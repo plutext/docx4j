@@ -21,6 +21,13 @@ Property resolution:
   is Word's built-in, and a default table style named otherwise applies as written, cell
   margins included (CR-030).
 
+- FontsAnalysis sees a table style's formatting: a header row the style makes bold counts as
+  the bold face, so FontEmbedder's subset of it is complete, and a font the style names is
+  reported (CR-030).
+
+- AbstractTableWriterModel's three-argument rowConditions and cellConditions are deprecated;
+  the conditions come from the table's TableContext (CR-030).
+
 PDF and HTML output, tables (CR-030):
 
 - A paragraph numbered through its style keeps its number in a table cell, and the list's count

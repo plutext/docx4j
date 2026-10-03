@@ -598,6 +598,11 @@ class WmlToMarkdown {
 	 * GFM pipes: first row is the header; block content in cells flattens to
 	 * inline with &lt;br&gt;; vMerge/gridSpan degrade (top-left wins, empty
 	 * cells elsewhere) — GFM has no spans.
+	 *
+	 * <p>The table style's formatting is left out on purpose (CR-030 decision 4):
+	 * the cells' runs are resolved without a CellContext, so a header row the
+	 * style makes bold is not written as **bold** (its being the GFM header says
+	 * as much), and GFM has no table styling for the rest.</p>
 	 */
 	private void table(Tbl tbl, Node container) throws Docx4JException {
 

@@ -63,13 +63,31 @@ import org.slf4j.LoggerFactory;
  * ({@link #getChainPPr(String)}, {@link #getChainRPr(String)}).  The merging itself is
  * {@link org.docx4j.model.styles.StyleUtil#apply}, driven by
  * {@link org.docx4j.model.styles.PropertyCatalogue}.  Numbering level indents are folded
- * in per layer through the numbering part.  A table style reaches a paragraph where the
- * caller hands the resolver the paragraph's {@link CellContext} (since 17.3.1; from a
- * {@link org.docx4j.model.table.TableContextTracker} during a walk, or
- * {@link #cellContextOf(P)}): the overloads which take none know nothing of tables.  For
- * the outputs which name styles, {@code ParagraphStylesInTableFix} gives each table
- * paragraph a synthetic style named and built here ({@link #styleIdFor},
- * {@link #syntheticStyle}, {@link #sourceStyleOf}; CR-030).
+ * in per layer through the numbering part.
+ *
+ * <p><b>Tables</b> (since 17.3.1).  A table style reaches a paragraph only where the caller
+ * hands the resolver the paragraph's {@link CellContext}: the overloads which take none know
+ * nothing of tables.</p>
+ * <ul>
+ * <li>The context comes from a {@link org.docx4j.model.table.TableContextTracker} during a
+ *     walk (the FO visitor's, and {@code FontsAnalysis}'s), or from {@link #cellContextOf(P)}
+ *     for one paragraph, which costs a walk of its table per call.  It is null outside a
+ *     table, and in a text box, note or comment reached from a cell: Word gives those none of
+ *     the table's formatting.</li>
+ * <li>Which table style applies is decided by its <em>name</em>, as Word decides it
+ *     ({@link #getEffectiveTableStyle(TblPr)}, {@link #getTableStyleChain(String)}).</li>
+ * <li>The size and justification exception of [MS-DOCX]'s
+ *     {@code overrideTableStyleFontSizeAndJustification} applies below compatibility mode 15
+ *     only, where that setting is not on ({@link #appliesTableStyleSizeJcException()}).</li>
+ * <li>The table writers take their rows' and cells' conditions from the same
+ *     {@link org.docx4j.model.table.TableContext}, so a cell's borders and shading and its
+ *     text come from one reading of the table.</li>
+ * <li>The outputs which name styles (HTML, and PDF through the XSLT pathway) resolve through
+ *     synthetic styles instead: {@code ParagraphStylesInTableFix} gives each table paragraph
+ *     one, named and built here ({@link #styleIdFor}, {@link #syntheticStyle}).  Code which
+ *     compares style ids (numbering, STYLEREF) asks {@link #sourceStyleOf} for the
+ *     document's own.</li>
+ * </ul>
  *
  * <p><b>Live objects.</b>  What the style overloads and {@link #getEffectivePPr(PPr)}
  * return is cached and shared: clone it before changing it.  The cached objects share no
@@ -82,7 +100,8 @@ import org.slf4j.LoggerFactory;
  * part's list while another thread resolves is the caller's synchronisation.</p>
  *
  * <p>The design and its measurements are in
- * {@code docs/developer/change-requests/CR-015-property-resolution.md}.</p>
+ * {@code docs/developer/change-requests/CR-015-property-resolution.md}, and for tables in
+ * {@code CR-030-table-conditions-in-the-resolver.md}.</p>
  *
  * @author jharrop
  */

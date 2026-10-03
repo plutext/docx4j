@@ -90,6 +90,13 @@ result text, content controls their content; headers/footers, textboxes and
 VML are dropped.  Everything outside CommonMark+GFM degrades to the nearest
 construct rather than inventing syntax.
 
+A table style's formatting is not carried either: a cell's bold, italic and
+alignment are its paragraphs' and runs' own (and their styles'), and the first
+row is the GFM header whatever the table style makes of it.  GFM has no table
+styling to carry it in.  (docx4j's `PropertyResolver` gives a cell paragraph's
+formatting with its table style, given its `CellContext`, should that change:
+CR-030 decision 4.)
+
 ## Dependencies
 
 `org.commonmark:commonmark` and extension artifacts (BSD-2-Clause; see

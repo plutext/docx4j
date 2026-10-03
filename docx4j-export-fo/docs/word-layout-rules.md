@@ -2585,8 +2585,8 @@ whose text then stayed on one line where Word wraps it, 64 times. A family witho
 face is measured, as it is drawn, in the regular one, so nothing is measured narrower than
 before. The probes are unchanged by it (none sets a heading in bold), and the effect on
 the real-document corpora is small: the bold most of their tables carry comes from
-`w:tblStylePr` conditional formatting, which docx4j does not yet apply, so there is no
-bold on the span for the sizer to see until that lands.
+`w:tblStylePr` conditional formatting, which docx4j did not yet apply, so there was no
+bold on the span for the sizer to see. (It applies it since 17.2.0, §6.10.)
 
 <a id="s63breaks"></a>**A column's minimum is measured at the line manager's break
 opportunities, not at white space** (17.2.0). The measurement must agree with the engine
@@ -3387,26 +3387,57 @@ with a conditional `w:rPr`.
   `w:trPr` for a table style, and `apply(TrPr, TrPr)` returned a null or empty destination
   untouched, so no style's `w:trPr` ever reached the effective style.
 
-**Where the paragraph properties are applied: the preprocess, not `PropertyResolver`.**
-The resolver is handed a `w:pPr` and knows nothing of the table around it, and its callers
-- both FO pathways, both HTML pathways, the TOC generator, markdown, binding - have no row
-and column to hand; the XSLT pathway cannot even find them, its `w:tbl` having been
-unmarshalled from the DOM without parents. `ParagraphStylesInTableFix` already walks the
-document with the table on a stack, is already what carries the table style's own
-`w:pPr`/`w:rPr` into a synthetic paragraph style per table, and runs for FO and HTML alike.
-It now keeps a per-table context (the look, the band sizes, the grid column of every cell)
-and emits one synthetic style per *(paragraph style, table style, applicable conditions)* -
-`Normal-PlainTable1-firstCol-firstRow-nwCell-BR` - with the conditions applied in
-precedence order between the table style's own properties and the paragraph style's chain.
-A paragraph under no condition the style defines keeps the pre-17.2.0 style id, so a table
-style without conditional formatting is untouched. Nothing else applies these properties,
-so there is nothing for it to double up with, and `PropertyFactory`'s list method is now
-deliberately empty.
+**Where the paragraph properties are applied: `PropertyResolver`, given the paragraph's
+table context** (17.3.1, CR-030). Until 17.3.1 a preprocess applied them, because the
+resolver was handed a `w:pPr` and knew nothing of the table around it. `ParagraphStylesInTableFix`
+walked the document with the table on a stack. It gave each table paragraph a synthetic
+paragraph style per *(paragraph style, table style, applicable conditions)*, such as
+`Normal-PlainTable1-firstCol-firstRow-nwCell-BR`, composed between the table style's own
+properties and the paragraph style's chain. That rewrite had defects of its own: a
+style-numbered paragraph in a cell lost its number, a text box in a cell took the cell's
+formatting, and STYLEREF missed a heading in a cell (CR-030 §2). Now:
 
-**The row and cell properties go through the writers.** `AbstractTableWriterModel` resolves
-each row's and cell's conditions and `AbstractTableWriter` applies the matching entries'
-`w:trPr` (before the row's own) and `w:tblPr`/`w:tcPr` (after the table's own borders,
-before the cell's own `w:tcPr`). A `w:tblHeader` under `firstRow` makes the row a header
+- **One reading of the table.** `org.docx4j.model.table.TableContext` reads a table once:
+  the table style it resolves to, the look, the band sizes, each row's index and each
+  cell's grid column. `forParagraph` gives a paragraph's `CellContext`. The resolver's
+  overloads which take one compose four levels: `docDefaults`; the table level (the style's
+  own `w:pPr`/`w:rPr`, then the applicable conditions in precedence order); the paragraph
+  style's chain; direct formatting. The toggle properties combine across the table and
+  paragraph-style levels (ECMA-376-1 §17.7.3).
+- **The FO visitor pathway** (the default) resolves each table paragraph in its context.
+  The conversion context tracks the tables as the visitor walks them, and no preprocess
+  runs. A text box, a note rendered at its reference, and a header or footer each start with
+  no table:
+  - Word gives a text box anchored in a cell none of the table's formatting (probe
+    `tables-textbox-in-cell`);
+  - Word keeps a note referenced from a cell plain (`tables-footnote-in-cell`). XSL-FO
+    inheritance still carries the cell's bold and italic into the note's blocks, a separate
+    defect in the FO writer (CR-030 D10).
+- **The HTML pathways and the FO XSLT pathway** keep the synthetic styles, since a style id
+  is a CSS class there. `ParagraphStylesInTableFix` asks the resolver for each id
+  (`styleIdFor`, made unique where two pairs would generate the same name) and for the
+  style's content (`syntheticStyle`), so nothing composes the table level a second way.
+  `sourceStyleOf` gives numbering and STYLEREF the document's own style back.
+- **Which table style applies is decided by name** (probes `tables-normal-table-text`,
+  `tables-named-normal-table`, `tables-renamed-default-margins`). A style *named* "Normal
+  Table" is Word's built-in (108 twips left and right, nothing to text), whether or not it
+  is the default, and the walk up a chain ends there. The `w:default` table style applies to
+  a table naming no style, whatever its name, as written and with nothing beneath it. Until
+  17.3.1 `getEffectiveTableStyle` went by the default style's id.
+- **[MS-DOCX]'s `overrideTableStyleFontSizeAndJustification` exception** (the default
+  paragraph style's 12pt and left justification give way to the table style's) applies
+  below compatibility mode 15 where the setting is not on; a document stating no mode is
+  mode 12. It never applies in mode 15, where Word 365 ignores a stated `0` and re-saves it
+  as `1` (probes `tables-compat-size-jc*`). Until 17.3.1 docx4j applied it in every mode,
+  and the preprocess wrote `1` into the exporter's settings.
+
+**The row and cell properties go through the writers.** `AbstractTableWriterModel` takes
+each row's and cell's conditions from the same `TableContext` (17.3.1). Until then it
+computed its own and counted the rows it writes, so a row whose every cell continues a
+vertical merge, which the written table drops, moved the bands after it by one: a cell's
+shading came from one band and its text from the other. `AbstractTableWriter` applies the
+matching entries' `w:trPr` (before the row's own) and `w:tblPr`/`w:tcPr` (after the
+table's own borders, before the cell's own `w:tcPr`). A `w:tblHeader` under `firstRow` makes the row a header
 row - `fo:table-header`, repeated on every page, `thead` in HTML - unless a cell of it
 spans into the body, which FOP rejects, or it is the last row. **Conditional borders are
 those of the condition's region**, resolved onto a cell as the table's own `w:tblBorders`
@@ -4031,11 +4062,14 @@ properties above `docDefaults` and below the paragraph style, which is what
 `ParagraphStylesInTableFix` (the `pp.common.tbl-p-style-fix` preprocessing step) builds a
 synthetic style for - but it only ever walked the main document part.
 
-Two settings govern that step. **`w:compatSetting overrideTableStyleFontSizeAndJustification`**
-(which Word 2010 and later write on every save, 293 documents of the three corpora) decides
-whether the default paragraph style's size and `w:jc` override the table style's;
-`DocumentSettingsPart.overrideTableStyleFontSizeAndJustification` is read by the step, and
-`PStyle11PtInTableOverrideFalseTest` / `PStyle12PtInTableGridOverride*Test` measure it.
+Since 17.3.1 (CR-030) the resolver composes the table level, and the FO visitor resolves a
+header's table paragraphs in context with no preprocess ([§6.10](#610-table-styles-conditional-formatting-wtblstylepr)).
+Two settings govern the table level. **`w:compatSetting overrideTableStyleFontSizeAndJustification`**
+(which Word 2010 and later write on every save, 293 documents of the three corpora) decides,
+below compatibility mode 15 only, whether the default paragraph style's size and `w:jc`
+override the table style's (§6.10). `PropertyResolver.appliesTableStyleSizeJcException`
+reads it, and `PStyle11PtInTableOverrideFalseTest` / `PStyle12PtInTableGridOverride*Test`
+measure it.
 **`w:compat/w:useWord2002TableStyleRules`** ("Emulate Word 2002 Table Style Rules") would
 switch the whole step off - Word 2002 did not put a table style's `w:pPr` and `w:rPr` above
 `docDefaults` at all - and reading it was measured and rejected in 17.1.0. Three mode-11

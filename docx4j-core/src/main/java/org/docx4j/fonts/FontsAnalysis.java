@@ -30,6 +30,8 @@ import org.docx4j.TraversalUtil;
 import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.table.CellContext;
+import org.docx4j.model.table.TableContextTracker;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
@@ -117,30 +119,39 @@ public final class FontsAnalysis {
 	}
 
 	/** One selector per part, as CR-016 phase 4 arranged (the scratch DOM is the
-	 *  selector's). */
-	private static final class UsageWalk extends TraversalUtil.CallbackImpl {
+	 *  selector's).  A {@link TableContextTracker}, so a run in a table cell is resolved
+	 *  with its table style's formatting: a header row the style makes bold is the bold
+	 *  face's, and a font the style names is used (CR-030; until 17.3.1 neither was seen,
+	 *  so FontEmbedder's subset of the bold face could miss the header's characters). */
+	private static final class UsageWalk extends TableContextTracker {
 
 		private final FontUsage usage;
 		private final RunFontSelector selector;
 		private final PropertyResolver propertyResolver;
 		private PPr pPr;
+		private CellContext cellContext;
 
 		UsageWalk(WordprocessingMLPackage pkg, FontUsage usage) {
+			super(resolverOf(pkg));
 			this.usage = usage;
 			this.selector = new RunFontSelector(pkg, NO_OP_VISITOR, RunFontSelector.RunFontActionType.DISCOVERY);
-			PropertyResolver resolver = null;
+			this.propertyResolver = getPropertyResolver();
+		}
+
+		private static PropertyResolver resolverOf(WordprocessingMLPackage pkg) {
 			try {
-				resolver = pkg.getMainDocumentPart().getPropertyResolver();
+				return pkg.getMainDocumentPart().getPropertyResolver();
 			} catch (Exception e) {
 				log.warn("No property resolver: " + e.getMessage());
+				return null;
 			}
-			this.propertyResolver = resolver;
 		}
 
 		@Override
 		public List<Object> apply(Object o) {
 			if (o instanceof P) {
 				pPr = ((P)o).getPPr();
+				cellContext = propertyResolver==null ? null : cellContext((P)o);
 			} else if (o instanceof R) {
 				run((R)o);
 			}
@@ -152,7 +163,7 @@ public final class FontsAnalysis {
 			RPr effective = r.getRPr();
 			if (propertyResolver!=null) {
 				try {
-					effective = propertyResolver.getEffectiveRPr(r.getRPr(), pPr);
+					effective = propertyResolver.getEffectiveRPr(r.getRPr(), pPr, cellContext);
 				} catch (Exception e) {
 					log.debug("effective rPr: " + e.getMessage());
 				}

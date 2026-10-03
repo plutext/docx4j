@@ -104,7 +104,8 @@ public abstract class TableContextTracker extends CallbackImpl {
 			Tr trBefore = null;
 			Tc tcBefore = null;
 			if (o instanceof Tbl) {
-				stack.push(new Frame(resolver.tableContext((Tbl) o)));
+				// with no resolver, nothing is tracked: every paragraph is in no table
+				stack.push(new Frame(resolver == null ? null : resolver.tableContext((Tbl) o)));
 				pushed = true;
 			} else if (isStoryBoundary(o)) {
 				stack.push(new Frame(null));

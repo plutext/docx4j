@@ -1,10 +1,14 @@
 # CR-030: table styles behind the resolver - a paragraph's table context handed to `PropertyResolver`, the synthetic styles reduced to names
 
-Status: IN PROGRESS. Phase 4 done 2026-10-04 (§6): the table writers take their rows' and
-cells' conditions from the `TableContext`, and every corpus document's FO and HTML is
-unchanged. Phase 5 remains. Phase 3 done 2026-10-03: the FO visitor resolves table paragraphs
-in context with no preprocess, and scores identical to phase 2 on every document. Phase 2
-done the same day, so 17.3.1 can ship. D1, D2, D3, D4, D6, D7, D8 and
+Status: DONE 2026-10-04. Phase 5 (§6): markdown keeps ignoring table styles, as decided;
+`FontsAnalysis` resolves runs in their table context, so the bold of a styled header row
+reaches the font report and the embedded subsets; the docs and CHANGELOG are written; the
+port hand-offs are made (core-ts told, python and mcp when a session runs, §6). Phase 4
+done the same day: the table writers take their rows' and cells' conditions from the
+`TableContext`, and every corpus document's FO and HTML is unchanged. Phase 3 done
+2026-10-03: the FO visitor resolves table paragraphs in context with no preprocess, and
+scores identical to phase 2 on every document. Phase 2 done the same day, so 17.3.1 can
+ship. D1, D2, D3, D4, D6, D7, D8 and
 D9 are fixed; the round trip finds no difference on the corpus; the three D1 documents
 improve, and nothing regresses. Phase 1 done the same day.
 Along the way, before phase 2:
@@ -871,6 +875,61 @@ DONE 2026-10-04.
 `PropertyResolver` class javadoc; `docx4j-export-fo/docs/word-layout-rules.md`'s
 table-conditions section; CHANGELOG; the hand-offs of §9.
 
+DONE 2026-10-04.
+- **Markdown** (decision 4): no code change. `WmlToMarkdown` resolves a cell's runs without
+  a `CellContext` on purpose. Its table export's javadoc and the module README now say so,
+  and say where the formatting is should that change.
+- **`FontsAnalysis`** (left from phase 3): its use walk is now a `TableContextTracker`, and
+  a run in a cell is resolved in its context.
+  - Before, a header row which the table style makes bold counted as the regular face, and a
+    font the style names was not seen at all. `FontEmbedder` (17.3.0) cuts each face's
+    subset from this count, so the bold subset could miss the header's characters.
+  - Measured over the 617 documents (real, real2, real3, the probes), with a scratch dump of
+    every font's characters and code points per face:
+    - 38 documents change;
+    - 79,023 characters move from the regular face to bold (66 to italic or bold italic);
+    - six font-and-face pairs appear, for example Calibri Bold in a document whose only bold
+      text is a table header;
+    - two fonts are newly seen. Times New Roman appears in 10 real documents, whose table
+      styles set it, bold, for a first row or column. Liberation Sans appears in probe T2,
+      whose default table style gives it to a table naming no style.
+  - `TableContextTracker` treats a null resolver as tracking nothing, since this walk
+    tolerated one before.
+  - Test: `FontsAnalysisTest.theUseWalkSeesTheTableStyle`. It fails on 31b920234.
+- **The other callers of the effective-property methods were checked; none needs a
+  context:**
+  - the HTML preprocesses (`ListsToContentControls`, `Containerization`) run before the
+    synthetic styles exist, and read numbering and borders;
+  - `HtmlCssHelper` writes the synthetic styles' CSS;
+  - `Emulator` reads numbering;
+  - the TOC generator (`TocEntry`, `USwitch`) reads outline levels and the entries' own
+    formatting;
+  - `BindingTraverserXSLT` formats bound content.
+
+  A table style giving any of these a numbering, an outline level or a border is not a case
+  the corpora have.
+- **Docs:**
+  - the `PropertyResolver` class javadoc gains a Tables section: where a context comes
+    from, the story boundaries, the name rule, the exception's gate, the writers, and the
+    synthetic styles;
+  - `word-layout-rules.md` §6.10 is rewritten for the resolver;
+  - its §7 header-table passage is brought up to date, and so is a sentence in §6.3 which
+    said conditional formatting was not yet applied.
+- CHANGELOG: `FontsAnalysis`, and the writer model's deprecations; the earlier phases'
+  entries were already in.
+- Gate, tests (reactor, with docx4j-markdown): core-tests 1,386/0, docx4j-markdown 143/0,
+  export-fo 240/0, export-fo-tests 676/0.
+- Hand-offs (§9):
+  - docx4j-core-ts: sent 2026-10-04 to its running session. The message covers the API of
+    phases 1 to 4 and the commits; that `getEffectiveTableStyle` and
+    `reachesDefaultTableStyle` now decide by name, which its harness reads; the exception's
+    gate on the compatibility mode; and `FontsAnalysis`'s change, which may move font
+    goldens of documents with styled tables.
+  - docx4j-python and docx4j-mcp: no session was running. The hand-off is this section and
+    the registry entry, and it is to be sent when one starts.
+  - The commits are on VERSION_17_3_1 and not yet pushed; a port building docx4j from
+    origin sees them only after the push.
+
 ## 7. Decisions for Jason
 
 1. **Phase 3 at all?**  It changes no output, by its gate. Recommended: yes, so the default
@@ -958,6 +1017,14 @@ table-conditions section; CHANGELOG; the hand-offs of §9.
   goldens per table paragraph gain (table style id, condition key) and the in-context
   properties. Unblocks core-ts CR-001's and python CR-002's "table conditional formatting
   stays out".
+
+  Also changed under them, by phase (added 2026-10-04):
+  - phase 2: `getEffectiveTableStyle` and `reachesDefaultTableStyle` decide by the style's
+    name, not the default style's id; the [MS-DOCX] size and justification exception
+    applies below compatibility mode 15 only; synthetic style ids are unique
+    (`styleIdFor`), and `sourceStyleOf` maps them back;
+  - phase 4: the table writers count a table's rows as its `w:tr`;
+  - phase 5: `FontsAnalysis` resolves a cell's runs in context.
 - **docx4j-mcp**: tools reporting effective formatting use `cellContextOf`.
 - **Enterprise CR-001**: none beyond the corpus scores of phase 2.
 

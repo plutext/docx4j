@@ -164,6 +164,41 @@ public class FontsAnalysisTest {
 	// ------------------------------------------------------------------ the grades
 
 	/** The document's own font, installed: nothing to report and nothing to do. */
+	/** A run in a table cell has its table style's formatting: here a header row the style
+	 *  sets bold, in another font.  Until 17.3.1 the walk resolved it outside the table, so
+	 *  the header counted as the regular face of the default font (CR-030), and
+	 *  FontEmbedder's subset of the bold face missed its characters. */
+	@Test
+	public void theUseWalkSeesTheTableStyle() throws Exception {
+
+		WordprocessingMLPackage pkg = packageWith(SERIF,
+				"<w:tbl><w:tblPr><w:tblStyle w:val=\"HeaderTable\"/><w:tblLook w:val=\"04A0\"/></w:tblPr>"
+				+ "<w:tblGrid><w:gridCol w:w=\"2000\"/></w:tblGrid>"
+				+ "<w:tr><w:tc>" + p(null, "head") + "</w:tc></w:tr>"
+				+ "<w:tr><w:tc>" + p(null, "body") + "</w:tc></w:tr>"
+				+ "</w:tbl>" + p(null, "after"),
+				null);
+		pkg.getMainDocumentPart().getStyleDefinitionsPart().getJaxbElement().getStyle().add(
+				(org.docx4j.wml.Style) XmlUtils.unmarshalString(
+						"<w:style xmlns:w=\"" + W + "\" w:type=\"table\" w:styleId=\"HeaderTable\">"
+						+ "<w:name w:val=\"Header Table\"/><w:tblStylePr w:type=\"firstRow\"><w:rPr>"
+						+ "<w:rFonts w:ascii=\"" + SANS + "\" w:hAnsi=\"" + SANS + "\"/><w:b/>"
+						+ "</w:rPr></w:tblStylePr></w:style>"));
+		pkg.getMainDocumentPart().getPropertyResolver().refresh();
+
+		FontUsage usage = FontsAnalysis.usage(pkg);
+
+		FontUsage.Use sans = usage.get(SANS);
+		assertNotNull("the table style's font is used", sans);
+		assertEquals(4, sans.getCharacters());
+		assertEquals("the header is bold", 4, sans.getByFace().get(FontUsage.Face.BOLD)[0]);
+		assertFalse(sans.getFaces().contains(FontUsage.Face.REGULAR));
+
+		FontUsage.Use serif = usage.get(SERIF);
+		assertEquals("body and after", 9, serif.getCharacters());
+		assertFalse(serif.getFaces().contains(FontUsage.Face.BOLD));
+	}
+
 	@Test
 	public void anInstalledFontIsExact() throws Exception {
 		WordprocessingMLPackage pkg = packageWith(SANS, p(null, SENTENCE), null);
