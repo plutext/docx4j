@@ -39,6 +39,11 @@ import org.w3c.dom.NodeList;
  * hold, and measured over a real-document corpus a whole non-Latin alphabet then
  * loses characters from the PDF's text layer.</p>
  *
+ * <p>Since 17.3.0, where the FO renderer has the gsub-features hook (the docx4j FO
+ * renderer), the run keeps the font's own declaration and carries
+ * {@code fox:gsub-features="-liga"} instead, so the PDF's font is subset like any other;
+ * the twin is Apache FOP's path ({@link LigatureHook}).</p>
+ *
  * @since 17.0.5
  */
 public class LigatureSuppressionTest extends AbstractXSLFOTest {
@@ -96,23 +101,40 @@ public class LigatureSuppressionTest extends AbstractXSLFOTest {
 
 	// --------------------------------------------------------------- the default
 
-	private void plainLatinRunUsesTheNoLigatureTwin(int flags) throws Exception {
+	/** the first fo:inline which has a font-family */
+	private static Element firstSpan(org.w3c.dom.Document doc) {
+		NodeList nl = doc.getElementsByTagNameNS(FO, "inline");
+		for (int i = 0; i < nl.getLength(); i++) {
+			Element el = (Element) nl.item(i);
+			if (el.getAttribute("font-family").length() > 0) return el;
+		}
+		return null;
+	}
+
+	private void plainLatinRunHasNoLigatures(int flags) throws Exception {
 		assumeTrueTypeCalibri();
-		String family = family(fo(pkg(run("", "attention to notification")), flags));
-		assertTrue("expected the no-ligature twin, got " + family,
-				family != null && family.endsWith(RunFontSelector.NOLIGA_SUFFIX));
+		Element span = firstSpan(fo(pkg(run("", "attention to notification")), flags));
+		String family = span == null ? null : span.getAttribute("font-family");
+		if (LigatureHook.on()) {
+			assertFalse("the font's own declaration, not the twin: " + family,
+					family == null || family.endsWith(RunFontSelector.NOLIGA_SUFFIX));
+			assertEquals("-liga", LigatureHook.delta(span));
+		} else {
+			assertTrue("expected the no-ligature twin, got " + family,
+					family != null && family.endsWith(RunFontSelector.NOLIGA_SUFFIX));
+		}
 		// and it still resolves to the physical font
 		assertEquals(PhysicalFonts.get(CARLITO), PhysicalFonts.get(family));
 	}
 
 	@Test
 	public void visitor() throws Exception {
-		plainLatinRunUsesTheNoLigatureTwin(Docx4J.FLAG_NONE);
+		plainLatinRunHasNoLigatures(Docx4J.FLAG_NONE);
 	}
 
 	@Test
 	public void xslt() throws Exception {
-		plainLatinRunUsesTheNoLigatureTwin(Docx4J.FLAG_EXPORT_PREFER_XSL);
+		plainLatinRunHasNoLigatures(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
 	// ------------------------------------------------------- when Word does apply them

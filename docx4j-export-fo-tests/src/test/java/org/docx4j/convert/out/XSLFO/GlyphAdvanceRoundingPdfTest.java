@@ -4,8 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -41,6 +39,11 @@ import org.junit.Test;
  * width may be smaller with it on, and their sum must be larger (any TrueType font has
  * advances which are not whole thousandths of an em).</p>
  *
+ * <p>Since 17.3.0 the docx4j FO renderer sets plain text in the font's own declaration, a
+ * subset CID font whose widths are its descendant font's {@code /W} (the single-byte
+ * {@code +noliga} twin, a simple font with {@code /Widths}, is Apache FOP's path; see
+ * {@link LigatureHook}), so both kinds are read.</p>
+ *
  * @since 17.1.0
  */
 public class GlyphAdvanceRoundingPdfTest {
@@ -64,9 +67,9 @@ public class GlyphAdvanceRoundingPdfTest {
 		return baos.toByteArray();
 	}
 
-	/** the /Widths array of each simple font of the document, by its /BaseFont name */
-	private static Map<String, List<Integer>> widths(byte[] pdf) throws Exception {
-		Map<String, List<Integer>> out = new TreeMap<String, List<Integer>>();
+	/** A simple font's code, or a CID font's CID, to its width; simple fonts keyed "simple:" */
+	private static Map<String, Map<Integer, Integer>> widths(byte[] pdf) throws Exception {
+		Map<String, Map<Integer, Integer>> out = new TreeMap<String, Map<Integer, Integer>>();
 		try (PDDocument doc = Loader.loadPDF(pdf)) {
 			for (PDPage page : doc.getPages()) {
 				PDResources resources = page.getResources();
@@ -77,13 +80,42 @@ public class GlyphAdvanceRoundingPdfTest {
 					COSBase base = ((COSDictionary) fonts).getDictionaryObject(name);
 					if (!(base instanceof COSDictionary)) continue;
 					COSDictionary font = (COSDictionary) base;
+					Map<Integer, Integer> values = new TreeMap<Integer, Integer>();
 					COSBase widths = font.getDictionaryObject(COSName.WIDTHS);
-					if (!(widths instanceof COSArray)) continue;
-					List<Integer> values = new ArrayList<Integer>();
-					for (COSBase w : (COSArray) widths) {
-						if (w instanceof COSNumber) values.add(((COSNumber) w).intValue());
+					if (widths instanceof COSArray) {
+						// a simple font: /FirstChar, then one width per code
+						int first = font.getInt(COSName.FIRST_CHAR, 0);
+						int i = 0;
+						for (COSBase w : (COSArray) widths) {
+							if (w instanceof COSNumber) values.put(first + i, ((COSNumber) w).intValue());
+							i++;
+						}
+						out.put("simple:" + font.getNameAsString(COSName.BASE_FONT), values);
+						continue;
 					}
-					out.put(font.getNameAsString(COSName.BASE_FONT), values);
+					COSBase descendants = font.getDictionaryObject(COSName.DESCENDANT_FONTS);
+					if (!(descendants instanceof COSArray) || ((COSArray) descendants).size() == 0) continue;
+					COSBase cidFont = ((COSArray) descendants).getObject(0);
+					if (!(cidFont instanceof COSDictionary)) continue;
+					COSBase w = ((COSDictionary) cidFont).getDictionaryObject(COSName.W);
+					if (!(w instanceof COSArray)) continue;
+					// a CID font's /W: "c [w1 w2 ...]" or "cFirst cLast w"
+					COSArray a = (COSArray) w;
+					for (int i = 0; i < a.size(); ) {
+						int c = ((COSNumber) a.getObject(i)).intValue();
+						COSBase next = a.getObject(i + 1);
+						if (next instanceof COSArray) {
+							int k = 0;
+							for (COSBase v : (COSArray) next) values.put(c + k++, ((COSNumber) v).intValue());
+							i += 2;
+						} else {
+							int last = ((COSNumber) next).intValue();
+							int v = ((COSNumber) a.getObject(i + 2)).intValue();
+							for (int k = c; k <= last; k++) values.put(k, v);
+							i += 3;
+						}
+					}
+					out.put("cid:" + font.getNameAsString(COSName.BASE_FONT), values);
 				}
 			}
 		}
@@ -94,10 +126,10 @@ public class GlyphAdvanceRoundingPdfTest {
 	public void widthsAreRoundedNotTruncated() throws Exception {
 
 		Docx4jProperties.setProperty(WordGlyphWidths.PROPERTY, false);
-		Map<String, List<Integer>> truncated = widths(pdf());
+		Map<String, Map<Integer, Integer>> truncated = widths(pdf());
 
 		Docx4jProperties.setProperty(WordGlyphWidths.PROPERTY, true);
-		Map<String, List<Integer>> rounded = widths(pdf());
+		Map<String, Map<Integer, Integer>> rounded = widths(pdf());
 
 		assertTrue("no font widths in the PDF", truncated.size() > 0);
 		assertEquals("the same fonts", truncated.keySet(), rounded.keySet());
@@ -111,11 +143,14 @@ public class GlyphAdvanceRoundingPdfTest {
 		final int GRAVE = 96, SMALL_TILDE = 0x98;
 
 		int larger = 0, reglyphed = 0;
+		boolean simple = false;
 		for (String font : truncated.keySet()) {
-			List<Integer> t = truncated.get(font), r = rounded.get(font);
-			assertEquals(font + ": the same number of widths", t.size(), r.size());
-			for (int i = 0; i < r.size(); i++) {
-				if (i == GRAVE || i == SMALL_TILDE) {
+			Map<Integer, Integer> t = truncated.get(font), r = rounded.get(font);
+			assertEquals(font + ": the same codes", t.keySet(), r.keySet());
+			boolean simpleFont = font.startsWith("simple:");
+			simple |= simpleFont;
+			for (Integer i : r.keySet()) {
+				if (simpleFont && (i == GRAVE || i == SMALL_TILDE)) {
 					if (!r.get(i).equals(t.get(i))) reglyphed++;
 					continue;
 				}
@@ -127,6 +162,7 @@ public class GlyphAdvanceRoundingPdfTest {
 			}
 		}
 		assertTrue("no advance was rounded up at all", larger > 0);
-		assertTrue("the declared encoding's glyph did not reach code 96 or 0x98", reglyphed > 0);
+		// the WinAnsiEncoding codes exist only in a simple font
+		if (simple) assertTrue("the declared encoding's glyph did not reach code 96 or 0x98", reglyphed > 0);
 	}
 }

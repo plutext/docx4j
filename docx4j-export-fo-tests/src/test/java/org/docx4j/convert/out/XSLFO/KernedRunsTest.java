@@ -17,6 +17,12 @@ import org.w3c.dom.NodeList;
  * Word kerns a run only when its w:kern threshold is at or below its size
  * (both half-points); FOP kerns per font, so such runs go to the font's kerned
  * twin (family name + "+kern", FopConfigUtil).  CR-001 §6.6 item 15.
+ *
+ * <p>An unkerned run has no ligatures either, which is Word's default.  Where the FO
+ * renderer has the gsub-features hook (the docx4j FO renderer, since 17.3.0) that is
+ * {@code fox:gsub-features="-liga"} on the font's own declaration; on Apache FOP it is the
+ * single-byte {@code +noliga} twin, which applies no OpenType feature at all
+ * ({@link LigatureHook}).</p>
  */
 public class KernedRunsTest {
 
@@ -81,13 +87,19 @@ public class KernedRunsTest {
 		org.junit.Assert.assertTrue("no kerned spaces", wordSpacingChildren(kerned) >= 1);
 		assertEquals("unkerned run keeps plain spaces", 0, wordSpacingChildren(span(doc, "PLAIN")));
 
-		// an unkerned run goes to the no-ligature twin, which has no OpenType feature
-		// at all - neither GSUB liga nor GPOS kern, which is Word's default
-		assertEquals("Liberation Serif+noliga", family(doc, "plain"));
-		assertEquals("12pt below a 14pt threshold", "Liberation Serif+noliga", family(doc, "below"));
+		// an unkerned run gets neither GPOS kern nor GSUB liga, which is Word's default: the
+		// font's own declaration with the liga delta where the renderer has the hook, else
+		// the no-ligature twin, which has no OpenType feature at all
+		String unkerned = LigatureHook.on() ? "Liberation Serif" : "Liberation Serif+noliga";
+		assertEquals(unkerned, family(doc, "plain"));
+		assertEquals("12pt below a 14pt threshold", unkerned, family(doc, "below"));
 		assertEquals("14pt at a 14pt threshold", "Liberation Serif+kern", family(doc, "at"));
 		assertEquals("Liberation Serif+kern", family(doc, "above"));
-		assertEquals("w:kern 0", "Liberation Serif+noliga", family(doc, "off"));
+		assertEquals("w:kern 0", unkerned, family(doc, "off"));
+		if (LigatureHook.on()) {
+			assertEquals("-liga", LigatureHook.delta(span(doc, "plain")));
+			assertEquals("a kerned run has no ligatures either", "-liga", LigatureHook.delta(span(doc, "at")));
+		}
 		// Word's Title style: w:kern 28 at 26/28pt
 		assertEquals("kerning from the style", "Liberation Serif+kern", family(doc, "title"));
 	}

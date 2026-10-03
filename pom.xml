@@ -48,6 +48,7 @@
         <module>docx4j-export-fo-fonts-theme2023</module>
 
         <module>docx4j-export-fo</module>
+        <module>docx4j-export-fo-tests</module> <!-- back in the reactor since 17.3.1: out of it, nothing ran these, and 17.3.0's XSLT pathway PDF failure went unseen -->
 
         <module>docx4j-conversion-via-microsoft-graph</module>
         <module>docx4j-documents4j-remote</module>                
