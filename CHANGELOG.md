@@ -15,6 +15,9 @@ PDF via XSL FO:
 
 - Rule leaders are drawn on an Apache FOP release without Leader.setRuleStyle(int) (FOP-3325).
 
+- A line break inside a run no longer loses the text after it, or fails the conversion, when its
+  paragraph is laid out a second time, beside a float or on a page of another width (FOP-1912).
+
 
 Version 17.3.0
 ===============

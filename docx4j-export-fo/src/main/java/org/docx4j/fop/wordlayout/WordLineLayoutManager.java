@@ -3525,6 +3525,32 @@ public class WordLineLayoutManager extends LineLayoutManager {
         return lineLayouts;
     }
 
+    /**
+     * The position inside this manager's own wrapping, where an earlier pass left one.  The
+     * elements of a nested block-level sequence (a block inside an inline, as docx4j writes a
+     * {@code w:br} in a run) are kept in knuthParagraphs and wrapped in place, here and by the
+     * ancestor managers.  When line breaking runs again over the same paragraphs (beside a
+     * float, in {@code PageBreaker.handleFloatLayout}, or after a change of IPD) they were
+     * wrapped a second time; adding their areas then re-entered the enclosing block's
+     * manager, whose area was flushed early, so the lines after the nested block were lost
+     * and {@code TraitSetter.setVisibility} threw (Enterprise CR-001 §6.6 item 36).  FOP's
+     * own defect, on 2.11 and on Apache main; the docx4j FO renderer's fop/CR-011 fixes its
+     * LineLayoutManager the same way, but this copy needs it too.  On a first pass nothing
+     * in the chain belongs to this manager, so nothing changes.
+     *
+     * @param pos the element's position
+     * @return the position inside this manager's wrapping, or pos if there is none
+     * @since 17.3.1
+     */
+    private Position unwrapEarlierPass(Position pos) {
+        for (Position p = pos; p != null; p = p.getPosition()) {
+            if (p instanceof NonLeafPosition && p.getLM() == this) {
+                return p.getPosition();
+            }
+        }
+        return pos;
+    }
+
     private List<ListElement> postProcessLineBreaks(int alignment, LayoutContext context) {
 
         List<ListElement> returnList = new LinkedList<>();
@@ -3563,7 +3589,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                     }
                     if (lm != this) {
                         tempElement.setPosition(notifyPos(new NonLeafPosition(this,
-                                tempElement.getPosition())));
+                                unwrapEarlierPass(tempElement.getPosition()))));
                     }
                     targetList.add(tempElement);
                 }
