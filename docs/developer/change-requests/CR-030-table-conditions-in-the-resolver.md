@@ -1,8 +1,13 @@
 # CR-030: table styles behind the resolver - a paragraph's table context handed to `PropertyResolver`, the synthetic styles reduced to names
 
-Status: IN PROGRESS. Proposed 2026-10-03; phase 0 started the same day (Jason: "start phase 0"):
-the six probes are in `Corpus.java` and on the share, and their Word goldens are awaited. The
-decisions of §7 are still open.
+Status: IN PROGRESS, waiting for Jason's review. Proposed 2026-10-03; phase 0 started the same
+day (Jason: "start phase 0"). Word's goldens for the six probes were cut and read the same day
+(§5.1):
+- D1 and D2 are confirmed;
+- D4 is settled: Word goes by the style's *name*;
+- a sixth defect is found (D6);
+- one follow-up probe is proposed (§5.2).
+The decisions of §7 are open.
 Carried forward from CR-015 ("Layering", Jason 2026-09-12: "we should be getting it right in
 the resolver so we are not layering fix upon fix"). Drafted with Claude Opus 5.5.
 Owner: Jason Harrop.
@@ -84,28 +89,54 @@ preprocess, `Docx4J.toHTML` and `Docx4J.toFO` (PDF), on 17.3.1-SNAPSHOT.
   the style the level names, does not find `ListNumber`, and reports "level 0 of numId 1 is
   linked to a paragraph style other than 'ListNumber-Grid-firstRow-BR'". Result: PDF and HTML
   both print `1. outside one`, the two cell paragraphs unnumbered, then `2. outside two`. The
-  paragraphs should be numbered 1 to 4 (§5 T4 is the Word check). Corpus: about 498 paragraphs
+  paragraphs should be numbered 1 to 4, and Word numbers them so (§5 T4). Corpus: about 498 paragraphs
   in 7 of 446 documents, one of them 458. That count comes from a scan by style id and does
   not check that numId and level match.
 - **D2. A text box anchored in a cell takes the cell's table formatting.**  `TraversalUtil`
   descends into `w:txbxContent`, and the walk's table stack is still pushed there, so the text
   box's paragraph got `Normal-Grid-firstRow-BR` (bold). A text box is a story of its own, and
-  Word is not expected to apply the table style to it (§5 T3). Corpus: 10 documents have a
-  text box anchored in a table cell.
+  Word does not apply the table style to it: in T3 the box text is 12pt regular in a 16pt
+  bold header cell (§5.1). Corpus: 10 documents have a text box anchored in a table cell.
 - **D3. DEBUG logging aborts the preprocess.**  With DEBUG on for `StyleRenamer`,
   `getCellPStyle` marshals each applicable `CTTblStylePr` for its log line. That type has no
   `@XmlRootElement`, so the marshal throws. The exception escapes the walk, and `process`
   catches and logs it, so the rest of the body and every header and footer are left
   unrenamed. It happens only with that
   logger at DEBUG, which is exactly when someone is investigating table formatting.
-- **D4. Two rules for which table style applies** (§1). On the corpus they agree on every
-  table: no document has a default table style not named "Normal Table", or a non-default
-  style so named. They also agree on what they ignore. Six documents (five de-DE) give their
-  Normal Table run properties (Times New Roman 10pt, `de-DE`), and both readings ignore them.
-  Whether Word does is §5 T1. The name-against-id case is T2.
+- **D4. Two rules for which table style applies** (§1), settled by T1 and T2 (§5.1): Word goes
+  by *name*.
+  - A style named "Normal Table" is Word's built-in Normal Table, whatever its own
+    definition says and whether or not it is the default. It gives cell margins of 108 twips
+    left and right, and nothing to text.
+  - The `w:default` table style applies to a table naming no style, whatever its name.
+  - On re-saving, Word merges a non-default style named "Normal Table" into its built-in, and
+    writes the default style's id onto the table that named none.
+
+  So the preprocess's rule (by name) is right for text. `getEffectiveTableStyle`'s rule (by
+  the default style's *id*) is wrong where the two differ: T2's table (a) names a non-default
+  style called "Normal Table", and docx4j gives it no cell margin where Word gives it 108.
+  No corpus document has such a case, so the fix moves nothing on the corpus. The six
+  documents whose Normal Table carries run properties (Times New Roman 10pt) are rendered
+  right already: Word ignores those properties too (T1).
 - **D5 (a gap, not a defect).**  Footnotes, endnotes and comments are not walked, so a table in
   a note gets no table style. The corpus has none. It follows for free once the context comes
   from the walk that renders the note.
+- **D6. docx4j applies [MS-DOCX]'s 12pt-and-left exception in compatibility mode 15, where Word
+  does not.**  Found by T5 (§5.1).
+  - Word: with `overrideTableStyleFontSizeAndJustification` stated 0 in a mode-15 document,
+    the output is identical to the same document stating 1. Normal's 12pt and left win over
+    the table style in every cell, which is ECMA-376's order, and Word's re-save rewrites the
+    setting to 1.
+  - docx4j: it applies the exception. Normal's cells come out 14pt centred in the header and
+    9pt right-aligned in the body, and the two styles that state no `w:jc` are centred and
+    right-aligned too.
+  - No corpus document is affected: all 171 mode-15 documents, and 125 others, state 1.
+  - The five corpus documents where the exception can fire are Word 2007 documents (no
+    `compatibilityMode`) with the setting absent. Whether Word 365 applies the exception to
+    them is §5.2's follow-up.
+  - The `PStyle12PtInTable*OverrideFalse` tests pin the exception as Word 2010 measured it,
+    but since 2026-09-19 `createPackage()` gives them mode-15 documents. They now assert the
+    exception in exactly the case where Word 365 does not apply it.
 
 ## 3. Corpus facts (the three real-document corpora, 446 documents; scanned 2026-10-03)
 
@@ -136,8 +167,12 @@ first and largest case.
 ### 4.2 A table context and a cell context (`org.docx4j.model.table`)
 
 - **`TableContext`**, built by the resolver from a `w:tbl` (`resolver.tableContext(tbl)`), holds:
-  - the effective table style (`getEffectiveTableStyle`, the one rule for which style applies,
-    with T1 and T2 applied);
+  - the effective table style (`getEffectiveTableStyle`, the one rule for which style
+    applies). As T1 and T2 measured it: the table's `w:tblStyle` if it names a style, else the
+    `w:default` table style, whatever its name. Walking the chain, a style *named* "Normal
+    Table" contributes Word's built-in (108 twips left and right, nothing to text) in place of
+    its own definition, and the walk ends there. Every other style applies as written,
+    the default style included;
   - the look (the table's `w:tblLook`, else the style's, else Word's default 04A0);
   - the band sizes;
   - each row's index and each cell's first grid column and span. This is one implementation
@@ -162,9 +197,11 @@ New overloads; a null context means outside a table, which is exactly today's be
                    + level(character style) + direct
     table(ctx)   = the table style's own pPr/rPr, then ctx's applicable conditions in order
 
-The composition is the preprocess's, moved, not reinvented. The compat rule reads the
-setting through `DocumentSettingsPart.overrideTableStyleFontSizeAndJustification()`, which
-already exists, and the preprocess stops writing `1` into the exporter's settings. Caches are
+The composition is the preprocess's, moved, not reinvented. The compat rule applies only below
+compatibility mode 15, and there only where the setting is off or absent. In mode 15 Word
+ignores a stated 0 and re-saves it as 1 (T5, D6). `CompatibilityOptions` already resolves a
+document's mode, and the preprocess stops writing `1` into the exporter's settings. Whether
+Word 365 applies the exception below mode 15 at all is §5.2's question. Caches are
 keyed (styleOf, ctx key), which is the same cardinality as the synthetic styles today:
 `ConcurrentHashMap`s holding immutable values, under CR-015's live-object contract.
 
@@ -172,7 +209,8 @@ keyed (styleOf, ctx key), which is the same cardinality as the synthetic styles 
 
 1. **A walker** extends or composes a **`TableContextTracker`**, a `TraversalUtil` callback
    that keeps the table stack: the preprocess's walk, made reusable. It starts an empty stack
-   inside `w:txbxContent` if T3 confirms D2.
+   inside `w:txbxContent`: T3 shows Word gives a text box anchored in a cell none of the
+   table's formatting (D2).
 2. **One paragraph in a loaded tree**: `resolver.cellContextOf(P)` follows parent pointers
    (`P > Tc > Tr > Tbl`). Measured 2026-10-03: the pointers are there after unmarshal, after
    `WordprocessingMLPackage.clone()` and after `XmlUtils.deepCopy`. They are absent for
@@ -283,11 +321,37 @@ stating 16pt.
   So the size exception reaches (a) only, and the justification exception every column, since
   none of the three styles states `w:jc`.
 
+### 5.1 Word's readings (goldens cut 2026-10-03, Word 365, fields not updated)
+
+Read with PDFBox from the goldens, and from Word's re-saves where the question was what Word
+*computed*. Method note: PDFBox's `getFontSizeInPt` reads Word's PDFs low at some sizes (10pt
+as 9.0, 16pt as 15.0) though not at others (12, 20). So sizes here come from glyph widths,
+taken relative to a 12pt line in the same PDF.
+
+| probe | Word | docx4j today | so |
+|---|---|---|---|
+| T1 `tables-normal-table-text` | (a), (b), (c) all 12pt Serif with no 30pt gap: the document's Normal Table text properties apply nowhere. Margins 108 for (a) and (b), 0 for (c), as in P5 | the same | docx4j is right; the six corpus documents are fine |
+| T2 `tables-named-normal-table` | (a), the non-default style named "Normal Table": 12pt Serif *and margins of 108*. (b), no style, default "My Default": 20pt Sans. (c), based on the default: 20pt Sans. The re-save drops (a)'s `w:tblStyle`, merges the style into the built-in TableNormal, and writes `w:tblStyle MyDefault` on (b) | text the same; (a)'s margin 0 | the name rule (D4); the resolver's margins are wrong for (a) |
+| T3 `tables-textbox-in-cell` | cell text (a) 16pt bold, (c) 16pt; the text in all three boxes 12pt regular | (b)'s box 16pt bold, (d)'s 16pt | D2 confirmed: the table style does not reach a text box |
+| T4 `tables-numbered-in-cell` | 1 to 8, (c) bold | (c), (d) unnumbered, (h) 6 | D1 confirmed |
+| T5 `tables-compat-size-jc` (setting 0, mode 15) | (a) 12pt, (b) 10pt, (c) 16pt in both rows, all left. The re-save writes the setting as 1 | (a) 14pt centred / 9pt right; (b), (c) centred / right | D6: Word ignores the setting in mode 15 |
+| T5 `tables-compat-size-jc-on` (setting 1, mode 15) | identical to the setting-0 document | as Word | ECMA-376's order |
+
+### 5.2 Follow-up probe (proposed, not added)
+
+**T6 `tables-compat-size-jc-mode12` and `-mode14`**: T5's document in compatibility mode 12
+(no `compatibilityMode`, as Word 2007 writes it) and in mode 14, with the setting absent. It
+answers whether Word 365 applies the 12pt-and-left exception below mode 15 at all:
+- if it does, the rule is "below mode 15 and the setting not on", and the
+  `PStyle12PtInTable*OverrideFalse` tests pin mode 14;
+- if not, the exception goes, and with it those tests' expectations and the five Word 2007
+  corpus documents' current rendering.
+
 ## 6. Phases
 
 **Phase 0 - probes.**  T1 to T5 in `Corpus.java`, then goldens from Word. No library change.
-IN PROGRESS: the six probes of §5 are written (2026-10-03) and on the share; the goldens are
-awaited. Then each probe's Word reading goes into §5 and settles the question it asks.
+Goldens cut and read 2026-10-03 (§5.1), and committed with their manifest lines. Open: the
+follow-up probe of §5.2, on Jason's word.
 
 **Phase 1 - the resolver takes the context (additive; no exporter change).**
 `TableContext`, `CellContext`, `TableContextTracker`, `cellContextOf`; the three overloads;
@@ -303,10 +367,12 @@ D3 on the way.
 
 **Phase 2 - names, and the defects.**  The preprocess uses `styleIdFor`; the synthetic
 style's content comes from the resolver; `Emulator` goes through `sourceStyleOf` (D1); the
-text-box reset if T3 says so (D2); T1/T2 applied to the one table-style rule (D4).
+text-box reset (D2); the name rule in `getEffectiveTableStyle` (D4); the compat rule gated on
+the mode (D6), with the `PStyle12PtInTable*OverrideFalse` tests pinned below mode 15 if §5.2
+says the exception lives there.
 - Gate: the corpora scored against the current baseline. Expected: the seven
-  numbered-in-cell documents improve (and the ten text-box documents if T3 agrees), none
-  regresses, and the probes match T1 to T5.
+  numbered-in-cell documents and the ten text-box documents improve, none regresses (D4 and D6
+  touch no corpus document), and the six probes match their goldens.
 
 **Phase 3 - the FO visitor resolves in context.**  The preprocess comes off `FLAG_NONE` FO
 output.
@@ -333,7 +399,9 @@ table-conditions section; CHANGELOG; the hand-offs of §9.
 4. **Markdown**: GFM has no table styling, and a styled header row is already the markdown
    header. Recommended: markdown keeps ignoring table-style formatting. The resolver makes it
    available should that change.
-5. **The probe set** T1 to T5 as listed, or trimmed.
+5. **The probe set** T1 to T5 as listed, or trimmed. Done: all six cut, read in §5.1.
+6. **The follow-up probe T6 (§5.2).**  Recommended: yes. It decides whether the exception
+   code stays at all, and two documents cost one Word run.
 
 ## 8. Risks
 
