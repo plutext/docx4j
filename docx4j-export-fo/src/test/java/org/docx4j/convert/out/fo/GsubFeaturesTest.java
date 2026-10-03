@@ -83,17 +83,53 @@ public class GsubFeaturesTest {
 	}
 
 	private static org.w3c.dom.Document fo(String runs) throws Exception {
+		return fo(runs, Docx4J.FLAG_NONE);
+	}
+
+	private static WordprocessingMLPackage pkg(String runs) throws Exception {
 		String xml = "<w:document " + W + " " + W14 + "><w:body><w:p>" + runs + "</w:p>"
 				+ "<w:sectPr><w:pgSz w:w=\"12240\" w:h=\"15840\"/>"
 				+ "<w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\" w:header=\"720\" w:footer=\"720\" w:gutter=\"0\"/>"
 				+ "</w:sectPr></w:body></w:document>";
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(xml));
-		FOSettings settings = new FOSettings(pkg);
+		return pkg;
+	}
+
+	private static org.w3c.dom.Document fo(String runs, int flags) throws Exception {
+		FOSettings settings = new FOSettings(pkg(runs));
 		settings.setApacheFopMime(FOSettings.INTERNAL_FO_MIME);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		Docx4J.toFO(settings, baos, Docx4J.FLAG_NONE);
+		Docx4J.toFO(settings, baos, flags);
 		return XmlUtils.getNewDocumentBuilder().parse(new ByteArrayInputStream(baos.toByteArray()));
+	}
+
+	/**
+	 * The XSLT pathway copies each run's fo:inline in from a DOM fragment, and Xalan drops a
+	 * namespaced attribute's declaration on the way: until 17.3.1 docx2fo.xslt did not declare
+	 * fox on fo:root, so this FO did not parse ("The prefix "fox" for attribute
+	 * "fox:gsub-features" ... is not bound").
+	 * @since 17.3.1
+	 */
+	@Test
+	public void theXsltPathwayDeclaresTheNamespace() throws Exception {
+		Docx4jProperties.setProperty("docx4j.convert.out.fo.gsubFeatures", "true");
+		Element el = span(fo(run("", "plain office"), Docx4J.FLAG_EXPORT_PREFER_XSL), "plain office");
+		assertEquals("-liga", delta(el));
+	}
+
+	/**
+	 * And so PDF output through the XSLT pathway failed outright in 17.3.0 on the docx4j FO
+	 * renderer: the FO which did not parse skipped WordLayoutFixups, and FOP was handed its
+	 * hint attributes ("Invalid property encountered on "fo:block": docx4j-baseline").  With
+	 * the renderer's own default for the hook.
+	 * @since 17.3.1
+	 */
+	@Test
+	public void theXsltPathwayRendersAPdf() throws Exception {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		Docx4J.toFO(new FOSettings(pkg(run("", "plain office"))), baos, Docx4J.FLAG_EXPORT_PREFER_XSL);
+		assertTrue(new String(baos.toByteArray(), 0, 5, "US-ASCII").startsWith("%PDF"));
 	}
 
 	/** the innermost fo:inline with a font-family whose text contains the marker */

@@ -16,6 +16,7 @@
 	xmlns:fo="http://www.w3.org/1999/XSL/Format"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:fox="http://xmlgraphics.apache.org/fop/extensions"
 	xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
     version="1.0"
         exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic wps r m">
@@ -24,7 +25,14 @@
        exclude-result-prefixes: it puts the declaration on fo:root, which is what
        keeps a metafile picture's SVG well-formed.  Batik writes an embedded bitmap
        as <image xlink:href="data:..."> and reads back only that attribute, and Xalan
-       drops the SVG's own xmlns:xlink when copy-of brings it in here.  CR-011. -->
+       drops the SVG's own xmlns:xlink when copy-of brings it in here.  CR-011.
+
+       xmlns:fox is deliberate for the same reason: RunFontSelector puts
+       fox:gsub-features on a run's fo:inline (where the FO renderer has the hook, as
+       the docx4j FO renderer 2.11-docx4j.2 does), and Xalan drops its declaration when
+       copy-of brings the inline in.  Without it on fo:root the FO did not parse, so
+       WordLayoutFixups was skipped and FOP was handed its hint attributes: PDF output
+       through this pathway failed outright in 17.3.0.  @since 17.3.1 -->
 
   <!-- 
     Copyright 200?-2012, Plutext Pty Ltd.

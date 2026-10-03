@@ -16,6 +16,10 @@ Property resolution:
 
 PDF via XSL FO:
 
+- PDF output through the XSLT pathway (FLAG_EXPORT_PREFER_XSL) works again on the docx4j FO
+  renderer: its FO left the fox namespace of fox:gsub-features undeclared, and the export failed
+  (17.3.0).
+
 - Letter-spaced text is measured correctly on an FO renderer carrying Apache's FOP-2722 without
   its width fix (FOP-2349), where lines would otherwise overrun.
 
