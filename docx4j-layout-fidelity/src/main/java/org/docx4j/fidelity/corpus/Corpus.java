@@ -2465,6 +2465,38 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		PROBES.add(new Probe("tables-banding-merged-row",
+				"a table style whose band1Horz condition gives bold text and grey shading, and whose "
+				+ "firstRow gives italic; w:tblLook firstRow and row banding on, no w:cnfStyle anywhere.  "
+				+ "(a) Six rows, the third's every cell continuing the second's vertical merge; (b) the "
+				+ "control, that row keeping one cell of its own.  In (b) rows 2, 4 and 6 are the first "
+				+ "band (bold, shaded).  In (a), are rows 4 and 6 bold and shaded (the merged row counts, as "
+				+ "docx4j counts it since 17.3.1), or row 5 (it does not)?  CR-030 phase 4.", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(SERIF, 24);
+			addTableStyle(d, "ProbeBands", null);
+			addTableStyleCondition(d, "ProbeBands", org.docx4j.wml.STTblStyleOverrideType.FIRST_ROW,
+					rpr -> rpr.setI(Doc.F.createBooleanDefaultTrue()));
+			addTableStyleCondition(d, "ProbeBands", org.docx4j.wml.STTblStyleOverrideType.BAND_1_HORZ, Doc::bold);
+			org.docx4j.wml.Style ts = d.mdp().getStyleDefinitionsPart().getStyleById("ProbeBands");
+			for (org.docx4j.wml.CTTblStylePr cond : ts.getTblStylePr()) {
+				if (cond.getType() == org.docx4j.wml.STTblStyleOverrideType.BAND_1_HORZ) {
+					org.docx4j.wml.TcPr tcPr = Doc.F.createTcPr();
+					org.docx4j.wml.CTShd shd = Doc.F.createCTShd();
+					shd.setVal(org.docx4j.wml.STShd.CLEAR);
+					shd.setColor("auto");
+					shd.setFill("D9D9D9");
+					tcPr.setShd(shd);
+					cond.setTcPr(tcPr);
+				}
+			}
+			d.para("(a) row 3 continues row 2's merge in every cell").after(120).add();
+			d.add(bandsProbeTable("a", true));
+			d.para("(b) the control: row 3 keeps a cell of its own").before(240).after(120).add();
+			d.add(bandsProbeTable("b", false));
+			return d.pkg();
+		}));
+
 		/*
 		 * CR-016's probe set (docs/developer/change-requests/CR-016-font-selection-and-mapping.md,
 		 * "Are the comments accurate?").  Font selection and mapping: which of a run's four
@@ -3915,6 +3947,35 @@ public final class Corpus {
 		return (Tbl) org.docx4j.XmlUtils.unwrap(org.docx4j.XmlUtils.unmarshalString(x.toString()));
 	}
 
+	/** tables-banding-merged-row: six rows of two cells under ProbeBands, w:tblLook with the
+	 *  first row and row banding on and nothing else; rows 2 and 3 merged vertically in the
+	 *  first column, and in the second too where fullyMerged, which leaves row 3 no cell of
+	 *  its own.  No w:cnfStyle, so Word places the bands itself. */
+	private static Tbl bandsProbeTable(String letter, boolean fullyMerged) throws Exception {
+		StringBuilder x = new StringBuilder("<w:tbl xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:tblPr>"
+				+ "<w:tblStyle w:val=\"ProbeBands\"/><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblBorders>");
+		for (String side : new String[] { "top", "left", "bottom", "right", "insideH", "insideV" }) {
+			x.append("<w:").append(side).append(" w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/>");
+		}
+		x.append("</w:tblBorders><w:tblLook w:val=\"0420\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"0\" "
+				+ "w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr>"
+				+ "<w:tblGrid><w:gridCol w:w=\"4500\"/><w:gridCol w:w=\"4500\"/></w:tblGrid>");
+		for (int r = 1; r <= 6; r++) {
+			x.append("<w:tr>");
+			for (int c = 1; c <= 2; c++) {
+				boolean merged = c == 1 || fullyMerged;
+				String vMerge = !merged || (r != 2 && r != 3) ? "" : (r == 2 ? "<w:vMerge w:val=\"restart\"/>" : "<w:vMerge/>");
+				String text = (r == 3 && merged) ? "" : "(" + letter + ") row " + r + (r == 2 && merged ? ", merged down" : "");
+				x.append("<w:tc><w:tcPr><w:tcW w:w=\"4500\" w:type=\"dxa\"/>").append(vMerge).append("</w:tcPr><w:p>");
+				if (text.length() > 0) x.append("<w:r><w:t>").append(text).append("</w:t></w:r>");
+				x.append("</w:p></w:tc>");
+			}
+			x.append("</w:tr>");
+		}
+		x.append("</w:tbl>");
+		return (Tbl) org.docx4j.XmlUtils.unwrap(org.docx4j.XmlUtils.unmarshalString(x.toString()));
+	}
+
 	/** Appends the paragraphs to the cell at row r, column c. */
 	private static void cellAdd(Tbl tbl, int r, int c, P... ps) {
 		org.docx4j.wml.Tr tr = (org.docx4j.wml.Tr) org.docx4j.XmlUtils.unwrap(tbl.getContent().get(r));
@@ -3999,17 +4060,18 @@ public final class Corpus {
 	private static WordprocessingMLPackage compatSizeJcProbe(Integer mode, String setting) throws Exception {
 		Doc d = Doc.create(mode == null ? 12 : mode.intValue());
 		d.documentDefaultRun(SERIF, 24);
-		/* Exactly one compatibilityMode (or none, for Word 2007): since createPackage writes
-		 * mode 15 itself (9de10aac9, 2026-09-19), Doc.create(mode) leaves a document stating
-		 * 15 and then its own mode.  The two tables-compat-size-jc documents already cut are
-		 * left as they were (15 twice, which is harmless). */
+		/* Word 2007 (mode null) writes no compat setting at all, not even the compatibilityMode
+		 * Doc.create(12) states; and where the setting is to be absent, the one Doc.create
+		 * keeps for modes 14 and 15 goes.  (Until the harness fix of 2026-10-04 this also had
+		 * to take out the second compatibilityMode Doc.create left, so the documents on the
+		 * share differ from a regeneration in compat settings the question does not touch:
+		 * -mode14 carries Word 2013's two, -absent states its mode last, and
+		 * tables-compat-size-jc and -on state mode 15 twice.) */
 		org.docx4j.wml.CTCompat compat = d.mdp().getDocumentSettingsPart().getContents().getCompat();
 		if (mode == null) {
 			if (compat != null) compat.getCompatSetting().clear();
-		} else if (mode.intValue() != 15 || setting == null) {
-			if (compat != null) compat.getCompatSetting().removeIf(cs -> "compatibilityMode".equals(cs.getName())
-					|| (setting == null && "overrideTableStyleFontSizeAndJustification".equals(cs.getName())));
-			d.mdp().getDocumentSettingsPart().setWordCompatSetting("compatibilityMode", String.valueOf(mode));
+		} else if (setting == null && compat != null) {
+			compat.getCompatSetting().removeIf(cs -> "overrideTableStyleFontSizeAndJustification".equals(cs.getName()));
 		}
 		if (setting != null) {
 			d.mdp().getDocumentSettingsPart().setWordCompatSetting(

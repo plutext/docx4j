@@ -539,7 +539,9 @@ The T6 documents state exactly one `compatibilityMode`, or none. That needed a w
 `Doc.create(mode)` now leaves a document stating 15 and then its own mode, because
 `createPackage()` has written mode 15 since 9de10aac9 (2026-09-19). The probes already on
 the share predate that change and state a single mode. The harness itself is not fixed
-here.
+here. (Fixed 2026-10-04: `Doc.create(mode)` states one `compatibilityMode`, with the compat
+settings Word writes in that mode, as measured over the corpora; the workaround is reduced
+to what T6 still needs.)
 
 **T6 `tables-compat-size-jc-mode12` and `-mode14`**: T5's document in compatibility mode 12
 (no `compatibilityMode`, as Word 2007 writes it) and in mode 14, with the setting absent. It
@@ -843,7 +845,16 @@ DONE 2026-10-04.
     (`dropFullySpannedRows`). The writer's bands after such a row then moved by one, and a
     cell's shading came from one band while its text's formatting came from the other.
     Word keeps the row, which has a height, so counting it is assumed but not measured.
-    A probe would settle it (tables-banding-merged-row, not added).
+    A probe settles it: `tables-banding-merged-row` (T9, added 2026-10-04, on the share, its
+    golden awaited).
+    - The probe's table style gives `band1Horz` bold and grey shading and `firstRow` italic.
+      Table (a) has six rows, the third continuing the second's merge in both cells; table
+      (b) is the control, its third row keeping a cell of its own.
+    - docx4j since this phase: in both tables, rows 2, 4 and 6 are bold and shaded.
+    - At 8c387f484, before this phase: (a)'s bold fell on rows 2, 4 and 6 and its shading on
+      rows 2 and 5.
+    - If Word's golden shows row 5, not rows 4 and 6, the merged row does not count, and
+      phase 4's reading is to be reversed.
   - **The look is the table's `w:tblLook` whole, else its style's.**  The writer used to merge
     the two attribute by attribute. The readings differ only where a table style states a
     `w:tblLook` and the table states some of the attributes, or the bitmask alone. No

@@ -189,6 +189,23 @@ public final class Doc {
 		}
 	}
 
+	/** The compat settings Word 2010 (mode 14) writes beside compatibilityMode; Word 2013 and
+	 *  later (mode 15) add differentiateMultirowTableHeaders (and Word 365
+	 *  useWord2013TrackBottomHyphenation), and a document in mode 12 states none.  Measured over
+	 *  the three corpora, 2026-10-04: 122 of 124 mode-14 documents carry exactly these three,
+	 *  169 mode-15 documents these and differentiateMultirowTableHeaders, 30 of 32 mode-12
+	 *  documents nothing. */
+	private static final java.util.Set<String> WORD_2010_COMPAT_SETTINGS = new java.util.HashSet<>(
+			java.util.Arrays.asList("overrideTableStyleFontSizeAndJustification", "enableOpenTypeFeatures",
+					"doNotFlipMirrorIndents"));
+
+	/**
+	 * Exactly one compatibilityMode, first, and beside it the compat settings Word writes in
+	 * that mode.  createPackage writes Word 365's set, mode 15 first (since 9de10aac9,
+	 * 2026-09-19), which mode 15 keeps; a lower mode replaces the value and drops what its
+	 * Word did not write.  (Until 2026-10-04 the mode was added after createPackage's, so every
+	 * probe generated since 9de10aac9 stated two compatibilityMode settings, 15 and its own.)
+	 */
 	private void setCompatMode(int mode) throws Exception {
 		DocumentSettingsPart dsp = mdp.getDocumentSettingsPart();
 		if (dsp == null) {
@@ -201,11 +218,13 @@ public final class Doc {
 			compat = F.createCTCompat();
 			dsp.getContents().setCompat(compat);
 		}
+		compat.getCompatSetting().removeIf(setting -> "compatibilityMode".equals(setting.getName())
+				|| (mode < 15 && (mode < 14 || !WORD_2010_COMPAT_SETTINGS.contains(setting.getName()))));
 		CTCompatSetting cs = F.createCTCompatSetting();
 		cs.setName("compatibilityMode");
 		cs.setUri("http://schemas.microsoft.com/office/word");
 		cs.setVal(Integer.toString(mode));
-		compat.getCompatSetting().add(cs);
+		compat.getCompatSetting().add(0, cs);
 	}
 
 	// ---------------------------------------------------------------- text
