@@ -1,5 +1,6 @@
 package org.docx4j.convert.out.html;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -518,6 +519,61 @@ public class HtmlVisitorParityTest {
 	}
 
 	/* ------------------------------------------------------------------ */
+
+	/* ------------------------------------------------------------------
+	 * Content controls inside a table's structure
+	 * ------------------------------------------------------------------ */
+
+	private static String cell(String text) {
+		return "<w:tc><w:tcPr><w:tcW w:w=\"1500\" w:type=\"dxa\"/></w:tcPr>"
+				+ "<w:p><w:r><w:t>" + text + "</w:t></w:r></w:p></w:tc>";
+	}
+
+	/** a table with an sdt around two cells of its second row (w:tr/w:sdt/w:tc) and an
+	 *  sdt around its third row (w:tbl/w:sdt/w:tr) */
+	private WordprocessingMLPackage sdtInTablePkg() throws Exception {
+
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body><w:tbl>"
+				+ "<w:tblPr><w:tblW w:w=\"4500\" w:type=\"dxa\"/></w:tblPr>"
+				+ "<w:tblGrid><w:gridCol w:w=\"1500\"/><w:gridCol w:w=\"1500\"/><w:gridCol w:w=\"1500\"/></w:tblGrid>"
+				+ "<w:tr>" + cell("r0c0") + cell("r0c1") + cell("r0c2") + "</w:tr>"
+				+ "<w:tr>" + cell("r1c0")
+				+   "<w:sdt><w:sdtPr><w:tag w:val=\"cells\"/></w:sdtPr><w:sdtContent>"
+				+     cell("r1c1") + cell("r1c2") + "</w:sdtContent></w:sdt></w:tr>"
+				+ "<w:sdt><w:sdtPr><w:tag w:val=\"row\"/></w:sdtPr><w:sdtContent>"
+				+   "<w:tr>" + cell("r2c0") + cell("r2c1") + cell("r2c2") + "</w:tr></w:sdtContent></w:sdt>"
+				+ "</w:tbl><w:p><w:r><w:t>after</w:t></w:r></w:p></w:body></w:document>"));
+		return pkg;
+	}
+
+	@Test
+	public void testSdtAroundCellsAndRows() throws Exception {
+
+		// the content controls are transparent to the table: three rows of three cells,
+		// each in its place.  Until 17.3.1 the visitor failed on the sdt around cells.
+		for (int flag : FLAGS) {
+			String html = toHTML(sdtInTablePkg(), flag);
+			String impl = flagName(flag) + ": ";
+
+			int start = html.indexOf("<table");
+			int end = html.indexOf("</table>");
+			assertTrue(impl + "no table", start >= 0 && end > start);
+			String[] rows = html.substring(start, end).split("<tr");
+			assertEquals(impl + "rows", 4, rows.length); // what precedes the first, then three
+			for (int r = 0; r < 3; r++) {
+				String row = rows[r + 1];
+				assertEquals(impl + "cells in row " + r, 3, row.split("<td").length - 1);
+				int at = -1;
+				for (int c = 0; c < 3; c++) {
+					int i = row.indexOf("r" + r + "c" + c);
+					assertTrue(impl + "r" + r + "c" + c + " in its row, in order", i > at);
+					at = i;
+				}
+			}
+		}
+	}
 
 	private String toHTML(WordprocessingMLPackage wordMLPackage, int flag) throws Exception {
 

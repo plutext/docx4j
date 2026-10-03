@@ -857,8 +857,9 @@ DONE 2026-10-04.
     identical PDF.
   - The comparison sees what scoring would miss: borders, shading and header rows move few
     lines.
-- **Found by the output gate, outside this CR, not fixed.**  17 HTML exports fail, the same
-  on both sides:
+- **Found by the output gate, outside this CR.**  17 HTML exports fail, the same on both
+  sides. Both defects were fixed the same day, in the commit after phase 4's, with tests
+  (`ListsToContentControlsTest`, `HtmlVisitorParityTest`):
   - `ListsToContentControls.groupContent` throws a NullPointerException on a `w:numPr` with
     no `w:numId`. This is 5 documents, on both HTML pathways.
   - The HTML visitor throws a NullPointerException on a `w:sdt` around cells

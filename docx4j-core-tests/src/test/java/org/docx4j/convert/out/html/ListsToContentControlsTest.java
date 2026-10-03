@@ -24,6 +24,7 @@ import org.docx4j.wml.PPrBase;
 import org.docx4j.wml.R;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtContentBlock;
+import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.Text;
@@ -248,6 +249,65 @@ public class ListsToContentControlsTest {
 		assertTrue(XmlUtils.unwrap(mdp.getContent().get(0)) instanceof SdtBlock);
 		assertTrue(XmlUtils.unwrap(mdp.getContent().get(1)) instanceof P);
 		assertTrue(XmlUtils.unwrap(mdp.getContent().get(2)) instanceof SdtBlock);
+	}
+
+	@Test
+	public  void numIdAbsent() throws Exception {
+
+		// w:numPr stating w:ilvl and no w:numId, in the paragraph or (as in Word's built-in
+		// Subtitle style) in its style, numbers nothing: not a list item.  Until 17.3.1
+		// this threw a NullPointerException, and both HTML exports failed.
+		WordprocessingMLPackage wordMLPackage = createPkg();
+
+		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
+		Style subtitle = (Style)XmlUtils.unmarshalString(
+				"<w:style xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
+				+ " w:type=\"paragraph\" w:styleId=\"Subtitle\"><w:name w:val=\"Subtitle\"/>"
+				+ "<w:basedOn w:val=\"Normal\"/><w:pPr><w:numPr><w:ilvl w:val=\"1\"/></w:numPr></w:pPr></w:style>");
+		mdp.getStyleDefinitionsPart().getJaxbElement().getStyle().add(subtitle);
+		mdp.getPropertyResolver().activateStyle(subtitle);
+
+		P styled = createUnnumberedP();
+		styled.setPPr(wmlObjectFactory.createPPr());
+		styled.getPPr().setPStyle(wmlObjectFactory.createPPrBasePStyle());
+		styled.getPPr().getPStyle().setVal("Subtitle");
+
+		P direct = createNumberedP(1,1);
+		direct.getPPr().getNumPr().setNumId(null);
+
+		mdp.getContent().add(createNumberedP(1,0));
+		mdp.getContent().add(styled);
+		mdp.getContent().add(direct);
+		mdp.getContent().add(createNumberedP(1,0));
+
+		ListsToContentControls.process(wordMLPackage);
+
+		// a list, the two bare paragraphs, a second list
+		assertEquals(4, mdp.getContent().size());
+		assertTrue(XmlUtils.unwrap(mdp.getContent().get(0)) instanceof SdtBlock);
+		assertTrue(XmlUtils.unwrap(mdp.getContent().get(1)) instanceof P);
+		assertTrue(XmlUtils.unwrap(mdp.getContent().get(2)) instanceof P);
+		assertTrue(XmlUtils.unwrap(mdp.getContent().get(3)) instanceof SdtBlock);
+	}
+
+	@Test
+	public  void numIdAbsentHtml() throws Exception {
+
+		// the same, end to end: both HTML exports complete
+		for (int flag : new int[] { Docx4J.FLAG_EXPORT_PREFER_XSL, Docx4J.FLAG_EXPORT_PREFER_NONXSL }) {
+			WordprocessingMLPackage wordMLPackage = createPkg();
+			MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
+			P direct = createNumberedP(1,1);
+			direct.getPPr().getNumPr().setNumId(null);
+			mdp.getContent().add(createNumberedP(1,0));
+			mdp.getContent().add(direct);
+
+			HTMLSettings htmlSettings = Docx4J.createHTMLSettings();
+			htmlSettings.setOpcPackage(wordMLPackage);
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			Docx4J.toHTML(htmlSettings, os, flag);
+			assertTrue("flag " + flag, os.toString("UTF-8").contains("list 1, ilvl 1"));
+		}
 	}
 
 	@Test

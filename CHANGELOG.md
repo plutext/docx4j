@@ -54,6 +54,13 @@ PDF via XSL FO:
 - A line break inside a run no longer loses the text after it, or fails the conversion, when its
   paragraph is laid out a second time, beside a float or on a page of another width (FOP-1912).
 
+HTML output:
+
+- A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's
+  built-in Subtitle style has it) no longer fails the export, on either pathway.
+
+- A content control around table cells (w:tr/w:sdt/w:tc) no longer fails the visitor export.
+
 
 Version 17.3.0
 ===============

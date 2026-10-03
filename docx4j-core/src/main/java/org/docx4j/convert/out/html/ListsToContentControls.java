@@ -313,7 +313,8 @@ public class ListsToContentControls {
 					
 					Style s = propertyResolver.getStyle( paragraph.getPPr().getPStyle().getVal() );
 					
-					if (s.getName()!=null 
+					if (s!=null // null where the paragraph names a missing style
+							&& s.getName()!=null && s.getName().getVal()!=null
 							&& s.getName().getVal().startsWith("heading ")  // the style name is always in English
 							) {
 						
@@ -350,7 +351,11 @@ public class ListsToContentControls {
 				 * 
 				 */
 				
-				BigInteger numId = numPr.getNumId().getVal();
+				// w:numId is optional: Word's built-in Subtitle style states
+				// <w:numPr><w:ilvl w:val="1"/></w:numPr> alone, which numbers nothing.
+				// (The effective w:numPr merges its children, so a paragraph stating
+				// only w:ilvl still has its style's w:numId here.)
+				BigInteger numId = numPr.getNumId()==null ? null : numPr.getNumId().getVal();
 				
 				// w:ilvl (and its w:val) is optional; its absence means level 0
 				BigInteger ilvl = null;
@@ -362,6 +367,7 @@ public class ListsToContentControls {
 				log.debug("ilvl: " + ilvl.intValue());
 
 				if (numId==null || numId.signum()==0 || ilvl.signum()<0) {
+					// no numId is no numbering (above);
 					// numId 0 means numbering is removed from this paragraph (ECMA-376 17.9.18);
 					// a negative ilvl is invalid, and Word treats such a paragraph as not numbered.
 					// Either way, this is not a list item.  Without this guard, a negative ilvl

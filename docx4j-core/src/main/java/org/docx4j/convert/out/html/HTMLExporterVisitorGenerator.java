@@ -43,6 +43,7 @@ import org.docx4j.wml.RPr;
 import org.docx4j.wml.RunDel;
 import org.docx4j.wml.RunIns;
 import org.docx4j.wml.RunTrackChange;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.SdtElement;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -291,19 +292,35 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 	 */
 	private void handleSdt(SdtElement sdt) {
 
+		// an sdt around cells (w:tr/w:sdt/w:tc) is met in a row, between its cells: the
+		// cells it holds belong in that row.  Until 17.3.1 they were walked with no row
+		// to go in, and the export failed.
+		Element row = (sdt instanceof org.docx4j.wml.CTSdtCell && tc.peek()==null) ? tr.peek() : null;
+
 		DocumentFragment childResults = document.createDocumentFragment();
 		if (sdt.getSdtContent()!=null) {
 			HTMLExporterVisitorGenerator generator = (HTMLExporterVisitorGenerator)
 					getFactory().createInstance(conversionContext, document, childResults);
 			generator.pPr = pPr; // a run-level sdt keeps its paragraph context
 			generator.noteNumber = noteNumber;
-			new TraversalUtil(sdt.getSdtContent().getContent(), generator);
+			if (row==null) {
+				new TraversalUtil(sdt.getSdtContent().getContent(), generator);
+			} else {
+				// the cells are walked into a stand-in row, then handed to SdtWriter as
+				// the sdt's content, as the XSLT's w:sdt template hands it the w:tc
+				Element standIn = document.createElementNS(Namespaces.NS_WORD12, "tr");
+				generator.tr.push(standIn);
+				new TraversalUtil(sdt.getSdtContent().getContent(), generator);
+				while (standIn.getFirstChild()!=null) {
+					childResults.appendChild(standIn.getFirstChild());
+				}
+			}
 		}
 
 		try {
 			Node result = SdtWriter.toNode(conversionContext, sdt.getSdtPr(), childResults);
 			if (result!=null) {
-				(tc.peek()!=null ? tc.peek() : getCurrentParent())
+				(tc.peek()!=null ? tc.peek() : (row!=null ? row : getCurrentParent()))
 						.appendChild(document.importNode(result, true));
 			}
 		} catch (javax.xml.transform.TransformerException e) {
