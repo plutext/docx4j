@@ -1166,6 +1166,11 @@ emission question, not a fork one.
 
 ### 9.4 The upstream backlog: `main` since the 2.11 tag (89 commits)
 
+*Superseded 2026-10-03 by the fork's `fop/CR-009` (docs/developer/change-requests/CR-009-merge-apache-main.md,
+5802054a6), which triages `main` commit by commit: 91 commits since the tag by then, 75 to take, 11 to
+resolve, 3 to gate, 2 needing docx4j (the `setRuleStyle(int)` that FOP-3325 removes, and FOP-2722's
+letter-space count against `fixLetterSpaces`). The grouping below is kept as it was.*
+
 The 2.11 tag sits on a release branch two commits off `main` (64c46d1). Of
 the 89 commits on `main` since, Metanorma has merged 75 (to 32c8c7176,
 2026-05-22) and lacks 14. Grouped for docx4j; the JIRA number is the key.
