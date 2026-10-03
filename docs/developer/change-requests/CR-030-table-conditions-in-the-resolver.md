@@ -3,7 +3,7 @@
 Status: DONE 2026-10-04. Phase 5 (§6): markdown keeps ignoring table styles, as decided;
 `FontsAnalysis` resolves runs in their table context, so the bold of a styled header row
 reaches the font report and the embedded subsets; the docs and CHANGELOG are written; the
-port hand-offs are made (core-ts told, python and mcp when a session runs, §6). Phase 4
+port hand-offs are made to core-ts, python and mcp (§6). Phase 4
 done the same day: the table writers take their rows' and cells' conditions from the
 `TableContext`, and every corpus document's FO and HTML is unchanged. Phase 3 done
 2026-10-03: the FO visitor resolves table paragraphs in context with no preprocess, and
@@ -925,8 +925,15 @@ DONE 2026-10-04.
     `reachesDefaultTableStyle` now decide by name, which its harness reads; the exception's
     gate on the compatibility mode; and `FontsAnalysis`'s change, which may move font
     goldens of documents with styled tables.
-  - docx4j-python and docx4j-mcp: no session was running. The hand-off is this section and
-    the registry entry, and it is to be sent when one starts.
+  - core-ts re-checked its 46 goldens against 843ac12df: no difference. None of its fixtures
+    exercises the name rule or in-context resolution, and it proposed the port as its own
+    CR-007.
+  - docx4j-python and docx4j-mcp: sent 2026-10-04, once Jason had started their sessions.
+    - Python got the API and the semantic changes, and was told that the core-ts goldens it
+      consumes do not move.
+    - docx4j-mcp builds against 17.1.0 and has no tool reporting effective formatting yet. It
+      was told what a future tool must hand the resolver, and what changes in its PDF and
+      HTML output on 17.3.1.
   - The commits are on VERSION_17_3_1 and not yet pushed; a port building docx4j from
     origin sees them only after the push.
 
