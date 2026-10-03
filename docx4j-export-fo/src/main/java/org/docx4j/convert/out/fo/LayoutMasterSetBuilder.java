@@ -571,16 +571,16 @@ public class LayoutMasterSetBuilder {
 	 * part of a merged run of continuous sections other than the one the page starts with
 	 * (CR-001 batch 44, {@link PageDimensions#getHeaderFooterIndentStart()}).
 	 *
-	 * <p>It is written where XSL-FO says it belongs, as {@code start-indent} and
-	 * {@code end-indent} on {@code fo:region-before} / {@code fo:region-after} - a region
-	 * takes the common margin properties, and this is exactly what they mean.  <b>FOP
-	 * ignores them</b>: measured on a page master with {@code start-indent="10pt"
-	 * end-indent="10pt"} on its {@code fo:region-after}, the region's ipd is 525300
-	 * millipoints, the same as the {@code fo:region-before} beside it which carries none.
-	 * So {@code WordLayoutFixups.headerFooterPartIndent} reads them back off the regions
-	 * and puts them on the static content's own blocks, where FOP does honour them, and
-	 * removes them.  An FO processor which honours them needs no such help, which is why
-	 * the FO says it this way.
+	 * <p>It is written as {@code start-indent} and {@code end-indent} on
+	 * {@code fo:region-before} / {@code fo:region-after}, which carries it to
+	 * {@code WordLayoutFixups.headerFooterPartIndent}.  Those properties do not apply to
+	 * these regions (XSL 1.1 §6.4.15 lists what does; only {@code fo:region-body} takes
+	 * margins), so FOP is right to ignore them: measured on a page master with
+	 * {@code start-indent="10pt" end-indent="10pt"} on its {@code fo:region-after}, the
+	 * region's ipd is 525300 millipoints, the same as the {@code fo:region-before} beside
+	 * it which carries none.  headerFooterPartIndent reads them back off the regions, puts
+	 * them on the static content's own blocks, which is where XSL-FO puts such an inset,
+	 * and removes them (CR-001 §6.6 item 25, corrected 2026-10-03).
 	 *
 	 * @since 17.2.0
 	 */

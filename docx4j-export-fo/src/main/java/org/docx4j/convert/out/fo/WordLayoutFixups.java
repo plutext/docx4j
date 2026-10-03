@@ -4767,10 +4767,12 @@ public final class WordLayoutFixups {
 	 * {@code start-indent} / {@code end-indent} on the {@code fo:region-before} and
 	 * {@code fo:region-after}.
 	 *
-	 * <p>That is where XSL-FO says the indent belongs, and <b>FOP ignores it</b>
-	 * (measured: a region carrying {@code start-indent="10pt" end-indent="10pt"} has the
-	 * same ipd as one carrying none).  So it is moved here onto the static content's own
-	 * top-level blocks, where FOP honours it, and taken off the regions - the same shift
+	 * <p>Those properties do not apply to a region-before or region-after (XSL 1.1
+	 * §6.4.15), so FOP is right to ignore them (measured: a region carrying
+	 * {@code start-indent="10pt" end-indent="10pt"} has the same ipd as one carrying none),
+	 * and no FOP release will make this pass redundant.  The indent is moved here onto the
+	 * static content's own top-level blocks, where it does apply, and taken off the
+	 * regions (CR-001 §6.6 item 25, corrected 2026-10-03) - the same shift
 	 * {@code XsltFOFunctions.shiftIndents} applies to the body parts, which is why the
 	 * body needs nothing here and why both export pathways are served by one pass.
 	 *
