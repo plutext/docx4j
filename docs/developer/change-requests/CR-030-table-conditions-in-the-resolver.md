@@ -8,6 +8,13 @@ day (Jason: "start phase 0"). Word's goldens for the six probes were cut and rea
 - a sixth defect is found (D6);
 - one follow-up probe is proposed (§5.2).
 The decisions of §7 are open.
+Reviewed 2026-10-03 against the code (Claude Fable 5.1, at Jason's request), and the findings
+folded in: D4's unmeasured half and D6's absent case (§2), D7 and D8 (new), §4.2 to §4.6,
+two more follow-up probes and their timing (§5.2), phase 1's handling of D6 (§6), decisions 2,
+3, 6 and 7 (§7), and §8.
+After the review (Jason: "fold them in"): D7's STYLEREF case measured, the D6 counts
+reconciled, the style-chain cache added to §4.2, and decision 7's round-trip condition
+added, with its phase 2 gate. Awaiting further review.
 Carried forward from CR-015 ("Layering", Jason 2026-09-12: "we should be getting it right in
 the resolver so we are not layering fix upon fix"). Drafted with Claude Opus 5.5.
 Owner: Jason Harrop.
@@ -118,9 +125,17 @@ preprocess, `Docx4J.toHTML` and `Docx4J.toFO` (PDF), on 17.3.1-SNAPSHOT.
   No corpus document has such a case, so the fix moves nothing on the corpus. The six
   documents whose Normal Table carries run properties (Times New Roman 10pt) are rendered
   right already: Word ignores those properties too (T1).
+
+  Not measured: what lies under a default style *not* named "Normal Table". T2's My Default
+  is the template's TableNormal renamed, so it states 108 itself, and the golden cannot tell
+  "applies as written" from "the built-in underneath". Today `getEffectiveTableStyle` gives a
+  table naming no style the built-in alone and skips the default style's own layer. §5.2's T7
+  settles it.
 - **D5 (a gap, not a defect).**  Footnotes, endnotes and comments are not walked, so a table in
-  a note gets no table style. The corpus has none. It follows for free once the context comes
-  from the walk that renders the note.
+  a note gets no table style. The corpus has none. It follows once the context comes from the
+  walk that renders the note, but that walk is also where a new leak can arise: the FO visitor
+  renders a note's body at its reference, so a note referenced from a cell is rendered while
+  the cell's context is current (§4.6).
 - **D6. docx4j applies [MS-DOCX]'s 12pt-and-left exception in compatibility mode 15, where Word
   does not.**  Found by T5 (§5.1).
   - Word: with `overrideTableStyleFontSizeAndJustification` stated 0 in a mode-15 document,
@@ -130,13 +145,47 @@ preprocess, `Docx4J.toHTML` and `Docx4J.toFO` (PDF), on 17.3.1-SNAPSHOT.
   - docx4j: it applies the exception. Normal's cells come out 14pt centred in the header and
     9pt right-aligned in the body, and the two styles that state no `w:jc` are centred and
     right-aligned too.
+  - docx4j also takes an *absent* setting as 0 (the preprocess's `defaultSetting`), so a
+    mode-15 document with no setting, as a producer other than Word may write it, gets the
+    exception too. By T5 Word would not apply it there; that case is not measured directly.
   - No corpus document is affected: all 171 mode-15 documents, and 125 others, state 1.
+    (296 counts all 454 files. §3's 288 counts the 446 whose main part is at
+    `word/document.xml`; the other 8 all state 1, so both counts are right. Reconciled
+    2026-10-03.)
   - The five corpus documents where the exception can fire are Word 2007 documents (no
     `compatibilityMode`) with the setting absent. Whether Word 365 applies the exception to
     them is §5.2's follow-up.
   - The `PStyle12PtInTable*OverrideFalse` tests pin the exception as Word 2010 measured it,
     but since 2026-09-19 `createPackage()` gives them mode-15 documents. They now assert the
     exception in exactly the case where Word 365 does not apply it.
+- **D7. The synthetic id reaches other code that reads a paragraph's style id.**  Found in
+  review from the code. The STYLEREF case was then measured (2026-10-03, scratch probe,
+  `FLAG_NONE` and `FLAG_EXPORT_PREFER_XSL` alike):
+  - The document has two Heading 1 paragraphs, the second in a TableGrid cell, and a header
+    holding `STYLEREF "Heading 1"`.
+  - Only the first heading gets a marker; the heading in the cell gets none.
+  - So on a page whose latest heading is in a cell, the header shows an earlier heading.
+
+  The contextual-spacing and HTML cases are read from the code. `Emulator` (D1) is one
+  consumer of several:
+  - `XsltFOFunctions.createBlock` writes `pStyleVal`, the synthetic id, into the
+    `HINT_PSTYLE` attribute of the block (line 1189);
+  - `StyleRefMarkers` matches blocks to a STYLEREF's style on that attribute (line 184), so a
+    STYLEREF cannot find a heading that sits in a table cell (measured, above);
+  - `WordLayoutFixups`' `w:contextualSpacing` pairing compares the same hint, so two
+    paragraphs of one style in a cell whose paragraph-level `w:cnfStyle` differ are not "of
+    the same style";
+  - the HTML visitor passes the id on as `pStyleVal` (`HTMLExporterVisitorGenerator`, line
+    330).
+
+  (`ListsToContentControls`' heading test by style name is safe: `PP_HTML_COLLECT_LISTS` runs
+  before the rename.)
+- **D8. Synthetic ids are ambiguous.**  Found in review, read from the code. The id is
+  `styleVal-tableStyle[-key]-BR`, joined with hyphens, and style ids may contain hyphens: a
+  paragraph style `A-B` in a table styled `C` and a paragraph style `A` in a table styled
+  `B-C` both give `A-B-C-BR`. `cellPStyles` then hands the second paragraph the first one's
+  style. For the same reason the source style cannot be recovered by parsing the id. No
+  corpus scan has looked for the case.
 
 ## 3. Corpus facts (the three real-document corpora, 446 documents; scanned 2026-10-03)
 
@@ -172,7 +221,9 @@ first and largest case.
     `w:default` table style, whatever its name. Walking the chain, a style *named* "Normal
     Table" contributes Word's built-in (108 twips left and right, nothing to text) in place of
     its own definition, and the walk ends there. Every other style applies as written,
-    the default style included;
+    the default style included. That last clause is measured for text only: whether the
+    built-in underlies a default style not named "Normal Table" waits on T7 (§5.2), and the
+    rule is written into the code only once T7 is read;
   - the look (the table's `w:tblLook`, else the style's, else Word's default 04A0);
   - the band sizes;
   - each row's index and each cell's first grid column and span. This is one implementation
@@ -183,6 +234,21 @@ first and largest case.
   (`TableStyleConditions.resolve` with the row, cell and paragraph `w:cnfStyle` caches), the
   applicable `w:tblStylePr` entries in precedence order, and a key (the
   `TableStyleConditions.key` the synthetic ids use today).
+- **The resolver keeps no `TableContext`.**  `tableContext(tbl)` builds a new one on each
+  call, and the caller (a walker, a writer) holds it for as long as it is in the table. A
+  `TableContext` is a reading of the *content* (rows, spans, look), and the resolver's
+  contract (CR-015) covers the styles part only: a context cached by `Tbl` would go stale
+  when a row is added, with nothing to refresh it. And since the resolver lives as long as
+  the package, a cache keyed by `Tbl` would keep every table's content reachable for that
+  long. What the resolver caches depends on styles alone:
+  - the composition per (styleOf, ctx key);
+  - each table style's merged `w:basedOn` chain, per style id. That is the half of
+    `getEffectiveTableStyle` which today is recomputed, a new `Style` each call. The table's
+    own `w:tblPr` goes over it in the `TableContext`.
+
+  So a `TableContext` costs a walk of the table's rows and nothing for its style, which is
+  what makes `cellContextOf` affordable for one paragraph (§4.4). (Added 2026-10-03, after
+  the review.)
 
 ### 4.3 The resolver composes it
 
@@ -215,8 +281,17 @@ keyed (styleOf, ctx key), which is the same cardinality as the synthetic styles 
    (`P > Tc > Tr > Tbl`). Measured 2026-10-03: the pointers are there after unmarshal, after
    `WordprocessingMLPackage.clone()` and after `XmlUtils.deepCopy`. They are absent for
    content built with `ObjectFactory` and added through `getContent().add()`, and in the
-   XSLT pathways' fragments. The method returns null where the chain breaks, and a text box's
-   paragraph stops at `CTTxbxContent`, which suits T3.
+   XSLT pathways' fragments. The method returns null where the chain breaks.
+   - The climb is to the *nearest* `Tc`, then the nearest `Tr`, then the nearest `Tbl`,
+     through whatever lies between: `w:sdt` around paragraphs, cells or rows (8 corpus
+     documents), `w:customXml`, `w:smartTag`, `mc:AlternateContent`. The bare chain
+     `P > Tc > Tr > Tbl` is the simple case only.
+   - It stops, returning null, at a story root reached before a `Tc`: `CTTxbxContent`
+     (which suits T3), a footnote, endnote or comment, a header or footer, the body.
+   - It costs one `TableContext` per call, which is a walk of the table (§4.2: the resolver
+     keeps none). That is right for "what formatting does this paragraph have"; code
+     resolving every paragraph of a document uses the tracker, and the javadoc says so.
+     Calling it per paragraph over a large table is quadratic.
 3. **The XSLT pathways** have neither, and use names (4.5).
 
 ### 4.5 Synthetic styles become names the resolver hands out
@@ -226,13 +301,21 @@ The preprocess stays for the HTML pathways and for the FO XSLT pathway
 (Layering rule 3).
 
 - **Naming:** the preprocess asks `resolver.styleIdFor(styleId, ctx)` for the id, named as
-  today.
+  today. The resolver records id -> (source style, context), and where a name is already
+  taken by a different pair, or by a style of the document, it hands out a distinct one (D8).
+  The record survives `refresh()`: the ids are already written into the document.
 - **Resolution:** a `w:pStyle` naming such an id resolves as (source style, context). The XSLT
   pathways therefore resolve correctly with no context of their own.
 - **Content:** the `w:style` written into the styles part (for `HtmlCssHelper`/`StyleTree`'s
   CSS) is built from the resolver's answer, so nothing composes table properties a second way.
+- **Which of the two is the authority** is decision 7. Resolution through the record and a
+  real style of the same content are two answers to one question, and they can drift. The
+  alternative is to keep the style real, resolved the plain way as today (docDefaults plus
+  its own flattened content), with the record serving `sourceStyleOf` and uniqueness only.
 - **The document's own style:** code that needs it calls `resolver.sourceStyleOf(id)`.
-  `Emulator` does, which fixes D1 on every pathway.
+  `Emulator` does, which fixes D1 on every pathway, and so do D7's consumers: the
+  `HINT_PSTYLE` attribute carries the source id, so STYLEREF and the contextual-spacing
+  pairing see the document's style.
 
 ### 4.6 The FO visitor needs no synthetic styles
 
@@ -243,6 +326,25 @@ conversion context on entering a cell and clears it on leaving. The shared FO co
 it from there. It is null on the XSLT pathway, where the name carries it.
 `PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX` then leaves the FO visitor pathway's feature set: one
 whole-document walk and rename fewer.
+
+- **The call sites are more than those three.**  Counted in review, the resolver is asked for
+  effective properties at about a dozen places in `XsltFOFunctions` (lines 231, 887-923,
+  1703, 1761, 3405, 3647, 4038, 4046), and in `FOExporterVisitorGenerator` (458, 805),
+  `XsltCommonFunctions` (437, the paragraph mark), `HiddenText` (72) and `RunFontSelector`
+  (1039, 1887). Phase 3 starts by listing every one and deciding, for each, whether it takes
+  the context. The zero-delta gate only catches a missed site that the corpus exercises (a
+  table style that hides text, for one, may not be there).
+- **The context is cleared at every story boundary, not only `w:txbxContent`.**  The visitor
+  renders a footnote's body at its reference (`handleFootnoteReference`), so a note
+  referenced from a cell is walked while that cell's context is current. Footnote, endnote
+  and comment bodies and text boxes each start with no context, and the cell's is restored
+  on the way out. T8 (§5.2) pins it.
+- With no synthetic id on this pathway, `pStyleVal` and `HINT_PSTYLE` are the document's own
+  style id again, which closes D7 here without `sourceStyleOf`.
+- Once the preprocess no longer rewrites the settings, the stack-trace test at the top of
+  `ParagraphStylesInTableFix.process` (it returns when called under `FOPAreaTreeHelper`,
+  "especially changing overrideTableStyleFontSizeAndJustification") has lost that reason.
+  Whether it can go is checked in phase 2.
 
 ### 4.7 The writers share the table context
 
@@ -337,7 +439,10 @@ taken relative to a 12pt line in the same PDF.
 | T5 `tables-compat-size-jc` (setting 0, mode 15) | (a) 12pt, (b) 10pt, (c) 16pt in both rows, all left. The re-save writes the setting as 1 | (a) 14pt centred / 9pt right; (b), (c) centred / right | D6: Word ignores the setting in mode 15 |
 | T5 `tables-compat-size-jc-on` (setting 1, mode 15) | identical to the setting-0 document | as Word | ECMA-376's order |
 
-### 5.2 Follow-up probe (proposed, not added)
+### 5.2 Follow-up probes (proposed, not added)
+
+Three, for one Word run, and **before phase 1**: T6 decides whether the compat rule is moved
+into the resolver at all, and T7 what `getEffectiveTableStyle`'s rule is.
 
 **T6 `tables-compat-size-jc-mode12` and `-mode14`**: T5's document in compatibility mode 12
 (no `compatibilityMode`, as Word 2007 writes it) and in mode 14, with the setting absent. It
@@ -347,36 +452,75 @@ answers whether Word 365 applies the 12pt-and-left exception below mode 15 at al
 - if not, the exception goes, and with it those tests' expectations and the five Word 2007
   corpus documents' current rendering.
 
+A third document, T5's in mode 15 with the setting *absent*, measures D6's absent case
+directly instead of inferring it from the stated 0.
+
+**T7 `tables-renamed-default-margins`**: T2's document with My Default stating cell margins
+of 300 left and right (as P5's Table Normal did), and a second default-style variant stating
+no `w:tblCellMar` at all. Tables: no `w:tblStyle`; a style based on My Default; a style with
+no `w:basedOn`. Read the first cell's text offset, as in P5.
+- 300 and 0 for the two variants: the default applies as written with nothing beneath, which
+  is §4.2's rule as drafted;
+- 108 in either: the built-in still underlies the default style, and §4.2's rule changes.
+
+**T8 `tables-footnote-in-cell`**: T3's table style (16pt, `firstRow` bold), with a footnote
+referenced from a header-row cell and one from a body-row cell, and a third from the body.
+Expected: all three notes alike, in the footnote style, none 16pt or bold. Pins §4.6's story
+boundary, which no current pathway gets wrong only because none walks the notes.
+
 ## 6. Phases
 
 **Phase 0 - probes.**  T1 to T5 in `Corpus.java`, then goldens from Word. No library change.
 Goldens cut and read 2026-10-03 (§5.1), and committed with their manifest lines. Open: the
-follow-up probe of §5.2, on Jason's word.
+follow-up probes of §5.2 (T6, T7, T8), on Jason's word. They are read before phase 1 starts.
 
 **Phase 1 - the resolver takes the context (additive; no exporter change).**
 `TableContext`, `CellContext`, `TableContextTracker`, `cellContextOf`; the three overloads;
 the compat rule read from settings; the composition moved from `getCellPStyle`, which loses
 D3 on the way.
+- The compat rule goes in in its final form, as T5 and T6 measure it: not applied in mode 15,
+  and below mode 15 only if T6 finds it there (if T6 does not, it is not moved at all). The
+  preprocess is untouched in this phase and keeps its ungated rule until phase 2. So the
+  resolver and the preprocess are *meant* to differ for a mode-15 document with the setting
+  off or absent; no corpus document is one.
 - Tests: a resolver-level twin of `ParagraphStylesInTableFixConditionalTest` with the same
-  expected values; the `PStyle12PtInTable*` expectations at resolver level; T5's outcomes.
+  expected values; T5's outcomes in mode 15; the `PStyle12PtInTable*` expectations at
+  resolver level *in the mode T6 finds the exception in*, if any (not on `createPackage()`'s
+  mode-15 documents, where they would contradict T5).
 - Gate: core-tests and export-fo-tests green.
 - Gate: an **equivalence harness** over the three corpora. For every paragraph, run and
   paragraph mark in a table, the in-context answer must equal the answer for the synthetic
-  style the preprocess writes. Every difference is recorded here and explained; none is
-  expected beyond T1/T2.
+  style the preprocess writes. Every difference is recorded here and explained. Expected
+  classes, each to be confirmed as that and nothing else:
+  - T1/T2 (which table style applies);
+  - the compat rule's gate, above (none in the corpus);
+  - numbering indents: the preprocess merges the paragraph style's chain with
+    `StyleUtil.apply(Style, Style)`, without the numbering part, where the resolver's
+    `applyPPr` folds the level's indent in per layer;
+  - heading outline levels: the preprocess does not go through `headingLayer`.
 
-**Phase 2 - names, and the defects.**  The preprocess uses `styleIdFor`; the synthetic
-style's content comes from the resolver; `Emulator` goes through `sourceStyleOf` (D1); the
-text-box reset (D2); the name rule in `getEffectiveTableStyle` (D4); the compat rule gated on
-the mode (D6), with the `PStyle12PtInTable*OverrideFalse` tests pinned below mode 15 if §5.2
-says the exception lives there.
+**Phase 2 - names, and the defects.**  The preprocess uses `styleIdFor`, which hands out
+unique ids (D8); the synthetic style's content comes from the resolver; `Emulator` goes
+through `sourceStyleOf` (D1); a sweep of every reader of a paragraph's style id on the HTML
+and FO XSLT pathways, starting from D7's list, each moved to `sourceStyleOf` or shown not to
+need it, with a STYLEREF-to-a-heading-in-a-cell test; the text-box reset (D2); the rule in
+`getEffectiveTableStyle` as T2 and T7 measure it (D4); the compat rule gated in the
+preprocess as it already is in the resolver (D6), with the `PStyle12PtInTable*OverrideFalse`
+tests pinned below mode 15 if T6 says the exception lives there, or removed with it; the
+`FOPAreaTreeHelper` stack-trace test in `process` (§4.6).
 - Gate: the corpora scored against the current baseline. Expected: the seven
   numbered-in-cell documents and the ten text-box documents improve, none regresses (D4 and D6
-  touch no corpus document), and the six probes match their goldens.
+  touch no corpus document), and the probes match their goldens.
+- Gate, if decision 7 goes to the real style: the **round trip** over the three corpora.
+  Plain resolution of each synthetic style must equal the in-context answer for every
+  paragraph, run and paragraph mark that uses it; each difference is recorded and settled
+  as decision 7 says.
 
 **Phase 3 - the FO visitor resolves in context.**  The preprocess comes off `FLAG_NONE` FO
-output.
-- Gate: corpora zero-delta against phase 2; export-fo-tests on both pathways.
+output. First the list of resolver call sites (§4.6), each marked as taking the context or
+not; the story-boundary reset, with T8.
+- Gate: corpora zero-delta against phase 2; export-fo-tests on both pathways; T8 matches its
+  golden.
 
 **Phase 4 - the writers share `TableContext`.**
 - Gate: zero-delta; `TableStyleConditionalWriterTest`, `TableStyleConditionsTest`.
@@ -388,20 +532,48 @@ table-conditions section; CHANGELOG; the hand-offs of §9.
 ## 7. Decisions for Jason
 
 1. **Phase 3 at all?**  It changes no output, by its gate. Recommended: yes, so the default
-   PDF pathway stops depending on a document rewrite.
+   PDF pathway stops depending on a document rewrite. The review adds a reason: with no
+   synthetic ids on that pathway, D7's whole class (STYLEREF, contextual spacing, whatever
+   else reads the id) cannot occur there.
 2. **D1 in 17.3.1 ahead of the CR?**  The principled fix is phase 2's `sourceStyleOf`, and
-   phase 1 is additive and short. Recommended: in phase 2, unless 17.3.1 is to ship first, in
-   which case a narrow `Emulator` fix (strip the synthetic suffix back to the source id) goes in
-   now and phase 2 replaces it.
+   phase 1 is additive and short. Recommended: in phase 2, unless 17.3.1 is to ship first. In
+   that case the narrow fix is *not* to strip the synthetic suffix back to the source id, as
+   first drafted: the ids are ambiguous (D8), so parsing one can name the wrong style. It is
+   `sourceStyleOf` itself, brought forward: the preprocess records id -> source style on the
+   resolver as it renames, and `Emulator` asks. Phase 2 then keeps it.
 3. **`cellContextOf(P)` through parent pointers**, or explicit contexts only?  Recommended:
-   include it, documented as null where the chain is broken. It is what docx4j-mcp and user
-   code can use.
+   include it, documented as null where the chain is broken, and as costing a walk of the
+   table per call (§4.4). It is what docx4j-mcp and user code can use.
 4. **Markdown**: GFM has no table styling, and a styled header row is already the markdown
    header. Recommended: markdown keeps ignoring table-style formatting. The resolver makes it
    available should that change.
 5. **The probe set** T1 to T5 as listed, or trimmed. Done: all six cut, read in §5.1.
-6. **The follow-up probe T6 (§5.2).**  Recommended: yes. It decides whether the exception
-   code stays at all, and two documents cost one Word run.
+6. **The follow-up probes T6, T7 and T8 (§5.2).**  Recommended: yes, all in one Word run, and
+   before phase 1. T6 decides whether the exception code stays at all; T7 decides the rule
+   phase 2 writes into `getEffectiveTableStyle`, half of which is so far inferred; T8 pins
+   the story boundary before phase 3 can get it wrong.
+7. **Which is the authority for a synthetic name (§4.5)**: the resolver's record, resolving
+   the id as (source style, context), or the real style in the styles part, resolved the
+   plain way?  Recommended: the real style, with the record kept for `sourceStyleOf` and
+   unique naming only. It is today's mechanism, the XSLT pathways and the CSS read the same
+   object, and there is one answer to drift from. The cost is that a synthetic style stays a
+   flattened copy, stale if a style is modified after the preprocess, as it is today.
+
+   The condition (added 2026-10-03, after the review): a flattened style loses the level
+   structure that some of the resolution depends on, so phase 2 gates on a **round trip**.
+   Resolving each synthetic style the plain way must give, for the paragraphs, runs and
+   paragraph marks that use it, the same answer as resolving them in context. The points
+   where flattening can lose something:
+   - the toggles (§17.7.3): a character style's level over the paragraph and table levels,
+     where the flattened style has merged the two;
+   - the numbering layer: a level's indent folded in once over the flattened `w:pPr`,
+     rather than at the paragraph style's own layer;
+   - a heading's outline level, which `headingLevelByName` finds by the style's *name*, and
+     a synthetic style is named by its id, so the flattened `w:pPr` has to carry
+     `w:outlineLvl` itself.
+
+   Any difference the round trip finds is where the real style is lossy, and there the record
+   answers instead.
 
 ## 8. Risks
 
@@ -411,8 +583,14 @@ table-conditions section; CHANGELOG; the hand-offs of §9.
 - **Synthetic ids stay visible on the HTML and FO XSLT pathways.**  Code there that compares
   `w:pStyle` values sees names, as it does today. `sourceStyleOf` is the remedy each time,
   and D1 was the case found.
-- **A document style whose id equals a generated name.**  The generated name wins, as
-  `activateStyle(Style)` replaces today.
+- **A document style whose id equals a generated name.**  Today the generated name wins, as
+  `activateStyle(Style)` replaces; so does the first of two (paragraph style, table style)
+  pairs that generate the same name (D8). `styleIdFor` hands out a distinct id in both cases,
+  which changes an id only where today's is wrong.
+- **A resolver call site missed in phase 3** resolves a cell's paragraph without its table
+  style, silently, where the preprocess used to cover every site at once. The list of §4.6 is
+  the guard, and the zero-delta gate catches only what the corpus exercises.
+- **Context leaking across a story boundary** on the visitor pathway (§4.6, T8).
 - **The resolver's API grows.**  The ports mirror it after phase 1, and their goldens gain
   the cell context.
 - **Cost:** one `TableContext` per table and cached compositions per key, the same order as
