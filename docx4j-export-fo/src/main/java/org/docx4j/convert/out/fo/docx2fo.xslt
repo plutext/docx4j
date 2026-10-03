@@ -938,13 +938,16 @@
 
 	<!-- the number styled by the reference's run (Word's FootnoteReference style makes
 	     it a superscript), and the note's paragraphs as the body, laid out as Word
-	     does: no hanging indent, the number (w:footnoteRef) inline in the first paragraph -->
+	     does: no hanging indent, the number (w:footnoteRef) inline in the first paragraph.
+	     The body inherits nothing of the paragraph the note is referenced from
+	     (XsltFOFunctions.footnoteBody; CR-030 D10). -->
+	<xsl:variable name="noteContent">
+	    <xsl:apply-templates
+				select="java:org.docx4j.convert.out.common.XsltCommonFunctions.getFootnote($conversionContext, $id)" />
+	</xsl:variable>
 	<fo:footnote>
 	    <fo:inline><xsl:copy-of select="$fnStyled"/></fo:inline>
-	    <fo:footnote-body>
-	    	<xsl:apply-templates
-					select="java:org.docx4j.convert.out.common.XsltCommonFunctions.getFootnote($conversionContext, $id)" />
-	    </fo:footnote-body>
+	    <xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.footnoteBody($noteContent)"/>
 	  </fo:footnote>
 	    
   </xsl:template>

@@ -190,7 +190,8 @@ public class TableContextFoTest {
 
 	/** T8: a footnote referenced from a header cell is resolved with no table context: nothing
 	 *  in the note's own blocks states the cell's bold or italic.  (What XSL-FO inheritance
-	 *  brings in from the referencing paragraph is CR-030 D10, a separate matter.) */
+	 *  brings in from the referencing paragraph is CR-030 D10, fixed in 17.3.1 and tested by
+	 *  FootnoteInheritanceTest.) */
 	@Test
 	public void aFootnoteFromACellIsResolvedWithoutIt() throws Exception {
 		Element note = holding(fo(Docx4J.FLAG_NONE), "the note");

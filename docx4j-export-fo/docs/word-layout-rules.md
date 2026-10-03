@@ -3411,8 +3411,8 @@ formatting, and STYLEREF missed a heading in a cell (CR-030 §2). Now:
   - Word gives a text box anchored in a cell none of the table's formatting (probe
     `tables-textbox-in-cell`);
   - Word keeps a note referenced from a cell plain (`tables-footnote-in-cell`). XSL-FO
-    inheritance still carries the cell's bold and italic into the note's blocks, a separate
-    defect in the FO writer (CR-030 D10).
+    inheritance carried the cell's bold and italic into the note's blocks until 17.3.1
+    ([§8](#8-footnotes)).
 - **The HTML pathways and the FO XSLT pathway** keep the synthetic styles, since a style id
   is a CSS class there. `ParagraphStylesInTableFix` asks the resolver for each id
   (`styleIdFor`, made unique where two pairs would generate the same name) and for the
@@ -4359,6 +4359,19 @@ before the zero-width space replaced it).
   EndnoteReference styles are what make them superscripts, so raising and shrinking them
   unconditionally double-applied it. The endnote loop skips separators by type as well as
   by id.
+- **A note's formatting is its own** (17.3.1, CR-030 D10). Word lays a note out the same
+  whatever the paragraph it is referenced from looks like: probe `tables-footnote-in-cell`
+  has notes referenced from a bold italic cell, an italic cell and a plain paragraph, and
+  Word sets all three upright and regular. docx4j writes the `fo:footnote-body` where the
+  note is referenced, inside the referencing paragraph's `fo:block` and run's `fo:inline`.
+  XSL-FO inheritance therefore carried into the note every inheritable property those
+  stated and the note's own blocks left unstated, which made the notes bold italic and
+  italic. The body now resets those properties to their initial values: weight, style,
+  colour, decoration, letter and word spacing, alignment, indents, hyphenation, visibility,
+  keeps, and white-space and linefeed treatment. It leaves alone the ones every block
+  states, and `line-height-shift-adjustment`, which `fo:root` sets for the whole document.
+  Scored: eight corpus documents improve and none regresses; `14_pl-PL_sdt_num_tbl_1587`
+  goes 0.8863 -> 0.9691.
 
 Measured: `footnotes` at 98% line parity; on `page-header-footnotes`, headers, footers,
 footnote lines and the separator rule all within 0.5pt of Word's. The one remaining miss on

@@ -313,6 +313,9 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		footnote.appendChild(marker);
 
 		Element body = document.createElementNS(XSL_FO, "footnote-body");
+		// the note's formatting is its own, not that of the paragraph it is referenced
+		// from, which is where the body is written (CR-030 D10)
+		XsltFOFunctions.resetInheritedFormatting(body);
 		footnote.appendChild(body);
 
 		// the footnote's content, found by w:id as the XSLT's getFootnote does

@@ -273,6 +273,25 @@ preprocess, `Docx4J.toHTML` and `Docx4J.toFO` (PDF), on 17.3.1-SNAPSHOT.
   regular (§5.3). No corpus count has
   been taken yet.
 
+  **Fixed 2026-10-04, on both pathways.**
+  - The footnote body now resets the inheritable properties docx4j writes and omits at
+    their initial value: weight, style, colour, decoration, letter and word spacing,
+    alignment, indents, hyphenation, visibility, keeps, and white-space and linefeed
+    treatment (`XsltFOFunctions.resetInheritedFormatting`).
+  - T8's notes are now regular Liberation Serif 10pt, as in Word's golden. At 0bf294232 they
+    were bold italic, italic and regular.
+  - Scored against 0bf294232 (whose scores equal phase 3's on every corpus): eight documents
+    improve, none regresses.
+    - real: `16_it-IT_num_tbl_11490` 0.7676 -> 0.7794.
+    - real2: `14_pl-PL_sdt_num_tbl_1587` 0.8863 -> 0.9691, `14_ru-RU_num_tbl_8132`
+      0.9633 -> 0.9662, `15_ru-RU_num_6960` 0.9834 -> 0.9945.
+    - real3: four documents, `14_ru-RU_sdt_num_tbl_7320` 0.9119 -> 0.9225 the most.
+    - The probes are unchanged in line terms, T8 included: its notes break the same way in
+      either face.
+  - Test: `FootnoteInheritanceTest`. It checks the area tree on both pathways: a note
+    referenced from a bold, italic, red, underlined paragraph comes out regular, upright,
+    black and not underlined. It fails on 0bf294232.
+
 ## 3. Corpus facts (the three real-document corpora, 446 documents; scanned 2026-10-03)
 
 | | documents | |
@@ -806,7 +825,8 @@ DONE 2026-10-03.
 - T8 does not match its golden yet. The resolver gives a note nothing of the cell, but the
   visitor puts the note's body inside the referencing paragraph's block, and XSL-FO
   inheritance still carries in the cell's bold and italic. That is D10, an FO-writer fix
-  outside this CR; T8's golden will gate it.
+  outside this CR; T8's golden will gate it. (Fixed 2026-10-04, and T8 now matches: §2,
+  D10.)
 
 **Phase 4 - the writers share `TableContext`.**
 - Gate: zero-delta; `TableStyleConditionalWriterTest`, `TableStyleConditionsTest`.

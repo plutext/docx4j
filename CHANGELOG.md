@@ -61,6 +61,9 @@ PDF via XSL FO:
 - A line break inside a run no longer loses the text after it, or fails the conversion, when its
   paragraph is laid out a second time, beside a float or on a page of another width (FOP-1912).
 
+- A footnote no longer takes the bold, italic, colour, underline, alignment or indent of the
+  paragraph it is referenced from, on either pathway (CR-030 D10).
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's

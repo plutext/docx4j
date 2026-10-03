@@ -507,6 +507,81 @@ public class XsltFOFunctions {
 		}
     }
 
+    /**
+     * The inheritable properties a footnote's body is reset to, each at its XSL-FO initial
+     * value.  The body is written where the note is referenced, inside the referencing
+     * paragraph's fo:block and run's fo:inline, so XSL-FO inheritance would carry into the
+     * note whatever those state and the note's own blocks leave unstated: a reference in a
+     * bold or italic paragraph gave a bold or italic note, and one in a centred, indented or
+     * coloured paragraph would centre, indent or colour it.  Word keeps a note's formatting
+     * its own (CR-030 D10, measured with probe tables-footnote-in-cell, T8).
+     *
+     * <p>These are the inheritable properties docx4j writes on a block or an inline and
+     * omits at their initial value.  The ones every block states (font-family, font-size,
+     * line-height, language, country, white-space-collapse) need no reset; nor do those set
+     * on fo:root for the whole document (line-height-shift-adjustment), which the note
+     * should inherit.  text-decoration is not inherited but propagates to descendant text,
+     * so it takes the values which stop that.</p>
+     *
+     * @since 17.3.1
+     */
+    private static final String[][] FOOTNOTE_BODY_RESETS = {
+    	{ "font-weight", "normal" },
+    	{ "font-style", "normal" },
+    	{ "color", "black" },
+    	{ "text-decoration", "no-underline no-overline no-line-through no-blink" },
+    	{ "letter-spacing", "normal" },
+    	{ "word-spacing", "normal" },
+    	{ "text-align", "start" },
+    	{ "text-align-last", "relative" },
+    	{ "text-indent", "0pt" },
+    	{ "start-indent", "0pt" },
+    	{ "end-indent", "0pt" },
+    	{ "hyphenate", "false" },
+    	{ "visibility", "visible" },
+    	{ "keep-together.within-page", "auto" },
+    	{ "white-space-treatment", "ignore-if-surrounding-linefeed" },
+    	{ "linefeed-treatment", "treat-as-space" } };
+
+    /**
+     * Stop a footnote's body inheriting the formatting of the paragraph and run it is
+     * referenced from (see FOOTNOTE_BODY_RESETS).  The visitor pathway calls this on the
+     * fo:footnote-body it builds; the XSLT pathway gets it through {@link #footnoteBody}.
+     *
+     * @since 17.3.1
+     */
+    public static void resetInheritedFormatting(Element footnoteBody) {
+    	for (String[] reset : FOOTNOTE_BODY_RESETS) {
+    		footnoteBody.setAttribute(reset[0], reset[1]);
+    	}
+    }
+
+    /**
+     * The XSLT pathway's fo:footnote-body: the note's converted paragraphs, in a body
+     * which inherits nothing of where the note is referenced
+     * ({@link #resetInheritedFormatting}).
+     *
+     * @since 17.3.1
+     */
+    public static DocumentFragment footnoteBody(NodeIterator childResultsIt) {
+
+    	Node childResults = (childResultsIt==null) ? null : childResultsIt.nextNode();
+    	try {
+			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
+			DocumentFragment docfrag = document.createDocumentFragment();
+			Element body = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:footnote-body");
+			resetInheritedFormatting(body);
+			docfrag.appendChild(body);
+			if (childResults!=null) {
+				XmlUtils.treeCopy(childResults, body);
+			}
+			return docfrag;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return null;
+		}
+    }
+
     /** The start and end indents (in twips) in an XSLT_Ind=start,end tag value. */
     private static int[] indents(String tagVal) {
 
