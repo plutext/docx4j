@@ -2401,12 +2401,69 @@ public final class Corpus {
 				+ "(a) Normal; (b) ProbeA, based on ProbeB (w:sz 20, 10pt) based on Normal, stating no "
 				+ "size; (c) ProbeC, based on Normal, stating w:sz 32 (16pt) - what size and alignment "
 				+ "does each cell's text take (does the 12pt-and-left exception cover the condition, and "
-				+ "the inherited (b))?", () -> compatSizeJcProbe(false)));
+				+ "the inherited (b))?", () -> compatSizeJcProbe(15, "0")));
 
 		PROBES.add(new Probe("tables-compat-size-jc-on",
 				"the same as tables-compat-size-jc with overrideTableStyleFontSizeAndJustification ON "
 				+ "(ECMA-376's own order): expected (a) 12pt left, (b) 10pt left, (c) 16pt left in both "
-				+ "rows", () -> compatSizeJcProbe(true)));
+				+ "rows", () -> compatSizeJcProbe(15, "1")));
+
+		/*
+		 * CR-030's follow-up probes (section 5.2), after Word's goldens for the six above:
+		 * T6, whether Word 365 applies the [MS-DOCX] 12pt-and-left exception at all below
+		 * mode 15 (and in mode 15 with the setting absent); T7, what lies under a default
+		 * table style not named "Normal Table"; T8, whether a table style reaches a footnote
+		 * referenced from one of its cells.
+		 */
+		PROBES.add(new Probe("tables-compat-size-jc-mode12",
+				"tables-compat-size-jc as Word 2007 writes it: no compatibilityMode and no "
+				+ "overrideTableStyleFontSizeAndJustification (no w:compatSetting at all) - does Word 365 "
+				+ "apply the 12pt-and-left exception: (a) 14pt centred in the header and 9pt right in the "
+				+ "body, and (b), (c) centred and right; or ECMA-376's order, everything left at 12, 10 and "
+				+ "16pt?", () -> compatSizeJcProbe(null, null)));
+
+		PROBES.add(new Probe("tables-compat-size-jc-mode14",
+				"tables-compat-size-jc in compatibilityMode 14, the setting absent - the same question "
+				+ "as -mode12", () -> compatSizeJcProbe(14, null)));
+
+		PROBES.add(new Probe("tables-compat-size-jc-absent",
+				"tables-compat-size-jc in compatibilityMode 15 with the setting absent rather than stated "
+				+ "0 (docx4j takes absent as 0) - expected as the stated 0: ECMA-376's order", () -> compatSizeJcProbe(15, null)));
+
+		PROBES.add(new Probe("tables-renamed-default-margins",
+				"the w:default=1 table style renamed My Default and given w:tblCellMar left and right 300 "
+				+ "(15pt).  Tables: (a) no w:tblStyle; (b) Grid2, based on My Default; (c) Custom, no "
+				+ "w:basedOn - where does each first cell's text start: 15pt in (the default applies as "
+				+ "written), 5.4pt (Word's built-in Normal Table underneath), or 0?", () -> renamedDefaultProbe(true)));
+
+		PROBES.add(new Probe("tables-renamed-default-nomargins",
+				"the same, My Default stating no w:tblCellMar at all - 0 (nothing beneath it) or 5.4pt "
+				+ "(the built-in beneath it)?", () -> renamedDefaultProbe(false)));
+
+		PROBES.add(new Probe("tables-footnote-in-cell",
+				"a table style giving the whole table w:i and w:sz 32, and its firstRow condition w:b.  "
+				+ "Footnotes referenced from (a) a header-row cell, (b) a body-row cell and (c) a body "
+				+ "paragraph after the table; each note's run states Liberation Serif 10pt - are the three "
+				+ "notes alike, upright and regular, or do (a) and (b) take the italic (and (a) the bold) "
+				+ "of the cell they are referenced from?", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(SERIF, 24);
+			addTableStyle(d, "ProbeNotes", null);
+			org.docx4j.wml.Style ts = d.mdp().getStyleDefinitionsPart().getStyleById("ProbeNotes");
+			Doc.font(SERIF, 32).accept(rPrOf(ts));
+			rPrOf(ts).setI(Doc.F.createBooleanDefaultTrue());
+			addTableStyleCondition(d, "ProbeNotes", org.docx4j.wml.STTblStyleOverrideType.FIRST_ROW, Doc::bold);
+			Tbl t = tablesProbeTable("ProbeNotes", 2, 9000);
+			cellAdd(t, 0, 0, d.para().noLabel().inheritSpacing().bareText("(a) header-row cell, its note here")
+					.run(d.footnoteRef("(a) the note referenced from the header row", SERIF, 20)).build());
+			cellAdd(t, 1, 0, d.para().noLabel().inheritSpacing().bareText("(b) body-row cell, its note here")
+					.run(d.footnoteRef("(b) the note referenced from a body row", SERIF, 20)).build());
+			d.add(t);
+			d.para().noLabel().inheritSpacing().bareText("(c) a body paragraph, its note here")
+					.run(d.footnoteRef("(c) the note referenced from the body", SERIF, 20)).add();
+			d.finishFootnotes();
+			return d.pkg();
+		}));
 
 		/*
 		 * CR-016's probe set (docs/developer/change-requests/CR-016-font-selection-and-mapping.md,
@@ -3908,12 +3965,56 @@ public final class Corpus {
 		return jc;
 	}
 
-	/** tables-compat-size-jc and its -on twin: the same document but for the compatibility setting. */
-	private static WordprocessingMLPackage compatSizeJcProbe(boolean settingOn) throws Exception {
+	/** tables-renamed-default-margins and -nomargins: the default table style renamed My
+	 *  Default, with cell margins of 300 or none, under three tables. */
+	private static WordprocessingMLPackage renamedDefaultProbe(boolean margins300) throws Exception {
 		Doc d = Doc.create(15);
 		d.documentDefaultRun(SERIF, 24);
-		d.mdp().getDocumentSettingsPart().setWordCompatSetting(
-				"overrideTableStyleFontSizeAndJustification", settingOn ? "1" : "0");
+		org.docx4j.wml.Style tn = d.mdp().getStyleDefinitionsPart().getDefaultTableStyle();
+		styleName(tn, "My Default");
+		if (margins300) {
+			tn.getTblPr().getTblCellMar().getLeft().setW(BigInteger.valueOf(300));
+			tn.getTblPr().getTblCellMar().getRight().setW(BigInteger.valueOf(300));
+		} else {
+			tn.getTblPr().setTblCellMar(null);
+		}
+		addTableStyle(d, "Grid2", tn.getStyleId());
+		addTableStyle(d, "Custom", null);
+		String[] cases = { "(a) no w:tblStyle: the default, My Default",
+				"(b) w:tblStyle Grid2, based on My Default", "(c) w:tblStyle Custom, no w:basedOn" };
+		String[] styles = { null, "Grid2", "Custom" };
+		for (int k = 0; k < 3; k++) {
+			d.para(cases[k]).before(k == 0 ? 0 : 240).after(120).add();
+			Tbl t = tablesProbeTable(styles[k], 1, 4500, 4500);
+			String letter = cases[k].substring(0, 3);
+			cellAdd(t, 0, 0, tablesPara(d, null, letter + " first cell"));
+			cellAdd(t, 0, 1, tablesPara(d, null, letter + " second cell"));
+			d.add(t);
+		}
+		return d.pkg();
+	}
+
+	/** tables-compat-size-jc and its twins: the same document but for the compatibility mode
+	 *  (null: none at all, as Word 2007 writes it) and the setting (null: absent). */
+	private static WordprocessingMLPackage compatSizeJcProbe(Integer mode, String setting) throws Exception {
+		Doc d = Doc.create(mode == null ? 12 : mode.intValue());
+		d.documentDefaultRun(SERIF, 24);
+		/* Exactly one compatibilityMode (or none, for Word 2007): since createPackage writes
+		 * mode 15 itself (9de10aac9, 2026-09-19), Doc.create(mode) leaves a document stating
+		 * 15 and then its own mode.  The two tables-compat-size-jc documents already cut are
+		 * left as they were (15 twice, which is harmless). */
+		org.docx4j.wml.CTCompat compat = d.mdp().getDocumentSettingsPart().getContents().getCompat();
+		if (mode == null) {
+			if (compat != null) compat.getCompatSetting().clear();
+		} else if (mode.intValue() != 15 || setting == null) {
+			if (compat != null) compat.getCompatSetting().removeIf(cs -> "compatibilityMode".equals(cs.getName())
+					|| (setting == null && "overrideTableStyleFontSizeAndJustification".equals(cs.getName())));
+			d.mdp().getDocumentSettingsPart().setWordCompatSetting("compatibilityMode", String.valueOf(mode));
+		}
+		if (setting != null) {
+			d.mdp().getDocumentSettingsPart().setWordCompatSetting(
+					"overrideTableStyleFontSizeAndJustification", setting);
+		}
 		org.docx4j.wml.Style normal = d.mdp().getStyleDefinitionsPart().getStyleById("Normal");
 		Doc.font(SERIF, 24).accept(rPrOf(normal));
 		pPrOf(normal).setJc(jc(org.docx4j.wml.JcEnumeration.LEFT));
@@ -3932,7 +4033,10 @@ public final class Corpus {
 				cond.setPPr(ppr);
 			}
 		}
-		d.para("overrideTableStyleFontSizeAndJustification " + (settingOn ? "ON" : "OFF")
+		String label = setting == null ? "absent" : ("1".equals(setting) ? "ON" : "OFF");
+		String modeText = mode == null ? ", no compatibilityMode (Word 2007)"
+				: (mode.intValue() != 15 || setting == null ? ", compatibilityMode " + mode : "");
+		d.para("overrideTableStyleFontSizeAndJustification " + label + modeText
 				+ "; the first row is the header").after(120).add();
 		Tbl t = tablesProbeTable("ProbeCompat", 2, 3000, 3000, 3000);
 		String[] row = { "header", "body" };

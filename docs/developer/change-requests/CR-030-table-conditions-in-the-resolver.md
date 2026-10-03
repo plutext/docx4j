@@ -1,6 +1,8 @@
 # CR-030: table styles behind the resolver - a paragraph's table context handed to `PropertyResolver`, the synthetic styles reduced to names
 
-Status: IN PROGRESS, waiting for Jason's review. Proposed 2026-10-03; phase 0 started the same
+Status: IN PROGRESS, phase 0: the follow-up probes T6 to T8 are on the share and their Word
+goldens are awaited. One decision is outstanding: decision 2's release question. Proposed
+2026-10-03; phase 0 started the same
 day (Jason: "start phase 0"). Word's goldens for the six probes were cut and read the same day
 (§5.1):
 - D1 and D2 are confirmed;
@@ -23,7 +25,16 @@ Second review 2026-10-03 (the same reviewer) folded in:
 - the chain cache copied before its merge and cleared by `refresh()`;
 - D1's count firmed up: 11 paragraphs in 3 documents, not about 498 in 7;
 - stale text corrected, and the effort revised.
-Awaiting further review.
+
+Decisions (Jason, 2026-10-03: "I will go with the recommendations"):
+- decisions 1, 3, 4, 6 and 7 are accepted as recommended;
+- decision 2 is reworded after the reviewer's last note and accepted, but its release
+  question is still open: does 17.3.1 ship before phase 2?
+
+The follow-up probes T6 to T8 were added the same day: six documents, on the share, Word
+goldens awaited (§5.2). docx4j's renderings of T8 found D10, a footnote that takes the
+formatting of the paragraph it is referenced from. That is an FO-layer defect outside this
+CR's resolver scope, so it is recorded but not planned here.
 Carried forward from CR-015 ("Layering", Jason 2026-09-12: "we should be getting it right in
 the resolver so we are not layering fix upon fix"). Drafted with Claude Opus 5.5.
 Owner: Jason Harrop.
@@ -220,6 +231,22 @@ preprocess, `Docx4J.toHTML` and `Docx4J.toFO` (PDF), on 17.3.1-SNAPSHOT.
   - The resolver resolves a missing style as the default (CR-015), so the in-context answer
     is right from phase 1. The preprocess stops composing in phase 2, and D3 and D9 go with
     `getCellPStyle`.
+
+- **D10. A footnote takes the bold and italic of the paragraph it is referenced from (FO
+  layer; outside this CR).**  Found 2026-10-03 when docx4j rendered T8 (§5.2), on the
+  visitor pathway:
+  - a note referenced from T8's bold italic header cell comes out bold italic, one from an
+    italic body cell italic, and one from a plain body paragraph plain;
+  - the same with no table at all: a note referenced from a paragraph whose style is bold
+    and italic comes out bold italic.
+
+  The visitor puts the note's body inside the referencing paragraph's `fo:block`, and
+  XSL-FO's property inheritance carries every inheritable property the note does not state
+  itself into it. Size and font do not leak, because the probe's note states both. It is
+  not the resolver's, so this CR's phase 3 story-boundary reset does not touch it. It needs
+  its own fix in the FO writer: the footnote body resets the inheritable properties, or the
+  note's blocks state them. Word's T8 golden shows the expected reading. No corpus count has
+  been taken yet.
 
 ## 3. Corpus facts (the three real-document corpora, 446 documents; scanned 2026-10-03)
 
@@ -477,10 +504,17 @@ taken relative to a 12pt line in the same PDF.
 | T5 `tables-compat-size-jc` (setting 0, mode 15) | (a) 12pt, (b) 10pt, (c) 16pt in both rows, all left. The re-save writes the setting as 1 | (a) 14pt centred / 9pt right; (b), (c) centred / right | D6: Word ignores the setting in mode 15 |
 | T5 `tables-compat-size-jc-on` (setting 1, mode 15) | identical to the setting-0 document | as Word | ECMA-376's order |
 
-### 5.2 Follow-up probes (proposed, not added)
+### 5.2 Follow-up probes (added 2026-10-03, on the share; goldens awaited)
 
-Three, for one Word run, and **before phase 1**: T6 decides whether the compat rule is moved
-into the resolver at all, and T7 what `getEffectiveTableStyle`'s rule is.
+Three probes in six documents, for one Word run, and **before phase 1**. T6 decides whether
+the compat rule is moved into the resolver at all; T7 what `getEffectiveTableStyle`'s rule
+is; T8 the story boundary. They are in `Corpus.java` after T5.
+
+The T6 documents state exactly one `compatibilityMode`, or none. That needed a workaround:
+`Doc.create(mode)` now leaves a document stating 15 and then its own mode, because
+`createPackage()` has written mode 15 since 9de10aac9 (2026-09-19). The probes already on
+the share predate that change and state a single mode. The harness itself is not fixed
+here.
 
 **T6 `tables-compat-size-jc-mode12` and `-mode14`**: T5's document in compatibility mode 12
 (no `compatibilityMode`, as Word 2007 writes it) and in mode 14, with the setting absent. It
@@ -493,6 +527,11 @@ answers whether Word 365 applies the 12pt-and-left exception below mode 15 at al
 A third document, T5's in mode 15 with the setting *absent*, measures D6's absent case
 directly instead of inferring it from the stated 0.
 
+- Ids: `tables-compat-size-jc-mode12` (no `w:compatSetting` at all),
+  `tables-compat-size-jc-mode14` and `tables-compat-size-jc-absent`.
+- docx4j today, all three: the exception applied, (a) 14pt centred in the header and 9pt
+  right in the body, and (b) and (c) centred and right, as in T5's stated 0.
+
 **T7 `tables-renamed-default-margins`**: T2's document with My Default stating cell margins
 of 300 left and right (as P5's Table Normal did), and a second default-style variant stating
 no `w:tblCellMar` at all. Tables: no `w:tblStyle`; a style based on My Default; a style with
@@ -500,17 +539,26 @@ no `w:basedOn`. Read the first cell's text offset, as in P5.
 - 300 and 0 for the two variants: the default applies as written with nothing beneath, which
   is §4.2's rule as drafted;
 - 108 in either: the built-in still underlies the default style, and §4.2's rule changes.
+- Ids: `tables-renamed-default-margins` and `tables-renamed-default-nomargins`.
+- docx4j today, both variants: (a) and (b) at 108, (c) at 0. The default style's own layer
+  is skipped for the built-in, so the stated 300 is not used. If Word starts (a) and (b) at
+  300, docx4j is wrong there.
 
-**T8 `tables-footnote-in-cell`**: T3's table style (16pt, `firstRow` bold), with a footnote
-referenced from a header-row cell and one from a body-row cell, and a third from the body.
-Expected: all three notes alike, in the footnote style, none 16pt or bold. Pins §4.6's story
-boundary, which no current pathway gets wrong only because none walks the notes.
+**T8 `tables-footnote-in-cell`**: a table style giving the whole table italic and 16pt and
+its `firstRow` bold, with a footnote referenced from a header-row cell, one from a body-row
+cell, and a third from the body. Each note's run states Liberation Serif 10pt, so leakage
+shows as italic or bold rather than as size.
+- Expected: all three notes alike, upright and regular. Pins §4.6's story boundary.
+- docx4j today: notes (a) bold italic, (b) italic, (c) regular. The review expected no
+  current pathway to get this wrong; this leak is D10, from FO inheritance rather than from
+  the resolver.
 
 ## 6. Phases
 
 **Phase 0 - probes.**  T1 to T5 in `Corpus.java`, then goldens from Word. No library change.
 Goldens cut and read 2026-10-03 (§5.1), and committed with their manifest lines. Open: the
-follow-up probes of §5.2 (T6, T7, T8), on Jason's word. They are read before phase 1 starts.
+follow-up probes of §5.2 (T6, T7, T8), added 2026-10-03 and on the share. Their goldens are
+read before phase 1 starts.
 
 **Phase 1 - the resolver takes the context (additive; no exporter change).**
 `TableContext`, `CellContext`, `TableContextTracker`, `cellContextOf`; the three overloads;
@@ -580,24 +628,33 @@ table-conditions section; CHANGELOG; the hand-offs of §9.
 1. **Phase 3 at all?**  It changes no output, by its gate. Recommended: yes, so the default
    PDF pathway stops depending on a document rewrite. The review adds a reason: with no
    synthetic ids on that pathway, D7's whole class (STYLEREF, contextual spacing, whatever
-   else reads the id) cannot occur there.
-2. **D1 in 17.3.1 ahead of the CR?**  The principled fix is phase 2's `sourceStyleOf`, and
-   phase 1 is additive and short. Recommended: in phase 2, unless 17.3.1 is to ship first. In
-   that case the narrow fix is *not* to strip the synthetic suffix back to the source id, as
-   first drafted: the ids are ambiguous (D8), so parsing one can name the wrong style. It is
-   `sourceStyleOf` itself, brought forward: the preprocess records id -> source style on the
-   resolver as it renames, and `Emulator` asks. Phase 2 then keeps it.
+   else reads the id) cannot occur there. Accepted (Jason, 2026-10-03).
+2. **D1, and what 17.3.1 needs** (reworded after the reviewer's last note, 2026-10-03).
+   D1 is fixed in phase 2, by `sourceStyleOf`. At 11 paragraphs in 3 corpus documents, not
+   the 498 in 7 first estimated, it no longer makes a case for a fix ahead of the CR. (Were
+   one wanted, it would not strip the synthetic suffix, since the ids are ambiguous (D8); it
+   would be `sourceStyleOf` brought forward.) The 17.3.1 question is about the preprocess's
+   defects as a set:
+   - **If 17.3.1 ships before phase 2:** D3 and D9 each get a small local guard in
+     `getCellPStyle`. For D3, the log line does not marshal the unrooted `CTTblStylePr`; for
+     D9, a missing style is treated as the default. Both defects silently drop table styling
+     for the rest of the document, so they are worth more than D1 as a stopgap.
+   - **If phase 2 lands first:** none of the three needs a stopgap.
+
+   Accepted (Jason, 2026-10-03). **Outstanding: does 17.3.1 ship before phase 2?**
 3. **`cellContextOf(P)` through parent pointers**, or explicit contexts only?  Recommended:
    include it, documented as null where the chain is broken, and as costing a walk of the
-   table per call (§4.4). It is what docx4j-mcp and user code can use.
+   table per call (§4.4). It is what docx4j-mcp and user code can use. Accepted (Jason,
+   2026-10-03).
 4. **Markdown**: GFM has no table styling, and a styled header row is already the markdown
    header. Recommended: markdown keeps ignoring table-style formatting. The resolver makes it
-   available should that change.
+   available should that change. Accepted (Jason, 2026-10-03).
 5. **The probe set** T1 to T5 as listed, or trimmed. Done: all six cut, read in §5.1.
 6. **The follow-up probes T6, T7 and T8 (§5.2).**  Recommended: yes, all in one Word run, and
    before phase 1. T6 decides whether the exception code stays at all; T7 decides the rule
    phase 2 writes into `getEffectiveTableStyle`, half of which is so far inferred; T8 pins
-   the story boundary before phase 3 can get it wrong.
+   the story boundary before phase 3 can get it wrong. Accepted (Jason, 2026-10-03): the
+   probes are added and on the share.
 7. **Which is the authority for a synthetic name (§4.5)**: the resolver's record, resolving
    the id as (source style, context), or the real style in the styles part, resolved the
    plain way?  Recommended: the real style, with the record kept for `sourceStyleOf` and
@@ -623,7 +680,7 @@ table-conditions section; CHANGELOG; the hand-offs of §9.
    difference cannot be fixed, the record becomes the authority *everywhere*, not for that
    case alone. Answering by the record only where the style is lossy would split the
    authority per style, which is the drift this decision exists to avoid. (All or nothing:
-   the second review, 2026-10-03.)
+   the second review, 2026-10-03.) Accepted (Jason, 2026-10-03).
 
 ## 8. Risks
 
