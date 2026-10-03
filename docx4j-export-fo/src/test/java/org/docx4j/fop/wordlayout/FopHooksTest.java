@@ -93,6 +93,27 @@ public class FopHooksTest {
 	}
 
 	@Test
+	public void ruleStyleIsSetOnThisFop() {
+		// setRuleStyle(int) directly, by reflection, or as a BorderStyle, whichever this FOP has
+		org.apache.fop.area.inline.Leader rule = new org.apache.fop.area.inline.Leader();
+		LBP.setRuleStyle(rule, org.apache.fop.fo.Constants.EN_DOTTED);
+		assertEquals(org.apache.fop.fo.Constants.EN_DOTTED, ruleStyle(rule));
+		LBP.setRuleStyle(rule, org.apache.fop.fo.Constants.EN_SOLID);
+		assertEquals(org.apache.fop.fo.Constants.EN_SOLID, ruleStyle(rule));
+	}
+
+	/** The rule style read back as an EN_ constant: getRuleStyle() is an int on FOP 2.11 and
+	 *  a BorderStyle where FOP-3325 is in, so it is read reflectively here too. */
+	private static int ruleStyle(org.apache.fop.area.inline.Leader rule) {
+		try {
+			Object v = org.apache.fop.area.inline.Leader.class.getMethod("getRuleStyle").invoke(rule);
+			return v instanceof Integer ? (Integer) v : ((org.apache.fop.traits.TraitEnum) v).getEnumValue();
+		} catch (ReflectiveOperationException e) {
+			throw new AssertionError(e);
+		}
+	}
+
+	@Test
 	public void pairTableIsWordsAfterApply() {
 		WordBreakOpportunities.applyWordPairTable();
 		if (WordLayoutCustomizer.breakOpportunities()) {

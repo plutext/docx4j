@@ -93,7 +93,15 @@ public final class FopCapabilities {
 		/** A glyph two code points share (a Kangxi radical and its ideograph) publishes to ToUnicode the
 		 *  character the document wrote (fork CR-006), so cjkAdvancedFeatures may default on and
 		 *  mustNotUseOpenTypeLayout go, once that flip is gated (CR-020).  @since 17.3.0 */
-		SHARED_GLYPH_TOUNICODE("shared-glyph-tounicode");
+		SHARED_GLYPH_TOUNICODE("shared-glyph-tounicode"),
+		/** {@code area.inline.Leader.setRuleStyle(int)}, which Apache's FOP-3325 replaced with
+		 *  {@code setRuleStyle(BorderStyle)}; the fork keeps the int form (fork CR-009), so a rule
+		 *  leader is styled by a direct call there.  @since 17.3.1 */
+		RULE_STYLE_INT("rule-style-int"),
+		/** On the complex-script path ({@code GlyphMapping.processWordMapping}) a word's counted letter
+		 *  spaces are in its width, as on the plain path (fork CR-010; upstream FOP-2349).  Without it,
+		 *  a FOP carrying FOP-2722 counts them and leaves them out.  @since 17.3.1 */
+		LETTER_SPACE_WIDTH("letter-space-width");
 
 		private final String key;
 

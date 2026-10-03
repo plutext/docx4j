@@ -128,4 +128,17 @@ public class LetterSpacingWidthTest {
 		Assume.assumeTrue("FOP's complex-script text path not in use here", !plain.equals(complex));
 		assertNotEquals(plain, complex);
 	}
+
+	@Test
+	public void countedSpacesInTheWidthDependOnThePath() {
+		// the plain path has always added its counted letter spaces to the width
+		assertEquals(4, WordLineLayoutManager.lettersInWidth(false, false, 4));
+		assertEquals(4, WordLineLayoutManager.lettersInWidth(false, true, 4));
+		// the complex-script path: FOP 2.11 counts none; a FOP carrying Apache's
+		// FOP-2722 alone counts them and leaves them out of the width
+		assertEquals(0, WordLineLayoutManager.lettersInWidth(true, false, 0));
+		assertEquals(0, WordLineLayoutManager.lettersInWidth(true, false, 4));
+		// the docx4j FO renderer with letter-space-width puts them in, as the plain path does
+		assertEquals(4, WordLineLayoutManager.lettersInWidth(true, true, 4));
+	}
 }

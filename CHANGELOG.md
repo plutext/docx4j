@@ -2,6 +2,20 @@ CHANGELOG
 =========
 
 
+Version 17.3.1
+===============
+
+Changes in Version 17.3.1
+--------------------------
+
+PDF via XSL FO:
+
+- Letter-spaced text is measured correctly on an FO renderer carrying Apache's FOP-2722 without
+  its width fix (FOP-2349), where lines would otherwise overrun.
+
+- Rule leaders are drawn on an Apache FOP release without Leader.setRuleStyle(int) (FOP-3325).
+
+
 Version 17.3.0
 ===============
 

@@ -532,12 +532,51 @@ final class LBP {
 			int thickness, int level) {
 		if (fobj.getRuleStyle() == org.apache.fop.fo.Constants.EN_NONE) return null;
 		org.apache.fop.area.inline.Leader rule = new org.apache.fop.area.inline.Leader();
-		rule.setRuleStyle(fobj.getRuleStyle());
+		setRuleStyle(rule, fobj.getRuleStyle());
 		rule.setRuleThickness(thickness);
 		rule.setBPD(thickness);
 		rule.addTrait(org.apache.fop.area.Trait.COLOR, fobj.getColor());
 		if (level >= 0) rule.setBidiLevel(level);
 		return rule;
+	}
+
+	// ---- area.inline.Leader's rule style.  Apache FOP 2.11 has setRuleStyle(int); Apache's
+	// FOP-3325 (on main, not yet released) replaced it with setRuleStyle(BorderStyle).  The docx4j
+	// FO renderer keeps the int form (capability rule-style-int), so the call is direct there;
+	// on any other FOP the setter it has is found once by reflection, the int form first.
+	private static final java.lang.reflect.Method RULE_STYLE_BY_INT
+			= FopHooks.RULE_STYLE_INT ? null : leaderSetter(int.class);
+	private static final java.lang.reflect.Method RULE_STYLE_BY_BORDER_STYLE
+			= FopHooks.RULE_STYLE_INT || RULE_STYLE_BY_INT != null ? null
+					: leaderSetter(org.apache.fop.traits.BorderStyle.class);
+
+	private static java.lang.reflect.Method leaderSetter(Class<?> param) {
+		try {
+			return org.apache.fop.area.inline.Leader.class.getMethod("setRuleStyle", param);
+		} catch (NoSuchMethodException e) {
+			return null;
+		}
+	}
+
+	/** Sets a rule leader's style (an {@code EN_} constant, as {@code fo.flow.Leader.getRuleStyle()}
+	 *  returns it) on whichever FOP is on the classpath.  @since 17.3.1 */
+	static void setRuleStyle(org.apache.fop.area.inline.Leader rule, int ruleStyle) {
+		if (FopHooks.RULE_STYLE_INT) {
+			rule.setRuleStyle(ruleStyle);
+			return;
+		}
+		try {
+			if (RULE_STYLE_BY_INT != null) {
+				RULE_STYLE_BY_INT.invoke(rule, ruleStyle);
+			} else if (RULE_STYLE_BY_BORDER_STYLE != null) {
+				RULE_STYLE_BY_BORDER_STYLE.invoke(rule, org.apache.fop.traits.BorderStyle.valueOf(ruleStyle));
+			} else {
+				throw new IllegalStateException("area.inline.Leader has neither setRuleStyle(int) nor"
+						+ " setRuleStyle(BorderStyle) on this FOP");
+			}
+		} catch (IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	/** The area a leader of repeated characters is drawn as, built the way

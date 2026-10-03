@@ -2381,6 +2381,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * opportunity that is not a space follows - one short of Word, which spaces
      * the word's last character too.  Both are brought here to Word's count, one
      * letter space after every character of the word (CR-001 §4.6).
+     *
+     * <p>How many of the counted spaces the width already holds depends on the
+     * FOP: see {@link #lettersInWidth}.  Runs while each child's elements are
+     * collected, so before {@link #emergencyBreaks} builds mappings of its own
+     * (which count their letter spaces and include them).</p>
      */
     private void fixLetterSpaces(InlineLevelLayoutManager lm, List<KnuthSequence> seqs) {
         if (seqs == null) return;
@@ -2406,7 +2411,9 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 org.apache.fop.fonts.GlyphMapping m = mappings.get(idx);
                 if (m.isSpace || m.font == null) continue;
                 int wordLength = m.getWordLength();
-                if (wordLength <= 0 || m.letterSpaceCount == wordLength) continue;
+                int inWidth = lettersInWidth(m.font.performsSubstitution() || m.font.performsPositioning(),
+                        FopHooks.LETTER_SPACE_WIDTH, m.letterSpaceCount);
+                if (wordLength <= 0 || inWidth == wordLength) continue;
                 org.apache.fop.fo.FOText foText = LBP.foText(tlm);
                 // Word puts one character space after every character, the word's last
                 // included, and one after a space (see fixSpaceLetterSpaces).  Measured
@@ -2420,7 +2427,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 boolean breakOpp = m.breakOppAfter && m.endIndex < foText.length()
                         && !Character.isWhitespace(foText.charAt(m.endIndex));
                 int spaces = wordLength;
-                int added = spaces - m.letterSpaceCount;
+                int added = spaces - inWidth;
                 m.breakOppAfter = breakOpp;
                 m.letterSpaceCount = spaces;
                 m.areaIPD = m.areaIPD.plus(ls.mult(added));
@@ -2435,6 +2442,26 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 seq.set(i, new KnuthInlineBox(width, box.getAlignmentContext(), pos, box.isAuxiliary()));
             }
         }
+    }
+
+    /**
+     * How many of a word's counted letter spaces ({@code GlyphMapping.letterSpaceCount}) its
+     * width already holds.  The plain path ({@code processWordNoMapping}) has always added them.
+     * The complex-script path ({@code processWordMapping}, the one {@code GlyphMapping.doGlyphMapping}
+     * takes when the font performs substitution or positioning) counted none in FOP 2.11; Apache's
+     * FOP-2722 gives it the count but not the width, so on a FOP carrying FOP-2722 alone the count
+     * must not be trusted, or every letter-spaced word is measured n - 1 letter spaces short
+     * (docx4j's own width fixups letter-space ordinary text too: on the fork's merge of Apache main,
+     * fop/CR-009, 51 documents regressed before its CR-010 added the width).  The fork with that
+     * fix declares {@code letter-space-width}; there, as on the plain path, the count is in the width.
+     *
+     * @param mappingPath whether the word took the complex-script path
+     * @param widthFix whether the renderer declares {@code letter-space-width}
+     * @param letterSpaceCount the mapping's count
+     * @since 17.3.1
+     */
+    static int lettersInWidth(boolean mappingPath, boolean widthFix, int letterSpaceCount) {
+        return mappingPath && !widthFix ? 0 : letterSpaceCount;
     }
 
     /**
