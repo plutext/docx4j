@@ -239,7 +239,7 @@ public class XsltFOFunctions {
     		RPr rPrDirect, Node childResults) {
 
         try {
-			RPr rPr = context.getPropertyResolver().getEffectiveRPr(rPrDirect, null);
+			RPr rPr = context.getPropertyResolver().getEffectiveRPr(rPrDirect, null, context.getCellContext());
 
 			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 			Element foInlineElement = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");
@@ -894,14 +894,17 @@ public class XsltFOFunctions {
     	RPr rPrParagraphMark = null;  // required for list item label
         try {
 
+        	// in a table cell, the table style's contribution comes with the cell context
+        	// (the FO visitor's; null on the XSLT pathway, whose synthetic styles carry it): CR-030
+        	org.docx4j.model.table.CellContext cellContext = context.getCellContext();
         	if (pPrDirect==null) {
-            	pPr = propertyResolver.getEffectivePPr(defaultParagraphStyleId);
-            	rPr = propertyResolver.getEffectiveRPr(defaultParagraphStyleId);
+            	pPr = propertyResolver.getEffectivePPr((PPr)null, cellContext);
+            	rPr = propertyResolver.getEffectiveRPr(null, null, cellContext);
             	rPrParagraphMark = rPr;
         		// TODO - in this case, we should be able to compute once,
         		// and on subsequent calls, just return pre computed value
         	} else {
-				pPr = propertyResolver.getEffectivePPr(pPrDirect);
+				pPr = propertyResolver.getEffectivePPr(pPrDirect, cellContext);
 				if ((pPr==null) && (log.isDebugEnabled())) {
 					log.debug("pPr null; obtained from: " + XmlUtils.marshaltoString(pPrDirect, true, true) );
 				}
@@ -931,7 +934,7 @@ public class XsltFOFunctions {
         			fontSzOnlyRPr.setLang(pPrDirect.getRPr().getLang());
         		}
 
-        		rPr = propertyResolver.getEffectiveRPr(fontSzOnlyRPr, pPrDirect);
+        		rPr = propertyResolver.getEffectiveRPr(fontSzOnlyRPr, pPrDirect, cellContext);
 
 				// Now, work out the value for list item label
         		rPrParagraphMark = XmlUtils.deepCopy(rPr);
@@ -3417,7 +3420,7 @@ public class XsltFOFunctions {
 		try {
 			Node n = pPrNodeIt == null ? null : pPrNodeIt.nextNode();
 			if (n != null) pPr = (PPr) XmlUtils.unwrap(XmlUtils.unmarshal(n));
-			pPr = context.getPropertyResolver().getEffectivePPr(pPr);
+			pPr = context.getPropertyResolver().getEffectivePPr(pPr, context.getCellContext());
 			Node r = rPrNodeIt == null ? null : rPrNodeIt.nextNode();
 			if (r != null) rPr = (RPr) XmlUtils.unwrap(XmlUtils.unmarshal(r));
 		} catch (Exception e) {
@@ -3659,7 +3662,7 @@ public class XsltFOFunctions {
 		try {
 			Node n = pPrNodeIt == null ? null : pPrNodeIt.nextNode();
 			if (n != null) pPr = (PPr) XmlUtils.unwrap(XmlUtils.unmarshal(n));
-			pPr = context.getPropertyResolver().getEffectivePPr(pPr);
+			pPr = context.getPropertyResolver().getEffectivePPr(pPr, context.getCellContext());
 		} catch (Exception e) {
 			log.warn("Couldn't resolve pPr for a leading tab: " + e.getMessage());
 			return "";
@@ -4050,7 +4053,7 @@ public class XsltFOFunctions {
 			RPr rPr = null;
 			if (jaxbR instanceof RPr) {
 				//rPrDirect =  (RPr)jaxbR;
-				rPr = propertyResolver.getEffectiveRPr((RPr)jaxbR, pPrDirect);
+				rPr = propertyResolver.getEffectiveRPr((RPr)jaxbR, pPrDirect, context.getCellContext());
 			} else if (jaxbR instanceof ParaRPr) {
 //				if (log.isDebugEnabled()) {
 //					Throwable t = new Throwable();
@@ -4058,7 +4061,7 @@ public class XsltFOFunctions {
 //				}
 				
 				// the paragraph mark's properties (CR-015 phase 2)
-				rPr = propertyResolver.getEffectiveParagraphMarkRPr(pPrDirect); 
+				rPr = propertyResolver.getEffectiveParagraphMarkRPr(pPrDirect, context.getCellContext()); 
         		StyleUtil.apply((ParaRPr)jaxbR, rPr); 				
 				
 			} else {

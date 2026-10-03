@@ -331,6 +331,14 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 		return id;
 	}
 
+	/** The FO visitor resolves table paragraphs in their cell context (CR-030 phase 3); on
+	 *  the XSLT pathway nothing reports the tables, so the context stays null there and the
+	 *  preprocess's synthetic styles carry the table's formatting.  @since 17.3.1 */
+	@Override
+	protected boolean tracksTableContext() {
+		return true;
+	}
+
 	@Override
 	public void enterTextBox() {
 		super.enterTextBox();

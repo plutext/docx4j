@@ -434,7 +434,7 @@ public class XsltCommonFunctions {
     				} else if (jaxb instanceof ParaRPr) {
     					// the paragraph mark's properties (CR-015 phase 2: an explicit call, no longer
     					// the run resolver's side effect for a null rPr)
-    					rPr = conversionContext.getPropertyResolver().getEffectiveParagraphMarkRPr(pPr); 
+    					rPr = conversionContext.getPropertyResolver().getEffectiveParagraphMarkRPr(pPr, conversionContext.getCellContext()); 
     	        		StyleUtil.apply((ParaRPr)jaxb, rPr); 				
     				}    				
     				

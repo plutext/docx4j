@@ -146,7 +146,14 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			// inside a TOC hyperlink needs the paragraph's tab stops for its dot leader
 			generator.pPr = pPr;
 			generator.rPr = rPr;
-			new TraversalUtil(((ContentAccessor)unmarshalledNode).getContent(), generator);
+			// a table's rows are walked here: its context is the cells' (CR-030 phase 3)
+			boolean table = unmarshalledNode instanceof org.docx4j.wml.Tbl;
+			if (table) conversionContext.enterTable((org.docx4j.wml.Tbl)unmarshalledNode);
+			try {
+				new TraversalUtil(((ContentAccessor)unmarshalledNode).getContent(), generator);
+			} finally {
+				if (table) conversionContext.exitTable();
+			}
 			
 		} else if (unmarshalledNode instanceof org.docx4j.wml.Pict) {
 			// if it contains a textbox..
@@ -253,6 +260,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 
 		if (o instanceof org.docx4j.wml.Tr) {
 			
+			conversionContext.enterRow((org.docx4j.wml.Tr)o);
 			tr.push(document.createElementNS(Namespaces.NS_WORD12, "tr"));
 			//parentNode is in this case the DocumentFragment, that get's passed 
 			//to the TableModel/TableModelWriter
@@ -260,6 +268,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			
 		} else if (o instanceof org.docx4j.wml.Tc) {
 			
+			conversionContext.enterCell((org.docx4j.wml.Tc)o);
 			tc.push(document.createElementNS(Namespaces.NS_WORD12, "tc"));
 			(tr.peek()).appendChild(tc.peek());
 			// now the html p content will go temporarily go in w:tc,
@@ -274,10 +283,12 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		if (o instanceof org.docx4j.wml.Tr) {
 			
 			tr.pop();
+			conversionContext.exitRow();
 			
 		} else if (o instanceof org.docx4j.wml.Tc) {
 			
 			tc.pop();
+			conversionContext.exitCell();
 			
 			parentNode = existingParentNode; // restore
 		}		
@@ -592,7 +603,8 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	protected boolean isHiddenRun(R r) {
 		if (r.getRPr()==null) return false;
 		try {
-			return HiddenText.isHiddenRun(conversionContext.getPropertyResolver(), pPr, r.getRPr());
+			return HiddenText.isHiddenRun(conversionContext.getPropertyResolver(), pPr, r.getRPr(),
+					conversionContext.getCellContext());
 		} catch (Exception e) {
 			log.warn("Couldn't resolve effective rPr for w:vanish: " + e.getMessage());
 			return false;

@@ -67,9 +67,20 @@ public class HiddenText {
 	 * paragraph style and the document defaults can all carry w:vanish).
 	 */
 	public static boolean isHiddenRun(PropertyResolver propertyResolver, PPr pPrDirect, RPr rPrDirect) {
+		return isHiddenRun(propertyResolver, pPrDirect, rPrDirect, null);
+	}
+
+	/**
+	 * As {@link #isHiddenRun(PropertyResolver, PPr, RPr)}, for a run in a table cell: the
+	 * table style can carry w:vanish too.
+	 * @param cellContext the paragraph's table context, or null (CR-030)
+	 * @since 17.3.1
+	 */
+	public static boolean isHiddenRun(PropertyResolver propertyResolver, PPr pPrDirect, RPr rPrDirect,
+			org.docx4j.model.table.CellContext cellContext) {
 		if (propertyResolver == null || isPrinted()) return false;
 		try {
-			return isHidden(propertyResolver.getEffectiveRPr(rPrDirect, pPrDirect));
+			return isHidden(propertyResolver.getEffectiveRPr(rPrDirect, pPrDirect, cellContext));
 		} catch (Exception e) {
 			log.warn("Couldn't resolve effective rPr for w:vanish: " + e.getMessage());
 			return false;

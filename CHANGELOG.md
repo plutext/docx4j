@@ -14,6 +14,9 @@ Property resolution:
   paragraphs and runs in a table when handed the paragraph's CellContext (TableContextTracker
   for a walk, cellContextOf for one paragraph); the overloads without one are unchanged (CR-030).
 
+- PDF output (the default, visitor pathway) resolves a table's paragraphs in their cell context
+  and no longer rewrites their styles in a preprocess; output is unchanged (CR-030).
+
 - Which table style applies follows Word's rule, the style's name: a style named "Normal Table"
   is Word's built-in, and a default table style named otherwise applies as written, cell
   margins included (CR-030).

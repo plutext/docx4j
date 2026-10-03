@@ -67,7 +67,16 @@ public abstract class AbstractWmlExporter<CS extends AbstractConversionSettings,
 				 */
 			throw new Docx4JException("MainDocumentPart empty");
 		}
-		return Preprocess.process(wmlPackage, conversionSettings.getFeatures());
+		return Preprocess.process(wmlPackage, preprocessFeatures(conversionSettings));
+	}
+
+	/**
+	 * The preprocessing features this exporter applies: the settings' own, unless an
+	 * exporter has no use for one (the FO visitor and the table-style fix, CR-030 phase 3).
+	 * @since 17.3.1
+	 */
+	protected java.util.Set<String> preprocessFeatures(CS conversionSettings) {
+		return conversionSettings.getFeatures();
 	}
 
 	@Override

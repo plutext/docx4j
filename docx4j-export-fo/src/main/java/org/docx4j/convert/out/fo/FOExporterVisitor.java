@@ -51,4 +51,19 @@ public class FOExporterVisitor extends AbstractFOExporter {
 		return instance;
 	}
 
+	/**
+	 * Without {@link org.docx4j.convert.out.ConversionFeatures#PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX}:
+	 * the visitor resolves each paragraph in a table in its cell context
+	 * ({@link FOConversionContext} keeps it as the tables are walked), so it needs no
+	 * synthetic paragraph styles, and the document is not rewritten for them.  The FO XSLT
+	 * pathway still uses them.  A copy: the caller's settings are left alone.
+	 * @since 17.3.1 (CR-030 phase 3)
+	 */
+	@Override
+	protected java.util.Set<String> preprocessFeatures(FOSettings conversionSettings) {
+		java.util.Set<String> features = new java.util.TreeSet<String>(conversionSettings.getFeatures());
+		features.remove(org.docx4j.convert.out.ConversionFeatures.PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX);
+		return features;
+	}
+
 }

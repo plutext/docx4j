@@ -1,8 +1,10 @@
 # CR-030: table styles behind the resolver - a paragraph's table context handed to `PropertyResolver`, the synthetic styles reduced to names
 
-Status: IN PROGRESS. Phase 2 done 2026-10-03 (§6), so 17.3.1 can ship. D1, D2, D3, D4, D6,
-D7, D8 and D9 are fixed; the round trip finds no difference on the corpus; the three D1
-documents improve, and nothing regresses. Phases 3 to 5 remain. Phase 1 done the same day.
+Status: IN PROGRESS. Phase 3 done 2026-10-03 (§6): the FO visitor resolves table paragraphs
+in context with no preprocess, and scores identical to phase 2 on every document. Phases 4
+and 5 remain. Phase 2 done the same day, so 17.3.1 can ship. D1, D2, D3, D4, D6, D7, D8 and
+D9 are fixed; the round trip finds no difference on the corpus; the three D1 documents
+improve, and nothing regresses. Phase 1 done the same day.
 Along the way, before phase 2:
 - 17.3.0's broken XSLT-pathway PDF export was fixed (3a81e4485);
 - export-fo-tests went back into the reactor, with its five stale tests updated (83009bfcc).
@@ -744,6 +746,59 @@ output. First the list of resolver call sites (§4.6), each marked as taking the
 not; the story-boundary reset, with T8.
 - Gate: corpora zero-delta against phase 2; export-fo-tests on both pathways; T8 matches its
   golden.
+
+DONE 2026-10-03.
+- Built:
+  - `AbstractWmlConversionContext` keeps the table context: `enterTable`, `enterRow`,
+    `enterCell`, `enterParagraph` and `getCellContext`. It is off unless
+    `tracksTableContext()`, which `FOConversionContext` turns on; HTML stays on its
+    synthetic styles.
+  - Every `enterStory` pushes a barrier: a text box, a note rendered at its reference, a
+    header, footer or endnotes part.
+  - The visitor generator reports tables (`convertToNode`) and rows and cells
+    (`walkJAXBElements`).
+  - `FOExporterVisitor` drops `PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX` through a new
+    `AbstractWmlExporter.preprocessFeatures` hook, which returns a copy and leaves the
+    caller's settings alone. The FO XSLT pathway keeps the preprocess.
+  - The resolver's in-context overloads compose from a synthetic style's source, so a caller
+    which runs the preprocess anyway gets no doubled table level.
+- Call sites (§4.6):
+  - Taking the context: the visitor's paragraph and run handling; `XsltFOFunctions`'
+    `createBlock` (pPr, run properties and the mark derived from them), `createInlineForSdt`,
+    `tabToFO`, `leadingTabLeaderLength` and `createBlockForRPr`; `XsltCommonFunctions`'
+    paragraph mark; `HiddenText.isHiddenRun`. On the XSLT pathway the context is null, and
+    the synthetic styles carry the table there.
+  - Not taking it:
+    - `footnoteSeparator` and `endnotesHeading`: never in a cell.
+    - `RunFontSelector`: the visitor hands it the effective pPr and rPr
+      (`rPrIsEffective`), so it resolves nothing itself.
+    - `ConversionSectionWrapperFactory`: section breaks, not cell paragraphs.
+    - `Containerization` and `FopWorkaroundReplacePageBreakInEachList`: preprocess steps,
+      which run before any table is walked and saw no table style in 17.2 either.
+    - `FontsAnalysis`: not an exporter; phase 5.
+- **Found by the corpus gate, and fixed.**  A `Containerization` shading or border
+  container's block takes its first paragraph's `w:pPr`, but is built after its paragraphs,
+  outside any paragraph's context.
+  - Through the preprocess, that `w:pPr` had named the synthetic style. In context it fell
+    back to Normal's spacing: in one real2 document a 30pt drift and a page (16 -> 17).
+  - The container is now built in its first paragraph's context.
+  - The FO for that document is then identical to phase 2's.
+- Tests: `TableContextFoTest` (5).
+  - The cells' bold and italic, on both pathways.
+  - A text box in a cell (T3).
+  - A footnote referenced from a cell, the resolver's half of T8: nothing in the note's own
+    blocks states the cell's formatting.
+  - Numbering in cells, on both pathways.
+  - The shading container.
+- Gate, tests (reactor): core-tests 1,381/0, export-fo 240/0, export-fo-tests 676/0. One
+  core-tests run failed `TemporaryImageCleanupTest` while a corpus scoring ran alongside,
+  writing images to the temp directory. Run alone, it passes.
+- Gate, scored against phase 2: real, real2, real3 and the probes **identical, document by
+  document, at any size**.
+- T8 does not match its golden yet. The resolver gives a note nothing of the cell, but the
+  visitor puts the note's body inside the referencing paragraph's block, and XSL-FO
+  inheritance still carries in the cell's bold and italic. That is D10, an FO-writer fix
+  outside this CR; T8's golden will gate it.
 
 **Phase 4 - the writers share `TableContext`.**
 - Gate: zero-delta; `TableStyleConditionalWriterTest`, `TableStyleConditionsTest`.

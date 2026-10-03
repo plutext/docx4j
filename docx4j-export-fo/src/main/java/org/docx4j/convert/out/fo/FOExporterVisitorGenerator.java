@@ -442,9 +442,12 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		// CR-012: the paragraph's id (null unless PP_FO_PARAGRAPH_IDS), and the count its
 		// runs' ids are taken from, open while its content is converted
 		String foId = conversionContext.beginParagraph(p.getParaId());
+		// the paragraph's table context, for every resolution while it is converted (CR-030)
+		org.docx4j.model.table.CellContext outer = conversionContext.enterParagraph(p);
 		try {
 			handleP(p, foId);
 		} finally {
+			conversionContext.exitParagraph(outer);
 			conversionContext.endParagraph();
 		}
 	}
@@ -455,7 +458,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		FOExporterVisitorGenerator generator = childGenerator(childResults);
 		try {
 			// the effective pPr, for font selection within the paragraph (as before)
-			generator.pPr = conversionContext.getPropertyResolver().getEffectivePPr(p.getPPr());
+			generator.pPr = conversionContext.getPropertyResolver().getEffectivePPr(p.getPPr(), conversionContext.getCellContext());
 			// the resolved pPr has no w:pStyle; RunFontSelector needs it to apply the
 			// paragraph style's run properties (fonts, size, w:kern) to the runs, as
 			// the XSLT pathway does with the raw pPr (found by KernedRunsTest, 17.0.5)
@@ -505,26 +508,32 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	/** the pPr of the container's first paragraph (looking through a nested
 	 *  container, as a borders container may directly hold a shading one) */
 	private PPr firstPPPr(SdtElement sdt) {
+		P first = firstP(sdt);
+		return first == null ? null : first.getPPr();
+	}
+
+	/** The paragraph whose w:pPr a container takes: its first, or its inner sdt's first. */
+	private P firstP(SdtElement sdt) {
 
 		if (sdt.getSdtContent()==null) return null;
-		PPr pPr = firstPPPr(sdt.getSdtContent().getContent());
-		if (pPr!=null) return pPr;
+		P p = firstP(sdt.getSdtContent().getContent());
+		if (p!=null) return p;
 		for (Object o : sdt.getSdtContent().getContent()) {
 			o = XmlUtils.unwrap(o);
 			if (o instanceof SdtElement) {
 				SdtElement inner = (SdtElement)o;
 				return (inner.getSdtContent()==null ? null
-						: firstPPPr(inner.getSdtContent().getContent()));
+						: firstP(inner.getSdtContent().getContent()));
 			}
 		}
 		return null;
 	}
 
-	private PPr firstPPPr(List<Object> content) {
+	private P firstP(List<Object> content) {
 
 		for (Object o : content) {
 			o = XmlUtils.unwrap(o);
-			if (o instanceof P) return ((P)o).getPPr();
+			if (o instanceof P) return (P)o;
 		}
 		return null;
 	}
@@ -553,8 +562,18 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		if (containerPPr!=null) {
 			// pStyleVal: the XSLT evaluates w:pPr/w:pStyle relative to the w:sdt,
 			// which selects nothing, so pass null (default paragraph style)
-			DocumentFragment result = XsltFOFunctions.createBlockForSdt(
+			// the container's block is the first paragraph's, so it is resolved in that
+			// paragraph's table context: in a cell, the table style's spacing is the
+			// container's too (CR-030 phase 3; through the preprocess's synthetic style,
+			// which the container's w:pPr named, until then)
+			org.docx4j.model.table.CellContext outer = conversionContext.enterParagraph(firstP(sdt));
+			DocumentFragment result;
+			try {
+				result = XsltFOFunctions.createBlockForSdt(
 					conversionContext, containerPPr, null, childResults, tag);
+			} finally {
+				conversionContext.exitParagraph(outer);
+			}
 			if (result!=null) {
 				(tc.peek()!=null ? tc.peek() : parentNode)
 						.appendChild(document.importNode(result, true));
@@ -802,7 +821,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
     	
     	
         try {
-        	RPr rPr = propertyResolver.getEffectiveRPr(rPrDirect, pPrDirect);
+        	RPr rPr = propertyResolver.getEffectiveRPr(rPrDirect, pPrDirect, conversionContext.getCellContext());
         	effectiveRPr = rPr; // for RunFontSelector: the run is resolved once (CR-016 phase 1)
         	
 				

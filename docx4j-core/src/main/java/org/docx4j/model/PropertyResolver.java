@@ -903,7 +903,7 @@ public class PropertyResolver {
 		if (cellContext == null || !cellContext.formatsText()) {
 			return getEffectivePPr(expressPPr);
 		}
-		PPr composed = composedPPr(paragraphStyleOf(expressPPr), cellContext);
+		PPr composed = composedPPr(sourceParagraphStyleOf(expressPPr), cellContext);
 		if (hasDirectPPrFormatting(expressPPr)) {
 			PPr effectivePPr = (PPr)XmlUtils.deepCopy(composed);
 			applyPPr(expressPPr, effectivePPr);
@@ -928,7 +928,7 @@ public class PropertyResolver {
 		if (cellContext == null || !cellContext.formatsText()) {
 			return getEffectiveRPr(expressRPr, pPr);
 		}
-		RPr effectiveRPr = (RPr)XmlUtils.deepCopy(composedRPr(paragraphStyleOf(pPr), cellContext));
+		RPr effectiveRPr = (RPr)XmlUtils.deepCopy(composedRPr(sourceParagraphStyleOf(pPr), cellContext));
 		applyCharacterStyleAndDirect(expressRPr, effectiveRPr);
 		return effectiveRPr;
 	}
@@ -943,11 +943,18 @@ public class PropertyResolver {
 		if (cellContext == null || !cellContext.formatsText()) {
 			return getEffectiveParagraphMarkRPr(pPr);
 		}
-		RPr effectiveRPr = (RPr)XmlUtils.deepCopy(composedRPr(paragraphStyleOf(pPr), cellContext));
+		RPr effectiveRPr = (RPr)XmlUtils.deepCopy(composedRPr(sourceParagraphStyleOf(pPr), cellContext));
 		if (pPr!=null && pPr.getRPr()!=null) {
 			applyRPr(pPr.getRPr(), effectiveRPr);
 		}
 		return effectiveRPr;
+	}
+
+	/** The paragraph's style for composing over a table level: where it names a synthetic
+	 *  style (the preprocess has run), the style that stands for, so the table level is not
+	 *  applied twice.  @since 17.3.1 */
+	private String sourceParagraphStyleOf(PPr pPr) {
+		return existingParagraphStyle(sourceStyleOf(paragraphStyleOf(pPr)));
 	}
 
 	/** The table level's w:pPr: the style's own, then its conditional formats'; null if none. */

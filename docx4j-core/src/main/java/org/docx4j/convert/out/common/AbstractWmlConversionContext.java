@@ -243,11 +243,117 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	 *  or a footnote's content converted in place.  @since 17.2.0 */
 	public void enterStory(org.docx4j.model.listnumbering.NumberingState story) {
 		storyStack.push(story);
+		// a story of its own has no table around it, whatever cell it is reached from
+		// (a text box anchored in a cell, a footnote referenced from one: CR-030 T3, T8)
+		if (tracksTableContext()) tableFrames.push(new TableFrame(null));
 	}
 
 	/** @since 17.2.0 */
 	public void exitStory() {
 		if (!storyStack.isEmpty()) storyStack.pop();
+		if (tracksTableContext() && !tableFrames.isEmpty()) tableFrames.pop();
+	}
+
+	// ------------------------------------------------ the table context (CR-030 phase 3)
+
+	/**
+	 * Whether this conversion resolves each paragraph in a table cell in its
+	 * {@link org.docx4j.model.table.CellContext}, which the visitor keeps here as it walks
+	 * the tables.  False here: HTML resolves through the synthetic styles the preprocess
+	 * writes, which are its CSS classes.  The FO visitor says true, and runs without that
+	 * preprocess.  @since 17.3.1
+	 */
+	protected boolean tracksTableContext() {
+		return false;
+	}
+
+	private static final class TableFrame {
+		/** null: a story boundary (a text box, a note), where no table applies */
+		final org.docx4j.model.table.TableContext table;
+		org.docx4j.wml.Tr tr;
+		org.docx4j.wml.Tc tc;
+		TableFrame(org.docx4j.model.table.TableContext table) {
+			this.table = table;
+		}
+	}
+
+	private final java.util.ArrayDeque<TableFrame> tableFrames = new java.util.ArrayDeque<TableFrame>();
+	private org.docx4j.model.table.CellContext cellContext = null;
+
+	/** The visitor is about to convert a table's rows. @since 17.3.1 */
+	public void enterTable(org.docx4j.wml.Tbl tbl) {
+		if (!tracksTableContext()) return;
+		try {
+			tableFrames.push(new TableFrame(getPropertyResolver().tableContext(tbl)));
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(), e);
+			tableFrames.push(new TableFrame(null));
+		}
+	}
+
+	/** ... and has finished with them. @since 17.3.1 */
+	public void exitTable() {
+		if (tracksTableContext() && !tableFrames.isEmpty()) tableFrames.pop();
+	}
+
+	/** @since 17.3.1 */
+	public void enterRow(org.docx4j.wml.Tr tr) {
+		TableFrame f = tableFrames.peek();
+		if (f != null && f.table != null) {
+			f.tr = tr;
+			f.tc = null;
+		}
+	}
+
+	/** @since 17.3.1 */
+	public void exitRow() {
+		TableFrame f = tableFrames.peek();
+		if (f != null && f.table != null) {
+			f.tr = null;
+			f.tc = null;
+		}
+	}
+
+	/** @since 17.3.1 */
+	public void enterCell(org.docx4j.wml.Tc tc) {
+		TableFrame f = tableFrames.peek();
+		if (f != null && f.table != null) f.tc = tc;
+	}
+
+	/** @since 17.3.1 */
+	public void exitCell() {
+		TableFrame f = tableFrames.peek();
+		if (f != null && f.table != null) f.tc = null;
+	}
+
+	/**
+	 * The visitor is about to convert a paragraph: from now until {@link #exitParagraph},
+	 * {@link #getCellContext()} is its context (null outside a table, in a text box or in a
+	 * note).
+	 * @return the context to restore on exit
+	 * @since 17.3.1
+	 */
+	public org.docx4j.model.table.CellContext enterParagraph(org.docx4j.wml.P p) {
+		org.docx4j.model.table.CellContext previous = cellContext;
+		TableFrame f = tableFrames.peek();
+		cellContext = (f == null || f.table == null || p.getParent() instanceof org.docx4j.wml.CTTxbxContent)
+				? null : f.table.forParagraph(f.tr, f.tc, p.getPPr());
+		return previous;
+	}
+
+	/** @since 17.3.1 */
+	public void exitParagraph(org.docx4j.model.table.CellContext previous) {
+		cellContext = previous;
+	}
+
+	/**
+	 * The context of the paragraph being converted, for the resolver's overloads which take
+	 * one: null outside a table, and always null where the conversion does not track tables
+	 * (HTML; the FO XSLT pathway, whose synthetic styles carry the table's formatting).
+	 * @since 17.3.1
+	 */
+	public org.docx4j.model.table.CellContext getCellContext() {
+		return cellContext;
 	}
 
 	/** Whether the content being converted is inside a text box, whose paragraphs are laid
