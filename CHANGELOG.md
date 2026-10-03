@@ -8,6 +8,12 @@ Version 17.3.1
 Changes in Version 17.3.1
 --------------------------
 
+Property resolution:
+
+- PropertyResolver applies a table style, and the conditional formats a paragraph is under, to
+  paragraphs and runs in a table when handed the paragraph's CellContext (TableContextTracker
+  for a walk, cellContextOf for one paragraph); the overloads without one are unchanged (CR-030).
+
 PDF via XSL FO:
 
 - Letter-spaced text is measured correctly on an FO renderer carrying Apache's FOP-2722 without

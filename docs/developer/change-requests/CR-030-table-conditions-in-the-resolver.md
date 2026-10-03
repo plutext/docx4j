@@ -1,7 +1,10 @@
 # CR-030: table styles behind the resolver - a paragraph's table context handed to `PropertyResolver`, the synthetic styles reduced to names
 
-Status: IN PROGRESS, phase 1 started 2026-10-03. Phase 0 is done: T1 to T8 were cut and read
-(§5.1, §5.3), and no decision is outstanding. Proposed
+Status: IN PROGRESS. Phase 1 done 2026-10-03 (§6): core-tests are green, and the corpus
+equivalence harness finds only D2's 21 text-box paragraphs. export-fo-tests are unchanged by it,
+with 279 failures that predate it, reported separately. Phase 2 is next, and lands before
+17.3.1 ships. Phase 0 is done: T1 to T8 were cut and read (§5.1, §5.3), and no decision is
+outstanding. Proposed
 2026-10-03; phase 0 started the same
 day (Jason: "start phase 0"). Word's goldens for the six probes were cut and read the same day
 (§5.1):
@@ -619,6 +622,56 @@ goes in phase 2, taking D3 and D9 with it.
     aborts there and leaves the rest unrenamed, and the resolver answers with the default
     style. No corpus document has one;
   - colliding synthetic ids (D8): none in the corpus, by the scan of §2.
+
+DONE 2026-10-03.
+- Built, in `org.docx4j.model.table`: `TableContext`; `CellContext`, with a structured `Key`;
+  and `TableContextTracker`.
+- Built, on `PropertyResolver`:
+  - `getEffectivePPr(PPr, CellContext)`, `getEffectiveRPr(RPr, PPr, CellContext)` and
+    `getEffectiveParagraphMarkRPr(PPr, CellContext)`;
+  - `tableContext(Tbl)` and `cellContextOf(P)`;
+  - `getTableStyleIdOf(TblPr)`, and `getTableStyleChain(String)`: the name rule, cached per
+    id, cleared by `refresh()`;
+  - `appliesTableStyleSizeJcException()`: below mode 15, with the setting not on.
+
+  The composition is cached per (paragraph style id, `CellContext.Key`). The preprocess and
+  the exporters are untouched.
+- Departures from §4, both without effect on the corpus (the harness below):
+  - The tracker's story boundary is the DrawingML anchor or inline and the VML text box,
+    the objects through which `TraversalUtil` reaches a text box's content, together with a
+    check of the paragraph's parent, rather than `w:txbxContent` itself.
+  - `TableContext` counts rows and cells over the branch `TraversalUtil` reads by default
+    from `mc:AlternateContent`, where the preprocess walks every branch.
+- Tests: `TableContextResolutionTest`, 13 tests.
+  - A twin of `ParagraphStylesInTableFixConditionalTest`, with its expected values.
+  - A paragraph-by-paragraph comparison with the preprocess's synthetic styles on that
+    fixture: all equal.
+  - T5 and T6 in modes 15, 14, 12 and none; the name rule of T1, T2 and T7.
+  - The tracker and `cellContextOf` through `w:sdt`, through text boxes, and without parent
+    pointers.
+  - D8's collision, D9's missing style, and `refresh()`.
+- Gate, core-tests: 1,372 run, 0 failures, 0 errors (13 skipped).
+- Gate, export-fo-tests: **not green, and not because of this phase.**
+  - 280 of 662 fail with HEAD's docx4j-core and the same 280 with phase 1's (one
+    export-fo-tests build, run both ways; the failure lists are identical). Surefire's own run
+    counts 279 of 669.
+  - 275 are the XSLT pathway. 230 produce FO that does not parse, because
+    `fox:gsub-features` is written without its namespace declaration; 45 fail to export a PDF,
+    very likely the same cause. docx4j depends on the released 2.11-docx4j.2, which has that
+    capability, so `FLAG_EXPORT_PREFER_XSL` PDF output may be broken in 17.3.0 too.
+  - The other four are the no-ligature font twins (two), glyph widths, and an off-page shape.
+  - Outside this CR, and reported to Jason.
+- Gate, the **equivalence harness**:
+  - Coverage: 452 documents of the three corpora (one more is refused by docx4j's zip-bomb
+    limit), with 254,652 paragraphs, 160,768 of them in tables.
+  - Every paragraph's `w:pPr`, mark and runs, in context, equal what the synthetic style gives,
+    except 21 paragraphs in 2 documents. All 21 are D2: text boxes anchored in cells.
+  - Counted as equal: `<w:b w:val="true"/>` against `<w:b/>` (likewise `w:i` and `w:bCs`),
+    the same value written two ways. Before that normalisation, 135 more paragraphs in 8
+    documents differed on it alone.
+  - None of the other expected classes occurs in the corpus: numbering indents, outline
+    levels, T1/T2, the compat gate, D8, D9.
+  - The harness is a scratch program, not committed; it is re-run for phase 2's round trip.
 
 **Phase 2 - names, and the defects.**  The preprocess uses `styleIdFor`, which hands out
 unique ids (D8); the synthetic style's content comes from the resolver; `Emulator` goes

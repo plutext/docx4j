@@ -10,6 +10,8 @@ import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleUtil;
+import org.docx4j.model.table.CellContext;
+import org.docx4j.model.table.TableContext;
 import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -17,14 +19,20 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.wml.CTTblPrBase;
+import org.docx4j.wml.CTTblStylePr;
 import org.docx4j.wml.DocDefaults;
 import org.docx4j.wml.HpsMeasure;
+import org.docx4j.wml.JcEnumeration;
+import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.RStyle;
 import org.docx4j.wml.Style;
+import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TblPr;
+import org.docx4j.wml.Tc;
+import org.docx4j.wml.Tr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +46,14 @@ import org.slf4j.LoggerFactory;
  *   paragraphMarkRPr(pPr)      = docDefaults.rPr + chainRPr(styleOf(pPr)) + pPr.rPr
  *   tableStyle(tblPr)          = built-in Normal Table (where its chain reaches the default table style,
  *                                or it names none) + the chain + tblPr
+ *
+ *   in a table cell, given its CellContext (since 17.3.1):
+ *   effectivePPr(direct, ctx)  = docDefaults.pPr + table(ctx).pPr + chainPPr(styleOf(direct)) [+ jc exception] + direct
+ *   effectiveRPr(direct, pPr, ctx)
+ *                              = docDefaults.rPr + level(table(ctx).rPr, chainRPr(styleOf(pPr))) [+ size exception]
+ *                                + chainRPr(direct.rStyle) + direct
+ *   table(ctx)                 = the table style's own pPr/rPr, then its conditional formats which
+ *                                apply, in ECMA-376-1 17.7.6 order
  * </pre>
  *
  * where {@code styleOf(pPr)} is the paragraph's {@code w:pStyle} if it names a style that
@@ -47,9 +63,12 @@ import org.slf4j.LoggerFactory;
  * ({@link #getChainPPr(String)}, {@link #getChainRPr(String)}).  The merging itself is
  * {@link org.docx4j.model.styles.StyleUtil#apply}, driven by
  * {@link org.docx4j.model.styles.PropertyCatalogue}.  Numbering level indents are folded
- * in per layer through the numbering part; table styles are not applied to paragraphs
- * here (the resolver is handed a {@code w:pPr} and does not know the table:
- * {@code ParagraphStylesInTableFix} carries them for the exporters).
+ * in per layer through the numbering part.  A table style reaches a paragraph where the
+ * caller hands the resolver the paragraph's {@link CellContext} (since 17.3.1; from a
+ * {@link org.docx4j.model.table.TableContextTracker} during a walk, or
+ * {@link #cellContextOf(P)}): the overloads which take none know nothing of tables, and
+ * {@code ParagraphStylesInTableFix} still carries table styles for the exporters
+ * (CR-030 phases 2 and 3 move them onto these overloads).
  *
  * <p><b>Live objects.</b>  What the style overloads and {@link #getEffectivePPr(PPr)}
  * return is cached and shared: clone it before changing it.  The cached objects share no
@@ -142,6 +161,7 @@ public class PropertyResolver {
 
 	public PropertyResolver(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 		
+		this.wordMLPackage = wordMLPackage;
 		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
 		
 		styleDefinitionsPart = mdp.getStyleDefinitionsPart(true);
@@ -173,6 +193,11 @@ public class PropertyResolver {
 		}
 		Style defaultTableStyle = this.styleDefinitionsPart.getDefaultTableStyle();
 		defaultTableStyleId = defaultTableStyle == null ? null : defaultTableStyle.getStyleId();
+
+		// [MS-DOCX] overrideTableStyleFontSizeAndJustification: see tableStyleSizeJcException
+		CompatibilityOptions compat = CompatibilityOptions.of(wordMLPackage);
+		tableStyleSizeJcException = compat.mode() < 15
+				&& !compat.setting("overrideTableStyleFontSizeAndJustification", false);
 
 		// Initialise styles
 		styles = (org.docx4j.wml.Styles)styleDefinitionsPart.getJaxbElement();	
@@ -590,6 +615,330 @@ public class PropertyResolver {
 		return resolvedRPr;
 	}
 
+	// ---------------------------------------------------------------- the table context (CR-030)
+
+	/** The package, for its settings (the [MS-DOCX] exception below).  @since 17.3.1 */
+	private final WordprocessingMLPackage wordMLPackage;
+
+	/**
+	 * Whether [MS-DOCX]'s {@code overrideTableStyleFontSizeAndJustification} exception applies
+	 * to this document: a default paragraph style's 12pt does not override the table style's
+	 * size, nor its left justification the table style's, for paragraphs in tables.  Measured
+	 * with Word 365 (CR-030 probes T5 and T6): it applies below compatibility mode 15 (a
+	 * document stating no compatibilityMode is mode 12) where the setting is not on, and never
+	 * in mode 15, where Word ignores a stated 0 and re-saves it as 1.  Read once per
+	 * {@link #refresh()}.  @since 17.3.1
+	 */
+	private volatile boolean tableStyleSizeJcException;
+
+	/** Each table style's w:basedOn chain merged, by id; styles only, so refresh() clears it. */
+	private final java.util.Map<String, Style> tableStyleChains = new java.util.concurrent.ConcurrentHashMap<String, Style>();
+
+	/** A paragraph style composed over a table level, document defaults included; by
+	 *  (paragraph style, table level).  What getEffectivePPr/getEffectiveRPr with a context
+	 *  start from, as getEffectivePPr(String) is what they start from without one. */
+	private final java.util.Map<Composition, PPr> composedPPr = new java.util.concurrent.ConcurrentHashMap<Composition, PPr>();
+	private final java.util.Map<Composition, RPr> composedRPr = new java.util.concurrent.ConcurrentHashMap<Composition, RPr>();
+
+	/** The cache key of a composition: a structured tuple, never a joined string (CR-030 D8). */
+	private static final class Composition {
+		final String styleId;
+		final CellContext.Key table;
+		Composition(String styleId, CellContext.Key table) {
+			this.styleId = styleId;
+			this.table = table;
+		}
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (!(o instanceof Composition)) return false;
+			Composition c = (Composition) o;
+			return (styleId == null ? c.styleId == null : styleId.equals(c.styleId)) && table.equals(c.table);
+		}
+		@Override
+		public int hashCode() {
+			return 31 * (styleId == null ? 0 : styleId.hashCode()) + table.hashCode();
+		}
+	}
+
+	/** An empty table style: what a table with no style to apply contributes. */
+	private static final Style NO_TABLE_STYLE = Context.getWmlObjectFactory().createStyle();
+
+	/**
+	 * Whether [MS-DOCX]'s overrideTableStyleFontSizeAndJustification exception applies to this
+	 * document (below compatibility mode 15, the setting not on; measured, CR-030 T5 and T6).
+	 * @since 17.3.1
+	 */
+	public boolean appliesTableStyleSizeJcException() {
+		return tableStyleSizeJcException;
+	}
+
+	/**
+	 * The id of the table style a table resolves to: its own {@code w:tblStyle}, else the
+	 * document's {@code w:default} table style, whatever its name.  (Whether that style
+	 * contributes anything is {@link #getTableStyleChain(String)}'s question.)
+	 * @param tblPr the table's own w:tblPr; may be null
+	 * @return the id, or null where the table names none and the document has no default
+	 * @since 17.3.1
+	 */
+	public String getTableStyleIdOf(TblPr tblPr) {
+		if (tblPr != null && tblPr.getTblStyle() != null) {
+			return tblPr.getTblStyle().getVal();
+		}
+		return defaultTableStyleId;
+	}
+
+	/**
+	 * A table style's {@code w:basedOn} chain merged root-first, conditional formats merged
+	 * per condition ({@link StyleUtil#apply(Style, Style)}), as it gives the paragraphs of its
+	 * tables their text formatting.  Word goes by the style's <em>name</em>: a style named
+	 * "Normal Table" is Word's built-in, which gives text nothing whatever its own definition
+	 * says, so the walk up the chain ends below it; every other style applies as written, the
+	 * default table style included (measured, CR-030 probes T1, T2 and T7).
+	 *
+	 * <p>Cached per id, and shared: read it, do not change it.  An empty style for null, for a
+	 * missing style, and for a chain which is "Normal Table" all the way down.</p>
+	 *
+	 * @throws RuntimeException wrapping a CyclicStylesException, where
+	 *         docx4j.openpackaging.exceptions.CyclicStylesException.throw asks for one
+	 * @since 17.3.1
+	 */
+	public Style getTableStyleChain(String styleId) {
+		if (styleId == null) return NO_TABLE_STYLE;
+		Style cached = tableStyleChains.get(styleId);
+		if (cached != null) return cached;
+		List<Style> chain;
+		try {
+			chain = ancestry(styleId);
+		} catch (CyclicStylesException e) {
+			throw new RuntimeException(e);
+		}
+		int start = 0;
+		for (int i = chain.size() - 1; i >= 0; i--) {
+			if (isNamedNormalTable(chain.get(i))) {
+				start = i + 1;
+				break;
+			}
+		}
+		Style merged = null;
+		for (int i = start; i < chain.size(); i++) {
+			merged = StyleUtil.apply(chain.get(i), merged);
+		}
+		if (merged == null) merged = NO_TABLE_STYLE;
+		tableStyleChains.put(styleId, merged);
+		return merged;
+	}
+
+	private static boolean isNamedNormalTable(Style s) {
+		// Google Docs (Nov 2014) writes table styles without a w:name
+		return s.getName() != null && "Normal Table".equals(s.getName().getVal());
+	}
+
+	/**
+	 * The context of a table, for the paragraphs in it: build one per table and hold it while
+	 * walking the table (the resolver keeps none, since it reads the table's content).
+	 * @since 17.3.1
+	 */
+	public TableContext tableContext(Tbl tbl) {
+		return new TableContext(tbl, this);
+	}
+
+	/**
+	 * The table context of one paragraph, found through its parent pointers: the nearest
+	 * enclosing cell, its row and its table, through whatever lies between ({@code w:sdt},
+	 * {@code w:customXml}, {@code w:smartTag}).  Null where the paragraph is in no table, where
+	 * a story begins before a cell is reached (a text box, a footnote, endnote or comment, a
+	 * header, a footer, the body), or where the pointers are not there: content created with
+	 * the ObjectFactory and added with {@code getContent().add()} has none, while unmarshalled,
+	 * cloned and deep-copied content has them.
+	 *
+	 * <p>Each call builds a {@link TableContext}, a walk of the table's rows.  That is right
+	 * for "what formatting does this paragraph have"; code resolving every paragraph of a
+	 * document walks it with a {@link org.docx4j.model.table.TableContextTracker} instead, since
+	 * calling this for each paragraph of a large table is quadratic.</p>
+	 * @since 17.3.1
+	 */
+	public CellContext cellContextOf(P p) {
+		Tc tc = null;
+		Tr tr = null;
+		for (Object o = parentOf(p); o != null; o = parentOf(o)) {
+			if (o instanceof org.docx4j.wml.CTTxbxContent || o instanceof org.docx4j.wml.CTFtnEdn
+					|| o instanceof org.docx4j.wml.Comments.Comment || o instanceof org.docx4j.wml.Hdr
+					|| o instanceof org.docx4j.wml.Ftr || o instanceof org.docx4j.wml.Body
+					|| o instanceof org.docx4j.wml.Document) {
+				return null;
+			}
+			if (o instanceof Tc) {
+				if (tc == null) tc = (Tc) o;
+			} else if (o instanceof Tr) {
+				if (tc != null && tr == null) tr = (Tr) o;
+			} else if (o instanceof Tbl) {
+				return tr == null ? null : tableContext((Tbl) o).forParagraph(tr, tc, p.getPPr());
+			}
+		}
+		return null;
+	}
+
+	private static Object parentOf(Object o) {
+		return (o instanceof org.jvnet.jaxb.lang.Child) ? ((org.jvnet.jaxb.lang.Child) o).getParent() : null;
+	}
+
+	/**
+	 * The paragraph properties which apply to a paragraph in a table cell: as
+	 * {@link #getEffectivePPr(PPr)}, with the table style's contribution (its own w:pPr, then
+	 * the conditional formats the paragraph is under) between the document defaults and the
+	 * paragraph's style, and [MS-DOCX]'s justification exception where it applies.
+	 *
+	 * @param cellContext where the paragraph sits; null for a paragraph in no table, which
+	 *        resolves exactly as {@link #getEffectivePPr(PPr)}
+	 * @return a live object where the paragraph has no direct formatting; clone it before changing it
+	 * @since 17.3.1
+	 */
+	public PPr getEffectivePPr(PPr expressPPr, CellContext cellContext) throws CyclicStylesException {
+		if (cellContext == null || !cellContext.formatsText()) {
+			return getEffectivePPr(expressPPr);
+		}
+		PPr composed = composedPPr(paragraphStyleOf(expressPPr), cellContext);
+		if (hasDirectPPrFormatting(expressPPr)) {
+			PPr effectivePPr = (PPr)XmlUtils.deepCopy(composed);
+			applyPPr(expressPPr, effectivePPr);
+			return effectivePPr;
+		}
+		return composed;
+	}
+
+	/**
+	 * The run properties which apply to a run in a table cell: as
+	 * {@link #getEffectiveRPr(RPr, PPr)}, with the table style's run properties (its own,
+	 * then its conditional formats') as a level of the style hierarchy beneath the paragraph
+	 * style's (the toggle properties combine across the two, ECMA-376-1 &#xa7;17.7.3), and
+	 * [MS-DOCX]'s size exception where it applies.
+	 *
+	 * @param cellContext where the paragraph sits; null resolves exactly as
+	 *        {@link #getEffectiveRPr(RPr, PPr)}
+	 * @return a new object each call
+	 * @since 17.3.1
+	 */
+	public RPr getEffectiveRPr(RPr expressRPr, PPr pPr, CellContext cellContext) throws CyclicStylesException {
+		if (cellContext == null || !cellContext.formatsText()) {
+			return getEffectiveRPr(expressRPr, pPr);
+		}
+		RPr effectiveRPr = (RPr)XmlUtils.deepCopy(composedRPr(paragraphStyleOf(pPr), cellContext));
+		applyCharacterStyleAndDirect(expressRPr, effectiveRPr);
+		return effectiveRPr;
+	}
+
+	/**
+	 * The run properties of the mark of a paragraph in a table cell: as
+	 * {@link #getEffectiveParagraphMarkRPr(PPr)}, with the table level beneath the paragraph
+	 * style's.
+	 * @since 17.3.1
+	 */
+	public RPr getEffectiveParagraphMarkRPr(PPr pPr, CellContext cellContext) throws CyclicStylesException {
+		if (cellContext == null || !cellContext.formatsText()) {
+			return getEffectiveParagraphMarkRPr(pPr);
+		}
+		RPr effectiveRPr = (RPr)XmlUtils.deepCopy(composedRPr(paragraphStyleOf(pPr), cellContext));
+		if (pPr!=null && pPr.getRPr()!=null) {
+			applyRPr(pPr.getRPr(), effectiveRPr);
+		}
+		return effectiveRPr;
+	}
+
+	/** The table level's w:pPr: the style's own, then its conditional formats'; null if none. */
+	private static PPr tableLevelPPr(CellContext ctx) {
+		PPr out = ctx.getTableStyle().getPPr() == null ? null : StyleUtil.apply(ctx.getTableStyle().getPPr(), (PPr)null);
+		for (CTTblStylePr pr : ctx.getTextConditions()) {
+			out = StyleUtil.apply(pr.getPPr(), out);
+		}
+		return out;
+	}
+
+	/** The table level's w:rPr: the style's own, then its conditional formats'; null if none. */
+	private static RPr tableLevelRPr(CellContext ctx) {
+		RPr out = ctx.getTableStyle().getRPr() == null ? null : StyleUtil.apply(ctx.getTableStyle().getRPr(), (RPr)null);
+		for (CTTblStylePr pr : ctx.getTextConditions()) {
+			out = StyleUtil.apply(pr.getRPr(), out);
+		}
+		return out;
+	}
+
+	/*
+	 * The composition is ParagraphStylesInTableFix's (17.2.0) moved, not reinvented: document
+	 * defaults, the table level over them, the paragraph style's chain over that (for the run
+	 * properties a level of its own, the toggles combined), then the [MS-DOCX] exception.  The
+	 * preprocess built it into a synthetic paragraph style per (paragraph style, table style,
+	 * conditions); this is the same thing, cached per (paragraph style, table level).
+	 */
+	private PPr composedPPr(String styleId, CellContext ctx) throws CyclicStylesException {
+		Composition key = new Composition(styleId, ctx.getKey());
+		PPr composed = composedPPr.get(key);
+		if (composed != null) return composed;
+
+		PPr tableLevel = tableLevelPPr(ctx);
+		composed = (PPr)XmlUtils.deepCopy(documentDefaultPPr);
+		if (tableLevel != null) {
+			StyleUtil.apply(tableLevel, composed);
+		}
+		applyPPr(chainPPr(styleId), composed);
+		if (tableStyleSizeJcException && tableLevel != null && tableLevel.getJc() != null
+				&& paragraphStyleGivesWay(styleId, false)) {
+			composed.setJc(XmlUtils.deepCopy(tableLevel.getJc()));
+		}
+		composedPPr.put(key, composed);
+		return composed;
+	}
+
+	private RPr composedRPr(String styleId, CellContext ctx) throws CyclicStylesException {
+		Composition key = new Composition(styleId, ctx.getKey());
+		RPr composed = composedRPr.get(key);
+		if (composed != null) return composed;
+
+		RPr tableOnly = tableLevelRPr(ctx);
+		RPr tableLevel = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
+		if (tableOnly != null) {
+			StyleUtil.apply(tableOnly, tableLevel);
+		}
+		RPr paragraphLevel = chainRPr(styleId);
+		composed = (RPr)XmlUtils.deepCopy(tableLevel);
+		applyRPr(paragraphLevel, composed);
+		// the table and the paragraph style are two levels of the hierarchy: the twelve
+		// toggles combine across them rather than the paragraph's overriding (17.7.3)
+		StyleUtil.applyToggles(paragraphLevel, tableLevel, documentDefaultRPr, composed);
+		if (tableStyleSizeJcException && tableOnly != null && tableOnly.getSz() != null
+				&& paragraphStyleGivesWay(styleId, true)) {
+			composed.setSz(XmlUtils.deepCopy(tableOnly.getSz()));
+		}
+		composedRPr.put(key, composed);
+		return composed;
+	}
+
+	/**
+	 * [MS-DOCX]'s exception, for a paragraph in a table whose style states a size (or a
+	 * justification): the paragraph's style gives way to it if the style is the default
+	 * paragraph style, or states no size (justification) of its own, and resolves to 12pt
+	 * (left).  A style of the paragraph's own which states one keeps it.  As
+	 * ParagraphStylesInTableFix applied it (measured there with Word 2010; CR-030 T6 with Word
+	 * 365 in modes 12 and 14).
+	 */
+	private boolean paragraphStyleGivesWay(String styleId, boolean size) throws CyclicStylesException {
+		boolean isDefault = styleId == null || styleId.equals(defaultParagraphStyleId);
+		Style express = getLiveStyle(styleId);
+		if (!isDefault && express != null) {
+			if (size && express.getRPr() != null && express.getRPr().getSz() != null) return false;
+			if (!size && express.getPPr() != null && express.getPPr().getJc() != null) return false;
+		}
+		if (size) {
+			RPr effective = getEffectiveRPr(styleId);
+			return effective != null && effective.getSz() != null && effective.getSz().getVal() != null
+					&& effective.getSz().getVal().intValue() == 24;
+		} else {
+			PPr effective = getEffectivePPr(styleId);
+			return effective != null && effective.getJc() != null
+					&& effective.getJc().getVal() == JcEnumeration.LEFT;
+		}
+	}
+
 	// ---------------------------------------------------------------- the chains
 
 	/** The paragraph's style: its w:pStyle where that names a style that exists, else the default paragraph style. */
@@ -845,6 +1194,9 @@ public class PropertyResolver {
     	chainRPr.clear();
     	effectivePPrByStyle.clear();
     	effectiveRPrByStyle.clear();
+    	tableStyleChains.clear();
+    	composedPPr.clear();
+    	composedRPr.clear();
     	init();
     }
 
