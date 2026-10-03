@@ -174,9 +174,14 @@ public class TableStyleConditionsTest {
 		assertTrue(TableStyleConditions.atPosition(look, 2, 3, 1, 6, 6, 1, 8).contains(STTblStyleOverrideType.BAND_2_VERT));
 		assertTrue(TableStyleConditions.atPosition(look, 2, 3, 1, 6, 7, 1, 8).contains(STTblStyleOverrideType.BAND_1_VERT));
 
+		// stated nowhere, no banding (CR-030 T9, T10): 0, and a size of 0 bands nothing
 		CTTblPrBase tblPr = Context.getWmlObjectFactory().createTblPr();
-		assertEquals(1, TableStyleConditions.rowBandSize(tblPr));
-		assertEquals(1, TableStyleConditions.colBandSize(null));
+		assertEquals(0, TableStyleConditions.rowBandSize(tblPr));
+		assertEquals(0, TableStyleConditions.colBandSize(null));
+		assertFalse(TableStyleConditions.atPosition(look, 0, 0, 1, 6, 1, 1, 8).contains(STTblStyleOverrideType.BAND_1_HORZ));
+		assertFalse(TableStyleConditions.atPosition(look, 0, 0, 1, 6, 1, 1, 8).contains(STTblStyleOverrideType.BAND_1_VERT));
+		assertNull(TableStyleConditions.hBandRows(look, 0, 1, 6));
+		assertNull(TableStyleConditions.vBandCols(look, 0, 1, 8));
 		CTTblPrBase.TblStyleRowBandSize rbs = Context.getWmlObjectFactory().createCTTblPrBaseTblStyleRowBandSize();
 		rbs.setVal(java.math.BigInteger.valueOf(2));
 		tblPr.setTblStyleRowBandSize(rbs);

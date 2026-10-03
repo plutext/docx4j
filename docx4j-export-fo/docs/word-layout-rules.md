@@ -3371,8 +3371,15 @@ with a conditional `w:rPr`.
   a stale one cannot switch on a format the table has turned off.
 - **Band arithmetic**, where there is no cache: bands count from the first row (column)
   which has no condition of its own - with `firstRow` on, row 1 is the first `band1Horz` -
-  in steps of `w:tblStyleRowBandSize` / `w:tblStyleColBandSize` (default 1), and a last
-  row or column with its own condition is left out of the bands. A cell spanning several
+  in steps of `w:tblStyleRowBandSize` / `w:tblStyleColBandSize`, and a last row or column
+  with its own condition is left out of the bands. **A size stated nowhere bands nothing**
+  (17.3.1): Word bands no row of a table whose style chain and own `w:tblPr` state no
+  `w:tblStyleRowBandSize`, whatever the look and the style's band conditions say, and a
+  size the table states alone is enough (probes `tables-banding-merged-row`,
+  `tables-banding-band-size`; Word's re-save writes no band bit). docx4j assumed 1 until
+  17.3.1. The columns follow the rows' rule, unprobed. No corpus table is affected: all 823
+  under a banded style state their sizes, as Word's own styles do. A row whose every cell
+  continues a vertical merge still counts for the bands after it (the same probe). A cell spanning several
   columns is placed by its first column and is in the last column where its span reaches it.
 - **Precedence** (ECMA-376-1 §17.7.6): `wholeTable`, `band1Vert`, `band2Vert`, `band1Horz`,
   `band2Horz`, `firstCol`, `lastCol`, `firstRow`, `lastRow`, `nwCell`, `neCell`, `swCell`,

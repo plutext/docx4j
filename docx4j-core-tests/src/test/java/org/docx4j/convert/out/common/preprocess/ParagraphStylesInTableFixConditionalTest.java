@@ -48,6 +48,8 @@ public class ParagraphStylesInTableFixConditionalTest {
 			// odd bands underlined; last row struck; the top-left corner blue
 			+ "<w:style w:type=\"table\" w:styleId=\"Base\"><w:name w:val=\"Base\"/><w:basedOn w:val=\"TableNormal\"/>"
 			+ "<w:rPr><w:sz w:val=\"18\"/></w:rPr>"
+			// band sizes, as Word's own banded styles state them (with none, Word bands nothing: CR-030 T10)
+			+ "<w:tblPr><w:tblStyleRowBandSize w:val=\"1\"/><w:tblStyleColBandSize w:val=\"1\"/></w:tblPr>"
 			+ "<w:tblStylePr w:type=\"firstRow\"><w:rPr><w:b/><w:color w:val=\"FF0000\"/></w:rPr>"
 			+ "<w:trPr><w:tblHeader/></w:trPr></w:tblStylePr>"
 			+ "<w:tblStylePr w:type=\"firstCol\"><w:rPr><w:i/></w:rPr></w:tblStylePr>"

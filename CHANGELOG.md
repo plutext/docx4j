@@ -47,6 +47,9 @@ PDF and HTML output, tables (CR-030):
   borders of the rows after it by one: the table writers take their rows' and cells'
   conditions from the paragraphs' table context.
 
+- A table style stating no band size (w:tblStyleRowBandSize, w:tblStyleColBandSize) bands
+  nothing, as in Word; docx4j banded it as if the size were 1 (CR-030 D11).
+
 PDF via XSL FO:
 
 - PDF output through the XSLT pathway (FLAG_EXPORT_PREFER_XSL) works again on the docx4j FO

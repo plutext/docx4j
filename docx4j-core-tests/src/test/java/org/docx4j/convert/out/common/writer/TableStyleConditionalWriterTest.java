@@ -45,6 +45,7 @@ public class TableStyleConditionalWriterTest {
 			// a Light List: the header a box with no rules between its cells, repeating;
 			// odd bands shaded; the first column ruled on its right
 			+ "<w:style w:type=\"table\" w:styleId=\"Cond\"><w:name w:val=\"Cond\"/><w:basedOn w:val=\"TableNormal\"/>"
+			+ "<w:tblPr><w:tblStyleRowBandSize w:val=\"1\"/></w:tblPr>"
 			+ "<w:tblStylePr w:type=\"firstRow\"><w:rPr><w:b/></w:rPr><w:trPr><w:tblHeader/></w:trPr>"
 			+ "<w:tcPr><w:tcBorders>"
 			+ "<w:top w:val=\"single\" w:sz=\"8\" w:space=\"0\" w:color=\"4F81BD\"/>"
@@ -57,6 +58,10 @@ public class TableStyleConditionalWriterTest {
 			+ "<w:tblStylePr w:type=\"firstCol\"><w:tcPr><w:tcBorders>"
 			+ "<w:right w:val=\"double\" w:sz=\"6\" w:space=\"0\" w:color=\"008000\"/></w:tcBorders></w:tcPr></w:tblStylePr>"
 			+ "</w:style>"
+			// Cond's band without a band size: Word bands nothing (CR-030 T10)
+			+ "<w:style w:type=\"table\" w:styleId=\"NoSize\"><w:name w:val=\"NoSize\"/><w:basedOn w:val=\"TableNormal\"/>"
+			+ "<w:tblStylePr w:type=\"band1Horz\"><w:tcPr><w:shd w:val=\"clear\" w:color=\"auto\" w:fill=\"F2F2F2\"/></w:tcPr></w:tblStylePr>"
+			+ "</w:style>"
 			+ "</w:styles>";
 
 	private static String cell(String text) {
@@ -68,7 +73,11 @@ public class TableStyleConditionalWriterTest {
 	}
 
 	private static String table(String id, String tblLook, String rows) {
-		return "<w:tbl><w:tblPr><w:tblStyle w:val=\"Cond\"/>" + tblLook + "</w:tblPr>"
+		return table(id, "Cond", "", tblLook, rows);
+	}
+
+	private static String table(String id, String styleId, String bandSize, String tblLook, String rows) {
+		return "<w:tbl><w:tblPr><w:tblStyle w:val=\"" + styleId + "\"/>" + bandSize + tblLook + "</w:tblPr>"
 				+ "<w:tblGrid><w:gridCol w:w=\"1500\"/><w:gridCol w:w=\"1500\"/><w:gridCol w:w=\"1500\"/></w:tblGrid>"
 				+ rows + "</w:tbl><w:p><w:r><w:t>after " + id + "</w:t></w:r></w:p>";
 	}
@@ -103,6 +112,9 @@ public class TableStyleConditionalWriterTest {
 					+ "<w:tr>" + cell("<w:vMerge/>", "") + cell("<w:vMerge/>", "") + cell("<w:vMerge/>", "") + "</w:tr>"
 					+ "<w:tr>" + cell("T4 r3c0") + cell("T4 r3c1") + cell("T4 r3c2") + "</w:tr>"
 					+ "<w:tr>" + cell("T4 r4c0") + cell("T4 r4c1") + cell("T4 r4c2") + "</w:tr>")
+			// T5, T6: a style stating no band size, and the table stating one (CR-030 T10 (c), (d))
+			+ table("T5", "NoSize", "", "<w:tblLook w:val=\"04A0\"/>", rows("T5", 3))
+			+ table("T6", "NoSize", "<w:tblStyleRowBandSize w:val=\"1\"/>", "<w:tblLook w:val=\"04A0\"/>", rows("T6", 3))
 			+ "<w:sectPr><w:pgSz w:w=\"11906\" w:h=\"16838\"/><w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\" w:header=\"708\" w:footer=\"708\" w:gutter=\"0\"/></w:sectPr>"
 			+ "</w:body></w:document>";
 
@@ -251,6 +263,20 @@ public class TableStyleConditionalWriterTest {
 			assertTrue("r1 band1 " + flag, has(cellTag(t, "T4 r1c1"), "background-color:\\s*#?f2f2f2"));
 			assertTrue("r3 band1 " + flag, has(cellTag(t, "T4 r3c1"), "background-color:\\s*#?f2f2f2"));
 			assertFalse("r4 band2 " + flag, has(cellTag(t, "T4 r4c1"), "f2f2f2"));
+		}
+	}
+
+	/**
+	 * Word bands no row of a table whose style chain and own w:tblPr state no band size,
+	 * whatever its w:tblLook asks for, and a size the table states alone is enough (measured,
+	 * CR-030 probes T9 and T10).  Until 17.3.1 docx4j took an absent size as 1.
+	 */
+	@Test
+	public void noBandSizeNoBands() throws Exception {
+		for (int flag : FLAGS) {
+			String html = html(flag);
+			assertFalse("T5 " + flag, has(cellTag(tableOf(html, "T5"), "T5 r1c1"), "f2f2f2"));
+			assertTrue("T6 " + flag, has(cellTag(tableOf(html, "T6"), "T6 r1c1"), "background-color:\\s*#?f2f2f2"));
 		}
 	}
 }

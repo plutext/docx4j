@@ -202,20 +202,29 @@ public final class TableStyleConditions {
 		return Look.of(tblPr == null ? null : tblPr.getTblLook());
 	}
 
-	/** {@code w:tblStyleRowBandSize}, at least 1 (the default). */
+	/**
+	 * {@code w:tblStyleRowBandSize}, at least 1 where it is stated, and 0 where it is not:
+	 * Word bands no row of a table whose style chain and own w:tblPr state no band size,
+	 * whatever its w:tblLook and the style's band conditions (measured, CR-030 probes T9 and
+	 * T10: Word's re-save writes no band bit, and its PDF has no band formatting; a size
+	 * stated by the table alone is enough).  Until 17.3.1 docx4j took an absent size as 1.
+	 */
 	public static int rowBandSize(CTTblPrBase tblPr) {
 		if (tblPr != null && tblPr.getTblStyleRowBandSize() != null) {
 			return atLeastOne(tblPr.getTblStyleRowBandSize().getVal());
 		}
-		return 1;
+		return 0;
 	}
 
-	/** {@code w:tblStyleColBandSize}, at least 1 (the default). */
+	/** {@code w:tblStyleColBandSize}, as {@link #rowBandSize} for the columns: 0, no
+	 *  vertical banding, where it is not stated.  (By the rows' rule: Word writes the two
+	 *  together, and every corpus table under a style with column bands states this one;
+	 *  the columns themselves were not probed.) */
 	public static int colBandSize(CTTblPrBase tblPr) {
 		if (tblPr != null && tblPr.getTblStyleColBandSize() != null) {
 			return atLeastOne(tblPr.getTblStyleColBandSize().getVal());
 		}
-		return 1;
+		return 0;
 	}
 
 	private static int atLeastOne(BigInteger v) {
@@ -270,7 +279,8 @@ public final class TableStyleConditions {
 	 * own: where the look has {@code firstRow} on, row 1 is the first banded row, so with
 	 * a band size of 1 the rows alternate band1Horz, band2Horz, ... from row 1; a last row
 	 * (column) the look gives its own condition is left out of the bands too.  A band is
-	 * {@code w:tblStyleRowBandSize} rows deep.  A cell spanning several columns is placed
+	 * {@code w:tblStyleRowBandSize} rows deep, and a size of 0 (none stated anywhere, see
+	 * {@link #rowBandSize}) bands nothing.  A cell spanning several columns is placed
 	 * by its first column, and is in the last column where its span reaches it.</p>
 	 *
 	 * @param row       0-based row index
@@ -288,7 +298,7 @@ public final class TableStyleConditions {
 		boolean last = look.lastRow && rowCount > 0 && row == rowCount - 1;
 		if (first) out.add(STTblStyleOverrideType.FIRST_ROW);
 		if (last) out.add(STTblStyleOverrideType.LAST_ROW);
-		if (look.hBand && !first && !last) {
+		if (look.hBand && rowBandSize > 0 && !first && !last) {
 			int offset = look.firstRow ? 1 : 0;
 			int band = (row - offset) / Math.max(1, rowBandSize);
 			out.add(band % 2 == 0 ? STTblStyleOverrideType.BAND_1_HORZ : STTblStyleOverrideType.BAND_2_HORZ);
@@ -298,7 +308,7 @@ public final class TableStyleConditions {
 		boolean lastCol = look.lastColumn && colCount > 0 && col + span - 1 >= colCount - 1;
 		if (firstCol) out.add(STTblStyleOverrideType.FIRST_COL);
 		if (lastCol) out.add(STTblStyleOverrideType.LAST_COL);
-		if (look.vBand && !firstCol && !lastCol) {
+		if (look.vBand && colBandSize > 0 && !firstCol && !lastCol) {
 			int offset = look.firstColumn ? 1 : 0;
 			int band = (col - offset) / Math.max(1, colBandSize);
 			out.add(band % 2 == 0 ? STTblStyleOverrideType.BAND_1_VERT : STTblStyleOverrideType.BAND_2_VERT);
@@ -387,6 +397,7 @@ public final class TableStyleConditions {
 	 * gets (see the table writers).
 	 */
 	public static int[] hBandRows(Look look, int rowBandSize, int row, int rowCount) {
+		if (rowBandSize <= 0) return null; // no band size stated: no banding
 		if (look == null) look = Look.DEFAULT;
 		int first = look.firstRow ? 1 : 0;
 		int last = rowCount - 1 - (look.lastRow ? 1 : 0);
@@ -398,6 +409,7 @@ public final class TableStyleConditions {
 
 	/** As {@link #hBandRows}, for the vertical band a column is in. */
 	public static int[] vBandCols(Look look, int colBandSize, int col, int colCount) {
+		if (colBandSize <= 0) return null;
 		if (look == null) look = Look.DEFAULT;
 		int first = look.firstColumn ? 1 : 0;
 		int last = colCount - 1 - (look.lastColumn ? 1 : 0);

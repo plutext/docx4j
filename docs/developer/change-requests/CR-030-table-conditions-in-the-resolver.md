@@ -256,6 +256,23 @@ preprocess, `Docx4J.toHTML` and `Docx4J.toFO` (PDF), on 17.3.1-SNAPSHOT.
     is right from phase 1. The preprocess stops composing in phase 2, and D3 and D9 go with
     `getCellPStyle`.
 
+- **D11. A table style stating no band size is banded as if it stated 1 (found 2026-10-04
+  by probe T9, confirmed by T10, fixed the same day).**
+  - Word bands no row of a table whose style chain and own `w:tblPr` state no
+    `w:tblStyleRowBandSize`, whatever its `w:tblLook` and the style's band conditions say.
+    A size the table states alone is enough (T10 (c) and (d), §6 phase 4).
+  - docx4j took an absent size as 1, in `TableStyleConditions.rowBandSize` (and
+    `colBandSize`), so it shaded and formatted bands Word leaves plain.
+  - Fixed: an absent size is 0, and a size of 0 bands nothing, in the position arithmetic
+    and in the writers' band extents. `w:cnfStyle` caches stay authoritative.
+  - The columns follow the rows' rule. Word writes the two sizes together, but the columns
+    were not probed.
+  - No corpus document is affected: every one of the 823 corpus tables under a style with
+    horizontal bands states a row band size, and every table under a style with vertical
+    bands a column band size.
+  - The test fixtures which modelled banded styles without a size now state one, as Word's
+    styles do.
+
 - **D10. A footnote takes the bold and italic of the paragraph it is referenced from (FO
   layer; outside this CR).**  Found 2026-10-03 when docx4j rendered T8 (§5.2), on the
   visitor pathway:
@@ -896,6 +913,16 @@ DONE 2026-10-04.
       not (c), the absent size means no banding: a docx4j defect (D11), to be fixed in
       `TableStyleConditions`'s band-size default and in the context's reading. (a) then
       answers the merged-row question.
+    - **Word's golden of T10 (cut 2026-10-04):**
+      - (a): rows 2, 4 and 6 bold, row 5 regular. **The merged row counts**, as phase 4
+        reads it.
+      - (b): rows 2, 4 and 6.
+      - (c): no row banded.
+      - (d): rows 2, 4 and 6, so a size the table states alone is enough.
+
+      Word's re-save writes `w:cnfStyle` 000000100000 (band1Horz) on rows 2, 4 and 6 of
+      (a), (b) and (d), and only the first row's in (c). The PDF's grey fills are D9D9D9.
+      D11 is confirmed, and fixed (§2).
   - **The look is the table's `w:tblLook` whole, else its style's.**  The writer used to merge
     the two attribute by attribute. The readings differ only where a table style states a
     `w:tblLook` and the table states some of the attributes, or the bitmask alone. No
