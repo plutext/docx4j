@@ -2472,28 +2472,41 @@ public final class Corpus {
 				+ "control, that row keeping one cell of its own.  In (b) rows 2, 4 and 6 are the first "
 				+ "band (bold, shaded).  In (a), are rows 4 and 6 bold and shaded (the merged row counts, as "
 				+ "docx4j counts it since 17.3.1), or row 5 (it does not)?  CR-030 phase 4.", () -> {
+			/* Word's golden (2026-10-04) bands NO row of either table, not even the control's:
+			 * its re-save writes firstRow's w:cnfStyle on row 1 and no band bit anywhere.  The
+			 * style states no w:tblStyleRowBandSize (Word's own banded styles always do), so the
+			 * merged-row question is asked again by tables-banding-band-size, which also asks
+			 * whether that absence is the reason. */
 			Doc d = Doc.create(15);
 			d.documentDefaultRun(SERIF, 24);
-			addTableStyle(d, "ProbeBands", null);
-			addTableStyleCondition(d, "ProbeBands", org.docx4j.wml.STTblStyleOverrideType.FIRST_ROW,
-					rpr -> rpr.setI(Doc.F.createBooleanDefaultTrue()));
-			addTableStyleCondition(d, "ProbeBands", org.docx4j.wml.STTblStyleOverrideType.BAND_1_HORZ, Doc::bold);
-			org.docx4j.wml.Style ts = d.mdp().getStyleDefinitionsPart().getStyleById("ProbeBands");
-			for (org.docx4j.wml.CTTblStylePr cond : ts.getTblStylePr()) {
-				if (cond.getType() == org.docx4j.wml.STTblStyleOverrideType.BAND_1_HORZ) {
-					org.docx4j.wml.TcPr tcPr = Doc.F.createTcPr();
-					org.docx4j.wml.CTShd shd = Doc.F.createCTShd();
-					shd.setVal(org.docx4j.wml.STShd.CLEAR);
-					shd.setColor("auto");
-					shd.setFill("D9D9D9");
-					tcPr.setShd(shd);
-					cond.setTcPr(tcPr);
-				}
-			}
+			addBandsProbeStyle(d, "ProbeBands", null);
 			d.para("(a) row 3 continues row 2's merge in every cell").after(120).add();
-			d.add(bandsProbeTable("a", true));
+			d.add(bandsProbeTable("a", "ProbeBands", true, null));
 			d.para("(b) the control: row 3 keeps a cell of its own").before(240).after(120).add();
-			d.add(bandsProbeTable("b", false));
+			d.add(bandsProbeTable("b", "ProbeBands", false, null));
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("tables-banding-band-size",
+				"tables-banding-merged-row's question asked again, since Word banded nothing there: "
+				+ "its style states no w:tblStyleRowBandSize.  ProbeBands1 is that style stating 1; "
+				+ "ProbeBands states none.  (a) ProbeBands1, row 3 continuing row 2's merge in every "
+				+ "cell; (b) ProbeBands1, the control; (c) ProbeBands, the control - banded at all?; (d) "
+				+ "ProbeBands with the table's own w:tblStyleRowBandSize 1, the control - is the table's "
+				+ "enough?  Banded rows are bold and shaded; the first row italic.  In (b) rows 2, 4 "
+				+ "and 6 are the first band; in (a), rows 4 and 6 (the merged row counts) or row 5?", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(SERIF, 24);
+			addBandsProbeStyle(d, "ProbeBands1", Integer.valueOf(1));
+			addBandsProbeStyle(d, "ProbeBands", null);
+			d.para("(a) ProbeBands1 (band size 1): row 3 continues row 2's merge in every cell").after(120).add();
+			d.add(bandsProbeTable("a", "ProbeBands1", true, null));
+			d.para("(b) ProbeBands1: the control").before(240).after(120).add();
+			d.add(bandsProbeTable("b", "ProbeBands1", false, null));
+			d.para("(c) ProbeBands (no band size): the control").before(240).after(120).add();
+			d.add(bandsProbeTable("c", "ProbeBands", false, null));
+			d.para("(d) ProbeBands, the table stating band size 1: the control").before(240).after(120).add();
+			d.add(bandsProbeTable("d", "ProbeBands", false, Integer.valueOf(1)));
 			return d.pkg();
 		}));
 
@@ -3947,13 +3960,42 @@ public final class Corpus {
 		return (Tbl) org.docx4j.XmlUtils.unwrap(org.docx4j.XmlUtils.unmarshalString(x.toString()));
 	}
 
-	/** tables-banding-merged-row: six rows of two cells under ProbeBands, w:tblLook with the
+	/** The banding probes' table style: band1Horz bold with grey shading, firstRow italic,
+	 *  and w:tblStyleRowBandSize where rowBandSize is given. */
+	private static void addBandsProbeStyle(Doc d, String styleId, Integer rowBandSize) {
+		addTableStyle(d, styleId, null);
+		addTableStyleCondition(d, styleId, org.docx4j.wml.STTblStyleOverrideType.FIRST_ROW,
+				rpr -> rpr.setI(Doc.F.createBooleanDefaultTrue()));
+		addTableStyleCondition(d, styleId, org.docx4j.wml.STTblStyleOverrideType.BAND_1_HORZ, Doc::bold);
+		org.docx4j.wml.Style ts = d.mdp().getStyleDefinitionsPart().getStyleById(styleId);
+		for (org.docx4j.wml.CTTblStylePr cond : ts.getTblStylePr()) {
+			if (cond.getType() == org.docx4j.wml.STTblStyleOverrideType.BAND_1_HORZ) {
+				org.docx4j.wml.TcPr tcPr = Doc.F.createTcPr();
+				org.docx4j.wml.CTShd shd = Doc.F.createCTShd();
+				shd.setVal(org.docx4j.wml.STShd.CLEAR);
+				shd.setColor("auto");
+				shd.setFill("D9D9D9");
+				tcPr.setShd(shd);
+				cond.setTcPr(tcPr);
+			}
+		}
+		if (rowBandSize != null) {
+			org.docx4j.wml.CTTblPrBase.TblStyleRowBandSize size = Doc.F.createCTTblPrBaseTblStyleRowBandSize();
+			size.setVal(BigInteger.valueOf(rowBandSize.intValue()));
+			ts.getTblPr().setTblStyleRowBandSize(size);
+		}
+	}
+
+	/** The banding probes' table: six rows of two cells under the style, w:tblLook with the
 	 *  first row and row banding on and nothing else; rows 2 and 3 merged vertically in the
 	 *  first column, and in the second too where fullyMerged, which leaves row 3 no cell of
-	 *  its own.  No w:cnfStyle, so Word places the bands itself. */
-	private static Tbl bandsProbeTable(String letter, boolean fullyMerged) throws Exception {
+	 *  its own; the table's own w:tblStyleRowBandSize where rowBandSize is given.  No
+	 *  w:cnfStyle, so Word places the bands itself. */
+	private static Tbl bandsProbeTable(String letter, String styleId, boolean fullyMerged, Integer rowBandSize) throws Exception {
 		StringBuilder x = new StringBuilder("<w:tbl xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:tblPr>"
-				+ "<w:tblStyle w:val=\"ProbeBands\"/><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblBorders>");
+				+ "<w:tblStyle w:val=\"" + styleId + "\"/>"
+				+ (rowBandSize == null ? "" : "<w:tblStyleRowBandSize w:val=\"" + rowBandSize + "\"/>")
+				+ "<w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblBorders>");
 		for (String side : new String[] { "top", "left", "bottom", "right", "insideH", "insideV" }) {
 			x.append("<w:").append(side).append(" w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/>");
 		}

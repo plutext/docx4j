@@ -875,6 +875,27 @@ DONE 2026-10-04.
       rows 2 and 5.
     - If Word's golden shows row 5, not rows 4 and 6, the merged row does not count, and
       phase 4's reading is to be reversed.
+    - **Word's golden (cut 2026-10-04) bands no row at all, in either table, the control
+      included.**
+      - Its lines are Liberation Serif regular, with the first row italic; the manifest
+        lists no bold face; the PDF has no grey fill.
+      - Word's re-save writes `w:cnfStyle` 100000000000 (firstRow) on row 1 and no band
+        bit on any row.
+      - The probe's style states no `w:tblStyleRowBandSize`, which Word's own banded
+        styles always do: all 823 tables in the corpora under a style with horizontal
+        bands state a size, in the style chain or the table.
+      - So T9 does not answer its question. It shows instead that Word, in this document,
+        applies no band where docx4j, which assumes a size of 1, applies one.
+    - `tables-banding-band-size` (T10, added 2026-10-04, on the share, 165 probes) asks
+      again, and asks why. It has four tables:
+      - (a) and (b): T9's two tables under ProbeBands1, a copy of the style stating size 1;
+      - (c): the control under the style stating none;
+      - (d): the same, with the table itself stating size 1.
+
+      docx4j today bands rows 2, 4 and 6 in all four. If Word bands (a), (b) and (d) but
+      not (c), the absent size means no banding: a docx4j defect (D11), to be fixed in
+      `TableStyleConditions`'s band-size default and in the context's reading. (a) then
+      answers the merged-row question.
   - **The look is the table's `w:tblLook` whole, else its style's.**  The writer used to merge
     the two attribute by attribute. The readings differ only where a table style states a
     `w:tblLook` and the table states some of the attributes, or the bitmask alone. No
