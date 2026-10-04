@@ -102,7 +102,7 @@ public abstract class AbstractCellMargin extends AbstractTableProperty {
 	public void setXslFO(Element foElement) {
 	int twips = getTwips();
 		if (twips > -1) {
-			foElement.setAttribute(foAttributeName, formatTwips(twips));				
+			foElement.setAttribute(foAttributeName, formatFoTwips(twips));
 		}
 	}
 
@@ -115,8 +115,34 @@ public abstract class AbstractCellMargin extends AbstractTableProperty {
 		return ret;
 	}
 
-	protected String formatTwips(int twips) {		
+	protected String formatTwips(int twips) {
 		return UnitsOfMeasurement.format2DP.format(UnitsOfMeasurement.twipToMm(twips)) + "mm";
+	}
+
+	/**
+	 * The margin as the FO exporter writes it: top and bottom in points on Word's
+	 * 1/600-inch grid, left and right in millimetres to two decimals as before (and as
+	 * the CSS still is).
+	 *
+	 * <p>Down the row Word lays a cell margin out as a whole number of 1/600 inch (0.12pt):
+	 * 28 twips are 12 units, 1.44pt.  Measured on corpus document 11657 (2393 rows of one
+	 * Calibri 11 line, 28-twip top and bottom margins, a 0.5pt border), Word's row is 140
+	 * units, 16.80pt (13.44 + 2 x 1.44 + 0.48), where ours was 16.69 (0.49mm = 1.389pt),
+	 * and by each page's foot we had fitted a row more than Word.  On the grid the document
+	 * is at Word's 222 pages (+179 lines; 7147 +5; no probe moved).</p>
+	 *
+	 * <p>Across the row the grid is not Word's.  The default 108-twip margin is 5.414pt in
+	 * millimetres and 5.40 on the grid, and that 0.014pt a side gained 11398 65 lines and
+	 * 8814 11 but cost 6380 140 lines and a page, 9888 15, and the table-cell-pct probe its
+	 * exact match.  Exact points, all four sides, were worse still (-74 lines over the
+	 * corpora).  @since 17.3.1</p>
+	 */
+	protected String formatFoTwips(int twips) {
+		if ("padding-top".equals(foAttributeName) || "padding-bottom".equals(foAttributeName)) {
+			long units = Math.round(twips * 5 / 12.0);   // 1/600 inch = 2.4 twips
+			return java.math.BigDecimal.valueOf(units * 12, 2).stripTrailingZeros().toPlainString() + "pt";
+		}
+		return formatTwips(twips);
 	}
 
 	protected void ensureMargin(TcPrInner tcPr) {

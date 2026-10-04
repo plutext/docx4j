@@ -97,6 +97,9 @@ PDF via XSL FO:
   numbered from 0 on a docx4j FO renderer that allows it (capability page-number-zero,
   fork CR-012); it printed every page number one high.
 
+- A table cell's top and bottom margins are laid out on Word's 1/600-inch grid (28 twips are
+  1.44pt, not 1.39), so a long table of single-line rows breaks its pages where Word does.
+
 - Symbol, Wingdings, Wingdings 2, Wingdings 3 and Webdings are drawn in the real font where it
   is installed (or embedded), with the document's own code points: runs, w:sym and numbering
   labels, on both pathways; FontsAnalysis grades such a font EXACT. Where the font is absent

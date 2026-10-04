@@ -111,15 +111,16 @@ public class TablePrExRowTest extends AbstractXSLFOTest {
 				row(PR_EX_CELL_MAR, "c", "d")), flags);
 		assertEquals("2x2 table", 4, cells.size());
 
-		// row 1 takes the table's own margins: 113tw = 5.65pt, 28tw = 1.4pt
-		assertPoints("row 1 bottom is the table's 113tw", 5.65, cells.get(0), "padding-bottom");
-		assertPoints("row 1 cell 2 agrees", 5.65, cells.get(1), "padding-bottom");
-		assertPoints("row 1 top is the table's 28tw", 1.4, cells.get(0), "padding-top");
+		// row 1 takes the table's own margins: 113tw = 5.64pt, 28tw = 1.44pt (top and
+		// bottom are on Word's 1/600-inch grid since 17.3.1, AbstractCellMargin.formatFoTwips)
+		assertPoints("row 1 bottom is the table's 113tw", 5.64, cells.get(0), "padding-bottom");
+		assertPoints("row 1 cell 2 agrees", 5.64, cells.get(1), "padding-bottom");
+		assertPoints("row 1 top is the table's 28tw", 1.44, cells.get(0), "padding-top");
 
 		// row 2's exception replaces the bottom margin, and only the bottom margin
-		assertPoints("row 2 bottom is the exception's 28tw", 1.4, cells.get(2), "padding-bottom");
-		assertPoints("row 2 cell 2 agrees", 1.4, cells.get(3), "padding-bottom");
-		assertPoints("row 2 top is still the table's 28tw", 1.4, cells.get(2), "padding-top");
+		assertPoints("row 2 bottom is the exception's 28tw", 1.44, cells.get(2), "padding-bottom");
+		assertPoints("row 2 cell 2 agrees", 1.44, cells.get(3), "padding-bottom");
+		assertPoints("row 2 top is still the table's 28tw", 1.44, cells.get(2), "padding-top");
 	}
 
 	/** The attribute in points, whatever unit the writer chose to express it in. */

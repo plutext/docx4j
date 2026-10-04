@@ -2458,6 +2458,21 @@ measure and broke in two, where Word keeps it on one line (70.8..149.5), and the
 extra lines put that document's `medianDy` at -41.0. Where the cell states one side only,
 the other comes from the table's pair. **10 documents of the three corpora.**
 
+<a id="s62grid"></a>**Top and bottom margins are on Word's 1/600-inch grid (17.3.1).** Down
+the row Word lays a cell margin out as a whole number of 1/600 inch (0.12pt): 28 twips are
+12 units, 1.44pt. Measured on corpus document 11657 (2,393 rows of one Calibri 11 line,
+`w:tblCellMar` top and bottom 28, a 0.5pt border): Word's row is 140 units, 16.80pt
+(13.44 + 2 x 1.44 + 0.48), where docx4j's was 16.69 with the margins in millimetres to two
+decimals (0.49mm = 1.389pt), and by each page's foot docx4j had fitted a row more than Word.
+`AbstractCellMargin.formatFoTwips` now writes top and bottom on the grid: 11657 is at
+Word's 222 pages (+179 lines), 7147 +5, nothing worse on class 2 but one line in a document
+already a row out of step (b87 against b85vs, the Windows faces supplied, no probe moved).
+**Left and right are not on it.** The default 108-twip margin is 5.414pt in millimetres
+and 5.40 on the grid; moving all four sides (b86m) gained 11398 65 lines and 8814 11, but
+cost 6380 140 lines and a page, 9888 15, and the `table-cell-pct` probe its exact match -
+whatever Word fits a cell's lines against, it is not that exact margin. Exact points on all
+four sides were worse still (-74 lines). HTML's CSS keeps millimetres.
+
 ### 6.3 Autofit column widths
 
 Word's default table layout sizes columns from their content, and honours `w:tblGrid` only
