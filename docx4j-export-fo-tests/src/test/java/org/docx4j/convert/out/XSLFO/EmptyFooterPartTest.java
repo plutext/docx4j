@@ -73,16 +73,21 @@ public class EmptyFooterPartTest extends AbstractXSLFOTest {
 	/** w:footer=720 (36pt) on an 841.95pt page: the body stops at the distance plus the
 	 *  empty footer's own line, which is what Word was measured doing (792.5 there, with
 	 *  a 13.43pt Footer-style line; here the footer paragraph is Normal, whose Calibri
-	 *  11pt line at w:line="276" is 15.44pt, so 790.5).  Until 17.2.0 only the distance
-	 *  was reserved (805.95), and a landscape corpus document whose eight trailing empty
-	 *  paragraphs Word puts on a second page kept them on its first.  @since 17.2.0 */
+	 *  11pt line at w:line="276" is 15.44pt), plus the empty paragraph's own 10pt
+	 *  space-after (Normal's w:after="200"), which Word reserves too: on corpus document
+	 *  4117 a footer of one empty paragraph w:after="709" puts Word's body bottom at
+	 *  750.3pt.  So 780.5.  Until 17.2.0 only the distance was reserved (805.95), and a
+	 *  landscape corpus document whose eight trailing empty paragraphs Word puts on a
+	 *  second page kept them on its first; until 17.3.1 an empty footer's spacing was
+	 *  not (790.5).  @since 17.2.0 */
 	@Test
 	public void theBodyStopsAtTheFooterDistancePlusItsLine() throws Exception {
 		for (int flag : FLAGS) {
 			int bottom = bodyBottom(areaTree(pkg(720), flag));
 			assertTrue(flagName(flag) + ": the body ends at " + bottom / 1000.0
-					+ "pt, not at 790.5 (36pt footer distance + the empty footer's 15.44pt line)",
-					Math.abs(bottom - 790510) < 1500);
+					+ "pt, not at 780.5 (36pt footer distance + the empty footer's 15.44pt line"
+					+ " + its 10pt space-after)",
+					Math.abs(bottom - 780510) < 1500);
 		}
 	}
 

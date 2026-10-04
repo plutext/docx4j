@@ -4826,15 +4826,19 @@ public final class WordLayoutFixups {
 			if (!flow.startsWith("xsl-region-before") && !flow.startsWith("xsl-region-after")) {
 				continue; // the footnote separator is not a header
 			}
-			// An *empty* header or footer reserves nothing at all, and the header or
-			// footer distance alone must not move the body (§7): a section with no
-			// footer part still gets a region and a placeholder block, and pinning that
-			// block's docDefaults space-after made the region 10pt tall, which pulled
-			// the body up by the footer distance plus the space.  Measured: a document
-			// whose 44 sectPr say w:bottom="0" w:footer="720" with no footerReference
-			// spilled each section's last line onto a page of its own, 24 Word pages
-			// coming out as 89.  @since 17.1.0
-			if (!hasVisibleContent(sc)) continue;
+			/* An empty header or footer PART reserves its paragraphs' spacing: Word puts
+			 * 4117's body top at 112.4pt under a first-page header of two empty
+			 * paragraphs, the first w:before="709", and its body bottom at 750.3 over a
+			 * footer of one empty paragraph w:after="709" - so the space is retained
+			 * whether or not the region draws anything (17.1.0 kept it only where it
+			 * did: 85.8 and 785.2 there, 83 pages to Word's 88).  A section with NO
+			 * part still reserves nothing at all (§7): HeaderFooterPolicy's invented
+			 * part has a 0/0 paragraph, where its docDefaults space-after once made
+			 * the region 10pt tall and spilled each of 44 sections' last line onto a
+			 * page of its own (24 Word pages coming out as 89).  And a paragraph
+			 * emptied only because the measurement pass took out its floating
+			 * drawing has its edge spacing dropped there (FOPAreaTreeHelper).
+			 * @since 17.1.0, 17.3.1 for empty parts */
 			/* The same at the other end: space-before.conditionality also defaults to
 			 * discard at the start of a reference area, so FOP drops the first
 			 * paragraph's space-before where Word applies it.  Measured against Word
@@ -4844,7 +4848,7 @@ public final class WordLayoutFixups {
 			 * pages; a second document, whose header style carries w:before="153"
 			 * (7.65pt), has Word at 59.5 and ours at 50.9.  @since 17.1.0 */
 			Element first = firstBlock(sc);
-			if (first != null && hasSpace(first, "space-before") && hasVisibleContent(first)) {
+			if (first != null && hasSpace(first, "space-before")) {
 				first.setAttribute("space-before.conditionality", "retain");
 			}
 			Element last = lastBlock(sc);
@@ -4852,19 +4856,6 @@ public final class WordLayoutFixups {
 				last.setAttribute("space-after.conditionality", "retain");
 			}
 		}
-	}
-
-	/** Whether this region draws anything: text beyond white space, or a graphic, a
-	 *  leader, a page number, a table.  @since 17.1.0 */
-	private static boolean hasVisibleContent(Element el) {
-		String text = el.getTextContent();
-		if (text != null && text.trim().length() > 0) return true;
-		for (String name : new String[] { "external-graphic", "instream-foreign-object",
-				"leader", "page-number", "page-number-citation", "page-number-citation-last",
-				"table" }) {
-			if (el.getElementsByTagNameNS(FO_NS, name).getLength() > 0) return true;
-		}
-		return false;
 	}
 
 	static void retainSpacingAtCellEdges(Document doc, int compatibilityMode) {

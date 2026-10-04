@@ -224,13 +224,57 @@ public class FOPAreaTreeHelper {
 	    		for (Object child : ((org.docx4j.wml.ContentAccessor)hdrFtr).getContent()) {
 	    			remover.apply(XmlUtils.unwrap(child));
 	    		}
+	    		dropEdgeSpacingOfEmptiedParagraphs(((org.docx4j.wml.ContentAccessor)hdrFtr).getContent(), remover);
     		} catch (RuntimeException e) {
     			log.warn(e.getMessage(), e);
     		}
     	}
     }
 
+    /**
+     * A paragraph whose only content was a floating drawing is empty once the drawing is
+     * gone, and its space at the region's edge is not charged: the space-before of the
+     * part's first block, and - where nothing in the part paints any more - the
+     * space-after of its last.  WordLayoutFixups retains the edge spacing of an empty
+     * header or footer paragraph (Word reserves it, 4117), so it is taken out here for
+     * the paragraphs the measurement emptied, which keeps what the pre-pass measured for
+     * them: retaining it put a document's spurious second page back (17.1.0).
+     */
+    private static void dropEdgeSpacingOfEmptiedParagraphs(List<Object> content, FloatingDrawingRemover remover) {
+    	if (remover.emptied.isEmpty()) return;
+    	List<Object> blocks = new ArrayList<Object>();
+    	flatten(content, blocks);
+    	if (blocks.isEmpty()) return;
+    	Object first = XmlUtils.unwrap(blocks.get(0));
+    	if (remover.emptied.contains(first)) zeroSpacing((org.docx4j.wml.P)first, true);
+    	for (Object b : blocks) {
+    		if (remover.paints(b, new ArrayList<Object>())) return;
+    	}
+    	Object last = XmlUtils.unwrap(blocks.get(blocks.size() - 1));
+    	if (last instanceof org.docx4j.wml.P) zeroSpacing((org.docx4j.wml.P)last, false);
+    }
+
+    private static void zeroSpacing(org.docx4j.wml.P p, boolean before) {
+    	org.docx4j.wml.ObjectFactory wmlF = org.docx4j.jaxb.Context.getWmlObjectFactory();
+    	if (p.getPPr() == null) p.setPPr(wmlF.createPPr());
+    	org.docx4j.wml.PPrBase.Spacing sp = p.getPPr().getSpacing();
+    	if (sp == null) {
+    		sp = wmlF.createPPrBaseSpacing();
+    		p.getPPr().setSpacing(sp);
+    	}
+    	if (before) {
+    		sp.setBefore(java.math.BigInteger.ZERO);
+    		sp.setBeforeAutospacing(Boolean.FALSE);
+    	} else {
+    		sp.setAfter(java.math.BigInteger.ZERO);
+    		sp.setAfterAutospacing(Boolean.FALSE);
+    	}
+    }
+
     private static class FloatingDrawingRemover extends TraversalUtil.CallbackImpl {
+
+    	/** The paragraphs whose whole content was floating, emptied by this remover. */
+    	final java.util.Set<Object> emptied = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Object, Boolean>());
 
 		@Override
 		public List<Object> apply(Object o) {
@@ -246,6 +290,7 @@ public class FOPAreaTreeHelper {
 				List<Object> floating = new ArrayList<Object>();
 				if (!paints(p, floating) && !floating.isEmpty()) {
 					for (Object d : floating) removeFrom(p, d);
+					emptied.add(p);
 				}
 			}
 			return null;

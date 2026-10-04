@@ -74,6 +74,9 @@ PDF via XSL FO:
 - A footnote no longer takes the bold, italic, colour, underline, alignment or indent of the
   paragraph it is referenced from, on either pathway (CR-030 D10).
 
+- A header or footer of empty paragraphs reserves their spacing, as Word does: the body no
+  longer starts above Word's under such a header, or runs below Word's over such a footer.
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's

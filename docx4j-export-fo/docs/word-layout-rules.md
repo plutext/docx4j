@@ -4035,6 +4035,30 @@ rule above unchanged - there an empty part reserves neither the distance nor a l
 which is what its own measurement says. **15 documents of the three corpora have an empty
 footer part.**
 
+<a id="s7emptyspacing"></a>**Where an empty part reserves, its paragraphs' spacing is
+reserved too (17.3.1).** 17.1.0 retained a header's or footer's edge spacing
+([§7](#s7hfspace), [§7](#s7hfspacebefore)) only where the region drew something, so an empty
+part that reserves its lines - several empty header paragraphs ([§7](#s7emptyhf)), any empty
+footer part (above) - lost its first paragraph's space-before and its last one's space-after.
+Corpus document 4117 says Word keeps both. Its first-page header is two empty paragraphs, the
+first `w:before="709"`, under `w:pgMar w:top="1701"` (85.05pt) and `w:header="720"`: Word's
+body top is 112.4, the distance + 35.45 + the two lines, where ours was the margin, 85.8. Its
+footer is one empty paragraph `w:after="709"`: Word's body bottom is 750.3, where ours was
+785.2. So every page carried 35pt more body than Word's, and the first page 61pt more - 83 pages
+to Word's 88. The guard
+is gone from `retainSpacingAtStaticContentEnd`. Two cases must still not reserve:
+- a part the document does not have ([§7](#s7nohdr)): `HeaderFooterPolicy`'s invented part
+  now carries a 0/0 paragraph rather than one taking the docDefaults' space-after, which is
+  what the guard had been protecting (the 44-section document above);
+- a paragraph emptied only because the extent pre-pass took its floating drawing out
+  ([the next paragraph](#s7hfanchor)): `FOPAreaTreeHelper` drops its edge spacing there, as
+  the guard did.
+
+Measured over the three corpora: 4117 0.9613 -> 0.9655 and 86 pages (Word's 88), its body
+top 112.5 and bottom 750.3; 1820 0.9883 -> 0.9942; 4957 one page more (64 to Word's 60), its
+front matter now on Word's three pages; no other document and no probe moves.
+`EmptyFooterPartTest`.
+
 <a id="s7hfanchor"></a>**An anchored drawing in a header or footer does not make it
 taller.** Word positions a floating object out of the flow and sizes the region on its
 in-flow paragraphs; we laid the picture out in the flow and charged its height to the

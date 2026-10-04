@@ -373,6 +373,21 @@ public class HeaderFooterPolicy {
 	
 	
 
+	/** The invented part's one paragraph, with no spacing: a part the document does not
+	 *  have reserves nothing, and its paragraph must not pick up the docDefaults'
+	 *  space-after, which the FO exporter now keeps at a header's or footer's end
+	 *  (an empty real part's spacing is reserved by Word).  @since 17.3.1 */
+	private static org.docx4j.wml.P dummyParagraph(ObjectFactory factory) {
+		org.docx4j.wml.P p = factory.createP();
+		org.docx4j.wml.PPr pPr = factory.createPPr();
+		org.docx4j.wml.PPrBase.Spacing sp = factory.createPPrBaseSpacing();
+		sp.setBefore(java.math.BigInteger.ZERO);
+		sp.setAfter(java.math.BigInteger.ZERO);
+		pPr.setSpacing(sp);
+		p.setPPr(pPr);
+		return p;
+	}
+
 	private void createDummyHeaderFooter() {
 		synchronized (dummyHeaderFooterMutex) {
 			if (dummyHeader == null) {
@@ -384,9 +399,9 @@ public class HeaderFooterPolicy {
 					//should not happen
 				}
 				dummyHeader.setJaxbElement(factory.createHdr());
-				dummyHeader.getJaxbElement().getContent().add(factory.createP());
+				dummyHeader.getJaxbElement().getContent().add(dummyParagraph(factory));
 				dummyFooter.setJaxbElement(factory.createFtr());
-				dummyFooter.getJaxbElement().getContent().add(factory.createP());
+				dummyFooter.getJaxbElement().getContent().add(dummyParagraph(factory));
 			}
 		}
 	}
