@@ -97,13 +97,15 @@ public class TextBoxLayoutTest extends AbstractXSLFOTest {
 		return null;
 	}
 
-	private void placedAbsolutely(String box, int flags, String width, String height) throws Exception {
+	private void placedAbsolutely(String box, int flags, String width, String height, String top) throws Exception {
 		org.w3c.dom.Document doc = fo(box, flags);
 		Element container = positionedBox(doc);
 		assertNotNull("the text box was not painted (no absolutely positioned container)", container);
 		assertEquals("absolute", container.getAttribute("absolute-position"));
 		assertEquals("100pt", container.getAttribute("left"));
-		assertEquals("90pt", container.getAttribute("top"));
+		/* FOP places top at the container's content edge, so it is the box's 90pt plus its
+		 * top inset (17.3.1; textbox-inset-stroke-list: Word's text starts that far down) */
+		assertEquals(top, container.getAttribute("top"));
 		/* The box is 180 x 30pt.  Down the page the container's content box is that
 		 * less the top and bottom insets, which are padding.  Across the line only the
 		 * end inset is padding: the start inset is start-indent, because FOP measures a
@@ -121,23 +123,23 @@ public class TextBoxLayoutTest extends AbstractXSLFOTest {
 
 	@Test
 	public void vmlTextBoxVisitor() throws Exception {
-		placedAbsolutely(VML_TEXT_BOX, Docx4J.FLAG_NONE, "180pt", "30pt");
+		placedAbsolutely(VML_TEXT_BOX, Docx4J.FLAG_NONE, "180pt", "30pt", "90pt");
 	}
 
 	@Test
 	public void vmlTextBoxXslt() throws Exception {
-		placedAbsolutely(VML_TEXT_BOX, Docx4J.FLAG_EXPORT_PREFER_XSL, "180pt", "30pt");
+		placedAbsolutely(VML_TEXT_BOX, Docx4J.FLAG_EXPORT_PREFER_XSL, "180pt", "30pt", "90pt");
 	}
 
 	@Test
 	public void drawingMLTextBoxVisitor() throws Exception {
 		// no wps:bodyPr insets, so Word's defaults: 0.1in left and right, 0.05in top and bottom
-		placedAbsolutely(DML_TEXT_BOX, Docx4J.FLAG_NONE, "172.8pt", "22.8pt");
+		placedAbsolutely(DML_TEXT_BOX, Docx4J.FLAG_NONE, "172.8pt", "22.8pt", "93.6pt");
 	}
 
 	@Test
 	public void drawingMLTextBoxXslt() throws Exception {
-		placedAbsolutely(DML_TEXT_BOX, Docx4J.FLAG_EXPORT_PREFER_XSL, "172.8pt", "22.8pt");
+		placedAbsolutely(DML_TEXT_BOX, Docx4J.FLAG_EXPORT_PREFER_XSL, "172.8pt", "22.8pt", "93.6pt");
 	}
 
 	/** A box Word wraps text around that fills the column reserves its height where

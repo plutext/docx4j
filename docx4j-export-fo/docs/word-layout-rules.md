@@ -4649,9 +4649,20 @@ instead of adding to it. On the probe, Word's list labels sit at the text area's
 documents 5123, 7046 and 6614 every list paragraph in a box re-wrapped on that 7.2pt. So
 `WordLayoutFixups.textBoxStartIndents` moves every numeric `start-indent` inside the
 container in by the inset. It does not reach inside a nested container, whose own
-`start-indent` is moved, nor inside a table. **Open:** down the box our text starts at the
-container's top, not one top inset (and half a stroke) down. The probe's text tops are 4.6pt
-above Word's at the default inset and 1.5pt at inset 0 (the vertical origin, ledger4's M22).
+`start-indent` is moved, nor inside a table.
+
+<a id="s92top"></a>**Down the box, the text starts one top inset (and half a stroke) below the
+box's top (17.3.1).** FOP places an absolutely positioned container's `top` at its *content*
+edge and draws its padding and border outward. So the top inset, which is the container's
+`padding-top`, never moved the text down: our first baselines were the box top + 11.20 in all
+twelve boxes of `textbox-inset-stroke-list`, where Word's are the box top + `padding-top` +
+11.15. Paragraph-anchored boxes were the same (corpus document 7046: Word 107.78, ours
+102.75). `anchorTextBox` therefore places `top` at the anchor offset plus `padding-top`. The
+probe's boxes now match Word's to 0.1pt. Measured over the three corpora (b81): +61 lines,
+14 documents up (5123 +30, 4994 +7, 11256 +6, 11783 +5). 4083 loses 15. Its boxes sit in
+table-cell paragraphs, anchored relative to the paragraph, and our vertical origin for those
+was already about 10pt below Word's, so the correct inset takes them further off. That is
+the vertical origin of text-relative boxes in cells (ledger4's M22), still open.
 
 <a id="s92negx"></a>**A negative horizontal offset is honoured**, not clamped to the column
 edge: Word draws such a box out into the margin. Measured on a landscape planner whose box

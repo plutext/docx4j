@@ -2485,7 +2485,13 @@ public final class WordLayoutFixups {
 			// out of the flow: the zero-height container takes no space
 			wrapper.setAttribute("height", "0pt");
 			box.setAttribute("absolute-position", pageY ? "fixed" : "absolute");
-			box.setAttribute("top", pt(off));
+			// FOP places top at the container's CONTENT edge, its padding and border going
+			// outward, so the box's top inset (and half its stroke) has to be added for the
+			// text to start where Word starts it.  Measured on textbox-inset-stroke-list:
+			// Word's first baseline is the box top + padding-top + 11.15 in all twelve boxes,
+			// ours was the box top + 11.20 (the inset lost), and paragraph-anchored boxes the
+			// same (7046: Word 107.78, ours 102.75).  @since 17.3.1
+			box.setAttribute("top", pt(off + lengthPt(box.getAttribute("padding-top"))));
 			box.setAttribute("left", pt(pageY ? x + ml : x));
 		} else {
 			// wrapped: reserve the box's height where Word puts it.  The indent goes on

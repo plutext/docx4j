@@ -83,6 +83,7 @@ PDF via XSL FO:
 
 - A text box's text is set in by half its border as well as by its inset, and a list or an
   indented paragraph in a text box is indented from the box's text area, not from its edge.
+  A positioned text box's text starts below its top inset, as Word's does.
 
 - A justified line is compressed to take one more word only where the compression is less
   than half the stretch of the line it would otherwise be (was: where that line would stretch
