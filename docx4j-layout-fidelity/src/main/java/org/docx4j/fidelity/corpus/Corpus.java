@@ -2753,6 +2753,131 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		// ------------------------------------------------------------- CR-001 batch 51
+		//                                   keeps in tables and chains, a grid wider than
+		//                                   the measure, an orphan in a page-spanning cell
+
+		/*
+		 * table-keeps-compat12/14/15 (ledger7 section 3 item 4).  Batch 50 found that below
+		 * compatibility mode 15 Word applies neither widow control nor w:keepLines in a table
+		 * cell.  The keeps that cost 7396 and 10730 (both mode 14) are w:keepNext in cells, and
+		 * table-row-keepnext was cut at mode 15 only.  So this asks the same questions per mode,
+		 * one document per mode, a case to a page.
+		 *   K1, K2, K5: table-row-keepnext's R1, R2 and R5 - keepNext on every paragraph of
+		 *     rows one and two (K1), on the first cell's only (K2), on every paragraph of every
+		 *     row with a paragraph after the table (K5) - after a filler table sized so that
+		 *     one 30pt row fits at the foot of the page (K5: three rows, but not the paragraph
+		 *     after them).
+		 *   K7: 7396's P5a.  30 exact 30pt rows, every row w:cantSplit and the first cell's
+		 *     paragraph keepNext - a 900pt chain - started about two thirds down a page.
+		 *   K8: K7 without w:cantSplit.  K9: K7 without keepNext, the control.
+		 * Read off the golden: on which page each row's tag ("K7 r12") lands.
+		 */
+		PROBES.add(tableKeepsProbe(12));
+		PROBES.add(tableKeepsProbe(14));
+		PROBES.add(tableKeepsProbe(15));
+
+		/*
+		 * keep-chain-overlong-compat14/15 (ledger7 item 4).  On 7396 Word moves a keepNext
+		 * chain of about 2.3 pages to a fresh page and then breaks inside it, where FOP breaks
+		 * it in place; docx4j bounds a keep chain at three pages (boundKeepChains).  Each case
+		 * starts a page with exact 24pt fillers to two thirds down it, then a chain of
+		 * three-sentence paragraphs each w:keepNext but the last:
+		 *   C05, C15, C25: chains of about half a page, one and a half pages and two and a half;
+		 *   C15W: C15 with widow control off (7396's style);
+		 *   C15S: C15 with the keepNext on a paragraph style rather than on each paragraph.
+		 * Read off: the page each chain's first paragraph lands on, and where Word breaks
+		 * inside the chain.
+		 */
+		PROBES.add(keepChainProbe(14));
+		PROBES.add(keepChainProbe(15));
+
+		/*
+		 * table-grid-over-measure (ledger7 item 3; 14924 and 13886).  Word kept an autofit
+		 * grid wider than the measure, the table overhanging the right margin, where docx4j
+		 * clamps it to the measure.  A grid this harness writes is recomputed by Word on open,
+		 * so here the width comes from the content: three columns, each holding one
+		 * unbreakable token of Liberation Serif digits (6pt each at 12pt), whose widths add up
+		 * to 102%, 106% and 110% of the 451.3pt measure (A4, 1in margins, mode 14), so that
+		 * Word's own autofit needs that width.  w:tblW auto and every cell auto; a full-width
+		 * row of justified prose spans the three columns.  Each table has a twin stating
+		 * w:tblW 100% (5000 pct).
+		 * Read off: the x of each column's first glyph and the spanning row's x0 and x1.
+		 */
+		PROBES.add(new Probe("table-grid-over-measure",
+				"autofit tables (w:tblW auto, every cell auto) whose content - one unbreakable "
+				+ "token of digits per cell - adds up to 102%, 106% and 110% of the 451.3pt "
+				+ "measure, each with a full-width row of justified prose spanning its three "
+				+ "columns, and a twin of each stating w:tblW 100%; mode 14.  Does Word keep the "
+				+ "grid wider than the measure, the table overhanging the margin?", () -> {
+			Doc d = Doc.create(14);
+			final int advTw = Doc.advanceTwipsCeil("0", SERIF, 24); // 120: 6pt a digit
+			final int measureTw = 9026;
+			for (int pct : new int[] { 102, 106, 110 }) {
+				for (boolean stated : new boolean[] { false, true }) {
+					String tag = "G" + pct + (stated ? "s" : "");
+					d.para(tag + ": three cells whose tokens add up to " + pct + "% of the measure"
+							+ (stated ? ", w:tblW 100%" : ", w:tblW auto")).before(240).after(120).add();
+					// token widths 30% / 30% / 40% of pct% of the measure, less each cell's margins
+					int total = measureTw * pct / 100;
+					int[] share = { total * 30 / 100, total * 30 / 100, total * 40 / 100 };
+					String[] tokens = new String[3];
+					for (int c = 0; c < 3; c++) {
+						int digits = Math.max(2, (share[c] - 216) / advTw);
+						StringBuilder sb = new StringBuilder();
+						for (int k = 0; k < digits; k++) sb.append((char) ('0' + (k % 10)));
+						tokens[c] = sb.toString();
+					}
+					Doc.Table t = new Doc.Table(3000, 3000, 3026);
+					if (stated) t.tableWidth(5000, "pct"); else t.autoWidth();
+					t.rowOf(null, null, t.cell(tokens[0], SERIF, 24, 1, null),
+							t.cell(tokens[1], SERIF, 24, 1, null), t.cell(tokens[2], SERIF, 24, 1, null));
+					P spanning = d.para(tag + " spanning row. " + prose(2, pct)).noLabel()
+							.jc(JcEnumeration.BOTH).build();
+					org.docx4j.wml.Tc tc = t.cell("", SERIF, 24, 3, null);
+					tc.getContent().clear();
+					tc.getContent().add(spanning);
+					t.rowOf(null, null, tc);
+					d.add(t.build());
+				}
+			}
+			d.para("after. " + prose(1)).before(240).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * widow-orphan-cell (ledger7 item 4; 7639, mode 15).  FOP leaves the one-line start of
+		 * a paragraph at the foot of a page inside a cell that spans pages, where Word moves
+		 * it; at mode 15 a cell keeps widow control (table-rowsplit-3), so this is about a
+		 * paragraph among many in one page-spanning cell.  The widow-orphan probe's 34
+		 * three-line paragraphs, inside the second cell of a one-row two-column table (1600 /
+		 * 7400 twips); section 1 widow control absent, section 2 w:widowControl off.
+		 * Read off: the lines of each paragraph on each side of every page boundary.
+		 */
+		PROBES.add(new Probe("widow-orphan-cell",
+				"the widow-orphan probe's three-line paragraphs inside the second cell of a "
+				+ "one-row table spanning pages: section 1 widow control absent, section 2 off; "
+				+ "mode 15.  Does a paragraph's single line stay at a page foot inside the cell?",
+				() -> {
+			Doc d = Doc.create(15);
+			for (int section = 0; section < 2; section++) {
+				boolean off = section == 1;
+				Doc.Table t = new Doc.Table(1600, 7400);
+				P[] ps = new P[34];
+				for (int i = 0; i < ps.length; i++) {
+					Doc.Para p = d.para("W" + section + " " + String.format("%02d", i + 1) + ". "
+							+ prose(3, i + section)).noLabel();
+					if (off) p.widowControl(false);
+					ps[i] = p.build();
+				}
+				t.rowOf(null, null, t.cell("W" + section + " tag", SERIF, 24, 1, 1600), t.cellOf(7400, null, ps));
+				d.add(t.build());
+				d.para("after the table of section " + (section + 1)).add();
+				if (section == 0) d.endSection("nextPage", 0);
+			}
+			return d.pkg();
+		}));
+
 		/*
 		 * CR-016's probe set (docs/developer/change-requests/CR-016-font-selection-and-mapping.md,
 		 * "Are the comments accurate?").  Font selection and mapping: which of a run's four
@@ -7922,6 +8047,106 @@ public final class Corpus {
 		if (built.getPPr().getInd() == null) built.getPPr().setInd(F.createPPrBaseInd());
 		built.getPPr().getInd().setRight(BigInteger.valueOf(rightTw));
 		d.add(built);
+	}
+
+	// ---------------------------------------------------------------- CR-001 batch 51 helpers
+
+	/** One table-keeps document, at one compatibility mode.  @since 17.3.1 (CR-001 batch 51) */
+	private static Probe tableKeepsProbe(int mode) {
+		return new Probe("table-keeps-compat" + mode,
+				"w:keepNext in table cells at mode " + mode + ": table-row-keepnext's R1 (every "
+				+ "paragraph of rows one and two), R2 (the first cell's only) and R5 (every row, a "
+				+ "paragraph after) as K1, K2, K5; then 7396's P5a, 30 exact 30pt rows each "
+				+ "w:cantSplit with the first cell keepNext, started two thirds down a page (K7), "
+				+ "without cantSplit (K8) and without keepNext (K9).  Read which page each row's "
+				+ "tag lands on", () -> {
+			Doc d = Doc.create(mode);
+			String[] ids = { "K1", "K2", "K5" };
+			String[] what = { "K1: keepNext on every paragraph of rows one and two.",
+					"K2: keepNext on the first cell's paragraph only, rows one and two.",
+					"K5: keepNext on every paragraph of every row; a paragraph follows." };
+			// as table-row-keepnext: 32 filler rows of 20pt leave room for one 30pt row (K5: 29
+			// leave room for the three rows but not the line after them)
+			int[] fillerRows = { 32, 32, 29 };
+			for (int c = 0; c < ids.length; c++) {
+				if (c > 0) d.pageBreak();
+				d.para(what[c]).after(240).add();
+				Doc.Table filler = new Doc.Table(4500, 4500);
+				for (int i = 0; i < fillerRows[c]; i++) {
+					filler.rowOf(400, org.docx4j.wml.STHeightRule.EXACT,
+							filler.cell(ids[c] + " filler " + (i + 1), SERIF, 24, 1, 4500),
+							filler.cell("value " + (i + 1), SERIF, 24, 1, 4500));
+				}
+				d.add(filler.build());
+				Doc.Table t = new Doc.Table(4500, 4500);
+				for (int r = 1; r <= 3; r++) {
+					boolean keepRow = r < 3 || c == 2;
+					boolean first = keepRow, last = keepRow && c != 1;
+					t.rowOf(600, org.docx4j.wml.STHeightRule.EXACT,
+							t.cellOf(4500, null, (first ? d.para().noLabel().keepNext() : d.para().noLabel())
+									.text(ids[c] + " row " + r + " cell one").build()),
+							t.cellOf(4500, null, (last ? d.para().noLabel().keepNext() : d.para().noLabel())
+									.text(ids[c] + " row " + r + " cell two").build()));
+				}
+				d.add(t.build());
+				d.para(ids[c] + " after the table. " + prose(1, c + 1)).after(0).add();
+			}
+			// P5a: 20 exact 24pt fillers (480pt of the 697.9pt body), then 30 rows of 30pt
+			for (String v : new String[] { "K7", "K8", "K9" }) {
+				d.pageBreak();
+				for (int i = 1; i <= 20; i++) {
+					d.para(v + " filler " + i).noLabel().line(480, STLineSpacingRule.EXACT).add();
+				}
+				Doc.Table t = new Doc.Table(4500, 4500);
+				for (int r = 1; r <= 30; r++) {
+					String tag = v + " r" + String.format("%02d", r);
+					Doc.Para first = d.para().noLabel().text(tag);
+					if (!"K9".equals(v)) first.keepNext();
+					t.rowOf(600, org.docx4j.wml.STHeightRule.EXACT, t.cellOf(4500, null, first.build()),
+							t.cellOf(4500, null, d.para().noLabel().text(tag + " second cell").build()));
+				}
+				Tbl tbl = t.build();
+				if (!"K8".equals(v)) cantSplitEveryRow(tbl);
+				d.add(tbl);
+				d.para(v + " after the table. " + prose(1, 3)).add();
+			}
+			return d.pkg();
+		});
+	}
+
+	/** One keep-chain-overlong document, at one compatibility mode.  @since 17.3.1 */
+	private static Probe keepChainProbe(int mode) {
+		return new Probe("keep-chain-overlong-compat" + mode,
+				"chains of w:keepNext paragraphs (three sentences each, the last without "
+				+ "keepNext) of about half a page (C05), one and a half (C15) and two and a half "
+				+ "(C25), started two thirds down a page; C15 with widow control off (C15W) and "
+				+ "with the keepNext on a paragraph style (C15S); mode " + mode + ".  Read where "
+				+ "each chain starts and where Word breaks inside it", () -> {
+			Doc d = Doc.create(mode);
+			d.addParagraphStyle("KeepStyle", null, ppr -> ppr.setKeepNext(new BooleanDefaultTrue()));
+			Object[][] cases = { { "C05", 7, false, false }, { "C15", 21, false, false },
+					{ "C25", 35, false, false }, { "C15W", 21, true, false }, { "C15S", 21, false, true } };
+			for (Object[] c : cases) {
+				String tag = (String) c[0];
+				int n = (Integer) c[1];
+				boolean widowOff = (Boolean) c[2], viaStyle = (Boolean) c[3];
+				for (int i = 1; i <= 20; i++) {
+					Doc.Para f = d.para(tag + " filler " + i).noLabel().line(480, STLineSpacingRule.EXACT);
+					if (i == 1) f.pageBreakBefore();
+					f.add();
+				}
+				for (int i = 1; i <= n; i++) {
+					Doc.Para p = d.para(tag + " p" + String.format("%02d", i) + ". " + prose(3, i)).noLabel();
+					if (i < n) {
+						if (viaStyle) p.style("KeepStyle"); else p.keepNext();
+					}
+					if (widowOff) p.widowControl(false);
+					p.add();
+				}
+				d.para(tag + " after the chain. " + prose(1, n)).noLabel().add();
+			}
+			return d.pkg();
+		});
 	}
 
 	/** Writes every probe as {@code <id>.docx} into dir, plus corpus.txt and corpus-manifest.properties. */
