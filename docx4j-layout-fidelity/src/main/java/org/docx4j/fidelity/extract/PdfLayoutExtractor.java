@@ -684,7 +684,7 @@ public final class PdfLayoutExtractor {
 						text.append(' ');
 					}
 				}
-				text.append(tp.getUnicode());
+				text.append(glyphText(tp));
 				ys.add((double) tp.getYDirAdj());
 				if (!isBlank(tp)) {
 					if (firstInk == null) firstInk = tp;
@@ -714,6 +714,57 @@ public final class PdfLayoutExtractor {
 			l.text = t;
 			leadingNumber(run, l);
 			out.lines.add(l);
+		}
+
+		/**
+		 * The text a glyph contributes to the line's key: what the PDF's ToUnicode says,
+		 * except that a glyph of a <b>symbol font</b> (Symbol, Wingdings, Wingdings 2,
+		 * Wingdings 3, Webdings) is read through the same table Word's PDF writes its text
+		 * layer with - {@code SymbolMapper}, whose Unicode replacements are Word's
+		 * (word-layout-rules.md: "as Word's own PDF output shows").
+		 *
+		 * <p>Word's PDF gives a Wingdings 0x71 glyph as U+2751 and a Symbol 0x2D as U+2212,
+		 * and docx4j's substitute path drew exactly those replacements, so the keys agreed.
+		 * Since 17.3.1 docx4j draws the real font where the machine has it, and the
+		 * renderer's ToUnicode then gives the font's own code point (U+F071) or its 8-bit
+		 * alias (U+002D) according to the cmap segment the glyph is in - neither Word's.
+		 * Measured with the VM's faces supplied (b85v against b84v): 15_fr-FR_num_tbl_1059
+		 * 1.0000 to 0.8100 on 38 lines opening with a Symbol minus, which the bullet rule
+		 * does not reach (U+002D is a hyphen), and 14_ru-RU_num_tbl_7634 0.9406 to 0.8911
+		 * on check-box cells which are the symbol alone, which it does not reach either.
+		 * Reading both sides through the table makes the key the glyph's meaning, whichever
+		 * code point the producer's ToUnicode chose for it; Word's own private-use
+		 * {@code w:sym} bullets (U+F02A) read the same way.  Only a glyph the font maps at
+		 * U+F020-U+F0FF or 0x20-0xFF is read through it; a code point the table has no
+		 * entry for keeps the ToUnicode text.</p>
+		 */
+		private static String glyphText(TextPosition tp) {
+			String u = tp.getUnicode();
+			if (u == null || u.isEmpty() || tp.getFont() == null) return u;
+			int cp = u.codePointAt(0);
+			if (u.length() != Character.charCount(cp)) return u;
+			String symbolFont = symbolFontOf(tp.getFont().getName());
+			if (symbolFont == null) return u;
+			int code = (cp >= 0xF020 && cp <= 0xF0FF) ? cp - 0xF000 : (cp >= 0x20 && cp <= 0xFF ? cp : -1);
+			if (code < 0) return u;
+			String mapped = org.docx4j.convert.out.common.writer.SymbolMapper.getUnicodeReplacementChar(symbolFont, (short) code);
+			return mapped == null ? u : mapped;
+		}
+
+		/** The SymbolMapper font a PDF font name is, subset tag and style welded on
+		 *  ({@code EAAAAA+Wingdings-Regular}, {@code SymbolMT}, {@code Wingdings3}), or null.
+		 *  Symbol is matched whole (Symbola and Noto Sans Symbols are Unicode faces). */
+		static String symbolFontOf(String pdfFontName) {
+			if (pdfFontName == null) return null;
+			String n = pdfFontName;
+			if (n.length() > 7 && n.charAt(6) == '+') n = n.substring(7);
+			n = n.toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9]", "");
+			if (n.startsWith("wingdings2")) return "Wingdings 2";
+			if (n.startsWith("wingdings3")) return "Wingdings 3";
+			if (n.startsWith("wingdings")) return "Wingdings";
+			if (n.startsWith("webdings")) return "Webdings";
+			if (n.equals("symbol") || n.equals("symbolmt")) return "Symbol";
+			return null;
 		}
 
 		/**

@@ -777,6 +777,12 @@ them at once:
   over `3a`: whatever docx4j did, the reference is already not the target. Reported,
   never gated on.
 
+A symbol font (Symbol, Wingdings, Wingdings 2, Wingdings 3, Webdings) is graded `CLASS` on
+the default font set, because docx4j draws its Unicode replacements in a substitute face, so
+a document whose only substituted family is one of them is `3a` there; with the VM's own
+faces supplied (`-Dfidelity.fonts`), docx4j since 17.3.1 draws the installed font itself,
+with the document's code points, the grade is `EXACT`, and the same document is `2`.
+
 Both sides are read at scoring time, per document. The Word side is the faces the golden
 PDF embeds (`PdfFonts.faces`, subset tags stripped) against the families the document's
 runs resolve to; the docx4j side is the grades `FontsAnalysis` reports for the render
