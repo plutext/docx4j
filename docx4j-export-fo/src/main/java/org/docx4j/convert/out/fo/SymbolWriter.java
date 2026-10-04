@@ -130,6 +130,11 @@ public class SymbolWriter extends AbstractSymbolWriter {
 				docfrag.appendChild(foInline);
 				foInline.setAttribute("font-family", real.getName());
 				foInline.appendChild(doc.createTextNode(new String(Character.toChars(cp))));
+				// Word's line for the face, as a run in it gets (RunFontSelector.symbolLineHeight);
+				// only where the run is known, which the XSLT pathway's lone w:sym is not
+				if (modelData.getParent() instanceof R && context.getRunFontSelector()!=null) {
+					context.getRunFontSelector().symbolLineHeight(foInline, (R)modelData.getParent(), symbolFontName, real);
+				}
 				return docfrag;
 			}
 		}

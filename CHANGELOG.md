@@ -109,6 +109,9 @@ PDF via XSL FO:
   labels, on both pathways; FontsAnalysis grades such a font EXACT. Where the font is absent
   the Unicode replacements in a substitute face are drawn as before. HTML output is unchanged.
 
+- A w:sym drawn in the real Wingdings sits on Word's baseline: its line takes Word's height for
+  the face, not FOP's (Wingdings' font tables put its descender above the baseline).
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's

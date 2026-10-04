@@ -2320,8 +2320,21 @@ extractor now reads a symbol-font glyph through `SymbolMapper` on both sides
 (`PdfLayoutExtractor.glyphText`); re-scored so (b85vs against b84vs), 48 documents moved
 from class 3a to class 2, class 2 lost one line in one 51-page document (a bulleted line in
 a two-column cell, whose pieces now match Word's own), four documents improved, and the one
-other mover (a `w:sym`-only cell line 4.4pt above Word's baseline, Wingdings' positive
-sTypoDescender of 420 as the renderer stacks it) is left for a later batch.
+other mover (a `w:sym`-only cell line 4.4pt above Word's baseline) is the next rule.
+
+<a id="s57symline"></a>**A `w:sym` in the real font takes Word's line height (17.3.1).** A run
+in the real face gets Word's line height for the face on its span, as every run does
+([§2.4](#24-a-lines-height-comes-from-the-runs-on-it)); the `SymbolWriter` span for a `w:sym`
+had a font-family alone, so the line manager took the line from the renderer's metrics for
+the face. Wingdings' OS/2 table has a descender above the baseline (sTypoDescender +420 of
+2048, a sign error: hhea and usWinDescent say 432 below), which FOP accepts because the box
+still fits the em (Enterprise CR-001 §6.6 item 40). Measured on corpus document 5975, a
+column of smileys after an empty paragraph: the smiley line came out 7.131pt tall with its
+baseline 5.646pt down, where Word's is the face's win metrics, 12.21pt and 9.89pt.
+`RunFontSelector.symbolLineHeight` now gives the span the line height a run in the face
+gets, from the run's effective size and the paragraph's spacing. 5975 goes 0.9709 to
+1.0000, 13118 +10 lines, two documents +1, nothing down (b89 against b87). The XSLT
+pathway's `w:sym` is unmarshalled alone, without its run, and keeps the old behaviour.
 
 <a id="s57symbolrange"></a>**The symbol range needs a fallback chain, not one Windows face.**
 `RunFontSelector`'s U+2190-U+2BFF branch asked the run's own font for the glyph and, where

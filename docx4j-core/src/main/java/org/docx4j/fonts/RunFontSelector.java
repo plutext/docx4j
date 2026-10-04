@@ -2104,6 +2104,33 @@ public class RunFontSelector {
     	return outputType==RunFontActionType.DISCOVERY ? null : finish(fragment);
     }
 
+    /**
+     * Word's line height on the span of a {@code w:sym} the real symbol font draws (the FO
+     * SymbolWriter), as {@link #appendOwnSegment} gives a run's stretch in that font: the
+     * face's line at the run's effective size and the paragraph's spacing.
+     *
+     * <p>Without it the span had a font-family alone, and the line manager took the line
+     * from FOP's metrics for the face.  Wingdings' OS/2 table has a descender above the
+     * baseline (sTypoDescender +420 of 2048), which FOP accepts because the box still fits
+     * the em, so a line holding only w:sym glyphs came out 7.1pt where Word's is 12.2, its
+     * baseline 4.4pt high (measured on corpus document 5975, a column of Wingdings
+     * smileys).</p>
+     *
+     * @param run the w:sym's run, whose properties and paragraph give the size and spacing
+     * @since 17.3.1
+     */
+    public void symbolLineHeight(Element span, org.docx4j.wml.R run, String symbolFontName, PhysicalFont real) {
+    	if (outputType!=RunFontActionType.XSL_FO || span==null || run==null || real==null) return;
+    	Object o = run.getParent();
+    	while (o instanceof org.jvnet.jaxb.lang.Child && !(o instanceof org.docx4j.wml.P)) {
+    		o = ((org.jvnet.jaxb.lang.Child)o).getParent();
+    	}
+    	PPr pPr = o instanceof org.docx4j.wml.P ? ((org.docx4j.wml.P)o).getPPr() : null;
+    	PropertyResolver propertyResolver = propertyResolver();
+    	captureLineSpec(propertyResolver, pPr, effectiveRPr(propertyResolver, pPr, run.getRPr(), false), false);
+    	applyLineHeight(span, symbolFontName, real);
+    }
+
     /** The mapped stretch in hand, as one span per substitute face; cleared.  @since 17.3.1 */
     private void appendMappedSegments(DocumentFragment fragment, Document document, String actualFontName, StringBuilder sb) {
     	if (sb.length()==0) return;
