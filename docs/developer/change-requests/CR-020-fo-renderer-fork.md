@@ -1136,6 +1136,28 @@ ten hooks.
 
 Reactor on .4: core-tests 1,387/0, export-fo 240/0, export-fo-tests 677/0.
 
+### fop/CR-012 gate: page 0 (2026-10-04)
+
+Batch 50 (ledger7 item 10) found Word's `w:pgNumType w:start="0"` clamped to 1: XSL 1.1 makes
+`initial-page-number` a positive integer, and FOP makes 0 into 1 in its property maker,
+`AbstractPageSequence.initPageNumber` and `doForcePageCount`. With 0 honoured,
+`PDFPageLabels.addPageLabel` crashed on the label "0" (Enterprise CR-001 §6.6 item 38). The fork
+session put page 0 behind a user-agent option, `FOUserAgent.setPageNumberZeroAllowed`, off by
+default, so the fork does not number pages differently from Apache FOP. It added capability
+`page-number-zero` and fixed the page label unconditionally (branch CR-012-page-number-zero,
+fab8f6268, off 2.11-docx4j.5). docx4j's side is b629f2be3: the capability, the setter on both
+render passes, and no odd/even parity swap under it.
+
+**Gate on 2.11-docx4j.5-SNAPSHOT** (installed by Jason, copied to the harness), against
+the b74-resaved-nofields basis:
+- control, docx4j without the setter: 0 documents and 0 probes move;
+- measurement, docx4j with the setter against the same docx4j on .4: 13347 0.8981 -> 0.9444,
+  6083 0.9207 -> 0.9627, 4899 0.8983 -> 0.9267 (+71 lines), 6251 0.9740 -> 0.9760, and nothing
+  else;
+- export-fo and export-fo-tests on the snapshot: 240 + 682, 0 failures.
+
+docx4j takes it when the dependency moves to a release carrying CR-012.
+
 ### Not done, carried
 
 - Cambria's Greek: docx4j maps Cambria to Caladea, which covers Latin only, so Greek runs
