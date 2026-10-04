@@ -110,6 +110,15 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link org.docx4j.convert.out.fopconf.Fonts.Font.ToUnicode }
+     * 
+     * @since 17.3.1
+     */
+    public org.docx4j.convert.out.fopconf.Fonts.Font.ToUnicode createFontsFontToUnicode() {
+        return new org.docx4j.convert.out.fopconf.Fonts.Font.ToUnicode();
+    }
+
+    /**
      * Create an instance of {@link Substitutions.Substitution.From }
      * 
      */

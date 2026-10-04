@@ -111,7 +111,13 @@ public final class FopCapabilities {
 		 *  later parts, where the cell is broken across pages, so that they can be laid out from
 		 *  the top as Word lays them out whatever the cell's w:vAlign (fork CR-013; Enterprise
 		 *  CR-001 §6.6 item 39).  @since 17.3.1 */
-		CONTINUATION_DISPLAY_ALIGN("continuation-display-align");
+		CONTINUATION_DISPLAY_ALIGN("continuation-display-align"),
+		/** A font declaration's {@code <to-unicode code-point=".." unicode=".."/>} entries are the
+		 *  ToUnicode text of those code points (fork CR-014), so a symbol font drawn in the real
+		 *  symbol-encoded face copies out of the PDF as Unicode rather than U+F0xx.  Nothing asks
+		 *  for it: FopConfigUtil writes the entries whatever the renderer, Apache FOP passing over
+		 *  them.  @since 17.3.1 */
+		TO_UNICODE_MAP("to-unicode-map");
 
 		private final String key;
 

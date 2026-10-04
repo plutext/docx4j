@@ -83,6 +83,13 @@
                                     <xs:attribute name="weight" type="xs:string" use="required" />
                                   </xs:complexType>
                                 </xs:element>
+                                <!-- docx4j FO renderer hook to-unicode-map (fork CR-014); docx4j 17.3.1 -->
+                                <xs:element minOccurs="0" maxOccurs="unbounded" name="to-unicode">
+                                  <xs:complexType>
+                                    <xs:attribute name="code-point" type="xs:string" use="required" />
+                                    <xs:attribute name="unicode" type="xs:string" use="required" />
+                                  </xs:complexType>
+                                </xs:element>
                               </xs:sequence>
                               <xs:attribute name="simulate-style" type="xs:boolean" use="required" />
                               <xs:attribute name="embed-url" type="xs:string" use="required" />

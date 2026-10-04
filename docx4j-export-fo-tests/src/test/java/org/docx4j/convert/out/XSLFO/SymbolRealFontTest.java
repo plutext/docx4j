@@ -179,6 +179,69 @@ public class SymbolRealFontTest {
 		assertTrue("the fixture face is not embedded", pdf.contains("Docx4jSymbolTest"));
 	}
 
+	/** The real face's declaration in the FOP configuration, or null. */
+	private static org.docx4j.convert.out.fopconf.Fonts.Font realFaceDeclaration(WordprocessingMLPackage pkg) throws Exception {
+		org.docx4j.convert.out.fopconf.Fop fop = org.docx4j.fonts.fop.util.FopConfigUtil.createConfigurationObject(
+				pkg.getFontMapper(), pkg.getMainDocumentPart().fontsInUse());
+		org.docx4j.convert.out.fopconf.Fonts fonts = org.docx4j.fonts.fop.util.FopConfigUtil.get(
+				fop.getRenderers(), "application/pdf").getFonts();
+		for (org.docx4j.convert.out.fopconf.Fonts.Font f : fonts.getFont()) {
+			for (org.docx4j.convert.out.fopconf.Fonts.Font.FontTriplet t : f.getFontTriplet()) {
+				if (t.getName().equals(FIXTURE)) return f;
+			}
+		}
+		return null;
+	}
+
+	private static String toUnicode(org.docx4j.convert.out.fopconf.Fonts.Font font, String codePoint) {
+		for (org.docx4j.convert.out.fopconf.Fonts.Font.ToUnicode tu : font.getToUnicode()) {
+			if (tu.getCodePoint().equals(codePoint)) return tu.getUnicode();
+		}
+		return null;
+	}
+
+	/** The real face's declaration gives each private-use code point the Unicode text
+	 *  SymbolMapper has for it, for the PDF's ToUnicode CMap (fork CR-014); a face drawn
+	 *  for a substitute's own Unicode needs none. */
+	@Test
+	public void theRealFaceDeclaresItsUnicodeText() throws Exception {
+		org.docx4j.convert.out.fopconf.Fonts.Font font = realFaceDeclaration(pkg());
+		assertNotNull("the fixture is not declared", font);
+		assertEquals("Wingdings 0x6E", "25A0", toUnicode(font, "F06E"));
+		assertEquals("Wingdings 0x4A, the smiling face", "263A", toUnicode(font, "F04A"));
+		assertEquals("Wingdings 0x4B, outside the BMP", "1F610", toUnicode(font, "F04B"));
+	}
+
+	@Test
+	public void theUnicodeTextCanBeLeftOut() throws Exception {
+		org.docx4j.Docx4jProperties.setProperty("docx4j.fonts.fop.util.FopConfigUtil.to-unicode", "false");
+		try {
+			org.docx4j.convert.out.fopconf.Fonts.Font font = realFaceDeclaration(pkg());
+			assertNotNull("the fixture is not declared", font);
+			assertTrue(font.getToUnicode().isEmpty());
+		} finally {
+			org.docx4j.Docx4jProperties.setProperty("docx4j.fonts.fop.util.FopConfigUtil.to-unicode", "true");
+		}
+	}
+
+	/** On a renderer with the hook, the PDF's text is the Unicode: the run, the w:sym and the
+	 *  label each copy out as U+25A0, not U+F06E.  Apache FOP has no such hook. */
+	@Test
+	public void thePdfTextIsTheUnicode() throws Exception {
+		org.junit.Assume.assumeTrue("the renderer has no to-unicode-map hook",
+				org.docx4j.convert.out.fo.FopCapabilities.has(org.docx4j.convert.out.fo.FopCapabilities.Capability.TO_UNICODE_MAP));
+		FOSettings foSettings = Docx4J.createFOSettings();
+		foSettings.setWmlPackage(pkg());
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		Docx4J.toFO(foSettings, baos, Docx4J.FLAG_NONE);
+		String text;
+		try (org.apache.pdfbox.pdmodel.PDDocument doc = org.apache.pdfbox.Loader.loadPDF(baos.toByteArray())) {
+			text = new org.apache.pdfbox.text.PDFTextStripper().getText(doc);
+		}
+		assertFalse("a private-use code point in the text layer: " + text, text.matches("(?s).*[\uF000-\uF8FF].*"));
+		assertEquals("the run, the w:sym and the label: " + text, 3, text.length() - text.replace("\u25A0", "").length());
+	}
+
 	/** Without the real font the substitute path is taken, as before (the control). */
 	@Test
 	public void withoutTheRealFontTheReplacementIsDrawn() throws Exception {

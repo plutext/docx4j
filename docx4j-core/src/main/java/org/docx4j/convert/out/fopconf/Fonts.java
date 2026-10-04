@@ -126,12 +126,15 @@ public class Fonts {
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-        "fontTriplet"
+        "fontTriplet",
+        "toUnicode"
     })
     public static class Font {
 
         @XmlElement(name = "font-triplet", required = true)
         protected List<Fonts.Font.FontTriplet> fontTriplet;
+        @XmlElement(name = "to-unicode")
+        protected List<Fonts.Font.ToUnicode> toUnicode;
         @XmlAttribute(name = "simulate-style", required = true)
         protected boolean simulateStyle;
         @XmlAttribute(name = "embed-url", required = true)
@@ -172,6 +175,18 @@ public class Fonts {
                 fontTriplet = new ArrayList<Fonts.Font.FontTriplet>();
             }
             return this.fontTriplet;
+        }
+
+        /**
+         * The text the PDF's ToUnicode CMap gives for a code point of this font (the live
+         * list): read by the docx4j FO renderer (capability {@code to-unicode-map}),
+         * ignored by Apache FOP.  @since 17.3.1
+         */
+        public List<Fonts.Font.ToUnicode> getToUnicode() {
+            if (toUnicode == null) {
+                toUnicode = new ArrayList<Fonts.Font.ToUnicode>();
+            }
+            return this.toUnicode;
         }
 
         /**
@@ -387,6 +402,38 @@ public class Fonts {
              */
             public void setWeight(String value) {
                 this.weight = value;
+            }
+
+        }
+
+
+        /**
+         * {@code <to-unicode code-point="F04A" unicode="263A"/>}: both hexadecimal; the
+         * unicode may be several code points separated by spaces.  @since 17.3.1
+         */
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "")
+        public static class ToUnicode {
+
+            @XmlAttribute(name = "code-point", required = true)
+            protected String codePoint;
+            @XmlAttribute(name = "unicode", required = true)
+            protected String unicode;
+
+            public String getCodePoint() {
+                return codePoint;
+            }
+
+            public void setCodePoint(String value) {
+                this.codePoint = value;
+            }
+
+            public String getUnicode() {
+                return unicode;
+            }
+
+            public void setUnicode(String value) {
+                this.unicode = value;
             }
 
         }

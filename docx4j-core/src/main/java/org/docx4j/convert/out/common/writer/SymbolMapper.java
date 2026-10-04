@@ -1108,6 +1108,16 @@ public class SymbolMapper {
 		}
 	}
 
+	/**
+	 * The font's whole table, code (0x20-0xFF) to Unicode text, read-only; null for a font
+	 * it does not cover.  For the PDF text layer of the real symbol font (FopConfigUtil).
+	 * @since 17.3.1
+	 */
+	public static Map<Short,String> getMap(String fontName) {
+		Map<Short,String> fontMap = fontMaps.get(fontName);
+		return fontMap==null ? null : java.util.Collections.unmodifiableMap(fontMap);
+	}
+
 	public static String getUnicodeReplacementChar(String fontName, short value) {
 
 		Map<Short,String> fontMap = fontMaps.get(fontName);

@@ -2351,6 +2351,19 @@ gets, from the run's effective size and the paragraph's spacing. 5975 goes 0.970
 1.0000, 13118 +10 lines, two documents +1, nothing down (b89 against b87). The XSLT
 pathway's `w:sym` is unmarshalled alone, without its run, and keeps the old behaviour.
 
+<a id="s57tounicode"></a>**The real face's text layer (17.3.1).** The real face is
+symbol-encoded, so the document's characters reach it as the private-use code points its cmap
+holds, and the PDF's ToUnicode CMap gave those back: a smiley copied out of the PDF was
+U+F04A, a bullet U+F0B7. Word's PDF has the Unicode equivalent where it knows one (U+263A for
+the smiley; U+F04B, the neutral face, it leaves as is). `FopConfigUtil.declareToUnicode`
+writes a `<to-unicode code-point="F04A" unicode="263A"/>` for every character `SymbolMapper`
+knows (outside the BMP too: U+1F610 for the neutral face) on each declaration of the face
+chosen as the real Symbol, Wingdings, Wingdings 2, Wingdings 3 or Webdings, and the docx4j FO
+renderer puts them in the CMap (capability `to-unicode-map`, fork CR-014); Apache FOP reads
+only a font's triplets and passes over them. Glyphs, widths and layout are untouched: on
+5975 every glyph of the page sits where it did, and its text layer reads U+263A and U+1F610
+where it read U+F04A and U+F04B. Property `docx4j.fonts.fop.util.FopConfigUtil.to-unicode`.
+
 <a id="s57symbolrange"></a>**The symbol range needs a fallback chain, not one Windows face.**
 `RunFontSelector`'s U+2190-U+2BFF branch asked the run's own font for the glyph and, where
 it lacked it, asked exactly one substitute - `Segoe UI Symbol`, which is what Word 2016

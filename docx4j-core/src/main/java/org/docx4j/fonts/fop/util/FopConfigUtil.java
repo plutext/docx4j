@@ -246,8 +246,64 @@ public class FopConfigUtil {
 					rendererFonts.getFont().add(noLiga);
 				}
 			}
+			declareToUnicode(rendererFonts, fontMapper, fontsInUse);
 		}
 		return rendererFonts;
+	}
+
+	/**
+	 * The text a reader copies out of the PDF for a symbol font docx4j draws in the real
+	 * face: one {@code <to-unicode>} per character SymbolMapper knows, on every
+	 * declaration of the face facesFor chose as the real Symbol, Wingdings, Wingdings 2,
+	 * Wingdings 3 or Webdings.
+	 *
+	 * <p>The real face is symbol-encoded, so the document's characters reach it as the
+	 * private-use code points its cmap holds (U+F020-U+F0FF, RunFontSelector.symbolRun),
+	 * and the PDF's ToUnicode CMap gave those back: a Wingdings smiley copied out of the
+	 * PDF was U+F04A where Word's PDF has U+263A.  The docx4j FO renderer writes these
+	 * entries into the CMap instead (capability {@code to-unicode-map}, fork CR-014);
+	 * glyphs, widths and layout are untouched.  Apache FOP reads only a font's triplets
+	 * and passes over them.  {@code docx4j.fonts.fop.util.FopConfigUtil.to-unicode=false}
+	 * leaves them out.  @since 17.3.1</p>
+	 */
+	private static void declareToUnicode(org.docx4j.convert.out.fopconf.Fonts rendererFonts,
+			Mapper fontMapper, Set<String> fontsInUse) {
+		if (!Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.to-unicode", true)) return;
+		// the real faces, by the family they are declared under (createFontEntry*: pf.getName())
+		// less any suffix (+nobold, and the +kern and +noliga twins)
+		java.util.Map<String,String> realFaces = new java.util.HashMap<String,String>();
+		for (String fontName : fontsInUse) {
+			String symbolFont = RunFontSelector.symbolFontName(fontName);
+			if (symbolFont==null) continue;
+			PhysicalFont real = PhysicalFonts.getSymbolEncodedFace(fontName, fontMapper);
+			if (real!=null) realFaces.put(unsuffixed(real.getName()), symbolFont);
+		}
+		if (realFaces.isEmpty()) return;
+		for (Font entry : rendererFonts.getFont()) {
+			String symbolFont = null;
+			for (org.docx4j.convert.out.fopconf.Fonts.Font.FontTriplet t : entry.getFontTriplet()) {
+				symbolFont = realFaces.get(unsuffixed(t.getName()));
+				if (symbolFont!=null) break;
+			}
+			java.util.Map<Short,String> map = symbolFont==null ? null
+					: org.docx4j.convert.out.common.writer.SymbolMapper.getMap(symbolFont);
+			if (map==null || !entry.getToUnicode().isEmpty()) continue;
+			for (java.util.Map.Entry<Short,String> e : new java.util.TreeMap<Short,String>(map).entrySet()) {
+				StringBuilder unicode = new StringBuilder();
+				e.getValue().codePoints().forEach(cp -> unicode.append(unicode.length()==0 ? "" : " ")
+						.append(String.format("%04X", cp)));
+				org.docx4j.convert.out.fopconf.Fonts.Font.ToUnicode tu = factory.createFontsFontToUnicode();
+				tu.setCodePoint(String.format("%04X", 0xF000 + (e.getKey() & 0xFF)));
+				tu.setUnicode(unicode.toString());
+				entry.getToUnicode().add(tu);
+			}
+		}
+	}
+
+	/** The family name before any {@code +} suffix.  @since 17.3.1 */
+	private static String unsuffixed(String name) {
+		int plus = name==null ? -1 : name.indexOf('+');
+		return plus<0 ? name : name.substring(0, plus);
 	}
 
 	/**

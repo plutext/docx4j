@@ -119,6 +119,10 @@ PDF via XSL FO:
 - A w:sym drawn in the real Wingdings sits on Word's baseline: its line takes Word's height for
   the face, not FOP's (Wingdings' font tables put its descender above the baseline).
 
+- Text copied out of the PDF from Symbol, Wingdings or Webdings drawn in the real font is the
+  Unicode character (a smiley is U+263A), not the font's private-use code point, on a docx4j FO
+  renderer with the to-unicode-map hook (fork CR-014).
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's
