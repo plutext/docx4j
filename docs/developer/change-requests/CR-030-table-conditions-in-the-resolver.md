@@ -275,6 +275,10 @@ preprocess, `Docx4J.toHTML` and `Docx4J.toFO` (PDF), on 17.3.1-SNAPSHOT.
 
     docx4j since D11 bands columns 2, 4 and 6 in (a) and (c), and none in (b). Before D11
     it banded all three.
+
+    **Word's golden of T11 (cut 2026-10-04): the same.** (a) and (c) have columns 2, 4 and 6
+    bold and shaded, and (b) has none. Word's re-save writes 000010000000 (band1Vert) on
+    those cells and no band bit in (b). The columns' rule is measured.
   - No corpus document is affected: every one of the 823 corpus tables under a style with
     horizontal bands states a row band size, and every table under a style with vertical
     bands a column band size.

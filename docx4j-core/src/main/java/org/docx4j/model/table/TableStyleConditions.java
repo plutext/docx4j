@@ -217,9 +217,8 @@ public final class TableStyleConditions {
 	}
 
 	/** {@code w:tblStyleColBandSize}, as {@link #rowBandSize} for the columns: 0, no
-	 *  vertical banding, where it is not stated.  (By the rows' rule: Word writes the two
-	 *  together, and every corpus table under a style with column bands states this one;
-	 *  the columns themselves were not probed.) */
+	 *  vertical banding, where it is not stated, and a size the table states alone is enough
+	 *  (measured, CR-030 probe T11). */
 	public static int colBandSize(CTTblPrBase tblPr) {
 		if (tblPr != null && tblPr.getTblStyleColBandSize() != null) {
 			return atLeastOne(tblPr.getTblStyleColBandSize().getVal());

@@ -3377,7 +3377,8 @@ with a conditional `w:rPr`.
   `w:tblStyleRowBandSize`, whatever the look and the style's band conditions say, and a
   size the table states alone is enough (probes `tables-banding-merged-row`,
   `tables-banding-band-size`; Word's re-save writes no band bit). docx4j assumed 1 until
-  17.3.1. The columns follow the rows' rule, unprobed. No corpus table is affected: all 823
+  17.3.1. The columns follow the same rule (probe `tables-banding-col-band-size`). No corpus
+  table is affected: all 823
   under a banded style state their sizes, as Word's own styles do. A row whose every cell
   continues a vertical merge still counts for the bands after it (the same probe). A cell spanning several
   columns is placed by its first column and is in the last column where its span reaches it.
