@@ -737,6 +737,14 @@ public final class PdfLayoutExtractor {
 		 * {@code w:sym} bullets (U+F02A) read the same way.  Only a glyph the font maps at
 		 * U+F020-U+F0FF or 0x20-0xFF is read through it; a code point the table has no
 		 * entry for keeps the ToUnicode text.</p>
+		 *
+		 * <p>A glyph in 0x20-0xFF which is already one of the font's Unicode replacements is
+		 * that character, not an 8-bit code: Word writes a Symbol 0xE3 as U+00A9 (the
+		 * replacement), and the docx4j FO renderer's to-unicode-map (fork CR-014) writes a
+		 * Symbol 0xB8 as U+00F7.  Read as codes they became Symbol 0xA9 and 0xF7, other
+		 * characters: measured on the CR-014 gate, a layout unchanged glyph for glyph moved
+		 * seven documents, 3942 -22 lines and 2339 -13 on Symbol division signs and middle
+		 * dots, and 2394 +12 where Word's U+00A9 and ours were misread alike.  @since 17.3.1</p>
 		 */
 		private static String glyphText(TextPosition tp) {
 			String u = tp.getUnicode();
@@ -747,8 +755,21 @@ public final class PdfLayoutExtractor {
 			if (symbolFont == null) return u;
 			int code = (cp >= 0xF020 && cp <= 0xF0FF) ? cp - 0xF000 : (cp >= 0x20 && cp <= 0xFF ? cp : -1);
 			if (code < 0) return u;
+			if (cp <= 0xFF && replacements(symbolFont).contains(u)) return u;
 			String mapped = org.docx4j.convert.out.common.writer.SymbolMapper.getUnicodeReplacementChar(symbolFont, (short) code);
 			return mapped == null ? u : mapped;
+		}
+
+		private static final java.util.Map<String, java.util.Set<String>> REPLACEMENTS =
+				new java.util.concurrent.ConcurrentHashMap<>();
+
+		/** The Unicode text SymbolMapper gives any code of the font.  @since 17.3.1 */
+		private static java.util.Set<String> replacements(String symbolFont) {
+			return REPLACEMENTS.computeIfAbsent(symbolFont, f -> {
+				java.util.Map<Short, String> table = org.docx4j.convert.out.common.writer.SymbolMapper.getMap(f);
+				return table == null ? java.util.Collections.<String>emptySet()
+						: new java.util.HashSet<String>(table.values());
+			});
 		}
 
 		/** The SymbolMapper font a PDF font name is, subset tag and style welded on
