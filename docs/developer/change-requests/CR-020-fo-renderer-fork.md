@@ -1098,6 +1098,8 @@ page images.
     U+1F600.
   - In `surrogate-pairs`, whose first emoji is 😀, the group's choice is DejaVu Sans, and
     the emoji draws.
+  - Fixed 2026-10-04: a character the group's font lacks is now asked for on its own
+    (`RunFontSelector.chosenIfItHas`, `GlyphFallbackTest`).
 - **P06** (a `w:bidi` paragraph: "P06 ", then the Hebrew run, with no `w:rtl`): Word draws
   "P06" at the left and the Hebrew to its right, as if the two runs kept their
   left-to-right order inside the right-to-left paragraph. docx4j draws "P06" at the right,

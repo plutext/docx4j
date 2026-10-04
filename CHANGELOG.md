@@ -56,6 +56,9 @@ PDF via XSL FO:
   its order, letter spaces count in a word's width on the complex-script path, Apache FOP's
   main branch merged, and a nested block's lines are no longer lost after a float (CR-020).
 
+- A character the fallback font chosen for its group lacks (an emoji after a different
+  emoji, say) is set in a font which has it, not drawn as #.
+
 - PDF output through the XSLT pathway (FLAG_EXPORT_PREFER_XSL) works again on the docx4j FO
   renderer: its FO left the fox namespace of fox:gsub-features undeclared, and the export failed
   (17.3.0).

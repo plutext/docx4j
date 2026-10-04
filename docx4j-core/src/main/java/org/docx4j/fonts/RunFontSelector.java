@@ -1263,10 +1263,10 @@ public class RunFontSelector {
     			// where there is no neighbour in the span to follow: the face this document
     			// font's own characters are being drawn in
     			pf = substituteAlreadyChosen(documentFont, cps[i]);
-    			if (pf==null) pf = chosen.get(group);
+    			if (pf==null) pf = chosenIfItHas(chosen, group, cps[i]);
     			if (pf==null) pf = lastResortFor(documentFont, group, cps[i]);
     		} else {
-    			pf = chosen.get(group);
+    			pf = chosenIfItHas(chosen, group, cps[i]);
     			if (pf==null) pf = lastResortFor(documentFont, group, cps[i]);
     		}
     		assigned[i] = pf;
@@ -1317,6 +1317,26 @@ public class RunFontSelector {
     	if (parent==null) return;
     	for (Node c : siblings) parent.insertBefore(c, span);
     	parent.removeChild(span);
+    }
+
+    /**
+     * The face chosen for the character's group, where it has the character; null where it
+     * has not, so that the character is asked for on its own ({@link #lastResortFor}).
+     *
+     * <p>The group's choice is cached per document font ({@link #fallbackFor}), so it was
+     * made for the first characters of the group this document met, and a later character
+     * of the group need not be in it.  Until 17.3.1 it was used regardless, and such a
+     * character came out as FOP's <code>#</code>: measured on probe
+     * <code>surrogate-pairs-bidi</code>, whose first emoji (U+1F44D) chose Noto Sans
+     * Symbols 2 for the group, which has no U+1F600, so the 😀 of a later line was drawn as
+     * <code>#</code> where Word draws it (CR-020, 2026-10-04).</p>
+     *
+     * @since 17.3.1
+     */
+    private static PhysicalFont chosenIfItHas(java.util.Map<String, PhysicalFont> chosen, String group, int cp)
+    		throws java.util.concurrent.ExecutionException {
+    	PhysicalFont pf = chosen.get(group);
+    	return (pf!=null && GlyphCheck.hasCodepoint(pf, cp)) ? pf : null;
     }
 
     /**

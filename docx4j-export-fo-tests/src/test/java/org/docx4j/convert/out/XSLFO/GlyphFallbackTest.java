@@ -145,6 +145,59 @@ public class GlyphFallbackTest extends AbstractXSLFOTest {
 		assertTrue("the Georgian text did not reach the area tree", seen);
 	}
 
+	/** U+1F44D (thumbs up) and then U+1F600 (grinning face): one coverage group, two lines. */
+	private static final int THUMBS_UP = 0x1F44D;
+	private static final int GRINNING = 0x1F600;
+
+	/**
+	 * A later character of a group gets a font which has it.  The fallback chosen for a
+	 * group is cached per document font, so it was chosen for the group's first character
+	 * in the document; until 17.3.1 a later character it lacked used it anyway, and came
+	 * out as '#' (CR-020's probe surrogate-pairs-bidi: U+1F44D chose Noto Sans Symbols 2,
+	 * which has no U+1F600).  Runs only where this machine's fonts set that trap.
+	 */
+	@Test
+	public void aLaterCharacterOfTheGroupGetsAFontWhichHasIt() throws Exception {
+
+		PhysicalFont forThumbs = FontFallback.selectCovering("Liberation Serif", new int[] { THUMBS_UP });
+		Assume.assumeTrue("nothing installed has U+1F44D", forThumbs!=null);
+		Assume.assumeTrue(forThumbs.getName() + " has U+1F600 too, so there is no trap here",
+				!FontFallback.covers(forThumbs, new int[] { GRINNING }));
+		Assume.assumeTrue("nothing installed has U+1F600",
+				FontFallback.selectCovering("Liberation Serif", new int[] { GRINNING })!=null);
+
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ para("Liberation Serif", "first " + new String(Character.toChars(THUMBS_UP)))
+				+ para("Liberation Serif", "then " + new String(Character.toChars(GRINNING)))
+				+ "</w:body></w:document>"));
+
+		org.w3c.dom.Document fo = w3cDomDocumentFromByteArray(toFO(pkg));
+		int seen = 0;
+		NodeList nl = fo.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "inline");
+		for (int i=0; i<nl.getLength(); i++) {
+			Element el = (Element)nl.item(i);
+			String text = el.getTextContent();
+			String family = el.getAttribute("font-family");
+			if (family.length()==0 || text.codePoints().noneMatch(cp -> cp==GRINNING || cp==THUMBS_UP)) continue;
+			if (el.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "inline").getLength()>0) continue;
+			seen++;
+			PhysicalFont chosen = PhysicalFonts.get(family);
+			assertNotNull(family + " is not an installed font", chosen);
+			assertTrue("'" + text + "' is set in " + family + ", which has no glyph for it",
+					FontFallback.covers(chosen, text.codePoints().filter(cp -> cp > 0xFFFF).toArray()));
+		}
+		assertTrue("no fo:inline carries the emoji", seen>=2);
+
+		// and FOP draws them, rather than its '#'
+		org.w3c.dom.Document areaTree = areaTree(pkg, Docx4J.FLAG_NONE);
+		String drawn = areaTree.getDocumentElement().getTextContent();
+		assertTrue("U+1F600 did not reach the area tree", drawn.contains(new String(Character.toChars(GRINNING))));
+		assertTrue("U+1F44D did not reach the area tree", drawn.contains(new String(Character.toChars(THUMBS_UP))));
+		assertTrue("FOP drew a '#'", !drawn.contains("#"));
+	}
+
 	private byte[] toFO(WordprocessingMLPackage pkg) throws Exception {
 
 		FOSettings foSettings = Docx4J.createFOSettings();
