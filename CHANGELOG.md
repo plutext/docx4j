@@ -52,6 +52,10 @@ PDF and HTML output, tables (CR-030):
 
 PDF via XSL FO:
 
+- docx4j-fo-renderer 2.11-docx4j.4 (was .2): text outside the BMP in right-to-left runs keeps
+  its order, letter spaces count in a word's width on the complex-script path, Apache FOP's
+  main branch merged, and a nested block's lines are no longer lost after a float (CR-020).
+
 - PDF output through the XSLT pathway (FLAG_EXPORT_PREFER_XSL) works again on the docx4j FO
   renderer: its FO left the fox namespace of fox:gsub-features undeclared, and the export failed
   (17.3.0).

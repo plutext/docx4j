@@ -198,9 +198,9 @@
 				<fo.renderer.events.artifactId>docx4j-fo-renderer-events</fo.renderer.events.artifactId>
 				<!-- the fork's DEVELOPMENT snapshot, which is what a gate measures; the released
 				     version is what docx4j-export-fo depends on.  Bump this with the fork's
-				     branch (2.11-docx4j.3-SNAPSHOT since 2026-10-02, 2.11-docx4j.2 being released), or a gate scores the previous jars
+				     branch (2.11-docx4j.5-SNAPSHOT since 2026-10-04, 2.11-docx4j.4 being released), or a gate scores the previous jars
 				     under ~/.m2 and passes without measuring anything. -->
-				<fo.renderer.version>2.11-docx4j.3-SNAPSHOT</fo.renderer.version>
+				<fo.renderer.version>2.11-docx4j.5-SNAPSHOT</fo.renderer.version>
 				<fidelity.libDir>${project.build.directory}/lib-fork</fidelity.libDir>
 			</properties>
 		</profile>

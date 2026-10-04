@@ -130,10 +130,10 @@
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-xml/1.19/batik-xml-1.19.jar"/>
 
 		<!-- docx4j version of FOP -->
-        <pathelement location="${m2Repository}/org/docx4j/docx4j-fo-renderer/2.11-docx4j.2/docx4j-fo-renderer-2.11-docx4j.2.jar"/>
-        <pathelement location="${m2Repository}/org/docx4j/docx4j-fo-renderer-util/2.11-docx4j.2/docx4j-fo-renderer-util-2.11-docx4j.2.jar"/>
-        <pathelement location="${m2Repository}/org/docx4j/docx4j-fo-renderer-core/2.11-docx4j.2/docx4j-fo-renderer-core-2.11-docx4j.2.jar"/>
-        <pathelement location="${m2Repository}/org/docx4j/docx4j-fo-renderer-events/2.11-docx4j.2/docx4j-fo-renderer-events-2.11-docx4j.2.jar"/>
+        <pathelement location="${m2Repository}/org/docx4j/docx4j-fo-renderer/2.11-docx4j.4/docx4j-fo-renderer-2.11-docx4j.4.jar"/>
+        <pathelement location="${m2Repository}/org/docx4j/docx4j-fo-renderer-util/2.11-docx4j.4/docx4j-fo-renderer-util-2.11-docx4j.4.jar"/>
+        <pathelement location="${m2Repository}/org/docx4j/docx4j-fo-renderer-core/2.11-docx4j.4/docx4j-fo-renderer-core-2.11-docx4j.4.jar"/>
+        <pathelement location="${m2Repository}/org/docx4j/docx4j-fo-renderer-events/2.11-docx4j.4/docx4j-fo-renderer-events-2.11-docx4j.4.jar"/>
         
 		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-transcoder/1.19/batik-transcoder-1.19.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.19/batik-svggen-1.19.jar"/>

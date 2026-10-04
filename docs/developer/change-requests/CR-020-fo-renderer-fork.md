@@ -1108,6 +1108,32 @@ page images.
   - docx4j draws the emoji in DejaVu Sans. The ideograph comes out as `#`, since no font
     on the scoring machine covers Extension B.
 
+### docx4j moves to 2.11-docx4j.4 for 17.3.1 (2026-10-04)
+
+The fork released 2.11-docx4j.4 to Maven Central on 2026-10-04. It carries fop/CR-008 (bidi
+levels of surrogate pairs), the merge of Apache main (fop/CR-009), fop/CR-010 (letter spaces
+in a word's width) and fop/CR-011 (a nested block wrapped twice). Its dependencies are .2's.
+docx4j-export-fo's `fo.renderer.version` moves to it. The harness's fork profile follows the
+fork's branch, 2.11-docx4j.5-SNAPSHOT.
+
+**Gate on the released artifact:** docx4j at 0349796f9's code, the same jars on .2 and on .4,
+with the four renderer jars swapped from Central. The scoreboard line confirms .4, with all
+ten hooks.
+- real and real2: identical, document by document.
+- probes: `surrogate-pairs-bidi` 0.4286 -> 0.5714, the CR-008 fix, as Word's golden reads
+  it; nothing else moves.
+- real3: one document moves, `14_en-GB_sdt_num_8371`, 0.6799 -> 0.6778: four lines of
+  Greek break one word earlier.
+  - This is not CR-011. The fork's CR-009/CR-010 gate run B (today's docx4j on the .4
+    snapshot before CR-011, 2026-10-03) already scored it 0.6778, below the scorer's 0.02
+    floor.
+  - docx4j 17.3.0 scored 0.6778 on .2 as well. So the document is back at the released
+    17.3.0's score.
+  - The 0.0021 is the path-aware letter spacing, docx4j's compensation on .2 against .4's
+    own width. It falls on Greek drawn in P052 for want of a Greek Cambria (carried below).
+
+Reactor on .4: core-tests 1,387/0, export-fo 240/0, export-fo-tests 677/0.
+
 ### Not done, carried
 
 - Cambria's Greek: docx4j maps Cambria to Caladea, which covers Latin only, so Greek runs

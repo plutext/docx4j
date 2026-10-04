@@ -25,7 +25,7 @@
 		<fo.renderer.groupId>org.docx4j</fo.renderer.groupId>
 		<fo.renderer.artifactId>docx4j-fo-renderer</fo.renderer.artifactId>
 		<fo.renderer.events.artifactId>docx4j-fo-renderer-events</fo.renderer.events.artifactId>
-		<fo.renderer.version>2.11-docx4j.2</fo.renderer.version>
+		<fo.renderer.version>2.11-docx4j.4</fo.renderer.version>
 	</properties>
 	  
 	
