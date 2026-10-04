@@ -201,6 +201,7 @@ public final class WordLayoutFixups {
 		spanWrapperBreaks(doc); // after listItemPageBreaks: the break may now be on the list-block
 		blockForEmptyCell(doc);
 		clipExactRows(doc);
+		continuationFromTop(doc);
 		StyleRefMarkers.apply(doc); // before stripHints: it reads the paragraph-style hint
 		stripHints(doc);
 	}
@@ -4967,6 +4968,46 @@ public final class WordLayoutFixups {
 				}
 			}
 			splitCellParagraphs(child);
+		}
+	}
+
+	/**
+	 * Word lays out the later part of a table cell broken across pages from the top,
+	 * whatever its w:vAlign; only the cell's first part keeps its alignment.  Measured on
+	 * the table-rowsplit-3 probe (variant F, every cell w:vAlign bottom): on the page a row
+	 * continues onto, Word sets each cell's remaining lines on one baseline (y=86.53), where
+	 * FOP, keeping display-align="after" for every area the cell generates, put a one-line
+	 * continuation on the longest cell's last line, 14pt lower.  XSL cannot say this, so the
+	 * cell carries the docx4j FO renderer's fox:continuation-display-align="before" (fork
+	 * CR-013), where that renderer has it.  Corpus document 11657 (about 2,900 bottom-aligned
+	 * cells, rows split since 939025a59) has 37 such boundaries.  Gated on the renderer's
+	 * CR-013 snapshot (b88, the Windows faces supplied): with the attribute off nothing moved
+	 * against the renderer before it; with it on, ten documents and probes moved, none down -
+	 * 13102 +12 lines, 11741 +4, 11657 +3, and the four table-rowsplit-3 modes to Word's
+	 * every line.  Property {@code docx4j.convert.out.fo.wordLayout.continuationFromTop}.
+	 *
+	 * @since 17.3.1
+	 */
+	static void continuationFromTop(Document doc) {
+		continuationFromTop(doc, FopCapabilities.has(FopCapabilities.Capability.CONTINUATION_DISPLAY_ALIGN));
+	}
+
+	/** @param hook whether the renderer has fox:continuation-display-align */
+	static void continuationFromTop(Document doc, boolean hook) {
+		if (!hook) return;
+		if (!org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.wordLayout.continuationFromTop", true)) return;
+		boolean any = false;
+		for (Element cell : elements(doc, "table-cell")) {
+			String align = cell.getAttribute("display-align");
+			if ("center".equals(align) || "after".equals(align)) {
+				cell.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS,
+						"fox:continuation-display-align", "before");
+				any = true;
+			}
+		}
+		if (any) {
+			doc.getDocumentElement().setAttributeNS(XMLNS, "xmlns:fox", org.docx4j.fonts.RunFontSelector.FOX_NS);
 		}
 	}
 

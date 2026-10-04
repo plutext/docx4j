@@ -267,6 +267,37 @@ public class WordLayoutFixupsTest {
 		assertFalse(WordLayoutFixups.apply(in, 15).contains("retain"));
 	}
 
+	/** Where the renderer has fox:continuation-display-align (fork CR-013), a centred or
+	 *  bottom-aligned cell's later parts are laid out from the top, as Word lays them out;
+	 *  a top-aligned cell needs nothing, and without the hook nothing is written.
+	 *  @since 17.3.1 */
+	@Test
+	public void brokenCellsContinueFromTheTop() throws Exception {
+		String fo = flow("<fo:table><fo:table-body><fo:table-row>"
+				+ "<fo:table-cell display-align=\"after\"><fo:block>a</fo:block></fo:table-cell>"
+				+ "<fo:table-cell display-align=\"center\"><fo:block>b</fo:block></fo:table-cell>"
+				+ "<fo:table-cell display-align=\"before\"><fo:block>c</fo:block></fo:table-cell>"
+				+ "</fo:table-row></fo:table-body></fo:table>");
+		String fox = org.docx4j.fonts.RunFontSelector.FOX_NS;
+
+		org.w3c.dom.Document doc = parse(fo);
+		WordLayoutFixups.continuationFromTop(doc, true);
+		org.w3c.dom.NodeList cells = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "table-cell");
+		assertEquals("after", "before", ((org.w3c.dom.Element) cells.item(0)).getAttributeNS(fox, "continuation-display-align"));
+		assertEquals("center", "before", ((org.w3c.dom.Element) cells.item(1)).getAttributeNS(fox, "continuation-display-align"));
+		assertFalse("before", ((org.w3c.dom.Element) cells.item(2)).hasAttributeNS(fox, "continuation-display-align"));
+
+		doc = parse(fo);
+		WordLayoutFixups.continuationFromTop(doc, false);
+		cells = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "table-cell");
+		assertFalse("no hook", ((org.w3c.dom.Element) cells.item(0)).hasAttributeNS(fox, "continuation-display-align"));
+	}
+
+	private static org.w3c.dom.Document parse(String fo) throws Exception {
+		return org.docx4j.XmlUtils.getNewDocumentBuilder().parse(
+				new org.xml.sax.InputSource(new java.io.StringReader(fo)));
+	}
+
 	private static int count(String s, String sub) {
 		int n = 0, i = 0;
 		while ((i = s.indexOf(sub, i)) >= 0) { n++; i += sub.length(); }

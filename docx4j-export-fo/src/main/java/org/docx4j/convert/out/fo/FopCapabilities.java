@@ -106,7 +106,12 @@ public final class FopCapabilities {
 		 *  is honoured (FOP makes it 1, as XSL 1.1 allows) and a page numbered 0 gets a PDF page
 		 *  label, so Word's {@code w:pgNumType w:start="0"} numbers its section from 0 (fork CR-012;
 		 *  Enterprise CR-001 §6.6 item 38).  @since 17.3.1 */
-		PAGE_NUMBER_ZERO("page-number-zero");
+		PAGE_NUMBER_ZERO("page-number-zero"),
+		/** {@code fox:continuation-display-align} on fo:table-cell: the display-align of a cell's
+		 *  later parts, where the cell is broken across pages, so that they can be laid out from
+		 *  the top as Word lays them out whatever the cell's w:vAlign (fork CR-013; Enterprise
+		 *  CR-001 §6.6 item 39).  @since 17.3.1 */
+		CONTINUATION_DISPLAY_ALIGN("continuation-display-align");
 
 		private final String key;
 

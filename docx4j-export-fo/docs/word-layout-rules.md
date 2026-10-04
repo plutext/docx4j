@@ -3254,6 +3254,20 @@ re-breaks the paragraph inside the container (corpus documents 7924 and 4255 los
 its 200 page boundaries this way. Property
 `docx4j.convert.out.fo.wordLayout.splitCellParagraphsBelowMode15`.
 
+<a id="s67continuation"></a>**A divided cell continues from the top (17.3.1).** Word sets the
+later part of a cell broken across pages at the top of its part of the row, whatever the
+cell's `w:vAlign`; only the first part keeps its alignment. Measured on `table-rowsplit-3`
+variant F (every cell `w:vAlign="bottom"`): on the continuation page the three cells'
+remaining lines share one baseline (y=86.53), where FOP, applying `display-align="after"` to
+every area the cell generates, set a one-line continuation on the longest cell's last line,
+14pt lower. XSL cannot say it, so on the docx4j FO renderer (capability
+`continuation-display-align`, fork CR-013) `WordLayoutFixups.continuationFromTop` writes
+`fox:continuation-display-align="before"` on every centred or bottom-aligned cell. Gated on
+the renderer's snapshot: nothing moved with the attribute off; with it on, ten documents and
+probes moved and none went down (13102 +12 lines, 11741 +4, 11657 +3, the four
+`table-rowsplit-3` modes to Word's every line). On Apache FOP nothing is written. Property
+`docx4j.convert.out.fo.wordLayout.continuationFromTop`.
+
 <a id="s68"></a>**Exact row heights.** `w:trHeight` with `w:hRule="exact"`: Word keeps the
 row at that height and lets the text overflow over the rows below, where FOP treats the
 height as a minimum and grows the row. docx4j clips the cell content to the exact height

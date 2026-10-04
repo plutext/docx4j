@@ -81,6 +81,10 @@ PDF via XSL FO:
   Word divides it; widow control and keep-lines hold a cell paragraph together only from
   mode 15.
 
+- A centred or bottom-aligned table cell broken across pages continues at the top of the next
+  page, as Word's does, on a docx4j FO renderer that allows it (capability
+  continuation-display-align, fork CR-013).
+
 - A text box's text is set in by half its border as well as by its inset, and a list or an
   indented paragraph in a text box is indented from the box's text area, not from its edge.
   A positioned text box's text starts below its top inset, as Word's does.
