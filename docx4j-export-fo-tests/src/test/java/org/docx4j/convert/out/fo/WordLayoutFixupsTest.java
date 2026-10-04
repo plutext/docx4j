@@ -1040,4 +1040,71 @@ public class WordLayoutFixupsTest {
 		assertTrue("the last of several keeps its space-after: " + last,
 				last.contains("space-after=\"10pt\""));
 	}
+
+	/** A row of one cell paragraph, which w:keepLines marks keep-together, in a row
+	 *  w:cantSplit marks the same. */
+	private static String cellParagraphRow() {
+		return flow("<fo:table><fo:table-body>"
+				+ "<fo:table-row keep-together.within-page=\"always\"><fo:table-cell>"
+				+ "<fo:block docx4j-pstyle=\"\" keep-together.within-page=\"always\">two lines</fo:block>"
+				+ "</fo:table-cell></fo:table-row></fo:table-body></fo:table>");
+	}
+
+	/**
+	 * Below compatibility mode 15 Word divides a row inside a cell paragraph at any line
+	 * (table-rowsplit-3: modes 11, 12 and 14 split 1+1, 1+2 and 2+1 with widow control
+	 * on and with w:keepLines), so the cell gets widows and orphans of 1 and its
+	 * paragraphs lose keep-together; w:cantSplit's keep on the row stays.  @since 17.3.1
+	 */
+	@Test
+	public void cellParagraphsSplitBelowMode15() {
+		String out = WordLayoutFixups.apply(cellParagraphRow(), 14);
+		assertTrue("paragraph widows", out.matches("(?s).*<fo:block[^>]*widows=\"1\".*"));
+		assertTrue("paragraph orphans", out.matches("(?s).*<fo:block[^>]*orphans=\"1\".*"));
+		assertFalse("keepLines kept on the cell paragraph",
+				out.matches("(?s).*<fo:block[^>]*keep-together.within-page.*"));
+		assertTrue("cantSplit lost from the row",
+				out.matches("(?s).*<fo:table-row[^>]*keep-together.within-page=\"always\".*"));
+	}
+
+	/** Not inside a container (a cell clipped to an exact row height, a turned cell),
+	 *  which cannot be divided across pages anyway.  @since 17.3.1 */
+	@Test
+	public void cellParagraphsInAContainerKeepTheirWidows() {
+		String in = flow("<fo:table><fo:table-body><fo:table-row><fo:table-cell>"
+				+ "<fo:block-container block-progression-dimension=\"12pt\" overflow=\"hidden\">"
+				+ "<fo:block docx4j-pstyle=\"\">clipped</fo:block></fo:block-container>"
+				+ "</fo:table-cell></fo:table-row></fo:table-body></fo:table>");
+		assertFalse(WordLayoutFixups.apply(in, 14).contains("widows"));
+	}
+
+	/** ...and from mode 15 they hold the paragraph together as Word does.  @since 17.3.1 */
+	@Test
+	public void cellParagraphsKeepTogetherFromMode15() {
+		String out = WordLayoutFixups.apply(cellParagraphRow(), 15);
+		assertFalse(out.contains("widows=\"1\""));
+		assertTrue(out.matches("(?s).*<fo:block[^>]*keep-together.within-page=\"always\".*"));
+	}
+
+	/**
+	 * An explicit start-indent in a text box is measured from the box's text area, as
+	 * Word measures it (textbox-inset-stroke-list): moved in by the box's start inset;
+	 * body-start() and the inherited start are left alone.  @since 17.3.1
+	 */
+	@Test
+	public void textBoxStartIndentsAddTheInset() {
+		String in = flow("<fo:block-container start-indent=\"8.7pt\" docx4j-textbox-start=\"8.7pt\">"
+				+ "<fo:block docx4j-pstyle=\"\">plain</fo:block>"
+				+ "<fo:list-block start-indent=\"0in\" provisional-distance-between-starts=\"18pt\">"
+				+ "<fo:list-item><fo:list-item-label end-indent=\"label-end()\"><fo:block>1.</fo:block></fo:list-item-label>"
+				+ "<fo:list-item-body start-indent=\"body-start()\"><fo:block>item</fo:block></fo:list-item-body>"
+				+ "</fo:list-item></fo:list-block>"
+				+ "<fo:block docx4j-pstyle=\"\" start-indent=\"36pt\">indented</fo:block>"
+				+ "</fo:block-container>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertTrue("list-block", out.matches("(?s).*<fo:list-block[^>]*start-indent=\"8.7pt\".*"));
+		assertTrue("indented paragraph", out.contains("start-indent=\"44.7pt\""));
+		assertTrue("body-start() changed", out.contains("start-indent=\"body-start()\""));
+		assertFalse("hint left", out.contains("docx4j-textbox-start"));
+	}
 }

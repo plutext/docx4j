@@ -1264,16 +1264,23 @@ lines as Word does (0.20 gives 78%, 0.30 gives 74%). For a document below mode 1
 writes `docx4j:space-shrink="0"` on `fo:root` and the line manager caps the allowance with
 it. Setting the property explicitly applies it to every document.
 
-Being inside that cap is **not** enough. Word compresses only when the line it would
-otherwise leave is very loose: measured on three corpus lines it refused compressions of
-22.5%, 15.1% and 13.3% and took an alternative stretched by only 38.5%, 16.1% and 12.8%
-instead, while every line it did compress in the `break-justified` golden had a far looser
-alternative again. `docx4j.convert.out.fo.wordLayout.minStretchToCompress` is how stretched
-that alternative has to be, as a fraction of the spaces' natural width; swept on the probe,
-0 and 0.1 break 98% of its lines as Word does, **0.2 and 0.3 break 100%**, 0.5 gives 83%
-and 0.7 gives 57%. The default is 0.30, which is also the maximum over the batch-1
-documents carrying those lines (77.5% -> 80.2% of lines matched). 0 restores 17.0.5's
-behaviour.
+Being inside that cap is **not** enough. <a id="s42ratio"></a>**Word compresses only where
+the compression is less than half the stretch the other line would take (17.3.1)**, each as a
+fraction of its own line's natural space width. The `justified-compression-decision` probe
+measures it: 159 two-line justified paragraphs, each built so that bringing the next word up
+needs every space compressed by c and leaving it stretches the shorter line's spaces by s, on a
+grid of c 3-24% against s 8-80%. The grid ran in Carlito, Liberation Sans and Liberation Serif
+at 12pt (no 1/300-inch size rounding), with 6 to 36 spaces on the line, plus 1035's numbered
+first lines. Word brought the word up exactly where c < s/2, in every face and whatever the
+number of spaces; at exactly half it went both ways. The numbered lines follow the same rule,
+measured after the tab. 17.1.0's rule - an alternative stretched by at least 30% - got 39 of
+the 159 wrong both ways: it refused 3% against an 8% stretch, and it took 18% against 32%.
+The ratio rule gets 155 right, and the 4 it misses are the knife edge. It also fits the eleven
+corpus lines that set the old rule, among them refusals of 22.5% against 38.5% and 15.1%
+against 16.1%. `docx4j.convert.out.fo.wordLayout.compressionToStretch` is the ratio (0.5; 0
+turns it off). `docx4j.convert.out.fo.wordLayout.minStretchToCompress`, 17.1.0's rule, stays
+as a floor under it, default 0 (it was 0.30). The cap stands: Word took 24.0% against an 80%
+stretch, and batch 44 measured it refusing 25%.
 
 <a id="s42shiftreturn"></a>**A line that ends in a soft return is justified**
 (`w:compat/w:doNotExpandShiftReturn`, 17.1.0). Word stretches the spaces of a line ending
@@ -3147,6 +3154,26 @@ not content-sized (`CellSpacingAutofitTest`).
   height). One document of a 103-document corpus has eleven such cells and lost its whole
   export to them.
 
+<a id="s67split"></a>**Below compatibility mode 15, a row is divided inside a cell paragraph at any
+line (17.3.1).** Word applies neither widow control nor `w:keepLines` to a paragraph in a
+table cell there, so a row breaks across the page wherever the page ends, and only
+`w:cantSplit` keeps it whole. The `table-rowsplit-3` probe measured it in five documents
+(modes 11, 12, 14 and 15, and 11 again with a corpus document's fifteen Word 2003
+compatibility flags). Each holds rows of a two-line and a three-line cell paragraph, with the
+page bottom one or two lines into the row. At modes 11, 12 and 14 Word divides the
+paragraphs 1+1, 1+2 and 2+1, with `w:widowControl` absent, stated on, and with `w:keepLines`
+alike. At mode 15 it moves the row whole, as FOP's default widows and orphans of 2 do. Body
+paragraphs keep widow control at every mode, and the flags change nothing. So below 15
+`WordLayoutFixups.splitCellParagraphsBelowMode15` gives a cell's paragraphs widows and
+orphans of 1, and takes off the keep-together that `w:keepLines` (or the break-only
+paragraph rule, which stands for widow control) put on them. Paragraphs inside a cell's
+`fo:block-container` are left alone: a cell clipped to an exact row height, or one turned by
+`w:textDirection`, cannot be divided across pages anyway. Given widows of 1 there, FOP
+re-breaks the paragraph inside the container (corpus documents 7924 and 4255 lost 0.043 and
+0.012 when the cell itself carried the value). Corpus document 11657 (mode 11) splits 37 of
+its 200 page boundaries this way. Property
+`docx4j.convert.out.fo.wordLayout.splitCellParagraphsBelowMode15`.
+
 <a id="s68"></a>**Exact row heights.** `w:trHeight` with `w:hRule="exact"`: Word keeps the
 row at that height and lets the text overflow over the rows below, where FOP treats the
 height as a minimum and grows the row. docx4j clips the cell content to the exact height
@@ -4587,10 +4614,33 @@ now. It is also why a *centred* line in such a box sat 7.2pt left of Word's - th
 rectangle was the right width but began in the wrong place. So across the line the
 container's `width` is the shape less the **end** inset (which stays padding, and which FOP
 does take off the measure), the **start** inset is `start-indent`, and `resetTextBox` no
-longer overwrites either. The measure is unchanged: 297.9 - 7.2 - 7.2 = 283.5. A shape's
-`strokeweight` is still uncounted, so a bordered box's text is up to half a stroke left of
-Word's. 694 absolutely positioned containers carrying padding, in 40 documents of the three
-corpora.
+longer overwrites either. The measure is unchanged: 297.9 - 7.2 - 7.2 = 283.5. 694
+absolutely positioned containers carrying padding, in 40 documents of the three corpora.
+
+<a id="s92stroke"></a>**The text is also set in by half the stroke, on every side (17.3.1).**
+The `textbox-inset-stroke-list` probe has twelve 240pt boxes: VML `v:shape` text boxes
+unstroked, at VML's default 0.75pt, at .5, 3 and 6pt, with inset 0 and with a wider inset, and
+DrawingML boxes with no line and with 0.75, 3 and 6pt lines. Word's text starts at the inset
+plus half the stroke in every one: x0 from the box edge is 7.24 unstroked, 7.67 at 0.75pt,
+8.75 at 3pt, 10.26 at 6pt, 0.45 at inset 0 and 0.75pt, and 15.95 at inset 14.4pt and 3pt. The
+DrawingML boxes match these to 0.05pt, and the right and top edges move by the same half
+stroke. docx4j set the text at the inset alone, so a stroked box's measure was a stroke too
+wide: corpus document 7046's 3pt box fits a word Word does not on its third line, and its
+118 lines re-wrap from there. `FOTextBoxes.withStroke` adds half the stroke to each inset:
+the VML `strokeweight` (0 for `stroked="f"`, 0.75pt when absent), or the `a:ln` `w`.
+
+<a id="s92indent"></a>**An indent inside a box is measured from the box's text area (17.3.1).**
+The container's start inset is its `start-indent`, which the box's paragraphs inherit. But a
+paragraph with an indent of its own - a list item, `w:ind w:left` - writes an explicit
+`start-indent`, which XSL-FO measures from the container's edge, so it replaced the inset
+instead of adding to it. On the probe, Word's list labels sit at the text area's edge and a
+`w:ind w:left="720"` paragraph 36pt in from it; ours were the inset further left. On corpus
+documents 5123, 7046 and 6614 every list paragraph in a box re-wrapped on that 7.2pt. So
+`WordLayoutFixups.textBoxStartIndents` moves every numeric `start-indent` inside the
+container in by the inset. It does not reach inside a nested container, whose own
+`start-indent` is moved, nor inside a table. **Open:** down the box our text starts at the
+container's top, not one top inset (and half a stroke) down. The probe's text tops are 4.6pt
+above Word's at the default inset and 1.5pt at inset 0 (the vertical origin, ledger4's M22).
 
 <a id="s92negx"></a>**A negative horizontal offset is honoured**, not clamped to the column
 edge: Word draws such a box out into the margin. Measured on a landscape planner whose box

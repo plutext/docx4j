@@ -164,6 +164,7 @@ public final class WordLayoutFixups {
 		positionFrames(doc);
 		anchorImages(doc);
 		anchorTextBoxes(doc);
+		textBoxStartIndents(doc);
 		anchorFloatingTables(doc);
 		hoistFloats(doc);
 		// after the anchoring passes: a paragraph which gains a positioned container is
@@ -194,6 +195,7 @@ public final class WordLayoutFixups {
 		cellLineWidth(doc);
 		nestedTableGridEdge(doc);
 		fixLists(doc);
+		splitCellParagraphsBelowMode15(doc, compatibilityMode); // after fixLists and keepBreakOnlyParagraphsTogether, before stripHints
 		spacingOutsideBorders(doc); // after syncContainerSpacing (the wrapper carries the spacing) and fixLists (which puts a numbered paragraph's onto its list-block)
 		listItemPageBreaks(doc); // after fixLists, which is what puts the item's space-before on the list-block
 		spanWrapperBreaks(doc); // after listItemPageBreaks: the break may now be on the list-block
@@ -829,6 +831,11 @@ public final class WordLayoutFixups {
 	public static final String HINT_ANCHOR_COL = "docx4j-anchor-col";
 	/** @since 17.0.5 */
 	public static final String HINT_ANCHOR_ML = "docx4j-anchor-ml";
+
+	/** On a text box's fo:block-container: its start inset (with half its stroke), which
+	 *  an explicit start-indent inside it has to be moved in by.
+	 *  @see #textBoxStartIndents(Document)  @since 17.3.1 */
+	public static final String HINT_TEXTBOX_START = "docx4j-textbox-start";
 	private static final String[] ANCHOR_HINTS = { HINT_ANCHOR, HINT_ANCHOR_W, HINT_ANCHOR_H,
 			HINT_ANCHOR_X, HINT_ANCHOR_Y, "docx4j-anchor-dist", "docx4j-anchor-behind",
 			HINT_ANCHOR_COL, HINT_ANCHOR_ML };
@@ -2528,6 +2535,48 @@ public final class WordLayoutFixups {
 		// start-indent and end-indent are the box's own inset (FOTextBoxes.createContainer)
 		// and must not be reset here: they are what puts the text inside the shape.
 		dropPagination(box);
+	}
+
+	/**
+	 * A paragraph with an indent of its own in a text box - a list item, an indented
+	 * paragraph - starts that far in from the box's text area, as every other paragraph
+	 * there does.  The container carries the box's start inset as its start-indent
+	 * (FOTextBoxes.createContainer), which the box's other paragraphs inherit; but an
+	 * explicit start-indent is measured from the container's edge, so it replaced the
+	 * inset instead of adding to it.  Measured on the textbox-inset-stroke-list probe
+	 * (CR-001 batch 50): Word's list labels sit at the text area's edge and its
+	 * w:ind left=720 paragraph 36pt in from it, in VML and DrawingML boxes alike, where
+	 * ours were 7.2pt (the default inset) further left; on corpus documents 5123, 7046
+	 * and 6614 every list paragraph in a box re-wrapped on it.  So every numeric
+	 * start-indent inside the container is moved in by the inset - not inside a nested
+	 * container, which is a reference area of its own (its own start-indent is moved),
+	 * nor inside a table, whose cells measure from themselves.
+	 *
+	 * @since 17.3.1
+	 */
+	static void textBoxStartIndents(Document doc) {
+		for (Element box : elements(doc, "block-container")) {
+			String hint = box.getAttribute(HINT_TEXTBOX_START);
+			box.removeAttribute(HINT_TEXTBOX_START);
+			if (hint.isEmpty()) continue;
+			double inset = lengthPt(hint);
+			if (inset != 0) shiftStartIndents(box, inset);
+		}
+	}
+
+	/** @see #textBoxStartIndents(Document) */
+	private static void shiftStartIndents(Element el, double deltaPt) {
+		for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (!(n instanceof Element)) continue;
+			Element child = (Element) n;
+			if (isFo(child, "table") || isFo(child, "table-and-caption")) continue;
+			String v = child.getAttribute("start-indent").trim();
+			if (v.matches("-?[0-9]*\\.?[0-9]+(pt|in|mm|cm|px)?")) {
+				child.setAttribute("start-indent", org.docx4j.fonts.WordLineMetrics.format(lengthPt(v) + deltaPt));
+			}
+			if (isFo(child, "block-container")) continue;
+			shiftStartIndents(child, deltaPt);
+		}
 	}
 
 	/** Pagination properties FOP must not see inside a positioned container. */
@@ -4855,6 +4904,63 @@ public final class WordLayoutFixups {
 			if (last != null && hasSpace(last, "space-after")) {
 				last.setAttribute("space-after.conditionality", "retain");
 			}
+		}
+	}
+
+	/**
+	 * Below compatibility mode 15 Word divides a table row inside a paragraph of its
+	 * cells at any line: neither widow control (on by default) nor {@code w:keepLines}
+	 * holds a cell paragraph's lines together, and only {@code w:cantSplit} keeps the
+	 * row whole.  Measured on the table-rowsplit-3 probe (CR-001 batch 50): rows of a
+	 * two-line and a three-line cell paragraph with the page bottom one or two lines in
+	 * are divided 1+1, 1+2 and 2+1 at modes 11, 12 and 14 - with w:widowControl absent,
+	 * stated on, and with w:keepLines - and moved whole at mode 15, as FOP's default
+	 * widows and orphans of 2 move them; body paragraphs keep widow control at every
+	 * mode, and a corpus document's Word 2003 compatibility flags change nothing.  So
+	 * below 15 a cell's paragraphs get widows and orphans of 1 and lose the keep-together
+	 * that w:keepLines (or the break-only paragraph rule, which stands for widow control)
+	 * put on them.  Corpus document 11657 (mode 11) splits 37 of its 200 page boundaries
+	 * this way.
+	 *
+	 * <p>On the paragraphs, not on the cell for them to inherit, and not inside an
+	 * fo:block-container: a cell clipped to an exact row height, or turned by
+	 * w:textDirection, is laid out in one, which cannot be divided across pages anyway,
+	 * and FOP lets a paragraph of widows 1 re-break inside such a container - measured on
+	 * corpus documents 7924 (an exact row whose overflowing line moved) and 4255 (a turned
+	 * cell's text moved 70pt), where giving the cell the value lost 0.043 and 0.012.
+	 * Property {@code docx4j.convert.out.fo.wordLayout.splitCellParagraphsBelowMode15}.</p>
+	 *
+	 * @since 17.3.1
+	 */
+	static void splitCellParagraphsBelowMode15(Document doc, int compatibilityMode) {
+		if (compatibilityMode >= 15) return;
+		if (!org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.wordLayout.splitCellParagraphsBelowMode15", true)) return;
+		for (Element cell : elements(doc, "table-cell")) {
+			splitCellParagraphs(cell);
+		}
+	}
+
+	/** Widows and orphans of 1, and no keep-together, on every paragraph below el (its
+	 *  fo:block, or the fo:list-block a numbered one is), but not inside a container
+	 *  or a nested table, whose own cells are reached on their own.
+	 *  @see #splitCellParagraphsBelowMode15 */
+	private static void splitCellParagraphs(Element el) {
+		for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (!(n instanceof Element)) continue;
+			Element child = (Element) n;
+			if (isFo(child, "block-container") || isFo(child, "table")
+					|| isFo(child, "table-and-caption")) {
+				continue;
+			}
+			if ((isFo(child, "block") && child.hasAttribute(HINT_PSTYLE)) || isFo(child, "list-block")) {
+				child.setAttribute("widows", "1");
+				child.setAttribute("orphans", "1");
+				if ("always".equals(child.getAttribute("keep-together.within-page"))) {
+					child.removeAttribute("keep-together.within-page");
+				}
+			}
+			splitCellParagraphs(child);
 		}
 	}
 

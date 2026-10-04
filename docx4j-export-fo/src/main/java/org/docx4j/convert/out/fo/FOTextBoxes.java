@@ -103,6 +103,10 @@ public class FOTextBoxes {
 		// container is: without this the content would be indented all over again
 		container.setAttribute("start-indent", pt(Math.max(0, in[0])));
 		container.setAttribute("end-indent", "0pt");
+		// an explicit start-indent inside (a list, an indented paragraph) is measured from
+		// the box's edge too, and has to be moved in by the same inset
+		// (WordLayoutFixups.textBoxStartIndents)
+		if (in[0] > 0) container.setAttribute(WordLayoutFixups.HINT_TEXTBOX_START, pt(in[0]));
 		if (!"inline".equals(kind)) {
 			container.setAttribute(WordLayoutFixups.HINT_ANCHOR, kind);
 			container.setAttribute(WordLayoutFixups.HINT_ANCHOR_W, pt(w));
@@ -294,11 +298,52 @@ public class FOTextBoxes {
 		container.removeAttribute("padding-bottom");
 		container.setAttribute("start-indent", "0pt");
 		container.setAttribute("end-indent", "0pt");
+		container.removeAttribute(WordLayoutFixups.HINT_TEXTBOX_START);
 	}
 
 	/** Word's wrapping styles, as the fixups know them. */
 	private static String kind(String wrapType) {
 		return ("none".equals(wrapType) || wrapType==null) ? "none" : "square";
+	}
+
+	/**
+	 * The insets a box's text has once its stroke is counted: Word sets the text in by
+	 * half the stroke as well as by the inset, on every side, for a VML and a DrawingML
+	 * box alike.  Measured on the textbox-inset-stroke-list probe (CR-001 batch 50),
+	 * text x0 from the box edge: 7.24 unstroked, 7.67 at VML's default 0.75pt, 8.75 at
+	 * 3pt, 10.26 at 6pt; 0.45 at inset 0 and 0.75pt; 15.95 at inset 14.4pt and 3pt; the
+	 * DrawingML boxes the same to 0.05pt, and the right and top edges likewise.  docx4j
+	 * set the text at the inset alone, so a stroked box's measure was a stroke too wide
+	 * (corpus documents 7046 and 4994 re-wrap on it).
+	 *
+	 * @param inset as {@link #inset(String)} gives it: null for Word's default
+	 * @param strokePt the stroke's width in points, 0 for none
+	 * @since 17.3.1
+	 */
+	public static double[] withStroke(double[] inset, double strokePt) {
+		if (strokePt <= 0) return inset;
+		double[] in = (inset==null ? DEFAULT_INSET : inset).clone();
+		for (int i = 0; i < in.length; i++) in[i] += strokePt / 2;
+		return in;
+	}
+
+	/** A VML shape's stroke width in points: 0 where it says stroked="f", its
+	 *  strokeweight where it gives one (pt, or another CSS unit; a bare number is
+	 *  points), and VML's default of 0.75pt otherwise.  @since 17.3.1 */
+	public static double vmlStrokePt(org.docx4j.vml.VmlShapeElements shape) {
+		if (!(shape instanceof org.docx4j.vml.VmlAllShapeAttributes)) return 0.75;
+		org.docx4j.vml.VmlAllShapeAttributes a = (org.docx4j.vml.VmlAllShapeAttributes) shape;
+		org.docx4j.vml.STTrueFalse stroked = a.getStroked();
+		if (stroked!=null && (stroked.equals(org.docx4j.vml.STTrueFalse.F)
+				|| stroked.equals(org.docx4j.vml.STTrueFalse.FALSE))) {
+			return 0;
+		}
+		String weight = a.getStrokeweight();
+		if (weight==null || weight.trim().length()==0) return 0.75;
+		double v = pts(weight.trim(), -1);
+		if (v < 0) return 0.75;
+		// a bare number this large is in EMU (12700 to the point), as DrawingML's are
+		return weight.trim().matches("[0-9]+") && v >= 100 ? v / 12700 : v;
 	}
 
 	/** The v:textbox/@inset ("0,0,0,0", "1mm,2pt,,") in points, or null for Word's default. */

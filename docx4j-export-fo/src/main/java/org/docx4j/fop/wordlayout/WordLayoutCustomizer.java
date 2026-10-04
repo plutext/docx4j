@@ -89,28 +89,46 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 		return v == null ? DEFAULT_MAX_HYPHEN_SPACE_SHRINK : v.doubleValue();
 	}
 
-	/** How stretched the alternative line has to be before Word compresses instead.
-	 *  Word does <em>not</em> compress a justified line to pull one more word on merely
-	 *  because the compression is inside {@link #MAX_SPACE_SHRINK}; it does so only when
-	 *  the line it would otherwise leave is very loose.  Measured (CR-001 §4.2, corpus
-	 *  batch 1): on three corpus lines Word refused compressions of 22.5%, 15.1% and
-	 *  13.3% and took a line stretched by 38.5%, 16.1% and 12.8% instead, while in the
-	 *  <code>break-justified</code> golden it compressed lines whose alternative was far
-	 *  looser again.  Swept on that probe: 0 and 0.1 break 98% of its lines as Word
-	 *  does, <b>0.2 and 0.3 break 100%</b>, 0.5 gives 83% and 0.7 gives 57%; on the
-	 *  batch-1 documents carrying these lines 0.3 is also the maximum (77.5% -> 80.2% of
-	 *  lines matched).  docx4j property or system property
-	 *  docx4j.convert.out.fo.wordLayout.minStretchToCompress; 0 restores 17.0.5's
-	 *  behaviour of compressing whenever the shrink is within the cap.
+	/** How stretched the alternative line has to be, at least, before Word compresses
+	 *  instead: a floor under {@link #COMPRESSION_TO_STRETCH}, as a fraction of the
+	 *  alternative's spaces' natural width.  It was the whole rule from 17.1.0 to 17.3.0
+	 *  (default 0.30, from three corpus lines where Word refused compressions of 22.5%,
+	 *  15.1% and 13.3% against alternatives stretched by 38.5%, 16.1% and 12.8%); the
+	 *  justified-compression-decision probe shows Word compressing far below it - 3% against
+	 *  an 8% alternative - and the ratio rule fits all eleven of those lines too.  docx4j
+	 *  property or system property docx4j.convert.out.fo.wordLayout.minStretchToCompress;
+	 *  default 0 (no floor).
 	 *  @since 17.1.0 */
 	public static final String MIN_STRETCH_TO_COMPRESS
 			= "docx4j.convert.out.fo.wordLayout.minStretchToCompress";
 
-	public static final double DEFAULT_MIN_STRETCH_TO_COMPRESS = 0.30;
+	public static final double DEFAULT_MIN_STRETCH_TO_COMPRESS = 0;
 
 	public static double minStretchToCompress() {
 		Double v = doubleProperty(MIN_STRETCH_TO_COMPRESS);
 		return v == null ? DEFAULT_MIN_STRETCH_TO_COMPRESS : v.doubleValue();
+	}
+
+	/** When Word compresses a justified line to pull one more word on rather than stretch
+	 *  the line it would otherwise leave: when the compression is less than this fraction of
+	 *  that stretch, each as a fraction of its line's natural space width (and within
+	 *  {@link #MAX_SPACE_SHRINK}).  Measured on the justified-compression-decision probe
+	 *  (2026-10-04): 159 lines, a grid of compressions 3-24% against stretches 8-80% in
+	 *  Carlito, Liberation Sans and Liberation Serif, with 6 to 36 spaces and numbered first
+	 *  lines - Word brought the word up exactly where the compression was under half the
+	 *  stretch, in every face and whatever the number of spaces; at exactly half it went
+	 *  both ways.  docx4j property or system property
+	 *  docx4j.convert.out.fo.wordLayout.compressionToStretch; default 0.5; 0 turns the rule
+	 *  off (compress whenever within the cap and the floor).
+	 *  @since 17.3.1 */
+	public static final String COMPRESSION_TO_STRETCH
+			= "docx4j.convert.out.fo.wordLayout.compressionToStretch";
+
+	public static final double DEFAULT_COMPRESSION_TO_STRETCH = 0.5;
+
+	public static double compressionToStretch() {
+		Double v = doubleProperty(COMPRESSION_TO_STRETCH);
+		return v == null ? DEFAULT_COMPRESSION_TO_STRETCH : v.doubleValue();
 	}
 
 	/** Whether <code>w:hyphenationZone</code> is enforced as the largest gap Word will

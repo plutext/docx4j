@@ -386,8 +386,9 @@ public class XsltFOFunctions {
 
     	// a wp:inline shape is in the flow; a wp:anchor is positioned, and
     	// stampAnchorHints works out where from its wrap and position elements
+    	// the text is set in by half the line as well as by the insets (17.3.1)
     	Element container = FOTextBoxes.createContainer(document, "inline", w, h, 0, "p:0", 0, 0,
-    			shapeInsets(anchorOrInline));
+    			FOTextBoxes.withStroke(shapeInsets(anchorOrInline), shapeLinePt(anchorOrInline)));
     	if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor
     			&& FOTextBoxes.isEnabled()) {
     		org.docx4j.model.images.WordXmlPictureE20.stampAnchorHints(container,
@@ -399,6 +400,24 @@ public class XsltFOFunctions {
     		}
     	}
     	return container;
+    }
+
+    /** The width in points of the line round the shape (wps:spPr/a:ln): 0 where there is
+     *  none or it is a:noFill, its w where it gives one, DrawingML's default of 0.75pt
+     *  where it does not.  A shape with no a:ln at all is drawn by its wps:style's
+     *  a:lnRef, which Word's text boxes give idx 0 (no line) unless styled; that case is
+     *  taken as 0.75pt only where the lnRef names a line.  @since 17.3.1 */
+    private static double shapeLinePt(Object anchorOrInline) {
+    	org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp
+    			= shape(anchorOrInline);
+    	if (wsp==null) return 0;
+    	org.docx4j.dml.CTLineProperties ln = wsp.getSpPr()==null ? null : wsp.getSpPr().getLn();
+    	if (ln==null) {
+    		org.docx4j.dml.CTShapeStyle style = wsp.getStyle();
+    		return (style!=null && style.getLnRef()!=null && style.getLnRef().getIdx() > 0) ? 0.75 : 0;
+    	}
+    	if (ln.getNoFill()!=null) return 0;
+    	return ln.getW()==null ? 0.75 : ln.getW() / 12700d;
     }
 
     /** The shape's text insets (wps:bodyPr lIns/tIns/rIns/bIns, EMU) in points, or null

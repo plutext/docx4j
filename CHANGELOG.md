@@ -77,6 +77,17 @@ PDF via XSL FO:
 - A header or footer of empty paragraphs reserves their spacing, as Word does: the body no
   longer starts above Word's under such a header, or runs below Word's over such a footer.
 
+- Below compatibility mode 15 a table row is divided inside a cell paragraph at any line, as
+  Word divides it; widow control and keep-lines hold a cell paragraph together only from
+  mode 15.
+
+- A text box's text is set in by half its border as well as by its inset, and a list or an
+  indented paragraph in a text box is indented from the box's text area, not from its edge.
+
+- A justified line is compressed to take one more word only where the compression is less
+  than half the stretch of the line it would otherwise be (was: where that line would stretch
+  by 30% or more).
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's

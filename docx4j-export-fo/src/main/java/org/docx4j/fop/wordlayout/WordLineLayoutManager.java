@@ -433,7 +433,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                         + " el=" + element);
             }
             boolean fits = difference >= 0
-                    || (fitsByShrinkingSpaces(elementIdx, difference) && worthCompressing());
+                    || (fitsByShrinkingSpaces(elementIdx, difference) && worthCompressing(elementIdx, difference));
             // a break inside an over-long word is Word's last resort, and only once the
             // word has a line to itself; it must still be measured, though, or the line
             // holding it would never be found too long (see emergencyUsable)
@@ -554,21 +554,26 @@ public class WordLineLayoutManager extends LineLayoutManager {
         /**
          * Whether Word would compress this line rather than break at the last
          * opportunity that fitted.  Being inside {@link #maxSpaceShrink} is not enough:
-         * Word compresses only when the line it would otherwise leave is very loose.
-         * Measured (CR-001 §4.2): on three corpus lines where Word refused a compression
-         * of 22.5 / 15.1 / 13.3% the alternative it took was stretched by only
-         * 38.5 / 16.1 / 12.8%, while in the break-justified golden the alternative to
-         * each compressed line was far looser again.  The threshold is
-         * {@link WordLayoutCustomizer#MIN_STRETCH_TO_COMPRESS} (0.30).
+         * Word compresses only where the compression, as a fraction of this line's
+         * natural space width, is less than {@link #compressionToStretch} (0.5) of the
+         * stretch the alternative line would take, as a fraction of its own.  Measured on
+         * the justified-compression-decision probe (CR-001 batch 50, word-layout-rules
+         * §4.2): 159 lines in three faces, 6 to 36 spaces, numbered first lines among
+         * them - the boundary is c = s/2 in every face, whatever the number of spaces.
+         * {@link #minStretchToCompress}, the 17.1.0 rule, is a floor under it (default 0).
          *
-         * @since 17.1.0
+         * @since 17.1.0, 17.3.1 the ratio
          */
-        private boolean worthCompressing() {
-            if (minStretchToCompress <= 0) return true;
+        private boolean worthCompressing(int elementIdx, int difference) {
             if (candIdx < 0) return true;   // nothing has fitted on this line yet
             int spaces = spacesWidth(candIdx);
             if (spaces <= 0) return true;
-            return candDifference > minStretchToCompress * spaces;
+            if (minStretchToCompress > 0 && candDifference <= minStretchToCompress * spaces) return false;
+            if (compressionToStretch <= 0) return true;
+            int compressedSpaces = spacesWidth(elementIdx);
+            if (compressedSpaces <= 0) return true;
+            // c < ratio x s, where c = -difference / compressedSpaces and s = candDifference / spaces
+            return (double) -difference * spaces < compressionToStretch * candDifference * compressedSpaces;
         }
 
         /**
@@ -1538,13 +1543,22 @@ public class WordLineLayoutManager extends LineLayoutManager {
     private final double maxHyphenSpaceShrink;
 
     /**
-     * How loose the alternative line has to be before Word compresses this one to pull
-     * one more word on ({@link WordLayoutCustomizer#minStretchToCompress()}, default
-     * 0.90 of the spaces' natural width).
+     * How loose the alternative line has to be, at least, before Word compresses this one
+     * to pull one more word on ({@link WordLayoutCustomizer#minStretchToCompress()}, a
+     * floor; default 0).
      *
      * @since 17.1.0
      */
     private final double minStretchToCompress = WordLayoutCustomizer.minStretchToCompress();
+
+    /**
+     * Word compresses a line to pull one more word on only where the compression is less
+     * than this fraction of the alternative line's stretch
+     * ({@link WordLayoutCustomizer#compressionToStretch()}, default 0.5).
+     *
+     * @since 17.3.1
+     */
+    private final double compressionToStretch = WordLayoutCustomizer.compressionToStretch();
 
     private static double documentHyphenSpaceShrink(double spaceShrink) {
         return Math.min(WordLayoutCustomizer.maxHyphenSpaceShrink(), spaceShrink);
