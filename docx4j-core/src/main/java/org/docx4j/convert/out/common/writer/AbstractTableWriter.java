@@ -508,6 +508,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 				for (int k = c; k < end; k++) max[k] = Math.max(max[k], min[k]);
 			}
 			int available = availableWidthTwips(context, tblPr, container);
+			int room = available; // what the page fit measures a grid against (fitToAvailableWidth)
 			// the grid-edge allowance is the text column's; a nested table's grid is not
 			// shifted off its container's edge (see TableWriter.isNested), so it gets none
 			if (available > 0 && tablePreferred <= 0 && container <= 0) {
@@ -546,6 +547,12 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			 * @since 17.2.0 */
 			int gridPreferred = container > 0 ? tablePreferred : preferredTableWidthTwips(tblPr,
 					containerWidthTwips(context) + autofitGridAllowanceTwips(context, table, tblPr));
+			if (gridPreferred <= 0 && autoGrid()) {
+				boolean anyDeclared = false;
+				for (boolean d : declared) anyDeclared |= d;
+				int[] grid = anyDeclared ? null : gridWidths(table, cols);
+				if (grid != null && gridFitsContent(grid, mi, ma)) return autoGridWidths(grid, ma, room);
+			}
 			if (gridIsAuthoritative(table, tblPr, cols, pref, declared, gridPreferred)) return null;
 			if (available <= 0) return null;
 			int[] widths = org.docx4j.model.table.AutofitLayout.distribute(mi, ma, pref, available);
@@ -600,8 +607,10 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 *     the table was written for.
 	 * </ul>
 	 *
-	 * <p>A table whose cells are all auto-width is untouched, so Word's content-based
-	 * autofit (&#xa7;6.3) and the widening of &#xa7;6.4 still apply to it.</p>
+	 * <p>A table of auto width whose cells are all auto-width is not decided here: it keeps
+	 * its grid where the grid could be Word's autofit of its content ({@link #autoGridWidths},
+	 * 17.3.1), and otherwise Word's content-based autofit (&#xa7;6.3) and the widening of
+	 * &#xa7;6.4 apply to it.</p>
 	 *
 	 * @since 17.1.0
 	 */
@@ -640,7 +649,93 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			for (int w : grid) sum += w;
 			if (Math.abs(sum - tablePreferred) * 100 <= tablePreferred) return true;
 		}
-		return false; // a wholly auto-width table is Word's autofit
+		return false; // a wholly auto-width table is Word's autofit (but see autoGridWidths)
+	}
+
+	/**
+	 * The columns of a table of auto width whose cells are all auto-width, and whose
+	 * {@code w:tblGrid} could be Word's autofit of its content ({@link #gridFitsContent}):
+	 * that grid, which is
+	 * Word's own autofit of the content, cached when Word last saved the document - or null
+	 * where it is wider than the table's room (the text column less any indent, before the
+	 * grid-edge allowance), which the page fit's rules for an over-wide grid then take
+	 * ({@link #fitToAvailableWidth}): Word lets such a grid overhang the margin (14924), and
+	 * the content-sized squeeze would undo that.
+	 *
+	 * <p>docx4j's content pass is only a model of Word's autofit.  Measured on the three
+	 * corpora against Word's re-save of each document: of 46 such tables (layout not
+	 * fixed), the re-save left 45 grids exactly as they were, so the grid is the layout Word
+	 * draws; and laid out on it (b93 against b89, the Windows faces supplied) two documents
+	 * reach Word's every line from 0.77 and 0.79, 14924 goes 0.818 to 0.967, 7639 +67 lines
+	 * and Word's page count, 8814 +44, no probe down (word-layout-rules.md &#xa7;6.3).  The
+	 * original documents, rather than Word's re-saves, move the same way.  A grid with a
+	 * column narrower than its content's minimum, or wider than its widest content, is no
+	 * autofit of that content - a generator's, which Word recomputes on open (the
+	 * table-grid-over-measure probe's 3000/3000/3026 against tokens wider than that; two
+	 * 1500-twip columns holding "one" and "two") - and goes to the content pass as before.</p>
+	 *
+	 * <p>The columns are content-sized, as the content pass's are, so that a line Word keeps
+	 * whole is not re-broken by the border width FOP charges the cell
+	 * ({@code WordLayoutFixups.cellLineWidth}).  And a column a hair short of the widest
+	 * content docx4j measured in it - by a point and half a per cent at most - is given that
+	 * width, room allowing: Word sized it to hold that content on one line, and docx4j's
+	 * glyph widths run a fraction over Word's.  Three probes laid out on the bare grid lost
+	 * a line each so (pbdr-space 58.05pt by the content pass against the grid's 57.95,
+	 * table-autofit-wrap 212.1 against 211.9, table-cell-measure 387.5 against 387.4).</p>
+	 *
+	 * @param grid the table's w:tblGrid, one entry per column
+	 * @param max per-column widest content in twips (cell margins included)
+	 * @param available the table's room (the page fit's writable width), or 0 or less where unknown
+	 * @since 17.3.1
+	 */
+	static int[] autoGridWidths(int[] grid, int[] max, int available) {
+		long sum = 0;
+		for (int g : grid) sum += g;
+		if (available > 0 && sum > available) return null;
+		int[] widths = grid.clone();
+		long held = sum;
+		for (int i = 0; i < widths.length && i < max.length; i++) {
+			if (max[i] > widths[i] && max[i] - widths[i] <= 20 + widths[i] / 200) {
+				held += max[i] - widths[i];
+				widths[i] = max[i];
+			}
+		}
+		return (available > 0 && held > available) ? grid.clone() : widths;
+	}
+
+	/**
+	 * Whether the grid could be Word's autofit of the content: every column at least its
+	 * content's minimum (2% and a twip allowed) and at most a few points over its widest
+	 * content (cell margins included in both).  Word's autofit of a table with no preferred
+	 * width gives no column much more than its widest content (&#xa7;6.4's widening needs a
+	 * w:tblW), so a column far wider is a generator's grid - as is one narrower than its
+	 * minimum - and Word recomputes it on open.  "A few points": of the auto/auto tables in
+	 * the three corpora, 11 columns are wider than docx4j's measure of their widest content,
+	 * nine of them by 58 twips exactly and none by more than 103, a measurement offset rather
+	 * than a different layout; refusing those at 2% and a twip cost 2564, 10224 and 10244 a
+	 * few lines each (b94).  A generator's grid is typically far out: two 1500-twip columns
+	 * holding "one" and "two".
+	 *
+	 * @since 17.3.1
+	 */
+	static boolean gridFitsContent(int[] grid, int[] min, int[] max) {
+		if (grid == null || min == null || max == null) return false;
+		for (int i = 0; i < grid.length && i < min.length && i < max.length; i++) {
+			if (min[i] > grid[i] * 1.02 + 20) return false;
+			if (grid[i] > max[i] * 1.02 + 150) return false;
+		}
+		return true;
+	}
+
+	/** docx4j.convert.out.fo.tables.autoGrid: a table of auto width whose cells are all
+	 *  auto-width is laid out on its {@code w:tblGrid}, the layout Word cached for it,
+	 *  rather than on docx4j's content-based autofit, where the grid could be Word's
+	 *  autofit of the content ({@link #gridFitsContent}).  {@code false} sizes it from its
+	 *  content, as 17.3.0 did.  @since 17.3.1 */
+	public static final String AUTO_GRID = "docx4j.convert.out.fo.tables.autoGrid";
+
+	private static boolean autoGrid() {
+		return org.docx4j.Docx4jProperties.getProperty(AUTO_GRID, true);
 	}
 
 	/** docx4j.convert.out.fo.tables.refitStaleGrid: an autofit table of auto width, every

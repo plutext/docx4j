@@ -107,6 +107,10 @@ PDF via XSL FO:
 - A table after a bordered or shaded paragraph is no longer drawn inside that paragraph's
   border (PDF and HTML); in PDF a long one no longer moves to the next page with it.
 
+- A table whose width and cells are all auto keeps the column widths Word saved with it
+  (w:tblGrid) where they fit its content, rather than being re-sized from its content
+  (docx4j.convert.out.fo.tables.autoGrid=false for the 17.3.0 behaviour).
+
 - Symbol, Wingdings, Wingdings 2, Wingdings 3 and Webdings are drawn in the real font where it
   is installed (or embedded), with the document's own code points: runs, w:sym and numbering
   labels, on both pathways; FontsAnalysis grades such a font EXACT. Where the font is absent

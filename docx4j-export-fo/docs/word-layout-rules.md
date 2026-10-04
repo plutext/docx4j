@@ -2548,8 +2548,47 @@ cell auto: the content pass gave 73.6 / 40.9 / 242.35 / 77.7pt against the grid'
 the grid sums to, every cell auto - is 12 documents and 35 tables of the three corpora, and
 over all three the change is +128 lines matched, the medians up on all three, one page count
 recovered (a table that took four pages of Word's three now takes three) and one lost, and
-no document down. A table which states no width of its own and has all-auto cells is still
-untouched, so the content-based pass and §6.4's widening still apply to it.
+no document down. A table which states no width of its own and has all-auto cells was still
+left to the content-based pass and §6.4's widening; since 17.3.1 it keeps its grid too
+(below).
+
+<a id="s63autogrid"></a>**A table of auto width with all-auto cells keeps a grid that holds
+its content (17.3.1).** Such a table's `w:tblGrid` is Word's own autofit of its content, cached
+when Word last saved the document: of the 46 such tables in the three corpora (layout not
+fixed), Word's re-save left 45 grids exactly as they were. docx4j's content pass is a model of
+that autofit, and where the two differ Word draws its grid. `AbstractTableWriter.autoGridWidths`
+lays the table out on the grid, with three qualifications, each measured:
+
+- **The grid must be an autofit of the content.** A column narrower than its content's
+  minimum (2% and a twip allowed) is no autofit of that content: it is a generator's grid,
+  which Word recomputes on open (the `table-grid-over-measure` probe's 3000/3000/3026 twips
+  against tokens wider than that), and the content pass takes it as before. So is a column far
+  wider than its widest content, since Word's autofit of a table with no `w:tblW` gives a
+  column no more than that (two 1500-twip columns holding "one" and "two", a generated
+  fixture of `TableWidthTest`). "Far" is measured: of the corpora's auto/auto tables 11
+  columns are wider than docx4j's measure of their widest content, nine by 58 twips exactly
+  and none by more than 103 - an offset in the measurement, not another layout - and
+  refusing them at 2% cost three documents a few lines each (b94), so the bound is 2% and 150
+  twips.
+- **A grid wider than the text column is left to the page fit** (§6.5), whose rules let an
+  autofit grid overhang the margin as Word does (14924). Taking it as content-sized instead
+  squeezed it to the column and gave back 14924's gain (-27 lines) and two others'.
+- **The columns are content-sized**, so a line Word keeps whole is not re-broken by the
+  border width FOP charges the cell (`WordLayoutFixups.cellLineWidth`), and a column a hair
+  short of the widest content docx4j measured in it - by a point and half a per cent at most
+  - is given that width, room allowing: Word sized it for that content on one line, and
+  docx4j's glyph widths run a fraction over Word's. On the bare grid three probes lost a line
+  each (`pbdr-space` 57.95pt against the content pass's 58.05, `table-autofit-wrap` 211.9
+  against 212.1, `table-cell-measure` 387.4 against 387.5, the last a line 0.02pt over).
+
+Measured (b93 against b89, the Windows faces supplied, with §3's table-ends-the-border-run
+rule): class 2 +748 lines, 2564 and 10224 from 0.77 and 0.79 to Word's every line, 14924 0.818
+to 0.967, 7639 +67 lines and Word's page count, 8814 +44, 7951 +12, 14776 +11; probes two up,
+none down. On the original documents rather than Word's re-saves (autoGrid on against off,
+the 20 documents concerned) the effect is the same but for 14776, the one table Word's re-save
+changed, so the rule does not depend on the scoring basis. Property
+`docx4j.convert.out.fo.tables.autoGrid` (`false` sizes such a table from its content, as
+17.3.0 did).
 
 <a id="s63pctcells"></a>**A `w:tcW` in `pct` is a preferred width, exactly as a `dxa` one
 is** (17.2.0). Reading only `dxa` left a `pct` table with *no* column preferences at all: it
