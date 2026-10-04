@@ -2510,6 +2510,28 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		PROBES.add(new Probe("tables-banding-col-band-size",
+				"tables-banding-band-size's question for the columns: does a style stating no "
+				+ "w:tblStyleColBandSize band its columns?  band1Vert gives bold text and grey shading, "
+				+ "firstCol italic; w:tblLook first column and column banding on, nothing else.  Six "
+				+ "columns, two rows.  (a) ProbeColBands1, the style stating 1; (b) ProbeColBands, "
+				+ "stating none; (c) ProbeColBands with the table's own w:tblStyleColBandSize 1.  In (a) "
+				+ "columns 2, 4 and 6 are the first band - and in (b)?  CR-030 D11.", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(SERIF, 24);
+			addBandProbeStyle(d, "ProbeColBands1", org.docx4j.wml.STTblStyleOverrideType.FIRST_COL,
+					org.docx4j.wml.STTblStyleOverrideType.BAND_1_VERT, null, Integer.valueOf(1));
+			addBandProbeStyle(d, "ProbeColBands", org.docx4j.wml.STTblStyleOverrideType.FIRST_COL,
+					org.docx4j.wml.STTblStyleOverrideType.BAND_1_VERT, null, null);
+			d.para("(a) ProbeColBands1 (column band size 1)").after(120).add();
+			d.add(colBandsProbeTable("a", "ProbeColBands1", null));
+			d.para("(b) ProbeColBands (no column band size)").before(240).after(120).add();
+			d.add(colBandsProbeTable("b", "ProbeColBands", null));
+			d.para("(c) ProbeColBands, the table stating column band size 1").before(240).after(120).add();
+			d.add(colBandsProbeTable("c", "ProbeColBands", Integer.valueOf(1)));
+			return d.pkg();
+		}));
+
 		/*
 		 * CR-016's probe set (docs/developer/change-requests/CR-016-font-selection-and-mapping.md,
 		 * "Are the comments accurate?").  Font selection and mapping: which of a run's four
@@ -3963,13 +3985,20 @@ public final class Corpus {
 	/** The banding probes' table style: band1Horz bold with grey shading, firstRow italic,
 	 *  and w:tblStyleRowBandSize where rowBandSize is given. */
 	private static void addBandsProbeStyle(Doc d, String styleId, Integer rowBandSize) {
+		addBandProbeStyle(d, styleId, org.docx4j.wml.STTblStyleOverrideType.FIRST_ROW,
+				org.docx4j.wml.STTblStyleOverrideType.BAND_1_HORZ, rowBandSize, null);
+	}
+
+	/** A banding probe's table style: the band condition bold with grey shading, the first
+	 *  condition italic, and the band sizes where given. */
+	private static void addBandProbeStyle(Doc d, String styleId, org.docx4j.wml.STTblStyleOverrideType first,
+			org.docx4j.wml.STTblStyleOverrideType band, Integer rowBandSize, Integer colBandSize) {
 		addTableStyle(d, styleId, null);
-		addTableStyleCondition(d, styleId, org.docx4j.wml.STTblStyleOverrideType.FIRST_ROW,
-				rpr -> rpr.setI(Doc.F.createBooleanDefaultTrue()));
-		addTableStyleCondition(d, styleId, org.docx4j.wml.STTblStyleOverrideType.BAND_1_HORZ, Doc::bold);
+		addTableStyleCondition(d, styleId, first, rpr -> rpr.setI(Doc.F.createBooleanDefaultTrue()));
+		addTableStyleCondition(d, styleId, band, Doc::bold);
 		org.docx4j.wml.Style ts = d.mdp().getStyleDefinitionsPart().getStyleById(styleId);
 		for (org.docx4j.wml.CTTblStylePr cond : ts.getTblStylePr()) {
-			if (cond.getType() == org.docx4j.wml.STTblStyleOverrideType.BAND_1_HORZ) {
+			if (cond.getType() == band) {
 				org.docx4j.wml.TcPr tcPr = Doc.F.createTcPr();
 				org.docx4j.wml.CTShd shd = Doc.F.createCTShd();
 				shd.setVal(org.docx4j.wml.STShd.CLEAR);
@@ -3984,6 +4013,38 @@ public final class Corpus {
 			size.setVal(BigInteger.valueOf(rowBandSize.intValue()));
 			ts.getTblPr().setTblStyleRowBandSize(size);
 		}
+		if (colBandSize != null) {
+			org.docx4j.wml.CTTblPrBase.TblStyleColBandSize size = Doc.F.createCTTblPrBaseTblStyleColBandSize();
+			size.setVal(BigInteger.valueOf(colBandSize.intValue()));
+			ts.getTblPr().setTblStyleColBandSize(size);
+		}
+	}
+
+	/** tables-banding-col-band-size's table: two rows of six cells under the style,
+	 *  w:tblLook with the first column and column banding on and nothing else, the table's own
+	 *  w:tblStyleColBandSize where colBandSize is given.  No w:cnfStyle. */
+	private static Tbl colBandsProbeTable(String letter, String styleId, Integer colBandSize) throws Exception {
+		StringBuilder x = new StringBuilder("<w:tbl xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:tblPr>"
+				+ "<w:tblStyle w:val=\"" + styleId + "\"/>"
+				+ (colBandSize == null ? "" : "<w:tblStyleColBandSize w:val=\"" + colBandSize + "\"/>")
+				+ "<w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblBorders>");
+		for (String side : new String[] { "top", "left", "bottom", "right", "insideH", "insideV" }) {
+			x.append("<w:").append(side).append(" w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/>");
+		}
+		x.append("</w:tblBorders><w:tblLook w:val=\"0280\" w:firstRow=\"0\" w:lastRow=\"0\" w:firstColumn=\"1\" "
+				+ "w:lastColumn=\"0\" w:noHBand=\"1\" w:noVBand=\"0\"/></w:tblPr><w:tblGrid>");
+		for (int c = 1; c <= 6; c++) x.append("<w:gridCol w:w=\"1500\"/>");
+		x.append("</w:tblGrid>");
+		for (int r = 1; r <= 2; r++) {
+			x.append("<w:tr>");
+			for (int c = 1; c <= 6; c++) {
+				x.append("<w:tc><w:tcPr><w:tcW w:w=\"1500\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>(")
+						.append(letter).append(") c").append(c).append("</w:t></w:r></w:p></w:tc>");
+			}
+			x.append("</w:tr>");
+		}
+		x.append("</w:tbl>");
+		return (Tbl) org.docx4j.XmlUtils.unwrap(org.docx4j.XmlUtils.unmarshalString(x.toString()));
 	}
 
 	/** The banding probes' table: six rows of two cells under the style, w:tblLook with the

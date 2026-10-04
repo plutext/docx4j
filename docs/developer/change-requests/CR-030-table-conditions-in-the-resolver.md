@@ -266,7 +266,15 @@ preprocess, `Docx4J.toHTML` and `Docx4J.toFO` (PDF), on 17.3.1-SNAPSHOT.
   - Fixed: an absent size is 0, and a size of 0 bands nothing, in the position arithmetic
     and in the writers' band extents. `w:cnfStyle` caches stay authoritative.
   - The columns follow the rows' rule. Word writes the two sizes together, but the columns
-    were not probed.
+    were not probed. Probe `tables-banding-col-band-size` (T11, added 2026-10-04, on the
+    share, its golden awaited) asks Word. It has three tables of six columns, the first
+    column italic and `band1Vert` bold and shaded:
+    - (a) a style stating `w:tblStyleColBandSize` 1;
+    - (b) a style stating none;
+    - (c) that style, with the table stating 1.
+
+    docx4j since D11 bands columns 2, 4 and 6 in (a) and (c), and none in (b). Before D11
+    it banded all three.
   - No corpus document is affected: every one of the 823 corpus tables under a style with
     horizontal bands states a row band size, and every table under a style with vertical
     bands a column band size.
