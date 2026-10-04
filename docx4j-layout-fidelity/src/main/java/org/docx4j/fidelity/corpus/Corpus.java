@@ -2532,6 +2532,227 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		// ------------------------------------------------------------- CR-001 batch 50
+		//                                   ledger7's three questions for one Word run:
+		//                                   rows split in cells, text box insets, and
+		//                                   the justified compression decision
+
+		/*
+		 * table-rowsplit-3 (ledger7 section 3 item 1).  On corpus document 11657, at
+		 * compatibility mode 11, Word breaks the page inside two- and three-line cell
+		 * paragraphs, 1+1 and 1+2, which widow control forbids.  The document sets nothing
+		 * to allow it: no w:cantSplit, no w:keepLines, and no w:widowControl anywhere in
+		 * the package, which Word reads as on (32 corpus documents write w:val="0" to turn
+		 * it off).  probes47's table-rowsplit (mode 15, one three-line paragraph per row)
+		 * never divided a row.  So one of these holds:
+		 *   - Word does not apply widow control inside a table cell at mode 11;
+		 *   - it does not apply it at all below some mode;
+		 *   - one of 11657's Word 2003 compatibility flags switches it off.
+		 * The mode is a document property, so this is five documents: modes 11, 12, 14
+		 * and 15, and mode 11 again with 11657's fifteen w:compat flags.
+		 *
+		 * Each document has sixteen variants, each on a page of its own (its first filler
+		 * paragraph is w:pageBreakBefore).  Every line in them is an exact 14pt line, and
+		 * the tables have no borders and no top or bottom cell margin, so a row is exactly
+		 * its lines and the page bottom (A4, 1in margins: a 697.9pt body) can be put
+		 * where wanted.  Fillers and a spacer line bring the table's top to where the page
+		 * bottom falls half way through line 2 of the third three-line row (the "1"
+		 * variants: one line of that row fits) or half way through its line 3 (the "2"
+		 * variants: two fit).  A row is a tag cell ("C1 r3"), a cell whose paragraph
+		 * wraps to two lines, and a cell whose paragraph wraps to three, every break at
+		 * least 3pt from the measure either way.
+		 *
+		 *   A  w:widowControl absent everywhere (11657's shape)
+		 *   B  w:widowControl w:val="false" on every cell paragraph
+		 *   C  w:widowControl, on, on every cell paragraph
+		 *   D  A with w:cantSplit on every row
+		 *   E  A with w:keepLines on every cell paragraph
+		 *   F  A in 11657's row shape: a repeated header row (w:tblHeader), every cell
+		 *      w:vAlign bottom, and the tag cell's text in two one-line paragraphs
+		 *   G  no table: a body paragraph of two lines (G1, one fits) or three (G2, one
+		 *      fits; G3, two fit), w:widowControl absent
+		 *   H  G1 with w:widowControl on
+		 *
+		 * Read off each golden: which page each line of the straddling row or paragraph
+		 * lands on (1+1, 1+2, 2+1, or the whole row moved).
+		 */
+		PROBES.add(rowSplit3Probe(11, false));
+		PROBES.add(rowSplit3Probe(11, true));
+		PROBES.add(rowSplit3Probe(12, false));
+		PROBES.add(rowSplit3Probe(14, false));
+		PROBES.add(rowSplit3Probe(15, false));
+
+		/*
+		 * textbox-inset-stroke-list (ledger7 section 3 item 2).  Two readings, from four
+		 * corpus documents, both about where a text box's text area starts:
+		 *   - Word insets a VML box's text by half its stroke: text origins Word minus
+		 *     ours +0.42pt and +0.41 at VML's default 0.75pt stroke (5123, 4994), and
+		 *     +1.38 at strokeweight 3pt (7046), whose measure is 3pt narrower in Word;
+		 *   - a list paragraph in a box loses the box's inset in our render: the list's
+		 *     start-indent replaces the container's 7.2pt where Word adds the two (5123,
+		 *     7046, 6614: labels 7.2pt to 8.8pt left of Word's).
+		 * Neither is settled for strokes the corpus does not have, for a box whose inset
+		 * is 0 or not the default, or for a DrawingML box, whose a:ln may or may not be
+		 * charged the same way.
+		 *
+		 * Twelve boxes, four to a page, every one 240 x 340pt, positioned against the
+		 * page (50pt or 305pt from its left edge, 70pt or 450pt from its top), unfilled,
+		 * each holding the same six paragraphs in Liberation Serif 12pt:
+		 *   1. a one-line heading naming the box;
+		 *   2. a justified paragraph (its lines' x0 and x1 give the text area);
+		 *   3. a list item at w:ind left 360 hanging 360;
+		 *   4. a list item at left 720 hanging 360;
+		 *   5. a plain paragraph at w:ind left 720, the control for 4;
+		 *   6. a right-aligned one-word line.
+		 * The boxes:
+		 *   - S0, S1, S2, S3, S6: VML v:shape text boxes (the four corpus documents' own
+		 *     shape, type #_x0000_t202), default inset, stroked="f" / no stroke
+		 *     attributes (VML's default 0.75pt) / strokeweight .5pt (5123's) / 3pt
+		 *     (7046's) / 6pt;
+		 *   - I0, I3: inset="0,0,0,0" at the default stroke and at 3pt;
+		 *   - IW: inset 14.4pt,7.2pt,14.4pt,7.2pt at 3pt;
+		 *   - D0, D1, D3, D6: DrawingML wps text boxes (mc:AlternateContent with a VML
+		 *     fallback of the same stroke, as Word writes them), default insets, a:ln
+		 *     with a:noFill, and w 9525 (0.75pt), 38100 (3pt) and 76200 (6pt).
+		 * Read off the golden, per box: the heading's x0 and baseline against the box's
+		 * edge, the justified lines' x1, the list labels' x and their text's x, and the
+		 * plain indented paragraph's x.
+		 */
+		PROBES.add(new Probe("textbox-inset-stroke-list",
+				"twelve unfilled 240 x 340pt text boxes, four to a page, each holding a heading, a "
+				+ "justified paragraph, list items at w:ind 360/360 and 720/360, a plain paragraph "
+				+ "at left 720 and a right-aligned word, Liberation Serif 12pt.  VML v:shape "
+				+ "(type 202) boxes stroked=\"f\", with no stroke attributes (0.75pt), and at "
+				+ "strokeweight .5, 3 and 6pt; inset 0 at the default stroke and at 3pt; inset "
+				+ "14.4/7.2pt at 3pt; DrawingML wps boxes with a:ln noFill, 0.75, 3 and 6pt.  "
+				+ "Read where each box's text starts and ends: is half the stroke charged, and "
+				+ "does a list's indent add to the box's inset?", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(SERIF, 24);
+			d.numberingXml("<w:abstractNum w:abstractNumId=\"30\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ Doc.decimalLevel(0, null, 360, 360) + "</w:abstractNum>"
+					+ "<w:abstractNum w:abstractNumId=\"31\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ Doc.decimalLevel(0, null, 720, 360) + "</w:abstractNum>"
+					+ num(30, 30) + num(31, 31));
+			String[][] boxes = {
+				// tag, kind, stroke (VML attributes, or a:ln w in EMU), inset, what
+				{ "S0", "vml", "stroked=\"f\"", null, "VML, stroked f" },
+				{ "S1", "vml", "", null, "VML, default stroke" },
+				{ "S2", "vml", "strokeweight=\".5pt\"", null, "VML, stroke .5pt" },
+				{ "S3", "vml", "strokeweight=\"3pt\"", null, "VML, stroke 3pt" },
+				{ "S6", "vml", "strokeweight=\"6pt\"", null, "VML, stroke 6pt" },
+				{ "I0", "vml", "", "0,0,0,0", "VML, inset 0" },
+				{ "I3", "vml", "strokeweight=\"3pt\"", "0,0,0,0", "VML, inset 0, stroke 3pt" },
+				{ "IW", "vml", "strokeweight=\"3pt\"", "14.4pt,7.2pt,14.4pt,7.2pt",
+						"VML, inset 14.4/7.2, 3pt" },
+				{ "D0", "dml", null, null, "DrawingML, no line" },
+				{ "D1", "dml", "9525", null, "DrawingML, line 0.75pt" },
+				{ "D3", "dml", "38100", null, "DrawingML, line 3pt" },
+				{ "D6", "dml", "76200", null, "DrawingML, line 6pt" },
+			};
+			int[][] at = { { 50, 70 }, { 305, 70 }, { 50, 450 }, { 305, 450 } };
+			for (int page = 0; page < 3; page++) {
+				StringBuilder runs = new StringBuilder();
+				for (int i = 0; i < 4; i++) {
+					String[] b = boxes[4 * page + i];
+					int n = 4 * page + i + 1;
+					String content = insetBoxContent(d, b[0], b[4]);
+					runs.append("vml".equals(b[1])
+							? "<w:r><w:pict>" + (n == 1 ? Corpus.SHAPETYPE_202 : "")
+									+ vmlInsetBox(n, at[i][0], at[i][1], b[2], b[3], content) + "</w:pict></w:r>"
+							: wpsInsetBox(n, at[i][0], at[i][1], b[2], content));
+				}
+				// the anchor paragraph holds the boxes and no text, which would print under the first
+				d.add((P) org.docx4j.XmlUtils.unwrap(org.docx4j.XmlUtils.unmarshalString(
+						"<w:p " + Corpus.BOX_NAMESPACES + "><w:pPr>" + (page > 0 ? "<w:pageBreakBefore/>" : "")
+						+ "</w:pPr>" + runs + "</w:p>")));
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * justified-compression-decision (ledger7 section 3 item 7).  When does Word
+		 * compress a justified line's spaces to bring the next word up, rather than
+		 * stretch them to leave it down?  Say bringing it up needs every space c short of
+		 * the face's own space, and leaving it stretches every space by s (both as
+		 * fractions of that space).  Eight measured (c, s) pairs from 1035, 2580 and 6083,
+		 * and three from section 4.2:
+		 *   - Word compressed at (2.4, 22), (3.1, 18.2), (5.8, 18.8) and (10, 32) per cent;
+		 *   - it refused at (20.4, 40.4), (21.3, 35), (23.7, 28.6), (32, 87), (22.5, 38.5),
+		 *     (15.1, 16.1) and (13.3, 12.8).
+		 * Two rules fit all eleven: c <= s/2, or a flat cap near 12%.  batch 44's
+		 * justification-crossover brought a word up at c = 19.9% when its alternative was
+		 * stretched over 200%, which a flat 12% cap does not allow.  docx4j's rule (c <=
+		 * 24% and s >= 30%) gets seven of the eight wrong, and on 1035's numbered first
+		 * lines it compresses 31%, beyond its own cap.
+		 *
+		 * So this is a grid: c of 3, 6, 9, 12, 15, 18, 21 and 24 per cent against s of 8,
+		 * 16, 24, 32, 48 and 80, in three faces at 12pt:
+		 *   - Carlito (C), the Calibri clone of 2580;
+		 *   - Liberation Sans (S), the Arial clone of 1035;
+		 *   - Liberation Serif (T), the Times clone of 6083.
+		 * 12pt is 50/300 inch, so Word's 1/300-inch size grid (11pt drawn as 11.04)
+		 * changes no advance.
+		 *
+		 * Each case is a two-line w:jc="both" paragraph on a 468pt measure (US Letter,
+		 * 1in margins), w:suppressAutoHyphens, under a small marker line that states it.
+		 * Its first line is k + 1 words with k spaces, measured off the installed faces
+		 * with Doc.advancePoints; the line's last word and the next word are built letter
+		 * by letter, with no f anywhere, so nothing ligates.  c depends only on k, s and
+		 * the next word, so k is picked (between 6 and 36, the next word about three
+		 * spaces wide) as the one whose buildable next word lands nearest; the first line
+		 * is built a point short and the paragraph's w:ind w:right takes up the rest, so
+		 * s is exact to a twip.  Built, c is within 0.3% of the grid in 152 of the 159
+		 * cases and 0.8% in all; the marker states what was built.
+		 *
+		 * Two further series:
+		 *   - K: (9, 20), (12, 25) and (15, 32) in Carlito at k = 12, 20 and 32, which
+		 *     says whether the rule is per space or per line;
+		 *   - L: 1035's numbered shape in Liberation Sans (w:ind left 567 hanging 567, a
+		 *     label, a tab, the text from 28.35pt), which is where docx4j went past its
+		 *     cap.
+		 * Read off each case: did the next word come up onto line 1?
+		 */
+		PROBES.add(new Probe("justified-compression-decision",
+				"when Word compresses a justified line's spaces to bring the next word up: "
+				+ "two-line w:jc=\"both\" paragraphs on a 468pt measure, each built so that "
+				+ "bringing its next word up needs every space compressed by c and leaving it "
+				+ "stretches them by s (fractions of the face's own space).  c 3..24% by 3 "
+				+ "against s 8, 16, 24, 32, 48 and 80%, in Carlito, Liberation Sans and "
+				+ "Liberation Serif 12pt; three (c, s) pairs at k = 12, 20 and 32 spaces; and "
+				+ "1035's numbered first line (left 567 hanging 567).  The marker above each "
+				+ "case states its c, s, k and the w:ind w:right that sets s.  Read off each: "
+				+ "did the next word come up?",
+				() -> {
+			Doc d = Doc.create(15);
+			// US Letter, 1 inch margins: a measure of exactly 468.0pt
+			d.pageGeometry(12240, 15840, false, 1440, 1440, 1440, 1440);
+			d.documentDefaultRun(SANS, 24);
+			d.numberingXml("<w:abstractNum w:abstractNumId=\"40\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ Doc.decimalLevel(0, null, 567, 567) + "</w:abstractNum>" + num(40, 40));
+			int[] cs = { 3, 6, 9, 12, 15, 18, 21, 24 };
+			int[] ss = { 8, 16, 24, 32, 48, 80 };
+			String[][] faces = { { "C", CARLITO }, { "S", SANS }, { "T", SERIF } };
+			for (String[] face : faces) {
+				for (int c : cs) {
+					for (int s : ss) {
+						compressionCase(d, face[0], face[1], c, s, null, false);
+					}
+				}
+			}
+			int[][] perLine = { { 9, 20 }, { 12, 25 }, { 15, 32 } };
+			for (int[] cs2 : perLine) {
+				for (int k : new int[] { 12, 20, 32 }) {
+					compressionCase(d, "K", CARLITO, cs2[0], cs2[1], k, false);
+				}
+			}
+			int[][] labelled = { { 6, 16 }, { 9, 24 }, { 12, 32 }, { 18, 48 }, { 24, 80 }, { 32, 87 } };
+			for (int[] cs2 : labelled) {
+				compressionCase(d, "L", SANS, cs2[0], cs2[1], null, true);
+			}
+			return d.pkg();
+		}));
+
 		/*
 		 * CR-016's probe set (docs/developer/change-requests/CR-016-font-selection-and-mapping.md,
 		 * "Are the comments accurate?").  Font selection and mapping: which of a run's four
@@ -7251,6 +7472,456 @@ public final class Corpus {
 		Object o = org.docx4j.XmlUtils.unmarshalString(xml, org.docx4j.jaxb.Context.jc, P.class);
 		if (o instanceof jakarta.xml.bind.JAXBElement) o = ((jakarta.xml.bind.JAXBElement<?>) o).getValue();
 		return (P) o;
+	}
+
+	// ---------------------------------------------------------------- CR-001 batch 50 helpers
+
+	/** A4 with 1 inch margins: the body's height in twips (16838 - 2 x 1440).
+	 *  @since 17.3.1 (CR-001 batch 50) */
+	private static final int A4_BODY_TW = 13958;
+
+	/** Every line of table-rowsplit-3 is exactly this tall: 14pt.  @since 17.3.1 */
+	private static final int SPLIT_LINE_TW = 280;
+
+	/** Corpus document 11657's w:compat flags besides its compatibility mode 11 (the Word
+	 *  2003 set), by their {@link Doc#compat} names.  @since 17.3.1 (CR-001 batch 50) */
+	private static final String[] FLAGS_11657 = { "useNormalStyleForList",
+		"doNotUseIndentAsNumberingTabStop", "useAltKinsokuLineBreakRules",
+		"allowSpaceOfSameStyleInTable", "doNotSuppressIndentation",
+		"doNotAutofitConstrainedTables", "autofitToFirstFixedWidthCell", "underlineTabInNumList",
+		"displayHangulFixedWidth", "splitPgBreakAndParaMark", "doNotVertAlignCellWithSp",
+		"doNotBreakConstrainedForcedTable", "doNotVertAlignInTxbx", "useAnsiKerningPairs",
+		"cachedColBalance" };
+
+	/** One table-rowsplit-3 document, at one compatibility mode (and, for mode 11, with or
+	 *  without 11657's w:compat flags).  @since 17.3.1 (CR-001 batch 50) */
+	private static Probe rowSplit3Probe(int mode, boolean flags11657) {
+		String what = "mode " + mode + (flags11657 ? " with corpus document 11657's fifteen w:compat flags" : "");
+		return new Probe("table-rowsplit-3-compat" + mode + (flags11657 ? "-11657" : ""),
+				"does Word divide a table row inside a two- or three-line cell paragraph (1+1, 1+2) "
+				+ "where widow control forbids it, as it does on 11657 at mode 11?  At " + what
+				+ ": rows of a tag cell, a two-line and a three-line cell paragraph, every line an "
+				+ "exact 14pt, the page bottom half way through line 2 (one line fits) or line 3 "
+				+ "(two fit) of the third row.  A w:widowControl absent, B w:val=\"false\", C on, "
+				+ "D A + w:cantSplit, E A + w:keepLines, F A in 11657's row shape (w:tblHeader, "
+				+ "w:vAlign bottom, a two-paragraph tag cell); G body paragraphs of two and three "
+				+ "lines, widow control absent, H on.  A page each.  Read which page each line "
+				+ "of the straddling row or paragraph lands on", () -> {
+			Doc d = Doc.create(mode);
+			if (flags11657) {
+				for (String flag : FLAGS_11657) d.compat(flag, true);
+			}
+			d.para("table-rowsplit-3 at " + what + ". Sixteen variants follow, a page each; the "
+					+ "page bottom falls inside the third three-line row of each table, or inside "
+					+ "the body paragraph.").add();
+			for (String v : new String[] { "A", "B", "C", "D", "E", "F" }) {
+				for (int fit = 1; fit <= 2; fit++) {
+					String tag = v + fit;
+					// above the straddling row: F's one-line header row, then two rows of three lines
+					int above = ("F".equals(v) ? SPLIT_LINE_TW : 0) + 2 * 3 * SPLIT_LINE_TW;
+					fillTo(d, tag, A4_BODY_TW - above - (2 * fit + 1) * SPLIT_LINE_TW / 2);
+					d.add(splitTable(tag, v));
+					d.para(tag + " after the table").noLabel().line(SPLIT_LINE_TW, STLineSpacingRule.EXACT).add();
+				}
+			}
+			// tag, lines, how many of them fit, widow control (null = absent)
+			Object[][] body = { { "G1", 2, 1, null }, { "G2", 3, 1, null }, { "G3", 3, 2, null },
+					{ "H1", 2, 1, Boolean.TRUE } };
+			for (Object[] b : body) {
+				String tag = (String) b[0];
+				int fit = (Integer) b[2];
+				fillTo(d, tag, A4_BODY_TW - (2 * fit + 1) * SPLIT_LINE_TW / 2);
+				// A4 with 1in margins: a 451.3pt measure
+				Doc.Para p = d.para(linesOf(tag + " body:", (Integer) b[1], fit + 5, SERIF, 24, 451.3))
+						.noLabel().line(SPLIT_LINE_TW, STLineSpacingRule.EXACT);
+				if (b[3] != null) p.widowControl((Boolean) b[3]);
+				p.add();
+				d.para(tag + " after the paragraph").noLabel().line(SPLIT_LINE_TW, STLineSpacingRule.EXACT).add();
+			}
+			return d.pkg();
+		});
+	}
+
+	/** Exact 14pt filler lines from the top of a new page, then one spacer line of
+	 *  whatever is left over (14pt to 28pt), so that what follows starts topTwips below
+	 *  the body's top.  @since 17.3.1 (CR-001 batch 50) */
+	private static void fillTo(Doc d, String tag, int topTwips) {
+		int n = topTwips / SPLIT_LINE_TW - 1;
+		int spacer = topTwips - n * SPLIT_LINE_TW;
+		for (int i = 0; i <= n; i++) {
+			Doc.Para p = i < n
+					? d.para(tag + " filler " + (i + 1)).noLabel().line(SPLIT_LINE_TW, STLineSpacingRule.EXACT)
+					: d.para(tag + " spacer, one exact line of " + spacer / 20.0 + "pt").noLabel()
+							.line(spacer, STLineSpacingRule.EXACT);
+			if (i == 0) p.pageBreakBefore();
+			p.add();
+		}
+	}
+
+	/** One of table-rowsplit-3's tables: five rows (after a one-line header row in F) of
+	 *  a tag cell, a two-line and a three-line cell paragraph.  @since 17.3.1 */
+	private static Tbl splitTable(String tag, String variant) {
+		boolean f = "F".equals(variant);
+		String vAlign = f ? "bottom" : null;
+		Doc.Table t = new Doc.Table(1500, 3700, 3800).fixedLayout().noBorders().cellMargins(108, 0);
+		if (f) {
+			t.rowOf(null, null, t.cellOf(1500, vAlign, splitCellPara(tag + " head", variant)),
+					t.cellOf(3700, vAlign, splitCellPara("two lines", variant)),
+					t.cellOf(3800, vAlign, splitCellPara("three lines", variant)));
+		}
+		for (int r = 1; r <= 5; r++) {
+			String rt = tag + " r" + r;
+			P[] tagCell = f ? new P[] { splitCellPara(rt, variant), splitCellPara("code " + r, variant) }
+					: new P[] { splitCellPara(rt, variant) };
+			// cell measures: 3700 and 3800 twips less 2 x 108 of cell margin
+			t.rowOf(null, null, t.cellOf(1500, vAlign, tagCell),
+					t.cellOf(3700, vAlign, splitCellPara(linesOf(rt + " two:", 2, r, SERIF, 24, 174.2), variant)),
+					t.cellOf(3800, vAlign, splitCellPara(linesOf(rt + " three:", 3, r + 3, SERIF, 24, 179.2), variant)));
+		}
+		Tbl tbl = t.build();
+		if ("D".equals(variant)) cantSplitEveryRow(tbl);
+		if (f) {
+			org.docx4j.wml.Tr head = (org.docx4j.wml.Tr) tbl.getContent().get(0);
+			if (head.getTrPr() == null) head.setTrPr(F.createTrPr());
+			head.getTrPr().getCnfStyleOrDivIdOrGridBefore().add(
+					F.createCTTrPrBaseTblHeader(new BooleanDefaultTrue()));
+		}
+		return tbl;
+	}
+
+	/** A table-rowsplit-3 cell paragraph: Liberation Serif 12pt on exact 14pt lines, with
+	 *  what the variant states about widow control and keeping lines.  @since 17.3.1 */
+	private static P splitCellPara(String text, String variant) {
+		P p = Doc.plainParagraph(text, SERIF, 24);
+		PPr ppr = p.getPPr();
+		ppr.getSpacing().setLine(BigInteger.valueOf(SPLIT_LINE_TW));
+		ppr.getSpacing().setLineRule(STLineSpacingRule.EXACT);
+		if ("B".equals(variant)) {
+			BooleanDefaultTrue off = new BooleanDefaultTrue();
+			off.setVal(Boolean.FALSE);
+			ppr.setWidowControl(off);
+		} else if ("C".equals(variant)) {
+			ppr.setWidowControl(new BooleanDefaultTrue());
+		} else if ("E".equals(variant)) {
+			ppr.setKeepLines(new BooleanDefaultTrue());
+		}
+		return p;
+	}
+
+	/**
+	 * Text which Word's greedy line breaker sets in exactly {@code lines} lines of
+	 * {@code measurePt}, in font at halfPts.  Every full line is at least 3pt short of the
+	 * measure, and at least 3pt too long once the next word is added; a word that would
+	 * bring its line within 3pt of the measure, either way, is passed over.  The last
+	 * line is about half full.  The words are {@link Doc#prose}'s from offset on, after
+	 * lead.  @since 17.3.1 (CR-001 batch 50)
+	 */
+	private static String linesOf(String lead, int lines, int offset, String font, int halfPts,
+			double measurePt) {
+		String[] words = prose(8, offset).split(" ");
+		StringBuilder text = new StringBuilder(lead);
+		String line = lead;
+		int made = 1;
+		for (int w = 0; w < 10 * words.length; w++) {
+			String word = words[w % words.length];
+			String trial = line + " " + word;
+			double width = Doc.advancePoints(trial, font, halfPts);
+			if (made == lines) {
+				if (width > 0.55 * measurePt) return text.toString();
+				text.append(' ').append(word);
+				line = trial;
+			} else if (width <= measurePt - 3) {
+				text.append(' ').append(word);
+				line = trial;
+			} else if (width > measurePt + 3) {
+				text.append(' ').append(word);
+				line = word;
+				made++;
+			}
+		}
+		throw new IllegalStateException("cannot set \"" + lead + "\" in " + lines + " lines");
+	}
+
+	/** The VML text-box shape type, which Word writes once before the first box that
+	 *  uses it.  @since 17.3.1 (CR-001 batch 50) */
+	private static final String SHAPETYPE_202 = "<v:shapetype id=\"_x0000_t202\" coordsize=\"21600,21600\""
+			+ " o:spt=\"202\" path=\"m,l,21600r21600,l21600,xe\"><v:stroke joinstyle=\"miter\"/>"
+			+ "<v:path gradientshapeok=\"t\" o:connecttype=\"rect\"/></v:shapetype>";
+
+	/** The namespaces a paragraph of textbox-inset-stroke-list's boxes needs.  @since 17.3.1 */
+	private static final String BOX_NAMESPACES =
+			"xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
+			+ " xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\""
+			+ " xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
+			+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
+			+ " xmlns:wps=\"http://schemas.microsoft.com/office/word/2010/wordprocessingShape\""
+			+ " xmlns:v=\"urn:schemas-microsoft-com:vml\""
+			+ " xmlns:o=\"urn:schemas-microsoft-com:office:office\""
+			+ " xmlns:w10=\"urn:schemas-microsoft-com:office:word\"";
+
+	/** textbox-inset-stroke-list's six paragraphs, as the content of a w:txbxContent.
+	 *  @since 17.3.1 (CR-001 batch 50) */
+	private static String insetBoxContent(Doc d, String tag, String what) throws Exception {
+		List<P> ps = new ArrayList<>();
+		ps.add(d.para(tag + ": " + what).noLabel().build());
+		ps.add(d.para(tag + " justified. " + prose(2, 1)).noLabel().jc(JcEnumeration.BOTH).build());
+		ps.add(d.para(tag + " list at w:ind left 360 hanging 360. " + prose(1, 3)).noLabel()
+				.numPr(30, 0).build());
+		ps.add(d.para(tag + " list at w:ind left 720 hanging 360. " + prose(1, 4)).noLabel()
+				.numPr(31, 0).build());
+		ps.add(d.para(tag + " plain at w:ind left 720. " + prose(1, 5)).noLabel().indent(720, 0, 0).build());
+		ps.add(d.para(tag + "-right").noLabel().jc(JcEnumeration.RIGHT).build());
+		return Doc.paragraphsXml(ps);
+	}
+
+	/** A 240 x 340pt unfilled VML text box (v:shape of type 202) at (leftPt, topPt) on
+	 *  the page, with the given stroke attributes and v:textbox inset (null: none, the
+	 *  default 7.2pt,3.6pt,7.2pt,3.6pt).  @since 17.3.1 (CR-001 batch 50) */
+	private static String vmlInsetBox(int n, int leftPt, int topPt, String strokeAttrs, String inset,
+			String content) {
+		return "<v:shape id=\"Text Box " + n + "\" o:spid=\"_x0000_s" + (1025 + n) + "\" type=\"#_x0000_t202\""
+				+ " style=\"position:absolute;margin-left:" + leftPt + "pt;margin-top:" + topPt
+				+ "pt;width:240pt;height:340pt;z-index:" + n
+				+ ";mso-position-horizontal-relative:page;mso-position-vertical-relative:page\""
+				+ " filled=\"f\"" + (strokeAttrs.isEmpty() ? "" : " " + strokeAttrs) + ">"
+				+ "<v:textbox" + (inset == null ? "" : " inset=\"" + inset + "\"") + ">"
+				+ "<w:txbxContent>" + content + "</w:txbxContent></v:textbox></v:shape>";
+	}
+
+	/** The same box as DrawingML: an anchored wps text box, page-relative, no wrap, a:ln
+	 *  of lineEmu (null: a:noFill), default body insets, in mc:AlternateContent with a VML
+	 *  fallback of the same stroke, as Word writes it.  @since 17.3.1 (CR-001 batch 50) */
+	private static String wpsInsetBox(int n, int leftPt, int topPt, String lineEmu, String content) {
+		long cx = 240 * 12700L, cy = 340 * 12700L;
+		String ln = lineEmu == null ? "<a:ln><a:noFill/></a:ln>"
+				: "<a:ln w=\"" + lineEmu + "\"><a:solidFill><a:srgbClr val=\"000000\"/></a:solidFill></a:ln>";
+		String fallbackStroke = lineEmu == null ? "stroked=\"f\""
+				: "strokeweight=\"" + (Integer.parseInt(lineEmu) / 12700.0) + "pt\"";
+		return "<w:r><mc:AlternateContent><mc:Choice Requires=\"wps\"><w:drawing>"
+				+ "<wp:anchor distT=\"0\" distB=\"0\" distL=\"114300\" distR=\"114300\" simplePos=\"0\""
+				+ " relativeHeight=\"" + (251659264 + n) + "\" behindDoc=\"0\" locked=\"0\" layoutInCell=\"1\""
+				+ " allowOverlap=\"1\"><wp:simplePos x=\"0\" y=\"0\"/>"
+				+ "<wp:positionH relativeFrom=\"page\"><wp:posOffset>" + leftPt * 12700L + "</wp:posOffset></wp:positionH>"
+				+ "<wp:positionV relativeFrom=\"page\"><wp:posOffset>" + topPt * 12700L + "</wp:posOffset></wp:positionV>"
+				+ "<wp:extent cx=\"" + cx + "\" cy=\"" + cy + "\"/><wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>"
+				+ "<wp:wrapNone/><wp:docPr id=\"" + (200 + n) + "\" name=\"Text Box " + n + "\"/><wp:cNvGraphicFramePr/>"
+				+ "<a:graphic><a:graphicData uri=\"http://schemas.microsoft.com/office/word/2010/wordprocessingShape\">"
+				+ "<wps:wsp><wps:cNvSpPr txBox=\"1\"/><wps:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/>"
+				+ "<a:ext cx=\"" + cx + "\" cy=\"" + cy + "\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom>"
+				+ "<a:noFill/>" + ln + "</wps:spPr><wps:txbx><w:txbxContent>" + content + "</w:txbxContent></wps:txbx>"
+				+ "<wps:bodyPr rot=\"0\" vert=\"horz\" wrap=\"square\" lIns=\"91440\" tIns=\"45720\" rIns=\"91440\""
+				+ " bIns=\"45720\" anchor=\"t\" anchorCtr=\"0\"><a:noAutofit/></wps:bodyPr></wps:wsp>"
+				+ "</a:graphicData></a:graphic></wp:anchor></w:drawing></mc:Choice>"
+				+ "<mc:Fallback><w:pict>" + vmlInsetBox(n, leftPt, topPt, fallbackStroke, null, content)
+				+ "</w:pict></mc:Fallback></mc:AlternateContent></w:r>";
+	}
+
+	/** Words with no f in them, so nothing ligates in any of the probe faces: from one
+	 *  letter to twenty, for justified-compression-decision's first lines.
+	 *  @since 17.3.1 (CR-001 batch 50) */
+	private static final String[] PLAIN_WORDS = ("a to in it is on an at by as or we he be do go no so up us my me "
+			+ "the and was not but can are has had his her one two way day may say new old man men see own our "
+			+ "out all any how now who its yet set put run sat sun ten top use try win yes also back been both "
+			+ "came come does done down each even ever give good have here into just keep kind last left like "
+			+ "line long look made make many more most much must name near need next only open over part same "
+			+ "seem show side some such sure take than that them then they this time turn very want well went "
+			+ "were what when will with word work year about above again along among began being below bring "
+			+ "built carry cause close could count early earth event every great green group heard house large "
+			+ "later learn least light might money never north order other paper place plant point power press "
+			+ "quite reach right round seven shall short since small sound south space stand start state still "
+			+ "story study table taken their there these thing think those three today total under until upper "
+			+ "using value water where which while white whole whose world would write young another because "
+			+ "between brought company country current develop example general however include instead machine "
+			+ "measure natural nothing number certain central morning outside picture present problem process "
+			+ "program provide question several special student support through without accommodated "
+			+ "consideration characteristically typographical internationalization responsibility "
+			+ "administration organization representative").split(" ");
+
+	/** Advances already measured, by face and size, since a case measures hundreds of
+	 *  words.  @since 17.3.1 */
+	private static final java.util.Map<String, Double> ADVANCES = new java.util.HashMap<>();
+
+	private static double advance(String text, String font, int halfPts) {
+		return ADVANCES.computeIfAbsent(font + "|" + halfPts + "|" + text,
+				key -> Doc.advancePoints(text, font, halfPts));
+	}
+
+	/** The letters a built word is made of: five wide and five narrow, no f.  @since 17.3.1 */
+	private static final String BUILD_WIDE = "moneu";
+	private static final String BUILD_NARROW = "iltrs";
+
+	/**
+	 * A nonsense word whose advance in font at halfPts comes as near targetPt as letters
+	 * can bring it.  The counts (0 to 5) of five wide and five narrow letters are searched
+	 * meet-in-the-middle, the fewer letters winning a tie within 0.002pt; the letters are
+	 * then dealt round-robin so the word reads as one.  The caller states the width the
+	 * word actually has.  @since 17.3.1 (CR-001 batch 50)
+	 */
+	private static String builtWord(double targetPt, String font, int halfPts) {
+		double[] wide = new double[5], narrow = new double[5];
+		for (int i = 0; i < 5; i++) {
+			wide[i] = advance(BUILD_WIDE.substring(i, i + 1), font, halfPts);
+			narrow[i] = advance(BUILD_NARROW.substring(i, i + 1), font, halfPts);
+		}
+		int combos = 7776; // 6^5
+		double[] narrowSum = new double[combos];
+		Integer[] order = new Integer[combos];
+		for (int code = 0; code < combos; code++) {
+			narrowSum[code] = sumOf(code, narrow);
+			order[code] = code;
+		}
+		java.util.Arrays.sort(order, (x, y) -> Double.compare(narrowSum[x], narrowSum[y]));
+		double[] sorted = new double[combos];
+		for (int i = 0; i < combos; i++) sorted[i] = narrowSum[order[i]];
+		int bestWide = 0, bestNarrow = 0, bestLetters = Integer.MAX_VALUE;
+		double bestErr = Double.MAX_VALUE;
+		for (int wc = 0; wc < combos; wc++) {
+			double need = targetPt - sumOf(wc, wide);
+			if (need < -0.5) continue;
+			int at = java.util.Arrays.binarySearch(sorted, need);
+			if (at < 0) at = -at - 1;
+			for (int i = Math.max(0, at - 2); i <= Math.min(combos - 1, at + 2); i++) {
+				int nc = order[i];
+				double err = Math.abs(need - narrowSum[nc]);
+				int letters = letterCount(wc) + letterCount(nc);
+				if (letters == 0) continue;
+				if (err < bestErr - 0.002 || (err < bestErr + 0.002 && letters < bestLetters)) {
+					bestErr = Math.min(err, bestErr);
+					bestWide = wc;
+					bestNarrow = nc;
+					bestLetters = letters;
+				}
+			}
+		}
+		int[] count = new int[10];
+		for (int i = 0, w = bestWide, n = bestNarrow; i < 5; i++, w /= 6, n /= 6) {
+			count[i] = w % 6;
+			count[5 + i] = n % 6;
+		}
+		String letters = BUILD_WIDE + BUILD_NARROW;
+		StringBuilder word = new StringBuilder();
+		for (boolean any = true; any;) {
+			any = false;
+			for (int i : new int[] { 0, 5, 1, 6, 2, 7, 3, 8, 4, 9 }) { // m i o l n t e r u s
+				if (count[i] > 0) {
+					word.append(letters.charAt(i));
+					count[i]--;
+					any = true;
+				}
+			}
+		}
+		return word.toString();
+	}
+
+	private static double sumOf(int code, double[] widths) {
+		double sum = 0;
+		for (int i = 0; i < 5; i++, code /= 6) sum += (code % 6) * widths[i];
+		return sum;
+	}
+
+	private static int letterCount(int code) {
+		int n = 0;
+		for (int i = 0; i < 5; i++, code /= 6) n += code % 6;
+		return n;
+	}
+
+	/**
+	 * One justified-compression-decision case, added to d: a marker line stating it, and
+	 * a two-line w:jc="both" paragraph in font at 12pt whose first line has k spaces and
+	 * whose next word needs every one of k + 1 spaces compressed by c per cent of the
+	 * face's own space to come up, where leaving it stretches the k spaces by s per cent.
+	 *
+	 * <p>c depends only on k, s and the next word's advance - c = 1 - (k(1 + s) x space -
+	 * next) / ((k + 1) x space) - and Liberation Sans and Serif draw letters on a grid of
+	 * 1/18 em, so a built word cannot land anywhere.  k is therefore chosen from a window
+	 * round the value that makes the next word about three spaces wide (6 to 36), as the
+	 * one whose buildable next word comes nearest; kGiven fixes it.  The first line is
+	 * then built about a point short, and the paragraph's w:ind w:right (in twips) takes
+	 * up the rest, so that s is what was asked to a twentieth of a point.  labelled puts
+	 * the paragraph in list 40 (w:ind left 567 hanging 567), so its first line's measure
+	 * is what is left after the tab: 468 - 28.35pt.  @since 17.3.1 (CR-001 batch 50)
+	 */
+	private static void compressionCase(Doc d, String series, String font, int cPct, int sPct, Integer kGiven,
+			boolean labelled) throws Exception {
+		final int halfPts = 24;
+		double c = cPct / 100.0, s = sPct / 100.0;
+		double measure = labelled ? 468.0 - 567 / 20.0 : 468.0;
+		double space = advance(" ", font, halfPts);
+		int k0 = Math.max(6, Math.min(36, (int) Math.round((3.5 + 1 - c) / (s + c))));
+		int k = -1;
+		String next = null;
+		double bestErr = Double.MAX_VALUE;
+		for (int kk = kGiven != null ? kGiven : Math.max(6, k0 - 4);
+				kk <= (kGiven != null ? kGiven : Math.min(36, k0 + 4)); kk++) {
+			double target = kk * space * (1 + s) - (kk + 1) * space * (1 - c);
+			if (target < 1.6 * space) continue;
+			String word = builtWord(target, font, halfPts);
+			// in c, plus a little for straying from k0, so a tie goes to the nearer k
+			double err = Math.abs(advance(word, font, halfPts) - target) / ((kk + 1) * space)
+					+ 0.0001 * Math.abs(kk - k0);
+			if (err < bestErr) {
+				bestErr = err;
+				k = kk;
+				next = word;
+			}
+		}
+		if (k < 0) {
+			throw new IllegalStateException(series + " c" + cPct + " s" + sPct + ": no k gives a next word");
+		}
+		// the first line: k + 1 words, the last of them built, about a point short of the
+		// glyph width that gives s; a word may repeat, the less used much preferred
+		String line = null;
+		double glyphs = 0;
+		for (double shortBy = 1.0; line == null || measure - glyphs - k * space * (1 + s) < 0; shortBy += 1.0) {
+			if (shortBy > 20) {
+				throw new IllegalStateException(series + " c" + cPct + " s" + sPct + " k" + k
+						+ ": no first line under " + (measure - k * space * (1 + s)) + "pt; last " + glyphs
+						+ " \"" + line + "\"");
+			}
+			double g = measure - k * space * (1 + s) - shortBy;
+			java.util.Map<String, Integer> uses = new java.util.HashMap<>();
+			StringBuilder sb = new StringBuilder();
+			double sum = 0;
+			for (int i = 0; i < k; i++) {
+				double ideal = (g - sum) / (k + 1 - i);
+				String best = null;
+				double bestScore = Double.MAX_VALUE;
+				for (String w : PLAIN_WORDS) {
+					if (w.indexOf('f') >= 0) continue;
+					// a repeat costs 5% of the wanted width: variety among long words, while a line
+				// of k = 36 still gets the two-letter words it needs
+				double score = Math.abs(advance(w, font, halfPts) - ideal) + 0.05 * ideal * uses.getOrDefault(w, 0);
+					if (score < bestScore) {
+						bestScore = score;
+						best = w;
+					}
+				}
+				uses.merge(best, 1, Integer::sum);
+				sum += advance(best, font, halfPts);
+				sb.append(i == 0 ? "" : " ").append(best);
+			}
+			sb.append(' ').append(builtWord(g - sum, font, halfPts));
+			line = sb.toString();
+			glyphs = Doc.advancePoints(line, font, halfPts) - k * space;
+		}
+		int rightTw = (int) Math.round((measure - glyphs - k * space * (1 + s)) * 20);
+		double m = measure - rightTw / 20.0;
+		double nextWidth = Doc.advancePoints(next, font, halfPts);
+		double sBuilt = (m - glyphs) / (k * space) - 1;
+		double cBuilt = 1 - (m - glyphs - nextWidth) / ((k + 1) * space);
+		String id = series + "-c" + String.format("%02d", cPct) + "-s" + String.format("%02d", sPct)
+				+ (kGiven != null ? "-k" + k : "");
+		d.para(String.format(java.util.Locale.ROOT, "case %s, %s%s: k %d, next \"%s\" %.2fpt, "
+				+ "c %.1f%%, s %.1f%%, w:ind right %d", id, font, labelled ? " numbered" : "", k, next,
+				nextWidth, 100 * cBuilt, 100 * sBuilt, rightTw))
+				.noLabel().font(SANS, 16).before(120).add();
+		Doc.Para p = d.para(line + " " + next + " " + JUST_TAIL).noLabel().font(font, halfPts)
+				.jc(JcEnumeration.BOTH).suppressAutoHyphens();
+		if (labelled) p.numPr(40, 0).indent(567, 0, 567);
+		P built = p.build();
+		if (built.getPPr().getInd() == null) built.getPPr().setInd(F.createPPrBaseInd());
+		built.getPPr().getInd().setRight(BigInteger.valueOf(rightTw));
+		d.add(built);
 	}
 
 	/** Writes every probe as {@code <id>.docx} into dir, plus corpus.txt and corpus-manifest.properties. */
