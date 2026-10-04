@@ -2879,6 +2879,79 @@ public final class Corpus {
 		}));
 
 		/*
+		 * table-cellspacing-pitch-compat14/15 (batch 51, corpus document 4083).  4083's form
+		 * table states w:tblCellSpacing 28 twips on w:tblPr and on every w:trPr; across its
+		 * date-of-birth row (one digit per cell, ~20 columns) our cells drift 1.4pt a column
+		 * from Word's, and a wrap that follows pushes every row below down 11pt.  Our FO uses
+		 * the separate-border model (border-separation = 2 x the spacing, each column the grid
+		 * less one spacing; word-layout-rules §6.6), which table-cellspacing (2 columns, 72tw
+		 * on w:tblPr only, mode 15) found right.  What differs in 4083: the spacing on the
+		 * rows too, mode 14, many columns.  Six fixed 1500-twip columns, each cell a
+		 * left-aligned tag and a right-aligned one, so both content edges show:
+		 *   P28/P72: w:tblCellSpacing 28 / 72 on w:tblPr only;
+		 *   R28/R72: on every w:trPr only;
+		 *   B28/B72: on both.
+		 * Read off: each cell's left tag x0 and right tag x1, i.e. Word's pitch and widths.
+		 */
+		PROBES.add(cellSpacingPitchProbe(14));
+		PROBES.add(cellSpacingPitchProbe(15));
+
+		/*
+		 * vml-box-anchor-space-before (batch 51, M22; 4083, 9775, 7042).  A text-relative VML
+		 * box (mso-position-vertical-relative:text) is placed margin-top below its anchor
+		 * paragraph.  On 4083 our box text sits ~3pt low against the same row's label where
+		 * the anchor paragraph has 3pt of space-before, and level where it has none: Word
+		 * seems to measure from the paragraph's top BEFORE its space-before, docx4j after it.
+		 * But 9775 (body, 14pt before) matches, and 7042 (cell, 12pt, a tall inline image) is
+		 * 3.1pt the other way.  Each case: a paragraph of text with space-before 0, 6 or
+		 * 18pt holding a 20pt-tall v:rect text box (inset 0) at margin-top 0, -1.2 or 10pt;
+		 * in the body (B), and as the only paragraph of a table cell (C).
+		 * Read off: the box text's baseline minus its anchor paragraph's text baseline.
+		 */
+		PROBES.add(new Probe("vml-box-anchor-space-before",
+				"text-relative VML text boxes (mso-position-vertical-relative:text, inset 0) at "
+				+ "margin-top 0, -1.2 and 10pt, anchored in paragraphs with space-before 0, 6 and "
+				+ "18pt, in the body (B) and as a table cell's only paragraph (C); mode 15.  Read "
+				+ "the box text's baseline minus its anchor paragraph's text baseline: is a box "
+				+ "measured from the paragraph's top before or after its space-before?", () -> {
+			Doc d = Doc.create(15);
+			int[] befores = { 0, 120, 360 };
+			String[] tops = { "0", "-1.2pt", "10pt" };
+			int n = 0;
+			for (int b : befores) {
+				for (String top : tops) {
+					String tag = "B" + (b / 20) + "m" + top.replace("pt", "").replace("-", "n").replace(".", "");
+					n++;
+					d.para(tag + " filler, an ordinary line before the anchor").after(0).add();
+					String style = "position:absolute;margin-left:250pt;margin-top:" + top
+							+ ";width:150pt;height:20pt;z-index:" + n
+							+ ";mso-position-horizontal-relative:text;mso-position-vertical-relative:text";
+					// 36pt after: the box (up to 10pt down, 20pt tall) clears the next case's line
+					d.para(tag + " anchor").before(b).after(720).run(d.vmlRect(style, tag + " box text")).add();
+				}
+			}
+			d.para("after the body cases").before(240).add();
+			Doc.Table t = new Doc.Table(4500, 4500).fixedLayout();
+			for (int b : befores) {
+				for (String top : tops) {
+					String tag = "C" + (b / 20) + "m" + top.replace("pt", "").replace("-", "n").replace(".", "");
+					n++;
+					// inside the 225pt first cell, clear of the anchor text and of the next cell
+					String style = "position:absolute;margin-left:95pt;margin-top:" + top
+							+ ";width:120pt;height:20pt;z-index:" + n
+							+ ";mso-position-horizontal-relative:text;mso-position-vertical-relative:text";
+					P anchor = d.para(tag + " anchor").noLabel().before(b).after(0)
+							.run(d.vmlRect(style, tag + " box text")).build();
+					t.rowOf(800, org.docx4j.wml.STHeightRule.AT_LEAST, t.cellOf(4500, null, anchor),
+							t.cell(tag + " beside", SERIF, 24, 1, 4500));
+				}
+			}
+			d.add(t.build());
+			d.para("after the table").before(240).add();
+			return d.pkg();
+		}));
+
+		/*
 		 * CR-016's probe set (docs/developer/change-requests/CR-016-font-selection-and-mapping.md,
 		 * "Are the comments accurate?").  Font selection and mapping: which of a run's four
 		 * fonts (w:ascii, w:hAnsi, w:eastAsia, w:cs) formats each character, and what Word
@@ -8145,6 +8218,52 @@ public final class Corpus {
 				}
 				d.para(tag + " after the chain. " + prose(1, n)).noLabel().add();
 			}
+			return d.pkg();
+		});
+	}
+
+	/** One table-cellspacing-pitch document, at one compatibility mode.  @since 17.3.1 */
+	private static Probe cellSpacingPitchProbe(int mode) {
+		return new Probe("table-cellspacing-pitch-compat" + mode,
+				"six fixed 1500-twip columns whose cells hold a left-aligned and a right-aligned "
+				+ "tag, with w:tblCellSpacing 28 and 72 twips on w:tblPr only (P28, P72), on every "
+				+ "w:trPr only (R28, R72) and on both (B28, B72); mode " + mode + ".  Read each "
+				+ "cell's content edges: Word's column pitch and cell width", () -> {
+			Doc d = Doc.create(mode);
+			for (String where : new String[] { "P", "R", "B" }) {
+				for (int sp : new int[] { 28, 72 }) {
+					String tag = where + sp;
+					d.para(tag + ": w:tblCellSpacing " + sp + " twips "
+							+ ("P".equals(where) ? "on w:tblPr" : "R".equals(where) ? "on every w:trPr" : "on both"))
+							.before(240).after(120).add();
+					Doc.Table t = new Doc.Table(1500, 1500, 1500, 1500, 1500, 1500).fixedLayout();
+					if (!"R".equals(where)) t.cellSpacing(sp);
+					for (int r = 1; r <= 2; r++) {
+						org.docx4j.wml.Tc[] cells = new org.docx4j.wml.Tc[6];
+						for (int c = 0; c < 6; c++) {
+							String cell = tag + "r" + r + "c" + (c + 1);
+							cells[c] = t.cellOf(1500, null,
+									d.para(cell + "L").noLabel().build(),
+									d.para(cell + "R").noLabel().jc(JcEnumeration.RIGHT).build());
+						}
+						t.rowOf(null, null, cells);
+					}
+					Tbl tbl = t.build();
+					if (!"P".equals(where)) {
+						for (Object o : tbl.getContent()) {
+							if (!(o instanceof org.docx4j.wml.Tr)) continue;
+							org.docx4j.wml.Tr tr = (org.docx4j.wml.Tr) o;
+							if (tr.getTrPr() == null) tr.setTrPr(F.createTrPr());
+							org.docx4j.wml.TblWidth w = F.createTblWidth();
+							w.setW(BigInteger.valueOf(sp));
+							w.setType("dxa");
+							tr.getTrPr().getCnfStyleOrDivIdOrGridBefore().add(F.createCTTrPrBaseTblCellSpacing(w));
+						}
+					}
+					d.add(tbl);
+				}
+			}
+			d.para("after. " + prose(1)).before(240).add();
 			return d.pkg();
 		});
 	}
