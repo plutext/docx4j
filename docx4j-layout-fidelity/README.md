@@ -853,6 +853,40 @@ document regresses beyond that noise floor; a change that lifts the mean while
 breaking a handful of documents needs those documents looked at individually
 (`run` with `-Dfidelity.only=<id>` gives the page images).
 
+### More class 2 documents: `FontRewrite`
+
+`org.docx4j.fidelity.corpus.FontRewrite` makes copies of corpus documents whose fonts the two
+machines do not draw alike, rewritten to faces both have, so that goldens cut from the copies
+are class 2 (the layout fidelity plan, `../docx4j-portfolio/docs/layout_fidelity_plan.md`
+section 4). It takes a baseline's `classes.txt` per corpus as its evidence:
+
+```
+java -cp "$CP" org.docx4j.fidelity.corpus.FontRewrite <baselineScoreDir> <outCorpusDir> ~/fidelity-real ~/fidelity-real2 ~/fidelity-real3
+```
+
+- **Which documents:** left-to-right European documents of class `2n`, `3a` or `3b`, made from
+  Word's re-save, that substitute a font outside the Windows VM's common fonts (those are
+  copied to the scoring machine instead; a document lacking only those is left alone), and every
+  `3b` document.
+- **Which fonts:** those substitutions, Word's missing fonts in a `3b` document, and whatever
+  else `FontsAnalysis` does not grade EXACT in the document, bar the VM and symbol faces. Every
+  other font is left exactly as it is.
+- **What they become:** by metric twin where the name says which face it is (Calibri ->
+  Carlito, Arial and Helvetica -> Liberation Sans, Times -> Liberation Serif, Courier ->
+  Liberation Mono, PostScript and localised spellings included). A styled or PostScript
+  spelling of a VM font becomes that font (`TrebuchetMS,Bold` -> Trebuchet MS); Caladea is not
+  Cambria's twin. Otherwise the font table's `w:pitch` and `w:family` decide (fixed is mono,
+  swiss and modern sans, roman serif), then the name; symbol faces go to DejaVu Sans.
+- **Where:** every XML part under `word/`, as text rather than through JAXB, so nothing else
+  in the package changes. That covers `w:rFonts`, DrawingML `typeface` (the theme's major,
+  minor and script fonts included, matched through `CJKToEnglish` for the East Asian
+  spellings), the font tables (a renamed entry loses its `w:altName`, and a second entry of
+  one name is dropped), and VML `font-family`. Each copy is then searched for the old names.
+
+`font-rewrite-manifest.tsv` records each copy's mapping. The first run (b74 evidence, 4 October
+2026) made 107 copies, the share's `real-c2` group. `FontsAnalysis` then reports every font in
+them as EXACT, a VM font or a symbol font.
+
 ## JUnit
 
 `FidelityTest` generates and renders the corpus unconditionally, and compares
