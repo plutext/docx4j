@@ -2951,6 +2951,24 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		// CR-001 batch 52 (ledger8 §5, ~/fidelity-real3/triage/ledger8.md): probes first, one Word run
+		PROBES.add(pagebreakParagraphProbe(12));
+		PROBES.add(pagebreakParagraphProbe(14));
+		PROBES.add(pagebreakParagraphProbe(15));
+		PROBES.add(folioParityProbe(false));
+		PROBES.add(folioParityProbe(true));
+		PROBES.add(sizeChangeBreakProbe());
+		PROBES.add(sdtTagsProbe());
+		PROBES.add(pctAutofitGridProbe(12));
+		PROBES.add(pctAutofitGridProbe(14));
+		PROBES.add(pctAutofitGridProbe(15));
+		PROBES.add(cellNeighbourBorderProbe());
+		PROBES.add(compressionCapProbe());
+		PROBES.add(keepChainRoomProbe(14));
+		PROBES.add(keepChainRoomProbe(15));
+		PROBES.add(ccmpTextLayerProbe());
+		PROBES.add(breakAtSpaceProbe());
+
 		/*
 		 * CR-016's probe set (docs/developer/change-requests/CR-016-font-selection-and-mapping.md,
 		 * "Are the comments accurate?").  Font selection and mapping: which of a run's four
@@ -8041,6 +8059,13 @@ public final class Corpus {
 	 */
 	private static void compressionCase(Doc d, String series, String font, int cPct, int sPct, Integer kGiven,
 			boolean labelled) throws Exception {
+		compressionCase(d, d::add, series, font, cPct, sPct, kGiven, labelled);
+	}
+
+	/** As above, with the marker and the case's paragraph handed to sink (a table cell's content, say)
+	 *  rather than added to the body.  @since 17.3.1 (CR-001 batch 52) */
+	private static void compressionCase(Doc d, java.util.function.Consumer<P> sink, String series, String font,
+			int cPct, int sPct, Integer kGiven, boolean labelled) throws Exception {
 		final int halfPts = 24;
 		double c = cPct / 100.0, s = sPct / 100.0;
 		double measure = labelled ? 468.0 - 567 / 20.0 : 468.0;
@@ -8109,17 +8134,18 @@ public final class Corpus {
 		double cBuilt = 1 - (m - glyphs - nextWidth) / ((k + 1) * space);
 		String id = series + "-c" + String.format("%02d", cPct) + "-s" + String.format("%02d", sPct)
 				+ (kGiven != null ? "-k" + k : "");
-		d.para(String.format(java.util.Locale.ROOT, "case %s, %s%s: k %d, next \"%s\" %.2fpt, "
+		P marker = d.para(String.format(java.util.Locale.ROOT, "case %s, %s%s: k %d, next \"%s\" %.2fpt, "
 				+ "c %.1f%%, s %.1f%%, w:ind right %d", id, font, labelled ? " numbered" : "", k, next,
 				nextWidth, 100 * cBuilt, 100 * sBuilt, rightTw))
-				.noLabel().font(SANS, 16).before(120).add();
+				.noLabel().font(SANS, 16).before(120).build();
+		sink.accept(marker);
 		Doc.Para p = d.para(line + " " + next + " " + JUST_TAIL).noLabel().font(font, halfPts)
 				.jc(JcEnumeration.BOTH).suppressAutoHyphens();
 		if (labelled) p.numPr(40, 0).indent(567, 0, 567);
 		P built = p.build();
 		if (built.getPPr().getInd() == null) built.getPPr().setInd(F.createPPrBaseInd());
 		built.getPPr().getInd().setRight(BigInteger.valueOf(rightTw));
-		d.add(built);
+		sink.accept(built);
 	}
 
 	// ---------------------------------------------------------------- CR-001 batch 51 helpers
@@ -8264,6 +8290,527 @@ public final class Corpus {
 				}
 			}
 			d.para("after. " + prose(1)).before(240).add();
+			return d.pkg();
+		});
+	}
+
+	// ---------------------------------------------------------------- CR-001 batch 52 (ledger8 §5)
+
+	/** A paragraph holding nothing but a page break, with no properties of its own (Normal's).
+	 *  @since 17.3.1 (CR-001 batch 52) */
+	private static P breakOnlyParagraph() {
+		P p = F.createP();
+		R r = F.createR();
+		Br br = F.createBr();
+		br.setType(STBrType.PAGE);
+		r.getContent().add(br);
+		p.getContent().add(r);
+		return p;
+	}
+
+	/**
+	 * pagebreak-paragraph-compat&lt;mode&gt; (ledger8 item 19).  Where does a break-only paragraph's mark go, and
+	 * what becomes of the paragraph after the break?  In mode 15 Word keeps the mark on the page before the
+	 * break (13347, 2703, 4372, 1372: 11 of the 50 mode-15 class 2 documents with break-only paragraphs miss
+	 * Word's page count, against 7% without); below 15 the mark's line is thought to go to the next page
+	 * (ledger7 item 6, docx4j's parked pageBreakParagraphLine), except before a table (rules §3.3).  Each case
+	 * opens a page (pageBreakBefore on its first paragraph):
+	 * A a paragraph, the break-only paragraph, then a paragraph with 12pt before;
+	 * B the same with a one-row table after the break;
+	 * C with a 16pt heading carrying pageBreakBefore after it (13347: is there a blank page?);
+	 * D the page filled by 29 exact 24pt lines (1.9pt left) before the break;
+	 * E 28 exact 24pt lines (25.9pt left: room for the mark's line);
+	 * F the break-only paragraph as the document's last.
+	 * Read: the page count; the first baseline on each case's second page; any blank page.
+	 * @since 17.3.1 (CR-001 batch 52)
+	 */
+	private static Probe pagebreakParagraphProbe(int mode) {
+		return new Probe("pagebreak-paragraph-compat" + mode,
+				"break-only paragraphs (w:br type=page alone, Normal's properties) at mode " + mode + ": mid-page "
+				+ "followed by a paragraph with 12pt before (A), a table (B) and a pageBreakBefore heading (C); at "
+				+ "a page foot with 1.9pt left (D) and 25.9pt left (E); and as the document's last paragraph (F). "
+				+ "Read the page count, the first baseline on each case's second page, and any blank page", () -> {
+			Doc d = Doc.create(mode);
+			String[] cases = { "A", "B", "C", "D", "E" };
+			for (int i = 0; i < cases.length; i++) {
+				String c = cases[i];
+				if ("D".equals(c) || "E".equals(c)) {
+					int lines = "D".equals(c) ? 29 : 28;
+					for (int k = 1; k <= lines; k++) {
+						Doc.Para f = d.para(k == 1 ? c + ". " + lines + " exact 24pt lines, then a break-only paragraph"
+								: c + " line " + k + " of " + lines).noLabel().font(SERIF, 24)
+								.before(0).after(0).line(480, STLineSpacingRule.EXACT);
+						if (k == 1) f.pageBreakBefore();
+						f.add();
+					}
+				} else {
+					Doc.Para t = d.para(c + ". A paragraph, then a break-only paragraph, then "
+							+ ("A".equals(c) ? "a paragraph with 12pt before" : "B".equals(c) ? "a table"
+									: "a heading with pageBreakBefore") + ". " + prose(3, i)).noLabel();
+					if (i > 0) t.pageBreakBefore();
+					t.add();
+				}
+				d.add(breakOnlyParagraph());
+				if ("B".equals(c)) {
+					Doc.Table t = new Doc.Table(4513, 4513);
+					t.rowOf(null, null, t.cell("B cell one", SERIF, 24, 1, 4513), t.cell("B cell two", SERIF, 24, 1, 4513));
+					d.add(t.build());
+					d.para("B after the table. " + prose(1, i)).noLabel().add();
+				} else if ("C".equals(c)) {
+					Doc.Para h = d.para("C heading with pageBreakBefore").noLabel().font(SERIF, 32);
+					h.pageBreakBefore();
+					h.add();
+					d.para("C after the heading. " + prose(1, i)).noLabel().add();
+				} else {
+					d.para(c + " after: 12pt before. " + prose(1, i)).noLabel().before(240).add();
+				}
+			}
+			Doc.Para last = d.para("F. The break-only paragraph after this one is the document's last paragraph. "
+					+ prose(1, 7)).noLabel();
+			last.pageBreakBefore();
+			last.add();
+			d.add(breakOnlyParagraph());
+			return d.pkg();
+		});
+	}
+
+	/** A footer paragraph: the label, then a PAGE field (cached "1").  @since 17.3.1 (CR-001 batch 52) */
+	private static P folioParagraph(String label) {
+		P p = Doc.plainParagraph(label + " ", SANS, 18);
+		org.docx4j.wml.CTSimpleField f = F.createCTSimpleField();
+		f.setInstr(" PAGE ");
+		f.getContent().add(Doc.run("1", SANS, 18, null));
+		p.getContent().add(F.createPFldSimple(f));
+		return p;
+	}
+
+	/**
+	 * page-number-restart-parity (ledger8 item 21; 9539, 8695).  Does Word insert a blank page so that a
+	 * restarted folio does not repeat the parity of the one before it, and how does an oddPage or evenPage
+	 * section read a restarted folio?  On 9539 (mode 14, evenAndOddHeaders) Word puts a wholly blank page
+	 * before each of two sections restarting at 7 after an odd folio; docx4j none.  On 8695 an oddPage section
+	 * restarting at 3 gets no blank page in Word, one in docx4j (end-on-even).  Eight sections of one page:
+	 * S1 from 1; then nextPage at 7, nextPage at 7 again, nextPage at 8, oddPage at 3, oddPage at 4, evenPage
+	 * at 5, evenPage at 6.  The footer prints the folio; the -eo variant has evenAndOddHeaders, with odd and
+	 * even footers.  Read: the page count, each page's footer, and which pages are blank.
+	 * @since 17.3.1 (CR-001 batch 52)
+	 */
+	private static Probe folioParityProbe(boolean evenOdd) {
+		return new Probe("page-number-restart-parity" + (evenOdd ? "-eo" : ""),
+				"eight one-page sections, mode 14" + (evenOdd ? ", w:evenAndOddHeaders with odd and even footers" : "")
+				+ ": S1 from folio 1, then nextPage sections restarting at 7, 7 and 8, oddPage at 3 and 4, evenPage "
+				+ "at 5 and 6; the footer prints the folio.  Read the page count, the footers and the blank pages",
+				() -> {
+			Doc d = Doc.create(14);
+			if (evenOdd) {
+				d.addFooter(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.List.of(folioParagraph("odd footer, folio")));
+				d.addFooter(org.docx4j.wml.HdrFtrRef.EVEN, java.util.List.of(folioParagraph("even footer, folio")));
+			} else {
+				d.addFooter(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.List.of(folioParagraph("footer, folio")));
+			}
+			String[] types = { null, "nextPage", "nextPage", "nextPage", "oddPage", "oddPage", "evenPage", "evenPage" };
+			int[] starts = { 0, 7, 7, 8, 3, 4, 5, 6 };
+			for (int i = 0; i < types.length; i++) {
+				d.para("S" + (i + 1) + ": " + (types[i] == null ? "the first section, folios from 1"
+						: "a " + types[i] + " section, w:pgNumType start " + starts[i]) + ". " + prose(2, i))
+						.noLabel().add();
+				if (i + 1 < types.length) {
+					d.endSection(types[i + 1]);
+					d.sectPr().setPgNumType(null);
+					d.pageNumberStart(starts[i + 1]);
+				}
+			}
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * section-break-page-size-change (ledger8 item 21; 9539 p2).  A paragraph ending in a page break, an empty
+	 * paragraph closing its section, and a continuous section of another page size after it: Word gives the
+	 * size change its new page and the break none of its own; docx4j gives both (+1 page on 9539).  C1 that
+	 * shape (A4 portrait, then continuous A4 landscape); C2 the control with no size change (continuous, A4
+	 * portrait again); C3 a nextPage section of the other size.  Read: the page count and the page each case's
+	 * "after" text is on.  @since 17.3.1 (CR-001 batch 52)
+	 */
+	private static Probe sizeChangeBreakProbe() {
+		return new Probe("section-break-page-size-change",
+				"a paragraph ending in a page break, then an empty paragraph closing its section, then: a continuous "
+				+ "section of another page size (C1), a continuous section of the same size (C2), a nextPage section "
+				+ "of another size (C3); mode 14.  Read the page count and where each case's after-text lands", () -> {
+			Doc d = Doc.create(14);
+			String[] cases = { "C1", "C2", "C3" };
+			String[] next = { "continuous", "continuous", "nextPage" };
+			boolean[] landscapeAfter = { true, false, true };
+			boolean landscape = false;
+			for (int i = 0; i < cases.length; i++) {
+				P p = d.para(cases[i] + ": this paragraph ends in a page break; its section's last paragraph is empty, "
+						+ "and the next section is " + next[i] + (landscapeAfter[i] != landscape ? ", of another page size"
+								: ", of the same size") + ". " + prose(1, i)).noLabel().build();
+				R r = F.createR();
+				Br br = F.createBr();
+				br.setType(STBrType.PAGE);
+				r.getContent().add(br);
+				p.getContent().add(r);
+				d.add(p);
+				d.endSection(next[i]);
+				landscape = landscapeAfter[i];
+				if (landscape) d.pageGeometry(16838, 11906, true, 1440, 1440, 1440, 1440);
+				else d.pageGeometry(11906, 16838, false, 1440, 1440, 1440, 1440);
+				d.para(cases[i] + " after: the first paragraph of the next section. " + prose(1, i + 3)).noLabel().add();
+				if (i + 1 < cases.length) {
+					d.endSection("nextPage");
+					landscape = false;
+					d.pageGeometry(11906, 16838, false, 1440, 1440, 1440, 1440);
+				}
+			}
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * sdt-appearance-tags (ledger8 item 2; 1277, 9775).  Word draws a content control whose w15:appearance is
+	 * "tags" with its start and end tags in the page (Tahoma 8pt on 1277), and a block control's end tag takes
+	 * a line of its own; docx4j draws nothing (1277: 7 pages short).  Block controls of two paragraphs with
+	 * appearance tags (T1), boundingBox (T3), hidden (T4) and none (T5); inline controls in mid-line with
+	 * tags and an alias (T2), tags and only a w:tag (T6), and boundingBox (T7).  A plain paragraph before and
+	 * after each block.  Read: what is drawn for each tag (text, font, size, position) and the lines it takes.
+	 * @since 17.3.1 (CR-001 batch 52)
+	 */
+	private static Probe sdtTagsProbe() {
+		return new Probe("sdt-appearance-tags",
+				"content controls with w15:appearance tags, boundingBox, hidden and none: block controls of two "
+				+ "paragraphs (T1 tags, T3 boundingBox, T4 hidden, T5 none) between plain paragraphs, and inline "
+				+ "controls (T2 tags with an alias, T6 tags with only a tag, T7 boundingBox); mode 15.  Read what "
+				+ "Word draws for each tag and the lines it takes", () -> {
+			Doc d = Doc.create(15);
+			String ns = "xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" "
+					+ "xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\"";
+			StringBuilder body = new StringBuilder();
+			String[][] blocks = { { "T1", "tags", "Block control" }, { "T3", "boundingBox", "Bounding box" },
+					{ "T4", "hidden", "Hidden control" }, { "T5", null, "No appearance" } };
+			int id = 52001, k = 0;
+			for (String[] b : blocks) {
+				body.append(plainXml(b[0] + " before: a plain paragraph. " + prose(1, k++)));
+				body.append("<w:sdt>").append(sdtPrXml(b[2], b[0], id++, b[1])).append("<w:sdtContent>")
+						.append(plainXml(b[0] + " first paragraph inside the control. " + prose(1, k++)))
+						.append(plainXml(b[0] + " second paragraph inside the control."))
+						.append("</w:sdtContent></w:sdt>");
+				body.append(plainXml(b[0] + " after: a plain paragraph. " + prose(1, k++)));
+			}
+			String[][] inlines = { { "T2", "tags", "Inline control" }, { "T6", "tags", null }, { "T7", "boundingBox", "Inline box" } };
+			for (String[] b : inlines) {
+				body.append("<w:p><w:r><w:t xml:space=\"preserve\">").append(b[0])
+						.append(" text before an inline control </w:t></w:r><w:sdt>")
+						.append(sdtPrXml(b[2], b[0], id++, b[1]))
+						.append("<w:sdtContent><w:r><w:t>inline content</w:t></w:r></w:sdtContent></w:sdt>")
+						.append("<w:r><w:t xml:space=\"preserve\"> and the text after it. ").append(prose(1, k++))
+						.append("</w:t></w:r></w:p>");
+			}
+			org.docx4j.wml.Document doc = (org.docx4j.wml.Document) org.docx4j.XmlUtils.unmarshalString(
+					"<w:document " + ns + "><w:body>" + body + "</w:body></w:document>");
+			d.para("Content controls, w15:appearance. " + prose(1)).noLabel().add();
+			d.mdp().getContent().addAll(doc.getBody().getContent());
+			return d.pkg();
+		});
+	}
+
+	private static String plainXml(String text) {
+		String escaped = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+		return "<w:p><w:r><w:t xml:space=\"preserve\">" + escaped + "</w:t></w:r></w:p>";
+	}
+
+	private static String sdtPrXml(String alias, String tag, int id, String appearance) {
+		return "<w:sdtPr>" + (alias == null ? "" : "<w:alias w:val=\"" + alias + "\"/>")
+				+ "<w:tag w:val=\"" + tag + "\"/><w:id w:val=\"" + id + "\"/>"
+				+ (appearance == null ? "" : "<w15:appearance w15:val=\"" + appearance + "\"/>") + "</w:sdtPr>";
+	}
+
+	/**
+	 * table-grid-pct-autofit-compat&lt;mode&gt; (ledger8 item 1).  How wide does Word draw an autofit table whose
+	 * w:tblW is a percentage?  Below mode 15 the corpora's re-saved grids are the column plus 216tw - both
+	 * outer cell margins - in 24 of 28 such tables (545, 3229, slice D), and the column itself in 11 of 12 at
+	 * mode 15; docx4j draws the column.  G1 5000 pct, cells auto, Word's default margins; G2 cells 2500 pct
+	 * each; G3 tblCellMar left/right 0; G4 200; G5 4000 pct; G6 no borders.  Each cell holds a left-aligned
+	 * and a right-aligned tag.  Read: the tags' x (the content edges) and the drawn borders.
+	 * @since 17.3.1 (CR-001 batch 52)
+	 */
+	private static Probe pctAutofitGridProbe(int mode) {
+		return new Probe("table-grid-pct-autofit-compat" + mode,
+				"autofit tables with w:tblW in pct at mode " + mode + ": 5000 pct with auto cells (G1), 2500 pct "
+				+ "cells (G2), tblCellMar left/right 0 (G3) and 200 (G4), 4000 pct (G5), no borders (G6); each cell "
+				+ "a left- and a right-aligned tag.  Read the tags' x and the drawn borders", () -> {
+			Doc d = Doc.create(mode);
+			Object[][] cases = {
+				{ "G1", 5000, null, null, false }, { "G2", 5000, 2500, null, false }, { "G3", 5000, null, 0, false },
+				{ "G4", 5000, null, 200, false }, { "G5", 4000, null, null, false }, { "G6", 5000, null, null, true } };
+			for (Object[] c : cases) {
+				String tag = (String) c[0];
+				int pct = (Integer) c[1];
+				Integer tcPct = (Integer) c[2], mar = (Integer) c[3];
+				boolean noBorders = (Boolean) c[4];
+				d.para(tag + ": w:tblW " + pct + " pct, autofit, cells " + (tcPct == null ? "auto" : tcPct + " pct")
+						+ ", cell margins " + (mar == null ? "Word's default" : mar + "tw") + (noBorders ? ", no borders"
+								: ", 0.5pt borders") + ". " + prose(1)).noLabel().before(240).after(120).add();
+				Doc.Table t = new Doc.Table(4513, 4513);
+				t.tableWidth(pct, "pct");
+				if (mar != null) t.cellMargins(mar, 0);
+				if (noBorders) t.noBorders();
+				org.docx4j.wml.Tc[] cells = new org.docx4j.wml.Tc[2];
+				for (int k = 0; k < 2; k++) {
+					String id = tag + "c" + (k + 1);
+					P right = Doc.plainParagraph(id + "R", SERIF, 24);
+					org.docx4j.wml.Jc jc = F.createJc();
+					jc.setVal(JcEnumeration.RIGHT);
+					right.getPPr().setJc(jc);
+					org.docx4j.wml.Tc tc = t.cellOf(Doc.plainParagraph(id + "L", SERIF, 24), right);
+					if (tcPct != null) {
+						org.docx4j.wml.TblWidth w = F.createTblWidth();
+						w.setW(BigInteger.valueOf(tcPct));
+						w.setType("pct");
+						tc.getTcPr().setTcW(w);
+					}
+					cells[k] = tc;
+				}
+				t.rowOf(null, null, cells);
+				d.add(t.build());
+			}
+			d.para("after. " + prose(1)).before(240).add();
+			return d.pkg();
+		});
+	}
+
+	/** A border for a w:tcBorders side: single, eighthsOfPoint wide, or w:val="nil" where 0. */
+	private static org.docx4j.wml.CTBorder cellBorder(int eighthsOfPoint) {
+		org.docx4j.wml.CTBorder b = F.createCTBorder();
+		if (eighthsOfPoint <= 0) {
+			b.setVal(org.docx4j.wml.STBorder.NIL);
+		} else {
+			b.setVal(org.docx4j.wml.STBorder.SINGLE);
+			b.setSz(BigInteger.valueOf(eighthsOfPoint));
+			b.setSpace(BigInteger.ZERO);
+			b.setColor("000000");
+		}
+		return b;
+	}
+
+	/**
+	 * table-cell-measure-neighbour (ledger8 §2, item 7; 13743).  What measure does Word give a cell's text when
+	 * the border between it and its neighbour is collapsed?  docx4j gives back a cell's own borders; FOP also
+	 * charges half of a neighbour's collapsed border, so 13743's cells are 0.48pt narrow (64 lines).  Two fixed
+	 * 4513tw columns, Word's default margins: N1 the left cell has a 1pt right border, the right cell a nil left
+	 * one; N2 the reverse (the right cell's own 1pt left border); N3 both 1pt; N4 no borders; N5 0.5pt all round
+	 * (table borders).  In the right cell, six paragraphs whose first line's natural width is the nominal measure
+	 * (225.65 - 10.8 = 214.85pt) plus 0.72, 0.48, 0.24 less and 0.24, 0.48, 0.72 more, the difference set by a
+	 * right indent; each marker states it.  Read: which first lines keep their last word.
+	 * @since 17.3.1 (CR-001 batch 52)
+	 */
+	private static Probe cellNeighbourBorderProbe() {
+		return new Probe("table-cell-measure-neighbour",
+				"two fixed 4513tw columns with collapsed borders: the left cell's 1pt right border against a nil "
+				+ "left one (N1), the reverse (N2), both 1pt (N3), none (N4), 0.5pt all round (N5); the right "
+				+ "cell's lines are its nominal measure (214.85pt) +/- 0.24, 0.48, 0.72pt wide.  Read which lines "
+				+ "keep their last word", () -> {
+			Doc d = Doc.create(15);
+			final String font = SERIF;
+			final int halfPts = 24;
+			final double nominal = 4513 / 20.0 - 2 * 5.4;
+			double[] deltas = { -0.72, -0.48, -0.24, 0.24, 0.48, 0.72 };
+			int[][] borders = { { 8, 0 }, { 0, 8 }, { 8, 8 }, { 0, 0 }, { -1, -1 } }; // left cell's right, right cell's left; -1: table 0.5pt
+			String[] tags = { "N1", "N2", "N3", "N4", "N5" };
+			String[] words = longProse(6, 3).split(" ");
+			for (int t = 0; t < tags.length; t++) {
+				d.para(tags[t] + ": " + (borders[t][0] < 0 ? "0.5pt table borders all round"
+						: "left cell's right border " + (borders[t][0] / 8.0) + "pt, right cell's left border "
+								+ (borders[t][1] / 8.0) + "pt") + ". " + prose(1, t)).noLabel().before(240).after(120).add();
+				Doc.Table tb = new Doc.Table(4513, 4513).fixedLayout();
+				if (borders[t][0] >= 0) tb.noBorders();
+				java.util.List<P> right = new java.util.ArrayList<>();
+				int w = t * 7;
+				for (double delta : deltas) {
+					StringBuilder line = new StringBuilder(tags[t] + (delta > 0 ? "+" : "") + delta);
+					while (Doc.advancePoints(line + " " + words[w % words.length], font, halfPts) < nominal - 3.0) {
+						line.append(' ').append(words[w++ % words.length]);
+					}
+					double natural = Doc.advancePoints(line.toString(), font, halfPts);
+					int rightTw = (int) Math.round((nominal - (natural - delta)) * 20);
+					right.add(Doc.plainParagraph(String.format(java.util.Locale.ROOT, "%s %+.2f: natural %.2f, ind right %d",
+							tags[t], delta, natural, rightTw), SANS, 14));
+					P p = Doc.plainParagraph(line + " " + words[w % words.length] + " " + words[(w + 1) % words.length]
+							+ " " + words[(w + 2) % words.length], font, halfPts);
+					w += 3;
+					if (p.getPPr().getInd() == null) p.getPPr().setInd(F.createPPrBaseInd());
+					p.getPPr().getInd().setRight(BigInteger.valueOf(rightTw));
+					right.add(p);
+				}
+				org.docx4j.wml.Tc a = tb.cellOf(4513, null, Doc.plainParagraph(tags[t] + " left cell", SERIF, 24));
+				org.docx4j.wml.Tc b = tb.cellOf(4513, null, right.toArray(new P[0]));
+				if (borders[t][0] >= 0) {
+					org.docx4j.wml.TcPrInner.TcBorders ab = F.createTcPrInnerTcBorders();
+					ab.setRight(cellBorder(borders[t][0]));
+					a.getTcPr().setTcBorders(ab);
+					org.docx4j.wml.TcPrInner.TcBorders bb = F.createTcPrInnerTcBorders();
+					bb.setLeft(cellBorder(borders[t][1]));
+					b.getTcPr().setTcBorders(bb);
+				}
+				tb.rowOf(null, null, a, b);
+				d.add(tb.build());
+			}
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * justified-compression-cap (ledger8 §2, item 7; 11741, 1035, 3959).  Batch 50's rule is that Word
+	 * compresses iff c &lt; s/2, capped at 24%.  Word took 24.4-25.0% (11741 p10 needs 24.5%), compressed on
+	 * c = s/2 ties, and refused c = 16% against s = 75% in a table cell (3959).  Body cases at c 24, 25, 26%
+	 * against s 80% in Liberation Serif and Sans; ties c = s/2 at (10, 20), (12, 24), (15, 30); and in a
+	 * one-cell table whose measure is the page's 468pt, c 16 against s 75 and the controls c 10 against s 40
+	 * and c 20 against s 80.  Each marker states the built c, s and k.  Read: did the next word come up?
+	 * @since 17.3.1 (CR-001 batch 52)
+	 */
+	private static Probe compressionCapProbe() {
+		return new Probe("justified-compression-cap",
+				"justified lines built as in justified-compression-decision: c 24, 25, 26% against s 80% in "
+				+ "Liberation Serif and Sans, the ties c = s/2 at 10/20, 12/24, 15/30, and in a one-cell table of "
+				+ "the page's 468pt c 16/s 75, 10/40 and 20/80.  Read whether each next word came up", () -> {
+			Doc d = Doc.create(15);
+			d.pageGeometry(12240, 15840, false, 1440, 1440, 1440, 1440);
+			d.documentDefaultRun(SANS, 24);
+			for (String font : new String[] { SERIF, SANS }) {
+				for (int c : new int[] { 24, 25, 26 }) compressionCase(d, "cap", font, c, 80, null, false);
+			}
+			for (int[] cs : new int[][] { { 10, 20 }, { 12, 24 }, { 15, 30 } }) {
+				compressionCase(d, "tie", SERIF, cs[0], cs[1], null, false);
+			}
+			d.para("In a table cell whose measure is the page's 468pt (no margins, no borders):").noLabel()
+					.before(240).add();
+			Doc.Table t = new Doc.Table(9360).fixedLayout().noBorders().cellMargins(0, 0);
+			java.util.List<P> inCell = new java.util.ArrayList<>();
+			for (int[] cs : new int[][] { { 16, 75 }, { 10, 40 }, { 20, 80 } }) {
+				compressionCase(d, inCell::add, "cell", SERIF, cs[0], cs[1], null, false);
+			}
+			t.rowOf(null, null, t.cellOf(9360, null, inCell.toArray(new P[0])));
+			d.add(t.build());
+			d.para("after. " + prose(1)).before(240).add();
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * keep-chain-room-compat&lt;mode&gt; (ledger8 item 9; 2514).  A keepNext chain a little taller than the room left
+	 * (but shorter than a page): on 2514 (mode 14, two columns) Word moves the whole 587pt chain to the next
+	 * column with 582pt free, because the chain's last paragraph would split 1+1, widow control forbids it, and
+	 * keepNext cascades back; docx4j breaks it in place.  keep-chain-overlong's chains, longer than a page,
+	 * break inside a paragraph instead.  Exact 24pt lines; each case opens a page with 10 filler lines,
+	 * leaving 457.9pt: K1 18 one-line keepNext paragraphs then a two-line paragraph (the break would split it
+	 * 1+1); K2 17 then a five-line paragraph (2+3, which widow control allows); K3 19 one-line keepNext
+	 * paragraphs then a one-line paragraph (the break falls between two chain paragraphs); K4 K1 in the second
+	 * section's two columns.  Read: where each chain starts, and where it breaks.
+	 * @since 17.3.1 (CR-001 batch 52)
+	 */
+	private static Probe keepChainRoomProbe(int mode) {
+		return new Probe("keep-chain-room-compat" + mode,
+				"keepNext chains of exact 24pt lines a little taller than the 457.9pt left after 10 filler lines, "
+				+ "shorter than a page: ending in a two-line paragraph that would split 1+1 (K1), a five-line one "
+				+ "(K2), a one-line one with the break between chain paragraphs (K3), and K1 in two columns (K4); "
+				+ "mode " + mode + ".  Read where each chain starts and breaks", () -> {
+			Doc d = Doc.create(mode);
+			Object[][] cases = { { "K1", 18, 2 }, { "K2", 17, 5 }, { "K3", 19, 1 }, { "K4", 18, 2 } };
+			for (int i = 0; i < cases.length; i++) {
+				String tag = (String) cases[i][0];
+				int chain = (Integer) cases[i][1], lastLines = (Integer) cases[i][2];
+				if ("K4".equals(tag)) {
+					d.endSection("nextPage");
+					d.equalColumns(2, 708);
+				}
+				for (int k = 1; k <= 10; k++) {
+					Doc.Para f = d.para(tag + " filler " + k).noLabel().before(0).after(0)
+							.line(480, STLineSpacingRule.EXACT);
+					if (k == 1 && i > 0 && !"K4".equals(tag)) f.pageBreakBefore();
+					f.add();
+				}
+				for (int k = 1; k <= chain; k++) {
+					d.para(tag + " chain " + String.format("%02d", k) + " (keepNext)").noLabel().before(0).after(0)
+							.line(480, STLineSpacingRule.EXACT).keepNext().add();
+				}
+				Doc.Para last = d.para(tag + " last paragraph, " + lastLines + " line" + (lastLines > 1 ? "s" : "")
+						+ ", line 1").noLabel().before(0).after(0).line(480, STLineSpacingRule.EXACT);
+				for (int l = 2; l <= lastLines; l++) {
+					last.softReturn();
+					last.text(tag + " last paragraph, line " + l);
+				}
+				last.add();
+				d.para(tag + " after the chain.").noLabel().before(0).after(0).line(480, STLineSpacingRule.EXACT).add();
+			}
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * ccmp-text-layer (§6.6 item 42; fop/CR-016).  The text Word's PDF and docx4j's give for Cambria Regular
+	 * letters that its GSUB ccmp decomposes (accented Latin and Greek), beside their plain forms; Cambria Bold,
+	 * which has no such decompositions, as the control.  Read: the extracted text, against the source.
+	 * @since 17.3.1 (CR-001 batch 52)
+	 */
+	private static Probe ccmpTextLayerProbe() {
+		return new Probe("ccmp-text-layer",
+				"Cambria Regular and Bold lines mixing letters its ccmp decomposes with their plain forms "
+				+ "(à a é e ü u ć c ά α ό ο Å A) and two sentences of Greek and of accented French; mode 15.  "
+				+ "Read the extracted text against the source", () -> {
+			Doc d = Doc.create(15);
+			String[] lines = {
+				"à a é e ü u ć c ά α ό ο έ ε ή η ί ι ύ υ ώ ω Å A",
+				"Η παρούσα μεταπτυχιακή διατριβή υποβλήθηκε, ο κανόνας και η ομάδα, α β γ δ ε ζ η θ ι κ λ μ ν ξ ο π ρ σ τ υ φ χ ψ ω.",
+				"Le café et la naïveté, à côté de l'été : une forêt, un château et Ålesund, Øre, Ação." };
+			for (boolean bold : new boolean[] { false, true }) {
+				for (int i = 0; i < lines.length; i++) {
+					d.para().noLabel().run((bold ? "B" : "R") + (i + 1) + " " + lines[i], "Cambria", 24,
+							bold ? Doc::bold : null).add();
+				}
+			}
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * break-after-space-uax14 (ledger8 item 15).  Word breaks at a space before ',' '.' '?' and after a closing
+	 * quote before '(' or '[' (69 lines over the 80 near misses), where FOP's UAX #14 pair table refuses (LB13:
+	 * no break before IS/CL/EX even after spaces).  Each case is a ragged paragraph whose first line's measure,
+	 * set by a right indent, holds "... WORD" with 1pt to spare but not "... WORD ," : if Word may break at the
+	 * space the line ends with WORD; if not, WORD goes down with its punctuation.  Cases: ' ,' ' .' ' ?' ' :'
+	 * ' ;' ' !' ' …', and '” (' and '» ['.  Read: the last word of each first line.
+	 * @since 17.3.1 (CR-001 batch 52)
+	 */
+	private static Probe breakAtSpaceProbe() {
+		return new Probe("break-after-space-uax14",
+				"ragged paragraphs whose first line holds \"... WORD\" with 1pt to spare but not what follows: "
+				+ "a space then , . ? : ; ! or an ellipsis, or a closing quote, a space and ( or [; mode 15.  Read "
+				+ "whether Word breaks at the space", () -> {
+			Doc d = Doc.create(15);
+			final String font = SERIF;
+			final int halfPts = 24;
+			final double measure = 9026 / 20.0;
+			String[][] cases = { { "S1", " ,", "comma" }, { "S2", " .", "period" }, { "S3", " ?", "question" },
+					{ "S4", " :", "colon" }, { "S5", " ;", "semicolon" }, { "S6", " !", "exclamation" },
+					{ "S7", " …", "ellipsis" }, { "S8", "” (", "quote then paren" },
+					{ "S9", "» [", "guillemet then bracket" } };
+			String[] words = longProse(8, 5).split(" ");
+			int w = 0;
+			for (String[] c : cases) {
+				StringBuilder line = new StringBuilder(c[0]);
+				while (Doc.advancePoints(line + " " + words[w % words.length], font, halfPts) < measure - 40) {
+					line.append(' ').append(words[w++ % words.length]);
+				}
+				line.append(" WORD");
+				double holds = Doc.advancePoints(line.toString(), font, halfPts);
+				int rightTw = (int) Math.round((measure - holds - 1.0) * 20);
+				d.para(String.format(java.util.Locale.ROOT, "%s (%s): the first line holds %.2fpt; ind right %d",
+						c[0], c[2], holds, rightTw)).noLabel().font(SANS, 14).before(120).add();
+				P p = Doc.plainParagraph(line + c[1] + " tail " + prose(1, w), font, halfPts);
+				if (p.getPPr().getInd() == null) p.getPPr().setInd(F.createPPrBaseInd());
+				p.getPPr().getInd().setRight(BigInteger.valueOf(rightTw));
+				d.add(p);
+			}
 			return d.pkg();
 		});
 	}
