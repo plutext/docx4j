@@ -110,6 +110,9 @@ PDF via XSL FO:
 - A table with cell spacing keeps Word's column pitch: only the outer columns give up the
   spacing (every column did, so the table ended short), and its cells start where Word's do.
 
+- A VML text box positioned relative to the text is measured from the top of its paragraph
+  before the paragraph's space-before, as Word measures it (it was that much too low).
+
 - A table whose width and cells are all auto keeps the column widths Word saved with it
   (w:tblGrid) where they fit its content, rather than being re-sized from its content
   (docx4j.convert.out.fo.tables.autoGrid=false for the 17.3.0 behaviour).

@@ -167,6 +167,32 @@ public class TextBoxLayoutTest extends AbstractXSLFOTest {
 		assertEquals("", wrapper.getAttribute("absolute-position"));
 	}
 
+	/** A VML box of the document's own, relative to the text, is measured from its
+	 *  paragraph's top before the paragraph's space-before (vml-box-anchor-space-before:
+	 *  Word's box sits that much higher than one measured after it); one relative to the
+	 *  line, a DrawingML box, and VML that is a DrawingML shape's mc:Fallback (Word lays
+	 *  out the Choice; corpus document 9775) keep the old reading.  @since 17.3.1 */
+	@Test
+	public void aTextRelativeBoxIsMeasuredFromAboveTheSpaceBefore() throws Exception {
+		String spaced = VML_TEXT_BOX.replaceFirst("<w:p>", "<w:p><w:pPr><w:spacing w:before=\"360\"/></w:pPr>");
+		assertEquals("the box's 90pt less the paragraph's 18pt before", "72pt",
+				positionedBox(fo(spaced, Docx4J.FLAG_NONE)).getAttribute("top"));
+		assertEquals("the XSLT pathway's VML has no parents to say it is the document's own", "90pt",
+				positionedBox(fo(spaced, Docx4J.FLAG_EXPORT_PREFER_XSL)).getAttribute("top"));
+		String fallback = spaced.replace("<w:r><w:pict>",
+				"<w:r><mc:AlternateContent xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\">"
+				+ "<mc:Choice Requires=\"wps\"><w:t>choice</w:t></mc:Choice><mc:Fallback><w:pict>")
+				.replace("</w:pict></w:r>", "</w:pict></mc:Fallback></mc:AlternateContent></w:r>");
+		assertEquals("a DrawingML shape's VML Fallback is not moved", "90pt",
+				positionedBox(fo(fallback, Docx4J.FLAG_NONE)).getAttribute("top"));
+		String line = spaced.replace("mso-position-vertical-relative:text", "mso-position-vertical-relative:line");
+		assertEquals("a box relative to the line is not moved", "90pt",
+				positionedBox(fo(line, Docx4J.FLAG_NONE)).getAttribute("top"));
+		String dml = DML_TEXT_BOX.replaceFirst("<w:p>", "<w:p><w:pPr><w:spacing w:before=\"360\"/></w:pPr>");
+		assertEquals("DrawingML, not measured yet, is not moved", "93.6pt",
+				positionedBox(fo(dml, Docx4J.FLAG_NONE)).getAttribute("top"));
+	}
+
 	/** A narrower one is placed where Word puts it and takes no space: Word flows the
 	 *  text beside it, and several such boxes side by side (a planner built from text
 	 *  boxes) would otherwise cost a page each. */

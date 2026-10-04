@@ -183,6 +183,20 @@ public class FOTextBoxes {
 	 */
 	public static Element createVmlContainer(Document doc, Map<String, String> props,
 			String wrapType, double[] inset, PageDimensions pd, String textboxStyle) {
+		return createVmlContainer(doc, props, wrapType, inset, pd, textboxStyle, false);
+	}
+
+	/**
+	 * @param ownVml whether the VML is the document's own rather than a DrawingML shape's
+	 *        mc:Fallback ({@link org.docx4j.jaxb.McSelection#isOwnContent}): Word measures
+	 *        the document's own text-relative VML box from its paragraph's top before the
+	 *        paragraph's space-before (WordLayoutFixups.anchorTextBox), where a DrawingML
+	 *        shape relative to the paragraph, which Word lays out in place of its Fallback,
+	 *        is measured from after it.
+	 * @since 17.3.1
+	 */
+	public static Element createVmlContainer(Document doc, Map<String, String> props,
+			String wrapType, double[] inset, PageDimensions pd, String textboxStyle, boolean ownVml) {
 
 		double w = pts(props.get("width"), 0);
 		double h = pts(props.get("height"), 0);
@@ -223,7 +237,10 @@ public class FOTextBoxes {
 		String relV = props.get("mso-position-vertical-relative");
 		String posV = props.get("mso-position-vertical");
 		String y;
-		if (relV==null || "text".equals(relV) || "line".equals(relV)) {
+		if (ownVml && (relV==null || "text".equals(relV))) {
+			// from the paragraph's top before its space-before (WordLayoutFixups.anchorTextBox)
+			y = "t:" + fmt(marginTop);
+		} else if (relV==null || "text".equals(relV) || "line".equals(relV)) {
 			y = "p:" + fmt(marginTop);
 		} else {
 			double refTop = 0, refBottom = pageH;

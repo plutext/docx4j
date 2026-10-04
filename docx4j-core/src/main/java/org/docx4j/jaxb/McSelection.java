@@ -94,6 +94,27 @@ public final class McSelection {
 	}
 
 	/**
+	 * Whether the object is the document's own markup rather than a branch of an
+	 * mc:AlternateContent: true where its paragraph is reached first going up, false where
+	 * an mc:Choice or mc:Fallback is, or where the object has no parents to ask (one
+	 * unmarshalled on its own, as the XSLT pathway's are).  The FO exporter needs it for a
+	 * VML text box: where the VML is a DrawingML shape's Fallback, Word lays out the Choice,
+	 * and the two measure a text-relative position from different places.
+	 *
+	 * @since 17.3.1
+	 */
+	public static boolean isOwnContent(Object o) {
+		Object p = o;
+		for (int i = 0; i < 64 && p instanceof org.jvnet.jaxb.lang.Child; i++) {
+			p = ((org.jvnet.jaxb.lang.Child) p).getParent();
+			if (p instanceof AlternateContent || p instanceof AlternateContent.Fallback
+					|| p instanceof AlternateContent.Choice) return false;
+			if (p instanceof org.docx4j.wml.P) return true;
+		}
+		return false;
+	}
+
+	/**
 	 * The branch docx4j draws: an {@link AlternateContent.Choice} or the
 	 * {@link AlternateContent.Fallback}, or null for an element with no branch at all.
 	 */

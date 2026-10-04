@@ -4856,6 +4856,24 @@ table-cell paragraphs, anchored relative to the paragraph, and our vertical orig
 was already about 10pt below Word's, so the correct inset takes them further off. That is
 the vertical origin of text-relative boxes in cells (ledger4's M22), still open.
 
+<a id="s92spacebefore"></a>**A VML box relative to the text is measured from above its
+paragraph's space-before (17.3.1).** Measured on `vml-box-anchor-space-before`: boxes at
+`margin-top` 0, -1.2 and 10pt in paragraphs with space-before 0, 6 and 18pt, in the body and
+as a table cell's only paragraph. In all eighteen cases Word's box-to-anchor baseline offset
+falls by exactly the space-before, so Word measures the box from the paragraph's top
+*before* its space-before; docx4j's wrapper sits in the paragraph's block, after the space,
+and its boxes were 6 and 18pt low. `WordLayoutFixups.anchorTextBox` now places such a box
+the paragraph's `space-before` higher (all eighteen within 0.14pt). Only the document's own
+VML: where the VML is a DrawingML shape's `mc:Fallback`, Word lays out the Choice, and a
+DrawingML shape `relativeFrom="paragraph"` is measured from *after* the space-before
+(corpus document 9775, a 14pt space-before, where Word's box sits on our old reading). The
+FO writer knows which it is from the shape's parents (`McSelection.isOwnContent`), so the
+XSLT pathway, whose VML is unmarshalled alone, keeps the old reading. Boxes relative to the
+line, and DrawingML shapes, are unchanged. This is ledger4's M22 for VML. With &#xa7;6.6's
+cell-spacing pitch, measured together (b98 against b95, the Windows faces supplied): 4083
++21 lines in both its copies and Word's 11 pages, 10493 to Word's every line, 14236 +2,
+13046 +1, nothing down; the probe 0.80 to 1.0000.
+
 <a id="s92negx"></a>**A negative horizontal offset is honoured**, not clamped to the column
 edge: Word draws such a box out into the margin. Measured on a landscape planner whose box
 is anchored at -41.0pt, Word's box content rect is 31.0..1141.7 - its border rect starting

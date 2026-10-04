@@ -826,7 +826,9 @@ public final class WordLayoutFixups {
 	public static final String HINT_ANCHOR_H = "docx4j-anchor-h";
 	/** @since 17.0.5 */
 	public static final String HINT_ANCHOR_X = "docx4j-anchor-x";
-	/** @since 17.0.5 */
+	/** "page:" from the page top, "p:" from the anchor paragraph's top, or (a VML text box
+	 *  relative to the text, 17.3.1) "t:" from its top before its space-before; in pt.
+	 *  @since 17.0.5 */
 	public static final String HINT_ANCHOR_Y = "docx4j-anchor-y";
 	/** @since 17.0.5 */
 	public static final String HINT_ANCHOR_COL = "docx4j-anchor-col";
@@ -2492,7 +2494,17 @@ public final class WordLayoutFixups {
 			// Word's first baseline is the box top + padding-top + 11.15 in all twelve boxes,
 			// ours was the box top + 11.20 (the inset lost), and paragraph-anchored boxes the
 			// same (7046: Word 107.78, ours 102.75).  @since 17.3.1
-			box.setAttribute("top", pt(off + lengthPt(box.getAttribute("padding-top"))));
+			/* A VML box positioned relative to the text (mso-position-vertical-relative:text,
+			 * or nothing stated) is measured from its paragraph's top BEFORE the paragraph's
+			 * space-before; the wrapper sits after it, in the paragraph's block.  Measured on
+			 * vml-box-anchor-space-before (boxes at margin-top 0, -1.2 and 10pt in paragraphs
+			 * with space-before 0, 6 and 18pt, in the body and as a table cell's only
+			 * paragraph): Word's box-to-anchor baseline offset falls by the space-before in
+			 * all eighteen cases, where ours stayed put, 6 and 18pt low.  DrawingML anchors,
+			 * relativeFrom paragraph, are not measured yet and keep the old reading ("p:").
+			 * @since 17.3.1 */
+			double above = y.startsWith("t:") ? spaceBeforePt(para) : 0;
+			box.setAttribute("top", pt(off - above + lengthPt(box.getAttribute("padding-top"))));
 			box.setAttribute("left", pt(pageY ? x + ml : x));
 		} else {
 			// wrapped: reserve the box's height where Word puts it.  The indent goes on
@@ -2596,6 +2608,15 @@ public final class WordLayoutFixups {
 		for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
 			if (n instanceof Element) dropPagination((Element) n);
 		}
+	}
+
+	/** The block's own space-before in points (its optimum where only that is given), 0 where
+	 *  it states none.  @since 17.3.1 */
+	private static double spaceBeforePt(Element block) {
+		String v = block.getAttribute("space-before");
+		if (v.isEmpty()) v = block.getAttribute("space-before.optimum");
+		if (v.isEmpty() || !v.trim().matches("-?[0-9]*\\.?[0-9]+(pt|in|mm|cm|px)?")) return 0;
+		return lengthPt(v.trim());
 	}
 
 	/** The block the text box belongs to: the nearest ancestor fo:block. */
