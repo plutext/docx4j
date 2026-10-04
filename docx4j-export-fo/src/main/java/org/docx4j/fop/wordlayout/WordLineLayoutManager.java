@@ -3569,6 +3569,12 @@ public class WordLineLayoutManager extends LineLayoutManager {
         return pos;
     }
 
+    /**
+     * Creates the element list in BP direction for the broken lines.
+     * @param alignment the currently applicable vertical alignment
+     * @param context the layout context
+     * @return the newly built element list
+     */
     private List<ListElement> postProcessLineBreaks(int alignment, LayoutContext context) {
 
         List<ListElement> returnList = new LinkedList<>();
