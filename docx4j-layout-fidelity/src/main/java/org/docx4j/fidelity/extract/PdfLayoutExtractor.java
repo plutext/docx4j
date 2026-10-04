@@ -700,7 +700,11 @@ public final class PdfLayoutExtractor {
 			 * extracted lines, where Word's PDF of the same document has none.  isBlank()
 			 * already knows every whitespace glyph, so firstInk == null is the test. */
 			if (firstInk == null) return;
-			String t = PdfLayout.Line.foldSpaces(text.toString()).trim().replaceAll("\\s+", " ");
+			/* Composed (NFC): a renderer may give an accented letter's text as base + combining mark - the docx4j
+			 * FO renderer's fop/CR-016 does, for a letter its font's ccmp decomposes - where Word's PDF gives the
+			 * precomposed character, and the two are the same text.  @since 17.3.1 */
+			String t = java.text.Normalizer.normalize(PdfLayout.Line.foldSpaces(text.toString()), java.text.Normalizer.Form.NFC)
+					.trim().replaceAll("\\s+", " ");
 			if (t.isEmpty()) return;
 			Collections.sort(ys);
 			PdfLayout.Line l = new PdfLayout.Line();
