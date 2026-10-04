@@ -42,6 +42,29 @@ public class ContainerizationStyleBordersTest {
 		assertTrue(XmlUtils.unwrap(body.get(2)) instanceof org.docx4j.wml.P);
 	}
 
+	/** A table ends the group: a bordered paragraph, a table and a bordered paragraph are
+	 *  two borders containers with the table between them, not one around all three.
+	 *  @since 17.3.1 */
+	@Test
+	public void aTableEndsTheBorderGroup() throws Exception {
+		String bordered = "<w:p><w:pPr><w:pBdr><w:bottom w:val=\"single\" w:sz=\"6\" w:space=\"1\" w:color=\"auto\"/></w:pBdr>"
+				+ "<w:shd w:val=\"clear\" w:color=\"auto\" w:fill=\"DDDDDD\"/></w:pPr><w:r><w:t>bordered</w:t></w:r></w:p>";
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ bordered
+				+ "<w:tbl><w:tblGrid><w:gridCol w:w=\"2000\"/></w:tblGrid><w:tr><w:tc><w:p><w:r><w:t>cell</w:t></w:r></w:p></w:tc></w:tr></w:tbl>"
+				+ bordered
+				+ "</w:body></w:document>"));
+		Containerization.process(pkg);
+		java.util.List<Object> body = pkg.getMainDocumentPart().getJaxbElement().getBody().getContent();
+		assertEquals(3, body.size());
+		assertTrue("the first paragraph's container", XmlUtils.unwrap(body.get(0)) instanceof SdtBlock);
+		assertTrue("the table at body level, not in the paragraph's border: " + XmlUtils.unwrap(body.get(1)).getClass(),
+				XmlUtils.unwrap(body.get(1)) instanceof org.docx4j.wml.Tbl);
+		assertTrue("the second paragraph's own container", XmlUtils.unwrap(body.get(2)) instanceof SdtBlock);
+	}
+
 	@Test
 	public void borderSpaceBecomesPadding() {
 		CTBorder b = new CTBorder();

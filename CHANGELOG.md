@@ -104,6 +104,9 @@ PDF via XSL FO:
 - A table cell's top and bottom margins are laid out on Word's 1/600-inch grid (28 twips are
   1.44pt, not 1.39), so a long table of single-line rows breaks its pages where Word does.
 
+- A table after a bordered or shaded paragraph is no longer drawn inside that paragraph's
+  border (PDF and HTML); in PDF a long one no longer moves to the next page with it.
+
 - Symbol, Wingdings, Wingdings 2, Wingdings 3 and Webdings are drawn in the real font where it
   is installed (or embedded), with the document's own code points: runs, w:sym and numbering
   labels, on both pathways; FontsAnalysis grades such a font EXACT. Where the font is absent

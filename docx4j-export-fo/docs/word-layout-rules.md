@@ -1093,6 +1093,21 @@ way and cost no width, above). A paragraph carrying both a border and shading of
 the same shape with one paragraph in it, and was 3.02pt too tall for the same reason. 33
 documents of one corpus have a bordered wrapper directly wrapping another block.
 
+<a id="s3bdrtable"></a>**A table ends the run (17.3.1).** Word draws a paragraph border around
+paragraphs; a table after a bordered paragraph is outside its box, and a bordered paragraph
+after the table opens a box of its own. `Containerization` closed a group only at a paragraph
+with other borders, so a table went into the group the paragraph before it had opened: drawn
+inside that paragraph's border, and inside a wrapper carrying the paragraph's keeps. Measured
+on corpus document 13743, a `Heading2` with a bottom border before a 25-row table: the
+wrapper's `keep-together` (the style's `w:keepLines`) could not hold a table of several pages,
+so FOP moved heading and table to the next page, a 36-line gap where Word starts the table
+under the heading. A table now closes the border and shading groups (HTML too, which shares
+the preprocess). 13743 goes 0.7578 to 0.9558 (+493 lines) and to Word's 45 pages, 4083 +27,
+5478 +7; a CV whose bordered `EDUCATION` heading tops a table has the table 1.48pt lower,
+within 0.16pt of Word's, which pushes one empty paragraph off its page 1 (-1 line), and a
+71-page document reaches Word's page count and page breaks from page 57 on, with ten fewer
+lines paired in its densest table (b91 against b90).
+
 **List items.** Space-before and space-after belong on the `fo:list-block`, not on the
 block inside `fo:list-item-body` where FOP does not apply them - and so does a **hard page
 break** inside the paragraph, for the same reason: FOP laid the list block's space-before

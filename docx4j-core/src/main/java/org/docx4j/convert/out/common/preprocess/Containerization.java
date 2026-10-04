@@ -275,6 +275,18 @@ public class Containerization {
 			}
 			else if (unwrapped instanceof Tbl) {
 				groupTable((Tbl)unwrapped, resolver);
+				/* A table ends a run of bordered or shaded paragraphs: Word draws a paragraph
+				 * border around paragraphs, and the next bordered paragraph opens a box of its
+				 * own.  Until 17.3.1 the table went into the group the paragraph before it had
+				 * opened, so it was drawn inside that paragraph's border, and the container
+				 * kept the paragraph's w:keepLines: measured on corpus document 13743, a
+				 * Heading2 with a bottom border before a 25-row table, FOP could not keep the
+				 * table on one page and moved heading and table to the next, a 36-line gap
+				 * where Word starts the table under the heading. */
+				sdtBorders = null;
+				sdtShading = null;
+				currentBorders = null;
+				currentShading = null;
 			}
 			if (sdtShading!=null) {
 				sdtShading.getSdtContent().getContent().add(o);
