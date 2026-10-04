@@ -349,8 +349,12 @@ public class LayoutMasterSetBuilder {
 		if (!oddEvenParityFix()) return false;
 		int start = section.getPageNumberInformation().getPageStart();
 		if (start < 0) return inheritedInversion;  // numbering continues from the section before
-		// FOP renders this section's first page as folio max(1, start)
-		return ((Math.max(1, start) - start) % 2) != 0;
+		// FOP renders this section's first page as folio max(1, start), unless it honours a
+		// start of 0 (the docx4j FO renderer's page-number-zero, which FORendererApacheFOP
+		// turns on): then the folio is Word's number and nothing is swapped
+		int folio = FopCapabilities.has(FopCapabilities.Capability.PAGE_NUMBER_ZERO)
+				? Math.max(0, start) : Math.max(1, start);
+		return ((folio - start) % 2) != 0;
 	}
 
 	/**

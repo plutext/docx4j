@@ -94,20 +94,26 @@ public class PageMastersParityTest {
 	 * for the headers to land on the side Word puts them.  Measured: with an even header
 	 * of no {@code w:jc} and a right-aligned default one, Word's page 2 header is
 	 * right-aligned at x=430.3..524.7 and ours was the even one at 70.9..162.9.
+	 * On the docx4j FO renderer with page-number-zero (17.3.1) FOP's folio is Word's
+	 * number, so nothing is swapped.
 	 */
 	@Test
 	public void pgNumTypeStartZeroSwapsTheParity() throws Exception {
 		String sectPr = "<w:p><w:pPr><w:sectPr>" + PG_MAR
 				+ "<w:pgNumType w:start=\"0\"/>"
 				+ "</w:sectPr></w:pPr></w:p>";
+		boolean zero = org.docx4j.convert.out.fo.FopCapabilities.has(
+				org.docx4j.convert.out.fo.FopCapabilities.Capability.PAGE_NUMBER_ZERO);
 		for (int flag : FLAGS) {
 			// mirrored margins give this section a parity-selected pair to read the
 			// swap off; the same flag drives the odd/even header alternatives
 			org.w3c.dom.Document doc = fo(sectPr, "<w:mirrorMargins/>", flag);
-			assertEquals(flagName(flag) + ": Word's even page is FOP's odd folio",
-					"odd", parityFor(doc, "s1-simple-mirrored"));
-			assertEquals(flagName(flag) + ": Word's odd page is FOP's even folio",
-					"even", parityFor(doc, "s1-simple"));
+			assertEquals(flagName(flag) + (zero ? ": page 0 is even, as Word's"
+					: ": Word's even page is FOP's odd folio"),
+					zero ? "even" : "odd", parityFor(doc, "s1-simple-mirrored"));
+			assertEquals(flagName(flag) + (zero ? ": page 1 is odd, as Word's"
+					: ": Word's odd page is FOP's even folio"),
+					zero ? "odd" : "even", parityFor(doc, "s1-simple"));
 		}
 	}
 

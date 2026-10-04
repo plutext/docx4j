@@ -4376,6 +4376,17 @@ FOP from the folio it clamped, and nothing in XSL-FO offsets it, so a `PAGE` fie
 such a section still prints one too high (§10). The two-pass literal that carries
 `NUMPAGES` is one value for a whole section, and `PAGE` differs on every page of it.
 
+<a id="s7pagezero"></a>**On the docx4j FO renderer, page 0 is page 0 (17.3.1).** The fork
+honours `initial-page-number="0"` where the user agent allows it (capability
+`page-number-zero`, fork CR-012; it also writes page 0's PDF label, which crashed FOP).
+`FORendererApacheFOP` turns that on for both passes, and with it the parity swap above is
+not made, since the folio is Word's number. Measured on the six corpus documents that start
+at 0: 13347 0.8981 -> 0.9444, 6083 0.9207 -> 0.9627, 4899 0.8983 -> 0.9267 (71 lines, its
+TOC and footers), 6251 0.9740 -> 0.9760; 278 and 2189 do not move, nor does anything else in
+the three corpora or the probes. On Apache FOP, or a renderer without the hook, the swap
+and the one-high number stand. All six start their first section at 0; what Word does with
+0 on a later section is unmeasured.
+
 **`w:settings/w:mirrorMargins`.** Word calls `w:pgMar/@w:left` the *inside* margin and
 `@w:right` the *outside* one, so on an even (left-hand) page they swap - and so does the
 binding edge `@w:gutter` widens. Every page master that is not already chosen by page
@@ -4854,7 +4865,9 @@ Worked around here, and worth knowing about:
   master alternatives are swapped to compensate for the *parity* (§7), which is what
   costs whole-page geometry; the printed number is one character and stays wrong. Nothing
   in XSL-FO offsets `fo:page-number`, and the two-pass literal that carries `NUMPAGES`
-  cannot carry `PAGE`, which differs on every page of a section.
+  cannot carry `PAGE`, which differs on every page of a section. **Fixed on the docx4j FO
+  renderer** from the release carrying fork CR-012 (capability `page-number-zero`,
+  [§7](#s7pagezero)); Enterprise CR-001 §6.6 item 38.
 - **`display-align` does not count the flow's last block's `space-after`**, which Word
   does (§7). `space-after.conditionality="retain"` on that block is the fix, and is what
   docx4j now writes; before it, zeroing a 10pt `space-after` on the last block of a

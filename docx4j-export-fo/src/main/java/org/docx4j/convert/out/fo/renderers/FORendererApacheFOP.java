@@ -327,7 +327,11 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			// as in render(): docx4j specifies the fonts itself, so FOP's font cache is
 			// not wanted here (and reading a stale or half-written one can fail hard)
 			fopFactory.getFontManager().disableFontCache();
-			fop = fopFactory.newFop(outputFormat, new NullOutputStream());
+			// what newFop(outputFormat, stream) makes for itself, with page 0 allowed as in
+			// the pass that renders, so the two passes number pages alike
+			FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
+			allowPageNumberZero(foUserAgent);
+			fop = fopFactory.newFop(outputFormat, foUserAgent, new NullOutputStream());
 			result = new SAXResult(new PlaceholderReplacementHandler(fop.getDefaultHandler(), placeholderLookup));
 		} catch (FOPException e) {
 			throw new Docx4JException("Exception setting up result for fo transformation: " + e.getMessage(), e);
@@ -359,9 +363,43 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		settings.getSettings().put(FOP_FACTORY, fopFactory);
 
 	    FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
+	    allowPageNumberZero(foUserAgent);
 		settings.getSettings().put(FO_USER_AGENT, foUserAgent);
 		
 		return foUserAgent;
+	}
+
+	private static volatile java.lang.reflect.Method setPageNumberZeroAllowed;
+
+	/**
+	 * Word numbers a section from 0 where its {@code w:pgNumType} says {@code w:start="0"}
+	 * (a cover page that is page 0, so the first numbered page is 1).  XSL 1.1 makes
+	 * {@code initial-page-number} a positive integer and FOP makes 0 into 1, so every PAGE
+	 * and PAGEREF of the section printed one high.  The docx4j FO renderer honours 0 where the
+	 * user agent allows it (capability page-number-zero, fork CR-012); it is called
+	 * reflectively, since this module compiles against a FOP without the method.  Measured
+	 * on the six corpus documents that start at 0 (renderer 2.11-docx4j.5-SNAPSHOT, fork
+	 * fab8f6268): 13347 0.8981 -> 0.9444, 6083 0.9207 -> 0.9627, 4899 0.8983 -> 0.9267,
+	 * 6251 0.9740 -> 0.9760, nothing else moving (Enterprise CR-001 §6.6 item 38).
+	 *
+	 * @since 17.3.1
+	 */
+	static void allowPageNumberZero(FOUserAgent foUserAgent) {
+		if (foUserAgent==null
+				|| !org.docx4j.convert.out.fo.FopCapabilities.has(
+						org.docx4j.convert.out.fo.FopCapabilities.Capability.PAGE_NUMBER_ZERO)) {
+			return;
+		}
+		try {
+			java.lang.reflect.Method m = setPageNumberZeroAllowed;
+			if (m==null) {
+				m = FOUserAgent.class.getMethod("setPageNumberZeroAllowed", boolean.class);
+				setPageNumberZeroAllowed = m;
+			}
+			m.invoke(foUserAgent, Boolean.TRUE);
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			log.warn("page-number-zero advertised but not callable: " + e);
+		}
 	}
 
 	/**

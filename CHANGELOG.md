@@ -88,6 +88,10 @@ PDF via XSL FO:
   than half the stretch of the line it would otherwise be (was: where that line would stretch
   by 30% or more).
 
+- A section whose numbering starts at 0 (w:pgNumType w:start="0", a cover page numbered 0) is
+  numbered from 0 on a docx4j FO renderer that allows it (capability page-number-zero,
+  fork CR-012); it printed every page number one high.
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's

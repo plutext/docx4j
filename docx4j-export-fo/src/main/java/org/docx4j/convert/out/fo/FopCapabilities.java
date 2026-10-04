@@ -101,7 +101,12 @@ public final class FopCapabilities {
 		/** On the complex-script path ({@code GlyphMapping.processWordMapping}) a word's counted letter
 		 *  spaces are in its width, as on the plain path (fork CR-010; upstream FOP-2349).  Without it,
 		 *  a FOP carrying FOP-2722 counts them and leaves them out.  @since 17.3.1 */
-		LETTER_SPACE_WIDTH("letter-space-width");
+		LETTER_SPACE_WIDTH("letter-space-width"),
+		/** {@code FOUserAgent.setPageNumberZeroAllowed}: with it on, {@code initial-page-number="0"}
+		 *  is honoured (FOP makes it 1, as XSL 1.1 allows) and a page numbered 0 gets a PDF page
+		 *  label, so Word's {@code w:pgNumType w:start="0"} numbers its section from 0 (fork CR-012;
+		 *  Enterprise CR-001 §6.6 item 38).  @since 17.3.1 */
+		PAGE_NUMBER_ZERO("page-number-zero");
 
 		private final String key;
 
