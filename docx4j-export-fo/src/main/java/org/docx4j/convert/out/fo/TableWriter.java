@@ -235,7 +235,7 @@ public class TableWriter extends AbstractTableWriter {
 			}
 			int mode = compatibilityMode(context);
 			if (mode < 15) {
-				int shift = leftCellMarginTwips(table, tblPr);
+				int shift = leftCellMarginTwips(table, tblPr) + cellSpacingIndentTwips(tblPr, mode);
 				indent -= shift;
 				// Word does not shift a table nested in a w:tc (see isNested); whether
 				// this one is is not known until the FO is assembled, since in the XSLT
@@ -245,6 +245,8 @@ public class TableWriter extends AbstractTableWriter {
 					tableRoot.setAttribute(WordLayoutFixups.HINT_GRID_SHIFT,
 							UnitsOfMeasurement.twipToBest(shift));
 				}
+			} else {
+				indent += cellSpacingIndentTwips(tblPr, mode);
 			}
 		}
 		if (tblPr != null && tblPr.getTblpPr() != null && floatingTablesEnabled()) {
@@ -272,6 +274,34 @@ public class TableWriter extends AbstractTableWriter {
 	 *
 	 * @since 17.1.0
 	 */
+	/**
+	 * What w:tblCellSpacing adds to a left-aligned table's indent.  The separate-border
+	 * model's table border and padding (applyTableCustomAttributes) lie outside the content
+	 * edge that start-indent places, so FOP hung them into the margin, where Word draws them
+	 * inside the table.  From 15 Word's table edge is where the indent says, its first cell a
+	 * whole gap (2 x the spacing) and the border's inner half further in, so the cells go in
+	 * by the spacing (the padding) and half the table's left border: the value returned is
+	 * added to the indent.  Below 15 Word sets the first cell's text on the margin plus the
+	 * indent (&#xa7;6.1), so the table goes out by the spacing and the cell's border as well
+	 * as by the cell margin: the value returned is added to that shift (which a table nested
+	 * in a cell gives back, as Word shifts none).  Measured on table-cellspacing-pitch (28
+	 * and 72 twips, 0.5pt borders, modes 14 and 15): docx4j's first text was 1.73 and 3.85pt
+	 * left of Word's at 15, and 1.87 and 4.07pt right of it at 14.  @since 17.3.1
+	 */
+	private static int cellSpacingIndentTwips(org.docx4j.wml.CTTblPrBase tblPr, int mode) {
+		if (tblPr == null || tblPr.getTblCellSpacing() == null || tblPr.getTblCellSpacing().getW() == null) return 0;
+		int spacing = tblPr.getTblCellSpacing().getW().intValue();
+		if (spacing <= 0) return 0;
+		int border = 0; // the table's left border in twips (w:sz is in eighths of a point)
+		org.docx4j.wml.TblBorders b = tblPr.getTblBorders();
+		if (b != null && b.getLeft() != null && b.getLeft().getSz() != null
+				&& b.getLeft().getVal() != null && b.getLeft().getVal() != org.docx4j.wml.STBorder.NONE
+				&& b.getLeft().getVal() != org.docx4j.wml.STBorder.NIL) {
+			border = (int) Math.round(b.getLeft().getSz().intValue() * 2.5);
+		}
+		return mode < 15 ? spacing + border : spacing + border / 2;
+	}
+
 	/** docx4j.convert.out.fo.tables.position (default true): whether a table's w:tblpPr
 	 *  is honoured at all.  @since 17.1.0 */
 	static boolean floatingTablesEnabled() {
@@ -850,9 +880,18 @@ public class TableWriter extends AbstractTableWriter {
 					(table.getEffectiveTableStyle().getTblPr().getTblCellSpacing().getW() != null)) ?
 					table.getEffectiveTableStyle().getTblPr().getTblCellSpacing().getW().intValue() : 0;
 			if (cellSpacing > 0 && !table.isContentSizedColumns()) {
-				// Word: each column loses a whole gap and a half of the outer gaps (a 150pt
-				// column with 3.6pt spacing holds a 139.2pt cell); FOP's separate model
-				// takes one gap per column, so give up the extra half here.
+				// Word: a cell is its grid column less a whole gap (2 x the spacing), and a
+				// column on the table's edge also holds the outer gap's other half: an
+				// interior cell is gridCol - 2 x spacing, an outer one gridCol - 3 x spacing.
+				// FOP's separate model takes one gap per column and puts half a gap at each
+				// edge, which the table's padding makes whole, so only a column on an edge
+				// gives up the spacing, once for each edge it touches.  Measured on
+				// table-cellspacing-pitch (six 1500-twip columns, 28 and 72 twips, modes 14
+				// and 15): Word's re-saved grid is 1548/1476/1476/1476/1476/1548 for 72
+				// twips, its cells' content edges keep that pitch (73.8pt), and the table
+				// stays 9000 twips; taking the spacing off every column, as docx4j did from
+				// 17.0.5 (measured then on two columns, both outer), drew every interior
+				// column 3.6pt narrow, 14.4pt short by the sixth.  @since 17.3.1
 				//
 				// Only against a *grid* width, which is what includes the gaps.  A
 				// content-autofit width is built from the measured content plus w:tblCellMar
@@ -864,7 +903,8 @@ public class TableWriter extends AbstractTableWriter {
 				// where the cell's one line needs 135.3 and is one line in Word.
 				// 136.8 - the 1.5pt of border-separation is exactly Word's 135.3.
 				// (@since 17.1.0)
-				columnWidth = Math.max(1, columnWidth - cellSpacing);
+				int edges = (columnIndex == 0 ? 1 : 0) + (columnIndex == table.getColCount() - 1 ? 1 : 0);
+				columnWidth = Math.max(1, columnWidth - edges * cellSpacing);
 			}
 	        column.setAttribute("column-width", UnitsOfMeasurement.twipToBest(columnWidth) );
 		}

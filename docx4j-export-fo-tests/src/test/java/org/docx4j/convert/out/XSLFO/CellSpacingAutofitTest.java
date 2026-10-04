@@ -19,6 +19,7 @@
  */
 package org.docx4j.convert.out.XSLFO;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -138,9 +139,49 @@ public class CellSpacingAutofitTest extends AbstractXSLFOTest {
 		org.w3c.dom.Document doc = fo("<w:tblW w:w=\"2799\" w:type=\"dxa\"/>",
 				"<w:tcW w:w=\"2799\" w:type=\"dxa\"/>", Docx4J.FLAG_NONE);
 		double column = columnWidthPt(doc);
-		// 2799tw = 139.95pt, less the 15tw gap = 139.2pt
+		// 2799tw = 139.95pt, less the 15tw spacing once for each table edge the column
+		// touches (17.3.1; a lone column touches both) = 138.45pt
 		assertTrue("a grid column keeps the give-back: " + column + "pt",
-				Math.abs(column - 139.2) < 0.2);
+				Math.abs(column - 138.45) < 0.2);
+	}
+
+	/** Only a column on the table's edge gives up the spacing; an interior one keeps its grid
+	 *  width (Word's cell is gridCol - 2 x spacing inside, - 3 x at an edge; measured on
+	 *  table-cellspacing-pitch), and the cells go in by the spacing (from 15).  @since 17.3.1 */
+	@Test
+	public void onlyTheEdgeColumnsGiveUpTheSpacing() throws Exception {
+		String doc = "<w:document " + W + "><w:body><w:tbl><w:tblPr>"
+				+ "<w:tblW w:w=\"4500\" w:type=\"dxa\"/><w:tblLayout w:type=\"fixed\"/>"
+				+ "<w:tblCellSpacing w:w=\"72\" w:type=\"dxa\"/></w:tblPr>"
+				+ "<w:tblGrid><w:gridCol w:w=\"1500\"/><w:gridCol w:w=\"1500\"/><w:gridCol w:w=\"1500\"/></w:tblGrid>"
+				+ "<w:tr>"
+				+ "<w:tc><w:tcPr><w:tcW w:w=\"1500\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>a</w:t></w:r></w:p></w:tc>"
+				+ "<w:tc><w:tcPr><w:tcW w:w=\"1500\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>b</w:t></w:r></w:p></w:tc>"
+				+ "<w:tc><w:tcPr><w:tcW w:w=\"1500\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>c</w:t></w:r></w:p></w:tc>"
+				+ "</w:tr></w:tbl><w:p/>"
+				+ "<w:sectPr><w:pgSz w:w=\"11906\" w:h=\"16838\"/>"
+				+ "<w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\"/>"
+				+ "</w:sectPr></w:body></w:document>";
+		for (int flags : new int[] { Docx4J.FLAG_NONE, Docx4J.FLAG_EXPORT_PREFER_XSL }) {
+			WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage(); // mode 15
+			pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(doc));
+			FOSettings foSettings = Docx4J.createFOSettings();
+			foSettings.setOpcPackage(pkg);
+			foSettings.setApacheFopMime(FOSettings.INTERNAL_FO_MIME);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			Docx4J.toFO(foSettings, baos, flags);
+			org.w3c.dom.Document fo = w3cDomDocumentFromByteArray(baos.toByteArray());
+			NodeList cols = fo.getElementsByTagNameNS(FO, "table-column");
+			assertEquals(3, cols.getLength());
+			double[] w = new double[3];
+			for (int i = 0; i < 3; i++) w[i] = WordLayoutFixupsAccess.lengthPt(((Element) cols.item(i)).getAttribute("column-width"));
+			assertEquals("an edge column: 75pt less 3.6", 71.4, w[0], 0.01);
+			assertEquals("an interior column keeps its grid width", 75.0, w[1], 0.01);
+			assertEquals("the other edge", 71.4, w[2], 0.01);
+			Element table = (Element) fo.getElementsByTagNameNS(FO, "table").item(0);
+			assertEquals("the cells go in by the spacing (no table border)", 3.6,
+					WordLayoutFixupsAccess.lengthPt(table.getAttribute("start-indent")), 0.01);
+		}
 	}
 
 	/** {@code WordLayoutFixups.lengthPt} is package-private to its own package. */

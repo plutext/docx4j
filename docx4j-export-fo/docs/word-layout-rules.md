@@ -3276,11 +3276,29 @@ tables; the document this was measured on went from 0.17 to 0.93 of Word's lines
 
 ### 6.6 `w:tblCellSpacing`
 
-Word puts a whole gap (2 x the spacing) between the table border and the outer cells, and
-each column's cell is `gridCol - 3 x spacing` wide; FO's separate-border model puts half a
-gap at the edges instead. Padding on the `fo:table` plus columns narrowed by the spacing
-reproduce Word's geometry with the table width unchanged: measured, cell text 3.6pt further
-in for 72 twips of spacing.
+Word puts a whole gap (2 x the spacing) between adjacent cells and between the table edge and
+the outer cells: a table of n cells is n cells and n + 1 gaps. So an interior cell is its grid
+column less one gap (`gridCol - 2 x spacing`) and a cell on the table's edge one and a half
+(`gridCol - 3 x spacing`; a lone column, two). FO's separate-border model puts one gap per
+column and half a gap at each edge. Padding on the `fo:table` makes the edge gap whole, and
+only a column on an edge gives up the spacing, once for each edge it touches
+(`TableWriter.applyColumnCustomAttributes`).
+
+<a id="s66pitch"></a>**Measured on `table-cellspacing-pitch` (17.3.1):** six fixed 1500-twip
+columns, spacing of 28 and 72 twips, on `w:tblPr`, on every `w:trPr`, or both (Word lays the
+three out alike), modes 14 and 15. Word's re-saved grid is `1548/1476/1476/1476/1476/1548` for
+72 twips: interior columns 1500 - spacing/3, edge columns 1500 + 2 x spacing/3, summing to
+the same 9000. Its cells' content edges keep that pitch (73.8pt). Until 17.3.1 docx4j took the
+spacing off every column (the rule above was read on a two-column probe, both columns outer),
+so every interior column was a spacing narrow, 14.4pt short by the sixth at 72 twips. Pitch and
+widths now match Word to 0.1pt.
+
+**And the table's border and padding go inside the indent.** They lie outside the content edge
+`start-indent` places, so FOP hung them into the margin. From 15 the cells go in by the spacing
+and half the table's left border; below 15 Word sets the first cell's text on the margin (§6.1),
+so the table goes out by the spacing and the border as well as by the cell margin
+(`TableWriter.cellSpacingIndentTwips`). docx4j's first text had been 1.73 and 3.85pt left of
+Word's at 15 and 1.87 and 4.07pt right of it at 14; all four are now within 0.1pt.
 
 **The gap is charged against a grid width, not against a content-autofit one.** FOP's
 separate border model takes one gap per column where Word takes a whole gap and half of each
