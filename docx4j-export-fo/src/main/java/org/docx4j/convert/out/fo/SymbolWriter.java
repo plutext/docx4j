@@ -33,6 +33,7 @@ import org.docx4j.convert.out.common.writer.SymbolUtils;
 import org.docx4j.fonts.GlyphCheck;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
+import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.fonts.fop.fonts.Typeface;
 import org.docx4j.wml.R;
 import org.w3c.dom.Document;
@@ -102,14 +103,37 @@ public class SymbolWriter extends AbstractSymbolWriter {
 		String textValue =  modelData.getChar();
 
 		boolean haveUnicodeReplacement = false;
-		
-		// TODO: if Symbol, Wingdings, Webdings is actually present, use it?
-		// If there is a PhysicalFont, and it is the identity mapping, 
-		// ie Symbol, Wingdings, Webdings is actually present,
-		// should we try to use it?
-		// Maybe this should be fallback if Noto Sans Symbols 2 (Linux) or Segoe UI Symbol (Windows)
-		// is not present?
-				
+
+		/* The real font, where this machine has it: Symbol, Wingdings, Wingdings 2,
+		 * Wingdings 3 or Webdings installed (or embedded in the document), and the
+		 * character in its cmap.  The w:sym's own code point is drawn in it, in the
+		 * private-use form the font holds it at, as RunFontSelector.symbolRun draws a run
+		 * in that font; a code point the real font lacks takes the substitute path below,
+		 * as before.  Where the machine has no such face nothing changes.  @since 17.3.1 */
+		String symbolFontName = RunFontSelector.symbolFontName(fontName);
+		PhysicalFont real = symbolFontName==null ? null
+				: PhysicalFonts.getSymbolEncodedFace(symbolFontName, context.getWmlPackage().getFontMapper());
+		if (real!=null) {
+			int cp = -1;
+			try {
+				cp = RunFontSelector.symbolCodePoint(Integer.parseInt(textValue, 16));
+			} catch (NumberFormatException nfe) {
+				// not a code: the substitute path says what it makes of it
+			}
+			boolean has = false;
+			try {
+				has = cp>=0 && GlyphCheck.hasCodepoint(real, cp);
+			} catch (ExecutionException e) {}
+			if (has) {
+				DocumentFragment docfrag = doc.createDocumentFragment();
+				Element foInline = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");
+				docfrag.appendChild(foInline);
+				foInline.setAttribute("font-family", real.getName());
+				foInline.appendChild(doc.createTextNode(new String(Character.toChars(cp))));
+				return docfrag;
+			}
+		}
+
 		// TODO: are there other symbol fonts?  what to do?
 		
 		PhysicalFont pf;

@@ -70,7 +70,9 @@ public final class FontDecision {
 		MAPPER_OWN,
 		/** A symbol font, whose characters {@link RunFontSelector} draws in the face
 		 *  {@link PhysicalFonts#getWDingsFont} or {@link PhysicalFonts#getSymbolFont}
-		 *  picks, whatever the mapper made of the name. */
+		 *  picks, whatever the mapper made of the name.  Not where the machine has the
+		 *  real font ({@link PhysicalFonts#getSymbolEncodedFace}): that is drawn as any
+		 *  installed font is, and is {@link #INSTALLED} or {@link #EMBEDDED} (17.3.1). */
 		SYMBOL,
 		/** Nothing mapped it: FOP will draw it in its base-14 fallback. */
 		UNMAPPED

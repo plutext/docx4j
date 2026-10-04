@@ -891,6 +891,57 @@ public class PhysicalFonts {
 	private static PhysicalFont suitableFontSymbol;
 	private static boolean haveLookedForsuitableFontSymbol = false;
 
+	/**
+	 * The <b>real</b> symbol font, where this machine has it: the face mapped for the
+	 * name (the mapper's, else the installed face of that name) when its cmap is
+	 * symbol-encoded - a (3,0) cmap holding the glyphs at U+F020-U+F0FF, as Symbol,
+	 * Wingdings, Wingdings 2, Wingdings 3 and Webdings are encoded, and as an embedded
+	 * copy of one of them is.  Such a face draws the document's own code points
+	 * ({@link RunFontSelector} since 17.3.1), where the substitutes above draw Unicode
+	 * replacements of them.  Null where the face mapped for the name is not
+	 * symbol-encoded - a text font a mapper put in its place, or nothing at all - so that
+	 * the mapped path is taken, as it was before.
+	 *
+	 * <p>Symbol-encoded is read off the face itself (glyphs at both U+F041 and U+F061,
+	 * the capital and small letter positions every one of the five fonts has glyphs at),
+	 * not off its name: a face a mapper or a user put under the name is drawn only if it
+	 * has what a run in that font asks for, and a stray private-use glyph in a text font
+	 * does not pass.  Measured on the five Windows faces and the Noto, DejaVu and
+	 * Liberation sets (2026-10-04).</p>
+	 *
+	 * @param symbolFontName the document's font name (one SymbolMapper knows)
+	 * @param mapper the document's mapper, or null to ask the installed fonts alone
+	 * @return the face, or null
+	 * @since 17.3.1
+	 */
+	public static PhysicalFont getSymbolEncodedFace(String symbolFontName, Mapper mapper) {
+
+		if (symbolFontName==null) return null;
+		PhysicalFont mapped = mapper==null ? null : mapper.get(symbolFontName);
+		if (mapped!=null && isSymbolEncoded(mapped)) return mapped;
+		PhysicalFont installed = get(symbolFontName);
+		if (installed!=null && installed!=mapped && isSymbolEncoded(installed)) return installed;
+		return null;
+	}
+
+	/** Whether the face's cmap is symbol-encoded (see {@link #getSymbolEncodedFace});
+	 *  remembered per face, since it is asked per run.  @since 17.3.1 */
+	public static boolean isSymbolEncoded(PhysicalFont pf) {
+		if (pf==null) return false;
+		Boolean known = symbolEncoded.get(pf);
+		if (known!=null) return known.booleanValue();
+		boolean is;
+		try {
+			is = GlyphCheck.hasCodepoint(pf, 0xF041) && GlyphCheck.hasCodepoint(pf, 0xF061);
+		} catch (Exception e) {
+			is = false;
+		}
+		symbolEncoded.put(pf, Boolean.valueOf(is));
+		return is;
+	}
+	private static final Map<PhysicalFont, Boolean> symbolEncoded
+			= new java.util.concurrent.ConcurrentHashMap<PhysicalFont, Boolean>();
+
 	
 	public static void main(String[] args) throws Exception {
 

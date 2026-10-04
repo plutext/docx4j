@@ -97,6 +97,11 @@ PDF via XSL FO:
   numbered from 0 on a docx4j FO renderer that allows it (capability page-number-zero,
   fork CR-012); it printed every page number one high.
 
+- Symbol, Wingdings, Wingdings 2, Wingdings 3 and Webdings are drawn in the real font where it
+  is installed (or embedded), with the document's own code points: runs, w:sym and numbering
+  labels, on both pathways; FontsAnalysis grades such a font EXACT. Where the font is absent
+  the Unicode replacements in a substitute face are drawn as before. HTML output is unchanged.
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's

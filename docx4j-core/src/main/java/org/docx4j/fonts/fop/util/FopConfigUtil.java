@@ -140,6 +140,39 @@ public class FopConfigUtil {
     }
 
 	/**
+	 * The faces to declare for a document font: the mapped face; for one of the symbol
+	 * fonts, the real font where this machine has it (RunFontSelector draws the run in
+	 * it, 17.3.1) and then the substitutes RunFontSelector and SymbolWriter draw a
+	 * character it lacks in - Noto Sans Symbols 2 and Noto Sans Symbols for the Wingdings
+	 * fonts and Webdings, DejaVu Serif for Symbol (PhysicalFonts.getWDingsFont,
+	 * getWDingsFont2, getSymbolFont).
+	 *
+	 * @return the faces, in that order; empty where nothing is mapped
+	 * @since 17.3.1
+	 */
+	private static List<PhysicalFont> facesFor(Mapper fontMapper, String fontName) {
+
+		List<PhysicalFont> faces = new ArrayList<PhysicalFont>();
+		String symbolFont = RunFontSelector.symbolFontName(fontName);
+		if (symbolFont==null) {
+			PhysicalFont pf = fontMapper.get(fontName);
+			if (pf!=null) faces.add(pf);
+			return faces;
+		}
+		PhysicalFont real = PhysicalFonts.getSymbolEncodedFace(fontName, fontMapper);
+		if (real!=null) faces.add(real);
+		if (symbolFont.equals("Symbol")) {
+			PhysicalFont pf = PhysicalFonts.getSymbolFont();
+			if (pf!=null && !faces.contains(pf)) faces.add(pf);
+		} else {
+			for (PhysicalFont pf : new PhysicalFont[] { PhysicalFonts.getWDingsFont(), PhysicalFonts.getWDingsFont2() }) {
+				if (pf!=null && !faces.contains(pf)) faces.add(pf);
+			}
+		}
+		return faces;
+	}
+
+	/**
 	 * Create a FOP font configuration for each font used in the
 	 * document.
 	 * 
@@ -169,31 +202,13 @@ public class FopConfigUtil {
 		// <font simulate-style="true"	
 			for (String fontName : fontsInUse) {		    
 			    
-				PhysicalFont pf;
-				PhysicalFont pf2 = null;
-				if (fontName.equals("Webdings")
-						|| fontName.equals("Wingdings")
-						|| fontName.equals("Wingdings 2")
-						|| fontName.equals("Wingdings 3")
-						) {
-					pf = PhysicalFonts.getWDingsFont();
-					pf2 = PhysicalFonts.getWDingsFont2();
-				} else if (fontName.equals("Symbol")) {
-					pf = PhysicalFonts.getSymbolFont();
-				} else {
-					// Usual case
-					pf = fontMapper.get(fontName);
-				}
-
-				
-			    if (pf==null) {
+				List<PhysicalFont> faces = facesFor(fontMapper, fontName);
+			    if (faces.isEmpty()) {
 			    	log.warn("Document font " + fontName + " is not mapped to a physical font!");
 			    	// We may still have eg Cambria-bold embedded, but ignore this for now
 			    } else {
-			    	
-			    	createFontEntrySimulateStyles( fontMapper,  fontEntries, pf.getName(), pf); // using pf.getName() ensures we use the symbol font substitute name
-			    	if (pf2!=null) {
-			    		createFontEntrySimulateStyles( fontMapper,  fontEntries, pf2.getName(), pf2);			    		
+			    	for (PhysicalFont pf : faces) {
+			    		createFontEntrySimulateStyles( fontMapper,  fontEntries, pf.getName(), pf); // using pf.getName() ensures we use the symbol font substitute name
 			    	}
 			    }
 			}
@@ -204,29 +219,13 @@ public class FopConfigUtil {
 		// <font simulate-style="false"
 			for (String fontName : fontsInUse) {		    
 			    
-				PhysicalFont pf;
-				PhysicalFont pf2 = null;
-				if (fontName.equals("Webdings")
-						|| fontName.equals("Wingdings")
-						|| fontName.equals("Wingdings 2")
-						|| fontName.equals("Wingdings 3")
-						) {
-					pf = PhysicalFonts.getWDingsFont();
-					pf2 = PhysicalFonts.getWDingsFont2();
-				} else if (fontName.equals("Symbol")) {
-					pf = PhysicalFonts.getSymbolFont();
-				} else {				
-					pf = fontMapper.get(fontName);
-				}
-			    
-			    if (pf==null) {
+				List<PhysicalFont> faces = facesFor(fontMapper, fontName);
+			    if (faces.isEmpty()) {
 			    	log.warn("Document font " + fontName + " is not mapped to a physical font!");
 			    	// We may still have eg Cambria-bold embedded
 			    } else {
-
-			    	createFontEntry( fontMapper,  fontEntries, pf.getName(), pf);
-			    	if (pf2!=null) {
-				    	createFontEntry( fontMapper,  fontEntries, pf2.getName(), pf2);			    		
+			    	for (PhysicalFont pf : faces) {
+			    		createFontEntry( fontMapper,  fontEntries, pf.getName(), pf);
 			    	}
 			    }
 			}

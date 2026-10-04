@@ -602,7 +602,11 @@ public class RunFontSelector {
 		if (outputType== RunFontActionType.DISCOVERY) {
 			return;
 		} else if (outputType==RunFontActionType.XHTML) {
-			// In XHTML, we leave it up to the browser to choose the specific font
+			// In XHTML, we leave it up to the browser to choose the specific font.  The
+			// text is the Unicode replacement even where this machine has the real symbol
+			// font (symbolRun, 17.3.1): a font installed on the converting machine does not
+			// help the reader's browser, and a private-use code point would draw as nothing
+			// there, where the replacement is a character any browser's fonts have.
     		if (spacePreserve) {
     	    	/*
     	    	 * 	Convert @xml:space='preserve' to style="white-space:pre-wrap;"
@@ -674,8 +678,12 @@ public class RunFontSelector {
 			/* A symbol font is drawn in whatever face has the glyphs, whatever the mapper
 			 * made of its name (PhysicalFonts.getWDingsFont / getSymbolFont, which still
 			 * name their candidates in code).  Recorded as the decision for this document
-			 * font, since it is what the reader will see (CR-017 phase 1). */
-			if (pf!=null && wordMLPackage!=null && wordMLPackage.getFontMapper()!=null) {
+			 * font, since it is what the reader will see (CR-017 phase 1).  Not where the
+			 * machine has the real font: then the mapper's own decision for it (INSTALLED,
+			 * or EMBEDDED) is what the reader sees, and this span is the odd character the
+			 * real font lacks (symbolRun, 17.3.1). */
+			if (pf!=null && wordMLPackage!=null && wordMLPackage.getFontMapper()!=null
+					&& symbolEncodedFace(fontName)==null) {
 				wordMLPackage.getFontMapper().recordSymbolFace(fontName, pf);
 			}
 
@@ -2022,19 +2030,51 @@ public class RunFontSelector {
      * (PhysicalFonts.getWDingsFont and getWDingsFont2), and until 17.2.0 the first code
      * point chose the face for the whole run (and a run needing both faces failed, the
      * second span being appended to the scratch Document beside the first).
+     *
+     * <p>Where this machine has the <b>real font</b> - a face mapped for the name whose
+     * cmap is symbol-encoded ({@link PhysicalFonts#getSymbolEncodedFace}) - the run is
+     * drawn in it, with the document's own code points and no replacement: that is what
+     * Word draws, glyph for glyph and advance for advance, where the Unicode replacement
+     * in a substitute face is a glyph of another design at another width (measured on a
+     * corpus CV's Symbol arrowdblright bullet: Word's glyph 0.987 em, the substitute's
+     * 0.838).  The code point sent to the renderer is the private-use form the font's
+     * (3,0) cmap holds (U+F020-U+F0FF), whatever form the document wrote - Word writes
+     * that form itself, VBA writes the byte, and issue 632's Windows-1252 cases translate
+     * to the byte - because it is the form both the font loader here and the renderer
+     * read directly from the cmap, where the 8-bit alias is not mapped for a font whose
+     * cmap segments have no range offset (Wingdings 2 and 3 1.55, see SymbolWriter), and
+     * because it is the code point Word's own PDF carries in its text layer.  A character
+     * the real font has no glyph for takes the mapped path as before, in a stretch of its
+     * own.  XSL FO only: a font installed on the converting machine does not help the
+     * reader's browser, so HTML keeps the Unicode replacements, which any browser can
+     * draw.  @since 17.3.1</p>
      */
     private Object symbolRun(Document document, String actualFontName, String text) {
 
-    	StringBuilder sb = new StringBuilder();
+    	PhysicalFont real = symbolEncodedFace(actualFontName);
+
+    	DocumentFragment fragment = document.createDocumentFragment();
+    	StringBuilder sb = new StringBuilder();   // the stretch being mapped to Unicode replacements
+    	StringBuilder own = new StringBuilder();  // the stretch the real font draws
     	for (int i = 0; i < text.length(); i = text.offsetByCodePoints(i, 1)) {
     		int cp = text.codePointAt(i);
     		String valStr = null;
 
+    		if (real!=null) {
+    			int pua = symbolCodePoint(cp);
+    			if (pua>=0 && hasGlyph(real, pua)) {
+    				appendMappedSegments(fragment, document, actualFontName, sb);
+    				own.appendCodePoint(pua);
+    				continue;
+    			}
+    			appendOwnSegment(fragment, document, actualFontName, real, own);
+    		}
+
     		// VBA like rng.InsertAfter Chr(i); rng.Font.Name = "Wingdings"
     		// for code points 128-159 (0x80-0x9F) results in Unicode you might not expect (rather than the code point asked for).
-    		// This is because these are used in the Windows-1252 codepage but are reserved in Unicode for 
+    		// This is because these are used in the Windows-1252 codepage but are reserved in Unicode for
     		// control characters: https://en.wikipedia.org/wiki/Windows-1252
-    		// For example, codepoint 137 (0x89) gets translated to U+2030.	
+    		// For example, codepoint 137 (0x89) gets translated to U+2030.
     		// See further https://github.com/plutext/docx4j/issues/632
     		if (cp>255) {
     			cp = translateUnicode2SingleByte(cp);
@@ -2051,29 +2091,91 @@ public class RunFontSelector {
     			valStr = SymbolMapper.getUnicodeReplacementChar(actualFontName, (short)cp);
     		}
     		if (valStr==null) {
-    			sb.append(SymbolUtils.MISSING_SYMBOL); 
+    			sb.append(SymbolUtils.MISSING_SYMBOL);
     			if (warnedOnce.add("symbol " + actualFontName + " " + cp)) {
     				log.warn(actualFontName + " " + (short)cp + " Hex " + Integer.toHexString(cp) + " has no replacement.");
     			}
     		} else {
-    			sb.append(valStr);  						
+    			sb.append(valStr);
     		}
     	}
+    	appendOwnSegment(fragment, document, actualFontName, real, own);
+    	appendMappedSegments(fragment, document, actualFontName, sb);
+    	return outputType==RunFontActionType.DISCOVERY ? null : finish(fragment);
+    }
 
-    	DocumentFragment fragment = document.createDocumentFragment();
-    	for (String segment : symbolSegments(actualFontName, sb.toString())) {
+    /** The mapped stretch in hand, as one span per substitute face; cleared.  @since 17.3.1 */
+    private void appendMappedSegments(DocumentFragment fragment, Document document, String actualFontName, StringBuilder sb) {
+    	if (sb.length()==0) return;
+    	String mapped = sb.toString();
+    	sb.setLength(0);
+    	for (String segment : symbolSegments(actualFontName, mapped)) {
     		Element seg = createElement(document);
     		if (seg==null) continue; // the DISCOVERY mode
     		fragment.appendChild(seg);
-    		seg.setTextContent(segment==null ? sb.toString() : segment);
+    		seg.setTextContent(segment==null ? mapped : segment);
     		this.symbolSetAttribute(seg, actualFontName, seg.getTextContent());
     	}
-    	return outputType==RunFontActionType.DISCOVERY ? null : finish(fragment);
+    }
+
+    /** The stretch the real symbol font draws, as one span in that font, marked as an
+     *  ordinary run's span is (the document font for the coverage pass, the line height,
+     *  the width factor); cleared.  @since 17.3.1 */
+    private void appendOwnSegment(DocumentFragment fragment, Document document, String fontName,
+    		PhysicalFont real, StringBuilder own) {
+    	if (own.length()==0) return;
+    	String text = own.toString();
+    	own.setLength(0);
+    	Element seg = createElement(document);
+    	if (seg==null) return; // the DISCOVERY mode
+    	fragment.appendChild(seg);
+    	seg.setTextContent(text);
+    	seg.setAttribute("font-family", foFontFamily(real.getName()));
+    	applyLineHeight(seg, fontName, real);
+    	registerUsedFont(real.getName(), real);
+    	seg.setAttribute(MARK_DOCUMENT_FONT, fontName);
+    	markWidthFactor(seg, fontName, real.getName());
+    }
+
+    /**
+     * The real font for one of the symbol fonts, where this machine has it and the output
+     * is XSL FO; null otherwise (the mapped path).  See {@link #symbolRun}.
+     *
+     * @since 17.3.1
+     */
+    private PhysicalFont symbolEncodedFace(String symbolFontName) {
+    	if (outputType!=RunFontActionType.XSL_FO) return null;
+    	Mapper mapper = wordMLPackage==null ? null : wordMLPackage.getFontMapper();
+    	return PhysicalFonts.getSymbolEncodedFace(symbolFontName, mapper);
+    }
+
+    /** Whether the face has a glyph for the code point; false where it cannot be asked. */
+    private static boolean hasGlyph(PhysicalFont pf, int cp) {
+    	try {
+    		return GlyphCheck.hasCodepoint(pf, cp);
+    	} catch (ExecutionException e) {
+    		return false;
+    	}
+    }
+
+    /**
+     * The code point a symbol font's own cmap holds this character at: the private-use
+     * form U+F020-U+F0FF, from the document's private-use character, from its byte
+     * (0x20-0xFF, as VBA writes a symbol character), or from the Windows-1252 character
+     * such a byte in 0x80-0x9F becomes (issue 632); -1 for anything else, which no symbol
+     * font has.
+     *
+     * @since 17.3.1
+     */
+    public static int symbolCodePoint(int cp) {
+    	if (cp>=0xF020 && cp<=0xF0FF) return cp;
+    	if (cp>0xFF) cp = translateUnicode2SingleByte(cp);
+    	return (cp>=0x20 && cp<=0xFF) ? 0xF000 + cp : -1;
     }
     
     /** The canonical name of one of the fonts SymbolMapper knows, whatever case the
-     *  document wrote it in; null for any other font. */
-    static String symbolFontName(String documentFontName) {
+     *  document wrote it in; null for any other font.  Public since 17.3.1. */
+    public static String symbolFontName(String documentFontName) {
     	if (documentFontName==null) return null;
     	for (String known : new String[] { "Symbol", "Webdings", "Wingdings", "Wingdings 2", "Wingdings 3" }) {
     		if (known.equalsIgnoreCase(documentFontName.trim())) return known;
@@ -2113,7 +2215,7 @@ public class RunFontSelector {
     	return segments.size()<=1 ? one : segments;
     }
 
-    private int translateUnicode2SingleByte(int cp) {
+    private static int translateUnicode2SingleByte(int cp) {
 
 		switch (cp) {
 		case 0x20AC: return 0x80;

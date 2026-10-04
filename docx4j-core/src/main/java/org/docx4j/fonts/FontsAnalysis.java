@@ -318,11 +318,17 @@ public final class FontsAnalysis {
 	 * {@link PhysicalFonts#getWDingsFont} or {@link PhysicalFonts#getSymbolFont} picks,
 	 * whatever the mapper made of the name, and only records it as it converts.  Asking
 	 * the same two methods here records the same decision.
+	 *
+	 * <p>Not where this machine has the real font ({@link PhysicalFonts#getSymbolEncodedFace}):
+	 * the selector draws the run in it, with the document's own code points, and the
+	 * mapper's own decision for the name - INSTALLED, or EMBEDDED - is the one the
+	 * reader sees, graded EXACT as any installed font is.  @since 17.3.1</p>
 	 */
 	private static void recordSymbolFontFace(String documentFont, Mapper mapper) {
 
 		String symbolFont = RunFontSelector.symbolFontName(documentFont);
 		if (symbolFont==null) return;
+		if (PhysicalFonts.getSymbolEncodedFace(symbolFont, mapper)!=null) return;
 		FontDecision existing = mapper.getDecision(documentFont);
 		if (existing!=null && existing.getSource()==FontDecision.Source.SYMBOL) return;
 		PhysicalFont face = "Symbol".equals(symbolFont)

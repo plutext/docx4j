@@ -2288,6 +2288,41 @@ corpus over 111 documents with none improved**. The fallback as shipped fixed 10
 383 excess `#` lines and moved no document's score by 0.005 either way (real1 +21 matched
 lines with one document +0.076, real2 +14, real3 exactly unchanged).
 
+<a id="s57realsymbolfont"></a>**The real symbol font, where the machine has it.** Everything
+above maps a Symbol, Wingdings, Wingdings 2, Wingdings 3 or Webdings character to a Unicode
+replacement and draws that in a substitute face - a glyph of another design at another
+width: on a corpus CV's Symbol `arrowdblright` bullet Word's glyph is 0.987 em and the
+substitute's 0.838 ([the label measurement](#s57lvlsym) above). Since 17.3.1 that is the
+path for a machine which lacks the font, which most do. Where the font is **installed** (or
+embedded in the document) - the face mapped for the name is symbol-encoded, a (3,0) cmap with
+its glyphs at U+F020-U+F0FF, which is `PhysicalFonts.getSymbolEncodedFace` - a run in it
+(`RunFontSelector.symbolRun`), a `w:sym` in it (`SymbolWriter`) and a numbering label in it
+(`symbolLabelFallback`) are drawn in that font with the document's own code points, no
+replacement, on both pathways; `FontsAnalysis` then grades the font EXACT as it grades any
+installed font, and the fidelity harness's class column reads such a document as class 2
+rather than 3a. The code point sent to the renderer is always the private-use form, whatever
+the document wrote (Word writes U+F0xx; VBA writes the byte; issue 632's Windows-1252
+characters translate to it): measured on the five Windows faces, every one maps
+U+F020-U+F0FF, and Wingdings 2, Wingdings 3 and Webdings map the 8-bit alias of none of them
+(their cmap segments have no range offset, so the loader's experimental 0xF0xx -> 0xxx
+mapping never fires), and it is the code point Word's own PDF carries in its text layer,
+which is what the harness's bullet normalisation keys on. A character the installed font has
+no glyph for (Symbol 0x7F) takes the mapped path in a stretch of its own. HTML is unchanged:
+a font on the converting machine does not help the reader's browser, and the replacement is a
+character any browser's fonts have. Measured on the three corpora and the second-corpus
+probes with the Windows VM's faces supplied (`-Dfidelity.fonts`, b85v against b84v) and, as
+the control, with the default font set (b85a against b83-rowkeep): the control moved nothing,
+and with the faces the first reading moved 35 documents, every one of them the PDF's **text
+layer** - Word's ToUnicode gives a Symbol 0x2D as U+2212 and a Wingdings 0x71 as U+2751, the
+very replacements `SymbolMapper` holds, where the renderer's gives the font's own code point
+(U+F071) or its 8-bit alias (U+002D) by cmap segment - and not its layout. The harness's
+extractor now reads a symbol-font glyph through `SymbolMapper` on both sides
+(`PdfLayoutExtractor.glyphText`); re-scored so (b85vs against b84vs), 48 documents moved
+from class 3a to class 2, class 2 lost one line in one 51-page document (a bulleted line in
+a two-column cell, whose pieces now match Word's own), four documents improved, and the one
+other mover (a `w:sym`-only cell line 4.4pt above Word's baseline, Wingdings' positive
+sTypoDescender of 420 as the renderer stacks it) is left for a later batch.
+
 <a id="s57symbolrange"></a>**The symbol range needs a fallback chain, not one Windows face.**
 `RunFontSelector`'s U+2190-U+2BFF branch asked the run's own font for the glyph and, where
 it lacked it, asked exactly one substitute - `Segoe UI Symbol`, which is what Word 2016

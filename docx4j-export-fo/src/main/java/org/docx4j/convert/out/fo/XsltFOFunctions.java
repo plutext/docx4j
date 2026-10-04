@@ -2292,7 +2292,7 @@ public class XsltFOFunctions {
 		    	// give effect to any character mapping performed by RFS; where it made
 		    	// none for a symbol font, symbolLabelFallback does (@since 17.1.0)
 		    	foListItemLabelBody.setTextContent(
-		    			symbolLabelFallback(triple, rfsFrag.getTextContent(), foListItemLabelBody));
+		    			symbolLabelFallback(triple, rfsFrag.getTextContent(), foListItemLabelBody, wmlPackage));
 				
 			} else if (triple.getNumString()==null) {
 				log.debug("computed NumString was null!");
@@ -3078,10 +3078,12 @@ public class XsltFOFunctions {
 	 * corpus over 111 documents with no document improved.
 	 *
 	 * @param rendered the label as run font selection left it
+	 * @param wmlPackage the document, for its mapper (null asks the installed fonts alone)
 	 * @return the label to draw, mapped where this could map it
-	 * @since 17.1.0
+	 * @since 17.1.0; with the package since 17.3.1
 	 */
-	protected static String symbolLabelFallback(NumberingResult triple, String rendered, Element foListItemLabelBody) {
+	protected static String symbolLabelFallback(NumberingResult triple, String rendered, Element foListItemLabelBody,
+			WordprocessingMLPackage wmlPackage) {
 
 		if (rendered==null || rendered.isEmpty() || triple==null) return rendered;
 		boolean unmapped = false;
@@ -3092,6 +3094,28 @@ public class XsltFOFunctions {
 		if (!unmapped) return rendered; // run font selection mapped it, and chose the font
 		String font = triple.getNumFont();
 		if (font==null || !SYMBOL_LABEL_FONTS.contains(font)) return rendered;
+
+		/* The real font, where this machine has it: the label keeps its own code points
+		 * and is drawn in that face - which is what run font selection did where the
+		 * level's font reached it (RunFontSelector.symbolRun, 17.3.1), and what it would
+		 * have done where it did not.  @since 17.3.1 */
+		org.docx4j.fonts.PhysicalFont real = org.docx4j.fonts.PhysicalFonts.getSymbolEncodedFace(font,
+				wmlPackage==null ? null : wmlPackage.getFontMapper());
+		if (real!=null) {
+			boolean has = true;
+			try {
+				for (int i = 0; i < rendered.length() && has; i++) {
+					char c = rendered.charAt(i);
+					if (c >= '\uF000' && c <= '\uF8FF') has = org.docx4j.fonts.GlyphCheck.hasCodepoint(real, c);
+				}
+			} catch (java.util.concurrent.ExecutionException e) {
+				has = false;
+			}
+			if (has) {
+				foListItemLabelBody.setAttribute("font-family", real.getName());
+				return rendered;
+			}
+		}
 
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < rendered.length(); i++) {

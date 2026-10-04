@@ -226,6 +226,8 @@ public abstract class Mapper {
 	 * the one {@link PhysicalFonts#getWDingsFont} or {@link PhysicalFonts#getSymbolFont}
 	 * picks for the glyphs, whatever this mapper made of the name, since a {@code w:sym}
 	 * character is a code point in that face and not in the font the run asks for.
+	 * Not called where the machine has the real font (17.3.1): then the decision this
+	 * mapper made for the name stands.
 	 *
 	 * @since 17.2.0
 	 */
