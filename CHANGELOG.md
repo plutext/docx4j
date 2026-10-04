@@ -85,6 +85,10 @@ PDF via XSL FO:
   indented paragraph in a text box is indented from the box's text area, not from its edge.
   A positioned text box's text starts below its top inset, as Word's does.
 
+- A table whose rows are all kept with the next row, and which is longer than a page, is
+  broken where the page fills, as Word breaks it; it ran off the page, and its last rows and
+  the text after it were lost.
+
 - A justified line is compressed to take one more word only where the compression is less
   than half the stretch of the line it would otherwise be (was: where that line would stretch
   by 30% or more).

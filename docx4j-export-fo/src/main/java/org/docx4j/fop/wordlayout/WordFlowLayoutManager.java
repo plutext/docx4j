@@ -136,11 +136,31 @@ public class WordFlowLayoutManager extends FlowLayoutManager {
 		}
 		if (tolerance < 1.0) tolerance = 1.0;
 		long limit = (long) (available * tolerance);
+		/* A chain made only of a table's row keeps is bounded at the page itself.  Its height
+		 * is the rows' own, not the over-estimate the 3x allows for, and Word's rule is
+		 * measured: on the table-keeps probe (30 exact 30pt rows each keeping with the next,
+		 * with or without w:cantSplit, started two thirds down a page; corpus document 7396's
+		 * shape) Word moves the table to a fresh page, fills it and breaks it there, at
+		 * modes 12, 14 and 15 alike.  Bounded at 3x the chain stayed whole and FOP ran it off
+		 * the page: rows 27-30 and the paragraph after the table were not painted at all.
+		 * Bounded at the page, every case is on Word's pages.
+		 * Property docx4j.convert.out.fo.wordLayout.keepChainRowTolerance, default 1.0.
+		 * @since 17.3.1 */
+		double rowTolerance;
+		try {
+			rowTolerance = Double.parseDouble(org.docx4j.Docx4jProperties.getProperty(
+					"docx4j.convert.out.fo.wordLayout.keepChainRowTolerance", "1.0").trim());
+		} catch (NumberFormatException e) {
+			rowTolerance = 1.0;
+		}
+		if (rowTolerance < 1.0) rowTolerance = 1.0;
+		long rowLimit = (long) (available * rowTolerance);
 
-		// the infinite penalties passed since the last break the breaker may take, and
-		// the height accumulated over them
+		// the infinite penalties passed since the last break the breaker may take, the
+		// height accumulated over them, and whether every one of them is a table's
 		List<KnuthPenalty> chain = new java.util.ArrayList<KnuthPenalty>();
 		int height = 0;
+		boolean rowsOnly = true;
 
 		for (ListElement el : elements) {
 			if (!(el instanceof KnuthElement)) continue;
@@ -155,10 +175,12 @@ public class WordFlowLayoutManager extends FlowLayoutManager {
 				// a legal break: everything before it can be left behind
 				chain.clear();
 				height = 0;
+				rowsOnly = true;
 				continue;
 			}
 			chain.add(p);
-			if (height > limit) {
+			rowsOnly &= isTableContent(p);
+			if (height > (rowsOnly ? rowLimit : limit)) {
 				// this chain cannot be satisfied on any page; let the breaker into it
 				if (LOG.isDebugEnabled()) {
 					LOG.debug("keep chain of " + chain.size() + " bounded: " + height
@@ -169,8 +191,29 @@ public class WordFlowLayoutManager extends FlowLayoutManager {
 				}
 				chain.clear();
 				height = 0;
+				rowsOnly = true;
 			}
 		}
+	}
+
+	/** Whether a penalty is a table's own - the stepper's break between two of its rows - by
+	 *  its positions, walked inward through every wrapper: the flow's and the blocks'
+	 *  NonLeafPositions and space resolution's SpaceHandlingBreakPosition around the table
+	 *  manager's TableHFPenaltyPosition (package-private, so known by its manager).
+	 *  @since 17.3.1 */
+	static boolean isTableContent(KnuthPenalty p) {
+		org.apache.fop.layoutmgr.Position pos = p.getPosition();
+		for (int depth = 0; pos != null && depth < 16; depth++) {
+			if (pos instanceof org.apache.fop.layoutmgr.table.TableContentPosition
+					|| pos.getLM() instanceof org.apache.fop.layoutmgr.table.TableContentLayoutManager
+					|| pos.getLM() instanceof org.apache.fop.layoutmgr.table.TableLayoutManager) {
+				return true;
+			}
+			org.apache.fop.layoutmgr.Position inner = pos.getPosition();
+			if (inner == pos) break;
+			pos = inner;
+		}
+		return false;
 	}
 
 	/** The block-progression dimension of the page body, in millipoints; 0 where the

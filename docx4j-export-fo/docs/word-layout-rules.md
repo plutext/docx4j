@@ -1168,6 +1168,36 @@ two (46, 44 and 42 pages). Properties
 `docx4j.convert.out.fo.wordLayout.boundKeepChains`, `...keepChainPenalty` and
 `...keepChainTolerance`.
 
+<a id="s39rowchain"></a>**A chain of table rows is bounded at the page itself (17.3.1).** Rows
+are kept with the next row by the first cell's `w:keepNext` ([below](#s39rowkeep)). A table
+whose every row keeps is one chain, and its height is the rows' own, not the over-estimate the
+3x allows for. The `table-keeps` probe measures it (corpus document 7396's shape, P5a): 30
+exact 30pt rows, each keeping with the next, with and without `w:cantSplit`, started two thirds
+down a page. Word moves the table to a fresh page, fills it (rows 1-23) and breaks there, at
+modes 12, 14 and 15 alike. Bounded at three pages, the 900pt chain stayed whole, and FOP ran it
+off the bottom of the page: rows 27-30 and the paragraph after the table were not painted at
+all. So a chain whose infinite penalties are all the table stepper's breaks between rows
+(`WordFlowLayoutManager.isTableContent`) is bounded at one page; every other chain keeps the
+3x. With that, all three modes' cases are on Word's pages. Property
+`docx4j.convert.out.fo.wordLayout.keepChainRowTolerance` (1.0).
+
+Measured over the three corpora and `real-c2` (b83 against b81h):
+- **10730** +9 lines, at Word's 5 pages (it was 4): ledger7's "keeps out of cells".
+- **1679** +2 lines.
+- **13743** (class 2n) -22 lines and a page over Word's 45. It ran a row chain off its page
+  22 (lowest line at 788pt on a 792pt page, the rest unpainted) and now does not. But FOP's
+  total-fit breaker breaks the bounded chain earlier than Word: our pages 21-23 hold 95, 118
+  and 114 lines against Word's 111, 129 and 62. Word fills the page and FOP balances.
+- Nothing else moves; no class 2 document loses.
+
+The same probe settles two other readings:
+- `w:keepNext` in a cell is honoured at every compatibility mode (its K1, K2 and K5 match
+  Word at 12, 14 and 15), unlike widow control ([§6.7](#s67split)).
+- A paragraph keep chain longer than the room left on the page is broken where it stands,
+  not moved to a fresh page: `keep-chain-overlong` at modes 14 and 15, chains of half a page
+  to two and a half, matches docx4j in 9 of its 10 cases (the tenth one paragraph apart at one
+  break).
+
 <a id="s39rowkeep"></a>**A table row keeps with the next row, and the last row with the
 paragraph after the table, where the first paragraph of the row's first cell has
 `w:keepNext`.** Word has no row-level keep; the paragraph property does the work. Measured on
