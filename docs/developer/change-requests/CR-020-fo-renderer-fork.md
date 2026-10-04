@@ -1080,6 +1080,34 @@ the BMP (scan of 2026-10-03), and only a low surrogate's placeholder changed cla
 control is unchanged, as it should be: FOP's table classes it L (Enterprise §6.6 item 35).
 Record and tools: `~/fidelity-cr008/GATE.txt`.
 
+**Word's goldens read 2026-10-04.** `surrogate-pairs` and `surrogate-pairs-bidi` were cut
+2026-10-03, and read with the gate's `order.py`, characters' x positions and fonts, and the
+page images.
+- **P02** (a Cypriot letter inside Hebrew) and **P03** (👍 between two Hebrew words): Word
+  draws one right-to-left run, as the candidate does, and the released 2.11-docx4j.2 does
+  not. fop/CR-008 is confirmed against Word. It reaches docx4j's users only with a release
+  that carries it: Maven Central has .1 and .2, and .3 and .4 are snapshots, so 17.3.1 as
+  it stands depends on .2.
+- **P01, P04, P07**: Word, the baseline and the candidate agree.
+- **P05** (😀 between two Hebrew words): Word draws one right-to-left run. docx4j, on both
+  renderers, splits it at the emoji: FOP's bidi table classes 😀 as L (Enterprise §6.6
+  item 35). docx4j also draws `#` in the emoji's place, a separate docx4j defect outside
+  this CR.
+  - `RunFontSelector.fallbackFor` caches its choice per (document font, coverage group).
+  - The document's first emoji, P03's 👍, chose Noto Sans Symbols 2, which has no
+    U+1F600.
+  - In `surrogate-pairs`, whose first emoji is 😀, the group's choice is DejaVu Sans, and
+    the emoji draws.
+- **P06** (a `w:bidi` paragraph: "P06 ", then the Hebrew run, with no `w:rtl`): Word draws
+  "P06" at the left and the Hebrew to its right, as if the two runs kept their
+  left-to-right order inside the right-to-left paragraph. docx4j draws "P06" at the right,
+  as the Unicode bidi algorithm orders it. Word writes `w:rtl` on Hebrew it creates, so
+  this may be the probe's missing `w:rtl`. Unexplained, not pursued.
+- **`surrogate-pairs`**: the lines' order and text are identical.
+  - Word draws the emoji in Segoe UI Emoji and the Extension B ideograph in MingLiU-ExtB.
+  - docx4j draws the emoji in DejaVu Sans. The ideograph comes out as `#`, since no font
+    on the scoring machine covers Extension B.
+
 ### Not done, carried
 
 - Cambria's Greek: docx4j maps Cambria to Caladea, which covers Latin only, so Greek runs
