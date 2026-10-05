@@ -134,14 +134,23 @@ LTR: 367 documents on Word's page count, from 365.
 | P4 titlePg | 2 | S1 30 (S2 starts mid-page) | **S1** default | | |
 | | 3, 4 | S2 | S2 **default** (never the first-page header) | | |
 | P5 sect-break foot | 1-6 | | each case 2 pages, 6 in all; every "after" line at the next page's top, 80.5 | | |
+| P6 restart, evenAndOddHeaders | 2 | S1 30 (S2 starts mid-page) | S1 EVEN, folio 2 | | S1 EVEN, folio 2 |
+| | 3 | S2 19 | S2 ODD, folio **1** | | S2 ODD, folio 1 |
+| | 4, 5 | S2 | S2 EVEN, folio 2; S2 ODD, folio 3 | | |
+| P6 mirror twin | 1-5 | as P6 | as P6; body and headers at x=108 on pages 1, 3, 5 and x=36 on 2, 4 | | |
 
 1. **D1's rule holds, and takes the headers and footers with it.** A page takes everything from
    the section that owns its first line: top and bottom margins, header and footer distances, and
    the header and footer text. A section starting mid-page changes nothing on that page, and one
    starting at a page top owns it (P2). Modes 14 and 15 are identical, to the point.
-2. **A continuous restart counts from the page the section starts on**, but that page prints its
-   owner's folio: P3's folios are 1, 2, **2**, 3. Page 2 is S2's page 1, and shows S1's footer
-   with S1's folio, 2.
+2. **A continuous restart counts from the page the section starts on - but not in a document with
+   `w:evenAndOddHeaders`** (P6, read 2026-10-05). Without them (P3) the folios are 1, 2, **2**, 3:
+   page 2 is S2's page 1, and shows S1's footer with S1's folio, 2. With them (P6, the same shape
+   otherwise; the re-saves differ only in that setting) the folios are 1, 2, **1**, 2, 3: S2's page
+   1 is page 3, the first page S2 owns. Why the origin moves is not yet known. Two readings fit:
+   (H1) with odd and even headers the count starts at the first page the section owns; (H2) Word
+   puts the origin where the folio's parity matches the physical page's - here page 3, odd, takes
+   the odd start number 1. Probe P7 (§5, proposed) separates them.
 3. **A continuous section's first page is the page it starts on**, so where it starts mid-page its
    `w:titlePg` first-page header is never printed (P4): that page shows the section before's
    header, and the next page the section's default.
@@ -149,6 +158,11 @@ LTR: 367 documents on Word's page count, from 365.
    whatever the next section's break (continuous, continuous on another page size, nextPage): P5's
    "after" lines all open their page at 80.5, and no page holds only a header. That is D2's rule,
    for the section-break paragraph itself as well as for the split break half.
+5. **After a continuous restart, odd/even headers and mirrored margins follow one parity together**
+   (P6 and its mirror twin: the odd header and the inside margin on the left, x=108, on pages 1, 3
+   and 5; the even ones, x=36, on 2 and 4). But in P6 the printed folio and the physical page have
+   the same parity on every page, so which of the two governs is still open; P7's first document
+   puts an even folio on an odd page under H1.
 
 ## 3. Corpus facts (the four corpora on b110, 2026-10-05; page counts brought to b112)
 
@@ -270,6 +284,9 @@ oscillate.
    step first said "indent container".) Not an FO that generates no boxes - an absolutely positioned
    block-container (a floating table or picture) or an `fo:float` - since parts are located by
    walking boxes to their marked FOs: the marker goes on the part's first in-flow block-level FO.
+   fop/CR-017 (c910fcdcf, test 9) adds a safety net: a marked FO that produces no box (an empty
+   block, an absolute block-container) starts its part at the next box rather than being lost; a
+   marker on an `fo:float` is reported and ignored.
 3. `PageBreakingAlgorithm.getLineWidth` takes the node: the page it starts is owned by the part of
    the first box after `node.position`. For a column that is not its page's first, follow
    `node.previous` back to the node which started the page. The five call sites change; nothing else
@@ -296,10 +313,10 @@ oscillate.
 5. "First page" for a part means the page its first line opens, so a part starting mid-page never
    uses its `first` master (P4), and one starting at a page top does.
 6. Optionally (phase 3), a restart on the marker: pages the part owns print its start number plus
-   the pages since the page it started on, which reproduces P3's 1, 2, 2, 3. Which master - odd or
-   even - such a page takes is **not measured**: P3 prints two even folios in a row, and no probe
-   has `w:evenAndOddHeaders` or mirror margins with a continuous restart (finding 4). Probe P6 (§5)
-   reads it before phase 3, whichever of 4.2 and 4.2b is chosen.
+   the pages since the page it started on, which reproduces P3's 1, 2, 2, 3. **P6 (read 2026-10-05)
+   showed that is not the whole rule**: with `w:evenAndOddHeaders` the count starts at the first
+   page the part owns (1, 2, 1, 2, 3), and which parity governs the odd/even master is still
+   unseparated (§2, D3 items 2 and 5). P7 (§5) reads both before the restart step is designed.
 7. Inert unless the attribute is present ("changes nothing FOP does on its own"), with a capability in
    `Docx4jFop`.
 
@@ -432,13 +449,24 @@ distances and texts together with it, mode 14, a section starting at a page top,
   carrying a section break whose next section is (a) continuous, same page size; (b) continuous
   with a page size change (9539); (c) nextPage. Read: the page count and any page holding only the
   header.
-- **P6 `continuous-restart-evenodd`** and **`-evenodd-mirror`** (review finding 4; cut 2026-10-05,
-  on the share, awaiting the Word run): P3's shape -
+- **P6 `continuous-restart-evenodd`** and **`-evenodd-mirror`** (review finding 4; cut and read
+  2026-10-05, readings in §2 D3 items 2 and 5): P3's shape -
   S2 continuous, `w:pgNumType w:start="1"`, starting mid-page 2 and running to page 5 - with
   `w:evenAndOddHeaders`, each section's odd and even headers naming themselves, and a mirror-margins
   twin (inside 108pt, outside 36pt). Read: which header (odd or even) and which side margins each
   page takes after the restart, where the folios run 1, 2, 2, 3, 4 - by the printed folio, or by the
   physical page.
+
+- **P7** (proposed 2026-10-05, after P6; for the restart step, phase 3), all with
+  `w:evenAndOddHeaders` and each section's odd and even headers and footers naming themselves:
+  - `continuous-restart-evenodd-start2`: P6 with `w:start="2"`. H1 puts folio 2 (even) on physical
+    page 3 (odd); H2 counts from page 2, so page 3 prints 3. Under H1, page 3's header (EVEN or ODD)
+    says whether the header follows the folio or the physical page.
+  - `continuous-restart-evenodd-start2-mirror`: the same with `w:mirrorMargins` (inside 108pt,
+    outside 36pt): page 3's x says whether the margins follow the folio or the physical page.
+  - `continuous-restart-evenodd-oddstart`: S1 15 lines, so S2 (`w:start="1"`) starts mid-page 1,
+    a physical odd page. H1: page 2, the first S2 owns, prints 1 (an odd folio on an even page);
+    H2: counting from page 1, page 2 prints 2.
 
 ## 6. Phases
 
