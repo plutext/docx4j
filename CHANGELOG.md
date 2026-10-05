@@ -158,7 +158,12 @@ PDF via XSL FO:
 
 - A section restarting its page numbering at a number of the wrong parity for its oddPage or
   evenPage break starts on the next one, as Word does, and gets no blank page in a document
-  without different odd and even headers.
+  without different odd and even headers.  With different odd and even headers, a nextPage
+  section restarting at the parity of the page before it gets the blank page Word gives it
+  (docx4j.convert.out.fo.wordLayout.restartParityBlankPage=false leaves it out).
+
+- A section ending in a paragraph of text and then a page break no longer gets an extra page,
+  holding only its header, where that page is full.
 
 HTML output:
 

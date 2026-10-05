@@ -196,7 +196,7 @@ key in `docx4j.properties` still wins, and a deployment without either file gets
 | `docx4j.convert.out.fo.wordLayout.keepBreakOnlyParagraph` | `true` | A paragraph of one or two `w:br` and nothing that paints is marked `keep-together.within-page="always"`: Word's widow control cannot split a two- or three-line paragraph, where FOP breaks between the nested blocks the breaks are written as ([§3](#s39brkeep)). `false` leaves it breakable, as 17.1.0 did. |
 | `docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine` | `false` | `true`: a paragraph holding only a page break keeps the line before its break, sized by its mark, at the foot of the page it is on; where the page has no room for it the line goes to the next page and the break to the one after ([§3.3](#s33line)). Off by default: over the corpora it costs more pages than it gives, and the probe behind it is with Word. |
 | `docx4j.convert.out.fo.wordLayout.tableTakesPageBreak` | `false` | `true`: a break-only paragraph followed by a table gives its break to the table, which starts at the top of the page as Word's does, rather than keeping the paragraph's line there ([§3.3](#s33table)). Off by default until continuous sections' margins and the page-break line are Word's. |
-| `docx4j.convert.out.fo.wordLayout.restartParityBlankPage` | `false` | `true`: in a document with different odd and even headers, a nextPage section restarting its folio at the parity of the page before it gets a blank page between, as Word's does (an oddPage or evenPage one always does) ([§7](#s7parity)). Off by default until docx4j paginates continuous sections as Word does. |
+| `docx4j.convert.out.fo.wordLayout.restartParityBlankPage` | `true` | In a document with different odd and even headers, a nextPage section restarting its folio at the parity of the page before it gets a blank page between, as Word's does (an oddPage or evenPage one always does) ([§7](#s7parity)). `false` leaves it out. On since 17.3.1 (CR-031 phase 1). |
 | `docx4j.convert.out.fo.fieldErrors` | `en` | What a REF or PAGEREF field whose bookmark is missing prints: Word's English error text (`en`), or `cached`, the field's cached result, as 17.1.0 to 17.3.0 did ([§4.4](#s44missingbm)). |
 | `docx4j.jaxb.mc.preferChoice` | empty | The `mc:Choice/@Requires` prefixes we claim to be able to draw; the first `mc:Choice` naming only those wins over the `mc:Fallback`, as it does in Word. Empty (the default, and what measured better) always takes the fallback, as docx4j always has (§1.3). Also HTML. |
 | `docx4j.fonts.runFontSelector.trimUnpreservedWhitespace` | `true` | The leading and trailing white space of a `w:t` with no `xml:space="preserve"` is dropped, as Word drops it (§1.3). Also HTML. |
@@ -937,6 +937,22 @@ Word's 31, and a third kept Word's 56 exactly. 20 documents of the three corpora
 page break with nothing but a `w:sectPr` paragraph after it. (Word does emit genuinely
 empty pages elsewhere - one 22-page document has two and one 56-page document six, none of
 them at a section end - which §10 records.)
+
+<a id="s33sectsplit"></a>**Nor does the paragraph the break ends (17.3.1, CR-031 D2).** Where the
+section's last paragraph is text and then the break, `PageBreak` splits it at the break, and
+its empty second half - a line of preserved space - is what is left in the section once the
+rule above has taken the break off it. Kept, that line started a page of its own wherever the
+page before was full: corpus document 9539's first sequence (A3) ends that way, its text 9pt
+above the foot, and docx4j's page 2 was a second A3 page carrying nothing but the running
+head, which Word does not have. Word gives no such line a page: the
+`section-break-paragraph-foot` probe fills three pages to 1.95pt above the foot and ends each
+with an empty section-break paragraph (the next section continuous, continuous on another page
+size, nextPage), and in all three the next section's first line is at the very top of the next
+page, 6 pages in all. docx4j has those 6 pages already, because it drops an empty section-break
+paragraph itself (`ConversionSectionWrapperFactory`, since 17.0.5); the split half now goes the
+same way, where it holds nothing. It was held back in 17.2.0 because 9539 lost a page
+without gaining Word's two blank pages at its parity restarts ([§7](#s7parity)); with both it
+has Word's 22 pages.
 
 **A page break inside a table** belongs to the table, not to the paragraph: Word takes a
 `w:pageBreakBefore` on the paragraph which opens the table, and ignores one anywhere else in
@@ -4699,14 +4715,16 @@ its `-eo` twin: eight one-page sections, nextPage restarting at 7, 7 and 8, oddP
   sections restarting at 3) a page 2 Word does not have.
 * With it Word inserts one wherever a restarted folio would repeat the parity of the page
   before it - 7 after 1, 7 after 7, 5 after 3, 6 after 6 - 12 pages, which is XSL-FO's
-  `force-page-count="auto"` against the next sequence's `initial-page-number`. For an
-  oddPage or evenPage restart docx4j does so; for a **nextPage** one it is **off by default**
-  (`docx4j.convert.out.fo.wordLayout.restartParityBlankPage`): FOP decides the parity from
-  its own folios, which follow Word's only where docx4j paginates the sections as Word does,
-  and corpus document 9539 - the one corpus document with evenAndOddHeaders and restarts,
-  three nextPage sections restarting at 7, whose continuous sections docx4j gives a page Word
-  does not - went from a page short of Word to two over with it on. The probe is at 10 pages
-  (Word's 12) by default, and at 12 with it.
+  `force-page-count="auto"` against the next sequence's `initial-page-number`, and docx4j
+  does so for all three break types. For a **nextPage** one it is behind
+  `docx4j.convert.out.fo.wordLayout.restartParityBlankPage`, **on by default since 17.3.1**
+  (CR-031 phase 1): FOP decides the parity from its own folios, which follow Word's only
+  where docx4j paginates the sections as Word does. Corpus document 9539 - the one corpus
+  document with evenAndOddHeaders and restarts, three nextPage sections restarting at 7 -
+  went from a page short of Word to two over with it on alone, because docx4j also gave its
+  first sequence a page Word does not: the empty second half of a split page-break
+  paragraph ending the sequence ([§3.3](#s33sect), now removed). With both it has
+  Word's 22 pages. The probe is at Word's 12 pages (10 with the property off).
 * Where the numbering **continues**, an oddPage or evenPage section's blank page is as
   before (`end-on-even` / `end-on-odd`), in either kind of document: `page-blank` (no
   evenAndOddHeaders) has Word's blank page 5 for a second evenPage section after folio 4.

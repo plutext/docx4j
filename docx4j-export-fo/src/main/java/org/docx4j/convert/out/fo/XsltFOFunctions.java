@@ -4352,13 +4352,16 @@ public class XsltFOFunctions {
      * a blank page 2 in corpus document 8695 (an oddPage section restarting at 3, no
      * evenAndOddHeaders) which Word does not have.  (17.3.1)</p>
      *
-     * <p>For a <b>nextPage</b> section that half is off by default
-     * ({@code docx4j.convert.out.fo.wordLayout.restartParityBlankPage}): FOP decides the
-     * parity from its own folios, which follow Word's only where docx4j's sections paginate
-     * as Word's do, and corpus document 9539 - evenAndOddHeaders, three nextPage sections
-     * restarting at 7, continuous sections docx4j gives a page Word does not - went from a
-     * page short of Word to two over with it on.  An oddPage or evenPage restart takes it
-     * regardless, which is what docx4j had always done there, now with the parity right.</p>
+     * <p>For a <b>nextPage</b> section that half is behind
+     * {@code docx4j.convert.out.fo.wordLayout.restartParityBlankPage}, on by default since
+     * 17.3.1 (CR-031 phase 1): FOP decides the parity from its own folios, which follow
+     * Word's only where docx4j's sections paginate as Word's do.  Corpus document 9539 -
+     * evenAndOddHeaders, three nextPage sections restarting at 7 - went from a page short
+     * of Word to two over with it on alone, because docx4j also gave its first sequence a
+     * page Word does not (the empty half of a split page-break paragraph, which
+     * {@code WordLayoutFixups.mergePageBreakParagraphs} now removes); with both it has
+     * Word's 22 pages.  An oddPage or evenPage restart takes it regardless, which is what
+     * docx4j had always done there, now with the parity right.</p>
      *
      * @param context
      * @return
@@ -4406,11 +4409,11 @@ public class XsltFOFunctions {
     	return Integer.toString(start);
     }
 
-    /** {@code docx4j.convert.out.fo.wordLayout.restartParityBlankPage}, default false: see
+    /** {@code docx4j.convert.out.fo.wordLayout.restartParityBlankPage}, default true: see
      *  {@link #getForcePageCount}.  @since 17.3.1 */
     static boolean restartParityBlankPage() {
     	return org.docx4j.Docx4jProperties.getProperty(
-    			"docx4j.convert.out.fo.wordLayout.restartParityBlankPage", false);
+    			"docx4j.convert.out.fo.wordLayout.restartParityBlankPage", true);
     }
 
     /** w:sectPr/w:type, "nextPage" where it is not stated.  @since 17.3.1 */

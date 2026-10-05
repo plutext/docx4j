@@ -100,18 +100,18 @@ public class FolioParityTest {
 		}
 	}
 
-	/** For a nextPage restart, off by default (docx4j.convert.out.fo.wordLayout.restartParityBlankPage):
-	 *  measured, but FOP's folios are Word's only where docx4j paginates the sections as Word does. */
+	/** For a nextPage restart, on by default since 17.3.1 (docx4j.convert.out.fo.wordLayout.restartParityBlankPage,
+	 *  CR-031 phase 1), and off where the property says so. */
 	@Test
-	public void aNextPageRestartsBlankPageWaitsOnItsProperty() throws Exception {
+	public void aNextPageRestartTakesItsBlankPageUnlessThePropertySaysNot() throws Exception {
 		try {
 			for (int flags : FLAGS) {
-				assertEquals("off by default", "no-force",
+				assertEquals("a blank page where the parity would repeat", "auto",
 						sequences("nextPage", 7, true, flags).get(0).getAttribute("force-page-count"));
 			}
-			org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.wordLayout.restartParityBlankPage", true);
+			org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.wordLayout.restartParityBlankPage", false);
 			for (int flags : FLAGS) {
-				assertEquals("a blank page where the parity would repeat", "auto",
+				assertEquals("off", "no-force",
 						sequences("nextPage", 7, true, flags).get(0).getAttribute("force-page-count"));
 			}
 		} finally {

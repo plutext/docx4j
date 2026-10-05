@@ -4391,19 +4391,25 @@ public final class WordLayoutFixups {
 				// </block></flow>, the break was kept, and our page 2 was a second A3 page
 				// carrying nothing but its running head, which Word does not emit.
 				// @since 17.2.0
-				// Only the break goes; the block stays.  Removing the block as well -
-				// it is the empty half PageBreak split off the paragraph the break ended,
-				// and its preserved space still opens a page of its own - was measured on
-				// that document and is NOT done: it takes the page (22/21 -> 22/20) and
-				// the geometry improves a lot (page parity 0.3410 -> 0.7506, max dy
-				// 479.79 -> 63.29), but line parity falls 0.8855 -> 0.8217, because the
-				// document is already a page short of Word - Word emits two wholly blank
-				// pages here which docx4j does not (the section-start blank page, a
-				// LayoutMasterSetBuilder matter), and taking a third page out moves every
-				// page further from its Word counterpart.  The two belong together.
-				// @since 17.2.0
+				// The block goes as well where it holds nothing (CR-031 D2).  It is the
+				// empty half PageBreak split off the paragraph the break ended, and its
+				// preserved space still opened a page of its own: on that document a second
+				// A3 page carrying nothing but its running head.  Removing it was measured
+				// in 17.2.0 and held back - it took the page, but line parity fell 0.8855 ->
+				// 0.8217, because Word also emits two wholly blank pages there which docx4j
+				// then did not (nextPage sections restarting at the parity of the page
+				// before them, with odd and even headers), and taking a third page out moved
+				// every page further from its Word counterpart.  Those pages are
+				// XsltFOFunctions.restartParityBlankPage's, on since 17.3.1, and with both
+				// the document has Word's 22 pages (line parity 0.8880 -> 0.9145, page
+				// parity 0.3410 -> 0.9048).  Not where it carries an id, which something may
+				// name, nor where it opens the flow as well - it would be the flow's only
+				// block, and an fo:flow must hold one.  @since 17.3.1
 				if (next == null && lastInFlow(empty) && sectionFollows(empty)) {
 					empty.removeAttribute("break-before");
+					if (blankBlock(empty) && !empty.hasAttribute("id") && !opensFlow(empty)) {
+						empty.getParentNode().removeChild(empty);
+					}
 				}
 				continue;
 			}

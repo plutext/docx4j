@@ -1,7 +1,9 @@
 # CR-031: continuous sections paginated as Word paginates them - a page's vertical margins from the section that owns it, and no page for an empty block at a sequence's end
 
-Status: PROPOSED 2026-10-05 (Jason, after batch 52 part 2: "fix the older defect and turn them
-on?" - "yes please" to writing this CR). Phase 0 (Word probes) is next.
+Status: IN PROGRESS. Proposed 2026-10-05 (Jason, after batch 52 part 2: "fix the older defect and
+turn them on?" - "yes please" to writing this CR). Phase 0 DONE 2026-10-05 (Word run; readings in
+§2, D3). Phase 1 DONE 2026-10-05 (D2, with `restartParityBlankPage` on by default; gate b111).
+Phase 2 next, on Jason's decision 1 (§7).
 
 ## 0. Why now
 
@@ -79,7 +81,7 @@ acceptance test. (Page 2's 53.8 is the line the break-only paragraph
 kept above a table, which `tableTakesPageBreak` removes - to 41.1, against Word's 43.1 - and which is
 how that rule exposed this.) The hypothesis, to be confirmed in phase 0: **a page takes the top and
 bottom margins, and the header and footer distances, of the section that owns its first line.**
-Whether its header and footer *text* follow the same section is not measured (D3).
+Phase 0 confirmed it, and its header and footer text follow the same section (D3, below).
 
 **D2. An empty block at the end of a page-sequence starts a page of its own.** Corpus document
 9539: its first page-sequence (A3, sections 0 to 2, merged) ends with the paragraph
@@ -104,14 +106,43 @@ writes. **Measured together on 2026-10-05**, with the block removed where it hol
 | `restartParityBlankPage` | 24 | 0.8904 | 0.3361 |
 | **both** | **22** | **0.9145** | **0.9048** |
 
-The corpus gate is b111. That page is also why `restartParityBlankPage` went two over on its own: it
-shifted the folio parity by one.
+That page is also why `restartParityBlankPage` went two over on its own: it shifted the folio
+parity by one. **The corpus gate, b111 against b110** (four corpora and the probes): three movers,
+all to Word's page count and none worse - 9539 21 -> 22 (line parity 0.8880 -> 0.9145), 6749 24 ->
+25 (evenAndOddHeaders and a nextPage restart at 2: the parity blank page alone), and the
+`page-number-restart-parity-eo` probe 10 -> 12 (Word 12; b110's 8 there predates cand39). Class 2
+LTR: 367 documents on Word's page count, from 365.
 
-**D3 (to be measured).** On a page whose first line belongs to a later continuous section: whose
-header and footer text, and whose `w:titlePg` first-page header? And where does a continuous
-section's `w:pgNumType/@w:start` take effect - the page the section starts on, or the next? (9539's
-sections 0 and 2 both restart at 1; docx4j keeps the first restart of a merged run and loses the
-second.)
+**D3, measured in phase 0 (Word run 2026-10-05).** The probes of §5, read from Word's PDFs
+(`pdftotext -bbox-layout`, top of the line box; 72pt margins put the first line at 80.5):
+
+| probe | page | first line | Word: header text / y | first line y | footer text / y |
+|---|---|---|---|---|---|
+| P1 (both modes) | 1 | S1 1 | S1, folio 1 / 36.0 | 80.5 | S1 / 792.5 |
+| | 2 | S1 30 (S2 starts at line 17) | **S1**, folio 2 / 36.0 | 80.5, last 752.6 | **S1** / 792.5 |
+| | 3 | S2 14 | S2, folio 3 / **18.0** | **152.5**, last 776.6 | S2 / **810.5** |
+| | 5 | S2 68 (S3 starts at line 4) | **S2**, folio 5 / 18.0 | 152.5 | **S2** / 810.5 |
+| P2 at-top | 2 | S2 1 (S2 opens the page) | **S2**, folio 2 / 18.0 | 152.5 | S2 / 810.5 |
+| P3 restart | 2 | S1 30 (S2 starts mid-page) | S1, folio **2** | | S1, folio 2 |
+| | 3, 4 | S2 | S2, folio **2**, **3** | | |
+| P4 titlePg | 2 | S1 30 (S2 starts mid-page) | **S1** default | | |
+| | 3, 4 | S2 | S2 **default** (never the first-page header) | | |
+| P5 sect-break foot | 1-6 | | each case 2 pages, 6 in all; every "after" line at the next page's top, 80.5 | | |
+
+1. **D1's rule holds, and takes the headers and footers with it.** A page takes everything from
+   the section that owns its first line: top and bottom margins, header and footer distances, and
+   the header and footer text. A section starting mid-page changes nothing on that page, and one
+   starting at a page top owns it (P2). Modes 14 and 15 are identical, to the point.
+2. **A continuous restart counts from the page the section starts on**, but that page prints its
+   owner's folio: P3's folios are 1, 2, **2**, 3. Page 2 is S2's page 1, and shows S1's footer
+   with S1's folio, 2.
+3. **A continuous section's first page is the page it starts on**, so where it starts mid-page its
+   `w:titlePg` first-page header is never printed (P4): that page shows the section before's
+   header, and the next page the section's default.
+4. **An empty section-break paragraph at a full page's foot takes no line on the next page**,
+   whatever the next section's break (continuous, continuous on another page size, nextPage): P5's
+   "after" lines all open their page at 80.5, and no page holds only a header. That is D2's rule,
+   for the section-break paragraph itself as well as for the split break half.
 
 ## 3. Corpus facts (the four corpora on b110, 2026-10-05)
 
@@ -163,10 +194,21 @@ document out, so this joins an existing pattern rather than adding a new one.
 
 ### 4.3 D3: header and footer text, first-page header, restart
 
-To be designed once phase 0 has answered. If a page's header follows the part that owns it, 4.2's
-per-part masters carry per-part `fo:region-before`/`-after` names and static content, which
-`LayoutMasterSetBuilder` already writes per section. A continuous restart lands where phase 0
-says, through the same page map.
+Phase 0 has answered (§2, D3), and all three follow the owner of the page, so they ride on 4.2's
+page map:
+
+- **Header and footer text**: a page's header follows the part that owns it, so 4.2's per-part
+  masters carry per-part `fo:region-before`/`-after` names and static content, which
+  `LayoutMasterSetBuilder` already writes per section.
+- **`w:titlePg`**: a part's first-page master is used only where the part owns the page it starts
+  on (starts at a page top); one starting mid-page goes straight to its default (or odd/even)
+  master. The explicit `fo:page-sequence-master` of 4.2 expresses that directly.
+- **Restart**: the folio printed on a page the restarting part owns is its start number plus the
+  pages since the page it started on (P3: 1, 2, 2, 3). One `fo:page-sequence` has one counter,
+  and `fo:page-number` takes no offset, so either pass 2 writes those folios literally into the
+  part's static content (the page map knows them), or the sequence is split at the page where
+  the part takes over (rejected for margins in 4.2, but the split point is now known from pass 1).
+  To be chosen in phase 3; only documents with a restart at a continuous break pay it.
 
 ## 5. Phase 0: Word probes (for one Word run)
 
@@ -196,7 +238,7 @@ distances and texts together with it, mode 14, a section starting at a page top,
 
 0. Probes (§5), Word run, readings into §2.
 1. D2 (§4.1), with `restartParityBlankPage` turned on: they belong together (§2). Gate: 9539 to
-   Word's 22 pages; the even/odd folio probe to Word's 12.
+   Word's 22 pages; the even/odd folio probe to Word's 12. **DONE** (b111, §2).
 2. D1 (§4.2), the per-page masters and the passes. Gate: 12802's page tops at Word's, the 34
    documents read one by one.
 3. D3 (§4.3), as phase 0 decides.
