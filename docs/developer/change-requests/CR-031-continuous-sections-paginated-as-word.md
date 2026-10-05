@@ -3,8 +3,10 @@
 Status: IN PROGRESS. Proposed 2026-10-05 (Jason, after batch 52 part 2: "fix the older defect and
 turn them on?" - "yes please" to writing this CR). Phase 0 DONE 2026-10-05 (Word run; readings in
 §2, D3). Phase 1 DONE 2026-10-05 (D2, with `restartParityBlankPage` on by default; gate b111).
-Phase 2 next, on Jason's decision 1 (§7). Reviewed 2026-10-05 (another session): recommends
-4.2b, with six design findings and the staleness below folded in (§4.2b, §5 P6, §6, §7, §8).
+Reviewed 2026-10-05 (another session): recommends 4.2b, with six design findings and the
+staleness below folded in (§4.2b, §5 P6, §6, §7, §8). **Decision 1 made 2026-10-05 (Jason): 4.2b**,
+the fork extension. Phase 2 next: handed to the fork session for its fop/CR (2026-10-05); P6 cut and
+on the share for the Word run.
 
 ## 0. Why now
 
@@ -240,8 +242,9 @@ oscillate.
      list on a page that already exists (`startColumnOfCurrentElementList`), and
      `getAvailableBPD` answers with that page's `getRemainingBPD()`. That page already has an owner,
      so the first page of a continuing list keeps the owner of the page it continues on, and its
-     height is the remaining height as now; ownership is decided afresh only from the list's next
-     page. This is the common case, not a corner: a part with fewer columns is a span change exactly
+     height is the remaining height as now - for every column of that page, not only the list's
+     first node; ownership is decided afresh only from the list's next page. (The fork CR is to say
+     so explicitly.) This is the common case, not a corner: a part with fewer columns is a span change exactly
      at a part boundary (`XSLT_Cols`), on both sides of it, so the part after a column change in
      either direction starts its list mid-page, on a page the part before owns.
    - **A page holding only footnote bodies** (`createFootnotePages`, two call sites; finding 3):
@@ -393,7 +396,8 @@ distances and texts together with it, mode 14, a section starting at a page top,
   carrying a section break whose next section is (a) continuous, same page size; (b) continuous
   with a page size change (9539); (c) nextPage. Read: the page count and any page holding only the
   header.
-- **P6 `continuous-restart-evenodd`** (to cut before phase 3; review finding 4): P3's shape -
+- **P6 `continuous-restart-evenodd`** and **`-evenodd-mirror`** (review finding 4; cut 2026-10-05,
+  on the share, awaiting the Word run): P3's shape -
   S2 continuous, `w:pgNumType w:start="1"`, starting mid-page 2 and running to page 5 - with
   `w:evenAndOddHeaders`, each section's odd and even headers naming themselves, and a mirror-margins
   twin (inside 108pt, outside 36pt). Read: which header (odd or even) and which side margins each
@@ -402,11 +406,12 @@ distances and texts together with it, mode 14, a section starting at a page top,
 
 ## 6. Phases
 
-0. Probes (§5), Word run, readings into §2. **DONE** (P1-P5). P6 to cut and run before phase 3.
+0. Probes (§5), Word run, readings into §2. **DONE** (P1-P5). P6 cut 2026-10-05, awaiting the Word
+   run; read before phase 3.
 1. D2 (§4.1), with `restartParityBlankPage` turned on: they belong together (§2). Gate: 9539 to
    Word's 22 pages; the even/odd folio probe to Word's 12. **DONE** (b111, §2).
-2. D1, as decision 1 chooses. **4.2b** (recommended): the fork CR's first hook (§4.2b steps 1-5,
-   7), released or as a gated snapshot; in docx4j, per-part masters with their own vertical
+2. D1, by **4.2b** (decision 1, 2026-10-05): the fork CR's first hook (§4.2b steps 1-5, 7),
+   released or as a gated snapshot; in docx4j, per-part masters with their own vertical
    margins, distances and region names, the marker on each part's outermost block, the pre-pass
    measuring per-part masters (each part its own sequence in the trimmed copy), all behind
    `FopCapabilities`. **4.2**: the pass loop and the explicit page-sequence-master. Either way the
@@ -427,7 +432,7 @@ distances and texts together with it, mode 14, a section starting at a page top,
 
 ## 7. Decisions for Jason
 
-1. **How D1 is done**: extra layout passes in docx4j (§4.2; the render time of the 34 or so affected
+1. **How D1 is done** - **DECIDED 2026-10-05 (Jason): 4.2b.** Extra layout passes in docx4j (§4.2; the render time of the 34 or so affected
    documents doubles or more, and it works on Apache FOP), or a fork extension choosing page masters
    by the content a page starts with (§4.2b; one pass and exact, but on Apache FOP those documents
    keep today's margins). Recommendation (2026-10-05): **4.2b**, since docx4j renders on the fork by

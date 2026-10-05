@@ -2976,6 +2976,8 @@ public final class Corpus {
 		PROBES.add(continuousRestartProbe());
 		PROBES.add(continuousTitlePgProbe());
 		PROBES.add(sectionBreakParagraphFootProbe());
+		PROBES.add(continuousRestartEvenOddProbe(false));   // P6, the CR-031 review's finding 4
+		PROBES.add(continuousRestartEvenOddProbe(true));
 
 		/*
 		 * CR-016's probe set (docs/developer/change-requests/CR-016-font-selection-and-mapping.md,
@@ -8993,5 +8995,46 @@ public final class Corpus {
 			}
 			return d.pkg();
 		});
+	}
+
+	/**
+	 * continuous-restart-evenodd / -mirror (CR-031 D3, probe P6; the review's finding 4).  P3's shape with
+	 * w:evenAndOddHeaders: S1 runs 40 exact 24pt lines, to mid page 2; S2, continuous, w:pgNumType w:start="1",
+	 * runs 80 lines, to page 5, so the folios Word prints are 1, 2, 2, 3, 4 (P3's rule) and two even folios meet
+	 * at pages 2 and 3.  Each section has odd (default) and even headers and footers naming themselves and
+	 * printing the folio.  The -mirror twin adds w:mirrorMargins, inside (w:left) 108pt and outside (w:right)
+	 * 36pt.  Read: which header and footer, odd or even, each page carries, and on the twin the x of its lines -
+	 * whether they follow the printed folio or the physical page.  @since 17.3.1 (CR-031 phase 0)
+	 */
+	private static Probe continuousRestartEvenOddProbe(boolean mirror) {
+		return new Probe("continuous-restart-evenodd" + (mirror ? "-mirror" : ""),
+				"S1 runs 40 exact 24pt lines, to mid page 2; S2, continuous, w:pgNumType w:start=\"1\", 80 lines, to "
+				+ "page 5; w:evenAndOddHeaders, each section's odd and even headers and footers naming themselves and "
+				+ "printing the folio" + (mirror ? "; w:mirrorMargins, inside 108pt, outside 36pt" : "")
+				+ "; mode 15.  Read which header and footer, odd or even, each page carries"
+				+ (mirror ? ", and the x of its lines" : ""), () -> {
+			Doc d = Doc.create(15);
+			if (mirror) {
+				d.pkg().getMainDocumentPart().getDocumentSettingsPart().getContents()
+						.setMirrorMargins(new org.docx4j.wml.BooleanDefaultTrue());
+				org.docx4j.wml.SectPr.PgMar m = d.sectPr().getPgMar();
+				m.setLeft(BigInteger.valueOf(2160));   // inside
+				m.setRight(BigInteger.valueOf(720));   // outside
+			}
+			evenOddHeaderFooter(d, "S1");
+			d.endSectionOn(exactLines(d, "S1", 40), "continuous");
+			evenOddHeaderFooter(d, "S2");
+			d.pageNumberStart(1);
+			exactLines(d, "S2", 80);
+			return d.pkg();
+		});
+	}
+
+	/** Odd (default) and even headers and footers naming the section and printing the folio. */
+	private static void evenOddHeaderFooter(Doc d, String section) throws Exception {
+		d.addHeader(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.List.of(folioParagraph(section + " ODD header, folio")));
+		d.addHeader(org.docx4j.wml.HdrFtrRef.EVEN, java.util.List.of(folioParagraph(section + " EVEN header, folio")));
+		d.addFooter(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.List.of(folioParagraph(section + " ODD footer, folio")));
+		d.addFooter(org.docx4j.wml.HdrFtrRef.EVEN, java.util.List.of(folioParagraph(section + " EVEN footer, folio")));
 	}
 }
