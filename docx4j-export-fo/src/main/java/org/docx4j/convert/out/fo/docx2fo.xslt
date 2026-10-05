@@ -442,6 +442,16 @@
   
   <xsl:template match="w:sdt">
   	<xsl:choose>
+  		<xsl:when test="starts-with(./w:sdtPr/w:tag/@w:val, 'XSLT_Part')">
+  			<!-- a merged continuous section at which the page-sequence's vertical margins
+  			     change (ConversionSectionWrapperFactory, CR-031): its content as it stands,
+  			     marked for the page masters chosen by content -->
+			<xsl:variable name="childResults">
+	  			<xsl:apply-templates select="w:sdtContent/*"/>
+			</xsl:variable>
+		  	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.stampPart(
+		  		$conversionContext, string(./w:sdtPr/w:tag/@w:val), $childResults)"/>
+  		</xsl:when>
   		<xsl:when test="starts-with(./w:sdtPr/w:tag/@w:val, 'XSLT_Cols')">
   			<!-- a part of a merged page-sequence with fewer columns than the sequence
   			     (ConversionSectionWrapperFactory): a block spanning them all -->

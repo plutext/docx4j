@@ -808,6 +808,10 @@ public class FOPAreaTreeHelper {
     	return true;
     }
 
+    /** A merged part's master name: section, part number, kind.  @since 17.3.1 */
+    private static final java.util.regex.Pattern PART_MASTER =
+    		java.util.regex.Pattern.compile("(s\\d+)-p(\\d+)-(.+)");
+
     /**
      * Inject the calculated heights for each header and footer, and adjust the region body margins to fit them.
      *
@@ -839,12 +843,27 @@ public class FOPAreaTreeHelper {
     			// We'll need the corresponding ConversionSectionWrapper
     			int index = -1 + Integer.parseInt(
     					simplePageMasterName.substring(1, simplePageMasterName.indexOf("-")));
+    			/* A merged part's master, "s<n>-p<m>-<kind>" (LayoutMasterSetBuilder.addPartMasters,
+    			 * CR-031 phase 2), shows the page-sequence's own static content in the same width, so
+    			 * it takes the extents measured for the page-sequence's master of that kind
+    			 * ("s<n>-<kind>"), with the part's own vertical margins for the body's edges.
+    			 * @since 17.3.1 */
+    			String measuredName = simplePageMasterName;
+    			Integer partNumber = null;
+    			java.util.regex.Matcher part = PART_MASTER.matcher(simplePageMasterName);
+    			if (part.matches()) {
+    				partNumber = Integer.valueOf(part.group(2));
+    				measuredName = part.group(1) + "-" + part.group(3);
+    			}
     			PageDimensions page = null;
     			org.docx4j.model.structure.HeaderFooterPolicy hfPolicy = null;
     			if (sections.get(index)==null) {
     				log.error("Couldn't find section " + index + " from " + simplePageMasterName);
     			} else {
     				page = sections.get(index).getPageDimensions();
+    				if (partNumber != null) {
+    					page = page.withVerticalMargins(sections.get(index).getPartVerticalMargins().get(partNumber));
+    				}
     				hfPolicy = sections.get(index).getHeaderFooterPolicy();
     			}
     			/* Where the part is the empty one docx4j invents for w:titlePg or
@@ -855,14 +874,14 @@ public class FOPAreaTreeHelper {
     			 * (35.3pt): Word's body top is 21.6, ours was 35.3 + a 13.799pt dummy
     			 * extent = 49.1, so every line and the logo was +26.5 to +27.5pt low.
     			 * @since 17.1.0 */
-    			String pageKind = simplePageMasterName.substring(simplePageMasterName.indexOf("-") + 1);
+    			String pageKind = measuredName.substring(measuredName.indexOf("-") + 1);
     			boolean headerIsDummy = hfPolicy != null && isDummyHeader(hfPolicy, pageKind);
     			boolean footerIsDummy = hfPolicy != null && isDummyFooter(hfPolicy, pageKind);
     			boolean footerIsAbsent = hfPolicy == null || isAbsentFooter(hfPolicy, pageKind);
 
     			// Region before
     			if (spm.getRegionBefore()!=null) {
-    				Integer hBpdaMilliPts = headerBpda.get(simplePageMasterName);
+    				Integer hBpdaMilliPts = headerBpda.get(measuredName);
     				if (hBpdaMilliPts==null) {
     					// No headerBpda for s1-default
     					log.error("No headerBpda for " + simplePageMasterName);
@@ -903,7 +922,7 @@ public class FOPAreaTreeHelper {
     			
     			// Region after
     			if (spm.getRegionAfter()!=null) {
-    				Integer fBpdaMilliPts = footerBpda.get(simplePageMasterName);
+    				Integer fBpdaMilliPts = footerBpda.get(measuredName);
     				if (fBpdaMilliPts==null) {
     					log.error("No footerBpda for " + simplePageMasterName);
     					

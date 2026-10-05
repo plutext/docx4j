@@ -601,6 +601,81 @@ public class XsltFOFunctions {
 		}
     }
 
+    /** The private attribute {@link #stampPart} puts on a merged part's FOs, naming the page
+     *  master its pages take; {@code WordLayoutFixups.pageMastersByContent} turns it into the
+     *  renderer's attribute and removes it.  @since 17.3.1 */
+    public static final String HINT_PART_MASTER = "docx4j-psm";
+
+    /**
+     * Whether a page-sequence's merged continuous sections get page masters of their own,
+     * chosen by the content a page starts with (CR-031 phase 2): where the FO renderer has
+     * {@code fox:page-sequence-master-reference} (fork CR-017,
+     * {@link FopCapabilities.Capability#PAGE_MASTER_BY_CONTENT}), unless
+     * {@code docx4j.convert.out.fo.wordLayout.pageMasterByContent} is {@code false}
+     * ({@code true} writes them whatever the renderer, which ignores what it does not know).
+     * Never in the header and footer extent pre-pass, which measures the page-sequence's own
+     * masters (the parts' take those extents, FOPAreaTreeHelper), nor without the Word layout
+     * fixups, which place the attribute.
+     *
+     * @since 17.3.1
+     */
+    public static boolean pageMasterByContent(AbstractWmlConversionContext context) {
+    	if (context != null && context.getConversionSettings() instanceof org.docx4j.convert.out.FOSettings
+    			&& ((org.docx4j.convert.out.FOSettings) context.getConversionSettings())
+    					.lsLayoutMasterSetCalculationInProgress()) {
+    		return false;
+    	}
+    	if (!WordLayoutFixups.isEnabled()) return false;
+    	String setting = Docx4jProperties.getProperty(
+    			"docx4j.convert.out.fo.wordLayout.pageMasterByContent", "auto");
+    	if ("false".equalsIgnoreCase(setting)) return false;
+    	if ("true".equalsIgnoreCase(setting)) return true;
+    	return FopCapabilities.has(FopCapabilities.Capability.PAGE_MASTER_BY_CONTENT);
+    }
+
+    /**
+     * Marks the FOs a merged part rendered to (tag XSLT_Part=m, ConversionSectionWrapperFactory)
+     * with the page-sequence-master its pages take, {@code <section id>-p<m>}
+     * (LayoutMasterSetBuilder).  Every top-level FO of the part is marked, so that a fixup which
+     * drops the first of them moves the part's start to the next instead of losing it;
+     * {@code WordLayoutFixups.pageMastersByContent} decides which FO carries the renderer's
+     * attribute.
+     *
+     * @since 17.3.1
+     */
+    public static void stampPart(AbstractWmlConversionContext context, Node parent, String tagVal) {
+    	if (parent == null || tagVal == null || !pageMasterByContent(context)) return;
+    	ConversionSectionWrapper section = context.getSections().getCurrentSection();
+    	int eq = tagVal.indexOf('=');
+    	if (section == null || eq < 0) return;
+    	String master = section.getId() + "-p" + tagVal.substring(eq + 1).trim();
+    	for (Node n = parent.getFirstChild(); n != null; n = n.getNextSibling()) {
+    		if (n instanceof Element) ((Element) n).setAttribute(HINT_PART_MASTER, master);
+    	}
+    }
+
+    /**
+     * The XSLT pathway's form of stampPart: the part's already converted content, marked.
+     *
+     * @since 17.3.1
+     */
+    public static DocumentFragment stampPart(AbstractWmlConversionContext context, String tagVal,
+    		NodeIterator childResultsIt) {
+    	Node childResults = (childResultsIt==null) ? null : childResultsIt.nextNode();
+    	try {
+			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
+			DocumentFragment docfrag = document.createDocumentFragment();
+			if (childResults!=null) {
+				XmlUtils.treeCopy(childResults, docfrag);
+			}
+			stampPart(context, docfrag, tagVal);
+			return docfrag;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return null;
+		}
+    }
+
     /** The start and end indents (in twips) in an XSLT_Ind=start,end tag value. */
     private static int[] indents(String tagVal) {
 

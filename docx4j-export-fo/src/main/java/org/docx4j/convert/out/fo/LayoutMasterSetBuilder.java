@@ -312,6 +312,11 @@ public class LayoutMasterSetBuilder {
 			foliosInverted = foliosInverted(section, foliosInverted);
 			lms.getSimplePageMasterOrPageSequenceMaster().add(
 					createPageSequenceMaster(hf, sectionName, foliosInverted )  );
+
+			// THIRD, the masters of the merged continuous sections whose vertical margins differ
+			if (XsltFOFunctions.pageMasterByContent(context)) {
+				addPartMasters(lms, section, sectionName, foliosInverted, gutterAtTop, mirrorMargins);
+			}
 		}
 		
 		// 
@@ -403,7 +408,9 @@ public class LayoutMasterSetBuilder {
 			for (Object o : items) {
 				if (!(o instanceof PageSequenceMaster)) continue;
 				PageSequenceMaster psm = (PageSequenceMaster)o;
-				if (!sectionName.equals(psm.getMasterName())) continue;
+				// the section's own, and its merged parts' (addPartMasters), alike
+				if (!sectionName.equals(psm.getMasterName())
+						&& !psm.getMasterName().matches(java.util.regex.Pattern.quote(sectionName) + "-p\\d+")) continue;
 				for (Object alt : psm.getSinglePageMasterReferenceOrRepeatablePageMasterReferenceOrRepeatablePageMasterAlternatives()) {
 					if (!(alt instanceof RepeatablePageMasterAlternatives)) continue;
 					List<ConditionalPageMasterReference> refs =
@@ -492,8 +499,58 @@ public class LayoutMasterSetBuilder {
 				"docx4j.convert.out.fo.pgNumType.oddEvenParityFix", true);
 	}
 
+	/**
+	 * The page masters of a merged run's parts whose top and bottom margins or header and
+	 * footer distances differ from the page-sequence's (CR-031 phase 2;
+	 * {@link ConversionSectionWrapper#getPartVerticalMargins()}): for each, a
+	 * page-sequence-master {@code <section>-p<m>} - one unbounded
+	 * repeatable-page-master-alternatives, as fork CR-017 requires - over simple-page-masters
+	 * which are the section's own with the part's vertical margins.  Word gives a page the
+	 * vertical margins of the section owning its first line (CR-031 D1); the renderer picks
+	 * these by the content a page starts with ({@code fox:page-sequence-master-reference},
+	 * placed by WordLayoutFixups.pageMastersByContent).
+	 *
+	 * <p>Everything else is the page-sequence's: the page size, width and column count (which
+	 * CR-017 requires to agree), and the region names, so the parts' pages show the
+	 * page-sequence's own headers and footers, as they did on its single master - a part's own
+	 * header text, and its first-page header, are CR-031 phase 3.  So there is no first-page
+	 * alternative: the page-sequence's first page is the only one which shows its first-page
+	 * header, as before.  The parts' extents are the page-sequence's, measured (FOPAreaTreeHelper):
+	 * the same static content in the same width is the same height.</p>
+	 *
+	 * @since 17.3.1
+	 */
+	private static void addPartMasters(LayoutMasterSet lms, ConversionSectionWrapper section,
+			String sectionName, boolean foliosInverted, boolean gutterAtTop, boolean mirrorMargins) {
+		HeaderFooterPolicy hf = section.getHeaderFooterPolicy();
+		for (Map.Entry<Integer, org.docx4j.wml.SectPr.PgMar> part : section.getPartVerticalMargins().entrySet()) {
+			String partName = sectionName + "-p" + part.getKey();
+			PageDimensions dims = section.getPageDimensions().withVerticalMargins(part.getValue());
+			List<Object> items = lms.getSimplePageMasterOrPageSequenceMaster();
+			if (hf.getEvenHeader()!=null || hf.getEvenFooter()!=null) {
+				items.add(createSimplePageMaster(partName + "-evenpage", dims, "evenpage",
+						(hf.getEvenHeader()!=null), (hf.getEvenFooter()!=null), gutterAtTop, mirrorMargins));
+			}
+			if (hf.getDefaultHeader()!=null || hf.getDefaultFooter()!=null) {
+				items.add(createSimplePageMaster(partName + "-default", dims, "default",
+						(hf.getDefaultHeader()!=null), (hf.getDefaultFooter()!=null), gutterAtTop, mirrorMargins));
+			} else {
+				items.add(createSimplePageMaster(partName + "-simple", dims, "simple",
+						true, true, gutterAtTop, mirrorMargins));
+			}
+			items.add(createPageSequenceMaster(hf, partName, foliosInverted, false));
+		}
+	}
+
 	private static PageSequenceMaster createPageSequenceMaster(HeaderFooterPolicy hf,
 			String sectionName, boolean foliosInverted ) {
+		return createPageSequenceMaster(hf, sectionName, foliosInverted, true);
+	}
+
+	/** @param firstPage whether the first page takes the first-page master where there is
+	 *         one; false for a merged part's masters (addPartMasters).  @since 17.3.1 */
+	private static PageSequenceMaster createPageSequenceMaster(HeaderFooterPolicy hf,
+			String sectionName, boolean foliosInverted, boolean firstPage ) {
 
 		boolean noHeadersFootersAfterFirstPage = true;
 		
@@ -505,7 +562,7 @@ public class LayoutMasterSetBuilder {
 		psm.getSinglePageMasterReferenceOrRepeatablePageMasterReferenceOrRepeatablePageMasterAlternatives().add(rpma);
 		
 		// has first header or footer?
-		if (hf.getFirstHeader()!=null || hf.getFirstFooter()!=null) {			
+		if (firstPage && (hf.getFirstHeader()!=null || hf.getFirstFooter()!=null)) {
 			ConditionalPageMasterReference cpmr1 = getFactory().createConditionalPageMasterReference();
 			cpmr1.setMasterReference(sectionName+"-firstpage");
 			cpmr1.setPagePosition(PagePositionType.FIRST);

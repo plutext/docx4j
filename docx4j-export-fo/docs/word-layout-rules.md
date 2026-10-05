@@ -197,6 +197,7 @@ key in `docx4j.properties` still wins, and a deployment without either file gets
 | `docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine` | `false` | `true`: a paragraph holding only a page break keeps the line before its break, sized by its mark, at the foot of the page it is on; where the page has no room for it the line goes to the next page and the break to the one after ([§3.3](#s33line)). Off by default: over the corpora it costs more pages than it gives, and the probe behind it is with Word. |
 | `docx4j.convert.out.fo.wordLayout.tableTakesPageBreak` | `false` | `true`: a break-only paragraph followed by a table gives its break to the table, which starts at the top of the page as Word's does, rather than keeping the paragraph's line there ([§3.3](#s33table)). Off by default until continuous sections' margins and the page-break line are Word's. |
 | `docx4j.convert.out.fo.wordLayout.restartParityBlankPage` | `true` | In a document with different odd and even headers, a nextPage section restarting its folio at the parity of the page before it gets a blank page between, as Word's does (an oddPage or evenPage one always does) ([§7](#s7parity)). `false` leaves it out. On since 17.3.1 (CR-031 phase 1). |
+| `docx4j.convert.out.fo.wordLayout.pageMasterByContent` | `auto` | A merged run of continuous sections whose top or bottom margins, or header or footer distances, differ gets a page master per part, and each page takes the masters of the section owning its first line, as Word gives it ([§7](#s7pagemasters)). `auto` does so where the FO renderer chooses page masters by content (the docx4j FO renderer's capability `page-master-by-content`, fork CR-017); `false` never; `true` writes them whatever the renderer, which ignores what it does not know. |
 | `docx4j.convert.out.fo.fieldErrors` | `en` | What a REF or PAGEREF field whose bookmark is missing prints: Word's English error text (`en`), or `cached`, the field's cached result, as 17.1.0 to 17.3.0 did ([§4.4](#s44missingbm)). |
 | `docx4j.jaxb.mc.preferChoice` | empty | The `mc:Choice/@Requires` prefixes we claim to be able to draw; the first `mc:Choice` naming only those wins over the `mc:Fallback`, as it does in Word. Empty (the default, and what measured better) always takes the fallback, as docx4j always has (§1.3). Also HTML. |
 | `docx4j.fonts.runFontSelector.trimUnpreservedWhitespace` | `true` | The leading and trailing white space of a `w:t` with no `xml:space="preserve"` is dropped, as Word drops it (§1.3). Also HTML. |
@@ -4655,6 +4656,27 @@ that a header line holding only the field still measures as a line. The space in
 the field survives as it does in front of a page number (a zero-width space after it, below):
 "Extarct Tool - HLD 1.1" had come out "HLD1.1". Not done: `\p` ("above"/"below"), `\t`
 (suppress non-delimiter characters), and the formatting switches other than `MERGEFORMAT`.
+<a id="s7pagemasters"></a>**A page takes the vertical margins of the section owning its first line (17.3.1,
+CR-031 D1).** docx4j merges a run of continuous sections into one page-sequence, whose page
+master carried the first part's top and bottom margins and header and footer distances on every
+page. Word gives each page those of the section that owns its first line, and a section starting
+mid-page changes nothing until the next page: measured on the `continuous-margins-vertical`
+probes (S1 72/72pt and 36/36pt distances, S2 144/36 and 18/18, S3 back to 72/72, in modes 14
+and 15 alike: page 2, where S2 starts, is S1's; page 3 has S2's header at y=18 and its first
+line at 152.5; page 5, where S3 starts, is still S2's), on `continuous-margins-at-top` (a section
+starting at a page top owns that page) and on `section-continuous-geometry`. XSL-FO chooses a
+page master by position, parity and blankness only, so the docx4j FO renderer chooses it by
+content instead (fork CR-017, `fox:page-sequence-master-reference`). `ConversionSectionWrapperFactory`
+tags each merged part at which the vertical margins change (`XSLT_Part`); `LayoutMasterSetBuilder`
+writes a page-sequence-master per distinct set (`s<n>-p<m>`), the page-sequence's own masters
+with that part's vertical margins, the same width, columns and region names, and no first-page
+alternative; `FOPAreaTreeHelper` gives them the extents measured for the page-sequence's own
+masters, the static content being the same; `WordLayoutFixups.pageMastersByContent` puts the
+attribute on the part's first in-flow block-level FO. Header and footer **text** per part, a
+part's first-page header and a continuous restart are CR-031 phase 3. Gated by
+`docx4j.convert.out.fo.wordLayout.pageMasterByContent`; on Apache FOP, or a docx4j FO renderer
+without the capability, nothing changes.
+
 <a id="s7conthf"></a>**A page's headers and footers are those of the section it begins
 in.** A continuous section beginning mid-page therefore shows the previous section's,
 whatever `w:headerReference`/`w:footerReference` it declares itself - honouring those

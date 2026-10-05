@@ -8,8 +8,9 @@ staleness below folded in (§4.2b, §5 P6, §6, §7, §8). **Decision 1 made 202
 the fork extension. Phase 2 next (registry `docx4j/CR-031.2`), depending on the fork's **fop/CR-017**
 "page masters chosen by the content a page starts with" (written 2026-10-05 and revised after a
 review, 8b509a0e8 on `2.11-docx4j.5`; proposed, about five to six days; implementation waits on
-Jason's go there). P6 cut and on the share for
-the Word run.
+Jason's go there). **Phase 2's docx4j side built 2026-10-05** (§6),
+dormant until the renderer has the capability; its end-to-end gate waits on fop/CR-017's snapshot.
+P6 read (§2 D3); P7 proposed.
 
 ## 0. Why now
 
@@ -284,9 +285,10 @@ oscillate.
    step first said "indent container".) Not an FO that generates no boxes - an absolutely positioned
    block-container (a floating table or picture) or an `fo:float` - since parts are located by
    walking boxes to their marked FOs: the marker goes on the part's first in-flow block-level FO.
-   fop/CR-017 (c910fcdcf, test 9) adds a safety net: a marked FO that produces no box (an empty
-   block, an absolute block-container) starts its part at the next box rather than being lost; a
-   marker on an `fo:float` is reported and ignored.
+   fop/CR-017 (c910fcdcf, test 9) adds a safety net: a marked FO that produces no box (an absolute
+   block-container) starts its part at the next box rather than being lost; a marker on an
+   `fo:float` is reported and ignored. (An empty `fo:block` carries a zero-width box of its own, so
+   its marker is seen directly: fop/CR-017's second review, 969a56765.)
 3. `PageBreakingAlgorithm.getLineWidth` takes the node: the page it starts is owned by the part of
    the first box after `node.position`. For a column that is not its page's first, follow
    `node.previous` back to the node which started the page. The five call sites change; nothing else
@@ -326,11 +328,15 @@ whose body heights differ make a page's height depend on its folio as well. That
 of the node chain, but it is the fiddliest case.
 
 **docx4j side (needed for 4.2 as well).** Per-part masters for a merged sequence, each with that
-part's top and bottom margins, header and footer distances and extents, and its own region names, so
-each part's static content (its own `HeaderFooterPolicy`) is what its pages show. That gives D3's
-header text for nothing. The attribute goes on each merged part's first block (the factory knows the
-boundaries: `MergedPart`). The header and footer extent pre-pass measures per part. Gated by
-`FopCapabilities`: on Apache FOP nothing new is written, and the output is today's.
+part's top and bottom margins and header and footer distances. The attribute goes on each merged
+part's first block (the factory knows the boundaries: `MergedPart`). Gated by `FopCapabilities`: on
+Apache FOP nothing new is written, and the output is today's. **As built (phase 2, 2026-10-05)** the
+parts' masters keep the page-sequence's region names, so its pages show the page-sequence's own
+headers and footers, as they do today; giving each part its own static content (its own
+`HeaderFooterPolicy`, its own region names) is phase 3's, with `w:titlePg` and the restart. That
+split also makes the extents free: the same static content in the same width is the same height,
+so each part master takes the extent measured for the page-sequence's master of its kind, with its
+own vertical margins for the body's edges, and the pre-pass needs no change (§6 phase 2).
 
 **Against 4.2:**
 
@@ -475,16 +481,29 @@ distances and texts together with it, mode 14, a section starting at a page top,
 1. D2 (§4.1), with `restartParityBlankPage` turned on: they belong together (§2). Gate: 9539 to
    Word's 22 pages; the even/odd folio probe to Word's 12. **DONE** (b111, §2).
 2. D1, by **4.2b** (decision 1, 2026-10-05): fop/CR-017 (§4.2b steps 1-5, 7), released or as a
-   gated snapshot; in docx4j, per-part masters with their own vertical
-   margins, distances and region names, the marker on each part's outermost block, the pre-pass
-   measuring per-part masters (each part its own sequence in the trimmed copy), all behind
-   `FopCapabilities`. **4.2**: the pass loop and the explicit page-sequence-master. Either way the
+   gated snapshot; in docx4j, per-part masters with their own vertical margins and distances,
+   the marker on each part's outermost block, all behind `FopCapabilities`. **docx4j side BUILT
+   2026-10-05**: `ConversionSectionWrapperFactory` tags each part at which the vertical margins
+   change (`XSLT_Part=m`, outermost, so the `span="all"` block is what gets marked) and hands the
+   distinct sets to the wrapper (`getPartVerticalMargins`); both FO pathways stamp the part's
+   top-level FOs (`XsltFOFunctions.stampPart`); `LayoutMasterSetBuilder.addPartMasters` writes
+   `s<n>-p<m>` (one unbounded repeatable-page-master-alternatives, the section's kinds without
+   the first-page one, the page-sequence's region names; mirrored even masters as for the
+   section); `FOPAreaTreeHelper.adjustLayoutMasterSet` sizes them from the page-sequence's measured
+   extents; `WordLayoutFixups.pageMastersByContent`, last before `stripHints`, puts
+   `fox:page-sequence-master-reference` on the first allowed FO where the master changes. Property
+   `docx4j.convert.out.fo.wordLayout.pageMasterByContent` (`auto` = the capability; `true`;
+   `false`); never in the extent pre-pass. Test `PageMasterByContentTest` (both pathways). Forced
+   on, on today's renderer: the markers fall at P1's S2 and S3, 12802's sections 1 and 4, and
+   section-continuous-geometry's S3, S4 and S5, and nothing renders differently (the renderer
+   ignores the attribute). **4.2**: the pass loop and the explicit page-sequence-master. Either way the
    gate is the same: P1's pages at Word's margins and headers' distances, the
    section-continuous-geometry golden's pages 5 to 8, 12802's page tops at Word's, the 34
    documents read one by one, nothing else moving; on 4.2b, both renderers (Apache FOP unchanged).
-3. D3 (§4.3): each part's own header and footer text on the pages it owns (largely free with phase
-   2's per-part masters), `w:titlePg` (step 5), the restart folio (step 6, or 4.2's literal folios),
-   with P6 read first. Scope per decision 2.
+3. D3 (§4.3): each part's own header and footer text on the pages it owns (per-part region names
+   and static content in both pathways, and the pre-pass measuring them - phase 2 keeps the
+   page-sequence's), `w:titlePg` (step 5), the restart folio (step 6, or 4.2's literal folios),
+   with P7 read first. Scope per decision 2.
 4. *(moved out)* Turning on `tableTakesPageBreak` needs the page-break line as well (4994), which
    is outside this CR (§9). It moves to that triage, which depends on phase 2 here (for 12802).
    This CR closes at phase 3 with the property still off (review finding 6).

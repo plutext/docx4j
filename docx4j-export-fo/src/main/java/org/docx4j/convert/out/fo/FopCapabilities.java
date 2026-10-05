@@ -117,7 +117,13 @@ public final class FopCapabilities {
 		 *  symbol-encoded face copies out of the PDF as Unicode rather than U+F0xx.  Nothing asks
 		 *  for it: FopConfigUtil writes the entries whatever the renderer, Apache FOP passing over
 		 *  them.  @since 17.3.1 */
-		TO_UNICODE_MAP("to-unicode-map");
+		TO_UNICODE_MAP("to-unicode-map"),
+		/** {@code fox:page-sequence-master-reference} on a block-level FO in the main flow: pages
+		 *  whose first line lies at or after it take their masters from the page-sequence-master it
+		 *  names (fork CR-017), so the parts of a merged run of continuous sections each get the
+		 *  vertical margins of the section owning a page's first line, as Word gives them (docx4j
+		 *  CR-031 phase 2).  @since 17.3.1 */
+		PAGE_MASTER_BY_CONTENT("page-master-by-content");
 
 		private final String key;
 

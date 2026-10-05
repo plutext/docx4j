@@ -204,6 +204,7 @@ public final class WordLayoutFixups {
 		continuationFromTop(doc);
 		fieldErrorWeights(doc);
 		StyleRefMarkers.apply(doc); // before stripHints: it reads the paragraph-style hint
+		pageMastersByContent(doc); // after every fixup which moves or drops blocks
 		stripHints(doc);
 	}
 
@@ -4481,6 +4482,65 @@ public final class WordLayoutFixups {
 	}
 
 
+
+	/**
+	 * Puts the renderer's {@code fox:page-sequence-master-reference} (fork CR-017) where a
+	 * merged run's page masters change, from the {@link XsltFOFunctions#HINT_PART_MASTER} the
+	 * FO exporter stamped on each tagged part's FOs (CR-031 phase 2), and removes the stamps.
+	 *
+	 * <p>The flow's block-level FOs are read in document order, each taking the stamp of its
+	 * nearest stamped ancestor-or-self, and the first one whose master differs from the one in
+	 * force carries the attribute.  Only an FO CR-017 accepts carries it - a block, a
+	 * list-block, a table, or a block-container not absolutely positioned (one that is takes no
+	 * place in the flow, so produces no box) - and only where its ancestors up to the flow are
+	 * blocks or block-containers, so nothing inside a table, a list item, a footnote, a float
+	 * or an inline is looked at.  Done last, so that a fixup which drops a part's first block
+	 * (a break-only paragraph, mergePageBreakParagraphs) leaves the part starting at its next:
+	 * every top-level FO of a part is stamped.  An FO a fixup made around stamped ones carries
+	 * no stamp of its own and the boundary falls on the stamped FO inside it.  Nothing is
+	 * stamped unless {@link XsltFOFunctions#pageMasterByContent} said so.</p>
+	 *
+	 * @since 17.3.1
+	 */
+	static void pageMastersByContent(Document doc) {
+		String[] state = new String[2]; // [0] the master in force, [1] "any"
+		for (Element seq : elements(doc, "page-sequence")) {
+			for (Node n = seq.getFirstChild(); n != null; n = n.getNextSibling()) {
+				if (n instanceof Element && isFo((Element) n, "flow")) {
+					state[0] = null; // the page-sequence's own masters
+					partBoundaries((Element) n, null, state);
+				}
+			}
+		}
+		NodeList all = doc.getElementsByTagName("*");
+		for (int i = 0; i < all.getLength(); i++) {
+			((Element) all.item(i)).removeAttribute(XsltFOFunctions.HINT_PART_MASTER);
+		}
+		if (state[1] != null) {
+			doc.getDocumentElement().setAttributeNS(XMLNS, "xmlns:fox", org.docx4j.fonts.RunFontSelector.FOX_NS);
+		}
+	}
+
+	private static void partBoundaries(Element parent, String inherited, String[] state) {
+		for (Node n = parent.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (!(n instanceof Element)) continue;
+			Element el = (Element) n;
+			boolean block = isFo(el, "block");
+			boolean container = isFo(el, "block-container")
+					&& !"absolute".equals(el.getAttribute("absolute-position"))
+					&& !"fixed".equals(el.getAttribute("absolute-position"));
+			if (!block && !container && !isFo(el, "list-block") && !isFo(el, "table")) continue;
+			String own = el.getAttribute(XsltFOFunctions.HINT_PART_MASTER);
+			String master = own.length() > 0 ? own : inherited;
+			if (master != null && !master.equals(state[0])) {
+				el.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS,
+						"fox:page-sequence-master-reference", master);
+				state[0] = master;
+				state[1] = "any";
+			}
+			if (block || container) partBoundaries(el, master, state);
+		}
+	}
 
 	/** {@code docx4j.convert.out.fo.wordLayout.tableTakesPageBreak}, default false: see
 	 *  {@link #mergePageBreakParagraphs}.  @since 17.3.1 */

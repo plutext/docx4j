@@ -528,6 +528,35 @@ public class PageDimensions {
 	private int headerFooterIndentStart;
 	private int headerFooterIndentEnd;
 
+	/**
+	 * These dimensions with another section's top and bottom margins and header and footer
+	 * distances, wherever that section states them: the page masters of a part of a merged
+	 * run of continuous sections, which keep this page-sequence's page size, width, columns
+	 * and header and footer indent, and take the part's own vertical margins (CR-031 phase 2).
+	 * The copy's w:pgMar is its own; the rest is shared with this one, as nothing changes it
+	 * once the page masters are built.
+	 *
+	 * @param part the part's w:pgMar, or null for an unchanged copy
+	 * @since 17.3.1
+	 */
+	public PageDimensions withVerticalMargins(PgMar part) {
+		PgMar mar = XmlUtils.deepCopy(pgMar);
+		if (part != null) {
+			if (part.getTop() != null) mar.setTop(part.getTop());
+			if (part.getBottom() != null) mar.setBottom(part.getBottom());
+			if (part.getHeader() != null) mar.setHeader(part.getHeader());
+			if (part.getFooter() != null) mar.setFooter(part.getFooter());
+		}
+		PageDimensions copy = new PageDimensions(pgSz, mar);
+		copy.cols = cols;
+		copy.verticalAlign = verticalAlign;
+		copy.headerFooterIndentStart = headerFooterIndentStart;
+		copy.headerFooterIndentEnd = headerFooterIndentEnd;
+		copy.singleColumnNarrowing = singleColumnNarrowing;
+		copy.singleColumnWritableWidth = singleColumnWritableWidth;
+		return copy;
+	}
+
 	/** Whether this section's page is landscape: w:pgSz/@w:orient, else w &gt; h.
 	 *  @since 17.1.0 */
 	public boolean isLandscape() {

@@ -341,6 +341,7 @@ public class ConversionSectionWrapperFactory {
 								currentSectionWrapper.getPageDimensions().setColsNum(merged.cols);
 							}
 							usePartMargins(currentSectionWrapper, merged.marginRef, merged.verticalMarginRef);
+							currentSectionWrapper.setPartVerticalMargins(merged.partMasters);
 							conversionSections.add(currentSectionWrapper);
 							previousHF = currentSectionWrapper.getHeaderFooterPolicy();
 							sectionContent = new ArrayList<Object>();
@@ -377,6 +378,7 @@ public class ConversionSectionWrapperFactory {
 			currentSectionWrapper.getPageDimensions().setColsNum(merged.cols);
 		}
 		usePartMargins(currentSectionWrapper, merged.marginRef, merged.verticalMarginRef);
+		currentSectionWrapper.setPartVerticalMargins(merged.partMasters);
 		conversionSections.add(currentSectionWrapper);
 		return conversionSections;
 	}
@@ -389,6 +391,14 @@ public class ConversionSectionWrapperFactory {
 	 *  <code>XSLT_Ind=start,end</code> in twips, relative to the page-sequence's own
 	 *  margins.  @since 17.0.5 */
 	public static final String TAG_INDENT = "XSLT_Ind";
+
+	/** Tag of the container around a merged continuous section at which the page-sequence's
+	 *  vertical margins change: <code>XSLT_Part=m</code>, m being the number (from 1) of the
+	 *  part whose top and bottom margins and header and footer distances its pages take
+	 *  ({@link ConversionSectionWrapper#getPartVerticalMargins()}).  The FO exporter renders
+	 *  its content as it stands, marking it for the page masters it chooses by content
+	 *  (CR-031 phase 2).  @since 17.3.1 */
+	public static final String TAG_PART = "XSLT_Part";
 
 	/** One of the continuous sections merged into a single page-sequence. @since 17.0.5 */
 	private static class MergedPart {
@@ -734,10 +744,18 @@ public class ConversionSectionWrapperFactory {
 		/** the first of the merged parts, whose vertical w:pgMar the masters take.
 		 *  @since 17.2.0 */
 		final SectPr verticalMarginRef;
+		/** the vertical margins of the parts the page-sequence needs masters for beside its
+		 *  own, by part number (partTags).  @since 17.3.1 */
+		final java.util.Map<Integer, SectPr.PgMar> partMasters;
 		Merged(int cols, SectPr marginRef, SectPr verticalMarginRef) {
+			this(cols, marginRef, verticalMarginRef, null);
+		}
+		Merged(int cols, SectPr marginRef, SectPr verticalMarginRef,
+				java.util.Map<Integer, SectPr.PgMar> partMasters) {
 			this.cols = cols;
 			this.marginRef = marginRef;
 			this.verticalMarginRef = verticalMarginRef;
+			this.partMasters = partMasters;
 		}
 	}
 
@@ -875,19 +893,59 @@ public class ConversionSectionWrapperFactory {
 
 		boolean uniformCols = true;
 		for (int c : cols) if (c != max) uniformCols = false;
-		if (uniformCols && sameMargins && !asTables && !split) return new Merged(max, ref, sectPrs.get(0));
+		/* Word gives a page the vertical margins of the section owning its first line (CR-031
+		 * D1), which one page master cannot: each part at which they change is tagged with
+		 * the part whose margins its pages take, so that the FO exporter can give those pages
+		 * masters of their own.  @since 17.3.1 */
+		java.util.Map<Integer, SectPr.PgMar> partMasters = new java.util.LinkedHashMap<Integer, SectPr.PgMar>();
+		String[] partTags = partTags(sectPrs, partMasters);
+		if (uniformCols && sameMargins && !asTables && !split && partMasters.isEmpty()) {
+			return new Merged(max, ref, sectPrs.get(0), partMasters);
+		}
 
 		List<Object> result = new ArrayList<Object>();
 		for (int i = 0; i < parts.size(); i++) {
-			addPart(result, parts.get(i), sectPrs.get(i), cols[i], max, sameMargins, refLeft, refRight);
+			addPart(result, parts.get(i), sectPrs.get(i), cols[i], max, sameMargins, refLeft, refRight,
+					partTags[i]);
 		}
 		content.clear();
 		content.addAll(result);
-		return new Merged(max, ref, sectPrs.get(0));
+		return new Merged(max, ref, sectPrs.get(0), partMasters);
+	}
+
+	/**
+	 * For each merged part, the {@link #TAG_PART} tag it takes, or null: a part is tagged
+	 * where its top or bottom margin, or its header or footer distance, differs from the
+	 * part before's, with the first part whose values are its own.  The w:pgMar of each
+	 * part named so goes into {@code partMasters}.  The first part is never tagged: its
+	 * values are the page-sequence's own (usePartMargins).  @since 17.3.1
+	 */
+	private static String[] partTags(List<SectPr> sectPrs, java.util.Map<Integer, SectPr.PgMar> partMasters) {
+		String[] tags = new String[sectPrs.size()];
+		String current = verticalMargins(sectPrs.get(0));
+		for (int i = 1; i < sectPrs.size(); i++) {
+			String key = verticalMargins(sectPrs.get(i));
+			if (key.equals(current)) continue;
+			int m = 0;
+			while (!verticalMargins(sectPrs.get(m)).equals(key)) m++;
+			tags[i] = TAG_PART + "=" + (m + 1);
+			if (sectPrs.get(m) != null && sectPrs.get(m).getPgMar() != null) {
+				partMasters.put(m + 1, sectPrs.get(m).getPgMar());
+			}
+			current = key;
+		}
+		return tags;
+	}
+
+	/** A part's top and bottom margins and header and footer distances, as one key. */
+	private static String verticalMargins(SectPr sectPr) {
+		if (sectPr == null || sectPr.getPgMar() == null) return "";
+		SectPr.PgMar m = sectPr.getPgMar();
+		return m.getTop() + "," + m.getBottom() + "," + m.getHeader() + "," + m.getFooter();
 	}
 
 	private static void addPart(List<Object> result, List<Object> part, SectPr sectPr, int partCols,
-			int max, boolean sameMargins, int refLeft, int refRight) {
+			int max, boolean sameMargins, int refLeft, int refRight, String partTag) {
 		if (part.isEmpty()) return;
 		List<Object> content = new ArrayList<Object>(part);
 		if (!sameMargins
@@ -898,6 +956,10 @@ public class ConversionSectionWrapperFactory {
 		}
 		if (partCols < max) {
 			content = wrap(content, TAG_SPAN_ALL + "=" + partCols);
+		}
+		// outermost, so that the FO it marks is the span="all" block where there is one
+		if (partTag != null) {
+			content = wrap(content, partTag);
 		}
 		result.addAll(content);
 	}

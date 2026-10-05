@@ -212,6 +212,18 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			// the borders/shading; any other sdt is traversed transparently, as in the
 			// XSLT's w:sdt template
 			SdtElement sdt = (SdtElement)o;
+			if (partContainer(sdt)!=null) {
+				// a merged continuous section at which the page-sequence's vertical margins
+				// change (ConversionSectionWrapperFactory, CR-031): its content as it stands,
+				// marked for the page masters chosen by content
+				DocumentFragment part = document.createDocumentFragment();
+				if (sdt.getSdtContent()!=null) {
+					new TraversalUtil(sdt.getSdtContent().getContent(), childGenerator(part));
+				}
+				XsltFOFunctions.stampPart(conversionContext, part, partContainer(sdt));
+				getCurrentParent().appendChild(part);
+				return null;
+			}
 			if (isSpanAllContainer(sdt)) {
 				// a part of a merged page-sequence with fewer columns than the
 				// sequence (ConversionSectionWrapperFactory): a block spanning them all
@@ -380,6 +392,15 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 						org.docx4j.convert.out.common.wrappers.ConversionSectionWrapperFactory.TAG_SPAN_ALL);
 	}
 
+	/** The tag value of an XSLT_Part container (a merged continuous section at which the
+	 *  vertical margins change), or null.  @since 17.3.1 */
+	private static String partContainer(SdtElement sdt) {
+		if (sdt.getSdtPr()==null || sdt.getSdtPr().getTag()==null || sdt.getSdtPr().getTag().getVal()==null) return null;
+		String val = sdt.getSdtPr().getTag().getVal();
+		return val.startsWith(
+				org.docx4j.convert.out.common.wrappers.ConversionSectionWrapperFactory.TAG_PART) ? val : null;
+	}
+
 	/** The tag value of an XSLT_Ind container (a merged continuous section with other
 	 *  page margins), or null.  @since 17.0.5 */
 	private static String indentContainer(SdtElement sdt) {
@@ -402,6 +423,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			return false;
 		}
 		if (o instanceof SdtElement && (isSpanAllContainer((SdtElement)o) || indentContainer((SdtElement)o)!=null
+				|| partContainer((SdtElement)o)!=null
 				|| containerTag((SdtElement)o)!=null)) {
 			// its contents were already converted in apply (handleXsltContainer)
 			return false;
