@@ -209,6 +209,12 @@ page map:
   part's static content (the page map knows them), or the sequence is split at the page where
   the part takes over (rejected for margins in 4.2, but the split point is now known from pass 1).
   To be chosen in phase 3; only documents with a restart at a continuous break pay it.
+- **Done ahead of phase 3**: a continuous break which changes the page size already ends the
+  page-sequence (§7 of the rules), so the section after it owns its first page, and it now takes
+  its own headers and footers there (`ConversionSectionWrapperFactory`, `followingStartsPage`).
+  P5's case B: Word's landscape page shows that section's header, docx4j showed the one before.
+  Gate b112 against b111: 11741 54 -> 55 pages (Word 56), line parity 0.9397 -> 0.9678, and the
+  probe +1 line; nothing else moved.
 
 ## 5. Phase 0: Word probes (for one Word run)
 

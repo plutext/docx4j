@@ -100,7 +100,8 @@ public class HeaderFooterPolicy {
 
 	/**
 	 * @param startsPage whether the section begins on a page of its own even though
-	 *        its type is continuous (its first paragraph breaks the page), in which
+	 *        its type is continuous (its first paragraph breaks the page, or - since
+	 *        17.3.1 - it changes the page size or orientation), in which
 	 *        case the headers and footers it declares itself apply to it, as they do to
 	 *        a next-page section.  Word's page takes the headers of the section it begins
 	 *        in: a continuous section beginning mid-page has no page of its own, and its

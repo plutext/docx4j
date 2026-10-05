@@ -4008,9 +4008,10 @@ and whose first three declare `<w:pgSz w:w="23814" w:h="16840" w:orient="landsca
 landscape - against a final A4: Word's page 1 is 1190.6 x 841.9pt with its content at
 x=76.6..396.3, where docx4j merged the whole continuous run onto one master, the **last**
 part's A4 won, page 1 came out 841.7 x 595.5 and the content ran to x=881.9 - 40pt past our
-own page edge, one column overprinting another. Such a break now ends the section instead;
-the headers and footers are still this section's, which is what Word keeps, and sections
-whose page size agrees are merged as before. `ConversionSectionWrapperFactory.insertPageBreak`
+own page edge, one column overprinting another. Such a break now ends the section instead,
+and sections whose page size agrees are merged as before. The section after the break owns
+the page it starts, and shows its own headers and footers there ([below](#s7conthf); until
+17.3.1 it kept the section before's, which this paragraph said Word keeps). `ConversionSectionWrapperFactory.insertPageBreak`
 (which already detected the change, and inserted a `w:pageBreakBefore` on the wrong
 paragraph - the last of the section rather than the first of the next - which did nothing on
 a shared master). **A change of the margins or the header/footer distance alone is not
@@ -4663,7 +4664,14 @@ of merged sections keeps inheriting there. But a continuous section which begins
 its own ([above](#s7startspage)) shows its own: measured on the 179-page document, whose
 body section is continuous, breaks the page and declares its own running header, Word
 paints it on every body page, where docx4j painted the front matter's on all 170 of them
-(`HeaderFooterPolicy`, told so by the section factory).
+(`HeaderFooterPolicy`, told so by the section factory). So does one after a continuous break
+which changes the page size ([§7](#s7pgsz)), since 17.3.1: the `section-break-paragraph-foot`
+probe's case B is a continuous section on A4 landscape after an A4 portrait one, each with its
+own default header, and Word's landscape page carries the landscape section's, where docx4j's
+carried the portrait one's. CR-031's probes read the rule whole: a page takes its header and
+footer text, its header and footer distances and its top and bottom margins from the section
+which owns its first line (a merged run of continuous sections does not do that yet: CR-031
+phases 2 and 3).
 
 
 **A `DATE`, `TIME` or `PRINTDATE` field is formatted in the document's own language**

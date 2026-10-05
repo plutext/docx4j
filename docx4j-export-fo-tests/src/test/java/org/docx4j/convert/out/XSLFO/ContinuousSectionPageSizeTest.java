@@ -163,6 +163,61 @@ public class ContinuousSectionPageSizeTest extends AbstractXSLFOTest {
 		check(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
+	/** A header part holding one paragraph of this text; returns its relationship id. */
+	private static String header(WordprocessingMLPackage pkg, String name) throws Exception {
+		org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart hp =
+				new org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart(
+						new org.docx4j.openpackaging.parts.PartName("/word/" + name + ".xml"));
+		hp.setPackage(pkg);
+		hp.setJaxbElement((org.docx4j.wml.Hdr) XmlUtils.unmarshalString(
+				"<w:hdr " + W + "><w:p><w:r><w:t>" + name + "</w:t></w:r></w:p></w:hdr>",
+				org.docx4j.jaxb.Context.jc, org.docx4j.wml.Hdr.class));
+		return pkg.getMainDocumentPart().addTargetPart(hp).getId();
+	}
+
+	/**
+	 * The section after such a break owns the page it starts, and shows its own headers
+	 * there, as a next-page section does.  Measured on the section-break-paragraph-foot
+	 * probe (CR-031 phase 0), whose case B is a continuous section on A4 landscape after an
+	 * A4 portrait one, each with its own default header: Word's landscape page carries the
+	 * landscape section's, docx4j's carried the portrait one's.  @since 17.3.1
+	 */
+	@Test
+	public void theSectionAfterAPageSizeChangeShowsItsOwnHeader() throws Exception {
+		for (int flags : new int[] { Docx4J.FLAG_NONE, Docx4J.FLAG_EXPORT_PREFER_XSL }) {
+			WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+			String a = header(pkg, "headerPortrait"), b = header(pkg, "headerLandscape");
+			String r = "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"";
+			pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
+					"<w:document " + W + " " + r + "><w:body>"
+					+ "<w:p><w:r><w:t>one</w:t></w:r></w:p>"
+					+ "<w:p><w:pPr><w:sectPr><w:headerReference w:type=\"default\" r:id=\"" + a + "\"/>"
+					+ A4P + MAR + "</w:sectPr></w:pPr></w:p>"
+					+ "<w:p><w:r><w:t>two</w:t></w:r></w:p>"
+					+ "<w:sectPr><w:headerReference w:type=\"default\" r:id=\"" + b + "\"/>"
+					+ "<w:type w:val=\"continuous\"/>" + A4L + MAR
+					+ "</w:sectPr></w:body></w:document>"));
+			FOSettings foSettings = Docx4J.createFOSettings();
+			foSettings.setOpcPackage(pkg);
+			foSettings.setApacheFopMime(FOSettings.INTERNAL_FO_MIME);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			Docx4J.toFO(foSettings, baos, flags);
+			NodeList sequences = w3cDomDocumentFromByteArray(baos.toByteArray()).getElementsByTagNameNS(FO, "page-sequence");
+			assertEquals(2, sequences.getLength());
+			assertEquals("the first section's own header", "headerPortrait", staticText((Element) sequences.item(0)));
+			assertEquals("the second section's own header, not the one before", "headerLandscape",
+					staticText((Element) sequences.item(1)));
+		}
+	}
+
+	/** The text of a page-sequence's static content. */
+	private static String staticText(Element sequence) {
+		StringBuilder sb = new StringBuilder();
+		NodeList sc = sequence.getElementsByTagNameNS(FO, "static-content");
+		for (int i = 0; i < sc.getLength(); i++) sb.append(sc.item(i).getTextContent().trim());
+		return sb.toString();
+	}
+
 	/** 2in top margin on the second section, against 1in on the first. */
 	private static final String MAR_TOP2 =
 			"<w:pgMar w:top=\"2880\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\" w:header=\"708\" w:footer=\"708\"/>";

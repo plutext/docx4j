@@ -165,6 +165,9 @@ PDF via XSL FO:
 - A section ending in a paragraph of text and then a page break no longer gets an extra page,
   holding only its header, where that page is full.
 
+- A continuous section which changes the page size shows its own headers and footers on the page
+  it starts, as Word does, rather than the previous section's.
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's

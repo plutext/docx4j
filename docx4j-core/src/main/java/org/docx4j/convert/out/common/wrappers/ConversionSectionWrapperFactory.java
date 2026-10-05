@@ -260,13 +260,14 @@ public class ConversionSectionWrapperFactory {
 						          <w:pgSz <---- different values from previous sectPr
 						 *
 						 * In this case, Word will render a page break,
-						 * but:
-						 * 1. still show it as continuous
-						 * 2. still use the headers/footers from this section
+						 * but still show it as continuous.
 						 *
 						 * A page-sequence has one page master, so the two parts cannot
 						 * be merged: this section ends here and keeps its own page size,
 						 * which is what Word starts a page for.  See insertPageBreak.
+						 * The following section then owns the page it starts, and takes
+						 * its own headers and footers there (followingStartsPage), as
+						 * Word does: until 17.3.1 it kept this section's.
 						 */
 
 						boolean ignoreThisSection = false;
@@ -277,6 +278,7 @@ public class ConversionSectionWrapperFactory {
 
 							if (insertPageBreak(ppr.getSectPr().getPgSz(), followingSectPr.getPgSz())) {
 								log.info("following sectPr is continuous but changes the page size or orientation; Word starts a page, so this section is not merged into it");
+								followingStartsPage = true;
 							} else if (startsPage(bodyIndex + 1 < bodyContent.size() ? bodyContent.get(bodyIndex + 1) : null,
 									propertyResolver)) {
 								log.info("following sectPr is continuous but its first paragraph breaks the page; Word starts a page there anyway, so this section is not merged into it");
@@ -927,8 +929,17 @@ public class ConversionSectionWrapperFactory {
 	 * which the <em>last</em> part's A4 won, so page 1 came out 841.7 x 595.5 and the
 	 * content ran to x=881.9 - 40pt past our own page edge, one column overprinting
 	 * another.  A page-sequence carries one page master, so such a break now ends the
-	 * section rather than merging into it; the headers and footers are still this
-	 * section's, which is what Word keeps.</p>
+	 * section rather than merging into it.</p>
+	 *
+	 * <p>The section after the break owns the page it starts, and takes its own headers
+	 * and footers there, as a next-page section does ({@link HeaderFooterPolicy}'s
+	 * {@code startsPage}).  Until 17.3.1 it kept the section before's, which this comment
+	 * said was what Word keeps: it is not.  Measured on the section-break-paragraph-foot
+	 * probe (CR-031 phase 0), whose case B is a continuous section on A4 landscape after
+	 * an A4 portrait one, each with its own default header: Word's landscape page carries
+	 * the landscape section's ("case B after header"), docx4j's carried the portrait
+	 * one's.  It is the rule all three CR-031 probes read: a page takes its headers from
+	 * the section which owns its first line.</p>
 	 */
 	/*
 	 * A continuous break which changes only the margins or the header/footer distance is
