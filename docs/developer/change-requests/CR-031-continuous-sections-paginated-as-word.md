@@ -189,8 +189,87 @@ document out, so this joins an existing pattern rather than adding a new one.
 - *Split the page-sequence where a part takes over.* A page-sequence always starts a page, so the
   split must fall exactly on a page boundary that only a layout knows. It still needs pass 1, and
   splits paragraphs across sequences. Rejected.
-- *A fork extension* (region margins switched by a marker). It changes FOP's page model, and no
-  upstream would take it. Rejected unless 4.2 proves unworkable.
+- *A fork extension*: explored in 4.2b (2026-10-05), at Jason's word that the fork is maintained
+  indefinitely in any case. It is no longer rejected; decision 1 (§7) chooses between it and 4.2.
+
+### 4.2b D1 as a fork extension: page masters chosen by the content a page starts with
+
+Read from the fork (`../xmlgraphics-fop-plutext`, branch `2.11-docx4j.5`), read-only; the fork-side
+CR and the code are the fork session's.
+
+**What FOP does now.** A page's master is chosen by position alone:
+`PageProvider.cacheNextPage` asks `PageSequence.getNextSimplePageMaster(index, first, last, blank)`,
+which walks the page-sequence-master's alternatives. The page breaker asks how tall each page is
+through `PageBreakingAlgorithm.getLineWidth(line)` -> `PageProvider.getAvailableBPD(index)`, by page
+(part) number. So FOP already lays out pages of different body heights - a first-page master with a
+taller region-body works today - as long as the height is a function of the page's number. What it
+cannot do is let the height depend on what the page starts with.
+
+**Why it fits the algorithm.** FOP's page breaker is Knuth's total-fit. Every candidate page is
+measured from an active node, and in all five places the page height is asked for
+(`computeDifference`, three times, and `createFootnotePages`, twice) that node is in hand, with its
+`position`: the element where the page before ended. The part owning the first box after that
+position is the part owning the page's first line - Word's rule. A height that depends on the
+starting node is sound in Knuth's model: candidates that end at the same element compete, and they
+start the next page at the same place, so they agree on its height. The search stays exact: every
+candidate page is measured with the margins it would really get, in one pass, with nothing to
+oscillate.
+
+**The extension (fork side).**
+1. An attribute on a block in the main flow, say `fox:page-sequence-master-reference="s2"` (name for
+   the fork session): pages whose first line lies at or after this block, up to the next such block,
+   take their masters from that page-sequence-master instead of the sequence's own. FOP already keeps
+   unknown attributes on every FO (`FObj.addForeignAttribute`), so the FO tree needs nothing new.
+2. When the breaker builds an element list, record where each marked block's first element falls
+   (the elements' layout managers lead to their FOs), carrying the current part across lists - FOP
+   splits a flow into lists at forced breaks and span changes.
+3. `PageBreakingAlgorithm.getLineWidth` takes the node: the page it starts is owned by the part of
+   the first box after `node.position`. For a column that is not its page's first, follow
+   `node.previous` back to the node which started the page. The five call sites change; nothing else
+   in the algorithm does.
+4. `PageProvider` gives the height of page `index` under a given part's master without caching a
+   page for it (several candidates ask about the same index with different parts), and when areas are
+   added (`PageBreaker.startPart`) it is told the owner of the page being started, and replaces a
+   cached page whose master differs - the replacement path it already has for blank, last-page and
+   span mismatches (`newPageVP.replace(oldPageVP)`, `IDTracker.replacePageViewPort`).
+5. "First page" for a part means the page its first line opens, so a part starting mid-page never
+   uses its `first` master (P4), and one starting at a page top does.
+6. Optionally (phase 3), a restart on the marker: pages the part owns print its start number plus
+   the pages since the page it started on, which reproduces P3's 1, 2, 2, 3, and odd/even masters
+   follow that folio.
+7. Inert unless the attribute is present ("changes nothing FOP does on its own"), with a capability in
+   `Docx4jFop`.
+
+Constraints: the parts' masters keep the reference part's width and column count, as docx4j's merged
+masters do now, so FOP's IPD-change restart (`restartAtLM`) is never triggered. Odd and even masters
+whose body heights differ make a page's height depend on its folio as well. That is still a function
+of the node chain, but it is the fiddliest case.
+
+**docx4j side (needed for 4.2 as well).** Per-part masters for a merged sequence, each with that
+part's top and bottom margins, header and footer distances and extents, and its own region names, so
+each part's static content (its own `HeaderFooterPolicy`) is what its pages show. That gives D3's
+header text for nothing. The attribute goes on each merged part's first block (the factory knows the
+boundaries: `MergedPart`). The header and footer extent pre-pass measures per part. Gated by
+`FopCapabilities`: on Apache FOP nothing new is written, and the output is today's.
+
+**Against 4.2:**
+
+| | 4.2 layout passes | 4.2b fork extension |
+|---|---|---|
+| render time, affected documents | 2x to 4x | unchanged (one pass) |
+| exactness | a fixed point if one is reached, else the last of three | exact by construction |
+| Apache FOP | works | today's behaviour (capability-gated) |
+| code | docx4j: the pass loop, an explicit page-sequence-master per sequence | fork: about five call sites, `PageProvider`, the attribute; docx4j: the attribute |
+| restart folios (D3) | literal folios in pass 2, or a split sequence | a numbering offset in the extension |
+| upkeep | docx4j only | fork code in `PageBreakingAlgorithm`/`PageProvider`, which change little upstream; carried through each merge (fop/CR-009's pattern) |
+| upstream | - | not expected to be taken as it stands; a JIRA can describe the need |
+
+**Risks:** the page cache replacement (pages made during breaking with the wrong master, IDs
+registered against them); footnotes and floats, whose code reads the page height too; balanced
+columns at span changes (`BalancingColumnBreakingAlgorithm` has its own height); the last-page
+re-layout (docx4j writes no `page-position="last"`, so out of scope at first). Each needs a FOP-level
+test before docx4j gates it. The P1 probes and the section-continuous-geometry golden are the
+acceptance tests on the docx4j side, unchanged.
 
 ### 4.3 D3: header and footer text, first-page header, restart
 
@@ -252,9 +331,12 @@ distances and texts together with it, mode 14, a section starting at a page top,
 
 ## 7. Decisions for Jason
 
-1. **Extra layout passes** (§4.2) for documents whose merged continuous sections differ in their
-   vertical margins: the render time of those documents doubles or more. The alternative is a fork
-   extension (§4.2, rejected above).
+1. **How D1 is done**: extra layout passes in docx4j (§4.2; the render time of the 34 or so affected
+   documents doubles or more, and it works on Apache FOP), or a fork extension choosing page masters
+   by the content a page starts with (§4.2b; one pass and exact, but on Apache FOP those documents
+   keep today's margins). Recommendation (2026-10-05): **4.2b**, since docx4j renders on the fork by
+   default (since 17.3.0) and the fork is maintained indefinitely in any case. If agreed, the fork
+   session writes a fop/CR for it and phase 2 depends on that CR.
 2. **Scope of phase 3**, once phase 0 has read D3.
 
 ## 8. Risks
@@ -277,4 +359,5 @@ reaches Word's count. Those five will be read for a common cause.
 ## 10. Effort (rough)
 
 Phase 0: the probes, an hour, plus Jason's Word run. Phase 1: half a day. Phase 2: two to three
-days. Phase 3: a day or two, depending on phase 0. Phase 4: half a day with the gates.
+days by 4.2; by 4.2b, about two days in docx4j plus the fork CR (rough guess: two to four days in
+the fork, its session's estimate to replace this). Phase 3: a day or two, depending on phase 0. Phase 4: half a day with the gates.
