@@ -186,11 +186,13 @@ public class LineNumberNormaliseTest {
 		assertTrue(Double.isNaN(PdfLayoutExtractor.textEdge(new ArrayList<>())));
 	}
 
-	/** U+00A0, U+2007 and U+202F fold to a space; everything else is left alone. */
+	/** U+00A0, U+202F and U+2000 to U+200A fold to a space; everything else is left alone. */
 	@Test
 	public void noBreakSpacesFold() {
 		assertEquals("1 000 kg", Line.foldSpaces("1\u00a0000\u2007kg"));
 		assertEquals("12 h", Line.foldSpaces("12\u202fh"));
+		assertEquals("\u00ab     \u00bb", Line.foldSpaces("\u00ab\u2002\u2002\u2002\u2002\u2002\u00bb"));   // FORMTEXT placeholder
+		assertEquals("a b", Line.foldSpaces("a\u2009b"));
 		String plain = "nothing to fold";
 		assertTrue(plain == Line.foldSpaces(plain));
 	}

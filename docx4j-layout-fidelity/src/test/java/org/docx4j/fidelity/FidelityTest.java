@@ -50,7 +50,11 @@ public class FidelityTest {
 		assertEquals("12", Fidelity.compatMode(declared));
 
 		File none = new File(dir, "15_no_compat_setting.docx");
-		org.docx4j.openpackaging.packages.WordprocessingMLPackage.createPackage().save(none);
+		// createPackage states mode 15 since 17.3.0 (Word 365's settings), so take them out
+		org.docx4j.openpackaging.packages.WordprocessingMLPackage pkg
+				= org.docx4j.openpackaging.packages.WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().getDocumentSettingsPart().getJaxbElement().setCompat(null);
+		pkg.save(none);
 		assertEquals("", Fidelity.compatMode(none));
 	}
 

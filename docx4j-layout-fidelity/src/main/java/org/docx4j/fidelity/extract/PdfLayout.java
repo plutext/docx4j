@@ -194,13 +194,18 @@ public final class PdfLayout {
 		 * line parity 0.8351 to 0.8478 and 145 more lines matched, ten documents up
 		 * and none down (one from 0.105 to 0.947).  Both sides go through it;
 		 * {@code -Dfidelity.nbspNormalise=false} keeps the glyphs distinct.
+		 *
+		 * <p>The other fixed-width spaces, U+2000 to U+200A (U+2007 among them), are
+		 * folded with them: a FORMTEXT field's placeholder is five U+2002 EN SPACEs,
+		 * which docx4j writes as glyphs and Word's PDF does not, so corpus document
+		 * 11596's eight placeholder lines never paired (ledger8).</p>
 		 */
 		static String foldSpaces(String s) {
 			if (!NORMALISE_NBSP) return s;
 			StringBuilder sb = null;
 			for (int i = 0; i < s.length(); i++) {
 				char c = s.charAt(i);
-				if (c == '\u00a0' || c == '\u2007' || c == '\u202f') {
+				if (c == '\u00a0' || c == '\u202f' || (c >= '\u2000' && c <= '\u200a')) {
 					if (sb == null) sb = new StringBuilder(s);
 					sb.setCharAt(i, ' ');
 				}
@@ -214,10 +219,12 @@ public final class PdfLayout {
 		/**
 		 * Month names, full and abbreviated, of the locales the corpora are written in
 		 * (en, de, fr, es, it, nl, pt, ru, hu, tr, sk).  Russian is in the genitive,
-		 * which is the form a date takes.  Matched case-insensitively.
+		 * which is the form a date takes.  Matched case-insensitively.  Turkish since
+		 * ledger8 ("9 Eyl\u00fcl 2026" against "5 Ekim 2026" in 719 and 11256).
 		 */
 		private static final String MONTHS =
-				"jan(?:uary|uar|vier|eiro)?|feb(?:ruary|ruar)?|f[e\u00e9]v(?:rier|ereiro)?|"
+				"ocak|\u015fubat|mart|nisan|may\u0131s|haziran|temmuz|a\u011fustos|eyl\u00fcl|ekim|kas\u0131m|aral\u0131k|"
+				+ "jan(?:uary|uar|vier|eiro)?|feb(?:ruary|ruar)?|f[e\u00e9]v(?:rier|ereiro)?|"
 				+ "mar(?:ch|ch|s|zo|\u00e7o|z|ec)?|apr(?:il|ile)?|avr(?:il)?|abr(?:il)?|"
 				+ "ma[yiej]|mei|mai|mag(?:gio)?|maj|"
 				+ "jun[ie]?|jun(?:e|io|ho)?|juin|giu(?:gno)?|"
@@ -234,6 +241,19 @@ public final class PdfLayout {
 		 *  is required, so a section number ("1.2.34") is not a date. */
 		private static final java.util.regex.Pattern NUMERIC_DATE = java.util.regex.Pattern
 				.compile("\\b(?:\\d{4}[./-]\\d{1,2}[./-]\\d{1,2}|\\d{1,2}[./-]\\d{1,2}[./-]\\d{4})\\b");
+
+		/** {@code 05.10.26}: a two-digit year, so two-digit day and month, both in range, with one
+		 *  separator, and not inside a longer number ({@code 1.10.11.12}).  A section number
+		 *  {@code 10.11.12} reads as a date too, on both sides alike.  Word's footer DATE
+		 *  {@code \@ "dd.MM.yy"} refreshed at export (ledger8). */
+		private static final java.util.regex.Pattern SHORT_YEAR_DATE = java.util.regex.Pattern
+				.compile("(?<![\\d./-])(?:0[1-9]|[12]\\d|3[01])([./-])(?:0[1-9]|1[0-2])\\1\\d{2}(?!\\d|[./-]\\d)");
+
+		/** {@code 09-September-2026}, {@code 20-Mar-2017}: Word's SAVEDATE {@code d-MMMM-yyyy}
+		 *  refreshed at export (ledger8). */
+		private static final java.util.regex.Pattern HYPHEN_DATE = java.util.regex.Pattern
+				.compile("\\b\\d{1,2}-(?:" + MONTHS + ")\\.?-\\d{4}\\b",
+						java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.UNICODE_CASE);
 
 		/** {@code 5 September 2026}, {@code 5. September 2026}, {@code 5 sept. 2026}. */
 		private static final java.util.regex.Pattern DMY_DATE = java.util.regex.Pattern
@@ -261,6 +281,8 @@ public final class PdfLayout {
 			}
 			if (!digit) return s;
 			String out = NUMERIC_DATE.matcher(s).replaceAll(DATE_TOKEN);
+			out = SHORT_YEAR_DATE.matcher(out).replaceAll(DATE_TOKEN);
+			out = HYPHEN_DATE.matcher(out).replaceAll(DATE_TOKEN);
 			out = DMY_DATE.matcher(out).replaceAll(DATE_TOKEN);
 			out = MDY_DATE.matcher(out).replaceAll(DATE_TOKEN);
 			out = CLOCK_TIME.matcher(out).replaceAll(TIME_TOKEN);

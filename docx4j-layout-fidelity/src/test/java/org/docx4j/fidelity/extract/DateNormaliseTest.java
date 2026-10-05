@@ -33,6 +33,18 @@ public class DateNormaliseTest {
 		assertEquals(D, PdfLayout.Line.normaliseDates("5 de septiembre de 2026"));
 		assertEquals(D, PdfLayout.Line.normaliseDates("5 settembre 2026"));
 		assertEquals(D, PdfLayout.Line.normaliseDates("5 сентября 2026"));
+		assertEquals(D, PdfLayout.Line.normaliseDates("9 Eylül 2026"));
+		assertEquals(D, PdfLayout.Line.normaliseDates("5 Ekim 2026"));
+		assertEquals(D, PdfLayout.Line.normaliseDates("12 MAYIS 2026"));
+	}
+
+	/** Word's SAVEDATE "d-MMMM-yyyy" and footer DATE "dd.MM.yy", refreshed at export (ledger8). */
+	@Test
+	public void hyphenAndShortYearDates() {
+		assertEquals(D + " " + T, PdfLayout.Line.normaliseDates("09-September-2026 8:10 PM"));
+		assertEquals(D, PdfLayout.Line.normaliseDates("20-March-2017"));
+		assertEquals("Stand: " + D, PdfLayout.Line.normaliseDates("Stand: 05.10.26"));
+		assertEquals(D + ".", PdfLayout.Line.normaliseDates("09.09.26."));
 	}
 
 	@Test
@@ -54,6 +66,11 @@ public class DateNormaliseTest {
 		assertEquals("pages 5-2026", PdfLayout.Line.normaliseDates("pages 5-2026"));
 		assertEquals("September", PdfLayout.Line.normaliseDates("September"));
 		assertEquals("Article 5 of 2026", PdfLayout.Line.normaliseDates("Article 5 of 2026"));
+		assertEquals("1.10.11.12", PdfLayout.Line.normaliseDates("1.10.11.12"));
+		assertEquals("10.11.12.3", PdfLayout.Line.normaliseDates("10.11.12.3"));
+		assertEquals("32.01.26", PdfLayout.Line.normaliseDates("32.01.26"));
+		assertEquals("05.13.26", PdfLayout.Line.normaliseDates("05.13.26"));
+		assertEquals("05.10-26", PdfLayout.Line.normaliseDates("05.10-26"));
 	}
 
 	/** A line with no digit at all short-circuits without running a regex. */
