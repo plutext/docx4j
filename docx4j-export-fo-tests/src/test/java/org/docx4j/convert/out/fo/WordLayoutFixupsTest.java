@@ -103,6 +103,30 @@ public class WordLayoutFixupsTest {
 		assertTrue("on the empty block, before the list-block", brk < out.indexOf("<fo:list-block"));
 	}
 
+	/** A break-only paragraph ending the document gives Word no further page from mode 12:
+	 *  the mark after the break is the document's last line, on the page before it (the five
+	 *  document-end-break probes in mode 15, and the pagebreak-paragraph probes' case F in
+	 *  modes 12, 14 and 15).  The break goes, and the empty block with it.  @since 17.3.1 */
+	@Test
+	public void aBreakEndingTheDocumentCostsNoPage() {
+		String in = flow("<fo:block>one</fo:block>"
+				+ "<fo:block break-before=\"page\" white-space-treatment=\"preserve\"> </fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertEquals("no page boundary", 0, count(out, "break-before=\"page\""));
+		assertFalse("the empty break block is gone", out.contains("white-space-treatment=\"preserve\"> </fo:block>"));
+		assertTrue(out.contains(">one<"));
+	}
+
+	/** Below mode 12 Word gives the mark moved past a break a line on the next page (corpus
+	 *  document 11657), so a break ending the document keeps its page.  @since 17.3.1 */
+	@Test
+	public void aBreakEndingTheDocumentInMode11KeepsItsPage() {
+		String in = flow("<fo:block>one</fo:block>"
+				+ "<fo:block break-before=\"page\" white-space-treatment=\"preserve\"> </fo:block>");
+		String out = WordLayoutFixups.apply(in, 11);
+		assertEquals("one page boundary", 1, count(out, "break-before=\"page\""));
+	}
+
 	/** A break paragraph which opens the flow keeps its page: the section break has
 	 *  already started one, so the break makes another. */
 	@Test

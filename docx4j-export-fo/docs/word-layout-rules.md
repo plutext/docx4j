@@ -893,7 +893,17 @@ re-gated with this batch's rules, still costs more than it gives (one document t
 count, five a page away). And a break-only paragraph which ends the document (F) gives Word no
 further page here, where `page-blank`'s, after a paragraph with 12pt after, does; the two
 differ in nothing else measured, the one corpus document of the shape already matches, and the
-rule above is left as it is.
+rule above is left as it is. **F is settled (17.3.1, [below](#s33sect)):** Word changed between
+builds. The five `document-end-break` probes (2026-10-06) give no further page in any of its
+shapes, and `page-blank` re-cut the same day has 8 pages where its 2026-09-09 golden has 9, pages
+1-8 within 0.25pt. docx4j had kept the page, and with the page-break line off, F's page count had
+matched only because the probe was a page short before it. With the end-of-document break gone,
+both rules on against both off (gate b135, CR-031 phase 1 and 2 in place): ten documents to Word's
+page count (4372, 2703, 6115 in two corpora, F in modes 12, 14 and 15, `page-break-line` and the
+four `page-top-space-before` probes) and three a page away - 8814, 11398 and 3493, each already
+denser than Word before the break (8814 overflows its page 20 either way; 11398's page-2 table
+ends 29pt below Word's; 3493 is a page over by page 12, and gets the blank page Word itself has
+before its schedule). Their goldens are 2026-09-09 cuts.
 
 A paragraph holding only a page break leaves no empty
 line at the top of the new page. The next paragraph's space-before is dropped there where
@@ -934,9 +944,21 @@ add one for the break as well. Measured on `tab-toc-pageref`, whose third sectio
 way: Word's document is 6 pages and its fourth section opens page 4 at the top (its first
 heading at y=84.3, the same as on every other page), where docx4j had a blank page 4
 carrying nothing but the empty block the break had been moved onto, and 7 pages. At the end
-of the **document** the page is Word's own - `page-blank` ends in a page break and Word
-gives it a ninth page - so a break with no section after it keeps its page
-(`WordLayoutFixups.mergePageBreakParagraphs`). The blank page was not
+of the **document** the page was taken to be Word's own - `page-blank` ends in a page break and
+Word gave it a ninth page - so until 17.3.1 a break with no section after it kept its page
+(`WordLayoutFixups.mergePageBreakParagraphs`). <a id="s33docend"></a>**From compatibility mode
+12 it costs none there either (17.3.1):** the mark after the break is the document's last line, on
+the page before it, and nothing follows to start another. Measured on the five `document-end-break`
+probes (mode 15: one paragraph; the same with 12pt after; in a second, nextPage section; both; and a
+section with an earlier break-only paragraph and text after it) and on the `pagebreak-paragraph`
+probes' case F in modes 12, 14 and 15: Word ends each on its last page of text, where docx4j added
+an empty one. `page-blank`'s ninth page was the Word build of 2026-09: re-cut on 2026-10-06 it has 8
+pages, its old ninth page having held only the break-only paragraph's mark (in Aptos, the paragraph's
+font), and corpus document 1372 says the same twice, its 2026-09-09 golden 2 pages and its 2026-10-04
+golden (real-c2) 1. The three goldens of the real corpora cut on 2026-09-09 therefore still carry the
+old page where a document ends in a break-only paragraph (1372 there now reads one page short). Below
+mode 12 the break keeps its page: Word gives the mark moved past a break a line on the next page
+there (11657, [above](#s33each)). The blank page was not
 `force-page-count`: docx4j writes `no-force` on every page-sequence already, and Word's own
 `w:pgNumType w:start` restart (98 in that probe) costs no page either.
 

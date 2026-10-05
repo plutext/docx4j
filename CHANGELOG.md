@@ -188,6 +188,9 @@ PDF via XSL FO:
   only its separators printed the heading, and a document of several sections printed it at each
   section's end.
 
+- A paragraph holding only a page break at the end of a document no longer gives it an empty
+  last page (compatibility mode 12 and later), as Word for Microsoft 365 lays it out.
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's

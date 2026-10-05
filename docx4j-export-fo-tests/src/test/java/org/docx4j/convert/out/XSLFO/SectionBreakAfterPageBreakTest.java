@@ -22,9 +22,11 @@ import org.w3c.dom.NodeList;
  * one anyway.  Measured on the {@code tab-toc-pageref} probe, whose third section ends
  * with a page-break paragraph and then its section-break paragraph: Word renders 6 pages
  * and opens the next section at the top of page 4, where docx4j had a page 4 holding
- * nothing but the empty block the break had been moved onto (7 pages).  At the end of the
- * <em>document</em> the page is Word's own, which the {@code page-blank} probe measures
- * (it ends in a page break and Word gives it a ninth page), so the break stays there.
+ * nothing but the empty block the break had been moved onto (7 pages).  Nor does a break
+ * ending the <em>document</em> get one, from compatibility mode 12 (17.3.1; until then it
+ * kept its page, on the {@code page-blank} golden's ninth page): measured on the five
+ * document-end-break probes and the pagebreak-paragraph probes' case F, Word ends each on
+ * its last page of text.
  *
  * @since 17.1.0
  */
@@ -48,7 +50,7 @@ public class SectionBreakAfterPageBreakTest extends AbstractXSLFOTest {
 				+ "<w:p><w:r><w:br w:type=\"page\"/></w:r></w:p>"
 				+ "<w:p><w:pPr>" + sectPr("nextPage") + "</w:pPr></w:p>"
 				+ "<w:p><w:r><w:t>section two</w:t></w:r></w:p>"
-				// and the document ends with one, which Word does give a page
+				// and the document ends with one, which Word gives no page either (mode 15)
 				+ "<w:p><w:r><w:br w:type=\"page\"/></w:r></w:p>"
 				+ sectPr(null)
 				+ "</w:body></w:document>"));
@@ -69,8 +71,8 @@ public class SectionBreakAfterPageBreakTest extends AbstractXSLFOTest {
 
 		assertEquals("the break ending the first section costs no page: the next section starts one",
 				0, pageBreaks((Element) sequences.item(0)));
-		assertEquals("the break ending the document keeps its page",
-				1, pageBreaks((Element) sequences.item(1)));
+		assertEquals("nor does the break ending the document",
+				0, pageBreaks((Element) sequences.item(1)));
 	}
 
 	/** How many blocks of this page-sequence ask for a page of their own. */

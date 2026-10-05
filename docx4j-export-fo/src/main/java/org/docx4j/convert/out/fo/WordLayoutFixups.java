@@ -4398,9 +4398,20 @@ public final class WordLayoutFixups {
 				// probe, whose third section ends "page break paragraph, section-break
 				// paragraph" - Word 6 pages, and the section after it opens page 4 at the
 				// top; ours had a page 4 holding nothing but that empty block.  At the end
-				// of the document the page is Word's (the page-blank probe ends in a page
-				// break and Word gives it a ninth page), so the break stays there.
+				// of the document the page was taken to be Word's (the page-blank probe ends
+				// in a page break and Word gave it a ninth page), so the break stayed there.
 				// @since 17.1.0
+				// Nor at the end of the document, from compatibility mode 12 (17.3.1): the
+				// mark after the break is Word's last line, on the page before it, and
+				// nothing follows to start another page.  Measured on the five
+				// document-end-break probes (mode 15: one paragraph; with 12pt after; in a
+				// second, nextPage section; both; and a section with an earlier break-only
+				// paragraph and text after it) and on the pagebreak-paragraph probes' case F
+				// in modes 12, 14 and 15: Word ends each on its last page of text, where
+				// docx4j added an empty page.  The page-blank golden (2026-09-09), whose
+				// ending is the same, is the one reading that disagrees.  Below mode 12 Word
+				// gives the mark moved past a break a line on the next page (11657, above), so
+				// the break stays there.
 				// "nothing left in this section" is nothing left in the *flow*, not merely
 				// nothing left beside this block: a multi-column section wraps its
 				// trailing material in a span="all" block, and the test used to ask for
@@ -4424,7 +4435,8 @@ public final class WordLayoutFixups {
 				// parity 0.3410 -> 0.9048).  Not where it carries an id, which something may
 				// name, nor where it opens the flow as well - it would be the flow's only
 				// block, and an fo:flow must hold one.  @since 17.3.1
-				if (next == null && lastInFlow(empty) && sectionFollows(empty)) {
+				if (next == null && lastInFlow(empty)
+						&& (sectionFollows(empty) || compat == null || compat.mode() >= 12)) {
 					empty.removeAttribute("break-before");
 					if (blankBlock(empty) && !empty.hasAttribute("id") && !opensFlow(empty)) {
 						empty.getParentNode().removeChild(empty);
