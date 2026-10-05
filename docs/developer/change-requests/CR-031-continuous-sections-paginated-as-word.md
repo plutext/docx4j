@@ -11,7 +11,7 @@ review, 8b509a0e8 on `2.11-docx4j.5`; proposed, about five to six days; implemen
 Jason's go there). **Phase 2's docx4j side DONE 2026-10-05** (305264ed3,
 1ee6dfa8f; §6), gated end to end on fop/CR-017's snapshot (b114 control 0 movers; b115/b118); it
 reaches users with the fork release carrying CR-017.
-P6 read (§2 D3); P7 proposed.
+P6 read (§2 D3); P7 cut, awaiting the Word run.
 
 ## 0. Why now
 
@@ -464,7 +464,7 @@ distances and texts together with it, mode 14, a section starting at a page top,
   page takes after the restart, where the folios run 1, 2, 2, 3, 4 - by the printed folio, or by the
   physical page.
 
-- **P7** (proposed 2026-10-05, after P6; for the restart step, phase 3), all with
+- **P7** (cut 2026-10-05, after P6, on the share for the Word run; for the restart step, phase 3), all with
   `w:evenAndOddHeaders` and each section's odd and even headers and footers naming themselves:
   - `continuous-restart-evenodd-start2`: P6 with `w:start="2"`. H1 puts folio 2 (even) on physical
     page 3 (odd); H2 counts from page 2, so page 3 prints 3. Under H1, page 3's header (EVEN or ODD)

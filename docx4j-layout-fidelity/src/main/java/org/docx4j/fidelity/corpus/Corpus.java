@@ -2978,6 +2978,9 @@ public final class Corpus {
 		PROBES.add(sectionBreakParagraphFootProbe());
 		PROBES.add(continuousRestartEvenOddProbe(false));   // P6, the CR-031 review's finding 4
 		PROBES.add(continuousRestartEvenOddProbe(true));
+		PROBES.add(continuousRestartEvenOddProbe("continuous-restart-evenodd-start2", 40, 2, false));   // P7
+		PROBES.add(continuousRestartEvenOddProbe("continuous-restart-evenodd-start2-mirror", 40, 2, true));
+		PROBES.add(continuousRestartEvenOddProbe("continuous-restart-evenodd-oddstart", 15, 1, false));
 
 		/*
 		 * CR-016's probe set (docs/developer/change-requests/CR-016-font-selection-and-mapping.md,
@@ -9007,11 +9010,26 @@ public final class Corpus {
 	 * whether they follow the printed folio or the physical page.  @since 17.3.1 (CR-031 phase 0)
 	 */
 	private static Probe continuousRestartEvenOddProbe(boolean mirror) {
-		return new Probe("continuous-restart-evenodd" + (mirror ? "-mirror" : ""),
-				"S1 runs 40 exact 24pt lines, to mid page 2; S2, continuous, w:pgNumType w:start=\"1\", 80 lines, to "
-				+ "page 5; w:evenAndOddHeaders, each section's odd and even headers and footers naming themselves and "
+		return continuousRestartEvenOddProbe("continuous-restart-evenodd" + (mirror ? "-mirror" : ""), 40, 1, mirror);
+	}
+
+	/**
+	 * P6's shape with S1's length and S2's restart number as given (CR-031 probe P7, after P6 showed that with
+	 * w:evenAndOddHeaders the restart counts from the first page S2 owns - folios 1, 2, 1, 2, 3 - where P3, without
+	 * them, counted from the page S2 starts on).  Two readings fit P6: (H1) with odd and even headers the count
+	 * starts at the first page the section owns; (H2) Word puts the origin where the folio's parity matches the
+	 * physical page's.  {@code -start2}: S2 restarts at 2 - H1 puts folio 2 (even) on physical page 3 (odd), H2
+	 * counts from page 2 so page 3 prints 3; under H1 page 3's header says whether odd/even follows the folio or the
+	 * page, and the {@code -mirror} twin's x says the same for the margins.  {@code -oddstart}: S1 runs 15 lines,
+	 * so S2 (start 1) begins mid-page 1, a physical odd page - H1: page 2, the first S2 owns, prints 1 (odd folio,
+	 * even page); H2: counting from page 1, page 2 prints 2.  @since 17.3.1 (CR-031 phase 0)
+	 */
+	private static Probe continuousRestartEvenOddProbe(String id, int s1Lines, int start, boolean mirror) {
+		return new Probe(id,
+				"S1 runs " + s1Lines + " exact 24pt lines; S2, continuous, w:pgNumType w:start=\"" + start + "\", 80 lines; "
+				+ "w:evenAndOddHeaders, each section's odd and even headers and footers naming themselves and "
 				+ "printing the folio" + (mirror ? "; w:mirrorMargins, inside 108pt, outside 36pt" : "")
-				+ "; mode 15.  Read which header and footer, odd or even, each page carries"
+				+ "; mode 15.  Read each page's folio and which header and footer, odd or even, it carries"
 				+ (mirror ? ", and the x of its lines" : ""), () -> {
 			Doc d = Doc.create(15);
 			if (mirror) {
@@ -9022,9 +9040,9 @@ public final class Corpus {
 				m.setRight(BigInteger.valueOf(720));   // outside
 			}
 			evenOddHeaderFooter(d, "S1");
-			d.endSectionOn(exactLines(d, "S1", 40), "continuous");
+			d.endSectionOn(exactLines(d, "S1", s1Lines), "continuous");
 			evenOddHeaderFooter(d, "S2");
-			d.pageNumberStart(1);
+			d.pageNumberStart(start);
 			exactLines(d, "S2", 80);
 			return d.pkg();
 		});
