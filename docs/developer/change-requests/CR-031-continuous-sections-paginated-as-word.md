@@ -688,6 +688,13 @@ The page-break line (`pageBreakParagraphLine`), the other half of what blocks `t
 Word's. It is triaged on its own: re-gated in batch 52 (b106), five documents lose a page and one
 reaches Word's count. Those five will be read for a common cause. Turning on `tableTakesPageBreak`
 (this CR's former phase 4) moves to that triage, which needs this CR's phase 2 for 12802.
+**Settled 2026-10-06: both on by default** (Jason). The triage found one docx4j defect behind the
+page-break line's losses, a break-only paragraph ending the document given a page of its own, which
+Word's current build does not give (fixed in a0d3562a4: the five document-end-break probes, and
+page-blank re-cut with 8 pages where its 2026-09-09 golden had 9); the remaining losers are density
+the line exposes (8814, 11398, 3493, each already fuller than Word's page before the break). Both
+rules on against both off with phase 2 and that fix in (b135): ten documents to Word's page count,
+three a page away.
 
 ## 10. Effort (rough)
 

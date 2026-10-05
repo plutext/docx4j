@@ -4427,13 +4427,14 @@ public final class WordLayoutFixups {
 			// A table takes it too, measured (17.3.1): on the pagebreak-paragraph-compat
 			// probes, a break-only paragraph followed by a table, Word's first row is at the
 			// top of the next page in modes 12, 14 and 15 alike, where docx4j keeps the
-			// paragraph's line (and its space-after) above it, 24.2pt.  Off by default
+			// paragraph's line (and its space-after) above it, 24.2pt.  Held off at first
 			// (docx4j.convert.out.fo.wordLayout.tableTakesPageBreak): the kept line had been
-			// standing in for two other differences, and taking it away costs the documents
+			// standing in for two other differences, and taking it away cost the documents
 			// that rest on them - 12802 (its continuous sections' own top margins, which Word
-			// applies from the next page and docx4j does not) and 4994 (the line the break
+			// applies from the next page and docx4j did not) and 4994 (the line the break
 			// paragraph keeps on the page before the break, pageBreakParagraphLine, off) -
-			// where it brings 2703 and 6749 to Word's page count.  It goes on with them.
+			// where it brings 2703 and 6749 to Word's page count.  On since 17.3.1, with them
+			// (CR-031 phase 2 for 12802, and the page-break line on).
 			// A numbered paragraph is an fo:list-block, and takes the break as a block does.
 			// It had been left out, so the break stayed on the empty block in front of it and,
 			// where the numbered paragraph breaks the page itself (a heading whose style has
@@ -4647,11 +4648,11 @@ public final class WordLayoutFixups {
 		}
 	}
 
-	/** {@code docx4j.convert.out.fo.wordLayout.tableTakesPageBreak}, default false: see
+	/** {@code docx4j.convert.out.fo.wordLayout.tableTakesPageBreak}, default true: see
 	 *  {@link #mergePageBreakParagraphs}.  @since 17.3.1 */
 	static boolean tableTakesPageBreak() {
 		return org.docx4j.Docx4jProperties.getProperty(
-				"docx4j.convert.out.fo.wordLayout.tableTakesPageBreak", false);
+				"docx4j.convert.out.fo.wordLayout.tableTakesPageBreak", true);
 	}
 
 	/** Whether this block is the first thing its fo:flow holds, so that the section's own

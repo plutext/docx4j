@@ -194,8 +194,8 @@ key in `docx4j.properties` still wins, and a deployment without either file gets
 | `docx4j.convert.out.fo.tables.rowKeepWithNext` | `true` | A table row whose first paragraph (first cell) carries `w:keepNext` is written with `keep-with-next="always"` on the `fo:table-row`, so it keeps with the next row and, on the last row, keeps the table with the paragraph after it ([§3](#s39rowkeep)). `false` leaves the keep on the cells' blocks alone, as 17.1.0 did, where FOP drops it at the last row. |
 | `docx4j.convert.out.fo.tables.hideMark` | `true` | A cell with `w:hideMark` whose last paragraph paints nothing takes no line for it: the row is as tall as its margins and borders, as Word sizes it ([§6](#s6hidemark)). `false` gives the mark its line, as 17.1.0 did. |
 | `docx4j.convert.out.fo.wordLayout.keepBreakOnlyParagraph` | `true` | A paragraph of one or two `w:br` and nothing that paints is marked `keep-together.within-page="always"`: Word's widow control cannot split a two- or three-line paragraph, where FOP breaks between the nested blocks the breaks are written as ([§3](#s39brkeep)). `false` leaves it breakable, as 17.1.0 did. |
-| `docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine` | `false` | `true`: a paragraph holding only a page break keeps the line before its break, sized by its mark, at the foot of the page it is on; where the page has no room for it the line goes to the next page and the break to the one after ([§3.3](#s33line)). Off by default: over the corpora it costs more pages than it gives, and the probe behind it is with Word. |
-| `docx4j.convert.out.fo.wordLayout.tableTakesPageBreak` | `false` | `true`: a break-only paragraph followed by a table gives its break to the table, which starts at the top of the page as Word's does, rather than keeping the paragraph's line there ([§3.3](#s33table)). Off by default until continuous sections' margins and the page-break line are Word's. |
+| `docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine` | `true` | A paragraph holding only a page break keeps the line before its break, sized by its mark, at the foot of the page it is on; where the page has no room for it the line goes to the next page and the break to the one after ([§3.3](#s33line)). On since 17.3.1 (off until then: over the corpora it cost more pages than it gave while the differences it rides on were docx4j's). `false` folds the paragraph into what follows. |
+| `docx4j.convert.out.fo.wordLayout.tableTakesPageBreak` | `true` | A break-only paragraph followed by a table gives its break to the table, which starts at the top of the page as Word's does, rather than keeping the paragraph's line there ([§3.3](#s33table)). On since 17.3.1, with continuous sections' margins and the page-break line Word's. `false` keeps the line. |
 | `docx4j.convert.out.fo.wordLayout.restartParityBlankPage` | `true` | In a document with different odd and even headers, a nextPage section restarting its folio at the parity of the page before it gets a blank page between, as Word's does (an oddPage or evenPage one always does) ([§7](#s7parity)). `false` leaves it out. On since 17.3.1 (CR-031 phase 1). |
 | `docx4j.convert.out.fo.wordLayout.pageMasterByContent` | `auto` | A merged run of continuous sections whose top or bottom margins, or header or footer distances, differ gets a page master per part, and each page takes the masters of the section owning its first line, as Word gives it ([§7](#s7pagemasters)). `auto` does so where the FO renderer chooses page masters by content (the docx4j FO renderer's capability `page-master-by-content`, fork CR-017); `false` never; `true` writes them whatever the renderer, which ignores what it does not know. |
 | `docx4j.convert.out.fo.measuredRegionExtents` | `auto` | Header and footer extents are measured by the FO renderer from each master's static content (`fox:extent="measured"`), and the extent pre-pass is skipped ([§7](#s7measured)). `auto` does so where the renderer has the capability `measured-region-extents` (fork CR-018); `false` always runs the pre-pass; `true` asks whatever the renderer, which on one that does not measure leaves the body under the header. |
@@ -877,7 +877,11 @@ break-only paragraph at the foot of a page which docx4j had already filled a few
 fuller than Word, so that a line Word had room for tipped over into an empty page - and
 one such document three pages. Word does move the line; what decides is that the line's
 cost when our page is a few points too full is a page, where the density errors it rides
-on are points. It should go on once those are down.
+on are points. It should go on once those are down. **On since 17.3.1**, with
+`tableTakesPageBreak` ([below](#s33table)): with continuous sections' own margins (CR-031) and
+the end-of-document break ([§3.3](#s33docend)) Word's, the two together bring ten documents to
+Word's page count and take three a page away, each of those already fuller than Word's page
+before the break (gate b135).
 
 <a id="s33table"></a>**The `pagebreak-paragraph-compat` probes (17.3.1) confirm it a third time and add
 three things**, the same in modes 12, 14 and 15 (so these are not mode-15 rules, as ledger8 had
@@ -885,8 +889,8 @@ supposed). A break-only paragraph after a page filled to 1.9pt of its foot (case
 blank page - the line, then the break - and with 25.9pt left (E) none. A table after a
 break-only paragraph (B) starts at the top of the next page, where docx4j keeps the paragraph's
 line and space-after above it, 24.2pt; giving the break to the table is right by the probe and
-brings 2703 and 6749 to Word's page count, but it is off by default
-(`docx4j.convert.out.fo.wordLayout.tableTakesPageBreak`): the kept line was standing in for the
+brings 2703 and 6749 to Word's page count, but it was held off at first
+(`docx4j.convert.out.fo.wordLayout.tableTakesPageBreak`, on since 17.3.1): the kept line was standing in for the
 page-break line here (4994 loses a page without it) and, in 12802, for a continuous section's
 own top margin, which Word applies from the page after the break and docx4j does not (34 corpus
 documents have a continuous section changing the top or bottom margin). The page-break line,
@@ -904,7 +908,7 @@ page count (4372, 2703, 6115 in two corpora, F in modes 12, 14 and 15, `page-bre
 four `page-top-space-before` probes) and three a page away - 8814, 11398 and 3493, each already
 denser than Word before the break (8814 overflows its page 20 either way; 11398's page-2 table
 ends 29pt below Word's; 3493 is a page over by page 12, and gets the blank page Word itself has
-before its schedule). Their goldens are 2026-09-09 cuts.
+before its schedule). Their goldens are 2026-09-09 cuts. Both rules are on since 17.3.1.
 
 A paragraph holding only a page break leaves no empty
 line at the top of the new page. The next paragraph's space-before is dropped there where
@@ -956,8 +960,10 @@ probes' case F in modes 12, 14 and 15: Word ends each on its last page of text, 
 an empty one. `page-blank`'s ninth page was the Word build of 2026-09: re-cut on 2026-10-06 it has 8
 pages, its old ninth page having held only the break-only paragraph's mark (in Aptos, the paragraph's
 font), and corpus document 1372 says the same twice, its 2026-09-09 golden 2 pages and its 2026-10-04
-golden (real-c2) 1. The three goldens of the real corpora cut on 2026-09-09 therefore still carry the
-old page where a document ends in a break-only paragraph (1372 there now reads one page short). Below
+golden (real-c2) 1. Of the goldens of the real corpora cut on 2026-09-09, two end in a page break and
+were re-cut on 2026-10-06: 1372 now has Word's 1 page, and 11875, whose last paragraph is text and
+then the break, still has 144 - the mark's own page, which a break after text gives the mark in its
+paragraph (`w:splitPgBreakAndParaMark`), is kept, and docx4j keeps it too. Below
 mode 12 the break keeps its page: Word gives the mark moved past a break a line on the next page
 there (11657, [above](#s33each)). The blank page was not
 `force-page-count`: docx4j writes `no-force` on every page-sequence already, and Word's own

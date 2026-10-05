@@ -85,13 +85,15 @@ public class Preprocess extends ConversionFeatures {
 	}
 
 	/** Whether PageBreak.process keeps a break-only paragraph's line (see there): the
-	 *  PP_PDF_PAGEBREAK_PARAGRAPH_LINE feature and the property both say so.  Public so
-	 *  that org.docx4j.model.pagination.Paginate can replay the split (CR-012).
+	 *  PP_PDF_PAGEBREAK_PARAGRAPH_LINE feature asks for it and the property
+	 *  docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine does not say false (on by
+	 *  default since 17.3.1).  Public so that org.docx4j.model.pagination.Paginate can
+	 *  replay the split (CR-012).
 	 *  @since 17.2.0 */
 	public static boolean keepBreakLine(Set<String> features) {
 		return features.contains(PP_PDF_PAGEBREAK_PARAGRAPH_LINE)
 				&& org.docx4j.Docx4jProperties.getProperty(
-						"docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine", false);
+						"docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine", true);
 	}
 
 	/** Check what parts might be changed by the preprocessing, 

@@ -68,6 +68,7 @@ public final class PaginationMap {
 	}
 
 	private final List<String> keys = new ArrayList<String>();
+	private boolean breakLinesKept;
 	private final Map<String, Integer> pageIndexOf = new LinkedHashMap<String, Integer>();
 	private final Map<String, Integer> lastPageIndexOf = new LinkedHashMap<String, Integer>();
 	private final Map<String, Integer> pageOf = new LinkedHashMap<String, Integer>();
@@ -138,6 +139,22 @@ public final class PaginationMap {
 	}
 
 	/** The number of pages in the rendering. */
+	/**
+	 * Whether the layout kept a break-only paragraph's line on the page its break is on
+	 * (the PDF export's page-break line, {@code PageBreak}'s split: on by default since
+	 * 17.3.1), so that the map places such a paragraph on that page, rather than - its
+	 * break folded into the next block - on the page after.
+	 *
+	 * @since 17.3.1
+	 */
+	public boolean breakLinesKept() {
+		return breakLinesKept;
+	}
+
+	void setBreakLinesKept(boolean kept) {
+		this.breakLinesKept = kept;
+	}
+
 	public int getPageCount() {
 		return pageCount;
 	}

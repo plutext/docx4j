@@ -125,11 +125,13 @@ public abstract class ConversionFeatures {
 	 * break is split there, so that its empty first half is that line.
 	 * Where the page has no room left for the line it goes to the next page and the
 	 * break to the one after, which is a page with nothing on it, as Word gives it.
-	 * Honoured only with PP_COMMON_MOVE_PAGEBREAK, and only where property
-	 * docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine is true: it is off by
-	 * default, since over the corpora the line tips a page whose content is already a
-	 * few points fuller than Word's into an empty page more often than it gives the one
-	 * Word has (measured on one document with a 28pt mark; a probe is with Word).
+	 * Honoured only with PP_COMMON_MOVE_PAGEBREAK, and not where property
+	 * docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine is false.  Off by default
+	 * until 17.3.1, since over the corpora the line tipped a page whose content was
+	 * already a few points fuller than Word's into an empty page more often than it gave
+	 * the one Word has; on since 17.3.1, with continuous sections' own margins (CR-031),
+	 * the end-of-document break and a table taking the break, which it had been standing
+	 * in for, all Word's.
 	 * @since 17.2.0
 	 */
 	public static final String PP_PDF_PAGEBREAK_PARAGRAPH_LINE = "pp.pdf.pagebreakparagraphline";

@@ -348,6 +348,23 @@ public class PaginateTest {
 	 */
 	@Test
 	public void explicitBreaksPutTheMarkerWhereWordDoes() throws Exception {
+		explicitBreaks();
+	}
+
+	/** The same with the page-break line off (on by default since 17.3.1): a break-only
+	 *  paragraph's break is folded into the next block, so the map has it a page later,
+	 *  and the markers still land where Word's do.  @since 17.3.1 */
+	@Test
+	public void explicitBreaksWithoutThePageBreakLine() throws Exception {
+		org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine", "false");
+		try {
+			explicitBreaks();
+		} finally {
+			org.docx4j.Docx4jProperties.getProperties().remove("docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine");
+		}
+	}
+
+	private void explicitBreaks() throws Exception {
 
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		MainDocumentPart mdp = pkg.getMainDocumentPart();

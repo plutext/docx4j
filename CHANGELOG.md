@@ -191,6 +191,11 @@ PDF via XSL FO:
 - A paragraph holding only a page break at the end of a document no longer gives it an empty
   last page (compatibility mode 12 and later), as Word for Microsoft 365 lays it out.
 
+- A paragraph holding only a page break keeps the line before its break at the foot of its page,
+  and a table after one starts at the top of the next, as in Word: properties
+  docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine and tableTakesPageBreak are now on by
+  default (false to turn off).
+
 - A floating picture which is the only content of its header or footer paragraph is drawn where
   it was but takes no space, so the header's text after it is no longer pushed down below it.
 

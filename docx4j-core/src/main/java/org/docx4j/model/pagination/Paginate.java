@@ -182,7 +182,11 @@ public final class Paginate {
 	 * why the map has the paragraph on the page after); with {@code lineBreaks} the text
 	 * after the break gets the marker.  A paragraph holding nothing but page breaks is
 	 * taken to end on the page before the one the map places it on, so the paragraph
-	 * after it gets the marker, where Word puts it.</p>
+	 * after it gets the marker, where Word puts it - unless the layout kept its line
+	 * ({@link PaginationMap#breakLinesKept}, the PDF export's page-break line, on by default
+	 * since 17.3.1), which puts it on the page its break is on: then it ends there like any
+	 * other paragraph, and gets the marker itself where its break run opens a page (the
+	 * second of two break-only paragraphs, whose run is all an empty page holds).</p>
 	 *
 	 * @since 17.2.0 (CR-012 phase 2)
 	 */
@@ -226,12 +230,13 @@ public final class Paginate {
 			}
 
 			boolean newPage = contentEnd != null && start.intValue() > contentEnd.intValue();
-			if (newPage && !leadingBreak) {
+			boolean lineKept = breakOnly && map.breakLinesKept(); // placed on its break's page
+			if (newPage && (!leadingBreak || lineKept)) {
 				insertMarker(p);
 				written++;
 			} else if (newPage && leadingBreak && !breakOnly && lineBreaks) {
 				if (placeAt(lp, 0)) written++;   // after the break, before the text
-			} else if (breakOnly && contentEnd != null && start.intValue() - 1 > contentEnd.intValue()) {
+			} else if (breakOnly && !lineKept && contentEnd != null && start.intValue() - 1 > contentEnd.intValue()) {
 				insertMarker(p);                 // its break run opens a page
 				written++;
 			}
@@ -242,7 +247,7 @@ public final class Paginate {
 			}
 
 			int end = map.getLastPageIndex(key).intValue();
-			if (breakOnly) {
+			if (breakOnly && !lineKept) {
 				// its break is on the page before the one FOP placed it on; at the start
 				// of the document FOP places it on page 1 and ignores the break
 				contentEnd = max(contentEnd, Math.max(start.intValue() - 1, 1));
@@ -536,6 +541,7 @@ public final class Paginate {
 		boolean splitAtBreaks = movePageBreaks
 				&& CompatibilityOptions.of(pkg).is(CompatibilityOptions.Flag.SPLIT_PG_BREAK_AND_PARA_MARK);
 		boolean keepBreakLine = movePageBreaks && Preprocess.keepBreakLine(features);
+		map.setBreakLinesKept(keepBreakLine);
 
 		for (int i = 0; i < paragraphs.size(); i++) {
 			String key = keys.get(i);
