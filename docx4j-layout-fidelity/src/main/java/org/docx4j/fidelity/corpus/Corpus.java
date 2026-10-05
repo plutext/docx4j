@@ -2981,6 +2981,7 @@ public final class Corpus {
 		PROBES.add(continuousRestartEvenOddProbe("continuous-restart-evenodd-start2", 40, 2, false));   // P7
 		PROBES.add(continuousRestartEvenOddProbe("continuous-restart-evenodd-start2-mirror", 40, 2, true));
 		PROBES.add(continuousRestartEvenOddProbe("continuous-restart-evenodd-oddstart", 15, 1, false));
+		for (char v = 'a'; v <= 'e'; v++) PROBES.add(documentEndBreakProbe(v));   // case F (rules §3.3)
 
 		/*
 		 * CR-016's probe set (docs/developer/change-requests/CR-016-font-selection-and-mapping.md,
@@ -9054,5 +9055,37 @@ public final class Corpus {
 		d.addHeader(org.docx4j.wml.HdrFtrRef.EVEN, java.util.List.of(folioParagraph(section + " EVEN header, folio")));
 		d.addFooter(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.List.of(folioParagraph(section + " ODD footer, folio")));
 		d.addFooter(org.docx4j.wml.HdrFtrRef.EVEN, java.util.List.of(folioParagraph(section + " EVEN footer, folio")));
+	}
+
+	/**
+	 * document-end-break-&lt;a..e&gt; (pagebreak-paragraph-compat's open case F, rules §3.3).  Does a break-only
+	 * paragraph ending the document give Word a further page?  page-blank's does (its ninth page), the
+	 * pagebreak-paragraph probes' F does not, and they differed in nothing measured.  Each document is one page of
+	 * text and then a break-only paragraph as its last paragraph, varying what page-blank has and F has not:
+	 * a: one paragraph, no space after; b: the same with 12pt after (page-blank's last paragraph); c: a's paragraph
+	 * in a second, nextPage section (page-blank's last section is one); d: c with 12pt after; e: a single section
+	 * with a break-only paragraph earlier in it and text after (page-blank's last section has one).  Read: the page
+	 * count, and whether the last page holds anything.  @since 17.3.1
+	 */
+	private static Probe documentEndBreakProbe(char variant) {
+		return new Probe("document-end-break-" + variant,
+				"a document whose last paragraph holds nothing but a page break, variant " + variant
+				+ "; mode 15.  Read the page count and whether its last page is empty", () -> {
+			Doc d = Doc.create(15);
+			boolean twelveAfter = variant == 'b' || variant == 'd';
+			if (variant == 'c' || variant == 'd') {
+				d.para("Section one, a paragraph of its own. " + prose(1, 1)).noLabel().after(0).add();
+				d.endSection("nextPage", 0);
+			}
+			if (variant == 'e') {
+				d.para("Before the earlier break-only paragraph. " + prose(1, 2)).noLabel().after(240).add();
+				d.add(breakOnlyParagraph());
+				d.para("After the earlier break-only paragraph. " + prose(1, 3)).noLabel().after(240).add();
+			}
+			d.para("The last paragraph with text on it, variant " + variant + ". " + prose(2, 4)).noLabel()
+					.after(twelveAfter ? 240 : 0).add();
+			d.add(breakOnlyParagraph());
+			return d.pkg();
+		});
 	}
 }
