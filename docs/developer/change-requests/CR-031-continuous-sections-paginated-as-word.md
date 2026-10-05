@@ -3,7 +3,8 @@
 Status: IN PROGRESS. Proposed 2026-10-05 (Jason, after batch 52 part 2: "fix the older defect and
 turn them on?" - "yes please" to writing this CR). Phase 0 DONE 2026-10-05 (Word run; readings in
 §2, D3). Phase 1 DONE 2026-10-05 (D2, with `restartParityBlankPage` on by default; gate b111).
-Phase 2 next, on Jason's decision 1 (§7).
+Phase 2 next, on Jason's decision 1 (§7). Reviewed 2026-10-05 (another session): recommends
+4.2b, with six design findings and the staleness below folded in (§4.2b, §5 P6, §6, §7, §8).
 
 ## 0. Why now
 
@@ -16,9 +17,10 @@ leans on how docx4j paginates continuous sections. Both were committed off by de
 | `docx4j.convert.out.fo.wordLayout.tableTakesPageBreak` (ed3d7b268) | a table after a break-only paragraph starts at the page top | 12802 1.0000 -> 0.72: a continuous section's top margin (D1); 4994 a page short: the page-break line (outside this CR) |
 | `docx4j.convert.out.fo.wordLayout.restartParityBlankPage` (b3c39ed0c) | with odd and even headers, a nextPage restart repeating the parity gets a blank page | 9539 a page short -> two over: an extra page docx4j gives its first sequence (D2) |
 
-This CR fixes D1 and D2, then turns those two rules on. The page-break line
-(`pageBreakParagraphLine`, the other half of 4994) is a density question, not a section one; it is
-triaged separately (§9).
+This CR fixes D1 and D2 and turns `restartParityBlankPage` on (done, phase 1). `tableTakesPageBreak`
+also needs the page-break line (`pageBreakParagraphLine`, the other half of 4994), a density
+question rather than a section one, so turning it on belongs to that triage (§9), which depends on
+this CR's phase 2 for 12802; this CR closes at phase 3 with the property still off.
 
 ## 1. What docx4j does today (read from the code, 2026-10-05)
 
@@ -57,7 +59,9 @@ to 3 have top 860 (43pt); continuous section 4 has top 617 (30.85pt). Word's fir
 | 5 | 31.1 | 34.4 | 30.85pt, section 4 |
 
 docx4j draws every page on section 0's 36pt. (Which section's text opens each of Word's pages is
-read from the margins here, not traced.)
+read from the margins here, not traced. Page 2's 53.8 is the line the break-only paragraph kept
+above a table, which `tableTakesPageBreak` removes - to 41.1, against Word's 43.1 - and which is how
+that rule exposed this.)
 
 **An existing golden confirms the rule** - `section-continuous-geometry` (probes, cut before this
 CR): five continuous sections, each over a page long; S2 has a 2in top margin, S3 a 290.55pt footer
@@ -77,11 +81,8 @@ its first line**, and a section starting mid-page changes nothing until the next
 S2 to S5 into one sequence on S2's margins, and its pages 5 to 8 are 71pt low and 220pt long at
 the foot. (S2 itself opens a page in both, because the probe writes 11906x16838 there against the
 document's 11907x16839: a page size change, which starts a page.) This golden is phase 2's
-acceptance test. (Page 2's 53.8 is the line the break-only paragraph
-kept above a table, which `tableTakesPageBreak` removes - to 41.1, against Word's 43.1 - and which is
-how that rule exposed this.) The hypothesis, to be confirmed in phase 0: **a page takes the top and
-bottom margins, and the header and footer distances, of the section that owns its first line.**
-Phase 0 confirmed it, and its header and footer text follow the same section (D3, below).
+acceptance test. Phase 0 confirmed the rule, with the header and footer distances, and found the
+header and footer text following the same section (D3, below).
 
 **D2. An empty block at the end of a page-sequence starts a page of its own.** Corpus document
 9539: its first page-sequence (A3, sections 0 to 2, merged) ends with the paragraph
@@ -144,11 +145,13 @@ LTR: 367 documents on Word's page count, from 365.
    "after" lines all open their page at 80.5, and no page holds only a header. That is D2's rule,
    for the section-break paragraph itself as well as for the split break half.
 
-## 3. Corpus facts (the four corpora on b110, 2026-10-05)
+## 3. Corpus facts (the four corpora on b110, 2026-10-05; page counts brought to b112)
 
 - **34 documents** change the top or bottom `w:pgMar` at a continuous section break; 26 are class 2.
-- **9 are off Word's page count**: 12317 (Word 2, docx4j 1), 5507 (4, 3), 2600 (15, 13), 7235 (15, 16),
-  1137 (15, 16), 11741 (56, 54), 719 (29, 28), 9539 (22, 21), 11256 (25, 27).
+- **9 were off Word's page count on b110**: 12317 (Word 2, docx4j 1), 5507 (4, 3), 2600 (15, 13),
+  7235 (15, 16), 1137 (15, 16), 11741 (56, 54), 719 (29, 28), 9539 (22, 21), 11256 (25, 27). On b112,
+  **8**: 9539 is at Word's 22 (phase 1), and 11741 at 55 of 56 (a558bfcbf, the size-change header);
+  the other seven are unchanged.
 - How many of those nine D1 explains is not known until it is fixed: several also carry other
   differences (7235's table grid was one, fixed in 7a12ed272).
 - D2's shape - an empty block ending a page-sequence pushed onto a page of its own - is in 9539.
@@ -161,7 +164,11 @@ LTR: 367 documents on Word's page count, from 365.
 
 Where `mergePageBreakParagraphs` takes the break off the empty half of a split paragraph that ends
 a flow before another section, it removes the half as well if it holds nothing (`blankBlock`).
-Done together with `restartParityBlankPage` on (phase 1, §2's table). Small.
+Done together with `restartParityBlankPage` on (phase 1, §2's table). Small. **As committed
+(48852f8ea)** the half stays where it carries an `id` attribute (something may name it) or where it
+also opens its flow (it would be the flow's only block, and an `fo:flow` must hold one). A half
+holding a bookmark is never collected at all - its `fo:inline id` makes it non-empty - and keeps its
+break, as before this CR.
 
 ### 4.2 D1: page masters chosen per page from a layout pass
 
@@ -222,21 +229,38 @@ oscillate.
    unknown attributes on every FO (`FObj.addForeignAttribute`), so the FO tree needs nothing new.
 2. When the breaker builds an element list, record where each marked block's first element falls
    (the elements' layout managers lead to their FOs), carrying the current part across lists - FOP
-   splits a flow into lists at forced breaks and span changes.
+   splits a flow into lists at forced breaks and span changes. docx4j marks each part's outermost
+   block: the `span="all"` wrapper (`XSLT_Cols`) or indent container (`XSLT_Ind`) where the part has
+   one, else its first block.
 3. `PageBreakingAlgorithm.getLineWidth` takes the node: the page it starts is owned by the part of
    the first box after `node.position`. For a column that is not its page's first, follow
    `node.previous` back to the node which started the page. The five call sites change; nothing else
-   in the algorithm does.
+   in the algorithm does. Two cases have no first box of their own:
+   - **A list that starts mid-page** (review finding 1). After a span change FOP starts a new element
+     list on a page that already exists (`startColumnOfCurrentElementList`), and
+     `getAvailableBPD` answers with that page's `getRemainingBPD()`. That page already has an owner,
+     so the first page of a continuing list keeps the owner of the page it continues on, and its
+     height is the remaining height as now; ownership is decided afresh only from the list's next
+     page. This is the common case, not a corner: a part with fewer columns is a span change exactly
+     at a part boundary (`XSLT_Cols`), on both sides of it, so the part after a column change in
+     either direction starts its list mid-page, on a page the part before owns.
+   - **A page holding only footnote bodies** (`createFootnotePages`, two call sites; finding 3):
+     it inherits the owner of the page before it. Not measured in Word; a probe can confirm it if a
+     corpus document shows the shape.
 4. `PageProvider` gives the height of page `index` under a given part's master without caching a
    page for it (several candidates ask about the same index with different parts), and when areas are
    added (`PageBreaker.startPart`) it is told the owner of the page being started, and replaces a
    cached page whose master differs - the replacement path it already has for blank, last-page and
-   span mismatches (`newPageVP.replace(oldPageVP)`, `IDTracker.replacePageViewPort`).
+   span mismatches (`newPageVP.replace(oldPageVP)`, `IDTracker.replacePageViewPort`). Its one-entry
+   height cache (`lastRequestedIndex` / `lastReportedBPD`) is keyed by index alone and would hand one
+   part's height to a candidate asking for another (finding 2): it is keyed by index and part.
 5. "First page" for a part means the page its first line opens, so a part starting mid-page never
    uses its `first` master (P4), and one starting at a page top does.
 6. Optionally (phase 3), a restart on the marker: pages the part owns print its start number plus
-   the pages since the page it started on, which reproduces P3's 1, 2, 2, 3, and odd/even masters
-   follow that folio.
+   the pages since the page it started on, which reproduces P3's 1, 2, 2, 3. Which master - odd or
+   even - such a page takes is **not measured**: P3 prints two even folios in a row, and no probe
+   has `w:evenAndOddHeaders` or mirror margins with a continuous restart (finding 4). Probe P6 (§5)
+   reads it before phase 3, whichever of 4.2 and 4.2b is chosen.
 7. Inert unless the attribute is present ("changes nothing FOP does on its own"), with a capability in
    `Docx4jFop`.
 
@@ -309,29 +333,36 @@ an implausible footer distance - rather than applying them after a measurement.
 Caveats: the pre-pass measures a doctored copy, and the in-FOP measurement must leave out the same
 things - floating drawings in headers and footers (marked by docx4j, or emitted so they take no
 height) and the edge spacing of paragraphs emptied by their removal. On Apache FOP the pre-pass stays,
-gated by `FopCapabilities` like 4.2b, so its code remains as the fallback. Recommended to go into
-the same fork CR as 4.2b, as a second hook sharing the `PageProvider` change; docx4j then drops the
-pre-pass on the fork for every document. Gate: the corpora and probes on the fork with the hook
+gated by `FopCapabilities` like 4.2b, so its code remains as the fallback. It can go into the same
+fork CR as 4.2b, as a second hook sharing the `PageProvider` change, but it is **gated and landed
+separately** (review finding 5): it changes every PDF conversion where D1 touches some 34 documents,
+so it is its own phase (§6, phase 5) with its own corpus gate, and phase 2 does not depend on it.
+Phase 2 therefore measures the per-part masters with the existing pre-pass, which needs each part's
+masters reached by filler: the trimmed copy gives each merged part a page-sequence of its own
+(followedByPageStart's pattern), since a part's header and footer heights do not depend on its
+being merged. Gate: the corpora and probes on the fork with the hook
 against the pre-pass, every master's extents equal to the point (they are the same layout of the
 same static content) except where the doctored copy and the real header differ.
 
 ### 4.3 D3: header and footer text, first-page header, restart
 
-Phase 0 has answered (§2, D3), and all three follow the owner of the page, so they ride on 4.2's
-page map:
+Phase 0 has answered (§2, D3), and all three follow the owner of the page, so they ride on whatever
+decides the owner - 4.2b's per-page master choice (recommended), or 4.2's page map:
 
 - **Header and footer text**: a page's header follows the part that owns it, so 4.2's per-part
   masters carry per-part `fo:region-before`/`-after` names and static content, which
   `LayoutMasterSetBuilder` already writes per section.
 - **`w:titlePg`**: a part's first-page master is used only where the part owns the page it starts
   on (starts at a page top); one starting mid-page goes straight to its default (or odd/even)
-  master. The explicit `fo:page-sequence-master` of 4.2 expresses that directly.
+  master. Under 4.2b that is step 5's meaning of "first page"; under 4.2 the explicit
+  `fo:page-sequence-master` expresses it.
 - **Restart**: the folio printed on a page the restarting part owns is its start number plus the
   pages since the page it started on (P3: 1, 2, 2, 3). One `fo:page-sequence` has one counter,
-  and `fo:page-number` takes no offset, so either pass 2 writes those folios literally into the
-  part's static content (the page map knows them), or the sequence is split at the page where
-  the part takes over (rejected for margins in 4.2, but the split point is now known from pass 1).
-  To be chosen in phase 3; only documents with a restart at a continuous break pay it.
+  and `fo:page-number` takes no offset. Under 4.2b the extension carries the offset (step 6); under
+  4.2 either pass 2 writes those folios literally into the part's static content (the page map
+  knows them), or the sequence is split at the page where the part takes over. Odd/even after such
+  a restart waits on probe P6. Decision 2 (§7); only documents with a restart at a continuous break
+  pay it.
 - **Done ahead of phase 3**: a continuous break which changes the page size already ends the
   page-sequence (§7 of the rules), so the section after it owns its first page, and it now takes
   its own headers and footers there (`ConversionSectionWrapperFactory`, `followingStartsPage`).
@@ -362,16 +393,37 @@ distances and texts together with it, mode 14, a section starting at a page top,
   carrying a section break whose next section is (a) continuous, same page size; (b) continuous
   with a page size change (9539); (c) nextPage. Read: the page count and any page holding only the
   header.
+- **P6 `continuous-restart-evenodd`** (to cut before phase 3; review finding 4): P3's shape -
+  S2 continuous, `w:pgNumType w:start="1"`, starting mid-page 2 and running to page 5 - with
+  `w:evenAndOddHeaders`, each section's odd and even headers naming themselves, and a mirror-margins
+  twin (inside 108pt, outside 36pt). Read: which header (odd or even) and which side margins each
+  page takes after the restart, where the folios run 1, 2, 2, 3, 4 - by the printed folio, or by the
+  physical page.
 
 ## 6. Phases
 
-0. Probes (§5), Word run, readings into §2.
+0. Probes (§5), Word run, readings into §2. **DONE** (P1-P5). P6 to cut and run before phase 3.
 1. D2 (§4.1), with `restartParityBlankPage` turned on: they belong together (§2). Gate: 9539 to
    Word's 22 pages; the even/odd folio probe to Word's 12. **DONE** (b111, §2).
-2. D1 (§4.2), the per-page masters and the passes. Gate: 12802's page tops at Word's, the 34
-   documents read one by one.
-3. D3 (§4.3), as phase 0 decides.
-4. Turn on `tableTakesPageBreak`, gated (after the page-break line, §9), and record why it was off.
+2. D1, as decision 1 chooses. **4.2b** (recommended): the fork CR's first hook (§4.2b steps 1-5,
+   7), released or as a gated snapshot; in docx4j, per-part masters with their own vertical
+   margins, distances and region names, the marker on each part's outermost block, the pre-pass
+   measuring per-part masters (each part its own sequence in the trimmed copy), all behind
+   `FopCapabilities`. **4.2**: the pass loop and the explicit page-sequence-master. Either way the
+   gate is the same: P1's pages at Word's margins and headers' distances, the
+   section-continuous-geometry golden's pages 5 to 8, 12802's page tops at Word's, the 34
+   documents read one by one, nothing else moving; on 4.2b, both renderers (Apache FOP unchanged).
+3. D3 (§4.3): each part's own header and footer text on the pages it owns (largely free with phase
+   2's per-part masters), `w:titlePg` (step 5), the restart folio (step 6, or 4.2's literal folios),
+   with P6 read first. Scope per decision 2.
+4. *(moved out)* Turning on `tableTakesPageBreak` needs the page-break line as well (4994), which
+   is outside this CR (§9). It moves to that triage, which depends on phase 2 here (for 12802).
+   This CR closes at phase 3 with the property still off (review finding 6).
+5. The companion extent hook (end of §4.2b), if the fork CR carries it: the pre-pass retired on the
+   fork for every document. Independent of phases 2 and 3, with its own gate - the corpora and
+   probes on the fork, hook against pre-pass, every master's extents equal except where the
+   pre-pass's doctored copy differs from the real header - since it touches every PDF conversion
+   (review finding 5).
 
 ## 7. Decisions for Jason
 
@@ -382,28 +434,56 @@ distances and texts together with it, mode 14, a section starting at a page top,
    default (since 17.3.0) and the fork is maintained indefinitely in any case. If agreed, the fork
    session writes a fop/CR for it and phase 2 depends on that CR; the same CR can carry the
    companion hook that measures header and footer extents in FOP and retires the extent pre-pass
-   on the fork (end of §4.2b).
-2. **Scope of phase 3**, once phase 0 has read D3.
+   on the fork (end of §4.2b), landed and gated separately as phase 5. The review (2026-10-05)
+   agrees: it checked that all five call sites have the node in hand, and that nodes are already
+   kept apart by line, so the odd/even case is covered too.
+2. **Phase 3's restart and `w:titlePg`**: is `w:titlePg` at a continuous break in scope (a part
+   starting at a page top shows its first-page header; one starting mid-page never does - P4)?
+   And for the restart folio: under 4.2b, the extension's offset (step 6); under 4.2, literal folios
+   written in pass 2 or a split sequence. Odd/even after the restart waits on P6 either way.
+3. **Phase 5** (the extent hook in FOP): in the same fork CR as phase 2's hook, or later; and
+   whether docx4j then drops the pre-pass on the fork for every document (§4.2b, end).
 
 ## 8. Risks
 
-- The page map oscillating between passes, where a part's margins move the page on which it takes
-  over. Mitigation: at most three passes, keep the last, and log the oscillation; measure on the 34.
-- Interaction with the header and footer extent pre-pass, `Paginate`, the two-pass NUMPAGES, the
-  page-number-zero hook, folio parity, mirror margins (each master's mirrored twin) and the page
-  masters' own first/odd/even/blank alternatives. Each needs a test.
+Either way:
+- Interaction with the header and footer extent pre-pass (per-part masters to reach), `Paginate`,
+  the two-pass NUMPAGES, the page-number-zero hook, folio parity, mirror margins (each master's
+  mirrored twin) and the page masters' own first/odd/even/blank alternatives. Each needs a test.
 - A merged sequence whose parts also differ in columns: the reference part's left and right
   margins stay as they are; only the vertical margins vary per page.
+
+4.2 (passes):
+- The page map oscillating between passes, where a part's margins move the page on which it takes
+  over. Mitigation: at most three passes, keep the last, and log the oscillation; measure on the 34.
+- Render time: 2x to 4x on the affected documents.
+
+4.2b (fork extension; each needs a FOP-level test before docx4j gates it):
+- The page cache: pages made while breaking carry the position-chosen master, and ids are
+  registered against them; replacing them when areas are added must keep `IDTracker` right.
+- Lists that start mid-page (span changes at part boundaries, §4.2b step 3): the continuing page
+  keeps its owner. The common case for merged column changes, so it is tested first.
+- The height cache keyed by index and part (step 4).
+- Footnote-only pages inheriting the page before's owner, and floats, whose code reads the page
+  height too.
+- Balanced columns at span changes: `BalancingColumnBreakingAlgorithm` has its own height.
+- Odd and even masters whose body heights differ (header extents of different heights): the height
+  then depends on the folio as well as the owner.
+- The last-page re-layout (`page-position="last"`): docx4j writes none, so out of scope at first.
+- Upkeep: the change lives in `PageBreakingAlgorithm` and `PageProvider`, carried through each
+  upstream merge (fop/CR-009's pattern).
 
 ## 9. Outside this CR
 
 The page-break line (`pageBreakParagraphLine`), the other half of what blocks `tableTakesPageBreak`
 (4994), is right by three probes but costs pages wherever docx4j's page is a few points fuller than
 Word's. It is triaged on its own: re-gated in batch 52 (b106), five documents lose a page and one
-reaches Word's count. Those five will be read for a common cause.
+reaches Word's count. Those five will be read for a common cause. Turning on `tableTakesPageBreak`
+(this CR's former phase 4) moves to that triage, which needs this CR's phase 2 for 12802.
 
 ## 10. Effort (rough)
 
 Phase 0: the probes, an hour, plus Jason's Word run. Phase 1: half a day. Phase 2: two to three
 days by 4.2; by 4.2b, about two days in docx4j plus the fork CR (rough guess: two to four days in
-the fork, its session's estimate to replace this). Phase 3: a day or two, depending on phase 0. Phase 4: half a day with the gates.
+the fork, its session's estimate to replace this). Phase 3: a day or two, plus P6 and its Word run.
+Phase 5: the fork's hook (its estimate), and about a day in docx4j with the gate.
