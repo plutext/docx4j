@@ -8,8 +8,9 @@ staleness below folded in (§4.2b, §5 P6, §6, §7, §8). **Decision 1 made 202
 the fork extension. Phase 2 next (registry `docx4j/CR-031.2`), depending on the fork's **fop/CR-017**
 "page masters chosen by the content a page starts with" (written 2026-10-05 and revised after a
 review, 8b509a0e8 on `2.11-docx4j.5`; proposed, about five to six days; implementation waits on
-Jason's go there). **Phase 2's docx4j side built 2026-10-05** (§6),
-dormant until the renderer has the capability; its end-to-end gate waits on fop/CR-017's snapshot.
+Jason's go there). **Phase 2's docx4j side DONE 2026-10-05** (305264ed3,
+1ee6dfa8f; §6), gated end to end on fop/CR-017's snapshot (b114 control 0 movers; b115/b118); it
+reaches users with the fork release carrying CR-017.
 P6 read (§2 D3); P7 proposed.
 
 ## 0. Why now
@@ -506,7 +507,9 @@ distances and texts together with it, mode 14, a section starting at a page top,
    misses:
    - 12802's page 5 kept the masters before (section 4's block opens it with a space-before, whose
      box FOP's space resolver makes without a layout manager, and CR-017 took it for the part's
-     first box): fixed in the fork, 7c6f43b07, to be re-gated.
+     first box): fixed in the fork, 7c6f43b07. Re-gated on renderer r11 (d5a7616b9): page 5 starts
+     at 29.2 (Word 31.1) and ends at 753.8 (754.3), pages 3 to 6 within 2pt of Word; b118 (cand43 on
+     r11) against b116 (on r10): 0 movers, so everything b115 moved holds.
    - section-continuous-geometry's pages 5 and 6 took S3's top but not its foot, and the probe lost
      a page (9 -> 8). Two causes. docx4j's 17.1.0 clamp ignored a footer distance past a quarter of
      the page over an empty footer part - read off corpus document 5507's page 3, which its second
@@ -515,7 +518,12 @@ distances and texts together with it, mode 14, a section starting at a page top,
      clamp kept on a merged run with one master: 0 movers). And the probe's S3 declares its own
      (empty) footer where the run's first section declares none, so its pages, showing the
      run's footers, reserve nothing: that is phase 3's (each part's own headers and footers), and
-     pages 5 and 6 of that golden wait on it; its pages 3, 4, 7 and 8 have Word's tops now. **4.2**: the pass loop and the explicit page-sequence-master. Either way the
+     pages 5 and 6 of that golden wait on it; its pages 3, 4, 7 and 8 have Word's tops now.
+   **Net, b112 -> b118** (cand43 on r11): 5507 +2 lines, 3 -> 4 pages (Word's 4), line parity
+   1.0000; 7235 +22 lines; section-continuous-geometry 9 -> 8 pages (phase 3, above); class 2 LTR
+   documents on Word's page count 367 -> 368; nothing else moves in the scores. Phase 2 is DONE on
+   docx4j's side; it reaches users with the fork release carrying CR-017 and docx4j's renderer
+   version bump (export-fo's `fo.renderer.version`). **4.2**: the pass loop and the explicit page-sequence-master. Either way the
    gate is the same: P1's pages at Word's margins and headers' distances, the
    section-continuous-geometry golden's pages 5 to 8, 12802's page tops at Word's, the 34
    documents read one by one, nothing else moving; on 4.2b, both renderers (Apache FOP unchanged).

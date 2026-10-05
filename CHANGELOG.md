@@ -168,6 +168,14 @@ PDF via XSL FO:
 - A continuous section which changes the page size shows its own headers and footers on the page
   it starts, as Word does, rather than the previous section's.
 
+- On a docx4j FO renderer that chooses page masters by content (capability page-master-by-content,
+  fork CR-017), each page of a run of continuous sections takes the top and bottom margins and the
+  header and footer distances of the section owning its first line, as Word's does, rather than
+  the first section's (docx4j.convert.out.fo.wordLayout.pageMasterByContent=false to turn off).
+
+- A footer distance larger than a quarter of the page, over an empty footer, is honoured as Word
+  honours it, where it was ignored.
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's
