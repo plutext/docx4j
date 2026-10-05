@@ -677,6 +677,16 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 if (breakAt >= active.position && fitsAt(breakAt)) {
                     commitAt(breakAt);          // the tab starts the next line
                     unreachable = noStopReachable(position, tab);   // measured again there
+                } else if (!fitsAt(breakAt) && commitLastFitting()) {
+                    /* What precedes the tab does not fit either: break at the last break that
+                     * did, as the greedy loop does for any element, and the rescan meets this
+                     * tab again on the line it lands on.  Until 17.3.1 this branch gave up the
+                     * break altogether, and the text ran past the cell: measured on corpus
+                     * document 12301, "Configuración de Avance del Proyecto<tab>" in a 162.7pt
+                     * cell measure was drawn to 7.5pt past the cell edge where Word breaks
+                     * before "Proyecto"; 128 such cells cost 3 pages and 300 lines (ledger8
+                     * item 5). */
+                    return;
                 } else {
                     unreachable = false;
                 }

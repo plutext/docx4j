@@ -1628,7 +1628,11 @@ first cost a page:
 - where what precedes the tab **does not itself fit**, the ordinary break wins: the line
   breaks at the last opportunity that did and the tab is measured again on the line it lands
   on. Measured on a form whose cell holds `1.1<tab>Technische Freigabe erteilt<tab>o`, which
-  Word breaks before "erteilt". (The allowance an earlier tab's stop past the available
+  Word breaks before "erteilt". Until 17.3.1 the line manager did so only where the break
+  before the tab fitted; where it did not, it gave the break up, laid the tab out as if it
+  reached a stop, and the text ran past the cell. Measured on the 311-page report: `Configuración de Avance del
+  Proyecto<tab>` in a 162.7pt cell was drawn to 7.5pt past the cell's edge where Word breaks
+  before "Proyecto"; its 128 such cells were 3 of its 4 missing pages and 300 lines. (The allowance an earlier tab's stop past the available
   width bought the line is not room for more text, so it does not count towards the fit.)
 
 In the line manager: a tab whose stop lies past `lineWidth + endIndent` commits the line

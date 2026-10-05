@@ -138,6 +138,9 @@ PDF via XSL FO:
 - A numbered paragraph opening the document or a section keeps its space-before, as a plain one
   does.
 
+- Text before a tab which does not fit a table cell breaks onto the next line, as Word breaks it,
+  rather than running past the cell's edge.
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's
