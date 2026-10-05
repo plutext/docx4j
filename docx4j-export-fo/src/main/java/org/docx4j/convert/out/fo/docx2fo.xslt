@@ -185,9 +185,11 @@
 				
 				
 			<fo:page-sequence master-reference="{@name}" format="{$pageNumberFormat}" id="section_{@name}" force-page-count="{$pageCountVal}">
-				<xsl:if test="java:org.docx4j.convert.out.fo.XsltFOFunctions.hasPgNumTypeStart($conversionContext)">
-					<xsl:attribute name="initial-page-number"><xsl:value-of 
-						select="java:org.docx4j.convert.out.fo.XsltFOFunctions.getPageNumberInitial($conversionContext)"/></xsl:attribute>
+				<!-- the restart, or the parity an oddPage / evenPage section starts on (17.3.1) -->
+				<xsl:variable name="initialPageNumber"
+					select="java:org.docx4j.convert.out.fo.XsltFOFunctions.initialPageNumber($conversionContext)"/>
+				<xsl:if test="string-length($initialPageNumber) &gt; 0">
+					<xsl:attribute name="initial-page-number"><xsl:value-of select="$initialPageNumber"/></xsl:attribute>
 				</xsl:if>
 
 				<!--  First Page Header -->

@@ -67,7 +67,6 @@ public class FOExporterVisitorDelegate extends AbstractVisitorExporterDelegate<F
 			Document document, 
 			ConversionSectionWrapper sectionWrapper, Element currentParent) throws Docx4JException {
 	Element pageSequence = document.createElementNS(XSL_FO, "page-sequence");
-	int pageNumberInitial = sectionWrapper.getPageNumberInformation().getPageStart();
 	String pageFormat = sectionWrapper.getPageNumberInformation().getPageFormat();
 	
     	pageSequence.setAttribute("master-reference", sectionWrapper.getId());
@@ -77,8 +76,10 @@ public class FOExporterVisitorDelegate extends AbstractVisitorExporterDelegate<F
     	pageSequence.setAttribute("force-page-count",
     			XsltFOFunctions.getForcePageCount(conversionContext));
     	pageFormat = FormattingSwitchHelper.getFoPageNumberFormat(pageFormat);
-    	if (pageNumberInitial > -1) {
-        	pageSequence.setAttribute("initial-page-number", Integer.toString(pageNumberInitial));
+    	// the restart, or the parity an oddPage / evenPage section starts on (17.3.1)
+    	String initial = XsltFOFunctions.initialPageNumber(conversionContext);
+    	if (initial.length() > 0) {
+        	pageSequence.setAttribute("initial-page-number", initial);
     	}
     	if (pageFormat != null) {
         	pageSequence.setAttribute("format", pageFormat);

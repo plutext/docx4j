@@ -195,6 +195,9 @@ key in `docx4j.properties` still wins, and a deployment without either file gets
 | `docx4j.convert.out.fo.tables.hideMark` | `true` | A cell with `w:hideMark` whose last paragraph paints nothing takes no line for it: the row is as tall as its margins and borders, as Word sizes it ([§6](#s6hidemark)). `false` gives the mark its line, as 17.1.0 did. |
 | `docx4j.convert.out.fo.wordLayout.keepBreakOnlyParagraph` | `true` | A paragraph of one or two `w:br` and nothing that paints is marked `keep-together.within-page="always"`: Word's widow control cannot split a two- or three-line paragraph, where FOP breaks between the nested blocks the breaks are written as ([§3](#s39brkeep)). `false` leaves it breakable, as 17.1.0 did. |
 | `docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine` | `false` | `true`: a paragraph holding only a page break keeps the line before its break, sized by its mark, at the foot of the page it is on; where the page has no room for it the line goes to the next page and the break to the one after ([§3.3](#s33line)). Off by default: over the corpora it costs more pages than it gives, and the probe behind it is with Word. |
+| `docx4j.convert.out.fo.wordLayout.tableTakesPageBreak` | `false` | `true`: a break-only paragraph followed by a table gives its break to the table, which starts at the top of the page as Word's does, rather than keeping the paragraph's line there ([§3.3](#s33table)). Off by default until continuous sections' margins and the page-break line are Word's. |
+| `docx4j.convert.out.fo.wordLayout.restartParityBlankPage` | `false` | `true`: in a document with different odd and even headers, a nextPage section restarting its folio at the parity of the page before it gets a blank page between, as Word's does (an oddPage or evenPage one always does) ([§7](#s7parity)). Off by default until docx4j paginates continuous sections as Word does. |
+| `docx4j.convert.out.fo.fieldErrors` | `en` | What a REF or PAGEREF field whose bookmark is missing prints: Word's English error text (`en`), or `cached`, the field's cached result, as 17.1.0 to 17.3.0 did ([§4.4](#s44missingbm)). |
 | `docx4j.jaxb.mc.preferChoice` | empty | The `mc:Choice/@Requires` prefixes we claim to be able to draw; the first `mc:Choice` naming only those wins over the `mc:Fallback`, as it does in Word. Empty (the default, and what measured better) always takes the fallback, as docx4j always has (§1.3). Also HTML. |
 | `docx4j.fonts.runFontSelector.trimUnpreservedWhitespace` | `true` | The leading and trailing white space of a `w:t` with no `xml:space="preserve"` is dropped, as Word drops it (§1.3). Also HTML. |
 | `docx4j.convert.out.fo.hyphenate` | unset | Overrides the document's own `w:autoHyphenation`: `true` hyphenates every paragraph that does not suppress hyphenation, `false` hyphenates nothing. Unset, the document decides (§4.7). |
@@ -4666,6 +4669,32 @@ TOC and footers), 6251 0.9740 -> 0.9760; 278 and 2189 do not move, nor does anyt
 the three corpora or the probes. On Apache FOP, or a renderer without the hook, the swap
 and the one-high number stand. All six start their first section at 0; what Word does with
 0 on a later section is unmeasured.
+
+<a id="s7parity"></a>**A restarted folio takes its section's parity, and costs a blank page only
+with different odd and even headers** (17.3.1). Measured on `page-number-restart-parity` and
+its `-eo` twin: eight one-page sections, nextPage restarting at 7, 7 and 8, oddPage at 3 and
+4, evenPage at 5 and 6.
+* An oddPage section restarting at an even number, or an evenPage one at an odd, starts on
+  the next number of its parity: 4 prints 5 and 5 prints 6, in both.
+* Without `w:evenAndOddHeaders` Word inserts **no** blank page for a restart, whatever the
+  break type: 8 pages, folios 1 7 7 8 3 5 6 6. docx4j forced a blank page around a
+  restarting oddPage or evenPage section, 10 pages, and on corpus document 8695 (two oddPage
+  sections restarting at 3) a page 2 Word does not have.
+* With it Word inserts one wherever a restarted folio would repeat the parity of the page
+  before it - 7 after 1, 7 after 7, 5 after 3, 6 after 6 - 12 pages, which is XSL-FO's
+  `force-page-count="auto"` against the next sequence's `initial-page-number`. For an
+  oddPage or evenPage restart docx4j does so; for a **nextPage** one it is **off by default**
+  (`docx4j.convert.out.fo.wordLayout.restartParityBlankPage`): FOP decides the parity from
+  its own folios, which follow Word's only where docx4j paginates the sections as Word does,
+  and corpus document 9539 - the one corpus document with evenAndOddHeaders and restarts,
+  three nextPage sections restarting at 7, whose continuous sections docx4j gives a page Word
+  does not - went from a page short of Word to two over with it on. The probe is at 10 pages
+  (Word's 12) by default, and at 12 with it.
+* Where the numbering **continues**, an oddPage or evenPage section's blank page is as
+  before (`end-on-even` / `end-on-odd`), in either kind of document: `page-blank` (no
+  evenAndOddHeaders) has Word's blank page 5 for a second evenPage section after folio 4.
+
+`XsltFOFunctions.getForcePageCount` and `initialPageNumber`, both pathways.
 
 **`w:settings/w:mirrorMargins`.** Word calls `w:pgMar/@w:left` the *inside* margin and
 `@w:right` the *outside* one, so on an even (left-hand) page they swap - and so does the

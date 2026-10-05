@@ -4327,71 +4327,108 @@ public class XsltFOFunctions {
     }
     
     /**
-     * FOP inserts a blank page if necessary so that a section with page numbering
-     * from 1 would be face up when printed double sided. Word doesn't do that
-     * (unless you have an odd section type), so this function mimics Word's 
-     * behaviour. 
-     * 
+     * Whether the page sequence ends with a blank page Word would insert, as
+     * {@code fo:page-sequence/@force-page-count}.
+     *
+     * <p>Where the next section's numbering <b>continues</b>, an oddPage or evenPage section
+     * starts on the next folio of its parity, and Word inserts a blank page where the next
+     * folio has the other (the page-blank probe, no {@code w:evenAndOddHeaders}: a second
+     * evenPage section after a page with folio 4 gets a blank page 5; its first, after
+     * folio 3, none): {@code end-on-even} or {@code end-on-odd}.  A nextPage section never
+     * gets one.</p>
+     *
+     * <p>Where it <b>restarts</b> ({@code w:pgNumType/@w:start}), the restart number takes
+     * the section's parity ({@link #initialPageNumber}) and no folio is skipped, so the
+     * question is only whether two pages in a row may have folios of one parity.  Word
+     * inserts a blank page between them in a document with different odd and even headers
+     * and footers, and in no other: measured on the page-number-restart-parity probes
+     * (eight one-page sections: nextPage restarting at 7, 7 and 8, oddPage at 3 and 4,
+     * evenPage at 5 and 6), Word's PDF without the setting has 8 pages and folios 1 7 7 8
+     * 3 5 6 6, and with it 12, a blank page before each section whose folio repeats the
+     * previous page's parity (7 after 1, 7 after 7, 5 after 3, 6 after 6) - which is
+     * XSL-FO's {@code auto} against the next sequence's {@code initial-page-number}.
+     * docx4j had forced a blank page around a restarting oddPage or evenPage section
+     * whatever the setting, and none around a nextPage one: 10 pages for both probes, and
+     * a blank page 2 in corpus document 8695 (an oddPage section restarting at 3, no
+     * evenAndOddHeaders) which Word does not have.  (17.3.1)</p>
+     *
+     * <p>For a <b>nextPage</b> section that half is off by default
+     * ({@code docx4j.convert.out.fo.wordLayout.restartParityBlankPage}): FOP decides the
+     * parity from its own folios, which follow Word's only where docx4j's sections paginate
+     * as Word's do, and corpus document 9539 - evenAndOddHeaders, three nextPage sections
+     * restarting at 7, continuous sections docx4j gives a page Word does not - went from a
+     * page short of Word to two over with it on.  An oddPage or evenPage restart takes it
+     * regardless, which is what docx4j had always done there, now with the parity right.</p>
+     *
      * @param context
      * @return
      * @since 3.2.2
      */
     public static String getForcePageCount(FOConversionContext context) {
-    	
-    	// see http://www.w3.org/TR/xsl/#force-page-count
-    	
-    	ConversionSectionWrapper wrapper = context.getSections().peekNextSection();
-    	
-    	if (wrapper==null) {
-    		// final section
-    		return "no-force";
-    	} else {
-    		SectPr.Type secType = wrapper.getSectPr().getType();
-    		
-    		CTPageNumber pgNumType = wrapper.getSectPr().getPgNumType();
-    		Boolean isExplicitOdd = null; // null means numbering will continue from the highest page number in the previous section
-    		if (pgNumType!=null && pgNumType.getStart()!=null) {
-    			int start = pgNumType.getStart().intValue();
-    			if ( start % 2 == 0) {
-    				isExplicitOdd = Boolean.FALSE;    				
-    			} else {
-    				isExplicitOdd = Boolean.TRUE;    				    				
-    			}
-    		}
-    		
-    		if (secType==null || secType.getVal().equals("nextPage") ) {
-        		return "no-force";  
-    		} else if (isExplicitOdd==null  // LIMITATION: We don't get this right after the user has set the page number explicitly in a previous section
-    						|| isExplicitOdd) {
-    			// The normal case
-    			if ( secType.getVal().equals("evenPage") ) {
-	    			// Even page section breaks, which begin the new section on the next even-numbered page.
-	    			// (What happens if that section has w:pgNumType/@w:start="1"?)
-	    			return "end-on-odd";
-	    		} else if ( secType.getVal().equals("oddPage") ) {
-	    			// Odd page section breaks, which begin the new section on the next odd-numbered page
-	    			return "end-on-even";
-	    		} else {
-	    			// continuous (!)
-	        		return "no-force";    			    			
-	    		}
-    		} else {
-    			// section starts with p2 or p4
-    			if ( secType.getVal().equals("evenPage") ) {
-	    			// Even page section breaks, which begin the new section on the next even-numbered page.
-	    			// (What happens if that section has w:pgNumType/@w:start="1"?)
-	    			return "end-on-even";
-	    		} else if ( secType.getVal().equals("oddPage") ) {
-	    			// Odd page section breaks, which begin the new section on the next odd-numbered page
-	    			return "end-on-odd";
-	    		} else {
-	    			// continuous (!)
-	        		return "no-force";    			    			
-	    		}
-    			
-    		}
-    	}
 
+    	// see http://www.w3.org/TR/xsl/#force-page-count
+    	ConversionSectionWrapper next = context.getSections().peekNextSection();
+    	if (next == null) return "no-force";
+    	String type = sectionType(next.getSectPr());
+    	if ("continuous".equals(type)) return "no-force";
+    	if (next.getSectPr().getPgNumType() != null && next.getSectPr().getPgNumType().getStart() != null) {
+    		if (!evenAndOddHeaders(context)) return "no-force";
+    		// an oddPage or evenPage restart always forced a page here; a nextPage one waits on
+    		// the property (see below)
+    		boolean typed = "oddPage".equals(type) || "evenPage".equals(type);
+    		return typed || restartParityBlankPage() ? "auto" : "no-force";
+    	}
+    	if ("oddPage".equals(type)) return "end-on-even";
+    	if ("evenPage".equals(type)) return "end-on-odd";
+    	return "no-force";
+    }
+
+    /**
+     * The current section's {@code fo:page-sequence/@initial-page-number}, or "" for none.
+     *
+     * <p>A restart number is the section's {@code w:pgNumType/@w:start}, except that an
+     * oddPage section starts on an odd folio and an evenPage section on an even one:
+     * Word takes the next number of that parity (measured on the
+     * page-number-restart-parity probes: oddPage at 4 prints 5, evenPage at 5 prints 6).
+     * Without a restart the numbering continues, the preceding sequence's
+     * {@link #getForcePageCount} giving it the parity.  The first section has no break
+     * before it.  @since 17.3.1</p>
+     */
+    public static String initialPageNumber(FOConversionContext context) {
+    	ConversionSectionWrapper current = context.getSections().getCurrentSection();
+    	int start = current.getPageNumberInformation().getPageStart();
+    	if (start < 0) return "";
+    	boolean first = context.getSections().getList().isEmpty()
+    			|| context.getSections().getList().get(0) == current;
+    	String type = first ? "nextPage" : sectionType(current.getSectPr());
+    	if ("oddPage".equals(type) && start % 2 == 0) return Integer.toString(start + 1);
+    	if ("evenPage".equals(type) && start % 2 != 0) return Integer.toString(start + 1);
+    	return Integer.toString(start);
+    }
+
+    /** {@code docx4j.convert.out.fo.wordLayout.restartParityBlankPage}, default false: see
+     *  {@link #getForcePageCount}.  @since 17.3.1 */
+    static boolean restartParityBlankPage() {
+    	return org.docx4j.Docx4jProperties.getProperty(
+    			"docx4j.convert.out.fo.wordLayout.restartParityBlankPage", false);
+    }
+
+    /** w:sectPr/w:type, "nextPage" where it is not stated.  @since 17.3.1 */
+    private static String sectionType(SectPr sectPr) {
+    	if (sectPr == null || sectPr.getType() == null || sectPr.getType().getVal() == null) return "nextPage";
+    	return sectPr.getType().getVal();
+    }
+
+    /** w:settings/w:evenAndOddHeaders.  @since 17.3.1 */
+    static boolean evenAndOddHeaders(FOConversionContext context) {
+    	try {
+    		DocumentSettingsPart settings = context.getWmlPackage().getMainDocumentPart().getDocumentSettingsPart();
+    		if (settings == null || settings.getJaxbElement() == null) return false;
+    		org.docx4j.wml.BooleanDefaultTrue eo = settings.getJaxbElement().getEvenAndOddHeaders();
+    		return eo != null && eo.isVal();
+    	} catch (Exception e) {
+    		return false;
+    	}
     }
     
     private static boolean isOdd(SectPr sectPr) {

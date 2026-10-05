@@ -156,6 +156,10 @@ PDF via XSL FO:
 
 - A table cell's text is not narrowed by its neighbour's collapsed border.
 
+- A section restarting its page numbering at a number of the wrong parity for its oddPage or
+  evenPage break starts on the next one, as Word does, and gets no blank page in a document
+  without different odd and even headers.
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's
