@@ -4836,6 +4836,16 @@ before the zero-width space replaced it).
   EndnoteReference styles are what make them superscripts, so raising and shrinking them
   unconditionally double-applied it. The endnote loop skips separators by type as well as
   by id.
+- **Endnotes print only where there are some, once, at the end** (17.3.1,
+  `XsltFOFunctions.endnotesHere`, both pathways). Word prints nothing for an endnotes part
+  holding only its separators, continuation separator or continuation notice, and by default
+  (`w:endnotePr/w:pos` docEnd) prints the notes once, after the document's last paragraph;
+  only `sectEnd` puts them at each section's end. docx4j wrote its "Endnotes" heading wherever
+  an endnotes part existed, and at the end of every section: 10 documents of the four corpora
+  printed a heading Word does not (6251 at the end of each of its two sections, its front
+  matter's last page then too full for the break paragraph after it), and 8695, with two
+  endnotes and six sections, printed it twice. Gates b129/b131: 6625 3 to 2 pages and 11657
+  221 to 222 (+248 lines), both Word's, nothing else moving.
 - **A note's formatting is its own** (17.3.1, CR-030 D10). Word lays a note out the same
   whatever the paragraph it is referenced from looks like: probe `tables-footnote-in-cell`
   has notes referenced from a bold italic cell, an italic cell and a plain paragraph, and

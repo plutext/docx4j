@@ -2012,6 +2012,47 @@ public class XsltFOFunctions {
 	public static final String ENDNOTES_HEADING = "Endnotes";
 
 	/**
+	 * Whether the current section ends with the document's endnotes (their heading and the
+	 * notes).  Word prints endnotes only where there are some - a part holding nothing but its
+	 * separators, continuation separator or continuation notice prints nothing - and, by
+	 * default ({@code w:endnotePr/w:pos} docEnd), once, at the end of the document; only
+	 * {@code sectEnd} puts them at each section's end.  Until 17.3.1 they were written wherever
+	 * an endnotes part existed and at the end of every section: measured on the four corpora,
+	 * 10 documents printed an "Endnotes" heading which Word does not (one of them, 6251, at the
+	 * end of each of its two sections, its front matter's last page then too full for the
+	 * break paragraph after it), and 8695, which has two endnotes and six sections, printed
+	 * its heading twice.
+	 *
+	 * @since 17.3.1
+	 */
+	public static boolean endnotesHere(AbstractWmlConversionContext context) {
+		org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart mdp =
+				context.getWmlPackage().getMainDocumentPart();
+		if (!mdp.hasEndnotesPart() || mdp.getEndNotesPart().getJaxbElement() == null) return false;
+		boolean any = false;
+		for (org.docx4j.wml.CTFtnEdn note : mdp.getEndNotesPart().getJaxbElement().getEndnote()) {
+			if (note.getType() == null || note.getType() == org.docx4j.wml.STFtnEdn.NORMAL) {
+				any = true;
+				break;
+			}
+		}
+		if (!any) return false;
+		boolean sectEnd = false;
+		try {
+			org.docx4j.wml.CTSettings settings = mdp.getDocumentSettingsPart() == null ? null
+					: mdp.getDocumentSettingsPart().getJaxbElement();
+			sectEnd = settings != null && settings.getEndnotePr() != null
+					&& settings.getEndnotePr().getPos() != null
+					&& settings.getEndnotePr().getPos().getVal() == org.docx4j.wml.STEdnPos.SECT_END;
+		} catch (Exception e) {
+			log.debug("w:endnotePr: " + e.getMessage());
+		}
+		if (sectEnd) return true;
+		List<ConversionSectionWrapper> sections = context.getSections().getList();
+		return sections.isEmpty() || context.getSections().getCurrentSection() == sections.get(sections.size() - 1);
+	}
+
+	/**
 	 * The heading docx4j writes above a section's endnotes, in the document's default font.
 	 *
 	 * <p>Word writes no such heading - it has no endnotes story in the page at all, it

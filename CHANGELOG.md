@@ -183,6 +183,11 @@ PDF via XSL FO:
 - A footer distance larger than a quarter of the page, over an empty footer, is honoured as Word
   honours it, where it was ignored.
 
+- Endnotes, and docx4j's "Endnotes" heading above them, are written only where the document has
+  endnotes, and once, at its end, unless w:endnotePr/w:pos says sectEnd: an endnotes part holding
+  only its separators printed the heading, and a document of several sections printed it at each
+  section's end.
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's

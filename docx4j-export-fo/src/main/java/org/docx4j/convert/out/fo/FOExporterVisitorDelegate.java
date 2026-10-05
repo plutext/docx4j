@@ -193,9 +193,10 @@ public class FOExporterVisitorDelegate extends AbstractVisitorExporterDelegate<F
 			ConversionSectionWrapper sectionWrapper,
 			Element currentParent) throws Docx4JException {
 
-		// Endnotes at the end of the section's flow (which the XSLT does for every
-		// section; Word's default position is actually end of document)
-		if (!XsltCommonFunctions.hasEndnotesPart(conversionContext)) {
+		// The endnotes at the end of the section's flow: only where there are endnotes, and
+		// only in the last section unless w:endnotePr/w:pos says sectEnd, as Word places them
+		// (XsltFOFunctions.endnotesHere; the XSLT asks the same).  @since 17.3.1
+		if (!XsltFOFunctions.endnotesHere(conversionContext)) {
 			return;
 		}
 
