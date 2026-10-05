@@ -818,7 +818,20 @@ the one page Word gives).
 at the top of a page and Word adds none for it (`page-empty`'s S6). Reading any
 `break-before="page"` on the next block as a second break cost two spurious pages of
 fourteen on a corpus document whose Heading 1 style carries `w:pageBreakBefore`, and one
-of seven on another.
+of seven on another. **Nor is a numbered one** (17.3.1): a numbered paragraph is an
+`fo:list-block`, which the fold had not accepted, so the break stayed on the empty block in
+front of it - and where the numbered paragraph breaks the page itself (a heading whose style has
+`w:pageBreakBefore`), that was two breaks and a page with nothing on it. Corpus document 13347
+(mode 15) has a break-only paragraph and then "2. processen" in such a style: Word's page 4,
+docx4j's empty page 4 and every page after it one late; now 14 pages, Word's 14, line parity
+0.944 -> 0.995 (and 9031 to Word's 4 pages, 9838 +12 lines, 6380 +27, three more gaining a few).
+A numbered paragraph which does not break takes the break as a block does, with no empty line
+above it. **Only from compatibility mode 12**: corpus document 11657 (mode 11) has a break-only
+Normal paragraph and then a numbered Heading 1 with no space-before, and Word sets the heading
+24.7pt below the page top - the mark's 14pt line and its 9pt space-after - so in mode 11 the mark
+moved past the break keeps its line there, at least above a numbered paragraph; folding it cost
+that document a page of 222. The page-top probes measured modes 12, 14 and 15 only; mode 11 above
+a plain paragraph is unmeasured.
 
 One corpus document disagrees with the probe and has not been reconciled: its two
 consecutive break-only paragraphs cost it a page Word does not give (Word's 22 pages

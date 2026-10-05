@@ -4329,7 +4329,8 @@ public final class WordLayoutFixups {
 	}
 
 	/**
-	 * @param compat kept for the signature's sake: until 17.2.0
+	 * @param compat the compatibility mode decides whether a numbered paragraph (an
+	 *        fo:list-block) takes the break (from mode 12, 17.3.1).  Until 17.2.0
 	 *        {@code w:compat/w:suppressSpBfAfterPgBrk} ("Do Not Use Space Before On First
 	 *        Line After a Page Break", ECMA-376-1 17.15.1) was read here to decide whether
 	 *        the paragraph the break moves onto keeps its space-before.  It does not:
@@ -4372,7 +4373,24 @@ public final class WordLayoutFixups {
 			// applies from the next page and docx4j does not) and 4994 (the line the break
 			// paragraph keeps on the page before the break, pageBreakParagraphLine, off) -
 			// where it brings 2703 and 6749 to Word's page count.  It goes on with them.
-			if (next == null || !(isFo(next, "block") || (isFo(next, "table") && tableTakesPageBreak())
+			// A numbered paragraph is an fo:list-block, and takes the break as a block does.
+			// It had been left out, so the break stayed on the empty block in front of it and,
+			// where the numbered paragraph breaks the page itself (a heading whose style has
+			// w:pageBreakBefore), there were two breaks and a page with nothing on it, which
+			// Word does not have: measured on corpus document 13347, a break-only paragraph and
+			// then "2. processen" in a style breaking before, Word's page 4 where docx4j had an
+			// empty page 4 and every page after it one late.  From compatibility mode 12 only:
+			// in mode 11 Word gives the mark moved past the break a line at the top of the next
+			// page, above a numbered paragraph at least - measured on corpus document 11657
+			// (mode 11), a break-only Normal paragraph and then a numbered Heading 1, whose
+			// heading Word sets 24.7pt below the page top (the mark's 14pt line and its 9pt
+			// space-after), which the empty block standing there reproduced; taking the break
+			// moved it to the top and cost the document a page of 222.  The modes the
+			// page-top probes measured (12, 14, 15) are those this rule was measured in.
+			// @since 17.3.1
+			boolean listBlockTakes = compat == null || compat.mode() >= 12;
+			if (next == null || !(isFo(next, "block") || (isFo(next, "list-block") && listBlockTakes)
+					|| (isFo(next, "table") && tableTakesPageBreak())
 					|| takesNoSpace(next))) {
 				// Nothing left in this section for the break to move to.  Where another
 				// section follows, its own page-sequence starts a page anyway and Word

@@ -57,6 +57,52 @@ public class WordLayoutFixupsTest {
 		assertEquals("one page boundary", 1, count(out, "break-before=\"page\""));
 	}
 
+	private static String listBlock(String breakBefore, String text) {
+		return "<fo:list-block" + breakBefore + "><fo:list-item>"
+				+ "<fo:list-item-label end-indent=\"label-end()\"><fo:block>2.</fo:block></fo:list-item-label>"
+				+ "<fo:list-item-body start-indent=\"body-start()\"><fo:block>" + text + "</fo:block></fo:list-item-body>"
+				+ "</fo:list-item></fo:list-block>";
+	}
+
+	/** The same for a numbered heading, which is an fo:list-block: corpus document 13347 had
+	 *  a break-only paragraph and then "2. processen" in a style breaking before, and an empty
+	 *  page between, which Word does not have.  @since 17.3.1 */
+	@Test
+	public void pageBreakBeforeListBlockAfterABreakCostsNoPage() {
+		String in = flow("<fo:block>one</fo:block>"
+				+ "<fo:block break-before=\"page\" white-space-treatment=\"preserve\"> </fo:block>"
+				+ listBlock(" break-before=\"page\"", "a numbered heading whose style breaks before"));
+		String out = WordLayoutFixups.apply(in, 15);
+		assertEquals("one page boundary", 1, count(out, "break-before=\"page\""));
+		assertFalse("the empty break block is gone", out.contains("white-space-treatment=\"preserve\"> </fo:block>"));
+	}
+
+	/** And a numbered paragraph which does not break takes the break, with no empty line
+	 *  above it: the mark Word moves past the break takes no line there.  @since 17.3.1 */
+	@Test
+	public void aListBlockAfterABreakTakesIt() {
+		String in = flow("<fo:block>one</fo:block>"
+				+ "<fo:block break-before=\"page\"/>"
+				+ listBlock("", "a numbered paragraph"));
+		String out = WordLayoutFixups.apply(in, 15);
+		assertEquals("one page boundary", 1, count(out, "break-before=\"page\""));
+		int brk = out.indexOf("break-before=\"page\"");
+		assertTrue("on the list-block", out.lastIndexOf("<fo:list-block", brk) > out.lastIndexOf("<fo:block>one", brk));
+	}
+
+	/** In compatibility mode 11 the mark keeps its line above a numbered paragraph (corpus
+	 *  document 11657), so the empty block stays and keeps the break.  @since 17.3.1 */
+	@Test
+	public void aListBlockAfterABreakInMode11LeavesTheMarksLine() {
+		String in = flow("<fo:block>one</fo:block>"
+				+ "<fo:block break-before=\"page\"/>"
+				+ listBlock("", "a numbered paragraph"));
+		String out = WordLayoutFixups.apply(in, 11);
+		assertEquals("one page boundary", 1, count(out, "break-before=\"page\""));
+		int brk = out.indexOf("break-before=\"page\"");
+		assertTrue("on the empty block, before the list-block", brk < out.indexOf("<fo:list-block"));
+	}
+
 	/** A break paragraph which opens the flow keeps its page: the section break has
 	 *  already started one, so the break makes another. */
 	@Test

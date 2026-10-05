@@ -165,6 +165,9 @@ PDF via XSL FO:
 - A section ending in a paragraph of text and then a page break no longer gets an extra page,
   holding only its header, where that page is full.
 
+- A paragraph holding only a page break before a numbered heading whose style breaks the page no
+  longer leaves an empty page between them (compatibility mode 12 and later).
+
 - A continuous section which changes the page size shows its own headers and footers on the page
   it starts, as Word does, rather than the previous section's.
 
