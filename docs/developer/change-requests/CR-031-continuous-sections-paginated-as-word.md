@@ -82,14 +82,30 @@ bottom margins, and the header and footer distances, of the section that owns it
 Whether its header and footer *text* follow the same section is not measured (D3).
 
 **D2. An empty block at the end of a page-sequence starts a page of its own.** Corpus document
-9539: its first page-sequence (A3, sections 0 to 2, merged) ends with "(Queensland Studies
-Authority Template, 2012)" at y=758.8..773.1, and then an empty preserved block (10pt, 11.5pt line)
-which does not fit above the 782.1pt foot - so FOP starts a second A3 page holding only the running
-header and footer. Word's first page ends 4pt lower (767.0..778.3), with 3.8pt left, and has no
-second A3 page. The paragraph carrying section 2's break is empty (style `ACversionline`, no runs),
-so `rendersNothing` should have dropped it; which paragraph the empty block is, and why it was kept,
-is phase 1's first job. That same extra page is what shifts 9539's folio parity under
-`restartParityBlankPage`.
+9539: its first page-sequence (A3, sections 0 to 2, merged) ends with the paragraph
+"(Queensland Studies Authority Template, 2012)<w:br w:type="page"/>". `PageBreak` splits it at the
+break, and its empty second half ends the flow. `WordLayoutFixups.mergePageBreakParagraphs` removes
+that half's break, since another section follows and starts a page anyway (17.2.0). But it keeps
+the block, a preserved space on an 11.5pt line, and the block does not fit above the 782.1pt foot
+(the text ends at 773.1). So FOP starts a second A3 page holding only the running header and
+footer, which Word does not have (Word's text ends 4pt lower, at 778.3, and the page has no
+second line).
+
+The 17.2.0 comment there records this very document. Removing the block as well was measured, and
+held back: it took the page, but line parity fell, because Word also has two blank pages
+(before two nextPage sections restarting at 7, with odd and even headers) which docx4j does not -
+"the two belong together". Those blank pages are what `restartParityBlankPage` (b3c39ed0c) now
+writes. **Measured together on 2026-10-05**, with the block removed where it holds nothing:
+
+| | pages (Word 22) | line parity | page parity |
+|---|---|---|---|
+| neither (b110) | 21 | 0.8880 | 0.3410 |
+| the block removed | 20 | 0.9145 | 0.8398 |
+| `restartParityBlankPage` | 24 | 0.8904 | 0.3361 |
+| **both** | **22** | **0.9145** | **0.9048** |
+
+The corpus gate is b111. That page is also why `restartParityBlankPage` went two over on its own: it
+shifted the folio parity by one.
 
 **D3 (to be measured).** On a page whose first line belongs to a later continuous section: whose
 header and footer text, and whose `w:titlePg` first-page header? And where does a continuous
@@ -112,11 +128,9 @@ second.)
 
 ### 4.1 D2: no page for an empty block at a sequence's end
 
-Trace 9539's empty block to the paragraph it comes from, then make the rule `rendersNothing` states
-hold for it: an empty block which ends a page-sequence's flow, carries no break, and is not
-closing a vertically aligned section is removed (or never written). A block with something on it,
-or one in a vertically aligned section (`retainSpaceAfterInAlignedFlow` notes Word counts it
-there), is left. Small; phase 1.
+Where `mergePageBreakParagraphs` takes the break off the empty half of a split paragraph that ends
+a flow before another section, it removes the half as well if it holds nothing (`blankBlock`).
+Done together with `restartParityBlankPage` on (phase 1, §2's table). Small.
 
 ### 4.2 D1: page masters chosen per page from a layout pass
 
@@ -181,11 +195,12 @@ distances and texts together with it, mode 14, a section starting at a page top,
 ## 6. Phases
 
 0. Probes (§5), Word run, readings into §2.
-1. D2 (§4.1). Gate: 9539 loses its extra page; nothing else moves.
+1. D2 (§4.1), with `restartParityBlankPage` turned on: they belong together (§2). Gate: 9539 to
+   Word's 22 pages; the even/odd folio probe to Word's 12.
 2. D1 (§4.2), the per-page masters and the passes. Gate: 12802's page tops at Word's, the 34
    documents read one by one.
 3. D3 (§4.3), as phase 0 decides.
-4. Turn on `restartParityBlankPage` and `tableTakesPageBreak`, gated, and record why each was off.
+4. Turn on `tableTakesPageBreak`, gated (after the page-break line, §9), and record why it was off.
 
 ## 7. Decisions for Jason
 
