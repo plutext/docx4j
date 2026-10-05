@@ -4360,10 +4360,19 @@ public final class WordLayoutFixups {
 			// the page of a page-anchored floating table begins with, and leaving the
 			// empty block there cost a line at the top of it (measured on the
 			// table-floating-anchor probe: Word's first paragraph at y=83.1, docx4j's at
-			// 108.6).  Not a table: measured on a corpus document whose page break is
-			// followed by one, Word keeps that line, and dropping it lost a page.
-			// @since 17.1.0
-			if (next == null || !(isFo(next, "block") || takesNoSpace(next))) {
+			// 108.6).  @since 17.1.0
+			// A table takes it too, measured (17.3.1): on the pagebreak-paragraph-compat
+			// probes, a break-only paragraph followed by a table, Word's first row is at the
+			// top of the next page in modes 12, 14 and 15 alike, where docx4j keeps the
+			// paragraph's line (and its space-after) above it, 24.2pt.  Off by default
+			// (docx4j.convert.out.fo.wordLayout.tableTakesPageBreak): the kept line had been
+			// standing in for two other differences, and taking it away costs the documents
+			// that rest on them - 12802 (its continuous sections' own top margins, which Word
+			// applies from the next page and docx4j does not) and 4994 (the line the break
+			// paragraph keeps on the page before the break, pageBreakParagraphLine, off) -
+			// where it brings 2703 and 6749 to Word's page count.  It goes on with them.
+			if (next == null || !(isFo(next, "block") || (isFo(next, "table") && tableTakesPageBreak())
+					|| takesNoSpace(next))) {
 				// Nothing left in this section for the break to move to.  Where another
 				// section follows, its own page-sequence starts a page anyway and Word
 				// does not add one for the break as well: measured on the tab-toc-pageref
@@ -4466,6 +4475,13 @@ public final class WordLayoutFixups {
 	}
 
 
+
+	/** {@code docx4j.convert.out.fo.wordLayout.tableTakesPageBreak}, default false: see
+	 *  {@link #mergePageBreakParagraphs}.  @since 17.3.1 */
+	static boolean tableTakesPageBreak() {
+		return org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.wordLayout.tableTakesPageBreak", false);
+	}
 
 	/** Whether this block is the first thing its fo:flow holds, so that the section's own
 	 *  page has just been started for it.  (A continuous section is merged into the

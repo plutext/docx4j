@@ -864,6 +864,23 @@ one such document three pages. Word does move the line; what decides is that the
 cost when our page is a few points too full is a page, where the density errors it rides
 on are points. It should go on once those are down.
 
+<a id="s33table"></a>**The `pagebreak-paragraph-compat` probes (17.3.1) confirm it a third time and add
+three things**, the same in modes 12, 14 and 15 (so these are not mode-15 rules, as ledger8 had
+supposed). A break-only paragraph after a page filled to 1.9pt of its foot (case D) gives Word a
+blank page - the line, then the break - and with 25.9pt left (E) none. A table after a
+break-only paragraph (B) starts at the top of the next page, where docx4j keeps the paragraph's
+line and space-after above it, 24.2pt; giving the break to the table is right by the probe and
+brings 2703 and 6749 to Word's page count, but it is off by default
+(`docx4j.convert.out.fo.wordLayout.tableTakesPageBreak`): the kept line was standing in for the
+page-break line here (4994 loses a page without it) and, in 12802, for a continuous section's
+own top margin, which Word applies from the page after the break and docx4j does not (34 corpus
+documents have a continuous section changing the top or bottom margin). The page-break line,
+re-gated with this batch's rules, still costs more than it gives (one document to Word's page
+count, five a page away). And a break-only paragraph which ends the document (F) gives Word no
+further page here, where `page-blank`'s, after a paragraph with 12pt after, does; the two
+differ in nothing else measured, the one corpus document of the shape already matches, and the
+rule above is left as it is.
+
 A paragraph holding only a page break leaves no empty
 line at the top of the new page. The next paragraph's space-before is dropped there where
 **`w:compat/w:suppressSpBfAfterPgBrk`** ("Do Not Use Space Before On First Line After a
