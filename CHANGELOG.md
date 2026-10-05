@@ -141,6 +141,9 @@ PDF via XSL FO:
 - Text before a tab which does not fit a table cell breaks onto the next line, as Word breaks it,
   rather than running past the cell's edge.
 
+- A tab at the start of a paragraph styled like a table-of-contents entry goes to its tab stop,
+  as Word lays it out, rather than drawing dots across the line.
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's

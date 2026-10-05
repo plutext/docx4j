@@ -264,7 +264,13 @@ public class XsltCommonFunctions {
 
     /** The run-level leaves of a paragraph in document order (text, tabs, breaks,
      *  drawings...), looking into runs, hyperlinks, fields, smart tags and inline
-     *  content controls.  @since 17.0.5 */
+     *  content controls.  @since 17.0.5
+     *
+     *  <p>Not a field's code ({@code w:instrText}, {@code w:delInstrText}), which is never
+     *  drawn: as a {@code Text} it counted as visible, so a tab after a check box's
+     *  {@code FORMCHECKBOX} code was no leading tab on the visitor pathway (the XSLT's
+     *  count is of {@code w:t} alone).  Measured on corpus document 7235 (ledger8 item 10).
+     *  @since 17.3.1</p> */
     public static List<Object> paragraphLeaves(P p) {
     	List<Object> out = new ArrayList<Object>();
     	if (p != null) collectLeaves(p.getContent(), out, 0);
@@ -276,7 +282,10 @@ public class XsltCommonFunctions {
     	for (Object c : content) {
     		Object o = XmlUtils.unwrap(c);
     		if (o instanceof R) {
-    			for (Object rc : ((R) o).getContent()) out.add(XmlUtils.unwrap(rc));
+    			for (Object rc : ((R) o).getContent()) {
+    				if (isFieldCode(rc)) continue;
+    				out.add(XmlUtils.unwrap(rc));
+    			}
     		} else if (o instanceof org.docx4j.wml.SdtRun) {
     			org.docx4j.wml.SdtContent sc = ((org.docx4j.wml.SdtRun) o).getSdtContent();
     			if (sc != null) collectLeaves(sc.getContent(), out, depth + 1);
@@ -284,6 +293,12 @@ public class XsltCommonFunctions {
     			collectLeaves(((ContentAccessor) o).getContent(), out, depth + 1);
     		}
     	}
+    }
+
+    private static boolean isFieldCode(Object runContent) {
+    	if (!(runContent instanceof jakarta.xml.bind.JAXBElement)) return false;
+    	String name = ((jakarta.xml.bind.JAXBElement<?>) runContent).getName().getLocalPart();
+    	return "instrText".equals(name) || "delInstrText".equals(name);
     }
 
     /** Whether a run leaf takes up space on the line (text, tab, break, picture,

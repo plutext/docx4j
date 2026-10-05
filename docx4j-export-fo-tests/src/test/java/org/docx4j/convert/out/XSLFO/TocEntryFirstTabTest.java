@@ -156,6 +156,63 @@ public class TocEntryFirstTabTest extends AbstractXSLFOTest {
 				isStretchingDotLeader(leaders.get(1)));
 	}
 
+	/** a check box form field: begin, code, separate, end - no result text */
+	private static final String CHECKBOX =
+			"<w:r><w:fldChar w:fldCharType=\"begin\"><w:ffData><w:name w:val=\"Check1\"/><w:enabled/>"
+			+ "<w:calcOnExit w:val=\"0\"/><w:checkBox><w:sizeAuto/><w:default w:val=\"0\"/></w:checkBox>"
+			+ "</w:ffData></w:fldChar></w:r>"
+			+ "<w:r><w:instrText xml:space=\"preserve\"> FORMCHECKBOX </w:instrText></w:r>"
+			+ "<w:r><w:fldChar w:fldCharType=\"separate\"/></w:r>"
+			+ "<w:r><w:fldChar w:fldCharType=\"end\"/></w:r>";
+
+	/**
+	 * A <b>leading</b> tab in the entry's shape - nothing but a field before it - is no
+	 * entry's tab: it reaches the hanging indent's stop and is laid out against it.  Corpus
+	 * document 7235's check-box paragraphs, {@code FORMCHECKBOX<tab>text} in a style with a
+	 * right dot stop hanging 284 twips: Word starts the text on the hanging stop, where the
+	 * stretching leader started it at the line's start.  On the visitor pathway the field's
+	 * code had counted as text before the tab.  @since 17.3.1
+	 */
+	private void checkLeadingTabAfterField(int flags) throws Exception {
+		List<Element> leaders = leaders(pkg(
+				"<w:p>" + TOC_PPR + CHECKBOX + TAB + run("Les risques sont identifiés.")
+				+ "</w:p><w:p/>"), flags);
+		assertEquals("one tab, one leader", 1, leaders.size());
+		assertTrue("the leading tab reaches the hanging stop and is laid out; it got "
+				+ XmlUtils.w3CDomNodeToString(leaders.get(0)), isLaidOutTab(leaders.get(0)));
+	}
+
+	/** ... but with no w:ind the walk from the line's start reaches the dot stop, as an
+	 *  entry's first tab does there (the case above), and the leader stays. */
+	private void checkLeadingTabNoIndent(int flags) throws Exception {
+		List<Element> leaders = leaders(pkg(
+				"<w:p>" + TOC_PPR_NO_IND + TAB + run("Text after a leading tab")
+				+ "</w:p><w:p/>"), flags);
+		assertEquals("one tab, one leader", 1, leaders.size());
+		assertTrue("nothing stands before the dot stop, so the leader stays; it got "
+				+ XmlUtils.w3CDomNodeToString(leaders.get(0)), isStretchingDotLeader(leaders.get(0)));
+	}
+
+	@Test
+	public void leadingTabAfterFieldVisitorPathway() throws Exception {
+		checkLeadingTabAfterField(Docx4J.FLAG_NONE);
+	}
+
+	@Test
+	public void leadingTabAfterFieldXsltPathway() throws Exception {
+		checkLeadingTabAfterField(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
+	@Test
+	public void leadingTabNoIndentVisitorPathway() throws Exception {
+		checkLeadingTabNoIndent(Docx4J.FLAG_NONE);
+	}
+
+	@Test
+	public void leadingTabNoIndentXsltPathway() throws Exception {
+		checkLeadingTabNoIndent(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
 	@Test
 	public void twoTabEntryNoIndentVisitorPathway() throws Exception {
 		checkTwoTabEntryNoIndent(Docx4J.FLAG_NONE);

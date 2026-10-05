@@ -3436,7 +3436,7 @@ public class XsltFOFunctions {
 		// measured), which is how the page numbers of a TOC line up at all.
 		// ... and only for a tab which reaches that stop.  See this method's javadoc.
 		if (isTocDotLeader(effectivePPr)
-				&& (!realTabs() || !tocTabStopsShort(context, effectivePPr, precedingTabs, followingTabs))) {
+				&& (!realTabs() || !tocTabStopsShort(context, effectivePPr, precedingTabs, precedingText, followingTabs))) {
 			Element foLeader = d.createElementNS(XSL_FO, "fo:leader");
 			/* The leader is as wide as the gap Word leaves, and no width of its own is
 			 * preferred: measured on Word's PDF of a 222-page corpus report, its TOC
@@ -3593,11 +3593,20 @@ public class XsltFOFunctions {
 	 * before layout; the {@code followingTabs} half keeps it from ever taking the leader
 	 * off the tab that carries the page number.</p>
 	 *
+	 * <p>A <b>leading</b> tab (nothing but tabs and fields before it) is the exception to the
+	 * first condition: the walk from the line's start is exact for it, and it is no page-number
+	 * tab.  Measured on corpus document 7235, whose check-box paragraphs ({@code FORMCHECKBOX
+	 * <tab> text}) are in a style whose first stop is right-aligned with dots and which hangs
+	 * 284 twips: Word sends the tab to the hanging indent's stop and starts the text there, where
+	 * the stretching leader started each line 14.2pt to the left and stretched its last line
+	 * across the column; with the tab laid out, 0.6544 -> 0.8481 (ledger8 item 10).
+	 * @since 17.3.1</p>
+	 *
 	 * @since 17.2.0
 	 */
 	static boolean tocTabStopsShort(FOConversionContext context, PPr effectivePPr,
-			int precedingTabs, int followingTabs) {
-		if (followingTabs <= 0) return false;
+			int precedingTabs, int precedingText, int followingTabs) {
+		if (followingTabs <= 0 && precedingText > 0) return false;
 		CTTabStop dotStop = effectivePPr.getTabs().getTab().get(0);
 		if (dotStop.getPos() == null) return false;
 		DocumentSettingsPart settings = null;

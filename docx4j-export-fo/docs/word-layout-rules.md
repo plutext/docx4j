@@ -1754,6 +1754,19 @@ stretching leader and `text-align-last="justify"` they have always had: their st
 right margin, and a stretching leader absorbs the width an unresolved
 `fo:page-number-citation` loses when it resolves.
 
+**A leading tab is not an entry's tab** (17.3.1). A paragraph whose style has that shape
+but whose tab comes first - nothing but tabs and fields before it - reaches the stop a walk
+from the line's start finds, which is exact there, and is laid out against it like any other
+tab. Measured on corpus document 7235, whose check-box paragraphs (`FORMCHECKBOX<tab>text`)
+are in such a style hanging 284 twips: Word sends the tab to the hanging indent's stop and
+starts the text there, where the stretching leader started every line 14.2pt to the left and
+stretched its last line across the column (line parity 0.65 to 0.83). On the visitor pathway
+the field's code had counted as text before the tab (`XsltCommonFunctions.paragraphLeaves`
+returned `w:instrText`, which is never drawn; the XSLT pathway counts `w:t` alone). The
+document comes out a page longer than before, 17 against Word's 15: with its text where
+Word's is, its cells are seen to be about 3pt narrower than Word's, the grid of a percentage
+table below mode 15, which the old leader had masked.
+
 <a id="s44tocstop"></a>**...but the leader ends on the entry's own stop, not on the
 paragraph's right indent** (17.1.0). `text-align-last="justify"` stretches to the block's
 end-indent; Word stretches to the stop the tab reaches, and where that stop lies outside
