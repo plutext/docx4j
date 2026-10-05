@@ -46,6 +46,21 @@ public class WordBreakOpportunitiesTest {
 	}
 
 	/**
+	 * Word breaks at a space before {@code , . : ; ? !}, where UAX #14 rule LB13 forbids it
+	 * "even after spaces": the break-after-space-uax14 probe (CR-001 batch 52).  Without a
+	 * space the punctuation stays with its word, and after an opening bracket LB14 still holds.
+	 */
+	@Test
+	public void aSpaceBeforePunctuationBreaks() {
+		WordBreakOpportunities.applyWordPairTable();
+		for (String p : new String[] { ",", ".", ":", ";", "?", "!" }) {
+			assertEquals(p, Arrays.asList("WORD ", p + " ", "tail"), units("WORD " + p + " tail"));
+			assertEquals(p, Arrays.asList("WORD" + p + " ", "tail"), units("WORD" + p + " tail"));
+		}
+		assertEquals(Arrays.asList("x ", "( , ", "y"), units("x ( , y"));
+	}
+
+	/**
 	 * Word breaks after a hyphen followed by a digit, where UAX #14 rule LB25 keeps the
 	 * two together: FOP's pair table holds {@code HY x NU} as an indirect break, which
 	 * inside a word is no break at all, and {@code 1997-05-12} was one unbreakable token.

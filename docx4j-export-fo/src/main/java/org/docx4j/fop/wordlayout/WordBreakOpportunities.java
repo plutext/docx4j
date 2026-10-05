@@ -249,6 +249,9 @@ public final class WordBreakOpportunities {
 	 * <p>Idempotent, and a no-op where FOP's table has changed shape (a value other
 	 * than the {@code INDIRECT_BREAK} measured here is left alone and logged).
 	 *
+	 * <p>Since 17.3.1 it also lets a line break at a space before {@code , . : ; ? !}
+	 * ({@link #breakAfterSpacesBeforePunctuation}).</p>
+	 *
 	 * @since 17.2.0 (CR-001 batch 48 item 3)
 	 */
 	public static synchronized void applyWordPairTable() {
@@ -257,37 +260,82 @@ public final class WordBreakOpportunities {
 		int hyProp = LineBreakUtils.LINE_BREAK_PROPERTY_HY;
 		int nuProp = LineBreakUtils.LINE_BREAK_PROPERTY_NU;
 		/* The docx4j FO renderer (hook pair-table) has a public override,
-		 * LineBreakUtils.setLineBreakPairProperty(before, after, value); Apache FOP has only the
-		 * private static table.  CR-020 phase 1. */
-		java.lang.invoke.MethodHandle override = FopHooks.method(FopHooks.PAIR_TABLE, LineBreakUtils.class,
+		 * LineBreakUtils.setLineBreakPairProperty; Apache FOP only the reflective write. */
+		final java.lang.invoke.MethodHandle override = FopHooks.method(FopHooks.PAIR_TABLE, LineBreakUtils.class,
 				"setLineBreakPairProperty", int.class, int.class, byte.class);
+		final byte[][] table;
 		if (override != null) {
-			byte was = LineBreakUtils.getLineBreakPairProperty(hyProp, nuProp);
-			if (was != LineBreakUtils.INDIRECT_BREAK) {
-				log.info("FOP's line-break pair table holds HY x NU as " + was
-						+ ", not the indirect break this was measured against; left alone");
+			table = null;
+		} else {
+			try {
+				Field field = LineBreakUtils.class.getDeclaredField("PAIR_TABLE");
+				field.setAccessible(true);
+				table = (byte[][]) field.get(null);
+			} catch (ReflectiveOperationException | RuntimeException e) {
+				log.warn("could not apply Word's breaks to FOP's pair table: " + e.getMessage());
 				return;
 			}
-			FopHooks.call(override, hyProp, nuProp, LineBreakUtils.DIRECT_BREAK);
-			return;
 		}
-		try {
-			Field field = LineBreakUtils.class.getDeclaredField("PAIR_TABLE");
-			field.setAccessible(true);
-			byte[][] table = (byte[][]) field.get(null);
-			int hy = LineBreakUtils.LINE_BREAK_PROPERTY_HY - 1;
-			int nu = LineBreakUtils.LINE_BREAK_PROPERTY_NU - 1;
-			if (hy < 0 || nu < 0 || hy >= table.length || nu >= table[hy].length) return;
-			byte was = table[hy][nu];
-			if (was != LineBreakUtils.INDIRECT_BREAK) {
-				log.info("FOP's line-break pair table holds HY x NU as " + was
-						+ ", not the indirect break this was measured against; left alone");
-				return;
+		PairWriter write = (before, after, value) -> {
+			if (override != null) FopHooks.call(override, before, after, value);
+			else table[before - 1][after - 1] = value;
+		};
+		byte was = pair(hyProp, nuProp);
+		if (was != LineBreakUtils.INDIRECT_BREAK) {
+			log.info("FOP's line-break pair table holds HY x NU as " + was
+					+ ", not the indirect break this was measured against; left alone");
+		} else {
+			write.set(hyProp, nuProp, LineBreakUtils.DIRECT_BREAK);
+		}
+		breakAfterSpacesBeforePunctuation(write);
+	}
+
+	/**
+	 * Word breaks at a <b>space before</b> {@code , . : ;} (UAX #14 class IS) and {@code ? !}
+	 * (class EX), where UAX #14's rule LB13 forbids it - "do not break before ... even
+	 * after spaces" - and FOP's pair table with it.
+	 *
+	 * <p>Measured on the break-after-space-uax14 probe (CR-001 batch 52): ragged paragraphs
+	 * whose first line holds {@code ... WORD} with a point to spare but not
+	 * {@code ... WORD ,}; for each of {@code " ,"} {@code " ."} {@code " ?"} {@code " :"}
+	 * {@code " ;"} {@code " !"} Word ends the line with WORD and begins the next with the
+	 * punctuation, where docx4j took WORD down with it.  The ellipsis (class IN) already
+	 * breaks after a space, as does a space before an opening bracket, and both agree.
+	 * 69 lines of ledger8's 80 near misses are this shape.</p>
+	 *
+	 * <p>So the pair (X, IS) and (X, EX) goes from a prohibited break to an indirect one,
+	 * which is a break only across spaces: {@code WORD,} stays whole.  Only for a class X
+	 * that may break across spaces before a letter at all ({@code X x AL} not prohibited),
+	 * so that LB14's {@code ( ,} and LB12's no-break space keep their hold.  Closing
+	 * brackets and SY are not measured and left as they are.  @since 17.3.1</p>
+	 */
+	private static void breakAfterSpacesBeforePunctuation(PairWriter write) {
+		int al = LineBreakUtils.LINE_BREAK_PROPERTY_AL;
+		int changed = 0;
+		for (int before = 1; ; before++) {
+			byte toLetter;
+			try {
+				toLetter = pair(before, al);
+			} catch (RuntimeException e) {
+				break;   // past the table
 			}
-			table[hy][nu] = LineBreakUtils.DIRECT_BREAK;
-		} catch (ReflectiveOperationException | RuntimeException e) {
-			log.warn("could not apply Word's HY x NU break to FOP's pair table: " + e.getMessage());
+			if (toLetter == LineBreakUtils.PROHIBITED_BREAK || toLetter == LineBreakUtils.COMBINING_PROHIBITED_BREAK) continue;
+			for (int after : new int[] { LineBreakUtils.LINE_BREAK_PROPERTY_IS, LineBreakUtils.LINE_BREAK_PROPERTY_EX }) {
+				if (pair(before, after) == LineBreakUtils.PROHIBITED_BREAK) {
+					write.set(before, after, LineBreakUtils.INDIRECT_BREAK);
+					changed++;
+				}
+			}
 		}
+		log.debug("break after spaces before IS and EX: " + changed + " pairs");
+	}
+
+	private static byte pair(int before, int after) {
+		return LineBreakUtils.getLineBreakPairProperty(before, after);
+	}
+
+	private interface PairWriter {
+		void set(int before, int after, byte value);
 	}
 
 	/**

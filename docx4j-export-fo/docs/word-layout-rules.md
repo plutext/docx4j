@@ -1390,6 +1390,18 @@ Number" was painted "Roll" and then a 93.5pt "Number /Registration" running 6pt 
 table, where Word sets "Roll Number " and "/Registration ". FOP's elements for it are
 `box("Number") box(" ") box("/")` - the space is a non-breaking box - so the line manager
 puts a zero penalty after it (and relaxes the infinite penalty in the justified form).
+
+<a id="s43punct"></a>**Word breaks at a space before `, . : ; ? !`** (17.3.1), where LB13 forbids a
+break before classes IS and EX "even after spaces". Measured on `break-after-space-uax14`:
+ragged paragraphs whose first line holds `... WORD` with a point to spare but not
+`... WORD ,`; for each of space-comma, -period, -question mark, -colon, -semicolon and
+-exclamation mark Word ends the line with WORD and starts the next with the punctuation,
+where docx4j took WORD down with it (the probe 0.50 -> 1.0000). A space before an ellipsis
+(class IN) or an opening bracket already broke, in both. `WordBreakOpportunities` turns the
+pair table's (X, IS) and (X, EX) from a prohibited break into an indirect one - a break only
+across spaces, so `WORD,` stays whole - for each class X that may break across spaces before a
+letter at all, so LB14's `( ,` and a no-break space keep their hold. Closing brackets and SY
+are unmeasured and left alone. ledger8 counted 69 lines of its 80 near misses in this shape.
 <a id="s43prefix"></a>**Nor between a letter and a backslash** (17.2.0). FOP's pair table
 (`LineBreakUtils`) is generated from a Unicode version before 8.0, whose LB24 added
 `(AL|HL) × (PR|PO)` - no break between a letter and a prefix or postfix character - so FOP

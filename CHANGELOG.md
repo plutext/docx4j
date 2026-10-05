@@ -151,6 +151,9 @@ PDF via XSL FO:
 - A table whose width is a percentage is as wide as Word draws it below compatibility mode 15: a
   percentage of the text column and the table's two outer cell margins, not of the column alone.
 
+- A line may break at a space before , . : ; ? or !, as Word breaks it, rather than carrying the
+  word before the space down with the punctuation.
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's
