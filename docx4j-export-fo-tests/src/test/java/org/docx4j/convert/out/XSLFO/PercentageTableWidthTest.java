@@ -144,6 +144,27 @@ public class PercentageTableWidthTest extends AbstractXSLFOTest {
 		}
 	}
 
+	/**
+	 * Below compatibility mode 15 the percentage is of the text column widened by a cell
+	 * margin at each end: the table-grid-pct-autofit-compat12 and -14 probes, where Word's
+	 * 5000 pct autofit table is 451.3 + 10.8 = 462.1pt across, its content from margin to
+	 * margin (&#xa7;6.5, 17.3.1).  Both the autofit pass (auto cells) and the scaling of a grid
+	 * that falls short (4513+4513, the bare column).
+	 */
+	@Test
+	public void belowMode15ThePercentageIsOfTheColumnAndItsCellMargins() throws Exception {
+		for (int flags : FLAGS) {
+			WordprocessingMLPackage pkg = pkg(5000, 4513, false, 0);
+			pkg.getMainDocumentPart().getDocumentSettingsPart().setWordCompatSetting("compatibilityMode", "14");
+			assertEquals(flagName(flags) + ": 100 per cent of the column and two 5.4pt margins",
+					462.1, tableWidthPt(fo(pkg, flags)), 0.5);
+			pkg = pkg(4000, 4513, false, 0);
+			pkg.getMainDocumentPart().getDocumentSettingsPart().setWordCompatSetting("compatibilityMode", "14");
+			assertEquals(flagName(flags) + ": 80 per cent of the same",
+					369.7, tableWidthPt(fo(pkg, flags)), 0.5);
+		}
+	}
+
 	/** A grid which already sums to the percentage width is left exactly alone. */
 	@Test
 	public void aGridWhichAlreadyFitsIsUntouched() throws Exception {

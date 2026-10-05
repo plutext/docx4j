@@ -3188,6 +3188,21 @@ on eight documents.
   width (the 120% table's two columns are 254.0 and 286.2pt, the same 0.888 ratio as
   ours), so only the total is the percentage's.
 
+<a id="s65pctbase"></a>**Below compatibility mode 15 the percentage is of the column widened by a
+cell margin at each end** (17.3.1) - the grid edge of §6.1, which the grid check had used since
+17.2.0 - where in mode 15 it is of the column. Measured on the `table-grid-pct-autofit-compat12`,
+`-14` and `-15` probes (autofit tables, `w:tblW` in pct, two cells each with a left- and a
+right-aligned tag): in modes 12 and 14 alike a 5000 pct table puts its cells' content from the
+left margin to the right, the table 462.2pt across with Word's default 108-twip margins (451.3 +
+10.8), 471.3 with 200-twip ones, and a 4000 pct table 80% of the widened 462.1; Word's re-save
+writes those grids (4621+4622 twips on a 9026-twip column). docx4j laid the autofit pass out to
+the column and scaled Word's grid down to it, 451.3pt, both now on the widened base
+(`AbstractTableWriter.widenedPercentageWidth`); every content edge is within 0.3pt of Word's.
+Mode 15 is unchanged and matched already. Scored with the break at a space before punctuation
+(§4.3): 37 documents up and none down, among them 7235 +105 lines (its four 25% columns had
+each been 2.5pt narrow), 3229 to Word's 11 pages and 7733 +46; class 2's documents at 0.98 or
+better 243 -> 246.
+
 <a id="s65degenerate"></a>**A percentage which resolves to less than one pair of Word's default
 cell margins is not a width** (17.2.0). One corpus document states `w:tblW w:w="1"
 w:type="pct"` - 0.02% of the text column, 1.9 twips - on a five-row table with a

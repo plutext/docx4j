@@ -434,6 +434,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			boolean[] declared = new boolean[cols];
 			int container = containingCellWidthTwips(table, tblPr);
 			int tablePreferred = preferredTableWidthTwips(context, tblPr, container);
+			tablePreferred = widenedPercentageWidth(context, table, tblPr, container, tablePreferred);
 			/* A w:tcW in pct is a preferred width like a dxa one, stated as a fraction of
 			 * the table's own width rather than in twips, and reading only dxa left a pct
 			 * table with no column preferences at all: it failed the "every column has a
@@ -507,7 +508,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 				spreadShortfall(max, c, end, needMax, max);
 				for (int k = c; k < end; k++) max[k] = Math.max(max[k], min[k]);
 			}
-			int available = availableWidthTwips(context, tblPr, container);
+			int available = tablePreferred > 0 ? tablePreferred : availableWidthTwips(context, tblPr, container);
 			int room = available; // what the page fit measures a grid against (fitToAvailableWidth)
 			// the grid-edge allowance is the text column's; a nested table's grid is not
 			// shifted off its container's edge (see TableWriter.isNested), so it gets none
@@ -1128,7 +1129,8 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 				return null;
 			}
 			int container = containingCellWidthTwips(table, tblPr);
-			int target = preferredTableWidthTwips(context, tblPr, container);
+			int target = widenedPercentageWidth(context, table, tblPr, container,
+					preferredTableWidthTwips(context, tblPr, container));
 			if (target <= 0) return null;
 			int[] grid = gridWidths(table, table.getColCount());
 			if (grid == null || grid.length == 0) return null;
@@ -1290,6 +1292,34 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			log.debug("No section page dimensions: " + e.getMessage());
 			return -1;
 		}
+	}
+
+	/**
+	 * A percentage w:tblW resolved as Word resolves it: below compatibility mode 15, of the
+	 * text column widened by a cell margin at each end - the grid edge
+	 * ({@link #autofitGridAllowanceTwips}), which is also the base the grid check
+	 * ({@code gridPreferred}) has used since 17.2.0 - and in mode 15, or for a table nested
+	 * in a cell, of the column or the cell as before.
+	 *
+	 * <p>Measured on the table-grid-pct-autofit-compat12 and -14 probes (identical): a 5000
+	 * pct autofit table puts its cells' content from the left margin to the right, 462.2pt
+	 * across with Word's default margins, 471.3 with 200-twip ones, and a 4000 pct table is
+	 * 80% of the widened 462.1; Word's re-save writes those grids (4621+4622 against a
+	 * 9026-twip column).  docx4j laid the autofit pass out to the column and scaled Word's
+	 * grid down to it, 451.3pt.  In mode 15 both are the column.  Corpus document 7235's
+	 * four 25% columns were each 2.5pt narrower than Word's.  @since 17.3.1</p>
+	 *
+	 * @param preferred the percentage resolved against the column (or cell), or -1
+	 */
+	private int widenedPercentageWidth(AbstractWmlConversionContext context, AbstractTableWriterModel table,
+			org.docx4j.wml.CTTblPrBase tblPr, int container, int preferred) {
+		if (container > 0 || preferred <= 0 || tblPr == null || tblPr.getTblW() == null
+				|| !"pct".equals(tblPr.getTblW().getType())) return preferred;
+		int allowance = autofitGridAllowanceTwips(context, table, tblPr);
+		int column = containerWidthTwips(context);
+		if (allowance <= 0 || column <= 0) return preferred;
+		int widened = preferredTableWidthTwips(tblPr, column + allowance);
+		return widened > 0 ? widened : preferred;
 	}
 
 	/**

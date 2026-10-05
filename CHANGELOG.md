@@ -148,6 +148,9 @@ PDF via XSL FO:
   Word's PDF export does ("Error! Bookmark not defined.", "Error! Reference source not found."),
   where it kept the result the field cached (docx4j.convert.out.fo.fieldErrors=cached for that).
 
+- A table whose width is a percentage is as wide as Word draws it below compatibility mode 15: a
+  percentage of the text column and the table's two outer cell margins, not of the column alone.
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's
