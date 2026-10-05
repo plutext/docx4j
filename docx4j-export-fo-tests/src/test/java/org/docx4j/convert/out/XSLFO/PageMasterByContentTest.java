@@ -213,6 +213,72 @@ public class PageMasterByContentTest extends AbstractXSLFOTest {
 		assertFalse(anyStamp(doc));
 	}
 
+	/**
+	 * Corpus document 5507's shape: a first section with an empty footer part and
+	 * {@code w:footer="5811"} (290.55pt), then a continuous one at 709 (35.45pt).  Word
+	 * honours the 290.55pt on the first section's pages (its pages 1 and 2 end at y=531) and
+	 * the 35.45pt on the second's (page 3 at 762.5).  With part masters each section's
+	 * master has its own; without them the run's one master keeps the quarter-page clamp,
+	 * the lesser error, since honouring 290.55pt there would end every page of the run high.
+	 */
+	private WordprocessingMLPackage letter() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		org.docx4j.openpackaging.parts.WordprocessingML.FooterPart footer =
+				new org.docx4j.openpackaging.parts.WordprocessingML.FooterPart(
+						new org.docx4j.openpackaging.parts.PartName("/word/footer1.xml"));
+		footer.setJaxbElement((org.docx4j.wml.Ftr) XmlUtils.unmarshalString(
+				"<w:ftr " + W + "><w:p/></w:ftr>", org.docx4j.jaxb.Context.jc, org.docx4j.wml.Ftr.class));
+		String f = pkg.getMainDocumentPart().addTargetPart(footer).getId();
+		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
+				"<w:document " + W + " " + R + "><w:body>"
+				+ "<w:p><w:pPr><w:sectPr><w:footerReference w:type=\"default\" r:id=\"" + f + "\"/>"
+				+ A4 + pgMar(964, 1418, 709, 5811) + "</w:sectPr></w:pPr><w:r><w:t>letterhead</w:t></w:r></w:p>"
+				+ para("the letter")
+				+ "<w:sectPr><w:type w:val=\"continuous\"/>" + A4 + pgMar(964, 1417, 709, 709) + "</w:sectPr>"
+				+ "</w:body></w:document>"));
+		return pkg;
+	}
+
+	/** The distance from the page's bottom edge to the body's, in points. */
+	private static float bodyFoot(org.w3c.dom.Document doc, String master) {
+		Element spm = named(doc, "simple-page-master", master);
+		Element body = (Element) spm.getElementsByTagNameNS(FO, "region-body").item(0);
+		return pt(spm.getAttribute("margin-bottom")) + pt(body.getAttribute("margin-bottom"));
+	}
+
+	private void checkLetter(int flags) throws Exception {
+		FOSettings foSettings = Docx4J.createFOSettings();
+		foSettings.setOpcPackage(letter());
+		foSettings.setApacheFopMime(FOSettings.INTERNAL_FO_MIME);
+
+		Docx4jProperties.setProperty(PROPERTY, "false");
+		ByteArrayOutputStream off = new ByteArrayOutputStream();
+		Docx4J.toFO(foSettings, off, flags);
+		org.w3c.dom.Document doc = w3cDomDocumentFromByteArray(off.toByteArray());
+		assertEquals("one master for the run: the clamp, the body to the 70.9pt bottom margin", 70.9f,
+				bodyFoot(doc, "s1-default"), 0.1f);
+
+		Docx4jProperties.setProperty(PROPERTY, "true");
+		foSettings = Docx4J.createFOSettings();
+		foSettings.setOpcPackage(letter());
+		foSettings.setApacheFopMime(FOSettings.INTERNAL_FO_MIME);
+		ByteArrayOutputStream on = new ByteArrayOutputStream();
+		Docx4J.toFO(foSettings, on, flags);
+		doc = w3cDomDocumentFromByteArray(on.toByteArray());
+		assertTrue("the first section's pages honour its 290.55pt footer distance, and the empty footer's line: "
+				+ bodyFoot(doc, "s1-default"), bodyFoot(doc, "s1-default") > 300f);
+		// 35.45pt + the empty footer's line and space-after is 60.89, inside the 70.85pt
+		// bottom margin, which therefore ends the body (Word's page 3 ends at 762.5)
+		assertEquals("the second section's pages: its own bottom margin", 70.85f,
+				bodyFoot(doc, "s1-p2-default"), 0.1f);
+	}
+
+	@Test
+	public void aLargeFooterDistanceOnlyWhereThePagesFollowTheirSection() throws Exception {
+		checkLetter(Docx4J.FLAG_NONE);
+		checkLetter(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
 	@Test
 	public void onVisitor() throws Exception {
 		checkOn(Docx4J.FLAG_NONE);

@@ -496,7 +496,26 @@ distances and texts together with it, mode 14, a section starting at a page top,
    `false`); never in the extent pre-pass. Test `PageMasterByContentTest` (both pathways). Forced
    on, on today's renderer: the markers fall at P1's S2 and S3, 12802's sections 1 and 4, and
    section-continuous-geometry's S3, S4 and S5, and nothing renders differently (the renderer
-   ignores the attribute). **4.2**: the pass loop and the explicit page-sequence-master. Either way the
+   ignores the attribute).
+   **Measured on fop/CR-017** (renderer r10, 2026-10-05). Control b114 (markers off) against b113:
+   0 movers. Measurement b115 (on) against b114: no exception; the P1 probes' page parity 0.917 ->
+   0.959, continuous-margins-at-top 0.920 -> 0.947; 12802's pages 3 and 4 start at 41.9 and 42.5
+   (Word 43.3, 43.4; were 34.9, 35.5); 7235 +22 lines (its pages at Word's 35.9 top, were 27.1; one
+   line spills to a 17th page, density); 5507 +1, 14067 page parity up. The other 29 of the 32 do
+   not move in the scores, which tolerate a few points (12802's 7pt did not register either). Two
+   misses:
+   - 12802's page 5 kept the masters before (section 4's block opens it with a space-before, whose
+     box FOP's space resolver makes without a layout manager, and CR-017 took it for the part's
+     first box): fixed in the fork, 7c6f43b07, to be re-gated.
+   - section-continuous-geometry's pages 5 and 6 took S3's top but not its foot, and the probe lost
+     a page (9 -> 8). Two causes. docx4j's 17.1.0 clamp ignored a footer distance past a quarter of
+     the page over an empty footer part - read off corpus document 5507's page 3, which its second
+     section owns (D1): its first section's pages honour the 290.55pt. Corrected (gate b116 on r10
+     against b115: 5507 3 -> 4 pages, Word's 4, line parity 1.0000; b117 on r9 against b113, the
+     clamp kept on a merged run with one master: 0 movers). And the probe's S3 declares its own
+     (empty) footer where the run's first section declares none, so its pages, showing the
+     run's footers, reserve nothing: that is phase 3's (each part's own headers and footers), and
+     pages 5 and 6 of that golden wait on it; its pages 3, 4, 7 and 8 have Word's tops now. **4.2**: the pass loop and the explicit page-sequence-master. Either way the
    gate is the same: P1's pages at Word's margins and headers' distances, the
    section-continuous-geometry golden's pages 5 to 8, 12802's page tops at Word's, the 34
    documents read one by one, nothing else moving; on 4.2b, both renderers (Apache FOP unchanged).

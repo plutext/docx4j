@@ -4372,9 +4372,16 @@ is honoured on the pages the first section's geometry governs, and the 756.2 / 7
 baselines read as "ignored" are page 3's, the second section's. Which pages a continuous
 section's geometry governs was the open question; the letter answers it for itself - Word
 continues on the page and gives each page the section in force at its start, so page 2
-keeps the 5811 - which one page master cannot express ([§7](#s7pgsz)). So the clamp stands
-as the lesser error for a run merged onto its last part's master, and that letter is one
-page short of Word's four.
+keeps the 5811 - which one page master cannot express ([§7](#s7pgsz)). So the clamp stood
+as the lesser error for a run merged onto one master, and that letter is one page short of
+Word's four. **Since 17.3.1 the distance is honoured whatever its size** - CR-031 confirmed the
+reading (a page takes the vertical margins of the section owning its first line,
+[§7](#s7pagemasters)), and the `section-continuous-geometry` golden's S3, 290.55pt over an empty
+footer part, ends its own pages at 508.9 - **except on the one master of a merged run whose
+parts' vertical margins differ and which has no part masters** (Apache FOP, or a renderer
+without `page-master-by-content`), where it would end every page of the run high and the clamp
+stays the lesser error. With part masters each section's distance is on the pages it owns.
+`EmptyFooterPartTest`, `PageMasterByContentTest`.
 `HeaderFooterPolicy.isAbsent` tells the two cases apart. The head of the page keeps the
 rule above unchanged - there an empty part reserves neither the distance nor a line box,
 which is what its own measurement says. **15 documents of the three corpora have an empty

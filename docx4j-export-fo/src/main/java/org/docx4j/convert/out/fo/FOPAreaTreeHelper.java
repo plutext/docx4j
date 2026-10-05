@@ -53,6 +53,7 @@ import org.docx4j.wml.RPr;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Text;
 import org.plutext.jaxb.xslfo.LayoutMasterSet;
+import org.plutext.jaxb.xslfo.PageSequenceMaster;
 import org.plutext.jaxb.xslfo.SimplePageMaster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -758,18 +759,6 @@ public class FOPAreaTreeHelper {
      *  the dummy part docx4j invents for w:titlePg / w:evenAndOddHeaders, or a real
      *  part with nothing in it (@since 17.1.0). */
 
-    /** Whether a w:footer distance is one Word honours: a distance past a quarter of
-     *  the page is treated as absurd and ignored (see the body-bottom rule).  @since 17.1.0 */
-    private static boolean plausibleFooterDistance(org.docx4j.model.structure.PageDimensions page, float footerMarginPts) {
-        if (footerMarginPts <= 0) return false;
-        try {
-            float pageHeightPts = page.getPgSz().getH().intValue() / 20f;
-            return pageHeightPts <= 0 || footerMarginPts <= pageHeightPts / 4f;
-        } catch (RuntimeException e) {
-            return true;
-        }
-    }
-
     private static boolean isDummyHeader(org.docx4j.model.structure.HeaderFooterPolicy hf, String pageKind) {
     	if ("firstpage".equals(pageKind)) {
     		return org.docx4j.model.structure.HeaderFooterPolicy.reservesNothing(hf.getFirstHeader());
@@ -804,6 +793,35 @@ public class FOPAreaTreeHelper {
     		return org.docx4j.model.structure.HeaderFooterPolicy.isAbsent(hf.getEvenFooter());
     	} else if ("default".equals(pageKind)) {
     		return org.docx4j.model.structure.HeaderFooterPolicy.isAbsent(hf.getDefaultFooter());
+    	}
+    	return true;
+    }
+
+    /** Whether a w:footer distance is one Word honours on every page of a page-sequence
+     *  with a single master: a distance past a quarter of the page is ignored there (see
+     *  the body-bottom rule).  @since 17.1.0; since 17.3.1 only for a merged run's own
+     *  master whose parts' vertical margins differ and which has no part masters
+     *  ({@link #clampsFooterDistance}). */
+    private static boolean plausibleFooterDistance(org.docx4j.model.structure.PageDimensions page, float footerMarginPts) {
+        if (footerMarginPts <= 0) return false;
+        try {
+            float pageHeightPts = page.getPgSz().getH().intValue() / 20f;
+            return pageHeightPts <= 0 || footerMarginPts <= pageHeightPts / 4f;
+        } catch (RuntimeException e) {
+            return true;
+        }
+    }
+
+    /** Whether this page-sequence's own master still stands for every page of a merged run
+     *  whose parts' vertical margins differ - no part masters were written for it
+     *  (LayoutMasterSetBuilder.addPartMasters) - so that the quarter-page clamp on the footer
+     *  distance applies as the lesser error.  @since 17.3.1 */
+    private static boolean clampsFooterDistance(LayoutMasterSet layoutMasterSet, ConversionSectionWrapper section,
+    		String sectionName) {
+    	if (section == null || section.getPartVerticalMargins().isEmpty()) return false;
+    	String prefix = sectionName + "-p";
+    	for (Object o : layoutMasterSet.getSimplePageMasterOrPageSequenceMaster()) {
+    		if (o instanceof PageSequenceMaster && ((PageSequenceMaster) o).getMasterName().startsWith(prefix)) return false;
     	}
     	return true;
     }
@@ -952,10 +970,23 @@ public class FOPAreaTreeHelper {
 		    			 * bottom of 828.25) would have kept.  The clamp J2 needed was
 		    			 * against an *absurd* w:footer, not against emptiness: the document
 		    			 * that rule was measured on states w:footer="5811" (290.55pt, a
-		    			 * third of the page) and Word ignores it entirely, running the body
+		    			 * third of the page) and Word seemed to ignore it, running the body
 		    			 * to its 70.9pt bottom margin (its last baselines are 756.2 and
 		    			 * 767.0 on an 841.95pt page).  A footer distance past a quarter of
-		    			 * the page is therefore not honoured.  Nor does this apply where the
+		    			 * the page was therefore not honoured, until 17.3.1: that reading was
+		    			 * of the document's page 3, which belongs to its second section
+		    			 * (continuous, w:footer="709") - Word gives a page the vertical
+		    			 * margins of the section owning its first line (CR-031 D1) - while its
+		    			 * pages 1 and 2, the first section's, end at y=531, 290.55pt and the
+		    			 * empty footer line above the edge.  The section-continuous-geometry
+		    			 * golden says the same (its S3, 290.55pt over an empty footer part,
+		    			 * ends its pages at 508.9).  The distance is honoured now whatever its
+		    			 * size, except on the one master of a merged run whose parts' vertical
+		    			 * margins differ and which has no part masters (Apache FOP, or a
+		    			 * renderer without page-master-by-content): there it would end every
+		    			 * page of the run high, and the clamp stays as the lesser error.  With
+		    			 * part masters (CR-031 phase 2) each section's distance is on the pages
+		    			 * it owns.  Nor does this apply where the
 		    			 * document has no footer part at all (or only the one docx4j invents
 		    			 * for w:titlePg): there Word reserves nothing, which is what J2's
 		    			 * own measurement says and FooterDistanceTest holds.  15 documents
@@ -974,7 +1005,9 @@ public class FOPAreaTreeHelper {
 		    			float footerReserve = footerIsDummy ? 0f : fBpdaPts;
 		    			float footerFloor = footerReserve > 0 ? footerMarginPts + footerReserve
 		    					: (footerIsDummy && !footerIsAbsent
-		    							&& plausibleFooterDistance(page, footerMarginPts)
+		    							&& (partNumber != null
+		    									|| !clampsFooterDistance(layoutMasterSet, sections.get(index), "s" + (index + 1))
+		    									|| plausibleFooterDistance(page, footerMarginPts))
 		    						? footerMarginPts + fBpdaPts : 0f);
 		    			float bodyBottom = bottomMarginPts < 0 ? -bottomMarginPts
 		    					: Math.max(bottomMarginPts, footerFloor);

@@ -25,10 +25,12 @@ import org.w3c.dom.NodeList;
  * {@code w:p}, with {@code w:pgMar w:bottom="274"} (13.7pt) and {@code w:footer="720"}
  * (36pt): Word's body ends at y=792.5 - the footer distance plus the empty footer's own
  * 13.43pt line - and puts the next block on the following page, where the bottom margin
- * alone (a body bottom of 828.25) kept it.  The clamp the "reserves nothing" rule really
- * needed was against an <em>absurd</em> {@code w:footer}: the document it was measured on
- * states {@code w:footer="5811"} (290.55pt, a third of the page) and Word ignores it
- * entirely.  15 documents of three corpora have an empty footer part.</p>
+ * alone (a body bottom of 828.25) kept it.  The clamp the "reserves nothing" rule seemed
+ * to need was against an <em>absurd</em> {@code w:footer}: the document it was measured on
+ * states {@code w:footer="5811"} (290.55pt, a third of the page) and Word seemed to ignore
+ * it - but those were the lines of its page 3, which its second section owns; its first
+ * section's pages honour it (CR-031 D1, 17.3.1).  15 documents of three corpora have an
+ * empty footer part.</p>
  *
  * @since 17.1.0
  */
@@ -91,15 +93,19 @@ public class EmptyFooterPartTest extends AbstractXSLFOTest {
 		}
 	}
 
-	/** w:footer=5811 (290.55pt, a third of the page) is absurd and Word ignores it: the
-	 *  body runs to the 13.7pt bottom margin. */
+	/** w:footer=5811 (290.55pt, a third of the page) is honoured like any other distance,
+	 *  as Word honours it on the pages of the section that states it (17.3.1; until then it
+	 *  was taken for absurd and ignored, on a reading of a page another section owned - see
+	 *  the class comment, CR-031 D1).  The quarter-page clamp stays only on the one master of
+	 *  a merged run whose parts' margins differ, PageMasterByContentTest. */
 	@Test
-	public void anAbsurdFooterDistanceIsIgnored() throws Exception {
+	public void aLargeFooterDistanceIsHonoured() throws Exception {
 		for (int flag : FLAGS) {
 			int bottom = bodyBottom(areaTree(pkg(5811), flag));
 			assertTrue(flagName(flag) + ": the body ends at " + bottom / 1000.0
-					+ "pt, not near the page's own 828.25pt",
-					Math.abs(bottom - 828250) < 2000);
+					+ "pt, at 525.96 (290.55pt footer distance + the empty footer's 15.44pt line"
+					+ " + its 10pt space-after)",
+					Math.abs(bottom - 525960) < 1500);
 		}
 	}
 }
