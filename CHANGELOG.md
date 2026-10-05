@@ -144,6 +144,10 @@ PDF via XSL FO:
 - A tab at the start of a paragraph styled like a table-of-contents entry goes to its tab stop,
   as Word lays it out, rather than drawing dots across the line.
 
+- A REF or PAGEREF field whose bookmark the document no longer has prints Word's error text, as
+  Word's PDF export does ("Error! Bookmark not defined.", "Error! Reference source not found."),
+  where it kept the result the field cached (docx4j.convert.out.fo.fieldErrors=cached for that).
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's

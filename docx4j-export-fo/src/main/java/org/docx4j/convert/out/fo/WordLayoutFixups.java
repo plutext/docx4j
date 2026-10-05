@@ -202,6 +202,7 @@ public final class WordLayoutFixups {
 		blockForEmptyCell(doc);
 		clipExactRows(doc);
 		continuationFromTop(doc);
+		fieldErrorWeights(doc);
 		StyleRefMarkers.apply(doc); // before stripHints: it reads the paragraph-style hint
 		stripHints(doc);
 	}
@@ -453,6 +454,10 @@ public final class WordLayoutFixups {
 	public static final String HINT_TAB_IND = "docx4j-tab-ind";
 
 	private static final String[] TAB_HINTS = { HINT_TABS, HINT_TAB_DEFAULT, HINT_TAB_IND };
+
+	/** on the fo:inline holding Word's error text for a REF or PAGEREF whose bookmark is
+	 *  missing (FldSimpleWriter.fieldError); see {@link #fieldErrorWeights}.  @since 17.3.1 */
+	public static final String HINT_FIELD_ERROR = "docx4j-field-error";
 
 	/** on a table-of-contents entry's block (XsltFOFunctions.applyTocStopHint): the
 	 *  entry's own right dot stop in twips from the left margin, which is where its
@@ -3015,6 +3020,52 @@ public final class WordLayoutFixups {
 	}
 
 	/** Remove the hint attributes whether or not the rules ran (FOP must not see them). */
+	/**
+	 * Word's error text for a field whose bookmark is missing is the field result's
+	 * formatting with bold toggled: measured on corpus document 8695's table of contents,
+	 * the error is regular beside a bold TOC1 entry and bold beside a regular TOC2 one.
+	 * The weight the text would have is only known here, where the block and every inline
+	 * above it are in place.  @since 17.3.1
+	 */
+	static void fieldErrorWeights(Document doc) {
+		for (Element inline : elements(doc, "inline")) {
+			if (!inline.hasAttribute(HINT_FIELD_ERROR)) continue;
+			inline.removeAttribute(HINT_FIELD_ERROR);
+			Element holder = firstTextHolder(inline);
+			if (holder == null) holder = inline;
+			holder.setAttribute("font-weight", isBold(effectiveWeight(holder)) ? "normal" : "bold");
+		}
+	}
+
+	/** the element directly holding the first non-blank text under this one, or null */
+	private static Element firstTextHolder(Element e) {
+		for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n.getNodeType() == Node.TEXT_NODE && n.getNodeValue().trim().length() > 0) return e;
+			if (n instanceof Element) {
+				Element found = firstTextHolder((Element) n);
+				if (found != null) return found;
+			}
+		}
+		return null;
+	}
+
+	private static String effectiveWeight(Element e) {
+		for (Node n = e; n instanceof Element; n = n.getParentNode()) {
+			String w = ((Element) n).getAttribute("font-weight");
+			if (w.length() > 0) return w;
+		}
+		return "normal";
+	}
+
+	private static boolean isBold(String weight) {
+		if ("bold".equals(weight) || "bolder".equals(weight)) return true;
+		try {
+			return Integer.parseInt(weight.trim()) >= 600;
+		} catch (NumberFormatException e) {
+			return false;
+		}
+	}
+
 	public static void stripHints(Document doc) {
 		for (Element block : elements(doc, "block")) {
 			block.removeAttribute(HINT_PSTYLE);

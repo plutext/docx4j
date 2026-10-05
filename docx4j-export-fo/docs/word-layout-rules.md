@@ -1815,14 +1815,31 @@ off the line). FOP's own redistribution could not do it: it applies a variation 
 justified line's stretchable areas, and a tab of a settled width on a start-aligned line has
 neither.
 
-**A page reference whose bookmark is gone keeps its cached result.** Word paints the result
-it cached for a field whose target has been deleted - which editing leaves behind
-routinely: one corpus document emits 150 `PAGEREF` fields and holds not one of the
-bookmarks they name. An `fo:page-number-citation` whose `ref-id` is never emitted is
-painted as **nothing at all** by FOP, so all 150 numbers vanished (and the entries' dots
-with them, since the line ended early). Both pathways now check the document for the
-bookmark first (`AbstractWmlConversionContext.hasBookmark`) and keep the field's cached
-runs where it is absent, which is also what HTML output wanted: the link had nowhere to go.
+<a id="s44missingbm"></a>**A reference whose bookmark is gone prints Word's error text**
+(17.3.1; 17.1.0 to 17.3.0 kept the cached result). Editing routinely leaves fields pointing at
+bookmarks the document no longer has: one corpus document emits 150 `PAGEREF` fields and 683
+`REF` fields and holds not one bookmark. Word's PDF export re-evaluates `REF` and `PAGEREF`,
+and for such a field prints **"Error! Bookmark not defined."** (`PAGEREF`, a table of
+contents' page numbers among them) or **"Error! Reference source not found."** (`REF`).
+Measured over the four corpora: every one of the ~1,000 such fields in 12 documents, whatever
+the field cached - 6761's cached result is already Word's Slovak error text, and Word's PDF
+prints the English one. The language is that of the Word which evaluates the field, not the
+document's: the corpora's cached error strings follow the author's Word (a Russian document
+caching the English text, a document whose default language is English caching the Slovak),
+and our English Word printed English throughout. The text takes the field result's formatting
+(capitals from a `TOC1` style with `w:caps`) with **bold toggled**: next to a bold entry the
+error is regular, next to a regular one bold. docx4j writes the English strings
+(`docx4j.convert.out.fo.fieldErrors`, `en`; `cached` for the 17.3.0 behaviour), matching
+names as Word does, ignoring case, in every story. HTML output keeps the cached result.
+
+Where the bookmark is present a reference is made as before. Where it is not, the cached
+result had been kept since 17.1.0 for want of a target: an `fo:page-number-citation` whose
+`ref-id` is never emitted is painted as **nothing at all** by FOP, so all 150 numbers had
+vanished (and the entries' dots with them, since the line ended early). Scored: that
+document (8695) +1,336 lines, 0.774 to 0.974, its error strings Word's to the count (150 and
+624), and 174 to 180 pages against Word's 179 - the one over an older front-matter offset;
+eight more documents up, none down. A form field's own bookmark lies inside its field, which
+docx4j's preprocessing collapses, so the bookmarks are read from the document as loaded.
 
 A right `w:ptab` is resolved as a right tab stop at the end of the line, by the same line
 manager. With `wordLayout=false` no stops are written, and a mid-line tab keeps the

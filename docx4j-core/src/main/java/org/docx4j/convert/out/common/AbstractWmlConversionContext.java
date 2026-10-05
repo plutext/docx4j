@@ -129,13 +129,14 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	 * referring to it (PAGEREF, REF, a TOC entry) can be rendered as a reference at
 	 * all.
 	 *
-	 * <p>Word tolerates a field whose target bookmark is gone - editing routinely
-	 * leaves a table of contents pointing at headings the document no longer has -
-	 * and paints the result it cached the last time the field was updated.  XSL FO
-	 * has no equivalent: an {@code fo:page-number-citation} whose {@code ref-id}
-	 * never resolves is painted as nothing at all, so a document of that shape lost
-	 * every one of its page numbers.  A writer therefore asks first, and keeps the
-	 * cached result where the answer is no.</p>
+	 * <p>Editing routinely leaves a table of contents pointing at headings the document
+	 * no longer has.  An {@code fo:page-number-citation} whose {@code ref-id} never
+	 * resolves is painted as nothing at all, so a document of that shape lost every one
+	 * of its page numbers.  A writer therefore asks first, and where the answer is no
+	 * makes no reference: since 17.3.1 the FO writer prints Word's error text there
+	 * ({@link #isMissingBookmark(String)}), and HTML keeps the cached result.  (Until
+	 * 17.3.1 this said Word paints the cached result; Word's PDF export prints the error
+	 * text.)</p>
 	 *
 	 * <p>Only the main document part is searched, which is where a bookmark a field
 	 * can reach lives; where it cannot be searched the answer is yes, leaving the
@@ -161,6 +162,60 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 		return bookmarkNames == null || bookmarkNames.contains(name);
 	}
 	
+	/** The bookmark names of every story, lower-cased; see {@link #isMissingBookmark(String)}. */
+	private java.util.Set<String> allBookmarkNames = null;
+	private boolean allBookmarkNamesCollected = false;
+
+	/**
+	 * Whether the document holds no bookmark of this name at all, as Word looks for one: by
+	 * name ignoring case, in the body, the headers and footers, and the notes.  Word's PDF
+	 * export refreshes a REF or PAGEREF field, and where its bookmark is missing prints its
+	 * own error text rather than the result the field cached (word-layout-rules.md &#xa7;4.4,
+	 * "A reference whose bookmark is gone"); {@link #hasBookmark(String)}, which only decides
+	 * whether a reference can be made, is the narrower question.  Where the bookmarks cannot
+	 * be collected the answer is false, leaving the field as it was.
+	 *
+	 * @since 17.3.1
+	 */
+	public boolean isMissingBookmark(String name) {
+		if (name == null) return false;
+		if (!allBookmarkNamesCollected) {
+			allBookmarkNamesCollected = true;
+			try {
+				/* the document as it was handed over, not the preprocessed copy: FieldsCombiner
+				 * collapses a complex field whole, and a bookmark between its begin and separate -
+				 * where Word puts a form field's own bookmark - went with it (corpus document 2823,
+				 * REF Text1 to a FORMTEXT, which Word resolves). */
+				WordprocessingMLPackage pkg = getConversionSettings() != null
+						&& getConversionSettings().getOpcPackage() instanceof WordprocessingMLPackage
+						? (WordprocessingMLPackage) getConversionSettings().getOpcPackage() : getWmlPackage();
+				org.docx4j.finders.RangeFinder finder = new org.docx4j.finders.RangeFinder();
+				new org.docx4j.TraversalUtil(pkg.getMainDocumentPart().getContent(), finder);
+				for (org.docx4j.openpackaging.parts.Part part : pkg.getParts().getParts().values()) {
+					if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart) {
+						new org.docx4j.TraversalUtil(((org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart) part).getContent(), finder);
+					} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.FooterPart) {
+						new org.docx4j.TraversalUtil(((org.docx4j.openpackaging.parts.WordprocessingML.FooterPart) part).getContent(), finder);
+					} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart
+							&& ((org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart) part).getJaxbElement() != null) {
+						new org.docx4j.TraversalUtil(((org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart) part).getJaxbElement().getFootnote(), finder);
+					} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart
+							&& ((org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart) part).getJaxbElement() != null) {
+						new org.docx4j.TraversalUtil(((org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart) part).getJaxbElement().getEndnote(), finder);
+					}
+				}
+				java.util.Set<String> names = new java.util.HashSet<String>();
+				for (org.docx4j.wml.CTBookmark bm : finder.getStarts()) {
+					if (bm.getName() != null) names.add(bm.getName().toLowerCase(java.util.Locale.ROOT));
+				}
+				allBookmarkNames = names;
+			} catch (Exception e) {
+				log.warn("Couldn't collect the document's bookmarks: " + e.getMessage());
+			}
+		}
+		return allBookmarkNames != null && !allBookmarkNames.contains(name.toLowerCase(java.util.Locale.ROOT));
+	}
+
 	/** {@link #getCompatibilityOptions()}, read once per conversion. */
 	private org.docx4j.model.CompatibilityOptions compatibilityOptions = null;
 

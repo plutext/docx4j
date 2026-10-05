@@ -56,11 +56,12 @@ public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.
 	public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException {
 	String bookmarkId = model.getFldParameters().get(0);
 	Node content = model.getContent();
-		// The bookmark this field points at is not in the document: Word paints the
-		// result the field cached, and so do we.  A reference to an id that is never
-		// emitted resolves to nothing at all in FO (fo:page-number-citation) and to a
-		// dead link in HTML, which cost one corpus document all 150 of its table of
-		// contents page numbers.  @since 17.1.0
+		// The bookmark this field points at is not in the document: no reference can be
+		// made.  A reference to an id that is never emitted resolves to nothing at all in
+		// FO (fo:page-number-citation) and to a dead link in HTML, which cost one corpus
+		// document all 150 of its table of contents page numbers.  So the cached result is
+		// kept here (@since 17.1.0); the FO writer prints Word's error text before it gets
+		// this far (FldSimpleWriter.fieldError, 17.3.1).
 		if (!context.hasBookmark(bookmarkId)) {
 			if (log.isDebugEnabled()) {
 				log.debug("PAGEREF target '" + bookmarkId + "' is not in the document; keeping the field's cached result");

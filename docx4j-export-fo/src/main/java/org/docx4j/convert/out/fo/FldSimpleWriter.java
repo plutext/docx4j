@@ -221,6 +221,12 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		}
 
 		@Override
+		public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException {
+			Node error = fieldError(context, model, doc, ERROR_BOOKMARK_NOT_DEFINED);
+			return error != null ? error : super.toNode(context, model, doc);
+		}
+
+		@Override
 		protected Node createPageref(AbstractWmlConversionContext context, Document doc, String bookmarkId) {
 		Element ret = doc.createElementNS(FO_NS, "fo:page-number-citation");
 			ret.setAttribute("ref-id", bookmarkId);
@@ -229,6 +235,71 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		
 	}
 	
+	protected static class FoRefHandler extends RefHandler {
+		protected FoRefHandler() {
+			super(HyperlinkUtil.FO_OUTPUT);
+		}
+
+		@Override
+		public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException {
+			Node error = fieldError(context, model, doc, ERROR_REFERENCE_SOURCE_NOT_FOUND);
+			return error != null ? error : super.toNode(context, model, doc);
+		}
+	}
+
+	/** Word's text for a PAGEREF whose bookmark is missing, as an English Word prints it. */
+	static final String ERROR_BOOKMARK_NOT_DEFINED = "Error! Bookmark not defined.";
+
+	/** Word's text for a REF whose bookmark is missing, as an English Word prints it. */
+	static final String ERROR_REFERENCE_SOURCE_NOT_FOUND = "Error! Reference source not found.";
+
+	/**
+	 * Word's error text for a REF or PAGEREF field whose bookmark the document does not hold,
+	 * in the field result's formatting, or null where the field is not such a field.
+	 *
+	 * <p>Word's PDF export re-evaluates REF and PAGEREF, whatever the field cached, and for a
+	 * missing bookmark prints its error text in the language of its own user interface (the
+	 * corpora's cached error strings follow the author's Word, not the document's language);
+	 * here that is English, the Word the layout rules were measured on.  The text takes the
+	 * result's formatting with bold toggled ({@link WordLayoutFixups#HINT_FIELD_ERROR}, which
+	 * needs the whole FO tree).  Measured over the four corpora: every one of the ~1,000 such
+	 * fields in 12 documents (word-layout-rules.md &#xa7;4.4, "A reference whose bookmark is
+	 * gone").  {@code docx4j.convert.out.fo.fieldErrors}: {@code en}, the default, or
+	 * {@code cached} for the cached result (17.1.0 to 17.3.0).</p>
+	 *
+	 * @since 17.3.1
+	 */
+	static Node fieldError(AbstractWmlConversionContext context, FldSimpleModel model, Document doc, String text) {
+		if ("cached".equalsIgnoreCase(org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.fieldErrors", "en"))) return null;
+		List<String> params = model.getFldParameters();
+		if (params == null || params.isEmpty() || !context.isMissingBookmark(params.get(0))) return null;
+		Element wrapper = doc.createElementNS(FO_NS, "fo:inline");
+		wrapper.setAttribute(WordLayoutFixups.HINT_FIELD_ERROR, "1");
+		// (treeCopy, not importNode: on the XSLT pathway the content is Xalan's, which refuses it)
+		if (model.getContent() != null) org.docx4j.XmlUtils.treeCopy(model.getContent(), wrapper);
+		// the text goes where the result's first text was, in that text's formatting
+		List<org.w3c.dom.Text> texts = new java.util.ArrayList<org.w3c.dom.Text>();
+		collectTexts(wrapper, texts);
+		if (texts.isEmpty()) {
+			wrapper.appendChild(doc.createTextNode(text));
+		} else {
+			texts.get(0).setData(text);
+			for (int i = 1; i < texts.size(); i++) texts.get(i).setData("");
+		}
+		return wrapper;
+	}
+
+	private static void collectTexts(Node node, List<org.w3c.dom.Text> out) {
+		for (Node n = node.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof org.w3c.dom.Text) {
+				if (((org.w3c.dom.Text) n).getData().trim().length() > 0) out.add((org.w3c.dom.Text) n);
+			} else {
+				collectTexts(n, out);
+			}
+		}
+	}
+
 	protected FldSimpleWriter() {
 		super(FO_NS, "fo:inline");
 	}
@@ -238,7 +309,7 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		super.registerHandlers();
 		registerHandler(new PageHandler());
 		registerHandler(new HyperlinkWriter());
-		registerHandler(new RefHandler(HyperlinkUtil.FO_OUTPUT));
+		registerHandler(new FoRefHandler());
 		registerHandler(new PagerefHandler());
 		registerHandler(new NumpagesHandler());
 		registerHandler(new SectionpagesHandler());

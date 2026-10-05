@@ -7,19 +7,24 @@ import java.io.ByteArrayOutputStream;
 
 import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Document;
+import org.junit.After;
 import org.junit.Test;
 
 /**
  * A PAGEREF field - which is what every entry of a table of contents holds - whose
- * bookmark the document no longer contains keeps the result Word cached for it.
+ * bookmark the document no longer contains makes no reference to it.
  *
- * <p>Word paints that cached result; an {@code fo:page-number-citation} whose
- * {@code ref-id} is never emitted is painted as nothing at all by FOP, which cost one
- * corpus document all 150 of its page numbers (its TOC hyperlinks point at headings
- * that have been deleted).  Both FO pathways.</p>
+ * <p>An {@code fo:page-number-citation} whose {@code ref-id} is never emitted is painted
+ * as nothing at all by FOP, which cost one corpus document all 150 of its page numbers
+ * (its TOC hyperlinks point at headings that have been deleted), so no reference is made.
+ * What is printed instead is Word's error text, as Word's PDF export prints it (17.3.1;
+ * {@link FieldErrorTextTest}), or with {@code docx4j.convert.out.fo.fieldErrors=cached} the
+ * cached result, which 17.1.0 to 17.3.0 printed in the belief that Word does.  Both FO
+ * pathways.</p>
  *
  * @since 17.1.0
  */
@@ -49,8 +54,27 @@ public class PagerefMissingBookmarkTest {
 		return new String(baos.toByteArray(), "UTF-8");
 	}
 
+	@After
+	public void restore() {
+		Docx4jProperties.getProperties().remove("docx4j.convert.out.fo.fieldErrors");
+	}
+
 	@Test
-	public void aPagerefToAMissingBookmarkKeepsTheCachedResult() throws Exception {
+	public void aPagerefToAMissingBookmarkPrintsWordsErrorText() throws Exception {
+		for (int flag : FLAGS) {
+			String fo = fo(ENTRY, flag);
+			assertFalse("a citation of an id nothing emits, which FOP paints as nothing: " + fo,
+					fo.contains("page-number-citation"));
+			assertFalse("a link to an id nothing emits: " + fo,
+					fo.contains("internal-destination=\"_Toc123\""));
+			assertTrue("Word's error text: " + fo, fo.contains("Error! Bookmark not defined."));
+			assertFalse("the cached page number is still there: " + fo, fo.contains(">7<"));
+		}
+	}
+
+	@Test
+	public void aPagerefToAMissingBookmarkKeepsTheCachedResultOnRequest() throws Exception {
+		Docx4jProperties.setProperty("docx4j.convert.out.fo.fieldErrors", "cached");
 		for (int flag : FLAGS) {
 			String fo = fo(ENTRY, flag);
 			assertFalse("a citation of an id nothing emits, which FOP paints as nothing: " + fo,
