@@ -4441,7 +4441,15 @@ public final class WordLayoutFixups {
 	static void retainSpaceBeforeAtFlowStart(Document doc) {
 		double prevAfter = 0;
 		for (Element flow : elements(doc, "flow")) {
-			Element first = firstBlock(flow);
+			/* A numbered first paragraph is an fo:list-block, and its spacing is still on the block
+			 * in its fo:list-item-body here - fixLists, later, moves it (conditionality and all) to
+			 * the list-block - where firstBlock, descending to the label's block, never looked:
+			 * measured on corpus document 12301, whose flow opens with a numbered TOC Heading
+			 * (w:before 480), Word's "1 Contents" is at 129.1 and docx4j's was at 103.5, and the
+			 * 24pt drove its TOC a page early; 13383's numbered heading at a section start the same
+			 * (ledger8 item 20).  @since 17.3.1 */
+			Element first = listBodyBlock(firstListBlock(flow));
+			if (first == null) first = firstBlock(flow);
 			if (first != null && isAutoSpaceBefore(first)) {
 				// HTML auto spacing (w:beforeAutospacing) is a margin, and a margin
 				// collapses out at the top of the body: measured on a document whose
@@ -4586,6 +4594,27 @@ public final class WordLayoutFixups {
 		} catch (NumberFormatException e) {
 			return 0;
 		}
+	}
+
+	/** The first block of a list-block's item body - where the paragraph's spacing is until
+	 *  {@link #fixLists} - or null.  @since 17.3.1 */
+	private static Element listBodyBlock(Element listBlock) {
+		if (listBlock == null) return null;
+		for (Element body : descendants(listBlock, "list-item-body")) return firstBlock(body);
+		return null;
+	}
+
+	/** The list-block that opens parent - directly, or inside the wrapper blocks that open it - or null where
+	 *  something else does.  @since 17.3.1 */
+	private static Element firstListBlock(Element parent) {
+		for (Node n = parent.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (!(n instanceof Element)) continue;
+			Element el = (Element) n;
+			if (isFo(el, "list-block")) return el;
+			if (isFo(el, "block") && !hasSpace(el, "space-before")) return firstListBlock(el);
+			return null;
+		}
+		return null;
 	}
 
 	/** The first fo:block in document order under this element, not descending into tables. */

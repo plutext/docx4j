@@ -733,6 +733,14 @@ were 10. An explicit `w:spacing w:before` is honoured at a flow start - that is 
 automatic value is dropped. The first flow block carried a retained space-before in 17 of
 99 documents of the long-document corpus.
 
+**A numbered first paragraph too** (17.3.1). Such a paragraph is an `fo:list-block`, and the
+rule looked for the first `fo:block`, which inside a list-block is the label's, so it never
+found the paragraph's spacing (it sits on the item body's block until `fixLists` moves it to
+the list-block). Measured on corpus document 12301, whose flow opens with a numbered TOC
+Heading of 24pt before: Word's "1 Contents" is at y=129.1 and docx4j's was at 103.5; it is
+now at 127.5, and the report's ten contents pages match Word's line for line. Scored: 2422
+(a numbered heading at a section start) 0.956 to 0.988, 13383 a line.
+
 **Contextual spacing.** `w:contextualSpacing` (ECMA-376 17.3.1.9) zeroes the gap between
 two same-style paragraphs when **either** carries it, not only on the flagged paragraph's
 side: a contextual paragraph followed by a non-contextual one of the same style with 12pt

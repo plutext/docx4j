@@ -293,6 +293,26 @@ public class WordLayoutFixupsTest {
 		assertFalse("no hook", ((org.w3c.dom.Element) cells.item(0)).hasAttributeNS(fox, "continuation-display-align"));
 	}
 
+	/**
+	 * A numbered paragraph opening the document keeps its space-before, as a plain one does:
+	 * its spacing is on the item body's block until fixLists moves it to the list-block, and
+	 * the retain has to travel with it.  Corpus document 12301 (a numbered TOC Heading, 24pt
+	 * before): Word's first line at 129.1, docx4j's at 103.5.  @since 17.3.1
+	 */
+	@Test
+	public void numberedFirstParagraphRetainsItsSpaceBefore() throws Exception {
+		String in = flow("<fo:list-block provisional-distance-between-starts=\"21.6pt\"><fo:list-item>"
+				+ "<fo:list-item-label end-indent=\"label-end()\"><fo:block>1</fo:block></fo:list-item-label>"
+				+ "<fo:list-item-body start-indent=\"body-start()\"><fo:block space-before=\"24pt\">Contents</fo:block>"
+				+ "</fo:list-item-body></fo:list-item></fo:list-block>"
+				+ "<fo:block space-before=\"12pt\">after</fo:block>");
+		org.w3c.dom.Document doc = parse(WordLayoutFixups.apply(in, 15));
+		org.w3c.dom.Element listBlock = (org.w3c.dom.Element) doc.getElementsByTagNameNS(
+				"http://www.w3.org/1999/XSL/Format", "list-block").item(0);
+		assertEquals("24pt", listBlock.getAttribute("space-before"));
+		assertEquals("retain", listBlock.getAttribute("space-before.conditionality"));
+	}
+
 	private static org.w3c.dom.Document parse(String fo) throws Exception {
 		return org.docx4j.XmlUtils.getNewDocumentBuilder().parse(
 				new org.xml.sax.InputSource(new java.io.StringReader(fo)));

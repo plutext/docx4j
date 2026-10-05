@@ -135,6 +135,9 @@ PDF via XSL FO:
 - A line holding Cambria Math (an equation, or a symbol set in it) takes Word's height for the
   font; it was nearly five times too tall.
 
+- A numbered paragraph opening the document or a section keeps its space-before, as a plain one
+  does.
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's
