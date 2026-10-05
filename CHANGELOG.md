@@ -129,6 +129,9 @@ PDF via XSL FO:
   Unicode character (a smiley is U+263A), not the font's private-use code point, on a docx4j FO
   renderer with the to-unicode-map hook (fork CR-014).
 
+- A footnote cited from a list item spaced at more than single line spacing is printed; such
+  footnotes were missing from the PDF, bodies and all.
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's

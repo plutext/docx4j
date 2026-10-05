@@ -4634,6 +4634,13 @@ before the zero-width space replaced it).
   states, and `line-height-shift-adjustment`, which `fo:root` sets for the whole document.
   Scored: eight corpus documents improve and none regresses; `14_pl-PL_sdt_num_tbl_1587`
   goes 0.8863 -> 0.9691.
+- **A note cited from a list item is printed** (17.3.1). A list item whose lines are spaced
+  over single has leading to drop at the foot of a page (§2.3), and
+  `WordListItemLayoutManager` takes it out of the item's last Knuth box. That box is FOP's
+  `KnuthBlockBox`, which carries the notes cited on its lines to the page breaker, and the
+  plain box put in its place lost them, bodies and all: corpus document 2451, whose list
+  items are at 1.5 lines, lacked the five notes cited from them, 7396 three of three, 4899
+  one. The shortened box is now a `KnuthBlockBox` with the same notes.
 
 Measured: `footnotes` at 98% line parity; on `page-header-footnotes`, headers, footers,
 footnote lines and the separator rule all within 0.5pt of Word's. The one remaining miss on

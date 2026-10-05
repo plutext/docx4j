@@ -35,6 +35,7 @@ import org.apache.fop.fo.flow.ListItem;
 import org.apache.fop.fonts.Font;
 import org.apache.fop.fonts.FontInfo;
 import org.apache.fop.fonts.FontTriplet;
+import org.apache.fop.layoutmgr.KnuthBlockBox;
 import org.apache.fop.layoutmgr.KnuthBox;
 import org.apache.fop.layoutmgr.KnuthElement;
 import org.apache.fop.layoutmgr.KnuthPenalty;
@@ -103,7 +104,7 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 			if (!(el instanceof KnuthBox)) continue;
 			KnuthBox box = (KnuthBox) el;
 			if (box.getWidth() < leading) return;
-			result.set(i, new KnuthBox(box.getWidth() - leading, box.getPosition(), box.isAuxiliary()));
+			result.set(i, shortened(box, box.getWidth() - leading));
 			// as WordLineLayoutManager ends a block: no break between box and glue,
 			// and a box after the glue so the list does not end in glue
 			result.add(new KnuthPenalty(0, KnuthElement.INFINITE, false, null, true));
@@ -111,6 +112,27 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 			result.add(new KnuthBox(0, null, true));
 			return;
 		}
+	}
+
+	/**
+	 * The box, shorter.  A list item's step boxes are {@code KnuthBlockBox}es, which carry the
+	 * footnotes (and floats) anchored on their lines to the page breaker; a plain KnuthBox in
+	 * the last one's place lost them.  Measured on corpus document 2451, whose list items are
+	 * set at 1.5 lines (so they have a trailing leading to expose): the five footnotes cited
+	 * from its list items were missing from the PDF, bodies and all, while the FO held them
+	 * (ledger8 item 22; 7396 the same, 3 of 3).  @since 17.3.1
+	 */
+	private static KnuthBox shortened(KnuthBox box, int width) {
+		if (!(box instanceof KnuthBlockBox)) {
+			return new KnuthBox(width, box.getPosition(), box.isAuxiliary());
+		}
+		KnuthBlockBox block = (KnuthBlockBox) box;
+		KnuthBlockBox copy = new KnuthBlockBox(width, block.getFootnoteBodyLMs(), block.getPosition(),
+				block.isAuxiliary(), block.getFloatContentLMs());
+		if (block.getElementLists() != null) {   // null when no footnote's elements are held
+			for (List<?> list : block.getElementLists()) copy.addElementList(list);
+		}
+		return copy;
 	}
 
 	// ---- the w:suff separator in the text layer ------------------------------------
