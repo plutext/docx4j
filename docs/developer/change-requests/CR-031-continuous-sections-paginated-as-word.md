@@ -5,8 +5,10 @@ turn them on?" - "yes please" to writing this CR). Phase 0 DONE 2026-10-05 (Word
 §2, D3). Phase 1 DONE 2026-10-05 (D2, with `restartParityBlankPage` on by default; gate b111).
 Reviewed 2026-10-05 (another session): recommends 4.2b, with six design findings and the
 staleness below folded in (§4.2b, §5 P6, §6, §7, §8). **Decision 1 made 2026-10-05 (Jason): 4.2b**,
-the fork extension. Phase 2 next: handed to the fork session for its fop/CR (2026-10-05); P6 cut and
-on the share for the Word run.
+the fork extension. Phase 2 next (registry `docx4j/CR-031.2`), depending on the fork's **fop/CR-017**
+"page masters chosen by the content a page starts with" (written 2026-10-05, 08fce8175 on
+`2.11-docx4j.5`, proposed; implementation waits on Jason's go there). P6 cut and on the share for
+the Word run.
 
 ## 0. Why now
 
@@ -204,7 +206,22 @@ document out, so this joins an existing pattern rather than adding a new one.
 ### 4.2b D1 as a fork extension: page masters chosen by the content a page starts with
 
 Read from the fork (`../xmlgraphics-fop-plutext`, branch `2.11-docx4j.5`), read-only; the fork-side
-CR and the code are the fork session's.
+CR and the code are the fork session's. **That CR is fop/CR-017** (2026-10-05), which fixes what
+docx4j builds against:
+- the attribute `fox:page-sequence-master-reference="<master-name>"` on a block-level FO in the main
+  flow (block, block-container, list-block, table); pages before the first marker keep the
+  sequence's own `master-reference`, so the first part needs none;
+- the named master must be one unbounded `fo:repeatable-page-master-alternatives` (what docx4j
+  writes now), its conditions tested per page with no walk state; any other form, or a master of
+  another body width or column count, is reported once and ignored;
+- the capability `page-master-by-content` (`Docx4jFop.PAGE_MASTER_BY_CONTENT`);
+- blank padding pages take the previous page's owner and its blank alternative;
+- no restart offset until P6 is read (a later step of fop/CR-017, about a day);
+- the extent hook (phase 5) is not in fop/CR-017: it gets its own fork CR when phase 5 is taken up,
+  on the same `PageProvider` seam.
+
+The design as first written here follows; fop/CR-017 refines it (and its §3.3 states the every-column
+rule for a list starting mid-page).
 
 **What FOP does now.** A page's master is chosen by position alone:
 `PageProvider.cacheNextPage` asks `PageSequence.getNextSimplePageMaster(index, first, last, blank)`,
@@ -225,8 +242,7 @@ candidate page is measured with the margins it would really get, in one pass, wi
 oscillate.
 
 **The extension (fork side).**
-1. An attribute on a block in the main flow, say `fox:page-sequence-master-reference="s2"` (name for
-   the fork session): pages whose first line lies at or after this block, up to the next such block,
+1. An attribute on a block in the main flow, `fox:page-sequence-master-reference="s2"` (fop/CR-017): pages whose first line lies at or after this block, up to the next such block,
    take their masters from that page-sequence-master instead of the sequence's own. FOP already keeps
    unknown attributes on every FO (`FObj.addForeignAttribute`), so the FO tree needs nothing new.
 2. When the breaker builds an element list, record where each marked block's first element falls
@@ -410,8 +426,8 @@ distances and texts together with it, mode 14, a section starting at a page top,
    run; read before phase 3.
 1. D2 (§4.1), with `restartParityBlankPage` turned on: they belong together (§2). Gate: 9539 to
    Word's 22 pages; the even/odd folio probe to Word's 12. **DONE** (b111, §2).
-2. D1, by **4.2b** (decision 1, 2026-10-05): the fork CR's first hook (§4.2b steps 1-5, 7),
-   released or as a gated snapshot; in docx4j, per-part masters with their own vertical
+2. D1, by **4.2b** (decision 1, 2026-10-05): fop/CR-017 (§4.2b steps 1-5, 7), released or as a
+   gated snapshot; in docx4j, per-part masters with their own vertical
    margins, distances and region names, the marker on each part's outermost block, the pre-pass
    measuring per-part masters (each part its own sequence in the trimmed copy), all behind
    `FopCapabilities`. **4.2**: the pass loop and the explicit page-sequence-master. Either way the
@@ -489,6 +505,6 @@ reaches Word's count. Those five will be read for a common cause. Turning on `ta
 ## 10. Effort (rough)
 
 Phase 0: the probes, an hour, plus Jason's Word run. Phase 1: half a day. Phase 2: two to three
-days by 4.2; by 4.2b, about two days in docx4j plus the fork CR (rough guess: two to four days in
-the fork, its session's estimate to replace this). Phase 3: a day or two, plus P6 and its Word run.
-Phase 5: the fork's hook (its estimate), and about a day in docx4j with the gate.
+days by 4.2; by 4.2b, about two days in docx4j plus fop/CR-017 (the fork session's estimate: about
+four days, give or take one, to a gated snapshot, and a day more for the restart step after P6). Phase 3: a day or two, plus P6 and its Word run.
+Phase 5: a fork CR of its own (numbered when taken up), and about a day in docx4j with the gate.
