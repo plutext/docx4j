@@ -805,9 +805,10 @@ public class ConversionSectionWrapperFactory {
 	 * columns before it, as Word does at a continuous break.  Word's common case
 	 * (1 column, then a 2-column stretch, then 1 column again) comes out right; a
 	 * 2-column part under a 3-column count is spanned too (an approximation).</li>
-	 * <li>other page margins (tag XSLT_Ind=start,end in twips): an
-	 * fo:block-container indented by the difference, which is a new reference area,
-	 * so the indents of the paragraphs and tables inside it still work.</li>
+	 * <li>other page margins (tag XSLT_Ind=start,end in twips): the difference is
+	 * added to the indents of the part's own paragraphs and tables (both pathways,
+	 * XsltFOFunctions.shiftIndents).  No container is written: a block-container in a
+	 * multi-column flow makes FOP throw when it balances the columns.</li>
 	 * </ul>
 	 * Sections that agree in both are left alone.
 	 *

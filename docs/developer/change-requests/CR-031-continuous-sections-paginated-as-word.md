@@ -6,8 +6,9 @@ turn them on?" - "yes please" to writing this CR). Phase 0 DONE 2026-10-05 (Word
 Reviewed 2026-10-05 (another session): recommends 4.2b, with six design findings and the
 staleness below folded in (§4.2b, §5 P6, §6, §7, §8). **Decision 1 made 2026-10-05 (Jason): 4.2b**,
 the fork extension. Phase 2 next (registry `docx4j/CR-031.2`), depending on the fork's **fop/CR-017**
-"page masters chosen by the content a page starts with" (written 2026-10-05, 08fce8175 on
-`2.11-docx4j.5`, proposed; implementation waits on Jason's go there). P6 cut and on the share for
+"page masters chosen by the content a page starts with" (written 2026-10-05 and revised after a
+review, 8b509a0e8 on `2.11-docx4j.5`; proposed, about five to six days; implementation waits on
+Jason's go there). P6 cut and on the share for
 the Word run.
 
 ## 0. Why now
@@ -152,6 +153,13 @@ LTR: 367 documents on Word's page count, from 365.
 ## 3. Corpus facts (the four corpora on b110, 2026-10-05; page counts brought to b112)
 
 - **34 documents** change the top or bottom `w:pgMar` at a continuous section break; 26 are class 2.
+  In two of them (9539, 11741) the break also changes the page size, which starts a page-sequence
+  with its own masters already, so **D1's population is 32**: documents with a merged run whose
+  parts differ in top or bottom margin.
+- Two of the 32 (719 and 11256, one Turkish template) have **side floats** (`fo:float`, six each) in
+  that run, all in part 1, before the one part boundary (part 1 top margin 0, part 2 70.85pt, the
+  last fifth of each). fop/CR-017's test 13 decides whether a marker after a side float is honoured
+  or reported and ignored; in the second case those two keep today's margins.
 - **9 were off Word's page count on b110**: 12317 (Word 2, docx4j 1), 5507 (4, 3), 2600 (15, 13),
   7235 (15, 16), 1137 (15, 16), 11741 (56, 54), 719 (29, 28), 9539 (22, 21), 11256 (25, 27). On b112,
   **8**: 9539 is at Word's 22 (phase 1), and 11741 at 55 of 56 (a558bfcbf, the size-change header);
@@ -209,13 +217,20 @@ Read from the fork (`../xmlgraphics-fop-plutext`, branch `2.11-docx4j.5`), read-
 CR and the code are the fork session's. **That CR is fop/CR-017** (2026-10-05), which fixes what
 docx4j builds against:
 - the attribute `fox:page-sequence-master-reference="<master-name>"` on a block-level FO in the main
-  flow (block, block-container, list-block, table); pages before the first marker keep the
-  sequence's own `master-reference`, so the first part needs none;
+  flow (block, block-container, list-block, table) whose ancestors up to the flow are blocks or
+  block-containers - never inside a table cell, list item, footnote, float or inline (reported and
+  ignored); pages before the first marker keep the sequence's own `master-reference`, so the first
+  part needs none;
 - the named master must be one unbounded `fo:repeatable-page-master-alternatives` (what docx4j
   writes now), its conditions tested per page with no walk state; any other form, or a master of
-  another body width or column count, is reported once and ignored;
+  another body width or column count, or whose region-body's region-name is not the flow's
+  flow-name, is reported once and ignored (docx4j's region-body states no region-name, so it is
+  `xsl-region-body`, the flow's name);
 - the capability `page-master-by-content` (`Docx4jFop.PAGE_MASTER_BY_CONTENT`);
 - blank padding pages take the previous page's owner and its blank alternative;
+- exact for single-column flows; on multi-column pages consistent but not guaranteed optimal;
+- a part starting right after a page break (9539's shape) has its still-empty page replaced with its
+  own master once the list shows its first box;
 - no restart offset until P6 is read (a later step of fop/CR-017, about a day);
 - the extent hook (phase 5) is not in fop/CR-017: it gets its own fork CR when phase 5 is taken up,
   on the same `PageProvider` seam.
@@ -248,8 +263,13 @@ oscillate.
 2. When the breaker builds an element list, record where each marked block's first element falls
    (the elements' layout managers lead to their FOs), carrying the current part across lists - FOP
    splits a flow into lists at forced breaks and span changes. docx4j marks each part's outermost
-   block: the `span="all"` wrapper (`XSLT_Cols`) or indent container (`XSLT_Ind`) where the part has
-   one, else its first block.
+   block: the `span="all"` block (`XSLT_Cols`) where the part has fewer columns, else the part's
+   first block-level FO. (`XSLT_Ind` has no container: since 17.0.5 both pathways add the margin
+   difference to the part's own paragraphs and tables, `XsltFOFunctions.shiftIndents`, because a
+   block-container in a multi-column flow made FOP throw when balancing; corrected 2026-10-05, this
+   step first said "indent container".) Not an FO that generates no boxes - an absolutely positioned
+   block-container (a floating table or picture) or an `fo:float` - since parts are located by
+   walking boxes to their marked FOs: the marker goes on the part's first in-flow block-level FO.
 3. `PageBreakingAlgorithm.getLineWidth` takes the node: the page it starts is owned by the part of
    the first box after `node.position`. For a column that is not its page's first, follow
    `node.previous` back to the node which started the page. The five call sites change; nothing else
@@ -300,7 +320,7 @@ boundaries: `MergedPart`). The header and footer extent pre-pass measures per pa
 | | 4.2 layout passes | 4.2b fork extension |
 |---|---|---|
 | render time, affected documents | 2x to 4x | unchanged (one pass) |
-| exactness | a fixed point if one is reached, else the last of three | exact by construction |
+| exactness | a fixed point if one is reached, else the last of three | exact for single-column flows; multi-column pages consistent, not guaranteed optimal (fop/CR-017) |
 | Apache FOP | works | today's behaviour (capability-gated) |
 | code | docx4j: the pass loop, an explicit page-sequence-master per sequence | fork: about five call sites, `PageProvider`, the attribute; docx4j: the attribute |
 | restart folios (D3) | literal folios in pass 2, or a split sequence | a numbering offset in the extension |
@@ -505,6 +525,6 @@ reaches Word's count. Those five will be read for a common cause. Turning on `ta
 ## 10. Effort (rough)
 
 Phase 0: the probes, an hour, plus Jason's Word run. Phase 1: half a day. Phase 2: two to three
-days by 4.2; by 4.2b, about two days in docx4j plus fop/CR-017 (the fork session's estimate: about
-four days, give or take one, to a gated snapshot, and a day more for the restart step after P6). Phase 3: a day or two, plus P6 and its Word run.
+days by 4.2; by 4.2b, about two days in docx4j plus fop/CR-017 (the fork session's estimate after its
+review: five to six days to a gated snapshot, and a day more for the restart step after P6). Phase 3: a day or two, plus P6 and its Word run.
 Phase 5: a fork CR of its own (numbered when taken up), and about a day in docx4j with the gate.
