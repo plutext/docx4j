@@ -491,9 +491,14 @@ The seventh field flags an East Asian family (its line is 1.3 x the usWin box). 
 are present for a family whose Regular face sets OS/2 `fsSelection` **USE_TYPO_METRICS** and
 whose typo box differs from its usWin box: Word lays such a font out on the typo box. Measured
 on Aptos from Word's own PDF: 13.45pt at 11pt, its typo box 2500/2048, where the usWin rule
-gives 14.13 - 0.7pt a line. Twenty-five of the 512 families are of this kind (Aptos, Georgia
-Pro, Bierstadt, Seaford, Montserrat, ...); `WordLineMetrics` applies the same rule when it reads
-a physical font's own file. It is the typo box and not the hhea box: Bierstadt (typo 2462,
+gives 14.13 - 0.7pt a line. Twenty-seven of the 512 families are of this kind (Aptos, Georgia
+Pro, Bierstadt, Seaford, Montserrat, Cambria Math, ...); `WordLineMetrics` applies the same rule
+when it reads a physical font's own file. Cambria Math joined them in 17.3.1: it is the second
+face of `cambria.ttc`, and the pass that read the flag (`etc/GenWordLineMetricsTypo`) read only a
+collection's first face, Cambria, which does not set it. On its usWin box (5.58 em) a line
+holding a Cambria Math run - an equation, or a symbol set in the font - was 117pt tall at 21pt;
+on the typo box (1.17 em) three corpus documents reach Word's page count (7320 86 to 85, 5604 8
+to 7, 3640 37 to 33) and 4957 comes a page closer (64 to 63 against 60). It is the typo box and not the hhea box: Bierstadt (typo 2462,
 hhea and usWin 2341) steps 13.20pt at 11pt in Word's PDF, the typo rule's 13.22 and not 12.57
 (the `line-box-typo-metrics` golden). And the bit is honoured whatever the OS/2 table's version:
 DokChampa sets it in a version 3 table, where the specification does not define it, and Word

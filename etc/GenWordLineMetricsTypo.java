@@ -68,14 +68,18 @@ public class GenWordLineMetricsTypo {
 				files++;
 				try {
 					byte[] data = Files.readAllBytes(f.toPath());
-					int[] m = typoIfFlagged(data);
-					if (m == null) continue;
-					flagged++;
-					boolean isRegular = subfamily(data).equalsIgnoreCase("Regular");
-					for (String family : families(data)) {
-						if (!typo.containsKey(family) || (isRegular && !regular.get(family))) {
-							typo.put(family, m);
-							regular.put(family, isRegular);
+					// every face of a collection (.ttc): until 2026-10-05 only the first was read, so
+					// Cambria Math, cambria.ttc's second face, was never seen to set USE_TYPO_METRICS
+					for (int face : faceOffsets(data)) {
+						int[] m = typoIfFlagged(data, face);
+						if (m == null) continue;
+						flagged++;
+						boolean isRegular = subfamily(data, face).equalsIgnoreCase("Regular");
+						for (String family : families(data, face)) {
+							if (!typo.containsKey(family) || (isRegular && !regular.get(family))) {
+								typo.put(family, m);
+								regular.put(family, isRegular);
+							}
 						}
 					}
 				} catch (Exception e) {
@@ -118,9 +122,7 @@ public class GenWordLineMetricsTypo {
 
 	/** {typoAsc, typoDesc, typoGap} where the OS/2 table (version 4 or later) sets
 	 *  USE_TYPO_METRICS and the typo box differs from the usWin box; else null. */
-	static int[] typoIfFlagged(byte[] data) {
-		int offset = 0;
-		if (data.length >= 12 && tag(data, 0).equals("ttcf")) offset = u32(data, 12);
+	static int[] typoIfFlagged(byte[] data, int offset) {
 		int numTables = u16(data, offset + 4);
 		for (int i = 0; i < numTables; i++) {
 			int rec = offset + 12 + 16 * i;
@@ -138,24 +140,34 @@ public class GenWordLineMetricsTypo {
 		return null;
 	}
 
-	static String subfamily(byte[] data) {
-		for (String[] n : names(data)) if (n[0].equals("2")) return n[1];
+	/** The offset of each face's table directory: one for a .ttf or .otf, numFonts for a .ttc. */
+	static List<Integer> faceOffsets(byte[] data) {
+		List<Integer> out = new ArrayList<Integer>();
+		if (data.length >= 12 && tag(data, 0).equals("ttcf")) {
+			int n = u32(data, 8);
+			for (int i = 0; i < n && 12 + 4 * i + 4 <= data.length; i++) out.add(u32(data, 12 + 4 * i));
+		} else {
+			out.add(0);
+		}
+		return out;
+	}
+
+	static String subfamily(byte[] data, int offset) {
+		for (String[] n : names(data, offset)) if (n[0].equals("2")) return n[1];
 		return "";
 	}
 
 	/** name ids 1 and 16, lower-cased. */
-	static Set<String> families(byte[] data) {
+	static Set<String> families(byte[] data, int offset) {
 		Set<String> out = new TreeSet<String>();
-		for (String[] n : names(data)) {
+		for (String[] n : names(data, offset)) {
 			if (n[0].equals("1") || n[0].equals("16")) out.add(n[1].toLowerCase(Locale.ROOT));
 		}
 		return out;
 	}
 
-	private static List<String[]> names(byte[] data) {
+	private static List<String[]> names(byte[] data, int offset) {
 		List<String[]> out = new ArrayList<String[]>();
-		int offset = 0;
-		if (data.length >= 12 && tag(data, 0).equals("ttcf")) offset = u32(data, 12);
 		int numTables = u16(data, offset + 4);
 		for (int i = 0; i < numTables; i++) {
 			int rec = offset + 12 + 16 * i;

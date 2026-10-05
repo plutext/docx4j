@@ -132,6 +132,9 @@ PDF via XSL FO:
 - A footnote cited from a list item spaced at more than single line spacing is printed; such
   footnotes were missing from the PDF, bodies and all.
 
+- A line holding Cambria Math (an equation, or a symbol set in it) takes Word's height for the
+  font; it was nearly five times too tall.
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's
