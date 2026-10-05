@@ -68,7 +68,8 @@ public class ConversionSectionWrapper extends SectionWrapper {
 
 	/**
 	 * Where this page-sequence is a merged run of continuous sections whose top or bottom
-	 * margins, or header or footer distances, differ: for each part at which they change,
+	 * margins, header or footer distances, or own headers and footers (CR-031 phase 3,
+	 * {@link #getPartHeaderFooterPolicies()}) differ: for each part at which they change,
 	 * the w:pgMar of the part whose values its pages take, keyed by that part's number (1 for
 	 * the first).  Word gives a page the vertical margins of the section owning its first line
 	 * (CR-031 D1), so each such part gets page masters of its own (named
@@ -79,6 +80,22 @@ public class ConversionSectionWrapper extends SectionWrapper {
 	 */
 	public java.util.Map<Integer, SectPr.PgMar> getPartVerticalMargins() {
 		return partVerticalMargins;
+	}
+
+	/** The own headers and footers of the parts in {@link #getPartVerticalMargins()} whose
+	 *  pages show headers or footers other than the page-sequence's (CR-031 phase 3): their
+	 *  masters have region names and static content of their own.  @since 17.3.1 */
+	protected java.util.Map<Integer, HeaderFooterPolicy> partHeaderFooterPolicies = java.util.Collections.emptyMap();
+
+	/** @since 17.3.1 */
+	public java.util.Map<Integer, HeaderFooterPolicy> getPartHeaderFooterPolicies() {
+		return partHeaderFooterPolicies;
+	}
+
+	/** @since 17.3.1 */
+	public void setPartHeaderFooterPolicies(java.util.Map<Integer, HeaderFooterPolicy> partHeaderFooterPolicies) {
+		this.partHeaderFooterPolicies = partHeaderFooterPolicies == null
+				? java.util.Collections.<Integer, HeaderFooterPolicy>emptyMap() : partHeaderFooterPolicies;
 	}
 
 	/** @since 17.3.1 */

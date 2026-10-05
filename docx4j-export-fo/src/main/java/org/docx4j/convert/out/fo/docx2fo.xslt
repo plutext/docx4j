@@ -287,6 +287,12 @@
 					</fo:static-content>
 				</xsl:if>
 
+				<!-- the merged parts' own headers and footers (CR-031 phase 3) -->
+				<xsl:call-template name="part-static-content">
+					<xsl:with-param name="i" select="1"/>
+					<xsl:with-param name="n" select="java:org.docx4j.convert.out.fo.XsltFOFunctions.partStaticContentCount($conversionContext)"/>
+				</xsl:call-template>
+
 				<!-- start fo:flow
 					each flow is targeted
 					at one (and only one) of the following:
@@ -440,6 +446,39 @@
   	</fo:inline>
   </xsl:template>  	
   
+  <!-- The static content of the current page-sequence's merged parts whose headers and footers
+       are their own, under the region names their masters have (LayoutMasterSetBuilder.addPartMasters;
+       the visitor pathway: FOExporterVisitorDelegate.appendSectionHeader).  CR-031 phase 3. -->
+  <xsl:template name="part-static-content">
+	<xsl:param name="i"/>
+	<xsl:param name="n"/>
+	<xsl:if test="$i &lt;= $n">
+		<xsl:call-template name="part-region"><xsl:with-param name="i" select="$i"/><xsl:with-param name="kind" select="'before-firstpage'"/></xsl:call-template>
+		<xsl:call-template name="part-region"><xsl:with-param name="i" select="$i"/><xsl:with-param name="kind" select="'after-firstpage'"/></xsl:call-template>
+		<xsl:call-template name="part-region"><xsl:with-param name="i" select="$i"/><xsl:with-param name="kind" select="'before-evenpage'"/></xsl:call-template>
+		<xsl:call-template name="part-region"><xsl:with-param name="i" select="$i"/><xsl:with-param name="kind" select="'after-evenpage'"/></xsl:call-template>
+		<xsl:call-template name="part-region"><xsl:with-param name="i" select="$i"/><xsl:with-param name="kind" select="'before-default'"/></xsl:call-template>
+		<xsl:call-template name="part-region"><xsl:with-param name="i" select="$i"/><xsl:with-param name="kind" select="'after-default'"/></xsl:call-template>
+		<xsl:call-template name="part-static-content">
+			<xsl:with-param name="i" select="$i + 1"/>
+			<xsl:with-param name="n" select="$n"/>
+		</xsl:call-template>
+	</xsl:if>
+  </xsl:template>
+
+  <xsl:template name="part-region">
+	<xsl:param name="i"/>
+	<xsl:param name="kind"/>
+	<xsl:if test="java:org.docx4j.convert.out.fo.XsltFOFunctions.hasPartHeaderFooter($conversionContext, number($i), string($kind))">
+		<xsl:variable name="partname"
+			select="java:org.docx4j.convert.out.fo.XsltFOFunctions.inPartHeaderFooter($conversionContext, number($i), string($kind))" />
+		<fo:static-content flow-name="{java:org.docx4j.convert.out.fo.XsltFOFunctions.partFlowName($conversionContext, number($i), string($kind))}">
+			<xsl:apply-templates
+				select="java:org.docx4j.convert.out.fo.XsltFOFunctions.getPartHeaderFooter($conversionContext, number($i), string($kind))" />
+		</fo:static-content>
+	</xsl:if>
+  </xsl:template>
+
   <xsl:template match="w:sdt">
   	<xsl:choose>
   		<xsl:when test="starts-with(./w:sdtPr/w:tag/@w:val, 'XSLT_Part')">

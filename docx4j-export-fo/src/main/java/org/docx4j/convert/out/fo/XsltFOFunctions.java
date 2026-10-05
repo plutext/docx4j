@@ -613,18 +613,15 @@ public class XsltFOFunctions {
      * {@link FopCapabilities.Capability#PAGE_MASTER_BY_CONTENT}), unless
      * {@code docx4j.convert.out.fo.wordLayout.pageMasterByContent} is {@code false}
      * ({@code true} writes them whatever the renderer, which ignores what it does not know).
-     * Never in the header and footer extent pre-pass, which measures the page-sequence's own
-     * masters (the parts' take those extents, FOPAreaTreeHelper), nor without the Word layout
-     * fixups, which place the attribute.
+     * Not without the Word layout fixups, which place the attribute.  The header and footer
+     * extent pre-pass writes them too, each merged part on a page of its own
+     * (FOPAreaTreeHelper.trimContent), so that a part whose headers and footers are its own
+     * (CR-031 phase 3) has its masters measured; where the renderer does not choose masters by
+     * content, the parts' masters take the page-sequence's extents.
      *
      * @since 17.3.1
      */
     public static boolean pageMasterByContent(AbstractWmlConversionContext context) {
-    	if (context != null && context.getConversionSettings() instanceof org.docx4j.convert.out.FOSettings
-    			&& ((org.docx4j.convert.out.FOSettings) context.getConversionSettings())
-    					.lsLayoutMasterSetCalculationInProgress()) {
-    		return false;
-    	}
     	if (!WordLayoutFixups.isEnabled()) return false;
     	String setting = Docx4jProperties.getProperty(
     			"docx4j.convert.out.fo.wordLayout.pageMasterByContent", "auto");
@@ -674,6 +671,67 @@ public class XsltFOFunctions {
 			log.error(e.getMessage(), e);
 			return null;
 		}
+    }
+
+    /* The XSLT pathway's static content for the merged parts whose headers and footers are
+     * their own (CR-031 phase 3): docx2fo.xslt's part-static-content template walks these by
+     * index, as FOExporterVisitorDelegate.appendSectionHeader walks the map.  A region kind is
+     * "before-" or "after-" and "firstpage", "evenpage" or "default".  @since 17.3.1 */
+
+    private static List<java.util.Map.Entry<Integer, org.docx4j.model.structure.HeaderFooterPolicy>> partHeadersAndFooters(
+    		AbstractWmlConversionContext context) {
+    	if (!pageMasterByContent(context)) return java.util.Collections.emptyList();
+    	return new java.util.ArrayList<java.util.Map.Entry<Integer, org.docx4j.model.structure.HeaderFooterPolicy>>(
+    			context.getSections().getCurrentSection().getPartHeaderFooterPolicies().entrySet());
+    }
+
+    private static org.docx4j.openpackaging.parts.JaxbXmlPart<?> partHeaderFooter(
+    		AbstractWmlConversionContext context, double index, String kind) {
+    	List<java.util.Map.Entry<Integer, org.docx4j.model.structure.HeaderFooterPolicy>> parts =
+    			partHeadersAndFooters(context);
+    	int i = (int) index;
+    	if (i < 1 || i > parts.size()) return null;
+    	org.docx4j.model.structure.HeaderFooterPolicy hf = parts.get(i - 1).getValue();
+    	switch (kind) {
+    		case "before-firstpage": return hf.getFirstHeader();
+    		case "after-firstpage": return hf.getFirstFooter();
+    		case "before-evenpage": return hf.getEvenHeader();
+    		case "after-evenpage": return hf.getEvenFooter();
+    		case "before-default": return hf.getDefaultHeader();
+    		case "after-default": return hf.getDefaultFooter();
+    		default: return null;
+    	}
+    }
+
+    /** How many merged parts of the current page-sequence have headers and footers of their
+     *  own.  @since 17.3.1 */
+    public static int partStaticContentCount(AbstractWmlConversionContext context) {
+    	return partHeadersAndFooters(context).size();
+    }
+
+    /** @since 17.3.1 */
+    public static boolean hasPartHeaderFooter(AbstractWmlConversionContext context, double index, String kind) {
+    	return partHeaderFooter(context, index, kind) != null;
+    }
+
+    /** Makes the part's header or footer the current part, as inDefaultHeader does.  @since 17.3.1 */
+    public static void inPartHeaderFooter(AbstractWmlConversionContext context, double index, String kind) {
+    	context.setCurrentPart(partHeaderFooter(context, index, kind));
+    }
+
+    /** The flow name of the part's static content, which is its masters' region name
+     *  (LayoutMasterSetBuilder.partRegionSuffix).  @since 17.3.1 */
+    public static String partFlowName(AbstractWmlConversionContext context, double index, String kind) {
+    	List<java.util.Map.Entry<Integer, org.docx4j.model.structure.HeaderFooterPolicy>> parts =
+    			partHeadersAndFooters(context);
+    	return "xsl-region-" + kind + LayoutMasterSetBuilder.partRegionSuffix(parts.get((int) index - 1).getKey());
+    }
+
+    /** The part's header or footer, for the XSLT to apply its templates to, as getDefaultHeader
+     *  gives the section's.  @since 17.3.1 */
+    public static Node getPartHeaderFooter(AbstractWmlConversionContext context, double index, String kind) {
+    	org.docx4j.openpackaging.parts.JaxbXmlPart<?> part = partHeaderFooter(context, index, kind);
+    	return part == null ? null : XmlUtils.marshaltoW3CDomDocument(part.getJaxbElement());
     }
 
     /** The start and end indents (in twips) in an XSLT_Ind=start,end tag value. */

@@ -161,6 +161,23 @@ public class FOExporterVisitorDelegate extends AbstractVisitorExporterDelegate<F
 				sectionWrapper.getHeaderFooterPolicy().getDefaultFooter().getJaxbElement().getContent());
 		}
 
+		// The static content of the merged parts whose headers and footers are their own,
+		// under the region names LayoutMasterSetBuilder.addPartMasters gives their masters
+		// (CR-031 phase 3).  @since 17.3.1
+		if (XsltFOFunctions.pageMasterByContent(conversionContext)) {
+			for (java.util.Map.Entry<Integer, org.docx4j.model.structure.HeaderFooterPolicy> part
+					: sectionWrapper.getPartHeaderFooterPolicies().entrySet()) {
+				String suffix = LayoutMasterSetBuilder.partRegionSuffix(part.getKey());
+				org.docx4j.model.structure.HeaderFooterPolicy hf = part.getValue();
+				appendHeaderFooter(conversionContext, document, currentParent, "xsl-region-before-firstpage" + suffix, hf.getFirstHeader());
+				appendHeaderFooter(conversionContext, document, currentParent, "xsl-region-after-firstpage" + suffix, hf.getFirstFooter());
+				appendHeaderFooter(conversionContext, document, currentParent, "xsl-region-before-evenpage" + suffix, hf.getEvenHeader());
+				appendHeaderFooter(conversionContext, document, currentParent, "xsl-region-after-evenpage" + suffix, hf.getEvenFooter());
+				appendHeaderFooter(conversionContext, document, currentParent, "xsl-region-before-default" + suffix, hf.getDefaultHeader());
+				appendHeaderFooter(conversionContext, document, currentParent, "xsl-region-after-default" + suffix, hf.getDefaultFooter());
+			}
+		}
+
 		// <fo:static-content flow-name="xsl-footnote-separator">
 		if (XsltCommonFunctions.hasFootnotesPart(conversionContext)) {
 			Element separatorContent = document.createElementNS(XSL_FO, "static-content");
@@ -217,6 +234,18 @@ public class FOExporterVisitorDelegate extends AbstractVisitorExporterDelegate<F
 				conversionContext.exitStory();
 			}
 		}
+	}
+
+	/** A header or footer part as the fo:static-content of this region, where there is one.
+	 *  @since 17.3.1 */
+	private void appendHeaderFooter(FOConversionContext conversionContext, Document document,
+			Element currentParent, String name, org.docx4j.openpackaging.parts.JaxbXmlPart<?> part)
+			throws Docx4JException {
+		if (part == null) return;
+		List<Object> content = part instanceof org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart
+				? ((org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart) part).getJaxbElement().getContent()
+				: ((org.docx4j.openpackaging.parts.WordprocessingML.FooterPart) part).getJaxbElement().getContent();
+		appendPartContent(conversionContext, document, currentParent, name, part, content);
 	}
 
 	protected void appendPartContent(FOConversionContext conversionContext, 

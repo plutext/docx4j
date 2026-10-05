@@ -135,7 +135,8 @@ public class LayoutMasterSetBuilder {
 		try {
 			hfPkg = (WordprocessingMLPackage) PartialDeepCopy.process(wordMLPackage, relationshipTypes);
 			
-			FOPAreaTreeHelper.trimContent(hfPkg);
+			// each merged part on a page of its own, so that its masters are measured (CR-031)
+			FOPAreaTreeHelper.trimContent(hfPkg, XsltFOFunctions.pageMasterByContent(context));
 			FOPAreaTreeHelper.dropFloatingDrawingsFromHeadersFooters(hfPkg);
 			StyleRefMarkers.paintStoredResults(hfPkg); // its body is filler: nothing to retrieve
 			
@@ -500,46 +501,62 @@ public class LayoutMasterSetBuilder {
 	}
 
 	/**
-	 * The page masters of a merged run's parts whose top and bottom margins or header and
-	 * footer distances differ from the page-sequence's (CR-031 phase 2;
-	 * {@link ConversionSectionWrapper#getPartVerticalMargins()}): for each, a
+	 * The page masters of a merged run's parts whose top and bottom margins, header and footer
+	 * distances, or own headers and footers differ from the part before's (CR-031 phases 2 and
+	 * 3; {@link ConversionSectionWrapper#getPartVerticalMargins()}): for each, a
 	 * page-sequence-master {@code <section>-p<m>} - one unbounded
 	 * repeatable-page-master-alternatives, as fork CR-017 requires - over simple-page-masters
 	 * which are the section's own with the part's vertical margins.  Word gives a page the
-	 * vertical margins of the section owning its first line (CR-031 D1); the renderer picks
-	 * these by the content a page starts with ({@code fox:page-sequence-master-reference},
-	 * placed by WordLayoutFixups.pageMastersByContent).
+	 * vertical margins, and the headers and footers, of the section owning its first line
+	 * (CR-031 D1, D3); the renderer picks these by the content a page starts with
+	 * ({@code fox:page-sequence-master-reference}, placed by WordLayoutFixups.pageMastersByContent).
 	 *
-	 * <p>Everything else is the page-sequence's: the page size, width and column count (which
-	 * CR-017 requires to agree), and the region names, so the parts' pages show the
-	 * page-sequence's own headers and footers, as they did on its single master - a part's own
-	 * header text, and its first-page header, are CR-031 phase 3.  So there is no first-page
-	 * alternative: the page-sequence's first page is the only one which shows its first-page
-	 * header, as before.  The parts' extents are the page-sequence's, measured (FOPAreaTreeHelper):
-	 * the same static content in the same width is the same height.</p>
+	 * <p>The page size, width and column count are the page-sequence's (CR-017 requires them to
+	 * agree).  A part whose own headers and footers are the page-sequence's shares its region
+	 * names and static content; one whose are not has region names of its own
+	 * ({@link #partRegionSuffix}) and the FO exporters write its static content under them.  A
+	 * part's first-page master is there where its own w:titlePg makes one, and the renderer
+	 * uses it only on a page the part's first line opens (Word: a continuous section starting
+	 * mid-page never prints its first-page header, CR-031 P4).  The extents are measured by the
+	 * pre-pass, which writes these masters too (FOPAreaTreeHelper).</p>
 	 *
 	 * @since 17.3.1
 	 */
 	private static void addPartMasters(LayoutMasterSet lms, ConversionSectionWrapper section,
 			String sectionName, boolean foliosInverted, boolean gutterAtTop, boolean mirrorMargins) {
-		HeaderFooterPolicy hf = section.getHeaderFooterPolicy();
 		for (Map.Entry<Integer, org.docx4j.wml.SectPr.PgMar> part : section.getPartVerticalMargins().entrySet()) {
 			String partName = sectionName + "-p" + part.getKey();
 			PageDimensions dims = section.getPageDimensions().withVerticalMargins(part.getValue());
+			// the part's own headers and footers, with region names of their own, where they are
+			// not the page-sequence's (CR-031 phase 3)
+			HeaderFooterPolicy own = section.getPartHeaderFooterPolicies().get(part.getKey());
+			HeaderFooterPolicy hf = own != null ? own : section.getHeaderFooterPolicy();
+			String regions = own != null ? partRegionSuffix(part.getKey()) : "";
 			List<Object> items = lms.getSimplePageMasterOrPageSequenceMaster();
+			if (hf.getFirstHeader()!=null || hf.getFirstFooter()!=null) {
+				items.add(createSimplePageMaster(partName + "-firstpage", dims, "firstpage" + regions,
+						(hf.getFirstHeader()!=null), (hf.getFirstFooter()!=null), gutterAtTop, mirrorMargins));
+			}
 			if (hf.getEvenHeader()!=null || hf.getEvenFooter()!=null) {
-				items.add(createSimplePageMaster(partName + "-evenpage", dims, "evenpage",
+				items.add(createSimplePageMaster(partName + "-evenpage", dims, "evenpage" + regions,
 						(hf.getEvenHeader()!=null), (hf.getEvenFooter()!=null), gutterAtTop, mirrorMargins));
 			}
 			if (hf.getDefaultHeader()!=null || hf.getDefaultFooter()!=null) {
-				items.add(createSimplePageMaster(partName + "-default", dims, "default",
+				items.add(createSimplePageMaster(partName + "-default", dims, "default" + regions,
 						(hf.getDefaultHeader()!=null), (hf.getDefaultFooter()!=null), gutterAtTop, mirrorMargins));
 			} else {
-				items.add(createSimplePageMaster(partName + "-simple", dims, "simple",
+				items.add(createSimplePageMaster(partName + "-simple", dims, "simple" + regions,
 						true, true, gutterAtTop, mirrorMargins));
 			}
-			items.add(createPageSequenceMaster(hf, partName, foliosInverted, false));
+			items.add(createPageSequenceMaster(hf, partName, foliosInverted, true));
 		}
+	}
+
+	/** The suffix on the region names of a merged part whose headers and footers are its own:
+	 *  {@code xsl-region-before-default-p2}, and so on.  The FO exporters name the part's
+	 *  {@code fo:static-content} the same.  @since 17.3.1 */
+	public static String partRegionSuffix(int part) {
+		return "-p" + part;
 	}
 
 	private static PageSequenceMaster createPageSequenceMaster(HeaderFooterPolicy hf,

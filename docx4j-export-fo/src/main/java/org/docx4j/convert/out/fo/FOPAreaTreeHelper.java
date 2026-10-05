@@ -90,6 +90,18 @@ public class FOPAreaTreeHelper {
      * @param hfPkg
      */
     static void trimContent(WordprocessingMLPackage hfPkg)   {
+    	trimContent(hfPkg, false);
+    }
+
+    /**
+     * @param partPages whether each continuous section's fillers start a page (behind a
+     *        break-only paragraph, which does not stop the section being merged -
+     *        ConversionSectionWrapperFactory.startsPage), so that a merged part owns a page
+     *        and its page masters, chosen by content, are measured (CR-031 phase 3; only
+     *        where the renderer chooses masters by content)
+     * @since 17.3.1
+     */
+    static void trimContent(WordprocessingMLPackage hfPkg, boolean partPages)   {
     	
     	// Find the sectPrs
     	SectPrFinder sf = new SectPrFinder(hfPkg.getMainDocumentPart());
@@ -136,8 +148,11 @@ public class FOPAreaTreeHelper {
 		contents.clear();
 		boolean breakFirst = false;
 		
+		boolean first = true;
 		for (SectPr sectPr : sectPrList) {
 			
+			if (partPages && !first && !breakFirst && isContinuous(sectPr)) contents.add(createBreakOnlyP());
+			first = false;
 			contents.add(breakFirst ? createBreakingFillerP() : filler);
 			contents.add(filler);
 			contents.add(filler);
@@ -163,6 +178,10 @@ public class FOPAreaTreeHelper {
 		// Add content before the body level sectPr
 		if (hfPkg.getMainDocumentPart().getJaxbElement().getBody().getSectPr()!=null) {
 
+			if (partPages && !first && !breakFirst
+					&& isContinuous(hfPkg.getMainDocumentPart().getJaxbElement().getBody().getSectPr())) {
+				contents.add(createBreakOnlyP());
+			}
 			contents.add(breakFirst ? createBreakingFillerP() : filler);
 			contents.add(filler);
 			contents.add(filler);
@@ -381,6 +400,24 @@ public class FOPAreaTreeHelper {
 
     /** A filler which opens a page, standing in for a paragraph whose
      *  w:pageBreakBefore keeps its continuous section its own page-sequence.  @since 17.2.0 */
+    /** Whether a section's w:type is continuous.  @since 17.3.1 */
+    private static boolean isContinuous(SectPr sectPr) {
+    	return sectPr != null && sectPr.getType() != null && "continuous".equals(sectPr.getType().getVal());
+    }
+
+    /** A paragraph holding nothing but a page break: the next filler opens a page, and the
+     *  continuous section it begins is still merged.  @since 17.3.1 */
+    private static P createBreakOnlyP() {
+    	org.docx4j.wml.ObjectFactory f = Context.getWmlObjectFactory();
+    	P p = f.createP();
+    	R r = f.createR();
+    	org.docx4j.wml.Br br = f.createBr();
+    	br.setType(org.docx4j.wml.STBrType.PAGE);
+    	r.getContent().add(br);
+    	p.getContent().add(r);
+    	return p;
+    }
+
     private static P createBreakingFillerP() {
     	P p = createFillerP();
     	p.getPPr().setPageBreakBefore(Context.getWmlObjectFactory().createBooleanDefaultTrue());
@@ -862,16 +899,22 @@ public class FOPAreaTreeHelper {
     			int index = -1 + Integer.parseInt(
     					simplePageMasterName.substring(1, simplePageMasterName.indexOf("-")));
     			/* A merged part's master, "s<n>-p<m>-<kind>" (LayoutMasterSetBuilder.addPartMasters,
-    			 * CR-031 phase 2), shows the page-sequence's own static content in the same width, so
-    			 * it takes the extents measured for the page-sequence's master of that kind
-    			 * ("s<n>-<kind>"), with the part's own vertical margins for the body's edges.
-    			 * @since 17.3.1 */
+    			 * CR-031 phases 2 and 3), takes the extents the pre-pass measured for it, where it did
+    			 * (a part with headers and footers of its own, its pages laid out by a renderer which
+    			 * chooses masters by content); otherwise - its static content being the page-sequence's,
+    			 * in the same width - those of the page-sequence's master of that kind ("s<n>-<kind>").
+    			 * The part's own vertical margins give the body's edges, and its own headers and
+    			 * footers the empty-part rules below.  @since 17.3.1 */
     			String measuredName = simplePageMasterName;
     			Integer partNumber = null;
+    			String partKind = null;
     			java.util.regex.Matcher part = PART_MASTER.matcher(simplePageMasterName);
     			if (part.matches()) {
     				partNumber = Integer.valueOf(part.group(2));
-    				measuredName = part.group(1) + "-" + part.group(3);
+    				partKind = part.group(3);
+    				if (!headerBpda.containsKey(simplePageMasterName) && !footerBpda.containsKey(simplePageMasterName)) {
+    					measuredName = part.group(1) + "-" + part.group(3);
+    				}
     			}
     			PageDimensions page = null;
     			org.docx4j.model.structure.HeaderFooterPolicy hfPolicy = null;
@@ -883,6 +926,9 @@ public class FOPAreaTreeHelper {
     					page = page.withVerticalMargins(sections.get(index).getPartVerticalMargins().get(partNumber));
     				}
     				hfPolicy = sections.get(index).getHeaderFooterPolicy();
+    				if (partNumber != null && sections.get(index).getPartHeaderFooterPolicies().get(partNumber) != null) {
+    					hfPolicy = sections.get(index).getPartHeaderFooterPolicies().get(partNumber);
+    				}
     			}
     			/* Where the part is the empty one docx4j invents for w:titlePg or
     			 * w:evenAndOddHeaders, the document has no header (or footer) there and
@@ -892,7 +938,7 @@ public class FOPAreaTreeHelper {
     			 * (35.3pt): Word's body top is 21.6, ours was 35.3 + a 13.799pt dummy
     			 * extent = 49.1, so every line and the logo was +26.5 to +27.5pt low.
     			 * @since 17.1.0 */
-    			String pageKind = measuredName.substring(measuredName.indexOf("-") + 1);
+    			String pageKind = partKind != null ? partKind : measuredName.substring(measuredName.indexOf("-") + 1);
     			boolean headerIsDummy = hfPolicy != null && isDummyHeader(hfPolicy, pageKind);
     			boolean footerIsDummy = hfPolicy != null && isDummyFooter(hfPolicy, pageKind);
     			boolean footerIsAbsent = hfPolicy == null || isAbsentFooter(hfPolicy, pageKind);

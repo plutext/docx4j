@@ -4679,8 +4679,13 @@ writes a page-sequence-master per distinct set (`s<n>-p<m>`), the page-sequence'
 with that part's vertical margins, the same width, columns and region names, and no first-page
 alternative; `FOPAreaTreeHelper` gives them the extents measured for the page-sequence's own
 masters, the static content being the same; `WordLayoutFixups.pageMastersByContent` puts the
-attribute on the part's first in-flow block-level FO. Header and footer **text** per part, a
-part's first-page header and a continuous restart are CR-031 phase 3. Gated by
+attribute on the part's first in-flow block-level FO. **Each part's own headers and footers**
+(CR-031 phase 3): a part whose own - its own `w:headerReference`s, the rest inherited from the part
+before, as Word inherits - are not the page-sequence's gets masters with region names of its own
+(`-p<m>`) and its own static content, and a first-page master where its own `w:titlePg` makes one,
+which the renderer uses only on a page the part's first line opens; the extent pre-pass gives each
+continuous section a page so that these masters are measured. A continuous restart is still to
+come (fork CR-017.2). Gated by
 `docx4j.convert.out.fo.wordLayout.pageMasterByContent`; on Apache FOP, or a docx4j FO renderer
 without the capability, nothing changes.
 
@@ -4699,8 +4704,10 @@ probe's case B is a continuous section on A4 landscape after an A4 portrait one,
 own default header, and Word's landscape page carries the landscape section's, where docx4j's
 carried the portrait one's. CR-031's probes read the rule whole: a page takes its header and
 footer text, its header and footer distances and its top and bottom margins from the section
-which owns its first line (a merged run of continuous sections does not do that yet: CR-031
-phases 2 and 3).
+which owns its first line - and its first-page header only where that section's first line opens
+the page (a continuous section starting mid-page never prints its own). Within a merged run of
+continuous sections docx4j does so where the FO renderer chooses page masters by content
+([§7](#s7pagemasters), 17.3.1); elsewhere the run keeps its first section's.
 
 
 **A `DATE`, `TIME` or `PRINTDATE` field is formatted in the document's own language**

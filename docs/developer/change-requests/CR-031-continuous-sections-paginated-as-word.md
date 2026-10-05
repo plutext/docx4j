@@ -10,7 +10,8 @@ the fork extension. Phase 2 next (registry `docx4j/CR-031.2`), depending on the 
 review, 8b509a0e8 on `2.11-docx4j.5`; proposed, about five to six days; implementation waits on
 Jason's go there). **Phase 2's docx4j side DONE 2026-10-05** (305264ed3,
 1ee6dfa8f; §6), gated end to end on fop/CR-017's snapshot (b114 control 0 movers; b115/b118); it
-reaches users with the fork release carrying CR-017.
+reaches users with the fork release carrying CR-017. **Phase 3**: each part's own headers, footers
+and first page BUILT and gated (b119, b120); the restart waits on fop/CR-017.2.
 P6 and P7 read (§2 D3): the restart rule is settled.
 
 ## 0. Why now
@@ -543,6 +544,28 @@ distances and texts together with it, mode 14, a section starting at a page top,
    and static content in both pathways, and the pre-pass measuring them - phase 2 keeps the
    page-sequence's), `w:titlePg` (step 5), the restart folio (step 6, or 4.2's literal folios),
    with P7 read first. Scope per decision 2.
+   **Headers, footers and `w:titlePg` BUILT 2026-10-05**: the factory computes each part's own
+   `HeaderFooterPolicy` (its own references, the rest inherited from the part before, as Word
+   inherits) and tags a part where its vertical margins *or* that policy change
+   (`getPartHeaderFooterPolicies`); `addPartMasters` gives a part whose policy is not the
+   page-sequence's region names of its own (`-p<m>`, `partRegionSuffix`) and a first-page master
+   where its own `w:titlePg` makes one; both FO pathways write those parts' static content
+   (`FOExporterVisitorDelegate.appendHeaderFooter`; docx2fo.xslt `part-static-content`, with
+   `XsltFOFunctions.partStaticContentCount` and the rest); the pre-pass writes the part masters
+   too and gives each continuous section a page of its own behind a break-only paragraph
+   (`trimContent(hfPkg, partPages)`), so their extents are measured
+   (`adjustLayoutMasterSet` prefers a part master's own measurement, and its own policy for the
+   empty-part rules). Test `PageMasterByContentTest.eachPartsOwnHeaders`. Gate b119 (cand44 on
+   r11) against b118: section-continuous-geometry back to Word's 9 pages; the P1 probes,
+   continuous-margins-at-top, continuous-titlepg and section-break-paragraph-foot each to line
+   parity 1.0000; 11256 +2 lines; nothing worse. Gate b120 (cand44 on r9) against b117: 0 movers.
+   **The restart** waits on fop/CR-017.2 (designed in the fork's CR-017 §11, 080bb2d49): docx4j
+   writes `fox:page-number-restart="S"` beside the marker, and `fox:page-number-restart-parity="keep"`
+   where the document has `w:evenAndOddHeaders` (§2 D3 item 2). The fork's two questions, measured:
+   no corpus document has a restarting part opening its page with odd and even headers (9539's
+   section 2 starts at the foot of page 1, and confirms the rule: Word's pages 2 and 3 print 2
+   and 3); the one format change inside a merged run (14067's section 2, upperRoman) is masked by
+   the inherited footer's `PAGE \* Arabic`, so no format attribute.
 4. *(moved out)* Turning on `tableTakesPageBreak` needs the page-break line as well (4994), which
    is outside this CR (§9). It moves to that triage, which depends on phase 2 here (for 12802).
    This CR closes at phase 3 with the property still off (review finding 6).

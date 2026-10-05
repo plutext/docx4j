@@ -217,6 +217,8 @@ public class ConversionSectionWrapperFactory {
 		List<ConversionSectionWrapper> conversionSections = new ArrayList<ConversionSectionWrapper>();
 		ConversionSectionWrapper currentSectionWrapper = null;
 		HeaderFooterPolicy previousHF = null;
+		// the own headers and footers of the latest part of the run being merged (CR-031 phase 3)
+		HeaderFooterPolicy partHF = null;
 		int conversionSectionIndex = 0;
 				List<Object> sectionContent = new ArrayList<Object>();
 		// the continuous sections merged into the wrapper being built
@@ -298,6 +300,12 @@ public class ConversionSectionWrapperFactory {
 							previousHF = new HeaderFooterPolicy(ppr.getSectPr(), previousHF, rels, evenAndOddHeaders,
 									thisSectionStartsPage);
 							thisSectionStartsPage = followingStartsPage;
+							// Each part's own headers and footers - its own references, the rest
+							// inherited from the part before - are what Word shows on the pages the
+							// part owns (CR-031 D3); the run's first part's are the page-sequence's.
+							// @since 17.3.1
+							partHF = columnParts.isEmpty() ? previousHF
+									: new HeaderFooterPolicy(ppr.getSectPr(), partHF, rels, evenAndOddHeaders, true);
 
 							
 							// (a continuous break which changes the page size is not merged,
@@ -310,7 +318,7 @@ public class ConversionSectionWrapperFactory {
 							// this section's content (up to and including this paragraph) is
 							// one part of the merged page-sequence, with its own column
 							// count and page margins
-							columnParts.add(new MergedPart(ppr.getSectPr(), sectionContent.size() + (drop ? 0 : 1)));
+							columnParts.add(new MergedPart(ppr.getSectPr(), sectionContent.size() + (drop ? 0 : 1), partHF));
 							//ppr.setSectPr(null); // Don't do this, since we have to process the docx (inc sectPrs) multiple times for a single PDF output
 							if (drop) continue;
 
@@ -329,7 +337,9 @@ public class ConversionSectionWrapperFactory {
 								sectionContent.add(o);
 							}
 							int[] weights = partWeights(sectionContent, columnParts);
-							Merged merged = spanColumnParts(sectionContent, columnParts, ppr.getSectPr());
+							Merged merged = spanColumnParts(sectionContent, columnParts, ppr.getSectPr(),
+									columnParts.isEmpty() ? null
+											: new HeaderFooterPolicy(ppr.getSectPr(), partHF, rels, evenAndOddHeaders, true));
 							currentSectionWrapper = createSectionWrapper(
 									ppr.getSectPr(), previousHF, rels, evenAndOddHeaders,
 									++conversionSectionIndex, sectionContent, dummyPageNumbering,
@@ -342,10 +352,12 @@ public class ConversionSectionWrapperFactory {
 							}
 							usePartMargins(currentSectionWrapper, merged.marginRef, merged.verticalMarginRef);
 							currentSectionWrapper.setPartVerticalMargins(merged.partMasters);
+							currentSectionWrapper.setPartHeaderFooterPolicies(merged.partHFs);
 							conversionSections.add(currentSectionWrapper);
 							previousHF = currentSectionWrapper.getHeaderFooterPolicy();
 							sectionContent = new ArrayList<Object>();
 							columnParts = new ArrayList<MergedPart>();
+							partHF = null;
 							continue;
 						}
 					}
@@ -368,7 +380,9 @@ public class ConversionSectionWrapperFactory {
 		}
 
 		int[] weights = partWeights(sectionContent, columnParts);
-		Merged merged = spanColumnParts(sectionContent, columnParts, document.getBody().getSectPr());
+		Merged merged = spanColumnParts(sectionContent, columnParts, document.getBody().getSectPr(),
+				columnParts.isEmpty() ? null
+						: new HeaderFooterPolicy(document.getBody().getSectPr(), partHF, rels, evenAndOddHeaders, true));
 		currentSectionWrapper = createSectionWrapper(
 				document.getBody().getSectPr(), previousHF, rels, evenAndOddHeaders,
 				++conversionSectionIndex, sectionContent, dummyPageNumbering, thisSectionStartsPage);
@@ -379,6 +393,7 @@ public class ConversionSectionWrapperFactory {
 		}
 		usePartMargins(currentSectionWrapper, merged.marginRef, merged.verticalMarginRef);
 		currentSectionWrapper.setPartVerticalMargins(merged.partMasters);
+		currentSectionWrapper.setPartHeaderFooterPolicies(merged.partHFs);
 		conversionSections.add(currentSectionWrapper);
 		return conversionSections;
 	}
@@ -393,9 +408,11 @@ public class ConversionSectionWrapperFactory {
 	public static final String TAG_INDENT = "XSLT_Ind";
 
 	/** Tag of the container around a merged continuous section at which the page-sequence's
-	 *  vertical margins change: <code>XSLT_Part=m</code>, m being the number (from 1) of the
-	 *  part whose top and bottom margins and header and footer distances its pages take
-	 *  ({@link ConversionSectionWrapper#getPartVerticalMargins()}).  The FO exporter renders
+	 *  vertical margins, or its headers and footers, change: <code>XSLT_Part=m</code>, m being
+	 *  the number (from 1) of the part whose top and bottom margins, header and footer
+	 *  distances and own headers and footers its pages take
+	 *  ({@link ConversionSectionWrapper#getPartVerticalMargins()},
+	 *  {@link ConversionSectionWrapper#getPartHeaderFooterPolicies()}).  The FO exporter renders
 	 *  its content as it stands, marking it for the page masters it chooses by content
 	 *  (CR-031 phase 2).  @since 17.3.1 */
 	public static final String TAG_PART = "XSLT_Part";
@@ -405,9 +422,12 @@ public class ConversionSectionWrapperFactory {
 		final SectPr sectPr;
 		/** end index (exclusive) of this part's content */
 		final int end;
-		MergedPart(SectPr sectPr, int end) {
+		/** the part's own headers and footers (CR-031 phase 3).  @since 17.3.1 */
+		final HeaderFooterPolicy hf;
+		MergedPart(SectPr sectPr, int end, HeaderFooterPolicy hf) {
 			this.sectPr = sectPr;
 			this.end = end;
+			this.hf = hf;
 		}
 	}
 
@@ -747,15 +767,20 @@ public class ConversionSectionWrapperFactory {
 		/** the vertical margins of the parts the page-sequence needs masters for beside its
 		 *  own, by part number (partTags).  @since 17.3.1 */
 		final java.util.Map<Integer, SectPr.PgMar> partMasters;
+		/** the own headers and footers of the parts whose masters need static content of their
+		 *  own, by part number (partTags).  @since 17.3.1 */
+		final java.util.Map<Integer, HeaderFooterPolicy> partHFs;
 		Merged(int cols, SectPr marginRef, SectPr verticalMarginRef) {
-			this(cols, marginRef, verticalMarginRef, null);
+			this(cols, marginRef, verticalMarginRef, null, null);
 		}
 		Merged(int cols, SectPr marginRef, SectPr verticalMarginRef,
-				java.util.Map<Integer, SectPr.PgMar> partMasters) {
+				java.util.Map<Integer, SectPr.PgMar> partMasters,
+				java.util.Map<Integer, HeaderFooterPolicy> partHFs) {
 			this.cols = cols;
 			this.marginRef = marginRef;
 			this.verticalMarginRef = verticalMarginRef;
 			this.partMasters = partMasters;
+			this.partHFs = partHFs;
 		}
 	}
 
@@ -840,20 +865,25 @@ public class ConversionSectionWrapperFactory {
 	 * @return the column count the wrapper should use
 	 * @since 17.0.5
 	 */
-	private static Merged spanColumnParts(List<Object> content, List<MergedPart> columnParts, SectPr lastSectPr) {
+	/** @param lastHF the last part's own headers and footers, or null where nothing is merged */
+	private static Merged spanColumnParts(List<Object> content, List<MergedPart> columnParts, SectPr lastSectPr,
+			HeaderFooterPolicy lastHF) {
 
 		// the parts of the page-sequence, in order, each with its own sectPr
 		List<List<Object>> parts = new ArrayList<List<Object>>();
 		List<SectPr> sectPrs = new ArrayList<SectPr>();
+		List<HeaderFooterPolicy> hfs = new ArrayList<HeaderFooterPolicy>();
 		int start = 0;
 		for (MergedPart part : columnParts) {
 			int end = Math.min(part.end, content.size());
 			parts.add(new ArrayList<Object>(content.subList(start, end)));
 			sectPrs.add(part.sectPr);
+			hfs.add(part.hf);
 			start = end;
 		}
 		parts.add(new ArrayList<Object>(content.subList(start, content.size())));
 		sectPrs.add(lastSectPr);
+		hfs.add(lastHF);
 
 		// a stretch of unequal columns becomes a one-row table, and so one column
 		int[] cols = new int[parts.size()];
@@ -898,9 +928,10 @@ public class ConversionSectionWrapperFactory {
 		 * the part whose margins its pages take, so that the FO exporter can give those pages
 		 * masters of their own.  @since 17.3.1 */
 		java.util.Map<Integer, SectPr.PgMar> partMasters = new java.util.LinkedHashMap<Integer, SectPr.PgMar>();
-		String[] partTags = partTags(sectPrs, partMasters);
+		java.util.Map<Integer, HeaderFooterPolicy> partHFs = new java.util.LinkedHashMap<Integer, HeaderFooterPolicy>();
+		String[] partTags = partTags(sectPrs, hfs, partMasters, partHFs);
 		if (uniformCols && sameMargins && !asTables && !split && partMasters.isEmpty()) {
-			return new Merged(max, ref, sectPrs.get(0), partMasters);
+			return new Merged(max, ref, sectPrs.get(0), partMasters, partHFs);
 		}
 
 		List<Object> result = new ArrayList<Object>();
@@ -910,31 +941,49 @@ public class ConversionSectionWrapperFactory {
 		}
 		content.clear();
 		content.addAll(result);
-		return new Merged(max, ref, sectPrs.get(0), partMasters);
+		return new Merged(max, ref, sectPrs.get(0), partMasters, partHFs);
 	}
 
 	/**
 	 * For each merged part, the {@link #TAG_PART} tag it takes, or null: a part is tagged
-	 * where its top or bottom margin, or its header or footer distance, differs from the
-	 * part before's, with the first part whose values are its own.  The w:pgMar of each
-	 * part named so goes into {@code partMasters}.  The first part is never tagged: its
-	 * values are the page-sequence's own (usePartMargins).  @since 17.3.1
+	 * where its top or bottom margin, its header or footer distance, or its own headers and
+	 * footers (CR-031 phase 3) differ from the part before's, with the first part whose values
+	 * and headers are its own.  The w:pgMar of each part named so goes into
+	 * {@code partMasters}, and its headers and footers into {@code partHFs} where they are not
+	 * the first part's.  The first part is never tagged: its values and headers are the
+	 * page-sequence's own (usePartMargins).  @since 17.3.1
 	 */
-	private static String[] partTags(List<SectPr> sectPrs, java.util.Map<Integer, SectPr.PgMar> partMasters) {
+	private static String[] partTags(List<SectPr> sectPrs, List<HeaderFooterPolicy> hfs,
+			java.util.Map<Integer, SectPr.PgMar> partMasters, java.util.Map<Integer, HeaderFooterPolicy> partHFs) {
 		String[] tags = new String[sectPrs.size()];
-		String current = verticalMargins(sectPrs.get(0));
+		int current = 0;
 		for (int i = 1; i < sectPrs.size(); i++) {
-			String key = verticalMargins(sectPrs.get(i));
-			if (key.equals(current)) continue;
+			if (samePart(sectPrs, hfs, i, current)) continue;
 			int m = 0;
-			while (!verticalMargins(sectPrs.get(m)).equals(key)) m++;
+			while (!samePart(sectPrs, hfs, i, m)) m++;
 			tags[i] = TAG_PART + "=" + (m + 1);
-			if (sectPrs.get(m) != null && sectPrs.get(m).getPgMar() != null) {
-				partMasters.put(m + 1, sectPrs.get(m).getPgMar());
-			}
-			current = key;
+			partMasters.put(m + 1, sectPrs.get(m) == null ? null : sectPrs.get(m).getPgMar());
+			if (!sameHeadersAndFooters(hfs.get(m), hfs.get(0))) partHFs.put(m + 1, hfs.get(m));
+			current = m;
 		}
 		return tags;
+	}
+
+	/** Whether parts i and j need the same page masters: their vertical margins and their own
+	 *  headers and footers agree. */
+	private static boolean samePart(List<SectPr> sectPrs, List<HeaderFooterPolicy> hfs, int i, int j) {
+		return verticalMargins(sectPrs.get(i)).equals(verticalMargins(sectPrs.get(j)))
+				&& sameHeadersAndFooters(hfs.get(i), hfs.get(j));
+	}
+
+	/** Whether two parts show the same header and footer parts on each kind of page (the
+	 *  first page counting only where it is active, w:titlePg). */
+	private static boolean sameHeadersAndFooters(HeaderFooterPolicy a, HeaderFooterPolicy b) {
+		if (a == b) return true;
+		if (a == null || b == null) return false;
+		return a.getFirstHeader() == b.getFirstHeader() && a.getDefaultHeader() == b.getDefaultHeader()
+				&& a.getEvenHeader() == b.getEvenHeader() && a.getFirstFooter() == b.getFirstFooter()
+				&& a.getDefaultFooter() == b.getDefaultFooter() && a.getEvenFooter() == b.getEvenFooter();
 	}
 
 	/** A part's top and bottom margins and header and footer distances, as one key. */

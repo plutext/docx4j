@@ -279,6 +279,93 @@ public class PageMasterByContentTest extends AbstractXSLFOTest {
 		checkLetter(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
+	/**
+	 * Each part's own headers and footers on the pages it owns (CR-031 phase 3; D3: a page takes
+	 * the header and footer text of the section owning its first line).  The three sections'
+	 * margins are the same, so only their headers tell them apart: S1 a header; S2 its own, and
+	 * w:titlePg with a first-page header; S3 none of its own, so Word's inheritance gives it S2's
+	 * default header but not S2's first page (w:titlePg is the section's own).
+	 */
+	private WordprocessingMLPackage ownHeaders() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		String h1 = header(pkg, "headS1"), h2 = header(pkg, "headS2"), f2 = header(pkg, "firstS2");
+		String mar = A4 + pgMar(1440, 1440, 720, 720);
+		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
+				"<w:document " + W + " " + R + "><w:body>"
+				+ "<w:p><w:pPr><w:sectPr><w:headerReference w:type=\"default\" r:id=\"" + h1 + "\"/>" + mar
+				+ "</w:sectPr></w:pPr><w:r><w:t>S1 text</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr><w:sectPr><w:headerReference w:type=\"default\" r:id=\"" + h2 + "\"/>"
+				+ "<w:headerReference w:type=\"first\" r:id=\"" + f2 + "\"/><w:type w:val=\"continuous\"/>" + mar
+				+ "<w:titlePg/></w:sectPr></w:pPr><w:r><w:t>S2 text</w:t></w:r></w:p>"
+				+ para("S3 text")
+				+ "<w:sectPr><w:type w:val=\"continuous\"/>" + mar + "</w:sectPr>"
+				+ "</w:body></w:document>"));
+		return pkg;
+	}
+
+	/** The text of the page-sequence's fo:static-content of this flow name, or null. */
+	private static String staticContent(org.w3c.dom.Document doc, String flowName) {
+		NodeList nl = doc.getElementsByTagNameNS(FO, "static-content");
+		for (int i = 0; i < nl.getLength(); i++) {
+			Element sc = (Element) nl.item(i);
+			if (flowName.equals(sc.getAttribute("flow-name"))) return sc.getTextContent().trim();
+		}
+		return null;
+	}
+
+	private static String regionBefore(org.w3c.dom.Document doc, String master) {
+		Element spm = named(doc, "simple-page-master", master);
+		return spm == null ? null
+				: ((Element) spm.getElementsByTagNameNS(FO, "region-before").item(0)).getAttribute("region-name");
+	}
+
+	private void checkOwnHeaders(int flags) throws Exception {
+		Docx4jProperties.setProperty(PROPERTY, "true");
+		FOSettings foSettings = Docx4J.createFOSettings();
+		foSettings.setOpcPackage(ownHeaders());
+		foSettings.setApacheFopMime(FOSettings.INTERNAL_FO_MIME);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		Docx4J.toFO(foSettings, baos, flags);
+		org.w3c.dom.Document doc = w3cDomDocumentFromByteArray(baos.toByteArray());
+
+		// S2: its own header, and its first-page header on a page its first line opens
+		assertEquals("xsl-region-before-default-p2", regionBefore(doc, "s1-p2-default"));
+		assertEquals("xsl-region-before-firstpage-p2", regionBefore(doc, "s1-p2-firstpage"));
+		boolean first = false;
+		NodeList refs = named(doc, "page-sequence-master", "s1-p2").getElementsByTagNameNS(FO, "conditional-page-master-reference");
+		for (int i = 0; i < refs.getLength(); i++) {
+			Element ref = (Element) refs.item(i);
+			if ("first".equals(ref.getAttribute("page-position"))) {
+				first = true;
+				assertEquals("s1-p2-firstpage", ref.getAttribute("master-reference"));
+			}
+		}
+		assertTrue("S2's first-page master, for a page its first line opens", first);
+		assertEquals("headS2", staticContent(doc, "xsl-region-before-default-p2"));
+		assertEquals("firstS2", staticContent(doc, "xsl-region-before-firstpage-p2"));
+
+		// S3: S2's default header by inheritance, no first page of its own
+		assertEquals("xsl-region-before-default-p3", regionBefore(doc, "s1-p3-default"));
+		assertTrue("S3 has no first-page master", named(doc, "simple-page-master", "s1-p3-firstpage") == null);
+		assertEquals("headS2", staticContent(doc, "xsl-region-before-default-p3"));
+
+		// the page-sequence's own, as before
+		assertEquals("headS1", staticContent(doc, "xsl-region-before-default"));
+
+		List<Element> marks = marked(doc);
+		assertEquals(2, marks.size());
+		assertEquals("s1-p2", marks.get(0).getAttributeNS(FOX, "page-sequence-master-reference"));
+		assertEquals("S2 text", marks.get(0).getTextContent().trim());
+		assertEquals("s1-p3", marks.get(1).getAttributeNS(FOX, "page-sequence-master-reference"));
+		assertEquals("S3 text", marks.get(1).getTextContent().trim());
+	}
+
+	@Test
+	public void eachPartsOwnHeaders() throws Exception {
+		checkOwnHeaders(Docx4J.FLAG_NONE);
+		checkOwnHeaders(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
 	@Test
 	public void onVisitor() throws Exception {
 		checkOn(Docx4J.FLAG_NONE);
