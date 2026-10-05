@@ -366,6 +366,74 @@ public class PageMasterByContentTest extends AbstractXSLFOTest {
 		checkOwnHeaders(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
+	/**
+	 * A merged part restarting its page numbers (CR-031 phase 3, fork CR-017.2): S2 restarts at 1
+	 * and S3 at 4, neither changing margins or headers.  Each still gets a marker - naming the
+	 * masters in force, s1-p1 - which carries fox:page-number-restart, and
+	 * fox:page-number-restart-parity="keep" where the document has odd and even headers (Word
+	 * keeps a folio's parity the page's there: probes P6, P7).  The page-sequence's own
+	 * initial-page-number is then its first part's restart, of which S1 has none; without the
+	 * renderer's restart it is, as before, the first restart any part declares.
+	 */
+	private WordprocessingMLPackage restarts(boolean evenOdd) throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		String h1 = header(pkg, "headS1");
+		String mar = A4 + pgMar(1440, 1440, 720, 720);
+		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
+				"<w:document " + W + " " + R + "><w:body>"
+				+ "<w:p><w:pPr><w:sectPr><w:headerReference w:type=\"default\" r:id=\"" + h1 + "\"/>" + mar
+				+ "</w:sectPr></w:pPr><w:r><w:t>S1 text</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr><w:sectPr><w:type w:val=\"continuous\"/>" + mar + "<w:pgNumType w:start=\"1\"/>"
+				+ "</w:sectPr></w:pPr><w:r><w:t>S2 text</w:t></w:r></w:p>"
+				+ para("S3 text")
+				+ "<w:sectPr><w:type w:val=\"continuous\"/>" + mar + "<w:pgNumType w:start=\"4\"/></w:sectPr>"
+				+ "</w:body></w:document>"));
+		if (evenOdd) {
+			pkg.getMainDocumentPart().getDocumentSettingsPart(true).getJaxbElement()
+					.setEvenAndOddHeaders(new org.docx4j.wml.BooleanDefaultTrue());
+		}
+		return pkg;
+	}
+
+	private org.w3c.dom.Document restartsFo(boolean evenOdd, String property, int flags) throws Exception {
+		Docx4jProperties.setProperty(PROPERTY, property);
+		FOSettings foSettings = Docx4J.createFOSettings();
+		foSettings.setOpcPackage(restarts(evenOdd));
+		foSettings.setApacheFopMime(FOSettings.INTERNAL_FO_MIME);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		Docx4J.toFO(foSettings, baos, flags);
+		return w3cDomDocumentFromByteArray(baos.toByteArray());
+	}
+
+	private void checkRestarts(int flags) throws Exception {
+		for (boolean evenOdd : new boolean[] { false, true }) {
+			org.w3c.dom.Document doc = restartsFo(evenOdd, "true", flags);
+			Element seq = (Element) doc.getElementsByTagNameNS(FO, "page-sequence").item(0);
+			assertEquals("S1 does not restart, so the page-sequence does not", "", seq.getAttribute("initial-page-number"));
+			List<Element> marks = marked(doc);
+			assertEquals(2, marks.size());
+			String[][] expected = { { "S2 text", "1" }, { "S3 text", "4" } };
+			for (int i = 0; i < 2; i++) {
+				assertEquals(expected[i][0], marks.get(i).getTextContent().trim());
+				assertEquals("the masters in force", "s1-p1", marks.get(i).getAttributeNS(FOX, "page-sequence-master-reference"));
+				assertEquals(expected[i][1], marks.get(i).getAttributeNS(FOX, "page-number-restart"));
+				assertEquals(evenOdd ? "keep" : "", marks.get(i).getAttributeNS(FOX, "page-number-restart-parity"));
+			}
+			assertFalse(anyStamp(doc));
+			for (Element m : marks) assertFalse(m.hasAttribute("docx4j-restart"));
+		}
+		org.w3c.dom.Document off = restartsFo(false, "false", flags);
+		assertEquals("without the renderer's restart: the first restart any part declares, as before", "1",
+				((Element) off.getElementsByTagNameNS(FO, "page-sequence").item(0)).getAttribute("initial-page-number"));
+		assertEquals(0, marked(off).size());
+	}
+
+	@Test
+	public void aRestartingPartCarriesItsRestart() throws Exception {
+		checkRestarts(Docx4J.FLAG_NONE);
+		checkRestarts(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
 	@Test
 	public void onVisitor() throws Exception {
 		checkOn(Docx4J.FLAG_NONE);

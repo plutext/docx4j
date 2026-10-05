@@ -1,18 +1,15 @@
 # CR-031: continuous sections paginated as Word paginates them - a page's vertical margins from the section that owns it, and no page for an empty block at a sequence's end
 
-Status: IN PROGRESS. Proposed 2026-10-05 (Jason, after batch 52 part 2: "fix the older defect and
-turn them on?" - "yes please" to writing this CR). Phase 0 DONE 2026-10-05 (Word run; readings in
-§2, D3). Phase 1 DONE 2026-10-05 (D2, with `restartParityBlankPage` on by default; gate b111).
-Reviewed 2026-10-05 (another session): recommends 4.2b, with six design findings and the
-staleness below folded in (§4.2b, §5 P6, §6, §7, §8). **Decision 1 made 2026-10-05 (Jason): 4.2b**,
-the fork extension. Phase 2 next (registry `docx4j/CR-031.2`), depending on the fork's **fop/CR-017**
-"page masters chosen by the content a page starts with" (written 2026-10-05 and revised after a
-review, 8b509a0e8 on `2.11-docx4j.5`; proposed, about five to six days; implementation waits on
-Jason's go there). **Phase 2's docx4j side DONE 2026-10-05** (305264ed3,
-1ee6dfa8f; §6), gated end to end on fop/CR-017's snapshot (b114 control 0 movers; b115/b118); it
-reaches users with the fork release carrying CR-017. **Phase 3**: each part's own headers, footers
-and first page BUILT and gated (b119, b120); the restart waits on fop/CR-017.2.
-P6 and P7 read (§2 D3): the restart rule is settled.
+Status: IN PROGRESS - phases 0 to 3 DONE on docx4j's side; remaining: export-fo's renderer version
+bump once the fork releases 2.11-docx4j.5 (CR-017, CR-017.2). Proposed 2026-10-05 (Jason, after
+batch 52 part 2: "fix the older defect and turn them on?" - "yes please"). Phase 0 DONE (P1-P7 read,
+§2 D3). Phase 1 DONE (D2 + `restartParityBlankPage` on; gate b111). Reviewed by another session
+(six findings folded in). **Decision 1 (Jason): 4.2b**, the fork extension. Phase 2 DONE (305264ed3,
+1ee6dfa8f, 1e4af6c3d; on fop/CR-017: b114 control, b115/b118). Phase 3 DONE: each part's own headers,
+footers and first page (d1d993164; b119, b120) and the restart (on fop/CR-017.2: b122 control,
+b123). Former phase 4 moved to the page-break-line triage (§9); phase 5 (the extent hook) not
+started. Follow-up outside this CR: 13347's empty page (a break-only paragraph before a heading
+whose style breaks the page: Word one break, docx4j two), §6 phase 3.
 
 ## 0. Why now
 
@@ -566,6 +563,25 @@ distances and texts together with it, mode 14, a section starting at a page top,
    section 2 starts at the foot of page 1, and confirms the rule: Word's pages 2 and 3 print 2
    and 3); the one format change inside a merged run (14067's section 2, upperRoman) is masked by
    the inherited footer's `PAGE \* Arabic`, so no format attribute.
+   **The restart BUILT and gated 2026-10-05** (fork CR-017.2, renderer r12 = fork 1c960ac66): the
+   factory tags a restarting part even where its masters are the part before's
+   (`XSLT_Part=m,S,i[,r]`, r for the restart alone) and records each part's start
+   (`getPartPageStarts`); `stampPart` stamps the restart (and `keep` with `w:evenAndOddHeaders`)
+   where the renderer has `page-number-restart`, and skips a restart-only part without it;
+   `WordLayoutFixups.pageMastersByContent` treats a restart as a boundary and writes
+   `fox:page-number-restart` / `fox:page-number-restart-parity="keep"` on the marker; a merged
+   page-sequence's own `initial-page-number` is its first part's restart only. Test
+   `PageMasterByContentTest.aRestartingPartCarriesItsRestart`. Control b122 (cand44 on r12)
+   against b119: 0 movers. Measurement b123 (cand46 on r12) against b122: P3 (continuous-restart),
+   both P6 documents and both P7 start2 documents to line parity 1.0000 (P7 oddstart already was:
+   its folios are the continuing ones); 79 +1 line; 8940 unchanged; and 13347 -10 lines - its
+   restart is now right (Word's TOC: inleiding 3; b123 3, b122 2) but docx4j gives it an empty page
+   4 Word does not (a break-only paragraph before a heading whose style, Kop1EOG, has
+   w:pageBreakBefore: Word one break, docx4j two), which the missing restart had cancelled for every
+   later TOC entry. That empty page is outside this CR, a pagination item to triage.
+   On the way, b121 (the restart tags on r11, without CR-017.2) found a fork defect: a marker on a
+   part starting part-way down a sequence's first page after a span change measured that page as a
+   fresh one (79, 8940 lost lines); fixed in the fork, 9711c6bc9, before r12.
 4. *(moved out)* Turning on `tableTakesPageBreak` needs the page-break line as well (4994), which
    is outside this CR (§9). It moves to that triage, which depends on phase 2 here (for 12802).
    This CR closes at phase 3 with the property still off (review finding 6).

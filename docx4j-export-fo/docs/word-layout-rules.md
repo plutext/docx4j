@@ -4684,8 +4684,14 @@ attribute on the part's first in-flow block-level FO. **Each part's own headers 
 before, as Word inherits - are not the page-sequence's gets masters with region names of its own
 (`-p<m>`) and its own static content, and a first-page master where its own `w:titlePg` makes one,
 which the renderer uses only on a page the part's first line opens; the extent pre-pass gives each
-continuous section a page so that these masters are measured. A continuous restart is still to
-come (fork CR-017.2). Gated by
+continuous section a page so that these masters are measured. **A continuous restart** (fork
+CR-017.2): the restarting part's marker carries `fox:page-number-restart` - the page it starts on
+prints its owner's number, its count beginning there - and, with `w:evenAndOddHeaders`,
+`fox:page-number-restart-parity="keep"`, since Word keeps every folio's parity the physical page's
+in such a document and so moves the count to the next page where the start number's parity is not
+the start page's (probes P3, P6, P7: 1, 2, 2, 3 without odd and even headers; 1, 2, 1, 2, 3 and 1,
+2, 3, 4, 5 with them). The merged page-sequence's own `initial-page-number` is then its first
+part's restart only. Gated by
 `docx4j.convert.out.fo.wordLayout.pageMasterByContent`; on Apache FOP, or a docx4j FO renderer
 without the capability, nothing changes.
 

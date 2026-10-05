@@ -98,6 +98,23 @@ public class ConversionSectionWrapper extends SectionWrapper {
 				? java.util.Collections.<Integer, HeaderFooterPolicy>emptyMap() : partHeaderFooterPolicies;
 	}
 
+	/** Where this page-sequence is a merged run of continuous sections: the page number each
+	 *  part restarts at (w:pgNumType/@w:start), by part number from 1; null where nothing is
+	 *  merged.  The page-sequence's own initial-page-number is the first part's where the FO
+	 *  renderer restarts the others itself (fork CR-017.2, CR-031 phase 3); otherwise, as
+	 *  before, the first restart any part declares.  @since 17.3.1 */
+	protected java.util.Map<Integer, Integer> partPageStarts = null;
+
+	/** @since 17.3.1 */
+	public java.util.Map<Integer, Integer> getPartPageStarts() {
+		return partPageStarts;
+	}
+
+	/** @since 17.3.1 */
+	public void setPartPageStarts(java.util.Map<Integer, Integer> partPageStarts) {
+		this.partPageStarts = partPageStarts;
+	}
+
 	/** @since 17.3.1 */
 	public void setPartVerticalMargins(java.util.Map<Integer, SectPr.PgMar> partVerticalMargins) {
 		this.partVerticalMargins = partVerticalMargins == null

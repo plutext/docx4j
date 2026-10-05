@@ -4503,25 +4503,29 @@ public final class WordLayoutFixups {
 	 * @since 17.3.1
 	 */
 	static void pageMastersByContent(Document doc) {
-		String[] state = new String[2]; // [0] the master in force, [1] "any"
+		String[] state = new String[2]; // [0] the master (and restart) in force, [1] "any"
 		for (Element seq : elements(doc, "page-sequence")) {
 			for (Node n = seq.getFirstChild(); n != null; n = n.getNextSibling()) {
 				if (n instanceof Element && isFo((Element) n, "flow")) {
 					state[0] = null; // the page-sequence's own masters
-					partBoundaries((Element) n, null, state);
+					partBoundaries((Element) n, null, null, state);
 				}
 			}
 		}
 		NodeList all = doc.getElementsByTagName("*");
 		for (int i = 0; i < all.getLength(); i++) {
 			((Element) all.item(i)).removeAttribute(XsltFOFunctions.HINT_PART_MASTER);
+			((Element) all.item(i)).removeAttribute(XsltFOFunctions.HINT_PART_RESTART);
 		}
 		if (state[1] != null) {
 			doc.getDocumentElement().setAttributeNS(XMLNS, "xmlns:fox", org.docx4j.fonts.RunFontSelector.FOX_NS);
 		}
 	}
 
-	private static void partBoundaries(Element parent, String inherited, String[] state) {
+	/** A restarting part (XsltFOFunctions.HINT_PART_RESTART: "start,part[,keep]") is a boundary
+	 *  even where its master is the one in force, and its marker carries the restart (fork
+	 *  CR-017.2, CR-031 phase 3).  @since 17.3.1 */
+	private static void partBoundaries(Element parent, String inherited, String inheritedRestart, String[] state) {
 		for (Node n = parent.getFirstChild(); n != null; n = n.getNextSibling()) {
 			if (!(n instanceof Element)) continue;
 			Element el = (Element) n;
@@ -4532,13 +4536,23 @@ public final class WordLayoutFixups {
 			if (!block && !container && !isFo(el, "list-block") && !isFo(el, "table")) continue;
 			String own = el.getAttribute(XsltFOFunctions.HINT_PART_MASTER);
 			String master = own.length() > 0 ? own : inherited;
-			if (master != null && !master.equals(state[0])) {
+			String restart = own.length() > 0 ? el.getAttribute(XsltFOFunctions.HINT_PART_RESTART) : inheritedRestart;
+			String key = master == null ? null : master + "|" + (restart == null ? "" : restart);
+			if (key != null && !key.equals(state[0])) {
 				el.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS,
 						"fox:page-sequence-master-reference", master);
-				state[0] = master;
+				if (restart != null && restart.length() > 0) {
+					String[] r = restart.split(",");
+					el.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS, "fox:page-number-restart", r[0]);
+					if (r.length > 2 && "keep".equals(r[2])) {
+						el.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS,
+								"fox:page-number-restart-parity", "keep");
+					}
+				}
+				state[0] = key;
 				state[1] = "any";
 			}
-			if (block || container) partBoundaries(el, master, state);
+			if (block || container) partBoundaries(el, master, restart, state);
 		}
 	}
 

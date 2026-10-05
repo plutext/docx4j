@@ -353,6 +353,7 @@ public class ConversionSectionWrapperFactory {
 							usePartMargins(currentSectionWrapper, merged.marginRef, merged.verticalMarginRef);
 							currentSectionWrapper.setPartVerticalMargins(merged.partMasters);
 							currentSectionWrapper.setPartHeaderFooterPolicies(merged.partHFs);
+							currentSectionWrapper.setPartPageStarts(merged.partStarts);
 							conversionSections.add(currentSectionWrapper);
 							previousHF = currentSectionWrapper.getHeaderFooterPolicy();
 							sectionContent = new ArrayList<Object>();
@@ -394,6 +395,7 @@ public class ConversionSectionWrapperFactory {
 		usePartMargins(currentSectionWrapper, merged.marginRef, merged.verticalMarginRef);
 		currentSectionWrapper.setPartVerticalMargins(merged.partMasters);
 		currentSectionWrapper.setPartHeaderFooterPolicies(merged.partHFs);
+		currentSectionWrapper.setPartPageStarts(merged.partStarts);
 		conversionSections.add(currentSectionWrapper);
 		return conversionSections;
 	}
@@ -770,17 +772,22 @@ public class ConversionSectionWrapperFactory {
 		/** the own headers and footers of the parts whose masters need static content of their
 		 *  own, by part number (partTags).  @since 17.3.1 */
 		final java.util.Map<Integer, HeaderFooterPolicy> partHFs;
+		/** the page number each merged part restarts at, by part number, or null where nothing
+		 *  is merged.  @since 17.3.1 */
+		final java.util.Map<Integer, Integer> partStarts;
 		Merged(int cols, SectPr marginRef, SectPr verticalMarginRef) {
-			this(cols, marginRef, verticalMarginRef, null, null);
+			this(cols, marginRef, verticalMarginRef, null, null, null);
 		}
 		Merged(int cols, SectPr marginRef, SectPr verticalMarginRef,
 				java.util.Map<Integer, SectPr.PgMar> partMasters,
-				java.util.Map<Integer, HeaderFooterPolicy> partHFs) {
+				java.util.Map<Integer, HeaderFooterPolicy> partHFs,
+				java.util.Map<Integer, Integer> partStarts) {
 			this.cols = cols;
 			this.marginRef = marginRef;
 			this.verticalMarginRef = verticalMarginRef;
 			this.partMasters = partMasters;
 			this.partHFs = partHFs;
+			this.partStarts = partStarts;
 		}
 	}
 
@@ -930,8 +937,12 @@ public class ConversionSectionWrapperFactory {
 		java.util.Map<Integer, SectPr.PgMar> partMasters = new java.util.LinkedHashMap<Integer, SectPr.PgMar>();
 		java.util.Map<Integer, HeaderFooterPolicy> partHFs = new java.util.LinkedHashMap<Integer, HeaderFooterPolicy>();
 		String[] partTags = partTags(sectPrs, hfs, partMasters, partHFs);
+		java.util.Map<Integer, Integer> partStarts = new java.util.LinkedHashMap<Integer, Integer>();
+		for (int i = 0; i < sectPrs.size(); i++) {
+			if (pageStart(sectPrs.get(i)) != null) partStarts.put(i + 1, pageStart(sectPrs.get(i)));
+		}
 		if (uniformCols && sameMargins && !asTables && !split && partMasters.isEmpty()) {
-			return new Merged(max, ref, sectPrs.get(0), partMasters, partHFs);
+			return new Merged(max, ref, sectPrs.get(0), partMasters, partHFs, partStarts);
 		}
 
 		List<Object> result = new ArrayList<Object>();
@@ -941,7 +952,7 @@ public class ConversionSectionWrapperFactory {
 		}
 		content.clear();
 		content.addAll(result);
-		return new Merged(max, ref, sectPrs.get(0), partMasters, partHFs);
+		return new Merged(max, ref, sectPrs.get(0), partMasters, partHFs, partStarts);
 	}
 
 	/**
@@ -958,10 +969,19 @@ public class ConversionSectionWrapperFactory {
 		String[] tags = new String[sectPrs.size()];
 		int current = 0;
 		for (int i = 1; i < sectPrs.size(); i++) {
-			if (samePart(sectPrs, hfs, i, current)) continue;
+			Integer restart = pageStart(sectPrs.get(i));
+			boolean same = samePart(sectPrs, hfs, i, current);
+			if (same && restart == null) continue;
 			int m = 0;
-			while (!samePart(sectPrs, hfs, i, m)) m++;
-			tags[i] = TAG_PART + "=" + (m + 1);
+			if (same) m = current;
+			else while (!samePart(sectPrs, hfs, i, m)) m++;
+			// A part restarting its page numbers is tagged even where its masters are the
+			// part before's: the renderer's restart (fork CR-017.2) sits on the part's marker.
+			// Its own number keeps two restarting parts in a row apart, and "r" says the tag
+			// is there for the restart alone (the FO exporter writes no marker for it where the
+			// renderer does not restart).  @since 17.3.1
+			tags[i] = TAG_PART + "=" + (m + 1)
+					+ (restart == null ? "" : "," + restart + "," + (i + 1) + (same ? ",r" : ""));
 			partMasters.put(m + 1, sectPrs.get(m) == null ? null : sectPrs.get(m).getPgMar());
 			if (!sameHeadersAndFooters(hfs.get(m), hfs.get(0))) partHFs.put(m + 1, hfs.get(m));
 			current = m;
@@ -984,6 +1004,12 @@ public class ConversionSectionWrapperFactory {
 		return a.getFirstHeader() == b.getFirstHeader() && a.getDefaultHeader() == b.getDefaultHeader()
 				&& a.getEvenHeader() == b.getEvenHeader() && a.getFirstFooter() == b.getFirstFooter()
 				&& a.getDefaultFooter() == b.getDefaultFooter() && a.getEvenFooter() == b.getEvenFooter();
+	}
+
+	/** The page number a part restarts at (w:pgNumType/@w:start), or null.  @since 17.3.1 */
+	private static Integer pageStart(SectPr sectPr) {
+		if (sectPr == null || sectPr.getPgNumType() == null || sectPr.getPgNumType().getStart() == null) return null;
+		return sectPr.getPgNumType().getStart().intValue();
 	}
 
 	/** A part's top and bottom margins and header and footer distances, as one key. */

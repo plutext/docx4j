@@ -606,6 +606,28 @@ public class XsltFOFunctions {
      *  renderer's attribute and removes it.  @since 17.3.1 */
     public static final String HINT_PART_MASTER = "docx4j-psm";
 
+    /** The private attribute {@link #stampPart} puts on a restarting merged part's FOs: the
+     *  start number, the part's own number, and "keep" where the document has odd and even
+     *  headers.  {@code WordLayoutFixups.pageMastersByContent} turns it into the renderer's
+     *  {@code fox:page-number-restart} and {@code fox:page-number-restart-parity}.  @since 17.3.1 */
+    public static final String HINT_PART_RESTART = "docx4j-restart";
+
+    /**
+     * Whether a merged continuous section restarting its page numbers has the renderer restart
+     * them on its marker (fork CR-017.2, CR-031 phase 3): where page masters are chosen by
+     * content ({@link #pageMasterByContent}) and the renderer has
+     * {@link FopCapabilities.Capability#PAGE_NUMBER_RESTART} - or the property says {@code true},
+     * for tests.  Otherwise the page-sequence takes the first restart any part declares, as before.
+     *
+     * @since 17.3.1
+     */
+    public static boolean pageNumberRestart(AbstractWmlConversionContext context) {
+    	if (!pageMasterByContent(context)) return false;
+    	if ("true".equalsIgnoreCase(Docx4jProperties.getProperty(
+    			"docx4j.convert.out.fo.wordLayout.pageMasterByContent", "auto"))) return true;
+    	return FopCapabilities.has(FopCapabilities.Capability.PAGE_NUMBER_RESTART);
+    }
+
     /**
      * Whether a page-sequence's merged continuous sections get page masters of their own,
      * chosen by the content a page starts with (CR-031 phase 2): where the FO renderer has
@@ -645,9 +667,21 @@ public class XsltFOFunctions {
     	ConversionSectionWrapper section = context.getSections().getCurrentSection();
     	int eq = tagVal.indexOf('=');
     	if (section == null || eq < 0) return;
-    	String master = section.getId() + "-p" + tagVal.substring(eq + 1).trim();
+    	// "m", or "m,start,part" for a part restarting its page numbers, "m,start,part,r" where it is
+    	// tagged for the restart alone (ConversionSectionWrapperFactory)
+    	String[] values = tagVal.substring(eq + 1).trim().split(",");
+    	boolean restartOnly = values.length > 3 && "r".equals(values[3]);
+    	if (restartOnly && !pageNumberRestart(context)) return; // nothing changes at it
+    	String master = section.getId() + "-p" + values[0];
+    	String restart = null;
+    	if (values.length >= 3 && pageNumberRestart(context)) {
+    		boolean evenOdd = context instanceof FOConversionContext && evenAndOddHeaders((FOConversionContext) context);
+    		restart = values[1] + "," + values[2] + (evenOdd ? ",keep" : "");
+    	}
     	for (Node n = parent.getFirstChild(); n != null; n = n.getNextSibling()) {
-    		if (n instanceof Element) ((Element) n).setAttribute(HINT_PART_MASTER, master);
+    		if (!(n instanceof Element)) continue;
+    		((Element) n).setAttribute(HINT_PART_MASTER, master);
+    		if (restart != null) ((Element) n).setAttribute(HINT_PART_RESTART, restart);
     	}
     }
 
@@ -4533,6 +4567,12 @@ public class XsltFOFunctions {
     public static String initialPageNumber(FOConversionContext context) {
     	ConversionSectionWrapper current = context.getSections().getCurrentSection();
     	int start = current.getPageNumberInformation().getPageStart();
+    	// a merged run whose later parts the renderer restarts itself takes its first part's own
+    	// restart, or none (CR-031 phase 3).  @since 17.3.1
+    	if (current.getPartPageStarts() != null && pageNumberRestart(context)) {
+    		Integer first = current.getPartPageStarts().get(1);
+    		start = first == null ? -1 : first;
+    	}
     	if (start < 0) return "";
     	boolean first = context.getSections().getList().isEmpty()
     			|| context.getSections().getList().get(0) == current;

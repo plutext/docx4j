@@ -123,7 +123,13 @@ public final class FopCapabilities {
 		 *  names (fork CR-017), so the parts of a merged run of continuous sections each get the
 		 *  vertical margins of the section owning a page's first line, as Word gives them (docx4j
 		 *  CR-031 phase 2).  @since 17.3.1 */
-		PAGE_MASTER_BY_CONTENT("page-master-by-content");
+		PAGE_MASTER_BY_CONTENT("page-master-by-content"),
+		/** {@code fox:page-number-restart} (and {@code fox:page-number-restart-parity="keep"}) on a
+		 *  marked FO: the part restarts its page numbers as Word restarts a continuous section's -
+		 *  the page it starts on prints its owner's number, and with odd and even headers the count
+		 *  moves to the next page where the start number's parity is not that page's (fork
+		 *  CR-017.2; docx4j CR-031 phase 3, probes P3, P6, P7).  @since 17.3.1 */
+		PAGE_NUMBER_RESTART("page-number-restart");
 
 		private final String key;
 

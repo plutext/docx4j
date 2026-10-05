@@ -171,8 +171,11 @@ PDF via XSL FO:
 - On a docx4j FO renderer that chooses page masters by content (capability page-master-by-content,
   fork CR-017), each page of a run of continuous sections takes the top and bottom margins, the
   header and footer distances and the headers and footers of the section owning its first line, as
-  Word's does, rather than the first section's, and a section's first-page header shows only on a
-  page it opens (docx4j.convert.out.fo.wordLayout.pageMasterByContent=false to turn off).
+  Word's does, rather than the first section's, a section's first-page header shows only on a
+  page it opens, and a section restarting its page numbers restarts them where Word does (with odd
+  and even headers, keeping each number's parity the page's) rather than its restart being lost
+  (capability page-number-restart, fork CR-017.2; docx4j.convert.out.fo.wordLayout.pageMasterByContent=false
+  to turn off).
 
 - A footer distance larger than a quarter of the page, over an empty footer, is honoured as Word
   honours it, where it was ignored.
