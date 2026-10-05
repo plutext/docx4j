@@ -55,7 +55,27 @@ to 3 have top 860 (43pt); continuous section 4 has top 617 (30.85pt). Word's fir
 | 5 | 31.1 | 34.4 | 30.85pt, section 4 |
 
 docx4j draws every page on section 0's 36pt. (Which section's text opens each of Word's pages is
-read from the margins here, not traced; phase 0 measures it directly.) (Page 2's 53.8 is the line the break-only paragraph
+read from the margins here, not traced.)
+
+**An existing golden confirms the rule** - `section-continuous-geometry` (probes, cut before this
+CR): five continuous sections, each over a page long; S2 has a 2in top margin, S3 a 290.55pt footer
+distance over an empty footer part, S4 a 35.45pt one, S5 a 2in left margin. Word's pages:
+
+| page | sections on it | Word: first line / last line | docx4j (b110) |
+|---|---|---|---|
+| 3 | S2 | 144.4 / 729.1 (S2's) | 143.4 / 729.8 |
+| 4 | S2, then S3 from mid-page | 144.4 / 729.1 (**S2's**, though S3 starts on it) | 143.4 / 729.8 |
+| 5 | S3 | 72.4 / 508.9 (**S3's**: its footer distance ends the page high) | 143.4 / 729.8 |
+| 6 | S3, then S4 | 72.4 / 508.9 (S3's) | 143.4 / 729.8 |
+| 7 | S4 | 72.4 / 755.9 (S4's) | 143.4 / 729.8 |
+| 9 | S5 | 72.4, lines at x=144.1 (S5's) | 143.4, x=144.0 |
+
+So **a page takes the vertical margins - top, bottom and footer distance - of the section that owns
+its first line**, and a section starting mid-page changes nothing until the next page. docx4j merges
+S2 to S5 into one sequence on S2's margins, and its pages 5 to 8 are 71pt low and 220pt long at
+the foot. (S2 itself opens a page in both, because the probe writes 11906x16838 there against the
+document's 11907x16839: a page size change, which starts a page.) This golden is phase 2's
+acceptance test. (Page 2's 53.8 is the line the break-only paragraph
 kept above a table, which `tableTakesPageBreak` removes - to 41.1, against Word's 43.1 - and which is
 how that rule exposed this.) The hypothesis, to be confirmed in phase 0: **a page takes the top and
 bottom margins, and the header and footer distances, of the section that owns its first line.**
@@ -139,10 +159,14 @@ says, through the same page map.
 Mode 15, with a mode 14 twin of P1. Exact 24pt lines so baselines read cleanly; each section's
 header and footer name the section and print the folio.
 
-- **P1 `continuous-margins-vertical`**: S1 top/bottom 72/72pt, header/footer distances 36/36, a page
-  and a half; S2 continuous, top/bottom 144/36, distances 18/18, three pages; S3 continuous, back
-  to 72/72, starting mid-page. Read: each page's first and last baselines, its header and footer
-  text and their y.
+D1's rule is already measured (§2); the probes read what it leaves open - the header and footer
+distances and texts together with it, mode 14, a section starting at a page top, restarts,
+`w:titlePg`, and D2.
+
+- **P1 `continuous-margins-vertical-compat15` / `-compat14`**: S1 top/bottom 72/72pt, header/footer
+  distances 36/36, a page and a half; S2 continuous, top/bottom 144/36, distances 18/18, three pages;
+  S3 continuous, back to 72/72, starting mid-page. Read: each page's first and last baselines, its
+  header and footer text and their y.
 - **P2 `continuous-margins-at-top`**: S1 fills its last page exactly, so S2 (continuous, other
   margins) starts at a page top. Read: that page's margins.
 - **P3 `continuous-restart`**: S2 continuous with `w:pgNumType w:start="1"`, starting mid-page, and

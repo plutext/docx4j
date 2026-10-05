@@ -2969,6 +2969,14 @@ public final class Corpus {
 		PROBES.add(ccmpTextLayerProbe());
 		PROBES.add(breakAtSpaceProbe());
 
+		// CR-031 phase 0 (docs/developer/change-requests/CR-031-continuous-sections-paginated-as-word.md §5)
+		PROBES.add(continuousMarginsProbe(15));
+		PROBES.add(continuousMarginsProbe(14));
+		PROBES.add(continuousMarginsAtTopProbe());
+		PROBES.add(continuousRestartProbe());
+		PROBES.add(continuousTitlePgProbe());
+		PROBES.add(sectionBreakParagraphFootProbe());
+
 		/*
 		 * CR-016's probe set (docs/developer/change-requests/CR-016-font-selection-and-mapping.md,
 		 * "Are the comments accurate?").  Font selection and mapping: which of a run's four
@@ -8833,5 +8841,157 @@ public final class Corpus {
 			m.println("probes=" + PROBES.size());
 			m.println("fonts=" + SERIF + ", " + SANS + ", " + CARLITO + ", " + DEJAVU);
 		}
+	}
+
+	// ------------------------------------------------------------------ CR-031 phase 0
+
+	/** The current section's vertical w:pgMar, in twips. */
+	private static void verticalMargins(Doc d, int top, int bottom, int header, int footer) {
+		org.docx4j.wml.SectPr.PgMar m = d.sectPr().getPgMar();
+		m.setTop(BigInteger.valueOf(top));
+		m.setBottom(BigInteger.valueOf(bottom));
+		m.setHeader(BigInteger.valueOf(header));
+		m.setFooter(BigInteger.valueOf(footer));
+	}
+
+	/** A header and a footer naming the section and printing the folio. */
+	private static void sectionHeaderFooter(Doc d, String section) throws Exception {
+		d.addHeader(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.List.of(folioParagraph(section + " header, folio")));
+		d.addFooter(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.List.of(folioParagraph(section + " footer, folio")));
+	}
+
+	/** n exact 24pt lines labelled with the section; returns the last paragraph. */
+	private static P exactLines(Doc d, String section, int n) {
+		P last = null;
+		for (int k = 1; k <= n; k++) {
+			last = d.para(section + " line " + k + " of " + n).noLabel().font(SERIF, 24).before(0).after(0)
+					.line(480, STLineSpacingRule.EXACT).add();
+		}
+		return last;
+	}
+
+	/**
+	 * continuous-margins-vertical-compat&lt;mode&gt; (CR-031 D1).  Which top and bottom margins, and which header and
+	 * footer distances, does a page take where continuous sections with different vertical margins share a run?
+	 * S1: top/bottom 72/72pt, header/footer 36/36, 45 lines (a page and a half); S2 continuous: 144/36, distances
+	 * 18/18, 70 lines (about three pages); S3 continuous: back to 72/72 and 36/36, 20 lines.  Exact 24pt lines;
+	 * each section's own header and footer name it and print the folio.  The breaks sit on each section's last
+	 * line, so no empty break paragraph is in the way.  Read: each page's first and last baselines, and its header
+	 * and footer text and y.  @since 17.3.1 (CR-031 phase 0)
+	 */
+	private static Probe continuousMarginsProbe(int mode) {
+		return new Probe("continuous-margins-vertical-compat" + mode,
+				"three continuous sections in one run: S1 72/72pt margins and 36/36pt header/footer distances, "
+				+ "S2 144/36 and 18/18, S3 72/72 and 36/36; exact 24pt lines; each section's header and footer "
+				+ "name it; mode " + mode + ".  Read each page's first and last baselines and its header and footer",
+				() -> {
+			Doc d = Doc.create(mode);
+			verticalMargins(d, 1440, 1440, 720, 720);
+			sectionHeaderFooter(d, "S1");
+			d.endSectionOn(exactLines(d, "S1", 45), "continuous");
+			verticalMargins(d, 2880, 720, 360, 360);
+			sectionHeaderFooter(d, "S2");
+			d.endSectionOn(exactLines(d, "S2", 70), "continuous");
+			verticalMargins(d, 1440, 1440, 720, 720);
+			sectionHeaderFooter(d, "S3");
+			exactLines(d, "S3", 20);
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * continuous-margins-at-top (CR-031 D1).  S1 (72/72pt) fills its page exactly with 29 exact 24pt lines, so the
+	 * continuous S2 (144/36pt, distances 18/18) starts at the top of page 2.  Read: page 2's first baseline and
+	 * header, and page 3's.  @since 17.3.1 (CR-031 phase 0)
+	 */
+	private static Probe continuousMarginsAtTopProbe() {
+		return new Probe("continuous-margins-at-top",
+				"S1 (72/72pt margins) fills page 1 with 29 exact 24pt lines; the continuous S2 (144/36, header and "
+				+ "footer 18/18) begins at the top of page 2 and runs 40 lines; mode 15.  Read page 2's and page 3's "
+				+ "first baselines and headers", () -> {
+			Doc d = Doc.create(15);
+			verticalMargins(d, 1440, 1440, 720, 720);
+			sectionHeaderFooter(d, "S1");
+			d.endSectionOn(exactLines(d, "S1", 29), "continuous");
+			verticalMargins(d, 2880, 720, 360, 360);
+			sectionHeaderFooter(d, "S2");
+			exactLines(d, "S2", 40);
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * continuous-restart (CR-031 D3).  Where does a continuous section's w:pgNumType w:start take effect?  S1, 40
+	 * exact 24pt lines (to mid page 2); S2 continuous, restarting at 1, 60 lines.  Each footer names its section
+	 * and prints the folio.  Read: each page's folio and footer.  @since 17.3.1 (CR-031 phase 0)
+	 */
+	private static Probe continuousRestartProbe() {
+		return new Probe("continuous-restart",
+				"S1 runs 40 exact 24pt lines, to mid page 2; S2, continuous, w:pgNumType w:start=\"1\", 60 lines; "
+				+ "each footer names its section and prints the folio; mode 15.  Read each page's folio and footer",
+				() -> {
+			Doc d = Doc.create(15);
+			sectionHeaderFooter(d, "S1");
+			d.endSectionOn(exactLines(d, "S1", 40), "continuous");
+			sectionHeaderFooter(d, "S2");
+			d.pageNumberStart(1);
+			exactLines(d, "S2", 60);
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * continuous-titlepg (CR-031 D3).  S1, 40 exact 24pt lines with a default header; S2 continuous, w:titlePg, a
+	 * first-page header and a default one, 70 lines.  Read: which header each page carries.
+	 * @since 17.3.1 (CR-031 phase 0)
+	 */
+	private static Probe continuousTitlePgProbe() {
+		return new Probe("continuous-titlepg",
+				"S1 runs 40 exact 24pt lines under a default header; S2, continuous, has w:titlePg with a first-page "
+				+ "header and a default header, 70 lines; mode 15.  Read which header each page carries", () -> {
+			Doc d = Doc.create(15);
+			d.addHeader(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.List.of(folioParagraph("S1 default header, folio")));
+			d.endSectionOn(exactLines(d, "S1", 40), "continuous");
+			d.addHeader(org.docx4j.wml.HdrFtrRef.FIRST, java.util.List.of(folioParagraph("S2 FIRST-page header, folio")));
+			d.addHeader(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.List.of(folioParagraph("S2 default header, folio")));
+			exactLines(d, "S2", 70);
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * section-break-paragraph-foot (CR-031 D2; 9539).  Does an empty paragraph carrying a section break, at the foot
+	 * of a page with no room for its line, start a page of its own?  Three cases, each a page of 29 exact 24pt
+	 * lines (1.95pt left at 72/72pt margins) and then an empty section-break paragraph (no spacing) whose next
+	 * section is: A continuous, the same page size; B continuous, A4 landscape (a page size change, which starts a
+	 * page: 9539's shape); C nextPage.  Each next section holds one line, "X after".  Headers name the case.  Read:
+	 * the page count, and any page holding only a header.  @since 17.3.1 (CR-031 phase 0)
+	 */
+	private static Probe sectionBreakParagraphFootProbe() {
+		return new Probe("section-break-paragraph-foot",
+				"pages filled to 1.95pt above the foot, then an empty paragraph carrying a section break whose next "
+				+ "section is continuous (A), continuous with a page size change (B) and nextPage (C); mode 15.  "
+				+ "Read the page count and any page holding only a header", () -> {
+			Doc d = Doc.create(15);
+			String[][] cases = { { "A", "continuous" }, { "B", "continuous" }, { "C", "nextPage" } };
+			for (int i = 0; i < cases.length; i++) {
+				String c = cases[i][0];
+				d.addHeader(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.List.of(folioParagraph("case " + c + " header, folio")));
+				exactLines(d, c, 29);
+				d.endSection(cases[i][1], 0);
+				if ("B".equals(c)) d.pageGeometry(16839, 11907, true, 1440, 1440, 1440, 1440);
+				d.addHeader(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.List.of(folioParagraph("case " + c + " after header, folio")));
+				P after = d.para(c + " after the section break").noLabel().font(SERIF, 24).before(0).after(0)
+						.line(480, STLineSpacingRule.EXACT).add();
+				if (i + 1 < cases.length) {
+					d.endSectionOn(after, "nextPage");
+					if ("B".equals(c)) {
+						d.pageGeometry(11907, 16839, false, 1440, 1440, 1440, 1440);
+						d.sectPr().getPgSz().setOrient(null);   // pageGeometry leaves a landscape orientation set
+					}
+				}
+			}
+			return d.pkg();
+		});
 	}
 }
