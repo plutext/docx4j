@@ -271,6 +271,50 @@ re-layout (docx4j writes no `page-position="last"`, so out of scope at first). E
 test before docx4j gates it. The P1 probes and the section-continuous-geometry golden are the
 acceptance tests on the docx4j side, unchanged.
 
+**A companion hook: the header and footer extents measured in FOP (2026-10-05).** 4.2b decides
+*which* master a page takes; it does not decide how large the body is *inside* a master. That is
+the header and footer extent pre-pass (`LayoutMasterSetBuilder.fixExtents`, `FOPAreaTreeHelper`): a
+partial deep copy of the package, its body replaced by filler (`trimContent`), floating drawings
+removed from its headers and footers, STYLEREF painted from its cached result, converted to FO and
+rendered by FOP to an area tree; each simple-page-master's region-before and region-after heights
+are read from that tree (`calculateHFExtents`), and `adjustLayoutMasterSet` writes Word's rule into
+the masters - body top = max(top margin, header distance + header height), and the mirror at the
+foot - with docx4j's exceptions (no reserve for a header or footer docx4j invents for `w:titlePg`
+or `w:evenAndOddHeaders`, a negative top margin fixing the body top, a footer distance past a
+quarter of the page not honoured, an empty footer part unlike an absent one). It runs on every PDF
+conversion, not only on the documents this CR is about.
+
+4.2b makes `PageProvider` the one place that answers "how tall is this page's body?", so a second
+hook fits the same seam: the first time a master is used, FOP lays out that master's region-before
+and region-after static content (its `StaticContentLayoutManager`, which otherwise runs when the page
+is finished), measures it, and sets the body's edges by the rule, where the FO asks for it (an
+attribute on the simple-page-master carrying the top and bottom margins; the header and footer
+distances are the master's own margins). docx4j keeps its exceptions by encoding them in the FO -
+no attribute where nothing is reserved, a fixed body top for a negative margin, the margin alone for
+an implausible footer distance - rather than applying them after a measurement.
+
+- **Every document gains**: one FOP render fewer per conversion (and the deep copy and the trimmed
+  document's FO conversion with it).
+- **A class of defect goes**: the pre-pass measures only the masters its filler pages reach, and its
+  merging must match the real pass's - when it did not, a 179-page document came out as 1,429 pages
+  (fixed in 17.2.0 by `followedByPageStart`). 4.2b's per-part masters are each used only on pages a
+  part owns, which filler would reach only with more such contrivance; measured in FOP, each master
+  is measured on the page that uses it.
+- **Closer to Word, later**: STYLEREF in a header is an `fo:retrieve-marker` (`StyleRefMarkers`),
+  whose text, and so whose height, varies from page to page; the pre-pass takes the field's cached
+  result. A per-page measurement is possible in FOP, but circular - the header's markers come from
+  the page's body, whose height depends on the header - so per master first (today's behaviour), per
+  page as a later refinement once Word's behaviour there is probed.
+
+Caveats: the pre-pass measures a doctored copy, and the in-FOP measurement must leave out the same
+things - floating drawings in headers and footers (marked by docx4j, or emitted so they take no
+height) and the edge spacing of paragraphs emptied by their removal. On Apache FOP the pre-pass stays,
+gated by `FopCapabilities` like 4.2b, so its code remains as the fallback. Recommended to go into
+the same fork CR as 4.2b, as a second hook sharing the `PageProvider` change; docx4j then drops the
+pre-pass on the fork for every document. Gate: the corpora and probes on the fork with the hook
+against the pre-pass, every master's extents equal to the point (they are the same layout of the
+same static content) except where the doctored copy and the real header differ.
+
 ### 4.3 D3: header and footer text, first-page header, restart
 
 Phase 0 has answered (§2, D3), and all three follow the owner of the page, so they ride on 4.2's
@@ -336,7 +380,9 @@ distances and texts together with it, mode 14, a section starting at a page top,
    by the content a page starts with (§4.2b; one pass and exact, but on Apache FOP those documents
    keep today's margins). Recommendation (2026-10-05): **4.2b**, since docx4j renders on the fork by
    default (since 17.3.0) and the fork is maintained indefinitely in any case. If agreed, the fork
-   session writes a fop/CR for it and phase 2 depends on that CR.
+   session writes a fop/CR for it and phase 2 depends on that CR; the same CR can carry the
+   companion hook that measures header and footer extents in FOP and retires the extent pre-pass
+   on the fork (end of §4.2b).
 2. **Scope of phase 3**, once phase 0 has read D3.
 
 ## 8. Risks
