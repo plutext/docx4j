@@ -4123,6 +4123,16 @@ public final class WordLayoutFixups {
 	 * back, and {@code table-fixed}, {@code table-cellspacing} and
 	 * {@code table-cell-measure} all keep the lines Word keeps without it.
 	 *
+	 * <p><b>The border FOP charges is the collapsed one</b>, the wider of the cell's own and
+	 * its neighbour's, so that is what is given back (17.3.1).  Measured on
+	 * {@code table-cell-measure-neighbour}: a right cell with no left border of its own, next
+	 * to a left cell with a 1pt right border, keeps a line 0.48pt wider than its nominal
+	 * measure on one line in Word, where docx4j, giving back only the cell's own (nil)
+	 * border, charged half the neighbour's and wrapped it; the reverse pairing, and both
+	 * 1pt, already matched.  Corpus document 13743's cells were 0.48pt narrow on this
+	 * account (64 lines).  Not where a row-spanning cell leaves the rows' siblings out of
+	 * step with the columns.</p>
+	 *
 	 * @since 17.1.0
 	 */
 	static void cellLineWidth(Document doc) {
@@ -4132,8 +4142,13 @@ public final class WordLayoutFixups {
 			// a separate border is Word's charge as well as FOP's; only a collapsed one
 			// (which FOP charges half of to each of the two cells it separates) is free
 			if ("separate".equals(tbl.getAttribute("border-collapse"))) continue;
-			double give = 0.5 * (lengthPt(cell.getAttribute("border-left-width"))
-					+ lengthPt(cell.getAttribute("border-right-width")));
+			double left = cellBorderPt(cell, "left"), right = cellBorderPt(cell, "right");
+			if (!spansRows(tbl)) {
+				Element before = siblingCell(cell, false), after = siblingCell(cell, true);
+				if (before != null) left = Math.max(left, cellBorderPt(before, "right"));
+				if (after != null) right = Math.max(right, cellBorderPt(after, "left"));
+			}
+			double give = 0.5 * (left + right);
 			if (give <= 0) continue;
 			// the end side is the one to take it from: the start padding places the text
 			String end = "rl-tb".equals(writingMode(cell)) ? "padding-left" : "padding-right";
@@ -4141,6 +4156,31 @@ public final class WordLayoutFixups {
 			if (padding <= 0) continue;   // nothing to give back; FO padding cannot go negative
 			cell.setAttribute(end, pt(Math.max(0, padding - give)));
 		}
+	}
+
+	/** A cell border's width in points, 0 where its style draws nothing.  @since 17.3.1 */
+	private static double cellBorderPt(Element cell, String side) {
+		String style = cell.getAttribute("border-" + side + "-style");
+		if ("none".equals(style) || "hidden".equals(style)) return 0;
+		return lengthPt(cell.getAttribute("border-" + side + "-width"));
+	}
+
+	/** The table-cell before (or after) this one in its row, or null.  @since 17.3.1 */
+	private static Element siblingCell(Element cell, boolean next) {
+		for (Node n = next ? cell.getNextSibling() : cell.getPreviousSibling(); n != null;
+				n = next ? n.getNextSibling() : n.getPreviousSibling()) {
+			if (n instanceof Element) return isFo((Element) n, "table-cell") ? (Element) n : null;
+		}
+		return null;
+	}
+
+	/** Whether any cell of this table spans rows.  @since 17.3.1 */
+	private static boolean spansRows(Element table) {
+		for (Element c : descendants(table, "table-cell")) {
+			String r = c.getAttribute("number-rows-spanned");
+			if (r.length() > 0 && !"1".equals(r)) return true;
+		}
+		return false;
 	}
 
 	/*

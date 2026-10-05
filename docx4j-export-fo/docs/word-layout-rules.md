@@ -2774,6 +2774,20 @@ and the first two of the others. That settles H12 against the reading `table-fix
 `table-cellspacing` had suggested; their lines had no slack at all, so all they said was
 that *something* was charged.
 
+<a id="s63neighbour"></a>**Nor does the neighbour's** (17.3.1). The border FOP charges a cell is
+the collapsed one, the wider of the cell's own and its neighbour's, and docx4j had given back
+only the cell's own. Measured on `table-cell-measure-neighbour` (two fixed columns, lines at
+the nominal measure less and more 0.24, 0.48 and 0.72pt): a right cell with no left border,
+beside a left cell with a 1pt right border, keeps the lines 0.24 and 0.48pt over its nominal
+measure in Word, which docx4j wrapped, charging half the neighbour's border; the reverse
+pairing, both 1pt, none and table borders all round already matched. `cellLineWidth` gives
+back half of the wider of the two on each side, a border styled none counting nothing, and
+not in a table with a row-spanning cell, whose rows' sibling cells are not their columns'.
+The probe 0.96 -> 1.0000; corpus document 13743's cells had been 0.48pt narrow on this account,
+and it gains 71 lines (0.956 -> 0.984), 9444 goes to 1.0000; two documents lose a line or three
+(5478, 11807), a cell's line now held whole by the 0.36pt half of a neighbour's 0.72pt border
+that Word breaks - a knife edge our glyph widths decide.
+
 With **separate** borders (`w:tblCellSpacing`, §6.6) Word charges what FOP charges: the
 same probe's three cell-spacing tables wrap all three rows in Word and here alike, which
 is two whole border widths. Nothing is given back there.

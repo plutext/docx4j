@@ -154,6 +154,8 @@ PDF via XSL FO:
 - A line may break at a space before , . : ; ? or !, as Word breaks it, rather than carrying the
   word before the space down with the punctuation.
 
+- A table cell's text is not narrowed by its neighbour's collapsed border.
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's

@@ -313,6 +313,26 @@ public class WordLayoutFixupsTest {
 		assertEquals("retain", listBlock.getAttribute("space-before.conditionality"));
 	}
 
+	/**
+	 * The collapsed border FOP charges a cell is the wider of its own and its neighbour's, so
+	 * that is what cellLineWidth gives back: table-cell-measure-neighbour's right cell, with no
+	 * left border of its own beside a 1pt one, keeps Word's measure (17.3.1).
+	 */
+	@Test
+	public void aNeighboursCollapsedBorderIsGivenBack() throws Exception {
+		String cell = "<fo:table-cell padding-left=\"5.4pt\" padding-right=\"5.4pt\" %s><fo:block>x</fo:block></fo:table-cell>";
+		String fo = flow("<fo:table border-collapse=\"collapse\"><fo:table-body><fo:table-row>"
+				+ String.format(cell, "border-right-style=\"solid\" border-right-width=\"1pt\"")
+				+ String.format(cell, "border-left-style=\"none\" border-left-width=\"0.48pt\"")
+				+ "</fo:table-row></fo:table-body></fo:table>");
+		org.w3c.dom.Document doc = parse(fo);
+		WordLayoutFixups.cellLineWidth(doc);
+		org.w3c.dom.NodeList cells = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "table-cell");
+		assertEquals("its own 1pt", "4.9pt", ((org.w3c.dom.Element) cells.item(0)).getAttribute("padding-right"));
+		assertEquals("the neighbour's 1pt, its own being none", "4.9pt",
+				((org.w3c.dom.Element) cells.item(1)).getAttribute("padding-right"));
+	}
+
 	private static org.w3c.dom.Document parse(String fo) throws Exception {
 		return org.docx4j.XmlUtils.getNewDocumentBuilder().parse(
 				new org.xml.sax.InputSource(new java.io.StringReader(fo)));
