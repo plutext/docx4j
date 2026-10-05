@@ -867,6 +867,166 @@ public class FOPAreaTreeHelper {
     private static final java.util.regex.Pattern PART_MASTER =
     		java.util.regex.Pattern.compile("(s\\d+)-p(\\d+)-(.+)");
 
+    /** What decides a page master's header and footer reservations: its section's page, its
+     *  own (or its merged part's) vertical margins and header/footer policy, whether its header
+     *  and footer are invented, empty or absent.  {@code measuredName} is the master whose
+     *  measured extents it takes, where extents were measured (the pre-pass).  @since 17.3.1 */
+    private static final class MasterPolicy {
+    	final int index;
+    	final String measuredName;
+    	final Integer partNumber;
+    	final PageDimensions page;
+    	final boolean headerIsDummy;
+    	final boolean footerIsDummy;
+    	final boolean footerIsAbsent;
+
+    	MasterPolicy(String simplePageMasterName, List<ConversionSectionWrapper> sections,
+    			Map<String, Integer> headerBpda, Map<String, Integer> footerBpda) {
+    		// We'll need the corresponding ConversionSectionWrapper
+    		int index = -1 + Integer.parseInt(
+    				simplePageMasterName.substring(1, simplePageMasterName.indexOf("-")));
+    		/* A merged part's master, "s<n>-p<m>-<kind>" (LayoutMasterSetBuilder.addPartMasters,
+    		 * CR-031 phases 2 and 3), takes the extents the pre-pass measured for it, where it did
+    		 * (a part with headers and footers of its own, its pages laid out by a renderer which
+    		 * chooses masters by content); otherwise - its static content being the page-sequence's,
+    		 * in the same width - those of the page-sequence's master of that kind ("s<n>-<kind>").
+    		 * The part's own vertical margins give the body's edges, and its own headers and
+    		 * footers the empty-part rules below.  @since 17.3.1 */
+    		String measuredName = simplePageMasterName;
+    		Integer partNumber = null;
+    		String partKind = null;
+    		java.util.regex.Matcher part = PART_MASTER.matcher(simplePageMasterName);
+    		if (part.matches()) {
+    			partNumber = Integer.valueOf(part.group(2));
+    			partKind = part.group(3);
+    			if (headerBpda != null && !headerBpda.containsKey(simplePageMasterName)
+    					&& !footerBpda.containsKey(simplePageMasterName)) {
+    				measuredName = part.group(1) + "-" + part.group(3);
+    			}
+    		}
+    		PageDimensions page = null;
+    		org.docx4j.model.structure.HeaderFooterPolicy hfPolicy = null;
+    		if (sections.get(index)==null) {
+    			log.error("Couldn't find section " + index + " from " + simplePageMasterName);
+    		} else {
+    			page = sections.get(index).getPageDimensions();
+    			if (partNumber != null) {
+    				page = page.withVerticalMargins(sections.get(index).getPartVerticalMargins().get(partNumber));
+    			}
+    			hfPolicy = sections.get(index).getHeaderFooterPolicy();
+    			if (partNumber != null && sections.get(index).getPartHeaderFooterPolicies().get(partNumber) != null) {
+    				hfPolicy = sections.get(index).getPartHeaderFooterPolicies().get(partNumber);
+    			}
+    		}
+    		/* Where the part is the empty one docx4j invents for w:titlePg or
+    		 * w:evenAndOddHeaders, the document has no header (or footer) there and
+    		 * Word reserves nothing for it - not even the line box our empty
+    		 * paragraph measures.  Measured on a document with no header part and no
+    		 * headerReference at all, w:pgMar/@w:top=432 (21.6pt) and w:header=706
+    		 * (35.3pt): Word's body top is 21.6, ours was 35.3 + a 13.799pt dummy
+    		 * extent = 49.1, so every line and the logo was +26.5 to +27.5pt low.
+    		 * @since 17.1.0 */
+    		String pageKind = partKind != null ? partKind : measuredName.substring(measuredName.indexOf("-") + 1);
+    		boolean headerIsDummy = hfPolicy != null && isDummyHeader(hfPolicy, pageKind);
+    		boolean footerIsDummy = hfPolicy != null && isDummyFooter(hfPolicy, pageKind);
+    		boolean footerIsAbsent = hfPolicy == null || isAbsentFooter(hfPolicy, pageKind);
+    		this.index = index;
+    		this.measuredName = measuredName;
+    		this.partNumber = partNumber;
+    		this.page = page;
+    		this.headerIsDummy = headerIsDummy;
+    		this.footerIsDummy = footerIsDummy;
+    		this.footerIsAbsent = footerIsAbsent;
+    	}
+    }
+
+    /**
+     * For a renderer which measures header and footer extents itself (fork CR-018,
+     * {@code fox:extent="measured"}; CR-031 phase 5): set each page master's margins as
+     * {@link #adjustLayoutMasterSet} would, with the measurement left to the renderer, and
+     * return the regions to be measured, as "master/before" and "master/after".
+     *
+     * <p>The renderer makes the body's margin on a measured side the larger of its stated
+     * margin and the region's height.  So with the page master's margin at the header
+     * distance and the body's at what the top margin adds to it, the body starts at
+     * max(top margin, header distance + header height), Word's rule; and likewise at the foot.
+     * docx4j's exceptions are the regions it does not ask: a header or footer which reserves
+     * nothing (docx4j's invented part, an empty header part, no footer part, and the empty
+     * footer part of a merged run's single master whose footer distance is clamped) keeps the
+     * stated values, as it would have measuring nothing.  A negative margin fixes the body's
+     * edge whatever the header or footer does, Word letting it overlap the text; where such a
+     * header or footer paints something its region still needs its height, which only the
+     * pre-pass gives, so null is returned and nothing is changed.</p>
+     *
+     * @since 17.3.1
+     */
+    static java.util.Set<String> askRendererToMeasure(LayoutMasterSet layoutMasterSet,
+    		ConversionSectionWrappers conversionSectionWrappers) {
+		List<ConversionSectionWrapper> sections = conversionSectionWrappers.getList();
+		List<SimplePageMaster> spms = new java.util.ArrayList<SimplePageMaster>();
+		List<MasterPolicy> policies = new java.util.ArrayList<MasterPolicy>();
+    	for (Object o : layoutMasterSet.getSimplePageMasterOrPageSequenceMaster()) {
+    		if (!(o instanceof SimplePageMaster)) continue;
+    		SimplePageMaster spm = (SimplePageMaster) o;
+    		MasterPolicy mp = new MasterPolicy(spm.getMasterName(), sections, null, null);
+    		if (mp.page == null) return null;
+    		if (spm.getRegionBefore() != null && !mp.headerIsDummy
+    				&& mp.page.getPgMar().getTop().intValue() < 0) return null;
+    		if (spm.getRegionAfter() != null && !mp.footerIsDummy
+    				&& mp.page.getPgMar().getBottom().intValue() < 0) return null;
+    		spms.add(spm);
+    		policies.add(mp);
+    	}
+    	java.util.Set<String> measured = new java.util.HashSet<String>();
+    	for (int i = 0; i < spms.size(); i++) {
+    		SimplePageMaster spm = spms.get(i);
+    		MasterPolicy mp = policies.get(i);
+    		PageDimensions page = mp.page;
+    		if (spm.getRegionBefore() != null) {
+    			float headerMarginPts = page.getHeaderMargin()/20f;
+    			float topMarginPts = page.getPgMar().getTop().intValue()/20f;
+    			if (!mp.headerIsDummy) {
+    				spm.setMarginTop(headerMarginPts+"pt");
+    				spm.getRegionBody().setMarginTop(Math.max(0f, topMarginPts - headerMarginPts)+"pt");
+    				measured.add(spm.getMasterName() + "/before");
+    			} else {
+    				// nothing reserved; the region keeps its stated extent, and paints nothing
+    				float bodyTop = Math.abs(topMarginPts);
+    				float spmTop = Math.min(headerMarginPts, bodyTop);
+    				spm.setMarginTop(spmTop+"pt");
+    				spm.getRegionBody().setMarginTop((bodyTop-spmTop)+"pt");
+    			}
+    		}
+    		if (spm.getRegionAfter() != null) {
+    			float footerMarginPts = page.getFooterMargin()/20f;
+    			float bottomMarginPts = page.getPgMar().getBottom().intValue()/20f;
+    			// as adjustLayoutMasterSet's footer floor: a footer with content, or an empty
+    			// footer part (its empty line measured) unless the distance is clamped
+    			boolean reserves = !mp.footerIsDummy
+    					|| (!mp.footerIsAbsent
+    							&& (mp.partNumber != null
+    									|| !clampsFooterDistance(layoutMasterSet, sections.get(mp.index), "s" + (mp.index + 1))
+    									|| plausibleFooterDistance(page, footerMarginPts)));
+    			if (reserves && bottomMarginPts >= 0) {
+    				spm.setMarginBottom(footerMarginPts+"pt");
+    				spm.getRegionBody().setMarginBottom(Math.max(0f, bottomMarginPts - footerMarginPts)+"pt");
+    				measured.add(spm.getMasterName() + "/after");
+    			} else {
+    				float bodyBottom = Math.abs(bottomMarginPts);
+    				float spmBottom = Math.min(footerMarginPts, bodyBottom);
+    				spm.setMarginBottom(spmBottom+"pt");
+    				spm.getRegionBody().setMarginBottom((bodyBottom-spmBottom)+"pt");
+    				/* The region keeps its stated extent, half the page, and its content -
+    				 * which paints nothing visible, but an empty paragraph's preserved space
+    				 * is still text - goes to its foot, where the pre-pass's exact extent put
+    				 * it, rather than to its top, half way up the page. */
+    				spm.getRegionAfter().setDisplayAlign(org.plutext.jaxb.xslfo.DisplayAlignType.AFTER);
+    			}
+    		}
+    	}
+    	return measured;
+    }
+
     /**
      * Inject the calculated heights for each header and footer, and adjust the region body margins to fit them.
      *
@@ -894,54 +1054,14 @@ public class FOPAreaTreeHelper {
     			SimplePageMaster spm =((SimplePageMaster)o);
     			
     			String simplePageMasterName = spm.getMasterName();  // eg s1-first page
-    			
-    			// We'll need the corresponding ConversionSectionWrapper
-    			int index = -1 + Integer.parseInt(
-    					simplePageMasterName.substring(1, simplePageMasterName.indexOf("-")));
-    			/* A merged part's master, "s<n>-p<m>-<kind>" (LayoutMasterSetBuilder.addPartMasters,
-    			 * CR-031 phases 2 and 3), takes the extents the pre-pass measured for it, where it did
-    			 * (a part with headers and footers of its own, its pages laid out by a renderer which
-    			 * chooses masters by content); otherwise - its static content being the page-sequence's,
-    			 * in the same width - those of the page-sequence's master of that kind ("s<n>-<kind>").
-    			 * The part's own vertical margins give the body's edges, and its own headers and
-    			 * footers the empty-part rules below.  @since 17.3.1 */
-    			String measuredName = simplePageMasterName;
-    			Integer partNumber = null;
-    			String partKind = null;
-    			java.util.regex.Matcher part = PART_MASTER.matcher(simplePageMasterName);
-    			if (part.matches()) {
-    				partNumber = Integer.valueOf(part.group(2));
-    				partKind = part.group(3);
-    				if (!headerBpda.containsKey(simplePageMasterName) && !footerBpda.containsKey(simplePageMasterName)) {
-    					measuredName = part.group(1) + "-" + part.group(3);
-    				}
-    			}
-    			PageDimensions page = null;
-    			org.docx4j.model.structure.HeaderFooterPolicy hfPolicy = null;
-    			if (sections.get(index)==null) {
-    				log.error("Couldn't find section " + index + " from " + simplePageMasterName);
-    			} else {
-    				page = sections.get(index).getPageDimensions();
-    				if (partNumber != null) {
-    					page = page.withVerticalMargins(sections.get(index).getPartVerticalMargins().get(partNumber));
-    				}
-    				hfPolicy = sections.get(index).getHeaderFooterPolicy();
-    				if (partNumber != null && sections.get(index).getPartHeaderFooterPolicies().get(partNumber) != null) {
-    					hfPolicy = sections.get(index).getPartHeaderFooterPolicies().get(partNumber);
-    				}
-    			}
-    			/* Where the part is the empty one docx4j invents for w:titlePg or
-    			 * w:evenAndOddHeaders, the document has no header (or footer) there and
-    			 * Word reserves nothing for it - not even the line box our empty
-    			 * paragraph measures.  Measured on a document with no header part and no
-    			 * headerReference at all, w:pgMar/@w:top=432 (21.6pt) and w:header=706
-    			 * (35.3pt): Word's body top is 21.6, ours was 35.3 + a 13.799pt dummy
-    			 * extent = 49.1, so every line and the logo was +26.5 to +27.5pt low.
-    			 * @since 17.1.0 */
-    			String pageKind = partKind != null ? partKind : measuredName.substring(measuredName.indexOf("-") + 1);
-    			boolean headerIsDummy = hfPolicy != null && isDummyHeader(hfPolicy, pageKind);
-    			boolean footerIsDummy = hfPolicy != null && isDummyFooter(hfPolicy, pageKind);
-    			boolean footerIsAbsent = hfPolicy == null || isAbsentFooter(hfPolicy, pageKind);
+    			MasterPolicy mp = new MasterPolicy(simplePageMasterName, sections, headerBpda, footerBpda);
+    			String measuredName = mp.measuredName;
+    			Integer partNumber = mp.partNumber;
+    			int index = mp.index;
+    			PageDimensions page = mp.page;
+    			boolean headerIsDummy = mp.headerIsDummy;
+    			boolean footerIsDummy = mp.footerIsDummy;
+    			boolean footerIsAbsent = mp.footerIsAbsent;
 
     			// Region before
     			if (spm.getRegionBefore()!=null) {

@@ -191,6 +191,14 @@ PDF via XSL FO:
 - A paragraph holding only a page break at the end of a document no longer gives it an empty
   last page (compatibility mode 12 and later), as Word for Microsoft 365 lays it out.
 
+- A floating picture which is the only content of its header or footer paragraph is drawn where
+  it was but takes no space, so the header's text after it is no longer pushed down below it.
+
+- On a docx4j FO renderer that measures header and footer heights itself (capability
+  measured-region-extents, fork CR-018), docx4j asks it to and skips its own pre-pass over the
+  headers and footers, about 7% faster
+  (docx4j.convert.out.fo.measuredRegionExtents=false keeps the pre-pass).
+
 HTML output:
 
 - A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's

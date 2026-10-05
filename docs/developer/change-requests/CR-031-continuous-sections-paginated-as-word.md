@@ -1,15 +1,16 @@
 # CR-031: continuous sections paginated as Word paginates them - a page's vertical margins from the section that owns it, and no page for an empty block at a sequence's end
 
-Status: IN PROGRESS - phases 0 to 3 DONE on docx4j's side; remaining: export-fo's renderer version
-bump once the fork releases 2.11-docx4j.5 (CR-017, CR-017.2). Proposed 2026-10-05 (Jason, after
+Status: IN PROGRESS - phases 0 to 3 and 5 DONE on docx4j's side; remaining: export-fo's renderer
+version bump once the fork releases 2.11-docx4j.5 (CR-017, CR-017.2, CR-018). Proposed 2026-10-05 (Jason, after
 batch 52 part 2: "fix the older defect and turn them on?" - "yes please"). Phase 0 DONE (P1-P7 read,
 §2 D3). Phase 1 DONE (D2 + `restartParityBlankPage` on; gate b111). Reviewed by another session
 (six findings folded in). **Decision 1 (Jason): 4.2b**, the fork extension. Phase 2 DONE (305264ed3,
 1ee6dfa8f, 1e4af6c3d; on fop/CR-017: b114 control, b115/b118). Phase 3 DONE: each part's own headers,
 footers and first page (d1d993164; b119, b120) and the restart (on fop/CR-017.2: b122 control,
-b123). Former phase 4 moved to the page-break-line triage (§9); phase 5 (the extent hook) not
-started. Follow-up outside this CR: 13347's empty page (a break-only paragraph before a heading
-whose style breaks the page: Word one break, docx4j two), §6 phase 3.
+b123). Former phase 4 moved to the page-break-line triage (§9). Phase 5 DONE (the extent hook, on
+fop/CR-018: control b132, gate b137 against b136, nothing moving; render time -7.6%). Follow-up outside this CR: 13347's empty page
+(a break-only paragraph before a numbered heading whose style breaks the page: Word one break,
+docx4j two), §6 phase 3 - fixed in 706d1eb88.
 
 ## 0. Why now
 
@@ -578,7 +579,9 @@ distances and texts together with it, mode 14, a section starting at a page top,
    restart is now right (Word's TOC: inleiding 3; b123 3, b122 2) but docx4j gives it an empty page
    4 Word does not (a break-only paragraph before a heading whose style, Kop1EOG, has
    w:pageBreakBefore: Word one break, docx4j two), which the missing restart had cancelled for every
-   later TOC entry. That empty page is outside this CR, a pagination item to triage.
+   later TOC entry. That empty page is outside this CR, a pagination item to triage. Fixed in
+   706d1eb88: in mode 12 and later a numbered paragraph's list-block takes the page break as a
+   block does (mode 11 keeps the paragraph mark's line, 11657).
    On the way, b121 (the restart tags on r11, without CR-017.2) found a fork defect: a marker on a
    part starting part-way down a sequence's first page after a span change measured that page as a
    fresh one (79, 8940 lost lines); fixed in the fork, 9711c6bc9, before r12.
@@ -589,7 +592,46 @@ distances and texts together with it, mode 14, a section starting at a page top,
    fork for every document. Independent of phases 2 and 3, with its own gate - the corpora and
    probes on the fork, hook against pre-pass, every master's extents equal except where the
    pre-pass's doctored copy differs from the real header - since it touches every PDF conversion
-   (review finding 5).
+   (review finding 5). **Fork CR written: fop/CR-018** (2026-10-05, da2b6781f, revised after a review
+   31eb87883, proposed, four to five days; registry `docx4j/CR-031.5` depends on it; its measuring
+   layout suppresses marker retrieval and builds a real page, so PAGE/NUMPAGES in headers work): one attribute, `fox:extent="measured"` on
+   fo:region-before / fo:region-after - the region is its static content's height at its width,
+   and the region-body's margin on that side is max(stated, that height); capability
+   `measured-region-extents`. docx4j asks for it where a region reserves (not for an invented
+   header, an absent footer or a negative top margin), skips the pre-pass with the capability, and
+   gives a header or footer block whose only content is a STYLEREF `fo:retrieve-marker` a
+   zero-length `fo:leader` strut, since the measuring layout retrieves no markers (8695's three
+   headers, 12502's header 2, likely 278's).
+   **Done 2026-10-06** on fop/CR-018 (installed 06:02, renderer copy r13):
+   - Built as described: `FopCapabilities.MEASURED_REGION_EXTENTS`;
+     `LayoutMasterSetBuilder.measuredRegionExtents()` (property
+     `docx4j.convert.out.fo.measuredRegionExtents`, auto/true/false) and `markMeasuredRegions`
+     (the attribute goes on the marshalled tree, the XSL-FO model having no room for it, and on
+     mirrored masters too); `FOPAreaTreeHelper.askRendererToMeasure` (the page master's margin at
+     the distance, the body's at max(0, margin - distance); a region reserving nothing not asked;
+     a header or footer painting over a negative margin returns the document to the pre-pass);
+     `StyleRefMarkers.strutRetrieveOnlyLines`. `MeasuredRegionExtentsTest`.
+   - Control (a), b132 (docx4j unchanged) on r13 against b129 on r12: 0 movers.
+   - The first build (cand50, b133) moved six documents. Two causes, both docx4j's, neither the
+     fork's: (1) a header paragraph whose only content is a floating picture (12502, 17, 1576,
+     5320): docx4j painted a wide or top-and-bottom picture there as an in-flow block as tall as
+     the picture, which the pre-pass never measured (its copy drops such drawings, Word's rule) and
+     the renderer, measuring the real header, did - 857pt for 12502's full-page picture, a first
+     page with a body of no height. Word lays such a picture out of the flow altogether (17: its
+     header text beside the 54pt logo at y=77.5, docx4j's at 131.9), so docx4j now does too -
+     absolutely positioned in a zero-height container, drawn where it was
+     (`WordLayoutFixups.anchorImage`) - and the renderer measures what the pre-pass measured, with
+     no fallback (a per-document fallback to the pre-pass was built first and dropped); the fork's
+     proposed measurement-skip attribute is not needed. (2) A region not asked kept a half-page
+     placeholder extent, which put an empty footer paragraph's space half way up the page (6603,
+     3160, 10452: a line each in the scorer's pairing); its content now goes to its foot.
+   - Gate (b), cand52: b137 (the pre-pass forced) against b136 (measured): 0 movers. Area-tree
+     extents, pre-pass against measured: 2 of 1,902 masters differ by more than 0.5pt, both in
+     11868, where the renderer is right (its footer within 0.5pt of Word's, the pre-pass's copy
+     11pt high). Render time 270s to 249s over the four corpora and the probes (-7.6%). Against
+     the committed code on the same renderer (b136 against b132): 17 to line parity 1.0000 and
+     12363 to Word's 15 pages of 16 (+37 lines), from the header-picture layout, which also
+     applies on the pre-pass path.
 
 ## 7. Decisions for Jason
 

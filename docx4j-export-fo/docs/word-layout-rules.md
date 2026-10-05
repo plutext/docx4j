@@ -198,6 +198,7 @@ key in `docx4j.properties` still wins, and a deployment without either file gets
 | `docx4j.convert.out.fo.wordLayout.tableTakesPageBreak` | `false` | `true`: a break-only paragraph followed by a table gives its break to the table, which starts at the top of the page as Word's does, rather than keeping the paragraph's line there ([§3.3](#s33table)). Off by default until continuous sections' margins and the page-break line are Word's. |
 | `docx4j.convert.out.fo.wordLayout.restartParityBlankPage` | `true` | In a document with different odd and even headers, a nextPage section restarting its folio at the parity of the page before it gets a blank page between, as Word's does (an oddPage or evenPage one always does) ([§7](#s7parity)). `false` leaves it out. On since 17.3.1 (CR-031 phase 1). |
 | `docx4j.convert.out.fo.wordLayout.pageMasterByContent` | `auto` | A merged run of continuous sections whose top or bottom margins, or header or footer distances, differ gets a page master per part, and each page takes the masters of the section owning its first line, as Word gives it ([§7](#s7pagemasters)). `auto` does so where the FO renderer chooses page masters by content (the docx4j FO renderer's capability `page-master-by-content`, fork CR-017); `false` never; `true` writes them whatever the renderer, which ignores what it does not know. |
+| `docx4j.convert.out.fo.measuredRegionExtents` | `auto` | Header and footer extents are measured by the FO renderer from each master's static content (`fox:extent="measured"`), and the extent pre-pass is skipped ([§7](#s7measured)). `auto` does so where the renderer has the capability `measured-region-extents` (fork CR-018); `false` always runs the pre-pass; `true` asks whatever the renderer, which on one that does not measure leaves the body under the header. |
 | `docx4j.convert.out.fo.fieldErrors` | `en` | What a REF or PAGEREF field whose bookmark is missing prints: Word's English error text (`en`), or `cached`, the field's cached result, as 17.1.0 to 17.3.0 did ([§4.4](#s44missingbm)). |
 | `docx4j.jaxb.mc.preferChoice` | empty | The `mc:Choice/@Requires` prefixes we claim to be able to draw; the first `mc:Choice` naming only those wins over the `mc:Fallback`, as it does in Word. Empty (the default, and what measured better) always takes the fallback, as docx4j always has (§1.3). Also HTML. |
 | `docx4j.fonts.runFontSelector.trimUnpreservedWhitespace` | `true` | The leading and trailing white space of a `w:t` with no `xml:space="preserve"` is dropped, as Word drops it (§1.3). Also HTML. |
@@ -4327,7 +4328,22 @@ where the header itself reaches further, i.e. `max(top margin, header distance +
 height)`. Using the header distance alone pushed the body down by `w:pgMar/@w:header` minus
 `w:pgMar/@w:top` wherever the distance was larger and the header empty (13.9pt on every
 line of one document). Header and footer extents come from an area-tree pre-pass
-(`FOPAreaTreeHelper`), which is how their real heights are known. Measured:
+(`FOPAreaTreeHelper`), which is how their real heights are known - or, <a id="s7measured"></a>on
+a docx4j FO renderer which measures them itself (capability `measured-region-extents`, fork
+CR-018; CR-031 phase 5, 17.3.1), from that renderer: docx4j writes `fox:extent="measured"` on each
+region that reserves space, the page master's margin at the header (footer) distance and the
+body's at what the top (bottom) margin adds to it, and the renderer makes the body's margin the
+larger of that and the region's height, which is Word's rule; the pre-pass is skipped. A region
+that reserves nothing (an invented part, an empty header part, no footer part, the clamped empty
+footer of a merged run's single master) is not asked and keeps its stated values, a footer's
+content at its foot. A header or footer painting over a negative margin keeps the pre-pass for
+the document, since only the pre-pass gives that region a height it does not reserve. A header
+line holding only a STYLEREF gets a zero-length leader as a strut (`StyleRefMarkers`), since the
+renderer measures with marker retrieval off. Gated on the four corpora and the probes (b137
+against b136, the same build with the pre-pass forced): nothing moves; 2 of 1,902 masters'
+extents differ by more than 0.5pt, both in 11868, whose footer the renderer puts within 0.5pt of
+Word's where the pre-pass's copy had it 11pt high; render time -7.6%.
+Property `docx4j.convert.out.fo.measuredRegionExtents`. Measured:
 `page-first-even-odd-heights` - a three-line first-page header, a one-line even header, a
 five-line odd header containing a picture, one-line odd and three-line even footers, six
 pages - matches Word on 7 of 7 pages and 318 of 318 lines.
@@ -4462,6 +4478,17 @@ footer *itself*, not one in a table it holds: a cell's height is the row's, and 
 everywhere shortened letterhead tables Word does size around (measured: -0.043 and a page
 on one document, -0.022 on another). `docx4j.convert.out.fo.headerExtent.ignoreFloatingObjects=false`
 restores 17.0.5's behaviour.
+**Since 17.3.1 the real render lays such a picture out as Word does, too** (CR-031 phase 5): in
+a header or footer paragraph of its own whose only content is floating pictures (the paragraphs
+the pre-pass empties), a picture that would have reserved its height - a top-and-bottom wrap, or
+a square, tight or through wrap wider than 60% of the measure - is absolutely positioned in a
+zero-height container at its offsets, as a picture that does not wrap is
+(`WordLayoutFixups.anchorImage`), so it is drawn where it was and the text after it is laid out
+as though it were not there. Measured on corpus document 17, a header of a 54pt
+`wrapTopAndBottom` logo and then a paragraph of text: Word's text is at y=77.5, beside the logo,
+where docx4j painted it at 131.9 below it (17 to line parity 1.0000; 12363 to Word's 15 pages of
+16, +37 lines). It is what lets a renderer measuring the real header (below) agree with the
+pre-pass, which never saw the picture.
 
 <a id="s7hfspacebefore"></a>**The first paragraph of a header or footer keeps its
 space-before.** `space-before.conditionality` defaults to `discard` at the start of a

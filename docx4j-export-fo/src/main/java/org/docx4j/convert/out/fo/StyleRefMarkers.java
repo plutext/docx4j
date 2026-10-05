@@ -180,6 +180,7 @@ public final class StyleRefMarkers {
 			if (name.startsWith(CLASS_PREFIX)) wanted.add(name);
 		}
 		if (wanted.isEmpty()) return;
+		if (LayoutMasterSetBuilder.measuredRegionExtents()) strutRetrieveOnlyLines(doc);
 		for (Element block : elements(doc, "block")) {
 			if (!block.hasAttribute(WordLayoutFixups.HINT_PSTYLE)) continue;
 			String styleId = block.getAttribute(WordLayoutFixups.HINT_PSTYLE);
@@ -191,6 +192,60 @@ public final class StyleRefMarkers {
 			if (wantNumber) insertMarker(doc, block, number, labelText(block));
 			if (wantText) insertMarker(doc, block, text, markerText(block));
 		}
+	}
+
+	/**
+	 * Give a header or footer paragraph whose only content is a STYLEREF's retrieve-marker a
+	 * zero-length {@code fo:leader} beside it, as a strut: a line box of the paragraph's own
+	 * font and line height, with no width, so its alignment is unchanged.  Where the renderer
+	 * measures header and footer extents itself (fork CR-018,
+	 * {@link LayoutMasterSetBuilder#measuredRegionExtents}) it measures with marker retrieval
+	 * off, so without the strut such a line measures as no line at all, where the extent
+	 * pre-pass painted the field's stored result there (see {@link #paintStoredResults}).  On
+	 * a page before the first paragraph of the style the line keeps its place as well, as
+	 * Word's empty field result does.  A STYLEREF whose text would wrap to a second line still
+	 * measures one.
+	 *
+	 * @since 17.3.1
+	 */
+	static void strutRetrieveOnlyLines(Document doc) {
+		for (Element rm : elements(doc, "retrieve-marker")) {
+			if (!rm.getAttribute("retrieve-class-name").startsWith(CLASS_PREFIX)) continue;
+			Element block = null;
+			boolean inStaticContent = false;
+			for (Node n = rm.getParentNode(); n instanceof Element; n = n.getParentNode()) {
+				Element e = (Element) n;
+				if (!FO_NS.equals(e.getNamespaceURI())) continue;
+				if (block == null && "block".equals(e.getLocalName())) block = e;
+				if ("static-content".equals(e.getLocalName())) {
+					inStaticContent = true;
+					break;
+				}
+			}
+			if (block == null || !inStaticContent || paintsBesides(block, rm)) continue;
+			Element leader = doc.createElementNS(FO_NS, "fo:leader");
+			leader.setAttribute("leader-length", "0pt");
+			rm.getParentNode().insertBefore(leader, rm.getNextSibling());
+		}
+	}
+
+	/** Whether anything under the node other than a retrieve-marker gives a line: text,
+	 *  a nested block, a page number, a picture, a leader. */
+	private static boolean paintsBesides(Node n, Element rm) {
+		for (Node c = n.getFirstChild(); c != null; c = c.getNextSibling()) {
+			if (c == rm) continue;
+			if (c.getNodeType() == Node.TEXT_NODE || c.getNodeType() == Node.CDATA_SECTION_NODE) {
+				if (c.getNodeValue().trim().length() > 0) return true;
+			} else if (c instanceof Element) {
+				String name = c.getLocalName();
+				if ("inline".equals(name) || "wrapper".equals(name) || "basic-link".equals(name)) {
+					if (paintsBesides(c, rm)) return true;
+				} else if (!"marker".equals(name) && !"retrieve-marker".equals(name)) {
+					return true; // (another retrieve-marker retrieves nothing while measured either)
+				}
+			}
+		}
+		return false;
 	}
 
 	private static void insertMarker(Document doc, Element block, String className, String text) {

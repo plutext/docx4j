@@ -91,15 +91,17 @@ public class LayoutMasterSetBuilder {
 		
 		// Set suitable extents, for which we need area tree 
 		FOSettings foSettings = (FOSettings)context.getConversionSettings();
+		Set<String> measured = null;
 		if ( !foSettings.lsLayoutMasterSetCalculationInProgress()) // Avoid infinite loop
 			// Can't just do it where foSettings.getApacheFopMime() is not MimeConstants.MIME_FOP_AREA_TREE,
 			// since TOC functionality uses that.
 		{
-			fixExtents( lms, context, true);
+			measured = fixExtents( lms, context, true);
 			addMirroredEvenMasters( lms, context );
 		}
 		
 		org.w3c.dom.Document document = XmlUtils.marshaltoW3CDomDocument(lms, Context.getXslFoContext() );
+		markMeasuredRegions(document, measured);
 		DocumentFragment docfrag = document.createDocumentFragment();
 		docfrag.appendChild(document.getDocumentElement());
 		
@@ -107,12 +109,32 @@ public class LayoutMasterSetBuilder {
 		return docfrag;		
 	}
 	
-	private static void fixExtents(LayoutMasterSet lms, AbstractWmlConversionContext context, boolean useXSLT) {
+	/**
+	 * Size the header and footer regions and the body's margins around them.  Where the FO
+	 * renderer measures header and footer extents itself ({@link #measuredRegionExtents}),
+	 * the regions which reserve space are asked to be measured, and the names of the masters
+	 * and sides asked are returned, for {@link #markMeasuredRegions}; otherwise the extent
+	 * pre-pass lays out a copy of the document's headers and footers and the extents it
+	 * measures are written in, and null is returned.
+	 */
+	private static Set<String> fixExtents(LayoutMasterSet lms, AbstractWmlConversionContext context, boolean useXSLT) {
 		
 		WordprocessingMLPackage wordMLPackage = context.getWmlPackage();
 
 		StartEvent startEvent = new StartEvent( wordMLPackage, WellKnownProcessSteps.FO_EXTENTS );
 		startEvent.publish();
+		
+		if (measuredRegionExtents()) {
+			Set<String> measured = FOPAreaTreeHelper.askRendererToMeasure(lms, context.getSections());
+			if (measured != null) {
+		        if(log.isDebugEnabled()) {
+		            log.debug("LMS for measured extents " + measured + ": " + XmlUtils.marshaltoString(lms, Context.getXslFoContext()));
+		        }
+				new EventFinished(startEvent).publish();
+				return measured;
+			}
+			// a header or footer painting over a negative margin: its extent is the pre-pass's
+		}
 		
 //		log.debug(wordMLPackage.getMainDocumentPart().getXML());
 
@@ -181,7 +203,57 @@ public class LayoutMasterSetBuilder {
         }
 		
 		new EventFinished(startEvent).publish();
-		
+		return null;
+	}
+	
+	/**
+	 * Whether header and footer extents are measured by the FO renderer, from each master's
+	 * static content as it lays it out (fork CR-018, {@code fox:extent="measured"}), rather
+	 * than by the extent pre-pass, which lays out a copy of the document's headers and footers
+	 * with a filler body first (CR-031 phase 5): where the renderer has
+	 * {@link FopCapabilities.Capability#MEASURED_REGION_EXTENTS}, unless
+	 * {@code docx4j.convert.out.fo.measuredRegionExtents} is {@code false}.  {@code true}
+	 * asks whatever the renderer, for tests: a renderer which does not measure then leaves
+	 * the body under the header.
+	 *
+	 * @since 17.3.1
+	 */
+	public static boolean measuredRegionExtents() {
+		String setting = org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.measuredRegionExtents", "auto");
+		if ("false".equalsIgnoreCase(setting)) return false;
+		if ("true".equalsIgnoreCase(setting)) return true;
+		return FopCapabilities.has(FopCapabilities.Capability.MEASURED_REGION_EXTENTS);
+	}
+
+	/** The renderer's attribute asking for a region's extent to be measured (fork CR-018). */
+	private static final String FOX_NS = "http://xmlgraphics.apache.org/fop/extensions";
+
+	/**
+	 * Put {@code fox:extent="measured"} on each region {@link #fixExtents} asked the renderer
+	 * to measure ("master/before", "master/after"), and on the mirrored copy of its master
+	 * ({@link #addMirroredEvenMasters}), which has the same static content.  The XSL-FO
+	 * object model has no room for a foreign attribute, so it goes on the marshalled tree.
+	 *
+	 * @since 17.3.1
+	 */
+	static void markMeasuredRegions(org.w3c.dom.Document document, Set<String> measured) {
+		if (measured == null || measured.isEmpty()) return;
+		org.w3c.dom.NodeList spms = document.getElementsByTagNameNS(
+				"http://www.w3.org/1999/XSL/Format", "simple-page-master");
+		for (int i = 0; i < spms.getLength(); i++) {
+			org.w3c.dom.Element spm = (org.w3c.dom.Element) spms.item(i);
+			String name = spm.getAttribute("master-name");
+			if (name.endsWith("-mirrored")) name = name.substring(0, name.length() - "-mirrored".length());
+			for (org.w3c.dom.Node n = spm.getFirstChild(); n != null; n = n.getNextSibling()) {
+				if (!(n instanceof org.w3c.dom.Element)) continue;
+				String side = "region-before".equals(n.getLocalName()) ? "before"
+						: "region-after".equals(n.getLocalName()) ? "after" : null;
+				if (side != null && measured.contains(name + "/" + side)) {
+					((org.w3c.dom.Element) n).setAttributeNS(FOX_NS, "fox:extent", "measured");
+				}
+			}
+		}
 	}
 	
 	/**
@@ -212,15 +284,17 @@ public class LayoutMasterSetBuilder {
 		
 		// Set suitable extents, for which we need area tree 
 		FOSettings foSettings = (FOSettings)context.getConversionSettings();
+		Set<String> measured = null;
 		if ( !foSettings.lsLayoutMasterSetCalculationInProgress()) // Avoid infinite loop
 			// Can't just do it where foSettings.getApacheFopMime() is not MimeConstants.MIME_FOP_AREA_TREE,
 			// since TOC functionality uses that.
 		{
-			fixExtents( lms, context, false);
+			measured = fixExtents( lms, context, false);
 			addMirroredEvenMasters( lms, context );
 		}
 		
 		org.w3c.dom.Document document = XmlUtils.marshaltoW3CDomDocument(lms, Context.getXslFoContext() );
+		markMeasuredRegions(document, measured);
 		XmlUtils.treeCopy(document.getDocumentElement(), foRoot);
 	}
 
@@ -489,6 +563,7 @@ public class LayoutMasterSetBuilder {
 			RegionAfter rAfter = getFactory().createRegionAfter();
 			rAfter.setRegionName(src.getRegionAfter().getRegionName());
 			rAfter.setExtent(src.getRegionAfter().getExtent());
+			rAfter.setDisplayAlign(src.getRegionAfter().getDisplayAlign());
 			mirror.setRegionAfter(rAfter);
 		}
 		return mirror;

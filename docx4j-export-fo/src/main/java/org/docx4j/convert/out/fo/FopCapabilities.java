@@ -129,7 +129,13 @@ public final class FopCapabilities {
 		 *  the page it starts on prints its owner's number, and with odd and even headers the count
 		 *  moves to the next page where the start number's parity is not that page's (fork
 		 *  CR-017.2; docx4j CR-031 phase 3, probes P3, P6, P7).  @since 17.3.1 */
-		PAGE_NUMBER_RESTART("page-number-restart");
+		PAGE_NUMBER_RESTART("page-number-restart"),
+		/** {@code fox:extent="measured"} on fo:region-before and fo:region-after: the region as tall
+		 *  as its static content laid out at its width, per page-sequence and master, and the
+		 *  region-body's margin on that side the larger of its stated margin and that height (fork
+		 *  CR-018), so the header and footer extent pre-pass is not needed (docx4j CR-031 phase 5).
+		 *  @since 17.3.1 */
+		MEASURED_REGION_EXTENTS("measured-region-extents");
 
 		private final String key;
 

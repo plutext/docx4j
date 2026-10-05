@@ -1508,6 +1508,21 @@ public final class WordLayoutFixups {
 		 * column 1 put ours at 323.0.  An absolutely positioned container is measured
 		 * from the same origin, so it lands where Word puts it.  @since 17.1.0 */
 		if (oneColumn > 0 && x >= oneColumn && !"none".equals(kind)) kind = "none";
+		/* In a header or footer, a paragraph whose only content is floating drawings takes no
+		 * space for them: Word sizes the region on its in-flow paragraphs and lays out the text
+		 * after such a picture as though it were not there.  Measured on corpus document 17, a
+		 * header of a 54pt wrapTopAndBottom logo and then a paragraph of text: Word's text is at
+		 * y=77.5, beside the logo, and its body at 97.6, where reserving the logo's height put
+		 * the text at 131.9.  So the picture takes the zero-height treatment below, drawn where
+		 * it was, and the region measures what the extent pre-pass measures - a copy without
+		 * such drawings (FOPAreaTreeHelper.dropFloatingDrawingsFromHeadersFooters, the same
+		 * paragraphs) - whether the pre-pass measures it or the renderer does (CR-031 phase 5):
+		 * reserving the height, a renderer measuring the real header took 12502's first page,
+		 * under a full-page picture, to a body of no height at all.  Not in a table the header
+		 * holds (a cell's height is the row's), nor where
+		 * docx4j.convert.out.fo.headerExtent.ignoreFloatingObjects=false asks for floating
+		 * drawings to count.  @since 17.3.1 */
+		if (!"none".equals(kind) && anchorOnlyHeaderFooterParagraph(para)) kind = "none";
 
 		Element wrapper;
 		if ("square".equals(kind)) {
@@ -2647,6 +2662,52 @@ public final class WordLayoutFixups {
 			n = n.getParentNode();
 		}
 		return null;
+	}
+
+	/** Whether the paragraph is one of a header's or footer's own (not in a table it holds) and
+	 *  paints nothing but floating drawings - the paragraphs the extent pre-pass empties
+	 *  (FOPAreaTreeHelper.FloatingDrawingRemover: text, a field or a symbol paints; a tab, a
+	 *  positional tab or a line break does not).  @since 17.3.1 */
+	private static boolean anchorOnlyHeaderFooterParagraph(Element para) {
+		if (!org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.headerExtent.ignoreFloatingObjects", true)) return false;
+		boolean inRegion = false;
+		for (Node n = para.getParentNode(); n instanceof Element; n = n.getParentNode()) {
+			Element e = (Element) n;
+			if (isFo(e, "table-cell") || isFo(e, "flow") || isFo(e, "footnote-body")) return false;
+			if (isFo(e, "static-content")) {
+				String flow = e.getAttribute("flow-name");
+				inRegion = flow.startsWith("xsl-region-before") || flow.startsWith("xsl-region-after");
+				break;
+			}
+		}
+		return inRegion && !paintsBesideAnchors(para);
+	}
+
+	/** Whether anything under the node paints other than an anchored picture (one still carrying
+	 *  its anchor hint, or one already positioned in a container of its own). */
+	private static boolean paintsBesideAnchors(Node n) {
+		for (Node c = n.getFirstChild(); c != null; c = c.getNextSibling()) {
+			if (c.getNodeType() == Node.TEXT_NODE || c.getNodeType() == Node.CDATA_SECTION_NODE) {
+				if (c.getNodeValue() != null && c.getNodeValue().trim().length() > 0) return true;
+				continue;
+			}
+			if (!(c instanceof Element)) continue;
+			Element e = (Element) c;
+			if (isFo(e, "external-graphic") || isFo(e, "instream-foreign-object")) {
+				if (e.getAttribute(HINT_ANCHOR).length() > 0) continue; // floating
+				return true;
+			}
+			if (isFo(e, "block-container") || isFo(e, "float")) continue; // already out of the flow
+			if (isFo(e, "leader")) continue; // a tab or a positional tab
+			if (isFo(e, "inline") || isFo(e, "basic-link") || isFo(e, "wrapper")
+					|| isFo(e, "bidi-override") || isFo(e, "block")) {
+				if (paintsBesideAnchors(e)) return true;
+				continue;
+			}
+			return true; // page-number, citation, character, ...
+		}
+		return false;
 	}
 
 	/** FOP lays out side floats only in the main flow's blocks, and not in a
