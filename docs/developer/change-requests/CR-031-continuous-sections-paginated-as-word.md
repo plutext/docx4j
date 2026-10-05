@@ -11,7 +11,7 @@ review, 8b509a0e8 on `2.11-docx4j.5`; proposed, about five to six days; implemen
 Jason's go there). **Phase 2's docx4j side DONE 2026-10-05** (305264ed3,
 1ee6dfa8f; §6), gated end to end on fop/CR-017's snapshot (b114 control 0 movers; b115/b118); it
 reaches users with the fork release carrying CR-017.
-P6 read (§2 D3); P7 cut, awaiting the Word run.
+P6 and P7 read (§2 D3): the restart rule is settled.
 
 ## 0. Why now
 
@@ -140,19 +140,29 @@ LTR: 367 documents on Word's page count, from 365.
 | | 3 | S2 19 | S2 ODD, folio **1** | | S2 ODD, folio 1 |
 | | 4, 5 | S2 | S2 EVEN, folio 2; S2 ODD, folio 3 | | |
 | P6 mirror twin | 1-5 | as P6 | as P6; body and headers at x=108 on pages 1, 3, 5 and x=36 on 2, 4 | | |
+| P7 start2 (restart at 2) | 2 | S1 30 (S2 starts mid-page) | S1 EVEN, folio 2 | | |
+| | 3, 4, 5 | S2 | S2 ODD folio **3**, EVEN 4, ODD 5 | | |
+| P7 start2 mirror twin | 1-5 | as start2 | as start2; x=108 on pages 1, 3, 5, x=36 on 2, 4 | | |
+| P7 oddstart (S2 from mid page 1, at 1) | 1 | S1 1 | S1 ODD, folio 1 | | |
+| | 2, 3, 4 | S2 | S2 EVEN folio **2**, ODD 3, EVEN 4 | | |
 
 1. **D1's rule holds, and takes the headers and footers with it.** A page takes everything from
    the section that owns its first line: top and bottom margins, header and footer distances, and
    the header and footer text. A section starting mid-page changes nothing on that page, and one
    starting at a page top owns it (P2). Modes 14 and 15 are identical, to the point.
-2. **A continuous restart counts from the page the section starts on - but not in a document with
-   `w:evenAndOddHeaders`** (P6, read 2026-10-05). Without them (P3) the folios are 1, 2, **2**, 3:
-   page 2 is S2's page 1, and shows S1's footer with S1's folio, 2. With them (P6, the same shape
-   otherwise; the re-saves differ only in that setting) the folios are 1, 2, **1**, 2, 3: S2's page
-   1 is page 3, the first page S2 owns. Why the origin moves is not yet known. Two readings fit:
-   (H1) with odd and even headers the count starts at the first page the section owns; (H2) Word
-   puts the origin where the folio's parity matches the physical page's - here page 3, odd, takes
-   the odd start number 1. Probe P7 (§5, proposed) separates them.
+2. **A continuous restart counts from the page the section starts on, which still prints its
+   owner's folio; with `w:evenAndOddHeaders`, from the next page instead wherever the start
+   number's parity is not that page's** (P3, P6, P7; settled 2026-10-05). Without odd and even
+   headers (P3) the folios are 1, 2, **2**, 3: page 2 is S2's page 1, and shows S1's footer with
+   S1's folio, 2. With them, Word keeps every folio's parity the physical page's: P6 (restart at
+   1, S2 starting on page 2, even) gives 1, 2, **1**, 2, 3 - the origin moves to page 3, odd; P7's
+   start2 (restart at 2 on the same page 2) gives 1, 2, **3**, 4, 5 - page 2 is S2's page 2, so the
+   origin stays; P7's oddstart (restart at 1, S2 starting on page 1, odd) gives 1, **2**, 3, 4.
+   That is P6's reading H2; H1 (the count always starts at the first page the section owns) is
+   refuted by both P7 documents. The mid-page start page itself prints its owner's folio in every
+   case (P3's page 2, P7's page 1 and page 2). This is the continuous counterpart of a nextPage
+   restart's blank page, which Word inserts to the same end ([§7](../../../docx4j-export-fo/docs/word-layout-rules.md),
+   restartParityBlankPage): a continuous break cannot make a page, so the count moves instead.
 3. **A continuous section's first page is the page it starts on**, so where it starts mid-page its
    `w:titlePg` first-page header is never printed (P4): that page shows the section before's
    header, and the next page the section's default.
@@ -160,11 +170,11 @@ LTR: 367 documents on Word's page count, from 365.
    whatever the next section's break (continuous, continuous on another page size, nextPage): P5's
    "after" lines all open their page at 80.5, and no page holds only a header. That is D2's rule,
    for the section-break paragraph itself as well as for the split break half.
-5. **After a continuous restart, odd/even headers and mirrored margins follow one parity together**
-   (P6 and its mirror twin: the odd header and the inside margin on the left, x=108, on pages 1, 3
-   and 5; the even ones, x=36, on 2 and 4). But in P6 the printed folio and the physical page have
-   the same parity on every page, so which of the two governs is still open; P7's first document
-   puts an even folio on an odd page under H1.
+5. **After a continuous restart, odd/even headers and mirrored margins follow the folio, which
+   Word keeps at the physical page's parity** (P6, P7 and their mirror twins: the odd header and
+   the inside margin on the left, x=108, on every odd page, the even ones, x=36, on every even
+   page). The question P6 left - folio or physical page - does not arise: item 2's rule never lets
+   them differ.
 
 ## 3. Corpus facts (the four corpora on b110, 2026-10-05; page counts brought to b112)
 
@@ -319,7 +329,9 @@ oscillate.
    the pages since the page it started on, which reproduces P3's 1, 2, 2, 3. **P6 (read 2026-10-05)
    showed that is not the whole rule**: with `w:evenAndOddHeaders` the count starts at the first
    page the part owns (1, 2, 1, 2, 3), and which parity governs the odd/even master is still
-   unseparated (§2, D3 items 2 and 5). P7 (§5) reads both before the restart step is designed.
+   unseparated (§2, D3 items 2 and 5). **P7 settled it (2026-10-05)**: with odd and even headers
+   the origin is the page the part starts on where the start number has that page's parity, else
+   the next page, so folio and physical parity always agree and odd/even masters follow either.
 7. Inert unless the attribute is present ("changes nothing FOP does on its own"), with a capability in
    `Docx4jFop`.
 
@@ -464,7 +476,7 @@ distances and texts together with it, mode 14, a section starting at a page top,
   page takes after the restart, where the folios run 1, 2, 2, 3, 4 - by the printed folio, or by the
   physical page.
 
-- **P7** (cut 2026-10-05, after P6, on the share for the Word run; for the restart step, phase 3), all with
+- **P7** (cut and read 2026-10-05; readings in §2 D3 items 2 and 5), all with
   `w:evenAndOddHeaders` and each section's odd and even headers and footers naming themselves:
   - `continuous-restart-evenodd-start2`: P6 with `w:start="2"`. H1 puts folio 2 (even) on physical
     page 3 (odd); H2 counts from page 2, so page 3 prints 3. Under H1, page 3's header (EVEN or ODD)
