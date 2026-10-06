@@ -353,25 +353,61 @@ public class FopConfigUtil {
 	static boolean rendererKeepsSharedGlyphCharacters() {
 		Boolean kept = sharedGlyphCharactersKept;
 		if (kept == null) {
-			boolean found = false;
+			boolean found = rendererCapabilities().contains(SHARED_GLYPH_TOUNICODE);
+			kept = found;
+			sharedGlyphCharactersKept = kept;
+			log.debug("CJK fonts keep their OpenType layout tables: " + kept + " (shared-glyph-tounicode " + (found ? "declared" : "absent") + ")");
+		}
+		return kept;
+	}
+
+	private static volatile java.util.Set<String> rendererCapabilities;
+
+	/** The capabilities the docx4j FO renderer's marker class declares; empty on Apache FOP or
+	 *  where there is no renderer.  Probed once.  @since 17.3.1 */
+	static java.util.Set<String> rendererCapabilities() {
+		java.util.Set<String> caps = rendererCapabilities;
+		if (caps == null) {
+			caps = new java.util.HashSet<String>();
 			try {
 				Class<?> marker = Class.forName(FORK_MARKER_CLASS, true, FopConfigUtil.class.getClassLoader());
-				Object caps = marker.getMethod("capabilities").invoke(null);
-				if (caps instanceof Iterable) {
-					for (Object o : (Iterable<?>) caps) {
-						if (SHARED_GLYPH_TOUNICODE.equals(String.valueOf(o))) found = true;
-					}
+				Object declared = marker.getMethod("capabilities").invoke(null);
+				if (declared instanceof Iterable) {
+					for (Object o : (Iterable<?>) declared) caps.add(String.valueOf(o));
 				}
 			} catch (ClassNotFoundException e) {
 				// Apache FOP, or no renderer at all
 			} catch (Throwable t) {
 				log.debug("probing the FO renderer's capabilities: " + t);
 			}
-			kept = found;
-			sharedGlyphCharactersKept = kept;
-			log.debug("CJK fonts keep their OpenType layout tables: " + kept + " (shared-glyph-tounicode " + (found ? "declared" : "absent") + ")");
+			rendererCapabilities = caps;
 		}
-		return kept;
+		return caps;
+	}
+
+	/** Tests only: the capabilities to answer with instead of probing; null to probe again. */
+	static void rendererCapabilitiesForTest(java.util.Set<String> caps) {
+		rendererCapabilities = caps==null ? null : new java.util.HashSet<String>(caps);
+	}
+
+	/** The renderer's capability for {@link #boldItalicOnItalicFace}.  @since 17.3.1 */
+	private static final String SIMULATE_STYLE_PER_FACE = "simulate-style-per-face";
+
+	/**
+	 * Whether bold italic in a family with an italic face but no bold one is declared on the
+	 * italic face, for FOP to stroke, rather than on the regular face for FOP to shear and stroke.
+	 * Word draws it so: measured on the fonts-light-bold-italic probe, Calibri Light's bold italic
+	 * is Calibri-LightItalic, unsheared, stroked at 1/35 em at every size (corpus document 2065's
+	 * "Összeállítás:" likewise), where docx4j drew Calibri-Light sheared 0.3333.  Only where the
+	 * renderer shears no italic face and strokes at 1/35 em (fork CR-021, capability
+	 * {@code simulate-style-per-face}, Enterprise CR-001 §6.6 item 46): elsewhere FOP would shear
+	 * the italic face a second time.  Property
+	 * {@code docx4j.fonts.fop.util.FopConfigUtil.boldItalicOnItalicFace}, default true.
+	 * @since 17.3.1
+	 */
+	public static boolean boldItalicOnItalicFace() {
+		return Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.boldItalicOnItalicFace", true)
+				&& rendererCapabilities().contains(SIMULATE_STYLE_PER_FACE);
 	}
 
 	/**
@@ -567,6 +603,9 @@ public class FopConfigUtil {
 
     		// Italics
 			PhysicalFont pfVariation = fontMapper.getItalicForm(fontName, pf);
+			// an italic face and no bold one: bold italic is the italic face, stroked (@since 17.3.1)
+			boolean boldItalicOnItalic = pfVariation!=null && fontMapper.getBoldForm(fontName, pf)==null
+					&& boldItalicOnItalicFace();
     		if (pfVariation==null) {
     			rendererFont.getFontTriplet().add(createFontTriplet(fontName, "italic", "normal"));
     			if (log.isDebugEnabled()) {
@@ -574,9 +613,13 @@ public class FopConfigUtil {
     			}
     		} else {    			
     			org.docx4j.convert.out.fopconf.Fonts.Font variant = createVariant(pf, pfVariation, "italic", "italic", "normal");    			
+    			if (boldItalicOnItalic) {
+    				variant.setSimulateStyle(true);
+    				variant.getFontTriplet().add(createFontTriplet(pf.getName(), "italic", "bold"));
+    			}
         		fontEntries.add(variant);    			
     			if (log.isDebugEnabled()) {
-    				log.debug(fontName + " - added italic form");
+    				log.debug(fontName + " - added italic form" + (boldItalicOnItalic ? ", bold italic on it" : ""));
     			}
     		}
     		
@@ -597,7 +640,9 @@ public class FopConfigUtil {
     		}
     		
     		
-    		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "italic", "bold"));
+    		if (!boldItalicOnItalic) {
+    			rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "italic", "bold"));
+    		}
     		addFamilyTriplet(rendererFont, pf, "normal", "normal");
 
     	} else {
@@ -852,7 +897,10 @@ public class FopConfigUtil {
 		// bold italic
 		boolean simulate = Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.simulate-style", true);
 		if (simulate && (pfBold==null || pfItalic==null)) {
-			return regular; // createFontEntrySimulateStyles declares (name, italic, bold) on the regular file
+			// createFontEntrySimulateStyles declares (name, italic, bold) on the regular file - or, for
+			// a family with an italic face and no bold one, on the italic file (@since 17.3.1)
+			if (pfBold==null && pfItalic!=null && boldItalicOnItalicFace()) return pfItalic;
+			return regular;
 		}
 		PhysicalFont pfBoldItalic = fontMapper==null ? PhysicalFonts.getBoldItalicForm(regular)
 				: fontMapper.getBoldItalicForm(name, regular);

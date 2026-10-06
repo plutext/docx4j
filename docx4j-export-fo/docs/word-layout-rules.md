@@ -2593,6 +2593,17 @@ the list (`Mapper.NO_ITALIC_FACE_IN_WORD`) holds only fonts measured so: Aptos L
 Word's every line (0.8966 to 1.0000); no corpus document uses Aptos Light. Property
 `docx4j.fonts.Mapper.noItalicFaceAliases`.
 
+<a id="s56bolditalic"></a>**Bold italic in a family with an italic face but no bold one is the italic
+face, stroked (17.3.1).** Word draws Calibri Light's bold italic in Calibri-LightItalic, unsheared, with
+its synthetic-bold stroke of 1/35 em - measured on `fonts-light-bold-italic` at 8 to 36pt, and on corpus
+document 2065's "Összeállítás:" - where `FopConfigUtil` declared it on the regular file for FOP to shear
+0.3333 and stroke. Declared on the italic file, FOP sheared it a second time (Enterprise CR-001 §6.6 item
+46), so the change waits on a renderer that shears only an upright face and strokes at 1/35 em (fork
+CR-021, capability `simulate-style-per-face`; upstream FOP-3356): with it, `FopConfigUtil` declares
+(family, italic, bold) on the italic file with `simulate-style`, and `renderedFace`, which the table
+sizer measures in, answers the italic face. Gated on fork r15 (b178): nothing moved; 2065's run is
+Word's face, slant and stroke. Property `docx4j.fonts.fop.util.FopConfigUtil.boldItalicOnItalicFace`.
+
 ### 5.7 Spans, scripts and symbols
 
 FOP kerns and letter-spaces within a span, not across two, so how text is split into
@@ -3089,7 +3100,8 @@ declaration and FOP's own lookup do: the mapper's bold (or italic) face where th
 has one, else the regular file - which is also what FOP draws then, re-stroked when
 `simulate-style` is on and weight-matched when it is off, with the regular advances either
 way; bold italic is that face, or the italic, or (with `simulate-style` on and one of the
-two faces missing) the regular. Measured at 8pt: a two-word heading is 88.0pt in Verdana
+two faces missing) the regular - the italic, where the family has an italic face and no bold one
+and the renderer simulates per face ([§5.6](#s56bolditalic)). Measured at 8pt: a two-word heading is 88.0pt in Verdana
 Bold, which Word used, 89.1 in DejaVu Sans Bold, which FOP draws it in, and 79.6 in
 DejaVu Sans - the width the column was being sized to. In one corpus document a label
 column Word gives 172.9pt was given 163.9, and the 9pt went to the neighbouring column,

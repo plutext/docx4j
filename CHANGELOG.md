@@ -245,6 +245,9 @@ PDF via XSL FO:
   italic face for it); the substitute's real italic had been used.
 - Book Antiqua's bold, italic and bold italic faces are used; docx4j had taken it for a family with
   no bold face and synthesised them.
+- PDF: on the docx4j FO renderer 2.11-docx4j.5, bold italic in a family with an italic face and no
+  bold one (Calibri Light) is its italic face emboldened, as Word draws it; it had been the upright
+  face slanted.
 
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties

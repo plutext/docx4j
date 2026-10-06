@@ -135,7 +135,12 @@ public final class FopCapabilities {
 		 *  region-body's margin on that side the larger of its stated margin and that height (fork
 		 *  CR-018), so the header and footer extent pre-pass is not needed (docx4j CR-031 phase 5).
 		 *  @since 17.3.1 */
-		MEASURED_REGION_EXTENTS("measured-region-extents");
+		MEASURED_REGION_EXTENTS("measured-region-extents"),
+		/** {@code simulate-style} per face (fork CR-021; Enterprise CR-001 §6.6 item 46): an italic
+		 *  triplet is sheared only where the face's italic angle is 0, a bold one stroked only where its
+		 *  weight class is below 700, the stroke 1/35 em - as Word draws synthetic styles.  docx4j-core's
+		 *  {@code FopConfigUtil.boldItalicOnItalicFace} asks the marker for it directly.  @since 17.3.1 */
+		SIMULATE_STYLE_PER_FACE("simulate-style-per-face");
 
 		private final String key;
 
