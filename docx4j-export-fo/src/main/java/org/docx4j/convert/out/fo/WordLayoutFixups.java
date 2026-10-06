@@ -202,6 +202,7 @@ public final class WordLayoutFixups {
 		spacingOutsideBorders(doc); // after syncContainerSpacing (the wrapper carries the spacing) and fixLists (which puts a numbered paragraph's onto its list-block)
 		listItemPageBreaks(doc); // after fixLists, which is what puts the item's space-before on the list-block
 		spanWrapperBreaks(doc); // after listItemPageBreaks: the break may now be on the list-block
+		retainSpaceAtSpanBoundaries(doc); // after fixLists and spacingOutsideBorders, which move space onto a list-block or wrapper
 		blockForEmptyCell(doc);
 		clipExactRows(doc);
 		continuationFromTop(doc);
@@ -3355,6 +3356,63 @@ public final class WordLayoutFixups {
 		for (Element cell : elements(doc, "table-cell")) contextualSpacingAmong(cell, cellEdges);
 	}
 
+	/**
+	 * Space where a one-column stretch meets the columns after it is kept, as Word keeps it.
+	 * A merged continuous section with fewer columns is an {@code fo:block span="all"}
+	 * (ConversionSectionWrapperFactory), and FOP discards space at a span boundary: the
+	 * space-after of the wrapper's last paragraph and the space-before of the first block
+	 * after it.  Measured (ledger3 E21, ledger4): corpus document 2570's 10pt docDefaults
+	 * space-after before a continuous two-column section, Word's gap 29.3pt against ours 19.2;
+	 * 177's 8pt, every column-2 line 29.7pt high; 477's 8.35pt space-before opening the
+	 * columns, Word's gap 34.3pt against 25.7; 9539's 6pt Table title space-after, its three
+	 * columns 6.4pt high.  41 documents of the three first corpora hold 172 such wrappers.
+	 *
+	 * <p>Conditionality "retain" on those two spaces only.  XSL-FO's discard rule exists for
+	 * the head and foot of a page, and retaining space generally (rules §10) would keep it
+	 * there too; at a span boundary that is not the page's edge the space is Word's.  E21
+	 * was tried in two forms in CR-001 b2-batch14 (2026-09-06) and dropped (rules §7: retain
+	 * on that block cost a second document 0.20 of line parity at a page foot; space-after
+	 * on the spanning block is discarded too); this is ledger4's narrower form, both sides
+	 * of the boundary, gated clean on 17.3.1's code (b165).
+	 * Property {@code docx4j.convert.out.fo.wordLayout.retainSpanBoundarySpace}.</p>
+	 *
+	 * @since 17.3.1
+	 */
+	static void retainSpaceAtSpanBoundaries(Document doc) {
+		if (!org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.wordLayout.retainSpanBoundarySpace", true)) return;
+		for (Element span : spanAllBlocks(doc)) {
+			Element next = nextElementSibling(span);
+			if (next == null || "all".equals(next.getAttribute("span"))) continue; // no columns follow
+			/* Not where the wrapper ends in a paragraph whose runs paint nothing - the code of
+			 * a field whose result runs on into the columns: corpus documents 13459 and 8695
+			 * end the one-column part with the paragraph holding an INDEX field's code and
+			 * the section break, to which Word gives neither a line nor its space-after;
+			 * retaining its 10pt put 13459's index a further 10pt below Word's (that docx4j
+			 * draws the paragraph's line at all is a separate defect, 21pt).  A truly empty
+			 * paragraph there does keep its space (177, 79, 9454; gate b164 took it away from
+			 * every blank block and lost them). */
+			Element last = spacedEdge(span, "space-after", false);
+			if (last != null && !(blankBlock(last) && last.getElementsByTagNameNS(FO_NS, "inline").getLength() > 0)) {
+				last.setAttribute("space-after.conditionality", "retain");
+			}
+			Element first = spacedEdge(next, "space-before", true);
+			if (first != null) first.setAttribute("space-before.conditionality", "retain");
+		}
+	}
+
+	/** The block at the first (or last) edge of el, el itself or a block or list-block
+	 *  nested at that edge, which carries a non-zero {@code space}; null where none does
+	 *  before a table or other content.  @since 17.3.1 */
+	private static Element spacedEdge(Element el, String space, boolean first) {
+		Element e = first ? el : lastElementChild(el);
+		while (e != null && (isFo(e, "block") || isFo(e, "list-block"))) {
+			if (hasSpace(e, space)) return e;
+			e = first ? firstElementChild(e) : lastElementChild(e);
+		}
+		return null;
+	}
+
 	/** The blocks spanning all columns of a multi-column page-sequence (a merged
 	 *  continuous section, ConversionSectionWrapperFactory): their children are
 	 *  flow-level paragraphs too. */
@@ -5654,6 +5712,20 @@ public final class WordLayoutFixups {
 			if (n instanceof Element && isFo((Element) n, "block")) out.add((Element) n);
 		}
 		return out;
+	}
+
+	private static Element firstElementChild(Element el) {
+		for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element) return (Element) n;
+		}
+		return null;
+	}
+
+	private static Element lastElementChild(Element el) {
+		for (Node n = el.getLastChild(); n != null; n = n.getPreviousSibling()) {
+			if (n instanceof Element) return (Element) n;
+		}
+		return null;
 	}
 
 	private static Element nextElementSibling(Element el) {

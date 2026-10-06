@@ -4297,8 +4297,8 @@ one-column document; taking the last section's count put everything before it in
 columns.
 
 A spanning block is a reference area of its own, so XSL-FO drops the space at its end and
-the **last paragraph of the narrower part loses its space-after** - and nothing here has
-put it back. Measured on a document whose one-column opening runs into a continuous
+the **last paragraph of the narrower part loses its space-after** (and the first block of the
+columns after it its space-before). Until 17.3.1 nothing here put it back. Measured on a document whose one-column opening runs into a continuous
 two-column section: the 10pt of docDefaults `w:after="200"` on the last block before the
 break goes missing, Word's third line at y=290.5 against docx4j's 280.3, and every line
 after it carries the -10.2. Two ways of restoring it were measured and both were dropped:
@@ -4307,6 +4307,23 @@ reference-area end, the foot of a page included, where Word drops it - it moved 
 document's later pages by 17.7pt and cost it 0.20 of line parity - and the space-after on
 the spanning block itself, which is where it belongs, is discarded by FOP as well
 (measured: no change at all). See [§10](#10-known-fop-defects-and-limitations).
+
+<a id="s7spanspace"></a>**Since 17.3.1 the two spaces at the boundary are retained**
+(`WordLayoutFixups.retainSpaceAtSpanBoundaries`): `space-after.conditionality="retain"` on the
+spanning block's last paragraph and `space-before.conditionality="retain"` on the first block
+after it, where columns follow. That is the first attempt above, narrowed to the boundary on
+both sides (ledger4's E21 proposal, never tried before); on today's code the cost the first
+attempt measured at a page foot did not appear. Not where the narrower part ends in a
+paragraph whose runs paint nothing: corpus documents 13459 and 8695 end it with the paragraph
+holding an INDEX field's code and the section break, to which Word gives neither a line nor
+its space-after (docx4j still draws that paragraph's line, a separate defect, 21pt on 13459).
+An empty paragraph there does keep its space. Gate b165 against b161: 177 0.636 to 1.000 (+44
+lines), 10495 +24, 79 +10, 9454 +7 in two corpora, 9539 and 3236 +1; 6116 -5, whose
+boundaries are now within 1.3pt of Word's where they were 4 to 10pt off, the loss being its
+columns balancing differently; no probe moved. (b163, retaining on every blank last block,
+also cost 13459 -5 and 8695 -1; b164, retaining on none, lost 177, 79 and 9454.) The history
+and every gate are in the Enterprise fidelity register, `causes/span-boundary-space.md`.
+Property `docx4j.convert.out.fo.wordLayout.retainSpanBoundarySpace`.
 
 <a id="s7onecol"></a>**A section declaring a single `w:col` uses that column's width**,
 whether it is narrower *or wider* than the margin box. The narrow half took a 60-page
@@ -5796,7 +5813,8 @@ Worked around here, and worth knowing about:
   the last block inside it, so the space-after Word draws where a one-column stretch runs
   into a continuous multi-column section is lost (measured, 10pt on one document, §7). The
   only lever XSL-FO offers is `space-after.conditionality="retain"`, which keeps the space
-  at the foot of every page too, and costs more than it buys.
+  at the foot of every page too where it is applied generally; since 17.3.1 it is applied to
+  the boundary's two blocks only, which gates clean ([§7](#s7spanspace)).
 - **`advanced="false"` on a font declaration is parsed and then discarded** on the PDF path
   (`LazyFont`), so it cannot be used to switch OpenType features off. Reported upstream.
 - **No per-run, per-script or per-feature GSUB switch**: the features are a private static

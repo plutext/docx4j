@@ -237,6 +237,8 @@ PDF via XSL FO:
   decomposed each letter and put its accent ahead of it in the text layer.
 - PDF: widow control counts a paragraph's lines across its line breaks, as Word's does; a paragraph
   ending in a line break is no longer divided one line on each page.
+- PDF: the space where a one-column stretch meets a continuous multi-column section is kept, as in
+  Word; FOP had discarded it.
 
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties

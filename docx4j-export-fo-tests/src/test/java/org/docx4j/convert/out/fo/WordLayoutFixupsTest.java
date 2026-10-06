@@ -150,6 +150,33 @@ public class WordLayoutFixupsTest {
 		assertEquals("one page boundary", 1, count(out, "break-before=\"page\""));
 	}
 
+	/** Where a one-column stretch (a span="all" wrapper) meets the columns after it, the
+	 *  space-after of its last paragraph and the space-before of the first block after it are
+	 *  kept, as Word keeps them: FOP discards space at a span boundary (E21; corpus document
+	 *  177, every column-2 line 29.7pt high).  @since 17.3.1 */
+	@Test
+	public void spaceAtASpanBoundaryIsRetained() {
+		String in = flow("<fo:block span=\"all\"><fo:block>Title</fo:block>"
+				+ "<fo:block space-after=\"8pt\" white-space-treatment=\"preserve\"> </fo:block></fo:block>"
+				+ "<fo:block space-before=\"4.3pt\">In columns</fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertTrue("the wrapper's last space-after: " + out, out.contains("space-after=\"8pt\" space-after.conditionality=\"retain\"")
+				|| out.contains("space-after.conditionality=\"retain\" space-after=\"8pt\""));
+		assertTrue("the next block's space-before: " + out, out.contains("space-before.conditionality=\"retain\""));
+	}
+
+	/** ...but not where the wrapper ends in a paragraph whose runs paint nothing - an INDEX
+	 *  field's code with the section break, to which Word gives neither a line nor its space
+	 *  (corpus documents 13459, 8695).  @since 17.3.1 */
+	@Test
+	public void aFieldCodeParagraphEndingASpanKeepsNoSpace() {
+		String in = flow("<fo:block span=\"all\"><fo:block>Index</fo:block>"
+				+ "<fo:block space-after=\"10pt\" white-space-treatment=\"preserve\"><fo:inline> </fo:inline></fo:block></fo:block>"
+				+ "<fo:block>#</fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertFalse("no retain on the field-code paragraph: " + out, out.contains("space-after.conditionality=\"retain\""));
+	}
+
 	/** A break-only paragraph ending the document gives Word no further page from mode 12:
 	 *  the mark after the break is the document's last line, on the page before it (the five
 	 *  document-end-break probes in mode 15, and the pagebreak-paragraph probes' case F in
