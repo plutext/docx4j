@@ -32,8 +32,18 @@ import java.util.TreeSet;
  * language's proofing tools is unhyphenated whatever the document asks for. Which
  * languages the machine had is therefore part of the set.</p>
  *
- * <p>Both are read from the Windows registry where this runs on Windows, which is where
- * the golden runner runs. Neither reading is a failure: a value that cannot be read is
+ * <p><b>The default printer.</b> Word formats text against the default printer's device: it
+ * sets each font size in whole device pixels, so the size it writes into the PDF is the nominal
+ * size rounded to 1/dpi inch, and line widths move with it. Measured on corpus document 11875,
+ * cut on 2026-09-09 with a 300-dpi default printer and on 2026-10-06 with a 600-dpi one: its
+ * 10pt text is written 10.08pt (42 pixels at 300 dpi) and 9.96pt (83 at 600), its 14pt 13.92 and
+ * 14.04, and the same 10pt line is 0.33% wider in the first, the order of the knife-edge line
+ * breaks the harness measures. The two runs of one script on the same day, with and without the
+ * review-markup lines, write the same sizes, so the printer, not the script, decided it
+ * (ledger9 §8). The printer and its resolution are therefore part of the set.</p>
+ *
+ * <p>The first two are read from the Windows registry, and the printer from WMI
+ * ({@code Win32_Printer}), where this runs on Windows, which is where the golden runner runs. Neither reading is a failure: a value that cannot be read is
  * {@code unknown}, and the operator can state it with
  * {@code -Dfidelity.connectedExperiences=on|off|unknown} and
  * {@code -Dfidelity.proofingLanguages=<list>}. An explicit property always wins over the
@@ -46,6 +56,9 @@ public final class MachineState {
 
 	/** {@code -Dfidelity.proofingLanguages=en-US,de-DE}: what the operator states. */
 	public static final String PROOFING_PROPERTY = "fidelity.proofingLanguages";
+
+	/** {@code -Dfidelity.printer=<name, resolution>}: what the operator states. */
+	public static final String PRINTER_PROPERTY = "fidelity.printer";
 
 	/** Not read, and not stated. */
 	public static final String UNKNOWN = "unknown";
@@ -113,6 +126,27 @@ public final class MachineState {
 		return sb.toString() + " (" + PROOFING_KEY + ")";
 	}
 
+	/**
+	 * The default printer's name and resolution, as Word sees it when it formats a document,
+	 * or {@code unknown}.  The resolution is the driver's default print quality (the
+	 * printing preferences), which is what Word's device context reports.  @since 17.3.1
+	 */
+	public static String defaultPrinter() {
+		String stated = stated(PRINTER_PROPERTY);
+		if (stated != null) return stated + " (stated by the operator)";
+		if (!isWindows()) return UNKNOWN + " (not Windows; no WMI to read, and -D"
+				+ PRINTER_PROPERTY + " was not set)";
+		for (String line : run(new String[] { "powershell", "-NoProfile", "-NonInteractive", "-Command",
+				"Get-CimInstance Win32_Printer -Filter 'Default=TRUE' | ForEach-Object { "
+				+ "'PRINTER|' + $_.Name + '|' + $_.HorizontalResolution + '|' + $_.VerticalResolution }" })) {
+			if (!line.startsWith("PRINTER|")) continue;
+			String[] f = line.split("\\|", -1);
+			if (f.length < 4 || f[1].trim().isEmpty()) continue;
+			return f[1].trim() + ", " + f[2].trim() + "x" + f[3].trim() + " dpi (Win32_Printer)";
+		}
+		return UNKNOWN + " (Win32_Printer named no default printer)";
+	}
+
 	// ------------------------------------------------------------------ the manifest lines
 
 	/**
@@ -130,9 +164,17 @@ public final class MachineState {
 		return Collections.unmodifiableList(out);
 	}
 
-	/** {@link #manifestLines(String, String)} of this machine. */
+	/** As {@link #manifestLines(String, String)}, with the default printer's line after them.
+	 *  @since 17.3.1 */
+	public static List<String> manifestLines(String connected, String proofing, String printer) {
+		List<String> out = new ArrayList<String>(manifestLines(connected, proofing));
+		out.add("printer=" + blankToUnknown(printer));
+		return Collections.unmodifiableList(out);
+	}
+
+	/** {@link #manifestLines(String, String, String)} of this machine. */
 	public static List<String> manifestLines() {
-		return manifestLines(connectedExperiences(), proofingLanguages());
+		return manifestLines(connectedExperiences(), proofingLanguages(), defaultPrinter());
 	}
 
 	private static String blankToUnknown(String value) {
@@ -190,6 +232,11 @@ public final class MachineState {
 
 	/** {@code reg}'s output, or nothing at all: a record must never cost a run. */
 	private static List<String> reg(String[] command) {
+		return run(command);
+	}
+
+	/** A command's output, or nothing at all: a record must never cost a run. */
+	private static List<String> run(String[] command) {
 		List<String> out = new ArrayList<String>();
 		try {
 			ProcessBuilder pb = new ProcessBuilder(command);

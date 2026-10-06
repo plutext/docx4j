@@ -61,6 +61,26 @@ public class MachineStateTest {
 		assertEquals("proofingLanguages=lcid 1033", lines.get(1));
 	}
 
+	/** The default printer's line follows the other two (17.3.1). */
+	@Test
+	public void thePrinterLineComesThird() {
+		List<String> lines = MachineState.manifestLines("on", "lcid 1033", "Microsoft Print to PDF, 600x600 dpi (Win32_Printer)");
+		assertEquals(3, lines.size());
+		assertEquals("printer=Microsoft Print to PDF, 600x600 dpi (Win32_Printer)", lines.get(2));
+		assertEquals("printer=unknown", MachineState.manifestLines("on", "x", null).get(2));
+	}
+
+	/** An operator who knows the printer can state it. */
+	@Test
+	public void aStatedPrinterWins() {
+		System.setProperty(MachineState.PRINTER_PROPERTY, "FX DocuPrint C2255 PCL 6, 300x300 dpi");
+		try {
+			assertEquals("FX DocuPrint C2255 PCL 6, 300x300 dpi (stated by the operator)", MachineState.defaultPrinter());
+		} finally {
+			System.clearProperty(MachineState.PRINTER_PROPERTY);
+		}
+	}
+
 	@Test
 	public void aBlankReadingIsRecordedAsUnknownRatherThanAsNothing() {
 		List<String> lines = MachineState.manifestLines(null, "  ");
