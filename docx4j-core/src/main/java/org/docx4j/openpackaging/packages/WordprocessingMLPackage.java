@@ -419,6 +419,10 @@ public class WordprocessingMLPackage extends OpcPackage {
 			/* Last, since it re-maps: a document font with no bold face of its own (Calibri
 			 * Light) keeps its mapped file's advances when bold, as Word does.  @since 17.2.0 */
 			fontMapper.addNoBoldFaceAliases(fontsInUse);
+
+			/* And a document font Word has no italic face for (Aptos Light) is sheared for
+			 * italic, as Word does; after the no-bold aliases, which it wraps.  @since 17.3.1 */
+			fontMapper.addNoItalicFaceAliases(fontsInUse);
 		}
     }
 

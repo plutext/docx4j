@@ -105,7 +105,8 @@ public class PhysicalFonts {
 		boolean stripped = true;
 		while (stripped) {
 			stripped = false;
-			for (String suffix : new String[] { RunFontSelector.KERNED_SUFFIX, RunFontSelector.NOLIGA_SUFFIX, PhysicalFont.NOBOLD_SUFFIX }) {
+			for (String suffix : new String[] { RunFontSelector.KERNED_SUFFIX, RunFontSelector.NOLIGA_SUFFIX,
+					PhysicalFont.NOBOLD_SUFFIX, PhysicalFont.NOITALIC_SUFFIX }) {
 				if (key.endsWith(suffix)) {
 					key = key.substring(0, key.length() - suffix.length());
 					stripped = true;
@@ -675,6 +676,10 @@ public class PhysicalFonts {
 
 	public static PhysicalFont getBoldForm( PhysicalFont pf) {
 		if (pf.isNoBoldFace()) return null; // FOP synthesises it at the regular advances (17.2.0)
+		if (pf.isNoItalicFace()) { // the regular face's bold, as getItalicForm does for +nobold (17.3.1)
+			PhysicalFont regular = get(pf.getName());
+			return (regular == null || regular == pf) ? null : getBoldForm(regular);
+		}
 
 		// look up the font in MicrosoftFontsRegistry
 		MicrosoftFonts.Font msFont = MicrosoftFontsRegistry.getMsFonts().get(pf.getName() );
@@ -709,6 +714,7 @@ public class PhysicalFonts {
 	
 	public static PhysicalFont getBoldItalicForm( PhysicalFont pf) {
 		if (pf.isNoBoldFace()) return null; // as getBoldForm (17.2.0)
+		if (pf.isNoItalicFace()) return null; // as getItalicForm (17.3.1)
 		
 		// look up the font in MicrosoftFontsRegistry
 		MicrosoftFonts.Font msFont = MicrosoftFontsRegistry.getMsFonts().get(pf.getName() );
@@ -741,6 +747,7 @@ public class PhysicalFonts {
 	}
 	
 	public static PhysicalFont getItalicForm( PhysicalFont pf) {
+		if (pf.isNoItalicFace()) return null; // FOP shears the regular face, as Word does (17.3.1)
 		/* The +nobold alias (PhysicalFont.noBoldFaceAlias) stands for its family's regular
 		 * face, and has that face's italic: looked up under the alias's own name it found
 		 * none, and FOP drew the family's italic runs upright.  Measured on corpus document

@@ -241,6 +241,8 @@ PDF via XSL FO:
   Word; FOP had discarded it.
 - PDF: a bordered table's top and bottom borders take their whole width outside its rows, as in
   Word; FOP's collapsing model had kept half of each inside, so each table was a border width short.
+- PDF: Aptos Light italic is drawn as the upright face sheared, as Word draws it (Word has no
+  italic face for it); the substitute's real italic had been used.
 
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties

@@ -2580,6 +2580,19 @@ any` and quietly setting text in a default font:
 Over the corpus that removed all 55 warnings about document fonts; what remains are FOP's
 own missing bold base-14 Symbol and ZapfDingbats.
 
+<a id="s56noitalic"></a>**A font Word has no italic face for is sheared, not set in its substitute's
+italic (17.3.1).** Word's Aptos Light has no italic face: it draws the italic by shearing the upright
+face 0.3333 (FOP's own shear). Measured on `fonts-light-bold-italic` and `fonts-aptos-light-italic`
+(Word's italic is Aptos-Light sheared, and its italic paragraphs wrap line for line as its upright
+ones), and against the golden VM's Office cloud fonts, which hold Aptos Light upright only. docx4j
+drew the metric clone's real Akasia Light Italic, 0.3% narrower, and the 16pt italic paragraph wrapped
+differently from line 6. `Mapper.addNoItalicFaceAliases`, the last mapping pass, gives such a font a
+`+noitalic` alias of its mapped file (`PhysicalFont.noItalicFaceAlias`, as `+nobold` does for a font
+with no bold face) for which no italic or bold italic face is found, so FOP shears the regular face;
+the list (`Mapper.NO_ITALIC_FACE_IN_WORD`) holds only fonts measured so: Aptos Light. The probe comes to
+Word's every line (0.8966 to 1.0000); no corpus document uses Aptos Light. Property
+`docx4j.fonts.Mapper.noItalicFaceAliases`.
+
 ### 5.7 Spans, scripts and symbols
 
 FOP kerns and letter-spaces within a span, not across two, so how text is split into

@@ -2634,10 +2634,8 @@ public class RunFontSelector {
 		if (htmlPhysicalOnly()) {
 			if (pf!=null) {
 				String font = pf.getName();
-				if (font.endsWith(PhysicalFont.NOBOLD_SUFFIX)) {
-					// the alias for a document font with no bold face is an XSL FO matter
-					font = font.substring(0, font.length() - PhysicalFont.NOBOLD_SUFFIX.length());
-				}
+				// the aliases for a document font with no bold or italic face are an XSL FO matter
+				font = PhysicalFonts.stripSuffixes(font);
 				return Property.composeCss(CSS_NAME, "'" + font + "'");
 			}
 			// We don't have this font, so don't specify it in our CSS

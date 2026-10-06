@@ -145,6 +145,40 @@ public class PhysicalFont {
 		PhysicalFont alias = new PhysicalFont(name + NOBOLD_SUFFIX, embedFontInfo, fontResolver);
 		alias.panose = panose;
 		alias.noBoldFace = true;
+		alias.noItalicFace = noItalicFace;
+		return alias;
+	}
+
+	/**
+	 * True for an alias standing for a document font Word has no italic face for (Aptos Light):
+	 * FOP is to shear this file for italic, as Word does, rather than take the substitute
+	 * family's real italic.  {@link PhysicalFonts#getItalicForm} and
+	 * {@link PhysicalFonts#getBoldItalicForm} answer null for it.  Measured (probes
+	 * fonts-light-bold-italic and fonts-aptos-light-italic): Word draws Aptos Light italic as
+	 * Aptos-Light sheared 0.3333 - FOP's own shear - and its italic paragraphs wrap line for line
+	 * as its upright ones, where docx4j drew the clone's Akasia Light Italic, 0.3% narrower.
+	 *
+	 * @since 17.3.1
+	 */
+	private boolean noItalicFace = false;
+
+	public boolean isNoItalicFace() {
+		return noItalicFace;
+	}
+
+	/** Suffix of a no-italic alias's name; {@link PhysicalFonts#get} strips it.  @since 17.3.1 */
+	public static final String NOITALIC_SUFFIX = "+noitalic";
+
+	/**
+	 * This font again under {@code name + NOITALIC_SUFFIX}, reporting no italic face (and no
+	 * bold one where this font reports none).  Held by the Mapper, as {@link #noBoldFaceAlias}
+	 * is.  @since 17.3.1
+	 */
+	public PhysicalFont noItalicFaceAlias() {
+		PhysicalFont alias = new PhysicalFont(name + NOITALIC_SUFFIX, embedFontInfo, fontResolver);
+		alias.panose = panose;
+		alias.noBoldFace = noBoldFace;
+		alias.noItalicFace = true;
 		return alias;
 	}
 

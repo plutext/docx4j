@@ -297,7 +297,7 @@ public abstract class Mapper {
 		double factor = 1;
 		if (pf!=null) {
 			bold = pf.isNoBoldFace() ? SYNTHETIC : faceName(getBoldForm(documentFont, pf));
-			italic = faceName(getItalicForm(documentFont, pf));
+			italic = pf.isNoItalicFace() ? SYNTHETIC : faceName(getItalicForm(documentFont, pf));
 			boldItalic = faceName(getBoldItalicForm(documentFont, pf));
 			factor = widthFactorFor(documentFont, pf.getName());
 		}
@@ -1070,6 +1070,40 @@ public abstract class Mapper {
      *
      * @since 17.2.0
      */
+    /**
+     * The document fonts Word has no italic face for, lower-cased: it draws their italic by
+     * shearing the regular face 0.3333, which is FOP's own shear.  Measured, not guessed: Aptos
+     * Light (probes fonts-light-bold-italic and fonts-aptos-light-italic; the golden VM's Office
+     * cloud fonts hold Aptos Light upright only, and Word fetched no italic when the probe asked
+     * for one).  @since 17.3.1
+     */
+    static final Set<String> NO_ITALIC_FACE_IN_WORD = java.util.Collections.unmodifiableSet(
+    		new java.util.HashSet<String>(java.util.Arrays.asList("aptos light")));
+
+    /**
+     * For each document font Word has no italic face for ({@link #NO_ITALIC_FACE_IN_WORD}), an
+     * alias of its mapped physical font reporting none ({@link PhysicalFont#noItalicFaceAlias}),
+     * so that FOP shears the regular face for italic as Word does, rather than take the
+     * substitute family's real italic (Aptos Light is drawn in the metric clone Akasia Light,
+     * whose family has a Light Italic).  Last of the passes, after the no-bold aliases, which
+     * it wraps.  No corpus document uses such a font (0 of 557, 2026-10-07); the probes are its
+     * measure.  Property {@code docx4j.fonts.Mapper.noItalicFaceAliases}, default true.
+     *
+     * @since 17.3.1
+     */
+    public void addNoItalicFaceAliases(Set<String> documentFontNames) {
+    	if (documentFontNames==null) return;
+    	if (!org.docx4j.Docx4jProperties.getProperty("docx4j.fonts.Mapper.noItalicFaceAliases", true)) return;
+    	for (String documentFontName : documentFontNames) {
+    		if (documentFontName==null) continue;
+    		if (!NO_ITALIC_FACE_IN_WORD.contains(documentFontName.trim().toLowerCase(java.util.Locale.ROOT))) continue;
+    		if (isEmbedded(documentFontName)) continue; // the embedded forms say what the document has
+    		PhysicalFont pf = get(documentFontName);
+    		if (pf==null || pf.isNoItalicFace()) continue;
+    		fontMappings.put(documentFontName.toLowerCase(), pf.noItalicFaceAlias());
+    	}
+    }
+
     public void addNoBoldFaceAliases(Set<String> documentFontNames) {
 
     	if (documentFontNames==null) return;
