@@ -203,6 +203,9 @@ PDF via XSL FO:
 - A run of shaded or bordered paragraphs no longer takes its first paragraph's keepNext and
   keepLines for the whole run, which had moved the run to the next page whole.
 
+- A numbered or bulleted paragraph at a line spacing below single no longer has a taller first
+  line than its others.
+
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties
   docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine and tableTakesPageBreak are now on by

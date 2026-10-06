@@ -334,6 +334,7 @@ public final class WordLayoutFixups {
 			block.setAttribute(HINT_LINE_BOX, org.docx4j.fonts.WordLineMetrics.format(height));
 			block.setAttribute(HINT_BASELINE, org.docx4j.fonts.WordLineMetrics.format(height));
 			block.setAttribute(HINT_LINE_RULE, "auto");
+			block.removeAttribute(HINT_AUTO_CUT);
 			// ... and the paragraph's line-spacing multiple does not apply to it: Word
 			// gives the picture's line the picture's height, not 1.5 x it.  Left at the
 			// text line-height, the extra leading is a fraction of the *picture*:
@@ -432,6 +433,10 @@ public final class WordLayoutFixups {
 	public static final String HINT_LINE_BOX = "docx4j-linebox";
 	public static final String HINT_BASELINE = "docx4j-baseline";
 	public static final String HINT_LINE_RULE = "docx4j-linerule";
+	/** what an auto multiple below 1 cuts off the top of the block's lines (their
+	 *  natural ascent less the baseline), for the list label beside them; only where
+	 *  there is a cut.  @since 17.3.1 */
+	public static final String HINT_AUTO_CUT = "docx4j-autocut";
 	/** on a list item's first paragraph block: the label's natural ascent, which
 	 *  joins the runs of the first line (WordLineLayoutManager) */
 	public static final String HINT_LABEL_ASCENT = "docx4j-label-ascent";
@@ -588,7 +593,15 @@ public final class WordLayoutFixups {
 					docFont.length() == 0 ? null : docFont,
 					family.length() == 0 ? null : org.docx4j.fonts.PhysicalFonts.get(family));
 			if (m.fallback) continue;
-			double labelAscent = (m.winAscent + m.externalLeading) * size;
+			/* An auto multiple below 1 cuts the label by as much as the text (applyLineBoxHints'
+			 * cut), so an item's first line is as short as any other: measured on the
+			 * list-label-line-multiplier probe (CR-001 batch 53, corpus document 3493),
+			 * numbered and bulleted items of Liberation Serif 11pt at w:line="180" auto have
+			 * Word's first lines 9.48pt like every line, where docx4j gave the label its whole
+			 * 10.27pt ascent over a 7.11pt baseline, +3.2pt an item.  At 240 the two agreed.
+			 * @since 17.3.1 */
+			double cut = "auto".equals(rule) ? lengthPt(body.getAttribute(HINT_AUTO_CUT)) : 0;
+			double labelAscent = (m.winAscent + m.externalLeading) * size - Math.max(0, cut);
 			double a = Math.max(labelAscent, base);
 			double d = box - base;
 			label.setAttribute(HINT_LINE_BOX, pt(a + d));
@@ -786,6 +799,7 @@ public final class WordLayoutFixups {
 			block.removeAttribute(HINT_BASELINE);
 			block.removeAttribute(HINT_LINE_RULE);
 			block.removeAttribute(HINT_LABEL_ASCENT);
+			block.removeAttribute(HINT_AUTO_CUT);
 			if (ns == null || box.length() == 0) continue;
 			if (!declared) {
 				doc.getDocumentElement().setAttributeNS(XMLNS, "xmlns:docx4j", ns);
@@ -3198,6 +3212,7 @@ public final class WordLayoutFixups {
 			block.removeAttribute(HINT_BASELINE);
 			block.removeAttribute(HINT_LINE_RULE);
 			block.removeAttribute(HINT_LABEL_ASCENT);
+			block.removeAttribute(HINT_AUTO_CUT);
 			block.removeAttribute(HINT_LABEL_SUFFIX);
 			block.removeAttribute(HINT_COLUMN_BREAK);
 			block.removeAttribute(HINT_BREAK_RUN);

@@ -1856,6 +1856,11 @@ public class XsltFOFunctions {
 		foBlockElement.setAttribute(WordLayoutFixups.HINT_LINE_BOX, org.docx4j.fonts.WordLineMetrics.format(box));
 		foBlockElement.setAttribute(WordLayoutFixups.HINT_BASELINE, org.docx4j.fonts.WordLineMetrics.format(baseline));
 		foBlockElement.setAttribute(WordLayoutFixups.HINT_LINE_RULE, ruleName);
+		if ("auto".equals(ruleName) && natural - baseline > 0.001) {
+			foBlockElement.setAttribute(WordLayoutFixups.HINT_AUTO_CUT, org.docx4j.fonts.WordLineMetrics.format(natural - baseline));
+		} else {
+			foBlockElement.removeAttribute(WordLayoutFixups.HINT_AUTO_CUT);
+		}
 	}
 
 	/**

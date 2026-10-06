@@ -808,6 +808,33 @@ public class WordLayoutFixupsTest {
 		assertFalse(out.contains("docx4j-font"));
 	}
 
+	/** Under an auto multiple below 1 the label is cut as the text is (CR-001 batch 53,
+	 *  list-label-line-multiplier, 3493): Liberation Serif 11pt at w:line="180", whose line
+	 *  applyLineBoxHints cuts to a 9.487pt box on a 7.108pt baseline, 3.162pt off the top.
+	 *  The label "1." in the same font no longer stands its whole 10.27pt ascent over that
+	 *  baseline: its line is the text's, and the line manager learns the cut ascent. */
+	@Test
+	public void listLabelIsCutWithItsLineBelowSingleSpacing() throws Exception {
+		String in = flow("<fo:list-block><fo:list-item>"
+				+ "<fo:list-item-label font-size=\"11pt\"><fo:block font-family=\"Liberation Serif\" docx4j-font=\"Times New Roman\" line-height=\"12.65pt\">1.</fo:block></fo:list-item-label>"
+				+ "<fo:list-item-body><fo:block docx4j-linebox=\"9.487pt\" docx4j-baseline=\"7.108pt\" docx4j-linerule=\"auto\""
+				+ " docx4j-autocut=\"3.162\" font-family=\"Liberation Serif\" font-size=\"11pt\" line-height=\"9.487pt\">text</fo:block>"
+				+ "</fo:list-item-body></fo:list-item></fo:list-block>");
+		org.w3c.dom.Document doc = org.docx4j.XmlUtils.getNewDocumentBuilder().parse(
+				new org.xml.sax.InputSource(new java.io.StringReader(in)));
+		WordLayoutFixups.listLabelLines(doc);
+		org.w3c.dom.NodeList blocks = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "block");
+		org.w3c.dom.Element label = (org.w3c.dom.Element) blocks.item(0);
+		org.w3c.dom.Element text = (org.w3c.dom.Element) blocks.item(1);
+		assertEquals("9.49pt", label.getAttribute(WordLayoutFixups.HINT_LINE_BOX));
+		assertEquals("7.11pt", label.getAttribute(WordLayoutFixups.HINT_BASELINE));
+		assertEquals("9.49pt", label.getAttribute("line-height"));
+		assertEquals("7.11pt", text.getAttribute(WordLayoutFixups.HINT_LABEL_ASCENT));
+
+		String out = WordLayoutFixups.apply(in, 15);
+		assertFalse(out.contains("docx4j-autocut"));
+	}
+
 	/**
 	 * Word gives every paragraph a line at the paragraph mark's font and size, whatever
 	 * its runs came to.  A paragraph whose runs produced no inline content - an empty

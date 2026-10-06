@@ -561,6 +561,17 @@ line's box is the paragraph's (`docx4j.convert.out.fo.wordLayout.labelAscentAgai
 on by default; CR-001 batch 40, scored +8 documents on Word's page count over the three
 corpora with nothing worse).
 
+<a id="s28cut"></a>**Under an auto multiple below 1 the label is cut with its line (17.3.1).**
+A multiple below 1 takes its shortfall off the top of the line (`applyLineBoxHints`), and Word
+takes the same off the label: an item's first line is as short as any other. Measured on the
+`list-label-line-multiplier` probe (corpus document 3493): numbered and bulleted items of
+Liberation Serif 11pt at `w:line="180"` auto have Word's first lines 9.48pt like every line,
+where docx4j gave the label its whole 10.27pt ascent over the cut 7.11pt baseline, +3.2pt an
+item; at 240 the two agreed. `applyLineBoxHints` records the cut (`docx4j-autocut`, the natural
+ascent less the baseline) where it computes it, and `listLabelLines` takes it off the label's
+ascent; recomputing it there from metrics could invent a cut at a multiple of 1 where a
+substitute's metrics differ from the document font's. `WordLayoutFixupsTest`.
+
 <a id="s28def"></a>**Which level definition the label comes from.** A numbering instance may
 carry a level definition of its own (`w:num/w:lvlOverride/w:lvl`, ECMA-376 17.9.8), which
 replaces the abstract one; docx4j read the **abstract** level only, so an override's
