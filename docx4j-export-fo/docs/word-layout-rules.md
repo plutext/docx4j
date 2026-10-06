@@ -2549,12 +2549,16 @@ of its own takes `-ccmp` as well. Cambria's `ccmp` for those scripts decomposes 
 precomposed letter - é into e and a combining acute, its lookup 10, with nothing recomposing
 them - and FOP, applying it, put the mark ahead of its letter in the PDF: corpus document 2065's
 running head "Médiafigyelés" copied out as "Ḿediafigyeĺes", on every page. Word's PDF has the
-precomposed glyph, so Word composes nothing there; the ink is the same either way. Over the four
-corpora 7 documents' text layers carried combining marks Word's do not, every one in Cambria
-(8371's Greek 7,799 of them, 6693's French 769, 6195 175, 2065 107, and three with a few);
-all now carry none, and gate b160 moved no line and no page (the harness's own extraction had
-paired the decomposed text already). A span with a combining mark keeps `ccmp`, which places
-the mark. `docx4j.convert.out.fo.simpleScriptCcmp=true` keeps `ccmp` everywhere.
+precomposed glyph, so Word composes nothing there. The ink changes at the accents, to the
+precomposed glyph Word draws in place of the base and a mark placed by GPOS: at 300 dpi 8371's
+page 4 differs by about 12,300 pixels, 6693's page 2 by 181, 2065's page 3 by anti-aliasing
+only. Over the four corpora 7 documents' text layers carried combining marks Word's do not,
+every one in Cambria (8371's Greek 7,799 of them, 6693's French 769, 6195 175, 2065 107, and
+three with a few); all now carry none, and gate b160 moved no line and no page (the harness's
+extraction, PDFBox sorting glyphs by position, had paired the decomposed text already). A span
+with a combining mark keeps `ccmp`, which places the mark - painted ahead of its base, which
+FOP's mark-to-base positioning needs (fop/CR-016 §7, reviewed by the fork session 2026-10-07).
+`docx4j.convert.out.fo.simpleScriptCcmp=true` keeps `ccmp` everywhere.
 `LigatureSuppressionTest`, `GsubFeaturesTest`.
 
 ### 5.6 Declaring fonts to FOP

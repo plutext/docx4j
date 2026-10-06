@@ -466,10 +466,14 @@ public class RunFontSelector {
      * {@code ccmp} for latn, grek and cyrl decomposes every precomposed letter (é into e
      * and a combining acute, its lookup 10, with nothing recomposing them), and FOP puts
      * the mark ahead of its letter in the PDF, so the text layer reads "Ḿediafigyeĺes"
-     * for "Médiafigyelés", where Word's PDF has the precomposed glyph.  The ink is the
-     * same.  Measured over the corpora: 7 documents' text layers carried combining marks
-     * Word's do not, every one of them in Cambria (8371's Greek 7,695 of them, 6693's
-     * French 769).  A span with a combining mark keeps {@code ccmp}, which positions it.
+     * for "Médiafigyelés", where Word's PDF has the precomposed glyph.  The ink changes at
+     * the accents: the precomposed glyph Word draws, in place of the base and a mark placed
+     * by GPOS (at 300 dpi, 8371's page 4 about 12,300 pixels, 6693's page 2 181, 2065's
+     * page 3 anti-aliasing only).  Measured over the corpora: 7 documents' text layers
+     * carried combining marks Word's do not, every one of them in Cambria (8371's Greek
+     * 7,799 of them, 6693's French 769).  A span with a combining mark keeps {@code ccmp},
+     * which positions it; FOP paints such a mark ahead of its base, by design
+     * (fop/CR-016 §7).
      * {@code docx4j.convert.out.fo.simpleScriptCcmp=true} keeps {@code ccmp} everywhere.
      * @since 17.3.1
      */
