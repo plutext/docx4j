@@ -2997,6 +2997,9 @@ public final class Corpus {
 		PROBES.add(tableNormalStyleRprProbe(15));
 		PROBES.add(tableStyleSizeTriggerProbe('a'));   // ledger9 §9: what in TableGrid sets 1912's tables at docDefaults
 		PROBES.add(tableStyleSizeTriggerProbe('b'));
+		PROBES.add(vmlBoxBesideProbe(false));   // ledger9 §9 follow-ups: 10855
+		PROBES.add(vmlBoxBesideProbe(true));
+		PROBES.add(tableOuterBorderStackProbe());   // 9919
 		for (String v : new String[] { "first", "middle", "none" }) PROBES.add(shadedGroupKeepsProbe(v));
 		PROBES.add(listLabelLineMultiplierProbe());
 		PROBES.add(lineBoxBoldRunProbe());
@@ -9516,6 +9519,95 @@ public final class Corpus {
 				}
 				d.add(xmlTbl(x.append("</w:tbl>").toString()));
 				d.add(xmlP("<w:p/>"));
+			}
+			return d.pkg();
+		});
+	}
+
+	/** A square-wrapped VML text box, 20pt tall, at a margin-relative x and width, its text "TAG box". */
+	private static String vmlSquareBoxRun(String tag, double x, double w, int z) {
+		String style = "position:absolute;margin-left:" + x + "pt;margin-top:0;width:" + w + "pt;height:20pt;z-index:" + z
+				+ ";mso-wrap-style:square;mso-position-horizontal:absolute;mso-position-horizontal-relative:margin"
+				+ ";mso-position-vertical:absolute;mso-position-vertical-relative:text";
+		return "<w:r><w:pict xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\""
+				+ " xmlns:w10=\"urn:schemas-microsoft-com:office:word\">"
+				+ "<v:rect id=\"Box" + z + "\" style=\"" + style + "\" filled=\"f\" stroked=\"t\" strokeweight=\".5pt\">"
+				+ "<v:textbox inset=\"0,0,0,0\"><w:txbxContent><w:p><w:pPr><w:spacing w:before=\"0\" w:after=\"0\"/></w:pPr>"
+				+ xrun(tag + " box", SERIF, 20, false) + "</w:p></w:txbxContent></v:textbox>"
+				+ "<w10:wrap type=\"square\"/></v:rect></w:pict></w:r>";
+	}
+
+	/**
+	 * vml-box-beside-&lt;portrait|landscape&gt; (ledger9 §9; 10855).  docx4j reserves the height of a square-wrapped
+	 * text box at least 60% of the column wide (rules §9.2: nothing useful fits beside it), measured on boxes at a
+	 * column edge.  10855's box is 68% of the column but offset: 222.75pt free on its left, where Word sets the
+	 * anchor paragraph's heading beside it, and docx4j put the heading below.  Each case on a page of its own: an
+	 * anchor paragraph (a short heading, then the box), a three-line paragraph, an ordinary last line.  Portrait
+	 * (A4, 72pt margins, a 451pt column): (a) flush left 68%; (b) flush right 68%; (c) centred 50%; (d) 80% leaving
+	 * 20% on the left; (e) 68% leaving 22% left and 10% right.  Landscape: 10855's own box, x 222.75, w 476.25 in a
+	 * 698pt column.  Read: the y of the heading and of the lines after it against the box's top and bottom; whether
+	 * they run beside it or below it.  @since 17.3.1
+	 */
+	private static Probe vmlBoxBesideProbe(boolean landscape) {
+		return new Probe("vml-box-beside-" + (landscape ? "landscape" : "portrait"), "square-wrapped VML text boxes 20pt"
+				+ " tall, at margin-relative offsets and widths, in a paragraph holding a short heading, then a three-line"
+				+ " paragraph; one case a page; mode 15.  Read whether the heading and the lines run beside the box or below"
+				+ " it", () -> {
+			Doc d = Doc.create(15);
+			double[][] cases;
+			String[] tags;
+			if (landscape) {
+				d.pageGeometry(16838, 11906, true, 1440, 1440, 1440, 1440);
+				cases = new double[][] { { 222.75, 476.25 } };
+				tags = new String[] { "L10855" };
+			} else {
+				d.pageGeometry(11906, 16838, false, 1440, 1440, 1440, 1440);
+				cases = new double[][] { { 0, 307 }, { 144, 307 }, { 113, 225 }, { 90, 361 }, { 99, 307 } };
+				tags = new String[] { "Pa", "Pb", "Pc", "Pd", "Pe" };
+			}
+			for (int i = 0; i < cases.length; i++) {
+				String br = i > 0 ? "<w:pageBreakBefore/>" : "";
+				d.add(xmlP("<w:p><w:pPr>" + br + "<w:spacing w:before=\"0\" w:after=\"200\"/></w:pPr>"
+						+ xrun(tags[i] + " heading text", SERIF, 24, false)
+						+ vmlSquareBoxRun(tags[i], cases[i][0], cases[i][1], i + 1) + "</w:p>"));
+				d.add(xmlP("<w:p><w:pPr><w:spacing w:before=\"0\" w:after=\"200\"/></w:pPr>"
+						+ xrun(tags[i] + " lines: " + prose(3, i), SERIF, 24, false) + "</w:p>"));
+				d.add(xmlP(exactP(tags[i] + " last line", 280, "")));
+			}
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * table-outer-border-stack (ledger9 part B §17; 9919).  docx4j's tables are 0.33-0.37pt short of Word's above
+	 * and below where the outer border is sz 6 (0.75pt): FOP's collapsing model puts half of each outer border
+	 * outside the table, where Word appears to stack the whole of it.  Exact 14pt lines, then a two-row one-column
+	 * table of exact 14pt rows bordered single at sz 4, 8, 12 and 24 (0.5, 1, 1.5, 3pt), then exact lines again;
+	 * the same four with no inside border.  Read: the baseline of the line before each table to that of the line
+	 * after it.  @since 17.3.1
+	 */
+	private static Probe tableOuterBorderStackProbe() {
+		return new Probe("table-outer-border-stack", "exact 14pt lines around two-row one-column tables of exact 14pt"
+				+ " rows, single borders at sz 4, 8, 12 and 24, with and without inside borders; mode 15.  Read the"
+				+ " distance from the line before each table to the line after it", () -> {
+			Doc d = Doc.create(15);
+			for (boolean inside : new boolean[] { true, false }) {
+				for (int sz : new int[] { 4, 8, 12, 24 }) {
+					String tag = "S" + sz + (inside ? "i" : "o");
+					String b = "w:val=\"single\" w:sz=\"" + sz + "\" w:space=\"0\" w:color=\"000000\"";
+					String borders = "<w:tblBorders><w:top " + b + "/><w:left " + b + "/><w:bottom " + b + "/><w:right " + b + "/>"
+							+ (inside ? "<w:insideH " + b + "/><w:insideV " + b + "/>" : "") + "</w:tblBorders>";
+					StringBuilder t = new StringBuilder("<w:tbl><w:tblPr><w:tblW w:w=\"4000\" w:type=\"dxa\"/>" + borders
+							+ "<w:tblLayout w:type=\"fixed\"/><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/>"
+							+ "</w:tblCellMar></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid>");
+					for (int r = 1; r <= 2; r++) {
+						t.append("<w:tr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr>")
+								.append(exactP(tag + " row " + r, 280, "")).append("</w:tc></w:tr>");
+					}
+					d.add(xmlP(exactP(tag + " before", 280, "")));
+					d.add(xmlTbl(t.append("</w:tbl>").toString()));
+					d.add(xmlP(exactP(tag + " after", 280, "")));
+				}
 			}
 			return d.pkg();
 		});
