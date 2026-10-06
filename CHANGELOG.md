@@ -194,6 +194,9 @@ PDF via XSL FO:
 - A page-anchored floating table is drawn once: the invisible copy reserving its band in the flow
   was drawn too, since FOP honours visibility="hidden" on fo:block only.
 
+- An anchored picture taller than the page body is drawn once, overflowing the margins as Word
+  draws it, where it had been spread over two pages.
+
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties
   docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine and tableTakesPageBreak are now on by

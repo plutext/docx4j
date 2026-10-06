@@ -1558,6 +1558,19 @@ public final class WordLayoutFixups {
 		 * docx4j.convert.out.fo.headerExtent.ignoreFloatingObjects=false asks for floating
 		 * drawings to count.  @since 17.3.1 */
 		if (!"none".equals(kind) && anchorOnlyHeaderFooterParagraph(para)) kind = "none";
+		/* A picture taller than the page's body reserves nothing either: Word sets its
+		 * paragraph's line at the top of the page and draws the picture overflowing both
+		 * margins, at its offset.  Reserving its height, FOP could not place the
+		 * block-container on any page and drew the picture across two - corpus document 4957,
+		 * a 787.2pt wrapSquare class diagram positioned 69.6pt above its paragraph on a
+		 * 697.5pt body, which Word draws once on page 54 and docx4j put on pages 56 and 57;
+		 * and capping the reservation at the body still pushed the paragraph's own line onto
+		 * a page of its own.  So it takes the zero-height treatment below, positioned where
+		 * Word puts it.  @since 17.3.1 */
+		if (!"none".equals(kind)) {
+			double body = bodyHeightPt(para);
+			if (body > 0 && Math.max(0, off) + h > body) kind = "none";
+		}
 
 		Element wrapper;
 		if ("square".equals(kind)) {
@@ -2995,6 +3008,19 @@ public final class WordLayoutFixups {
 			name = next;
 		}
 		return null;
+	}
+
+	/** The page body's height in points, from the page master the element's page-sequence
+	 *  names (its first alternative): the page height less the master's and the body's top
+	 *  and bottom margins, as stated.  -1 where it cannot be worked out.  @since 17.3.1 */
+	static double bodyHeightPt(Element el) {
+		Element rb = regionBody(el);
+		if (rb == null || !(rb.getParentNode() instanceof Element)) return -1;
+		Element spm = (Element) rb.getParentNode();
+		double h = lengthPt(spm.getAttribute("page-height"))
+				- lengthPt(spm.getAttribute("margin-top")) - lengthPt(spm.getAttribute("margin-bottom"))
+				- lengthPt(rb.getAttribute("margin-top")) - lengthPt(rb.getAttribute("margin-bottom"));
+		return h > 0 ? h : -1;
 	}
 
 	/** A child of fo:layout-master-set of this kind, with this master-name. */

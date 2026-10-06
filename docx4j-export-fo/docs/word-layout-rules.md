@@ -5002,6 +5002,17 @@ the first are not indented too. A hanging indent (a negative `text-indent`) is l
 there is nothing to reserve, and FOP puts the first line at the start-indent, which is where
 Word puts it.
 
+<a id="s91tall"></a>**A picture taller than the page's body is positioned, not reserved** (17.3.1):
+Word sets its paragraph's line at the top of the page and draws the picture overflowing both
+margins, at its offset. Reserving its height as a top-and-bottom (or wide square) wrap does, FOP
+could not place the block-container on any page: corpus document 4957's 787.2pt wrapSquare class
+diagram, 69.6pt above its paragraph on a 697.5pt body, which Word draws once on page 54, came out
+over pages 56 and 57 with FOP's "region-body exceeds its viewport" twice. Capping the reservation at
+the body's height still pushed the paragraph's own line onto a page of its own, so the picture takes
+the zero-height treatment of a picture that does not wrap (`WordLayoutFixups.bodyHeightPt` reads the
+body's height off the page master). Gate b142: 4957 63 to 62 pages (Word's 60), its two body events
+gone, nothing else moving. `TallAnchoredPictureTest`.
+
 <a id="s91cols"></a>**In a multi-column region a wrapped object is always positioned**,
 whatever its width, and so is a text box. FOP paints nothing at all for an `fo:float` in a
 multi-column region - neither the picture nor an indent beside it - and the alternative,
