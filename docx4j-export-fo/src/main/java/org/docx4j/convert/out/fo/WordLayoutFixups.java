@@ -3099,14 +3099,12 @@ public final class WordLayoutFixups {
 	 * it, below).</p>
 	 *
 	 * <p>Not where that row is exact: Word's exact height is the whole row, borders included
-	 * ({@link #clipExactRows}), and FOP's pitch already agrees.  Nor where it is at least a
-	 * height ({@code w:hRule="atLeast"}, the default where a height is given), which is not
-	 * measured: on corpus document 11657, whose 274 tables have sz 12 tops and sz 4 bottoms
-	 * and 1372 rows at least 15pt, padding them made docx4j's pages hold a row less than Word's
-	 * (b166: 222 pages to 223), where before they held a row more, which is what the border
-	 * counted inside the minimum, as in an exact row, would give.  The
-	 * table-outer-border-atleast probe asks Word.  Not a table in the separate model
-	 * ({@code w:tblCellSpacing}), whose borders FOP keeps inside it.
+	 * ({@link #clipExactRows}), and FOP's pitch already agrees.  A row at least a height
+	 * ({@code w:hRule="atLeast"}) is padded as an auto-height one is: measured on the
+	 * table-outer-border-atleast probe, Word adds the whole of the top, inside and bottom
+	 * borders outside the rows whether the minimum governs (rows at least 20pt holding a 14pt
+	 * line: 14 + 20 + 20 + 3w before to after, 63.14 at sz 24) or the line does.  Not a table
+	 * in the separate model ({@code w:tblCellSpacing}), whose borders FOP keeps inside it.
 	 * Property {@code docx4j.convert.out.fo.wordLayout.tableOuterBorders}.</p>
 	 *
 	 * @since 17.3.1
@@ -3131,13 +3129,13 @@ public final class WordLayoutFixups {
 			if (rows.isEmpty()) continue;
 			Element first = rows.get(0), last = rows.get(rows.size() - 1);
 			double top = 0, bottom = 0;
-			if (!statesItsHeight(first)) {
+			if (!exactRow(first)) {
 				top = outerBorderPt(table, "top");
 				for (Element cell : childElements(first)) {
 					if (isFo(cell, "table-cell")) top = Math.max(top, outerBorderPt(cell, "top"));
 				}
 			}
-			if (!statesItsHeight(last)) {
+			if (!exactRow(last)) {
 				bottom = outerBorderPt(table, "bottom");
 				// the last row's cells, and those of earlier rows spanning down into it
 				Element lastPart = (Element) last.getParentNode();
@@ -3171,10 +3169,9 @@ public final class WordLayoutFixups {
 		}
 	}
 
-	/** Whether a row states its height: exact ({@link #HINT_ROW_EXACT}) or at least
-	 *  ({@code w:hRule="atLeast"}, the FO's {@code height}).  @since 17.3.1 */
-	private static boolean statesItsHeight(Element row) {
-		return row.getAttribute(HINT_ROW_EXACT).length() > 0 || lengthPt(row.getAttribute("height")) > 0;
+	/** Whether a row's height is exact ({@link #HINT_ROW_EXACT}), borders included.  @since 17.3.1 */
+	private static boolean exactRow(Element row) {
+		return row.getAttribute(HINT_ROW_EXACT).length() > 0;
 	}
 
 	/** The width of a border edge an FO states, in points; 0 where its style draws nothing. */

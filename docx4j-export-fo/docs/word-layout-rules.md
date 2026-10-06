@@ -3748,10 +3748,11 @@ page break still falls before the padding (padding on the `fo:table` itself is i
 collapsing model, and `space-before` would be resolved against the space-after before it). The
 probe's gaps come to 16.88 / 16.88 / 16.88 at sz 24, within 0.2pt of Word's; corpus document 6115
 comes to Word's 7 pages (page parity 0.44 to 0.92) and 1258 to its 2. Not at an edge whose row
-states its height, exact (above) or at least (`w:hRule="atLeast"`, not measured yet: the
-`table-outer-border-atleast` probe asks): on corpus document 11657, 1372 rows at least 15pt,
-padding them made docx4j's pages hold a row less than Word's, which the border counted inside the
-minimum would explain. Not a table in the separate model ([§6.6](#66-wtblcellspacing)).
+is exact (above): Word's exact height includes the borders. A row at least a height is padded as an
+auto-height one: measured on `table-outer-border-atleast`, Word adds the whole of the top, inside
+and bottom borders outside the rows whether the minimum governs (rows at least 20pt holding a 14pt
+line: 63.14 before to after at sz 24, 14 + 20 + 20 + 3 x 3) or the line does. Not a table in the
+separate model ([§6.6](#66-wtblcellspacing)).
 `WordFlowLayoutManager` leaves space resolution's position-less auxiliary penalties - the padded
 block has two - out of a keep chain: counted, a table whose rows keep together and with the next
 became a mixed chain, bounded at three pages rather than one, and ran off the page (corpus document

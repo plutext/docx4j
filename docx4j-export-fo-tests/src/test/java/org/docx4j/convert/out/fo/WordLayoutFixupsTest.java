@@ -218,18 +218,18 @@ public class WordLayoutFixupsTest {
 	}
 
 	/** An exact row's height is the whole row, borders included, in Word, and FOP's pitch
-	 *  already agrees: no padding at that edge; nor at an at-least row's.  @since 17.3.1 */
+	 *  already agrees: no padding at that edge; an at-least row is padded.  @since 17.3.1 */
 	@Test
-	public void aRowStatingItsHeightTakesNoPaddingAtItsEdge() {
+	public void anExactRowTakesNoPaddingAtItsEdge() {
 		String out = WordLayoutFixups.apply(flow(borderedTable(border("top", "1pt") + border("bottom", "1pt"),
 				" docx4j-row-exact=\"20pt\"", "1pt", "", "1pt")), 15);
 		assertFalse("no top padding over an exact first row: " + out, out.contains("padding-top=\"0.5pt\""));
 		assertTrue("the auto last row's: " + out, out.contains("padding-bottom=\"0.5pt\""));
-		// nor over one at least a height (unmeasured; corpus 11657 overshot with it)
+		// a row at least a height is padded as an auto-height one is (table-outer-border-atleast)
 		out = WordLayoutFixups.apply(flow(borderedTable(border("top", "1pt") + border("bottom", "1pt"),
 				"", "1pt", " height=\"15pt\"", "1pt")), 15);
 		assertTrue("the auto first row's: " + out, out.contains("padding-top=\"0.5pt\""));
-		assertFalse("no bottom padding under an at-least last row: " + out, out.contains("padding-bottom=\"0.5pt\""));
+		assertTrue("the at-least last row's: " + out, out.contains("padding-bottom=\"0.5pt\""));
 	}
 
 	/** A table in the separate model keeps its borders inside it, and one with no border
