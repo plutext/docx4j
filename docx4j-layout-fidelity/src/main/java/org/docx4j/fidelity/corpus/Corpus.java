@@ -3181,6 +3181,35 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		/* fonts-aptos-light-italic (register cause aptos-light-italic-synthetic).  Word has no italic face for
+		 * Aptos Light: fonts-light-bold-italic showed its italic drawn as Aptos-Light sheared 0.3333, where
+		 * docx4j draws the metric clone's real Akasia Light Italic, 0.3% narrower on that sample.  No corpus
+		 * document uses Aptos Light, so this is the fix's only measure: the same six-sentence paragraph in
+		 * Aptos Light regular, italic and bold italic at 11pt and regular and italic at 16pt, and in Aptos
+		 * regular and italic (a real italic face), the control.  If Word shears the upright face, its
+		 * italic paragraphs wrap line for line as its regular ones do.  @since 17.3.1 */
+		PROBES.add(new Probe("fonts-aptos-light-italic",
+				"the same six-sentence paragraph, a label in Carlito then the text: Aptos Light regular (LR),"
+				+ " italic (LI) and bold italic (LBI) at 11pt, LR and LI at 16pt; Aptos regular (AR) and italic (AI)"
+				+ " at 11pt, the control.  Read each paragraph's line breaks and the face and shear Word's PDF names:"
+				+ " a sheared upright italic wraps as the upright text does", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(CARLITO, 22);
+			final String text = Doc.prose(6, 0);
+			java.util.function.Consumer<org.docx4j.wml.RPr> boldItalic = rpr -> { Doc.bold(rpr); Doc.italic(rpr); };
+			Object[][] cases = {
+				{ "LR11 ", "Aptos Light", 22, null }, { "LI11 ", "Aptos Light", 22, (java.util.function.Consumer<org.docx4j.wml.RPr>) Doc::italic },
+				{ "LBI11 ", "Aptos Light", 22, boldItalic },
+				{ "LR16 ", "Aptos Light", 32, null }, { "LI16 ", "Aptos Light", 32, (java.util.function.Consumer<org.docx4j.wml.RPr>) Doc::italic },
+				{ "AR11 ", "Aptos", 22, null }, { "AI11 ", "Aptos", 22, (java.util.function.Consumer<org.docx4j.wml.RPr>) Doc::italic } };
+			for (Object[] c : cases) {
+				@SuppressWarnings("unchecked")
+				java.util.function.Consumer<org.docx4j.wml.RPr> styling = (java.util.function.Consumer<org.docx4j.wml.RPr>) c[3];
+				d.para().noLabel().after(200).bareText((String) c[0]).run(text, (String) c[1], (Integer) c[2], styling).add();
+			}
+			return d.pkg();
+		}));
+
 		PROBES.add(new Probe("fonts-symbol-and-emoji",
 				"docDefaults Carlito 12pt.  (a) w:rFonts 'symbol' (lower case) with 'abgdpw'; (b) 'wingdings' "
 				+ "(lower case) with U+F0FC U+F0FE U+F0A7; (c) an emoji in Carlito; (d) an arrow, a shadowed "
