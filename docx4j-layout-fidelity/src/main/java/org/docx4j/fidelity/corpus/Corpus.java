@@ -2995,6 +2995,8 @@ public final class Corpus {
 		for (String v : new String[] { "2", "4", "6", "4-cantsplit", "4-header" }) PROBES.add(keepNextTableFirstRowProbe(v));
 		PROBES.add(tableNormalStyleRprProbe(12));
 		PROBES.add(tableNormalStyleRprProbe(15));
+		PROBES.add(tableStyleSizeTriggerProbe('a'));   // ledger9 §9: what in TableGrid sets 1912's tables at docDefaults
+		PROBES.add(tableStyleSizeTriggerProbe('b'));
 		for (String v : new String[] { "first", "middle", "none" }) PROBES.add(shadedGroupKeepsProbe(v));
 		PROBES.add(listLabelLineMultiplierProbe());
 		PROBES.add(lineBoxBoldRunProbe());
@@ -9449,6 +9451,68 @@ public final class Corpus {
 								+ " cell " + c + ": the quick brown fox jumps over the lazy dog</w:t></w:r></w:p></w:tc>");
 					}
 					x.append("</w:tr>");
+				}
+				d.add(xmlTbl(x.append("</w:tbl>").toString()));
+				d.add(xmlP("<w:p/>"));
+			}
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * table-style-size-trigger-&lt;a|b&gt; (ledger9 §9; 1912).  table-normal-style-rpr12 found, in mode 12, a
+	 * TableGrid table's paragraphs set at docDefaults' 11pt and a custom style's (no pPr, no rPr) at Normal's 12pt.
+	 * TableGrid differs from that custom style twice: it is built in, and it has a w:pPr.  These separate the two,
+	 * and ask whether a w:rPr without a size, or a conditional format alone, does the same.  docDefaults Liberation
+	 * Serif 11pt, Normal 12pt, mode 12, paragraphs without pStyle.  a: TableGrid with its usual w:pPr; b: TableGrid
+	 * with none.  Both: a custom style with only a w:pPr (spacing); one with only a w:rPr stating a colour; one with
+	 * only a firstRow conditional format (bold); one stating 9pt (the measured exception, a control); one with
+	 * neither (12pt, the control).  @since 17.3.1
+	 */
+	private static Probe tableStyleSizeTriggerProbe(char variant) {
+		boolean gridPPr = variant == 'a';
+		return new Probe("table-style-size-trigger-" + variant, "docDefaults Liberation Serif 11pt, Normal 12pt, mode 12;"
+				+ " tables without pStyle in: TableGrid " + (gridPPr ? "with" : "without") + " its w:pPr, custom styles with"
+				+ " only a pPr, only an rPr colour, only a firstRow format, 9pt, nothing.  Read the size of each table's"
+				+ " text (the label leads each cell)", () -> {
+			Doc d = Doc.create(12);
+			d.documentDefaultRun(SERIF, 22);
+			for (org.docx4j.wml.Style st : d.mdp().getStyleDefinitionsPart().getJaxbElement().getStyle()) {
+				if ("Normal".equals(st.getStyleId())) {
+					if (st.getRPr() == null) st.setRPr(new org.docx4j.wml.RPr());
+					org.docx4j.wml.HpsMeasure sz = new org.docx4j.wml.HpsMeasure();
+					sz.setVal(BigInteger.valueOf(24));
+					st.getRPr().setSz(sz);
+				}
+			}
+			String borders = "<w:tblPr><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/>"
+					+ "<w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/>"
+					+ "<w:insideH w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders></w:tblPr>";
+			styleXml(d, "<w:style w:type=\"table\" w:styleId=\"TableGrid\"><w:name w:val=\"Table Grid\"/><w:basedOn w:val=\"TableNormal\"/>"
+					+ (gridPPr ? "<w:pPr><w:spacing w:after=\"0\" w:line=\"240\" w:lineRule=\"auto\"/></w:pPr>" : "") + borders + "</w:style>");
+			String[][] custom = {
+					{ "ProbePPrOnly", "<w:pPr><w:spacing w:after=\"0\" w:line=\"240\" w:lineRule=\"auto\"/></w:pPr>" },
+					{ "ProbeRPrColour", "<w:rPr><w:color w:val=\"1F3864\"/></w:rPr>" },
+					{ "ProbeFirstRowOnly", null },
+					{ "ProbeNinePoint", "<w:rPr><w:sz w:val=\"18\"/><w:szCs w:val=\"18\"/></w:rPr>" },
+					{ "ProbeNothing", "" } };
+			for (String[] c : custom) {
+				String inner = c[1] != null ? c[1] + borders
+						: borders + "<w:tblStylePr w:type=\"firstRow\"><w:rPr><w:b/><w:bCs/></w:rPr></w:tblStylePr>";
+				styleXml(d, "<w:style w:type=\"table\" w:customStyle=\"1\" w:styleId=\"" + c[0] + "\"><w:name w:val=\"" + c[0] + "\"/>"
+						+ "<w:basedOn w:val=\"TableNormal\"/>" + inner + "</w:style>");
+			}
+			d.add(xmlP("<w:p><w:r><w:t>Body text in Normal, which says 12pt over docDefaults' 11pt.</w:t></w:r></w:p>"));
+			java.util.List<String> styles = new java.util.ArrayList<String>();
+			styles.add("TableGrid");
+			for (String[] c : custom) styles.add(c[0]);
+			for (String style : styles) {
+				StringBuilder x = new StringBuilder("<w:tbl><w:tblPr><w:tblStyle w:val=\"" + style + "\"/><w:tblW w:w=\"0\" w:type=\"auto\"/>"
+						+ "<w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"0\" w:lastColumn=\"0\" w:noHBand=\"1\" w:noVBand=\"1\"/>"
+						+ "</w:tblPr><w:tblGrid><w:gridCol w:w=\"9026\"/></w:tblGrid>");
+				for (int r = 1; r <= 2; r++) {
+					x.append("<w:tr><w:tc><w:tcPr><w:tcW w:w=\"9026\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>" + style + " row " + r
+							+ ": the quick brown fox jumps over the lazy dog</w:t></w:r></w:p></w:tc></w:tr>");
 				}
 				d.add(xmlTbl(x.append("</w:tbl>").toString()));
 				d.add(xmlP("<w:p/>"));
