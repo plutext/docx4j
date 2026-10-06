@@ -399,6 +399,76 @@ public class TableContextResolutionTest {
 		assertCell(pkg, walk(pkg), "(a) header", 24, JcEnumeration.LEFT);
 	}
 
+	/** The table-style-size-trigger probes' document (CR-001 batch 53, corpus document 1912):
+	 *  docDefaults 11pt, Normal 12pt, one two-row table per style. */
+	private static final String TRIGGER_STYLES = "<w:styles " + W + ">"
+			+ "<w:docDefaults><w:rPrDefault><w:rPr><w:sz w:val=\"22\"/></w:rPr></w:rPrDefault></w:docDefaults>"
+			+ "<w:style w:type=\"paragraph\" w:default=\"1\" w:styleId=\"Normal\"><w:name w:val=\"Normal\"/>"
+			+ "<w:rPr><w:sz w:val=\"24\"/></w:rPr></w:style>"
+			+ "<w:style w:type=\"table\" w:default=\"1\" w:styleId=\"TableNormal\"><w:name w:val=\"Normal Table\"/></w:style>"
+			+ "<w:style w:type=\"table\" w:styleId=\"TableGrid\"><w:name w:val=\"Table Grid\"/><w:basedOn w:val=\"TableNormal\"/>"
+			+ "<w:pPr><w:spacing w:after=\"0\" w:line=\"240\" w:lineRule=\"auto\"/></w:pPr></w:style>"
+			+ "<w:style w:type=\"table\" w:styleId=\"PlainGrid\"><w:name w:val=\"PlainGrid\"/><w:basedOn w:val=\"TableNormal\"/>"
+			+ "<w:tblPr><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders></w:tblPr></w:style>"
+			+ "<w:style w:type=\"table\" w:styleId=\"RPrColour\"><w:name w:val=\"RPrColour\"/><w:basedOn w:val=\"TableNormal\"/>"
+			+ "<w:rPr><w:color w:val=\"1F3864\"/></w:rPr></w:style>"
+			+ "<w:style w:type=\"table\" w:styleId=\"FirstRowOnly\"><w:name w:val=\"FirstRowOnly\"/><w:basedOn w:val=\"TableNormal\"/>"
+			+ "<w:tblStylePr w:type=\"firstRow\"><w:rPr><w:b/></w:rPr></w:tblStylePr></w:style>"
+			+ "<w:style w:type=\"table\" w:styleId=\"Nothing\"><w:name w:val=\"Nothing\"/><w:basedOn w:val=\"TableNormal\"/></w:style>"
+			+ "</w:styles>";
+
+	private static final String[] TRIGGER_TABLES = { "TableGrid", "PlainGrid", "RPrColour", "FirstRowOnly", "Nothing" };
+
+	private static String triggerDoc() {
+		StringBuilder sb = new StringBuilder("<w:document " + W + "><w:body>");
+		for (String style : TRIGGER_TABLES) {
+			sb.append("<w:tbl><w:tblPr><w:tblStyle w:val=\"").append(style).append("\"/>")
+					.append("<w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"0\" w:lastColumn=\"0\" w:noHBand=\"1\" w:noVBand=\"1\"/>")
+					.append("</w:tblPr><w:tblGrid><w:gridCol w:w=\"3000\"/></w:tblGrid>")
+					.append("<w:tr>").append(tc(p(style + " row 1"))).append("</w:tr>")
+					.append("<w:tr>").append(tc(p(style + " row 2"))).append("</w:tr></w:tbl>").append(p("after " + style));
+		}
+		return sb.append("</w:body></w:document>").toString();
+	}
+
+	/**
+	 * Below mode 15 the size exception applies wherever the table style formats text at all -
+	 * a w:pPr, an rPr without a size, a conditional format, whether or not it applies to the
+	 * row - and gives the table level's size, docDefaults' where the style states none.  A style
+	 * which formats no text leaves Normal's 12pt.  In mode 15 every table takes Normal's.
+	 * Measured: the table-style-size-trigger probes (CR-001 batch 53).  And where the
+	 * docDefaults state no size either, Normal keeps its 12pt (corpus documents 10244 and
+	 * 12723, gate b148).  @since 17.3.1
+	 */
+	@Test
+	public void theExceptionWhereTheTableStyleFormatsTextWithoutASize() throws Exception {
+		for (boolean docDefaultsSize : new boolean[] { true, false })
+		for (Integer mode : new Integer[] { 12, 15 }) {
+			String styles = docDefaultsSize ? TRIGGER_STYLES
+					: TRIGGER_STYLES.replace("<w:rPrDefault><w:rPr><w:sz w:val=\"22\"/></w:rPr></w:rPrDefault>", "");
+			WordprocessingMLPackage pkg = pkg(triggerDoc(), styles);
+			DocumentSettingsPart dsp = pkg.getMainDocumentPart().getDocumentSettingsPart();
+			dsp.getContents().getCompat().getCompatSetting().removeIf(cs -> "compatibilityMode".equals(cs.getName())
+					|| "overrideTableStyleFontSizeAndJustification".equals(cs.getName()));
+			dsp.setWordCompatSetting("compatibilityMode", String.valueOf(mode));
+			PropertyResolver resolver = pkg.getMainDocumentPart().getPropertyResolver();
+			resolver.refresh();
+			Map<P, CellContext> paras = walk(pkg);
+			for (String style : TRIGGER_TABLES) {
+				boolean formats = !style.equals("PlainGrid") && !style.equals("Nothing");
+				int expected = mode == 12 && formats && docDefaultsSize ? 22 : 24;
+				for (String row : new String[] { " row 1", " row 2" }) {
+					P p = para(paras, style + row);
+					assertEquals("mode " + mode + (docDefaultsSize ? "" : ", no docDefaults size") + ", " + style + row, expected,
+							resolver.getEffectiveRPr(firstRun(p).getRPr(), p.getPPr(), paras.get(p)).getSz().getVal().intValue());
+				}
+			}
+			P after = para(paras, "after TableGrid");
+			assertEquals("outside a table, Normal's", 24,
+					resolver.getEffectiveRPr(firstRun(after).getRPr(), after.getPPr(), paras.get(after)).getSz().getVal().intValue());
+		}
+	}
+
 	// ------------------------------------------------ which table style applies (T1, T2, T7)
 
 	private static String namesStyles(String defaultName) {

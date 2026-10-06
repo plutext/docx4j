@@ -40,6 +40,10 @@ PDF and HTML output, tables (CR-030):
 - [MS-DOCX]'s overrideTableStyleFontSizeAndJustification exception is applied below
   compatibility mode 15 only, as Word 365 applies it.
 
+- Below compatibility mode 15 that exception applies wherever the table style formats text at all
+  (as Table Grid's paragraph spacing does), with the document defaults' size where the style states
+  none and they state one, as Word does; until now only a table style stating a size brought it in.
+
 - A paragraph in a table naming a missing style no longer leaves the rest of the document
   without its table styling; nor does DEBUG logging.
 

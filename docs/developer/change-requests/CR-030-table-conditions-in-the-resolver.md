@@ -646,6 +646,36 @@ So the compat rule as phase 1 writes it is: the exception applies below compatib
 (a document with no `compatibilityMode` is mode 12) where the setting is not on, and never in
 mode 15. And `getEffectiveTableStyle`'s rule is §4.2's, now fully measured.
 
+**Follow-up, 17.3.1 (CR-001 batch 53, corpus document 1912): what brings the size exception into
+play.** T5 and T6's table style states a size, so they could not say what happens where it does
+not. `table-normal-style-rpr12` then found a TableGrid table's paragraphs at docDefaults' 11pt
+(Normal 12pt, mode 12) where docx4j set Normal's 12pt, and `table-style-size-trigger-a/b`
+(goldens cut 2026-10-06) settled it, sizes read from glyph widths:
+
+| table style (mode 12, docDefaults 11pt, Normal 12pt) | Word |
+|---|---|
+| TableGrid with its usual `w:pPr` (spacing) | 11pt |
+| TableGrid without it | 12pt |
+| a custom style with only a `w:pPr` | 11pt |
+| a custom style with only an `w:rPr` colour | 11pt |
+| a custom style with only a `firstRow` format (bold) | 11pt, its second row too |
+| a custom style stating 9pt (control) | 9pt |
+| a custom style with none of these (control) | 12pt |
+
+So the exception applies wherever the table style formats text **at all** - a `w:pPr`, an `w:rPr`
+whatever it states, or a conditional format whether or not it applies to the row - and gives
+the table level's size: the style's own where it states one, else the document defaults'.
+Being built in is not it. **But only where a size is stated somewhere**: the first form of the
+rule (gate b148) also gave Word's fallback 10pt where neither the table style nor the docDefaults
+state one, and corpus documents 10244 (a TableGrid table of ListParagraph paragraphs) and 12723 (a
+Medium Shading 1 table of Normal ones), whose docDefaults state no size, have those tables at 12pt
+in Word; 6115, whose docDefaults say 11pt, has its TableGrid table at 11pt, as the rule gives. `CellContext.styleFormatsText()` answers the first half; the resolver
+composes a cell's paragraph over its table level under the exception whenever it holds, and
+`composedRPr` takes the table level's size (`TableContextResolutionTest`
+`theExceptionWhereTheTableStyleFormatsTextWithoutASize`). The justification half is unchanged
+(no probe has a table style formatting text without stating a justification against a Normal
+which is not left).
+
 ## 6. Phases
 
 **Phase 0 - probes.**  T1 to T5 in `Corpus.java`, then goldens from Word. No library change.

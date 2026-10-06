@@ -78,7 +78,10 @@ import org.slf4j.LoggerFactory;
  *     ({@link #getEffectiveTableStyle(TblPr)}, {@link #getTableStyleChain(String)}).</li>
  * <li>The size and justification exception of [MS-DOCX]'s
  *     {@code overrideTableStyleFontSizeAndJustification} applies below compatibility mode 15
- *     only, where that setting is not on ({@link #appliesTableStyleSizeJcException()}).</li>
+ *     only, where that setting is not on ({@link #appliesTableStyleSizeJcException()}); the
+ *     size half wherever the table style formats text at all
+ *     ({@link CellContext#styleFormatsText()}), giving the table level's size, docDefaults'
+ *     where the style states none (CR-030 §5.3 follow-up).</li>
  * <li>The table writers take their rows' and cells' conditions from the same
  *     {@link org.docx4j.model.table.TableContext}, so a cell's borders and shading and its
  *     text come from one reading of the table.</li>
@@ -248,6 +251,7 @@ public class PropertyResolver {
 			documentDefaultRPr = XmlUtils.deepCopy(docDefaults.getRPrDefault().getRPr());
         }
 		
+		docDefaultsStateSize = documentDefaultRPr.getSz() != null;
 		if (documentDefaultRPr.getSz()==null) {
 			// Make Word's default explicit: 10pt where nothing states a size (measured, CR-015
 			// probe styles-no-size-anywhere: identical to an explicit 10pt run)
@@ -657,6 +661,12 @@ public class PropertyResolver {
 	 */
 	private volatile boolean tableStyleSizeJcException;
 
+	/** Whether the document's own w:docDefaults state a size, rather than the 10pt the
+	 *  resolver makes explicit where they do not: the size exception takes the document
+	 *  defaults' size only where they state one.  Read once per {@link #refresh()}.
+	 *  @since 17.3.1 */
+	private volatile boolean docDefaultsStateSize;
+
 	/** Each table style's w:basedOn chain merged, by id; styles only, so refresh() clears it. */
 	private final java.util.Map<String, Style> tableStyleChains = new java.util.concurrent.ConcurrentHashMap<String, Style>();
 
@@ -773,7 +783,7 @@ public class PropertyResolver {
 		Style.Name name = Context.getWmlObjectFactory().createStyleName();
 		name.setVal(id);
 		style.setName(name);
-		if (synthetic.context.formatsText()) {
+		if (composes(synthetic.context)) {
 			style.setPPr((PPr)XmlUtils.deepCopy(composedPPr(synthetic.sourceStyleId, synthetic.context)));
 			style.setRPr((RPr)XmlUtils.deepCopy(composedRPr(synthetic.sourceStyleId, synthetic.context)));
 		} else {
@@ -919,7 +929,7 @@ public class PropertyResolver {
 	 * @since 17.3.1
 	 */
 	public PPr getEffectivePPr(PPr expressPPr, CellContext cellContext) throws CyclicStylesException {
-		if (cellContext == null || !cellContext.formatsText()) {
+		if (!composes(cellContext)) {
 			return getEffectivePPr(expressPPr);
 		}
 		PPr composed = composedPPr(sourceParagraphStyleOf(expressPPr), cellContext);
@@ -944,7 +954,7 @@ public class PropertyResolver {
 	 * @since 17.3.1
 	 */
 	public RPr getEffectiveRPr(RPr expressRPr, PPr pPr, CellContext cellContext) throws CyclicStylesException {
-		if (cellContext == null || !cellContext.formatsText()) {
+		if (!composes(cellContext)) {
 			return getEffectiveRPr(expressRPr, pPr);
 		}
 		RPr effectiveRPr = (RPr)XmlUtils.deepCopy(composedRPr(sourceParagraphStyleOf(pPr), cellContext));
@@ -959,7 +969,7 @@ public class PropertyResolver {
 	 * @since 17.3.1
 	 */
 	public RPr getEffectiveParagraphMarkRPr(PPr pPr, CellContext cellContext) throws CyclicStylesException {
-		if (cellContext == null || !cellContext.formatsText()) {
+		if (!composes(cellContext)) {
 			return getEffectiveParagraphMarkRPr(pPr);
 		}
 		RPr effectiveRPr = (RPr)XmlUtils.deepCopy(composedRPr(sourceParagraphStyleOf(pPr), cellContext));
@@ -967,6 +977,14 @@ public class PropertyResolver {
 			applyRPr(pPr.getRPr(), effectiveRPr);
 		}
 		return effectiveRPr;
+	}
+
+	/** Whether a paragraph in this context is composed over its table level: where the table
+	 *  style gives it text formatting, or, under [MS-DOCX]'s size exception, where the style
+	 *  formats text anywhere ({@link CellContext#styleFormatsText()}).  @since 17.3.1 */
+	private boolean composes(CellContext cellContext) {
+		return cellContext != null && (cellContext.formatsText()
+				|| (tableStyleSizeJcException && cellContext.styleFormatsText()));
 	}
 
 	/** The paragraph's style for composing over a table level: where it names a synthetic
@@ -1036,17 +1054,32 @@ public class PropertyResolver {
 		// the table and the paragraph style are two levels of the hierarchy: the twelve
 		// toggles combine across them rather than the paragraph's overriding (17.7.3)
 		StyleUtil.applyToggles(paragraphLevel, tableLevel, documentDefaultRPr, composed);
-		if (tableStyleSizeJcException && tableOnly != null && tableOnly.getSz() != null
+		/* The size the table level gives is its own where the table style states one, else
+		 * the document defaults' where they state one (17.3.1): Word applies the exception
+		 * wherever the table style formats text at all, not only where it states a size -
+		 * measured on the table-style-size-trigger probes (CR-001 batch 53, corpus document
+		 * 1912): in mode 12, with docDefaults 11pt and Normal 12pt, a table style with only a
+		 * w:pPr (TableGrid's usual spacing), only an rPr colour, or only a firstRow format sets
+		 * its table's paragraphs at 11pt; with none of these, at Normal's 12pt.  But where
+		 * neither the table style nor the docDefaults state a size, Normal keeps its 12pt, not
+		 * the 10pt Word falls back to: corpus documents 10244 (a TableGrid table of ListParagraph
+		 * paragraphs) and 12723 (a Medium Shading 1 table of Normal ones) have no docDefaults
+		 * size, and Word draws those tables at 12pt (gate b148), as 6115, whose docDefaults
+		 * say 11pt, has its TableGrid table at 11pt. */
+		boolean tableStatesSize = tableOnly != null && tableOnly.getSz() != null;
+		if (tableStyleSizeJcException && ctx.styleFormatsText() && tableLevel.getSz() != null
+				&& (tableStatesSize || docDefaultsStateSize)
 				&& paragraphStyleGivesWay(styleId, true)) {
-			composed.setSz(XmlUtils.deepCopy(tableOnly.getSz()));
+			composed.setSz(XmlUtils.deepCopy(tableLevel.getSz()));
 		}
 		composedRPr.put(key, composed);
 		return composed;
 	}
 
 	/**
-	 * [MS-DOCX]'s exception, for a paragraph in a table whose style states a size (or a
-	 * justification): the paragraph's style gives way to it if the style is the default
+	 * [MS-DOCX]'s exception, for a paragraph in a table whose style formats text (for the
+	 * size; since 17.3.1 the style need not state one) or states a justification: the
+	 * paragraph's style gives way to it if the style is the default
 	 * paragraph style, or states no size (justification) of its own, and resolves to 12pt
 	 * (left).  A style of the paragraph's own which states one keeps it.  As
 	 * ParagraphStylesInTableFix applied it (measured there with Word 2010; CR-030 T6 with Word

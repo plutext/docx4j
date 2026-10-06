@@ -52,6 +52,7 @@ public final class CellContext {
 	private final Set<STTblStyleOverrideType> conditions;
 	private final List<CTTblStylePr> textConditions;
 	private final boolean formatsText;
+	private final boolean styleFormatsText;
 	private final Key key;
 
 	/**
@@ -75,9 +76,19 @@ public final class CellContext {
 			}
 		}
 		this.textConditions = Collections.unmodifiableList(text);
-		this.formatsText = !text.isEmpty()
-				|| (tableStyle != null && tableStyle.getPPr() != null && !StyleUtil.isEmpty(tableStyle.getPPr()))
+		boolean own = (tableStyle != null && tableStyle.getPPr() != null && !StyleUtil.isEmpty(tableStyle.getPPr()))
 				|| (tableStyle != null && tableStyle.getRPr() != null && !StyleUtil.isEmpty(tableStyle.getRPr()));
+		this.formatsText = !text.isEmpty() || own;
+		boolean anywhere = own;
+		if (!anywhere && tableStyle != null) {
+			for (CTTblStylePr pr : tableStyle.getTblStylePr()) {
+				if (TableStyleConditions.formatsText(pr)) {
+					anywhere = true;
+					break;
+				}
+			}
+		}
+		this.styleFormatsText = anywhere;
 		this.key = new Key(tableStyleId, named);
 	}
 
@@ -105,9 +116,24 @@ public final class CellContext {
 
 	/** Whether the table style gives this paragraph anything at all: its own w:pPr or w:rPr,
 	 *  or a conditional format with one.  Where it does not, resolving with this context
-	 *  gives the same answer as resolving without one. */
+	 *  gives the same answer as resolving without one - except under [MS-DOCX]'s size
+	 *  exception, for which see {@link #styleFormatsText()}. */
 	public boolean formatsText() {
 		return formatsText;
+	}
+
+	/**
+	 * Whether the table style formats text anywhere: its own w:pPr or w:rPr, or a conditional
+	 * format with one, whether or not that condition holds for this paragraph.  Below
+	 * compatibility mode 15 this, not what applies here, is what brings [MS-DOCX]'s size
+	 * exception into play: measured on the table-style-size-trigger probes (CR-001 batch 53,
+	 * corpus document 1912), a table style with only a w:pPr, only an rPr colour, or only a
+	 * firstRow format sets every row of its table at docDefaults' size where Normal states
+	 * 12pt - the firstRow format's second row included - while a style with none of these
+	 * leaves Normal's 12pt.  @since 17.3.1
+	 */
+	public boolean styleFormatsText() {
+		return styleFormatsText;
 	}
 
 	/** What the table level's composition depends on: the table style and the conditional
