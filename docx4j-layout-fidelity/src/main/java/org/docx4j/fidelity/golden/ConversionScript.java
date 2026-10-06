@@ -133,6 +133,19 @@ final class ConversionScript {
 		return path;
 	}
 
+	/**
+	 * The call that writes the PDF, for the manifest beside {@code pdfExport=} (what the PDFs
+	 * show, {@link PdfExport}).  The scripts written here convert with {@code SaveAs <pdf>, 17}
+	 * (wdFormatPDF), as documents4j's own does for its {@code DocumentType.PDF}, and that call
+	 * passes no export options, so Word's own are in force.  A script written elsewhere does
+	 * what it does.  @since 17.3.1
+	 */
+	static String exportCall() {
+		if ("none".equals(mode)) return "none - no conversion was run";
+		if ("as-scripted".equals(markup)) return "as scripted by " + path + " (documents4j asks it for wdFormatPDF, 17)";
+		return "Document.SaveAs <pdf>, 17 (wdFormatPDF): no export options passed, Word's own in force";
+	}
+
 	/** The property documents4j reads, and which {@code Documents4jLocalServices} sets from
 	 *  {@code docx4j.properties} when it is not already a system property. */
 	static final String SCRIPT_PROPERTY = "com.documents4j.conversion.msoffice.word_convert.vbs";

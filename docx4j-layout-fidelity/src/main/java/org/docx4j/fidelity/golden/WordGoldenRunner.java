@@ -65,6 +65,13 @@ import org.docx4j.wml.CTCompatSetting;
  * the corpus goldens of 2026-09-05, and both change a golden. The faces each PDF embeds
  * go in as {@code <id>.fonts=} whether the PDF was cut by this run or was already there,
  * so that a set always says what fonts its reference was drawn with.</p>
+ *
+ * <p><b>And what Word, the printer and the export were</b> (17.3.1): the default printer, its
+ * driver and its page (paper and hard margins), and Word's build, with the machine's state
+ * ({@link MachineState}); at the end of the run the files behind the faces the PDFs embed, by
+ * SHA-256 ({@link FontFiles}, one {@code fontFile.<face>=} line each), and what the export did
+ * as the PDFs show it ({@link PdfExport}, {@code pdfExport=}), beside the call that made them
+ * ({@code pdfExportCall=}).</p>
  */
 public final class WordGoldenRunner {
 
@@ -142,6 +149,8 @@ public final class WordGoldenRunner {
 		 * to record this at all). */
 		java.util.Map<String, String> previousFonts = PdfFonts.previous(manifest);
 		java.util.SortedSet<String> runFonts = new java.util.TreeSet<String>();
+		/* What the export did, per distinct record over the PDFs this run cuts (PdfExport). */
+		java.util.Map<String, Integer> exportRecords = new java.util.TreeMap<String, Integer>();
 		int fontsChanged = 0, fontsCompared = 0;
 		try (PrintWriter m = new PrintWriter(new FileWriter(manifest, true))) {
 			m.println("# run " + ZonedDateTime.now());
@@ -154,6 +163,7 @@ public final class WordGoldenRunner {
 			m.println("fieldUpdate=" + ConversionScript.mode());
 			m.println("markup=" + ConversionScript.markup());
 			m.println("wordConvertScript=" + ConversionScript.path());
+			m.println("pdfExportCall=" + ConversionScript.exportCall());
 			/* The machine's own state, which decides a golden as much as the script does:
 			 * whether the cloud fonts counted, and which languages could hyphenate.  The
 			 * corpus goldens of 2026-09-05 record neither, and it took a measurement on a
@@ -210,6 +220,7 @@ public final class WordGoldenRunner {
 								if (f.length() > 0) runFonts.add(f);
 							}
 						}
+						exportRecords.merge(PdfExport.record(pdf), 1, Integer::sum);
 						String before = previousFonts.get(id);
 						if (before != null) {
 							fontsCompared++;
@@ -313,6 +324,16 @@ public final class WordGoldenRunner {
 			/* Run-level, after the per-document lines, so two manifests diff at a glance. */
 			m.println("fonts=" + PdfFonts.join(runFonts));
 			if (fontsCompared > 0) m.println("fontsChangedSincePreviousRun=" + fontsChanged + "/" + fontsCompared);
+			/* The files behind those faces, by hash: a face name does not say which release of
+			 * the font drew it (FontFiles). */
+			for (String line : FontFiles.manifestLines(runFonts)) {
+				m.println(line);
+				System.out.println(line);
+			}
+			/* And what the export did, read off the PDFs: SaveAs 17 takes no options. */
+			String export = PdfExport.summary(exportRecords);
+			m.println("pdfExport=" + export);
+			System.out.println("pdfExport=" + export);
 		} catch (Exception e) {
 			System.out.println("  could not append the font summary to golden-manifest.properties: " + e);
 		}
@@ -429,6 +450,7 @@ public final class WordGoldenRunner {
 			r.println("fieldUpdate=" + ConversionScript.mode());
 			r.println("markup=" + ConversionScript.markup());
 			r.println("wordConvertScript=" + ConversionScript.path());
+			r.println("pdfExportCall=" + ConversionScript.exportCall());
 			for (String line : MachineState.manifestLines()) r.println(line);
 		} catch (Exception e) {
 			// a manifest is a record, not the work; never let it cost a run

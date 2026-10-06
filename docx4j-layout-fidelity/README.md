@@ -329,8 +329,21 @@ Either way the run prints the mode and the script path at startup and writes the
 fieldUpdate=off
 markup=off
 wordConvertScript=X:\fidelity\real2\goldens-nofields\word_convert-nofields.vbs
+pdfExportCall=Document.SaveAs <pdf>, 17 (wdFormatPDF): no export options passed, Word's own in force
 connectedExperiences=on (HKCU\Software\Microsoft\Office\16.0\Common\Privacy\DisconnectedState=0)
 proofingLanguages=lcid 1033,3081 (HKLM\SOFTWARE\Microsoft\Shared Tools\Proofing Tools\1.0\Override)
+printer=FX DocuPrint C2255 PCL 6, 300x300 dpi (Win32_Printer)
+printerDriver=FX DocuPrint C2255 PCL 6, version ..., dated ..., by ..., v3 driver (Get-PrinterDriver)
+printerPage=A4 595.4 x 841.7pt, hard margins left ... top ... right ... bottom ... pt (System.Drawing.Printing)
+word=16.0.... (Click-to-Run, Current Channel 492350f6-..., x64); winword.exe 16.0....
+```
+
+and, at the end of the run, after `fonts=`:
+
+```
+fontFile.Calibri=sha256:..., 1688720 bytes, C:\Windows\Fonts\calibri.ttf
+fontFile.TimesNewRomanPSMT=sha256:..., 1155040 bytes, C:\Windows\Fonts\times.ttf
+pdfExport=PDF 1.7, producer Microsoft® Word for Microsoft 365, tagged, bookmarks, not PDF/A, every font embedded
 ```
 
 The last two are the machine's own state, and they decide a golden as much as the script
@@ -345,8 +358,25 @@ state either instead, with `-Dfidelity.connectedExperiences=on|off|unknown` and
 `-Dfidelity.proofingLanguages=<list>`, and an explicit property wins. Neither reading
 ever fails a run: what cannot be read is recorded as `unknown`, with the reason.
 
+**The default printer** decides more than it should: Word sets each font size in whole device
+pixels of the default printer, so the size it writes into the PDF is the nominal size rounded
+to 1/dpi inch (10pt is 10.08 at 300 dpi, 9.96 at 600), and line widths move with it; and a
+driver's printable area can move the page itself (an HP at 600 dpi set 11875's header and body
+31.2pt lower than another 600-dpi printer did, and took 152 pages to 144; ledger9 §8). So the
+printer, its driver and its default page (the paper and its four hard margins) are recorded,
+with **Word's build**. The goldens are cut with the FX DocuPrint C2255 as the default printer
+(300 dpi), on which the three corpora were cut in September; a re-cut of every set against
+Microsoft Print to PDF is planned. Each of these can be stated instead, with
+`-Dfidelity.printer`, `-Dfidelity.printerDriver`, `-Dfidelity.printerPage` and `-Dfidelity.word`.
+
 The faces each PDF embeds go in as `<id>.fonts=` whether this run cut the PDF or found it
-already there, so that a set always says what its reference was drawn with. The corpus
+already there, so that a set always says what its reference was drawn with. **The files behind
+them** go in by SHA-256 at the end of the run (`fontFile.<face>=`, found by PostScript name in
+Windows', the per-user, Office's cloud-font and Office's private font folders, every match
+listed; `-Dfidelity.fontDirs` names other folders), since a face name does not say which release
+of the font drew it. **What the export did** goes in as `pdfExport=`, read off the PDFs (version,
+producer, tagged, bookmarks, PDF/A, fonts not embedded): the script's `SaveAs <pdf>, 17` passes
+no export options, so the PDFs are the only witness to the ones Word applied. The corpus
 goldens of 2026-09-05 predate that line, which is why the `class` column reads the PDFs
 itself.
 

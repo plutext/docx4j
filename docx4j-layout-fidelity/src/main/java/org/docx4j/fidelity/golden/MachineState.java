@@ -42,12 +42,26 @@ import java.util.TreeSet;
  * review-markup lines, write the same sizes, so the printer, not the script, decided it
  * (ledger9 §8). The printer and its resolution are therefore part of the set.</p>
  *
- * <p>The first two are read from the Windows registry, and the printer from WMI
- * ({@code Win32_Printer}), where this runs on Windows, which is where the golden runner runs. Neither reading is a failure: a value that cannot be read is
- * {@code unknown}, and the operator can state it with
- * {@code -Dfidelity.connectedExperiences=on|off|unknown} and
- * {@code -Dfidelity.proofingLanguages=<list>}. An explicit property always wins over the
- * registry, so an operator who knows what the machine is set to can say so.</p>
+ * <p><b>The printer's driver and its page.</b> The resolution is not all the printer decides.
+ * Two 600-dpi printers cut 11875 differently: on an HP OfficeJet Pro 9010 every page's header and
+ * body stood 31.2pt lower than on a Fujifilm Apeos, its 18pt top margin apparently raised to
+ * the driver's printable area, and the document took 152 pages to 144 (ledger9 §8). So the
+ * driver (its name, version and date) and the default page it offers (the paper and its four
+ * hard margins) are recorded too.  @since 17.3.1</p>
+ *
+ * <p><b>Word's build.</b> Word's layout changes between builds; "Microsoft 365" says nothing
+ * about which. The Click-to-Run version and channel, and winword.exe's own file version, are
+ * recorded.  @since 17.3.1</p>
+ *
+ * <p>The first two are read from the Windows registry; the printer, its driver and page, and
+ * Word's build in one PowerShell call (WMI {@code Win32_Printer}, {@code Get-PrinterDriver},
+ * {@code System.Drawing.Printing}, the registry and winword.exe), made once and kept for the
+ * run, where this runs on Windows, which is where the golden runner runs. No reading is a
+ * failure: a value that cannot be read is {@code unknown}, and the operator can state each with
+ * {@code -Dfidelity.connectedExperiences=on|off|unknown}, {@code -Dfidelity.proofingLanguages=<list>},
+ * {@code -Dfidelity.printer}, {@code -Dfidelity.printerDriver}, {@code -Dfidelity.printerPage} and
+ * {@code -Dfidelity.word}. An explicit property always wins over the reading, so an operator who
+ * knows what the machine is set to can say so.</p>
  */
 public final class MachineState {
 
@@ -59,6 +73,15 @@ public final class MachineState {
 
 	/** {@code -Dfidelity.printer=<name, resolution>}: what the operator states. */
 	public static final String PRINTER_PROPERTY = "fidelity.printer";
+
+	/** {@code -Dfidelity.printerDriver=<name, version>}: what the operator states.  @since 17.3.1 */
+	public static final String DRIVER_PROPERTY = "fidelity.printerDriver";
+
+	/** {@code -Dfidelity.printerPage=<paper, hard margins>}: what the operator states.  @since 17.3.1 */
+	public static final String PAGE_PROPERTY = "fidelity.printerPage";
+
+	/** {@code -Dfidelity.word=<version>}: what the operator states.  @since 17.3.1 */
+	public static final String WORD_PROPERTY = "fidelity.word";
 
 	/** Not read, and not stated. */
 	public static final String UNKNOWN = "unknown";
@@ -136,15 +159,160 @@ public final class MachineState {
 		if (stated != null) return stated + " (stated by the operator)";
 		if (!isWindows()) return UNKNOWN + " (not Windows; no WMI to read, and -D"
 				+ PRINTER_PROPERTY + " was not set)";
-		for (String line : run(new String[] { "powershell", "-NoProfile", "-NonInteractive", "-Command",
-				"Get-CimInstance Win32_Printer -Filter 'Default=TRUE' | ForEach-Object { "
-				+ "'PRINTER|' + $_.Name + '|' + $_.HorizontalResolution + '|' + $_.VerticalResolution }" })) {
-			if (!line.startsWith("PRINTER|")) continue;
+		String line = reading("PRINTER|");
+		if (line != null) {
 			String[] f = line.split("\\|", -1);
-			if (f.length < 4 || f[1].trim().isEmpty()) continue;
-			return f[1].trim() + ", " + f[2].trim() + "x" + f[3].trim() + " dpi (Win32_Printer)";
+			if (f.length >= 4 && !f[1].trim().isEmpty()) {
+				return f[1].trim() + ", " + f[2].trim() + "x" + f[3].trim() + " dpi (Win32_Printer)";
+			}
 		}
 		return UNKNOWN + " (Win32_Printer named no default printer)";
+	}
+
+	/** The default printer's driver: its name, version, date, maker and model (v3 or v4), or
+	 *  {@code unknown}.  @since 17.3.1 */
+	public static String printerDriver() {
+		String stated = stated(DRIVER_PROPERTY);
+		if (stated != null) return stated + " (stated by the operator)";
+		if (!isWindows()) return UNKNOWN + " (not Windows, and -D" + DRIVER_PROPERTY + " was not set)";
+		String parsed = parseDriver(reading("DRIVER|"));
+		return parsed != null ? parsed : UNKNOWN + " (Get-PrinterDriver named no driver for the default printer)";
+	}
+
+	/** The default page the default printer offers: the paper and its four hard margins, in
+	 *  points, or {@code unknown}.  @since 17.3.1 */
+	public static String printerPage() {
+		String stated = stated(PAGE_PROPERTY);
+		if (stated != null) return stated + " (stated by the operator)";
+		if (!isWindows()) return UNKNOWN + " (not Windows, and -D" + PAGE_PROPERTY + " was not set)";
+		String parsed = parsePage(reading("PAGE|"));
+		return parsed != null ? parsed : UNKNOWN + " (System.Drawing.Printing gave no default page)";
+	}
+
+	/** Word's build: the Click-to-Run version and channel and winword.exe's file version, or
+	 *  {@code unknown}.  @since 17.3.1 */
+	public static String word() {
+		String stated = stated(WORD_PROPERTY);
+		if (stated != null) return stated + " (stated by the operator)";
+		if (!isWindows()) return UNKNOWN + " (not Windows, and -D" + WORD_PROPERTY + " was not set)";
+		String parsed = parseWord(reading("WORD|"));
+		return parsed != null ? parsed : UNKNOWN + " (neither Click-to-Run nor winword.exe answered)";
+	}
+
+	// ------------------------------------------------------------------ the PowerShell reading
+
+	/**
+	 * One PowerShell call answers for the printer, its driver and page, and Word: a line each,
+	 * {@code TAG|field|field...}, with only single quotes inside so that the command survives
+	 * Windows' argument quoting, and the decimals written invariantly whatever the machine's
+	 * locale.  Every statement may fail on its own and the rest still answer.
+	 */
+	static final String READING_SCRIPT = "$ErrorActionPreference = 'SilentlyContinue'; "
+			+ "$inv = [cultureinfo]::InvariantCulture; "
+			+ "$pr = Get-CimInstance Win32_Printer -Filter 'Default=TRUE' | Select-Object -First 1; "
+			+ "if ($pr) { 'PRINTER|' + $pr.Name + '|' + $pr.HorizontalResolution + '|' + $pr.VerticalResolution + '|' + $pr.DriverName; "
+			+ "  $d = Get-PrinterDriver -Name $pr.DriverName | Select-Object -First 1; "
+			+ "  if ($d) { $v = [uint64]$d.DriverVersion; "
+			+ "    $ver = '{0}.{1}.{2}.{3}' -f (($v -shr 48) -band 65535), (($v -shr 32) -band 65535), (($v -shr 16) -band 65535), ($v -band 65535); "
+			+ "    $date = ''; if ($d.DriverDate) { $date = $d.DriverDate.ToString('yyyy-MM-dd', $inv) }; "
+			+ "    'DRIVER|' + $d.Name + '|' + $ver + '|' + $date + '|' + $d.Manufacturer + '|' + $d.MajorVersion } }; "
+			+ "Add-Type -AssemblyName System.Drawing; "
+			+ "$ps = New-Object System.Drawing.Printing.PrinterSettings; "
+			+ "$pg = $ps.DefaultPageSettings; "
+			+ "if ($pg) { $a = $pg.PrintableArea; "
+			+ "  'PAGE|' + $ps.PrinterName + '|' + $pg.PaperSize.PaperName + '|' + $pg.PaperSize.Width + '|' + $pg.PaperSize.Height"
+			+ " + '|' + $a.X.ToString($inv) + '|' + $a.Y.ToString($inv) + '|' + $a.Width.ToString($inv) + '|' + $a.Height.ToString($inv)"
+			+ " + '|' + $pg.Landscape }; "
+			+ "$w = (Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\Winword.exe').'(default)'; "
+			+ "$fv = ''; if ($w -and (Test-Path $w)) { $fv = (Get-Item $w).VersionInfo.FileVersion }; "
+			+ "$c = Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Office\\ClickToRun\\Configuration'; "
+			+ "'WORD|' + $fv + '|' + $c.VersionToReport + '|' + $c.UpdateChannel + '|' + $c.CDNBaseUrl + '|' + $c.Platform + '|' + $w";
+
+	private static List<String> readings;
+
+	/** The reading's line with this tag, or null; the call is made once per run. */
+	private static synchronized String reading(String tag) {
+		if (readings == null) {
+			readings = run(new String[] { "powershell", "-NoProfile", "-NonInteractive", "-Command", READING_SCRIPT });
+		}
+		for (String line : readings) {
+			if (line.startsWith(tag)) return line;
+		}
+		return null;
+	}
+
+	/** {@code DRIVER|name|version|date|maker|major} as a manifest value, or null. */
+	static String parseDriver(String line) {
+		if (line == null) return null;
+		String[] f = line.split("\\|", -1);
+		if (f.length < 6 || f[1].trim().isEmpty()) return null;
+		StringBuilder sb = new StringBuilder(f[1].trim());
+		if (!f[2].trim().isEmpty() && !f[2].trim().equals("0.0.0.0")) sb.append(", version ").append(f[2].trim());
+		if (!f[3].trim().isEmpty()) sb.append(", dated ").append(f[3].trim());
+		if (!f[4].trim().isEmpty()) sb.append(", by ").append(f[4].trim());
+		if (!f[5].trim().isEmpty()) sb.append(", v").append(f[5].trim()).append(" driver");
+		return sb.append(" (Get-PrinterDriver)").toString();
+	}
+
+	/**
+	 * {@code PAGE|printer|paper|width|height|x|y|printableWidth|printableHeight|landscape} as a
+	 * manifest value, or null.  System.Drawing gives the paper and the printable area in
+	 * hundredths of an inch, the area already turned for landscape; the four hard margins are
+	 * what lies outside the area, in points.
+	 */
+	static String parsePage(String line) {
+		if (line == null) return null;
+		String[] f = line.split("\\|", -1);
+		if (f.length < 10) return null;
+		try {
+			double w = Double.parseDouble(f[3].trim()), h = Double.parseDouble(f[4].trim());
+			if (Boolean.parseBoolean(f[9].trim())) { double t = w; w = h; h = t; }
+			double x = Double.parseDouble(f[5].trim()), y = Double.parseDouble(f[6].trim());
+			double pw = Double.parseDouble(f[7].trim()), ph = Double.parseDouble(f[8].trim());
+			return String.format(Locale.ROOT,
+					"%s %.1f x %.1fpt%s, hard margins left %.1f top %.1f right %.1f bottom %.1f pt (System.Drawing.Printing)",
+					f[2].trim(), w * 0.72, h * 0.72, Boolean.parseBoolean(f[9].trim()) ? " landscape" : "",
+					x * 0.72, y * 0.72, (w - x - pw) * 0.72, (h - y - ph) * 0.72);
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	/** The Click-to-Run channels Microsoft documents, by the GUID that ends their CDN URL. */
+	private static final String[][] CHANNELS = {
+			{ "492350f6-3a01-4f97-b9c0-c7c6ddf67d60", "Current Channel" },
+			{ "64256afe-f5d9-4f86-8936-8840a6a4f5be", "Current Channel (Preview)" },
+			{ "5440fd1f-7ecb-4221-8110-145efaa6372f", "Beta Channel" },
+			{ "55336b82-a18d-4dd6-b5f6-9e5095c314a6", "Monthly Enterprise Channel" },
+			{ "7ffbc6bf-bc32-4f92-8982-f9dd17fd3114", "Semi-Annual Enterprise Channel" },
+			{ "b8f9b850-328d-4355-9145-c59439a0c4cf", "Semi-Annual Enterprise Channel (Preview)" } };
+
+	/** {@code WORD|fileVersion|versionToReport|updateChannel|cdnBaseUrl|platform|path} as a
+	 *  manifest value, or null.  The channel is the GUID ending the update URL, named where it
+	 *  is one Microsoft documents; the GUID is kept either way. */
+	static String parseWord(String line) {
+		if (line == null) return null;
+		String[] f = line.split("\\|", -1);
+		if (f.length < 7) return null;
+		String file = f[1].trim(), c2r = f[2].trim(), path = f[6].trim();
+		String url = !f[3].trim().isEmpty() ? f[3].trim() : f[4].trim();
+		if (file.isEmpty() && c2r.isEmpty()) return null;
+		StringBuilder sb = new StringBuilder();
+		if (!c2r.isEmpty()) {
+			sb.append(c2r).append(" (Click-to-Run");
+			if (!url.isEmpty()) {
+				String guid = url.substring(url.lastIndexOf('/') + 1).toLowerCase(Locale.ROOT);
+				String name = null;
+				for (String[] ch : CHANNELS) if (ch[0].equals(guid)) name = ch[1];
+				sb.append(", ").append(name != null ? name + " " + guid : "channel " + guid);
+			}
+			if (!f[5].trim().isEmpty()) sb.append(", ").append(f[5].trim());
+			sb.append(')');
+			if (!file.isEmpty()) sb.append("; ");
+		}
+		if (!file.isEmpty()) sb.append("winword.exe ").append(file);
+		if (c2r.isEmpty() && !path.isEmpty()) sb.append(" (").append(path).append(')');
+		return sb.toString();
 	}
 
 	// ------------------------------------------------------------------ the manifest lines
@@ -172,9 +340,21 @@ public final class MachineState {
 		return Collections.unmodifiableList(out);
 	}
 
-	/** {@link #manifestLines(String, String, String)} of this machine. */
+	/** As {@link #manifestLines(String, String, String)}, with the printer's driver and page and
+	 *  Word's build after them.  @since 17.3.1 */
+	public static List<String> manifestLines(String connected, String proofing, String printer,
+			String driver, String page, String word) {
+		List<String> out = new ArrayList<String>(manifestLines(connected, proofing, printer));
+		out.add("printerDriver=" + blankToUnknown(driver));
+		out.add("printerPage=" + blankToUnknown(page));
+		out.add("word=" + blankToUnknown(word));
+		return Collections.unmodifiableList(out);
+	}
+
+	/** {@link #manifestLines(String, String, String, String, String, String)} of this machine. */
 	public static List<String> manifestLines() {
-		return manifestLines(connectedExperiences(), proofingLanguages(), defaultPrinter());
+		return manifestLines(connectedExperiences(), proofingLanguages(), defaultPrinter(),
+				printerDriver(), printerPage(), word());
 	}
 
 	private static String blankToUnknown(String value) {
