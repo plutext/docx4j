@@ -94,6 +94,17 @@ for Jason to file (JIRA in project FOP, then a GitHub PR titled `FOP-####: ...`,
 FOP-3330 were), and the commit subject takes the number once it exists. docx4j-export-fo builds
 against released FOP, so a docx4j workaround is still needed until the fix is released.
 
+## Fidelity findings register
+
+Word-layout fidelity work keeps its findings in the private Enterprise repository:
+`../Plutext-Enterprise-Java-11/docs/developer/fidelity-register/` (read its README). Before trying a
+fix for a cause, read the cause's entry and its attempts there (`causes.md`, `causes/`,
+`attempts.md`); the triage ledgers alone have lost attempts before. After every gate, record the
+attempt in `attempts.md` and the cause's entry, kept or reverted alike: what exactly was changed, the
+gate and its baseline, the numbers, the outcome, the reason, the commit. A finding about a corpus
+document goes in its `documents/<n>.md`, newest first. Corpus documents, Word's PDFs, renders and
+scoreboards never go in the register (quotes of a document's text may).
+
 ## Portfolio task registry
 
 This repository's change requests are indexed, with their dependencies on work in the other
