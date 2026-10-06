@@ -322,6 +322,9 @@ lost if the run is interrupted (a run resumes, skipping the PDFs already cut).
   to. Only in that case does the missing-`docx4j.properties` warning appear; once the switch is
   given, the configuration is decided and the warning would be noise.
 
+What has to stay constant for the goldens to be a fixed target - the printer, Word's build, the
+fonts and the rest - and how each is held and recorded is in **GOLDEN-ENVIRONMENT.md**.
+
 Either way the run prints the mode and the script path at startup and writes them into
 `golden-manifest.properties`:
 
