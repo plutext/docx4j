@@ -1307,9 +1307,22 @@ public class WordLineLayoutManager extends LineLayoutManager {
                     org.apache.fop.fonts.Font f = LBP.inlineFont(element.getLayoutManager());
                     if (f != null && f.getFontMetrics() != null) {
                         org.docx4j.fonts.PhysicalFont pf = org.docx4j.fonts.PhysicalFonts.get(f.getFontMetrics().getFullName());
-                        // the span's docx4j:font names the document font a substitute renders
-                        String docFont = foreignAttribute(element.getLayoutManager().getFObj(), "font");
-                        org.docx4j.fonts.WordLineMetrics.Metrics m = (pf == null && docFont == null) ? null
+                        // the span's docx4j:font names the document font a substitute renders.  Read off
+                        // the innermost inline: the element's own manager is the outermost inline's once
+                        // positions are wrapped, and the run's span is usually inside another, so until
+                        // 17.3.1 this found nothing and took the substitute's own ascent share.
+                        String docFont = innermostForeignAttribute(element, "font");
+                        /* An element naming no document font in the block's own font is the
+                         * block's text (or a bookmark's empty inline), and the block's declared
+                         * baseline is already Word's split for it.  The substitute's own share
+                         * is not: Nimbus Sans Narrow's is 0.7917 where Arial Narrow's is 0.8166,
+                         * so beside a run naming Arial Narrow the line took one's ascent and the
+                         * other's descent, 0.51pt over Word's box at 18pt (corpus document 9623,
+                         * its headings and running head).  Not on a picture-only line, whose
+                         * baseline is its box.  @since 17.3.1 */
+                        boolean blockText = docFont == null && wordBaseline > 0 && wordBaseline < wordLineBox
+                                && f.getFontMetrics().getFullName().equals(blockFontName());
+                        org.docx4j.fonts.WordLineMetrics.Metrics m = (blockText || pf == null && docFont == null) ? null
                                 : org.docx4j.fonts.WordLineMetrics.get(docFont, pf);
                         if (m != null && !m.fallback && m.lineHeightFactor() > 0) {
                             r = (m.winAscent + m.externalLeading) / m.lineHeightFactor();
@@ -2347,6 +2360,20 @@ public class WordLineLayoutManager extends LineLayoutManager {
         } else {
             return textAlignment;
         }
+    }
+
+    private String blockFontName;
+
+    /** The full name of the block's own font, which {@link #wordLine} tells the block's
+     *  text by.  @since 17.3.1 */
+    private String blockFontName() {
+        if (blockFontName == null) {
+            FontInfo fi = fobj.getFOEventHandler().getFontInfo();
+            FontTriplet[] fontkeys = fobj.getCommonFont().getFontState(fi);
+            Font fs = fi.getFontInstance(fontkeys[0], fobj.getCommonFont().fontSize.getValue(this));
+            blockFontName = fs.getFontMetrics() == null ? "" : fs.getFontMetrics().getFullName();
+        }
+        return blockFontName;
     }
 
     /** {@inheritDoc} */

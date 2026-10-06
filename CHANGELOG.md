@@ -225,6 +225,8 @@ PDF via XSL FO:
   the tab allow, as in Word; the tab had been counted as space.
 - A section's opening space-before is reduced by the previous section's break paragraph's space-after
   even when that empty paragraph is not drawn; it had been reduced by the paragraph or table before it.
+- A run set in a substitute font divides its line into ascent and descent by its document font's
+  metrics, and unmarked text by its paragraph's; the substitute's own metrics had been used.
 
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties

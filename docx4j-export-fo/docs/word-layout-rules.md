@@ -548,12 +548,26 @@ were 13.55 (15.59); mixed lines matched already. A span naming its document font
 attribute is read off the innermost inline of the element's position chain
 (`WordLineLayoutManager.innermostForeignAttribute`): the element's own layout manager is the
 outermost inline's once positions are wrapped. Gate b146: 2600 +64 lines (+80 in real-c2), 3653 +9,
-8132 +8, 5320 to Word's 2 pages; 9698 -87, an unmasking - its bold title now pitches 16.1 as
-Word's does (15.8 before), and a 2.5pt offset on the title's first line, which the short pitch
-had cancelled by the body, now reaches it - and 5041, 3229 and 7639 move a knife-edge break each
-(7639 one page short of Word's 34). Not yet done: the substitute-ascent lookup a few lines below
-reads `docx4j:font` off the outermost inline too, so it has probably not been finding it.
+8132 +8, 5320 to Word's 2 pages; 9698 -87, its bold title now pitching 16.1 as Word's does
+(15.8 before), and 5041, 3229 and 7639 move a knife-edge break each (7639 one page short of
+Word's 34). (A 2.5pt offset on 9698's title, read here before, was pdftotext's `yMin`: the
+baseline less the embedded face's ascent, Times New Roman's in Word's PDF and Tinos's in ours.
+On baselines the title is at 214.66 against Word's 214.63, and its body within 0.2pt.)
 `BoldLineHeightTest` (fails on the old code: 13556 against 13799).
+
+<a id="s27split"></a>**...and the line's split into ascent and descent is the document font's
+(17.3.1).** The same pass splits each run's pitch by the ascent share of the font its span names
+in `docx4j:font`, read since 17.3.1 off the innermost inline; it had been read off the outermost,
+found nothing, and taken the substitute's own share. An element naming no document font, in the
+block's own font - the block's text, a bookmark's empty `fo:inline` - takes the block's split,
+which is the document font's; the substitute's is not (Nimbus Sans Narrow's 0.7917 against Arial
+Narrow's 0.8166), and beside a run naming Arial Narrow the line took one's ascent and the other's
+descent, 0.51pt over Word's box at 18pt (corpus document 9623, its headings and running head).
+Gates b155 and b156: 6251's pitch 11.50 to Word's 12.00 (median dy -0.85 to -0.35, and a knife-edge
+line, -4), 12363, 6115 and 9919 +1. The lookup alone had also brought 9919 to Word's 87 pages, but
+with its contents lines 27.7pt apart where Word's are 22.4, a wrong pitch standing in for
+something else; the block's split takes it back. `BookmarkLineHeightTest` (fails without the
+block's split).
 
 ### 2.8 List labels
 
