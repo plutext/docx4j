@@ -4659,6 +4659,25 @@ public class XsltFOFunctions {
     	return Integer.toString(start);
     }
 
+    /** The current section's {@link #sectionMarkSpaceAfter(ConversionSectionWrapper)}, for
+     *  the XSLT pathway.  @since 17.3.1 */
+    public static String sectionMarkSpaceAfter(FOConversionContext context) {
+    	return sectionMarkSpaceAfter(context.getSections().getCurrentSection());
+    }
+
+    /**
+     * The space-after of the empty paragraph carrying this section's break, which is not
+     * rendered, as a length for the {@code docx4j-mark-after} hint on the section's fo:flow;
+     * "" where the paragraph is rendered (its block is the flow's last), where its space-after
+     * is automatic, or where the layout fixups are off.  The next section's first paragraph
+     * reduces its space-before by it (WordLayoutFixups.retainSpaceBeforeAtFlowStart).
+     * @since 17.3.1
+     */
+    public static String sectionMarkSpaceAfter(ConversionSectionWrapper section) {
+    	if (section == null || section.getDroppedMarkSpaceAfter() == null || !WordLayoutFixups.isEnabled()) return "";
+    	return org.docx4j.fonts.WordLineMetrics.format(section.getDroppedMarkSpaceAfter().intValue() / 20.0);
+    }
+
     /** {@code docx4j.convert.out.fo.wordLayout.restartParityBlankPage}, default true: see
      *  {@link #getForcePageCount}.  @since 17.3.1 */
     static boolean restartParityBlankPage() {

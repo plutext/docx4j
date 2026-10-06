@@ -223,6 +223,8 @@ PDF via XSL FO:
 
 - A justified line beginning with a number and a tab is compressed only as far as its spaces after
   the tab allow, as in Word; the tab had been counted as space.
+- A section's opening space-before is reduced by the previous section's break paragraph's space-after
+  even when that empty paragraph is not drawn; it had been reduced by the paragraph or table before it.
 
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties

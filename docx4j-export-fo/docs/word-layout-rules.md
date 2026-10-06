@@ -777,6 +777,18 @@ Heading of 24pt before: Word's "1 Contents" is at y=129.1 and docx4j's was at 10
 now at 127.5, and the report's ten contents pages match Word's line for line. Scored: 2422
 (a numbered heading at a section start) 0.956 to 0.988, 13383 a line.
 
+<a id="s3markafter"></a>**The previous section's last paragraph is its break paragraph, rendered or
+not (17.3.1).** An empty paragraph carrying a section break gets no block (Word gives it no line,
+`SectionBreakParagraphMarkTest`), so the rule read the space-after of the block before it - or of nothing, where a
+table ends the section. Measured on corpus document 13383, twelve sections: one ending in an empty
+Normal paragraph (after 0) after BodyText (after 6) has Word's next numbered heading (before 12)
+12pt down where docx4j gave 6, and one ending in an empty BodyText paragraph (after 6) after a
+table has Word's next heading 6pt down where docx4j gave 12; the two now sit at Word's offsets
+(84.9 and 78.9 against 87.2 and 81.2, the 2.3pt between them and Word another matter).
+`ConversionSectionWrapperFactory` records the dropped paragraph's effective space-after on the
+section, and the exporter passes it to the fixup on the `fo:flow` (`docx4j-mark-after`).
+`SectionBreakParagraphMarkTest`.
+
 **Contextual spacing.** `w:contextualSpacing` (ECMA-376 17.3.1.9) zeroes the gap between
 two same-style paragraphs when **either** carries it, not only on the flagged paragraph's
 side: a contextual paragraph followed by a non-contextual one of the same style with 12pt

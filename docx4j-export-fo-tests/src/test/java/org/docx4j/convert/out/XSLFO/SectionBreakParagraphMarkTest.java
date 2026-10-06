@@ -67,6 +67,43 @@ public class SectionBreakParagraphMarkTest extends AbstractXSLFOTest {
 		return "<w:p><w:r><w:t>" + text + "</w:t></w:r></w:p>";
 	}
 
+	// ------------------------------------- the next section's space-before (17.3.1)
+
+	/** The space-before of the second flow's first block. */
+	private static String secondSectionSpaceBefore(org.w3c.dom.Document doc) {
+		org.w3c.dom.Element f = (org.w3c.dom.Element) doc.getElementsByTagNameNS(FO, "flow").item(1);
+		org.w3c.dom.Element b = (org.w3c.dom.Element) f.getElementsByTagNameNS(FO, "block").item(0);
+		return b.getAttribute("space-before");
+	}
+
+	/**
+	 * The next section's first paragraph reduces its space-before by the space-after of the
+	 * section's last paragraph, which is the empty break paragraph even though it is not
+	 * rendered (corpus document 13383): after 0 on the mark, after 6 on the paragraph before
+	 * it, before 12 on the next - 12, not 6; and a mark of after 6 after a table - 6, not 12.
+	 * The hint carrying the mark's spacing does not reach the output.
+	 */
+	@Test
+	public void theUnrenderedMarksSpaceAfterReducesTheNextSectionsSpaceBefore() throws Exception {
+		String next = "<w:p><w:pPr><w:spacing w:before=\"240\"/></w:pPr><w:r><w:t>next section</w:t></w:r></w:p>"
+				+ "<w:sectPr>" + PG + "</w:sectPr>";
+		String markAfter0 = "<w:p><w:pPr><w:spacing w:after=\"0\"/><w:sectPr>" + PG + "</w:sectPr></w:pPr></w:p>";
+		String markAfter6 = "<w:p><w:pPr><w:spacing w:after=\"120\"/><w:sectPr>" + PG + "</w:sectPr></w:pPr></w:p>";
+		String table = "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"5000\"/></w:tblGrid>"
+				+ "<w:tr><w:tc><w:tcPr><w:tcW w:w=\"5000\" w:type=\"dxa\"/></w:tcPr>" + p("cell") + "</w:tc></w:tr></w:tbl>";
+		for (int flags : new int[] { Docx4J.FLAG_NONE, Docx4J.FLAG_EXPORT_PREFER_XSL }) {
+			org.w3c.dom.Document doc = fo(pkg("<w:p><w:pPr><w:spacing w:after=\"120\"/></w:pPr><w:r><w:t>after 6</w:t></w:r></w:p>"
+					+ markAfter0 + next), flags);
+			assertEquals("12 less the mark's 0, not the paragraph before it's 6", "12pt", secondSectionSpaceBefore(doc));
+			doc = fo(pkg(table + markAfter6 + next), flags);
+			assertEquals("12 less the mark's 6, where a table ends the flow", "6pt", secondSectionSpaceBefore(doc));
+			org.w3c.dom.NodeList flows = doc.getElementsByTagNameNS(FO, "flow");
+			for (int i = 0; i < flows.getLength(); i++) {
+				assertEquals("the hint is consumed", "", ((org.w3c.dom.Element) flows.item(i)).getAttribute("docx4j-mark-after"));
+			}
+		}
+	}
+
 	// ----------------------------------------------------------- an empty mark
 
 	private void emptyMarkProducesNoBlock(int flags) throws Exception {

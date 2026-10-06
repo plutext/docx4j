@@ -265,6 +265,8 @@ public class FOExporterVisitorDelegate extends AbstractVisitorExporterDelegate<F
 			Element currentParent) throws Docx4JException {
     Element ret = document.createElementNS(XSL_FO, "flow");
     	ret.setAttribute("flow-name", "xsl-region-body");
+    	String markAfter = XsltFOFunctions.sectionMarkSpaceAfter(sectionWrapper);
+    	if (markAfter.length() > 0) ret.setAttribute(WordLayoutFixups.HINT_MARK_AFTER, markAfter);
     	return ret;
 	}
 }

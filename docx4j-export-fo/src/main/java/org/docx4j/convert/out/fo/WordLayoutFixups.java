@@ -4891,10 +4891,27 @@ public final class WordLayoutFixups {
 					first.setAttribute("space-before", "0pt");
 				}
 			}
-			Element last = lastBlock(flow);
-			prevAfter = (last == null || !hasSpace(last, "space-after")) ? 0 : lengthPt(last.getAttribute("space-after"));
+			/* The previous section's last paragraph is the one carrying its break, which is not
+			 * rendered where it is empty; its space-after then comes as a hint on the flow, where
+			 * the flow's last block is the paragraph before it, or a table.  Measured on corpus
+			 * document 13383 (ledger9 part B §9): a section ending in an empty Normal paragraph
+			 * (after 0) after BodyText (after 6) - Word sets the next section's numbered heading
+			 * (before 12) 12pt down, docx4j, reading the BodyText, 6; a section ending in an empty
+			 * BodyText paragraph (after 6) after a table - Word 6, docx4j 12.  @since 17.3.1 */
+			String mark = flow.getAttribute(HINT_MARK_AFTER);
+			flow.removeAttribute(HINT_MARK_AFTER);
+			if (mark.length() > 0) {
+				prevAfter = lengthPt(mark);
+			} else {
+				Element last = lastBlock(flow);
+				prevAfter = (last == null || !hasSpace(last, "space-after")) ? 0 : lengthPt(last.getAttribute("space-after"));
+			}
 		}
 	}
+
+	/** On an fo:flow: the space-after of its section's empty break paragraph, which is not
+	 *  rendered (XsltFOFunctions.sectionMarkSpaceAfter).  @since 17.3.1 */
+	public static final String HINT_MARK_AFTER = "docx4j-mark-after";
 
 	/**
 	 * A vertically aligned section counts its last paragraph's space-after as part of

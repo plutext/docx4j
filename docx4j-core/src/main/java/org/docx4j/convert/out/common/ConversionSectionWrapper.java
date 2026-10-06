@@ -115,6 +115,23 @@ public class ConversionSectionWrapper extends SectionWrapper {
 		this.partPageStarts = partPageStarts;
 	}
 
+	/** The space-after, in twips, of the paragraph which carries this section's w:sectPr, where
+	 *  that paragraph is empty and so not rendered (Word gives an empty section-break paragraph
+	 *  no line); null where it is rendered, or where its space-after is automatic.  The next
+	 *  section's first paragraph reduces its space-before by it at the top of the new page, as
+	 *  Word does, so the FO exporter passes it on.  @since 17.3.1 */
+	protected java.math.BigInteger droppedMarkSpaceAfter = null;
+
+	/** @since 17.3.1 */
+	public java.math.BigInteger getDroppedMarkSpaceAfter() {
+		return droppedMarkSpaceAfter;
+	}
+
+	/** @since 17.3.1 */
+	public void setDroppedMarkSpaceAfter(java.math.BigInteger droppedMarkSpaceAfter) {
+		this.droppedMarkSpaceAfter = droppedMarkSpaceAfter;
+	}
+
 	/** @since 17.3.1 */
 	public void setPartVerticalMargins(java.util.Map<Integer, SectPr.PgMar> partVerticalMargins) {
 		this.partVerticalMargins = partVerticalMargins == null

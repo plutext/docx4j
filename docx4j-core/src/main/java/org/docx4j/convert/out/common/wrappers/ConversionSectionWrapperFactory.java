@@ -332,9 +332,12 @@ public class ConversionSectionWrapperFactory {
 							// is all it is), and the empty block otherwise ends the flow -
 							// and where it does not fit, starts a page of its own carrying
 							// only the running header.
+							java.math.BigInteger droppedMarkAfter = null;
 							if (sectionContent.isEmpty() || !rendersNothing((org.docx4j.wml.P)o)
 									|| closesAlignedTable(ppr.getSectPr(), sectionContent)) {
 								sectionContent.add(o);
+							} else {
+								droppedMarkAfter = spaceAfter((org.docx4j.wml.P)o, propertyResolver);
 							}
 							int[] weights = partWeights(sectionContent, columnParts);
 							Merged merged = spanColumnParts(sectionContent, columnParts, ppr.getSectPr(),
@@ -345,6 +348,7 @@ public class ConversionSectionWrapperFactory {
 									++conversionSectionIndex, sectionContent, dummyPageNumbering,
 									thisSectionStartsPage);
 							thisSectionStartsPage = followingStartsPage;
+							currentSectionWrapper.setDroppedMarkSpaceAfter(droppedMarkAfter);
 							usePartPageNumbering(currentSectionWrapper, columnParts);
 							useWinningPartCols(currentSectionWrapper, columnParts, ppr.getSectPr(), merged.cols, weights);
 							if (merged.cols != colsNum(ppr.getSectPr())) {
@@ -475,6 +479,28 @@ public class ConversionSectionWrapperFactory {
 		if (vAlign == org.docx4j.wml.STVerticalJc.TOP) return false;
 		if (sectionContent.isEmpty()) return false;
 		return XmlUtils.unwrap(sectionContent.get(sectionContent.size() - 1)) instanceof org.docx4j.wml.Tbl;
+	}
+
+	/**
+	 * The effective w:spacing/@w:after of a paragraph, in twips: 0 where none is stated
+	 * anywhere, null where it is automatic or cannot be resolved.  For the empty paragraph
+	 * carrying a section break, which is not rendered: the next section's first paragraph
+	 * reduces its space-before by it at the top of the page (measured, corpus document 13383:
+	 * a section ending in an empty Normal paragraph (after 0) after BodyText (after 6), its
+	 * next heading (before 12) at 12 in Word, where docx4j, reading the BodyText, gave 6; and
+	 * an empty BodyText one after a table, 6 in Word, 12 in docx4j).  @since 17.3.1
+	 */
+	private static java.math.BigInteger spaceAfter(org.docx4j.wml.P p, org.docx4j.model.PropertyResolver resolver) {
+		if (resolver == null) return null;
+		try {
+			org.docx4j.wml.PPr effective = resolver.getEffectivePPr(p.getPPr());
+			if (effective == null || effective.getSpacing() == null) return java.math.BigInteger.ZERO;
+			if (effective.getSpacing().isAfterAutospacing()) return null;
+			java.math.BigInteger after = effective.getSpacing().getAfter();
+			return after == null ? java.math.BigInteger.ZERO : after;
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	private static boolean rendersNothing(org.docx4j.wml.P p) {

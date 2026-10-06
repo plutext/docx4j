@@ -306,6 +306,13 @@
 					in this case there is only one target: xsl-region-body
 				-->
 				<fo:flow flow-name="xsl-region-body">
+					<!-- the space-after of the section's unrendered empty break paragraph, for
+					     WordLayoutFixups.retainSpaceBeforeAtFlowStart (17.3.1) -->
+					<xsl:variable name="markAfter"
+						select="java:org.docx4j.convert.out.fo.XsltFOFunctions.sectionMarkSpaceAfter($conversionContext)" />
+					<xsl:if test="string-length($markAfter) &gt; 0">
+						<xsl:attribute name="docx4j-mark-after"><xsl:value-of select="$markAfter"/></xsl:attribute>
+					</xsl:if>
 
 					<xsl:variable name="partname" 
 						select="java:org.docx4j.convert.out.common.XsltCommonFunctions.setCurrentPartMainDocument($conversionContext)" />
