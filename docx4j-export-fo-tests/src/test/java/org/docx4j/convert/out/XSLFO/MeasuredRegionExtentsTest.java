@@ -187,19 +187,34 @@ public class MeasuredRegionExtentsTest extends AbstractXSLFOTest {
 		assertEquals(0, countMeasured(doc));
 	}
 
-	/** An empty header part reserves nothing (HeaderFooterPolicy.reservesNothing), so it is not
-	 *  asked and the body starts at the top margin; an empty footer part is asked, its empty line
-	 *  being what Word reserves above the footer distance. */
+	/** An empty header part is asked, as an empty footer part is: its empty line is what Word
+	 *  reserves below the header distance (EmptyHeaderPartTest).  Until 17.3.1 it reserved
+	 *  nothing and was not asked. */
 	@Test
-	public void anEmptyHeaderIsNotAskedAnEmptyFooterIs() throws Exception {
+	public void anEmptyHeaderPartIsAskedAsAnEmptyFooterPartIs() throws Exception {
 		Docx4jProperties.setProperty(PROPERTY, "true");
 		org.w3c.dom.Document doc = fo(pkg("<w:p/>", "<w:p/>", 1440, 1440), Docx4J.FLAG_NONE);
 		Element spm = master(doc, "s1-default");
 		Element body = child(spm, "region-body");
-		assertTrue("an empty header is not measured", !measured(child(spm, "region-before")));
-		assertEquals("the body at the top margin", 72f,
+		assertTrue("an empty header part is measured", measured(child(spm, "region-before")));
+		assertEquals("the page master's top at the header distance", 36f, pt(spm.getAttribute("margin-top")), 0.01f);
+		assertEquals("the body's stated top at the top margin", 72f,
 				pt(spm.getAttribute("margin-top")) + pt(body.getAttribute("margin-top")), 0.01f);
 		assertTrue("an empty footer part is measured", measured(child(spm, "region-after")));
+	}
+
+	/** Over a negative top margin an empty header part paints nothing, so the body's edge is
+	 *  |top| without its height: it is not asked, and the footer still is. */
+	@Test
+	public void anEmptyHeaderPartOverANegativeTopMarginIsNotAsked() throws Exception {
+		Docx4jProperties.setProperty(PROPERTY, "true");
+		org.w3c.dom.Document doc = fo(pkg("<w:p/>", para("Footer"), -312, 1440), Docx4J.FLAG_NONE);
+		Element spm = master(doc, "s1-default");
+		Element body = child(spm, "region-body");
+		assertTrue("not measured", !measured(child(spm, "region-before")));
+		assertEquals("the body at |top|", 15.6f,
+				pt(spm.getAttribute("margin-top")) + pt(body.getAttribute("margin-top")), 0.01f);
+		assertTrue("the footer is measured", measured(child(spm, "region-after")));
 	}
 
 	/** A header painting over a negative top margin needs its extent from the pre-pass, which

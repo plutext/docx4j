@@ -792,9 +792,10 @@ public class FOPAreaTreeHelper {
     }
     
 
-    /** Whether the header this page master's region-before shows reserves nothing:
+    /** Whether the header this page master's region-before shows paints nothing:
      *  the dummy part docx4j invents for w:titlePg / w:evenAndOddHeaders, or a real
-     *  part with nothing in it (@since 17.1.0). */
+     *  part with nothing in it (@since 17.1.0).  Only the first reserves nothing
+     *  ({@link #isAbsentHeader}, since 17.3.1). */
 
     private static boolean isDummyHeader(org.docx4j.model.structure.HeaderFooterPolicy hf, String pageKind) {
     	if ("firstpage".equals(pageKind)) {
@@ -815,6 +816,21 @@ public class FOPAreaTreeHelper {
     		return org.docx4j.model.structure.HeaderFooterPolicy.reservesNothing(hf.getEvenFooter());
     	} else if ("default".equals(pageKind)) {
     		return org.docx4j.model.structure.HeaderFooterPolicy.reservesNothing(hf.getDefaultFooter());
+    	}
+    	return true;
+    }
+
+    /** Whether the document has no header for this page master at all - no part, or the
+     *  empty one docx4j invents - as against a real header part which paints nothing.
+     *  Word reserves the header distance and the empty part's line for the second, as it
+     *  does at the foot, and nothing for the first.  @since 17.3.1 */
+    private static boolean isAbsentHeader(org.docx4j.model.structure.HeaderFooterPolicy hf, String pageKind) {
+    	if ("firstpage".equals(pageKind)) {
+    		return org.docx4j.model.structure.HeaderFooterPolicy.isAbsent(hf.getFirstHeader());
+    	} else if ("evenpage".equals(pageKind)) {
+    		return org.docx4j.model.structure.HeaderFooterPolicy.isAbsent(hf.getEvenHeader());
+    	} else if ("default".equals(pageKind)) {
+    		return org.docx4j.model.structure.HeaderFooterPolicy.isAbsent(hf.getDefaultHeader());
     	}
     	return true;
     }
@@ -877,6 +893,7 @@ public class FOPAreaTreeHelper {
     	final Integer partNumber;
     	final PageDimensions page;
     	final boolean headerIsDummy;
+    	final boolean headerIsAbsent;
     	final boolean footerIsDummy;
     	final boolean footerIsAbsent;
 
@@ -926,8 +943,17 @@ public class FOPAreaTreeHelper {
     		 * (35.3pt): Word's body top is 21.6, ours was 35.3 + a 13.799pt dummy
     		 * extent = 49.1, so every line and the logo was +26.5 to +27.5pt low.
     		 * @since 17.1.0 */
+    		/* A real header part holding one empty paragraph is not absent, though: Word
+    		 * reserves its distance and the empty line, in compatibility modes 12, 14 and 15
+    		 * alike.  Measured on the header-empty-paragraph-compat probes (w:top=900,
+    		 * w:header=720, header1.xml one empty w:p of 12pt Liberation Serif at 1.15):
+    		 * Word's body top is 36 + 15.87 = 51.87, where ours, reserving nothing, was the
+    		 * 45pt top margin.  6541's goldens, which the 17.1.0 rule was read from, agree
+    		 * with the probes (a body top of about 48.9 = 35.45 + 13.43 under w:top=510).
+    		 * 65 corpus documents have such a part.  @since 17.3.1 */
     		String pageKind = partKind != null ? partKind : measuredName.substring(measuredName.indexOf("-") + 1);
     		boolean headerIsDummy = hfPolicy != null && isDummyHeader(hfPolicy, pageKind);
+    		boolean headerIsAbsent = hfPolicy == null || isAbsentHeader(hfPolicy, pageKind);
     		boolean footerIsDummy = hfPolicy != null && isDummyFooter(hfPolicy, pageKind);
     		boolean footerIsAbsent = hfPolicy == null || isAbsentFooter(hfPolicy, pageKind);
     		this.index = index;
@@ -935,6 +961,7 @@ public class FOPAreaTreeHelper {
     		this.partNumber = partNumber;
     		this.page = page;
     		this.headerIsDummy = headerIsDummy;
+    		this.headerIsAbsent = headerIsAbsent;
     		this.footerIsDummy = footerIsDummy;
     		this.footerIsAbsent = footerIsAbsent;
     	}
@@ -951,9 +978,9 @@ public class FOPAreaTreeHelper {
      * distance and the body's at what the top margin adds to it, the body starts at
      * max(top margin, header distance + header height), Word's rule; and likewise at the foot.
      * docx4j's exceptions are the regions it does not ask: a header or footer which reserves
-     * nothing (docx4j's invented part, an empty header part, no footer part, and the empty
-     * footer part of a merged run's single master whose footer distance is clamped) keeps the
-     * stated values, as it would have measuring nothing.  A negative margin fixes the body's
+     * nothing (no part or docx4j's invented one, and the empty footer part of a merged run's
+     * single master whose footer distance is clamped) keeps the stated values, as it would
+     * have measuring nothing.  A negative margin fixes the body's
      * edge whatever the header or footer does, Word letting it overlap the text; where such a
      * header or footer paints something its region still needs its height, which only the
      * pre-pass gives, so null is returned and nothing is changed.</p>
@@ -985,7 +1012,7 @@ public class FOPAreaTreeHelper {
     		if (spm.getRegionBefore() != null) {
     			float headerMarginPts = page.getHeaderMargin()/20f;
     			float topMarginPts = page.getPgMar().getTop().intValue()/20f;
-    			if (!mp.headerIsDummy) {
+    			if (!mp.headerIsAbsent && topMarginPts >= 0) {
     				spm.setMarginTop(headerMarginPts+"pt");
     				spm.getRegionBody().setMarginTop(Math.max(0f, topMarginPts - headerMarginPts)+"pt");
     				measured.add(spm.getMasterName() + "/before");
@@ -1059,7 +1086,7 @@ public class FOPAreaTreeHelper {
     			Integer partNumber = mp.partNumber;
     			int index = mp.index;
     			PageDimensions page = mp.page;
-    			boolean headerIsDummy = mp.headerIsDummy;
+    			boolean headerIsAbsent = mp.headerIsAbsent;
     			boolean footerIsDummy = mp.footerIsDummy;
     			boolean footerIsAbsent = mp.footerIsAbsent;
 
@@ -1078,8 +1105,8 @@ public class FOPAreaTreeHelper {
 		    			/* Word starts the body at the top margin, and pushes it down only
 		    			 * where the header reaches further, ie where the header distance
 		    			 * plus the header's own height is more than the top margin.  Where
-		    			 * there is no header (or an empty one), there is nothing to reserve
-		    			 * and the header distance alone must not move the body: until 17.0.5
+		    			 * there is no header part, there is nothing to reserve and the
+		    			 * header distance alone must not move the body: until 17.0.5
 		    			 * it did, since the page master's own margin-top is the header
 		    			 * distance, so a document with w:header greater than w:pgMar/@w:top
 		    			 * had its whole body pushed down by the difference.
@@ -1094,7 +1121,7 @@ public class FOPAreaTreeHelper {
 		    			 * ours at 49.25 - +33.7pt on the table header, on page 2 and on
 		    			 * every one of six pictures.  A second document, w:top="-993",
 		    			 * was +97.5pt throughout.  @since 17.1.0 */
-		    			float headerReserve = headerIsDummy ? 0f : hBpdaPts;
+		    			float headerReserve = headerIsAbsent ? 0f : hBpdaPts;
 		    			float bodyTop = topMarginPts < 0 ? -topMarginPts
 		    					: Math.max(topMarginPts,
 		    					(headerReserve>0) ? headerMarginPts + headerReserve : 0f);

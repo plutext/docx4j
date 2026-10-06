@@ -279,21 +279,20 @@ public class HeaderFooterPolicy {
 	}
 
 	/**
-	 * Whether this header or footer reserves no space on the page: either it is the
-	 * dummy part docx4j invents ({@link #isDummy}), or it is a real part with nothing
-	 * in it - at most one paragraph, painting nothing.
+	 * Whether this header or footer paints nothing: either it is the dummy part docx4j
+	 * invents ({@link #isDummy}), or it is a real part with nothing in it - at most one
+	 * paragraph, painting nothing.
 	 *
-	 * <p>Measured against Word 365.  A document with <code>w:pgMar/@w:top=510</code>
-	 * (25.5pt) and <code>w:header=709</code> (35.45pt) whose <code>header1.xml</code>
-	 * holds a single empty <code>w:p</code>: Word's body top is 25.5 (its first
-	 * baseline 38.7), so the empty header contributes neither its own line box nor the
-	 * header distance; ours reserved 35.45 + a 13.428pt line, +22.9pt on every page,
-	 * and Word's last page-1 row fell onto our page 2.  The mirror at the foot: a
-	 * document with <code>w:bottom=1418</code> (70.9pt) and <code>w:footer=5811</code>
-	 * (290.55pt) whose two footer parts are each one empty <code>w:p</code> - Word's
-	 * body runs to 756.2 and paints nothing at 551, where our
-	 * <code>margin-bottom="290.55pt"</code> ended the body at 551.4 and made 3 Word
-	 * pages 5.</p>
+	 * <p>Despite the name, Word does reserve space for a real part of this kind: at the
+	 * head of the page, as at the foot, it reserves the header (footer) distance and the
+	 * empty paragraph's line.  Only a part which is absent ({@link #isAbsent}) reserves
+	 * nothing.  Measured against Word 365 on a document with <code>w:pgMar/@w:top=900</code>
+	 * (45pt) and <code>w:header=720</code> (36pt) whose <code>header1.xml</code> holds a
+	 * single empty <code>w:p</code>, in compatibility modes 12, 14 and 15: Word's body
+	 * top is 36 + the 15.87pt line = 51.87, not the top margin.  (Until 17.3.1 this
+	 * javadoc said otherwise, read from a document whose Word PDFs agree with the
+	 * measurement once read again.)  The FO exporter still asks this, to know whether a
+	 * header over a negative top margin needs its height measured.</p>
 	 *
 	 * @since 17.1.0
 	 */

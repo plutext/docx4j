@@ -14,11 +14,10 @@ import org.docx4j.wml.Text;
 import org.junit.Test;
 
 /**
- * Word reserves nothing on the page for a header or footer with nothing in it: measured
- * on a document with <code>w:pgMar/@w:top=510</code> (25.5pt) and
- * <code>w:header=709</code> (35.45pt) whose header is a single empty <code>w:p</code>,
- * Word's body top is 25.5 - neither the empty paragraph's line box nor the header
- * distance moves it.
+ * Which headers and footers paint nothing: no part, docx4j's invented one, or a real
+ * part of at most one paragraph with nothing in it.  (Word still reserves space for a
+ * real empty part - see {@link HeaderFooterPolicy#reservesNothing} - so the FO exporter
+ * asks {@link HeaderFooterPolicy#isAbsent} for that.)
  *
  * @since 17.1.0
  */

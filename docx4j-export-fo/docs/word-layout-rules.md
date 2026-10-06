@@ -4345,8 +4345,8 @@ CR-018; CR-031 phase 5, 17.3.1), from that renderer: docx4j writes `fox:extent="
 region that reserves space, the page master's margin at the header (footer) distance and the
 body's at what the top (bottom) margin adds to it, and the renderer makes the body's margin the
 larger of that and the region's height, which is Word's rule; the pre-pass is skipped. A region
-that reserves nothing (an invented part, an empty header part, no footer part, the clamped empty
-footer of a merged run's single master) is not asked and keeps its stated values, a footer's
+that reserves nothing (no part or an invented one, the clamped empty footer of a merged run's
+single master) is not asked and keeps its stated values, a footer's
 content at its foot. A header or footer painting over a negative margin keeps the pre-pass for
 the document, since only the pre-pass gives that region a height it does not reserve. A header
 line holding only a STYLEREF gets a zero-length leader as a strut (`StyleRefMarkers`), since the
@@ -4404,6 +4404,20 @@ nothing put ours at 70.85 and every line 19.8pt above Word's. 7 documents of the
 corpora have `w:footer` greater than `w:pgMar/@w:bottom` with every footer part empty, and
 70 have a header that is only empty paragraphs.
 
+<a id="s7emptyhdr"></a>**Refuted at the head of the page too (17.3.1): an empty header part
+reserves its distance and its line**, as an empty footer part does ([§7](#s7emptyftr)). The
+header reading above does not hold: 6541's goldens, cut by two builds of Word, both put its first
+baseline at 62, a body top of about 48.9 = 35.45 + 13.43, not 25.5. The
+`header-empty-paragraph-compat12/14/15` probes (CR-001 batch 53) settle it in every mode:
+`w:pgMar w:top="900"` (45pt), `w:header="720"` (36pt), `header1.xml` one empty `w:p` of 12pt
+Liberation Serif at `w:line="276"` - Word's body top is 36 + 15.87 = 51.87 in modes 12, 14 and 15
+alike, where docx4j, reserving nothing, started the body at the 45pt top margin.
+`FOPAreaTreeHelper` asks `HeaderFooterPolicy.isAbsent` for the header as for the footer;
+`reservesNothing` now says only that a part paints nothing, which a header over a negative top
+margin still needs. Gate b143 against b142: 2600 +42 lines (real2; +29 in real-c2), 6541 +9 (+8),
+2064 +1, nothing worse; of 65 corpus documents with such a part the rest have a top margin past
+the header's reach. `EmptyHeaderPartTest`, `MeasuredRegionExtentsTest`.
+
 <a id="s7emptyftr"></a>**Settled, and at the foot the rule is different (17.1.0).** The two
 documents which disagreed with the paragraph above are the discriminator: an *empty footer
 part* is not the same as **no** footer part. With no `footerReference` at all Word reserves
@@ -4444,9 +4458,9 @@ parts' vertical margins differ and which has no part masters** (Apache FOP, or a
 without `page-master-by-content`), where it would end every page of the run high and the clamp
 stays the lesser error. With part masters each section's distance is on the pages it owns.
 `EmptyFooterPartTest`, `PageMasterByContentTest`.
-`HeaderFooterPolicy.isAbsent` tells the two cases apart. The head of the page keeps the
-rule above unchanged - there an empty part reserves neither the distance nor a line box,
-which is what its own measurement says. **15 documents of the three corpora have an empty
+`HeaderFooterPolicy.isAbsent` tells the two cases apart. Until 17.3.1 the head of the page
+kept the rule above, an empty part reserving neither the distance nor a line box; it follows
+the foot now ([§7](#s7emptyhdr)). **15 documents of the three corpora have an empty
 footer part.**
 
 <a id="s7emptyspacing"></a>**Where an empty part reserves, its paragraphs' spacing is

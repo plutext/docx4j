@@ -197,6 +197,9 @@ PDF via XSL FO:
 - An anchored picture taller than the page body is drawn once, overflowing the margins as Word
   draws it, where it had been spread over two pages.
 
+- A header part holding one empty paragraph reserves the header distance and that paragraph's
+  line, as Word does, where the body had started at the top margin.
+
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties
   docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine and tableTakesPageBreak are now on by
