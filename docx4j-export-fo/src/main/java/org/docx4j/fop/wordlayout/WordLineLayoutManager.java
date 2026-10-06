@@ -3706,12 +3706,16 @@ public class WordLineLayoutManager extends LineLayoutManager {
         for (Object o : seq) {
             // the element reports the fo:inline the block is nested in; the block's own
             // manager is further down its position chain
+            // (a TableContentPosition answers itself as its own sub-position, so the walk
+            // stops where the chain does not advance)
             org.apache.fop.fo.flow.Block b = null;
-            for (Position pos = ((ListElement) o).getPosition(); pos != null && b == null; pos = pos.getPosition()) {
+            for (Position pos = ((ListElement) o).getPosition(); pos != null && b == null; ) {
                 LayoutManager lm = pos.getLM();
                 if (lm != null && lm.getFObj() instanceof org.apache.fop.fo.flow.Block) {
                     b = (org.apache.fop.fo.flow.Block) lm.getFObj();
                 }
+                Position sub = pos.getPosition();
+                pos = sub == pos ? null : sub;
             }
             if (b == null) {
                 if (((ListElement) o).isBox()) return false;
