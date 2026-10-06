@@ -258,6 +258,26 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	}
 
 	/**
+	 * Whether a paragraph's widows and orphans are counted across its soft returns, as
+	 * Word's widow control counts them (WordLineLayoutManager.linesAcrossSoftReturns).
+	 * On by default; docx4j property or system property
+	 * docx4j.convert.out.fo.wordLayout.widowsAcrossSoftReturns=false counts each run of
+	 * lines between them on its own, as FOP does.
+	 *
+	 * @since 17.3.1
+	 */
+	public static final String WIDOWS_ACROSS_SOFT_RETURNS
+			= "docx4j.convert.out.fo.wordLayout.widowsAcrossSoftReturns";
+
+	public static boolean widowsAcrossSoftReturns() {
+		String v = System.getProperty(WIDOWS_ACROSS_SOFT_RETURNS);
+		if (v == null) {
+			return Docx4jProperties.getProperty(WIDOWS_ACROSS_SOFT_RETURNS, true);
+		}
+		return Boolean.parseBoolean(v.trim());
+	}
+
+	/**
 	 * Whether a {@code w:tab} carries a space character in the PDF's text layer, as Word's
 	 * does, rather than being a jump of the pen.
 	 *

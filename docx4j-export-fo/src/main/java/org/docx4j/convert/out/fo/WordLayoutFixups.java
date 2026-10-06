@@ -178,6 +178,7 @@ public final class WordLayoutFixups {
 		emptyLineAfterLineBreak(doc);
 		keepBreakOnlyParagraphsTogether(doc); // after emptyLineAfterLineBreak: it counts the same nested blocks
 		splitInlinesAtLineBreaks(doc); // after the two above, which read a w:br's block inside its run's inline
+		wrapLineBreakBlocks(doc);
 		tocLeaderEndIndent(doc);
 		leadingWhitespaceLeader(doc);
 		containWhitespaceTreatment(doc);
@@ -3802,7 +3803,8 @@ public final class WordLayoutFixups {
 	 * the breaks plus one, exact since nothing can wrap - is two or three.  A longer such
 	 * paragraph Word may split two and two; it is left alone.  A paragraph <em>with</em>
 	 * text between its breaks is left alone too: how many lines each part takes is not
-	 * known until layout, so its widow control across the breaks is still open (§10).
+	 * known until layout; the line manager counts its widows and orphans across the
+	 * breaks (WordLineLayoutManager.linesAcrossSoftReturns, 17.3.1).
 	 * Property {@code docx4j.convert.out.fo.wordLayout.keepBreakOnlyParagraph}.</p>
 	 *
 	 * @since 17.2.0
@@ -4077,6 +4079,29 @@ public final class WordLayoutFixups {
 
 	private static boolean isXmlWhitespace(char c) {
 		return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+	}
+
+	/**
+	 * A {@code w:br}'s block standing directly in its paragraph's block goes into an
+	 * {@code fo:inline}, as the visitor pathway writes it.  The XSLT pathway writes it as the
+	 * paragraph block's own child, and FOP then lays the paragraph out as a line manager for
+	 * the text before the break, the break's block, and another for the text after, so the
+	 * line manager could not count the paragraph's widows and orphans across the break
+	 * (WordLineLayoutManager.linesAcrossSoftReturns), which it can for a break inside an
+	 * inline.  The two pathways' layouts of such a paragraph are the same otherwise.
+	 * {@code WidowsAcrossSoftReturnsTest}.  @since 17.3.1
+	 */
+	static void wrapLineBreakBlocks(Document doc) {
+		List<Element> breaks = new ArrayList<>();
+		for (Element block : elements(doc, "block")) {
+			Node parent = block.getParentNode();
+			if (isLineBreak(block) && parent instanceof Element && isFo((Element) parent, "block")) breaks.add(block);
+		}
+		for (Element br : breaks) {
+			Element inline = doc.createElementNS(FO_NS, "fo:inline");
+			br.getParentNode().replaceChild(inline, br);
+			inline.appendChild(br);
+		}
 	}
 
 	/**

@@ -235,6 +235,8 @@ PDF via XSL FO:
   family's italic face; it had been drawn upright.
 - PDF: accented Latin, Greek and Cyrillic text in Cambria copies out as written; FOP's ccmp had
   decomposed each letter and put its accent ahead of it in the text layer.
+- PDF: widow control counts a paragraph's lines across its line breaks, as Word's does; a paragraph
+  ending in a line break is no longer divided one line on each page.
 
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties

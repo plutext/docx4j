@@ -3652,6 +3652,78 @@ public class WordLineLayoutManager extends LineLayoutManager {
     }
 
     /**
+     * Word's widow control counts a paragraph's lines across its soft returns; FOP's counts
+     * each run of lines between them on its own.  BrWriter writes a {@code w:br} as a
+     * nested {@code fo:block}, which splits the block's content into separate Knuth
+     * paragraphs here, so a break between any two of them was always allowed and widows
+     * and orphans were applied to each part alone: a paragraph of a line of text and a
+     * trailing {@code w:br} - two lines to Word, which widow control will not divide - was
+     * set one line on each page.  Measured on corpus document 2065, whose article entries
+     * end in a {@code w:br}: Word moves such an entry to the next page whole, where docx4j
+     * left its text at the foot of the page, and the next page started 16pt high.
+     *
+     * <p>Where every block-level part of this block is a soft return's block (an
+     * {@code fo:block} with {@code linefeed-treatment="preserve"} and no break), the lines
+     * of the inline parts are counted together: the result holds, for each Knuth paragraph,
+     * the number of lines before it, and the total last.  Null where widow control is off
+     * (widows and orphans of 1), where the block has no soft return, or where a part is
+     * some other block, which keeps FOP's counting.</p>
+     *
+     * @since 17.3.1
+     */
+    private int[] linesAcrossSoftReturns() {
+        if (!WordLayoutCustomizer.widowsAcrossSoftReturns()) return null;
+        if (handlingFloat() || knuthParagraphs.size() < 2) return null;
+        if (fobj.getOrphans() <= 1 && fobj.getWidows() <= 1) return null;
+        int n = knuthParagraphs.size();
+        int[] before = new int[n + 1];
+        boolean softReturn = false;
+        for (int p = 0; p < n; p++) {
+            KnuthSequence seq = knuthParagraphs.get(p);
+            before[p + 1] = before[p];
+            if (seq.isInlineSequence()) {
+                before[p + 1] += lineLayoutsList[p].getChosenLineCount();
+            } else if (isSoftReturn(seq)) {
+                softReturn = true;
+            } else {
+                return null;
+            }
+        }
+        if (log.isDebugEnabled() && softReturn) log.debug("linesAcrossSoftReturns: " + java.util.Arrays.toString(before));
+        return softReturn ? before : null;
+    }
+
+    /** Whether a page may break before the paragraph's line {@code line} (counted from 0
+     *  across its soft returns), by its widows and orphans.  @since 17.3.1 */
+    private boolean breakAllowedBefore(int line, int[] linesBefore) {
+        int total = linesBefore[linesBefore.length - 1];
+        return line >= fobj.getOrphans() && line <= total - fobj.getWidows();
+    }
+
+    /** Whether this block-level Knuth sequence is a soft return's nested block.  @since 17.3.1 */
+    private static boolean isSoftReturn(KnuthSequence seq) {
+        boolean found = false;
+        for (Object o : seq) {
+            // the element reports the fo:inline the block is nested in; the block's own
+            // manager is further down its position chain
+            org.apache.fop.fo.flow.Block b = null;
+            for (Position pos = ((ListElement) o).getPosition(); pos != null && b == null; pos = pos.getPosition()) {
+                LayoutManager lm = pos.getLM();
+                if (lm != null && lm.getFObj() instanceof org.apache.fop.fo.flow.Block) {
+                    b = (org.apache.fop.fo.flow.Block) lm.getFObj();
+                }
+            }
+            if (b == null) {
+                if (((ListElement) o).isBox()) return false;
+                continue;
+            }
+            if (b.getLinefeedTreatment() != Constants.EN_PRESERVE || b.getBreakBefore() != Constants.EN_AUTO) return false;
+            found = true;
+        }
+        return found;
+    }
+
+    /**
      * Creates the element list in BP direction for the broken lines.
      * @param alignment the currently applicable vertical alignment
      * @param context the layout context
@@ -3666,9 +3738,17 @@ public class WordLineLayoutManager extends LineLayoutManager {
         // break possibility that follows the line (glue after a taken break is
         // dropped, so the last line of a page keeps only its text box)
         int pendingLeading = 0;
+        int[] linesBefore = linesAcrossSoftReturns();
         for (int p = 0; p < knuthParagraphs.size(); p++) {
             // penalty between paragraphs
-            if (p > 0) {
+            if (p > 0 && linesBefore != null && !breakAllowedBefore(linesBefore[p], linesBefore)) {
+                // within the widows or orphans counted across the soft returns (17.3.1)
+                returnList.add(new KnuthPenalty(0, KnuthElement.INFINITE, false, new Position(this), false));
+                if (pendingLeading > 0) {
+                    returnList.add(new LeadingGlue(pendingLeading));
+                    pendingLeading = 0;
+                }
+            } else if (p > 0) {
                 Keep keep = getKeepTogether();
                 returnList.add(new BreakElement(
                             new Position(this),
@@ -3720,9 +3800,12 @@ public class WordLineLayoutManager extends LineLayoutManager {
                         orphans = 1;
                         widows = 1;
                     }
+                    boolean outsideWidowsAndOrphans = linesBefore != null
+                            ? breakAllowedBefore(linesBefore[p] + i, linesBefore)
+                            : i >= orphans && i <= llPoss.getChosenLineCount() - widows;
                     if (returnList.size() > 0
                             && i > 0 //if i==0 break generated above already
-                            && i >= orphans && i <= llPoss.getChosenLineCount() - widows) {
+                            && outsideWidowsAndOrphans) {
                         // penalty allowing a page break between lines
                         Keep keep = getKeepTogether();
                         returnList.add(new BreakElement(

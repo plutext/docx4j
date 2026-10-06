@@ -1329,7 +1329,26 @@ on both sides. Word's widow and orphan decisions match FOP's once the line break
 built-in heading style sets, maps to `keep-together.within-page="always"` in FO and
 `page-break-inside: avoid` in CSS. Without it a heading broken over two lines by a `w:br`
 could straddle a page, because the `w:br` is a nested block, which ends FOP's line sequence
-and puts widow control out of reach (§10).
+and put widow control out of reach (§10) until 17.3.1 (below).
+
+<a id="s39brkeep"></a>**Widow control counts a paragraph's lines across its soft returns (17.3.1).**
+Word's `w:widowControl` applies to all of a paragraph's lines, whatever ended them. FOP's
+widows and orphans apply within one line sequence, and the nested `fo:block` docx4j writes for
+a `w:br` divides the paragraph into several, so a break between them was always legal: a line
+of text and a trailing `w:br` - two lines to Word, which widow control will not divide - was set
+one line at the foot of a page and the empty one at the top of the next. Measured on corpus
+document 2065, whose article entries each end in a `w:br`: Word takes such an entry to the next
+page whole, where docx4j left its text at the foot, and the next page began 16pt high.
+`WordLineLayoutManager.linesAcrossSoftReturns` counts the lines of the inline parts together
+where every block-level part of the paragraph is a soft return's block, and allows a page break
+before line *g* only where *g* is at least the orphans and at most the total less the widows,
+between the parts as within them. On the XSLT pathway the break's block stood directly in the
+paragraph's block, which FOP lays out as separate line managers, so it is wrapped in an
+`fo:inline` as the visitor pathway writes it (`WordLayoutFixups.wrapLineBreakBlocks`). A
+paragraph of soft returns alone keeps its own rule (`keep-together`, `keepBreakOnlyParagraph`).
+Gate b161: 3955 to 1.0000, 2065 +8, 8985 +3, 13046 and 5625 +1, the `keep-chain-room` probes
+in modes 14 and 15 0.8966 to 1.0000, nothing down. Property
+`docx4j.convert.out.fo.wordLayout.widowsAcrossSoftReturns`. `WidowsAcrossSoftReturnsTest`.
 
 <a id="s39keepchain"></a>**A keep Word cannot satisfy it drops; FOP overflows the page.**
 `w:keepNext` becomes `keep-with-next.within-page="always"`, which FOP writes as a penalty
