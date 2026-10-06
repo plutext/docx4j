@@ -841,3 +841,26 @@ already kept what it knows typed and the rest as DOM; the word is now
 `lax`, which is what ECMA-376 Part 3 means and what JAXB did. The
 regenerated Java sources differ only in javadoc and an unused import; the
 mc tests are green. objects-ts regenerates from this commit.
+
+### 8.13 Re-measured: preferChoice=wps on today's code (2026-10-06, ledger9)
+
+Corpus document 4069 (real-c2) draws an unrelated photo where Word draws a grey text box reading
+"Photograph / PP size". Its `mc:Choice Requires="wpg"` holds a plain anchored `wps` shape (no
+`wpg:wgp`), and its Fallback is a different picture (a 181 x 227 JPEG), not a copy of the box. So
+the default (Fallback) loses the box's text, and even `preferChoice=wps` would not reach it, since
+the Choice names `wpg`.
+
+Gate b141 (docx4j b50591218 on the 2.11-docx4j.5 snapshot) with `-Ddocx4j.jaxb.mc.preferChoice=wps`
+against b140, the four corpora and the probes:
+- **No corpus document moves.** The 17.1.0 measurement (two documents fell) no longer holds; the text
+  box work since (insets, strokes, VML positions) has closed the gap between the branches.
+- **Probes:** `textbox-inset-stroke-list` +22 lines (0.79 -> 0.89), `mc-textbox-branches-numbered` +4,
+  `tables-textbox-in-cell` +2.
+- **The one loss is §8.6 item 2:** `mc-textbox-branches-bound-sdt` -1. Its text box is inline, and the
+  FO exporter still draws no inline `wps` text box, so its text disappears where the VML Fallback
+  kept it.
+
+So the default can flip to `wps` once the FO exporter draws an inline `wps` text box (and the HTML
+exporter, §8.6 item 1, either draws `v:textbox` or follows). Then a Choice that names `wpg` but
+holds no `wpg:wgp` should count as `wps`, which reaches 4069. Not batch 53; a CR-021 follow-up.
+
