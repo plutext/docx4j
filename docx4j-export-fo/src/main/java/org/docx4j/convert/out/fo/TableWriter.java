@@ -1089,6 +1089,19 @@ public class TableWriter extends AbstractTableWriter {
 	 * with the row after it by construction.  The keep on the row is what FOP propagates
 	 * out of the table.</p>
 	 *
+	 * <p><b>Such a row holding a nested table is kept whole</b>, as {@code w:cantSplit}
+	 * keeps it (17.3.1).  Measured on the table-nested-rowsplit probes (CR-001 batch 53,
+	 * corpus document 12301; mode 15): an outer row of a paragraph and a 20-row nested
+	 * table, 280pt, starting with 152pt left on the page.  Without a keep Word splits the
+	 * row there, as docx4j does (a); with {@code w:cantSplit} it moves the row whole (c); and
+	 * with {@code w:keepNext} on the row's first paragraph it moves it whole too (d), where
+	 * docx4j split it.  Only where the keep is a paragraph's, as measured: a row whose cell
+	 * opens with the nested table, and keeps by that table's first row, is left alone.  Word
+	 * moves such rows whole too (corpus document 12301's layout table, one section per row),
+	 * but where a run of them cannot fit a page it breaks a keep between rows, while FOP,
+	 * given each row kept whole, ran page 146 72pt past the body.  Rows without a nested
+	 * table are not changed: the probes measured none.</p>
+	 *
 	 * @since 17.2.0
 	 */
   	@Override
@@ -1100,7 +1113,60 @@ public class TableWriter extends AbstractTableWriter {
   		if (rowIndex < 0 || rowIndex >= table.getRows().size()) return;
   		if (rowKeepsWithNext(table.getRows().get(rowIndex))) {
   			row.setAttribute("keep-with-next", "always");
+  			if (rowKeepIsAParagraphs(table.getRows().get(rowIndex))
+  					&& rowHoldsNestedTable(table.getRows().get(rowIndex))
+  					&& !row.hasAttribute("keep-together.within-page")) {
+  				row.setAttribute("keep-together.within-page", "always");
+  			}
   		}
+  	}
+
+  	/** Whether the row keeps with the next by its first cell's first paragraph, rather than
+  	 *  by a nested table opening that cell.  @since 17.3.1 */
+  	static boolean rowKeepIsAParagraphs(org.docx4j.model.table.TableModelRow rowModel) {
+  		for (TableModelCell cell : rowModel.getRowContents()) {
+  			if (cell.isDummy()) continue;
+  			Node content = ((AbstractTableWriterModelCell) cell).getContent();
+  			if (content == null) return false;
+  			NodeList children = content.getChildNodes();
+  			for (int i = 0; i < children.getLength(); i++) {
+  				Node n = children.item(i);
+  				if (n.getNodeType() != Node.ELEMENT_NODE) continue;
+  				String name = localName((Element) n);
+  				if ("block".equals(name) || "list-block".equals(name)) return true;
+  				if ("table".equals(name)) return false;
+  				if ("block-container".equals(name) || "wrapper".equals(name)) {
+  					// look inside, as firstBlockKeepsWithNext does
+  					NodeList inner = n.getChildNodes();
+  					for (int k = 0; k < inner.getLength(); k++) {
+  						Node m = inner.item(k);
+  						if (m.getNodeType() != Node.ELEMENT_NODE) continue;
+  						return !"table".equals(localName((Element) m));
+  					}
+  				}
+  			}
+  			return false;
+  		}
+  		return false;
+  	}
+
+  	/** Whether any cell of the row holds a table of its own.  @since 17.3.1 */
+  	static boolean rowHoldsNestedTable(org.docx4j.model.table.TableModelRow rowModel) {
+  		for (TableModelCell cell : rowModel.getRowContents()) {
+  			if (cell.isDummy()) continue;
+  			Node content = ((AbstractTableWriterModelCell) cell).getContent();
+  			if (content != null && holdsTable(content.getChildNodes())) return true;
+  		}
+  		return false;
+  	}
+
+  	private static boolean holdsTable(NodeList children) {
+  		for (int i = 0; i < children.getLength(); i++) {
+  			Node n = children.item(i);
+  			if (n.getNodeType() != Node.ELEMENT_NODE) continue;
+  			if ("table".equals(localName((Element) n)) || holdsTable(n.getChildNodes())) return true;
+  		}
+  		return false;
   	}
 
   	/** The first paragraph of the row's first cell keeps with next (Word's rule). */

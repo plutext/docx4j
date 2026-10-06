@@ -1385,6 +1385,18 @@ a numbered paragraph by its list body's block, a nested table by its own first r
 keep climbs through the cell of the table it sits in. Header rows are not marked. Property
 `docx4j.convert.out.fo.tables.rowKeepWithNext`.
 
+<a id="s39rowwhole"></a>**Such a row holding a nested table is kept whole (17.3.1)**, as
+`w:cantSplit` keeps it. Measured on the `table-nested-rowsplit` probes (corpus document 12301;
+mode 15): an outer row of a paragraph and a 20-row nested table, 280pt, starting with 152pt left
+on the page. Without a keep Word splits the row there, as docx4j does (a); with `w:cantSplit` it
+moves the row whole (c); with `w:keepNext` on the row's first paragraph it moves it whole too (d),
+where docx4j split it. Only where the keep is a **paragraph's**: a row whose cell opens with the
+nested table, keeping by that table's heading row, is not marked. Word moves those whole too -
+12301's layout table, one report section per row - but where a run of them cannot fit a page it
+breaks a keep between rows, while FOP, given each row kept whole, did not bound the chain
+([above](#s39rowchain)) and ran 12301's page 146 72pt past the body (gate b144). Rows without a
+nested table are unchanged; the probes measured none. `TableRowKeepTest`.
+
 <a id="s3emptyadd"></a>**The report's heading seam, resolved.** Its 53.8pt from a table's last
 row to the heading after it was read here for a day as an empty paragraph's space-after
 *adding* to the heading's space-before, against the "larger of" rule above. Three probes said

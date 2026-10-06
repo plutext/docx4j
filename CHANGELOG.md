@@ -203,6 +203,9 @@ PDF via XSL FO:
 - A run of shaded or bordered paragraphs no longer takes its first paragraph's keepNext and
   keepLines for the whole run, which had moved the run to the next page whole.
 
+- A table row whose first paragraph keeps with the next and which holds a nested table is kept
+  on one page, as Word keeps it.
+
 - A numbered or bulleted paragraph at a line spacing below single no longer has a taller first
   line than its others.
 
