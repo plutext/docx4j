@@ -3148,6 +3148,39 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		/* fonts-light-bold-italic (2065; CR-001 §6.6 item 46).  Word draws bold italic in a family with an
+		 * italic face but no bold one (Calibri Light) as the italic face with a synthetic bold: stroked at
+		 * 1/35 em and spread about 0.4% on 2065's 13pt runs; docx4j draws the regular face, FOP-sheared.
+		 * To pin the rule: the same sample in Calibri Light regular, italic, bold and bold italic at 8, 11,
+		 * 13, 16, 22 and 36pt; Aptos Light italic and bold italic at 11 and 22pt; Calibri (real bold
+		 * faces) the control.  Read per line: the face Word's PDF names, the stroke width, and each
+		 * glyph's x - bold italic against italic, and bold against regular, advance by advance.
+		 * @since 17.3.1 */
+		PROBES.add(new Probe("fonts-light-bold-italic",
+				"one sample per line, a label in Carlito then the sample: Calibri Light regular (R), italic (I), bold"
+				+ " (B) and bold italic (BI) at 8, 11, 13, 16, 22 and 36pt; Aptos Light I and BI at 11 and 22pt;"
+				+ " Calibri I and BI at 11 and 22pt (real faces, the control).  Read the face, the stroke width and"
+				+ " each glyph's x: Word's synthetic bold of an italic face, its widening per glyph and per size", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(CARLITO, 18);
+			final String sample = "\u00d6ssze\u00e1ll\u00edt\u00e1s Hamburgefons";
+			java.util.function.Consumer<org.docx4j.wml.RPr> boldItalic = rpr -> { Doc.bold(rpr); Doc.italic(rpr); };
+			for (int pt : new int[] { 8, 11, 13, 16, 22, 36 }) {
+				d.para().noLabel().after(0).bareText("R" + pt + " ").run(sample, "Calibri Light", pt * 2, null).add();
+				d.para().noLabel().after(0).bareText("I" + pt + " ").run(sample, "Calibri Light", pt * 2, Doc::italic).add();
+				d.para().noLabel().after(0).bareText("B" + pt + " ").run(sample, "Calibri Light", pt * 2, Doc::bold).add();
+				d.para().noLabel().after(120).bareText("BI" + pt + " ").run(sample, "Calibri Light", pt * 2, boldItalic).add();
+			}
+			for (String font : new String[] { "Aptos Light", "Calibri" }) {
+				String tag = font.startsWith("Aptos") ? "AL" : "C";
+				for (int pt : new int[] { 11, 22 }) {
+					d.para().noLabel().after(0).bareText(tag + "I" + pt + " ").run(sample, font, pt * 2, Doc::italic).add();
+					d.para().noLabel().after(120).bareText(tag + "BI" + pt + " ").run(sample, font, pt * 2, boldItalic).add();
+				}
+			}
+			return d.pkg();
+		}));
+
 		PROBES.add(new Probe("fonts-symbol-and-emoji",
 				"docDefaults Carlito 12pt.  (a) w:rFonts 'symbol' (lower case) with 'abgdpw'; (b) 'wingdings' "
 				+ "(lower case) with U+F0FC U+F0FE U+F0A7; (c) an emoji in Carlito; (d) an arrow, a shadowed "
