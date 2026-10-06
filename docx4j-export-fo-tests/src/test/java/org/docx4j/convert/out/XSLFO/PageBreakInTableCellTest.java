@@ -121,6 +121,33 @@ public class PageBreakInTableCellTest extends AbstractXSLFOTest {
 		}
 	}
 
+	/** A numbered paragraph opening the table is still its opening paragraph: its break
+	 *  belongs to the table too (corpus document 545, numbered Heading1 paragraphs each
+	 *  opening a table; 17.3.1). */
+	@Test
+	public void pageBreakBeforeOnANumberedOpeningParagraphMovesTheTable() throws Exception {
+		String p = "<w:p><w:pPr><w:pageBreakBefore/><w:numPr><w:ilvl w:val=\"0\"/><w:numId w:val=\"1\"/></w:numPr></w:pPr>"
+				+ "<w:r><w:t>Numbered row one</w:t></w:r></w:p>";
+		for (int flags : FLAGS) {
+			WordprocessingMLPackage pkg = pkg(p);
+			org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart ndp =
+					new org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart();
+			ndp.setJaxbElement((org.docx4j.wml.Numbering) XmlUtils.unmarshalString(
+					"<w:numbering " + W + "><w:abstractNum w:abstractNumId=\"0\"><w:lvl w:ilvl=\"0\">"
+					+ "<w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1\"/>"
+					+ "<w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr></w:lvl></w:abstractNum>"
+					+ "<w:num w:numId=\"1\"><w:abstractNumId w:val=\"0\"/></w:num></w:numbering>"));
+			pkg.getMainDocumentPart().addTargetPart(ndp);
+			org.w3c.dom.Document doc = fo(pkg, flags);
+			assertEquals(flagName(flags) + ": a list-block in the cell", true,
+					doc.getElementsByTagNameNS(FO_NS, "list-block").getLength() > 0);
+			assertEquals(flagName(flags) + ": the break belongs to the table",
+					1, breaks(doc, "table"));
+			assertEquals(flagName(flags) + ": and not to the paragraph",
+					0, breaks(doc, "block") + breaks(doc, "list-block"));
+		}
+	}
+
 	@Test
 	public void pageBreakBeforeLowerDownTheTableIsDropped() throws Exception {
 		String p = "<w:p><w:r><w:t>Row one</w:t></w:r></w:p>"

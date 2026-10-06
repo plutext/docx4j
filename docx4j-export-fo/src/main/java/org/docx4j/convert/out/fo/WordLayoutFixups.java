@@ -4170,12 +4170,40 @@ public final class WordLayoutFixups {
 	}
 
 	/** Whether this block is the first thing the table holds, descending through any
-	 *  borders/shading wrapper the first cell's content is in. */
+	 *  borders/shading wrapper the first cell's content is in.  A numbered paragraph is its
+	 *  fo:list-block: its break is on the block in the list-item-body, but the first block
+	 *  the table holds is the label's, so the walk had never reached it, and a numbered
+	 *  heading opening a table lost its w:pageBreakBefore - measured on corpus document
+	 *  545, whose Heading1 paragraphs (numbered, w:pageBreakBefore) each open a one-column
+	 *  table: Word starts "5 Purpose" on page 5, docx4j left it on page 4, and was a page
+	 *  short from there (ledger9 F2).  @since 17.1.0; 17.3.1 for a numbered paragraph */
 	private static boolean opensTable(Element table, Element block) {
-		for (Element f = firstBlock(table); f != null; f = firstBlock(f)) {
-			if (f == block) return true;
+		Element paragraph = block;
+		for (Node n = block.getParentNode(); n instanceof Element; n = n.getParentNode()) {
+			Element e = (Element) n;
+			if (isFo(e, "list-block")) { paragraph = e; break; }
+			if (isFo(e, "table-cell") || isFo(e, "list-item-label")) break;
+		}
+		for (Element f = firstBlockOrList(table); f != null; f = firstBlockOrList(f)) {
+			if (f == block || f == paragraph) return true;
 		}
 		return false;
+	}
+
+	/** As {@link #firstBlock}, but a list-block is answered as itself, a numbered paragraph
+	 *  being one.  @since 17.3.1 */
+	private static Element firstBlockOrList(Element parent) {
+		NodeList children = parent.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			Node n = children.item(i);
+			if (!(n instanceof Element)) continue;
+			Element el = (Element) n;
+			if (isFo(el, "table")) return null;
+			if (isFo(el, "block") || isFo(el, "list-block")) return el;
+			Element inner = firstBlockOrList(el);
+			if (inner != null) return inner;
+		}
+		return null;
 	}
 
 	// -------------------------------------------------- 6. the width a cell line fits in

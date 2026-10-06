@@ -215,6 +215,9 @@ PDF via XSL FO:
 
 - A line set in bold (or italic) only is as tall as a regular line of the same font, as in Word.
 
+- A numbered paragraph opening a table keeps its page break before: the table starts the page,
+  as in Word.
+
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties
   docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine and tableTakesPageBreak are now on by

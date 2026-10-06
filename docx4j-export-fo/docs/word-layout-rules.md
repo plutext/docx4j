@@ -1037,6 +1037,16 @@ in Word, and is five only because those two breaks are taken. `WordLayoutFixups`
 opening break to the `fo:table` and drops the rest (FOP otherwise breaks the table wherever
 it finds one in a cell). A nested table cannot carry the break - it would land inside the
 outer table - so there it is dropped.
+**A numbered paragraph opening the table is still the paragraph which opens it (17.3.1).** Its
+break is on the block in its `fo:list-item-body`, and the first block the table holds is the
+label's, so the walk had not reached it and the break was dropped. Measured on corpus document
+545, whose numbered Heading1 paragraphs, each `w:pageBreakBefore`, open one-column tables: Word
+starts "5 Purpose" on page 5, docx4j left it on page 4 and was a page short from there (ledger9
+F2). The paragraph's `fo:list-block` now counts as the opening. Gate b151: 545's pages 1-6 are
+Word's; it overshoots by two (43 against 41) where empty paragraphs before two of those tables,
+on pages fuller than Word's, overflow to a page of their own before the table's break. The keeps
+half of F2 needed nothing: FOP's list item passes its body block's keep-with-next out.
+`PageBreakInTableCellTest`.
 
 **HTML auto spacing.** `w:beforeAutospacing` / `w:afterAutospacing` is **14pt**, combined
 by "larger of" like any other spacing, and honours `w:doNotUseHTMLParagraphAutoSpacing`. It
