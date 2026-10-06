@@ -3651,9 +3651,14 @@ absolute y.
 <a id="s68reserve"></a>**A table which content precedes can be positioned with its band
 reserved.** The reason it could not was that the flow closing over it drew the two on top
 of each other; §9.5's `w:wrap` trick fixes exactly that - an invisible copy of the table
-left where it was (FOP honours `visibility="hidden"`: the area keeps its size and paints
-nothing) reserves the height in the flow, so what follows is pushed down while the table
-itself goes to its anchor. It is right only where the flow has **not already passed** the
+left where it was (in an `fo:block` with `visibility="hidden"`: the area keeps its size and
+paints nothing) reserves the height in the flow, so what follows is pushed down while the table
+itself goes to its anchor. **FOP honours `visibility` on `fo:block` only** (17.3.1; Enterprise
+CR-001 §6.6 item 43): it is not inherited there, and until 17.3.1 the copy was the `fo:table`
+itself marked hidden, which FOP drew in full - corpus document 5075's table appeared twice, at its
+anchor and in the flow, and 13544's band copy stood in the flow over the body text. The copy now
+goes inside a hidden block (`WordLayoutFixups.hidden`), which takes over its keeps and breaks;
+gate b140: the duplicates gone, nothing else moving but the lines they had matched. It is right only where the flow has **not already passed** the
 table's anchor; where the anchor is above the flow, Word draws the table over ground the
 flow has already covered and the reservation is pure error. The fixups cannot know where
 the flow has reached, and the measured cut is the anchor's own place on the page:
@@ -5316,8 +5321,9 @@ direct formatting was a frame never reached `applyPPr` and lost it.
 no text run beside the frame, so Word's flow steps over it and resumes below; `auto` (the
 default), `around`, `tight` and `through` let text run beside it, and the flow keeps
 nothing. The band is reproduced by leaving an invisible copy of the frame's own blocks
-where they were (FOP honours `visibility="hidden"`: the area keeps its size and paints
-nothing), which reserves exactly the height the frame occupies - `w:h` cannot, since
+where they were (a hidden `fo:block` keeps its size and paints nothing; anything other than a
+block is copied inside one, since FOP honours `visibility` on blocks only, [§6.8](#s68reserve)),
+which reserves exactly the height the frame occupies - `w:h` cannot, since
 `w:hRule="auto"` is the common case. What Word skips is the **union** of the bands, not
 the sum of the heights: the letterhead sets its frames out in pairs at `w:y=3743` and
 `w:y=4821` and Word steps over each pair once, so a frame whose top is not below the last

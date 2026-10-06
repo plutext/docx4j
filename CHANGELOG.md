@@ -191,6 +191,9 @@ PDF via XSL FO:
 - A paragraph holding only a page break at the end of a document no longer gives it an empty
   last page (compatibility mode 12 and later), as Word for Microsoft 365 lays it out.
 
+- A page-anchored floating table is drawn once: the invisible copy reserving its band in the flow
+  was drawn too, since FOP honours visibility="hidden" on fo:block only.
+
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties
   docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine and tableTakesPageBreak are now on by

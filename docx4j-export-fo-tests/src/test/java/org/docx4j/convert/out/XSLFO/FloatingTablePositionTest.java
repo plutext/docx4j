@@ -369,7 +369,10 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 	 * it: Word draws it at its anchor and puts what follows below it, so it is positioned
 	 * <em>and</em> its band is reserved in the flow by an invisible copy left where it
 	 * was (&#xa7;9.5's w:wrap trick, &#xa7;6.8).  Before 17.1.0 it was left in the flow
-	 * entirely, because the flow closing over it drew the two on top of each other.
+	 * entirely, because the flow closing over it drew the two on top of each other.  The
+	 * copy is in an fo:block with visibility="hidden", since FOP honours the property on a
+	 * block only: marked on the table itself, the copy was drawn too (corpus document 5075,
+	 * its table twice; Enterprise CR-001 &#xa7;6.6 item 43).  @since 17.3.1 for the block
 	 */
 	private void aWideMidFlowTableIsPositionedAndReserved(int flags) throws Exception {
 		String wide = "<w:tbl><w:tblPr>"
@@ -385,7 +388,10 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 		int hidden = 0, positioned = 0;
 		for (int i = 0; i < tables.getLength(); i++) {
 			Element t = (Element) tables.item(i);
-			if ("hidden".equals(t.getAttribute("visibility"))) hidden++;
+			assertEquals("FOP ignores visibility on a table", "", t.getAttribute("visibility"));
+			Node parent = t.getParentNode();
+			if (parent instanceof Element && "block".equals(parent.getLocalName())
+					&& "hidden".equals(((Element) parent).getAttribute("visibility"))) hidden++;
 			for (Node n = t.getParentNode(); n instanceof Element; n = n.getParentNode()) {
 				Element e = (Element) n;
 				if (FO_NS.equals(e.getNamespaceURI()) && "block-container".equals(e.getLocalName())
@@ -396,7 +402,7 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 				}
 			}
 		}
-		assertEquals("one invisible copy reserves the band", 1, hidden);
+		assertEquals("one copy in a hidden block reserves the band", 1, hidden);
 		assertEquals("one copy is positioned at the anchor", 1, positioned);
 	}
 

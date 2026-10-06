@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -1052,7 +1053,8 @@ public final class WordLayoutFixups {
 	 * and {@code none} say it may not, so Word skips the frame's band - the flow resumes
 	 * below it.  The band is reproduced by leaving an invisible copy of the frame's own
 	 * blocks where they were: they reserve exactly the height Word's frame occupies (FOP
-	 * honours {@code visibility="hidden"} - the area keeps its size and paints nothing),
+	 * honours {@code visibility="hidden"} on a block - the area keeps its size and paints
+	 * nothing - so any other element is copied inside a hidden block, {@link #hidden}),
 	 * which the frame's {@code w:h} does not give, since {@code w:hRule="auto"} is the
 	 * common case.
 	 *
@@ -1078,10 +1080,43 @@ public final class WordLayoutFixups {
 		reservedTo.put(parent, Double.valueOf(top));
 		for (Element block : group) {
 			Element copy = (Element) block.cloneNode(true);
-			copy.setAttribute("visibility", "hidden");
 			stripIds(copy);
-			parent.insertBefore(copy, after);
+			parent.insertBefore(hidden(copy), after);
 		}
+	}
+
+	/**
+	 * The copy, made invisible where it keeps its size in the flow.  FOP honours
+	 * {@code visibility="hidden"} on an fo:block only - its BlockLayoutManager sets the
+	 * trait and the renderer skips a hidden block's children - and does not inherit it,
+	 * so an fo:table (or fo:list-block) marked hidden is drawn in full, text and borders.
+	 * Corpus document 5075's page-anchored floating table was drawn twice that way: at
+	 * its position, and as the copy reserving its band in the flow (Enterprise CR-001
+	 * &#xa7;6.6 item 43; XSL 1.1 &#xa7;7.30.17 applies visibility to every formatting
+	 * object).  Anything other than a block therefore goes into a hidden block, which
+	 * takes over the copy's keeps and breaks so that the flow keeps them; measured on
+	 * 5075's FO, the copy's text goes and every other word keeps its place.
+	 *
+	 * @since 17.3.1
+	 */
+	private static Element hidden(Element copy) {
+		if (isFo(copy, "block")) {
+			copy.setAttribute("visibility", "hidden");
+			return copy;
+		}
+		Element block = copy.getOwnerDocument().createElementNS(FO_NS, "fo:block");
+		block.setAttribute("visibility", "hidden");
+		NamedNodeMap attrs = copy.getAttributes();
+		for (int i = attrs.getLength() - 1; i >= 0; i--) {
+			String name = attrs.item(i).getNodeName();
+			if (name.startsWith("keep-with-next") || name.startsWith("keep-with-previous")
+					|| name.equals("break-before") || name.equals("break-after")) {
+				block.setAttribute(name, attrs.item(i).getNodeValue());
+				copy.removeAttribute(name);
+			}
+		}
+		block.appendChild(copy);
+		return block;
 	}
 
 	/** An id must not appear twice in the FO, so the invisible copy loses them all. */
@@ -1976,11 +2011,10 @@ public final class WordLayoutFixups {
 		if (reserve) {
 			// the band the table occupies in the flow, so what follows is pushed down
 			Element copy = (Element) tbl.cloneNode(true);
-			copy.setAttribute("visibility", "hidden");
 			for (String hint : TBLP_HINTS) copy.removeAttribute(hint);
 			copy.removeAttribute("break-before");
 			stripIds(copy);
-			parent.insertBefore(copy, tbl);
+			parent.insertBefore(hidden(copy), tbl);
 		}
 		parent.removeChild(tbl);
 		tbl.setAttribute("start-indent", "0pt");
@@ -1991,8 +2025,8 @@ public final class WordLayoutFixups {
 	/**
 	 * Whether a page- or margin-anchored floating table which content <em>precedes</em>
 	 * is positioned at its anchor with its band reserved in the flow by an invisible copy
-	 * (&#xa7;9.5's {@code w:wrap} trick, which FOP honours: {@code visibility="hidden"}
-	 * keeps the area's size and paints nothing), rather than being left in the flow as
+	 * (&#xa7;9.5's {@code w:wrap} trick: in a block with {@code visibility="hidden"}, which
+	 * keeps the area's size and paints nothing, {@link #hidden}), rather than being left in the flow as
 	 * 17.0.5 and b2-batch18 left it.
 	 *
 	 * <p>Reserving the band is right only where the flow has <b>not already passed</b>
