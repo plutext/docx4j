@@ -243,6 +243,8 @@ PDF via XSL FO:
   Word; FOP's collapsing model had kept half of each inside, so each table was a border width short.
 - PDF: Aptos Light italic is drawn as the upright face sheared, as Word draws it (Word has no
   italic face for it); the substitute's real italic had been used.
+- Book Antiqua's bold, italic and bold italic faces are used; docx4j had taken it for a family with
+  no bold face and synthesised them.
 
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties

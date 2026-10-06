@@ -372,7 +372,11 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 
 <font name="Bodoni MT Poster Compressed" filename="BOD_PSTC.TTF"/>
 
-<font name="Book Antiqua" filename="BKANT.TTF"/>
+<font name="Book Antiqua" filename="BKANT.TTF">
+		<bold filename="ANTQUAB.TTF"/>
+		<italic filename="ANTQUAI.TTF"/>
+		<bolditalic filename="ANTQUABI.TTF"/>
+	</font>
 
 <font name="Bookman Old Style" filename="BOOKOS.TTF">
 		<bold filename="BOOKOSB.TTF"/>
