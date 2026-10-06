@@ -1484,6 +1484,14 @@ turns it off). `docx4j.convert.out.fo.wordLayout.minStretchToCompress`, 17.1.0's
 as a floor under it, default 0 (it was 0.30). The cap stands: Word took 24.0% against an 80%
 stretch, and batch 44 measured it refusing 25%.
 
+<a id="s42tab"></a>**Only the spaces after the line's last tab are compressed, and counted
+(17.3.1).** A tab reaches the line breaker as its leader's glue, and the compression was worked
+out over it as if it were space: on a numbered paragraph's first line ("3.6<tab>To purchase...",
+`w:ind left=567 hanging=567`, the tab about 12pt) that made the needed compression some 77% of
+what the spaces alone took, inside the cap, where they were really compressed 26-31%. Word
+measures after the tab, as the probe's numbered lines above say, and refused those lines. Corpus
+document 1035: four first lines and their re-wraps, 0.961 to 0.991.
+
 <a id="s42shiftreturn"></a>**A line that ends in a soft return is justified**
 (`w:compat/w:doNotExpandShiftReturn`, 17.1.0). Word stretches the spaces of a line ending
 in a `w:br` with no type, inside a `w:jc="both"` paragraph, exactly as it stretches any

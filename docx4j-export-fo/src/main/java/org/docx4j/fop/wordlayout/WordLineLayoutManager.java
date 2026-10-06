@@ -539,14 +539,27 @@ public class WordLineLayoutManager extends LineLayoutManager {
             return -difference <= maxShrink * spacesWidth(elementIdx);
         }
 
-        /** The natural width of the spaces between the last break and elementIdx. */
+        /**
+         * The natural width of the spaces between the last break and elementIdx, after the
+         * line's last tab.  A tab reaches the breaker as glue (its leader's), and was counted
+         * as space: on a numbered paragraph's first line ("3.6&lt;tab&gt;To purchase...",
+         * ind left 567 hanging 567, the tab about 12pt) the compression worked out over tab
+         * and spaces came to some 77% of what the spaces alone took, inside the cap, where the
+         * spaces were really compressed 26-31%.  Word measures after the tab (rules §4.2, the
+         * justified-compression-decision probe's numbered lines) and refused those lines:
+         * corpus document 1035, four first lines and their re-wraps, 17 lines (ledger9 part C
+         * §49).  @since 17.3.1 for the tab
+         */
         private int spacesWidth(int elementIdx) {
             int spaces = 0;
             for (int i = active.position + 1; i < elementIdx; i++) {
                 KnuthElement e = getElement(i);
-                if (e.isGlue() && e.getWidth() > 0) {
-                    spaces += e.getWidth();
+                if (!e.isGlue()) continue;
+                if (elementLM(e) instanceof org.apache.fop.layoutmgr.inline.LeaderLayoutManager) {
+                    spaces = 0; // a tab: only the spaces after it are compressed
+                    continue;
                 }
+                if (e.getWidth() > 0) spaces += e.getWidth();
             }
             return spaces;
         }

@@ -221,6 +221,9 @@ PDF via XSL FO:
 - Spaces after a line break (w:br) in the same run are kept, as Word draws them; FOP had collapsed
   them to one.
 
+- A justified line beginning with a number and a tab is compressed only as far as its spaces after
+  the tab allow, as in Word; the tab had been counted as space.
+
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties
   docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine and tableTakesPageBreak are now on by
