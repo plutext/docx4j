@@ -44,9 +44,13 @@ and even in documents without `w:usePrinterMetrics` (no document in the four cor
 - **The C2255 is the standard** (decided 2026-10-06). The three corpora were cut on it on
   2026-09-09. Re-cutting 11875 on it reproduces that golden exactly: all 6002 word boxes in the same
   place, the same page breaks, the same size operands.
-- **What drifted.** On 2026-09-29 the default printer became the Apeos without anyone deciding it,
-  and everything cut after that is on a different basis: `X:\fidelity\scriptcheck\recut-on-c2255.tsv`
-  lists the 212 goldens to re-cut on the C2255 (103 probes, all of real-c2, and 1372 and 11875).
+- **What drifted, and its repair.** On 2026-09-29 the default printer became the Apeos without
+  anyone deciding it, and 212 goldens were cut on it (103 probes, all of real-c2, and 1372 and 11875;
+  `X:\fidelity\scriptcheck\recut-on-c2255.tsv`). They were moved to
+  `X:\fidelity\superseded\2026-10-06-apeos\` and re-cut on the C2255 on 2026-10-06, with current
+  docx4j; every set is now on one basis, and the harness baseline on it is b150. The re-cut changed
+  no score in real, real2, real3 or the probes, and moved real-c2's documents by a few lines each
+  (ledger9 §8).
 - **Planned:** after the next release, every set is re-cut against Microsoft Print to PDF, whose
   characteristics are better understood and which other contributors can reproduce. Then re-baseline.
   Microsoft Print to PDF also has a v4 driver, so compare 11875's header position with the C2255 cut
