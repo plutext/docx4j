@@ -2982,6 +2982,24 @@ public final class Corpus {
 		PROBES.add(continuousRestartEvenOddProbe("continuous-restart-evenodd-start2-mirror", 40, 2, true));
 		PROBES.add(continuousRestartEvenOddProbe("continuous-restart-evenodd-oddstart", 15, 1, false));
 		for (char v = 'a'; v <= 'e'; v++) PROBES.add(documentEndBreakProbe(v));   // case F (rules §3.3)
+		// CR-001 batch 53 (ledger9 §5): one Word run
+		PROBES.add(fontSizeGridProbe("serif", SERIF));
+		PROBES.add(fontSizeGridProbe("sans", SANS));
+		PROBES.add(fontSizeGridProbe("carlito", CARLITO));
+		for (int mode : new int[] { 12, 14, 15 }) PROBES.add(headerEmptyParagraphCompatProbe(mode));
+		PROBES.add(tableHeaderOverflowProbe(false));
+		PROBES.add(tableHeaderOverflowProbe(true));
+		for (char v = 'a'; v <= 'd'; v++) PROBES.add(tableNestedRowsplitProbe(v));
+		PROBES.add(ommlInlineLineBoxProbe());
+		for (String v : new String[] { "2", "6", "20", "heading", "break" }) PROBES.add(trailingEmptiesOverflowProbe(v));
+		for (String v : new String[] { "2", "4", "6", "4-cantsplit", "4-header" }) PROBES.add(keepNextTableFirstRowProbe(v));
+		PROBES.add(tableNormalStyleRprProbe(12));
+		PROBES.add(tableNormalStyleRprProbe(15));
+		for (String v : new String[] { "first", "middle", "none" }) PROBES.add(shadedGroupKeepsProbe(v));
+		PROBES.add(listLabelLineMultiplierProbe());
+		PROBES.add(lineBoxBoldRunProbe());
+		for (char v = 'a'; v <= 'c'; v++) PROBES.add(sectionFinalEmptyNextPageProbe(v));
+		PROBES.add(breakAtDoubleSpaceProbe());
 
 		/*
 		 * CR-016's probe set (docs/developer/change-requests/CR-016-font-selection-and-mapping.md,
@@ -9085,6 +9103,472 @@ public final class Corpus {
 			d.para("The last paragraph with text on it, variant " + variant + ". " + prose(2, 4)).noLabel()
 					.after(twelveAfter ? 240 : 0).add();
 			d.add(breakOnlyParagraph());
+			return d.pkg();
+		});
+	}
+
+	// ---------------------------------------------------------------- CR-001 batch 53 probes (ledger9 §5)
+	//
+	// One Word run.  A4, 1 inch margins: the column is 9026 twips (451.3pt) wide and the body 13958
+	// twips (697.9pt) tall.  Filler lines are exact 14pt (280 twips), so the room a probe leaves at a
+	// page foot is known to the point.
+
+	private static final String W_NS = "xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"";
+	private static final String M_NS = "xmlns:m=\"http://schemas.openxmlformats.org/officeDocument/2006/math\"";
+	private static final int COLUMN_TWIPS = 11906 - 2 * 1440;
+	private static final int BODY_TWIPS = 16838 - 2 * 1440;
+
+	/** A paragraph (or table) from its WordprocessingML; the namespace declarations are added. */
+	private static P xmlP(String xml) throws Exception {
+		String ns = W_NS + (xml.contains("<m:") ? " " + M_NS : "");
+		xml = xml.replaceFirst("<w:p(?=[ >/])", "<w:p " + ns);
+		Object o = org.docx4j.XmlUtils.unmarshalString(xml, org.docx4j.jaxb.Context.jc, P.class);
+		if (o instanceof jakarta.xml.bind.JAXBElement) o = ((jakarta.xml.bind.JAXBElement<?>) o).getValue();
+		return (P) o;
+	}
+
+	private static Tbl xmlTbl(String xml) throws Exception {
+		xml = xml.replaceFirst("<w:tbl(?=[ >])", "<w:tbl " + W_NS);
+		return (Tbl) org.docx4j.XmlUtils.unwrap(org.docx4j.XmlUtils.unmarshalString(xml));
+	}
+
+	private static String xmlEscape(String s) {
+		return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+	}
+
+	private static String rpr(String font, int halfPts, boolean bold) {
+		return "<w:rPr><w:rFonts w:ascii=\"" + font + "\" w:hAnsi=\"" + font + "\" w:eastAsia=\"" + font
+				+ "\" w:cs=\"" + font + "\"/>" + (bold ? "<w:b/><w:bCs/>" : "")
+				+ "<w:sz w:val=\"" + halfPts + "\"/><w:szCs w:val=\"" + halfPts + "\"/></w:rPr>";
+	}
+
+	private static String xrun(String text, String font, int halfPts, boolean bold) {
+		return "<w:r>" + rpr(font, halfPts, bold) + "<w:t xml:space=\"preserve\">" + xmlEscape(text) + "</w:t></w:r>";
+	}
+
+	/** A paragraph of one exact-height line (14pt unless given), the mark in Liberation Serif 12. */
+	private static String exactP(String text, int lineTwips, String extraPPr) {
+		return "<w:p><w:pPr>" + extraPPr + "<w:spacing w:before=\"0\" w:after=\"0\" w:line=\"" + lineTwips
+				+ "\" w:lineRule=\"exact\"/>" + rpr(SERIF, 24, false) + "</w:pPr>"
+				+ (text.isEmpty() ? "" : xrun(text, SERIF, 24, false)) + "</w:p>";
+	}
+
+	/** {@code n} exact 14pt filler lines, numbered so the reader can find a page's last one. */
+	private static void fillerLines(Doc d, String tag, int n) throws Exception {
+		for (int i = 1; i <= n; i++) d.add(xmlP(exactP(tag + " filler line " + i + " of " + n, 280, "")));
+	}
+
+	/** Words with no break opportunity but the spaces between them. */
+	private static final String[] GRID_WORDS = ("Typesetting engines decide where each line ends and where each page ends "
+			+ "while small differences in measurement accumulate quietly across every paragraph of a long document "
+			+ "until whole pages move").split(" ");
+
+	/** Whole plain words up to (not over) {@code targetPt} at this font and size. */
+	private static String plainWordsUpTo(String font, int halfPts, double targetPt) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; ; i++) {
+			String next = (sb.length() == 0 ? "" : sb + " ") + GRID_WORDS[i % GRID_WORDS.length];
+			if (Doc.advancePoints(next, font, halfPts) > targetPt) return sb.toString();
+			sb.setLength(0);
+			sb.append(next);
+		}
+	}
+
+	private static final int[] GRID_HALF_POINTS = { 14, 15, 16, 17, 18, 20, 21, 22, 23, 24, 26, 28, 30, 32 };
+	private static final double[] GRID_LADDER = { -1.2, -0.9, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.9, 1.2 };
+
+	/**
+	 * font-size-grid-&lt;serif|sans|carlito&gt; (ledger9 §2, F1).  Does Word lay text out at the font size
+	 * rounded to 1/300 inch (7.92, 9.12, 10.08, 11.04, 12, 12.96, 13.92...), and by how much does it scale the
+	 * advances?  For each size a heading, then a ladder of left-aligned one-line paragraphs of the same text,
+	 * each with a right indent making the measure the text's advance at the nominal size (the font's own
+	 * metrics) times 1+k, k = -1.2% ... +1.2%.  The last word wraps where Word's width exceeds the measure,
+	 * so the first rung that holds on one line is Word's width ratio at that size.  @since 17.3.1
+	 */
+	private static Probe fontSizeGridProbe(String tag, String font) {
+		return new Probe("font-size-grid-" + tag,
+				"F1: for sizes 7-16pt in " + font + ", a heading then 11 one-line left-aligned"
+				+ " paragraphs of the same text with measures of its nominal advance x (1+k), k = -1.2, -0.9, -0.6,"
+				+ " -0.4, -0.2, 0, +0.2, +0.4, +0.6, +0.9, +1.2%; mode 15.  Read per size: Word's font size in the PDF,"
+				+ " and which rungs wrap their last word (the first that holds is Word's width ratio)", () -> {
+			Doc d = Doc.create(15);
+			for (int hp : GRID_HALF_POINTS) {
+				String text = plainWordsUpTo(font, hp, COLUMN_TWIPS / 20.0 * 0.66);
+				double w = Doc.advancePoints(text, font, hp);
+				d.add(xmlP("<w:p><w:pPr><w:keepNext/><w:spacing w:before=\"160\" w:after=\"40\"/></w:pPr>"
+						+ xrun("Size " + (hp / 2.0) + "pt: the text is " + String.format(java.util.Locale.ROOT, "%.3f", w)
+								+ "pt at the nominal size", SANS, 16, true) + "</w:p>"));
+				for (double k : GRID_LADDER) {
+					int rightTwips = (int) Math.round(COLUMN_TWIPS - w * (1 + k / 100.0) * 20.0);
+					d.add(xmlP("<w:p><w:pPr><w:keepLines/><w:spacing w:before=\"0\" w:after=\"0\"/><w:ind w:left=\"0\" w:right=\""
+							+ rightTwips + "\"/><w:jc w:val=\"left\"/></w:pPr>" + xrun(text, font, hp, false) + "</w:p>"));
+				}
+			}
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * header-empty-paragraph-compat&lt;12|14|15&gt; (ledger9; 6131, 7061).  Does a header part holding one empty
+	 * paragraph reserve its line?  Rules §7 measured "no" (mode unrecorded); 6131 and 7061 (mode 12) say yes.
+	 * Top margin 45pt, header distance 36pt: reserving the 13.8pt line puts the body at 49.8.  @since 17.3.1
+	 */
+	private static Probe headerEmptyParagraphCompatProbe(int mode) {
+		return new Probe("header-empty-paragraph-compat" + mode,
+				"one empty header paragraph (Liberation Serif 12), w:top 45pt, w:header 36pt; mode " + mode
+				+ ".  Read the first body baseline: about 45 + ascent if the header reserves nothing, 49.8 + ascent if"
+				+ " its line counts", () -> {
+			Doc d = Doc.create(mode);
+			d.sectPr().getPgMar().setTop(BigInteger.valueOf(900));
+			d.sectPr().getPgMar().setHeader(BigInteger.valueOf(720));
+			d.addHeader(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.List.of(xmlP(
+					"<w:p><w:pPr><w:spacing w:before=\"0\" w:after=\"0\"/>" + rpr(SERIF, 24, false) + "</w:pPr></w:p>")));
+			for (int i = 1; i <= 3; i++) d.para("Body paragraph " + i + ". " + prose(3, i)).noLabel().after(120).add();
+			return d.pkg();
+		});
+	}
+
+	/** A one-column table: a first row of {@code firstRowLines} exact 14pt lines (as header, can't-split or
+	 *  plain), then {@code bodyRows} rows of one line; cell margins top and bottom 0. */
+	private static String linesTable(String tag, int firstRowLines, String firstRowTrPr, int bodyRows, String styleId) {
+		StringBuilder x = new StringBuilder("<w:tbl><w:tblPr>");
+		if (styleId != null) x.append("<w:tblStyle w:val=\"").append(styleId).append("\"/>");
+		x.append("<w:tblW w:w=\"").append(COLUMN_TWIPS).append("\" w:type=\"dxa\"/><w:tblBorders>");
+		for (String side : new String[] { "top", "left", "bottom", "right", "insideH", "insideV" }) {
+			x.append("<w:").append(side).append(" w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/>");
+		}
+		x.append("</w:tblBorders><w:tblLayout w:type=\"fixed\"/><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/>"
+				+ "<w:left w:w=\"108\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/><w:right w:w=\"108\" w:type=\"dxa\"/>"
+				+ "</w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"0\" w:lastColumn=\"0\""
+				+ " w:noHBand=\"1\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"").append(COLUMN_TWIPS).append("\"/></w:tblGrid>");
+		x.append("<w:tr>").append(firstRowTrPr == null ? "" : "<w:trPr>" + firstRowTrPr + "</w:trPr>")
+				.append("<w:tc><w:tcPr><w:tcW w:w=\"").append(COLUMN_TWIPS).append("\" w:type=\"dxa\"/></w:tcPr>");
+		for (int i = 1; i <= firstRowLines; i++) x.append(exactP(tag + " first row line " + i + " of " + firstRowLines, 280, ""));
+		x.append("</w:tc></w:tr>");
+		for (int r = 1; r <= bodyRows; r++) {
+			x.append("<w:tr><w:tc><w:tcPr><w:tcW w:w=\"").append(COLUMN_TWIPS).append("\" w:type=\"dxa\"/></w:tcPr>")
+					.append(exactP(tag + " body row " + r, 280, "")).append("</w:tc></w:tr>");
+		}
+		return x.append("</w:tbl>").toString();
+	}
+
+	/** Adds (or replaces) a style given as XML. */
+	private static void styleXml(Doc d, String xml) throws Exception {
+		xml = xml.replaceFirst("<w:style(?=[ >])", "<w:style " + W_NS);
+		org.docx4j.wml.Style style = (org.docx4j.wml.Style) org.docx4j.XmlUtils.unwrap(org.docx4j.XmlUtils.unmarshalString(xml));
+		java.util.List<org.docx4j.wml.Style> styles = d.mdp().getStyleDefinitionsPart().getJaxbElement().getStyle();
+		styles.removeIf(s -> style.getStyleId().equals(s.getStyleId()));
+		styles.add(style);
+	}
+
+	/**
+	 * table-header-overflow-&lt;tblheader|style&gt; (ledger9; 12301).  A keepNext heading, then a table whose
+	 * repeating first row (by w:tblHeader, or by the table style's firstRow) is 168pt tall where 95.9pt are left
+	 * on the page.  12301: Word takes the table to the next page and leaves the heading at the foot; FOP runs the
+	 * header row off the page.  @since 17.3.1
+	 */
+	private static Probe tableHeaderOverflowProbe(boolean byStyle) {
+		String id = "table-header-overflow-" + (byStyle ? "style" : "tblheader");
+		return new Probe(id, "43 exact 14pt lines (95.9pt left), a keepNext heading, then a table whose repeating"
+				+ " first row is 12 lines (168pt), by " + (byStyle ? "the table style's firstRow w:tblHeader" : "w:tblHeader")
+				+ ", and 8 body rows; mode 15.  Read the page the heading and the table start on, and whether the header"
+				+ " row repeats on the next page", () -> {
+			Doc d = Doc.create(15);
+			if (byStyle) {
+				styleXml(d, "<w:style w:type=\"table\" w:styleId=\"ProbeHeaderTable\"><w:name w:val=\"Probe Header Table\"/>"
+						+ "<w:tblPr><w:tblCellMar><w:left w:w=\"108\" w:type=\"dxa\"/><w:right w:w=\"108\" w:type=\"dxa\"/></w:tblCellMar></w:tblPr>"
+						+ "<w:tblStylePr w:type=\"firstRow\"><w:rPr><w:b/></w:rPr><w:trPr><w:tblHeader/></w:trPr></w:tblStylePr></w:style>");
+			}
+			fillerLines(d, "THO", 43);
+			d.add(xmlP(exactP("THO heading kept with the table", 280, "<w:keepNext/>")));
+			d.add(xmlTbl(linesTable("THO", 12, byStyle ? null : "<w:tblHeader/>", 8, byStyle ? "ProbeHeaderTable" : null)));
+			d.add(xmlP(exactP("THO after the table", 280, "")));
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * table-nested-rowsplit-&lt;a|b|c|d&gt; (ledger9; 12301).  An outer row holding a nested table taller than the
+	 * room left (151.9pt): (a) the nested table 280pt, shorter than a page; (b) 840pt, longer; (c) a with the
+	 * outer row w:cantSplit; (d) a with keepNext on the row's first paragraph.  12301: Word moves such a row
+	 * whole.  @since 17.3.1
+	 */
+	private static Probe tableNestedRowsplitProbe(char variant) {
+		return new Probe("table-nested-rowsplit-" + variant, "39 exact 14pt lines (151.9pt left), then a one-column"
+				+ " table: a one-line row, then a row holding a paragraph and a nested table of "
+				+ (variant == 'b' ? 60 : 20) + " exact 14pt rows" + (variant == 'c' ? ", the row w:cantSplit" : "")
+				+ (variant == 'd' ? ", the row's first paragraph keepNext" : "") + "; mode 15.  Read whether the row"
+				+ " starts on page 1 (split) or page 2 (moved whole), and where it breaks", () -> {
+			Doc d = Doc.create(15);
+			fillerLines(d, "NRS", 39);
+			int inner = COLUMN_TWIPS - 400;
+			StringBuilder nested = new StringBuilder("<w:tbl><w:tblPr><w:tblW w:w=\"").append(inner).append("\" w:type=\"dxa\"/>"
+					+ "<w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/>"
+					+ "<w:insideH w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblLayout w:type=\"fixed\"/>"
+					+ "<w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPr>"
+					+ "<w:tblGrid><w:gridCol w:w=\"").append(inner).append("\"/></w:tblGrid>");
+			int rows = variant == 'b' ? 60 : 20;
+			for (int r = 1; r <= rows; r++) {
+				nested.append("<w:tr><w:tc><w:tcPr><w:tcW w:w=\"").append(inner).append("\" w:type=\"dxa\"/></w:tcPr>")
+						.append(exactP("NRS nested row " + r + " of " + rows, 280, "")).append("</w:tc></w:tr>");
+			}
+			nested.append("</w:tbl>");
+			String cell = "<w:tc><w:tcPr><w:tcW w:w=\"" + COLUMN_TWIPS + "\" w:type=\"dxa\"/></w:tcPr>";
+			String tbl = "<w:tbl><w:tblPr><w:tblW w:w=\"" + COLUMN_TWIPS + "\" w:type=\"dxa\"/><w:tblBorders>"
+					+ "<w:top w:val=\"single\" w:sz=\"8\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"8\" w:space=\"0\" w:color=\"auto\"/>"
+					+ "<w:bottom w:val=\"single\" w:sz=\"8\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"8\" w:space=\"0\" w:color=\"auto\"/>"
+					+ "<w:insideH w:val=\"single\" w:sz=\"8\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblLayout w:type=\"fixed\"/>"
+					+ "<w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPr>"
+					+ "<w:tblGrid><w:gridCol w:w=\"" + COLUMN_TWIPS + "\"/></w:tblGrid>"
+					+ "<w:tr>" + cell + exactP("NRS outer row 1", 280, "") + "</w:tc></w:tr>"
+					+ "<w:tr>" + (variant == 'c' ? "<w:trPr><w:cantSplit/></w:trPr>" : "") + cell
+					+ exactP("NRS outer row 2, before its nested table", 280, variant == 'd' ? "<w:keepNext/>" : "")
+					+ nested + exactP("", 280, "") + "</w:tc></w:tr></w:tbl>";
+			d.add(xmlTbl(tbl));
+			d.add(xmlP(exactP("NRS after the table", 280, "")));
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * omml-inline-line-box (ledger9; 7320).  docx4j's inline math (JEuclid) makes a 1.5-spaced 14pt line about
+	 * 5pt taller than Word's.  Paragraphs at 14pt, line 360 auto: plain, then each with an inline n-ary with
+	 * limits, a subscript, a fraction, wrapping to several lines.  @since 17.3.1
+	 */
+	private static Probe ommlInlineLineBoxProbe() {
+		return new Probe("omml-inline-line-box", "14pt Liberation Serif, line 360 auto: a plain paragraph, then"
+				+ " paragraphs holding an inline n-ary sum with limits, an msub, a fraction, each wrapping; mode 15."
+				+ "  Read every line's baseline (the pitch where math sits against plain lines)", () -> {
+			Doc d = Doc.create(15);
+			String pPr = "<w:pPr><w:spacing w:before=\"0\" w:after=\"240\" w:line=\"360\" w:lineRule=\"auto\"/></w:pPr>";
+			String text = xrun("Plain text around the formula, set at fourteen points on one and a half lines, " + prose(2, 3) + " ", SERIF, 28, false);
+			String tail = xrun(" and the paragraph goes on after it. " + prose(2, 5), SERIF, 28, false);
+			String mr = "<m:r><w:rPr><w:rFonts w:ascii=\"Cambria Math\" w:hAnsi=\"Cambria Math\"/><w:sz w:val=\"28\"/></w:rPr><m:t>%s</m:t></m:r>";
+			String nary = "<m:oMath><m:nary><m:naryPr><m:chr m:val=\"∑\"/><m:limLoc m:val=\"undOvr\"/></m:naryPr><m:sub>"
+					+ String.format(mr, "i=1") + "</m:sub><m:sup>" + String.format(mr, "n") + "</m:sup><m:e><m:sSub><m:e>"
+					+ String.format(mr, "x") + "</m:e><m:sub>" + String.format(mr, "i") + "</m:sub></m:sSub></m:e></m:nary></m:oMath>";
+			String msub = "<m:oMath><m:sSub><m:e>" + String.format(mr, "x") + "</m:e><m:sub>" + String.format(mr, "i")
+					+ "</m:sub></m:sSub></m:oMath>";
+			String frac = "<m:oMath><m:f><m:num>" + String.format(mr, "a+b") + "</m:num><m:den>" + String.format(mr, "c")
+					+ "</m:den></m:f></m:oMath>";
+			d.add(xmlP("<w:p>" + pPr + text + tail + "</w:p>"));
+			for (String math : new String[] { nary, msub, frac }) d.add(xmlP("<w:p>" + pPr + text + math + tail + "</w:p>"));
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * trailing-empties-overflow-&lt;2|6|20|heading|break&gt; (ledger9; 719).  Does a document's run of trailing
+	 * empty paragraphs that overflows the last page give Word a further page?  719 (Word 29 pages, ours 28) says
+	 * yes.  Five text lines and 44 empty paragraphs, all exact 14pt (686pt of the 697.9pt body), then a last
+	 * empty paragraph sized to overflow by 2, 6 or 20pt; or an empty Heading1-like paragraph (keepNext, 12pt
+	 * before, 3pt after); or a break-only paragraph.  @since 17.3.1
+	 */
+	private static Probe trailingEmptiesOverflowProbe(String variant) {
+		return new Probe("trailing-empties-overflow-" + variant, "5 text lines and 44 empty paragraphs, exact 14pt"
+				+ " (686pt of 697.9), then " + ("heading".equals(variant) ? "an empty keepNext paragraph with 12pt before"
+				: "break".equals(variant) ? "a break-only paragraph" : "an empty paragraph overflowing the body by " + variant
+				+ "pt") + "; mode 15.  Read the page count, and what the last page holds", () -> {
+			Doc d = Doc.create(15);
+			for (int i = 1; i <= 5; i++) d.add(xmlP(exactP("TEO text line " + i, 280, "")));
+			for (int i = 1; i <= 44; i++) d.add(xmlP(exactP("", 280, "")));
+			if ("heading".equals(variant)) {
+				d.add(xmlP("<w:p><w:pPr><w:keepNext/><w:spacing w:before=\"240\" w:after=\"60\" w:line=\"280\" w:lineRule=\"exact\"/>"
+						+ rpr(SERIF, 32, true) + "</w:pPr></w:p>"));
+			} else if ("break".equals(variant)) {
+				d.add(breakOnlyParagraph());
+			} else {
+				int over = Integer.parseInt(variant);
+				int last = BODY_TWIPS - 49 * 280 + over * 20;
+				d.add(xmlP(exactP("", last, "")));
+			}
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * keep-next-table-first-row-&lt;2|4|6|4-cantsplit|4-header&gt; (ledger9; 2451).  A keepNext caption before a
+	 * table whose first row is 2, 4 or 6 exact 14pt lines, with room for the caption and about half the row.
+	 * 2451: Word moves caption and row to the next page; FOP splits the row.  @since 17.3.1
+	 */
+	private static Probe keepNextTableFirstRowProbe(String variant) {
+		int lines = Integer.parseInt(variant.substring(0, 1));
+		int fillers = (BODY_TWIPS - 280 - lines * 140) / 280;
+		return new Probe("keep-next-table-first-row-" + variant, fillers + " exact 14pt lines (room for the caption"
+				+ " and about half the row), a keepNext caption, then a table whose first row is " + lines + " lines"
+				+ (variant.endsWith("cantsplit") ? ", w:cantSplit" : "") + (variant.endsWith("header") ? ", w:tblHeader" : "")
+				+ ", and 3 one-line rows; mode 15.  Read the page the caption and the first row start on, and whether the"
+				+ " row splits", () -> {
+			Doc d = Doc.create(15);
+			fillerLines(d, "KNT", fillers);
+			d.add(xmlP(exactP("KNT caption kept with the table", 280, "<w:keepNext/>")));
+			String trPr = variant.endsWith("cantsplit") ? "<w:cantSplit/>" : variant.endsWith("header") ? "<w:tblHeader/>" : null;
+			d.add(xmlTbl(linesTable("KNT", lines, trPr, 3, null)));
+			d.add(xmlP(exactP("KNT after the table", 280, "")));
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * table-normal-style-rpr&lt;12|15&gt; (ledger9; 1912).  docDefaults 11pt, Normal 12pt: a table's paragraphs
+	 * with no pStyle are set at 11pt by Word in 1912 (mode 12), at Normal's 12pt by docx4j.  A TableGrid table and
+	 * a table in a custom style without run properties, in modes 12 and 15.  @since 17.3.1
+	 */
+	private static Probe tableNormalStyleRprProbe(int mode) {
+		return new Probe("table-normal-style-rpr" + mode, "docDefaults Liberation Serif 11pt, Normal 12pt; a body"
+				+ " paragraph, a TableGrid table and a table in a custom style (no rPr), their paragraphs without pStyle;"
+				+ " mode " + mode + ".  Read the size of each table's text in Word's PDF", () -> {
+			Doc d = Doc.create(mode);
+			d.documentDefaultRun(SERIF, 22);
+			for (org.docx4j.wml.Style st : d.mdp().getStyleDefinitionsPart().getJaxbElement().getStyle()) {
+				if ("Normal".equals(st.getStyleId())) {
+					if (st.getRPr() == null) st.setRPr(new org.docx4j.wml.RPr());
+					org.docx4j.wml.HpsMeasure sz = new org.docx4j.wml.HpsMeasure();
+					sz.setVal(BigInteger.valueOf(24));
+					st.getRPr().setSz(sz);
+				}
+			}
+			styleXml(d, "<w:style w:type=\"table\" w:styleId=\"TableGrid\"><w:name w:val=\"Table Grid\"/><w:basedOn w:val=\"TableNormal\"/>"
+					+ "<w:pPr><w:spacing w:after=\"0\" w:line=\"240\" w:lineRule=\"auto\"/></w:pPr><w:tblPr><w:tblBorders>"
+					+ "<w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/>"
+					+ "<w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/>"
+					+ "<w:insideH w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:insideV w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/>"
+					+ "</w:tblBorders></w:tblPr></w:style>");
+			styleXml(d, "<w:style w:type=\"table\" w:customStyle=\"1\" w:styleId=\"ProbePlainTable\"><w:name w:val=\"Probe Plain Table\"/>"
+					+ "<w:basedOn w:val=\"TableNormal\"/><w:tblPr><w:tblBorders><w:top w:val=\"single\" w:sz=\"12\" w:space=\"0\" w:color=\"auto\"/>"
+					+ "<w:bottom w:val=\"single\" w:sz=\"12\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders></w:tblPr></w:style>");
+			d.add(xmlP("<w:p><w:r><w:t>Body text in Normal, which says 12pt over docDefaults' 11pt.</w:t></w:r></w:p>"));
+			for (String style : new String[] { "TableGrid", "ProbePlainTable" }) {
+				StringBuilder x = new StringBuilder("<w:tbl><w:tblPr><w:tblStyle w:val=\"" + style + "\"/><w:tblW w:w=\"0\" w:type=\"auto\"/>"
+						+ "<w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/>"
+						+ "</w:tblPr><w:tblGrid><w:gridCol w:w=\"4513\"/><w:gridCol w:w=\"4513\"/></w:tblGrid>");
+				for (int r = 1; r <= 3; r++) {
+					x.append("<w:tr>");
+					for (int c = 1; c <= 2; c++) {
+						x.append("<w:tc><w:tcPr><w:tcW w:w=\"4513\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>" + style + " row " + r
+								+ " cell " + c + ": the quick brown fox jumps over the lazy dog</w:t></w:r></w:p></w:tc>");
+					}
+					x.append("</w:tr>");
+				}
+				d.add(xmlTbl(x.append("</w:tbl>").toString()));
+				d.add(xmlP("<w:p/>"));
+			}
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * shaded-group-keeps-&lt;first|middle|none&gt; (ledger9; 1152).  docx4j wraps a run of shaded paragraphs in
+	 * one block that takes the first paragraph's keeps, so a group taller than the room keeps together and opens
+	 * the next page.  Ten shaded paragraphs of about three lines after 33 exact lines (235.9pt left), with
+	 * keepNext and keepLines on the first, on the fifth, or on none.  @since 17.3.1
+	 */
+	private static Probe shadedGroupKeepsProbe(String variant) {
+		return new Probe("shaded-group-keeps-" + variant, "33 exact 14pt lines (235.9pt left), then ten paragraphs"
+				+ " shaded D9D9D9 of about three lines each, keepNext + keepLines on " + ("none".equals(variant) ? "none"
+				: "the " + variant + " one") + "; mode 15.  Read where page 1 ends and where the group starts", () -> {
+			Doc d = Doc.create(15);
+			fillerLines(d, "SGK", 33);
+			for (int i = 1; i <= 10; i++) {
+				boolean keeps = ("first".equals(variant) && i == 1) || ("middle".equals(variant) && i == 5);
+				d.add(xmlP("<w:p><w:pPr>" + (keeps ? "<w:keepNext/><w:keepLines/>" : "")
+						+ "<w:shd w:val=\"clear\" w:color=\"auto\" w:fill=\"D9D9D9\"/><w:spacing w:before=\"0\" w:after=\"0\"/></w:pPr>"
+						+ xrun("SGK shaded paragraph " + i + ". " + prose(3, i), SERIF, 24, false) + "</w:p>"));
+			}
+			d.add(xmlP(exactP("SGK after the group", 280, "")));
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * list-label-line-multiplier (ledger9; 3493).  docx4j lays a list label out at its full line box, so an item
+	 * on a line multiplier below 1 is as tall as a single line (3493: item pitch 23.5 against Word's 20.18).
+	 * Numbered and bulleted items at line 180 auto (0.75), one and two lines, empty paragraphs between.
+	 * @since 17.3.1
+	 */
+	private static Probe listLabelLineMultiplierProbe() {
+		return new Probe("list-label-line-multiplier", "decimal and bullet items, Liberation Serif 11, line 180 auto"
+				+ " (0.75), one- and two-line items with empty paragraphs between, and the same at 240 auto; mode 15."
+				+ "  Read every baseline: the item pitch against plain paragraphs'", () -> {
+			Doc d = Doc.create(15);
+			String lvl = "<w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/><w:numFmt w:val=\"%s\"/><w:lvlText w:val=\"%s\"/><w:lvlJc w:val=\"left\"/>"
+					+ "<w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr>" + rpr(SERIF, 22, false) + "</w:lvl>";
+			d.numberingXml("<w:abstractNum w:abstractNumId=\"0\">" + String.format(lvl, "decimal", "%1.") + "</w:abstractNum>"
+					+ "<w:abstractNum w:abstractNumId=\"1\">" + String.format(lvl, "bullet", "•") + "</w:abstractNum>"
+					+ "<w:num w:numId=\"1\"><w:abstractNumId w:val=\"0\"/></w:num><w:num w:numId=\"2\"><w:abstractNumId w:val=\"1\"/></w:num>");
+			for (int line : new int[] { 180, 240 }) {
+				String sp = "<w:spacing w:before=\"0\" w:after=\"0\" w:line=\"" + line + "\" w:lineRule=\"auto\"/>";
+				d.add(xmlP("<w:p><w:pPr>" + sp + "</w:pPr>" + xrun("Plain paragraph at line " + line + ".", SERIF, 22, false) + "</w:p>"));
+				for (int numId = 1; numId <= 2; numId++) {
+					for (int i = 1; i <= 3; i++) {
+						String text = i == 2 ? "Item " + i + ", two lines: " + prose(2, i) : "Item " + i + ", one line.";
+						d.add(xmlP("<w:p><w:pPr><w:numPr><w:ilvl w:val=\"0\"/><w:numId w:val=\"" + numId + "\"/></w:numPr>" + sp
+								+ "</w:pPr>" + xrun(text, SERIF, 22, false) + "</w:p>"));
+						d.add(xmlP("<w:p><w:pPr>" + sp + rpr(SERIF, 22, false) + "</w:pPr></w:p>"));
+					}
+				}
+			}
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * line-box-bold-run (ledger9; 4025, 13321).  Bold lines pitch short of Word's in docx4j (Tinos Bold 15.59
+	 * against 15.84 at 1.15; a bold twin's box 11.30 against 11.52).  Liberation Serif 12 at single and 1.15:
+	 * all regular, all bold, and mixed.  {@code line-box-bold} covers 9 and 11pt at single spacing (docx4j
+	 * matches it); this adds 12pt and the 1.15 multiplier, where 4025's residue is.  @since 17.3.1
+	 */
+	private static Probe lineBoxBoldRunProbe() {
+		return new Probe("line-box-bold-run", "Liberation Serif 12, line 240 and 276 auto: five-line paragraphs all"
+				+ " regular, all bold, and mixed (alternate words bold); mode 15.  Read the line pitch of each", () -> {
+			Doc d = Doc.create(15);
+			for (int line : new int[] { 240, 276 }) {
+				String pPr = "<w:pPr><w:spacing w:before=\"0\" w:after=\"240\" w:line=\"" + line + "\" w:lineRule=\"auto\"/></w:pPr>";
+				String text = prose(5, line);
+				d.add(xmlP("<w:p>" + pPr + xrun("Regular, line " + line + ". " + text, SERIF, 24, false) + "</w:p>"));
+				d.add(xmlP("<w:p>" + pPr + xrun("Bold, line " + line + ". " + text, SERIF, 24, true) + "</w:p>"));
+				StringBuilder mixed = new StringBuilder("<w:p>" + pPr);
+				String[] words = ("Mixed, line " + line + ". " + text).split(" ");
+				for (int i = 0; i < words.length; i++) mixed.append(xrun(words[i] + " ", SERIF, 24, i % 2 == 1));
+				d.add(xmlP(mixed.append("</w:p>").toString()));
+			}
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * section-final-empty-nextpage-&lt;a|b|c&gt; (ledger9; 12317).  A document whose last section holds only
+	 * (a) one empty paragraph, nextPage; (b) the same, continuous; (c) a break-only paragraph, nextPage.  12317:
+	 * Word gives (a) a page of its own.  @since 17.3.1
+	 */
+	private static Probe sectionFinalEmptyNextPageProbe(char variant) {
+		return new Probe("section-final-empty-nextpage-" + variant, "a section of text, then a last section holding "
+				+ (variant == 'c' ? "a break-only paragraph" : "one empty paragraph") + ", " + (variant == 'b' ? "continuous"
+				: "nextPage") + "; mode 15.  Read the page count", () -> {
+			Doc d = Doc.create(15);
+			for (int i = 1; i <= 3; i++) d.para("SFE section one, paragraph " + i + ". " + prose(2, i)).noLabel().after(120).add();
+			d.endSection(variant == 'b' ? "continuous" : "nextPage", 0);
+			if (variant == 'c') d.add(breakOnlyParagraph());
+			else d.add(xmlP("<w:p><w:pPr><w:spacing w:before=\"0\" w:after=\"0\"/>" + rpr(SERIF, 24, false) + "</w:pPr></w:p>"));
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * break-at-double-space (ledger9; 8814).  Word does not break a line at a double space where docx4j does
+	 * (8814 p21).  Justified and left-aligned paragraphs whose words are separated by two spaces.  @since 17.3.1
+	 */
+	private static Probe breakAtDoubleSpaceProbe() {
+		return new Probe("break-at-double-space", "Liberation Serif 12 paragraphs, justified and left-aligned, every"
+				+ " word followed by two spaces; mode 15.  Read every line's first and last word", () -> {
+			Doc d = Doc.create(15);
+			for (String jc : new String[] { "both", "left" }) {
+				for (int i = 1; i <= 3; i++) {
+					String text = String.join("  ", (prose(4, i * 7)).split(" "));
+					d.add(xmlP("<w:p><w:pPr><w:spacing w:before=\"0\" w:after=\"240\"/><w:jc w:val=\"" + jc + "\"/></w:pPr>"
+							+ xrun(text, SERIF, 24, false) + "</w:p>"));
+				}
+			}
 			return d.pkg();
 		});
 	}
