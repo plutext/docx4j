@@ -1268,7 +1268,21 @@ public class WordLineLayoutManager extends LineLayoutManager {
                     // is the block's line-height, in which case FOP's content height for
                     // the run is scaled by the block font's pitch : content ratio
                     int pitch = LBP.lineHeight(ac);
-                    if (pitch <= 0 || pitch == lineHeight) {
+                    /* A span naming its document font (docx4j:font) carries Word's pitch for
+                     * it explicitly, so a pitch equal to the block's is the block's and not
+                     * an inherited value: the run's natural pitch is the block's box, and
+                     * FOP's content height does not come into it.  It differs by face where
+                     * the font's typo metrics do: Liberation Serif Bold's sTypoAscender is
+                     * 1387 to the Regular's 1420, so a line of bold runs only was 1829/1862
+                     * of the block's box.  Measured on the line-box-bold-run probe (CR-001
+                     * batch 53; corpus documents 4025, 13321): Liberation Serif 12pt lines
+                     * all bold pitch 13.80 in Word as regular ones do (15.84 at 1.15), where
+                     * docx4j's were 13.55 (15.59).  Auto spacing only: atLeast keeps FOP's.
+                     * @since 17.3.1 */
+                    if (pitch == lineHeight && wordLineRule == RULE_AUTO && wordLineBox > 0
+                            && innermostForeignAttribute(element, "font") != null) {
+                        pitch = wordLineBox;
+                    } else if (pitch <= 0 || pitch == lineHeight) {
                         pitch = (int) Math.round(h * (double) wordLineBox / (lead + follow));
                     } else if (wordLineRule == RULE_AUTO && wordLineBox > 0 && lineHeight > wordLineBox) {
                         // the span's pitch carries the paragraph's auto multiple, applied
@@ -2264,6 +2278,24 @@ public class WordLineLayoutManager extends LineLayoutManager {
                     && localName.equals(name.getLocalName())) {
                 return String.valueOf(e.getValue()).trim();
             }
+        }
+        return null;
+    }
+
+    /** A foreign attribute of the innermost inline this element comes from which has it: the
+     *  element's own layout manager is the outermost inline's once positions are wrapped, and
+     *  docx4j's run span (docx4j:font) is usually inside another.  @since 17.3.1 */
+    static String innermostForeignAttribute(KnuthElement element, String localName) {
+        java.util.List<org.apache.fop.layoutmgr.LayoutManager> lms = new java.util.ArrayList<org.apache.fop.layoutmgr.LayoutManager>();
+        for (org.apache.fop.layoutmgr.Position p = element.getPosition(); p != null; p = p.getPosition()) {
+            if (p.getLM() != null) lms.add(p.getLM());
+            if (p.getPosition() == p) break;
+        }
+        for (int i = lms.size() - 1; i >= 0; i--) {
+            org.apache.fop.fo.FObj fobj = lms.get(i).getFObj();
+            if (fobj instanceof Block) break;
+            String v = foreignAttribute(fobj, localName);
+            if (v != null) return v;
         }
         return null;
     }

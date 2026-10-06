@@ -535,6 +535,26 @@ A document which declares its own alias in `w:altName` (§5.1) adds one of these
 that alias is what resolves the font, Word is using the alternate font outright, so the
 line metrics are the alternate's.
 
+<a id="s27face"></a>**A bold (or italic) run's line is the family's, not FOP's face height
+(17.3.1).** Each run's span carries Word's pitch for its document font as `line-height`; where
+that equals the block's, the line manager took it for an inherited value and scaled FOP's content
+height for the run by the block's box. FOP's content height comes from the face's typo metrics,
+and those differ by face where the win and hhea metrics do not: Liberation Serif Bold's
+`sTypoAscender` is 1387 to the Regular's 1420, so a line of bold runs only was 1829/1862 of the
+box. Measured on the `line-box-bold-run` probe (corpus documents 4025, 13321): Liberation Serif
+12pt lines all in bold pitch 13.80 in Word as regular ones do (15.84 at 1.15), where docx4j's
+were 13.55 (15.59); mixed lines matched already. A span naming its document font
+(`docx4j:font`) now takes the block's box under auto spacing; atLeast keeps the old path. The
+attribute is read off the innermost inline of the element's position chain
+(`WordLineLayoutManager.innermostForeignAttribute`): the element's own layout manager is the
+outermost inline's once positions are wrapped. Gate b146: 2600 +64 lines (+80 in real-c2), 3653 +9,
+8132 +8, 5320 to Word's 2 pages; 9698 -87, an unmasking - its bold title now pitches 16.1 as
+Word's does (15.8 before), and a 2.5pt offset on the title's first line, which the short pitch
+had cancelled by the body, now reaches it - and 5041, 3229 and 7639 move a knife-edge break each
+(7639 one page short of Word's 34). Not yet done: the substitute-ascent lookup a few lines below
+reads `docx4j:font` off the outermost inline too, so it has probably not been finding it.
+`BoldLineHeightTest` (fails on the old code: 13556 against 13799).
+
 ### 2.8 List labels
 
 Word raises a list item's first line by the amount the label's ascent exceeds the text's -
