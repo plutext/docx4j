@@ -95,4 +95,20 @@ public class PagerefMissingBookmarkTest {
 			assertTrue("no bookmark to point at: " + fo, fo.contains("id=\"_Toc123\""));
 		}
 	}
+
+	/**
+	 * The citation carries the shape of the number Word last wrote there, which FOP measures it
+	 * by while the page it cites is unknown: "60" as "00", a roman "iv" as it stands.  FOP's
+	 * own placeholder set a two-digit table of contents number 6pt too wide (corpus document
+	 * 11657).  @since 17.3.1
+	 */
+	@Test
+	public void aPagerefCarriesTheShapeOfItsCachedNumber() throws Exception {
+		for (int flag : FLAGS) {
+			String fo = fo(ENTRY.replace(">7<", ">60<") + HEADING, flag);
+			assertTrue("the two-digit shape: " + fo, fo.contains("docx4j:placeholder=\"00\""));
+			fo = fo(ENTRY.replace(">7<", ">iv<") + HEADING, flag);
+			assertTrue("the roman number: " + fo, fo.contains("docx4j:placeholder=\"iv\""));
+		}
+	}
 }

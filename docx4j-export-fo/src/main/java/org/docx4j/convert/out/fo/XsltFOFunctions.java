@@ -3515,6 +3515,14 @@ public class XsltFOFunctions {
 		return WordLayoutFixups.isEnabled() && WordLayoutFixups.extensionNamespace()!=null;
 	}
 
+	/** {@code docx4j.convert.out.fo.wordLayout.tocBreakBeforeTab}, default true: a
+	 *  table-of-contents entry may break before its page number's tab, as Word's does
+	 *  (see {@link #tabToFO}).  @since 17.3.1 */
+	static boolean tocBreakBeforeTab() {
+		return org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.wordLayout.tocBreakBeforeTab", true);
+	}
+
 	/** the FO leader standing in for a tab carries this, so the line manager can tell
 	 *  it from a ptab or a fixed leading-tab leader (WordLayoutFixups moves it into the
 	 *  docx4j: namespace).  @since 17.0.5 */
@@ -3710,6 +3718,17 @@ public class XsltFOFunctions {
 			 * (223 -> 224) and 119 matched lines, and they buy nothing, because the
 			 * harness's own leader-run normalisation already swallows the whitespace at
 			 * each end of a run (PdfLayout.Line.LEADER_RUN).  Measured, CR-001 batch 45. */
+			/* Word breaks a line at the tab: where the page number does not fit after the
+			 * entry's text, the tab goes down with it and its dots run on the next line from
+			 * the indent.  FOP allows no break before a leader, so the entry broke inside its
+			 * text instead (a long token taken down to the number) or ran the number past the
+			 * margin with no dots.  A zero-width space is the break; it leaves no glyph and no
+			 * width (TextLayoutManager adds no zero-width space to the text area), and the
+			 * line manager's greedy breaking takes it only when the number does not fit.
+			 * Measured on corpus document 11657's 222 contents entries: Word's entry 4.43
+			 * "Constante" / "«...type»" / "...... 63" where ours was "«...type»63" over the
+			 * margin, and 4.46 "Constante «...type»" / "...... 65".  @since 17.3.1 */
+			if (realTabs() && tocBreakBeforeTab()) df.appendChild(d.createTextNode("\u200b"));
 			df.appendChild(foLeader);
 			return df;
 		}

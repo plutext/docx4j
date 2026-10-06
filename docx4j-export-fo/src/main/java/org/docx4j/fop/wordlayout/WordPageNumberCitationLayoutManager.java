@@ -80,7 +80,9 @@ public class WordPageNumberCitationLayoutManager extends PageNumberCitationLayou
 	protected MinOptMax getAllocationIPD(int refIPD) {
 		MinOptMax fops = super.getAllocationIPD(refIPD);
 		if (getCitedPage() != null) return fops;    // FOP measured the number itself
-		String placeholder = WordLayoutCustomizer.pageNumberPlaceholder("000");
+		// the shape of the number Word last wrote here, where the FO carries it (17.3.1)
+		String placeholder = WordLineLayoutManager.foreignAttribute(citation, WordLayoutElementMapping.PLACEHOLDER);
+		if (placeholder == null || placeholder.length() == 0) placeholder = WordLayoutCustomizer.pageNumberPlaceholder("000");
 		if (placeholder == null || placeholder.length() == 0 || font == null) return fops;
 		int width = 0;
 		for (int i = 0; i < placeholder.length(); i++) {

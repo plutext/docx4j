@@ -223,7 +223,37 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		@Override
 		public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException {
 			Node error = fieldError(context, model, doc, ERROR_BOOKMARK_NOT_DEFINED);
-			return error != null ? error : super.toNode(context, model, doc);
+			if (error != null) return error;
+			Node node = super.toNode(context, model, doc);
+			String shape = XsltFOFunctions.realTabs() && model.getContent() != null
+					? placeholderShape(getTextcontent(model.getContent())) : null;
+			if (shape != null) markCitations(node, shape);
+			return node;
+		}
+
+		/**
+		 * The width FOP should reserve for the page number while it is unknown, from the
+		 * number Word last wrote here: its digits as zeros ("60" is "00"), or a roman number
+		 * as it stands; null for anything else.  The citation is measured before the page it
+		 * cites is laid out, and FOP's placeholder of three characters set a table of
+		 * contents entry's two-digit number 6pt too wide, so an entry whose number fitted
+		 * after its text was broken before the tab (corpus document 11657, entry 4.38: Word
+		 * "...ichage.type» 60" on one line).  Word renumbers at export, so the number can
+		 * change; its width seldom does.  @since 17.3.1
+		 */
+		static String placeholderShape(String cached) {
+			if (cached == null) return null;
+			String t = cached.trim();
+			if (t.matches("[0-9]{1,6}")) return t.replaceAll("[0-9]", "0");
+			if (t.matches("[ivxlcdm]{1,8}|[IVXLCDM]{1,8}")) return t;
+			return null;
+		}
+
+		private static void markCitations(Node node, String shape) {
+			if (node instanceof Element && "page-number-citation".equals(node.getLocalName())) {
+				((Element) node).setAttribute(WordLayoutFixups.HINT_CITATION_PLACEHOLDER, shape);
+			}
+			for (Node c = node.getFirstChild(); c != null; c = c.getNextSibling()) markCitations(c, shape);
 		}
 
 		@Override

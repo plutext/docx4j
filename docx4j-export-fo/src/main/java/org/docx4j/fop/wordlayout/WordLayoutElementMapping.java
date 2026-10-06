@@ -109,6 +109,10 @@ public class WordLayoutElementMapping extends ElementMapping {
 	 *  width from the line manager, which is why it is not {@link #TAB}.  The value is
 	 *  the {@code w:leader} kind.  @since 17.2.0 */
 	public static final String TOC_LEADER = "toc-leader";
+	/** on an fo:page-number-citation: the shape of the number Word last wrote there,
+	 *  which {@link WordPageNumberCitationLayoutManager} measures the citation by while its
+	 *  page is unknown.  @since 17.3.1 */
+	public static final String PLACEHOLDER = "placeholder";
 	/** on a paragraph's fo:block: its custom tab stops, "pos:align:leader;..." in
 	 *  twips from the left margin (w:val="clear" stops included: they clear the
 	 *  default stops before them). */

@@ -159,6 +159,7 @@ key in `docx4j.properties` still wins, and a deployment without either file gets
 | `docx4j.convert.out.fo.wordLayout.maxHyphenSpaceShrink` | `0.10` | The same, for taking a longer **hyphenation fragment** rather than a whole word; Word pays much less for one (§4.7). Capped by `maxSpaceShrink`. |
 | `docx4j.convert.out.fo.wordLayout.labelAscentAgainstBaseline` | `true` | A list label's excess ascent is measured against the paragraph's own ascent (`docx4j:baseline`), not against the ascent the line's runs report, wherever the line is the paragraph's own size ([§2.8](#s28against)). `false` restores 17.1.0's behaviour, which grew every numbered paragraph by the difference between a substitute's ascent share and the document font's. |
 | `docx4j.convert.out.fo.wordLayout.tocStretchingLeader` | `true` | A table-of-contents entry (first stop right-aligned with a dot leader) keeps the stretching `fo:leader` and `text-align-last="justify"`. `false` lays its tabs out against the stops like any other tab, which also gives its dots Word's grid phase; measured, the two are a wash (§4.4). |
+| `docx4j.convert.out.fo.wordLayout.tocBreakBeforeTab` | `true` | A table-of-contents entry may break before its page number's tab, as Word's does where the number does not fit after the text: the dots and the number go down to the next line ([§4.4](#s44tocbreak)). `false` breaks inside the text, as before 17.3.1. |
 | `docx4j.convert.out.fo.wordLayout.hyphenationZone` | `false` | `true` enforces `w:hyphenationZone` as the largest gap tolerated before hyphenating, which is what docx4j did to 17.0.5. Measured against Word, the zone never fires (§4.7). |
 | `docx4j.convert.out.fo.wordLayout.justifySoftReturn` | `true` | A justified line that ends in a soft return (`w:br` with no type) is justified, as Word justifies it unless `w:compat/w:doNotExpandShiftReturn` is set (§4.2). `false` restores 17.0.5's behaviour, which was the flag-on behaviour for every document. |
 | `docx4j.convert.out.fo.wordLayout.emptyLineAfterBreak` | `true` | A `w:br` whose new line holds nothing that paints still takes a line box, as Word gives it (&sect;2.5). `false` restores 17.0.5's behaviour. |
@@ -2030,6 +2031,27 @@ document (8695) +1,336 lines, 0.774 to 0.974, its error strings Word's to the co
 624), and 174 to 180 pages against Word's 179 - the one over an older front-matter offset;
 eight more documents up, none down. A form field's own bookmark lies inside its field, which
 docx4j's preprocessing collapses, so the bookmarks are read from the document as loaded.
+
+<a id="s44tocbreak"></a>**A contents entry breaks before its page number's tab (17.3.1).** Where
+the number does not fit after the entry's text, Word takes the tab down with it, and the dots run
+on the next line from the indent to the number. Measured on corpus document 11657's 222 pages of
+`toc 2` entries (`4.46<tab>Constante «...type»<tab>65`): Word sets "4.46 Constante
+«comptabiliteTiers.operationTiers.paramTypeFacturationImputation.type»" and then "...... 65", and
+an entry whose token does not fit after "Constante" as "4.43 Constante", the token, "...... 63".
+FOP allows no break before an `fo:leader` (a box, then an infinite penalty), so docx4j broke inside
+the text - the token went down to join the number - or, where token and number fitted no line
+together, set the number against the token past the margin with no dots ("«...type»63").
+`XsltFOFunctions.tabToFO` now writes a zero-width space before the stretching leader: a break the
+first-fit line manager takes only when the number does not fit, and which FOP leaves out of the
+text area. The number it is measured against is the shape of the page number, not FOP's
+placeholder: `FldSimpleWriter` puts the shape of the number the `PAGEREF` last held on the
+citation (`docx4j:placeholder`, "00" for "60", a roman number as it stands), and
+`WordPageNumberCitationLayoutManager` measures an unresolved citation by it. Against "000" (18pt
+in Times 12, where "60" is 12) entry 4.38, whose token ends 14.6pt short of the stop, went to
+three lines where Word fits its "60" after the token. Gate b157: 11657 +42 lines (FOP's
+overflowing-line warnings on it 27 to 3), 6416 +19, nothing else moved.
+`docx4j.convert.out.fo.wordLayout.tocBreakBeforeTab`. `TocBreakBeforeTabTest`,
+`PageNumberCitationWidthTest`, `PagerefMissingBookmarkTest`.
 
 A right `w:ptab` is resolved as a right tab stop at the end of the line, by the same line
 manager. With `wordLayout=false` no stops are written, and a mid-line tab keeps the

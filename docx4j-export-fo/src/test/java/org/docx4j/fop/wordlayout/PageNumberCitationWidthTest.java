@@ -100,6 +100,12 @@ public class PageNumberCitationWidthTest {
 		return fo(tokenChars, "<fo:page-number-citation ref-id=\"tgt\"/>");
 	}
 
+	/** The entry with its citation carrying the shape of the number Word last wrote there,
+	 *  as FldSimpleWriter writes it for a PAGEREF.  @since 17.3.1 */
+	private static String withCitation(int tokenChars, String shape) {
+		return fo(tokenChars, "<fo:page-number-citation ref-id=\"tgt\" docx4j:placeholder=\"" + shape + "\"/>");
+	}
+
 	/** The same entry with the page number set as text: what the line would be broken
 	 *  against if FOP knew the number, and what Word breaks it against. */
 	private static String withTheNumberItself(int tokenChars) {
@@ -192,5 +198,15 @@ public class PageNumberCitationWidthTest {
 	public void aTokenTooLongForTheLineStillMovesDown() throws Exception {
 		assertEquals(2, entryLines(withCitation(TOO_LONG)));
 		assertEquals(2, entryLines(withTheNumberItself(TOO_LONG)));
+	}
+
+	/** Where the FO carries the shape of the number Word last wrote, the citation is measured
+	 *  by it: one character past {@link #FITS}, the token "000" moves down keeps its line with
+	 *  "00", as it does with the number "23" itself.  @since 17.3.1 */
+	@Test
+	public void theCachedNumbersShapeIsMeasuredWhereTheFOCarriesIt() throws Exception {
+		assertEquals("\"000\" moves it down", 2, entryLines(withCitation(FITS + 1)));
+		assertEquals("the number itself does not", 1, entryLines(withTheNumberItself(FITS + 1)));
+		assertEquals("nor does its shape", 1, entryLines(withCitation(FITS + 1, "00")));
 	}
 }

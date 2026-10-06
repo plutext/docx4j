@@ -480,6 +480,11 @@ public final class WordLayoutFixups {
 	 *  justification.  Its value is the {@code w:leader} kind.  @since 17.2.0 */
 	public static final String HINT_TOC_LEADER = "docx4j-toc-leader";
 
+	/** on an fo:page-number-citation: the shape of the page number Word last wrote there
+	 *  ("00" for a two-digit number), which the citation is measured by while its page is
+	 *  unknown (FldSimpleWriter, WordPageNumberCitationLayoutManager).  @since 17.3.1 */
+	public static final String HINT_CITATION_PLACEHOLDER = "docx4j-placeholder";
+
 	/** on the block a {@code w:br w:type="column"} makes (BrWriter): where the section
 	 *  has columns to go to, it is a column break and not a line break.  @since 17.1.0 */
 	public static final String HINT_COLUMN_BREAK = "docx4j-colbreak";
@@ -762,6 +767,19 @@ public final class WordLayoutFixups {
 			}
 			leader.setAttributeNS(ns,
 					"docx4j:" + org.docx4j.fop.wordlayout.WordLayoutElementMapping.TOC_LEADER, kind);
+		}
+		// and the shape of a page-number citation's last known number.  @since 17.3.1
+		for (Element citation : elements(doc, "page-number-citation")) {
+			String shape = citation.getAttribute(HINT_CITATION_PLACEHOLDER);
+			if (shape.length()==0) continue;
+			citation.removeAttribute(HINT_CITATION_PLACEHOLDER);
+			if (ns == null) continue;
+			if (!declared) {
+				doc.getDocumentElement().setAttributeNS(XMLNS, "xmlns:docx4j", ns);
+				declared = true;
+			}
+			citation.setAttributeNS(ns,
+					"docx4j:" + org.docx4j.fop.wordlayout.WordLayoutElementMapping.PLACEHOLDER, shape);
 		}
 		// a list item's label block carries the w:suff separator, which the line manager
 		// writes into the text layer as Word's space glyph.  @since 17.2.0
