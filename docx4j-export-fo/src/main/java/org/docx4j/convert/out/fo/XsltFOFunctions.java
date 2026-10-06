@@ -113,6 +113,7 @@ public class XsltFOFunctions {
 
     	applySdtContainerMargins(docfrag, tag);
     	resetContainerIndents(docfrag, tag);
+    	dropContainerKeeps(docfrag);
     	borderAgainstHangingIndent(docfrag);
     	wrapInBidiBlockContainer(docfrag);
 
@@ -134,6 +135,7 @@ public class XsltFOFunctions {
 
     	applySdtContainerMargins(docfrag, tag);
     	resetContainerIndents(docfrag, tag);
+    	dropContainerKeeps(docfrag);
     	borderAgainstHangingIndent(docfrag);
     	wrapInBidiBlockContainer(docfrag);
 
@@ -194,6 +196,35 @@ public class XsltFOFunctions {
 		block.setAttribute("start-indent", "0pt");
 		block.setAttribute("end-indent", "0pt");
 		block.setAttribute("text-indent", "0pt");
+	}
+
+	/**
+	 * A shading or border container is built from the pPr of its <em>first</em> paragraph,
+	 * so it took that paragraph's {@code w:keepNext} and {@code w:keepLines} for the whole
+	 * group: keep-together on the container holds every paragraph of it on one page, and
+	 * keep-with-next binds the last of them to what follows.  Word keeps each paragraph by
+	 * its own properties, the group being only how it is drawn.  Measured on the
+	 * shaded-group-keeps probes (CR-001 batch 53, corpus document 1152): ten shaded
+	 * paragraphs of about three lines after 236pt of a page, keepNext and keepLines on the
+	 * first - Word breaks the group after its third paragraph; docx4j moved all ten to
+	 * page 2.  With the keeps on the fifth paragraph, or on none, the two already agreed.
+	 * The paragraphs inside keep their own keeps, and FOP carries the last one's
+	 * keep-with-next out of the container.
+	 *
+	 * @since 17.3.1
+	 */
+	private static void dropContainerKeeps(DocumentFragment docfrag) {
+		if (docfrag == null) return;
+		Node foBlock = docfrag.getFirstChild();
+		if (!(foBlock instanceof Element)) return;
+		Element block = (Element) foBlock;
+		java.util.List<String> keeps = new java.util.ArrayList<String>();
+		org.w3c.dom.NamedNodeMap attrs = block.getAttributes();
+		for (int i = 0; i < attrs.getLength(); i++) {
+			String name = attrs.item(i).getNodeName();
+			if (name.startsWith("keep-together") || name.startsWith("keep-with-next")) keeps.add(name);
+		}
+		for (String name : keeps) block.removeAttribute(name);
 	}
 
 	/** Whether an FO length attribute is absent, empty or a zero of any unit. */

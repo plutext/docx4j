@@ -1170,6 +1170,18 @@ at 72.0..182.3 - the same width, 54pt right (72 inherited less the 18pt text-ind
 eight such blocks in one document. The shading wrapper is reset to zero and the paragraphs
 inside keep their own.
 
+<a id="s3contkeeps"></a>**The wrapper must not pass on its first paragraph's keeps (17.3.1).**
+A shading or border container took its first paragraph's `w:keepNext` and `w:keepLines` for the
+whole group: `keep-together` on it held every paragraph of the group on one page, and
+`keep-with-next` bound the last of them to what follows. Word keeps each paragraph by its own;
+the group is only how it is drawn. Measured on the `shaded-group-keeps` probes (corpus document
+1152): ten shaded paragraphs of about three lines after 236pt of a page, keepNext and keepLines
+on the first - Word breaks the group after its third paragraph, docx4j moved all ten to page 2.
+With the keeps on the fifth paragraph, or on none, the two already agreed. The paragraphs inside
+keep their keeps, and FOP carries the last one's keep-with-next out of the container
+(`BlockStackingLayoutManager`). Gate b144: 1152 7 to 6 pages (Word's 6), nothing worse.
+`ShadingContainerTest`.
+
 <a id="s3bdrrun"></a>**One box for a run of identically bordered paragraphs, whatever their
 shading.** `Containerization` groups by border and then, *inside* that group, by shading,
 which is the right nesting - but both wrappers are built from the same paragraph's

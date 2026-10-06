@@ -35,6 +35,10 @@ import org.w3c.dom.NodeList;
  * states none was displaced by the first one's: measured, a shaded group opening with a
  * <code>w:ind w:left="1440" w:hanging="360"</code> paragraph put the body paragraphs
  * after it at x=126.0 where Word draws them at 72.0.</li>
+ * <li><b>The keeps</b> (17.3.1). The first paragraph's <code>w:keepNext</code> and
+ * <code>w:keepLines</code> held the whole group on one page; Word keeps each paragraph by
+ * its own (the shaded-group-keeps probes, corpus document 1152).  They stay on the
+ * paragraph's own block.</li>
  * </ul>
  *
  * @since 17.1.0
@@ -53,8 +57,8 @@ public class ShadingContainerTest extends AbstractXSLFOTest {
 		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
 				"<w:document " + W + "><w:body>"
 				+ "<w:p><w:r><w:t>before</w:t></w:r></w:p>"
-				// the first paragraph of the shaded run carries both the spacing and the indent
-				+ para("indented first", "<w:spacing w:before=\"600\" w:after=\"0\"/>"
+				// the first paragraph of the shaded run carries the keeps, the spacing and the indent
+				+ para("indented first", "<w:keepNext/><w:keepLines/><w:spacing w:before=\"600\" w:after=\"0\"/>"
 						+ "<w:ind w:left=\"1440\" w:hanging=\"360\"/>")
 				+ para("plain second", "")
 				+ "</w:body></w:document>"));
@@ -93,6 +97,32 @@ public class ShadingContainerTest extends AbstractXSLFOTest {
 				"0pt", container.getAttribute("start-indent"));
 		assertEquals("0pt", container.getAttribute("text-indent"));
 		assertEquals("0pt", container.getAttribute("end-indent"));
+
+		org.w3c.dom.NamedNodeMap attrs = container.getAttributes();
+		for (int i = 0; i < attrs.getLength(); i++) {
+			String name = attrs.item(i).getNodeName();
+			assertTrue("the wrapper must not keep the whole group: " + name,
+					!name.startsWith("keep-together") && !name.startsWith("keep-with-next"));
+		}
+		Element first = firstBlockWithText(container, "indented first");
+		assertNotNull(first);
+		assertTrue("the first paragraph keeps its keepNext",
+				first.getAttribute("keep-with-next.within-page").length() > 0
+				|| first.getAttribute("keep-with-next").length() > 0);
+		assertTrue("and its keepLines",
+				first.getAttribute("keep-together.within-page").length() > 0
+				|| first.getAttribute("keep-together").length() > 0);
+	}
+
+	/** The innermost block under the container whose text contains this. */
+	private static Element firstBlockWithText(Element container, String text) {
+		NodeList nl = container.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "block");
+		Element found = null;
+		for (int i = 0; i < nl.getLength(); i++) {
+			Element el = (Element) nl.item(i);
+			if (el.getTextContent().contains(text)) found = el;
+		}
+		return found;
 	}
 
 	@Test
