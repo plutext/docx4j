@@ -152,15 +152,19 @@ public class AnchoredPictureFloatTest extends AbstractXSLFOTest {
 	}
 
 	/**
-	 * The XSLT pathway emits the line break's block as a sibling of the run's inlines,
-	 * not inside one, and FOP survives that - so the float is left where the paragraph
-	 * put it, which measures closer to Word (the image-anchored probe).
+	 * The XSLT pathway emits the line break's block as a sibling of the run's inlines, and
+	 * since 17.3.1 the fixups put it in an inline, as the visitor writes it
+	 * (WordLayoutFixups.wrapLineBreakBlocks, so that widows count across the break): the
+	 * float then goes to the flow as the visitor's does.  That step ran after the floats were
+	 * made at first, which left this float in its paragraph beside the crash's other half.
 	 */
 	@Test
-	public void floatIsLeftInTheParagraphXslt() throws Exception {
+	public void floatIsAtFlowLevelXslt() throws Exception {
 		org.w3c.dom.Document doc = fo(Docx4J.FLAG_EXPORT_PREFER_XSL);
-		assertTrue(!blockInsideInline(doc));
-		assertEquals("block", ((Element)theFloat(doc).getParentNode()).getLocalName());
+		assertTrue("the line break's block is in an inline, as the visitor writes it",
+				blockInsideInline(doc));
+		assertEquals("an fo:float nested in a block crashes FOP; it belongs to the flow",
+				"flow", ((Element)theFloat(doc).getParentNode()).getLocalName());
 		assertTrue("nothing was laid out",
 				lineCount(areaTree(pkg(), Docx4J.FLAG_EXPORT_PREFER_XSL)) > 10);
 	}

@@ -162,6 +162,7 @@ public final class WordLayoutFixups {
 		inlineLabelGaps(doc);
 		listLabelLines(doc);
 		lineBoxAttributes(doc, compatibilityMode, hyphenation, compat);
+		wrapLineBreakBlocks(doc); // before any float is made: the floats' FOP-crash checks look for this shape
 		positionFrames(doc);
 		anchorImages(doc);
 		anchorTextBoxes(doc);
@@ -178,7 +179,6 @@ public final class WordLayoutFixups {
 		emptyLineAfterLineBreak(doc);
 		keepBreakOnlyParagraphsTogether(doc); // after emptyLineAfterLineBreak: it counts the same nested blocks
 		splitInlinesAtLineBreaks(doc); // after the two above, which read a w:br's block inside its run's inline
-		wrapLineBreakBlocks(doc);
 		tocLeaderEndIndent(doc);
 		leadingWhitespaceLeader(doc);
 		containWhitespaceTreatment(doc);
@@ -4147,7 +4147,15 @@ public final class WordLayoutFixups {
 	 * line manager could not count the paragraph's widows and orphans across the break
 	 * (WordLineLayoutManager.linesAcrossSoftReturns), which it can for a break inside an
 	 * inline.  The two pathways' layouts of such a paragraph are the same otherwise.
-	 * {@code WidowsAcrossSoftReturnsTest}.  @since 17.3.1
+	 * {@code WidowsAcrossSoftReturnsTest}.
+	 *
+	 * <p>Done before the frames, pictures and tables are floated: a block inside an inline
+	 * after a float is the other half of the FOP crash {@link #hoistFloats} works around, and
+	 * that and the float checks ({@link #floatFrame}, {@link #floatFloatingTable}) look for
+	 * this shape.  Run after them, it put the XSLT pathway's floats back beside the shape
+	 * (AnchoredPictureFloatTest).</p>
+	 *
+	 * @since 17.3.1
 	 */
 	static void wrapLineBreakBlocks(Document doc) {
 		List<Element> breaks = new ArrayList<>();
