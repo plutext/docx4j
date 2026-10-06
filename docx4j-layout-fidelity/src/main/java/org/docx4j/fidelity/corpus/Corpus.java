@@ -3000,6 +3000,7 @@ public final class Corpus {
 		PROBES.add(vmlBoxBesideProbe(false));   // ledger9 §9 follow-ups: 10855
 		PROBES.add(vmlBoxBesideProbe(true));
 		PROBES.add(tableOuterBorderStackProbe());   // 9919
+		PROBES.add(actualTextClustersProbe());   // fop/CR-019: the text a reader should get per cluster
 		for (String v : new String[] { "first", "middle", "none" }) PROBES.add(shadedGroupKeepsProbe(v));
 		PROBES.add(listLabelLineMultiplierProbe());
 		PROBES.add(lineBoxBoldRunProbe());
@@ -9535,6 +9536,64 @@ public final class Corpus {
 				+ "<v:textbox inset=\"0,0,0,0\"><w:txbxContent><w:p><w:pPr><w:spacing w:before=\"0\" w:after=\"0\"/></w:pPr>"
 				+ xrun(tag + " box", SERIF, 20, false) + "</w:p></w:txbxContent></v:textbox>"
 				+ "<w10:wrap type=\"square\"/></v:rect></w:pict></w:r>";
+	}
+
+	/**
+	 * actualtext-clusters (fop/CR-019, ActualText per cluster; the fork's §7 measurement and §9 reachability).
+	 * Word's PDF gives the text a reader should get for each cluster; docx4j's, for the same lines, shows where
+	 * FOP's mark-first order (fop/CR-016 §7) or a split cluster gives it something else.  One labelled paragraph
+	 * per case, the label in Calibri and the case's text in its own font:
+	 * L1-L3 Latin precomposed and decomposed in Cambria (whose ccmp decomposes every accented letter, docx4j
+	 * 3e05db3af), L4-L5 the decomposed line in Calibri and Times New Roman, L6 stacked marks (Vietnamese),
+	 * L7-L8 Greek precomposed and decomposed, L9 Cyrillic decomposed (corpus document 3489's й as и + U+0306),
+	 * L10-L11 Devanagari in Nirmala UI (a pre-base vowel sign, a conjunct, virama, and "है," whose vowel sign
+	 * docx4j's text layer put after the comma on corpus document 394), L12 Bengali (pre-base and two-part vowel
+	 * signs), L13 Arabic with harakat and lam-alef, right to left, L14 Hebrew with niqqud, right to left.
+	 * Read: each line's extracted text (pdftotext, mutool, PDFBox, a browser's PDF viewer) against the source.
+	 * @since 17.3.1
+	 */
+	private static Probe actualTextClustersProbe() {
+		return new Probe("actualtext-clusters", "one labelled line per cluster case: Latin precomposed and decomposed "
+				+ "(Cambria, Calibri, Times New Roman), stacked Vietnamese marks, Greek and Cyrillic decomposed, "
+				+ "Devanagari and Bengali in Nirmala UI, Arabic and Hebrew right to left.  Read the text each PDF "
+				+ "reader extracts per line against the source text", () -> {
+			Doc d = Doc.create(15);
+			String ns = "xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"";
+			String[][] cases = {
+				{ "L1 Latin precomposed, Cambria", "Cambria", "", "café résumé naïve Ålborg ça ñandú őr" },
+				{ "L2 Latin decomposed, Cambria", "Cambria", "", "café résumé naïve Ålborg ça ñandú őr" },
+				{ "L3 Latin mixed, Cambria", "Cambria", "", "Médiafigyelés Mediafigyelés Médiafigyelés" },
+				{ "L4 Latin decomposed, Calibri", "Calibri", "", "café résumé naïve Ålborg ça ñandú" },
+				{ "L5 Latin decomposed, Times New Roman", "Times New Roman", "", "café résumé naïve Ålborg ça ñandú" },
+				{ "L6 Vietnamese stacked marks, Times New Roman", "Times New Roman", "", "Việt Nam tiếng Việt người" },
+				{ "L7 Greek precomposed, Cambria", "Cambria", "", "άέήίόύώ σήμερα ουσία" },
+				{ "L8 Greek decomposed, Cambria", "Cambria", "", "άέή σήμερα ουσία" },
+				{ "L9 Cyrillic decomposed, Times New Roman", "Times New Roman", "", "дальнейшую онлайн ёлка й ё" },
+				{ "L10 Devanagari, Nirmala UI", "Nirmala UI", "cs", "नमस्ते हिन्दी क्षत्रिय किताब" },
+				{ "L11 Devanagari before a comma, Nirmala UI", "Nirmala UI", "cs", "यह क्या है, कि वह है।" },
+				{ "L12 Bengali, Nirmala UI", "Nirmala UI", "cs", "বাংলা রাখবেন কোথায় নেই বিদ্যা" },
+				{ "L13 Arabic with harakat, Arial", "Arial", "rtl", "بِسْمِ اللَّهِ لا العَرَبِيَّة" },
+				{ "L14 Hebrew with niqqud, Arial", "Arial", "rtl", "שָׁלוֹם עוֹלָם בְּרֵאשִׁית" },
+			};
+			StringBuilder body = new StringBuilder();
+			for (String[] c : cases) {
+				boolean rtl = c[2].equals("rtl"), cs = rtl || c[2].equals("cs");
+				String fonts = "<w:rFonts w:ascii=\"" + c[1] + "\" w:hAnsi=\"" + c[1] + "\" w:cs=\"" + c[1] + "\"/>";
+				String rPr = "<w:rPr>" + fonts + (rtl ? "<w:rtl/>" : "") + "<w:sz w:val=\"28\"/>" + (cs ? "<w:szCs w:val=\"28\"/>" : "") + "</w:rPr>";
+				String label = "<w:r><w:rPr><w:rFonts w:ascii=\"Calibri\" w:hAnsi=\"Calibri\"/><w:sz w:val=\"20\"/></w:rPr>"
+						+ "<w:t xml:space=\"preserve\">" + c[0] + ": </w:t></w:r>";
+				// the label first, then the case on a line of its own, so a reader's extraction of the case is not
+				// mixed with the label's (and a right-to-left line is a paragraph of its own)
+				body.append("<w:p><w:pPr><w:spacing w:after=\"0\"/></w:pPr>").append(label).append("</w:p>");
+				body.append("<w:p><w:pPr>").append(rtl ? "<w:bidi/>" : "").append("<w:spacing w:after=\"240\"/></w:pPr>")
+						.append("<w:r>").append(rPr).append("<w:t xml:space=\"preserve\">").append(c[3]).append("</w:t></w:r></w:p>");
+			}
+			org.docx4j.wml.Document doc = (org.docx4j.wml.Document) org.docx4j.XmlUtils.unmarshalString(
+					"<w:document " + ns + "><w:body>" + body + "</w:body></w:document>");
+			d.para("Clusters for ActualText (fop/CR-019): each case's text on the line after its label.").noLabel().add();
+			d.mdp().getContent().addAll(doc.getBody().getContent());
+			return d.pkg();
+		});
 	}
 
 	/**
