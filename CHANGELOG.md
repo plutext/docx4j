@@ -229,6 +229,8 @@ PDF via XSL FO:
   metrics, and unmarked text by its paragraph's; the substitute's own metrics had been used.
 - A table of contents entry whose page number does not fit after its text takes the number, with its
   dots, to the next line, as Word does; and a page reference is measured by its last number's width.
+- In a document stating w:splitPgBreakAndParaMark, the mark of a paragraph holding only a page break
+  keeps its line at the top of the next page, as in Word; it had been folded into the next paragraph.
 
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties

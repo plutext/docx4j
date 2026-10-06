@@ -885,12 +885,22 @@ front of it - and where the numbered paragraph breaks the page itself (a heading
 docx4j's empty page 4 and every page after it one late; now 14 pages, Word's 14, line parity
 0.944 -> 0.995 (and 9031 to Word's 4 pages, 9838 +12 lines, 6380 +27, three more gaining a few).
 A numbered paragraph which does not break takes the break as a block does, with no empty line
-above it. **Only from compatibility mode 12**: corpus document 11657 (mode 11) has a break-only
-Normal paragraph and then a numbered Heading 1 with no space-before, and Word sets the heading
-24.7pt below the page top - the mark's 14pt line and its 9pt space-after - so in mode 11 the mark
-moved past the break keeps its line there, at least above a numbered paragraph; folding it cost
-that document a page of 222. The page-top probes measured modes 12, 14 and 15 only; mode 11 above
-a plain paragraph is unmeasured.
+above it. <a id="s33markline"></a>**Except where the document states
+`w:splitPgBreakAndParaMark`** (17.3.1; below compatibility mode 12 in 17.3.0, for a numbered
+paragraph only). There the mark moved past the break keeps its line at the top of the next page,
+with its space-after, above whatever follows, and the paragraph after it is no longer first on
+its page, so its space-before counts. Measured on all six corpus documents which state the flag
+and hold a break-only paragraph, each of whose next page Word starts that much lower than the
+fold did: 11657 (mode 11) 23pt above its contents title (the Normal mark's 14pt line and its 9pt
+after) and 24.7pt above a numbered Heading 1; 4899 46pt, a 1.5-spaced mark line above a heading
+whose space-before then counts; 6693 (mode 14) 12pt; 13749 13pt; 10182 11.8pt; 4712 9.3pt. Where
+the document does not state the flag the mode decides, as before: below 12 the mark keeps its
+line (no corpus document of mode 11 leaves the flag unstated: Word writes it with the mode), from
+12 it takes none (the page-top probes, modes 12, 14 and 15). Not where the paragraph after the mark
+breaks the page itself: 13749, a break-only paragraph and then one opening with a break, has its
+"Change history" on the next page 13pt down, not a page holding the mark alone.
+`WordLayoutFixups.markKeepsLineAfterBreak`. Gate b158: 4899 +153 lines (0.924 to 0.985), 11657 +2,
+13749 +1; the others' pages start at Word's offsets with no line moving.
 
 One corpus document disagrees with the probe and has not been reconciled: its two
 consecutive break-only paragraphs cost it a page Word does not give (Word's 22 pages
@@ -1021,9 +1031,9 @@ font), and corpus document 1372 says the same twice, its 2026-09-09 golden 2 pag
 golden (real-c2) 1. Of the goldens of the real corpora cut on 2026-09-09, two end in a page break and
 were re-cut on 2026-10-06: 1372 now has Word's 1 page, and 11875, whose last paragraph is text and
 then the break, still has 144 - the mark's own page, which a break after text gives the mark in its
-paragraph (`w:splitPgBreakAndParaMark`), is kept, and docx4j keeps it too. Below
-mode 12 the break keeps its page: Word gives the mark moved past a break a line on the next page
-there (11657, [above](#s33each)). The blank page was not
+paragraph (`w:splitPgBreakAndParaMark`), is kept, and docx4j keeps it too. Where the mark moved
+past a break keeps a line on the next page - below mode 12, or where the document states
+`w:splitPgBreakAndParaMark` - the break keeps its page ([above](#s33markline)). The blank page was not
 `force-page-count`: docx4j writes `no-force` on every page-sequence already, and Word's own
 `w:pgNumType w:start` restart (98 in that probe) costs no page either.
 

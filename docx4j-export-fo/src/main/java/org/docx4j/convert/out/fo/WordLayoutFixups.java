@@ -4547,6 +4547,28 @@ public final class WordLayoutFixups {
 		return true;
 	}
 
+	/**
+	 * Whether the paragraph mark Word moves past a page break takes a line at the top of the
+	 * next page: where the document states {@code w:splitPgBreakAndParaMark} ("Always Move
+	 * Paragraph Mark to Page after a Page Break", ECMA-376-1 17.15.1) on, in any mode, and
+	 * below mode 12 unless the document states it off.  Measured on the six corpus documents
+	 * which state it and hold a break-only paragraph, each of whose next page Word starts that
+	 * mark's line lower than docx4j did: 11657 (mode 11) 23pt, the Normal mark's 14pt line and
+	 * its 9pt after, above a contents title; 4899 46pt, a 1.5-spaced line above a heading
+	 * whose space-before then counts; 6693 (mode 14) 12pt; 13749 13pt; 10182 11.8pt; 4712
+	 * 9.3pt.  No document leaves it unstated in mode 11, and none states it in modes 12 to 15
+	 * but 6693; the documents that state nothing in those modes give the mark no line (the
+	 * pagebreak-paragraph probes, and the three documents a line there once cost a page each).
+	 * @since 17.3.1
+	 */
+	static boolean markKeepsLineAfterBreak(org.docx4j.model.CompatibilityOptions compat) {
+		if (compat == null) return false;
+		org.docx4j.model.CompatibilityOptions.Flag f
+				= org.docx4j.model.CompatibilityOptions.Flag.SPLIT_PG_BREAK_AND_PARA_MARK;
+		if (compat.isStated(f)) return compat.is(f);
+		return compat.mode() < 12;
+	}
+
 	static void mergePageBreakParagraphs(Document doc, int compatibilityMode) {
 		mergePageBreakParagraphs(doc, org.docx4j.model.CompatibilityOptions.ofMode(compatibilityMode));
 	}
@@ -4612,7 +4634,9 @@ public final class WordLayoutFixups {
 			// moved it to the top and cost the document a page of 222.  The modes the
 			// page-top probes measured (12, 14, 15) are those this rule was measured in.
 			// @since 17.3.1
-			boolean listBlockTakes = compat == null || compat.mode() >= 12;
+			// Where the document states w:splitPgBreakAndParaMark, in any mode, as well (6693,
+			// mode 14): see markKeepsLineAfterBreak.  @since 17.3.1
+			boolean listBlockTakes = !markKeepsLineAfterBreak(compat);
 			if (next == null || !(isFo(next, "block") || (isFo(next, "list-block") && listBlockTakes)
 					|| (isFo(next, "table") && tableTakesPageBreak())
 					|| takesNoSpace(next))) {
@@ -4660,7 +4684,7 @@ public final class WordLayoutFixups {
 				// name, nor where it opens the flow as well - it would be the flow's only
 				// block, and an fo:flow must hold one.  @since 17.3.1
 				if (next == null && lastInFlow(empty)
-						&& (sectionFollows(empty) || compat == null || compat.mode() >= 12)) {
+						&& (sectionFollows(empty) || !markKeepsLineAfterBreak(compat))) {
 					empty.removeAttribute("break-before");
 					if (blankBlock(empty) && !empty.hasAttribute("id") && !opensFlow(empty)) {
 						empty.getParentNode().removeChild(empty);
@@ -4698,6 +4722,18 @@ public final class WordLayoutFixups {
 				if (!nextBreaks) next.setAttribute("break-before", "page");
 				if (!empty.hasChildNodes()) {
 					// FOP builds no page for a block with no area: give it the mark's line
+					empty.setAttribute("white-space-treatment", "preserve");
+					empty.appendChild(doc.createTextNode(" "));
+				}
+				continue;
+			}
+			// Where the mark keeps a line on the next page it keeps the break as well, and the
+			// paragraph after it is no longer first on its page.  Not where that paragraph breaks
+			// the page itself: there Word gives no page to the mark alone (13749, a break-only
+			// paragraph and then one opening with a break, has its "Change history" on the next
+			// page, 13pt down).  @since 17.3.1
+			if (markKeepsLineAfterBreak(compat) && !nextAlreadyBreaks) {
+				if (empty.getTextContent().length() == 0) {
 					empty.setAttribute("white-space-treatment", "preserve");
 					empty.appendChild(doc.createTextNode(" "));
 				}

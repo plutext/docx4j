@@ -103,6 +103,53 @@ public class WordLayoutFixupsTest {
 		assertTrue("on the empty block, before the list-block", brk < out.indexOf("<fo:list-block"));
 	}
 
+	/** A paragraph after a break-only paragraph takes the break where the mark takes no line
+	 *  (mode 15, the flag unstated).  @since 17.3.1 */
+	@Test
+	public void aBlockAfterABreakTakesIt() {
+		String in = flow("<fo:block>one</fo:block>"
+				+ "<fo:block break-before=\"page\" space-after=\"9pt\" white-space-treatment=\"preserve\"> </fo:block>"
+				+ "<fo:block>Table des mati\u00e8res</fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertEquals("one page boundary", 1, count(out, "break-before=\"page\""));
+		assertFalse("the mark's block is gone", out.contains("space-after=\"9pt\""));
+	}
+
+	/** Where the mark takes a line at the top of the next page - mode 11 (corpus document
+	 *  11657, its contents title 23pt down: the Normal mark's 14pt line and 9pt after) - the
+	 *  empty block keeps the break and its line.  @since 17.3.1 */
+	@Test
+	public void aBlockAfterABreakInMode11LeavesTheMarksLine() {
+		String in = flow("<fo:block>one</fo:block>"
+				+ "<fo:block break-before=\"page\" space-after=\"9pt\"/>"
+				+ "<fo:block>Table des mati\u00e8res</fo:block>");
+		String out = WordLayoutFixups.apply(in, 11);
+		assertEquals("one page boundary", 1, count(out, "break-before=\"page\""));
+		int brk = out.indexOf("break-before=\"page\"");
+		assertTrue("on the mark's block, before the title", brk < out.indexOf("Table des"));
+		assertTrue("which has a line to give: " + out, out.contains("white-space-treatment=\"preserve\""));
+	}
+
+	/** ...and in any mode where the document states w:splitPgBreakAndParaMark (corpus
+	 *  document 6693, mode 14).  @since 17.3.1 */
+	@Test
+	public void aBlockAfterABreakWhereTheFlagIsStatedLeavesTheMarksLine() throws Exception {
+		org.docx4j.openpackaging.packages.WordprocessingMLPackage pkg
+				= org.docx4j.openpackaging.packages.WordprocessingMLPackage.createPackage();
+		org.docx4j.wml.CTSettings settings = pkg.getMainDocumentPart().getDocumentSettingsPart().getJaxbElement();
+		if (settings.getCompat() == null) settings.setCompat(new org.docx4j.wml.CTCompat());
+		settings.getCompat().setSplitPgBreakAndParaMark(new org.docx4j.wml.BooleanDefaultTrue());
+		org.docx4j.model.CompatibilityOptions compat = org.docx4j.model.CompatibilityOptions.of(pkg);
+		assertTrue("mode 15", compat.mode() == 15);
+		String in = flow("<fo:block>one</fo:block>"
+				+ "<fo:block break-before=\"page\" space-after=\"9pt\" white-space-treatment=\"preserve\"> </fo:block>"
+				+ "<fo:block>ANNEXE I</fo:block>");
+		String out = WordLayoutFixups.apply(in, compat, null);
+		int brk = out.indexOf("break-before=\"page\"");
+		assertTrue("the break stays on the mark's block: " + out, brk >= 0 && brk < out.indexOf("ANNEXE"));
+		assertEquals("one page boundary", 1, count(out, "break-before=\"page\""));
+	}
+
 	/** A break-only paragraph ending the document gives Word no further page from mode 12:
 	 *  the mark after the break is the document's last line, on the page before it (the five
 	 *  document-end-break probes in mode 15, and the pagebreak-paragraph probes' case F in
