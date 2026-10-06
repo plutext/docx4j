@@ -189,9 +189,12 @@ public final class CompatibilityOptions {
 		 * a Page Break".  <b>Assumed on in every mode</b>: it is what Word 365 was measured
 		 * doing for both a mode-12 and a mode-15 golden (word-layout-rules.md &#xa7;3.3 -
 		 * the paragraph is split at the break, what precedes it staying on the page it is
-		 * on), and no document of the reference corpus states the flag either way.  A
-		 * document which states <code>w:val="0"</code> takes the whole paragraph to the
-		 * next page, which is what docx4j did to 17.0.5.
+		 * on).  A document which states <code>w:val="0"</code> takes the whole paragraph to
+		 * the next page, which is what docx4j did to 17.0.5.  Whether the document
+		 * <em>states</em> the flag matters too: where it does, Word gives the mark moved past
+		 * a break a line at the top of the next page (WordLayoutFixups
+		 * .markKeepsLineAfterBreak, 17.3.1).  36 documents of the four reference corpora state
+		 * it: every one of compatibility mode 11, three of mode 12 and one of mode 14.
 		 */
 		SPLIT_PG_BREAK_AND_PARA_MARK(ALWAYS, ALWAYS),
 
