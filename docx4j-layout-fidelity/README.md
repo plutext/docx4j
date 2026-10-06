@@ -361,10 +361,10 @@ ever fails a run: what cannot be read is recorded as `unknown`, with the reason.
 **The default printer** decides more than it should: Word sets each font size in whole device
 pixels of the default printer, so the size it writes into the PDF is the nominal size rounded
 to 1/dpi inch (10pt is 10.08 at 300 dpi, 9.96 at 600), and line widths move with it; and a
-driver's printable area can move the page itself (an HP at 600 dpi set 11875's header and body
-31.2pt lower than another 600-dpi printer did, and took 152 pages to 144; ledger9 §8). So the
-printer, its driver and its default page (the paper and its four hard margins) are recorded,
-with **Word's build**. The goldens are cut with the FX DocuPrint C2255 as the default printer
+printer can move the page itself, for reasons not yet known (an HP at 600 dpi set 11875's header
+and body 31.2pt lower than another 600-dpi printer did, and took 152 pages to 144, though its
+hard margins are 8.4pt, inside the document's 18pt; ledger9 §8). So the printer, its driver and
+its default page (the paper and its four hard margins) are recorded, with **Word's build**. The goldens are cut with the FX DocuPrint C2255 as the default printer
 (300 dpi), on which the three corpora were cut in September; a re-cut of every set against
 Microsoft Print to PDF is planned. Each of these can be stated instead, with
 `-Dfidelity.printer`, `-Dfidelity.printerDriver`, `-Dfidelity.printerPage` and `-Dfidelity.word`.

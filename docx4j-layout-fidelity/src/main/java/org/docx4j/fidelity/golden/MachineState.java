@@ -44,10 +44,12 @@ import java.util.TreeSet;
  *
  * <p><b>The printer's driver and its page.</b> The resolution is not all the printer decides.
  * Two 600-dpi printers cut 11875 differently: on an HP OfficeJet Pro 9010 every page's header and
- * body stood 31.2pt lower than on a Fujifilm Apeos, its 18pt top margin apparently raised to
- * the driver's printable area, and the document took 152 pages to 144 (ledger9 §8). So the
- * driver (its name, version and date) and the default page it offers (the paper and its four
- * hard margins) are recorded too.  @since 17.3.1</p>
+ * body stood 31.2pt lower than on a Fujifilm Apeos, and the document took 152 pages to 144
+ * (ledger9 §8). Not because of its printable area: the HP's hard margins are 8.4pt all round,
+ * inside the document's 18pt top margin, as this class read them; why is not known (its driver
+ * is a v4 driver, the C2255's a v3). So the driver (its name, version, date and model) and the
+ * default page it offers (the paper and its four hard margins) are recorded, for the next such
+ * difference to be read against.  @since 17.3.1</p>
  *
  * <p><b>Word's build.</b> Word's layout changes between builds; "Microsoft 365" says nothing
  * about which. The Click-to-Run version and channel, and winword.exe's own file version, are
