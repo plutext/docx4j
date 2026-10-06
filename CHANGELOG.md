@@ -231,6 +231,8 @@ PDF via XSL FO:
   dots, to the next line, as Word does; and a page reference is measured by its last number's width.
 - In a document stating w:splitPgBreakAndParaMark, the mark of a paragraph holding only a page break
   keeps its line at the top of the next page, as in Word; it had been folded into the next paragraph.
+- PDF: italic text in a family Word has no bold for (Calibri Light, among others) is drawn in the
+  family's italic face; it had been drawn upright.
 
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties

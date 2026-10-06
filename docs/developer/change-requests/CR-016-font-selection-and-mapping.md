@@ -1084,6 +1084,14 @@ As designed, with the goldens' answers in it:
   Word does for Calibri Light (378.55pt against Carlito Bold's 388.70).  No
   change in `fonts/fop`: the alias goes through the existing
   `getBoldForm` path.  The HTML pathway strips the suffix.
+  **17.3.1:** the alias keeps its family's italic.  `PhysicalFonts.getItalicForm`
+  had looked it up under its own name, which the Microsoft fonts registry does
+  not know, so 22 of the 440 families with an italic in the fidelity harness's
+  font set lost it (Calibri Light, Cambria, Georgia, Verdana ...) and FOP drew
+  an italic run upright and wider: corpus document 2065's italic Calibri Light
+  runs, a line Word fills to the margin breaking a word early.  It answers the
+  regular face's italic now (`MapperPrecedenceTest
+  .theNoBoldAliasKeepsItsFamilysItalic`; gate b159: 2065 +3, 13265 to 1.0000).
 - `Mapper.get(null)` tolerates null (phase 1).  Not done: the family-name
   alias in `PhysicalFonts` (optional; nothing in the corpus asked for it).
 

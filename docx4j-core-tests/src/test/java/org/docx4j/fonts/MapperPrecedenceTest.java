@@ -218,6 +218,29 @@ public class MapperPrecedenceTest {
 	}
 
 	/**
+	 * The alias keeps its family's italic.  Word draws an italic Calibri Light run in Calibri
+	 * Light Italic; the alias, looked up under its own name in the Microsoft fonts registry,
+	 * had no italic, so FOP drew the run upright and wider (corpus document 2065).  Of the 440
+	 * families with an italic in the fidelity harness's font set, 22 lost it so, Calibri Light,
+	 * Cambria, Georgia and Verdana among them.  Every installed family is checked.
+	 * @since 17.3.1
+	 */
+	@Test
+	public void theNoBoldAliasKeepsItsFamilysItalic() throws Exception {
+		java.util.List<String> lost = new java.util.ArrayList<String>();
+		for (PhysicalFont pf : new java.util.ArrayList<PhysicalFont>(PhysicalFonts.getPhysicalFonts().values())) {
+			if (pf.isNoBoldFace()) continue;
+			PhysicalFont italic = PhysicalFonts.getItalicForm(pf);
+			if (italic == null) continue;
+			PhysicalFont aliasItalic = PhysicalFonts.getItalicForm(pf.noBoldFaceAlias());
+			if (aliasItalic == null || !java.util.Objects.equals(italic.getEmbeddedURI(), aliasItalic.getEmbeddedURI())) {
+				lost.add(pf.getName());
+			}
+		}
+		assertTrue("aliases without their family's italic: " + lost, lost.isEmpty());
+	}
+
+	/**
 	 * A document font with no bold face of its own gets the alias even where the
 	 * substitute has no bold sibling to withhold (CR-017 phase 5).  FOP synthesises the
 	 * bold either way - a family with no bold face takes the simulate-style branch of the

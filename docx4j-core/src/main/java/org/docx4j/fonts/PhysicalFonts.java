@@ -741,7 +741,17 @@ public class PhysicalFonts {
 	}
 	
 	public static PhysicalFont getItalicForm( PhysicalFont pf) {
-		
+		/* The +nobold alias (PhysicalFont.noBoldFaceAlias) stands for its family's regular
+		 * face, and has that face's italic: looked up under the alias's own name it found
+		 * none, and FOP drew the family's italic runs upright.  Measured on corpus document
+		 * 2065, whose italic paragraphs hold runs in Calibri Light: Word draws them in Calibri
+		 * Light Italic, docx4j drew them in Calibri Light, wider, and a line Word fills to the
+		 * margin broke a word early.  @since 17.3.1 */
+		if (pf.isNoBoldFace()) {
+			PhysicalFont regular = get(pf.getName());
+			return (regular == null || regular == pf) ? null : getItalicForm(regular);
+		}
+
 		// look up the font in MicrosoftFontsRegistry
 		MicrosoftFonts.Font msFont = MicrosoftFontsRegistry.getMsFonts().get(pf.getName() );
 		
