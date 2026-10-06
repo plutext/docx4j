@@ -177,6 +177,7 @@ public final class WordLayoutFixups {
 		emptyLineForBlockWithNoContent(doc);
 		emptyLineAfterLineBreak(doc);
 		keepBreakOnlyParagraphsTogether(doc); // after emptyLineAfterLineBreak: it counts the same nested blocks
+		splitInlinesAtLineBreaks(doc); // after the two above, which read a w:br's block inside its run's inline
 		tocLeaderEndIndent(doc);
 		leadingWhitespaceLeader(doc);
 		containWhitespaceTreatment(doc);
@@ -4058,6 +4059,46 @@ public final class WordLayoutFixups {
 
 	private static boolean isXmlWhitespace(char c) {
 		return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+	}
+
+	/**
+	 * Text after a {@code w:br} in the same run keeps its spaces.  BrWriter writes the break
+	 * as an {@code fo:block} inside the run's {@code fo:inline}, and FOP collapses the
+	 * whitespace of whatever follows that nested block within the same inline - whatever the
+	 * paragraph block's {@code white-space-collapse="false"} says, and whatever the nested
+	 * block's own (FOP's whitespace handler takes its rules from the current block, which the
+	 * nested one has become).  Measured on corpus document 7733 (ledger9 part B §5): bullet
+	 * items run together in one {@code w:t} after a break, 27 to 91 spaces apart; Word draws
+	 * every space, so the spaces overhang the 333pt cell and the next item starts a line, while
+	 * docx4j joined the two with one 2.22pt space - 164 lines, and a page.  A FOP experiment on
+	 * the same text: the nested block in a sibling inline, or the text in a later sibling
+	 * inline, keeps the spaces.
+	 *
+	 * <p>So each inline holding such a block is split after it, and its ancestors up to the
+	 * paragraph likewise: what follows the break goes into copies of the same inlines (their
+	 * attributes but not their {@code id}), after the ones which end with the break.</p>
+	 *
+	 * @since 17.3.1
+	 */
+	static void splitInlinesAtLineBreaks(Document doc) {
+		List<Element> breaks = new ArrayList<>();
+		for (Element block : elements(doc, "block")) {
+			Node parent = block.getParentNode();
+			if (parent instanceof Element && isFo((Element) parent, "inline")) breaks.add(block);
+		}
+		for (Element br : breaks) {
+			Node at = br;
+			while (at.getParentNode() instanceof Element && isFo((Element) at.getParentNode(), "inline")) {
+				Element inline = (Element) at.getParentNode();
+				if (at.getNextSibling() != null) {
+					Element tail = (Element) inline.cloneNode(false);
+					tail.removeAttribute("id");
+					while (at.getNextSibling() != null) tail.appendChild(at.getNextSibling());
+					inline.getParentNode().insertBefore(tail, inline.getNextSibling());
+				}
+				at = inline;
+			}
+		}
 	}
 
 	/**

@@ -218,6 +218,9 @@ PDF via XSL FO:
 - A numbered paragraph opening a table keeps its page break before: the table starts the page,
   as in Word.
 
+- Spaces after a line break (w:br) in the same run are kept, as Word draws them; FOP had collapsed
+  them to one.
+
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties
   docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine and tableTakesPageBreak are now on by

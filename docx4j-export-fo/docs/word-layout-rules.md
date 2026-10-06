@@ -2158,6 +2158,17 @@ out-of-flow child of such a block back on the XSL-FO default, which stops the in
 without moving the placeholder off the block that needs it. The same applies to the
 empty-paragraph placeholder of [§2.5](#s25).
 
+<a id="s45br"></a>**After a `w:br` in the same run (17.3.1).** A soft return is written as an
+`fo:block` inside the run's `fo:inline`, and FOP collapses the whitespace of whatever follows that
+nested block within the same inline, whatever the paragraph block says (its whitespace handler
+takes its rules from the current block, which the nested one has become). Measured on corpus
+document 7733: bullet items run together in one `w:t` after a break, 27 to 91 spaces apart; Word
+draws every space, so they overhang the 333pt cell and the next item starts a line, where docx4j
+joined the two with one space - 164 lines, and a page. `WordLayoutFixups.splitInlinesAtLineBreaks`
+ends the run's inline, and its ancestors' up to the paragraph, at the break, and puts what follows
+in copies of them (without their `id`). 7733: 26 to 27 pages (Word's 27), 0.862 to 0.950.
+`WordLayoutFixupsTest`.
+
 ### 4.6 Character spacing (`w:spacing` on a run) and scaling (`w:w`)
 
 Word adds the expansion after **every** character, spaces included, which is also how FOP

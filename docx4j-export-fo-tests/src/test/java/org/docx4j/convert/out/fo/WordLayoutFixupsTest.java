@@ -808,6 +808,39 @@ public class WordLayoutFixupsTest {
 		assertFalse(out.contains("docx4j-font"));
 	}
 
+	/** A w:br's block ends its run's inline, and its ancestors' up to the paragraph; what
+	 *  follows goes into copies of them (without their id), so that FOP keeps its spaces
+	 *  (7733, ledger9 part B §5).  @since 17.3.1 */
+	@Test
+	public void textAfterALineBreakIsInInlinesOfItsOwn() throws Exception {
+		String in = flow("<fo:block white-space-collapse=\"false\">"
+				+ "<fo:inline id=\"run1\" font-size=\"8pt\"><fo:inline font-family=\"Arimo\">before"
+				+ "<fo:block line-height=\"0pt\"/>after    spaces</fo:inline></fo:inline></fo:block>");
+		org.w3c.dom.Document doc = org.docx4j.XmlUtils.getNewDocumentBuilder().parse(
+				new org.xml.sax.InputSource(new java.io.StringReader(in)));
+		WordLayoutFixups.splitInlinesAtLineBreaks(doc);
+		org.w3c.dom.Element p = (org.w3c.dom.Element) doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "block").item(0);
+		java.util.List<org.w3c.dom.Element> outer = new java.util.ArrayList<org.w3c.dom.Element>();
+		for (org.w3c.dom.Node n = p.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof org.w3c.dom.Element) outer.add((org.w3c.dom.Element) n);
+		}
+		assertEquals("two runs at the paragraph's level", 2, outer.size());
+		assertEquals("the first keeps its id", "run1", outer.get(0).getAttribute("id"));
+		assertEquals("the copy has none", "", outer.get(1).getAttribute("id"));
+		assertEquals("the copy keeps the run's size", "8pt", outer.get(1).getAttribute("font-size"));
+		assertEquals("the first ends with the break", "block",
+				outer.get(0).getFirstChild().getLastChild().getLocalName());
+		assertEquals("before", outer.get(0).getTextContent());
+		assertEquals("after    spaces", outer.get(1).getTextContent());
+		assertEquals("Arimo", ((org.w3c.dom.Element) outer.get(1).getFirstChild()).getAttribute("font-family"));
+
+		// a break with nothing after it leaves the run alone
+		in = flow("<fo:block><fo:inline>text<fo:block line-height=\"0pt\"/></fo:inline></fo:block>");
+		doc = org.docx4j.XmlUtils.getNewDocumentBuilder().parse(new org.xml.sax.InputSource(new java.io.StringReader(in)));
+		WordLayoutFixups.splitInlinesAtLineBreaks(doc);
+		assertEquals(1, doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "inline").getLength());
+	}
+
 	/** Under an auto multiple below 1 the label is cut as the text is (CR-001 batch 53,
 	 *  list-label-line-multiplier, 3493): Liberation Serif 11pt at w:line="180", whose line
 	 *  applyLineBoxHints cuts to a 9.487pt box on a 7.108pt baseline, 3.162pt off the top.
