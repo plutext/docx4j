@@ -3000,6 +3000,7 @@ public final class Corpus {
 		PROBES.add(vmlBoxBesideProbe(false));   // ledger9 §9 follow-ups: 10855
 		PROBES.add(vmlBoxBesideProbe(true));
 		PROBES.add(tableOuterBorderStackProbe());   // 9919
+		PROBES.add(tableOuterBorderAtLeastProbe()); // 11657
 		PROBES.add(actualTextClustersProbe());   // fop/CR-019: the text a reader should get per cluster
 		for (String v : new String[] { "first", "middle", "none" }) PROBES.add(shadedGroupKeepsProbe(v));
 		PROBES.add(listLabelLineMultiplierProbe());
@@ -9662,6 +9663,47 @@ public final class Corpus {
 							+ "</w:tblCellMar></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid>");
 					for (int r = 1; r <= 2; r++) {
 						t.append("<w:tr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr>")
+								.append(exactP(tag + " row " + r, 280, "")).append("</w:tc></w:tr>");
+					}
+					d.add(xmlP(exactP(tag + " before", 280, "")));
+					d.add(xmlTbl(t.append("</w:tbl>").toString()));
+					d.add(xmlP(exactP(tag + " after", 280, "")));
+				}
+			}
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * table-outer-border-atleast (11657; the table-outer-border-stack probe's open case).  Word adds the whole of
+	 * a table's outer top and bottom borders outside auto-height rows (table-outer-border-stack) and keeps them
+	 * inside an exact row's height; whether a row of at least a height keeps them inside where the minimum
+	 * governs is not measured, and docx4j assumes it does (corpus 11657: 1372 rows at least 15pt, which padding
+	 * made a row a page too sparse).  The stack probe's tables - two rows of one exact 14pt line, single borders
+	 * at sz 8 and 24, inside borders too - with both rows at least 20pt (the minimum governs), at least 10pt
+	 * (the line does), and the first at least 20pt over an auto-height second.  Read: the baseline of the line
+	 * before each table to row 1, row 1 to row 2 and row 2 to the line after.  @since 17.3.1
+	 */
+	private static Probe tableOuterBorderAtLeastProbe() {
+		return new Probe("table-outer-border-atleast", "exact 14pt lines around two-row one-column tables whose rows of"
+				+ " one exact 14pt line are at least 20pt, at least 10pt, or at least 20pt over auto, single borders at sz 8"
+				+ " and 24 with inside borders; mode 15.  Read the baselines before, of each row and after", () -> {
+			Doc d = Doc.create(15);
+			String[][] rows = { { "200", "200" }, { "400", "400" }, { "400", "" } };
+			String[] names = { "A10", "A20", "A20x" };
+			for (int sz : new int[] { 8, 24 }) {
+				for (int c = 0; c < rows.length; c++) {
+					String tag = names[c] + "s" + sz;
+					String b = "w:val=\"single\" w:sz=\"" + sz + "\" w:space=\"0\" w:color=\"000000\"";
+					String borders = "<w:tblBorders><w:top " + b + "/><w:left " + b + "/><w:bottom " + b + "/><w:right " + b + "/>"
+							+ "<w:insideH " + b + "/><w:insideV " + b + "/></w:tblBorders>";
+					StringBuilder t = new StringBuilder("<w:tbl><w:tblPr><w:tblW w:w=\"4000\" w:type=\"dxa\"/>" + borders
+							+ "<w:tblLayout w:type=\"fixed\"/><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/>"
+							+ "</w:tblCellMar></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid>");
+					for (int r = 1; r <= 2; r++) {
+						String h = rows[c][r - 1];
+						t.append("<w:tr>").append(h.isEmpty() ? "" : "<w:trPr><w:trHeight w:val=\"" + h + "\" w:hRule=\"atLeast\"/></w:trPr>")
+								.append("<w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr>")
 								.append(exactP(tag + " row " + r, 280, "")).append("</w:tc></w:tr>");
 					}
 					d.add(xmlP(exactP(tag + " before", 280, "")));
