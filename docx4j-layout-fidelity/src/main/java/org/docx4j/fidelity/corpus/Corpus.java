@@ -9641,13 +9641,14 @@ public final class Corpus {
 	 * table-outer-border-stack (ledger9 part B §17; 9919).  docx4j's tables are 0.33-0.37pt short of Word's above
 	 * and below where the outer border is sz 6 (0.75pt): FOP's collapsing model puts half of each outer border
 	 * outside the table, where Word appears to stack the whole of it.  Exact 14pt lines, then a two-row one-column
-	 * table of exact 14pt rows bordered single at sz 4, 8, 12 and 24 (0.5, 1, 1.5, 3pt), then exact lines again;
-	 * the same four with no inside border.  Read: the baseline of the line before each table to that of the line
-	 * after it.  @since 17.3.1
+	 * table bordered single at sz 4, 8, 12 and 24 (0.5, 1, 1.5, 3pt), its rows auto-height, each holding one exact
+	 * 14pt line, then exact lines again; the same four with no inside border.  Read: the baseline of the line before
+	 * each table to that of the line after it.  Word's reading (2026-10-07): the whole of the top, inside and bottom
+	 * borders is added to the 42pt; docx4j adds half the top and half the bottom.  @since 17.3.1
 	 */
 	private static Probe tableOuterBorderStackProbe() {
-		return new Probe("table-outer-border-stack", "exact 14pt lines around two-row one-column tables of exact 14pt"
-				+ " rows, single borders at sz 4, 8, 12 and 24, with and without inside borders; mode 15.  Read the"
+		return new Probe("table-outer-border-stack", "exact 14pt lines around two-row one-column tables of auto-height"
+				+ " rows of one exact 14pt line, single borders at sz 4, 8, 12 and 24, with and without inside borders; mode 15.  Read the"
 				+ " distance from the line before each table to the line after it", () -> {
 			Doc d = Doc.create(15);
 			for (boolean inside : new boolean[] { true, false }) {
