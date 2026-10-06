@@ -97,8 +97,9 @@ public class KernedRunsTest {
 		assertEquals("Liberation Serif+kern", family(doc, "above"));
 		assertEquals("w:kern 0", unkerned, family(doc, "off"));
 		if (LigatureHook.on()) {
-			assertEquals("-liga", LigatureHook.delta(span(doc, "plain")));
-			assertEquals("a kerned run has no ligatures either", "-liga", LigatureHook.delta(span(doc, "at")));
+			// and no ccmp, which Word applies to no Latin text (17.3.1, LigatureSuppressionTest)
+			assertEquals("-liga -ccmp", LigatureHook.delta(span(doc, "plain")));
+			assertEquals("a kerned run has no ligatures either", "-liga -ccmp", LigatureHook.delta(span(doc, "at")));
 		}
 		// Word's Title style: w:kern 28 at 26/28pt
 		assertEquals("kerning from the style", "Liberation Serif+kern", family(doc, "title"));

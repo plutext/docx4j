@@ -423,7 +423,8 @@ public class RunFontSelector {
     				}
     			}
     			if (!twinned && delta!=null && gsubFeaturesScripts(cps)) {
-    				el.setAttributeNS(FOX_NS, "fox:" + GSUB_FEATURES, delta);
+    				el.setAttributeNS(FOX_NS, "fox:" + GSUB_FEATURES,
+    						noComposition(cps) ? delta + " -ccmp" : delta);
     			}
     		}
     	}
@@ -456,6 +457,33 @@ public class RunFontSelector {
     	if (val==null || val==org.docx4j.w14.STLigatures.NONE) return "-liga";
     	String v = val.value();
     	return (v.startsWith("standard") || val==org.docx4j.w14.STLigatures.ALL) ? null : "-liga";
+    }
+
+    /**
+     * Whether this span's text takes no glyph composition: Latin, Greek and Cyrillic (and
+     * common characters) holding no combining mark of its own, in a run which asks for no
+     * ligatures.  Word applies no {@code ccmp} to such text, and FOP does: Cambria's
+     * {@code ccmp} for latn, grek and cyrl decomposes every precomposed letter (é into e
+     * and a combining acute, its lookup 10, with nothing recomposing them), and FOP puts
+     * the mark ahead of its letter in the PDF, so the text layer reads "Ḿediafigyeĺes"
+     * for "Médiafigyelés", where Word's PDF has the precomposed glyph.  The ink is the
+     * same.  Measured over the corpora: 7 documents' text layers carried combining marks
+     * Word's do not, every one of them in Cambria (8371's Greek 7,695 of them, 6693's
+     * French 769).  A span with a combining mark keeps {@code ccmp}, which positions it.
+     * {@code docx4j.convert.out.fo.simpleScriptCcmp=true} keeps {@code ccmp} everywhere.
+     * @since 17.3.1
+     */
+    private static boolean noComposition(int[] cps) {
+    	if (Docx4jProperties.getProperty("docx4j.convert.out.fo.simpleScriptCcmp", false)) return false;
+    	for (int cp : cps) {
+    		switch (FontFallback.scriptOf(cp)) {
+    		case LATIN: case GREEK: case CYRILLIC: case COMMON:
+    			break;
+    		default:
+    			return false;
+    		}
+    	}
+    	return true;
     }
 
     /**

@@ -233,6 +233,8 @@ PDF via XSL FO:
   keeps its line at the top of the next page, as in Word; it had been folded into the next paragraph.
 - PDF: italic text in a family Word has no bold for (Calibri Light, among others) is drawn in the
   family's italic face; it had been drawn upright.
+- PDF: accented Latin, Greek and Cyrillic text in Cambria copies out as written; FOP's ccmp had
+  decomposed each letter and put its accent ahead of it in the text layer.
 
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties

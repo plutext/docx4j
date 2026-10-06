@@ -49,6 +49,11 @@ import org.w3c.dom.NodeList;
  */
 public class GsubFeaturesTest {
 
+	/** A span's delta where its run asks for no standard ligatures: "-liga", and, the text
+	 *  being Latin or Cyrillic with no combining mark, "-ccmp" (17.3.1,
+	 *  RunFontSelector.noComposition) */
+	private static final String NO_LIGA = "-liga -ccmp";
+
 	private static final String W = "xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"";
 	private static final String W14 = "xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\"";
 	private static final String FO = "http://www.w3.org/1999/XSL/Format";
@@ -67,10 +72,10 @@ public class GsubFeaturesTest {
 		org.w3c.dom.Document doc = fo(run("", "plain office") + run("<w:kern w:val=\"2\"/><w:sz w:val=\"24\"/>", "kerned office"));
 		Element plain = span(doc, "plain office");
 		// the 17.2.x declaration where it works, the delta where it never reached
-		if (twinned(plain)) assertNull(delta(plain)); else assertEquals("-liga", delta(plain));
+		if (twinned(plain)) assertNull(delta(plain)); else assertEquals(NO_LIGA, delta(plain));
 		Element kerned = span(doc, "kerned office");
 		assertTrue(!twinned(kerned));
-		assertEquals("-liga", delta(kerned));
+		assertEquals(NO_LIGA, delta(kerned));
 	}
 
 	private static String run(String rPr, String text) {
@@ -115,7 +120,7 @@ public class GsubFeaturesTest {
 	public void theXsltPathwayDeclaresTheNamespace() throws Exception {
 		Docx4jProperties.setProperty("docx4j.convert.out.fo.gsubFeatures", "true");
 		Element el = span(fo(run("", "plain office"), Docx4J.FLAG_EXPORT_PREFER_XSL), "plain office");
-		assertEquals("-liga", delta(el));
+		assertEquals(NO_LIGA, delta(el));
 	}
 
 	/**
@@ -175,7 +180,7 @@ public class GsubFeaturesTest {
 		// a Latin run in a TrueType font with no ligatures asked, the twin's own case
 		// until 17.3.0: the delta on the font's own declaration, which FOP subsets
 		assertTrue(el.getAttribute("font-family"), !twinned(el));
-		assertEquals("-liga", delta(el));
+		assertEquals(NO_LIGA, delta(el));
 	}
 
 	@Test
@@ -195,7 +200,7 @@ public class GsubFeaturesTest {
 		Docx4jProperties.setProperty("docx4j.convert.out.fo.gsubFeatures", "true");
 		Element el = span(fo(run("<w:kern w:val=\"2\"/><w:sz w:val=\"24\"/>", "kerned office")), "kerned office");
 		assertTrue(!twinned(el));
-		assertEquals("-liga", delta(el));
+		assertEquals(NO_LIGA, delta(el));
 	}
 
 	@Test
@@ -206,8 +211,8 @@ public class GsubFeaturesTest {
 				+ run(lig("standard"), "standard office")
 				+ run(lig("standardContextual"), "standardContextual office")
 				+ run(lig("all"), "all office"));
-		assertEquals("-liga", delta(span(doc, "contextual office")));
-		assertEquals("-liga", delta(span(doc, "discretional office")));
+		assertEquals(NO_LIGA, delta(span(doc, "contextual office")));
+		assertEquals(NO_LIGA, delta(span(doc, "discretional office")));
 		assertNull(delta(span(doc, "standard office")));
 		assertNull(delta(span(doc, "standardContextual office")));
 		assertNull(delta(span(doc, "all office")));
@@ -218,7 +223,7 @@ public class GsubFeaturesTest {
 		Docx4jProperties.setProperty("docx4j.convert.out.fo.gsubFeatures", "true");
 		org.w3c.dom.Document doc = fo(run("", "офис")
 				+ "<w:r><w:rPr><w:rFonts w:cs=\"Times New Roman\"/><w:rtl/></w:rPr><w:t>الله</w:t></w:r>");
-		assertEquals("-liga", delta(span(doc, "офис")));
+		assertEquals(NO_LIGA, delta(span(doc, "офис")));
 		assertNull(delta(span(doc, "الله")));
 	}
 

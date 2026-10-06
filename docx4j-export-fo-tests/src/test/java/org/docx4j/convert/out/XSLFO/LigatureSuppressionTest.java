@@ -118,7 +118,8 @@ public class LigatureSuppressionTest extends AbstractXSLFOTest {
 		if (LigatureHook.on()) {
 			assertFalse("the font's own declaration, not the twin: " + family,
 					family == null || family.endsWith(RunFontSelector.NOLIGA_SUFFIX));
-			assertEquals("-liga", LigatureHook.delta(span));
+			// and no ccmp: Word composes nothing in Latin text (17.3.1)
+			assertEquals("-liga -ccmp", LigatureHook.delta(span));
 		} else {
 			assertTrue("expected the no-ligature twin, got " + family,
 					family != null && family.endsWith(RunFontSelector.NOLIGA_SUFFIX));
@@ -135,6 +136,22 @@ public class LigatureSuppressionTest extends AbstractXSLFOTest {
 	@Test
 	public void xslt() throws Exception {
 		plainLatinRunHasNoLigatures(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
+	/**
+	 * A span holding a combining mark of its own keeps ccmp, which places the mark; Latin,
+	 * Greek and Cyrillic without one lose it, as in Word, where Cambria's ccmp decomposed
+	 * every accented letter and FOP put the mark ahead of its letter in the text layer
+	 * ("Ḿediafigyeĺes" for "Médiafigyelés", corpus document 2065).  @since 17.3.1
+	 */
+	@Test
+	public void ccmpGoesOnlyFromTextWithoutCombiningMarks() throws Exception {
+		assumeTrueTypeCalibri();
+		Assume.assumeTrue("the renderer has no gsub-features hook", LigatureHook.on());
+		Element span = firstSpan(fo(pkg(run("", "M\u00e9diafigyel\u00e9s \u03ad\u03bd\u03b1")), Docx4J.FLAG_NONE));
+		assertEquals("precomposed Latin and Greek", "-liga -ccmp", LigatureHook.delta(span));
+		span = firstSpan(fo(pkg(run("", "Me\u0301diafigyele\u0301s")), Docx4J.FLAG_NONE));
+		assertEquals("a combining acute keeps ccmp", "-liga", LigatureHook.delta(span));
 	}
 
 	// ------------------------------------------------------- when Word does apply them

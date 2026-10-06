@@ -2523,6 +2523,21 @@ and a font like Carlito has none. `docx4j.convert.out.fo.ligatures=true` restore
 behaviour. `w14:ligatures` survives style resolution, so a character or paragraph style can
 ask for ligatures.
 
+<a id="s55ccmp"></a>**...nor any glyph composition in Latin, Greek or Cyrillic text (17.3.1).** On
+the docx4j FO renderer a run asking for no ligatures takes `fox:gsub-features="-liga"`
+(`RunFontSelector`), and a span of it which is Latin, Greek or Cyrillic with no combining mark
+of its own takes `-ccmp` as well. Cambria's `ccmp` for those scripts decomposes every
+precomposed letter - é into e and a combining acute, its lookup 10, with nothing recomposing
+them - and FOP, applying it, put the mark ahead of its letter in the PDF: corpus document 2065's
+running head "Médiafigyelés" copied out as "Ḿediafigyeĺes", on every page. Word's PDF has the
+precomposed glyph, so Word composes nothing there; the ink is the same either way. Over the four
+corpora 7 documents' text layers carried combining marks Word's do not, every one in Cambria
+(8371's Greek 7,799 of them, 6693's French 769, 6195 175, 2065 107, and three with a few);
+all now carry none, and gate b160 moved no line and no page (the harness's own extraction had
+paired the decomposed text already). A span with a combining mark keeps `ccmp`, which places
+the mark. `docx4j.convert.out.fo.simpleScriptCcmp=true` keeps `ccmp` everywhere.
+`LigatureSuppressionTest`, `GsubFeaturesTest`.
+
 ### 5.6 Declaring fonts to FOP
 
 Two rules, both of which showed up as FOP logging `Font ... not found. Substituting with
