@@ -157,6 +157,7 @@ public final class WordGoldenRunner {
 			m.println("source=documents4j-local (desktop Word)");
 			m.println("os=" + System.getProperty("os.name") + " " + System.getProperty("os.version"));
 			m.println("java=" + System.getProperty("java.version"));
+			m.println("docx4j=" + docx4jBuild());
 			/* So the set says how it was cut. Nobody could tell, of the set before this line
 			 * existed, whether Word had updated its fields; it took a pair of runs of
 			 * ResaveInvariance to find out, and that is not a thing to rediscover. */
@@ -447,6 +448,7 @@ public final class WordGoldenRunner {
 			r.println("source=documents4j-local (desktop Word), opened and saved back as docx");
 			r.println("os=" + System.getProperty("os.name") + " " + System.getProperty("os.version"));
 			r.println("java=" + System.getProperty("java.version"));
+			r.println("docx4j=" + docx4jBuild());
 			r.println("fieldUpdate=" + ConversionScript.mode());
 			r.println("markup=" + ConversionScript.markup());
 			r.println("wordConvertScript=" + ConversionScript.path());
@@ -476,6 +478,32 @@ public final class WordGoldenRunner {
 	private static void progress(String what, String id, int n, int total, File docx) {
 		System.out.printf("[%d/%d] %s %s (%d KB)%n", n, total, what, id, docx.length() / 1024);
 		System.out.flush();
+	}
+
+	/**
+	 * The docx4j build this run loads and re-saves each document with: Word is given docx4j's
+	 * re-save, not the corpus file, so what docx4j's load and save keep is part of Word's input
+	 * (GOLDEN-ENVIRONMENT.md).  The version, and - since a SNAPSHOT version names no build - where
+	 * docx4j-core was loaded from, with the jar's SHA-256; a classes directory is named instead.
+	 * @since 17.3.1
+	 */
+	static String docx4jBuild() {
+		String version = org.docx4j.Version.getDocx4jVersion();
+		StringBuilder sb = new StringBuilder(version == null ? MachineState.UNKNOWN : version);
+		try {
+			java.security.CodeSource cs = org.docx4j.Docx4J.class.getProtectionDomain().getCodeSource();
+			File where = cs == null || cs.getLocation() == null ? null : new File(cs.getLocation().toURI());
+			if (where == null) {
+				sb.append(" (docx4j-core's location unknown)");
+			} else if (where.isFile()) {
+				sb.append(" (").append(where.getName()).append(", sha256:").append(FontFiles.sha256(where)).append(')');
+			} else {
+				sb.append(" (classes at ").append(where.getPath()).append(')');
+			}
+		} catch (Exception e) {
+			sb.append(" (docx4j-core's location unreadable: ").append(e.getClass().getSimpleName()).append(')');
+		}
+		return MachineState.oneLine(sb.toString());
 	}
 
 	static String compatMode(WordprocessingMLPackage pkg) {

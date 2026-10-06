@@ -329,6 +329,7 @@ Either way the run prints the mode and the script path at startup and writes the
 `golden-manifest.properties`:
 
 ```
+docx4j=17.3.1-SNAPSHOT (docx4j-core-17.3.1-SNAPSHOT.jar, sha256:...)
 fieldUpdate=off
 markup=off
 wordConvertScript=X:\fidelity\real2\goldens-nofields\word_convert-nofields.vbs

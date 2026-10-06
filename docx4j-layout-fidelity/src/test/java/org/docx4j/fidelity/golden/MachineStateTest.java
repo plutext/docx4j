@@ -147,6 +147,16 @@ public class MachineStateTest {
 		assertEquals(null, MachineState.parseWord("WORD||||||"));
 	}
 
+	/** The runner's docx4j: the version and the jar it came from, by hash, or the classes
+	 *  directory; one line (17.3.1). */
+	@Test
+	public void theDocx4jBuildIsItsVersionAndWhereItCameFrom() {
+		String build = WordGoldenRunner.docx4jBuild();
+		assertTrue(build, build.startsWith(org.docx4j.Version.getDocx4jVersion() + " ("));
+		assertTrue(build, build.matches(".*\\(docx4j-core[^,]*\\.jar, sha256:[0-9a-f]{64}\\)$") || build.contains("(classes at "));
+		assertTrue(build, build.indexOf('\n') < 0);
+	}
+
 	@Test
 	public void aBlankReadingIsRecordedAsUnknownRatherThanAsNothing() {
 		List<String> lines = MachineState.manifestLines(null, "  ");

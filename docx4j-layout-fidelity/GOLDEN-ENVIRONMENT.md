@@ -25,7 +25,7 @@ it, so that a set says what cut it and a change shows up in a diff of two manife
 | Field update | off | `fieldUpdate=` |
 | Review markup | hidden by the script | `markup=` |
 | Conversion call | `SaveAs <pdf>, 17` (wdFormatPDF), Word's own export options | `pdfExportCall=`, `pdfExport=` |
-| The runner and its docx4j | a build of current source | not yet recorded (see Gaps) |
+| The runner and its docx4j | a build of current source | `docx4j=` (version, and the docx4j-core jar's SHA-256) |
 
 ## The default printer
 
@@ -143,7 +143,9 @@ with no picture switch.
 - **The golden PDF is cut from docx4j's re-save of the corpus file.** The runner loads each document
   with docx4j and documents4j hands Word a temporary copy (README, "Having Word save the docx too").
   So the docx4j build the runner runs on is part of the input: a change to what docx4j's load and
-  save keep (`mc:AlternateContent`, extension attributes) changes what Word lays out.
+  save keep (`mc:AlternateContent`, extension attributes) changes what Word lays out. `docx4j=`
+  records it: the version, and, since a SNAPSHOT version names no build, the docx4j-core jar it was
+  loaded from with that jar's SHA-256 (or the classes directory).
 - **The scored docx is Word's re-save** (`resaved-nofields`), not the corpus file. A golden set and
   its resaved directory are cut together and travel together.
 - Never edit a corpus file in place. A changed document is a new document.
@@ -174,7 +176,6 @@ with no picture switch.
 ## Gaps
 
 What is not yet recorded, and would be the next additions to the manifest:
-- **The docx4j version the runner ran on**, which made the re-save Word was given.
 - **Windows' build.** `os=` says only "Windows 10 10.0".
 - **Windows' regional format.**
 - **Word's application options.**
