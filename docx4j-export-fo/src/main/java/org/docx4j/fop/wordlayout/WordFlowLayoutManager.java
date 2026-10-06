@@ -178,6 +178,16 @@ public class WordFlowLayoutManager extends FlowLayoutManager {
 				rowsOnly = true;
 				continue;
 			}
+			/* An auxiliary penalty with no position is space resolution's (SpaceResolver.generate):
+			 * it keeps a space, padding or border with its content and is no keep of the
+			 * document's, so it neither joins the chain - reducing it would let a page break fall
+			 * between the padding and what it pads - nor makes a table's chain a mixed one.  The
+			 * block WordLayoutFixups puts round a bordered table, padded by half its outer
+			 * borders, adds two; counted, a table whose rows keep with the next ran off the page
+			 * in it (corpus document 10730, rows lost).  ElementListUtils.removeLegalBreaks's
+			 * inhibitors (a table's or list's widow and orphan content limits) are not auxiliary
+			 * and still count.  @since 17.3.1 */
+			if (p.getPosition() == null && p.isAuxiliary()) continue;
 			chain.add(p);
 			rowsOnly &= isTableContent(p);
 			if (height > (rowsOnly ? rowLimit : limit)) {

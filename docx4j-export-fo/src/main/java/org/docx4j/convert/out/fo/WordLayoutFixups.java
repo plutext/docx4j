@@ -204,6 +204,7 @@ public final class WordLayoutFixups {
 		spanWrapperBreaks(doc); // after listItemPageBreaks: the break may now be on the list-block
 		retainSpaceAtSpanBoundaries(doc); // after fixLists and spacingOutsideBorders, which move space onto a list-block or wrapper
 		blockForEmptyCell(doc);
+		outerBordersOutsideTables(doc); // before clipExactRows, which takes the exact-row hint off
 		clipExactRows(doc);
 		continuationFromTop(doc);
 		fieldErrorWeights(doc);
@@ -3077,6 +3078,113 @@ public final class WordLayoutFixups {
 		return s + "pt";
 	}
 
+	/**
+	 * Word stacks the whole width of a table's outer top and bottom borders outside its rows,
+	 * where FOP's collapsing border model keeps half of each inside the table and lets the
+	 * other half spill over the block before (and after) it.  Measured on the
+	 * table-outer-border-stack probe (two auto-height rows of one exact 14pt line, single
+	 * borders at sz 4 to 24, with and without inside borders): Word's baseline gaps are 14 + w
+	 * above the first row and below the last (16.80 / 17.04 for 3pt), docx4j's were 14 + w/2
+	 * (15.44), so every bordered table was one border width short; corpus document 9919, sz 6
+	 * borders, was 0.33-0.37pt short above and below each table.
+	 *
+	 * <p>The table goes in a block whose padding is half the outer border's width, top and
+	 * bottom: the table, its border with it, starts that much lower, so the border is drawn
+	 * from where the block before ends, as Word draws it, and the text below it is where
+	 * Word's is.  Padding on the fo:table itself is not honoured in the collapsing model
+	 * (FOP warns and ignores it), and space-before would be resolved against the space-after
+	 * before it.  The table's breaks, keeps and spaces move to the block, so a page break
+	 * still falls before the padding.  The width is the collapsed one: the widest of the
+	 * table's border and the first row's cells' (the last row's, and of cells spanning into
+	 * it, below).</p>
+	 *
+	 * <p>Not where that row is exact: Word's exact height is the whole row, borders included
+	 * ({@link #clipExactRows}), and FOP's pitch already agrees.  Nor where it is at least a
+	 * height ({@code w:hRule="atLeast"}, the default where a height is given), which is not
+	 * measured: on corpus document 11657, whose 274 tables have sz 12 tops and sz 4 bottoms
+	 * and 1372 rows at least 15pt, padding them made docx4j's pages hold a row less than Word's
+	 * (b166: 222 pages to 223), where before they held a row more, which is what the border
+	 * counted inside the minimum, as in an exact row, would give.  The
+	 * table-outer-border-atleast probe asks Word.  Not a table in the separate model
+	 * ({@code w:tblCellSpacing}), whose borders FOP keeps inside it.
+	 * Property {@code docx4j.convert.out.fo.wordLayout.tableOuterBorders}.</p>
+	 *
+	 * @since 17.3.1
+	 */
+	static void outerBordersOutsideTables(Document doc) {
+		if (!org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.wordLayout.tableOuterBorders", true)) return;
+		for (Element table : elements(doc, "table")) {
+			if (!"collapse".equals(table.getAttribute("border-collapse"))) continue;
+			List<Element> rows = new ArrayList<>();
+			Element footer = null;
+			for (Element part : childElements(table)) {
+				if (isFo(part, "table-header") || isFo(part, "table-body")) {
+					for (Element row : childElements(part)) if (isFo(row, "table-row")) rows.add(row);
+				} else if (isFo(part, "table-footer")) {
+					footer = part;
+				}
+			}
+			if (footer != null) {
+				for (Element row : childElements(footer)) if (isFo(row, "table-row")) rows.add(row);
+			}
+			if (rows.isEmpty()) continue;
+			Element first = rows.get(0), last = rows.get(rows.size() - 1);
+			double top = 0, bottom = 0;
+			if (!statesItsHeight(first)) {
+				top = outerBorderPt(table, "top");
+				for (Element cell : childElements(first)) {
+					if (isFo(cell, "table-cell")) top = Math.max(top, outerBorderPt(cell, "top"));
+				}
+			}
+			if (!statesItsHeight(last)) {
+				bottom = outerBorderPt(table, "bottom");
+				// the last row's cells, and those of earlier rows spanning down into it
+				Element lastPart = (Element) last.getParentNode();
+				List<Element> partRows = new ArrayList<>();
+				for (Element row : childElements(lastPart)) if (isFo(row, "table-row")) partRows.add(row);
+				for (int i = 0; i < partRows.size(); i++) {
+					for (Element cell : childElements(partRows.get(i))) {
+						if (!isFo(cell, "table-cell")) continue;
+						int span = Math.max(1, intOrZero(cell.getAttribute("number-rows-spanned")));
+						if (i + span >= partRows.size()) bottom = Math.max(bottom, outerBorderPt(cell, "bottom"));
+					}
+				}
+			}
+			if (top <= 0 && bottom <= 0) continue;
+			Element wrapper = doc.createElementNS(FO_NS, "fo:block");
+			if (top > 0) wrapper.setAttribute("padding-top", pt(top / 2));
+			if (bottom > 0) wrapper.setAttribute("padding-bottom", pt(bottom / 2));
+			org.w3c.dom.NamedNodeMap attrs = table.getAttributes();
+			for (int i = attrs.getLength() - 1; i >= 0; i--) {
+				org.w3c.dom.Attr a = (org.w3c.dom.Attr) attrs.item(i);
+				String name = a.getName();
+				if (name.startsWith("break-") || name.startsWith("keep-with-")
+						|| name.startsWith("space-before") || name.startsWith("space-after")
+						|| name.equals("margin-top") || name.equals("margin-bottom") || name.equals("span")) {
+					wrapper.setAttribute(name, a.getValue());
+					table.removeAttribute(name);
+				}
+			}
+			table.getParentNode().replaceChild(wrapper, table);
+			wrapper.appendChild(table);
+		}
+	}
+
+	/** Whether a row states its height: exact ({@link #HINT_ROW_EXACT}) or at least
+	 *  ({@code w:hRule="atLeast"}, the FO's {@code height}).  @since 17.3.1 */
+	private static boolean statesItsHeight(Element row) {
+		return row.getAttribute(HINT_ROW_EXACT).length() > 0 || lengthPt(row.getAttribute("height")) > 0;
+	}
+
+	/** The width of a border edge an FO states, in points; 0 where its style draws nothing. */
+	private static double outerBorderPt(Element el, String edge) {
+		String style = el.getAttribute("border-" + edge + "-style");
+		if (style.length() == 0 || "none".equals(style) || "hidden".equals(style)) return 0;
+		double w = lengthPt(el.getAttribute("border-" + edge + "-width"));
+		return w > 0 ? w : 0;
+	}
+
 	/** "docx4j-row-exact" on a table-row (TrHeight): the row must be exactly that tall. */
 	public static final String HINT_ROW_EXACT = "docx4j-row-exact";
 
@@ -5710,6 +5818,15 @@ public final class WordLayoutFixups {
 
 	private static boolean isFo(Element el, String localName) {
 		return FO_NS.equals(el.getNamespaceURI()) && localName.equals(el.getLocalName());
+	}
+
+	/** Every element child, in order.  @since 17.3.1 */
+	private static List<Element> childElements(Element parent) {
+		List<Element> out = new ArrayList<>();
+		for (Node n = parent.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element) out.add((Element) n);
+		}
+		return out;
 	}
 
 	private static List<Element> childBlocks(Element parent) {

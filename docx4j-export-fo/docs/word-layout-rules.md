@@ -3733,6 +3733,30 @@ two exact rows were 30.5 and 10.5pt against Word's 30.1 and 10.0 (probe line par
 100%). `w:hRule="atLeast"` rows are not touched: Word's atLeast pitch tracks docx4j's to
 0.1pt on the same probe.
 
+<a id="s67outer"></a>**A table's outer top and bottom borders stand outside its rows (17.3.1).** FOP's
+collapsing border model keeps half of each outer border inside the table and lets the other half
+spill over the block before (and after) it; Word stacks the whole width outside the content.
+Measured on `table-outer-border-stack` (two auto-height rows of one exact 14pt line between exact
+14pt lines, single borders at sz 4, 8, 12 and 24, with and without inside borders): Word's baseline
+gaps are 14 + w above the first row and below the last (16.80 and 17.04 at sz 24), docx4j's were
+14 + w/2 (15.44), so every bordered table was one border width short; corpus document 9919, with
+sz 6 borders, was 0.33-0.37pt short above and below each table.
+`WordLayoutFixups.outerBordersOutsideTables` puts such a table in an `fo:block` padded by half the
+outer border at each edge - the widest of the table's border and the cells' at that edge - and moves
+the table's breaks, keeps and spaces to it, so the table and its border start lower together and a
+page break still falls before the padding (padding on the `fo:table` itself is ignored in the
+collapsing model, and `space-before` would be resolved against the space-after before it). The
+probe's gaps come to 16.88 / 16.88 / 16.88 at sz 24, within 0.2pt of Word's; corpus document 6115
+comes to Word's 7 pages (page parity 0.44 to 0.92) and 1258 to its 2. Not at an edge whose row
+states its height, exact (above) or at least (`w:hRule="atLeast"`, not measured yet: the
+`table-outer-border-atleast` probe asks): on corpus document 11657, 1372 rows at least 15pt,
+padding them made docx4j's pages hold a row less than Word's, which the border counted inside the
+minimum would explain. Not a table in the separate model ([§6.6](#66-wtblcellspacing)).
+`WordFlowLayoutManager` leaves space resolution's position-less auxiliary penalties - the padded
+block has two - out of a keep chain: counted, a table whose rows keep together and with the next
+became a mixed chain, bounded at three pages rather than one, and ran off the page (corpus document
+10730, 181 words lost). Property `docx4j.convert.out.fo.wordLayout.tableOuterBorders`.
+
 <a id="s69"></a>
 ### 6.8 Floating tables
 

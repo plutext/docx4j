@@ -177,6 +177,72 @@ public class WordLayoutFixupsTest {
 		assertFalse("no retain on the field-code paragraph: " + out, out.contains("space-after.conditionality=\"retain\""));
 	}
 
+	private static String border(String edge, String w) {
+		return " border-" + edge + "-style=\"solid\" border-" + edge + "-width=\"" + w + "\" border-" + edge + "-color=\"#000000\"";
+	}
+
+	private static String borderedTable(String tableAttrs, String row1Attrs, String cellTop, String row2Attrs, String cellBottom) {
+		return "<fo:table border-collapse=\"collapse\" table-layout=\"fixed\" width=\"200pt\"" + tableAttrs + ">"
+				+ "<fo:table-column column-width=\"200pt\"/><fo:table-body>"
+				+ "<fo:table-row" + row1Attrs + "><fo:table-cell" + border("top", cellTop) + "><fo:block>row 1</fo:block></fo:table-cell></fo:table-row>"
+				+ "<fo:table-row" + row2Attrs + "><fo:table-cell" + border("bottom", cellBottom) + "><fo:block>row 2</fo:block></fo:table-cell></fo:table-row>"
+				+ "</fo:table-body></fo:table>";
+	}
+
+	/** Word stacks the whole of a table's outer top and bottom borders outside its rows, FOP's
+	 *  collapsing model half: the table goes in a block padded by half of each, so it and its
+	 *  border start that much lower (the table-outer-border-stack probe; corpus 9919).  The
+	 *  table's page break moves to the block, ahead of the padding.  @since 17.3.1 */
+	@Test
+	public void aBorderedTableStandsInABlockPaddedByHalfItsOuterBorders() {
+		String in = flow("<fo:block>before</fo:block>"
+				+ borderedTable(border("top", "2.88pt") + border("bottom", "2.88pt") + " break-before=\"page\"", "", "2.88pt", "", "2.88pt")
+				+ "<fo:block>after</fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		int table = out.indexOf("<fo:table ");
+		String block = out.substring(out.lastIndexOf("<fo:block ", table), table);
+		assertTrue("a padded block around the table, with its break: " + out, block.endsWith(">")
+				&& block.contains("padding-top=\"1.44pt\"") && block.contains("padding-bottom=\"1.44pt\"")
+				&& block.contains("break-before=\"page\""));
+		assertEquals("one break, on the block: " + out, 1, count(out, "break-before=\"page\""));
+		assertTrue("the table closes the block: " + out, out.contains("</fo:table></fo:block><fo:block>after"));
+	}
+
+	/** The collapsed width is the widest of the table's border and its cells', at each edge.
+	 *  @since 17.3.1 */
+	@Test
+	public void theOuterBorderIsTheWiderOfTableAndCell() {
+		String out = WordLayoutFixups.apply(flow(borderedTable(border("top", "0.5pt") + border("bottom", "1pt"), "", "1.5pt", "", "0.5pt")), 15);
+		assertTrue("top: the cell's 1.5pt; bottom: the table's 1pt: " + out,
+				out.contains("padding-top=\"0.75pt\"") && out.contains("padding-bottom=\"0.5pt\""));
+	}
+
+	/** An exact row's height is the whole row, borders included, in Word, and FOP's pitch
+	 *  already agrees: no padding at that edge; nor at an at-least row's.  @since 17.3.1 */
+	@Test
+	public void aRowStatingItsHeightTakesNoPaddingAtItsEdge() {
+		String out = WordLayoutFixups.apply(flow(borderedTable(border("top", "1pt") + border("bottom", "1pt"),
+				" docx4j-row-exact=\"20pt\"", "1pt", "", "1pt")), 15);
+		assertFalse("no top padding over an exact first row: " + out, out.contains("padding-top=\"0.5pt\""));
+		assertTrue("the auto last row's: " + out, out.contains("padding-bottom=\"0.5pt\""));
+		// nor over one at least a height (unmeasured; corpus 11657 overshot with it)
+		out = WordLayoutFixups.apply(flow(borderedTable(border("top", "1pt") + border("bottom", "1pt"),
+				"", "1pt", " height=\"15pt\"", "1pt")), 15);
+		assertTrue("the auto first row's: " + out, out.contains("padding-top=\"0.5pt\""));
+		assertFalse("no bottom padding under an at-least last row: " + out, out.contains("padding-bottom=\"0.5pt\""));
+	}
+
+	/** A table in the separate model keeps its borders inside it, and one with no border
+	 *  drawn at either edge is left where it is.  @since 17.3.1 */
+	@Test
+	public void separateAndBorderlessTablesAreLeftAlone() {
+		String separate = flow(borderedTable(border("top", "1pt") + border("bottom", "1pt"), "", "1pt", "", "1pt")
+				.replace("border-collapse=\"collapse\"", "border-collapse=\"separate\""));
+		assertFalse(WordLayoutFixups.apply(separate, 15).contains("padding-top"));
+		String none = flow(borderedTable("", "", "0pt", "", "0pt").replace("solid", "none"));
+		assertFalse(WordLayoutFixups.apply(none, 15).contains("padding-"));
+	}
+
 	/** A break-only paragraph ending the document gives Word no further page from mode 12:
 	 *  the mark after the break is the document's last line, on the page before it (the five
 	 *  document-end-break probes in mode 15, and the pagebreak-paragraph probes' case F in

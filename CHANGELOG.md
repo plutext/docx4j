@@ -239,6 +239,8 @@ PDF via XSL FO:
   ending in a line break is no longer divided one line on each page.
 - PDF: the space where a one-column stretch meets a continuous multi-column section is kept, as in
   Word; FOP had discarded it.
+- PDF: a bordered table's top and bottom borders take their whole width outside its rows, as in
+  Word; FOP's collapsing model had kept half of each inside, so each table was a border width short.
 
 - A paragraph holding only a page break keeps the line before its break at the foot of its page,
   and a table after one starts at the top of the next, as in Word: properties
