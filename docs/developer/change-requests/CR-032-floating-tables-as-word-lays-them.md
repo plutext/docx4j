@@ -1,8 +1,10 @@
 # CR-032: floating tables laid out as Word lays them - the band at its offset, the wide table's band, the paragraphs behind it
 
-Status: IN PROGRESS - phase 0 (the eight probes) being built 2026-10-08; D1, D2 and D3 DECIDED yes by Jason
-2026-10-08 (§7). Proposed 2026-10-08 (Jason: "let's start on the floating-tables CR", after ledger9 §5 named it
-the largest page lever left in class 2). Phase 2 depends on a fork CR (the fork session's, briefed the same day).
+Status: IN PROGRESS - phase 0 DONE 2026-10-08 (nine probes cut and read, §3; the premise about the empties
+corrected, the design redirected, §4); phase 1 next. D1, D2 and D3 DECIDED yes by Jason 2026-10-08 (§7).
+Proposed 2026-10-08 (Jason: "let's start on the floating-tables CR", after ledger9 §5 named it the largest
+page lever left in class 2). Phase 2 depends on a fork CR (fop/CR-023, the fork session's; brief revised by
+the phase 0 readings, §4.2).
 
 ## 0. Summary
 
@@ -133,24 +135,73 @@ Measured (the 2026-09-06 probes, rules §6.8):
 - `tblpYSpec=bottom`, `center` and the page anchors land where §6.8 says.
 - A table with no `vertAnchor` is anchored to the margin box (probe case 5, §1).
 
-Read off corpus documents, to be settled by phase 0:
+**Measured 2026-10-08, the phase 0 probes** (Word 365 on the VM, fields off; docx4j = HEAD on the
+released 2.11-docx4j.5, rendered from Word's re-saves; `y` = pdftotext's top of the word, page margins
+72pt; the probes are the regression set from here on):
 
-- **Empty paragraphs sit behind a full-width table.** 11490, 6705, 11092: Word lays the empties in
-  the table's band, so the table costs the flow nothing beyond them; non-empty text that does not
-  fit beside goes below the table, `bottomFromText` under it.
-- **Floating tables may overlap each other** (6705, 8985); Word does not push them apart.
-- **A negative `tblpY` pulls the table above its anchor** and may use the previous page's space
-  (Vajna, LibreOffice's Word-compatibility notes).
-- **A table taller than the room** moves whole to the next page when no row fits, else splits,
-  the wrap continuing on the next page (Vajna); `w:doNotBreakWrappedTables` forbids the split.
-- **In a cell**, the floating table floats within the cell and the cell's text wraps beside it
-  (5936: a 70.5pt table, text at x=149 beside it for six paragraphs).
-- **A text-anchored table when the anchor paragraph itself moves to a new page** goes with it.
+- **Empty paragraphs do not sit behind a full-width table.** `table-floating-wide-empties` (a 451pt
+  table in a 451pt column, `leftFromText`/`rightFromText` 9pt): with `tblpY` 0 and three empties, Word
+  draws the table at the anchor's position and the three empties *below* it, the next text at y 386.4;
+  docx4j, which leaves the table in the flow, has it at 385.3. **The in-flow treatment of a
+  full-width table is Word's layout** to within a point; the register's "empties behind" readings
+  (11490, 6705, 11092) were of tables narrower than the column, where a zero-width line fits beside.
+- **`tblpY` is honoured, and the lines that fit above the table fill the offset.** The same probe with
+  `tblpY` 36pt and eight empties: Word's table is 36.9pt lower than docx4j's, but the text after is only
+  10.3pt lower (462.7 against 452.4): two of the eight empties were laid in the 36pt gap above the table,
+  six below it. `tblpY` 6pt: table and following text both 7.0pt lower than ours. So the offset's cost to
+  the flow is `tblpY` less the lines that fit in it.
+- **The offset is measured from the anchor paragraph's top including its space-before.**
+  `table-floating-offset-sides` case 4: 24pt of space-before on the anchor moves its first line from 107.9
+  to 131.9 but leaves the table at 180.4, where case 1's is (107.9 + 72.5). docx4j measures from the first
+  line (195.5).
+- **The anchor paragraph's own text runs above the offset, full width, and continues below the table.**
+  `table-floating-wide-anchor-text` case 2 (`tblpY` 30pt): the anchor's first two lines above the table,
+  the rest below; the following paragraph lands 3.5pt lower than docx4j's (313.6 vs 310.1), since docx4j
+  puts the table first and the whole paragraph after. Case 1 (`tblpY` 0): Word = docx4j within a point.
+- **Text runs on both sides of a float, and takes any room at all.** `offset-sides` case 1 (a 40% table
+  centred): Word's lines run on the left *and* the right of it; case 3 (`tblpX` 1000, a 41pt sliver on
+  the left): single words in the sliver and the rest on the right. `wide-anchor-text` case 3 (a 75%
+  table, 104pt beside): the anchor's text beside it, word by word. There is no minimum width; whatever
+  fits a line segment goes beside. docx4j floats one side only (the side of the table's centre) and
+  narrows from the anchor's first line: the following paragraph is 96pt (seven lines) lower than Word's
+  in case 1, 54pt in case 3, 15pt in the 75% case.
+- **Two floats on one anchor**: left and right (`pair` case 1, two 100pt tables): side by side at the
+  same y, the anchor's text between them (x 181.5 to 414). Same side (case 2): Word stacks the second
+  below the first (108.4 and 371.7) with the text beside both; it does not overlap them. Two full-width
+  tables with three empties between (case 3, 6705's shape as read): first table, three empties, second
+  table, text - docx4j identical (P08 300.9 vs 301.9). docx4j's case 1 puts the second table 221pt
+  lower than Word's and the anchor text beside it (329.3), and spills to a second page.
+- **A negative offset pulls the table above its anchor into the preceding paragraph and into the top
+  margin.** `negative` case 1 (`tblpY` -30pt mid-page): the table sits inside the preceding paragraph,
+  whose intersecting lines wrap below it; the anchor follows; net 6.6pt on the text after. Case 2 (the
+  anchor first on page 2): the table at y 42.8, in the top margin, the anchor at 99.0; docx4j at 71.9 and
+  128.1 (29pt).
+- **In a cell**: Word floats the one-cell table and wraps the cell's first paragraph beside it (two
+  lines beside, two below); docx4j puts that paragraph below. From the second paragraph on, identical
+  (P03 171.8 vs 171.7, P08 419.3 vs 419.1): a line's worth of difference, not 5936's two pages, which
+  therefore come from something else in that document (its nested table's 36/186 gaps and 70.5pt width
+  against a cell, to be re-read).
+- **A text-anchored table taller than its page splits across pages exactly as FOP splits it**
+  (rows 1-5 / 6-22 / 23-39 / 40 on both; the anchor paragraph after it at 114.9 vs 113.5), and
+  **`w:doNotBreakWrappedTables` changes nothing** in Word (`tall-nobreak` identical to `tall`). A
+  page-anchored table running past the foot continues on the following pages in both; Word fits 14 rows
+  on its first page where docx4j fits 16 (28pt rows against 30pt: the positioned container's row height,
+  to be checked).
+- **An anchor paragraph opening with `w:br`** (`br-anchor` case 1, 6293's shape): Word floats the 40%
+  table and wraps the text beside it, the break giving an empty first line; docx4j declines the float
+  (the line-break rule, §1) and the following paragraph is 70pt lower (337.3 vs 267.5). **An anchor
+  carrying a continuous section's `sectPr`** (case 2, full width): Word = docx4j within a point.
+
+Still read off corpus documents, not probed:
+
+- Floating tables overlapping each other (6705 as the register reads it; the probe's same-side pair did
+  not overlap). To be re-read on the document.
 
 ### Phase 0: the probes
 
-One Word run (WordGoldenRunner, fields off, the share's `corpus/` and `corpus.txt`), eight
-probes, built in `docx4j-layout-fidelity`'s `Corpus.java` with `Table.floating(...)`:
+One Word run (WordGoldenRunner, fields off, the share's `corpus/` and `corpus.txt`), nine
+probes (the tall case split in two for its compatibility setting), built in `docx4j-layout-fidelity`'s
+`Corpus.java` with `Table.floating(...)`; cut 2026-10-08 06:27, read the same day (above):
 
 | probe | what it settles |
 |---|---|
@@ -163,90 +214,75 @@ probes, built in `docx4j-layout-fidelity`'s `Corpus.java` with `Table.floating(.
 | `table-floating-tall` | a text-anchored table taller than the room left on its page, with and without `doNotBreakWrappedTables`; and a page-anchored one |
 | `table-floating-br-anchor` | the anchor paragraph opening with `w:br` (6293's shape), and one carrying the `sectPr` |
 
-Each probe's reading goes into §3 as measured, and the design below is corrected before phase 1
-builds. The existing `table-floating` and `table-floating-anchor` probes stay as the regression
-set.
+The readings are above; the design below was corrected on them before phase 1 builds. The nine join
+`table-floating` and `table-floating-anchor` as the regression set.
 
-## 4. Design
+## 4. Design (redirected 2026-10-08 on the phase 0 readings)
+
+What the probes changed: the full-width table in the flow *is* Word's layout, so the corpus's dominant
+case needs no float and no hook, only its offset. The losses are in (a) the offset, which docx4j drops
+for a wide table and applies from the wrong point for a narrow one, (b) the one-sided, from-the-first-
+line float where Word wraps both sides from the offset down, (c) the 60% rule, which keeps tables of
+60-99% in the flow where Word wraps text beside them, (d) the declines (`w:br`, no `vertAnchor`), and
+(e) two floats on one anchor. Nothing in Word's splitting, in-cell or `sectPr` behaviour needs work.
 
 ### 4.1 Phase 1, docx4j alone
 
-- **Default anchors.** `vertAnchor` absent = margin (probe case 5, §1; the schema states no default,
-  so the spec's words are re-read when this builds), `horzAnchor` absent = text. The `tblpY`-with-margin branch then takes the no-`vertAnchor` table
-  to the positioned container, as Word does.
-- **In a cell.** The floating table inside a `w:tc` is placed within the cell: indent from
-  `tblpX` (already), `tblpY` as `space-before`, and - since FOP has no float under a table - the
-  cell's following paragraphs are laid below it (no text beside). Not Word's wrap, but the right
-  position and no lost lines (5936's +85pt).
-- **`topFromText` / `bottomFromText`** read and applied: the band table gets the top gap as
-  padding, the bottom gap as `space-after` on the float's block (narrow) or the table (wide).
-- **The wide text-anchored table.** Two routes, chosen per table:
-  - *followed only by empty paragraphs whose height covers the table's* (the 133-empty-anchor
-    population's common shape): the same `fo:float` + band table as the narrow case. The §4.2
-    measurement shows both renderers lay the empties as zero-ipd lines in the band and resume
-    the text at the float's foot, which is Word's layout; the hazard is a text line falling
-    beside the float (laid at ipd 0, one word a line), so the route is taken only when the
-    empties' accumulated line boxes reach the table's estimated height (below), and the
-    estimate errs towards the flow route.
-  - *otherwise*, left in the flow as now, with:
-  - `tblpY` ≥ 0 as `space-before` on the table (Word's table top is the anchor's top + `tblpY`,
-    and the anchor paragraph's text, when there is any, goes below the table: measured by probe 2);
-  - the empty paragraphs following it absorbed into the band while their accumulated height is
-    at most the table's **estimated** height: rows × the row's line box for single-line cells, the
-    `w:trHeight` where stated, or the cell text measured with `TextMeasurer` (CR-017's) against
-    the column width. The estimate is conservative: an empty paragraph is only absorbed if the
-    whole of it fits in the band. Phase 2 replaces the estimate with FOP's layout.
-  - a negative `tblpY` as `space-before` of the same sign where FOP honours it, else 0 (phase 3).
-- **The `w:br` decline** (6293): the decline exists because hoisting loses a table float. Since
-  dd74eb6fb the XSLT pathway's `w:br` block is wrapped like the visitor's; the remaining case is
-  a `w:br` in a run after the float in the same flow. Measure on the fork whether the NPE
-  (`TraitSetter.setVisibility`) still occurs with the fork's float edges; if it does not, the
-  decline is lifted on a renderer with `side-float-edges`.
-- The 1616 case (a full-width page-anchored table opening its section, the next table drawn over
-  it): `reservesItsBand` never reserves for a table that opens its page; a wide one should, since
-  nothing can go beside it. Gate separately: the cover-page population is where the hidden copy
-  was measured to cost pages.
+- **Default anchors.** `vertAnchor` absent = margin (probe `table-floating-anchor` case 5; the schema
+  states no default, so the spec's words are re-read when this builds), `horzAnchor` absent = text. The
+  `tblpY`-with-margin branch then takes the no-`vertAnchor` table to the positioned container.
+- **The offset of a table in the flow.** A text-anchored table left in the flow gets its `tblpY`:
+  positive, as the lines that fit in the gap above it (Word's rule, §3) when the paragraphs that follow
+  it are empty - `k = floor(tblpY / line pitch)` of the following empties are moved before the table,
+  the remainder of `tblpY` is `space-before` on the table (the 36pt case: two empties above, 8.4pt of
+  space; the 6pt case: 6pt of space) - and as plain `space-before` when the anchor paragraph holds text
+  (Word runs that text above the table; the error is `tblpY` less the lines that fit, 3.5pt on the
+  30pt probe, left for phase 2's hook). Negative `tblpY`: the table is pulled up by it where FOP
+  takes a negative `space-before` (to measure; else 0 and phase 3).
+- **The 60% rule becomes "no room beside".** On a renderer with `side-float-edges`, a text-anchored
+  table floats whenever `column - width - leftFromText - rightFromText > 0`; Word puts a word in a
+  41pt sliver and the anchor's text beside a 75% table, and FOP's narrowed lines do the same (the
+  §4.2 measurement: only ipd 0 overflows, which cannot arise once the room is positive). The full-width
+  table (room ≤ 0) stays in the flow, which is Word's layout. On Apache FOP the 60% rule stays (D3).
+  The band table's columns are then `{room on the left, table, room on the right}` as now.
+- **The `w:br` decline** (6293, probe case 1: 70pt a page): measured on the fork whether the
+  `TraitSetter.setVisibility` NPE still occurs with a float in a paragraph followed by a block-inside-
+  inline; if not, the decline is lifted on a renderer with `side-float-edges`; if it does, the fork gets
+  it as a defect (fop/CR-023 §).
+- **Two floats on one anchor.** Both go into the anchor paragraph, each at its side, instead of the
+  second trailing the first table's "next sibling" (the probe's 221pt and a spilt page); FOP lays a left
+  and a right float side by side. Two on the same side: FOP stacks them, as Word does.
+- **In a cell**: no change (a line's worth on the probe). 5936's two pages are re-read on the document.
+- **Positioned (page/margin) tables**: unchanged, except the 1616 case (a full-width page-anchored
+  table opening its section, the next table drawn over it): `reservesItsBand` never reserves for a
+  table that opens its page; a wide one should, since nothing can go beside it. Gated separately on the
+  cover-page population.
 
-### 4.2 Phase 2, the fork hook
+### 4.2 Phase 2, the fork hooks (fop/CR-023, revised)
 
-Two things `fo:float` cannot say, which are the whole of the wide-table and offset defects:
+- **`float-offset`** (unchanged in kind, settled in semantics): a side float whose intrusion into the
+  line boxes begins `offset` below the **top of the anchor paragraph's block including its
+  space-before** (probe case 4), the lines in between keeping the full ipd, the content placed at the
+  offset. docx4j writes `tblpY` as the offset. This closes `table-floating` (0.69 → 1.0) and the
+  narrow-float share of every text-anchored table with an offset (38 of 180 state more than 15pt).
+- **Both sides.** Word runs text down both sides of a float and between two floats, taking any
+  segment a word fits. `fo:float` is single-sided; the fork would need a line manager that lays a line
+  as two segments around an obstacle - §6.6 item 10's project, which the probes now show is a floating-
+  table matter as much as a picture one (`offset-sides` cases 1 and 3, 96pt and 54pt a page). Listed
+  here as the hook's second half, for the fork session to size; not a condition of phase 1.
+- **`float-band` is withdrawn.** The reading it rested on (empties behind a full-width table) is
+  refuted (§3); the full-width table is right in the flow, and a narrower one leaves positive room
+  where FOP's lines already wrap. What remains of it - a content line beside a float with ipd 0 - cannot
+  arise under the "no room beside" rule.
 
-1. **A float's band starting below its anchor line.** `fox:float-offset="72pt"`: the float is
-   anchored at the line it sits in, but the intrusion into the line boxes begins `offset` below
-   that line's top, and the content is placed there; the lines in between keep the full ipd.
-   docx4j then writes `tblpY` as the offset instead of padding, and the narrowed-lines-above
-   residual of `table-floating` goes (its 0.69 → 1.0, the only defect that probe has).
-2. **A float that takes the column.** With `side-float-edges`, a float's edge is the first break
-   whose content and glue reach its foot. **Measured 2026-10-08** on Apache FOP 2.11 and on
-   2.11-docx4j.5 (scratch FO mirroring docx4j's construct: the float first in the anchor block,
-   a 451.3pt fixed table of three rows, four empty `white-space-treatment="preserve"` blocks,
-   then text; identical on both): the lines beside a column-wide float get ipd 0. An empty block
-   beside it is laid as a zero-ipd line and **consumes the band** - the four empties took four
-   14pt lines and the text after them started full width at the float's foot (y 201.6 under rows
-   at 139.8, 157.8, 175.8). A block *with* text beside it is laid at ipd 0 as well, one word per
-   line, overflowing past the right margin until the float's foot, where the rest of the paragraph
-   flows full width; no exception. So FOP already does Word's thing for the empties, and the hook
-   reduces to: a line whose content does not fit the remaining ipd (ipd 0 included) is deferred to
-   the first line position after the float's foot at the full ipd; a line with no content keeps
-   today's zero-ipd line in the band; a minimum width below which text goes under even when
-   something would fit, if phase 0 shows Word has one, as a parameter. Capability `float-band`.
+### 4.3 Phase 3, what the probes left
 
-With both, the wide text-anchored table becomes the same `fo:float` + band table as the narrow
-one, and the "60% rule" goes away on the fork (it stays on Apache FOP, where the phase 1 flow
-treatment holds). The fork CR is the fork session's to write (fop/CR-023 or whatever number it
-takes; fop/CR-022, clear after a side float, is already queued ahead of it) once Jason says so;
-docx4j's side is gated by `FopCapabilities` as every hook is, and Apache FOP is unchanged.
-
-### 4.3 Phase 3, what the probes may add
-
-- The negative offset using the previous page (probe 4).
-- Overlapping pairs (probe 5): two floats on one side, where Word draws them over each other and
-  FOP stacks them; whether to let the second overlap (an absolutely positioned copy) or accept the
-  stack.
-- Tables split across pages (probe 7) and `doNotBreakWrappedTables`.
-- Text on both sides of a centred float (probe 3): §6.6 item 10, the obstacle-aware line manager;
-  out of scope here unless the probe shows Word uses one side only, in which case the side rule
-  is corrected.
+- The negative offset into the top margin (`negative` case 2: Word at y 42.8, 29pt above the margin).
+- The anchor paragraph's text above a wide table's offset (3.5pt on the probe) once `float-offset`
+  exists on the fork: the wide table then floats too, with `float-offset` and room ≤ 0, if the hook's
+  ipd-0 case is made to defer content lines; otherwise it stays in the flow with the §4.1 rule.
+- The page-anchored container's row height (Word 28pt rows against 30pt, `tall` pages 5-7).
+- 5936 and 6705 re-read on the documents (the in-cell wrap and the overlap the register recorded).
 
 ## 5. Gates and acceptance
 
@@ -256,15 +292,16 @@ the resaved-nofields basis against the current baseline (b180 at the time of wri
 export-fo and export-fo-tests suites (`FloatingTablePositionTest` grows a case per rule).
 
 Acceptance for the CR: the 13 ledger9 documents at Word's page count or nearer it, none of the
-other floating-table documents down, `table-floating` and the new probes at 1.0 on the fork,
-and the Apache FOP output unchanged except where phase 1 applies.
+other floating-table documents down, `table-floating` and the nine probes at 1.0 on the fork where
+the rules reach (both-sides wrap excepted until the fork has it), and the Apache FOP output unchanged
+except where phase 1 applies.
 
 ## 6. Out of scope, and the neighbours
 
 - Anchored pictures and text boxes left in the flow (13232, 14236, 10747 of the 13) are the same
   mechanism with their own rules (§9.1, §9.2, the register's `anchor-at-page-foot` and
-  `textbox-wide-no-text-beside`); the `float-band` hook serves the wide text box too, which is why
-  the text-box band is listed as unblocked once it exists.
+  `textbox-wide-no-text-beside`); the wide text box's band (`textbox-wide-no-text-beside`) is now a separate question, since
+  `float-band` is withdrawn (§4.2).
 - Text on both sides of an object (§6.6 item 10) and wrap around a page-positioned object (11):
   the line-manager project, not this CR.
 
@@ -279,11 +316,12 @@ and the Apache FOP output unchanged except where phase 1 applies.
 
 ## 8. Risks
 
-- The band-height estimate of phase 1 is an estimate; an empty paragraph absorbed wrongly loses a
-  line. Conservative by construction, gated, and replaced by phase 2.
-- FOP's full-width float behaviour was unknown; measured (§4.2): no exception, the empties
-  behave, a text line beside overflows. The float route of phase 1 therefore guards against any
-  text line beside the table, and the hook of phase 2 removes the guard.
+- The empties-above-the-table rule of phase 1 moves paragraphs in the FO; a wrong line pitch puts an
+  empty line on the wrong side of the table (one line). Gated; phase 2's offset makes it exact.
+- Lowering the 60% rule to "no room beside" floats 60-99% tables for the first time (about 20 of
+  208 in the corpora); FOP's narrowed lines beside a wide float are measured sound (ipd > 0), but the
+  edge cases (a float ending inside a table, item 45) are the fork's `side-float-edges`, so the rule is
+  gated on that capability.
 - The reserveBand change for 1616 touches cover pages, where a hidden copy cost pages before.
 
 ## 9. Hand-offs
