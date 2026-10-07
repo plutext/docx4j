@@ -21,6 +21,17 @@ Claude Fable 5.1 and Opus 5.5
 Changes in Version 17.3.2
 --------------------------
 
+PDF via XSL FO:
+
+- Floating tables (w:tblpPr) laid out nearer Word's layout (CR-032 phase 1, measured on nine
+  probes against Word): a text-anchored table left in the flow keeps its tblpY, with the empty
+  paragraphs that fit in the gap laid above it as Word lays them; on the docx4j FO renderer a
+  table wider than 60% of the column floats when 2in is left beside it, and a table whose anchor
+  paragraph holds a line break floats (the FOP defect that forbade it is fixed in
+  2.11-docx4j.5); two floating tables on one paragraph sit side by side; a table with no
+  w:vertAnchor is anchored to the margin box in the lower half of the page. Properties as
+  before: docx4j.convert.out.fo.tables.position / .float.
+
 
 
 

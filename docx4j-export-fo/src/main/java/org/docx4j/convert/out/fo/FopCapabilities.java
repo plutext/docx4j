@@ -140,7 +140,14 @@ public final class FopCapabilities {
 		 *  triplet is sheared only where the face's italic angle is 0, a bold one stroked only where its
 		 *  weight class is below 700, the stroke 1/35 em - as Word draws synthetic styles.  docx4j-core's
 		 *  {@code FopConfigUtil.boldItalicOnItalicFace} asks the marker for it directly.  @since 17.3.1 */
-		SIMULATE_STYLE_PER_FACE("simulate-style-per-face");
+		SIMULATE_STYLE_PER_FACE("simulate-style-per-face"),
+		/** Side floats with sound edges (fork CR-020; Enterprise CR-001 §6.6 items 44 and 45): a float
+		 *  ends at the break before the first line below its foot, keeps the space there, and never ends
+		 *  inside a table.  The renderer that carries it (2.11-docx4j.5) also carries fop/CR-011's fix of
+		 *  the {@code TraitSetter.setVisibility} NPE a float followed by a block inside an inline threw,
+		 *  so docx4j no longer declines a floating table whose anchor paragraph holds a line break
+		 *  ({@link WordLayoutFixups}; CR-032 phase 1).  @since 17.3.2 */
+		SIDE_FLOAT_EDGES("side-float-edges");
 
 		private final String key;
 

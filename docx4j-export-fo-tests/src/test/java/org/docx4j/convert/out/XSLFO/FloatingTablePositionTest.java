@@ -3,6 +3,7 @@ package org.docx4j.convert.out.XSLFO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -272,9 +273,144 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 				+ "<w:p><w:r><w:t>one</w:t></w:r></w:p></w:tc></w:tr></w:tbl>"
 				+ "<w:p><w:r><w:t>after</w:t></w:r></w:p>";
 		org.w3c.dom.Document doc = fo(wide, flags);
+		// 9026 - 8000 - 180 - 180 twips of room is less than the 2in a float needs on either
+		// renderer (Word puts words in a sliver that narrow, probe -offset-sides case 3, but
+		// FOP overflows what does not fit, gate b182)
 		assertNull("nothing fits beside it", floatContainer(doc));
 		assertEquals(5.0, pt(foTable(doc).getAttribute("start-indent")), 0.01);
+		// a 5500 twip table leaves 3166 twips (2.2in): it floats on a renderer with sound
+		// float edges, and stays in the flow on Apache FOP (over 60%)
+		doc = fo(wide.replace("8000", "5500"), flags);
+		if (sideFloatEdges()) assertNotNull("2in of room: floats", floatContainer(doc));
+		else assertNull("over 60% on Apache FOP", floatContainer(doc));
+		// a table as wide as the column stays in the flow on both renderers, where Word's
+		// layout is the in-flow one (probe table-floating-wide-empties case 1)
+		doc = fo(wide.replace("8000", "9026").replace("w:tblpX=\"100\"", "w:tblpX=\"0\""), flags);
+		assertNull("no room beside a full-width table", floatContainer(doc));
 	}
+
+	private static boolean sideFloatEdges() {
+		return org.docx4j.convert.out.fo.FopCapabilities.has(
+				org.docx4j.convert.out.fo.FopCapabilities.Capability.SIDE_FLOAT_EDGES);
+	}
+
+	private static final String DOCX4J_NS = "http://docx4j.org/fop/word-layout";
+
+	/** A length in pt or in (docx4j writes "0in" for a zero space), else 0. */
+	private static double len(String v) {
+		if (v == null || v.isEmpty()) return 0;
+		if (v.endsWith("in")) return Double.parseDouble(v.substring(0, v.length() - 2)) * 72;
+		if (v.endsWith("pt")) return Double.parseDouble(v.substring(0, v.length() - 2));
+		return 0;
+	}
+
+	private static String fullWidthTable(String tblpPr, String cellText) {
+		return "<w:tbl><w:tblPr>" + tblpPr
+				+ "<w:tblLayout w:type=\"fixed\"/><w:tblW w:type=\"dxa\" w:w=\"9026\"/></w:tblPr>"
+				+ "<w:tblGrid><w:gridCol w:w=\"9026\"/></w:tblGrid>"
+				+ "<w:tr><w:tc><w:tcPr><w:tcW w:type=\"dxa\" w:w=\"9026\"/></w:tcPr>"
+				+ "<w:p><w:r><w:t>" + cellText + "</w:t></w:r></w:p></w:tc></w:tr></w:tbl>";
+	}
+
+	/** The element siblings before the fo:table in its flow, in order. */
+	private static java.util.List<Element> siblingsBefore(Element table) {
+		java.util.List<Element> out = new java.util.ArrayList<Element>();
+		for (Node n = table.getPreviousSibling(); n != null; n = n.getPreviousSibling()) {
+			if (n instanceof Element) out.add(0, (Element) n);
+		}
+		return out;
+	}
+
+	/** A full-width text-anchored table keeps its w:tblpY in the flow, as Word lays it out:
+	 *  the empty paragraphs after it that fit in the gap go above it, the rest of the gap is
+	 *  a spacer before it (probe table-floating-wide-empties case 3: tblpY 36pt, eight empties,
+	 *  Word lays two above and six below; CR-032 phase 1). */
+	private void inFlowOffsetMovesEmptiesAbove(int flags) throws Exception {
+		org.w3c.dom.Document doc = fo("<w:p><w:r><w:t>before</w:t></w:r></w:p>"
+				+ fullWidthTable("<w:tblpPr w:vertAnchor=\"text\" w:horzAnchor=\"margin\" w:tblpX=\"0\" w:tblpY=\"720\"/>", "wide")
+				+ "<w:p/><w:p/><w:p/><w:p><w:r><w:t>after</w:t></w:r></w:p>", flags);
+		Element table = foTable(doc);
+		assertNull(floatContainer(doc));
+		java.util.List<Element> before = siblingsBefore(table);
+		// "before", the empties that fit in 36pt, the spacer
+		Element spacer = before.get(before.size() - 1);
+		assertEquals("block-container", spacer.getLocalName());
+		double moved = 0;
+		int empties = 0;
+		for (int i = 1; i < before.size() - 1; i++) {
+			Element empty = before.get(i);
+			assertEquals("block", empty.getLocalName());
+			assertEquals("an empty paragraph", "", empty.getTextContent().trim());
+			moved += pt(empty.getAttribute("line-height")) + len(empty.getAttribute("space-before"))
+					+ len(empty.getAttribute("space-after"));
+			empties++;
+		}
+		assertTrue("at least one empty paragraph fits in 36pt", empties >= 1);
+		assertTrue("the next would not have fitted: " + moved, moved <= 36 && moved + moved / empties > 36);
+		assertEquals(36.0 - moved, pt(spacer.getAttribute("height")), 0.05);
+		// the empties not moved are still after the table, then "after"
+		Element next = (Element) table.getNextSibling();
+		assertEquals("", next.getTextContent().trim());
+	}
+
+	@Test public void inFlowOffsetVisitor() throws Exception { inFlowOffsetMovesEmptiesAbove(Docx4J.FLAG_NONE); }
+	@Test public void inFlowOffsetXslt() throws Exception { inFlowOffsetMovesEmptiesAbove(Docx4J.FLAG_EXPORT_PREFER_XSL); }
+
+	/** A text anchor: Word lays the lines that fit in the gap above the table; docx4j keeps
+	 *  only the part of the gap those lines would not fill, so the following text lands
+	 *  where Word's does (probe -wide-anchor-text case 2: tblpY 30pt, two 13.8pt lines above
+	 *  in Word, the next paragraph within 1.1pt). */
+	private void textAnchorKeepsTheGapsRemainder(int flags) throws Exception {
+		org.w3c.dom.Document doc = fo(fullWidthTable("<w:tblpPr w:vertAnchor=\"text\" w:horzAnchor=\"margin\" w:tblpX=\"0\" w:tblpY=\"600\"/>", "wide")
+				+ "<w:p><w:r><w:t>anchor paragraph with text</w:t></w:r></w:p>", flags);
+		Element table = foTable(doc);
+		Element anchor = (Element) table.getNextSibling();
+		double pitch = pt(anchor.getAttribute("line-height"));
+		assertTrue(pitch > 10);
+		Element spacer = (Element) table.getPreviousSibling();
+		assertEquals("block-container", spacer.getLocalName());
+		assertEquals(30.0 - Math.floor(30.0 / pitch) * pitch, pt(spacer.getAttribute("height")), 0.05);
+	}
+
+	@Test public void textAnchorOffsetVisitor() throws Exception { textAnchorKeepsTheGapsRemainder(Docx4J.FLAG_NONE); }
+	@Test public void textAnchorOffsetXslt() throws Exception { textAnchorKeepsTheGapsRemainder(Docx4J.FLAG_EXPORT_PREFER_XSL); }
+
+	/** Two floating tables on one anchor paragraph go into it side by side (Word: probe
+	 *  table-floating-pair case 1, the text between them); the first used to be left in the
+	 *  flow because its next sibling was the second table, not the paragraph. */
+	private void aPairSharesTheAnchor(int flags) throws Exception {
+		String narrow = "<w:tbl><w:tblPr>%s<w:tblLayout w:type=\"fixed\"/><w:tblW w:type=\"dxa\" w:w=\"2000\"/></w:tblPr>"
+				+ "<w:tblGrid><w:gridCol w:w=\"2000\"/></w:tblGrid><w:tr><w:tc><w:tcPr><w:tcW w:type=\"dxa\" w:w=\"2000\"/></w:tcPr>"
+				+ "<w:p><w:r><w:t>%s</w:t></w:r></w:p></w:tc></w:tr></w:tbl>";
+		org.w3c.dom.Document doc = fo(
+				String.format(narrow, "<w:tblpPr w:vertAnchor=\"text\" w:horzAnchor=\"margin\" w:tblpX=\"0\" w:tblpY=\"0\"/>", "left")
+				+ String.format(narrow, "<w:tblpPr w:vertAnchor=\"text\" w:horzAnchor=\"margin\" w:tblpXSpec=\"right\" w:tblpY=\"0\"/>", "right")
+				+ "<w:p><w:r><w:t>anchor of both</w:t></w:r></w:p>", flags);
+		NodeList floats = doc.getElementsByTagNameNS(FO_NS, "float");
+		assertEquals(2, floats.getLength());
+		assertSame("both in the one paragraph", floats.item(0).getParentNode(), floats.item(1).getParentNode());
+		assertEquals("left", ((Element) floats.item(0)).getAttribute("float"));
+		assertEquals("right", ((Element) floats.item(1)).getAttribute("float"));
+	}
+
+	@Test public void pairVisitor() throws Exception { aPairSharesTheAnchor(Docx4J.FLAG_NONE); }
+	@Test public void pairXslt() throws Exception { aPairSharesTheAnchor(Docx4J.FLAG_EXPORT_PREFER_XSL); }
+
+	/** No w:vertAnchor is the margin box (probe table-floating-anchor case 5: Word at
+	 *  y=173 = 72 + 100), not the text - taken where the positioned container reserves its
+	 *  band, the lower half of the page; in the upper half the old text-anchored treatment
+	 *  stands (3387 and 7490 lost a page and 26 lines to an unreserved container, gate b182). */
+	private void noVertAnchorIsTheMargin(int flags) throws Exception {
+		org.w3c.dom.Document doc = fo(body("<w:tblpPr w:horzAnchor=\"margin\" w:tblpX=\"1000\" w:tblpY=\"8000\"/>"), flags);
+		Element abs = positioningContainer(doc);
+		assertNotNull("anchored to the margin box", abs);
+		assertEquals(472.0, pt(abs.getAttribute("top")), 0.01);
+		doc = fo(body("<w:tblpPr w:horzAnchor=\"margin\" w:tblpX=\"1000\" w:tblpY=\"2000\"/>"), flags);
+		assertNull("upper half: not positioned", positioningContainer(doc));
+	}
+
+	@Test public void noVertAnchorVisitor() throws Exception { noVertAnchorIsTheMargin(Docx4J.FLAG_NONE); }
+	@Test public void noVertAnchorXslt() throws Exception { noVertAnchorIsTheMargin(Docx4J.FLAG_EXPORT_PREFER_XSL); }
 
 	@Test public void wideTableVisitor() throws Exception { aWideTableStaysInFlow(Docx4J.FLAG_NONE); }
 	@Test public void wideTableXslt() throws Exception {
@@ -311,20 +447,40 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 		aTableInColumnsStaysInFlow(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
-	/** FOP throws when a float shares a flow with a block inside an inline - the shape a
-	 *  line break inside a run takes - and renders nothing at all when the float holding a
-	 *  table is moved to flow level to avoid that (both measured).  So such a table is
-	 *  left in the flow rather than lost. */
-	private void aTableBeforeALineBreakStaysInFlow(int flags) throws Exception {
+	/** Apache FOP throws when a float shares a flow with a block inside an inline - the shape
+	 *  a line break inside a run takes - and renders nothing at all when the float holding a
+	 *  table is moved to flow level to avoid that (both measured).  So on Apache FOP such a
+	 *  table is left in the flow rather than lost.  The docx4j renderer from 2.11-docx4j.5
+	 *  (capability side-float-edges) carries the fix of that NPE (fop/CR-011), and Word floats
+	 *  the table as any other (probe table-floating-br-anchor), so there it is floated
+	 *  (CR-032 phase 1). */
+	private void aTableBeforeALineBreak(int flags) throws Exception {
 		org.w3c.dom.Document doc = fo(body("<w:tblpPr w:vertAnchor=\"text\" w:horzAnchor=\"margin\""
 						+ " w:tblpX=\"4500\"/>")
 				+ "<w:p><w:r><w:t>a</w:t><w:br/><w:t>b</w:t></w:r></w:p>", flags);
-		assertNull("the float would be lost", floatContainer(doc));
-		assertEquals(225.0, pt(foTable(doc).getAttribute("start-indent")), 0.01);
+		if (sideFloatEdges()) {
+			assertNotNull("floated on a renderer whose float survives the line break", floatContainer(doc));
+		} else {
+			assertNull("the float would be lost", floatContainer(doc));
+			assertEquals(225.0, pt(foTable(doc).getAttribute("start-indent")), 0.01);
+		}
+		// with an offset of more than a line and a half it stays in the flow on both, until the
+		// fork's float-offset puts the band at the offset (4083: the lines above the table
+		// were cut into a column beside it); the offset is then kept in the flow
+		doc = fo(body("<w:tblpPr w:vertAnchor=\"text\" w:horzAnchor=\"margin\" w:tblpX=\"4500\" w:tblpY=\"1000\"/>")
+				+ "<w:p><w:r><w:t>a</w:t><w:br/><w:t>b</w:t></w:r></w:p>", flags);
+		assertNull("a large offset: in the flow", floatContainer(doc));
+		Element spacer = (Element) foTable(doc).getPreviousSibling();
+		assertEquals("block-container", spacer.getLocalName());
+		assertTrue("the offset's remainder as a spacer", pt(spacer.getAttribute("height")) > 0);
 	}
 
 	@Test public void tableBeforeALineBreakVisitor() throws Exception {
-		aTableBeforeALineBreakStaysInFlow(Docx4J.FLAG_NONE);
+		aTableBeforeALineBreak(Docx4J.FLAG_NONE);
+	}
+
+	@Test public void tableBeforeALineBreakXslt() throws Exception {
+		aTableBeforeALineBreak(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
 	/** A page-anchored table which opens a page - after a hard page break - is positioned

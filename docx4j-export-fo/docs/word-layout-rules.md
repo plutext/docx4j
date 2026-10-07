@@ -3921,6 +3921,51 @@ did.
 `leftFromText` and `rightFromText` are the gaps the float leaves; `topFromText` and
 `bottomFromText` are not used, and nothing wraps beside a *positioned* table (§10).
 
+<a id="s68inflow"></a>**17.3.2 (CR-032 phase 1), measured on nine probes against Word 365.** What the probes
+settled: a table as wide as the column laid out in the flow *is* Word's layout to within a point - the
+paragraphs after it, empty or not, come below it (the "empty paragraphs behind a floating table" reading
+of the corpus was of tables narrower than the column); `tblpY` is measured from the top of the anchor
+paragraph's block including its space-before, and the lines that fit in the gap are laid full width
+above the table; text runs down both sides of a float and takes any room at all; two floats on one
+anchor sit side by side with the text between them; a negative offset pulls the table into the
+preceding paragraph; a table taller than its page splits where FOP splits it, and
+`doNotBreakWrappedTables` changes nothing. Four rules follow:
+
+- **The offset of a table in the flow** (`WordLayoutFixups.inFlowOffset`): a text-anchored table left
+  in the flow keeps its `tblpY`. The empty paragraphs after it whose line pitch and spacing fit in the
+  gap are moved above it, and the rest of the gap is a spacer `fo:block-container` before the table
+  (a spacer, not `space-before`, because FOP resolves a space against the previous paragraph's
+  space-after where Word's offset adds to it: probe `table-floating-wide-empties` case 2, 8pt after +
+  6pt offset). Where a text paragraph follows, Word fills the rest of the gap with its lines, which
+  docx4j cannot split, so only the gap's remainder modulo that paragraph's line pitch is kept and the
+  text after lands where Word's does (`-wide-anchor-text` case 2: 312.5 against Word's 313.6;
+  `-wide-empties`: 304.7/461.5 against 305.7/462.7). A negative `tblpY` of up to a line and a half is a
+  negative space-before, FOP's pull-up over the text before being Word's result for a small offset
+  (11398: +35 lines, its pages to Word's); a larger one is not applied, since the pull-up is then over
+  whole paragraphs (3653's -580pt lost 100 lines) where Word wraps the preceding lines below the table
+  (CR-032 phase 3).
+- **Room beside, not 60%, on the docx4j renderer**: with `side-float-edges` a table wider than 60% of
+  the column floats too when `column - width - leftFromText - rightFromText` is at least 2in
+  (`TableWriter.FLOAT_MIN_ROOM`). Word puts single words in a 41pt sliver (`-offset-sides` case 3), but
+  FOP overflows a word that does not fit its narrowed line where Word moves it below, so narrower
+  rooms cost lines (gate b182: 6705's 36pt and 54pt slivers -9, 1616's 22pt -11, 9832's 142pt -11).
+  Apache FOP keeps the 60% rule.
+- **The line-break anchor floats** on the docx4j renderer from 2.11-docx4j.5 (`side-float-edges`): the
+  `TraitSetter.setVisibility` NPE the decline guarded against is fixed there (fop/CR-011), and Word
+  floats such a table as any other (`-br-anchor` case 1: 267.5, docx4j 266.8, was 337.3). Guarded
+  until the fork's `float-offset`: with an offset of more than a line and a half the table stays in
+  the flow (4083's 51pt offset at the page's left cut the question above it into a column beside).
+- **Two floating tables on one anchor** share the paragraph, each at its side (`-pair` case 1); the
+  first used to be left in the flow because its next sibling was the second table.
+- **No `vertAnchor` is the margin box**, not the text (`table-floating-anchor` case 5: Word at
+  y = 72 + 100), taken where the positioned container reserves its band (the lower half of the
+  page, `s68reserve`); in the upper half the text-anchored treatment stands, since an unreserved
+  container ran its following text under the table (3387, 7490).
+
+What the probes leave to the fork (CR-032 phase 2, fop/CR-023): the float's band starting at the
+offset rather than the anchor's first line, and a line that does not fit beside a float deferred to
+its foot; and, as a project of its own, text on both sides of a float (§6.6 item 10).
+
 ### 6.9 `w:textDirection`: cells whose text Word turns on its side
 
 `w:tcPr/w:textDirection` `btLr` turns the cell's text 90° anticlockwise
@@ -5915,7 +5960,9 @@ Limitations that remain in docx4j's output:
   A table anchored to the **page or the margin box** is positioned only where it opens its
   section or opens a page and is narrow; positioned mid-page it would be drawn over the
   content Word puts below it, and mid-page Word wraps text beside it, which a positioned
-  container cannot do. `topFromText`/`bottomFromText` are ignored.
+  container cannot do. `topFromText`/`bottomFromText` are ignored. From 17.3.2 the
+  in-flow table keeps its offset, a wider table floats with 2in of room, and a line-break anchor
+  floats on the docx4j renderer ([§6.8](#s68inflow)).
 - **Exact-height rows clip** their overflowing content rather than drawing it over the rows
   below ([§6](#s68)).
 - **A picture's crop** (`a:srcRect`) is not applied: the picture is stretched into the

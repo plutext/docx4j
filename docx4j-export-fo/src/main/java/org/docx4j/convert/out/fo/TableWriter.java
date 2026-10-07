@@ -323,6 +323,16 @@ public class TableWriter extends AbstractTableWriter {
 	 *  that document a page and 0.03 of line parity. */
 	private static final double FLOAT_MAX_SHARE = 0.6;
 
+	/** On a renderer with sound float edges a wider table floats too, if at least this
+	 *  much (twips: 2in) is left beside it.  Word puts single words in any sliver (probe
+	 *  table-floating-offset-sides case 3: 41pt) and moves what does not fit below; FOP
+	 *  overflows a word that does not fit its narrowed line instead, so with less room the
+	 *  float costs lines (gate b182: 6705's 36pt and 54pt slivers -9, 1616's 22pt -11,
+	 *  9832's 142pt -11, 8236's 1pt -2).  The 75% table of probe -wide-anchor-text (104pt
+	 *  beside) is lost to this threshold until the fork can defer a line that does not fit
+	 *  (CR-032 phase 2).  @since 17.3.2 */
+	private static final int FLOAT_MIN_ROOM = 2880;
+
 	/**
 	 * A floating table (w:tblPr/w:tblpPr), as Word places it.
 	 *
@@ -406,6 +416,19 @@ public class TableWriter extends AbstractTableWriter {
 		} else if (tblpPr.getTblpY() != null
 				&& (vertPage || org.docx4j.wml.STVAnchor.MARGIN.equals(tblpPr.getVertAnchor()))) {
 			topTwips = (vertPage ? 0 : marginTop) + tblpPr.getTblpY().intValue();
+		} else if (tblpPr.getTblpY() != null && tblpPr.getVertAnchor() == null
+				&& marginTop + tblpPr.getTblpY().intValue() > pageH / 2) {
+			/* No w:vertAnchor is the margin box, not the text: measured on
+			 * table-floating-anchor case 5 (horzAnchor=margin tblpX=1000 tblpY=2000, no
+			 * vertAnchor), where Word draws the table at y=173 = 72 (margin) + 100 (tblpY),
+			 * below the whole of the paragraph after it.  But a positioned container reserves
+			 * its band only in the lower half of the page (WordLayoutFixups.reservesItsBand),
+			 * and in the upper half the text Word lays below the table ran over it: 3387
+			 * (top 103pt) lost a page, 7490 (93pt) 26 lines (gate b182).  So the margin
+			 * anchoring is taken only where the band is reserved; the rest keep the
+			 * text-anchored treatment they had, until a float can start at an offset
+			 * (CR-032 phase 1; the fork's float-offset). */
+			topTwips = marginTop + tblpPr.getTblpY().intValue();
 		}
 		if (topTwips == null && frame == null) {
 			// text-anchored: an fo:float at the anchor paragraph, text beside it
@@ -470,11 +493,30 @@ public class TableWriter extends AbstractTableWriter {
 	private int floatBesideText(org.docx4j.model.structure.PageDimensions dims,
 			org.docx4j.wml.CTTblPPr tblpPr, Element tableRoot, int indent, int width, int gridShift) {
 
+		int leftFromText = intValue(tblpPr.getLeftFromText(), 0);
+		int rightFromText = intValue(tblpPr.getRightFromText(), 0);
+		// a text-anchored table left in the flow keeps its w:tblpY (CR-032 phase 1): the
+		// fixups lay it out as Word does, the lines that fit in the gap above the table
+		if (tblpPr.getTblpY() != null && tblpPr.getTblpY().intValue() != 0) {
+			tableRoot.setAttribute(WordLayoutFixups.HINT_TBLP_INFLOW_Y,
+					UnitsOfMeasurement.twipToBest(tblpPr.getTblpY().intValue()));
+		}
 		if (!floatingTablesWrap()) return indent;
 		int column = dims.getWritableWidthTwips();
 		if (width <= 0 || column <= 0) return indent;
 		if (dims.getColsNum() > 1) return indent;
-		if (width > FLOAT_MAX_SHARE * column) return indent;
+		/* Which tables get text beside them.  On a renderer with sound float edges (the
+		 * docx4j renderer from 2.11-docx4j.5, FopCapabilities.SIDE_FLOAT_EDGES) a table
+		 * floats whenever any room is left beside it: Word puts single words in a 41pt
+		 * sliver and the anchor's text beside a 75% table, and a full-width table (no room)
+		 * is laid out in the flow exactly as Word lays it (probes table-floating-offset-sides
+		 * case 3, -wide-anchor-text cases 1 and 3; CR-032 phase 1).  On Apache FOP the 60%
+		 * rule stays, its float edges being what they are (§6.6 items 44, 45). */
+		boolean edges = FopCapabilities.has(FopCapabilities.Capability.SIDE_FLOAT_EDGES);
+		int room = column - width - leftFromText - rightFromText;
+		if (width > FLOAT_MAX_SHARE * column && !(edges && room >= FLOAT_MIN_ROOM)) {
+			return indent;
+		}
 		/* Below mode 15 applyStartIndent has already moved the grid edge back by one cell
 		 * margin (§6.1), which is about the grid and not about where Word puts the frame;
 		 * a table with no w:tblpX therefore arrived here at -108 twips and was declined the
@@ -482,8 +524,6 @@ public class TableWriter extends AbstractTableWriter {
 		int bandStart = indent + gridShift;
 		if (bandStart < 0 || bandStart + width > column) return indent;
 
-		int leftFromText = intValue(tblpPr.getLeftFromText(), 0);
-		int rightFromText = intValue(tblpPr.getRightFromText(), 0);
 		boolean right = bandStart + width / 2.0 > column / 2.0;
 		int padLeft = right ? leftFromText : bandStart;
 		int padRight = right ? column - bandStart - width : rightFromText;
