@@ -22,6 +22,7 @@ import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.Br;
 import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.P;
+import org.docx4j.wml.Tc;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase;
 import org.docx4j.wml.R;
@@ -911,6 +912,245 @@ public final class Corpus {
 			for (int i = 0; i < 5; i++) {
 				d.para(prose(4, i + 7)).after(160).add();
 			}
+			return d.pkg();
+		}));
+
+		// ------------------------------------- CR-032 phase 0: floating tables as Word lays them
+
+		/*
+		 * CR-032 (docs/developer/change-requests/CR-032-floating-tables-as-word-lays-them.md).
+		 * The corpora's floating tables are mostly full-width text-anchored tables with
+		 * empty paragraphs after them, which Word lays BEHIND the table; today docx4j leaves
+		 * a table wider than 60% of the column in the flow (the empties then stack below it)
+		 * and drops its tblpY.  Eight probes, one Word run, one case a page: the band of a
+		 * wide table and the empties behind it, the anchor paragraph's own text, the sides of
+		 * a centred float, a negative offset, overlapping pairs, a floating table in a cell, a
+		 * table taller than its page, and a line break or section break on the anchor.
+		 */
+
+		// A full-width (9026 twips = the A4 text width at 72pt margins) text-anchored table,
+		// followed by empty paragraphs and then text.  Three cases: a tall table with few
+		// empties (the deficit), a short table with many (the surplus), and a 36pt offset.
+		PROBES.add(new Probe("table-floating-wide-empties",
+				"full-width text-anchored floating tables (tblpY 0, 6pt, 36pt) followed by 3 or 8 empty "
+				+ "paragraphs then text, one case a page; mode 15.  Read whether the empties sit in the "
+				+ "table's band (the text after resumes at the table's foot + bottomFromText) or below it, "
+				+ "and what the surplus empties cost", () -> {
+			Doc d = Doc.create(15);
+			int[][] cases = { { 6, 0, 3 }, { 2, 120, 8 }, { 6, 720, 8 } };
+			for (int c = 0; c < cases.length; c++) {
+				int rows = cases[c][0], y = cases[c][1], empties = cases[c][2];
+				d.para("before case " + (c + 1) + ": " + rows + " rows, tblpY " + y + ", " + empties
+						+ " empty paragraphs behind. " + prose(1, c)).after(160).add();
+				Doc.Table t = new Doc.Table(4513, 4513).fixedLayout()
+						.floating("text", "margin", 0, null, y, null);
+				for (int r = 0; r < rows; r++) {
+					t.row(SERIF, 24, false, "wide row " + (r + 1), prose(1, r));
+				}
+				d.add(t.build());
+				for (int i = 0; i < empties; i++) d.emptyParagraph();
+				d.para("after the empties. " + prose(3, c + 3)).after(160).add();
+				d.para(prose(3, c + 6)).after(160).add();
+				if (c < cases.length - 1) d.pageBreak();
+			}
+			return d.pkg();
+		}));
+
+		// The same wide table with a paragraph of text as its anchor: does the anchor
+		// paragraph's text go below the table, does the offset count from the paragraph's
+		// top (the lines above it full width), and does a 75% table get text beside it.
+		PROBES.add(new Probe("table-floating-wide-anchor-text",
+				"a full-width text-anchored floating table whose anchor paragraph holds five sentences "
+				+ "(tblpY 0 and 30pt), and a 75%-wide one; one case a page; mode 15.  Read where the anchor "
+				+ "paragraph's text goes (above the offset, below the table, beside a 75% table)", () -> {
+			Doc d = Doc.create(15);
+			int[][] cases = { { 4513, 0 }, { 4513, 600 }, { 3385, 0 } };
+			for (int c = 0; c < cases.length; c++) {
+				int half = cases[c][0], y = cases[c][1];
+				d.para("before case " + (c + 1) + ": width " + (2 * half) + ", tblpY " + y + ". " + prose(1, c)).after(160).add();
+				Doc.Table t = new Doc.Table(half, half).fixedLayout()
+						.floating("text", "margin", 0, null, y, null);
+				t.row(SERIF, 24, false, "anchor text", "case " + (c + 1))
+						.row(SERIF, 24, false, prose(1, c), "b")
+						.row(SERIF, 24, false, "third", prose(1, c + 1));
+				d.add(t.build());
+				d.para("anchor paragraph. " + prose(5, c + 2)).after(160).add();
+				d.para("the paragraph after. " + prose(3, c + 7)).after(160).add();
+				if (c < cases.length - 1) d.pageBreak();
+			}
+			return d.pkg();
+		}));
+
+		// A 40% table with an offset of 1in: centred (room both sides), at the left edge, and
+		// at tblpX 1000 (unequal room).  Which side(s) Word uses, and the lines above the
+		// offset full width.
+		PROBES.add(new Probe("table-floating-offset-sides",
+				"40%-wide text-anchored floating tables with tblpY 1in: centred on the margin box, at its "
+				+ "left edge, and at tblpX 1000; a seven-sentence anchor paragraph and two more; one case a "
+				+ "page; mode 15.  Read which side or sides the text runs down, and that the lines above "
+				+ "the offset are full width", () -> {
+			Doc d = Doc.create(15);
+			String[] xSpec = { "center", null, null };
+			Integer[] xTw = { null, 0, 1000 };
+			for (int c = 0; c < 3; c++) {
+				d.para("before case " + (c + 1) + ". " + prose(1, c)).after(160).add();
+				Doc.Table t = new Doc.Table(1805, 1805).fixedLayout()
+						.floating("text", "margin", xTw[c], xSpec[c], 1440, null);
+				t.row(SERIF, 24, false, "sides", "case " + (c + 1)).row(SERIF, 24, false, prose(1, c), "y");
+				d.add(t.build());
+				d.para("anchor paragraph. " + prose(7, c + 1)).after(160).add();
+				d.para(prose(4, c + 8)).after(160).add();
+				d.para(prose(4, c + 12)).after(160).add();
+				if (c < 2) d.pageBreak();
+			}
+			return d.pkg();
+		}));
+
+		// A negative offset: mid-page over the paragraph before, and on the first paragraph
+		// of a page (into the top margin, or the previous page's space?).
+		PROBES.add(new Probe("table-floating-negative",
+				"a full-width text-anchored floating table with tblpY -30pt, anchored to a mid-page paragraph "
+				+ "and to the first paragraph of page 2; mode 15.  Read where the table sits against the "
+				+ "paragraph before it, and what happens at the top of a page", () -> {
+			Doc d = Doc.create(15);
+			d.para("P1 the paragraph before the table. " + prose(4, 0)).after(160).add();
+			Doc.Table t = new Doc.Table(4513, 4513).fixedLayout().floating("text", "margin", 0, null, -600, null);
+			t.row(SERIF, 24, false, "negative", "mid-page").row(SERIF, 24, false, prose(1, 1), "b");
+			d.add(t.build());
+			d.para("anchor paragraph, mid-page. " + prose(4, 2)).after(160).add();
+			d.para(prose(3, 6)).after(160).add();
+			d.pageBreak();
+			Doc.Table u = new Doc.Table(4513, 4513).fixedLayout().floating("text", "margin", 0, null, -600, null);
+			u.row(SERIF, 24, false, "negative", "page top").row(SERIF, 24, false, prose(1, 3), "b");
+			d.add(u.build());
+			d.para("anchor paragraph, first on page 2. " + prose(4, 4)).after(160).add();
+			d.para(prose(3, 8)).after(160).add();
+			return d.pkg();
+		}));
+
+		// Pairs: two 44% tables on one anchor, left and right; two on the same side; and
+		// 6705's shape, two full-width tables with three empties between them.
+		PROBES.add(new Probe("table-floating-pair",
+				"two 44%-wide text-anchored floating tables on one anchor paragraph, left and right, then "
+				+ "both at the left; and two full-width ones with three empty paragraphs between (a corpus "
+				+ "shape); one case a page; mode 15.  Read whether Word places them side by side, overlaps "
+				+ "them, or stacks them", () -> {
+			Doc d = Doc.create(15);
+			// 1. left and right
+			d.para("before case 1. " + prose(1, 0)).after(160).add();
+			Doc.Table a = new Doc.Table(1000, 1000).fixedLayout().floating("text", "margin", 0, null, 0, null);
+			a.row(SERIF, 24, false, "pair", "left").row(SERIF, 24, false, prose(1, 0), "a");
+			d.add(a.build());
+			Doc.Table b = new Doc.Table(1000, 1000).fixedLayout().floating("text", "margin", null, "right", 0, null);
+			b.row(SERIF, 24, false, "pair", "right").row(SERIF, 24, false, prose(1, 1), "b");
+			d.add(b.build());
+			d.para("anchor of both. " + prose(6, 2)).after(160).add();
+			d.para(prose(3, 8)).after(160).add();
+			d.pageBreak();
+			// 2. both at the left
+			d.para("before case 2. " + prose(1, 1)).after(160).add();
+			Doc.Table c = new Doc.Table(1000, 1000).fixedLayout().floating("text", "margin", 0, null, 0, null);
+			c.row(SERIF, 24, false, "same side", "first").row(SERIF, 24, false, prose(1, 2), "c");
+			d.add(c.build());
+			Doc.Table e = new Doc.Table(1000, 1000).fixedLayout().floating("text", "margin", 0, null, 0, null);
+			e.row(SERIF, 24, false, "same side", "second").row(SERIF, 24, false, prose(1, 3), "e");
+			d.add(e.build());
+			d.para("anchor of both. " + prose(6, 3)).after(160).add();
+			d.para(prose(3, 9)).after(160).add();
+			d.pageBreak();
+			// 3. two full-width tables, three empties between
+			d.para("before case 3. " + prose(1, 2)).after(160).add();
+			Doc.Table f = new Doc.Table(4513, 4513).fixedLayout().floating("text", "margin", 0, null, 0, null);
+			f.row(SERIF, 24, false, "wide", "first").row(SERIF, 24, false, prose(1, 4), "f");
+			d.add(f.build());
+			for (int i = 0; i < 3; i++) d.emptyParagraph();
+			Doc.Table g = new Doc.Table(4513, 4513).fixedLayout().floating("text", "margin", 0, null, 0, null);
+			g.row(SERIF, 24, false, "wide", "second").row(SERIF, 24, false, prose(1, 5), "g");
+			d.add(g.build());
+			for (int i = 0; i < 3; i++) d.emptyParagraph();
+			d.para("after both. " + prose(4, 4)).after(160).add();
+			return d.pkg();
+		}));
+
+		// 5936's shape: a one-cell floating table inside a cell, with six paragraphs of
+		// text in the cell after it.
+		PROBES.add(new Probe("table-floating-in-cell",
+				"a one-cell text-anchored floating table (70.5pt wide, tblpX 0) nested in the single cell of "
+				+ "a full-width table, followed in the cell by six two-sentence paragraphs; mode 15.  Read "
+				+ "whether the cell's text wraps beside the nested table as it does in the body", () -> {
+			Doc d = Doc.create(15);
+			d.para("before the outer table. " + prose(1, 0)).after(160).add();
+			Doc.Table outer = new Doc.Table(9026).fixedLayout();
+			Doc.Table inner = new Doc.Table(1410).fixedLayout().floating("text", "margin", 0, null, 0, null);
+			inner.row(SERIF, 24, false, "in cell");
+			P[] ps = new P[6];
+			for (int i = 0; i < 6; i++) ps[i] = d.para(prose(2, i + 1)).after(160).build();
+			Tc tc = outer.cellOf(ps);
+			tc.getContent().add(0, inner.build());
+			outer.rowOf(null, null, tc);
+			d.add(outer.build());
+			d.para("after the outer table. " + prose(2, 7)).after(160).add();
+			return d.pkg();
+		}));
+
+		// A text-anchored table taller than the room left on its page (anchored half-way
+		// down), then a page-anchored one running past the page foot.
+		PROBES.add(new Probe("table-floating-tall",
+				"a 40-row full-width text-anchored floating table anchored half-way down page 1, and a "
+				+ "40-row page-anchored one at tblpY 360pt; mode 15.  Read whether Word splits the table "
+				+ "across pages (and how the text after it flows) or moves it whole", () -> {
+			Doc d = Doc.create(15);
+			for (int i = 0; i < 5; i++) d.para(prose(5, i)).after(160).add();
+			Doc.Table t = new Doc.Table(4513, 4513).fixedLayout().floating("text", "margin", 0, null, 0, null);
+			for (int r = 0; r < 40; r++) t.row(SERIF, 24, false, "tall row " + (r + 1), prose(1, r));
+			d.add(t.build());
+			d.para("anchor paragraph. " + prose(4, 5)).after(160).add();
+			d.para(prose(4, 9)).after(160).add();
+			d.pageBreak();
+			d.para("page-anchored case. " + prose(2, 0)).after(160).add();
+			Doc.Table u = new Doc.Table(4513, 4513).fixedLayout().floating("page", "margin", 0, null, 7200, null);
+			for (int r = 0; r < 40; r++) u.row(SERIF, 24, false, "page row " + (r + 1), prose(1, r + 3));
+			d.add(u.build());
+			d.para("text after the page-anchored table. " + prose(4, 6)).after(160).add();
+			return d.pkg();
+		}));
+
+		// The same tall text-anchored table with w:doNotBreakWrappedTables.
+		PROBES.add(new Probe("table-floating-tall-nobreak",
+				"the 40-row text-anchored floating table of table-floating-tall, with "
+				+ "w:doNotBreakWrappedTables; mode 15.  Read whether the setting keeps the table whole", () -> {
+			Doc d = Doc.create(15);
+			d.compat("doNotBreakWrappedTables", true);
+			for (int i = 0; i < 5; i++) d.para(prose(5, i)).after(160).add();
+			Doc.Table t = new Doc.Table(4513, 4513).fixedLayout().floating("text", "margin", 0, null, 0, null);
+			for (int r = 0; r < 40; r++) t.row(SERIF, 24, false, "tall row " + (r + 1), prose(1, r));
+			d.add(t.build());
+			d.para("anchor paragraph. " + prose(4, 5)).after(160).add();
+			d.para(prose(4, 9)).after(160).add();
+			return d.pkg();
+		}));
+
+		// 6293's shape: the anchor paragraph opens with a w:br; and an anchor paragraph
+		// carrying the section's sectPr.
+		PROBES.add(new Probe("table-floating-br-anchor",
+				"a 40%-wide text-anchored floating table whose anchor paragraph opens with a w:br line break, "
+				+ "and a full-width one whose anchor paragraph carries the sectPr of a continuous section; "
+				+ "one case a page; mode 15.  Read where each table sits and how the text flows", () -> {
+			Doc d = Doc.create(15);
+			d.para("before case 1. " + prose(1, 0)).after(160).add();
+			Doc.Table t = new Doc.Table(1805, 1805).fixedLayout().floating("text", "margin", 0, null, 0, null);
+			t.row(SERIF, 24, false, "br anchor", "case 1").row(SERIF, 24, false, prose(1, 0), "a");
+			d.add(t.build());
+			d.para().noLabel().softReturn().text("anchor paragraph opening with a line break. " + prose(5, 1)).after(160).add();
+			d.para(prose(3, 6)).after(160).add();
+			d.pageBreak();
+			d.para("before case 2. " + prose(1, 1)).after(160).add();
+			Doc.Table u = new Doc.Table(4513, 4513).fixedLayout().floating("text", "margin", 0, null, 0, null);
+			u.row(SERIF, 24, false, "sectPr anchor", "case 2").row(SERIF, 24, false, prose(1, 2), "b");
+			d.add(u.build());
+			P last = d.para("anchor paragraph carrying the section break. " + prose(3, 3)).after(160).add();
+			d.endSectionOn(last, "continuous");
+			d.para("first paragraph of the next section. " + prose(4, 7)).after(160).add();
 			return d.pkg();
 		}));
 

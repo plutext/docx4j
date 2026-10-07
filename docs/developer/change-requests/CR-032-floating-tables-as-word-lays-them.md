@@ -1,8 +1,8 @@
 # CR-032: floating tables laid out as Word lays them - the band at its offset, the wide table's band, the paragraphs behind it
 
-Status: PROPOSED 2026-10-08 (Jason: "let's start on the floating-tables CR", after ledger9 §5 named it
-the largest page lever left in class 2). Phase 0 (the Word probes) is the next step; nothing is built.
-Depends on a fork hook for phase 2 (a new fop CR, to be written by the fork session once Jason says so).
+Status: IN PROGRESS - phase 0 (the eight probes) being built 2026-10-08; D1, D2 and D3 DECIDED yes by Jason
+2026-10-08 (§7). Proposed 2026-10-08 (Jason: "let's start on the floating-tables CR", after ledger9 §5 named it
+the largest page lever left in class 2). Phase 2 depends on a fork CR (the fork session's, briefed the same day).
 
 ## 0. Summary
 
@@ -254,10 +254,12 @@ and the Apache FOP output unchanged except where phase 1 applies.
 
 ## 7. Decisions for Jason
 
-1. **D1**: go ahead with phase 0's eight probes (one Word run).
+1. **D1**: go ahead with phase 0's eight probes (one Word run). **DECIDED yes (Jason, 2026-10-08).**
 2. **D2**: whether the fork takes the two hooks of §4.2 (a fop CR by the fork session). Without
-   it, the CR ends at phase 1's estimate.
+   it, the CR ends at phase 1's estimate. **DECIDED yes (Jason, 2026-10-08)**; the fork session
+   briefed with §4.2 the same day.
 3. **D3**: the 60% rule's fate on Apache FOP once phase 2 lands (keep, as the fallback).
+   **DECIDED keep (Jason, 2026-10-08).**
 
 ## 8. Risks
 
