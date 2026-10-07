@@ -2,6 +2,28 @@ CHANGELOG
 =========
 
 
+Version 17.3.2
+===============
+
+Release date
+------------
+
+[]
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Claude Fable 5.1 and Opus 5.5
+
+
+Changes in Version 17.3.2
+--------------------------
+
+
+
+
 Version 17.3.1
 ===============
 
