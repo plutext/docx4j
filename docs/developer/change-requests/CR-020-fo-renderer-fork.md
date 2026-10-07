@@ -1158,6 +1158,41 @@ the b74-resaved-nofields basis:
 
 docx4j takes it when the dependency moves to a release carrying CR-012.
 
+### docx4j moves to 2.11-docx4j.5 for 17.3.1 (2026-10-07)
+
+The fork released 2.11-docx4j.5 to Maven Central on 2026-10-07 (tag v2.11-docx4j.5 at 724e92d1c,
+built from the pushed branch by CI; core jar sha256
+dff5ffe1b3ef5425a20f6fe392729e9c69faa86c11c163e175a46b3cf11f2af3, verified against Central's
+checksum). It carries fop/CR-012 (page 0), CR-013 (continuation-display-align), CR-014
+(to-unicode-map), CR-015 (ascender-descender), CR-016 (decomposed letters in ToUnicode), CR-017
+and CR-017.2 (page-master-by-content, page-number-restart), CR-018 (measured-region-extents),
+CR-020 (side-float-edges) and CR-021 (simulate-style-per-face): nineteen capabilities, all of
+which `FopCapabilities` reports from the released core. Its release notes are the fork's
+`docs/release-notes/2.11-docx4j.5.md`. docx4j-export-fo's `fo.renderer.version` moves to it; the
+harness's fork profile follows the fork's branch, 2.11-docx4j.6-SNAPSHOT. So CR-031's phases, the
+page-0 rule and the rest reach users with 17.3.1.
+
+A local `mvn install` of the fork at the version commit had left a 2.11-docx4j.5 in `~/.m2` whose
+core jar differed from Central's (sha256 e20d7fe0...); it was replaced by Central's artifacts
+(`_remote.repositories` now says central) before the gate, which reads the jars from a copy
+(`~/fidelity-cr030/r5`).
+
+**Gate on the released artifact (b179):** docx4j at 2a7d957a0 (= b178's cand92) on the four
+renderer jars from Central, against b178 (the same docx4j on r15, the fork's .5 snapshot), on the
+resaved-nofields basis. Scoreboard line: `docx4j-fo-renderer 2.11-docx4j.5`, nineteen hooks.
+- real, real2, real3, real-c2: movers 0 (tools/movers.py), scoreboard rows identical; every
+  event count equal (line 8083, clip 1552, bcov 1280, glyph 63, font 8).
+- probes (260): scoreboard identical row for row.
+
+Reactor on .5: core-tests 1,408/0 (13 skipped), export-fo 243/0, export-fo-tests 769/0 (8 skipped)
+after two test fixes: `HiddenDocDefaultsExtentTest` and `PageMasterByContentTest.checkLetter`
+read the extent pre-pass's region extents from the FO, which a renderer with
+`measured-region-extents` skips (the FO then keeps its placeholder extents and
+`fox:extent="measured"`); they now force the pre-pass with
+`docx4j.convert.out.fo.measuredRegionExtents=false`, as `MeasuredRegionExtentsTest` documents.
+Three failures on the first run, none a rendering change: the measured path was gated as 0 movers
+in CR-031 phase 5.
+
 ### Not done, carried
 
 - Cambria's Greek: docx4j maps Cambria to Caladea, which covers Latin only, so Greek runs

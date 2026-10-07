@@ -6,12 +6,15 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayOutputStream;
 
 import org.docx4j.Docx4J;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.Styles;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -34,6 +37,21 @@ import org.w3c.dom.NodeList;
 public class HiddenDocDefaultsExtentTest extends AbstractXSLFOTest {
 
 	private static final String W = "xmlns:w=\"" + Namespaces.NS_WORD12 + "\"";
+
+	/** The extents these tests read are the extent pre-pass's; on a renderer which measures
+	 *  them itself (docx4j-fo-renderer 2.11-docx4j.5, {@code fox:extent="measured"}) the
+	 *  pre-pass is skipped and the FO keeps its placeholder extents, so force it. */
+	private static final String EXTENTS_PROPERTY = "docx4j.convert.out.fo.measuredRegionExtents";
+
+	@Before
+	public void forcePrePass() {
+		Docx4jProperties.setProperty(EXTENTS_PROPERTY, "false");
+	}
+
+	@After
+	public void resetProperty() {
+		Docx4jProperties.getProperties().remove(EXTENTS_PROPERTY);
+	}
 
 	private static final String STYLES =
 			"<w:styles " + W + "><w:docDefaults><w:rPrDefault><w:rPr>"

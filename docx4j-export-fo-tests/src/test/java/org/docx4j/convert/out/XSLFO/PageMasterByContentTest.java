@@ -63,12 +63,17 @@ public class PageMasterByContentTest extends AbstractXSLFOTest {
 	private static final String FO = "http://www.w3.org/1999/XSL/Format";
 	private static final String FOX = "http://xmlgraphics.apache.org/fop/extensions";
 	private static final String PROPERTY = "docx4j.convert.out.fo.wordLayout.pageMasterByContent";
+	/** {@link #checkLetter} reads the extent pre-pass's footer extent (the empty footer's line
+	 *  over the footer distance); a renderer which measures extents itself (docx4j-fo-renderer
+	 *  2.11-docx4j.5) skips the pre-pass, so that test forces it. */
+	private static final String EXTENTS_PROPERTY = "docx4j.convert.out.fo.measuredRegionExtents";
 
 	private static final String A4 = "<w:pgSz w:w=\"11906\" w:h=\"16838\"/>";
 
 	@After
 	public void resetProperty() {
 		Docx4jProperties.getProperties().remove(PROPERTY);
+		Docx4jProperties.getProperties().remove(EXTENTS_PROPERTY);
 	}
 
 	private static String pgMar(int top, int bottom, int header, int footer) {
@@ -247,6 +252,7 @@ public class PageMasterByContentTest extends AbstractXSLFOTest {
 	}
 
 	private void checkLetter(int flags) throws Exception {
+		Docx4jProperties.setProperty(EXTENTS_PROPERTY, "false");
 		FOSettings foSettings = Docx4J.createFOSettings();
 		foSettings.setOpcPackage(letter());
 		foSettings.setApacheFopMime(FOSettings.INTERNAL_FO_MIME);

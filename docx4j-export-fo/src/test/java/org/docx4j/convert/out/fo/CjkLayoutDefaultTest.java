@@ -47,7 +47,7 @@ public class CjkLayoutDefaultTest {
 		Docx4jProperties.getProperties().remove(PROPERTY);
 		boolean capability = FopCapabilities.has(FopCapabilities.Capability.SHARED_GLYPH_TOUNICODE);
 		assertEquals("docx4j-core's own probe agrees with FopCapabilities", capability, FopConfigUtil.keepsCjkLayoutTables());
-		// the renderer this module is built against (2.11-docx4j.4; the capability since .2) declares it
+		// the renderer this module is built against (2.11-docx4j.5; the capability since .2) declares it
 		if (FopCapabilities.get().isDocx4jRenderer()) assertTrue(capability);
 	}
 

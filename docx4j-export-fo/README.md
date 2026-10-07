@@ -38,7 +38,7 @@ Two renderers are supported (docx4j CR-020):
 
 At start-up `org.docx4j.convert.out.fo.FopCapabilities` probes which one is present and
 logs one line at INFO, e.g. `FO renderer: Apache FOP 2.11, hooks: none (...)` or
-`FO renderer: docx4j-fo-renderer 2.11-docx4j.4, hooks: ...`. Every rule that needs a hook
+`FO renderer: docx4j-fo-renderer 2.11-docx4j.5, hooks: ...`. Every rule that needs a hook
 of the fork asks `FopCapabilities.has(...)` and falls back on Apache FOP, so the rendering
 on Apache FOP is what it was before the fork, and the line says which rules are off.
 

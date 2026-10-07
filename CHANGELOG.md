@@ -59,6 +59,11 @@ PDF via XSL FO:
 - docx4j-fo-renderer 2.11-docx4j.4 (was .2): text outside the BMP in right-to-left runs keeps
   its order, letter spaces count in a word's width on the complex-script path, Apache FOP's
   main branch merged, and a nested block's lines are no longer lost after a float (CR-020).
+- docx4j-fo-renderer 2.11-docx4j.5 (was .4): the hooks the rules of this release need - page 0,
+  a broken cell's continuation from the top, symbol fonts' text layer, Word's ascender and
+  descender, decomposed letters reading as written, page masters and page-number restarts per
+  continuous section, header and footer extents measured in FOP (no extra render), side floats
+  ending at the right line, and bold or italic simulated per face (CR-020, CR-031).
 
 - A character the fallback font chosen for its group lacks (an emoji after a different
   emoji, say) is set in a font which has it, not drawn as #.
