@@ -5,274 +5,45 @@ CHANGELOG
 Version 17.3.1
 ===============
 
+Release date
+------------
+
+7 October 2026
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Claude Fable 5.1 and Opus 5.5
+
+
 Changes in Version 17.3.1
 --------------------------
 
 Property resolution:
 
-- PropertyResolver applies a table style, and the conditional formats a paragraph is under, to
-  paragraphs and runs in a table when handed the paragraph's CellContext (TableContextTracker
-  for a walk, cellContextOf for one paragraph); the overloads without one are unchanged (CR-030).
+- PropertyResolver applies a table style, and the conditional formats a paragraph is under
 
-- PDF output (the default, visitor pathway) resolves a table's paragraphs in their cell context
-  and no longer rewrites their styles in a preprocess; output is unchanged (CR-030).
+PDF and HTML output table formatting improvements, including:
 
-- Which table style applies follows Word's rule, the style's name: a style named "Normal Table"
-  is Word's built-in, and a default table style named otherwise applies as written, cell
-  margins included (CR-030).
-
-- FontsAnalysis sees a table style's formatting: a header row the style makes bold counts as
-  the bold face, so FontEmbedder's subset of it is complete, and a font the style names is
-  reported (CR-030).
-
-- AbstractTableWriterModel's three-argument rowConditions and cellConditions are deprecated;
-  the conditions come from the table's TableContext (CR-030).
-
-PDF and HTML output, tables (CR-030):
-
-- A paragraph numbered through its style keeps its number in a table cell, and the list's count
-  no longer skips it.
-
-- A text box anchored in a table cell no longer takes the table style's formatting.
-
-- STYLEREF finds a heading in a table cell.
-
-- [MS-DOCX]'s overrideTableStyleFontSizeAndJustification exception is applied below
-  compatibility mode 15 only, as Word 365 applies it.
-
-- Below compatibility mode 15 that exception applies wherever the table style formats text at all
-  (as Table Grid's paragraph spacing does), with the document defaults' size where the style states
-  none and they state one, as Word does; until now only a table style stating a size brought it in.
-
-- A paragraph in a table naming a missing style no longer leaves the rest of the document
-  without its table styling; nor does DEBUG logging.
-
-- A row whose every cell continues a vertical merge no longer moves the band shading and
-  borders of the rows after it by one: the table writers take their rows' and cells'
-  conditions from the paragraphs' table context.
-
-- A table style stating no band size (w:tblStyleRowBandSize, w:tblStyleColBandSize) bands
-  nothing, as in Word; docx4j banded it as if the size were 1 (CR-030 D11).
-
-PDF via XSL FO:
-
-- docx4j-fo-renderer 2.11-docx4j.4 (was .2): text outside the BMP in right-to-left runs keeps
-  its order, letter spaces count in a word's width on the complex-script path, Apache FOP's
-  main branch merged, and a nested block's lines are no longer lost after a float (CR-020).
-- docx4j-fo-renderer 2.11-docx4j.5 (was .4): the hooks the rules of this release need - page 0,
-  a broken cell's continuation from the top, symbol fonts' text layer, Word's ascender and
-  descender, decomposed letters reading as written, page masters and page-number restarts per
-  continuous section, header and footer extents measured in FOP (no extra render), side floats
-  ending at the right line, and bold or italic simulated per face (CR-020, CR-031).
-
-- A character the fallback font chosen for its group lacks (an emoji after a different
-  emoji, say) is set in a font which has it, not drawn as #.
-
-- PDF output through the XSLT pathway (FLAG_EXPORT_PREFER_XSL) works again on the docx4j FO
-  renderer: its FO left the fox namespace of fox:gsub-features undeclared, and the export failed
-  (17.3.0).
-
-- Letter-spaced text is measured correctly on an FO renderer carrying Apache's FOP-2722 without
-  its width fix (FOP-2349), where lines would otherwise overrun.
-
-- Rule leaders are drawn on an Apache FOP release without Leader.setRuleStyle(int) (FOP-3325).
-
-- A line break inside a run no longer loses the text after it, or fails the conversion, when its
-  paragraph is laid out a second time, beside a float or on a page of another width (FOP-1912).
-
-- A footnote no longer takes the bold, italic, colour, underline, alignment or indent of the
-  paragraph it is referenced from, on either pathway (CR-030 D10).
-
-- A header or footer of empty paragraphs reserves their spacing, as Word does: the body no
-  longer starts above Word's under such a header, or runs below Word's over such a footer.
-
-- Below compatibility mode 15 a table row is divided inside a cell paragraph at any line, as
-  Word divides it; widow control and keep-lines hold a cell paragraph together only from
-  mode 15.
-
-- A centred or bottom-aligned table cell broken across pages continues at the top of the next
-  page, as Word's does, on a docx4j FO renderer that allows it (capability
-  continuation-display-align, fork CR-013).
-
-- A text box's text is set in by half its border as well as by its inset, and a list or an
-  indented paragraph in a text box is indented from the box's text area, not from its edge.
-  A positioned text box's text starts below its top inset, as Word's does.
-
-- A table whose rows are all kept with the next row, and which is longer than a page, is
-  broken where the page fills, as Word breaks it; it ran off the page, and its last rows and
-  the text after it were lost.
-
-- A justified line is compressed to take one more word only where the compression is less
-  than half the stretch of the line it would otherwise be (was: where that line would stretch
-  by 30% or more).
-
-- A section whose numbering starts at 0 (w:pgNumType w:start="0", a cover page numbered 0) is
-  numbered from 0 on a docx4j FO renderer that allows it (capability page-number-zero,
-  fork CR-012); it printed every page number one high.
-
-- A table cell's top and bottom margins are laid out on Word's 1/600-inch grid (28 twips are
-  1.44pt, not 1.39), so a long table of single-line rows breaks its pages where Word does.
-
-- A table after a bordered or shaded paragraph is no longer drawn inside that paragraph's
-  border (PDF and HTML); in PDF a long one no longer moves to the next page with it.
-
-- A table with cell spacing keeps Word's column pitch: only the outer columns give up the
-  spacing (every column did, so the table ended short), and its cells start where Word's do.
-
-- A VML text box positioned relative to the text is measured from the top of its paragraph
-  before the paragraph's space-before, as Word measures it (it was that much too low).
-
-- A table whose width and cells are all auto keeps the column widths Word saved with it
-  (w:tblGrid) where they fit its content, rather than being re-sized from its content
-  (docx4j.convert.out.fo.tables.autoGrid=false for the 17.3.0 behaviour).
-
-- Symbol, Wingdings, Wingdings 2, Wingdings 3 and Webdings are drawn in the real font where it
-  is installed (or embedded), with the document's own code points: runs, w:sym and numbering
-  labels, on both pathways; FontsAnalysis grades such a font EXACT. Where the font is absent
-  the Unicode replacements in a substitute face are drawn as before. HTML output is unchanged.
-
-- A w:sym drawn in the real Wingdings sits on Word's baseline: its line takes Word's height for
-  the face, not FOP's (Wingdings' font tables put its descender above the baseline).
-
-- Text copied out of the PDF from Symbol, Wingdings or Webdings drawn in the real font is the
-  Unicode character (a smiley is U+263A), not the font's private-use code point, on a docx4j FO
-  renderer with the to-unicode-map hook (fork CR-014).
-
-- A footnote cited from a list item spaced at more than single line spacing is printed; such
-  footnotes were missing from the PDF, bodies and all.
-
-- A line holding Cambria Math (an equation, or a symbol set in it) takes Word's height for the
-  font; it was nearly five times too tall.
-
-- A numbered paragraph opening the document or a section keeps its space-before, as a plain one
-  does.
-
-- Text before a tab which does not fit a table cell breaks onto the next line, as Word breaks it,
-  rather than running past the cell's edge.
-
-- A tab at the start of a paragraph styled like a table-of-contents entry goes to its tab stop,
-  as Word lays it out, rather than drawing dots across the line.
-
-- A REF or PAGEREF field whose bookmark the document no longer has prints Word's error text, as
-  Word's PDF export does ("Error! Bookmark not defined.", "Error! Reference source not found."),
-  where it kept the result the field cached (docx4j.convert.out.fo.fieldErrors=cached for that).
-
-- A table whose width is a percentage is as wide as Word draws it below compatibility mode 15: a
-  percentage of the text column and the table's two outer cell margins, not of the column alone.
-
-- A line may break at a space before , . : ; ? or !, as Word breaks it, rather than carrying the
-  word before the space down with the punctuation.
-
-- A table cell's text is not narrowed by its neighbour's collapsed border.
-
-- A section restarting its page numbering at a number of the wrong parity for its oddPage or
-  evenPage break starts on the next one, as Word does, and gets no blank page in a document
-  without different odd and even headers.  With different odd and even headers, a nextPage
-  section restarting at the parity of the page before it gets the blank page Word gives it
-  (docx4j.convert.out.fo.wordLayout.restartParityBlankPage=false leaves it out).
-
-- A section ending in a paragraph of text and then a page break no longer gets an extra page,
-  holding only its header, where that page is full.
-
-- A paragraph holding only a page break before a numbered heading whose style breaks the page no
-  longer leaves an empty page between them (compatibility mode 12 and later).
-
-- A continuous section which changes the page size shows its own headers and footers on the page
-  it starts, as Word does, rather than the previous section's.
-
-- On a docx4j FO renderer that chooses page masters by content (capability page-master-by-content,
-  fork CR-017), each page of a run of continuous sections takes the top and bottom margins, the
-  header and footer distances and the headers and footers of the section owning its first line, as
-  Word's does, rather than the first section's, a section's first-page header shows only on a
-  page it opens, and a section restarting its page numbers restarts them where Word does (with odd
-  and even headers, keeping each number's parity the page's) rather than its restart being lost
-  (capability page-number-restart, fork CR-017.2; docx4j.convert.out.fo.wordLayout.pageMasterByContent=false
-  to turn off).
-
-- A footer distance larger than a quarter of the page, over an empty footer, is honoured as Word
-  honours it, where it was ignored.
-
-- Endnotes, and docx4j's "Endnotes" heading above them, are written only where the document has
-  endnotes, and once, at its end, unless w:endnotePr/w:pos says sectEnd: an endnotes part holding
-  only its separators printed the heading, and a document of several sections printed it at each
-  section's end.
-
-- A paragraph holding only a page break at the end of a document no longer gives it an empty
-  last page (compatibility mode 12 and later), as Word for Microsoft 365 lays it out.
-
-- A page-anchored floating table is drawn once: the invisible copy reserving its band in the flow
-  was drawn too, since FOP honours visibility="hidden" on fo:block only.
-
-- An anchored picture taller than the page body is drawn once, overflowing the margins as Word
-  draws it, where it had been spread over two pages.
-
-- A header part holding one empty paragraph reserves the header distance and that paragraph's
-  line, as Word does, where the body had started at the top margin.
-
-- A run of shaded or bordered paragraphs no longer takes its first paragraph's keepNext and
-  keepLines for the whole run, which had moved the run to the next page whole.
-
-- A table row whose first paragraph keeps with the next and which holds a nested table is kept
-  on one page, as Word keeps it.
-
-- A numbered or bulleted paragraph at a line spacing below single no longer has a taller first
-  line than its others.
-
-- A line set in bold (or italic) only is as tall as a regular line of the same font, as in Word.
-
-- A numbered paragraph opening a table keeps its page break before: the table starts the page,
-  as in Word.
-
-- Spaces after a line break (w:br) in the same run are kept, as Word draws them; FOP had collapsed
-  them to one.
-
-- A justified line beginning with a number and a tab is compressed only as far as its spaces after
-  the tab allow, as in Word; the tab had been counted as space.
-- A section's opening space-before is reduced by the previous section's break paragraph's space-after
-  even when that empty paragraph is not drawn; it had been reduced by the paragraph or table before it.
-- A run set in a substitute font divides its line into ascent and descent by its document font's
-  metrics, and unmarked text by its paragraph's; the substitute's own metrics had been used.
-- A table of contents entry whose page number does not fit after its text takes the number, with its
-  dots, to the next line, as Word does; and a page reference is measured by its last number's width.
-- In a document stating w:splitPgBreakAndParaMark, the mark of a paragraph holding only a page break
-  keeps its line at the top of the next page, as in Word; it had been folded into the next paragraph.
-- PDF: italic text in a family Word has no bold for (Calibri Light, among others) is drawn in the
-  family's italic face; it had been drawn upright.
-- PDF: accented Latin, Greek and Cyrillic text in Cambria copies out as written; FOP's ccmp had
-  decomposed each letter and put its accent ahead of it in the text layer.
-- PDF: widow control counts a paragraph's lines across its line breaks, as Word's does; a paragraph
-  ending in a line break is no longer divided one line on each page.
-- PDF: the space where a one-column stretch meets a continuous multi-column section is kept, as in
-  Word; FOP had discarded it.
-- PDF: a bordered table's top and bottom borders take their whole width outside its rows, as in
-  Word; FOP's collapsing model had kept half of each inside, so each table was a border width short.
-- PDF: Aptos Light italic is drawn as the upright face sheared, as Word draws it (Word has no
-  italic face for it); the substitute's real italic had been used.
-- Book Antiqua's bold, italic and bold italic faces are used; docx4j had taken it for a family with
-  no bold face and synthesised them.
-- PDF: on the docx4j FO renderer 2.11-docx4j.5, bold italic in a family with an italic face and no
-  bold one (Calibri Light) is its italic face emboldened, as Word draws it; it had been the upright
-  face slanted.
-
-- A paragraph holding only a page break keeps the line before its break at the foot of its page,
-  and a table after one starts at the top of the next, as in Word: properties
-  docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine and tableTakesPageBreak are now on by
-  default (false to turn off).
-
-- A floating picture which is the only content of its header or footer paragraph is drawn where
-  it was but takes no space, so the header's text after it is no longer pushed down below it.
+PDF via XSL FO: numerous formatting improvements, some available only via 
+docx4j-fo-renderer 2.11-docx4j.5
 
 - On a docx4j FO renderer that measures header and footer heights itself (capability
   measured-region-extents, fork CR-018), docx4j asks it to and skips its own pre-pass over the
   headers and footers, about 7% faster
   (docx4j.convert.out.fo.measuredRegionExtents=false keeps the pre-pass).
 
-HTML output:
+- A REF or PAGEREF field whose bookmark the document no longer has prints Word's error text, as
+  Word's PDF export does ("Error! Bookmark not defined.", "Error! Reference source not found."),
+  where it kept the result the field cached (docx4j.convert.out.fo.fieldErrors=cached for that).
 
-- A paragraph whose numbering states a level and no list (w:numPr without w:numId, as Word's
-  built-in Subtitle style has it) no longer fails the export, on either pathway.
+PDF output through the XSLT pathway (FLAG_EXPORT_PREFER_XSL) works again on the docx4j FO
+  renderer: its FO left the fox namespace of fox:gsub-features undeclared, and the export failed
+  (17.3.0).
 
-- A content control around table cells (w:tr/w:sdt/w:tc) no longer fails the visitor export.
+Miscellaneous other improvements.  For details, please see https://github.com/plutext/docx4j/blob/2de765a77c9c5ef51c33e45e802f8fb8e2dc1272/CHANGELOG.md
 
 
 Version 17.3.0

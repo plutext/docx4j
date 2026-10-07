@@ -5,7 +5,7 @@ Contents
   
 
 
-**This guide is for docx4j 17.3.0 (Java 11 and later); most of it applies to 11.5.x as well.   **
+**This guide is for docx4j 17.3.1 (Java 11 and later); most of it applies to 11.5.x as well.   **
 
 Version numbering jumped from 11.5.14 to 17.0.0 in part because of the following API changes:
 
@@ -150,7 +150,7 @@ To use docx4j 11.4 or later, ensure any code references **jakarta.xml.bind** (no
 
 &#9;		`<artifactId>``docx4j-JAXB-``ReferenceImpl``</artifactId>`
 
-&#9;		`<version>``17.3.0``</version>`
+&#9;		`<version>``17.3.1``</version>`
 
 &#9;	`</dependency>`
 
@@ -164,7 +164,7 @@ To use docx4j 11.4 or later, ensure any code references **jakarta.xml.bind** (no
 
 &#9;		`<artifactId>``docx4j-JAXB-``MOXy``</artifactId>`
 
-&#9;		`<version>``17.3.0``</version>`
+&#9;		`<version>``17.3.1``</version>`
 
 &#9;	`</dependency>`
 
@@ -1310,13 +1310,16 @@ These jars are in the zip file, in dir optional/export-fo
 
 One limitation: an equation is a single graphic, so a very long display equation overflows the margin instead of wrapping (Word cannot break inside an equation either).  Everything within the page width renders correctly.  For the whole maths pipeline - Markdown, docx, HTML and PDF - see docs/Maths\_from\_Markdown.md.
 
-**The FO renderer.  **From 17.3.0 docx4j-export-fo depends on the docx4j FO renderer, org.docx4j:docx4j-fo-renderer (2.11-docx4j.5 on Maven Central since 7 October 2026): an upstream-tracking fork of Apache FOP 2.11 which carries the fixes docx4j has found in FOP and hooks for the Word layout rules.  Apache FOP 2.11 stays supported: exclude org.docx4j:docx4j-fo-renderer (and its -core, -events and -util artifacts) from docx4j-export-fo and add org.apache.xmlgraphics:fop (docx4j-export-fo/README.md has the recipe).  The docx4j renderer brings:
+**The FO renderer.  **From 17.3.0 docx4j-export-fo depends on the docx4j FO renderer, org.docx4j:**docx4j-fo-renderer** (currently 2.11-docx4j.5). docx4j-fo-renderer is an upstream-tracking fork of Apache FOP which carries the fixes docx4j has found in FOP and hooks for the Word layout rules.  Apache FOP 2.11 stays supported: exclude org.docx4j:docx4j-fo-renderer (and its -core, -events and -util artifacts) from docx4j-export-fo and add org.apache.xmlgraphics:fop (docx4j-export-fo/README.md has the recipe).  The docx4j renderer brings:
 
 - PDFs a fraction of their 17.2.x size: Word’s “no ligatures” setting reaches the renderer per font, so every font is embedded as a subset where a whole copy of each TrueType font used to go in.
 - Kerning and shaping that follow the run’s language, a run without w:kern left unkerned as Word leaves it, and letter-spaced text painted where the layout put it.
 - A text layer that says what the document says: a ligature extracts as its letters, a CJK ideograph as itself rather than as a Kangxi radical, a non-breaking space and a symbol glyph as what they are; and a CJK font keeps its layout tables, so its Latin text kerns.
 
-Whichever is on the classpath is used: FopCapabilities probes once per JVM and logs one INFO line naming the renderer, its version and the hooks it carries, so a support question can start from it; a rule which needs a hook falls back on Apache FOP, which therefore behaves as it did before the fork.  The probe also warns of two hazards: two copies of FOP on the classpath (the fork keeps Apache's package names, so classpath order decides which wins), and a FOP of another line than 2.11, whose internals the layout managers subclass.
+Whichever is on the classpath is used: FopCapabilities probes once per JVM and logs one INFO line naming the renderer, its version and the hooks it carries, so a support question can start from it; a rule which needs a hook falls back on Apache FOP, which therefore behaves as it did before the fork.  The probe also warns of two hazards: 
+
+1. two copies of FOP on the classpath (the fork keeps Apache's package names, so classpath order decides which wins), and 
+2. a FOP from a release line docx4j-export-fo was not built for (its layout managers subclass FOP internals, so a 2.10 or a future 2.12 is unsupported until docx4j-export-fo moves to it).
 
 **Pictures.  **From 17.3.0, pictures are drawn as Word draws them in its own PDFs: a picture stored at more than 300 pixels per inch for the size it is shown at is resampled to 200, and a high-quality JPEG is re-encoded at quality 75, as Word’s PDF export does, so the pictures in a PDF come out near the size of Word’s.  
 
