@@ -1,10 +1,10 @@
 # CR-032: floating tables laid out as Word lays them - the band at its offset, the wide table's band, the paragraphs behind it
 
-Status: IN PROGRESS - phase 0 DONE 2026-10-08 (nine probes cut and read, §3; the premise about the empties
-corrected, the design redirected, §4); phase 1 next. D1, D2 and D3 DECIDED yes by Jason 2026-10-08 (§7).
-Proposed 2026-10-08 (Jason: "let's start on the floating-tables CR", after ledger9 §5 named it the largest
-page lever left in class 2). Phase 2 depends on a fork CR (fop/CR-023, the fork session's; brief revised by
-the phase 0 readings, §4.2).
+Status: IN PROGRESS - phase 1 DONE 2026-10-08 (4a6ab1d89 on VERSION_17_3_2; gates b181-b190, §4.1: lines
+matched real +10, real2 +20, real3 +46, class 2 -13; 8985 +45 and 11398 +35 to Word's pages; residual 3229),
+phase 0 DONE the same day (nine probes read, §3). Phase 2 waits on the fork's fop/CR-023 (float-offset, and
+a line that does not fit beside a float deferred to its foot); fop/CR-022's first half gated PASS on r17
+(b186b). D1, D2 and D3 DECIDED yes by Jason 2026-10-08 (§7). Proposed 2026-10-08.
 
 ## 0. Summary
 
