@@ -986,22 +986,27 @@ public final class Corpus {
 		// offset full width.
 		PROBES.add(new Probe("table-floating-offset-sides",
 				"40%-wide text-anchored floating tables with tblpY 1in: centred on the margin box, at its "
-				+ "left edge, and at tblpX 1000; a seven-sentence anchor paragraph and two more; one case a "
-				+ "page; mode 15.  Read which side or sides the text runs down, and that the lines above "
-				+ "the offset are full width", () -> {
+				+ "left edge, at tblpX 1000, and centred again with 24pt of space-before on the anchor paragraph; "
+				+ "a seven-sentence anchor paragraph and two more; one case a page; mode 15.  Read which side or "
+				+ "sides the text runs down, that the lines above the offset are full width, and whether the "
+				+ "offset counts from the paragraph's space-before or from its first line", () -> {
 			Doc d = Doc.create(15);
-			String[] xSpec = { "center", null, null };
-			Integer[] xTw = { null, 0, 1000 };
-			for (int c = 0; c < 3; c++) {
+			// case 4 = case 1 with 24pt of space-before on the anchor paragraph: is tblpY
+			// measured from the paragraph's top including its space, or from its first line?
+			String[] xSpec = { "center", null, null, "center" };
+			Integer[] xTw = { null, 0, 1000, null };
+			for (int c = 0; c < 4; c++) {
 				d.para("before case " + (c + 1) + ". " + prose(1, c)).after(160).add();
 				Doc.Table t = new Doc.Table(1805, 1805).fixedLayout()
 						.floating("text", "margin", xTw[c], xSpec[c], 1440, null);
 				t.row(SERIF, 24, false, "sides", "case " + (c + 1)).row(SERIF, 24, false, prose(1, c), "y");
 				d.add(t.build());
-				d.para("anchor paragraph. " + prose(7, c + 1)).after(160).add();
+				Doc.Para anchor = d.para("anchor paragraph. " + prose(7, c + 1)).after(160);
+				if (c == 3) anchor.before(480);
+				anchor.add();
 				d.para(prose(4, c + 8)).after(160).add();
 				d.para(prose(4, c + 12)).after(160).add();
-				if (c < 2) d.pageBreak();
+				if (c < 3) d.pageBreak();
 			}
 			return d.pkg();
 		}));
