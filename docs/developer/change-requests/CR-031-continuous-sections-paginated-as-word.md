@@ -1,6 +1,6 @@
 # CR-031: continuous sections paginated as Word paginates them - a page's vertical margins from the section that owns it, and no page for an empty block at a sequence's end
 
-Status: DONE 2026-10-07 - phases 0 to 3 and 5 on docx4j's side, and docx4j-export-fo moved to
+Status: SHIPPED in docx4j 17.3.1 (Maven Central, 2026-10-07); DONE 2026-10-07 - phases 0 to 3 and 5 on docx4j's side, and docx4j-export-fo moved to
 docx4j-fo-renderer 2.11-docx4j.5 (released that day with CR-017, CR-017.2 and CR-018). Proposed 2026-10-05 (Jason, after
 batch 52 part 2: "fix the older defect and turn them on?" - "yes please"). Phase 0 DONE (P1-P7 read,
 §2 D3). Phase 1 DONE (D2 + `restartParityBlankPage` on; gate b111). Reviewed by another session

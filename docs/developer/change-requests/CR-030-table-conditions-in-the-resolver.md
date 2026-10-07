@@ -1,6 +1,6 @@
 # CR-030: table styles behind the resolver - a paragraph's table context handed to `PropertyResolver`, the synthetic styles reduced to names
 
-Status: DONE 2026-10-04. Phase 5 (§6): markdown keeps ignoring table styles, as decided;
+Status: SHIPPED in docx4j 17.3.1 (Maven Central, 2026-10-07); DONE 2026-10-04. Phase 5 (§6): markdown keeps ignoring table styles, as decided;
 `FontsAnalysis` resolves runs in their table context, so the bold of a styled header row
 reaches the font report and the embedded subsets; the docs and CHANGELOG are written; the
 port hand-offs are made to core-ts, python and mcp (§6). Phase 4
