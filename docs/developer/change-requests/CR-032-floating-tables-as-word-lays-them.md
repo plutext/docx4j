@@ -156,7 +156,7 @@ probes, built in `docx4j-layout-fidelity`'s `Corpus.java` with `Table.floating(.
 |---|---|
 | `table-floating-wide-empties` | a full-width text-anchored table (`tblpY` 0 / 120 / 720 twips) followed by 0, 3 and 8 empty paragraphs then text: where the text resumes (band bottom + `bottomFromText`?), whether the empties take space |
 | `table-floating-wide-anchor-text` | the same table with a non-empty anchor paragraph: does the paragraph's text go below the table, and does the offset count from the paragraph's top |
-| `table-floating-offset-sides` | a 40% table centred (`tblpXSpec=center`) with `tblpY=1440`: lines above full, both sides used or one |
+| `table-floating-offset-sides` | a 40% table centred (`tblpXSpec=center`) with `tblpY=1440`: lines above full, both sides used or one; a fourth case with 24pt of space-before on the anchor: the offset from the paragraph's top including its space, or from its first line |
 | `table-floating-negative` | `tblpY=-600` mid-page, and at the top of page 2 (does it use page 1's space) |
 | `table-floating-pair` | two 45% tables anchored to the same paragraph, left and right; two full-width tables with three empties between (6705's shape) |
 | `table-floating-in-cell` | 5936's shape: a one-cell floating table inside a cell with six paragraphs of text |
@@ -180,7 +180,15 @@ set.
   position and no lost lines (5936's +85pt).
 - **`topFromText` / `bottomFromText`** read and applied: the band table gets the top gap as
   padding, the bottom gap as `space-after` on the float's block (narrow) or the table (wide).
-- **The wide text-anchored table.** Left in the flow as now, with:
+- **The wide text-anchored table.** Two routes, chosen per table:
+  - *followed only by empty paragraphs whose height covers the table's* (the 133-empty-anchor
+    population's common shape): the same `fo:float` + band table as the narrow case. The §4.2
+    measurement shows both renderers lay the empties as zero-ipd lines in the band and resume
+    the text at the float's foot, which is Word's layout; the hazard is a text line falling
+    beside the float (laid at ipd 0, one word a line), so the route is taken only when the
+    empties' accumulated line boxes reach the table's estimated height (below), and the
+    estimate errs towards the flow route.
+  - *otherwise*, left in the flow as now, with:
   - `tblpY` ≥ 0 as `space-before` on the table (Word's table top is the anchor's top + `tblpY`,
     and the anchor paragraph's text, when there is any, goes below the table: measured by probe 2);
   - the empty paragraphs following it absorbed into the band while their accumulated height is
@@ -209,11 +217,19 @@ Two things `fo:float` cannot say, which are the whole of the wide-table and offs
    docx4j then writes `tblpY` as the offset instead of padding, and the narrowed-lines-above
    residual of `table-floating` goes (its 0.69 → 1.0, the only defect that probe has).
 2. **A float that takes the column.** With `side-float-edges`, a float's edge is the first break
-   whose content and glue reach its foot. A float of ipd ≥ the column leaves nothing beside it;
-   FOP's behaviour there is unmeasured (phase 0 measures it on plain FOP and the fork before the
-   hook is designed). The hook wanted: a line with content goes below the float; a line box with
-   no content (an empty paragraph's) is laid beside it, consuming the band, as Word lays the
-   empties behind a full-width table. Capability `float-band`.
+   whose content and glue reach its foot. **Measured 2026-10-08** on Apache FOP 2.11 and on
+   2.11-docx4j.5 (scratch FO mirroring docx4j's construct: the float first in the anchor block,
+   a 451.3pt fixed table of three rows, four empty `white-space-treatment="preserve"` blocks,
+   then text; identical on both): the lines beside a column-wide float get ipd 0. An empty block
+   beside it is laid as a zero-ipd line and **consumes the band** - the four empties took four
+   14pt lines and the text after them started full width at the float's foot (y 201.6 under rows
+   at 139.8, 157.8, 175.8). A block *with* text beside it is laid at ipd 0 as well, one word per
+   line, overflowing past the right margin until the float's foot, where the rest of the paragraph
+   flows full width; no exception. So FOP already does Word's thing for the empties, and the hook
+   reduces to: a line whose content does not fit the remaining ipd (ipd 0 included) is deferred to
+   the first line position after the float's foot at the full ipd; a line with no content keeps
+   today's zero-ipd line in the band; a minimum width below which text goes under even when
+   something would fit, if phase 0 shows Word has one, as a parameter. Capability `float-band`.
 
 With both, the wide text-anchored table becomes the same `fo:float` + band table as the narrow
 one, and the "60% rule" goes away on the fork (it stays on Apache FOP, where the phase 1 flow
@@ -265,8 +281,9 @@ and the Apache FOP output unchanged except where phase 1 applies.
 
 - The band-height estimate of phase 1 is an estimate; an empty paragraph absorbed wrongly loses a
   line. Conservative by construction, gated, and replaced by phase 2.
-- FOP's full-width float behaviour is unknown and may throw (as a float ending inside a table
-  did, item 45). Measured first.
+- FOP's full-width float behaviour was unknown; measured (§4.2): no exception, the empties
+  behave, a text line beside overflows. The float route of phase 1 therefore guards against any
+  text line beside the table, and the hook of phase 2 removes the guard.
 - The reserveBand change for 1616 touches cover pages, where a hidden copy cost pages before.
 
 ## 9. Hand-offs
