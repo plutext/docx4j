@@ -235,9 +235,16 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 		assertEquals(TABLE_PT, columns[1], 0.01);
 		assertEquals(COLUMN_PT - 225 - TABLE_PT, columns[2], 0.01);
 
-		// tblpY is the distance from the anchor paragraph's top to the table's top edge
+		// tblpY is the distance from the anchor paragraph's top to the table's top edge: the
+		// float's own offset on a renderer with float-offset (fork CR-023, 2.11-docx4j.6),
+		// else padding on the block inside the float
 		NodeList blocks = ((Element) fl).getElementsByTagNameNS(FO_NS, "block");
-		assertEquals(72.0, pt(((Element) fl.getFirstChild()).getAttribute("padding-top")), 0.01);
+		if (floatOffset()) {
+			assertEquals(72.0, pt(fl.getAttributeNS(FOX_NS, "float-offset")), 0.01);
+			assertEquals("", ((Element) fl.getFirstChild()).getAttribute("padding-top"));
+		} else {
+			assertEquals(72.0, pt(((Element) fl.getFirstChild()).getAttribute("padding-top")), 0.01);
+		}
 		assertTrue("the float holds the table", blocks.getLength() > 0);
 
 		// the float carries the position, so the table starts at its cell's edge
@@ -293,6 +300,13 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 		return org.docx4j.convert.out.fo.FopCapabilities.has(
 				org.docx4j.convert.out.fo.FopCapabilities.Capability.SIDE_FLOAT_EDGES);
 	}
+
+	private static boolean floatOffset() {
+		return org.docx4j.convert.out.fo.FopCapabilities.has(
+				org.docx4j.convert.out.fo.FopCapabilities.Capability.FLOAT_OFFSET);
+	}
+
+	private static final String FOX_NS = "http://xmlgraphics.apache.org/fop/extensions";
 
 	private static final String DOCX4J_NS = "http://docx4j.org/fop/word-layout";
 
@@ -464,15 +478,22 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 			assertNull("the float would be lost", floatContainer(doc));
 			assertEquals(225.0, pt(foTable(doc).getAttribute("start-indent")), 0.01);
 		}
-		// with an offset of more than a line and a half it stays in the flow on both, until the
-		// fork's float-offset puts the band at the offset (4083: the lines above the table
-		// were cut into a column beside it); the offset is then kept in the flow
+		// with an offset of more than a line and a half it stays in the flow, the offset kept
+		// as a spacer, until the fork's float-offset puts the band at the offset (4083: the
+		// lines above the table were cut into a column beside it); with float-offset
+		// (2.11-docx4j.6) it floats, the offset on the float
 		doc = fo(body("<w:tblpPr w:vertAnchor=\"text\" w:horzAnchor=\"margin\" w:tblpX=\"4500\" w:tblpY=\"1000\"/>")
 				+ "<w:p><w:r><w:t>a</w:t><w:br/><w:t>b</w:t></w:r></w:p>", flags);
-		assertNull("a large offset: in the flow", floatContainer(doc));
-		Element spacer = (Element) foTable(doc).getPreviousSibling();
-		assertEquals("block-container", spacer.getLocalName());
-		assertTrue("the offset's remainder as a spacer", pt(spacer.getAttribute("height")) > 0);
+		if (sideFloatEdges() && floatOffset()) {
+			Element fl = floatContainer(doc);
+			assertNotNull("a large offset: floated at it", fl);
+			assertEquals(50.0, pt(fl.getAttributeNS(FOX_NS, "float-offset")), 0.01);
+		} else {
+			assertNull("a large offset: in the flow", floatContainer(doc));
+			Element spacer = (Element) foTable(doc).getPreviousSibling();
+			assertEquals("block-container", spacer.getLocalName());
+			assertTrue("the offset's remainder as a spacer", pt(spacer.getAttribute("height")) > 0);
+		}
 	}
 
 	@Test public void tableBeforeALineBreakVisitor() throws Exception {

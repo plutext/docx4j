@@ -150,7 +150,16 @@ public class FramePrTest extends AbstractXSLFOTest {
 		assertNotNull("the frame was left in the flow", fl);
 		assertEquals("the nearer edge", "left", fl.getAttribute("float"));
 		Element block = (Element) fl.getElementsByTagNameNS(FO, "block").item(0);
-		assertEquals("w:y is padding above the frame", 12.0, pt(block.getAttribute("padding-top")), 0.05);
+		// w:y: the float's own offset on a renderer with float-offset (fork CR-023,
+		// 2.11-docx4j.6), else padding above the frame inside the float
+		if (org.docx4j.convert.out.fo.FopCapabilities.has(
+				org.docx4j.convert.out.fo.FopCapabilities.Capability.FLOAT_OFFSET)) {
+			assertEquals("w:y as the float's offset", 12.0,
+					pt(fl.getAttributeNS("http://xmlgraphics.apache.org/fop/extensions", "float-offset")), 0.05);
+			assertEquals("", block.getAttribute("padding-top"));
+		} else {
+			assertEquals("w:y is padding above the frame", 12.0, pt(block.getAttribute("padding-top")), 0.05);
+		}
 		assertEquals("w:vSpace below it", 6.0, pt(block.getAttribute("padding-bottom")), 0.05);
 		Element band = (Element) fl.getElementsByTagNameNS(FO, "table").item(0);
 		assertNotNull("no band table", band);

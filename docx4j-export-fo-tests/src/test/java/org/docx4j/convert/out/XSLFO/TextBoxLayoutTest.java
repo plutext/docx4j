@@ -178,6 +178,13 @@ public class TextBoxLayoutTest extends AbstractXSLFOTest {
 				org.docx4j.convert.out.fo.FopCapabilities.Capability.CLEAR_AFTER_SIDE_FLOAT);
 	}
 
+	private static boolean floatOffset() {
+		return org.docx4j.convert.out.fo.FopCapabilities.has(
+				org.docx4j.convert.out.fo.FopCapabilities.Capability.FLOAT_OFFSET);
+	}
+
+	private static final String FOX_NS = "http://xmlgraphics.apache.org/fop/extensions";
+
 	/** A wide box with at least 72pt beside it, in a paragraph with text of its own: Word
 	 *  sets the text beside the box (probes vml-box-beside-portrait/-landscape, six cases
 	 *  at baseline 83.30; 10855's rubric heading).  On a renderer with side-float-edges the
@@ -200,9 +207,16 @@ public class TextBoxLayoutTest extends AbstractXSLFOTest {
 			Element holder = (Element) inner.getFirstChild();
 			assertEquals("block-container", holder.getLocalName());
 			// the band: from the box's wrap edge (100 - 9) to the column's edge, as tall as
-			// offset + height + bottom wrap distance (90 + 30 + 0)
+			// offset + height + bottom wrap distance (90 + 30 + 0); on a renderer with
+			// float-offset (fork CR-023, 2.11-docx4j.6) the offset is the float's own and the
+			// band is the box's height
 			assertEquals(451.3 - 91, Double.parseDouble(holder.getAttribute("width").replace("pt", "")), 0.1);
-			assertEquals(120.0, Double.parseDouble(holder.getAttribute("height").replace("pt", "")), 0.1);
+			if (floatOffset()) {
+				assertEquals(90.0, Double.parseDouble(band.getAttributeNS(FOX_NS, "float-offset").replace("pt", "")), 0.1);
+				assertEquals(30.0, Double.parseDouble(holder.getAttribute("height").replace("pt", "")), 0.1);
+			} else {
+				assertEquals(120.0, Double.parseDouble(holder.getAttribute("height").replace("pt", "")), 0.1);
+			}
 			assertNotNull("the box is positioned, not reserved", positionedBox(doc));
 		} else {
 			assertEquals(0, floats.getLength());
@@ -231,7 +245,11 @@ public class TextBoxLayoutTest extends AbstractXSLFOTest {
 		if (sideFloatEdges() && clearAfterSideFloat()) {
 			assertEquals("the band", 1, floats.getLength());
 			String side = ((Element) floats.item(0)).getAttribute("float");
-			assertEquals("clear on the table's wrapper block, the band's side", side, wrapper.getAttribute("clear"));
+			// clear goes on what follows the paragraph: the table's wrapper block where it
+			// has one, else the table itself (WordLayoutFixups.tableAfter)
+			String clear = wrapper.getAttribute("clear");
+			if (clear.isEmpty()) clear = table.getAttribute("clear");
+			assertEquals("clear on the table (or its wrapper block), the band's side", side, clear);
 		} else {
 			assertEquals("the band withheld: a table follows", 0, floats.getLength());
 			assertEquals("", wrapper.getAttribute("clear"));

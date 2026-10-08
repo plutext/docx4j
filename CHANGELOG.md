@@ -40,6 +40,11 @@ Digital signatures (new module docx4j-digsig, CR-033):
 
 PDF via XSL FO:
 
+- docx4j-fo-renderer 2.11-docx4j.6 (was .5): the hooks the rules of this release need - a side
+  float cleared after its last line, floating tables offset and overflowing below as Word's,
+  a row started only where its first part has room, and the section's unequal column widths
+  and balancing on fo:region-body (fop/CR-022, CR-023, CR-025, CR-026); each hook off until
+  docx4j asks for it, so Apache FOP 2.11 still renders.
 - A keep chain which runs into a table with a repeated header row is judged with the header's
   height, which FOP carries in the break's width rather than in a box: a heading, a full-page
   picture and a heading kept with a 36-column table ran 119pt off the page where Word drops the

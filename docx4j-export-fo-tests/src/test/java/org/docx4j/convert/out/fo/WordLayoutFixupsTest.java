@@ -591,7 +591,15 @@ public class WordLayoutFixupsTest {
 		assertTrue(out.contains("float=\"left\""));
 		assertTrue("offset from the column edge", out.contains("padding-left=\"72pt\""));
 		assertTrue("wrap distance on the text side", out.contains("padding-right=\"9pt\""));
-		assertTrue("vertical offset from the paragraph top", out.contains("padding-top=\"36pt\""));
+		// the vertical offset: the float's own on a renderer with float-offset (fork CR-023,
+		// 2.11-docx4j.6), else padding inside the float
+		if (org.docx4j.convert.out.fo.FopCapabilities.has(
+				org.docx4j.convert.out.fo.FopCapabilities.Capability.FLOAT_OFFSET)) {
+			assertTrue("vertical offset from the paragraph top", out.contains("float-offset=\"36pt\""));
+			assertFalse(out.contains("padding-top=\"36pt\""));
+		} else {
+			assertTrue("vertical offset from the paragraph top", out.contains("padding-top=\"36pt\""));
+		}
 	}
 
 	@Test

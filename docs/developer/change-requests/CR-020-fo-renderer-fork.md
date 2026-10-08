@@ -1210,6 +1210,36 @@ in CR-031 phase 5.
   25 is a layout change in FOP's page-sequence code, to be met when a batch
   needs it.
 
+### docx4j moves to 2.11-docx4j.6 for 17.3.2 (2026-10-09)
+
+The fork released 2.11-docx4j.6 to Maven Central on 2026-10-09 (version commit 76a413acf on
+3df9e8b12, the last code commit 0d14ae993 = the harness's r27; core jar sha256
+c0a8f9e48206e45da5175ba4b584d05c545163d115ba880bbdecacd2ab9e2900, verified against Central's
+checksum after `dependency:get`). It carries fop/CR-022 (clear-after-side-float, with the three
+edge-search fixes), CR-023 (float-offset, float-overflow-below), CR-025 (row-first-part-room) and
+CR-026 phases A and B (column-widths, column-balancing): twenty-five capabilities, all of which
+`FopCapabilities` reports from the released core. Its release notes are the fork's
+`docs/release-notes/2.11-docx4j.6.md`. docx4j-export-fo's `fo.renderer.version` moves to it, so
+CR-032 phase 2 (floating tables and pictures at their offset), the text-box band's clear, the
+split-row start rule and the unequal-column region body reach users with 17.3.2.
+
+**Gates on the release code and the released artifact:**
+- b218: cand120 (HEAD c8a6094ea) on r27, the release code, against b215 (the fork's r27
+  baseline): one mover, 12301 +5 (the docx4j keep-chain change of c8a6094ea itself, as b217
+  showed on .5); probes and errors unchanged.
+- b219: cand121 = export-fo bumped to the four Central jars (copied to `~/fidelity-cr030/r6`),
+  against b218: movers 0 on real, real2, real3 and real-c2; every event count equal (line 17602,
+  clip 1552, bcov 1274, body 19); probes (270) identical row for row. Baseline on .6: b219.
+
+Reactor on .6: export-fo 245/0, export-fo-tests 782/0 (8 skipped) after four test classes were
+made capability-aware: `FloatingTablePositionTest`, `FramePrTest`, `TextBoxLayoutTest` and
+`WordLayoutFixupsTest` had pinned the .5 shape (the offset as padding-top inside the float, a
+large-offset table kept in the flow, the band as tall as offset plus box) where a renderer with
+float-offset gets `fox:float-offset` on the float and the band at the box's height, and the
+clear after a text box's band lands on the table itself where it has no wrapper block. Each
+test now asserts the shape for the capability the renderer on the classpath reports, so the
+same tests pass on Apache FOP 2.11 (the fallback) and on the fork.
+
 ## 9. Phase 2 classification (2026-09-19)
 
 ### 9.1 Method and numbers
