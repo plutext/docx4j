@@ -164,7 +164,14 @@ public final class FopCapabilities {
 		 *  the float's foot with the rest of its paragraph (fork CR-023), where FOP overflowed it; so a
 		 *  table floats on any room beside it, as Word floats it, not only on 2in (CR-032 phase 2).
 		 *  @since 17.3.2 */
-		FLOAT_OVERFLOW_BELOW("float-overflow-below");
+		FLOAT_OVERFLOW_BELOW("float-overflow-below"),
+		/** {@code FOUserAgent.setRowFirstPartRoom}: with it on, a table row is started at a page's
+		 *  foot only where its first line fits with the padding and border its cells give up at a
+		 *  split (the first part is still drawn without them), as Word starts one: 11657's page 30
+		 *  ends at row 53 where FOP had set row 54's first line in the room of its bottom margin
+		 *  (fork CR-025; Enterprise CR-001 §6.6 item 48).  Off by default in the renderer: Apache's
+		 *  own element-list test expects the old width.  @since 17.3.2 */
+		ROW_FIRST_PART_ROOM("row-first-part-room");
 
 		private final String key;
 

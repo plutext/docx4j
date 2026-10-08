@@ -331,6 +331,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			// the pass that renders, so the two passes number pages alike
 			FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
 			allowPageNumberZero(foUserAgent);
+		rowFirstPartRoom(foUserAgent);
 			fop = fopFactory.newFop(outputFormat, foUserAgent, new NullOutputStream());
 			result = new SAXResult(new PlaceholderReplacementHandler(fop.getDefaultHandler(), placeholderLookup));
 		} catch (FOPException e) {
@@ -364,6 +365,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 
 	    FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
 	    allowPageNumberZero(foUserAgent);
+		rowFirstPartRoom(foUserAgent);
 		settings.getSettings().put(FO_USER_AGENT, foUserAgent);
 		
 		return foUserAgent;
@@ -399,6 +401,41 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			m.invoke(foUserAgent, Boolean.TRUE);
 		} catch (ReflectiveOperationException | RuntimeException e) {
 			log.warn("page-number-zero advertised but not callable: " + e);
+		}
+	}
+
+	private static volatile java.lang.reflect.Method setRowFirstPartRoom;
+
+	/**
+	 * Word starts a table row at a page's foot only where its first line fits with the
+	 * cell's bottom margin below it, and then splits the row after that line if the next
+	 * does not fit; FOP measured a row's first part without the padding its cells give up
+	 * at a split, and started the row wherever the line alone fit.  The docx4j FO renderer
+	 * applies Word's condition where the user agent asks (capability row-first-part-room,
+	 * fork CR-025, off by default there since an Apache element-list test expects the old
+	 * width); called reflectively, as the module compiles against a FOP without the method.
+	 * Measured on 11657 (2393 one-line rows, 28-twip margins): page 30 ends at row 53 as
+	 * Word's does, where row 54's first line had been set in the room of the margin
+	 * (Enterprise CR-001 §6.6 item 48).
+	 *
+	 * @since 17.3.2
+	 */
+	static void rowFirstPartRoom(FOUserAgent foUserAgent) {
+		if (foUserAgent==null
+				|| !org.docx4j.convert.out.fo.FopCapabilities.has(
+						org.docx4j.convert.out.fo.FopCapabilities.Capability.ROW_FIRST_PART_ROOM)) {
+			return;
+		}
+		try {
+			java.lang.reflect.Method m = setRowFirstPartRoom;
+			if (m==null) {
+				m = FOUserAgent.class.getMethod("setRowFirstPartRoom", boolean.class);
+				setRowFirstPartRoom = m;
+			}
+			m.invoke(foUserAgent, Boolean.TRUE);
+			log.debug("row-first-part-room: on (" + foUserAgent + ")");
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			log.warn("row-first-part-room advertised but not callable: " + e);
 		}
 	}
 
