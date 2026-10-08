@@ -1,10 +1,11 @@
 # CR-032: floating tables laid out as Word lays them - the band at its offset, the wide table's band, the paragraphs behind it
 
-Status: IN PROGRESS - phase 2's docx4j side DONE 2026-10-08 (gated on the fork's float-offset, unreleased:
-fox:float-offset written on a floating table's float and a text box's band; gates b195-b197 on r19, §4.2: the
-four offset probes at Word's y, 6293 to Word's pages; two fork defects open, the pair crash and the page-end
-case, with reproducers); phase 1 DONE 2026-10-08 (4a6ab1d89); phase 0 DONE (nine probes read, §3). D1, D2 and D3
-DECIDED yes by Jason 2026-10-08 (§7). Proposed 2026-10-08.
+Status: IN PROGRESS - phase 2 DONE 2026-10-08 (docx4j side in three commits gated on the fork's float-offset:
+fox:float-offset on a floating table's float, each float of an anchor at its own offset, a text box's band,
+anchored-picture and framePr floats; fop/CR-023 merged to 2.11-docx4j.6 at 3339fc1cf, unreleased, so the
+export-fo bump to .6 follows its release; gates b195-b202 on r19-r21, §4.2; 13419's hidden anchor fixed
+2dd06021f); phase 1 DONE 2026-10-08 (4a6ab1d89); phase 0 DONE (nine probes read, §3). Phase 3 open (§4.3,
+with the gap-fill probe question). D1, D2 and D3 DECIDED yes by Jason 2026-10-08 (§7). Proposed 2026-10-08.
 
 ## 0. Summary
 
