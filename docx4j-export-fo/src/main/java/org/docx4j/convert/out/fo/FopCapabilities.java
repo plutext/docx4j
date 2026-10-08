@@ -177,7 +177,12 @@ public final class FopCapabilities {
 		 *  gives every column one width.  docx4j writes a section's w:col widths on the region body
 		 *  and no longer turns such a stretch into a one-row table (which cannot flow across pages).
 		 *  @since 17.3.2 */
-		COLUMN_WIDTHS("column-widths");
+		COLUMN_WIDTHS("column-widths"),
+		/** Columns of unequal width balanced before a {@code span="all"} block, by trial (fork CR-026
+		 *  phase B); with it the region body takes a section's near-equal widths too (within 5%, Word's
+		 *  rounding of equal columns), which without balancing cost 11126 a page: with it 11126 is at
+		 *  1.0 (r27).  @since 17.3.2 */
+		COLUMN_BALANCING("column-balancing");
 
 		private final String key;
 

@@ -266,14 +266,19 @@ public class LayoutMasterSetBuilder {
 			List<org.docx4j.wml.CTColumn> declared = cols.getCol();
 			if (cols.getNum() != null && cols.getNum().intValue() != declared.size()) continue;
 			// columns within 5% of each other are Word's own rounding of equal ones (rules §7):
-			// written as widths they cost 11126 73 lines and 5639 two pages on r24 (gate b210)
-			int minW = Integer.MAX_VALUE, maxW = 0;
-			for (org.docx4j.wml.CTColumn col : declared) {
-				int w = col.getW() == null ? 0 : col.getW().intValue();
-				minW = Math.min(minW, w);
-				maxW = Math.max(maxW, w);
+			// written as widths they cost 11126 73 lines and 5639 two pages on r24 (gate b210),
+			// where the renderer did not yet balance them before a span="all" block; with that
+			// balancing (column-balancing, fork CR-026 phase B) the exact widths are Word's
+			// (11126 0.9560 -> 1.0000 on r27)
+			if (!org.docx4j.convert.out.common.RendererHints.has(FopCapabilities.Capability.COLUMN_BALANCING.key())) {
+				int minW = Integer.MAX_VALUE, maxW = 0;
+				for (org.docx4j.wml.CTColumn col : declared) {
+					int w = col.getW() == null ? 0 : col.getW().intValue();
+					minW = Math.min(minW, w);
+					maxW = Math.max(maxW, w);
+				}
+				if (maxW <= minW * 1.05) continue;
 			}
-			if (maxW <= minW * 1.05) continue;
 			StringBuilder widths = new StringBuilder(), gaps = new StringBuilder();
 			long sum = 0;
 			boolean ok = true;

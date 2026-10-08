@@ -43,6 +43,8 @@ PDF via XSL FO:
   of unequal width that run past a page are laid at their w:col widths (fox:column-widths and
   fox:column-gaps on fo:region-body) instead of equal ones; a stretch that fits a page stays the
   one-row table. A CV in 125/361pt columns over eight pages: 0.21 -> 0.75 line parity (CR-026).
+  Where the renderer also balances unequal columns before a spanning block (column-balancing),
+  near-equal widths are written too: three corpus documents +4, +65 and +50 lines.
 - A table cell keeps its top margin where its row continues on the next page, as Word lays the
   continued cell (padding-before with conditionality retain; FOP discards padding at a break).
   A corpus document of 2393 rows had been fitting a row more on such pages (CR-001).
