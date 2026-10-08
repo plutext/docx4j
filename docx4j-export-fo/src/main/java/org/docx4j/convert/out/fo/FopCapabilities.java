@@ -171,7 +171,13 @@ public final class FopCapabilities {
 		 *  ends at row 53 where FOP had set row 54's first line in the room of its bottom margin
 		 *  (fork CR-025; Enterprise CR-001 §6.6 item 48).  Off by default in the renderer: Apache's
 		 *  own element-list test expects the old width.  @since 17.3.2 */
-		ROW_FIRST_PART_ROOM("row-first-part-room");
+		ROW_FIRST_PART_ROOM("row-first-part-room"),
+		/** {@code fox:column-widths} and {@code fox:column-gaps} on fo:region-body: each column laid
+		 *  at its own width, across pages (fork CR-026; Enterprise CR-001 §6.6 item 49), where XSL-FO
+		 *  gives every column one width.  docx4j writes a section's w:col widths on the region body
+		 *  and no longer turns such a stretch into a one-row table (which cannot flow across pages).
+		 *  @since 17.3.2 */
+		COLUMN_WIDTHS("column-widths");
 
 		private final String key;
 
@@ -217,6 +223,8 @@ public final class FopCapabilities {
 						log.warn(w);
 					}
 					instance = c;
+					// the parts of the conversion in docx4j-core ask by name (RendererHints)
+					org.docx4j.convert.out.common.RendererHints.set(c.capabilities);
 				}
 			}
 		}

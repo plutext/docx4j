@@ -102,6 +102,7 @@ public class LayoutMasterSetBuilder {
 		
 		org.w3c.dom.Document document = XmlUtils.marshaltoW3CDomDocument(lms, Context.getXslFoContext() );
 		markMeasuredRegions(document, measured);
+		markColumnWidths(document, context.getSections().getList());
 		DocumentFragment docfrag = document.createDocumentFragment();
 		docfrag.appendChild(document.getDocumentElement());
 		
@@ -237,6 +238,82 @@ public class LayoutMasterSetBuilder {
 	 *
 	 * @since 17.3.1
 	 */
+	/**
+	 * A section whose columns are of different widths gets them on its region body:
+	 * {@code fox:column-widths} (a length per column) and {@code fox:column-gaps} (one per
+	 * pair), which the docx4j FO renderer lays the columns at, across pages (capability
+	 * column-widths, fork CR-026; Enterprise CR-001 §6.6 item 49).  XSL-FO's region body
+	 * gives every column one width, so until the hook such a stretch was a one-row table
+	 * where it fitted a page and equal columns where it did not (10598: Word's 125.45 and
+	 * 360.8pt columns as two of 243pt, 8 pages to our 10).  {@code column-count} and
+	 * {@code column-gap} stay as they are, so Apache FOP lays equal columns from the same
+	 * FO.  Written only where the widths and gaps sum to the writable width within a point
+	 * and the count is the master's column-count, which is the renderer's own validation;
+	 * a sequence of merged continuous sections whose count is larger than this section's
+	 * is left alone.
+	 *
+	 * @since 17.3.2
+	 */
+	static void markColumnWidths(org.w3c.dom.Document document, List<ConversionSectionWrapper> sections) {
+		// (RendererHints carries the probe's answer, so a test can set it; the key is the capability's)
+		if (!org.docx4j.convert.out.common.RendererHints.has(FopCapabilities.Capability.COLUMN_WIDTHS.key())) return;
+		org.w3c.dom.NodeList spms = document.getElementsByTagNameNS(
+				"http://www.w3.org/1999/XSL/Format", "simple-page-master");
+		for (int i = 0; i < sections.size(); i++) {
+			PageDimensions page = sections.get(i).getPageDimensions();
+			org.docx4j.wml.CTColumns cols = page.getCols();
+			if (cols == null || cols.isEqualWidth() || cols.getCol() == null || cols.getCol().size() < 2) continue;
+			List<org.docx4j.wml.CTColumn> declared = cols.getCol();
+			if (cols.getNum() != null && cols.getNum().intValue() != declared.size()) continue;
+			// columns within 5% of each other are Word's own rounding of equal ones (rules §7):
+			// written as widths they cost 11126 73 lines and 5639 two pages on r24 (gate b210)
+			int minW = Integer.MAX_VALUE, maxW = 0;
+			for (org.docx4j.wml.CTColumn col : declared) {
+				int w = col.getW() == null ? 0 : col.getW().intValue();
+				minW = Math.min(minW, w);
+				maxW = Math.max(maxW, w);
+			}
+			if (maxW <= minW * 1.05) continue;
+			StringBuilder widths = new StringBuilder(), gaps = new StringBuilder();
+			long sum = 0;
+			boolean ok = true;
+			for (int c = 0; c < declared.size() && ok; c++) {
+				org.docx4j.wml.CTColumn col = declared.get(c);
+				if (col.getW() == null || col.getW().intValue() <= 0) { ok = false; break; }
+				int w = col.getW().intValue();
+				sum += w;
+				if (widths.length() > 0) widths.append(' ');
+				widths.append(UnitsOfMeasurement.twipToBest(w));
+				if (c + 1 < declared.size()) {
+					int sp = col.getSpace() == null ? 0 : col.getSpace().intValue();
+					sum += sp;
+					if (gaps.length() > 0) gaps.append(' ');
+					gaps.append(UnitsOfMeasurement.twipToBest(sp));
+				}
+			}
+			if (!ok) continue;
+			int writable = page.getWritableWidthTwips();
+			if (Math.abs(sum - writable) > 20) {   // the renderer's own tolerance, 1pt
+				log.debug("unequal columns of section " + (i + 1) + " not written: widths and gaps sum to " + sum
+						+ " twips against a writable width of " + writable);
+				continue;
+			}
+			String sectionName = "s" + (i + 1);
+			for (int m = 0; m < spms.getLength(); m++) {
+				org.w3c.dom.Element spm = (org.w3c.dom.Element) spms.item(m);
+				String name = spm.getAttribute("master-name");
+				if (!name.equals(sectionName) && !name.startsWith(sectionName + "-")) continue;
+				for (org.w3c.dom.Node n = spm.getFirstChild(); n != null; n = n.getNextSibling()) {
+					if (!(n instanceof org.w3c.dom.Element) || !"region-body".equals(n.getLocalName())) continue;
+					org.w3c.dom.Element rb = (org.w3c.dom.Element) n;
+					if (!String.valueOf(declared.size()).equals(rb.getAttribute("column-count"))) continue;
+					rb.setAttributeNS(FOX_NS, "fox:column-widths", widths.toString());
+					rb.setAttributeNS(FOX_NS, "fox:column-gaps", gaps.toString());
+				}
+			}
+		}
+	}
+
 	static void markMeasuredRegions(org.w3c.dom.Document document, Set<String> measured) {
 		if (measured == null || measured.isEmpty()) return;
 		org.w3c.dom.NodeList spms = document.getElementsByTagNameNS(
@@ -295,6 +372,7 @@ public class LayoutMasterSetBuilder {
 		
 		org.w3c.dom.Document document = XmlUtils.marshaltoW3CDomDocument(lms, Context.getXslFoContext() );
 		markMeasuredRegions(document, measured);
+		markColumnWidths(document, context.getSections().getList());
 		XmlUtils.treeCopy(document.getDocumentElement(), foRoot);
 	}
 

@@ -86,6 +86,14 @@ class UnequalColumns {
 	 */
 	static List<Object> asOneRowTable(List<Object> content, SectPr sectPr) {
 
+		// (Where the stretch cannot be a table - longer than a page, or holding a table or
+		// a break of its own - it stays in the flow, and the docx4j FO renderer lays the
+		// region body's columns at the section's widths: hook column-widths, fork CR-026,
+		// written by LayoutMasterSetBuilder.markColumnWidths.  The table stays the route
+		// for a stretch that fits a page: measured on r24 (gate b210), the region body at
+		// given widths cost the five such documents 2 to 9 lines each, since the renderer
+		// does not yet balance unequal columns.  @since 17.3.2)
+
 		int[][] columns = unequalColumns(sectPr);
 		if (columns == null || content.isEmpty()) return null;
 		int[] widths = columns[0], spaces = columns[1];

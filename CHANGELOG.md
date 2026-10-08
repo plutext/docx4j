@@ -39,6 +39,10 @@ PDF via XSL FO:
   (docx4j-fo-renderer 2.11-docx4j.6), else the band is withheld. Apache FOP unchanged
   (fidelity register cause textbox-wide-no-text-beside; probes vml-box-beside-*).
 
+- On a docx4j FO renderer with the column-widths capability (2.11-docx4j.6), a section's columns
+  of unequal width that run past a page are laid at their w:col widths (fox:column-widths and
+  fox:column-gaps on fo:region-body) instead of equal ones; a stretch that fits a page stays the
+  one-row table. A CV in 125/361pt columns over eight pages: 0.21 -> 0.75 line parity (CR-026).
 - A table cell keeps its top margin where its row continues on the next page, as Word lays the
   continued cell (padding-before with conditionality retain; FOP discards padding at a break).
   A corpus document of 2393 rows had been fitting a row more on such pages (CR-001).

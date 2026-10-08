@@ -428,6 +428,12 @@ public class PageDimensions {
 	 *
 	 * @since 17.0.5
 	 */
+	/** The section's column properties as this object holds them (a copy where
+	 *  {@link #setCols} or {@link #setColsNum} was used); never null.  @since 17.3.2 */
+	public CTColumns getCols() {
+		return cols;
+	}
+
 	public void setCols(CTColumns cols) {
 		this.cols = (cols == null) ? Context.getWmlObjectFactory().createCTColumns() : XmlUtils.deepCopy(cols);
 	}
