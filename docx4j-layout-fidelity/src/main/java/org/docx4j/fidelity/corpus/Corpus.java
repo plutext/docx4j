@@ -3286,7 +3286,8 @@ public final class Corpus {
 		PROBES.add(vmlBoxBesideProbe(false));   // ledger9 §9 follow-ups: 10855
 		PROBES.add(vmlBoxBesideProbe(true));
 		PROBES.add(tableOuterBorderStackProbe());   // 9919
-		PROBES.add(tableOuterBorderAtLeastProbe()); // 11657
+		PROBES.add(tableOuterBorderAtLeastProbe());
+		PROBES.add(tableOuterBorderCellMarginProbe()); // 11657
 		PROBES.add(actualTextClustersProbe());   // fop/CR-019: the text a reader should get per cluster
 		for (String v : new String[] { "first", "middle", "none" }) PROBES.add(shadedGroupKeepsProbe(v));
 		PROBES.add(listLabelLineMultiplierProbe());
@@ -10058,6 +10059,49 @@ public final class Corpus {
 					d.add(xmlTbl(t.append("</w:tbl>").toString()));
 					d.add(xmlP(exactP(tag + " after", 280, "")));
 				}
+			}
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * table-outer-border-cellmargin (11657; table-outer-border-half's open case).  Word's step from the line before
+	 * a table to its first row is 0.54pt more than the row's content on 11657 (a 1.5pt top border over a 1.4pt cell
+	 * top margin), where docx4j, adding the whole border outside the row and the margin inside it, steps 0.72 more;
+	 * 0.18pt a table over 1372 rows is a row a page.  How the cell margin and the outer border combine is unmeasured.
+	 * One-column two-row tables of exact 14pt lines, top border sz 12 and bottom sz 4 as 11657's, with cell top and
+	 * bottom margins 0, 28, 57 and 113 twips; 11657's own shape (margins 28, rows at least 300, the top border on
+	 * the cells too); and margins 28 with the border only on the cells.  Read: the baseline of the line before each
+	 * table to row 1, row 1 to row 2 and row 2 to the line after.  @since 17.3.2
+	 */
+	private static Probe tableOuterBorderCellMarginProbe() {
+		return new Probe("table-outer-border-cellmargin", "exact 14pt lines around two-row one-column tables of exact"
+				+ " 14pt lines, top border sz 12, bottom and inside sz 4, cell top and bottom margins 0, 28, 57, 113 twips;"
+				+ " 11657's shape (28, rows at least 300, top border on the cells too); margins 28 with the top border on"
+				+ " the cells only; mode 15.  Read the baselines before, of each row and after", () -> {
+			Doc d = Doc.create(15);
+			String[] names = { "M0", "M28", "M57", "M113", "M28a", "M28c" };
+			int[] mar = { 0, 28, 57, 113, 28, 28 };
+			String top = "w:val=\"single\" w:sz=\"12\" w:space=\"0\" w:color=\"000000\"";
+			String thin = "w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"404040\"";
+			for (int c = 0; c < names.length; c++) {
+				String tag = names[c];
+				boolean cellTop = c >= 4, tblTop = c != 5, atLeast = c == 4;
+				String borders = "<w:tblBorders>" + (tblTop ? "<w:top " + top + "/>" : "") + "<w:bottom " + thin + "/>"
+						+ "<w:insideH " + thin + "/></w:tblBorders>";
+				StringBuilder t = new StringBuilder("<w:tbl><w:tblPr><w:tblW w:w=\"4000\" w:type=\"dxa\"/>" + borders
+						+ "<w:tblLayout w:type=\"fixed\"/><w:tblCellMar><w:top w:w=\"" + mar[c] + "\" w:type=\"dxa\"/>"
+						+ "<w:left w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"" + mar[c] + "\" w:type=\"dxa\"/>"
+						+ "<w:right w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid>");
+				for (int r = 1; r <= 2; r++) {
+					t.append("<w:tr>").append(atLeast ? "<w:trPr><w:trHeight w:val=\"300\" w:hRule=\"atLeast\"/></w:trPr>" : "")
+							.append("<w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/>")
+							.append(cellTop && r == 1 ? "<w:tcBorders><w:top " + top + "/></w:tcBorders>" : "")
+							.append("</w:tcPr>").append(exactP(tag + " row " + r, 280, "")).append("</w:tc></w:tr>");
+				}
+				d.add(xmlP(exactP(tag + " before", 280, "")));
+				d.add(xmlTbl(t.append("</w:tbl>").toString()));
+				d.add(xmlP(exactP(tag + " after", 280, "")));
 			}
 			return d.pkg();
 		});
