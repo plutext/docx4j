@@ -172,7 +172,13 @@ public class WordFlowLayoutManager extends FlowLayoutManager {
 			if (!k.isPenalty()) continue;
 			KnuthPenalty p = (KnuthPenalty) k;
 			if (p.getPenalty() < KnuthElement.INFINITE) {
-				// a legal break: everything before it can be left behind
+				// a legal break: the segment since the last one must sit on one page whole,
+				// its last member included (the check below, made at each keep, sees only
+				// what precedes the keep: a heading's keep before a table never counted the
+				// table's header and first row, so a chain of heading, 481pt picture, heading
+				// and a 130pt header row ran 119pt off 12301's page 11 where Word breaks
+				// before the table)
+				bound(chain, height, rowsOnly ? rowLimit : limit, reduced, available);
 				chain.clear();
 				height = 0;
 				rowsOnly = true;
@@ -192,17 +198,23 @@ public class WordFlowLayoutManager extends FlowLayoutManager {
 			rowsOnly &= isTableContent(p);
 			if (height > (rowsOnly ? rowLimit : limit)) {
 				// this chain cannot be satisfied on any page; let the breaker into it
-				if (LOG.isDebugEnabled()) {
-					LOG.debug("keep chain of " + chain.size() + " bounded: " + height
-							+ " > " + limit + " (page " + available + ")");
-				}
-				for (KnuthPenalty each : chain) {
-					each.setPenalty(reduced);
-				}
+				bound(chain, height, rowsOnly ? rowLimit : limit, reduced, available);
 				chain.clear();
 				height = 0;
 				rowsOnly = true;
 			}
+		}
+		bound(chain, height, rowsOnly ? rowLimit : limit, reduced, available);
+	}
+
+	/** Reduce the chain's keeps to the finite penalty where the segment's height exceeds the limit. */
+	private static void bound(List<KnuthPenalty> chain, int height, long limit, int reduced, int available) {
+		if (chain.isEmpty() || height <= limit) return;
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("keep chain of " + chain.size() + " bounded: " + height + " > " + limit + " (page " + available + ")");
+		}
+		for (KnuthPenalty each : chain) {
+			each.setPenalty(reduced);
 		}
 	}
 
