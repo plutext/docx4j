@@ -23,6 +23,11 @@ Changes in Version 17.3.2
 
 PDF via XSL FO:
 
+- A keep chain which runs into a table with a repeated header row is judged with the header's
+  height, which FOP carries in the break's width rather than in a box: a heading, a full-page
+  picture and a heading kept with a 36-column table ran 119pt off the page where Word drops the
+  keeps and breaks before the table (corpus document 12301, every monthly section).
+
 - Floating tables (w:tblpPr) laid out nearer Word's layout (CR-032 phase 1, measured on nine
   probes against Word): a text-anchored table left in the flow keeps its tblpY, with the empty
   paragraphs that fit in the gap laid above it as Word lays them; on the docx4j FO renderer a

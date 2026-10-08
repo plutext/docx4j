@@ -103,6 +103,49 @@ public class KeepChainBoundTest {
 		assertEquals("under three times the page, the keeps stand", 8, infinites(els));
 	}
 
+	/** A table's own break (the stepper's, between two of its steps) carries the repeated
+	 *  header's height in its width, never in a box before the table's end. */
+	private static KnuthPenalty tableBreak(int headerHeight) {
+		org.apache.fop.layoutmgr.table.TableLayoutManager tableLM =
+				new org.apache.fop.layoutmgr.table.TableLayoutManager(
+						new org.apache.fop.fo.flow.table.Table(null));
+		return new KnuthPenalty(headerHeight, 0, false,
+				new org.apache.fop.layoutmgr.Position(tableLM), false);
+	}
+
+	/** Three blocks kept with a table: a heading, a 481pt picture and a heading, then the
+	 *  table's first step, with the table's 178pt header in the break's width (12301's page
+	 *  11).  The boxes sum to 551pt on a 615pt page; the break taken there puts 729pt on
+	 *  it, so the keeps must give way, as Word's do (its page ends with the second heading,
+	 *  the table opens the next). */
+	@Test
+	public void aChainWhoseClosingBreakOverfillsThePageIsBounded() {
+		List<ListElement> els = keptChain(3, 0);
+		els.set(0, new KnuthBox(13000, null, false));
+		els.set(2, new KnuthBox(493000, null, false));
+		els.set(4, new KnuthBox(23000, null, false));
+		els.add(new KnuthPenalty(0, KnuthElement.INFINITE, false, null, false));
+		els.add(new KnuthBox(22000, null, false));
+		els.add(tableBreak(178000));
+		WordFlowLayoutManager.boundKeepChains(els, 615000);
+		assertEquals("the chain's keeps give way", 0, infinites(els));
+	}
+
+	/** The same shape where the header fits too: 251pt of blocks, a 178pt header, on a
+	 *  615pt page.  Nothing is touched. */
+	@Test
+	public void aChainWhoseClosingBreakFitsIsUntouched() {
+		List<ListElement> els = keptChain(3, 0);
+		els.set(0, new KnuthBox(13000, null, false));
+		els.set(2, new KnuthBox(215000, null, false));
+		els.set(4, new KnuthBox(23000, null, false));
+		els.add(new KnuthPenalty(0, KnuthElement.INFINITE, false, null, false));
+		els.add(new KnuthBox(22000, null, false));
+		els.add(tableBreak(178000));
+		WordFlowLayoutManager.boundKeepChains(els, 615000);
+		assertEquals("the keeps stand", 3, infinites(els));
+	}
+
 	/** With no page dimension to compare against, nothing is decided. */
 	@Test
 	public void noPageHeightLeavesTheListAlone() {

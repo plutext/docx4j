@@ -174,11 +174,19 @@ public class WordFlowLayoutManager extends FlowLayoutManager {
 			if (p.getPenalty() < KnuthElement.INFINITE) {
 				// a legal break: the segment since the last one must sit on one page whole,
 				// its last member included (the check below, made at each keep, sees only
-				// what precedes the keep: a heading's keep before a table never counted the
-				// table's header and first row, so a chain of heading, 481pt picture, heading
-				// and a 130pt header row ran 119pt off 12301's page 11 where Word breaks
-				// before the table)
-				bound(chain, height, rowsOnly ? rowLimit : limit, reduced, available);
+				// what precedes the keep), and the break's own width with it: a break taken
+				// there puts that width on the page too, and between a table's steps it is
+				// the repeated header (TableStepper carries the header's height in every
+				// break's width, never in a box before the table's end), so a chain of
+				// heading, 481pt picture, heading and a table's first step summed to 551pt
+				// against a 615pt body while the breaker, with the 178pt header, had 729pt
+				// and ran 119pt off 12301's page 11 where Word breaks before the table.
+				// A segment ending at a table's own break is judged at the page: its
+				// height is the kept blocks', the first step's and the header's, none of
+				// the over-estimate the tolerance allows for (that is a table's phantom
+				// header box, which comes at the table's end).
+				int atBreak = height + Math.max(0, p.getWidth());
+				bound(chain, atBreak, rowsOnly || isTableContent(p) ? rowLimit : limit, reduced, available);
 				chain.clear();
 				height = 0;
 				rowsOnly = true;
