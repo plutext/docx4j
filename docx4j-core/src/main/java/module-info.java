@@ -213,4 +213,8 @@ module org.docx4j.core {
 	opens org.docx4j.convert.in.word2003xml;
     
     
+
+    // an optional module supplies part classes core cannot hold (docx4j-digsig; CR-033)
+    uses org.docx4j.openpackaging.parts.PartProvider;
+
 }

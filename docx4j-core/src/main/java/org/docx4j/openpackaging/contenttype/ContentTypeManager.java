@@ -50,7 +50,6 @@ package org.docx4j.openpackaging.contenttype;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Iterator;
@@ -81,6 +80,7 @@ import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.InkmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.PartProvider;
 import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.TrueTypeFontPart;
 import org.docx4j.openpackaging.parts.VMLPart;
@@ -515,30 +515,18 @@ public class ContentTypeManager  {
 			return new org.docx4j.openpackaging.parts.DrawingML.ThemeOverridePart(new PartName(partName));	
 			
 		} else if (contentType.equals(ContentTypes.DIGITAL_SIGNATURE_XML_SIGNATURE_PART)) {
-//			return new org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart(new PartName(partName));
 			
-			// Use reflection, since the dig sig functionality is in Enterprise only
-			try {
-				Class<?> xmlSignaturePart = Class.forName("org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart");
-				Constructor<?> cons = xmlSignaturePart.getConstructor(PartName.class);
-				PartName pn = new PartName(partName);
-				return (Part) cons.newInstance(pn);
-			} catch (Exception e) {
-				return CreateDefaultXmlPartObject(partName );				
-			}			
+			// XmlSignaturePart is in docx4j-digsig (CR-033), which supplies a PartProvider
+			Part provided = providedPart(contentType, partName);
+			if (provided != null) return provided;
+			return CreateDefaultXmlPartObject(partName );				
 			
 		} else if (contentType.equals(ContentTypes.DIGITAL_SIGNATURE_ORIGIN_PART)) {
-//			return new org.docx4j.openpackaging.parts.digitalsignature.SignatureOriginPart(new PartName(partName));
 			
-			// Use reflection, since the dig sig functionality is in Enterprise only
-			try {
-				Class<?> originPart = Class.forName("org.docx4j.openpackaging.parts.digitalsignature.SignatureOriginPart");
-				Constructor<?> cons = originPart.getConstructor(PartName.class);
-				PartName pn = new PartName(partName);
-				return (Part) cons.newInstance(pn);
-			} catch (Exception e) {
-				return new BinaryPart( new PartName(partName));				
-			}			
+			// SignatureOriginPart, likewise
+			Part provided = providedPart(contentType, partName);
+			if (provided != null) return provided;
+			return new BinaryPart( new PartName(partName));				
 			
 		} else if (contentType.equals(ContentTypes.WEB_EXTENSION_TASKPANES)) {
 			return new TaskpanesPart(new PartName(partName));
@@ -592,6 +580,23 @@ public class ContentTypeManager  {
 			return new BinaryPart( new PartName(partName));
 		}
 
+	}
+
+	/**
+	 * A part from a module outside core (see {@link PartProvider}), or null.
+	 * Until 17.3.2 the signature parts were found by Class.forName on the
+	 * Enterprise DigSig jar; a provider on the module path needs no such thing.
+	 */
+	private Part providedPart(String contentType, String partName) {
+		for (PartProvider p : PartProvider.providers()) {
+			try {
+				Part part = p.createPart(contentType, new PartName(partName));
+				if (part != null) return part;
+			} catch (Exception e) {
+				log.warn("Part provider " + p.getClass().getName() + " failed for " + partName + ": " + e.getMessage(), e);
+			}
+		}
+		return null;
 	}
 
 	public Part CreateDefaultXmlPartObject(String partName)

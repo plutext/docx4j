@@ -4,8 +4,9 @@ Status: ACCEPTED 2026-10-08 (Jason: "i accept the recommendations in CR-033"; pr
 day: "prepare a CR for moving this into docx4j proper"; no additional dependencies in
 docx4j-core; the `com.plutext` packages become `org.docx4j` packages). Decisions D1 to D7 taken
 (§8; D7 with `template.potx` held back). Implementation from the DigSig session, with the docx4j
-session reviewing phase 2 (§8). Phase 0 done 2026-10-08 (private repo 8bceacd); phase 1 done
-2026-10-08 on branch `CR-033-digsig` (§10). Drafted with Claude Fable 5.1 from the DigSig
+session reviewing phase 2 (§8). Phase 0 done 2026-10-08 (private repo 8bceacd); phase 1 (bacdc3044), phase 2 (the core
+service) and phase 3's documentation done 2026-10-08 on branch `CR-033-digsig`; phase 3's Office
+check awaits Jason; phase 4 after it (§10). Drafted with Claude Fable 5.1 from the DigSig
 session, with the inventory of §2 measured in `../docx4j-digsig_11_4` at commit d7ea9a4 plus its
 uncommitted phase 5 samples. Owner: Jason Harrop.
 
@@ -538,3 +539,57 @@ comes with the module; noted for the licence list. `commons-codec` is on docx4j-
 classpath but not in its `module-info`, hence the `Base64` swap.
 
 Not done in phase 1: the Office check (phase 3); `docs/DigitalSignatures.md` (phase 3).
+
+### Phase 2 (2026-10-08), the core change
+
+`org.docx4j.openpackaging.parts.PartProvider` in docx4j-core: `Part createPart(String
+contentType, PartName)` returning null when not handled, with the providers resolved once by
+`ServiceLoader` (TCCL first, then core's own loader, as `MetafileSvgProvider` does), and `uses`
+in core's `module-info`. `ContentTypeManager` asks the providers for the two signature content
+types and falls back to its generic XML and binary parts; the `Class.forName` branches are gone
+(D3 said one release of fallback; there is no caller left to protect, since the only class
+those names ever found is in this module, which provides). `LoadFromZipNG` and
+`FlatOpcXmlImporter` lose the class-name string compare, which could never have worked for
+the current `XmlSignaturePart` (it extends `XmlPart`, and the branch cast to `JaxbXmlPart`);
+their `XmlPart` branch handles it. `Load3`'s commented-out line goes. No dependency added.
+
+The module: `DigitalSignaturePartProvider` (`provides` in `module-info`, and
+`META-INF/services`), and `PartProviderTest` (the provider is found; an Office-signed golden
+loads with `XmlSignaturePart` and `SignatureOriginPart`). 135 tests pass.
+
+Measured with a probe loading `word2016.docx`: on the classpath, one provider, the typed
+parts; on the module path (`java -p`, `--add-modules org.docx4j.digsig`), one provider, the
+typed parts, the service resolved through `uses`/`provides`; with docx4j-core alone, no
+provider, `DefaultXmlPart` and `BinaryPart`, and the package loads.
+
+Found on the way, for the docx4j session: core's `module-info` has no `uses
+org.docx4j.model.images.MetafileSvgProvider`, so on the module path that lookup throws
+`ServiceConfigurationError`, which its catch turns into the no-provider fallback. Not changed
+here (not this CR's code); one line to add.
+
+`docs/DigitalSignatures.md` written (phase 3's documentation item).
+
+### Phase 3 (2026-10-08), documentation done; the Office check awaits Jason
+
+`docs/DigitalSignatures.md` and the module's `README.md` written; `CLAUDE.md`'s module map,
+the CHANGELOG entry and the two `docx4j.properties` blocks were in phase 1. The samples module
+compiles.
+
+The Office-check set is in `docx4j-digsig/target/office-check-1/` (not committed; made with
+`plutext-digsig-test.pfx`, which Office on the VM already trusts from CR-002):
+
+| File | Made from | Our validator | master (2.0.6) |
+|---|---|---|---|
+| `docx4j-signed.docx` | `sign me please.docx` | VALID | VALID |
+| `docx4j-signed.xlsx` | `corpus/comments.xlsx` | VALID | n/a (master's static validator is docx-only) |
+| `docx4j-signed.pptx` | `corpus/table.pptx` | VALID | n/a |
+| `docx4j-signed.xlsm` | `goldens/originals/macro.xlsm` | VALID | n/a |
+| `docx4j-signed-strict.pptx` | `corpus/strict.pptx` | VALID | n/a |
+| `docx4j-signed-sigline.xlsx` | `goldens/originals/sigline.xlsx`, Excel's line signed with a PNG | VALID | n/a |
+| `docx4j-signed-xades-t.docx` | `sign me please.docx`, XAdES-T, TSA `http://timestamp.digicert.com` | VALID | VALID |
+
+So XAdES-T works end to end against a public RFC 3161 server after the BouncyCastle upgrade
+(`xd:SignatureTimeStamp` with an `EncapsulatedTimeStamp` is in the signature); that was the one
+untested path of §4.5. The gate: Word, Excel and PowerPoint report each file's signature valid
+and complete, the Excel line shows the signed image, and Word shows the XAdES-T one as valid
+(Office labels any XAdES level "XAdES-EPES" in its details, per CR-002 §6.6).

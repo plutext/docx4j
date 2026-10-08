@@ -41,6 +41,9 @@ module org.docx4j.digsig {
 	exports org.docx4j.dsig.crypt.services;
 	exports org.docx4j.openpackaging.parts.digitalsignature;
 
+	provides org.docx4j.openpackaging.parts.PartProvider
+		with org.docx4j.openpackaging.parts.digitalsignature.DigitalSignaturePartProvider;
+
 	exports org.docx4j.org.etsi.uri.x01903.v13;
 	exports org.docx4j.org.etsi.uri.x01903.v141;
 	exports org.docx4j.com.microsoft.schemas.office.x2006.digsig;
