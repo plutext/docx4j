@@ -315,17 +315,22 @@ case as read) and 4083 -1. Left for the fork: the pair, the page-end case; then 
 
 ### 4.3 Phase 3, what the probes left
 
-**A probe for phase 3 from 13419 (2026-10-08).** Its body table (full width, tblpY 80pt) is anchored to a
-hidden empty paragraph; four empties follow (the first the anchor of a small floating address table,
-tblpY 2.25pt), then the text paragraph "Service Order Agreement - Page 1 of 4". Word lays the empties and
-the address table in the 80pt gap (the address table at the page's top, y 50) and leaves the rest of the
-gap empty: the text paragraph does not fill it, though three of its 10.35pt lines would fit the 38.7pt left
-(and in Word they would sit beside the address table, 169pt of room). docx4j's gap-fill rule (§4.1, from
-probe `-wide-anchor-text` case 2 and 3229's heading) assumes the next text paragraph's lines fill the rest
-of the gap and keeps only the modulo, which puts 13419's body table 31pt above Word's. A probe is needed
-for which of these Word does: fill with the next text paragraph only when it is the anchor; fill with
-whole paragraphs only (a paragraph that does not fit whole goes below); or not fill beside a second float.
-Until it is read, the rule stands (gate b202).
+**Probe `table-floating-gap-text` (Word run 2026-10-08), from 13419.** A full-width table in the flow with
+tblpY 120pt and an empty anchor; the text after the empties fills the rest of the gap with as many of its lines
+as fit and continues below the table, in every case: case 1 (three empties, a seven-sentence paragraph) four
+lines above at 161.7 to 203.2, the table at 228.4, the rest from 312.9; case 2 the one-sentence paragraph whole
+and three lines of the long one; case 3 (a 40% float anchored to the second empty, at 125) four lines beside
+that float, narrowed to 72 to 320, then the table; case 4 (no empties) seven lines above, two below. So the
+§4.1 rule stands as measured: lines that fit fill the gap, split from their paragraph, beside a second float
+too; docx4j, unable to split, keeps the modulo and the text after the table lands at Word's y (case 1: the
+fifth line at 311.7 against 312.9) with the table itself 55pt above Word's. The probe also confirmed the
+anchor is the paragraph a floating table precedes (case 3's small float at the second empty's top + 3pt).
+
+13419 remains unexplained by this: its body table (anchored to a hidden empty paragraph, whose hidden mark
+merges it with the next paragraph in Word, so the address table shares the anchor) is drawn at 108 to 716
+with nothing in the 38pt left of the gap, and the one-line paragraph after the empties starts page 2 though
+it would fit the gap whole or the page's foot (716 to 756). A pair on one anchor with a hidden mark is the
+remaining suspect; deferred (the document is at Word's pages on both renderers, one line short).
 
 - The negative offset beyond a line and a half, and into the top margin (`negative` case 2: Word at y
   42.8, 29pt above the margin).
