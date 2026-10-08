@@ -1283,7 +1283,16 @@ public final class WordLayoutFixups {
 		Element holder = doc.createElementNS(FO_NS, "fo:block");
 		holder.setAttribute("start-indent", "0pt");
 		holder.setAttribute("end-indent", "0pt");
-		if (y > 0) holder.setAttribute("padding-top", pt(y));
+		// the frame's offset below its anchor: on a renderer with float-offset (fork CR-023)
+		// the float is drawn there and the lines above it keep the full width, as Word lays
+		// them; else padding inside the float, which narrows them (§10; CR-032 phase 2)
+		if (y > 0) {
+			if (FopCapabilities.has(FopCapabilities.Capability.FLOAT_OFFSET)) {
+				wrapper.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS, "fox:float-offset", pt(y));
+			} else {
+				holder.setAttribute("padding-top", pt(y));
+			}
+		}
 		if (vSpace > 0) holder.setAttribute("padding-bottom", pt(vSpace));
 		wrapper.appendChild(holder);
 		Element cell = bandTable(doc, holder, padLeft, w, padRight);
@@ -1625,7 +1634,16 @@ public final class WordLayoutFixups {
 			wrapper.setAttribute("float", right ? "right" : "left");
 			holder.setAttribute("padding-left", pt(right ? distL : Math.max(0, x)));
 			holder.setAttribute("padding-right", pt(right ? Math.max(0, col - x - w) : distR));
-			if (off > 0) holder.setAttribute("padding-top", pt(off));
+			// the picture's offset below its paragraph: as the float's offset on a renderer
+			// with float-offset (fork CR-023; the lines above it full width, as Word's), else
+			// padding inside the float (CR-032 phase 2)
+			if (off > 0) {
+				if (FopCapabilities.has(FopCapabilities.Capability.FLOAT_OFFSET)) {
+					wrapper.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS, "fox:float-offset", pt(off));
+				} else {
+					holder.setAttribute("padding-top", pt(off));
+				}
+			}
 			if (distB > 0) holder.setAttribute("padding-bottom", pt(distB));
 			wrapper.appendChild(holder);
 		} else if ("topAndBottom".equals(kind)) {
@@ -2012,23 +2030,12 @@ public final class WordLayoutFixups {
 		 * and its "float a" cell line at 186.8, ours at 186.6.  (What FOP will not do is
 		 * leave the lines *above* the table full width: it anchors the float at the line
 		 * it sits at, so the padding narrows them too - §10.) */
-		// a second float on the same anchor with an offset threw in the renderer's layout
-		// (3229, two tables at 43pt and 339pt: NoSuchElementException in LMiter.next, gate
-		// b196 on r19; reproducer ~/fidelity-cr030/repro/float-offset-lmiter-3229.fo), so a
-		// pair keeps the padding until the fork handles it
+		// (a second offset float on the same anchor threw in the renderer until the fork's r20,
+		// which draws each float of an anchor at its own offset: 3229's two tables at 43pt and
+		// 339pt, gate b196 -> b199)
 		boolean pair = false;
-		for (Node n = anchor.getFirstChild(); n != null; n = n.getNextSibling()) {
-			if (n instanceof Element && isFo((Element) n, "float")) pair = true;
-		}
-		for (Node n = tbl.getNextSibling(); n != null && !pair; n = n.getNextSibling()) {
-			if (n instanceof Element) {
-				Element e = (Element) n;
-				if (isFo(e, "table") && e.hasAttribute(HINT_TBLP_FLOAT)) pair = true;
-				else break;
-			}
-		}
 		if (padTop > 0) {
-			if (FopCapabilities.has(FopCapabilities.Capability.FLOAT_OFFSET) && !pair) {
+			if (FopCapabilities.has(FopCapabilities.Capability.FLOAT_OFFSET)) {
 				// fork CR-023: the float drawn tblpY below the top of its anchor block, the lines
 				// above it full width, as Word lays them (CR-032 phase 2)
 				wrapper.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS, "fox:float-offset", pt(padTop));
