@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+  <parent>
+	<groupId>org.docx4j</groupId>
+	<artifactId>docx4j-parent</artifactId>
+	<version>${revision}</version>
+  </parent>
+	<artifactId>docx4j-digsig</artifactId>
+	<packaging>jar</packaging>
+	<name>docx4j-digsig</name>
+	<description>
+		Digital signatures for docx, pptx and xlsx: sign an OPC package (XML-DSig,
+		XAdES-EPES or XAdES-T) as Office does, validate signatures made by Office or
+		by docx4j, list and remove them, and sign Word and Excel signature lines.
+		Formerly Plutext DigSig (CR-033). The core is adapted from Apache POI's
+		poifs.crypt.dsig; the XML security work is Apache Santuario's.
+	</description>
+	<properties>
+		<!-- Pinned: a Santuario version change is a signing change and gets the Office check
+		     (CR-033 section 4.5; 2.3.0 signed invalidly on the old javax branch). -->
+		<version.xmlsec>3.0.6</version.xmlsec>
+		<version.bouncycastle>1.78.1</version.bouncycastle>
+	</properties>
+	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
+		<testOutputDirectory>bin-testOutput</testOutputDirectory>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>${version.maven-jar-plugin}</version>
+				<configuration>
+					<excludes>
+						<exclude>src/test/resources/**/*</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<dependency>
+            <groupId>org.docx4j</groupId>
+            <artifactId>docx4j-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<!-- Apache Santuario (Apache 2): the XML Signature provider, c14n, the TransformService base
+		     class, and the org.apache.xml.security.binding.xmldsig JAXB classes -->
+		<dependency>
+		    <groupId>org.apache.santuario</groupId>
+		    <artifactId>xmlsec</artifactId>
+		    <version>${version.xmlsec}</version>
+		</dependency>
+		<!-- BouncyCastle (MIT-style): RFC 3161 timestamps for XAdES-T, OCSP and CRL values for
+		     XAdES-XL; brings bcprov and bcutil -->
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpkix-jdk18on</artifactId>
+			<version>${version.bouncycastle}</version>
+		</dependency>
+		<!-- renders the signer's name as the signature-line image (Apache 2) -->
+		<dependency>
+			<groupId>org.docx4j.org.capaxit.textimage</groupId>
+			<artifactId>TextImageGen</artifactId>
+			<version>1.9</version>
+		</dependency>
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${version.logback-classic}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>

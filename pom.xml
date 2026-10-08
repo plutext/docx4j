@@ -40,6 +40,7 @@
         <module>docx4j-diffx</module>
         <module>docx4j-diffx-tests</module>
         <module>docx4j-markdown</module>
+        <module>docx4j-digsig</module>
         
         <module>docx4j-export-fo-fonts-symbol</module>
         <module>docx4j-export-fo-fonts-croscore</module>  
@@ -64,6 +65,7 @@
         <module>docx4j-samples-pptx4j</module>
         <module>docx4j-samples-xlsx4j</module>
         <module>docx4j-samples-glox4j</module>
+        <module>docx4j-samples-digsig</module>
         
         <module>docx4j-samples-conversion-via-microsoft-graph</module>
 

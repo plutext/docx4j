@@ -21,6 +21,23 @@ Claude Fable 5.1 and Opus 5.5
 Changes in Version 17.3.2
 --------------------------
 
+Digital signatures (new module docx4j-digsig, CR-033):
+
+- Sign a docx, pptx or xlsx (XML-DSig, XAdES-EPES or XAdES-T, SHA-256 by default) so that
+  Word, Excel and PowerPoint report a valid signature; validate signatures made by Office
+  or by docx4j; list and remove them; Word and Excel signature lines; a certificate trust
+  checker (DefaultCertificateTrustChecker) with the caller's trust anchors.  Formerly
+  Plutext DigSig; the com.plutext packages are now org.docx4j.dsig (API),
+  org.docx4j.dsig.crypt (the core, adapted from Apache POI) and the
+  org.docx4j.openpackaging.parts.digitalsignature parts.  Dependencies (Apache Santuario,
+  BouncyCastle, TextImageGen) belong to this module only; docx4j-core is unchanged.
+  Samples in docx4j-samples-digsig.
+- The properties com.plutext.dsig.XAdES.Level and com.plutext.dsig.validation.maxReferences
+  are now docx4j.dsig.XAdES.Level and docx4j.dsig.validation.maxReferences; the old names
+  are not read.
+- DigSig's 2016 trial-notice paragraph is gone, so signing a docx docx4j already signed
+  leaves the earlier signature valid.
+
 PDF via XSL FO:
 
 - A keep chain which runs into a table with a repeated header row is judged with the header's

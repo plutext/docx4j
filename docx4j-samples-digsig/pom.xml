@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+  <parent>
+	<groupId>org.docx4j</groupId>
+	<artifactId>docx4j-parent</artifactId>
+	<version>${revision}</version>
+  </parent>
+	<artifactId>docx4j-samples-digsig</artifactId>
+	<packaging>jar</packaging>
+	<name>docx4j-samples-digsig</name>
+	<description>Samples for docx4j-digsig: sign and validate docx, pptx and xlsx; signature lines</description>
+	<properties>
+	    <maven.javadoc.skip>true</maven.javadoc.skip>
+	    <maven.deploy.skip>true</maven.deploy.skip>
+	</properties>
+	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
+		<plugins>
+			<!--  don't deploy this jar to Maven Central -->
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.7.0</version>
+				<configuration>
+				    <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-digsig</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<!--  choose a docx4j-JAXB implementation, one ONLY of the 2 following :-->
+		<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+<!--
+		<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-MOXy</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+ -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${version.logback-classic}</version>
+		</dependency>
+	</dependencies>
+</project>

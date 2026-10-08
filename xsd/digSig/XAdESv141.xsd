@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://uri.etsi.org/01903/v1.4.1#"
+	xmlns="http://uri.etsi.org/01903/v1.4.1#" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" elementFormDefault="qualified"
+		xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+	<!-- 
+	
+     \Java\jaxb-ri-2.2.6\bin\xjc   XAdESv141.xsd -d tmp  -no-header -target 2.0
+     
+     For Java 8, add -disableXmlSecurity
+     
+	
+	 -->	
+	
+	<!--  used by com.plutext.crypt.dsig.facets.org.apache.poi.poifs.crypt.dsig.facets.XAdESXLSignatureFacet -->
+	
+	<xsd:import namespace="http://uri.etsi.org/01903/v1.3.2#" schemaLocation="XAdES.xsd"/>
+	<!--  http://uri.etsi.org/01903/v1.3.2/XAdES.xsd" -->
+	
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings/>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="com.plutext.org.etsi.uri.x01903.v141"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	 
+	
+	
+	<!-- Start CertificateValues -->
+	<xsd:element name="TimeStampValidationData" type="ValidationDataType"/>
+	<xsd:complexType name="ValidationDataType">
+		<xsd:sequence>
+			<xsd:element ref="xades:CertificateValues" minOccurs="0"/>
+			<xsd:element ref="xades:RevocationValues" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute name="Id" type="xsd:ID" use="optional"/>
+		<xsd:attribute name="URI" type="xsd:anyURI" use="optional"/>
+	</xsd:complexType>
+	<xsd:element name="ArchiveTimeStamp" type="xades:XAdESTimeStampType"/>
+</xsd:schema>
