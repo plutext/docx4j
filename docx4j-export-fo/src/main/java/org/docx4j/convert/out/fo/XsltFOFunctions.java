@@ -89,12 +89,12 @@ public class XsltFOFunctions {
     /** The paragraph style a (synthetic) style id stands for; the id itself if the package
      *  has no resolver.  @since 17.3.1 */
     private static String sourceStyleOf(WordprocessingMLPackage wmlPackage, String styleId) {
-    	if (styleId == null || wmlPackage == null) return styleId;
-    	try {
-    		return wmlPackage.getMainDocumentPart().getPropertyResolver().sourceStyleOf(styleId);
-    	} catch (Docx4JException e) {
-    		return styleId;
-    	}
+		if (styleId == null || wmlPackage == null) return styleId;
+		try {
+			return wmlPackage.getMainDocumentPart().getPropertyResolver().sourceStyleOf(styleId);
+		} catch (Docx4JException e) {
+			return styleId;
+		}
     }
 	
 
@@ -103,21 +103,21 @@ public class XsltFOFunctions {
 	}
 	
     public static DocumentFragment createBlockForSdt(FOConversionContext context,
-    		NodeIterator pPrNodeIt,
-    		String pStyleVal, NodeIterator childResults, String tag) {
+			NodeIterator pPrNodeIt,
+			String pStyleVal, NodeIterator childResults, String tag) {
 
-    	DocumentFragment docfrag = createBlock(context,
+		DocumentFragment docfrag = createBlock(context,
         		 pPrNodeIt,
         		 pStyleVal,  childResults,
         		 true);
 
-    	applySdtContainerMargins(docfrag, tag);
-    	resetContainerIndents(docfrag, tag);
-    	dropContainerKeeps(docfrag);
-    	borderAgainstHangingIndent(docfrag);
-    	wrapInBidiBlockContainer(docfrag);
+		applySdtContainerMargins(docfrag, tag);
+		resetContainerIndents(docfrag, tag);
+		dropContainerKeeps(docfrag);
+		borderAgainstHangingIndent(docfrag);
+		wrapInBidiBlockContainer(docfrag);
 
-    	return docfrag;
+		return docfrag;
     }
 
     /**
@@ -129,17 +129,17 @@ public class XsltFOFunctions {
      * @since 17.0.4
      */
     public static DocumentFragment createBlockForSdt(FOConversionContext context,
-    		PPr pPrDirect, String pStyleVal, Node childResults, String tag) {
+			PPr pPrDirect, String pStyleVal, Node childResults, String tag) {
 
-    	DocumentFragment docfrag = createBlock(context, pPrDirect, pStyleVal, childResults, true);
+		DocumentFragment docfrag = createBlock(context, pPrDirect, pStyleVal, childResults, true);
 
-    	applySdtContainerMargins(docfrag, tag);
-    	resetContainerIndents(docfrag, tag);
-    	dropContainerKeeps(docfrag);
-    	borderAgainstHangingIndent(docfrag);
-    	wrapInBidiBlockContainer(docfrag);
+		applySdtContainerMargins(docfrag, tag);
+		resetContainerIndents(docfrag, tag);
+		dropContainerKeeps(docfrag);
+		borderAgainstHangingIndent(docfrag);
+		wrapInBidiBlockContainer(docfrag);
 
-    	return docfrag;
+		return docfrag;
     }
 
 	/**
@@ -160,19 +160,19 @@ public class XsltFOFunctions {
 	 */
 	private static void applySdtContainerMargins(DocumentFragment docfrag, String tag) {
 
-    	if (tag.equals(Containerization.TAG_SHADING) && docfrag!=null) {
-    		// docfrag.getNodeName() is  #document-fragment
-    	    Node foBlock = docfrag.getFirstChild();
-    	    if (foBlock instanceof Element) {
-    	    	Element block = (Element)foBlock;
-    	    	if (isZeroOrAbsent(block.getAttribute("space-before"))) {
-    	    		block.setAttribute("margin-top", "0in");
-    	    	}
-    	    	if (isZeroOrAbsent(block.getAttribute("space-after"))) {
-    	    		block.setAttribute("margin-bottom", "0in");
-    	    	}
-    	    }
-    	}
+		if (tag.equals(Containerization.TAG_SHADING) && docfrag!=null) {
+			// docfrag.getNodeName() is  #document-fragment
+		    Node foBlock = docfrag.getFirstChild();
+		    if (foBlock instanceof Element) {
+		    	Element block = (Element)foBlock;
+		    	if (isZeroOrAbsent(block.getAttribute("space-before"))) {
+		    		block.setAttribute("margin-top", "0in");
+		    	}
+		    	if (isZeroOrAbsent(block.getAttribute("space-after"))) {
+		    		block.setAttribute("margin-bottom", "0in");
+		    	}
+		    }
+		}
 	}
 
 	/**
@@ -245,17 +245,17 @@ public class XsltFOFunctions {
 	}
 
     public static DocumentFragment createInlineForSdt(
-    		FOConversionContext context,
-    		NodeIterator rPrNodeIt,
-    		NodeIterator childResults, String tag) {
+			FOConversionContext context,
+			NodeIterator rPrNodeIt,
+			NodeIterator childResults, String tag) {
 
-    	DocumentFragment docfrag = createBlockForRPr(
+		DocumentFragment docfrag = createBlockForRPr(
         		context,
         		null,
         		rPrNodeIt,
         		childResults);
 
-    	return docfrag;
+		return docfrag;
     }
 
     /**
@@ -266,8 +266,8 @@ public class XsltFOFunctions {
      * @since 17.0.4
      */
     public static DocumentFragment createInlineForSdt(
-    		FOConversionContext context,
-    		RPr rPrDirect, Node childResults) {
+			FOConversionContext context,
+			RPr rPrDirect, Node childResults) {
 
         try {
 			RPr rPr = context.getPropertyResolver().getEffectiveRPr(rPrDirect, null, context.getCellContext());
@@ -305,10 +305,10 @@ public class XsltFOFunctions {
      * @since 17.1.0
      */
     public static DocumentFragment createVmlPicture(FOConversionContext context,
-    		NodeIterator wpict, String style, String wrapType) {
+			NodeIterator wpict, String style, String wrapType) {
 
-    	DocumentFragment frag = org.docx4j.model.images.WordXmlPictureE10.createXslFoImgE10(context, wpict);
-    	return anchorVmlPicture(context, frag, style, wrapType);
+		DocumentFragment frag = org.docx4j.model.images.WordXmlPictureE10.createXslFoImgE10(context, wpict);
+		return anchorVmlPicture(context, frag, style, wrapType);
     }
 
     /**
@@ -321,10 +321,10 @@ public class XsltFOFunctions {
      * @since 17.1.0
      */
     public static DocumentFragment anchorVmlPicture(AbstractWmlConversionContext context,
-    		DocumentFragment frag, String style, String wrapType) {
+			DocumentFragment frag, String style, String wrapType) {
 
-    	if (frag==null || !FOTextBoxes.isEnabled()) return frag;
-    	try {
+		if (frag==null || !FOTextBoxes.isEnabled()) return frag;
+		try {
 	    	java.util.Map<String, String> props = FOTextBoxes.parseStyle(style);
 	    	if (!FOTextBoxes.isPositioned(props)) return frag;
 
@@ -360,10 +360,10 @@ public class XsltFOFunctions {
 	    	container.appendChild(holder);
 	    	frag.appendChild(container);
 	    	return frag;
-    	} catch (Exception e) {
-    		log.warn("Absolutely positioned VML picture left in the flow: " + e.getMessage(), e);
-    		return frag;
-    	}
+		} catch (Exception e) {
+			log.warn("Absolutely positioned VML picture left in the flow: " + e.getMessage(), e);
+			return frag;
+		}
     }
 
     /**
@@ -376,24 +376,24 @@ public class XsltFOFunctions {
      */
     public static org.docx4j.wml.CTTxbxContent shapeTextBox(Object anchorOrInline) {
 
-    	org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp
-    			= shape(anchorOrInline);
-    	if (wsp==null || wsp.getTxbx()==null) return null;
-    	return wsp.getTxbx().getTxbxContent();
+		org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp
+				= shape(anchorOrInline);
+		if (wsp==null || wsp.getTxbx()==null) return null;
+		return wsp.getTxbx().getTxbxContent();
     }
 
     /** The DrawingML shape (wps:wsp) in this wp:anchor or wp:inline, or null. */
     private static org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape
-    		shape(Object anchorOrInline) {
+			shape(Object anchorOrInline) {
 
-    	org.docx4j.dml.Graphic graphic = null;
-    	if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
-    		graphic = ((org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline).getGraphic();
-    	} else if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
-    		graphic = ((org.docx4j.dml.wordprocessingDrawing.Inline)anchorOrInline).getGraphic();
-    	}
-    	if (graphic==null || graphic.getGraphicData()==null) return null;
-    	return graphic.getGraphicData().getWordprocessingShape();
+		org.docx4j.dml.Graphic graphic = null;
+		if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
+			graphic = ((org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline).getGraphic();
+		} else if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
+			graphic = ((org.docx4j.dml.wordprocessingDrawing.Inline)anchorOrInline).getGraphic();
+		}
+		if (graphic==null || graphic.getGraphicData()==null) return null;
+		return graphic.getGraphicData().getWordprocessingShape();
     }
 
     /**
@@ -404,33 +404,55 @@ public class XsltFOFunctions {
      * @since 17.0.5
      */
     public static Element createShapeTextBox(FOConversionContext context,
-    		Object anchorOrInline, Document document) {
+			Object anchorOrInline, Document document) {
 
-    	org.docx4j.dml.CTPositiveSize2D extent = null;
-    	if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
-    		extent = ((org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline).getExtent();
-    	} else if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
-    		extent = ((org.docx4j.dml.wordprocessingDrawing.Inline)anchorOrInline).getExtent();
-    	}
-    	double w = (extent==null) ? 0 : extent.getCx() / 12700d;
-    	double h = (extent==null) ? 0 : extent.getCy() / 12700d;
+		org.docx4j.dml.CTPositiveSize2D extent = null;
+		if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
+			extent = ((org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline).getExtent();
+		} else if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
+			extent = ((org.docx4j.dml.wordprocessingDrawing.Inline)anchorOrInline).getExtent();
+		}
+		double w = (extent==null) ? 0 : extent.getCx() / 12700d;
+		double h = (extent==null) ? 0 : extent.getCy() / 12700d;
 
-    	// a wp:inline shape is in the flow; a wp:anchor is positioned, and
-    	// stampAnchorHints works out where from its wrap and position elements
-    	// the text is set in by half the line as well as by the insets (17.3.1)
-    	Element container = FOTextBoxes.createContainer(document, "inline", w, h, 0, "p:0", 0, 0,
-    			FOTextBoxes.withStroke(shapeInsets(anchorOrInline), shapeLinePt(anchorOrInline)));
-    	if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor
-    			&& FOTextBoxes.isEnabled()) {
-    		org.docx4j.model.images.WordXmlPictureE20.stampAnchorHints(container,
-    				(org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline, context);
-    		if ("topAndBottom".equals(container.getAttribute(WordLayoutFixups.HINT_ANCHOR))) {
-    			// the fixups' text box cases are "none" (out of the flow) and "square"
-    			// (reserve the box's height); topAndBottom is the latter
-    			container.setAttribute(WordLayoutFixups.HINT_ANCHOR, "square");
-    		}
-    	}
-    	return container;
+		// a wp:inline shape is in the flow; a wp:anchor is positioned, and
+		// stampAnchorHints works out where from its wrap and position elements
+		// the text is set in by half the line as well as by the insets (17.3.1)
+		Element container = FOTextBoxes.createContainer(document, "inline", w, h, 0, "p:0", 0, 0,
+				FOTextBoxes.withStroke(shapeInsets(anchorOrInline), shapeLinePt(anchorOrInline)));
+		if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor
+				&& FOTextBoxes.isEnabled()) {
+			org.docx4j.model.images.WordXmlPictureE20.stampAnchorHints(container,
+					(org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline, context);
+			if ("topAndBottom".equals(container.getAttribute(WordLayoutFixups.HINT_ANCHOR))) {
+				// the fixups' text box cases are "none" (out of the flow) and "square"
+				// (reserve the box's height); topAndBottom is the latter
+				container.setAttribute(WordLayoutFixups.HINT_ANCHOR, "square");
+			}
+			stampTextBeside(container, (org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline);
+		}
+		return container;
+    }
+
+    /** A shape wrapped square, tight or through lets text run beside it: its distL, distR
+     *  and distB and the wrap's wrapText side, for WordLayoutFixups.textBesideBand.
+     *  @since 17.3.1 */
+    private static void stampTextBeside(Element container, org.docx4j.dml.wordprocessingDrawing.Anchor anchor) {
+		org.docx4j.dml.wordprocessingDrawing.STWrapText side;
+		if (anchor.getWrapSquare()!=null) side = anchor.getWrapSquare().getWrapText();
+		else if (anchor.getWrapTight()!=null) side = anchor.getWrapTight().getWrapText();
+		else if (anchor.getWrapThrough()!=null) side = anchor.getWrapThrough().getWrapText();
+		else return;
+		String s = side==org.docx4j.dml.wordprocessingDrawing.STWrapText.LEFT ? "left"
+				: side==org.docx4j.dml.wordprocessingDrawing.STWrapText.RIGHT ? "right"
+				: side==org.docx4j.dml.wordprocessingDrawing.STWrapText.LARGEST ? "largest" : "both";
+		container.setAttribute(WordLayoutFixups.HINT_TEXTBOX_BESIDE,
+				FOTextBoxes.pt(emuPt(anchor.getDistL())) + " " + FOTextBoxes.pt(emuPt(anchor.getDistR())) + " "
+				+ FOTextBoxes.pt(emuPt(anchor.getDistB())) + " " + s);
+    }
+
+    private static double emuPt(Long emu) {
+		return emu==null ? 0 : emu / 12700d;
     }
 
     /** The width in points of the line round the shape (wps:spPr/a:ln): 0 where there is
@@ -439,34 +461,34 @@ public class XsltFOFunctions {
      *  a:lnRef, which Word's text boxes give idx 0 (no line) unless styled; that case is
      *  taken as 0.75pt only where the lnRef names a line.  @since 17.3.1 */
     private static double shapeLinePt(Object anchorOrInline) {
-    	org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp
-    			= shape(anchorOrInline);
-    	if (wsp==null) return 0;
-    	org.docx4j.dml.CTLineProperties ln = wsp.getSpPr()==null ? null : wsp.getSpPr().getLn();
-    	if (ln==null) {
-    		org.docx4j.dml.CTShapeStyle style = wsp.getStyle();
-    		return (style!=null && style.getLnRef()!=null && style.getLnRef().getIdx() > 0) ? 0.75 : 0;
-    	}
-    	if (ln.getNoFill()!=null) return 0;
-    	return ln.getW()==null ? 0.75 : ln.getW() / 12700d;
+		org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp
+				= shape(anchorOrInline);
+		if (wsp==null) return 0;
+		org.docx4j.dml.CTLineProperties ln = wsp.getSpPr()==null ? null : wsp.getSpPr().getLn();
+		if (ln==null) {
+			org.docx4j.dml.CTShapeStyle style = wsp.getStyle();
+			return (style!=null && style.getLnRef()!=null && style.getLnRef().getIdx() > 0) ? 0.75 : 0;
+		}
+		if (ln.getNoFill()!=null) return 0;
+		return ln.getW()==null ? 0.75 : ln.getW() / 12700d;
     }
 
     /** The shape's text insets (wps:bodyPr lIns/tIns/rIns/bIns, EMU) in points, or null
      *  for Word's defaults. */
     private static double[] shapeInsets(Object anchorOrInline) {
 
-    	org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp
-    			= shape(anchorOrInline);
-    	if (wsp==null || wsp.getBodyPr()==null) return null;
-    	org.docx4j.dml.CTTextBodyProperties bodyPr = wsp.getBodyPr();
-    	if (bodyPr.getLIns()==null && bodyPr.getTIns()==null
-    			&& bodyPr.getRIns()==null && bodyPr.getBIns()==null) return null;
-    	// DrawingML's defaults are Word's: 0.1in left and right, 0.05in top and bottom
-    	return new double[] {
-    			bodyPr.getLIns()==null ? 7.2 : bodyPr.getLIns() / 12700d,
-    			bodyPr.getTIns()==null ? 3.6 : bodyPr.getTIns() / 12700d,
-    			bodyPr.getRIns()==null ? 7.2 : bodyPr.getRIns() / 12700d,
-    			bodyPr.getBIns()==null ? 3.6 : bodyPr.getBIns() / 12700d };
+		org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp
+				= shape(anchorOrInline);
+		if (wsp==null || wsp.getBodyPr()==null) return null;
+		org.docx4j.dml.CTTextBodyProperties bodyPr = wsp.getBodyPr();
+		if (bodyPr.getLIns()==null && bodyPr.getTIns()==null
+				&& bodyPr.getRIns()==null && bodyPr.getBIns()==null) return null;
+		// DrawingML's defaults are Word's: 0.1in left and right, 0.05in top and bottom
+		return new double[] {
+				bodyPr.getLIns()==null ? 7.2 : bodyPr.getLIns() / 12700d,
+				bodyPr.getTIns()==null ? 3.6 : bodyPr.getTIns() / 12700d,
+				bodyPr.getRIns()==null ? 7.2 : bodyPr.getRIns() / 12700d,
+				bodyPr.getBIns()==null ? 3.6 : bodyPr.getBIns() / 12700d };
     }
 
     /**
@@ -476,14 +498,14 @@ public class XsltFOFunctions {
      * @since 17.0.5
      */
     public static DocumentFragment createShapeTextBox(FOConversionContext context,
-    		NodeIterator anchorIt, NodeIterator childResultsIt) {
+			NodeIterator anchorIt, NodeIterator childResultsIt) {
 
-    	try {
-    		Node anchorNode = (anchorIt==null) ? null : anchorIt.nextNode();
-    		if (anchorNode==null) return null;
-    		Unmarshaller u = Context.jc.createUnmarshaller();
-    		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-    		Object anchorOrInline = XmlUtils.unwrap(u.unmarshal(anchorNode));
+		try {
+			Node anchorNode = (anchorIt==null) ? null : anchorIt.nextNode();
+			if (anchorNode==null) return null;
+			Unmarshaller u = Context.jc.createUnmarshaller();
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+			Object anchorOrInline = XmlUtils.unwrap(u.unmarshal(anchorNode));
 
 			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 			Element container = createShapeTextBox(context, anchorOrInline, document);
@@ -519,19 +541,19 @@ public class XsltFOFunctions {
      */
     public static void shiftIndents(Node parent, String tagVal) {
 
-    	int[] indents = indents(tagVal);
-    	if (parent==null || (indents[0]==0 && indents[1]==0)) return;
-    	double start = indents[0] / 20d, end = indents[1] / 20d;
-    	for (Node n = parent.getFirstChild(); n!=null; n = n.getNextSibling()) {
-    		if (!(n instanceof Element)) continue;
-    		shift((Element)n, "start-indent", start);
-    		shift((Element)n, "end-indent", end);
-    	}
+		int[] indents = indents(tagVal);
+		if (parent==null || (indents[0]==0 && indents[1]==0)) return;
+		double start = indents[0] / 20d, end = indents[1] / 20d;
+		for (Node n = parent.getFirstChild(); n!=null; n = n.getNextSibling()) {
+			if (!(n instanceof Element)) continue;
+			shift((Element)n, "start-indent", start);
+			shift((Element)n, "end-indent", end);
+		}
     }
 
     private static void shift(Element child, String name, double delta) {
-    	double value = WordLayoutFixups.lengthPt(child.getAttribute(name)) + delta;
-    	child.setAttribute(name, org.docx4j.fonts.WordLineMetrics.format(value));
+		double value = WordLayoutFixups.lengthPt(child.getAttribute(name)) + delta;
+		child.setAttribute(name, org.docx4j.fonts.WordLineMetrics.format(value));
     }
 
     /**
@@ -542,8 +564,8 @@ public class XsltFOFunctions {
      */
     public static DocumentFragment shiftIndents(String tagVal, NodeIterator childResultsIt) {
 
-    	Node childResults = (childResultsIt==null) ? null : childResultsIt.nextNode();
-    	try {
+		Node childResults = (childResultsIt==null) ? null : childResultsIt.nextNode();
+		try {
 			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 			DocumentFragment docfrag = document.createDocumentFragment();
 			if (childResults!=null) {
@@ -576,22 +598,22 @@ public class XsltFOFunctions {
      * @since 17.3.1
      */
     private static final String[][] FOOTNOTE_BODY_RESETS = {
-    	{ "font-weight", "normal" },
-    	{ "font-style", "normal" },
-    	{ "color", "black" },
-    	{ "text-decoration", "no-underline no-overline no-line-through no-blink" },
-    	{ "letter-spacing", "normal" },
-    	{ "word-spacing", "normal" },
-    	{ "text-align", "start" },
-    	{ "text-align-last", "relative" },
-    	{ "text-indent", "0pt" },
-    	{ "start-indent", "0pt" },
-    	{ "end-indent", "0pt" },
-    	{ "hyphenate", "false" },
-    	{ "visibility", "visible" },
-    	{ "keep-together.within-page", "auto" },
-    	{ "white-space-treatment", "ignore-if-surrounding-linefeed" },
-    	{ "linefeed-treatment", "treat-as-space" } };
+		{ "font-weight", "normal" },
+		{ "font-style", "normal" },
+		{ "color", "black" },
+		{ "text-decoration", "no-underline no-overline no-line-through no-blink" },
+		{ "letter-spacing", "normal" },
+		{ "word-spacing", "normal" },
+		{ "text-align", "start" },
+		{ "text-align-last", "relative" },
+		{ "text-indent", "0pt" },
+		{ "start-indent", "0pt" },
+		{ "end-indent", "0pt" },
+		{ "hyphenate", "false" },
+		{ "visibility", "visible" },
+		{ "keep-together.within-page", "auto" },
+		{ "white-space-treatment", "ignore-if-surrounding-linefeed" },
+		{ "linefeed-treatment", "treat-as-space" } };
 
     /**
      * Stop a footnote's body inheriting the formatting of the paragraph and run it is
@@ -601,9 +623,9 @@ public class XsltFOFunctions {
      * @since 17.3.1
      */
     public static void resetInheritedFormatting(Element footnoteBody) {
-    	for (String[] reset : FOOTNOTE_BODY_RESETS) {
-    		footnoteBody.setAttribute(reset[0], reset[1]);
-    	}
+		for (String[] reset : FOOTNOTE_BODY_RESETS) {
+			footnoteBody.setAttribute(reset[0], reset[1]);
+		}
     }
 
     /**
@@ -615,8 +637,8 @@ public class XsltFOFunctions {
      */
     public static DocumentFragment footnoteBody(NodeIterator childResultsIt) {
 
-    	Node childResults = (childResultsIt==null) ? null : childResultsIt.nextNode();
-    	try {
+		Node childResults = (childResultsIt==null) ? null : childResultsIt.nextNode();
+		try {
 			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 			DocumentFragment docfrag = document.createDocumentFragment();
 			Element body = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:footnote-body");
@@ -653,10 +675,10 @@ public class XsltFOFunctions {
      * @since 17.3.1
      */
     public static boolean pageNumberRestart(AbstractWmlConversionContext context) {
-    	if (!pageMasterByContent(context)) return false;
-    	if ("true".equalsIgnoreCase(Docx4jProperties.getProperty(
-    			"docx4j.convert.out.fo.wordLayout.pageMasterByContent", "auto"))) return true;
-    	return FopCapabilities.has(FopCapabilities.Capability.PAGE_NUMBER_RESTART);
+		if (!pageMasterByContent(context)) return false;
+		if ("true".equalsIgnoreCase(Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.wordLayout.pageMasterByContent", "auto"))) return true;
+		return FopCapabilities.has(FopCapabilities.Capability.PAGE_NUMBER_RESTART);
     }
 
     /**
@@ -675,12 +697,12 @@ public class XsltFOFunctions {
      * @since 17.3.1
      */
     public static boolean pageMasterByContent(AbstractWmlConversionContext context) {
-    	if (!WordLayoutFixups.isEnabled()) return false;
-    	String setting = Docx4jProperties.getProperty(
-    			"docx4j.convert.out.fo.wordLayout.pageMasterByContent", "auto");
-    	if ("false".equalsIgnoreCase(setting)) return false;
-    	if ("true".equalsIgnoreCase(setting)) return true;
-    	return FopCapabilities.has(FopCapabilities.Capability.PAGE_MASTER_BY_CONTENT);
+		if (!WordLayoutFixups.isEnabled()) return false;
+		String setting = Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.wordLayout.pageMasterByContent", "auto");
+		if ("false".equalsIgnoreCase(setting)) return false;
+		if ("true".equalsIgnoreCase(setting)) return true;
+		return FopCapabilities.has(FopCapabilities.Capability.PAGE_MASTER_BY_CONTENT);
     }
 
     /**
@@ -694,26 +716,26 @@ public class XsltFOFunctions {
      * @since 17.3.1
      */
     public static void stampPart(AbstractWmlConversionContext context, Node parent, String tagVal) {
-    	if (parent == null || tagVal == null || !pageMasterByContent(context)) return;
-    	ConversionSectionWrapper section = context.getSections().getCurrentSection();
-    	int eq = tagVal.indexOf('=');
-    	if (section == null || eq < 0) return;
-    	// "m", or "m,start,part" for a part restarting its page numbers, "m,start,part,r" where it is
-    	// tagged for the restart alone (ConversionSectionWrapperFactory)
-    	String[] values = tagVal.substring(eq + 1).trim().split(",");
-    	boolean restartOnly = values.length > 3 && "r".equals(values[3]);
-    	if (restartOnly && !pageNumberRestart(context)) return; // nothing changes at it
-    	String master = section.getId() + "-p" + values[0];
-    	String restart = null;
-    	if (values.length >= 3 && pageNumberRestart(context)) {
-    		boolean evenOdd = context instanceof FOConversionContext && evenAndOddHeaders((FOConversionContext) context);
-    		restart = values[1] + "," + values[2] + (evenOdd ? ",keep" : "");
-    	}
-    	for (Node n = parent.getFirstChild(); n != null; n = n.getNextSibling()) {
-    		if (!(n instanceof Element)) continue;
-    		((Element) n).setAttribute(HINT_PART_MASTER, master);
-    		if (restart != null) ((Element) n).setAttribute(HINT_PART_RESTART, restart);
-    	}
+		if (parent == null || tagVal == null || !pageMasterByContent(context)) return;
+		ConversionSectionWrapper section = context.getSections().getCurrentSection();
+		int eq = tagVal.indexOf('=');
+		if (section == null || eq < 0) return;
+		// "m", or "m,start,part" for a part restarting its page numbers, "m,start,part,r" where it is
+		// tagged for the restart alone (ConversionSectionWrapperFactory)
+		String[] values = tagVal.substring(eq + 1).trim().split(",");
+		boolean restartOnly = values.length > 3 && "r".equals(values[3]);
+		if (restartOnly && !pageNumberRestart(context)) return; // nothing changes at it
+		String master = section.getId() + "-p" + values[0];
+		String restart = null;
+		if (values.length >= 3 && pageNumberRestart(context)) {
+			boolean evenOdd = context instanceof FOConversionContext && evenAndOddHeaders((FOConversionContext) context);
+			restart = values[1] + "," + values[2] + (evenOdd ? ",keep" : "");
+		}
+		for (Node n = parent.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (!(n instanceof Element)) continue;
+			((Element) n).setAttribute(HINT_PART_MASTER, master);
+			if (restart != null) ((Element) n).setAttribute(HINT_PART_RESTART, restart);
+		}
     }
 
     /**
@@ -722,9 +744,9 @@ public class XsltFOFunctions {
      * @since 17.3.1
      */
     public static DocumentFragment stampPart(AbstractWmlConversionContext context, String tagVal,
-    		NodeIterator childResultsIt) {
-    	Node childResults = (childResultsIt==null) ? null : childResultsIt.nextNode();
-    	try {
+			NodeIterator childResultsIt) {
+		Node childResults = (childResultsIt==null) ? null : childResultsIt.nextNode();
+		try {
 			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 			DocumentFragment docfrag = document.createDocumentFragment();
 			if (childResults!=null) {
@@ -744,73 +766,73 @@ public class XsltFOFunctions {
      * "before-" or "after-" and "firstpage", "evenpage" or "default".  @since 17.3.1 */
 
     private static List<java.util.Map.Entry<Integer, org.docx4j.model.structure.HeaderFooterPolicy>> partHeadersAndFooters(
-    		AbstractWmlConversionContext context) {
-    	if (!pageMasterByContent(context)) return java.util.Collections.emptyList();
-    	return new java.util.ArrayList<java.util.Map.Entry<Integer, org.docx4j.model.structure.HeaderFooterPolicy>>(
-    			context.getSections().getCurrentSection().getPartHeaderFooterPolicies().entrySet());
+			AbstractWmlConversionContext context) {
+		if (!pageMasterByContent(context)) return java.util.Collections.emptyList();
+		return new java.util.ArrayList<java.util.Map.Entry<Integer, org.docx4j.model.structure.HeaderFooterPolicy>>(
+				context.getSections().getCurrentSection().getPartHeaderFooterPolicies().entrySet());
     }
 
     private static org.docx4j.openpackaging.parts.JaxbXmlPart<?> partHeaderFooter(
-    		AbstractWmlConversionContext context, double index, String kind) {
-    	List<java.util.Map.Entry<Integer, org.docx4j.model.structure.HeaderFooterPolicy>> parts =
-    			partHeadersAndFooters(context);
-    	int i = (int) index;
-    	if (i < 1 || i > parts.size()) return null;
-    	org.docx4j.model.structure.HeaderFooterPolicy hf = parts.get(i - 1).getValue();
-    	switch (kind) {
-    		case "before-firstpage": return hf.getFirstHeader();
-    		case "after-firstpage": return hf.getFirstFooter();
-    		case "before-evenpage": return hf.getEvenHeader();
-    		case "after-evenpage": return hf.getEvenFooter();
-    		case "before-default": return hf.getDefaultHeader();
-    		case "after-default": return hf.getDefaultFooter();
-    		default: return null;
-    	}
+			AbstractWmlConversionContext context, double index, String kind) {
+		List<java.util.Map.Entry<Integer, org.docx4j.model.structure.HeaderFooterPolicy>> parts =
+				partHeadersAndFooters(context);
+		int i = (int) index;
+		if (i < 1 || i > parts.size()) return null;
+		org.docx4j.model.structure.HeaderFooterPolicy hf = parts.get(i - 1).getValue();
+		switch (kind) {
+			case "before-firstpage": return hf.getFirstHeader();
+			case "after-firstpage": return hf.getFirstFooter();
+			case "before-evenpage": return hf.getEvenHeader();
+			case "after-evenpage": return hf.getEvenFooter();
+			case "before-default": return hf.getDefaultHeader();
+			case "after-default": return hf.getDefaultFooter();
+			default: return null;
+		}
     }
 
     /** How many merged parts of the current page-sequence have headers and footers of their
      *  own.  @since 17.3.1 */
     public static int partStaticContentCount(AbstractWmlConversionContext context) {
-    	return partHeadersAndFooters(context).size();
+		return partHeadersAndFooters(context).size();
     }
 
     /** @since 17.3.1 */
     public static boolean hasPartHeaderFooter(AbstractWmlConversionContext context, double index, String kind) {
-    	return partHeaderFooter(context, index, kind) != null;
+		return partHeaderFooter(context, index, kind) != null;
     }
 
     /** Makes the part's header or footer the current part, as inDefaultHeader does.  @since 17.3.1 */
     public static void inPartHeaderFooter(AbstractWmlConversionContext context, double index, String kind) {
-    	context.setCurrentPart(partHeaderFooter(context, index, kind));
+		context.setCurrentPart(partHeaderFooter(context, index, kind));
     }
 
     /** The flow name of the part's static content, which is its masters' region name
      *  (LayoutMasterSetBuilder.partRegionSuffix).  @since 17.3.1 */
     public static String partFlowName(AbstractWmlConversionContext context, double index, String kind) {
-    	List<java.util.Map.Entry<Integer, org.docx4j.model.structure.HeaderFooterPolicy>> parts =
-    			partHeadersAndFooters(context);
-    	return "xsl-region-" + kind + LayoutMasterSetBuilder.partRegionSuffix(parts.get((int) index - 1).getKey());
+		List<java.util.Map.Entry<Integer, org.docx4j.model.structure.HeaderFooterPolicy>> parts =
+				partHeadersAndFooters(context);
+		return "xsl-region-" + kind + LayoutMasterSetBuilder.partRegionSuffix(parts.get((int) index - 1).getKey());
     }
 
     /** The part's header or footer, for the XSLT to apply its templates to, as getDefaultHeader
      *  gives the section's.  @since 17.3.1 */
     public static Node getPartHeaderFooter(AbstractWmlConversionContext context, double index, String kind) {
-    	org.docx4j.openpackaging.parts.JaxbXmlPart<?> part = partHeaderFooter(context, index, kind);
-    	return part == null ? null : XmlUtils.marshaltoW3CDomDocument(part.getJaxbElement());
+		org.docx4j.openpackaging.parts.JaxbXmlPart<?> part = partHeaderFooter(context, index, kind);
+		return part == null ? null : XmlUtils.marshaltoW3CDomDocument(part.getJaxbElement());
     }
 
     /** The start and end indents (in twips) in an XSLT_Ind=start,end tag value. */
     private static int[] indents(String tagVal) {
 
-    	int[] result = new int[2];
-    	try {
-    		String vals = tagVal.substring(tagVal.indexOf('=')+1);
-    		result[0] = Integer.parseInt(vals.substring(0, vals.indexOf(',')).trim());
-    		result[1] = Integer.parseInt(vals.substring(vals.indexOf(',')+1).trim());
-    	} catch (Exception e) {
-    		log.error("Couldn't read indents from " + tagVal, e);
-    	}
-    	return result;
+		int[] result = new int[2];
+		try {
+			String vals = tagVal.substring(tagVal.indexOf('=')+1);
+			result[0] = Integer.parseInt(vals.substring(0, vals.indexOf(',')).trim());
+			result[1] = Integer.parseInt(vals.substring(vals.indexOf(',')+1).trim());
+		} catch (Exception e) {
+			log.error("Couldn't read indents from " + tagVal, e);
+		}
+		return result;
     }
 
     /**
@@ -824,86 +846,86 @@ public class XsltFOFunctions {
      * @since 17.0.4
      */
     public static DocumentFragment mathToFO(FOConversionContext context, NodeIterator ommlNodeIt) {
-    	Node n = (ommlNodeIt == null) ? null : ommlNodeIt.nextNode();
-    	if (n == null) {
-    		return null;
-    	}
-    	try {
-    		Unmarshaller u = Context.jc.createUnmarshaller();
-    		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-    		return mathToFO(context, XmlUtils.unwrap(u.unmarshal(n)));
-    	} catch (Exception e) {
-    		log.warn("MathML->FO failed; omitting equation: " + e.getMessage());
-    		return null;
-    	}
+		Node n = (ommlNodeIt == null) ? null : ommlNodeIt.nextNode();
+		if (n == null) {
+			return null;
+		}
+		try {
+			Unmarshaller u = Context.jc.createUnmarshaller();
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+			return mathToFO(context, XmlUtils.unwrap(u.unmarshal(n)));
+		} catch (Exception e) {
+			log.warn("MathML->FO failed; omitting equation: " + e.getMessage());
+			return null;
+		}
     }
 
     public static DocumentFragment mathToFO(FOConversionContext context, Object omml) {
-    	// Xalan resolves the stylesheet's call to this overload and passes its node
-    	// iterator (a DTMNodeIterator) as the Object, not to the NodeIterator form
-    	// above; the equation then went unconverted in the XSLT pathway (17.0.4).
-    	if (omml instanceof NodeIterator) {
-    		return mathToFO(context, (NodeIterator) omml);
-    	}
-    	if (omml instanceof Node) {
-    		try {
-    			Unmarshaller u = Context.jc.createUnmarshaller();
-    			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-    			omml = XmlUtils.unwrap(u.unmarshal((Node) omml));
-    		} catch (Exception e) {
-    			log.warn("MathML->FO failed; omitting equation: " + e.getMessage());
-    			return null;
-    		}
-    	}
-    	Document document = XmlUtils.getNewDocumentBuilder().newDocument();
-    	DocumentFragment frag = document.createDocumentFragment();
+		// Xalan resolves the stylesheet's call to this overload and passes its node
+		// iterator (a DTMNodeIterator) as the Object, not to the NodeIterator form
+		// above; the equation then went unconverted in the XSLT pathway (17.0.4).
+		if (omml instanceof NodeIterator) {
+			return mathToFO(context, (NodeIterator) omml);
+		}
+		if (omml instanceof Node) {
+			try {
+				Unmarshaller u = Context.jc.createUnmarshaller();
+				u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+				omml = XmlUtils.unwrap(u.unmarshal((Node) omml));
+			} catch (Exception e) {
+				log.warn("MathML->FO failed; omitting equation: " + e.getMessage());
+				return null;
+			}
+		}
+		Document document = XmlUtils.getNewDocumentBuilder().newDocument();
+		DocumentFragment frag = document.createDocumentFragment();
 
-    	if (org.docx4j.convert.out.fo.renderers.FORendererApacheFOP.isMathMLRendererAvailable()) {
-    		try {
-    			org.docx4j.convert.out.mathml.OmmlToMathML converter =
-    					new org.docx4j.convert.out.mathml.OmmlToMathML();
-    			Document mathDoc;
-    			if (omml instanceof org.docx4j.math.CTOMathPara) {
-    				mathDoc = converter.toMathMLDocument((org.docx4j.math.CTOMathPara) omml);
-    			} else {
-    				mathDoc = converter.toMathMLDocument((org.docx4j.math.CTOMath) omml);
-    			}
-    			Element ifo = document.createElementNS(
-    					"http://www.w3.org/1999/XSL/Format", "fo:instream-foreign-object");
-    			ifo.appendChild(document.importNode(mathDoc.getDocumentElement(), true));
-    			frag.appendChild(ifo);
-    			return frag;
-    		} catch (org.docx4j.convert.out.mathml.MathConversionException e) {
-    			log.warn("OMML->MathML failed; emitting equation text: " + e.getMessage());
-    			// fall through to text
-    		}
-    	}
+		if (org.docx4j.convert.out.fo.renderers.FORendererApacheFOP.isMathMLRendererAvailable()) {
+			try {
+				org.docx4j.convert.out.mathml.OmmlToMathML converter =
+						new org.docx4j.convert.out.mathml.OmmlToMathML();
+				Document mathDoc;
+				if (omml instanceof org.docx4j.math.CTOMathPara) {
+					mathDoc = converter.toMathMLDocument((org.docx4j.math.CTOMathPara) omml);
+				} else {
+					mathDoc = converter.toMathMLDocument((org.docx4j.math.CTOMath) omml);
+				}
+				Element ifo = document.createElementNS(
+						"http://www.w3.org/1999/XSL/Format", "fo:instream-foreign-object");
+				ifo.appendChild(document.importNode(mathDoc.getDocumentElement(), true));
+				frag.appendChild(ifo);
+				return frag;
+			} catch (org.docx4j.convert.out.mathml.MathConversionException e) {
+				log.warn("OMML->MathML failed; emitting equation text: " + e.getMessage());
+				// fall through to text
+			}
+		}
 
-    	String text = mathText(omml);
-    	if (!text.isEmpty()) {
-    		frag.appendChild(document.createTextNode(text));
-    	}
-    	return frag;
+		String text = mathText(omml);
+		if (!text.isEmpty()) {
+			frag.appendChild(document.createTextNode(text));
+		}
+		return frag;
     }
 
     /** Plain text of an OMath/OMathPara, for the no-renderer / failure fallback. */
     private static String mathText(Object omml) {
-    	try {
-    		org.docx4j.math.ObjectFactory of = new org.docx4j.math.ObjectFactory();
-    		Object toMarshal = (omml instanceof org.docx4j.math.CTOMathPara)
-    				? of.createOMathPara((org.docx4j.math.CTOMathPara) omml)
-    				: of.createOMath((org.docx4j.math.CTOMath) omml);
-    		Document d = XmlUtils.marshaltoW3CDomDocument(toMarshal);
-    		org.w3c.dom.NodeList ts = d.getElementsByTagNameNS(
-    				"http://schemas.openxmlformats.org/officeDocument/2006/math", "t");
-    		StringBuilder sb = new StringBuilder();
-    		for (int i = 0; i < ts.getLength(); i++) {
-    			sb.append(ts.item(i).getTextContent());
-    		}
-    		return sb.toString();
-    	} catch (Exception e) {
-    		return "";
-    	}
+		try {
+			org.docx4j.math.ObjectFactory of = new org.docx4j.math.ObjectFactory();
+			Object toMarshal = (omml instanceof org.docx4j.math.CTOMathPara)
+					? of.createOMathPara((org.docx4j.math.CTOMathPara) omml)
+					: of.createOMath((org.docx4j.math.CTOMath) omml);
+			Document d = XmlUtils.marshaltoW3CDomDocument(toMarshal);
+			org.w3c.dom.NodeList ts = d.getElementsByTagNameNS(
+					"http://schemas.openxmlformats.org/officeDocument/2006/math", "t");
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < ts.getLength(); i++) {
+				sb.append(ts.item(i).getTextContent());
+			}
+			return sb.toString();
+		} catch (Exception e) {
+			return "";
+		}
     }
 
     /**
@@ -916,17 +938,17 @@ public class XsltFOFunctions {
      * @return
      */
     public static DocumentFragment createBlockForPPr(
-    		FOConversionContext context,
-    		NodeIterator pPrNodeIt,
-    		String pStyleVal, NodeIterator childResults) {
+			FOConversionContext context,
+			NodeIterator pPrNodeIt,
+			String pStyleVal, NodeIterator childResults) {
 
-    	DocumentFragment df = createBlock(
+		DocumentFragment df = createBlock(
         		context,
         		pPrNodeIt,
         		pStyleVal, childResults,
         		false);
 
-    	return postProcessBlockForPPr(df);
+		return postProcessBlockForPPr(df);
     }
 
     /**
@@ -938,46 +960,46 @@ public class XsltFOFunctions {
      * @since 17.0.4
      */
     public static DocumentFragment createBlockForPPr(
-    		FOConversionContext context,
-    		PPr pPrDirect,
-    		String pStyleVal, Node childResults) {
+			FOConversionContext context,
+			PPr pPrDirect,
+			String pStyleVal, Node childResults) {
 
-    	DocumentFragment df = createBlock(context, pPrDirect, pStyleVal, childResults, false);
+		DocumentFragment df = createBlock(context, pPrDirect, pStyleVal, childResults, false);
 
-    	return postProcessBlockForPPr(df);
+		return postProcessBlockForPPr(df);
     }
 
     private static DocumentFragment postProcessBlockForPPr(DocumentFragment df) {
 
-    	// Note: prior to 17.0.1, an inline with direction="rtl" (as then created by
-    	// the TextDirection class for a w:rtl run) was wrapped here in
-    	//    <fo:bidi-override direction="rtl" unicode-bidi="embed">
-    	// That actively broke FOP's own bidi processing (unshaped Arabic, and wrong
-    	// run order in mixed RTL/LTR paragraphs); see issue 660.  Instead, a w:bidi
-    	// paragraph now gets an RTL paragraph embedding level; see wrapInBidiBlockContainer.
+		// Note: prior to 17.0.1, an inline with direction="rtl" (as then created by
+		// the TextDirection class for a w:rtl run) was wrapped here in
+		//    <fo:bidi-override direction="rtl" unicode-bidi="embed">
+		// That actively broke FOP's own bidi processing (unshaped Arabic, and wrong
+		// run order in mixed RTL/LTR paragraphs); see issue 660.  Instead, a w:bidi
+		// paragraph now gets an RTL paragraph embedding level; see wrapInBidiBlockContainer.
 
-    	if (df==null || !(df.getFirstChild() instanceof Element)) return df;
+		if (df==null || !(df.getFirstChild() instanceof Element)) return df;
 
-    	Element block = (Element)df.getFirstChild();
+		Element block = (Element)df.getFirstChild();
 
-    	// the indents are final here, which is what the border rule reads
-    	borderAgainstHangingIndent(df);
+		// the indents are final here, which is what the border rule reads
+		borderAgainstHangingIndent(df);
 
-    	if (foContainsStretchingLeader(block)) {
+		if (foContainsStretchingLeader(block)) {
 			// ptab to leader implementation:
 			// for leader to work as expected in fop, we need text-align-last; see http://xmlgraphics.apache.org/fop/faq.html#leader-expansion
 			// this code adds that.
-    		// Note that it doesn't seem to be necessary for leader in TOC, but it doesn't hurt
-    		// (a leader of fixed length, standing in for a leading tab, must not justify the last line)
+			// Note that it doesn't seem to be necessary for leader in TOC, but it doesn't hurt
+			// (a leader of fixed length, standing in for a leading tab, must not justify the last line)
 			block.setAttribute("text-align-last", "justify");
-    	}
+		}
 
-    	// (hyphenation is applied in createBlock, where the document's settings and the
-    	//  effective pPr are both to hand; see applyHyphenation)
+		// (hyphenation is applied in createBlock, where the document's settings and the
+		//  effective pPr are both to hand; see applyHyphenation)
 
-    	wrapInBidiBlockContainer(df);
+		wrapInBidiBlockContainer(df);
 
-    	return df;
+		return df;
     }
 
     /**
@@ -993,36 +1015,36 @@ public class XsltFOFunctions {
      */
     protected static void wrapInBidiBlockContainer(DocumentFragment df) {
 
-    	if (df==null || !(df.getFirstChild() instanceof Element)) return;
-    	Element first = (Element)df.getFirstChild();
+		if (df==null || !(df.getFirstChild() instanceof Element)) return;
+		Element first = (Element)df.getFirstChild();
 
-    	// The attribute is on the block carrying the pPr properties: the first
-    	// child itself, or, in the list item case, a block inside the list-block.
-    	Element marked = findElementWithWritingMode(first);
-    	if (marked==null) return;
+		// The attribute is on the block carrying the pPr properties: the first
+		// child itself, or, in the list item case, a block inside the list-block.
+		Element marked = findElementWithWritingMode(first);
+		if (marked==null) return;
 
-    	marked.removeAttribute(Bidi.FO_WRITING_MODE_NAME);
+		marked.removeAttribute(Bidi.FO_WRITING_MODE_NAME);
 
-    	Element container = df.getOwnerDocument().createElementNS("http://www.w3.org/1999/XSL/Format",
-    			"fo:block-container");
-    	container.setAttribute(Bidi.FO_WRITING_MODE_NAME, Bidi.FO_WRITING_MODE_RTL);
+		Element container = df.getOwnerDocument().createElementNS("http://www.w3.org/1999/XSL/Format",
+				"fo:block-container");
+		container.setAttribute(Bidi.FO_WRITING_MODE_NAME, Bidi.FO_WRITING_MODE_RTL);
 
-    	df.replaceChild(container, first);
-    	container.appendChild(first);
+		df.replaceChild(container, first);
+		container.appendChild(first);
     }
 
     private static Element findElementWithWritingMode(Element el) {
 
-    	if (el.hasAttribute(Bidi.FO_WRITING_MODE_NAME)) return el;
+		if (el.hasAttribute(Bidi.FO_WRITING_MODE_NAME)) return el;
 
-    	// Only descend the list item structure (the marked block sits inside
-    	// fo:list-item-body there).  In particular, don't descend into an
-    	// fo:block: anything below it is the paragraph's content, which may
-    	// contain already-wrapped nested paragraphs of its own.
-    	String localName = el.getLocalName();
-    	if ("list-block".equals(localName)
-    			|| "list-item".equals(localName)
-    			|| "list-item-body".equals(localName)) {
+		// Only descend the list item structure (the marked block sits inside
+		// fo:list-item-body there).  In particular, don't descend into an
+		// fo:block: anything below it is the paragraph's content, which may
+		// contain already-wrapped nested paragraphs of its own.
+		String localName = el.getLocalName();
+		if ("list-block".equals(localName)
+				|| "list-item".equals(localName)
+				|| "list-item-body".equals(localName)) {
 
 	    	NodeList children = el.getChildNodes();
 	    	for (int i=0; i<children.getLength(); i++) {
@@ -1031,8 +1053,8 @@ public class XsltFOFunctions {
 	    			if (found!=null) return found;
 	    		}
 	    	}
-    	}
-    	return null;
+		}
+		return null;
     }
     
     
@@ -1102,33 +1124,33 @@ public class XsltFOFunctions {
     }
     
     private static DocumentFragment createBlock(
-    		FOConversionContext context,
-    		NodeIterator pPrNodeIt,
-    		String pStyleVal, NodeIterator childResults,
-    		boolean sdt) {
+			FOConversionContext context,
+			NodeIterator pPrNodeIt,
+			String pStyleVal, NodeIterator childResults,
+			boolean sdt) {
 
-    	// Note that this is invoked for every paragraph with a pPr node.
+		// Note that this is invoked for every paragraph with a pPr node.
 
-    	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator
-    	// which implements org.w3c.dom.traversal.NodeIterator
+		// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator
+		// which implements org.w3c.dom.traversal.NodeIterator
 
-    	// Get the pPr node as a JAXB object,
-    	// so we can read it using our standard
-    	// methods.  Its a bit sad that we
-    	// can't just adorn our DOM tree with the
-    	// original JAXB objects?
-    	PPr pPrDirect = null;
-    	if (pPrNodeIt!=null) {
-    		Node n = pPrNodeIt.nextNode();
-    		if (n==null) {
-    			if (log.isDebugEnabled()) {
-    				log.debug("pPrNodeIt.nextNode() was null (ie there is no pPr in this p)");
-    			}
-    		} else {
-    			if (log.isDebugEnabled()) {
-    				log.debug( "P actual pPr: "+ XmlUtils.w3CDomNodeToString(n) );
-    			}
-    			try {
+		// Get the pPr node as a JAXB object,
+		// so we can read it using our standard
+		// methods.  Its a bit sad that we
+		// can't just adorn our DOM tree with the
+		// original JAXB objects?
+		PPr pPrDirect = null;
+		if (pPrNodeIt!=null) {
+			Node n = pPrNodeIt.nextNode();
+			if (n==null) {
+				if (log.isDebugEnabled()) {
+					log.debug("pPrNodeIt.nextNode() was null (ie there is no pPr in this p)");
+				}
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug( "P actual pPr: "+ XmlUtils.w3CDomNodeToString(n) );
+				}
+				try {
 	    			Unmarshaller u = Context.jc.createUnmarshaller();
 	    			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 					pPrDirect =  (PPr)u.unmarshal(n);
@@ -1136,9 +1158,9 @@ public class XsltFOFunctions {
 					log.error(e.getMessage(), e);
 			    	return null;
 				}
-    		}
-    	}
-    	return createBlock(context, pPrDirect, pStyleVal, childResults.nextNode(), sdt);
+			}
+		}
+		return createBlock(context, pPrDirect, pStyleVal, childResults.nextNode(), sdt);
     }
 
     /**
@@ -1149,12 +1171,12 @@ public class XsltFOFunctions {
      * @since 17.0.4
      */
     protected static DocumentFragment createBlock(
-    		FOConversionContext context,
-    		PPr pPrDirect,
-    		String pStyleVal, Node childResults,
-    		boolean sdt) {
+			FOConversionContext context,
+			PPr pPrDirect,
+			String pStyleVal, Node childResults,
+			boolean sdt) {
 
-    	PropertyResolver propertyResolver;
+		PropertyResolver propertyResolver;
 		try {
 			propertyResolver = context.getPropertyResolver();
 		} catch (Docx4JException e) {
@@ -1167,10 +1189,10 @@ public class XsltFOFunctions {
 				context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false).getDefaultParagraphStyle() :
 				null);
 
-    	String defaultParagraphStyleId;
-    	if (defaultParagraphStyle==null) // possible, for non MS source docx
-    		defaultParagraphStyleId = "Normal";
-    	else defaultParagraphStyleId = defaultParagraphStyle.getStyleId();
+		String defaultParagraphStyleId;
+		if (defaultParagraphStyle==null) // possible, for non MS source docx
+			defaultParagraphStyleId = "Normal";
+		else defaultParagraphStyleId = defaultParagraphStyle.getStyleId();
 
 		if ( pStyleVal ==null || pStyleVal.equals("") ) {
 //			pStyleVal = "Normal";
@@ -1181,9 +1203,9 @@ public class XsltFOFunctions {
 		}
 
 		/* First, determine effective paragraph and run properties (pPr, rPr) */
-    	PPr pPr = null;
-    	RPr rPr = null;
-    	RPr rPrParagraphMark = null;  // required for list item label
+		PPr pPr = null;
+		RPr rPr = null;
+		RPr rPrParagraphMark = null;  // required for list item label
         try {
 
         	// in a table cell, the table style's contribution comes with the cell context
@@ -3398,25 +3420,25 @@ public class XsltFOFunctions {
 	}
 
     protected static void applyRunFontSelection(DocumentFragment frag, Element foListItemLabelBody) {
-    	
-    	if (log.isDebugEnabled()) {
-    		log.debug(XmlUtils.w3CDomNodeToString(frag));
-    	}
-    	// eg <fo:inline xmlns:fo="http://www.w3.org/1999/XSL/Format" font-family="Times New Roman">1)</fo:inline>
-    	
-    	// Now get the attribute value
-    	if (frag!=null && frag.getFirstChild()!=null) {
-    		Attr attr = ((Element)frag.getFirstChild()).getAttributeNode("font-family");
-    		if (attr!=null) {
-    			foListItemLabelBody.setAttribute("font-family", attr.getValue());
-    		}
-    		// and its line pitch and document font (WordLayoutFixups.listLabelLines
-    		// sizes the item's first line from the label's metrics too, as Word does)
-    		for (String name : new String[] { "line-height", org.docx4j.fonts.RunFontSelector.HINT_FONT }) {
-    			Attr a = ((Element)frag.getFirstChild()).getAttributeNode(name);
-    			if (a!=null) foListItemLabelBody.setAttribute(name, a.getValue());
-    		}
-    	}
+		
+		if (log.isDebugEnabled()) {
+			log.debug(XmlUtils.w3CDomNodeToString(frag));
+		}
+		// eg <fo:inline xmlns:fo="http://www.w3.org/1999/XSL/Format" font-family="Times New Roman">1)</fo:inline>
+		
+		// Now get the attribute value
+		if (frag!=null && frag.getFirstChild()!=null) {
+			Attr attr = ((Element)frag.getFirstChild()).getAttributeNode("font-family");
+			if (attr!=null) {
+				foListItemLabelBody.setAttribute("font-family", attr.getValue());
+			}
+			// and its line pitch and document font (WordLayoutFixups.listLabelLines
+			// sizes the item's first line from the label's metrics too, as Word does)
+			for (String name : new String[] { "line-height", org.docx4j.fonts.RunFontSelector.HINT_FONT }) {
+				Attr a = ((Element)frag.getFirstChild()).getAttributeNode(name);
+				if (a!=null) foListItemLabelBody.setAttribute(name, a.getValue());
+			}
+		}
 			
     }
     
@@ -4102,11 +4124,11 @@ public class XsltFOFunctions {
      * @since 17.1.0
      */
     static boolean namesNoFont(org.docx4j.wml.RFonts rFonts) {
-    	if (rFonts==null) return false;
-    	return rFonts.getAscii()==null && rFonts.getHAnsi()==null
-    			&& rFonts.getCs()==null && rFonts.getEastAsia()==null
-    			&& rFonts.getAsciiTheme()==null && rFonts.getHAnsiTheme()==null
-    			&& rFonts.getCstheme()==null && rFonts.getEastAsiaTheme()==null;
+		if (rFonts==null) return false;
+		return rFonts.getAscii()==null && rFonts.getHAnsi()==null
+				&& rFonts.getCs()==null && rFonts.getEastAsia()==null
+				&& rFonts.getAsciiTheme()==null && rFonts.getHAnsiTheme()==null
+				&& rFonts.getCstheme()==null && rFonts.getEastAsiaTheme()==null;
     }
 
     protected static int getDistanceToNextTabStop( int pos, int numWidth, Tabs pprTabs, DocumentSettingsPart settings) {
@@ -4167,9 +4189,9 @@ public class XsltFOFunctions {
 
 	private static void createFoAttributes(OpcPackage opcPackage, PPr pPr, Element foBlockElement, boolean inList, boolean ignoreBorders){
 		
-    	List<Property> properties = PropertyFactory.createProperties(opcPackage, pPr);
-    	
-    	for( Property p :  properties ) {
+		List<Property> properties = PropertyFactory.createProperties(opcPackage, pPr);
+		
+		for( Property p :  properties ) {
 			if (p!=null) {
 				
 				if (ignoreBorders &&
@@ -4188,41 +4210,41 @@ public class XsltFOFunctions {
 					p.setXslFO(foBlockElement);
 				}
 			}
-    	}
-    	
-    	if (pPr==null) return;
+		}
 		
-    	// Special case, since bidi is translated to align right
-    	// Handle interaction between w:pPr/w:bidi and w:pPr/w:jc/@w:val='right'
-    	if (pPr.getBidi()!=null && pPr.getBidi().isVal()) {
-    		
-    		if (pPr.getJc()!=null) {
-    			if (pPr.getJc().getVal().equals(JcEnumeration.RIGHT)) {
-    				// set it to left!
-    				foBlockElement.setAttribute(Justification.FO_NAME,  "left");
-    			} else if (pPr.getJc().getVal().equals(JcEnumeration.LEFT)) {
-    				// set it to right!
-    				foBlockElement.setAttribute(Justification.FO_NAME,  "right");
-    			}
-    		}
-    	}
-    	
-    	// The stretching dot leader of a table of contents needs text-align-last="justify"
-    	// (PStyle is not included in our effective pPr, so the stops are the test).
-    	// With real tabs the leader has the width the line manager gave it, and justifying
-    	// the last line would stretch the spaces around it; only the TOC shape, which keeps
-    	// its stretching leader (XsltFOFunctions.tabToFO), still needs this.  @since 17.0.5
-    	if (pPr.getTabs()!=null && !pPr.getTabs().getTab().isEmpty()) {
+		if (pPr==null) return;
+		
+		// Special case, since bidi is translated to align right
+		// Handle interaction between w:pPr/w:bidi and w:pPr/w:jc/@w:val='right'
+		if (pPr.getBidi()!=null && pPr.getBidi().isVal()) {
+			
+			if (pPr.getJc()!=null) {
+				if (pPr.getJc().getVal().equals(JcEnumeration.RIGHT)) {
+					// set it to left!
+					foBlockElement.setAttribute(Justification.FO_NAME,  "left");
+				} else if (pPr.getJc().getVal().equals(JcEnumeration.LEFT)) {
+					// set it to right!
+					foBlockElement.setAttribute(Justification.FO_NAME,  "right");
+				}
+			}
+		}
+		
+		// The stretching dot leader of a table of contents needs text-align-last="justify"
+		// (PStyle is not included in our effective pPr, so the stops are the test).
+		// With real tabs the leader has the width the line manager gave it, and justifying
+		// the last line would stretch the spaces around it; only the TOC shape, which keeps
+		// its stretching leader (XsltFOFunctions.tabToFO), still needs this.  @since 17.0.5
+		if (pPr.getTabs()!=null && !pPr.getTabs().getTab().isEmpty()) {
 
-    		CTTabStop tabStop = pPr.getTabs().getTab().get(0);
-    		if (tabStop!=null
-    				&& STTabJc.RIGHT.equals(tabStop.getVal())
-    				&& (!realTabs() || isTocDotLeader(pPr)) ) {
+			CTTabStop tabStop = pPr.getTabs().getTab().get(0);
+			if (tabStop!=null
+					&& STTabJc.RIGHT.equals(tabStop.getVal())
+					&& (!realTabs() || isTocDotLeader(pPr)) ) {
 
-    			foBlockElement.setAttribute("text-align-last",  "justify");
-    		}
-    	}
-    	
+				foBlockElement.setAttribute("text-align-last",  "justify");
+			}
+		}
+		
 	}
 	
 	/** The attribute a border's {@code w:space} becomes on the block ({@code PBorderLeft}). */
@@ -4374,19 +4396,19 @@ public class XsltFOFunctions {
 	}
 	
     private static void createFoAttributes(TrPr trPr, Element foBlockElement){
-    	if (trPr == null) {
-    		return;
-    	}
-    	applyFoAttributes(PropertyFactory.createProperties(trPr), foBlockElement);
+		if (trPr == null) {
+			return;
+		}
+		applyFoAttributes(PropertyFactory.createProperties(trPr), foBlockElement);
     }
 	
     private static void createFoAttributes(TcPr tcPr, Element foBlockElement){
-    	// includes TcPrInner.TcBorders, CTShd, TcMar, CTVerticalJc
-    	
+		// includes TcPrInner.TcBorders, CTShd, TcMar, CTVerticalJc
+		
 		if (tcPr==null) {
 			return;
 		}
-    	applyFoAttributes(PropertyFactory.createProperties(tcPr), foBlockElement);
+		applyFoAttributes(PropertyFactory.createProperties(tcPr), foBlockElement);
     }
 	
 
@@ -4401,24 +4423,24 @@ public class XsltFOFunctions {
      * @return
      */
     public static DocumentFragment createBlockForRPr( 
-    		FOConversionContext context,
-    		NodeIterator pPrNodeIt,
-    		NodeIterator rPrNodeIt,
-    		NodeIterator childResults ) {
+			FOConversionContext context,
+			NodeIterator pPrNodeIt,
+			NodeIterator rPrNodeIt,
+			NodeIterator childResults ) {
 
         try {
         	PropertyResolver propertyResolver = context.getPropertyResolver();
-    	
-    	// Note that this is invoked for every paragraph with a pPr node.
-    	
-    	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
-    	// which implements org.w3c.dom.traversal.NodeIterator
+		
+		// Note that this is invoked for every paragraph with a pPr node.
+		
+		// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
+		// which implements org.w3c.dom.traversal.NodeIterator
 
-    	
+		
 //    	log.info("rPrNode:" + rPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
 //    	log.info("childResults:" + childResults.getClass().getName() ); 
-    	
-    	
+		
+		
         	
 			Unmarshaller u = Context.jc.createUnmarshaller();			
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
@@ -4495,9 +4517,9 @@ public class XsltFOFunctions {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} 
-    	
-    	return null;
-    	
+		
+		return null;
+		
     }
 
 	/**
@@ -4566,27 +4588,27 @@ public class XsltFOFunctions {
 			RPr rPr, Element foInlineElement){
 		if (rPr == null) return;
 
-    	List<Property> properties = PropertyFactory.createProperties(opcPackage, rPr);
+		List<Property> properties = PropertyFactory.createProperties(opcPackage, rPr);
 
-    	for( Property p :  properties ) {
-    		p.setXslFO(foInlineElement);
-    	}
+		for( Property p :  properties ) {
+			p.setXslFO(foInlineElement);
+		}
 
 	}
 	
     public static String getPageNumberFormat(FOConversionContext context) {
-    	String pageFormat = 
-    			context.getSections().getCurrentSection().getPageNumberInformation().getPageFormat();
-    	//may return empty string if no page number format supplied
-    	pageFormat = FormattingSwitchHelper.getFoPageNumberFormat(pageFormat);
-    	return (pageFormat == null ? "" : pageFormat);
+		String pageFormat = 
+				context.getSections().getCurrentSection().getPageNumberInformation().getPageFormat();
+		//may return empty string if no page number format supplied
+		pageFormat = FormattingSwitchHelper.getFoPageNumberFormat(pageFormat);
+		return (pageFormat == null ? "" : pageFormat);
     }
 	
     public static String getPageNumberInitial(FOConversionContext context) {
-    	int ret = 
-    			context.getSections().getCurrentSection().getPageNumberInformation().getPageStart();
-    	//may return empty string if no start page number supplied
-    	return (ret == -1 ? "" : Integer.toString(ret));
+		int ret = 
+				context.getSections().getCurrentSection().getPageNumberInformation().getPageStart();
+		//may return empty string if no start page number supplied
+		return (ret == -1 ? "" : Integer.toString(ret));
     }
     
     /**
@@ -4632,21 +4654,21 @@ public class XsltFOFunctions {
      */
     public static String getForcePageCount(FOConversionContext context) {
 
-    	// see http://www.w3.org/TR/xsl/#force-page-count
-    	ConversionSectionWrapper next = context.getSections().peekNextSection();
-    	if (next == null) return "no-force";
-    	String type = sectionType(next.getSectPr());
-    	if ("continuous".equals(type)) return "no-force";
-    	if (next.getSectPr().getPgNumType() != null && next.getSectPr().getPgNumType().getStart() != null) {
-    		if (!evenAndOddHeaders(context)) return "no-force";
-    		// an oddPage or evenPage restart always forced a page here; a nextPage one waits on
-    		// the property (see below)
-    		boolean typed = "oddPage".equals(type) || "evenPage".equals(type);
-    		return typed || restartParityBlankPage() ? "auto" : "no-force";
-    	}
-    	if ("oddPage".equals(type)) return "end-on-even";
-    	if ("evenPage".equals(type)) return "end-on-odd";
-    	return "no-force";
+		// see http://www.w3.org/TR/xsl/#force-page-count
+		ConversionSectionWrapper next = context.getSections().peekNextSection();
+		if (next == null) return "no-force";
+		String type = sectionType(next.getSectPr());
+		if ("continuous".equals(type)) return "no-force";
+		if (next.getSectPr().getPgNumType() != null && next.getSectPr().getPgNumType().getStart() != null) {
+			if (!evenAndOddHeaders(context)) return "no-force";
+			// an oddPage or evenPage restart always forced a page here; a nextPage one waits on
+			// the property (see below)
+			boolean typed = "oddPage".equals(type) || "evenPage".equals(type);
+			return typed || restartParityBlankPage() ? "auto" : "no-force";
+		}
+		if ("oddPage".equals(type)) return "end-on-even";
+		if ("evenPage".equals(type)) return "end-on-odd";
+		return "no-force";
     }
 
     /**
@@ -4661,27 +4683,27 @@ public class XsltFOFunctions {
      * before it.  @since 17.3.1</p>
      */
     public static String initialPageNumber(FOConversionContext context) {
-    	ConversionSectionWrapper current = context.getSections().getCurrentSection();
-    	int start = current.getPageNumberInformation().getPageStart();
-    	// a merged run whose later parts the renderer restarts itself takes its first part's own
-    	// restart, or none (CR-031 phase 3).  @since 17.3.1
-    	if (current.getPartPageStarts() != null && pageNumberRestart(context)) {
-    		Integer first = current.getPartPageStarts().get(1);
-    		start = first == null ? -1 : first;
-    	}
-    	if (start < 0) return "";
-    	boolean first = context.getSections().getList().isEmpty()
-    			|| context.getSections().getList().get(0) == current;
-    	String type = first ? "nextPage" : sectionType(current.getSectPr());
-    	if ("oddPage".equals(type) && start % 2 == 0) return Integer.toString(start + 1);
-    	if ("evenPage".equals(type) && start % 2 != 0) return Integer.toString(start + 1);
-    	return Integer.toString(start);
+		ConversionSectionWrapper current = context.getSections().getCurrentSection();
+		int start = current.getPageNumberInformation().getPageStart();
+		// a merged run whose later parts the renderer restarts itself takes its first part's own
+		// restart, or none (CR-031 phase 3).  @since 17.3.1
+		if (current.getPartPageStarts() != null && pageNumberRestart(context)) {
+			Integer first = current.getPartPageStarts().get(1);
+			start = first == null ? -1 : first;
+		}
+		if (start < 0) return "";
+		boolean first = context.getSections().getList().isEmpty()
+				|| context.getSections().getList().get(0) == current;
+		String type = first ? "nextPage" : sectionType(current.getSectPr());
+		if ("oddPage".equals(type) && start % 2 == 0) return Integer.toString(start + 1);
+		if ("evenPage".equals(type) && start % 2 != 0) return Integer.toString(start + 1);
+		return Integer.toString(start);
     }
 
     /** The current section's {@link #sectionMarkSpaceAfter(ConversionSectionWrapper)}, for
      *  the XSLT pathway.  @since 17.3.1 */
     public static String sectionMarkSpaceAfter(FOConversionContext context) {
-    	return sectionMarkSpaceAfter(context.getSections().getCurrentSection());
+		return sectionMarkSpaceAfter(context.getSections().getCurrentSection());
     }
 
     /**
@@ -4693,43 +4715,43 @@ public class XsltFOFunctions {
      * @since 17.3.1
      */
     public static String sectionMarkSpaceAfter(ConversionSectionWrapper section) {
-    	if (section == null || section.getDroppedMarkSpaceAfter() == null || !WordLayoutFixups.isEnabled()) return "";
-    	return org.docx4j.fonts.WordLineMetrics.format(section.getDroppedMarkSpaceAfter().intValue() / 20.0);
+		if (section == null || section.getDroppedMarkSpaceAfter() == null || !WordLayoutFixups.isEnabled()) return "";
+		return org.docx4j.fonts.WordLineMetrics.format(section.getDroppedMarkSpaceAfter().intValue() / 20.0);
     }
 
     /** {@code docx4j.convert.out.fo.wordLayout.restartParityBlankPage}, default true: see
      *  {@link #getForcePageCount}.  @since 17.3.1 */
     static boolean restartParityBlankPage() {
-    	return org.docx4j.Docx4jProperties.getProperty(
-    			"docx4j.convert.out.fo.wordLayout.restartParityBlankPage", true);
+		return org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.wordLayout.restartParityBlankPage", true);
     }
 
     /** w:sectPr/w:type, "nextPage" where it is not stated.  @since 17.3.1 */
     private static String sectionType(SectPr sectPr) {
-    	if (sectPr == null || sectPr.getType() == null || sectPr.getType().getVal() == null) return "nextPage";
-    	return sectPr.getType().getVal();
+		if (sectPr == null || sectPr.getType() == null || sectPr.getType().getVal() == null) return "nextPage";
+		return sectPr.getType().getVal();
     }
 
     /** w:settings/w:evenAndOddHeaders.  @since 17.3.1 */
     static boolean evenAndOddHeaders(FOConversionContext context) {
-    	try {
-    		DocumentSettingsPart settings = context.getWmlPackage().getMainDocumentPart().getDocumentSettingsPart();
-    		if (settings == null || settings.getJaxbElement() == null) return false;
-    		org.docx4j.wml.BooleanDefaultTrue eo = settings.getJaxbElement().getEvenAndOddHeaders();
-    		return eo != null && eo.isVal();
-    	} catch (Exception e) {
-    		return false;
-    	}
+		try {
+			DocumentSettingsPart settings = context.getWmlPackage().getMainDocumentPart().getDocumentSettingsPart();
+			if (settings == null || settings.getJaxbElement() == null) return false;
+			org.docx4j.wml.BooleanDefaultTrue eo = settings.getJaxbElement().getEvenAndOddHeaders();
+			return eo != null && eo.isVal();
+		} catch (Exception e) {
+			return false;
+		}
     }
     
     private static boolean isOdd(SectPr sectPr) {
-    	
-    	CTPageNumber pgNumType = sectPr.getPgNumType();
-    	
-    	return true;
+		
+		CTPageNumber pgNumType = sectPr.getPgNumType();
+		
+		return true;
     }
 
     public static boolean hasPgNumTypeStart(FOConversionContext context) {
-    	return (context.getSections().getCurrentSection().getPageNumberInformation().getPageStart() > -1);
+		return (context.getSections().getCurrentSection().getPageNumberInformation().getPageStart() > -1);
     }
 }

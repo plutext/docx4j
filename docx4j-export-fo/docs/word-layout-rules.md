@@ -5495,7 +5495,29 @@ are unreliable (§10). Instead, a box in front of or behind the text, and a wrap
 narrower than 60% of the column, is positioned where Word puts it and takes no space; a
 wider wrapped box reserves its height at its paragraph. The 60% rule is measured: Word
 flows text beside a narrow box, and a page built from several such boxes would otherwise
-cost a page each. **Limitation**: text does not flow beside a text box.
+cost a page each. **Limitation** (Apache FOP): text does not flow beside a text box.
+
+<a id="s92band"></a>**17.3.2, on the docx4j renderer: a wide wrapped box with room beside it is
+positioned, and its band kept clear by a float** (`WordLayoutFixups.textBesideBand`; fidelity
+register cause `textbox-wide-no-text-beside`). Only the narrow half of the 60% rule had been measured;
+the probes `vml-box-beside-portrait` and `-landscape` (Word run 2026-10-07) set a paragraph's heading
+beside a 20pt box of 68% or 80% of the column in all six cases (baseline 83.30, where docx4j had it
+below the box at 103.20), and corpus document 561 wraps 13 lines into the 175pt left of a 318pt figure
+box. So a box Word wraps square, tight or through, of 60% of the column or more, with at least 72pt
+beside it after its wrap distance (`TEXT_BESIDE_MIN_PT`; Word measured beside an 81pt gap, narrower
+gaps not measured), in a paragraph with text of its own, is positioned like a narrow one and an empty
+`fo:float` at the head of its paragraph, on the side away from the room (the larger side's, FOP's floats
+being one-sided where Word fills both), from the box's wrap edge to the column's edge and as tall as the
+box's offset, height and bottom wrap distance, keeps the band clear. The float holds a sized
+block-container inside an `fo:block` (Apache main since FOP-3331 puts a float whose own child is a
+block-container in the flow). Only on a renderer with `side-float-edges` (2.11-docx4j.5): Apache FOP's
+floats narrowed one line too many and threw on a table (§6.6 items 44, 45; gates b167, b172). **A table
+whose anchor paragraph follows the box's** goes below the box in Word: on a renderer with
+`clear-after-side-float` (fork CR-022) the table's wrapper block gets `clear` on the band's side and
+starts at the band's foot, full width (10855's rubric table at 146.8 against Word's 148.2, its heading at
+71.0 against 72.3; FOP had drawn the table over the box); without the capability the band is withheld
+where a table follows, the box reserving its height as before. The probes then match Word line for
+line (Pa's heading at x 388.0 against 388.7).
 
 ### 9.3 Hidden text
 

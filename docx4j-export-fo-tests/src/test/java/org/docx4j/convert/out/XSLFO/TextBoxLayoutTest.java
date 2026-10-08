@@ -2,6 +2,7 @@ package org.docx4j.convert.out.XSLFO;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -165,6 +166,77 @@ public class TextBoxLayoutTest extends AbstractXSLFOTest {
 		assertEquals("30pt", wrapper.getAttribute("height"));
 		assertEquals("90pt", wrapper.getAttribute("padding-top"));
 		assertEquals("", wrapper.getAttribute("absolute-position"));
+	}
+
+	private static boolean sideFloatEdges() {
+		return org.docx4j.convert.out.fo.FopCapabilities.has(
+				org.docx4j.convert.out.fo.FopCapabilities.Capability.SIDE_FLOAT_EDGES);
+	}
+
+	private static boolean clearAfterSideFloat() {
+		return org.docx4j.convert.out.fo.FopCapabilities.has(
+				org.docx4j.convert.out.fo.FopCapabilities.Capability.CLEAR_AFTER_SIDE_FLOAT);
+	}
+
+	/** A wide box with at least 72pt beside it, in a paragraph with text of its own: Word
+	 *  sets the text beside the box (probes vml-box-beside-portrait/-landscape, six cases
+	 *  at baseline 83.30; 10855's rubric heading).  On a renderer with side-float-edges the
+	 *  box is positioned and its band kept clear by an empty float in the paragraph
+	 *  (WordLayoutFixups.textBesideBand); on Apache FOP it reserves its height as before. */
+	@Test
+	public void aWideWrappedBoxWithRoomBesideKeepsABand() throws Exception {
+		// 300pt at x=100 of a 451.3pt column: 91pt to its left after the 9pt wrap distance
+		String wrapped = VML_TEXT_BOX.replace("width:180pt", "width:300pt")
+				.replace("</v:textbox>", "</v:textbox><w10:wrap type=\"square\"/>")
+				.replace("</w:pict></w:r></w:p>", "</w:pict></w:r><w:r><w:t>heading beside the box</w:t></w:r></w:p>");
+		org.w3c.dom.Document doc = fo(wrapped, Docx4J.FLAG_NONE);
+		NodeList floats = doc.getElementsByTagNameNS(FO_NS, "float");
+		if (sideFloatEdges()) {
+			assertEquals("the band", 1, floats.getLength());
+			Element band = (Element) floats.item(0);
+			assertEquals("the room is on the left, so the band floats right", "right", band.getAttribute("float"));
+			Element inner = (Element) band.getFirstChild();
+			assertEquals("a block inside the float (FOP-3331)", "block", inner.getLocalName());
+			Element holder = (Element) inner.getFirstChild();
+			assertEquals("block-container", holder.getLocalName());
+			// the band: from the box's wrap edge (100 - 9) to the column's edge, as tall as
+			// offset + height + bottom wrap distance (90 + 30 + 0)
+			assertEquals(451.3 - 91, Double.parseDouble(holder.getAttribute("width").replace("pt", "")), 0.1);
+			assertEquals(120.0, Double.parseDouble(holder.getAttribute("height").replace("pt", "")), 0.1);
+			assertNotNull("the box is positioned, not reserved", positionedBox(doc));
+		} else {
+			assertEquals(0, floats.getLength());
+			assertNull(positionedBox(doc));
+		}
+	}
+
+	/** Word puts a table whose anchor paragraph follows the box's below the box.  A renderer
+	 *  with clear-after-side-float (fork CR-022) gets clear on the table, which then starts at
+	 *  the band's foot (10855's rubric table at Word's y, gate b191); one without it keeps the
+	 *  band withheld where a table follows, the box reserving its height (FOP drew the table
+	 *  over the box, b172). */
+	@Test
+	public void aTableAfterTheBoxClearsTheBandOrWithholdsIt() throws Exception {
+		String wrapped = VML_TEXT_BOX.replace("width:180pt", "width:300pt")
+				.replace("</v:textbox>", "</v:textbox><w10:wrap type=\"square\"/>")
+				.replace("</w:pict></w:r></w:p>", "</w:pict></w:r><w:r><w:t>heading beside the box</w:t></w:r></w:p>"
+						+ "<w:tbl><w:tblPr><w:tblW w:type=\"dxa\" w:w=\"9026\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"9026\"/></w:tblGrid>"
+						+ "<w:tr><w:tc><w:tcPr><w:tcW w:type=\"dxa\" w:w=\"9026\"/></w:tcPr><w:p><w:r><w:t>table below the box</w:t></w:r></w:p></w:tc></w:tr></w:tbl>");
+		org.w3c.dom.Document doc = fo(wrapped, Docx4J.FLAG_NONE);
+		NodeList floats = doc.getElementsByTagNameNS(FO_NS, "float");
+		NodeList tables = doc.getElementsByTagNameNS(FO_NS, "table");
+		assertTrue(tables.getLength() > 0);
+		Element table = (Element) tables.item(0);
+		Element wrapper = (Element) table.getParentNode();
+		if (sideFloatEdges() && clearAfterSideFloat()) {
+			assertEquals("the band", 1, floats.getLength());
+			String side = ((Element) floats.item(0)).getAttribute("float");
+			assertEquals("clear on the table's wrapper block, the band's side", side, wrapper.getAttribute("clear"));
+		} else {
+			assertEquals("the band withheld: a table follows", 0, floats.getLength());
+			assertEquals("", wrapper.getAttribute("clear"));
+			assertNull("the box reserves its height", positionedBox(doc));
+		}
 	}
 
 	/** A VML box of the document's own, relative to the text, is measured from its

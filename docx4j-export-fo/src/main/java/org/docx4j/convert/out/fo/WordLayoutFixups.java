@@ -882,9 +882,13 @@ public final class WordLayoutFixups {
 	 *  an explicit start-indent inside it has to be moved in by.
 	 *  @see #textBoxStartIndents(Document)  @since 17.3.1 */
 	public static final String HINT_TEXTBOX_START = "docx4j-textbox-start";
+	/** On a text box Word wraps square, tight or through - text may run beside it: its wrap
+	 *  distances left, right and bottom in pt, and the side text may take ("both", "left",
+	 *  "right" or "largest").  @see #textBesideBand  @since 17.3.1 */
+	public static final String HINT_TEXTBOX_BESIDE = "docx4j-textbox-beside";
 	private static final String[] ANCHOR_HINTS = { HINT_ANCHOR, HINT_ANCHOR_W, HINT_ANCHOR_H,
 			HINT_ANCHOR_X, HINT_ANCHOR_Y, "docx4j-anchor-dist", "docx4j-anchor-behind",
-			HINT_ANCHOR_COL, HINT_ANCHOR_ML };
+			HINT_ANCHOR_COL, HINT_ANCHOR_ML, HINT_TEXTBOX_BESIDE };
 
 	// ------------------------------------------------------------ 0e. text frames
 
@@ -2753,6 +2757,27 @@ public final class WordLayoutFixups {
 		// parity from 0.478 to 0.087 (@since 17.1.0)
 		if ("square".equals(kind) && oneColumn > 0) kind = "none";
 		if ("square".equals(kind) && col > 0 && w < 0.6 * col) kind = "none";
+		// a wider box with room beside it: positioned too, and its band kept clear (@since 17.3.1)
+		Element band = null;
+		Element cleared = null;
+		if ("square".equals(kind) && !pageY) {
+			double above = y.startsWith("t:") ? spaceBeforePt(para) : 0;
+			band = textBesideBand(doc, box, para, x, w, h, col, off - above);
+			if (band != null) {
+				/* Word puts a table whose anchor paragraph follows the box's below the box, not
+				 * beside it.  A renderer with clear-after-side-float (fork CR-022) honours clear on
+				 * the table: it starts at the band's foot, full width (10855's rubric table at
+				 * Word's 155.35pt, where without it FOP drew the table over the box, b172).  Without
+				 * the capability the band is withheld where a table follows, as before. */
+				cleared = tableAfter(para);
+				if (cleared != null && !FopCapabilities.has(FopCapabilities.Capability.CLEAR_AFTER_SIDE_FLOAT)) {
+					log.debug("A wide text box reserves its height: a table follows and the renderer has no clear");
+					band = null;
+					cleared = null;
+				}
+			}
+			if (band != null) kind = "none";
+		}
 
 		Element wrapper = doc.createElementNS(FO_NS, "fo:block-container");
 		wrapper.setAttribute("start-indent", "0pt");
@@ -2798,6 +2823,117 @@ public final class WordLayoutFixups {
 		box.getParentNode().removeChild(box);
 		wrapper.appendChild(box);
 		insertAnchorWrapper(para, wrapper);
+		if (band != null) para.insertBefore(band, wrapper.getNextSibling());
+		if (cleared != null) cleared.setAttribute("clear", band.getAttribute("float"));
+	}
+
+	/** The table that follows this paragraph in its flow - its wrapper block (a padding
+	 *  fo:block whose first element is the fo:table), or the table itself - with only blank
+	 *  blocks between; null where the next thing is a paragraph, which Word sets beside the
+	 *  box.  @since 17.3.2 */
+	private static Element tableAfter(Element para) {
+		for (Node n = para.getNextSibling(); n != null; n = n.getNextSibling()) {
+			if (!(n instanceof Element)) continue;
+			Element e = (Element) n;
+			if (isFo(e, "table")) return e;
+			if (!isFo(e, "block")) return null;
+			Element first = null;
+			for (Node c = e.getFirstChild(); c != null; c = c.getNextSibling()) {
+				if (c instanceof Element) { first = (Element) c; break; }
+			}
+			if (first != null && isFo(first, "table")) return e;
+			if (!blankBlock(e)) return null;
+		}
+		return null;
+	}
+
+	/** The room beside a wrapped box, in points, below which the box keeps reserving its
+	 *  height ({@link #textBesideBand}).  Word set a line beside an 81pt gap
+	 *  (vml-box-beside-portrait, case Pd); narrower gaps are not measured.  @since 17.3.1 */
+	static final double TEXT_BESIDE_MIN_PT = 72;
+
+	/** The tallest band (the box's offset, height and bottom wrap distance) a wrapped box is
+	 *  given a float for, until a positioned box is kept on its anchor's page as Word keeps it
+	 *  (561: a 292pt box off the page).  @since 17.3.2 */
+	static final double TEXT_BESIDE_MAX_BAND_PT = 250;
+
+	/**
+	 * Word runs text beside a box it wraps square, tight or through wherever there is room,
+	 * however wide the box: measured on the vml-box-beside probes, a 20pt box 68% or 80% of
+	 * the column, flush left, flush right or offset, has its paragraph's heading set beside
+	 * it (baseline 83.30) in all six cases, where docx4j - reserving the height of any box
+	 * 60% of the column or wider ({@link #anchorTextBox}, §9.2: only the narrow half of that
+	 * rule was ever measured) - set it below the box at 103.20.  Corpus document 561 has
+	 * Word wrapping 13 lines into the 175pt left of a 318 x 292pt figure box; 10855's
+	 * landscape heading was 29pt low under its 476pt box, and the page ran on.
+	 *
+	 * <p>So such a box is positioned where Word puts it, as a narrow one is, and its band is
+	 * kept clear by an empty {@code fo:float} at the head of its paragraph: on the side away
+	 * from the room (the larger side's, where both have it - FOP's floats are one-sided, where
+	 * Word fills both), from the box's wrap edge to the column's edge, as tall as the box's
+	 * offset, height and bottom wrap distance.  The float holds a sized block-container, not
+	 * the band table a framed paragraph's float holds, so {@link #hoistFloats} can still move
+	 * it.  Lines above the box's top in its paragraph are narrowed too (a side float starts at
+	 * its line; rules §10).</p>
+	 *
+	 * <p>Not where the room is under {@link #TEXT_BESIDE_MIN_PT}, where floats are not laid
+	 * out ({@link #floatsAllowed}, or the float property is off), nor where the paragraph has
+	 * nothing of its own to set beside the box: FOP anchors a side float to a line and drops
+	 * one which has none.  Those keep reserving the box's height.</p>
+	 *
+	 * @param top the box's top below its paragraph's first line, in pt
+	 * @return the float, to go after the box's wrapper; null where the box reserves its height
+	 * @since 17.3.1
+	 */
+	private static Element textBesideBand(Document doc, Element box, Element para, double x,
+			double w, double h, double col, double top) {
+		String beside = box.getAttribute(HINT_TEXTBOX_BESIDE).trim();
+		if (beside.length() == 0 || col <= 0 || w <= 0) return null;
+		// only on a renderer whose side floats end where the text below them starts and never
+		// inside a table (fork CR-020, 2.11-docx4j.5): on Apache FOP the band narrowed one line
+		// too many and crashed on a table (§6.6 items 44, 45; b167)
+		if (!FopCapabilities.has(FopCapabilities.Capability.SIDE_FLOAT_EDGES)) return null;
+		if (!FOConversionContext.useFloats() || !floatsAllowed(para)) return null;
+		if (!paintsBesideAnchors(para)) return null;
+		String[] d = beside.split("\\s+");
+		if (d.length < 3) return null;
+		double distL = lengthPt(d[0]), distR = lengthPt(d[1]), distB = lengthPt(d[2]);
+		String side = d.length > 3 ? d[3] : "both";
+		double left = "right".equals(side) ? 0 : x - distL;
+		double right = "left".equals(side) ? 0 : col - x - w - distR;
+		if (Math.max(left, right) < TEXT_BESIDE_MIN_PT) return null;
+		double bandH = top + h + distB;
+		if (bandH <= 0) return null;
+		/* A tall box near a page's foot: Word keeps the box on its anchor's page (the
+		 * register's anchor-at-page-foot rule, not yet built), where docx4j's positioned
+		 * container runs off the page - 561's 292pt figure box, positioned from a paragraph
+		 * laid out near page 14's foot, was drawn at y 1070 and its page lost 6 lines (gates
+		 * b172, b191).  Until that rule exists a band taller than this reserves the box's
+		 * height as before; 10855's rubric box is well under it.  @since 17.3.2 */
+		if (bandH > TEXT_BESIDE_MAX_BAND_PT) return null;
+		boolean textLeft = left >= right;
+		double bandW = textLeft ? col - Math.max(0, x - distL) : Math.min(col, x + w + distR);
+		if (bandW <= 0) return null;
+		Element fl = doc.createElementNS(FO_NS, "fo:float");
+		fl.setAttribute("float", textLeft ? "right" : "left");
+		// the sized container inside an fo:block: Apache main since FOP-3331 (744281b1e) puts a
+		// float whose own child is a block-container in the flow, text below it at full width;
+		// wrapped, the text stays beside it (measured on main by the fork session, CR-020 §6)
+		Element inner = doc.createElementNS(FO_NS, "fo:block");
+		inner.setAttribute("start-indent", "0pt");
+		inner.setAttribute("end-indent", "0pt");
+		Element holder = doc.createElementNS(FO_NS, "fo:block-container");
+		holder.setAttribute("width", pt(bandW));
+		holder.setAttribute("height", pt(bandH));
+		holder.setAttribute("start-indent", "0pt");
+		holder.setAttribute("end-indent", "0pt");
+		Element empty = doc.createElementNS(FO_NS, "fo:block");
+		empty.setAttribute("font-size", "0.1pt");
+		empty.setAttribute("line-height", "0pt");
+		holder.appendChild(empty);
+		inner.appendChild(holder);
+		fl.appendChild(inner);
+		return fl;
 	}
 
 	/**

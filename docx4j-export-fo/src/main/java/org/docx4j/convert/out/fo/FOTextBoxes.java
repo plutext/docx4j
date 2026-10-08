@@ -265,6 +265,15 @@ public class FOTextBoxes {
 		}
 
 		Element container = createContainer(doc, kind(wrapType), w, h, x, y, colW, mL, inset);
+		/* Square, tight and through let text run beside the box; the fixups keep its band
+		 * clear when it is too wide to be positioned alone (WordLayoutFixups.textBesideBand).
+		 * Word's VML defaults are 9pt left and right.  @since 17.3.1 */
+		if ("square".equals(wrapType) || "tight".equals(wrapType) || "through".equals(wrapType)) {
+			container.setAttribute(WordLayoutFixups.HINT_TEXTBOX_BESIDE,
+					pt(pts(props.get("mso-wrap-distance-left"), 9)) + " "
+					+ pt(pts(props.get("mso-wrap-distance-right"), 9)) + " "
+					+ pt(pts(props.get("mso-wrap-distance-bottom"), 0)));
+		}
 		Map<String, String> flow = parseStyle(textboxStyle);
 		if (!flow.containsKey("layout-flow")) flow = props;
 		applyLayoutFlow(container, flow, w, h, inset==null ? DEFAULT_INSET : inset);

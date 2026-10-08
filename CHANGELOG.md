@@ -32,6 +32,13 @@ PDF via XSL FO:
   w:vertAnchor is anchored to the margin box in the lower half of the page. Properties as
   before: docx4j.convert.out.fo.tables.position / .float.
 
+- On the docx4j FO renderer, text runs beside a wide wrapped text box (square, tight or through,
+  60% of the column or more) where Word runs it, with at least 72pt beside the box: the box is
+  positioned and its band kept clear by a float, where it reserved its height; a table that follows
+  the box's paragraph goes below the box on a renderer with the clear-after-side-float capability
+  (docx4j-fo-renderer 2.11-docx4j.6), else the band is withheld. Apache FOP unchanged
+  (fidelity register cause textbox-wide-no-text-beside; probes vml-box-beside-*).
+
 
 
 

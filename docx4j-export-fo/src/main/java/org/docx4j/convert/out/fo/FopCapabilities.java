@@ -147,7 +147,13 @@ public final class FopCapabilities {
 		 *  the {@code TraitSetter.setVisibility} NPE a float followed by a block inside an inline threw,
 		 *  so docx4j no longer declines a floating table whose anchor paragraph holds a line break
 		 *  ({@link WordLayoutFixups}; CR-032 phase 1).  @since 17.3.2 */
-		SIDE_FLOAT_EDGES("side-float-edges");
+		SIDE_FLOAT_EDGES("side-float-edges"),
+		/** {@code clear} honoured on a block-level FO after a side float (fork CR-022): a block,
+		 *  block-container, table or list-block with {@code clear} naming the float's side starts at
+		 *  the float's foot, full width, as a table after a wrapped text box does in Word.  docx4j
+		 *  writes it on the table that follows a text-box band ({@link WordLayoutFixups}); without it
+		 *  the band is withheld where a table follows.  @since 17.3.2 */
+		CLEAR_AFTER_SIDE_FLOAT("clear-after-side-float");
 
 		private final String key;
 
