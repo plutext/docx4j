@@ -39,6 +39,9 @@ PDF via XSL FO:
   (docx4j-fo-renderer 2.11-docx4j.6), else the band is withheld. Apache FOP unchanged
   (fidelity register cause textbox-wide-no-text-beside; probes vml-box-beside-*).
 
+- A table cell keeps its top margin where its row continues on the next page, as Word lays the
+  continued cell (padding-before with conditionality retain; FOP discards padding at a break).
+  A corpus document of 2393 rows had been fitting a row more on such pages (CR-001).
 - A paragraph mark's own character style (w:pPr/w:rPr/w:rStyle) is resolved before its direct
   formatting, in PropertyResolver and the FO exporter: an empty paragraph whose mark names a 9pt
   style is laid at 9pt, not its paragraph style's 12pt (a corpus document whose table cells end

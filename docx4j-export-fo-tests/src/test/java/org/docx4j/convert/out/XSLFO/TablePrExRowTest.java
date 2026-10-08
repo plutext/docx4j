@@ -1,6 +1,7 @@
 package org.docx4j.convert.out.XSLFO;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -112,15 +113,22 @@ public class TablePrExRowTest extends AbstractXSLFOTest {
 		assertEquals("2x2 table", 4, cells.size());
 
 		// row 1 takes the table's own margins: 113tw = 5.64pt, 28tw = 1.44pt (top and
-		// bottom are on Word's 1/600-inch grid since 17.3.1, AbstractCellMargin.formatFoTwips)
-		assertPoints("row 1 bottom is the table's 113tw", 5.64, cells.get(0), "padding-bottom");
-		assertPoints("row 1 cell 2 agrees", 5.64, cells.get(1), "padding-bottom");
-		assertPoints("row 1 top is the table's 28tw", 1.44, cells.get(0), "padding-top");
+		// bottom are on Word's 1/600-inch grid since 17.3.1, AbstractCellMargin.formatFoTwips;
+		// since 17.3.2 the fixups write them as padding-before, retained where a row
+		// continues on the next page, and padding-after: WordLayoutFixups.cellPaddingAtRowBreaks)
+		assertPoints("row 1 bottom is the table's 113tw", 5.64, cells.get(0), "padding-after");
+		assertPoints("row 1 cell 2 agrees", 5.64, cells.get(1), "padding-after");
+		assertPoints("row 1 top is the table's 28tw", 1.44, cells.get(0), "padding-before");
+		assertEquals("the top margin is kept where the row continues on the next page",
+				"retain", cells.get(0).getAttribute("padding-before.conditionality"));
+		assertFalse("padding-top itself is gone (FOP ignores conditionality on it)", cells.get(0).hasAttribute("padding-top"));
+		assertFalse("the bottom margin is not kept at a split (gate b206: Word does not)",
+				cells.get(0).hasAttribute("padding-after.conditionality"));
 
 		// row 2's exception replaces the bottom margin, and only the bottom margin
-		assertPoints("row 2 bottom is the exception's 28tw", 1.44, cells.get(2), "padding-bottom");
-		assertPoints("row 2 cell 2 agrees", 1.44, cells.get(3), "padding-bottom");
-		assertPoints("row 2 top is still the table's 28tw", 1.44, cells.get(2), "padding-top");
+		assertPoints("row 2 bottom is the exception's 28tw", 1.44, cells.get(2), "padding-after");
+		assertPoints("row 2 cell 2 agrees", 1.44, cells.get(3), "padding-after");
+		assertPoints("row 2 top is still the table's 28tw", 1.44, cells.get(2), "padding-before");
 	}
 
 	/** The attribute in points, whatever unit the writer chose to express it in. */

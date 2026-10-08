@@ -205,6 +205,15 @@ key in `docx4j.properties` still wins, and a deployment without either file gets
 | `docx4j.fonts.runFontSelector.trimUnpreservedWhitespace` | `true` | The leading and trailing white space of a `w:t` with no `xml:space="preserve"` is dropped, as Word drops it (§1.3). Also HTML. |
 | `docx4j.convert.out.fo.hyphenate` | unset | Overrides the document's own `w:autoHyphenation`: `true` hyphenates every paragraph that does not suppress hyphenation, `false` hyphenates nothing. Unset, the document decides (§4.7). |
 
+**A cell's margins where its row splits across pages** (17.3.2, `cellPaddingAtRowBreaks`). Word lays
+the continuation of a split row out as a cell of its own, top margin included: on 11657 the step from
+the repeated header row to the first body line is 20.19pt on every page, a continued row's included,
+where FOP's was 18.71. XSL-FO discards padding at a break unless its conditionality is retain, and FOP
+honours that only on `padding-before`, not on `padding-top` (measured), so every cell's padding-top is
+written as padding-before with retain. The bottom margin is not retained: Word does not keep it at
+every split (gate b206: 11657 -55, 12363 -8), though it refuses to start a row whose first line would
+not fit with the margin below it (11657's page 30), a rule left to the renderer.
+
 <a id="s16settings"></a>
 ### 1.6 Settings sensitivity
 

@@ -207,10 +207,52 @@ public final class WordLayoutFixups {
 		outerBordersOutsideTables(doc); // before clipExactRows, which takes the exact-row hint off
 		clipExactRows(doc);
 		continuationFromTop(doc);
+		cellPaddingAtRowBreaks(doc); // after every pass that reads or writes a cell's padding-top
 		fieldErrorWeights(doc);
 		StyleRefMarkers.apply(doc); // before stripHints: it reads the paragraph-style hint
 		pageMastersByContent(doc); // after every fixup which moves or drops blocks
 		stripHints(doc);
+	}
+
+	/**
+	 * A cell's top margin again where a row continues on the next page.
+	 *
+	 * <p>Word lays the continuation of a split row out as a cell of its own, its top
+	 * margin included: on 11657 (2393 rows of one Calibri 11 line, 28-twip margins) the
+	 * step from the repeated header row to the first body line is 20.19pt on every page,
+	 * a continued row's included, where FOP's was 18.71 there - XSL-FO discards padding
+	 * at a break unless its conditionality is retain, and FOP honours that only on the
+	 * writing-mode-relative {@code padding-before}, not on {@code padding-top}
+	 * (measured: a cell with padding-top and padding-top.conditionality="retain" lost
+	 * the 10pt on page 2, the same cell as padding-before kept it).  So every table
+	 * cell's padding-top becomes padding-before with retain; padding-bottom becomes
+	 * padding-after, discarded at the break as before.  The 1.48pt a continued row was
+	 * short let docx4j fit a row more on such pages (11657's page 30: 54 rows against
+	 * Word's 53), after which every page broke a row from Word's.</p>
+	 *
+	 * <p>The bottom margin is not retained: Word does not keep it at every split (gate
+	 * b206, retain on padding-after too: 11657 -55 lines, 12363 -8, against 13383 +19 and
+	 * 2451 +19), though it does refuse to <em>start</em> a row whose first line would not
+	 * fit with the margin below it (11657's page 30, body foot 549.8pt on both sides by
+	 * the area tree: Word stops at row 53 where row 54's first line would end at 549.3
+	 * plus the 1.44pt margin; FOP sets that line).  That start rule is the renderer's to
+	 * add (Enterprise CR-001 §6.6).</p>
+	 *
+	 * <p>Last of the table passes: the edge-row and exact-row passes read and write
+	 * padding-top.  @since 17.3.2</p>
+	 */
+	static void cellPaddingAtRowBreaks(Document doc) {
+		for (Element cell : elements(doc, "table-cell")) {
+			if (cell.hasAttribute("padding-top")) {
+				cell.setAttribute("padding-before", cell.getAttribute("padding-top"));
+				cell.setAttribute("padding-before.conditionality", "retain");
+				cell.removeAttribute("padding-top");
+			}
+			if (cell.hasAttribute("padding-bottom")) {
+				cell.setAttribute("padding-after", cell.getAttribute("padding-bottom"));
+				cell.removeAttribute("padding-bottom");
+			}
+		}
 	}
 
 	// ------------------------------------------------------------ 0. superscripts
