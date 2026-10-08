@@ -1,14 +1,13 @@
 # CR-033: Digital signatures in docx4j — the `docx4j-digsig` module
 
-Status: ACCEPTED 2026-10-08 (Jason: "i accept the recommendations in CR-033"; proposed the same
-day: "prepare a CR for moving this into docx4j proper"; no additional dependencies in
-docx4j-core; the `com.plutext` packages become `org.docx4j` packages). Decisions D1 to D7 taken
-(§8; D7 with `template.potx` held back). Implementation from the DigSig session, with the docx4j
-session reviewing phase 2 (§8). Phase 0 done 2026-10-08 (private repo 8bceacd); phase 1 (bacdc3044), phase 2 (the core
-service, d21a2ddd0, review by the docx4j session requested) and phase 3's documentation done 2026-10-08 on branch `CR-033-digsig`; phase 3's Office
-check awaits Jason; phase 4 after it (§10). Drafted with Claude Fable 5.1 from the DigSig
-session, with the inventory of §2 measured in `../docx4j-digsig_11_4` at commit d7ea9a4 plus its
-uncommitted phase 5 samples. Owner: Jason Harrop.
+Status: DONE 2026-10-09. Accepted 2026-10-08 (Jason: "i accept the recommendations in CR-033";
+proposed the same day). Phases 0 to 4 shipped 2026-10-08/09 on branch `CR-033-digsig`, rebased onto
+`VERSION_17_3_2` at c8a6094ea and merged fast-forward (df1e535b1, 12b3530ca, 19ec762ee and the
+closing commit); the
+Office check of the seven-file set passed (Jason, 2026-10-09); the core change was reviewed by
+the docx4j session (§10). `template.potx` is still to come as a smaller file (D7). Owner: Jason
+Harrop. Drafted with Claude Fable 5.1 from the DigSig session, with the inventory of §2 measured
+in `../docx4j-digsig_11_4` at commit d7ea9a4.
 
 Scope: move Plutext DigSig (OPC package signatures: XML-DSig, XAdES-EPES and XAdES-T, for docx,
 pptx and xlsx; validation; signature lines) from its private repository into this reactor as a
@@ -540,7 +539,7 @@ classpath but not in its `module-info`, hence the `Base64` swap.
 
 Not done in phase 1: the Office check (phase 3); `docs/DigitalSignatures.md` (phase 3).
 
-### Phase 2 (2026-10-08), the core change: commit d21a2ddd0 (with phase 3's documentation)
+### Phase 2 (2026-10-08), the core change: commit 12b3530ca (with phase 3's documentation)
 
 `org.docx4j.openpackaging.parts.PartProvider` in docx4j-core: `Part createPart(String
 contentType, PartName)` returning null when not handled, with the providers resolved once by
@@ -601,3 +600,21 @@ So XAdES-T works end to end against a public RFC 3161 server after the BouncyCas
 untested path of §4.5. The gate: Word, Excel and PowerPoint report each file's signature valid
 and complete, the Excel line shows the signed image, and Word shows the XAdES-T one as valid
 (Office labels any XAdES level "XAdES-EPES" in its details, per CR-002 §6.6).
+
+**Passed (Jason, 2026-10-09): all seven.** Phase 3 complete.
+
+### Phase 4 (2026-10-09), decommission and registry
+
+- The private repository's `README.md` points here; `CLAUDE.md` and `notes_2026.txt` there say
+  the code's home is docx4j from commit df1e535b1 and that the repository is the archive.
+- Enterprise CR-002: its Status gains the move, its §9 the new path; its remaining phase 5
+  items (manual chapter, release) are re-homed: the chapter is `docs/DigitalSignatures.md`
+  here, the release is docx4j's.
+- Registry: `docx4j/CR-033` done; `enterprise/digsig-release` deferred as superseded;
+  `enterprise/CR-002.5` now depends on `docx4j/CR-033` and keeps only the Enterprise manual's
+  pointer sentence.
+- Merge: fast-forward of `CR-033-digsig` into `VERSION_17_3_2`; the registry symlink in the
+  main checkout removed first; the worktree removed after.
+- Still open after this CR: a smaller `template.potx` for the corpus (D7); the competition
+  analysis note (§4.11), left to the portfolio's owner session since that document carries
+  other sessions' uncommitted edits.
