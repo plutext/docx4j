@@ -5,7 +5,7 @@ proposed the same day). Phases 0 to 4 shipped 2026-10-08/09 on branch `CR-033-di
 `VERSION_17_3_2` at c8a6094ea and merged fast-forward (df1e535b1, 12b3530ca, 19ec762ee and the
 closing commit); the
 Office check of the seven-file set passed (Jason, 2026-10-09); the core change was reviewed by
-the docx4j session (§10). `template.potx` is still to come as a smaller file (D7). Owner: Jason
+the docx4j session (§10). `template.potx` joined the corpus on 2026-10-09 as a 65 KB file (D7). Owner: Jason
 Harrop. Drafted with Claude Fable 5.1 from the DigSig session, with the inventory of §2 measured
 in `../docx4j-digsig_11_4` at commit d7ea9a4.
 
@@ -440,8 +440,8 @@ and 3 can run in parallel once it lands. The release that carries it is D4.
 D4 the release is whichever is open when phase 3's Office check passes; D5 §4.11 as written
 (DigSig becomes an open-source docx4j module, the private repository is the archive, history not
 imported); D6 the generated classes stay checked in (a named departure from the adding-a-schema
-recipe). D7 decided the same day: the fixtures of §4.8 go in as listed except `template.potx`, which is
-not committed until Jason has made a smaller potx to replace it (`RoundTripTest` runs over
+recipe). D7 decided the same day: the fixtures of §4.8 go in as listed except `template.potx`, which was
+not committed until a smaller one existed (2026-10-09, §10: its image replaced) (`RoundTripTest` runs over
 whatever is in `corpus`, so the module's tests are unaffected by its absence).
 
 **Also accepted 2026-10-08 (Jason): who implements.** The DigSig session (the one that wrote this
@@ -615,6 +615,9 @@ and complete, the Excel line shows the signed image, and Word shows the XAdES-T 
   pointer sentence.
 - Merge: fast-forward of `CR-033-digsig` into `VERSION_17_3_2`; the registry symlink in the
   main checkout removed first; the worktree removed after.
-- Still open after this CR: a smaller `template.potx` for the corpus (D7); the competition
-  analysis note (§4.11), left to the portfolio's owner session since that document carries
-  other sessions' uncommitted edits.
+- `template.potx` (D7): 2026-10-09, Jason: the file was large only because of its
+  `ppt/media/image1.png` (555 KB, 1600 by 900); replaced by a 6 KB 320 by 180 colour-spectrum
+  PNG, nothing else in the package touched, 618 KB to 65 KB; the tests cover it again (the
+  three `template.potx` cases of `RoundTripTest`).
+- Still open after this CR: the competition analysis note (§4.11), left to the portfolio's
+  owner session since that document carries other sessions' uncommitted edits.
