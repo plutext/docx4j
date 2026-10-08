@@ -314,6 +314,18 @@ case as read) and 4083 -1. Left for the fork: the pair, the page-end case; then 
 
 ### 4.3 Phase 3, what the probes left
 
+**A probe for phase 3 from 13419 (2026-10-08).** Its body table (full width, tblpY 80pt) is anchored to a
+hidden empty paragraph; four empties follow (the first the anchor of a small floating address table,
+tblpY 2.25pt), then the text paragraph "Service Order Agreement - Page 1 of 4". Word lays the empties and
+the address table in the 80pt gap (the address table at the page's top, y 50) and leaves the rest of the
+gap empty: the text paragraph does not fill it, though three of its 10.35pt lines would fit the 38.7pt left
+(and in Word they would sit beside the address table, 169pt of room). docx4j's gap-fill rule (§4.1, from
+probe `-wide-anchor-text` case 2 and 3229's heading) assumes the next text paragraph's lines fill the rest
+of the gap and keeps only the modulo, which puts 13419's body table 31pt above Word's. A probe is needed
+for which of these Word does: fill with the next text paragraph only when it is the anchor; fill with
+whole paragraphs only (a paragraph that does not fit whole goes below); or not fill beside a second float.
+Until it is read, the rule stands (gate b202).
+
 - The negative offset beyond a line and a half, and into the top margin (`negative` case 2: Word at y
   42.8, 29pt above the margin).
 - The anchor paragraph's text above a wide table's offset (3.5pt on the probe) once `float-offset`

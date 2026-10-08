@@ -2141,17 +2141,28 @@ public final class WordLayoutFixups {
 		if (y > 0) {
 			Element anchor = null;
 			java.util.List<Element> above = new java.util.ArrayList<Element>();
+			java.util.List<Element> waiting = new java.util.ArrayList<Element>();
 			for (Node n = tbl.getNextSibling(); n != null; n = n.getNextSibling()) {
 				if (!(n instanceof Element)) continue;
 				Element b = (Element) n;
-				// (another floating table on the same anchor ends the scan: skipping it moved
-				// the empties after both above the first, which cost 13419 two lines and gave
-				// 3229 nothing - gate b187)
+				// a floating table still waiting for its turn is anchored to the block after
+				// it, and goes above with that block when it moves: 13419's address table
+				// follows its body table directly (the paragraph between them is hidden) and
+				// is anchored to the empty paragraph after it, which Word lays in the gap
+				// above the body table, the address table at the page's top with it; left
+				// after the body table, both fell at the page's foot.  Moving the empties
+				// without the table (gate b187) anchored it to the text after them instead
+				if (isFo(b, "table") && b.hasAttribute(HINT_TBLP_FLOAT)) {
+					waiting.add(b);
+					continue;
+				}
 				if (!isFo(b, "block")) break;
 				if (anchor == null) anchor = b;
-				if (!blankBlock(b) || takesNoSpace(b)) break;
+				if (!blankButFloats(b) || takesNoSpace(b)) break;
 				double h = blockHeightPt(b);
 				if (h <= 0 || moved + h > y + 0.05) break;
+				above.addAll(waiting);
+				waiting.clear();
 				above.add(b);
 				moved += h;
 			}
@@ -2413,6 +2424,24 @@ public final class WordLayoutFixups {
 
 	/** A block with nothing on its lines: an empty paragraph (which already carries the
 	 *  preserved space of &#xa7;2.5) counts as nothing before the table. */
+	/** A block that is blank but for the floats anchored in it.  Word lays such an empty
+	 *  anchor in the gap above a floating table in the flow like any empty paragraph, and
+	 *  its float with it: 13419's address table, anchored to the empty paragraph after its
+	 *  full-width body table, is drawn at the page's top; left after that table because it
+	 *  held the float, the anchor fell at the page's foot and the float past the body's
+	 *  foot (gates b198-b201 on the fork's CR-023).  @since 17.3.2 */
+	private static boolean blankButFloats(Element el) {
+		for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element) {
+				if (isFo((Element) n, "float")) continue;
+				if (!blankBlock((Element) n)) return false;
+			} else if (n.getNodeType() == Node.TEXT_NODE && n.getNodeValue().trim().length() > 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private static boolean blankBlock(Element el) {
 		for (String name : new String[] { "external-graphic", "leader", "table", "page-number" }) {
 			if (el.getElementsByTagNameNS(FO_NS, name).getLength() > 0) return false;
