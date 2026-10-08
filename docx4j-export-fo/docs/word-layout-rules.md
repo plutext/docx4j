@@ -4523,6 +4523,12 @@ sections is one page-sequence with one master, so it carries one set of widths (
 divisions get the one of the section the sequence was built from); and 10598's last page is
 three blank paragraphs at a column foot which Word fits and our list overshoots by 3.9pt, open.
 
+With the renderer's `column-balancing` (fork CR-026 phase B: unequal columns balanced before a
+`span="all"` block by trial) the 5% rule is lifted and near-equal widths are written as well: on r27
+(gate b215 against b214) 11126 0.9560 to 1.0000, 6116 0.6773 to 0.8663 and 394 0.4798 to 0.7688, all at
+Word's page counts, nothing else moving; without the balancing those widths had cost 11126 a page
+(b210). 6116's explicit column breaks leave its own stretches unbalanced, as Word leaves them.
+
 <a id="s73equal"></a>**A column break in columns of equal width**, which the region body
 lays out, is the same rule and is taken the same way: the paragraph is divided at the break
 (`ConversionSectionWrapperFactory` via `ColumnBreaks`, only for a section whose `w:cols`
