@@ -4506,6 +4506,23 @@ Columns within 5% of each other (4716/4715, 4680/4860 in the corpora) are Word's
 rounding of equal columns and are left to the region body.
 `org.docx4j.convert.out.common.wrappers.UnequalColumns` builds the table.
 
+**On a renderer with `column-widths`** (fork CR-026, 2.11-docx4j.6) a stretch the table cannot
+take - longer than a page, or holding a table or a break of its own - is laid by the region body
+at the section's widths: `LayoutMasterSetBuilder.markColumnWidths` writes `fox:column-widths`
+(a length per column) and `fox:column-gaps` (one per pair) on the master's `fo:region-body` where
+they sum to the writable width within a point, the count is the master's `column-count` and the
+columns differ by more than 5%; `column-count` and `column-gap` stay, so Apache FOP lays equal
+columns from the same FO. Measured on the fork's r24 (gate b211 against b209): 10598, a CV in
+125.45 / 51.25 / 360.8pt columns over eight pages, 0.2128 to 0.7527 and 10 pages to 9 (Word 8),
+its right column at Word's x=210; 6116 0.6366 to 0.6773 at Word's 5 pages; nothing else moved.
+Written on every unequal section instead (b210), the short stretches the table had right lost
+(13753 and 1432 from 1.0) since the renderer does not balance unequal columns before a
+`span="all"` block yet (the fork's phase B), and near-equal columns holding a table wider than
+either overflowed the body (11126 -73): hence the routing. Two limits: a run of continuous
+sections is one page-sequence with one master, so it carries one set of widths (6116's nine
+divisions get the one of the section the sequence was built from); and 10598's last page is
+three blank paragraphs at a column foot which Word fits and our list overshoots by 3.9pt, open.
+
 <a id="s73equal"></a>**A column break in columns of equal width**, which the region body
 lays out, is the same rule and is taken the same way: the paragraph is divided at the break
 (`ConversionSectionWrapperFactory` via `ColumnBreaks`, only for a section whose `w:cols`
