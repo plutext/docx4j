@@ -1011,6 +1011,47 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		// 13419's gap (CR-032 §4.3): a full-width table in the flow with a 120pt offset, its
+		// anchor an empty paragraph, and text after the empties that does not fit the rest
+		// of the gap whole.  Does Word fill the gap with that paragraph's lines (the rule
+		// from -wide-anchor-text case 2 and 3229), with whole paragraphs only, or not at
+		// all when a second float sits in the gap?
+		PROBES.add(new Probe("table-floating-gap-text",
+				"a full-width text-anchored floating table with tblpY 120pt and an empty anchor paragraph: "
+				+ "case 1 three more empties then a seven-sentence paragraph; case 2 the same with a one-sentence "
+				+ "paragraph before the long one; case 3 case 1 with a 40% floating table (tblpY 3pt, right) "
+				+ "anchored to the first empty; case 4 the long paragraph directly after the anchor; one case a "
+				+ "page; mode 15.  Read which lines Word lays in the gap above the wide table: the long "
+				+ "paragraph's first lines, whole paragraphs only, or none beside the second float", () -> {
+			Doc d = Doc.create(15);
+			for (int c = 0; c < 4; c++) {
+				d.para("before case " + (c + 1) + ". " + prose(1, c)).after(160).add();
+				Doc.Table t = new Doc.Table(4513, 4513).fixedLayout()
+						.floating("text", "margin", 0, null, 2400, null);
+				t.row(SERIF, 24, false, "wide row 1", "case " + (c + 1))
+						.row(SERIF, 24, false, prose(1, c), "b")
+						.row(SERIF, 24, false, "third", prose(1, c + 1));
+				d.add(t.build());
+				d.emptyParagraph();   // the anchor
+				if (c == 2) {
+					Doc.Table f = new Doc.Table(1805, 1805).fixedLayout()
+							.floating("text", "margin", null, "right", 60, null);
+					f.row(SERIF, 24, false, "small", "float").row(SERIF, 24, false, prose(1, c + 5), "y");
+					d.add(f.build());
+				}
+				if (c != 3) {
+					d.emptyParagraph();
+					d.emptyParagraph();
+					d.emptyParagraph();
+				}
+				if (c == 1) d.para("one short sentence that fits the gap whole.").after(160).add();
+				d.para("the long paragraph. " + prose(7, c + 1)).after(160).add();
+				d.para(prose(3, c + 8)).after(160).add();
+				if (c < 3) d.pageBreak();
+			}
+			return d.pkg();
+		}));
+
 		// A negative offset: mid-page over the paragraph before, and on the first paragraph
 		// of a page (into the top margin, or the previous page's space?).
 		PROBES.add(new Probe("table-floating-negative",
