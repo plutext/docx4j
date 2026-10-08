@@ -39,6 +39,10 @@ PDF via XSL FO:
   (docx4j-fo-renderer 2.11-docx4j.6), else the band is withheld. Apache FOP unchanged
   (fidelity register cause textbox-wide-no-text-beside; probes vml-box-beside-*).
 
+- A paragraph mark's own character style (w:pPr/w:rPr/w:rStyle) is resolved before its direct
+  formatting, in PropertyResolver and the FO exporter: an empty paragraph whose mark names a 9pt
+  style is laid at 9pt, not its paragraph style's 12pt (a corpus document whose table cells end
+  in such empties: its pages back to Word's line for line).
 - On a docx4j FO renderer with the float-offset capability (2.11-docx4j.6), a text-anchored floating
   table's tblpY is the float's offset: the table lands tblpY below its anchor paragraph's top with
   the lines above it full width, as Word lays it (probe table-floating 0.69 -> 0.98); a wrapped text

@@ -1250,12 +1250,16 @@ public class XsltFOFunctions {
 
         		rPr = propertyResolver.getEffectiveRPr(fontSzOnlyRPr, pPrDirect, cellContext);
 
-				// Now, work out the value for list item label
-        		rPrParagraphMark = XmlUtils.deepCopy(rPr);
-
-//    			System.out.println("p rpr-->" + XmlUtils.marshaltoString(pPrDirect.getRPr()));
-
-        		StyleUtil.apply(pPrDirect.getRPr(), rPrParagraphMark);
+				// Now, work out the value for list item label: the resolver's mark, which
+        		// since 17.3.2 resolves the mark's own w:rStyle before its direct formatting
+        		// (an empty paragraph whose mark names a 9pt character style was laid at
+        		// its paragraph style's 12pt - corpus 9698, 87 lines; until then the mark was
+        		// the runs' rPr with the direct w:pPr/w:rPr applied over it, the style unread)
+        		rPrParagraphMark = propertyResolver.getEffectiveParagraphMarkRPr(pPrDirect, cellContext);
+        		if (rPrParagraphMark == null) {
+        			rPrParagraphMark = XmlUtils.deepCopy(rPr);
+        			StyleUtil.apply(pPrDirect.getRPr(), rPrParagraphMark);
+        		}
         	}
 
 			if (log.isDebugEnabled() && pPr!=null) {

@@ -103,6 +103,13 @@ public class PropertyResolverOrderTest {
 		sr.setB(on());
 		s.setRPr(sr);
 
+		// a character style a paragraph mark may name (corpus 9698's "Основной текст + 10 pt": 9pt Trebuchet)
+		Style small = style("character", "Small", "DefaultParagraphFont", false);
+		RPr smr = F.createRPr();
+		smr.setRFonts(fonts("Trebuchet MS"));
+		smr.setSz(hps(18));
+		small.setRPr(smr);
+
 		pkg = PropertyResolverTestUtils.createdPkgWithStyles(styles);
 	}
 
@@ -206,6 +213,31 @@ public class PropertyResolverOrderTest {
 		assertEquals(28, sz(pr.getEffectiveParagraphMarkRPr(null)));
 	}
 
+	@Test
+	public void theParagraphMarksCharacterStyleIsResolvedThenItsDirectFormatting() throws Exception {
+		PropertyResolver pr = new PropertyResolver(pkg);
+		PPr marked = F.createPPr();
+		ParaRPr mark = F.createParaRPr();
+		mark.setRStyle(rStyle("Small"));
+		mark.setRFonts(fonts("Times New Roman"));
+		marked.setRPr(mark);
+		RPr markRPr = pr.getEffectiveParagraphMarkRPr(marked);
+		assertEquals("the mark's character style gives its size (9698: an empty paragraph's line)", 18, sz(markRPr));
+		assertEquals("the mark's direct font wins over the style's", "Times New Roman", markRPr.getRFonts().getAscii());
+		assertEquals("the cell-context overload too", 18, sz(pr.getEffectiveParagraphMarkRPr(marked, null)));
+
+		mark.setSz(hps(40));
+		assertEquals("direct size over the style's", 40, sz(pr.getEffectiveParagraphMarkRPr(marked)));
+
+		ParaRPr missing = F.createParaRPr();
+		missing.setRStyle(rStyle("Missing"));
+		PPr m2 = F.createPPr();
+		m2.setRPr(missing);
+		assertEquals("a missing character style is ignored", 28, sz(pr.getEffectiveParagraphMarkRPr(m2)));
+
+		assertEquals("the runs are not touched by the mark's style", 28, sz(pr.getEffectiveRPr((RPr) null, marked)));
+	}
+
 	// ---------------------------------------------------------------- the other overloads
 
 	@Test
@@ -269,6 +301,12 @@ public class PropertyResolverOrderTest {
 		RFonts r = F.createRFonts();
 		r.setAscii(ascii);
 		r.setHAnsi(ascii);
+		return r;
+	}
+
+	private static RStyle rStyle(String id) {
+		RStyle r = F.createRStyle();
+		r.setVal(id);
 		return r;
 	}
 

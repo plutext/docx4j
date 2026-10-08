@@ -513,9 +513,31 @@ public class PropertyResolver {
 		RPr effectiveRPr = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
 		applyRPr(chainRPr(paragraphStyleOf(pPr)), effectiveRPr);
 		if (pPr!=null && pPr.getRPr()!=null) {
-			applyRPr(pPr.getRPr(), effectiveRPr);
+			applyMarkRPr(pPr.getRPr(), effectiveRPr);
 		}
 		return effectiveRPr;
+	}
+
+	/**
+	 * The paragraph mark's character style (w:pPr/w:rPr/w:rStyle) as a level over what is
+	 * beneath it, then the mark's direct formatting: the order {@link #applyCharacterStyleAndDirect}
+	 * gives a run.  (Until 17.3.2 the mark's w:rStyle was copied as an attribute and never
+	 * resolved, so an empty paragraph whose mark named a 9pt character style was laid at its
+	 * paragraph style's 12pt: 13.8pt a line against Word's 10.3 - corpus 9698, where a table
+	 * cell's trailing empties then spilt onto the next page, 87 lines.)
+	 * @since 17.3.2
+	 */
+	private void applyMarkRPr(ParaRPr mark, RPr effectiveRPr) throws CyclicStylesException {
+		if (mark == null) return;
+		if (mark.getRStyle() != null && mark.getRStyle().getVal() != null) {
+			String runStyleId = mark.getRStyle().getVal();
+			if (getLiveStyle(runStyleId) == null) {
+				logMissing(runStyleId);
+			} else {
+				StyleUtil.applyStyleLevel(chainRPr(runStyleId), effectiveRPr, documentDefaultRPr);
+			}
+		}
+		applyRPr(mark, effectiveRPr);
 	}
 
 	/**
@@ -974,7 +996,7 @@ public class PropertyResolver {
 		}
 		RPr effectiveRPr = (RPr)XmlUtils.deepCopy(composedRPr(sourceParagraphStyleOf(pPr), cellContext));
 		if (pPr!=null && pPr.getRPr()!=null) {
-			applyRPr(pPr.getRPr(), effectiveRPr);
+			applyMarkRPr(pPr.getRPr(), effectiveRPr);
 		}
 		return effectiveRPr;
 	}
