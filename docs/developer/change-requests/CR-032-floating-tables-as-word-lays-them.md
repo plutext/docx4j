@@ -1,10 +1,10 @@
 # CR-032: floating tables laid out as Word lays them - the band at its offset, the wide table's band, the paragraphs behind it
 
-Status: IN PROGRESS - phase 1 DONE 2026-10-08 (4a6ab1d89 on VERSION_17_3_2; gates b181-b190, §4.1: lines
-matched real +10, real2 +20, real3 +46, class 2 -13; 8985 +45 and 11398 +35 to Word's pages; residual 3229),
-phase 0 DONE the same day (nine probes read, §3). Phase 2 waits on the fork's fop/CR-023 (float-offset, and
-a line that does not fit beside a float deferred to its foot); fop/CR-022's first half gated PASS on r17
-(b186b). D1, D2 and D3 DECIDED yes by Jason 2026-10-08 (§7). Proposed 2026-10-08.
+Status: IN PROGRESS - phase 2's docx4j side DONE 2026-10-08 (gated on the fork's float-offset, unreleased:
+fox:float-offset written on a floating table's float and a text box's band; gates b195-b197 on r19, §4.2: the
+four offset probes at Word's y, 6293 to Word's pages; two fork defects open, the pair crash and the page-end
+case, with reproducers); phase 1 DONE 2026-10-08 (4a6ab1d89); phase 0 DONE (nine probes read, §3). D1, D2 and D3
+DECIDED yes by Jason 2026-10-08 (§7). Proposed 2026-10-08.
 
 ## 0. Summary
 
@@ -290,6 +290,27 @@ line float where Word wraps both sides from the offset down, (c) the 60% rule, w
   refuted (§3); the full-width table is right in the flow, and a narrower one leaves positive room
   where FOP's lines already wrap. What remains of it - a content line beside a float with ipd 0 - cannot
   arise under the "no room beside" rule.
+
+**Phase 2 as built (2026-10-08, the fork's r19 = branch CR-023-float-offset 5afcfc657, capabilities
+`float-offset` and `float-overflow-below`).** docx4j writes `fox:float-offset` = `tblpY` on a text-anchored
+table's `fo:float` (no padding inside it) and the box's offset on a text box's band, on `float-offset`; the
+1.5-line `w:br` guard is lifted there. The renderer's reference was corrected on the probes (r18 measured
+from the anchor's resolved space, r19 from its own space-before, excluding the previous paragraph's
+space-after, which is Word's); across a floated table Word applies that space-after and the anchor's
+space-before both, where the FO had them adjacent, so docx4j forces the anchor's space-before to the sum
+and grows the offset by the space-after (offset-sides case 4: the anchor at 131.0 against 131.9, the table
+at 179.5 against 180.4). Gates on r19 against the renderer-alone control b195 (0 movers): b196, with the 2in
+bound lifted on `float-overflow-below`, showed that rule inert for the sliver documents (6705, 1616, 9832,
+8236, 14776 exactly at b182's values: a line set at the float's foot re-flows with its paragraph where Word's
+in-flow table precedes them), so the bound stays and the capability is unused for tables; and two fork
+defects: two offset floats on one anchor throw (3229, `NoSuchElementException` in `LMiter.next`; docx4j
+withholds the offset for a pair), and an offset float near a page's foot is carried past the page's end,
+split from its anchor (4083 -10 and a page; 3640's paragraph drawn into the footer; reproducers in
+`~/fidelity-cr030/repro/`). b197, the bounded build: `table-floating` 0.6875 → 0.9792 (its table at 183.5
+against Word's 184.5), `-offset-sides` 0.5000 → 0.6882 (all four tables at Word's y, case 2 exact; cases 1,
+3 and 4 both-sides), 6293 +16 and to Word's 9 pages, 6131 +2, 1616 +1; 9775 -5 (a 15pt offset, the page-end
+case as read) and 4083 -1. Left for the fork: the pair, the page-end case; then the two docx4j guards go
+(the pair's padding, the 2in bound stays on its own measurement).
 
 ### 4.3 Phase 3, what the probes left
 

@@ -3962,9 +3962,16 @@ preceding paragraph; a table taller than its page splits where FOP splits it, an
   page, `s68reserve`); in the upper half the text-anchored treatment stands, since an unreserved
   container ran its following text under the table (3387, 7490).
 
-What the probes leave to the fork (CR-032 phase 2, fop/CR-023): the float's band starting at the
-offset rather than the anchor's first line, and a line that does not fit beside a float deferred to
-its foot; and, as a project of its own, text on both sides of a float (§6.6 item 10).
+**On a renderer with `float-offset`** (fork CR-023, 2.11-docx4j.6) the float's band starts at the
+offset: docx4j writes `fox:float-offset` = `tblpY` on the float with no padding inside it, and the lines
+above the table keep the full width (`table-floating` 0.6875 → 0.9792, its table at 183.5 against
+Word's 184.5; the four `-offset-sides` tables at Word's y). Across a floated table Word applies the
+previous paragraph's space-after and the anchor's space-before both (not "larger of": they are not
+adjacent in document order), so the anchor's space-before is forced to the sum and the offset grown by
+the space-after. A pair of floats on one anchor keeps the padding (the renderer throws on two offset
+floats), and the 2in rule stays: the renderer's `float-overflow-below` was measured inert for the sliver
+documents. Left to the fork: the pair, an offset float near a page's foot (carried past the page's end,
+split from its anchor: 4083, 3640), and text on both sides of a float (§6.6 item 10).
 
 ### 6.9 `w:textDirection`: cells whose text Word turns on its side
 

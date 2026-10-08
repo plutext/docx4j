@@ -39,6 +39,11 @@ PDF via XSL FO:
   (docx4j-fo-renderer 2.11-docx4j.6), else the band is withheld. Apache FOP unchanged
   (fidelity register cause textbox-wide-no-text-beside; probes vml-box-beside-*).
 
+- On a docx4j FO renderer with the float-offset capability (2.11-docx4j.6), a text-anchored floating
+  table's tblpY is the float's offset: the table lands tblpY below its anchor paragraph's top with
+  the lines above it full width, as Word lays it (probe table-floating 0.69 -> 0.98); a wrapped text
+  box's band likewise (CR-032 phase 2).
+
 
 
 

@@ -1993,7 +1993,8 @@ public final class WordLayoutFixups {
 			 * the offset, this newly floated shape floats only when its offset is within a
 			 * line and a half of the anchor (CR-032 phase 1, gate b181). */
 			double pitch = linePitchPt(anchor);
-			if (pitch > 0 && padTop > 1.5 * pitch) {
+			if (pitch > 0 && padTop > 1.5 * pitch
+					&& !FopCapabilities.has(FopCapabilities.Capability.FLOAT_OFFSET)) {
 				log.debug("Floating table left in the flow: a line break follows it and its offset is "
 						+ padTop + "pt, more than a line and a half");
 				return false;
@@ -2011,7 +2012,30 @@ public final class WordLayoutFixups {
 		 * and its "float a" cell line at 186.8, ours at 186.6.  (What FOP will not do is
 		 * leave the lines *above* the table full width: it anchors the float at the line
 		 * it sits at, so the padding narrows them too - §10.) */
-		if (padTop > 0) holder.setAttribute("padding-top", pt(padTop));
+		// a second float on the same anchor with an offset threw in the renderer's layout
+		// (3229, two tables at 43pt and 339pt: NoSuchElementException in LMiter.next, gate
+		// b196 on r19; reproducer ~/fidelity-cr030/repro/float-offset-lmiter-3229.fo), so a
+		// pair keeps the padding until the fork handles it
+		boolean pair = false;
+		for (Node n = anchor.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element && isFo((Element) n, "float")) pair = true;
+		}
+		for (Node n = tbl.getNextSibling(); n != null && !pair; n = n.getNextSibling()) {
+			if (n instanceof Element) {
+				Element e = (Element) n;
+				if (isFo(e, "table") && e.hasAttribute(HINT_TBLP_FLOAT)) pair = true;
+				else break;
+			}
+		}
+		if (padTop > 0) {
+			if (FopCapabilities.has(FopCapabilities.Capability.FLOAT_OFFSET) && !pair) {
+				// fork CR-023: the float drawn tblpY below the top of its anchor block, the lines
+				// above it full width, as Word lays them (CR-032 phase 2)
+				wrapper.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS, "fox:float-offset", pt(padTop));
+			} else {
+				holder.setAttribute("padding-top", pt(padTop));
+			}
+		}
 		wrapper.appendChild(holder);
 
 		// FOP gives the float area the ipd of its content and ignores the padding of the
@@ -2048,6 +2072,29 @@ public final class WordLayoutFixups {
 		// FOP anchors a side float to a line, and drops one which has no line to anchor
 		// to (measured: a float holding the table as a direct child of the flow rendered
 		// nothing at all), so it goes inside the anchor paragraph found above.
+		/* In document order the table sits between the paragraph before it and its anchor,
+		 * so Word does not combine that paragraph's space-after with the anchor's space-before
+		 * by "larger of" (rules §2): both apply.  Once the table is in the float the two blocks
+		 * are adjacent in the FO and FOP would take the larger, so the anchor's space-before is
+		 * forced to the sum.  Measured on table-floating-offset-sides case 4 (8pt after, 24pt
+		 * before): Word's anchor at 131.9 and its float at 180.4; with the larger of the two the
+		 * anchor sat at 123.0 and the float, measured from its block, 8.9pt high (CR-032 phase 2). */
+		double before = lengthPt(anchor.getAttribute("space-before"));
+		Element prevBlock = null;
+		for (Node n = tbl.getPreviousSibling(); n != null; n = n.getPreviousSibling()) {
+			if (n instanceof Element) { prevBlock = (Element) n; break; }
+		}
+		double after = prevBlock != null && isFo(prevBlock, "block") ? lengthPt(prevBlock.getAttribute("space-after")) : 0;
+		if (before > 0 && after > 0) {
+			anchor.setAttribute("space-before", pt(before + after));
+			anchor.setAttribute("space-before.precedence", "force");
+			// the renderer measures fox:float-offset from the top of the anchor's own
+			// space-before, which is now the sum; Word's reference is the top of the 24pt,
+			// below the 8pt, so the offset grows by the previous paragraph's space-after
+			if (padTop > 0 && !pair && FopCapabilities.has(FopCapabilities.Capability.FLOAT_OFFSET)) {
+				wrapper.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS, "fox:float-offset", pt(padTop + after));
+			}
+		}
 		parent.removeChild(tbl);
 		tbl.setAttribute("start-indent", "0pt");
 		tbl.setAttribute("end-indent", "0pt");
@@ -2902,7 +2949,8 @@ public final class WordLayoutFixups {
 		double left = "right".equals(side) ? 0 : x - distL;
 		double right = "left".equals(side) ? 0 : col - x - w - distR;
 		if (Math.max(left, right) < TEXT_BESIDE_MIN_PT) return null;
-		double bandH = top + h + distB;
+		boolean floatOffset = top > 0 && FopCapabilities.has(FopCapabilities.Capability.FLOAT_OFFSET);
+		double bandH = (floatOffset ? 0 : top) + h + distB;
 		if (bandH <= 0) return null;
 		/* A tall box near a page's foot: Word keeps the box on its anchor's page (the
 		 * register's anchor-at-page-foot rule, not yet built), where docx4j's positioned
@@ -2916,6 +2964,9 @@ public final class WordLayoutFixups {
 		if (bandW <= 0) return null;
 		Element fl = doc.createElementNS(FO_NS, "fo:float");
 		fl.setAttribute("float", textLeft ? "right" : "left");
+		// fork CR-023: the band drawn at the box's top, the paragraph's lines above it full
+		// width, as Word lays them (CR-032 phase 2)
+		if (floatOffset) fl.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS, "fox:float-offset", pt(top));
 		// the sized container inside an fo:block: Apache main since FOP-3331 (744281b1e) puts a
 		// float whose own child is a block-container in the flow, text below it at full width;
 		// wrapped, the text stays beside it (measured on main by the fork session, CR-020 §6)

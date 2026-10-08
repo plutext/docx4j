@@ -153,7 +153,18 @@ public final class FopCapabilities {
 		 *  the float's foot, full width, as a table after a wrapped text box does in Word.  docx4j
 		 *  writes it on the table that follows a text-box band ({@link WordLayoutFixups}); without it
 		 *  the band is withheld where a table follows.  @since 17.3.2 */
-		CLEAR_AFTER_SIDE_FLOAT("clear-after-side-float");
+		CLEAR_AFTER_SIDE_FLOAT("clear-after-side-float"),
+		/** {@code fox:float-offset} on {@code fo:float} (fork CR-023): the float is drawn that far below
+		 *  the top of its anchor block, space-before included, and the lines above it keep the full
+		 *  width - Word's text-anchored floating table at {@code tblpY} (probe table-floating; CR-032
+		 *  phase 2).  docx4j writes {@code tblpY} as the offset instead of padding inside the float.
+		 *  @since 17.3.2 */
+		FLOAT_OFFSET("float-offset"),
+		/** A line whose content does not fit beside a side float but would fit the column is set at
+		 *  the float's foot with the rest of its paragraph (fork CR-023), where FOP overflowed it; so a
+		 *  table floats on any room beside it, as Word floats it, not only on 2in (CR-032 phase 2).
+		 *  @since 17.3.2 */
+		FLOAT_OVERFLOW_BELOW("float-overflow-below");
 
 		private final String key;
 

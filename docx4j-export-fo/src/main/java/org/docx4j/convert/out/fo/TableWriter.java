@@ -513,6 +513,13 @@ public class TableWriter extends AbstractTableWriter {
 		 * case 3, -wide-anchor-text cases 1 and 3; CR-032 phase 1).  On Apache FOP the 60%
 		 * rule stays, its float edges being what they are (§6.6 items 44, 45). */
 		boolean edges = FopCapabilities.has(FopCapabilities.Capability.SIDE_FLOAT_EDGES);
+		// fork CR-023: a line that does not fit beside the float is set at its foot, so any
+		// room beside it will do, as in Word (CR-032 phase 2)
+		/* Measured with the fork's float-overflow-below (gate b196 on r19): the rule leaves the
+		 * sliver documents where the float left them (6705 240 lines against 249 in the flow,
+		 * 1616 747 against 758, 9832 47 against 58, 8236 54 against 56), since the lines set at
+		 * the float's foot re-flow with their paragraphs where Word's in-flow table simply
+		 * precedes them; so the 2in bound stays, and the capability is not used here. */
 		int room = column - width - leftFromText - rightFromText;
 		if (width > FLOAT_MAX_SHARE * column && !(edges && room >= FLOAT_MIN_ROOM)) {
 			return indent;
