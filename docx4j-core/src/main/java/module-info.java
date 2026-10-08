@@ -216,5 +216,7 @@ module org.docx4j.core {
 
     // an optional module supplies part classes core cannot hold (docx4j-digsig; CR-033)
     uses org.docx4j.openpackaging.parts.PartProvider;
+    // docx4j-export-fo provides this (CR-011); without 'uses', ServiceLoader throws on the module path (found by CR-033)
+    uses org.docx4j.model.images.MetafileSvgProvider;
 
 }

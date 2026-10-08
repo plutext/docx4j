@@ -18,12 +18,8 @@
  */
 package org.docx4j.openpackaging.parts;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.ServiceLoader;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A part class that lives outside docx4j-core.
@@ -33,7 +29,7 @@ import org.slf4j.LoggerFactory;
  * needs dependencies docx4j-core does not have: the digital signature parts
  * ({@code XmlSignaturePart}, {@code SignatureOriginPart}) need Apache Santuario
  * and are in docx4j-digsig.  Such a module supplies a provider through
- * {@link ServiceLoader} ({@code provides} in its module-info, and
+ * {@link java.util.ServiceLoader} ({@code provides} in its module-info, and
  * {@code META-INF/services/org.docx4j.openpackaging.parts.PartProvider}); core
  * asks the providers before falling back to its generic part.  With no provider
  * present the package still loads and saves: the part is then a plain XML or
@@ -57,34 +53,6 @@ public interface PartProvider {
 	 * The providers found on the classpath or module path, resolved once.
 	 */
 	static List<PartProvider> providers() {
-		return Holder.PROVIDERS;
-	}
-
-	final class Holder {
-		private static final Logger log = LoggerFactory.getLogger(PartProvider.class);
-		static final List<PartProvider> PROVIDERS = load();
-
-		private static List<PartProvider> load() {
-			List<PartProvider> found = new ArrayList<PartProvider>();
-			try {
-				for (PartProvider p : ServiceLoader.load(PartProvider.class)) {
-					found.add(p);
-				}
-				if (found.isEmpty()) {
-					// TCCL didn't have it (eg a container which isolates the app);
-					// try the classloader docx4j-core itself came from
-					for (PartProvider p : ServiceLoader.load(PartProvider.class,
-							PartProvider.class.getClassLoader())) {
-						found.add(p);
-					}
-				}
-			} catch (Throwable t) {
-				log.warn("Part providers not loaded: " + t);
-			}
-			for (PartProvider p : found) {
-				log.debug("Part provider " + p.getClass().getName());
-			}
-			return found;
-		}
+		return PartProviders.PROVIDERS;
 	}
 }

@@ -5,7 +5,7 @@ day: "prepare a CR for moving this into docx4j proper"; no additional dependenci
 docx4j-core; the `com.plutext` packages become `org.docx4j` packages). Decisions D1 to D7 taken
 (§8; D7 with `template.potx` held back). Implementation from the DigSig session, with the docx4j
 session reviewing phase 2 (§8). Phase 0 done 2026-10-08 (private repo 8bceacd); phase 1 (bacdc3044), phase 2 (the core
-service) and phase 3's documentation done 2026-10-08 on branch `CR-033-digsig`; phase 3's Office
+service, d21a2ddd0, review by the docx4j session requested) and phase 3's documentation done 2026-10-08 on branch `CR-033-digsig`; phase 3's Office
 check awaits Jason; phase 4 after it (§10). Drafted with Claude Fable 5.1 from the DigSig
 session, with the inventory of §2 measured in `../docx4j-digsig_11_4` at commit d7ea9a4 plus its
 uncommitted phase 5 samples. Owner: Jason Harrop.
@@ -540,7 +540,7 @@ classpath but not in its `module-info`, hence the `Base64` swap.
 
 Not done in phase 1: the Office check (phase 3); `docs/DigitalSignatures.md` (phase 3).
 
-### Phase 2 (2026-10-08), the core change
+### Phase 2 (2026-10-08), the core change: commit d21a2ddd0 (with phase 3's documentation)
 
 `org.docx4j.openpackaging.parts.PartProvider` in docx4j-core: `Part createPart(String
 contentType, PartName)` returning null when not handled, with the providers resolved once by
@@ -568,6 +568,14 @@ org.docx4j.model.images.MetafileSvgProvider`, so on the module path that lookup 
 here (not this CR's code); one line to add.
 
 `docs/DigitalSignatures.md` written (phase 3's documentation item).
+
+**Reviewed by the docx4j session (2026-10-08): approved**, with two things folded in (the
+follow-up commit): the resolved provider list moved out of a nested `Holder` (implicitly
+public in an interface, so API) into a package-private top-level `PartProviders`, so only the
+interface and `providers()` are public; and `uses org.docx4j.model.images.MetafileSvgProvider`
+added to core's `module-info` in the same change, the gap noted above. It confirmed the removed
+loader branches could never have run. The branch is off the current `VERSION_17_3_2` HEAD, so
+the merge is a fast-forward if taken before its next core commit.
 
 ### Phase 3 (2026-10-08), documentation done; the Office check awaits Jason
 
