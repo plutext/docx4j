@@ -30,8 +30,17 @@ Digital signatures (new module docx4j-digsig, CR-033):
   Plutext DigSig; the com.plutext packages are now org.docx4j.dsig (API),
   org.docx4j.dsig.crypt (the core, adapted from Apache POI) and the
   org.docx4j.openpackaging.parts.digitalsignature parts.  Dependencies (Apache Santuario,
-  BouncyCastle, TextImageGen) belong to this module only; docx4j-core is unchanged.
+  BouncyCastle, TextImageGen) belong to this module only; docx4j-core gains no dependency.
   Samples in docx4j-samples-digsig.
+- Documentation: docs/docx4j_DigitalSignatures.docx (the user guide: signing, visible
+  signatures in Word and Excel, validation, trust checking, limitations, test certificates)
+  and docs/DigitalSignatures.md (the per-format support statement and what was checked in
+  Office).
+- docx4j-core: a part class that lives in another module is now found through the
+  PartProvider service (org.docx4j.openpackaging.parts.PartProvider, uses/provides) instead
+  of Class.forName; docx4j-digsig provides the signature parts.  The module-info also
+  declares `uses` for MetafileSvgProvider, without which that lookup failed on the module
+  path.
 - The properties com.plutext.dsig.XAdES.Level and com.plutext.dsig.validation.maxReferences
   are now docx4j.dsig.XAdES.Level and docx4j.dsig.validation.maxReferences; the old names
   are not read.
