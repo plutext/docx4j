@@ -8,7 +8,7 @@ Version 17.3.2
 Release date
 ------------
 
-[]
+9 October 2026
 
 Contributors to this release
 ----------------------------
@@ -21,17 +21,11 @@ Claude Fable 5.1 and Opus 5.5
 Changes in Version 17.3.2
 --------------------------
 
-Digital signatures (new module docx4j-digsig, CR-033):
+Digital signatures (new module docx4j-digsig, formerly Plutext DigSig):
 
 - Sign a docx, pptx or xlsx (XML-DSig, XAdES-EPES or XAdES-T, SHA-256 by default) so that
   Word, Excel and PowerPoint report a valid signature; validate signatures made by Office
-  or by docx4j; list and remove them; Word and Excel signature lines; a certificate trust
-  checker (DefaultCertificateTrustChecker) with the caller's trust anchors.  Formerly
-  Plutext DigSig; the com.plutext packages are now org.docx4j.dsig (API),
-  org.docx4j.dsig.crypt (the core, adapted from Apache POI) and the
-  org.docx4j.openpackaging.parts.digitalsignature parts.  Dependencies (Apache Santuario,
-  BouncyCastle, TextImageGen) belong to this module only; docx4j-core gains no dependency.
-  Samples in docx4j-samples-digsig.
+  or by docx4j. 
 - Documentation: docs/docx4j_DigitalSignatures.docx (the user guide: signing, visible
   signatures in Word and Excel, validation, trust checking, limitations, test certificates)
   and docs/DigitalSignatures.md (the per-format support statement and what was checked in
@@ -41,60 +35,14 @@ Digital signatures (new module docx4j-digsig, CR-033):
   of Class.forName; docx4j-digsig provides the signature parts.  The module-info also
   declares `uses` for MetafileSvgProvider, without which that lookup failed on the module
   path.
-- The properties com.plutext.dsig.XAdES.Level and com.plutext.dsig.validation.maxReferences
-  are now docx4j.dsig.XAdES.Level and docx4j.dsig.validation.maxReferences; the old names
-  are not read.
-- DigSig's 2016 trial-notice paragraph is gone, so signing a docx docx4j already signed
-  leaves the earlier signature valid.
 
 PDF via XSL FO:
 
-- docx4j-fo-renderer 2.11-docx4j.6 (was .5): the hooks the rules of this release need - a side
-  float cleared after its last line, floating tables offset and overflowing below as Word's,
-  a row started only where its first part has room, and the section's unequal column widths
-  and balancing on fo:region-body (fop/CR-022, CR-023, CR-025, CR-026); each hook off until
-  docx4j asks for it, so Apache FOP 2.11 still renders.
-- A keep chain which runs into a table with a repeated header row is judged with the header's
-  height, which FOP carries in the break's width rather than in a box: a heading, a full-page
-  picture and a heading kept with a 36-column table ran 119pt off the page where Word drops the
-  keeps and breaks before the table (corpus document 12301, every monthly section).
-
-- Floating tables (w:tblpPr) laid out nearer Word's layout (CR-032 phase 1, measured on nine
-  probes against Word): a text-anchored table left in the flow keeps its tblpY, with the empty
-  paragraphs that fit in the gap laid above it as Word lays them; on the docx4j FO renderer a
-  table wider than 60% of the column floats when 2in is left beside it, and a table whose anchor
-  paragraph holds a line break floats (the FOP defect that forbade it is fixed in
-  2.11-docx4j.5); two floating tables on one paragraph sit side by side; a table with no
-  w:vertAnchor is anchored to the margin box in the lower half of the page. Properties as
-  before: docx4j.convert.out.fo.tables.position / .float.
-
-- On the docx4j FO renderer, text runs beside a wide wrapped text box (square, tight or through,
-  60% of the column or more) where Word runs it, with at least 72pt beside the box: the box is
-  positioned and its band kept clear by a float, where it reserved its height; a table that follows
-  the box's paragraph goes below the box on a renderer with the clear-after-side-float capability
-  (docx4j-fo-renderer 2.11-docx4j.6), else the band is withheld. Apache FOP unchanged
-  (fidelity register cause textbox-wide-no-text-beside; probes vml-box-beside-*).
-
-- On a docx4j FO renderer with the column-widths capability (2.11-docx4j.6), a section's columns
-  of unequal width that run past a page are laid at their w:col widths (fox:column-widths and
-  fox:column-gaps on fo:region-body) instead of equal ones; a stretch that fits a page stays the
-  one-row table. A CV in 125/361pt columns over eight pages: 0.21 -> 0.75 line parity (CR-026).
-  Where the renderer also balances unequal columns before a spanning block (column-balancing),
-  near-equal widths are written too: three corpus documents +4, +65 and +50 lines.
-- A table cell keeps its top margin where its row continues on the next page, as Word lays the
-  continued cell (padding-before with conditionality retain; FOP discards padding at a break).
-  A corpus document of 2393 rows had been fitting a row more on such pages (CR-001).
-- A paragraph mark's own character style (w:pPr/w:rPr/w:rStyle) is resolved before its direct
-  formatting, in PropertyResolver and the FO exporter: an empty paragraph whose mark names a 9pt
-  style is laid at 9pt, not its paragraph style's 12pt (a corpus document whose table cells end
-  in such empties: its pages back to Word's line for line).
-- On a docx4j FO renderer with the float-offset capability (2.11-docx4j.6), a text-anchored floating
-  table's tblpY is the float's offset: the table lands tblpY below its anchor paragraph's top with
-  the lines above it full width, as Word lays it (probe table-floating 0.69 -> 0.98); a wrapped text
-  box's band likewise (CR-032 phase 2).
-
-
-
+- docx4j-fo-renderer 2.11-docx4j.6 (was .5): the hooks the rules of this release need, including
+  for section columns of unequal width
+  
+- for other improvements, see  https://github.com/plutext/docx4j/blob/8faf6e356c399b077890f34251d17746c88442d4/CHANGELOG.md
+  
 
 Version 17.3.1
 ===============

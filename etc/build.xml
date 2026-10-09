@@ -14,8 +14,8 @@
 	<property environment="env"/>
 	<property name="dist" value="./dist"/>
 
-	<property name="version" value="17.3.1"/>
-	<property name="docx4j-fo-renderer-version" value="2.11-docx4j.5"/>
+	<property name="version" value="17.3.2"/>
+	<property name="docx4j-fo-renderer-version" value="2.11-docx4j.6"/>
 
 
 	<property name="importxhtml-version" value="17.0.4"/>

@@ -7,7 +7,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>17.3.2-SNAPSHOT</revision>
+		<revision>17.3.2</revision>
 		<packaging.type>jar</packaging.type>
 		
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -173,6 +173,23 @@
 			<groupId>org.glassfish.jaxb</groupId>
 			<artifactId>txw2</artifactId>
 			<version>${version.jaxb.ri}</version>
+		</dependency>
+
+		<!-- docx4j-core gets commons-codec through commons-compress, but Santuario's xmlsec
+		     (docx4j-digsig) and httpclient (docx4j-legacy-service) ask for older versions, nearer.
+		     Left unmanaged, each is a dependency convergence error for anyone who depends on
+		     those modules. -->
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.19.0</version>
+		</dependency>
+
+		<!-- jaxb-runtime asks for angus-activation 2.0.3, angus-mail (the samples) for 2.0.2 -->
+		<dependency>
+			<groupId>org.eclipse.angus</groupId>
+			<artifactId>angus-activation</artifactId>
+			<version>2.0.3</version>
 		</dependency>
 
     </dependencies>
