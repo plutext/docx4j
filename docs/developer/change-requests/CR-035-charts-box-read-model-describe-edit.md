@@ -225,6 +225,10 @@ Public API (§8 D6). It reports what the file says and, where Office derives wha
 Office shows, each named as such. It holds the JAXB objects it read, so a caller can always go
 deeper.
 
+What the file says comes from ISO/IEC 29500-1 §21.2 (each element's meaning and default); what
+Office shows starts from [MS-OI29500]'s notes on §21.2, read before phase 2's probes are cut, so
+probes measure only what the notes leave open (the charts plan's §11, added 2026-10-12).
+
 **Finding charts.** `Charts.in(OpcPackage)` returns each placed chart in document order as a
 `ChartRef`: its host part (main document, header, footer, footnotes; slide, layout, master;
 worksheet drawing; chartsheet), its anchor (`wp:inline`/`wp:anchor`, `p:graphicFrame`,
@@ -248,6 +252,13 @@ Choice. `ChartRef.of(Part host, Object anchor)` serves the exporters' sites.
   point) with no fill of its own is reported as **automatic**, with the chart's style number and
   the series' index, not as null, so the renderer, the Enterprise jar and the ports share one
   answer; the colours an automatic series gets are phase 7's, from the style and colour parts.
+- **Filtered series and categories** (added 2026-10-12, from the specifications review): a series
+  hidden with Excel's chart filter is not a `c:ser` but a `c15:filteredBarSeries` (or one of its
+  seven siblings, [MS-ODRAWXML] §2.6.3) in the group's `c:extLst`, and hidden categories are
+  `c15:categoryFilterExceptions`; all are bound, in
+  `org.docx4j.com.microsoft.schemas.office.drawing.x2012.chart`.  The model reads them as series
+  and categories marked hidden, not dropped: a description shows the data Office shows, and the
+  editor (§4.4) sees every series that holds an `idx`.
 - **Axes:** id, kind (category, value, date, series), the axis it crosses, position, deleted,
   scaling (min, max, orientation, log base), units, number format (and `sourceLinked`), crossing
   (`crosses`/`crossesAt`, `crossBetween`), tick marks and label position, gridlines, title.
@@ -275,7 +286,8 @@ compare against, as they do the strict fixtures) and the MCP server's payload (�
 **More probes** (one Excel run): one workbook per chart kind the model reads that the probes
 lack (area, scatter, doughnut, radar, bubble, stock, surface, bar of pie), a combination chart
 with a secondary axis, a chartsheet, a chart with a gap in its data and with multi-level
-categories, and a chart pasted into PowerPoint.
+categories, a chart with a series and a category filtered out, and a chart pasted into
+PowerPoint.
 
 ### 4.3 Phase 3: describe
 
@@ -300,11 +312,13 @@ the embedded workbook. Phase 4 builds it, and tests it, on xlsx.
   every reference and the table as Excel does.
 - `addSeries(name, values)`, `removeSeries(series)`, `addCategory(...)`,
   `removeCategory(...)`: a new series is a copy of the group's last one, given `idx` and `order`
-  one above the largest in the whole chart (POI reuses them), a fresh `c16:uniqueId`, references
+  one above the largest in the whole chart, filtered series included (they share the `idx` and
+  `order` sequences; POI reuses them), a fresh `c16:uniqueId`, references
   to its new column, and its colour from the chart's colour style (`cs:colorStyle meth="cycle"`:
   the next accent, with the style's variation each time round), as Excel colours a new series.
 - `refreshCaches()`: every cache from the cells: `ptCount`, a `c:pt` per non-blank cell by
-  index, the format code from the cell's number format.
+  index, the format code from the cell's number format; a filtered series' caches and
+  references too, so that showing it again in Excel shows the edited data.
 - The table grows as finding 4 measured: `ref`, `autoFilter`, `tableColumns` (count, names, ids).
 
 A cell holding a formula is not overwritten unless asked (§8 D10); when an edit changes cells in
