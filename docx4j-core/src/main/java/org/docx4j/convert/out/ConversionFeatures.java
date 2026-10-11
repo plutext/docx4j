@@ -169,10 +169,11 @@ public abstract class ConversionFeatures {
 	 *  @since 17.2.0 */
 	public static final String PP_COMMON_ACCEPT_TRACKED_CHANGES = "pp.common.accepttrackedchanges";
 
-	/** Draw a hyperlinked table of contents' entries as Word does, without the Hyperlink
-	 *  character style their runs carry (TocHyperlinkStyle).  On by default for PDF and HTML.
+	/** Leave the Hyperlink character style off where Word does: a cross-reference's result
+	 *  (REF, PAGEREF) and a table of contents' hyperlinks (FieldHyperlinkStyle).  On by default
+	 *  for PDF and HTML.
 	 *  @since 17.3.3 */
-	public static final String PP_COMMON_TOC_HYPERLINK_STYLE = "pp.common.tochyperlinkstyle";
+	public static final String PP_COMMON_FIELD_HYPERLINK_STYLE = "pp.common.fieldhyperlinkstyle";
 
 	
 	/** Default features, that get applied to a PDF conversion
@@ -185,7 +186,7 @@ public abstract class ConversionFeatures {
 		PP_PDF_COVERPAGE_MOVE_SECTPR, 
 		PP_COMMON_CONTAINERIZATION,
 		PP_COMMON_COMBINE_FIELDS,
-		PP_COMMON_TOC_HYPERLINK_STYLE,
+		PP_COMMON_FIELD_HYPERLINK_STYLE,
 		PP_COMMON_PAGE_NUMBERING,
 		PP_COMMON_CREATE_SECTIONS,
 		PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH,
@@ -201,7 +202,7 @@ public abstract class ConversionFeatures {
 		PP_COMMON_CONTAINERIZATION,
 		PP_HTML_COLLECT_LISTS, // post 3.2.1; implemented in via XSLT only; requires SdtToListSdtTagHandler to be configured
 		PP_COMMON_COMBINE_FIELDS,
-		PP_COMMON_TOC_HYPERLINK_STYLE,
+		PP_COMMON_FIELD_HYPERLINK_STYLE,
 		PP_COMMON_DUMMY_PAGE_NUMBERING,
 		PP_COMMON_DUMMY_CREATE_SECTIONS,
 		PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX // 3.0.2

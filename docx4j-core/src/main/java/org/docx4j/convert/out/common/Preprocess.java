@@ -33,7 +33,7 @@ import org.docx4j.convert.out.common.preprocess.FopWorkaroundReplacePageBreakInE
 import org.docx4j.convert.out.common.preprocess.PageBreak;
 import org.docx4j.convert.out.common.preprocess.ParagraphStylesInTableFix;
 import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
-import org.docx4j.convert.out.common.preprocess.TocHyperlinkStyle;
+import org.docx4j.convert.out.common.preprocess.FieldHyperlinkStyle;
 import org.docx4j.convert.out.html.ListsToContentControls;
 import org.docx4j.events.EventFinished;
 import org.docx4j.events.StartEvent;
@@ -122,7 +122,7 @@ public class Preprocess extends ConversionFeatures {
 			relationshipTypes.add(Namespaces.COMMENTS);
 		}
 		if (features.contains(PP_COMMON_MOVE_PAGEBREAK) ||
-			features.contains(PP_COMMON_TOC_HYPERLINK_STYLE) ||
+			features.contains(PP_COMMON_FIELD_HYPERLINK_STYLE) ||
 			features.contains(PP_PDF_COVERPAGE_MOVE_SECTPR) ||
 			features.contains(PP_HTML_COLLECT_LISTS) ||
 			features.contains(PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH) ||
@@ -175,10 +175,10 @@ public class Preprocess extends ConversionFeatures {
 			log.debug("PP_COMMON_ACCEPT_TRACKED_CHANGES");
 			AcceptTrackedChanges.process(ret);
 		}
-		if (features.contains(PP_COMMON_TOC_HYPERLINK_STYLE)) {
-			// before the fields are combined: it reads the TOC field's instruction
-			log.debug("PP_COMMON_TOC_HYPERLINK_STYLE");
-			TocHyperlinkStyle.process(ret);
+		if (features.contains(PP_COMMON_FIELD_HYPERLINK_STYLE)) {
+			// before the fields are combined: it reads the fields' instructions
+			log.debug("PP_COMMON_FIELD_HYPERLINK_STYLE");
+			FieldHyperlinkStyle.process(ret);
 		}
 		if (features.contains(PP_COMMON_COMBINE_FIELDS)) {
 			log.debug("PP_COMMON_COMBINE_FIELDS");

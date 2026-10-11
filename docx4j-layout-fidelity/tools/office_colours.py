@@ -18,6 +18,8 @@ coloured.  For each label this reports:
   text    the colour the label itself was drawn in
   rules   thin filled or stroked paths (under 4pt high) from 22pt above the label's baseline to
           8pt below it, overlapping it: paragraph borders and underlines
+  font    the font of the label's first glyph (its weight is in the name: Aptos-Bold)
+  size    that glyph's size in points
 Colours are RRGGBB, with /alpha where the PDF gives one below 1; DeviceGray is written as RGB.
 
 usage: office_colours.py CASES.TSV PROBE PDF > readings.tsv
@@ -72,7 +74,8 @@ def box(el):
 
 
 def pages(pdf):
-    """Per page, in painting order: ('fill'|'stroke', colour, box) and ('text', colour, text, [(x, y)])"""
+    """Per page, in painting order: ('fill'|'stroke', colour, box) and
+    ('text', colour, text, [(x, y)], [(font, size)])"""
     trace = subprocess.run(["mutool", "trace", pdf], capture_output=True, text=True, check=True).stdout
     root = ET.fromstring(trace)
     out = []
@@ -85,11 +88,15 @@ def pages(pdf):
                     items.append(("fill" if el.tag == "fill_path" else "stroke", colour(el), b))
             elif el.tag == "fill_text":
                 m = matrix(el.get("transform"))
-                chars, pos = [], []
-                for g in el.iter("g"):
-                    chars.append(g.get("unicode", ""))
-                    pos.append(apply(m, float(g.get("x")), float(g.get("y"))))
-                items.append(("text", colour(el), "".join(chars), pos))
+                chars, pos, fonts = [], [], []
+                for span in el.iter("span"):
+                    trm = matrix(span.get("trm"))
+                    face = (span.get("font") or "").split("+")[-1]
+                    for g in span.iter("g"):
+                        chars.append(g.get("unicode", ""))
+                        pos.append(apply(m, float(g.get("x")), float(g.get("y"))))
+                        fonts.append((face, abs(trm[3]) or abs(trm[0])))
+                items.append(("text", colour(el), "".join(chars), pos, fonts))
         out.append(items)
     return out
 
@@ -108,8 +115,8 @@ def main():
         chars = []   # (character, item index, x, y, colour)
         for i, it in enumerate(items):
             if it[0] == "text":
-                for ch, (x, y) in zip(it[2], it[3]):
-                    chars.append((ch, i, x, y, it[1]))
+                for ch, (x, y), f in zip(it[2], it[3], it[4]):
+                    chars.append((ch, i, x, y, it[1], f))
         stream = "".join(c[0] for c in chars)
         for lab in labels:
             if lab in found:
@@ -119,7 +126,7 @@ def main():
                 k = stream.find(lab, k + 1)
             if k < 0:
                 continue
-            _, i, x, y, text_colour = chars[k]
+            _, i, x, y, text_colour, (face, size) = chars[k]
             it = ("text", text_colour, lab, [(c[2], c[3]) for c in chars[k:k + len(lab)]])
             before = [p for p in items[:i] if p[0] == "fill" and inside(p[2], x, y)]
             fill = min(before, key=lambda p: (p[2][2] - p[2][0]) * (p[2][3] - p[2][1])) if before else None
@@ -133,8 +140,9 @@ def main():
             rules = sorted({p[1] for p in items if p[0] in ("fill", "stroke")
                             and p[2][3] - p[2][1] < 4 and -22 < (p[2][1] + p[2][3]) / 2 - y < 8
                             and p[2][0] < max(xs) and p[2][2] > min(xs)})
-            found[lab] = (pn, fill[1] if fill else "", stroke[1] if stroke else "", it[1], " ".join(rules))
-    print("label\tpage\tfill\tstroke\ttext\trules")
+            found[lab] = (pn, fill[1] if fill else "", stroke[1] if stroke else "", it[1], " ".join(rules),
+                          face, "%.2f" % size)
+    print("label\tpage\tfill\tstroke\ttext\trules\tfont\tsize")
     for lab in labels:
         r = found.get(lab)
         print(lab + "\t" + ("\t".join(str(x) for x in r) if r else "NOT FOUND"))

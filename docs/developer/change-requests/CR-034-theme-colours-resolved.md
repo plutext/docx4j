@@ -637,13 +637,21 @@ found by its gate, so recorded here; each is in the CHANGELOG.
   found, 1,447 drawn black, 288 grey and 45 in the TOC styles' own colours, none in the Hyperlink
   colour (the one blue match was body text of the same words); in a `w:hyperlink` outside a TOC,
   486 blue of 535.  373 shows the weight: its Hyperlink style is bold and coloured, and Word draws
-  TOC1 entries bold (TOC1's own) and TOC2 entries regular, all black.  A Word MVP states the rule
-  for hyperlinked cross-references too; none in the corpora carries the style, so they are left.
-  New preprocess step `TocHyperlinkStyle` (feature `PP_COMMON_TOC_HYPERLINK_STYLE`, on by default
-  for PDF and HTML) removes the style from those runs on the output's copy.  It exposed an XSLT
-  pathway defect, fixed with it: a run inside a `w:hyperlink` (or a smart tag, an insertion, an
-  inline sdt) was resolved without its paragraph (`../w:pPr`), in docx2fo.xslt and in
-  docx2xhtml-core.xslt; now `ancestor::w:p[1]/w:pPr`.  (455463622)
+  TOC1 entries bold (TOC1's own) and TOC2 entries regular, all black.  New preprocess step
+  `TocHyperlinkStyle` (feature `PP_COMMON_TOC_HYPERLINK_STYLE`, on by default for PDF and HTML)
+  removes the style from those runs on the output's copy.  It exposed an XSLT pathway defect,
+  fixed with it: a run inside a `w:hyperlink` (or a smart tag, an insertion, an inline sdt) was
+  resolved without its paragraph (`../w:pPr`), in docx2fo.xslt and in docx2xhtml-core.xslt; now
+  `ancestor::w:p[1]/w:pPr`.  (455463622)
+
+  **Word's probe** (`HyperlinkStyleProbes`, 21 cases, Jason's run 2026-10-12; the probe and Word's
+  readings in docx4j-core-tests' `hyperlink-style/`) refined the rule, and the step became
+  `FieldHyperlinkStyle` (feature `PP_COMMON_FIELD_HYPERLINK_STYLE`).  Word leaves the style off a
+  REF or PAGEREF result with or without `\h`, and in a TOC result off a run inside a hyperlink
+  (a `w:hyperlink` or a HYPERLINK field) whether or not the TOC has `\h`, but keeps it on a TOC
+  run outside a hyperlink, on a HYPERLINK field's result and on a `w:hyperlink` elsewhere.
+  FollowedHyperlink goes as Hyperlink does; another character style, one based on Hyperlink, and
+  direct formatting stay.  `FieldHyperlinkStyleTest` checks all 19 styled cases against Word.
 
 **Their gate**: the same 2,244 outputs, phase 2's build (2e381ef26) against the fixes, each
 difference classified: 604 outputs of 251 documents differ, every difference one

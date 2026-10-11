@@ -1,0 +1,22 @@
+probe	label	context	rPr	expect
+hl-fields.docx	H01	w:hyperlink, no field	rStyle Hyperlink	drawn (control)
+hl-fields.docx	H02	plain run, no field	rStyle Hyperlink	drawn (control)
+hl-fields.docx	M01	plain run, no field	rStyle Marked	drawn (control)
+hl-fields.docx	H03	REF _Ref_probe \h	rStyle Hyperlink	the question
+hl-fields.docx	H04	REF _Ref_probe	rStyle Hyperlink	the question
+hl-fields.docx	H05	PAGEREF _Ref_probe \h	rStyle Hyperlink	the question
+hl-fields.docx	H06	PAGEREF _Ref_probe	rStyle Hyperlink	the question
+hl-fields.docx	H07	HYPERLINK \l "_Ref_probe"	rStyle Hyperlink	the question
+hl-fields.docx	H08	REF _Ref_probe \h	rStyle Marked	the question
+hl-fields.docx	H09	REF _Ref_probe \h	<w:color w:val="C00000<w:u w:val="double	the question
+hl-fields.docx	H10	REF _Ref_probe \h \* MERGEFORMAT	rStyle Hyperlink	the question
+hl-fields.docx	T01	TOC \h, w:hyperlink	rStyle Hyperlink	suppressed (corpus)
+hl-fields.docx	T02	TOC \h, no w:hyperlink	rStyle Hyperlink	the question
+hl-fields.docx	T03	TOC \h, w:hyperlink	rStyle Marked	the question
+hl-fields.docx	T04	TOC \h, w:hyperlink	direct color C00000, u double	the question
+hl-fields.docx	T05	TOC \h, w:hyperlink	rStyle HyperlinkChild (basedOn Hyperlink, i)	the question
+hl-fields.docx	T06	TOC \h, w:hyperlink	rStyle FollowedHyperlink	the question
+hl-fields.docx	T07	TOC \h, nested HYPERLINK \l field	rStyle Hyperlink	the question
+hl-fields.docx	T08P	TOC \h, PAGEREF \h in w:hyperlink (the page number)	rStyle Hyperlink	the question
+hl-fields.docx	U01	TOC without \h	rStyle Hyperlink	the question (MVP: an unlinked TOC keeps the style)
+hl-fields.docx	U02	TOC without \h, w:hyperlink	rStyle Hyperlink	the question

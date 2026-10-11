@@ -37,12 +37,12 @@ import org.docx4j.wml.Style;
 import org.junit.Test;
 
 /**
- * A hyperlinked TOC's entries are drawn without the Hyperlink character style, as Word draws
- * them; a hyperlink elsewhere, and a TOC without {@code \h}, keep it (TocHyperlinkStyle).  The
- * Hyperlink style here has a translated id ({@code Hipervnculo}), as in a Spanish document:
- * it is found by its name.  The FO side is export-fo-tests' TocHyperlinkStyleFoTest.
+ * The Hyperlink character style left off where Word leaves it off (FieldHyperlinkStyle): checked
+ * case by case against Word's PDF of the probe in {@code hyperlink-style/}, and on a document
+ * whose Hyperlink style has a translated id ({@code Hipervnculo}), as in a Spanish document: it
+ * is found by its name.  The FO side is export-fo-tests' FieldHyperlinkStyleFoTest.
  */
-public class TocHyperlinkStyleTest {
+public class FieldHyperlinkStyleTest {
 
 	static final String W = "xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
 			+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"";
@@ -105,13 +105,62 @@ public class TocHyperlinkStyleTest {
 	@Test
 	public void leavesTheStyleOffOnlyAHyperlinkedTocsEntries() throws Exception {
 		WordprocessingMLPackage pkg = doc();
-		TocHyperlinkStyle.process(pkg);
+		FieldHyperlinkStyle.process(pkg);
 		List<R> runs = runs(pkg);
 		assertNull(style(runs, "TOCENTRYONE"));
 		assertNull(style(runs, "PAGEONE"));
 		assertNull(style(runs, "TOCENTRYTWO"));
 		assertEquals("Hipervnculo", style(runs, "PLAINTOCENTRY"));
 		assertEquals("Hipervnculo", style(runs, "BODYLINK"));
+	}
+
+	/**
+	 * Every labelled run of the probe that has a character style keeps it exactly where Word drew
+	 * it.  Each style the probe uses is 14pt over 11pt body text, so Word's size says whether it
+	 * drew the style (word-readings.tsv).
+	 */
+	@Test
+	public void matchesWordOnTheProbe() throws Exception {
+		java.util.Map<String, Boolean> drawn = new java.util.LinkedHashMap<String, Boolean>();
+		try (java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(
+				getClass().getClassLoader().getResourceAsStream("hyperlink-style/word-readings.tsv"),
+				java.nio.charset.StandardCharsets.UTF_8))) {
+			in.readLine();
+			for (String line; (line = in.readLine()) != null;) {
+				String[] f = line.split("\t");
+				drawn.put(f[0], Double.parseDouble(f[7]) > 13);
+			}
+		}
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(
+				getClass().getClassLoader().getResourceAsStream("hyperlink-style/hl-fields.docx"));
+		List<R> runs = runs(pkg);
+		java.util.Map<String, R> styledRuns = new java.util.LinkedHashMap<String, R>();
+		for (String label : drawn.keySet()) {
+			R run = labelled(runs, label);
+			if (run.getRPr() != null && run.getRPr().getRStyle() != null) styledRuns.put(label, run);
+		}
+		FieldHyperlinkStyle.process(pkg);
+		int checked = 0;
+		for (java.util.Map.Entry<String, R> e : styledRuns.entrySet()) {
+			boolean kept = e.getValue().getRPr().getRStyle() != null;
+			assertEquals(e.getKey() + ": Word drew the style", drawn.get(e.getKey()), kept);
+			checked++;
+		}
+		assertEquals("cases with a character style", 19, checked);
+	}
+
+	private static R labelled(List<R> runs, String label) {
+		for (R r : runs) {
+			for (Object o : r.getContent()) {
+				Object u = XmlUtils.unwrap(o);
+				if (u instanceof org.docx4j.wml.Text && ((org.docx4j.wml.Text) u).getValue().startsWith(label)
+						&& (((org.docx4j.wml.Text) u).getValue().length() == label.length()
+								|| !Character.isLetterOrDigit(((org.docx4j.wml.Text) u).getValue().charAt(label.length())))) {
+					return r;
+				}
+			}
+		}
+		throw new AssertionError(label + " not found");
 	}
 
 	@Test

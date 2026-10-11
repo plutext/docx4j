@@ -37,10 +37,10 @@ import org.w3c.dom.Node;
 
 /**
  * A hyperlinked TOC's entries are drawn without the Hyperlink character style in FO, as Word
- * draws them; a hyperlink elsewhere, and a TOC without {@code \h}, keep it (TocHyperlinkStyle;
- * the same document as core-tests' TocHyperlinkStyleTest).
+ * draws them; a hyperlink elsewhere, and a TOC without {@code \h}, keep it (FieldHyperlinkStyle;
+ * the same document as core-tests' FieldHyperlinkStyleTest).
  */
-public class TocHyperlinkStyleFoTest extends AbstractXSLFOTest {
+public class FieldHyperlinkStyleFoTest extends AbstractXSLFOTest {
 
 	private static final String W = "xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"";
 

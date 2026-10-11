@@ -42,9 +42,10 @@ Changes in Version 17.3.3
 - Style inheritance: a colour inherits as one, so a run's own w:color (or a border's, a shading's,
   an underline's) no longer keeps a style's theme reference; a w:color stating only a theme colour
   is inherited, where it was dropped.  CR-034.
-- PDF and HTML output draw a hyperlinked table of contents' entries without the Hyperlink character
-  style, as Word does (new preprocess feature PP_COMMON_TOC_HYPERLINK_STYLE, on by default).  The
-  XSLT pathways resolve a run inside a w:hyperlink with its paragraph's style.
+- PDF and HTML output leave the Hyperlink character style off where Word does: a REF or PAGEREF
+  result, and a table of contents' hyperlinks (new preprocess feature
+  PP_COMMON_FIELD_HYPERLINK_STYLE, on by default).  The XSLT pathways resolve a run inside a
+  w:hyperlink with its paragraph's style.
 - HTML output: a paragraph's own top and bottom borders are drawn, and adjacent paragraphs with the
   same borders make one box (TagSingleBox, now registered by default); a shaded paragraph keeps its
   border colours, and w:fill="auto" no longer draws a 1px box.
