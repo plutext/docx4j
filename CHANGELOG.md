@@ -37,6 +37,9 @@ Changes in Version 17.3.3
   ChartModel and ChartExModel read one (groups, series, data by point, colours, axes, title, legend,
   and what Office shows where it derives it), with a versioned JSON form; ChartCells compares the
   caches with the cells.  CR-035.
+- A chart is described in markdown output as its title and a table of its data (categories down,
+  series across, numbers in their format), and in HTML the same table on the property
+  docx4j.convert.out.html.chartDataTable; new ChartTable.  CR-035.
 - New org.docx4j.model.color: theme colours resolved as Office draws them - DrawingML colours and
   transforms, WordprocessingML theme attributes, SpreadsheetML theme/tint/indexed - checked against
   Word's, PowerPoint's and Excel's own renderings.  CR-034.

@@ -1,25 +1,26 @@
 # CR-035: charts - the chart's box kept in PDF and HTML, a public read model, a chart described in markdown and MCP, and a chart's data edited in xlsx (charts plan phases 0, 2, 3 and 4)
 
-Status: IN PROGRESS. Phase 2 DONE 2026-10-12 (Jason: "Next is CR-035 phase 2"; D6 to D8 built as
-recommended): the read model, `org.docx4j.model.chart`, with its JSON form and goldens for every
-fixture; MS-OI29500's notes on §21.2 read first; 16 probes made by Excel itself (§11).  Phases 3
-and 4 next.  Phase 0 built 2026-10-12 (Jason: "do Phase 0 of each CR"; D1 to D5 built as
-recommended): the chart's box in FO, HTML and pptx's SVG-in-HTML, the three parts typed, the 48
-attribute lists starting null (measured first: only the chart style parts' mods), the fixtures, three
-box probes; gate b221 to b222 0 movers; against Word's goldens the box probes go from 0.8449 to
-0.9358 line parity, chart-box-inline to 1.0000.  Word's and PowerPoint's chartex Fallback is a
-picture of the chart, which docx4j already draws; Word and PowerPoint open docx4j's re-saves of them
-(§11).  Phase 0 DONE 2026-10-12; phase 2 next (it needs CR-034's resolver).  Proposed 2026-10-11. Drafted from the charts plan
-(`../docx4j-portfolio/docs/charts_plan.md`, revised 2026-10-11, portfolio 1174e65) on Jason's
-request ("please draft CR-034 (theme-colour resolver) and CR-035 (charts phases 0, 2, 3 and 4).
-Do not implement anything yet."). The plan's D1 (option (d): the classic chart types open in
-every respect, the Office 2016 types commercial) and D2 (docx4j's own renderer) are taken.
-Reviewed the same day by the docx4j-13 session (Claude Fable 5.1, at Jason's request): approved
-with four amendments, applied (the corpus counted for charts, §3, which moved phase 0's gate onto
-probes; the generated package names, §4.1; automatic colours reported, §4.2; a copied-then-saved
-fixture in the round-trip gate, §4.1, where the review's premise that the copy plugin needs
-changing did not hold). The decisions of §8 are open. Owner: Jason Harrop. Drafted with Claude
-Opus 5.5.
+Status: IN PROGRESS. Phase 3 DONE 2026-10-12 (Jason: "please commit then continue"; D9 as
+recommended): a chart described in markdown and, on a property, in HTML; the MCP hand-off in the
+registry (§11).  Phase 4 next.  Phase 2 DONE 2026-10-12 (Jason: "Next is CR-035 phase 2"; D6 to D8
+built as recommended): the read model, `org.docx4j.model.chart`, with its JSON form and goldens for
+every fixture; MS-OI29500's notes on §21.2 read first; 16 probes made by Excel itself (§11).  Phase
+0 built 2026-10-12 (Jason: "do Phase 0 of each CR"; D1 to D5 built as recommended): the chart's box
+in FO, HTML and pptx's SVG-in-HTML, the three parts typed, the 48 attribute lists starting null
+(measured first: only the chart style parts' mods), the fixtures, three box probes; gate b221 to
+b222 0 movers; against Word's goldens the box probes go from 0.8449 to 0.9358 line parity,
+chart-box-inline to 1.0000.  Word's and PowerPoint's chartex Fallback is a picture of the chart,
+which docx4j already draws; Word and PowerPoint open docx4j's re-saves of them (§11).  Phase 0 DONE
+2026-10-12; phase 2 next (it needs CR-034's resolver).  Proposed 2026-10-11. Drafted from the charts
+plan (`../docx4j-portfolio/docs/charts_plan.md`, revised 2026-10-11, portfolio 1174e65) on Jason's
+request ("please draft CR-034 (theme-colour resolver) and CR-035 (charts phases 0, 2, 3 and 4). Do
+not implement anything yet."). The plan's D1 (option (d): the classic chart types open in every
+respect, the Office 2016 types commercial) and D2 (docx4j's own renderer) are taken. Reviewed the
+same day by the docx4j-13 session (Claude Fable 5.1, at Jason's request): approved with four
+amendments, applied (the corpus counted for charts, §3, which moved phase 0's gate onto probes; the
+generated package names, §4.1; automatic colours reported, §4.2; a copied-then-saved fixture in the
+round-trip gate, §4.1, where the review's premise that the copy plugin needs changing did not hold).
+The decisions of §8 are open. Owner: Jason Harrop. Drafted with Claude Opus 5.5.
 
 Phase numbers are the plan's: phase 1, the theme-colour resolver, is CR-034, so this CR has
 phases 0, 2, 3 and 4, and no phase 1.
@@ -596,3 +597,41 @@ deleted; the doughnut's varied colours; the three chartex placements (Word, Powe
 each in a Choice.  Office's caches agree with their cells in every fixture checked, the docx's
 embedded workbook included.  Tests: `ChartModelTest` (10), `ChartsTest` (6), `ChartCellsTest` (3);
 docx4j-core-tests 1,466 run, 0 failed (11 skipped); docx4j-export-fo-tests 790, 0 failed (9 skipped).
+
+### Phase 3 (2026-10-12), done
+
+Jason: "please commit then continue" (after phase 2's commit).  D9 built as recommended: the box
+only by default in HTML, the data as a table on a property.
+
+- **`ChartTable`** (docx4j-core, `org.docx4j.model.chart`): a chart as its title as Office shows
+  it and its data, categories down and the series Office shows across (a filtered series and
+  category left out, a pie's first series only, every group of a combination chart), numbers
+  formatted by their format codes through the repackaged `DataFormatter`, in the US locale so that
+  a description reads the same wherever it is made (`4.4000000000000004` is `4.4`, a date
+  `2026-01-01` or `1-Jan` as its format says), a gap empty, an error as written; multi-level
+  categories a column a level, the outermost first; a chart with no categories (scatter, bubble)
+  one x column where the series share their x values, else each series' x beside its y.  A chartex
+  chart the same from its caches.
+- **Markdown** (`WmlToMarkdown`): a chart's title as a paragraph and its data as a GFM table, after
+  the paragraph the chart is in (a chart is inline in Word, a table is a block), or after the table
+  where the chart is in a cell; value columns right-aligned.  A chartex chart in a Choice keeps
+  Word's picture of it (the Fallback, which docx4j already exports) and its table follows.
+- **HTML**: `docx4j.convert.out.html.chartDataTable` (default false; in the reference
+  docx4j.properties) follows the chart's box with `<table class="docx4j-chart-data">`, the title its
+  caption, on both pathways (`ChartBox.createHtml`).  It sits where the chart is, inside its
+  paragraph, where an HTML parser closes the paragraph before it.
+- **MCP**: the docx4j side is the JSON form (phase 2) and `ChartTable`; the tool is the MCP
+  repository's, handed over as the registry entry `mcp/chart-tools` (no MCP session was running).
+
+**Gate.**  The tables of the probes against their data as excel-chart-probes.ps1 and Word made it
+(`ChartTableTest`, 9: categories and series, gaps and #N/A, dates by format code, two category
+levels, a scatter's shared x, the filtered series and category left out, a combination chart, the
+chartex waterfall, and the HTML table on the property, both pathways); markdown of Word's pie and
+waterfall (`MarkdownChartTest`, 2); docx4j-markdown 145 tests green; docx4j-core-tests 1,475 run, 0 failed
+(11 skipped); docx4j-export-fo-tests 790, 0 failed (9 skipped).
+
+Phase 4's oracle, ready to run: `docx4j-layout-fidelity/tools/excel-chart-edit-probes.ps1` (on the
+share as `office_charts/phase4/`) has Excel make seven edits to Word's default chart data in a
+table (a value; a category label and a series name; a category added and a series added, typed
+beside the table; a series and a category removed; a blank and an error), saving each workbook
+before and after, with a report of the table's range and the series' formulas each side.

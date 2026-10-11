@@ -169,13 +169,67 @@ public final class ChartBox {
 	}
 
 	/**
-	 * The HTML for a chart: an empty inline {@code <svg>} of the drawing's extent.
+	 * The property which, set true, follows a chart's box in HTML with its data as a table
+	 * (CR-035 phase 3, D9): for readers without the picture.  False by default.
+	 *
+	 * @since 17.3.3
+	 */
+	public static final String HTML_DATA_TABLE = "docx4j.convert.out.html.chartDataTable";
+
+	/**
+	 * The HTML for a chart: an empty inline {@code <svg>} of the drawing's extent; with
+	 * {@link #HTML_DATA_TABLE} set, then a {@code <table class="docx4j-chart-data">} of its data
+	 * ({@link ChartTable}), its title the caption.  The table follows the box where the chart is,
+	 * inside its paragraph, where an HTML parser ends the paragraph before it.
 	 *
 	 * @return null where the drawing has no extent
 	 */
 	public static DocumentFragment createHtml(AbstractWmlConversionContext context, Object anchorOrInline) {
-		ChartBox box = of(anchorOrInline);
-		return box == null ? null : box.toHtml();
+		Object o = anchorOrInline instanceof NodeIterator ? unmarshal((NodeIterator) anchorOrInline) : anchorOrInline;
+		ChartBox box = of(o);
+		if (box == null) return null;
+		DocumentFragment f = box.toHtml();
+		if (context != null && org.docx4j.Docx4jProperties.getProperty(HTML_DATA_TABLE, false)) {
+			Element table = dataTable(f.getOwnerDocument(), context.getCurrentPart(), o);
+			if (table != null) f.appendChild(table);
+		}
+		return f;
+	}
+
+	private static Element dataTable(Document d, org.docx4j.openpackaging.parts.Part host, Object anchor) {
+		ChartRef ref = ChartRef.of(host, anchor);
+		if (ref == null) return null;
+		ChartTable t;
+		try {
+			t = ref.isChartEx() ? ChartTable.of(ref.readChartEx()) : ChartTable.of(ref.read());
+		} catch (Exception e) {
+			log.warn("Couldn't describe the chart " + ref.getName() + ": " + e.getMessage());
+			return null;
+		}
+		Element table = d.createElement("table");
+		table.setAttribute("class", "docx4j-chart-data");
+		if (t.getTitle() != null) {
+			Element caption = d.createElement("caption");
+			caption.setTextContent(t.getTitle());
+			table.appendChild(caption);
+		}
+		Element head = d.createElement("thead");
+		head.appendChild(row(d, t.getHeader(), "th"));
+		table.appendChild(head);
+		Element body = d.createElement("tbody");
+		for (java.util.List<String> r : t.getRows()) body.appendChild(row(d, r, "td"));
+		table.appendChild(body);
+		return table;
+	}
+
+	private static Element row(Document d, java.util.List<String> cells, String cellName) {
+		Element tr = d.createElement("tr");
+		for (String c : cells) {
+			Element cell = d.createElement(cellName);
+			cell.setTextContent(c);
+			tr.appendChild(cell);
+		}
+		return tr;
 	}
 
 	/** As {@link #createHtml(AbstractWmlConversionContext, Object)}, for the XSLT */

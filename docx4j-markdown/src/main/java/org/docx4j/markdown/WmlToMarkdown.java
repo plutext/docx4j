@@ -129,6 +129,10 @@ class WmlToMarkdown {
 
 	private int imageCounter;
 
+	// a chart's title and table (CR-035 phase 3): blocks, so they wait for the end of the
+	// paragraph the chart is in
+	private final java.util.List<Node> pendingCharts = new java.util.ArrayList<>();
+
 	WmlToMarkdown(WordprocessingMLPackage pkg, MarkdownExportOptions options) {
 		this.pkg = pkg;
 		this.options = options;
@@ -142,6 +146,7 @@ class WmlToMarkdown {
 
 		Document document = new Document();
 		processBlocks(mdp.getContent(), document);
+		flushCharts(document);
 		closeLists();
 		closeQuote();
 		appendFootnoteDefinitions(document);
@@ -157,6 +162,7 @@ class WmlToMarkdown {
 
 			if (block instanceof P) {
 				i = processParagraph(blocks, i, container);
+				flushCharts(container);
 			} else if (block instanceof SdtElement) {
 				// content controls contribute their content
 				closeLists();
@@ -166,6 +172,7 @@ class WmlToMarkdown {
 				closeLists();
 				closeQuote();
 				table((Tbl) block, container);
+				flushCharts(container);   // a chart in a cell: after the table
 			} else {
 				log.debug("Dropping unmapped block {}", block.getClass().getSimpleName());
 			}
@@ -976,6 +983,16 @@ class WmlToMarkdown {
 						drawing((Drawing) bu, sink);
 					}
 				}
+				// a chartex chart is in a Choice docx4j does not select, its Fallback a picture of
+				// it: the picture stays, and its data follows the paragraph
+				for (org.docx4j.mce.AlternateContent.Choice c : ((org.docx4j.mce.AlternateContent) u).getChoice()) {
+					for (Object b : c.getAny()) {
+						Object bu = XmlUtils.unwrap(b);
+						if (bu instanceof Drawing) {
+							for (Object a : ((Drawing) bu).getAnchorOrInline()) chart(a);
+						}
+					}
+				}
 			}
 			// instrText and other run content dropped
 		}
@@ -993,6 +1010,9 @@ class WmlToMarkdown {
 	private void drawing(Drawing drawing, InlineSink sink) {
 
 		for (Object o : drawing.getAnchorOrInline()) {
+			if (chart(o)) {
+				continue;
+			}
 			org.docx4j.dml.Graphic graphic = null;
 			org.docx4j.dml.CTNonVisualDrawingProps docPr = null;
 			if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
@@ -1037,6 +1057,69 @@ class WmlToMarkdown {
 			image.appendChild(new Text(alt == null ? "" : alt));
 			sink.node(image);
 		}
+	}
+
+	/**
+	 * A chart: its title as a paragraph and its data as a table (CR-035 phase 3), after the
+	 * paragraph it is in, the categories down and the series across, numbers formatted by their
+	 * format codes ({@link org.docx4j.model.chart.ChartTable}).
+	 *
+	 * @return whether the anchor placed a chart
+	 */
+	private boolean chart(Object anchor) {
+		if (currentRels == null) return false;
+		org.docx4j.model.chart.ChartRef ref = org.docx4j.model.chart.ChartRef.of(
+				currentRels.getSourceP() instanceof org.docx4j.openpackaging.parts.Part ? (org.docx4j.openpackaging.parts.Part) currentRels.getSourceP() : null, anchor);
+		if (ref == null) return false;
+		try {
+			org.docx4j.model.chart.ChartTable t = ref.isChartEx()
+					? org.docx4j.model.chart.ChartTable.of(ref.readChartEx())
+					: org.docx4j.model.chart.ChartTable.of(ref.read());
+			if (t.getTitle() != null && !t.getTitle().isEmpty()) {
+				org.commonmark.node.Paragraph title = new org.commonmark.node.Paragraph();
+				title.appendChild(new Text(t.getTitle()));
+				pendingCharts.add(title);
+			}
+			if (!t.getHeader().isEmpty()) pendingCharts.add(chartTable(t));
+		} catch (Exception e) {
+			log.warn("Couldn't describe the chart {}: {}", ref.getName(), e.getMessage());
+		}
+		return true;
+	}
+
+	private static TableBlock chartTable(org.docx4j.model.chart.ChartTable t) {
+		TableBlock block = new TableBlock();
+		TableHead head = new TableHead();
+		head.appendChild(chartRow(t.getHeader(), true, t));
+		block.appendChild(head);
+		if (!t.getRows().isEmpty()) {
+			TableBody body = new TableBody();
+			for (List<String> r : t.getRows()) body.appendChild(chartRow(r, false, t));
+			block.appendChild(body);
+		}
+		return block;
+	}
+
+	private static TableRow chartRow(List<String> cells, boolean header, org.docx4j.model.chart.ChartTable t) {
+		TableRow row = new TableRow();
+		int labels = 0;
+		while (labels < t.getHeader().size() && t.getHeader().get(labels).isEmpty()) labels++;
+		for (int i = 0; i < cells.size(); i++) {
+			TableCell cell = new TableCell();
+			cell.setHeader(header);
+			if (i >= Math.max(labels, 1)) cell.setAlignment(TableCell.Alignment.RIGHT);
+			if (!cells.get(i).isEmpty()) cell.appendChild(new Text(cells.get(i)));
+			row.appendChild(cell);
+		}
+		return row;
+	}
+
+	private void flushCharts(Node container) {
+		if (pendingCharts.isEmpty()) return;
+		closeLists();
+		closeQuote();
+		for (Node n : pendingCharts) container.appendChild(n);
+		pendingCharts.clear();
 	}
 
 	/** Data URI by default; a file in imageDirPath (with a relative link) when set. */
