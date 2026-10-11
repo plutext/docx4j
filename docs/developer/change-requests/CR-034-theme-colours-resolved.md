@@ -1,0 +1,356 @@
+# CR-034: theme colours resolved - one resolver for DrawingML, WordprocessingML and SpreadsheetML colour references
+
+Status: PROPOSED 2026-10-11, not started. Drafted from the charts plan
+(`../docx4j-portfolio/docs/charts_plan.md`, phase 1, which made it its own CR) on Jason's
+request ("please draft CR-034 (theme-colour resolver) and CR-035 (charts phases 0, 2, 3 and 4).
+Do not implement anything yet."). Reviewed the same day by the docx4j-13 session (Claude Fable
+5.1, at Jason's request): approved with three amendments, applied (style references resolved in
+phase 1, §4.1; D4 named as a departure from the plan, below; the corpus scan committed in phase
+0, §6). The decisions of §7 are open. Owner: Jason Harrop. Drafted with Claude Opus 5.5.
+
+Scope: one resolver that turns any colour reference Office writes into the RGB value (and alpha)
+Office draws: DrawingML's six colour kinds and their transforms, through the host's colour map
+and theme; WordprocessingML's `themeColor`/`themeTint`/`themeShade` and `themeFill` attributes;
+SpreadsheetML's `theme`/`tint`/`indexed` colours. Exposed through `PropertyResolver` for
+WordprocessingML, and as API for charts (CR-035) and pptx. The FO and HTML outputs take a
+WordprocessingML theme colour as Word draws it (§4.5). A shape's style references (`a:fillRef`,
+`a:lnRef`, `a:fontRef`) resolve through the theme's format scheme where the entry is a solid
+fill (§4.1). Not in scope: painting DrawingML fills and outlines in the FO output, which is
+independent of themes (§7 D4); gradients, patterns and effects, which are the chart renderer's
+(charts plan phase 7); rendering of cells in xlsx.
+
+**A departure from the plan:** the plan's §6 says phase 1 "lets the PDF output paint text-box and
+shape fills and outlines". This CR builds the resolver that painting needs but leaves the painting
+to a follow-up CR (D4): the corpus's shapes use direct colours, which need no theme, and painting
+is layout-fidelity work with its own gate.
+
+## 0. Why
+
+- **Charts.** A chart's colours are almost all theme references (`a:schemeClr accent1` with
+  `lumMod`/`lumOff`), and Office draws them in the *host's* theme: the same chart XML came out
+  `4472C4` in Word's PDF of the docx and `156082` in Excel's PDF of the embedded workbook
+  (charts plan, finding 7). CR-035's read model reports series colours through this resolver.
+- **pptx.** Slides are written in scheme colours throughout, through a colour map that the
+  master sets and a layout or slide can override. Nothing in pptx can be drawn right without it.
+- **WordprocessingML.** Word writes the resolved value beside every theme reference (§3), so the
+  outputs mostly come out right by reading `w:val` - but where the two disagree, docx4j draws
+  the value and Word may draw the theme (§2.3, measured in phase 0).
+- **The ports.** docx4j-core-ts and docx4j-python treat docx4j as their oracle; the resolver is
+  small, pure arithmetic, and the test vectors of §4.6 make it portable as a table.
+
+## 1. What docx4j does today (read from the code, 2026-10-11)
+
+No code in docx4j resolves a theme colour. Nothing reads a theme's `a:clrScheme` to produce a
+colour; every output writes the hex value of `w:val`, `w:color` or `w:fill`; there is no HSL
+conversion, no DrawingML transform and no SpreadsheetML tint arithmetic in any module.
+
+- **WordprocessingML.** The generated `Color`, `CTShd`, `CTBorder` and `U` carry every theme
+  attribute (`STThemeColor` has the 16 values of §2.3). `StyleUtil` is the only main code that
+  reads them, to merge and compare, never for a value: `apply(CTShd)` (StyleUtil.java:2515),
+  `apply(CTBorder)` (2550), `apply(U)` (2738) and `apply(Color)` (2801) carry them, and
+  `isEmpty`/`areEqual` of `CTShd` and `CTBorder` include them. But `isEmpty(Color)` (1484) and
+  `areEqual(Color)` (757) look at `w:val` alone, so a `w:color` stating only a theme colour
+  counts as empty and is not carried by a merge (§4.2); `isEmpty(U)` (1451) and
+  `areEqual(U)` (714) likewise ignore `w:themeColor`.
+- **The property classes** (`org.docx4j.model.properties`), which write both FO and CSS, read no
+  theme attribute: `FontColor` (92-108) writes `w:val` (`auto` as black); `PShading`, `RShading`
+  and the cell `Shading` say "We just support fill color right now" and write `w:fill` only (a
+  pattern's `w:color` is logged as a TODO); the border classes (`RBorder`, `AbstractPBorder`, the
+  table `AbstractBorder`) write `w:color`; `Underline` ignores the underline's colour. The one
+  colour arithmetic on this side is the table writer's pattern blend
+  (`AbstractTableWriter.processAttributes` 1991-2051, `UnitsOfMeasurement.combineColors`), on
+  the hex attributes. `PropertyResolver`, `ImmutablePropertyResolver` and the XSLTs have no
+  colour logic.
+- **`w:clrSchemeMapping`** is read nowhere (`CTSettings.getClrSchemeMapping()` is generated and
+  unused).
+- **DrawingML.** No main code reads `CTSchemeColor`, `CTSRgbColor`, `CTSystemColor`,
+  `CTPresetColor`, `CTHslColor`, `CTScRgbColor` or a transform (each colour class has a
+  `List<JAXBElement<?>> egColorTransform`). The FO output of text boxes reads a line's width only
+  (`XsltFOFunctions.shapeLinePt`, 463-474; an `a:lnRef` with an index counts as 0.75pt, its
+  colour unread) and writes no fill or stroke colour. pptx4j's SVG output hard-codes connectors
+  `rgb(99,99,99)` (`SvgExporter` 552), carries no text colour (`TextStyles.getWmlRPr` 361-399:
+  bold, italic, underline and size only) and draws no slide background.
+- **Colour maps.** The generated `clrMap` of masters, `clrMapOvr` of slides, layouts and notes,
+  and `CTChartSpace.clrMapOvr` are read by nothing. `JaxbPmlPart.COLOR_MAPPING` (61) is a
+  constant used to create a new master.
+- **Themes.** `ThemePart` (`org.docx4j.openpackaging.parts.ThemePart`) has font helpers only;
+  the scheme is reached as `getJaxbElement().getThemeElements().getClrScheme()`, whose slots are
+  `dml.CTColor`. The shortcuts: `MainDocumentPart.getThemePart()`,
+  `MainPresentationPart.getThemePart()` (a slide master's own theme only through its
+  relationships), `WorkbookPart.getThemePart()`. `ThemeOverridePart` has no helper and no
+  shortcut. `createPackage` adds the default theme of §2.1; `PresentationMLPackage.createPackage`
+  shares one theme part between the presentation and its master.
+- **SpreadsheetML.** The generated `org.xlsx4j.sml.CTColor` (`auto`, `indexed`, `rgb`, `theme`,
+  `tint`) and `CTIndexedColors` are read by no main code, and xlsx4j has no output that draws
+  cells.
+- **Nearest existing arithmetic:** the trimmed POI `org.docx4j.org.apache.poi.sl.draw.DrawPaint`
+  keeps only the sRGB/linear pair (`RGB2SCRGB`, `SCRGB2RGB`), used by the EMF+ gradient blend.
+- **Tests:** merge tests only (`StyleUtilMergeRulesTest` 231-255: a `themeFill` survives a direct
+  `w:shd`; the underline colour inherits). Fixtures carry theme attributes
+  (`NumberingSample1Test`, `styles-simple.xml`, `parts/settings.xml` with a
+  `w:clrSchemeMapping`), and no test asserts a resolved colour.
+
+**The ports** have no resolution either: docx4j-core-ts (`src/model/properties/catalogue.mts`)
+and docx4j-python (`docx4j_py/model/property_catalogue.py`) mirror `StyleUtil`'s merge, and
+their content APIs read `w:val` (python's python-docx facade reports a theme colour's name, not
+its value).
+
+**Apache POI** (`../poi`, trunk `ae62bb5116`) is the only neighbour with the arithmetic, and
+departs from the spec where Office is unmeasured:
+- `XSLFColor` and `DrawPaint.applyColorTransform` (DrawPaint.java:414-439) read one of each
+  transform in a fixed order, not document order; apply `shade` and `tint` in linear RGB, then
+  the `hue`/`sat`/`lum` mod-off pairs in HSL; and skip `comp`, `inv`, `gray`, `gamma` and the
+  channel transforms. Its own TODO says the colours don't match PowerPoint's.
+- `ThemesTable.getThemeColor` (140-169) swaps the first four SpreadsheetML indexes (§2.4).
+- `ExtendedColor.applyTint` (168-176) applies an xlsx tint to each RGB channel, though its
+  javadoc describes the spec's HLS rule.
+- Nothing for WordprocessingML's `themeTint`/`themeShade`.
+
+## 2. The rules
+
+### 2.1 Which theme, which colour map
+
+| Host | Theme | Colour map (`bg1`, `tx1`, `bg2`, `tx2` to a slot) |
+|---|---|---|
+| docx: body, headers, footers, notes, text boxes | the main document part's theme part | `w:settings/w:clrSchemeMapping` |
+| docx: a chart | the document's theme (finding 7), unless the chart has a theme override part | the document's, then the chart's `c:clrMapOvr` |
+| pptx: a slide | its master's theme part (each master has its own) | the master's `p:clrMap`, overridden by the layout's then the slide's `p:clrMapOvr` (`a:overrideClrMapping`; `a:masterClrMapping` keeps the master's) |
+| pptx: notes, handouts | the notes or handout master's theme | that master's `p:clrMap` |
+| pptx: a chart | the slide's theme, unless the chart has a theme override part | the slide's, then the chart's `c:clrMapOvr` |
+| xlsx: cells | the workbook's theme part | none: SpreadsheetML indexes the scheme directly (§2.4) |
+| xlsx: drawings and charts | the workbook's theme | the default (`bg1`=`lt1`, `tx1`=`dk1`, `bg2`=`lt2`, `tx2`=`dk2`), then the chart's `c:clrMapOvr` |
+
+A package without a theme part gets the theme Office supplies, which docx4j already chooses for
+fonts: `docx4j.fonts.defaultTheme`, with the three bundled themes `theme-2023.xml` (the default),
+`theme-2013.xml` and `theme-2007.xml` (`Docx4jProperties.DefaultTheme`). The bundled 2007 theme is
+the 2013 one with the major Latin face changed, so its colour scheme is 2013's (`accent1`
+`4472C4`), not Office 2007's (`4F81BD`): §7 D2.
+
+### 2.2 DrawingML
+
+A colour is one of six kinds (ECMA-376 Part 1 §20.1.2.3): `a:srgbClr` (hex), `a:scrgbClr`
+(linear RGB percentages), `a:hslClr`, `a:sysClr` (a system colour, with `lastClr` the value on
+the machine that saved it), `a:prstClr` (a named colour) and `a:schemeClr` (a slot of the theme's
+colour scheme through the colour map, or `phClr`, the placeholder a style reference supplies:
+`a:fillRef`, `a:lnRef`, `a:effectRef`, `a:fontRef` carry the colour that replaces `phClr` in the
+theme's format scheme). Any kind takes a list of transforms, applied in document order: `tint`,
+`shade`, `comp`, `inv`, `gray`, `alpha`/`alphaOff`/`alphaMod`, `hue`/`hueOff`/`hueMod`,
+`sat`/`satOff`/`satMod`, `lum`/`lumOff`/`lumMod`, `red`/`redOff`/`redMod` (and green, blue),
+`gamma`, `invGamma`.
+
+The spec gives each transform's meaning but not its colour space or rounding. Implementations
+differ: `lumMod`/`lumOff` and `sat*`/`hue*` are HSL operations everywhere; POI applies `tint`
+and `shade` in linear RGB, in a fixed order rather than the document's (§1). Office is the oracle:
+phase 0 measures every transform from Word's and PowerPoint's PDFs (§5, P3), where a fill is a
+`DeviceRGB` colour to read exactly.
+
+**Style references.** A shape with a style (`wps:style` in a docx, `p:style` in a pptx, the
+usual way PowerPoint colours a shape) names its fill, line, effect and font by index into the
+theme's format scheme (`a:fmtScheme`), each reference carrying the colour that replaces `phClr`
+in the entry: `a:fillRef idx` 0 is no fill, 1 to 999 the entries of `a:fillStyleLst`, 1001 and
+up those of `a:bgFillStyleLst`; `a:lnRef idx` an entry of `a:lnStyleLst`; `a:fontRef idx`
+`major` or `minor`. An entry may be a solid fill, a gradient, a pattern or a picture.
+
+What Office writes most: its colour picker's tints and shades of the ten scheme slots, as
+`lumMod`+`lumOff` pairs (`lumMod 20000 lumOff 80000` for "lighter 80%", `lumMod 75000` for
+"darker 25%"); and chart styles' `lumMod`/`lumOff`/`shade`/`tint`/`satMod` on `accent1` to
+`accent6` and `tx1` (charts plan, finding 2).
+
+### 2.3 WordprocessingML
+
+`w:color`, `w:u`, `w:shd` (pattern colour and fill), the border elements (`w:top` ... `w:bar`,
+`w:insideH`/`w:insideV`, `w:tl2br`/`w:tr2bl`) and `w:background` carry `w:themeColor` (or
+`w:themeFill`) with an optional `w:themeTint`/`w:themeShade` (or `w:themeFillTint`/
+`w:themeFillShade`), a byte in hex: `99` is a tint of 0x99/0xFF = 60%. `text1`, `background1`,
+`text2` and `background2` go through `w:clrSchemeMapping`; `dark1` ... `accent6`, `hyperlink` and
+`followedHyperlink` name a slot directly.
+
+Word writes the colour it computed beside the reference (`w:val`, `w:color`, `w:fill`). Over the
+corpora (§3) that value is the theme slot exactly for a plain reference, and the HSL rule below
+to within one unit per channel for a tint or shade:
+
+- tint t: L' = L·t + (1 − t)
+- shade t: L' = L·t
+
+The same rule in RGB (each channel toward white or black) misses by more than one unit in 470
+tints and 1,445 shades, and Windows' integer HLS (`ColorRGBToHLS`, HLSMAX 240 or 255) misses more
+than float HSL does, so neither is Word's arithmetic. Word's rounding is not yet matched: float
+HSL rounded is exact in 1,043 of 3,005 tints and 2,764 of 4,698 shades; truncated, 1,610 and
+3,214; the rest are one unit off. Phase 1 finds the rounding, with these 7,700 values as the test.
+
+Where the written value and the theme disagree (§3: 20 attributes in 7 documents, every one an
+Office 2007 theme value in a document whose theme is newer), which does Word draw? Phase 0 reads
+Word's goldens of those seven documents (P1).
+
+### 2.4 SpreadsheetML
+
+`CT_Color` (`x:color`, `x:fgColor`, `x:bgColor`, the font and border colours) is one of `rgb`
+(ARGB hex), `theme` (an index into the scheme), `indexed` (the legacy 64-colour palette, or the
+workbook's own `x:indexedColors`; 64 and 65 are the system foreground and background) or `auto`,
+with an optional `tint` from −1 to 1 applied to the HLS luminance (ECMA-376 Part 1 §18.8.19):
+L' = L·(1 + tint) when the tint is negative, L·(1 − tint) + (HLSMAX − HLSMAX·(1 − tint)) when
+positive. POI applies the same formula to each RGB channel instead (§1), which gives different
+colours; P4 measures which Excel does, and its rounding. The `theme` index does not follow the
+scheme's element order: Excel reads 0 as `lt1` and 1 as `dk1`, 2 as `lt2` and 3 as `dk2` (POI's
+`ThemesTable` swaps them too).
+
+## 3. Corpus facts (the four real-document corpora, 561 docx, scanned 2026-10-11)
+
+Measured with a scratch script, which phase 0 commits as a harness tool (§6); the corpora are
+not redistributable, so only counts are recorded.
+
+- **WordprocessingML theme attributes: 36,892, in 310 of the 561 documents.** By element:
+  `w:color` in 266 documents; borders (`w:top` 121, `w:bottom` 133, `w:left`/`w:right` 104,
+  `w:insideH` 80, `w:insideV` 82); `w:shd/@w:themeFill` in 120 documents (12,099 attributes);
+  `w:u` 2; `w:background` 2. 29,129 are plain references, 3,026 tints and 4,737 shades. Every
+  one of the 36,742 in documents with a theme part has a hex value beside it.
+- **Plain:** of the 29,039 with a hex value, 29,027 are the theme's slot exactly. The other 12
+  are Office 2007 values in documents with a newer theme (`accent1` written `4F81BD`;
+  `hyperlink` written `0000FF` against `0563C1`).
+- **Tints and shades:** the HSL rule of §2.3 to within one unit per channel in all 3,005 tints
+  and all but 8 of the 4,698 shades. The 8 are Office 2007 values again (`365F91`, `243F60`,
+  `17365D`: `accent1` and `text2` of the 2007 theme, shaded), so 20 attributes in 7 documents
+  disagree with their theme, all for the same reason.
+- 150 theme attributes are in documents with no theme part.
+- No document maps `w:clrSchemeMapping` other than the default.
+- **DrawingML in the document parts** (body, headers, footers, notes; charts not counted): 60
+  `a:schemeClr` in 7 documents, 260 `a:srgbClr` in 58, 11 `a:prstClr` in 6; transforms:
+  `alpha` 55, `lumMod` 4, `tint`, `satMod`, `shade` one each. So in docx the resolver matters
+  for WordprocessingML and charts; drawing shapes mostly use direct colours, and what keeps
+  their fills out of the PDF is that the FO output paints none (§7 D4), not the theme.
+
+## 4. Design
+
+### 4.1 Package and classes
+
+A new package `org.docx4j.model.color` in docx4j-core (the codebase's spelling: `FontColor`,
+`HighlightColor`), with no dependency beyond the JAXB classes:
+
+- **`ResolvedColor`**: immutable red, green, blue (0-255) and alpha (0-100000, OOXML's unit);
+  `toHex()`, `isOpaque()`. Not `java.awt.Color` (§7 D5).
+- **`ThemeColors`**: a colour scheme and a colour map, which is all a reference needs. Made by
+  `ThemeColors.of(...)` for each host of §2.1: a `WordprocessingMLPackage` (its theme part, or the
+  default theme, and `w:clrSchemeMapping`); a slide, layout, master or notes part (the master's
+  theme and the `p:clrMap`/`p:clrMapOvr` chain); a `SpreadsheetMLPackage`; and
+  `forChart(Chart, ThemeColors host)` for a chart (its theme override part and `c:clrMapOvr`
+  over the host's). `withPlaceholder(ResolvedColor)` supplies `phClr`.
+- **`DrawingMLColors.resolve(colour, ThemeColors)`**: any of the six kinds with its transforms.
+- **`DrawingMLColors.resolveStyle(reference, ThemeColors)`**: a style reference's entry in the
+  format scheme, with `phClr` replaced by the reference's colour. A solid fill (or a line with
+  one) resolves to its colour; a gradient, pattern or picture entry is reported as "not solid",
+  with its kind, and not guessed at: drawing it is the renderer's.
+- **`WordColors`**: a WordprocessingML colour from its attributes (value, theme colour, tint,
+  shade), by Word's precedence as phase 0 measures it.
+- **`SpreadsheetColors`**: a `CT_Color` with the workbook's scheme and `x:indexedColors`.
+- HSL and linear-RGB arithmetic package-private, with the rounding phase 0 and 1 settle.
+
+### 4.2 Exposure through `PropertyResolver`
+
+`PropertyResolver` gets the document's `ThemeColors` (made once, lazily) and a method returning
+the effective colour of a run, a shading or a border from its resolved properties. The property
+classes that write colours (`FontColor`, `RShading`, `PShading`, the border classes, `Underline`)
+call it where a theme attribute is present, instead of reading `w:val` alone. The change to
+`PropertyResolver` is an accessor; the resolution rules stay where they are.
+
+With it, `StyleUtil`'s `isEmpty(Color)`/`areEqual(Color)` and `isEmpty(U)`/`areEqual(U)` count
+the theme attributes, as the `CTShd` and `CTBorder` ones already do (§1), so that a style's
+`w:color w:themeColor="accent1"` with no usable `w:val` is inherited instead of dropped. This
+changes what the merge carries, so it goes through phase 2's gate.
+
+### 4.3 Themeless packages
+
+As §2.1: the bundled theme `docx4j.fonts.defaultTheme` names. The property keeps its name (it
+already chooses the theme part `createPackage` writes, not only fonts), documented as choosing
+colours too.
+
+### 4.4 System colours
+
+`a:sysClr` resolves to `lastClr`, the value on the machine that saved the file, which is what
+Office draws in a PDF on another machine too (to confirm in P3). Without `lastClr`, the Windows
+defaults (`windowText` black, `window` white).
+
+### 4.5 What the outputs gain in this CR
+
+- FO and HTML: a WordprocessingML theme colour drawn as Word draws it. If phase 0 finds Word
+  draws `w:val` when the two disagree, nothing changes in the output and §4.2 serves the API only.
+- No DrawingML painting (§7 D4), no SpreadsheetML output (docx4j renders no cells).
+- API for CR-035's read model and, later, the chart renderer and pptx output.
+
+### 4.6 Test vectors for the ports
+
+A resource in docx4j-core-tests, `theme-colors/vectors.tsv`: one line per case (host kind, the
+reference as written, the scheme and map it resolves against, the expected hex and alpha), from
+the phase 0 probes and from the distinct (base colour, tint or shade, Word's value) triples of
+§3, which carry no document content. The Java tests read it; core-ts and python read the same
+file, as they do the strict fixtures.
+
+## 5. Phase 0: probes (one run each of Word, PowerPoint and Excel)
+
+Built by docx4j code in the fidelity harness (as CR-030's were), on the share
+(`Office 2016/fidelity/theme-colours/`), with Office's PDFs read by a script that lists each
+fill's `DeviceRGB` value from `mutool trace`:
+
+- **P1 Precedence (Word):** runs, shading and borders whose `w:val` disagrees with their
+  `w:themeColor`, with and without a tint; `w:val="auto"` with a theme colour. And, without a
+  new run, Word's goldens of the 7 corpus documents of §3.
+- **P2 Colour map (Word):** `w:clrSchemeMapping` with `bg1`↔`t1` swapped: runs in `text1` and
+  `background1`, and shapes filled `tx1` and `bg1`. Whether the mapping applies to both.
+- **P3 Transforms (Word and PowerPoint):** a grid of rectangles, each `accent1` ... `accent6`,
+  `tx1`, `bg2` with one transform at three values (each transform of §2.2), the picker's pairs,
+  and orders that differ (`tint` then `lumMod` against `lumMod` then `tint`); a `sysClr` whose
+  `lastClr` is not the machine's colour; a shape with only a style reference (`phClr`).
+- **P4 SpreadsheetML (Excel):** cells filled with theme 0 to 9 at tints −0.5, −0.25, −0.1, 0,
+  0.2, 0.3333, 0.4, 0.6, 0.8; indexed 0 to 65 with and without a custom `x:indexedColors`.
+- **P5 pptx map override (PowerPoint):** a slide with `a:overrideClrMapping` (dark background)
+  and a layout with one, text and shapes in `tx1`/`bg1`.
+
+## 6. Phases
+
+| Phase | What | Gate | Effort |
+|---|---|---|---|
+| 0 | The probes of §5; Jason's Office run; readings recorded here. Word's goldens of the 7 corpus documents read. The corpus scan behind §3 committed as a harness tool (`docx4j-layout-fidelity/tools/`; counts and the distinct colour triples only, nothing else from a document), so phase 1's gate has its instrument. | Every probe read; P1's answer decides §4.5; the tool reproduces §3's counts | 1-1.5 days + the run |
+| 1 | `org.docx4j.model.color` (§4.1), the arithmetic as phase 0 measured it, and style references; unit tests from the probes; phase 0's tool extended to compare: every WordprocessingML theme attribute in the four corpora resolved and compared with Word's value; the test vectors (§4.6). | All probe readings reproduced (P3's style-reference shape included); the corpus check exact (or each residual explained) | 2.5-3.5 days |
+| 2 | §4.2 and §4.5: `PropertyResolver`, the property classes, `StyleUtil`'s `Color` and `U` comparisons. | FO and HTML of the four corpora: the documents that change are exactly those whose values disagree with their theme (none, if Word draws `w:val`); docx4j-core-tests and export-fo-tests green | 1 day |
+| 3 | Documentation (the `PropertyResolver` javadoc, the colour package's), CHANGELOG, hand-offs (§9), registry. | | 0.5 day |
+
+## 7. Decisions for Jason
+
+- **D1. Package and names:** `org.docx4j.model.color`, the classes of §4.1. Recommendation: yes.
+- **D2. Themeless colours:** the bundled theme `docx4j.fonts.defaultTheme` names (2023 by
+  default, as Word 365 does). Its `2007` value gives the 2013 colour scheme (§2.1). Options: (a)
+  accept and document it; (b) give `theme-2007.xml` Office 2007's colour scheme, which also
+  changes the theme part `createPackage` writes under that setting. Recommendation: (a); the
+  setting exists for fonts, and nobody has asked for 2007 colours.
+- **D3. Word's precedence:** follow what P1 measures, even though it changes the output for the
+  7 corpus documents. Recommendation: yes.
+- **D4. DrawingML fills and outlines in the FO output:** not in this CR. The FO output paints no
+  DrawingML fill or line today, of any colour kind; in the corpora those shapes use direct
+  colours (§3), so painting them is layout-fidelity work with its own gate, which this resolver
+  then serves. Recommendation: a follow-up CR, entered in the fidelity register.
+- **D5. The colour type:** docx4j's own `ResolvedColor` rather than `java.awt.Color`: it keeps
+  OOXML's alpha unit, keeps AWT out of the model, and the ports mirror it. Recommendation: yes.
+- **D6. Rounding:** each host's as measured (Word's, PowerPoint's and Excel's may differ), not one
+  rounding for all. Recommendation: yes.
+
+## 8. Risks
+
+- **The exact rounding may not be found.** Within one unit is invisible in output, but the ports'
+  parity tests need an exact rule; if none reproduces all of §3, the vectors carry a tolerance.
+- **Hosts may differ.** Word, PowerPoint and Excel may apply a transform differently; P3 covers
+  Word and PowerPoint, P4 Excel's own colours. Charts in Excel are not probed separately.
+- **`PropertyResolver` is widely shared.** The change is an accessor plus the property classes'
+  colour, gated by the corpus diff of phase 2.
+
+## 9. Hand-offs
+
+- **CR-035** (charts): phase 2's read model reports colours through `DrawingMLColors`.
+- **The charts plan:** its §6 sentence on painting fills, aligned with D4 (the reviewing session
+  undertook to change it).
+- **docx4j-core-ts, docx4j-python:** port the resolver and read the vectors (§4.6).
+- **docx4j-mcp:** effective colours in its content description, if it reports colours.
+- **Enterprise fidelity register:** D4's follow-up, as a cause (DrawingML fills not painted).
+
+## 10. Effort (rough)
+
+5-6.5 working days, plus one Office run (Word, PowerPoint, Excel) for phase 0. The charts plan
+estimated 4-6; style references (the review's first amendment) add half a day.
