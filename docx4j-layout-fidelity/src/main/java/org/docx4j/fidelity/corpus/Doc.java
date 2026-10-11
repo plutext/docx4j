@@ -804,9 +804,22 @@ public final class Doc {
 
 	private static final String SERIF_DEFAULT = "Liberation Serif";
 
-	/** Re-relate a picture made against the main document part to a header part. */
+	/** Re-relate a picture (or, since 17.3.3, a chart) made against the main document part to a header part. */
 	private void rehome(Drawing d, HeaderPart hp) throws Exception {
 		for (Object o : d.getAnchorOrInline()) {
+			org.docx4j.dml.GraphicData gd = o instanceof Inline ? ((Inline) o).getGraphic().getGraphicData()
+					: o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor
+							? ((org.docx4j.dml.wordprocessingDrawing.Anchor) o).getGraphic().getGraphicData() : null;
+			org.docx4j.dml.chart.CTRelId chartRef = gd == null || gd.getAny().isEmpty() ? null
+					: XmlUtils.unwrap(gd.getAny().get(0)) instanceof org.docx4j.dml.chart.CTRelId
+							? (org.docx4j.dml.chart.CTRelId) XmlUtils.unwrap(gd.getAny().get(0)) : null;
+			if (chartRef != null) {
+				Relationship old = mdp.getRelationshipsPart().getRelationshipByID(chartRef.getId());
+				org.docx4j.openpackaging.parts.Part chartPart = mdp.getRelationshipsPart().getPart(old);
+				mdp.getRelationshipsPart().removeRelationship(old);
+				chartRef.setId(hp.addTargetPart(chartPart).getId());
+				continue;
+			}
 			if (!(o instanceof Inline)) continue;
 			org.docx4j.dml.picture.Pic pic = ((Inline) o).getGraphic().getGraphicData().getPic();
 			String rId = pic.getBlipFill().getBlip().getEmbed();
@@ -862,6 +875,121 @@ public final class Doc {
 		cols.setNum(BigInteger.valueOf(num));
 		cols.setSpace(BigInteger.valueOf(spaceTwips));
 		sectPr().setCols(cols);
+	}
+
+	// ---------------------------------------------------------------- charts
+
+	private static WordprocessingMLPackage chartTemplate;
+	private int chartCounter = 0;
+
+	/**
+	 * A chart as Word writes one: a copy of Word's Insert Chart default (clustered column, in
+	 * the resource chart-template.docx) with its title, axes and legend deleted, so Word draws
+	 * only the bars and gridlines and every line of text on the page is the document's own.  The
+	 * chart part, its style and colour parts and its embedded workbook are copied, the workbook
+	 * keeping the relationship id the chart names it by.  Related to the main document part;
+	 * {@link #addHeaderContent} re-relates it to a header.  @since 17.3.3 (CR-035 phase 0)
+	 */
+	private String addChart() throws Exception {
+		if (chartTemplate == null) {
+			try (java.io.InputStream is = Doc.class.getResourceAsStream("chart-template.docx")) {
+				chartTemplate = WordprocessingMLPackage.load(is);
+			}
+		}
+		chartCounter++;
+		MainDocumentPart tm = chartTemplate.getMainDocumentPart();
+		org.docx4j.openpackaging.parts.DrawingML.Chart src = (org.docx4j.openpackaging.parts.DrawingML.Chart)
+				tm.getRelationshipsPart().getPart(tm.getRelationshipsPart().getRelationshipByType(
+						org.docx4j.openpackaging.parts.relationships.Namespaces.SPREADSHEETML_CHART));
+		org.docx4j.openpackaging.parts.DrawingML.Chart chart = new org.docx4j.openpackaging.parts.DrawingML.Chart(
+				new PartName("/word/charts/chart" + chartCounter + ".xml"));
+		org.docx4j.dml.chart.CTChartSpace cs = XmlUtils.deepCopy(src.getContents());
+		org.docx4j.dml.chart.CTBoolean yes = new org.docx4j.dml.chart.CTBoolean();
+		yes.setVal(Boolean.TRUE);
+		cs.getChart().setTitle(null);
+		cs.getChart().setAutoTitleDeleted(yes);
+		cs.getChart().setLegend(null);
+		for (Object ax : cs.getChart().getPlotArea().getValAxOrCatAxOrDateAx()) {
+			if (ax instanceof org.docx4j.dml.chart.CTCatAx) ((org.docx4j.dml.chart.CTCatAx) ax).setDelete(yes);
+			if (ax instanceof org.docx4j.dml.chart.CTValAx) ((org.docx4j.dml.chart.CTValAx) ax).setDelete(yes);
+		}
+		chart.setJaxbElement(cs);
+		Relationship rel = mdp.addTargetPart(chart);
+		for (Relationship r : src.getRelationshipsPart().getRelationships().getRelationship()) {
+			org.docx4j.openpackaging.parts.Part sp = src.getRelationshipsPart().getPart(r);
+			org.docx4j.openpackaging.parts.Part np;
+			if (sp instanceof org.docx4j.openpackaging.parts.DrawingML.ChartStylePart) {
+				org.docx4j.openpackaging.parts.DrawingML.ChartStylePart x = new org.docx4j.openpackaging.parts.DrawingML.ChartStylePart(
+						new PartName("/word/charts/style" + chartCounter + ".xml"));
+				x.setJaxbElement(XmlUtils.deepCopy(((org.docx4j.openpackaging.parts.DrawingML.ChartStylePart) sp).getContents()));
+				np = x;
+			} else if (sp instanceof org.docx4j.openpackaging.parts.DrawingML.ChartColorStylePart) {
+				org.docx4j.openpackaging.parts.DrawingML.ChartColorStylePart x = new org.docx4j.openpackaging.parts.DrawingML.ChartColorStylePart(
+						new PartName("/word/charts/colors" + chartCounter + ".xml"));
+				x.setJaxbElement(XmlUtils.deepCopy(((org.docx4j.openpackaging.parts.DrawingML.ChartColorStylePart) sp).getContents()));
+				np = x;
+			} else if (sp instanceof org.docx4j.openpackaging.parts.WordprocessingML.EmbeddedPackagePart) {
+				org.docx4j.openpackaging.parts.WordprocessingML.EmbeddedPackagePart x = new org.docx4j.openpackaging.parts.WordprocessingML.EmbeddedPackagePart(
+						new PartName("/word/embeddings/Microsoft_Excel_Worksheet" + chartCounter + ".xlsx"));
+				x.setBinaryData(((org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) sp).getBytes());
+				x.setContentType(new org.docx4j.openpackaging.contenttype.ContentType(sp.getContentType()));
+				np = x;
+			} else {
+				continue;
+			}
+			chart.addTargetPart(np, org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour.RENAME_IF_NAME_EXISTS, r.getId());
+		}
+		return rel.getId();
+	}
+
+	private static final String CHART_GRAPHIC = "<a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/chart\">"
+			+ "<c:chart r:id=\"%s\"/></a:graphicData></a:graphic>";
+	private static final String CHART_NS = " xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
+			+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
+			+ " xmlns:c=\"http://schemas.openxmlformats.org/drawingml/2006/chart\""
+			+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"";
+
+	/** A run holding an inline chart of the given extent (EMU); see {@link #addChart()}. */
+	public R inlineChart(long cxEmu, long cyEmu) throws Exception {
+		String rId = addChart();
+		String xml = "<wp:inline" + CHART_NS + " distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\">"
+				+ "<wp:extent cx=\"" + cxEmu + "\" cy=\"" + cyEmu + "\"/><wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>"
+				+ "<wp:docPr id=\"" + (1000 + chartCounter) + "\" name=\"Chart " + chartCounter + "\"/><wp:cNvGraphicFramePr/>"
+				+ String.format(CHART_GRAPHIC, rId) + "</wp:inline>";
+		return drawingRun(XmlUtils.unwrap(XmlUtils.unmarshalString(xml, Context.jc, Inline.class)));
+	}
+
+	/**
+	 * A run holding an anchored chart: wrap "square" (text both sides), "topAndBottom" or
+	 * "none" (behind text); horizontally an alignment relative to the margin, or a posOffset
+	 * (EMU) from the column when hAlign is null; vertically a posOffset from the paragraph.
+	 */
+	public R anchoredChart(long cxEmu, long cyEmu, String wrap, String hAlign, long hOffsetEmu, long vOffsetEmu)
+			throws Exception {
+		String rId = addChart();
+		String wrapXml = "square".equals(wrap) ? "<wp:wrapSquare wrapText=\"bothSides\"/>"
+				: "topAndBottom".equals(wrap) ? "<wp:wrapTopAndBottom/>" : "<wp:wrapNone/>";
+		String posH = hAlign != null ? "<wp:positionH relativeFrom=\"margin\"><wp:align>" + hAlign + "</wp:align></wp:positionH>"
+				: "<wp:positionH relativeFrom=\"column\"><wp:posOffset>" + hOffsetEmu + "</wp:posOffset></wp:positionH>";
+		String xml = "<wp:anchor" + CHART_NS + " distT=\"0\" distB=\"0\" distL=\"114300\" distR=\"114300\" simplePos=\"0\""
+				+ " relativeHeight=\"" + (251659264 + chartCounter) + "\" behindDoc=\"" + ("none".equals(wrap) ? 1 : 0) + "\""
+				+ " locked=\"0\" layoutInCell=\"1\" allowOverlap=\"1\">"
+				+ "<wp:simplePos x=\"0\" y=\"0\"/>" + posH
+				+ "<wp:positionV relativeFrom=\"paragraph\"><wp:posOffset>" + vOffsetEmu + "</wp:posOffset></wp:positionV>"
+				+ "<wp:extent cx=\"" + cxEmu + "\" cy=\"" + cyEmu + "\"/><wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>"
+				+ wrapXml
+				+ "<wp:docPr id=\"" + (1000 + chartCounter) + "\" name=\"Chart " + chartCounter + "\"/><wp:cNvGraphicFramePr/>"
+				+ String.format(CHART_GRAPHIC, rId) + "</wp:anchor>";
+		return drawingRun(XmlUtils.unwrap(XmlUtils.unmarshalString(xml, Context.jc,
+				org.docx4j.dml.wordprocessingDrawing.Anchor.class)));
+	}
+
+	private static R drawingRun(Object inlineOrAnchor) {
+		R r = F.createR();
+		Drawing d = F.createDrawing();
+		d.getAnchorOrInline().add(inlineOrAnchor);
+		r.getContent().add(d);
+		return r;
 	}
 
 	// ---------------------------------------------------------------- anchored images

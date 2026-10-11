@@ -553,8 +553,19 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			
 		} else if (o instanceof org.docx4j.mce.AlternateContent) {
 
-			// only the Fallback is traversed; see walkJAXBElements
-			log.info("mc:AlternateContent: selecting Fallback ie ignoring mc:Choice");
+			// walkJAXBElements walks the one branch McSelection chose (CR-021)
+			log.debug("mc:AlternateContent: walking the branch McSelection chose");
+
+		} else if (org.docx4j.model.chart.ChartBox.isChartReference(o)) {
+			/* A chart (c:chart; or cx:chart, where a user prefers chartex's mc:Choice): its
+			 * box, an empty space of the drawing's extent, until docx4j draws charts.  Until
+			 * 17.3.3 it fell to the catch-all below, which wrote nothing, so the text after a
+			 * chart moved up into its place.  @since 17.3.3 (CR-035 phase 0) */
+			DocumentFragment box = createChartBox(conversionContext, anchorOrInline);
+			anchorOrInline = null;
+			if (box != null) {
+				getCurrentParent().appendChild(document.importNode(box, true));
+			}
 
 		} else if ((o instanceof org.docx4j.wml.ProofErr) ||
 				   (o instanceof org.docx4j.wml.R.LastRenderedPageBreak) ||
@@ -729,6 +740,17 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	protected abstract AbstractVisitorExporterDelegate.AbstractVisitorExporterGeneratorFactory<CC> getFactory();
 	
 	protected abstract DocumentFragment createImage(int imgType, CC conversionContext, Object anchorOrInline);
+
+	/**
+	 * A chart's box in this output (see {@link org.docx4j.model.chart.ChartBox}); the default
+	 * writes nothing, as before 17.3.3.
+	 *
+	 * @param anchorOrInline the chart's wp:inline or wp:anchor
+	 * @since 17.3.3
+	 */
+	protected DocumentFragment createChartBox(CC conversionContext, Object anchorOrInline) {
+		return null;
+	}
 	
 	protected abstract Element createNode(Document doc, int nodeType);
 	

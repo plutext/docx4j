@@ -1,14 +1,21 @@
 package org.docx4j.openpackaging.parts.DrawingML;
 
+import org.docx4j.com.microsoft.schemas.office.drawing.x2012.chartStyle.CTChartStyle;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 /**
+ * A chart's style part ({@code cs:chartStyle}, Office 2013 and later): Office's recipe for
+ * applying the chart's style again.
+ *
+ * <p>Typed since 17.3.3 (CR-035 phase 0); it was generic, made raw, though it always held a
+ * {@link CTChartStyle}.</p>
+ *
  * @since 11.4.10
  */
-public class ChartStylePart<E> extends JaxbXmlPart<E> {
+public class ChartStylePart extends JaxbXmlPart<CTChartStyle> {
 
 	public ChartStylePart(PartName partName) throws InvalidFormatException {
 		super(partName);

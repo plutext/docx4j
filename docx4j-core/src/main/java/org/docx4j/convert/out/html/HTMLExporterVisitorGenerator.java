@@ -534,6 +534,12 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			}
 		return null;
 	}
+
+	/** A chart's box: an empty inline svg of its extent (CR-035).  @since 17.3.3 */
+	@Override
+	protected DocumentFragment createChartBox(HTMLConversionContext conversionContext, Object anchorOrInline) {
+		return org.docx4j.model.chart.ChartBox.createHtml(conversionContext, anchorOrInline);
+	}
 	
 	/**
 	 * Not used by this generator since 17.0.4: the paragraph element is built via

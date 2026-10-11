@@ -663,6 +663,13 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		return null;
 	}
 
+	/** A chart's box: an fo:instream-foreign-object of its extent, anchored as a picture
+	 *  would be (CR-035).  @since 17.3.3 */
+	@Override
+	protected DocumentFragment createChartBox(FOConversionContext conversionContext, Object anchorOrInline) {
+		return org.docx4j.model.chart.ChartBox.createXslFo(conversionContext, anchorOrInline);
+	}
+
 	// vmlShape and vmlWrapType moved to AbstractVisitorExporterGenerator in 17.1.0,
 	// so the w:object branch there can use them too.
 

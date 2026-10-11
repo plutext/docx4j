@@ -60,6 +60,40 @@ public class ModifyGeneratedSources {
 		}
 		System.out.println("  updated " + changed[0] + " files");
 
+		///////////////////////////////////////////////////////////////////
+		// Attribute lists (xs:list attributes) start null, not empty
+		///////////////////////////////////////////////////////////////////
+
+		// With collectionType set, XJC initialises every list field; for an attribute that means
+		// an absent attribute unmarshals to an empty list, which JAXB writes back as name="" (the
+		// chart style part's mods="", CR-035).  The getter still creates the list on demand, and
+		// the generated copyTo reaches it only for each item copied, so an empty list stays null.
+		System.out.println("Leaving xs:list attribute fields uninitialised, so an absent attribute stays absent");
+		final java.util.regex.Pattern eagerAttributeList = java.util.regex.Pattern.compile(
+				"(@XmlAttribute\\([^)]*\\)\\s*\\n\\s*protected (?:java\\.util\\.)?List<[^>]+> \\w+) = new ArrayListDocx4j<>\\(this\\);");
+		final int[] lazy = { 0 };
+		try (Stream<Path> s = Files.walk(root)) {
+			s.filter(p -> p.toString().endsWith(".java")).forEach(p -> {
+				try {
+					String content = read(p);
+					java.util.regex.Matcher m = eagerAttributeList.matcher(content);
+					int before = lazy[0];
+					StringBuffer sb = new StringBuffer();
+					while (m.find()) {
+						m.appendReplacement(sb, java.util.regex.Matcher.quoteReplacement(m.group(1) + ";"));
+						lazy[0]++;
+					}
+					if (lazy[0] > before) {
+						m.appendTail(sb);
+						write(p, sb.toString());
+					}
+				} catch (IOException e) {
+					throw new java.io.UncheckedIOException(e);
+				}
+			});
+		}
+		System.out.println("  updated " + lazy[0] + " fields");
+
 		////////////
 		// Document
 		////////////

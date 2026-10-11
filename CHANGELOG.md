@@ -26,6 +26,13 @@ Changes in Version 17.3.3
   set.  PNGs in PDF output wait on xmlgraphics-commons XGC-150.  Issue 609.
 - A w:lvl without w:ilvl (which the schema requires) no longer throws a NullPointerException:
   as in Word, it is read as an empty level 0, so paragraphs at level 0 get no number.  Issue 593.
+- A chart keeps its space in PDF and HTML output (and pptx's SVG-in-HTML) as an empty box of its
+  extent, inline or floating as a picture would be; it was dropped, and the text after it moved
+  up into its place.  New org.docx4j.model.chart.ChartBox.  CR-035.
+- ChartStylePart, ChartColorStylePart and ChartExSpacePart are typed (CTChartStyle, CTColorStyle,
+  chartex CTChartSpace); they lose their type parameter, so code declaring one must drop it.  CR-035.
+- An absent xs:list attribute stays absent when docx4j saves a part it has read: a chart style
+  part no longer gains mods="" (48 generated attribute-list fields start null).  CR-035.
 
 
 Version 17.3.2

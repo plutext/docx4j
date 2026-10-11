@@ -3267,6 +3267,10 @@ public final class Corpus {
 		PROBES.add(continuousRestartEvenOddProbe("continuous-restart-evenodd-start2", 40, 2, false));   // P7
 		PROBES.add(continuousRestartEvenOddProbe("continuous-restart-evenodd-start2-mirror", 40, 2, true));
 		PROBES.add(continuousRestartEvenOddProbe("continuous-restart-evenodd-oddstart", 15, 1, false));
+		// CR-035 phase 0: a chart keeps its box (one Word run)
+		PROBES.add(chartBoxInlineProbe());
+		PROBES.add(chartBoxFloatingProbe());
+		PROBES.add(chartBoxPlacesProbe());
 		for (char v = 'a'; v <= 'e'; v++) PROBES.add(documentEndBreakProbe(v));   // case F (rules §3.3)
 		// CR-001 batch 53 (ledger9 §5): one Word run
 		PROBES.add(fontSizeGridProbe("serif", SERIF));
@@ -9199,6 +9203,110 @@ public final class Corpus {
 				p.getPPr().getInd().setRight(BigInteger.valueOf(rightTw));
 				d.add(p);
 			}
+			return d.pkg();
+		});
+	}
+
+	// ------------------------------------------------------------------ CR-035 phase 0
+
+	/** Word's Insert Chart default, 6 x 3.5in, in EMU */
+	private static final long CHART_CX = 5486400L, CHART_CY = 3200400L;
+
+	/**
+	 * chart-box-inline (CR-035 phase 0).  Inline charts (Word's default chart with its text
+	 * deleted, see Doc.inlineChart) where docx4j until 17.3.3 wrote nothing: page 1, a 6 x 3.5in
+	 * chart alone in its paragraph between two, then a 3 x 1.5in chart mid-line with text either
+	 * side; page 2, two 6 x 2.5in charts with a paragraph between; page 3, 20 exact 24pt lines
+	 * and then a 6 x 3.5in chart, which does not fit below them.  Read: the y of each paragraph
+	 * after a chart, and the page the last chart and the text after it are on.
+	 * @since 17.3.3 (CR-035 phase 0)
+	 */
+	private static Probe chartBoxInlineProbe() {
+		return new Probe("chart-box-inline",
+				"inline charts: a 6 x 3.5in chart alone in a paragraph, a 3 x 1.5in chart mid-line, two 6 x 2.5in "
+				+ "charts with a paragraph between, and a 6 x 3.5in chart after 20 exact 24pt lines (it does not fit "
+				+ "on the page); each chart Word's default with its title, axes and legend deleted; mode 15.  Read "
+				+ "where the text after each chart is, and the page the last chart goes to", () -> {
+			Doc d = Doc.create(15);
+			d.para("before the chart. " + prose(2)).after(160).add();
+			d.para().noLabel().run(d.inlineChart(CHART_CX, CHART_CY)).after(160).add();
+			d.para("after the chart. " + prose(3, 1)).after(160).add();
+			d.para("a chart mid-line: ").run(d.inlineChart(2743200L, 1371600L))
+					.text(" and the text after it, on the same line and the next. " + prose(2, 2)).after(160).add();
+			d.para(prose(3, 3)).after(160).add();
+			d.pageBreak();
+			d.para("two charts follow. " + prose(1, 4)).after(160).add();
+			d.para().noLabel().run(d.inlineChart(CHART_CX, 2286000L)).add();
+			d.para("between the two charts. " + prose(1, 5)).after(160).add();
+			d.para().noLabel().run(d.inlineChart(CHART_CX, 2286000L)).add();
+			d.para("after both charts. " + prose(2, 6)).after(160).add();
+			d.pageBreak();
+			for (int k = 1; k <= 20; k++) {
+				d.para("exact line " + k + " of 20").noLabel().font(SERIF, 24).line(480, STLineSpacingRule.EXACT).add();
+			}
+			d.para().noLabel().run(d.inlineChart(CHART_CX, CHART_CY)).add();
+			d.para("after the chart that did not fit. " + prose(2, 7)).after(160).add();
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * chart-box-floating (CR-035 phase 0).  Anchored charts, one a page: square wrap at the right
+	 * margin (3 x 2in), top-and-bottom wrap centred (6 x 2.5in), behind text at a 1in offset
+	 * (3 x 1.5in), and square wrap at a 1in offset half an inch below its paragraph (2.5 x 2in),
+	 * each followed by paragraphs, as image-anchored places pictures.  Read: the lines beside and
+	 * below each chart.  @since 17.3.3 (CR-035 phase 0)
+	 */
+	private static Probe chartBoxFloatingProbe() {
+		return new Probe("chart-box-floating",
+				"anchored charts, one a page: square wrap at the right margin (3 x 2in), top-and-bottom centred "
+				+ "(6 x 2.5in), behind text at a 1in offset (3 x 1.5in), square wrap at a 1in offset 0.5in below its "
+				+ "paragraph (2.5 x 2in); paragraphs after each; mode 15.  Read the lines beside and below each chart",
+				() -> {
+			Doc d = Doc.create(15);
+			d.para("square wrap, right of the margin. " + prose(1)).after(160)
+					.run(d.anchoredChart(2743200L, 1828800L, "square", "right", 0, 0)).add();
+			for (int i = 0; i < 4; i++) d.para(prose(3, i + 1)).after(160).add();
+			d.pageBreak();
+			d.para("top and bottom wrap, centred. " + prose(1, 2)).after(160)
+					.run(d.anchoredChart(CHART_CX, 2286000L, "topAndBottom", "center", 0, 0)).add();
+			for (int i = 0; i < 3; i++) d.para(prose(3, i + 3)).after(160).add();
+			d.pageBreak();
+			d.para("behind text at a left offset. " + prose(1, 4)).after(160)
+					.run(d.anchoredChart(2743200L, 1371600L, "none", null, 914400L, 0)).add();
+			for (int i = 0; i < 3; i++) d.para(prose(3, i + 5)).after(160).add();
+			d.pageBreak();
+			d.para("square wrap at a left offset of 1in, 0.5in below the paragraph. " + prose(1, 6)).after(160)
+					.run(d.anchoredChart(2286000L, 1828800L, "square", null, 914400L, 457200L)).add();
+			for (int i = 0; i < 4; i++) d.para(prose(3, i + 6)).after(160).add();
+			return d.pkg();
+		});
+	}
+
+	/**
+	 * chart-box-places (CR-035 phase 0).  A 2 x 0.75in chart in the default header (taller than
+	 * the room above the top margin, so it pushes the body down), and a 2.5 x 1.5in chart in the
+	 * first cell of a two-column table with text in the second; two pages of text.  Read: where
+	 * the body starts on each page, and the table row's height.  @since 17.3.3 (CR-035 phase 0)
+	 */
+	private static Probe chartBoxPlacesProbe() {
+		return new Probe("chart-box-places",
+				"a 2 x 0.75in chart in the default header after a line of text, and a 2.5 x 1.5in chart in the "
+				+ "first cell of a two-column table; two pages of text; mode 15.  Read where the body starts on each "
+				+ "page and the height of the table's row", () -> {
+			Doc d = Doc.create(15);
+			P header = Doc.plainParagraph("header with a chart: ", SERIF, 20);
+			header.getContent().add(d.inlineChart(1828800L, 685800L));
+			d.addHeaderContent(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.List.<Object>of(header));
+			d.para("before the table. " + prose(2)).after(160).add();
+			Doc.Table t = new Doc.Table(4513, 4513).fixedLayout();
+			Tc chartCell = t.cell("a chart in a cell: ", SERIF, 24, 1, 4513);
+			((P) chartCell.getContent().get(0)).getContent().add(d.inlineChart(2286000L, 1371600L));
+			t.rowOf(null, null, chartCell, t.cell(prose(2, 1), SERIF, 24, 1, 4513));
+			t.row(SERIF, 24, false, "second row", prose(1, 2));
+			d.add(t.build());
+			d.para("after the table. " + prose(3, 3)).after(160).add();
+			for (int i = 0; i < 12; i++) d.para(prose(3, i + 4)).after(160).add();
 			return d.pkg();
 		});
 	}

@@ -6,7 +6,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 @Deprecated
-public class ChartStylePart<E> extends org.docx4j.openpackaging.parts.DrawingML.ChartStylePart<E> {
+public class ChartStylePart extends org.docx4j.openpackaging.parts.DrawingML.ChartStylePart {
 
 	public ChartStylePart(PartName partName) throws InvalidFormatException {
 		super(partName);

@@ -604,6 +604,12 @@
 		   	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.createShapeTextBox(
 		   			$conversionContext, $wpinline, $childResults)" />
   		</xsl:when>
+  		<xsl:when test="./a:graphic/a:graphicData[@uri='http://schemas.openxmlformats.org/drawingml/2006/chart' or @uri='http://schemas.microsoft.com/office/drawing/2014/chartex']">
+  			<!--  a chart: its box, an empty space of the drawing's extent, until docx4j draws
+  			      charts (17.3.3, CR-035) -->
+		   	<xsl:copy-of select="java:org.docx4j.model.chart.ChartBox.createXslFo(
+		   			$conversionContext, $wpinline)" />
+  		</xsl:when>
   		<xsl:otherwise>
   		
 			<xsl:copy-of 

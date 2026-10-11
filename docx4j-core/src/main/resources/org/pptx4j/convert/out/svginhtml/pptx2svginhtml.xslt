@@ -165,6 +165,25 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
  	      
  </xsl:template>
 
+ <!--  A chart's frame: an empty box at the frame's place and size, until docx4j draws
+       charts (17.3.3, CR-035).  Until then it fell to the catch-all below, which wrote a red
+       "NOT IMPLEMENTED: support for graphicFrame".  Frames holding a table, a diagram or an
+       OLE object still do.  -->
+ <xsl:template match="p:graphicFrame[a:graphic/a:graphicData[@uri='http://schemas.openxmlformats.org/drawingml/2006/chart' or @uri='http://schemas.microsoft.com/office/drawing/2014/chartex']]">
+ 	<xsl:variable name="x"><xsl:value-of select="round(number(p:xfrm/a:off/@x)*96 div 914400)"/></xsl:variable>
+ 	<xsl:variable name="y"><xsl:value-of select="round(number(p:xfrm/a:off/@y)*96 div 914400)"/></xsl:variable>
+ 	<xsl:variable name="cx"><xsl:value-of select="round(number(p:xfrm/a:ext/@cx)*96 div 914400)"/></xsl:variable>
+ 	<xsl:variable name="cy"><xsl:value-of select="round(number(p:xfrm/a:ext/@cy)*96 div 914400)"/></xsl:variable>
+ 	<xsl:variable name="name">
+ 		<xsl:choose>
+ 			<xsl:when test="normalize-space(p:nvGraphicFramePr/p:cNvPr/@descr)"><xsl:value-of select="normalize-space(p:nvGraphicFramePr/p:cNvPr/@descr)"/></xsl:when>
+ 			<xsl:when test="normalize-space(p:nvGraphicFramePr/p:cNvPr/@name)"><xsl:value-of select="normalize-space(p:nvGraphicFramePr/p:cNvPr/@name)"/></xsl:when>
+ 			<xsl:otherwise>Chart</xsl:otherwise>
+ 		</xsl:choose>
+ 	</xsl:variable>
+ 	<div role="img" aria-label="{$name}" style="position: absolute; width:{$cx}px; height:{$cy}px; left:{$x}px; top:{$y}px;"/>
+ </xsl:template>
+
  <xsl:template match="p:cxnSp">
 
 		<xsl:variable name="shape" select="."/>

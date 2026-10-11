@@ -1,6 +1,10 @@
 # CR-035: charts - the chart's box kept in PDF and HTML, a public read model, a chart described in markdown and MCP, and a chart's data edited in xlsx (charts plan phases 0, 2, 3 and 4)
 
-Status: PROPOSED 2026-10-11, not started. Drafted from the charts plan
+Status: IN PROGRESS. Phase 0 built 2026-10-12 (Jason: "do Phase 0 of each CR"; D1 to D5 built as
+recommended): the chart's box in FO, HTML and pptx's SVG-in-HTML, the three parts typed, the 48
+attribute lists starting null (measured first: only the chart style parts' mods), the fixtures, three
+box probes; gate b221 to b222 0 movers.  Word's run of the box probes and the chartex fixtures await
+Jason (§11).  Proposed 2026-10-11. Drafted from the charts plan
 (`../docx4j-portfolio/docs/charts_plan.md`, revised 2026-10-11, portfolio 1174e65) on Jason's
 request ("please draft CR-034 (theme-colour resolver) and CR-035 (charts phases 0, 2, 3 and 4).
 Do not implement anything yet."). The plan's D1 (option (d): the classic chart types open in
@@ -400,3 +404,72 @@ registry entry, and the hand-offs it triggers.
 
 14-20 working days, plus Office runs: Word and PowerPoint (phase 0's chartex fixtures), Excel
 (phase 2's probes, phase 4's gate).
+
+## 11. Implementation record
+
+### Phase 0 (2026-10-12), built; Word's run of the box probes and the chartex fixtures await Jason
+
+Jason: "do Phase 0 of each CR".  D1 to D5, the decisions phase 0 rests on, are built as
+recommended (the empty SVG; pptx's box; the parts typed; all 48 attribute lists; the probes as
+fixtures); none was confirmed separately, so any can be revisited before the push.
+
+**The box.** `org.docx4j.model.chart.ChartBox` (docx4j-core, package exported) makes it from a
+`wp:inline` or `wp:anchor`, or the XSLT's node: an `fo:instream-foreign-object` with
+`content-width`/`content-height` of the extent, `scaling="non-uniform"`, the drawing's name as
+`fox:alt-text` and an empty SVG; for a `wp:anchor` the anchor hints, so `WordLayoutFixups`
+floats it as it does a picture.  HTML: an empty inline `<svg>` sized as a picture's `<img>` is
+(points as pixels), with `role="img"` and `aria-label`.  Wired in:
+- the visitor: `AbstractVisitorExporterGenerator.apply` matches `ChartBox.isChartReference`
+  (a `c:chart`, or the chartex `CTRelId`) and calls `createChartBox`, which the FO and HTML
+  generators override; the stale "selecting Fallback ie ignoring mc:Choice" log line now says
+  what happens, at debug;
+- `docx2fo.xslt` and `docx2xhtml-core.xslt`: a `when` for `a:graphicData/@uri` chart or chartex
+  before the `notImplemented`;
+- `pptx2svginhtml.xslt`: a `p:graphicFrame` holding a chart becomes an absolutely positioned
+  empty `div` (`role="img"`, `aria-label` from `p:cNvPr`) at its `p:xfrm`.
+
+Tests: `ChartBoxTest` (core: Word's default chart is 432 x 252pt "Chart 1"; HTML on both
+pathways one svg of that size, no "NOT IMPLEMENTED"; the pptx frame at 637 x 453px, (511, 163),
+"Chart 3"), `ChartBoxFoTest` (export-fo: the FO element on both pathways; in the PDF the text
+after an inline chart, and after a top-and-bottom anchored one, 252 to 300pt below the text
+before it).  No "Need to handle" or parent-mismatch warning is logged on either pathway.
+
+**The parts** are typed (`ChartStylePart extends JaxbXmlPart<CTChartStyle>`, and so on); the
+deprecated `WordprocessingML` subclasses follow.  Enterprise MergeDocx uses all three raw and
+compiles unchanged.
+
+**Attribute lists, measured then fixed.** Round-tripping the 13 chart fixtures,
+`loadAndSave.{docx,pptx,xlsx}`, the anonymiser's xlsx, pptx and xlsm fixtures and the CR-022
+workbooks with every JAXB part read: the only attribute that came out empty was `mods`, on the
+chart style parts, 2,646 times (1,029 in docx, 1,470 in xlsx, 147 in pptx), the same with every
+part deep-copied.  The four corpora (561 docx): none of the 48 fields.  The fix is a step in
+`ModifyGeneratedSources.java` after XJC: an `@XmlAttribute` list field loses its initialiser (48
+fields; the getter still creates the list).  After a clean regeneration: none, plain or copied
+(`ChartStylePartsTypedTest`, which also checks the `mods` Office wrote are kept).
+
+**Fixtures:** `docx4j-core-tests/src/test/resources/charts/` (the 13 probes, hyphenated, with a
+README); a copy of `bar-chart.docx` in docx4j-export-fo-tests.
+
+**The box probes** (`Corpus`): `chart-box-inline` (alone, mid-line, two on a page, one that
+doesn't fit after 20 exact lines), `chart-box-floating` (square at the right margin,
+top-and-bottom, behind text, square at an offset), `chart-box-places` (in the header, in a table
+cell), each chart a copy of Word's default (`chart-template.docx`, the harness's own copy of
+`clustered-column.docx`) with title, axes and legend deleted, so every scored line is the
+document's.  `Doc.inlineChart`/`anchoredChart` copy the chart part with its style, colour and
+workbook parts; `Doc.rehome` re-relates a chart to a header.  docx4j's renders read as intended
+(4, 4 and 2 pages; the header's chart pushes the body down to 91pt).  On the share's
+`fidelity/corpus` with their `corpus.txt` lines; Word's goldens wait for Jason's run.
+
+**Gate (control).** b221 is HEAD before phase 0 (aa91f312e, built in a separate worktree), b222
+phase 0, both on the released renderer 2.11-docx4j.6, over the four corpora and the 270 scored
+probes: `movers.py b221 b222` reports 0 movers and every event count unchanged; the probe
+scoreboards are identical cell for cell.  (No corpus document has a chart, §3, so this shows
+only that nothing else moved.)  Against the previous baseline b219, b221 itself moves one
+document, 5075 (in real2 and real-c2), by one line: a change between 17.3.2's b219 and HEAD,
+not phase 0's, and not investigated here.  Tests: docx4j-core-tests 1,421 (0 failures, 11
+skipped), docx4j-export-fo-tests 788 (0, 9 skipped), docx4j-markdown, docx4j-diffx-tests and
+docx4j-digsig green, on the regenerated objects.
+
+Left for phase 0: Word's run of the three probes and their scoring against it; the chartex
+fixtures (a waterfall inserted in Word and in PowerPoint, `fidelity/cr035-chartex/`), committed
+and checked to open in Word and PowerPoint after a docx4j save.

@@ -1,14 +1,21 @@
 package org.docx4j.openpackaging.parts.DrawingML;
 
+import org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTChartSpace;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 /**
+ * A chartex chart ({@code cx:chartSpace}): the Office 2016 chart types (waterfall, histogram,
+ * treemap and the rest).
+ *
+ * <p>Typed since 17.3.3 (CR-035 phase 0); it was generic, made raw, though it always held a
+ * {@link CTChartSpace}.</p>
+ *
  * @since 11.4.10
  */
- public class ChartExSpacePart<E> extends JaxbXmlPart<E> {
+public class ChartExSpacePart extends JaxbXmlPart<CTChartSpace> {
 
 	public ChartExSpacePart(PartName partName) throws InvalidFormatException {
 		super(partName);
