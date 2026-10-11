@@ -2,6 +2,30 @@ CHANGELOG
 =========
 
 
+Version 17.3.3
+===============
+
+Release date
+------------
+
+[]
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Claude Opus 5.5
+
+
+Changes in Version 17.3.3
+--------------------------
+
+- A TOC update no longer leaves its temporary image files open (undeletable on Windows):
+  docx4j sets xmlgraphics' AbstractImageSessionContext.no-source-reuse true unless already
+  set.  PNGs in PDF output wait on xmlgraphics-commons XGC-150.  Issue 609.
+
+
 Version 17.3.2
 ===============
 

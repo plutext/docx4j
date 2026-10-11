@@ -58,6 +58,7 @@ import org.docx4j.events.StartEvent;
 import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.fop.fonts.FontPaddingResourceResolver;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.images.XmlGraphicsImageStreams;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.utils.XmlSerializerUtil;
 import org.slf4j.Logger;
@@ -75,7 +76,12 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 	
 	private static final String FO_USER_AGENT = "foUserAgent";
 	public static final String FOP_FACTORY = "fopFactory";
-	
+
+	static {
+		// before FOP's first image session: close preloaded image streams (issue 609)
+		XmlGraphicsImageStreams.init();
+	}
+
 	
 	protected static class FopPlaceholderLookup extends AbstractPlaceholderLookup {
 		

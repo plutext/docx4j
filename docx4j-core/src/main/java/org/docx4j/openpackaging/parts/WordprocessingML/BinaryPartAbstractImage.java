@@ -48,6 +48,7 @@ import org.docx4j.Docx4jProperties;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.dml.picture.Pic;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
+import org.docx4j.model.images.XmlGraphicsImageStreams;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.model.structure.SectionWrapper;
 import org.docx4j.openpackaging.Base;
@@ -74,6 +75,11 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	protected static Logger log = LoggerFactory.getLogger(BinaryPartAbstractImage.class);
 	final static String IMAGE_DIR_PREFIX = "/word/media/";
 	final static String IMAGE_NAME_PREFIX = "image";
+
+	static {
+		// before xmlgraphics' first image session: close preloaded image streams (issue 609)
+		XmlGraphicsImageStreams.init();
+	}
 	
 
 
