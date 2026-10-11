@@ -5,8 +5,8 @@ recommended): the chart's box in FO, HTML and pptx's SVG-in-HTML, the three part
 attribute lists starting null (measured first: only the chart style parts' mods), the fixtures, three
 box probes; gate b221 to b222 0 movers; against Word's goldens the box probes go from 0.8449 to
 0.9358 line parity, chart-box-inline to 1.0000.  Word's and PowerPoint's chartex Fallback is a
-picture of the chart, which docx4j already draws (§11).  Left: Office opening docx4j's re-saves of the
-chartex fixtures.  Proposed 2026-10-11. Drafted from the charts plan
+picture of the chart, which docx4j already draws; Word and PowerPoint open docx4j's re-saves of them
+(§11).  Phase 0 DONE 2026-10-12; phase 2 next (it needs CR-034's resolver).  Proposed 2026-10-11. Drafted from the charts plan
 (`../docx4j-portfolio/docs/charts_plan.md`, revised 2026-10-11, portfolio 1174e65) on Jason's
 request ("please draft CR-034 (theme-colour resolver) and CR-035 (charts phases 0, 2, 3 and 4).
 Do not implement anything yet."). The plan's D1 (option (d): the classic chart types open in
@@ -411,7 +411,7 @@ registry entry, and the hand-offs it triggers.
 
 ## 11. Implementation record
 
-### Phase 0 (2026-10-12), built; Word's run of the box probes and the chartex fixtures await Jason
+### Phase 0 (2026-10-12), done
 
 Jason: "do Phase 0 of each CR".  D1 to D5, the decisions phase 0 rests on, are built as
 recommended (the empty SVG; pptx's box; the parts typed; all 48 attribute lists; the probes as
@@ -502,5 +502,7 @@ outputs.  The picture is as old as Office's last save, so a chart whose data cha
 (phase 6) leaves it stale: for the plan's phase 9 and D5.  The fixtures are typed-part fixtures
 too (`ChartStylePartsTypedTest`: 17 style and colour parts, 3 chartex).
 
-Left for phase 0: Word and PowerPoint opening docx4j's re-saves of the two (on the share,
-`fidelity/cr035-chartex/resaved/`) without a repair prompt.
+**docx4j's re-saves of the two open in Office** (Jason, 2026-10-12, `office-colours.ps1` on
+`fidelity/cr035-chartex/resaved/`, every XML part read and written back): no repair prompt, and
+Word and PowerPoint each drew the waterfall from its chartex part, as live text and shapes ("Chart
+Title", the legend, the axis values), not the Fallback picture.  Phase 0 is done.
