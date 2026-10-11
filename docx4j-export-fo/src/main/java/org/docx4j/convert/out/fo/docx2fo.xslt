@@ -401,7 +401,10 @@
 						<xsl:apply-templates/>
 					</xsl:variable>
 			
-					<xsl:variable name="pPrNode" select="../w:pPr" />   	
+					<!-- the run's own paragraph, also for a run in a w:hyperlink, w:smartTag, w:ins or an
+					     inline sdt (until 17.3.3 ../w:pPr, which found none there, so such a run was
+					     resolved without its paragraph style) -->
+					<xsl:variable name="pPrNode" select="ancestor::w:p[1]/w:pPr" />   	
 					<xsl:variable name="rPrNode" select="w:rPr" />  	
 	
 				  	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.createBlockForRPr( 

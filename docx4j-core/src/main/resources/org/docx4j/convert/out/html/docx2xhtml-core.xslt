@@ -305,7 +305,9 @@
 						<xsl:apply-templates/>
 					</xsl:variable>
 					
-					<xsl:variable name="pStyleVal" select="string( ../w:pPr/w:pStyle/@w:val )" />  			
+					<!-- the run's own paragraph, also for a run in a w:hyperlink and the like (until
+					     17.3.3 ../w:pPr, which found none there) -->
+					<xsl:variable name="pStyleVal" select="string( ancestor::w:p[1]/w:pPr/w:pStyle/@w:val )" />  			
 					
 					<xsl:variable name="rPrNode" select="w:rPr" />  	
 			
