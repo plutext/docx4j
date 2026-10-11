@@ -176,6 +176,13 @@ public class ListLevel {
      */
     public ListLevel(Lvl levelNode)
     {
+        if (levelNode.getIlvl() == null) {
+            // w:ilvl is required.  Word reads a w:lvl without it as level 0 and keeps none
+            // of its content - no number, no indent - and a later level 0 replaces it as
+            // usual (issue 593: probes 593-a and 593-b, Word 365, 2026-10-11)
+            log.warn("w:lvl without w:ilvl: read as an empty level 0, as Word does");
+            levelNode = emptyLevelZero();
+        }
     	this.jaxbAbstractLvl = levelNode;
     	
         this.id = levelNode.getIlvl().toString(); 
@@ -218,6 +225,20 @@ public class ListLevel {
         	
         }
 
+    }
+
+    /** What Word makes of a {@code w:lvl} without {@code w:ilvl}: level 0, with no number. */
+    private static Lvl emptyLevelZero() {
+        org.docx4j.wml.ObjectFactory factory = org.docx4j.jaxb.Context.getWmlObjectFactory();
+        Lvl lvl = factory.createLvl();
+        lvl.setIlvl(BigInteger.ZERO);
+        NumFmt numFmt = factory.createNumFmt();
+        numFmt.setVal(NumberFormat.NONE);
+        lvl.setNumFmt(numFmt);
+        Lvl.LvlText lvlText = factory.createLvlLvlText();
+        lvlText.setVal("");
+        lvl.setLvlText(lvlText);
+        return lvl;
     }
 
     /** 

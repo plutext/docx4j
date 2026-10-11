@@ -24,6 +24,8 @@ Changes in Version 17.3.3
 - A TOC update no longer leaves its temporary image files open (undeletable on Windows):
   docx4j sets xmlgraphics' AbstractImageSessionContext.no-source-reuse true unless already
   set.  PNGs in PDF output wait on xmlgraphics-commons XGC-150.  Issue 609.
+- A w:lvl without w:ilvl (which the schema requires) no longer throws a NullPointerException:
+  as in Word, it is read as an empty level 0, so paragraphs at level 0 get no number.  Issue 593.
 
 
 Version 17.3.2

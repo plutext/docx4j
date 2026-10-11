@@ -268,7 +268,8 @@ class WmlToMarkdown {
 				? numPr.getNumId().getVal() : null;
 		if (numId != null && !BigInteger.ZERO.equals(numId)) {
 			closeQuote();
-			int ilvl = (numPr.getIlvl() != null) ? numPr.getIlvl().getVal().intValue() : 0;
+			int ilvl = (numPr.getIlvl() != null && numPr.getIlvl().getVal() != null)
+					? numPr.getIlvl().getVal().intValue() : 0;
 			String label = labelText(numId, ilvl);
 			if (label != null) {
 				// a level with numFmt none, or a lvlText with no %n, is a label ("NOTE",
