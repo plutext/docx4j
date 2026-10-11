@@ -61,7 +61,7 @@ public class ChartStylePartsTypedTest {
 			"charts/line-chart.docx", "charts/pie-chart.docx", "charts/stacked-column.docx",
 			"charts/bar-chart.xlsx", "charts/bar-chart-style-2.xlsx", "charts/clustered-column.xlsx",
 			"charts/line-chart.xlsx", "charts/pie-chart.xlsx", "charts/stacked-column.xlsx",
-			"charts/waterfall.xlsx", "loadAndSave.pptx" };
+			"charts/waterfall.xlsx", "charts/waterfall.docx", "charts/waterfall.pptx", "loadAndSave.pptx" };
 
 	private static final Pattern EMPTY_MODS = Pattern.compile("\\smods=\"\"");
 	private static final Pattern MODS = Pattern.compile("\\smods=\"[^\"]+\"");
@@ -108,10 +108,11 @@ public class ChartStylePartsTypedTest {
 				}
 			}
 		}
-		// waterfall.xlsx holds a line chart and the waterfall, each with its style and colours
-		assertEquals(15, style);
-		assertEquals(15, colour);
-		assertEquals(1, chartex);
+		// waterfall.xlsx holds a line chart and the waterfall, each with its style and colours;
+		// waterfall.docx and .pptx a waterfall each
+		assertEquals(17, style);
+		assertEquals(17, colour);
+		assertEquals(3, chartex);
 	}
 
 	@Test
@@ -152,7 +153,7 @@ public class ChartStylePartsTypedTest {
 				assertEquals(f + " " + e.getKey(), count(MODS, before.get(e.getKey())), count(MODS, e.getValue()));
 			}
 		}
-		assertEquals(15, styleParts);
+		assertEquals(17, styleParts);
 		assertTrue(failures.toString(), failures.isEmpty());
 	}
 }

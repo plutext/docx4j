@@ -107,6 +107,27 @@ public class ChartBoxTest {
 		}
 	}
 
+	/**
+	 * A chartex chart in a docx: Word's mc:Fallback is a picture of the chart it drew, so by
+	 * default (chartex's Choice not preferred) the output shows that picture, not a box.
+	 */
+	@Test
+	public void chartexInWordDrawsItsFallbackPicture() throws Exception {
+
+		for (int flags : PATHWAYS) {
+			String pathway = flags == Docx4J.FLAG_NONE ? "visitor: " : "XSLT: ";
+			HTMLSettings settings = Docx4J.createHTMLSettings();
+			try (InputStream is = ChartBoxTest.class.getClassLoader().getResourceAsStream("charts/waterfall.docx")) {
+				settings.setOpcPackage(WordprocessingMLPackage.load(is));
+			}
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			Docx4J.toHTML(settings, baos, flags);
+			String html = baos.toString("UTF-8");
+			assertTrue(pathway + html, html.matches("(?s).*<img[^>]*width=\"432\"[^>]*>.*"));
+			assertFalse(pathway, html.contains("<svg"));
+		}
+	}
+
 	@Test
 	public void pptxSvgKeepsTheChartsFrame() throws Exception {
 

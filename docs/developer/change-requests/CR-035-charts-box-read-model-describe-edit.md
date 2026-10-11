@@ -3,8 +3,10 @@
 Status: IN PROGRESS. Phase 0 built 2026-10-12 (Jason: "do Phase 0 of each CR"; D1 to D5 built as
 recommended): the chart's box in FO, HTML and pptx's SVG-in-HTML, the three parts typed, the 48
 attribute lists starting null (measured first: only the chart style parts' mods), the fixtures, three
-box probes; gate b221 to b222 0 movers.  Word's run of the box probes and the chartex fixtures await
-Jason (§11).  Proposed 2026-10-11. Drafted from the charts plan
+box probes; gate b221 to b222 0 movers; against Word's goldens the box probes go from 0.8449 to
+0.9358 line parity, chart-box-inline to 1.0000.  Word's and PowerPoint's chartex Fallback is a
+picture of the chart, which docx4j already draws (§11).  Left: Office opening docx4j's re-saves of the
+chartex fixtures.  Proposed 2026-10-11. Drafted from the charts plan
 (`../docx4j-portfolio/docs/charts_plan.md`, revised 2026-10-11, portfolio 1174e65) on Jason's
 request ("please draft CR-034 (theme-colour resolver) and CR-035 (charts phases 0, 2, 3 and 4).
 Do not implement anything yet."). The plan's D1 (option (d): the classic chart types open in
@@ -354,6 +356,8 @@ registry entry, and the hand-offs it triggers.
 - **Chartex Fallback text in PDF.** If Word's Fallback is the text shape, docx4j's PDF prints
   "This chart isn't available in your version of …" where Word draws the chart. That is D1 (d)'s
   open behaviour; whether to print the box instead is a question for phase 0's fixture.
+  (Answered 2026-10-12: Word's and PowerPoint's Fallback is a picture of the chart, which docx4j
+  draws; only Excel writes the sentence, and docx4j renders no workbooks.  §11.)
 - **The derived title and others.** Office's derived values (the title, automatic axis scaling,
   the colours of automatic series) are many; the model names what probes have measured and marks
   the rest as automatic (§4.2), leaving the values to the renderer.
@@ -470,6 +474,33 @@ not phase 0's, and not investigated here.  Tests: docx4j-core-tests 1,421 (0 fai
 skipped), docx4j-export-fo-tests 788 (0, 9 skipped), docx4j-markdown, docx4j-diffx-tests and
 docx4j-digsig green, on the regenerated objects.
 
-Left for phase 0: Word's run of the three probes and their scoring against it; the chartex
-fixtures (a waterfall inserted in Word and in PowerPoint, `fidelity/cr035-chartex/`), committed
-and checked to open in Word and PowerPoint after a docx4j save.
+**The box probes against Word** (Jason's `WordGoldenRunner` run, 2026-10-12), scored before the
+box (b221's jars) and with it (b222's):
+
+| Probe | Line parity | Pages (Word's) |
+|---|---|---|
+| chart-box-inline | 0.9111 → **1.0000** (45 of 45 lines) | 3 → 4 (4) |
+| chart-box-floating | 0.6757 → 0.8514 | 4 → 4 (4) |
+| chart-box-places | 0.9853 → 0.9853; page parity 0.9265 → 0.9853 | 2 → 2 (2) |
+| all three | 0.8449 → 0.9358; page parity 0.9111 → 0.9853 | |
+
+chart-box-floating's remainder is its fourth case, a square-wrapped chart 1in from the column's
+edge: Word sets text down both sides of it, docx4j only on the right.  That is the anchored
+picture's behaviour, not the box's (both-sides wrap, listed for the fork in CR-032), so the box
+adds nothing to fix there.  (The VM's harness has docx4j 17.1.1-SNAPSHOT, whose trailing-bytes
+check falsely reported two of the probes, those over 64 KB; fixed in 17.2.1.)
+
+**The chartex fixtures** (`charts/waterfall.docx`, `charts/waterfall.pptx`: *Insert Chart >
+Waterfall* in Word and in PowerPoint, Jason, 2026-10-12).  The chartex part is in
+`mc:AlternateContent` with `Requires="cx1"`, as in Excel, but **the Fallback is a picture of the
+chart Office drew** (`pic:pic`, a 577 x 337 PNG in Word, 855 x 571 in PowerPoint), not Excel's
+"This chart isn't available in your version of …" text shape.  So in a docx or pptx docx4j's
+default output already shows a chartex chart, as Office's picture of it: the PDF of
+`waterfall.docx` draws the PNG at 432 x 252pt (checked), and `ChartBoxTest` checks the HTML on
+both pathways.  §7's risk of the Fallback's sentence in a PDF applies to none of docx4j's
+outputs.  The picture is as old as Office's last save, so a chart whose data changes later
+(phase 6) leaves it stale: for the plan's phase 9 and D5.  The fixtures are typed-part fixtures
+too (`ChartStylePartsTypedTest`: 17 style and colour parts, 3 chartex).
+
+Left for phase 0: Word and PowerPoint opening docx4j's re-saves of the two (on the share,
+`fidelity/cr035-chartex/resaved/`) without a repair prompt.

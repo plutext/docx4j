@@ -13,6 +13,7 @@ share, `Office 2016/office_charts` (`goldens-word\`, `goldens-excel\`).
 | `bar-chart.xlsx` | ... then given axis titles, data labels and a `0.0` value-axis format in Excel |
 | `stacked-column.xlsx` | ... then its table grown by a row and a column in Excel, which extended every reference and added a fourth series |
 | `waterfall.xlsx` | a waterfall chart (chartex, `xl/charts/chartEx1.xml`), and the line chart of a first attempt |
+| `waterfall.docx`, `waterfall.pptx` | *Insert Chart > Waterfall* in Word and in PowerPoint (2026-10-12): the chartex part in `mc:AlternateContent` (`Requires="cx1"`) whose Fallback is a picture of the chart Office drew (`image1.png`), not the text shape Excel writes |
 
 On the share the docx `clustered-column.docx` was `clustered columnsdocx.docx`; the other names
 had spaces where these have hyphens.

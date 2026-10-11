@@ -104,29 +104,36 @@ def main():
               if l.split("\t")[0] == probe]
     found = {}
     for pn, items in enumerate(pages(pdf), 1):
+        # the page's text as one stream: Word splits a label like P1-01 into "P1", "-" and "01"
+        chars = []   # (character, item index, x, y, colour)
         for i, it in enumerate(items):
-            if it[0] != "text":
+            if it[0] == "text":
+                for ch, (x, y) in zip(it[2], it[3]):
+                    chars.append((ch, i, x, y, it[1]))
+        stream = "".join(c[0] for c in chars)
+        for lab in labels:
+            if lab in found:
                 continue
-            for lab in labels:
-                if lab in found:
-                    continue
-                k = it[2].find(lab)
-                if k < 0 or (k + len(lab) < len(it[2]) and it[2][k + len(lab)].isdigit()):
-                    continue
-                x, y = it[3][k]
-                before = [p for p in items[:i] if p[0] == "fill" and inside(p[2], x, y)]
-                fill = min(before, key=lambda p: (p[2][2] - p[2][0]) * (p[2][3] - p[2][1])) if before else None
-                stroke = None
-                if fill:
-                    for p in items:
-                        if p[0] == "stroke" and all(abs(p[2][j] - fill[2][j]) <= 2 for j in range(4)):
-                            stroke = p
-                            break
-                xs = [q[0] for q in it[3]]
-                rules = sorted({p[1] for p in items if p[0] in ("fill", "stroke")
-                                and p[2][3] - p[2][1] < 4 and -22 < (p[2][1] + p[2][3]) / 2 - y < 8
-                                and p[2][0] < max(xs) and p[2][2] > min(xs)})
-                found[lab] = (pn, fill[1] if fill else "", stroke[1] if stroke else "", it[1], " ".join(rules))
+            k = stream.find(lab)
+            while k >= 0 and k + len(lab) < len(stream) and stream[k + len(lab)].isdigit():
+                k = stream.find(lab, k + 1)
+            if k < 0:
+                continue
+            _, i, x, y, text_colour = chars[k]
+            it = ("text", text_colour, lab, [(c[2], c[3]) for c in chars[k:k + len(lab)]])
+            before = [p for p in items[:i] if p[0] == "fill" and inside(p[2], x, y)]
+            fill = min(before, key=lambda p: (p[2][2] - p[2][0]) * (p[2][3] - p[2][1])) if before else None
+            stroke = None
+            if fill:
+                for p in items:
+                    if p[0] == "stroke" and all(abs(p[2][j] - fill[2][j]) <= 2 for j in range(4)):
+                        stroke = p
+                        break
+            xs = [q[0] for q in it[3]]
+            rules = sorted({p[1] for p in items if p[0] in ("fill", "stroke")
+                            and p[2][3] - p[2][1] < 4 and -22 < (p[2][1] + p[2][3]) / 2 - y < 8
+                            and p[2][0] < max(xs) and p[2][2] > min(xs)})
+            found[lab] = (pn, fill[1] if fill else "", stroke[1] if stroke else "", it[1], " ".join(rules))
     print("label\tpage\tfill\tstroke\ttext\trules")
     for lab in labels:
         r = found.get(lab)

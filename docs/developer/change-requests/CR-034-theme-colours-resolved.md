@@ -1,9 +1,12 @@
 # CR-034: theme colours resolved - one resolver for DrawingML, WordprocessingML and SpreadsheetML colour references
 
-Status: IN PROGRESS. Phase 0 started 2026-10-12 (Jason: "do Phase 0 of each CR"): the corpus scan is a
-harness tool and reproduces §3; the corpus half of P1 is read (Word draws the theme reference, not the
-value written beside it, §11); the probes, their reader and the Office script are on the share; the
-Office run awaits Jason.  Proposed 2026-10-11. Drafted from the charts plan
+Status: IN PROGRESS. Phase 0 DONE 2026-10-12 (Jason: "do Phase 0 of each CR"; his Office run the same
+day): every probe read (§11).  Word draws the theme reference wherever the written value disagrees;
+DrawingML's tint, shade, inv, gamma and channel transforms act in linear RGB, hue, sat and lum in HSL
+(saturation not clamped), gray is Rec.709 luma in sRGB, in document order, Word and PowerPoint
+identical on all 403 cases; Excel's tint is Windows' integer HLS (HLSMAX 240) and its theme indexes
+swap the first four slots; system colours are drawn as the machine's, not lastClr.  Phase 1 next.
+Proposed 2026-10-11. Drafted from the charts plan
 (`../docx4j-portfolio/docs/charts_plan.md`, phase 1, which made it its own CR) on Jason's
 request ("please draft CR-034 (theme-colour resolver) and CR-035 (charts phases 0, 2, 3 and 4).
 Do not implement anything yet."). Reviewed the same day by the docx4j-13 session (Claude Fable
@@ -268,9 +271,9 @@ colours too.
 
 ### 4.4 System colours
 
-`a:sysClr` resolves to `lastClr`, the value on the machine that saved the file, which is what
-Office draws in a PDF on another machine too (to confirm in P3). Without `lastClr`, the Windows
-defaults (`windowText` black, `window` white).
+`a:sysClr` resolves to the Windows default for its name (`windowText` black, `window` white, and
+so on), not to `lastClr`.  (Drafted the other way round, `lastClr` first; P3 showed Office draws
+the machine's colour and ignores `lastClr`, §11, 2026-10-12.)
 
 ### 4.5 What the outputs gain in this CR
 
@@ -360,7 +363,7 @@ estimated 4-6; style references (the review's first amendment) add half a day.
 
 ## 11. Implementation record
 
-### Phase 0 (2026-10-12), not yet complete: the Office run awaits Jason
+### Phase 0 (2026-10-12), done
 
 **The corpus scan** is `docx4j-layout-fidelity/tools/theme_colour_scan.py` (counts only; with
 `--triples` the distinct (theme value, op, byte, Word's value), with `--stale` the attributes
@@ -404,5 +407,71 @@ underline read as docx4j wrote them (docx4j paints no shape fill, §1).
 probes, `cases.tsv`, `office-colours.ps1` (opens each probe in its own application, exports a
 PDF to `goldens\`) and `RUN.txt`.
 
-Left for phase 0: Jason's run; reading the seven PDFs; recording the readings here (P1 decides
-§4.5 and D3).
+**Office's run** (Jason, 2026-10-12): `office-colours.ps1` on the VM, after two fixes to it:
+Word's `ExportAsFixedFormat` stalled, so Word now uses documents4j's route (`Documents.Open` with
+four arguments, `SaveAs` format 17), each file copied to a local temp folder first; and the PDFs
+are named after the whole file name, since the docx and pptx of P3 share a base name.  All 1,068
+labels were found in the seven PDFs.
+
+#### Readings
+
+**P1, precedence (Word).** Word draws the theme reference in every case and ignores the value
+written beside it, `FF0000`, `00FF00`, `auto` or Office 2007's `4F81BD` alike: runs (`accent1`
+`156082`; tint `99` `45B0E1`; shade `BF` `0F4761`; `text1` `000000`; `hyperlink` `467886`),
+paragraph shading (`accent2` `E97132`, tint `66` `F6C5AC`), the 25% pattern (`E7CAE4`: a 25/75
+blend of `accent5` and white, in sRGB), top borders (`accent6` `4EA72E`, shade `80` `275317`), the
+underline (`accent4` `0F9ED5`), run shading (`accent3` `196B24`).  With 11782's TOC Heading from
+the corpus, that settles §2.3's question and D3: the written value is a cache.
+
+**P2, colour map (Word).** The swapped `w:clrSchemeMapping` applies to WordprocessingML theme
+colours (`text1` drawn `FFFFFF`, `background1` `000000`, `text2` `E8E8E8`, `background2`
+`0E2841`) and to DrawingML scheme colours alike (`tx1` filled `FFFFFF`, `bg1` `000000`, `tx2`
+`E8E8E8`, `bg2` `0E2841`); direct slots (`dark1`, `dk1`, `lt1`, `accent1`) are untouched.
+Automatic text (no `w:color`) stays black: "auto" does not follow `text1`.
+
+**P3, DrawingML transforms (Word and PowerPoint).** Word's and PowerPoint's readings are identical
+on all 403 cases.  A model fits nearly all of them exactly, applying each transform in document
+order (each order case differs from its reverse, as the model says):
+- `tint` t: linear RGB, c' = 1 − (1 − c)·t; `shade` t: c' = c·t; `inv`: c' = 1 − c; `red`, `green`,
+  `blue` and their `Off`/`Mod`: the channel in linear RGB; `gamma`: the colour taken as linear and
+  written as sRGB; `invGamma`: the reverse.  (sRGB's transfer function, IEC 61966-2-1.)  Exact in
+  every case: 16 tints, 16 shades, 5 inv, 90 channel cases, 10 gamma.  So DrawingML's tint is not
+  WordprocessingML's themeTint, which is HSL (§2.3).
+- `hue`, `hueOff`, `hueMod`, `lum`, `lumOff`, `lumMod`, `comp` (hue + 180°): HSL of the sRGB
+  colour.  Exact in 77 of 85, the rest within one unit; the picker pairs 46 of 50, the rest within
+  one.
+- `sat`, `satOff`, `satMod`: HSL, with saturation **not clamped** (to 0 or 1) before converting
+  back; the channels are clamped after.  33 of 45 exact; the misses are one unit off, or on the
+  grey `bg2` (`E8E8E8`), where Office gives a grey's undefined hue about 40° and a negative
+  saturation flips it.  Left to phase 1.
+- `gray`: Rec.709 luma of the sRGB channels, 0.2126 R + 0.7152 G + 0.0722 B: 5 of 5.
+- `alpha`, `alphaOff`, `alphaMod`: as written, 35 of 35.
+- Other kinds: `srgbClr` with a tint (linear, as above), `scrgbClr` (linear percentages: 50/25/75%
+  is `BC89E1`), `hslClr`, `prstClr` (`coral` `FF7F50`), `hlink`, `folHlink`: exact.  **`sysClr` is
+  drawn as the machine's colour, not `lastClr`**: `windowText` with `lastClr` `FF0000` came out
+  black, `window` with `00FF00` white.  §4.4 assumed the opposite; the resolver should take the
+  Windows default for the named colour and ignore `lastClr`.
+- Style references: Word's default shape style gave fill `accent1` (`fillRef 1`), line `accent1`
+  shaded 50% (`0C445E`, the same as a shade on its own) and white text (`fontRef` `lt1`);
+  `fillRef 1001` took the background fill list (`A02B93`); `fillRef 2`, a gradient in the 2023
+  theme, is not a solid fill (as §4.1 has it).
+
+POI got the colour spaces of tint and shade right (linear) but applies transforms in a fixed
+order; LibreOffice the same spaces.
+
+**P4, SpreadsheetML (Excel).** Excel swaps the first theme indexes as POI does: theme 0 is `lt1`,
+1 `dk1`, 2 `lt2`, 3 `dk2`.  Its tint is HLS, not POI's per-channel RGB (`dk2` at +0.2: Excel
+`1D5287`, HLS `1D5488`, POI's rule `3E5367`), and in Windows' integer arithmetic (`ColorRGBToHLS`,
+HLSMAX 240), the luminance truncated and a grey's channel rounded: 82 of 90; leaving tint 0 alone
+(Excel does) makes it 88, the last two both at tint 0.3333.  So Word's themeTint (float HSL, §2.3)
+and Excel's tint are different arithmetic: D6's answer is per host.  Indexed colours: the legacy
+64-colour palette, 64 and 65 drawn black and white; a workbook's `x:indexedColors` replaces all 64
+entries (each of the 64 custom ones reproduced).
+
+**P5, PowerPoint's colour map override.** The slide's `a:overrideClrMapping` applies to fills
+(`tx1` `FFFFFF`, `bg1` `000000`, `tx2` `E8E8E8`, `bg2` `0E2841`) and to the slide's own text colour
+(white); the slide keeping the master's map draws the master's.
+
+**What phase 1 builds on:** §4.1 as written, with the spaces above; `sysClr` by name; WordprocessingML
+by the theme reference first; Excel's integer HLS.  The readings become test vectors (§4.6) with
+the corpus triples.
