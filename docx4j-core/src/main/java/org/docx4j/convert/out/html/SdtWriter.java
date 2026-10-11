@@ -26,6 +26,7 @@ import jakarta.xml.bind.JAXBException;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.common.preprocess.Containerization;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -56,6 +57,10 @@ public class SdtWriter {
 		 * Registered here, so the default output is what the preprocess intends; a
 		 * caller's own registration still replaces it.  (CR-003, 2026-09-18.) */
 		handlers.put("HTML_ELEMENT", new SdtToListSdtTagHandler());
+		/* Likewise Containerization's border group (17.3.3): without a handler the
+		 * paragraphs' top and bottom borders were drawn by nothing.  TagSingleBox makes the
+		 * group one box. */
+		handlers.put(Containerization.TAG_BORDERS, new TagSingleBox());
 	}
 	
 	static IdentityHandler identity = new IdentityHandler();

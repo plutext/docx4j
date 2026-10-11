@@ -381,10 +381,16 @@ public class HtmlVisitorParityTest {
 			String html = toHTML(phase2Pkg(), flag);
 			String impl = flagName(flag) + ": ";
 
-			// TagSingleBox: one bordered div around both paragraphs
-			String borderDiv = block(html, "<div style=\"[^\"]*border-left-style: solid;[^\"]*\">", "</div>");
+			// TagSingleBox: one div around both paragraphs, drawn as one box since 17.3.3 (the
+			// paragraphs keep their own left and right borders; the first its top, the last its
+			// bottom), where the div used to copy the first paragraph's whole style
+			String borderDiv = block(html, "<div>", "</div>");
 			assertTrue(impl + "borders container div lost",
 					borderDiv.contains("bordered one") && borderDiv.contains("bordered two"));
+			String first = block(html, "<p [^>]*border-top-style: solid;", "bordered one");
+			assertTrue(impl + "the group's top border", first.length() > 0 && !first.contains("border-bottom-"));
+			String second = block(html, "<p [^>]*border-bottom-style: solid;", "bordered two");
+			assertTrue(impl + "the group's bottom border", second.length() > 0 && !second.contains("border-top-"));
 
 			// .. and a shaded div around both shaded paragraphs
 			String shadedDiv = block(html, "<div style=\"[^\"]*background-color: #FFFF00;[^\"]*\">", "</div>");

@@ -61,7 +61,7 @@ public class HtmlCssHelper {
 
 	private static Logger log = LoggerFactory.getLogger(HtmlCssHelper.class);
 
-	//Temporary maps that get used in applyAttributes, they are kept here to be able to reuse it
+	//Temporary maps that applyAttributes used until 17.3.3 (see there)
 	private static ThreadLocal<Map<String, Property>> threadLocalTempMap = new ThreadLocal<Map<String, Property>>();
 
     public static void createDefaultCss(boolean hasDefaultHeader, boolean hasDefaultFooter, StringBuilder result) {
@@ -316,6 +316,25 @@ public class HtmlCssHelper {
 		boolean indentEmitted = false;
     	List<Property> properties = PropertyFactory.createProperties(opcPackage, pPr);
     	for( Property p :  properties ) {
+			if (p instanceof PShading) {
+    	    	// To close the gap between divs, we need to avoid
+    	    	// CSS margin collapse.
+    	    	// To do that, we add a border the same color as
+    	    	// the background color.  First, so that a border of the paragraph's own,
+				// written after it, wins on its side (17.3.3; it used to come after the
+				// borders and drew them in the fill colour, 1px wide)
+				// Only where there is a fill to draw: for w:fill="auto" this wrote
+				// "border-color: #auto", which a browser drops, keeping the rest - a 1px box
+				// in the text colour (17.3.3)
+				CTShd shd = (CTShd)p.getObject();
+				String fill = p.themedFill(shd); // the theme colour drawn (CR-034)
+				if (fill==null && shd.getFill()!=null && !"auto".equals(shd.getFill())) fill = "#" + shd.getFill();
+				if (fill!=null) {
+					result.append("border-color: " + fill + "; border-style:solid; border-width:1px;");
+				}
+			}
+    	}
+    	for( Property p :  properties ) {
 	    	if (shiftHang && p instanceof Indent) {
 	    		// the hang moves from the margin into the padding (see above)
 	    		Ind ind = (Ind) p.getObject();
@@ -343,16 +362,6 @@ public class HtmlCssHelper {
 	    		// eg "position: relative; margin-left: 0.5in;text-indent: -0.25in;
 				continue;
 	    	}
-
-			if (p instanceof PShading) {
-    	    	// To close the gap between divs, we need to avoid
-    	    	// CSS margin collapse.
-    	    	// To do that, we add a border the same color as
-    	    	// the background color
-				String fill = p.themedFill((CTShd)p.getObject()); // the theme colour drawn (CR-034)
-				if (fill==null) fill = "#" + ((CTShd)p.getObject()).getFill();
-				result.append("border-color: " + fill + "; border-style:solid; border-width:1px;");
-			}
 
     		appendNonNull(result, p);
     	}
@@ -433,23 +442,29 @@ public class HtmlCssHelper {
 		}
     }
 
+	/**
+	 * The properties' CSS appended to the element's style, the last of each CSS name winning.
+	 * A property with no CSS name ({@code Lang}, {@code Bidi}, {@code Tabs} ...) writes nothing.
+	 *
+	 * <p>Until 17.3.3 the properties went through a map kept per thread and cleared after use: a
+	 * property with no CSS name made it throw (a null key), which lost the element (a simple
+	 * field's result whose run had a {@code w:lang} was dropped from the output) and left the
+	 * map holding what it had taken so far, so the next element styled on the thread - the next
+	 * document's first table, say - gained a {@code font-weight: bold} it never had.</p>
+	 */
 	public static void applyAttributes(List<Property> properties, Element node) {
-	Map<String, Property> tempAttributeMap = null;
-	StringBuilder buffer = null;
-		if ((properties != null) && (!properties.isEmpty())) {
-			tempAttributeMap = getTempMap();
-			if ((properties != null) && (!properties.isEmpty())) {
-				buffer = new StringBuilder();
-				for (int i=0; i<properties.size(); i++) {
-					tempAttributeMap.put(properties.get(i).getCssName(), properties.get(i));
-				}
-				for (Property property : tempAttributeMap.values()) {
-					buffer.append(property.getCssProperty());
-				}
-				tempAttributeMap.clear();
-				appendStyle(node, buffer.toString());
+		if ((properties == null) || properties.isEmpty()) return;
+		Map<String, Property> byName = new TreeMap<String, Property>();
+		for (Property property : properties) {
+			if (property != null && property.getCssName() != null) {
+				byName.put(property.getCssName(), property);
 			}
 		}
+		StringBuilder buffer = new StringBuilder();
+		for (Property property : byName.values()) {
+			appendNonNull(buffer, property);
+		}
+		appendStyle(node, buffer.toString());
 	}
 
 	public static void appendStyle(Element node, String newValue) {
@@ -462,6 +477,8 @@ public class HtmlCssHelper {
 		}
 	}
 
+	/** @deprecated unused since 17.3.3: {@link #applyAttributes} keeps a map of its own per call */
+	@Deprecated
 	protected static Map<String, Property> getTempMap() {
 	Map<String, Property> ret = threadLocalTempMap.get();
 		if (ret == null) {

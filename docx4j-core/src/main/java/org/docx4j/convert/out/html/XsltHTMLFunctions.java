@@ -827,7 +827,11 @@ public class XsltHTMLFunctions {
 		
 			
 			// Does our pPr contain anything else?
-			boolean ignoreBorders = (htmlElementName.equals("p"));
+			// a paragraph writes all its borders: they used to be left (top and bottom) to a
+			// container for Containerization's border group, which by default drew nothing, so
+			// they were lost.  TagSingleBox, registered for the group by default since 17.3.3,
+			// keeps the group's top border on its first paragraph and its bottom on its last.
+			boolean ignoreBorders = false;
 			Ind mergedInd = (pPr!=null) ? pPr.getInd() : null;
 			if (pPr!=null) {
 				

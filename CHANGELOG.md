@@ -42,6 +42,11 @@ Changes in Version 17.3.3
 - Style inheritance: a colour inherits as one, so a run's own w:color (or a border's, a shading's,
   an underline's) no longer keeps a style's theme reference; a w:color stating only a theme colour
   is inherited, where it was dropped.  CR-034.
+- HTML output: a paragraph's own top and bottom borders are drawn, and adjacent paragraphs with the
+  same borders make one box (TagSingleBox, now registered by default); a shaded paragraph keeps its
+  border colours, and w:fill="auto" no longer draws a 1px box.
+- HTML output: a simple field whose run has a w:lang is no longer dropped, nor does it leave its
+  formatting on the next table converted in the thread.
 
 
 Version 17.3.2
