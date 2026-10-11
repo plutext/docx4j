@@ -1,10 +1,12 @@
 # CR-034: theme colours resolved - one resolver for DrawingML, WordprocessingML and SpreadsheetML colour references
 
-Status: IN PROGRESS. Phase 2 DONE 2026-10-12 (Jason: "Next is CR-034 phase 2"): PDF and HTML
+Status: DONE 2026-10-12, all phases.  Phase 3 (Jason: "Please start phase 3 (docs and hand-offs) when
+you are ready"): the colour package's documentation; the hand-offs of §9 sent or recorded (§11).
+Three issues the phase 2 gate found are fixed beside it (§11).  Phase 2 DONE 2026-10-12 (Jason: "Next is CR-034 phase 2"): PDF and HTML
 draw a WordprocessingML theme colour as Word does, through `PropertyResolver.getThemeColors()`; a
 colour now inherits as one (value, reference, tint, shade), which Word's own rendering requires
 (§4.2, §11).  Over the four corpora the outputs that change are exactly those of the three
-documents whose stale values are in use, in colour values only.  Phase 3 next.  Phase 1 DONE 2026-10-12 (Jason: "start CR-034 phase 1"): `org.docx4j.model.color`
+documents whose stale values are in use, in colour values only.  Phase 1 DONE 2026-10-12 (Jason: "start CR-034 phase 1"): `org.docx4j.model.color`
 built; against Office's readings every case of the probes is exact or within one unit but the nine
 saturation-on-grey cases; over four corpora it returns Word's own value for 36,899 of 36,919 theme
 attributes and the theme colour for the 20 stale ones (§11).  Phase 2 next.  Phase 0 DONE 2026-10-12
@@ -592,17 +594,87 @@ Beside the gate:
 - A first run against a four-shard baseline moved 11 more visitor-HTML outputs, a document's first
   table gaining or losing `font-weight: bold`, identically in both candidates: the HTML visitor's
   table style carries state from the document converted before it in the same thread.  It does not
-  depend on this change; noted for a separate fix.
+  depend on this change.  (Fixed after phase 2, below.)
 - Word's re-save refreshes a stale cache: 2422's Hyperlink style goes from `0000FF` to `0563C1` in
   its `resaved-nofields` copy.
 - Word draws the Hyperlink-styled TOC entries of 2422, 11782 and 13986 black and not underlined;
   docx4j draws them blue and underlined, before this change and after.  Not a theme-colour
-  question; recorded in the fidelity register (`documents/2422.md` and the other two).
+  question; recorded in the fidelity register (`documents/2422.md` and the other two).  (Fixed
+  after phase 2, below.)
 - The HTML outputs draw no paragraph border for the test document's bordered paragraph, before and
-  after: an existing gap, outside this CR.
+  after: an existing gap, outside this CR.  (Fixed after phase 2, below.)
 
 **Tests**: `ThemeColourOutputTest` (core-tests: `PropertyResolver`, the property classes, HTML by
 both pathways), `ThemeColourFoTest` (export-fo-tests: FO by both pathways), three new cases in
 `StyleUtilMergeRulesTest`.  Each case is a stale value, a theme colour with no value, `auto` with a
 theme colour, a current cache, a run's own value under a style's reference, a shading fill, a
 border and a table cell.  docx4j-core-tests 1,441 run, 0 failed (11 skipped); docx4j-export-fo-tests 789, 0 failed (9 skipped).
+
+### Found beside phase 2, fixed (2026-10-12)
+
+Jason: "make the commits, then fix the 3 issues found along the way".  Not CR-034's scope, but
+found by its gate, so recorded here; each is in the CHANGELOG.
+- **HTML: a property with no CSS name.**  `HtmlCssHelper.applyAttributes` put the properties in
+  a map kept per thread, keyed by CSS name and cleared after use.  `Lang` (and `Bidi`, `Tabs`, `OutlineLevel`) has none, so
+  a simple field whose run had a `w:lang` threw: the field's result was dropped from the HTML
+  ("Page  of", "Страница  из"), and the map kept what it held for the next element styled on the
+  thread, a later document's first table taking `font-weight: bold`, a colour or italics.  A
+  property whose CSS is null was also written as "null" (a cell's `nullpadding-right`).  Now a map
+  of its own per call, and properties with no CSS name or no CSS are skipped.  (09e45b1eb)
+- **HTML: paragraph borders.**  A `<p>` left its top and bottom borders to Containerization's
+  border group, which by default no handler drew, so they were lost.  It now writes all four;
+  `TagSingleBox`, registered for the group by default (as the list handler was in 17.2.0), keeps
+  the group's top border on its first paragraph and its bottom on its last, so adjacent
+  paragraphs with the same borders are one box, and its div copies no style (it used to copy the
+  first paragraph's margins and indents onto the group, so they applied twice; left and right
+  borders stay on each paragraph, at its own indent, as CR-003 placed them).  The 1px border in the
+  fill colour that keeps a shaded paragraph's background unbroken now comes before the
+  paragraph's own borders, which it had overridden, and is not written for `w:fill="auto"`, where
+  it was "#auto" and drew a 1px box in the text colour.  (09e45b1eb)
+- **Hyperlink-styled TOC entries.**  Word draws the entries of a TOC field with `\h` without the
+  Hyperlink character style their runs carry: colour, underline, weight and size alike.  Measured
+  on the corpus goldens: of the Hyperlink-styled runs in a `TOC \h` result whose text could be
+  found, 1,447 drawn black, 288 grey and 45 in the TOC styles' own colours, none in the Hyperlink
+  colour (the one blue match was body text of the same words); in a `w:hyperlink` outside a TOC,
+  486 blue of 535.  373 shows the weight: its Hyperlink style is bold and coloured, and Word draws
+  TOC1 entries bold (TOC1's own) and TOC2 entries regular, all black.  A Word MVP states the rule
+  for hyperlinked cross-references too; none in the corpora carries the style, so they are left.
+  New preprocess step `TocHyperlinkStyle` (feature `PP_COMMON_TOC_HYPERLINK_STYLE`, on by default
+  for PDF and HTML) removes the style from those runs on the output's copy.  It exposed an XSLT
+  pathway defect, fixed with it: a run inside a `w:hyperlink` (or a smart tag, an insertion, an
+  inline sdt) was resolved without its paragraph (`../w:pPr`), in docx2fo.xslt and in
+  docx2xhtml-core.xslt; now `ancestor::w:p[1]/w:pPr`.  (455463622)
+
+**Their gate**: the same 2,244 outputs, phase 2's build (2e381ef26) against the fixes, each
+difference classified: 604 outputs of 251 documents differ, every difference one
+of the fixes'.
+- FO, visitor pathway (57 outputs): the TOC entries' Hyperlink colour and underline gone (53),
+  373's TOC entries' weight (TOC1 bold, TOC2 regular, as Word draws them; 373 scored against
+  Word's golden before and after: 1.0000, all 419 lines matched, no line moved), and the clock
+  fields of 5361 and 11875.
+- FO, XSLT pathway (105): the same, and runs inside a `w:hyperlink` now resolved with their
+  paragraph's style.  Measured by the inline formatting (size, weight, style, colour,
+  decoration) of each document's XSLT output against its visitor output: closer in 63 documents,
+  further in none, unchanged in 42.
+- HTML, both pathways (442): top and bottom paragraph borders drawn and groups made one box (182),
+  the shading border's place in the style (96), the TOC entries' Hyperlink class gone and its
+  stylesheet rule with it, the "#auto" boxes gone, a table's leaked font weight, colour or italics
+  gone and "null" declarations with them, and the simple fields the exception had dropped back in
+  their place (20 outputs: page numbers, dates, a product name in 13459's user guide).
+
+### Phase 3 (2026-10-12), done
+
+Jason: "Please start phase 3 (docs and hand-offs) when you are ready".
+- Documentation: `org.docx4j.model.color`'s package documentation (the hosts, the references,
+  where docx4j uses it, how it was measured); `PropertyResolver`'s class documentation and its
+  colour methods (phase 2); the CHANGELOG (phases 1 and 2, and the fixes above).
+- Hand-offs (§9):
+  - CR-035: phase 2's read model takes a series' colour through `DrawingMLColors` in
+    `ThemeColors.forChart` on its host's; the registry's dependency is met.
+  - The charts plan: its §6 sentence on painting was aligned with D4 on 2026-10-11 (portfolio
+    8e8e78b); nothing more.
+  - docx4j-core-ts and docx4j-python: sent 2026-10-12 to their sessions: the resolver and its
+    vectors; phase 2's merge rules (the theme attributes in `isEmpty`/`areEqual`, a colour
+    inheriting as one), which their catalogues mirror; Word's TOC Hyperlink rule.
+  - docx4j-mcp: nothing to carry; it reports no colours.
+  - The Enterprise fidelity register: D4 entered as the cause `drawingml-fills-not-painted`.
