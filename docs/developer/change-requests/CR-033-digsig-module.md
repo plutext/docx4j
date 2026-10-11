@@ -1,6 +1,6 @@
 # CR-033: Digital signatures in docx4j — the `docx4j-digsig` module
 
-Status: DONE 2026-10-09. Accepted 2026-10-08 (Jason: "i accept the recommendations in CR-033";
+Status: SHIPPED in docx4j 17.3.2 (Maven Central, 2026-10-09); DONE 2026-10-09. Accepted 2026-10-08 (Jason: "i accept the recommendations in CR-033";
 proposed the same day). Phases 0 to 4 shipped 2026-10-08/09 on branch `CR-033-digsig`, rebased onto
 `VERSION_17_3_2` at c8a6094ea and merged fast-forward (df1e535b1, 12b3530ca, 19ec762ee and the
 closing commit); the

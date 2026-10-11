@@ -1,6 +1,7 @@
 # CR-032: floating tables laid out as Word lays them - the band at its offset, the wide table's band, the paragraphs behind it
 
-Status: IN PROGRESS - phase 2 DONE 2026-10-08 (docx4j side in three commits gated on the fork's float-offset:
+Status: IN PROGRESS - phases 1 and 2 SHIPPED in docx4j 17.3.2 (Maven Central, 2026-10-09), on 2.11-docx4j.6 (the export-fo bump
+409392c9a); phase 2 DONE 2026-10-08 (docx4j side in three commits gated on the fork's float-offset:
 fox:float-offset on a floating table's float, each float of an anchor at its own offset, a text box's band,
 anchored-picture and framePr floats; fop/CR-023 merged to 2.11-docx4j.6 at 3339fc1cf, unreleased, so the
 export-fo bump to .6 follows its release; gates b195-b202 on r19-r21, §4.2; 13419's hidden anchor fixed
