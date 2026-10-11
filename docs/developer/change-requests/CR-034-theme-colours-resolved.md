@@ -1,6 +1,9 @@
 # CR-034: theme colours resolved - one resolver for DrawingML, WordprocessingML and SpreadsheetML colour references
 
-Status: PROPOSED 2026-10-11, not started. Drafted from the charts plan
+Status: IN PROGRESS. Phase 0 started 2026-10-12 (Jason: "do Phase 0 of each CR"): the corpus scan is a
+harness tool and reproduces §3; the corpus half of P1 is read (Word draws the theme reference, not the
+value written beside it, §11); the probes, their reader and the Office script are on the share; the
+Office run awaits Jason.  Proposed 2026-10-11. Drafted from the charts plan
 (`../docx4j-portfolio/docs/charts_plan.md`, phase 1, which made it its own CR) on Jason's
 request ("please draft CR-034 (theme-colour resolver) and CR-035 (charts phases 0, 2, 3 and 4).
 Do not implement anything yet."). Reviewed the same day by the docx4j-13 session (Claude Fable
@@ -354,3 +357,52 @@ fill's `DeviceRGB` value from `mutool trace`:
 
 5-6.5 working days, plus one Office run (Word, PowerPoint, Excel) for phase 0. The charts plan
 estimated 4-6; style references (the review's first amendment) add half a day.
+
+## 11. Implementation record
+
+### Phase 0 (2026-10-12), not yet complete: the Office run awaits Jason
+
+**The corpus scan** is `docx4j-layout-fidelity/tools/theme_colour_scan.py` (counts only; with
+`--triples` the distinct (theme value, op, byte, Word's value), with `--stale` the attributes
+that disagree with their theme).  Over the four corpora it reproduces §3 exactly: 29,027 of
+29,039 plain references exact; 3,005 tints and 4,690 of 4,698 shades within one unit; float HSL
+exact in 1,043 / 2,764 rounded and 1,610 / 3,214 truncated.  117 distinct triples, the core of
+§4.6's vectors.
+
+**P1 from the corpus goldens.** All 20 disagreeing attributes are in style definitions
+(`styles.xml`), not in runs; 13 of the styles are used by no paragraph in their documents. One
+gives an answer: in 11782 the TOC Heading style has `accent1` shaded `BF` with `365F91` written
+beside it (Office 2007's `accent1`, shaded), and Word drew its paragraph ("Contents") in
+`2E74B5`, which is the document's own `accent1` (`5B9BD5`) shaded `BF`.  So Word draws the theme
+reference, and the written value is a cache.  The Hyperlink style's three samples are TOC
+entries, which Word drew black, so they say nothing about precedence.  P1's probe settles runs,
+shading, borders and the underline.
+
+**The probes** are `org.docx4j.fidelity.corpus.ThemeColourProbes` in the harness: 1,068 labelled
+cases in seven files, all in the Office 2023 theme.
+
+| Probe | Cases |
+|---|---|
+| `tc-p1-precedence.docx` | 17: eight runs, four paragraph shadings (one a 25% pattern), three top borders (each after an unbordered paragraph, since Word joins adjacent paragraphs with equal borders into one box), an underline, a run shading |
+| `tc-p2-colour-map.docx` | 13: six runs and seven shapes under a `w:clrSchemeMapping` with the light and dark slots swapped |
+| `tc-p3-transforms.docx`, `.pptx` | 403 each: five bases (`accent1`, `accent2`, `accent4`, `tx2`, `bg2`) with each of the 28 transforms at up to three values (330), Office's picker pairs on all ten slots (50), transforms in both orders and the theme's and chart styles' combinations (10), the other colour kinds including two `sysClr` whose `lastClr` is not the machine's colour (9), four shapes coloured only by a style reference |
+| `tc-p4-spreadsheet.xlsx` | 156: theme 0 to 9 at nine tints, indexed 0 to 65 |
+| `tc-p4-spreadsheet-palette.xlsx` | 66: indexed 0 to 65 against a custom `x:indexedColors` (a hue wheel) |
+| `tc-p5-map-override.pptx` | 10: five shapes on a slide overriding the master's colour map, five on a slide keeping it |
+
+A departure from §5: P5's override is on a slide only.  A second layout with its own override
+needs a layout part docx4j's `createPackage` does not make; it can follow if the slide case
+shows the override applies.
+
+**Reading.** `tools/office_colours.py` matches each label to the fill it sits in (and the
+outline around it, its own colour, and thin rules near it) in `mutool trace`'s output; Word's
+PDFs give colours to three decimals, enough to recover each 8-bit value.  Checked on docx4j's
+own renders of the three Word probes: every label found; text, shading, the borders and the
+underline read as docx4j wrote them (docx4j paints no shape fill, §1).
+
+**On the share**, `Office 2016/fidelity/theme-colours/` (`X:\fidelity\theme-colours`): the seven
+probes, `cases.tsv`, `office-colours.ps1` (opens each probe in its own application, exports a
+PDF to `goldens\`) and `RUN.txt`.
+
+Left for phase 0: Jason's run; reading the seven PDFs; recording the readings here (P1 decides
+§4.5 and D3).

@@ -927,6 +927,29 @@ java -cp "$CP" org.docx4j.fidelity.corpus.FontRewrite <baselineScoreDir> <outCor
 2026) made 107 copies, the share's `real-c2` group. `FontsAnalysis` then reports every font in
 them as EXACT, a VM font or a symbol font.
 
+## Colour probes and tools (CR-034)
+
+Not layout: CR-034 (`docs/developer/change-requests/CR-034-theme-colours-resolved.md`) measures
+how Office resolves colour references, so that docx4j's resolver can match it.
+
+- `org.docx4j.fidelity.corpus.ThemeColourProbes <dir>` writes the probes (Word, PowerPoint and
+  Excel files in the Office 2023 theme, each case a labelled shape, run, paragraph or cell) and
+  `cases.tsv`, which says what each label's colour is written as.  They are not in `Corpus`'s
+  probe list and are not scored.
+- `tools/office-colours.ps1` (on the VM) opens each probe in its own application and exports a
+  PDF into `goldens\`.
+- `tools/office_colours.py CASES PROBE PDF` reads Office's PDF with `mutool trace`: for each
+  label, the fill it sits in, the outline around that, the label's own colour, and thin rules
+  near it (borders, underlines).
+- `tools/theme_colour_scan.py DOCX...` counts the WordprocessingML theme colours in a corpus
+  against the value Word wrote beside each, and with `--triples` and `--stale` writes the test
+  vectors and the disagreements (counts and colours only: nothing from a document but, in
+  `--stale`, a paragraph's first 40 characters, for finding it in Word's PDF).
+
+The chart probes (`chart-box-*`, CR-035) are ordinary layout probes in `Corpus`; their charts are
+copies of Word's default chart (`chart-template.docx`) with the title, axes and legend deleted, so
+every scored line is the document's own.
+
 ## JUnit
 
 `FidelityTest` generates and renders the corpus unconditionally, and compares
