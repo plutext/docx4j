@@ -19,6 +19,7 @@
 package org.docx4j.model.styles;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -30,14 +31,17 @@ import org.docx4j.model.PropertyResolver;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.BooleanDefaultTrue;
+import org.docx4j.wml.CTBorder;
 import org.docx4j.wml.CTLanguage;
 import org.docx4j.wml.CTShd;
 import org.docx4j.wml.CTSignedHpsMeasure;
 import org.docx4j.wml.CTTblPPr;
+import org.docx4j.wml.Color;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.RStyle;
+import org.docx4j.wml.STBorder;
 import org.docx4j.wml.STHAnchor;
 import org.docx4j.wml.STLineSpacingRule;
 import org.docx4j.wml.STShd;
@@ -252,6 +256,92 @@ public class StyleUtilMergeRulesTest {
 		assertEquals(UnderlineEnumeration.DOUBLE, merged.getVal());
 		assertEquals("FF0000", merged.getColor());
 		assertNull(StyleUtil.apply((U) null, (U) null));
+	}
+
+	/**
+	 * A colour inherits as one (CR-034 phase 2): Word draws a theme reference over the value
+	 * beside it, so a run's plain red under a style's accent1 must not keep the reference.
+	 */
+	@Test
+	public void colourStatingAValueReplacesAnInheritedThemeReference() {
+		Color inherited = F.createColor();
+		inherited.setVal("0F4761");
+		inherited.setThemeColor(STThemeColor.ACCENT_1);
+		inherited.setThemeShade("BF");
+		Color direct = F.createColor();
+		direct.setVal("FF0000");
+
+		Color merged = StyleUtil.apply(direct, inherited);
+		assertEquals("FF0000", merged.getVal());
+		assertNull(merged.getThemeColor());
+		assertNull(merged.getThemeShade());
+	}
+
+	/** A w:color stating only a theme colour is not empty: inherited, and it replaces a value */
+	@Test
+	public void colourStatingOnlyAThemeReference() {
+		Color themeOnly = F.createColor();
+		themeOnly.setThemeColor(STThemeColor.ACCENT_2);
+		assertFalse(StyleUtil.isEmpty(themeOnly));
+		assertEquals(STThemeColor.ACCENT_2, StyleUtil.apply(themeOnly, null).getThemeColor());
+
+		Color inherited = F.createColor();
+		inherited.setVal("FF0000");
+		assertFalse(StyleUtil.areEqual(themeOnly, inherited));
+		Color merged = StyleUtil.apply(themeOnly, inherited);
+		assertNull(merged.getVal());
+		assertEquals(STThemeColor.ACCENT_2, merged.getThemeColor());
+
+		// a tint alone still inherits on its own
+		Color tint = F.createColor();
+		tint.setThemeTint("99");
+		merged = StyleUtil.apply(tint, merged);
+		assertEquals(STThemeColor.ACCENT_2, merged.getThemeColor());
+		assertEquals("99", merged.getThemeTint());
+	}
+
+	@Test
+	public void shadingFillAndBorderAndUnderlineColoursInheritAsOne() {
+		CTShd shd = F.createCTShd();
+		shd.setVal(STShd.CLEAR);
+		shd.setColor("auto");
+		shd.setFill("156082");
+		shd.setThemeFill(STThemeColor.ACCENT_1);
+		CTShd fill = F.createCTShd();
+		fill.setFill("FFFF00");
+		CTShd mergedShd = StyleUtil.apply(fill, shd);
+		assertEquals("FFFF00", mergedShd.getFill());
+		assertNull(mergedShd.getThemeFill());
+		assertEquals("auto", mergedShd.getColor()); // the pattern colour is its own
+		assertEquals(STShd.CLEAR, mergedShd.getVal());
+
+		CTBorder border = F.createCTBorder();
+		border.setVal(STBorder.SINGLE);
+		border.setSz(BigInteger.valueOf(4));
+		border.setColor("156082");
+		border.setThemeColor(STThemeColor.ACCENT_1);
+		CTBorder red = F.createCTBorder();
+		red.setColor("FF0000");
+		CTBorder mergedBorder = StyleUtil.apply(red, border);
+		assertEquals("FF0000", mergedBorder.getColor());
+		assertNull(mergedBorder.getThemeColor());
+		assertEquals(STBorder.SINGLE, mergedBorder.getVal());
+
+		U u = F.createU();
+		u.setVal(UnderlineEnumeration.SINGLE);
+		u.setColor("156082");
+		u.setThemeColor(STThemeColor.ACCENT_1);
+		U redU = F.createU();
+		redU.setColor("FF0000");
+		U mergedU = StyleUtil.apply(redU, u);
+		assertEquals(UnderlineEnumeration.SINGLE, mergedU.getVal());
+		assertEquals("FF0000", mergedU.getColor());
+		assertNull(mergedU.getThemeColor());
+
+		U themeU = F.createU();
+		themeU.setThemeColor(STThemeColor.ACCENT_4);
+		assertFalse(StyleUtil.isEmpty(themeU));
+		assertFalse(StyleUtil.areEqual(themeU, redU));
 	}
 
 	// ---------------------------------------------------------------- helpers

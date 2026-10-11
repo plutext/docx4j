@@ -33,6 +33,9 @@ import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.color.ResolvedColor;
+import org.docx4j.model.color.ThemeColors;
+import org.docx4j.model.color.WordColors;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.properties.table.AbstractBorder;
@@ -1993,13 +1996,17 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	int bgColor = 0xffffff; //the background color of the page is assumed as white
 	int fgColor = 0; //the default color of the font is assumed as black
 	int pctPattern = -1;
+	ThemeColors theme = themeColors(context);
+		// borders and shading in a theme colour are drawn as Word draws them (CR-034)
+		PropertyFactory.setThemeColors(properties, theme);
 		for (int i=0; i<properties.size(); i++) {
 			if (properties.get(i) instanceof Shading) {
 				shd = (CTShd)properties.get(i).getObject();
-				fgColor = extractColor(shd.getColor(), 0); 
+				String fill = themed(shd.getFill(), shd.getThemeFill() == null ? null : WordColors.fill(shd, theme));
+				fgColor = extractColor(themed(shd.getColor(), shd.getThemeColor() == null ? null : WordColors.pattern(shd, theme)), 0); 
 				if ((shd.getVal() != null) &&
 					("clear".equals(shd.getVal().value())) &&	
-					("auto".equals(shd.getFill()))
+					("auto".equals(fill))
 					) {
 					//This is a reset to the background color of the page, 
 					//it is treated as an special case, as the background color 
@@ -2009,7 +2016,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 				}
 				else {
 					pctPattern = (shd.getVal() != null ? extractPattern(shd.getVal().value()) : -1);
-					bgColor = extractColor(shd.getFill(), bgColor);
+					bgColor = extractColor(fill, bgColor);
 				}
 			}
 		}
@@ -2021,6 +2028,21 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			applyAttributes(context, properties, element);
 			properties.remove(properties.size() - 1);
 		}
+	}
+
+	/** The document's theme colours, or null where they can't be read (CR-034) */
+	private static ThemeColors themeColors(AbstractWmlConversionContext context) {
+		try {
+			return context == null ? null : context.getPropertyResolver().getThemeColors();
+		} catch (Exception e) {
+			log.warn("Couldn't read the theme colours: " + e.getMessage());
+			return null;
+		}
+	}
+
+	/** A shading colour's hex value: the theme colour drawn where there is one, else the value written */
+	private static String themed(String value, ResolvedColor drawn) {
+		return drawn == null ? value : drawn.toHex();
 	}
 
 	protected int extractPattern(String pattern) {

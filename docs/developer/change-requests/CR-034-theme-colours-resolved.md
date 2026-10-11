@@ -1,6 +1,10 @@
 # CR-034: theme colours resolved - one resolver for DrawingML, WordprocessingML and SpreadsheetML colour references
 
-Status: IN PROGRESS. Phase 1 DONE 2026-10-12 (Jason: "start CR-034 phase 1"): `org.docx4j.model.color`
+Status: IN PROGRESS. Phase 2 DONE 2026-10-12 (Jason: "Next is CR-034 phase 2"): PDF and HTML
+draw a WordprocessingML theme colour as Word does, through `PropertyResolver.getThemeColors()`; a
+colour now inherits as one (value, reference, tint, shade), which Word's own rendering requires
+(§4.2, §11).  Over the four corpora the outputs that change are exactly those of the three
+documents whose stale values are in use, in colour values only.  Phase 3 next.  Phase 1 DONE 2026-10-12 (Jason: "start CR-034 phase 1"): `org.docx4j.model.color`
 built; against Office's readings every case of the probes is exact or within one unit but the nine
 saturation-on-grey cases; over four corpora it returns Word's own value for 36,899 of 36,919 theme
 attributes and the theme colour for the 20 stale ones (§11).  Phase 2 next.  Phase 0 DONE 2026-10-12
@@ -270,6 +274,11 @@ the theme attributes, as the `CTShd` and `CTBorder` ones already do (§1), so th
 `w:color w:themeColor="accent1"` with no usable `w:val` is inherited instead of dropped. This
 changes what the merge carries, so it goes through phase 2's gate.
 
+(Phase 2, 2026-10-12: one more change to the merge proved necessary.  `StyleUtil.apply` carried
+each colour attribute on its own, so a run's own `w:color w:val="auto"` under a style's
+`w:themeColor` kept the style's reference, and with the reference winning would draw the theme
+colour; Word draws the run's own.  A colour now inherits as one: §11, phase 2.)
+
 ### 4.3 Themeless packages
 
 As §2.1: the bundled theme `docx4j.fonts.defaultTheme` names. The property keeps its name (it
@@ -534,3 +543,66 @@ probes, `cases.tsv`, Office's `readings.tsv` and the corpus `word-tint-shade.tsv
 
 Decisions taken in building it: D1, D5 and D6 as recommended; D2 (a), the default theme as is.
 D3 and D4 are phase 2's.
+
+### Phase 2 (2026-10-12), done
+
+**What changed.**
+- `PropertyResolver.getThemeColors()`: the document's `ThemeColors`, made once and re-read by
+  `refresh()`; `resolveColor` (`Color`, `CTBorder`, `U`), `resolveFill` and `resolvePatternColor`
+  (`CTShd`) give the colour Word draws from resolved properties.
+- The property classes: `Property` carries the theme (`getThemeColors`/`setThemeColors`) and
+  `themeColour(...)`, which is Word's drawing of a theme reference where it differs from the value
+  beside it and null otherwise, so that a document whose caches are current comes out exactly as
+  before.  `FontColor`, `PShading`, `RShading`, the cell `Shading`, `AbstractPBorder`, the table
+  `AbstractBorder` and `RBorder` write it.  `PropertyFactory.themeColors(OpcPackage)` (the
+  resolver's, or read afresh where there is none yet) and `setThemeColors(List, ThemeColors)`; the
+  factory's three overloads which take a package set it.
+- Where an output takes a colour outside those overloads: the table writer's `processAttributes`
+  (every table, row and cell property, and the two colours of the pattern blend), the HTML table
+  styles (`HtmlCssHelper`) and cell rules (`XsltHTMLFunctions`), the border a shaded paragraph gets
+  in HTML, a list item's shading in FO, and `Containerization`, which compares two fills as drawn
+  where either has a theme reference.
+- `Underline` writes no colour (XSL-FO has no underline colour, and CSS's `text-decoration-color`
+  would change every coloured underline, theme or not), so for `w:u` §4.2 is `StyleUtil` alone.
+- `StyleUtil`: `isEmpty` and `areEqual` of `Color` and `U` count the theme attributes (§4.2).
+- D3 applied as recommended (Word's precedence, as P1 measured it); D4 stays a follow-up.
+
+**A colour inherits as one** (the departure noted at §4.2).  Built without it (candidate A), the
+outputs of 86 documents changed, not the three expected: in 3229 the runs of a table whose style
+colours its text `accent1` shaded `BF` each state `w:color w:val="auto"`, and the attribute-by-
+attribute merge left them `auto` with the style's reference, drawn `366091`.  Word's PDF draws
+those runs black (`DeviceGray 0`), on the same page as the style's other text in `365F91`
+(`.212 .373 .569`), so the PDF is in colour and the black is Word's.  Now, where a layer states a
+value or a theme reference, its value, reference, tint and shade replace the ones below together;
+a tint or shade stated alone still inherits on its own.  The same holds for `w:u`'s colour,
+`w:shd`'s pattern colour and fill (each its own group, so CR-015's "a `themeFill` survives a
+direct `w:shd`" stands where the direct one states no fill), and the borders.
+
+**The gate**: FO and HTML of the four corpora (561 documents), each by the visitor and the XSLT
+pathway, 2,244 outputs, from HEAD (3dbe4eee5) and from the candidate, five shards each, compared
+with UUIDs normalised (`OutputDiff.java` and `cmp.sh` of `~/fidelity-cr030/tools`): 18 differ.
+- 2422, 11782 and 13986, all four outputs of each, every difference a colour value: the Hyperlink
+  style's stale `0000FF` drawn as the theme's `0563C1` (in all three), and 11782's TOC Heading
+  `365F91` as `2E75B5` (Word's own drawing of it, phase 0).
+- 5361 and 11875: clock times in fields, known noise.
+- The other four documents of §3's seven hold their stale values in styles no paragraph uses,
+  which no output writes, so nothing there changes.
+
+Beside the gate:
+- A first run against a four-shard baseline moved 11 more visitor-HTML outputs, a document's first
+  table gaining or losing `font-weight: bold`, identically in both candidates: the HTML visitor's
+  table style carries state from the document converted before it in the same thread.  It does not
+  depend on this change; noted for a separate fix.
+- Word's re-save refreshes a stale cache: 2422's Hyperlink style goes from `0000FF` to `0563C1` in
+  its `resaved-nofields` copy.
+- Word draws the Hyperlink-styled TOC entries of 2422, 11782 and 13986 black and not underlined;
+  docx4j draws them blue and underlined, before this change and after.  Not a theme-colour
+  question; recorded in the fidelity register (`documents/2422.md` and the other two).
+- The HTML outputs draw no paragraph border for the test document's bordered paragraph, before and
+  after: an existing gap, outside this CR.
+
+**Tests**: `ThemeColourOutputTest` (core-tests: `PropertyResolver`, the property classes, HTML by
+both pathways), `ThemeColourFoTest` (export-fo-tests: FO by both pathways), three new cases in
+`StyleUtilMergeRulesTest`.  Each case is a stale value, a theme colour with no value, `auto` with a
+theme colour, a current cache, a run's own value under a style's reference, a shading fill, a
+border and a table cell.  docx4j-core-tests 1,441 run, 0 failed (11 skipped); docx4j-export-fo-tests 789, 0 failed (9 skipped).

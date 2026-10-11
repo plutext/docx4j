@@ -529,7 +529,7 @@ public class XsltHTMLFunctions {
     	// TODO - this is no good with IE8, which doesn't treat this 
     	// as a minimum; it won't resize if there is more :-(
     	properties.add(new AdHocProperty("height", "5mm", null, null));
-    	
+    	PropertyFactory.setThemeColors(properties, pr.getThemeColors()); // CR-034
     	
 		for( Property p :  properties ) {
 			if (p!=null) {

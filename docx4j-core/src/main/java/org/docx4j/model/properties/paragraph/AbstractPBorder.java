@@ -119,8 +119,11 @@ public abstract class AbstractPBorder extends AbstractParagraphProperty {
 		} 
 		
 		String color = "";
+		String themed = themedColour(border);
 		// IE8 needs color to be specified.  Other browsers don't care.
-		if (border.getColor()!=null) {
+		if (themed!=null) {
+			color = composeCss(CSS_NAME__COLOR, themed);
+		} else if (border.getColor()!=null) {
 			if (border.getColor().equals("auto")) {
 				color = composeCss(CSS_NAME__COLOR, "#000000"  );
 			} else {
@@ -177,7 +180,10 @@ public abstract class AbstractPBorder extends AbstractParagraphProperty {
 					UnitsOfMeasurement.eighthsToGridPt(border.getSz().intValue())) + "pt");
 		}
 
-		if (border.getColor()!=null) {
+		String themed = themedColour(border);
+		if (themed!=null) {
+			foElement.setAttribute(CSS_NAME__COLOR, themed);
+		} else if (border.getColor()!=null) {
 			if (border.getColor().equals("auto")) {
 				foElement.setAttribute(CSS_NAME__COLOR, "#000000"  );
 			} else {

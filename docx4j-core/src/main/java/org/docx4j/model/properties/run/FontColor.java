@@ -86,10 +86,19 @@ public class FontColor extends AbstractRunProperty {
 		this.setObject(color);
 	}	
 	
+	/** The theme colour Word draws, where it differs from w:val (CR-034); else null */
+	private String themed() {
+		Color c = (Color)this.getObject();
+		return themeColour(c.getVal(), c.getThemeColor(), c.getThemeTint(), c.getThemeShade());
+	}
+
 	@Override
 	public String getCssProperty() {
 		
-		if (((Color)this.getObject()).getVal()!=null ) {
+		String themed = themed();
+		if (themed != null) {
+			return composeCss(CSS_NAME, themed);
+		} else if (((Color)this.getObject()).getVal()!=null ) {
 			return composeCss(CSS_NAME, hexColour(((Color)this.getObject()).getVal()));
 		} else {
 			return CSS_NULL;
@@ -100,7 +109,10 @@ public class FontColor extends AbstractRunProperty {
 	@Override
 	public void setXslFO(Element foElement) {
 		
-		if (((Color)this.getObject()).getVal()!=null ) {
+		String themed = themed();
+		if (themed != null) {
+			foElement.setAttribute(FO_NAME, themed);
+		} else if (((Color)this.getObject()).getVal()!=null ) {
 			if (((Color)this.getObject()).getVal().equals("auto")) {
 				// set it to black
 				foElement.setAttribute(FO_NAME, "black");				

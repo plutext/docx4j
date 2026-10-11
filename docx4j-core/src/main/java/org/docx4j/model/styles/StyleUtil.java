@@ -711,11 +711,15 @@ public class StyleUtil {
 		    );
 	}
 
+	/** The underline's colour attributes count, the theme ones too (since 17.3.3, CR-034). */
 	public static boolean areEqual(U u1, U u2) {
 		return (u1 == u2) ||
 	       ((u1 != null) && (u2 != null) &&
 		    areEqual(u1.getVal(), u2.getVal()) &&
-		    areEqual(u1.getColor(), u2.getColor())
+		    areEqual(u1.getColor(), u2.getColor()) &&
+		    areEqual(u1.getThemeColor(), u2.getThemeColor()) &&
+		    areEqual(u1.getThemeTint(), u2.getThemeTint()) &&
+		    areEqual(u1.getThemeShade(), u2.getThemeShade())
 		    );
 	}
 
@@ -754,10 +758,14 @@ public class StyleUtil {
 		    );
 	}
 
+	/** The theme attributes count, as they do for CTShd and CTBorder (since 17.3.3, CR-034). */
 	public static boolean areEqual(Color color1, Color color2) {
 		return (color1 == color2) ||
 	       ((color1 != null) && (color2 != null) &&
-		   (areEqual(color1.getVal(), color2.getVal()))
+		   areEqual(color1.getVal(), color2.getVal()) &&
+		   areEqual(color1.getThemeColor(), color2.getThemeColor()) &&
+		   areEqual(color1.getThemeTint(), color2.getThemeTint()) &&
+		   areEqual(color1.getThemeShade(), color2.getThemeShade())
 		    );
 	}
 
@@ -1448,10 +1456,14 @@ public class StyleUtil {
 		return (effect == null) || (effect.getVal() == null);
 	}
 
+	/** The theme attributes count (since 17.3.3, CR-034). */
 	public static boolean isEmpty(U u) {
 		return (u == null) ||
 	       ((u.getVal() == null) &&
-		    isEmpty(u.getColor())
+		    isEmpty(u.getColor()) &&
+		    (u.getThemeColor() == null) &&
+		    isEmpty(u.getThemeTint()) &&
+		    isEmpty(u.getThemeShade())
 		    );
 	}
 
@@ -1481,8 +1493,14 @@ public class StyleUtil {
 		return (measure == null) || isEmpty(measure.getVal());
 	}
 
+	/** A {@code w:color} stating only a theme colour is not empty (since 17.3.3, CR-034): it is
+	 *  inherited, where it used to be dropped. */
 	public static boolean isEmpty(Color color) {
-		return (color == null) || isEmpty(color.getVal());
+		return (color == null) ||
+				(isEmpty(color.getVal()) &&
+				 (color.getThemeColor() == null) &&
+				 isEmpty(color.getThemeTint()) &&
+				 isEmpty(color.getThemeShade()));
 	}
 
 	public static boolean isEmpty(CTTblLook tblLook) {
@@ -2517,17 +2535,27 @@ public class StyleUtil {
 			if (destination == null)
 				destination = Context.getWmlObjectFactory().createCTShd();
 			
-			destination.setColor(apply(source.getColor(), destination.getColor()));
-			destination.setFill(apply(source.getFill(), destination.getFill()));
 			destination.setVal(apply(source.getVal(), destination.getVal()));
-			
-			destination.setThemeTint(apply(source.getThemeTint(), destination.getThemeTint()));
-			destination.setThemeShade(apply(source.getThemeShade(), destination.getThemeShade()));
-			destination.setThemeFillTint(apply(source.getThemeFillTint(), destination.getThemeFillTint()));
-			destination.setThemeFillShade(apply(source.getThemeFillShade(), destination.getThemeFillShade()));
-			// enums only when the source states them (until 17.2.0 a null source value cleared the inherited one)
-			destination.setThemeColor(apply(source.getThemeColor(), destination.getThemeColor()));
-			destination.setThemeFill(apply(source.getThemeFill(), destination.getThemeFill()));
+
+			// the pattern colour and the fill each inherit as one (see apply(Color, Color))
+			if (statesColour(source.getColor(), source.getThemeColor())) {
+				destination.setColor(source.getColor());
+				destination.setThemeColor(source.getThemeColor());
+				destination.setThemeTint(source.getThemeTint());
+				destination.setThemeShade(source.getThemeShade());
+			} else {
+				destination.setThemeTint(apply(source.getThemeTint(), destination.getThemeTint()));
+				destination.setThemeShade(apply(source.getThemeShade(), destination.getThemeShade()));
+			}
+			if (statesColour(source.getFill(), source.getThemeFill())) {
+				destination.setFill(source.getFill());
+				destination.setThemeFill(source.getThemeFill());
+				destination.setThemeFillTint(source.getThemeFillTint());
+				destination.setThemeFillShade(source.getThemeFillShade());
+			} else {
+				destination.setThemeFillTint(apply(source.getThemeFillTint(), destination.getThemeFillTint()));
+				destination.setThemeFillShade(apply(source.getThemeFillShade(), destination.getThemeFillShade()));
+			}
 		}
 		return destination;
 	}
@@ -2552,13 +2580,19 @@ public class StyleUtil {
 			if (destination == null)
 				destination = Context.getWmlObjectFactory().createCTBorder();
 			
-			destination.setColor(apply(source.getColor(), destination.getColor()));
 			destination.setSpace(apply(source.getSpace(), destination.getSpace())); 
 			destination.setSz(apply(source.getSz(), destination.getSz())); 
-			destination.setThemeColor(apply(source.getThemeColor(), destination.getThemeColor())); // when stated (17.2.0)
-			destination.setThemeShade(apply(source.getThemeShade(), destination.getThemeShade())); 
-			destination.setThemeTint(apply(source.getThemeTint(), destination.getThemeTint()));
 			destination.setVal(apply(source.getVal(), destination.getVal()));
+			// the colour inherits as one (see apply(Color, Color))
+			if (statesColour(source.getColor(), source.getThemeColor())) {
+				destination.setColor(source.getColor());
+				destination.setThemeColor(source.getThemeColor());
+				destination.setThemeTint(source.getThemeTint());
+				destination.setThemeShade(source.getThemeShade());
+			} else {
+				destination.setThemeShade(apply(source.getThemeShade(), destination.getThemeShade())); 
+				destination.setThemeTint(apply(source.getThemeTint(), destination.getThemeTint()));
+			}
 		}
 		return destination;
 	}
@@ -2734,16 +2768,22 @@ public class StyleUtil {
 		return destination;
 	}
 
-	/** {@code w:val} and the colour attributes each inherit on their own (17.2.0; was the value alone, replaced whole). */
+	/** {@code w:val} and the colour inherit on their own (17.2.0; was the value alone, replaced
+	 *  whole), the colour as one (17.3.3, see {@link #apply(Color, Color)}). */
 	public static U apply(U source, U destination) {
 		if (!isEmpty(source)) {
 			if (destination == null)
 				destination = Context.getWmlObjectFactory().createU();
 			destination.setVal(apply(source.getVal(), destination.getVal()));
-			destination.setColor(apply(source.getColor(), destination.getColor()));
-			destination.setThemeColor(apply(source.getThemeColor(), destination.getThemeColor()));
-			destination.setThemeTint(apply(source.getThemeTint(), destination.getThemeTint()));
-			destination.setThemeShade(apply(source.getThemeShade(), destination.getThemeShade()));
+			if (statesColour(source.getColor(), source.getThemeColor())) {
+				destination.setColor(source.getColor());
+				destination.setThemeColor(source.getThemeColor());
+				destination.setThemeTint(source.getThemeTint());
+				destination.setThemeShade(source.getThemeShade());
+			} else {
+				destination.setThemeTint(apply(source.getThemeTint(), destination.getThemeTint()));
+				destination.setThemeShade(apply(source.getThemeShade(), destination.getThemeShade()));
+			}
 		}
 		return destination;
 	}
@@ -2798,17 +2838,36 @@ public class StyleUtil {
 		return destination;
 	}
 
+	/**
+	 * A colour inherits as one (since 17.3.3, CR-034): where the source states a value or a theme
+	 * reference, its value, theme colour, tint and shade replace the destination's together.  Word
+	 * draws a theme reference over the value written beside it, so taken one by one, a run's
+	 * {@code w:val="FF0000"} under a style's {@code w:themeColor="accent1"} would keep the style's
+	 * reference and draw accent1, where Word draws red.  A tint or shade stated alone still
+	 * inherits on its own.  The same holds for the colours of {@code w:u}, {@code w:shd} (its
+	 * pattern colour and its fill) and the borders.
+	 */
 	public static Color apply(Color source, Color destination) {
 		if (!isEmpty(source)) {
 			if (destination == null)
 				destination = Context.getWmlObjectFactory().createColor();
 
-			destination.setThemeColor(apply(source.getThemeColor(), destination.getThemeColor()));
-			destination.setThemeShade(apply(source.getThemeShade(), destination.getThemeShade()));
-			destination.setThemeTint(apply(source.getThemeTint(), destination.getThemeTint()));
-			destination.setVal(apply(source.getVal(), destination.getVal()));
+			if (statesColour(source.getVal(), source.getThemeColor())) {
+				destination.setVal(source.getVal());
+				destination.setThemeColor(source.getThemeColor());
+				destination.setThemeTint(source.getThemeTint());
+				destination.setThemeShade(source.getThemeShade());
+			} else {
+				destination.setThemeShade(apply(source.getThemeShade(), destination.getThemeShade()));
+				destination.setThemeTint(apply(source.getThemeTint(), destination.getThemeTint()));
+			}
 		}
 		return destination;
+	}
+
+	/** Whether a colour's value or theme reference is stated: then the colour inherits as one */
+	private static boolean statesColour(String val, STThemeColor themeColor) {
+		return !isEmpty(val) || !isEmpty(themeColor);
 	}
 
 	private static STThemeColor apply(STThemeColor source, STThemeColor destination) {

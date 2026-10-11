@@ -19,6 +19,12 @@
  */
 package org.docx4j.model.properties;
 
+import org.docx4j.model.color.ResolvedColor;
+import org.docx4j.model.color.ThemeColors;
+import org.docx4j.model.color.WordColors;
+import org.docx4j.wml.CTBorder;
+import org.docx4j.wml.CTShd;
+import org.docx4j.wml.STThemeColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -90,6 +96,61 @@ public abstract class Property {
 			v = v.substring(1);
 		}
 		return "#" + v;
+	}
+
+	private ThemeColors themeColors;
+
+	/**
+	 * The theme in which a WordprocessingML theme colour of this property is drawn; null, the
+	 * default, writes the value written beside the theme reference, as before 17.3.3.
+	 * {@link PropertyFactory} sets it from the package (CR-034).
+	 *
+	 * @since 17.3.3
+	 */
+	public ThemeColors getThemeColors() {
+		return themeColors;
+	}
+
+	/** @since 17.3.3 */
+	public void setThemeColors(ThemeColors themeColors) {
+		this.themeColors = themeColors;
+	}
+
+	/**
+	 * A colour with a theme reference ({@code w:themeColor}, {@code w:themeFill}) as Word draws it,
+	 * "#RRGGBB", where that differs from the value written beside it: Word draws the theme
+	 * reference and keeps the value as a cache, which can be stale (an older theme's) or absent
+	 * ("auto") (CR-034 §11, P1).
+	 *
+	 * @return null where there is no theme reference or no {@link #getThemeColors()}, or the value
+	 * written is the colour drawn, for the caller to write the value as it always has
+	 * @since 17.3.3
+	 */
+	public String themeColour(String val, STThemeColor themeColor, String tint, String shade) {
+		if (themeColors == null || themeColor == null) return null;
+		ResolvedColor drawn = WordColors.resolve(val, themeColor, tint, shade, themeColors);
+		if (drawn == null || drawn.equals(ResolvedColor.ofHex(val == null ? null : val.trim()))) return null;
+		return hexColour(drawn.toHex());
+	}
+
+	/**
+	 * A shading's fill ({@code w:fill}, {@code w:themeFill}) as {@link #themeColour} gives it.
+	 *
+	 * @since 17.3.3
+	 */
+	public String themedFill(CTShd shd) {
+		return shd == null ? null
+				: themeColour(shd.getFill(), shd.getThemeFill(), shd.getThemeFillTint(), shd.getThemeFillShade());
+	}
+
+	/**
+	 * A border's colour ({@code w:color}, {@code w:themeColor}) as {@link #themeColour} gives it.
+	 *
+	 * @since 17.3.3
+	 */
+	public String themedColour(CTBorder border) {
+		return border == null ? null
+				: themeColour(border.getColor(), border.getThemeColor(), border.getThemeTint(), border.getThemeShade());
 	}
 
 	public final static String composeCss(String name, String value) {

@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.docx4j.model.properties.Property;
+import org.docx4j.model.color.ThemeColors;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
@@ -87,6 +88,7 @@ public class HtmlCssHelper {
 
 		// First iteration - table styles
 		result.append("\n /* TABLE STYLES */ \n");
+		ThemeColors themeColors = PropertyFactory.themeColors(opcPackage); // CR-034
 		Tree<AugmentedStyle> tableTree = styleTree.getTableStylesTree();
     	for (org.docx4j.model.styles.Node<AugmentedStyle> n : tableTree.toList() ) {
 
@@ -107,7 +109,7 @@ public class HtmlCssHelper {
     		if (s.getTblPr()==null) {
     		} else {
     			log.debug("Applying tblPr..");
-            	createCss(s.getTblPr(), result);
+            	createCss(s.getTblPr(), result, themeColors);
 
     		}
 
@@ -131,7 +133,7 @@ public class HtmlCssHelper {
     		if (s.getTcPr()==null) {
     		} else {
     			log.debug("Applying tcPr.. ");
-            	createCss( s.getTcPr(), result);
+            	createCss( s.getTcPr(), result, themeColors);
     		}
 
         	if (s.getPPr()==null) {
@@ -207,12 +209,17 @@ public class HtmlCssHelper {
     }
 
     protected static void createCss(CTTblPrBase  tblPr, StringBuilder result) {
+    	createCss(tblPr, result, null);
+    }
+
+    /** With the document's theme colours (CR-034).  @since 17.3.3 */
+    protected static void createCss(CTTblPrBase  tblPr, StringBuilder result, ThemeColors themeColors) {
 
 		if (tblPr==null) {
 			return;
 		}
 
-    	List<Property> properties = PropertyFactory.createProperties(tblPr);
+    	List<Property> properties = PropertyFactory.setThemeColors(PropertyFactory.createProperties(tblPr), themeColors);
     	for( Property p :  properties ) {
     		appendNonNull(result, p);
     	}
@@ -245,13 +252,18 @@ public class HtmlCssHelper {
     }
 
     protected static void createCss(TcPr tcPr, StringBuilder result) {
+    	createCss(tcPr, result, null);
+    }
+
+    /** With the document's theme colours (CR-034).  @since 17.3.3 */
+    protected static void createCss(TcPr tcPr, StringBuilder result, ThemeColors themeColors) {
     	// includes TcPrInner.TcBorders, CTShd, TcMar, CTVerticalJc
 
 		if (tcPr==null) {
 			return;
 		}
 
-    	List<Property> properties = PropertyFactory.createProperties(tcPr);
+    	List<Property> properties = PropertyFactory.setThemeColors(PropertyFactory.createProperties(tcPr), themeColors);
     	for( Property p :  properties ) {
     		appendNonNull(result, p);
     	}
@@ -337,8 +349,9 @@ public class HtmlCssHelper {
     	    	// CSS margin collapse.
     	    	// To do that, we add a border the same color as
     	    	// the background color
-				String fill = ((CTShd)p.getObject()).getFill();
-				result.append("border-color: #" + fill + "; border-style:solid; border-width:1px;");
+				String fill = p.themedFill((CTShd)p.getObject()); // the theme colour drawn (CR-034)
+				if (fill==null) fill = "#" + ((CTShd)p.getObject()).getFill();
+				result.append("border-color: " + fill + "; border-style:solid; border-width:1px;");
 			}
 
     		appendNonNull(result, p);

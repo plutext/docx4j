@@ -111,8 +111,11 @@ public class RBorder extends AbstractRunProperty {
 		} 
 		
 		String color = "";
+		String themed = themedColour(border);
 		// IE8 needs color to be specified.  Other browsers don't care.
-		if (border.getColor()!=null) {
+		if (themed!=null) {
+			color = composeCss(CSS_NAME_COLOR, themed);
+		} else if (border.getColor()!=null) {
 			if (border.getColor().equals("auto")) {
 				color = "#000000";
 			} else {
@@ -171,7 +174,10 @@ public class RBorder extends AbstractRunProperty {
 			foElement.setAttribute(CSS_NAME_WIDTH, val);
 		} 
 
-		if (border.getColor()!=null) {
+		String themed = themedColour(border);
+		if (themed!=null) {
+			foElement.setAttribute(CSS_NAME_COLOR, themed);
+		} else if (border.getColor()!=null) {
 			if (border.getColor().equals("auto")) {
 				val = "#000000";
 			} else {

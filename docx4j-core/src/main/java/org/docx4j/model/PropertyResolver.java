@@ -8,6 +8,9 @@ import java.util.List;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.color.ResolvedColor;
+import org.docx4j.model.color.ThemeColors;
+import org.docx4j.model.color.WordColors;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.model.table.CellContext;
@@ -18,7 +21,10 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
+import org.docx4j.wml.CTBorder;
+import org.docx4j.wml.CTShd;
 import org.docx4j.wml.CTTblPrBase;
+import org.docx4j.wml.Color;
 import org.docx4j.wml.CTTblStylePr;
 import org.docx4j.wml.DocDefaults;
 import org.docx4j.wml.HpsMeasure;
@@ -33,6 +39,7 @@ import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TblPr;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.Tr;
+import org.docx4j.wml.U;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,6 +98,13 @@ import org.slf4j.LoggerFactory;
  *     compares style ids (numbering, STYLEREF) asks {@link #sourceStyleOf} for the
  *     document's own.</li>
  * </ul>
+ *
+ * <p><b>Colours</b> (since 17.3.3).  A resolved colour's {@code w:themeColor} (or a shading's
+ * {@code w:themeFill}) is what Word draws, the value beside it a cache which can be stale:
+ * {@link #resolveColor(Color)} and its overloads give the colour drawn, in the document's
+ * {@link #getThemeColors()} (CR-034).  A colour inherits as one: a layer stating a value or a
+ * theme reference replaces the value, the reference, the tint and the shade below it
+ * ({@link org.docx4j.model.styles.StyleUtil#apply(Color, Color)}).</p>
  *
  * <p><b>Live objects.</b>  What the style overloads and {@link #getEffectivePPr(PPr)}
  * return is cached and shared: clone it before changing it.  The cached objects share no
@@ -665,6 +679,57 @@ public class PropertyResolver {
 		}
 		applyRPr(chainRPr(styleId), resolvedRPr);
 		return resolvedRPr;
+	}
+
+	// ---------------------------------------------------------------- colours (CR-034)
+
+	private volatile ThemeColors themeColors;
+
+	/**
+	 * The document's theme colours: its theme part (or the theme docx4j supplies where it has
+	 * none, {@code docx4j.fonts.defaultTheme}) and the settings' {@code w:clrSchemeMapping}.
+	 * Read once per {@link #refresh()}.
+	 *
+	 * @since 17.3.3
+	 */
+	public ThemeColors getThemeColors() {
+		ThemeColors tc = themeColors;
+		if (tc == null) {
+			tc = ThemeColors.of(wordMLPackage);
+			themeColors = tc;
+		}
+		return tc;
+	}
+
+	/**
+	 * The colour Word draws for a run's {@code w:color}: its theme reference where it has one
+	 * (the value beside it is a cache), else its value.
+	 *
+	 * @return null for automatic: the caller's default (black text, as a rule)
+	 * @since 17.3.3
+	 */
+	public ResolvedColor resolveColor(Color color) {
+		return WordColors.of(color, getThemeColors());
+	}
+
+	/** A border's colour, as {@link #resolveColor(Color)}; null for automatic.  @since 17.3.3 */
+	public ResolvedColor resolveColor(CTBorder border) {
+		return WordColors.of(border, getThemeColors());
+	}
+
+	/** An underline's colour, as {@link #resolveColor(Color)}; null for automatic (the text's).  @since 17.3.3 */
+	public ResolvedColor resolveColor(U u) {
+		return WordColors.of(u, getThemeColors());
+	}
+
+	/** A shading's fill ({@code w:fill}, {@code w:themeFill}); null for automatic.  @since 17.3.3 */
+	public ResolvedColor resolveFill(CTShd shd) {
+		return WordColors.fill(shd, getThemeColors());
+	}
+
+	/** A shading's pattern colour ({@code w:color}, {@code w:themeColor}); null for automatic.  @since 17.3.3 */
+	public ResolvedColor resolvePatternColor(CTShd shd) {
+		return WordColors.pattern(shd, getThemeColors());
 	}
 
 	// ---------------------------------------------------------------- the table context (CR-030)
@@ -1370,7 +1435,8 @@ public class PropertyResolver {
      * to the styles part since this PropertyResolver was constructed is picked up
      * automatically, but resolved style properties are cached, so if you have
      * <em>modified</em> or <em>removed</em> a style (or replaced the styles part's
-     * JAXB element), call this to make the change visible.
+     * JAXB element), call this to make the change visible.  The theme colours are
+     * re-read too (a changed theme part or {@code w:clrSchemeMapping}, since 17.3.3).
      *
      * @since 17.0.4
      */
@@ -1383,6 +1449,7 @@ public class PropertyResolver {
     	tableStyleChains.clear();
     	composedPPr.clear();
     	composedRPr.clear();
+    	themeColors = null;
     	init();
     }
 

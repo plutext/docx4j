@@ -37,6 +37,8 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.color.ThemeColors;
+import org.docx4j.model.color.WordColors;
 import org.docx4j.wml.CTBorder;
 import org.docx4j.wml.CTShd;
 import org.docx4j.wml.Comments.Comment;
@@ -220,6 +222,7 @@ public class Containerization {
 		CTShd lastShading = null;
 		CTShd currentShading = null;
 		P paragraph = null;
+		ThemeColors theme = resolver == null ? null : resolver.getThemeColors();
 		
 		for (Object o : bodyElts) {
 			Object unwrapped;
@@ -254,7 +257,7 @@ public class Containerization {
 					}
 				}
 				
-				if (shadingChanged(currentShading, lastShading )) {
+				if (shadingChanged(currentShading, lastShading, theme)) {
 					// handle change to shading before addElement
 					if (currentShading == null) {
 						sdtShading = null;
@@ -463,6 +466,12 @@ public class Containerization {
 	}
 
 	private static boolean shadingChanged(CTShd currentShading, CTShd lastShading) {
+		return shadingChanged(currentShading, lastShading, null);
+	}
+
+	/** With the document's theme colours, fills of which either has a theme reference are
+	 *  compared as drawn (CR-034): Word draws the theme reference, not the value beside it. */
+	private static boolean shadingChanged(CTShd currentShading, CTShd lastShading, ThemeColors theme) {
 		
 		if (currentShading==null && lastShading==null)
 			return false;
@@ -471,6 +480,10 @@ public class Containerization {
 			return true;
 		if (currentShading!=null && lastShading==null)
 			return true;
+
+		if (theme != null && (currentShading.getThemeFill() != null || lastShading.getThemeFill() != null)) {
+			return !java.util.Objects.equals(WordColors.fill(currentShading, theme), WordColors.fill(lastShading, theme));
+		}
 			
 		// TODO: enhance this
 		if (currentShading.getFill()==null || lastShading.getFill()==null)

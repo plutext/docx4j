@@ -18,3 +18,7 @@ d643638ad5d42e14e2b5df01e4ae58b862a8d2bf
 
 # CR-018 phase 1 preliminary: PeoplePart.java and shared-customxmlprops.xsd, CRLF -> LF
 e054b7f1756207d08e40ba64c72f9d16ed5d26ad
+
+# CR-034 phase 2: five classes of org.docx4j.model.properties (Property, PShading,
+# FontColor, RBorder, RShading), CRLF -> LF
+8928aacc5fef138b4145a2d252006ca2946f1ec5

@@ -100,7 +100,10 @@ public class PShading extends AbstractParagraphProperty {
 		}
 		
 		// We just support fill color right now
-		if (shd.getFill()!=null &&
+		String themed = themedFill(shd);
+		if (themed != null) {
+			return composeCss(CSS_NAME, themed);
+		} else if (shd.getFill()!=null &&
 				!shd.getFill().equals("auto")) {
 			return composeCss(CSS_NAME, hexColour(shd.getFill()) );
 		} else {
@@ -124,7 +127,10 @@ public class PShading extends AbstractParagraphProperty {
 		}
 		
 		// We just support fill color right now
-		if (shd.getFill()!=null &&
+		String themed = themedFill(shd);
+		if (themed != null) {
+			foElement.setAttribute(FO_NAME, themed);
+		} else if (shd.getFill()!=null &&
 				!shd.getFill().equals("auto")) {
 			foElement.setAttribute(FO_NAME, hexColour(shd.getFill()) );
 		} 

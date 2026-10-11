@@ -36,6 +36,12 @@ Changes in Version 17.3.3
 - New org.docx4j.model.color: theme colours resolved as Office draws them - DrawingML colours and
   transforms, WordprocessingML theme attributes, SpreadsheetML theme/tint/indexed - checked against
   Word's, PowerPoint's and Excel's own renderings.  CR-034.
+- PDF and HTML output draw a WordprocessingML theme colour (w:themeColor/w:themeFill, with tint
+  and shade) as Word does, not the value written beside it, which Word keeps as a cache that can be
+  stale; new PropertyResolver.getThemeColors() and resolveColor/resolveFill.  CR-034.
+- Style inheritance: a colour inherits as one, so a run's own w:color (or a border's, a shading's,
+  an underline's) no longer keeps a style's theme reference; a w:color stating only a theme colour
+  is inherited, where it was dropped.  CR-034.
 
 
 Version 17.3.2

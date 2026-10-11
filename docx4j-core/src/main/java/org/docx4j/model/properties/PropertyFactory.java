@@ -66,6 +66,8 @@ import org.docx4j.model.properties.table.CellMarginRight;
 import org.docx4j.model.properties.table.CellMarginTop;
 import org.docx4j.model.properties.table.tc.Shading;
 import org.docx4j.model.properties.table.tc.TextDir;
+import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.color.ThemeColors;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblStylePr;
@@ -99,6 +101,42 @@ public class PropertyFactory {
 	 */
 	
 	protected static Logger log = LoggerFactory.getLogger(PropertyFactory.class);
+
+	/**
+	 * The theme colours in which a package's content is drawn (CR-034): a
+	 * WordprocessingMLPackage's, from its PropertyResolver (or read afresh where it has none
+	 * yet); null for any other package, which leaves each property writing the value beside a
+	 * theme reference.  The overloads which take a package set them on what they create; for the
+	 * others (tables), see {@link #setThemeColors(List, ThemeColors)}.
+	 *
+	 * @since 17.3.3
+	 */
+	public static ThemeColors themeColors(OpcPackage pkg) {
+		if (!(pkg instanceof WordprocessingMLPackage)) return null;
+		try {
+			PropertyResolver pr = ((WordprocessingMLPackage) pkg).getMainDocumentPart().getPropertyResolver(false);
+			return pr != null ? pr.getThemeColors() : ThemeColors.of((WordprocessingMLPackage) pkg);
+		} catch (Exception e) {
+			log.warn("Couldn't read the theme colours: " + e.getMessage());
+			return null;
+		}
+	}
+
+	/**
+	 * Sets the theme colours on each of the properties: a theme colour is then written as Word
+	 * draws it ({@link Property#themeColour}).
+	 *
+	 * @return the list
+	 * @since 17.3.3
+	 */
+	public static List<Property> setThemeColors(List<Property> properties, ThemeColors themeColors) {
+		if (themeColors != null && properties != null) {
+			for (Property p : properties) {
+				if (p != null) p.setThemeColors(themeColors);
+			}
+		}
+		return properties;
+	}
 	
 	public static List<Property> createProperties(CTTblPrBase  tblPr) {
 		
@@ -333,7 +371,7 @@ public class PropertyFactory {
 //		if (rPr.getWebHidden() != null)
 //			dest.setWebHidden(rPr.getWebHidden());
 		
-		return properties;		
+		return setThemeColors(properties, themeColors(wmlPackage));		
 	}
 
 	public static List<Property> createProperties(OpcPackage wmlPackage, ParaRPr rPr) {
@@ -429,7 +467,7 @@ public class PropertyFactory {
 //		if (rPr.getWebHidden() != null)
 //			dest.setWebHidden(rPr.getWebHidden());
 		
-		return properties;		
+		return setThemeColors(properties, themeColors(wmlPackage));		
 	}
 	
 
@@ -561,7 +599,7 @@ public class PropertyFactory {
 		}
 //		if (pPr.getWordWrap() != null)
 //			dest.setWordWrap(pPr.getWordWrap());
-		return properties;		
+		return setThemeColors(properties, themeColors(wmlPackage));		
 	}
 	
 	private static Boolean useHIghlightInRPr = null;

@@ -2467,6 +2467,7 @@ public class XsltFOFunctions {
 		// Need to apply shading at fo:list-block level
 		if (pPr.getShd()!=null) {
 			PShading pShading = new PShading(pPr.getShd());
+			pShading.setThemeColors(PropertyFactory.themeColors(wmlPackage)); // CR-034
 			pShading.setXslFO(foListBlock);
 		}
 		
