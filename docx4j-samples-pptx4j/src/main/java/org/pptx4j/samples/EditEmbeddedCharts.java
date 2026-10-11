@@ -138,14 +138,14 @@ public class EditEmbeddedCharts
 					{
 						if (cell.getR().equals("B2") && cell.getV() != null) {
 							System.out.println("B2 CELL VAL: " + cell.getV());
-							// change the B2 cell value
-							cell.setT(STCellType.STR);
+							// change the B2 cell value, a number (STR would make it a formula's text result)
+							cell.setT(STCellType.N);
 							cell.setV(firstValue);
 						}
 						else if (cell.getR().equals("B3") && cell.getV() != null) {
 							System.out.println("B3 CELL VAL: " + cell.getV());
-							// Change the B3 cell value
-							cell.setT(STCellType.STR);
+							// Change the B3 cell value, a number too
+							cell.setT(STCellType.N);
 							cell.setV(secondValue);
 						}
 					}					
