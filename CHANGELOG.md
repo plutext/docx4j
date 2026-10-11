@@ -33,6 +33,9 @@ Changes in Version 17.3.3
   chartex CTChartSpace); they lose their type parameter, so code declaring one must drop it.  CR-035.
 - An absent xs:list attribute stays absent when docx4j saves a part it has read: a chart style
   part no longer gains mods="" (48 generated attribute-list fields start null).  CR-035.
+- New org.docx4j.model.color: theme colours resolved as Office draws them - DrawingML colours and
+  transforms, WordprocessingML theme attributes, SpreadsheetML theme/tint/indexed - checked against
+  Word's, PowerPoint's and Excel's own renderings.  CR-034.
 
 
 Version 17.3.2

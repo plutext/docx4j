@@ -1,7 +1,10 @@
 # CR-034: theme colours resolved - one resolver for DrawingML, WordprocessingML and SpreadsheetML colour references
 
-Status: IN PROGRESS. Phase 0 DONE 2026-10-12 (Jason: "do Phase 0 of each CR"; his Office run the same
-day): every probe read (§11).  Word draws the theme reference wherever the written value disagrees;
+Status: IN PROGRESS. Phase 1 DONE 2026-10-12 (Jason: "start CR-034 phase 1"): `org.docx4j.model.color`
+built; against Office's readings every case of the probes is exact or within one unit but the nine
+saturation-on-grey cases; over four corpora it returns Word's own value for 36,899 of 36,919 theme
+attributes and the theme colour for the 20 stale ones (§11).  Phase 2 next.  Phase 0 DONE 2026-10-12
+(Jason: "do Phase 0 of each CR"; his Office run the same day): every probe read (§11).  Word draws the theme reference wherever the written value disagrees;
 DrawingML's tint, shade, inv, gamma and channel transforms act in linear RGB, hue, sat and lum in HSL
 (saturation not clamped), gray is Rec.709 luma in sRGB, in document order, Word and PowerPoint
 identical on all 403 cases; Excel's tint is Windows' integer HLS (HLSMAX 240) and its theme indexes
@@ -217,7 +220,11 @@ not redistributable, so only counts are recorded.
   and all but 8 of the 4,698 shades. The 8 are Office 2007 values again (`365F91`, `243F60`,
   `17365D`: `accent1` and `text2` of the 2007 theme, shaded), so 20 attributes in 7 documents
   disagree with their theme, all for the same reason.
-- 150 theme attributes are in documents with no theme part.
+- 150 theme attributes are in documents with no theme part.  (Wrong, corrected 2026-10-12: those
+  documents' main part is `word/document2.xml`, or the relationship's target is absolute, and the
+  scan looked only for `word/_rels/document.xml.rels`; every document with a theme attribute has a
+  theme part.  Corrected, the scan counts 36,919 attributes, 29,156 plain (29,144 exact, the same
+  12 stale), the same tints and shades; §11's phase 1 record has the figures.)
 - No document maps `w:clrSchemeMapping` other than the default.
 - **DrawingML in the document parts** (body, headers, footers, notes; charts not counted): 60
   `a:schemeClr` in 7 documents, 260 `a:srgbClr` in 58, 11 `a:prstClr` in 6; transforms:
@@ -475,3 +482,55 @@ entries (each of the 64 custom ones reproduced).
 **What phase 1 builds on:** §4.1 as written, with the spaces above; `sysClr` by name; WordprocessingML
 by the theme reference first; Excel's integer HLS.  The readings become test vectors (§4.6) with
 the corpus triples.
+
+### Phase 1 (2026-10-12), done
+
+**MS-OI29500 first** (plan §11): its notes on §17.3.2.6 (`w:color`, 2.1.72) give Word's
+themeTint and themeShade exactly as §2.3 measured (HSL luminance, L·t + 1 − t and L·t), and add
+that **where both are present Word applies the tint**; its notes on the DrawingML transforms say
+Office reads a percentage as "50%" or as 50000 and writes only the latter, that `prstClr` needs its
+`val`, and that `lumOff` and `satOff` are "not supported by Office and may produce unexpected
+color" - which Office 365 contradicts: it applied both, as HSL offsets, in every probe case.
+
+**`org.docx4j.model.color`** (docx4j-core, exported), as §4.1 with the readings of phase 0:
+- `ResolvedColor`: red, green, blue and an OOXML alpha; immutable.
+- `ThemeColors`: a scheme and a map; `of(WordprocessingMLPackage)` (the main document's theme or
+  the default theme, `w:clrSchemeMapping`), `of(SpreadsheetMLPackage)`, `of(Part)` for a slide
+  (master's theme, master's `p:clrMap`, layout's then slide's `p:clrMapOvr`), layout, master, notes
+  slide, notes or handout master; `forChart(Chart)` (a theme override part, `c:clrMapOvr`);
+  `withPlaceholder` for `phClr`; `schemeColor`, `wordThemeColor`, `sheetThemeColor` (Excel's
+  index swap).
+- `DrawingMLColors`: the six kinds, the transforms in document order in the spaces of §11; the
+  fill, line and font style references (`fillRef` 0 / 1-999 / 1001+, `lnRef`, `fontRef`), a
+  non-solid entry reported as `StyleFill` of its kind.
+- `WordColors`: the theme reference over the written value, tint before shade; **Word's value
+  where it is a current cache** (within one unit of the computation), so every attribute Word
+  wrote against the document's theme comes back exactly, whatever Word's rounding; the
+  computation (float HSL, the channels truncated, which gives Word 365's drawing in the probe's
+  three run cases exactly) where the value is stale or absent.
+- `SpreadsheetColors`: rgb, theme, indexed (Excel's palette as measured, or the workbook's
+  `x:indexedColors`), tint in Windows' integer HLS, the luminance truncated after adding 0.02:
+  all 90 tint cells exact (plain truncation missed two at tint 0.3333, which Excel rounds up).
+- `ColorTables`: the 140 preset and 30 system colours (POI's `PresetColor`, Apache-2.0) and the
+  indexed palette.
+
+**Against Office** (`ThemeColourProbesTest`, every probe case resolved through its own file):
+P2, P4 (222 cells) and P5 exact; P1 exact but `P1-10` (a shading's themeFillTint with an
+unusable value, one unit); P3 in Word and in PowerPoint exact or within one unit (hue, luminance
+and picker cases) but the nine saturation transforms on the grey `bg2`, which stay a known
+difference (Office's grey hue).  `ThemeColorsTest`: a new docx has the 2023 theme, a themeless
+package the default theme (and `2013` gives `4472C4`, D2), the Excel index swap, a chart in its
+host's theme.
+
+**The corpus check** (`org.docx4j.fidelity.corpus.ThemeColourCheck`, the four corpora, 560
+documents; one more exceeds docx4j's zip-bomb limit): 36,919 theme attributes.  The computation
+alone: plain 29,144 of 29,156 exact (12 stale), shades 3,245 exact and 1,484 within one of 4,737
+(8 stale), tints 1,631 exact and 1,395 within one of 3,026.  What `WordColors.resolve` returns:
+Word's own value for 36,899; for the 20 stale ones the theme colour, which is what Word draws
+(P1, and 11782's TOC Heading).
+
+**Vectors for the ports** (§4.6): `docx4j-core-tests/src/test/resources/theme-colors/`, the seven
+probes, `cases.tsv`, Office's `readings.tsv` and the corpus `word-tint-shade.tsv`, with a README.
+
+Decisions taken in building it: D1, D5 and D6 as recommended; D2 (a), the default theme as is.
+D3 and D4 are phase 2's.

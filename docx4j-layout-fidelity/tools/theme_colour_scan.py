@@ -53,17 +53,30 @@ DIRECT = {"dark1": "dk1", "light1": "lt1", "dark2": "dk2", "light2": "lt2",
 MAPPED = {"text1": ("t1", "dark1"), "background1": ("bg1", "light1"),
           "text2": ("t2", "dark2"), "background2": ("bg2", "light2")}
 
-PARTS = re.compile(r"word/(document|styles|numbering|header\d*|footer\d*|footnotes|endnotes|comments)\.xml$")
+# the main document part is word/document.xml, or another name Word sometimes gives it (document2.xml)
+PARTS = re.compile(r"word/(document\d*|styles|numbering|header\d*|footer\d*|footnotes|endnotes|comments)\.xml$")
+
+
+def main_part(z, names):
+    """The main document part's name, from the package relationships"""
+    if "_rels/.rels" in names:
+        for rel in ET.fromstring(z.read("_rels/.rels")).iter("{%s}Relationship" % R):
+            if rel.get("Type", "").endswith("/officeDocument"):
+                return rel.get("Target").lstrip("/")
+    return "word/document.xml"
 
 
 def scheme(z, names):
     """The main document's theme colour scheme: slot -> hex (srgbClr val, or sysClr lastClr)"""
-    rels = "word/_rels/document.xml.rels"
+    main = main_part(z, names)
+    rels = posixpath.join(posixpath.dirname(main), "_rels", posixpath.basename(main) + ".rels")
     if rels not in names:
         return None
     for rel in ET.fromstring(z.read(rels)).iter("{%s}Relationship" % R):
         if rel.get("Type", "").endswith("/theme"):
-            p = posixpath.normpath(posixpath.join("word", rel.get("Target")))
+            target = rel.get("Target")
+            # a Target may be absolute (/word/theme/theme1.xml) as well as relative to word/
+            p = target.lstrip("/") if target.startswith("/") else posixpath.normpath(posixpath.join("word", target))
             if p not in names:
                 return None
             cs = ET.fromstring(z.read(p)).find(".//{%s}clrScheme" % A)

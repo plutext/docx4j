@@ -74,6 +74,7 @@ module org.docx4j.core {
     exports org.docx4j.model;
     exports org.docx4j.model.bookmarks;
     exports org.docx4j.model.chart;
+    exports org.docx4j.model.color;
     exports org.docx4j.model.datastorage;
     exports org.docx4j.model.datastorage.migration;
     exports org.docx4j.model.datastorage.xpathtracker;

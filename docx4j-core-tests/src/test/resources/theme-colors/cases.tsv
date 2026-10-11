@@ -1,0 +1,1069 @@
+probe	label	kind	written	note
+tc-p1-precedence.docx	P1-01	run text	<w:color w:val="FF0000" w:themeColor="accent1"/>	val FF0000, theme accent1
+tc-p1-precedence.docx	P1-02	run text	<w:color w:val="FF0000" w:themeColor="accent1" w:themeTint="99"/>	val FF0000, theme accent1, tint 99
+tc-p1-precedence.docx	P1-03	run text	<w:color w:val="FF0000" w:themeColor="accent1" w:themeShade="BF"/>	val FF0000, theme accent1, shade BF
+tc-p1-precedence.docx	P1-04	run text	<w:color w:val="auto" w:themeColor="accent1"/>	val auto, theme accent1
+tc-p1-precedence.docx	P1-05	run text	<w:color w:val="156082" w:themeColor="accent1"/>	val 156082, theme accent1 (they agree)
+tc-p1-precedence.docx	P1-06	run text	<w:color w:val="FF0000" w:themeColor="text1"/>	val FF0000, theme text1
+tc-p1-precedence.docx	P1-07	run text	<w:color w:val="00FF00" w:themeColor="hyperlink"/>	val 00FF00, theme hyperlink
+tc-p1-precedence.docx	P1-08	run text	<w:color w:val="4F81BD" w:themeColor="accent1" w:themeShade="BF"/>	val 4F81BD (the 2007 accent1), theme accent1, shade BF
+tc-p1-precedence.docx	P1-09	paragraph shading	<w:shd w:val="clear" w:color="auto" w:fill="FF0000" w:themeFill="accent2"/>	fill FF0000, themeFill accent2
+tc-p1-precedence.docx	P1-10	paragraph shading	<w:shd w:val="clear" w:color="auto" w:fill="FF0000" w:themeFill="accent2" w:themeFillTint="66"/>	fill FF0000, themeFill accent2, tint 66
+tc-p1-precedence.docx	P1-11	paragraph shading	<w:shd w:val="clear" w:color="auto" w:fill="auto" w:themeFill="accent2"/>	fill auto, themeFill accent2
+tc-p1-precedence.docx	P1-12	paragraph shading	<w:shd w:val="pct25" w:color="FF0000" w:themeColor="accent5" w:fill="FFFFFF"/>	25% pattern, color FF0000 themeColor accent5, fill FFFFFF
+tc-p1-precedence.docx	P1-13	paragraph top border	<w:top w:val="single" w:sz="24" w:space="1" w:color="FF0000" w:themeColor="accent6"/>	top border, color FF0000, theme accent6
+tc-p1-precedence.docx	P1-14	paragraph top border	<w:top w:val="single" w:sz="24" w:space="1" w:color="auto" w:themeColor="accent6"/>	top border, color auto, theme accent6
+tc-p1-precedence.docx	P1-15	paragraph top border	<w:top w:val="single" w:sz="24" w:space="1" w:color="FF0000" w:themeColor="accent6" w:themeShade="80"/>	top border, color FF0000, theme accent6, shade 80
+tc-p1-precedence.docx	P1-16	underline	<w:u w:val="thick" w:color="FF0000" w:themeColor="accent4"/>	thick underline, color FF0000, theme accent4
+tc-p1-precedence.docx	P1-17	run shading	<w:shd w:val="clear" w:color="auto" w:fill="FF0000" w:themeFill="accent3"/>	run shading, fill FF0000, themeFill accent3
+tc-p2-colour-map.docx	P2-01	run text	<w:color w:val="000000" w:themeColor="text1"/>	text1 (val 000000)
+tc-p2-colour-map.docx	P2-02	run text	<w:color w:val="FFFFFF" w:themeColor="background1"/>	background1 (val FFFFFF)
+tc-p2-colour-map.docx	P2-03	run text	<w:color w:val="0E2841" w:themeColor="text2"/>	text2 (val 0E2841)
+tc-p2-colour-map.docx	P2-04	run text	<w:color w:val="E8E8E8" w:themeColor="background2"/>	background2 (val E8E8E8)
+tc-p2-colour-map.docx	P2-05	run text	<w:color w:val="000000" w:themeColor="dark1"/>	dark1, direct
+tc-p2-colour-map.docx	P2-06	run text	(none)	no colour at all (automatic)
+tc-p2-colour-map.docx	P2-07	shape fill	<a:schemeClr val="tx1"/>	schemeClr tx1 under the swapped mapping
+tc-p2-colour-map.docx	P2-08	shape fill	<a:schemeClr val="bg1"/>	schemeClr bg1 under the swapped mapping
+tc-p2-colour-map.docx	P2-09	shape fill	<a:schemeClr val="tx2"/>	schemeClr tx2 under the swapped mapping
+tc-p2-colour-map.docx	P2-10	shape fill	<a:schemeClr val="bg2"/>	schemeClr bg2 under the swapped mapping
+tc-p2-colour-map.docx	P2-11	shape fill	<a:schemeClr val="dk1"/>	schemeClr dk1 under the swapped mapping
+tc-p2-colour-map.docx	P2-12	shape fill	<a:schemeClr val="lt1"/>	schemeClr lt1 under the swapped mapping
+tc-p2-colour-map.docx	P2-13	shape fill	<a:schemeClr val="accent1"/>	schemeClr accent1 under the swapped mapping
+tc-p3-transforms.docx	T001	shape fill	<a:schemeClr val="accent1"><a:tint val="25000"/></a:schemeClr>	accent1 tint 25000
+tc-p3-transforms.docx	T002	shape fill	<a:schemeClr val="accent1"><a:tint val="50000"/></a:schemeClr>	accent1 tint 50000
+tc-p3-transforms.docx	T003	shape fill	<a:schemeClr val="accent1"><a:tint val="75000"/></a:schemeClr>	accent1 tint 75000
+tc-p3-transforms.docx	T004	shape fill	<a:schemeClr val="accent1"><a:shade val="25000"/></a:schemeClr>	accent1 shade 25000
+tc-p3-transforms.docx	T005	shape fill	<a:schemeClr val="accent1"><a:shade val="50000"/></a:schemeClr>	accent1 shade 50000
+tc-p3-transforms.docx	T006	shape fill	<a:schemeClr val="accent1"><a:shade val="75000"/></a:schemeClr>	accent1 shade 75000
+tc-p3-transforms.docx	T007	shape fill	<a:schemeClr val="accent1"><a:comp/></a:schemeClr>	accent1 comp
+tc-p3-transforms.docx	T008	shape fill	<a:schemeClr val="accent1"><a:inv/></a:schemeClr>	accent1 inv
+tc-p3-transforms.docx	T009	shape fill	<a:schemeClr val="accent1"><a:gray/></a:schemeClr>	accent1 gray
+tc-p3-transforms.docx	T010	shape fill	<a:schemeClr val="accent1"><a:alpha val="25000"/></a:schemeClr>	accent1 alpha 25000
+tc-p3-transforms.docx	T011	shape fill	<a:schemeClr val="accent1"><a:alpha val="50000"/></a:schemeClr>	accent1 alpha 50000
+tc-p3-transforms.docx	T012	shape fill	<a:schemeClr val="accent1"><a:alpha val="75000"/></a:schemeClr>	accent1 alpha 75000
+tc-p3-transforms.docx	T013	shape fill	<a:schemeClr val="accent1"><a:alphaOff val="-25000"/></a:schemeClr>	accent1 alphaOff -25000
+tc-p3-transforms.docx	T014	shape fill	<a:schemeClr val="accent1"><a:alphaOff val="-50000"/></a:schemeClr>	accent1 alphaOff -50000
+tc-p3-transforms.docx	T015	shape fill	<a:schemeClr val="accent1"><a:alphaMod val="50000"/></a:schemeClr>	accent1 alphaMod 50000
+tc-p3-transforms.docx	T016	shape fill	<a:schemeClr val="accent1"><a:alphaMod val="25000"/></a:schemeClr>	accent1 alphaMod 25000
+tc-p3-transforms.docx	T017	shape fill	<a:schemeClr val="accent1"><a:hue val="0"/></a:schemeClr>	accent1 hue 0
+tc-p3-transforms.docx	T018	shape fill	<a:schemeClr val="accent1"><a:hue val="7200000"/></a:schemeClr>	accent1 hue 7200000
+tc-p3-transforms.docx	T019	shape fill	<a:schemeClr val="accent1"><a:hue val="14400000"/></a:schemeClr>	accent1 hue 14400000
+tc-p3-transforms.docx	T020	shape fill	<a:schemeClr val="accent1"><a:hueOff val="1800000"/></a:schemeClr>	accent1 hueOff 1800000
+tc-p3-transforms.docx	T021	shape fill	<a:schemeClr val="accent1"><a:hueOff val="-1800000"/></a:schemeClr>	accent1 hueOff -1800000
+tc-p3-transforms.docx	T022	shape fill	<a:schemeClr val="accent1"><a:hueOff val="5400000"/></a:schemeClr>	accent1 hueOff 5400000
+tc-p3-transforms.docx	T023	shape fill	<a:schemeClr val="accent1"><a:hueMod val="50000"/></a:schemeClr>	accent1 hueMod 50000
+tc-p3-transforms.docx	T024	shape fill	<a:schemeClr val="accent1"><a:hueMod val="150000"/></a:schemeClr>	accent1 hueMod 150000
+tc-p3-transforms.docx	T025	shape fill	<a:schemeClr val="accent1"><a:hueMod val="200000"/></a:schemeClr>	accent1 hueMod 200000
+tc-p3-transforms.docx	T026	shape fill	<a:schemeClr val="accent1"><a:sat val="0"/></a:schemeClr>	accent1 sat 0
+tc-p3-transforms.docx	T027	shape fill	<a:schemeClr val="accent1"><a:sat val="50000"/></a:schemeClr>	accent1 sat 50000
+tc-p3-transforms.docx	T028	shape fill	<a:schemeClr val="accent1"><a:sat val="100000"/></a:schemeClr>	accent1 sat 100000
+tc-p3-transforms.docx	T029	shape fill	<a:schemeClr val="accent1"><a:satOff val="-50000"/></a:schemeClr>	accent1 satOff -50000
+tc-p3-transforms.docx	T030	shape fill	<a:schemeClr val="accent1"><a:satOff val="-25000"/></a:schemeClr>	accent1 satOff -25000
+tc-p3-transforms.docx	T031	shape fill	<a:schemeClr val="accent1"><a:satOff val="25000"/></a:schemeClr>	accent1 satOff 25000
+tc-p3-transforms.docx	T032	shape fill	<a:schemeClr val="accent1"><a:satMod val="50000"/></a:schemeClr>	accent1 satMod 50000
+tc-p3-transforms.docx	T033	shape fill	<a:schemeClr val="accent1"><a:satMod val="150000"/></a:schemeClr>	accent1 satMod 150000
+tc-p3-transforms.docx	T034	shape fill	<a:schemeClr val="accent1"><a:satMod val="200000"/></a:schemeClr>	accent1 satMod 200000
+tc-p3-transforms.docx	T035	shape fill	<a:schemeClr val="accent1"><a:lum val="25000"/></a:schemeClr>	accent1 lum 25000
+tc-p3-transforms.docx	T036	shape fill	<a:schemeClr val="accent1"><a:lum val="50000"/></a:schemeClr>	accent1 lum 50000
+tc-p3-transforms.docx	T037	shape fill	<a:schemeClr val="accent1"><a:lum val="75000"/></a:schemeClr>	accent1 lum 75000
+tc-p3-transforms.docx	T038	shape fill	<a:schemeClr val="accent1"><a:lumOff val="-25000"/></a:schemeClr>	accent1 lumOff -25000
+tc-p3-transforms.docx	T039	shape fill	<a:schemeClr val="accent1"><a:lumOff val="20000"/></a:schemeClr>	accent1 lumOff 20000
+tc-p3-transforms.docx	T040	shape fill	<a:schemeClr val="accent1"><a:lumOff val="40000"/></a:schemeClr>	accent1 lumOff 40000
+tc-p3-transforms.docx	T041	shape fill	<a:schemeClr val="accent1"><a:lumMod val="25000"/></a:schemeClr>	accent1 lumMod 25000
+tc-p3-transforms.docx	T042	shape fill	<a:schemeClr val="accent1"><a:lumMod val="50000"/></a:schemeClr>	accent1 lumMod 50000
+tc-p3-transforms.docx	T043	shape fill	<a:schemeClr val="accent1"><a:lumMod val="75000"/></a:schemeClr>	accent1 lumMod 75000
+tc-p3-transforms.docx	T044	shape fill	<a:schemeClr val="accent1"><a:red val="0"/></a:schemeClr>	accent1 red 0
+tc-p3-transforms.docx	T045	shape fill	<a:schemeClr val="accent1"><a:red val="50000"/></a:schemeClr>	accent1 red 50000
+tc-p3-transforms.docx	T046	shape fill	<a:schemeClr val="accent1"><a:red val="100000"/></a:schemeClr>	accent1 red 100000
+tc-p3-transforms.docx	T047	shape fill	<a:schemeClr val="accent1"><a:redOff val="-25000"/></a:schemeClr>	accent1 redOff -25000
+tc-p3-transforms.docx	T048	shape fill	<a:schemeClr val="accent1"><a:redOff val="25000"/></a:schemeClr>	accent1 redOff 25000
+tc-p3-transforms.docx	T049	shape fill	<a:schemeClr val="accent1"><a:redMod val="50000"/></a:schemeClr>	accent1 redMod 50000
+tc-p3-transforms.docx	T050	shape fill	<a:schemeClr val="accent1"><a:redMod val="150000"/></a:schemeClr>	accent1 redMod 150000
+tc-p3-transforms.docx	T051	shape fill	<a:schemeClr val="accent1"><a:green val="0"/></a:schemeClr>	accent1 green 0
+tc-p3-transforms.docx	T052	shape fill	<a:schemeClr val="accent1"><a:green val="50000"/></a:schemeClr>	accent1 green 50000
+tc-p3-transforms.docx	T053	shape fill	<a:schemeClr val="accent1"><a:green val="100000"/></a:schemeClr>	accent1 green 100000
+tc-p3-transforms.docx	T054	shape fill	<a:schemeClr val="accent1"><a:greenOff val="-25000"/></a:schemeClr>	accent1 greenOff -25000
+tc-p3-transforms.docx	T055	shape fill	<a:schemeClr val="accent1"><a:greenOff val="25000"/></a:schemeClr>	accent1 greenOff 25000
+tc-p3-transforms.docx	T056	shape fill	<a:schemeClr val="accent1"><a:greenMod val="50000"/></a:schemeClr>	accent1 greenMod 50000
+tc-p3-transforms.docx	T057	shape fill	<a:schemeClr val="accent1"><a:greenMod val="150000"/></a:schemeClr>	accent1 greenMod 150000
+tc-p3-transforms.docx	T058	shape fill	<a:schemeClr val="accent1"><a:blue val="0"/></a:schemeClr>	accent1 blue 0
+tc-p3-transforms.docx	T059	shape fill	<a:schemeClr val="accent1"><a:blue val="50000"/></a:schemeClr>	accent1 blue 50000
+tc-p3-transforms.docx	T060	shape fill	<a:schemeClr val="accent1"><a:blue val="100000"/></a:schemeClr>	accent1 blue 100000
+tc-p3-transforms.docx	T061	shape fill	<a:schemeClr val="accent1"><a:blueOff val="-25000"/></a:schemeClr>	accent1 blueOff -25000
+tc-p3-transforms.docx	T062	shape fill	<a:schemeClr val="accent1"><a:blueOff val="25000"/></a:schemeClr>	accent1 blueOff 25000
+tc-p3-transforms.docx	T063	shape fill	<a:schemeClr val="accent1"><a:blueMod val="50000"/></a:schemeClr>	accent1 blueMod 50000
+tc-p3-transforms.docx	T064	shape fill	<a:schemeClr val="accent1"><a:blueMod val="150000"/></a:schemeClr>	accent1 blueMod 150000
+tc-p3-transforms.docx	T065	shape fill	<a:schemeClr val="accent1"><a:gamma/></a:schemeClr>	accent1 gamma
+tc-p3-transforms.docx	T066	shape fill	<a:schemeClr val="accent1"><a:invGamma/></a:schemeClr>	accent1 invGamma
+tc-p3-transforms.docx	T067	shape fill	<a:schemeClr val="accent2"><a:tint val="25000"/></a:schemeClr>	accent2 tint 25000
+tc-p3-transforms.docx	T068	shape fill	<a:schemeClr val="accent2"><a:tint val="50000"/></a:schemeClr>	accent2 tint 50000
+tc-p3-transforms.docx	T069	shape fill	<a:schemeClr val="accent2"><a:tint val="75000"/></a:schemeClr>	accent2 tint 75000
+tc-p3-transforms.docx	T070	shape fill	<a:schemeClr val="accent2"><a:shade val="25000"/></a:schemeClr>	accent2 shade 25000
+tc-p3-transforms.docx	T071	shape fill	<a:schemeClr val="accent2"><a:shade val="50000"/></a:schemeClr>	accent2 shade 50000
+tc-p3-transforms.docx	T072	shape fill	<a:schemeClr val="accent2"><a:shade val="75000"/></a:schemeClr>	accent2 shade 75000
+tc-p3-transforms.docx	T073	shape fill	<a:schemeClr val="accent2"><a:comp/></a:schemeClr>	accent2 comp
+tc-p3-transforms.docx	T074	shape fill	<a:schemeClr val="accent2"><a:inv/></a:schemeClr>	accent2 inv
+tc-p3-transforms.docx	T075	shape fill	<a:schemeClr val="accent2"><a:gray/></a:schemeClr>	accent2 gray
+tc-p3-transforms.docx	T076	shape fill	<a:schemeClr val="accent2"><a:alpha val="25000"/></a:schemeClr>	accent2 alpha 25000
+tc-p3-transforms.docx	T077	shape fill	<a:schemeClr val="accent2"><a:alpha val="50000"/></a:schemeClr>	accent2 alpha 50000
+tc-p3-transforms.docx	T078	shape fill	<a:schemeClr val="accent2"><a:alpha val="75000"/></a:schemeClr>	accent2 alpha 75000
+tc-p3-transforms.docx	T079	shape fill	<a:schemeClr val="accent2"><a:alphaOff val="-25000"/></a:schemeClr>	accent2 alphaOff -25000
+tc-p3-transforms.docx	T080	shape fill	<a:schemeClr val="accent2"><a:alphaOff val="-50000"/></a:schemeClr>	accent2 alphaOff -50000
+tc-p3-transforms.docx	T081	shape fill	<a:schemeClr val="accent2"><a:alphaMod val="50000"/></a:schemeClr>	accent2 alphaMod 50000
+tc-p3-transforms.docx	T082	shape fill	<a:schemeClr val="accent2"><a:alphaMod val="25000"/></a:schemeClr>	accent2 alphaMod 25000
+tc-p3-transforms.docx	T083	shape fill	<a:schemeClr val="accent2"><a:hue val="0"/></a:schemeClr>	accent2 hue 0
+tc-p3-transforms.docx	T084	shape fill	<a:schemeClr val="accent2"><a:hue val="7200000"/></a:schemeClr>	accent2 hue 7200000
+tc-p3-transforms.docx	T085	shape fill	<a:schemeClr val="accent2"><a:hue val="14400000"/></a:schemeClr>	accent2 hue 14400000
+tc-p3-transforms.docx	T086	shape fill	<a:schemeClr val="accent2"><a:hueOff val="1800000"/></a:schemeClr>	accent2 hueOff 1800000
+tc-p3-transforms.docx	T087	shape fill	<a:schemeClr val="accent2"><a:hueOff val="-1800000"/></a:schemeClr>	accent2 hueOff -1800000
+tc-p3-transforms.docx	T088	shape fill	<a:schemeClr val="accent2"><a:hueOff val="5400000"/></a:schemeClr>	accent2 hueOff 5400000
+tc-p3-transforms.docx	T089	shape fill	<a:schemeClr val="accent2"><a:hueMod val="50000"/></a:schemeClr>	accent2 hueMod 50000
+tc-p3-transforms.docx	T090	shape fill	<a:schemeClr val="accent2"><a:hueMod val="150000"/></a:schemeClr>	accent2 hueMod 150000
+tc-p3-transforms.docx	T091	shape fill	<a:schemeClr val="accent2"><a:hueMod val="200000"/></a:schemeClr>	accent2 hueMod 200000
+tc-p3-transforms.docx	T092	shape fill	<a:schemeClr val="accent2"><a:sat val="0"/></a:schemeClr>	accent2 sat 0
+tc-p3-transforms.docx	T093	shape fill	<a:schemeClr val="accent2"><a:sat val="50000"/></a:schemeClr>	accent2 sat 50000
+tc-p3-transforms.docx	T094	shape fill	<a:schemeClr val="accent2"><a:sat val="100000"/></a:schemeClr>	accent2 sat 100000
+tc-p3-transforms.docx	T095	shape fill	<a:schemeClr val="accent2"><a:satOff val="-50000"/></a:schemeClr>	accent2 satOff -50000
+tc-p3-transforms.docx	T096	shape fill	<a:schemeClr val="accent2"><a:satOff val="-25000"/></a:schemeClr>	accent2 satOff -25000
+tc-p3-transforms.docx	T097	shape fill	<a:schemeClr val="accent2"><a:satOff val="25000"/></a:schemeClr>	accent2 satOff 25000
+tc-p3-transforms.docx	T098	shape fill	<a:schemeClr val="accent2"><a:satMod val="50000"/></a:schemeClr>	accent2 satMod 50000
+tc-p3-transforms.docx	T099	shape fill	<a:schemeClr val="accent2"><a:satMod val="150000"/></a:schemeClr>	accent2 satMod 150000
+tc-p3-transforms.docx	T100	shape fill	<a:schemeClr val="accent2"><a:satMod val="200000"/></a:schemeClr>	accent2 satMod 200000
+tc-p3-transforms.docx	T101	shape fill	<a:schemeClr val="accent2"><a:lum val="25000"/></a:schemeClr>	accent2 lum 25000
+tc-p3-transforms.docx	T102	shape fill	<a:schemeClr val="accent2"><a:lum val="50000"/></a:schemeClr>	accent2 lum 50000
+tc-p3-transforms.docx	T103	shape fill	<a:schemeClr val="accent2"><a:lum val="75000"/></a:schemeClr>	accent2 lum 75000
+tc-p3-transforms.docx	T104	shape fill	<a:schemeClr val="accent2"><a:lumOff val="-25000"/></a:schemeClr>	accent2 lumOff -25000
+tc-p3-transforms.docx	T105	shape fill	<a:schemeClr val="accent2"><a:lumOff val="20000"/></a:schemeClr>	accent2 lumOff 20000
+tc-p3-transforms.docx	T106	shape fill	<a:schemeClr val="accent2"><a:lumOff val="40000"/></a:schemeClr>	accent2 lumOff 40000
+tc-p3-transforms.docx	T107	shape fill	<a:schemeClr val="accent2"><a:lumMod val="25000"/></a:schemeClr>	accent2 lumMod 25000
+tc-p3-transforms.docx	T108	shape fill	<a:schemeClr val="accent2"><a:lumMod val="50000"/></a:schemeClr>	accent2 lumMod 50000
+tc-p3-transforms.docx	T109	shape fill	<a:schemeClr val="accent2"><a:lumMod val="75000"/></a:schemeClr>	accent2 lumMod 75000
+tc-p3-transforms.docx	T110	shape fill	<a:schemeClr val="accent2"><a:red val="0"/></a:schemeClr>	accent2 red 0
+tc-p3-transforms.docx	T111	shape fill	<a:schemeClr val="accent2"><a:red val="50000"/></a:schemeClr>	accent2 red 50000
+tc-p3-transforms.docx	T112	shape fill	<a:schemeClr val="accent2"><a:red val="100000"/></a:schemeClr>	accent2 red 100000
+tc-p3-transforms.docx	T113	shape fill	<a:schemeClr val="accent2"><a:redOff val="-25000"/></a:schemeClr>	accent2 redOff -25000
+tc-p3-transforms.docx	T114	shape fill	<a:schemeClr val="accent2"><a:redOff val="25000"/></a:schemeClr>	accent2 redOff 25000
+tc-p3-transforms.docx	T115	shape fill	<a:schemeClr val="accent2"><a:redMod val="50000"/></a:schemeClr>	accent2 redMod 50000
+tc-p3-transforms.docx	T116	shape fill	<a:schemeClr val="accent2"><a:redMod val="150000"/></a:schemeClr>	accent2 redMod 150000
+tc-p3-transforms.docx	T117	shape fill	<a:schemeClr val="accent2"><a:green val="0"/></a:schemeClr>	accent2 green 0
+tc-p3-transforms.docx	T118	shape fill	<a:schemeClr val="accent2"><a:green val="50000"/></a:schemeClr>	accent2 green 50000
+tc-p3-transforms.docx	T119	shape fill	<a:schemeClr val="accent2"><a:green val="100000"/></a:schemeClr>	accent2 green 100000
+tc-p3-transforms.docx	T120	shape fill	<a:schemeClr val="accent2"><a:greenOff val="-25000"/></a:schemeClr>	accent2 greenOff -25000
+tc-p3-transforms.docx	T121	shape fill	<a:schemeClr val="accent2"><a:greenOff val="25000"/></a:schemeClr>	accent2 greenOff 25000
+tc-p3-transforms.docx	T122	shape fill	<a:schemeClr val="accent2"><a:greenMod val="50000"/></a:schemeClr>	accent2 greenMod 50000
+tc-p3-transforms.docx	T123	shape fill	<a:schemeClr val="accent2"><a:greenMod val="150000"/></a:schemeClr>	accent2 greenMod 150000
+tc-p3-transforms.docx	T124	shape fill	<a:schemeClr val="accent2"><a:blue val="0"/></a:schemeClr>	accent2 blue 0
+tc-p3-transforms.docx	T125	shape fill	<a:schemeClr val="accent2"><a:blue val="50000"/></a:schemeClr>	accent2 blue 50000
+tc-p3-transforms.docx	T126	shape fill	<a:schemeClr val="accent2"><a:blue val="100000"/></a:schemeClr>	accent2 blue 100000
+tc-p3-transforms.docx	T127	shape fill	<a:schemeClr val="accent2"><a:blueOff val="-25000"/></a:schemeClr>	accent2 blueOff -25000
+tc-p3-transforms.docx	T128	shape fill	<a:schemeClr val="accent2"><a:blueOff val="25000"/></a:schemeClr>	accent2 blueOff 25000
+tc-p3-transforms.docx	T129	shape fill	<a:schemeClr val="accent2"><a:blueMod val="50000"/></a:schemeClr>	accent2 blueMod 50000
+tc-p3-transforms.docx	T130	shape fill	<a:schemeClr val="accent2"><a:blueMod val="150000"/></a:schemeClr>	accent2 blueMod 150000
+tc-p3-transforms.docx	T131	shape fill	<a:schemeClr val="accent2"><a:gamma/></a:schemeClr>	accent2 gamma
+tc-p3-transforms.docx	T132	shape fill	<a:schemeClr val="accent2"><a:invGamma/></a:schemeClr>	accent2 invGamma
+tc-p3-transforms.docx	T133	shape fill	<a:schemeClr val="accent4"><a:tint val="25000"/></a:schemeClr>	accent4 tint 25000
+tc-p3-transforms.docx	T134	shape fill	<a:schemeClr val="accent4"><a:tint val="50000"/></a:schemeClr>	accent4 tint 50000
+tc-p3-transforms.docx	T135	shape fill	<a:schemeClr val="accent4"><a:tint val="75000"/></a:schemeClr>	accent4 tint 75000
+tc-p3-transforms.docx	T136	shape fill	<a:schemeClr val="accent4"><a:shade val="25000"/></a:schemeClr>	accent4 shade 25000
+tc-p3-transforms.docx	T137	shape fill	<a:schemeClr val="accent4"><a:shade val="50000"/></a:schemeClr>	accent4 shade 50000
+tc-p3-transforms.docx	T138	shape fill	<a:schemeClr val="accent4"><a:shade val="75000"/></a:schemeClr>	accent4 shade 75000
+tc-p3-transforms.docx	T139	shape fill	<a:schemeClr val="accent4"><a:comp/></a:schemeClr>	accent4 comp
+tc-p3-transforms.docx	T140	shape fill	<a:schemeClr val="accent4"><a:inv/></a:schemeClr>	accent4 inv
+tc-p3-transforms.docx	T141	shape fill	<a:schemeClr val="accent4"><a:gray/></a:schemeClr>	accent4 gray
+tc-p3-transforms.docx	T142	shape fill	<a:schemeClr val="accent4"><a:alpha val="25000"/></a:schemeClr>	accent4 alpha 25000
+tc-p3-transforms.docx	T143	shape fill	<a:schemeClr val="accent4"><a:alpha val="50000"/></a:schemeClr>	accent4 alpha 50000
+tc-p3-transforms.docx	T144	shape fill	<a:schemeClr val="accent4"><a:alpha val="75000"/></a:schemeClr>	accent4 alpha 75000
+tc-p3-transforms.docx	T145	shape fill	<a:schemeClr val="accent4"><a:alphaOff val="-25000"/></a:schemeClr>	accent4 alphaOff -25000
+tc-p3-transforms.docx	T146	shape fill	<a:schemeClr val="accent4"><a:alphaOff val="-50000"/></a:schemeClr>	accent4 alphaOff -50000
+tc-p3-transforms.docx	T147	shape fill	<a:schemeClr val="accent4"><a:alphaMod val="50000"/></a:schemeClr>	accent4 alphaMod 50000
+tc-p3-transforms.docx	T148	shape fill	<a:schemeClr val="accent4"><a:alphaMod val="25000"/></a:schemeClr>	accent4 alphaMod 25000
+tc-p3-transforms.docx	T149	shape fill	<a:schemeClr val="accent4"><a:hue val="0"/></a:schemeClr>	accent4 hue 0
+tc-p3-transforms.docx	T150	shape fill	<a:schemeClr val="accent4"><a:hue val="7200000"/></a:schemeClr>	accent4 hue 7200000
+tc-p3-transforms.docx	T151	shape fill	<a:schemeClr val="accent4"><a:hue val="14400000"/></a:schemeClr>	accent4 hue 14400000
+tc-p3-transforms.docx	T152	shape fill	<a:schemeClr val="accent4"><a:hueOff val="1800000"/></a:schemeClr>	accent4 hueOff 1800000
+tc-p3-transforms.docx	T153	shape fill	<a:schemeClr val="accent4"><a:hueOff val="-1800000"/></a:schemeClr>	accent4 hueOff -1800000
+tc-p3-transforms.docx	T154	shape fill	<a:schemeClr val="accent4"><a:hueOff val="5400000"/></a:schemeClr>	accent4 hueOff 5400000
+tc-p3-transforms.docx	T155	shape fill	<a:schemeClr val="accent4"><a:hueMod val="50000"/></a:schemeClr>	accent4 hueMod 50000
+tc-p3-transforms.docx	T156	shape fill	<a:schemeClr val="accent4"><a:hueMod val="150000"/></a:schemeClr>	accent4 hueMod 150000
+tc-p3-transforms.docx	T157	shape fill	<a:schemeClr val="accent4"><a:hueMod val="200000"/></a:schemeClr>	accent4 hueMod 200000
+tc-p3-transforms.docx	T158	shape fill	<a:schemeClr val="accent4"><a:sat val="0"/></a:schemeClr>	accent4 sat 0
+tc-p3-transforms.docx	T159	shape fill	<a:schemeClr val="accent4"><a:sat val="50000"/></a:schemeClr>	accent4 sat 50000
+tc-p3-transforms.docx	T160	shape fill	<a:schemeClr val="accent4"><a:sat val="100000"/></a:schemeClr>	accent4 sat 100000
+tc-p3-transforms.docx	T161	shape fill	<a:schemeClr val="accent4"><a:satOff val="-50000"/></a:schemeClr>	accent4 satOff -50000
+tc-p3-transforms.docx	T162	shape fill	<a:schemeClr val="accent4"><a:satOff val="-25000"/></a:schemeClr>	accent4 satOff -25000
+tc-p3-transforms.docx	T163	shape fill	<a:schemeClr val="accent4"><a:satOff val="25000"/></a:schemeClr>	accent4 satOff 25000
+tc-p3-transforms.docx	T164	shape fill	<a:schemeClr val="accent4"><a:satMod val="50000"/></a:schemeClr>	accent4 satMod 50000
+tc-p3-transforms.docx	T165	shape fill	<a:schemeClr val="accent4"><a:satMod val="150000"/></a:schemeClr>	accent4 satMod 150000
+tc-p3-transforms.docx	T166	shape fill	<a:schemeClr val="accent4"><a:satMod val="200000"/></a:schemeClr>	accent4 satMod 200000
+tc-p3-transforms.docx	T167	shape fill	<a:schemeClr val="accent4"><a:lum val="25000"/></a:schemeClr>	accent4 lum 25000
+tc-p3-transforms.docx	T168	shape fill	<a:schemeClr val="accent4"><a:lum val="50000"/></a:schemeClr>	accent4 lum 50000
+tc-p3-transforms.docx	T169	shape fill	<a:schemeClr val="accent4"><a:lum val="75000"/></a:schemeClr>	accent4 lum 75000
+tc-p3-transforms.docx	T170	shape fill	<a:schemeClr val="accent4"><a:lumOff val="-25000"/></a:schemeClr>	accent4 lumOff -25000
+tc-p3-transforms.docx	T171	shape fill	<a:schemeClr val="accent4"><a:lumOff val="20000"/></a:schemeClr>	accent4 lumOff 20000
+tc-p3-transforms.docx	T172	shape fill	<a:schemeClr val="accent4"><a:lumOff val="40000"/></a:schemeClr>	accent4 lumOff 40000
+tc-p3-transforms.docx	T173	shape fill	<a:schemeClr val="accent4"><a:lumMod val="25000"/></a:schemeClr>	accent4 lumMod 25000
+tc-p3-transforms.docx	T174	shape fill	<a:schemeClr val="accent4"><a:lumMod val="50000"/></a:schemeClr>	accent4 lumMod 50000
+tc-p3-transforms.docx	T175	shape fill	<a:schemeClr val="accent4"><a:lumMod val="75000"/></a:schemeClr>	accent4 lumMod 75000
+tc-p3-transforms.docx	T176	shape fill	<a:schemeClr val="accent4"><a:red val="0"/></a:schemeClr>	accent4 red 0
+tc-p3-transforms.docx	T177	shape fill	<a:schemeClr val="accent4"><a:red val="50000"/></a:schemeClr>	accent4 red 50000
+tc-p3-transforms.docx	T178	shape fill	<a:schemeClr val="accent4"><a:red val="100000"/></a:schemeClr>	accent4 red 100000
+tc-p3-transforms.docx	T179	shape fill	<a:schemeClr val="accent4"><a:redOff val="-25000"/></a:schemeClr>	accent4 redOff -25000
+tc-p3-transforms.docx	T180	shape fill	<a:schemeClr val="accent4"><a:redOff val="25000"/></a:schemeClr>	accent4 redOff 25000
+tc-p3-transforms.docx	T181	shape fill	<a:schemeClr val="accent4"><a:redMod val="50000"/></a:schemeClr>	accent4 redMod 50000
+tc-p3-transforms.docx	T182	shape fill	<a:schemeClr val="accent4"><a:redMod val="150000"/></a:schemeClr>	accent4 redMod 150000
+tc-p3-transforms.docx	T183	shape fill	<a:schemeClr val="accent4"><a:green val="0"/></a:schemeClr>	accent4 green 0
+tc-p3-transforms.docx	T184	shape fill	<a:schemeClr val="accent4"><a:green val="50000"/></a:schemeClr>	accent4 green 50000
+tc-p3-transforms.docx	T185	shape fill	<a:schemeClr val="accent4"><a:green val="100000"/></a:schemeClr>	accent4 green 100000
+tc-p3-transforms.docx	T186	shape fill	<a:schemeClr val="accent4"><a:greenOff val="-25000"/></a:schemeClr>	accent4 greenOff -25000
+tc-p3-transforms.docx	T187	shape fill	<a:schemeClr val="accent4"><a:greenOff val="25000"/></a:schemeClr>	accent4 greenOff 25000
+tc-p3-transforms.docx	T188	shape fill	<a:schemeClr val="accent4"><a:greenMod val="50000"/></a:schemeClr>	accent4 greenMod 50000
+tc-p3-transforms.docx	T189	shape fill	<a:schemeClr val="accent4"><a:greenMod val="150000"/></a:schemeClr>	accent4 greenMod 150000
+tc-p3-transforms.docx	T190	shape fill	<a:schemeClr val="accent4"><a:blue val="0"/></a:schemeClr>	accent4 blue 0
+tc-p3-transforms.docx	T191	shape fill	<a:schemeClr val="accent4"><a:blue val="50000"/></a:schemeClr>	accent4 blue 50000
+tc-p3-transforms.docx	T192	shape fill	<a:schemeClr val="accent4"><a:blue val="100000"/></a:schemeClr>	accent4 blue 100000
+tc-p3-transforms.docx	T193	shape fill	<a:schemeClr val="accent4"><a:blueOff val="-25000"/></a:schemeClr>	accent4 blueOff -25000
+tc-p3-transforms.docx	T194	shape fill	<a:schemeClr val="accent4"><a:blueOff val="25000"/></a:schemeClr>	accent4 blueOff 25000
+tc-p3-transforms.docx	T195	shape fill	<a:schemeClr val="accent4"><a:blueMod val="50000"/></a:schemeClr>	accent4 blueMod 50000
+tc-p3-transforms.docx	T196	shape fill	<a:schemeClr val="accent4"><a:blueMod val="150000"/></a:schemeClr>	accent4 blueMod 150000
+tc-p3-transforms.docx	T197	shape fill	<a:schemeClr val="accent4"><a:gamma/></a:schemeClr>	accent4 gamma
+tc-p3-transforms.docx	T198	shape fill	<a:schemeClr val="accent4"><a:invGamma/></a:schemeClr>	accent4 invGamma
+tc-p3-transforms.docx	T199	shape fill	<a:schemeClr val="tx2"><a:tint val="25000"/></a:schemeClr>	tx2 tint 25000
+tc-p3-transforms.docx	T200	shape fill	<a:schemeClr val="tx2"><a:tint val="50000"/></a:schemeClr>	tx2 tint 50000
+tc-p3-transforms.docx	T201	shape fill	<a:schemeClr val="tx2"><a:tint val="75000"/></a:schemeClr>	tx2 tint 75000
+tc-p3-transforms.docx	T202	shape fill	<a:schemeClr val="tx2"><a:shade val="25000"/></a:schemeClr>	tx2 shade 25000
+tc-p3-transforms.docx	T203	shape fill	<a:schemeClr val="tx2"><a:shade val="50000"/></a:schemeClr>	tx2 shade 50000
+tc-p3-transforms.docx	T204	shape fill	<a:schemeClr val="tx2"><a:shade val="75000"/></a:schemeClr>	tx2 shade 75000
+tc-p3-transforms.docx	T205	shape fill	<a:schemeClr val="tx2"><a:comp/></a:schemeClr>	tx2 comp
+tc-p3-transforms.docx	T206	shape fill	<a:schemeClr val="tx2"><a:inv/></a:schemeClr>	tx2 inv
+tc-p3-transforms.docx	T207	shape fill	<a:schemeClr val="tx2"><a:gray/></a:schemeClr>	tx2 gray
+tc-p3-transforms.docx	T208	shape fill	<a:schemeClr val="tx2"><a:alpha val="25000"/></a:schemeClr>	tx2 alpha 25000
+tc-p3-transforms.docx	T209	shape fill	<a:schemeClr val="tx2"><a:alpha val="50000"/></a:schemeClr>	tx2 alpha 50000
+tc-p3-transforms.docx	T210	shape fill	<a:schemeClr val="tx2"><a:alpha val="75000"/></a:schemeClr>	tx2 alpha 75000
+tc-p3-transforms.docx	T211	shape fill	<a:schemeClr val="tx2"><a:alphaOff val="-25000"/></a:schemeClr>	tx2 alphaOff -25000
+tc-p3-transforms.docx	T212	shape fill	<a:schemeClr val="tx2"><a:alphaOff val="-50000"/></a:schemeClr>	tx2 alphaOff -50000
+tc-p3-transforms.docx	T213	shape fill	<a:schemeClr val="tx2"><a:alphaMod val="50000"/></a:schemeClr>	tx2 alphaMod 50000
+tc-p3-transforms.docx	T214	shape fill	<a:schemeClr val="tx2"><a:alphaMod val="25000"/></a:schemeClr>	tx2 alphaMod 25000
+tc-p3-transforms.docx	T215	shape fill	<a:schemeClr val="tx2"><a:hue val="0"/></a:schemeClr>	tx2 hue 0
+tc-p3-transforms.docx	T216	shape fill	<a:schemeClr val="tx2"><a:hue val="7200000"/></a:schemeClr>	tx2 hue 7200000
+tc-p3-transforms.docx	T217	shape fill	<a:schemeClr val="tx2"><a:hue val="14400000"/></a:schemeClr>	tx2 hue 14400000
+tc-p3-transforms.docx	T218	shape fill	<a:schemeClr val="tx2"><a:hueOff val="1800000"/></a:schemeClr>	tx2 hueOff 1800000
+tc-p3-transforms.docx	T219	shape fill	<a:schemeClr val="tx2"><a:hueOff val="-1800000"/></a:schemeClr>	tx2 hueOff -1800000
+tc-p3-transforms.docx	T220	shape fill	<a:schemeClr val="tx2"><a:hueOff val="5400000"/></a:schemeClr>	tx2 hueOff 5400000
+tc-p3-transforms.docx	T221	shape fill	<a:schemeClr val="tx2"><a:hueMod val="50000"/></a:schemeClr>	tx2 hueMod 50000
+tc-p3-transforms.docx	T222	shape fill	<a:schemeClr val="tx2"><a:hueMod val="150000"/></a:schemeClr>	tx2 hueMod 150000
+tc-p3-transforms.docx	T223	shape fill	<a:schemeClr val="tx2"><a:hueMod val="200000"/></a:schemeClr>	tx2 hueMod 200000
+tc-p3-transforms.docx	T224	shape fill	<a:schemeClr val="tx2"><a:sat val="0"/></a:schemeClr>	tx2 sat 0
+tc-p3-transforms.docx	T225	shape fill	<a:schemeClr val="tx2"><a:sat val="50000"/></a:schemeClr>	tx2 sat 50000
+tc-p3-transforms.docx	T226	shape fill	<a:schemeClr val="tx2"><a:sat val="100000"/></a:schemeClr>	tx2 sat 100000
+tc-p3-transforms.docx	T227	shape fill	<a:schemeClr val="tx2"><a:satOff val="-50000"/></a:schemeClr>	tx2 satOff -50000
+tc-p3-transforms.docx	T228	shape fill	<a:schemeClr val="tx2"><a:satOff val="-25000"/></a:schemeClr>	tx2 satOff -25000
+tc-p3-transforms.docx	T229	shape fill	<a:schemeClr val="tx2"><a:satOff val="25000"/></a:schemeClr>	tx2 satOff 25000
+tc-p3-transforms.docx	T230	shape fill	<a:schemeClr val="tx2"><a:satMod val="50000"/></a:schemeClr>	tx2 satMod 50000
+tc-p3-transforms.docx	T231	shape fill	<a:schemeClr val="tx2"><a:satMod val="150000"/></a:schemeClr>	tx2 satMod 150000
+tc-p3-transforms.docx	T232	shape fill	<a:schemeClr val="tx2"><a:satMod val="200000"/></a:schemeClr>	tx2 satMod 200000
+tc-p3-transforms.docx	T233	shape fill	<a:schemeClr val="tx2"><a:lum val="25000"/></a:schemeClr>	tx2 lum 25000
+tc-p3-transforms.docx	T234	shape fill	<a:schemeClr val="tx2"><a:lum val="50000"/></a:schemeClr>	tx2 lum 50000
+tc-p3-transforms.docx	T235	shape fill	<a:schemeClr val="tx2"><a:lum val="75000"/></a:schemeClr>	tx2 lum 75000
+tc-p3-transforms.docx	T236	shape fill	<a:schemeClr val="tx2"><a:lumOff val="-25000"/></a:schemeClr>	tx2 lumOff -25000
+tc-p3-transforms.docx	T237	shape fill	<a:schemeClr val="tx2"><a:lumOff val="20000"/></a:schemeClr>	tx2 lumOff 20000
+tc-p3-transforms.docx	T238	shape fill	<a:schemeClr val="tx2"><a:lumOff val="40000"/></a:schemeClr>	tx2 lumOff 40000
+tc-p3-transforms.docx	T239	shape fill	<a:schemeClr val="tx2"><a:lumMod val="25000"/></a:schemeClr>	tx2 lumMod 25000
+tc-p3-transforms.docx	T240	shape fill	<a:schemeClr val="tx2"><a:lumMod val="50000"/></a:schemeClr>	tx2 lumMod 50000
+tc-p3-transforms.docx	T241	shape fill	<a:schemeClr val="tx2"><a:lumMod val="75000"/></a:schemeClr>	tx2 lumMod 75000
+tc-p3-transforms.docx	T242	shape fill	<a:schemeClr val="tx2"><a:red val="0"/></a:schemeClr>	tx2 red 0
+tc-p3-transforms.docx	T243	shape fill	<a:schemeClr val="tx2"><a:red val="50000"/></a:schemeClr>	tx2 red 50000
+tc-p3-transforms.docx	T244	shape fill	<a:schemeClr val="tx2"><a:red val="100000"/></a:schemeClr>	tx2 red 100000
+tc-p3-transforms.docx	T245	shape fill	<a:schemeClr val="tx2"><a:redOff val="-25000"/></a:schemeClr>	tx2 redOff -25000
+tc-p3-transforms.docx	T246	shape fill	<a:schemeClr val="tx2"><a:redOff val="25000"/></a:schemeClr>	tx2 redOff 25000
+tc-p3-transforms.docx	T247	shape fill	<a:schemeClr val="tx2"><a:redMod val="50000"/></a:schemeClr>	tx2 redMod 50000
+tc-p3-transforms.docx	T248	shape fill	<a:schemeClr val="tx2"><a:redMod val="150000"/></a:schemeClr>	tx2 redMod 150000
+tc-p3-transforms.docx	T249	shape fill	<a:schemeClr val="tx2"><a:green val="0"/></a:schemeClr>	tx2 green 0
+tc-p3-transforms.docx	T250	shape fill	<a:schemeClr val="tx2"><a:green val="50000"/></a:schemeClr>	tx2 green 50000
+tc-p3-transforms.docx	T251	shape fill	<a:schemeClr val="tx2"><a:green val="100000"/></a:schemeClr>	tx2 green 100000
+tc-p3-transforms.docx	T252	shape fill	<a:schemeClr val="tx2"><a:greenOff val="-25000"/></a:schemeClr>	tx2 greenOff -25000
+tc-p3-transforms.docx	T253	shape fill	<a:schemeClr val="tx2"><a:greenOff val="25000"/></a:schemeClr>	tx2 greenOff 25000
+tc-p3-transforms.docx	T254	shape fill	<a:schemeClr val="tx2"><a:greenMod val="50000"/></a:schemeClr>	tx2 greenMod 50000
+tc-p3-transforms.docx	T255	shape fill	<a:schemeClr val="tx2"><a:greenMod val="150000"/></a:schemeClr>	tx2 greenMod 150000
+tc-p3-transforms.docx	T256	shape fill	<a:schemeClr val="tx2"><a:blue val="0"/></a:schemeClr>	tx2 blue 0
+tc-p3-transforms.docx	T257	shape fill	<a:schemeClr val="tx2"><a:blue val="50000"/></a:schemeClr>	tx2 blue 50000
+tc-p3-transforms.docx	T258	shape fill	<a:schemeClr val="tx2"><a:blue val="100000"/></a:schemeClr>	tx2 blue 100000
+tc-p3-transforms.docx	T259	shape fill	<a:schemeClr val="tx2"><a:blueOff val="-25000"/></a:schemeClr>	tx2 blueOff -25000
+tc-p3-transforms.docx	T260	shape fill	<a:schemeClr val="tx2"><a:blueOff val="25000"/></a:schemeClr>	tx2 blueOff 25000
+tc-p3-transforms.docx	T261	shape fill	<a:schemeClr val="tx2"><a:blueMod val="50000"/></a:schemeClr>	tx2 blueMod 50000
+tc-p3-transforms.docx	T262	shape fill	<a:schemeClr val="tx2"><a:blueMod val="150000"/></a:schemeClr>	tx2 blueMod 150000
+tc-p3-transforms.docx	T263	shape fill	<a:schemeClr val="tx2"><a:gamma/></a:schemeClr>	tx2 gamma
+tc-p3-transforms.docx	T264	shape fill	<a:schemeClr val="tx2"><a:invGamma/></a:schemeClr>	tx2 invGamma
+tc-p3-transforms.docx	T265	shape fill	<a:schemeClr val="bg2"><a:tint val="25000"/></a:schemeClr>	bg2 tint 25000
+tc-p3-transforms.docx	T266	shape fill	<a:schemeClr val="bg2"><a:tint val="50000"/></a:schemeClr>	bg2 tint 50000
+tc-p3-transforms.docx	T267	shape fill	<a:schemeClr val="bg2"><a:tint val="75000"/></a:schemeClr>	bg2 tint 75000
+tc-p3-transforms.docx	T268	shape fill	<a:schemeClr val="bg2"><a:shade val="25000"/></a:schemeClr>	bg2 shade 25000
+tc-p3-transforms.docx	T269	shape fill	<a:schemeClr val="bg2"><a:shade val="50000"/></a:schemeClr>	bg2 shade 50000
+tc-p3-transforms.docx	T270	shape fill	<a:schemeClr val="bg2"><a:shade val="75000"/></a:schemeClr>	bg2 shade 75000
+tc-p3-transforms.docx	T271	shape fill	<a:schemeClr val="bg2"><a:comp/></a:schemeClr>	bg2 comp
+tc-p3-transforms.docx	T272	shape fill	<a:schemeClr val="bg2"><a:inv/></a:schemeClr>	bg2 inv
+tc-p3-transforms.docx	T273	shape fill	<a:schemeClr val="bg2"><a:gray/></a:schemeClr>	bg2 gray
+tc-p3-transforms.docx	T274	shape fill	<a:schemeClr val="bg2"><a:alpha val="25000"/></a:schemeClr>	bg2 alpha 25000
+tc-p3-transforms.docx	T275	shape fill	<a:schemeClr val="bg2"><a:alpha val="50000"/></a:schemeClr>	bg2 alpha 50000
+tc-p3-transforms.docx	T276	shape fill	<a:schemeClr val="bg2"><a:alpha val="75000"/></a:schemeClr>	bg2 alpha 75000
+tc-p3-transforms.docx	T277	shape fill	<a:schemeClr val="bg2"><a:alphaOff val="-25000"/></a:schemeClr>	bg2 alphaOff -25000
+tc-p3-transforms.docx	T278	shape fill	<a:schemeClr val="bg2"><a:alphaOff val="-50000"/></a:schemeClr>	bg2 alphaOff -50000
+tc-p3-transforms.docx	T279	shape fill	<a:schemeClr val="bg2"><a:alphaMod val="50000"/></a:schemeClr>	bg2 alphaMod 50000
+tc-p3-transforms.docx	T280	shape fill	<a:schemeClr val="bg2"><a:alphaMod val="25000"/></a:schemeClr>	bg2 alphaMod 25000
+tc-p3-transforms.docx	T281	shape fill	<a:schemeClr val="bg2"><a:hue val="0"/></a:schemeClr>	bg2 hue 0
+tc-p3-transforms.docx	T282	shape fill	<a:schemeClr val="bg2"><a:hue val="7200000"/></a:schemeClr>	bg2 hue 7200000
+tc-p3-transforms.docx	T283	shape fill	<a:schemeClr val="bg2"><a:hue val="14400000"/></a:schemeClr>	bg2 hue 14400000
+tc-p3-transforms.docx	T284	shape fill	<a:schemeClr val="bg2"><a:hueOff val="1800000"/></a:schemeClr>	bg2 hueOff 1800000
+tc-p3-transforms.docx	T285	shape fill	<a:schemeClr val="bg2"><a:hueOff val="-1800000"/></a:schemeClr>	bg2 hueOff -1800000
+tc-p3-transforms.docx	T286	shape fill	<a:schemeClr val="bg2"><a:hueOff val="5400000"/></a:schemeClr>	bg2 hueOff 5400000
+tc-p3-transforms.docx	T287	shape fill	<a:schemeClr val="bg2"><a:hueMod val="50000"/></a:schemeClr>	bg2 hueMod 50000
+tc-p3-transforms.docx	T288	shape fill	<a:schemeClr val="bg2"><a:hueMod val="150000"/></a:schemeClr>	bg2 hueMod 150000
+tc-p3-transforms.docx	T289	shape fill	<a:schemeClr val="bg2"><a:hueMod val="200000"/></a:schemeClr>	bg2 hueMod 200000
+tc-p3-transforms.docx	T290	shape fill	<a:schemeClr val="bg2"><a:sat val="0"/></a:schemeClr>	bg2 sat 0
+tc-p3-transforms.docx	T291	shape fill	<a:schemeClr val="bg2"><a:sat val="50000"/></a:schemeClr>	bg2 sat 50000
+tc-p3-transforms.docx	T292	shape fill	<a:schemeClr val="bg2"><a:sat val="100000"/></a:schemeClr>	bg2 sat 100000
+tc-p3-transforms.docx	T293	shape fill	<a:schemeClr val="bg2"><a:satOff val="-50000"/></a:schemeClr>	bg2 satOff -50000
+tc-p3-transforms.docx	T294	shape fill	<a:schemeClr val="bg2"><a:satOff val="-25000"/></a:schemeClr>	bg2 satOff -25000
+tc-p3-transforms.docx	T295	shape fill	<a:schemeClr val="bg2"><a:satOff val="25000"/></a:schemeClr>	bg2 satOff 25000
+tc-p3-transforms.docx	T296	shape fill	<a:schemeClr val="bg2"><a:satMod val="50000"/></a:schemeClr>	bg2 satMod 50000
+tc-p3-transforms.docx	T297	shape fill	<a:schemeClr val="bg2"><a:satMod val="150000"/></a:schemeClr>	bg2 satMod 150000
+tc-p3-transforms.docx	T298	shape fill	<a:schemeClr val="bg2"><a:satMod val="200000"/></a:schemeClr>	bg2 satMod 200000
+tc-p3-transforms.docx	T299	shape fill	<a:schemeClr val="bg2"><a:lum val="25000"/></a:schemeClr>	bg2 lum 25000
+tc-p3-transforms.docx	T300	shape fill	<a:schemeClr val="bg2"><a:lum val="50000"/></a:schemeClr>	bg2 lum 50000
+tc-p3-transforms.docx	T301	shape fill	<a:schemeClr val="bg2"><a:lum val="75000"/></a:schemeClr>	bg2 lum 75000
+tc-p3-transforms.docx	T302	shape fill	<a:schemeClr val="bg2"><a:lumOff val="-25000"/></a:schemeClr>	bg2 lumOff -25000
+tc-p3-transforms.docx	T303	shape fill	<a:schemeClr val="bg2"><a:lumOff val="20000"/></a:schemeClr>	bg2 lumOff 20000
+tc-p3-transforms.docx	T304	shape fill	<a:schemeClr val="bg2"><a:lumOff val="40000"/></a:schemeClr>	bg2 lumOff 40000
+tc-p3-transforms.docx	T305	shape fill	<a:schemeClr val="bg2"><a:lumMod val="25000"/></a:schemeClr>	bg2 lumMod 25000
+tc-p3-transforms.docx	T306	shape fill	<a:schemeClr val="bg2"><a:lumMod val="50000"/></a:schemeClr>	bg2 lumMod 50000
+tc-p3-transforms.docx	T307	shape fill	<a:schemeClr val="bg2"><a:lumMod val="75000"/></a:schemeClr>	bg2 lumMod 75000
+tc-p3-transforms.docx	T308	shape fill	<a:schemeClr val="bg2"><a:red val="0"/></a:schemeClr>	bg2 red 0
+tc-p3-transforms.docx	T309	shape fill	<a:schemeClr val="bg2"><a:red val="50000"/></a:schemeClr>	bg2 red 50000
+tc-p3-transforms.docx	T310	shape fill	<a:schemeClr val="bg2"><a:red val="100000"/></a:schemeClr>	bg2 red 100000
+tc-p3-transforms.docx	T311	shape fill	<a:schemeClr val="bg2"><a:redOff val="-25000"/></a:schemeClr>	bg2 redOff -25000
+tc-p3-transforms.docx	T312	shape fill	<a:schemeClr val="bg2"><a:redOff val="25000"/></a:schemeClr>	bg2 redOff 25000
+tc-p3-transforms.docx	T313	shape fill	<a:schemeClr val="bg2"><a:redMod val="50000"/></a:schemeClr>	bg2 redMod 50000
+tc-p3-transforms.docx	T314	shape fill	<a:schemeClr val="bg2"><a:redMod val="150000"/></a:schemeClr>	bg2 redMod 150000
+tc-p3-transforms.docx	T315	shape fill	<a:schemeClr val="bg2"><a:green val="0"/></a:schemeClr>	bg2 green 0
+tc-p3-transforms.docx	T316	shape fill	<a:schemeClr val="bg2"><a:green val="50000"/></a:schemeClr>	bg2 green 50000
+tc-p3-transforms.docx	T317	shape fill	<a:schemeClr val="bg2"><a:green val="100000"/></a:schemeClr>	bg2 green 100000
+tc-p3-transforms.docx	T318	shape fill	<a:schemeClr val="bg2"><a:greenOff val="-25000"/></a:schemeClr>	bg2 greenOff -25000
+tc-p3-transforms.docx	T319	shape fill	<a:schemeClr val="bg2"><a:greenOff val="25000"/></a:schemeClr>	bg2 greenOff 25000
+tc-p3-transforms.docx	T320	shape fill	<a:schemeClr val="bg2"><a:greenMod val="50000"/></a:schemeClr>	bg2 greenMod 50000
+tc-p3-transforms.docx	T321	shape fill	<a:schemeClr val="bg2"><a:greenMod val="150000"/></a:schemeClr>	bg2 greenMod 150000
+tc-p3-transforms.docx	T322	shape fill	<a:schemeClr val="bg2"><a:blue val="0"/></a:schemeClr>	bg2 blue 0
+tc-p3-transforms.docx	T323	shape fill	<a:schemeClr val="bg2"><a:blue val="50000"/></a:schemeClr>	bg2 blue 50000
+tc-p3-transforms.docx	T324	shape fill	<a:schemeClr val="bg2"><a:blue val="100000"/></a:schemeClr>	bg2 blue 100000
+tc-p3-transforms.docx	T325	shape fill	<a:schemeClr val="bg2"><a:blueOff val="-25000"/></a:schemeClr>	bg2 blueOff -25000
+tc-p3-transforms.docx	T326	shape fill	<a:schemeClr val="bg2"><a:blueOff val="25000"/></a:schemeClr>	bg2 blueOff 25000
+tc-p3-transforms.docx	T327	shape fill	<a:schemeClr val="bg2"><a:blueMod val="50000"/></a:schemeClr>	bg2 blueMod 50000
+tc-p3-transforms.docx	T328	shape fill	<a:schemeClr val="bg2"><a:blueMod val="150000"/></a:schemeClr>	bg2 blueMod 150000
+tc-p3-transforms.docx	T329	shape fill	<a:schemeClr val="bg2"><a:gamma/></a:schemeClr>	bg2 gamma
+tc-p3-transforms.docx	T330	shape fill	<a:schemeClr val="bg2"><a:invGamma/></a:schemeClr>	bg2 invGamma
+tc-p3-transforms.docx	T331	shape fill	<a:schemeClr val="bg1"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	bg1 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.docx	T332	shape fill	<a:schemeClr val="bg1"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	bg1 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.docx	T333	shape fill	<a:schemeClr val="bg1"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	bg1 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.docx	T334	shape fill	<a:schemeClr val="bg1"><a:lumMod val="75000"/></a:schemeClr>	bg1 picker lumMod 75000
+tc-p3-transforms.docx	T335	shape fill	<a:schemeClr val="bg1"><a:lumMod val="50000"/></a:schemeClr>	bg1 picker lumMod 50000
+tc-p3-transforms.docx	T336	shape fill	<a:schemeClr val="tx1"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	tx1 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.docx	T337	shape fill	<a:schemeClr val="tx1"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	tx1 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.docx	T338	shape fill	<a:schemeClr val="tx1"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	tx1 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.docx	T339	shape fill	<a:schemeClr val="tx1"><a:lumMod val="75000"/></a:schemeClr>	tx1 picker lumMod 75000
+tc-p3-transforms.docx	T340	shape fill	<a:schemeClr val="tx1"><a:lumMod val="50000"/></a:schemeClr>	tx1 picker lumMod 50000
+tc-p3-transforms.docx	T341	shape fill	<a:schemeClr val="bg2"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	bg2 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.docx	T342	shape fill	<a:schemeClr val="bg2"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	bg2 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.docx	T343	shape fill	<a:schemeClr val="bg2"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	bg2 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.docx	T344	shape fill	<a:schemeClr val="bg2"><a:lumMod val="75000"/></a:schemeClr>	bg2 picker lumMod 75000
+tc-p3-transforms.docx	T345	shape fill	<a:schemeClr val="bg2"><a:lumMod val="50000"/></a:schemeClr>	bg2 picker lumMod 50000
+tc-p3-transforms.docx	T346	shape fill	<a:schemeClr val="tx2"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	tx2 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.docx	T347	shape fill	<a:schemeClr val="tx2"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	tx2 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.docx	T348	shape fill	<a:schemeClr val="tx2"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	tx2 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.docx	T349	shape fill	<a:schemeClr val="tx2"><a:lumMod val="75000"/></a:schemeClr>	tx2 picker lumMod 75000
+tc-p3-transforms.docx	T350	shape fill	<a:schemeClr val="tx2"><a:lumMod val="50000"/></a:schemeClr>	tx2 picker lumMod 50000
+tc-p3-transforms.docx	T351	shape fill	<a:schemeClr val="accent1"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	accent1 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.docx	T352	shape fill	<a:schemeClr val="accent1"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	accent1 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.docx	T353	shape fill	<a:schemeClr val="accent1"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	accent1 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.docx	T354	shape fill	<a:schemeClr val="accent1"><a:lumMod val="75000"/></a:schemeClr>	accent1 picker lumMod 75000
+tc-p3-transforms.docx	T355	shape fill	<a:schemeClr val="accent1"><a:lumMod val="50000"/></a:schemeClr>	accent1 picker lumMod 50000
+tc-p3-transforms.docx	T356	shape fill	<a:schemeClr val="accent2"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	accent2 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.docx	T357	shape fill	<a:schemeClr val="accent2"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	accent2 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.docx	T358	shape fill	<a:schemeClr val="accent2"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	accent2 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.docx	T359	shape fill	<a:schemeClr val="accent2"><a:lumMod val="75000"/></a:schemeClr>	accent2 picker lumMod 75000
+tc-p3-transforms.docx	T360	shape fill	<a:schemeClr val="accent2"><a:lumMod val="50000"/></a:schemeClr>	accent2 picker lumMod 50000
+tc-p3-transforms.docx	T361	shape fill	<a:schemeClr val="accent3"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	accent3 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.docx	T362	shape fill	<a:schemeClr val="accent3"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	accent3 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.docx	T363	shape fill	<a:schemeClr val="accent3"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	accent3 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.docx	T364	shape fill	<a:schemeClr val="accent3"><a:lumMod val="75000"/></a:schemeClr>	accent3 picker lumMod 75000
+tc-p3-transforms.docx	T365	shape fill	<a:schemeClr val="accent3"><a:lumMod val="50000"/></a:schemeClr>	accent3 picker lumMod 50000
+tc-p3-transforms.docx	T366	shape fill	<a:schemeClr val="accent4"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	accent4 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.docx	T367	shape fill	<a:schemeClr val="accent4"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	accent4 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.docx	T368	shape fill	<a:schemeClr val="accent4"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	accent4 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.docx	T369	shape fill	<a:schemeClr val="accent4"><a:lumMod val="75000"/></a:schemeClr>	accent4 picker lumMod 75000
+tc-p3-transforms.docx	T370	shape fill	<a:schemeClr val="accent4"><a:lumMod val="50000"/></a:schemeClr>	accent4 picker lumMod 50000
+tc-p3-transforms.docx	T371	shape fill	<a:schemeClr val="accent5"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	accent5 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.docx	T372	shape fill	<a:schemeClr val="accent5"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	accent5 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.docx	T373	shape fill	<a:schemeClr val="accent5"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	accent5 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.docx	T374	shape fill	<a:schemeClr val="accent5"><a:lumMod val="75000"/></a:schemeClr>	accent5 picker lumMod 75000
+tc-p3-transforms.docx	T375	shape fill	<a:schemeClr val="accent5"><a:lumMod val="50000"/></a:schemeClr>	accent5 picker lumMod 50000
+tc-p3-transforms.docx	T376	shape fill	<a:schemeClr val="accent6"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	accent6 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.docx	T377	shape fill	<a:schemeClr val="accent6"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	accent6 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.docx	T378	shape fill	<a:schemeClr val="accent6"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	accent6 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.docx	T379	shape fill	<a:schemeClr val="accent6"><a:lumMod val="75000"/></a:schemeClr>	accent6 picker lumMod 75000
+tc-p3-transforms.docx	T380	shape fill	<a:schemeClr val="accent6"><a:lumMod val="50000"/></a:schemeClr>	accent6 picker lumMod 50000
+tc-p3-transforms.docx	T381	shape fill	<a:schemeClr val="accent1"><a:tint val="50000"/><a:lumMod val="75000"/></a:schemeClr>	accent1 tint 50000 then lumMod 75000
+tc-p3-transforms.docx	T382	shape fill	<a:schemeClr val="accent1"><a:lumMod val="75000"/><a:tint val="50000"/></a:schemeClr>	accent1 lumMod 75000 then tint 50000
+tc-p3-transforms.docx	T383	shape fill	<a:schemeClr val="accent1"><a:shade val="50000"/><a:satMod val="150000"/></a:schemeClr>	accent1 shade 50000 then satMod 150000
+tc-p3-transforms.docx	T384	shape fill	<a:schemeClr val="accent1"><a:satMod val="150000"/><a:shade val="50000"/></a:schemeClr>	accent1 satMod 150000 then shade 50000
+tc-p3-transforms.docx	T385	shape fill	<a:schemeClr val="accent1"><a:lumMod val="50000"/><a:lumOff val="25000"/></a:schemeClr>	accent1 lumMod 50000 then lumOff 25000
+tc-p3-transforms.docx	T386	shape fill	<a:schemeClr val="accent1"><a:lumOff val="25000"/><a:lumMod val="50000"/></a:schemeClr>	accent1 lumOff 25000 then lumMod 50000
+tc-p3-transforms.docx	T387	shape fill	<a:schemeClr val="accent1"><a:tint val="50000"/><a:tint val="50000"/></a:schemeClr>	accent1 tint 50000 twice
+tc-p3-transforms.docx	T388	shape fill	<a:schemeClr val="accent1"><a:satMod val="103000"/><a:lumMod val="102000"/><a:tint val="94000"/></a:schemeClr>	accent1 the 2013 theme's gradient stop: satMod 103000 lumMod 102000 tint 94000
+tc-p3-transforms.docx	T389	shape fill	<a:schemeClr val="accent1"><a:shade val="76000"/></a:schemeClr>	accent1 chart style: shade 76000
+tc-p3-transforms.docx	T390	shape fill	<a:schemeClr val="accent1"><a:tint val="77000"/></a:schemeClr>	accent1 chart style: tint 77000
+tc-p3-transforms.docx	T391	shape fill	<a:srgbClr val="336699"/>	srgbClr 336699 (control)
+tc-p3-transforms.docx	T392	shape fill	<a:srgbClr val="336699"><a:tint val="50000"/></a:srgbClr>	srgbClr 336699 tint 50000
+tc-p3-transforms.docx	T393	shape fill	<a:scrgbClr r="50000" g="25000" b="75000"/>	scrgbClr 50/25/75%
+tc-p3-transforms.docx	T394	shape fill	<a:hslClr hue="14400000" sat="50000" lum="40000"/>	hslClr 240deg 50% 40%
+tc-p3-transforms.docx	T395	shape fill	<a:prstClr val="coral"/>	prstClr coral
+tc-p3-transforms.docx	T396	shape fill	<a:sysClr val="windowText" lastClr="FF0000"/>	sysClr windowText, lastClr FF0000
+tc-p3-transforms.docx	T397	shape fill	<a:sysClr val="window" lastClr="00FF00"/>	sysClr window, lastClr 00FF00
+tc-p3-transforms.docx	T398	shape fill	<a:schemeClr val="hlink"/>	schemeClr hlink
+tc-p3-transforms.docx	T399	shape fill	<a:schemeClr val="folHlink"/>	schemeClr folHlink
+tc-p3-transforms.docx	T400	shape style	<a:lnRef idx="2"><a:schemeClr val="accent1"><a:shade val="50000"/></a:schemeClr></a:lnRef><a:fillRef idx="1"><a:schemeClr val="accent1"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="accent1"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="lt1"/></a:fontRef>	Word's default shape style: line accent1 shade 50000 (lnRef 2), fill accent1 (fillRef 1), text lt1
+tc-p3-transforms.docx	T401	shape style	<a:lnRef idx="1"><a:schemeClr val="accent6"/></a:lnRef><a:fillRef idx="1"><a:schemeClr val="accent2"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr></a:fillRef><a:effectRef idx="0"><a:schemeClr val="accent2"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="dk1"/></a:fontRef>	line accent6 (lnRef 1), fill accent2 lumMod 60000 lumOff 40000 (fillRef 1), text dk1
+tc-p3-transforms.docx	T402	shape style	<a:lnRef idx="3"><a:schemeClr val="accent4"/></a:lnRef><a:fillRef idx="2"><a:schemeClr val="accent4"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="accent4"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="lt1"/></a:fontRef>	line accent4 (lnRef 3), fill accent4 through fillRef 2 (a gradient in the 2023 theme), text lt1
+tc-p3-transforms.docx	T403	shape style	<a:lnRef idx="0"><a:schemeClr val="accent5"/></a:lnRef><a:fillRef idx="1001"><a:schemeClr val="accent5"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="accent5"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="lt1"/></a:fontRef>	no line (lnRef 0), fill accent5 through fillRef 1001 (bgFillStyleLst), text lt1
+tc-p3-transforms.pptx	T001	shape fill	<a:schemeClr val="accent1"><a:tint val="25000"/></a:schemeClr>	accent1 tint 25000
+tc-p3-transforms.pptx	T002	shape fill	<a:schemeClr val="accent1"><a:tint val="50000"/></a:schemeClr>	accent1 tint 50000
+tc-p3-transforms.pptx	T003	shape fill	<a:schemeClr val="accent1"><a:tint val="75000"/></a:schemeClr>	accent1 tint 75000
+tc-p3-transforms.pptx	T004	shape fill	<a:schemeClr val="accent1"><a:shade val="25000"/></a:schemeClr>	accent1 shade 25000
+tc-p3-transforms.pptx	T005	shape fill	<a:schemeClr val="accent1"><a:shade val="50000"/></a:schemeClr>	accent1 shade 50000
+tc-p3-transforms.pptx	T006	shape fill	<a:schemeClr val="accent1"><a:shade val="75000"/></a:schemeClr>	accent1 shade 75000
+tc-p3-transforms.pptx	T007	shape fill	<a:schemeClr val="accent1"><a:comp/></a:schemeClr>	accent1 comp
+tc-p3-transforms.pptx	T008	shape fill	<a:schemeClr val="accent1"><a:inv/></a:schemeClr>	accent1 inv
+tc-p3-transforms.pptx	T009	shape fill	<a:schemeClr val="accent1"><a:gray/></a:schemeClr>	accent1 gray
+tc-p3-transforms.pptx	T010	shape fill	<a:schemeClr val="accent1"><a:alpha val="25000"/></a:schemeClr>	accent1 alpha 25000
+tc-p3-transforms.pptx	T011	shape fill	<a:schemeClr val="accent1"><a:alpha val="50000"/></a:schemeClr>	accent1 alpha 50000
+tc-p3-transforms.pptx	T012	shape fill	<a:schemeClr val="accent1"><a:alpha val="75000"/></a:schemeClr>	accent1 alpha 75000
+tc-p3-transforms.pptx	T013	shape fill	<a:schemeClr val="accent1"><a:alphaOff val="-25000"/></a:schemeClr>	accent1 alphaOff -25000
+tc-p3-transforms.pptx	T014	shape fill	<a:schemeClr val="accent1"><a:alphaOff val="-50000"/></a:schemeClr>	accent1 alphaOff -50000
+tc-p3-transforms.pptx	T015	shape fill	<a:schemeClr val="accent1"><a:alphaMod val="50000"/></a:schemeClr>	accent1 alphaMod 50000
+tc-p3-transforms.pptx	T016	shape fill	<a:schemeClr val="accent1"><a:alphaMod val="25000"/></a:schemeClr>	accent1 alphaMod 25000
+tc-p3-transforms.pptx	T017	shape fill	<a:schemeClr val="accent1"><a:hue val="0"/></a:schemeClr>	accent1 hue 0
+tc-p3-transforms.pptx	T018	shape fill	<a:schemeClr val="accent1"><a:hue val="7200000"/></a:schemeClr>	accent1 hue 7200000
+tc-p3-transforms.pptx	T019	shape fill	<a:schemeClr val="accent1"><a:hue val="14400000"/></a:schemeClr>	accent1 hue 14400000
+tc-p3-transforms.pptx	T020	shape fill	<a:schemeClr val="accent1"><a:hueOff val="1800000"/></a:schemeClr>	accent1 hueOff 1800000
+tc-p3-transforms.pptx	T021	shape fill	<a:schemeClr val="accent1"><a:hueOff val="-1800000"/></a:schemeClr>	accent1 hueOff -1800000
+tc-p3-transforms.pptx	T022	shape fill	<a:schemeClr val="accent1"><a:hueOff val="5400000"/></a:schemeClr>	accent1 hueOff 5400000
+tc-p3-transforms.pptx	T023	shape fill	<a:schemeClr val="accent1"><a:hueMod val="50000"/></a:schemeClr>	accent1 hueMod 50000
+tc-p3-transforms.pptx	T024	shape fill	<a:schemeClr val="accent1"><a:hueMod val="150000"/></a:schemeClr>	accent1 hueMod 150000
+tc-p3-transforms.pptx	T025	shape fill	<a:schemeClr val="accent1"><a:hueMod val="200000"/></a:schemeClr>	accent1 hueMod 200000
+tc-p3-transforms.pptx	T026	shape fill	<a:schemeClr val="accent1"><a:sat val="0"/></a:schemeClr>	accent1 sat 0
+tc-p3-transforms.pptx	T027	shape fill	<a:schemeClr val="accent1"><a:sat val="50000"/></a:schemeClr>	accent1 sat 50000
+tc-p3-transforms.pptx	T028	shape fill	<a:schemeClr val="accent1"><a:sat val="100000"/></a:schemeClr>	accent1 sat 100000
+tc-p3-transforms.pptx	T029	shape fill	<a:schemeClr val="accent1"><a:satOff val="-50000"/></a:schemeClr>	accent1 satOff -50000
+tc-p3-transforms.pptx	T030	shape fill	<a:schemeClr val="accent1"><a:satOff val="-25000"/></a:schemeClr>	accent1 satOff -25000
+tc-p3-transforms.pptx	T031	shape fill	<a:schemeClr val="accent1"><a:satOff val="25000"/></a:schemeClr>	accent1 satOff 25000
+tc-p3-transforms.pptx	T032	shape fill	<a:schemeClr val="accent1"><a:satMod val="50000"/></a:schemeClr>	accent1 satMod 50000
+tc-p3-transforms.pptx	T033	shape fill	<a:schemeClr val="accent1"><a:satMod val="150000"/></a:schemeClr>	accent1 satMod 150000
+tc-p3-transforms.pptx	T034	shape fill	<a:schemeClr val="accent1"><a:satMod val="200000"/></a:schemeClr>	accent1 satMod 200000
+tc-p3-transforms.pptx	T035	shape fill	<a:schemeClr val="accent1"><a:lum val="25000"/></a:schemeClr>	accent1 lum 25000
+tc-p3-transforms.pptx	T036	shape fill	<a:schemeClr val="accent1"><a:lum val="50000"/></a:schemeClr>	accent1 lum 50000
+tc-p3-transforms.pptx	T037	shape fill	<a:schemeClr val="accent1"><a:lum val="75000"/></a:schemeClr>	accent1 lum 75000
+tc-p3-transforms.pptx	T038	shape fill	<a:schemeClr val="accent1"><a:lumOff val="-25000"/></a:schemeClr>	accent1 lumOff -25000
+tc-p3-transforms.pptx	T039	shape fill	<a:schemeClr val="accent1"><a:lumOff val="20000"/></a:schemeClr>	accent1 lumOff 20000
+tc-p3-transforms.pptx	T040	shape fill	<a:schemeClr val="accent1"><a:lumOff val="40000"/></a:schemeClr>	accent1 lumOff 40000
+tc-p3-transforms.pptx	T041	shape fill	<a:schemeClr val="accent1"><a:lumMod val="25000"/></a:schemeClr>	accent1 lumMod 25000
+tc-p3-transforms.pptx	T042	shape fill	<a:schemeClr val="accent1"><a:lumMod val="50000"/></a:schemeClr>	accent1 lumMod 50000
+tc-p3-transforms.pptx	T043	shape fill	<a:schemeClr val="accent1"><a:lumMod val="75000"/></a:schemeClr>	accent1 lumMod 75000
+tc-p3-transforms.pptx	T044	shape fill	<a:schemeClr val="accent1"><a:red val="0"/></a:schemeClr>	accent1 red 0
+tc-p3-transforms.pptx	T045	shape fill	<a:schemeClr val="accent1"><a:red val="50000"/></a:schemeClr>	accent1 red 50000
+tc-p3-transforms.pptx	T046	shape fill	<a:schemeClr val="accent1"><a:red val="100000"/></a:schemeClr>	accent1 red 100000
+tc-p3-transforms.pptx	T047	shape fill	<a:schemeClr val="accent1"><a:redOff val="-25000"/></a:schemeClr>	accent1 redOff -25000
+tc-p3-transforms.pptx	T048	shape fill	<a:schemeClr val="accent1"><a:redOff val="25000"/></a:schemeClr>	accent1 redOff 25000
+tc-p3-transforms.pptx	T049	shape fill	<a:schemeClr val="accent1"><a:redMod val="50000"/></a:schemeClr>	accent1 redMod 50000
+tc-p3-transforms.pptx	T050	shape fill	<a:schemeClr val="accent1"><a:redMod val="150000"/></a:schemeClr>	accent1 redMod 150000
+tc-p3-transforms.pptx	T051	shape fill	<a:schemeClr val="accent1"><a:green val="0"/></a:schemeClr>	accent1 green 0
+tc-p3-transforms.pptx	T052	shape fill	<a:schemeClr val="accent1"><a:green val="50000"/></a:schemeClr>	accent1 green 50000
+tc-p3-transforms.pptx	T053	shape fill	<a:schemeClr val="accent1"><a:green val="100000"/></a:schemeClr>	accent1 green 100000
+tc-p3-transforms.pptx	T054	shape fill	<a:schemeClr val="accent1"><a:greenOff val="-25000"/></a:schemeClr>	accent1 greenOff -25000
+tc-p3-transforms.pptx	T055	shape fill	<a:schemeClr val="accent1"><a:greenOff val="25000"/></a:schemeClr>	accent1 greenOff 25000
+tc-p3-transforms.pptx	T056	shape fill	<a:schemeClr val="accent1"><a:greenMod val="50000"/></a:schemeClr>	accent1 greenMod 50000
+tc-p3-transforms.pptx	T057	shape fill	<a:schemeClr val="accent1"><a:greenMod val="150000"/></a:schemeClr>	accent1 greenMod 150000
+tc-p3-transforms.pptx	T058	shape fill	<a:schemeClr val="accent1"><a:blue val="0"/></a:schemeClr>	accent1 blue 0
+tc-p3-transforms.pptx	T059	shape fill	<a:schemeClr val="accent1"><a:blue val="50000"/></a:schemeClr>	accent1 blue 50000
+tc-p3-transforms.pptx	T060	shape fill	<a:schemeClr val="accent1"><a:blue val="100000"/></a:schemeClr>	accent1 blue 100000
+tc-p3-transforms.pptx	T061	shape fill	<a:schemeClr val="accent1"><a:blueOff val="-25000"/></a:schemeClr>	accent1 blueOff -25000
+tc-p3-transforms.pptx	T062	shape fill	<a:schemeClr val="accent1"><a:blueOff val="25000"/></a:schemeClr>	accent1 blueOff 25000
+tc-p3-transforms.pptx	T063	shape fill	<a:schemeClr val="accent1"><a:blueMod val="50000"/></a:schemeClr>	accent1 blueMod 50000
+tc-p3-transforms.pptx	T064	shape fill	<a:schemeClr val="accent1"><a:blueMod val="150000"/></a:schemeClr>	accent1 blueMod 150000
+tc-p3-transforms.pptx	T065	shape fill	<a:schemeClr val="accent1"><a:gamma/></a:schemeClr>	accent1 gamma
+tc-p3-transforms.pptx	T066	shape fill	<a:schemeClr val="accent1"><a:invGamma/></a:schemeClr>	accent1 invGamma
+tc-p3-transforms.pptx	T067	shape fill	<a:schemeClr val="accent2"><a:tint val="25000"/></a:schemeClr>	accent2 tint 25000
+tc-p3-transforms.pptx	T068	shape fill	<a:schemeClr val="accent2"><a:tint val="50000"/></a:schemeClr>	accent2 tint 50000
+tc-p3-transforms.pptx	T069	shape fill	<a:schemeClr val="accent2"><a:tint val="75000"/></a:schemeClr>	accent2 tint 75000
+tc-p3-transforms.pptx	T070	shape fill	<a:schemeClr val="accent2"><a:shade val="25000"/></a:schemeClr>	accent2 shade 25000
+tc-p3-transforms.pptx	T071	shape fill	<a:schemeClr val="accent2"><a:shade val="50000"/></a:schemeClr>	accent2 shade 50000
+tc-p3-transforms.pptx	T072	shape fill	<a:schemeClr val="accent2"><a:shade val="75000"/></a:schemeClr>	accent2 shade 75000
+tc-p3-transforms.pptx	T073	shape fill	<a:schemeClr val="accent2"><a:comp/></a:schemeClr>	accent2 comp
+tc-p3-transforms.pptx	T074	shape fill	<a:schemeClr val="accent2"><a:inv/></a:schemeClr>	accent2 inv
+tc-p3-transforms.pptx	T075	shape fill	<a:schemeClr val="accent2"><a:gray/></a:schemeClr>	accent2 gray
+tc-p3-transforms.pptx	T076	shape fill	<a:schemeClr val="accent2"><a:alpha val="25000"/></a:schemeClr>	accent2 alpha 25000
+tc-p3-transforms.pptx	T077	shape fill	<a:schemeClr val="accent2"><a:alpha val="50000"/></a:schemeClr>	accent2 alpha 50000
+tc-p3-transforms.pptx	T078	shape fill	<a:schemeClr val="accent2"><a:alpha val="75000"/></a:schemeClr>	accent2 alpha 75000
+tc-p3-transforms.pptx	T079	shape fill	<a:schemeClr val="accent2"><a:alphaOff val="-25000"/></a:schemeClr>	accent2 alphaOff -25000
+tc-p3-transforms.pptx	T080	shape fill	<a:schemeClr val="accent2"><a:alphaOff val="-50000"/></a:schemeClr>	accent2 alphaOff -50000
+tc-p3-transforms.pptx	T081	shape fill	<a:schemeClr val="accent2"><a:alphaMod val="50000"/></a:schemeClr>	accent2 alphaMod 50000
+tc-p3-transforms.pptx	T082	shape fill	<a:schemeClr val="accent2"><a:alphaMod val="25000"/></a:schemeClr>	accent2 alphaMod 25000
+tc-p3-transforms.pptx	T083	shape fill	<a:schemeClr val="accent2"><a:hue val="0"/></a:schemeClr>	accent2 hue 0
+tc-p3-transforms.pptx	T084	shape fill	<a:schemeClr val="accent2"><a:hue val="7200000"/></a:schemeClr>	accent2 hue 7200000
+tc-p3-transforms.pptx	T085	shape fill	<a:schemeClr val="accent2"><a:hue val="14400000"/></a:schemeClr>	accent2 hue 14400000
+tc-p3-transforms.pptx	T086	shape fill	<a:schemeClr val="accent2"><a:hueOff val="1800000"/></a:schemeClr>	accent2 hueOff 1800000
+tc-p3-transforms.pptx	T087	shape fill	<a:schemeClr val="accent2"><a:hueOff val="-1800000"/></a:schemeClr>	accent2 hueOff -1800000
+tc-p3-transforms.pptx	T088	shape fill	<a:schemeClr val="accent2"><a:hueOff val="5400000"/></a:schemeClr>	accent2 hueOff 5400000
+tc-p3-transforms.pptx	T089	shape fill	<a:schemeClr val="accent2"><a:hueMod val="50000"/></a:schemeClr>	accent2 hueMod 50000
+tc-p3-transforms.pptx	T090	shape fill	<a:schemeClr val="accent2"><a:hueMod val="150000"/></a:schemeClr>	accent2 hueMod 150000
+tc-p3-transforms.pptx	T091	shape fill	<a:schemeClr val="accent2"><a:hueMod val="200000"/></a:schemeClr>	accent2 hueMod 200000
+tc-p3-transforms.pptx	T092	shape fill	<a:schemeClr val="accent2"><a:sat val="0"/></a:schemeClr>	accent2 sat 0
+tc-p3-transforms.pptx	T093	shape fill	<a:schemeClr val="accent2"><a:sat val="50000"/></a:schemeClr>	accent2 sat 50000
+tc-p3-transforms.pptx	T094	shape fill	<a:schemeClr val="accent2"><a:sat val="100000"/></a:schemeClr>	accent2 sat 100000
+tc-p3-transforms.pptx	T095	shape fill	<a:schemeClr val="accent2"><a:satOff val="-50000"/></a:schemeClr>	accent2 satOff -50000
+tc-p3-transforms.pptx	T096	shape fill	<a:schemeClr val="accent2"><a:satOff val="-25000"/></a:schemeClr>	accent2 satOff -25000
+tc-p3-transforms.pptx	T097	shape fill	<a:schemeClr val="accent2"><a:satOff val="25000"/></a:schemeClr>	accent2 satOff 25000
+tc-p3-transforms.pptx	T098	shape fill	<a:schemeClr val="accent2"><a:satMod val="50000"/></a:schemeClr>	accent2 satMod 50000
+tc-p3-transforms.pptx	T099	shape fill	<a:schemeClr val="accent2"><a:satMod val="150000"/></a:schemeClr>	accent2 satMod 150000
+tc-p3-transforms.pptx	T100	shape fill	<a:schemeClr val="accent2"><a:satMod val="200000"/></a:schemeClr>	accent2 satMod 200000
+tc-p3-transforms.pptx	T101	shape fill	<a:schemeClr val="accent2"><a:lum val="25000"/></a:schemeClr>	accent2 lum 25000
+tc-p3-transforms.pptx	T102	shape fill	<a:schemeClr val="accent2"><a:lum val="50000"/></a:schemeClr>	accent2 lum 50000
+tc-p3-transforms.pptx	T103	shape fill	<a:schemeClr val="accent2"><a:lum val="75000"/></a:schemeClr>	accent2 lum 75000
+tc-p3-transforms.pptx	T104	shape fill	<a:schemeClr val="accent2"><a:lumOff val="-25000"/></a:schemeClr>	accent2 lumOff -25000
+tc-p3-transforms.pptx	T105	shape fill	<a:schemeClr val="accent2"><a:lumOff val="20000"/></a:schemeClr>	accent2 lumOff 20000
+tc-p3-transforms.pptx	T106	shape fill	<a:schemeClr val="accent2"><a:lumOff val="40000"/></a:schemeClr>	accent2 lumOff 40000
+tc-p3-transforms.pptx	T107	shape fill	<a:schemeClr val="accent2"><a:lumMod val="25000"/></a:schemeClr>	accent2 lumMod 25000
+tc-p3-transforms.pptx	T108	shape fill	<a:schemeClr val="accent2"><a:lumMod val="50000"/></a:schemeClr>	accent2 lumMod 50000
+tc-p3-transforms.pptx	T109	shape fill	<a:schemeClr val="accent2"><a:lumMod val="75000"/></a:schemeClr>	accent2 lumMod 75000
+tc-p3-transforms.pptx	T110	shape fill	<a:schemeClr val="accent2"><a:red val="0"/></a:schemeClr>	accent2 red 0
+tc-p3-transforms.pptx	T111	shape fill	<a:schemeClr val="accent2"><a:red val="50000"/></a:schemeClr>	accent2 red 50000
+tc-p3-transforms.pptx	T112	shape fill	<a:schemeClr val="accent2"><a:red val="100000"/></a:schemeClr>	accent2 red 100000
+tc-p3-transforms.pptx	T113	shape fill	<a:schemeClr val="accent2"><a:redOff val="-25000"/></a:schemeClr>	accent2 redOff -25000
+tc-p3-transforms.pptx	T114	shape fill	<a:schemeClr val="accent2"><a:redOff val="25000"/></a:schemeClr>	accent2 redOff 25000
+tc-p3-transforms.pptx	T115	shape fill	<a:schemeClr val="accent2"><a:redMod val="50000"/></a:schemeClr>	accent2 redMod 50000
+tc-p3-transforms.pptx	T116	shape fill	<a:schemeClr val="accent2"><a:redMod val="150000"/></a:schemeClr>	accent2 redMod 150000
+tc-p3-transforms.pptx	T117	shape fill	<a:schemeClr val="accent2"><a:green val="0"/></a:schemeClr>	accent2 green 0
+tc-p3-transforms.pptx	T118	shape fill	<a:schemeClr val="accent2"><a:green val="50000"/></a:schemeClr>	accent2 green 50000
+tc-p3-transforms.pptx	T119	shape fill	<a:schemeClr val="accent2"><a:green val="100000"/></a:schemeClr>	accent2 green 100000
+tc-p3-transforms.pptx	T120	shape fill	<a:schemeClr val="accent2"><a:greenOff val="-25000"/></a:schemeClr>	accent2 greenOff -25000
+tc-p3-transforms.pptx	T121	shape fill	<a:schemeClr val="accent2"><a:greenOff val="25000"/></a:schemeClr>	accent2 greenOff 25000
+tc-p3-transforms.pptx	T122	shape fill	<a:schemeClr val="accent2"><a:greenMod val="50000"/></a:schemeClr>	accent2 greenMod 50000
+tc-p3-transforms.pptx	T123	shape fill	<a:schemeClr val="accent2"><a:greenMod val="150000"/></a:schemeClr>	accent2 greenMod 150000
+tc-p3-transforms.pptx	T124	shape fill	<a:schemeClr val="accent2"><a:blue val="0"/></a:schemeClr>	accent2 blue 0
+tc-p3-transforms.pptx	T125	shape fill	<a:schemeClr val="accent2"><a:blue val="50000"/></a:schemeClr>	accent2 blue 50000
+tc-p3-transforms.pptx	T126	shape fill	<a:schemeClr val="accent2"><a:blue val="100000"/></a:schemeClr>	accent2 blue 100000
+tc-p3-transforms.pptx	T127	shape fill	<a:schemeClr val="accent2"><a:blueOff val="-25000"/></a:schemeClr>	accent2 blueOff -25000
+tc-p3-transforms.pptx	T128	shape fill	<a:schemeClr val="accent2"><a:blueOff val="25000"/></a:schemeClr>	accent2 blueOff 25000
+tc-p3-transforms.pptx	T129	shape fill	<a:schemeClr val="accent2"><a:blueMod val="50000"/></a:schemeClr>	accent2 blueMod 50000
+tc-p3-transforms.pptx	T130	shape fill	<a:schemeClr val="accent2"><a:blueMod val="150000"/></a:schemeClr>	accent2 blueMod 150000
+tc-p3-transforms.pptx	T131	shape fill	<a:schemeClr val="accent2"><a:gamma/></a:schemeClr>	accent2 gamma
+tc-p3-transforms.pptx	T132	shape fill	<a:schemeClr val="accent2"><a:invGamma/></a:schemeClr>	accent2 invGamma
+tc-p3-transforms.pptx	T133	shape fill	<a:schemeClr val="accent4"><a:tint val="25000"/></a:schemeClr>	accent4 tint 25000
+tc-p3-transforms.pptx	T134	shape fill	<a:schemeClr val="accent4"><a:tint val="50000"/></a:schemeClr>	accent4 tint 50000
+tc-p3-transforms.pptx	T135	shape fill	<a:schemeClr val="accent4"><a:tint val="75000"/></a:schemeClr>	accent4 tint 75000
+tc-p3-transforms.pptx	T136	shape fill	<a:schemeClr val="accent4"><a:shade val="25000"/></a:schemeClr>	accent4 shade 25000
+tc-p3-transforms.pptx	T137	shape fill	<a:schemeClr val="accent4"><a:shade val="50000"/></a:schemeClr>	accent4 shade 50000
+tc-p3-transforms.pptx	T138	shape fill	<a:schemeClr val="accent4"><a:shade val="75000"/></a:schemeClr>	accent4 shade 75000
+tc-p3-transforms.pptx	T139	shape fill	<a:schemeClr val="accent4"><a:comp/></a:schemeClr>	accent4 comp
+tc-p3-transforms.pptx	T140	shape fill	<a:schemeClr val="accent4"><a:inv/></a:schemeClr>	accent4 inv
+tc-p3-transforms.pptx	T141	shape fill	<a:schemeClr val="accent4"><a:gray/></a:schemeClr>	accent4 gray
+tc-p3-transforms.pptx	T142	shape fill	<a:schemeClr val="accent4"><a:alpha val="25000"/></a:schemeClr>	accent4 alpha 25000
+tc-p3-transforms.pptx	T143	shape fill	<a:schemeClr val="accent4"><a:alpha val="50000"/></a:schemeClr>	accent4 alpha 50000
+tc-p3-transforms.pptx	T144	shape fill	<a:schemeClr val="accent4"><a:alpha val="75000"/></a:schemeClr>	accent4 alpha 75000
+tc-p3-transforms.pptx	T145	shape fill	<a:schemeClr val="accent4"><a:alphaOff val="-25000"/></a:schemeClr>	accent4 alphaOff -25000
+tc-p3-transforms.pptx	T146	shape fill	<a:schemeClr val="accent4"><a:alphaOff val="-50000"/></a:schemeClr>	accent4 alphaOff -50000
+tc-p3-transforms.pptx	T147	shape fill	<a:schemeClr val="accent4"><a:alphaMod val="50000"/></a:schemeClr>	accent4 alphaMod 50000
+tc-p3-transforms.pptx	T148	shape fill	<a:schemeClr val="accent4"><a:alphaMod val="25000"/></a:schemeClr>	accent4 alphaMod 25000
+tc-p3-transforms.pptx	T149	shape fill	<a:schemeClr val="accent4"><a:hue val="0"/></a:schemeClr>	accent4 hue 0
+tc-p3-transforms.pptx	T150	shape fill	<a:schemeClr val="accent4"><a:hue val="7200000"/></a:schemeClr>	accent4 hue 7200000
+tc-p3-transforms.pptx	T151	shape fill	<a:schemeClr val="accent4"><a:hue val="14400000"/></a:schemeClr>	accent4 hue 14400000
+tc-p3-transforms.pptx	T152	shape fill	<a:schemeClr val="accent4"><a:hueOff val="1800000"/></a:schemeClr>	accent4 hueOff 1800000
+tc-p3-transforms.pptx	T153	shape fill	<a:schemeClr val="accent4"><a:hueOff val="-1800000"/></a:schemeClr>	accent4 hueOff -1800000
+tc-p3-transforms.pptx	T154	shape fill	<a:schemeClr val="accent4"><a:hueOff val="5400000"/></a:schemeClr>	accent4 hueOff 5400000
+tc-p3-transforms.pptx	T155	shape fill	<a:schemeClr val="accent4"><a:hueMod val="50000"/></a:schemeClr>	accent4 hueMod 50000
+tc-p3-transforms.pptx	T156	shape fill	<a:schemeClr val="accent4"><a:hueMod val="150000"/></a:schemeClr>	accent4 hueMod 150000
+tc-p3-transforms.pptx	T157	shape fill	<a:schemeClr val="accent4"><a:hueMod val="200000"/></a:schemeClr>	accent4 hueMod 200000
+tc-p3-transforms.pptx	T158	shape fill	<a:schemeClr val="accent4"><a:sat val="0"/></a:schemeClr>	accent4 sat 0
+tc-p3-transforms.pptx	T159	shape fill	<a:schemeClr val="accent4"><a:sat val="50000"/></a:schemeClr>	accent4 sat 50000
+tc-p3-transforms.pptx	T160	shape fill	<a:schemeClr val="accent4"><a:sat val="100000"/></a:schemeClr>	accent4 sat 100000
+tc-p3-transforms.pptx	T161	shape fill	<a:schemeClr val="accent4"><a:satOff val="-50000"/></a:schemeClr>	accent4 satOff -50000
+tc-p3-transforms.pptx	T162	shape fill	<a:schemeClr val="accent4"><a:satOff val="-25000"/></a:schemeClr>	accent4 satOff -25000
+tc-p3-transforms.pptx	T163	shape fill	<a:schemeClr val="accent4"><a:satOff val="25000"/></a:schemeClr>	accent4 satOff 25000
+tc-p3-transforms.pptx	T164	shape fill	<a:schemeClr val="accent4"><a:satMod val="50000"/></a:schemeClr>	accent4 satMod 50000
+tc-p3-transforms.pptx	T165	shape fill	<a:schemeClr val="accent4"><a:satMod val="150000"/></a:schemeClr>	accent4 satMod 150000
+tc-p3-transforms.pptx	T166	shape fill	<a:schemeClr val="accent4"><a:satMod val="200000"/></a:schemeClr>	accent4 satMod 200000
+tc-p3-transforms.pptx	T167	shape fill	<a:schemeClr val="accent4"><a:lum val="25000"/></a:schemeClr>	accent4 lum 25000
+tc-p3-transforms.pptx	T168	shape fill	<a:schemeClr val="accent4"><a:lum val="50000"/></a:schemeClr>	accent4 lum 50000
+tc-p3-transforms.pptx	T169	shape fill	<a:schemeClr val="accent4"><a:lum val="75000"/></a:schemeClr>	accent4 lum 75000
+tc-p3-transforms.pptx	T170	shape fill	<a:schemeClr val="accent4"><a:lumOff val="-25000"/></a:schemeClr>	accent4 lumOff -25000
+tc-p3-transforms.pptx	T171	shape fill	<a:schemeClr val="accent4"><a:lumOff val="20000"/></a:schemeClr>	accent4 lumOff 20000
+tc-p3-transforms.pptx	T172	shape fill	<a:schemeClr val="accent4"><a:lumOff val="40000"/></a:schemeClr>	accent4 lumOff 40000
+tc-p3-transforms.pptx	T173	shape fill	<a:schemeClr val="accent4"><a:lumMod val="25000"/></a:schemeClr>	accent4 lumMod 25000
+tc-p3-transforms.pptx	T174	shape fill	<a:schemeClr val="accent4"><a:lumMod val="50000"/></a:schemeClr>	accent4 lumMod 50000
+tc-p3-transforms.pptx	T175	shape fill	<a:schemeClr val="accent4"><a:lumMod val="75000"/></a:schemeClr>	accent4 lumMod 75000
+tc-p3-transforms.pptx	T176	shape fill	<a:schemeClr val="accent4"><a:red val="0"/></a:schemeClr>	accent4 red 0
+tc-p3-transforms.pptx	T177	shape fill	<a:schemeClr val="accent4"><a:red val="50000"/></a:schemeClr>	accent4 red 50000
+tc-p3-transforms.pptx	T178	shape fill	<a:schemeClr val="accent4"><a:red val="100000"/></a:schemeClr>	accent4 red 100000
+tc-p3-transforms.pptx	T179	shape fill	<a:schemeClr val="accent4"><a:redOff val="-25000"/></a:schemeClr>	accent4 redOff -25000
+tc-p3-transforms.pptx	T180	shape fill	<a:schemeClr val="accent4"><a:redOff val="25000"/></a:schemeClr>	accent4 redOff 25000
+tc-p3-transforms.pptx	T181	shape fill	<a:schemeClr val="accent4"><a:redMod val="50000"/></a:schemeClr>	accent4 redMod 50000
+tc-p3-transforms.pptx	T182	shape fill	<a:schemeClr val="accent4"><a:redMod val="150000"/></a:schemeClr>	accent4 redMod 150000
+tc-p3-transforms.pptx	T183	shape fill	<a:schemeClr val="accent4"><a:green val="0"/></a:schemeClr>	accent4 green 0
+tc-p3-transforms.pptx	T184	shape fill	<a:schemeClr val="accent4"><a:green val="50000"/></a:schemeClr>	accent4 green 50000
+tc-p3-transforms.pptx	T185	shape fill	<a:schemeClr val="accent4"><a:green val="100000"/></a:schemeClr>	accent4 green 100000
+tc-p3-transforms.pptx	T186	shape fill	<a:schemeClr val="accent4"><a:greenOff val="-25000"/></a:schemeClr>	accent4 greenOff -25000
+tc-p3-transforms.pptx	T187	shape fill	<a:schemeClr val="accent4"><a:greenOff val="25000"/></a:schemeClr>	accent4 greenOff 25000
+tc-p3-transforms.pptx	T188	shape fill	<a:schemeClr val="accent4"><a:greenMod val="50000"/></a:schemeClr>	accent4 greenMod 50000
+tc-p3-transforms.pptx	T189	shape fill	<a:schemeClr val="accent4"><a:greenMod val="150000"/></a:schemeClr>	accent4 greenMod 150000
+tc-p3-transforms.pptx	T190	shape fill	<a:schemeClr val="accent4"><a:blue val="0"/></a:schemeClr>	accent4 blue 0
+tc-p3-transforms.pptx	T191	shape fill	<a:schemeClr val="accent4"><a:blue val="50000"/></a:schemeClr>	accent4 blue 50000
+tc-p3-transforms.pptx	T192	shape fill	<a:schemeClr val="accent4"><a:blue val="100000"/></a:schemeClr>	accent4 blue 100000
+tc-p3-transforms.pptx	T193	shape fill	<a:schemeClr val="accent4"><a:blueOff val="-25000"/></a:schemeClr>	accent4 blueOff -25000
+tc-p3-transforms.pptx	T194	shape fill	<a:schemeClr val="accent4"><a:blueOff val="25000"/></a:schemeClr>	accent4 blueOff 25000
+tc-p3-transforms.pptx	T195	shape fill	<a:schemeClr val="accent4"><a:blueMod val="50000"/></a:schemeClr>	accent4 blueMod 50000
+tc-p3-transforms.pptx	T196	shape fill	<a:schemeClr val="accent4"><a:blueMod val="150000"/></a:schemeClr>	accent4 blueMod 150000
+tc-p3-transforms.pptx	T197	shape fill	<a:schemeClr val="accent4"><a:gamma/></a:schemeClr>	accent4 gamma
+tc-p3-transforms.pptx	T198	shape fill	<a:schemeClr val="accent4"><a:invGamma/></a:schemeClr>	accent4 invGamma
+tc-p3-transforms.pptx	T199	shape fill	<a:schemeClr val="tx2"><a:tint val="25000"/></a:schemeClr>	tx2 tint 25000
+tc-p3-transforms.pptx	T200	shape fill	<a:schemeClr val="tx2"><a:tint val="50000"/></a:schemeClr>	tx2 tint 50000
+tc-p3-transforms.pptx	T201	shape fill	<a:schemeClr val="tx2"><a:tint val="75000"/></a:schemeClr>	tx2 tint 75000
+tc-p3-transforms.pptx	T202	shape fill	<a:schemeClr val="tx2"><a:shade val="25000"/></a:schemeClr>	tx2 shade 25000
+tc-p3-transforms.pptx	T203	shape fill	<a:schemeClr val="tx2"><a:shade val="50000"/></a:schemeClr>	tx2 shade 50000
+tc-p3-transforms.pptx	T204	shape fill	<a:schemeClr val="tx2"><a:shade val="75000"/></a:schemeClr>	tx2 shade 75000
+tc-p3-transforms.pptx	T205	shape fill	<a:schemeClr val="tx2"><a:comp/></a:schemeClr>	tx2 comp
+tc-p3-transforms.pptx	T206	shape fill	<a:schemeClr val="tx2"><a:inv/></a:schemeClr>	tx2 inv
+tc-p3-transforms.pptx	T207	shape fill	<a:schemeClr val="tx2"><a:gray/></a:schemeClr>	tx2 gray
+tc-p3-transforms.pptx	T208	shape fill	<a:schemeClr val="tx2"><a:alpha val="25000"/></a:schemeClr>	tx2 alpha 25000
+tc-p3-transforms.pptx	T209	shape fill	<a:schemeClr val="tx2"><a:alpha val="50000"/></a:schemeClr>	tx2 alpha 50000
+tc-p3-transforms.pptx	T210	shape fill	<a:schemeClr val="tx2"><a:alpha val="75000"/></a:schemeClr>	tx2 alpha 75000
+tc-p3-transforms.pptx	T211	shape fill	<a:schemeClr val="tx2"><a:alphaOff val="-25000"/></a:schemeClr>	tx2 alphaOff -25000
+tc-p3-transforms.pptx	T212	shape fill	<a:schemeClr val="tx2"><a:alphaOff val="-50000"/></a:schemeClr>	tx2 alphaOff -50000
+tc-p3-transforms.pptx	T213	shape fill	<a:schemeClr val="tx2"><a:alphaMod val="50000"/></a:schemeClr>	tx2 alphaMod 50000
+tc-p3-transforms.pptx	T214	shape fill	<a:schemeClr val="tx2"><a:alphaMod val="25000"/></a:schemeClr>	tx2 alphaMod 25000
+tc-p3-transforms.pptx	T215	shape fill	<a:schemeClr val="tx2"><a:hue val="0"/></a:schemeClr>	tx2 hue 0
+tc-p3-transforms.pptx	T216	shape fill	<a:schemeClr val="tx2"><a:hue val="7200000"/></a:schemeClr>	tx2 hue 7200000
+tc-p3-transforms.pptx	T217	shape fill	<a:schemeClr val="tx2"><a:hue val="14400000"/></a:schemeClr>	tx2 hue 14400000
+tc-p3-transforms.pptx	T218	shape fill	<a:schemeClr val="tx2"><a:hueOff val="1800000"/></a:schemeClr>	tx2 hueOff 1800000
+tc-p3-transforms.pptx	T219	shape fill	<a:schemeClr val="tx2"><a:hueOff val="-1800000"/></a:schemeClr>	tx2 hueOff -1800000
+tc-p3-transforms.pptx	T220	shape fill	<a:schemeClr val="tx2"><a:hueOff val="5400000"/></a:schemeClr>	tx2 hueOff 5400000
+tc-p3-transforms.pptx	T221	shape fill	<a:schemeClr val="tx2"><a:hueMod val="50000"/></a:schemeClr>	tx2 hueMod 50000
+tc-p3-transforms.pptx	T222	shape fill	<a:schemeClr val="tx2"><a:hueMod val="150000"/></a:schemeClr>	tx2 hueMod 150000
+tc-p3-transforms.pptx	T223	shape fill	<a:schemeClr val="tx2"><a:hueMod val="200000"/></a:schemeClr>	tx2 hueMod 200000
+tc-p3-transforms.pptx	T224	shape fill	<a:schemeClr val="tx2"><a:sat val="0"/></a:schemeClr>	tx2 sat 0
+tc-p3-transforms.pptx	T225	shape fill	<a:schemeClr val="tx2"><a:sat val="50000"/></a:schemeClr>	tx2 sat 50000
+tc-p3-transforms.pptx	T226	shape fill	<a:schemeClr val="tx2"><a:sat val="100000"/></a:schemeClr>	tx2 sat 100000
+tc-p3-transforms.pptx	T227	shape fill	<a:schemeClr val="tx2"><a:satOff val="-50000"/></a:schemeClr>	tx2 satOff -50000
+tc-p3-transforms.pptx	T228	shape fill	<a:schemeClr val="tx2"><a:satOff val="-25000"/></a:schemeClr>	tx2 satOff -25000
+tc-p3-transforms.pptx	T229	shape fill	<a:schemeClr val="tx2"><a:satOff val="25000"/></a:schemeClr>	tx2 satOff 25000
+tc-p3-transforms.pptx	T230	shape fill	<a:schemeClr val="tx2"><a:satMod val="50000"/></a:schemeClr>	tx2 satMod 50000
+tc-p3-transforms.pptx	T231	shape fill	<a:schemeClr val="tx2"><a:satMod val="150000"/></a:schemeClr>	tx2 satMod 150000
+tc-p3-transforms.pptx	T232	shape fill	<a:schemeClr val="tx2"><a:satMod val="200000"/></a:schemeClr>	tx2 satMod 200000
+tc-p3-transforms.pptx	T233	shape fill	<a:schemeClr val="tx2"><a:lum val="25000"/></a:schemeClr>	tx2 lum 25000
+tc-p3-transforms.pptx	T234	shape fill	<a:schemeClr val="tx2"><a:lum val="50000"/></a:schemeClr>	tx2 lum 50000
+tc-p3-transforms.pptx	T235	shape fill	<a:schemeClr val="tx2"><a:lum val="75000"/></a:schemeClr>	tx2 lum 75000
+tc-p3-transforms.pptx	T236	shape fill	<a:schemeClr val="tx2"><a:lumOff val="-25000"/></a:schemeClr>	tx2 lumOff -25000
+tc-p3-transforms.pptx	T237	shape fill	<a:schemeClr val="tx2"><a:lumOff val="20000"/></a:schemeClr>	tx2 lumOff 20000
+tc-p3-transforms.pptx	T238	shape fill	<a:schemeClr val="tx2"><a:lumOff val="40000"/></a:schemeClr>	tx2 lumOff 40000
+tc-p3-transforms.pptx	T239	shape fill	<a:schemeClr val="tx2"><a:lumMod val="25000"/></a:schemeClr>	tx2 lumMod 25000
+tc-p3-transforms.pptx	T240	shape fill	<a:schemeClr val="tx2"><a:lumMod val="50000"/></a:schemeClr>	tx2 lumMod 50000
+tc-p3-transforms.pptx	T241	shape fill	<a:schemeClr val="tx2"><a:lumMod val="75000"/></a:schemeClr>	tx2 lumMod 75000
+tc-p3-transforms.pptx	T242	shape fill	<a:schemeClr val="tx2"><a:red val="0"/></a:schemeClr>	tx2 red 0
+tc-p3-transforms.pptx	T243	shape fill	<a:schemeClr val="tx2"><a:red val="50000"/></a:schemeClr>	tx2 red 50000
+tc-p3-transforms.pptx	T244	shape fill	<a:schemeClr val="tx2"><a:red val="100000"/></a:schemeClr>	tx2 red 100000
+tc-p3-transforms.pptx	T245	shape fill	<a:schemeClr val="tx2"><a:redOff val="-25000"/></a:schemeClr>	tx2 redOff -25000
+tc-p3-transforms.pptx	T246	shape fill	<a:schemeClr val="tx2"><a:redOff val="25000"/></a:schemeClr>	tx2 redOff 25000
+tc-p3-transforms.pptx	T247	shape fill	<a:schemeClr val="tx2"><a:redMod val="50000"/></a:schemeClr>	tx2 redMod 50000
+tc-p3-transforms.pptx	T248	shape fill	<a:schemeClr val="tx2"><a:redMod val="150000"/></a:schemeClr>	tx2 redMod 150000
+tc-p3-transforms.pptx	T249	shape fill	<a:schemeClr val="tx2"><a:green val="0"/></a:schemeClr>	tx2 green 0
+tc-p3-transforms.pptx	T250	shape fill	<a:schemeClr val="tx2"><a:green val="50000"/></a:schemeClr>	tx2 green 50000
+tc-p3-transforms.pptx	T251	shape fill	<a:schemeClr val="tx2"><a:green val="100000"/></a:schemeClr>	tx2 green 100000
+tc-p3-transforms.pptx	T252	shape fill	<a:schemeClr val="tx2"><a:greenOff val="-25000"/></a:schemeClr>	tx2 greenOff -25000
+tc-p3-transforms.pptx	T253	shape fill	<a:schemeClr val="tx2"><a:greenOff val="25000"/></a:schemeClr>	tx2 greenOff 25000
+tc-p3-transforms.pptx	T254	shape fill	<a:schemeClr val="tx2"><a:greenMod val="50000"/></a:schemeClr>	tx2 greenMod 50000
+tc-p3-transforms.pptx	T255	shape fill	<a:schemeClr val="tx2"><a:greenMod val="150000"/></a:schemeClr>	tx2 greenMod 150000
+tc-p3-transforms.pptx	T256	shape fill	<a:schemeClr val="tx2"><a:blue val="0"/></a:schemeClr>	tx2 blue 0
+tc-p3-transforms.pptx	T257	shape fill	<a:schemeClr val="tx2"><a:blue val="50000"/></a:schemeClr>	tx2 blue 50000
+tc-p3-transforms.pptx	T258	shape fill	<a:schemeClr val="tx2"><a:blue val="100000"/></a:schemeClr>	tx2 blue 100000
+tc-p3-transforms.pptx	T259	shape fill	<a:schemeClr val="tx2"><a:blueOff val="-25000"/></a:schemeClr>	tx2 blueOff -25000
+tc-p3-transforms.pptx	T260	shape fill	<a:schemeClr val="tx2"><a:blueOff val="25000"/></a:schemeClr>	tx2 blueOff 25000
+tc-p3-transforms.pptx	T261	shape fill	<a:schemeClr val="tx2"><a:blueMod val="50000"/></a:schemeClr>	tx2 blueMod 50000
+tc-p3-transforms.pptx	T262	shape fill	<a:schemeClr val="tx2"><a:blueMod val="150000"/></a:schemeClr>	tx2 blueMod 150000
+tc-p3-transforms.pptx	T263	shape fill	<a:schemeClr val="tx2"><a:gamma/></a:schemeClr>	tx2 gamma
+tc-p3-transforms.pptx	T264	shape fill	<a:schemeClr val="tx2"><a:invGamma/></a:schemeClr>	tx2 invGamma
+tc-p3-transforms.pptx	T265	shape fill	<a:schemeClr val="bg2"><a:tint val="25000"/></a:schemeClr>	bg2 tint 25000
+tc-p3-transforms.pptx	T266	shape fill	<a:schemeClr val="bg2"><a:tint val="50000"/></a:schemeClr>	bg2 tint 50000
+tc-p3-transforms.pptx	T267	shape fill	<a:schemeClr val="bg2"><a:tint val="75000"/></a:schemeClr>	bg2 tint 75000
+tc-p3-transforms.pptx	T268	shape fill	<a:schemeClr val="bg2"><a:shade val="25000"/></a:schemeClr>	bg2 shade 25000
+tc-p3-transforms.pptx	T269	shape fill	<a:schemeClr val="bg2"><a:shade val="50000"/></a:schemeClr>	bg2 shade 50000
+tc-p3-transforms.pptx	T270	shape fill	<a:schemeClr val="bg2"><a:shade val="75000"/></a:schemeClr>	bg2 shade 75000
+tc-p3-transforms.pptx	T271	shape fill	<a:schemeClr val="bg2"><a:comp/></a:schemeClr>	bg2 comp
+tc-p3-transforms.pptx	T272	shape fill	<a:schemeClr val="bg2"><a:inv/></a:schemeClr>	bg2 inv
+tc-p3-transforms.pptx	T273	shape fill	<a:schemeClr val="bg2"><a:gray/></a:schemeClr>	bg2 gray
+tc-p3-transforms.pptx	T274	shape fill	<a:schemeClr val="bg2"><a:alpha val="25000"/></a:schemeClr>	bg2 alpha 25000
+tc-p3-transforms.pptx	T275	shape fill	<a:schemeClr val="bg2"><a:alpha val="50000"/></a:schemeClr>	bg2 alpha 50000
+tc-p3-transforms.pptx	T276	shape fill	<a:schemeClr val="bg2"><a:alpha val="75000"/></a:schemeClr>	bg2 alpha 75000
+tc-p3-transforms.pptx	T277	shape fill	<a:schemeClr val="bg2"><a:alphaOff val="-25000"/></a:schemeClr>	bg2 alphaOff -25000
+tc-p3-transforms.pptx	T278	shape fill	<a:schemeClr val="bg2"><a:alphaOff val="-50000"/></a:schemeClr>	bg2 alphaOff -50000
+tc-p3-transforms.pptx	T279	shape fill	<a:schemeClr val="bg2"><a:alphaMod val="50000"/></a:schemeClr>	bg2 alphaMod 50000
+tc-p3-transforms.pptx	T280	shape fill	<a:schemeClr val="bg2"><a:alphaMod val="25000"/></a:schemeClr>	bg2 alphaMod 25000
+tc-p3-transforms.pptx	T281	shape fill	<a:schemeClr val="bg2"><a:hue val="0"/></a:schemeClr>	bg2 hue 0
+tc-p3-transforms.pptx	T282	shape fill	<a:schemeClr val="bg2"><a:hue val="7200000"/></a:schemeClr>	bg2 hue 7200000
+tc-p3-transforms.pptx	T283	shape fill	<a:schemeClr val="bg2"><a:hue val="14400000"/></a:schemeClr>	bg2 hue 14400000
+tc-p3-transforms.pptx	T284	shape fill	<a:schemeClr val="bg2"><a:hueOff val="1800000"/></a:schemeClr>	bg2 hueOff 1800000
+tc-p3-transforms.pptx	T285	shape fill	<a:schemeClr val="bg2"><a:hueOff val="-1800000"/></a:schemeClr>	bg2 hueOff -1800000
+tc-p3-transforms.pptx	T286	shape fill	<a:schemeClr val="bg2"><a:hueOff val="5400000"/></a:schemeClr>	bg2 hueOff 5400000
+tc-p3-transforms.pptx	T287	shape fill	<a:schemeClr val="bg2"><a:hueMod val="50000"/></a:schemeClr>	bg2 hueMod 50000
+tc-p3-transforms.pptx	T288	shape fill	<a:schemeClr val="bg2"><a:hueMod val="150000"/></a:schemeClr>	bg2 hueMod 150000
+tc-p3-transforms.pptx	T289	shape fill	<a:schemeClr val="bg2"><a:hueMod val="200000"/></a:schemeClr>	bg2 hueMod 200000
+tc-p3-transforms.pptx	T290	shape fill	<a:schemeClr val="bg2"><a:sat val="0"/></a:schemeClr>	bg2 sat 0
+tc-p3-transforms.pptx	T291	shape fill	<a:schemeClr val="bg2"><a:sat val="50000"/></a:schemeClr>	bg2 sat 50000
+tc-p3-transforms.pptx	T292	shape fill	<a:schemeClr val="bg2"><a:sat val="100000"/></a:schemeClr>	bg2 sat 100000
+tc-p3-transforms.pptx	T293	shape fill	<a:schemeClr val="bg2"><a:satOff val="-50000"/></a:schemeClr>	bg2 satOff -50000
+tc-p3-transforms.pptx	T294	shape fill	<a:schemeClr val="bg2"><a:satOff val="-25000"/></a:schemeClr>	bg2 satOff -25000
+tc-p3-transforms.pptx	T295	shape fill	<a:schemeClr val="bg2"><a:satOff val="25000"/></a:schemeClr>	bg2 satOff 25000
+tc-p3-transforms.pptx	T296	shape fill	<a:schemeClr val="bg2"><a:satMod val="50000"/></a:schemeClr>	bg2 satMod 50000
+tc-p3-transforms.pptx	T297	shape fill	<a:schemeClr val="bg2"><a:satMod val="150000"/></a:schemeClr>	bg2 satMod 150000
+tc-p3-transforms.pptx	T298	shape fill	<a:schemeClr val="bg2"><a:satMod val="200000"/></a:schemeClr>	bg2 satMod 200000
+tc-p3-transforms.pptx	T299	shape fill	<a:schemeClr val="bg2"><a:lum val="25000"/></a:schemeClr>	bg2 lum 25000
+tc-p3-transforms.pptx	T300	shape fill	<a:schemeClr val="bg2"><a:lum val="50000"/></a:schemeClr>	bg2 lum 50000
+tc-p3-transforms.pptx	T301	shape fill	<a:schemeClr val="bg2"><a:lum val="75000"/></a:schemeClr>	bg2 lum 75000
+tc-p3-transforms.pptx	T302	shape fill	<a:schemeClr val="bg2"><a:lumOff val="-25000"/></a:schemeClr>	bg2 lumOff -25000
+tc-p3-transforms.pptx	T303	shape fill	<a:schemeClr val="bg2"><a:lumOff val="20000"/></a:schemeClr>	bg2 lumOff 20000
+tc-p3-transforms.pptx	T304	shape fill	<a:schemeClr val="bg2"><a:lumOff val="40000"/></a:schemeClr>	bg2 lumOff 40000
+tc-p3-transforms.pptx	T305	shape fill	<a:schemeClr val="bg2"><a:lumMod val="25000"/></a:schemeClr>	bg2 lumMod 25000
+tc-p3-transforms.pptx	T306	shape fill	<a:schemeClr val="bg2"><a:lumMod val="50000"/></a:schemeClr>	bg2 lumMod 50000
+tc-p3-transforms.pptx	T307	shape fill	<a:schemeClr val="bg2"><a:lumMod val="75000"/></a:schemeClr>	bg2 lumMod 75000
+tc-p3-transforms.pptx	T308	shape fill	<a:schemeClr val="bg2"><a:red val="0"/></a:schemeClr>	bg2 red 0
+tc-p3-transforms.pptx	T309	shape fill	<a:schemeClr val="bg2"><a:red val="50000"/></a:schemeClr>	bg2 red 50000
+tc-p3-transforms.pptx	T310	shape fill	<a:schemeClr val="bg2"><a:red val="100000"/></a:schemeClr>	bg2 red 100000
+tc-p3-transforms.pptx	T311	shape fill	<a:schemeClr val="bg2"><a:redOff val="-25000"/></a:schemeClr>	bg2 redOff -25000
+tc-p3-transforms.pptx	T312	shape fill	<a:schemeClr val="bg2"><a:redOff val="25000"/></a:schemeClr>	bg2 redOff 25000
+tc-p3-transforms.pptx	T313	shape fill	<a:schemeClr val="bg2"><a:redMod val="50000"/></a:schemeClr>	bg2 redMod 50000
+tc-p3-transforms.pptx	T314	shape fill	<a:schemeClr val="bg2"><a:redMod val="150000"/></a:schemeClr>	bg2 redMod 150000
+tc-p3-transforms.pptx	T315	shape fill	<a:schemeClr val="bg2"><a:green val="0"/></a:schemeClr>	bg2 green 0
+tc-p3-transforms.pptx	T316	shape fill	<a:schemeClr val="bg2"><a:green val="50000"/></a:schemeClr>	bg2 green 50000
+tc-p3-transforms.pptx	T317	shape fill	<a:schemeClr val="bg2"><a:green val="100000"/></a:schemeClr>	bg2 green 100000
+tc-p3-transforms.pptx	T318	shape fill	<a:schemeClr val="bg2"><a:greenOff val="-25000"/></a:schemeClr>	bg2 greenOff -25000
+tc-p3-transforms.pptx	T319	shape fill	<a:schemeClr val="bg2"><a:greenOff val="25000"/></a:schemeClr>	bg2 greenOff 25000
+tc-p3-transforms.pptx	T320	shape fill	<a:schemeClr val="bg2"><a:greenMod val="50000"/></a:schemeClr>	bg2 greenMod 50000
+tc-p3-transforms.pptx	T321	shape fill	<a:schemeClr val="bg2"><a:greenMod val="150000"/></a:schemeClr>	bg2 greenMod 150000
+tc-p3-transforms.pptx	T322	shape fill	<a:schemeClr val="bg2"><a:blue val="0"/></a:schemeClr>	bg2 blue 0
+tc-p3-transforms.pptx	T323	shape fill	<a:schemeClr val="bg2"><a:blue val="50000"/></a:schemeClr>	bg2 blue 50000
+tc-p3-transforms.pptx	T324	shape fill	<a:schemeClr val="bg2"><a:blue val="100000"/></a:schemeClr>	bg2 blue 100000
+tc-p3-transforms.pptx	T325	shape fill	<a:schemeClr val="bg2"><a:blueOff val="-25000"/></a:schemeClr>	bg2 blueOff -25000
+tc-p3-transforms.pptx	T326	shape fill	<a:schemeClr val="bg2"><a:blueOff val="25000"/></a:schemeClr>	bg2 blueOff 25000
+tc-p3-transforms.pptx	T327	shape fill	<a:schemeClr val="bg2"><a:blueMod val="50000"/></a:schemeClr>	bg2 blueMod 50000
+tc-p3-transforms.pptx	T328	shape fill	<a:schemeClr val="bg2"><a:blueMod val="150000"/></a:schemeClr>	bg2 blueMod 150000
+tc-p3-transforms.pptx	T329	shape fill	<a:schemeClr val="bg2"><a:gamma/></a:schemeClr>	bg2 gamma
+tc-p3-transforms.pptx	T330	shape fill	<a:schemeClr val="bg2"><a:invGamma/></a:schemeClr>	bg2 invGamma
+tc-p3-transforms.pptx	T331	shape fill	<a:schemeClr val="bg1"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	bg1 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.pptx	T332	shape fill	<a:schemeClr val="bg1"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	bg1 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.pptx	T333	shape fill	<a:schemeClr val="bg1"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	bg1 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.pptx	T334	shape fill	<a:schemeClr val="bg1"><a:lumMod val="75000"/></a:schemeClr>	bg1 picker lumMod 75000
+tc-p3-transforms.pptx	T335	shape fill	<a:schemeClr val="bg1"><a:lumMod val="50000"/></a:schemeClr>	bg1 picker lumMod 50000
+tc-p3-transforms.pptx	T336	shape fill	<a:schemeClr val="tx1"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	tx1 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.pptx	T337	shape fill	<a:schemeClr val="tx1"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	tx1 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.pptx	T338	shape fill	<a:schemeClr val="tx1"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	tx1 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.pptx	T339	shape fill	<a:schemeClr val="tx1"><a:lumMod val="75000"/></a:schemeClr>	tx1 picker lumMod 75000
+tc-p3-transforms.pptx	T340	shape fill	<a:schemeClr val="tx1"><a:lumMod val="50000"/></a:schemeClr>	tx1 picker lumMod 50000
+tc-p3-transforms.pptx	T341	shape fill	<a:schemeClr val="bg2"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	bg2 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.pptx	T342	shape fill	<a:schemeClr val="bg2"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	bg2 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.pptx	T343	shape fill	<a:schemeClr val="bg2"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	bg2 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.pptx	T344	shape fill	<a:schemeClr val="bg2"><a:lumMod val="75000"/></a:schemeClr>	bg2 picker lumMod 75000
+tc-p3-transforms.pptx	T345	shape fill	<a:schemeClr val="bg2"><a:lumMod val="50000"/></a:schemeClr>	bg2 picker lumMod 50000
+tc-p3-transforms.pptx	T346	shape fill	<a:schemeClr val="tx2"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	tx2 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.pptx	T347	shape fill	<a:schemeClr val="tx2"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	tx2 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.pptx	T348	shape fill	<a:schemeClr val="tx2"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	tx2 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.pptx	T349	shape fill	<a:schemeClr val="tx2"><a:lumMod val="75000"/></a:schemeClr>	tx2 picker lumMod 75000
+tc-p3-transforms.pptx	T350	shape fill	<a:schemeClr val="tx2"><a:lumMod val="50000"/></a:schemeClr>	tx2 picker lumMod 50000
+tc-p3-transforms.pptx	T351	shape fill	<a:schemeClr val="accent1"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	accent1 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.pptx	T352	shape fill	<a:schemeClr val="accent1"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	accent1 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.pptx	T353	shape fill	<a:schemeClr val="accent1"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	accent1 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.pptx	T354	shape fill	<a:schemeClr val="accent1"><a:lumMod val="75000"/></a:schemeClr>	accent1 picker lumMod 75000
+tc-p3-transforms.pptx	T355	shape fill	<a:schemeClr val="accent1"><a:lumMod val="50000"/></a:schemeClr>	accent1 picker lumMod 50000
+tc-p3-transforms.pptx	T356	shape fill	<a:schemeClr val="accent2"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	accent2 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.pptx	T357	shape fill	<a:schemeClr val="accent2"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	accent2 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.pptx	T358	shape fill	<a:schemeClr val="accent2"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	accent2 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.pptx	T359	shape fill	<a:schemeClr val="accent2"><a:lumMod val="75000"/></a:schemeClr>	accent2 picker lumMod 75000
+tc-p3-transforms.pptx	T360	shape fill	<a:schemeClr val="accent2"><a:lumMod val="50000"/></a:schemeClr>	accent2 picker lumMod 50000
+tc-p3-transforms.pptx	T361	shape fill	<a:schemeClr val="accent3"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	accent3 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.pptx	T362	shape fill	<a:schemeClr val="accent3"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	accent3 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.pptx	T363	shape fill	<a:schemeClr val="accent3"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	accent3 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.pptx	T364	shape fill	<a:schemeClr val="accent3"><a:lumMod val="75000"/></a:schemeClr>	accent3 picker lumMod 75000
+tc-p3-transforms.pptx	T365	shape fill	<a:schemeClr val="accent3"><a:lumMod val="50000"/></a:schemeClr>	accent3 picker lumMod 50000
+tc-p3-transforms.pptx	T366	shape fill	<a:schemeClr val="accent4"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	accent4 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.pptx	T367	shape fill	<a:schemeClr val="accent4"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	accent4 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.pptx	T368	shape fill	<a:schemeClr val="accent4"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	accent4 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.pptx	T369	shape fill	<a:schemeClr val="accent4"><a:lumMod val="75000"/></a:schemeClr>	accent4 picker lumMod 75000
+tc-p3-transforms.pptx	T370	shape fill	<a:schemeClr val="accent4"><a:lumMod val="50000"/></a:schemeClr>	accent4 picker lumMod 50000
+tc-p3-transforms.pptx	T371	shape fill	<a:schemeClr val="accent5"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	accent5 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.pptx	T372	shape fill	<a:schemeClr val="accent5"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	accent5 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.pptx	T373	shape fill	<a:schemeClr val="accent5"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	accent5 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.pptx	T374	shape fill	<a:schemeClr val="accent5"><a:lumMod val="75000"/></a:schemeClr>	accent5 picker lumMod 75000
+tc-p3-transforms.pptx	T375	shape fill	<a:schemeClr val="accent5"><a:lumMod val="50000"/></a:schemeClr>	accent5 picker lumMod 50000
+tc-p3-transforms.pptx	T376	shape fill	<a:schemeClr val="accent6"><a:lumMod val="20000"/><a:lumOff val="80000"/></a:schemeClr>	accent6 picker lumMod 20000 lumOff 80000
+tc-p3-transforms.pptx	T377	shape fill	<a:schemeClr val="accent6"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>	accent6 picker lumMod 40000 lumOff 60000
+tc-p3-transforms.pptx	T378	shape fill	<a:schemeClr val="accent6"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr>	accent6 picker lumMod 60000 lumOff 40000
+tc-p3-transforms.pptx	T379	shape fill	<a:schemeClr val="accent6"><a:lumMod val="75000"/></a:schemeClr>	accent6 picker lumMod 75000
+tc-p3-transforms.pptx	T380	shape fill	<a:schemeClr val="accent6"><a:lumMod val="50000"/></a:schemeClr>	accent6 picker lumMod 50000
+tc-p3-transforms.pptx	T381	shape fill	<a:schemeClr val="accent1"><a:tint val="50000"/><a:lumMod val="75000"/></a:schemeClr>	accent1 tint 50000 then lumMod 75000
+tc-p3-transforms.pptx	T382	shape fill	<a:schemeClr val="accent1"><a:lumMod val="75000"/><a:tint val="50000"/></a:schemeClr>	accent1 lumMod 75000 then tint 50000
+tc-p3-transforms.pptx	T383	shape fill	<a:schemeClr val="accent1"><a:shade val="50000"/><a:satMod val="150000"/></a:schemeClr>	accent1 shade 50000 then satMod 150000
+tc-p3-transforms.pptx	T384	shape fill	<a:schemeClr val="accent1"><a:satMod val="150000"/><a:shade val="50000"/></a:schemeClr>	accent1 satMod 150000 then shade 50000
+tc-p3-transforms.pptx	T385	shape fill	<a:schemeClr val="accent1"><a:lumMod val="50000"/><a:lumOff val="25000"/></a:schemeClr>	accent1 lumMod 50000 then lumOff 25000
+tc-p3-transforms.pptx	T386	shape fill	<a:schemeClr val="accent1"><a:lumOff val="25000"/><a:lumMod val="50000"/></a:schemeClr>	accent1 lumOff 25000 then lumMod 50000
+tc-p3-transforms.pptx	T387	shape fill	<a:schemeClr val="accent1"><a:tint val="50000"/><a:tint val="50000"/></a:schemeClr>	accent1 tint 50000 twice
+tc-p3-transforms.pptx	T388	shape fill	<a:schemeClr val="accent1"><a:satMod val="103000"/><a:lumMod val="102000"/><a:tint val="94000"/></a:schemeClr>	accent1 the 2013 theme's gradient stop: satMod 103000 lumMod 102000 tint 94000
+tc-p3-transforms.pptx	T389	shape fill	<a:schemeClr val="accent1"><a:shade val="76000"/></a:schemeClr>	accent1 chart style: shade 76000
+tc-p3-transforms.pptx	T390	shape fill	<a:schemeClr val="accent1"><a:tint val="77000"/></a:schemeClr>	accent1 chart style: tint 77000
+tc-p3-transforms.pptx	T391	shape fill	<a:srgbClr val="336699"/>	srgbClr 336699 (control)
+tc-p3-transforms.pptx	T392	shape fill	<a:srgbClr val="336699"><a:tint val="50000"/></a:srgbClr>	srgbClr 336699 tint 50000
+tc-p3-transforms.pptx	T393	shape fill	<a:scrgbClr r="50000" g="25000" b="75000"/>	scrgbClr 50/25/75%
+tc-p3-transforms.pptx	T394	shape fill	<a:hslClr hue="14400000" sat="50000" lum="40000"/>	hslClr 240deg 50% 40%
+tc-p3-transforms.pptx	T395	shape fill	<a:prstClr val="coral"/>	prstClr coral
+tc-p3-transforms.pptx	T396	shape fill	<a:sysClr val="windowText" lastClr="FF0000"/>	sysClr windowText, lastClr FF0000
+tc-p3-transforms.pptx	T397	shape fill	<a:sysClr val="window" lastClr="00FF00"/>	sysClr window, lastClr 00FF00
+tc-p3-transforms.pptx	T398	shape fill	<a:schemeClr val="hlink"/>	schemeClr hlink
+tc-p3-transforms.pptx	T399	shape fill	<a:schemeClr val="folHlink"/>	schemeClr folHlink
+tc-p3-transforms.pptx	T400	shape style	<a:lnRef idx="2"><a:schemeClr val="accent1"><a:shade val="50000"/></a:schemeClr></a:lnRef><a:fillRef idx="1"><a:schemeClr val="accent1"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="accent1"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="lt1"/></a:fontRef>	Word's default shape style: line accent1 shade 50000 (lnRef 2), fill accent1 (fillRef 1), text lt1
+tc-p3-transforms.pptx	T401	shape style	<a:lnRef idx="1"><a:schemeClr val="accent6"/></a:lnRef><a:fillRef idx="1"><a:schemeClr val="accent2"><a:lumMod val="60000"/><a:lumOff val="40000"/></a:schemeClr></a:fillRef><a:effectRef idx="0"><a:schemeClr val="accent2"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="dk1"/></a:fontRef>	line accent6 (lnRef 1), fill accent2 lumMod 60000 lumOff 40000 (fillRef 1), text dk1
+tc-p3-transforms.pptx	T402	shape style	<a:lnRef idx="3"><a:schemeClr val="accent4"/></a:lnRef><a:fillRef idx="2"><a:schemeClr val="accent4"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="accent4"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="lt1"/></a:fontRef>	line accent4 (lnRef 3), fill accent4 through fillRef 2 (a gradient in the 2023 theme), text lt1
+tc-p3-transforms.pptx	T403	shape style	<a:lnRef idx="0"><a:schemeClr val="accent5"/></a:lnRef><a:fillRef idx="1001"><a:schemeClr val="accent5"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="accent5"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="lt1"/></a:fontRef>	no line (lnRef 0), fill accent5 through fillRef 1001 (bgFillStyleLst), text lt1
+tc-p4-spreadsheet.xlsx	X001	cell fill	<fgColor theme="0" tint="-0.5"/>	theme 0 tint -0.5
+tc-p4-spreadsheet.xlsx	X002	cell fill	<fgColor theme="0" tint="-0.25"/>	theme 0 tint -0.25
+tc-p4-spreadsheet.xlsx	X003	cell fill	<fgColor theme="0" tint="-0.1"/>	theme 0 tint -0.1
+tc-p4-spreadsheet.xlsx	X004	cell fill	<fgColor theme="0"/>	theme 0 tint 0.0
+tc-p4-spreadsheet.xlsx	X005	cell fill	<fgColor theme="0" tint="0.2"/>	theme 0 tint 0.2
+tc-p4-spreadsheet.xlsx	X006	cell fill	<fgColor theme="0" tint="0.3333"/>	theme 0 tint 0.3333
+tc-p4-spreadsheet.xlsx	X007	cell fill	<fgColor theme="0" tint="0.4"/>	theme 0 tint 0.4
+tc-p4-spreadsheet.xlsx	X008	cell fill	<fgColor theme="0" tint="0.6"/>	theme 0 tint 0.6
+tc-p4-spreadsheet.xlsx	X009	cell fill	<fgColor theme="0" tint="0.8"/>	theme 0 tint 0.8
+tc-p4-spreadsheet.xlsx	X010	cell fill	<fgColor theme="1" tint="-0.5"/>	theme 1 tint -0.5
+tc-p4-spreadsheet.xlsx	X011	cell fill	<fgColor theme="1" tint="-0.25"/>	theme 1 tint -0.25
+tc-p4-spreadsheet.xlsx	X012	cell fill	<fgColor theme="1" tint="-0.1"/>	theme 1 tint -0.1
+tc-p4-spreadsheet.xlsx	X013	cell fill	<fgColor theme="1"/>	theme 1 tint 0.0
+tc-p4-spreadsheet.xlsx	X014	cell fill	<fgColor theme="1" tint="0.2"/>	theme 1 tint 0.2
+tc-p4-spreadsheet.xlsx	X015	cell fill	<fgColor theme="1" tint="0.3333"/>	theme 1 tint 0.3333
+tc-p4-spreadsheet.xlsx	X016	cell fill	<fgColor theme="1" tint="0.4"/>	theme 1 tint 0.4
+tc-p4-spreadsheet.xlsx	X017	cell fill	<fgColor theme="1" tint="0.6"/>	theme 1 tint 0.6
+tc-p4-spreadsheet.xlsx	X018	cell fill	<fgColor theme="1" tint="0.8"/>	theme 1 tint 0.8
+tc-p4-spreadsheet.xlsx	X019	cell fill	<fgColor theme="2" tint="-0.5"/>	theme 2 tint -0.5
+tc-p4-spreadsheet.xlsx	X020	cell fill	<fgColor theme="2" tint="-0.25"/>	theme 2 tint -0.25
+tc-p4-spreadsheet.xlsx	X021	cell fill	<fgColor theme="2" tint="-0.1"/>	theme 2 tint -0.1
+tc-p4-spreadsheet.xlsx	X022	cell fill	<fgColor theme="2"/>	theme 2 tint 0.0
+tc-p4-spreadsheet.xlsx	X023	cell fill	<fgColor theme="2" tint="0.2"/>	theme 2 tint 0.2
+tc-p4-spreadsheet.xlsx	X024	cell fill	<fgColor theme="2" tint="0.3333"/>	theme 2 tint 0.3333
+tc-p4-spreadsheet.xlsx	X025	cell fill	<fgColor theme="2" tint="0.4"/>	theme 2 tint 0.4
+tc-p4-spreadsheet.xlsx	X026	cell fill	<fgColor theme="2" tint="0.6"/>	theme 2 tint 0.6
+tc-p4-spreadsheet.xlsx	X027	cell fill	<fgColor theme="2" tint="0.8"/>	theme 2 tint 0.8
+tc-p4-spreadsheet.xlsx	X028	cell fill	<fgColor theme="3" tint="-0.5"/>	theme 3 tint -0.5
+tc-p4-spreadsheet.xlsx	X029	cell fill	<fgColor theme="3" tint="-0.25"/>	theme 3 tint -0.25
+tc-p4-spreadsheet.xlsx	X030	cell fill	<fgColor theme="3" tint="-0.1"/>	theme 3 tint -0.1
+tc-p4-spreadsheet.xlsx	X031	cell fill	<fgColor theme="3"/>	theme 3 tint 0.0
+tc-p4-spreadsheet.xlsx	X032	cell fill	<fgColor theme="3" tint="0.2"/>	theme 3 tint 0.2
+tc-p4-spreadsheet.xlsx	X033	cell fill	<fgColor theme="3" tint="0.3333"/>	theme 3 tint 0.3333
+tc-p4-spreadsheet.xlsx	X034	cell fill	<fgColor theme="3" tint="0.4"/>	theme 3 tint 0.4
+tc-p4-spreadsheet.xlsx	X035	cell fill	<fgColor theme="3" tint="0.6"/>	theme 3 tint 0.6
+tc-p4-spreadsheet.xlsx	X036	cell fill	<fgColor theme="3" tint="0.8"/>	theme 3 tint 0.8
+tc-p4-spreadsheet.xlsx	X037	cell fill	<fgColor theme="4" tint="-0.5"/>	theme 4 tint -0.5
+tc-p4-spreadsheet.xlsx	X038	cell fill	<fgColor theme="4" tint="-0.25"/>	theme 4 tint -0.25
+tc-p4-spreadsheet.xlsx	X039	cell fill	<fgColor theme="4" tint="-0.1"/>	theme 4 tint -0.1
+tc-p4-spreadsheet.xlsx	X040	cell fill	<fgColor theme="4"/>	theme 4 tint 0.0
+tc-p4-spreadsheet.xlsx	X041	cell fill	<fgColor theme="4" tint="0.2"/>	theme 4 tint 0.2
+tc-p4-spreadsheet.xlsx	X042	cell fill	<fgColor theme="4" tint="0.3333"/>	theme 4 tint 0.3333
+tc-p4-spreadsheet.xlsx	X043	cell fill	<fgColor theme="4" tint="0.4"/>	theme 4 tint 0.4
+tc-p4-spreadsheet.xlsx	X044	cell fill	<fgColor theme="4" tint="0.6"/>	theme 4 tint 0.6
+tc-p4-spreadsheet.xlsx	X045	cell fill	<fgColor theme="4" tint="0.8"/>	theme 4 tint 0.8
+tc-p4-spreadsheet.xlsx	X046	cell fill	<fgColor theme="5" tint="-0.5"/>	theme 5 tint -0.5
+tc-p4-spreadsheet.xlsx	X047	cell fill	<fgColor theme="5" tint="-0.25"/>	theme 5 tint -0.25
+tc-p4-spreadsheet.xlsx	X048	cell fill	<fgColor theme="5" tint="-0.1"/>	theme 5 tint -0.1
+tc-p4-spreadsheet.xlsx	X049	cell fill	<fgColor theme="5"/>	theme 5 tint 0.0
+tc-p4-spreadsheet.xlsx	X050	cell fill	<fgColor theme="5" tint="0.2"/>	theme 5 tint 0.2
+tc-p4-spreadsheet.xlsx	X051	cell fill	<fgColor theme="5" tint="0.3333"/>	theme 5 tint 0.3333
+tc-p4-spreadsheet.xlsx	X052	cell fill	<fgColor theme="5" tint="0.4"/>	theme 5 tint 0.4
+tc-p4-spreadsheet.xlsx	X053	cell fill	<fgColor theme="5" tint="0.6"/>	theme 5 tint 0.6
+tc-p4-spreadsheet.xlsx	X054	cell fill	<fgColor theme="5" tint="0.8"/>	theme 5 tint 0.8
+tc-p4-spreadsheet.xlsx	X055	cell fill	<fgColor theme="6" tint="-0.5"/>	theme 6 tint -0.5
+tc-p4-spreadsheet.xlsx	X056	cell fill	<fgColor theme="6" tint="-0.25"/>	theme 6 tint -0.25
+tc-p4-spreadsheet.xlsx	X057	cell fill	<fgColor theme="6" tint="-0.1"/>	theme 6 tint -0.1
+tc-p4-spreadsheet.xlsx	X058	cell fill	<fgColor theme="6"/>	theme 6 tint 0.0
+tc-p4-spreadsheet.xlsx	X059	cell fill	<fgColor theme="6" tint="0.2"/>	theme 6 tint 0.2
+tc-p4-spreadsheet.xlsx	X060	cell fill	<fgColor theme="6" tint="0.3333"/>	theme 6 tint 0.3333
+tc-p4-spreadsheet.xlsx	X061	cell fill	<fgColor theme="6" tint="0.4"/>	theme 6 tint 0.4
+tc-p4-spreadsheet.xlsx	X062	cell fill	<fgColor theme="6" tint="0.6"/>	theme 6 tint 0.6
+tc-p4-spreadsheet.xlsx	X063	cell fill	<fgColor theme="6" tint="0.8"/>	theme 6 tint 0.8
+tc-p4-spreadsheet.xlsx	X064	cell fill	<fgColor theme="7" tint="-0.5"/>	theme 7 tint -0.5
+tc-p4-spreadsheet.xlsx	X065	cell fill	<fgColor theme="7" tint="-0.25"/>	theme 7 tint -0.25
+tc-p4-spreadsheet.xlsx	X066	cell fill	<fgColor theme="7" tint="-0.1"/>	theme 7 tint -0.1
+tc-p4-spreadsheet.xlsx	X067	cell fill	<fgColor theme="7"/>	theme 7 tint 0.0
+tc-p4-spreadsheet.xlsx	X068	cell fill	<fgColor theme="7" tint="0.2"/>	theme 7 tint 0.2
+tc-p4-spreadsheet.xlsx	X069	cell fill	<fgColor theme="7" tint="0.3333"/>	theme 7 tint 0.3333
+tc-p4-spreadsheet.xlsx	X070	cell fill	<fgColor theme="7" tint="0.4"/>	theme 7 tint 0.4
+tc-p4-spreadsheet.xlsx	X071	cell fill	<fgColor theme="7" tint="0.6"/>	theme 7 tint 0.6
+tc-p4-spreadsheet.xlsx	X072	cell fill	<fgColor theme="7" tint="0.8"/>	theme 7 tint 0.8
+tc-p4-spreadsheet.xlsx	X073	cell fill	<fgColor theme="8" tint="-0.5"/>	theme 8 tint -0.5
+tc-p4-spreadsheet.xlsx	X074	cell fill	<fgColor theme="8" tint="-0.25"/>	theme 8 tint -0.25
+tc-p4-spreadsheet.xlsx	X075	cell fill	<fgColor theme="8" tint="-0.1"/>	theme 8 tint -0.1
+tc-p4-spreadsheet.xlsx	X076	cell fill	<fgColor theme="8"/>	theme 8 tint 0.0
+tc-p4-spreadsheet.xlsx	X077	cell fill	<fgColor theme="8" tint="0.2"/>	theme 8 tint 0.2
+tc-p4-spreadsheet.xlsx	X078	cell fill	<fgColor theme="8" tint="0.3333"/>	theme 8 tint 0.3333
+tc-p4-spreadsheet.xlsx	X079	cell fill	<fgColor theme="8" tint="0.4"/>	theme 8 tint 0.4
+tc-p4-spreadsheet.xlsx	X080	cell fill	<fgColor theme="8" tint="0.6"/>	theme 8 tint 0.6
+tc-p4-spreadsheet.xlsx	X081	cell fill	<fgColor theme="8" tint="0.8"/>	theme 8 tint 0.8
+tc-p4-spreadsheet.xlsx	X082	cell fill	<fgColor theme="9" tint="-0.5"/>	theme 9 tint -0.5
+tc-p4-spreadsheet.xlsx	X083	cell fill	<fgColor theme="9" tint="-0.25"/>	theme 9 tint -0.25
+tc-p4-spreadsheet.xlsx	X084	cell fill	<fgColor theme="9" tint="-0.1"/>	theme 9 tint -0.1
+tc-p4-spreadsheet.xlsx	X085	cell fill	<fgColor theme="9"/>	theme 9 tint 0.0
+tc-p4-spreadsheet.xlsx	X086	cell fill	<fgColor theme="9" tint="0.2"/>	theme 9 tint 0.2
+tc-p4-spreadsheet.xlsx	X087	cell fill	<fgColor theme="9" tint="0.3333"/>	theme 9 tint 0.3333
+tc-p4-spreadsheet.xlsx	X088	cell fill	<fgColor theme="9" tint="0.4"/>	theme 9 tint 0.4
+tc-p4-spreadsheet.xlsx	X089	cell fill	<fgColor theme="9" tint="0.6"/>	theme 9 tint 0.6
+tc-p4-spreadsheet.xlsx	X090	cell fill	<fgColor theme="9" tint="0.8"/>	theme 9 tint 0.8
+tc-p4-spreadsheet.xlsx	Y000	cell fill	<fgColor indexed="0"/>	indexed 0
+tc-p4-spreadsheet.xlsx	Y001	cell fill	<fgColor indexed="1"/>	indexed 1
+tc-p4-spreadsheet.xlsx	Y002	cell fill	<fgColor indexed="2"/>	indexed 2
+tc-p4-spreadsheet.xlsx	Y003	cell fill	<fgColor indexed="3"/>	indexed 3
+tc-p4-spreadsheet.xlsx	Y004	cell fill	<fgColor indexed="4"/>	indexed 4
+tc-p4-spreadsheet.xlsx	Y005	cell fill	<fgColor indexed="5"/>	indexed 5
+tc-p4-spreadsheet.xlsx	Y006	cell fill	<fgColor indexed="6"/>	indexed 6
+tc-p4-spreadsheet.xlsx	Y007	cell fill	<fgColor indexed="7"/>	indexed 7
+tc-p4-spreadsheet.xlsx	Y008	cell fill	<fgColor indexed="8"/>	indexed 8
+tc-p4-spreadsheet.xlsx	Y009	cell fill	<fgColor indexed="9"/>	indexed 9
+tc-p4-spreadsheet.xlsx	Y010	cell fill	<fgColor indexed="10"/>	indexed 10
+tc-p4-spreadsheet.xlsx	Y011	cell fill	<fgColor indexed="11"/>	indexed 11
+tc-p4-spreadsheet.xlsx	Y012	cell fill	<fgColor indexed="12"/>	indexed 12
+tc-p4-spreadsheet.xlsx	Y013	cell fill	<fgColor indexed="13"/>	indexed 13
+tc-p4-spreadsheet.xlsx	Y014	cell fill	<fgColor indexed="14"/>	indexed 14
+tc-p4-spreadsheet.xlsx	Y015	cell fill	<fgColor indexed="15"/>	indexed 15
+tc-p4-spreadsheet.xlsx	Y016	cell fill	<fgColor indexed="16"/>	indexed 16
+tc-p4-spreadsheet.xlsx	Y017	cell fill	<fgColor indexed="17"/>	indexed 17
+tc-p4-spreadsheet.xlsx	Y018	cell fill	<fgColor indexed="18"/>	indexed 18
+tc-p4-spreadsheet.xlsx	Y019	cell fill	<fgColor indexed="19"/>	indexed 19
+tc-p4-spreadsheet.xlsx	Y020	cell fill	<fgColor indexed="20"/>	indexed 20
+tc-p4-spreadsheet.xlsx	Y021	cell fill	<fgColor indexed="21"/>	indexed 21
+tc-p4-spreadsheet.xlsx	Y022	cell fill	<fgColor indexed="22"/>	indexed 22
+tc-p4-spreadsheet.xlsx	Y023	cell fill	<fgColor indexed="23"/>	indexed 23
+tc-p4-spreadsheet.xlsx	Y024	cell fill	<fgColor indexed="24"/>	indexed 24
+tc-p4-spreadsheet.xlsx	Y025	cell fill	<fgColor indexed="25"/>	indexed 25
+tc-p4-spreadsheet.xlsx	Y026	cell fill	<fgColor indexed="26"/>	indexed 26
+tc-p4-spreadsheet.xlsx	Y027	cell fill	<fgColor indexed="27"/>	indexed 27
+tc-p4-spreadsheet.xlsx	Y028	cell fill	<fgColor indexed="28"/>	indexed 28
+tc-p4-spreadsheet.xlsx	Y029	cell fill	<fgColor indexed="29"/>	indexed 29
+tc-p4-spreadsheet.xlsx	Y030	cell fill	<fgColor indexed="30"/>	indexed 30
+tc-p4-spreadsheet.xlsx	Y031	cell fill	<fgColor indexed="31"/>	indexed 31
+tc-p4-spreadsheet.xlsx	Y032	cell fill	<fgColor indexed="32"/>	indexed 32
+tc-p4-spreadsheet.xlsx	Y033	cell fill	<fgColor indexed="33"/>	indexed 33
+tc-p4-spreadsheet.xlsx	Y034	cell fill	<fgColor indexed="34"/>	indexed 34
+tc-p4-spreadsheet.xlsx	Y035	cell fill	<fgColor indexed="35"/>	indexed 35
+tc-p4-spreadsheet.xlsx	Y036	cell fill	<fgColor indexed="36"/>	indexed 36
+tc-p4-spreadsheet.xlsx	Y037	cell fill	<fgColor indexed="37"/>	indexed 37
+tc-p4-spreadsheet.xlsx	Y038	cell fill	<fgColor indexed="38"/>	indexed 38
+tc-p4-spreadsheet.xlsx	Y039	cell fill	<fgColor indexed="39"/>	indexed 39
+tc-p4-spreadsheet.xlsx	Y040	cell fill	<fgColor indexed="40"/>	indexed 40
+tc-p4-spreadsheet.xlsx	Y041	cell fill	<fgColor indexed="41"/>	indexed 41
+tc-p4-spreadsheet.xlsx	Y042	cell fill	<fgColor indexed="42"/>	indexed 42
+tc-p4-spreadsheet.xlsx	Y043	cell fill	<fgColor indexed="43"/>	indexed 43
+tc-p4-spreadsheet.xlsx	Y044	cell fill	<fgColor indexed="44"/>	indexed 44
+tc-p4-spreadsheet.xlsx	Y045	cell fill	<fgColor indexed="45"/>	indexed 45
+tc-p4-spreadsheet.xlsx	Y046	cell fill	<fgColor indexed="46"/>	indexed 46
+tc-p4-spreadsheet.xlsx	Y047	cell fill	<fgColor indexed="47"/>	indexed 47
+tc-p4-spreadsheet.xlsx	Y048	cell fill	<fgColor indexed="48"/>	indexed 48
+tc-p4-spreadsheet.xlsx	Y049	cell fill	<fgColor indexed="49"/>	indexed 49
+tc-p4-spreadsheet.xlsx	Y050	cell fill	<fgColor indexed="50"/>	indexed 50
+tc-p4-spreadsheet.xlsx	Y051	cell fill	<fgColor indexed="51"/>	indexed 51
+tc-p4-spreadsheet.xlsx	Y052	cell fill	<fgColor indexed="52"/>	indexed 52
+tc-p4-spreadsheet.xlsx	Y053	cell fill	<fgColor indexed="53"/>	indexed 53
+tc-p4-spreadsheet.xlsx	Y054	cell fill	<fgColor indexed="54"/>	indexed 54
+tc-p4-spreadsheet.xlsx	Y055	cell fill	<fgColor indexed="55"/>	indexed 55
+tc-p4-spreadsheet.xlsx	Y056	cell fill	<fgColor indexed="56"/>	indexed 56
+tc-p4-spreadsheet.xlsx	Y057	cell fill	<fgColor indexed="57"/>	indexed 57
+tc-p4-spreadsheet.xlsx	Y058	cell fill	<fgColor indexed="58"/>	indexed 58
+tc-p4-spreadsheet.xlsx	Y059	cell fill	<fgColor indexed="59"/>	indexed 59
+tc-p4-spreadsheet.xlsx	Y060	cell fill	<fgColor indexed="60"/>	indexed 60
+tc-p4-spreadsheet.xlsx	Y061	cell fill	<fgColor indexed="61"/>	indexed 61
+tc-p4-spreadsheet.xlsx	Y062	cell fill	<fgColor indexed="62"/>	indexed 62
+tc-p4-spreadsheet.xlsx	Y063	cell fill	<fgColor indexed="63"/>	indexed 63
+tc-p4-spreadsheet.xlsx	Y064	cell fill	<fgColor indexed="64"/>	indexed 64
+tc-p4-spreadsheet.xlsx	Y065	cell fill	<fgColor indexed="65"/>	indexed 65
+tc-p4-spreadsheet-palette.xlsx	Z000	cell fill	<fgColor indexed="0"/>	indexed 0 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z001	cell fill	<fgColor indexed="1"/>	indexed 1 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z002	cell fill	<fgColor indexed="2"/>	indexed 2 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z003	cell fill	<fgColor indexed="3"/>	indexed 3 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z004	cell fill	<fgColor indexed="4"/>	indexed 4 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z005	cell fill	<fgColor indexed="5"/>	indexed 5 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z006	cell fill	<fgColor indexed="6"/>	indexed 6 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z007	cell fill	<fgColor indexed="7"/>	indexed 7 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z008	cell fill	<fgColor indexed="8"/>	indexed 8 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z009	cell fill	<fgColor indexed="9"/>	indexed 9 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z010	cell fill	<fgColor indexed="10"/>	indexed 10 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z011	cell fill	<fgColor indexed="11"/>	indexed 11 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z012	cell fill	<fgColor indexed="12"/>	indexed 12 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z013	cell fill	<fgColor indexed="13"/>	indexed 13 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z014	cell fill	<fgColor indexed="14"/>	indexed 14 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z015	cell fill	<fgColor indexed="15"/>	indexed 15 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z016	cell fill	<fgColor indexed="16"/>	indexed 16 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z017	cell fill	<fgColor indexed="17"/>	indexed 17 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z018	cell fill	<fgColor indexed="18"/>	indexed 18 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z019	cell fill	<fgColor indexed="19"/>	indexed 19 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z020	cell fill	<fgColor indexed="20"/>	indexed 20 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z021	cell fill	<fgColor indexed="21"/>	indexed 21 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z022	cell fill	<fgColor indexed="22"/>	indexed 22 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z023	cell fill	<fgColor indexed="23"/>	indexed 23 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z024	cell fill	<fgColor indexed="24"/>	indexed 24 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z025	cell fill	<fgColor indexed="25"/>	indexed 25 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z026	cell fill	<fgColor indexed="26"/>	indexed 26 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z027	cell fill	<fgColor indexed="27"/>	indexed 27 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z028	cell fill	<fgColor indexed="28"/>	indexed 28 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z029	cell fill	<fgColor indexed="29"/>	indexed 29 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z030	cell fill	<fgColor indexed="30"/>	indexed 30 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z031	cell fill	<fgColor indexed="31"/>	indexed 31 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z032	cell fill	<fgColor indexed="32"/>	indexed 32 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z033	cell fill	<fgColor indexed="33"/>	indexed 33 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z034	cell fill	<fgColor indexed="34"/>	indexed 34 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z035	cell fill	<fgColor indexed="35"/>	indexed 35 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z036	cell fill	<fgColor indexed="36"/>	indexed 36 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z037	cell fill	<fgColor indexed="37"/>	indexed 37 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z038	cell fill	<fgColor indexed="38"/>	indexed 38 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z039	cell fill	<fgColor indexed="39"/>	indexed 39 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z040	cell fill	<fgColor indexed="40"/>	indexed 40 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z041	cell fill	<fgColor indexed="41"/>	indexed 41 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z042	cell fill	<fgColor indexed="42"/>	indexed 42 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z043	cell fill	<fgColor indexed="43"/>	indexed 43 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z044	cell fill	<fgColor indexed="44"/>	indexed 44 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z045	cell fill	<fgColor indexed="45"/>	indexed 45 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z046	cell fill	<fgColor indexed="46"/>	indexed 46 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z047	cell fill	<fgColor indexed="47"/>	indexed 47 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z048	cell fill	<fgColor indexed="48"/>	indexed 48 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z049	cell fill	<fgColor indexed="49"/>	indexed 49 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z050	cell fill	<fgColor indexed="50"/>	indexed 50 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z051	cell fill	<fgColor indexed="51"/>	indexed 51 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z052	cell fill	<fgColor indexed="52"/>	indexed 52 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z053	cell fill	<fgColor indexed="53"/>	indexed 53 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z054	cell fill	<fgColor indexed="54"/>	indexed 54 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z055	cell fill	<fgColor indexed="55"/>	indexed 55 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z056	cell fill	<fgColor indexed="56"/>	indexed 56 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z057	cell fill	<fgColor indexed="57"/>	indexed 57 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z058	cell fill	<fgColor indexed="58"/>	indexed 58 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z059	cell fill	<fgColor indexed="59"/>	indexed 59 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z060	cell fill	<fgColor indexed="60"/>	indexed 60 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z061	cell fill	<fgColor indexed="61"/>	indexed 61 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z062	cell fill	<fgColor indexed="62"/>	indexed 62 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z063	cell fill	<fgColor indexed="63"/>	indexed 63 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z064	cell fill	<fgColor indexed="64"/>	indexed 64 against the workbook's own x:indexedColors
+tc-p4-spreadsheet-palette.xlsx	Z065	cell fill	<fgColor indexed="65"/>	indexed 65 against the workbook's own x:indexedColors
+tc-p5-map-override.pptx	P5-11	shape fill, label in the slide's own text colour	<a:schemeClr val="tx1"/>	slide overrides the map (bg1=dk1, tx1=lt1, bg2=dk2, tx2=lt2); schemeClr tx1
+tc-p5-map-override.pptx	P5-12	shape fill, label in the slide's own text colour	<a:schemeClr val="bg1"/>	slide overrides the map (bg1=dk1, tx1=lt1, bg2=dk2, tx2=lt2); schemeClr bg1
+tc-p5-map-override.pptx	P5-13	shape fill, label in the slide's own text colour	<a:schemeClr val="tx2"/>	slide overrides the map (bg1=dk1, tx1=lt1, bg2=dk2, tx2=lt2); schemeClr tx2
+tc-p5-map-override.pptx	P5-14	shape fill, label in the slide's own text colour	<a:schemeClr val="bg2"/>	slide overrides the map (bg1=dk1, tx1=lt1, bg2=dk2, tx2=lt2); schemeClr bg2
+tc-p5-map-override.pptx	P5-15	shape fill, label in the slide's own text colour	<a:schemeClr val="accent1"/>	slide overrides the map (bg1=dk1, tx1=lt1, bg2=dk2, tx2=lt2); schemeClr accent1
+tc-p5-map-override.pptx	P5-21	shape fill, label in the slide's own text colour	<a:schemeClr val="tx1"/>	slide keeps the master's map; schemeClr tx1
+tc-p5-map-override.pptx	P5-22	shape fill, label in the slide's own text colour	<a:schemeClr val="bg1"/>	slide keeps the master's map; schemeClr bg1
+tc-p5-map-override.pptx	P5-23	shape fill, label in the slide's own text colour	<a:schemeClr val="tx2"/>	slide keeps the master's map; schemeClr tx2
+tc-p5-map-override.pptx	P5-24	shape fill, label in the slide's own text colour	<a:schemeClr val="bg2"/>	slide keeps the master's map; schemeClr bg2
+tc-p5-map-override.pptx	P5-25	shape fill, label in the slide's own text colour	<a:schemeClr val="accent1"/>	slide keeps the master's map; schemeClr accent1
