@@ -185,11 +185,14 @@ still holds 2013 copies of `tsle` and an empty `sle` file (the inventory's
 - **Excel's empty Fallback** stays empty: kept whole, it round-trips; a
   reader in the default mode sees nothing, as before.
 - **The chart's `c14:style`**: Word, PowerPoint and Excel charts all carry
-  it, so this touches every document with a chart - the export-fo suite
-  (charts render through the chart exporter) is the check that nothing
-  downstream reads `getStyle()` and is surprised by `null` where the
-  Fallback used to supply it. If something does, `McSelection.selectedContent`
-  gives it the Fallback's `c:style` as before.
+  it, so this touches every document with a chart. Nothing downstream may
+  read `getStyle()` and be surprised by `null` where the Fallback used to
+  supply it; if something does, `McSelection.selectedContent` gives it the
+  Fallback's `c:style` as before. (Corrected 2026-10-11: this said the
+  export-fo suite was that check, since "charts render through the chart
+  exporter". docx4j has no chart exporter - every output drops a chart - so
+  the suite cannot see it. The check is that no main code calls
+  `CTChartSpace.getStyle()`, true on `VERSION_17_3_3`.)
 - **MOXy**: the three DrawingML schemas' packages are in every context; the
   core suite's context check.
 
