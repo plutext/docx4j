@@ -1,0 +1,176 @@
+{
+  "version": 1,
+  "style": 2,
+  "c14Style": 102,
+  "date1904": false,
+  "roundedCorners": false,
+  "lang": "en-US",
+  "title": {
+    "text": null,
+    "reference": null,
+    "shownText": "Y",
+    "overlay": false
+  },
+  "autoTitleDeleted": false,
+  "legend": null,
+  "plotVisOnly": true,
+  "dispBlanksAs": "gap",
+  "showDLblsOverMax": false,
+  "groups": [
+    {
+      "kind": "scatter",
+      "barDirection": null,
+      "grouping": null,
+      "varyColors": false,
+      "variesColors": false,
+      "shownDispBlanksAs": "gap",
+      "settings": {
+        "scatterStyle": "smoothMarker"
+      },
+      "axisIds": [
+        313514399,
+        311060511
+      ],
+      "dataLabels": {
+        "deleted": null,
+        "showValue": false,
+        "showCategoryName": false,
+        "showSeriesName": false,
+        "showPercent": false,
+        "showBubbleSize": false,
+        "showLegendKey": false,
+        "position": null,
+        "shownPosition": "r",
+        "numberFormat": null,
+        "separator": null
+      },
+      "series": [
+        {
+          "idx": 0,
+          "order": 0,
+          "hidden": false,
+          "name": {
+            "kind": "stringReference",
+            "reference": "Sheet1!$B$1",
+            "fullReference": null,
+            "count": 1,
+            "formatCode": null,
+            "points": [
+              "Y"
+            ]
+          },
+          "shownName": "Y",
+          "uniqueId": "{00000000-86F4-422A-BD2E-378DE73F1EB3}",
+          "fill": {
+            "kind": "automatic"
+          },
+          "line": {
+            "kind": "solid",
+            "color": "156082"
+          },
+          "categories": null,
+          "values": null,
+          "xValues": {
+            "kind": "numberReference",
+            "reference": "Sheet1!$A$2:$A$6",
+            "fullReference": null,
+            "count": 5,
+            "formatCode": "General",
+            "points": [
+              0.7,
+              1.8,
+              2.6,
+              3.9,
+              4.4000000000000004
+            ]
+          },
+          "yValues": {
+            "kind": "numberReference",
+            "reference": "Sheet1!$B$2:$B$6",
+            "fullReference": null,
+            "count": 5,
+            "formatCode": "General",
+            "points": [
+              2.7,
+              3.2,
+              0.8,
+              4.0999999999999996,
+              2.2000000000000002
+            ]
+          },
+          "bubbleSizes": null,
+          "points": [],
+          "smooth": true,
+          "invertIfNegative": null,
+          "explosion": null,
+          "marker": "circle",
+          "dataLabels": {
+            "deleted": null,
+            "showValue": false,
+            "showCategoryName": false,
+            "showSeriesName": false,
+            "showPercent": false,
+            "showBubbleSize": false,
+            "showLegendKey": false,
+            "position": null,
+            "shownPosition": "r",
+            "numberFormat": null,
+            "separator": null
+          }
+        }
+      ]
+    }
+  ],
+  "axes": [
+    {
+      "id": 313514399,
+      "kind": "value",
+      "crossAxisId": 311060511,
+      "position": "b",
+      "deleted": false,
+      "orientation": "minMax",
+      "min": null,
+      "max": null,
+      "logBase": null,
+      "majorUnit": null,
+      "minorUnit": null,
+      "baseTimeUnit": null,
+      "numberFormat": "General",
+      "numberFormatSourceLinked": true,
+      "crosses": "autoZero",
+      "crossesAt": null,
+      "crossBetween": "midCat",
+      "majorTickMark": "none",
+      "minorTickMark": "none",
+      "tickLabelPosition": "nextTo",
+      "majorGridlines": true,
+      "minorGridlines": false,
+      "title": null
+    },
+    {
+      "id": 311060511,
+      "kind": "value",
+      "crossAxisId": 313514399,
+      "position": "l",
+      "deleted": false,
+      "orientation": "minMax",
+      "min": null,
+      "max": null,
+      "logBase": null,
+      "majorUnit": null,
+      "minorUnit": null,
+      "baseTimeUnit": null,
+      "numberFormat": "General",
+      "numberFormatSourceLinked": true,
+      "crosses": "autoZero",
+      "crossesAt": null,
+      "crossBetween": "midCat",
+      "majorTickMark": "none",
+      "minorTickMark": "none",
+      "tickLabelPosition": "nextTo",
+      "majorGridlines": true,
+      "minorGridlines": false,
+      "title": null
+    }
+  ]
+}

@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "style": 2,
+  "c14Style": 102,
+  "date1904": false,
+  "roundedCorners": false,
+  "lang": "en-US",
+  "title": {
+    "text": null,
+    "reference": null,
+    "shownText": "Sales",
+    "overlay": false
+  },
+  "autoTitleDeleted": false,
+  "legend": {
+    "position": "b",
+    "overlay": false,
+    "deletedEntries": []
+  },
+  "plotVisOnly": true,
+  "dispBlanksAs": "gap",
+  "showDLblsOverMax": false,
+  "groups": [
+    {
+      "kind": "pie",
+      "barDirection": null,
+      "grouping": null,
+      "varyColors": true,
+      "variesColors": true,
+      "shownDispBlanksAs": "gap",
+      "settings": {
+        "firstSliceAng": 0
+      },
+      "axisIds": [],
+      "dataLabels": {
+        "deleted": null,
+        "showValue": false,
+        "showCategoryName": false,
+        "showSeriesName": false,
+        "showPercent": false,
+        "showBubbleSize": false,
+        "showLegendKey": false,
+        "position": null,
+        "shownPosition": "bestFit",
+        "numberFormat": null,
+        "separator": null
+      },
+      "series": [
+        {
+          "idx": 0,
+          "order": 0,
+          "hidden": false,
+          "name": {
+            "kind": "stringReference",
+            "reference": "Sheet1!$B$1",
+            "fullReference": null,
+            "count": 1,
+            "formatCode": null,
+            "points": [
+              "Sales"
+            ]
+          },
+          "shownName": "Sales",
+          "uniqueId": "{00000000-18DC-4009-BFF5-F8D5185E2AD5}",
+          "fill": {
+            "kind": "automatic"
+          },
+          "line": {
+            "kind": "automatic"
+          },
+          "categories": {
+            "kind": "stringReference",
+            "reference": "Sheet1!$A$2:$A$5",
+            "fullReference": null,
+            "count": 4,
+            "formatCode": null,
+            "points": [
+              "1st Qtr",
+              "2nd Qtr",
+              "3rd Qtr",
+              "4th Qtr"
+            ]
+          },
+          "values": {
+            "kind": "numberReference",
+            "reference": "Sheet1!$B$2:$B$5",
+            "fullReference": null,
+            "count": 4,
+            "formatCode": "General",
+            "points": [
+              8.1999999999999993,
+              3.2,
+              1.4,
+              1.2
+            ]
+          },
+          "xValues": null,
+          "yValues": null,
+          "bubbleSizes": null,
+          "points": [
+            {
+              "idx": 0,
+              "fill": {
+                "kind": "solid",
+                "color": "156082"
+              }
+            },
+            {
+              "idx": 1,
+              "fill": {
+                "kind": "solid",
+                "color": "E97132"
+              }
+            },
+            {
+              "idx": 2,
+              "fill": {
+                "kind": "solid",
+                "color": "196B24"
+              }
+            },
+            {
+              "idx": 3,
+              "fill": {
+                "kind": "solid",
+                "color": "0F9ED5"
+              }
+            }
+          ],
+          "smooth": null,
+          "invertIfNegative": null,
+          "explosion": null,
+          "marker": null,
+          "dataLabels": {
+            "deleted": null,
+            "showValue": false,
+            "showCategoryName": false,
+            "showSeriesName": false,
+            "showPercent": false,
+            "showBubbleSize": false,
+            "showLegendKey": false,
+            "position": null,
+            "shownPosition": "bestFit",
+            "numberFormat": null,
+            "separator": null
+          }
+        }
+      ]
+    }
+  ],
+  "axes": []
+}

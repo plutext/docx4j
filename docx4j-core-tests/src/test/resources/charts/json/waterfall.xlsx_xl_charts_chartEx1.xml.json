@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "chartex": true,
+  "hasTitle": true,
+  "titleText": null,
+  "shownTitle": "Chart Title",
+  "legendPosition": "t",
+  "series": [
+    {
+      "layout": "waterfall",
+      "hidden": false,
+      "uniqueId": "{00000000-3C3B-49AA-8209-ADB14F33BA6B}",
+      "formatIdx": 0,
+      "name": "Series 1",
+      "nameFormula": "_xlchart.v1.8",
+      "dataId": 0,
+      "subtotals": [],
+      "data": [
+        {
+          "type": "cat",
+          "numeric": false,
+          "formula": "_xlchart.v1.7",
+          "levels": []
+        },
+        {
+          "type": "val",
+          "numeric": true,
+          "formula": "_xlchart.v1.9",
+          "levels": []
+        }
+      ]
+    },
+    {
+      "layout": "waterfall",
+      "hidden": true,
+      "uniqueId": "{00000001-3C3B-49AA-8209-ADB14F33BA6B}",
+      "formatIdx": 1,
+      "name": "Series 2",
+      "nameFormula": "_xlchart.v1.10",
+      "dataId": 1,
+      "subtotals": [],
+      "data": [
+        {
+          "type": "cat",
+          "numeric": false,
+          "formula": "_xlchart.v1.7",
+          "levels": []
+        },
+        {
+          "type": "val",
+          "numeric": true,
+          "formula": "_xlchart.v1.11",
+          "levels": []
+        }
+      ]
+    },
+    {
+      "layout": "waterfall",
+      "hidden": true,
+      "uniqueId": "{00000002-3C3B-49AA-8209-ADB14F33BA6B}",
+      "formatIdx": 2,
+      "name": "Series 3",
+      "nameFormula": "_xlchart.v1.12",
+      "dataId": 2,
+      "subtotals": [],
+      "data": [
+        {
+          "type": "cat",
+          "numeric": false,
+          "formula": "_xlchart.v1.7",
+          "levels": []
+        },
+        {
+          "type": "val",
+          "numeric": true,
+          "formula": "_xlchart.v1.13",
+          "levels": []
+        }
+      ]
+    }
+  ],
+  "axes": [
+    {
+      "id": 0,
+      "kind": "category",
+      "hidden": false
+    },
+    {
+      "id": 1,
+      "kind": "value",
+      "hidden": false
+    }
+  ]
+}

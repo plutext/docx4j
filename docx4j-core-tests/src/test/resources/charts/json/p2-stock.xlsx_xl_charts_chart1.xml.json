@@ -1,0 +1,321 @@
+{
+  "version": 1,
+  "style": 2,
+  "c14Style": 102,
+  "date1904": false,
+  "roundedCorners": false,
+  "lang": "en-US",
+  "title": {
+    "text": null,
+    "reference": null,
+    "shownText": "Chart Title",
+    "overlay": false
+  },
+  "autoTitleDeleted": false,
+  "legend": {
+    "position": "b",
+    "overlay": false,
+    "deletedEntries": []
+  },
+  "plotVisOnly": true,
+  "dispBlanksAs": "gap",
+  "showDLblsOverMax": false,
+  "groups": [
+    {
+      "kind": "stock",
+      "barDirection": null,
+      "grouping": null,
+      "varyColors": null,
+      "variesColors": false,
+      "shownDispBlanksAs": "gap",
+      "settings": {},
+      "axisIds": [
+        259426639,
+        158578815
+      ],
+      "dataLabels": {
+        "deleted": null,
+        "showValue": false,
+        "showCategoryName": false,
+        "showSeriesName": false,
+        "showPercent": false,
+        "showBubbleSize": false,
+        "showLegendKey": false,
+        "position": null,
+        "shownPosition": "r",
+        "numberFormat": null,
+        "separator": null
+      },
+      "series": [
+        {
+          "idx": 0,
+          "order": 0,
+          "hidden": false,
+          "name": {
+            "kind": "stringReference",
+            "reference": "Sheet1!$B$1",
+            "fullReference": null,
+            "count": 1,
+            "formatCode": null,
+            "points": [
+              "High"
+            ]
+          },
+          "shownName": "High",
+          "uniqueId": "{00000000-A9DA-453B-8D0A-EF1A12041C5A}",
+          "fill": {
+            "kind": "automatic"
+          },
+          "line": {
+            "kind": "none"
+          },
+          "categories": {
+            "kind": "numberReference",
+            "reference": "Sheet1!$A$2:$A$6",
+            "fullReference": null,
+            "count": 5,
+            "formatCode": "yyyy\\-mm\\-dd",
+            "points": [
+              46023,
+              46024,
+              46025,
+              46026,
+              46027
+            ]
+          },
+          "values": {
+            "kind": "numberReference",
+            "reference": "Sheet1!$B$2:$B$6",
+            "fullReference": null,
+            "count": 5,
+            "formatCode": "General",
+            "points": [
+              55,
+              57,
+              57,
+              58,
+              58
+            ]
+          },
+          "xValues": null,
+          "yValues": null,
+          "bubbleSizes": null,
+          "points": [],
+          "smooth": false,
+          "invertIfNegative": null,
+          "explosion": null,
+          "marker": "none",
+          "dataLabels": {
+            "deleted": null,
+            "showValue": false,
+            "showCategoryName": false,
+            "showSeriesName": false,
+            "showPercent": false,
+            "showBubbleSize": false,
+            "showLegendKey": false,
+            "position": null,
+            "shownPosition": "r",
+            "numberFormat": null,
+            "separator": null
+          }
+        },
+        {
+          "idx": 1,
+          "order": 1,
+          "hidden": false,
+          "name": {
+            "kind": "stringReference",
+            "reference": "Sheet1!$C$1",
+            "fullReference": null,
+            "count": 1,
+            "formatCode": null,
+            "points": [
+              "Low"
+            ]
+          },
+          "shownName": "Low",
+          "uniqueId": "{00000001-A9DA-453B-8D0A-EF1A12041C5A}",
+          "fill": {
+            "kind": "automatic"
+          },
+          "line": {
+            "kind": "none"
+          },
+          "categories": {
+            "kind": "numberReference",
+            "reference": "Sheet1!$A$2:$A$6",
+            "fullReference": null,
+            "count": 5,
+            "formatCode": "yyyy\\-mm\\-dd",
+            "points": [
+              46023,
+              46024,
+              46025,
+              46026,
+              46027
+            ]
+          },
+          "values": {
+            "kind": "numberReference",
+            "reference": "Sheet1!$C$2:$C$6",
+            "fullReference": null,
+            "count": 5,
+            "formatCode": "General",
+            "points": [
+              11,
+              12,
+              13,
+              11,
+              25
+            ]
+          },
+          "xValues": null,
+          "yValues": null,
+          "bubbleSizes": null,
+          "points": [],
+          "smooth": false,
+          "invertIfNegative": null,
+          "explosion": null,
+          "marker": "none",
+          "dataLabels": {
+            "deleted": null,
+            "showValue": false,
+            "showCategoryName": false,
+            "showSeriesName": false,
+            "showPercent": false,
+            "showBubbleSize": false,
+            "showLegendKey": false,
+            "position": null,
+            "shownPosition": "r",
+            "numberFormat": null,
+            "separator": null
+          }
+        },
+        {
+          "idx": 2,
+          "order": 2,
+          "hidden": false,
+          "name": {
+            "kind": "stringReference",
+            "reference": "Sheet1!$D$1",
+            "fullReference": null,
+            "count": 1,
+            "formatCode": null,
+            "points": [
+              "Close"
+            ]
+          },
+          "shownName": "Close",
+          "uniqueId": "{00000002-A9DA-453B-8D0A-EF1A12041C5A}",
+          "fill": {
+            "kind": "automatic"
+          },
+          "line": {
+            "kind": "none"
+          },
+          "categories": {
+            "kind": "numberReference",
+            "reference": "Sheet1!$A$2:$A$6",
+            "fullReference": null,
+            "count": 5,
+            "formatCode": "yyyy\\-mm\\-dd",
+            "points": [
+              46023,
+              46024,
+              46025,
+              46026,
+              46027
+            ]
+          },
+          "values": {
+            "kind": "numberReference",
+            "reference": "Sheet1!$D$2:$D$6",
+            "fullReference": null,
+            "count": 5,
+            "formatCode": "General",
+            "points": [
+              25,
+              38,
+              50,
+              35,
+              43
+            ]
+          },
+          "xValues": null,
+          "yValues": null,
+          "bubbleSizes": null,
+          "points": [],
+          "smooth": false,
+          "invertIfNegative": null,
+          "explosion": null,
+          "marker": "dot",
+          "dataLabels": {
+            "deleted": null,
+            "showValue": false,
+            "showCategoryName": false,
+            "showSeriesName": false,
+            "showPercent": false,
+            "showBubbleSize": false,
+            "showLegendKey": false,
+            "position": null,
+            "shownPosition": "r",
+            "numberFormat": null,
+            "separator": null
+          }
+        }
+      ]
+    }
+  ],
+  "axes": [
+    {
+      "id": 259426639,
+      "kind": "date",
+      "crossAxisId": 158578815,
+      "position": "b",
+      "deleted": false,
+      "orientation": "minMax",
+      "min": null,
+      "max": null,
+      "logBase": null,
+      "majorUnit": null,
+      "minorUnit": null,
+      "baseTimeUnit": "days",
+      "numberFormat": "yyyy\\-mm\\-dd",
+      "numberFormatSourceLinked": true,
+      "crosses": "autoZero",
+      "crossesAt": null,
+      "crossBetween": null,
+      "majorTickMark": "out",
+      "minorTickMark": "none",
+      "tickLabelPosition": "nextTo",
+      "majorGridlines": false,
+      "minorGridlines": false,
+      "title": null
+    },
+    {
+      "id": 158578815,
+      "kind": "value",
+      "crossAxisId": 259426639,
+      "position": "l",
+      "deleted": false,
+      "orientation": "minMax",
+      "min": null,
+      "max": null,
+      "logBase": null,
+      "majorUnit": null,
+      "minorUnit": null,
+      "baseTimeUnit": null,
+      "numberFormat": "General",
+      "numberFormatSourceLinked": true,
+      "crosses": "autoZero",
+      "crossesAt": null,
+      "crossBetween": "between",
+      "majorTickMark": "none",
+      "minorTickMark": "none",
+      "tickLabelPosition": "nextTo",
+      "majorGridlines": true,
+      "minorGridlines": false,
+      "title": null
+    }
+  ]
+}

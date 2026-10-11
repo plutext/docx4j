@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "chartex": true,
+  "hasTitle": true,
+  "titleText": null,
+  "shownTitle": "Chart Title",
+  "legendPosition": "t",
+  "series": [
+    {
+      "layout": "waterfall",
+      "hidden": false,
+      "uniqueId": "{BE394444-3D33-475F-BAFE-A7CE102EF786}",
+      "formatIdx": null,
+      "name": "Series1",
+      "nameFormula": "Sheet1!$B$1",
+      "dataId": 0,
+      "subtotals": [
+        0,
+        4,
+        7
+      ],
+      "data": [
+        {
+          "type": "cat",
+          "numeric": false,
+          "formula": "Sheet1!$A$2:$A$9",
+          "levels": [
+            {
+              "count": 8,
+              "formatCode": null,
+              "points": [
+                "Category 1",
+                "Category 2",
+                "Category 3",
+                "Category 4",
+                "Category 5",
+                "Category 6",
+                "Category 7",
+                "Category 8"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "val",
+          "numeric": true,
+          "formula": "Sheet1!$B$2:$B$9",
+          "levels": [
+            {
+              "count": 8,
+              "formatCode": "General",
+              "points": [
+                100,
+                20,
+                50,
+                -40,
+                130,
+                -60,
+                70,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "axes": [
+    {
+      "id": 0,
+      "kind": "category",
+      "hidden": false
+    },
+    {
+      "id": 1,
+      "kind": "value",
+      "hidden": false
+    }
+  ]
+}

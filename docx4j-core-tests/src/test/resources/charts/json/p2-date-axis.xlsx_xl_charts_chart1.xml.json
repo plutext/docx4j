@@ -1,0 +1,177 @@
+{
+  "version": 1,
+  "style": 2,
+  "c14Style": 102,
+  "date1904": false,
+  "roundedCorners": false,
+  "lang": "en-US",
+  "title": {
+    "text": null,
+    "reference": null,
+    "shownText": "Visits",
+    "overlay": false
+  },
+  "autoTitleDeleted": false,
+  "legend": null,
+  "plotVisOnly": true,
+  "dispBlanksAs": "gap",
+  "showDLblsOverMax": false,
+  "groups": [
+    {
+      "kind": "line",
+      "barDirection": null,
+      "grouping": "standard",
+      "varyColors": false,
+      "variesColors": false,
+      "shownDispBlanksAs": "gap",
+      "settings": {
+        "marker": true,
+        "smooth": false
+      },
+      "axisIds": [
+        316662287,
+        311077311
+      ],
+      "dataLabels": {
+        "deleted": null,
+        "showValue": false,
+        "showCategoryName": false,
+        "showSeriesName": false,
+        "showPercent": false,
+        "showBubbleSize": false,
+        "showLegendKey": false,
+        "position": null,
+        "shownPosition": "r",
+        "numberFormat": null,
+        "separator": null
+      },
+      "series": [
+        {
+          "idx": 0,
+          "order": 0,
+          "hidden": false,
+          "name": {
+            "kind": "stringReference",
+            "reference": "Sheet1!$B$1",
+            "fullReference": null,
+            "count": 1,
+            "formatCode": null,
+            "points": [
+              "Visits"
+            ]
+          },
+          "shownName": "Visits",
+          "uniqueId": "{00000000-82F3-43AF-A530-85BB3A793914}",
+          "fill": {
+            "kind": "automatic"
+          },
+          "line": {
+            "kind": "solid",
+            "color": "156082"
+          },
+          "categories": {
+            "kind": "numberReference",
+            "reference": "Sheet1!$A$2:$A$6",
+            "fullReference": null,
+            "count": 5,
+            "formatCode": "d\\-mmm",
+            "points": [
+              46023,
+              46030,
+              46037,
+              46044,
+              46051
+            ]
+          },
+          "values": {
+            "kind": "numberReference",
+            "reference": "Sheet1!$B$2:$B$6",
+            "fullReference": null,
+            "count": 5,
+            "formatCode": "General",
+            "points": [
+              120,
+              135,
+              128,
+              150,
+              162
+            ]
+          },
+          "xValues": null,
+          "yValues": null,
+          "bubbleSizes": null,
+          "points": [],
+          "smooth": false,
+          "invertIfNegative": null,
+          "explosion": null,
+          "marker": "circle",
+          "dataLabels": {
+            "deleted": null,
+            "showValue": false,
+            "showCategoryName": false,
+            "showSeriesName": false,
+            "showPercent": false,
+            "showBubbleSize": false,
+            "showLegendKey": false,
+            "position": null,
+            "shownPosition": "r",
+            "numberFormat": null,
+            "separator": null
+          }
+        }
+      ]
+    }
+  ],
+  "axes": [
+    {
+      "id": 316662287,
+      "kind": "date",
+      "crossAxisId": 311077311,
+      "position": "b",
+      "deleted": false,
+      "orientation": "minMax",
+      "min": null,
+      "max": null,
+      "logBase": null,
+      "majorUnit": null,
+      "minorUnit": null,
+      "baseTimeUnit": "days",
+      "numberFormat": "d\\-mmm",
+      "numberFormatSourceLinked": true,
+      "crosses": "autoZero",
+      "crossesAt": null,
+      "crossBetween": null,
+      "majorTickMark": "out",
+      "minorTickMark": "none",
+      "tickLabelPosition": "nextTo",
+      "majorGridlines": false,
+      "minorGridlines": false,
+      "title": null
+    },
+    {
+      "id": 311077311,
+      "kind": "value",
+      "crossAxisId": 316662287,
+      "position": "l",
+      "deleted": false,
+      "orientation": "minMax",
+      "min": null,
+      "max": null,
+      "logBase": null,
+      "majorUnit": null,
+      "minorUnit": null,
+      "baseTimeUnit": null,
+      "numberFormat": "General",
+      "numberFormatSourceLinked": true,
+      "crosses": "autoZero",
+      "crossesAt": null,
+      "crossBetween": "between",
+      "majorTickMark": "none",
+      "minorTickMark": "none",
+      "tickLabelPosition": "nextTo",
+      "majorGridlines": true,
+      "minorGridlines": false,
+      "title": null
+    }
+  ]
+}

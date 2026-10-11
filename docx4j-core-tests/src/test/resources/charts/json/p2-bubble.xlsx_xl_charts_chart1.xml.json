@@ -1,0 +1,252 @@
+{
+  "version": 1,
+  "style": 2,
+  "c14Style": 102,
+  "date1904": false,
+  "roundedCorners": false,
+  "lang": "en-US",
+  "title": {
+    "text": null,
+    "reference": null,
+    "shownText": "Chart Title",
+    "overlay": false
+  },
+  "autoTitleDeleted": false,
+  "legend": {
+    "position": "b",
+    "overlay": false,
+    "deletedEntries": []
+  },
+  "plotVisOnly": true,
+  "dispBlanksAs": "gap",
+  "showDLblsOverMax": false,
+  "groups": [
+    {
+      "kind": "bubble",
+      "barDirection": null,
+      "grouping": null,
+      "varyColors": false,
+      "variesColors": false,
+      "shownDispBlanksAs": "gap",
+      "settings": {
+        "bubbleScale": 100,
+        "showNegBubbles": false
+      },
+      "axisIds": [
+        262139583,
+        311086911
+      ],
+      "dataLabels": {
+        "deleted": null,
+        "showValue": false,
+        "showCategoryName": false,
+        "showSeriesName": false,
+        "showPercent": false,
+        "showBubbleSize": false,
+        "showLegendKey": false,
+        "position": null,
+        "shownPosition": "r",
+        "numberFormat": null,
+        "separator": null
+      },
+      "series": [
+        {
+          "idx": 0,
+          "order": 0,
+          "hidden": false,
+          "name": null,
+          "shownName": "Series1",
+          "uniqueId": "{00000000-3085-45DA-A33F-E570A57EB9E7}",
+          "fill": {
+            "kind": "solid",
+            "color": "156082",
+            "alpha": 75000
+          },
+          "line": {
+            "kind": "none"
+          },
+          "categories": null,
+          "values": null,
+          "xValues": {
+            "kind": "stringReference",
+            "reference": "Sheet1!$A$1:$C$1",
+            "fullReference": null,
+            "count": 3,
+            "formatCode": null,
+            "points": [
+              "X",
+              "Y",
+              "Size"
+            ]
+          },
+          "yValues": {
+            "kind": "numberReference",
+            "reference": "Sheet1!$A$2:$C$2",
+            "fullReference": null,
+            "count": 3,
+            "formatCode": "General",
+            "points": [
+              0.7,
+              2.7,
+              10
+            ]
+          },
+          "bubbleSizes": {
+            "kind": "numberReference",
+            "reference": "Sheet1!$A$3:$C$3",
+            "fullReference": null,
+            "count": 3,
+            "formatCode": "General",
+            "points": [
+              1.8,
+              3.2,
+              4
+            ]
+          },
+          "points": [],
+          "smooth": null,
+          "invertIfNegative": false,
+          "explosion": null,
+          "marker": null,
+          "dataLabels": {
+            "deleted": null,
+            "showValue": false,
+            "showCategoryName": false,
+            "showSeriesName": false,
+            "showPercent": false,
+            "showBubbleSize": false,
+            "showLegendKey": false,
+            "position": null,
+            "shownPosition": "r",
+            "numberFormat": null,
+            "separator": null
+          }
+        },
+        {
+          "idx": 1,
+          "order": 1,
+          "hidden": false,
+          "name": null,
+          "shownName": "Series2",
+          "uniqueId": "{00000001-3085-45DA-A33F-E570A57EB9E7}",
+          "fill": {
+            "kind": "solid",
+            "color": "E97132",
+            "alpha": 75000
+          },
+          "line": {
+            "kind": "none"
+          },
+          "categories": null,
+          "values": null,
+          "xValues": {
+            "kind": "stringReference",
+            "reference": "Sheet1!$A$1:$C$1",
+            "fullReference": null,
+            "count": 3,
+            "formatCode": null,
+            "points": [
+              "X",
+              "Y",
+              "Size"
+            ]
+          },
+          "yValues": {
+            "kind": "numberReference",
+            "reference": "Sheet1!$A$4:$C$4",
+            "fullReference": null,
+            "count": 3,
+            "formatCode": "General",
+            "points": [
+              2.6,
+              0.8,
+              8
+            ]
+          },
+          "bubbleSizes": {
+            "kind": "numberLiteral",
+            "reference": null,
+            "fullReference": null,
+            "count": 3,
+            "formatCode": "General",
+            "points": [
+              1,
+              1,
+              1
+            ]
+          },
+          "points": [],
+          "smooth": null,
+          "invertIfNegative": false,
+          "explosion": null,
+          "marker": null,
+          "dataLabels": {
+            "deleted": null,
+            "showValue": false,
+            "showCategoryName": false,
+            "showSeriesName": false,
+            "showPercent": false,
+            "showBubbleSize": false,
+            "showLegendKey": false,
+            "position": null,
+            "shownPosition": "r",
+            "numberFormat": null,
+            "separator": null
+          }
+        }
+      ]
+    }
+  ],
+  "axes": [
+    {
+      "id": 262139583,
+      "kind": "value",
+      "crossAxisId": 311086911,
+      "position": "b",
+      "deleted": false,
+      "orientation": "minMax",
+      "min": null,
+      "max": null,
+      "logBase": null,
+      "majorUnit": null,
+      "minorUnit": null,
+      "baseTimeUnit": null,
+      "numberFormat": null,
+      "numberFormatSourceLinked": null,
+      "crosses": "autoZero",
+      "crossesAt": null,
+      "crossBetween": "midCat",
+      "majorTickMark": "none",
+      "minorTickMark": "none",
+      "tickLabelPosition": "nextTo",
+      "majorGridlines": true,
+      "minorGridlines": false,
+      "title": null
+    },
+    {
+      "id": 311086911,
+      "kind": "value",
+      "crossAxisId": 262139583,
+      "position": "l",
+      "deleted": false,
+      "orientation": "minMax",
+      "min": null,
+      "max": null,
+      "logBase": null,
+      "majorUnit": null,
+      "minorUnit": null,
+      "baseTimeUnit": null,
+      "numberFormat": "General",
+      "numberFormatSourceLinked": true,
+      "crosses": "autoZero",
+      "crossesAt": null,
+      "crossBetween": "midCat",
+      "majorTickMark": "none",
+      "minorTickMark": "none",
+      "tickLabelPosition": "nextTo",
+      "majorGridlines": true,
+      "minorGridlines": false,
+      "title": null
+    }
+  ]
+}

@@ -17,3 +17,21 @@ share, `Office 2016/office_charts` (`goldens-word\`, `goldens-excel\`).
 
 On the share the docx `clustered-column.docx` was `clustered columnsdocx.docx`; the other names
 had spaces where these have hyphens.
+
+## Phase 2's probes (made by Excel, 2026-10-12)
+
+`p2-*.xlsx` and `p2-pasted.pptx` were made by Excel itself from Word's default chart data, by
+`docx4j-layout-fidelity/tools/excel-chart-probes.ps1` (Jason's run on the Windows VM), for the
+read model (CR-035 phase 2): the chart kinds the files above lack (`p2-area`, `-doughnut`,
+`-radar`, `-surface`, `-bar-of-pie`, `-3d-column`, `-scatter`, `-bubble`, `-stock`), a date axis
+(`-date-axis`), a combination chart with its line on a secondary axis (`-combo-secondary`), a
+chartsheet (`-chartsheet`), a blank cell and a #N/A (`-gaps`), two levels of categories
+(`-multilevel`), a series and a category hidden with Excel's chart filter (`-filtered`), and a
+chart copied into PowerPoint (`-pasted.pptx`).  Excel's renderings (a PDF of each workbook, a PNG
+of each chart) are on the share, `office_charts\phase2\goldens-excel`, and PowerPoint's of the
+pasted chart in `goldens`.
+
+`json/` holds the JSON goldens of the read model (`ChartModel.toJson()`, `ChartExModel.toJson()`)
+for every chart part of every fixture, named after the fixture and the part: docx4j's TypeScript
+and Python ports compare their readings against them.  `ChartModelTest` and `ChartsTest` check
+them, and write them afresh with `-Ddocx4j.chartGoldens.write=<this json directory>`.

@@ -1,0 +1,259 @@
+MS-OI29500 NOTES ON ISO/IEC 29500-1 §21.2 (DrawingML Charts), plus MS-OE376 defaults and MS-ODRAWXML chart extensions
+
+SOURCES AND COVERAGE
+- MS-OI29500 v25.0 (2026-08-18; the .docx from the Learn page). I read all of it. Its §21.2 notes run without a gap from 2.1.1428 to 2.1.1599, 172 notes in all (144 on 21.2.2.x elements, 28 on 21.2.3.x simple types). Learn's toc.json lists the same 172. All were reachable; nothing is missing.
+- How to read the URLs below: "oi/<GUID>" stands for https://learn.microsoft.com/en-us/openspecs/office_standards/ms-oi29500/<GUID>. I spot-checked three URLs and they resolve.
+- The full map of note number, GUID and title is in /tmp/claude-1001/-home-jharrop-git-docx4j/618ec003-0a58-4cbe-8283-471e235488a6/scratchpad/map.txt. The verbatim text of all 172 notes is in body.txt in the same directory.
+- Citations in the form "2.1.N(x)" name the lettered sub-note x.
+
+KEY FINDING ON DEFAULTS
+MS-OI29500 has no note that changes a default for any of these: roundedCorners, varyColors, smooth, plotVisOnly, date1904, autoTitleDeleted, style, the c:CT_Boolean val default, gapWidth or overlap, crosses or crossBetween, tick marks, or the case where dispBlanksAs is absent.
+Office 2007's "default false" notes for these are in MS-OE376 (see the section near the end), and every one of them is limited to Office 2007. So for Office 2010 and later, Microsoft documents no deviation from the schema defaults (c:CT_Boolean val default="true").
+Neither document says what Office does when one of these elements is absent altogether. That has to be measured.
+
+=== CHART SPACE AND CHART-WIDE SETTINGS ===
+- 21.2.2.42 dispBlanksAs, 2.1.1452 oi/1942c028-3c4e-4dd9-a379-b12a9b7914df. A per-chart-type table: S = supported methods, D = the type's default method.
+    barChart, bar3DChart: S gap, zero; D gap
+    areaChart, grouping standard: S gap, zero; D gap
+    areaChart, grouping not standard (stacked, percentStacked): S zero only; D zero
+    area3DChart: S zero only; D zero
+    lineChart, grouping standard: S gap, span, zero; D gap
+    lineChart, grouping not standard: S zero only; D zero
+    line3DChart: S gap, zero; D gap
+    pieChart, pie3DChart, doughnutChart: S gap, zero; D gap
+    bubbleChart, scatterChart, radarChart: S gap, span, zero; D gap
+  An unsupported method falls back to the type's default.
+  The note does not cover a missing dispBlanksAs element, and it does not list ofPie, stock or surface charts.
+- 21.2.2.28 chartObject, 2.1.1445 oi/f0443747-f6a1-4f2b-b35a-3b4159cf25f9. Office ignores it and allows editing whatever the value.
+- 21.2.2.37 data, 2.1.1449 oi/1ddb29af-9f99-49dd-b024-07491c8d02ef. Ignored. The user can still change the data.
+- 21.2.2.72 formatting, 2.1.1472 oi/1a0d07f9-ff1b-4373-ae2a-fdc4610c6c36. Only partly respected.
+- 21.2.2.149 protection, 2.1.1526 oi/8c074063-cd93-4739-91fd-ec17d2bfa679. Applies whether or not the sheet is protected. Office writes only the selection child; the other children are not implemented.
+- 21.2.2.219 userInterface, 2.1.1567 oi/2e9f2f68-de8a-4769-81ec-c433df93c50c. Its presence means protection, whatever val says. Office never writes it, and on load treats it as standard protection.
+- 21.2.2.63 externalData, 2.1.1466 oi/3749a690-7ce7-4cf0-897a-cb98f767dd91. The r:id must exist in the chart part's own relationships.
+- 21.2.2.65 f, 2.1.1467 oi/49f95e2f-0491-4f4c-b552-091b1fb6d822. Must be a §18.17 formula, at most 8192 characters once decoded.
+- 21.2.2.117 name (pivot), 2.1.1503 oi/3a82b89e-7264-40c1-a09f-d569374fe6a9. Format is "[filename]sheet!pivottable". A bad format or a missing target means the chart gets no pivot association.
+- 21.2.2.142 pivotFmt, 2.1.1520 oi/c670152e-0849-4bcf-962e-35ea83fc42de. txPr is not allowed as a child. The txPr note, 2.1.1566 oi/7567be8d-0d5e-4265-a80b-52a3006799b3, refers back to this.
+- 21.2.2.143 pivotFmts, 2.1.1521 oi/07298e0e-ed82-488f-9575-e43bc37b2fd3. This is the PivotChart format collection. The standard's text wrongly describes it as surface bands.
+- 21.2.2.144 pivotSource, 2.1.1522 oi/e2f9906d-9246-45d1-817b-796d5cc91dac. At most one extLst. fmtId is at most 2147483647.
+- 21.2.2.70 fmtId, 2.1.1471 oi/b1f80d65-0055-4957-97e6-99d84ef6398a. At most 2147483647.
+- 21.2.2.148 printSettings, 2.1.1525 oi/ed56b005-235b-4130-8db9-602e08a13b96. If pageMargins is missing, Office creates one with application-defined values.
+- 21.2.2.133 pageMargins, 2.1.1513 oi/b030ac61-0cab-41f3-a939-6a5c193f33f3. Each of b, t, l, r, header and footer must be at least 0 and less than 49. (g) Office swaps header and footer on save.
+- 21.2.2.134 pageSetup, 2.1.1514 oi/8ffbeaeb-0d29-4ab7-8360-3f7b61509929. firstPageNumber is xsd:int. paperSize and copies are at most 2147483647. The note includes a paperSize table, and values of 256 or more mean custom paper.
+- 21.2.2.79 headerFooter, 2.1.1478 oi/0c9d02ec-a22c-49ae-b335-f2a4f1d2dd8e. With alignWithMargins=false, the application decides the alignment.
+- 21.2.2.59 evenFooter 2.1.1463 oi/0564e12c-acce-44e9-bbda-4dd76edd2f07 and 21.2.2.60 evenHeader 2.1.1464 oi/0b142db5-aa01-43b6-b228-2cd3f8ac3c1a. Ignored unless differentOddEven is true. ST_Xstring escapes are not decoded.
+- 21.2.2.66 firstFooter 2.1.1468 oi/ffa6e78a-fedd-422e-8521-050dd540543f and 21.2.2.67 firstHeader 2.1.1469 oi/040fa40f-5c91-4e65-be97-a7b64d744fcf. Ignored unless "differentOddEven" is true; that is the note's wording, and differentFirst is presumably meant. Escapes are not decoded.
+- 21.2.2.124 oddFooter 2.1.1505 oi/756b76a3-434e-4616-b00e-a5ee62ca85ba and 21.2.2.125 oddHeader 2.1.1506 oi/80313181-6818-45dc-acc6-6357c2366ddc. Used on every page when differentOddEven is false, and not on the first page when differentFirst is true. Escapes are not decoded.
+- 21.2.3.46 ST_Style, 2.1.1598 oi/48c6336a-dac0-43d4-b9a0-e29a1b3aa23c. "accent1-6" means the first style uses accent1, the next accent2, and so on to the sixth, which uses accent6. Where a style applies an effect, the effect colour is dk1.
+- 21.2.2.228 view3D, 2.1.1572 oi/4e6a1483-9d2e-45e3-bb39-dfb21f5e7c92. Applies only if the chart contains area3D, bar3D, line3D, pie3D, surface3D or surfaceChart.
+- 21.2.2.11 backWall, 2.1.1434 oi/51f8d9b9-d15b-478a-91c5-e8b09907af84. Allowed only on 3-D charts (bar3D, line3D, area3D, surface3D, pie3D).
+- 21.2.2.69 floor 2.1.1470 oi/14a18d6f-5679-4a50-bd05-b4dfbc77d851 and 21.2.2.191 sideWall 2.1.1552 oi/a0cfce2c-bcc6-459a-b1af-121b9b2453bf. Require a 3-D chart group.
+
+=== TITLE, AUTOTITLEDELETED AND MANUAL LAYOUT ===
+- 21.2.2.7 autoTitleDeleted, 2.1.1431 oi/94796dcb-1512-4541-b4d0-9514d4070913. Applies only when the parent c:chart has no c:title. The note gives no default.
+- 21.2.2.210 title, 2.1.1561 oi/a87b8094-484e-49fd-bdf7-ae3ed95e9572.
+  (a) With no tx, the text is a localized string for the parent type. The exception: if the chart has a single series and that series has a name, the title is that name.
+  (b) The title needs default or direct character properties (defRPr or rPr).
+- 21.2.2.156 rich, 2.1.1533 oi/6f6e05f3-8a22-4170-a467-b859506d76c7. The p elements together may hold at most 255 characters.
+- 21.2.2.216 txPr, 2.1.1566 oi/7567be8d-0d5e-4265-a80b-52a3006799b3. Ignored on load and removed on save if the sibling tx contains rich. Only the first a:p is read or saved.
+- 21.2.2.104 manualLayout, 2.1.1494 oi/8ef04866-6150-457e-9997-509ec5a80cf5. Under legend or plotArea, x, y, w and h are all present or all absent. Under dispUnitsLbl, dLbl, title or trendlineLbl, x and y come together.
+- 21.2.2.88 layout, 2.1.1485 oi/103a45d5-64c4-4e46-b972-658f87b24c63. Under dLbl or trendlineLbl, it is not saved unless it has a manualLayout, even when it has an extLst.
+- 21.2.2.89 layoutTarget, 2.1.1486 oi/63d53b16-d3cf-4361-b048-75462a9a40e7. Not allowed under dispUnitsLbl, dLbl, legend, title or trendlineLbl.
+- 21.2.2.78 h 2.1.1477 oi/2492a099-586a-4b75-99a5-39bb273e5c0a and 21.2.2.229 w 2.1.1573 oi/251f0661-860c-455e-bc94-a20c41df76c7. Ignored under dispUnitsLbl, dLbl, title or trendline, where the size fits the text. A val below 0 or above 1 makes Office ignore the whole manualLayout and use the default size and position.
+- 21.2.2.232 x 2.1.1575 oi/39d7c733-19c2-4442-87d9-97c0efce4cda and 21.2.2.235 y 2.1.1577 oi/8c46e53b-c525-4bb6-8927-59d133a60a06. The whole manualLayout is ignored if val > 1, if val < 0 in edge mode, or if val < -1 in factor mode. An in-range value that would push the element outside the chart is moved inside, keeping its size.
+- 21.2.2.81 hMode 2.1.1479 oi/4d59213a-27af-4901-9006-ff11f30589b4 and 21.2.2.231 wMode 2.1.1574 oi/67d2127f-6922-43a2-9ffe-e4d67615136d. Office writes only factor; edge is converted on save, with h and w recomputed. (wMode a) The mode applies to the parent element.
+- 21.2.2.233 xMode 2.1.1576 oi/033c001f-a29a-4817-a32a-75394f971109 and 21.2.2.236 yMode 2.1.1578 oi/3e552fb6-fb17-40bd-aa1c-6628425e5b8a. Office writes only edge; factor is converted on save. After conversion x or y can fall outside 0..1, and the layout is then ignored on the next load.
+- 21.2.3.20 ST_LayoutMode, 2.1.1587 oi/bb8565e7-dfea-453f-868b-ae680ab8a823.
+  edge: h and w give the distance from the chart's top or left edge to the element's bottom or right edge; x and y give the element's left or top edge. All are fractions of the chart's size.
+  factor: h and w give the element's size as a fraction of the chart's. x and y are offsets from the element's DEFAULT position, as fractions of the chart's size.
+
+=== LEGEND ===
+- 21.2.2.95 legendPos, 2.1.1488 oi/8314e929-129a-4991-a7f9-9f37010521e5. A sibling layout/manualLayout overrides the position.
+- There are no notes on legendEntry, overlay or the legend's txPr.
+
+=== PLOT AREA AND CHART GROUPS ===
+- 21.2.2.145 plotArea, 2.1.1523 oi/83596c29-eda7-4a40-a24d-721aa7b23b3f. At most 4 axes (valAx, catAx, dateAx, serAx).
+- At most 255 ser per chart group: areaChart 2.1.1430 oi/29ab25d3-5428-484c-b2a3-ec691a0bf49f; bar3DChart 2.1.1437 oi/46a9db16-5bfa-4d0f-86ad-196bf11c9230; bubbleChart 2.1.1441(a) oi/c99aee60-a26e-4654-8607-0e0411ea81eb; line3DChart 2.1.1489(b) oi/7bcdf1d2-3b75-4a54-8fb8-7af678555e39 (lineChart 2.1.1490 oi/28cc58e8-71c2-454c-9c4e-ef78fa758552 cross-refers);
+  pie3DChart 2.1.1518(b) oi/06c61892-1ab3-4e35-a09d-ee70b3a3c704 (pieChart and ofPieChart cross-refer); radarChart 2.1.1530 oi/0cd74246-587c-4969-aa8c-705f633ff3d9; scatterChart 2.1.1534 oi/3a25f022-e56d-4b75-8361-c2d5beab1060; surface3DChart 2.1.1556 oi/9732db6e-4647-475f-a419-3f53903a7d46 (surfaceChart 2.1.1557 oi/b275eedb-a86d-48a3-ae21-c44ac20c7dcc). line3DChart's axId is also capped at 2147483647.
+- 21.2.2.141 pieChart 2.1.1519 oi/f2797eb1-3b5e-4a40-be3e-344faa60f3dc and 21.2.2.140 pie3DChart 2.1.1518(a) oi/06c61892-1ab3-4e35-a09d-ee70b3a3c704. Office displays only the FIRST series.
+- 21.2.2.126 ofPieChart, 2.1.1507 oi/8bff8328-f5ee-483c-8421-4df869d8f741. A primary pie plus a secondary bar or pie. The secondary's points are added up into an "Other" slice on the primary.
+- 21.2.2.127 ofPieType, 2.1.1508 oi/c444df6e-f827-424b-88b3-8411bcb3e799. val is required.
+- 21.2.2.196 splitType, 2.1.1554 oi/48975c46-5844-4ebf-8217-dcf06ae04755. val is required. If the element is absent, Office splits by position, with splitPos = ceil(number of points / 3).
+- 21.2.3.45 ST_SplitType, 2.1.1597 oi/53d3723d-2ebe-4ff8-b8ba-cfc8338c5edb. "auto" is not allowed.
+- 21.2.2.195 splitPos, 2.1.1553 oi/002a3237-21c5-425f-8352-1a108d5bc7bb. With pos, an integer from 0 to 32000; with percent, 0.0 to 100.0. Needs a splitType of percent, pos or val. INF and NaN are not allowed.
+- 21.2.2.163 secondPiePt, 2.1.1535 oi/ada73b7e-3161-426f-89b3-ecbcc68eace0. A zero-based point index, unique within the collection, at most 2147483647.
+- 21.2.2.75 gapWidth, 2.1.1475 oi/2f482e39-6b11-4a3b-a3c4-3c46edfb3fc9. On ofPieChart it sets the primary pie's radius. On bar, bar3D and upDownBars it is the space between series clusters along the category axis, as a percentage of bar width. No default is given.
+- 21.2.2.131 overlap, 2.1.1512 oi/4abcc447-4ee3-422c-b12f-0eb93ab89779. How much the bars of adjacent series in one category overlap. No default is given.
+- 21.2.2.74 gapDepth, 2.1.1474 oi/012f5622-abbb-4844-8368-833b087789e4. The space between categories along the depth axis, as a percentage of the bar, column, line or base depth.
+- 21.2.2.16 barChart, 2.1.1438 oi/4f86580b-39ca-4555-8ef8-44b2f35f3648. At most one serLines.
+- 21.2.2.17 barDir, 2.1.1439 oi/e99b822a-a75c-4a26-8b42-0136b3acee5b. val is required.
+- 21.2.3.3 ST_BarDir, 2.1.1580 oi/2ebc850c-2ebe-4101-aecc-74500c1c8c1f. Gives the orientation only. In 3-D the shape element sets the shape.
+- 21.2.3.4 ST_BarGrouping, 2.1.1581 oi/294bc3bc-b346-4326-94c3-94b19a9a985c. In 2-D, "standard" behaves like "clustered". In 3-D the clusters line up along the depth axis.
+- 21.2.2.76 grouping 2.1.1476 oi/8fd06fa9-7194-482c-aa15-286409552ac5 and 21.2.3.17 ST_Grouping 2.1.1585 oi/9e882b63-2524-4008-8fd8-85e34d6585c3. Office uses this grouping only for line and area charts; bar charts use their own grouping.
+- 21.2.2.176 serLines, 2.1.1545 oi/446ec2e6-2887-4179-aa9c-4c4e8ff79873. In barChart, the lines join the tops of a series' adjacent points, and are allowed only when grouping is stacked or percentStacked. In ofPie, they join the secondary chart to the "Other" slice.
+- 21.2.2.177 shape, 2.1.1546 oi/064f48d3-7de6-4d57-ac6b-6deec7c01b6c. On bar3DChart it is the default series shape. On a ser it is allowed only inside bar3DChart.
+- 21.2.3.42 ST_Shape, 2.1.1595 oi/0680b9ba-6833-4f31-94a8-add5e312db29. coneToMax and pyramidToMax are cut off at the data value, with the apex at the chart's maximum.
+- 21.2.2.50 doughnutChart, 2.1.1458 oi/715e20be-5789-467d-b9ec-5a39ae8a307b. holeSize is REQUIRED.
+- 21.2.2.82 holeSize, 2.1.1480 oi/21355c07-074d-42ba-8c5e-37e6f33692ac. val is required.
+- 21.2.3.18 ST_HoleSize, 2.1.1586 oi/56d2baaf-961d-4e81-bc6f-09d90ef42a68. Minimum 1, where the standard says 10.
+- 21.2.2.20 bubbleChart, 2.1.1441(b) oi/c99aee60-a26e-4654-8607-0e0411ea81eb. bubble3D is not allowed as a child of bubbleChart. The bubble3D note, 2.1.1440 oi/b8441f8d-1013-434e-8d86-ba06b64e4d92, refers back to this.
+- 21.2.2.154 radarStyle, 2.1.1531 oi/b303418c-8a07-46d5-b1de-e6905c3b589c. val is required.
+- 21.2.3.37 ST_RadarStyle, 2.1.1593 oi/d82e8935-8582-4ef5-9b33-bb5fe1dd8fe0. A series' own line and marker settings override the style.
+- 21.2.3.40 ST_ScatterStyle, 2.1.1594 oi/790a49d0-6829-4626-8e0f-4f6681a9586b.
+  "none" makes the file FAIL TO LOAD. On load, "smooth" is read as smoothMarker, and "line" and "marker" as lineMarker. Office never writes smooth, line or marker; it writes smoothMarker or lineMarker
+  and switches markers or lines off on the series. A series' own line and marker settings override the style.
+- 21.2.3.27 ST_MarkerStyle, 2.1.1588 oi/54d012c4-b9dc-4e50-b14e-0b151096b96b. "auto" is accepted, and the application chooses.
+- 21.2.2.227 varyColors, 2.1.1571 oi/c929a5be-b7e4-401b-a9b5-699079e2705c.
+  (a, b) It also varies marker types, and the colour of each point, marker and slice. (c) IGNORED on area, area3D and stock charts, and on radar charts with radarStyle=filled.
+  (d) IGNORED whenever the chart has more than one series. No default is given.
+- 3-D settings:
+  - 21.2.2.41 depthPercent, 2.1.1451 oi/2643b634-5b71-4371-b8d9-b25715fe3ebb. A percentage of the 3-D plot area's width (the standard says chart width).
+  - 21.2.2.83 hPercent, 2.1.1481 oi/efdfd9b1-197c-426b-a356-d35c55a14eae. If absent, Office scales automatically: height / width = plot area height / plot area width. If present, it turns that off and is a percentage of the 3-D plot area's width. On pie3D, the thickness is the application's default thickness times hPercent.
+  - 21.2.2.136 perspective, 2.1.1516 oi/6aa1047e-4bc0-4a22-8292-385d1f45a437. val is twice the field-of-view angle. 0 gives 0.1 degrees. rAngAx takes precedence.
+  - 21.2.3.34 ST_Perspective, 2.1.1591 oi/0215ce81-e51b-4bf7-a61b-27f8f76121ea. 0 to 240 degrees, where the standard says 0 to 100 percent.
+  - 21.2.2.155 rAngAx, 2.1.1532 oi/c7d20cb5-11c9-401a-b29a-03574828cd25. Office computes the default extrusion angles from rotX and rotY only when rAngAx is specified.
+  - 21.2.2.206 thickness, 2.1.1558 oi/95f7cec9-fd77-4e74-a313-28e846491e4e. At most 100. A percentage of the smaller of the 3-D chart's height and width.
+  - 21.2.2.2 applyToFront 2.1.1428 oi/1b1344e7-a009-44f5-aa3a-4cbb4f752c80. Also applies to backWall; ignored on floor and sideWall.
+  - 21.2.2.3 applyToSides 2.1.1429 oi/82ee2e51-0df4-4d6a-86c4-6529093bae80. Also applies to floor and sideWall; ignored on backWall.
+  - 21.2.2.138 pictureOptions, 2.1.1517 oi/49556f62-0f36-4dc0-8a71-075a46b62142. pictureStackUnit is allowed only with pictureFormat=stackScale; otherwise the chart FAILS TO LOAD. pictureOptions is ignored unless the sibling spPr has a blipFill. pictureStackUnit is ignored on floor.
+  - 21.2.3.35 ST_PictureFormat, 2.1.1592 oi/559db49f-5917-417e-894b-34c17cd12e33. stretch is not anisotropic.
+  - 21.2.2.14 bandFmts, 2.1.1436 oi/7bcd4b61-50c6-4a1a-88cf-5a29bdeb03cc. Bands are indexed from 0, low values to high. Bands without formatting may be left out.
+
+=== SERIES ===
+- 21.2.2.215 tx (series text), 2.1.1565 oi/663bc5a1-9c24-4a29-a84d-a6f9c6e60acd. If absent, the name is the localized "Series#", where # = idx + 1.
+- 21.2.2.24 cat, 2.1.1443 oi/ea16141c-f0bc-469c-a1a0-214e200eda61. If absent, the categories are the 1-based point indexes 1, 2, 3 and so on.
+- 21.2.2.84 idx, 2.1.1482 oi/6ceb7cd8-40d8-4c66-95fa-130240a4a22a. Unique within the collection. At most 2147483647.
+- 21.2.2.128 order, 2.1.1509 oi/3bb9ee04-625a-48d9-8462-c6b25dc8a319. Unique among the order elements of the same collection. At most 2147483647.
+- Per-series limits: at most 254 trendlines; at most 32000 dPt, or 4000 inside area3D, bar3D, line3D or pie3D.
+  Notes: scatter ser 21.2.2.167 2.1.1537 oi/8d3e50cd-20d7-4a88-b682-fa2e521d61b3; area ser .168 2.1.1538 oi/3eecdd27-5cd0-4745-bf73-8025f834a3bd (val REQUIRED); radar ser .169 2.1.1539 oi/5dd6d577-2824-4f22-9394-85f6c5e4ab13; bar ser .170 2.1.1540 oi/22c33bf4-27ac-4854-beda-c6bd361820d7; line ser .171 2.1.1541 oi/578d597b-6a68-4e39-a980-bc2897aa728e; pie ser .172 2.1.1542 oi/b585b8c6-05e6-44d9-998f-f52943ad40ef; bubble ser .174 2.1.1543 oi/f1c2a070-8b43-4ac8-a91f-c7fcfada5506 (yVal REQUIRED).
+  There are no notes on xVal, val, bubbleSize, dPt content, smooth, bubbleScale, showNegBubbles or sizeRepresents.
+- 21.2.2.61 explosion, 2.1.1465 oi/cd1772e1-ff69-4c58-81e1-793baa9fe54c. At most 2147483647. No default is given.
+- 21.2.2.86 invertIfNegative, 2.1.1484 oi/c26d486f-a3ba-4b87-bcc1-8e10062f4c2f. Ignored in bubbleChart, where negative values are always inverted.
+- 21.2.2.105 marker ("Show Marker", the boolean), 2.1.1495 oi/72be6907-2aa4-474d-a8e2-9b5fb073bd8a. Office ALWAYS IGNORES it and does not use it to decide whether markers show.
+- 21.2.2.106 marker (the Marker element), 2.1.1496 oi/c42ddf7d-f72d-4cb6-9f35-13e6e30d7d25. Not allowed inside line3DChart.
+- 21.2.2.197 spPr, 2.1.1555 oi/efeb511d-3275-4e5d-a518-04bd555d9540. It also cross-refers to the §20.5.2.30 notes.
+  grpFill is not allowed. *Fill children are not kept on dropLines, hiLowLines, leaderLines, gridlines, line, scatter or non-filled radar series, or trendlines. effectDag and effectLst are not kept on leaderLines.
+  scene3d and sp3d are not kept on axes, dropLines, dTable, hiLowLines, leaderLines, gridlines, line, scatter or non-filled radar series, seriesLines, or trendlines.
+- Trendlines and error bars (short):
+  - trendline 21.2.2.211, 2.1.1562 oi/a627a81e-2d01-4a7f-8f7c-40e2aec4f792. Allowed only on area or line with grouping standard, bar with grouping clustered, and bubble, scatter or stock charts.
+  - trendlineLbl 21.2.2.212, 2.1.1563 oi/fe147abc-7915-492e-a048-c353ef9ebb28. The default text comes from dispEq and dispRSqr; a tx replaces it; the label is hidden for movingAvg; only specify it if dispEq or dispRSqr is true.
+  - trendlineType 2.1.1564 oi/3a602038-1d92-4913-ad3e-43556bf8b51f. val is required.
+  - ST_TrendlineType 2.1.1599 oi/b4f2d82c-f8ae-4592-847f-4360fbd8fdad. exp means y = a*e^(bx).
+  - period 2.1.1515 oi/1a9be881-a8fa-4b3f-9546-1bef22ea3b41. Required for movingAvg and only then. At most (number of categories - 1); above that the trendline is not drawn.
+  - order (polynomial) 2.1.1510 oi/4370285e-4d97-454c-a63a-23336f48f90c. Required for poly.
+  - ST_Period 2.1.1590 oi/26be8f3a-e9c2-4f58-9fa8-72bab178b598. unsignedInt with a minimum of 2.
+  - dispEq 2.1.1453 oi/a025f35c-2661-4dd1-8afd-cc79c9784163 and dispRSqr 2.1.1454 oi/e70f0d89-2989-4621-9425-7749106adbe1. Ignored if trendlineLbl has a tx, or for movingAvg.
+  - forward 2.1.1473 oi/bd4e4652-e4ee-46e5-9d88-b730b2233e20 and backward 2.1.1435 oi/69fafe69-4f3e-42d8-88d5-3955a6e9be2e. Any value above 0; no INF or NaN. Units for scatter and bubble, categories otherwise.
+  - intercept 2.1.1483 oi/ecb7cd15-5c46-458b-9f7c-016272458527. No INF or NaN.
+  - errBars 2.1.1459 oi/31439cca-bd5c-45fa-9c75-a12b55c1d15f. Ignored on 3-D charts.
+  - errBarType 2.1.1460 oi/761c5fad-51b2-4739-84b9-087b034ff117 and errValType 2.1.1462 oi/a8d73708-564d-4e71-ba08-3b7b1f405ea8. val is required.
+  - errDir 2.1.1461 oi/d68b40e0-7ab7-477d-986d-84201e67a2d0. If absent, x for horizontal bar charts and y otherwise. Office reads it on any series but writes it only for line and scatter.
+  - plus 2.1.1524 oi/ddc60b42-62be-4617-bf28-4372f3fa3422 and minus 2.1.1500 oi/f9019fcf-f51d-4d95-89c4-e9267f846bdb. Also written for stdErr if the bars were custom earlier in the session.
+  - val (error bar value) 2.1.1569 oi/4536b8c0-15fd-4156-a3e1-b4a93b280d6f. Ignored if "errBarType" is stdErr. That is the note's wording; errValType is presumably meant.
+  - ST_ErrValType 2.1.1584 oi/ba45301a-b700-4913-a052-71e61c1b5023. stdDev = the standard deviation for each point times val.
+
+=== DATA LABELS ===
+- 21.2.2.49 dLbls, 2.1.1457 oi/953e5879-8008-4d14-a8bc-fbe39d848e0a.
+  (a) Directly under a chart group (not under a ser), these children are NOT allowed: delete, dLbl, leaderLines, numFmt, showLeaderLines, spPr, txPr.
+  (b) Overrides layer up: the chart group's dLbls, then the series' dLbls, then an individual dLbl.
+- 21.2.2.47 dLbl, 2.1.1455 oi/f4264e4b-7a40-405d-a32c-e804b2fcaac3. Only under pivotFmt or under a series' dLbls. If the dLbl has a tx, Office ignores numFmt, separator, showBubbleSize, showCatName, showPercent, showSerName and showVal.
+- 21.2.2.48 dLblPos, 2.1.1456 oi/e2b1697c-7adc-463d-9081-3daef72f656f.
+  (a) Valid positions when a ser is an ancestor: pie, pie3D, ofPie: bestFit, outEnd, inEnd, ctr. bar clustered: inBase, inEnd, outEnd, ctr. bar stacked or percentStacked: inBase, inEnd, ctr.
+      bubble, line, scatter, stock: l, r, t, b, ctr. area, area3D, bar3D, doughnut, line3D, radar: dLblPos must NOT be specified.
+  (b) DEFAULT when absent: pie, pie3D, ofPie: bestFit. area, area3D, doughnut: ctr. bar or bar3D stacked or percentStacked: ctr.
+      bar or bar3D clustered, and radar: outEnd. bubble, scatter, stock, line, line3D: r.
+- 21.2.2.166 separator, 2.1.1536 oi/172cb24b-16a9-4bc4-8a94-aa447afb2486. The default depends on region and language; the standard says comma.
+- 21.2.2.178 showBubbleSize 2.1.1547 oi/8d4ce2ea-cc59-4f76-9171-2ea85c07e463. Only in bubbleChart.
+- 21.2.2.187 showPercent 2.1.1551 oi/5ab67be7-75d9-474c-8104-d1167f77b169. Only in pie, pie3D, ofPie and doughnut.
+- 21.2.2.183 showLeaderLines, 2.1.1549 oi/52830fc3-8068-4e69-9e0e-9fdb4d45e7ee. Only in pie, pie3D, ofPie and doughnut, and needs one of showCatName, showSerName, showVal or showPercent to be true. For leader lines on any chart type, see c15 below.
+- 21.2.2.92 leaderLines, 2.1.1487 oi/3536abf1-0a57-4a15-a197-6b56b3f4616f. Needs showLeaderLines=true, and only in pie, pie3D, ofPie and doughnut.
+- 21.2.2.184 showLegendKey, 2.1.1550 oi/b0d0713f-ac98-44b4-b4ee-2a490237c3ac. The key copies the legend key's formatting. It shows only if one of showBubbleSize, showCatName, showSerName, showVal or showPercent is true, or the dLbl has a tx.
+- 21.2.2.180 showDLblsOverMax, 2.1.1548 oi/2285918b-950e-4bef-a710-d7b9588c59c0. Covers values above the axis maximum AND below the axis minimum.
+- 21.2.2.121 numFmt, 2.1.1504 oi/0539ffcc-9bd2-430d-aea0-17400f7f532f. Under trendlineLbl, sourceLinked is not used.
+- 21.2.2.23 builtInUnit 2.1.1442 oi/cce3b3b3-a43d-4e95-b977-1428b377e670 and 21.2.2.36 custUnit 2.1.1448 oi/c9de0cf2-f9d5-416a-abe6-f1b160b4e823. These also give the dispUnitsLbl text when that label has no tx. custUnit does not allow INF or NaN.
+- 21.2.3.6 ST_BuiltInUnit, 2.1.1582 oi/6f412fc9-93b9-49d6-8446-7b5e4b5e6f4d. trillions means 10^12; the standard says 10^9.
+
+=== AXES ===
+- 21.2.2.10 axPos, 2.1.1433 oi/5989881e-d2de-44f3-8792-8dbded2e2b00. IGNORED. Office places an axis using crosses on a valAx, crossesAt on a catAx or dateAx, and the scaling/orientation of the axis it crosses.
+- 21.2.2.9 axId 2.1.1432 oi/089f849f-fcd6-4fa0-a281-35aa6a432a16 and 21.2.2.31 crossAx 2.1.1446 oi/195a0d2d-3977-477a-86de-d88b14745e13. At most 2147483647, and the value must match an axis's axId.
+  The same matching rule appears for catAx 2.1.1444 oi/c6aec8b1-cbe3-4239-ba00-b837970abc14, dateAx 2.1.1450 oi/6ef95635-4ff5-4794-a80e-60decf3acac7, valAx 2.1.1570 oi/a00fdd02-4b9f-424a-9f7e-6bc5239c298e and serAx 2.1.1544 oi/148a97b9-8f4e-4289-bbf9-e01ca98276fd.
+  barChart 2.1.1438 and bubbleChart 2.1.1441 also cross-refer to the axId note.
+- 21.2.2.175 serAx, 2.1.1544(b) oi/148a97b9-8f4e-4289-bbf9-e01ca98276fd. numFmt is IGNORED, though it is loaded and saved.
+- 21.2.2.34 crossesAt, 2.1.1447 oi/c5ba9569-da34-4530-9743-b040df140552. The value's type depends on the axis being crossed: a decimal on a valAx, an integer date on a dateAx, a 1-based category number on a catAx. INF and NaN are not allowed.
+- 21.2.3.8 ST_Crosses, 2.1.1583 oi/e79c50d2-400c-490f-9b7b-f65492782142. autoZero crosses at zero if the axis has one; at the minimum if the minimum is above 0 OR THE AXIS IS NOT NUMERIC; at the maximum if the maximum is below 0.
+- 21.2.2.130 orientation 2.1.1511 oi/85891d6c-7ab5-4abb-8e36-9a770c5ed9f7 and 21.2.3.30 ST_Orientation 2.1.1589 oi/89794847-d1b7-41ce-9e2a-c789afe390d2. Whether the axis values increase or decrease. The standard's text about pictures is wrong.
+- 21.2.2.103 majorUnit 2.1.1493 oi/8268861e-15c9-44fa-9982-632c6f2d6987 and 21.2.2.112 minorUnit 2.1.1499 oi/8c28df63-f352-44b9-bdf6-34dcd4faaa84. At least 1 on a dateAx.
+- 21.2.3.1 ST_AxisUnit, 2.1.1579 oi/b7da8e66-6213-4305-a140-0604cf2886aa. INF and NaN are not allowed.
+- 21.2.2.107 max 2.1.1497 oi/652d488b-12c6-41ba-9cca-59a8e954102b and 21.2.2.108 min 2.1.1498 oi/8066396f-ad5d-4ee1-8d3f-bc72fe7b589d. Cross-references only: no INF or NaN.
+- 21.2.2.101 majorTickMark, 2.1.1492 oi/c1126f5e-88c8-44d3-b6cd-3bcfc7368bea. val is the MAJOR tick mark; the standard's text says minor. No default is given.
+- 21.2.2.208 tickLblSkip 2.1.1559 oi/bd2dcc2d-e1e2-4b3b-ba3a-08817be49e05 and 21.2.2.209 tickMarkSkip 2.1.1560 oi/ee2e8e04-bcc4-4e86-9167-ea14e1bd91a9. val is the interval at which labels or marks are drawn (1 = every one), not how many are skipped.
+- 21.2.3.44 ST_Skip, 2.1.1596 oi/be0b8235-f853-4143-a208-dd2e3e11d0f1. xsd:int; the standard says unsignedShort.
+- No notes on: crossBetween, crosses (the element), delete, major/minorGridlines (beyond spPr), axis numFmt/sourceLinked, tickLblPos, minorTickMark, lblAlgn, lblOffset, noMultiLvlLbl, auto, baseTimeUnit, logBase, dispUnits.
+
+=== CACHES AND DATA ===
+- 21.2.2.150 pt (numeric), 2.1.1527 oi/21771f88-3694-4e2b-9df2-7e0165525383. idx is unique among siblings, from 0 to (number of points - 1), at most 2147483647. idx is the point's index; the standard says series.
+- 21.2.2.151 pt (string), 2.1.1528 oi/a73d668f-e5e6-4f20-9740-a419ea6e4ea3. The same idx rules.
+- 21.2.2.152 ptCount, 2.1.1529 oi/cc0514b4-0c86-4b54-93db-b549ef487ce6. At most 2147483647.
+- 21.2.2.222 v, 2.1.1568 oi/f1fef0f3-755d-403b-a81f-9730ffb5681c. A numeric v must be a double, an integer or "#N/A".
+- 21.2.2.99 lvl, 2.1.1491 oi/f6d3a915-d035-4a95-b166-8a66c55ff8a4. The pt cap is 2147483647, but pt elements beyond 1048576 are ignored on load and dropped on save.
+- 21.2.2.114 multiLvlStrCache 2.1.1501 oi/c18a957f-2c2c-4f6c-b25a-6b7e733cc52e and 21.2.2.115 multiLvlStrRef 2.1.1502 oi/5a37b2e1-a091-4137-b7fa-bf136bc9b3c5. Also used for the x values of bubble and scatter charts.
+- No notes on: strRef, numRef, strCache, numCache, formatCode, strLit, numLit, or ptCount missing or not matching the pt elements.
+
+=== WHAT MS-OI29500 SAYS NOTHING ABOUT (beyond those already listed) ===
+roundedCorners, date1904, plotVisOnly, lang, style (the element), clrMapOvr, autoUpdate, userShapes, legendEntry, overlay, dTable, upDownBars, hiLowLines, dropLines, firstSliceAng, wireframe, rotX, rotY, bubbleScale, sizeRepresents.
+
+=== MS-OE376 (Office 2007 and 2010 on ECMA-376 1st ed.; its Part 4 §5.7 mirrors §21.2) ===
+https://learn.microsoft.com/en-us/openspecs/office_standards/ms-oe376/ — 209 chart notes, 2.1.1440 onwards. I read the 2022-08-16 .docx.
+Every default-value note below is marked "applies to 2007, 2007 SP1, 2007 SP2" only.
+- c:CT_Boolean with val omitted means FALSE in Office 2007 (the standard says true) for:
+  auto, autoTitleDeleted, autoUpdate, bubble3D, chartObject, data, date1904, delete, dispEq, dispRSqr, formatting, invertIfNegative, noEndCap, noMultiLvlLbl, overlay, plotVisOnly, rAngAx, roundedCorners, selection, showBubbleSize, showCatName, showDLblsOverMax, showHorzBorder, showKeys, showLeaderLines, showLegendKey, showNegBubbles, showOutline, showPercent, showSerName, showVal, showVertBorder, smooth, userInterface, varyColors, wireframe, and numFmt@sourceLinked.
+- Other Office 2007 defaults: dispBlanksAs gap where the type supports gap, otherwise zero (standard: zero); gapWidth 100 in ofPie, 150 in bar, bar3D and upDownBars; bar grouping standard (standard: clustered);
+  majorTickMark out and minorTickMark none (standard: cross); rotX 15, rotY 20; scatterStyle lineMarker; style optional, default 2; thickness 0; baseTimeUnit, majorTimeUnit and minorTimeUnit chosen from the
+  span of the data (standard: days); builtInUnit a custUnit of 1 (standard: thousands); and the ST_Style tint tables.
+- Readers commonly treat these "default false" readings as applying only to files that Office 2007 wrote (app.xml AppVersion 12.x). That is a reader convention, not something MS-OE376 states, and I did not verify it here.
+
+=== MS-ODRAWXML (2026-10-06 .docx; prefix od/ = https://learn.microsoft.com/en-us/openspecs/office_standards/ms-odrawxml/) ===
+- Extension URIs, §2.2.1 Charts od/1412a3ef-0c28-46f3-aa69-5d80813e059f:
+  - c15 {02D57815-91ED-43cb-92C2-25804820EDAC}:
+    - filtered<Type>Series in the extLst of area, area3D, bar, bar3D, bubble, line, line3D, radar, scatter, surface and surface3D charts.
+    - On every ser type: filteredSeriesTitle, filteredCategoryTitle, categoryFilterExceptions, datalabelsRange.
+    - On numRef, strRef and multiLvlStrRef: fullRef, levelRef, formulaRef.
+    - c15:filteredPieSeries is defined, but no extension table gives it a host. pie, pie3D, doughnut, ofPie and stock have no row.
+  - c15 {CE6537A1-D6FC-4f65-9D91-7224C49458BB}:
+    - On dLbls: showLeaderLines, leaderLines, tx, dlblFieldTable, showDataLabelsRange, spPr, layout.
+    - On dLbl: dlblFieldTable, xForSave, showDataLabelsRange, spPr, layout.
+  - Others: {F40574EE-89B7-4290-83BB-5DA773EAF853} c15:numFmt on the axes (only with a non-worksheet pivotSource); {E218EAE0-A670-482B-9A64-EF95B99D9540} autoCat on strLit; {6F2FDCE9-48DA-4B69-8628-5D25D57E5C99} c14:invertSolidFillFmt on bar and bubble series;
+    {781A3756-C4B2-4CAC-9D66-4F8BD8637D16} c14:pivotOptions; {E28EC0CA-F0BB-4C9C-879D-F8772B89E7AC} c16:pivotOptions16. A chartSpace mc:AlternateContent whose Choice requires c14 holds c14:style.
+  - NOT documented anywhere in MS-ODRAWXML:
+    - c16:uniqueId on a ser, with its URI. CT_ChartUniqueID appears only inside c16 categoryFilterException and datapointuniqueidmap.
+    - The extension URIs for c16:datapointuniqueidmap and for c16r3:dataDisplayOptions16.
+- Filtered series, §2.6.1.5–2.6.1.14 and §2.6.3.5–2.6.3.14 (§2.6.3 is od/d5007ac4-14ea-46bb-b012-3ae92afe3d8b; CT_FilteredBarSer is od/1e992b3e-96b8-4a2a-baf4-1ae6c43832d3).
+  - Each c15:filtered*Series wraps exactly one ordinary c:ser (CT_BarSer and so on): a series "filtered from the chart", meaning hidden. Office 2010 and earlier do not support these.
+  - filteredSeriesTitle (§2.6.3.13) holds a filtered series' auto-generated title as c:tx.
+  - filteredCategoryTitle (§2.6.3.8) holds filtered auto-numbered categories as c:cat.
+  - categoryFilterExceptions (c15 §2.6.3.1, keyed by sqref) records formatting for filtered-out points: spPr, explosion, invertIfNegative, bubble3D, marker, dLbl. The c16 version (§2.22.3.2) is keyed by c16:uniqueId.
+  - fullRef (§2.6.3.16) is the full reference, filtered and unfiltered together.
+  - formulaRef (§2.6.3.15) is the visible reference of a filtered-out series.
+  - levelRef (§2.6.3.17) is the reference of the selected label level.
+  - None of these references include "=".
+  - autoCat (§2.6.1.1) on strLit: the captions were generated automatically. It is present only if the series has filtered points.
+- Data label ranges.
+  - datalabelsRange (§2.6.1.3 od/d9944abd-f5c4-4b72-bce3-ef830454436a; CT_SeriesDataLabelsRange §2.6.3.18 od/116bd09e-66fe-4e65-9a93-aaec8978959c) is per series: f (an absolute single-sheet or external-name reference, or exactly "#REF!") plus dlblRangeCache (CT_StrData). The values go to the labels in index order.
+  - showDataLabelsRange (§2.6.1.22 od/0b481308-0fe4-4566-9966-50ffd3f040ed) on dLbls or dLbl: when true, the label shows the range value at its own index.
+  - dlblFieldTable (§2.6.3.3–2.6.3.4) entries are txfldGUID, f and dlblFieldTableCache. They map a cell-reference a:fld in the label text, by its GUID, to a formula and its cached text.
+  - xForSave (§2.6.1.26 od/288e1a31-6d5c-4b00-9b5b-2301c82258f7): a dLbl written only for saving. On load it is merged back into the series' default label.
+  - c15:tx on dLbls (§2.6.1.25): text shown in every label that has no custom properties of its own.
+  - c15:layout (§2.6.1.17): a dLbl honours only w and h; dLbls honours x, y, w and h.
+  - c15:showLeaderLines and leaderLines (§2.6.1.23 and §2.6.1.18): leader lines for any chart type.
+- c16 (2014/chart, §2.22 od/32d81455-f263-46c4-ae81-e333ffbdbd14; Office 2016 and later):
+  - datapointuniqueidmap (§2.22.3.4 od/1fbba64a-2b89-4f1d-bf2d-903c6b70473e) maps each ptidx to a uniqueID (a GUID), for filtered-out points with special properties.
+  - CT_LiteralDataChart (§2.22.3.7 od/c7691ea0-6b3e-4175-a016-b94b3aebbe98): saved by an application without formula references. Office 2016 builds a temporary embedded workbook for it.
+  - Filtered literal caches str, num and multiLvlStr, plus c16ac:multiLvlStrLit.
+  - pivotOptions16.
+  - CT_BooleanFalse: val defaults to false.
+- c16r3 (2017/03/chart, §2.33): dataDisplayOptions16/dispNaAsBlank (CT_DataDisplayOptions16, od/532c066f-fb03-42d5-9b4c-043a22279986) treats #N/A cells as blank cells. It is a CT_BooleanFalse, so an omitted val means false. No product note.
+- c16r2 (2015/06/chart, §2.44 od/a3b9fe0d-bf1a-4b6f-93bc-3f4c591fb25f): formatcode2, as an element or an attribute, is a number format plus language and culture information. Office 2016 and later.
+- c14:style (CT_Style §2.7.3.5 od/d3a2d9da-8f0b-4086-89a2-5906d2d87f96; ST_Style §2.7.4.1 od/aad524be-3cb3-4840-925d-4fe0b98aa9b3):
+  - When present, c:style MUST exist with val = c14 val - 100 and SHOULD be ignored; footnote <87> says Excel 2007 does not ignore it.
+  - c14 styles 101–148 differ from 21.2.3.46: chart font 10pt and title 18pt by default; axis and major gridlines 75% tint of tx1 (101–132) or 75% tint of dk1 (133–148);
+    minor gridlines 50% tint of dk1 (133–140) or 90% tint of dk1 (141–148); "other lines" dk1 (135–140); floor, walls and plot area 20% tint of accent1–6 (135–140); effect colour dk1; style 133's line 92.5% tint of dk1.
+

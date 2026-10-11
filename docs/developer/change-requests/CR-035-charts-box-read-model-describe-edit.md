@@ -1,6 +1,9 @@
 # CR-035: charts - the chart's box kept in PDF and HTML, a public read model, a chart described in markdown and MCP, and a chart's data edited in xlsx (charts plan phases 0, 2, 3 and 4)
 
-Status: IN PROGRESS. Phase 0 built 2026-10-12 (Jason: "do Phase 0 of each CR"; D1 to D5 built as
+Status: IN PROGRESS. Phase 2 DONE 2026-10-12 (Jason: "Next is CR-035 phase 2"; D6 to D8 built as
+recommended): the read model, `org.docx4j.model.chart`, with its JSON form and goldens for every
+fixture; MS-OI29500's notes on §21.2 read first; 16 probes made by Excel itself (§11).  Phases 3
+and 4 next.  Phase 0 built 2026-10-12 (Jason: "do Phase 0 of each CR"; D1 to D5 built as
 recommended): the chart's box in FO, HTML and pptx's SVG-in-HTML, the three parts typed, the 48
 attribute lists starting null (measured first: only the chart style parts' mods), the fixtures, three
 box probes; gate b221 to b222 0 movers; against Word's goldens the box probes go from 0.8449 to
@@ -520,3 +523,76 @@ too (`ChartStylePartsTypedTest`: 17 style and colour parts, 3 chartex).
 `fidelity/cr035-chartex/resaved/`, every XML part read and written back): no repair prompt, and
 Word and PowerPoint each drew the waterfall from its chartex part, as live text and shapes ("Chart
 Title", the legend, the axis values), not the Fallback picture.  Phase 0 is done.
+
+### Phase 2 (2026-10-12), done
+
+Jason: "Next is CR-035 phase 2".  D6 (the package), D7 (values from the caches, the cells on
+request) and D8 (the JSON form, versioned, as public API) are built as recommended, none
+confirmed separately.
+
+**The specifications first.**  [MS-OI29500]'s 172 notes on ISO/IEC 29500-1 §21.2 (2.1.1428 to
+2.1.1599), with MS-OE376's and [MS-ODRAWXML]'s on the chart extensions, were read before any probe
+was cut (a research agent; the summary and the note map are in `CR-035-notes/`).  What the model
+takes from them: a title with no text shows a localized default, or a single series' name
+(2.1.1561); a series with no name is "Series" and its idx plus one (2.1.1565); varyColors is
+ignored on area, 3-D area and stock charts, on filled radar charts, and with more than one series
+(2.1.1571); a pie chart shows its first series only (2.1.1519); the data label positions Office
+uses where none is stated (2.1.1456) and the layering group, series, label (2.1.1457); the blank
+cell methods each kind supports and its default (2.1.1452); scatterStyle as Office reads it
+(2.1.1594); c:style is c14:style less 100 ([MS-ODRAWXML] 2.7.3.5); axPos is ignored (2.1.1433, so
+the model reports it as stated).  No note says what Office does where a boolean element is absent
+altogether, and MS-OE376's "default false" notes are Office 2007's: not used.
+
+**The probes** (`docx4j-layout-fidelity/tools/excel-chart-probes.ps1`, Jason's run 2026-10-12):
+Excel made 15 workbooks and a chart pasted into PowerPoint, rendered with `excel-goldens.ps1`;
+committed as fixtures (`charts/p2-*`, README).  Measured from them: Excel records a category
+hidden with its chart filter by narrowing every series' `c:f` to the cells still shown, a union
+(`(Sheet1!$A$2:$A$3,Sheet1!$A$5)`), its cache to their points, and the whole range as
+`c15:fullRef`, not with `categoryFilterExceptions`; a series hidden is a `c15:filteredBarSeries`
+whose `c:f` is a `c15:formulaRef`.  A chartex part in a workbook has no caches, only formulas
+naming hidden defined names (`_xlchart.v1.N`); Word's and PowerPoint's have them.  In an xlsx or
+a pptx, docx4j leaves the content of an `mc:AlternateContent` Choice it does not select as DOM
+elements (in a docx, as JAXB objects), so a chartex chart's frame is read from the DOM there.
+
+**`org.docx4j.model.chart`** (docx4j-core):
+- `Charts.in(OpcPackage)`: every placed chart in document order as a `ChartRef` (host part,
+  anchor, extent, name, description, chart or chartex part, whether in a Choice): a docx's body,
+  headers, footers, notes and comments; a pptx's slides, layouts and masters (groups and
+  AlternateContent included); an xlsx's sheets in order, worksheets and chartsheets.
+  `ChartRef.of(host, anchor)` serves one anchor; `getHostTheme()` is the host's (CR-034).
+- `ChartModel.read(Chart, ThemeColors)`: chart-wide settings (style and c14:style, date1904,
+  roundedCorners, lang, plotVisOnly, dispBlanksAs, showDLblsOverMax), title (`ChartTitle`: text as
+  written, its cell, the text shown), legend (`ChartLegend`), groups (`ChartGroup`: kind, bar
+  direction, grouping, varyColors and whether Office varies colours, the kind's settings, axis ids,
+  data labels, the blank cell method Office uses, the series shown), series (`ChartSeries`, one
+  adapter over the eight classes: idx, order, name and the name shown, categories, values, x and y
+  values, bubble sizes as `ChartData` keyed by `c:pt/@idx` with `ptCount`, references, full
+  references and point format codes, multi-level categories innermost first; hidden; c16:uniqueId;
+  fill and line as `ChartFill`, automatic where unstated, a solid one's colour resolved; point
+  overrides; smooth, marker, explosion, invertIfNegative; data labels, the series' over the
+  group's, `ChartDataLabels`), axes (`ChartAxis`: kind, id, crossing, position, deleted, scaling,
+  units, number format, crosses, crossBetween, tick marks, tick labels, gridlines, title).
+- `ChartExModel`: a chartex chart's series (layout, hidden, uniqueId, formatIdx, name and its
+  formula, subtotals), each with its data dimensions (type, formula, levels from the caches),
+  axes, legend, and the title shown.
+- `ChartCells`: the cells a reference names (quoted sheet names, `$`, unions), in the workbook or
+  the workbook embedded with the chart (`c:externalData`), and every point where they and the
+  caches differ.
+- `toJson()` on both models: version 1, a fixed member order, cache numbers as the file writes
+  them, gaps as null.
+
+Not in it yet: a title's capitals from its text properties; the default colours of automatic
+series (phase 7's, from the style and colour style parts); multi-level categories in
+`ChartCells`' comparison.
+
+**Gate.**  JSON goldens for every chart part of every fixture (29 charts and 3 chartex, in
+`charts/json/`), and against Office's renderings: every probe's title as Excel or Word drew it
+("Chart Title" for several series; "Sales", "Visits", "Y", "Series 1" for one, the doughnut's
+PNG checked; none where the chart has no `c:title`); "Axis Title" on bar-chart.xlsx's axes; the
+`#,##0.0` data labels; the colours in the host's theme (`4472C4` in the docx, `156082` in the
+workbook and the pasted chart's slide); the filtered series and categories; the gaps; the two
+category levels; the combination chart's secondary value axis at the right and its category axis
+deleted; the doughnut's varied colours; the three chartex placements (Word, PowerPoint, Excel),
+each in a Choice.  Office's caches agree with their cells in every fixture checked, the docx's
+embedded workbook included.  Tests: `ChartModelTest` (10), `ChartsTest` (6), `ChartCellsTest` (3);
+docx4j-core-tests 1,466 run, 0 failed (11 skipped); docx4j-export-fo-tests 790, 0 failed (9 skipped).
