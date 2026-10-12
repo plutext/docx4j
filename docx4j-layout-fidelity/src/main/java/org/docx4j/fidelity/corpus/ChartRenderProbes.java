@@ -161,6 +161,8 @@ public final class ChartRenderProbes {
 	private String sweep = "";
 	/** R14: an Excel chart (CR-036's P1, P6) copied as it is, an xlsx only */
 	private File copyOf;
+	/** R14: the chart's colour and style parts removed (no colour style to cycle through) */
+	private boolean noColourStyle;
 
 	private ChartRenderProbes(String set, String name, ChartDefinition definition, String note) {
 		this.set = set;
@@ -191,6 +193,11 @@ public final class ChartRenderProbes {
 
 	private ChartRenderProbes style(int s) {
 		style = s;
+		return this;
+	}
+
+	private ChartRenderProbes noColourStyle() {
+		noColourStyle = true;
 		return this;
 	}
 
@@ -627,6 +634,20 @@ public final class ChartRenderProbes {
 					.tweak(c -> ticks(c, t)));
 		}
 
+		// automatic colours: series with no fill of their own, Office's cycle through the colour
+		// style (accents, then their variations), and without one; a pie's points with none
+		ChartDefinition auto = ChartDefinition.of(col).categories("A", "B", "C");
+		for (int s = 1; s <= 8; s++) auto.series("Series " + s, s, s + 1, s + 2);
+		l.add(probe("R14", "r14-auto-colours", auto, "eight series with no fill of their own: the colour style's cycle")
+				.tweak(c -> noFills(c)));
+		ChartDefinition auto2 = ChartDefinition.of(col).categories("A", "B", "C");
+		for (int s = 1; s <= 8; s++) auto2.series("Series " + s, s, s + 1, s + 2);
+		l.add(probe("R14", "r14-auto-colours-no-style", auto2, "eight series with no fill of their own, no colour style part")
+				.tweak(c -> noFills(c)).noColourStyle());
+		ChartDefinition twelve = ChartDefinition.of(pie).categories("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
+				"Oct", "Nov", "Dec").series("Sales", 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
+		l.add(probe("R14", "r14-auto-pie", twelve, "twelve slices with no fill of their own (varyColors)").tweak(c -> noFills(c)));
+
 		// kerning: which of Carlito's pairs Office applies (r1-scatter's title: "Va" but not "Y-"),
 		// each pair a category label at 14pt, measured one by one in Word's PDF
 		String[] pairs = { "Y-", "T-", "-Y", "AV", "Va", "Ty", "To", "LT", "P.", "F,", "r.", "y,", "Yo", "AT", "LY", "f." };
@@ -652,6 +673,23 @@ public final class ChartRenderProbes {
 			if (!n.endsWith(".xlsx") || !own.matcher(n.replace(".xlsx", "")).matches()) continue;
 			// Excel's chart at its size, 5 by 3 inches
 			l.add(copy("R14", f, 360, 216, "Excel's own chart (CR-036 " + n.substring(0, 2).toUpperCase() + "), its layout"));
+		}
+	}
+
+	/** Every series' and point's own shape properties removed */
+	private static void noFills(CTChartSpace c) {
+		for (Object g : plot(c).getAreaChartOrArea3DChartOrLineChart()) {
+			Object sers = invoke(g, "getSer");
+			if (!(sers instanceof List)) continue;
+			for (Object ser : (List<?>) sers) {
+				try {
+					ser.getClass().getMethod("setSpPr", org.docx4j.dml.CTShapeProperties.class).invoke(ser, (Object) null);
+				} catch (ReflectiveOperationException e) {
+					throw new IllegalStateException(e);
+				}
+				Object dPts = invoke(ser, "getDPt");
+				if (dPts instanceof List) ((List<?>) dPts).clear();
+			}
 		}
 	}
 
@@ -959,8 +997,23 @@ public final class ChartRenderProbes {
 		return (org.docx4j.dml.Theme) XmlUtils.unwrap(XmlUtils.unmarshalString(themeXml(theme), Context.jcThemePart));
 	}
 
-	/** The chart's contents through the probe's tweaks */
+	/** The chart's contents through the probe's tweaks (and its colour and style parts gone, where asked) */
 	private void tweak(Chart chart) throws Exception {
+		if (noColourStyle) {
+			List<PartName> gone = new ArrayList<>();
+			for (org.docx4j.relationships.Relationship r : chart.getRelationshipsPart().getRelationships().getRelationship()) {
+				org.docx4j.openpackaging.parts.Part p = chart.getRelationshipsPart().getPart(r);
+				if (p instanceof org.docx4j.openpackaging.parts.DrawingML.ChartColorStylePart
+						|| p instanceof org.docx4j.openpackaging.parts.DrawingML.ChartStylePart) {
+					gone.add(p.getPartName());
+				}
+			}
+			for (PartName n : gone) {
+				chart.getRelationshipsPart().removePart(n);
+				// (removePart leaves the part's content type override behind)
+				chart.getPackage().getContentTypeManager().removeContentType(n);
+			}
+		}
 		CTChartSpace c = tweak.apply(chart.getContents());
 		String xml = XmlUtils.marshaltoString(c, true, false, chart.getJAXBContext());
 		String changed = xmlTweak.apply(xml);

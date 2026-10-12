@@ -750,7 +750,13 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   - kerning: Office kerns r1-scatter's title "Y-Values" by its "Va" pair (0.78pt at 14pt) but not
     by the "Y-" pair Carlito also has (0.80pt), so the title's box is 0.8pt narrower than ours:
     Calibri's pairs are not all Carlito's.  Open until R14's kerning probe.
-- **R14** (on the share for a VM run; `ChartRenderProbes`, 120 probes: 53 made by docx4j as xlsx
+- **Automatic colours** (§4.2): `ChartColorStyles` in core, out of `ChartDataEditor` (which uses it
+  now): a chart's colour style part and its cycle (colour idx mod n, varied by variation idx / n).
+  The renderer colours a series, or a point where the colours vary by point, that has no fill of
+  its own by it, and a line series with no line of its own in that colour at 2.25pt; where a chart
+  has no colour style, Office's colorful style (id 10), to be checked on R14's probes.  The read
+  model's colours and the renderer's now resolve through the chart's own theme override alike.
+- **R14** (on the share for a VM run; `ChartRenderProbes`, 123 probes: 56 made by docx4j as xlsx
   and docx, 67 of Excel's own CR-036 charts copied as xlsx only): sweeps (the script resizes a
   chart through about 180 widths or heights and reads its axes at each, `excel\<name>.sweep.json`)
   for the horizontal axis's unit against its labels' width and size (bars at three scales and
@@ -760,5 +766,6 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   rings, both explosions); marker symbols and sizes; smoothed lines and a scatter chart's lines;
   date axes (months with a gap, weekdays, years, a major unit set, columns over dates, a long
   format); stacks with negative values, stacked lines and areas; tick marks out, in and across;
-  kerning pairs at 14pt; axis number formats; and P1's and P6's dates and shapes, so that Excel's
+  kerning pairs at 14pt; axis number formats; series and a pie's points with no fill of their own,
+  with and without a colour style part; and P1's and P6's dates and shapes, so that Excel's
   own charts join the gate (layout and picture; they have no docx).

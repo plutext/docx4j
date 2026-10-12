@@ -31,7 +31,6 @@ import org.docx4j.XmlUtils;
 import org.docx4j.com.microsoft.schemas.office.drawing.x2012.chart.CTFormulaRef;
 import org.docx4j.com.microsoft.schemas.office.drawing.x2012.chart.CTFullRef;
 import org.docx4j.com.microsoft.schemas.office.drawing.x2012.chartStyle.CTColorStyle;
-import org.docx4j.com.microsoft.schemas.office.drawing.x2012.chartStyle.CTColorStyleVariation;
 import org.docx4j.copy.Copyable;
 import org.docx4j.dml.CTPresetColor;
 import org.docx4j.dml.CTSRgbColor;
@@ -64,7 +63,6 @@ import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.DrawingML.Chart;
-import org.docx4j.openpackaging.parts.DrawingML.ChartColorStylePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.EmbeddedPackagePart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.openpackaging.parts.SpreadsheetML.TablePart;
@@ -477,9 +475,9 @@ public final class ChartDataEditor implements AutoCloseable {
 		if (last == null || last.getIdx().getVal() != idx - 1 || dPts.size() != idx) return;
 		CTDPt n = (CTDPt) last.copy();
 		n.getIdx().setVal(idx);
-		CTColorStyle cs = colorStyle();
+		CTColorStyle cs = ChartColorStyles.of(chart);
 		if (cs != null && !cs.getEGColorChoice().isEmpty() && (cs.getMeth() == null || "cycle".equals(cs.getMeth()))) {
-			recolour(n.getSpPr(), key(autoColour(cs, idx - 1)), cs, idx);
+			recolour(n.getSpPr(), key(ChartColorStyles.automatic(cs, idx - 1)), cs, idx);
 		}
 		uniqueId(n, 2L * idx + 1);
 		n.setParent(s.ser);
@@ -894,9 +892,9 @@ public final class ChartDataEditor implements AutoCloseable {
 	 * variation (idx / n) mod v.  A colour of the series' own choosing is copied as it is.
 	 */
 	private void recolour(Object ser, long fromIdx, long toIdx) {
-		CTColorStyle cs = colorStyle();
+		CTColorStyle cs = ChartColorStyles.of(chart);
 		if (cs == null || cs.getEGColorChoice().isEmpty() || (cs.getMeth() != null && !"cycle".equals(cs.getMeth()))) return;
-		String from = key(autoColour(cs, fromIdx));
+		String from = key(ChartColorStyles.automatic(cs, fromIdx));
 		CTShapeProperties sp = (CTShapeProperties) ChartSeries.get(ser, "getSpPr");
 		recolour(sp, from, cs, toIdx);
 		CTMarker m = (CTMarker) ChartSeries.get(ser, "getMarker");
@@ -911,7 +909,7 @@ public final class ChartDataEditor implements AutoCloseable {
 
 	private void recolour(CTSolidColorFillProperties f, String from, CTColorStyle cs, long toIdx) {
 		if (f == null || !from.equals(key(colourOf(f)))) return;
-		Object c = autoColour(cs, toIdx);
+		Object c = ChartColorStyles.automatic(cs, toIdx);
 		f.setScrgbClr(null);
 		f.setSrgbClr(null);
 		f.setHslClr(null);
@@ -931,7 +929,7 @@ public final class ChartDataEditor implements AutoCloseable {
 	 * colour style's for its idx): the formatting a new series copies; this one where none is
 	 */
 	private Ser autoFormatted(Ser last) throws Docx4JException {
-		CTColorStyle cs = colorStyle();
+		CTColorStyle cs = ChartColorStyles.of(chart);
 		if (cs == null || cs.getEGColorChoice().isEmpty()) return last;
 		List<Ser> group = new ArrayList<Ser>();
 		for (Ser s : inOrder()) if (s.group == last.group && s.wrapper == null) group.add(s);
@@ -941,44 +939,9 @@ public final class ChartDataEditor implements AutoCloseable {
 			if (sp == null) continue;
 			CTSolidColorFillProperties f = sp.getSolidFill() != null ? sp.getSolidFill()
 					: sp.getLn() != null ? sp.getLn().getSolidFill() : null;
-			if (f != null && key(colourOf(f)).equals(key(autoColour(cs, s.idx())))) return s;
+			if (f != null && key(colourOf(f)).equals(key(ChartColorStyles.automatic(cs, s.idx())))) return s;
 		}
 		return last;
-	}
-
-	private CTColorStyle colorStyle() {
-		if (chart.getRelationshipsPart() == null) return null;
-		for (org.docx4j.relationships.Relationship r : chart.getRelationshipsPart().getRelationships().getRelationship()) {
-			Part p = chart.getRelationshipsPart().getPart(r);
-			if (p instanceof ChartColorStylePart) {
-				try {
-					return ((ChartColorStylePart) p).getContents();
-				} catch (Docx4JException e) {
-					return null;
-				}
-			}
-		}
-		return null;
-	}
-
-	/** The colour style's colour for an idx, a new object */
-	@SuppressWarnings("unchecked")
-	private static Object autoColour(CTColorStyle cs, long idx) {
-		List<Object> colours = cs.getEGColorChoice();
-		int n = colours.size();
-		Object c = ((Copyable) XmlUtils.unwrap(colours.get((int) (idx % n)))).copy();
-		List<CTColorStyleVariation> vs = cs.getVariation();
-		if (!vs.isEmpty()) {
-			CTColorStyleVariation v = vs.get((int) ((idx / n) % vs.size()));
-			List<JAXBElement<?>> to = (List<JAXBElement<?>>) ChartSeries.get(c, "getEGColorTransform");
-			if (to != null) {
-				for (JAXBElement<?> t : v.getEGColorTransform()) {
-					Object val = t.getValue() instanceof Copyable ? ((Copyable) t.getValue()).copy() : t.getValue();
-					to.add(new JAXBElement<Object>(t.getName(), (Class<Object>) t.getDeclaredType(), val));
-				}
-			}
-		}
-		return c;
 	}
 
 	private static Object colourOf(CTSolidColorFillProperties f) {

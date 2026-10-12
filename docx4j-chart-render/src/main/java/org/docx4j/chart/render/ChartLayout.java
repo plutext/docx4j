@@ -49,7 +49,9 @@ import org.docx4j.dml.chart.CTMarker;
 import org.docx4j.dml.chart.CTTickMark;
 import org.docx4j.dml.chart.CTTitle;
 import org.docx4j.dml.chart.CTValAx;
+import org.docx4j.com.microsoft.schemas.office.drawing.x2012.chartStyle.CTColorStyle;
 import org.docx4j.model.chart.ChartAxis;
+import org.docx4j.model.chart.ChartColorStyles;
 import org.docx4j.model.chart.ChartData;
 import org.docx4j.model.chart.ChartFill;
 import org.docx4j.model.chart.ChartFonts;
@@ -214,7 +216,8 @@ final class ChartLayout {
 
 	private ChartLayout(ChartModel model, ThemeColors theme, ChartFonts fonts, double w, double h) {
 		this.model = model;
-		this.theme = theme;
+		// the chart's own theme override and colour map, as the read model resolves its fills
+		this.theme = theme != null && model.getPart() != null ? theme.forChart(model.getPart()) : theme;
 		this.fonts = fonts;
 		this.w = w;
 		this.h = h;
@@ -1077,6 +1080,11 @@ final class ChartLayout {
 			CTShapeProperties sp = spPr(sr);
 			Color lc = lineColour(sp);
 			double lw = lineWidth(sp);
+			// a line series with no line of its own: the automatic colour, Office's 2.25pt (its template's)
+			if (sp == null && !scatter) {
+				lc = automatic(sr.getIdx());
+				lw = 2.25;
+			}
 			Marker m = marker(sr);
 			boolean smooth = Boolean.TRUE.equals(sr.getSmooth());
 			int nCat = to[s].length;
@@ -1312,19 +1320,42 @@ final class ChartLayout {
 		return band(s, lines);
 	}
 
+	/** A series' fill: its own, else (automatic) its colour style's colour for its index */
 	private Color seriesFill(ChartSeries s) {
 		ChartFill f = s.getFill();
 		if (f != null && f.getColor() != null) return awt(f.getColor());
+		if (f == null || f.isAutomatic()) return automatic(s.getIdx());
 		f = s.getPointFills().get(0);
 		if (f != null && f.getColor() != null) return awt(f.getColor());
 		return Color.GRAY;
 	}
 
-	/** A point's fill: its own (c:dPt), else its series' */
+	/** A point's fill: its own (c:dPt), else where the colours vary by point the automatic colour for its index, else its series' */
 	private Color pointFill(ChartSeries s, int i) {
 		ChartFill f = s.getPointFills().get(i);
 		if (f != null && f.getColor() != null) return awt(f.getColor());
+		ChartGroup g = model.getGroups().get(0);
+		boolean byPoint = g.getKind() == ChartGroup.Kind.PIE || g.getKind() == ChartGroup.Kind.DOUGHNUT || g.variesColors();
+		if (byPoint && (f == null || f.isAutomatic()) && (s.getFill() == null || s.getFill().isAutomatic())) return automatic(i);
 		return seriesFill(s);
+	}
+
+	private CTColorStyle colourStyle;
+	private boolean colourStyleRead;
+
+	/**
+	 * The colour Office gives an index with no colour of its own: the chart's colour style's
+	 * (CR-037 §4.2, the helper ChartDataEditor uses), else Office's colorful style's
+	 */
+	private Color automatic(long idx) {
+		if (!colourStyleRead) {
+			colourStyle = ChartColorStyles.of(model.getPart());
+			colourStyleRead = true;
+		}
+		Object c = colourStyle != null && !colourStyle.getEGColorChoice().isEmpty() ? ChartColorStyles.automatic(colourStyle, idx)
+				: ChartColorStyles.automatic(idx);
+		Color colour = awt(DrawingMLColors.resolve(c, theme));
+		return colour == null ? Color.GRAY : colour;
 	}
 
 	/** A point's shape properties: its own (c:dPt), else its series' */
