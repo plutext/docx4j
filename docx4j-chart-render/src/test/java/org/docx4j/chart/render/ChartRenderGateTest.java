@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.model.chart.ChartFonts;
 import org.docx4j.model.chart.ChartModel;
 import org.docx4j.model.chart.ChartRef;
@@ -53,6 +54,12 @@ public class ChartRenderGateTest {
 			OPEN.put(p, "a plot 1pt high: Office's inside is 0pt, ours 0.46");
 		}
 		OPEN.put("r2-max-set", "a maximum set, the labels hanging from a zero line near the bottom: the inside 0.55pt shorter");
+		OPEN.put("r1-scatter", "Office kerns the title's \"Va\" but not Carlito's \"Y-\" pair: its box 0.8pt narrower than Office's (R14's kerning probe)");
+	}
+
+	static {
+		// Office shows number format 14 (m/d/yyyy) in the machine's short date: the VM's is d/mm/yyyy
+		Docx4jProperties.setProperty("docx4j.Chart.ShortDate", "d/mm/yyyy");
 	}
 
 	static String text(String path) throws IOException {

@@ -133,16 +133,36 @@ final class RenderGate {
 				// a blank point's box is far off the chart (no geometry)
 				if (b == null || b.getMinX() < -1 || b.getMinY() < -1 || b.getMaxX() > cw + 1 || b.getMaxY() > ch + 1) continue;
 				same(r, "point " + s + "." + p, b, d.boxes.get("point." + s + "." + p));
+				// a pie's slice, by the places Office reports (PieSliceLocation 1 to 9, finding 7)
+				Object at = Json.object(points.get(p)).get("slice");
+				double[][] ours = d.slices.get("point." + s + "." + p);
+				if (at == null) continue;
+				Map<String, Object> office = Json.object(at);
+				for (int k = 1; k <= 9; k++) {
+					List<Object> xy = Json.list(office.get(String.valueOf(k)));
+					if (xy == null || xy.size() < 2 || xy.get(0) == null) continue;
+					double ox = Json.number(xy.get(0)) + pointOrigin, oy = Json.number(xy.get(1)) + pointOrigin;
+					if (ours == null || ours[k] == null) {
+						r.check(false, "slice " + s + "." + p + " place " + k + " missing");
+						continue;
+					}
+					double e = Math.max(Math.abs(ox - ours[k][0]), Math.abs(oy - ours[k][1]));
+					r.check(e <= GEOMETRY, String.format("slice %d.%d place %d off by %.2f (Office %.2f,%.2f, ours %.2f,%.2f)", s, p, k, e, ox, oy,
+							ours[k][0], ours[k][1]));
+				}
 			}
 		}
 		for (Object o : Json.list(dump.get("axes"))) {
 			Map<String, Object> a = Json.object(o);
 			if (a.get("categoryType") != null || a.get("minimumScale") == null || a.get("tickLabels") == null) continue;
 			double[] office = { Json.number(a.get("minimumScale")), Json.number(a.get("maximumScale")), Json.number(a.get("majorUnit")) };
-			boolean ok = d.valueAxis != null;
-			for (int i = 0; ok && i < 3; i++) ok = Math.abs(office[i] - d.valueAxis[i]) <= 1e-9 * Math.max(1, Math.abs(office[i]));
-			r.check(ok, "value axis: Office " + office[0] + " to " + office[1] + " by " + office[2] + ", ours "
-					+ (d.valueAxis == null ? "none" : d.valueAxis[0] + " to " + d.valueAxis[1] + " by " + d.valueAxis[2]));
+			// a scatter chart's x axis is Office's "category" axis (type 1), a value axis
+			boolean x = Json.number(a.get("type")) == 1;
+			double[] ours = x ? d.xAxis : d.valueAxis;
+			boolean ok = ours != null;
+			for (int i = 0; ok && i < 3; i++) ok = Math.abs(office[i] - ours[i]) <= 1e-9 * Math.max(1, Math.abs(office[i]));
+			r.check(ok, (x ? "x" : "value") + " axis: Office " + office[0] + " to " + office[1] + " by " + office[2] + ", ours "
+					+ (ours == null ? "none" : ours[0] + " to " + ours[1] + " by " + ours[2]));
 		}
 	}
 
@@ -216,7 +236,8 @@ final class RenderGate {
 		// ours: each area's box, filled or stroked
 		List<Drawing.Area> areas = new ArrayList<>();
 		for (Object o : d.items) if (o instanceof Drawing.Area) areas.add((Drawing.Area) o);
-		boolean[] used = new boolean[areas.size()];
+		// a shape's fill and its line are separate paths in Word's PDF (a marker, a slice)
+		boolean[] usedFill = new boolean[areas.size()], usedLine = new boolean[areas.size()];
 		// Word draws category labels turned 45 degrees as glyph outlines, not text (finding 10):
 		// those below the plot, in the labels' colour, are Excel's picture's to check
 		String outlines = null;
@@ -239,8 +260,8 @@ final class RenderGate {
 				for (int i = 0; i < areas.size(); i++) {
 					Drawing.Area a = areas.get(i);
 					Color c = fill ? a.fill : a.line;
-					if (used[i] || c == null || !hex(c).equals(colour)) continue;
-					double e = edge(office, a.shape.getBounds2D());
+					if ((fill ? usedFill[i] : usedLine[i]) || c == null || !hex(c).equals(colour)) continue;
+					double e = edge(office, bounds(a.shape));
 					if (e < bestD) {
 						bestD = e;
 						best = i;
@@ -251,12 +272,28 @@ final class RenderGate {
 					r.check(false, what + " not drawn");
 					continue;
 				}
-				used[best] = true;
+				if (fill) usedFill[best] = true;
+				else usedLine[best] = true;
 				r.check(bestD <= GEOMETRY, String.format("%s off by %.2f", what, bestD));
 			}
 		}
 		for (int i = 0; i < areas.size(); i++) {
-			if (!used[i]) r.check(false, areas.get(i).role + " drawn, Office has none");
+			Drawing.Area a = areas.get(i);
+			if (a.fill != null && !usedFill[i]) r.check(false, a.role + " drawn (fill " + hex(a.fill) + "), Office has none");
+			if (a.line != null && a.lineWidth > 0 && !usedLine[i]) r.check(false, a.role + " drawn (line " + hex(a.line) + "), Office has none");
 		}
+	}
+
+	/** A shape's box, its curves flattened (as chart_trace.py samples Office's), not their control points' */
+	static Rectangle2D bounds(java.awt.Shape shape) {
+		Rectangle2D b = null;
+		double[] c = new double[6];
+		for (java.awt.geom.PathIterator it = shape.getPathIterator(null, 0.01); !it.isDone(); it.next()) {
+			int type = it.currentSegment(c);
+			if (type == java.awt.geom.PathIterator.SEG_CLOSE) continue;
+			if (b == null) b = new Rectangle2D.Double(c[0], c[1], 0, 0);
+			else b.add(c[0], c[1]);
+		}
+		return b == null ? shape.getBounds2D() : b;
 	}
 }

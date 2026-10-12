@@ -570,6 +570,13 @@ def fixtures(d, out):
                 with open(os.path.join(out, sub, name + ".json"), "w", encoding="utf-8") as f:
                     f.write("{\n" + ",\n".join(" %s: %s" % (json.dumps(k), json.dumps(v, separators=(",", ":")))
                                                 for k, v in j.items()) + "\n}\n")
+        # R14's sweeps: one row a size
+        src = os.path.join(d, "excel", name + ".sweep.json")
+        if os.path.exists(src):
+            j = compact(json.load(open(src, encoding="utf-8-sig")))
+            with open(os.path.join(out, "excel-layout", name + ".sweep.json"), "w", encoding="utf-8") as f:
+                f.write('{"probe": %s, "sweep": %s, "rows": [\n' % (json.dumps(j["probe"]), json.dumps(j["sweep"]))
+                        + ",\n".join(json.dumps(r, separators=(",", ":")) for r in j.get("rows", [])) + "\n]}\n")
         for app, sub in (("word", "word-pdf"), ("powerpoint", "powerpoint-pdf")):
             src = os.path.join(d, "traces", app, name + ".json")
             if os.path.exists(src):

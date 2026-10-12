@@ -37,7 +37,9 @@ import java.util.List;
  * <li>a log axis runs from the power of its base below the data to the power above, by the base.</li>
  * </ul>
  * A bound or unit the file sets is kept.  The length is the plot's height with one line of
- * category labels (Excel chooses the unit before it wraps or turns them).
+ * category labels (Excel chooses the unit before it wraps or turns them).  A horizontal value axis
+ * (a bar chart's, a scatter chart's x axis) has its own test of whether its labels fit
+ * ({@link Fits}).
  */
 final class AxisScale {
 
@@ -82,6 +84,11 @@ final class AxisScale {
 		return (int) Math.round((hi - lo) / u);
 	}
 
+	/** Whether an axis's labels fit at a unit: its bounds, the unit, the intervals */
+	interface Fits {
+		boolean fits(double min, double max, double unit, int intervals);
+	}
+
 	/**
 	 * @param dataMin, dataMax the values plotted
 	 * @param setMin, setMax, setUnit what the file states (null: automatic)
@@ -91,6 +98,14 @@ final class AxisScale {
 	 */
 	static AxisScale of(double dataMin, double dataMax, Double setMin, Double setMax, Double setUnit, Double logBase,
 			double length, double line) {
+		return of(dataMin, dataMax, setMin, setMax, setUnit, logBase, (lo, hi, u, n) -> (n + 1) * line <= length + ALLOWANCE);
+	}
+
+	/**
+	 * @param fits whether the labels fit at a unit (a vertical axis: (n + 1) lines within its length
+	 *     and {@link #ALLOWANCE})
+	 */
+	static AxisScale of(double dataMin, double dataMax, Double setMin, Double setMax, Double setUnit, Double logBase, Fits fits) {
 		if (logBase != null && logBase > 1 && dataMin > 0) {
 			double b = logBase;
 			double lo = setMin != null ? setMin : Math.pow(b, Math.floor(Math.log(dataMin) / Math.log(b) + 1e-9));
@@ -109,7 +124,7 @@ final class AxisScale {
 			double[] b = bounds(dataMin, dataMax, u, setMin, setMax, zeros);
 			int n = intervals(b[0], b[1], u);
 			if (n < 1) continue;
-			if (n <= MAX_INTERVALS && (n + 1) * line <= length + ALLOWANCE) return new AxisScale(b[0], b[1], u, false);
+			if (n <= MAX_INTERVALS && fits.fits(b[0], b[1], u, n)) return new AxisScale(b[0], b[1], u, false);
 			if (n == 1 && oneInterval == null) {
 				oneInterval = b;
 				oneUnit = u;

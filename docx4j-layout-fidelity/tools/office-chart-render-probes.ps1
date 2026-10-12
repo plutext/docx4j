@@ -15,6 +15,9 @@
 #   powerpoint\<name>.pdf    PowerPoint's PDF of the pptx (R1), and powerpoint\<name>.json
 #   R10 (style in probes.tsv): Excel's gallery style applied (Chart.ChartStyle) by Excel and by Word
 #   before the drawing; the styled files saved as excel\<name>-styled.xlsx, word\<name>-styled.docx.
+#   R14 (sweep in probes.tsv, "width:from:to:step" or "height:..."): after its dump the chart is
+#   resized step by step and its plot's inside and axes read at each size, excel\<name>.sweep.json.
+#   A probe whose hosts are "xlsx" only (R14's copies of Excel's own charts) has no docx.
 #
 # -Dir is the probes' folder's parent (default X:\office_charts\cr037, the probes in its probes\);
 # a probe whose outputs are there already is skipped, so a rerun resumes.  A probe that fails is
@@ -227,6 +230,37 @@ function Dump($chart, $app, $probe, $chartObject) {
 
 function WriteJson($d, $path) { $d | ConvertTo-Json -Depth 12 | Set-Content -Encoding UTF8 $path }
 
+# R14: the chart resized step by step ($spec "width:from:to:step" or "height:from:to:step"), the
+# plot's inside, each axis's bounds, unit, labels' orientation and spacing read at each size; the
+# first size read again at the end, to show the layout followed each step
+function Sweep($co, $ch, $spec) {
+  $parts = $spec -split ':'
+  $dim = $parts[0]; $from = [double]$parts[1]; $to = [double]$parts[2]; $step = [double]$parts[3]
+  $sizes = New-Object System.Collections.ArrayList
+  for ($v = $from; $v -le $to + 1e-9; $v += $step) { [void]$sizes.Add($v) }
+  [void]$sizes.Add($from)
+  $rows = New-Object System.Collections.ArrayList
+  foreach ($v in $sizes) {
+    if ($dim -eq "width") { $co.Width = $v } else { $co.Height = $v }
+    try { $ch.Refresh() } catch { }
+    $pa = $ch.PlotArea
+    $row = [ordered]@{ size = $v; insideLeft = (V { $pa.InsideLeft }); insideTop = (V { $pa.InsideTop });
+      insideWidth = (V { $pa.InsideWidth }); insideHeight = (V { $pa.InsideHeight }) }
+    $axes = @()
+    foreach ($t in 1, 2) {
+      $ax = V { $ch.Axes($t, 1) }
+      if (-not $ax) { continue }
+      $a = [ordered]@{ type = $t; min = (V { $ax.MinimumScale }); max = (V { $ax.MaximumScale }); unit = (V { $ax.MajorUnit });
+        orientation = (V { $ax.TickLabels.Orientation }); spacing = (V { $ax.TickLabelSpacing }); top = (V { $ax.Top });
+        height = (V { $ax.Height }); left = (V { $ax.Left }); width = (V { $ax.Width }) }
+      $axes += $a
+    }
+    $row.axes = $axes
+    [void]$rows.Add($row)
+  }
+  return $rows
+}
+
 # ------------------------------------------------------------------ Excel
 
 $excel = $null; $word = $null; $ppt = $null
@@ -299,6 +333,12 @@ try {
         }
         WriteJson $d $json
         Say "  wrote $name.json"
+        if ($p.sweep) {
+          Step "sweep $($p.sweep)"
+          $rows = Sweep $co $ch $p.sweep
+          WriteJson ([ordered]@{ probe = $name; sweep = $p.sweep; rows = $rows }) (Join-Path $out.excel "$name.sweep.json")
+          Say "  wrote $name.sweep.json ($($rows.Count) sizes)"
+        }
       } catch { Failed $out.excel $name $_ } finally { if ($wb) { try { $wb.Close($false) } catch { } } }
     }
   }
@@ -323,6 +363,7 @@ try {
       $name = $p.name
       $pdf = Join-Path $out.word "$name.pdf"
       if (Test-Path $pdf) { continue }
+      if ($p.hosts -and ($p.hosts -notlike "*docx*")) { continue }
       Say "Word $name"; Fresh $out.word $name
       $doc = $null
       try {

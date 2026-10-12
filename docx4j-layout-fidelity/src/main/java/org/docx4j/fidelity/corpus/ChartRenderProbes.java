@@ -33,6 +33,22 @@ import java.util.regex.Pattern;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
+import org.docx4j.dml.chart.CTAreaChart;
+import org.docx4j.dml.chart.CTCatAx;
+import org.docx4j.dml.chart.CTDateAx;
+import org.docx4j.dml.chart.CTGrouping;
+import org.docx4j.dml.chart.CTLineChart;
+import org.docx4j.dml.chart.CTLineSer;
+import org.docx4j.dml.chart.CTMarker;
+import org.docx4j.dml.chart.CTScatterChart;
+import org.docx4j.dml.chart.CTScatterSer;
+import org.docx4j.dml.chart.CTTickMark;
+import org.docx4j.dml.chart.CTTimeUnit;
+import org.docx4j.dml.chart.STGrouping;
+import org.docx4j.dml.chart.STMarkerStyle;
+import org.docx4j.dml.chart.STScatterStyle;
+import org.docx4j.dml.chart.STTickMark;
+import org.docx4j.dml.chart.STTimeUnit;
 import org.docx4j.dml.chart.CTAxisUnit;
 import org.docx4j.dml.chart.CTBoolean;
 import org.docx4j.dml.chart.CTChart;
@@ -100,7 +116,8 @@ import org.xlsx4j.model.CellRef;
  * gallery styles (applied on the VM, {@code style} in the manifest); R11 (phase 1) the value
  * axis's unit against its length, one chart at many heights and a bar chart at many widths; R12
  * (phase 1) the category labels as the room for them shrinks; R13 (phase 1) how far labels turned
- * 45 degrees push the plot right.</p>
+ * 45 degrees push the plot right; R14 (phase 2) what the other types add, sweeps, and Excel's own
+ * charts of CR-036 (an xlsx only).</p>
  *
  * <p>One theme for each probe (review A2): the docx's theme part (Office 2013's, Calibri and
  * accent 1 4472C4, unless the probe says 2023) is copied into the xlsx, which docx4j makes with
@@ -110,10 +127,10 @@ import org.xlsx4j.model.CellRef;
  *
  * <p>Writes into the directory given the probes and {@code probes.tsv} (name, set, size in
  * points, hosts, theme, Excel gallery style, the chart's place on the PDF page for each host,
- * what the probe asks).  Ids come from a {@link Random} seeded by the probe's name, so the same
+ * what the probe asks, R14's sweep).  Ids come from a {@link Random} seeded by the probe's name, so the same
  * files are made each time.</p>
  *
- * <p>usage: {@code java -cp ... org.docx4j.fidelity.corpus.ChartRenderProbes <dir>}</p>
+ * <p>usage: {@code java -cp ... org.docx4j.fidelity.corpus.ChartRenderProbes <dir> [<CR-036 charts dir>]}</p>
  *
  * @since 17.3.3 (CR-037 phase 0)
  */
@@ -140,6 +157,10 @@ public final class ChartRenderProbes {
 	private int style;
 	private UnaryOperator<CTChartSpace> tweak = c -> c;
 	private UnaryOperator<String> xmlTweak = s -> s;
+	/** R14: the chart resized step by step in Excel, "width:from:to:step" or "height:..." */
+	private String sweep = "";
+	/** R14: an Excel chart (CR-036's P1, P6) copied as it is, an xlsx only */
+	private File copyOf;
 
 	private ChartRenderProbes(String set, String name, ChartDefinition definition, String note) {
 		this.set = set;
@@ -171,6 +192,18 @@ public final class ChartRenderProbes {
 	private ChartRenderProbes style(int s) {
 		style = s;
 		return this;
+	}
+
+	private ChartRenderProbes sweep(String spec) {
+		sweep = spec;
+		return this;
+	}
+
+	private static ChartRenderProbes copy(String set, File xlsx, int width, int height, String note) {
+		String name = xlsx.getName().replaceAll("\\.xlsx$", "");
+		ChartRenderProbes p = new ChartRenderProbes(set, name, null, note);
+		p.copyOf = xlsx;
+		return p.size(width, height);
 	}
 
 	/** A change to the chart made in each host, after ChartCreator */
@@ -463,7 +496,246 @@ public final class ChartRenderProbes {
 					"the axes' and legend's text at " + sz / 100 + "pt, turned 45 degrees, 216 by 252pt").size(216, H)
 					.xml(x -> textSize(x, sz)));
 		}
+		r14(l);
 		return l;
+	}
+
+	/**
+	 * R14 (CR-037 phase 2): the rules the other types add.  Sweeps (one chart resized step by step
+	 * in Excel, its axes read at each size: a horizontal value axis's unit against its labels'
+	 * width and size; the category labels' ladder on a text and a date axis); legends (a line
+	 * series' key at three sizes, the positions not yet probed, the order of a vertical legend, a
+	 * legend too wide for a row); pies at other shapes; markers, smoothed lines, a scatter chart's
+	 * lines; date axes (gaps, weekdays, years, a major unit set, columns over dates); stacks with
+	 * negative values, stacked lines and areas; tick marks; kerning pairs; axis number formats; and Excel's own
+	 * charts of CR-036 (P1's twelve types and the date axis, P6's dates and shapes), copied as they
+	 * are, an xlsx only
+	 */
+	private static void r14(List<ChartRenderProbes> l) {
+		ChartType col = ChartType.COLUMN_CLUSTERED, bar = ChartType.BAR_CLUSTERED;
+		String widths = "width:120:660:3";
+		for (int scale : new int[] { 1, 100, 10000 }) {
+			l.add(probe("R14", "r14-sweep-bar-x" + scale, scaled(words(bar), scale), "Word's bar chart, values times " + scale
+					+ ", swept across widths 120 to 660pt").sweep(widths));
+		}
+		for (int sz : new int[] { 700, 1200 }) {
+			l.add(probe("R14", "r14-sweep-bar-text-" + sz / 100, words(bar), "Word's bar chart, its text at " + sz / 100
+					+ "pt, swept across widths").sweep(widths).xml(x -> textSize(x, sz)));
+		}
+		l.add(probe("R14", "r14-sweep-bar-x100-text-12", scaled(words(bar), 100), "Word's bar chart, values times 100, text 12pt, swept across widths")
+				.sweep(widths).xml(x -> textSize(x, 1200)));
+		l.add(probe("R14", "r14-sweep-bar-100", words(ChartType.BAR_STACKED_100), "the 100% bar chart (0% to 100%), swept across widths")
+				.sweep(widths));
+		l.add(probe("R14", "r14-sweep-scatter", words(ChartType.SCATTER), "Word's scatter chart (its x axis), swept across widths").sweep(widths));
+		l.add(probe("R14", "r14-sweep-column-h", column(), "Word's column, swept across heights 60 to 420pt").sweep("height:60:420:2"));
+		l.add(probe("R14", "r14-sweep-cats8", categories(8, "Category ", 2), "eight categories, swept across widths (the labels' ladder)")
+				.sweep(widths));
+		LocalDate[] days = new LocalDate[22];
+		for (int i = 0; i < days.length; i++) days[i] = LocalDate.of(2026, 1, 1).plusDays(i);
+		double[] dayValues = new double[days.length];
+		for (int i = 0; i < days.length; i++) dayValues[i] = 3 + (i * 7 % 5);
+		l.add(probe("R14", "r14-sweep-dates", ChartDefinition.of(ChartType.LINE).dates("d-mmm", days).series("Data", dayValues)
+				.legend(LegendPosition.BOTTOM), "22 days on a date axis, swept across widths (its labels' ladder)").sweep(widths));
+
+		// legends
+		for (int sz : new int[] { 700, 1200, 1600 }) {
+			l.add(probe("R14", "r14-legend-line-" + sz / 100, words(ChartType.LINE_MARKERS), "the line chart's legend (line keys) at " + sz / 100
+					+ "pt").xml(x -> textSize(x, sz)));
+		}
+		for (LegendPosition pos : new LegendPosition[] { LegendPosition.TOP, LegendPosition.LEFT, LegendPosition.TOP_RIGHT }) {
+			l.add(probe("R14", "r14-legend-" + pos.name().toLowerCase().replace('_', '-'), column().legend(pos), "the legend at "
+					+ pos.name().toLowerCase().replace('_', ' ')));
+		}
+		for (ChartType t : new ChartType[] { ChartType.COLUMN_STACKED, bar, ChartType.BAR_STACKED, ChartType.AREA, ChartType.LINE }) {
+			l.add(probe("R14", "r14-legend-right-" + t.getTemplateName(), words(t).legend(LegendPosition.RIGHT), "the " + t.getTemplateName()
+					+ " chart's legend at the right: its entries' order"));
+		}
+		ChartDefinition eight = ChartDefinition.of(col).categories("A", "B", "C");
+		for (int s = 1; s <= 8; s++) eight.series("Series " + s, s, s + 1, s + 2);
+		l.add(probe("R14", "r14-legend-rows-8", eight, "eight entries at the bottom of a 288pt chart: more than a row holds").size(288, H));
+		ChartDefinition five = ChartDefinition.of(col).categories("A", "B", "C");
+		for (int s = 1; s <= 5; s++) five.series("Series " + s, s, s + 1, s + 2);
+		l.add(probe("R14", "r14-legend-rows-5", five, "five entries at the bottom of a 216pt chart").size(216, H));
+
+		// pies
+		ChartType pie = ChartType.PIE;
+		l.add(probe("R14", "r14-pie-wide", words(pie), "a pie in a wide chart, 432 by 144pt").size(W, 144));
+		l.add(probe("R14", "r14-pie-tall", words(pie), "a pie in a tall chart, 216 by 288pt").size(216, 288));
+		l.add(probe("R14", "r14-pie-legend-right", words(pie).legend(LegendPosition.RIGHT), "a pie, its legend at the right"));
+		l.add(probe("R14", "r14-doughnut-two", words(ChartType.DOUGHNUT).series("Costs", 3.1, 2.2, 1.9, 0.8), "a doughnut of two series (rings)"));
+		l.add(probe("R14", "r14-pie-explode-both", words(pie), "the series exploded 10% and the third point 25%").tweak(c -> {
+			explodeSeries(c, 10);
+			explodePoint(c, 2, 25);
+		}));
+
+		// markers and lines
+		String[] symbols = { "circle", "square", "diamond", "triangle", "x", "star", "dash", "dot", "plus" };
+		ChartDefinition marked = ChartDefinition.of(ChartType.LINE_MARKERS).categories("A", "B", "C", "D");
+		for (int i = 0; i < symbols.length; i++) marked.series(symbols[i], i + 1, i + 1.5, i + 1.2, i + 1.8);
+		l.add(probe("R14", "r14-markers-symbols", marked, "each marker symbol, size 7").tweak(c -> markers(c, symbols, 7)));
+		l.add(probe("R14", "r14-markers-sizes", words(ChartType.LINE_MARKERS), "markers of sizes 3, 9 and 15")
+				.tweak(c -> markerSizes(c, 3, 9, 15)));
+		l.add(probe("R14", "r14-line-smooth", words(ChartType.LINE), "smoothed lines").tweak(c -> smooth(c)));
+		l.add(probe("R14", "r14-scatter-lines", words(ChartType.SCATTER), "a scatter chart with its line shown").tweak(c -> scatterLine(c)));
+		l.add(probe("R14", "r14-scatter-smooth", words(ChartType.SCATTER), "a scatter chart, its line shown and smoothed").tweak(c -> {
+			scatterLine(c);
+			smooth(c);
+		}));
+
+		// date axes
+		l.add(probe("R14", "r14-dates-months-gap", ChartDefinition.of(ChartType.LINE).dates("mmm-yy", LocalDate.of(2026, 1, 1),
+				LocalDate.of(2026, 2, 1), LocalDate.of(2026, 5, 1), LocalDate.of(2026, 6, 1), LocalDate.of(2026, 7, 1)).series("Data", 3, 5, 4, 6, 2)
+				.legend(LegendPosition.BOTTOM), "months with a gap (March, April missing)"));
+		List<LocalDate> weekdays = new ArrayList<>();
+		for (LocalDate d = LocalDate.of(2026, 3, 2); weekdays.size() < 15; d = d.plusDays(1)) {
+			if (d.getDayOfWeek().getValue() <= 5) weekdays.add(d);
+		}
+		double[] wv = new double[weekdays.size()];
+		for (int i = 0; i < wv.length; i++) wv[i] = 2 + (i * 3 % 7);
+		l.add(probe("R14", "r14-dates-weekdays", ChartDefinition.of(ChartType.LINE).dates("d-mmm", weekdays.toArray(new LocalDate[0]))
+				.series("Data", wv).legend(LegendPosition.BOTTOM), "fifteen weekdays (weekends missing)"));
+		LocalDate[] years = new LocalDate[7];
+		for (int i = 0; i < years.length; i++) years[i] = LocalDate.of(2020 + i, 1, 1);
+		l.add(probe("R14", "r14-dates-years", ChartDefinition.of(ChartType.LINE).dates("yyyy", years).series("Data", 3, 5, 4, 6, 2, 7, 5)
+				.legend(LegendPosition.BOTTOM), "January 1st of seven years"));
+		LocalDate[] months = new LocalDate[12];
+		for (int i = 0; i < months.length; i++) months[i] = LocalDate.of(2026, 1 + i, 1);
+		double[] mv = { 32, 30, 28, 25, 20, 18, 15, 17, 21, 24, 27, 31 };
+		l.add(probe("R14", "r14-dates-major-2", ChartDefinition.of(ChartType.AREA).dates("mmm", months).series("Data", mv)
+				.legend(LegendPosition.BOTTOM), "twelve months, the major unit 2 months").tweak(c -> dateMajor(c, 2, STTimeUnit.MONTHS)));
+		l.add(probe("R14", "r14-dates-column", ChartDefinition.of(col).dates("mmm-yy", LocalDate.of(2026, 1, 1), LocalDate.of(2026, 2, 1),
+				LocalDate.of(2026, 3, 1), LocalDate.of(2026, 4, 1), LocalDate.of(2026, 5, 1), LocalDate.of(2026, 6, 1)).series("Data", 3, 5, 4, 6, 2, 4)
+				.legend(LegendPosition.BOTTOM), "columns over six months (a date axis)"));
+		l.add(probe("R14", "r14-dates-long", ChartDefinition.of(ChartType.LINE).dates("d mmmm yyyy", days).series("Data", dayValues)
+				.legend(LegendPosition.BOTTOM), "22 days in a long format"));
+
+		// stacks
+		ChartDefinition mixed = ChartDefinition.of(ChartType.COLUMN_STACKED).categories(CATS).series("Series 1", 4.3, -2.5, 3.5, 4.5)
+				.series("Series 2", -2.4, 4.4, 1.8, -2.8).series("Series 3", 2, 2, -3, 5);
+		l.add(probe("R14", "r14-stacked-negative", mixed, "a stacked column with negative values"));
+		ChartDefinition mixed100 = ChartDefinition.of(ChartType.COLUMN_STACKED_100).categories(CATS).series("Series 1", 4.3, -2.5, 3.5, 4.5)
+				.series("Series 2", -2.4, 4.4, 1.8, -2.8).series("Series 3", 2, 2, -3, 5);
+		l.add(probe("R14", "r14-stacked-100-negative", mixed100, "a 100% stacked column with negative values"));
+		l.add(probe("R14", "r14-line-stacked", words(ChartType.LINE_MARKERS), "a stacked line chart").tweak(c -> grouping(c, STGrouping.STACKED)));
+		l.add(probe("R14", "r14-area-stacked", words(ChartType.AREA), "a stacked area chart").tweak(c -> grouping(c, STGrouping.STACKED)));
+		l.add(probe("R14", "r14-area-stacked-100", words(ChartType.AREA), "a 100% stacked area chart")
+				.tweak(c -> grouping(c, STGrouping.PERCENT_STACKED)));
+
+		// tick marks, both axes, the value axis's line shown
+		for (STTickMark t : new STTickMark[] { STTickMark.OUT, STTickMark.IN, STTickMark.CROSS }) {
+			l.add(probe("R14", "r14-ticks-" + t.value(), column(), "tick marks " + t.value() + " on both axes, the value axis's line shown")
+					.tweak(c -> ticks(c, t)));
+		}
+
+		// kerning: which of Carlito's pairs Office applies (r1-scatter's title: "Va" but not "Y-"),
+		// each pair a category label at 14pt, measured one by one in Word's PDF
+		String[] pairs = { "Y-", "T-", "-Y", "AV", "Va", "Ty", "To", "LT", "P.", "F,", "r.", "y,", "Yo", "AT", "LY", "f." };
+		double[] pv = new double[pairs.length];
+		for (int i = 0; i < pv.length; i++) pv[i] = 1 + i % 5;
+		l.add(probe("R14", "r14-kerning", ChartDefinition.of(col).categories(pairs).series("Data", pv).legend(LegendPosition.BOTTOM),
+				"kerning pairs as category labels at 14pt, 720 by 252pt").size(720, H).xml(x -> textSize(x, 1400)));
+
+		// axis number formats (no data labels)
+		String[][] formats = { { "percent", "0%" }, { "thousands", "#,##0" }, { "currency", "\"$\"#,##0.00" }, { "decimal", "0.0" } };
+		for (String[] f : formats) {
+			double[] v = f[1].contains("%") ? new double[] { 0.125, 0.25, 0.4, 0.6 } : new double[] { 1234.5, 2500.25, 1800, 3100.75 };
+			l.add(probe("R14", "r14-format-" + f[0], one(col, v).valueAxis(a -> a.numberFormat(f[1])), "the value axis in " + f[1]));
+		}
+
+		// Excel's own charts (CR-036): P1's types, P6's dates and shapes, as Excel made them
+		File[] files = authoring.listFiles();
+		if (files == null) throw new IllegalStateException("no CR-036 charts in " + authoring);
+		Arrays.sort(files);
+		Pattern own = Pattern.compile("p1-.*|p6-.*-(dates|one-by-one|two-by-two|eight-series|eight-points|numbers|text|title-text)|p6-range-.*");
+		for (File f : files) {
+			String n = f.getName();
+			if (!n.endsWith(".xlsx") || !own.matcher(n.replace(".xlsx", "")).matches()) continue;
+			// Excel's chart at its size, 5 by 3 inches
+			l.add(copy("R14", f, 360, 216, "Excel's own chart (CR-036 " + n.substring(0, 2).toUpperCase() + "), its layout"));
+		}
+	}
+
+	/** Word's default data times scale */
+	private static ChartDefinition scaled(ChartDefinition words, double scale) {
+		if (scale == 1) return words;
+		return ChartDefinition.of(ChartType.BAR_CLUSTERED).categories(CATS).series("Series 1", 4.3 * scale, 2.5 * scale, 3.5 * scale, 4.5 * scale)
+				.series("Series 2", 2.4 * scale, 4.4 * scale, 1.8 * scale, 2.8 * scale).series("Series 3", 2 * scale, 2 * scale, 3 * scale, 5 * scale);
+	}
+
+	/** Each series' marker: its symbol, the size */
+	private static void markers(CTChartSpace c, String[] symbols, int size) {
+		List<CTLineSer> sers = ((CTLineChart) group(c)).getSer();
+		for (int i = 0; i < sers.size(); i++) {
+			CTMarker m = sers.get(i).getMarker();
+			m.getSymbol().setVal(STMarkerStyle.fromValue(symbols[i]));
+			m.getSize().setVal((short) size);
+		}
+	}
+
+	private static void markerSizes(CTChartSpace c, int... sizes) {
+		List<CTLineSer> sers = ((CTLineChart) group(c)).getSer();
+		for (int i = 0; i < sers.size(); i++) sers.get(i).getMarker().getSize().setVal((short) sizes[i % sizes.length]);
+	}
+
+	private static void smooth(CTChartSpace c) {
+		Object g = group(c);
+		Object sers = invoke(g, "getSer");
+		for (Object s : (List<?>) sers) {
+			Object b = invoke(s, "getSmooth");
+			if (b instanceof CTBoolean) ((CTBoolean) b).setVal(true);
+		}
+		if (g instanceof CTScatterChart) ((CTScatterChart) g).getScatterStyle().setVal(STScatterStyle.SMOOTH_MARKER);
+	}
+
+	/** A scatter chart's series' line shown (Word's has it, but with no fill) */
+	private static void scatterLine(CTChartSpace c) {
+		for (CTScatterSer s : ((CTScatterChart) group(c)).getSer()) {
+			org.docx4j.dml.CTLineProperties ln = s.getSpPr().getLn();
+			ln.setNoFill(null);
+			ln.setW(19050);
+			ln.setSolidFill(s.getMarker().getSpPr().getSolidFill());
+		}
+	}
+
+	private static void grouping(CTChartSpace c, STGrouping g) {
+		Object group = group(c);
+		CTGrouping v = new CTGrouping();
+		v.setVal(g);
+		if (group instanceof CTLineChart) ((CTLineChart) group).setGrouping(v);
+		else ((CTAreaChart) group).setGrouping(v);
+		if (group instanceof CTLineChart) {
+			// Excel's stacked line has its series overlapping (as its template); nothing else to set
+		}
+	}
+
+	private static void dateMajor(CTChartSpace c, double unit, STTimeUnit timeUnit) {
+		for (Object o : plot(c).getValAxOrCatAxOrDateAx()) {
+			if (!(o instanceof CTDateAx)) continue;
+			CTDateAx d = (CTDateAx) o;
+			d.setMajorUnit(unit(unit));
+			CTTimeUnit t = new CTTimeUnit();
+			t.setVal(timeUnit);
+			d.setMajorTimeUnit(t);
+			return;
+		}
+		throw new IllegalStateException("no date axis");
+	}
+
+	/** Tick marks on both axes, the value axis's line drawn as the category axis's is */
+	private static void ticks(CTChartSpace c, STTickMark t) {
+		org.docx4j.dml.CTShapeProperties line = null;
+		for (Object o : plot(c).getValAxOrCatAxOrDateAx()) {
+			if (o instanceof CTCatAx) line = ((CTCatAx) o).getSpPr();
+		}
+		for (Object o : plot(c).getValAxOrCatAxOrDateAx()) {
+			CTTickMark m = new CTTickMark();
+			m.setVal(t);
+			if (o instanceof CTCatAx) ((CTCatAx) o).setMajorTickMark(m);
+			if (o instanceof CTValAx) {
+				((CTValAx) o).setMajorTickMark(m);
+				((CTValAx) o).setSpPr(XmlUtils.deepCopy(line, Context.jc));
+			}
+		}
 	}
 
 	/** n categories ("Category 2" ... between the first and last given), two series, values 1 to 5 times scale */
@@ -731,11 +1003,16 @@ public final class ChartRenderProbes {
 	}
 
 	private void write(File dir) throws Exception {
+		if (copyOf != null) {
+			java.nio.file.Files.copy(copyOf.toPath(), new File(dir, name + ".xlsx").toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+			ROWS.add(String.join("\t", name, set, String.valueOf(w), String.valueOf(h), "xlsx", "", "", "", "", note, ""));
+			return;
+		}
 		xlsx(dir);
 		docx(dir);
 		if (pptx) pptx(dir);
 		ROWS.add(String.join("\t", name, set, String.valueOf(w), String.valueOf(h), pptx ? "xlsx,docx,pptx" : "xlsx,docx", theme,
-				style == 0 ? "" : String.valueOf(style), DOCX_AT + "," + DOCX_AT, pptx ? PPTX_AT + "," + PPTX_AT : "", note));
+				style == 0 ? "" : String.valueOf(style), DOCX_AT + "," + DOCX_AT, pptx ? PPTX_AT + "," + PPTX_AT : "", note, sweep));
 	}
 
 	private void pptx(File dir) throws Exception {
@@ -750,9 +1027,13 @@ public final class ChartRenderProbes {
 		pkg.save(new File(dir, name + ".pptx"));
 	}
 
+	/** CR-036's oracle charts (Excel's own: P1, P6), which R14 copies */
+	private static File authoring = new File("../docx4j-core-tests/src/test/resources/charts/authoring");
+
 	public static void main(String[] args) throws Exception {
 		File dir = new File(args[0]);
 		dir.mkdirs();
+		if (args.length > 1) authoring = new File(args[1]);
 		List<ChartRenderProbes> probes = probes();
 		for (ChartRenderProbes p : probes) {
 			try {
@@ -762,7 +1043,7 @@ public final class ChartRenderProbes {
 			}
 		}
 		try (PrintWriter out = new PrintWriter(new File(dir, "probes.tsv"), StandardCharsets.UTF_8)) {
-			out.println("name\tset\twidth\theight\thosts\ttheme\tstyle\tdocx_at\tpptx_at\tnote");
+			out.println("name\tset\twidth\theight\thosts\ttheme\tstyle\tdocx_at\tpptx_at\tnote\tsweep");
 			for (String r : ROWS) out.println(r);
 		}
 		System.out.println("wrote " + ROWS.size() + " probes into " + dir);

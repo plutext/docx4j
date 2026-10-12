@@ -48,20 +48,24 @@ public class ChartRendererSpiTest {
 	}
 
 	@Test
-	public void checkDrawsTheColumnAndRefusesWhatPhaseOneDoesNot() throws Exception {
+	public void checkDrawsTheTwelveTypesAndRefusesWhatPhaseTwoDoesNot() throws Exception {
 		ChartRenderer r = new ClassicChartRenderer();
-		ChartRef column = ChartRenderGateTest.chart("r1-column-clustered");
-		ChartRenderCheck c = r.check(column.read(), column.getHostTheme());
-		assertTrue(c.toString(), c.isDrawn());
-		assertFalse(c.isSimplified());
-		ChartRef pie = ChartRenderGateTest.chart("r1-pie");
-		ChartRenderCheck p = r.check(pie.read(), pie.getHostTheme());
-		assertFalse(p.isDrawn());
-		assertTrue(p.getRefused().toString(), p.getRefused().contains("a pie chart"));
+		for (String t : new String[] { "column-clustered", "column-stacked", "column-stacked-100", "bar-clustered", "bar-stacked",
+				"bar-stacked-100", "line", "line-markers", "pie", "doughnut", "area", "scatter" }) {
+			ChartRef c = ChartRenderGateTest.chart("r1-" + t);
+			ChartRenderCheck k = r.check(c.read(), c.getHostTheme());
+			assertTrue(t + ": " + k, k.isDrawn());
+			assertFalse(t + ": " + k, k.isSimplified());
+		}
 		ChartRef labels = ChartRenderGateTest.chart("r6-column-clustered-ctr");
-		assertTrue(r.check(labels.read(), labels.getHostTheme()).getRefused().contains("data labels"));
+		ChartRenderCheck l = r.check(labels.read(), labels.getHostTheme());
+		assertFalse(l.isDrawn());
+		assertTrue(l.getRefused().toString(), l.getRefused().contains("data labels"));
+		ChartRef moved = ChartRenderGateTest.chart("r9-title-moved");
+		assertTrue(r.check(moved.read(), moved.getHostTheme()).getRefused().contains("the title placed by hand"));
 		// a refused chart: no SVG, no picture
-		assertNull(r.toSvg(pie.read(), pie.getHostTheme(), ChartFonts.of(pie.getHost()), 432, 252));
+		assertNull(r.toSvg(labels.read(), labels.getHostTheme(), ChartFonts.of(labels.getHost()), 432, 252));
+		assertNull(r.toImage(labels.read(), labels.getHostTheme(), ChartFonts.of(labels.getHost()), 432, 252, 72));
 	}
 
 	@Test

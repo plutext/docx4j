@@ -2,7 +2,8 @@
 
 Status: ACTIVE: phase 0 DONE 2026-10-12; phase 1 DONE 2026-10-12 (Jason: "close phase 1 then
 start phase 2"): the module, the SPI and the clustered column, 136 of the 141 probes drawn within
-tolerance in every element (§11); phase 2 next.  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
+tolerance in every element (§11); phase 2 IN PROGRESS (started 2026-10-12): the eleven types
+drawn, every probe of theirs in R1 to R13 within tolerance but one; R14 on the share for a run.  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
 (integration) of the charts plan.  Do not implement yet."); reviewed the same day by the
 docx4j-13 session (Claude Fable 5.1, at Jason's request): approved with nine amendments, all
 accepted by Jason ("apply all nine") and applied (§8).  D1 to D9 taken as recommended (Jason, 2026-10-12);
@@ -683,3 +684,70 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   (R11's bar probes: 24.75pt between labels refused, 30.75 taken), its rule to find on R11's ten
   widths; the read model, the colour cycle for series with no fill (out of `ChartDataEditor`)
   and the oracle for every type of R1, R6, R7, R8, P1, P3, P4 and P6 are in place.
+
+### Phase 2 (2026-10-12), in progress: the other eleven types
+
+- **Built**: `ChartLayout` is now the frame (the title, the legend, the plot area) and the plot of
+  each kind: columns and bars clustered, stacked and 100% stacked; lines (markers, gaps and spans)
+  and areas over categories or dates; a scatter chart's points over two value axes; pies and
+  doughnuts.  `AxisScale` takes the test of whether a scale's labels fit as a parameter, so that
+  a horizontal value axis has its own; `Drawing` keeps a pie's slice places as Office reports
+  them.  `check` draws the twelve types and still refuses smoothed lines (until R14 shows Office's
+  curve), data labels, axis titles, manual layouts, secondary axes, combinations and 3-D.  The
+  gate compares a pie's slices by their nine `PieSliceLocation`s, a scatter chart's x axis, and a
+  shape's fill and line apart (Word's PDF draws a marker's or slice's as two paths).
+- **The gate**: 176 probes drawn (the twelve types of R1, R2's line and bar, R5's dates, R7, R8
+  but its labelled pie, R11's bars), **170 within tolerance in every element** (99.1% of 18,558).
+  Every probe of the new types passes but r1-scatter, whose kerned title is named open (below);
+  the other five open are phase 1's.
+- **Pictures**: our pictures' rectangles were anti-aliased, Excel's are on whole pixels (a bar's
+  edge pixel is its colour or the background), which put every probe at about 1% of pixels off by
+  more than 32, phase 1's included.  Phase 1's record of 0.04% to 0.33% could not be reproduced
+  from its renders with `chart_score.py raster` (the same renders score 0.96% on R1's column);
+  how it was measured is not recorded.  `toImage` now paints rectangles and level lines crisp
+  (the SVG is unchanged): **169 of the 175 pictures within their tolerance**, every one of the new
+  types'; the six others are phase 1's (three open, two with labels cut short, r12-cats12-w180 at
+  0.71% against 0.70%).
+- **Measured on the way** (each now a rule in `ChartLayout`, with its probes):
+  - a bar chart: its categories up the left from the bottom, their labels placed as a column's
+    value labels (6.53pt from the chart's edge, 0.7575 of a line from the inside); its values along
+    the bottom, labels centred under their gridlines, the inside's right edge in by half the last
+    label (r1-bar-*, R11); series from the bottom of each category; the legend of a clustered bar
+    chart lists the series from the last (r1-bar-clustered), a stacked one's from the first;
+  - stacked bars stack on the bars of their sign; a 100% chart's axis ends at 100% and its
+    labels, linked to the source, are `0%`;
+  - a horizontal value axis's unit (bars, a scatter chart's x): the labels need more than 24.75pt
+    an interval and take 25.49 (R11's bar chart, one-digit labels at 9pt); taken as 25.1 until
+    R14's sweeps give the rule;
+  - labels centred on the inside's edges keep within the plot area: a midCat axis's first and
+    last (r1-area's dates), a horizontal value axis's last;
+  - a date axis: dates placed by their base unit (months: equally spaced, whatever the days),
+    labelled at each major unit; its labels turn 90 degrees where text would turn 45 (R5's daily
+    dates: the band the widest label turned 90, to 0.01pt); number format 14 (`m/d/yyyy`) is the
+    machine's short date in Excel and Word alike (the VM's `d/mm/yyyy`, so `1/05/2002`), docx4j's
+    `docx4j.Chart.ShortDate` property, the gate setting the VM's;
+  - tick marks 2.85pt long (r1-area's date axis);
+  - a line series' legend key is 12pt wide (an entry twice the key plus its text, as a square
+    key's), its line drawn 1.6 times the key, the marker at its middle; a horizontal legend
+    spaces its entries by their own widths but Excel reports each at the widest's (r1-pie), and is
+    at most 0.9 of the chart's width, its entries closing up (r11-bar-w144);
+  - a pie: the largest circle the plot's space holds, centred; slices clockwise from twelve
+    o'clock; a series' explosion shrinks the pie by 1 + its share and moves each slice out its
+    share of the radius, a point's alone moves its slice without shrinking the pie (R8); a
+    doughnut's hole its share of the radius; slices and their legend keys stroked with the
+    point's line (white, 1.5pt);
+  - kerning: Office kerns r1-scatter's title "Y-Values" by its "Va" pair (0.78pt at 14pt) but not
+    by the "Y-" pair Carlito also has (0.80pt), so the title's box is 0.8pt narrower than ours:
+    Calibri's pairs are not all Carlito's.  Open until R14's kerning probe.
+- **R14** (on the share for a VM run; `ChartRenderProbes`, 120 probes: 53 made by docx4j as xlsx
+  and docx, 67 of Excel's own CR-036 charts copied as xlsx only): sweeps (the script resizes a
+  chart through about 180 widths or heights and reads its axes at each, `excel\<name>.sweep.json`)
+  for the horizontal axis's unit against its labels' width and size (bars at three scales and
+  three sizes, the 100% bar, the scatter), the vertical unit, and the labels' ladder on a text and
+  a date axis; legends (line keys at 7, 12 and 16pt; top, left, top right; the order of a vertical
+  legend for five types; legends wider than a row); pies (wide, tall, legend at the right, two
+  rings, both explosions); marker symbols and sizes; smoothed lines and a scatter chart's lines;
+  date axes (months with a gap, weekdays, years, a major unit set, columns over dates, a long
+  format); stacks with negative values, stacked lines and areas; tick marks out, in and across;
+  kerning pairs at 14pt; axis number formats; and P1's and P6's dates and shapes, so that Excel's
+  own charts join the gate (layout and picture; they have no docx).
