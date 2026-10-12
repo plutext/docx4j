@@ -63,7 +63,7 @@ public class ChartRenderGateTest {
 
 	static {
 		// Office shows number format 14 (m/d/yyyy) in the machine's short date: the VM's is d/mm/yyyy
-		Docx4jProperties.setProperty("docx4j.Chart.ShortDate", "d/mm/yyyy");
+		Docx4jProperties.setProperty("docx4j.chart.render.shortDate", "d/mm/yyyy");
 	}
 
 	static String text(String path) throws IOException {

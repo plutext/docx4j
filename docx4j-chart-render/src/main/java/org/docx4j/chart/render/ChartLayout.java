@@ -125,7 +125,7 @@ final class ChartLayout {
 	static final int LEVEL = 0, WRAPPED = 1, TURNED_45 = 2, TURNED_90 = 3;
 	/**
 	 * Builtin number format 14, which Office shows in the machine's short date (the VM's: d/mm/yyyy,
-	 * r1-area); docx4j shows it as the property {@code docx4j.Chart.ShortDate} says, by default as written
+	 * r1-area); docx4j shows it as the property {@code docx4j.chart.render.shortDate} says, by default as written
 	 */
 	static final String SHORT_DATE = "m/d/yyyy";
 
@@ -212,7 +212,7 @@ final class ChartLayout {
 	private final double w, h;
 	private final Drawing d;
 	private final DataFormatter formatter = new DataFormatter(Locale.US);
-	private final String shortDate = Docx4jProperties.getProperty("docx4j.Chart.ShortDate", SHORT_DATE);
+	private final String shortDate = Docx4jProperties.getProperty("docx4j.chart.render.shortDate", SHORT_DATE);
 
 	private ChartLayout(ChartModel model, ThemeColors theme, ChartFonts fonts, double w, double h) {
 		this.model = model;

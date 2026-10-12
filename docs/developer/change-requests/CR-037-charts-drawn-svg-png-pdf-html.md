@@ -734,7 +734,7 @@ three (a constant series, all zeros, one at an edge) by its refinements.
     labelled at each major unit; its labels turn 90 degrees where text would turn 45 (R5's daily
     dates: the band the widest label turned 90, to 0.01pt); number format 14 (`m/d/yyyy`) is the
     machine's short date in Excel and Word alike (the VM's `d/mm/yyyy`, so `1/05/2002`), docx4j's
-    `docx4j.Chart.ShortDate` property, the gate setting the VM's;
+    `docx4j.chart.render.shortDate` property, the gate setting the VM's;
   - tick marks 0.3167 of their axis's text size long (r1-area's date axis: 2.85pt at 9pt in Word's
     PDF, 3.80 at 11.97pt in PowerPoint's);
   - a line series' legend key is 12pt wide (an entry twice the key plus its text, as a square
