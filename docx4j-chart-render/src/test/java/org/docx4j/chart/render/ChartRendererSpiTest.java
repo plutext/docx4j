@@ -1,0 +1,99 @@
+/*
+ *  Copyright 2026, Plutext Pty Ltd.
+ *
+ *  This file is part of docx4j.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+package org.docx4j.chart.render;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.awt.image.BufferedImage;
+
+import org.docx4j.model.chart.ChartFonts;
+import org.docx4j.model.chart.ChartRef;
+import org.docx4j.model.chart.ChartRenderCheck;
+import org.docx4j.model.chart.ChartRenderer;
+import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+/**
+ * The renderer through docx4j-core's SPI (CR-037, review A8: found by ServiceLoader on the module
+ * path), its check (A1), and its SVG (text as text, D6) and picture.
+ */
+public class ChartRendererSpiTest {
+
+	@Test
+	public void foundThroughTheSpi() {
+		ChartRenderer r = ChartRenderer.getRenderer();
+		assertNotNull("no ChartRenderer found", r);
+		assertEquals(ClassicChartRenderer.class, r.getClass());
+	}
+
+	@Test
+	public void checkDrawsTheColumnAndRefusesWhatPhaseOneDoesNot() throws Exception {
+		ChartRenderer r = new ClassicChartRenderer();
+		ChartRef column = ChartRenderGateTest.chart("r1-column-clustered");
+		ChartRenderCheck c = r.check(column.read(), column.getHostTheme());
+		assertTrue(c.toString(), c.isDrawn());
+		assertFalse(c.isSimplified());
+		ChartRef pie = ChartRenderGateTest.chart("r1-pie");
+		ChartRenderCheck p = r.check(pie.read(), pie.getHostTheme());
+		assertFalse(p.isDrawn());
+		assertTrue(p.getRefused().toString(), p.getRefused().contains("a pie chart"));
+		ChartRef labels = ChartRenderGateTest.chart("r6-column-clustered-ctr");
+		assertTrue(r.check(labels.read(), labels.getHostTheme()).getRefused().contains("data labels"));
+		// a refused chart: no SVG, no picture
+		assertNull(r.toSvg(pie.read(), pie.getHostTheme(), ChartFonts.of(pie.getHost()), 432, 252));
+	}
+
+	@Test
+	public void svgKeepsTextAsTextInTheMappedFamily() throws Exception {
+		ChartRef c = ChartRenderGateTest.chart("r1-column-clustered");
+		Document svg = new ClassicChartRenderer().toSvg(c.read(), c.getHostTheme(), ChartFonts.of(c.getHost()), 432, 252);
+		assertNotNull(svg);
+		Element root = svg.getDocumentElement();
+		assertEquals("432pt", root.getAttribute("width"));
+		assertEquals("0 0 432 252", root.getAttribute("viewBox"));
+		NodeList texts = svg.getElementsByTagNameNS("http://www.w3.org/2000/svg", "text");
+		StringBuilder all = new StringBuilder();
+		boolean carlito = false;
+		for (int i = 0; i < texts.getLength(); i++) {
+			all.append(texts.item(i).getTextContent()).append('|');
+			Element e = (Element) texts.item(i);
+			for (org.w3c.dom.Node n = e; n instanceof Element; n = n.getParentNode()) {
+				if (((Element) n).getAttribute("font-family").contains("Carlito")) carlito = true;
+			}
+		}
+		assertTrue(all.toString(), all.toString().contains("Chart Title|"));
+		assertTrue(all.toString(), all.toString().contains("Category 4|"));
+		assertTrue("Calibri drawn as Carlito, the family FOP is given", carlito);
+	}
+
+	@Test
+	public void picture() throws Exception {
+		ChartRef c = ChartRenderGateTest.chart("r1-column-clustered");
+		BufferedImage im = ChartRenderer.getRenderer().toImage(c.read(), c.getHostTheme(), ChartFonts.of(c.getHost()), 432, 252, 120);
+		assertEquals(720, im.getWidth());
+		assertEquals(420, im.getHeight());
+		// the first series' bar, accent 1, under the first category
+		assertEquals(0x4472C4, im.getRGB(80, 250) & 0xFFFFFF);
+	}
+}

@@ -40,6 +40,7 @@
         <module>docx4j-diffx</module>
         <module>docx4j-diffx-tests</module>
         <module>docx4j-markdown</module>
+        <module>docx4j-chart-render</module> <!-- charts drawn (CR-037); docx4j-export-fo depends on it -->
         <module>docx4j-digsig</module>
         
         <module>docx4j-export-fo-fonts-symbol</module>

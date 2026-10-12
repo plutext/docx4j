@@ -93,8 +93,8 @@ types (`column-clustered`, `-stacked`, `-stacked-100`, `bar-...`, `line`, `line-
 Their PDFs (Word's and PowerPoint's own) and Excel's chart PNGs are on the share,
 `office_charts\cr036`.
 
-## The render oracle (CR-037 phase 0)
+## The render oracle (CR-037)
 
-`render/` holds the render probes (docx4j's charts, sets R1 to R10) with Office's drawings of them
-as numbers: Excel's layout dumps and the readings of Word's and PowerPoint's PDFs, the oracle of
-the chart renderer.  Its own README says what each file is and how to read the dumps.
+The render probes (docx4j's charts) with Office's drawings of them as numbers, the oracle of the
+chart renderer, are in `docx4j-chart-render/src/test/resources/charts/render/` (here in phase 0,
+moved beside the renderer in phase 1); their README says what each file is.

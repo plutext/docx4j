@@ -90,6 +90,13 @@
 			<artifactId>docx4j-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
+		<!-- charts drawn into their boxes in the PDF (CR-037) -->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-chart-render</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	
 		<dependency>
 			<groupId>org.plutext</groupId>

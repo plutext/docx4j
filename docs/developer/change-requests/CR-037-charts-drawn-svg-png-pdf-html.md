@@ -1,7 +1,8 @@
 # CR-037: charts drawn - a chart rendered to SVG and PNG as Office draws it, and drawn in PDF, HTML and pptx output (charts plan phases 7 and 8)
 
-Status: ACTIVE: phase 0 DONE 2026-10-12; phase 1 not started (Jason: "do not commence phase 1
-yet").  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
+Status: ACTIVE: phase 0 DONE 2026-10-12; phase 1 STARTED 2026-10-12 (Jason: "add the extra
+axis-height probe set; start phase 1"): the module, the SPI and the clustered column's frame
+built, 86 of the 95 probes drawn within tolerance in every element (§11).  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
 (integration) of the charts plan.  Do not implement yet."); reviewed the same day by the
 docx4j-13 session (Claude Fable 5.1, at Jason's request): approved with nine amendments, all
 accepted by Jason ("apply all nine") and applied (§8).  D1 to D9 taken as recommended (Jason, 2026-10-12);
@@ -360,7 +361,7 @@ departure from §4.1 is all right").
   | Measure | Tolerance | Office against Office |
   |---|---|---|
   | each text Office draws | the same string, font family and colour | the same |
-  | a text's size | within 0.13pt of Word's PDF | Word draws on a 0.24pt grid (±0.02); PowerPoint as laid out |
+  | a text's size | within 0.15pt of Word's PDF | Word draws on a 0.24pt grid (±0.02: 9pt is 9.12 or 9.14); PowerPoint as laid out |
   | a text's place (its centre) | within 0.5pt of Office's | Office's text in its own boxes: ±0.31pt |
   | geometry: the plot area's inside, each bar, marker, line or area vertex, slice point, gridline | within 0.25pt | Office's drawing against its layout: 0.00 (plot area), 0.13 (points), 0.02 (slices) |
   | the value axis | bounds, unit and labels exactly Excel's | exact |
@@ -369,6 +370,10 @@ departure from §4.1 is all right").
 
   Excel's layout and Word's are identical (0.00), so the layout oracle is one; a drawing that
   Office makes a picture of (style 258's slices) is held to the picture's tolerance only.
+  **Corrected** 2026-10-12, at phase 1's first gate run: the text size was set at 0.13pt, half the
+  grid, but Word draws 9pt at 9.14 as well as 9.12 (191 texts), so Office's own spread is
+  0.12 + 0.02 = 0.14pt and the tolerance, by the rule above, 0.15pt.  An error in reading
+  Office's numbers, corrected from Office's numbers, not from docx4j's.
 - **D5. A picture written into the document** for consumers that can't draw charts (the plan's
   D5): Office writes none for a classic chart.  Recommendation: not in this CR; `ChartImages`
   gives a caller the picture to insert, and a method for it can follow if one is asked for.
@@ -513,6 +518,26 @@ Word run of the harness's chart probes in phase 3.
 8. **Placement**: PowerPoint puts a chart 0.04pt off its frame (99.96 for 100); Word draws the
    chart area's border last and an invisible 0.14pt stroke of the box first.
 
+**R11** (the value axis's unit against its length, run by Jason the same evening, 63 probes:
+Word's column, eight categories and one series with no title or legend at fifteen heights, 14pt
+text at eight, a bar chart at ten widths; nothing failed; the series' own properties in the dumps
+now): the baseline holds over all 165 probes (points within 0.13pt, pictures 0.65%, every value
+axis agreeing).  The rule (finding 9, below), on the 106 column probes: 103 at once, the other
+three (a constant series, all zeros, one at an edge) by its refinements.
+
+9. **The value axis's unit**: the finest of 1, 2 and 5 times a power of ten that gives at most ten
+   intervals and whose labels, one line each, fit the axis's length with 4.87pt to spare ((n + 1)
+   lines <= length + 4.87; measured 4.66 to 5.08); where none does, the coarsest that gives one
+   interval.  Word's data never goes to 0.5 at any height (eleven intervals); eight categories
+   (0 to 4.7) by 0.5 from 216pt high.  A constant series pads from zero (5: 0 to 6), all zeros is
+   0 to 1 by 0.1.  **The unit is chosen with one line of category labels**: R3's eight categories
+   at 288pt wide are turned 45 degrees, so the plot is shorter than its unit was chosen for (by a
+   one-line band the plot is exactly the 84.84pt of Word's column at that size).  A level value
+   axis (the bar chart) needs wider spacing (24.75pt refused, 30.75 taken): phase 2's.
+10. **Word drops turned category labels from its PDF** (R3's eight categories at 180 and 288pt
+    wide: Excel's picture has them, turned 45 degrees, Word's PDF has none): for those, Excel's
+    picture and layout are the oracle.
+
 **What phase 0 means for the design** (advice for Jason, 2026-10-12; nothing changed in §4 yet):
 
 - **One layout, one oracle.**  Excel, Word and PowerPoint lay a chart out by the same rules to the
@@ -544,3 +569,56 @@ Word run of the harness's chart probes in phase 3.
 - **The read model needs nothing more for phase 1**: it agrees with Office on every probe; the
   automatic colour cycle (series with no `c:spPr`, out of `ChartDataEditor` as §4.2 says) and a
   gradient's colours (phase 4) are as planned.
+
+### Phase 1 (started 2026-10-12): the renderer's frame on the clustered column
+
+- **Built**: in docx4j-core (`org.docx4j.model.chart`), `ChartRenderer` (the SPI: `check`, `draw`
+  on a `Graphics2D`, `toSvg`, `toImage` in core with AWT alone; found through `ServiceLoader`,
+  `uses` in core's module-info, A8), `ChartRenderCheck` (A1: refused and simplified, with
+  reasons) and `ChartFonts` (a chart's theme fonts, `+mn-lt` and `+mj-lt`, made AWT fonts from the
+  files docx4j's mapper gives FOP: Calibri is Carlito, measured to Calibri's advances exactly).
+  A new module, **docx4j-chart-render** (`org.docx4j.chart.render`, nothing exported, D7):
+  `ClassicChartRenderer` (provides the SPI; SVG through Batik's `SVGGraphics2D`, text as text in
+  the mapped family, D6), `ChartLayout` (the rules of §11), `AxisScale` (finding 9, R2),
+  `Drawing` (what is painted, and the boxes Office reports).  In the reactor; docx4j-export-fo
+  depends on it and `requires` it (A8), drawing nothing with it until phase 3.  `check` draws a
+  clustered column and refuses the rest (other types, data labels, axis titles, manual layouts,
+  secondary axes, 3-D) until the phase that draws it.
+- **The oracle moved** beside the renderer: `docx4j-chart-render/src/test/resources/charts/render/`
+  (5.9 MB with R11), with `ChartRenderFixturesTest`.
+- **The gate** (`ChartRenderGateTest`, `RenderGate`, D4's tolerances): each probe drawn, its layout
+  against Excel's (title, legend, entries, keys, plot area, inside, every point, the value axis)
+  and its drawing against Word's PDF (each text: string, centre, size, colour, face; each shape:
+  colour and box).  First run: 86.5% of the elements; now **86 of the 95 probes drawn are within
+  tolerance in every element** (94.0% of 10,229 elements), and the gate fails the build if any of
+  them regresses.  Open (each named in the test): R3's and R11's small plots (eight) and R2's set
+  maximum (one).  Pictures (rendered at Excel's 1.667 px/pt): 0.04% to 0.33% of the pixels off by
+  more than 32 against Excel's PNG on the passing probes (tolerance 0.7%), indistinguishable by
+  eye.  `ChartRendererSpiTest`: found through the SPI on the module path, `check`'s refusals, the
+  SVG's text in Carlito, the picture.
+- **Measured on the way** (each now a rule in `ChartLayout`, with its probes):
+  - the frame: the title 2pt into the inner frame, centred, its box its text plus 3pt either side
+    and its line plus 1.5pt above and below; the plot area 7pt from the inner frame's edges and 11pt
+    from the title and the legend; the legend 2pt from its edge;
+  - the legend: entries a line high, each its key (0.45 of a line, inset half a key) twice over
+    plus its text; a horizontal legend its entries plus a fifth of each, spread evenly before,
+    between and after them (one, two, three and eight entries, Calibri and Aptos); a vertical
+    one centred on the plot area, its entries 3pt wider, rows a line plus 5.9pt; keys drawn 0.75pt
+    right of their reported box and 0.055 of the text's size lower;
+  - the axes: the widest value label's left edge 6.53pt from the chart's edge, the inside 0.7575 of
+    a line after its right edge; the inside's top dropping only where the top label would stand
+    more than 6pt above the plot area; the category labels' band 1.855 x size - 4.5pt (plus a line
+    for each wrapped line), labels wrapped at the category's width, turned 45 degrees where a
+    word won't fit; the band only where the category axis is at the plot's bottom (with data of
+    either sign the labels hang 14.5pt below the zero line, no band);
+  - kerning: text at or above its `kern` size (Office writes 1200) is kerned: R4's long title is
+    Carlito's kerned advances to 0.01pt (333.348 against 334.216 plain);
+  - a set bound anchors the ticks: a set maximum of 150 by 20 gives -10 (and a set minimum the
+    maximum likewise); bars aren't clipped by the scale but by the plot's inside (Excel and Word
+    alike hide a bar below a set minimum; Word's PDF has its path, clipped);
+  - a blank shown as zero (`dispBlanksAs` zero) is a point of no height.
+- **R12** (the category labels as the room for them shrinks: 31 probes, four category counts at
+  five widths, two at four heights, one-word labels) is on the share for an Office run: Office
+  caps the labels' band on a small plot (R3 at 180 x 108: overlapping on one line; eight
+  categories: turned and cut to "C..."; R11 at 90pt high: the band 1.45pt short), the rule for
+  which R3 and R11 don't pin.

@@ -220,5 +220,7 @@ module org.docx4j.core {
     uses org.docx4j.openpackaging.parts.PartProvider;
     // docx4j-export-fo provides this (CR-011); without 'uses', ServiceLoader throws on the module path (found by CR-033)
     uses org.docx4j.model.images.MetafileSvgProvider;
+    // docx4j-chart-render provides this (CR-037, review A8)
+    uses org.docx4j.model.chart.ChartRenderer;
 
 }

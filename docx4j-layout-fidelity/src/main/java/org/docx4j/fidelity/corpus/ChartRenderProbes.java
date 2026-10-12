@@ -97,7 +97,9 @@ import org.xlsx4j.model.CellRef;
  * the 2023 theme; R2 the value axis's scaling; R3 one chart at four sizes; R4 text (long
  * categories, a long title, eight series, text sizes, many categories); R5 number formats; R6
  * data labels at each position; R7 blanks; R8 pie and doughnut; R9 manual layouts; R10 Excel's
- * gallery styles (applied on the VM, {@code style} in the manifest).</p>
+ * gallery styles (applied on the VM, {@code style} in the manifest); R11 (phase 1) the value
+ * axis's unit against its length, one chart at many heights and a bar chart at many widths; R12
+ * (phase 1) the category labels as the room for them shrinks.</p>
  *
  * <p>One theme for each probe (review A2): the docx's theme part (Office 2013's, Calibri and
  * accent 1 4472C4, unless the probe says 2023) is copied into the xlsx, which docx4j makes with
@@ -382,6 +384,51 @@ public final class ChartRenderProbes {
 		}
 		for (int s : new int[] { 254, 258 }) {
 			l.add(probe("R10", "r10-pie-style-" + s, words(pie), "Excel's gallery style " + s + " applied by Office").style(s));
+		}
+
+		// R11 (CR-037 phase 1) the value axis's unit against the axis's length: one chart at many
+		// heights (Word's column, eight categories, one series with no title or legend so the plot
+		// has the height), the column's text at 14pt, and a bar chart (its value axis level) at
+		// many widths
+		int[] heights = { 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 252, 288, 324, 360, 432 };
+		for (int h : heights) {
+			l.add(probe("R11", "r11-default-h" + h, column(), "Word's column, 432 by " + h + "pt").size(W, h));
+		}
+		for (int h : heights) {
+			l.add(probe("R11", "r11-eight-h" + h, categories(8, "Category ", 3), "eight categories, 432 by " + h + "pt").size(W, h));
+		}
+		for (int h : heights) {
+			l.add(probe("R11", "r11-bare-h" + h, ChartDefinition.of(col).categories("A", "B", "C", "D").series("Data", 12, 45, 78, 93)
+					.noTitle().noLegend(), "12 to 93, no title or legend, 432 by " + h + "pt").size(W, h));
+		}
+		for (int h : new int[] { 108, 144, 180, 216, 252, 288, 360, 432 }) {
+			l.add(probe("R11", "r11-text14-h" + h, column(), "Word's column, its axes' and legend's text 14pt, 432 by " + h + "pt")
+					.size(W, h).xml(x -> textSize(x, 1400)));
+		}
+		for (int w : new int[] { 144, 180, 216, 252, 288, 360, 432, 504, 576, 648 }) {
+			l.add(probe("R11", "r11-bar-w" + w, words(ChartType.BAR_CLUSTERED), "Word's bar chart, " + w + " by 252pt").size(w, H));
+		}
+
+		// R12 (CR-037 phase 1) the category labels as the room for them shrinks: kept on a line,
+		// wrapped, turned, cut short or overlapping (R3's small charts do each); by width, by
+		// height, and labels of one word, which can't wrap
+		for (int n : new int[] { 4, 6, 8, 12 }) {
+			for (int w : new int[] { 144, 180, 216, 288, 360 }) {
+				l.add(probe("R12", "r12-cats" + n + "-w" + w, categories(n, "Category ", 2), n + " categories, " + w + " by 252pt")
+						.size(w, H));
+			}
+		}
+		for (int n : new int[] { 4, 8 }) {
+			int w = n == 4 ? 180 : 216;
+			for (int h : new int[] { 108, 144, 180, 216 }) {
+				l.add(probe("R12", "r12-cats" + n + "-w" + w + "-h" + h, categories(n, "Category ", 2),
+						n + " categories, " + w + " by " + h + "pt").size(w, h));
+			}
+		}
+		for (int w : new int[] { 180, 216, 288 }) {
+			l.add(probe("R12", "r12-words-w" + w, ChartDefinition.of(col).categories("Northeastern", "Southwestern", "Mountainous",
+					"Archipelagic").series("Series 1", 4.3, 2.5, 3.5, 4.5).series("Series 2", 2.4, 4.4, 1.8, 2.8),
+					"one-word categories, " + w + " by 252pt").size(w, H));
 		}
 		return l;
 	}

@@ -25,7 +25,8 @@ from the chart box's top left, y down; each command prints a summary, --json the
                             chart box (--box x,y,w,h, points, y down) drawn at A's scale): the
                             share of pixels differing by more than 32 and 64 (of 255, the largest
                             channel), each pixel against its best of B's 3x3 neighbours
-  fixtures DIR OUT          the oracle for the build (review A3), from a run whose baseline has
+  fixtures DIR OUT          the oracle for the build (review A3; docx4j-chart-render's
+                            src/test/resources/charts/render), from a run whose baseline has
                             been made: probes.tsv; probes\\ the xlsx (the chart and its theme;
                             each docx's chart is the same chart), R1's pptx and R10's styled
                             xlsx (Excel's); excel-layout\\ and powerpoint-layout\\ the dumps

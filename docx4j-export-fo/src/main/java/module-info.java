@@ -2,6 +2,9 @@ module org.docx4j.export_fo {
 
 	requires org.slf4j;
 	requires org.docx4j.core;
+	// charts drawn into a chart's box (CR-037); reached through docx4j-core's ChartRenderer,
+	// required so that the module path resolves the provider
+	requires org.docx4j.chart.render;
 	requires org.docx4j.generated_objects;
 	requires org.plutext.jaxb.xslfo;
 

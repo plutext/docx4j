@@ -969,7 +969,7 @@ draws charts, and measures Office's drawings of them as numbers.
   colour), `layout` (an Office layout dump against a reading: titles, labels, legend entries,
   the plot area's inside, each point, the value axis's numbers), `raster` (a PNG against a PNG
   or a PDF's chart box), `baseline DIR` (Office against Office over a run: the tolerances), and
-  `fixtures DIR OUT` (the oracle for the build, `docx4j-core-tests/.../charts/render/`).  Office's
+  `fixtures DIR OUT` (the oracle for the build, `docx4j-chart-render/src/test/resources/charts/render/`).  Office's
   object model reports elements from 4pt inside the chart's box (`ORIGIN`; CR-037 §11).
 
 ## JUnit

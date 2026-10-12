@@ -1,0 +1,18 @@
+{
+ "probe": "r11-bare-h288",
+ "app": "excel",
+ "size": [432,288],
+ "chartType": 51,
+ "chartStyle": 201,
+ "displayBlanksAs": 1,
+ "chartObject": {"left":144,"top":0,"width":432,"height":288},
+ "chartArea": {"left":144,"top":0,"width":427,"height":283},
+ "plotArea": {"left":7,"top":7,"width":410,"height":266,"insideLeft":24.529,"insideTop":7,"insideWidth":392.471,"insideHeight":253.802},
+ "hasTitle": false,
+ "hasLegend": false,
+ "axes": [{"type":1,"group":1,"left":25,"top":261,"width":392,"height":18,"crosses":-4105,"crossesAt":1,"reversePlotOrder":false,"axisBetweenCategories":true,"tickLabelSpacing":1,"tickLabelSpacingIsAuto":true,"tickMarkSpacing":1,"categoryType":-4105,"baseUnit":0,"majorTickMark":-4142,"tickLabelPosition":4,"hasMajorGridlines":false,"hasMinorGridlines":false,"tickLabels":{"orientation":-4105,"offset":100,"numberFormat":"General","numberFormatLinked":true,"fontSize":9,"fontName":"Calibri"},"hasTitle":false},{"type":2,"group":1,"left":1,"top":7,"width":24,"height":254,"minimumScale":0,"maximumScale":100,"majorUnit":10,"minorUnit":2,"minimumScaleIsAuto":true,"maximumScaleIsAuto":true,"majorUnitIsAuto":true,"scaleType":-4132,"crosses":-4105,"crossesAt":0,"reversePlotOrder":false,"majorTickMark":-4142,"tickLabelPosition":4,"hasMajorGridlines":true,"hasMinorGridlines":false,"displayUnit":-4142,"tickLabels":{"orientation":-4105,"offset":100,"numberFormat":"General","numberFormatLinked":true,"fontSize":9,"fontName":"Calibri"},"hasTitle":false}],
+ "series": [{"index":1,"name":"Data","chartType":51,"axisGroup":1,"plotOrder":1,"fill":"4472C4","line":"000000","lineWeight":-2147483648,"lineVisible":-1,"markerStyle":-4142,"markerSize":5,"explosion":0,"hasDataLabels":false,"values":[12,45,78,93],"xValues":["A","B","C","D"],"points":[{"left":58.209,"top":230.346,"width":30.758,"height":30.456,"fill":"4472C4","explosion":0},{"left":156.327,"top":146.591,"width":30.758,"height":114.211,"fill":"4472C4","explosion":0},{"left":254.444,"top":62.836,"width":30.758,"height":197.965,"fill":"4472C4","explosion":0},{"left":352.562,"top":24.766,"width":30.758,"height":236.036,"fill":"4472C4","explosion":0}]}],
+ "excelVersion": "16.0 build 20430",
+ "repaired": false,
+ "png": {"width":720,"height":480,"dpiX":119.99}
+}
