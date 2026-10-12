@@ -63,6 +63,15 @@ public class ClassicChartRenderer implements ChartRenderer {
 
 	private static final String SVG_NS = "http://www.w3.org/2000/svg";
 
+	/**
+	 * The property which, set true, writes a chart's text in its SVG as glyph outlines rather
+	 * than {@code <text>} (CR-037 D6): drawn alike whatever fonts the reader of the SVG has, but
+	 * no longer text in a PDF (not searchable, not selectable) and larger.  False by default.
+	 *
+	 * @since 17.3.3
+	 */
+	public static final String TEXT_AS_SHAPES = "docx4j.chart.render.textAsShapes";
+
 	public ClassicChartRenderer() {
 	}
 
@@ -203,8 +212,9 @@ public class ClassicChartRenderer implements ChartRenderer {
 			SVGGeneratorContext ctx = SVGGeneratorContext.createDefault(doc);
 			ctx.setComment(null);
 			ctx.setPrecision(4);
-			// text as text, under the families docx4j's mapping gives FOP (D6)
-			SVGGraphics2D g = new SVGGraphics2D(ctx, false);
+			// text as text, under the families docx4j's mapping gives FOP; outlines on the
+			// property (D6), as for a metafile's
+			SVGGraphics2D g = new SVGGraphics2D(ctx, org.docx4j.Docx4jProperties.getProperty(TEXT_AS_SHAPES, false));
 			g.setSVGCanvasSize(new Dimension((int) Math.max(1, Math.ceil(width)), (int) Math.max(1, Math.ceil(height))));
 			draw(chart, theme, fonts, width, height, g);
 			Element root = doc.getDocumentElement();
@@ -214,6 +224,9 @@ public class ClassicChartRenderer implements ChartRenderer {
 			root.setAttributeNS(null, "height", length(height) + "pt");
 			root.setAttributeNS(null, "viewBox", "0 0 " + length(width) + " " + length(height));
 			root.setAttributeNS(null, "preserveAspectRatio", "none");
+			// each text is placed and split at its kerned pairs already (Drawing): a browser
+			// kerns an SVG's text and makes ligatures by default, FOP doesn't, and neither should
+			root.setAttributeNS(null, "style", "font-kerning: none; font-variant-ligatures: none");
 			return doc;
 		} catch (RuntimeException e) {
 			log.warn("Could not draw the chart as SVG: " + e, e);

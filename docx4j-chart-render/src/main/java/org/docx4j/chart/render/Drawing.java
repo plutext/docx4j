@@ -171,13 +171,45 @@ final class Drawing {
 				g.setColor(t.colour);
 				g.setFont(t.font);
 				if (t.angle == 0) {
-					g.drawString(t.text, (float) t.x, (float) t.baseline);
+					drawString(g, t, raster);
 				} else {
 					AffineTransform saved = g.getTransform();
 					g.rotate(Math.toRadians(t.angle), t.x, t.baseline);
-					g.drawString(t.text, (float) t.x, (float) t.baseline);
+					drawString(g, t, raster);
 					g.setTransform(saved);
 				}
+			}
+		}
+	}
+
+	/**
+	 * A text drawn: kerned, for anything but a picture, as runs split at each kerned pair, each
+	 * from where the kerned layout puts its first glyph.  An SVG's text carries no kerning, so
+	 * FOP and a browser draw a {@code <text>} unkerned, a kerned title 1.1pt wider than Office's
+	 * ("Y-Values" at 14pt, CR-037 phase 3); as runs, each is drawn at its own advances (the
+	 * mapped font's, the same file) from its kerned place.  A picture is drawn by AWT, kerned.
+	 */
+	private static void drawString(Graphics2D g, Text t, boolean raster) {
+		float x = (float) t.x, y = (float) t.baseline;
+		if (raster || !java.awt.font.TextAttribute.KERNING_ON.equals(t.font.getAttributes().get(java.awt.font.TextAttribute.KERNING))
+				|| t.text.length() < 2) {
+			g.drawString(t.text, x, y);
+			return;
+		}
+		char[] cs = t.text.toCharArray();
+		java.awt.font.GlyphVector gv = t.font.layoutGlyphVector(g.getFontRenderContext(), cs, 0, cs.length,
+				java.awt.Font.LAYOUT_LEFT_TO_RIGHT);
+		if (gv.getNumGlyphs() != cs.length) {
+			g.drawString(t.text, x, y);
+			return;
+		}
+		int start = 0;
+		for (int i = 1; i <= cs.length; i++) {
+			boolean kerned = i < cs.length && Math.abs(gv.getGlyphPosition(i).getX()
+					- gv.getGlyphPosition(i - 1).getX() - gv.getGlyphMetrics(i - 1).getAdvanceX()) > 1e-4;
+			if (i == cs.length || kerned) {
+				g.drawString(new String(cs, start, i - start), x + (float) gv.getGlyphPosition(start).getX(), y);
+				start = i;
 			}
 		}
 	}

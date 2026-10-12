@@ -4,7 +4,9 @@ Status: ACTIVE: phase 0 DONE 2026-10-12; phase 1 DONE 2026-10-12 (Jason: "close 
 start phase 2"): the module, the SPI and the clustered column, 136 of the 141 probes drawn within
 tolerance in every element (§11); phase 2 DONE 2026-10-13: the other eleven types, smoothing
 and date axes, 328 of the 338 probes drawn within tolerance in every element and Excel's axes at
-every swept size but four (§11); phase 3 next.  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
+every swept size but four (§11); phase 3 DONE 2026-10-13 (Jason: "close phase 3"): charts drawn
+in PDF, HTML and pptx output, `ChartImages`; P3 14/14 through PDF on both pathways, P4 13/13
+through SVG-in-HTML, the box probes and the corpora unmoved (§11); phase 4 next.  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
 (integration) of the charts plan.  Do not implement yet."); reviewed the same day by the
 docx4j-13 session (Claude Fable 5.1, at Jason's request): approved with nine amendments, all
 accepted by Jason ("apply all nine") and applied (§8).  D1 to D9 taken as recommended (Jason, 2026-10-12);
@@ -846,3 +848,111 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   date wrapping, a spaced date's 45.  Leader lines with outside labels wait for data labels
   (phase 4, §4.5).  For phase 3: the renderer is drawn into the outputs as is; nothing in phase 3
   needs a new rule.
+
+### Phase 3 (2026-10-13), done: in the outputs, and an API
+
+- **Built**:
+  - `ChartBox` draws: the chart is found from the conversion's current part (a header's chart from
+    the header) through `ChartRef`, and the renderer's SVG goes into the
+    `fo:instream-foreign-object` CR-035 writes (FO, the visitor and the XSLT alike) or is the
+    inline `<svg>` (HTML, both pathways; with `docx4j.convert.out.html.chartAsPng`, an `<img>` of
+    the chart's picture, a data URI at twice the box's pixels: D8).  pptx's SVG-in-HTML calls
+    `SvgExporter.createChart` from its chart template, a `div` at the frame's place holding the
+    SVG.  Where nothing draws the chart (no renderer on the classpath, a chartex chart, a chart
+    `check` refuses) the box stays empty, as in CR-035, and the reasons are logged (A1).
+  - `ChartImages` (core, public, D7): `check(ChartRef)` (the renderer's reasons, and "no
+    renderer" or "chartex" before it), `getSize`, `toSvg`, `writeSvg`, `toImage`,
+    `toPng(ChartRef, dpi)` (PNG bytes), `writePng`, each at the anchor's size or one given; a
+    chart that can't be drawn throws, the reasons in the message.  An xlsx two-cell anchor is
+    sized from its cells (`ChartAnchorSize`: ECMA-376's column width in the Normal font's widest
+    digit, in whole pixels, a default column rounded up to 8 pixels; rows as the file gives them,
+    a height set by hand in whole pixels; hidden ones nothing), on a screen of so many dots an
+    inch, `getSize(chart, dpi)`, 96 (a screen at 100%) unless asked.  **Measured**
+    (`charts/sizes/`: ten probes of Excel's own chart with one thing changed each,
+    `tools/chart_size_probes.py`; Excel's report of each, `tools/excel-chart-size-check.ps1`, Jason's
+    runs 2026-10-13 with the VM's display at 125% and at 100%): Excel lays the sheet out in
+    pixels of the screen.  Widths: **all ten exactly Excel's at 120, nine at 96**; the tenth is
+    GDI's hinting (Calibri 14 at 96 is set at 19 pixels, where its digits are 10 pixels wide, its
+    advances 9.6; docx4j measures 9.46 and rounds to 9).  Heights: a height set by hand is
+    Excel's at both, floored to whole pixels (20pt: 19.5 at 96, 19.8 at 120).  A height not set
+    by hand Excel takes from the Normal font at the screen (Aptos Narrow 11: 15pt at 96, 14.4 at
+    120; Calibri 14: 18.75 and 18; Arial 10: 12.75 and 13.2), which neither the file nor the
+    clones' metrics give (no rounding of the fonts' ascent and descent fits all six: GDI's hinting
+    of the real faces), so docx4j takes the file's, Excel's at the screen that saved it: Excel's
+    own chart, saved at 120, is 252pt high there and 262.2pt at 96.  `ChartAnchorSizeTest`.
+    `ChartBox.forChart(ChartRef)` and `toHtml(width, height)` for an output that places
+    the box itself.  Sample `ChartsAsImages` (docx4j-samples-docx-export-fo).
+  - D6's outlines: `docx4j.chart.render.textAsShapes` writes the SVG's text as glyph outlines
+    (one path a text), as `docx4j.convert.out.metafile.textAsShapes` does a metafile's.
+- **What the outputs needed**, found on P3 and P4 (no new layout rule; the renderer's drawing as
+  phase 2 left it):
+  - **kerning**: an SVG's `<text>` carries none, so FOP drew P3's kerned title "Y-Values"
+    unkerned, 1.1pt wider than Word's, from a start placed for the kerned width (0.74pt off).
+    `Drawing` now writes a kerned text (for an SVG; a picture is AWT's, kerned) as runs split at
+    each kerned pair, each from its kerned place: 0.05pt from Word's.
+  - **a browser kerns, and makes ligatures**, in an SVG's text by default (Chrome drew P4's legend
+    entry "Y-Values" at 11.97pt, below the kern size and unkerned by PowerPoint, 1.8pt narrower).
+    The SVG's root says `font-kerning: none; font-variant-ligatures: none`, every run being placed
+    already; FOP's Batik reads the style and draws as before.
+  - **families**: Batik names the AWT font's family, the face docx4j's mapper gives FOP
+    (Carlito); the SVG now names after it the face the chart names and its class's generic
+    family, as docx4j's HTML does for a run (`'Carlito', 'Calibri', sans-serif`; `ChartFonts`
+    records the face each family stands for), so a reader of the SVG without Carlito draws
+    Calibri, at the same widths, or at least a face of the class.  Chrome on Linux resolves
+    neither Carlito nor Calibri by name (its own metric-compatibility rules over fontconfig's
+    aliases: Carlito installed, Akasia resolved, measured), so on this machine it now draws a
+    docx's chart in its sans-serif, not its serif.  `FontFallback` knows no class for Aptos, so an
+    Aptos chart's list ends at `'Akasia', 'Aptos'`, as docx4j's HTML of an Aptos run does.  The
+    HTML's `docx4j.convert.out.html.fontFamily` order (document face first) is not applied: a
+    chart is laid out in the mapped face.
+  - **fonts in the PDF**: nothing to do.  `ChartFonts` makes its fonts through
+    `Docx4jDrawFontManager` with the document's mapper, which registers each face it draws as a
+    late fallback, and `FopConfigUtil.declareFallbackFonts` declares those to FOP once the FO is
+    made (CR-011's route for a metafile's fonts, 17.2.0): a chart in DejaVu Serif in a Calibri
+    document, the face named nowhere else, comes out embedded, as text.
+  - **ids**: Batik writes `genericDefs` and numbers clip paths from 1, and one HTML document
+    holds every chart's SVG: each chart's ids, and the references to them, are prefixed with its
+    part's name (`docx4j-chart1-...`).  In FO each `fo:instream-foreign-object` is its own SVG.
+- **The gate** (§4.4, §5; `tools/chart_outputs.py`, the harness's `ChartOutputs`):
+  - **P3** (Word's Insert Chart, 14 documents, every type, two charts in one) through docx4j's PDF
+    against Word's PDFs: **14 of 14 within D4's tolerances in every element, by the visitor and
+    by the XSLT** (texts within 0.26pt, shapes within 0.23pt), the dates in the VM's short date.
+  - **P4** (PowerPoint's, 13) through the SVG-in-HTML, printed by headless Chrome with docx4j's
+    font files given to it: **13 of 13 within the same tolerances** (texts 0.31pt, shapes
+    0.21pt), not the looser ones §4.4 allowed.  Without docx4j's fonts Chrome draws P4's Aptos
+    (Akasia) in its default face, which measures the browser, not docx4j.
+  - **The harness's chart probes** against Word's goldens: 0.9358 line parity, 0.9853 page parity,
+    every line and page as b222's with the box empty, the charts drawn (in a header, in a table
+    cell, floating; seen): their charts have no title, axes or legend, so the drawing adds
+    shapes, not lines.
+  - **The corpora's control**: b224 (HEAD 2d9fc09a4 with phase 3) against b223 (HEAD), the four
+    corpora and the 270 probes: **0 movers, every event count equal, the probes identical row for
+    row** (no corpus document has a chart, so this shows only that nothing else moved;
+    `~/fidelity-cr030/gate-b223-b224.sh`).  HEAD itself, against b222 (CR-035 phase 0's
+    candidate), moves one document, 5361, by 4 lines, not this phase's and not looked into (the
+    fidelity register's `documents/5361.md`).
+  - **Tests**: docx4j-chart-render's `ChartImagesTest` (the API on Word's, PowerPoint's and
+    Excel's charts, a refusal and chartex, the HTML on both pathways, the PNG property, pptx,
+    outlines) and `ChartAnchorSizeTest` (Excel's sizes at 120), and
+    its phase 1 and 2 gates unchanged; docx4j-export-fo-tests' `ChartBoxFoTest` (the chart drawn
+    in its box on both pathways, the box empty without a renderer, the chart's text text in the
+    PDF); docx4j-core-tests' chart tests unchanged (no renderer on its classpath: the box).
+    Maven: docx4j-chart-render 20/0; docx4j-export-fo-tests 792/0 (9 skipped); docx4j-core-tests
+    1545/0 (11 skipped), once `font-substitutes.xml`'s catalogue had Intos Narrow (phase 2's
+    1af3088b3 added its metric row but not its catalogue entry, which `FontSubstitutionTableTest`
+    requires; phase 2 had run the chart tests alone).
+  - **Time**: a chart adds about 10ms to a document's PDF once the JVM is warm (P3's clustered
+    column, 31 against 20ms); `toSvg` 1.1ms, `toPng` at 96 dpi 5ms.
+- **Open**: A chart on a
+  pptx layout or master is looked up in the slide's relationships, as the SVG-in-HTML output
+  does for the other content it takes from them.  Converting P3's clustered column logs four
+  "Parent of org.docx4j.dml.chart.CTRelId is currently org.docx4j.dml.GraphicData" warnings, at
+  HEAD as well: `TraversalUtil.getChildren` gives an `Inline`'s graphic data items as its children
+  (skipping `GraphicData`), so the walk's parent check sees the chart reference's grandparent.
+  Harmless, not phase 3's; left as it is.
+- **Closed** 2026-10-13 (Jason: "close phase 3").  §4.4's gate is met: P3 and P4 within D4's
+  tolerances in every element, the box probes and the corpora unmoved, docx4j-export-fo-tests
+  green; nothing named open in the outputs.  Hand-offs (§9): the MCP tool can now take
+  `ChartImages` (the plan's phase 10); the fidelity register has the two causes and the attempt.
+  For phase 4: the outputs draw whatever `check` passes, so each feature phase 4 draws reaches
+  PDF, HTML and pptx output without more work here.

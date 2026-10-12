@@ -45,6 +45,12 @@ Reading the dumps (measured on all of them, CR-037 section 11):
   radii's ends and the centre, not its arc (use `slice`: 1 and 3 the radii's outer ends, 2 the
   arc's middle, 5 the centre, 4 and 6 the radii's middles, 7 to 9 a doughnut's inner points).
 
+Beside this folder, `charts/waterfall.xlsx` (a copy of docx4j-core-tests' CR-035 fixture: Excel's
+waterfall, a chartex chart) is for `ChartImagesTest`: the open renderer doesn't draw chartex, and
+says so.  `office/`'s documents are also phase 3's gate of the outputs (CR-037 section 11;
+`docx4j-layout-fidelity/tools/chart_outputs.py`): each through docx4j's PDF or SVG-in-HTML, against
+the same Office PDFs.
+
 The docx, Word's and PowerPoint's PDFs, Excel's PNGs (720 × 420 at 432 × 252pt; Excel's own charts
 600 × 361 at 360 × 216) and the full baseline (`baseline.tsv`) are on the share,
 `Office 2016/office_charts/cr037`.

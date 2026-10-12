@@ -971,6 +971,15 @@ draws charts, and measures Office's drawings of them as numbers.
   or a PDF's chart box), `baseline DIR` (Office against Office over a run: the tolerances), and
   `fixtures DIR OUT` (the oracle for the build, `docx4j-chart-render/src/test/resources/charts/render/`).  Office's
   object model reports elements from 4pt inside the chart's box (`ORIGIN`; CR-037 §11).
+- `tools/chart_outputs.py --cp "$CP" --out DIR --fonts FONTDIR` is phase 3's gate: Office's own
+  charts (the oracle's `office/`: Word's Insert Chart of each type, PowerPoint's) through docx4j's
+  outputs (`org.docx4j.fidelity.corpus.ChartOutputs`: the docx through the PDF output by the
+  visitor and by the XSLT, the pptx through the SVG-in-HTML output printed by headless Chrome),
+  each chart read with `chart_trace.py` and held to CR-037 D4's tolerances against Word's or
+  PowerPoint's PDF.  `FONTDIR` holds docx4j's font jars' files unzipped (`fonts/` of
+  docx4j-export-fo-fonts-theme2023, -crosextra, -croscore), given to Chrome through fontconfig:
+  the HTML's text is drawn in whatever fonts the browser has.  The classpath needs
+  docx4j-chart-render; the docx's dates in format 14 are drawn in the VM's short date.
 
 ## JUnit
 

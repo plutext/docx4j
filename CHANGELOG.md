@@ -68,6 +68,11 @@ Changes in Version 17.3.3
   docx4j.properties setting docx4j.chart.render.shortDate.  CR-037.
 - docx4j-export-fo-fonts-theme2023 adds Intos Narrow, a metric clone of Aptos Narrow (Excel 365's
   body font), which mapped to Arimo before.  CR-037.
+- Charts are drawn in PDF output (as SVG, text as text; outlines with
+  docx4j.chart.render.textAsShapes), HTML output (an inline svg; a PNG with
+  docx4j.convert.out.html.chartAsPng) and pptx's SVG-in-HTML, where docx4j-chart-render is on the
+  classpath (docx4j-export-fo brings it); a chart it doesn't draw yet keeps its empty box.  New
+  ChartImages: any chart in a docx, pptx or xlsx as SVG or PNG, and why one isn't drawn.  CR-037.
 - New docx4j.properties setting docx4j.dcterms.write (default false): true sets dcterms:modified
   to the current time on save, and dcterms:created on a new document.  CR-036.
 - A TOC update no longer adds another Hyperlink style to the styles part each time (TocStyles

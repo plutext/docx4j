@@ -64,6 +64,8 @@ public final class ChartFonts {
 	/** the faces this object has mapped */
 	private final Set<String> mapped = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
 	private final Map<String, Font> fonts = new ConcurrentHashMap<String, Font>();
+	/** the faces each AWT family drawn stands for (Carlito: Calibri) */
+	private final Map<String, Set<String>> facesByFamily = new ConcurrentHashMap<String, Set<String>>();
 
 	private ChartFonts(String majorLatin, String minorLatin, Mapper mapper) {
 		Docx4jProperties.DefaultTheme t = Docx4jProperties.getDefaultTheme();
@@ -167,7 +169,19 @@ public final class ChartFonts {
 		map(face);
 		String key = face + "|" + bold + "|" + italic;
 		Font base = fonts.computeIfAbsent(key, k -> manager.createAWTFont(null, () -> face, 1, bold, italic));
+		if (!face.equalsIgnoreCase(base.getFamily())) {
+			facesByFamily.computeIfAbsent(base.getFamily(), k -> Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>()))
+					.add(face);
+		}
 		return base.deriveFont((float) size);
+	}
+
+	/**
+	 * The faces the AWT families this object has made fonts of stand for: Carlito, Calibri
+	 * (the family an SVG of the chart names, and the face the chart names)
+	 */
+	Map<String, Set<String>> facesByFamily() {
+		return facesByFamily;
 	}
 
 	/**

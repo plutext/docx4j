@@ -1,0 +1,11 @@
+name	what
+s0-base	Excel's own, unchanged
+s1-widths	columns H and I 20.78 characters, L 3
+s2-heights	rows 7 and 8 30pt, row 11 hidden
+s3-hidden-column	column K hidden
+s4-calibri-14	the Normal font Calibri 14 (the sheet's default row height left at 14.4)
+s5-arial-10	the Normal font Arial 10
+s6-default-width	the sheet's defaultColWidth 15.78
+s7-base-width	the sheet's baseColWidth 12
+s8-default-height	the sheet's defaultRowHeight 20 with customHeight
+s9-offsets	the anchor's offsets: from G+30pt, row 2+10pt to O+40pt, row 19+2pt

@@ -558,9 +558,10 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 
 		} else if (org.docx4j.model.chart.ChartBox.isChartReference(o)) {
 			/* A chart (c:chart; or cx:chart, where a user prefers chartex's mc:Choice): its
-			 * box, an empty space of the drawing's extent, until docx4j draws charts.  Until
-			 * 17.3.3 it fell to the catch-all below, which wrote nothing, so the text after a
-			 * chart moved up into its place.  @since 17.3.3 (CR-035 phase 0) */
+			 * box, a space of the drawing's extent, holding the chart drawn where
+			 * docx4j-chart-render draws it (CR-037 phase 3).  Until 17.3.3 it fell to the
+			 * catch-all below, which wrote nothing, so the text after a chart moved up into
+			 * its place.  @since 17.3.3 (CR-035 phase 0) */
 			DocumentFragment box = createChartBox(conversionContext, anchorOrInline);
 			anchorOrInline = null;
 			if (box != null) {

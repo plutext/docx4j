@@ -47,11 +47,11 @@ import org.w3c.dom.NodeList;
 import jakarta.xml.bind.JAXBElement;
 
 /**
- * A chart keeps its space in the FO and the PDF, in both pathways, until docx4j draws charts
- * (CR-035 phase 0): an {@code fo:instream-foreign-object} of the drawing's extent holding an
- * empty SVG, inline in its line, or floated as an anchored picture is.  Until 17.3.3 the chart
- * was dropped ("Need to handle ...CTRelId"; the XSLT's "without pic:pic") and the text after it
- * moved up into its place.
+ * A chart keeps its space in the FO and the PDF, in both pathways (CR-035 phase 0): an
+ * {@code fo:instream-foreign-object} of the drawing's extent, inline in its line, or floated as
+ * an anchored picture is; and it is drawn there, as SVG, by docx4j-chart-render (CR-037 phase 3),
+ * the box left empty where no renderer draws it.  Until 17.3.3 the chart was dropped ("Need to
+ * handle ...CTRelId"; the XSLT's "without pic:pic") and the text after it moved up into its place.
  */
 public class ChartBoxFoTest extends AbstractXSLFOTest {
 
@@ -148,21 +148,66 @@ public class ChartBoxFoTest extends AbstractXSLFOTest {
 		return y;
 	}
 
+	/** The box's frame: an fo:instream-foreign-object of the extent, holding one SVG */
+	private static Element boxSvg(org.w3c.dom.Document fo, int flags) {
+		NodeList ifos = fo.getElementsByTagNameNS(FO, "instream-foreign-object");
+		assertEquals(pathway(flags), 1, ifos.getLength());
+		Element ifo = (Element) ifos.item(0);
+		assertEquals(pathway(flags), "432pt", ifo.getAttribute("content-width"));
+		assertEquals(pathway(flags), "252pt", ifo.getAttribute("content-height"));
+		assertEquals(pathway(flags), "non-uniform", ifo.getAttribute("scaling"));
+		assertEquals(pathway(flags), "Chart 1", ifo.getAttributeNS(FOX, "alt-text"));
+		NodeList svg = ifo.getElementsByTagNameNS(SVG, "svg");
+		assertEquals(pathway(flags), 1, svg.getLength());
+		return (Element) svg.item(0);
+	}
+
 	@Test
-	public void inlineChartIsAnEmptySvgOfItsExtent() throws Exception {
+	public void inlineChartIsDrawnInItsExtent() throws Exception {
 
 		for (int flags : PATHWAYS) {
-			org.w3c.dom.Document fo = fo(doc(false), flags);
-			NodeList ifos = fo.getElementsByTagNameNS(FO, "instream-foreign-object");
-			assertEquals(pathway(flags), 1, ifos.getLength());
-			Element ifo = (Element) ifos.item(0);
-			assertEquals(pathway(flags), "432pt", ifo.getAttribute("content-width"));
-			assertEquals(pathway(flags), "252pt", ifo.getAttribute("content-height"));
-			assertEquals(pathway(flags), "non-uniform", ifo.getAttribute("scaling"));
-			assertEquals(pathway(flags), "Chart 1", ifo.getAttributeNS(FOX, "alt-text"));
-			NodeList svg = ifo.getElementsByTagNameNS(SVG, "svg");
-			assertEquals(pathway(flags), 1, svg.getLength());
-			assertEquals(pathway(flags), 0, ((Element) svg.item(0)).getChildNodes().getLength());
+			Element svg = boxSvg(fo(doc(false), flags), flags);
+			assertEquals(pathway(flags), "432pt", svg.getAttribute("width"));
+			assertEquals(pathway(flags), "0 0 432 252", svg.getAttribute("viewBox"));
+			List<String> texts = new java.util.ArrayList<>();
+			NodeList t = svg.getElementsByTagNameNS(SVG, "text");
+			for (int i = 0; i < t.getLength(); i++) texts.add(t.item(i).getTextContent());
+			for (String s : new String[] { "Category 1", "Category 4", "Series 1", "Series 3" }) {
+				assertTrue(pathway(flags) + s + " in " + texts, texts.contains(s));
+			}
+		}
+	}
+
+	@Test
+	public void withoutARendererTheBoxStaysEmpty() throws Exception {
+
+		org.docx4j.model.chart.ChartRenderer was = org.docx4j.model.chart.ChartRenderer.getRenderer();
+		assertNotNull("docx4j-chart-render is export-fo's dependency", was);
+		org.docx4j.model.chart.ChartRenderer.setRenderer(null);
+		try {
+			for (int flags : PATHWAYS) {
+				Element svg = boxSvg(fo(doc(false), flags), flags);
+				assertEquals(pathway(flags), 0, svg.getChildNodes().getLength());
+			}
+		} finally {
+			org.docx4j.model.chart.ChartRenderer.setRenderer(was);
+		}
+	}
+
+	@Test
+	public void theChartsTextIsTextInThePdf() throws Exception {
+
+		for (int flags : PATHWAYS) {
+			FOSettings foSettings = Docx4J.createFOSettings();
+			foSettings.setOpcPackage(doc(false));
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			Docx4J.toFO(foSettings, baos, flags);
+			try (PDDocument d = Loader.loadPDF(baos.toByteArray())) {
+				String text = new PDFTextStripper().getText(d);
+				for (String s : new String[] { "Category 1", "Series 2" }) {
+					assertTrue(pathway(flags) + s + " in " + text, text.contains(s));
+				}
+			}
 		}
 	}
 

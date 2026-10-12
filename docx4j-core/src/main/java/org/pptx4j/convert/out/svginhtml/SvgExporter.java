@@ -42,6 +42,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
+import org.docx4j.model.chart.ChartBox;
+import org.docx4j.model.chart.ChartRef;
+import org.docx4j.openpackaging.parts.Part;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -505,6 +508,81 @@ public class SvgExporter {
     }
     
     
+    /**
+     * A chart's frame ({@code p:graphicFrame} holding a {@code c:chart}, or a {@code cx:chart}):
+     * a box at the frame's place and size, holding the chart drawn as SVG where docx4j's chart
+     * renderer (docx4j-chart-render) draws it, empty otherwise (CR-037 phase 3; until 17.3.3 it
+     * fell to the catch-all, a red "NOT IMPLEMENTED: support for graphicFrame").
+     *
+     * @since 17.3.3
+     */
+    public static DocumentFragment createChart(SvgConversionContext context, NodeIterator frameIt) {
+
+    	Document d = XmlUtils.getNewDocumentBuilder().newDocument();
+    	Element div = d.createElement("div");
+    	d.appendChild(div);
+    	try {
+    		Node n = frameIt == null ? null : frameIt.nextNode();
+    		// a plain DOM copy: ChartRef reads the frame with getElementsByTagNameNS
+    		Element frame = n == null ? null : (Element) d.importNode(n, true);
+    		long[] xfrm = frame == null ? new long[4] : xfrm(frame);
+    		long x = Math.round(xfrm[0] * 96.0 / 914400), y = Math.round(xfrm[1] * 96.0 / 914400);
+    		long cx = Math.round(xfrm[2] * 96.0 / 914400), cy = Math.round(xfrm[3] * 96.0 / 914400);
+    		div.setAttribute("style", "position: absolute; width:" + cx + "px; height:" + cy + "px; left:" + x + "px; top:" + y + "px;");
+
+    		Part host = context == null || context.getResolvedLayout() == null || context.getResolvedLayout().relationships == null
+    				? null : (Part) context.getResolvedLayout().relationships.getSourceP();
+    		ChartRef chart = frame == null ? null : ChartRef.of(host, frame);
+    		ChartBox box = chart == null ? null : ChartBox.forChart(chart);
+    		if (box != null) {
+    			div.setAttribute("role", "img");
+    			div.setAttribute("aria-label", box.getAltText());
+    			if (box.isDrawn()) {
+    				DocumentFragment svg = box.toHtml(Long.toString(cx), Long.toString(cy));
+    				div.appendChild(d.importNode(svg, true));
+    				div.removeAttribute("role");
+    				div.removeAttribute("aria-label");
+    			}
+    		} else {
+    			div.setAttribute("role", "img");
+    			div.setAttribute("aria-label", "Chart");
+    		}
+    	} catch (Exception e) {
+    		log.error("Couldn't draw a chart's frame: " + e.getMessage(), e);
+    	}
+    	DocumentFragment f = d.createDocumentFragment();
+    	f.appendChild(d.getDocumentElement());
+    	return f;
+    }
+
+    /** a frame's p:xfrm: off x, y and ext cx, cy, EMU */
+    private static long[] xfrm(Element frame) {
+    	long[] v = new long[4];
+    	org.w3c.dom.NodeList l = frame.getElementsByTagNameNS("http://schemas.openxmlformats.org/presentationml/2006/main", "xfrm");
+    	if (l.getLength() == 0) return v;
+    	Element xfrm = (Element) l.item(0);
+    	for (Node c = xfrm.getFirstChild(); c != null; c = c.getNextSibling()) {
+    		if (!(c instanceof Element)) continue;
+    		Element e = (Element) c;
+    		if ("off".equals(e.getLocalName())) {
+    			v[0] = number(e.getAttribute("x"));
+    			v[1] = number(e.getAttribute("y"));
+    		} else if ("ext".equals(e.getLocalName())) {
+    			v[2] = number(e.getAttribute("cx"));
+    			v[3] = number(e.getAttribute("cy"));
+    		}
+    	}
+    	return v;
+    }
+
+    private static long number(String s) {
+    	try {
+    		return s == null || s.isEmpty() ? 0 : Long.parseLong(s);
+    	} catch (NumberFormatException e) {
+    		return 0;
+    	}
+    }
+
     /**
      * Connection (line)
      */

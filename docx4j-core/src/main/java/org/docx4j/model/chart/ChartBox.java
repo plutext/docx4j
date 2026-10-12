@@ -28,6 +28,7 @@ import org.docx4j.dml.wordprocessingDrawing.Anchor;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.images.WordXmlPictureE20;
+import org.docx4j.openpackaging.parts.Part;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -37,17 +38,21 @@ import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 
 /**
- * The space a chart takes in the FO and HTML outputs, until docx4j draws charts: an empty box
- * of the drawing's extent ({@code wp:extent}), placed as a picture of that size would be, inline
- * in its line or, for a {@code wp:anchor}, floating through the same anchor hints a picture
- * gets.  Until 17.3.3 every output dropped a chart without keeping its space, so the text after
- * it moved up into its place and the pages broke where Word's don't (CR-035 phase 0).
+ * A chart in the FO and HTML outputs: the box of the drawing's extent ({@code wp:extent}),
+ * placed as a picture of that size would be, inline in its line or, for a {@code wp:anchor},
+ * floating through the same anchor hints a picture gets, and the chart drawn in it by the
+ * {@link ChartRenderer} on the classpath (docx4j-chart-render's, which docx4j-export-fo brings;
+ * CR-037 phase 3).  Where none draws it (no renderer, a chart it refuses, a chartex chart) the
+ * box stays empty, so the chart keeps its space.  Until 17.3.3 every output dropped a chart
+ * without keeping its space, so the text after it moved up into its place and the pages broke
+ * where Word's don't (CR-035 phase 0).
  *
- * <p>In FO the box is an {@code fo:instream-foreign-object} holding an empty SVG, sized as a
- * picture's {@code fo:instream-foreign-object} is, with the chart's name as its
- * {@code fox:alt-text}; the drawing, when docx4j can make one, goes into the same element.  In
- * HTML it is an empty inline {@code <svg>}, sized as a picture's {@code <img>} is (its points as
- * pixels), with the name as its {@code aria-label}.</p>
+ * <p>In FO the box is an {@code fo:instream-foreign-object}, sized as a picture's is, with the
+ * chart's name as its {@code fox:alt-text}, holding the chart's SVG (FOP draws it as vectors, its
+ * text as text) or an empty one.  In HTML it is an inline {@code <svg>} (or, with
+ * {@link #HTML_PNG}, an {@code <img>} of the chart's picture), sized as a picture's {@code <img>}
+ * is (its points as pixels), with the name as its {@code aria-label}; each chart's SVG ids are
+ * prefixed with its part's name, since one document holds them all.</p>
  *
  * <p>Used for a {@code c:chart} and, where a user prefers chartex's {@code mc:Choice}
  * ({@code docx4j.jaxb.mc.preferChoice}), a {@code cx:chart}.  By default a chartex chart's
@@ -69,6 +74,12 @@ public final class ChartBox {
 	private final double heightPt;
 	private final String altText;
 	private final Anchor anchor;
+	/** the chart drawn (CR-037 phase 3), its box's size; null: the box stays empty */
+	private Document drawing;
+	/** the chart drawn */
+	private ChartRef chart;
+	/** the chart drawn: its part's name, for the ids of its SVG in HTML */
+	private String chartName;
 
 	private ChartBox(double widthPt, double heightPt, String altText, Anchor anchor) {
 		this.widthPt = widthPt;
@@ -159,8 +170,11 @@ public final class ChartBox {
 	 * @return null where the drawing has no extent (nothing is written, as before 17.3.3)
 	 */
 	public static DocumentFragment createXslFo(AbstractWmlConversionContext context, Object anchorOrInline) {
-		ChartBox box = of(anchorOrInline);
-		return box == null ? null : box.toXslFo(context);
+		Object o = anchorOrInline instanceof NodeIterator ? unmarshal((NodeIterator) anchorOrInline) : anchorOrInline;
+		ChartBox box = of(o);
+		if (box == null) return null;
+		box.draw(context == null ? null : context.getCurrentPart(), o);
+		return box.toXslFo(context);
 	}
 
 	/** As {@link #createXslFo(AbstractWmlConversionContext, Object)}, for the XSLT */
@@ -188,6 +202,7 @@ public final class ChartBox {
 		Object o = anchorOrInline instanceof NodeIterator ? unmarshal((NodeIterator) anchorOrInline) : anchorOrInline;
 		ChartBox box = of(o);
 		if (box == null) return null;
+		box.draw(context == null ? null : context.getCurrentPart(), o);
 		DocumentFragment f = box.toHtml();
 		if (context != null && org.docx4j.Docx4jProperties.getProperty(HTML_DATA_TABLE, false)) {
 			Element table = dataTable(f.getOwnerDocument(), context.getCurrentPart(), o);
@@ -237,6 +252,52 @@ public final class ChartBox {
 		return createHtml(context, (Object) wpInline);
 	}
 
+	/**
+	 * The chart drawn into this box by the {@link ChartRenderer} on the classpath
+	 * (docx4j-chart-render's), where there is one and it draws the chart; else the box stays
+	 * empty.  A chart it refuses (a structural feature it doesn't draw) is logged with its
+	 * reasons, one it draws simplified likewise (CR-037 phase 3).
+	 *
+	 * @param host the part whose relationships hold the chart (the conversion's current part)
+	 * @return whether the chart was drawn
+	 */
+	boolean draw(Part host, Object anchorOrInline) {
+		return draw(ChartRef.of(host, anchorOrInline));
+	}
+
+	private boolean draw(ChartRef ref) {
+		drawing = ChartImages.svg(ref, widthPt, heightPt);
+		if (drawing != null) {
+			chart = ref;
+			String n = ref.getChartPart().getPartName().getName();
+			chartName = n.substring(n.lastIndexOf('/') + 1).replace(".xml", "").replaceAll("[^A-Za-z0-9_-]", "_");
+		}
+		return drawing != null;
+	}
+
+	/**
+	 * The box of the chart a reference names, its size the reference's ({@link ChartImages#getSize}),
+	 * drawn where the chart can be: for an output that places the box itself (a pptx's frame in
+	 * SVG-in-HTML).
+	 *
+	 * @return null where the chart has no size
+	 * @since 17.3.3 (CR-037 phase 3)
+	 */
+	public static ChartBox forChart(ChartRef chart) {
+		java.awt.geom.Dimension2D size = ChartImages.getSize(chart);
+		if (size == null) return null;
+		String alt = chart.getDescription() != null && !chart.getDescription().trim().isEmpty() ? chart.getDescription().trim()
+				: chart.getName() != null && !chart.getName().trim().isEmpty() ? chart.getName().trim() : "Chart";
+		ChartBox box = new ChartBox(size.getWidth(), size.getHeight(), alt, null);
+		box.draw(chart);
+		return box;
+	}
+
+	/** @return whether the chart is drawn in this box (rather than the box left empty) */
+	public boolean isDrawn() {
+		return drawing != null;
+	}
+
 	/** This box as FO; see {@link #createXslFo(AbstractWmlConversionContext, Object)} */
 	public DocumentFragment toXslFo(AbstractWmlConversionContext context) {
 
@@ -249,7 +310,8 @@ public final class ChartBox {
 		ifo.setAttribute("content-height", length(heightPt) + "pt");
 		ifo.setAttribute("scaling", "non-uniform");
 		ifo.setAttributeNS(FOX_NS, "fox:alt-text", altText);
-		ifo.appendChild(svg(d, length(widthPt) + "pt", length(heightPt) + "pt"));
+		ifo.appendChild(drawing != null ? d.importNode(drawing.getDocumentElement(), true)
+				: svg(d, length(widthPt) + "pt", length(heightPt) + "pt"));
 
 		WordXmlPictureE20.stampAnchorHints(ifo, anchor, context);
 
@@ -258,20 +320,118 @@ public final class ChartBox {
 		return f;
 	}
 
-	/** This box as HTML; see {@link #createHtml(AbstractWmlConversionContext, Object)} */
+	/**
+	 * The property which, set true, writes a drawn chart in HTML as a PNG picture (an
+	 * {@code <img>} with a data URI, at twice the box's pixels) rather than an inline SVG
+	 * (CR-037 D8).  False by default.
+	 *
+	 * @since 17.3.3
+	 */
+	public static final String HTML_PNG = "docx4j.convert.out.html.chartAsPng";
+
+	/**
+	 * This box as HTML; see {@link #createHtml(AbstractWmlConversionContext, Object)}.  A
+	 * drawn chart is its SVG (or, with {@link #HTML_PNG}, its picture), sized as a picture's
+	 * {@code <img>} is: its points as pixels.
+	 */
 	public DocumentFragment toHtml() {
+		// a picture's <img> gives its points as pixels (AbstractWordXmlPicture), so the same here
+		return toHtml(Long.toString(Math.round(widthPt)), Long.toString(Math.round(heightPt)));
+	}
+
+	/**
+	 * This box as HTML, as {@link #toHtml()}, its width and height as given (an attribute's
+	 * value: pixels, or a length)
+	 *
+	 * @since 17.3.3 (CR-037 phase 3)
+	 */
+	public DocumentFragment toHtml(String w, String h) {
 
 		Document d = XmlUtils.getNewDocumentBuilder().newDocument();
-		// a picture's <img> gives its points as pixels (AbstractWordXmlPicture), so the same here
-		Element svg = svg(d, Long.toString(Math.round(widthPt)), Long.toString(Math.round(heightPt)));
-		svg.setAttribute("role", "img");
-		svg.setAttribute("aria-label", altText);
-		d.appendChild(svg);
+		Element e = null;
+		if (drawing != null && org.docx4j.Docx4jProperties.getProperty(HTML_PNG, false)) {
+			e = png(d, w, h);
+		}
+		if (e == null && drawing != null) {
+			e = (Element) d.importNode(drawing.getDocumentElement(), true);
+			e.setAttribute("width", w);
+			e.setAttribute("height", h);
+			// one document holds every chart's SVG, so each chart's ids are its own
+			prefixIds(e, "docx4j-" + chartName + "-");
+		}
+		if (e == null) {
+			e = svg(d, w, h);
+		}
+		boolean img = "img".equals(e.getNodeName());
+		if (!img) e.setAttribute("role", "img");
+		e.setAttribute(img ? "alt" : "aria-label", altText);
+		d.appendChild(e);
 
 		DocumentFragment f = d.createDocumentFragment();
 		f.appendChild(d.getDocumentElement());
 		return f;
 	}
+
+	/** The drawn chart as an {@code <img>} of its picture, a data URI; null where it can't be made */
+	private Element png(Document d, String w, String h) {
+		java.awt.image.BufferedImage image = ChartImages.image(chart, widthPt, heightPt, 2 * 96);
+		if (image == null) return null;
+		java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+		try {
+			javax.imageio.ImageIO.write(image, "png", out);
+		} catch (java.io.IOException e) {
+			log.warn("Couldn't write the chart " + chart.getName() + " as PNG: " + e.getMessage());
+			return null;
+		}
+		Element img = d.createElement("img");
+		img.setAttribute("src", "data:image/png;base64," + java.util.Base64.getEncoder().encodeToString(out.toByteArray()));
+		img.setAttribute("width", w);
+		img.setAttribute("height", h);
+		return img;
+	}
+
+	/**
+	 * Each id in the SVG prefixed, and each reference to one ({@code url(#id)}, {@code #id}):
+	 * Batik numbers a drawing's clip paths from 1, and an HTML document holds every chart's
+	 */
+	private static void prefixIds(Element svg, String prefix) {
+		java.util.Set<String> ids = new java.util.HashSet<>();
+		collectIds(svg, ids);
+		if (!ids.isEmpty()) renameIds(svg, ids, prefix);
+	}
+
+	private static void collectIds(Element e, java.util.Set<String> ids) {
+		if (e.hasAttribute("id")) ids.add(e.getAttribute("id"));
+		for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element) collectIds((Element) n, ids);
+		}
+	}
+
+	private static void renameIds(Element e, java.util.Set<String> ids, String prefix) {
+		org.w3c.dom.NamedNodeMap attrs = e.getAttributes();
+		for (int i = 0; i < attrs.getLength(); i++) {
+			org.w3c.dom.Attr a = (org.w3c.dom.Attr) attrs.item(i);
+			String v = a.getValue();
+			if ("id".equals(a.getName())) {
+				a.setValue(prefix + v);
+			} else if (v.startsWith("#") && ids.contains(v.substring(1))) {
+				a.setValue("#" + prefix + v.substring(1));
+			} else if (v.contains("url(#")) {
+				StringBuilder b = new StringBuilder();
+				java.util.regex.Matcher m = java.util.regex.Pattern.compile("url\\(#([^)]*)\\)").matcher(v);
+				while (m.find()) {
+					m.appendReplacement(b, java.util.regex.Matcher.quoteReplacement(
+							ids.contains(m.group(1)) ? "url(#" + prefix + m.group(1) + ")" : m.group()));
+				}
+				m.appendTail(b);
+				a.setValue(b.toString());
+			}
+		}
+		for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element) renameIds((Element) n, ids, prefix);
+		}
+	}
+
 
 	private Element svg(Document d, String width, String height) {
 		Element svg = d.createElementNS(SVG_NS, "svg");

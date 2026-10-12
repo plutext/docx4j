@@ -414,6 +414,10 @@
            jar="docx4j-export-fo-fonts-theme2023"
            packages="none: upstream is https://github.com/muglug/intos"
            scripts="Latin, Greek, Cyrillic"/>
+    <clone name="Intos Narrow" alsoKnownAs="Intos Narrow Regular" licence="OFL-1.1"
+           jar="docx4j-export-fo-fonts-theme2023"
+           packages="none: upstream is https://github.com/muglug/intos"
+           scripts="Latin, Greek, Cyrillic"/>
     <clone name="Akasia Light" licence="OFL-1.1"
            jar="docx4j-export-fo-fonts-theme2023"
            packages="none: upstream is https://codeberg.org/bloudraad/akasia (v0.0.2)"

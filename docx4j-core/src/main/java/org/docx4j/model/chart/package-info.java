@@ -36,7 +36,9 @@
  *     differ.</li>
  * <li>Both models have a versioned JSON form ({@code toJson()}), which docx4j's TypeScript and
  *     Python ports compare against, and which describes a chart to a tool.</li>
- * <li>{@link org.docx4j.model.chart.ChartBox} keeps a chart's space in the PDF and HTML outputs.</li>
+ * <li>{@link org.docx4j.model.chart.ChartBox} keeps a chart's space in the PDF and HTML outputs, and holds
+ *     the chart drawn there where docx4j-chart-render draws it.</li>
+ * <li>{@link org.docx4j.model.chart.ChartImages}: any chart as SVG or PNG, and why one isn't drawn.</li>
  * <li>{@link org.docx4j.model.chart.ChartDataEditor} edits a chart's data as Excel and Word do: the
  *     cells, the table, the references and the caches in step, in an xlsx or in the workbook
  *     embedded with a chart in a docx or pptx.</li>
