@@ -2,7 +2,7 @@
 
 Status: ACTIVE: phase 0 DONE 2026-10-12; phase 1 STARTED 2026-10-12 (Jason: "add the extra
 axis-height probe set; start phase 1"): the module, the SPI and the clustered column's frame
-built, 86 of the 95 probes drawn within tolerance in every element (§11).  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
+built; with R11 and R12 run, 111 of the 126 probes drawn within tolerance in every element (§11).  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
 (integration) of the charts plan.  Do not implement yet."); reviewed the same day by the
 docx4j-13 session (Claude Fable 5.1, at Jason's request): approved with nine amendments, all
 accepted by Jason ("apply all nine") and applied (§8).  D1 to D9 taken as recommended (Jason, 2026-10-12);
@@ -374,6 +374,11 @@ departure from §4.1 is all right").
   grid, but Word draws 9pt at 9.14 as well as 9.12 (191 texts), so Office's own spread is
   0.12 + 0.02 = 0.14pt and the tolerance, by the rule above, 0.15pt.  An error in reading
   Office's numbers, corrected from Office's numbers, not from docx4j's.
+  **Pictures, per probe** (2026-10-12, R12): on dense charts (twelve categories in 144pt, bars
+  two pixels wide, labels turned) Excel's picture and Word's PDF differ by up to 0.85% and
+  0.32%, more than the 0.7% and 0.15% set from R1 to R10.  So a probe's picture tolerance is the
+  larger of those and 1.2 times Office's own difference on that probe (the baseline's), the rule
+  above applied probe by probe.
 - **D5. A picture written into the document** for consumers that can't draw charts (the plan's
   D5): Office writes none for a classic chart.  Recommendation: not in this CR; `ChartImages`
   gives a caller the picture to insert, and a method for it can follow if one is asked for.
@@ -534,9 +539,10 @@ three (a constant series, all zeros, one at an edge) by its refinements.
    at 288pt wide are turned 45 degrees, so the plot is shorter than its unit was chosen for (by a
    one-line band the plot is exactly the 84.84pt of Word's column at that size).  A level value
    axis (the bar chart) needs wider spacing (24.75pt refused, 30.75 taken): phase 2's.
-10. **Word drops turned category labels from its PDF** (R3's eight categories at 180 and 288pt
-    wide: Excel's picture has them, turned 45 degrees, Word's PDF has none): for those, Excel's
-    picture and layout are the oracle.
+10. **Word draws category labels turned 45 degrees as glyph outlines** (filled paths in the
+    labels' colour), not text; turned 90 degrees, as text.  (First read, from R3, as "dropped":
+    the trace looks for text.  Corrected on R12.)  For those, Excel's layout and picture, and
+    Word's outlines as ink, are the oracle.
 
 **What phase 0 means for the design** (advice for Jason, 2026-10-12; nothing changed in §4 yet):
 
@@ -622,3 +628,29 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   caps the labels' band on a small plot (R3 at 180 x 108: overlapping on one line; eight
   categories: turned and cut to "C..."; R11 at 90pt high: the band 1.45pt short), the rule for
   which R3 and R11 don't pin.
+- **R12** (run by Jason the same night, 31 probes, nothing failed; baseline over all 196 probes:
+  points within 0.13pt, every value axis agreeing; pictures as above):
+  - **the category labels' ladder**: on one line where each fits its category; wrapped where each
+    word does; turned 45 degrees where the category is at least a line / sin 45 wide (15.54pt at
+    9pt); turned 90 where it is a line wide; else every second label, every third ..., trying
+    again (twelve categories in 144pt: every second, turned 45).  The band: wrapped, a line a line;
+    turned 45, (the widest + a line) x sin 45; turned 90, the widest; each plus 0.634 x size - 4.5.
+    Every R12 probe's band is Office's.
+  - **a small plot caps the band** at 0.56 of the plot area's height: wrapped labels go back on
+    one line, overlapping (R3's 180 x 108); turned ones are cut to the band of one line (at least
+    a character, and an ellipsis: "C..."); a line too tall overlaps the gap below (R11 at 90pt).
+  - **the axis's maximum is padded from the axis's minimum**: a twentieth of (the data's maximum
+    less the axis's minimum), not of the data's range (R12's 1.1 to 4.8 is 0 to 6 by 1, Office's;
+    by the data's range, 0 to 5 by 0.5).  With the length taken with one line of category labels,
+    the rule now agrees with Office on all 137 column probes.
+  - **a label turned 45 degrees**: its rotated line's top corner on the labels' top line, its
+    end's middle over the category's centre (fitted to Word's outlines on seven labels: 0.1pt).
+  - **labels turned 45 degrees push the plot's inside right** where the first would reach past
+    the chart's left: the first category's centre lands 32.0 to 33.8pt into the inner frame
+    (by chart width and category count), and the first label's ink 7.6 to 9.4pt from the chart's
+    edge, neither constant: the rule is not found yet.
+- **The gate after R12**: 126 probes drawn, **111 within tolerance in every element** (94.1% of
+  13,253 elements), the ratchet holding them.  Open (named in the test): the 45-degree push
+  (twelve probes), a plot 1pt high (two: Office's inside 0, ours 0.46) and R2's set maximum (one).
+  Pictures: 109 of the 111 within their tolerance (0.04% to 0.65% off Excel's); the two others
+  are the cut-short labels ("C..." about a point low; 0.81% and 0.65% against 0.7%).

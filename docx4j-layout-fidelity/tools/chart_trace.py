@@ -158,6 +158,7 @@ def read(pdf, page_no):
                     item["width"] = float(el.get("linewidth", "1"))
             items.append(item)
         elif tag == "fill_text":
+            run_no = len(items)
             m = matrix(el.get("transform"))
             col = colour(el)
             alpha = el.get("alpha")
@@ -171,7 +172,7 @@ def read(pdf, page_no):
                     x, y = apply(m, float(g.get("x")), float(g.get("y")))
                     adv = float(g.get("adv", "0")) * size
                     items.append({"tag": "glyph", "char": g.get("unicode", ""), "x": x, "y": y, "adv": adv,
-                                  "dir": (dx, dy), "size": size, "font": face, "colour": col,
+                                  "dir": (dx, dy), "size": size, "font": face, "colour": col, "run": run_no,
                                   "alpha": float(alpha) if alpha is not None else 1.0})
         elif tag in ("fill_image", "fill_shade", "fill_image_mask"):
             # a shading fills its clip; a picture its unit square, within its clip; the clip's outline
@@ -224,7 +225,10 @@ def lines(glyphs):
             same = (g["font"] == p["font"] and abs(g["size"] - p["size"]) < 0.01 and g["colour"] == p["colour"]
                     and abs(across) < 0.5 and abs(g["dir"][0] * p["dir"][1] - g["dir"][1] * p["dir"][0]) < 1e-3)
             gap = along - p["adv"]
-            if same and -0.3 * p["size"] <= gap <= 0.6 * p["size"]:
+            # glyphs of another text run join only where they touch: Word draws each category
+            # label as a run, and narrow categories set them 2.4pt apart (R12)
+            limit = 0.6 * p["size"] if g["run"] == p["run"] else 0.1 * p["size"]
+            if same and -0.3 * p["size"] <= gap <= limit:
                 # (Word writes its spaces; a smaller gap is letter spacing, a gallery style's capitals)
                 if gap > 0.3 * p["size"] and g["char"] != " " and p["char"] != " ":
                     cur["text"] += " "

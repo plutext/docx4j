@@ -164,3 +164,34 @@ r11-bar-w432	R11	432	252	xlsx,docx	2013		36,36		Word's bar chart, 432 by 252pt
 r11-bar-w504	R11	504	252	xlsx,docx	2013		36,36		Word's bar chart, 504 by 252pt
 r11-bar-w576	R11	576	252	xlsx,docx	2013		36,36		Word's bar chart, 576 by 252pt
 r11-bar-w648	R11	648	252	xlsx,docx	2013		36,36		Word's bar chart, 648 by 252pt
+r12-cats4-w144	R12	144	252	xlsx,docx	2013		36,36		4 categories, 144 by 252pt
+r12-cats4-w180	R12	180	252	xlsx,docx	2013		36,36		4 categories, 180 by 252pt
+r12-cats4-w216	R12	216	252	xlsx,docx	2013		36,36		4 categories, 216 by 252pt
+r12-cats4-w288	R12	288	252	xlsx,docx	2013		36,36		4 categories, 288 by 252pt
+r12-cats4-w360	R12	360	252	xlsx,docx	2013		36,36		4 categories, 360 by 252pt
+r12-cats6-w144	R12	144	252	xlsx,docx	2013		36,36		6 categories, 144 by 252pt
+r12-cats6-w180	R12	180	252	xlsx,docx	2013		36,36		6 categories, 180 by 252pt
+r12-cats6-w216	R12	216	252	xlsx,docx	2013		36,36		6 categories, 216 by 252pt
+r12-cats6-w288	R12	288	252	xlsx,docx	2013		36,36		6 categories, 288 by 252pt
+r12-cats6-w360	R12	360	252	xlsx,docx	2013		36,36		6 categories, 360 by 252pt
+r12-cats8-w144	R12	144	252	xlsx,docx	2013		36,36		8 categories, 144 by 252pt
+r12-cats8-w180	R12	180	252	xlsx,docx	2013		36,36		8 categories, 180 by 252pt
+r12-cats8-w216	R12	216	252	xlsx,docx	2013		36,36		8 categories, 216 by 252pt
+r12-cats8-w288	R12	288	252	xlsx,docx	2013		36,36		8 categories, 288 by 252pt
+r12-cats8-w360	R12	360	252	xlsx,docx	2013		36,36		8 categories, 360 by 252pt
+r12-cats12-w144	R12	144	252	xlsx,docx	2013		36,36		12 categories, 144 by 252pt
+r12-cats12-w180	R12	180	252	xlsx,docx	2013		36,36		12 categories, 180 by 252pt
+r12-cats12-w216	R12	216	252	xlsx,docx	2013		36,36		12 categories, 216 by 252pt
+r12-cats12-w288	R12	288	252	xlsx,docx	2013		36,36		12 categories, 288 by 252pt
+r12-cats12-w360	R12	360	252	xlsx,docx	2013		36,36		12 categories, 360 by 252pt
+r12-cats4-w180-h108	R12	180	108	xlsx,docx	2013		36,36		4 categories, 180 by 108pt
+r12-cats4-w180-h144	R12	180	144	xlsx,docx	2013		36,36		4 categories, 180 by 144pt
+r12-cats4-w180-h180	R12	180	180	xlsx,docx	2013		36,36		4 categories, 180 by 180pt
+r12-cats4-w180-h216	R12	180	216	xlsx,docx	2013		36,36		4 categories, 180 by 216pt
+r12-cats8-w216-h108	R12	216	108	xlsx,docx	2013		36,36		8 categories, 216 by 108pt
+r12-cats8-w216-h144	R12	216	144	xlsx,docx	2013		36,36		8 categories, 216 by 144pt
+r12-cats8-w216-h180	R12	216	180	xlsx,docx	2013		36,36		8 categories, 216 by 180pt
+r12-cats8-w216-h216	R12	216	216	xlsx,docx	2013		36,36		8 categories, 216 by 216pt
+r12-words-w180	R12	180	252	xlsx,docx	2013		36,36		one-word categories, 180 by 252pt
+r12-words-w216	R12	216	252	xlsx,docx	2013		36,36		one-word categories, 216 by 252pt
+r12-words-w288	R12	288	252	xlsx,docx	2013		36,36		one-word categories, 288 by 252pt

@@ -200,8 +200,15 @@ final class RenderGate {
 			r.check(family.replace(" ", "").equalsIgnoreCase(our.face.replace(" ", "")),
 					"text \"" + text + "\" face " + our.face + ", Office " + font);
 		}
+		// Word leaves category labels turned 45 degrees out of its PDF (CR-037 §11, finding 10):
+		// ours turned so are Excel's picture's to check, not Word's PDF's
+		boolean word45 = false;
+		for (Object o : Json.list(trace.get("texts"))) {
+			if (Math.abs(Json.number(Json.object(o).get("angle")) + 45) < 1) word45 = true;
+		}
 		for (int i = 0; i < ours.size(); i++) {
-			if (!used[i]) r.check(false, "text \"" + ours.get(i).text + "\" drawn, Office has none");
+			if (used[i] || (!word45 && Math.abs(ours.get(i).angle + 45) < 1)) continue;
+			r.check(false, "text \"" + ours.get(i).text + "\" drawn, Office has none");
 		}
 	}
 
@@ -210,6 +217,13 @@ final class RenderGate {
 		List<Drawing.Area> areas = new ArrayList<>();
 		for (Object o : d.items) if (o instanceof Drawing.Area) areas.add((Drawing.Area) o);
 		boolean[] used = new boolean[areas.size()];
+		// Word draws category labels turned 45 degrees as glyph outlines, not text (finding 10):
+		// those below the plot, in the labels' colour, are Excel's picture's to check
+		String outlines = null;
+		for (Object o : d.items) {
+			if (o instanceof Drawing.Text && Math.abs(((Drawing.Text) o).angle + 45) < 1) outlines = hex(((Drawing.Text) o).colour);
+		}
+		Rectangle2D inside = d.boxes.get("inside");
 		for (Object o : Json.list(trace.get("shapes"))) {
 			Map<String, Object> s = Json.object(o);
 			if (s.get("alpha") != null && Json.number(s.get("alpha")) == 0) continue;
@@ -219,6 +233,7 @@ final class RenderGate {
 				List<Object> b = Json.list(Json.object(p).get("box"));
 				Rectangle2D office = new Rectangle2D.Double(Json.number(b.get(0)), Json.number(b.get(1)),
 						Json.number(b.get(2)) - Json.number(b.get(0)), Json.number(b.get(3)) - Json.number(b.get(1)));
+				if (fill && colour.equals(outlines) && inside != null && office.getMinY() >= inside.getMaxY() - 1) continue;
 				int best = -1;
 				double bestD = Double.MAX_VALUE;
 				for (int i = 0; i < areas.size(); i++) {

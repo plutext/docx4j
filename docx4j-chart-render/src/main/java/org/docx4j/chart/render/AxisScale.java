@@ -27,9 +27,9 @@ import java.util.List;
  * <ul>
  * <li>the minimum is zero where the data's range is more than a sixth of its maximum (all
  *     positive), else the data's minimum less half its range, down to the unit; the maximum is
- *     the data's plus a twentieth of its range, up to the unit (KB 214075); data of either sign
- *     is padded a twentieth at both ends; all negative is mirrored; a constant series counts its
- *     range from zero; all zeros is 0 to 1;</li>
+ *     the data's plus a twentieth of the range from that minimum, up to the unit (KB 214075, which
+ *     has the data's range); data of either sign is padded a twentieth at both ends; all
+ *     negative is mirrored; all zeros is 0 to 1 (on 137 column probes, R1 to R12, none apart);</li>
  * <li>the unit is the finest of 1, 2 and 5 times a power of ten that gives at most ten
  *     intervals and whose labels, one line each, fit the axis's length with
  *     {@link #ALLOWANCE} to spare ((n + 1) lines &lt;= length + allowance); where none does, the
@@ -146,9 +146,9 @@ final class AxisScale {
 			double range = dmax - dmin;
 			boolean fromZero = dmax == dmin || range > dmax / 6;
 			lo = fromZero ? 0 : down(dmin - range / 2, u);
-			// a constant series pads from zero
-			double pad = (dmax == dmin ? dmax : range) / 20;
-			hi = up(dmax + pad, u);
+			// padded a twentieth of the range from the axis's minimum (R12: 1.1 to 4.8 is 0 to 6
+			// by 1, not 0 to 5 by 0.5; a constant series so pads from zero)
+			hi = up(dmax + (dmax - lo) / 20, u);
 		} else if (dmax <= 0) {
 			double[] m = bounds(-dmax, -dmin, u, null, null, false);
 			lo = -m[1];

@@ -47,9 +47,13 @@ public class ChartRenderGateTest {
 	/** The probes drawn but not yet within tolerance, and why (CR-037 §11) */
 	static final Map<String, String> OPEN = new LinkedHashMap<>();
 	static {
-		for (String p : new String[] { "r3-default-180x108", "r3-eight-180x108", "r3-eight-288x168", "r11-default-h72",
-				"r11-default-h90", "r11-eight-h72", "r11-eight-h90", "r11-text14-h108" }) {
-			OPEN.put(p, "a small plot: Office caps the category labels' band, overlapping, cutting short or turning them (R12)");
+		for (String p : new String[] { "r3-eight-288x168", "r12-cats4-w144", "r12-cats6-w144", "r12-cats8-w180", "r12-cats8-w216",
+				"r12-cats8-w288", "r12-cats12-w144", "r12-cats12-w288", "r12-cats12-w360", "r12-cats8-w216-h144",
+				"r12-cats8-w216-h180", "r12-cats8-w216-h216" }) {
+			OPEN.put(p, "category labels turned 45 degrees push the plot's inside right, by a rule not yet found (§11)");
+		}
+		for (String p : new String[] { "r11-default-h72", "r11-eight-h72" }) {
+			OPEN.put(p, "a plot 1pt high: Office's inside is 0pt, ours 0.46");
 		}
 		OPEN.put("r2-max-set", "a maximum set, the labels hanging from a zero line near the bottom: the inside 0.55pt shorter");
 	}

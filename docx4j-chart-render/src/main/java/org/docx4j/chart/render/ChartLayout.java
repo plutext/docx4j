@@ -90,6 +90,10 @@ final class ChartLayout {
 	static final double VALUE_LABEL_GAP = 0.7575;
 	/** The top value label may stand this far above the plot area before the inside drops */
 	static final double VALUE_LABEL_TOP = 6;
+	/** The category labels' band is at most this share of the plot area's height (R11, R12) */
+	static final double CATEGORY_CAP = 0.56;
+	/** How the category labels are set (R12) */
+	static final int LEVEL = 0, WRAPPED = 1, TURNED_45 = 2, TURNED_90 = 3;
 
 	private static final FontRenderContext FRC = new FontRenderContext(null, true, true);
 	private static final double SIN45 = Math.sqrt(0.5);
@@ -394,30 +398,73 @@ final class ChartLayout {
 		double insideRight = plotRight;
 		double catW = nCat == 0 ? 0 : (insideRight - insideLeft) / nCat;
 
-		// the category labels: one line, else wrapped at the category's width, else turned 45 degrees
+		// the category labels, as Office tries them (R12): on one line where each fits its
+		// category, wrapped where each word does, turned 45 degrees where the category is a line /
+		// sin 45 wide, turned 90 where it is a line wide; else every second label, every third ...
 		List<String> catTexts = new ArrayList<>();
 		if (catLabels && !series.isEmpty()) {
 			ChartData cats = series.get(0).getCategories();
 			for (int i = 0; i < nCat; i++) catTexts.add(categoryText(cats, i, catAx));
 		}
-		List<List<String>> catLines = new ArrayList<>();
-		boolean turned = false;
-		int lines = 1;
-		double catMax = 0;
-		for (String t : catTexts) catMax = Math.max(catMax, cst.width(t));
-		if (catLabels && catMax > catW) {
-			boolean wraps = true;
-			for (String t : catTexts) {
-				for (String word : t.split(" ")) if (cst.width(word) > catW) wraps = false;
-			}
-			turned = !wraps;
-		}
+		double catMax = 0, wordMax = 0;
 		for (String t : catTexts) {
-			List<String> l = turned || cst.width(t) <= catW ? java.util.Collections.singletonList(t) : wrap(t, cst, catW);
+			catMax = Math.max(catMax, cst.width(t));
+			for (String word : t.split(" ")) wordMax = Math.max(wordMax, cst.width(word));
+		}
+		int mode = LEVEL, every = 1;
+		if (catLabels && nCat > 0) {
+			for (every = 1; every <= nCat; every++) {
+				double room = every * catW;
+				if (catMax <= room) mode = LEVEL;
+				else if (wordMax <= room) mode = WRAPPED;
+				else if (room >= cst.line / SIN45) mode = TURNED_45;
+				else if (room >= cst.line) mode = TURNED_90;
+				else continue;
+				break;
+			}
+			if (every > nCat) every = nCat;
+		}
+		List<List<String>> catLines = new ArrayList<>();
+		int lines = 1;
+		double shownMax = 0;
+		for (int i = 0; i < catTexts.size(); i++) {
+			String t = catTexts.get(i);
+			List<String> l = i % every != 0 ? java.util.Collections.<String>emptyList()
+					: mode == WRAPPED && cst.width(t) > catW * every ? wrap(t, cst, catW * every) : java.util.Collections.singletonList(t);
 			catLines.add(l);
 			lines = Math.max(lines, l.size());
+			if (!l.isEmpty()) shownMax = Math.max(shownMax, cst.width(t));
 		}
-		double band = !catLabels || !bottomAxis ? 0 : turned ? (catMax + cst.line) * SIN45 + 0.634 * cst.size - 4.5 : band(cst, lines);
+		double band = !catLabels || !bottomAxis ? 0 : bandOf(mode, cst, lines, shownMax);
+		// a small plot caps the band (R3, R11, R12: about 0.56 of the plot area's height): wrapped
+		// labels go back on one line, overlapping; turned ones are cut short to the band of one
+		// line (at least a character, and "..."); a line too tall overlaps the gap below
+		double cap = CATEGORY_CAP * (plotBottom - plotTop);
+		if (band > cap) {
+			if (mode == WRAPPED) {
+				mode = LEVEL;
+				for (int i = 0; i < catLines.size(); i++) {
+					if (!catLines.get(i).isEmpty()) catLines.set(i, java.util.Collections.singletonList(catTexts.get(i)));
+				}
+				lines = 1;
+				band = band(cst, 1);
+			} else if (mode == TURNED_45 || mode == TURNED_90) {
+				double room = mode == TURNED_45 ? (band(cst, 1) - (0.634 * cst.size - 4.5)) / SIN45 - cst.line
+						: band(cst, 1) - (0.634 * cst.size - 4.5);
+				shownMax = 0;
+				for (int i = 0; i < catLines.size(); i++) {
+					if (catLines.get(i).isEmpty()) continue;
+					String t = catTexts.get(i);
+					int k = t.length();
+					while (k > 1 && cst.width(t.substring(0, k)) > room) k--;
+					shownMax = Math.max(shownMax, cst.width(t.substring(0, k)));
+					if (k < t.length()) t = t.substring(0, k) + "\u2026";
+					catLines.set(i, java.util.Collections.singletonList(t));
+				}
+				band = bandOf(mode, cst, 1, shownMax);
+			}
+			if (band > cap) band = cap;
+		}
 		double insideBottom = plotBottom - band;
 		double insideH = insideBottom - insideTop;
 		d.boxes.put("inside", new Rectangle2D.Double(insideLeft, insideTop, insideRight - insideLeft, insideH));
@@ -474,20 +521,26 @@ final class ChartLayout {
 			d.add(new Drawing.Text(t, fonts.face(vs.typeface), vs.font, vs.colour, insideLeft - VALUE_LABEL_GAP * vs.line - tw, y + 0.289 * vs.size + 0.2, tw, 0,
 					"value." + k));
 		}
-		// the category labels, centred under their categories
+		// the category labels, centred under their categories (turned: a turned 90 label's line
+		// centred on its category, its end at the labels' top; a turned 45 label's end there)
 		for (int i = 0; i < catLines.size(); i++) {
 			double cx = insideLeft + (i + 0.5) * catW;
 			List<String> l = catLines.get(i);
+			double top = crossY + 0.61 * cst.size + 0.45;
 			for (int j = 0; j < l.size(); j++) {
 				String t = l.get(j);
 				double tw = cst.width(t);
-				if (turned) {
-					// the label's end at the category's centre, turned up 45 degrees
-					double top = crossY + 0.61 * cst.size + 0.45;
-					double ex = cx + cst.ascent * SIN45 / 2, ey = top + cst.ascent * SIN45 / 2;
-					d.add(new Drawing.Text(t, fonts.face(cst.typeface), cst.font, cst.colour, ex - tw * SIN45, ey + tw * SIN45, tw, -45, "category." + i));
+				if (mode == TURNED_90) {
+					double bx = cx + (cst.ascent - (cst.line - cst.ascent)) / 2;
+					d.add(new Drawing.Text(t, fonts.face(cst.typeface), cst.font, cst.colour, bx, top + tw, tw, -90, "category." + i));
+				} else if (mode == TURNED_45) {
+					// the turned line's top corner on the labels' top, its end's middle over the
+					// category's centre (Word's glyph outlines, R12: to 0.1pt)
+					double ex = cx + (cst.ascent - (cst.line - cst.ascent)) / 2 * SIN45, ey = top + cst.ascent * SIN45;
+					d.add(new Drawing.Text(t, fonts.face(cst.typeface), cst.font, cst.colour, ex - tw * SIN45, ey + tw * SIN45, tw, -45,
+							"category." + i));
 				} else {
-					double base = crossY + 0.61 * cst.size + 0.45 + cst.ascent + j * cst.line;
+					double base = top + cst.ascent + j * cst.line;
 					d.add(new Drawing.Text(t, fonts.face(cst.typeface), cst.font, cst.colour, cx - tw / 2, base, tw, 0, "category." + i));
 				}
 			}
@@ -505,6 +558,13 @@ final class ChartLayout {
 	/** The height of the category labels' band, lines high (finding: 1.855 x size - 4.5 for one line) */
 	private static double band(Style s, int lines) {
 		return lines * s.line + 0.634 * s.size - 4.5;
+	}
+
+	/** The band for labels laid out so: turned, their widest's footprint (R3, R12) */
+	private static double bandOf(int mode, Style s, int lines, double widest) {
+		if (mode == TURNED_45) return (widest + s.line) * SIN45 + 0.634 * s.size - 4.5;
+		if (mode == TURNED_90) return widest + 0.634 * s.size - 4.5;
+		return band(s, lines);
 	}
 
 	private Color seriesFill(ChartSeries s) {

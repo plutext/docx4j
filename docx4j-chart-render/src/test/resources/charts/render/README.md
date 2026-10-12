@@ -5,8 +5,8 @@ Office's drawings of the render probes, as numbers, so that the renderer's gates
 docx4j (`org.docx4j.fidelity.corpus.ChartRenderProbes`, `ChartCreator`, seeded; no customer
 content), drawn by Excel, Word and PowerPoint (Microsoft 365, build 16.0.20430) on the Windows VM
 (`docx4j-layout-fidelity/tools/office-chart-render-probes.ps1`, Jason's runs), read on Linux and
-copied here by `chart_score.py fixtures`.  Sets R1 to R10 (phase 0) and R11 (phase 1: the value
-axis's unit against its length).  `ChartRenderFixturesTest` checks the set; `ChartRenderGateTest`
+copied here by `chart_score.py fixtures`.  Sets R1 to R10 (phase 0), R11 and R12 (phase 1: the
+value axis's unit against its length; the category labels as the room for them shrinks).  `ChartRenderFixturesTest` checks the set; `ChartRenderGateTest`
 is the renderer's gate against it.  (Phase 0 put it in docx4j-core-tests; phase 1 moved it here,
 beside the renderer it is the oracle of.)
 
@@ -32,8 +32,10 @@ Reading the dumps (measured on all of them, CR-037 section 11):
   share).
 - `font.size` (from `TextFrame2`) mostly reads 18 for a legend or data labels whatever their
   size; `font.size2` (`Font.Size`) is right.
-- The series' own properties (name, fill, values, line, markers) are missing from these dumps
-  (a variable shadowed in the script, fixed after the run); each point's are there.
+- The series' own properties (name, fill, values, line, markers) are missing from R1 to R10's
+  dumps (a variable shadowed in the script, fixed before R11); each point's are there.
+- Word draws category labels turned 45 degrees as glyph outlines, not text (filled paths in the
+  labels' colour in `word-pdf/`); turned 90 degrees, as text.
 - A blank point's box in Excel is nonsense (far off the chart); a pie's point box spans its
   radii's ends and the centre, not its arc (use `slice`: 1 and 3 the radii's outer ends, 2 the
   arc's middle, 5 the centre, 4 and 6 the radii's middles, 7 to 9 a doughnut's inner points).
