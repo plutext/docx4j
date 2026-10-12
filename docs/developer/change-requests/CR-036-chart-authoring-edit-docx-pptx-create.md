@@ -1,11 +1,16 @@
 # CR-036: chart authoring - a chart's data edited in docx and pptx, and charts created in xlsx, docx and pptx (charts plan phases 6 and 5)
 
-Status: IN PROGRESS. Phase 2 DONE 2026-10-12 (Jason: "Start CR-036 phase 2"): ChartCreator makes
-charts in an xlsx from a ChartDefinition or over cells, ChartSettings sets their settings; after
+Status: DONE 2026-10-12, all four phases.  Phase 3 DONE 2026-10-12 (Jason: "please start phase
+3"): ChartCreator makes charts in docx and pptx as Word's and PowerPoint's insert does, their data
+in Word's own embedded workbook, and deletes a chart from any host; for every type Word's and
+PowerPoint's own chart, workbook and drawing part for part, and in Office's check their PDFs pixel
+for pixel, Edit Data and the tools working; docx4j.dcterms.write added (§11).  Phase 2 DONE 2026-10-12
+(Jason: "Start CR-036 phase 2"): ChartCreator makes charts in an xlsx from a ChartDefinition or
+over cells, ChartSettings sets their settings; after
 P6's readings (Excel's settings on every type, dates, text and numbers, other shapes, Excel's
 reading of a range), 106 created charts are Excel's own part for part, and in Excel's check none
 is repaired, their Select Data ranges and pictures are its own charts', and its tools work (§11).
-Phase 3 next. Phase 1 DONE 2026-10-12 (Jason: "please start CR-036 phase 1"): ChartDataEditor
+Phase 1 DONE 2026-10-12 (Jason: "please start CR-036 phase 1"): ChartDataEditor
 on docx and pptx charts, the embedded workbook kept live in EmbeddedPackagePart (A1); against Word's
 five and PowerPoint's four own edits, part by part, and all ten PDFs pixel for pixel Office's own
 (§11). Phase 2 next. Phase 0 DONE 2026-10-12 (Jason's runs of the probe script; findings in §11):
@@ -599,3 +604,112 @@ workbook and the sample, below the first screen; the check script now brings a c
 exports again when that happens, and in a second run (`cr036\recheck`, Jason's) all five came out
 at once: Excel's P1 area and scatter are ours pixel for pixel.  The new workbook's and the sample's
 five charts, which have no Excel original, were looked at: each is what its definition says.
+
+### Phase 3 (2026-10-12), done
+
+Jason: "please start phase 3".
+
+**Read from P3 and P4 first.**  What Word and PowerPoint write when they insert a chart, beyond
+phase 0's findings on the chart part:
+
+1. **The embedded workbook is Word's own per type, and PowerPoint's is the same** (random ids,
+   times and where Excel's window last was aside): one sheet, the default data at A1 in `Table1`,
+   a table with no `autoFilter` and no style name (Excel's own tables have both), the area's date
+   column with a `dxf` of its date format, Word's column widths for the type, B1 selected.  So the
+   templates are Word's twelve workbooks byte for byte (`templates/workbook/<type>.xlsx`), for both
+   hosts.
+2. **Word's chart is Excel's with the host step** (D1, as phase 0 found): no `c:printSettings`; a
+   `c:externalData` naming the workbook's `package` relationship (rId3, after the style's rId1 and
+   the colours' rId2) with `c:autoUpdate` 0; a scatter series' line 19050; each of a pie's or a
+   doughnut's points with a `c16:uniqueId` numbered 2 idx + 1, its suffix not the series'.
+3. **PowerPoint's chart and style parts are its own** (D1's escape hatch): twelve chart parts and
+   eight style parts (`templates/pptx/`, byte for byte; PowerPoint writes the style part with no
+   XML declaration); the colour part is the shared one; no per-point ids.
+4. **Word's drawing**: a run (`w:noProof`) holding a `wp:inline` with no distances, 5,486,400 ×
+   3,200,400 EMU, `wp14:anchorId` and `editId` random (eight hex digits, the top bit clear), a
+   `docPr` with a random id and the name "Chart n" (n counting the document's charts).
+   **PowerPoint's frame**: `cNvPr` the next id on the slide, named "Chart" and its id less one,
+   with an `a16:creationId`, and a random `p14:modId`.
+5. **Names**: `chartN`, `styleN`, `colorsN` (as phase 0's two charts), the workbook
+   `Microsoft_Excel_Worksheet.xlsx`, then `...Worksheet1.xlsx`; typed by a `Default
+   Extension="xlsx"`, no override.
+6. **The legend is the template's**: Word's and PowerPoint's insert starts from their own default
+   data, which the user then edits, so their chart keeps its template's legend whatever the data;
+   PowerPoint's scatter of one series has a legend, Word's (Excel's part) none.  Excel's defaults
+   for the data at insert (no legend for one series; a scatter's legend at two) are Excel's
+   reading of a selection, and stay xlsx's alone.
+
+**Built:**
+- **`ChartCreator.inDocument(pkg, definition[, cx, cy])`** returns the run holding the inline
+  drawing, for the caller to place (D4); **`inNewParagraph(pkg, definition)`** appends it in a new
+  paragraph and returns the `ChartRef`; **`inSlide(slide, definition, x, y, cx, cy)`** adds the
+  frame to the slide's shape tree and returns it.  `DEFAULT_WIDTH` and `DEFAULT_HEIGHT` are
+  Office's 6 × 3.5 inches.  The chart is the main document's (headers and the rest later).
+- **The workbook**: Word's for the type, its cells and shared strings emptied, the definition's
+  data written at A1 by `inSheet`'s own writer (dates, numbers, names, the corner), `Table1` set
+  over it (`Tables.setRef`); its random ids made afresh from the creator's source (the sheet's,
+  the table's and its columns', the window's, the revision's document id).  Its core properties
+  are not the template's (the probe account's name, the probe run's times) but docx4j.properties'
+  (Jason, 2026-10-12: "if property docx4j.dc.creator.value is set, use that, otherwise leave
+  blank", and a setting for the current time or none, "both here and to the file's
+  dcterms:created or dcterms:modified"): the creator `docx4j.dc.creator.value` where
+  `docx4j.dc.write` is on, else none; the times the current time where the new
+  **`docx4j.dcterms.write`** is true, else none; `lastModifiedBy` as docx4j's save writes it.
+- **`docx4j.dcterms.write`** (default false, as before): true makes every save set
+  `dcterms:modified` to the current time, and `dcterms:created` too on a new package that has none,
+  as Office writes them (a `dcterms:W3CDTF` literal, UTC, to the second); in both save paths
+  (`io3.Save`, the older `SaveToZipFile`), by `DocPropsCorePart.writeTimes()`.  Documented in the
+  docx4j.properties files.  (`DocPropsCorePart` and `SaveToZipFile` went to LF line endings
+  first, as `EmbeddedPackagePart` did.)
+- **The chart**: phase 2's making per host: Excel's templates for xlsx and docx (the date-axis one
+  for a docx column chart over dates), PowerPoint's for pptx (over dates, phase 2's axis
+  conversion, measured on Excel's other types, unmeasured in PowerPoint); then for a docx Word's
+  step (2 above), the related workbook, `c:externalData`, and the definition's settings.
+- **`ChartCreator.delete(ChartRef)`** (A4), for any host: the run holding a docx's drawing (the
+  drawing alone where the run holds more), a slide's frame, a sheet's anchor; the chart part and
+  what it relates to (style, colours, workbook) and their content types; the `xlsx` default where
+  no embedded workbook is left.
+- `DrawingPropsIdTracker.generateRandomId(Random)`: a random `docPr` id no drawing of the package
+  has, as Word's.
+- Samples `CreateChart` in docx4j-samples-docx4j (a chart in a new paragraph, one as a run of 4 ×
+  2.5 inches over dates, then edited and set) and docx4j-samples-pptx4j (a pie on a slide, edited
+  and set); both run.
+- `office-chart-edit-check.ps1 -Tools`: after the PDF, each chart given the next gallery style and
+  another type and back, as phase 2's Excel check does.
+
+**Gate.**  `ChartCreatorHostTest` (10): for each of the twelve types, in Word's own P3 document
+and on PowerPoint's own P4 slide, Office's chart deleted by `delete`, ours made with its data (on
+the slide at its frame's place), saved and loaded again, and compared with Office's document,
+loaded and saved by docx4j the same way: the chart part (Office's random ids aside) and its
+relationships; the embedded workbook's cells, shared strings, table, sheet, styles, workbook
+(ids aside; PowerPoint's window position aside) and parts; the package's parts with their content
+types and defaults; the document (its drawing's random ids aside) or the slide (likewise); one
+chart part, with fresh ids.  **All 24 identical**, and the data-set charts of both, and Word's two
+charts (a column and a line: parts, names, document, both charts).  Deleted: Word's column and
+pie documents become Word's document with no chart (`p3-no-chart.docx`, a fixture now) in their
+parts and content types, the paragraph left empty; a slide's frame and an xlsx's anchor go with
+their parts.  New documents: the editor and `ChartSettings` on made charts, a third chart's names
+("Chart 3", `Microsoft_Excel_Worksheet2.xlsx`), a date axis, a pie's point ids, distinct `docPr`
+ids; a seeded source makes the same document; a refused definition leaves nothing made.
+`ChartCreatorTest` (phase 2's) unchanged.  `DocPropsCoreTimesTest` (2): no times by default;
+with `docx4j.dcterms.write`, a new document's created and modified the time of its save, Office's
+form; a loaded one's created kept and modified renewed; the embedded workbook's author and times
+by the same properties.  docx4j-core-tests 1,541 run, 0 failed (11 skipped).
+
+**Office's check** (`office-chart-edit-check.ps1 -Dir X:\office_charts\cr036\docx4j-p3 -Tools`,
+the 32 documents the gate writes with `-Ddocx4j.chartCreate.write` and the samples' two; Jason's
+run 2026-10-12): **passed**.  Word and PowerPoint opened every document; *Edit Data* opened every
+chart's data, with its table, as made or edited (the new document's East added, the samples'
+Central); the Chart Design tools (the next gallery style, another type and back) worked on every
+chart; the documents with their chart deleted opened.  Their PDFs, rasterised at 100 dpi, are
+Word's and PowerPoint's own PDFs of their own insert pixel for pixel, all 28 that have one (the 24
+types, the data sets, the two charts); two different charts differ by 28,354 pixels, a line and a
+line with markers by 676, so the comparison sees a difference.  The two samples' outputs shared a
+name, so the pptx sample's report was overwritten: it and a docx and a pptx made with an author
+and `docx4j.dcterms.write` went to a second, short run (`docx4j-p3b`, Jason's): the pptx sample
+opened, *Edit Data* showed its Central added, its tools worked; so did the docx with an author
+and times.  That pair shared a name too, and the share lists files in no set order, so the
+pptx's report was overwritten in turn; the check script now names a docx's and a pptx's reports
+of one name apart, and in a third run (Jason's) the pptx with an author and times opened, *Edit
+Data* and its tools worked, as did the other two again.  Each looks as its definition says (the
+pptx in the theme of docx4j's new presentation).

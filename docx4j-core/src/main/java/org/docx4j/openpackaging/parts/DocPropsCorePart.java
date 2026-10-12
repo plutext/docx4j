@@ -25,8 +25,14 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.xpath.XPath;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.core.CoreProperties;
+import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
+import org.docx4j.docProps.core.dc.terms.W3CDTF;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -159,6 +165,48 @@ public class DocPropsCorePart extends JaxbXmlPart<CoreProperties> {
 	}
     
 	
+	// ------------------------------------------------------------------ the times (CR-036)
+
+	/**
+	 * Whether docx4j.properties' {@code docx4j.dcterms.write} (default false) asks for the current
+	 * time in {@code dcterms:created} and {@code dcterms:modified}: true, {@link #writeTimes()}
+	 * writes it as the part is saved; false leaves them as they are (none in a package docx4j
+	 * makes).
+	 *
+	 * @since 17.3.3
+	 */
+	public static boolean isTimesWritten() {
+		return Boolean.parseBoolean(Docx4jProperties.getProperty("docx4j.dcterms.write", "false"));
+	}
+
+	/**
+	 * The current time as Office writes it in {@code dcterms:created} and {@code dcterms:modified}:
+	 * a {@code dcterms:W3CDTF} literal, UTC, to the second
+	 *
+	 * @since 17.3.3
+	 */
+	public static SimpleLiteral now() {
+		W3CDTF w = new W3CDTF();
+		w.getContent().add(Instant.now().truncatedTo(ChronoUnit.SECONDS).toString());
+		return w;
+	}
+
+	/**
+	 * Where {@link #isTimesWritten()}: {@code dcterms:modified} the current time, and
+	 * {@code dcterms:created} too where the package is new and has none.  Called as the part is
+	 * saved.
+	 *
+	 * @since 17.3.3
+	 */
+	public void writeTimes() {
+		if (!isTimesWritten()) return;
+		CoreProperties cp = getJaxbElement();
+		if (cp == null) return;
+		SimpleLiteral now = now();
+		if (cp.getCreated() == null && getPackage() != null && getPackage().isNew()) cp.setCreated((SimpleLiteral) now.copy());
+		cp.setModified(now);
+	}
+
 }
 
 	

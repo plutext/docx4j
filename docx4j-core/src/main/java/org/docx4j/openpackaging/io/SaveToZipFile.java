@@ -228,6 +228,8 @@ public class SaveToZipFile {
 								"docx4j.dc.lastModifiedBy.value", "docx4j " + Version.getDocx4jVersion());
 						cp.setLastModifiedBy(modifier);
 					}
+					// dcterms:created and dcterms:modified, where docx4j.dcterms.write asks (CR-036)
+					((DocPropsCorePart)part).writeTimes();
 				}				
 				if (part instanceof DocPropsExtendedPart) {
 					boolean appWrite= Boolean.parseBoolean(

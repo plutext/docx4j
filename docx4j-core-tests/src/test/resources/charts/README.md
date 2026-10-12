@@ -65,7 +65,8 @@ types (`column-clustered`, `-stacked`, `-stacked-100`, `bar-...`, `line`, `line-
 - `p3-<type>.docx`: Word's *Insert Chart* (`InlineShapes.AddChart2`) with Word's default data;
   `p3-two-charts.docx` (how a second chart's parts are named) and `p3-data-set.docx` (a chart
   whose data was then set to North/South by Plan/Actual; its chart part is the oracle, its
-  workbook lost its table to the script's edits).
+  workbook lost its table to the script's edits); `p3-no-chart.docx` (Word's document with no
+  chart, "No chart.": what a document is once its chart is deleted, CR-036 phase 3).
 - `p1-<type>.xlsx`: Excel's chart of the same data (Word's embedded workbook, charted by
   `AddChart2`), with `p1-date-axis.xlsx` (a "Date" header over d-mmm dates).  `p1-*.txt` give each
   chart's type and series formulas.

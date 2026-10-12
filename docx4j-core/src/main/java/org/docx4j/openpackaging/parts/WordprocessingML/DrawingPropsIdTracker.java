@@ -91,6 +91,39 @@ public class DrawingPropsIdTracker {
 	 */
 	public long generateId() throws Docx4JException {
 				
+		knowAllIds();
+		
+		long newId = lastDispensed + 1;
+		while (usedIds.contains((Long)newId)) {
+			newId++;
+		}
+		
+		lastDispensed=newId;
+		usedIds.add(newId);
+		return newId;
+		
+	}
+	
+	/**
+	 * A random id no drawing of the package has, as Word gives a drawing it inserts (a positive
+	 * 31-bit number), from the source given; registered as used.
+	 * 
+	 * @since 17.3.3 (CR-036)
+	 */
+	public long generateRandomId(java.util.Random random) throws Docx4JException {
+		
+		knowAllIds();
+		long id;
+		do {
+			id = 1 + random.nextInt(Integer.MAX_VALUE - 1);
+		} while (usedIds.contains(id));
+		usedIds.add(id);
+		return id;
+	}
+	
+	/** The parts not yet unmarshalled, unmarshalled, so that every id in use is known */
+	private void knowAllIds() throws Docx4JException {
+		
 		if (!jaxbXmlParts.isEmpty()) {
 			// force unmarshall so we get any ids in use
 			for( JaxbXmlPart jaxbXmlPart : jaxbXmlParts ) {
@@ -110,16 +143,6 @@ public class DrawingPropsIdTracker {
 //			}
 			jaxbXmlParts.clear();
 		}
-		
-		long newId = lastDispensed + 1;
-		while (usedIds.contains((Long)newId)) {
-			newId++;
-		}
-		
-		lastDispensed=newId;
-		usedIds.add(newId);
-		return newId;
-		
 	}
 	
 	

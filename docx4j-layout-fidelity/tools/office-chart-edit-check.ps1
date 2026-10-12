@@ -8,7 +8,9 @@
 # Plutext Pty Ltd; Apache-2.0.
 #
 #   -Visible   show the applications, so a repair dialog can be seen
-param([string]$Dir = "X:\office_charts\cr036\docx4j", [switch]$Visible)
+#   -Tools     (CR-036 phase 3) after the PDF, each chart given the next style of the gallery and
+#              another type and back, as a user's Chart Design tools would: "tools ok" or the error
+param([string]$Dir = "X:\office_charts\cr036\docx4j", [switch]$Visible, [switch]$Tools)
 $ErrorActionPreference = "Stop"
 $tmp = Join-Path $env:TEMP "chart-edit-check"
 $out = Join-Path $Dir "check"
@@ -65,14 +67,29 @@ function EditData($chart) {
   return $lines
 }
 
+# The Chart Design tools on a chart: the next style, another type and back
+function Tools($chart) {
+  try {
+    $style = $chart.ChartStyle; $type = $chart.ChartType
+    $chart.ChartStyle = $style + 1
+    $chart.ChartType = $(if ($type -eq 4) { 51 } else { 4 })
+    $chart.ChartType = $type
+    return "  tools ok: style $style to $($chart.ChartStyle), type $type to another and back"
+  } catch { return "  TOOLS FAILED: $($_.Exception.Message)" }
+}
+
 $word = $null; $ppt = $null
 try {
-  foreach ($f in Get-ChildItem $Dir | Where-Object { $_.Extension -in ".docx", ".pptx" }) {
+  $files = @(Get-ChildItem $Dir | Where-Object { $_.Extension -in ".docx", ".pptx" })
+  foreach ($f in $files) {
     Say $f.Name
     $local = Join-Path $tmp $f.Name
     Copy-Item -Force $f.FullName $local
     $report = @()
-    $pdf = Join-Path $tmp ($f.BaseName + ".pdf")
+    # a docx and a pptx of the same name: each report and PDF named with its extension too
+    $base = $f.BaseName
+    if (@($files | Where-Object { $_.BaseName -eq $f.BaseName }).Count -gt 1) { $base = $base + "-" + $f.Extension.TrimStart(".") }
+    $pdf = Join-Path $tmp ($base + ".pdf")
     try {
       if ($f.Extension -eq ".docx") {
         if (-not $word) {
@@ -88,6 +105,7 @@ try {
           [string]$p = $pdf.ToString(); [int]$fmt = 17
           $doc.SaveAs([ref]$p, [ref]$fmt)
           Copy-Item -Force $pdf $out
+          if ($Tools) { foreach ($ic in $doc.InlineShapes) { if ($ic.HasChart) { $report += Tools $ic.Chart } } }
         } finally { [int]$dontSave = 0; $doc.Close([ref]$dontSave) }
       } else {
         if (-not $ppt) { $ppt = New-Object -ComObject PowerPoint.Application }
@@ -101,10 +119,13 @@ try {
           Step "SaveAs PDF"
           [string]$p = $pdf.ToString(); $pres.SaveAs($p, 32)   # 32 = ppSaveAsPDF, as the probes
           Copy-Item -Force $pdf $out
+          if ($Tools) {
+            foreach ($slide in $pres.Slides) { foreach ($sh in $slide.Shapes) { if ($sh.HasChart) { $report += Tools $sh.Chart } } }
+          }
         } finally { $pres.Close() }
       }
     } catch { $report += "FAILED: $($_.Exception.Message)"; Say "  FAILED: $($_.Exception.Message)" }
-    $report | Set-Content -Encoding UTF8 (Join-Path $out ($f.BaseName + ".txt"))
+    $report | Set-Content -Encoding UTF8 (Join-Path $out ($base + ".txt"))
   }
 } finally {
   foreach ($app in @($word, $ppt)) {

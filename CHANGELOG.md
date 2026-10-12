@@ -53,6 +53,12 @@ Changes in Version 17.3.3
   there (read as Excel reads a selection); each from Excel's own parts for its type.  New
   ChartSettings sets a chart's title, legend, axis titles, number format and data labels, on any
   chart.  Tables.create, SheetCells.setNumberFormat.  New xlsx sample CreateCharts.  CR-036.
+- ChartCreator makes charts in docx and pptx too, as Word's and PowerPoint's Insert Chart makes
+  them: the data in an embedded workbook (Edit Data opens it), the chart Word's or PowerPoint's
+  own of its type (inDocument, inNewParagraph, inSlide); ChartCreator.delete removes a chart and
+  its parts from any host.  New samples CreateChart (docx and pptx).  CR-036.
+- New docx4j.properties setting docx4j.dcterms.write (default false): true sets dcterms:modified
+  to the current time on save, and dcterms:created on a new document.  CR-036.
 - New org.docx4j.model.color: theme colours resolved as Office draws them - DrawingML colours and
   transforms, WordprocessingML theme attributes, SpreadsheetML theme/tint/indexed - checked against
   Word's, PowerPoint's and Excel's own renderings.  CR-034.

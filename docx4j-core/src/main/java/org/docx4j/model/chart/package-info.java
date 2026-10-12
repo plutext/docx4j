@@ -40,9 +40,11 @@
  * <li>{@link org.docx4j.model.chart.ChartDataEditor} edits a chart's data as Excel and Word do: the
  *     cells, the table, the references and the caches in step, in an xlsx or in the workbook
  *     embedded with a chart in a docx or pptx.</li>
- * <li>{@link org.docx4j.model.chart.ChartCreator} makes a chart in an xlsx as Excel's
- *     <i>Insert Chart</i> does, from a {@link org.docx4j.model.chart.ChartDefinition} or over cells
- *     already there, from Excel's own parts for its {@link org.docx4j.model.chart.ChartType};
+ * <li>{@link org.docx4j.model.chart.ChartCreator} makes a chart as Office's <i>Insert Chart</i>
+ *     does: in an xlsx as Excel's, from a {@link org.docx4j.model.chart.ChartDefinition} or over
+ *     cells already there; in a docx or on a slide as Word's and PowerPoint's, its data in a
+ *     workbook embedded with it; each from Office's own parts for its
+ *     {@link org.docx4j.model.chart.ChartType}.  It deletes a chart too.
  *     {@link org.docx4j.model.chart.ChartSettings} sets a chart's title, legend, axis titles,
  *     number format and data labels.</li>
  * </ul>

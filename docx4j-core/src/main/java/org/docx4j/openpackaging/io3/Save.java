@@ -257,6 +257,8 @@ public class Save {
 //						p.setSourcePartStore(targetPartStore);
 						
 					}
+					// dcterms:created and dcterms:modified, where docx4j.dcterms.write asks (CR-036)
+					((DocPropsCorePart)part).writeTimes();
 				}				
 				if (part instanceof DocPropsExtendedPart) {
 					boolean appWrite= Boolean.parseBoolean(
