@@ -52,8 +52,8 @@ import org.w3c.dom.Element;
  * ({@link ChartLayout}), painted onto a {@code Graphics2D}, Batik's SVG generator's for SVG.
  *
  * <p>Draws the column and bar charts (clustered, stacked, 100%), line and area charts over
- * categories or dates, scatter charts (markers, straight lines), pies and doughnuts; anything else
- * is refused (its box stays empty) until the phase that draws it.</p>
+ * categories or dates, scatter charts (markers, straight or smoothed lines), pies and doughnuts;
+ * anything else is refused (its box stays empty) until the phase that draws it.</p>
  *
  * @since 17.3.3 (CR-037)
  */
@@ -90,7 +90,6 @@ public class ClassicChartRenderer implements ChartRenderer {
 			if (shown(g.getDataLabels())) refused.add("data labels");
 			for (ChartSeries s : g.getShownSeries()) {
 				if (shown(s.getDataLabels())) refused.add("data labels");
-				if (Boolean.TRUE.equals(s.getSmooth())) refused.add("a smoothed line");
 				fill(s.getFill(), "a series' fill", simplified);
 			}
 		}

@@ -24,7 +24,7 @@ import jakarta.xml.bind.JAXBElement;
 import org.docx4j.XmlUtils;
 import org.docx4j.com.microsoft.schemas.office.drawing.x2012.chartStyle.CTColorStyle;
 import org.docx4j.com.microsoft.schemas.office.drawing.x2012.chartStyle.CTColorStyleVariation;
-import org.docx4j.dml.CTPercentage;
+import org.docx4j.dml.CTPositiveFixedPercentage;
 import org.docx4j.dml.CTSchemeColor;
 import org.docx4j.dml.ObjectFactory;
 import org.docx4j.dml.STSchemeColorVal;
@@ -38,8 +38,8 @@ import org.docx4j.copy.Copyable;
  * The colours Office gives a chart's series and points that have none of their own: its colour
  * style's ({@code cs:colorStyle}, the chart's colors part, Office 2013's), the colour for an index
  * its colour index modulo their number, varied by the variation for the index divided by it
- * ({@code meth="cycle"}).  Shared by {@link ChartDataEditor} (a new series in its automatic colour)
- * and the renderer (CR-037 §4.2).
+ * ({@code meth="cycle"}), what {@link ChartDataEditor} writes into a new series; and the colour
+ * Office shows for one that has none, the renderer's ({@link #automatic(long, int)}; CR-037 §4.2).
  *
  * @since 17.3.3 (CR-037)
  */
@@ -87,28 +87,27 @@ public final class ChartColorStyles {
 		return c;
 	}
 
-	/** Office's colorful style (id 10, its charts' default): the six accents, nine variations of each */
-	private static final int[][] COLORFUL = { {}, { 60000 }, { 80000, 20000 }, { 80000 }, { 60000, 40000 }, { 50000 }, { 70000, 30000 },
-			{ 70000 }, { 50000, 50000 } };
-
 	/**
-	 * The colour for an index where a chart has no colour style: Office's colorful style's (the
-	 * accents, then lumMod and lumOff variations); to be measured (CR-037 R14)
+	 * The colour Office shows for a series that has no fill of its own (or, where the colours vary
+	 * by point, a point), whatever the chart's colour style: accent (idx mod 6) + 1, shaded or tinted
+	 * by its cycle, idx / 6, of the count's, count / 6: t = floor(140 (cycle + 1) / (cycles + 2)) - 70
+	 * percent, a shade of 100 + t below zero, a tint of 100 - t above (CR-037 R14, every channel
+	 * exact: eight series, shaded 76% then tinted 77%, with the colour style part and without it;
+	 * twelve slices, shaded 65% then plain).  The colour style is what Office writes into a series
+	 * it adds ({@link #automatic(CTColorStyle, long)}), not what it shows for one that has none.
+	 * @param idx the series' index (c:idx), or the point's
+	 * @param count the series in the chart, or the points
 	 */
-	public static Object automatic(long idx) {
+	public static Object automatic(long idx, int count) {
 		ObjectFactory f = new ObjectFactory();
 		CTSchemeColor c = new CTSchemeColor();
 		c.setVal(STSchemeColorVal.fromValue("accent" + (idx % 6 + 1)));
-		int[] v = COLORFUL[(int) ((idx / 6) % COLORFUL.length)];
-		if (v.length > 0) {
-			CTPercentage mod = new CTPercentage();
-			mod.setVal(v[0]);
-			c.getEGColorTransform().add(f.createCTSchemeColorLumMod(mod));
-		}
-		if (v.length > 1) {
-			CTPercentage off = new CTPercentage();
-			off.setVal(v[1]);
-			c.getEGColorTransform().add(f.createCTSchemeColorLumOff(off));
+		long cycle = idx / 6, cycles = Math.max(0, count) / 6;
+		long t = Math.min(70, 140 * (cycle + 1) / (cycles + 2) - 70);
+		if (t != 0) {
+			CTPositiveFixedPercentage p = new CTPositiveFixedPercentage();
+			p.setVal((int) (100 - Math.abs(t)) * 1000);
+			c.getEGColorTransform().add(t < 0 ? f.createCTSchemeColorShade(p) : f.createCTSchemeColorTint(p));
 		}
 		return c;
 	}

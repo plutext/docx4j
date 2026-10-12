@@ -113,7 +113,7 @@ final class Drawing {
 	/** The value axis as laid out: min, max, major unit */
 	double[] valueAxis;
 
-	/** A scatter chart's x axis as laid out: min, max, major unit */
+	/** A scatter chart's x axis as laid out: min, max, major unit; a date axis's first and last dates and major unit */
 	double[] xAxis;
 
 	Drawing(double width, double height) {

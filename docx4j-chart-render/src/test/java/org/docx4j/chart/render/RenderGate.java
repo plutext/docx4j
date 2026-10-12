@@ -138,6 +138,10 @@ final class RenderGate {
 		double cw = Json.number(Json.list(dump.get("size")).get(0)), ch = Json.number(Json.list(dump.get("size")).get(1));
 		List<Object> series = Json.list(dump.get("series"));
 		for (int s = 0; s < series.size(); s++) {
+			// a pie shows its first series alone, though Excel reports the others' slices as if it drew
+			// them (p6-pie-two-by-two's picture)
+			Double type = Json.number(Json.object(series.get(s)).get("chartType"));
+			if (s > 0 && type != null && (type == 5 || type == 69)) continue;
 			List<Object> points = Json.list(Json.object(series.get(s)).get("points"));
 			for (int p = 0; p < points.size(); p++) {
 				Rectangle2D b = box(points.get(p), pointOrigin);

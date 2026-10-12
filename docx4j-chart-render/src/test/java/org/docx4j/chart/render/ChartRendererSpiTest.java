@@ -57,6 +57,11 @@ public class ChartRendererSpiTest {
 			assertTrue(t + ": " + k, k.isDrawn());
 			assertFalse(t + ": " + k, k.isSimplified());
 		}
+		// smoothed lines, as Office smooths them (R14)
+		for (String t : new String[] { "r14-line-smooth", "r14-scatter-smooth" }) {
+			ChartRef c = ChartRenderGateTest.chart(t);
+			assertTrue(t, r.check(c.read(), c.getHostTheme()).isDrawn());
+		}
 		ChartRef labels = ChartRenderGateTest.chart("r6-column-clustered-ctr");
 		ChartRenderCheck l = r.check(labels.read(), labels.getHostTheme());
 		assertFalse(l.isDrawn());

@@ -49,7 +49,6 @@ import org.docx4j.dml.chart.CTMarker;
 import org.docx4j.dml.chart.CTTickMark;
 import org.docx4j.dml.chart.CTTitle;
 import org.docx4j.dml.chart.CTValAx;
-import org.docx4j.com.microsoft.schemas.office.drawing.x2012.chartStyle.CTColorStyle;
 import org.docx4j.model.chart.ChartAxis;
 import org.docx4j.model.chart.ChartColorStyles;
 import org.docx4j.model.chart.ChartData;
@@ -98,6 +97,19 @@ final class ChartLayout {
 	static final double LEGEND_SIDE = 1.5;
 	/** A legend's entries are this far below its top */
 	static final double LEGEND_TOP = 3;
+	/** A legend at the top (or top right) is this far below the title (r14-legend-top, r14-legend-top-right) */
+	static final double LEGEND_BELOW_TITLE = 6;
+	/**
+	 * A legend at the top right: the plot area this far below it, and this much higher off the
+	 * bottom (r14-legend-top-right, one probe: provisional)
+	 */
+	static final double LEGEND_TR_BELOW = 5, LEGEND_TR_BOTTOM = 6;
+	/**
+	 * A horizontal legend's entries too wide for {@link #LEGEND_MAX} of the chart go in rows, as many
+	 * entries to each as the fewest rows allow, closed up; each row after the first adds a row's
+	 * height less this (r14-legend-rows-8: eight entries in two rows of four; one probe: provisional)
+	 */
+	static final double LEGEND_ROW_LESS = 1.5;
 	/** A horizontal legend is at most this share of the chart's width, its entries closing up (r11-bar-w144) */
 	static final double LEGEND_MAX = 0.9;
 	/** A line series' legend key is this wide (R1, at 9pt), its line drawn this many times as long, centred (Word's PDF) */
@@ -109,18 +121,40 @@ final class ChartLayout {
 	/** The top value label may stand this far above the plot area before the inside drops */
 	static final double VALUE_LABEL_TOP = 6;
 	/**
-	 * A horizontal value axis's labels are more than this share of their text size apart: at 9pt
-	 * more than 24.75pt an interval and at most 25.49 (R11's bar chart), 35.67 taken (r1-bar-stacked-100's
-	 * "100%"); at 11.97pt 33.76 refused (r1-bar-stacked-100.pptx): 2.821 to 2.832.  Not the labels'
-	 * width and a gap, which can't fit all three; provisional until R14's sweeps
+	 * A horizontal value axis's unit (a bar chart's, a scatter chart's x axis) gives intervals of at
+	 * least this share of its labels' text size across the whole plot area, the category labels'
+	 * band included: Excel chooses it before it lays out either axis's labels.  R14's sweeps change
+	 * unit at the same chart widths whatever the labels (1 to 60000, 0% to 100%, a scatter's x):
+	 * 3.789 to 3.814 at 9pt, 3.761 to 3.833 at 7pt, 3.778 to 3.819 at 12pt.  Where the labels at
+	 * that unit then overlap, the unit is doubled and the bounds kept (see {@link #acrossScale})
 	 */
-	static final double ACROSS = 2.826;
+	static final double ACROSS = 3.8;
 	/** See the push of labels turned 45 degrees in the layout: 10.94pt (R12, R13; 10.87 to 10.96) */
 	static final double TURNED_PUSH = 10.93;
-	/** The category labels' band is at most this share of the plot area's height (R11, R12) */
-	static final double CATEGORY_CAP = 0.56;
+	/**
+	 * A small plot's inside is at least this share of the plot area's height less the category band's
+	 * gap, the labels' band taking the rest (r14-sweep-column-h, 72 to 92pt high, to 0.01pt; at 14pt
+	 * r11-text14-h108, whose inside starts below the top value label's overhang; R11's and R12's
+	 * "about 0.56 of the plot" was this near 20pt of plot)
+	 */
+	static final double CATEGORY_CAP = 0.5;
 	/** A tick mark's length, a share of its axis's text size (r1-area: 2.85pt at 9pt in Word's PDF, 3.80 at 12pt in PowerPoint's) */
 	static final double TICK = 0.3167;
+	/**
+	 * A date axis's labels, turned 45 degrees, are at least this many lines apart square to them,
+	 * and turned 90 this many lines apart along the axis; where neither, an automatic major unit
+	 * goes up to the next of 1, 2 and 7 days (r14-sweep-dates: 13.101 to 13.111pt at 9pt in both
+	 * tests; R5's daily dates, 18.25pt a label, turned 90).  Text labels need a line (R12), and so
+	 * do dates with a space in them, which turn 45 as text does (r14-dates-long's "1 January 2026"
+	 * at 18.25pt a label; provisional)
+	 */
+	static final double DATE_ROOM = 1.193;
+	/**
+	 * A date label is wrapped at its hyphen only where it is at most this share wider than its room
+	 * ("22-Jan", 23.80pt: wrapped from 23.03 to 23.14pt of room, turned 45 below; r14-sweep-dates,
+	 * one label width: provisional)
+	 */
+	static final double DATE_WRAP = 1.031;
 	/** How the category labels are set (R12) */
 	static final int LEVEL = 0, WRAPPED = 1, TURNED_45 = 2, TURNED_90 = 3;
 	/**
@@ -136,7 +170,8 @@ final class ChartLayout {
 	 * A text style: a chart's c:txPr, inherited from the chart space's, else Office's default.
 	 * Text at or above its kern size (DrawingML's {@code kern}, hundredths of a point; Office's
 	 * charts write 1200) is kerned, as Office kerns it (R4's long title: its width is Carlito's
-	 * kerned advances, to 0.01pt)
+	 * kerned advances, to 0.01pt); an axis's labels never are (r14-kerning: sixteen pairs as 14pt
+	 * category labels, kern 1200, none kerned)
 	 */
 	static final class Style {
 		final String typeface;
@@ -204,6 +239,11 @@ final class ChartLayout {
 			this.line = line;
 			this.lineWidth = lineWidth;
 		}
+
+		/** This marker no larger than a size (a legend key's: r14-legend-line-7, 3.84pt for 5) */
+		Marker atMost(double max) {
+			return size <= max ? this : new Marker(symbol, max, fill, line, lineWidth);
+		}
 	}
 
 	private final ChartModel model;
@@ -269,6 +309,12 @@ final class ChartLayout {
 		}
 		int kern = p.getKern() != null ? p.getKern() : parent.kern;
 		return new Style(fonts, face, size, bold, italic, colour, kern);
+	}
+
+	/** An axis's labels' style: its c:txPr's, never kerned (see {@link Style}) */
+	private Style axisStyle(ChartAxis ax) {
+		Style s = style(ax == null ? null : txPr(ax.getSource()), base());
+		return s.kern == 0 ? s : new Style(fonts, s.typeface, s.size, s.bold, s.italic, s.colour, 0);
 	}
 
 	/** The title's: a c:rich's first paragraph and run over its c:txPr; Office's title is 1.8 times the text, bold */
@@ -353,11 +399,14 @@ final class ChartLayout {
 		List<ChartSeries> series = group.getShownSeries();
 		double plotLeft = ix + PLOT_EDGE, plotRight = ix + iw - PLOT_EDGE, plotBottom = iy + ih - PLOT_EDGE;
 		List<Drawing.Area> keys = new ArrayList<>();
-		List<Entry> entries = entries(group, series);
+		String pos = model.getLegend() == null || model.getLegend().getPosition() == null ? "r" : model.getLegend().getPosition();
+		boolean horizontal = "b".equals(pos) || "t".equals(pos);
+		List<Entry> entries = entries(group, series, !horizontal);
 		if (model.getLegend() != null && !entries.isEmpty()) {
 			CTLegend lg = model.getLegend().getSource();
 			Style s = style(lg.getTxPr(), base());
-			String pos = model.getLegend().getPosition() == null ? "r" : model.getLegend().getPosition();
+			// at the top, or the top right, the legend is below the title (or at the frame's edge)
+			double top = d.boxes.containsKey("title") ? d.boxes.get("title").getMaxY() + LEGEND_BELOW_TITLE : iy + LEGEND_EDGE;
 			double key = LEGEND_KEY * s.line;
 			double rowH = s.line + 5.97 - 0.0102 * s.size;
 			List<Double> widths = new ArrayList<>();
@@ -367,7 +416,6 @@ final class ChartLayout {
 				widths.add(ew);
 				maxW = Math.max(maxW, ew);
 			}
-			boolean horizontal = "b".equals(pos) || "t".equals(pos);
 			double lx, ly, lw, lh;
 			List<double[]> at = new ArrayList<>();
 			if (horizontal) {
@@ -375,15 +423,29 @@ final class ChartLayout {
 				int k = widths.size();
 				double sum = 0;
 				for (double ew : widths) sum += ew;
-				lw = Math.min((1 + LEGEND_SLOT) * sum, Math.max(sum, LEGEND_MAX * w));
-				double pad = (lw - sum) / (k + 1);
-				lh = rowH;
+				int rows = Math.max(1, (int) Math.ceil(sum / (LEGEND_MAX * w) - 1e-9));
+				int perRow = (int) Math.ceil(k / (double) rows);
+				rows = (int) Math.ceil(k / (double) perRow);
+				if (rows == 1) {
+					lw = Math.min((1 + LEGEND_SLOT) * sum, Math.max(sum, LEGEND_MAX * w));
+				} else {
+					lw = 0;
+					for (int r = 0; r < rows; r++) {
+						double rw = 0;
+						for (int i = r * perRow; i < Math.min(k, (r + 1) * perRow); i++) rw += widths.get(i);
+						lw = Math.max(lw, rw);
+					}
+				}
+				double pad = rows == 1 ? (lw - sum) / (k + 1) : 0;
+				lh = rows * rowH - (rows - 1) * LEGEND_ROW_LESS;
 				lx = ix + (iw - lw) / 2;
-				ly = "b".equals(pos) ? iy + ih - LEGEND_EDGE - lh : plotTop;
-				double x = lx + pad;
-				for (double ew : widths) {
-					at.add(new double[] { x, ly + LEGEND_TOP, maxW });
-					x += ew + pad;
+				ly = "b".equals(pos) ? iy + ih - LEGEND_EDGE - lh : top;
+				for (int r = 0; r < rows; r++) {
+					double x = lx + pad;
+					for (int i = r * perRow; i < Math.min(k, (r + 1) * perRow); i++) {
+						at.add(new double[] { x, ly + LEGEND_TOP + r * rowH, maxW });
+						x += widths.get(i) + pad;
+					}
 				}
 				if ("b".equals(pos)) plotBottom = ly - GAP;
 				else plotTop = ly + lh + GAP;
@@ -391,11 +453,15 @@ final class ChartLayout {
 				lw = maxW + 3 + 2 * LEGEND_SIDE;
 				lh = entries.size() * rowH;
 				lx = "l".equals(pos) ? ix + LEGEND_EDGE : ix + iw - LEGEND_EDGE - lw;
-				// centred on the plot area
-				ly = (plotTop + plotBottom) / 2 - lh / 2;
+				// centred on the plot area; at the top right, below the title, the plot area below it
+				ly = "tr".equals(pos) ? top : (plotTop + plotBottom) / 2 - lh / 2;
 				for (int i = 0; i < entries.size(); i++) at.add(new double[] { lx + LEGEND_SIDE, ly + LEGEND_TOP + i * rowH, maxW + 3 });
 				if ("l".equals(pos)) plotLeft = lx + lw + GAP;
 				else plotRight = lx - GAP;
+				if ("tr".equals(pos)) {
+					plotTop = ly + lh + LEGEND_TR_BELOW;
+					plotBottom -= LEGEND_TR_BOTTOM;
+				}
 			}
 			d.boxes.put("legend", new Rectangle2D.Double(lx, ly, lw, lh));
 			for (int i = 0; i < entries.size(); i++) {
@@ -413,7 +479,7 @@ final class ChartLayout {
 						keys.add(new Drawing.Area(new Line2D.Double(cx - half, cy, cx + half, cy), null, en.line, en.lineWidth, "legend.key." + i, null,
 								true));
 					}
-					if (en.marker != null) keys.add(marker(en.marker, cx, cy, "legend.key." + i));
+					if (en.marker != null) keys.addAll(marker(en.marker.atMost(key), cx, cy, "legend.key." + i));
 				} else {
 					keys.add(new Drawing.Area(new Rectangle2D.Double(kx, ky, key, key), en.fill, en.line, en.lineWidth, "legend.key." + i));
 				}
@@ -445,9 +511,11 @@ final class ChartLayout {
 	/**
 	 * The legend's entries: a series' each, or where the colours vary by point (a pie's, a
 	 * doughnut's), the first series' points'.  A clustered bar chart lists its series from the
-	 * last (r1-bar-clustered), as its bars run from the bottom up.
+	 * last (r1-bar-clustered), as its bars run from the bottom up; so does a stacked column or area
+	 * chart's legend at the side, as its stack does (r14-legend-right-column-stacked; a stacked bar's
+	 * and a line's in order)
 	 */
-	private List<Entry> entries(ChartGroup g, List<ChartSeries> series) {
+	private List<Entry> entries(ChartGroup g, List<ChartSeries> series, boolean vertical) {
 		List<Entry> out = new ArrayList<>();
 		if (series.isEmpty()) return out;
 		ChartGroup.Kind kind = g.getKind();
@@ -470,6 +538,9 @@ final class ChartLayout {
 			else out.add(new Entry(name, seriesFill(s), lineColour(sp), lineWidth(sp), false, null));
 		}
 		if (kind == ChartGroup.Kind.BAR && "bar".equals(g.getBarDirection()) && !stacked(g)) Collections.reverse(out);
+		else if (vertical && stacked(g) && (kind == ChartGroup.Kind.AREA || (kind == ChartGroup.Kind.BAR && !"bar".equals(g.getBarDirection())))) {
+			Collections.reverse(out);
+		}
 		return out;
 	}
 
@@ -478,6 +549,9 @@ final class ChartLayout {
 	}
 
 	// ------------------------------------------------------------------ the plot, with axes
+
+	/** Whether the value axis is a 100% chart's (set by axes() for its frame) */
+	private boolean percentAxis;
 
 	/** The axes' labels, places and scales, and the series drawn between them */
 	private void axes(ChartGroup group, List<ChartSeries> series, double plotLeft, double plotTop, double plotRight, double plotBottom,
@@ -502,8 +576,8 @@ final class ChartLayout {
 			else if (a.getKind() == ChartAxis.Kind.CATEGORY || a.getKind() == ChartAxis.Kind.DATE) catAx = a;
 		}
 		boolean valLabels = labelled(valAx), catLabels = labelled(catAx);
-		Style vs = style(valAx == null ? null : txPr(valAx.getSource()), base());
-		Style cst = style(catAx == null ? null : txPr(catAx.getSource()), base());
+		Style vs = axisStyle(valAx);
+		Style cst = axisStyle(catAx);
 
 		// the values: each point's extent, from (NaN: the axis's crossing) to; NaN to: a blank not drawn
 		int n = series.size(), nCat = 0;
@@ -563,9 +637,8 @@ final class ChartLayout {
 		}
 		if (dmin == Double.POSITIVE_INFINITY) dmin = dmax = xmin = xmax = 0;
 		Double setMin = valAx == null ? null : valAx.getMin(), setMax = valAx == null ? null : valAx.getMax();
-		// a 100% chart's axis ends at 100% (r1-column-stacked-100, r1-bar-stacked-100)
-		if (percent && setMax == null && dmax > 0) setMax = 1.0;
-		if (percent && setMin == null && dmin < 0) setMin = -1.0;
+		// a 100% chart's axis: its shares out to the unit, within 100% either way (AxisScale)
+		percentAxis = percent;
 		String valCode = numberFormat(valAx, series, percent);
 
 		Frame f = scatter ? scatterFrame(valAx, catAx, valLabels, catLabels, vs, cst, dmin, dmax, setMin, setMax, xmin, xmax, valCode, series,
@@ -576,6 +649,7 @@ final class ChartLayout {
 								plotTop, plotRight, plotBottom);
 		d.valueAxis = new double[] { f.scale.min, f.scale.max, f.scale.unit };
 		if (f.xScale != null) d.xAxis = new double[] { f.xScale.min, f.xScale.max, f.xScale.unit };
+		else if (f.dates != null) d.xAxis = f.dates;
 		Rectangle2D inside = new Rectangle2D.Double(f.left, f.top, f.right - f.left, f.bottom - f.top);
 		d.boxes.put("inside", inside);
 
@@ -685,6 +759,8 @@ final class ChartLayout {
 		double catW;
 		/** where the category axis's tick marks are */
 		List<Double> ticks = new ArrayList<>();
+		/** a date axis's first and last dates and its major unit in base units, as Excel reports them */
+		double[] dates;
 
 		/** a value's place along the value axis */
 		double v(double value) {
@@ -697,6 +773,14 @@ final class ChartLayout {
 			return left + xScale.fraction(value) * (right - left);
 		}
 	}
+
+	/**
+	 * A bar chart's category labels' band (from the plot area's edge to the inside) is at most this
+	 * share of the plot area less half the last value label; wider labels are wrapped to fit, a word
+	 * wider than the room broken where it reaches it (r14-sweep-bar-text-12 and -x100-text-12:
+	 * 0.548 to 0.553 on 24 sizes; "Categor" / "y 4")
+	 */
+	static final double BAR_CATEGORY_SHARE = 0.55;
 
 	/** A value axis's labels: the values and their texts */
 	private void valueLabels(Frame f, AxisScale scale, boolean labelled, String code, List<Double> values, List<String> texts) {
@@ -727,7 +811,7 @@ final class ChartLayout {
 		double band1 = catLabels && bottomAxis ? band(cst, 1) : 0;
 		// (a maximum set can take the scale below zero, so this is decided again with the scale)
 		f.scale = AxisScale.of(dmin, dmax, setMin, setMax, valAx == null ? null : valAx.getMajorUnit(), valAx == null ? null : valAx.getLogBase(),
-				plotBottom - band1 - f.top, vs.line);
+				plotBottom - band1 - f.top, vs.line, percentAxis ? AxisScale.Bounds.PERCENT : AxisScale.Bounds.VALUE);
 		if (!f.scale.log && f.scale.min < 0) bottomAxis = false;
 		valueLabels(f, f.scale, valLabels, valCode, f.values, f.valueTexts);
 		f.left = valLabels ? plotLeft - VALUE_LABEL_OVERHANG + widest(f.valueTexts, vs) + VALUE_LABEL_GAP * vs.line : plotLeft;
@@ -752,15 +836,37 @@ final class ChartLayout {
 		double catMax = 0, wordMax = 0;
 		for (String t : catTexts) {
 			catMax = Math.max(catMax, cst.width(t));
-			for (String word : t.split(" ")) wordMax = Math.max(wordMax, cst.width(word));
+			for (String word : words(t)) wordMax = Math.max(wordMax, cst.width(word));
 		}
 		int nLabels = catTexts.size();
 		int mode = LEVEL, every = 1;
 		double labelRoom = catW * c.step;
-		// a date axis's labels turn 90 degrees where text would turn 45 (R5's daily dates: 18.25pt a
-		// category, the band the widest turned 90; two probes)
 		boolean dates = c.dates;
-		if (catLabels && nLabels > 0) {
+		// a date axis's labels each have the inside over their number: level, wrapped, turned 45 or
+		// 90 ({@link #DATE_ROOM}), else an automatic major unit the next up (r14-sweep-dates)
+		if (catLabels && dates && !midCat && nLabels > 0) {
+			int[] units = c.autoMajor ? majorUnits(c.unit) : new int[] { c.step };
+			for (int u = 0; u < units.length; u++) {
+				if (c.autoMajor) dateLabels(c, units[u]);
+				catTexts = c.labels;
+				nLabels = catTexts.size();
+				catMax = 0;
+				wordMax = 0;
+				for (String t : catTexts) {
+					catMax = Math.max(catMax, cst.width(t));
+					for (String word : words(t)) wordMax = Math.max(wordMax, cst.width(word));
+				}
+				labelRoom = (f.right - f.left) / nLabels;
+				boolean spaced = false;
+				for (String t : catTexts) spaced |= t.indexOf(' ') >= 0;
+				if (catMax <= labelRoom) mode = LEVEL;
+				else if (wordMax <= labelRoom && (spaced || catMax <= DATE_WRAP * labelRoom)) mode = WRAPPED;
+				else if (spaced ? labelRoom >= cst.line / SIN45 : labelRoom * SIN45 >= DATE_ROOM * cst.line) mode = TURNED_45;
+				else if (labelRoom >= DATE_ROOM * cst.line || u == units.length - 1) mode = TURNED_90;
+				else continue;
+				break;
+			}
+		} else if (catLabels && nLabels > 0) {
 			for (every = 1; every <= nLabels; every++) {
 				double room = every * labelRoom;
 				if (catMax <= room) mode = LEVEL;
@@ -784,10 +890,10 @@ final class ChartLayout {
 			if (!l.isEmpty()) shownMax = Math.max(shownMax, cst.width(t));
 		}
 		double band = !catLabels || !bottomAxis ? 0 : bandOf(mode, cst, lines, shownMax);
-		// a small plot caps the band (R3, R11, R12: about 0.56 of the plot area's height): wrapped
+		// a small plot caps the band (R3, R11, R12, R14: CATEGORY_CAP of the plot area's height and the gap): wrapped
 		// labels go back on one line, overlapping; turned ones are cut short to the band of one
 		// line (at least a character, and "..."); a line too tall overlaps the gap below
-		double cap = CATEGORY_CAP * (plotBottom - plotTop);
+		double cap = (1 - CATEGORY_CAP) * (plotBottom - plotTop) + band(cst, 0) - (f.top - plotTop);
 		if (band > cap) {
 			if (mode == WRAPPED) {
 				mode = LEVEL;
@@ -817,15 +923,23 @@ final class ChartLayout {
 		// reach past the chart's left: to TURNED_PUSH + its width x sin 45 - the plot's right / (2n)
 		// (R12, R13: on all 31 probes turned so, to 0.07pt; the category width taken as the right
 		// edge over n, as if the plot began at the chart's edge)
+		// and pull its right edge in where the last category, placed so, is nearer the plot's right
+		// than a line x sin 45 (R12's every second label, r14-sweep-dates: on 16 sizes, to 0.05pt)
 		if (mode == TURNED_45 && nLabels > 0 && !catLines.get(0).isEmpty()) {
-			double pushed = TURNED_PUSH + SIN45 * cst.width(catLines.get(0).get(0)) - f.right / (2 * slots);
-			if (pushed > f.left) {
-				f.left = pushed;
-				catW = (f.right - f.left) / slots;
-			}
+			double right = f.right;
+			double pushed = TURNED_PUSH + SIN45 * cst.width(catLines.get(0).get(0)) - right / (2 * slots);
+			if (pushed > f.left) f.left = pushed;
+			double pulled = SIN45 * cst.line - right / (2 * slots);
+			if (pulled > 0) f.right = right - pulled;
+			catW = (f.right - f.left) / slots;
 		}
-		f.bottom = plotBottom - band;
+		// (the inside no less than nothing: r14-sweep-column-h below 74pt)
+		f.bottom = Math.max(f.top, plotBottom - band);
 		f.catW = catW;
+		if (dates) {
+			LocalDate end = "months".equals(c.unit) ? c.start.plusMonths(c.span) : "years".equals(c.unit) ? c.start.plusYears(c.span) : c.start.plusDays(c.span);
+			f.dates = new double[] { serial(c.start), serial(end), c.step };
+		}
 		f.categories = new double[nCat];
 		for (int i = 0; i < nCat; i++) f.categories[i] = f.left + (c.slot[i] + (midCat ? 0 : 0.5)) * catW;
 		if (midCat) for (int k = 0; k <= c.span; k += Math.max(1, c.step)) f.ticks.add(f.left + k * catW);
@@ -872,20 +986,37 @@ final class ChartLayout {
 		f.top = plotTop;
 		Categories c = categories(series, catAx, nCat);
 		List<String> catTexts = catLabels ? c.labels : new ArrayList<>();
-		f.left = catLabels ? plotLeft - VALUE_LABEL_OVERHANG + widest(catTexts, cst) + VALUE_LABEL_GAP * cst.line : plotLeft;
+		double overhead = VALUE_LABEL_GAP * cst.line - VALUE_LABEL_OVERHANG;
+		f.left = catLabels ? plotLeft + widest(catTexts, cst) + overhead : plotLeft;
 		f.bottom = plotBottom - (valLabels ? band(vs, 1) : 0);
-		double left = f.left;
-		f.scale = AxisScale.of(dmin, dmax, setMin, setMax, valAx == null ? null : valAx.getMajorUnit(), valAx == null ? null : valAx.getLogBase(),
-				(lo, hi, u, k) -> (plotRight - (valLabels ? vs.width(format(hi, valCode)) / 2 : 0) - left) / k > ACROSS * vs.size);
+		AxisScale.Bounds kind = percentAxis ? AxisScale.Bounds.PERCENT : AxisScale.Bounds.VALUE;
+		f.scale = acrossScale(dmin, dmax, setMin, setMax, valAx, valLabels, valCode, vs, plotLeft, f.left, plotRight, kind);
+		// labels too wide for their share of the plot area are wrapped to it, and the scale chosen again
+		List<List<String>> catLines = new ArrayList<>();
+		for (String t : catTexts) catLines.add(java.util.Collections.singletonList(t));
+		double half = valLabels ? vs.width(format(f.scale.max, valCode)) / 2 : 0;
+		double room = BAR_CATEGORY_SHARE * (plotRight - half - plotLeft) - overhead;
+		if (catLabels && widest(catTexts, cst) > room) {
+			double w = 0;
+			for (int i = 0; i < catTexts.size(); i++) {
+				List<String> l = wrapBroken(catTexts.get(i), cst, room);
+				catLines.set(i, l);
+				w = Math.max(w, widest(l, cst));
+			}
+			f.left = plotLeft + w + overhead;
+			f.scale = acrossScale(dmin, dmax, setMin, setMax, valAx, valLabels, valCode, vs, plotLeft, f.left, plotRight, kind);
+		}
 		valueLabels(f, f.scale, valLabels, valCode, f.values, f.valueTexts);
-		f.right = plotRight - (f.valueTexts.isEmpty() ? 0 : vs.width(f.valueTexts.get(f.valueTexts.size() - 1)) / 2);
+		f.right = plotRight - (valLabels ? vs.width(format(f.scale.max, valCode)) / 2 : 0);
 		double slots = c.span + 1;
 		f.catW = (f.bottom - f.top) / slots;
 		f.categories = new double[nCat];
 		for (int i = 0; i < nCat; i++) f.categories[i] = f.bottom - (c.slot[i] + 0.5) * f.catW;
 		for (int k = 0; k <= c.span + 1; k++) f.ticks.add(f.bottom - k * f.catW);
-		for (int i = 0; i < catTexts.size(); i++) {
-			f.categoryLabels.add(left(catTexts.get(i), cst, f.bottom - (c.labelSlot[i] + 0.5) * f.catW, f.left, "category." + i));
+		for (int i = 0; i < catLines.size(); i++) {
+			List<String> l = catLines.get(i);
+			double y = f.bottom - (c.labelSlot[i] + 0.5) * f.catW - (l.size() - 1) * cst.line / 2;
+			for (int j = 0; j < l.size(); j++) f.categoryLabels.add(left(l.get(j), cst, y + j * cst.line, f.left, "category." + i));
 		}
 		return f;
 	}
@@ -905,13 +1036,35 @@ final class ChartLayout {
 		valueLabels(f, f.scale, valLabels, valCode, f.values, f.valueTexts);
 		f.left = valLabels ? plotLeft - VALUE_LABEL_OVERHANG + widest(f.valueTexts, vs) + VALUE_LABEL_GAP * vs.line : plotLeft;
 		String xCode = xAx == null ? "General" : numberFormat(xAx, series.isEmpty() ? null : series.get(0).getXValues());
-		double left = f.left;
-		f.xScale = AxisScale.of(xmin, xmax, xAx == null ? null : xAx.getMin(), xAx == null ? null : xAx.getMax(),
-				xAx == null ? null : xAx.getMajorUnit(), xAx == null ? null : xAx.getLogBase(),
-				(lo, hi, u, k) -> (plotRight - (xLabels ? xs.width(format(hi, xCode)) / 2 : 0) - left) / k > ACROSS * xs.size);
+		f.xScale = acrossScale(xmin, xmax, xAx == null ? null : xAx.getMin(), xAx == null ? null : xAx.getMax(), xAx, xLabels, xCode, xs,
+				plotLeft, f.left, plotRight, AxisScale.Bounds.X);
 		valueLabels(f, f.xScale, xLabels, xCode, f.xValues, f.xTexts);
-		f.right = plotRight - (f.xTexts.isEmpty() ? 0 : xs.width(f.xTexts.get(f.xTexts.size() - 1)) / 2);
+		// the first label, centred on the inside's left edge, is kept within the plot area (p6-scatter-dates)
+		if (xLabels && !f.xTexts.isEmpty()) f.left = Math.max(f.left, plotLeft + xs.width(f.xTexts.get(0)) / 2);
+		f.right = plotRight - (xLabels ? xs.width(format(f.xScale.max, xCode)) / 2 : 0);
 		return f;
+	}
+
+	/**
+	 * A horizontal value axis's scale: the unit its plot area's width gives ({@link #ACROSS}), then
+	 * doubled, the bounds kept, while its interval on the inside is less than its widest label (R14's
+	 * sweeps: "60000", 22.90pt, at 9pt, 22.45 apart doubled and 23.45 not; "1000", 24.32pt, at 12pt,
+	 * 22.24 doubled and 25.24 not); the inside's right edge comes in by half the label at the maximum
+	 */
+	private AxisScale acrossScale(double dmin, double dmax, Double setMin, Double setMax, ChartAxis ax, boolean labels, String code, Style s,
+			double plotLeft, double left, double plotRight, AxisScale.Bounds kind) {
+		AxisScale scale = AxisScale.of(dmin, dmax, setMin, setMax, ax == null ? null : ax.getMajorUnit(), ax == null ? null : ax.getLogBase(),
+				(lo, hi, u, k) -> (plotRight - plotLeft) / k >= ACROSS * s.size, kind);
+		if (!labels || scale.log || (ax != null && ax.getMajorUnit() != null)) return scale;
+		double inside = plotRight - s.width(format(scale.max, code)) / 2 - left;
+		for (int guard = 0; guard < 8; guard++) {
+			List<Double> v = scale.values();
+			double widest = 0;
+			for (double x : v) widest = Math.max(widest, s.width(format(x, code)));
+			if (v.size() <= 2 || inside * scale.unit / (scale.max - scale.min) >= widest) return scale;
+			scale = scale.doubled();
+		}
+		return scale;
 	}
 
 	/** A category axis's categories: each one's slot (a date axis's: its base units from the first), and its labels */
@@ -926,6 +1079,32 @@ final class ChartLayout {
 		int step = 1;
 		/** a date axis's */
 		boolean dates;
+		/** a date axis's base unit, first date, labels' format, and whether its major unit is automatic */
+		String unit;
+		LocalDate start;
+		String code;
+		boolean autoMajor;
+	}
+
+	/** A date axis's major units Excel tries, in base units, finest first (r14-sweep-dates: 1, 2 and 7 days) */
+	private static int[] majorUnits(String unit) {
+		if ("months".equals(unit)) return new int[] { 1, 2, 3, 6, 12 };
+		if ("years".equals(unit)) return new int[] { 1, 2, 5, 10, 20, 50, 100 };
+		return new int[] { 1, 2, 7, 14 };
+	}
+
+	/** A date axis's labels at each major unit (step base units) from the first date */
+	private void dateLabels(Categories c, int step) {
+		c.step = step;
+		c.labels.clear();
+		List<Double> at = new ArrayList<>();
+		for (int k = 0; k <= c.span; k += c.step) {
+			at.add((double) k);
+			LocalDate dt = "months".equals(c.unit) ? c.start.plusMonths(k) : "years".equals(c.unit) ? c.start.plusYears(k) : c.start.plusDays(k);
+			c.labels.add(format(serial(dt), c.code));
+		}
+		c.labelSlot = new double[at.size()];
+		for (int i = 0; i < at.size(); i++) c.labelSlot[i] = at.get(i);
 	}
 
 	private Categories categories(List<ChartSeries> series, ChartAxis ax, int nCat) {
@@ -960,18 +1139,20 @@ final class ChartLayout {
 		c.span = (int) Math.round(last - first);
 		String major = ax.getMajorTimeUnit() != null ? ax.getMajorTimeUnit() : unit;
 		double step = ax.getMajorUnit() != null ? ax.getMajorUnit() : 1;
-		c.step = (int) Math.max(1, Math.round(step * ratio(major, unit)));
-		String code = ax.getNumberFormat() != null && !Boolean.TRUE.equals(ax.getNumberFormatSourceLinked()) ? ax.getNumberFormat()
+		c.unit = unit;
+		c.code = ax.getNumberFormat() != null && !Boolean.TRUE.equals(ax.getNumberFormatSourceLinked()) ? ax.getNumberFormat()
 				: cats.getFormatCode(0);
-		LocalDate start = date(cats.getNumber(0) == null ? 0 : cats.getNumber(0));
-		List<Double> at = new ArrayList<>();
-		for (int k = 0; k <= c.span; k += c.step) {
-			at.add((double) k);
-			LocalDate dt = "months".equals(unit) ? start.plusMonths(k) : "years".equals(unit) ? start.plusYears(k) : start.plusDays(k);
-			c.labels.add(format(serial(dt), code));
+		c.start = null;
+		for (int i = 0; i < nCat; i++) {
+			Double v = cats.getNumber(i);
+			if (v != null && units(v, unit) == first) {
+				c.start = date(v);
+				break;
+			}
 		}
-		c.labelSlot = new double[at.size()];
-		for (int i = 0; i < at.size(); i++) c.labelSlot[i] = at.get(i);
+		if (c.start == null) c.start = date(0);
+		c.autoMajor = ax.getMajorUnit() == null;
+		dateLabels(c, (int) Math.max(1, Math.round(step * ratio(major, unit))));
 		return c;
 	}
 
@@ -1082,7 +1263,7 @@ final class ChartLayout {
 			double lw = lineWidth(sp);
 			// a line series with no line of its own: the automatic colour, Office's 2.25pt (its template's)
 			if (sp == null && !scatter) {
-				lc = automatic(sr.getIdx());
+				lc = automatic(sr.getIdx(), seriesCount());
 				lw = 2.25;
 			}
 			Marker m = marker(sr);
@@ -1101,7 +1282,7 @@ final class ChartLayout {
 				double x = scatter ? f.x(xs[s][i]) : f.categories[i], y = f.v(to[s][i]);
 				d.boxes.put("point." + s + "." + i, new Rectangle2D.Double(x, y, 0, 0));
 				run.add(new double[] { x, y });
-				if (m != null) markers.add(marker(m, x, y, "point." + s + "." + i));
+				if (m != null) markers.addAll(marker(m, x, y, "point." + s + "." + i));
 			}
 			line(run, smooth, lc, lw, "series." + s);
 		}
@@ -1110,8 +1291,9 @@ final class ChartLayout {
 
 	/**
 	 * A run of a line's points, straight from one to the next, or smoothed: a Bezier curve through
-	 * them, each segment's control points a sixth of its neighbours' difference along (Catmull-Rom;
-	 * to be measured against Office's curves, R14)
+	 * them, each segment's control points a sixth of its neighbours' difference along (Catmull-Rom),
+	 * the ends' a third of the chord (R14's smoothed line and scatter: Word's PDF has these control
+	 * points, fitted to 0.006pt)
 	 */
 	private void line(List<double[]> run, boolean smooth, Color colour, double width, String role) {
 		if (colour == null || run.size() < 2) return;
@@ -1123,19 +1305,26 @@ final class ChartLayout {
 				p.lineTo(c[0], c[1]);
 				continue;
 			}
-			double[] a = run.get(Math.max(0, i - 2)), e = run.get(Math.min(run.size() - 1, i + 1));
+			// beyond either end, the end reflected (Office's end tangents are a third of the chord, r14-scatter-smooth)
+			double[] a = i >= 2 ? run.get(i - 2) : new double[] { 2 * b[0] - c[0], 2 * b[1] - c[1] };
+			double[] e = i + 1 < run.size() ? run.get(i + 1) : new double[] { 2 * c[0] - b[0], 2 * c[1] - b[1] };
 			p.curveTo(b[0] + (c[0] - a[0]) / 6, b[1] + (c[1] - a[1]) / 6, c[0] - (e[0] - b[0]) / 6, c[1] - (e[1] - b[1]) / 6, c[0], c[1]);
 		}
 		d.add(new Drawing.Area(p, null, colour, width, role, null, true));
 	}
 
-	/** A marker's shape, centred on x, y */
-	private static Drawing.Area marker(Marker m, double x, double y, String role) {
-		double r = m.size / 2;
-		Shape shape;
+	/**
+	 * A marker centred on x, y, its size across (R14's markers): an x, a star or a plus its strokes
+	 * over a square filled and outlined; a dash a bar a fifth of its size high; a dot that bar half
+	 * as long, from the point rightwards.  Word's PDF has them on its 0.24pt grid, 0.12 to 0.28
+	 * smaller (2.88 for 3, 4.80 for 5, 6.72 for 7), PowerPoint's at their size (5.04 for 5)
+	 */
+	private static List<Drawing.Area> marker(Marker m, double x, double y, String role) {
+		List<Drawing.Area> out = new ArrayList<>();
+		double s = m.size, r = s / 2, R = r;
 		switch (m.symbol) {
 		case "square":
-			shape = new Rectangle2D.Double(x - r, y - r, m.size, m.size);
+			out.add(new Drawing.Area(new Rectangle2D.Double(x - r, y - r, s, s), m.fill, m.line, m.lineWidth, role));
 			break;
 		case "diamond": {
 			Path2D.Double p = new Path2D.Double();
@@ -1144,7 +1333,7 @@ final class ChartLayout {
 			p.lineTo(x, y + r);
 			p.lineTo(x - r, y);
 			p.closePath();
-			shape = p;
+			out.add(new Drawing.Area(p, m.fill, m.line, m.lineWidth, role));
 			break;
 		}
 		case "triangle": {
@@ -1153,49 +1342,36 @@ final class ChartLayout {
 			p.lineTo(x + r, y + r);
 			p.lineTo(x - r, y + r);
 			p.closePath();
-			shape = p;
+			out.add(new Drawing.Area(p, m.fill, m.line, m.lineWidth, role));
 			break;
 		}
-		case "x": {
-			Path2D.Double p = new Path2D.Double();
-			p.moveTo(x - r, y - r);
-			p.lineTo(x + r, y + r);
-			p.moveTo(x + r, y - r);
-			p.lineTo(x - r, y + r);
-			shape = p;
-			break;
-		}
+		case "x":
+		case "star":
 		case "plus": {
-			Path2D.Double p = new Path2D.Double();
-			p.moveTo(x, y - r);
-			p.lineTo(x, y + r);
-			p.moveTo(x - r, y);
-			p.lineTo(x + r, y);
-			shape = p;
-			break;
-		}
-		case "star": {
-			Path2D.Double p = new Path2D.Double();
-			p.moveTo(x - r, y - r);
-			p.lineTo(x + r, y + r);
-			p.moveTo(x + r, y - r);
-			p.lineTo(x - r, y + r);
-			p.moveTo(x, y - r);
-			p.lineTo(x, y + r);
-			shape = p;
+			out.add(new Drawing.Area(new Rectangle2D.Double(x - r, y - r, s, s), m.fill, m.line, m.lineWidth, role));
+			List<Line2D> strokes = new ArrayList<>();
+			if (!"plus".equals(m.symbol)) {
+				strokes.add(new Line2D.Double(x - R, y - R, x + R, y + R));
+				strokes.add(new Line2D.Double(x + R, y - R, x - R, y + R));
+			}
+			if (!"x".equals(m.symbol)) strokes.add(new Line2D.Double(x, y - R, x, y + R));
+			if ("plus".equals(m.symbol)) strokes.add(new Line2D.Double(x - R, y, x + R, y));
+			// (each stroke a path of its own, filled and stroked, as Word's PDF has them)
+			for (Line2D l : strokes) out.add(new Drawing.Area(l, m.fill, m.line, m.lineWidth, role));
 			break;
 		}
 		case "dash":
-			shape = new Rectangle2D.Double(x - r, y - m.size / 10, m.size, m.size / 5);
+			out.add(new Drawing.Area(new Rectangle2D.Double(x - r, y - s / 10, s, s / 5), m.fill, m.line,
+					m.lineWidth, role));
 			break;
 		case "dot":
-			shape = new Rectangle2D.Double(x - r, y - m.size / 10, m.size / 5, m.size / 5);
+			out.add(new Drawing.Area(new Rectangle2D.Double(x, y - s / 10, r, s / 5), m.fill, m.line,
+					m.lineWidth, role));
 			break;
 		default:
-			shape = new Ellipse2D.Double(x - r, y - r, m.size, m.size);
+			out.add(new Drawing.Area(new Ellipse2D.Double(x - r, y - r, s, s), m.fill, m.line, m.lineWidth, role));
 		}
-		boolean open = "x".equals(m.symbol) || "plus".equals(m.symbol) || "star".equals(m.symbol);
-		return new Drawing.Area(shape, open ? null : m.fill, m.line, m.lineWidth, role);
+		return out;
 	}
 
 	/** A series' marker: none where its symbol is none, or where it states none (the probes all state theirs) */
@@ -1320,11 +1496,18 @@ final class ChartLayout {
 		return band(s, lines);
 	}
 
-	/** A series' fill: its own, else (automatic) its colour style's colour for its index */
+	/** The chart's series, as Office counts them for its automatic colours */
+	private int seriesCount() {
+		int n = 0;
+		for (ChartGroup g : model.getGroups()) n += g.getSeries().size();
+		return n;
+	}
+
+	/** A series' fill: its own, else (automatic) the colour Office shows for its index */
 	private Color seriesFill(ChartSeries s) {
 		ChartFill f = s.getFill();
 		if (f != null && f.getColor() != null) return awt(f.getColor());
-		if (f == null || f.isAutomatic()) return automatic(s.getIdx());
+		if (f == null || f.isAutomatic()) return automatic(s.getIdx(), seriesCount());
 		f = s.getPointFills().get(0);
 		if (f != null && f.getColor() != null) return awt(f.getColor());
 		return Color.GRAY;
@@ -1336,25 +1519,17 @@ final class ChartLayout {
 		if (f != null && f.getColor() != null) return awt(f.getColor());
 		ChartGroup g = model.getGroups().get(0);
 		boolean byPoint = g.getKind() == ChartGroup.Kind.PIE || g.getKind() == ChartGroup.Kind.DOUGHNUT || g.variesColors();
-		if (byPoint && (f == null || f.isAutomatic()) && (s.getFill() == null || s.getFill().isAutomatic())) return automatic(i);
+		if (byPoint && (f == null || f.isAutomatic()) && (s.getFill() == null || s.getFill().isAutomatic())) return automatic(i, count(s.getValues()));
 		return seriesFill(s);
 	}
 
-	private CTColorStyle colourStyle;
-	private boolean colourStyleRead;
-
 	/**
-	 * The colour Office gives an index with no colour of its own: the chart's colour style's
-	 * (CR-037 §4.2, the helper ChartDataEditor uses), else Office's colorful style's
+	 * The colour Office shows for an index with no colour of its own, of a count (the chart's
+	 * series, or a series' points): its legacy cycle of the accents, whatever the colour style
+	 * (CR-037 R14; ChartColorStyles)
 	 */
-	private Color automatic(long idx) {
-		if (!colourStyleRead) {
-			colourStyle = ChartColorStyles.of(model.getPart());
-			colourStyleRead = true;
-		}
-		Object c = colourStyle != null && !colourStyle.getEGColorChoice().isEmpty() ? ChartColorStyles.automatic(colourStyle, idx)
-				: ChartColorStyles.automatic(idx);
-		Color colour = awt(DrawingMLColors.resolve(c, theme));
+	private Color automatic(long idx, int count) {
+		Color colour = awt(DrawingMLColors.resolve(ChartColorStyles.automatic(idx, count), theme));
 		return colour == null ? Color.GRAY : colour;
 	}
 
@@ -1453,20 +1628,71 @@ final class ChartLayout {
 		return format(v, code);
 	}
 
-	/** Words wrapped to lines no wider than max (a word wider than max on a line of its own) */
+	/** The pieces a line can break between: at spaces, and after a hyphen ("22-Jan", r14-sweep-dates) */
+	static List<String> words(String text) {
+		List<String> out = new ArrayList<>();
+		for (String word : text.split(" ")) {
+			int from = 0;
+			for (int i = word.indexOf('-'); i >= 0 && i < word.length() - 1; i = word.indexOf('-', i + 1)) {
+				if (i == 0) continue;
+				out.add(word.substring(from, i + 1));
+				from = i + 1;
+			}
+			out.add(word.substring(from));
+		}
+		return out;
+	}
+
+	/**
+	 * Words wrapped to lines no wider than max (a word wider than max on a line of its own); a
+	 * hyphen's word breaks after it; text of spaces alone is a line with nothing on it (p6-pie-numbers'
+	 * title, " ")
+	 */
 	static List<String> wrap(String text, Style s, double max) {
 		List<String> out = new ArrayList<>();
 		String line = null;
 		for (String word : text.split(" ")) {
-			String next = line == null ? word : line + " " + word;
-			if (line != null && s.width(next) > max) {
-				out.add(line);
-				line = word;
-			} else {
-				line = next;
+			List<String> parts = words(word);
+			for (int p = 0; p < parts.size(); p++) {
+				String part = parts.get(p);
+				String next = line == null ? part : line + (p == 0 ? " " : "") + part;
+				if (line != null && s.width(next) > max) {
+					out.add(line);
+					line = part;
+				} else {
+					line = next;
+				}
 			}
 		}
 		if (line != null) out.add(line);
+		if (out.isEmpty()) out.add("");
+		return out;
+	}
+
+	/** Words wrapped to lines no wider than max, a word wider than max broken where it reaches it */
+	static List<String> wrapBroken(String text, Style s, double max) {
+		List<String> out = new ArrayList<>();
+		String line = null;
+		for (String word : text.split(" ")) {
+			String rest = word;
+			while (!rest.isEmpty()) {
+				String next = line == null ? rest : line + " " + rest;
+				if (s.width(next) <= max) {
+					line = next;
+					rest = "";
+				} else if (line != null) {
+					out.add(line);
+					line = null;
+				} else {
+					int k = rest.length();
+					while (k > 1 && s.width(rest.substring(0, k)) > max) k--;
+					out.add(rest.substring(0, k));
+					rest = rest.substring(k);
+				}
+			}
+		}
+		if (line != null) out.add(line);
+		if (out.isEmpty()) out.add("");
 		return out;
 	}
 

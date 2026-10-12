@@ -7,17 +7,20 @@ content), drawn by Excel, Word and PowerPoint (Microsoft 365, build 16.0.20430) 
 (`docx4j-layout-fidelity/tools/office-chart-render-probes.ps1`, Jason's runs), read on Linux and
 copied here by `chart_score.py fixtures`.  Sets R1 to R10 (phase 0), R11 to R13 (phase 1: the
 value axis's unit against its length; the category labels as the room for them shrinks; how far
-labels turned 45 degrees push the plot).  `ChartRenderFixturesTest` checks the set; `ChartRenderGateTest`
-is the renderer's gate against it.  (Phase 0 put it in docx4j-core-tests; phase 1 moved it here,
+labels turned 45 degrees push the plot), R14 (phase 2, run 2026-10-13: what the other types add,
+eleven sweeps, and 67 of Excel's own CR-036 charts copied as xlsx alone, `p1-*` and `p6-*`).
+`ChartRenderFixturesTest` checks the set; `ChartRenderGateTest` is the renderer's gate against it,
+`ChartSweepTest` its gate against the sweeps.  (Phase 0 put it in docx4j-core-tests; phase 1 moved it here,
 beside the renderer it is the oracle of.)
 
 | Path | What it is |
 |---|---|
-| `probes.tsv` | the probes: name, set (R1 to R10, CR-037 section 4.1), size in points, hosts, theme (2013 or 2023), the Excel gallery style R10 applied, where the chart sits on the PDF page (docx, pptx), what the probe asks |
+| `probes.tsv` | the probes: name, set (R1 to R14, CR-037 section 4.1), size in points, hosts, theme (2013 or 2023; empty: the file's own), the Excel gallery style R10 applied, where the chart sits on the PDF page (docx, pptx), what the probe asks, and for a swept probe its sweep (`width:120:660:3`: widths 120 to 660pt by 3) |
 | `probes/<name>.xlsx` | the chart as docx4j made it, beside its data, in the probe's theme (the docx's theme part copied in) |
 | `probes/<name>-styled.xlsx` | R10: Excel's save of it once its gallery style was applied |
 | `probes/<name>.pptx` | R1: PowerPoint's chart of the type, as docx4j made it (PowerPoint's template: no title, text 4/3 larger) |
 | `excel-layout/<name>.json` | Excel's layout of the chart (its object model): chart area, plot area and its inside, title, legend and its entries and keys, each axis (bounds, unit, labels' orientation, spacing, format, font), each point's box, a pie's `PieSliceLocation`s, data labels' text and boxes; nulls dropped, numbers to 0.001 |
+| `excel-layout/<name>.sweep.json` | a swept probe: Excel resized the chart through its sweep, the first size again at the end, and read at each size the plot's inside and each axis (bounds, unit, labels' orientation and spacing, box) |
 | `powerpoint-layout/<name>.json` | PowerPoint's, for the pptx |
 | `word-pdf/<name>.json` | `chart_trace.py`'s reading of Word's PDF of the probe's docx: each line of text (string, font, size, colour, baseline, centre) and each path (colour, box, each subpath's box and vertices), in points from the chart's top left |
 | `powerpoint-pdf/<name>.json` | the same of PowerPoint's PDF of the pptx |
@@ -42,5 +45,6 @@ Reading the dumps (measured on all of them, CR-037 section 11):
   radii's ends and the centre, not its arc (use `slice`: 1 and 3 the radii's outer ends, 2 the
   arc's middle, 5 the centre, 4 and 6 the radii's middles, 7 to 9 a doughnut's inner points).
 
-The docx, Word's and PowerPoint's PDFs, Excel's PNGs (720 × 420 at 432 × 252pt) and the full
-baseline (`baseline.tsv`) are on the share, `Office 2016/office_charts/cr037`.
+The docx, Word's and PowerPoint's PDFs, Excel's PNGs (720 × 420 at 432 × 252pt; Excel's own charts
+600 × 361 at 360 × 216) and the full baseline (`baseline.tsv`) are on the share,
+`Office 2016/office_charts/cr037`.

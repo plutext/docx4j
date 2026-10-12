@@ -62,6 +62,12 @@ Changes in Version 17.3.3
   ChartRenderCheck: what it refuses or draws simplified, and why; ChartFonts: a chart's theme fonts
   as AWT fonts).  This first part draws the clustered column; docx4j-export-fo depends on the
   module, and the outputs keep a chart's box empty until a later part.  CR-037.
+- docx4j-chart-render draws the other eleven classic types: bars, stacked and 100% stacked, lines
+  (markers, smoothing, gaps), areas, pies, doughnuts, scatter charts, and date axes.  New
+  ChartColorStyles: the colour Office shows for a series with none of its own.  New
+  docx4j.properties setting docx4j.chart.render.shortDate.  CR-037.
+- docx4j-export-fo-fonts-theme2023 adds Intos Narrow, a metric clone of Aptos Narrow (Excel 365's
+  body font), which mapped to Arimo before.  CR-037.
 - New docx4j.properties setting docx4j.dcterms.write (default false): true sets dcterms:modified
   to the current time on save, and dcterms:created on a new document.  CR-036.
 - A TOC update no longer adds another Hyperlink style to the styles part each time (TocStyles

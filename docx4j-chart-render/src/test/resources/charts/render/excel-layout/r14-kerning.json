@@ -1,0 +1,20 @@
+{
+ "probe": "r14-kerning",
+ "app": "excel",
+ "size": [720,252],
+ "chartType": 51,
+ "chartStyle": 201,
+ "displayBlanksAs": 1,
+ "chartObject": {"left":144,"top":0,"width":720,"height":252},
+ "chartArea": {"left":144,"top":0,"width":715,"height":247},
+ "plotArea": {"left":7,"top":33.09,"width":698,"height":174.991,"insideLeft":22.583,"insideTop":35.635,"insideWidth":682.417,"insideHeight":150.969},
+ "hasTitle": true,
+ "title": {"left":339.792,"top":2,"width":32.415,"height":20.09,"text":"Data","orientation":-4128,"font":{"size":14,"name":"Calibri","size2":14}},
+ "hasLegend": true,
+ "legend": {"left":330.742,"top":219.081,"width":50.515,"height":22.919,"position":-4107,"font":{"size":14,"size2":14},"entries":[{"left":334.952,"top":222.081,"width":42.096,"height":17.09,"key":{"left":338.798,"top":225.926,"width":7.69,"height":7.69}}]},
+ "axes": [{"type":1,"group":1,"left":23,"top":187,"width":682,"height":27,"crosses":-4105,"crossesAt":1,"reversePlotOrder":false,"axisBetweenCategories":true,"tickLabelSpacing":1,"tickLabelSpacingIsAuto":true,"tickMarkSpacing":1,"categoryType":-4105,"baseUnit":0,"majorTickMark":-4142,"tickLabelPosition":4,"hasMajorGridlines":false,"hasMinorGridlines":false,"tickLabels":{"orientation":-4105,"offset":100,"numberFormat":"General","numberFormatLinked":true,"fontSize":14,"fontName":"Calibri"},"hasTitle":false},{"type":2,"group":1,"left":1,"top":36,"width":22,"height":151,"minimumScale":0,"maximumScale":6,"majorUnit":1,"minorUnit":0.2,"minimumScaleIsAuto":true,"maximumScaleIsAuto":true,"majorUnitIsAuto":true,"scaleType":-4132,"crosses":-4105,"crossesAt":0,"reversePlotOrder":false,"majorTickMark":-4142,"tickLabelPosition":4,"hasMajorGridlines":true,"hasMinorGridlines":false,"displayUnit":-4142,"tickLabels":{"orientation":-4105,"offset":100,"numberFormat":"General","numberFormatLinked":true,"fontSize":14,"fontName":"Calibri"},"hasTitle":false}],
+ "series": [{"index":1,"name":"Data","chartType":51,"axisGroup":1,"plotOrder":1,"fill":"4472C4","line":"000000","lineWeight":-2147483648,"lineVisible":-1,"markerStyle":-4142,"markerSize":5,"explosion":0,"hasDataLabels":false,"values":[1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1],"xValues":["Y-","T-","-Y","AV","Va","Ty","To","LT","P.","F,","r.","y,","Yo","AT","LY","f."],"points":[{"left":37.224,"top":161.443,"width":13.37,"height":25.162,"fill":"4472C4","explosion":0},{"left":79.875,"top":136.281,"width":13.37,"height":50.323,"fill":"4472C4","explosion":0},{"left":122.526,"top":111.12,"width":13.37,"height":75.485,"fill":"4472C4","explosion":0},{"left":165.177,"top":85.958,"width":13.37,"height":100.646,"fill":"4472C4","explosion":0},{"left":207.828,"top":60.797,"width":13.37,"height":125.808,"fill":"4472C4","explosion":0},{"left":250.479,"top":161.443,"width":13.37,"height":25.162,"fill":"4472C4","explosion":0},{"left":293.13,"top":136.281,"width":13.37,"height":50.323,"fill":"4472C4","explosion":0},{"left":335.781,"top":111.12,"width":13.37,"height":75.485,"fill":"4472C4","explosion":0},{"left":378.432,"top":85.958,"width":13.37,"height":100.646,"fill":"4472C4","explosion":0},{"left":421.083,"top":60.797,"width":13.37,"height":125.808,"fill":"4472C4","explosion":0},{"left":463.734,"top":161.443,"width":13.37,"height":25.162,"fill":"4472C4","explosion":0},{"left":506.385,"top":136.281,"width":13.37,"height":50.323,"fill":"4472C4","explosion":0},{"left":549.036,"top":111.12,"width":13.37,"height":75.485,"fill":"4472C4","explosion":0},{"left":591.687,"top":85.958,"width":13.37,"height":100.646,"fill":"4472C4","explosion":0},{"left":634.338,"top":60.797,"width":13.37,"height":125.808,"fill":"4472C4","explosion":0},{"left":676.989,"top":161.443,"width":13.37,"height":25.162,"fill":"4472C4","explosion":0}]}],
+ "excelVersion": "16.0 build 20430",
+ "repaired": false,
+ "png": {"width":1200,"height":420,"dpiX":119.99}
+}

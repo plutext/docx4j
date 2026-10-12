@@ -31,10 +31,15 @@ import java.util.List;
  *     has the data's range); data of either sign is padded a twentieth at both ends; all
  *     negative is mirrored; all zeros is 0 to 1 (on 137 column probes, R1 to R12, none apart);</li>
  * <li>the unit is the finest of 1, 2 and 5 times a power of ten that gives at most ten
- *     intervals and whose labels, one line each, fit the axis's length with
- *     {@link #ALLOWANCE} to spare ((n + 1) lines &lt;= length + allowance); where none does, the
- *     coarsest that gives one interval;</li>
- * <li>a log axis runs from the power of its base below the data to the power above, by the base.</li>
+ *     intervals, each a label's line, within the axis's length less {@link #RESERVE}
+ *     (n lines &lt;= length - reserve); where none does, the coarsest that gives one interval;</li>
+ * <li>a log axis runs from the power of its base below the data to the power above, by the base;</li>
+ * <li>a 100% axis runs from the data's least share to its greatest, each out to the unit and no
+ *     further than -100% and 100%, unpadded (r14-stacked-100-negative: -36% to 77% is -40% to 80%;
+ *     all positive, 0 to 100%);</li>
+ * <li>a scatter chart's x axis, its data not from zero, is padded a twentieth of their range at
+ *     both ends, not the half range below (p6-scatter-dates: 46023 to 46026 is 46022.5 to 46026.5
+ *     by 0.5).</li>
  * </ul>
  * A bound or unit the file sets is kept.  The length is the plot's height with one line of
  * category labels (Excel chooses the unit before it wraps or turns them).  A horizontal value axis
@@ -43,8 +48,12 @@ import java.util.List;
  */
 final class AxisScale {
 
-	/** The room the labels may take beyond the axis's length: measured 4.66 to 5.08pt (R11) */
-	static final double ALLOWANCE = 4.87;
+	/**
+	 * What a vertical axis's length keeps back from its intervals' lines: 8.93 to 9.89pt, the same at
+	 * 7 to 16pt (463 tests: R1 to R13 and r14-sweep-column-h's 182 heights).  Phase 1's
+	 * (n + 1) lines within the length and 4.87pt fitted R11 alone, whose 14pt probes set it
+	 */
+	static final double RESERVE = 9.41;
 
 	/** At most this many intervals (R2, R11) */
 	static final int MAX_INTERVALS = 10;
@@ -69,7 +78,8 @@ final class AxisScale {
 			return v;
 		}
 		BigDecimal lo = BigDecimal.valueOf(min), u = BigDecimal.valueOf(unit);
-		int n = intervals(min, max, unit);
+		// (a doubled unit can stop short of the maximum: 0 to 60000 by 40000)
+		int n = (int) Math.floor((max - min) / unit + 1e-9);
 		for (int k = 0; k <= n; k++) v.add(lo.add(u.multiply(BigDecimal.valueOf(k))).doubleValue());
 		return v;
 	}
@@ -78,6 +88,14 @@ final class AxisScale {
 	double fraction(double v) {
 		if (log) return (Math.log(v) - Math.log(min)) / (Math.log(max) - Math.log(min));
 		return (v - min) / (max - min);
+	}
+
+	/**
+	 * The unit doubled, the bounds kept: a horizontal axis's labels that overlap at the unit its
+	 * length gives (r14-sweep-bar-x10000: 0 to 60000 by 40000)
+	 */
+	AxisScale doubled() {
+		return new AxisScale(min, max, unit * 2, log);
 	}
 
 	static int intervals(double lo, double hi, double u) {
@@ -98,14 +116,36 @@ final class AxisScale {
 	 */
 	static AxisScale of(double dataMin, double dataMax, Double setMin, Double setMax, Double setUnit, Double logBase,
 			double length, double line) {
-		return of(dataMin, dataMax, setMin, setMax, setUnit, logBase, (lo, hi, u, n) -> (n + 1) * line <= length + ALLOWANCE);
+		return of(dataMin, dataMax, setMin, setMax, setUnit, logBase, (lo, hi, u, n) -> n * line <= length - RESERVE, Bounds.VALUE);
+	}
+
+	/** How an axis's automatic bounds are found (see the class's note) */
+	enum Bounds {
+		/** a value axis's */
+		VALUE,
+		/** a 100% chart's */
+		PERCENT,
+		/** a scatter chart's x axis's */
+		X
+	}
+
+	/** An axis's scale, its bounds found so, its length and line as {@link #of(double, double, Double, Double, Double, Double, double, double)}'s */
+	static AxisScale of(double dataMin, double dataMax, Double setMin, Double setMax, Double setUnit, Double logBase,
+			double length, double line, Bounds kind) {
+		return of(dataMin, dataMax, setMin, setMax, setUnit, logBase, (lo, hi, u, n) -> n * line <= length - RESERVE, kind);
 	}
 
 	/**
-	 * @param fits whether the labels fit at a unit (a vertical axis: (n + 1) lines within its length
-	 *     and {@link #ALLOWANCE})
+	 * @param fits whether the labels fit at a unit (a vertical axis: n lines within its length less
+	 *     {@link #RESERVE})
 	 */
 	static AxisScale of(double dataMin, double dataMax, Double setMin, Double setMax, Double setUnit, Double logBase, Fits fits) {
+		return of(dataMin, dataMax, setMin, setMax, setUnit, logBase, fits, Bounds.VALUE);
+	}
+
+	/** @param kind how the bounds are found (see the class's note) */
+	static AxisScale of(double dataMin, double dataMax, Double setMin, Double setMax, Double setUnit, Double logBase, Fits fits,
+			Bounds kind) {
 		if (logBase != null && logBase > 1 && dataMin > 0) {
 			double b = logBase;
 			double lo = setMin != null ? setMin : Math.pow(b, Math.floor(Math.log(dataMin) / Math.log(b) + 1e-9));
@@ -115,13 +155,13 @@ final class AxisScale {
 		}
 		boolean zeros = dataMin == 0 && dataMax == 0;
 		if (setUnit != null && setUnit > 0) {
-			double[] b = bounds(dataMin, dataMax, setUnit, setMin, setMax, zeros);
+			double[] b = bounds(dataMin, dataMax, setUnit, setMin, setMax, zeros, kind);
 			return new AxisScale(b[0], b[1], setUnit, false);
 		}
 		double[] oneInterval = null;
 		double oneUnit = 0;
 		for (double u : units()) {
-			double[] b = bounds(dataMin, dataMax, u, setMin, setMax, zeros);
+			double[] b = bounds(dataMin, dataMax, u, setMin, setMax, zeros, kind);
 			int n = intervals(b[0], b[1], u);
 			if (n < 1) continue;
 			if (n <= MAX_INTERVALS && fits.fits(b[0], b[1], u, n)) return new AxisScale(b[0], b[1], u, false);
@@ -131,7 +171,7 @@ final class AxisScale {
 			}
 		}
 		if (oneInterval != null) return new AxisScale(oneInterval[0], oneInterval[1], oneUnit, false);
-		double[] b = bounds(dataMin, dataMax, 1, setMin, setMax, zeros);
+		double[] b = bounds(dataMin, dataMax, 1, setMin, setMax, zeros, kind);
 		return new AxisScale(b[0], b[1], Math.max(1e-12, b[1] - b[0]), false);
 	}
 
@@ -152,20 +192,23 @@ final class AxisScale {
 		return Math.ceil(v / u - 1e-9) * u;
 	}
 
-	private static double[] bounds(double dmin, double dmax, double u, Double setMin, Double setMax, boolean zeros) {
+	private static double[] bounds(double dmin, double dmax, double u, Double setMin, Double setMax, boolean zeros, Bounds kind) {
 		double lo, hi;
-		if (zeros) {
+		if (kind == Bounds.PERCENT) {
+			lo = dmin >= 0 ? 0 : Math.max(-1, down(dmin, u));
+			hi = dmax <= 0 ? 0 : Math.min(1, up(dmax, u));
+		} else if (zeros) {
 			lo = 0;
 			hi = 1;
 		} else if (dmin >= 0) {
 			double range = dmax - dmin;
 			boolean fromZero = dmax == dmin || range > dmax / 6;
-			lo = fromZero ? 0 : down(dmin - range / 2, u);
+			lo = fromZero ? 0 : down(dmin - (kind == Bounds.X ? range / 20 : range / 2), u);
 			// padded a twentieth of the range from the axis's minimum (R12: 1.1 to 4.8 is 0 to 6
 			// by 1, not 0 to 5 by 0.5; a constant series so pads from zero)
 			hi = up(dmax + (dmax - lo) / 20, u);
 		} else if (dmax <= 0) {
-			double[] m = bounds(-dmax, -dmin, u, null, null, false);
+			double[] m = bounds(-dmax, -dmin, u, null, null, false, kind);
 			lo = -m[1];
 			hi = -m[0];
 		} else {

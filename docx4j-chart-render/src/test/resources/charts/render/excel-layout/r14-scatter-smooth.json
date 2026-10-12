@@ -1,0 +1,19 @@
+{
+ "probe": "r14-scatter-smooth",
+ "app": "excel",
+ "size": [432,252],
+ "chartType": 72,
+ "chartStyle": 240,
+ "displayBlanksAs": 1,
+ "chartObject": {"left":144,"top":0,"width":432,"height":252},
+ "chartArea": {"left":144,"top":0,"width":427,"height":247},
+ "plotArea": {"left":7,"top":33.09,"width":410,"height":203.91,"insideLeft":22.239,"insideTop":33.09,"insideWidth":392.481,"insideHeight":191.712},
+ "hasTitle": true,
+ "title": {"left":185.007,"top":2,"width":53.985,"height":20.09,"text":"Y-Values","orientation":-4128,"font":{"size":14,"name":"Calibri","size2":14}},
+ "hasLegend": false,
+ "axes": [{"type":1,"group":1,"left":22,"top":225,"width":392,"height":18,"minimumScale":0,"maximumScale":3,"majorUnit":0.5,"minorUnit":0.1,"minimumScaleIsAuto":true,"maximumScaleIsAuto":true,"majorUnitIsAuto":true,"scaleType":-4132,"crosses":-4105,"crossesAt":0,"reversePlotOrder":false,"tickLabelSpacing":0,"tickLabelSpacingIsAuto":true,"tickMarkSpacing":0,"majorTickMark":-4142,"tickLabelPosition":4,"hasMajorGridlines":true,"hasMinorGridlines":false,"displayUnit":-4142,"tickLabels":{"orientation":-4105,"offset":100,"numberFormat":"General","numberFormatLinked":true,"fontSize":9,"fontName":"Calibri"},"hasTitle":false},{"type":2,"group":1,"left":1,"top":33,"width":21,"height":192,"minimumScale":0,"maximumScale":3.5,"majorUnit":0.5,"minorUnit":0.1,"minimumScaleIsAuto":true,"maximumScaleIsAuto":true,"majorUnitIsAuto":true,"scaleType":-4132,"crosses":-4105,"crossesAt":0,"reversePlotOrder":false,"majorTickMark":-4142,"tickLabelPosition":4,"hasMajorGridlines":true,"hasMinorGridlines":false,"displayUnit":-4142,"tickLabels":{"orientation":-4105,"offset":100,"numberFormat":"General","numberFormatLinked":true,"fontSize":9,"fontName":"Calibri"},"hasTitle":false}],
+ "series": [{"index":1,"name":"Y-Values","chartType":72,"axisGroup":1,"plotOrder":1,"fill":"000000","line":"4472C4","lineWeight":1.5,"lineVisible":-1,"markerStyle":8,"markerSize":5,"explosion":0,"hasDataLabels":false,"values":[2.7,3.2,0.8],"xValues":[0.7,1.8,2.6],"points":[{"left":113.818,"top":76.91,"width":0,"height":0,"fill":"000000","explosion":0},{"left":257.728,"top":49.522,"width":0,"height":0,"fill":"000000","explosion":0},{"left":362.389,"top":180.982,"width":0,"height":0,"fill":"000000","explosion":0}]}],
+ "excelVersion": "16.0 build 20430",
+ "repaired": false,
+ "png": {"width":720,"height":420,"dpiX":119.99}
+}

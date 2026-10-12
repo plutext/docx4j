@@ -2,8 +2,9 @@
 
 Status: ACTIVE: phase 0 DONE 2026-10-12; phase 1 DONE 2026-10-12 (Jason: "close phase 1 then
 start phase 2"): the module, the SPI and the clustered column, 136 of the 141 probes drawn within
-tolerance in every element (§11); phase 2 IN PROGRESS (started 2026-10-12): the eleven types
-drawn, every probe of theirs in R1 to R13 within tolerance but one; R14 on the share for a run.  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
+tolerance in every element (§11); phase 2 DONE 2026-10-13: the other eleven types, smoothing
+and date axes, 328 of the 338 probes drawn within tolerance in every element and Excel's axes at
+every swept size but four (§11); phase 3 next.  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
 (integration) of the charts plan.  Do not implement yet."); reviewed the same day by the
 docx4j-13 session (Claude Fable 5.1, at Jason's request): approved with nine amendments, all
 accepted by Jason ("apply all nine") and applied (§8).  D1 to D9 taken as recommended (Jason, 2026-10-12);
@@ -685,7 +686,7 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   widths; the read model, the colour cycle for series with no fill (out of `ChartDataEditor`)
   and the oracle for every type of R1, R6, R7, R8, P1, P3, P4 and P6 are in place.
 
-### Phase 2 (2026-10-12), in progress: the other eleven types
+### Phase 2 (2026-10-12 to 13), done: the other eleven types
 
 - **Built**: `ChartLayout` is now the frame (the title, the legend, the plot area) and the plot of
   each kind: columns and bars clustered, stacked and 100% stacked; lines (markers, gaps and spans)
@@ -769,3 +770,79 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   kerning pairs at 14pt; axis number formats; series and a pie's points with no fill of their own,
   with and without a colour style part; and P1's and P6's dates and shapes, so that Excel's
   own charts join the gate (layout and picture; they have no docx).
+- **R14's results** (run 2026-10-13; the oracle has them: 334 probes, eleven sweeps of 182 sizes,
+  `ChartSweepTest` lays each swept chart out at every size against Excel's axes and inside).
+  Several of the rules above were R1 to R13's slice of a different rule; each is replaced:
+  - Excel's own charts are in Excel 365's theme, whose body font is **Aptos Narrow**, which mapped
+    to Arimo (a class substitute): Intos Narrow (OFL, the same project and commit as the Intos
+    Display already in docx4j-export-fo-fonts-theme2023) has Aptos Narrow 2.00's and 2.01's
+    advances for all 987 code points the two share, in all four styles, and HarfBuzz's kerned
+    widths of seven test lines identical; it is in the jar now, a metric row in
+    `font-substitutes.xml`.  P1 and P6 went from none to 58 of their 67 passing on that alone, and
+    to all 67 with the rules below.
+  - a horizontal value axis's unit is chosen from the **whole plot area's width** (the category
+    labels' band included), at least 3.8 times its labels' text size an interval: every bar sweep
+    and the scatter's x change unit at the same chart widths whatever the labels (1 to 60000,
+    0% to 100%), 3.789 to 3.814 at 9pt, 3.761 to 3.833 at 7pt, 3.778 to 3.819 at 12pt.  Where its
+    widest label is wider than an interval on the inside, the unit is doubled and the bounds kept
+    (0 to 60000 by 40000).  This replaces the 2.826 x size above;
+  - a vertical axis's unit: n intervals of a line each within its length less 9.41pt (8.93 to
+    9.89 over 463 tests at 7 to 16pt, the column sweep's 182 heights among them).  Phase 1's
+    (n + 1) lines within the length and 4.87pt was R11's fit, its 14pt probes setting it;
+  - a small plot's inside is at least half the plot area's height less the category band's gap,
+    the band taking the rest, below the top value label's overhang (the column sweep from 72 to
+    92pt high, to 0.01pt; r11-text14-h108).  Phase 1's "0.56 of the plot area" was this near 20pt;
+  - a date axis's labels each have the inside over their number; they are set level, wrapped
+    at a hyphen (only within 3.1% of fitting: "22-Jan" wraps from 23.03pt and is level from its
+    23.80), turned 45 where they are 1.193 lines apart square to them (13.10pt at 9pt), turned 90
+    where 1.193 lines apart along the axis; else an automatic major unit goes up to the next of 1,
+    2 and 7 days (the date sweep's 182 widths, all exact).  Dates with a space turn 45 as text
+    does (r14-dates-long; provisional).  So R5's "turned 90 where text would turn 45" was the
+    space-free case;
+  - labels turned 45 pull the inside's right edge in by a line x sin 45 less the right edge over
+    twice the categories, where that is positive: the same estimate as their push on the left (the
+    date sweep's 16 sizes, to 0.05pt; r12-cats12-w144, phase 1's open one, to 0.04);
+  - a bar chart's category labels take at most 0.55 of the plot area less half its last value
+    label, wrapped to fit, a word broken where it reaches the room ("Categor" / "y 4"; the 12pt
+    bar sweeps, 0.548 to 0.553);
+  - an axis's labels are never kerned, whatever their kern size (r14-kerning: sixteen pairs as 14pt
+    category labels, kern 1200, none kerned); titles are.  The title "Y-Values" stays open: Excel
+    kerns its "Y-" in Aptos Narrow (p1-scatter) but not in Calibri (r1-scatter), though Calibri's
+    GPOS and kern tables have the pair as Carlito's do (-0.0571em);
+  - legends: at the top, 6pt below the title; at the top right, below the title with the plot
+    area 5pt below it and 6pt higher off the bottom (one probe); a stacked column's or area's
+    legend at the side lists the series from the last; entries too wide for 0.9 of the chart go in
+    rows, as many to a row as the fewest rows allow, closed up (one probe); a legend's marker no
+    larger than its key (3.84pt at 7pt);
+  - markers: an x, star or plus is its strokes over a filled and outlined square; a dash a bar a
+    fifth of its size high; a dot half that bar, from the point rightwards.  Word's PDF snaps them
+    to its 0.24pt grid (6.72pt for 7), PowerPoint's does not (5.04 for 5), so they are drawn at
+    their size and the two marker probes stay open;
+  - smoothing: Catmull-Rom, each control point a sixth of its neighbours' difference along, the
+    ends' a third of the chord (Word's PDF's control points, fitted to 0.006pt); `check` draws
+    smoothed lines now;
+  - automatic colours: Office shows a series (or point) with no fill of its own in its legacy
+    cycle, whatever the colour style: accent (idx mod 6) + 1 shaded or tinted by
+    t = floor(140 (cycle + 1) / (cycles + 2)) - 70 percent, cycle idx / 6, cycles count / 6 (eight
+    series shaded 76% then tinted 77%, with the colour style part and without; twelve slices
+    shaded 65% then plain; every channel exact).  `ChartColorStyles.automatic(idx, count)`
+    replaces the colorful-style guess; the colour style stays what a new series is written with;
+  - a 100% axis runs from its least share to its greatest, out to the unit, unpadded, within 100%
+    either way (-36% to 77% is -40% to 80%); a scatter chart's x axis away from zero is padded a
+    twentieth of its range at both ends, not the half range below that KB 214075 gives (46022.5 to
+    46026.5), and its first label is kept within the plot area;
+  - a pie shows its first series alone (Excel reports the others' slices as if drawn); a title of
+    spaces is a line high.
+- **Closed** (2026-10-13): **338 probes drawn, 328 within tolerance in every element** (99.7% of
+  30,227), every type of R1, P1, P3, P4 and P6 passing but r1-scatter's kerned title; Excel's axes
+  and inside at every swept size but four (`ChartSweepTest`); **295 of 299 pictures** within their
+  tolerance (r12-cats12-w180, r12-cats8-w216-h108 and r3-eight-180x108, phase 1's, and
+  p6-line-numbers, whose long, nearly level 2.25pt lines are anti-aliased differently).  Open, each
+  named with its reason in `ChartRenderGateTest.OPEN` and `ChartSweepTest.OPEN`: the "Y-Values"
+  title (five probes); Word's marker grid (two); r11-default-h72 and r11-eight-h72 (the inside is
+  Office's now, but Word draws a column nothing high as a 0.24pt sliver); r2-max-set (0.55pt); the
+  12pt bar sweeps' two narrowest sizes, the legend in two rows (the inside's top 0.55 and 0.93pt
+  lower).  Provisional, on one probe or one label width each: the top right legend, legend rows,
+  date wrapping, a spaced date's 45.  Leader lines with outside labels wait for data labels
+  (phase 4, §4.5).  For phase 3: the renderer is drawn into the outputs as is; nothing in phase 3
+  needs a new rule.

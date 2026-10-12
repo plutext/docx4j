@@ -50,14 +50,18 @@ public class ChartRenderGateTest {
 	/** The probes drawn but not yet within tolerance, and why (CR-037 §11); R1's pptx as name.pptx */
 	static final Map<String, String> OPEN = new LinkedHashMap<>();
 	static {
-		OPEN.put("r12-cats12-w144", "labels turned 45 degrees, every second one shown: Office's inside ends 2.18pt short of ours on the right");
-		OPEN.put("r13-text-12", "Word draws a 4.76pt bar 4.56 wide: 0.27 from Word's PDF, though within 0.13 of Excel's layout");
 		for (String p : new String[] { "r11-default-h72", "r11-eight-h72" }) {
-			OPEN.put(p, "a plot 1pt high: Office's inside is 0pt, ours 0.46");
+			OPEN.put(p, "a plot 1pt high: the inside is Office's (nothing), but Word's PDF has each column, nothing high, as a 0.24pt sliver"
+					+ " at the inside's top, and its gridline; ours draws none");
 		}
 		OPEN.put("r2-max-set", "a maximum set, the labels hanging from a zero line near the bottom: the inside 0.55pt shorter");
-		for (String p : new String[] { "r1-scatter", "r1-scatter.pptx" }) {
-			OPEN.put(p, "Office kerns the title's \"Va\" but not Carlito's \"Y-\" pair: its box narrower than Office's (R14's kerning probe)");
+		for (String p : new String[] { "r1-scatter", "r1-scatter.pptx", "r14-scatter-lines", "r14-scatter-smooth", "r14-sweep-scatter" }) {
+			OPEN.put(p, "the title \"Y-Values\": Excel kerns its \"Va\" but not its \"Y-\" in Calibri (in Aptos Narrow, p1-scatter, both),"
+					+ " though Calibri's own tables have the pair as Carlito's do: the box 0.4pt narrower than Office's");
+		}
+		for (String p : new String[] { "r14-markers-symbols", "r14-markers-sizes" }) {
+			OPEN.put(p, "Word's PDF puts markers on its 0.24pt grid, flooring a circle's or square's box and rounding a diamond's: up to"
+					+ " 0.48pt from the marker at its size on its point (PowerPoint's PDF has them at their size, P4)");
 		}
 	}
 
