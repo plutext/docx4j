@@ -1,9 +1,8 @@
 # CR-037: charts drawn - a chart rendered to SVG and PNG as Office draws it, and drawn in PDF, HTML and pptx output (charts plan phases 7 and 8)
 
-Status: ACTIVE: phase 0 DONE 2026-10-12; phase 1 STARTED 2026-10-12 (Jason: "add the extra
-axis-height probe set; start phase 1"): the module, the SPI and the clustered column's frame
-built; with R11, R12 and R13 run, 136 of the 141 probes drawn within tolerance in every element
-(§11).  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
+Status: ACTIVE: phase 0 DONE 2026-10-12; phase 1 DONE 2026-10-12 (Jason: "close phase 1 then
+start phase 2"): the module, the SPI and the clustered column, 136 of the 141 probes drawn within
+tolerance in every element (§11); phase 2 next.  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
 (integration) of the charts plan.  Do not implement yet."); reviewed the same day by the
 docx4j-13 session (Claude Fable 5.1, at Jason's request): approved with nine amendments, all
 accepted by Jason ("apply all nine") and applied (§8).  D1 to D9 taken as recommended (Jason, 2026-10-12);
@@ -577,7 +576,7 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   automatic colour cycle (series with no `c:spPr`, out of `ChartDataEditor` as §4.2 says) and a
   gradient's colours (phase 4) are as planned.
 
-### Phase 1 (started 2026-10-12): the renderer's frame on the clustered column
+### Phase 1 (2026-10-12), done: the renderer's frame on the clustered column
 
 - **Built**: in docx4j-core (`org.docx4j.model.chart`), `ChartRenderer` (the SPI: `check`, `draw`
   on a `Graphics2D`, `toSvg`, `toImage` in core with AWT alone; found through `ServiceLoader`,
@@ -671,3 +670,16 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   Excel's 4.76 (one: 0.27 from Word's PDF, within 0.13 of Excel's layout), plots 1pt high (two)
   and R2's set maximum (one).  Pictures: 134 of the 136 within their tolerance (median 0.13%); the
   two others are R12's cut-short labels ("C...", about a point low).
+- **Closed** 2026-10-12 (Jason: "close phase 1").  The gate (§4.2) is met but for the five probes
+  named open, each a corner (a plot 1pt high, a set maximum with the labels near the bottom,
+  every second label shown with labels turned, a bar Word's PDF rounds); they stay in the test's
+  list, and leave it as they come within tolerance.  **Not probed** in phase 1, and drawn by
+  analogy with what was: a legend at the top, the left or the top right (R1 to R13 have it at the
+  bottom and the right only), and an axis's number format other than General (R5's probes have
+  data labels, phase 4's; its categories are dates on a line chart, phase 2's).  CHANGELOG
+  entry for the module.  Hand-offs: none yet (the ports take the axis rule, §9, once phase 2 has
+  the level value axis too).
+- **For phase 2**: a level value axis (the bar chart) needs wider spacing than an upright one
+  (R11's bar probes: 24.75pt between labels refused, 30.75 taken), its rule to find on R11's ten
+  widths; the read model, the colour cycle for series with no fill (out of `ChartDataEditor`)
+  and the oracle for every type of R1, R6, R7, R8, P1, P3, P4 and P6 are in place.

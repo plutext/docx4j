@@ -57,6 +57,11 @@ Changes in Version 17.3.3
   them: the data in an embedded workbook (Edit Data opens it), the chart Word's or PowerPoint's
   own of its type (inDocument, inNewParagraph, inSlide); ChartCreator.delete removes a chart and
   its parts from any host.  New samples CreateChart (docx and pptx).  CR-036.
+- New module docx4j-chart-render draws a chart as Office lays it out, to a Graphics2D, SVG (its
+  text kept as text) or a picture, through the new SPI org.docx4j.model.chart.ChartRenderer (with
+  ChartRenderCheck: what it refuses or draws simplified, and why; ChartFonts: a chart's theme fonts
+  as AWT fonts).  This first part draws the clustered column; docx4j-export-fo depends on the
+  module, and the outputs keep a chart's box empty until a later part.  CR-037.
 - New docx4j.properties setting docx4j.dcterms.write (default false): true sets dcterms:modified
   to the current time on save, and dcterms:created on a new document.  CR-036.
 - A TOC update no longer adds another Hyperlink style to the styles part each time (TocStyles
