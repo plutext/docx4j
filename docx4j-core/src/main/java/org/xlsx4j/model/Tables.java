@@ -21,17 +21,25 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.SpreadsheetML.TablePart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.docx4j.relationships.Relationship;
+import org.xlsx4j.sml.CTAutoFilter;
 import org.xlsx4j.sml.CTTable;
 import org.xlsx4j.sml.CTTableColumn;
 import org.xlsx4j.sml.CTTableColumns;
+import org.xlsx4j.sml.CTTablePart;
+import org.xlsx4j.sml.CTTableParts;
+import org.xlsx4j.sml.CTTableStyleInfo;
+import org.xlsx4j.sml.Worksheet;
 
 /**
  * A worksheet's tables, grown and shrunk as Excel grows and shrinks them (CR-035 phase 4,
@@ -73,6 +81,103 @@ public final class Tables {
 
 	public static AreaRef getRef(TablePart table) throws Docx4JException {
 		return AreaRef.parse(table.getContents().getRef());
+	}
+
+	/**
+	 * A table made over the area, as Excel's <i>Format as Table</i> makes one (CR-036 phase 2): its
+	 * first row the header row, each column named from its header cell as {@link #nameColumns}
+	 * names them; its {@code id} one above the workbook's tables', named Table and the lowest
+	 * number no table of the workbook has, its part {@code /xl/tables/tableN.xml} after the
+	 * package's; Excel's default style (TableStyleMedium2, row stripes); its {@code xr:uid}s from
+	 * {@code ids}.  Refused over a table it would overlap.
+	 */
+	public static TablePart create(SheetCells cells, AreaRef ref, Random ids) throws Docx4JException {
+		WorksheetPart sheet = cells.getPart();
+		long id = 0;
+		Set<String> names = new HashSet<String>();
+		for (WorksheetPart w : SheetCells.worksheets(cells.getWorkbook())) {
+			for (TablePart t : of(w)) {
+				CTTable ct = t.getContents();
+				id = Math.max(id, ct.getId());
+				if (ct.getName() != null) names.add(ct.getName().toLowerCase(Locale.ROOT));
+				if (ct.getDisplayName() != null) names.add(ct.getDisplayName().toLowerCase(Locale.ROOT));
+				if (w == sheet && overlap(getRef(t), ref)) {
+					throw new IllegalStateException("a table can't overlap another (" + ct.getName() + ", " + ct.getRef() + ")");
+				}
+			}
+		}
+		id++;
+		int n = 1;
+		while (names.contains(("Table" + n).toLowerCase(Locale.ROOT))) n++;
+		String name = "Table" + n;
+		CTTable t = new CTTable();
+		t.setId(id);
+		t.setUid(guid(ids));
+		t.setName(name);
+		t.setDisplayName(name);
+		t.setRef(ref.formatLocal());
+		t.setTotalsRowShown(false);
+		t.setIgnorable("xr xr3");
+		CTAutoFilter af = new CTAutoFilter();
+		af.setRef(ref.formatLocal());
+		af.setUid(t.getUid());
+		af.setParent(t);
+		t.setAutoFilter(af);
+		CTTableColumns cols = new CTTableColumns();
+		cols.setParent(t);
+		for (int i = 0; i < ref.getColumnCount(); i++) {
+			CTTableColumn c = new CTTableColumn();
+			c.setId(i + 1);
+			c.setUid(guid(ids));
+			c.setName("");
+			c.setParent(cols);
+			cols.getTableColumn().add(c);
+		}
+		cols.setCount((long) ref.getColumnCount());
+		t.setTableColumns(cols);
+		CTTableStyleInfo style = new CTTableStyleInfo();
+		style.setName("TableStyleMedium2");
+		style.setShowFirstColumn(false);
+		style.setShowLastColumn(false);
+		style.setShowRowStripes(true);
+		style.setShowColumnStripes(false);
+		style.setParent(t);
+		t.setTableStyleInfo(style);
+
+		TablePart part;
+		try {
+			int i = 1;
+			while (cells.getWorkbook().getParts().get(new PartName("/xl/tables/table" + i + ".xml")) != null) i++;
+			part = new TablePart(new PartName("/xl/tables/table" + i + ".xml"));
+		} catch (InvalidFormatException e) {
+			throw new Docx4JException(e.getMessage(), e);
+		}
+		part.setJaxbElement(t);
+		Relationship r = sheet.addTargetPart(part);
+		Worksheet ws = sheet.getContents();
+		CTTableParts tps = ws.getTableParts();
+		if (tps == null) {
+			tps = new CTTableParts();
+			tps.setParent(ws);
+			ws.setTableParts(tps);
+		}
+		CTTablePart tp = new CTTablePart();
+		tp.setId(r.getId());
+		tp.setParent(tps);
+		tps.getTablePart().add(tp);
+		tps.setCount((long) tps.getTablePart().size());
+		nameColumns(part, cells);
+		return part;
+	}
+
+	private static boolean overlap(AreaRef a, AreaRef b) {
+		return a.getFirst().getColumn() <= b.getLast().getColumn() && b.getFirst().getColumn() <= a.getLast().getColumn()
+				&& a.getFirst().getRow() <= b.getLast().getRow() && b.getFirst().getRow() <= a.getLast().getRow();
+	}
+
+	/** A GUID as Office writes one, braced, upper case, from the source given */
+	static String guid(Random ids) {
+		return "{" + new UUID(ids.nextLong(), ids.nextLong()).toString().toUpperCase(Locale.ROOT) + "}";
 	}
 
 	/** Whether Excel's resizing of this table is known: a header row, no totals row */

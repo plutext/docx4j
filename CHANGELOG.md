@@ -48,6 +48,11 @@ Changes in Version 17.3.3
   the workbook embedded with it, which EmbeddedPackagePart now keeps live (getEmbeddedPackage) and
   writes whenever the document is saved; linked charts refused; a pie's new point formatted as
   Word formats it.  New docx sample EditChartData; pptx sample EditEmbeddedCharts uses it.  CR-036.
+- New ChartCreator: charts made in an xlsx as Excel's Insert Chart makes them, from data written as
+  a table (ChartDefinition: twelve types, text, number or date categories) or over cells already
+  there (read as Excel reads a selection); each from Excel's own parts for its type.  New
+  ChartSettings sets a chart's title, legend, axis titles, number format and data labels, on any
+  chart.  Tables.create, SheetCells.setNumberFormat.  New xlsx sample CreateCharts.  CR-036.
 - New org.docx4j.model.color: theme colours resolved as Office draws them - DrawingML colours and
   transforms, WordprocessingML theme attributes, SpreadsheetML theme/tint/indexed - checked against
   Word's, PowerPoint's and Excel's own renderings.  CR-034.

@@ -1,0 +1,4 @@
+﻿chart type 51
+  series 1: =SERIES('My Data'!$C$3,'My Data'!$B$4:$B$7,'My Data'!$C$4:$C$7,1)
+  series 2: =SERIES('My Data'!$D$3,'My Data'!$B$4:$B$7,'My Data'!$D$4:$D$7,2)
+  series 3: =SERIES('My Data'!$E$3,'My Data'!$B$4:$B$7,'My Data'!$E$4:$E$7,3)

@@ -13,6 +13,9 @@
 #   P5  Word's and PowerPoint's own data edits through ChartData: a value, a category added, a
 #       series added, a series removed (and a category added to Word's pie), each saved by Word or
 #       PowerPoint itself before and after, p5w-<case>-before/after.docx, p5p-...pptx.
+#   P6  (phase 2) Excel's charts of other data: P2's settings on the other types, categories of
+#       another kind (dates, text, numbers), other shapes (2 by 2, 1 by 1, eight series, eight
+#       points), and plain ranges as Excel reads them (another sheet, wide, numbers, no header).
 #
 # Into -Dir (default X:\office_charts\cr036); a file already there is skipped, so a rerun resumes.
 # Beside each workbook a .txt reports its chart's type and its series' formulas (what Select Data
@@ -269,7 +272,7 @@ try {
   }
 
   # ------------------------------------------------------------------ P1 and P2: Excel
-  if ((Want "p1") -or (Want "p2")) {
+  if ((Want "p1") -or (Want "p2") -or (Want "p6")) {
     $excel = New-Object -ComObject Excel.Application
     $excel.Visible = [bool]$Visible
     $excel.DisplayAlerts = $false
@@ -369,6 +372,118 @@ try {
           SaveWb $wb $name $c
         } catch { Failed $name $_ } finally { if ($wb) { try { $wb.Close($false) } catch { } } }
       }
+    }
+
+    # ------------------------------------------------------------------ P6: Excel, for phase 2
+    # What ChartCreator needs beyond P1 and P2 (CR-036 phase 2), each a new workbook of its own data
+    # in a table (Table1), charted by AddChart2 over it as P1 is:
+    #   p6-<type>-<setting>.xlsx   P2's settings on the other eleven types (no axes for pie, doughnut)
+    #   p6-<type>-dates.xlsx       a "Date" header over d-mmm dates, for each type (P1 has the column's)
+    #   p6-area-text.xlsx, p6-scatter-text.xlsx  text categories, where the type's template has others
+    #   p6-<type>-numbers.xlsx     numbers as categories under a " " corner
+    #   p6-<type>-two-by-two.xlsx, -one-by-one, -eight-series, -eight-points   other shapes of data
+    #   p6-range-<case>.xlsx       a chart over a plain range (no table) with Excel's own reading of
+    #                              it (SetSourceData with no PlotBy): on another sheet, wider than
+    #                              tall, numbers in the first column, no header row
+    if (Want "p6") {
+      # a new workbook, its first sheet holding the rows at A1, as a table unless -NoTable
+      function NewBook($rows, $format = $null, [switch]$NoTable) {
+        $wb = $excel.Workbooks.Add()
+        $ws = $wb.Worksheets.Item(1)
+        Fill $ws $rows
+        if ($format) { $ws.Range("A2").Resize($rows.Count - 1, 1).NumberFormat = $format }
+        if (-not $NoTable) {
+          $lo = $ws.ListObjects.Add($xlSrcRange, $ws.Range("A1").Resize($rows.Count, $rows[0].Count), $null, $xlYes)
+          $lo.Name = "Table1"
+        }
+        return $wb
+      }
+      function Probe($name, [scriptblock]$body) {
+        if (Done $name) { Say "$name is there already"; return }
+        Say "P6 $name"; Fresh $name
+        $wb = $null
+        # the body's last two outputs: the workbook and its chart (anything a COM call emits before them aside)
+        try { $r = @(& $body); $wb = $r[-2]; SaveWb $wb $name $r[-1] }
+        catch { Failed $name $_ } finally { if ($wb) { try { $wb.Close($false) } catch { } } }
+      }
+      $dates = @(@("Date", "Series 1", "Series 2", "Series 3"), @(46023, 4.3, 2.4, 2), @(46024, 2.5, 4.4, 2),
+        @(46025, 3.5, 1.8, 3), @(46026, 4.5, 2.8, 5))
+      $numbers = @(@(" ", "Series 1", "Series 2"), @(2021, 4.3, 2.4), @(2022, 2.5, 4.4), @(2023, 3.5, 1.8),
+        @(2024, 4.5, 2.8))
+      $xy = @(@("X", "Plan", "Actual"), @(1.5, 2, 3), @(3.5, 4, 5))
+      $one = @(@(" ", "Plan"), @("North", 1.5))
+      $eightSeries = @(@(" ", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"), @("A", 1, 2, 3, 4, 5, 6, 7, 8),
+        @("B", 2, 3, 4, 5, 6, 7, 8, 9), @("C", 3, 4, 5, 6, 7, 8, 9, 10))
+      $eightPoints = @(@(" ", "Sales"), @("P1", 8), @("P2", 7), @("P3", 6), @("P4", 5), @("P5", 4), @("P6", 3),
+        @("P7", 2), @("P8", 1))
+      function DataFor($t) { if ($t -eq "pie" -or $t -eq "doughnut") { $pieData } else { $defaultData } }
+
+      $p6settings = [ordered]@{
+        "title-text" = { param($c) $c.HasTitle = $true; $c.ChartTitle.Text = "Sales" }
+        "axis-titles" = { param($c)
+          $c.Axes($xlCategory).HasTitle = $true; $c.Axes($xlCategory).AxisTitle.Text = "Quarter"
+          $c.Axes($xlValue).HasTitle = $true; $c.Axes($xlValue).AxisTitle.Text = "Units" }
+        "data-labels" = { param($c) $c.ApplyDataLabels() }
+        "number-format" = { param($c) $c.Axes($xlValue).TickLabels.NumberFormat = "0.0" } }
+      foreach ($t in $chartTypes.Keys) {
+        if ($t -eq "column-clustered") { continue }
+        foreach ($k in $p6settings.Keys) {
+          if (($t -eq "pie" -or $t -eq "doughnut") -and ($k -eq "axis-titles" -or $k -eq "number-format")) { continue }
+          Probe "p6-$t-$k.xlsx" { $wb = NewBook (DataFor $t); $c = Chart $wb $chartTypes[$t]; [void](& $p6settings[$k] $c); $wb, $c }
+        }
+      }
+      foreach ($t in $chartTypes.Keys) {
+        if ($t -ne "column-clustered") {
+          Probe "p6-$t-dates.xlsx" { $wb = NewBook $dates "d-mmm"; $wb, (Chart $wb $chartTypes[$t]) }
+        }
+      }
+      Probe "p6-area-text.xlsx" { $wb = NewBook $defaultData; $wb, (Chart $wb $chartTypes["area"]) }
+      Probe "p6-scatter-text.xlsx" { $wb = NewBook $ourData; $wb, (Chart $wb $chartTypes["scatter"]) }
+      foreach ($t in @("column-clustered", "line", "pie")) {
+        Probe "p6-$t-numbers.xlsx" { $wb = NewBook $numbers; $wb, (Chart $wb $chartTypes[$t]) }
+      }
+      foreach ($t in $chartTypes.Keys) {
+        $d = if ($t -eq "scatter") { $xy } else { $ourData }
+        Probe "p6-$t-two-by-two.xlsx" { $wb = NewBook $d; $wb, (Chart $wb $chartTypes[$t]) }
+      }
+      foreach ($t in @("column-clustered", "line-markers", "pie", "scatter")) {
+        Probe "p6-$t-one-by-one.xlsx" { $wb = NewBook $one; $wb, (Chart $wb $chartTypes[$t]) }
+      }
+      foreach ($t in @("column-clustered", "line-markers", "area")) {
+        Probe "p6-$t-eight-series.xlsx" { $wb = NewBook $eightSeries; $wb, (Chart $wb $chartTypes[$t]) }
+      }
+      foreach ($t in @("pie", "doughnut")) {
+        Probe "p6-$t-eight-points.xlsx" { $wb = NewBook $eightPoints; $wb, (Chart $wb $chartTypes[$t]) }
+      }
+
+      # plain ranges, Excel's own reading: AddChart2 then SetSourceData with no PlotBy
+      function RangeChart($wb, $ws, $range, $type = 51) {
+        $shape = $wb.Worksheets.Item(1).Shapes.AddChart2(-1, $type, 300, 20, 432, 252)
+        $shape.Chart.SetSourceData($ws.Range($range))
+        return $shape.Chart
+      }
+      Probe "p6-range-other-sheet.xlsx" {
+        $wb = $excel.Workbooks.Add()
+        $data = $wb.Worksheets.Add([Type]::Missing, $wb.Worksheets.Item(1))
+        $data.Name = "My Data"
+        $rows = @(@("", "Series 1", "Series 2", "Series 3")) + $defaultData[1..4]
+        Fill $data $rows "B3"
+        $wb, (RangeChart $wb $data "B3:E7") }
+      Probe "p6-range-wide.xlsx" {
+        $wb = NewBook @(@("", "Q1", "Q2", "Q3", "Q4"), @("North", 1, 2, 3, 4), @("South", 5, 6, 7, 8)) -NoTable
+        $ws = $wb.Worksheets.Item(1); $wb, (RangeChart $wb $ws "A1:E3") }
+      Probe "p6-range-numbers.xlsx" {
+        $wb = NewBook @(@("", "Series 1", "Series 2"), @(2021, 4.3, 2.4), @(2022, 2.5, 4.4), @(2023, 3.5, 1.8)) -NoTable
+        $ws = $wb.Worksheets.Item(1); $wb, (RangeChart $wb $ws "A1:C4") }
+      Probe "p6-range-numbers-header.xlsx" {
+        $wb = NewBook @(@("Year", "Series 1", "Series 2"), @(2021, 4.3, 2.4), @(2022, 2.5, 4.4), @(2023, 3.5, 1.8)) -NoTable
+        $ws = $wb.Worksheets.Item(1); $wb, (RangeChart $wb $ws "A1:C4") }
+      Probe "p6-range-no-header.xlsx" {
+        $wb = NewBook @(@(4.3, 2.4), @(2.5, 4.4), @(3.5, 1.8), @(4.5, 2.8)) -NoTable
+        $ws = $wb.Worksheets.Item(1); $wb, (RangeChart $wb $ws "A1:B4") }
+      Probe "p6-range-text-corner.xlsx" {
+        $wb = NewBook @(@("Region", "Plan", "Actual"), @("North", 1.5, 2.5), @("South", 3.5, 4.5), @("East", 2, 3)) -NoTable
+        $ws = $wb.Worksheets.Item(1); $wb, (RangeChart $wb $ws "A1:C4") }
     }
   }
 

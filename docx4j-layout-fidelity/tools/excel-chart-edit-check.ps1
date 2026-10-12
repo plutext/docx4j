@@ -6,8 +6,11 @@
 # Copyright 2026, Plutext Pty Ltd; Apache-2.0.
 #
 #   -Visible   show Excel, so a repair dialog can be seen
-param([string[]]$Dirs = @("X:\office_charts\phase4\docx4j", "X:\office_charts\phase4"), [switch]$Visible)
+#   -Tools     (CR-036 phase 2) after its picture, each chart given the next style of Excel's gallery
+#              and another type and back, as a user's Chart Design tools would: "tools ok" or the error
+param([string[]]$Dirs = @("X:\office_charts\phase4\docx4j", "X:\office_charts\phase4"), [switch]$Visible, [switch]$Tools)
 $ErrorActionPreference = "Stop"
+$Dirs = @($Dirs | ForEach-Object { $_ -split "," })   # powershell -File passes "a,b" as one string
 $tmp = Join-Path $env:TEMP "chart-edit-check"
 New-Item -ItemType Directory -Force -Path $tmp | Out-Null
 function Say($s) { Write-Host ("{0:HH:mm:ss} {1}" -f (Get-Date), $s) }
@@ -50,7 +53,24 @@ try {
             }
             $png = Join-Path $tmp ("{0}-{1}.png" -f $f.BaseName, $n)
             [void]$ch.Export($png)
+            # Excel can write an empty picture of a chart it hasn't drawn yet (seen for charts below the
+            # first screen, and now and then for the first): bring the chart into view and try again
+            for ($try = 0; ((Get-Item $png).Length -eq 0) -and ($try -lt 3); $try++) {
+              try { $ws.Activate(); $excel.ActiveWindow.ScrollRow = $co.TopLeftCell.Row; $co.Activate() } catch { }
+              Start-Sleep -Milliseconds 500
+              [void]$ch.Export($png)
+            }
+            if ((Get-Item $png).Length -eq 0) { $report += "  (picture empty)" }
             Copy-Item -Force $png $out
+            if ($Tools) {
+              try {
+                $style = $ch.ChartStyle; $type = $ch.ChartType
+                $ch.ChartStyle = $style + 1
+                $ch.ChartType = $(if ($type -eq 4) { 51 } else { 4 })
+                $ch.ChartType = $type
+                $report += "  tools ok: style $style to $($ch.ChartStyle), type $type to another and back"
+              } catch { $report += "  TOOLS FAILED: $($_.Exception.Message)" }
+            }
           }
         }
         $wb.Close($false)

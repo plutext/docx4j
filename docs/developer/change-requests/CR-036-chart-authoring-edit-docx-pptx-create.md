@@ -1,6 +1,11 @@
 # CR-036: chart authoring - a chart's data edited in docx and pptx, and charts created in xlsx, docx and pptx (charts plan phases 6 and 5)
 
-Status: IN PROGRESS. Phase 1 DONE 2026-10-12 (Jason: "please start CR-036 phase 1"): ChartDataEditor
+Status: IN PROGRESS. Phase 2 DONE 2026-10-12 (Jason: "Start CR-036 phase 2"): ChartCreator makes
+charts in an xlsx from a ChartDefinition or over cells, ChartSettings sets their settings; after
+P6's readings (Excel's settings on every type, dates, text and numbers, other shapes, Excel's
+reading of a range), 106 created charts are Excel's own part for part, and in Excel's check none
+is repaired, their Select Data ranges and pictures are its own charts', and its tools work (§11).
+Phase 3 next. Phase 1 DONE 2026-10-12 (Jason: "please start CR-036 phase 1"): ChartDataEditor
 on docx and pptx charts, the embedded workbook kept live in EmbeddedPackagePart (A1); against Word's
 five and PowerPoint's four own edits, part by part, and all ten PDFs pixel for pixel Office's own
 (§11). Phase 2 next. Phase 0 DONE 2026-10-12 (Jason's runs of the probe script; findings in §11):
@@ -490,3 +495,107 @@ twelve documents docx4j wrote (the eight edits, the two controls, the two sample
 for pixel Word's and PowerPoint's own PDFs of the same edits, all ten (the controls against Word's
 insert); two different edits differ by 21,186 pixels, one value by 4,952, so the comparison sees
 an edit.
+
+### Phase 2 (2026-10-12), done
+
+Jason: "Start CR-036 phase 2".
+
+**Readings first (P6).**  P1 and P2 measured one kind of categories per type and the settings on a
+clustered column only, which left the settings on other types, other kinds of categories, other
+shapes of data and `fromCells`' reading unmeasured.  P6 (`office-chart-authoring-probes.ps1 -Only
+p6`, Jason's run, 83 workbooks, none failed; fixtures `charts/authoring/p6-*`) measured them:
+
+1. **The settings are P2's on every type**: a title's run, the legend's side, an axis title, the
+   value axis' number format, data labels showing the values on each series (no `dLblPos` on any
+   type).  A pie's and a doughnut's data labels carry their leader lines as `c:leaderLines` with
+   `showLeaderLines` 1 and an empty `c15` extension; every other type's are in the `c15`
+   extension.  An axis title is turned (`rot` -5400000) on an axis at the left or right, so a bar
+   chart's category axis title is.
+2. **Their text properties are the style part's**: the entry's `defRPr` (`cs:title`,
+   `cs:axisTitle`, `cs:legend`, `cs:dataLabel`) with Excel's defaults where it is silent (not
+   bold, not italic, no underline, no strike, baseline 0), the font reference's colour as the
+   fill, the theme's minor fonts (`+mn-lt` ...); a leader line the `cs:leaderLine`'s.  So they
+   follow PowerPoint's scaled style in phase 3.
+3. **Dates as categories** give every type with axes a `c:dateAx`: the cells' format linked,
+   outside tick marks, no `lblAlgn` or `noMultiLvlLbl`, a `baseTimeUnit` of days for daily dates
+   and months for the first of each month (P1's area); text on an area chart (whose template is
+   over dates) the reverse, its tick marks kept.  Numbers as categories (under an empty corner) are
+   a `numRef` on the type's own `c:catAx`.  A scatter chart's x axis takes the x values' format,
+   and has none where they are text.
+4. **Shapes**: one series has no legend (a pie's and a doughnut's keep theirs); a scatter chart
+   gains one with its second series; the seventh and eighth series or points take the colour
+   style's variation (`lumMod` 60000), as the editor colours them; every series of a pie or a
+   doughnut carries its own `c:dPt`s, the first's colours (which the editor's series copy, right
+   for an edit, drops); line markers are circles throughout.
+5. **Excel's reading of a selection** (`fromCells`): an empty top-left cell makes the first row
+   names and the first column categories; otherwise the first row is names where it holds no
+   number, the first column categories where it holds text or dates (a " " corner is not empty:
+   years under it are a series, in a table or not); the series run down the columns only where
+   the data has more rows than columns (a tie runs across the rows); with no names no `c:tx`, with
+   no categories no `c:cat` and a category axis without `numFmt`.
+6. Office writes a typed title's run in the machine's keyboard language (en-AU in this run, en-US
+   in P2's); docx4j writes the chart's own `c:lang`.
+
+**Built:**
+- `ChartType` (the twelve, Excel's names, each with its template and default style),
+  `LegendPosition`, `ChartDefinition` (groups, A2: `series()` and the axes the first group's,
+  `group()` there for later; categories text, numbers or `LocalDate`s with a date format;
+  `xValues`; `categoriesHeader`, Word's " " by default; title or `noTitle`, legend or `noLegend`,
+  axis titles and number formats, data labels; `fromData` in `setData`'s shape).
+- `ChartSettings` (A3): title, legend, axis titles, number format, data labels, each settable and
+  removable on any chart, made or loaded, as findings 1 and 2 have them; a chart with no style part
+  takes Excel's default style's text properties.
+- `ChartCreator`: `inSheet` (the data written as Word lays it out, a table over it, refused over
+  cells that hold something, over a table, for an empty definition or more than one group) and
+  `fromCells` (finding 5; no table, nothing written; the data on any sheet).  Each chart: the
+  type's template (the date-axis one for a clustered column over dates), its references pointed at
+  the data, its series and points made the data's by the editor's rules (a package-private
+  chart-only `ChartDataEditor.fit`, the cells being written already), the category kind and axis
+  made the data's (finding 3), each pie series' points (finding 4), Excel's legend default, fresh
+  ids, then the settings.  Placed in the sheet's drawing (made where it has none) as a two-cell
+  anchor over the area given, or beside the data at about Excel's default size; the parts named
+  after the package's (`chart2.xml`, `style2.xml`, `colors2.xml`, `drawing1.xml`, `table2.xml`).
+- The templates (`docx4j-core` resources `org/docx4j/model/chart/templates/`): Excel's P1 chart
+  part per type and `date-axis.xml`, the eight style parts (`style-<id>.xml`; the stacked types
+  share 297, pie and doughnut 251) and the one colour part (`colors-10.xml`), byte for byte (D6).
+- `Tables.create` (Excel's *Format as Table*: the next id and free TableN, TableStyleMedium2,
+  autoFilter, uids), `SheetCells.setNumberFormat` (built-in 14 and 16 by Excel's spellings, a
+  workbook's own format made, the workbook's styles made where it has none) and
+  `chartFormatCode` (a built-in format as Excel's charts spell it: `m/d/yyyy`, `d\-mmm`); a new
+  row with none before it takes the sheet's default descent.
+- Sample `docx4j-samples-xlsx4j` `CreateCharts` (runs); `excel-chart-edit-check.ps1 -Tools`
+  (each chart given the next gallery style and another type and back).
+
+**Departures from §4.3** (confirmed by Jason 2026-10-12, "departures confirmed"): `ChartCreator`
+is an object whose `Random` is the seedable source of D6 (`new ChartCreator(new Random(seed))`),
+not static methods; `placeAt` may be null (the chart beside its data); dates are `LocalDate`s with
+a format; `categoriesHeader` added.  D3, D5 and D6 built as recommended.
+
+**Gate.**  `ChartCreatorTest` (9): each chart made in Excel's own workbook of the probe, emptied of
+its chart, table and cells (so that what Excel keeps per workbook, its styles and the sheet's
+default descent, is Excel's on both sides), saved and loaded again, and compared with Excel's by
+`ChartGate`: the chart part (Office's random ids aside), the drawing, and for `inSheet` the cells
+(and P6's tables, which Excel made; P1's and P2's are Word's).  **106 charts identical to
+Excel's**: the 13 P1 charts, the 10 P2 settings, the 40 P6 settings on the other types, 34 P6
+kinds and shapes (dates on eleven types, text on area and scatter, two by two on all twelve, one by
+one, eight series, eight points), 9 `fromCells` readings.  Set aside, each named in the test: the
+keyboard language (finding 6), and one probe artefact (Excel's chart over another sheet's range was
+made on an empty sheet first, which left its legend out).  Also: `ChartSettings` on Excel's loaded
+P1 chart gives each P2 file's chart, and its reverses give P1's back (A3); a seeded `Random`
+makes the same chart, drawing and table; in a workbook docx4j made (no styles part) dates make its
+styles, a second chart shares the drawing and takes `chart2`, `Table2` and "Chart 2", and the
+editor opens on a made chart.  The chart tests pass, the editor's unchanged; docx4j-core-tests
+1,529 run, 0 failed (13 skipped).
+
+**Excel's check** (`excel-chart-edit-check.ps1 -Dirs X:\office_charts\cr036\docx4j-p2 -Tools`,
+the 107 workbooks the gate writes with `-Ddocx4j.chartCreate.write` and the sample's; Jason's run
+2026-10-12): **passed**.  All 108 opened without repair; every chart's Select Data ranges, read as
+series formulas, are those of Excel's own chart in all 106 workbooks that have one (over another
+sheet's range too, quoted `'My Data'!`); on all 111 charts Excel's Chart Design tools work (the
+next gallery style, another type and back).  Excel's picture of each chart is its picture of its
+own chart pixel for pixel, all 106.  Five pictures Excel's Export wrote empty (0 bytes) the first
+time, Excel's own P1 area and scatter in the P1 run and our second and third charts of the new
+workbook and the sample, below the first screen; the check script now brings a chart into view and
+exports again when that happens, and in a second run (`cr036\recheck`, Jason's) all five came out
+at once: Excel's P1 area and scatter are ours pixel for pixel.  The new workbook's and the sample's
+five charts, which have no Excel original, were looked at: each is what its definition says.

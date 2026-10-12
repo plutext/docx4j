@@ -134,6 +134,8 @@ public final class ChartDataEditor implements AutoCloseable {
 	private EmbeddedPackagePart embedded;
 	/** Whether an edit has been made, so that closing an unedited workbook leaves its part as it was */
 	private boolean edited;
+	/** For {@link #fit}: the edits change the chart alone, its cells being written already */
+	private boolean chartOnly;
 
 	/** An editor of the chart whose data is in this workbook */
 	public ChartDataEditor(Chart chart, SpreadsheetMLPackage workbook) {
@@ -332,6 +334,38 @@ public final class ChartDataEditor implements AutoCloseable {
 		finish();
 	}
 
+	/**
+	 * For {@link ChartCreator}: the chart made so many series and points over cells already
+	 * written, its references naming the first of them; nothing written into the cells.  Series
+	 * dropped at the end, or added as {@link #addSeries} adds them (a copy of the last, numbered,
+	 * coloured from the colour style); points dropped at the end, or added as {@link #addCategory}
+	 * adds them (a pie's {@code c:dPt} too); then the caches.
+	 */
+	void fit(int series, int points) throws Docx4JException {
+		if (series < 1 || points < 1) throw new IllegalArgumentException("a chart keeps a series and a category");
+		chartOnly = true;
+		try {
+			List<ChartSeries> s = getSeries();
+			while (s.size() > series) {
+				detach(find(s.get(s.size() - 1)));
+				s = getSeries();
+			}
+			int n = points();
+			while (n > points) doRemoveCategory(--n);
+			while (n < points) {
+				doAddCategory(null, new Double[0]);
+				n++;
+			}
+			while (s.size() < series) {
+				doAddSeries(null, new Double[0]);
+				s = getSeries();
+			}
+			refreshCaches();
+		} finally {
+			chartOnly = false;
+		}
+	}
+
 	/** Every cache from the cells (each edit does this itself) */
 	public void refreshCaches() throws Docx4JException {
 		List<Ser> all = all();
@@ -377,6 +411,18 @@ public final class ChartDataEditor implements AutoCloseable {
 		Src cat = categories();
 		if (label instanceof String && cat != null && cat.ref instanceof CTNumRef) {
 			throw new IllegalArgumentException("the chart's categories are numbers or dates; give one as a number");
+		}
+		if (chartOnly) {
+			for (Ser s : all()) {
+				int before = s.values() == null || s.values().areas == null ? -1 : s.values().size();
+				for (Src d : s.data()) {
+					d.areas = g.extend(d.areas, end);
+					if (d.full != null) d.full = g.extend(d.full, end);
+					d.save();
+				}
+				if (before >= 0) addPointFormat(s, before);
+			}
+			return;
 		}
 		// the new cells, checked before anything changes
 		Map<CellRef, Object> writes = new LinkedHashMap<CellRef, Object>();
@@ -453,6 +499,17 @@ public final class ChartDataEditor implements AutoCloseable {
 		if (points() <= 1) throw new IllegalStateException("a chart keeps a category");
 		Geometry g = geometry();
 		int p = g.pointPos(values(inOrder().get(0)).cell(point));
+		if (chartOnly) {
+			for (Ser s : all()) {
+				for (Src d : s.sources()) {
+					d.areas = g.removePoint(d.areas, p);
+					if (d.full != null) d.full = g.removePoint(d.full, p);
+					d.save();
+				}
+				removePointFormat(s, point);
+			}
+			return;
+		}
 		SheetCells sc = sheet(g.sheet);
 		AreaRef block = g.block(sc);
 		AreaRef moving = g.down ? new AreaRef(new CellRef(g.sheet, block.getFirst().getColumn(), p),
@@ -492,24 +549,30 @@ public final class ChartDataEditor implements AutoCloseable {
 		int delta = q + 1 - g.seriesPos(lv.areas.get(0).getFirst());
 		CTSerTx ltx = (CTSerTx) ChartSeries.get(last.ser, "getTx");
 		Src ln = ltx != null && ltx.getStrRef() != null ? new Src(ltx.getStrRef()) : null;
-		SheetCells sc = sheet(g.sheet);
 		Map<CellRef, Object> writes = new LinkedHashMap<CellRef, Object>();
 		Map<CellRef, CellRef> styleFrom = new LinkedHashMap<CellRef, CellRef>();
-		if (ln != null) {
-			CellRef c = g.shift(ln.cell(0), delta);
-			writes.put(c, name);
-			styleFrom.put(c, ln.cell(0));
+		TablePart t = null;
+		AreaRef tr = null;
+		boolean grow = false;
+		SheetCells sc = null;
+		if (!chartOnly) {
+			sc = sheet(g.sheet);
+			if (ln != null) {
+				CellRef c = g.shift(ln.cell(0), delta);
+				writes.put(c, name);
+				styleFrom.put(c, ln.cell(0));
+			}
+			for (int i = 0; i < lv.size(); i++) {
+				CellRef c = g.shift(lv.cell(i), delta);
+				writes.put(c, values != null && i < values.length ? values[i] : null);
+				styleFrom.put(c, lv.cell(i));
+			}
+			for (CellRef c : writes.keySet()) empty(sc, c);
+			t = Tables.containing(sc.getPart(), g.extent);
+			tr = t == null ? null : Tables.getRef(t);
+			grow = tr != null && g.seriesPos(tr.getLast()) == q;
+			if (grow && !Tables.canResize(t)) throw new IllegalStateException("the table has a totals row or no header row");
 		}
-		for (int i = 0; i < lv.size(); i++) {
-			CellRef c = g.shift(lv.cell(i), delta);
-			writes.put(c, values != null && i < values.length ? values[i] : null);
-			styleFrom.put(c, lv.cell(i));
-		}
-		for (CellRef c : writes.keySet()) empty(sc, c);
-		TablePart t = Tables.containing(sc.getPart(), g.extent);
-		AreaRef tr = t == null ? null : Tables.getRef(t);
-		boolean grow = tr != null && g.seriesPos(tr.getLast()) == q;
-		if (grow && !Tables.canResize(t)) throw new IllegalStateException("the table has a totals row or no header row");
 
 		// the series: a copy of the last, numbered after every series, its own things dropped
 		long idx = -1, order = -1;

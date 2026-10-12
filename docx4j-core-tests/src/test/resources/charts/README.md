@@ -79,5 +79,15 @@ types (`column-clustered`, `-stacked`, `-stacked-100`, `bar-...`, `line`, `line-
   seconds after an edit before closing the chart's data: closed at once, Office saved a chart
   whose cache lacked the last cell typed, or had no caches at all.)
 
+- `p6-*.xlsx` (CR-036 phase 2's readings, each a new Excel workbook with its data in Table1,
+  charted by `AddChart2`): `p6-<type>-<setting>.xlsx`, P2's settings on the other eleven types;
+  `p6-<type>-dates.xlsx` (a "Date" header over d-mmm dates), `p6-area-text.xlsx`,
+  `p6-scatter-text.xlsx`, `p6-<type>-numbers.xlsx` (numbers under a " " header: Excel takes them
+  as a series); other shapes of data, `-two-by-two`, `-one-by-one`, `-eight-series`,
+  `-eight-points`; and `p6-range-*.xlsx`, charts over plain ranges as Excel reads them
+  (`other-sheet`, `wide`, `numbers`, `numbers-header`, `no-header`, `text-corner`), the
+  `.txt` beside each giving the series' formulas.  The oracles of `ChartCreatorTest`.  (Office
+  writes a typed title's run in the machine's keyboard language: en-AU in this run.)
+
 Their PDFs (Word's and PowerPoint's own) and Excel's chart PNGs are on the share,
 `office_charts\cr036`.

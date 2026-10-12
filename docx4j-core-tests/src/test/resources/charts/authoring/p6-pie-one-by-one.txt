@@ -1,0 +1,2 @@
+﻿chart type 5
+  series 1: =SERIES(Sheet1!$B$1,Sheet1!$A$2,Sheet1!$B$2,1)

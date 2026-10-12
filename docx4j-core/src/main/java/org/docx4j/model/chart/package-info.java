@@ -37,10 +37,19 @@
  * <li>Both models have a versioned JSON form ({@code toJson()}), which docx4j's TypeScript and
  *     Python ports compare against, and which describes a chart to a tool.</li>
  * <li>{@link org.docx4j.model.chart.ChartBox} keeps a chart's space in the PDF and HTML outputs.</li>
+ * <li>{@link org.docx4j.model.chart.ChartDataEditor} edits a chart's data as Excel and Word do: the
+ *     cells, the table, the references and the caches in step, in an xlsx or in the workbook
+ *     embedded with a chart in a docx or pptx.</li>
+ * <li>{@link org.docx4j.model.chart.ChartCreator} makes a chart in an xlsx as Excel's
+ *     <i>Insert Chart</i> does, from a {@link org.docx4j.model.chart.ChartDefinition} or over cells
+ *     already there, from Excel's own parts for its {@link org.docx4j.model.chart.ChartType};
+ *     {@link org.docx4j.model.chart.ChartSettings} sets a chart's title, legend, axis titles,
+ *     number format and data labels.</li>
  * </ul>
  *
- * Drawing a chart, and writing one, are not here yet.  The design is
- * {@code docs/developer/change-requests/CR-035-charts-box-read-model-describe-edit.md}.
+ * Drawing a chart is not here yet.  The designs are
+ * {@code docs/developer/change-requests/CR-035-charts-box-read-model-describe-edit.md} and
+ * {@code CR-036-chart-authoring-edit-docx-pptx-create.md}.
  *
  * @since 17.3.3
  */

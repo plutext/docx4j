@@ -1,0 +1,4 @@
+﻿chart type 51
+  series 1: =SERIES(,Sheet1!$A$1:$C$1,Sheet1!$A$2:$C$2,1)
+  series 2: =SERIES(,Sheet1!$A$1:$C$1,Sheet1!$A$3:$C$3,2)
+  series 3: =SERIES(,Sheet1!$A$1:$C$1,Sheet1!$A$4:$C$4,3)

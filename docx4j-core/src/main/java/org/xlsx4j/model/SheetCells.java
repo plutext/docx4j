@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
@@ -36,6 +37,7 @@ import org.docx4j.relationships.Relationship;
 import org.xlsx4j.org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.xlsx4j.sml.CTCalcPr;
 import org.xlsx4j.sml.CTNumFmt;
+import org.xlsx4j.sml.CTNumFmts;
 import org.xlsx4j.sml.CTRElt;
 import org.xlsx4j.sml.CTRst;
 import org.xlsx4j.sml.CTSheetDimension;
@@ -55,7 +57,7 @@ import org.xlsx4j.sml.Worksheet;
  * written; a cell cleared; the cells of a block moved up or left over a deleted row or column.
  * Afterwards {@link #tidy()} sets what Excel keeps in step with the cells: the sheet's
  * {@code dimension}, each row's {@code spans}, the shared strings' counts.  Not a general cell
- * API: no formulas are written, no styles made.
+ * API: no formulas are written, and no styles made but a number format's.
  *
  * <p>A cell cleared loses its element, as Excel's does, unless it has a style, which it keeps.
  * A number is written in its shortest form (Excel writes some with 17 significant digits; both
@@ -141,9 +143,12 @@ public final class SheetCells {
 		if (r == null) {
 			r = new Row();
 			r.setR((long) row);
-			// as Excel's new row: the descent of the row before it
+			// as Excel's new row: the descent of the row before it, else the sheet's default descent
 			Row before = at > 0 ? rows.get(at - 1) : null;
 			if (before != null && before.getDyDescent() != null) r.setDyDescent(before.getDyDescent());
+			else if (before == null && part.getContents().getSheetFormatPr() != null) {
+				r.setDyDescent(part.getContents().getSheetFormatPr().getDyDescent());
+			}
 			r.setParent(part.getContents().getSheetData());
 			rows.add(at, r);
 		}
@@ -241,6 +246,128 @@ public final class SheetCells {
 		c.setV(String.valueOf(stringIndex(value)));
 		return c;
 	}
+
+	/**
+	 * The cell given a number format (a date's, for a chart's dates), its style otherwise kept: a
+	 * built-in format by its number, as Excel writes it ({@code m/d/yyyy} 14, {@code d-mmm} 16),
+	 * else the workbook's own format, made where it has none; a style made where none has the
+	 * cell's with this format (the workbook's styles made where it has none)
+	 */
+	public Cell setNumberFormat(int column, int row, String formatCode) throws Docx4JException {
+		CTStylesheet ss = stylesheet();
+		long id = numFmtId(ss, formatCode);
+		Cell c = cell(column, row);
+		List<CTXf> xfs = ss.getCellXfs().getXf();
+		CTXf base = c.getS() < xfs.size() ? xfs.get((int) c.getS()) : xfs.get(0);
+		long current = base.getNumFmtId() == null ? 0 : base.getNumFmtId();
+		if (current == id) return c;
+		for (int i = 0; i < xfs.size(); i++) {
+			CTXf x = xfs.get(i);
+			if (x.getNumFmtId() != null && x.getNumFmtId() == id && same(x.getFontId(), base.getFontId())
+					&& same(x.getFillId(), base.getFillId()) && same(x.getBorderId(), base.getBorderId())
+					&& same(x.getXfId(), base.getXfId()) && x.getAlignment() == null && base.getAlignment() == null
+					&& x.getProtection() == null && base.getProtection() == null) {
+				c.setS((long) i);
+				return c;
+			}
+		}
+		// as Excel's: the cell's style with the format, applyNumberFormat set
+		CTXf x = new CTXf();
+		x.setNumFmtId(id);
+		x.setFontId(base.getFontId() == null ? 0L : base.getFontId());
+		x.setFillId(base.getFillId() == null ? 0L : base.getFillId());
+		x.setBorderId(base.getBorderId() == null ? 0L : base.getBorderId());
+		x.setXfId(base.getXfId() == null ? 0L : base.getXfId());
+		x.setApplyNumberFormat(true);
+		if (base.getAlignment() != null) x.setAlignment(base.getAlignment());
+		x.setParent(ss.getCellXfs());
+		xfs.add(x);
+		ss.getCellXfs().setCount((long) xfs.size());
+		c.setS((long) xfs.size() - 1);
+		return c;
+	}
+
+	private static boolean same(Long a, Long b) {
+		return (a == null ? 0 : a) == (b == null ? 0 : b);
+	}
+
+	/**
+	 * A format code's number: Excel's built-in one, where Excel spells it so (the codes of
+	 * Excel's dates as its charts write them, a hyphen escaped, included), else the workbook's own,
+	 * made where it has none
+	 */
+	private static long numFmtId(CTStylesheet ss, String formatCode) {
+		Long builtin = builtinFormat(formatCode);
+		if (builtin != null) return builtin;
+		long max = BuiltinFormats.FIRST_USER_DEFINED_FORMAT_INDEX - 1;
+		if (ss.getNumFmts() != null) {
+			for (CTNumFmt f : ss.getNumFmts().getNumFmt()) {
+				if (formatCode.equals(f.getFormatCode())) return f.getNumFmtId();
+				max = Math.max(max, f.getNumFmtId());
+			}
+		} else {
+			ss.setNumFmts(new CTNumFmts());
+		}
+		CTNumFmt f = new CTNumFmt();
+		f.setNumFmtId(max + 1);
+		f.setFormatCode(formatCode);
+		f.setParent(ss.getNumFmts());
+		ss.getNumFmts().getNumFmt().add(f);
+		ss.getNumFmts().setCount((long) ss.getNumFmts().getNumFmt().size());
+		return max + 1;
+	}
+
+	/** A built-in format's number: Excel's spelling of 14 (m/d/yyyy), a chart's escaped hyphens */
+	static Long builtinFormat(String formatCode) {
+		if ("m/d/yyyy".equals(formatCode)) return 14L;
+		int i = BuiltinFormats.getBuiltinFormat(formatCode.replace("\\-", "-"));
+		return i < 0 ? null : (long) i;
+	}
+
+	/**
+	 * A built-in format as Excel's charts write it (CR-036 phase 2: {@code m/d/yyyy} for 14,
+	 * {@code d\-mmm} for 16, a hyphen escaped); a workbook's own format as it is
+	 */
+	public static String chartFormatCode(String formatCode) {
+		Long builtin = builtinFormat(formatCode);
+		if (builtin == null) return formatCode;
+		if (builtin == 14) return "m/d/yyyy";
+		return BuiltinFormats.getBuiltinFormat(builtin.intValue()).replace("-", "\\-");
+	}
+
+	/** The workbook's styles, made (as a new workbook of Excel's has them) where it has none */
+	private CTStylesheet stylesheet() throws Docx4JException {
+		Styles styles = workbook.getWorkbookPart().getStylesPart();
+		if (styles == null) {
+			try {
+				styles = new Styles();
+			} catch (InvalidFormatException e) {
+				throw new Docx4JException(e.getMessage(), e);
+			}
+			try {
+				styles.setJaxbElement((CTStylesheet) XmlUtils.unmarshalString(MINIMAL_STYLES, org.xlsx4j.jaxb.Context.jcSML, CTStylesheet.class));
+			} catch (jakarta.xml.bind.JAXBException e) {
+				throw new Docx4JException(e.getMessage(), e);
+			}
+			workbook.getWorkbookPart().addTargetPart(styles);
+		}
+		CTStylesheet ss = styles.getContents();
+		if (ss.getCellXfs() == null || ss.getCellXfs().getXf().isEmpty()) {
+			throw new IllegalStateException("the workbook's styles have no cellXfs");
+		}
+		return ss;
+	}
+
+	private static final String MINIMAL_STYLES = "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">"
+			+ "<fonts count=\"1\"><font><sz val=\"11\"/><color theme=\"1\"/><name val=\"Calibri\"/><family val=\"2\"/>"
+			+ "<scheme val=\"minor\"/></font></fonts>"
+			+ "<fills count=\"2\"><fill><patternFill patternType=\"none\"/></fill><fill><patternFill patternType=\"gray125\"/></fill></fills>"
+			+ "<borders count=\"1\"><border><left/><right/><top/><bottom/><diagonal/></border></borders>"
+			+ "<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs>"
+			+ "<cellXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/></cellXfs>"
+			+ "<cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles>"
+			+ "<dxfs count=\"0\"/><tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium2\" defaultPivotStyle=\"PivotStyleLight16\"/>"
+			+ "</styleSheet>";
 
 	/** An error value (#N/A, #DIV/0!, ...) into the cell, as a constant */
 	public Cell setError(int column, int row, String code) throws Docx4JException {

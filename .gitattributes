@@ -36,3 +36,7 @@ docx4j-core/src/main/resources/org/docx4j/fonts/microsoft/MicrosoftFonts.xsd tex
 
 # Anonymiser: converted to LF in CR-016 phase 4; keep it so.
 docx4j-docx-anon/src/main/java/org/docx4j/anon/ScrambleText.java text eol=lf
+
+# CR-036's chart templates are Office's parts byte for byte (a CRLF after the declaration, as
+# Excel writes it): never converted.
+docx4j-core/src/main/resources/org/docx4j/model/chart/templates/** -text
