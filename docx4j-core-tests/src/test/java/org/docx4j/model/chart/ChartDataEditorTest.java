@@ -27,23 +27,14 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.DrawingML.Chart;
-import org.docx4j.openpackaging.parts.SpreadsheetML.TablePart;
 import org.junit.Test;
 import org.xlsx4j.model.SheetCells;
-import org.xlsx4j.model.Tables;
 import org.xlsx4j.sml.CTCellFormula;
-import org.xlsx4j.sml.CTTable;
-import org.xlsx4j.sml.CTTableColumn;
-import org.xlsx4j.sml.Cell;
-import org.xlsx4j.sml.Row;
 
 /**
  * The chart data editor against Excel's own edits (CR-035 phase 4's gate): each probe of
@@ -94,60 +85,17 @@ public class ChartDataEditorTest {
 		if (dir != null) pkg.save(new File(dir, name + "-docx4j.xlsx"));
 	}
 
-	private static final Pattern V = Pattern.compile("<c:v>([^<]*)</c:v>");
-
-	/** The chart part as docx4j writes it, each cached number in one form */
+	/** The chart part, as {@link ChartGate} compares it (the xlsx probes keep Office's ids as they are) */
 	static String chartXml(SpreadsheetMLPackage pkg) throws Exception {
-		String xml = XmlUtils.marshaltoString(chart(pkg).getJaxbElement(), true, true);
-		Matcher m = V.matcher(xml);
-		StringBuffer sb = new StringBuffer();
-		while (m.find()) {
-			String v = m.group(1);
-			try {
-				v = Double.toString(Double.parseDouble(v));
-			} catch (NumberFormatException e) {
-				// text
-			}
-			m.appendReplacement(sb, Matcher.quoteReplacement("<c:v>" + v + "</c:v>"));
-		}
-		m.appendTail(sb);
-		return sb.toString();
+		return ChartGate.chartXml(chart(pkg), false);
 	}
 
-	/** Sheet1's dimension, rows (spans) and cells (type, style, value by its text, formula) */
 	static String cells(SpreadsheetMLPackage pkg, boolean formulas) throws Exception {
-		SheetCells sc = SheetCells.of(pkg, "Sheet1");
-		StringBuilder sb = new StringBuilder("dimension " + sc.getPart().getContents().getDimension().getRef() + "\n");
-		for (Row r : sc.getPart().getContents().getSheetData().getRow()) {
-			sb.append("row ").append(r.getR()).append(" spans ").append(r.getSpans()).append(" dyDescent ")
-					.append(r.getDyDescent()).append('\n');
-			for (Cell c : r.getC()) {
-				String v = sc.getText(c);
-				if (SheetCells.isNumber(c)) v = Double.toString(Double.parseDouble(v));
-				sb.append("  ").append(c.getR()).append(" t=").append(c.getT() == null ? "n" : c.getT().value())
-						.append(" s=").append(c.getS()).append(" v=").append(v);
-				if (formulas && c.getF() != null) sb.append(" f=").append(c.getF().getValue());
-				sb.append('\n');
-			}
-		}
-		return sb.toString();
+		return ChartGate.cells(pkg, formulas);
 	}
 
-	/** The sheet's table: ref, autoFilter, columns (id, name; a uid each) */
 	static String table(SpreadsheetMLPackage pkg) throws Exception {
-		SheetCells sc = SheetCells.of(pkg, "Sheet1");
-		StringBuilder sb = new StringBuilder();
-		for (TablePart t : Tables.of(sc.getPart())) {
-			CTTable ct = t.getContents();
-			sb.append(ct.getName()).append(' ').append(ct.getRef()).append(" autoFilter ")
-					.append(ct.getAutoFilter() == null ? null : ct.getAutoFilter().getRef()).append(" count ")
-					.append(ct.getTableColumns().getCount()).append('\n');
-			for (CTTableColumn c : ct.getTableColumns().getTableColumn()) {
-				sb.append("  ").append(c.getId()).append(" '").append(c.getName()).append("' uid ")
-						.append(c.getUid() != null).append('\n');
-			}
-		}
-		return sb.toString();
+		return ChartGate.table(pkg);
 	}
 
 	// ------------------------------------------------------------------ Excel's seven edits

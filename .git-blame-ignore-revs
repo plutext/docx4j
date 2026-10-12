@@ -22,3 +22,6 @@ e054b7f1756207d08e40ba64c72f9d16ed5d26ad
 # CR-034 phase 2: five classes of org.docx4j.model.properties (Property, PShading,
 # FontColor, RBorder, RShading), CRLF -> LF
 8928aacc5fef138b4145a2d252006ca2946f1ec5
+
+# CR-036 phase 1: EmbeddedPackagePart.java, CRLF -> LF
+44224bc832634fd68ddbb30ba9c4ddc6060b2a23

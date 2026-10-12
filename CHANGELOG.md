@@ -44,6 +44,10 @@ Changes in Version 17.3.3
   categories and series added and removed, or the whole data set), keeping the cells, the table,
   the references and the caches in step; with new cell writers in org.xlsx4j.model (CellRef,
   AreaRef, SheetCells, Tables).  CR-035.
+- ChartDataEditor edits a chart in a docx or pptx too (ChartDataEditor.of(chart), try-with-resources):
+  the workbook embedded with it, which EmbeddedPackagePart now keeps live (getEmbeddedPackage) and
+  writes whenever the document is saved; linked charts refused; a pie's new point formatted as
+  Word formats it.  New docx sample EditChartData; pptx sample EditEmbeddedCharts uses it.  CR-036.
 - New org.docx4j.model.color: theme colours resolved as Office draws them - DrawingML colours and
   transforms, WordprocessingML theme attributes, SpreadsheetML theme/tint/indexed - checked against
   Word's, PowerPoint's and Excel's own renderings.  CR-034.

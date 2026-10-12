@@ -1,6 +1,9 @@
 # CR-036: chart authoring - a chart's data edited in docx and pptx, and charts created in xlsx, docx and pptx (charts plan phases 6 and 5)
 
-Status: IN PROGRESS. Phase 0 DONE 2026-10-12 (Jason's runs of the probe script; findings in §11):
+Status: IN PROGRESS. Phase 1 DONE 2026-10-12 (Jason: "please start CR-036 phase 1"): ChartDataEditor
+on docx and pptx charts, the embedded workbook kept live in EmbeddedPackagePart (A1); against Word's
+five and PowerPoint's four own edits, part by part, and all ten PDFs pixel for pixel Office's own
+(§11). Phase 2 next. Phase 0 DONE 2026-10-12 (Jason's runs of the probe script; findings in §11):
 Word's chart part is Excel's exactly for nine types, and differs by its points' ids in the pie and
 doughnut and by one attribute in the scatter; PowerPoint's differs on every type (no title, a
 transparent chart area, text 4/3 larger, in the chart and the style part), so pptx takes its own
@@ -428,3 +431,62 @@ and the closing host element set aside):
 10. **The data-set charts** (Word and PowerPoint, North and South by Plan and Actual) are right in
     their chart parts; their workbooks lost the table to the script's edits, so for phase 3 they
     are oracles of the chart part only.
+
+### Phase 1 (2026-10-12), done
+
+Jason: "please start CR-036 phase 1".
+
+**Built:**
+- **`EmbeddedPackagePart`'s live package** (review A1): `getEmbeddedPackage()` (loaded from the
+  part's bytes once, then kept), `setEmbeddedPackage()` (null lets it go unwritten),
+  `hasEmbeddedPackage()`, `writeEmbeddedPackage()`, `releaseEmbeddedPackage()`; with a live
+  package the part's `getBuffer()` serialises it and `isLoaded()` is true, so both part stores'
+  save path (`isLoaded()`, `getBytes()`) writes it with the document: io3 itself unchanged.  Bytes
+  set explicitly replace a live package; `extractPackage()` still loads a copy (of the live state).
+  Readers (`ChartCells.of`) use the live package where an editor has one open, else a copy, so that
+  reading never makes a save rewrite the part.  The class went to LF line endings first, its own
+  commit.
+- **`ChartDataEditor.of(Chart)`** for any host: in a docx or pptx the workbook `c:externalData`
+  names, kept live; `AutoCloseable` (`close()` writes an edited workbook and lets it go, leaves an
+  unedited one's bytes as they were; `flush()` writes it now).  Refused: a linked chart (an external
+  target; the pasted pptx fixture) and a chart with no workbook.  An edited embedded workbook's
+  `calcPr/@calcId` set to 0, as Word's save sets it.
+- **A pie's or doughnut's points** (phase 0 finding 6): a category added gives the new point a
+  `c:dPt` copied from the last, recoloured from the colour style, with a `c16:uniqueId` numbered
+  2 idx + 1; a category removed takes its point's `c:dPt` and renumbers the later ones.  For every
+  host.
+- **Samples**: `docx4j-samples-pptx4j`'s `EditEmbeddedCharts` rewritten on the editor (it set the
+  caches and cells by hand); new `docx4j-samples-docx4j` `EditChartData` (a template's chart
+  filled by `setData`); both run.
+- **`ChartGate`** (A5): CR-035's comparison made a shared test helper (the chart part as docx4j
+  marshals it, numbers as numbers, Office's random ids aside on request; Sheet1's cells and rows;
+  the tables), used by both editor gates.
+
+**The oracles remade.**  Phase 0's P5 pairs were saved by Word and PowerPoint before their chart
+caught up with the last cell the script typed: the workbook had D6 = 4, the cache had no fifth
+point (both add-category pairs), or the chart had no caches at all (Word's remove-series).  The
+probe script now waits after an edit; Jason's rerun gave consistent pairs, PowerPoint's
+remove-series among them, which replaced the stale five in `charts/authoring`.
+
+**Measured:** Word's and PowerPoint's save of a chart's workbook leaves the sheet's `dimension`
+and the rows' `spans` at the larger extent after a column's cells are removed (A1:D5, 1:4, with no
+cell left in D), where Excel's save narrows them (CR-035's e5).  They are hints Excel recomputes;
+the editor narrows them as Excel does, and the gate leaves them out for the two removals.
+
+**Gate.**  `ChartDataEditorEmbeddedTest` (14): Word's five edits (a value, a category, a series
+added, a series removed, a pie's category) and PowerPoint's four, each made by the editor on
+Office's before-file in try-with-resources, the document saved and loaded again, and compared
+with Office's after-file: the chart part (Office's random ids aside), the embedded workbook's
+cells and table, `calcId`; caches agreeing with cells.  The controls (A5): opened and closed with
+no edit, the embedded workbook's bytes are Word's own still; rewritten by `flush()` with no edit,
+its cells, table and chart are Word's; a document saved with its editor still open keeps the edit
+(A1), and readers see the live workbook meanwhile; the linked and the workbook-less chart
+refused; a pie's point removed.  `ChartDataEditorTest` (27) unchanged on `ChartGate`.
+docx4j-core-tests 1,520 run, 0 failed (11 skipped).
+
+**Office check** (`office-chart-edit-check.ps1`, Jason's run): Word and PowerPoint opened all
+twelve documents docx4j wrote (the eight edits, the two controls, the two samples' outputs), and
+*Edit Data* showed each one's edited data and table.  Their PDFs, rasterised at 100 dpi, are pixel
+for pixel Word's and PowerPoint's own PDFs of the same edits, all ten (the controls against Word's
+insert); two different edits differ by 21,186 pixels, one value by 4,952, so the comparison sees
+an edit.

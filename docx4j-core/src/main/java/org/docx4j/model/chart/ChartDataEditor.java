@@ -58,11 +58,15 @@ import org.docx4j.dml.chart.CTStrRef;
 import org.docx4j.dml.chart.CTStrVal;
 import org.docx4j.dml.chart.CTUnsignedInt;
 import org.docx4j.dml.chart.CTDLbls;
+import org.docx4j.dml.chart.CTDPt;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.DrawingML.Chart;
 import org.docx4j.openpackaging.parts.DrawingML.ChartColorStylePart;
+import org.docx4j.openpackaging.parts.WordprocessingML.EmbeddedPackagePart;
+import org.docx4j.relationships.Relationship;
 import org.docx4j.openpackaging.parts.SpreadsheetML.TablePart;
 import org.w3c.dom.Element;
 import org.xlsx4j.model.AreaRef;
@@ -77,9 +81,13 @@ import jakarta.xml.bind.JAXBElement;
 /**
  * Edits a chart's data as Excel does (CR-035 phase 4): the cells its references name, the table
  * they're in, the references and the caches, kept in step, as Excel's own edits measured them
- * (the e1 to e7 probes, CR-035 §11).  It takes a chart and the workbook its data is in, so it
- * serves a chart in an xlsx ({@link #of(Chart)}) and, given the embedded workbook, a chart in a
- * docx or pptx.
+ * (the e1 to e7 probes, CR-035 §11).  It takes a chart and the workbook its data is in:
+ * {@link #of(Chart)} finds it, the xlsx's own or the one embedded with a chart in a docx or pptx
+ * (CR-036), which stays live in its part until {@link #close()} and is written with the document
+ * whenever that is saved, so {@code try (ChartDataEditor e = ChartDataEditor.of(chart)) {...}}.
+ * Word's and PowerPoint's own edits (CR-036's probes) are as Excel's, and add: a pie's or
+ * doughnut's new point formatted as its others ({@code c:dPt}), and an edited embedded workbook's
+ * {@code calcPr/@calcId} set to 0.
  *
  * <ul>
  * <li>A value, a category or a series name is written into its cell, a name into a table's
@@ -112,7 +120,7 @@ import jakarta.xml.bind.JAXBElement;
  *
  * @since 17.3.3 (CR-035)
  */
-public final class ChartDataEditor {
+public final class ChartDataEditor implements AutoCloseable {
 
 	private static final String UNIQUE_ID_URI = "{C3380CC4-5D6E-409C-BE32-E72D297353CC}";
 	private static final Pattern UNIQUE_ID = Pattern.compile("\\{[0-9A-Fa-f]{8}(-[^}]*)\\}");
@@ -122,6 +130,10 @@ public final class ChartDataEditor {
 	private final Map<String, SheetCells> sheets = new LinkedHashMap<String, SheetCells>();
 	private final DataFormatter formatter = new DataFormatter(Locale.US);
 	private boolean overwriteFormulas;
+	/** The part holding the workbook, for a chart in a docx or pptx; null for an xlsx's own */
+	private EmbeddedPackagePart embedded;
+	/** Whether an edit has been made, so that closing an unedited workbook leaves its part as it was */
+	private boolean edited;
 
 	/** An editor of the chart whose data is in this workbook */
 	public ChartDataEditor(Chart chart, SpreadsheetMLPackage workbook) {
@@ -129,12 +141,53 @@ public final class ChartDataEditor {
 		this.workbook = workbook;
 	}
 
-	/** An editor of a chart in an xlsx, whose data is in its own workbook */
-	public static ChartDataEditor of(Chart chart) {
-		if (!(chart.getPackage() instanceof SpreadsheetMLPackage)) {
-			throw new IllegalArgumentException("the chart isn't in a workbook; pass the workbook its data is in");
+	/**
+	 * An editor of a chart: in an xlsx, of its own workbook; in a docx or pptx, of the workbook
+	 * embedded with it ({@code c:externalData}), kept live in its part until {@link #close()}, and
+	 * written with the document whenever that is saved (CR-036).  Refused: a linked chart (its data
+	 * in another file) and a chart with no workbook.
+	 */
+	public static ChartDataEditor of(Chart chart) throws Docx4JException {
+		if (chart.getPackage() instanceof SpreadsheetMLPackage) {
+			return new ChartDataEditor(chart, (SpreadsheetMLPackage) chart.getPackage());
 		}
-		return new ChartDataEditor(chart, (SpreadsheetMLPackage) chart.getPackage());
+		org.docx4j.dml.chart.CTExternalData ext = chart.getContents().getExternalData();
+		if (ext == null || ext.getId() == null || chart.getRelationshipsPart() == null) {
+			throw new IllegalStateException("the chart has no workbook (no c:externalData)");
+		}
+		Relationship r = chart.getRelationshipsPart().getRelationshipByID(ext.getId());
+		if (r == null) throw new IllegalStateException("the chart's c:externalData names no relationship: " + ext.getId());
+		if ("External".equalsIgnoreCase(r.getTargetMode())) {
+			throw new IllegalStateException("the chart is linked: its data is in another file (" + r.getTarget() + ")");
+		}
+		Part p = chart.getRelationshipsPart().getPart(r);
+		if (!(p instanceof EmbeddedPackagePart)) throw new IllegalStateException("the chart's workbook isn't an embedded package");
+		OpcPackage wb = ((EmbeddedPackagePart) p).getEmbeddedPackage();
+		if (!(wb instanceof SpreadsheetMLPackage)) throw new IllegalStateException("the chart's embedded package isn't a workbook");
+		ChartDataEditor e = new ChartDataEditor(chart, (SpreadsheetMLPackage) wb);
+		e.embedded = (EmbeddedPackagePart) p;
+		return e;
+	}
+
+	/**
+	 * For a chart in a docx or pptx: its workbook written into its part's bytes now (the part keeps
+	 * it live, and writes it whenever the document is saved, so this is for a caller that wants the
+	 * bytes current); nothing for an xlsx
+	 */
+	public void flush() throws Docx4JException {
+		if (embedded != null) embedded.writeEmbeddedPackage();
+	}
+
+	/**
+	 * For a chart in a docx or pptx: its workbook, if edited, written into its part, and let go,
+	 * so that later readers load it from the bytes (unedited, the part keeps the bytes it had);
+	 * nothing for an xlsx
+	 */
+	@Override
+	public void close() throws Docx4JException {
+		if (embedded == null) return;
+		if (edited) embedded.releaseEmbeddedPackage();
+		else embedded.setEmbeddedPackage(null);
 	}
 
 	/** Whether a cell holding a formula may be overwritten (D10: not by default) */
@@ -348,14 +401,52 @@ public final class ChartDataEditor {
 		if (grow && !Tables.canResize(t)) throw new IllegalStateException("the table has a totals row or no header row");
 		// the references
 		for (Ser s : all()) {
+			int before = s.values() == null || s.values().areas == null ? -1 : s.values().size();
 			for (Src d : s.data()) {
 				d.areas = g.extend(d.areas, end);
 				if (d.full != null) d.full = g.extend(d.full, end);
 				d.save();
 			}
+			if (before >= 0) addPointFormat(s, before);
 		}
 		for (Map.Entry<CellRef, Object> w : writes.entrySet()) put(w.getKey(), w.getValue(), styleFrom.get(w.getKey()));
 		if (grow) Tables.setRef(t, g.down ? tr.resize(0, 0, 0, 1) : tr.resize(0, 0, 1, 0), sc);
+	}
+
+	/**
+	 * Where a series formats each of its points itself ({@code c:dPt}, a pie's or a doughnut's varied
+	 * colours), the new point's as Word adds it (CR-036 phase 0, p5w-pie-add-category): a copy of the
+	 * last point's, its colour the colour style's for the new index where the last had its own
+	 * automatic one, its {@code c16:uniqueId} numbered 2 idx + 1 as Word numbers points'
+	 */
+	@SuppressWarnings("unchecked")
+	private void addPointFormat(Ser s, int idx) {
+		List<CTDPt> dPts = (List<CTDPt>) ChartSeries.get(s.ser, "getDPt");
+		if (dPts == null || dPts.isEmpty()) return;
+		CTDPt last = null;
+		for (CTDPt d : dPts) {
+			if (d.getIdx() != null && (last == null || d.getIdx().getVal() > last.getIdx().getVal())) last = d;
+		}
+		// only where every point before it has its own (each idx up to idx - 1)
+		if (last == null || last.getIdx().getVal() != idx - 1 || dPts.size() != idx) return;
+		CTDPt n = (CTDPt) last.copy();
+		n.getIdx().setVal(idx);
+		CTColorStyle cs = colorStyle();
+		if (cs != null && !cs.getEGColorChoice().isEmpty() && (cs.getMeth() == null || "cycle".equals(cs.getMeth()))) {
+			recolour(n.getSpPr(), key(autoColour(cs, idx - 1)), cs, idx);
+		}
+		uniqueId(n, 2L * idx + 1);
+		n.setParent(s.ser);
+		dPts.add(n);
+	}
+
+	/** A removed point's own formatting gone with it, the later points' renumbered */
+	@SuppressWarnings("unchecked")
+	private static void removePointFormat(Ser s, int idx) {
+		List<CTDPt> dPts = (List<CTDPt>) ChartSeries.get(s.ser, "getDPt");
+		if (dPts == null || dPts.isEmpty()) return;
+		dPts.removeIf(d -> d.getIdx() != null && d.getIdx().getVal() == idx);
+		for (CTDPt d : dPts) if (d.getIdx() != null && d.getIdx().getVal() > idx) d.getIdx().setVal(d.getIdx().getVal() - 1);
 	}
 
 	private void doRemoveCategory(int point) throws Docx4JException {
@@ -377,6 +468,7 @@ public final class ChartDataEditor {
 				if (d.full != null) d.full = g.removePoint(d.full, p);
 				d.save();
 			}
+			removePointFormat(s, point);
 		}
 		if (g.down) sc.deleteRow(moving, p);
 		else sc.deleteColumn(moving, p);
@@ -590,9 +682,17 @@ public final class ChartDataEditor {
 	}
 
 	private void finish() throws Docx4JException {
+		edited = true;
 		refreshCaches();
 		for (SheetCells sc : sheets.values()) sc.tidy();
 		if (SheetCells.hasFormulas(workbook)) SheetCells.setFullCalcOnLoad(workbook);
+		if (embedded != null) {
+			// as Word's save of a chart's edited workbook (CR-036 phase 0): calcId 0, so that Excel
+			// recalculates it when it next opens it
+			org.xlsx4j.sml.Workbook wb = workbook.getWorkbookPart().getContents();
+			if (wb.getCalcPr() == null) wb.setCalcPr(new org.xlsx4j.sml.CTCalcPr());
+			wb.getCalcPr().setCalcId(0L);
+		}
 	}
 
 	// ------------------------------------------------------------------ caches
@@ -699,7 +799,10 @@ public final class ChartDataEditor {
 
 	// ------------------------------------------------------------------ the new series' id and colour
 
-	/** c16:uniqueId: the idx as eight hex digits, the suffix kept; the element a new one, not the copy's shared one */
+	/**
+	 * c16:uniqueId of a series (its idx) or a point (Word's 2 idx + 1): the number as eight hex
+	 * digits, the suffix kept; the element a new one, not the copy's shared one
+	 */
 	private static void uniqueId(Object ser, long idx) {
 		CTExtensionList extLst = (CTExtensionList) ChartSeries.get(ser, "getExtLst");
 		if (extLst == null) return;

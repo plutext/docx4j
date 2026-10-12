@@ -449,6 +449,9 @@ try {
           $wb, $ws = DataSheet $ic.Chart
           Step "the edit"
           & $edit $ws
+          # the chart catches up with the cells a moment later: closed at once, Word and PowerPoint
+          # saved a cache without the last cell typed (D6), while the workbook had it (Jason's run)
+          Start-Sleep -Seconds 3
           Step "Workbook.Close(True)"
           $wb.Close($true); CloseChartData $null; Redraw $ic.Chart
           $l2 = Join-Path $tmp $after; if (Test-Path $l2) { Remove-Item -Force $l2 }
@@ -474,6 +477,9 @@ try {
           $wb, $ws = DataSheet $sh.Chart
           Step "the edit"
           & $edit $ws
+          # the chart catches up with the cells a moment later: closed at once, Word and PowerPoint
+          # saved a cache without the last cell typed (D6), while the workbook had it (Jason's run)
+          Start-Sleep -Seconds 3
           Step "Workbook.Close(True)"
           $wb.Close($true); CloseChartData $null; Redraw $sh.Chart
           $l2 = Join-Path $tmp $after; if (Test-Path $l2) { Remove-Item -Force $l2 }

@@ -33,6 +33,7 @@ import org.docx4j.openpackaging.parts.DrawingML.Chart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.SharedStrings;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.EmbeddedPackagePart;
 import org.xlsx4j.sml.CTRElt;
 import org.xlsx4j.sml.CTRst;
 import org.xlsx4j.sml.Cell;
@@ -119,7 +120,11 @@ public final class ChartCells {
 		if (ext == null || ext.getId() == null || chart.getRelationshipsPart() == null) return null;
 		Part p = chart.getRelationshipsPart().getPart(ext.getId());
 		if (!(p instanceof BinaryPart)) return null;
-		OpcPackage embedded = OpcPackage.load(new ByteArrayInputStream(((BinaryPart) p).getBytes()));
+		// the live package, where an editor has one open (CR-036); else a copy, so that reading
+		// leaves the part as it was
+		OpcPackage embedded = p instanceof EmbeddedPackagePart && ((EmbeddedPackagePart) p).hasEmbeddedPackage()
+				? ((EmbeddedPackagePart) p).getEmbeddedPackage()
+				: OpcPackage.load(new ByteArrayInputStream(((BinaryPart) p).getBytes()));
 		return embedded instanceof SpreadsheetMLPackage ? new ChartCells((SpreadsheetMLPackage) embedded) : null;
 	}
 

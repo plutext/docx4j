@@ -75,9 +75,9 @@ types (`column-clustered`, `-stacked`, `-stacked-100`, `bar-...`, `line`, `line-
   `data-labels`, `number-format` (the value axis's `0.0`).
 - `p5w-<edit>-before/after.docx` and `p5p-...pptx`: Word's and PowerPoint's own edits of a
   default chart's data (`value`, `add-category`, `add-series`, `remove-series`, and in Word
-  `pie-add-category`), each file saved by Word or PowerPoint itself.  PowerPoint's
-  `remove-series` isn't kept: PowerPoint left that chart unchanged when the script shrank its
-  table.
+  `pie-add-category`), each file saved by Word or PowerPoint itself.  (The script waits a few
+  seconds after an edit before closing the chart's data: closed at once, Office saved a chart
+  whose cache lacked the last cell typed, or had no caches at all.)
 
 Their PDFs (Word's and PowerPoint's own) and Excel's chart PNGs are on the share,
 `office_charts\cr036`.
