@@ -6,12 +6,14 @@ reply (§8): the plan's D7 (authoring before rendering), D3 (the chart types of 
 own parts as templates, byte for byte), the builder's shape (an object model in the shape of POI's
 XDDF, with a one-call `fromData`) and created data in a table.  Reviewed the same day by the
 docx4j-13 session (Claude Fable 5.1, at Jason's request): approved with eight amendments, A1 to A8,
-and some smaller points, all accepted by Jason (A6 first, relayed by docx4j-13; then "yes, apply
-all eight amendments and the smaller points") and applied (§8 lists them): the embedded workbook
-kept live in its part (A1, deciding D2), the definition built of groups (A2), settings writers for
+and some smaller points, all accepted by Jason (A6 first, relayed by docx4j-13; then "yes, apply all
+eight amendments and the smaller points") and applied (§8 lists them): the embedded workbook kept
+live in its part (A1, deciding D2), the definition built of groups (A2), settings writers for
 existing charts (A3), a chart deleted (A4), a named comparator and a no-edit control in every gate
-(A5), PowerPoint's own PDFs (A6), more ids (A7), D1 decided after P4 (A8); 15-19 days.  D3 to D6
-are open.  Owner: Jason Harrop.  Drafted with Claude Opus 5.5.
+(A5), PowerPoint's own PDFs (A6), more ids (A7), D1 left for P4 (A8); 15-19 days.  D1 then taken the
+same day (Jason, relayed by docx4j-13): one chart template per type, Excel's, and a host step,
+within D6's "byte for byte".  D3 to D6 are open.  Owner: Jason Harrop.  Drafted with Claude Opus
+5.5.
 
 The charts plan (`../docx4j-portfolio/docs/charts_plan.md`) numbers authoring as phase 5 (create in
 xlsx) and phase 6 (edit and create in docx and pptx).  This CR takes them as its own phases 1 to 3,
@@ -205,10 +207,11 @@ ChartDefinition d = ChartDefinition.fromData(ChartType.COLUMN_CLUSTERED, categor
   in a paragraph (D4), with a convenience that appends a paragraph and returns the new chart's
   `ChartRef`, so that an editor can be opened on it at once; `ChartCreator.inSlide(slidePart,
   definition, x, y, cx, cy)` returns the `p:graphicFrame` it adds to the slide's tree.
-- The chart, style and colour parts from Word's (or PowerPoint's) template of the type, captured
-  by P3 and P4 (D1), with `c:externalData`; the workbook made from Word's (or PowerPoint's) own
-  embedded workbook, kept as a template (D6, taken), its data written by `setData`; named, related
-  and typed as P3 and P4 show.
+- The chart, style and colour parts from the type's template, Excel's (D1, taken), with the host
+  step: the trailing `c:printSettings` dropped and `c:externalData` appended (the new workbook's
+  `r:id`, `c:autoUpdate val="0"`); for a pie in a docx, the id source adds Word's per-point
+  `c16:uniqueId`s.  The workbook made from Word's (or PowerPoint's) own embedded workbook, kept as a
+  template (D6, taken), its data written by `setData`; named, related and typed as P3 and P4 show.
 - Ids (D6): `docPr` (a random id unused in the document, as Word's), `wp14:anchorId` and
   `wp14:editId`, `cNvPr` in a slide (the next free) and its `a16:creationId`, all from the seedable
   source (A7); the chart parts and the workbook named after any the document already has (P3's
@@ -312,21 +315,21 @@ to the CR and commit"), and applied:
 - **A5** the comparator named, with its normalisations, and a no-edit control in every phase (§5).
 - **A6** PowerPoint's own PDF export in phase 3's gate (§5).
 - **A7** `wp14:anchorId`/`editId` among the ids; part numbering across a document checked (§4.4).
-- **A8** D1 decided after P4.
+- **A8** D1 decided after P4; D1 was then taken the same day, keeping A8's escape hatch (below).
 - Smaller points: `setData`'s shrinking path tested explicitly (§4.3); `fromCells` takes data on
   any sheet, `inSheet` refuses an empty definition (§4.3); P5 saved by Office itself (§4.1); the
   docx convenience returns the `ChartRef` (§4.4).
 
-This CR's own (owner: Jason): D1 waits for P4 (A8) and D2 is decided (A1); D3 to D6 are open, with
+This CR's own (owner: Jason): D1 is taken and D2 decided (A1); D3 to D6 are open, with
 recommendations:
-- **D1. One template per type, or one per type and host: decided after P4** (review A8, accepted).
-  All three hosts' templates are captured (P1, P3, P4: one script).  If PowerPoint's chart part
-  equals Excel's, as Word's does (finding 1), ship one chart template per type, Excel's, with a
-  host step putting `c:externalData` where Excel has `c:printSettings`, and the style and colour
-  parts shared; the pie's point ids are made by the id source anyway.  The host step is of the same
-  kind as the fresh ids and `setData` every template gets; whether it sits within D6's "byte for
-  byte" is Jason's, asked with D1.  If PowerPoint's differs (its `c:txPr` defaults), a template
-  per host.
+- **D1. Taken (Jason, 2026-10-12, relayed by docx4j-13): one chart template per type, Excel's,
+  and a host step**, which sits within D6's "byte for byte": for a docx or pptx the trailing
+  `c:printSettings` dropped and `c:externalData` appended (the new workbook's `r:id`,
+  `c:autoUpdate val="0"`), nothing for an xlsx; the style and colour parts shared, as measured.
+  Excel's, Word's and PowerPoint's chart parts per type are still captured (P1, P3, P4), as the
+  oracles.  A8's escape hatch kept: if P4 shows PowerPoint's part differing beyond the trailing
+  element (its `c:txPr` defaults), per-host templates for pptx.  For a pie in a docx, the id
+  source adds Word's per-point `c16:uniqueId`s (finding 1).
 - **D2. Writing an embedded workbook back: decided by A1** (Jason, 2026-10-12): the part keeps a
   live package, written when the host is saved; `close()` and `flush()` write it explicitly (§4.2).
   Neither after every edit (re-zipping per `setValue` is slow in a loop) nor on `close()` alone (a
