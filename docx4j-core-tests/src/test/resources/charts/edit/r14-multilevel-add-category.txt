@@ -1,0 +1,7 @@
+before:
+  table A1:C5
+  series 1: =SERIES(Sheet1!$C$1,Sheet1!$A$2:$B$5,Sheet1!$C$2:$C$5,1)
+table grown by Excel as typed
+after:
+  table A1:C6
+  series 1: =SERIES(Sheet1!$C$1,Sheet1!$A$2:$B$6,Sheet1!$C$2:$C$6,1)

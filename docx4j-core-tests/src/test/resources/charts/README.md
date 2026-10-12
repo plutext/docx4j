@@ -35,3 +35,21 @@ pasted chart in `goldens`.
 for every chart part of every fixture, named after the fixture and the part: docx4j's TypeScript
 and Python ports compare their readings against them.  `ChartModelTest` and `ChartsTest` check
 them, and write them afresh with `-Ddocx4j.chartGoldens.write=<this json directory>`.
+
+## Phase 4's edits (made by Excel, 2026-10-12)
+
+`edit/` holds Excel's own edits of a chart's data, the oracle of `ChartDataEditor`
+(`ChartDataEditorTest`): `docx4j-layout-fidelity/tools/excel-chart-edit-probes.ps1` (Jason's run)
+put Word's default chart data in a table with a clustered column chart, saved the workbook
+(`<case>-before.xlsx`), made one edit as a user would, and saved it again (`<case>-after.xlsx`,
+with `SaveCopyAs`, so ids and uids are the same on both sides).  `<case>.txt` is the script's
+report: the table's range and each series' formula before and after, and whether Excel grew the
+table itself.  The cases: `e1-value`, `e2-labels` (a category label and a series name),
+`e3-add-category` and `e4-add-series` (typed under and beside the table, which Excel grew),
+`e5-remove-series` and `e6-remove-category` (the table shrunk), `e7-blank-and-error`.  The second
+round, `r1` to `r14` (the same script, the same day): a table's middle column and row deleted
+(`r1`, `r2`); a chart plotted by row with a row and a column added and deleted (`r3` to `r6`); a
+duplicate header (`r7`); a row typed under dates in column A, which Excel plotted as a series
+(`r8b`); a series added to a line chart (`r9`), after a series with data labels (`r10`) and after
+one coloured red (`r11`); Excel's chart filter with a category and a series added (`r12`, `r13`);
+two levels of categories with a row added (`r14`).

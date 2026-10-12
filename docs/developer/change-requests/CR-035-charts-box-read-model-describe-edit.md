@@ -1,12 +1,16 @@
 # CR-035: charts - the chart's box kept in PDF and HTML, a public read model, a chart described in markdown and MCP, and a chart's data edited in xlsx (charts plan phases 0, 2, 3 and 4)
 
-Status: IN PROGRESS. Phase 3 DONE 2026-10-12 (Jason: "please commit then continue"; D9 as
+Status: DONE 2026-10-12, all four phases. Phase 4 DONE 2026-10-12 (Jason: "the edit probes have
+run"; D10 and D11 as recommended): `ChartDataEditor` and the cell writers, gated on 21 of Excel's
+own edits; Office check passed (no repair; 19 of 21 charts pixel for pixel Excel's, r1 and r5 as D12
+says); D12 (a middle series removed) decided the editor's way (Jason: "D12 recommendation
+accepted."; §8, §11).  Phase 3 DONE 2026-10-12 (Jason: "please commit then continue"; D9 as
 recommended): a chart described in markdown and, on a property, in HTML; the MCP hand-off in the
-registry (§11).  Phase 4 next.  Phase 2 DONE 2026-10-12 (Jason: "Next is CR-035 phase 2"; D6 to D8
-built as recommended): the read model, `org.docx4j.model.chart`, with its JSON form and goldens for
-every fixture; MS-OI29500's notes on §21.2 read first; 16 probes made by Excel itself (§11).  Phase
-0 built 2026-10-12 (Jason: "do Phase 0 of each CR"; D1 to D5 built as recommended): the chart's box
-in FO, HTML and pptx's SVG-in-HTML, the three parts typed, the 48 attribute lists starting null
+registry (§11).  Phase 2 DONE 2026-10-12 (Jason: "Next is CR-035 phase 2"; D6 to D8 built as
+recommended): the read model, `org.docx4j.model.chart`, with its JSON form and goldens for every
+fixture; MS-OI29500's notes on §21.2 read first; 16 probes made by Excel itself (§11).  Phase 0
+built 2026-10-12 (Jason: "do Phase 0 of each CR"; D1 to D5 built as recommended): the chart's box in
+FO, HTML and pptx's SVG-in-HTML, the three parts typed, the 48 attribute lists starting null
 (measured first: only the chart style parts' mods), the fixtures, three box probes; gate b221 to
 b222 0 movers; against Word's goldens the box probes go from 0.8449 to 0.9358 line parity,
 chart-box-inline to 1.0000.  Word's and PowerPoint's chartex Fallback is a picture of the chart,
@@ -411,6 +415,14 @@ registry entry, and the hand-offs it triggers.
 - **D11. Cell writers:** public in `org.xlsx4j.model`, limited to §4.4's list, since phases 5 and 6
   need them too; or package-private in `org.docx4j.model.chart`. Recommendation: public and
   limited.
+- **D12. A middle series removed** (raised by phase 4's probes, §11): deleting a table's middle
+  column, Excel keeps the chart's series by position (the second `c:ser`, its idx and colour, then
+  plots what was the third's data, and the last `c:ser` goes); `removeSeries(series)` removes the
+  series it is given, its formatting with it, and moves the cells as Excel does.  Keep the
+  editor's way, or follow Excel's?  Recommendation: the editor's: its caller names the series to
+  remove, and a series' own formatting (a highlight in red) shouldn't move to its neighbour's
+  data.  `setData`, which removes series from the end, comes to the same as Excel either way.
+  **Decided 2026-10-12: the editor's way** (Jason: "D12 recommendation accepted.").
 
 ## 9. Hand-offs
 
@@ -635,3 +647,123 @@ share as `office_charts/phase4/`) has Excel make seven edits to Word's default c
 table (a value; a category label and a series name; a category added and a series added, typed
 beside the table; a series and a category removed; a blank and an error), saving each workbook
 before and after, with a report of the table's range and the series' formulas each side.
+
+### Phase 4 (2026-10-12), in progress
+
+Jason ran `excel-chart-edit-probes.ps1` (Excel 365, `office_charts/phase4/`): seven edits to Word's
+default chart data in a table (`Table1`, A1:D5, A1 a space as Word writes it), each workbook saved
+before and after with `SaveCopyAs`, so ids and uids are the same on both sides and every difference
+is the edit's.  What Excel changed, part by part:
+
+- **A value** (e1): the cell and that point of the cache, nothing else.
+- **A category label and a series name** (e2): the cells; each series' category cache and the
+  series' name cache; the table column's `name`, which follows its header cell (the `xr3:uid` and
+  `id` kept).  Excel rewrote the shared strings on save (unused ones dropped, the rest renumbered),
+  a save's doing, not the edit's.
+- **A category added**, typed into the row under the table (e3): Excel grew the table itself
+  (`ref`, `autoFilter/@ref`), the sheet's `dimension`, a new row with `spans` and the row above's
+  `x14ac:dyDescent`; every series' `c:cat` and `c:val` reference one row longer, `ptCount` 5 and a
+  fifth point.  The new cells took no style, as the cells above have none.
+- **A series added**, typed into the column beside the table (e4): the table grew a column
+  (`tableColumns/@count`, a `tableColumn` with `id` one above the largest, a new random `xr3:uid`,
+  the header's text as `name`), `spans` 1:5 on every row of the block; a fourth `c:ser` with
+  `idx` and `order` 3, its `c:tx` the header cell, its `c:cat` the same as the others', its `c:val`
+  the new column, `a:schemeClr accent4` where the third has accent3 (the colour style's cycle,
+  `colors1.xml` id 10), and **`c16:uniqueId` `{00000003-C3FB-...}`: every series' id is its `idx`
+  as eight hex digits followed by a suffix the chart's series share** (so in every fixture).
+- **A series removed**, the table shrunk by its last column and its cells cleared (e5): the
+  `c:ser` gone, the table column gone, `dimension` and `spans` narrowed.
+- **A category removed**, the table shrunk by its last row and its cells cleared (e6): every
+  reference a row shorter, the point gone from every cache, the row element removed.
+- **A blank and an error** (e7): the cleared cell's element removed and its point dropped from the
+  cache, `ptCount` kept at 4; the `=NA()` cell `t="e"` with `#N/A`, cached as the point `#N/A`;
+  Excel added a `calcChain` part for the formula.
+- **Number text**: Excel writes some numbers with 17 significant digits (2.2 as
+  `2.2000000000000002`, 4.4 as `4.4000000000000004`) and others short (3.1, 4.3, 2.4); the rule
+  isn't evident, and both forms read back as the same double, so the editor writes the shortest
+  form and the gate compares numbers as numbers.
+- **Format codes**: a cache's `formatCode` for a built-in number format is Excel's own spelling of
+  it (`d\-mmm` in p2-date-axis for format 16, which POI spells `d-mmm`), so a cache's existing format
+  code is kept rather than rebuilt from the cell's style.
+
+**Round 2** (Jason's second run, the same day): fourteen more edits, `r1` to `r14`, each against
+Excel's own; the editor was changed where they showed it wrong (r10, r11).
+
+- **A table's middle column deleted** (r1; plotted by row, its middle row, r5): the cells after it
+  move, the table loses that column's entry (the others keep their ids), and **Excel keeps the
+  chart's series by position**: the second `c:ser`, with its idx, colour and uniqueId, now plots
+  what was the third's data, and the last `c:ser` goes.  The editor removes the series it is
+  given instead (D12); cells, table and the chart's data by position are Excel's.
+- **A middle row deleted** (r2; by row, a middle column, r6): every reference a line shorter, the
+  points after it moved up, the table a row (or column) smaller.
+- **Plotted by row** (r3, r4): a row typed under the table is a fifth series (idx 4, accent5), a
+  column typed beside it a category, every series' references a column longer, the table's new
+  column named from its header cell, the category's label.
+- **A duplicate name** (r7): "Series 1" typed over "Series 2" is made "Series 12", in the cell and
+  the table column, as `Tables.nameColumns` does.
+- **Dates** (r8, r8b): with A1 a space and dates in A2:A5, Excel plotted column A as a fourth
+  series, so date categories weren't measured; r8b still shows a cell typed under the table
+  taking the style of the one above it (the date format, `s="1"`), the editor's rule for every new
+  cell.  r8 (text typed into that series) isn't kept as a fixture.
+- **A line chart** (r9): the new series' line, marker fill and marker line all accent4.
+- **Data labels on the last series** (r10): not the new series'.  The editor copied them; now
+  it doesn't.
+- **A colour of the last series' own** (red, r11): the new series takes its automatic colour,
+  accent4.  The editor copied the red; now a new series takes its formatting from the last series
+  still in its automatic colour, recoloured.
+- **Excel's chart filter** (r12, r13): a category added grows each union's last area and each
+  `c15:fullRef`, the filtered series' as well; a new series takes the same union in its own
+  column, and idx 3, after the filtered series' 1 and the shown 2.
+- **Two levels** (r14): the new quarter in B6, the region's cell left empty, the multi-level
+  cache five points long.
+
+**Built** (D10 and D11 as recommended):
+
+- **Cell writers**, public in `org.xlsx4j.model` and limited to what chart editing needs:
+  `CellRef` and `AreaRef` (A1 references, quoted sheet names, unions); `SheetCells` (a cell found
+  or made with its row, each in order; a number, a shared string, the shared-strings part made if
+  missing, or an error written; a cell cleared, its element removed unless styled, an empty row
+  removed; a block's row or column deleted with the cells after it moved; `tidy()` sets the
+  `dimension`, the `spans` of each 16-row block, the shared strings' counts, and drops the
+  calculation chain where a formula was overwritten); `Tables` (a sheet's tables, one resized, a
+  column added (id one above the largest, a fresh `xr3:uid`) or removed, every column named from
+  its header cell, made unique as Excel does).  No number-format writer: a new cell takes the
+  style of the cell before it, as Excel's table gives it (r8b), which is all the editor needs.
+- **`ChartDataEditor`** (`org.docx4j.model.chart`): `setValue`, `setBlank`, `setError`,
+  `setCategory` (text, or a number for numbers and dates), `setSeriesName`, `addCategory`,
+  `removeCategory`, `addSeries`, `removeSeries`, `setData`, `refreshCaches`; series as the read
+  model has them (`getSeries()`).  It takes a chart and the workbook its data is in (`of(Chart)`
+  for an xlsx), works on series in columns or in rows, references that are unions (the chart
+  filter) and multi-level categories, and refreshes every cache after each edit (a cache's
+  `formatCode` kept, a number cached as its cell holds it, an error as its code).  Refused, with a
+  message, rather than guessed: a formula cell overwritten unless `setOverwriteFormulas(true)`
+  (D10; `fullCalcOnLoad` set whenever the workbook has formulas), formula cells moved, a table
+  with a totals row or without a header row resized, a bubble chart's series added, data on
+  more than one sheet reshaped, new cells over cells that hold something.
+
+**Gate.**  `ChartDataEditorTest` (27): each of Excel's edits made by the editor on Excel's
+before-workbook and compared with Excel's after-workbook, part by part: the chart part (numbers as
+numbers), Sheet1's cells (strings by their text, styles, formulas), rows' `spans` and the
+`dimension`, the table; and the caches against the cells.  e1 to e7 and r2 to r14 are equal; r1
+and r5 equal in their cells, table and chart data, the series kept as D12 says.  A control (a
+different edit told apart), the formula rules, a middle series and category removed, `setData`,
+and every chart fixture Excel made edited each way with its caches and cells agreeing afterwards
+(refused only for the bubble chart's new series and the doughnut, whose next column holds Word's
+other data).  `CellWritersTest` (4).  docx4j-core-tests 1,492 run, 0 failed (before round 2's 14).
+
+**Office check, round 1, passed** (`excel-chart-edit-check.ps1`, Jason's run): Excel opened the
+seven workbooks the editor wrote without a repair, its *Select Data* ranges are those of Excel's
+own edits, and each chart's PNG is pixel for pixel Excel's own edit's (ImageMagick, 0 pixels
+differ; each edit had changed Excel's picture by 388 to 35,790 pixels).
+
+**Office check, round 2, passed** (the same script over all 21 workbooks the editor wrote, Jason's
+run): every one opened without a repair, with *Select Data* ranges equal to those of Excel's own
+edit; 19 charts are pixel for pixel Excel's.  r1 and r5 differ (4,740 and 8,625 pixels) only where
+D12 says: the series left after the deleted one keeps its own colour in docx4j's (green, accent3),
+where Excel's takes the deleted series' (orange, accent2); bars, values, legend and layout are the
+same.
+
+**Done** (2026-10-12): D12 decided the editor's way (Jason: "D12 recommendation accepted."), so
+r1 and r5 stand as they are.  docx4j-core-tests 1,506 run, 0 failed (11 skipped).  With phase 4,
+CR-035 is done; hand-offs (section 9): the editor to docx4j-core-ts and docx4j-python after the
+commit.

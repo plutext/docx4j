@@ -40,6 +40,10 @@ Changes in Version 17.3.3
 - A chart is described in markdown output as its title and a table of its data (categories down,
   series across, numbers in their format), and in HTML the same table on the property
   docx4j.convert.out.html.chartDataTable; new ChartTable.  CR-035.
+- New ChartDataEditor: a chart's data edited as Excel edits it (values, categories, series names;
+  categories and series added and removed, or the whole data set), keeping the cells, the table,
+  the references and the caches in step; with new cell writers in org.xlsx4j.model (CellRef,
+  AreaRef, SheetCells, Tables).  CR-035.
 - New org.docx4j.model.color: theme colours resolved as Office draws them - DrawingML colours and
   transforms, WordprocessingML theme attributes, SpreadsheetML theme/tint/indexed - checked against
   Word's, PowerPoint's and Excel's own renderings.  CR-034.
