@@ -1,19 +1,25 @@
 # CR-036: chart authoring - a chart's data edited in docx and pptx, and charts created in xlsx, docx and pptx (charts plan phases 6 and 5)
 
-Status: Proposed 2026-10-12.  Drafted on Jason's request ("Yes to all those decisions; please draft
-CR-036 on this scope"), after the scope proposal that followed CR-035's close.  Taken with that
-reply (§8): the plan's D7 (authoring before rendering), D3 (the chart types of §4.3), D6 (Office's
-own parts as templates, byte for byte), the builder's shape (an object model in the shape of POI's
-XDDF, with a one-call `fromData`) and created data in a table.  Reviewed the same day by the
-docx4j-13 session (Claude Fable 5.1, at Jason's request): approved with eight amendments, A1 to A8,
-and some smaller points, all accepted by Jason (A6 first, relayed by docx4j-13; then "yes, apply all
-eight amendments and the smaller points") and applied (§8 lists them): the embedded workbook kept
-live in its part (A1, deciding D2), the definition built of groups (A2), settings writers for
-existing charts (A3), a chart deleted (A4), a named comparator and a no-edit control in every gate
-(A5), PowerPoint's own PDFs (A6), more ids (A7), D1 left for P4 (A8); 15-19 days.  D1 then taken the
-same day (Jason, relayed by docx4j-13): one chart template per type, Excel's, and a host step,
-within D6's "byte for byte".  D3 to D6 are open.  Owner: Jason Harrop.  Drafted with Claude Opus
-5.5.
+Status: IN PROGRESS. Phase 0 DONE 2026-10-12 (Jason's runs of the probe script; findings in §11):
+Word's chart part is Excel's exactly for nine types, and differs by its points' ids in the pie and
+doughnut and by one attribute in the scatter; PowerPoint's differs on every type (no title, a
+transparent chart area, text 4/3 larger, in the chart and the style part), so pptx takes its own
+templates as D1's escape hatch says, and the docx host step also sets the scatter's line width
+(Jason); Word's own data edits are Excel's, and a category added to Word's pie adds a c:dPt, which
+CR-035's editor doesn't (phase 1). Phase 1 next. Proposed 2026-10-12.  Drafted on Jason's request
+("Yes to all those decisions; please draft CR-036 on this scope"), after the scope proposal that
+followed CR-035's close.  Taken with that reply (§8): the plan's D7 (authoring before rendering), D3
+(the chart types of §4.3), D6 (Office's own parts as templates, byte for byte), the builder's shape
+(an object model in the shape of POI's XDDF, with a one-call `fromData`) and created data in a
+table.  Reviewed the same day by the docx4j-13 session (Claude Fable 5.1, at Jason's request):
+approved with eight amendments, A1 to A8, and some smaller points, all accepted by Jason (A6 first,
+relayed by docx4j-13; then "yes, apply all eight amendments and the smaller points") and applied (§8
+lists them): the embedded workbook kept live in its part (A1, deciding D2), the definition built of
+groups (A2), settings writers for existing charts (A3), a chart deleted (A4), a named comparator and
+a no-edit control in every gate (A5), PowerPoint's own PDFs (A6), more ids (A7), D1 left for P4
+(A8); 15-19 days.  D1 then taken the same day (Jason, relayed by docx4j-13): one chart template per
+type, Excel's, and a host step, within D6's "byte for byte".  D3 to D6 are open.  Owner: Jason
+Harrop.  Drafted with Claude Opus 5.5.
 
 The charts plan (`../docx4j-portfolio/docs/charts_plan.md`) numbers authoring as phase 5 (create in
 xlsx) and phase 6 (edit and create in docx and pptx).  This CR takes them as its own phases 1 to 3,
@@ -329,7 +335,14 @@ recommendations:
   Excel's, Word's and PowerPoint's chart parts per type are still captured (P1, P3, P4), as the
   oracles.  A8's escape hatch kept: if P4 shows PowerPoint's part differing beyond the trailing
   element (its `c:txPr` defaults), per-host templates for pptx.  For a pie in a docx, the id
-  source adds Word's per-point `c16:uniqueId`s (finding 1).
+  source adds Word's per-point `c16:uniqueId`s (finding 1).  **Measured in phase 0** (§11): the
+  escape hatch applies to pptx (PowerPoint's chart and style parts differ on every type), so
+  PowerPoint's templates ship for pptx; for docx, Excel's template and the host step are exact for
+  eleven types, and the scatter differs by one attribute (Word's series line 1.5 pt, Excel's 3 pt).
+  **Decided (Jason, 2026-10-12): the host step special-cases it**: for a docx it also sets a scatter
+  series' `a:ln/@w` to 19050, as Word writes it, so docx and xlsx keep one template per type, and
+  per-host templates are pptx's alone.  Phase 3's gate compares every created docx with Word's own
+  insert (P3), so a difference a later Office brings shows there.
 - **D2. Writing an embedded workbook back: decided by A1** (Jason, 2026-10-12): the part keeps a
   live package, written when the host is saved; `close()` and `flush()` write it explicitly (§4.2).
   Neither after every edit (re-zipping per `setValue` is slow in a loop) nor on `close()` alone (a
@@ -365,4 +378,53 @@ open checks of phases 1 to 3.
 
 ## 11. Implementation record
 
-(none yet)
+### Phase 0 (2026-10-12), done
+
+`office-chart-authoring-probes.ps1`, Jason's runs on the Windows VM (Microsoft 365).  The script
+took several rounds to drive Word from PowerShell; what worked, kept in its comments: Word saved
+by `SaveAs` with `[ref]` plain `[string]`/`[int]` arguments (as CR-034's `office-colours.ps1`
+does; `SaveAs2` and `ExportAsFixedFormat` hung even on a document with no chart); the data window
+`AddChart2` leaves open closed by its title bar's close; the data workbook waited for; PowerPoint's
+chart redrawn (`Chart.Refresh`) before a scripted edit is saved.  The files are fixtures,
+`docx4j-core-tests/src/test/resources/charts/authoring/` (66, and the Excel reports; README
+there); the PDFs and PNGs stay on the share, `office_charts\cr036`.
+
+What Office writes (the chart parts compared with uniqueId suffixes, axis ids, relationship ids
+and the closing host element set aside):
+
+1. **Word's chart part is Excel's**, exactly, for nine types: column and bar (each clustered,
+   stacked and 100%), line, line with markers, and area.  Pie and doughnut differ only by Word's
+   per-point `c16:uniqueId`s, which the id source makes.  **The scatter differs by one attribute**:
+   the series' `a:ln/@w` is 19050 in Word's, 38100 in Excel's.  The style and colour parts are
+   byte for byte the same in Word and Excel, for every type.
+2. **PowerPoint's chart part differs on every type**, the same way each time: no `c:title`
+   (`autoTitleDeleted` still 0), the chart area with no fill and no line where Word's and Excel's
+   is white with a grey line, and every text size 4/3 of theirs (900 to 1197, 1000 to 1330, 1400 to
+   1862).  Its style part is the same style (201 for the clustered column) with the same scaling;
+   its colour part is the same.  So D1's escape hatch applies: pptx takes PowerPoint's templates.
+3. **Word's default data** per type (the templates' data): Series 1 to 3 by Category 1 to 4 for
+   the column, bar and line types; "Sales" by four quarters for pie and doughnut; two series over
+   five dates (`m/d/yyyy`, a `c:dateAx`) for the area; X-Values and Y-Values (A1:B4) for the
+   scatter.
+4. **A second chart's parts** in one document: `chart2.xml`, `style2.xml`, `colors2.xml`,
+   `Microsoft_Excel_Worksheet1.xlsx`.
+5. **Word's own data edits** (P5: a value, a category added, a series added, a series removed)
+   change the cells, the table, the shared strings, the references and the caches as Excel's own
+   did in CR-035's probes.  Word's save of the embedded workbook also resets `calcPr/@calcId` to 0
+   and moves its window (`workbookView`).
+6. **A category added to Word's pie** adds a `c:dPt` for the new point (the next accent, the white
+   1.5 pt line, a `c16:uniqueId` numbered 2·idx+1, 9 for the fifth), and gives every point's id a
+   fresh suffix.  CR-035's editor adds no `c:dPt`: phase 1 closes that gap for every host.
+7. **PowerPoint's scripted edits** needed the chart redrawn before the save (else its references
+   grew with no caches); with it, value, category and series added match Word's.  Removing a
+   series from the script left PowerPoint's chart as it was, so that pair isn't kept.
+8. **Excel's settings** (P2): a title's text is a `c:tx/c:rich` run in the existing `c:title`; no
+   title removes `c:title` and sets `autoTitleDeleted` 1; the legend's side is `c:legendPos`
+   alone (bottom is the default); no legend removes `c:legend`; axis titles add a `c:title` to
+   each axis; data labels a `c:dLbls` to each series; the number format the value axis's
+   `c:numFmt` (`0.0`, `sourceLinked="0"`).
+9. **A date axis** (closing CR-035's r8): a "Date" header over d-mmm dates gives categories as a
+   `c:numRef` with Excel's own `d\-mmm`.
+10. **The data-set charts** (Word and PowerPoint, North and South by Plan and Actual) are right in
+    their chart parts; their workbooks lost the table to the script's edits, so for phase 3 they
+    are oracles of the chart part only.

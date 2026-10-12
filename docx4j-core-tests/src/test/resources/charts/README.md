@@ -53,3 +53,31 @@ duplicate header (`r7`); a row typed under dates in column A, which Excel plotte
 (`r8b`); a series added to a line chart (`r9`), after a series with data labels (`r10`) and after
 one coloured red (`r11`); Excel's chart filter with a category and a series added (`r12`, `r13`);
 two levels of categories with a row added (`r14`).
+
+## CR-036's probes (made by Office, 2026-10-12)
+
+`authoring/` holds Office creating charts and editing their data, made by
+`docx4j-layout-fidelity/tools/office-chart-authoring-probes.ps1` (Jason's runs on the Windows VM,
+Microsoft 365), the oracles and templates of CR-036 (chart authoring).  For each of the twelve
+types (`column-clustered`, `-stacked`, `-stacked-100`, `bar-...`, `line`, `line-markers`, `pie`,
+`doughnut`, `area`, `scatter`):
+
+- `p3-<type>.docx`: Word's *Insert Chart* (`InlineShapes.AddChart2`) with Word's default data;
+  `p3-two-charts.docx` (how a second chart's parts are named) and `p3-data-set.docx` (a chart
+  whose data was then set to North/South by Plan/Actual; its chart part is the oracle, its
+  workbook lost its table to the script's edits).
+- `p1-<type>.xlsx`: Excel's chart of the same data (Word's embedded workbook, charted by
+  `AddChart2`), with `p1-date-axis.xlsx` (a "Date" header over d-mmm dates).  `p1-*.txt` give each
+  chart's type and series formulas.
+- `p4-<type>.pptx`: PowerPoint's insert (`Shapes.AddChart2`), and `p4-data-set.pptx`.
+- `p2-<setting>.xlsx`: Excel's settings on a clustered column, a file each: `title-text`,
+  `no-title`, `legend-bottom`/`-top`/`-left`/`-right`, `no-legend`, `axis-titles`,
+  `data-labels`, `number-format` (the value axis's `0.0`).
+- `p5w-<edit>-before/after.docx` and `p5p-...pptx`: Word's and PowerPoint's own edits of a
+  default chart's data (`value`, `add-category`, `add-series`, `remove-series`, and in Word
+  `pie-add-category`), each file saved by Word or PowerPoint itself.  PowerPoint's
+  `remove-series` isn't kept: PowerPoint left that chart unchanged when the script shrank its
+  table.
+
+Their PDFs (Word's and PowerPoint's own) and Excel's chart PNGs are on the share,
+`office_charts\cr036`.
