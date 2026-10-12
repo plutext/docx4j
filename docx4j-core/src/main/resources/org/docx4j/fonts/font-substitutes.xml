@@ -125,9 +125,11 @@
          .properties has their line boxes).  Akasia carries a Light of its own, matched
          to Aptos Light's stem and metrics by the project's own gated corpus (its
          compatibility.json pins Aptos-Light.ttf 2.01 as the baseline) - which is the
-         project's measurement, not ours, so it is recorded as such.  Akasia has no
-         Narrow, so Aptos Narrow keeps a class substitute and will be wide.  Aptos Mono
-         is not among the faces that folder had, so it has no row.  @since 17.2.0 -->
+         project's measurement, not ours, so it is recorded as such.  Aptos Mono is not
+         among the faces that folder had, so it has no row.  @since 17.2.0
+         Aptos Narrow is the minor font of Excel 365's theme, so it is the text of every
+         chart Excel makes today (CR-037); Intos Narrow, from the same project and commit
+         as Intos Display, is its clone.  @since 17.3.3 -->
     <font name="Aptos Light">
       <substitute font="Akasia Light" quality="metric"
                   error="Akasia's own per-style baseline against Aptos-Light.ttf 2.01 (compatibility.json, verified); not measured here as Aptos and Aptos Display were"/>
@@ -135,6 +137,8 @@
       <substitute font="Liberation Sans" quality="class"/>
     </font>
     <font name="Aptos Narrow">
+      <substitute font="Intos Narrow Regular" quality="metric"
+                  error="0.00%: the advances of all 987 code points the two share identical to Aptos Narrow 2.00 and 2.01 in all four styles, and HarfBuzz's kerned widths of seven test lines identical (fontTools + uharfbuzz, CR-037 phase 2); italic, bold and bold italic ship in the same jar"/>
       <substitute font="Arimo Regular" quality="class"/>
       <substitute font="Liberation Sans" quality="class"/>
     </font>

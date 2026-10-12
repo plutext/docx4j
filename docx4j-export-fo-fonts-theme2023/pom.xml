@@ -12,7 +12,7 @@
 	<packaging>jar</packaging>
 	<name>docx4j-export-fo-fonts-theme2023</name>
 
-	<description>metric-compatible substitutes (Akasia, Intos) for the fonts of Word's 2023 default theme (Aptos, Aptos Display)</description>
+	<description>metric-compatible substitutes (Akasia, Intos) for the fonts of Word's 2023 default theme (Aptos, Aptos Display, Aptos Narrow)</description>
 
 	<build>
 

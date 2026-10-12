@@ -666,8 +666,10 @@ public abstract class Mapper {
     	 * 0.001pt, so these are metric substitutes in the sense Carlito is for Calibri, not
     	 * measured stand-ins.  Akasia's Light is matched to Aptos Light by the Akasia
     	 * project's own gated baseline (its compatibility.json pins Aptos-Light.ttf 2.01),
-    	 * which is its measurement and not ours; it has no Narrow, so Aptos Narrow keeps a
-    	 * class substitute.  Where a machine really has Microsoft's Aptos - a licensed
+    	 * which is its measurement and not ours.  Since 17.3.3 the jar has Intos Narrow
+    	 * (OFL 1.1, four styles) for Aptos Narrow too, Excel 365's minor font and so the
+    	 * text of its charts: its advances and kerned widths are Aptos Narrow's (CR-037
+    	 * phase 2).  Where a machine really has Microsoft's Aptos - a licensed
     	 * Windows or Mac, not a server: they are cloud fonts - the installed face wins by
     	 * precedence and none of this is consulted.  @since 17.2.0 (CR-001 batch 49 item 6b)
     	 *
