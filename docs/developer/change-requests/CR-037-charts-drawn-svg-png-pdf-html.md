@@ -700,6 +700,14 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   but its labelled pie, R11's bars), **170 within tolerance in every element** (99.1% of 18,558).
   Every probe of the new types passes but r1-scatter, whose kerned title is named open (below);
   the other five open are phase 1's.
+- **The gate widened** (same day): R1's twelve pptx against PowerPoint's layout and PDF (the
+  oracle had them since phase 0; PowerPoint's template has no title and 11.97pt text); and Office's
+  own charts, CR-036's oracles copied into `charts/render/office/` (Word's *Insert Chart* of each
+  type, P3, and PowerPoint's, P4, with their PDFs traced; no layout dump, so the drawing alone):
+  **215 drawn, 208 within tolerance in every element** (99.3% of 21,881).  Word's 14 and
+  PowerPoint's 13 all pass, so the renderer draws Office's own chart XML as Office does, not only
+  docx4j's; the seven open are phase 1's five and the kerned "Y-Values" title in Word and
+  PowerPoint.
 - **Pictures**: our pictures' rectangles were anti-aliased, Excel's are on whole pixels (a bar's
   edge pixel is its colour or the background), which put every probe at about 1% of pixels off by
   more than 32, phase 1's included.  Phase 1's record of 0.04% to 0.33% could not be reproduced
@@ -716,9 +724,10 @@ three (a constant series, all zeros, one at an edge) by its refinements.
     chart lists the series from the last (r1-bar-clustered), a stacked one's from the first;
   - stacked bars stack on the bars of their sign; a 100% chart's axis ends at 100% and its
     labels, linked to the source, are `0%`;
-  - a horizontal value axis's unit (bars, a scatter chart's x): the labels need more than 24.75pt
-    an interval and take 25.49 (R11's bar chart, one-digit labels at 9pt); taken as 25.1 until
-    R14's sweeps give the rule;
+  - a horizontal value axis's unit (bars, a scatter chart's x): at 9pt more than 24.75pt an
+    interval and at most 25.49 (R11's bar chart, one-digit labels), 35.67 taken (r1-bar-stacked-100,
+    "100%"); at 11.97pt 33.76 refused (its pptx): a minimum of 2.821 to 2.832 times the labels'
+    text size, which the labels' width and a gap cannot fit; 2.826 until R14's sweeps;
   - labels centred on the inside's edges keep within the plot area: a midCat axis's first and
     last (r1-area's dates), a horizontal value axis's last;
   - a date axis: dates placed by their base unit (months: equally spaced, whatever the days),
@@ -726,9 +735,11 @@ three (a constant series, all zeros, one at an edge) by its refinements.
     dates: the band the widest label turned 90, to 0.01pt); number format 14 (`m/d/yyyy`) is the
     machine's short date in Excel and Word alike (the VM's `d/mm/yyyy`, so `1/05/2002`), docx4j's
     `docx4j.Chart.ShortDate` property, the gate setting the VM's;
-  - tick marks 2.85pt long (r1-area's date axis);
+  - tick marks 0.3167 of their axis's text size long (r1-area's date axis: 2.85pt at 9pt in Word's
+    PDF, 3.80 at 11.97pt in PowerPoint's);
   - a line series' legend key is 12pt wide (an entry twice the key plus its text, as a square
-    key's), its line drawn 1.6 times the key, the marker at its middle; a horizontal legend
+    key's), its line drawn 1.6 times the key, the marker at its middle; a scatter series with no
+    line has a square key with its marker in it (r1-scatter.pptx); a horizontal legend
     spaces its entries by their own widths but Excel reports each at the widest's (r1-pie), and is
     at most 0.9 of the chart's width, its entries closing up (r11-bar-w144);
   - a pie: the largest circle the plot's space holds, centred; slices clockwise from twelve

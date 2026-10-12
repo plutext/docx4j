@@ -5,8 +5,9 @@ Office's drawings of the render probes, as numbers, so that the renderer's gates
 docx4j (`org.docx4j.fidelity.corpus.ChartRenderProbes`, `ChartCreator`, seeded; no customer
 content), drawn by Excel, Word and PowerPoint (Microsoft 365, build 16.0.20430) on the Windows VM
 (`docx4j-layout-fidelity/tools/office-chart-render-probes.ps1`, Jason's runs), read on Linux and
-copied here by `chart_score.py fixtures`.  Sets R1 to R10 (phase 0), R11 and R12 (phase 1: the
-value axis's unit against its length; the category labels as the room for them shrinks).  `ChartRenderFixturesTest` checks the set; `ChartRenderGateTest`
+copied here by `chart_score.py fixtures`.  Sets R1 to R10 (phase 0), R11 to R13 (phase 1: the
+value axis's unit against its length; the category labels as the room for them shrinks; how far
+labels turned 45 degrees push the plot).  `ChartRenderFixturesTest` checks the set; `ChartRenderGateTest`
 is the renderer's gate against it.  (Phase 0 put it in docx4j-core-tests; phase 1 moved it here,
 beside the renderer it is the oracle of.)
 
@@ -20,6 +21,7 @@ beside the renderer it is the oracle of.)
 | `powerpoint-layout/<name>.json` | PowerPoint's, for the pptx |
 | `word-pdf/<name>.json` | `chart_trace.py`'s reading of Word's PDF of the probe's docx: each line of text (string, font, size, colour, baseline, centre) and each path (colour, box, each subpath's box and vertices), in points from the chart's top left |
 | `powerpoint-pdf/<name>.json` | the same of PowerPoint's PDF of the pptx |
+| `office/` | Office's own charts (CR-036's oracles, copied from docx4j-core-tests `charts/authoring`, phase 2): `p3-<type>.docx` Word's *Insert Chart*, `p4-<type>.pptx` PowerPoint's, with Word's and PowerPoint's PDFs read by `chart_trace.py` (`word-pdf/`, `powerpoint-pdf/`; the chart at 36,72 and 100,100 on the page); `office.tsv` lists them.  No layout dump: the gate compares the drawing alone |
 
 Reading the dumps (measured on all of them, CR-037 section 11):
 

@@ -66,9 +66,20 @@ final class RenderGate {
 		}
 	}
 
+	/** @param trace Word's PDF read, or null for a chart that has none (Excel's own) */
 	static Result compare(String probe, Drawing d, Map<String, Object> dump, Map<String, Object> trace) {
 		Result r = new Result(probe);
 		layout(r, d, dump);
+		if (trace != null) {
+			texts(r, d, trace);
+			shapes(r, d, trace);
+		}
+		return r;
+	}
+
+	/** The drawing alone against Word's or PowerPoint's PDF, for a chart Excel hasn't laid out (CR-036's P3, P4) */
+	static Result drawing(String probe, Drawing d, Map<String, Object> trace) {
+		Result r = new Result(probe);
 		texts(r, d, trace);
 		shapes(r, d, trace);
 		return r;
@@ -255,6 +266,8 @@ final class RenderGate {
 				Rectangle2D office = new Rectangle2D.Double(Json.number(b.get(0)), Json.number(b.get(1)),
 						Json.number(b.get(2)) - Json.number(b.get(0)), Json.number(b.get(3)) - Json.number(b.get(1)));
 				if (fill && colour.equals(outlines) && inside != null && office.getMinY() >= inside.getMaxY() - 1) continue;
+				// what reaches well past the chart is the page's or slide's (PowerPoint's white slide), not the chart's
+				if (office.getMinX() < -2 || office.getMinY() < -2 || office.getMaxX() > d.width + 2 || office.getMaxY() > d.height + 2) continue;
 				int best = -1;
 				double bestD = Double.MAX_VALUE;
 				for (int i = 0; i < areas.size(); i++) {

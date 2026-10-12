@@ -37,7 +37,9 @@ import org.junit.Test;
 
 /**
  * CR-037's gate (§5, D4): each render probe the renderer draws, laid out and drawn against
- * Office's (the oracle in charts/render/, README there): Excel's layout, Word's PDF.  Prints the
+ * Office's (the oracle in charts/render/, README there): Excel's layout, Word's PDF (Excel's own
+ * charts, which have no docx: the layout alone); R1's pptx against PowerPoint's layout and PDF;
+ * Word's and PowerPoint's own charts (office/) against their PDFs.  Prints the
  * scoreboard; every probe drawn must be within tolerance in every element, but those
  * {@link #OPEN}, each with what is not yet Office's.
  */
@@ -45,7 +47,7 @@ public class ChartRenderGateTest {
 
 	static final String DIR = "charts/render/";
 
-	/** The probes drawn but not yet within tolerance, and why (CR-037 §11) */
+	/** The probes drawn but not yet within tolerance, and why (CR-037 §11); R1's pptx as name.pptx */
 	static final Map<String, String> OPEN = new LinkedHashMap<>();
 	static {
 		OPEN.put("r12-cats12-w144", "labels turned 45 degrees, every second one shown: Office's inside ends 2.18pt short of ours on the right");
@@ -54,7 +56,9 @@ public class ChartRenderGateTest {
 			OPEN.put(p, "a plot 1pt high: Office's inside is 0pt, ours 0.46");
 		}
 		OPEN.put("r2-max-set", "a maximum set, the labels hanging from a zero line near the bottom: the inside 0.55pt shorter");
-		OPEN.put("r1-scatter", "Office kerns the title's \"Va\" but not Carlito's \"Y-\" pair: its box 0.8pt narrower than Office's (R14's kerning probe)");
+		for (String p : new String[] { "r1-scatter", "r1-scatter.pptx" }) {
+			OPEN.put(p, "Office kerns the title's \"Va\" but not Carlito's \"Y-\" pair: its box narrower than Office's (R14's kerning probe)");
+		}
 	}
 
 	static {
@@ -70,7 +74,11 @@ public class ChartRenderGateTest {
 	}
 
 	static ChartRef chart(String probe) throws Exception {
-		try (InputStream is = ChartRenderGateTest.class.getClassLoader().getResourceAsStream(DIR + "probes/" + probe + ".xlsx")) {
+		return chart(probe, ".xlsx");
+	}
+
+	static ChartRef chart(String probe, String ext) throws Exception {
+		try (InputStream is = ChartRenderGateTest.class.getClassLoader().getResourceAsStream(DIR + "probes/" + probe + ext)) {
 			return Charts.in(OpcPackage.load(is)).get(0);
 		}
 	}
@@ -89,8 +97,34 @@ public class ChartRenderGateTest {
 			double w = Double.parseDouble(r[2]), h = Double.parseDouble(r[3]);
 			Drawing d = renderer.layout(m, ref.getHostTheme(), ChartFonts.of(ref.getHost()), w, h);
 			String dump = text("excel-layout/" + r[0] + ".json"), trace = text("word-pdf/" + r[0] + ".json");
-			if (dump == null || trace == null) continue;
-			results.add(RenderGate.compare(r[0], d, Json.object(Json.parse(dump)), Json.object(Json.parse(trace))));
+			// Excel's own charts (R14's copies of CR-036's) have no docx: their layout alone
+			boolean xlsxOnly = "xlsx".equals(r[4]);
+			if (dump == null || (trace == null && !xlsxOnly)) continue;
+			results.add(RenderGate.compare(r[0], d, Json.object(Json.parse(dump)), trace == null ? null : Json.object(Json.parse(trace))));
+			// R1's pptx: PowerPoint's chart (its template's: no title, larger text), its layout and PDF
+			String pptDump = text("powerpoint-layout/" + r[0] + ".json"), pptTrace = text("powerpoint-pdf/" + r[0] + ".json");
+			if (r[4].contains("pptx") && pptDump != null && pptTrace != null) {
+				ChartRef p = chart(r[0], ".pptx");
+				ChartModel pm = p.read();
+				if (!renderer.check(pm, p.getHostTheme()).isDrawn()) continue;
+				Drawing pd = renderer.layout(pm, p.getHostTheme(), ChartFonts.of(p.getHost()), w, h);
+				results.add(RenderGate.compare(r[0] + ".pptx", pd, Json.object(Json.parse(pptDump)), Json.object(Json.parse(pptTrace))));
+			}
+		}
+		// Office's own charts (CR-036's P3, Word's Insert Chart, and P4, PowerPoint's): the drawing
+		// against their PDFs (they have no layout dump)
+		String[] office = text("office/office.tsv").split("\r?\n");
+		for (int i = 1; i < office.length; i++) {
+			String[] r = office[i].split("\t", -1);
+			ChartRef ref;
+			try (InputStream is = ChartRenderGateTest.class.getClassLoader().getResourceAsStream(DIR + "office/" + r[1])) {
+				ref = Charts.in(OpcPackage.load(is)).get(0);
+			}
+			ChartModel m = ref.read();
+			if (!renderer.check(m, ref.getHostTheme()).isDrawn()) continue;
+			Drawing d = renderer.layout(m, ref.getHostTheme(), ChartFonts.of(ref.getHost()), Double.parseDouble(r[2]), Double.parseDouble(r[3]));
+			String trace = text("office/" + (r[1].endsWith(".pptx") ? "powerpoint-pdf/" : "word-pdf/") + r[0] + ".json");
+			results.add(RenderGate.drawing(r[0], d, Json.object(Json.parse(trace))));
 		}
 		return results;
 	}

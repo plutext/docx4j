@@ -107,16 +107,18 @@ final class ChartLayout {
 	/** The top value label may stand this far above the plot area before the inside drops */
 	static final double VALUE_LABEL_TOP = 6;
 	/**
-	 * A horizontal value axis's labels are more than this far apart (R11's bar chart at ten
-	 * widths: more than 24.75pt, at most 25.49; provisional, a rule to find on more probes)
+	 * A horizontal value axis's labels are more than this share of their text size apart: at 9pt
+	 * more than 24.75pt an interval and at most 25.49 (R11's bar chart), 35.67 taken (r1-bar-stacked-100's
+	 * "100%"); at 11.97pt 33.76 refused (r1-bar-stacked-100.pptx): 2.821 to 2.832.  Not the labels'
+	 * width and a gap, which can't fit all three; provisional until R14's sweeps
 	 */
-	static final double ACROSS = 25.1;
+	static final double ACROSS = 2.826;
 	/** See the push of labels turned 45 degrees in the layout: 10.94pt (R12, R13; 10.87 to 10.96) */
 	static final double TURNED_PUSH = 10.93;
 	/** The category labels' band is at most this share of the plot area's height (R11, R12) */
 	static final double CATEGORY_CAP = 0.56;
-	/** A tick mark's length (r1-area's date axis, Word's PDF) */
-	static final double TICK = 2.85;
+	/** A tick mark's length, a share of its axis's text size (r1-area: 2.85pt at 9pt in Word's PDF, 3.80 at 12pt in PowerPoint's) */
+	static final double TICK = 0.3167;
 	/** How the category labels are set (R12) */
 	static final int LEVEL = 0, WRAPPED = 1, TURNED_45 = 2, TURNED_90 = 3;
 	/**
@@ -401,9 +403,9 @@ final class ChartLayout {
 				d.boxes.put("legend.key." + i, new Rectangle2D.Double(e[0] + kw / 2, e[1] + key / 2, kw, key));
 				// drawn 0.75pt right and 0.055 of the text's size down of the box Office reports for it
 				double kx = e[0] + kw / 2 + 0.75, ky = e[1] + key / 2 + 0.055 * s.size;
-				if (en.lineKey) {
+				if (en.lineKey || en.marker != null) {
 					double cx = kx + kw / 2, cy = ky + key / 2;
-					if (en.line != null) {
+					if (en.lineKey) {
 						double half = LINE_KEY_DRAWN * kw / 2;
 						keys.add(new Drawing.Area(new Line2D.Double(cx - half, cy, cx + half, cy), null, en.line, en.lineWidth, "legend.key." + i, null,
 								true));
@@ -459,7 +461,9 @@ final class ChartLayout {
 		for (ChartSeries s : series) {
 			String name = s.getShownName() == null ? "" : s.getShownName();
 			CTShapeProperties sp = spPr(s);
-			if (line) out.add(new Entry(name, null, lineColour(sp), lineWidth(sp), true, marker(s)));
+			// a line series' key is its line, its marker over it; a scatter series with no line has a
+			// square key, its marker in it (r1-scatter.pptx)
+			if (line) out.add(new Entry(name, null, lineColour(sp), lineWidth(sp), lineColour(sp) != null, marker(s)));
 			else out.add(new Entry(name, seriesFill(s), lineColour(sp), lineWidth(sp), false, null));
 		}
 		if (kind == ChartGroup.Kind.BAR && "bar".equals(g.getBarDirection()) && !stacked(g)) Collections.reverse(out);
@@ -612,7 +616,9 @@ final class ChartLayout {
 			d.add(new Drawing.Area(l, null, lineColour(catSp), lineWidth(catSp), "axis.category"));
 			String tick = tickMark(catAx.getSource());
 			if (tick != null && !scatter) {
-				for (double p : f.ticks) d.add(new Drawing.Area(tick(!across, p, crossV, tick), null, lineColour(catSp), lineWidth(catSp), "tick.category"));
+				for (double p : f.ticks) {
+					d.add(new Drawing.Area(tick(!across, p, crossV, tick, TICK * cst.size), null, lineColour(catSp), lineWidth(catSp), "tick.category"));
+				}
 			}
 		}
 		if (valLine) {
@@ -620,7 +626,9 @@ final class ChartLayout {
 			d.add(new Drawing.Area(l, null, lineColour(valSp), lineWidth(valSp), "axis.value"));
 			String tick = tickMark(valAx.getSource());
 			if (tick != null) {
-				for (double v : f.values) d.add(new Drawing.Area(tick(across, f.v(v), crossC, tick), null, lineColour(valSp), lineWidth(valSp), "tick.value"));
+				for (double v : f.values) {
+					d.add(new Drawing.Area(tick(across, f.v(v), crossC, tick, TICK * vs.size), null, lineColour(valSp), lineWidth(valSp), "tick.value"));
+				}
 			}
 		}
 
@@ -653,8 +661,8 @@ final class ChartLayout {
 	 * A tick mark at p along an axis whose line is at q: out (away from the plot: down from an
 	 * axis along the bottom, left from one at the left), in, or across it
 	 */
-	private static Line2D tick(boolean alongBottom, double p, double q, String mark) {
-		double out = "in".equals(mark) ? 0 : TICK, in = "out".equals(mark) ? 0 : TICK;
+	private static Line2D tick(boolean alongBottom, double p, double q, String mark, double length) {
+		double out = "in".equals(mark) ? 0 : length, in = "out".equals(mark) ? 0 : length;
 		if (alongBottom) return new Line2D.Double(p, q - in, p, q + out);
 		return new Line2D.Double(q - out, p, q + in, p);
 	}
@@ -865,7 +873,7 @@ final class ChartLayout {
 		f.bottom = plotBottom - (valLabels ? band(vs, 1) : 0);
 		double left = f.left;
 		f.scale = AxisScale.of(dmin, dmax, setMin, setMax, valAx == null ? null : valAx.getMajorUnit(), valAx == null ? null : valAx.getLogBase(),
-				(lo, hi, u, k) -> (plotRight - (valLabels ? vs.width(format(hi, valCode)) / 2 : 0) - left) / k > ACROSS);
+				(lo, hi, u, k) -> (plotRight - (valLabels ? vs.width(format(hi, valCode)) / 2 : 0) - left) / k > ACROSS * vs.size);
 		valueLabels(f, f.scale, valLabels, valCode, f.values, f.valueTexts);
 		f.right = plotRight - (f.valueTexts.isEmpty() ? 0 : vs.width(f.valueTexts.get(f.valueTexts.size() - 1)) / 2);
 		double slots = c.span + 1;
@@ -897,7 +905,7 @@ final class ChartLayout {
 		double left = f.left;
 		f.xScale = AxisScale.of(xmin, xmax, xAx == null ? null : xAx.getMin(), xAx == null ? null : xAx.getMax(),
 				xAx == null ? null : xAx.getMajorUnit(), xAx == null ? null : xAx.getLogBase(),
-				(lo, hi, u, k) -> (plotRight - (xLabels ? xs.width(format(hi, xCode)) / 2 : 0) - left) / k > ACROSS);
+				(lo, hi, u, k) -> (plotRight - (xLabels ? xs.width(format(hi, xCode)) / 2 : 0) - left) / k > ACROSS * xs.size);
 		valueLabels(f, f.xScale, xLabels, xCode, f.xValues, f.xTexts);
 		f.right = plotRight - (f.xTexts.isEmpty() ? 0 : xs.width(f.xTexts.get(f.xTexts.size() - 1)) / 2);
 		return f;
@@ -1070,33 +1078,47 @@ final class ChartLayout {
 			Color lc = lineColour(sp);
 			double lw = lineWidth(sp);
 			Marker m = marker(sr);
+			boolean smooth = Boolean.TRUE.equals(sr.getSmooth());
 			int nCat = to[s].length;
-			Path2D.Double run = null;
-			int runPoints = 0;
+			List<double[]> run = new ArrayList<>();
 			for (int i = 0; i < nCat; i++) {
 				if (Double.isNaN(to[s][i])) {
 					// a gap ends the line; spanned, the line goes on to the next point
-					if (!"span".equals(blanks) && run != null) {
-						if (lc != null && runPoints > 1) d.add(new Drawing.Area(run, null, lc, lw, "series." + s, null, true));
-						run = null;
-						runPoints = 0;
+					if (!"span".equals(blanks)) {
+						line(run, smooth, lc, lw, "series." + s);
+						run = new ArrayList<>();
 					}
 					continue;
 				}
 				double x = scatter ? f.x(xs[s][i]) : f.categories[i], y = f.v(to[s][i]);
 				d.boxes.put("point." + s + "." + i, new Rectangle2D.Double(x, y, 0, 0));
-				if (run == null) {
-					run = new Path2D.Double();
-					run.moveTo(x, y);
-				} else {
-					run.lineTo(x, y);
-				}
-				runPoints++;
+				run.add(new double[] { x, y });
 				if (m != null) markers.add(marker(m, x, y, "point." + s + "." + i));
 			}
-			if (run != null && lc != null && runPoints > 1) d.add(new Drawing.Area(run, null, lc, lw, "series." + s, null, true));
+			line(run, smooth, lc, lw, "series." + s);
 		}
 		for (Drawing.Area a : markers) d.add(a);
+	}
+
+	/**
+	 * A run of a line's points, straight from one to the next, or smoothed: a Bezier curve through
+	 * them, each segment's control points a sixth of its neighbours' difference along (Catmull-Rom;
+	 * to be measured against Office's curves, R14)
+	 */
+	private void line(List<double[]> run, boolean smooth, Color colour, double width, String role) {
+		if (colour == null || run.size() < 2) return;
+		Path2D.Double p = new Path2D.Double();
+		p.moveTo(run.get(0)[0], run.get(0)[1]);
+		for (int i = 1; i < run.size(); i++) {
+			double[] b = run.get(i - 1), c = run.get(i);
+			if (!smooth) {
+				p.lineTo(c[0], c[1]);
+				continue;
+			}
+			double[] a = run.get(Math.max(0, i - 2)), e = run.get(Math.min(run.size() - 1, i + 1));
+			p.curveTo(b[0] + (c[0] - a[0]) / 6, b[1] + (c[1] - a[1]) / 6, c[0] - (e[0] - b[0]) / 6, c[1] - (e[1] - b[1]) / 6, c[0], c[1]);
+		}
+		d.add(new Drawing.Area(p, null, colour, width, role, null, true));
 	}
 
 	/** A marker's shape, centred on x, y */
