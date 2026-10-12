@@ -44,6 +44,7 @@ There is also a commercial enterprise edition of docx4j, which comes with commer
 - Open existing docx (from filesystem, SMB/CIFS, WebDAV using VFS), pptx, xlsx
 - Create new docx, pptx, xlsx
 - Programmatically manipulate the above (of course)
+- Create charts, and edit their data (docx, pptx, xlsx)
 - Save to various media zipped, or unzipped
 - Protection settings
 - Produce/consume  the Flat OPC XML format
@@ -852,6 +853,10 @@ Here is a sample short docx4j.properties file (a complete one may be copied from
 `docx4j.dc.creator.value=``docx4j`
 
 `docx4j.dc.lastModifiedBy.value=``docx4j`
+
+`# dcterms:created (a new document's) and dcterms:modified set to the time of the save (since 17.3.3)`
+
+`docx4j.dcterms.write=``false`
 
 `#`
 
@@ -1959,6 +1964,81 @@ To set up the bindings, you can use one of the Word Add-In from [http://www.open
 # Mailmerge
 
 docx4j has quite good support for processing fields of type MERGEFIELD (ie the equivalent of doing a mailmerge operation from within Microsoft Word).
+
+# Charts
+
+From docx4j 17.3.3, you can create a chart in a docx, and edit the data of a chart already there, as Word does.  A chart docx4j creates is Word’s own chart of its type (made from the parts Word and Excel write), with its data in an Excel workbook embedded in the document, so that in Word, Edit Data opens the data and the Chart Design tools (the chart styles, Change Chart Type) work on it.
+
+The chart types (`ChartType`) are:
+
+- column: clustered, stacked and 100% stacked (`COLUMN_CLUSTERED`, `COLUMN_STACKED`, `COLUMN_STACKED_100`)
+- bar: clustered, stacked and 100% stacked (`BAR_CLUSTERED`, `BAR_STACKED`, `BAR_STACKED_100`)
+- line, and line with markers (`LINE`, `LINE_MARKERS`)
+- pie and doughnut (`PIE`, `DOUGHNUT`)
+- area (`AREA`)
+- scatter, with markers only (`SCATTER`)
+
+## Creating a chart
+
+Describe the chart with a `ChartDefinition` – its type, categories, series and settings – and give it to a `ChartCreator` (both in `org.docx4j.model.chart`):
+
+```
+WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+ChartDefinition sales = ChartDefinition.of(ChartType.COLUMN_CLUSTERED)
+    .categories("North", "South", "East", "West")
+    .series("2025", 1.5, 3.5, 2.0, 4.0)
+    .series("2026", 2.5, 4.5, 3.0, 3.5)
+    .title("Sales")
+    .legend(LegendPosition.BOTTOM)
+    .valueAxis(axis -> axis.title("Units").numberFormat("0.0"));
+ChartRef ref = new ChartCreator().inNewParagraph(pkg, sales);
+pkg.save(new File("sales.docx"));
+```
+
+`inNewParagraph` adds the chart in a new paragraph at the end of the document, at Word’s size (6 by 3.5 inches).  To place it yourself, `inDocument(pkg, definition, cx, cy)` returns a run (`R`) holding the chart, `cx` by `cy` EMUs, for you to add to a paragraph of the main document.
+
+The categories can be text, numbers or dates (`dates("d-mmm", LocalDate.of(2026, 1, 5), ...)`, drawn on a date axis); for a scatter chart they are the x values.  `ChartDefinition.fromData(type, categories, seriesNames, values)` makes a definition in one call.  What you don’t set is as Word makes it; the settings are a title (or `noTitle()`), the legend’s position (or `noLegend()`), the axes’ titles and number formats, and data labels (`dataLabels(true)`).
+
+The data goes into the embedded workbook as Word lays it out: the categories down the first column, a column for each series with its name at the top, as a table.  Office’s ids in a chart are random; `new ChartCreator(new Random(seed))` makes the same document each time, which helps in tests.
+
+## Editing a chart’s data
+
+`ChartDataEditor` edits the data of a chart already in a document – one docx4j made, one in a template, or one made in Word – as Word’s Edit Data does: the workbook’s cells and table, the chart’s references, and the values the chart keeps for display, all in step.
+
+```
+WordprocessingMLPackage pkg = Docx4J.load(new File("sales.docx"));
+ChartRef ref = Charts.in(pkg).get(0);
+Chart chart = (Chart) ref.getChartPart();
+try (ChartDataEditor editor = ChartDataEditor.of(chart)) {
+    ChartSeries first = editor.getSeries().get(0);
+    editor.setValue(first, 0, 1.75);            // its first point
+    editor.addCategory("Central", 3.0, 3.25);   // a value per series
+    editor.addSeries("2027", 2.0, 4.0, 3.5, 3.0, 3.25);
+}
+pkg.save(new File("sales-edited.docx"));
+```
+
+`Charts.in` finds every chart in a package, in document order.  The editor also renames categories and series, removes them, and replaces all the data at once (`setData`).  Closing it writes the embedded workbook back into the document (saving the document writes it too).  The sample EditChartData fills a template’s placeholder chart this way.
+
+## Settings, reading and deleting
+
+`ChartSettings` sets a chart’s title, legend, axis titles, number format and data labels, on any chart, for example `ChartSettings.setTitle(chart, "Sales by region")`.  `ref.read()` reads a chart into a `ChartModel`: its series and their values, title, legend and axes (and `toJson()`, for a tool or an LLM).  `ChartCreator.delete(ref)` removes a chart, with its parts and its workbook.
+
+See the samples CreateChart and EditChartData in docx4j-samples-docx4j.
+
+## Presentations and workbooks
+
+Similar functionality exists for pptx and xlsx.  `ChartCreator.inSlide` puts a chart on a slide as PowerPoint makes it (sample CreateChart in docx4j-samples-pptx4j).  In a workbook, `ChartCreator.inSheet` writes the data into a sheet as a table and charts it, and `fromCells` charts data already in cells, as Excel’s Insert Chart does over a selection (sample CreateCharts in docx4j-samples-xlsx4j).  `ChartDataEditor`, `ChartSettings` and `ChartCreator.delete` work on charts in all three.
+
+## Limitations
+
+- Only the types above: no combination charts, secondary axes, 3-D charts or the other variants yet.
+- The Office 2016 chart types (waterfall, funnel, treemap, sunburst, histogram, box and whisker) are read, but not created or edited.
+- A new chart is placed inline in the main document: not floating, and not in a header or footer (charts already there can be edited).
+- A linked chart, whose data is in a workbook outside the document, can’t be edited.
+- Settings other than those above (a chart’s style, colours, type, axis scales) are left as they are; change them in Word.
+- Where Office’s behaviour isn’t known, the editor refuses rather than guesses: a table with a totals row, or data on more than one sheet reshaped.  Cells holding formulas are left alone unless you call `setOverwriteFormulas(true)`.
+- docx4j’s PDF and HTML output don’t draw charts yet: a chart’s space is kept, empty.
 
 # SmartArt
 

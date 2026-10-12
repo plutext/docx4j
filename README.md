@@ -20,6 +20,7 @@ It uses JAXB to create the Java representation.
 - Apply transforms, including common filters
 - Font support (font substitution, and use of any fonts embedded in the document) 
 - Anonymize/sanitize a docx/pptx/xlsx 
+- Charts: create charts in docx/pptx/xlsx, and edit their data, as Word, PowerPoint and Excel do (types: clustered, stacked and 100% stacked column and bar; line; line with markers; pie; doughnut; area; scatter); see "Charts" in the Getting Started guide
 
 
 Choosing a library
