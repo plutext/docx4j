@@ -4,8 +4,14 @@ Status: Proposed 2026-10-12.  Drafted on Jason's request ("Yes to all those deci
 CR-036 on this scope"), after the scope proposal that followed CR-035's close.  Taken with that
 reply (§8): the plan's D7 (authoring before rendering), D3 (the chart types of §4.3), D6 (Office's
 own parts as templates, byte for byte), the builder's shape (an object model in the shape of POI's
-XDDF, with a one-call `fromData`) and created data in a table.  This CR's own decisions (§8, D1 to
-D6) are open.  Owner: Jason Harrop.  Drafted with Claude Opus 5.5.
+XDDF, with a one-call `fromData`) and created data in a table.  Reviewed the same day by the
+docx4j-13 session (Claude Fable 5.1, at Jason's request): approved with eight amendments, A1 to A8,
+and some smaller points, all accepted by Jason (A6 first, relayed by docx4j-13; then "yes, apply
+all eight amendments and the smaller points") and applied (§8 lists them): the embedded workbook
+kept live in its part (A1, deciding D2), the definition built of groups (A2), settings writers for
+existing charts (A3), a chart deleted (A4), a named comparator and a no-edit control in every gate
+(A5), PowerPoint's own PDFs (A6), more ids (A7), D1 decided after P4 (A8); 15-19 days.  D3 to D6
+are open.  Owner: Jason Harrop.  Drafted with Claude Opus 5.5.
 
 The charts plan (`../docx4j-portfolio/docs/charts_plan.md`) numbers authoring as phase 5 (create in
 xlsx) and phase 6 (edit and create in docx and pptx).  This CR takes them as its own phases 1 to 3,
@@ -108,9 +114,11 @@ Windows VM (Excel, Word and PowerPoint 365), saving each file into the share's
 - **P5, Word's and PowerPoint's own edits** of a default chart, before and after, through
   `ChartData.Activate()` and its workbook: a value, a category added, a series added, a series
   removed; and a category added to Word's pie, whose points carry their own `c16:uniqueId`
-  (finding 1: does the new point get a `c:dPt` and an id?).  Phase 1's oracle.  (`AddChart2` and
-  `ChartData` are documented in Word's and PowerPoint's object models; the run shows whether they
-  behave from a script as Excel's did.)
+  (finding 1: does the new point get a `c:dPt` and an id?).  Phase 1's oracle.  Each before and
+  after file saved by Word or PowerPoint itself, not re-saved by the script, so that the oracle is
+  Office's own save, as CR-035's edit pairs were (review).  (`AddChart2` and `ChartData` are
+  documented in Word's and PowerPoint's object models; the run shows whether they behave from a
+  script as Excel's did.)
 
 Each file is made from scratch, no customer content; the useful ones join
 `docx4j-core-tests/src/test/resources/charts/` as fixtures, as phase 4's did.
@@ -119,9 +127,17 @@ Each file is made from scratch, no customer content; the useful ones join
 
 - `ChartDataEditor.of(Chart)` accepts a chart in a docx or pptx: it opens the embedded workbook the
   chart's `c:externalData` names, and the editor works on it exactly as on an xlsx.
-- The editor becomes `AutoCloseable`: `close()` (and `flush()`) write the workbook back into its
-  `EmbeddedPackagePart`; for an xlsx they do nothing.  So `try (ChartDataEditor e =
-  ChartDataEditor.of(chart)) { ... }` (D2).
+- **The embedded workbook, live** (review A1, deciding D2): `EmbeddedPackagePart` gains
+  `getPackage()` (extracted once, then kept) and `setPackage()`, and writes its live package when
+  the host package is saved, as every other part writes its content.  So the readers
+  (`ChartCells.of`, `Charts.in`, `ChartModel.read`, each of which loads the part's bytes afresh
+  today) and an editor share one package, and a save after an editor left open loses nothing.
+  The editor is still `AutoCloseable`: `close()` and `flush()` write the workbook into the part's
+  bytes explicitly; for an xlsx they do nothing.  So `try (ChartDataEditor e =
+  ChartDataEditor.of(chart)) { ... }`.
+- **What docx4j's save does to Word's workbook** (A1): re-zipped and re-marshalled, Word's minimal
+  workbook is no longer byte for byte Word's; phase 1 measures the difference, and the no-edit
+  control (§5) gates that Word's *Edit Data* accepts it.
 - Refused, with a message: a **linked** chart (`c:externalData` naming an external target, as the
   pasted fixture's does; issue #126's case), and a chart with no workbook.
 - `c:externalData/c:autoUpdate` is left as it is (Word writes 0).
@@ -135,8 +151,12 @@ line and line with markers; pie; doughnut; area; scatter (markers only).  Twelve
 axes and the other variants (3-D, stacked lines and areas, smooth scatter) come later.
 
 **The object model** (the builder's shape, taken), in XDDF's terms: a chart with its title and
-legend, a category and a value axis (title, number format), and series from data sources.  It is
-assembled first, as a definition, and then made from Office's parts:
+legend, and one or more **groups**, each a chart type, its series (from data sources) and its pair
+of axes (each with a title and a number format).  The fluent `.categories()` and `.series()` are
+shorthand for the first group, so that combination charts and secondary axes later add a group
+(`.group(ChartType.LINE, g -> g.series(...).secondaryAxis())`) without breaking anything, and the
+ports mirror the group form from the start (review A2).  This CR creates charts of one group.  The
+definition is assembled first and then made from Office's parts:
 
 ```java
 ChartDefinition d = ChartDefinition.of(ChartType.COLUMN_CLUSTERED)
@@ -151,37 +171,74 @@ ChartDefinition d = ChartDefinition.of(ChartType.COLUMN_CLUSTERED)
 ChartDefinition d = ChartDefinition.fromData(ChartType.COLUMN_CLUSTERED, categories, seriesNames, values);
 ```
 
+- For a scatter chart the categories are the x values: `xValues(...)` is the same as
+  `categories(...)`, as the editor's `addCategory` already documents (A2).
+- Dates as categories are serial numbers with a date format: the format written into the cells
+  (`SheetCells`), the chart from the date-axis template (P1) (A2).
+
 **Making it** (`ChartCreator`, `org.docx4j.model.chart`):
 - `ChartCreator.inSheet(worksheet, definition, CellRef dataAt, AreaRef placeAt)`: the data written
   at `dataAt` as a new table (D3), refused over cells that hold something; the chart placed over
   `placeAt` in the sheet's drawing (made if missing), a `twoCellAnchor` as Excel writes it.
 - `ChartCreator.fromCells(worksheet, AreaRef data, ChartType type, AreaRef placeAt)`: a chart over
   data already in cells, as Excel's *Insert Chart* over a selection: the first row and column read
-  as Excel reads them (series names across, categories down, a blank corner), no table made.
+  as Excel reads them (series names across, categories down, a blank corner), no table made.  The
+  data may be on another sheet than the chart's (the `AreaRef` carries its sheet).  `inSheet`
+  refuses an empty definition (no series, or no categories) (review).
 - The chart, style and colour parts are copied from the type's template (D6, taken: Office's own,
   byte for byte, captured by P1); the axis ids and the `c16:uniqueId` suffix made fresh, random as
   Office's (D6 below); the series made by `ChartDataEditor.setData` from the template's default
   data, so a created chart's series, references, caches, table and colours follow the rules phase 4
-  measured; then the definition's settings written as P2 shows Excel writes them.
+  measured; then the definition's settings written as P2 shows Excel writes them.  Since every
+  template carries Word's three series and four categories, `setData`'s shrinking path is on every
+  created chart's way: phase 2 tests one series, one category, and one of each, explicitly
+  (review).
+- **Settings on an existing chart** (review A3): the writers of the definition's settings (title,
+  legend, axis titles, number format, data labels) public as `ChartSettings`, on any chart, made
+  or loaded, so that a filled template's title is set as its data is (issue #664's users want
+  both).
 
 ### 4.4 Phase 3: charts created in docx and pptx
 
 - `ChartCreator.inDocument(wordPackage, definition, long cx, long cy)` returns a `w:r` holding the
   `w:drawing` (`wp:inline`, Word's default 6 × 3.5 in where no size is given), for the caller to put
-  in a paragraph (D4); `ChartCreator.inSlide(slidePart, definition, x, y, cx, cy)` returns the
-  `p:graphicFrame` it adds to the slide's tree.
+  in a paragraph (D4), with a convenience that appends a paragraph and returns the new chart's
+  `ChartRef`, so that an editor can be opened on it at once; `ChartCreator.inSlide(slidePart,
+  definition, x, y, cx, cy)` returns the `p:graphicFrame` it adds to the slide's tree.
 - The chart, style and colour parts from Word's (or PowerPoint's) template of the type, captured
   by P3 and P4 (D1), with `c:externalData`; the workbook made from Word's (or PowerPoint's) own
   embedded workbook, kept as a template (D6, taken), its data written by `setData`; named, related
   and typed as P3 and P4 show.
-- Ids: `docPr` (a random id unused in the document, as Word's), `cNvPr` in a slide (the next free).
+- Ids (D6): `docPr` (a random id unused in the document, as Word's), `wp14:anchorId` and
+  `wp14:editId`, `cNvPr` in a slide (the next free) and its `a16:creationId`, all from the seedable
+  source (A7); the chart parts and the workbook named after any the document already has (P3's
+  two charts), checked in phase 3 (A7).
+- **A chart deleted** (review A4): `ChartCreator.delete(ChartRef)` removes its drawing (the
+  `w:drawing`'s run, the slide's frame, the sheet's anchor), its chart, style and colour parts, its
+  embedded workbook, their relationships, and the content types' `xlsx` default where no other
+  embedded workbook is left: for a template's placeholder chart, and for any host.
 
 **Left for later** (not in this CR): a chart copied with its workbook into another part or
 package; linked charts; floating (anchored) charts in a docx; charts created in headers, footers,
-layouts and masters (editing works in all of them); combination charts and secondary axes; chart
-properties of an existing chart edited (beyond its data); chartex (commercial, the plan's D1 (d)).
+layouts and masters (editing works in all of them); combination charts and secondary axes (the
+definition's groups are ready for them, A2); an existing chart's other properties (its type, its
+style, its axes' scaling; its settings are A3's); chartex (commercial, the plan's D1 (d)).
 
 ## 5. Gates and oracles
+
+**The comparator** (review A5): CR-035's gate (`ChartDataEditorTest`'s comparison) made a shared
+test helper.  The chart part marshalled by docx4j on both sides, then normalised: the
+`c16:uniqueId` suffixes, the axis ids (`c:axId`, `c:crossAx`), the drawing ids (`docPr`, `cNvPr`,
+`a16:creationId`, `wp14:anchorId`, `wp14:editId`); numbers compared as numbers.  A workbook, the
+host's or the embedded one, compared as CR-035 compared Sheet1: cells by their text, styles,
+formulas, rows' spans, the dimension, the table.  What docx4j's own save changes in Office's XML
+(booleans written `true`/`false` where Office writes `1`/`0`, which marshalling both sides hid
+in CR-035's gate) is what the control measures.
+
+**The control, in every phase** (A5): Office's own file loaded and saved by docx4j with no edit
+(in phase 1, the editor opened and closed with no edit) passes the same comparison against the
+original and opens in Office without repair, with *Edit Data* working, so that a gate tells a
+defect of the edit or the creation from an artefact of the save.
 
 - **Phase 0:** the probes read: each file opens, its chart is what was asked (the type, the data),
   finding 1 holds or the differences are listed for D1.
@@ -197,7 +254,9 @@ properties of an existing chart edited (beyond its data); chartex (commercial, t
   (a scripted check where Excel's object model allows, Jason's eye where not).
 - **Phase 3:** P3 and P4: Word's and PowerPoint's chart of the same type and data against
   `ChartCreator`'s, part by part, the embedded workbook included; each opens without repair and
-  *Edit Data* opens it; Word's PDF of each against Word's PDF of its own.
+  *Edit Data* opens it; Word's PDF of each docx against Word's PDF of its own, and PowerPoint's own
+  PDF export (`SaveAs` as PDF, scripted) of each pptx against PowerPoint's PDF of its own, by raster
+  difference (review A6).
 
 ## 6. Phases
 
@@ -205,10 +264,11 @@ properties of an existing chart edited (beyond its data); chartex (commercial, t
 |---|---|---|---|
 | 0 | §4.1: the probe script; Jason's run; the probes read and committed as fixtures. | CR-035 | 1 day + Office |
 | 1 | §4.2: the editor on docx and pptx, write-back, refusals, the samples; P5's gate. | 0 | 3-4 days |
-| 2 | §4.3: `ChartType`, `ChartDefinition`, `ChartCreator` for xlsx, the templates, `Tables` creating a table, the sheet's drawing; P1/P2's gate. | 0 | 7-9 days + Excel |
-| 3 | §4.4: docx and pptx creation, the embedded workbook template; P3/P4's gate. | 1, 2 | 3-4 days + Word, PowerPoint |
+| 2 | §4.3: `ChartType`, `ChartDefinition` (groups), `ChartCreator` for xlsx, `ChartSettings`, the templates, `Tables` creating a table, the sheet's drawing; P1/P2's gate. | 0 | 7.5-9.5 days + Excel |
+| 3 | §4.4: docx and pptx creation, the embedded workbook template, a chart deleted; P3/P4's gate. | 1, 2 | 3.5-4.5 days + Word, PowerPoint |
 
-14-18 working days, as the plan has phases 5 and 6, plus Office runs.  Each phase ends with
+15-19 working days (the plan's phases 5 and 6, 14-18, and a day for the review's A3 and A4), plus
+Office runs.  Each phase ends with
 CHANGELOG, this CR's record, the registry entry, and the hand-offs it triggers.
 
 ## 7. Risks
@@ -218,6 +278,10 @@ CHANGELOG, this CR's record, the registry entry, and the hand-offs it triggers.
   if so; failing that, Jason makes P5's edits by hand, saving before and after.
 - **PowerPoint's chart part may differ from Excel's** (text sizes, the `c:txPr` defaults) where
   Word's doesn't: then per-host templates (D1), measured in P4.
+- **A shared part's save path** (A1): `EmbeddedPackagePart` writing a live package changes how a
+  part reaches the zip, in the io3 save path CLAUDE.md counts as widely shared; the round trip of
+  every fixture with an embedded package (docx, pptx, the OLE and package embeddings of the
+  corpora) is its gate, and the no-edit control (§5) its check against Word.
 - **The templates are Office's, version by version.**  Excel 365's parts as of the run; an older
   Office opens them (they carry `mc:Ignorable` extensions it skips), but their look is 365's.
 - **Fresh random ids** can't collide in practice, but a document's `docPr` ids must stay unique;
@@ -235,31 +299,57 @@ Taken (Jason, 2026-10-12, "Yes to all those decisions", on the scope proposal):
 - **the builder**: an object model in XDDF's shape plus a one-call `fromData`;
 - **created data in a table**, as Word always puts it.
 
-Open (owner: Jason), with recommendations:
-- **D1. One template per type for all hosts**, Excel's, with the host's element added, or one per
-  host.  Word's is Excel's for the column and the line, not quite for the pie (its points' ids,
-  finding 1); PowerPoint's is measured in P4.  Recommendation: a template per type and host,
-  captured by P1, P3 and P4 alike, since a script makes them all at once; the code that adds the
-  host's parts is shared.
-- **D2. Writing an embedded workbook back** when the editor closes (`AutoCloseable`), or after every
-  edit.  Re-zipping a workbook per `setValue` is slow in a loop.  Recommendation: on `close()` and
-  `flush()`.
+Reviewed 2026-10-12 by the docx4j-13 session (Claude Fable 5.1, at Jason's request): approved,
+with eight amendments and some smaller points.  **A6 accepted** first (Jason, relayed by
+docx4j-13); then **all accepted** (Jason: "yes, apply all eight amendments and the smaller points
+to the CR and commit"), and applied:
+- **A1** the embedded workbook kept live in its part, written on the host's save (§4.2; decides D2);
+  what docx4j's save does to Word's workbook measured.
+- **A2** the definition built of groups, `.series()` the first group's; scatter's x values and
+  dates named (§4.3).
+- **A3** the settings writers public for existing charts, `ChartSettings` (§4.3).
+- **A4** a chart deleted (§4.4).
+- **A5** the comparator named, with its normalisations, and a no-edit control in every phase (§5).
+- **A6** PowerPoint's own PDF export in phase 3's gate (§5).
+- **A7** `wp14:anchorId`/`editId` among the ids; part numbering across a document checked (§4.4).
+- **A8** D1 decided after P4.
+- Smaller points: `setData`'s shrinking path tested explicitly (§4.3); `fromCells` takes data on
+  any sheet, `inSheet` refuses an empty definition (§4.3); P5 saved by Office itself (§4.1); the
+  docx convenience returns the `ChartRef` (§4.4).
+
+This CR's own (owner: Jason): D1 waits for P4 (A8) and D2 is decided (A1); D3 to D6 are open, with
+recommendations:
+- **D1. One template per type, or one per type and host: decided after P4** (review A8, accepted).
+  All three hosts' templates are captured (P1, P3, P4: one script).  If PowerPoint's chart part
+  equals Excel's, as Word's does (finding 1), ship one chart template per type, Excel's, with a
+  host step putting `c:externalData` where Excel has `c:printSettings`, and the style and colour
+  parts shared; the pie's point ids are made by the id source anyway.  The host step is of the same
+  kind as the fresh ids and `setData` every template gets; whether it sits within D6's "byte for
+  byte" is Jason's, asked with D1.  If PowerPoint's differs (its `c:txPr` defaults), a template
+  per host.
+- **D2. Writing an embedded workbook back: decided by A1** (Jason, 2026-10-12): the part keeps a
+  live package, written when the host is saved; `close()` and `flush()` write it explicitly (§4.2).
+  Neither after every edit (re-zipping per `setValue` is slow in a loop) nor on `close()` alone (a
+  save without it lost the edit).
 - **D3. Where created data goes in an xlsx**: at a cell the caller names, as a new table, refused
   over cells that hold something; and `fromCells` for data already there, with no table made, as
-  Excel's *Insert Chart* over a selection.  Recommendation: both.
+  Excel's *Insert Chart* over a selection, its data on any sheet; an empty definition refused.
+  Recommendation: both (the review agrees).
 - **D4. Placing a chart in a docx**: return the run holding an inline drawing for the caller to
   place (as `createImageInline` returns the inline), with a convenience that appends a paragraph.
-  Inline only: Word's *Insert Chart* is inline; floating charts later.  Recommendation: yes.
+  Inline only: Word's *Insert Chart* is inline; floating charts later.  The convenience returns
+  the new chart's `ChartRef`.  Recommendation: yes (the review agrees).
 - **D5. Names**: `ChartType`, `ChartDefinition`, `ChartCreator` in `org.docx4j.model.chart` (not
   `ChartData`, which is the read model's).  Recommendation: as named.
-- **D6. Ids**: axis ids, the `c16:uniqueId` suffix, `docPr` and `a16:creationId` random as Office
-  makes them, with a seedable source for reproducible output.  Recommendation: yes.
+- **D6. Ids**: axis ids, the `c16:uniqueId` suffix, `docPr`, `wp14:anchorId` and `wp14:editId`,
+  `cNvPr`'s `a16:creationId`, random as Office makes them, with a seedable source for reproducible
+  output.  Recommendation: yes.
 
 ## 9. Hand-offs
 
 - **docx4j-python**: its CR-004 phase F and CR-005 phase G (chart creation) can mirror
-  `ChartDefinition` (python-pptx's `CategoryChartData` and `add_chart` are the same idea) and ship
-  the same template parts; phase 2's fixtures are its oracle.
+  `ChartDefinition`, its group form included (python-pptx's `CategoryChartData` and `add_chart` are
+  the same idea), and ship the same template parts; phase 2's fixtures are its oracle.
 - **docx4j-core-ts**: the same, when it creates charts.
 - **docx4j-mcp**: a chart-creating tool beside `mcp/chart-tools`' describing one.
 - **Enterprise**: chartex creation (the plan's phase 9, commercial) plugs its own templates into
@@ -267,7 +357,7 @@ Open (owner: Jason), with recommendations:
 
 ## 10. Effort (rough)
 
-14-18 working days, plus Office runs: one for phase 0's probes (all three applications), and the
+15-19 working days, plus Office runs: one for phase 0's probes (all three applications), and the
 open checks of phases 1 to 3.
 
 ## 11. Implementation record
