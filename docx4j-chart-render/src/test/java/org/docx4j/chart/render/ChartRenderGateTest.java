@@ -47,11 +47,8 @@ public class ChartRenderGateTest {
 	/** The probes drawn but not yet within tolerance, and why (CR-037 §11) */
 	static final Map<String, String> OPEN = new LinkedHashMap<>();
 	static {
-		for (String p : new String[] { "r3-eight-288x168", "r12-cats4-w144", "r12-cats6-w144", "r12-cats8-w180", "r12-cats8-w216",
-				"r12-cats8-w288", "r12-cats12-w144", "r12-cats12-w288", "r12-cats12-w360", "r12-cats8-w216-h144",
-				"r12-cats8-w216-h180", "r12-cats8-w216-h216" }) {
-			OPEN.put(p, "category labels turned 45 degrees push the plot's inside right, by a rule not yet found (§11)");
-		}
+		OPEN.put("r12-cats12-w144", "labels turned 45 degrees, every second one shown: Office's inside ends 2.18pt short of ours on the right");
+		OPEN.put("r13-text-12", "Word draws a 4.76pt bar 4.56 wide: 0.27 from Word's PDF, though within 0.13 of Excel's layout");
 		for (String p : new String[] { "r11-default-h72", "r11-eight-h72" }) {
 			OPEN.put(p, "a plot 1pt high: Office's inside is 0pt, ours 0.46");
 		}

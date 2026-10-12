@@ -2,7 +2,8 @@
 
 Status: ACTIVE: phase 0 DONE 2026-10-12; phase 1 STARTED 2026-10-12 (Jason: "add the extra
 axis-height probe set; start phase 1"): the module, the SPI and the clustered column's frame
-built; with R11 and R12 run, 111 of the 126 probes drawn within tolerance in every element (§11).  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
+built; with R11, R12 and R13 run, 136 of the 141 probes drawn within tolerance in every element
+(§11).  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
 (integration) of the charts plan.  Do not implement yet."); reviewed the same day by the
 docx4j-13 session (Claude Fable 5.1, at Jason's request): approved with nine amendments, all
 accepted by Jason ("apply all nine") and applied (§8).  D1 to D9 taken as recommended (Jason, 2026-10-12);
@@ -648,9 +649,25 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   - **labels turned 45 degrees push the plot's inside right** where the first would reach past
     the chart's left: the first category's centre lands 32.0 to 33.8pt into the inner frame
     (by chart width and category count), and the first label's ink 7.6 to 9.4pt from the chart's
-    edge, neither constant: the rule is not found yet.
+    edge, neither constant: the rule is not found yet (R13 found it, below).
 - **The gate after R12**: 126 probes drawn, **111 within tolerance in every element** (94.1% of
   13,253 elements), the ratchet holding them.  Open (named in the test): the 45-degree push
   (twelve probes), a plot 1pt high (two: Office's inside 0, ours 0.46) and R2's set maximum (one).
   Pictures: 109 of the 111 within their tolerance (0.04% to 0.65% off Excel's); the two others
   are the cut-short labels ("C..." about a point low; 0.81% and 0.65% against 0.7%).
+- **R13** (how far labels turned 45 degrees push the plot right; 15 probes, Jason's run, nothing
+  failed; baseline over all 211 probes as before): the first label's length, the last's, the
+  category count, the chart's width, the value labels' width and the text's size, one at a time.
+  The push follows the first label alone (a short first label pushes nothing; the last label,
+  long or short, nothing), and **the inside's left is at least 10.93 + the first label's width x
+  sin 45 - the plot's right edge / (2n)** (n categories, the right edge from the chart's left):
+  Office takes the first category's width as the right edge over n, as if the plot began at
+  the chart's edge, so where the plot begins drops out.  On all 31 probes with labels turned
+  45 degrees (R3, R12, R13; 9 and 12pt; every label and every second shown) to 0.07pt; the
+  constant 10.87 to 10.96.  A label cut short pushes by its drawn width (R12's 108pt-high plots).
+- **The gate after R13**: 141 probes drawn, **136 within tolerance in every element** (98.9% of
+  14,844 elements).  Open (named in the test): every second label shown with labels turned 45
+  degrees (one: Office's inside ends 2.18pt short on the right), a bar Word draws 4.56pt for
+  Excel's 4.76 (one: 0.27 from Word's PDF, within 0.13 of Excel's layout), plots 1pt high (two)
+  and R2's set maximum (one).  Pictures: 134 of the 136 within their tolerance (median 0.13%); the
+  two others are R12's cut-short labels ("C...", about a point low).

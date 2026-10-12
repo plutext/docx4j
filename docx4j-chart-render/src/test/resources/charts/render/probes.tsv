@@ -195,3 +195,18 @@ r12-cats8-w216-h216	R12	216	216	xlsx,docx	2013		36,36		8 categories, 216 by 216p
 r12-words-w180	R12	180	252	xlsx,docx	2013		36,36		one-word categories, 180 by 252pt
 r12-words-w216	R12	216	252	xlsx,docx	2013		36,36		one-word categories, 216 by 252pt
 r12-words-w288	R12	288	252	xlsx,docx	2013		36,36		one-word categories, 288 by 252pt
+r13-first-a	R13	216	252	xlsx,docx	2013		36,36		the first label "A", turned 45 degrees, 216 by 252pt
+r13-first-categ	R13	216	252	xlsx,docx	2013		36,36		the first label "Categ", turned 45 degrees, 216 by 252pt
+r13-first-category-1	R13	216	252	xlsx,docx	2013		36,36		the first label "Category 1", turned 45 degrees, 216 by 252pt
+r13-first-and-more	R13	216	252	xlsx,docx	2013		36,36		the first label "Category 1 and more", turned 45 degrees, 216 by 252pt
+r13-first-long-name	R13	216	252	xlsx,docx	2013		36,36		the first label "Category one with a long name", turned 45 degrees, 216 by 252pt
+r13-last-h	R13	216	252	xlsx,docx	2013		36,36		the last label "H", turned 45 degrees, 216 by 252pt
+r13-last-long-name	R13	216	252	xlsx,docx	2013		36,36		the last label "Category 8 with a long name", turned 45 degrees, 216 by 252pt
+r13-n6-w216	R13	216	252	xlsx,docx	2013		36,36		6 categories turned 45 degrees, 216 by 252pt
+r13-n10-w216	R13	216	252	xlsx,docx	2013		36,36		10 categories turned 45 degrees, 216 by 252pt
+r13-n8-w240	R13	240	252	xlsx,docx	2013		36,36		8 categories turned 45 degrees, 240 by 252pt
+r13-n8-w252	R13	252	252	xlsx,docx	2013		36,36		8 categories turned 45 degrees, 252 by 252pt
+r13-values-x100	R13	216	252	xlsx,docx	2013		36,36		values times 100 (wider value labels), turned 45 degrees, 216 by 252pt
+r13-values-x10000	R13	216	252	xlsx,docx	2013		36,36		values times 10000 (wider value labels), turned 45 degrees, 216 by 252pt
+r13-text-7	R13	216	252	xlsx,docx	2013		36,36		the axes' and legend's text at 7pt, turned 45 degrees, 216 by 252pt
+r13-text-12	R13	216	252	xlsx,docx	2013		36,36		the axes' and legend's text at 12pt, turned 45 degrees, 216 by 252pt

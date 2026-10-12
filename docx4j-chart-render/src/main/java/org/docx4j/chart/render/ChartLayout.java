@@ -90,6 +90,8 @@ final class ChartLayout {
 	static final double VALUE_LABEL_GAP = 0.7575;
 	/** The top value label may stand this far above the plot area before the inside drops */
 	static final double VALUE_LABEL_TOP = 6;
+	/** See the push of labels turned 45 degrees in the layout: 10.94pt (R12, R13; 10.87 to 10.96) */
+	static final double TURNED_PUSH = 10.93;
 	/** The category labels' band is at most this share of the plot area's height (R11, R12) */
 	static final double CATEGORY_CAP = 0.56;
 	/** How the category labels are set (R12) */
@@ -464,6 +466,17 @@ final class ChartLayout {
 				band = bandOf(mode, cst, 1, shownMax);
 			}
 			if (band > cap) band = cap;
+		}
+		// labels turned 45 degrees push the plot's inside right where the first (as drawn) would
+		// reach past the chart's left: to TURNED_PUSH + its width x sin 45 - the plot's right / (2n)
+		// (R12, R13: on all 31 probes turned so, to 0.07pt; the category width taken as the right
+		// edge over n, as if the plot began at the chart's edge)
+		if (mode == TURNED_45 && nCat > 0 && !catLines.get(0).isEmpty()) {
+			double pushed = TURNED_PUSH + SIN45 * cst.width(catLines.get(0).get(0)) - insideRight / (2 * nCat);
+			if (pushed > insideLeft) {
+				insideLeft = pushed;
+				catW = (insideRight - insideLeft) / nCat;
+			}
 		}
 		double insideBottom = plotBottom - band;
 		double insideH = insideBottom - insideTop;

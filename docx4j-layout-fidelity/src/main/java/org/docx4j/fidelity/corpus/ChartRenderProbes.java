@@ -99,7 +99,8 @@ import org.xlsx4j.model.CellRef;
  * data labels at each position; R7 blanks; R8 pie and doughnut; R9 manual layouts; R10 Excel's
  * gallery styles (applied on the VM, {@code style} in the manifest); R11 (phase 1) the value
  * axis's unit against its length, one chart at many heights and a bar chart at many widths; R12
- * (phase 1) the category labels as the room for them shrinks.</p>
+ * (phase 1) the category labels as the room for them shrinks; R13 (phase 1) how far labels turned
+ * 45 degrees push the plot right.</p>
  *
  * <p>One theme for each probe (review A2): the docx's theme part (Office 2013's, Calibri and
  * accent 1 4472C4, unless the probe says 2023) is copied into the xlsx, which docx4j makes with
@@ -430,7 +431,53 @@ public final class ChartRenderProbes {
 					"Archipelagic").series("Series 1", 4.3, 2.5, 3.5, 4.5).series("Series 2", 2.4, 4.4, 1.8, 2.8),
 					"one-word categories, " + w + " by 252pt").size(w, H));
 		}
+
+		// R13 (CR-037 phase 1) how far labels turned 45 degrees push the plot's inside right: eight
+		// categories in 216pt (turned 45), one thing changed at a time
+		String[] first = { "A", "Categ", "Category 1", "Category 1 and more", "Category one with a long name" };
+		String[] firstNames = { "a", "categ", "category-1", "and-more", "long-name" };
+		for (int i = 0; i < first.length; i++) {
+			l.add(probe("R13", "r13-first-" + firstNames[i], turned(first[i], "Category 8", 8, 1), "the first label \"" + first[i]
+					+ "\", turned 45 degrees, 216 by 252pt").size(216, H));
+		}
+		String[] last = { "H", "Category 8 with a long name" };
+		String[] lastNames = { "h", "long-name" };
+		for (int i = 0; i < last.length; i++) {
+			l.add(probe("R13", "r13-last-" + lastNames[i], turned("Category 1", last[i], 8, 1), "the last label \"" + last[i]
+					+ "\", turned 45 degrees, 216 by 252pt").size(216, H));
+		}
+		for (int n : new int[] { 6, 10 }) {
+			l.add(probe("R13", "r13-n" + n + "-w216", turned("Category 1", "Category " + n, n, 1), n + " categories turned 45 degrees, 216 by 252pt")
+					.size(216, H));
+		}
+		for (int w : new int[] { 240, 252 }) {
+			l.add(probe("R13", "r13-n8-w" + w, turned("Category 1", "Category 8", 8, 1), "8 categories turned 45 degrees, " + w + " by 252pt")
+					.size(w, H));
+		}
+		for (int scale : new int[] { 100, 10000 }) {
+			l.add(probe("R13", "r13-values-x" + scale, turned("Category 1", "Category 8", 8, scale),
+					"values times " + scale + " (wider value labels), turned 45 degrees, 216 by 252pt").size(216, H));
+		}
+		for (int sz : new int[] { 700, 1200 }) {
+			l.add(probe("R13", "r13-text-" + sz / 100, turned("Category 1", "Category 8", 8, 1),
+					"the axes' and legend's text at " + sz / 100 + "pt, turned 45 degrees, 216 by 252pt").size(216, H)
+					.xml(x -> textSize(x, sz)));
+		}
 		return l;
+	}
+
+	/** n categories ("Category 2" ... between the first and last given), two series, values 1 to 5 times scale */
+	private static ChartDefinition turned(String first, String last, int n, double scale) {
+		String[] cats = new String[n];
+		for (int i = 0; i < n; i++) cats[i] = i == 0 ? first : i == n - 1 ? last : "Category " + (i + 1);
+		ChartDefinition d = ChartDefinition.of(ChartType.COLUMN_CLUSTERED).categories(cats);
+		Random r = new Random(n * 131 + 7);
+		for (int s = 0; s < 2; s++) {
+			double[] v = new double[n];
+			for (int i = 0; i < n; i++) v[i] = Math.round(10 + r.nextDouble() * 40) / 10.0 * scale;
+			d.series("Series " + (s + 1), v);
+		}
+		return d;
 	}
 
 	private static ChartDefinition yearsDefinition() {
