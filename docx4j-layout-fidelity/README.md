@@ -950,6 +950,28 @@ The chart probes (`chart-box-*`, CR-035) are ordinary layout probes in `Corpus`;
 copies of Word's default chart (`chart-template.docx`) with the title, axes and legend deleted, so
 every scored line is the document's own.
 
+## Chart render probes and tools (CR-037)
+
+Not layout either: CR-037 (`docs/developer/change-requests/CR-037-charts-drawn-svg-png-pdf-html.md`)
+draws charts, and measures Office's drawings of them as numbers.
+
+- `org.docx4j.fidelity.corpus.ChartRenderProbes <dir>` writes the render probes (sets R1 to R10,
+  each chart made by `ChartCreator` as an xlsx and a docx, R1's as a pptx too, every file of a
+  probe in one theme) and `probes.tsv` (size, theme, the Excel gallery style R10 applies, where
+  the chart sits on the PDF page).  The probes are on the share, `office_charts\cr037\probes`.
+- `tools/office-chart-render-probes.ps1` (on the VM; `RUN.txt` beside the probes) has Excel dump
+  each chart's layout from its object model (JSON) and export its picture, and Word and
+  PowerPoint save theirs as PDF (and dump their own layout).
+- `tools/chart_trace.py PDF --box x,y,w,h` reads a chart's region of a PDF (`mutool trace`): its
+  lines of text (string, font, size, colour, baseline, centre) and its paths (colour, box, each
+  subpath's box and vertices), in points from the chart's top left.
+- `tools/chart_score.py` compares: `traces` (two readings: texts by string, parts by kind and
+  colour), `layout` (an Office layout dump against a reading: titles, labels, legend entries,
+  the plot area's inside, each point, the value axis's numbers), `raster` (a PNG against a PNG
+  or a PDF's chart box), `baseline DIR` (Office against Office over a run: the tolerances), and
+  `fixtures DIR OUT` (the oracle for the build, `docx4j-core-tests/.../charts/render/`).  Office's
+  object model reports elements from 4pt inside the chart's box (`ORIGIN`; CR-037 §11).
+
 ## JUnit
 
 `FidelityTest` generates and renders the corpus unconditionally, and compares

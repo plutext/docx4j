@@ -1,0 +1,17 @@
+{
+ "probe": "r1-column-stacked",
+ "app": "powerpoint",
+ "size": [432,252],
+ "chartType": 52,
+ "chartStyle": 297,
+ "displayBlanksAs": 1,
+ "chartArea": {"left":4,"top":4,"width":432,"height":252},
+ "plotArea": {"left":7,"top":7,"width":410,"height":203.536,"insideLeft":25.733,"insideTop":8.305,"insideWidth":391.267,"insideHeight":184.524},
+ "hasTitle": false,
+ "hasLegend": true,
+ "legend": {"left":120.327,"top":221.536,"width":183.345,"height":20.464,"position":-4107,"font":{"size":18,"size2":11.95},"entries":[{"left":127.967,"top":224.536,"width":50.929,"height":14.61,"key":{"left":131.254,"top":227.823,"width":6.574,"height":6.574}},{"left":186.536,"top":224.536,"width":50.929,"height":14.61,"key":{"left":189.823,"top":227.823,"width":6.574,"height":6.574}},{"left":245.104,"top":224.536,"width":50.929,"height":14.61,"key":{"left":248.392,"top":227.823,"width":6.574,"height":6.574}}]},
+ "axes": [{"type":1,"group":1,"left":26,"top":193,"width":391,"height":24,"crosses":-4105,"crossesAt":1,"reversePlotOrder":false,"axisBetweenCategories":true,"tickLabelSpacing":1,"tickLabelSpacingIsAuto":true,"tickMarkSpacing":1,"categoryType":-4105,"baseUnit":0,"majorTickMark":-4142,"tickLabelPosition":4,"hasMajorGridlines":false,"hasMinorGridlines":false,"tickLabels":{"orientation":-4105,"offset":100,"numberFormat":"General","numberFormatLinked":true,"fontSize":11.95,"fontName":"Calibri"},"hasTitle":false},{"type":2,"group":1,"left":1,"top":8,"width":25,"height":185,"minimumScale":0,"maximumScale":14,"majorUnit":2,"minorUnit":0.4,"minimumScaleIsAuto":true,"maximumScaleIsAuto":true,"majorUnitIsAuto":true,"scaleType":-4132,"crosses":-4105,"crossesAt":0,"reversePlotOrder":false,"majorTickMark":-4142,"tickLabelPosition":4,"hasMajorGridlines":true,"hasMinorGridlines":false,"displayUnit":-4142,"tickLabels":{"orientation":-4105,"offset":100,"numberFormat":"General","numberFormatLinked":true,"fontSize":11.95,"fontName":"Calibri"},"hasTitle":false}],
+ "series": [{"index":1,"values":[null],"xValues":[null],"points":[{"left":59.078,"top":140.154,"width":39.127,"height":56.675,"fill":"4472C4","explosion":0},{"left":156.895,"top":163.879,"width":39.127,"height":32.951,"fill":"4472C4","explosion":0},{"left":254.712,"top":150.698,"width":39.127,"height":46.131,"fill":"4472C4","explosion":0},{"left":352.528,"top":137.518,"width":39.127,"height":59.311,"fill":"4472C4","explosion":0}]},{"index":2,"values":[null],"xValues":[null],"points":[{"left":59.078,"top":108.521,"width":39.127,"height":31.633,"fill":"ED7D31","explosion":0},{"left":156.895,"top":105.885,"width":39.127,"height":57.993,"fill":"ED7D31","explosion":0},{"left":254.712,"top":126.974,"width":39.127,"height":23.724,"fill":"ED7D31","explosion":0},{"left":352.528,"top":100.613,"width":39.127,"height":36.905,"fill":"ED7D31","explosion":0}]},{"index":3,"values":[null],"xValues":[null],"points":[{"left":59.078,"top":82.161,"width":39.127,"height":26.361,"fill":"A5A5A5","explosion":0},{"left":156.895,"top":79.525,"width":39.127,"height":26.361,"fill":"A5A5A5","explosion":0},{"left":254.712,"top":87.433,"width":39.127,"height":39.541,"fill":"A5A5A5","explosion":0},{"left":352.528,"top":34.712,"width":39.127,"height":65.901,"fill":"A5A5A5","explosion":0}]}],
+ "powerpointVersion": "16.0 build 20430",
+ "frame": {"left":72,"top":72,"width":432,"height":252}
+}

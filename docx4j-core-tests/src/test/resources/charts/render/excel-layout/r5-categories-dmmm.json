@@ -1,0 +1,20 @@
+{
+ "probe": "r5-categories-dmmm",
+ "app": "excel",
+ "size": [432,252],
+ "chartType": 4,
+ "chartStyle": 227,
+ "displayBlanksAs": 1,
+ "chartObject": {"left":144,"top":0,"width":432,"height":252},
+ "chartArea": {"left":144,"top":0,"width":427,"height":247},
+ "plotArea": {"left":7,"top":33.09,"width":410,"height":181.035,"insideLeft":15.409,"insideTop":33.09,"insideWidth":401.591,"insideHeight":156.037},
+ "hasTitle": true,
+ "title": {"left":195.792,"top":2,"width":32.415,"height":20.09,"text":"Data","orientation":-4128,"font":{"size":14,"name":"Calibri","size2":14}},
+ "hasLegend": true,
+ "legend": {"left":187.298,"top":225.125,"width":49.404,"height":16.875,"position":-4107,"font":{"size":18,"size2":9},"entries":[{"left":191.415,"top":228.125,"width":41.17,"height":10.985,"key":{"left":197.415,"top":230.596,"width":12.0,"height":4.943}}]},
+ "axes": [{"type":1,"group":1,"left":15,"top":189,"width":402,"height":31,"minimumScale":46023,"maximumScale":46044,"majorUnit":1,"minorUnit":1,"minimumScaleIsAuto":true,"maximumScaleIsAuto":true,"majorUnitIsAuto":true,"crosses":-4105,"crossesAt":46023,"reversePlotOrder":false,"axisBetweenCategories":true,"tickLabelSpacing":1,"tickLabelSpacingIsAuto":true,"tickMarkSpacing":1,"categoryType":-4105,"baseUnit":0,"majorTickMark":3,"tickLabelPosition":4,"hasMajorGridlines":false,"hasMinorGridlines":false,"tickLabels":{"orientation":-4105,"offset":100,"numberFormat":"d-mmm","numberFormatLinked":true,"fontSize":9,"fontName":"Calibri"},"hasTitle":false},{"type":2,"group":1,"left":1,"top":33,"width":14,"height":156,"minimumScale":0,"maximumScale":7,"majorUnit":1,"minorUnit":0.2,"minimumScaleIsAuto":true,"maximumScaleIsAuto":true,"majorUnitIsAuto":true,"scaleType":-4132,"crosses":-4105,"crossesAt":0,"reversePlotOrder":false,"majorTickMark":-4142,"tickLabelPosition":4,"hasMajorGridlines":true,"hasMinorGridlines":false,"displayUnit":-4142,"tickLabels":{"orientation":-4105,"offset":100,"numberFormat":"General","numberFormatLinked":true,"fontSize":9,"fontName":"Calibri"},"hasTitle":false}],
+ "series": [{"index":1,"values":[null],"xValues":[null],"points":[{"left":24.536,"top":122.254,"width":0,"height":0,"fill":"000000","explosion":0},{"left":152.315,"top":77.672,"width":0,"height":0,"fill":"000000","explosion":0},{"left":280.094,"top":99.963,"width":0,"height":0,"fill":"000000","explosion":0},{"left":407.873,"top":55.381,"width":0,"height":0,"fill":"000000","explosion":0}]}],
+ "excelVersion": "16.0 build 20430",
+ "repaired": false,
+ "png": {"width":720,"height":420,"dpiX":119.99}
+}

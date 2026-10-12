@@ -1,0 +1,20 @@
+{
+ "probe": "r5-date-mdy",
+ "app": "excel",
+ "size": [432,252],
+ "chartType": 51,
+ "chartStyle": 201,
+ "displayBlanksAs": 1,
+ "chartObject": {"left":144,"top":0,"width":432,"height":252},
+ "chartArea": {"left":144,"top":0,"width":427,"height":247},
+ "plotArea": {"left":7,"top":33.09,"width":410,"height":181.035,"insideLeft":54.279,"insideTop":33.09,"insideWidth":362.721,"insideHeight":168.837},
+ "hasTitle": true,
+ "title": {"left":195.792,"top":2,"width":32.415,"height":20.09,"text":"Data","orientation":-4128,"font":{"size":14,"name":"Calibri","size2":14}},
+ "hasLegend": true,
+ "legend": {"left":195.766,"top":225.125,"width":32.468,"height":16.875,"position":-4107,"font":{"size":18,"size2":9},"entries":[{"left":198.472,"top":228.125,"width":27.056,"height":10.985,"key":{"left":200.944,"top":230.596,"width":4.943,"height":4.943}}]},
+ "axes": [{"type":1,"group":1,"left":54,"top":202,"width":363,"height":18,"crosses":-4105,"crossesAt":1,"reversePlotOrder":false,"axisBetweenCategories":true,"tickLabelSpacing":1,"tickLabelSpacingIsAuto":true,"tickMarkSpacing":1,"categoryType":-4105,"baseUnit":0,"majorTickMark":-4142,"tickLabelPosition":4,"hasMajorGridlines":false,"hasMinorGridlines":false,"tickLabels":{"orientation":-4105,"offset":100,"numberFormat":"General","numberFormatLinked":true,"fontSize":9,"fontName":"Calibri"},"hasTitle":false},{"type":2,"group":1,"left":1,"top":33,"width":53,"height":169,"minimumScale":46005,"maximumScale":46055,"majorUnit":5,"minorUnit":1,"minimumScaleIsAuto":true,"maximumScaleIsAuto":true,"majorUnitIsAuto":true,"scaleType":-4132,"crosses":-4105,"crossesAt":46005,"reversePlotOrder":false,"majorTickMark":-4142,"tickLabelPosition":4,"hasMajorGridlines":true,"hasMinorGridlines":false,"displayUnit":-4142,"tickLabels":{"orientation":-4105,"offset":100,"numberFormat":"m/d/yyyy","numberFormatLinked":false,"fontSize":9,"fontName":"Calibri"},"hasTitle":false}],
+ "series": [{"index":1,"values":[null],"xValues":[null],"points":[{"left":85.406,"top":141.145,"width":28.426,"height":60.781,"fill":"4472C4","explosion":0,"dataLabel":{"left":77.184,"top":124.16,"width":44.87,"height":13.985,"text":"1/01/2026","position":2,"font":{"size":18,"size2":9}}},{"left":176.086,"top":117.508,"width":28.426,"height":84.418,"fill":"4472C4","explosion":0,"dataLabel":{"left":167.864,"top":100.523,"width":44.87,"height":13.985,"text":"8/01/2026","position":2,"font":{"size":18,"size2":9}}},{"left":266.767,"top":83.741,"width":28.426,"height":118.186,"fill":"4472C4","explosion":0,"dataLabel":{"left":256.265,"top":66.756,"width":49.43,"height":13.985,"text":"18/01/2026","position":2,"font":{"size":18,"size2":9}}},{"left":357.447,"top":49.974,"width":28.426,"height":151.953,"fill":"4472C4","explosion":0,"dataLabel":{"left":346.945,"top":32.989,"width":49.43,"height":13.985,"text":"28/01/2026","position":2,"font":{"size":18,"size2":9}}}]}],
+ "excelVersion": "16.0 build 20430",
+ "repaired": false,
+ "png": {"width":720,"height":420,"dpiX":119.99}
+}

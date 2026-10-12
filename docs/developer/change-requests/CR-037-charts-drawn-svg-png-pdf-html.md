@@ -1,10 +1,12 @@
 # CR-037: charts drawn - a chart rendered to SVG and PNG as Office draws it, and drawn in PDF, HTML and pptx output (charts plan phases 7 and 8)
 
-Status: PROPOSED 2026-10-12.  Drafted on Jason's request ("please draft a CR for phases 7
-(rendering) and 8 (integration) of the charts plan.  Do not implement yet."); reviewed the same day
-by the docx4j-13 session (Claude Fable 5.1, at Jason's request): approved with nine amendments, all
-accepted by Jason ("apply all nine") and applied (§8).  Nothing is implemented.  Owner: Jason
-Harrop.  Drafted with Claude Opus 5.5.
+Status: ACTIVE: phase 0 DONE 2026-10-12; phase 1 not started (Jason: "do not commence phase 1
+yet").  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
+(integration) of the charts plan.  Do not implement yet."); reviewed the same day by the
+docx4j-13 session (Claude Fable 5.1, at Jason's request): approved with nine amendments, all
+accepted by Jason ("apply all nine") and applied (§8).  D1 to D9 taken as recommended (Jason, 2026-10-12);
+D4's tolerances set from phase 0's baseline (§8); what phase 0 means for phases 1 to 4 is in
+§11.  Owner: Jason Harrop.  Drafted with Claude Opus 5.5.
 
 The charts plan (`../docx4j-portfolio/docs/charts_plan.md`) took docx4j's own renderer (its D2)
 and put the classic chart types, rendering included, in the open library (its D1 (d)); CR-034
@@ -116,7 +118,7 @@ with the box empty) measure the integration.
     window, or `Chart.Refresh` after sizing); a point with nothing drawn (a blank) may have no
     geometry; it takes `ChartArea.Width` and `Height` too, and the text sizes in use
     (`TickLabels.Font.Size`, `ChartTitle.Font.Size`), since Excel shrinks automatic text on a small
-    chart (R3).
+    chart (R3; measured: it doesn't where the sizes are written, §11).
   The sets:
   - R1 the twelve types, Word's default data (P1, P3 and P4 have them; the layout dump is new),
     and one chart with its `c:txPr` stripped, to see the text Office draws when the chart names
@@ -150,7 +152,9 @@ with the box empty) measure the integration.
   reading of each Office PDF (texts with their boxes, shapes with their colour and box, a small
   JSON each) join `docx4j-core-tests/src/test/resources/charts/render/` (made from scratch, no
   customer content), so that the gates of phases 1, 2 and 4 run in the build without the share;
-  the PDFs and PNGs stay on the share, for the raster comparison, run from the harness.
+  the PDFs and PNGs stay on the share, for the raster comparison, run from the harness.  (As
+  built, with Jason's agreement: the probes' xlsx, R1's pptx and R10's styled xlsx, not the docx,
+  whose chart is the xlsx's; §11.)
 
 ### 4.2 Phase 1: the renderer's frame, drawn on the clustered column
 
@@ -333,6 +337,10 @@ The review confirmed D1 (no module cycle; the bundle unaffected), the oracle and
 with A2 and A3, that Excel's object model reports the computed layout (its caveats are in §4.1),
 D9's order and §4.6's scope, and found nothing the plan expects that the CR misses.
 
+**Taken** 2026-10-12 by Jason: D1 to D9 as recommended ("I accept the recommendations for
+decisions D1 to D9"), with phase 0's departure from §4.1 (the fixtures without the docx: "the
+departure from §4.1 is all right").
+
 - **D1. Where the renderer lives**: a new module, docx4j-chart-render (package
   `org.docx4j.chart.render`), with batik-svggen and batik-dom, which docx4j-export-fo depends on;
   or inside docx4j-export-fo; or the drawing in docx4j-core (AWT only) with the SVG through an
@@ -347,6 +355,20 @@ D9's order and §4.6's scope, and found nothing the plan expects that the CR mis
 - **D4. Tolerances**: set from phase 0's Office-against-Office baseline (for instance, a text's box
   within the distance Excel's and Word's drawings of one chart differ by), recorded in the CR
   before phase 1's gate is run, not tuned to docx4j's results.  Recommendation: yes.
+  **Set** 2026-10-12 from the baseline (§11), each Office's own spread rounded up:
+
+  | Measure | Tolerance | Office against Office |
+  |---|---|---|
+  | each text Office draws | the same string, font family and colour | the same |
+  | a text's size | within 0.13pt of Word's PDF | Word draws on a 0.24pt grid (±0.02); PowerPoint as laid out |
+  | a text's place (its centre) | within 0.5pt of Office's | Office's text in its own boxes: ±0.31pt |
+  | geometry: the plot area's inside, each bar, marker, line or area vertex, slice point, gridline | within 0.25pt | Office's drawing against its layout: 0.00 (plot area), 0.13 (points), 0.02 (slices) |
+  | the value axis | bounds, unit and labels exactly Excel's | exact |
+  | colours (solid fills and lines) | exact | exact |
+  | the picture against Excel's PNG, at its scale | at most 0.7% of pixels off by more than 32 of 255, 0.15% by more than 64 | 0.65% and 0.12% at most (medians 0.13%, 0.01%) |
+
+  Excel's layout and Word's are identical (0.00), so the layout oracle is one; a drawing that
+  Office makes a picture of (style 258's slices) is held to the picture's tolerance only.
 - **D5. A picture written into the document** for consumers that can't draw charts (the plan's
   D5): Office writes none for a classic chart.  Recommendation: not in this CR; `ChartImages`
   gives a caller the picture to insert, and a method for it can follow if one is asked for.
@@ -381,4 +403,144 @@ Word run of the harness's chart probes in phase 3.
 
 ## 11. Implementation record
 
-(none yet)
+### Phase 0 (2026-10-12), done
+
+- **The probes**: `org.docx4j.fidelity.corpus.ChartRenderProbes` (docx4j-layout-fidelity), 102
+  charts made by `ChartCreator`, seeded, each an xlsx and a docx, R1's twelve types a pptx too
+  (217 files, 4.9 MB), on the share `office_charts\cr037\probes` with `probes.tsv`.  R1 15 (the
+  twelve types in Word's default data, the stripped `c:txPr` (A5), a column and a pie in the 2023
+  theme), R2 21 (KB 214075's cases and the edges of its sixth: data 49, 50 and 51 to 60), R3 8
+  (Word's column and an eight-category one at four sizes), R4 9, R5 9 (seven formats on the axis
+  and the labels, two date formats on categories), R6 16 (each position on the column, the
+  stacked column, the line with markers, the pie), R7 6, R8 7, R9 4, R10 7 (Excel's gallery
+  styles 202, 204, 207, 209, 213 on the column, 254, 258 on the pie, applied by Excel and by Word
+  on the VM, the styled files kept).  Settings `ChartCreator` doesn't make (an axis's bounds,
+  unit and log base, label positions, `dispBlanksAs`, slice angles and explosions, hole size,
+  manual layouts, text sizes) are written into each host's chart part alike.
+- **One theme (A2), and one chart**: every probe's docx, xlsx (which docx4j makes with none) and
+  pptx carry the same theme part, Office 2013's (Calibri, accent 1 `4472C4`) or, for two probes,
+  2023's.  Each probe's xlsx and docx charts were compared: 101 of 102 the same chart, but for
+  what the host adds (the xlsx's `c:printSettings`, the docx's `c:externalData` and Word's pie
+  points' `c16:uniqueId`s); the one left, the scatter, differs in its series' line width, a line
+  with no fill.  A docx's chart is inline at 36pt, 36pt on a page of its size plus margins; a
+  pptx's at 72pt, 72pt.
+- **The VM script** `tools/office-chart-render-probes.ps1` (RUN.txt on the share): Excel sizes each
+  chart, applies an R10 style, refreshes, exports the PNG, dumps the layout (§2 finding 3's
+  properties, each point's box, a pie's `PieSliceLocation`s, data labels, fonts) to JSON and dumps
+  it again after a second refresh; Word saves each docx as PDF and dumps its own chart's layout;
+  PowerPoint the same for R1's pptx.
+- **The tools**: `tools/chart_trace.py` (a chart's box of a PDF as texts and shapes, each bar,
+  slice, marker and gridline a part with its vertices, curves sampled to 0.02pt; a shading's or
+  picture's box and outline from its clip) and `tools/chart_score.py` (`traces`, `layout`,
+  `raster`, `baseline`, `fixtures`; README's "Chart render probes and tools").  The control,
+  Word's PDF of its own chart against Word's PDF of docx4j's identical chart (CR-036's P3: column,
+  pie, doughnut, line with markers, area, scatter; and PowerPoint's P4): every text and part
+  matched, every distance 0.00, before and after the run's changes to the tools.
+- **The run** (Jason's, 2026-10-12, Microsoft 365 build 16.0.20430): Excel and Word on all 102
+  probes, PowerPoint on R1's 12; nothing failed; no second dump moved (the layout was settled at
+  the first).  One defect of the script: a helper's parameter named `$s` hid the series' variable,
+  so the series' own properties (name, fill, values, line, markers) are null in the dumps; each
+  point's are there.  Fixed after the run; nothing in phases 1 to 4 needs them (the file has them),
+  and `-Apps excel` would fill them in.
+- **What the run taught the tools** (each change checked against the control): Office's frame
+  (finding 1); the legend's line keys aren't gridlines (lines at least half the longest of their
+  direction are); a pie's points by their `PieSliceLocation`s on the drawn outline (a doughnut's
+  centre is in its hole); an area's and a line's points (boxes of no width) by the nearest vertex,
+  a scatter's by its marker's centre; Excel's box for a blank point is far off the chart (no
+  geometry); a zero bar isn't drawn; a deleted axis has no labels though Office reports its
+  bounds; a category axis over dates has bounds too; date-formatted value axes counted, not
+  parsed; kerning closes up more than 1pt at 18.6pt and a style's capitals are letter-spaced (a
+  space only where the gap passes 0.3 of the size; Word writes its spaces).
+- **The baseline** (`chart_score.py baseline`; `baseline.tsv` and `baseline-summary.txt` on the
+  share), Office against Office:
+  - Excel's layout and Word's are the same numbers: with finding 1's frame, 102 of 102 dumps
+    identical (the pies' `PieSliceLocation`s follow the points' frame).  PowerPoint's chart is
+    another chart (CR-036) but laid out by the same rules and frame.
+  - Office's drawing against its layout (Word's PDF against the dump): the plot area's inside
+    against the gridlines and axis lines drawn, 0.00pt on every edge (84 charts); each bar,
+    marker, line and area vertex within 0.13pt (100 charts; PowerPoint's 0.06pt); each slice's
+    locations on its drawn outline within 0.02pt; every value axis's bounds, unit and labels as
+    Excel reports them; text: a title's and a data label's drawn centre 0.1pt across and about a
+    tenth of its size (0.104 to 0.106) down from its box's centre, within ±0.31pt (287 texts; the gallery styles' padded
+    labels apart).
+  - Excel's picture against Word's PDF drawn at its scale (1.667 px/pt, 720 × 420 for 432 × 252pt):
+    pixels off by more than 32 of 255, median 0.13%, p95 0.30%, at most 0.65%; by more than 64, at
+    most 0.12%.
+  - Set aside: Excel's blank points (no geometry), the zero bars, style 258's slices (pictures).
+  D4's tolerances (§8) are these, rounded up.
+- **The fixtures** (A3, with the departure Jason agreed): `docx4j-core-tests/src/test/resources/
+  charts/render/` (3.9 MB): `probes.tsv`, the 102 xlsx, R1's 12 pptx, R10's 7 Excel-styled xlsx,
+  Excel's 102 and PowerPoint's 12 layout dumps (nulls dropped, numbers to 0.001), the traces of
+  Word's 102 and PowerPoint's 12 PDFs; README there.  `ChartRenderFixturesTest`: every probe has
+  its files, and the read model agrees with Office on all 102 charts and 12 slides (the title it
+  says Office shows, the legend, the series, the first series' solid colour, resolved by CR-034
+  in the probe's theme).  The docx, the PDFs, the PNGs and the baseline stay on the share.  No
+  CHANGELOG entry: nothing in the library changed.
+
+**Measured** (findings, each with its probes):
+
+1. **Office's frame.**  The object model reports a chart's elements (plot area, titles, legend
+   and its entries, axes, data labels) from an origin 4pt inside the chart's box; points from that
+   origin in Excel, from the box itself in Word and PowerPoint (all 102 probes, 12 slides).  Word
+   and PowerPoint report `ChartArea.Left`, `Top` as 4; Excel its `ChartArea` 5pt narrower and
+   shorter than the chart.  A legend's key is drawn 0.5 to 0.7pt in from the box reported for it.
+2. **Text sizes in Word's PDF** are the nearest multiple of 0.24pt (1/300 in), ±0.02: 7 → 6.96,
+   9 → 9.12, 12 → 12.00, 14 → 13.92, 16 → 16.08, 18 → 18.00 (and a paragraph's 11 → 11.04).  Not
+   0.48, as this record first said from 9.12, 13.92 and 11.04 alone.  The layout is at the
+   nominal size (the dumps say 9 and 14); PowerPoint's PDF draws the size as laid out (12, 18.6).
+3. **No shrinking**: text keeps its size on the 180 × 108pt chart (R3), so §4.1's caveat doesn't
+   arise where the sizes are written (every chart Office or docx4j makes writes them).
+4. **No `c:txPr`** (A5): 10pt in the theme's minor font, as the review said, but black (`000000`,
+   where the style's text is `595959`), and the title 18pt bold.
+5. **The value axis (R2), KB 214075 confirmed, with its edges**: the minimum is zero only where
+   the data's range is more than a sixth of its maximum (49 to 60: 0; 50 to 60, exactly a sixth:
+   44); else the data's minimum less half its range, down to the unit (50 to 60: 44 by 2; 51 to
+   60: 46; 95.2 to 99.4: 93 by 1); the maximum is the data's plus a twentieth of its range, up to
+   the unit (every probe: 5 → 6, 10 → 12, 0.93 → 1, 4.9e6 → 6e6, the stacked 12.3 → 14); data of
+   either sign is padded a twentieth at both ends (−35 to 60: −40 to 80 by 20); all negative is
+   mirrored (−93 to −12: −100 to 0); a constant 5 gives 0 to 6, all zeros 0 to 1 by 0.1; a log
+   axis 1 to 10,000 by 10.  Not in the KB: **the unit depends on the plot's height** (R3: Word's
+   data 0 to 10 by 10 at 180 × 108, 0 to 6 by 1 from 288 × 168 up; eight categories by 5, by 1 and
+   by 0.5 as the chart grows), and **a maximum set moves the automatic minimum** (150: −10, by 20).
+6. **Effects in Word's PDF**: gradients are vector shadings in the shape's clip (styles 207,
+   254); shadows and glow are pictures (204, 209, 213); 3-D bevels make the shape a picture
+   through a soft mask (258, every slice).
+7. **A pie's point box** spans its radii's outer ends and the centre, not its arc;
+   `PieSliceLocation` 1 and 3 are the radii's outer ends, 2 the arc's middle, 5 the centre, 4 and
+   6 the radii's middles, 7 to 9 a doughnut's inner points.  `TextFrame2`'s font size for a
+   legend or data labels mostly reads 18 whatever the text's size (196 of 220 labels, 98 of 101
+   legends, all of them 8 to 10pt); `Font.Size` is right.
+8. **Placement**: PowerPoint puts a chart 0.04pt off its frame (99.96 for 100); Word draws the
+   chart area's border last and an invisible 0.14pt stroke of the box first.
+
+**What phase 0 means for the design** (advice for Jason, 2026-10-12; nothing changed in §4 yet):
+
+- **One layout, one oracle.**  Excel, Word and PowerPoint lay a chart out by the same rules to the
+  same numbers; a host changes the chart's XML (PowerPoint's template), not the drawing.  The
+  renderer needs one layout for every host, Excel's dump is the layout oracle for docx and pptx
+  too, and Word's PDF checks only what drawing adds (sizes, colours, z-order).  D2 stands, simpler.
+- **The tolerances are Office's precision, which is near exact** (D4 above), so §7's "text
+  widths" risk becomes the main one: a rule docx4j has that isn't Office's will show as a miss.
+  Advice: keep them (that is D4), let each gate report the share of elements within tolerance as
+  well as pass or fail, so a phase's progress shows; if a phase can't meet them, decide then with
+  the numbers rather than loosen them now.
+- **The plot area and the axis scale must be laid out together** (finding 5): the unit depends on
+  the plot's height, the plot area on the labels' widths, and those on the unit and the format.
+  Phase 1's layout is a fixed point (labels for a trial unit, the plot area, the unit again), not
+  a sequence.  R3's four sizes show it but don't pin it: advice, a probe set of one chart at ten
+  or so heights (an Excel-only run of a few minutes) at the start of phase 1, to find the rule
+  for the unit (labels' height and spacing against the axis's length).
+- **The axis rule handed to the ports** (§9) is still a pure function, but of the axis's length
+  and its labels' size as well as the data.
+- **Effects** (A1, §4.5): Office itself draws gradients as vector shadings and makes pictures of
+  shadows, glow and bevels.  So in phase 4 a gradient can be drawn as a gradient (SVG gradients,
+  which Batik and FOP draw) rather than "as one colour", and a shadow or glow drawn as a picture
+  is what Office does, not a degradation; A1's tiers stand, the targets move.
+- **Text defaults** for phase 1 (findings 2 to 4): lay out at the nominal size (Word's 0.24pt grid
+  is its PDF's, not its layout's, and is within the size tolerance), no shrinking, and A5's
+  defaults with black text and the 18pt bold title.
+- **The frame** (finding 1) is phase 1's starting point: elements placed from 4pt inside the
+  chart's box.
+- **The read model needs nothing more for phase 1**: it agrees with Office on every probe; the
+  automatic colour cycle (series with no `c:spPr`, out of `ChartDataEditor` as §4.2 says) and a
+  gradient's colours (phase 4) are as planned.
