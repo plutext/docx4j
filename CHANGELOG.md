@@ -59,6 +59,8 @@ Changes in Version 17.3.3
   its parts from any host.  New samples CreateChart (docx and pptx).  CR-036.
 - New docx4j.properties setting docx4j.dcterms.write (default false): true sets dcterms:modified
   to the current time on save, and dcterms:created on a new document.  CR-036.
+- A TOC update no longer adds another Hyperlink style to the styles part each time (TocStyles
+  didn't see the one already there).
 - New org.docx4j.model.color: theme colours resolved as Office draws them - DrawingML colours and
   transforms, WordprocessingML theme attributes, SpreadsheetML theme/tint/indexed - checked against
   Word's, PowerPoint's and Excel's own renderings.  CR-034.

@@ -134,6 +134,7 @@ public class TocStyles {
 					|| s.getName().getVal().equals(defaultPStyleName)
 					|| s.getName().getVal().equals(TOC_HEADING)
 					|| s.getName().getVal().equals(HEADING_1) // in order to create a TOC Heading, if necessary
+					|| s.getName().getVal().equals(HYPERLINK) // else added again each time (17.3.3)
 					) {
 				
 				styleNameToID.put(s.getName().getVal(), s.getStyleId());
@@ -147,12 +148,13 @@ public class TocStyles {
 		}
 		
 		// Proactively add hyperlink
-		getStyleIdForName("Hyperlink");		
+		getStyleIdForName(HYPERLINK);		
 				
 	}
 	
 	public final static String TOC_HEADING = "TOC Heading";
 	public final static String HEADING_1 = "heading 1";
+	public final static String HYPERLINK = "Hyperlink";
 	
 	private String defaultPStyleId=null;
 
