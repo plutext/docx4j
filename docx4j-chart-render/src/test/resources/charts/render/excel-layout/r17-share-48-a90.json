@@ -1,0 +1,20 @@
+{
+ "probe": "r17-share-48-a90",
+ "app": "excel",
+ "size": [432,252],
+ "chartType": 5,
+ "chartStyle": 251,
+ "displayBlanksAs": 1,
+ "chartObject": {"left":144,"top":0,"width":432,"height":252},
+ "chartArea": {"left":144,"top":0,"width":427,"height":247},
+ "plotArea": {"left":134.172,"top":45.78,"width":155.656,"height":155.656,"insideLeft":134.172,"insideTop":45.78,"insideWidth":155.656,"insideHeight":155.656},
+ "hasTitle": true,
+ "title": {"left":194.602,"top":2,"width":34.795,"height":20.09,"text":"Sales","orientation":-4128,"font":{"size":14,"name":"Calibri","size2":14}},
+ "hasLegend": true,
+ "legend": {"left":185.124,"top":225.125,"width":53.752,"height":16.875,"position":-4107,"font":{"size":18,"size2":9},"entries":[{"left":188.11,"top":228.125,"width":25.786,"height":10.985,"key":{"left":190.582,"top":230.596,"width":4.943,"height":4.943}},{"left":210.103,"top":228.125,"width":25.786,"height":10.985,"key":{"left":212.575,"top":230.596,"width":4.943,"height":4.943}}]},
+ "axes": [{"type":1,"group":1},{"type":2,"group":1},{"type":3,"group":1}],
+ "series": [{"index":1,"name":"Sales","chartType":5,"axisGroup":1,"plotOrder":1,"fill":"4472C4","line":"FFFFFF","lineWeight":1.5,"lineVisible":-1,"markerStyle":-4142,"markerSize":5,"explosion":0,"hasDataLabels":false,"values":[48,52],"xValues":["10","Rest"],"points":[{"left":212,"top":45.969,"width":5.429,"height":155.345,"fill":"4472C4","explosion":0,"slice":{"1":[216.344,201.314],"2":[289.826,124.151],"3":[217.429,45.969],"4":[214.714,84.788],"5":[212,123.607],"6":[214.172,162.461],"7":[null,null],"8":[null,null],"9":[null,null]},"dataLabel":{"left":272,"top":118.25,"width":15,"height":13.5,"text":"10","position":5,"font":{"size":9,"name":"Calibri","size2":9}}},{"left":212,"top":45.969,"width":5.429,"height":155.345,"fill":"ED7D31","explosion":0,"slice":{"1":[217.429,45.969],"2":[134.174,123.064],"3":[216.344,201.314],"4":[214.172,162.461],"5":[212,123.607],"6":[214.714,84.788],"7":[null,null],"8":[null,null],"9":[null,null]}}]}],
+ "excelVersion": "16.0 build 20430",
+ "repaired": false,
+ "png": {"width":720,"height":420,"dpiX":119.99}
+}

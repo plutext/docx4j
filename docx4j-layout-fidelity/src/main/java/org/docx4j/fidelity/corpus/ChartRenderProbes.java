@@ -127,7 +127,8 @@ import org.xlsx4j.model.CellRef;
  * charts of CR-036 (an xlsx only); R15 (phase 4) what the settings and the data add: axis titles,
  * data labels, manual layouts, legend entries, axis options, fills and effects, titles of several
  * runs, and Excel's own charts of CR-036's P2 and P6 settings (an xlsx only); R16 (phase 4) a
- * pie's labels outside it and at best fit, one label on a small slice turned round the pie.</p>
+ * pie's labels outside it and at best fit, one label on a small slice turned round the pie; R17
+ * (phase 4) best fit inside, one thing changed at a time.</p>
  *
  * <p>One theme for each probe (review A2): the docx's theme part (Office 2013's, Calibri and
  * accent 1 4472C4, unless the probe says 2023) is copied into the xlsx, which docx4j makes with
@@ -519,6 +520,7 @@ public final class ChartRenderProbes {
 		r14(l);
 		r15(l);
 		r16(l);
+		r17(l);
 		return l;
 	}
 
@@ -981,6 +983,75 @@ public final class ChartRenderProbes {
 		}
 		l.add(probe("R16", "r16-shrink-doughnut-288x168", words(ChartType.DOUGHNUT).dataLabels(true), "Word's doughnut with labels, 288 by 168pt")
 				.size(288, 168));
+	}
+
+	/**
+	 * R17 (CR-037 phase 4, the review's design): where Office puts a pie's label inside its slice at
+	 * best fit, one thing changed at a time.  The label shows the slice's category name, so its text
+	 * stays the same while the slice changes: the slice's width from 2% to 50% with its middle at 90
+	 * and at 0 degrees; the label's width ("1" to "10000", "1.5%", two words) on a 10% slice; its
+	 * text size (6, 12, 18pt); the chart's height swept (labels read at each size); two adjacent
+	 * labelled slices; an exploded slice; and a 25% slice turned round the pie by 30 degrees
+	 */
+	private static void r17(List<ChartRenderProbes> l) {
+		for (int mid : new int[] { 90, 0 }) {
+			for (int share = 2; share <= 50; share += 2) {
+				final int first = Math.floorMod((int) Math.round(mid - 1.8 * share), 360);
+				l.add(probe("R17", "r17-share-" + share + "-a" + mid, labelledSlice(share, "10"), "best fit, the label \"10\" on a " + share
+						+ "% slice, its middle at " + mid + " degrees").tweak(c -> {
+							oneLabel(c, 0, "bestFit", true, false, false);
+							firstSlice(c, first);
+						}));
+			}
+			final int first10 = Math.floorMod(mid - 18, 360);
+			String[] texts = { "1", "100", "1000", "10000", "1.5%", "Alpha beta" };
+			String[] names = { "1", "100", "1000", "10000", "pct", "words" };
+			for (int k = 0; k < texts.length; k++) {
+				l.add(probe("R17", "r17-text-" + names[k] + "-a" + mid, labelledSlice(10, texts[k]), "best fit, the label \"" + texts[k]
+						+ "\" on a 10% slice, at " + mid + " degrees").tweak(c -> {
+							oneLabel(c, 0, "bestFit", true, false, false);
+							firstSlice(c, first10);
+						}));
+			}
+			for (int sz : new int[] { 600, 1200, 1800 }) {
+				l.add(probe("R17", "r17-size-" + sz / 100 + "-a" + mid, labelledSlice(10, "10"), "best fit, the label \"10\" at " + sz / 100
+						+ "pt on a 10% slice, at " + mid + " degrees").tweak(c -> {
+							oneLabel(c, 0, "bestFit", true, false, false);
+							labelSize(c, sz);
+							firstSlice(c, first10);
+						}));
+			}
+		}
+		l.add(probe("R17", "r17-sweep-height", labelledSlice(10, "10"), "best fit, the label \"10\" on a 10% slice at 90 degrees, swept across heights")
+				.sweep("height:120:420:3").tweak(c -> {
+					oneLabel(c, 0, "bestFit", true, false, false);
+					firstSlice(c, 72);
+				}));
+		l.add(probe("R17", "r17-adjacent", ChartDefinition.of(ChartType.PIE).categories("10", "20", "Rest").series("Sales", 4, 4, 92).dataLabels(true),
+				"best fit, two adjacent 4% slices labelled \"10\" and \"20\", around 90 degrees").tweak(c -> {
+					oneLabel(c, 0, "bestFit", true, false, false);
+					oneLabel(c, 1, "bestFit", true, false, false);
+					firstSlice(c, 83);
+				}));
+		l.add(probe("R17", "r17-exploded", labelledSlice(10, "10"), "best fit, the label \"10\" on a 10% slice exploded 20%, at 90 degrees")
+				.tweak(c -> {
+					oneLabel(c, 0, "bestFit", true, false, false);
+					explodePoint(c, 0, 20);
+					firstSlice(c, 72);
+				}));
+		for (int mid = 0; mid < 360; mid += 30) {
+			final int first = Math.floorMod(mid - 45, 360);
+			l.add(probe("R17", "r17-wide-a" + mid, labelledSlice(25, "10"), "best fit, the label \"10\" on a 25% slice, its middle at " + mid
+					+ " degrees").tweak(c -> {
+						oneLabel(c, 0, "bestFit", true, false, false);
+						firstSlice(c, first);
+					}));
+		}
+	}
+
+	/** A pie of two slices, the first share percent named as given, the rest "Rest", with Excel's data labels */
+	private static ChartDefinition labelledSlice(int share, String name) {
+		return ChartDefinition.of(ChartType.PIE).categories(name, "Rest").series("Sales", share, 100 - share).dataLabels(true);
 	}
 
 	/** A pie of two slices, the first share percent ("Alpha"), the rest ("Rest"), with Excel's data labels (each probe chooses what shows) */

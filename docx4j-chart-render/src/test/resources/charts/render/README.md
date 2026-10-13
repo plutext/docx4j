@@ -13,7 +13,10 @@ run 2026-10-13: what the settings and the data add, 95 probes, and 39 of Excel's
 xlsx alone: CR-036's P2 settings, P6's axis titles, data labels and number formats on every type,
 `p2-*`, `p6-*`, and CR-035's chart with a series filtered out, `c35-filtered`), R16 (phase 4, run
 2026-10-13: where a pie's labels go outside it and at best fit, 75 probes: one label on a small
-slice turned round the pie, label sizes, slice widths, the pie's shrink at other chart shapes).
+slice turned round the pie, label sizes, slice widths, the pie's shrink at other chart shapes), R17
+(phase 4, run 2026-10-13: where a pie's label goes inside its slice at best fit, 83 probes, one
+thing changed at a time: the slice's width, the label's width and size, the angle, one swept across
+heights with the labels read at each).
 `ChartRenderFixturesTest` checks the set; `ChartRenderGateTest` is the renderer's gate against it,
 `ChartSweepTest` its gate against the sweeps.  (Phase 0 put it in docx4j-core-tests; phase 1 moved it here,
 beside the renderer it is the oracle of.)
@@ -25,7 +28,7 @@ beside the renderer it is the oracle of.)
 | `probes/<name>-styled.xlsx` | R10: Excel's save of it once its gallery style was applied |
 | `probes/<name>.pptx` | R1: PowerPoint's chart of the type, as docx4j made it (PowerPoint's template: no title, text 4/3 larger) |
 | `excel-layout/<name>.json` | Excel's layout of the chart (its object model): chart area, plot area and its inside, title, legend and its entries and keys, each axis (bounds, unit, labels' orientation, spacing, format, font), each point's box, a pie's `PieSliceLocation`s, data labels' text and boxes; nulls dropped, numbers to 0.001 |
-| `excel-layout/<name>.sweep.json` | a swept probe: Excel resized the chart through its sweep, the first size again at the end, and read at each size the plot's inside and each axis (bounds, unit, labels' orientation and spacing, box) |
+| `excel-layout/<name>.sweep.json` | a swept probe: Excel resized the chart through its sweep, the first size again at the end, and read at each size the plot's inside and each axis (bounds, unit, labels' orientation and spacing, box); R17's also the first series' data labels (box, and its slice's centre and arc middle) |
 | `powerpoint-layout/<name>.json` | PowerPoint's, for the pptx |
 | `word-pdf/<name>.json` | `chart_trace.py`'s reading of Word's PDF of the probe's docx: each line of text (string, font, size, colour, baseline, centre) and each path (colour, box, each subpath's box and vertices), in points from the chart's top left |
 | `powerpoint-pdf/<name>.json` | the same of PowerPoint's PDF of the pptx |

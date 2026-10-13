@@ -232,7 +232,8 @@ function WriteJson($d, $path) { $d | ConvertTo-Json -Depth 12 | Set-Content -Enc
 
 # R14: the chart resized step by step ($spec "width:from:to:step" or "height:from:to:step"), the
 # plot's inside, each axis's bounds, unit, labels' orientation and spacing read at each size; the
-# first size read again at the end, to show the layout followed each step
+# first size read again at the end, to show the layout followed each step; (R17) the first series'
+# data labels' boxes, with their slices' centres and arc midpoints
 function Sweep($co, $ch, $spec) {
   $parts = $spec -split ':'
   $dim = $parts[0]; $from = [double]$parts[1]; $to = [double]$parts[2]; $step = [double]$parts[3]
@@ -256,6 +257,24 @@ function Sweep($co, $ch, $spec) {
       $axes += $a
     }
     $row.axes = $axes
+    # (R17) the first series' data labels: each box, and its slice's centre and arc midpoint
+    $labels = @()
+    $sc = $null; try { $sc = $ch.SeriesCollection() } catch { }
+    if ($null -ne $sc -and $sc.Count -ge 1) {
+      $ser = $sc.Item(1); $pc = $null; try { $pc = $ser.Points() } catch { }
+      $m = if ($null -ne $pc) { $pc.Count } else { 0 }
+      for ($j = 1; $j -le $m; $j++) {
+        $pt = $pc.Item($j)
+        if (V { $pt.HasDataLabel }) {
+          $lb = Box (V { $pt.DataLabel })
+          $lb.index = $j
+          $lb.cx = V { $pt.PieSliceLocation(1, 5) }; $lb.cy = V { $pt.PieSliceLocation(2, 5) }
+          $lb.mx = V { $pt.PieSliceLocation(1, 2) }; $lb.my = V { $pt.PieSliceLocation(2, 2) }
+          $labels += $lb
+        }
+      }
+    }
+    $row.labels = $labels
     [void]$rows.Add($row)
   }
   return $rows

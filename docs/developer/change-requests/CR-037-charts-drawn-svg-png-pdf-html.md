@@ -1,14 +1,17 @@
 # CR-037: charts drawn - a chart rendered to SVG and PNG as Office draws it, and drawn in PDF, HTML and pptx output (charts plan phases 7 and 8)
 
-Status: ACTIVE: phase 0 DONE 2026-10-12; phase 1 DONE 2026-10-12 (Jason: "close phase 1 then
+Status: DONE 2026-10-13, all phases.  Phase 4 DONE 2026-10-13 (Jason: ask the review session
+whether it is happy to close phase 4; docx4j-13: yes, leaders dropped included, after four small
+things, done): data labels, axis titles, manual layouts, axis options, fills and effects drawn,
+531 of the 665 probes drawn within tolerance in every element, the rest named open with a ceiling
+each; best fit's place inside, the spreading of crowded labels, factor mode, linked formats in an
+xlsx, the kerned "Y-Values" and two pictures left open (§11).  Phase 0 DONE 2026-10-12; phase 1 DONE 2026-10-12 (Jason: "close phase 1 then
 start phase 2"): the module, the SPI and the clustered column, 136 of the 141 probes drawn within
 tolerance in every element (§11); phase 2 DONE 2026-10-13: the other eleven types, smoothing
 and date axes, 328 of the 338 probes drawn within tolerance in every element and Excel's axes at
 every swept size but four (§11); phase 3 DONE 2026-10-13 (Jason: "close phase 3"): charts drawn
 in PDF, HTML and pptx output, `ChartImages`; P3 14/14 through PDF on both pathways, P4 13/13
-through SVG-in-HTML, the box probes and the corpora unmoved (§11); phase 4 IN PROGRESS 2026-10-13:
-data labels, axis titles, manual layouts, axis options, fills and effects drawn, R15 and R16 run,
-529 of the 582 probes drawn within tolerance in every element, the rest named (§11).  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
+through SVG-in-HTML, the box probes and the corpora unmoved (§11).  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
 (integration) of the charts plan.  Do not implement yet."); reviewed the same day by the
 docx4j-13 session (Claude Fable 5.1, at Jason's request): approved with nine amendments, all
 accepted by Jason ("apply all nine") and applied (§8).  D1 to D9 taken as recommended (Jason, 2026-10-12);
@@ -959,7 +962,7 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   For phase 4: the outputs draw whatever `check` passes, so each feature phase 4 draws reaches
   PDF, HTML and pptx output without more work here.
 
-### Phase 4 (2026-10-13), in progress: what the settings and the data add
+### Phase 4 (2026-10-13), done: what the settings and the data add
 
 - **R15** (`ChartRenderProbes`, on the share with RUN.txt's section; Jason's run the same day,
   nothing failed): 95 probes made by docx4j (xlsx and docx) and 39 of Excel's own charts copied as
@@ -1046,7 +1049,9 @@ three (a constant series, all zeros, one at an edge) by its refinements.
     (r15-pie-gradient: no simple power fits), so radial gradients stay a picture miss;
   - Excel formats numbers linked to their source as the worksheet's cells, Word as the chart's
     cache (r15-labels-linked-format, whose cache and cells disagree on purpose); docx4j draws the
-    cache's, as Word does.
+    cache's, as Word does.  So the oracle depends on the host: a chart in a docx or pptx is right
+    with the cache, and one in an xlsx would be right with the cells, which docx4j-chart-render
+    does not read (open).
 - **R16** (Jason's run the same day, nothing failed; 75 probes, xlsx and docx): a pie with one
   label, on a small first slice turned round the pie by 15 degrees, at outEnd and at best fit; two
   other label sizes at eight angles; best fit on five slice widths; the pie's shrink at four more
@@ -1060,24 +1065,83 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   the three label sizes, and r6's, r8's, R15's twelve slices and moved label to 0.01pt: what
   looked like Excel pushing crowded labels aside was this slide.  **The shrink**: 7/8 of the side
   less 2.75pt (six sides, 73 to 265pt, to 0.01pt).  **Best fit** keeps the label inside the slice
-  in every probe (on a 3% slice too); its boxes lie on whole pixels at 96 dpi, edge by edge, and no
-  model of R16 fits their places (the farthest corner 1.2pt inside the arc, drawn, is up to 1.7pt
-  off): open.
-- **The gate** (`ChartRenderGateTest`, R10's styled charts in it now): **582 probes drawn, 529
-  within tolerance in every element** (99.4% of 50,790); phase 2's close was 338 and 328.  Every
-  probe of R5, R6's bars and lines, R9, R15's axis titles, axis options, legends and fills, R16 but
-  best fit, and every P2 and P6 settings chart but the pie's data labels (best fit).  Open (each
+  in every R16 probe (on a 3% slice too), but R15's twelve slices put five labels outside (the
+  1.5%, 1%, 1%, 0.5% and 0.5% slices, 1.1 to 1.6 radii out, spread apart) with leader lines in
+  Word's PDF (0.75pt, A6A6A6); inside, its boxes lie on whole pixels at 96 dpi, edge by edge, and
+  no model of R16 fits their places (the farthest corner 1.2pt inside the arc, drawn, is up to
+  1.7pt off): open (review, 2026-10-13: docx4j-13, which asked for the inside-or-outside decision
+  and the leader lines before phase 4 closes, and a time-boxed R17 for the inside place).
+- **Best fit, inside or outside** (after the review): a label stays inside when its text fits
+  across its slice's middle ray at the place it would take inside (the text's width times the
+  ray's |cos| plus its height times |sin|, against the chord there), as one line or split once
+  into two lines balanced at a space; else it goes outside.  57 of the 58 best-fit labels of R6,
+  R15 and R16 decided as Excel did (the one left: r15-labels-pie-everything's "3rd Qtr, 1.4, 10%",
+  which Excel keeps inside on two lines: the wrap half of the test is provisional), and R17's
+  (outside on 2% slices, wrapped "Alpha beta").
+  Outside, a lone label lies against its slice: its near edge on the middle ray 1.05pt inside the
+  arc (R17's 2% slices and the swept small pies, at 90 degrees; at the top 0 to 0.65pt), with no
+  leader line.  Office's rule is a leader for a label it has spread away from its slice: Word's PDFs
+  draw leader lines only on R15's twelve slices, where Excel spread five crowded labels apart, and
+  none on R17's 83, r15-labels-pie-moved or r6-pie-outEnd (a lone label outside, one moved by hand,
+  outEnd's).  A leader belongs with spreading, not with best fit: docx4j, which doesn't spread
+  labels, draws none, and an unspread label should not be given one.  The leader as drawn there,
+  for when spreading is built: from the
+  arc's middle to an elbow, then level for 4.5pt into the box's facing side, 1.5pt inside it, 2.5pt
+  below its middle (at 9pt); straight up or down into the box, 1.5pt inside its edge, when the
+  arc's middle lies within the box's width (0.75pt, A6A6A6).  The spread: open with the inside
+  place.
+  LibreOffice's best fit (`PieChart.cxx`, tested offline against R16) puts labels 1.72pt from
+  Excel's (median), no closer than docx4j's: not adopted.  No open source project found draws
+  best fit, factor mode, the luminance rounding or Excel's pattern bitmaps as Office does
+  (LibreOffice, Apache OpenOffice, POI, ONLYOFFICE's sdkjs read; ONLYOFFICE's pattern table is
+  AGPL, not usable here; LibreOffice has the radial gradient's size as FIXME tdf#166140).
+- **R17** (Jason's run the same day, nothing failed; the review's design, 83 probes, xlsx and docx):
+  best fit inside, one thing changed at a time, the label showing its slice's category name so its
+  text stays put: the slice's width 2% to 50% at 90 and at 0 degrees, the label's width ("1" to
+  "10000", "1.5%", two words) and size (6, 12, 18pt), two adjacent small slices, an exploded one, a
+  25% slice turned by 30 degrees, and one probe swept across 101 heights (the sweep now reads the
+  data labels' boxes at each size, with their slices' centres and arc middles).  Found:
+  - the boxes lie on whole pixels at 96 dpi counted from the chart's corner, each edge rounded to
+    the nearest (so a 15.12pt box is 15 or 15.75 wide), and Word's PDF draws the text in Excel's
+    snapped box (3.06 to 3.11pt in, the baseline 10.21 to 10.25pt down, whatever the box's size):
+    the snapping is the chart engine's, not Excel's window;
+  - the place doesn't depend on the radius: across the sweep (radius 30 to 151pt, at 90 degrees)
+    the box's outer edge is 1.52 to 1.70pt inside the arc at every size, its four-step sawtooth the
+    snapping's; the label goes inside from a radius of 30.6pt (outside at 29.3);
+  - it depends on the angle: the farthest corner (of docx4j's box) 2.2 to 2.7pt inside the arc at
+    the top, 1.2 to 1.4 at the right, 1.7 to 2.2 at the bottom, 0.5 to 0.6 at the left, -0.1 to
+    1.4 on the diagonals (R16's 24 angles, R17's 12), as if tested with corners cut, about half a
+    pixel off centre and taller than wide; the corner, not the edge, rules at the top (a wider label
+    goes in by what its corners need) and at the side (a taller one likewise);
+  - and on the slice's width, in steps of the snapping over a rise: at 90 degrees the farthest
+    corner at least 0.5pt inside on 3% to 6% slices, 1.2 on 8% to 34%, 1.9 on 36% to 50%; at the
+    top 2.1, 2.6, 2.9;
+  - an exploded slice's label moves with it.
+  No rule found fits these: a margin from the arc on the box padded or shrunk, moved off centre,
+  leaves the probes 0.14pt short of a common margin, and the slice's width outside it.  An
+  empirical fit (the angle to its fourth harmonic, the width) halves the centre's error (median
+  1.04 to 0.44pt) but puts 14 of the 133 inside labels exactly on Excel's pixels (the gate's bar:
+  a snapped box leaves its centre a window 0.12 to 0.63pt wide), against the simple rule's 4: not
+  adopted.  The place inside stays open; the time box (about a day, the review) is spent.
+- **Luminance rounding** (CR-034's follow-up, its §11): Office drew styles 202's and 254's text,
+  `tx1` at `lumMod 50000 lumOff 50000`, 7F7F7F where docx4j drew 808080.  A colour whose last
+  change is a luminance transform is now converted back from HSL as Foley and van Dam do, `lumMod`
+  taken as l x val / 100000, and rounded half down: CR-034's luminance and picker cases exact in 97
+  of 98 per host (was 85), no case of any family worse; hue and saturation unchanged.
+- **The gate** (`ChartRenderGateTest`, R10's styled charts in it now): **665 probes drawn, 531
+  within tolerance in every element** (99.2% of 54,878 elements; 529 of 582 before the luminance
+  rounding, R17's 83 then added, all open); phase 2's close was 338 and 328.  Every probe of R5, R6's bars and lines, R9, R10's styles, R15's axis
+  titles, axis options, legends and fills, R16 but best fit, and every P2 and P6 settings chart but
+  the pie's data labels (best fit).  Open (each
   named with its reason in `OPEN`):
-  - a pie's labels at best fit (34 probes, R16's among them): above;
+  - a pie's labels at best fit (117 probes, R16's and R17's among them): the place inside, and the
+    spread of crowded labels outside (above);
   - factor mode for the title, legend and plot area (three): Excel's offsets are not the spec's
     (0.10 is 39.1pt for the title, not 43.2); Excel itself writes edge mode, drawn exactly;
-  - text in tx1 lumMod 50% lumOff 50% (styles 202, 254): Office 7F7F7F, docx4j 808080 (CR-034's
-    known one-unit luminance cases: rounding half down fixes lum, lumMod and the picker but breaks
-    hueMod, satMod and satOff, measured on CR-034's readings);
   - the kerned "Y-Values" title (now eight probes with R15's scatter charts), phase 2's markers,
     plots 1pt high and set maximum, and the linked number format (above).
 - **Pictures** (rendered at Excel's 1.667 px/pt against Excel's PNGs, D4's per-probe tolerance):
-  **536 of 543 within tolerance**; the seven: phase 1's two small charts, two pies' labels at best fit (open),
+  **619 of 626 within tolerance** (R17's 83 all within); the seven: phase 1's two small charts, two pies' labels at best fit (open),
   R15's patterns (the tile's phase against Excel's resampling: 3.7% against 2.0%), the radial
   gradient on a pie's slices (above) and the factor-mode plot area (open).  Style 213's glow and
   R15's shadows pass once drawn (a glow follows what is drawn: around an outline alone, not its
@@ -1103,6 +1167,18 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   Batik's SVG generator encodes an embedded picture through batik-codec, not a dependency of
   docx4j-chart-render: the renderer gives it an image handler using the JDK's PNG writer.
 - **Tests**: docx4j-chart-render 20/0 (`ChartRendererSpiTest` and `ChartImagesTest` now refuse a
-  secondary axis, made in memory, where they refused data labels; `ChartRenderFixturesTest` 543
+  secondary axis, made in memory, where they refused data labels; `ChartRenderFixturesTest` 626
   probes, skipping a pattern's colour as a gradient's, Excel's carriage-return paragraphs, the
-  filtered series).
+  filtered series).  The gate gives each probe in `OPEN` a ceiling (`CEILING`: its farthest
+  measured element in points and how many elements may miss, today's with a margin; best fit 2.5pt
+  and three misses, its pies of several labels each their own), so an approximation named open
+  can't drift unseen: moving best fit's inside place 3pt further in fails 67 probes.  core-tests
+  1545/0 (11 skipped) with the luminance rounding; export-fo-tests 793/0 at the first phase 4 commit.
+- **The close** (2026-10-13; the review session, docx4j-13: close on this basis, the leaders dropped
+  included, after four small things: the ceilings above, the in-or-out miss named in `OPEN` and
+  here, comments on the luminance rounding's order of operations, the luminance rounding committed
+  on its own under CR-034).  Open, each named in `OPEN` with its reason and ceiling: best fit's place
+  inside (R17's facts above), and the spreading of crowded labels outside with their leaders; factor
+  mode for the title, legend and plot area; numbers linked to their source in a chart in an xlsx
+  (the cells', which docx4j-chart-render doesn't read; in a docx or pptx the cache's, drawn); the
+  kerned "Y-Values"; in pictures, the pattern tiles' phase and the radial gradient's falloff.

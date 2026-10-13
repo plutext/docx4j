@@ -1,0 +1,20 @@
+{
+ "probe": "r17-wide-a60",
+ "app": "excel",
+ "size": [432,252],
+ "chartType": 5,
+ "chartStyle": 251,
+ "displayBlanksAs": 1,
+ "chartObject": {"left":144,"top":0,"width":432,"height":252},
+ "chartArea": {"left":144,"top":0,"width":427,"height":247},
+ "plotArea": {"left":134.172,"top":45.78,"width":155.656,"height":155.656,"insideLeft":134.172,"insideTop":45.78,"insideWidth":155.656,"insideHeight":155.656},
+ "hasTitle": true,
+ "title": {"left":194.602,"top":2,"width":34.795,"height":20.09,"text":"Sales","orientation":-4128,"font":{"size":14,"name":"Calibri","size2":14}},
+ "hasLegend": true,
+ "legend": {"left":185.124,"top":225.125,"width":53.752,"height":16.875,"position":-4107,"font":{"size":18,"size2":9},"entries":[{"left":188.11,"top":228.125,"width":25.786,"height":10.985,"key":{"left":190.582,"top":230.596,"width":4.943,"height":4.943}},{"left":210.103,"top":228.125,"width":25.786,"height":10.985,"key":{"left":212.575,"top":230.596,"width":4.943,"height":4.943}}]},
+ "axes": [{"type":1,"group":1},{"type":2,"group":1},{"type":3,"group":1}],
+ "series": [{"index":1,"name":"Sales","chartType":5,"axisGroup":1,"plotOrder":1,"fill":"4472C4","line":"FFFFFF","lineWeight":1.5,"lineVisible":-1,"markerStyle":-4142,"markerSize":5,"explosion":0,"hasDataLabels":false,"values":[25,75],"xValues":["10","Rest"],"points":[{"left":212,"top":48.432,"width":75.176,"height":95.319,"fill":"4472C4","explosion":0,"slice":{"1":[287.176,143.751],"2":[279.401,84.694],"3":[232.143,48.431],"4":[222.072,86.019],"5":[212,123.607],"6":[249.588,133.679],"7":[null,null],"8":[null,null],"9":[null,null]},"dataLabel":{"left":262.25,"top":83,"width":15,"height":14.25,"text":"10","position":5,"font":{"size":9,"name":"Calibri","size2":9}}},{"left":212,"top":48.432,"width":75.176,"height":95.319,"fill":"ED7D31","explosion":0,"slice":{"1":[232.143,48.431],"2":[144.599,162.521],"3":[287.176,143.751],"4":[249.588,133.679],"5":[212,123.607],"6":[222.072,86.019],"7":[null,null],"8":[null,null],"9":[null,null]}}]}],
+ "excelVersion": "16.0 build 20430",
+ "repaired": false,
+ "png": {"width":720,"height":420,"dpiX":119.99}
+}

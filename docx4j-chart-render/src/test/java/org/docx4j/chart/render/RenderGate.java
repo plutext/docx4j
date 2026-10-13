@@ -45,6 +45,8 @@ final class RenderGate {
 		int checked;
 		int within;
 		final List<String> misses = new ArrayList<>();
+		/** the farthest any measured element is from Office's, in points */
+		double worst;
 
 		Result(String probe) {
 			this.probe = probe;
@@ -54,6 +56,12 @@ final class RenderGate {
 			checked++;
 			if (ok) within++;
 			else misses.add(what);
+		}
+
+		/** an element measured: how far it is from Office's */
+		void check(boolean ok, String what, double off) {
+			check(ok, what);
+			worst = Math.max(worst, off);
 		}
 
 		boolean passes() {
@@ -108,7 +116,7 @@ final class RenderGate {
 			return;
 		}
 		double e = edge(office, ours);
-		r.check(e <= GEOMETRY, String.format("%s off by %.2f (Office %s, ours %s)", what, e, str(office), str(ours)));
+		r.check(e <= GEOMETRY, String.format("%s off by %.2f (Office %s, ours %s)", what, e, str(office), str(ours)), e);
 	}
 
 	private static String str(Rectangle2D b) {
@@ -168,7 +176,7 @@ final class RenderGate {
 					}
 					double e = Math.max(Math.abs(ox - ours[k][0]), Math.abs(oy - ours[k][1]));
 					r.check(e <= GEOMETRY, String.format("slice %d.%d place %d off by %.2f (Office %.2f,%.2f, ours %.2f,%.2f)", s, p, k, e, ox, oy,
-							ours[k][0], ours[k][1]));
+							ours[k][0], ours[k][1]), e);
 				}
 			}
 		}
@@ -234,7 +242,7 @@ final class RenderGate {
 			}
 			used[best] = true;
 			Drawing.Text our = ours.get(best);
-			r.check(bestD <= TEXT_PLACE, String.format("text \"%s\" %.2f from Office's", text, bestD));
+			r.check(bestD <= TEXT_PLACE, String.format("text \"%s\" %.2f from Office's", text, bestD), bestD);
 			double size = Json.number(t.get("size"));
 			r.check(Math.abs(our.font.getSize2D() - size) <= TEXT_SIZE,
 					String.format("text \"%s\" size %.2f, Office %.2f", text, our.font.getSize2D(), size));
@@ -301,7 +309,7 @@ final class RenderGate {
 				}
 				if (fill) usedFill[best] = true;
 				else usedLine[best] = true;
-				r.check(bestD <= GEOMETRY, String.format("%s off by %.2f", what, bestD));
+				r.check(bestD <= GEOMETRY, String.format("%s off by %.2f", what, bestD), bestD);
 			}
 		}
 		// a gradient is a shading in Word's PDF (CR-037 finding 6), in the shape's clip: ours by its box
@@ -337,7 +345,7 @@ final class RenderGate {
 				}
 				if (areas.get(best).gradient != null) usedFill[best] = true;
 				else usedLine[best] = true;
-				r.check(bestD <= GEOMETRY, String.format("%s off by %.2f", what, bestD));
+				r.check(bestD <= GEOMETRY, String.format("%s off by %.2f", what, bestD), bestD);
 			}
 		}
 		for (int i = 0; i < areas.size(); i++) {

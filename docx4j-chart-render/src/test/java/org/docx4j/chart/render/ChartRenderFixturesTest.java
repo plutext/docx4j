@@ -153,7 +153,7 @@ public class ChartRenderFixturesTest {
 				}
 			}
 		}
-		assertEquals(543, rows.length - 1);
+		assertEquals(626, rows.length - 1);
 		assertEquals(12, pptx);
 		assertTrue(String.join("\n", failures), failures.isEmpty());
 	}

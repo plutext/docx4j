@@ -1,0 +1,20 @@
+{
+ "probe": "r17-text-1-a0",
+ "app": "excel",
+ "size": [432,252],
+ "chartType": 5,
+ "chartStyle": 251,
+ "displayBlanksAs": 1,
+ "chartObject": {"left":144,"top":0,"width":432,"height":252},
+ "chartArea": {"left":144,"top":0,"width":427,"height":247},
+ "plotArea": {"left":134.172,"top":45.78,"width":155.656,"height":155.656,"insideLeft":134.172,"insideTop":45.78,"insideWidth":155.656,"insideHeight":155.656},
+ "hasTitle": true,
+ "title": {"left":194.602,"top":2,"width":34.795,"height":20.09,"text":"Sales","orientation":-4128,"font":{"size":14,"name":"Calibri","size2":14}},
+ "hasLegend": true,
+ "legend": {"left":187.86,"top":225.125,"width":48.28,"height":16.875,"position":-4107,"font":{"size":18,"size2":9},"entries":[{"left":190.543,"top":228.125,"width":25.786,"height":10.985,"key":{"left":193.014,"top":230.596,"width":4.943,"height":4.943}},{"left":207.671,"top":228.125,"width":25.786,"height":10.985,"key":{"left":210.143,"top":230.596,"width":4.943,"height":4.943}}]},
+ "axes": [{"type":1,"group":1},{"type":2,"group":1},{"type":3,"group":1}],
+ "series": [{"index":1,"name":"Sales","chartType":5,"axisGroup":1,"plotOrder":1,"fill":"4472C4","line":"FFFFFF","lineWeight":1.5,"lineVisible":-1,"markerStyle":-4142,"markerSize":5,"explosion":0,"hasDataLabels":false,"values":[10,90],"xValues":["1","Rest"],"points":[{"left":187.95,"top":49.589,"width":48.1,"height":74.019,"fill":"4472C4","explosion":0,"slice":{"1":[236.05,49.589],"2":[212,45.78],"3":[187.95,49.589],"4":[199.975,86.598],"5":[212,123.607],"6":[224.025,86.598],"7":[null,null],"8":[null,null],"9":[null,null]},"dataLabel":{"left":206,"top":48.5,"width":11.25,"height":14.25,"text":"1","position":5,"font":{"size":9,"name":"Calibri","size2":9}}},{"left":187.95,"top":49.589,"width":48.1,"height":74.019,"fill":"ED7D31","explosion":0,"slice":{"1":[187.95,49.589],"2":[212,201.435],"3":[236.05,49.589],"4":[224.025,86.598],"5":[212,123.607],"6":[199.975,86.598],"7":[null,null],"8":[null,null],"9":[null,null]}}]}],
+ "excelVersion": "16.0 build 20430",
+ "repaired": false,
+ "png": {"width":720,"height":420,"dpiX":119.99}
+}

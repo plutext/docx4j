@@ -201,6 +201,12 @@ final class ChartLayout {
 	/** A pie's label at best fit, inside: its farthest corner this far inside the arc (R16: an approximation, boxes up to 1.5pt off) */
 	static final double LABEL_BEST_FIT_IN = 1.2;
 	/**
+	 * A pie's label at best fit that doesn't fit inside: its near edge on its slice's middle ray this
+	 * far inside the arc, and no leader line (R17's 2% slices and small swept pies; Office draws a
+	 * leader only for a label it moves aside among crowded ones, which docx4j doesn't do)
+	 */
+	static final double LABEL_BEST_FIT_OUT = 1.05;
+	/**
 	 * A plot area placed by hand has its axes' labels this much further in from its left and bottom
 	 * edges than Office's own plot area, and the top value label's half line below its top
 	 * (r9-plot-outer, r9-plot-inner: 6.00pt, the inside to 0.001pt)
@@ -1156,8 +1162,8 @@ final class ChartLayout {
 		/** a bar along the value axis: where it starts and ends (y down a column, x along a bar) */
 		double base, end;
 		boolean bar, across, area, slice;
-		/** a slice's inner and outer radius, its middle angle (degrees clockwise from twelve o'clock) */
-		double inner, outer, mid;
+		/** a slice's inner and outer radius, its middle angle and its sweep (degrees clockwise from twelve o'clock) */
+		double inner, outer, mid, sweep;
 		/** the value, for its label */
 		double value;
 
@@ -2372,13 +2378,46 @@ final class ChartLayout {
 			double[] ins = insets(ls.txPr);
 			double tw = 0;
 			for (String line : lines) tw = Math.max(tw, st.width(line));
+			// best fit on a pie: inside where the text fits across its slice, or (one line) on two
+			// lines broken where they are most even (r15-labels-pie-everything's "3rd Qtr," / "1.4,
+			// 10%" inside, where its "4th Qtr, 1.2, 9%", which two lines don't fit, is outside, on one)
+			String pos = ls.position == null ? "" : ls.position;
+			if (an.slice && "bestFit".equals(pos) && an.inner == 0) {
+				pos = "bestFitOutside";
+				List<List<String>> tries = new ArrayList<>();
+				tries.add(lines);
+				if (lines.size() == 1) {
+					String one = lines.get(0);
+					List<String> best = null;
+					double bestW = Double.MAX_VALUE;
+					for (int k = one.indexOf(' '); k > 0; k = one.indexOf(' ', k + 1)) {
+						List<String> two = java.util.Arrays.asList(one.substring(0, k), one.substring(k + 1));
+						double ww = Math.max(st.width(two.get(0)), st.width(two.get(1)));
+						if (ww < bestW) {
+							bestW = ww;
+							best = two;
+						}
+					}
+					if (best != null) tries.add(best);
+				}
+				for (List<String> tryLines : tries) {
+					double w2 = 0;
+					for (String line : tryLines) w2 = Math.max(w2, st.width(line));
+					if (fitsInside(an, w2, tryLines.size() * st.line, w2 + ins[0] + ins[2], tryLines.size() * st.line + ins[1] + ins[3])) {
+						lines = tryLines;
+						tw = w2;
+						pos = "bestFit";
+						break;
+					}
+				}
+			}
 			// its legend key before the text: the legend's square, in a slot of two keys and 3pt (r15-labels-legend-key)
 			double kw = ls.key ? LEGEND_KEY * st.line : 0, ks = ls.key ? 2 * kw + 3 : 0;
 			double bw = tw + ks + ins[0] + ins[2], bh = lines.size() * st.line + ins[1] + ins[3];
 			// turned a quarter (bodyPr rot -5400000: up the page, 5400000: down it), the box turned with
 			// it and placed by the same rule (r10-column-style-202)
 			int turn = rotation(ls.txPr);
-			double[] at = labelPlace(an, ls.position == null ? "" : ls.position, turn == 0 ? bw : bh, turn == 0 ? bh : bw);
+			double[] at = labelPlace(an, pos, turn == 0 ? bw : bh, turn == 0 ? bh : bw, tw);
 			Rectangle2D box = new Rectangle2D.Double(at[0], at[1], turn == 0 ? bw : bh, turn == 0 ? bh : bw);
 			// moved by hand: in factor mode by shares of the chart from where it would be (r15-labels-pie-moved)
 			if (ls.manual != null) box = manual(ls.manual, box);
@@ -2439,8 +2478,28 @@ final class ChartLayout {
 		return p / 100.0;
 	}
 
+	/**
+	 * Whether a best-fit label fits inside its slice: its text's extent across the slice's middle ray
+	 * (its width times the cosine of the ray's angle from twelve o'clock, its lines' height times the
+	 * sine; without its insets) no more than the slice's width at the label's place inside (the
+	 * review's rule, measured across the ray). On the oracle's 58 best-fit labels (R6, R15, P6, R16),
+	 * one line or two balanced lines, it matches Excel's inside or outside and its lines on 57; the
+	 * one left Excel wrapped onto two lines inside (r15-labels-pie-everything's "3rd Qtr, / 1.4, 10%")
+	 */
+	private static boolean fitsInside(Anchor an, double textW, double textH, double bw, double bh) {
+		double t = Math.toRadians(an.mid), ux = Math.sin(t), uy = -Math.cos(t);
+		double lo = 0, hi = an.outer;
+		for (int k = 0; k < 40; k++) {
+			double m = (lo + hi) / 2;
+			if (Math.hypot(Math.abs(m * ux) + bw / 2, Math.abs(m * uy) + bh / 2) > an.outer - LABEL_BEST_FIT_IN) hi = m;
+			else lo = m;
+		}
+		if (an.sweep >= 180) return true;
+		return textW * Math.abs(uy) + textH * Math.abs(ux) <= 2 * lo * Math.sin(Math.toRadians(an.sweep / 2));
+	}
+
 	/** A label box's top left, by its anchor and position */
-	private static double[] labelPlace(Anchor an, String pos, double bw, double bh) {
+	private static double[] labelPlace(Anchor an, String pos, double bw, double bh, double textW) {
 		double g = LABEL_GAP;
 		if (an.bar) {
 			// the value's direction along its axis: up a column (y falls), right along a bar
@@ -2489,6 +2548,21 @@ final class ChartLayout {
 			case "ctr":
 				dist = (an.inner + an.outer) / 2;
 				break;
+			case "bestFit": {
+				// inside, as far out as its farthest corner allows (an approximation: Excel's best fit
+				// is laid out on whole pixels by a rule not found, R16, R17); outside, bestFitOutside
+				double lo = 0, hi = an.outer;
+				for (int k = 0; k < 40; k++) {
+					double m = (lo + hi) / 2;
+					if (Math.hypot(Math.abs(m * ux) + bw / 2, Math.abs(m * uy) + bh / 2) > an.outer - LABEL_BEST_FIT_IN) hi = m;
+					else lo = m;
+				}
+				return new double[] { an.x + lo * ux - bw / 2, an.y + lo * uy - bh / 2 };
+			}
+			case "bestFitOutside":
+				// against the arc, its near edge just inside it (R17)
+				dist = an.outer - LABEL_BEST_FIT_OUT + reach;
+				break;
 			case "outEnd": {
 				// from a point beyond the arc, the box hung by a share of its width and height that
 				// slides round its edge with the angle: its bottom edge to 45 degrees, its middle at 90,
@@ -2501,18 +2575,6 @@ final class ChartLayout {
 				double a0 = Math.max(0, Math.min(0.5, 0.5 - LABEL_OUT_SLIDE * Math.abs(sin) / Math.abs(cos)));
 				double a = sin >= 0 ? a0 : 1 - a0;
 				return new double[] { px - a * bw, py - b * bh };
-			}
-			case "bestFit": {
-				// inside, as far out as its farthest corner allows (an approximation: Excel's best fit
-				// is laid out on whole pixels by a rule not found, R16)
-				double lo = 0, hi = an.outer;
-				for (int k = 0; k < 40; k++) {
-					double m = (lo + hi) / 2;
-					if (Math.hypot(Math.abs(m * ux) + bw / 2, Math.abs(m * uy) + bh / 2) > an.outer - LABEL_BEST_FIT_IN) hi = m;
-					else lo = m;
-				}
-				dist = lo;
-				break;
 			}
 			default: // inEnd
 				dist = an.outer - LABEL_PIE_IN - reach;
@@ -2671,6 +2733,7 @@ final class ChartLayout {
 				an.inner = inner;
 				an.outer = outer;
 				an.mid = (a + b) / 2;
+				an.sweep = b - a;
 				an.value = x;
 				an.w = total;
 				anchors.add(an);

@@ -542,3 +542,86 @@ r16-shrink-576x336	R16	576	336	xlsx,docx	2013		36,36		Word's pie, labels at outE
 r16-shrink-432x144	R16	432	144	xlsx,docx	2013		36,36		Word's pie, labels at outEnd, 432 by 144pt	
 r16-shrink-216x288	R16	216	288	xlsx,docx	2013		36,36		Word's pie, labels at outEnd, 216 by 288pt	
 r16-shrink-doughnut-288x168	R16	288	168	xlsx,docx	2013		36,36		Word's doughnut with labels, 288 by 168pt	
+r17-share-2-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 2% slice, its middle at 90 degrees	
+r17-share-4-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 4% slice, its middle at 90 degrees	
+r17-share-6-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 6% slice, its middle at 90 degrees	
+r17-share-8-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 8% slice, its middle at 90 degrees	
+r17-share-10-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 10% slice, its middle at 90 degrees	
+r17-share-12-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 12% slice, its middle at 90 degrees	
+r17-share-14-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 14% slice, its middle at 90 degrees	
+r17-share-16-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 16% slice, its middle at 90 degrees	
+r17-share-18-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 18% slice, its middle at 90 degrees	
+r17-share-20-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 20% slice, its middle at 90 degrees	
+r17-share-22-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 22% slice, its middle at 90 degrees	
+r17-share-24-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 24% slice, its middle at 90 degrees	
+r17-share-26-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 26% slice, its middle at 90 degrees	
+r17-share-28-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 28% slice, its middle at 90 degrees	
+r17-share-30-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 30% slice, its middle at 90 degrees	
+r17-share-32-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 32% slice, its middle at 90 degrees	
+r17-share-34-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 34% slice, its middle at 90 degrees	
+r17-share-36-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 36% slice, its middle at 90 degrees	
+r17-share-38-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 38% slice, its middle at 90 degrees	
+r17-share-40-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 40% slice, its middle at 90 degrees	
+r17-share-42-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 42% slice, its middle at 90 degrees	
+r17-share-44-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 44% slice, its middle at 90 degrees	
+r17-share-46-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 46% slice, its middle at 90 degrees	
+r17-share-48-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 48% slice, its middle at 90 degrees	
+r17-share-50-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 50% slice, its middle at 90 degrees	
+r17-text-1-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "1" on a 10% slice, at 90 degrees	
+r17-text-100-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "100" on a 10% slice, at 90 degrees	
+r17-text-1000-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "1000" on a 10% slice, at 90 degrees	
+r17-text-10000-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10000" on a 10% slice, at 90 degrees	
+r17-text-pct-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "1.5%" on a 10% slice, at 90 degrees	
+r17-text-words-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "Alpha beta" on a 10% slice, at 90 degrees	
+r17-size-6-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" at 6pt on a 10% slice, at 90 degrees	
+r17-size-12-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" at 12pt on a 10% slice, at 90 degrees	
+r17-size-18-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" at 18pt on a 10% slice, at 90 degrees	
+r17-share-2-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 2% slice, its middle at 0 degrees	
+r17-share-4-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 4% slice, its middle at 0 degrees	
+r17-share-6-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 6% slice, its middle at 0 degrees	
+r17-share-8-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 8% slice, its middle at 0 degrees	
+r17-share-10-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 10% slice, its middle at 0 degrees	
+r17-share-12-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 12% slice, its middle at 0 degrees	
+r17-share-14-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 14% slice, its middle at 0 degrees	
+r17-share-16-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 16% slice, its middle at 0 degrees	
+r17-share-18-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 18% slice, its middle at 0 degrees	
+r17-share-20-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 20% slice, its middle at 0 degrees	
+r17-share-22-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 22% slice, its middle at 0 degrees	
+r17-share-24-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 24% slice, its middle at 0 degrees	
+r17-share-26-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 26% slice, its middle at 0 degrees	
+r17-share-28-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 28% slice, its middle at 0 degrees	
+r17-share-30-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 30% slice, its middle at 0 degrees	
+r17-share-32-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 32% slice, its middle at 0 degrees	
+r17-share-34-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 34% slice, its middle at 0 degrees	
+r17-share-36-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 36% slice, its middle at 0 degrees	
+r17-share-38-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 38% slice, its middle at 0 degrees	
+r17-share-40-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 40% slice, its middle at 0 degrees	
+r17-share-42-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 42% slice, its middle at 0 degrees	
+r17-share-44-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 44% slice, its middle at 0 degrees	
+r17-share-46-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 46% slice, its middle at 0 degrees	
+r17-share-48-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 48% slice, its middle at 0 degrees	
+r17-share-50-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 50% slice, its middle at 0 degrees	
+r17-text-1-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "1" on a 10% slice, at 0 degrees	
+r17-text-100-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "100" on a 10% slice, at 0 degrees	
+r17-text-1000-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "1000" on a 10% slice, at 0 degrees	
+r17-text-10000-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10000" on a 10% slice, at 0 degrees	
+r17-text-pct-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "1.5%" on a 10% slice, at 0 degrees	
+r17-text-words-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "Alpha beta" on a 10% slice, at 0 degrees	
+r17-size-6-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" at 6pt on a 10% slice, at 0 degrees	
+r17-size-12-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" at 12pt on a 10% slice, at 0 degrees	
+r17-size-18-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" at 18pt on a 10% slice, at 0 degrees	
+r17-sweep-height	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 10% slice at 90 degrees, swept across heights	height:120:420:3
+r17-adjacent	R17	432	252	xlsx,docx	2013		36,36		best fit, two adjacent 4% slices labelled "10" and "20", around 90 degrees	
+r17-exploded	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 10% slice exploded 20%, at 90 degrees	
+r17-wide-a0	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 25% slice, its middle at 0 degrees	
+r17-wide-a30	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 25% slice, its middle at 30 degrees	
+r17-wide-a60	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 25% slice, its middle at 60 degrees	
+r17-wide-a90	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 25% slice, its middle at 90 degrees	
+r17-wide-a120	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 25% slice, its middle at 120 degrees	
+r17-wide-a150	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 25% slice, its middle at 150 degrees	
+r17-wide-a180	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 25% slice, its middle at 180 degrees	
+r17-wide-a210	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 25% slice, its middle at 210 degrees	
+r17-wide-a240	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 25% slice, its middle at 240 degrees	
+r17-wide-a270	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 25% slice, its middle at 270 degrees	
+r17-wide-a300	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 25% slice, its middle at 300 degrees	
+r17-wide-a330	R17	432	252	xlsx,docx	2013		36,36		best fit, the label "10" on a 25% slice, its middle at 330 degrees	

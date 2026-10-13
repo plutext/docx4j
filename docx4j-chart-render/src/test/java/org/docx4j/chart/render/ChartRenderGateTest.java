@@ -49,36 +49,77 @@ public class ChartRenderGateTest {
 
 	/** The probes drawn but not yet within tolerance, and why (CR-037 §11); R1's pptx as name.pptx */
 	static final Map<String, String> OPEN = new LinkedHashMap<>();
+	/**
+	 * How far each probe of {@link #OPEN} may be off before the gate fails, so that an approximation
+	 * named open can't drift unseen: its farthest measured element, in points, and how many of its
+	 * elements may miss (today's, with a margin on the first)
+	 */
+	static final Map<String, double[]> CEILING = new LinkedHashMap<>();
+
+	private static void open(String probe, String why, double worst, int misses) {
+		OPEN.put(probe, why);
+		CEILING.put(probe, new double[] { worst, misses });
+	}
+
 	static {
 		for (String p : new String[] { "r11-default-h72", "r11-eight-h72" }) {
-			OPEN.put(p, "a plot 1pt high: the inside is Office's (nothing), but Word's PDF has each column, nothing high, as a 0.24pt sliver"
-					+ " at the inside's top, and its gridline; ours draws none");
+			open(p, "a plot 1pt high: the inside is Office's (nothing), but Word's PDF has each column, nothing high, as a 0.24pt sliver"
+					+ " at the inside's top, and its gridline; ours draws none", 0.5, p.equals("r11-default-h72") ? 13 : 25);
 		}
-		OPEN.put("r2-max-set", "a maximum set, the labels hanging from a zero line near the bottom: the inside 0.55pt shorter");
+		open("r2-max-set", "a maximum set, the labels hanging from a zero line near the bottom: the inside 0.55pt shorter", 1, 19);
 		for (String p : new String[] { "r1-scatter", "r1-scatter.pptx", "r14-scatter-lines", "r14-scatter-smooth", "r14-sweep-scatter",
 				"r15-axis-titles-scatter", "r15-labels-scatter", "r15-labels-scatter-t" }) {
-			OPEN.put(p, "the title \"Y-Values\": Excel kerns its \"Va\" but not its \"Y-\" in Calibri (in Aptos Narrow, p1-scatter, both),"
-					+ " though Calibri's own tables have the pair as Carlito's do: the box 0.4pt narrower than Office's");
+			open(p, "the title \"Y-Values\": Excel kerns its \"Va\" but not its \"Y-\" in Calibri (in Aptos Narrow, p1-scatter, both),"
+					+ " though Calibri's own tables have the pair as Carlito's do: the box 0.4pt narrower than Office's", 1, 1);
 		}
 		List<String> bestFit = new ArrayList<>(java.util.Arrays.asList("r6-pie-bestFit", "r15-labels-pie-everything", "r15-labels-pie-percent",
 				"r15-labels-pie-twelve-bestFit", "p6-pie-data-labels"));
 		// (at 105 degrees the approximation is within tolerance)
 		for (int a = 0; a < 360; a += 15) if (a != 105) bestFit.add("r16-bestFit-a" + a);
 		for (String share : new String[] { "3", "6", "15", "25", "40", "15-long" }) bestFit.add("r16-bestFit-share-" + share);
+		// R17: best fit inside, one thing changed at a time
+		for (String a : new String[] { "90", "0" }) {
+			for (int share = 2; share <= 50; share += 2) bestFit.add("r17-share-" + share + "-a" + a);
+			for (String t : new String[] { "1", "100", "1000", "10000", "pct", "words" }) bestFit.add("r17-text-" + t + "-a" + a);
+			for (String z : new String[] { "6", "12", "18" }) bestFit.add("r17-size-" + z + "-a" + a);
+		}
+		for (int a = 0; a < 360; a += 30) bestFit.add("r17-wide-a" + a);
+		bestFit.addAll(java.util.Arrays.asList("r17-sweep-height", "r17-adjacent", "r17-exploded"));
+		// the pies of several labels are further off: R15's twelve, five of them spread apart by Excel; "3rd Qtr, 1.4, 10%",
+		// which Excel keeps inside on two lines and docx4j puts outside (r15-labels-pie-everything); a label of two
+		// words Excel wraps inside, docx4j keeps on one line (r17-text-words-a0)
+		Map<String, double[]> bestFitCeiling = new java.util.HashMap<>();
+		bestFitCeiling.put("r6-pie-bestFit", new double[] { 5, 8 });
+		bestFitCeiling.put("p6-pie-data-labels", new double[] { 4.5, 4 });
+		bestFitCeiling.put("r15-labels-pie-percent", new double[] { 4.5, 8 });
+		bestFitCeiling.put("r15-labels-pie-everything", new double[] { 39, 11 });
+		bestFitCeiling.put("r15-labels-pie-twelve-bestFit", new double[] { 47, 26 });
+		bestFitCeiling.put("r17-text-words-a0", new double[] { 11, 4 });
 		for (String p : bestFit) {
-			OPEN.put(p, "a pie's labels at best fit: inside the slice (R16: even on a 3% slice), Excel's place not found: its boxes on"
-					+ " whole pixels at 96 dpi, edge by edge, and placed by a rule no model of R16 fits (the farthest corner 1.2pt inside the"
-					+ " arc, drawn, is up to 1.7pt off), wrapped where they won't fit (r15-labels-pie-everything)");
+			double[] c = bestFitCeiling.getOrDefault(p, new double[] { 2.5, 3 });
+			open(p, "a pie's labels at best fit: in or out decided as Excel does (57 of R6, R15 and R16's 58: Excel keeps"
+					+ " r15-labels-pie-everything's \"3rd Qtr, 1.4, 10%\" inside on two lines, docx4j puts it outside; R17's too), but Excel's place"
+					+ " inside not found: its boxes on whole pixels at 96 dpi from the chart's corner, edge by edge (Word's PDF the same), the"
+					+ " farthest corner 0 to 2.9pt inside the arc by the angle (more at the axes, at the top and right) and the slice's width"
+					+ " (more on wider ones), not by the radius (R17's height sweep); docx4j's corner 1.2pt inside is a median 1.0pt off."
+					+ " Outside, crowded labels are spread apart with leader lines (R15's twelve), which docx4j doesn't do", c[0], (int) c[1]);
 		}
+		Map<String, double[]> factorCeiling = new java.util.HashMap<>();
+		factorCeiling.put("r15-title-factor", new double[] { 4.5, 1 });
+		factorCeiling.put("r15-legend-factor", new double[] { 9, 7 });
+		factorCeiling.put("r15-plot-inner-factor", new double[] { 93.5, 63 });
 		for (String p : new String[] { "r15-title-factor", "r15-legend-factor", "r15-plot-inner-factor" }) {
-			OPEN.put(p, "the title, legend or plot area placed in factor mode: Excel's offsets are not the spec's shares of the chart from"
-					+ " Office's own place (0.10 is 39.1pt, not 43.2, for the title); edge mode, which Excel writes, is drawn exactly");
+			open(p, "the title, legend or plot area placed in factor mode: Excel's offsets are not the spec's shares of the chart from"
+					+ " Office's own place (0.10 is 39.1pt, not 43.2, for the title); edge mode, which Excel writes, is drawn exactly",
+					factorCeiling.get(p)[0], (int) factorCeiling.get(p)[1]);
 		}
-		OPEN.put("r15-labels-linked-format", "numbers linked to their source: Excel formats them as the cells (General), Word as the chart's"
-				+ " cache (#,##0.00); the probe's cache and cells disagree on purpose, and docx4j draws the cache's, as Word does");
+		open("r15-labels-linked-format", "numbers linked to their source: Excel formats them as the cells (General), Word as the chart's"
+				+ " cache (#,##0.00); the probe's cache and cells disagree on purpose, and docx4j draws the cache's, as Word does (a chart"
+				+ " in an xlsx would be right with the cells, which docx4j-chart-render doesn't read)", 16, 9);
 		for (String p : new String[] { "r14-markers-symbols", "r14-markers-sizes" }) {
-			OPEN.put(p, "Word's PDF puts markers on its 0.24pt grid, flooring a circle's or square's box and rounding a diamond's: up to"
-					+ " 0.48pt from the marker at its size on its point (PowerPoint's PDF has them at their size, P4)");
+			open(p, "Word's PDF puts markers on its 0.24pt grid, flooring a circle's or square's box and rounding a diamond's: up to"
+					+ " 0.48pt from the marker at its size on its point (PowerPoint's PDF has them at their size, P4)", 1,
+					p.equals("r14-markers-symbols") ? 38 : 2);
 		}
 	}
 
@@ -179,6 +220,11 @@ public class ChartRenderGateTest {
 			if (r.passes()) passing++;
 			if (!OPEN.containsKey(r.probe) && !r.passes()) failed.add(r.toString());
 			if (OPEN.containsKey(r.probe) && r.passes()) failed.add(r.probe + " passes now: take it off OPEN");
+			double[] c = CEILING.get(r.probe);
+			if (c != null && !r.passes() && (r.worst > c[0] || r.misses.size() > c[1])) {
+				failed.add(String.format("%s is further off than its ceiling (worst %.2fpt, %d misses; ceiling %.2fpt, %d): %s", r.probe, r.worst,
+						r.misses.size(), c[0], (int) c[1], r));
+			}
 		}
 		System.out.println(String.format("CR-037 gate: %d probes drawn, %d within tolerance in every element; elements %d/%d (%.1f%%)",
 				results.size(), passing, within, checked, checked == 0 ? 0 : 100.0 * within / checked));
