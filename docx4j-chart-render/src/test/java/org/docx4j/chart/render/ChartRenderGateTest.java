@@ -64,10 +64,15 @@ public class ChartRenderGateTest {
 			OPEN.put(p, "text in tx1 lumMod 50% lumOff 50%: Office draws 7F7F7F, docx4j 808080 (127.5 rounded up); CR-034's known one-unit"
 					+ " luminance cases: rounding half down would fix lum, lumMod and the picker but not hueMod, satMod and satOff (measured)");
 		}
-		for (String p : new String[] { "r6-pie-outEnd", "r6-pie-bestFit", "r8-pie-labels-outside", "r15-labels-pie-everything", "r15-labels-pie-percent",
-				"r15-labels-pie-twelve-bestFit", "r15-labels-pie-twelve-outEnd", "r15-labels-pie-moved", "p6-pie-data-labels" }) {
-			OPEN.put(p, "a pie's labels outside it (outEnd) or at best fit: Office's places are not found; outside, 3.1 to 4.6pt off the arc"
-					+ " with crowded labels pushed aside (Excel's collision avoidance), best fit on whole pixels at 96 dpi and wrapped (R15)");
+		List<String> bestFit = new ArrayList<>(java.util.Arrays.asList("r6-pie-bestFit", "r15-labels-pie-everything", "r15-labels-pie-percent",
+				"r15-labels-pie-twelve-bestFit", "p6-pie-data-labels"));
+		// (at 105 degrees the approximation is within tolerance)
+		for (int a = 0; a < 360; a += 15) if (a != 105) bestFit.add("r16-bestFit-a" + a);
+		for (String share : new String[] { "3", "6", "15", "25", "40", "15-long" }) bestFit.add("r16-bestFit-share-" + share);
+		for (String p : bestFit) {
+			OPEN.put(p, "a pie's labels at best fit: inside the slice (R16: even on a 3% slice), Excel's place not found: its boxes on"
+					+ " whole pixels at 96 dpi, edge by edge, and placed by a rule no model of R16 fits (the farthest corner 1.2pt inside the"
+					+ " arc, drawn, is up to 1.7pt off), wrapped where they won't fit (r15-labels-pie-everything)");
 		}
 		for (String p : new String[] { "r15-title-factor", "r15-legend-factor", "r15-plot-inner-factor" }) {
 			OPEN.put(p, "the title, legend or plot area placed in factor mode: Excel's offsets are not the spec's shares of the chart from"

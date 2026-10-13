@@ -467,3 +467,78 @@ p6-scatter-axis-titles	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its l
 p6-scatter-data-labels	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
 p6-scatter-number-format	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
 c35-filtered	R15	360	216	xlsx					Excel's own chart with a series filtered out (CR-035's p2-filtered), its layout	
+r16-outEnd-a0	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 0 degrees	
+r16-outEnd-a15	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 15 degrees	
+r16-outEnd-a30	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 30 degrees	
+r16-outEnd-a45	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 45 degrees	
+r16-outEnd-a60	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 60 degrees	
+r16-outEnd-a75	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 75 degrees	
+r16-outEnd-a90	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 90 degrees	
+r16-outEnd-a105	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 105 degrees	
+r16-outEnd-a120	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 120 degrees	
+r16-outEnd-a135	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 135 degrees	
+r16-outEnd-a150	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 150 degrees	
+r16-outEnd-a165	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 165 degrees	
+r16-outEnd-a180	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 180 degrees	
+r16-outEnd-a195	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 195 degrees	
+r16-outEnd-a210	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 210 degrees	
+r16-outEnd-a225	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 225 degrees	
+r16-outEnd-a240	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 240 degrees	
+r16-outEnd-a255	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 255 degrees	
+r16-outEnd-a270	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 270 degrees	
+r16-outEnd-a285	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 285 degrees	
+r16-outEnd-a300	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 300 degrees	
+r16-outEnd-a315	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 315 degrees	
+r16-outEnd-a330	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 330 degrees	
+r16-outEnd-a345	R16	432	252	xlsx,docx	2013		36,36		one label (10) at outEnd, its slice's middle at 345 degrees	
+r16-bestFit-a0	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 0 degrees	
+r16-bestFit-a15	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 15 degrees	
+r16-bestFit-a30	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 30 degrees	
+r16-bestFit-a45	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 45 degrees	
+r16-bestFit-a60	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 60 degrees	
+r16-bestFit-a75	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 75 degrees	
+r16-bestFit-a90	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 90 degrees	
+r16-bestFit-a105	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 105 degrees	
+r16-bestFit-a120	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 120 degrees	
+r16-bestFit-a135	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 135 degrees	
+r16-bestFit-a150	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 150 degrees	
+r16-bestFit-a165	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 165 degrees	
+r16-bestFit-a180	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 180 degrees	
+r16-bestFit-a195	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 195 degrees	
+r16-bestFit-a210	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 210 degrees	
+r16-bestFit-a225	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 225 degrees	
+r16-bestFit-a240	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 240 degrees	
+r16-bestFit-a255	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 255 degrees	
+r16-bestFit-a270	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 270 degrees	
+r16-bestFit-a285	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 285 degrees	
+r16-bestFit-a300	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 300 degrees	
+r16-bestFit-a315	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 315 degrees	
+r16-bestFit-a330	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 330 degrees	
+r16-bestFit-a345	R16	432	252	xlsx,docx	2013		36,36		one label (10) at bestFit, its slice's middle at 345 degrees	
+r16-outEnd-two-lines-a0	R16	432	252	xlsx,docx	2013		36,36		one label of two lines (category, percentage) at outEnd, at 0 degrees	
+r16-outEnd-12pt-a0	R16	432	252	xlsx,docx	2013		36,36		one label (10) at 12pt at outEnd, at 0 degrees	
+r16-outEnd-two-lines-a45	R16	432	252	xlsx,docx	2013		36,36		one label of two lines (category, percentage) at outEnd, at 45 degrees	
+r16-outEnd-12pt-a45	R16	432	252	xlsx,docx	2013		36,36		one label (10) at 12pt at outEnd, at 45 degrees	
+r16-outEnd-two-lines-a90	R16	432	252	xlsx,docx	2013		36,36		one label of two lines (category, percentage) at outEnd, at 90 degrees	
+r16-outEnd-12pt-a90	R16	432	252	xlsx,docx	2013		36,36		one label (10) at 12pt at outEnd, at 90 degrees	
+r16-outEnd-two-lines-a135	R16	432	252	xlsx,docx	2013		36,36		one label of two lines (category, percentage) at outEnd, at 135 degrees	
+r16-outEnd-12pt-a135	R16	432	252	xlsx,docx	2013		36,36		one label (10) at 12pt at outEnd, at 135 degrees	
+r16-outEnd-two-lines-a180	R16	432	252	xlsx,docx	2013		36,36		one label of two lines (category, percentage) at outEnd, at 180 degrees	
+r16-outEnd-12pt-a180	R16	432	252	xlsx,docx	2013		36,36		one label (10) at 12pt at outEnd, at 180 degrees	
+r16-outEnd-two-lines-a225	R16	432	252	xlsx,docx	2013		36,36		one label of two lines (category, percentage) at outEnd, at 225 degrees	
+r16-outEnd-12pt-a225	R16	432	252	xlsx,docx	2013		36,36		one label (10) at 12pt at outEnd, at 225 degrees	
+r16-outEnd-two-lines-a270	R16	432	252	xlsx,docx	2013		36,36		one label of two lines (category, percentage) at outEnd, at 270 degrees	
+r16-outEnd-12pt-a270	R16	432	252	xlsx,docx	2013		36,36		one label (10) at 12pt at outEnd, at 270 degrees	
+r16-outEnd-two-lines-a315	R16	432	252	xlsx,docx	2013		36,36		one label of two lines (category, percentage) at outEnd, at 315 degrees	
+r16-outEnd-12pt-a315	R16	432	252	xlsx,docx	2013		36,36		one label (10) at 12pt at outEnd, at 315 degrees	
+r16-bestFit-share-3	R16	432	252	xlsx,docx	2013		36,36		one label at bestFit on a slice of 3%, its middle at 90 degrees	
+r16-bestFit-share-6	R16	432	252	xlsx,docx	2013		36,36		one label at bestFit on a slice of 6%, its middle at 90 degrees	
+r16-bestFit-share-15	R16	432	252	xlsx,docx	2013		36,36		one label at bestFit on a slice of 15%, its middle at 90 degrees	
+r16-bestFit-share-25	R16	432	252	xlsx,docx	2013		36,36		one label at bestFit on a slice of 25%, its middle at 90 degrees	
+r16-bestFit-share-40	R16	432	252	xlsx,docx	2013		36,36		one label at bestFit on a slice of 40%, its middle at 90 degrees	
+r16-bestFit-share-15-long	R16	432	252	xlsx,docx	2013		36,36		one label at bestFit on a slice of 15%: category, value and percentage	
+r16-shrink-288x168	R16	288	168	xlsx,docx	2013		36,36		Word's pie, labels at outEnd, 288 by 168pt	
+r16-shrink-576x336	R16	576	336	xlsx,docx	2013		36,36		Word's pie, labels at outEnd, 576 by 336pt	
+r16-shrink-432x144	R16	432	144	xlsx,docx	2013		36,36		Word's pie, labels at outEnd, 432 by 144pt	
+r16-shrink-216x288	R16	216	288	xlsx,docx	2013		36,36		Word's pie, labels at outEnd, 216 by 288pt	
+r16-shrink-doughnut-288x168	R16	288	168	xlsx,docx	2013		36,36		Word's doughnut with labels, 288 by 168pt	

@@ -1,0 +1,20 @@
+{
+ "probe": "r16-shrink-576x336",
+ "app": "excel",
+ "size": [576,336],
+ "chartType": 5,
+ "chartStyle": 251,
+ "displayBlanksAs": 1,
+ "chartObject": {"left":144,"top":0,"width":576,"height":336},
+ "chartArea": {"left":144,"top":0,"width":571,"height":331},
+ "plotArea": {"left":169.422,"top":51.03,"width":229.156,"height":229.156,"insideLeft":169.422,"insideTop":51.03,"insideWidth":229.156,"insideHeight":229.156},
+ "hasTitle": true,
+ "title": {"left":266.602,"top":2,"width":34.795,"height":20.09,"text":"Sales","orientation":-4128,"font":{"size":14,"name":"Calibri","size2":14}},
+ "hasLegend": true,
+ "legend": {"left":196.174,"top":309.125,"width":175.652,"height":16.875,"position":-4107,"font":{"size":18,"size2":9},"entries":[{"left":202.029,"top":312.125,"width":38.151,"height":10.985,"key":{"left":204.501,"top":314.596,"width":4.943,"height":4.943}},{"left":243.111,"top":312.125,"width":38.151,"height":10.985,"key":{"left":245.583,"top":314.596,"width":4.943,"height":4.943}},{"left":287.118,"top":312.125,"width":38.151,"height":10.985,"key":{"left":289.589,"top":314.596,"width":4.943,"height":4.943}},{"left":329.534,"top":312.125,"width":38.151,"height":10.985,"key":{"left":332.006,"top":314.596,"width":4.943,"height":4.943}}]},
+ "axes": [{"type":1,"group":1},{"type":2,"group":1},{"type":3,"group":1}],
+ "series": [{"index":1,"name":"Sales","chartType":5,"axisGroup":1,"plotOrder":1,"fill":"4472C4","line":"FFFFFF","lineWeight":1.5,"lineVisible":-1,"markerStyle":-4142,"markerSize":5,"explosion":0,"hasDataLabels":true,"values":[8.2,3.2,1.4,1.2],"xValues":["1st Qtr","2nd Qtr","3rd Qtr","4th Qtr"],"points":[{"left":225.233,"top":51.03,"width":58.767,"height":212.937,"fill":"4472C4","explosion":0,"slice":{"1":[225.233,263.966],"2":[394.449,196.089],"3":[284,51.03],"4":[284,108.319],"5":[284,165.607],"6":[254.617,214.787],"7":[null,null],"8":[null,null],"9":[null,null]},"dataLabel":{"left":400.234,"top":192.246,"width":17.39,"height":13.985,"text":"8.2","position":2,"font":{"size":18,"size2":9}}},{"left":178.643,"top":120.576,"width":105.357,"height":143.391,"fill":"ED7D31","explosion":0,"slice":{"1":[178.643,120.575],"2":[175.03,201.014],"3":[225.233,263.966],"4":[254.617,214.787],"5":[284,165.607],"6":[231.321,143.091],"7":[null,null],"8":[null,null],"9":[null,null]},"dataLabel":{"left":151.931,"top":197.71,"width":17.39,"height":13.985,"text":"3.2","position":2,"font":{"size":18,"size2":9}}},{"left":178.643,"top":67.248,"width":105.357,"height":98.359,"fill":"A5A5A5","explosion":0,"slice":{"1":[225.233,67.248],"2":[197.715,90.222],"3":[178.643,120.575],"4":[231.321,143.091],"5":[284,165.607],"6":[254.617,116.428],"7":[null,null],"8":[null,null],"9":[null,null]},"dataLabel":{"left":175.768,"top":74.105,"width":17.39,"height":13.985,"text":"1.4","position":2,"font":{"size":18,"size2":9}}},{"left":225.233,"top":51.03,"width":58.767,"height":114.578,"fill":"FFC000","explosion":0,"slice":{"1":[284,51.03],"2":[253.518,55.159],"3":[225.233,67.248],"4":[254.617,116.428],"5":[284,165.607],"6":[284,108.319],"7":[null,null],"8":[null,null],"9":[null,null]},"dataLabel":{"left":235.932,"top":36.756,"width":17.39,"height":13.985,"text":"1.2","position":2,"font":{"size":18,"size2":9}}}]}],
+ "excelVersion": "16.0 build 20430",
+ "repaired": false,
+ "png": {"width":960,"height":560,"dpiX":119.99}
+}

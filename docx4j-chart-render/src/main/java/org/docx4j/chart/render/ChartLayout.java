@@ -180,11 +180,26 @@ final class ChartLayout {
 	static final double LABEL_PIE_IN = 3.352;
 	/**
 	 * A pie whose labels may go outside it (outEnd, bestFit), or a doughnut with labels, is smaller
-	 * each side by this and this share of its side, whatever its labels (r6-pie-outEnd, -bestFit,
-	 * r8-pie-labels-outside, r15-labels-doughnut: 181.035 to 155.656pt; p6-pie-data-labels and
-	 * p6-doughnut-data-labels: 145.05 to 124.16pt; two sizes: provisional)
+	 * each side by this and this share of its side, whatever its labels' size (R16's shrink at four
+	 * chart shapes, r6-pie-outEnd, p6-pie-data-labels, R15's doughnut: six sides from 73 to 265pt, to
+	 * 0.01pt: 7/8 of the side less 2.75pt)
 	 */
-	static final double LABEL_PIE_ROOM = 1.395, LABEL_PIE_SHARE = 0.06239;
+	static final double LABEL_PIE_ROOM = 1.375, LABEL_PIE_SHARE = 1 / 16.0;
+	/**
+	 * A pie's label outside it hangs from a point beyond the arc on its slice's middle ray: this
+	 * share of the radius (and of the label's width) across, this share of the radius down or up
+	 * (R16: one label at 24 angles and three sizes, the pie at five sizes; r6, r8, R15's twelve
+	 * slices: to 0.01pt)
+	 */
+	static final double LABEL_OUT_X = 0.0508, LABEL_OUT_X_PER_WIDTH = 0.01, LABEL_OUT_Y = 0.04;
+	/**
+	 * A pie's label outside it near the top or bottom slides from its middle to its side three times
+	 * as fast as tan of its angle (R16: 0.093 of its width at 15 degrees, at its side from 30;
+	 * one angle between: provisional)
+	 */
+	static final double LABEL_OUT_SLIDE = 1.5;
+	/** A pie's label at best fit, inside: its farthest corner this far inside the arc (R16: an approximation, boxes up to 1.5pt off) */
+	static final double LABEL_BEST_FIT_IN = 1.2;
 	/**
 	 * A plot area placed by hand has its axes' labels this much further in from its left and bottom
 	 * edges than Office's own plot area, and the top value label's half line below its top
@@ -2249,6 +2264,8 @@ final class ChartLayout {
 		CTTx tx;
 		/** the label moved by hand (its own c:dLbl's layout) */
 		CTManualLayout manual;
+		/** what it shows said by the point's own c:dLbl */
+		boolean own;
 
 		boolean shown() {
 			return !deleted && (value || category || series || percent || tx != null);
@@ -2278,6 +2295,7 @@ final class ChartLayout {
 				return;
 			}
 			deleted = false;
+			own = l.getShowVal() != null || l.getShowCatName() != null || l.getShowPercent() != null || l.getShowSerName() != null;
 			if (l.getLayout() != null && l.getLayout().getManualLayout() != null) manual = l.getLayout().getManualLayout();
 			if (l.getShowVal() != null) value = l.getShowVal().isVal();
 			if (l.getShowCatName() != null) category = l.getShowCatName().isVal();
@@ -2343,8 +2361,9 @@ final class ChartLayout {
 				}
 				if (ls.percent) parts.add(format(percent(values(sr, scatter), an.i), "0%"));
 				// Office separates the parts by ", " (r15-labels-value-category, -all-three, -pie-everything),
-				// but a pie's category and percentage alone by a line (r8-pie-labels-outside; provisional)
-				boolean catPercent = pie && ls.category && ls.percent && !ls.value && !ls.series;
+				// but a pie's category and percentage alone, shown by the series' labels, by a line
+				// (r8-pie-labels-outside; a point's own label shows them with ", ", R16's two-part labels)
+				boolean catPercent = pie && ls.category && ls.percent && !ls.value && !ls.series && !ls.own;
 				String sep = ls.separator != null ? ls.separator : catPercent ? "\n" : ", ";
 				text = String.join(sep, parts);
 			}
@@ -2470,10 +2489,32 @@ final class ChartLayout {
 			case "ctr":
 				dist = (an.inner + an.outer) / 2;
 				break;
-			case "outEnd":
-				dist = an.outer + 3.95 + reach;
+			case "outEnd": {
+				// from a point beyond the arc, the box hung by a share of its width and height that
+				// slides round its edge with the angle: its bottom edge to 45 degrees, its middle at 90,
+				// its top edge from 135 (b = 1/2 + cot / 2); near the top and bottom its middle, sliding
+				// to its side by 30 degrees (R16)
+				double px = an.x + (an.outer * (1 + LABEL_OUT_X) + LABEL_OUT_X_PER_WIDTH * bw) * ux;
+				double py = an.y + an.outer * (1 + LABEL_OUT_Y) * uy;
+				double sin = ux, cos = -uy;
+				double b = Math.max(0, Math.min(1, 0.5 + 0.5 * cos / Math.abs(sin)));
+				double a0 = Math.max(0, Math.min(0.5, 0.5 - LABEL_OUT_SLIDE * Math.abs(sin) / Math.abs(cos)));
+				double a = sin >= 0 ? a0 : 1 - a0;
+				return new double[] { px - a * bw, py - b * bh };
+			}
+			case "bestFit": {
+				// inside, as far out as its farthest corner allows (an approximation: Excel's best fit
+				// is laid out on whole pixels by a rule not found, R16)
+				double lo = 0, hi = an.outer;
+				for (int k = 0; k < 40; k++) {
+					double m = (lo + hi) / 2;
+					if (Math.hypot(Math.abs(m * ux) + bw / 2, Math.abs(m * uy) + bh / 2) > an.outer - LABEL_BEST_FIT_IN) hi = m;
+					else lo = m;
+				}
+				dist = lo;
 				break;
-			default: // inEnd, and (provisional) bestFit
+			}
+			default: // inEnd
 				dist = an.outer - LABEL_PIE_IN - reach;
 			}
 			return new double[] { an.x + dist * ux - bw / 2, an.y + dist * uy - bh / 2 };

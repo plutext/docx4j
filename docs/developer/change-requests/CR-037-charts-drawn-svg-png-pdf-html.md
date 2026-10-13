@@ -7,8 +7,8 @@ and date axes, 328 of the 338 probes drawn within tolerance in every element and
 every swept size but four (§11); phase 3 DONE 2026-10-13 (Jason: "close phase 3"): charts drawn
 in PDF, HTML and pptx output, `ChartImages`; P3 14/14 through PDF on both pathways, P4 13/13
 through SVG-in-HTML, the box probes and the corpora unmoved (§11); phase 4 IN PROGRESS 2026-10-13:
-data labels, axis titles, manual layouts, axis options, fills and effects drawn, R15 run, 479 of the
-507 probes drawn within tolerance in every element, the rest named (§11).  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
+data labels, axis titles, manual layouts, axis options, fills and effects drawn, R15 and R16 run,
+529 of the 582 probes drawn within tolerance in every element, the rest named (§11).  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
 (integration) of the charts plan.  Do not implement yet."); reviewed the same day by the
 docx4j-13 session (Claude Fable 5.1, at Jason's request): approved with nine amendments, all
 accepted by Jason ("apply all nine") and applied (§8).  D1 to D9 taken as recommended (Jason, 2026-10-12);
@@ -1007,12 +1007,12 @@ three (a constant series, all zeros, one at an edge) by its refinements.
     marker's edge, centred on a bar or point; a line's labels stand off as from a marker of its
     size, Office's 5 where it shows none (R6, r15-labels-*, to 0.001pt);
   - a pie's label at its centre is half way out its middle ray; inside its end, the box leaves
-    the ray 3.352pt inside the arc (R6, R10's 258: all eight to 0.001pt); a pie with labels outside
-    or at best fit, and a doughnut with labels, is smaller by 1.395pt + 6.24% of its side each side
-    (two sizes: provisional);
-  - Office separates a label's parts by ", ", a pie's category and percentage alone by a line
-    (provisional); a pie's percentages are whole and add up to 100%, the difference on the largest
-    (style 258: 58%, not 59%);
+    the ray 3.352pt inside the arc (R6, R10's 258: all eight to 0.001pt); outside its end, see R16
+    below; a pie with labels outside or at best fit, and a doughnut with labels, is smaller by
+    1.375pt + 1/16 of its side each side, whatever the labels' size (R16 below);
+  - Office separates a label's parts by ", ", but a pie's category and percentage alone, shown by
+    the series' labels, by a line (r8; a point's own label shows them with ", ", R16); a pie's
+    percentages are whole and add up to 100%, the difference on the largest (style 258: 58%, not 59%);
   - a label's legend key is the legend's square, in a slot of two keys and 3pt before the text;
     a label moved in factor mode is moved by shares of the chart from its own place;
   - an axis title's box is its text and the title's padding, turned with it; it takes the plot
@@ -1047,13 +1047,28 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   - Excel formats numbers linked to their source as the worksheet's cells, Word as the chart's
     cache (r15-labels-linked-format, whose cache and cells disagree on purpose); docx4j draws the
     cache's, as Word does.
-- **The gate** (`ChartRenderGateTest`, R10's styled charts in it now): **507 probes drawn, 479
-  within tolerance in every element** (99.3% of 46,858); phase 2's close was 338 and 328.  Every
-  probe of R5, R6's bars and lines, R9, R15's axis titles, axis options, legends and fills, and every
-  P2 and P6 settings chart but the pie's data labels.  Open (each named with its reason in `OPEN`):
-  - a pie's labels outside it or at best fit (nine probes): outside, 3.1 to 4.6pt off the arc, the
-    crowded labels pushed aside by up to 5pt (Excel's collision avoidance); best fit on whole
-    pixels at 96 dpi and wrapped where a label won't fit: not found;
+- **R16** (Jason's run the same day, nothing failed; 75 probes, xlsx and docx): a pie with one
+  label, on a small first slice turned round the pie by 15 degrees, at outEnd and at best fit; two
+  other label sizes at eight angles; best fit on five slice widths; the pie's shrink at four more
+  chart shapes and a doughnut's.  **A label outside its pie** hangs from a point beyond the arc on
+  its slice's middle ray, 0.0508 of the radius and 0.01 of the label's width across, 0.04 of the
+  radius down or up; the box hangs from that point by shares of its width and height that slide
+  round its edge with the angle: vertically b = 1/2 + cot/2 between 0 and 1 (its bottom edge on
+  the point up to 45 degrees, its middle at 90, its top edge from 135), horizontally its middle at
+  the top and bottom sliding to its side three times as fast as tan of the angle (on its side from
+  about 18 degrees; one angle between: provisional).  Every R16 outEnd probe, the five pie sizes,
+  the three label sizes, and r6's, r8's, R15's twelve slices and moved label to 0.01pt: what
+  looked like Excel pushing crowded labels aside was this slide.  **The shrink**: 7/8 of the side
+  less 2.75pt (six sides, 73 to 265pt, to 0.01pt).  **Best fit** keeps the label inside the slice
+  in every probe (on a 3% slice too); its boxes lie on whole pixels at 96 dpi, edge by edge, and no
+  model of R16 fits their places (the farthest corner 1.2pt inside the arc, drawn, is up to 1.7pt
+  off): open.
+- **The gate** (`ChartRenderGateTest`, R10's styled charts in it now): **582 probes drawn, 529
+  within tolerance in every element** (99.4% of 50,790); phase 2's close was 338 and 328.  Every
+  probe of R5, R6's bars and lines, R9, R15's axis titles, axis options, legends and fills, R16 but
+  best fit, and every P2 and P6 settings chart but the pie's data labels (best fit).  Open (each
+  named with its reason in `OPEN`):
+  - a pie's labels at best fit (34 probes, R16's among them): above;
   - factor mode for the title, legend and plot area (three): Excel's offsets are not the spec's
     (0.10 is 39.1pt for the title, not 43.2); Excel itself writes edge mode, drawn exactly;
   - text in tx1 lumMod 50% lumOff 50% (styles 202, 254): Office 7F7F7F, docx4j 808080 (CR-034's
@@ -1062,7 +1077,7 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   - the kerned "Y-Values" title (now eight probes with R15's scatter charts), phase 2's markers,
     plots 1pt high and set maximum, and the linked number format (above).
 - **Pictures** (rendered at Excel's 1.667 px/pt against Excel's PNGs, D4's per-probe tolerance):
-  **460 of 468 within tolerance**; the eight: phase 1's two small charts, three pies' labels (open),
+  **536 of 543 within tolerance**; the seven: phase 1's two small charts, two pies' labels at best fit (open),
   R15's patterns (the tile's phase against Excel's resampling: 3.7% against 2.0%), the radial
   gradient on a pie's slices (above) and the factor-mode plot area (open).  Style 213's glow and
   R15's shadows pass once drawn (a glow follows what is drawn: around an outline alone, not its
@@ -1088,6 +1103,6 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   Batik's SVG generator encodes an embedded picture through batik-codec, not a dependency of
   docx4j-chart-render: the renderer gives it an image handler using the JDK's PNG writer.
 - **Tests**: docx4j-chart-render 20/0 (`ChartRendererSpiTest` and `ChartImagesTest` now refuse a
-  secondary axis, made in memory, where they refused data labels; `ChartRenderFixturesTest` 468
+  secondary axis, made in memory, where they refused data labels; `ChartRenderFixturesTest` 543
   probes, skipping a pattern's colour as a gradient's, Excel's carriage-return paragraphs, the
   filtered series).

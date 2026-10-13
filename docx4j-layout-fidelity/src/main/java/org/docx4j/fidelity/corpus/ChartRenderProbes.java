@@ -126,7 +126,8 @@ import org.xlsx4j.model.CellRef;
  * 45 degrees push the plot right; R14 (phase 2) what the other types add, sweeps, and Excel's own
  * charts of CR-036 (an xlsx only); R15 (phase 4) what the settings and the data add: axis titles,
  * data labels, manual layouts, legend entries, axis options, fills and effects, titles of several
- * runs, and Excel's own charts of CR-036's P2 and P6 settings (an xlsx only).</p>
+ * runs, and Excel's own charts of CR-036's P2 and P6 settings (an xlsx only); R16 (phase 4) a
+ * pie's labels outside it and at best fit, one label on a small slice turned round the pie.</p>
  *
  * <p>One theme for each probe (review A2): the docx's theme part (Office 2013's, Calibri and
  * accent 1 4472C4, unless the probe says 2023) is copied into the xlsx, which docx4j makes with
@@ -517,6 +518,7 @@ public final class ChartRenderProbes {
 		}
 		r14(l);
 		r15(l);
+		r16(l);
 		return l;
 	}
 
@@ -922,6 +924,84 @@ public final class ChartRenderProbes {
 		}
 		l.add(copy("R15", new File(authoring.getParentFile(), "p2-filtered.xlsx"), "c35-filtered", 360, 216,
 				"Excel's own chart with a series filtered out (CR-035's p2-filtered), its layout"));
+	}
+
+	/**
+	 * R16 (CR-037 phase 4): where Office puts a pie's label outside it (outEnd) and at best fit, its
+	 * rule apart from its collision avoidance.  Each pie has one label, on its small first slice (10
+	 * of 100), the slice turned by the first slice angle so that the label's angle goes round the
+	 * pie by 15 degrees, its text the same throughout; then two other label sizes at eight angles;
+	 * best fit over five slice widths (where it leaves the slice); and the pie's shrink for labels
+	 * outside at four more chart shapes, and a doughnut's
+	 */
+	private static void r16(List<ChartRenderProbes> l) {
+		ChartType pie = ChartType.PIE;
+		for (String pos : new String[] { "outEnd", "bestFit" }) {
+			for (int mid = 0; mid < 360; mid += 15) {
+				final int first = Math.floorMod(mid - 18, 360);
+				l.add(probe("R16", "r16-" + pos + "-a" + mid, twoSlices(10), "one label (10) at " + pos + ", its slice's middle at " + mid
+						+ " degrees").tweak(c -> {
+							oneLabel(c, 0, pos, false, true, false);
+							firstSlice(c, first);
+						}));
+			}
+		}
+		for (int mid = 0; mid < 360; mid += 45) {
+			final int first = Math.floorMod(mid - 18, 360);
+			l.add(probe("R16", "r16-outEnd-two-lines-a" + mid, twoSlices(10), "one label of two lines (category, percentage) at outEnd, at "
+					+ mid + " degrees").tweak(c -> {
+						oneLabel(c, 0, "outEnd", true, false, true);
+						firstSlice(c, first);
+					}));
+			l.add(probe("R16", "r16-outEnd-12pt-a" + mid, twoSlices(10), "one label (10) at 12pt at outEnd, at " + mid + " degrees").tweak(c -> {
+				oneLabel(c, 0, "outEnd", false, true, false);
+				labelSize(c, 1200);
+				firstSlice(c, first);
+			}));
+		}
+		// best fit: inside the slice while the label fits, outside (with a leader line?) where it doesn't
+		for (int share : new int[] { 3, 6, 15, 25, 40 }) {
+			final int first = Math.floorMod(90 - share * 360 / 200, 360);
+			l.add(probe("R16", "r16-bestFit-share-" + share, twoSlices(share), "one label at bestFit on a slice of " + share
+					+ "%, its middle at 90 degrees").tweak(c -> {
+						oneLabel(c, 0, "bestFit", false, true, false);
+						firstSlice(c, first);
+					}));
+		}
+		l.add(probe("R16", "r16-bestFit-share-15-long", twoSlices(15), "one label at bestFit on a slice of 15%: category, value and percentage")
+				.tweak(c -> {
+					oneLabel(c, 0, "bestFit", true, true, true);
+					firstSlice(c, Math.floorMod(90 - 27, 360));
+				}));
+		// the shrink for labels outside, at other chart shapes (r6-pie-outEnd at 432 by 252, p6 at 360 by 216)
+		int[][] shapes = { { 288, 168 }, { 576, 336 }, { 432, 144 }, { 216, 288 } };
+		for (int[] sh : shapes) {
+			l.add(probe("R16", "r16-shrink-" + sh[0] + "x" + sh[1], words(pie).dataLabels(true), "Word's pie, labels at outEnd, " + sh[0] + " by "
+					+ sh[1] + "pt").size(sh[0], sh[1]).tweak(c -> labelPosition(c, STDLblPos.OUT_END)));
+		}
+		l.add(probe("R16", "r16-shrink-doughnut-288x168", words(ChartType.DOUGHNUT).dataLabels(true), "Word's doughnut with labels, 288 by 168pt")
+				.size(288, 168));
+	}
+
+	/** A pie of two slices, the first share percent ("Alpha"), the rest ("Rest"), with Excel's data labels (each probe chooses what shows) */
+	private static ChartDefinition twoSlices(int share) {
+		return ChartDefinition.of(ChartType.PIE).categories("Alpha", "Rest").series("Sales", share, 100 - share).dataLabels(true);
+	}
+
+	/**
+	 * One point's label alone: the series' labels (Excel's, from dataLabels) showing nothing, a c:dLbl
+	 * for the point showing what is asked at the position (its style the series' labels')
+	 */
+	private static void oneLabel(CTChartSpace c, int idx, String pos, boolean category, boolean value, boolean percent) {
+		CTDLbls d = dLbls(c).get(0);
+		d.setShowVal(bool(false));
+		d.setShowCatName(bool(false));
+		d.setShowPercent(bool(false));
+		d.setShowSerName(bool(false));
+		CTDLbl one = frag(CTDLbl.class, "<c:idx val=\"" + idx + "\"/><c:dLblPos val=\"" + pos + "\"/><c:showLegendKey val=\"0\"/><c:showVal val=\""
+				+ (value ? 1 : 0) + "\"/><c:showCatName val=\"" + (category ? 1 : 0) + "\"/><c:showSerName val=\"0\"/><c:showPercent val=\""
+				+ (percent ? 1 : 0) + "\"/><c:showBubbleSize val=\"0\"/>");
+		d.getDLbl().add(one);
 	}
 
 	private static final String NS = " xmlns:c=\"http://schemas.openxmlformats.org/drawingml/2006/chart\""
