@@ -117,6 +117,10 @@ Changes in Version 17.3.3
   frame in a docx, on a slide and in a sheet (for a chartex chart, the Choice of an
   mc:AlternateContent with the Fallback given), part names and Office's ids.  ChartCreator.delete
   takes a chartex chart's mc:AlternateContent whole, with its Fallback's picture.  CR-039.
+- A histogram's bins (chartex cx:binSize, cx:binCount) are kept when docx4j saves a file: they are
+  bound with @val, as Excel writes them, where they were read as text (as [MS-ODRAWXML]'s schema
+  has them) and lost.  CTBinning.getBinSize() and getBinCount() now return CTBinSize and CTBinCount
+  (their getVal() the number).  CR-040.
 
 
 Version 17.3.2

@@ -402,10 +402,19 @@
      </xsd:restriction>
    </xsd:simpleType>
    <xsd:complexType name="CT_Aggregation"/>
+   <!-- docx4j (CR-040): [MS-ODRAWXML] revision 21.0 has binSize an element of xsd:double and
+        binCount of xsd:unsignedInt, with text content; Excel writes <cx:binSize val="10"/> and
+        <cx:binCount val="6"/>, and refuses a file with the text form.  Bound as Excel writes them. -->
+   <xsd:complexType name="CT_BinSize">
+     <xsd:attribute name="val" type="xsd:double" use="required"/>
+   </xsd:complexType>
+   <xsd:complexType name="CT_BinCount">
+     <xsd:attribute name="val" type="xsd:unsignedInt" use="required"/>
+   </xsd:complexType>
    <xsd:complexType name="CT_Binning">
      <xsd:choice minOccurs="0" maxOccurs="1">
-       <xsd:element name="binSize" type="xsd:double"/>
-       <xsd:element name="binCount" type="xsd:unsignedInt"/>
+       <xsd:element name="binSize" type="CT_BinSize"/>
+       <xsd:element name="binCount" type="CT_BinCount"/>
      </xsd:choice>
      <xsd:attribute name="intervalClosed" type="ST_IntervalClosedSide" use="optional"/>
      <xsd:attribute name="underflow" type="ST_DoubleOrAutomatic" use="optional"/>

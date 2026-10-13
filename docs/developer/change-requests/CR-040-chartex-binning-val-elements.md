@@ -1,6 +1,6 @@
 # CR-040: A histogram's bins kept - chartex `cx:binSize` and `cx:binCount` bound as Excel writes them (`@val`), not as [MS-ODRAWXML]'s schema has them (text)
 
-Status: PROPOSED 2026-10-14.  Raised by the Enterprise session (plutext-enterprise-java-11-44)
+Status: DONE 2026-10-14 (§6); the Office check passed (Jason).  Proposed the same day, raised by the Enterprise session (plutext-enterprise-java-11-44)
 from enterprise CR-004 phase 0's measurements on Excel 16.0.20326, and verified here the same
 day.  Jason, 2026-10-14: "commit then implement CR-040 with its three recommended decisions" (D1
 to D3, §3).  Owner: Jason Harrop.  One phase.
@@ -72,3 +72,38 @@ should the ports want a read model of them later.
 ## 5. Effort
 
 Half a day, plus the Office check.
+
+## 6. Implementation record (2026-10-14)
+
+- **The xsd.**  `CT_BinSize` and `CT_BinCount` (`val`, required) are added before `CT_Binning`,
+  whose two elements take them, with a comment naming revision 21.0, Excel's form and this CR.
+- **The regeneration** was clean.  Against a checksum of every generated source taken before it,
+  the change is `CTBinning`, the new `CTBinSize` and `CTBinCount`, and the chartex
+  `ObjectFactory`.  Twelve VML classes, `dml.diagram.CTConstraint` and the episode file also
+  differ, but they differ between two runs on the same xsd too: XJC orders attribute groups
+  differently from run to run, and the episode carries a timestamp.  That predates this CR.
+- **Fixtures.**  `charts/chartex/manual-binwidth-10.xlsx` and `manual-bincount-6.xlsx`, copied
+  from the share, their metadata already anonymised ("Author A").
+- **`ChartExBinningTest` (3).**
+  - Excel's bin width and bin count are read (10, 6, `intervalClosed` r), saved as Excel's form
+    and read back the same.
+  - Bins made in code marshal to Excel's form.
+  - Nothing is logged as an `UnmarshalException`.
+- **docx4j writes `val="10.0"`** for a bin width (JAXB's `xsd:double`); the Office check says
+  whether Excel takes it.
+- **Hand-offs** sent to docx4j-generated-objects-ts-82 and docx4j-python-cd, both of which confirmed
+  the trap in their own bindings.  Both wait for the commit's hash.
+  - objects-ts: the facade reads and writes `<cx:binning intervalClosed="r"/>`; jsonix's
+    unexpected-attribute hook can't see an attribute on an element bound as a simple type.
+  - python: its engine keeps the bins (an lxml tree), but its generated binding drops them and
+    raises on writing them back.
+
+**Gate:**
+- the reactor installed clean;
+- core-tests 1558/0 (11 skipped), export-fo-tests 794/0 (9 skipped), docx4j-chart-render 23/0
+  (the chart gate 531 of 665), docx4j-markdown 145/0;
+- the corpora and the probes against b226 (b227, jars frozen 09:56): 0 movers, every event count
+  equal, the probes' scoreboard byte-identical;
+- **the Office check** passed (Jason, 2026-10-14), on the share's `fidelity/cr040-binning/` (the
+  two files docx4j saved, and `CHECK.txt`): Excel opens each without repair, and shows bin width 10
+  and 6 bins.  So Excel takes `val="10.0"`.
