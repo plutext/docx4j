@@ -48,6 +48,14 @@ public class ChartRendererSpiTest {
 	}
 
 	@Test
+	public void theOpenRendererIsNoChartExRenderer() {
+		// the two SPIs are found apart (CR-039): docx4j-chart-render provides only ChartRenderer, so
+		// a chartex renderer beside it never competes with it
+		assertNull(org.docx4j.model.chart.ChartExRenderer.getRenderer());
+		assertEquals(ClassicChartRenderer.class, ChartRenderer.getRenderer().getClass());
+	}
+
+	@Test
 	public void checkDrawsTheTwelveTypesAndTheirSettingsAndRefusesTheRest() throws Exception {
 		ChartRenderer r = new ClassicChartRenderer();
 		for (String t : new String[] { "column-clustered", "column-stacked", "column-stacked-100", "bar-clustered", "bar-stacked",

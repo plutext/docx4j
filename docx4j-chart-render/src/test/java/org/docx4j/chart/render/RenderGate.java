@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.docx4j.chart.render.api.Drawing;
+
 /**
  * docx4j's layout and drawing of a chart against Office's (CR-037 §5), with D4's tolerances:
  * Excel's layout dump (each box Office reports, the value axis) and chart_trace.py's reading of
@@ -124,23 +126,23 @@ final class RenderGate {
 	}
 
 	private static void layout(Result r, Drawing d, Map<String, Object> dump) {
-		if (Boolean.TRUE.equals(dump.get("hasTitle"))) same(r, "title", box(dump.get("title"), ORIGIN), d.boxes.get("title"));
-		else same(r, "title", null, d.boxes.get("title"));
+		if (Boolean.TRUE.equals(dump.get("hasTitle"))) same(r, "title", box(dump.get("title"), ORIGIN), d.getBoxes().get("title"));
+		else same(r, "title", null, d.getBoxes().get("title"));
 		if (Boolean.TRUE.equals(dump.get("hasLegend"))) {
 			Map<String, Object> lg = Json.object(dump.get("legend"));
-			same(r, "legend", box(lg, ORIGIN), d.boxes.get("legend"));
+			same(r, "legend", box(lg, ORIGIN), d.getBoxes().get("legend"));
 			List<Object> entries = Json.list(lg.get("entries"));
 			for (int i = 0; i < entries.size(); i++) {
 				Map<String, Object> e = Json.object(entries.get(i));
-				same(r, "legend entry " + i, box(e, ORIGIN), d.boxes.get("legend.entry." + i));
-				same(r, "legend key " + i, box(e.get("key"), ORIGIN), d.boxes.get("legend.key." + i));
+				same(r, "legend entry " + i, box(e, ORIGIN), d.getBoxes().get("legend.entry." + i));
+				same(r, "legend key " + i, box(e.get("key"), ORIGIN), d.getBoxes().get("legend.key." + i));
 			}
 		}
 		Map<String, Object> pa = Json.object(dump.get("plotArea"));
-		same(r, "plot area", box(pa, ORIGIN), d.boxes.get("plotArea"));
+		same(r, "plot area", box(pa, ORIGIN), d.getBoxes().get("plotArea"));
 		Double il = Json.number(pa.get("insideLeft")), it = Json.number(pa.get("insideTop")), iw = Json.number(pa.get("insideWidth")),
 				ih = Json.number(pa.get("insideHeight"));
-		if (il != null) same(r, "inside", new Rectangle2D.Double(il + ORIGIN, it + ORIGIN, iw, ih), d.boxes.get("inside"));
+		if (il != null) same(r, "inside", new Rectangle2D.Double(il + ORIGIN, it + ORIGIN, iw, ih), d.getBoxes().get("inside"));
 		// points: from the inner frame in Excel, from the box in Word and PowerPoint
 		double pointOrigin = "excel".equals(dump.get("app")) ? ORIGIN : 0;
 		double cw = Json.number(Json.list(dump.get("size")).get(0)), ch = Json.number(Json.list(dump.get("size")).get(1));
@@ -155,15 +157,15 @@ final class RenderGate {
 				Rectangle2D b = box(points.get(p), pointOrigin);
 				// a blank point's box is far off the chart (no geometry)
 				if (b == null || b.getMinX() < -1 || b.getMinY() < -1 || b.getMaxX() > cw + 1 || b.getMaxY() > ch + 1) continue;
-				same(r, "point " + s + "." + p, b, d.boxes.get("point." + s + "." + p));
+				same(r, "point " + s + "." + p, b, d.getBoxes().get("point." + s + "." + p));
 				// its data label's box, an element (from the inner frame in every application)
 				Object dl = Json.object(points.get(p)).get("dataLabel");
-				if (dl != null || d.boxes.containsKey("label." + s + "." + p)) {
-					same(r, "label " + s + "." + p, box(dl, ORIGIN), d.boxes.get("label." + s + "." + p));
+				if (dl != null || d.getBoxes().containsKey("label." + s + "." + p)) {
+					same(r, "label " + s + "." + p, box(dl, ORIGIN), d.getBoxes().get("label." + s + "." + p));
 				}
 				// a pie's slice, by the places Office reports (PieSliceLocation 1 to 9, finding 7)
 				Object at = Json.object(points.get(p)).get("slice");
-				double[][] ours = d.slices.get("point." + s + "." + p);
+				double[][] ours = d.getSlices().get("point." + s + "." + p);
 				if (at == null) continue;
 				Map<String, Object> office = Json.object(at);
 				for (int k = 1; k <= 9; k++) {
@@ -183,15 +185,15 @@ final class RenderGate {
 		for (Object o : Json.list(dump.get("axes"))) {
 			Map<String, Object> a = Json.object(o);
 			// its title's box (an element)
-			if (Boolean.TRUE.equals(a.get("hasTitle")) || d.boxes.containsKey("axisTitle." + Json.number(a.get("type")).intValue())) {
+			if (Boolean.TRUE.equals(a.get("hasTitle")) || d.getBoxes().containsKey("axisTitle." + Json.number(a.get("type")).intValue())) {
 				int type = Json.number(a.get("type")).intValue();
-				same(r, "axis title " + type, Boolean.TRUE.equals(a.get("hasTitle")) ? box(a.get("title"), ORIGIN) : null, d.boxes.get("axisTitle." + type));
+				same(r, "axis title " + type, Boolean.TRUE.equals(a.get("hasTitle")) ? box(a.get("title"), ORIGIN) : null, d.getBoxes().get("axisTitle." + type));
 			}
 			if (a.get("categoryType") != null || a.get("minimumScale") == null || a.get("tickLabels") == null) continue;
 			double[] office = { Json.number(a.get("minimumScale")), Json.number(a.get("maximumScale")), Json.number(a.get("majorUnit")) };
 			// a scatter chart's x axis is Office's "category" axis (type 1), a value axis
 			boolean x = Json.number(a.get("type")) == 1;
-			double[] ours = x ? d.xAxis : d.valueAxis;
+			double[] ours = x ? d.getXAxis() : d.getValueAxis();
 			boolean ok = ours != null;
 			for (int i = 0; ok && i < 3; i++) ok = Math.abs(office[i] - ours[i]) <= 1e-9 * Math.max(1, Math.abs(office[i]));
 			r.check(ok, (x ? "x" : "value") + " axis: Office " + office[0] + " to " + office[1] + " by " + office[2] + ", ours "
@@ -211,15 +213,15 @@ final class RenderGate {
 
 	/** Our text's centre as chart_trace.py has Office's: the baseline's middle, raised a third of the size */
 	private static double[] centre(Drawing.Text t) {
-		double a = Math.toRadians(t.angle);
-		double mx = t.x + Math.cos(a) * t.width / 2, my = t.baseline + Math.sin(a) * t.width / 2;
-		double s = t.font.getSize2D();
+		double a = Math.toRadians(t.getAngle());
+		double mx = t.getX() + Math.cos(a) * t.getWidth() / 2, my = t.getBaseline() + Math.sin(a) * t.getWidth() / 2;
+		double s = t.getFont().getSize2D();
 		return new double[] { mx + Math.sin(a) * s / 3, my - Math.cos(a) * s / 3 };
 	}
 
 	private static void texts(Result r, Drawing d, Map<String, Object> trace) {
 		List<Drawing.Text> ours = new ArrayList<>();
-		for (Object o : d.items) if (o instanceof Drawing.Text) ours.add((Drawing.Text) o);
+		for (Object o : d.getItems()) if (o instanceof Drawing.Text) ours.add((Drawing.Text) o);
 		boolean[] used = new boolean[ours.size()];
 		for (Object o : Json.list(trace.get("texts"))) {
 			Map<String, Object> t = Json.object(o);
@@ -228,7 +230,7 @@ final class RenderGate {
 			int best = -1;
 			double bestD = Double.MAX_VALUE;
 			for (int i = 0; i < ours.size(); i++) {
-				if (used[i] || !norm(ours.get(i).text).equals(text)) continue;
+				if (used[i] || !norm(ours.get(i).getText()).equals(text)) continue;
 				double[] c = centre(ours.get(i));
 				double dd = Math.hypot(c[0] - cx, c[1] - cy);
 				if (dd < bestD) {
@@ -244,14 +246,14 @@ final class RenderGate {
 			Drawing.Text our = ours.get(best);
 			r.check(bestD <= TEXT_PLACE, String.format("text \"%s\" %.2f from Office's", text, bestD), bestD);
 			double size = Json.number(t.get("size"));
-			r.check(Math.abs(our.font.getSize2D() - size) <= TEXT_SIZE,
-					String.format("text \"%s\" size %.2f, Office %.2f", text, our.font.getSize2D(), size));
+			r.check(Math.abs(our.getFont().getSize2D() - size) <= TEXT_SIZE,
+					String.format("text \"%s\" size %.2f, Office %.2f", text, our.getFont().getSize2D(), size));
 			String colour = (String) t.get("colour");
-			r.check(hex(our.colour).equals(colour), "text \"" + text + "\" colour " + hex(our.colour) + ", Office " + colour);
+			r.check(hex(our.getColour()).equals(colour), "text \"" + text + "\" colour " + hex(our.getColour()) + ", Office " + colour);
 			String font = (String) t.get("font");
 			String family = font.replaceAll("-(Bold|Italic|BoldItalic)$", "").replaceAll(",.*$", "");
-			r.check(family.replace(" ", "").equalsIgnoreCase(our.face.replace(" ", "")),
-					"text \"" + text + "\" face " + our.face + ", Office " + font);
+			r.check(family.replace(" ", "").equalsIgnoreCase(our.getFace().replace(" ", "")),
+					"text \"" + text + "\" face " + our.getFace() + ", Office " + font);
 		}
 		// Word leaves category labels turned 45 degrees out of its PDF (CR-037 §11, finding 10):
 		// ours turned so are Excel's picture's to check, not Word's PDF's
@@ -260,24 +262,24 @@ final class RenderGate {
 			if (Math.abs(Json.number(Json.object(o).get("angle")) + 45) < 1) word45 = true;
 		}
 		for (int i = 0; i < ours.size(); i++) {
-			if (used[i] || (!word45 && Math.abs(ours.get(i).angle + 45) < 1)) continue;
-			r.check(false, "text \"" + ours.get(i).text + "\" drawn, Office has none");
+			if (used[i] || (!word45 && Math.abs(ours.get(i).getAngle() + 45) < 1)) continue;
+			r.check(false, "text \"" + ours.get(i).getText() + "\" drawn, Office has none");
 		}
 	}
 
 	private static void shapes(Result r, Drawing d, Map<String, Object> trace) {
 		// ours: each area's box, filled or stroked
 		List<Drawing.Area> areas = new ArrayList<>();
-		for (Object o : d.items) if (o instanceof Drawing.Area) areas.add((Drawing.Area) o);
+		for (Object o : d.getItems()) if (o instanceof Drawing.Area) areas.add((Drawing.Area) o);
 		// a shape's fill and its line are separate paths in Word's PDF (a marker, a slice)
 		boolean[] usedFill = new boolean[areas.size()], usedLine = new boolean[areas.size()];
 		// Word draws category labels turned 45 degrees as glyph outlines, not text (finding 10):
 		// those below the plot, in the labels' colour, are Excel's picture's to check
 		String outlines = null;
-		for (Object o : d.items) {
-			if (o instanceof Drawing.Text && Math.abs(((Drawing.Text) o).angle + 45) < 1) outlines = hex(((Drawing.Text) o).colour);
+		for (Object o : d.getItems()) {
+			if (o instanceof Drawing.Text && Math.abs(((Drawing.Text) o).getAngle() + 45) < 1) outlines = hex(((Drawing.Text) o).getColour());
 		}
-		Rectangle2D inside = d.boxes.get("inside");
+		Rectangle2D inside = d.getBoxes().get("inside");
 		for (Object o : Json.list(trace.get("shapes"))) {
 			Map<String, Object> s = Json.object(o);
 			if (s.get("alpha") != null && Json.number(s.get("alpha")) == 0) continue;
@@ -289,14 +291,14 @@ final class RenderGate {
 						Json.number(b.get(2)) - Json.number(b.get(0)), Json.number(b.get(3)) - Json.number(b.get(1)));
 				if (fill && colour.equals(outlines) && inside != null && office.getMinY() >= inside.getMaxY() - 1) continue;
 				// what reaches well past the chart is the page's or slide's (PowerPoint's white slide), not the chart's
-				if (office.getMinX() < -2 || office.getMinY() < -2 || office.getMaxX() > d.width + 2 || office.getMaxY() > d.height + 2) continue;
+				if (office.getMinX() < -2 || office.getMinY() < -2 || office.getMaxX() > d.getWidth() + 2 || office.getMaxY() > d.getHeight() + 2) continue;
 				int best = -1;
 				double bestD = Double.MAX_VALUE;
 				for (int i = 0; i < areas.size(); i++) {
 					Drawing.Area a = areas.get(i);
-					Color c = fill ? (a.gradient != null ? null : a.fill) : (a.lineGradient != null ? null : a.line);
+					Color c = fill ? (a.getGradient() != null ? null : a.getFill()) : (a.getLineGradient() != null ? null : a.getLine());
 					if ((fill ? usedFill[i] : usedLine[i]) || c == null || !hex(c).equals(colour)) continue;
-					double e = edge(office, bounds(a.shape));
+					double e = edge(office, bounds(a.getShape()));
 					if (e < bestD) {
 						bestD = e;
 						best = i;
@@ -323,15 +325,15 @@ final class RenderGate {
 			}
 			for (Object p : Json.list(im.get("parts"))) {
 				Rectangle2D office = rect(Json.list(Json.object(p).get("box")));
-				if (office.getMinX() < -2 || office.getMinY() < -2 || office.getMaxX() > d.width + 2 || office.getMaxY() > d.height + 2) continue;
+				if (office.getMinX() < -2 || office.getMinY() < -2 || office.getMaxX() > d.getWidth() + 2 || office.getMaxY() > d.getHeight() + 2) continue;
 				int best = -1;
 				double bestD = Double.MAX_VALUE;
 				for (int i = 0; i < areas.size(); i++) {
 					Drawing.Area a = areas.get(i);
 					// a gradient fill, or a gradient line (its stroke's outline)
-					if (a.gradient != null ? usedFill[i] : a.lineGradient == null || usedLine[i]) continue;
-					Rectangle2D ab = a.gradient != null ? bounds(a.shape)
-							: new java.awt.BasicStroke((float) a.lineWidth, java.awt.BasicStroke.CAP_BUTT, java.awt.BasicStroke.JOIN_MITER).createStrokedShape(a.shape).getBounds2D();
+					if (a.getGradient() != null ? usedFill[i] : a.getLineGradient() == null || usedLine[i]) continue;
+					Rectangle2D ab = a.getGradient() != null ? bounds(a.getShape())
+							: new java.awt.BasicStroke((float) a.getLineWidth(), java.awt.BasicStroke.CAP_BUTT, java.awt.BasicStroke.JOIN_MITER).createStrokedShape(a.getShape()).getBounds2D();
 					double e = edge(office, ab);
 					if (e < bestD) {
 						bestD = e;
@@ -343,7 +345,7 @@ final class RenderGate {
 					r.check(false, what + " not drawn");
 					continue;
 				}
-				if (areas.get(best).gradient != null) usedFill[best] = true;
+				if (areas.get(best).getGradient() != null) usedFill[best] = true;
 				else usedLine[best] = true;
 				r.check(bestD <= GEOMETRY, String.format("%s off by %.2f", what, bestD), bestD);
 			}
@@ -351,14 +353,14 @@ final class RenderGate {
 		for (int i = 0; i < areas.size(); i++) {
 			Drawing.Area a = areas.get(i);
 			// what Word makes a picture of (a shadow, a glow, a bevel: finding 6; a pattern's tiles) is the picture's to check (D4)
-			boolean pictured = a.pattern != null && !pictures.isEmpty();
-			Rectangle2D b = bounds(a.shape);
+			boolean pictured = a.getPattern() != null && !pictures.isEmpty();
+			Rectangle2D b = bounds(a.getShape());
 			for (Rectangle2D p : pictures) pictured |= p.getMinX() - 3 <= b.getMinX() && p.getMinY() - 3 <= b.getMinY() && b.getMaxX() <= p.getMaxX() + 3
-					&& b.getMaxY() <= p.getMaxY() + 3 && p.getWidth() < 0.9 * d.width;
-			if (a.fill != null && !usedFill[i] && !pictured) {
-				r.check(false, a.role + " drawn (" + (a.gradient != null ? "gradient" : "fill " + hex(a.fill)) + "), Office has none");
+					&& b.getMaxY() <= p.getMaxY() + 3 && p.getWidth() < 0.9 * d.getWidth();
+			if (a.getFill() != null && !usedFill[i] && !pictured) {
+				r.check(false, a.getRole() + " drawn (" + (a.getGradient() != null ? "gradient" : "fill " + hex(a.getFill())) + "), Office has none");
 			}
-			if (a.line != null && a.lineWidth > 0 && !usedLine[i] && !pictured) r.check(false, a.role + " drawn (line " + hex(a.line) + "), Office has none");
+			if (a.getLine() != null && a.getLineWidth() > 0 && !usedLine[i] && !pictured) r.check(false, a.getRole() + " drawn (line " + hex(a.getLine()) + "), Office has none");
 		}
 	}
 

@@ -248,8 +248,10 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			// For export, process one branch only, as the XSLT pathway does: the branch
 			// McSelection chooses (CR-021; the rule and its measurement are documented
 			// there).  This walk is McMode.READ, so getChildren would give the same
-			// branch; walking it here keeps the exporter explicit about it.
-			Object branch = org.docx4j.jaxb.McSelection.selectedBranch((org.docx4j.mce.AlternateContent)o);
+			// branch; walking it here keeps the exporter explicit about it, and gives the
+			// rule the current part, which a chartex chart's Choice needs (CR-039).
+			Object branch = org.docx4j.jaxb.McSelection.selectedBranch((org.docx4j.mce.AlternateContent)o,
+					conversionContext.getCurrentPart());
 			if (branch != null) {
 				super.walkJAXBElements(branch);
 			}

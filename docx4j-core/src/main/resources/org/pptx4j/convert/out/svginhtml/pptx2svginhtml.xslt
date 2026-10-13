@@ -101,7 +101,8 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
      its text (an equation, ink) and a Fallback holding a picture of it. -->
 <xsl:template match="mc:AlternateContent">
 	<xsl:variable name="preferred"
-		select="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))][1]"/>
+		select="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))
+			or java:org.docx4j.utils.XSLTUtils.mcSelectsChoice($conversionContext, .)][1]"/>
 	<xsl:choose>
 		<xsl:when test="$preferred">
 			<xsl:apply-templates select="$preferred/*"/>

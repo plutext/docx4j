@@ -105,6 +105,18 @@ Changes in Version 17.3.3
   last version), and Docx4J.pdfViaLegacyConverter() and EXPORT_LEGACY_CONVERTER_DETECTED are
   removed; for PDF use docx4j-export-fo, documents4j or Microsoft Graph, and for a TOC's page
   numbers docx4j-export-fo.  CR-038.
+- New SPI org.docx4j.model.chart.ChartExRenderer, for a renderer of chartex charts (waterfall,
+  histogram, ...), found apart from ChartRenderer: where one is present and draws the chart, PDF,
+  HTML and pptx SVG-in-HTML output draw the chart's mc:Choice, else its Fallback picture as before
+  (docx4j.properties setting docx4j.chart.chartex.branch: auto, fallback or choice).  New
+  ChartExModel.getPart().  CR-039.
+- docx4j-chart-render exports org.docx4j.chart.render.api, its frame for a renderer of other
+  charts: Excel's axis scale, text measured and wrapped, a shape's fills, the title's and legend's
+  places, and the drawing with its SVG writer.  CR-039.
+- New ChartHosting, ChartCreator's host steps opened: the embedded workbook and its data, a chart's
+  frame in a docx, on a slide and in a sheet (for a chartex chart, the Choice of an
+  mc:AlternateContent with the Fallback given), part names and Office's ids.  ChartCreator.delete
+  takes a chartex chart's mc:AlternateContent whole, with its Fallback's picture.  CR-039.
 
 
 Version 17.3.2

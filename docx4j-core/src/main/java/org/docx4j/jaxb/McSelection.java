@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.mce.AlternateContent;
+import org.docx4j.openpackaging.parts.Part;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +60,11 @@ import org.slf4j.LoggerFactory;
  * property is the one switch for every format: a PowerPoint slide's
  * {@code Requires="a14"} Choice (an equation, ink) is drawn with
  * {@code docx4j.jaxb.mc.preferChoice=a14}, its picture Fallback otherwise.</p>
+ *
+ * <p>A chartex chart's Choice (a waterfall, a histogram, ...) has a rule of its own, which the
+ * outputs that draw apply through {@link #selectedBranch(AlternateContent, Part)}: by default it
+ * is drawn where a chartex renderer draws it, its Fallback otherwise
+ * ({@link org.docx4j.model.chart.ChartExBranch}, CR-039).</p>
  *
  * @since 17.2.0 (CR-021 phase 1)
  */
@@ -119,9 +125,23 @@ public final class McSelection {
 	 * {@link AlternateContent.Fallback}, or null for an element with no branch at all.
 	 */
 	public static Object selectedBranch(AlternateContent ac) {
+		return selectedBranch(ac, null);
+	}
+
+	/**
+	 * The branch an output draws, for an element in the host's content: as
+	 * {@link #selectedBranch(AlternateContent)}, and a chartex chart's Choice where
+	 * {@link org.docx4j.model.chart.ChartExBranch} takes it (by default, where a chartex renderer
+	 * draws the chart).  A null host is {@link #selectedBranch(AlternateContent)}.
+	 *
+	 * @param host the part whose relationships the element's content refers to (an output's
+	 *     current part)
+	 * @since 17.3.3 (CR-039)
+	 */
+	public static Object selectedBranch(AlternateContent ac, Part host) {
 		if (ac == null) return null;
 		for (AlternateContent.Choice choice : ac.getChoice()) {
-			if (prefersChoice(choice.getRequires())) {
+			if (prefersChoice(choice.getRequires()) || org.docx4j.model.chart.ChartExBranch.takesChoice(host, choice)) {
 				if (log.isDebugEnabled()) log.debug("mc:AlternateContent: selecting Choice Requires=" + choice.getRequires());
 				return choice;
 			}

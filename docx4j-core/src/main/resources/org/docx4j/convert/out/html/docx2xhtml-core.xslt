@@ -748,7 +748,8 @@
 	     17.2.0 this stylesheet always took the Fallback. -->
 	<xsl:template match="mc:AlternateContent" >
 		<xsl:variable name="preferred"
-			select="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))][1]"/>
+			select="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))
+			or java:org.docx4j.utils.XSLTUtils.mcSelectsChoice($conversionContext, .)][1]"/>
 		<xsl:choose>
 			<xsl:when test="$preferred">
 				<xsl:variable name="info"

@@ -15,7 +15,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.docx4j.chart.render;
+package org.docx4j.chart.render.api;
 
 import java.awt.Color;
 import java.awt.LinearGradientPaint;

@@ -83,6 +83,7 @@ import org.docx4j.dml.chart.STTickMark;
 import org.docx4j.dml.chart.STTimeUnit;
 import org.docx4j.dml.spreadsheetdrawing.CTDrawing;
 import org.docx4j.jaxb.Context;
+import org.docx4j.mce.AlternateContent;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.OpcPackage;
@@ -141,6 +142,7 @@ public final class ChartCreator {
 	private static final int DEFAULT_COLUMNS = 8, DEFAULT_ROWS = 15;
 
 	private final Random ids;
+	private final ChartHosting hosting;
 
 	/** Ids random, as Office's */
 	public ChartCreator() {
@@ -151,6 +153,7 @@ public final class ChartCreator {
 	public ChartCreator(Random ids) {
 		if (ids == null) throw new IllegalArgumentException("no source of ids");
 		this.ids = ids;
+		this.hosting = new ChartHosting(ids);
 	}
 
 	// ------------------------------------------------------------------ in a sheet
@@ -187,13 +190,13 @@ public final class ChartCreator {
 			}
 		}
 
-		write(sc, definition, c0, r0);
+		ChartHosting.write(sc, grid(definition), c0, r0, definition.getDateFormat());
 		Tables.create(sc, new AreaRef(new CellRef(null, c0, r0), area.getLast()), ids);
 		sc.tidy();
 
 		Chart chart = make(workbook, "/xl/charts/", Host.XLSX, definition.getType(), data(definition, name, c0, r0), workbook);
 		apply(chart, definition, Host.XLSX);
-		return place(sheet, chart, placeAt != null ? placeAt : beside(area));
+		return hosting.sheetAnchor(sheet, chart, placeAt != null ? placeAt : beside(area), null, null);
 	}
 
 	/** The cells a definition's data takes at (c0, r0): its header row and categories' column too */
@@ -203,36 +206,30 @@ public final class ChartCreator {
 	}
 
 	/**
-	 * The definition's data written at (c0, r0) as Word lays it out: a header row (the corner
-	 * {@link ChartDefinition#getCategoriesHeader}, the series' names), the categories down the
-	 * first column (dates as serial numbers in their format), each series' values in its column
+	 * The definition's data as Word lays it out, a grid for {@link ChartHosting#write}: a header row
+	 * (the corner {@link ChartDefinition#getCategoriesHeader}, none where it is empty, the series'
+	 * names), then a row for each category (its text, number or date, each series' value or none)
 	 */
-	private static void write(SheetCells sc, ChartDefinition definition, int c0, int r0) throws Docx4JException {
+	private static List<List<Object>> grid(ChartDefinition definition) {
 		List<ChartDefinition.Series> series = definition.getGroups().get(0).getSeries();
 		List<Object> categories = definition.getCategories();
-		boolean date1904 = sc.getWorkbook().getWorkbookPart().isDate1904();
+		List<List<Object>> grid = new ArrayList<List<Object>>();
+		List<Object> top = new ArrayList<Object>();
 		String header = definition.getCategoriesHeader();
 		// none: the table names its column (Column1), as Excel's
-		if (header != null && !header.isEmpty()) sc.setString(c0, r0, header);
-		for (int s = 0; s < series.size(); s++) sc.setString(c0 + 1 + s, r0, series.get(s).getName());
+		top.add(header != null && !header.isEmpty() ? header : null);
+		for (ChartDefinition.Series s : series) top.add(s.getName());
+		grid.add(top);
 		for (int p = 0; p < categories.size(); p++) {
-			Object o = categories.get(p);
-			if (o instanceof String) sc.setString(c0, r0 + 1 + p, (String) o);
-			else if (o instanceof Double) sc.setNumber(c0, r0 + 1 + p, (Double) o);
-			else {
-				sc.setNumber(c0, r0 + 1 + p, serial((LocalDate) o, date1904));
-				sc.setNumberFormat(c0, r0 + 1 + p, definition.getDateFormat());
+			List<Object> row = new ArrayList<Object>();
+			row.add(categories.get(p));
+			for (ChartDefinition.Series s : series) {
+				List<Double> v = s.getValues();
+				row.add(p < v.size() ? v.get(p) : null);
 			}
-			for (int s = 0; s < series.size(); s++) {
-				List<Double> v = series.get(s).getValues();
-				if (p < v.size() && v.get(p) != null) sc.setNumber(c0 + 1 + s, r0 + 1 + p, v.get(p));
-			}
+			grid.add(row);
 		}
-		// as Excel's rows: their spans, which tidy() keeps once a row has them
-		for (int r = r0; r <= r0 + categories.size(); r++) {
-			Row row = sc.getRow(r);
-			if (row != null && row.getSpans().isEmpty()) row.getSpans().add(c0 + ":" + c0);
-		}
+		return grid;
 	}
 
 	/** Where the definition's data is, once written at (c0, r0): series down, names, categories, their kind */
@@ -274,7 +271,7 @@ public final class ChartCreator {
 			if (!dataSheet.equals(name)) throw new IllegalArgumentException("where to place the chart: its data is on another sheet");
 			placeAt = beside(area);
 		}
-		return place(sheet, chart, placeAt);
+		return hosting.sheetAnchor(sheet, chart, placeAt, null, null);
 	}
 
 	// ------------------------------------------------------------------ in a docx or pptx
@@ -282,7 +279,6 @@ public final class ChartCreator {
 	/** Word's and PowerPoint's size of a chart they insert: 6 by 3.5 inches, in EMUs */
 	public static final long DEFAULT_WIDTH = 5486400L, DEFAULT_HEIGHT = 3200400L;
 
-	private static final String XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 	/**
 	 * A chart of the definition's data in a docx, as Word's <i>Insert Chart</i> makes it (CR-036
@@ -304,34 +300,7 @@ public final class ChartCreator {
 	public R inDocument(WordprocessingMLPackage pkg, ChartDefinition definition, long cx, long cy) throws Docx4JException {
 		MainDocumentPart main = pkg.getMainDocumentPart();
 		Chart chart = embedded(main, Host.DOCX, definition);
-		Relationship r;
-		try {
-			r = main.addTargetPart(chart);
-		} catch (InvalidFormatException e) {
-			throw new Docx4JException(e.getMessage(), e);
-		}
-		int n = 0;
-		for (Relationship x : main.getRelationshipsPart().getRelationships().getRelationship()) {
-			if (Namespaces.SPREADSHEETML_CHART.equals(x.getType())) n++;
-		}
-		long docPr = pkg.getDrawingPropsIdTracker().generateRandomId(ids);
-		String xml = "<w:r xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" "
-				+ "xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\" "
-				+ "xmlns:wp14=\"http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing\">"
-				+ "<w:rPr><w:noProof/></w:rPr><w:drawing><wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\" "
-				+ "wp14:anchorId=\"" + wordId() + "\" wp14:editId=\"" + wordId() + "\">"
-				+ "<wp:extent cx=\"" + cx + "\" cy=\"" + cy + "\"/><wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>"
-				+ "<wp:docPr id=\"" + docPr + "\" name=\"Chart " + n + "\"/><wp:cNvGraphicFramePr/>"
-				+ "<a:graphic xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\">"
-				+ "<a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/chart\">"
-				+ "<c:chart xmlns:c=\"http://schemas.openxmlformats.org/drawingml/2006/chart\" "
-				+ "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" r:id=\"" + r.getId() + "\"/>"
-				+ "</a:graphicData></a:graphic></wp:inline></w:drawing></w:r>";
-		try {
-			return (R) XmlUtils.unmarshalString(xml, Context.jc, R.class);
-		} catch (jakarta.xml.bind.JAXBException e) {
-			throw new Docx4JException("the chart's drawing couldn't be made", e);
-		}
+		return hosting.docxRun(main, chart, cx, cy, null, null);
 	}
 
 	/**
@@ -359,46 +328,7 @@ public final class ChartCreator {
 	public CTGraphicalObjectFrame inSlide(SlidePart slide, ChartDefinition definition, long x, long y, long cx, long cy)
 			throws Docx4JException {
 		Chart chart = embedded(slide, Host.PPTX, definition);
-		Relationship r;
-		try {
-			r = slide.addTargetPart(chart);
-		} catch (InvalidFormatException e) {
-			throw new Docx4JException(e.getMessage(), e);
-		}
-		// the next id the slide's shapes leave, as PowerPoint numbers a new shape; named for it
-		long id = 0;
-		Matcher m = SHAPE_ID.matcher(XmlUtils.marshaltoString(slide.getJaxbElement(), true, false, org.pptx4j.jaxb.Context.jcPML));
-		while (m.find()) id = Math.max(id, Long.parseLong(m.group(1)));
-		id++;
-		String xml = "<p:graphicFrame xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\" "
-				+ "xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\">"
-				+ "<p:nvGraphicFramePr><p:cNvPr id=\"" + id + "\" name=\"Chart " + (id - 1) + "\"><a:extLst>"
-				+ "<a:ext uri=\"{FF2B5EF4-FFF2-40B4-BE49-F238E27FC236}\"><a16:creationId "
-				+ "xmlns:a16=\"http://schemas.microsoft.com/office/drawing/2014/main\" id=\"" + guid(ids) + "\"/></a:ext>"
-				+ "</a:extLst></p:cNvPr><p:cNvGraphicFramePr/><p:nvPr><p:extLst>"
-				+ "<p:ext uri=\"{D42A27DB-BD31-4B8C-83A1-F6EECF244321}\"><p14:modId "
-				+ "xmlns:p14=\"http://schemas.microsoft.com/office/powerpoint/2010/main\" val=\"" + (ids.nextInt() & 0xFFFFFFFFL)
-				+ "\"/></p:ext></p:extLst></p:nvPr></p:nvGraphicFramePr>"
-				+ "<p:xfrm><a:off x=\"" + x + "\" y=\"" + y + "\"/><a:ext cx=\"" + cx + "\" cy=\"" + cy + "\"/></p:xfrm>"
-				+ "<a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/chart\">"
-				+ "<c:chart xmlns:c=\"http://schemas.openxmlformats.org/drawingml/2006/chart\" "
-				+ "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" r:id=\"" + r.getId() + "\"/>"
-				+ "</a:graphicData></a:graphic></p:graphicFrame>";
-		CTGraphicalObjectFrame frame;
-		try {
-			frame = (CTGraphicalObjectFrame) XmlUtils.unmarshalString(xml, org.pptx4j.jaxb.Context.jcPML, CTGraphicalObjectFrame.class);
-		} catch (jakarta.xml.bind.JAXBException e) {
-			throw new Docx4JException("the chart's frame couldn't be made", e);
-		}
-		slide.getJaxbElement().getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame().add(frame);
-		return frame;
-	}
-
-	private static final Pattern SHAPE_ID = Pattern.compile("<p:cNvPr[^>]* id=\"(\\d+)\"");
-
-	/** Word's anchor and edit ids: eight hex digits, the top bit clear */
-	private String wordId() {
-		return String.format("%08X", ids.nextInt() & 0x7FFFFFFF);
+		return (CTGraphicalObjectFrame) hosting.slideFrame(slide, chart, x, y, cx, cy, null, null);
 	}
 
 	/** The inline drawing in a run made by {@link #inDocument} */
@@ -420,31 +350,18 @@ public final class ChartCreator {
 		OpcPackage pkg = host.getPackage();
 		ChartType type = definition.getType();
 		String dir = kind == Host.DOCX ? "/word/" : "/ppt/";
-		EmbeddedPackagePart part;
-		try {
-			part = new EmbeddedPackagePart(new PartName(embedding(pkg, dir + "embeddings/Microsoft_Excel_Worksheet")));
-		} catch (InvalidFormatException e) {
-			throw new Docx4JException(e.getMessage(), e);
-		}
-		part.setContentType(new ContentType(XLSX));
+		byte[] workbook;
 		try (InputStream is = template("workbook/" + type.getTemplateName() + ".xlsx")) {
-			part.setBinaryData(IOUtils.toByteArray(is));
+			workbook = IOUtils.toByteArray(is);
 		} catch (IOException e) {
 			throw new Docx4JException("the " + type + " workbook template couldn't be read", e);
 		}
+		EmbeddedPackagePart part = hosting.workbook(host, workbook);
 		SpreadsheetMLPackage wb = (SpreadsheetMLPackage) part.getEmbeddedPackage();
 		Data data = fill(wb, definition);
 		Chart chart = make(pkg, dir + "charts/", kind, type, data, wb);
-		Relationship r;
-		try {
-			// after the style's and the colours', as Office's (rId3)
-			r = chart.addTargetPart(part);
-		} catch (InvalidFormatException e) {
-			throw new Docx4JException(e.getMessage(), e);
-		}
-		// as Word's and PowerPoint's: the workbook typed by its extension
-		pkg.getContentTypeManager().removeOverrideContentType(part.getPartName());
-		pkg.getContentTypeManager().addDefaultContentType("xlsx", XLSX);
+		// after the style's and the colours', as Office's (rId3); typed by its extension, as Word's and PowerPoint's
+		Relationship r = hosting.relate(chart, part);
 		CTExternalData ed = chart.getContents().getExternalData();
 		if (ed == null) {
 			ed = new CTExternalData();
@@ -464,53 +381,8 @@ public final class ChartCreator {
 	 * its author and times docx4j.properties' (the template's are the probe's)
 	 */
 	private Data fill(SpreadsheetMLPackage wb, ChartDefinition definition) throws Docx4JException {
-		WorkbookPart book = wb.getWorkbookPart();
-		WorksheetPart sheet = SheetCells.of(wb, "Sheet1").getPart();
-		sheet.getContents().getSheetData().getRow().clear();
-		if (book.getSharedStrings() != null) book.getSharedStrings().getContents().getSi().clear();
-		SheetCells sc = new SheetCells(wb, sheet, "Sheet1");
-		write(sc, definition, 1, 1);
-		TablePart table = Tables.of(sheet).get(0);
-		Tables.setRef(table, area(definition, null, 1, 1), sc);
-		sc.tidy();
-
-		sheet.getContents().setUid(guid(ids));
-		CTTable t = table.getContents();
-		t.setUid(guid(ids));
-		if (t.getAutoFilter() != null) t.getAutoFilter().setUid(t.getUid());
-		for (CTTableColumn c : t.getTableColumns().getTableColumn()) c.setUid(guid(ids));
-		Workbook w = book.getContents();
-		if (w.getBookViews() != null) for (CTBookView v : w.getBookViews().getWorkbookView()) if (v.getUid() != null) v.setUid(guid(ids));
-		CTRevisionPtr rp = w.getRevisionPtr();
-		if (rp != null && rp.getDocumentId() != null) {
-			rp.setDocumentId(rp.getDocumentId().replaceFirst("\\{[^}]*\\}", Matcher.quoteReplacement(guid(ids))));
-		}
-		if (wb.getDocPropsCorePart() != null) {
-			// the template's are the probe's: the author docx4j.properties names for a new document
-			// (docx4j.dc.creator.value, where docx4j.dc.write), else none; the current time where
-			// docx4j.dcterms.write asks for it, else none (lastModifiedBy, and the time modified, as
-			// docx4j's save writes them)
-			CoreProperties cp = wb.getDocPropsCorePart().getContents();
-			String creator = Boolean.parseBoolean(Docx4jProperties.getProperty("docx4j.dc.write", "false"))
-					? Docx4jProperties.getProperty("docx4j.dc.creator.value") : null;
-			SimpleLiteral author = null;
-			if (creator != null) {
-				author = new SimpleLiteral();
-				author.getContent().add(creator);
-			}
-			cp.setCreator(author);
-			cp.setLastModifiedBy(null);
-			SimpleLiteral now = DocPropsCorePart.isTimesWritten() ? DocPropsCorePart.now() : null;
-			cp.setCreated(now);
-			cp.setModified(now == null ? null : (SimpleLiteral) now.copy());
-		}
+		hosting.fill(wb, grid(definition), definition.getDateFormat());
 		return data(definition, "Sheet1", 1, 1);
-	}
-
-	/** Word's name for an embedded workbook: the base, then the base 1, 2 ... where it is taken */
-	private static String embedding(OpcPackage pkg, String base) throws InvalidFormatException {
-		if (pkg.getParts().get(new PartName(base + ".xlsx")) == null) return base + ".xlsx";
-		return base + next(pkg, base, ".xlsx") + ".xlsx";
 	}
 
 	// ------------------------------------------------------------------ a chart deleted
@@ -519,12 +391,23 @@ public final class ChartCreator {
 	 * A chart deleted (CR-036 review A4): its drawing (a docx's run holding it, or the drawing
 	 * alone where the run holds more; a slide's frame; a sheet's anchor), its chart, style and
 	 * colour parts, its embedded workbook, their relationships and content types (the {@code xlsx}
-	 * default where no embedded workbook is left)
+	 * default where no embedded workbook is left).  A chartex chart's drawing is the Choice of an
+	 * {@code mc:AlternateContent}: that is deleted whole (in an xlsx, its anchor), and the parts its
+	 * Fallback refers to (Word's and PowerPoint's picture of the chart) with it (CR-039).
 	 */
 	public static void delete(ChartRef chart) throws Docx4JException {
 		Part host = chart.getHost();
 		Object anchor = XmlUtils.unwrap(chart.getAnchor());
-		if (anchor instanceof Inline || anchor instanceof Anchor) {
+		List<String> fallbackIds = new ArrayList<String>();
+		if (host instanceof JaxbXmlPart && removeAlternateContent(host instanceof ContentAccessor ? host : ((JaxbXmlPart<?>) host).getJaxbElement(),
+				anchor, fallbackIds)) {
+			for (String id : fallbackIds) {
+				Relationship rel = host.getRelationshipsPart().getRelationshipByID(id);
+				Part p = rel == null || "External".equals(rel.getTargetMode()) ? null : host.getRelationshipsPart().getPart(rel);
+				if (p == null) continue;
+				for (PartName n : host.getRelationshipsPart().removePart(p.getPartName())) host.getPackage().getContentTypeManager().removeOverrideContentType(n);
+			}
+		} else if (anchor instanceof Inline || anchor instanceof Anchor) {
 			if (!(host instanceof JaxbXmlPart) || !removeRun((JaxbXmlPart<?>) host, anchor)) {
 				throw new IllegalStateException("the chart's drawing wasn't found in " + host.getPartName());
 			}
@@ -537,6 +420,72 @@ public final class ChartCreator {
 		boolean xlsx = false;
 		for (PartName n : pkg.getParts().getParts().keySet()) if ("xlsx".equalsIgnoreCase(n.getExtension())) xlsx = true;
 		if (!xlsx) pkg.getContentTypeManager().removeDefaultContentType("xlsx");
+	}
+
+	private static final Pattern RELATED = Pattern.compile("\\b\\w+:(?:embed|link|id)=\"(rId[^\"]*)\"");
+
+	/**
+	 * The mc:AlternateContent whose Choice places the anchor removed from the tree (a docx's run
+	 * with it where that leaves it empty; an xlsx's anchor holding it), the relationships its
+	 * Fallback refers to collected
+	 *
+	 * @return whether there was one
+	 */
+	private static boolean removeAlternateContent(Object node, Object anchor, List<String> fallbackIds) {
+		for (List<Object> l : contents(node)) {
+			for (int i = 0; i < l.size(); i++) {
+				Object u = XmlUtils.unwrap(l.get(i));
+				Object held = u instanceof AlternateContent ? u
+						: u instanceof org.docx4j.dml.spreadsheetdrawing.CTTwoCellAnchor ? ((org.docx4j.dml.spreadsheetdrawing.CTTwoCellAnchor) u).getAlternateContent()
+						: u instanceof org.docx4j.dml.spreadsheetdrawing.CTOneCellAnchor ? ((org.docx4j.dml.spreadsheetdrawing.CTOneCellAnchor) u).getAlternateContent()
+						: u instanceof org.docx4j.dml.spreadsheetdrawing.CTAbsoluteAnchor ? ((org.docx4j.dml.spreadsheetdrawing.CTAbsoluteAnchor) u).getAlternateContent()
+						: null;
+				if (held instanceof AlternateContent && places((AlternateContent) held, anchor)) {
+					AlternateContent.Fallback f = ((AlternateContent) held).getFallback();
+					if (f != null) {
+						for (Object o : f.getAny()) {
+							Matcher m = RELATED.matcher(xml(o));
+							while (m.find()) fallbackIds.add(m.group(1));
+						}
+					}
+					l.remove(i);
+					return true;
+				}
+				if (removeAlternateContent(u, anchor, fallbackIds)) {
+					if (u instanceof R && ((R) u).getContent().isEmpty()) l.remove(i);
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/** Whether one of the element's Choices places the anchor: holds it, or a drawing of it */
+	private static boolean places(AlternateContent ac, Object anchor) {
+		for (AlternateContent.Choice c : ac.getChoice()) {
+			for (Object o : c.getAny()) {
+				Object u = XmlUtils.unwrap(o);
+				if (u == anchor) return true;
+				if (u instanceof org.docx4j.wml.Drawing) {
+					for (Object a : ((org.docx4j.wml.Drawing) u).getAnchorOrInline()) if (XmlUtils.unwrap(a) == anchor) return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/** A Fallback's content as XML: DOM as it is, JAXB marshalled (WordprocessingML's, else PresentationML's) */
+	private static String xml(Object o) {
+		if (o instanceof org.w3c.dom.Node) return XmlUtils.w3CDomNodeToString((org.w3c.dom.Node) o);
+		try {
+			return XmlUtils.marshaltoString(o, true, false, Context.jc);
+		} catch (RuntimeException e) {
+			try {
+				return XmlUtils.marshaltoString(o, true, false, org.pptx4j.jaxb.Context.jcPML);
+			} catch (RuntimeException e2) {
+				return "";
+			}
+		}
 	}
 
 	/** The run holding a docx's drawing removed from the part's content (the drawing alone where the run holds more) */
@@ -592,6 +541,9 @@ public final class ChartCreator {
 		List<List<Object>> out = new ArrayList<List<Object>>();
 		Object u = XmlUtils.unwrap(o);
 		if (u instanceof ContentAccessor) out.add(((ContentAccessor) u).getContent());
+		if (u instanceof org.docx4j.wml.SdtElement && ((org.docx4j.wml.SdtElement) u).getSdtContent() != null) {
+			out.add(((org.docx4j.wml.SdtElement) u).getSdtContent().getContent());
+		}
 		if (u instanceof GroupShape) out.add(((GroupShape) u).getSpOrGrpSpOrGraphicFrame());
 		if (u instanceof CTDrawing) out.add(((CTDrawing) u).getEGAnchor());
 		if (u instanceof org.pptx4j.pml.Sld) out.add(((org.pptx4j.pml.Sld) u).getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame());
@@ -785,10 +737,10 @@ public final class ChartCreator {
 		ChartStylePart style;
 		ChartColorStylePart colors;
 		try {
-			int n = next(pkg, dir + "chart", ".xml");
+			int n = ChartHosting.next(pkg, dir + "chart", ".xml");
 			chart = new Chart(new PartName(dir + "chart" + n + ".xml"));
-			style = new ChartStylePart(new PartName(free(pkg, dir + "style", n)));
-			colors = new ChartColorStylePart(new PartName(free(pkg, dir + "colors", n)));
+			style = new ChartStylePart(new PartName(ChartHosting.free(pkg, dir + "style", n)));
+			colors = new ChartColorStylePart(new PartName(ChartHosting.free(pkg, dir + "colors", n)));
 			// in the package first, as a part being read is (its Strict-ness asked)
 			chart.setPackage(pkg);
 			style.setPackage(pkg);
@@ -1159,77 +1111,6 @@ public final class ChartCreator {
 
 	// ------------------------------------------------------------------ placing it
 
-	/** The chart in the sheet's drawing (made where it has none), a two-cell anchor over the area */
-	private ChartRef place(WorksheetPart sheet, Chart chart, AreaRef at) throws Docx4JException {
-		OpcPackage pkg = sheet.getPackage();
-		Worksheet ws = sheet.getContents();
-		Drawing drawing = null;
-		if (ws.getDrawing() != null && sheet.getRelationshipsPart() != null) {
-			Part p = sheet.getRelationshipsPart().getPart(ws.getDrawing().getId());
-			if (p instanceof Drawing) drawing = (Drawing) p;
-		}
-		try {
-			if (drawing == null) {
-				drawing = new Drawing(new PartName("/xl/drawings/drawing" + next(pkg, "/xl/drawings/drawing", ".xml") + ".xml"));
-				drawing.setJaxbElement(new CTDrawing());
-				Relationship r = sheet.addTargetPart(drawing);
-				org.xlsx4j.sml.CTDrawing d = new org.xlsx4j.sml.CTDrawing();
-				d.setId(r.getId());
-				d.setParent(ws);
-				ws.setDrawing(d);
-			}
-		} catch (InvalidFormatException e) {
-			throw new Docx4JException(e.getMessage(), e);
-		}
-		Relationship r = drawing.addTargetPart(chart);
-		CTDrawing wsDr = (CTDrawing) drawing.getContents();
-		long id = 1;
-		for (Object a : wsDr.getEGAnchor()) id = Math.max(id, frameId(XmlUtils.unwrap(a)));
-		id++;
-		String xml = "<xdr:wsDr xmlns:xdr=\"http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing\" "
-				+ "xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\">"
-				+ "<xdr:twoCellAnchor><xdr:from><xdr:col>" + (at.getFirst().getColumn() - 1) + "</xdr:col><xdr:colOff>0</xdr:colOff>"
-				+ "<xdr:row>" + (at.getFirst().getRow() - 1) + "</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from>"
-				+ "<xdr:to><xdr:col>" + at.getLast().getColumn() + "</xdr:col><xdr:colOff>0</xdr:colOff>"
-				+ "<xdr:row>" + at.getLast().getRow() + "</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to>"
-				+ "<xdr:graphicFrame macro=\"\"><xdr:nvGraphicFramePr><xdr:cNvPr id=\"" + id + "\" name=\"Chart " + (id - 1) + "\">"
-				+ "<a:extLst><a:ext uri=\"{FF2B5EF4-FFF2-40B4-BE49-F238E27FC236}\"><a16:creationId "
-				+ "xmlns:a16=\"http://schemas.microsoft.com/office/drawing/2014/main\" id=\"" + guid(ids) + "\"/></a:ext></a:extLst>"
-				+ "</xdr:cNvPr><xdr:cNvGraphicFramePr/></xdr:nvGraphicFramePr>"
-				+ "<xdr:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"0\" cy=\"0\"/></xdr:xfrm>"
-				+ "<a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/chart\">"
-				+ "<c:chart xmlns:c=\"http://schemas.openxmlformats.org/drawingml/2006/chart\" "
-				+ "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" r:id=\"" + r.getId() + "\"/>"
-				+ "</a:graphicData></a:graphic></xdr:graphicFrame><xdr:clientData/></xdr:twoCellAnchor></xdr:wsDr>";
-		CTDrawing parsed;
-		try {
-			parsed = (CTDrawing) XmlUtils.unwrap(XmlUtils.unmarshalString(xml, Context.jc));
-		} catch (jakarta.xml.bind.JAXBException e) {
-			throw new Docx4JException("the chart's anchor couldn't be made", e);
-		}
-		Object anchor = parsed.getEGAnchor().get(0);
-		wsDr.getEGAnchor().add(anchor);
-		ChartSettings.invoke(XmlUtils.unwrap(anchor), "setParent", Object.class, wsDr);
-		return ChartRef.of(drawing, anchor);
-	}
-
-	private static long frameId(Object anchor) {
-		Object f = ChartSeries.get(anchor, "getGraphicFrame");
-		Object nv = f == null ? null : ChartSeries.get(f, "getNvGraphicFramePr");
-		Object c = nv == null ? null : ChartSeries.get(nv, "getCNvPr");
-		for (String kind : new String[] { "getSp", "getPic", "getCxnSp", "getGrpSp" }) {
-			if (c != null) break;
-			Object o = ChartSeries.get(anchor, kind);
-			if (o == null) continue;
-			for (String nvGetter : new String[] { "getNvSpPr", "getNvPicPr", "getNvCxnSpPr", "getNvGrpSpPr" }) {
-				Object n = ChartSeries.get(o, nvGetter);
-				if (n != null) c = ChartSeries.get(n, "getCNvPr");
-			}
-		}
-		Object id = c == null ? null : ChartSeries.get(c, "getId");
-		return id instanceof Number ? ((Number) id).longValue() : 0;
-	}
-
 	/** Beside the data: a column after it, from its first row, Excel's default size about */
 	private static AreaRef beside(AreaRef data) {
 		int c = data.getLast().getColumn() + 2, r = data.getFirst().getRow();
@@ -1244,19 +1125,6 @@ public final class ChartCreator {
 		return is;
 	}
 
-	/** The lowest number n for which prefix n suffix names no part */
-	private static int next(OpcPackage pkg, String prefix, String suffix) throws InvalidFormatException {
-		int n = 1;
-		while (pkg.getParts().get(new PartName(prefix + n + suffix)) != null) n++;
-		return n;
-	}
-
-	/** prefix n .xml where it names no part, else the next free number's */
-	private static String free(OpcPackage pkg, String prefix, int n) throws InvalidFormatException {
-		if (pkg.getParts().get(new PartName(prefix + n + ".xml")) == null) return prefix + n + ".xml";
-		return prefix + next(pkg, prefix, ".xml") + ".xml";
-	}
-
 	private static SpreadsheetMLPackage workbook(WorksheetPart sheet) {
 		if (!(sheet.getPackage() instanceof SpreadsheetMLPackage)) throw new IllegalArgumentException("the worksheet isn't in a workbook");
 		return (SpreadsheetMLPackage) sheet.getPackage();
@@ -1269,9 +1137,5 @@ public final class ChartCreator {
 			if (wb.getRelationshipsPart().getPart(s.getId()) == part) return s.getName();
 		}
 		throw new IllegalArgumentException("the worksheet isn't one of its workbook's sheets");
-	}
-
-	private static String guid(Random ids) {
-		return "{" + new UUID(ids.nextLong(), ids.nextLong()).toString().toUpperCase(Locale.ROOT) + "}";
 	}
 }

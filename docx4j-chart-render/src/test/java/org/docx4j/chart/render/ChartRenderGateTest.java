@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.docx4j.Docx4jProperties;
+import org.docx4j.chart.render.api.Drawing;
 import org.docx4j.model.chart.ChartFonts;
 import org.docx4j.model.chart.ChartModel;
 import org.docx4j.model.chart.ChartRef;

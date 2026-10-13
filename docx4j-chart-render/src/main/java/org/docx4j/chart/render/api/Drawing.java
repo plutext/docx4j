@@ -15,7 +15,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.docx4j.chart.render;
+package org.docx4j.chart.render.api;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -35,23 +35,33 @@ import java.util.Map;
  * and the boxes Office's object model reports for the same chart (CR-037 §11: the plot area,
  * the title, the legend and its entries, each point, a pie's slices), so that a layout can be
  * compared with Excel's without painting it.
+ *
+ * <p>A renderer builds one ({@link #add}), and paints it ({@link #paint}) or writes it as SVG
+ * ({@link SvgWriter}).  Sizes are points, from the chart's top left.</p>
+ *
+ * @since 17.3.3 (CR-039: from docx4j-chart-render's internals, CR-037)
  */
-final class Drawing {
+public final class Drawing {
 
 	/**
 	 * A DrawingML gradient ({@code a:gradFill}), made a paint for each shape's box: linear at an
 	 * angle (clockwise from the x axis, scaled to the box where it says), or along a path from its
 	 * focus ({@code a:fillToRect}) out to the farthest corner, its first stop at the focus
 	 */
-	static final class Gradient {
-		final float[] stops;
-		final Color[] colours;
-		final boolean linear, scaled;
-		final double angle;
+	public static final class Gradient {
+		private final float[] stops;
+		private final Color[] colours;
+		private final boolean linear, scaled;
+		private final double angle;
 		/** a path's focus: its insets from the box's left, top, right and bottom, shares of the box */
-		final double[] focus;
+		private final double[] focus;
 
-		Gradient(float[] stops, Color[] colours, boolean linear, double angle, boolean scaled, double[] focus) {
+		/**
+		 * @param stops strictly increasing, 0 to 1
+		 * @param angle a linear gradient's, degrees clockwise from the x axis
+		 * @param focus a path's (null for a linear gradient)
+		 */
+		public Gradient(float[] stops, Color[] colours, boolean linear, double angle, boolean scaled, double[] focus) {
 			this.stops = stops;
 			this.colours = colours;
 			this.linear = linear;
@@ -60,7 +70,38 @@ final class Drawing {
 			this.focus = focus;
 		}
 
-		java.awt.Paint paint(Rectangle2D b) {
+		/** The stops' places, 0 to 1 */
+		public float[] getStops() {
+			return stops;
+		}
+
+		/** The stops' colours */
+		public Color[] getColours() {
+			return colours;
+		}
+
+		/** Linear at {@link #getAngle()}, else along a path from {@link #getFocus()} */
+		public boolean isLinear() {
+			return linear;
+		}
+
+		/** A linear gradient's angle scaled to the box ({@code a:lin/@scaled}) */
+		public boolean isScaled() {
+			return scaled;
+		}
+
+		/** A linear gradient's angle, degrees clockwise from the x axis */
+		public double getAngle() {
+			return angle;
+		}
+
+		/** A path's focus: its insets from the box's left, top, right and bottom, shares of the box; null where linear */
+		public double[] getFocus() {
+			return focus;
+		}
+
+		/** The gradient as a paint for a shape's box */
+		public java.awt.Paint paint(Rectangle2D b) {
 			if (colours.length == 1) return colours[0];
 			double w = Math.max(b.getWidth(), 1e-6), h = Math.max(b.getHeight(), 1e-6);
 			if (linear) {
@@ -92,17 +133,34 @@ final class Drawing {
 	 * A DrawingML preset pattern ({@code a:pattFill}): an 8 by 8 tile of the foreground over the
 	 * background, a pixel 0.75pt (96 dpi), as Office draws it (Word's PDF: tiled pictures, r15-patterns)
 	 */
-	static final class Pattern {
-		final boolean[] on;
-		final Color fg, bg;
+	public static final class Pattern {
+		private final boolean[] on;
+		private final Color fg, bg;
 
-		Pattern(boolean[] on, Color fg, Color bg) {
+		/** @param on the tile's 64 pixels, row by row, true where the foreground is */
+		public Pattern(boolean[] on, Color fg, Color bg) {
 			this.on = on;
 			this.fg = fg;
 			this.bg = bg;
 		}
 
-		java.awt.Paint paint() {
+		/** The tile's 64 pixels, row by row: true where the foreground is */
+		public boolean[] getTile() {
+			return on;
+		}
+
+		/** The foreground */
+		public Color getForeground() {
+			return fg;
+		}
+
+		/** The background, or null for none */
+		public Color getBackground() {
+			return bg;
+		}
+
+		/** The pattern as a paint */
+		public java.awt.Paint paint() {
 			java.awt.image.BufferedImage tile = new java.awt.image.BufferedImage(8, 8, java.awt.image.BufferedImage.TYPE_INT_ARGB);
 			for (int y = 0; y < 8; y++) {
 				for (int x = 0; x < 8; x++) {
@@ -114,7 +172,7 @@ final class Drawing {
 		}
 
 		/** The preset's tile: the common presets by their rows, columns and diagonals; pctN by an ordered dither; others half on */
-		static boolean[] preset(String prst) {
+		public static boolean[] preset(String prst) {
 			boolean[] on = new boolean[64];
 			int[] bayer = { 0, 32, 8, 40, 2, 34, 10, 42, 48, 16, 56, 24, 50, 18, 58, 26, 12, 44, 4, 36, 14, 46, 6, 38, 60, 28, 52, 20, 62, 30, 54, 22, 3,
 					35, 11, 43, 1, 33, 9, 41, 51, 19, 59, 27, 49, 17, 57, 25, 15, 47, 7, 39, 13, 45, 5, 37, 63, 31, 55, 23, 61, 29, 53, 21 };
@@ -166,7 +224,7 @@ final class Drawing {
 	 * distance along its direction, scaled and skewed about its alignment point, or (a glow) grown
 	 * by its radius, filled in the colour and blurred
 	 */
-	static final class Shadow {
+	public static final class Shadow {
 		Color colour;
 		/** the blur's radius, the distance and direction (degrees clockwise from the x axis), in points */
 		double blur, dist, dir;
@@ -180,10 +238,68 @@ final class Drawing {
 		 * A glow's spread beyond what is drawn, and its blur's sigma, shares of its radius (r10-column-style-213
 		 * against Excel's picture: 0.15% of pixels off, mean 0.6 of 255; one style)
 		 */
-		static final double GLOW_SPREAD = 0.5, GLOW_BLUR = 0.25;
+		public static final double GLOW_SPREAD = 0.5, GLOW_BLUR = 0.25;
+
+		private Shadow() {
+		}
+
+		/**
+		 * An outer shadow ({@code a:outerShdw}), in points and degrees
+		 *
+		 * @param dir its direction, degrees clockwise from the x axis
+		 * @param sx sy kx ky its scale and skew (degrees)
+		 * @param ax ay its alignment point's place in the shape's box, 0 to 1
+		 */
+		public static Shadow outer(Color colour, double blur, double dist, double dir, double sx, double sy, double kx, double ky, double ax,
+				double ay) {
+			Shadow s = new Shadow();
+			s.colour = colour;
+			s.blur = blur;
+			s.dist = dist;
+			s.dir = dir;
+			s.sx = sx;
+			s.sy = sy;
+			s.kx = kx;
+			s.ky = ky;
+			s.ax = ax;
+			s.ay = ay;
+			return s;
+		}
+
+		/** A glow ({@code a:glow}) of a radius in points */
+		public static Shadow glow(Color colour, double radius) {
+			Shadow s = new Shadow();
+			s.colour = colour;
+			s.glow = radius;
+			return s;
+		}
+
+		public Color getColour() {
+			return colour;
+		}
+
+		/** The blur's radius, in points */
+		public double getBlur() {
+			return blur;
+		}
+
+		/** The distance, in points */
+		public double getDistance() {
+			return dist;
+		}
+
+		/** The direction, degrees clockwise from the x axis */
+		public double getDirection() {
+			return dir;
+		}
+
+		/** A glow's radius, in points; 0 for a shadow */
+		public double getGlow() {
+			return glow;
+		}
 
 		/** the shadow's (or glow's) shape: a glow around what is drawn, the outline alone where the shape isn't filled */
-		Shape shape(Shape s, boolean filled, double lineWidth) {
+		public Shape shape(Shape s, boolean filled, double lineWidth) {
 			if (glow > 0) {
 				java.awt.geom.Area a = new java.awt.geom.Area(new BasicStroke((float) (lineWidth + 2 * GLOW_SPREAD * glow), BasicStroke.CAP_ROUND,
 						BasicStroke.JOIN_ROUND).createStrokedShape(s));
@@ -202,7 +318,7 @@ final class Drawing {
 		}
 
 		/** Drawn under the shape: a picture at the drawing's own scale (at least 2 pixels a point) */
-		void paint(Graphics2D g, Shape s, boolean filled, double lineWidth) {
+		public void paint(Graphics2D g, Shape s, boolean filled, double lineWidth) {
 			Shape ss = shape(s, filled, lineWidth);
 			double sigma = Math.max(0.01, glow > 0 ? GLOW_BLUR * glow : blur / 2);
 			double scale = Math.max(2, Math.abs(g.getTransform().getScaleX()));
@@ -264,36 +380,36 @@ final class Drawing {
 	}
 
 	/** A filled or stroked shape: a bar, a gridline, the chart area, a legend key */
-	static final class Area {
-		final Shape shape;
-		final Color fill;
-		final Color line;
-		final double lineWidth;
-		final String role;
+	public static final class Area {
+		private final Shape shape;
+		private final Color fill;
+		private final Color line;
+		private final double lineWidth;
+		private final String role;
 		/** what it is drawn within (a bar, the plot's inside: Office clips there), or null */
-		final Shape clip;
+		private final Shape clip;
 		/** its line's ends and joins rounded (a line series'), else butt and mitred */
-		final boolean round;
+		private final boolean round;
 		/** its fill a gradient ({@link #fill} its first colour), or null */
-		Gradient gradient;
+		private Gradient gradient;
 		/** its line a gradient ({@link #line} its first colour), or null */
-		Gradient lineGradient;
+		private Gradient lineGradient;
 		/** its fill a pattern ({@link #fill} its foreground), or null */
-		Pattern pattern;
+		private Pattern pattern;
 		/** its shadows and glow, drawn under it */
-		List<Shadow> shadows;
+		private List<Shadow> shadows;
 		/** its line's dashes, in points, or null for a solid line */
-		float[] dash;
+		private float[] dash;
 
-		Area(Shape shape, Color fill, Color line, double lineWidth, String role) {
+		public Area(Shape shape, Color fill, Color line, double lineWidth, String role) {
 			this(shape, fill, line, lineWidth, role, null, false);
 		}
 
-		Area(Shape shape, Color fill, Color line, double lineWidth, String role, Shape clip) {
+		public Area(Shape shape, Color fill, Color line, double lineWidth, String role, Shape clip) {
 			this(shape, fill, line, lineWidth, role, clip, false);
 		}
 
-		Area(Shape shape, Color fill, Color line, double lineWidth, String role, Shape clip, boolean round) {
+		public Area(Shape shape, Color fill, Color line, double lineWidth, String role, Shape clip, boolean round) {
 			this.shape = shape;
 			this.fill = fill;
 			this.line = line;
@@ -302,28 +418,104 @@ final class Drawing {
 			this.clip = clip;
 			this.round = round;
 		}
+
+		public Shape getShape() {
+			return shape;
+		}
+
+		/** Its solid fill (a gradient's or pattern's first colour), or null */
+		public Color getFill() {
+			return fill;
+		}
+
+		/** Its line's colour, or null for none */
+		public Color getLine() {
+			return line;
+		}
+
+		/** Its line's width, in points */
+		public double getLineWidth() {
+			return lineWidth;
+		}
+
+		/** What it is, as Office's object model names it: plotArea, point.S.P, legend.key.N, ... */
+		public String getRole() {
+			return role;
+		}
+
+		/** What it is drawn within, or null */
+		public Shape getClip() {
+			return clip;
+		}
+
+		/** Its line's ends and joins rounded (a line series'), else butt and mitred */
+		public boolean isRound() {
+			return round;
+		}
+
+		public Gradient getGradient() {
+			return gradient;
+		}
+
+		public void setGradient(Gradient gradient) {
+			this.gradient = gradient;
+		}
+
+		public Gradient getLineGradient() {
+			return lineGradient;
+		}
+
+		public void setLineGradient(Gradient lineGradient) {
+			this.lineGradient = lineGradient;
+		}
+
+		public Pattern getPattern() {
+			return pattern;
+		}
+
+		public void setPattern(Pattern pattern) {
+			this.pattern = pattern;
+		}
+
+		/** Its shadows and glow, drawn under it, or null */
+		public List<Shadow> getShadows() {
+			return shadows;
+		}
+
+		public void setShadows(List<Shadow> shadows) {
+			this.shadows = shadows;
+		}
+
+		/** Its line's dashes, in points, or null for a solid line */
+		public float[] getDash() {
+			return dash;
+		}
+
+		public void setDash(float[] dash) {
+			this.dash = dash;
+		}
 	}
 
 	/** A line of text, from its baseline's start, turned by angle degrees (clockwise) about it */
-	static final class Text {
-		final String text;
+	public static final class Text {
+		private final String text;
 		/** the face the chart names (Calibri), where {@link #font} is the file it is drawn in (Carlito) */
-		final String face;
-		final Font font;
-		final Color colour;
-		final double x;
-		final double baseline;
-		final double width;
-		final double angle;
-		final String role;
+		private final String face;
+		private final Font font;
+		private final Color colour;
+		private final double x;
+		private final double baseline;
+		private final double width;
+		private final double angle;
+		private final String role;
 		/** the space after each character (DrawingML's spc), in points */
-		final double spacing;
+		private final double spacing;
 
-		Text(String text, String face, Font font, Color colour, double x, double baseline, double width, double angle, String role) {
+		public Text(String text, String face, Font font, Color colour, double x, double baseline, double width, double angle, String role) {
 			this(text, face, font, colour, x, baseline, width, angle, role, 0);
 		}
 
-		Text(String text, String face, Font font, Color colour, double x, double baseline, double width, double angle, String role, double spacing) {
+		public Text(String text, String face, Font font, Color colour, double x, double baseline, double width, double angle, String role, double spacing) {
 			this.spacing = spacing;
 			this.text = text;
 			this.face = face;
@@ -335,14 +527,61 @@ final class Drawing {
 			this.angle = angle;
 			this.role = role;
 		}
+
+		/** The text, as shown (in capitals where its style says) */
+		public String getText() {
+			return text;
+		}
+
+		/** The face the chart names (Calibri), where {@link #getFont()} is the file it is drawn in (Carlito) */
+		public String getFace() {
+			return face;
+		}
+
+		public Font getFont() {
+			return font;
+		}
+
+		public Color getColour() {
+			return colour;
+		}
+
+		/** Its baseline's start */
+		public double getX() {
+			return x;
+		}
+
+		public double getBaseline() {
+			return baseline;
+		}
+
+		/** Its width, to its last glyph */
+		public double getWidth() {
+			return width;
+		}
+
+		/** Turned by this many degrees, clockwise, about its baseline's start */
+		public double getAngle() {
+			return angle;
+		}
+
+		/** What it is, as Office's object model names it: title, legend.text.N, ... */
+		public String getRole() {
+			return role;
+		}
+
+		/** The space after each character (DrawingML's spc), in points */
+		public double getSpacing() {
+			return spacing;
+		}
 	}
 
-	final double width;
-	final double height;
-	final List<Object> items = new ArrayList<>();
+	private final double width;
+	private final double height;
+	private final List<Object> items = new ArrayList<>();
 
 	/** The boxes Office reports, by name: title, legend, legend.entry.N, legend.key.N, plotArea, inside, point.S.P */
-	final Map<String, Rectangle2D> boxes = new LinkedHashMap<>();
+	private final Map<String, Rectangle2D> boxes = new LinkedHashMap<>();
 
 	/**
 	 * A pie's or doughnut's slices, by point (point.S.P), at the places Office reports
@@ -350,25 +589,69 @@ final class Drawing {
 	 * point, the start edge's middle, the centre, the end edge's middle, then a doughnut's inner
 	 * start, inner arc's middle and inner end); null where a pie has none
 	 */
-	final Map<String, double[][]> slices = new LinkedHashMap<>();
+	private final Map<String, double[][]> slices = new LinkedHashMap<>();
 
 	/** The value axis as laid out: min, max, major unit */
-	double[] valueAxis;
+	private double[] valueAxis;
 
 	/** A scatter chart's x axis as laid out: min, max, major unit; a date axis's first and last dates and major unit */
-	double[] xAxis;
+	private double[] xAxis;
 
-	Drawing(double width, double height) {
+	/** A drawing of width by height points, empty */
+	public Drawing(double width, double height) {
 		this.width = width;
 		this.height = height;
 	}
 
-	void add(Area a) {
+	/** Adds a shape, painted after those before it */
+	public void add(Area a) {
 		items.add(a);
 	}
 
-	void add(Text t) {
+	/** Adds a text, painted after what is before it */
+	public void add(Text t) {
 		items.add(t);
+	}
+
+	public double getWidth() {
+		return width;
+	}
+
+	public double getHeight() {
+		return height;
+	}
+
+	/** What is painted, {@link Area}s and {@link Text}s in painting order (the list itself) */
+	public List<Object> getItems() {
+		return items;
+	}
+
+	/** The boxes Office reports, by name (the map itself): title, legend, legend.entry.N, legend.key.N, plotArea, inside, point.S.P */
+	public Map<String, Rectangle2D> getBoxes() {
+		return boxes;
+	}
+
+	/** A pie's or doughnut's slices, by point, at Office's nine places (the map itself; see the field's note) */
+	public Map<String, double[][]> getSlices() {
+		return slices;
+	}
+
+	/** The value axis as laid out: min, max, major unit; null where there is none */
+	public double[] getValueAxis() {
+		return valueAxis;
+	}
+
+	public void setValueAxis(double[] valueAxis) {
+		this.valueAxis = valueAxis;
+	}
+
+	/** A scatter chart's x axis as laid out, a date axis's first and last dates and major unit; null where there is none */
+	public double[] getXAxis() {
+		return xAxis;
+	}
+
+	public void setXAxis(double[] xAxis) {
+		this.xAxis = xAxis;
 	}
 
 	/** A line across or down (a gridline, an axis) */
@@ -379,7 +662,7 @@ final class Drawing {
 	}
 
 	/** Paints the items in order */
-	void paint(Graphics2D g) {
+	public void paint(Graphics2D g) {
 		paint(g, false);
 	}
 
@@ -387,7 +670,7 @@ final class Drawing {
 	 * Paints the items in order; for a picture (raster), with a rectangle's edges on whole pixels,
 	 * as Excel's pictures have them (a bar's edge is its colour or the background, not a blend)
 	 */
-	void paint(Graphics2D g, boolean raster) {
+	public void paint(Graphics2D g, boolean raster) {
 		for (Object o : items) {
 			if (o instanceof Area) {
 				Area a = (Area) o;

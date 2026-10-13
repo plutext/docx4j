@@ -282,4 +282,76 @@ public class ChartBoxFoTest extends AbstractXSLFOTest {
 			assertTrue(pathway(flags) + "gap " + gap, gap >= 252 && gap < 300);
 		}
 	}
+
+	/** A chartex renderer for the test: each chart a text naming its first series' layout */
+	private static final class TestChartExRenderer implements org.docx4j.model.chart.ChartExRenderer {
+		@Override
+		public org.docx4j.model.chart.ChartRenderCheck check(org.docx4j.model.chart.ChartExModel chart,
+				org.docx4j.model.color.ThemeColors theme) {
+			return new org.docx4j.model.chart.ChartRenderCheck(null, null);
+		}
+
+		@Override
+		public void draw(org.docx4j.model.chart.ChartExModel chart, org.docx4j.model.color.ThemeColors theme,
+				org.docx4j.model.chart.ChartFonts fonts, double width, double height, java.awt.Graphics2D g) {
+		}
+
+		@Override
+		public org.w3c.dom.Document toSvg(org.docx4j.model.chart.ChartExModel chart, org.docx4j.model.color.ThemeColors theme,
+				org.docx4j.model.chart.ChartFonts fonts, double width, double height) {
+			org.w3c.dom.Document d = XmlUtils.getNewDocumentBuilder().newDocument();
+			Element svg = d.createElementNS(SVG, "svg");
+			svg.setAttribute("viewBox", "0 0 " + (int) width + " " + (int) height);
+			d.appendChild(svg);
+			Element text = d.createElementNS(SVG, "text");
+			text.setAttribute("y", "20");
+			text.setTextContent("drawn " + chart.getSeries().get(0).getLayout());
+			svg.appendChild(text);
+			return d;
+		}
+	}
+
+	private static WordprocessingMLPackage waterfall() throws Exception {
+		try (InputStream is = ChartBoxFoTest.class.getClassLoader().getResourceAsStream("charts/waterfall.docx")) {
+			return WordprocessingMLPackage.load(is);
+		}
+	}
+
+	/**
+	 * A chartex chart (CR-039): Word's Fallback picture of it, until a chartex renderer is present
+	 * that draws it, and then its Choice drawn in its box, in both pathways; docx4j-chart-render
+	 * still draws the classic charts (the two renderers found apart, never competing)
+	 */
+	@Test
+	public void aChartexRendererDrawsAChartexChartsChoice() throws Exception {
+
+		assertEquals("docx4j's jars provide no chartex renderer", null, org.docx4j.model.chart.ChartExRenderer.getRenderer());
+		for (int flags : PATHWAYS) {
+			org.w3c.dom.Document fo = fo(waterfall(), flags);
+			assertEquals(pathway(flags), 0, fo.getElementsByTagNameNS(FO, "instream-foreign-object").getLength());
+			assertEquals(pathway(flags) + "Word's picture", 1, fo.getElementsByTagNameNS(FO, "external-graphic").getLength());
+		}
+		org.docx4j.model.chart.ChartExRenderer.setRenderer(new TestChartExRenderer());
+		try {
+			for (int flags : PATHWAYS) {
+				org.w3c.dom.Document fo = fo(waterfall(), flags);
+				assertEquals(pathway(flags), 0, fo.getElementsByTagNameNS(FO, "external-graphic").getLength());
+				NodeList ifos = fo.getElementsByTagNameNS(FO, "instream-foreign-object");
+				assertEquals(pathway(flags), 1, ifos.getLength());
+				Element ifo = (Element) ifos.item(0);
+				assertEquals(pathway(flags), "432pt", ifo.getAttribute("content-width"));
+				assertEquals(pathway(flags), "252pt", ifo.getAttribute("content-height"));
+				assertEquals(pathway(flags), "drawn waterfall", ifo.getElementsByTagNameNS(SVG, "text").item(0).getTextContent());
+
+				// the classic chart beside it: docx4j-chart-render's drawing
+				Element svg = boxSvg(fo(doc(false), flags), flags);
+				List<String> texts = new java.util.ArrayList<>();
+				NodeList t = svg.getElementsByTagNameNS(SVG, "text");
+				for (int i = 0; i < t.getLength(); i++) texts.add(t.item(i).getTextContent());
+				assertTrue(pathway(flags) + texts, texts.contains("Category 1"));
+			}
+		} finally {
+			org.docx4j.model.chart.ChartExRenderer.setRenderer(null);
+		}
+	}
 }

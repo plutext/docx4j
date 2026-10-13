@@ -18,7 +18,6 @@
 package org.docx4j.model.chart;
 
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.ServiceLoader;
 
@@ -32,7 +31,8 @@ import org.w3c.dom.Document;
  * Found through {@link ServiceLoader}, as {@code MetafileSvgProvider} is: docx4j-chart-render
  * provides the classic chart types (review A7: on the read model, so that a chart can be drawn
  * from a {@link ChartModel} without its package); the Enterprise jar, chartex (the charts plan's
- * D1 (d)).  docx4j-core on its own has none, and the outputs keep a chart's box empty
+ * D1 (d)), through its own interface, {@link ChartExRenderer}, so that the two never compete
+ * (CR-039).  docx4j-core on its own has none, and the outputs keep a chart's box empty
  * ({@link ChartBox}).
  *
  * <p>Sizes are points; a chart is drawn with its top left at the origin.  The theme is the
@@ -62,23 +62,7 @@ public interface ChartRenderer {
 	default BufferedImage toImage(ChartModel chart, ThemeColors theme, ChartFonts fonts, double width, double height,
 			double dpi) {
 		if (!check(chart, theme).isDrawn()) return null;
-		double scale = dpi / 72.0;
-		BufferedImage image = new BufferedImage((int) Math.max(1, Math.ceil(width * scale)),
-				(int) Math.max(1, Math.ceil(height * scale)), BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g = image.createGraphics();
-		try {
-			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-			g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-			g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-			g.setColor(java.awt.Color.WHITE);
-			g.fillRect(0, 0, image.getWidth(), image.getHeight());
-			g.scale(scale, scale);
-			draw(chart, theme, fonts, width, height, g);
-		} finally {
-			g.dispose();
-		}
-		return image;
+		return Renderers.picture(width, height, dpi, g -> draw(chart, theme, fonts, width, height, g));
 	}
 
 	// ------------------------------------------------------------------ lookup
@@ -98,22 +82,7 @@ public interface ChartRenderer {
 		if (!Holder.resolved) {
 			synchronized (Holder.class) {
 				if (!Holder.resolved) {
-					ChartRenderer found = null;
-					try {
-						for (ChartRenderer r : ServiceLoader.load(ChartRenderer.class)) {
-							found = r;
-							break;
-						}
-						if (found == null) {
-							// the thread's context class loader didn't have it: docx4j-core's own
-							for (ChartRenderer r : ServiceLoader.load(ChartRenderer.class, ChartRenderer.class.getClassLoader())) {
-								found = r;
-								break;
-							}
-						}
-					} catch (Throwable t) {
-						Holder.log.warn("No chart renderer: " + t);
-					}
+					ChartRenderer found = Renderers.first(ChartRenderer.class, Holder.log);
 					if (found == null) {
 						Holder.log.debug("No ChartRenderer on the classpath; charts keep their box (add docx4j-chart-render).");
 					}

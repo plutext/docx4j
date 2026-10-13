@@ -38,8 +38,9 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 /**
- * A chart as a picture: SVG or PNG, drawn as Office draws it by the {@link ChartRenderer} on
- * the classpath (docx4j-chart-render's, for the classic chart types; CR-037).  The chart is
+ * A chart as a picture: SVG or PNG, drawn as Office draws it by the renderer on the classpath
+ * for its kind: a classic chart by the {@link ChartRenderer} (docx4j-chart-render's; CR-037), a
+ * chartex chart by the {@link ChartExRenderer}, where there is one (CR-039).  The chart is
  * any a {@link ChartRef} names, in a docx, a pptx or an xlsx ({@link Charts#in} finds them);
  * its size is its anchor's unless one is given, its theme and fonts its host's.
  *
@@ -54,8 +55,8 @@ import org.w3c.dom.Document;
  * </pre>
  *
  * <p>Each method that draws throws where it can't: no renderer on the classpath (add
- * docx4j-chart-render), a chartex chart (waterfall, funnel, ...: not drawn by the open
- * renderer), a chart the renderer refuses (the reasons in the message, as {@link #check} gives
+ * docx4j-chart-render), a chartex chart (waterfall, funnel, ...) with no chartex renderer, a
+ * chart the renderer refuses (the reasons in the message, as {@link #check} gives
  * them), or a size unknown.  The PDF, HTML and pptx outputs draw charts through the same
  * renderer, and keep a chart's box empty where it can't be drawn ({@link ChartBox}).</p>
  *
@@ -73,13 +74,13 @@ public final class ChartImages {
 	/**
 	 * What the renderer would do with the chart: draw it, draw it simplified (a cosmetic
 	 * feature not drawn as Office draws it, each named), or refuse it (a structural feature it
-	 * doesn't draw, each named).  A chart is refused too where there is no renderer, or it is
-	 * a chartex chart.
+	 * doesn't draw, each named).  A chart is refused too where there is no renderer for its kind
+	 * (a chartex chart's is a {@link ChartExRenderer}).
 	 */
 	public static ChartRenderCheck check(ChartRef chart) throws Docx4JException {
 		String why = unrenderable(chart);
 		if (why != null) return refused(why);
-		return ChartRenderer.getRenderer().check(chart.read(), chart.getHostTheme());
+		return Drawn.of(chart).check();
 	}
 
 	/**
@@ -124,7 +125,7 @@ public final class ChartImages {
 	public static Document toSvg(ChartRef chart, double widthPt, double heightPt) throws Docx4JException {
 		Drawn d = drawable(chart);
 		ChartFonts fonts = ChartFonts.of(chart.getHost());
-		Document svg = d.renderer.toSvg(d.model, d.theme, fonts, widthPt, heightPt);
+		Document svg = d.toSvg(fonts, widthPt, heightPt);
 		if (svg == null) throw new Docx4JException("The chart " + chart.getName() + " couldn't be drawn as SVG");
 		documentFaces(svg.getDocumentElement(), fonts);
 		return svg;
@@ -149,7 +150,7 @@ public final class ChartImages {
 	/** The chart as a picture, width by height points, dpi pixels an inch, on white */
 	public static BufferedImage toImage(ChartRef chart, double widthPt, double heightPt, double dpi) throws Docx4JException {
 		Drawn d = drawable(chart);
-		BufferedImage image = d.renderer.toImage(d.model, d.theme, ChartFonts.of(chart.getHost()), widthPt, heightPt, dpi);
+		BufferedImage image = d.toImage(ChartFonts.of(chart.getHost()), widthPt, heightPt, dpi);
 		if (image == null) throw new Docx4JException("The chart " + chart.getName() + " couldn't be drawn");
 		return image;
 	}
@@ -176,27 +177,26 @@ public final class ChartImages {
 
 	/**
 	 * The chart drawn as SVG for an output's box ({@link ChartBox}), or null where it can't be
-	 * (no renderer, chartex, refused, an error), the reason logged: the box stays empty.
+	 * (no renderer for its kind, refused, an error), the reason logged: the box stays empty.
 	 */
 	static Document svg(ChartRef chart, double widthPt, double heightPt) {
-		if (chart == null || ChartRenderer.getRenderer() == null) return null;
+		// no renderer at all: the box, quietly, as before there was one
+		if (chart == null || !chart.isChartEx() && ChartRenderer.getRenderer() == null) return null;
 		String why = unrenderable(chart);
 		if (why != null) {
 			log.info("The chart " + chart.getName() + " keeps its box: " + why);
 			return null;
 		}
 		try {
-			ChartModel model = chart.read();
-			ThemeColors theme = chart.getHostTheme();
-			ChartRenderer renderer = ChartRenderer.getRenderer();
-			ChartRenderCheck check = renderer.check(model, theme);
+			Drawn d = Drawn.of(chart);
+			ChartRenderCheck check = d.check();
 			if (!check.isDrawn()) {
 				log.info("The chart " + chart.getName() + " keeps its box: " + check);
 				return null;
 			}
 			if (check.isSimplified()) log.info("The chart " + chart.getName() + " is " + check);
 			ChartFonts fonts = ChartFonts.of(chart.getHost());
-			Document svg = renderer.toSvg(model, theme, fonts, widthPt, heightPt);
+			Document svg = d.toSvg(fonts, widthPt, heightPt);
 			if (svg != null) documentFaces(svg.getDocumentElement(), fonts);
 			return svg;
 		} catch (Exception e) {
@@ -212,7 +212,7 @@ public final class ChartImages {
 	static BufferedImage image(ChartRef chart, double widthPt, double heightPt, double dpi) {
 		try {
 			Drawn d = drawable(chart);
-			return d.renderer.toImage(d.model, d.theme, ChartFonts.of(chart.getHost()), widthPt, heightPt, dpi);
+			return d.toImage(ChartFonts.of(chart.getHost()), widthPt, heightPt, dpi);
 		} catch (Exception e) {
 			log.warn("The chart " + (chart == null ? "" : chart.getName()) + " couldn't be drawn as a picture: " + e.getMessage());
 			return null;
@@ -253,35 +253,75 @@ public final class ChartImages {
 
 	// ------------------------------------------------------------------
 
-	private static final class Drawn {
-		final ChartRenderer renderer;
-		final ChartModel model;
-		final ThemeColors theme;
+	/**
+	 * A chart read, with the renderer of its kind: a classic chart's {@link ChartRenderer}, a
+	 * chartex chart's {@link ChartExRenderer} (CR-039)
+	 */
+	private abstract static class Drawn {
 
-		Drawn(ChartRenderer renderer, ChartModel model, ThemeColors theme) {
-			this.renderer = renderer;
-			this.model = model;
-			this.theme = theme;
+		abstract ChartRenderCheck check();
+
+		abstract Document toSvg(ChartFonts fonts, double widthPt, double heightPt);
+
+		abstract BufferedImage toImage(ChartFonts fonts, double widthPt, double heightPt, double dpi);
+
+		/** The chart read for its renderer, which {@link ChartImages#unrenderable} has found */
+		static Drawn of(ChartRef chart) throws Docx4JException {
+			ThemeColors theme = chart.getHostTheme();
+			if (chart.isChartEx()) {
+				ChartExRenderer renderer = ChartExRenderer.getRenderer();
+				ChartExModel model = chart.readChartEx();
+				return new Drawn() {
+					ChartRenderCheck check() {
+						return renderer.check(model, theme);
+					}
+
+					Document toSvg(ChartFonts fonts, double widthPt, double heightPt) {
+						return renderer.toSvg(model, theme, fonts, widthPt, heightPt);
+					}
+
+					BufferedImage toImage(ChartFonts fonts, double widthPt, double heightPt, double dpi) {
+						return renderer.toImage(model, theme, fonts, widthPt, heightPt, dpi);
+					}
+				};
+			}
+			ChartRenderer renderer = ChartRenderer.getRenderer();
+			ChartModel model = chart.read();
+			return new Drawn() {
+				ChartRenderCheck check() {
+					return renderer.check(model, theme);
+				}
+
+				Document toSvg(ChartFonts fonts, double widthPt, double heightPt) {
+					return renderer.toSvg(model, theme, fonts, widthPt, heightPt);
+				}
+
+				BufferedImage toImage(ChartFonts fonts, double widthPt, double heightPt, double dpi) {
+					return renderer.toImage(model, theme, fonts, widthPt, heightPt, dpi);
+				}
+			};
 		}
 	}
 
 	private static Drawn drawable(ChartRef chart) throws Docx4JException {
 		String why = unrenderable(chart);
 		if (why != null) throw new Docx4JException("The chart " + (chart == null ? "" : chart.getName()) + " can't be drawn: " + why);
-		ChartRenderer renderer = ChartRenderer.getRenderer();
-		ChartModel model = chart.read();
-		ThemeColors theme = chart.getHostTheme();
-		ChartRenderCheck check = renderer.check(model, theme);
+		Drawn d = Drawn.of(chart);
+		ChartRenderCheck check = d.check();
 		if (!check.isDrawn()) throw new Docx4JException("The chart " + chart.getName() + " can't be drawn: " + check);
 		if (check.isSimplified()) log.info("The chart " + chart.getName() + " is " + check);
-		return new Drawn(renderer, model, theme);
+		return d;
 	}
 
 	/** Why the chart can't be drawn by any renderer here, or null */
 	private static String unrenderable(ChartRef chart) {
 		if (chart == null) return "no chart";
+		if (chart.isChartEx()) {
+			if (ChartExRenderer.getRenderer() == null) return "a chartex chart (" + chart.getChartPart().getPartName()
+					+ "), and no chartex renderer on the classpath (docx4j-chart-render draws the classic chart types)";
+			return null;
+		}
 		if (ChartRenderer.getRenderer() == null) return "no chart renderer on the classpath (add docx4j-chart-render)";
-		if (chart.isChartEx()) return "a chartex chart (" + chart.getChartPart().getPartName() + "), which the open renderer doesn't draw";
 		return null;
 	}
 

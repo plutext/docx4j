@@ -222,5 +222,7 @@ module org.docx4j.core {
     uses org.docx4j.model.images.MetafileSvgProvider;
     // docx4j-chart-render provides this (CR-037, review A8)
     uses org.docx4j.model.chart.ChartRenderer;
+    // a chartex renderer provides this (the Enterprise jar's; CR-039)
+    uses org.docx4j.model.chart.ChartExRenderer;
 
 }

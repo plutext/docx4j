@@ -15,7 +15,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.docx4j.chart.render;
+package org.docx4j.chart.render.api;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -45,23 +45,25 @@ import java.util.List;
  * category labels (Excel chooses the unit before it wraps or turns them).  A horizontal value axis
  * (a bar chart's, a scatter chart's x axis) has its own test of whether its labels fit
  * ({@link Fits}).
+ *
+ * @since 17.3.3 (CR-039: from docx4j-chart-render's internals, CR-037)
  */
-final class AxisScale {
+public final class AxisScale {
 
 	/**
 	 * What a vertical axis's length keeps back from its intervals' lines: 8.93 to 9.89pt, the same at
 	 * 7 to 16pt (463 tests: R1 to R13 and r14-sweep-column-h's 182 heights).  Phase 1's
 	 * (n + 1) lines within the length and 4.87pt fitted R11 alone, whose 14pt probes set it
 	 */
-	static final double RESERVE = 9.41;
+	public static final double RESERVE = 9.41;
 
 	/** At most this many intervals (R2, R11) */
-	static final int MAX_INTERVALS = 10;
+	public static final int MAX_INTERVALS = 10;
 
-	final double min;
-	final double max;
-	final double unit;
-	final boolean log;
+	private final double min;
+	private final double max;
+	private final double unit;
+	private final boolean log;
 
 	private AxisScale(double min, double max, double unit, boolean log) {
 		this.min = min;
@@ -70,8 +72,28 @@ final class AxisScale {
 		this.log = log;
 	}
 
+	/** The axis's least value */
+	public double getMin() {
+		return min;
+	}
+
+	/** The axis's greatest value */
+	public double getMax() {
+		return max;
+	}
+
+	/** The major unit: a log axis's base */
+	public double getUnit() {
+		return unit;
+	}
+
+	/** Whether the axis is logarithmic */
+	public boolean isLog() {
+		return log;
+	}
+
 	/** The values labelled, min to max */
-	List<Double> values() {
+	public List<Double> values() {
 		List<Double> v = new ArrayList<>();
 		if (log) {
 			for (double x = min; x <= max * (1 + 1e-9); x *= unit) v.add(x);
@@ -85,7 +107,7 @@ final class AxisScale {
 	}
 
 	/** Where a value falls between min (0) and max (1) */
-	double fraction(double v) {
+	public double fraction(double v) {
 		if (log) return (Math.log(v) - Math.log(min)) / (Math.log(max) - Math.log(min));
 		return (v - min) / (max - min);
 	}
@@ -94,16 +116,16 @@ final class AxisScale {
 	 * The unit doubled, the bounds kept: a horizontal axis's labels that overlap at the unit its
 	 * length gives (r14-sweep-bar-x10000: 0 to 60000 by 40000)
 	 */
-	AxisScale doubled() {
+	public AxisScale doubled() {
 		return new AxisScale(min, max, unit * 2, log);
 	}
 
-	static int intervals(double lo, double hi, double u) {
+	public static int intervals(double lo, double hi, double u) {
 		return (int) Math.round((hi - lo) / u);
 	}
 
 	/** Whether an axis's labels fit at a unit: its bounds, the unit, the intervals */
-	interface Fits {
+	public interface Fits {
 		boolean fits(double min, double max, double unit, int intervals);
 	}
 
@@ -114,13 +136,13 @@ final class AxisScale {
 	 * @param length the axis's length in points (see the class's note)
 	 * @param line the height of a label's line
 	 */
-	static AxisScale of(double dataMin, double dataMax, Double setMin, Double setMax, Double setUnit, Double logBase,
+	public static AxisScale of(double dataMin, double dataMax, Double setMin, Double setMax, Double setUnit, Double logBase,
 			double length, double line) {
 		return of(dataMin, dataMax, setMin, setMax, setUnit, logBase, (lo, hi, u, n) -> n * line <= length - RESERVE, Bounds.VALUE);
 	}
 
 	/** How an axis's automatic bounds are found (see the class's note) */
-	enum Bounds {
+	public enum Bounds {
 		/** a value axis's */
 		VALUE,
 		/** a 100% chart's */
@@ -130,7 +152,7 @@ final class AxisScale {
 	}
 
 	/** An axis's scale, its bounds found so, its length and line as {@link #of(double, double, Double, Double, Double, Double, double, double)}'s */
-	static AxisScale of(double dataMin, double dataMax, Double setMin, Double setMax, Double setUnit, Double logBase,
+	public static AxisScale of(double dataMin, double dataMax, Double setMin, Double setMax, Double setUnit, Double logBase,
 			double length, double line, Bounds kind) {
 		return of(dataMin, dataMax, setMin, setMax, setUnit, logBase, (lo, hi, u, n) -> n * line <= length - RESERVE, kind);
 	}
@@ -139,12 +161,12 @@ final class AxisScale {
 	 * @param fits whether the labels fit at a unit (a vertical axis: n lines within its length less
 	 *     {@link #RESERVE})
 	 */
-	static AxisScale of(double dataMin, double dataMax, Double setMin, Double setMax, Double setUnit, Double logBase, Fits fits) {
+	public static AxisScale of(double dataMin, double dataMax, Double setMin, Double setMax, Double setUnit, Double logBase, Fits fits) {
 		return of(dataMin, dataMax, setMin, setMax, setUnit, logBase, fits, Bounds.VALUE);
 	}
 
 	/** @param kind how the bounds are found (see the class's note) */
-	static AxisScale of(double dataMin, double dataMax, Double setMin, Double setMax, Double setUnit, Double logBase, Fits fits,
+	public static AxisScale of(double dataMin, double dataMax, Double setMin, Double setMax, Double setUnit, Double logBase, Fits fits,
 			Bounds kind) {
 		if (logBase != null && logBase > 1 && dataMin > 0) {
 			double b = logBase;

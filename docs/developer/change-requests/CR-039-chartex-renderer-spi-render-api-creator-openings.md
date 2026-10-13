@@ -1,6 +1,7 @@
 # CR-039: Chartex hooks for the Enterprise jar - a `ChartExRenderer` SPI and the cx Choice, an exported `org.docx4j.chart.render.api`, and `ChartCreator`'s host steps opened
 
-Status: PROPOSED 2026-10-14.  Drafted at the request of the Enterprise session
+Status: DONE 2026-10-14, all three phases (§9); phase 3's Office check passed (Jason).  Proposed
+the same day, drafted at the request of the Enterprise session
 (plutext-enterprise-java-11-44), from enterprise CR-004 (`../Plutext-Enterprise-Java-11/docs/developer/change-requests/CR-004-chartex.md`)
 §4.1, §4.3 and §4.6.  That session relays Jason's decision on enterprise CR-004: phase 0 starts
 now; the product is a module of the Enterprise reactor; docx4j 17.3.3 is not released until it
@@ -289,7 +290,134 @@ relayed.
 
 ## 8. Registry and hand-offs
 
-`docx4j/CR-039`, with phases `.1` to `.3`, `proposed`.  Enterprise CR-004's `depends_on` points at
+`docx4j/CR-039`, with phases `.1` to `.3`.  Enterprise CR-004's `depends_on` points at
 it (the Enterprise session's to set).  The ports: nothing to hand off.  The SPI, the api and the
 host steps are Java's, and the outputs change only where a `ChartExRenderer` is present (charts
 plan phase 10: rendering stays Java's).
+
+## 9. Implementation record (2026-10-14)
+
+D1 to D4 taken as recommended (Jason: "commit CR-039 then implement it, with its four decisions as
+recommended").  All three phases implemented and gated.
+
+**Phase 1 (core).**
+- `ChartExRenderer`: as §3.1, with its own `Holder`.  Core's `module-info` has the `uses`.
+- `Renderers` (package-private) is what the two SPIs share:
+  - the lookup, the context loader's then core's, through `ServiceLoader.stream()`, so that a
+    second provider is named in a warning without being made;
+  - the picture behind both `toImage` defaults.
+- `ChartExModel.getPart()`.
+- `ChartImages` dispatches on the chart's kind through a `Drawn` per kind; a chartex chart with
+  no chartex renderer is refused "no chartex renderer on the classpath".
+- `ChartExBranch`: `docx4j.chart.chartex.branch`, and `takesChoice(host, Choice)` and
+  `takesChoice(host, Element)`.  A Choice is recognised through `ChartRef.of(host, ..., true)`
+  (its drawing's anchor, a frame, a run's content; DOM copied first, as `SvgExporter` does).
+- `McSelection.selectedBranch(ac, host)`.
+- Its callers:
+  - the visitor (`AbstractVisitorExporterGenerator`, with `conversionContext.getCurrentPart()`);
+  - `XSLTUtils.mcSelectsChoice(context, choice)`, which finds the part from a docx's context
+    (`AbstractWmlConversionContext`) or a pptx's (`SvgConversionContext`'s resolved layout);
+  - an `or` added to the Choice predicate of `docx2fo.xslt`, `docx2xhtml-core.xslt` and
+    `pptx2svginhtml.xslt`.
+- Tests:
+  - core-tests `ChartExRendererTest` (6): the lookup finds none; dispatch, check, SVG and PNG;
+    an xlsx's model reaching its workbook; the branch rule in every mode, with and without a part;
+    HTML on both pathways; pptx SVG-in-HTML;
+  - export-fo-tests `ChartBoxFoTest.aChartexRendererDrawsAChartexChartsChoice`: FO on both
+    pathways, the classic chart beside it still drawn by docx4j-chart-render;
+  - chart-render `ChartRendererSpiTest.theOpenRendererIsNoChartExRenderer`.
+
+**Phase 2 (docx4j-chart-render).** `org.docx4j.chart.render.api`, exported, with `requires
+transitive org.docx4j.core` (core carries the generated objects and AWT).  As §3.3, with these
+names:
+- `AxisScale` (moved): `getMin()`, `getMax()`, `getUnit()`, `isLog()`.
+- `TextStyle` (from `ChartLayout.Style`):
+  - holds its `ChartFonts`;
+  - `getLineHeight()` (§3.3 said `getLine()`), `getSpacing()`;
+  - `with(CTTextCharacterProperties | CTTextBody, theme)`, `unkerned()`, `defRPr()`;
+  - `text(...)`, which makes a `Drawing.Text`.
+- `TextWrap`: `Seg`, `Line` (`getSegs()` read-only, `getLineHeight()`), `paragraphs(rich, parent,
+  theme)`, `wrap`, `words`, `wrapBroken`.
+- `Fills(theme)`: `fill`, `gradient`, `pattern`, `shadows`, `area`, `lineColour`, `lineWidth`,
+  `dashes`, `awt`.
+- `Drawing` (moved):
+  - its classes public, getters, and setters for an `Area`'s gradients, pattern, shadows and dash;
+  - `Shadow.outer(...)` and `Shadow.glow(...)`;
+  - `getBoxes()` and `getSlices()` return the maps themselves.
+- `SvgWriter.toSvg(Drawing)`, with `TEXT_AS_SHAPES` (`ClassicChartRenderer.TEXT_AS_SHAPES` names
+  it still); `GradientHandler` moved beside it, package-private (D2).
+- `ChartFrame`:
+  - the frame's constants, measured, with their provenance;
+  - `plotEdges`, `titleWidth`, `titleBox`, `belowTitle`, `titleTexts`;
+  - `key`, `legend(...)`, which returns a `Legend` (box, entries, the plot's edges, cell width);
+  - `grid` (a legend sized by hand), `entryBox`, `keyBox`, `keyAt`, `textX`, `textBaseline`.
+  - The classic manual layout (`c:manualLayout`) stays in `ChartLayout`.
+- `ChartLayout` and `ClassicChartRenderer` are on it: the moved code's private methods are
+  delegates, and the field accesses became getters, rewritten where the compiler reported each (191 in the module, 97 in its tests and the scratch tools).
+  `ChartLayout` is 2,710 lines (was 3,041).
+- Test: `RenderApiTest` (2) draws a chart through the api alone.
+- **The identity gate** (`IdentityDump`, a scratch tool) records every one of the gate's 665
+  charts at full precision: boxes, slices, axes, every item's text and place, every shape's path,
+  the SVG, and the PNG's SHA-256.  Before the move, dumped twice: identical (deterministic).
+  After each stage (the classes moved; then `ChartFrame`): identical, all 1,330 files.  The
+  chart gate is unchanged, 531 of 665.
+
+**Phase 3 (core).** `ChartHosting(Random)`:
+- `wordId`, `guid`, `next`, `free`;
+- `workbook(host, template)`, `relate(chart, workbook)`, `fill(workbook, grid, dateFormat)`,
+  `write(sheetCells, grid, c0, r0, dateFormat)`;
+- `docxRun`, `slideFrame`, `sheetAnchor`, each with an optional `requires` and Fallback XML.
+
+`ChartCreator` is on it, and its data is a grid (`grid(definition)`; a series' name is never
+null, so the cells and the shared strings come in the same order).  Found on the way:
+- **A Choice's `Requires` prefix must be declared.**  A loaded document keeps the root's
+  `xmlns:cx1`; a new one doesn't, since JAXB has no use for a prefix named only in an attribute's
+  value.  `ChartHosting` calls the host part's `addMcChoiceNamespace(requires)`, the mechanism
+  docx4j has for this (`McIgnorableNamespaceDeclarator`).  The saved part declares `xmlns:cx1`
+  (tested in each host).
+- **A chartex chart's workbook has no table** (Word's waterfall: A1:B9, the name in B1), so `fill`
+  sets a table's range only where there is one.
+- **Word relates a chartex chart's workbook first** (rId1; the style rId2, the colours rId3), the
+  reverse of a classic chart's: `relate` and `addTargetPart` leave the order to the caller.
+- **`ChartCreator.delete` couldn't find a chartex chart's drawing.**  Its walk is `TraversalUtil`'s
+  READ mode, which sees the Fallback.  Now it first looks for an `mc:AlternateContent` whose Choice
+  places the anchor:
+  - it walks every content list, and a block or run SDT's content;
+  - it removes the element whole, in an xlsx the two-cell anchor holding it, and a docx's run where
+    that leaves it empty;
+  - it removes the parts the Fallback names (`r:embed`, `r:link`, `r:id`).
+- The docx Fallback's inline is given the Choice's extent, `docPr` id and name, and `wp14` ids, as
+  Word writes them.
+- A drawing's next frame id counts a Choice's frames.
+- A docx chart's name counts the part's chartex charts as well.
+
+Tests: core-tests `ChartHostingTest` (4).
+- Word's waterfall is put in a new docx and PowerPoint's in a new deck, through `ChartHosting` and
+  part copies alone: the workbook embedded, filled from the chart's caches and related; Word's
+  relationship order; the Fallback picture.
+- Excel's waterfall is anchored afresh in its own workbook, with Excel's Fallback.
+- For each: the saved part declares `cx1`, the chart is found in its Choice with the original's
+  data, and a chartex renderer draws it.  It is then deleted whole: the picture's part, the chart's
+  part and the workbook go too.
+- Office's three chartex charts are deleted whole, and what is left saves and loads.
+
+**`ChartCreator`'s identity.** Every type in all three hosts was made with seeded ids, by HEAD's
+core (compiled apart in the scratchpad) and by this one: 1,009 parts.  All chart, workbook,
+document, slide, drawing, relationship and content-type parts are byte-identical.  Only the pptx's
+`presentation.xml` and slide master differ, by `createPackage()`'s own unseeded ids.
+
+**Gate:**
+- the reactor installed clean, javadoc included, with no warning in the new files;
+- core-tests 1555/0 (11 skipped), export-fo-tests 794/0 (9 skipped), docx4j-chart-render 23/0
+  (the chart gate 531 of 665, as before), docx4j-markdown 145/0;
+- the corpora and the probes against b225 (b226, jars frozen 09:08): 0 movers on the four corpora,
+  every event count equal, the probes' scoreboard byte-identical;
+- **the Office check of phase 3** passed (Jason, 2026-10-14), on the share's
+  `fidelity/cr039-chartex/` (the three re-hosted files and `CHECK.txt`): Word, PowerPoint and
+  Excel open each without repair, the waterfall shows, and Edit Data opens its workbook.  (The
+  Enterprise session found on
+  2026-10-14 that Office's object model can't make or edit a chartex chart in Word, so the check is
+  by hand: open, look, Edit Data.)
+- The Enterprise session's skeleton provides a `ChartExRenderer` against these jars: it is found
+  with docx4j-chart-render beside it, and `selectedBranch` gives the Fallback, the Choice and the
+  Fallback in `auto` (its renderer refuses for now), `choice` and `fallback`.

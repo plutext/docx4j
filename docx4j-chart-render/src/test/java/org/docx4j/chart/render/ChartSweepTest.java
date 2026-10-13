@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.docx4j.chart.render.api.Drawing;
 import org.docx4j.model.chart.ChartFonts;
 import org.docx4j.model.chart.ChartModel;
 import org.docx4j.model.chart.ChartRef;
@@ -65,7 +66,7 @@ public class ChartSweepTest {
 				double size = Json.number(row.get("size"));
 				Drawing d = renderer.layout(m, ref.getHostTheme(), ChartFonts.of(ref.getHost()), width ? size : w, width ? h : size);
 				List<String> why = new ArrayList<>();
-				Rectangle2D in = d.boxes.get("inside");
+				Rectangle2D in = d.getBoxes().get("inside");
 				double[] office = { Json.number(row.get("insideLeft")) + RenderGate.ORIGIN, Json.number(row.get("insideTop")) + RenderGate.ORIGIN,
 						Json.number(row.get("insideWidth")), Json.number(row.get("insideHeight")) };
 				if (in == null) {
@@ -82,7 +83,7 @@ public class ChartSweepTest {
 					Map<String, Object> a = Json.object(ao);
 					if (a.get("min") == null) continue;
 					boolean x = Json.number(a.get("type")) == 1;
-					double[] ours = x ? d.xAxis : d.valueAxis;
+					double[] ours = x ? d.getXAxis() : d.getValueAxis();
 					double[] theirs = { Json.number(a.get("min")), Json.number(a.get("max")), Json.number(a.get("unit")) };
 					boolean same = ours != null;
 					for (int k = 0; same && k < 3; k++) same = Math.abs(theirs[k] - ours[k]) <= 1e-9 * Math.max(1, Math.abs(theirs[k]));

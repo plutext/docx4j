@@ -147,6 +147,7 @@ public final class ChartExModel {
 	}
 
 	private final CTChartSpace chartSpace;
+	private ChartExSpacePart part;
 	String titleText;
 	boolean hasTitle;
 	List<Series> series = new ArrayList<Series>();
@@ -158,7 +159,9 @@ public final class ChartExModel {
 	}
 
 	public static ChartExModel read(ChartExSpacePart part) throws Docx4JException {
-		return read(part.getContents());
+		ChartExModel m = read(part.getContents());
+		m.part = part;
+		return m;
 	}
 
 	public static ChartExModel read(CTChartSpace cs) {
@@ -299,6 +302,17 @@ public final class ChartExModel {
 
 	public CTChartSpace getSource() {
 		return chartSpace;
+	}
+
+	/**
+	 * The part the model was read from, for what the part leads to (its workbook, where an xlsx's
+	 * chart has no caches; its style and colour parts); null where it was read from a
+	 * {@link CTChartSpace} alone
+	 *
+	 * @since 17.3.3 (CR-039)
+	 */
+	public ChartExSpacePart getPart() {
+		return part;
 	}
 
 	/** The model as JSON (the version and conventions of {@link ChartModel#toJson()}) */

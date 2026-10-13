@@ -42,8 +42,9 @@ import org.w3c.dom.traversal.NodeIterator;
  * placed as a picture of that size would be, inline in its line or, for a {@code wp:anchor},
  * floating through the same anchor hints a picture gets, and the chart drawn in it by the
  * {@link ChartRenderer} on the classpath (docx4j-chart-render's, which docx4j-export-fo brings;
- * CR-037 phase 3).  Where none draws it (no renderer, a chart it refuses, a chartex chart) the
- * box stays empty, so the chart keeps its space.  Until 17.3.3 every output dropped a chart
+ * CR-037 phase 3), or a chartex chart by the {@link ChartExRenderer} (CR-039).  Where none draws
+ * it (no renderer for its kind, a chart it refuses) the box stays empty, so the chart keeps its
+ * space.  Until 17.3.3 every output dropped a chart
  * without keeping its space, so the text after it moved up into its place and the pages broke
  * where Word's don't (CR-035 phase 0).
  *
@@ -54,9 +55,10 @@ import org.w3c.dom.traversal.NodeIterator;
  * is (its points as pixels), with the name as its {@code aria-label}; each chart's SVG ids are
  * prefixed with its part's name, since one document holds them all.</p>
  *
- * <p>Used for a {@code c:chart} and, where a user prefers chartex's {@code mc:Choice}
- * ({@code docx4j.jaxb.mc.preferChoice}), a {@code cx:chart}.  By default a chartex chart's
- * {@code mc:Fallback} is what the outputs see, and that is drawn as written.</p>
+ * <p>Used for a {@code c:chart} and, where the outputs take a chartex chart's {@code mc:Choice}, a
+ * {@code cx:chart}, drawn by the {@link ChartExRenderer}.  By default they take it only where a
+ * chartex renderer draws the chart, and otherwise see its {@code mc:Fallback}, which is drawn as
+ * written ({@link ChartExBranch}, CR-039).</p>
  *
  * @since 17.3.3
  */

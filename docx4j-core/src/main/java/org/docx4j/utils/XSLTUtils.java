@@ -65,4 +65,28 @@ public class XSLTUtils {
 		return org.docx4j.jaxb.McSelection.prefersChoice(requires);
 	}
 
+	/**
+	 * Whether an output draws this {@code mc:Choice} for a chartex chart's
+	 * ({@link org.docx4j.model.chart.ChartExBranch}): by default, where a chartex renderer draws
+	 * the chart.  The XSLT pathways' {@code mc:AlternateContent} templates ask it of each Choice
+	 * {@link #mcPrefersChoice} doesn't take.
+	 *
+	 * @param conversionContext the stylesheet's: a docx's (its current part) or a pptx's (its slide)
+	 * @since 17.3.3 (CR-039)
+	 */
+	public static boolean mcSelectsChoice(Object conversionContext, org.w3c.dom.traversal.NodeIterator choice) {
+		org.w3c.dom.Node n = choice == null ? null : choice.nextNode();
+		if (!(n instanceof org.w3c.dom.Element)) return false;
+		org.docx4j.openpackaging.parts.Part host = null;
+		if (conversionContext instanceof org.docx4j.convert.out.common.AbstractWmlConversionContext) {
+			host = ((org.docx4j.convert.out.common.AbstractWmlConversionContext) conversionContext).getCurrentPart();
+		} else if (conversionContext instanceof org.pptx4j.convert.out.svginhtml.SvgConversionContext) {
+			org.pptx4j.model.ResolvedLayout rl = ((org.pptx4j.convert.out.svginhtml.SvgConversionContext) conversionContext).getResolvedLayout();
+			if (rl != null && rl.relationships != null && rl.relationships.getSourceP() instanceof org.docx4j.openpackaging.parts.Part) {
+				host = (org.docx4j.openpackaging.parts.Part) rl.relationships.getSourceP();
+			}
+		}
+		return org.docx4j.model.chart.ChartExBranch.takesChoice(host, (org.w3c.dom.Element) n);
+	}
+
 }
