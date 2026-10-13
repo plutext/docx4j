@@ -44,7 +44,7 @@ There is also a commercial enterprise edition of docx4j, which comes with commer
 - Open existing docx (from filesystem, SMB/CIFS, WebDAV using VFS), pptx, xlsx
 - Create new docx, pptx, xlsx
 - Programmatically manipulate the above (of course)
-- Create charts, and edit their data (docx, pptx, xlsx)
+- Create charts, edit their data, and draw them in PDF and HTML output or as images (docx, pptx, xlsx)
 - Save to various media zipped, or unzipped
 - Protection settings
 - Produce/consume  the Flat OPC XML format
@@ -54,7 +54,7 @@ Specific to docx4j (as opposed to pptx4j, xlsx4j):
 
 - Import XHTML
 - Import and export Markdown (from 17.0.4), including TeX math to/from native equations
-- Export as (X)HTML or PDF
+- Export as (X)HTML or PDF, including charts
 - Template substitution; CustomXML binding
 - Mail merge
 - Apply transforms, including common filters
@@ -1228,7 +1228,7 @@ See also AnonSingle and AnonCorpus in docx4j-samples-docx4j.  Whichever way you 
 
 docx4j can convert a docx to HTML or XHTML.  You will find the generated HTML is clean (in comparison to the HTML Word produces).
 
-Docx4j’s HTML output is suitable for documents which contain paragraphs, tables and images.  From 17.0.4, equations are output as native MathML.  It can’t handle more exotic features, such as SmartArt or WordArt (DrawingML or VML).
+Docx4j’s HTML output is suitable for documents which contain paragraphs, tables and images.  From 17.0.4, equations are output as native MathML, and from 17.3.3 charts are drawn (an inline SVG, or a PNG; see Charts).  It can’t handle more exotic features, such as SmartArt or WordArt (DrawingML or VML).
 
 Elsewhere on the web, you’ll find XSLT which can convert docx to HTML.  That XSLT is very complex, since it has to derive effective formatting from the hierarchy.
 
@@ -1336,6 +1336,8 @@ docx4j.convert.out.fo.images.resolution (or FOSettings.setImageResolution) chang
 - and a number sets the resolution (Word offers 330, 220, 150 and 96).  
 
 To make the docx itself smaller, CompressPictures.compress(wordMLPackage, "220", true) does what Word’s Compress Pictures does.
+
+**Charts.  **From 17.3.3, charts in the docx are drawn in the PDF, on both FO pathways, as Office lays them out: SVG inside `fo:instream-foreign-object`, with its text kept as text.  docx4j-export-fo brings the module that draws them, docx4j-chart-render.  See Charts, below, for what it draws and its settings.
 
 **Hyphenation.  **From 17.1.0, hyphenation in PDF output is driven by the document, as in Word: docx4j reads w:autoHyphenation, w:hyphenationZone, w:consecutiveHyphenLimit and w:doNotHyphenateCaps from settings.xml (and w:suppressAutoHyphens on a paragraph), and hyphenates only where the document asks for it.  Nothing needs configuring per document.
 
@@ -1967,7 +1969,7 @@ docx4j has quite good support for processing fields of type MERGEFIELD (ie the e
 
 # Charts
 
-From docx4j 17.3.3, you can create a chart in a docx, and edit the data of a chart already there, as Word does.  A chart docx4j creates is Word’s own chart of its type (made from the parts Word and Excel write), with its data in an Excel workbook embedded in the document, so that in Word, Edit Data opens the data and the Chart Design tools (the chart styles, Change Chart Type) work on it.
+From docx4j 17.3.3, you can create a chart in a docx, and edit the data of a chart already there, as Word does.  A chart docx4j creates is Word’s own chart of its type (made from the parts Word and Excel write), with its data in an Excel workbook embedded in the document, so that in Word, Edit Data opens the data and the Chart Design tools (the chart styles, Change Chart Type) work on it.  From the same release, docx4j’s PDF and HTML output draw charts (see Drawing charts, below).
 
 The chart types (`ChartType`) are:
 
@@ -2030,6 +2032,27 @@ See the samples CreateChart and EditChartData in docx4j-samples-docx4j.
 
 Similar functionality exists for pptx and xlsx.  `ChartCreator.inSlide` puts a chart on a slide as PowerPoint makes it (sample CreateChart in docx4j-samples-pptx4j).  In a workbook, `ChartCreator.inSheet` writes the data into a sheet as a table and charts it, and `fromCells` charts data already in cells, as Excel’s Insert Chart does over a selection (sample CreateCharts in docx4j-samples-xlsx4j).  `ChartDataEditor`, `ChartSettings` and `ChartCreator.delete` work on charts in all three.
 
+## Drawing charts
+
+docx4j’s PDF and HTML output draw a chart as Office lays it out: its title, legend, axes, gridlines and series, with data labels and axis titles, in the chart’s own colours, fills (gradients and patterns), shadows and fonts.  The drawing is done by docx4j-chart-render, which docx4j-export-fo brings with it.  It draws the types above, in docx, pptx and xlsx, whether docx4j or Office made the chart.
+
+In a PDF a chart is drawn as vectors, with its text kept as text (`docx4j.chart.render.textAsShapes=true` draws the text as outlines instead); in HTML it is an inline svg element (`docx4j.convert.out.html.chartAsPng=true` writes a PNG instead).  pptx’s SVG-in-HTML output draws charts too.
+
+`ChartImages` (in `org.docx4j.model.chart`) gives any chart as SVG or PNG (`writeSvg`, `writePng`; or `toSvg` and `toImage`, a DOM document and a picture):
+
+```
+for (ChartRef chart : Charts.in(pkg)) {
+    if (ChartImages.check(chart).isDrawn()) {
+        String name = chart.getName() + ".png";
+        try (OutputStream out = new FileOutputStream(name)) {
+            ChartImages.writePng(chart, 192, out);  // 192 dpi
+        }
+    }
+}
+```
+
+`check` says what the renderer would do with a chart: draw it, draw it simplified (naming what it doesn’t draw as Office does, a picture fill for example), or refuse it, with the reasons.  A chart it refuses keeps its space in PDF and HTML output, empty.  See the sample ChartsAsImages in docx4j-samples-docx-export-fo.
+
 ## Limitations
 
 - Only the types above: no combination charts, secondary axes, 3-D charts or the other variants yet.
@@ -2038,7 +2061,7 @@ Similar functionality exists for pptx and xlsx.  `ChartCreator.inSlide` puts a c
 - A linked chart, whose data is in a workbook outside the document, can’t be edited.
 - Settings other than those above (a chart’s style, colours, type, axis scales) are left as they are; change them in Word.
 - Where Office’s behaviour isn’t known, the editor refuses rather than guesses: a table with a totals row, or data on more than one sheet reshaped.  Cells holding formulas are left alone unless you call `setOverwriteFormulas(true)`.
-- docx4j’s PDF and HTML output don’t draw charts yet: a chart’s space is kept, empty.
+- PDF and HTML output and `ChartImages` don’t draw combination charts, secondary axes, 3-D charts or the Office 2016 types: their space is kept, empty.  A few placements differ from Office’s by a point or so (a pie’s labels at best fit, a layout set by factors).
 
 # SmartArt
 
