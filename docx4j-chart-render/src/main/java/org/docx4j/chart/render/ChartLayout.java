@@ -42,13 +42,21 @@ import org.docx4j.dml.CTTextParagraph;
 import org.docx4j.dml.chart.CTCatAx;
 import org.docx4j.dml.chart.CTChartLines;
 import org.docx4j.dml.chart.CTChartSpace;
+import org.docx4j.dml.chart.CTDLbl;
+import org.docx4j.dml.chart.CTDLbls;
 import org.docx4j.dml.chart.CTDPt;
 import org.docx4j.dml.chart.CTDateAx;
+import org.docx4j.dml.chart.CTLayout;
+import org.docx4j.dml.chart.CTLayoutMode;
 import org.docx4j.dml.chart.CTLegend;
+import org.docx4j.dml.chart.CTManualLayout;
 import org.docx4j.dml.chart.CTMarker;
 import org.docx4j.dml.chart.CTTickMark;
 import org.docx4j.dml.chart.CTTitle;
+import org.docx4j.dml.chart.CTTx;
 import org.docx4j.dml.chart.CTValAx;
+import org.docx4j.dml.chart.STLayoutMode;
+import org.docx4j.dml.chart.STLayoutTarget;
 import org.docx4j.model.chart.ChartAxis;
 import org.docx4j.model.chart.ChartColorStyles;
 import org.docx4j.model.chart.ChartData;
@@ -114,6 +122,8 @@ final class ChartLayout {
 	static final double LEGEND_MAX = 0.9;
 	/** A line series' legend key is this wide (R1, at 9pt), its line drawn this many times as long, centred (Word's PDF) */
 	static final double LINE_KEY = 12, LINE_KEY_DRAWN = 1.6;
+	/** A line series' legend key is at least this many times its line's width (r15-line-dashes: 15.75pt for 3.5pt; one width: provisional) */
+	static final double LINE_KEY_PER_WIDTH = 4.5;
 	/** The widest value label's left edge is this far left of the plot area's (6.53pt from the chart's edge) */
 	static final double VALUE_LABEL_OVERHANG = 4.47;
 	/** Between a value label's right edge and the plot's inside, a share of the label's line */
@@ -140,6 +150,10 @@ final class ChartLayout {
 	static final double CATEGORY_CAP = 0.5;
 	/** A tick mark's length, a share of its axis's text size (r1-area: 2.85pt at 9pt in Word's PDF, 3.80 at 12pt in PowerPoint's) */
 	static final double TICK = 0.3167;
+	/** A minor tick mark's (r15-ticks-minor: 2.13pt at 9pt; one probe) */
+	static final double MINOR_TICK = 0.2367;
+	/** Category labels above the plot stand this much higher than a mirror of those below (r15-catax-crosses-max, -high: 0.67pt at 9pt) */
+	static final double ABOVE_SHIFT = 0.67;
 	/**
 	 * A date axis's labels, turned 45 degrees, are at least this many lines apart square to them,
 	 * and turned 90 this many lines apart along the axis; where neither, an automatic major unit
@@ -155,8 +169,32 @@ final class ChartLayout {
 	 * one label width: provisional)
 	 */
 	static final double DATE_WRAP = 1.031;
+	/**
+	 * A data label's box is its text and its insets (its c:txPr's bodyPr, Excel's 3pt either side
+	 * and 1.5pt above and below); it stands this far from what it labels: a bar's end or base, a
+	 * marker's edge (R6: every label of the column, the stacked column and the line with markers,
+	 * to 0.001pt)
+	 */
+	static final double LABEL_GAP = 3;
+	/** A pie's label inside its end: where its box leaves the slice's middle ray, this far inside the arc (R6, R10's 258: 3.352pt, all eight) */
+	static final double LABEL_PIE_IN = 3.352;
+	/**
+	 * A pie whose labels may go outside it (outEnd, bestFit), or a doughnut with labels, is smaller
+	 * each side by this and this share of its side, whatever its labels (r6-pie-outEnd, -bestFit,
+	 * r8-pie-labels-outside, r15-labels-doughnut: 181.035 to 155.656pt; p6-pie-data-labels and
+	 * p6-doughnut-data-labels: 145.05 to 124.16pt; two sizes: provisional)
+	 */
+	static final double LABEL_PIE_ROOM = 1.395, LABEL_PIE_SHARE = 0.06239;
+	/**
+	 * A plot area placed by hand has its axes' labels this much further in from its left and bottom
+	 * edges than Office's own plot area, and the top value label's half line below its top
+	 * (r9-plot-outer, r9-plot-inner: 6.00pt, the inside to 0.001pt)
+	 */
+	static final double MANUAL_INSET = 6;
 	/** How the category labels are set (R12) */
 	static final int LEVEL = 0, WRAPPED = 1, TURNED_45 = 2, TURNED_90 = 3;
+	/** An axis's labels' side: at the low end of the crossing axis, the high end, or beside its line within the plot (R15) */
+	static final int LOW = 0, HIGH = 1, MID = 2;
 	/**
 	 * Builtin number format 14, which Office shows in the machine's short date (the VM's: d/mm/yyyy,
 	 * r1-area); docx4j shows it as the property {@code docx4j.chart.render.shortDate} says, by default as written
@@ -182,8 +220,17 @@ final class ChartLayout {
 		final int kern;
 		final Font font;
 		final double ascent, line;
+		/** the space after each character, in points (DrawingML's spc), and capitals (cap="all") */
+		final double spc;
+		final boolean caps;
 
 		Style(ChartFonts fonts, String typeface, double size, boolean bold, boolean italic, Color colour, int kern) {
+			this(fonts, typeface, size, bold, italic, colour, kern, 0, false);
+		}
+
+		Style(ChartFonts fonts, String typeface, double size, boolean bold, boolean italic, Color colour, int kern, double spc, boolean caps) {
+			this.spc = spc;
+			this.caps = caps;
 			this.typeface = typeface;
 			this.size = size;
 			this.bold = bold;
@@ -201,8 +248,20 @@ final class ChartLayout {
 			this.line = lm.getAscent() + lm.getDescent() + lm.getLeading();
 		}
 
+		/** A text as shown: in capitals where the style says */
+		String shown(String s) {
+			return caps ? s.toUpperCase(Locale.ROOT) : s;
+		}
+
+		/**
+		 * A text's width: its kerned advances and the space after each character, the last's
+		 * included (r10's styles 202, 209 and 258: the titles' boxes to 0.01pt; Office's spacing is
+		 * DrawingML's spc after every character)
+		 */
 		double width(String s) {
-			return s.isEmpty() ? 0 : font.getStringBounds(s, FRC).getWidth();
+			if (s.isEmpty()) return 0;
+			String u = shown(s);
+			return font.getStringBounds(u, FRC).getWidth() + u.length() * spc;
 		}
 	}
 
@@ -214,6 +273,10 @@ final class ChartLayout {
 		/** a line series' key: its line, and its marker over it */
 		final boolean lineKey;
 		final Marker marker;
+		/** its shape properties, for a gradient */
+		CTShapeProperties sp;
+		/** what c:legendEntry's idx names it by: its series' c:idx, or its point's index */
+		long idx;
 
 		Entry(String name, Color fill, Color line, double lineWidth, boolean lineKey, Marker marker) {
 			this.name = name;
@@ -286,6 +349,139 @@ final class ChartLayout {
 		return base;
 	}
 
+	/** A piece of rich text: its text in a style */
+	static final class Seg {
+		String text;
+		final Style style;
+
+		Seg(String text, Style style) {
+			this.text = text;
+			this.style = style;
+		}
+	}
+
+	/** A line of rich text: its pieces, its width, its height and ascent (its tallest piece's) */
+	static final class Line {
+		final List<Seg> segs = new ArrayList<>();
+		double width, line, ascent;
+	}
+
+	/**
+	 * A text body's paragraphs, each its runs in their styles: the paragraph's defRPr over the
+	 * parent, a run's rPr over that; a line break starts a new paragraph
+	 */
+	private List<List<Seg>> paragraphs(CTTextBody rich, Style parent) {
+		List<List<Seg>> out = new ArrayList<>();
+		for (CTTextParagraph p : rich.getP()) {
+			Style ps = style(p.getPPr() == null ? null : p.getPPr().getDefRPr(), parent);
+			List<Seg> para = new ArrayList<>();
+			for (Object o : p.getEGTextRun()) {
+				Object r = org.docx4j.XmlUtils.unwrap(o);
+				if (r instanceof org.docx4j.dml.CTRegularTextRun) {
+					org.docx4j.dml.CTRegularTextRun run = (org.docx4j.dml.CTRegularTextRun) r;
+					if (run.getT() != null) para.add(new Seg(run.getT(), style(run.getRPr(), ps)));
+				} else if (r instanceof org.docx4j.dml.CTTextField) {
+					org.docx4j.dml.CTTextField fld = (org.docx4j.dml.CTTextField) r;
+					if (fld.getT() != null) para.add(new Seg(fld.getT(), style(fld.getRPr(), ps)));
+				} else if (r instanceof org.docx4j.dml.CTTextLineBreak) {
+					out.add(para);
+					para = new ArrayList<>();
+				}
+			}
+			if (para.isEmpty()) para.add(new Seg("", ps));
+			out.add(para);
+		}
+		return out;
+	}
+
+	/** The title's text: its rich text's runs, or the text it shows (a cell's, Office's own) in its style */
+	private List<List<Seg>> titleText(CTTitle t) {
+		Style base = titleBase(t);
+		if (t.getTx() != null && t.getTx().getRich() != null) return paragraphs(t.getTx().getRich(), base);
+		List<List<Seg>> out = new ArrayList<>();
+		for (String p : model.getTitle().getShownText().split("\n", -1)) {
+			List<Seg> para = new ArrayList<>();
+			para.add(new Seg(p, base));
+			out.add(para);
+		}
+		return out;
+	}
+
+	/**
+	 * Paragraphs of runs wrapped to lines no wider than max, at spaces (a word wider than max on a
+	 * line of its own; a run's word that goes on into the next run kept whole); each line's pieces
+	 * of one style joined; text of spaces alone a line with nothing on it
+	 */
+	static List<Line> wrap(List<List<Seg>> paragraphs, double max) {
+		List<Line> out = new ArrayList<>();
+		for (List<Seg> para : paragraphs) {
+			// the paragraph's words, each its pieces
+			List<List<Seg>> words = new ArrayList<>();
+			List<Seg> cur = new ArrayList<>();
+			Style last = para.isEmpty() ? null : para.get(0).style;
+			for (Seg sg : para) {
+				last = sg.style;
+				String t = sg.text;
+				int start = 0;
+				for (int k = 0; k <= t.length(); k++) {
+					if (k < t.length() && t.charAt(k) != ' ') continue;
+					if (k > start) cur.add(new Seg(t.substring(start, k), sg.style));
+					if (k < t.length()) {
+						words.add(cur);
+						cur = new ArrayList<>();
+					}
+					start = k + 1;
+				}
+			}
+			words.add(cur);
+			Line line = null;
+			for (List<Seg> word : words) {
+				// spaces at either end, or more than one, are dropped (p6-pie-numbers' title of a space: no width)
+				if (word.isEmpty()) continue;
+				double ww = 0;
+				for (Seg sg : word) ww += sg.style.width(sg.text);
+				Style ws = word.isEmpty() ? last : word.get(0).style;
+				if (line != null && line.width + ws.width(" ") + ww > max && !line.segs.isEmpty()) {
+					out.add(line);
+					line = null;
+				}
+				if (line == null) {
+					line = new Line();
+					line.line = ws.line;
+					line.ascent = ws.ascent;
+				} else {
+					// the space before the word, on the line's last piece
+					Seg prev = line.segs.isEmpty() ? null : line.segs.get(line.segs.size() - 1);
+					if (prev != null) prev.text += " ";
+					else line.segs.add(new Seg(" ", ws));
+					line.width += ws.width(" ");
+				}
+				for (Seg sg : word) {
+					Seg prev = line.segs.isEmpty() ? null : line.segs.get(line.segs.size() - 1);
+					if (prev != null && prev.style == sg.style) prev.text += sg.text;
+					else line.segs.add(new Seg(sg.text, sg.style));
+					line.line = Math.max(line.line, sg.style.line);
+					line.ascent = Math.max(line.ascent, sg.style.ascent);
+				}
+				line.width = 0;
+				for (Seg sg : line.segs) line.width += sg.style.width(sg.text);
+			}
+			if (line == null) {
+				line = new Line();
+				line.line = last == null ? 0 : last.line;
+				line.ascent = last == null ? 0 : last.ascent;
+			}
+			out.add(line);
+		}
+		return out;
+	}
+
+	/** A text body's first paragraph's defRPr, or null */
+	private static CTTextCharacterProperties defRPr(CTTextBody tx) {
+		if (tx == null || tx.getP().isEmpty() || tx.getP().get(0).getPPr() == null) return null;
+		return tx.getP().get(0).getPPr().getDefRPr();
+	}
+
 	/** A c:txPr (its first paragraph's defRPr) over a parent style */
 	private Style style(CTTextBody tx, Style parent) {
 		CTTextCharacterProperties p = null;
@@ -308,35 +504,55 @@ final class ChartLayout {
 			if (c != null) colour = c;
 		}
 		int kern = p.getKern() != null ? p.getKern() : parent.kern;
-		return new Style(fonts, face, size, bold, italic, colour, kern);
+		double spc = p.getSpc() != null ? p.getSpc() / 100.0 : parent.spc;
+		boolean caps = p.getCap() != null ? p.getCap() == org.docx4j.dml.STTextCapsType.ALL : parent.caps;
+		return new Style(fonts, face, size, bold, italic, colour, kern, spc, caps);
 	}
 
 	/** An axis's labels' style: its c:txPr's, never kerned (see {@link Style}) */
 	private Style axisStyle(ChartAxis ax) {
 		Style s = style(ax == null ? null : txPr(ax.getSource()), base());
-		return s.kern == 0 ? s : new Style(fonts, s.typeface, s.size, s.bold, s.italic, s.colour, 0);
+		return s.kern == 0 ? s : new Style(fonts, s.typeface, s.size, s.bold, s.italic, s.colour, 0, s.spc, s.caps);
 	}
 
-	/** The title's: a c:rich's first paragraph and run over its c:txPr; Office's title is 1.8 times the text, bold */
-	private Style titleStyle(CTTitle t) {
+	/**
+	 * The title's: a c:rich's first paragraph and run over its c:txPr; where none of those says a
+	 * size, Office's is 1.8 times the chart's text (finding 4; r10-column-style-204, whose title's
+	 * txPr says none: 18pt), and bold where none says
+	 */
+	private Style titleBase(CTTitle t) {
 		Style b = base();
-		Style office = model.getSource().getTxPr() == null && t.getTxPr() == null && (t.getTx() == null || t.getTx().getRich() == null)
-				? new Style(fonts, b.typeface, b.size * 1.8, true, b.italic, b.colour, b.kern)
-				: b;
-		Style s = style(t.getTxPr(), office);
+		boolean sized = false, weighted = false;
+		List<CTTextCharacterProperties> chain = new ArrayList<>();
+		chain.add(defRPr(t.getTxPr()));
 		if (t.getTx() != null && t.getTx().getRich() != null) {
 			CTTextBody rich = t.getTx().getRich();
-			s = style(rich, s);
+			chain.add(defRPr(rich));
 			if (!rich.getP().isEmpty()) {
 				for (Object r : rich.getP().get(0).getEGTextRun()) {
 					if (r instanceof org.docx4j.dml.CTRegularTextRun) {
-						s = style(((org.docx4j.dml.CTRegularTextRun) r).getRPr(), s);
+						chain.add(((org.docx4j.dml.CTRegularTextRun) r).getRPr());
 						break;
 					}
 				}
 			}
 		}
-		return s;
+		for (CTTextCharacterProperties p : chain) {
+			if (p == null) continue;
+			sized |= p.getSz() != null;
+			weighted |= p.isB() != null;
+		}
+		Style office = new Style(fonts, b.typeface, sized ? b.size : b.size * 1.8, weighted ? b.bold : true, b.italic, b.colour, b.kern, b.spc, b.caps);
+		return style(t.getTxPr(), office);
+	}
+
+	/** A line of text in a style, from its baseline's start; width is the style's (spacing after its last character included) */
+	private Drawing.Text text(Style s, String t, double x, double baseline, double width, double angle, String role) {
+		// (a run ending in spaces is drawn to its last glyph: its spaces' width off, r15-title-runs)
+		String drawn = t.replaceAll(" +$", "");
+		if (drawn.length() < t.length()) width = s.width(drawn);
+		return new Drawing.Text(s.shown(t), fonts.face(s.typeface), s.font, s.colour, x, baseline, drawn.isEmpty() ? width : width - s.spc, angle, role,
+				s.spc);
 	}
 
 	static Color awt(ResolvedColor c) {
@@ -351,6 +567,100 @@ final class ChartLayout {
 		return null;
 	}
 
+	/** A shape's gradient fill (a:gradFill), its stops resolved through the theme; null for none */
+	private Drawing.Gradient gradient(CTShapeProperties sp) {
+		return sp == null ? null : gradient(sp.getGradFill());
+	}
+
+	private Drawing.Gradient gradient(org.docx4j.dml.CTGradientFillProperties g) {
+		if (g == null || g.getGsLst() == null) return null;
+		List<org.docx4j.dml.CTGradientStop> gs = new ArrayList<>(g.getGsLst().getGs());
+		if (gs.isEmpty()) return null;
+		gs.sort((a, b) -> Integer.compare(a.getPos(), b.getPos()));
+		float[] stops = new float[gs.size()];
+		Color[] colours = new Color[gs.size()];
+		for (int i = 0; i < gs.size(); i++) {
+			org.docx4j.dml.CTGradientStop st = gs.get(i);
+			Object c = st.getSchemeClr() != null ? st.getSchemeClr() : st.getSrgbClr() != null ? st.getSrgbClr()
+					: st.getPrstClr() != null ? st.getPrstClr() : st.getSysClr() != null ? st.getSysClr()
+							: st.getHslClr() != null ? st.getHslClr() : st.getScrgbClr();
+			colours[i] = awt(DrawingMLColors.resolve(c, theme));
+			if (colours[i] == null) colours[i] = Color.GRAY;
+			// strictly increasing, as AWT's gradients need
+			float f = (float) Math.max(0, Math.min(1, st.getPos() / 100000.0));
+			stops[i] = i > 0 && f <= stops[i - 1] ? Math.min(1f, stops[i - 1] + 1e-5f) : f;
+		}
+		if (stops.length > 1 && stops[stops.length - 1] <= stops[stops.length - 2]) {
+			// stops crowded at the end: as they came, spread a little below it
+			for (int i = stops.length - 2; i >= 0 && stops[i] >= stops[i + 1]; i--) stops[i] = stops[i + 1] - 1e-5f;
+		}
+		if (g.getPath() != null) {
+			org.docx4j.dml.CTRelativeRect r = g.getPath().getFillToRect();
+			double[] focus = r == null ? new double[] { 0.5, 0.5, 0.5, 0.5 }
+					: new double[] { r.getL() / 100000.0, r.getT() / 100000.0, r.getR() / 100000.0, r.getB() / 100000.0 };
+			return new Drawing.Gradient(stops, colours, false, 0, false, focus);
+		}
+		double angle = g.getLin() != null && g.getLin().getAng() != null ? g.getLin().getAng() / 60000.0 : 0;
+		boolean scaled = g.getLin() != null && Boolean.TRUE.equals(g.getLin().isScaled());
+		return new Drawing.Gradient(stops, colours, true, angle, scaled, null);
+	}
+
+	/** A shape's outer shadow and glow (a:effectLst), or null for none */
+	private List<Drawing.Shadow> shadows(CTShapeProperties sp) {
+		if (sp == null || sp.getEffectLst() == null) return null;
+		List<Drawing.Shadow> out = new ArrayList<>();
+		org.docx4j.dml.CTGlowEffect gl = sp.getEffectLst().getGlow();
+		if (gl != null) {
+			Object c = gl.getSchemeClr() != null ? gl.getSchemeClr() : gl.getSrgbClr() != null ? gl.getSrgbClr() : gl.getPrstClr() != null ? gl.getPrstClr()
+					: gl.getSysClr() != null ? gl.getSysClr() : gl.getHslClr() != null ? gl.getHslClr() : gl.getScrgbClr();
+			Drawing.Shadow g = new Drawing.Shadow();
+			g.colour = awt(DrawingMLColors.resolve(c, theme));
+			g.glow = gl.getRad() / 12700.0;
+			if (g.colour != null && g.glow > 0) out.add(g);
+		}
+		org.docx4j.dml.CTOuterShadowEffect os = sp.getEffectLst().getOuterShdw();
+		if (os != null) {
+			Object c = os.getSchemeClr() != null ? os.getSchemeClr() : os.getSrgbClr() != null ? os.getSrgbClr() : os.getPrstClr() != null ? os.getPrstClr()
+					: os.getSysClr() != null ? os.getSysClr() : os.getHslClr() != null ? os.getHslClr() : os.getScrgbClr();
+			Drawing.Shadow sh = new Drawing.Shadow();
+			sh.colour = awt(DrawingMLColors.resolve(c, theme));
+			sh.blur = os.getBlurRad() / 12700.0;
+			sh.dist = os.getDist() / 12700.0;
+			sh.dir = os.getDir() / 60000.0;
+			sh.sx = os.getSx() / 100000.0;
+			sh.sy = os.getSy() / 100000.0;
+			sh.kx = os.getKx() / 60000.0;
+			sh.ky = os.getKy() / 60000.0;
+			String al = os.getAlgn() == null ? "b" : os.getAlgn().value();
+			sh.ax = al.endsWith("l") ? 0 : al.endsWith("r") ? 1 : 0.5;
+			sh.ay = al.startsWith("t") ? 0 : al.startsWith("b") ? 1 : 0.5;
+			if (sh.colour != null) out.add(sh);
+		}
+		return out.isEmpty() ? null : out;
+	}
+
+	/** A shape's pattern fill (a:pattFill), its colours resolved through the theme; null for none */
+	private Drawing.Pattern pattern(CTShapeProperties sp) {
+		if (sp == null || sp.getPattFill() == null) return null;
+		org.docx4j.dml.CTPatternFillProperties pf = sp.getPattFill();
+		Color fg = pf.getFgClr() == null ? Color.BLACK : awt(DrawingMLColors.resolve(pf.getFgClr(), theme));
+		Color bg = pf.getBgClr() == null ? Color.WHITE : awt(DrawingMLColors.resolve(pf.getBgClr(), theme));
+		String prst = pf.getPrst() == null ? "pct5" : pf.getPrst().value();
+		return new Drawing.Pattern(Drawing.Pattern.preset(prst), fg == null ? Color.BLACK : fg, bg);
+	}
+
+	/** An area filled by a shape's properties: its solid fill, gradient or pattern, and its line */
+	private Drawing.Area area(Shape shape, CTShapeProperties sp, Color fill, String role, Shape clip) {
+		Drawing.Gradient gr = gradient(sp);
+		Drawing.Pattern pt = gr == null ? pattern(sp) : null;
+		Drawing.Area a = new Drawing.Area(shape, gr != null ? gr.colours[0] : pt != null ? pt.fg : fill, lineColour(sp), lineWidth(sp), role, clip);
+		a.gradient = gr;
+		a.pattern = pt;
+		a.shadows = shadows(sp);
+		a.dash = dashes(sp, a.lineWidth);
+		return a;
+	}
+
 	private Color lineColour(CTShapeProperties sp) {
 		CTLineProperties ln = sp == null ? null : sp.getLn();
 		if (ln == null || ln.getNoFill() != null || ln.getSolidFill() == null) return null;
@@ -362,6 +672,63 @@ final class ChartLayout {
 		return ln == null || ln.getW() == null ? 0.75 : ln.getW() / 12700.0;
 	}
 
+	/** The plot area's fill and line (its c:spPr), over its inside (provisional: R15's r15-plot-area-fill) */
+	private void plotAreaFill(Rectangle2D inside) {
+		CTChartSpace cs = model.getSource();
+		CTShapeProperties sp = cs.getChart() == null || cs.getChart().getPlotArea() == null ? null : cs.getChart().getPlotArea().getSpPr();
+		if (sp == null) return;
+		Drawing.Area a = area(inside, sp, fill(sp), "plotArea", null);
+		if (a.fill != null || a.line != null) d.add(a);
+	}
+
+	/**
+	 * A line's dashes (a:prstDash), in points: DrawingML's presets in multiples of the line's
+	 * width (Office's: dash 4 3, sysDash 3 1, ...); null for a solid line
+	 */
+	private static float[] dashes(CTShapeProperties sp, double width) {
+		if (sp == null || sp.getLn() == null || sp.getLn().getPrstDash() == null || sp.getLn().getPrstDash().getVal() == null) return null;
+		float[] u;
+		switch (sp.getLn().getPrstDash().getVal().value()) {
+		case "dot": u = new float[] { 1, 3 }; break;
+		case "dash": u = new float[] { 4, 3 }; break;
+		case "lgDash": u = new float[] { 8, 3 }; break;
+		case "dashDot": u = new float[] { 4, 3, 1, 3 }; break;
+		case "lgDashDot": u = new float[] { 8, 3, 1, 3 }; break;
+		case "lgDashDotDot": u = new float[] { 8, 3, 1, 3, 1, 3 }; break;
+		case "sysDash": u = new float[] { 3, 1 }; break;
+		case "sysDot": u = new float[] { 1, 1 }; break;
+		case "sysDashDot": u = new float[] { 3, 1, 1, 1 }; break;
+		case "sysDashDotDot": u = new float[] { 3, 1, 1, 1, 1, 1 }; break;
+		default: return null;
+		}
+		for (int i = 0; i < u.length; i++) u[i] *= (float) Math.max(width, 0.1);
+		return u;
+	}
+
+	/** A c:layout's manual layout, or null */
+	private static CTManualLayout manualLayout(CTLayout l) {
+		return l == null ? null : l.getManualLayout();
+	}
+
+	private static boolean edge(CTLayoutMode m) {
+		return m != null && m.getVal() == STLayoutMode.EDGE;
+	}
+
+	/**
+	 * A box placed by hand ({@code c:manualLayout}), from where Office would put it: x and y in edge
+	 * mode a share of the chart from its top left (r9-title-moved, r9-legend-moved: to 0.001pt), in
+	 * factor mode (the default) moved by that share from where Office puts it; w and h a share of
+	 * the chart (factor), or in edge mode where its right and bottom edges are
+	 */
+	private Rectangle2D manual(CTManualLayout m, Rectangle2D dflt) {
+		double x = dflt.getX(), y = dflt.getY(), bw = dflt.getWidth(), bh = dflt.getHeight();
+		if (m.getX() != null) x = edge(m.getXMode()) ? m.getX().getVal() * w : x + m.getX().getVal() * w;
+		if (m.getY() != null) y = edge(m.getYMode()) ? m.getY().getVal() * h : y + m.getY().getVal() * h;
+		if (m.getW() != null) bw = edge(m.getWMode()) ? m.getW().getVal() * w - x : m.getW().getVal() * w;
+		if (m.getH() != null) bh = edge(m.getHMode()) ? m.getH().getVal() * h - y : m.getH().getVal() * h;
+		return new Rectangle2D.Double(x, y, Math.max(0, bw), Math.max(0, bh));
+	}
+
 	// ------------------------------------------------------------------ the frame
 
 	private void layout() {
@@ -370,27 +737,49 @@ final class ChartLayout {
 
 		// the chart area
 		Color areaFill = fill(cs.getSpPr());
-		if (areaFill != null) d.add(new Drawing.Area(new Rectangle2D.Double(0, 0, w, h), areaFill, null, 0, "chartArea"));
+		Drawing.Gradient areaGradient = gradient(cs.getSpPr());
+		if (areaFill != null || areaGradient != null) {
+			Drawing.Area a = new Drawing.Area(new Rectangle2D.Double(0, 0, w, h), areaGradient != null ? areaGradient.colours[0] : areaFill, null, 0,
+					"chartArea");
+			a.gradient = areaGradient;
+			a.pattern = areaGradient == null ? pattern(cs.getSpPr()) : null;
+			a.shadows = shadows(cs.getSpPr());
+			d.add(a);
+		}
 
 		// the title
 		double plotTop = iy + PLOT_EDGE;
 		List<Drawing.Text> texts = new ArrayList<>();
 		if (model.getTitle() != null && model.getTitle().getShownText() != null) {
 			CTTitle t = model.getTitle().getSource();
-			Style s = titleStyle(t);
-			List<String> lines = wrap(model.getTitle().getShownText(), s, TITLE_MAX * w - 2 * TITLE_PAD_X);
-			double tw = 0;
-			for (String l : lines) tw = Math.max(tw, s.width(l));
-			double bw = tw + 2 * TITLE_PAD_X, bh = lines.size() * s.line + 2 * TITLE_PAD_Y;
-			double bx = ix + (iw - bw) / 2, by = iy + TITLE_TOP;
-			d.boxes.put("title", new Rectangle2D.Double(bx, by, bw, bh));
-			for (int i = 0; i < lines.size(); i++) {
-				String l = lines.get(i);
-				double lw = s.width(l);
-				texts.add(new Drawing.Text(l, fonts.face(s.typeface), s.font, s.colour, bx + (bw - lw) / 2, by + TITLE_PAD_Y + s.ascent + 0.15 + i * s.line, lw, 0,
-						"title"));
+			List<Line> lines = wrap(titleText(t), TITLE_MAX * w - 2 * TITLE_PAD_X);
+			double tw = 0, th = 0;
+			for (Line l : lines) {
+				tw = Math.max(tw, l.width);
+				th += l.line;
 			}
-			plotTop = by + bh + GAP;
+			double bw = tw + 2 * TITLE_PAD_X, bh = th + 2 * TITLE_PAD_Y;
+			double bx = ix + (iw - bw) / 2, by = iy + TITLE_TOP;
+			// the plot area keeps the room below the title where Office would put it, wherever it is
+			// placed by hand (r9-title-moved), or where it is over the plot area (overlay)
+			if (!model.getTitle().isOverlay()) plotTop = by + bh + GAP;
+			CTManualLayout tm = manualLayout(t.getLayout());
+			if (tm != null) {
+				Rectangle2D moved = manual(tm, new Rectangle2D.Double(bx, by, bw, bh));
+				bx = moved.getX();
+				by = moved.getY();
+			}
+			d.boxes.put("title", new Rectangle2D.Double(bx, by, bw, bh));
+			double y = by + TITLE_PAD_Y;
+			for (Line l : lines) {
+				double x = bx + (bw - l.width) / 2;
+				for (Seg sg : l.segs) {
+					double sw = sg.style.width(sg.text);
+					texts.add(text(sg.style, sg.text, x, y + l.ascent + 0.15, sw, 0, "title"));
+					x += sw;
+				}
+				y += l.line;
+			}
 		}
 
 		// the series drawn, and the legend
@@ -412,7 +801,7 @@ final class ChartLayout {
 			List<Double> widths = new ArrayList<>();
 			double maxW = 0;
 			for (Entry e : entries) {
-				double ew = 2 * (e.lineKey ? LINE_KEY : key) + s.width(e.name);
+				double ew = 2 * (e.lineKey ? lineKey(e) : key) + s.width(e.name);
 				widths.add(ew);
 				maxW = Math.max(maxW, ew);
 			}
@@ -447,7 +836,10 @@ final class ChartLayout {
 						x += widths.get(i) + pad;
 					}
 				}
-				if ("b".equals(pos)) plotBottom = ly - GAP;
+				// a legend over the plot area (overlay) takes no room from it
+				if (model.getLegend().isOverlay()) {
+					// nothing
+				} else if ("b".equals(pos)) plotBottom = ly - GAP;
 				else plotTop = ly + lh + GAP;
 			} else {
 				lw = maxW + 3 + 2 * LEGEND_SIDE;
@@ -456,18 +848,48 @@ final class ChartLayout {
 				// centred on the plot area; at the top right, below the title, the plot area below it
 				ly = "tr".equals(pos) ? top : (plotTop + plotBottom) / 2 - lh / 2;
 				for (int i = 0; i < entries.size(); i++) at.add(new double[] { lx + LEGEND_SIDE, ly + LEGEND_TOP + i * rowH, maxW + 3 });
-				if ("l".equals(pos)) plotLeft = lx + lw + GAP;
+				if (model.getLegend().isOverlay()) {
+					// nothing
+				} else if ("l".equals(pos)) plotLeft = lx + lw + GAP;
 				else plotRight = lx - GAP;
-				if ("tr".equals(pos)) {
+				if ("tr".equals(pos) && !model.getLegend().isOverlay()) {
 					plotTop = ly + lh + LEGEND_TR_BELOW;
 					plotBottom -= LEGEND_TR_BOTTOM;
 				}
+			}
+			// placed by hand: the plot area keeps the room Office would give the legend (r9-legend-moved);
+			// sized, its entries in a grid of as many columns as hold the widest, each centred in its
+			// cell, 0.75pt right and 0.055pt down (r9-legend-moved, r15-legend-right-sized)
+			CTManualLayout lm = manualLayout(lg.getLayout());
+			if (lm != null) {
+				Rectangle2D moved = manual(lm, new Rectangle2D.Double(lx, ly, lw, lh));
+				if (lm.getW() != null || lm.getH() != null) {
+					int k = entries.size();
+					double cellMax = horizontal ? maxW : maxW + 3;
+					int cols = Math.max(1, Math.min(k, (int) Math.floor(moved.getWidth() / cellMax)));
+					int rows = (int) Math.ceil(k / (double) cols);
+					double cw = moved.getWidth() / cols, ch = moved.getHeight() / rows;
+					at.clear();
+					for (int i = 0; i < k; i++) {
+						at.add(new double[] { moved.getX() + (i % cols) * cw + (cw - cellMax) / 2 + 0.75,
+								moved.getY() + (i / cols) * ch + (ch - s.line) / 2 + 0.055, cellMax });
+					}
+				} else {
+					for (double[] e : at) {
+						e[0] += moved.getX() - lx;
+						e[1] += moved.getY() - ly;
+					}
+				}
+				lx = moved.getX();
+				ly = moved.getY();
+				lw = moved.getWidth();
+				lh = moved.getHeight();
 			}
 			d.boxes.put("legend", new Rectangle2D.Double(lx, ly, lw, lh));
 			for (int i = 0; i < entries.size(); i++) {
 				Entry en = entries.get(i);
 				double[] e = at.get(i);
-				double kw = en.lineKey ? LINE_KEY : key;
+				double kw = en.lineKey ? lineKey(en) : key;
 				d.boxes.put("legend.entry." + i, new Rectangle2D.Double(e[0], e[1], e[2], s.line));
 				d.boxes.put("legend.key." + i, new Rectangle2D.Double(e[0] + kw / 2, e[1] + key / 2, kw, key));
 				// drawn 0.75pt right and 0.055 of the text's size down of the box Office reports for it
@@ -481,10 +903,13 @@ final class ChartLayout {
 					}
 					if (en.marker != null) keys.addAll(marker(en.marker.atMost(key), cx, cy, "legend.key." + i));
 				} else {
-					keys.add(new Drawing.Area(new Rectangle2D.Double(kx, ky, key, key), en.fill, en.line, en.lineWidth, "legend.key." + i));
+					Drawing.Area ka = new Drawing.Area(new Rectangle2D.Double(kx, ky, key, key), en.fill, en.line, en.lineWidth, "legend.key." + i);
+					ka.gradient = gradient(en.sp);
+					ka.pattern = ka.gradient == null ? pattern(en.sp) : null;
+					keys.add(ka);
 				}
 				double tx = e[0] + 2 * kw + (2.94 / 10.986 - LEGEND_KEY / 2) * s.line;
-				texts.add(new Drawing.Text(en.name, fonts.face(s.typeface), s.font, s.colour, tx, e[1] + s.ascent * 0.956, s.width(en.name), 0,
+				texts.add(text(s, en.name, tx, e[1] + s.ascent * 0.956, s.width(en.name), 0,
 						"legend.text." + i));
 			}
 		}
@@ -493,9 +918,41 @@ final class ChartLayout {
 		if (pie) {
 			pie(group, series, plotLeft, plotTop, plotRight, plotBottom);
 		} else {
+			// axis titles take the plot area's left and bottom edges, the plot area beside them
+			AxisTitle left = null, bottom = null;
+			for (ChartAxis a : model.getAxes()) {
+				if (!group.getAxisIds().contains(a.getId()) || a.getTitle() == null || a.getTitle().getShownText() == null) continue;
+				if ("l".equals(a.getPosition()) && left == null) left = axisTitle(a, true);
+				else if ("b".equals(a.getPosition()) && bottom == null) bottom = axisTitle(a, false);
+			}
+			if (left != null) {
+				left.box.setRect(plotLeft, 0, left.box.getWidth(), left.box.getHeight());
+				plotLeft += left.box.getWidth();
+				titleInsetLeft = true;
+			}
+			if (bottom != null) {
+				bottom.box.setRect(0, plotBottom - bottom.box.getHeight(), bottom.box.getWidth(), bottom.box.getHeight());
+				plotBottom -= bottom.box.getHeight();
+				titleInsetBottom = true;
+			}
 			d.boxes.put("plotArea", new Rectangle2D.Double(plotLeft, plotTop, plotRight - plotLeft, plotBottom - plotTop));
 			axes(group, series, plotLeft, plotTop, plotRight, plotBottom, labels);
+			// each centred on the inside along its axis (its top no higher than the plot area's), beside a
+			// plot area placed by hand (r15-plot-outer-axis-titles)
+			Rectangle2D inside = d.boxes.get("inside"), pa = d.boxes.get("plotArea");
+			if (left != null) {
+				double top = Math.max(pa.getMinY(), inside.getCenterY() - left.box.getHeight() / 2);
+				double x = manualPlot ? pa.getMinX() - left.box.getWidth() : left.box.getX();
+				left.box.setRect(x, top, left.box.getWidth(), left.box.getHeight());
+				placeAxisTitle(left, texts);
+			}
+			if (bottom != null) {
+				double y = manualPlot ? pa.getMaxY() : bottom.box.getY();
+				bottom.box.setRect(inside.getCenterX() - bottom.box.getWidth() / 2, y, bottom.box.getWidth(), bottom.box.getHeight());
+				placeAxisTitle(bottom, texts);
+			}
 		}
+		dataLabels(group, series);
 		for (Drawing.Area k : keys) d.add(k);
 		for (Drawing.Text t : labels) d.add(t);
 		for (Drawing.Text t : texts) d.add(t);
@@ -522,11 +979,24 @@ final class ChartLayout {
 		if (kind == ChartGroup.Kind.PIE || kind == ChartGroup.Kind.DOUGHNUT || g.variesColors()) {
 			ChartSeries s = series.get(0);
 			int n = count(s.getValues());
+			boolean lines = kind == ChartGroup.Kind.LINE || kind == ChartGroup.Kind.SCATTER;
 			for (int i = 0; i < n; i++) {
 				CTShapeProperties sp = pointSpPr(s, i);
-				out.add(new Entry(categoryText(s.getCategories(), i, null), pointFill(s, i), lineColour(sp), lineWidth(sp), false, null));
+				if (lines) {
+					// a line's points each an entry, its key the series' line and marker (r15-vary-colors-line)
+					CTShapeProperties ssp = spPr(s);
+					Color c = ssp == null ? automatic(s.getIdx(), seriesCount()) : lineColour(ssp);
+					Entry e = new Entry(categoryText(s.getCategories(), i, null), null, c, ssp == null ? 2.25 : lineWidth(ssp), c != null, marker(s));
+					e.idx = i;
+					out.add(e);
+					continue;
+				}
+				Entry e = new Entry(categoryText(s.getCategories(), i, null), pointFill(s, i), lineColour(sp), lineWidth(sp), false, null);
+				e.sp = sp;
+				e.idx = i;
+				out.add(e);
 			}
-			return out;
+			return undeleted(out);
 		}
 		boolean line = kind == ChartGroup.Kind.LINE || kind == ChartGroup.Kind.SCATTER;
 		for (ChartSeries s : series) {
@@ -534,13 +1004,33 @@ final class ChartLayout {
 			CTShapeProperties sp = spPr(s);
 			// a line series' key is its line, its marker over it; a scatter series with no line has a
 			// square key, its marker in it (r1-scatter.pptx)
-			if (line) out.add(new Entry(name, null, lineColour(sp), lineWidth(sp), lineColour(sp) != null, marker(s)));
-			else out.add(new Entry(name, seriesFill(s), lineColour(sp), lineWidth(sp), false, null));
+			Entry e = line ? new Entry(name, null, lineColour(sp), lineWidth(sp), lineColour(sp) != null, marker(s))
+					: new Entry(name, seriesFill(s), lineColour(sp), lineWidth(sp), false, null);
+			if (!line) e.sp = sp;
+			e.idx = s.getIdx();
+			out.add(e);
 		}
-		if (kind == ChartGroup.Kind.BAR && "bar".equals(g.getBarDirection()) && !stacked(g)) Collections.reverse(out);
+		out = undeleted(out);
+		// (its categories reversed, from the top down, the series in order: r15-bar-category-reversed)
+		boolean catRev = false;
+		for (ChartAxis a : model.getAxes()) catRev |= g.getAxisIds().contains(a.getId()) && a.getKind() != ChartAxis.Kind.VALUE && reversed(a);
+		if (kind == ChartGroup.Kind.BAR && "bar".equals(g.getBarDirection()) && !stacked(g) && !catRev) Collections.reverse(out);
 		else if (vertical && stacked(g) && (kind == ChartGroup.Kind.AREA || (kind == ChartGroup.Kind.BAR && !"bar".equals(g.getBarDirection())))) {
 			Collections.reverse(out);
 		}
+		return out;
+	}
+
+	/** A line series' legend key's width: {@link #LINE_KEY}, or for a wide line {@link #LINE_KEY_PER_WIDTH} times its width */
+	private static double lineKey(Entry e) {
+		return Math.max(LINE_KEY, LINE_KEY_PER_WIDTH * e.lineWidth);
+	}
+
+	/** The entries the legend keeps: those its c:legendEntry elements don't delete */
+	private List<Entry> undeleted(List<Entry> entries) {
+		if (model.getLegend() == null || model.getLegend().getDeletedEntries().isEmpty()) return entries;
+		List<Entry> out = new ArrayList<>();
+		for (Entry e : entries) if (!model.getLegend().getDeletedEntries().contains(e.idx)) out.add(e);
 		return out;
 	}
 
@@ -552,6 +1042,117 @@ final class ChartLayout {
 
 	/** Whether the value axis is a 100% chart's (set by axes() for its frame) */
 	private boolean percentAxis;
+
+	/** Whether the plot area is placed by hand (set by axes() for its frame): its labels in by {@link #MANUAL_INSET} more */
+	private boolean manualPlot;
+
+	/** Whether an axis title is at the plot area's left or bottom: the labels there in by {@link #MANUAL_INSET} more (R15) */
+	private boolean titleInsetLeft, titleInsetBottom;
+
+	/** An axis's title: its lines, its box (turned with its text), its Excel axis type (1 category or x, 2 value) */
+	private static final class AxisTitle {
+		List<Line> lines;
+		Rectangle2D box = new Rectangle2D.Double();
+		int turn;
+		double textWidth;
+		int type;
+		CTShapeProperties sp;
+		CTManualLayout manual;
+	}
+
+	/**
+	 * An axis's title (R15): its rich text (Office's "Axis Title" where it has none) in its style,
+	 * turned as its bodyPr says (an axis at the left's is turned up the page unless it says rot 0),
+	 * wrapped at 0.8 of the chart's side it runs along, less its padding (r15-axis-title-long); its
+	 * box its lines and the title's padding, 3pt along and 1.5pt across, turned with it
+	 */
+	private AxisTitle axisTitle(ChartAxis a, boolean leftSide) {
+		CTTitle t = a.getTitle().getSource();
+		AxisTitle at = new AxisTitle();
+		Style st = style(t.getTxPr(), base());
+		CTTextBody body = t.getTx() != null && t.getTx().getRich() != null ? t.getTx().getRich() : t.getTxPr();
+		Integer rot = body != null && body.getBodyPr() != null ? body.getBodyPr().getRot() : null;
+		at.turn = rot == null ? (leftSide ? -1 : 0) : rot == -5400000 ? -1 : rot == 5400000 ? 1 : 0;
+		List<List<Seg>> paras;
+		if (t.getTx() != null && t.getTx().getRich() != null) {
+			paras = paragraphs(t.getTx().getRich(), st);
+		} else {
+			paras = new ArrayList<>();
+			for (String p : a.getTitle().getShownText().split("\n", -1)) {
+				List<Seg> para = new ArrayList<>();
+				para.add(new Seg(p, st));
+				paras.add(para);
+			}
+		}
+		at.lines = wrap(paras, TITLE_MAX * (at.turn != 0 ? h : w) - 2 * TITLE_PAD_X);
+		double tw = 0, th = 0;
+		for (Line l : at.lines) {
+			tw = Math.max(tw, l.width);
+			th += l.line;
+		}
+		at.textWidth = tw;
+		double along = tw + 2 * TITLE_PAD_X, across = th + 2 * TITLE_PAD_Y;
+		at.box = at.turn != 0 ? new Rectangle2D.Double(0, 0, across, along) : new Rectangle2D.Double(0, 0, along, across);
+		at.type = a.getKind() == ChartAxis.Kind.VALUE && !(leftSide == false && model.getGroups().get(0).getKind() == ChartGroup.Kind.SCATTER) ? 2 : 1;
+		at.sp = t.getSpPr();
+		at.manual = manualLayout(t.getLayout());
+		return at;
+	}
+
+	/**
+	 * An axis title's text drawn in its box, each line centred; placed by hand as the chart's title
+	 * is, the plot area keeping its room (r15-axis-title-moved)
+	 */
+	private void placeAxisTitle(AxisTitle at, List<Drawing.Text> texts) {
+		if (at.manual != null) {
+			Rectangle2D moved = manual(at.manual, at.box);
+			at.box = new Rectangle2D.Double(moved.getX(), moved.getY(), at.box.getWidth(), at.box.getHeight());
+		}
+		Rectangle2D b = at.box;
+		d.boxes.put("axisTitle." + at.type, b);
+		Drawing.Area ba = area(b, at.sp, fill(at.sp), "axisTitle." + at.type, null);
+		if (ba.fill != null || ba.line != null) d.add(ba);
+		double across = 0;
+		for (Line l : at.lines) {
+			double along = (at.textWidth - l.width) / 2;
+			for (Seg sg : l.segs) {
+				double sw = sg.style.width(sg.text);
+				if (at.turn < 0) {
+					texts.add(text(sg.style, sg.text, b.getX() + TITLE_PAD_Y + across + l.ascent + 0.15, b.getMaxY() - TITLE_PAD_X - along, sw, -90,
+							"axisTitle." + at.type));
+				} else if (at.turn > 0) {
+					texts.add(text(sg.style, sg.text, b.getMaxX() - TITLE_PAD_Y - across - l.ascent - 0.15, b.getY() + TITLE_PAD_X + along, sw, 90,
+							"axisTitle." + at.type));
+				} else {
+					texts.add(text(sg.style, sg.text, b.getX() + TITLE_PAD_X + along, b.getY() + TITLE_PAD_Y + across + l.ascent + 0.15, sw, 0,
+							"axisTitle." + at.type));
+				}
+				along += sw;
+			}
+			across += l.line;
+		}
+	}
+
+	/** What each point's data label is placed by: its bar, its point and marker, its slice */
+	private static final class Anchor {
+		final int s, i;
+		/** a bar's box; a point's place (and its marker's half size); a slice's centre */
+		double x, y, w, h, m;
+		/** a bar along the value axis: where it starts and ends (y down a column, x along a bar) */
+		double base, end;
+		boolean bar, across, area, slice;
+		/** a slice's inner and outer radius, its middle angle (degrees clockwise from twelve o'clock) */
+		double inner, outer, mid;
+		/** the value, for its label */
+		double value;
+
+		Anchor(int s, int i) {
+			this.s = s;
+			this.i = i;
+		}
+	}
+
+	private final List<Anchor> anchors = new ArrayList<>();
 
 	/** The axes' labels, places and scales, and the series drawn between them */
 	private void axes(ChartGroup group, List<ChartSeries> series, double plotLeft, double plotTop, double plotRight, double plotBottom,
@@ -641,45 +1242,89 @@ final class ChartLayout {
 		percentAxis = percent;
 		String valCode = numberFormat(valAx, series, percent);
 
-		Frame f = scatter ? scatterFrame(valAx, catAx, valLabels, catLabels, vs, cst, dmin, dmax, setMin, setMax, xmin, xmax, valCode, series,
-				plotLeft, plotTop, plotRight, plotBottom)
-				: across ? barFrame(group, valAx, catAx, valLabels, catLabels, vs, cst, dmin, dmax, setMin, setMax, valCode, series, nCat, plotLeft,
-						plotTop, plotRight, plotBottom)
-						: columnFrame(valAx, catAx, valLabels, catLabels, vs, cst, dmin, dmax, setMin, setMax, valCode, series, nCat, plotLeft,
-								plotTop, plotRight, plotBottom);
+		final ChartAxis cAx = catAx, vAx = valAx;
+		final double fdmin = dmin, fdmax = dmax, fxmin = xmin, fxmax = xmax;
+		final int fnCat = nCat;
+		java.util.function.Function<double[], Frame> frameOf = b -> scatter
+				? scatterFrame(vAx, cAx, valLabels, catLabels, vs, cst, fdmin, fdmax, setMin, setMax, fxmin, fxmax, valCode, series, b[0], b[1], b[2], b[3])
+				: across ? barFrame(group, vAx, cAx, valLabels, catLabels, vs, cst, fdmin, fdmax, setMin, setMax, valCode, series, fnCat, b[0], b[1], b[2],
+						b[3])
+						: columnFrame(vAx, cAx, valLabels, catLabels, vs, cst, fdmin, fdmax, setMin, setMax, valCode, series, fnCat, b[0], b[1], b[2], b[3]);
+		Frame f = frameOf.apply(new double[] { plotLeft, plotTop, plotRight, plotBottom });
+		// the plot area placed by hand: its outer box, or its inside (r9-plot-outer, r9-plot-inner), the
+		// other found around it; its labels then in from its edges by MANUAL_INSET more
+		CTManualLayout pm = model.getSource().getChart() == null || model.getSource().getChart().getPlotArea() == null ? null
+				: manualLayout(model.getSource().getChart().getPlotArea().getLayout());
+		if (pm != null) {
+			manualPlot = true;
+			double[] o;
+			if (pm.getLayoutTarget() != null && pm.getLayoutTarget().getVal() == STLayoutTarget.INNER) {
+				Rectangle2D t = manual(pm, new Rectangle2D.Double(f.left, f.top, f.right - f.left, f.bottom - f.top));
+				o = new double[] { t.getMinX(), t.getMinY(), t.getMaxX(), t.getMaxY() };
+				// the labels' room depends on the scale, and the scale on the inside's length: a few rounds settle it
+				for (int k = 0; k < 4; k++) {
+					Frame g = frameOf.apply(o);
+					o = new double[] { t.getMinX() - (g.left - o[0]), t.getMinY() - (g.top - o[1]), t.getMaxX() + (o[2] - g.right),
+							t.getMaxY() + (o[3] - g.bottom) };
+				}
+			} else {
+				Rectangle2D b = manual(pm, new Rectangle2D.Double(plotLeft, plotTop, plotRight - plotLeft, plotBottom - plotTop));
+				o = new double[] { b.getMinX(), b.getMinY(), b.getMaxX(), b.getMaxY() };
+			}
+			f = frameOf.apply(o);
+			d.boxes.put("plotArea", new Rectangle2D.Double(o[0], o[1], o[2] - o[0], o[3] - o[1]));
+		}
 		d.valueAxis = new double[] { f.scale.min, f.scale.max, f.scale.unit };
 		if (f.xScale != null) d.xAxis = new double[] { f.xScale.min, f.xScale.max, f.xScale.unit };
 		else if (f.dates != null) d.xAxis = f.dates;
 		Rectangle2D inside = new Rectangle2D.Double(f.left, f.top, f.right - f.left, f.bottom - f.top);
 		d.boxes.put("inside", inside);
+		plotAreaFill(inside);
 
 		// gridlines; the axes' lines, where each crosses the other; tick marks
 		CTShapeProperties catSp = catAx == null ? null : spPr(catAx.getSource());
 		CTShapeProperties valSp = valAx == null ? null : spPr(valAx.getSource());
 		boolean catLine = catAx != null && !catAx.isDeleted() && lineColour(catSp) != null;
 		boolean valLine = valAx != null && !valAx.isDeleted() && lineColour(valSp) != null;
-		double cross = f.scale.log ? f.scale.min : Math.max(f.scale.min, Math.min(f.scale.max, 0));
+		double cross = scatter ? (f.scale.log ? f.scale.min : Math.max(f.scale.min, Math.min(f.scale.max, 0))) : f.crossValue;
 		double crossV = f.v(cross);
-		// where the value axis crosses: a category axis's start, a scatter chart's x of zero
+		// where the value axis crosses: a category axis's start (or end, or a category: Frame#crossPos), a scatter chart's x of zero
 		double crossC = scatter ? f.x(f.xScale.log ? f.xScale.min : Math.max(f.xScale.min, Math.min(f.xScale.max, 0)))
-				: across ? f.bottom : f.left;
-		CTChartLines grid = valAx == null ? null : gridlines(valAx.getSource());
-		if (grid != null && lineColour(grid.getSpPr()) != null) {
-			Color gc = lineColour(grid.getSpPr());
+				: !Double.isNaN(f.crossPos) ? f.crossPos : across ? f.bottom : f.left;
+		// gridlines: the value axis's minor then major ones, a scatter chart's x axis's, the category
+		// axis's at its tick marks (r10-column-style-213); none where an axis's line is drawn over them
+		CTChartLines minor = valAx == null ? null : gridlines(valAx.getSource(), false);
+		if (minor != null && !f.scale.log) {
+			double unit = valAx.getMinorUnit() != null ? valAx.getMinorUnit() : f.scale.unit / 5;
+			for (double v = f.scale.min; unit > 0 && v <= f.scale.max + unit * 1e-6; v += unit) {
+				double p = f.v(v);
+				boolean major = false;
+				for (double m : f.values) major |= Math.abs(f.v(m) - p) < 0.01;
+				if (major || (catLine && Math.abs(p - crossV) < 0.01)) continue;
+				gridline(across ? new Line2D.Double(p, f.top, p, f.bottom) : new Line2D.Double(f.left, p, f.right, p), minor, "gridline.minor");
+			}
+		}
+		CTChartLines grid = valAx == null ? null : gridlines(valAx.getSource(), true);
+		if (grid != null) {
 			for (double v : f.values) {
 				double p = f.v(v);
 				if (catLine && Math.abs(p - crossV) < 0.01) continue;
-				Line2D l = across ? new Line2D.Double(p, f.top, p, f.bottom) : new Line2D.Double(f.left, p, f.right, p);
-				d.add(new Drawing.Area(l, null, gc, lineWidth(grid.getSpPr()), "gridline"));
+				gridline(across ? new Line2D.Double(p, f.top, p, f.bottom) : new Line2D.Double(f.left, p, f.right, p), grid, "gridline");
 			}
 		}
-		CTChartLines xGrid = scatter ? gridlines(catAx.getSource()) : null;
-		if (xGrid != null && lineColour(xGrid.getSpPr()) != null) {
-			Color gc = lineColour(xGrid.getSpPr());
+		CTChartLines xGrid = scatter ? gridlines(catAx.getSource(), true) : null;
+		if (xGrid != null) {
 			for (double v : f.xValues) {
 				double p = f.x(v);
 				if (valLine && Math.abs(p - crossC) < 0.01) continue;
-				d.add(new Drawing.Area(new Line2D.Double(p, f.top, p, f.bottom), null, gc, lineWidth(xGrid.getSpPr()), "gridline.x"));
+				gridline(new Line2D.Double(p, f.top, p, f.bottom), xGrid, "gridline.x");
+			}
+		}
+		CTChartLines catGrid = !scatter && catAx != null ? gridlines(catAx.getSource(), true) : null;
+		if (catGrid != null) {
+			for (double p : f.ticks) {
+				if (valLine && Math.abs(p - crossC) < 0.01) continue;
+				gridline(across ? new Line2D.Double(f.left, p, f.right, p) : new Line2D.Double(p, f.top, p, f.bottom), catGrid, "gridline.category");
 			}
 		}
 
@@ -697,6 +1342,17 @@ final class ChartLayout {
 					d.add(new Drawing.Area(tick(!across, p, crossV, tick, TICK * cst.size), null, lineColour(catSp), lineWidth(catSp), "tick.category"));
 				}
 			}
+			// minor tick marks at each category's middle, and at the axis's far end (r15-ticks-minor; one probe)
+			String minorTick = scatter ? null : tickMark(catAx.getSource(), false);
+			if (minorTick != null && f.categories.length > 0) {
+				List<Double> at = new ArrayList<>();
+				for (double c : f.categories) at.add(c);
+				if (!f.ticks.isEmpty()) at.add(f.ticks.get(f.ticks.size() - 1));
+				for (double p : at) {
+					d.add(new Drawing.Area(tick(!across, p, crossV, minorTick, MINOR_TICK * cst.size), null, lineColour(catSp), lineWidth(catSp),
+							"tick.category.minor"));
+				}
+			}
 		}
 		if (valLine) {
 			Line2D l = across ? new Line2D.Double(f.left, crossC, f.right, crossC) : new Line2D.Double(crossC, f.top, crossC, f.bottom);
@@ -707,13 +1363,24 @@ final class ChartLayout {
 					d.add(new Drawing.Area(tick(across, f.v(v), crossC, tick, TICK * vs.size), null, lineColour(valSp), lineWidth(valSp), "tick.value"));
 				}
 			}
+			// minor tick marks at the minor unit, the major ones' places too (r15-ticks-minor: 2.13pt at 9pt; one probe)
+			String minorTick = tickMark(valAx.getSource(), false);
+			if (minorTick != null && !f.scale.log) {
+				double unit = valAx.getMinorUnit() != null ? valAx.getMinorUnit() : f.scale.unit / 5;
+				for (double v = f.scale.min; unit > 0 && v <= f.scale.max + unit * 1e-6; v += unit) {
+					d.add(new Drawing.Area(tick(across, f.v(v), crossC, minorTick, MINOR_TICK * vs.size), null, lineColour(valSp), lineWidth(valSp),
+							"tick.value.minor"));
+				}
+			}
 		}
 
 		// the value labels: at the left right-aligned, centred on their gridlines; below, centred under them
 		for (int k = 0; k < f.valueTexts.size(); k++) {
 			String t = f.valueTexts.get(k);
 			double p = f.v(f.values.get(k));
-			labels.add(across ? below(t, vs, p, f.bottom, "value." + k) : left(t, vs, p, f.left, "value." + k));
+			if (across) labels.add(f.valSide == HIGH ? above(t, vs, p, f.top, "value." + k) : below(t, vs, p, f.bottom, "value." + k));
+			else if (f.valSide == HIGH) labels.add(right(t, vs, p, f.right, "value." + k));
+			else labels.add(left(t, vs, p, f.valSide == MID ? crossC : f.left, "value." + k));
 		}
 		for (int k = 0; k < f.xTexts.size(); k++) {
 			labels.add(below(f.xTexts.get(k), cst, f.x(f.xValues.get(k)), f.bottom, "x." + k));
@@ -724,14 +1391,26 @@ final class ChartLayout {
 	/** A text right-aligned against the plot's inside, centred on y */
 	private Drawing.Text left(String t, Style s, double y, double insideLeft, String role) {
 		double tw = s.width(t);
-		return new Drawing.Text(t, fonts.face(s.typeface), s.font, s.colour, insideLeft - VALUE_LABEL_GAP * s.line - tw, y + 0.289 * s.size + 0.2, tw, 0,
+		return text(s, t, insideLeft - VALUE_LABEL_GAP * s.line - tw, y + 0.289 * s.size + 0.2, tw, 0,
 				role);
+	}
+
+	/** A text left-aligned against the plot's inside's right, centred on y (value labels at the right) */
+	private Drawing.Text right(String t, Style s, double y, double insideRight, String role) {
+		double tw = s.width(t);
+		return text(s, t, insideRight + VALUE_LABEL_GAP * s.line, y + 0.289 * s.size + 0.2, tw, 0, role);
+	}
+
+	/** A text centred over x, above the axis at y (a bar chart's value labels at the top; provisional) */
+	private Drawing.Text above(String t, Style s, double x, double y, String role) {
+		double tw = s.width(t);
+		return text(s, t, x - tw / 2, y - 0.61 * s.size - 0.45 - (s.line - s.ascent) - ABOVE_SHIFT, tw, 0, role);
 	}
 
 	/** A text centred under x, below the axis at y */
 	private Drawing.Text below(String t, Style s, double x, double y, String role) {
 		double tw = s.width(t);
-		return new Drawing.Text(t, fonts.face(s.typeface), s.font, s.colour, x - tw / 2, y + 0.61 * s.size + 0.45 + s.ascent, tw, 0, role);
+		return text(s, t, x - tw / 2, y + 0.61 * s.size + 0.45 + s.ascent, tw, 0, role);
 	}
 
 	/**
@@ -761,10 +1440,23 @@ final class ChartLayout {
 		List<Double> ticks = new ArrayList<>();
 		/** a date axis's first and last dates and its major unit in base units, as Excel reports them */
 		double[] dates;
+		/** the values' order reversed (maxMin): down a column chart, leftwards along a bar chart */
+		boolean valReversed;
+		/** the categories' order reversed (maxMin): from the right of a column chart, down a bar chart */
+		boolean catReversed;
+		/** the value where the category axis crosses the value axis */
+		double crossValue;
+		/** where the value axis's line is across the categories (x on a column chart, y on a bar chart); NaN: Office's own */
+		double crossPos = Double.NaN;
+		/** which side the value labels are on: LOW (left of a column chart, below a bar chart), HIGH, or MID (beside the axis's line) */
+		int valSide = LOW;
+		/** which side the category labels are on: LOW (below a column chart), HIGH (above), or MID (hanging from the axis's line) */
+		int catSide = LOW;
 
 		/** a value's place along the value axis */
 		double v(double value) {
 			double fr = scale.fraction(value);
+			if (valReversed) fr = 1 - fr;
 			return across ? left + fr * (right - left) : bottom - fr * (bottom - top);
 		}
 
@@ -802,20 +1494,39 @@ final class ChartLayout {
 			double dmax, Double setMin, Double setMax, String valCode, List<ChartSeries> series, int nCat, double plotLeft, double plotTop,
 			double plotRight, double plotBottom) {
 		Frame f = new Frame();
-		f.top = plotTop + (valLabels ? Math.max(0, vs.line / 2 - VALUE_LABEL_TOP) : 0);
+		double inset = manualPlot || titleInsetLeft ? MANUAL_INSET : 0, insetB = manualPlot || titleInsetBottom ? MANUAL_INSET : 0;
+		f.top = plotTop + (valLabels ? manualPlot ? vs.line / 2 : Math.max(0, vs.line / 2 - VALUE_LABEL_TOP) : 0);
+		f.valReversed = reversed(valAx);
+		boolean catRev = reversed(catAx);
+		f.catReversed = catRev;
 
 		// the scale, chosen with one line of category labels.  The category labels take a band at
-		// the plot's bottom only where their axis is there: below it they hang from the axis's line
-		// wherever it crosses (R2)
-		boolean bottomAxis = dmin >= 0 || (setMin != null && setMin >= 0);
-		double band1 = catLabels && bottomAxis ? band(cst, 1) : 0;
+		// the plot's bottom (or top) only where their axis is there: within the plot they hang from
+		// the axis's line wherever it crosses (R2, R15)
+		boolean guessLow = catAx != null && catAx.getCrossesAt() != null ? setMin != null && catAx.getCrossesAt() <= setMin
+				: catAx != null && "max".equals(catAx.getCrosses()) ? false : dmin >= 0 || (setMin != null && setMin >= 0);
+		boolean guessHigh = catAx != null && catAx.getCrossesAt() == null && "max".equals(catAx.getCrosses());
+		f.catSide = labelSide(catAx, guessLow, guessHigh, f.valReversed);
+		double band1 = catLabels && f.catSide != MID ? band(cst, 1) + (f.catSide == LOW ? insetB : 0) : 0;
+		double scaleTop = f.catSide == HIGH && catLabels ? plotTop : f.top;
 		// (a maximum set can take the scale below zero, so this is decided again with the scale)
 		f.scale = AxisScale.of(dmin, dmax, setMin, setMax, valAx == null ? null : valAx.getMajorUnit(), valAx == null ? null : valAx.getLogBase(),
-				plotBottom - band1 - f.top, vs.line, percentAxis ? AxisScale.Bounds.PERCENT : AxisScale.Bounds.VALUE);
-		if (!f.scale.log && f.scale.min < 0) bottomAxis = false;
+				plotBottom - band1 - scaleTop, vs.line, percentAxis ? AxisScale.Bounds.PERCENT : AxisScale.Bounds.VALUE);
+		f.crossValue = crossValue(catAx, f.scale);
+		// (zero at the maximum, all the data negative, is within the plot: the labels hang from it, r2-negative)
+		boolean explicitMax = catAx != null && (catAx.getCrossesAt() != null ? catAx.getCrossesAt() >= f.scale.max : "max".equals(catAx.getCrosses()));
+		f.catSide = labelSide(catAx, f.crossValue <= f.scale.min, explicitMax && !(f.crossValue <= f.scale.min), f.valReversed);
 		valueLabels(f, f.scale, valLabels, valCode, f.values, f.valueTexts);
-		f.left = valLabels ? plotLeft - VALUE_LABEL_OVERHANG + widest(f.valueTexts, vs) + VALUE_LABEL_GAP * vs.line : plotLeft;
-		f.right = plotRight;
+		// the value labels: left of the plot, right of it (the value axis crossing after the last
+		// category, or the categories reversed: r15-valax-crosses-max, r15-category-reversed), or
+		// beside the axis's line within it, taking no room (r15-valax-crosses-at-3)
+		double[] crossAt = { 1 };
+		int vc = valueCrossing(valAx, nCat, crossAt);
+		f.valSide = labelSide(valAx, vc < 0, vc > 0, catRev);
+		double labelsW = widest(f.valueTexts, vs) + VALUE_LABEL_GAP * vs.line;
+		f.left = valLabels && f.valSide == LOW ? plotLeft - VALUE_LABEL_OVERHANG + inset + labelsW : plotLeft;
+		f.right = valLabels && f.valSide == HIGH ? plotRight + VALUE_LABEL_OVERHANG - labelsW : plotRight;
+		boolean bottomAxis = f.catSide == LOW;
 
 		// the categories' places: by category, or a date axis's by its base unit; between the
 		// ticks (a category's centre) or on them (midCat: the points on the inside's edges)
@@ -829,7 +1540,8 @@ final class ChartLayout {
 		List<String> catTexts = catLabels ? c.labels : new ArrayList<>();
 		// labels centred on the inside's edges keep within the plot area (r1-area's dates)
 		if (midCat && !catTexts.isEmpty()) {
-			f.left = Math.max(f.left, plotLeft + cst.width(catTexts.get(0)) / 2);
+			// (from the plot area's edge less its labels' inset beside an axis title: r15-axis-titles-area)
+			f.left = Math.max(f.left, plotLeft - inset + cst.width(catTexts.get(0)) / 2);
 			f.right = Math.min(f.right, plotRight - cst.width(catTexts.get(catTexts.size() - 1)) / 2);
 		}
 		double catW = (f.right - f.left) / slots;
@@ -889,7 +1601,7 @@ final class ChartLayout {
 			lines = Math.max(lines, l.size());
 			if (!l.isEmpty()) shownMax = Math.max(shownMax, cst.width(t));
 		}
-		double band = !catLabels || !bottomAxis ? 0 : bandOf(mode, cst, lines, shownMax);
+		double band = !catLabels || f.catSide == MID ? 0 : bandOf(mode, cst, lines, shownMax) + (bottomAxis ? insetB : 0);
 		// a small plot caps the band (R3, R11, R12, R14: CATEGORY_CAP of the plot area's height and the gap): wrapped
 		// labels go back on one line, overlapping; turned ones are cut short to the band of one
 		// line (at least a character, and "..."); a line too tall overlaps the gap below
@@ -934,39 +1646,48 @@ final class ChartLayout {
 			catW = (f.right - f.left) / slots;
 		}
 		// (the inside no less than nothing: r14-sweep-column-h below 74pt)
-		f.bottom = Math.max(f.top, plotBottom - band);
+		if (f.catSide == HIGH) {
+			f.top = plotTop + band;
+			f.bottom = Math.max(f.top, plotBottom);
+		} else {
+			f.bottom = Math.max(f.top, plotBottom - band);
+		}
 		f.catW = catW;
 		if (dates) {
 			LocalDate end = "months".equals(c.unit) ? c.start.plusMonths(c.span) : "years".equals(c.unit) ? c.start.plusYears(c.span) : c.start.plusDays(c.span);
 			f.dates = new double[] { serial(c.start), serial(end), c.step };
 		}
+		// the categories from the left, or (reversed) from the right
+		final double x0 = catRev ? f.right : f.left, dx = catRev ? -catW : catW;
 		f.categories = new double[nCat];
-		for (int i = 0; i < nCat; i++) f.categories[i] = f.left + (c.slot[i] + (midCat ? 0 : 0.5)) * catW;
-		if (midCat) for (int k = 0; k <= c.span; k += Math.max(1, c.step)) f.ticks.add(f.left + k * catW);
-		else for (int k = 0; k <= c.span + 1; k += Math.max(1, c.step)) f.ticks.add(f.left + k * catW);
+		for (int i = 0; i < nCat; i++) f.categories[i] = x0 + (c.slot[i] + (midCat ? 0 : 0.5)) * dx;
+		if (midCat) for (int k = 0; k <= c.span; k += Math.max(1, c.step)) f.ticks.add(x0 + k * dx);
+		else for (int k = 0; k <= c.span + 1; k += Math.max(1, c.step)) f.ticks.add(x0 + k * dx);
+		f.crossPos = vc == 0 ? x0 + (crossAt[0] - 1) * dx : (vc < 0) != catRev ? f.left : f.right;
 
 		// the category labels, centred under their categories (turned: a turned 90 label's line
-		// centred on its category, its end at the labels' top; a turned 45 label's end there)
-		double crossV = f.v(f.scale.log ? f.scale.min : Math.max(f.scale.min, Math.min(f.scale.max, 0)));
+		// centred on its category, its end at the labels' top; a turned 45 label's end there); above
+		// the plot where their axis is at its top, a line's height up from it (provisional)
+		double crossV = f.catSide == LOW ? f.bottom : f.catSide == HIGH ? f.top : f.v(f.crossValue);
 		for (int i = 0; i < catLines.size(); i++) {
-			double cx = f.left + (c.labelSlot[i] + (midCat ? 0 : 0.5)) * catW;
+			double cx = x0 + (c.labelSlot[i] + (midCat ? 0 : 0.5)) * dx;
 			List<String> l = catLines.get(i);
-			double top = crossV + 0.61 * cst.size + 0.45;
+			double top = f.catSide == HIGH ? crossV - (0.61 * cst.size + 0.45) - l.size() * cst.line - ABOVE_SHIFT : crossV + 0.61 * cst.size + 0.45;
 			for (int j = 0; j < l.size(); j++) {
 				String t = l.get(j);
 				double tw = cst.width(t);
 				if (mode == TURNED_90) {
 					double bx = cx + (cst.ascent - (cst.line - cst.ascent)) / 2;
-					f.categoryLabels.add(new Drawing.Text(t, fonts.face(cst.typeface), cst.font, cst.colour, bx, top + tw, tw, -90, "category." + i));
+					f.categoryLabels.add(text(cst, t, bx, top + tw, tw, -90, "category." + i));
 				} else if (mode == TURNED_45) {
 					// the turned line's top corner on the labels' top, its end's middle over the
 					// category's centre (Word's glyph outlines, R12: to 0.1pt)
 					double ex = cx + (cst.ascent - (cst.line - cst.ascent)) / 2 * SIN45, ey = top + cst.ascent * SIN45;
-					f.categoryLabels.add(new Drawing.Text(t, fonts.face(cst.typeface), cst.font, cst.colour, ex - tw * SIN45, ey + tw * SIN45, tw, -45,
+					f.categoryLabels.add(text(cst, t, ex - tw * SIN45, ey + tw * SIN45, tw, -45,
 							"category." + i));
 				} else {
 					double base = top + cst.ascent + j * cst.line;
-					f.categoryLabels.add(new Drawing.Text(t, fonts.face(cst.typeface), cst.font, cst.colour, cx - tw / 2, base, tw, 0, "category." + i));
+					f.categoryLabels.add(text(cst, t, cx - tw / 2, base, tw, 0, "category." + i));
 				}
 			}
 		}
@@ -983,12 +1704,20 @@ final class ChartLayout {
 			double plotTop, double plotRight, double plotBottom) {
 		Frame f = new Frame();
 		f.across = true;
-		f.top = plotTop;
+		f.catReversed = reversed(catAx);
+		f.valReversed = reversed(valAx);
 		Categories c = categories(series, catAx, nCat);
 		List<String> catTexts = catLabels ? c.labels : new ArrayList<>();
 		double overhead = VALUE_LABEL_GAP * cst.line - VALUE_LABEL_OVERHANG;
-		f.left = catLabels ? plotLeft + widest(catTexts, cst) + overhead : plotLeft;
-		f.bottom = plotBottom - (valLabels ? band(vs, 1) : 0);
+		double inset = manualPlot || titleInsetLeft ? MANUAL_INSET : 0, insetB = manualPlot || titleInsetBottom ? MANUAL_INSET : 0;
+		f.left = catLabels ? plotLeft + widest(catTexts, cst) + overhead + inset : plotLeft;
+		// the value labels below the plot, or above it where the value axis crosses at its top (the
+		// categories from the top down: r15-bar-category-reversed)
+		double[] crossAt = { 1 };
+		int vc = valueCrossing(valAx, nCat, crossAt);
+		f.valSide = labelSide(valAx, vc < 0, vc > 0, f.catReversed);
+		f.top = plotTop + (valLabels && f.valSide == HIGH ? band(vs, 1) : 0);
+		f.bottom = plotBottom - (valLabels && f.valSide == LOW ? band(vs, 1) + insetB : 0);
 		AxisScale.Bounds kind = percentAxis ? AxisScale.Bounds.PERCENT : AxisScale.Bounds.VALUE;
 		f.scale = acrossScale(dmin, dmax, setMin, setMax, valAx, valLabels, valCode, vs, plotLeft, f.left, plotRight, kind);
 		// labels too wide for their share of the plot area are wrapped to it, and the scale chosen again
@@ -1003,20 +1732,30 @@ final class ChartLayout {
 				catLines.set(i, l);
 				w = Math.max(w, widest(l, cst));
 			}
-			f.left = plotLeft + w + overhead;
+			f.left = plotLeft + w + overhead + inset;
 			f.scale = acrossScale(dmin, dmax, setMin, setMax, valAx, valLabels, valCode, vs, plotLeft, f.left, plotRight, kind);
 		}
 		valueLabels(f, f.scale, valLabels, valCode, f.values, f.valueTexts);
 		f.right = plotRight - (valLabels ? vs.width(format(f.scale.max, valCode)) / 2 : 0);
+		// the category labels left of the plot, or (the category axis crossing within it: values of
+		// either sign) beside the axis's line, taking no room; the first value label then kept within
+		// the plot area (r15-labels-negative-bar)
+		f.crossValue = crossValue(catAx, f.scale);
+		boolean explicitMax = catAx != null && (catAx.getCrossesAt() != null ? catAx.getCrossesAt() >= f.scale.max : "max".equals(catAx.getCrosses()));
+		f.catSide = labelSide(catAx, f.crossValue <= f.scale.min, explicitMax && !(f.crossValue <= f.scale.min), f.valReversed);
+		if (f.catSide == MID) f.left = plotLeft + (valLabels ? vs.width(format(f.scale.min, valCode)) / 2 : 0);
 		double slots = c.span + 1;
 		f.catW = (f.bottom - f.top) / slots;
+		final double y0 = f.catReversed ? f.top : f.bottom, dy = f.catReversed ? f.catW : -f.catW;
 		f.categories = new double[nCat];
-		for (int i = 0; i < nCat; i++) f.categories[i] = f.bottom - (c.slot[i] + 0.5) * f.catW;
-		for (int k = 0; k <= c.span + 1; k++) f.ticks.add(f.bottom - k * f.catW);
+		for (int i = 0; i < nCat; i++) f.categories[i] = y0 + (c.slot[i] + 0.5) * dy;
+		for (int k = 0; k <= c.span + 1; k++) f.ticks.add(y0 + k * dy);
+		f.crossPos = vc == 0 ? y0 + (crossAt[0] - 1) * dy : (vc < 0) != f.catReversed ? f.bottom : f.top;
 		for (int i = 0; i < catLines.size(); i++) {
 			List<String> l = catLines.get(i);
-			double y = f.bottom - (c.labelSlot[i] + 0.5) * f.catW - (l.size() - 1) * cst.line / 2;
-			for (int j = 0; j < l.size(); j++) f.categoryLabels.add(left(l.get(j), cst, y + j * cst.line, f.left, "category." + i));
+			double y = y0 + (c.labelSlot[i] + 0.5) * dy - (l.size() - 1) * cst.line / 2;
+			double at = f.catSide == MID ? f.v(f.crossValue) : f.left;
+			for (int j = 0; j < l.size(); j++) f.categoryLabels.add(left(l.get(j), cst, y + j * cst.line, at, "category." + i));
 		}
 		return f;
 	}
@@ -1029,12 +1768,13 @@ final class ChartLayout {
 			double dmax, Double setMin, Double setMax, double xmin, double xmax, String valCode, List<ChartSeries> series, double plotLeft,
 			double plotTop, double plotRight, double plotBottom) {
 		Frame f = new Frame();
-		f.top = plotTop + (valLabels ? Math.max(0, vs.line / 2 - VALUE_LABEL_TOP) : 0);
-		f.bottom = plotBottom - (xLabels ? band(xs, 1) : 0);
+		double inset = manualPlot || titleInsetLeft ? MANUAL_INSET : 0, insetB = manualPlot || titleInsetBottom ? MANUAL_INSET : 0;
+		f.top = plotTop + (valLabels ? manualPlot ? vs.line / 2 : Math.max(0, vs.line / 2 - VALUE_LABEL_TOP) : 0);
+		f.bottom = plotBottom - (xLabels ? band(xs, 1) + insetB : 0);
 		f.scale = AxisScale.of(dmin, dmax, setMin, setMax, valAx == null ? null : valAx.getMajorUnit(), valAx == null ? null : valAx.getLogBase(),
 				f.bottom - f.top, vs.line);
 		valueLabels(f, f.scale, valLabels, valCode, f.values, f.valueTexts);
-		f.left = valLabels ? plotLeft - VALUE_LABEL_OVERHANG + widest(f.valueTexts, vs) + VALUE_LABEL_GAP * vs.line : plotLeft;
+		f.left = valLabels ? plotLeft - VALUE_LABEL_OVERHANG + inset + widest(f.valueTexts, vs) + VALUE_LABEL_GAP * vs.line : plotLeft;
 		String xCode = xAx == null ? "General" : numberFormat(xAx, series.isEmpty() ? null : series.get(0).getXValues());
 		f.xScale = acrossScale(xmin, xmax, xAx == null ? null : xAx.getMin(), xAx == null ? null : xAx.getMax(), xAx, xLabels, xCode, xs,
 				plotLeft, f.left, plotRight, AxisScale.Bounds.X);
@@ -1065,6 +1805,53 @@ final class ChartLayout {
 			scale = scale.doubled();
 		}
 		return scale;
+	}
+
+	private static boolean reversed(ChartAxis a) {
+		return a != null && "maxMin".equals(a.getOrientation());
+	}
+
+	/**
+	 * Where an axis crosses the value axis, in its values (an axis's c:crosses or c:crossesAt is
+	 * where it crosses the other axis, in that axis's units: r15-catax-crosses-at-2, -max): its
+	 * zero (autoZero, within the scale; a log scale's minimum), the scale's minimum or maximum, or a
+	 * value
+	 */
+	private static double crossValue(ChartAxis a, AxisScale scale) {
+		if (a != null && a.getCrossesAt() != null) return Math.max(scale.min, Math.min(scale.max, a.getCrossesAt()));
+		String c = a == null ? null : a.getCrosses();
+		if ("max".equals(c)) return scale.max;
+		if ("min".equals(c) || scale.log) return scale.min;
+		return Math.max(scale.min, Math.min(scale.max, 0));
+	}
+
+	/**
+	 * The side an axis's labels are on (R15): low and high by c:tickLblPos, at that end of the axis
+	 * it crosses (its order reversed, the other end); next to its line, the end its line is at, or
+	 * MID where its line is within the plot
+	 */
+	private static int labelSide(ChartAxis a, boolean atLow, boolean atHigh, boolean otherReversed) {
+		String tlp = a == null ? null : a.getTickLabelPosition();
+		int side;
+		if ("low".equals(tlp)) side = LOW;
+		else if ("high".equals(tlp)) side = HIGH;
+		else return atLow ? (otherReversed ? HIGH : LOW) : atHigh ? (otherReversed ? LOW : HIGH) : MID;
+		return otherReversed ? 1 - side : side;
+	}
+
+	/**
+	 * Where the value axis crosses the categories (its c:crosses or c:crossesAt, in categories):
+	 * -1 at the first category's edge, 1 after the last, 0 between, the category's number in at
+	 */
+	private static int valueCrossing(ChartAxis valAx, int nCat, double[] at) {
+		if (valAx != null && valAx.getCrossesAt() != null) {
+			double n = valAx.getCrossesAt();
+			if (n <= 1) return -1;
+			if (n > nCat) return 1;
+			at[0] = n;
+			return 0;
+		}
+		return valAx != null && "max".equals(valAx.getCrosses()) ? 1 : -1;
 	}
 
 	/** A category axis's categories: each one's slot (a date axis's: its base units from the first), and its labels */
@@ -1210,18 +1997,36 @@ final class ChartLayout {
 		double barW = f.catW / (n - (n - 1) * overlap + gapWidth);
 		for (int s = 0; s < n; s++) {
 			ChartSeries sr = series.get(s);
-			Color c = seriesFill(sr);
 			for (int i = 0; i < f.categories.length; i++) {
 				if (Double.isNaN(to[s][i])) continue;
 				double a = Double.isNaN(from[s][i]) ? crossV : f.v(from[s][i]), b = f.v(to[s][i]);
 				double lo = Math.min(a, b), hi = Math.max(a, b);
 				// the bars of a category from its start (a column's left, a bar's bottom)
 				double offset = -f.catW / 2 + gapWidth * barW / 2 + s * barW * (1 - overlap);
-				Rectangle2D r = across ? new Rectangle2D.Double(lo, f.categories[i] - offset - barW, hi - lo, barW)
-						: new Rectangle2D.Double(f.categories[i] + offset, lo, barW, hi - lo);
+				// (the categories reversed, the series within each too)
+				Rectangle2D r = across ? new Rectangle2D.Double(lo, f.catReversed ? f.categories[i] + offset : f.categories[i] - offset - barW, hi - lo, barW)
+						: new Rectangle2D.Double(f.catReversed ? f.categories[i] - offset - barW : f.categories[i] + offset, lo, barW, hi - lo);
 				d.boxes.put("point." + s + "." + i, r);
+				Anchor an = new Anchor(s, i);
+				an.bar = true;
+				an.across = across;
+				an.x = r.getX();
+				an.y = r.getY();
+				an.w = r.getWidth();
+				an.h = r.getHeight();
+				an.base = a;
+				an.end = b;
+				an.value = labelValue(sr, i, false);
+				anchors.add(an);
 				// clipped to the plot's inside, as Office clips a bar past the axis's bounds (R2)
-				if (hi - lo > 0) d.add(new Drawing.Area(r, c, null, 0, "point." + s + "." + i, inside));
+				if (hi - lo > 0) {
+					Drawing.Area bar = area(r, pointSpPr(sr, i), pointFill(sr, i), "point." + s + "." + i, inside);
+					// a negative value inverted: white, outlined in black (r15-invert-negative; no c14:invertSolidFillFmt)
+					if (Boolean.TRUE.equals(sr.getInvertIfNegative()) && labelValue(sr, i, false) < 0) {
+						bar = new Drawing.Area(r, Color.WHITE, Color.BLACK, 0.75, "point." + s + "." + i, inside);
+					}
+					d.add(bar);
+				}
 			}
 		}
 	}
@@ -1241,6 +2046,16 @@ final class ChartLayout {
 				started = true;
 				double base = Double.isNaN(from[s][i]) ? crossV : f.v(from[s][i]);
 				d.boxes.put("point." + s + "." + i, new Rectangle2D.Double(x, Math.min(y, base), 0, Math.abs(base - y)));
+				if (!Double.isNaN(to[s][i])) {
+					Anchor an = new Anchor(s, i);
+					an.area = true;
+					an.x = x;
+					an.y = y;
+					an.base = base;
+					an.end = y;
+					an.value = labelValue(sr, i, false);
+					anchors.add(an);
+				}
 			}
 			for (int i = nCat - 1; i >= 0; i--) {
 				double base = Double.isNaN(from[s][i]) ? crossV : f.v(from[s][i]);
@@ -1248,7 +2063,7 @@ final class ChartLayout {
 			}
 			p.closePath();
 			CTShapeProperties sp = spPr(sr);
-			if (nCat > 0) d.add(new Drawing.Area(p, seriesFill(sr), lineColour(sp), lineWidth(sp), "series." + s, inside));
+			if (nCat > 0) d.add(area(p, sp, seriesFill(sr), "series." + s, inside));
 		}
 	}
 
@@ -1269,24 +2084,46 @@ final class ChartLayout {
 			Marker m = marker(sr);
 			boolean smooth = Boolean.TRUE.equals(sr.getSmooth());
 			int nCat = to[s].length;
+			// the colours varied by point (one series): the legend lists the points, but the line is drawn a
+			// piece from each point to the next, all in the series' colour, as its markers (r15-vary-colors-line)
+			boolean vary = !scatter && model.getGroups().get(0).variesColors();
 			List<double[]> run = new ArrayList<>();
 			for (int i = 0; i < nCat; i++) {
 				if (Double.isNaN(to[s][i])) {
 					// a gap ends the line; spanned, the line goes on to the next point
 					if (!"span".equals(blanks)) {
-						line(run, smooth, lc, lw, "series." + s);
+						if (vary) pieces(run, lc, lw, dashes(sp, lw), "series." + s);
+						else line(run, smooth, lc, lw, dashes(sp, lw), "series." + s);
 						run = new ArrayList<>();
 					}
 					continue;
 				}
 				double x = scatter ? f.x(xs[s][i]) : f.categories[i], y = f.v(to[s][i]);
 				d.boxes.put("point." + s + "." + i, new Rectangle2D.Double(x, y, 0, 0));
-				run.add(new double[] { x, y });
+				Anchor an = new Anchor(s, i);
+				an.x = x;
+				an.y = y;
+				// a line's labels stand off as from a marker of its size, Office's 5 where it shows none (r15-labels-line)
+				an.m = (m == null ? markerSize(sr) : m.size) / 2;
+				an.value = labelValue(sr, i, scatter);
+				anchors.add(an);
+				run.add(new double[] { x, y, i });
 				if (m != null) markers.addAll(marker(m, x, y, "point." + s + "." + i));
 			}
-			line(run, smooth, lc, lw, "series." + s);
+			if (vary) pieces(run, lc, lw, dashes(sp, lw), "series." + s);
+			else line(run, smooth, lc, lw, dashes(sp, lw), "series." + s);
 		}
 		for (Drawing.Area a : markers) d.add(a);
+	}
+
+	/** A run of a line's points drawn a piece from each point to the next */
+	private void pieces(List<double[]> run, Color colour, double width, float[] dash, String role) {
+		for (int k = 1; k < run.size(); k++) {
+			List<double[]> piece = new ArrayList<>();
+			piece.add(run.get(k - 1));
+			piece.add(run.get(k));
+			line(piece, false, colour, width, dash, role);
+		}
 	}
 
 	/**
@@ -1295,7 +2132,7 @@ final class ChartLayout {
 	 * the ends' a third of the chord (R14's smoothed line and scatter: Word's PDF has these control
 	 * points, fitted to 0.006pt)
 	 */
-	private void line(List<double[]> run, boolean smooth, Color colour, double width, String role) {
+	private void line(List<double[]> run, boolean smooth, Color colour, double width, float[] dash, String role) {
 		if (colour == null || run.size() < 2) return;
 		Path2D.Double p = new Path2D.Double();
 		p.moveTo(run.get(0)[0], run.get(0)[1]);
@@ -1310,7 +2147,9 @@ final class ChartLayout {
 			double[] e = i + 1 < run.size() ? run.get(i + 1) : new double[] { 2 * c[0] - b[0], 2 * c[1] - b[1] };
 			p.curveTo(b[0] + (c[0] - a[0]) / 6, b[1] + (c[1] - a[1]) / 6, c[0] - (e[0] - b[0]) / 6, c[1] - (e[1] - b[1]) / 6, c[0], c[1]);
 		}
-		d.add(new Drawing.Area(p, null, colour, width, role, null, true));
+		Drawing.Area a = new Drawing.Area(p, null, colour, width, role, null, true);
+		a.dash = dash;
+		d.add(a);
 	}
 
 	/**
@@ -1374,6 +2213,18 @@ final class ChartLayout {
 		return out;
 	}
 
+	/** A point's value as its label shows it: the series' own, not its share of a 100% stack or its place in a stack */
+	private static double labelValue(ChartSeries s, int i, boolean scatter) {
+		Double v = number(values(s, scatter), i);
+		return v == null ? 0 : v;
+	}
+
+	/** A series' marker's size, shown or not (Office's 5 where it states none) */
+	private static double markerSize(ChartSeries s) {
+		Object o = get(s.getSource(), "getMarker");
+		return o instanceof CTMarker && ((CTMarker) o).getSize() != null ? ((CTMarker) o).getSize().getVal() : 5;
+	}
+
 	/** A series' marker: none where its symbol is none, or where it states none (the probes all state theirs) */
 	private Marker marker(ChartSeries s) {
 		Object o = get(s.getSource(), "getMarker");
@@ -1384,6 +2235,301 @@ final class ChartLayout {
 		double size = m.getSize() == null ? 5 : m.getSize().getVal();
 		CTShapeProperties sp = m.getSpPr();
 		return new Marker(symbol, size, fill(sp), lineColour(sp), lineWidth(sp));
+	}
+
+	// ------------------------------------------------------------------ data labels
+
+	/** A point's data label as its series' c:dLbls (over its group's) and its own c:dLbl say */
+	private static final class LabelSpec {
+		boolean deleted, value, category, series, percent, key;
+		String position, separator, code;
+		boolean linked = true;
+		CTTextBody txPr;
+		CTShapeProperties spPr;
+		CTTx tx;
+		/** the label moved by hand (its own c:dLbl's layout) */
+		CTManualLayout manual;
+
+		boolean shown() {
+			return !deleted && (value || category || series || percent || tx != null);
+		}
+
+		void apply(CTDLbls l) {
+			if (l == null) return;
+			if (l.getDelete() != null) deleted = l.getDelete().isVal();
+			if (l.getShowVal() != null) value = l.getShowVal().isVal();
+			if (l.getShowCatName() != null) category = l.getShowCatName().isVal();
+			if (l.getShowSerName() != null) series = l.getShowSerName().isVal();
+			if (l.getShowPercent() != null) percent = l.getShowPercent().isVal();
+			if (l.getShowLegendKey() != null) key = l.getShowLegendKey().isVal();
+			if (l.getDLblPos() != null && l.getDLblPos().getVal() != null) position = l.getDLblPos().getVal().value();
+			if (l.getSeparator() != null) separator = l.getSeparator();
+			if (l.getNumFmt() != null) {
+				code = l.getNumFmt().getFormatCode();
+				linked = Boolean.TRUE.equals(l.getNumFmt().isSourceLinked());
+			}
+			if (l.getTxPr() != null) txPr = l.getTxPr();
+			if (l.getSpPr() != null) spPr = l.getSpPr();
+		}
+
+		void apply(CTDLbl l) {
+			if (l.getDelete() != null && l.getDelete().isVal()) {
+				deleted = true;
+				return;
+			}
+			deleted = false;
+			if (l.getLayout() != null && l.getLayout().getManualLayout() != null) manual = l.getLayout().getManualLayout();
+			if (l.getShowVal() != null) value = l.getShowVal().isVal();
+			if (l.getShowCatName() != null) category = l.getShowCatName().isVal();
+			if (l.getShowSerName() != null) series = l.getShowSerName().isVal();
+			if (l.getShowPercent() != null) percent = l.getShowPercent().isVal();
+			if (l.getShowLegendKey() != null) key = l.getShowLegendKey().isVal();
+			if (l.getDLblPos() != null && l.getDLblPos().getVal() != null) position = l.getDLblPos().getVal().value();
+			if (l.getSeparator() != null) separator = l.getSeparator();
+			if (l.getNumFmt() != null) {
+				code = l.getNumFmt().getFormatCode();
+				linked = Boolean.TRUE.equals(l.getNumFmt().isSourceLinked());
+			}
+			if (l.getTxPr() != null) txPr = l.getTxPr();
+			if (l.getSpPr() != null) spPr = l.getSpPr();
+			if (l.getTx() != null && l.getTx().getRich() != null) tx = l.getTx();
+		}
+	}
+
+	/** Point i's label of a series: the group's labels, the series', then the point's own */
+	private LabelSpec labelSpec(ChartGroup g, ChartSeries s, int i) {
+		LabelSpec l = new LabelSpec();
+		Object gl = get(g.getSource(), "getDLbls"), sl = get(s.getSource(), "getDLbls");
+		l.apply(gl instanceof CTDLbls ? (CTDLbls) gl : null);
+		l.apply(sl instanceof CTDLbls ? (CTDLbls) sl : null);
+		if (l.position == null && s.getDataLabels() != null) l.position = s.getDataLabels().getShownPosition();
+		for (Object o : new Object[] { gl, sl }) {
+			if (!(o instanceof CTDLbls)) continue;
+			for (CTDLbl p : ((CTDLbls) o).getDLbl()) {
+				if (p.getIdx() != null && p.getIdx().getVal() == i) l.apply(p);
+			}
+		}
+		return l;
+	}
+
+	/**
+	 * Each point's data label, placed by what it labels (R6): a bar's at its end (outEnd, inEnd),
+	 * its base (inBase) or its middle (ctr), {@link #LABEL_GAP} from it; a point's above, below,
+	 * left or right of its marker, or on it; a slice's at the middle of its ray (ctr), inside its
+	 * arc (inEnd), outside it (outEnd, provisional) or, for bestFit, inside as inEnd (provisional)
+	 */
+	private void dataLabels(ChartGroup group, List<ChartSeries> series) {
+		boolean scatter = group.getKind() == ChartGroup.Kind.SCATTER;
+		boolean pie = group.getKind() == ChartGroup.Kind.PIE || group.getKind() == ChartGroup.Kind.DOUGHNUT;
+		for (Anchor an : anchors) {
+			if (an.s >= series.size()) continue;
+			ChartSeries sr = series.get(an.s);
+			LabelSpec ls = labelSpec(group, sr, an.i);
+			if (!ls.shown()) continue;
+			Style st = style(ls.txPr, base());
+			String text;
+			if (ls.tx != null) {
+				text = richText(ls.tx.getRich());
+			} else {
+				List<String> parts = new ArrayList<>();
+				if (ls.series) parts.add(sr.getShownName() == null ? "" : sr.getShownName());
+				ChartData xv = sr.getXValues();
+				if (ls.category) parts.add(scatter ? format(numberOr(xv, an.i), xv != null && xv.getFormatCode() != null ? xv.getFormatCode() : "General")
+						: categoryText(sr.getCategories(), an.i, null));
+				if (ls.value) {
+					ChartData v = values(sr, scatter);
+					String code = !ls.linked && ls.code != null ? ls.code : v != null && v.getFormatCode() != null ? v.getFormatCode() : "General";
+					parts.add(format(an.value, code));
+				}
+				if (ls.percent) parts.add(format(percent(values(sr, scatter), an.i), "0%"));
+				// Office separates the parts by ", " (r15-labels-value-category, -all-three, -pie-everything),
+				// but a pie's category and percentage alone by a line (r8-pie-labels-outside; provisional)
+				boolean catPercent = pie && ls.category && ls.percent && !ls.value && !ls.series;
+				String sep = ls.separator != null ? ls.separator : catPercent ? "\n" : ", ";
+				text = String.join(sep, parts);
+			}
+			List<String> lines = new ArrayList<>();
+			for (String line : text.split("\r?\n", -1)) lines.add(line);
+			double[] ins = insets(ls.txPr);
+			double tw = 0;
+			for (String line : lines) tw = Math.max(tw, st.width(line));
+			// its legend key before the text: the legend's square, in a slot of two keys and 3pt (r15-labels-legend-key)
+			double kw = ls.key ? LEGEND_KEY * st.line : 0, ks = ls.key ? 2 * kw + 3 : 0;
+			double bw = tw + ks + ins[0] + ins[2], bh = lines.size() * st.line + ins[1] + ins[3];
+			// turned a quarter (bodyPr rot -5400000: up the page, 5400000: down it), the box turned with
+			// it and placed by the same rule (r10-column-style-202)
+			int turn = rotation(ls.txPr);
+			double[] at = labelPlace(an, ls.position == null ? "" : ls.position, turn == 0 ? bw : bh, turn == 0 ? bh : bw);
+			Rectangle2D box = new Rectangle2D.Double(at[0], at[1], turn == 0 ? bw : bh, turn == 0 ? bh : bw);
+			// moved by hand: in factor mode by shares of the chart from where it would be (r15-labels-pie-moved)
+			if (ls.manual != null) box = manual(ls.manual, box);
+			String role = "label." + an.s + "." + an.i;
+			d.boxes.put(role, box);
+			Drawing.Area ba = area(box, ls.spPr, fill(ls.spPr), role, null);
+			if (ba.fill != null || ba.line != null) d.add(ba);
+			if (ls.key && turn == 0) {
+				Color kc = an.slice || group.variesColors() ? pointFill(sr, an.i) : seriesFill(sr);
+				if (kc == null) kc = lineColour(spPr(sr));
+				d.add(new Drawing.Area(new Rectangle2D.Double(box.getX() + ins[0] + kw / 2 + 0.75, box.getCenterY() - kw / 2 - 0.05, kw, kw), kc, null, 0,
+						role + ".key"));
+				box = new Rectangle2D.Double(box.getX() + ks, box.getY(), box.getWidth() - ks, box.getHeight());
+			}
+			for (int j = 0; j < lines.size(); j++) {
+				String line = lines.get(j);
+				double lw = st.width(line);
+				if (turn < 0) {
+					d.add(text(st, line, box.getX() + ins[1] + st.ascent + 0.15 + j * st.line, box.getMaxY() - ins[0] - (tw - lw) / 2, lw, -90, role));
+				} else if (turn > 0) {
+					d.add(text(st, line, box.getMaxX() - ins[1] - st.ascent - 0.15 - j * st.line, box.getY() + ins[0] + (tw - lw) / 2, lw, 90, role));
+				} else {
+					d.add(text(st, line, box.getX() + ins[0] + (tw - lw) / 2, box.getY() + ins[1] + st.ascent + 0.15 + j * st.line, lw, 0, role));
+				}
+			}
+		}
+	}
+
+	/**
+	 * A point's share of its series, as Office shows it in a label: whole percentages that add up
+	 * to 100%, the difference given to the largest share (r10-pie-style-258: 8.2, 3.2, 1.4 and 1.2
+	 * are 58%, 23%, 10% and 9%, not 59%)
+	 */
+	private static double percent(ChartData v, int i) {
+		int n = count(v);
+		double total = 0;
+		for (int k = 0; k < n; k++) {
+			Double x = number(v, k);
+			if (x != null) total += Math.abs(x);
+		}
+		if (total == 0) return 0;
+		long sum = 0;
+		int largest = -1;
+		double max = -1;
+		for (int k = 0; k < n; k++) {
+			Double x = number(v, k);
+			if (x == null) continue;
+			sum += Math.round(100 * Math.abs(x) / total);
+			if (Math.abs(x) > max) {
+				max = Math.abs(x);
+				largest = k;
+			}
+		}
+		Double x = number(v, i);
+		if (x == null) return 0;
+		long p = Math.round(100 * Math.abs(x) / total);
+		if (i == largest) p += 100 - sum;
+		return p / 100.0;
+	}
+
+	/** A label box's top left, by its anchor and position */
+	private static double[] labelPlace(Anchor an, String pos, double bw, double bh) {
+		double g = LABEL_GAP;
+		if (an.bar) {
+			// the value's direction along its axis: up a column (y falls), right along a bar
+			double dir = Math.signum(an.end - an.base);
+			if (!an.across) {
+				double x = an.x + an.w / 2 - bw / 2, y;
+				boolean up = dir <= 0;
+				switch (pos) {
+				case "inEnd":
+					y = up ? an.end + g : an.end - g - bh;
+					break;
+				case "inBase":
+					y = up ? an.base - g - bh : an.base + g;
+					break;
+				case "ctr":
+					y = (an.end + an.base) / 2 - bh / 2;
+					break;
+				default: // outEnd
+					y = up ? an.end - g - bh : an.end + g;
+				}
+				return new double[] { x, y };
+			}
+			double y = an.y + an.h / 2 - bh / 2, x;
+			boolean right = dir >= 0;
+			switch (pos) {
+			case "inEnd":
+				x = right ? an.end - g - bw : an.end + g;
+				break;
+			case "inBase":
+				x = right ? an.base + g : an.base - g - bw;
+				break;
+			case "ctr":
+				x = (an.end + an.base) / 2 - bw / 2;
+				break;
+			default:
+				x = right ? an.end + g : an.end - g - bw;
+			}
+			return new double[] { x, y };
+		}
+		if (an.slice) {
+			double t = Math.toRadians(an.mid), ux = Math.sin(t), uy = -Math.cos(t);
+			// how far the box reaches from its centre along the ray
+			double reach = Math.min(Math.abs(ux) < 1e-9 ? Double.MAX_VALUE : bw / 2 / Math.abs(ux), Math.abs(uy) < 1e-9 ? Double.MAX_VALUE : bh / 2 / Math.abs(uy));
+			double dist;
+			switch (pos) {
+			case "ctr":
+				dist = (an.inner + an.outer) / 2;
+				break;
+			case "outEnd":
+				dist = an.outer + 3.95 + reach;
+				break;
+			default: // inEnd, and (provisional) bestFit
+				dist = an.outer - LABEL_PIE_IN - reach;
+			}
+			return new double[] { an.x + dist * ux - bw / 2, an.y + dist * uy - bh / 2 };
+		}
+		if (an.area) {
+			return new double[] { an.x - bw / 2, (an.end + an.base) / 2 - bh / 2 };
+		}
+		double r = an.m + g;
+		switch (pos) {
+		case "t":
+			return new double[] { an.x - bw / 2, an.y - r - bh };
+		case "b":
+			return new double[] { an.x - bw / 2, an.y + r };
+		case "l":
+			return new double[] { an.x - r - bw, an.y - bh / 2 };
+		case "ctr":
+			return new double[] { an.x - bw / 2, an.y - bh / 2 };
+		default: // r
+			return new double[] { an.x + r, an.y - bh / 2 };
+		}
+	}
+
+	/** A text body's quarter turn: -1 up the page (rot -5400000), 1 down it (5400000), else 0 */
+	private static int rotation(CTTextBody tx) {
+		if (tx == null || tx.getBodyPr() == null || tx.getBodyPr().getRot() == null) return 0;
+		int rot = tx.getBodyPr().getRot();
+		return rot == -5400000 ? -1 : rot == 5400000 ? 1 : 0;
+	}
+
+	/** A text body's insets (lIns, tIns, rIns, bIns), Office's chart text's 3pt and 1.5pt where it says none */
+	private static double[] insets(CTTextBody tx) {
+		double[] out = { 3, 1.5, 3, 1.5 };
+		if (tx == null || tx.getBodyPr() == null) return out;
+		org.docx4j.dml.CTTextBodyProperties b = tx.getBodyPr();
+		if (b.getLIns() != null) out[0] = b.getLIns() / 12700.0;
+		if (b.getTIns() != null) out[1] = b.getTIns() / 12700.0;
+		if (b.getRIns() != null) out[2] = b.getRIns() / 12700.0;
+		if (b.getBIns() != null) out[3] = b.getBIns() / 12700.0;
+		return out;
+	}
+
+	/** A rich text body's text, its paragraphs on lines */
+	private static String richText(CTTextBody rich) {
+		StringBuilder b = new StringBuilder();
+		for (CTTextParagraph p : rich.getP()) {
+			if (b.length() > 0) b.append('\n');
+			for (Object r : p.getEGTextRun()) {
+				if (r instanceof org.docx4j.dml.CTRegularTextRun) b.append(((org.docx4j.dml.CTRegularTextRun) r).getT());
+			}
+		}
+		return b.toString();
+	}
+
+	private static double numberOr(ChartData d, int i) {
+		Double v = d == null ? null : d.getNumber(i);
+		return v == null ? i + 1 : v;
 	}
 
 	// ------------------------------------------------------------------ the plot, a pie
@@ -1397,11 +2543,34 @@ final class ChartLayout {
 	 * (Drawing#slices), and the box of its radii's ends (finding 7)
 	 */
 	private void pie(ChartGroup group, List<ChartSeries> series, double plotLeft, double plotTop, double plotRight, double plotBottom) {
+		// placed by hand: the largest square of the box given, centred in it (r15-plot-pie)
+		CTManualLayout pm = model.getSource().getChart() == null || model.getSource().getChart().getPlotArea() == null ? null
+				: manualLayout(model.getSource().getChart().getPlotArea().getLayout());
+		if (pm != null) {
+			Rectangle2D b = manual(pm, new Rectangle2D.Double(plotLeft, plotTop, plotRight - plotLeft, plotBottom - plotTop));
+			plotLeft = b.getMinX();
+			plotTop = b.getMinY();
+			plotRight = b.getMaxX();
+			plotBottom = b.getMaxY();
+		}
 		double side = Math.max(0, Math.min(plotRight - plotLeft, plotBottom - plotTop));
+		// labels that may go outside take room from the pie (LABEL_PIE_ROOM)
+		if (!series.isEmpty()) {
+			ChartSeries first = series.get(0);
+			for (int i = 0, n = count(first.getValues()); i < n; i++) {
+				LabelSpec ls = labelSpec(group, first, i);
+				// (a doughnut's labels, wherever they are: r15-labels-doughnut)
+				if (ls.shown() && ("outEnd".equals(ls.position) || "bestFit".equals(ls.position) || group.getKind() == ChartGroup.Kind.DOUGHNUT)) {
+					side = Math.max(0, side - 2 * (LABEL_PIE_ROOM + LABEL_PIE_SHARE * side));
+					break;
+				}
+			}
+		}
 		double px = plotLeft + (plotRight - plotLeft - side) / 2, py = plotTop + (plotBottom - plotTop - side) / 2;
 		Rectangle2D plot = new Rectangle2D.Double(px, py, side, side);
 		d.boxes.put("plotArea", plot);
 		d.boxes.put("inside", plot);
+		plotAreaFill(plot);
 		boolean doughnut = group.getKind() == ChartGroup.Kind.DOUGHNUT;
 		double r = side / 2, cx0 = px + r, cy0 = py + r;
 		long seriesExplosion = 0;
@@ -1454,11 +2623,20 @@ final class ChartLayout {
 				}
 				String key = "point." + s + "." + i;
 				d.slices.put(key, at);
+				Anchor an = new Anchor(s, i);
+				an.slice = true;
+				an.x = cx;
+				an.y = cy;
+				an.inner = inner;
+				an.outer = outer;
+				an.mid = (a + b) / 2;
+				an.value = x;
+				an.w = total;
+				anchors.add(an);
 				Rectangle2D box = new Rectangle2D.Double(at[1][0], at[1][1], 0, 0);
 				for (double[] q : new double[][] { at[3], doughnut ? at[7] : at[5], doughnut ? at[9] : at[5] }) box.add(q[0], q[1]);
 				d.boxes.put(key, box);
-				CTShapeProperties sp = pointSpPr(sr, i);
-				d.add(new Drawing.Area(shape, pointFill(sr, i), lineColour(sp), lineWidth(sp), key));
+				d.add(area(shape, pointSpPr(sr, i), pointFill(sr, i), key, null));
 				a = b;
 			}
 		}
@@ -1508,6 +2686,15 @@ final class ChartLayout {
 		ChartFill f = s.getFill();
 		if (f != null && f.getColor() != null) return awt(f.getColor());
 		if (f == null || f.isAutomatic()) return automatic(s.getIdx(), seriesCount());
+		if (f.getKind() == ChartFill.Kind.NONE) return null;
+		if (f.getKind() == ChartFill.Kind.GRADIENT) {
+			Drawing.Gradient g = gradient(spPr(s));
+			if (g != null) return g.colours[0];
+		}
+		if (f.getKind() == ChartFill.Kind.PATTERN) {
+			Drawing.Pattern p = pattern(spPr(s));
+			if (p != null) return p.fg;
+		}
 		f = s.getPointFills().get(0);
 		if (f != null && f.getColor() != null) return awt(f.getColor());
 		return Color.GRAY;
@@ -1710,14 +2897,39 @@ final class ChartLayout {
 		return null;
 	}
 
-	private static CTChartLines gridlines(Object axis) {
-		if (axis instanceof CTValAx) return ((CTValAx) axis).getMajorGridlines();
+	/** An axis's major or minor gridlines, or null */
+	private static CTChartLines gridlines(Object axis, boolean major) {
+		if (axis instanceof CTValAx) return major ? ((CTValAx) axis).getMajorGridlines() : ((CTValAx) axis).getMinorGridlines();
+		if (axis instanceof CTCatAx) return major ? ((CTCatAx) axis).getMajorGridlines() : ((CTCatAx) axis).getMinorGridlines();
+		if (axis instanceof CTDateAx) return major ? ((CTDateAx) axis).getMajorGridlines() : ((CTDateAx) axis).getMinorGridlines();
 		return null;
+	}
+
+	/** A gridline, in its line's colour or gradient (Word's PDF: a shading in the stroke, r10-column-style-213) */
+	private void gridline(Line2D l, CTChartLines g, String role) {
+		Drawing.Area a = line(l, g.getSpPr(), role);
+		if (a != null) d.add(a);
+	}
+
+	/** A line drawn by a shape's a:ln: its colour or gradient, its width; null where it has none */
+	private Drawing.Area line(Shape shape, CTShapeProperties sp, String role) {
+		Color c = lineColour(sp);
+		Drawing.Gradient gr = sp == null || sp.getLn() == null ? null : gradient(sp.getLn().getGradFill());
+		if (c == null && gr == null) return null;
+		Drawing.Area a = new Drawing.Area(shape, null, c != null ? c : gr.colours[0], lineWidth(sp), role);
+		a.lineGradient = gr;
+		a.dash = dashes(sp, a.lineWidth);
+		return a;
 	}
 
 	/** An axis's major tick marks: out, in or cross; null for none */
 	private static String tickMark(Object axis) {
-		Object o = get(axis, "getMajorTickMark");
+		return tickMark(axis, true);
+	}
+
+	/** An axis's major or minor tick marks: out, in or cross; null for none */
+	private static String tickMark(Object axis, boolean major) {
+		Object o = get(axis, major ? "getMajorTickMark" : "getMinorTickMark");
 		if (!(o instanceof CTTickMark) || ((CTTickMark) o).getVal() == null) return null;
 		String v = ((CTTickMark) o).getVal().value();
 		return "none".equals(v) ? null : v;

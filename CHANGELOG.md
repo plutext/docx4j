@@ -73,6 +73,12 @@ Changes in Version 17.3.3
   docx4j.convert.out.html.chartAsPng) and pptx's SVG-in-HTML, where docx4j-chart-render is on the
   classpath (docx4j-export-fo brings it); a chart it doesn't draw yet keeps its empty box.  New
   ChartImages: any chart in a docx, pptx or xlsx as SVG or PNG, and why one isn't drawn.  CR-037.
+- docx4j-chart-render draws a chart's data labels, axis titles, manual layouts, axis options
+  (crossings, reversed orders, tick label positions, minor gridlines and tick marks), deleted
+  legend entries, fills (gradients, patterns), dashed lines, shadows and glows, and titles of
+  several runs; it refuses only combinations, secondary axes, 3-D and the other kinds.  CR-037.
+- PDF output: a chart's or picture's bold face declared to FOP late no longer makes the regular
+  text of its family bold.  CR-037.
 - New docx4j.properties setting docx4j.dcterms.write (default false): true sets dcterms:modified
   to the current time on save, and dcterms:created on a new document.  CR-036.
 - A TOC update no longer adds another Hyperlink style to the styles part each time (TocStyles

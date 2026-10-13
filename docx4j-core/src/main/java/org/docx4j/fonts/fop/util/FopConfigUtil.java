@@ -643,7 +643,22 @@ public class FopConfigUtil {
     		if (!boldItalicOnItalic) {
     			rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "italic", "bold"));
     		}
-    		addFamilyTriplet(rendererFont, pf, "normal", "normal");
+    		// under its family name in its own style and weight: a bold face (a chart's bold labels,
+    		// declared late) declared as the family's normal answered for its regular text too, and
+    		// every regular Carlito text of the PDF came out bold (CR-037 phase 4, style 204) @since 17.3.3
+    		// (FOP's font info gives the face's own names normal and 400, its family's name its real
+    		// style and weight: "Carlito Bold,normal,400" but "Carlito,normal,700")
+    		FontTriplet own = null;
+    		if (pf.getEmbedFontInfo()!=null) {
+    			for (Object o : pf.getEmbedFontInfo().getFontTriplets()) {
+    				if (o instanceof FontTriplet && ((FontTriplet)o).getName().equals(pf.getFamilyName())) {
+    					own = (FontTriplet)o;
+    					break;
+    				}
+    			}
+    		}
+    		addFamilyTriplet(rendererFont, pf, own==null ? "normal" : own.getStyle(),
+    				own==null ? "normal" : weightToCSS2FontWeight(own.getWeight()));
 
     	} else {
     		// If we don't have to simulate-style, fall back to the old way of doing things

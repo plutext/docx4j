@@ -8,7 +8,10 @@ content), drawn by Excel, Word and PowerPoint (Microsoft 365, build 16.0.20430) 
 copied here by `chart_score.py fixtures`.  Sets R1 to R10 (phase 0), R11 to R13 (phase 1: the
 value axis's unit against its length; the category labels as the room for them shrinks; how far
 labels turned 45 degrees push the plot), R14 (phase 2, run 2026-10-13: what the other types add,
-eleven sweeps, and 67 of Excel's own CR-036 charts copied as xlsx alone, `p1-*` and `p6-*`).
+eleven sweeps, and 67 of Excel's own CR-036 charts copied as xlsx alone, `p1-*` and `p6-*`), R15 (phase 4,
+run 2026-10-13: what the settings and the data add, 95 probes, and 39 of Excel's own charts copied as
+xlsx alone: CR-036's P2 settings, P6's axis titles, data labels and number formats on every type,
+`p2-*`, `p6-*`, and CR-035's chart with a series filtered out, `c35-filtered`).
 `ChartRenderFixturesTest` checks the set; `ChartRenderGateTest` is the renderer's gate against it,
 `ChartSweepTest` its gate against the sweeps.  (Phase 0 put it in docx4j-core-tests; phase 1 moved it here,
 beside the renderer it is the oracle of.)

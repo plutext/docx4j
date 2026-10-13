@@ -178,15 +178,15 @@ public class ChartImagesTest {
 
 	@Test
 	public void aRefusedChartSaysWhy() throws Exception {
-		ChartRef labels = ChartRenderGateTest.chart("r6-column-clustered-ctr");
-		ChartRenderCheck k = ChartImages.check(labels);
+		ChartRef refused = ChartRenderGateTest.refused();
+		ChartRenderCheck k = ChartImages.check(refused);
 		assertFalse(k.isDrawn());
-		assertTrue(k.getRefused().toString(), k.getRefused().contains("data labels"));
+		assertTrue(k.getRefused().toString(), k.getRefused().contains("a secondary axis"));
 		try {
-			ChartImages.toSvg(labels);
+			ChartImages.toSvg(refused);
 			fail("a refused chart drawn");
 		} catch (Docx4JException e) {
-			assertTrue(e.getMessage(), e.getMessage().contains("data labels"));
+			assertTrue(e.getMessage(), e.getMessage().contains("a secondary axis"));
 		}
 	}
 

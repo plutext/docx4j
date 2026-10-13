@@ -34,6 +34,13 @@ import java.util.regex.Pattern;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.chart.CTAreaChart;
+import org.docx4j.dml.chart.STTickLblPos;
+import org.docx4j.dml.chart.STCrosses;
+import org.docx4j.dml.chart.CTTitle;
+import org.docx4j.dml.chart.CTTickLblPos;
+import org.docx4j.dml.chart.CTCrosses;
+import org.docx4j.dml.chart.CTChartLines;
+import org.docx4j.dml.chart.CTDLbl;
 import org.docx4j.dml.chart.CTCatAx;
 import org.docx4j.dml.chart.CTDateAx;
 import org.docx4j.dml.chart.CTGrouping;
@@ -117,7 +124,9 @@ import org.xlsx4j.model.CellRef;
  * axis's unit against its length, one chart at many heights and a bar chart at many widths; R12
  * (phase 1) the category labels as the room for them shrinks; R13 (phase 1) how far labels turned
  * 45 degrees push the plot right; R14 (phase 2) what the other types add, sweeps, and Excel's own
- * charts of CR-036 (an xlsx only).</p>
+ * charts of CR-036 (an xlsx only); R15 (phase 4) what the settings and the data add: axis titles,
+ * data labels, manual layouts, legend entries, axis options, fills and effects, titles of several
+ * runs, and Excel's own charts of CR-036's P2 and P6 settings (an xlsx only).</p>
  *
  * <p>One theme for each probe (review A2): the docx's theme part (Office 2013's, Calibri and
  * accent 1 4472C4, unless the probe says 2023) is copied into the xlsx, which docx4j makes with
@@ -207,7 +216,10 @@ public final class ChartRenderProbes {
 	}
 
 	private static ChartRenderProbes copy(String set, File xlsx, int width, int height, String note) {
-		String name = xlsx.getName().replaceAll("\\.xlsx$", "");
+		return copy(set, xlsx, xlsx.getName().replaceAll("\\.xlsx$", ""), width, height, note);
+	}
+
+	private static ChartRenderProbes copy(String set, File xlsx, String name, int width, int height, String note) {
 		ChartRenderProbes p = new ChartRenderProbes(set, name, null, note);
 		p.copyOf = xlsx;
 		return p.size(width, height);
@@ -504,6 +516,7 @@ public final class ChartRenderProbes {
 					.xml(x -> textSize(x, sz)));
 		}
 		r14(l);
+		r15(l);
 		return l;
 	}
 
@@ -673,6 +686,539 @@ public final class ChartRenderProbes {
 			if (!n.endsWith(".xlsx") || !own.matcher(n.replace(".xlsx", "")).matches()) continue;
 			// Excel's chart at its size, 5 by 3 inches
 			l.add(copy("R14", f, 360, 216, "Excel's own chart (CR-036 " + n.substring(0, 2).toUpperCase() + "), its layout"));
+		}
+	}
+
+	/**
+	 * R15 (CR-037 phase 4): what the settings and the data add.  Axis titles (each type, each axis,
+	 * beside each legend, long, larger, level); data labels (the positions R6 left: bars, areas,
+	 * scatter, doughnuts; their contents, separators, legend keys, a point's own, one deleted;
+	 * negative values; a pie's best fit and outside labels over twelve slices, a label moved);
+	 * manual layouts in factor mode and with right and bottom edges, a pie's, an axis title's;
+	 * legend entries deleted, overlays; axis options (deleted, crossing at a value or the maximum,
+	 * reversed, tick labels high, low and none, minor gridlines and tick marks); the chart area's
+	 * and plot area's fills and lines, gradients, patterns, shadows, transparency, dashes; titles of
+	 * several runs; invertIfNegative; varyColors on one series.  And Excel's own charts of CR-036's
+	 * P2 and P6 settings (axis titles, data labels, number formats on every type), an xlsx only
+	 */
+	private static void r15(List<ChartRenderProbes> l) {
+		ChartType col = ChartType.COLUMN_CLUSTERED, bar = ChartType.BAR_CLUSTERED, pie = ChartType.PIE;
+
+		// axis titles
+		l.add(probe("R15", "r15-axis-titles-column", column().categoryAxis(a -> a.title("Axis Title")).valueAxis(a -> a.title("Axis Title")),
+				"both axis titles on the column chart"));
+		for (ChartType t : new ChartType[] { bar, ChartType.LINE_MARKERS, ChartType.SCATTER, ChartType.AREA, ChartType.COLUMN_STACKED_100 }) {
+			l.add(probe("R15", "r15-axis-titles-" + t.getTemplateName(), words(t).categoryAxis(a -> a.title("Axis Title"))
+					.valueAxis(a -> a.title("Axis Title")), "both axis titles on the " + t.getTemplateName() + " chart"));
+		}
+		l.add(probe("R15", "r15-axis-title-value", column().valueAxis(a -> a.title("Units sold")), "the value axis's title alone"));
+		l.add(probe("R15", "r15-axis-title-category", column().categoryAxis(a -> a.title("Quarter")), "the category axis's title alone"));
+		for (LegendPosition pos : new LegendPosition[] { LegendPosition.RIGHT, LegendPosition.LEFT, LegendPosition.TOP }) {
+			String n = pos.name().toLowerCase();
+			l.add(probe("R15", "r15-axis-titles-legend-" + n, column().legend(pos).categoryAxis(a -> a.title("Axis Title"))
+					.valueAxis(a -> a.title("Axis Title")), "both axis titles, the legend at the " + n));
+		}
+		l.add(probe("R15", "r15-axis-title-long", column().valueAxis(a -> a.title("Sales in thousands of dollars, all regions and all products"))
+				.categoryAxis(a -> a.title("Quarters of the financial year ending June 2026, all regions and all products and services")),
+				"axis titles longer than their axes"));
+		l.add(probe("R15", "r15-axis-titles-14", column().categoryAxis(a -> a.title("Axis Title")).valueAxis(a -> a.title("Axis Title")),
+				"both axis titles at 14pt").tweak(c -> axisTitleSize(c, 1400)));
+		l.add(probe("R15", "r15-axis-title-level", column().valueAxis(a -> a.title("Units")), "the value axis's title set level (rot 0)")
+				.tweak(c -> axisTitleRot(c, 0)));
+		l.add(probe("R15", "r15-axis-titles-small", column().categoryAxis(a -> a.title("Axis Title")).valueAxis(a -> a.title("Axis Title")),
+				"both axis titles at 288 by 168pt").size(288, 168));
+
+		// data labels: the positions R6 left, on the other types (each type's default where none is said)
+		for (STDLblPos pos : new STDLblPos[] { STDLblPos.OUT_END, STDLblPos.IN_END, STDLblPos.CTR, STDLblPos.IN_BASE }) {
+			l.add(probe("R15", "r15-labels-bar-" + pos.value(), words(bar).dataLabels(true), "data labels at " + pos.value() + " on the bar chart")
+					.tweak(c -> labelPosition(c, pos)));
+		}
+		for (ChartType t : new ChartType[] { ChartType.BAR_STACKED, ChartType.COLUMN_STACKED_100, ChartType.AREA, ChartType.LINE, ChartType.DOUGHNUT,
+				ChartType.SCATTER }) {
+			l.add(probe("R15", "r15-labels-" + t.getTemplateName(), words(t).dataLabels(true), "data labels on the " + t.getTemplateName()
+					+ " chart, at its default place"));
+		}
+		l.add(probe("R15", "r15-labels-scatter-t", words(ChartType.SCATTER).dataLabels(true), "data labels above the scatter chart's points")
+				.tweak(c -> labelPosition(c, STDLblPos.T)));
+		l.add(probe("R15", "r15-labels-negative-outEnd", one(col, 4.3, -2.5, 3.5, -1.5).dataLabels(true), "data labels at outEnd on negative columns")
+				.tweak(c -> labelPosition(c, STDLblPos.OUT_END)));
+		l.add(probe("R15", "r15-labels-negative-inBase", one(col, 4.3, -2.5, 3.5, -1.5).dataLabels(true), "data labels at inBase on negative columns")
+				.tweak(c -> labelPosition(c, STDLblPos.IN_BASE)));
+		l.add(probe("R15", "r15-labels-negative-bar", one(bar, 4.3, -2.5, 3.5, -1.5).dataLabels(true), "data labels at outEnd on negative bars")
+				.tweak(c -> labelPosition(c, STDLblPos.OUT_END)));
+		// their contents, on one series
+		ChartDefinition sales = one(col, 4.3, 2.5, 3.5, 4.5);
+		l.add(probe("R15", "r15-labels-series-name", one(col, 4.3, 2.5, 3.5, 4.5).dataLabels(true), "data labels: the series' name")
+				.tweak(c -> labelContent(c, false, false, true, false, false, null)));
+		l.add(probe("R15", "r15-labels-category-name", one(col, 4.3, 2.5, 3.5, 4.5).dataLabels(true), "data labels: the category's name")
+				.tweak(c -> labelContent(c, true, false, false, false, false, null)));
+		l.add(probe("R15", "r15-labels-value-category", one(col, 4.3, 2.5, 3.5, 4.5).dataLabels(true), "data labels: category and value, Excel's separator")
+				.tweak(c -> labelContent(c, true, true, false, false, false, null)));
+		l.add(probe("R15", "r15-labels-separator-newline", one(col, 4.3, 2.5, 3.5, 4.5).dataLabels(true),
+				"data labels: category and value on two lines").tweak(c -> labelContent(c, true, true, false, false, false, "\n")));
+		l.add(probe("R15", "r15-labels-separator-semicolon", one(col, 4.3, 2.5, 3.5, 4.5).dataLabels(true),
+				"data labels: category and value, separated by \"; \"").tweak(c -> labelContent(c, true, true, false, false, false, "; ")));
+		l.add(probe("R15", "r15-labels-all-three", sales.dataLabels(true), "data labels: series, category and value")
+				.tweak(c -> labelContent(c, true, true, true, false, false, null)));
+		l.add(probe("R15", "r15-labels-legend-key", one(col, 4.3, 2.5, 3.5, 4.5).dataLabels(true), "data labels: the value with its legend key")
+				.tweak(c -> labelContent(c, false, true, false, false, true, null)));
+		l.add(probe("R15", "r15-labels-pie-everything", words(pie).dataLabels(true), "a pie's labels: category, value and percentage, best fit")
+				.tweak(c -> labelContent(c, true, true, false, true, false, null)));
+		l.add(probe("R15", "r15-labels-pie-percent", words(pie).dataLabels(true), "a pie's labels: the percentage alone, best fit")
+				.tweak(c -> labelContent(c, false, false, false, true, false, null)));
+		ChartDefinition twelve = ChartDefinition.of(pie).categories("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
+				"Dec").series("Sales", 40, 25, 12, 8, 5, 3, 2, 1.5, 1, 1, 0.5, 0.5);
+		l.add(probe("R15", "r15-labels-pie-twelve-bestFit", twelve.dataLabels(true), "twelve slices, small ones last, labels at best fit"));
+		ChartDefinition twelve2 = ChartDefinition.of(pie).categories("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
+				"Dec").series("Sales", 40, 25, 12, 8, 5, 3, 2, 1.5, 1, 1, 0.5, 0.5);
+		l.add(probe("R15", "r15-labels-pie-twelve-outEnd", twelve2.dataLabels(true), "twelve slices, labels outside (outEnd)")
+				.tweak(c -> labelPosition(c, STDLblPos.OUT_END)));
+		l.add(probe("R15", "r15-labels-pie-moved", words(pie).dataLabels(true), "a pie's labels outside, the second moved out by hand (a leader line)")
+				.tweak(c -> {
+					labelPosition(c, STDLblPos.OUT_END);
+					movedLabel(c, 1, 0.08, 0.06);
+				}));
+		l.add(probe("R15", "r15-labels-text-12", one(col, 4.3, 2.5, 3.5, 4.5).dataLabels(true), "data labels at 12pt")
+				.tweak(c -> labelSize(c, 1200)));
+		l.add(probe("R15", "r15-labels-one-point", one(col, 4.3, 2.5, 3.5, 4.5), "the third point's label alone").tweak(c -> onePointLabel(c, 2)));
+		l.add(probe("R15", "r15-labels-one-deleted", one(col, 4.3, 2.5, 3.5, 4.5).dataLabels(true), "every point's label but the second's")
+				.tweak(c -> deletedLabel(c, 1)));
+		l.add(probe("R15", "r15-labels-boxed", one(col, 4.3, 2.5, 3.5, 4.5).dataLabels(true), "data labels bold, in a filled and outlined box")
+				.tweak(c -> boxedLabels(c)));
+		l.add(probe("R15", "r15-labels-linked-format", one(col, 1234.5, 2500.25, 1800, 3100.75).dataLabels(true),
+				"the values' cells in #,##0.00, the labels and the axis linked to them").tweak(c -> linkedFormat(c, "#,##0.00")));
+
+		// manual layouts: factor mode (from where Office would put it), right and bottom edges
+		l.add(probe("R15", "r15-title-factor", column(), "the title moved by x 0.10, y 0.05 (factor)")
+				.tweak(c -> titleLayout(c, manualModes(null, 0.10, 0.05, null, null, false, false))));
+		l.add(probe("R15", "r15-legend-factor", column(), "the legend moved by x -0.20, y -0.10 (factor)")
+				.tweak(c -> legendLayout(c, manualModes(null, -0.20, -0.10, null, null, false, false))));
+		l.add(probe("R15", "r15-legend-right-sized", column().legend(LegendPosition.RIGHT), "the legend at the right, 0.20 by 0.50 (edge)")
+				.tweak(c -> legendLayout(c, manual(null, 0.75, 0.25, 0.20, 0.50))));
+		l.add(probe("R15", "r15-plot-inner-factor", column(), "the plot area's inner box moved by x 0.05, y 0.05, 0.50 by 0.50 (factor)")
+				.tweak(c -> plotLayout(c, manualModes(STLayoutTarget.INNER, 0.05, 0.05, 0.50, 0.50, false, false))));
+		l.add(probe("R15", "r15-plot-inner-right-bottom", column(), "the plot area's inner box from x 0.15, y 0.20 to its right 0.85, bottom 0.75 (edge)")
+				.tweak(c -> plotLayout(c, manualModes(STLayoutTarget.INNER, 0.15, 0.20, 0.85, 0.75, true, true))));
+		l.add(probe("R15", "r15-plot-pie", words(pie), "a pie's plot area at x 0.10, y 0.20, 0.40 by 0.70 (edge)")
+				.tweak(c -> plotLayout(c, manual(STLayoutTarget.INNER, 0.10, 0.20, 0.40, 0.70))));
+		l.add(probe("R15", "r15-plot-outer-axis-titles", column().categoryAxis(a -> a.title("Axis Title")).valueAxis(a -> a.title("Axis Title")),
+				"axis titles, the plot area's outer box at x 0.15, y 0.20, 0.60 by 0.55").tweak(
+						c -> plotLayout(c, manual(STLayoutTarget.OUTER, 0.15, 0.20, 0.60, 0.55))));
+		l.add(probe("R15", "r15-axis-title-moved", column().valueAxis(a -> a.title("Axis Title")), "the value axis's title moved to x 0.02, y 0.30 (edge)")
+				.tweak(c -> valAx(c).getTitle().setLayout(manual(null, 0.02, 0.30, null, null))));
+
+		// legends
+		l.add(probe("R15", "r15-legend-entry-deleted", column(), "the second series' legend entry deleted").tweak(c -> deleteLegendEntry(c, 1)));
+		l.add(probe("R15", "r15-legend-entry-deleted-pie", words(pie), "the first slice's legend entry deleted").tweak(c -> deleteLegendEntry(c, 0)));
+		l.add(probe("R15", "r15-legend-overlay", column().legend(LegendPosition.RIGHT), "the legend at the right over the plot area (overlay)")
+				.tweak(c -> c.getChart().getLegend().setOverlay(bool(true))));
+		l.add(probe("R15", "r15-title-overlay", column(), "the title over the plot area (overlay)")
+				.tweak(c -> c.getChart().getTitle().setOverlay(bool(true))));
+
+		// axis options
+		ChartDefinition signs = one(col, 4.3, -2.5, 3.5, -1.5);
+		l.add(probe("R15", "r15-value-axis-deleted", column(), "the value axis deleted").tweak(c -> valAx(c).setDelete(bool(true))));
+		l.add(probe("R15", "r15-category-axis-deleted", column(), "the category axis deleted").tweak(c -> catAx(c).setDelete(bool(true))));
+		l.add(probe("R15", "r15-catax-crosses-at-2", column(), "the category axis's crossesAt 2").tweak(c -> crossesAt(catAx(c), 2)));
+		l.add(probe("R15", "r15-valax-crosses-at-3", column(), "the value axis's crossesAt 3").tweak(c -> crossesAt(valAx(c), 3)));
+		l.add(probe("R15", "r15-catax-crosses-max", column(), "the category axis's crosses max").tweak(c -> crosses(catAx(c), STCrosses.MAX)));
+		l.add(probe("R15", "r15-valax-crosses-max", column(), "the value axis's crosses max").tweak(c -> crosses(valAx(c), STCrosses.MAX)));
+		l.add(probe("R15", "r15-category-reversed", column(), "the categories in reverse order").tweak(c -> reversed(catAx(c).getScaling())));
+		l.add(probe("R15", "r15-value-reversed", column(), "the values in reverse order").tweak(c -> reversed(valAx(c).getScaling())));
+		l.add(probe("R15", "r15-bar-category-reversed", words(bar), "a bar chart's categories in reverse order (from the top)")
+				.tweak(c -> reversed(catAx(c).getScaling())));
+		String[][] lbl = { { "catax-low", "low" }, { "catax-high", "high" }, { "catax-none", "none" }, { "valax-high", "high" }, { "valax-none", "none" } };
+		for (String[] k : lbl) {
+			l.add(probe("R15", "r15-ticklabels-" + k[0], one(col, 4.3, -2.5, 3.5, -1.5), "values of either sign, the " + k[0].substring(0, 5)
+					+ "'s tick labels " + k[1]).tweak(c -> tickLabels(k[0].startsWith("cat") ? catAx(c) : valAx(c), STTickLblPos.fromValue(k[1]))));
+		}
+		l.add(probe("R15", "r15-gridlines-minor", column(), "the value axis's minor gridlines, the category axis's major ones").tweak(c -> {
+			valAx(c).setMinorGridlines(gridlines("D9D9D9", 9525));
+			catAx(c).setMajorGridlines(gridlines("BFBFBF", 9525));
+		}));
+		l.add(probe("R15", "r15-ticks-minor", column(), "minor tick marks out on both axes, the value axis's line shown").tweak(c -> {
+			ticks(c, STTickMark.OUT);
+			CTTickMark m = new CTTickMark();
+			m.setVal(STTickMark.OUT);
+			valAx(c).setMinorTickMark(m);
+			CTTickMark m2 = new CTTickMark();
+			m2.setVal(STTickMark.CROSS);
+			catAx(c).setMinorTickMark(m2);
+		}));
+		l.add(probe("R15", "r15-no-gridlines", column(), "the value axis's gridlines removed").tweak(c -> valAx(c).setMajorGridlines(null)));
+
+		// fills, lines and effects
+		l.add(probe("R15", "r15-chart-area-fill", column(), "the chart area filled F2F2F2, a 2pt accent 1 border, rounded corners").tweak(c -> {
+			c.setSpPr(frag(org.docx4j.dml.CTShapeProperties.class, "<a:solidFill><a:srgbClr val=\"F2F2F2\"/></a:solidFill>"
+					+ "<a:ln w=\"25400\"><a:solidFill><a:schemeClr val=\"accent1\"/></a:solidFill></a:ln>"));
+			c.setRoundedCorners(bool(true));
+		}));
+		l.add(probe("R15", "r15-plot-area-fill", column(), "the plot area filled DEEBF7, a 1pt grey border").tweak(c -> plot(c).setSpPr(frag(
+				org.docx4j.dml.CTShapeProperties.class, "<a:solidFill><a:srgbClr val=\"DEEBF7\"/></a:solidFill>"
+						+ "<a:ln w=\"12700\"><a:solidFill><a:srgbClr val=\"7F7F7F\"/></a:solidFill></a:ln>"))));
+		l.add(probe("R15", "r15-chart-area-gradient", column(), "the chart area a linear gradient, top to bottom").tweak(c -> c.setSpPr(frag(
+				org.docx4j.dml.CTShapeProperties.class, "<a:gradFill rotWithShape=\"1\"><a:gsLst><a:gs pos=\"0\"><a:srgbClr val=\"FFFFFF\"/></a:gs>"
+						+ "<a:gs pos=\"100000\"><a:srgbClr val=\"BDD7EE\"/></a:gs></a:gsLst><a:lin ang=\"5400000\" scaled=\"0\"/></a:gradFill>"
+						+ "<a:ln><a:noFill/></a:ln>"))));
+		l.add(probe("R15", "r15-gradients", column(), "the series' fills: a linear gradient down, one of three stops across, a radial one")
+				.tweak(c -> seriesFills(c,
+						"<a:gradFill rotWithShape=\"1\"><a:gsLst><a:gs pos=\"0\"><a:schemeClr val=\"accent1\"><a:lumMod val=\"40000\"/><a:lumOff val=\"60000\"/>"
+								+ "</a:schemeClr></a:gs><a:gs pos=\"100000\"><a:schemeClr val=\"accent1\"/></a:gs></a:gsLst><a:lin ang=\"5400000\" scaled=\"0\"/></a:gradFill>",
+						"<a:gradFill rotWithShape=\"1\"><a:gsLst><a:gs pos=\"0\"><a:srgbClr val=\"FFC000\"/></a:gs><a:gs pos=\"50000\"><a:srgbClr val=\"ED7D31\"/>"
+								+ "</a:gs><a:gs pos=\"100000\"><a:srgbClr val=\"C00000\"/></a:gs></a:gsLst><a:lin ang=\"0\" scaled=\"0\"/></a:gradFill>",
+						"<a:gradFill rotWithShape=\"1\"><a:gsLst><a:gs pos=\"0\"><a:srgbClr val=\"FFFFFF\"/></a:gs><a:gs pos=\"100000\"><a:schemeClr val=\"accent3\"/>"
+								+ "</a:gs></a:gsLst><a:path path=\"circle\"><a:fillToRect l=\"50000\" t=\"50000\" r=\"50000\" b=\"50000\"/></a:path></a:gradFill>")));
+		l.add(probe("R15", "r15-patterns", column(), "the series' fills: patterns pct50, dkDnDiag, smCheck").tweak(c -> seriesFills(c,
+				"<a:pattFill prst=\"pct50\"><a:fgClr><a:schemeClr val=\"accent1\"/></a:fgClr><a:bgClr><a:schemeClr val=\"bg1\"/></a:bgClr></a:pattFill>",
+				"<a:pattFill prst=\"dkDnDiag\"><a:fgClr><a:schemeClr val=\"accent2\"/></a:fgClr><a:bgClr><a:schemeClr val=\"bg1\"/></a:bgClr></a:pattFill>",
+				"<a:pattFill prst=\"smCheck\"><a:fgClr><a:schemeClr val=\"accent3\"/></a:fgClr><a:bgClr><a:srgbClr val=\"FFFF00\"/></a:bgClr></a:pattFill>")));
+		l.add(probe("R15", "r15-shadows", column(), "the series' outer shadows (Excel's offset bottom preset)").tweak(c -> seriesEffects(c,
+				"<a:outerShdw blurRad=\"57150\" dist=\"19050\" dir=\"5400000\" algn=\"ctr\" rotWithShape=\"0\"><a:srgbClr val=\"000000\"><a:alpha val=\"63000\"/>"
+						+ "</a:srgbClr></a:outerShdw>")));
+		l.add(probe("R15", "r15-transparent", column(), "the series' fills 50% transparent, overlapping by 50%").tweak(c -> {
+			seriesFills(c, "<a:solidFill><a:schemeClr val=\"accent1\"><a:alpha val=\"50000\"/></a:schemeClr></a:solidFill>",
+					"<a:solidFill><a:schemeClr val=\"accent2\"><a:alpha val=\"50000\"/></a:schemeClr></a:solidFill>",
+					"<a:solidFill><a:schemeClr val=\"accent3\"><a:alpha val=\"50000\"/></a:schemeClr></a:solidFill>");
+			org.docx4j.dml.chart.CTOverlap o = new org.docx4j.dml.chart.CTOverlap();
+			o.setVal((byte) 50);
+			((org.docx4j.dml.chart.CTBarChart) group(c)).setOverlap(o);
+		}));
+		l.add(probe("R15", "r15-bar-outlines", column(), "the series' bars outlined, 1.5pt, in dark blue").tweak(c -> seriesLines(c,
+				"<a:ln w=\"19050\"><a:solidFill><a:srgbClr val=\"1F3864\"/></a:solidFill></a:ln>")));
+		l.add(probe("R15", "r15-line-dashes", words(ChartType.LINE), "the lines dashed (sysDash, dash, lgDashDot), 3.5pt").tweak(c -> lineDashes(c,
+				new String[] { "sysDash", "dash", "lgDashDot" }, 44450)));
+		l.add(probe("R15", "r15-gridlines-dashed", column(), "the gridlines dashed and coloured").tweak(c -> valAx(c).setMajorGridlines(
+				frag(CTChartLines.class, "<c:spPr><a:ln w=\"9525\"><a:solidFill><a:srgbClr val=\"FF0000\"/></a:solidFill><a:prstDash val=\"dash\"/></a:ln></c:spPr>"))));
+		l.add(probe("R15", "r15-pie-gradient", words(pie), "a pie's points: radial gradients").tweak(c -> pointFills(c,
+				"<a:gradFill rotWithShape=\"1\"><a:gsLst><a:gs pos=\"0\"><a:srgbClr val=\"FFFFFF\"/></a:gs><a:gs pos=\"100000\"><a:schemeClr val=\"accent%d\"/>"
+						+ "</a:gs></a:gsLst><a:path path=\"circle\"><a:fillToRect l=\"50000\" t=\"50000\" r=\"50000\" b=\"50000\"/></a:path></a:gradFill>")));
+
+		// titles
+		l.add(probe("R15", "r15-title-runs", column().title("Sales 2026"), "a title of two runs, \"Sales \" bold and \"2026\" italic in C00000")
+				.tweak(c -> titleRuns(c)));
+		l.add(probe("R15", "r15-title-paragraphs", column().title("Sales 2026"), "a title of two paragraphs").tweak(c -> titleParagraph(c, "by quarter")));
+		l.add(probe("R15", "r15-title-20", column().title("Sales 2026"), "a title at 20pt").tweak(c -> titleSize(c, 2000)));
+
+		// series
+		l.add(probe("R15", "r15-invert-negative", one(col, 4.3, -2.5, 3.5, -1.5), "invertIfNegative on a series of either sign")
+				.tweak(c -> invertIfNegative(c)));
+		l.add(probe("R15", "r15-vary-colors-column", one(col, 4.3, 2.5, 3.5, 4.5), "varyColors on a single series' columns")
+				.tweak(c -> varyColors(c)));
+		l.add(probe("R15", "r15-vary-colors-bar", one(bar, 4.3, 2.5, 3.5, 4.5), "varyColors on a single series' bars").tweak(c -> varyColors(c)));
+		l.add(probe("R15", "r15-vary-colors-line", one(ChartType.LINE_MARKERS, 4.3, 2.5, 3.5, 4.5), "varyColors on a single series' line with markers")
+				.tweak(c -> varyColors(c)));
+		l.add(probe("R15", "r15-line-markers-only", words(ChartType.LINE_MARKERS), "lines with markers, the lines not drawn (noFill)")
+				.tweak(c -> seriesLines(c, "<a:ln><a:noFill/></a:ln>")));
+
+		// Excel's own charts (CR-036): P2's settings on the column, P6's axis titles, data labels and
+		// number formats on the other types; and CR-035's chart with a series filtered out
+		File[] files = authoring.listFiles();
+		Arrays.sort(files);
+		Pattern own = Pattern.compile("p2-.*|p6-.*-(axis-titles|data-labels|number-format)");
+		for (File f : files) {
+			String n = f.getName();
+			if (!n.endsWith(".xlsx") || !own.matcher(n.replace(".xlsx", "")).matches()) continue;
+			l.add(copy("R15", f, 360, 216, "Excel's own chart (CR-036 " + n.substring(0, 2).toUpperCase() + "), its layout"));
+		}
+		l.add(copy("R15", new File(authoring.getParentFile(), "p2-filtered.xlsx"), "c35-filtered", 360, 216,
+				"Excel's own chart with a series filtered out (CR-035's p2-filtered), its layout"));
+	}
+
+	private static final String NS = " xmlns:c=\"http://schemas.openxmlformats.org/drawingml/2006/chart\""
+			+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\"";
+
+	/** A fragment of a chart's XML as its JAXB type (its root element's name doesn't matter) */
+	@SuppressWarnings("unchecked")
+	private static <T> T frag(Class<T> type, String inner) {
+		try {
+			return (T) XmlUtils.unmarshalString("<c:x" + NS + ">" + inner + "</c:x>", Context.jc, type);
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	private static CTCatAx catAx(CTChartSpace c) {
+		for (Object o : plot(c).getValAxOrCatAxOrDateAx()) if (o instanceof CTCatAx) return (CTCatAx) o;
+		throw new IllegalStateException("no category axis");
+	}
+
+	/** The value axis of a chart with one, else (a scatter chart) its first */
+	private static List<CTTitle> axisTitles(CTChartSpace c) {
+		List<CTTitle> l = new ArrayList<>();
+		for (Object o : plot(c).getValAxOrCatAxOrDateAx()) {
+			CTTitle t = o instanceof CTValAx ? ((CTValAx) o).getTitle() : o instanceof CTCatAx ? ((CTCatAx) o).getTitle()
+					: o instanceof CTDateAx ? ((CTDateAx) o).getTitle() : null;
+			if (t != null) l.add(t);
+		}
+		return l;
+	}
+
+	/** Each axis title's text size (its rich text's paragraph defaults, and its txPr's) */
+	private static void axisTitleSize(CTChartSpace c, int sz) {
+		for (CTTitle t : axisTitles(c)) {
+			for (org.docx4j.dml.CTTextBody b : new org.docx4j.dml.CTTextBody[] { t.getTx() == null ? null : t.getTx().getRich(), t.getTxPr() }) {
+				if (b == null) continue;
+				for (org.docx4j.dml.CTTextParagraph p : b.getP()) if (p.getPPr() != null && p.getPPr().getDefRPr() != null) p.getPPr().getDefRPr().setSz(sz);
+			}
+		}
+	}
+
+	/** The value axis's title's rotation (60000ths of a degree) */
+	private static void axisTitleRot(CTChartSpace c, int rot) {
+		CTTitle t = valAx(c).getTitle();
+		for (org.docx4j.dml.CTTextBody b : new org.docx4j.dml.CTTextBody[] { t.getTx() == null ? null : t.getTx().getRich(), t.getTxPr() }) {
+			if (b != null && b.getBodyPr() != null) b.getBodyPr().setRot(rot);
+		}
+	}
+
+	/** Every series' labels showing these (the others off), and the separator where one is given */
+	private static void labelContent(CTChartSpace c, boolean category, boolean value, boolean series, boolean percent, boolean key, String sep) {
+		for (CTDLbls d : dLbls(c)) {
+			d.setShowCatName(bool(category));
+			d.setShowVal(bool(value));
+			d.setShowSerName(bool(series));
+			d.setShowPercent(bool(percent));
+			d.setShowLegendKey(bool(key));
+			if (sep != null) d.setSeparator(sep);
+		}
+	}
+
+	private static void labelSize(CTChartSpace c, int sz) {
+		for (CTDLbls d : dLbls(c)) {
+			if (d.getTxPr() == null) continue;
+			for (org.docx4j.dml.CTTextParagraph p : d.getTxPr().getP()) if (p.getPPr() != null && p.getPPr().getDefRPr() != null) p.getPPr().getDefRPr().setSz(sz);
+		}
+	}
+
+	/** One point's label moved by hand (factor: from where Office would put it), the series' at outEnd */
+	private static void movedLabel(CTChartSpace c, int idx, double x, double y) {
+		CTDLbls d = dLbls(c).get(0);
+		CTDLbl l = frag(CTDLbl.class, "<c:idx val=\"" + idx + "\"/><c:layout><c:manualLayout><c:x val=\"" + x + "\"/><c:y val=\"" + y
+				+ "\"/></c:manualLayout></c:layout><c:dLblPos val=\"outEnd\"/><c:showLegendKey val=\"0\"/><c:showVal val=\"1\"/>"
+				+ "<c:showCatName val=\"0\"/><c:showSerName val=\"0\"/><c:showPercent val=\"0\"/><c:showBubbleSize val=\"0\"/>");
+		d.getDLbl().add(l);
+		d.setShowLeaderLines(bool(true));
+	}
+
+	/** One point's label alone (a c:dLbl showing its value, the series' labels showing nothing) */
+	private static void onePointLabel(CTChartSpace c, int idx) {
+		for (Object g : plot(c).getAreaChartOrArea3DChartOrLineChart()) {
+			Object sers = invoke(g, "getSer");
+			if (!(sers instanceof List)) continue;
+			for (Object s : (List<?>) sers) {
+				CTDLbls d = frag(CTDLbls.class, "<c:dLbl><c:idx val=\"" + idx + "\"/><c:spPr><a:noFill/><a:ln><a:noFill/></a:ln></c:spPr>"
+						+ "<c:dLblPos val=\"outEnd\"/><c:showLegendKey val=\"0\"/><c:showVal val=\"1\"/><c:showCatName val=\"0\"/><c:showSerName val=\"0\"/>"
+						+ "<c:showPercent val=\"0\"/><c:showBubbleSize val=\"0\"/></c:dLbl><c:spPr><a:noFill/><a:ln><a:noFill/></a:ln></c:spPr>"
+						+ "<c:showLegendKey val=\"0\"/><c:showVal val=\"0\"/><c:showCatName val=\"0\"/><c:showSerName val=\"0\"/><c:showPercent val=\"0\"/>"
+						+ "<c:showBubbleSize val=\"0\"/>");
+				try {
+					s.getClass().getMethod("setDLbls", CTDLbls.class).invoke(s, d);
+				} catch (ReflectiveOperationException e) {
+					throw new IllegalStateException(e);
+				}
+			}
+		}
+	}
+
+	private static void deletedLabel(CTChartSpace c, int idx) {
+		CTDLbl l = frag(CTDLbl.class, "<c:idx val=\"" + idx + "\"/><c:delete val=\"1\"/>");
+		dLbls(c).get(0).getDLbl().add(l);
+	}
+
+	/** The labels bold, in a box filled FFF2CC and outlined in BF9000 */
+	private static void boxedLabels(CTChartSpace c) {
+		for (CTDLbls d : dLbls(c)) {
+			d.setSpPr(frag(org.docx4j.dml.CTShapeProperties.class, "<a:solidFill><a:srgbClr val=\"FFF2CC\"/></a:solidFill>"
+					+ "<a:ln w=\"9525\"><a:solidFill><a:srgbClr val=\"BF9000\"/></a:solidFill></a:ln>"));
+			for (org.docx4j.dml.CTTextParagraph p : d.getTxPr().getP()) if (p.getPPr() != null && p.getPPr().getDefRPr() != null) p.getPPr().getDefRPr().setB(true);
+		}
+	}
+
+	/** The values' cache in a format, the labels' and the value axis's linked to it */
+	private static void linkedFormat(CTChartSpace c, String code) {
+		for (Object g : plot(c).getAreaChartOrArea3DChartOrLineChart()) {
+			Object sers = invoke(g, "getSer");
+			if (!(sers instanceof List)) continue;
+			for (Object s : (List<?>) sers) {
+				Object val = invoke(s, "getVal");
+				org.docx4j.dml.chart.CTNumRef ref = (org.docx4j.dml.chart.CTNumRef) invoke(val, "getNumRef");
+				ref.getNumCache().setFormatCode(code);
+			}
+		}
+		for (CTDLbls d : dLbls(c)) {
+			CTNumFmt f = new CTNumFmt();
+			f.setFormatCode("General");
+			f.setSourceLinked(true);
+			d.setNumFmt(f);
+		}
+		CTNumFmt f = new CTNumFmt();
+		f.setFormatCode("General");
+		f.setSourceLinked(true);
+		valAx(c).setNumFmt(f);
+	}
+
+	/** A manual layout, x and y in factor mode unless edge, w and h as the right and bottom edges where asked */
+	private static CTLayout manualModes(STLayoutTarget target, Double x, Double y, Double w, Double h, boolean xyEdge, boolean whEdge) {
+		CTLayout l = manual(target, x, y, w, h);
+		CTManualLayout m = l.getManualLayout();
+		if (!xyEdge) {
+			m.setXMode(null);
+			m.setYMode(null);
+		}
+		if (whEdge) {
+			m.setWMode(edge());
+			m.setHMode(edge());
+		}
+		return l;
+	}
+
+	private static void deleteLegendEntry(CTChartSpace c, int idx) {
+		org.docx4j.dml.chart.CTLegendEntry e = frag(org.docx4j.dml.chart.CTLegendEntry.class, "<c:idx val=\"" + idx + "\"/><c:delete val=\"1\"/>");
+		c.getChart().getLegend().getLegendEntry().add(e);
+	}
+
+	private static void crossesAt(Object axis, double v) {
+		try {
+			axis.getClass().getMethod("setCrosses", CTCrosses.class).invoke(axis, (Object) null);
+			axis.getClass().getMethod("setCrossesAt", CTDouble.class).invoke(axis, dbl(v));
+		} catch (ReflectiveOperationException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	private static void crosses(Object axis, STCrosses v) {
+		CTCrosses x = new CTCrosses();
+		x.setVal(v);
+		try {
+			axis.getClass().getMethod("setCrosses", CTCrosses.class).invoke(axis, x);
+		} catch (ReflectiveOperationException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	private static void reversed(CTScaling s) {
+		org.docx4j.dml.chart.CTOrientation o = new org.docx4j.dml.chart.CTOrientation();
+		o.setVal(org.docx4j.dml.chart.STOrientation.MAX_MIN);
+		s.setOrientation(o);
+	}
+
+	private static void tickLabels(Object axis, STTickLblPos pos) {
+		CTTickLblPos p = new CTTickLblPos();
+		p.setVal(pos);
+		try {
+			axis.getClass().getMethod("setTickLblPos", CTTickLblPos.class).invoke(axis, p);
+		} catch (ReflectiveOperationException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	private static CTChartLines gridlines(String rgb, int w) {
+		return frag(CTChartLines.class, "<c:spPr><a:ln w=\"" + w + "\"><a:solidFill><a:srgbClr val=\"" + rgb + "\"/></a:solidFill></a:ln></c:spPr>");
+	}
+
+	/** The group's series' spPr */
+	private static List<org.docx4j.dml.CTShapeProperties> seriesSpPr(CTChartSpace c) {
+		List<org.docx4j.dml.CTShapeProperties> l = new ArrayList<>();
+		Object sers = invoke(group(c), "getSer");
+		for (Object s : (List<?>) sers) {
+			Object sp = invoke(s, "getSpPr");
+			if (sp == null) {
+				sp = new org.docx4j.dml.CTShapeProperties();
+				try {
+					s.getClass().getMethod("setSpPr", org.docx4j.dml.CTShapeProperties.class).invoke(s, sp);
+				} catch (ReflectiveOperationException e) {
+					throw new IllegalStateException(e);
+				}
+			}
+			l.add((org.docx4j.dml.CTShapeProperties) sp);
+		}
+		return l;
+	}
+
+	/** Each series' fill, in turn, from a:solidFill, a:gradFill or a:pattFill XML (its line kept) */
+	private static void seriesFills(CTChartSpace c, String... fills) {
+		List<org.docx4j.dml.CTShapeProperties> l = seriesSpPr(c);
+		for (int i = 0; i < l.size(); i++) {
+			org.docx4j.dml.CTShapeProperties sp = l.get(i), f = frag(org.docx4j.dml.CTShapeProperties.class, fills[i % fills.length]);
+			sp.setNoFill(null);
+			sp.setSolidFill(f.getSolidFill());
+			sp.setGradFill(f.getGradFill());
+			sp.setPattFill(f.getPattFill());
+		}
+	}
+
+	private static void seriesEffects(CTChartSpace c, String effects) {
+		for (org.docx4j.dml.CTShapeProperties sp : seriesSpPr(c)) sp.setEffectLst(frag(org.docx4j.dml.CTEffectList.class, effects));
+	}
+
+	private static void seriesLines(CTChartSpace c, String ln) {
+		for (org.docx4j.dml.CTShapeProperties sp : seriesSpPr(c)) sp.setLn(frag(org.docx4j.dml.CTShapeProperties.class, ln).getLn());
+	}
+
+	private static void lineDashes(CTChartSpace c, String[] dashes, int w) {
+		List<org.docx4j.dml.CTShapeProperties> l = seriesSpPr(c);
+		for (int i = 0; i < l.size(); i++) {
+			org.docx4j.dml.CTLineProperties ln = l.get(i).getLn();
+			ln.setW(w);
+			ln.setPrstDash(frag(org.docx4j.dml.CTShapeProperties.class, "<a:ln><a:prstDash val=\"" + dashes[i % dashes.length] + "\"/></a:ln>")
+					.getLn().getPrstDash());
+		}
+	}
+
+	/** Each of a pie's points' fills (%d: the accent, 1 to 6) */
+	private static void pointFills(CTChartSpace c, String fill) {
+		List<CTDPt> pts = pieSeries(c).getDPt();
+		for (int i = 0; i < pts.size(); i++) {
+			org.docx4j.dml.CTShapeProperties sp = pts.get(i).getSpPr(),
+					f = frag(org.docx4j.dml.CTShapeProperties.class, String.format(fill, i % 6 + 1));
+			sp.setSolidFill(null);
+			sp.setGradFill(f.getGradFill());
+		}
+	}
+
+	/** The title's run split in two: "Sales " bold, "2026" italic in C00000 */
+	private static void titleRuns(CTChartSpace c) {
+		org.docx4j.dml.CTTextParagraph p = c.getChart().getTitle().getTx().getRich().getP().get(0);
+		p.getEGTextRun().clear();
+		p.getEGTextRun().add(frag(org.docx4j.dml.CTRegularTextRun.class, "<a:rPr lang=\"en-US\" b=\"1\"/><a:t>Sales </a:t>"));
+		p.getEGTextRun().add(frag(org.docx4j.dml.CTRegularTextRun.class,
+				"<a:rPr lang=\"en-US\" i=\"1\"><a:solidFill><a:srgbClr val=\"C00000\"/></a:solidFill></a:rPr><a:t>2026</a:t>"));
+	}
+
+	private static void titleParagraph(CTChartSpace c, String text) {
+		org.docx4j.dml.CTTextBody rich = c.getChart().getTitle().getTx().getRich();
+		org.docx4j.dml.CTTextParagraph p = XmlUtils.deepCopy(rich.getP().get(0), Context.jc);
+		p.getEGTextRun().clear();
+		p.getEGTextRun().add(frag(org.docx4j.dml.CTRegularTextRun.class, "<a:rPr lang=\"en-US\"/><a:t>" + text + "</a:t>"));
+		rich.getP().add(p);
+	}
+
+	private static void titleSize(CTChartSpace c, int sz) {
+		org.docx4j.dml.CTTextParagraph p = c.getChart().getTitle().getTx().getRich().getP().get(0);
+		p.getPPr().getDefRPr().setSz(sz);
+		for (Object r : p.getEGTextRun()) {
+			if (r instanceof org.docx4j.dml.CTRegularTextRun && ((org.docx4j.dml.CTRegularTextRun) r).getRPr() != null) {
+				((org.docx4j.dml.CTRegularTextRun) r).getRPr().setSz(sz);
+			}
+		}
+	}
+
+	private static void invertIfNegative(CTChartSpace c) {
+		for (Object s : (List<?>) invoke(group(c), "getSer")) {
+			try {
+				s.getClass().getMethod("setInvertIfNegative", CTBoolean.class).invoke(s, bool(true));
+			} catch (ReflectiveOperationException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+	}
+
+	private static void varyColors(CTChartSpace c) {
+		try {
+			Object g = group(c);
+			g.getClass().getMethod("setVaryColors", CTBoolean.class).invoke(g, bool(true));
+		} catch (ReflectiveOperationException e) {
+			throw new IllegalStateException(e);
 		}
 	}
 

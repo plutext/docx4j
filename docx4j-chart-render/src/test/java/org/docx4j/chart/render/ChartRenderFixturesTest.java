@@ -86,13 +86,16 @@ public class ChartRenderFixturesTest {
 		ChartModel m = ref.read();
 		List<String> bad = new ArrayList<>();
 		String title = "true".equals(field(json, "hasTitle", null)) ? field(json, "title", "text") : null;
+		// (Excel's paragraphs end in a carriage return, the model's in a line feed: r15-title-paragraphs)
+		if (title != null) title = title.replace("\\r", "\n").replace("\r", "\n");
 		String shown = m.getTitle() == null ? null : m.getTitle().getShownText();
 		if (!Objects.equals(title, shown)) bad.add("title: Office " + title + ", the model " + shown);
 		boolean legend = "true".equals(field(json, "hasLegend", null));
 		if (legend != (m.getLegend() != null)) bad.add("legend: Office " + legend + ", the model " + (m.getLegend() != null));
 		String series = field(json, "series", null);
 		int n = 0;
-		for (ChartGroup g : m.getGroups()) n += g.getSeries().size();
+		// (a series filtered out isn't in Excel's collection: c35-filtered)
+		for (ChartGroup g : m.getGroups()) for (ChartSeries s : g.getSeries()) if (!s.isHidden()) n++;
 		int office = series == null ? 0 : series.split("\"index\":", -1).length - 1;
 		if (n != office) bad.add("series: Office " + office + ", the model " + n);
 		Matcher f = FIRST_POINT_FILL.matcher(series == null ? "" : series);
@@ -108,8 +111,8 @@ public class ChartRenderFixturesTest {
 				fill = s.getPointFills().get(0);
 				byPoint = true;
 			}
-			// a gradient's colour (Office reports one) is phase 4's
-			if (fill == null || fill.getKind() != ChartFill.Kind.GRADIENT) {
+			// a gradient's or pattern's (Office reports one colour, the model none: the renderer draws them)
+			if (fill == null || (fill.getKind() != ChartFill.Kind.GRADIENT && fill.getKind() != ChartFill.Kind.PATTERN)) {
 				String hex = fill == null || fill.getColor() == null ? null : fill.getColor().toHex();
 				// none of its own: the colour Office shows for its index (R14's automatic colours)
 				if (hex == null && (fill == null || fill.getKind() == ChartFill.Kind.AUTOMATIC)) {
@@ -150,7 +153,7 @@ public class ChartRenderFixturesTest {
 				}
 			}
 		}
-		assertEquals(334, rows.length - 1);
+		assertEquals(468, rows.length - 1);
 		assertEquals(12, pptx);
 		assertTrue(String.join("\n", failures), failures.isEmpty());
 	}

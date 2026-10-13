@@ -211,6 +211,49 @@ public class ChartBoxFoTest extends AbstractXSLFOTest {
 		}
 	}
 
+	/**
+	 * A chart's bold text (here its data labels) is drawn in the bold face, its other text in the
+	 * regular one: the bold face, which the chart reaches FOP's configuration through as a late
+	 * fallback, was declared as its family's normal face and made every regular text bold (CR-037
+	 * phase 4, Excel's gallery style 204).
+	 */
+	@Test
+	public void aChartsBoldTextLeavesItsRegularTextRegular() throws Exception {
+
+		for (int flags : PATHWAYS) {
+			WordprocessingMLPackage pkg = doc(false);
+			org.docx4j.openpackaging.parts.DrawingML.Chart chart = (org.docx4j.openpackaging.parts.DrawingML.Chart) org.docx4j.model.chart.Charts
+					.in(pkg).get(0).getChartPart();
+			org.docx4j.model.chart.ChartSettings.setDataLabels(chart, true);
+			for (Object g : chart.getContents().getChart().getPlotArea().getAreaChartOrArea3DChartOrLineChart()) {
+				if (!(g instanceof org.docx4j.dml.chart.CTBarChart)) continue;
+				for (org.docx4j.dml.chart.CTBarSer ser : ((org.docx4j.dml.chart.CTBarChart) g).getSer()) {
+					ser.getDLbls().getTxPr().getP().get(0).getPPr().getDefRPr().setB(true);
+				}
+			}
+			FOSettings foSettings = Docx4J.createFOSettings();
+			foSettings.setOpcPackage(pkg);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			Docx4J.toFO(foSettings, baos, flags);
+			Map<String, String> fonts = new HashMap<>();
+			try (PDDocument d = Loader.loadPDF(baos.toByteArray())) {
+				PDFTextStripper st = new PDFTextStripper() {
+					@Override
+					protected void writeString(String text, List<TextPosition> positions) {
+						if (!positions.isEmpty()) fonts.putIfAbsent(text.trim(), positions.get(0).getFont().getName());
+					}
+				};
+				st.getText(d);
+			}
+			// Word's bar chart: categories, a label "4.3" (Series 1's first value)
+			assertNotNull(pathway(flags) + fonts, fonts.get("Category 1"));
+			assertTrue(pathway(flags) + fonts, !fonts.get("Category 1").contains("Bold"));
+			String label = fonts.get("4.3");
+			assertNotNull(pathway(flags) + fonts, label);
+			assertTrue(pathway(flags) + fonts, label.contains("Bold"));
+		}
+	}
+
 	@Test
 	public void textAfterAnInlineChartIsBelowIt() throws Exception {
 

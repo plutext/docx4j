@@ -48,7 +48,7 @@ public class ChartRendererSpiTest {
 	}
 
 	@Test
-	public void checkDrawsTheTwelveTypesAndRefusesWhatPhaseTwoDoesNot() throws Exception {
+	public void checkDrawsTheTwelveTypesAndTheirSettingsAndRefusesTheRest() throws Exception {
 		ChartRenderer r = new ClassicChartRenderer();
 		for (String t : new String[] { "column-clustered", "column-stacked", "column-stacked-100", "bar-clustered", "bar-stacked",
 				"bar-stacked-100", "line", "line-markers", "pie", "doughnut", "area", "scatter" }) {
@@ -62,15 +62,23 @@ public class ChartRendererSpiTest {
 			ChartRef c = ChartRenderGateTest.chart(t);
 			assertTrue(t, r.check(c.read(), c.getHostTheme()).isDrawn());
 		}
-		ChartRef labels = ChartRenderGateTest.chart("r6-column-clustered-ctr");
-		ChartRenderCheck l = r.check(labels.read(), labels.getHostTheme());
+		// what phase 4 draws: data labels, manual layouts, axis titles, Excel's gallery styles (gradients, shadows)
+		for (String t : new String[] { "r6-column-clustered-ctr", "r9-title-moved", "r9-plot-inner", "r15-axis-titles-column" }) {
+			ChartRef c = ChartRenderGateTest.chart(t);
+			ChartRenderCheck k = r.check(c.read(), c.getHostTheme());
+			assertTrue(t + ": " + k, k.isDrawn());
+			assertFalse(t + ": " + k, k.isSimplified());
+		}
+		ChartRef styled = ChartRenderGateTest.chart("r10-column-style-209-styled");
+		assertFalse(r.check(styled.read(), styled.getHostTheme()).isSimplified());
+		// a secondary axis is refused (section 4.6)
+		ChartRef refused = ChartRenderGateTest.refused();
+		ChartRenderCheck l = r.check(refused.read(), refused.getHostTheme());
 		assertFalse(l.isDrawn());
-		assertTrue(l.getRefused().toString(), l.getRefused().contains("data labels"));
-		ChartRef moved = ChartRenderGateTest.chart("r9-title-moved");
-		assertTrue(r.check(moved.read(), moved.getHostTheme()).getRefused().contains("the title placed by hand"));
+		assertTrue(l.getRefused().toString(), l.getRefused().contains("a secondary axis"));
 		// a refused chart: no SVG, no picture
-		assertNull(r.toSvg(labels.read(), labels.getHostTheme(), ChartFonts.of(labels.getHost()), 432, 252));
-		assertNull(r.toImage(labels.read(), labels.getHostTheme(), ChartFonts.of(labels.getHost()), 432, 252, 72));
+		assertNull(r.toSvg(refused.read(), refused.getHostTheme(), ChartFonts.of(refused.getHost()), 432, 252));
+		assertNull(r.toImage(refused.read(), refused.getHostTheme(), ChartFonts.of(refused.getHost()), 432, 252, 72));
 	}
 
 	@Test

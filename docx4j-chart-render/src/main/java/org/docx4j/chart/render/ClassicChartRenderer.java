@@ -52,8 +52,11 @@ import org.w3c.dom.Element;
  * ({@link ChartLayout}), painted onto a {@code Graphics2D}, Batik's SVG generator's for SVG.
  *
  * <p>Draws the column and bar charts (clustered, stacked, 100%), line and area charts over
- * categories or dates, scatter charts (markers, straight or smoothed lines), pies and doughnuts;
- * anything else is refused (its box stays empty) until the phase that draws it.</p>
+ * categories or dates, scatter charts (markers, straight or smoothed lines), pies and doughnuts,
+ * with their data labels, axis titles, manual layouts, axis options, fills (solid, gradients,
+ * patterns), lines (dashed) and shadows and glows; refuses (its box stays empty) the other kinds,
+ * combinations, secondary axes and 3-D (CR-037 section 4.6), and draws simplified (saying so) a
+ * picture fill, inner and preset shadows, reflections and soft edges.</p>
  *
  * @since 17.3.3 (CR-037)
  */
@@ -96,9 +99,7 @@ public class ClassicChartRenderer implements ChartRenderer {
 			default:
 				refused.add("a " + g.getKind().value() + " chart");
 			}
-			if (shown(g.getDataLabels())) refused.add("data labels");
 			for (ChartSeries s : g.getShownSeries()) {
-				if (shown(s.getDataLabels())) refused.add("data labels");
 				fill(s.getFill(), "a series' fill", simplified);
 			}
 		}
@@ -107,7 +108,6 @@ public class ClassicChartRenderer implements ChartRenderer {
 			if (a.getKind() == ChartAxis.Kind.VALUE) value++;
 			else if (a.getKind() == ChartAxis.Kind.CATEGORY || a.getKind() == ChartAxis.Kind.DATE) category++;
 			else refused.add("a " + a.getKind() + " axis");
-			if (a.getTitle() != null) refused.add("an axis title");
 			if ("r".equals(a.getPosition()) || "t".equals(a.getPosition())) refused.add("an axis at the " + a.getPosition());
 		}
 		// a scatter chart's two axes are both value axes
@@ -115,14 +115,22 @@ public class ClassicChartRenderer implements ChartRenderer {
 		if (scatter ? value > 2 || category > 0 : value > 1 || category > 1) refused.add("a secondary axis");
 		CTChartSpace cs = chart.getSource();
 		if (cs.getChart() != null) {
-			if (cs.getChart().getTitle() != null && manual(cs.getChart().getTitle().getLayout())) refused.add("the title placed by hand");
-			if (cs.getChart().getLegend() != null && manual(cs.getChart().getLegend().getLayout())) refused.add("the legend placed by hand");
-			if (cs.getChart().getPlotArea() != null && manual(cs.getChart().getPlotArea().getLayout())) refused.add("the plot area placed by hand");
 			if (cs.getChart().getView3D() != null && chart.getGroups().stream().anyMatch(g -> g.getKind().value().endsWith("3D"))) {
 				refused.add("3-D");
 			}
 		}
 		effects(cs.getSpPr(), "the chart area", simplified);
+		for (ChartGroup g : chart.getGroups()) {
+			for (ChartSeries s : g.getShownSeries()) {
+				Object sp = null;
+				try {
+					sp = s.getSource().getClass().getMethod("getSpPr").invoke(s.getSource());
+				} catch (ReflectiveOperationException e) {
+					// none
+				}
+				if (sp instanceof CTShapeProperties) effects((CTShapeProperties) sp, "a series", simplified);
+			}
+		}
 		return new ChartRenderCheck(dedupe(refused), dedupe(simplified));
 	}
 
@@ -140,12 +148,6 @@ public class ClassicChartRenderer implements ChartRenderer {
 	private static void fill(ChartFill f, String what, List<String> simplified) {
 		if (f == null) return;
 		switch (f.getKind()) {
-		case GRADIENT:
-			simplified.add(what + ": a gradient drawn as its first colour");
-			break;
-		case PATTERN:
-			simplified.add(what + ": a pattern drawn as its foreground");
-			break;
 		case PICTURE:
 			simplified.add(what + ": a picture drawn as grey");
 			break;
@@ -153,10 +155,14 @@ public class ClassicChartRenderer implements ChartRenderer {
 		}
 	}
 
+	/** Effects drawn simplified or not at all (outer shadows and glows are drawn, as pictures, as Office's PDFs have them) */
 	private static void effects(CTShapeProperties sp, String what, List<String> simplified) {
-		if (sp != null && sp.getEffectLst() != null && sp.getEffectLst().getOuterShdw() != null) {
-			simplified.add(what + ": its shadow not drawn");
-		}
+		if (sp == null || sp.getEffectLst() == null) return;
+		org.docx4j.dml.CTEffectList e = sp.getEffectLst();
+		if (e.getInnerShdw() != null) simplified.add(what + ": its inner shadow not drawn");
+		if (e.getPrstShdw() != null) simplified.add(what + ": its preset shadow not drawn");
+		if (e.getReflection() != null) simplified.add(what + ": its reflection not drawn");
+		if (e.getSoftEdge() != null) simplified.add(what + ": its soft edges not drawn");
 	}
 
 	private static List<String> dedupe(List<String> l) {
@@ -212,6 +218,21 @@ public class ClassicChartRenderer implements ChartRenderer {
 			SVGGeneratorContext ctx = SVGGeneratorContext.createDefault(doc);
 			ctx.setComment(null);
 			ctx.setPrecision(4);
+			// DrawingML's gradients: any number of stops, linear or radial
+			ctx.setExtensionHandler(new GradientHandler());
+			// pictures (shadows, glows, a pattern's tile) as PNG data, by the JDK's own writer (Batik's
+			// default needs batik-codec)
+			ctx.setImageHandler(new org.apache.batik.svggen.ImageHandlerBase64Encoder() {
+				@Override
+				public void encodeImage(java.awt.image.RenderedImage image, java.io.OutputStream os)
+						throws org.apache.batik.svggen.SVGGraphics2DIOException {
+					try {
+						javax.imageio.ImageIO.write(image, "png", os);
+					} catch (java.io.IOException e) {
+						throw new org.apache.batik.svggen.SVGGraphics2DIOException(e);
+					}
+				}
+			});
 			// text as text, under the families docx4j's mapping gives FOP; outlines on the
 			// property (D6), as for a metafile's
 			SVGGraphics2D g = new SVGGraphics2D(ctx, org.docx4j.Docx4jProperties.getProperty(TEXT_AS_SHAPES, false));

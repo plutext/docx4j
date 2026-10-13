@@ -6,7 +6,9 @@ tolerance in every element (§11); phase 2 DONE 2026-10-13: the other eleven typ
 and date axes, 328 of the 338 probes drawn within tolerance in every element and Excel's axes at
 every swept size but four (§11); phase 3 DONE 2026-10-13 (Jason: "close phase 3"): charts drawn
 in PDF, HTML and pptx output, `ChartImages`; P3 14/14 through PDF on both pathways, P4 13/13
-through SVG-in-HTML, the box probes and the corpora unmoved (§11); phase 4 next.  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
+through SVG-in-HTML, the box probes and the corpora unmoved (§11); phase 4 IN PROGRESS 2026-10-13:
+data labels, axis titles, manual layouts, axis options, fills and effects drawn, R15 run, 479 of the
+507 probes drawn within tolerance in every element, the rest named (§11).  Drafted on Jason's request ("please draft a CR for phases 7 (rendering) and 8
 (integration) of the charts plan.  Do not implement yet."); reviewed the same day by the
 docx4j-13 session (Claude Fable 5.1, at Jason's request): approved with nine amendments, all
 accepted by Jason ("apply all nine") and applied (§8).  D1 to D9 taken as recommended (Jason, 2026-10-12);
@@ -956,3 +958,136 @@ three (a constant series, all zeros, one at an edge) by its refinements.
   `ChartImages` (the plan's phase 10); the fidelity register has the two causes and the attempt.
   For phase 4: the outputs draw whatever `check` passes, so each feature phase 4 draws reaches
   PDF, HTML and pptx output without more work here.
+
+### Phase 4 (2026-10-13), in progress: what the settings and the data add
+
+- **R15** (`ChartRenderProbes`, on the share with RUN.txt's section; Jason's run the same day,
+  nothing failed): 95 probes made by docx4j (xlsx and docx) and 39 of Excel's own charts copied as
+  xlsx alone: CR-036's P2 settings (the ten), P6's axis titles, data labels and number formats on
+  every type (29), and CR-035's chart with a series filtered out (`c35-filtered`).  Axis titles on
+  each type, beside each legend, long, at 14pt, level, small; data labels at the positions R6 left
+  (bars, stacked bars, areas, lines without markers, doughnuts, scatter charts), their contents and
+  separators, a legend key, a point's own label and a deleted one, negative values, a pie's best fit
+  and outside labels over twelve slices, a label moved; manual layouts in factor mode, with right
+  and bottom edges, a pie's, an axis title's; legend entries deleted, overlays; axis options
+  (deleted, crossing at a value or the maximum, reversed, tick labels high, low and none, minor
+  gridlines and tick marks); the chart area's and plot area's fills and lines, gradients, patterns,
+  shadows, transparency, dashes; titles of several runs and paragraphs; invertIfNegative; varyColors
+  on one series.  The baseline over all 468 probes holds as before (points and the inside to
+  Office's precision); `chart_score.py`'s scoring of a few R15 features (reversed values, patterns)
+  is the tool's heuristics, not Office.  The oracle (`charts/render/`, 468 probes) has them.
+- **Built** (`ChartLayout`, `Drawing`, `ClassicChartRenderer`, `GradientHandler`, new): `check`
+  draws data labels, axis titles and manual layouts, and refuses only §4.6's (other kinds,
+  combinations, secondary axes, 3-D); gradients and patterns are drawn, not simplified; a picture
+  fill, inner and preset shadows, reflections and soft edges are simplified, and say so.
+  - **Data labels**: each point's label from its group's `c:dLbls`, its series', and its own
+    `c:dLbl` (deleted, moved by hand, rich text); its parts (series name, category name, value in
+    the label's number format or linked to the cache's, percentage), separated as Office does; its
+    box its text and its insets (`bodyPr`, Excel's 3pt and 1.5pt), turned a quarter where `rot`
+    says (style 202), with its legend key; filled and outlined by its `c:spPr`.
+  - **Axis titles**: rich text of several runs, wrapped, turned as `bodyPr` says, beside the plot area.
+  - **Text**: titles (and axis titles) as runs, each in its own style, wrapped across runs, each
+    paragraph its own lines; capitals (`cap="all"`) and letter spacing (`spc`) in every text.
+  - **Manual layouts** of the title, the legend (moved, or sized: its entries in a grid), the plot
+    area (its outer box or its inside, the other found around it; a pie's square within its box),
+    an axis title and a data label.
+  - **Axes**: crossings (`crosses`, `crossesAt`) and reversed orders on column and bar charts,
+    tick labels low, high and none, minor gridlines, the category axis's gridlines, minor tick marks.
+  - **Fills and lines**: the plot area's fill and line; gradients (linear at an angle, scaled or
+    not; radial paths), drawn as AWT paints and written to SVG as `linearGradient` and
+    `radialGradient` (`GradientHandler`: Batik's own writes a two-stop `GradientPaint` only), in
+    fills and in lines (style 213's gridlines); DrawingML's preset patterns as 8 by 8 tiles at 96
+    dpi; outer shadows (moved, scaled, skewed about their alignment, blurred) and glows drawn as
+    pictures under their shape, as Office's PDFs have them (finding 6), PNG data in the SVG by the
+    JDK's writer (Batik's needs batik-codec, not a dependency); dashed lines (`prstDash`, Office's
+    presets); a bar's own line; invertIfNegative; deleted legend entries; overlays.
+- **Measured on the way** (each a rule in `ChartLayout`, with its probes; "provisional" where one
+  probe or size pins it):
+  - a data label's box is its text and insets, `LABEL_GAP` (3pt) from a bar's end or base or a
+    marker's edge, centred on a bar or point; a line's labels stand off as from a marker of its
+    size, Office's 5 where it shows none (R6, r15-labels-*, to 0.001pt);
+  - a pie's label at its centre is half way out its middle ray; inside its end, the box leaves
+    the ray 3.352pt inside the arc (R6, R10's 258: all eight to 0.001pt); a pie with labels outside
+    or at best fit, and a doughnut with labels, is smaller by 1.395pt + 6.24% of its side each side
+    (two sizes: provisional);
+  - Office separates a label's parts by ", ", a pie's category and percentage alone by a line
+    (provisional); a pie's percentages are whole and add up to 100%, the difference on the largest
+    (style 258: 58%, not 59%);
+  - a label's legend key is the legend's square, in a slot of two keys and 3pt before the text;
+    a label moved in factor mode is moved by shares of the chart from its own place;
+  - an axis title's box is its text and the title's padding, turned with it; it takes the plot
+    area's left or bottom edge with no gap, is centred on the inside (its top no higher than the
+    plot area's), and the axis's labels on its side are `MANUAL_INSET` (6pt) further in; long ones
+    wrap at 0.8 of the chart's side (all 16 axis-title probes, to 0.001pt);
+  - manual layouts: edge-mode x and y are shares of the chart from its corner, the title, legend
+    and axis titles keeping the room Office gives them; a plot area placed by hand has its labels
+    `MANUAL_INSET` further in and the top value label's half line inside; a sized legend's entries
+    in a grid of as many columns as hold the widest, each centred in its cell (R9, R15);
+  - an axis's `crosses`/`crossesAt` is where it crosses the other axis in the other's units; its
+    labels are next to its line, a band at the plot's edge when the line is there, hanging from it
+    when within (zero at the maximum, all the data negative, is within: r2-negative); low and high
+    force the ends; columns are drawn from the crossing; reversed orders flip the direction and the
+    crossing, a reversed bar chart's legend in series order; labels above the plot stand 0.67pt
+    higher than a mirror of those below (R15's axis options, all to 0.001pt);
+  - a title, its txPr naming no size, is 1.8 times the chart's text and bold unless it says (204);
+    a letter-spaced text's width is its kerned advances and `spc` after every character, the last
+    included (202, 209, 258); a run's trailing space isn't drawn width (r15-title-runs);
+  - minor tick marks are 0.2367 of the text size and at every minor place, the major ones'
+    included; a category axis's minor ones at each category's middle and its far end (one probe);
+  - a line series' legend key is 4.5 times its line's width, at least 12pt (one width:
+    provisional); varyColors on a line series lists its points in the legend, each the series'
+    line and marker, and draws the line a piece from each point to the next, all in the series'
+    colour; invertIfNegative draws a negative bar white, outlined 0.75pt in black;
+  - Word's PDF draws gradients as shadings in the shape's clip, a gradient line as a shading in
+    the stroke, and shadows, glows, bevels and patterns as pictures: the gate compares a gradient
+    by its box and leaves pictures to the raster comparison (D4);
+  - Office interpolates gradients in linear light (a radial gradient's three channels agree there
+    and nowhere else); its radial path's falloff isn't linear in the distance from the focus
+    (r15-pie-gradient: no simple power fits), so radial gradients stay a picture miss;
+  - Excel formats numbers linked to their source as the worksheet's cells, Word as the chart's
+    cache (r15-labels-linked-format, whose cache and cells disagree on purpose); docx4j draws the
+    cache's, as Word does.
+- **The gate** (`ChartRenderGateTest`, R10's styled charts in it now): **507 probes drawn, 479
+  within tolerance in every element** (99.3% of 46,858); phase 2's close was 338 and 328.  Every
+  probe of R5, R6's bars and lines, R9, R15's axis titles, axis options, legends and fills, and every
+  P2 and P6 settings chart but the pie's data labels.  Open (each named with its reason in `OPEN`):
+  - a pie's labels outside it or at best fit (nine probes): outside, 3.1 to 4.6pt off the arc, the
+    crowded labels pushed aside by up to 5pt (Excel's collision avoidance); best fit on whole
+    pixels at 96 dpi and wrapped where a label won't fit: not found;
+  - factor mode for the title, legend and plot area (three): Excel's offsets are not the spec's
+    (0.10 is 39.1pt for the title, not 43.2); Excel itself writes edge mode, drawn exactly;
+  - text in tx1 lumMod 50% lumOff 50% (styles 202, 254): Office 7F7F7F, docx4j 808080 (CR-034's
+    known one-unit luminance cases: rounding half down fixes lum, lumMod and the picker but breaks
+    hueMod, satMod and satOff, measured on CR-034's readings);
+  - the kerned "Y-Values" title (now eight probes with R15's scatter charts), phase 2's markers,
+    plots 1pt high and set maximum, and the linked number format (above).
+- **Pictures** (rendered at Excel's 1.667 px/pt against Excel's PNGs, D4's per-probe tolerance):
+  **460 of 468 within tolerance**; the eight: phase 1's two small charts, three pies' labels (open),
+  R15's patterns (the tile's phase against Excel's resampling: 3.7% against 2.0%), the radial
+  gradient on a pie's slices (above) and the factor-mode plot area (open).  Style 213's glow and
+  R15's shadows pass once drawn (a glow follows what is drawn: around an outline alone, not its
+  inside).
+- **The outputs** (phase 3 drew whatever `check` passes, so phase 4's features reach PDF, HTML and
+  pptx with no change there): P3 through docx4j's PDF still 14 of 14 on both pathways
+  (`tools/chart_outputs.py`); R15's gradients, shadows, axis titles and labels with keys, and
+  style 204 (Word's styled docx), through docx4j's PDF against Word's PDFs, within D4's tolerances
+  in every element (gradients reach the PDF as shadings, shadows as pictures, as Word's). Style 204
+  first came out with every text bold: a face a chart draws in (CR-011's route since 17.2.0,
+  `Docx4jDrawFontManager`'s late fallbacks) was declared to FOP under its family name as the
+  family's normal face whatever its weight (`FopConfigUtil.createFontEntrySimulateStyles`'s
+  family triplet), so Carlito-Bold answered for "Carlito, normal, 400" and every regular Carlito
+  text of the PDF was drawn bold.  FOP's font info names a face's own names normal and 400 and
+  gives the family's name its real style and weight ("Carlito Bold,normal,400", "Carlito,normal,700"):
+  the family triplet now takes those.  Any late-declared bold or italic face had it (a metafile's
+  bold text, a fallback `RunFontSelector` reached for a bold run). The corpora's control, b225
+  (b224's jars, docx4j-chart-render phase 4's, with the fix) against b224: **0 movers, every event
+  count equal, the probes identical row for row** (the chart box probes too): no corpus document
+  had such a face (`~/fidelity-cr030/gate-b224-b225.sh`; the fidelity register's
+  `late-face-declared-family-normal`). Test: export-fo-tests'
+  `ChartBoxFoTest.aChartsBoldTextLeavesItsRegularTextRegular`, which fails without the fix.
+  Batik's SVG generator encodes an embedded picture through batik-codec, not a dependency of
+  docx4j-chart-render: the renderer gives it an image handler using the JDK's PNG writer.
+- **Tests**: docx4j-chart-render 20/0 (`ChartRendererSpiTest` and `ChartImagesTest` now refuse a
+  secondary axis, made in memory, where they refused data labels; `ChartRenderFixturesTest` 468
+  probes, skipping a pattern's colour as a gradient's, Excel's carriage-return paragraphs, the
+  filtered series).

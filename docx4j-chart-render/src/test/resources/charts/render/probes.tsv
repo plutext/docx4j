@@ -333,3 +333,137 @@ p6-scatter-one-by-one	R14	360	216	xlsx					Excel's own chart (CR-036 P6), its la
 p6-scatter-text	R14	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
 p6-scatter-title-text	R14	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
 p6-scatter-two-by-two	R14	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+r15-axis-titles-column	R15	432	252	xlsx,docx	2013		36,36		both axis titles on the column chart	
+r15-axis-titles-bar-clustered	R15	432	252	xlsx,docx	2013		36,36		both axis titles on the bar-clustered chart	
+r15-axis-titles-line-markers	R15	432	252	xlsx,docx	2013		36,36		both axis titles on the line-markers chart	
+r15-axis-titles-scatter	R15	432	252	xlsx,docx	2013		36,36		both axis titles on the scatter chart	
+r15-axis-titles-area	R15	432	252	xlsx,docx	2013		36,36		both axis titles on the area chart	
+r15-axis-titles-column-stacked-100	R15	432	252	xlsx,docx	2013		36,36		both axis titles on the column-stacked-100 chart	
+r15-axis-title-value	R15	432	252	xlsx,docx	2013		36,36		the value axis's title alone	
+r15-axis-title-category	R15	432	252	xlsx,docx	2013		36,36		the category axis's title alone	
+r15-axis-titles-legend-right	R15	432	252	xlsx,docx	2013		36,36		both axis titles, the legend at the right	
+r15-axis-titles-legend-left	R15	432	252	xlsx,docx	2013		36,36		both axis titles, the legend at the left	
+r15-axis-titles-legend-top	R15	432	252	xlsx,docx	2013		36,36		both axis titles, the legend at the top	
+r15-axis-title-long	R15	432	252	xlsx,docx	2013		36,36		axis titles longer than their axes	
+r15-axis-titles-14	R15	432	252	xlsx,docx	2013		36,36		both axis titles at 14pt	
+r15-axis-title-level	R15	432	252	xlsx,docx	2013		36,36		the value axis's title set level (rot 0)	
+r15-axis-titles-small	R15	288	168	xlsx,docx	2013		36,36		both axis titles at 288 by 168pt	
+r15-labels-bar-outEnd	R15	432	252	xlsx,docx	2013		36,36		data labels at outEnd on the bar chart	
+r15-labels-bar-inEnd	R15	432	252	xlsx,docx	2013		36,36		data labels at inEnd on the bar chart	
+r15-labels-bar-ctr	R15	432	252	xlsx,docx	2013		36,36		data labels at ctr on the bar chart	
+r15-labels-bar-inBase	R15	432	252	xlsx,docx	2013		36,36		data labels at inBase on the bar chart	
+r15-labels-bar-stacked	R15	432	252	xlsx,docx	2013		36,36		data labels on the bar-stacked chart, at its default place	
+r15-labels-column-stacked-100	R15	432	252	xlsx,docx	2013		36,36		data labels on the column-stacked-100 chart, at its default place	
+r15-labels-area	R15	432	252	xlsx,docx	2013		36,36		data labels on the area chart, at its default place	
+r15-labels-line	R15	432	252	xlsx,docx	2013		36,36		data labels on the line chart, at its default place	
+r15-labels-doughnut	R15	432	252	xlsx,docx	2013		36,36		data labels on the doughnut chart, at its default place	
+r15-labels-scatter	R15	432	252	xlsx,docx	2013		36,36		data labels on the scatter chart, at its default place	
+r15-labels-scatter-t	R15	432	252	xlsx,docx	2013		36,36		data labels above the scatter chart's points	
+r15-labels-negative-outEnd	R15	432	252	xlsx,docx	2013		36,36		data labels at outEnd on negative columns	
+r15-labels-negative-inBase	R15	432	252	xlsx,docx	2013		36,36		data labels at inBase on negative columns	
+r15-labels-negative-bar	R15	432	252	xlsx,docx	2013		36,36		data labels at outEnd on negative bars	
+r15-labels-series-name	R15	432	252	xlsx,docx	2013		36,36		data labels: the series' name	
+r15-labels-category-name	R15	432	252	xlsx,docx	2013		36,36		data labels: the category's name	
+r15-labels-value-category	R15	432	252	xlsx,docx	2013		36,36		data labels: category and value, Excel's separator	
+r15-labels-separator-newline	R15	432	252	xlsx,docx	2013		36,36		data labels: category and value on two lines	
+r15-labels-separator-semicolon	R15	432	252	xlsx,docx	2013		36,36		data labels: category and value, separated by "; "	
+r15-labels-all-three	R15	432	252	xlsx,docx	2013		36,36		data labels: series, category and value	
+r15-labels-legend-key	R15	432	252	xlsx,docx	2013		36,36		data labels: the value with its legend key	
+r15-labels-pie-everything	R15	432	252	xlsx,docx	2013		36,36		a pie's labels: category, value and percentage, best fit	
+r15-labels-pie-percent	R15	432	252	xlsx,docx	2013		36,36		a pie's labels: the percentage alone, best fit	
+r15-labels-pie-twelve-bestFit	R15	432	252	xlsx,docx	2013		36,36		twelve slices, small ones last, labels at best fit	
+r15-labels-pie-twelve-outEnd	R15	432	252	xlsx,docx	2013		36,36		twelve slices, labels outside (outEnd)	
+r15-labels-pie-moved	R15	432	252	xlsx,docx	2013		36,36		a pie's labels outside, the second moved out by hand (a leader line)	
+r15-labels-text-12	R15	432	252	xlsx,docx	2013		36,36		data labels at 12pt	
+r15-labels-one-point	R15	432	252	xlsx,docx	2013		36,36		the third point's label alone	
+r15-labels-one-deleted	R15	432	252	xlsx,docx	2013		36,36		every point's label but the second's	
+r15-labels-boxed	R15	432	252	xlsx,docx	2013		36,36		data labels bold, in a filled and outlined box	
+r15-labels-linked-format	R15	432	252	xlsx,docx	2013		36,36		the values' cells in #,##0.00, the labels and the axis linked to them	
+r15-title-factor	R15	432	252	xlsx,docx	2013		36,36		the title moved by x 0.10, y 0.05 (factor)	
+r15-legend-factor	R15	432	252	xlsx,docx	2013		36,36		the legend moved by x -0.20, y -0.10 (factor)	
+r15-legend-right-sized	R15	432	252	xlsx,docx	2013		36,36		the legend at the right, 0.20 by 0.50 (edge)	
+r15-plot-inner-factor	R15	432	252	xlsx,docx	2013		36,36		the plot area's inner box moved by x 0.05, y 0.05, 0.50 by 0.50 (factor)	
+r15-plot-inner-right-bottom	R15	432	252	xlsx,docx	2013		36,36		the plot area's inner box from x 0.15, y 0.20 to its right 0.85, bottom 0.75 (edge)	
+r15-plot-pie	R15	432	252	xlsx,docx	2013		36,36		a pie's plot area at x 0.10, y 0.20, 0.40 by 0.70 (edge)	
+r15-plot-outer-axis-titles	R15	432	252	xlsx,docx	2013		36,36		axis titles, the plot area's outer box at x 0.15, y 0.20, 0.60 by 0.55	
+r15-axis-title-moved	R15	432	252	xlsx,docx	2013		36,36		the value axis's title moved to x 0.02, y 0.30 (edge)	
+r15-legend-entry-deleted	R15	432	252	xlsx,docx	2013		36,36		the second series' legend entry deleted	
+r15-legend-entry-deleted-pie	R15	432	252	xlsx,docx	2013		36,36		the first slice's legend entry deleted	
+r15-legend-overlay	R15	432	252	xlsx,docx	2013		36,36		the legend at the right over the plot area (overlay)	
+r15-title-overlay	R15	432	252	xlsx,docx	2013		36,36		the title over the plot area (overlay)	
+r15-value-axis-deleted	R15	432	252	xlsx,docx	2013		36,36		the value axis deleted	
+r15-category-axis-deleted	R15	432	252	xlsx,docx	2013		36,36		the category axis deleted	
+r15-catax-crosses-at-2	R15	432	252	xlsx,docx	2013		36,36		the category axis's crossesAt 2	
+r15-valax-crosses-at-3	R15	432	252	xlsx,docx	2013		36,36		the value axis's crossesAt 3	
+r15-catax-crosses-max	R15	432	252	xlsx,docx	2013		36,36		the category axis's crosses max	
+r15-valax-crosses-max	R15	432	252	xlsx,docx	2013		36,36		the value axis's crosses max	
+r15-category-reversed	R15	432	252	xlsx,docx	2013		36,36		the categories in reverse order	
+r15-value-reversed	R15	432	252	xlsx,docx	2013		36,36		the values in reverse order	
+r15-bar-category-reversed	R15	432	252	xlsx,docx	2013		36,36		a bar chart's categories in reverse order (from the top)	
+r15-ticklabels-catax-low	R15	432	252	xlsx,docx	2013		36,36		values of either sign, the catax's tick labels low	
+r15-ticklabels-catax-high	R15	432	252	xlsx,docx	2013		36,36		values of either sign, the catax's tick labels high	
+r15-ticklabels-catax-none	R15	432	252	xlsx,docx	2013		36,36		values of either sign, the catax's tick labels none	
+r15-ticklabels-valax-high	R15	432	252	xlsx,docx	2013		36,36		values of either sign, the valax's tick labels high	
+r15-ticklabels-valax-none	R15	432	252	xlsx,docx	2013		36,36		values of either sign, the valax's tick labels none	
+r15-gridlines-minor	R15	432	252	xlsx,docx	2013		36,36		the value axis's minor gridlines, the category axis's major ones	
+r15-ticks-minor	R15	432	252	xlsx,docx	2013		36,36		minor tick marks out on both axes, the value axis's line shown	
+r15-no-gridlines	R15	432	252	xlsx,docx	2013		36,36		the value axis's gridlines removed	
+r15-chart-area-fill	R15	432	252	xlsx,docx	2013		36,36		the chart area filled F2F2F2, a 2pt accent 1 border, rounded corners	
+r15-plot-area-fill	R15	432	252	xlsx,docx	2013		36,36		the plot area filled DEEBF7, a 1pt grey border	
+r15-chart-area-gradient	R15	432	252	xlsx,docx	2013		36,36		the chart area a linear gradient, top to bottom	
+r15-gradients	R15	432	252	xlsx,docx	2013		36,36		the series' fills: a linear gradient down, one of three stops across, a radial one	
+r15-patterns	R15	432	252	xlsx,docx	2013		36,36		the series' fills: patterns pct50, dkDnDiag, smCheck	
+r15-shadows	R15	432	252	xlsx,docx	2013		36,36		the series' outer shadows (Excel's offset bottom preset)	
+r15-transparent	R15	432	252	xlsx,docx	2013		36,36		the series' fills 50% transparent, overlapping by 50%	
+r15-bar-outlines	R15	432	252	xlsx,docx	2013		36,36		the series' bars outlined, 1.5pt, in dark blue	
+r15-line-dashes	R15	432	252	xlsx,docx	2013		36,36		the lines dashed (sysDash, dash, lgDashDot), 3.5pt	
+r15-gridlines-dashed	R15	432	252	xlsx,docx	2013		36,36		the gridlines dashed and coloured	
+r15-pie-gradient	R15	432	252	xlsx,docx	2013		36,36		a pie's points: radial gradients	
+r15-title-runs	R15	432	252	xlsx,docx	2013		36,36		a title of two runs, "Sales " bold and "2026" italic in C00000	
+r15-title-paragraphs	R15	432	252	xlsx,docx	2013		36,36		a title of two paragraphs	
+r15-title-20	R15	432	252	xlsx,docx	2013		36,36		a title at 20pt	
+r15-invert-negative	R15	432	252	xlsx,docx	2013		36,36		invertIfNegative on a series of either sign	
+r15-vary-colors-column	R15	432	252	xlsx,docx	2013		36,36		varyColors on a single series' columns	
+r15-vary-colors-bar	R15	432	252	xlsx,docx	2013		36,36		varyColors on a single series' bars	
+r15-vary-colors-line	R15	432	252	xlsx,docx	2013		36,36		varyColors on a single series' line with markers	
+r15-line-markers-only	R15	432	252	xlsx,docx	2013		36,36		lines with markers, the lines not drawn (noFill)	
+p2-axis-titles	R15	360	216	xlsx					Excel's own chart (CR-036 P2), its layout	
+p2-data-labels	R15	360	216	xlsx					Excel's own chart (CR-036 P2), its layout	
+p2-legend-bottom	R15	360	216	xlsx					Excel's own chart (CR-036 P2), its layout	
+p2-legend-left	R15	360	216	xlsx					Excel's own chart (CR-036 P2), its layout	
+p2-legend-right	R15	360	216	xlsx					Excel's own chart (CR-036 P2), its layout	
+p2-legend-top	R15	360	216	xlsx					Excel's own chart (CR-036 P2), its layout	
+p2-no-legend	R15	360	216	xlsx					Excel's own chart (CR-036 P2), its layout	
+p2-no-title	R15	360	216	xlsx					Excel's own chart (CR-036 P2), its layout	
+p2-number-format	R15	360	216	xlsx					Excel's own chart (CR-036 P2), its layout	
+p2-title-text	R15	360	216	xlsx					Excel's own chart (CR-036 P2), its layout	
+p6-area-axis-titles	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-area-data-labels	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-area-number-format	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-bar-clustered-axis-titles	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-bar-clustered-data-labels	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-bar-clustered-number-format	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-bar-stacked-100-axis-titles	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-bar-stacked-100-data-labels	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-bar-stacked-100-number-format	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-bar-stacked-axis-titles	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-bar-stacked-data-labels	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-bar-stacked-number-format	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-column-stacked-100-axis-titles	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-column-stacked-100-data-labels	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-column-stacked-100-number-format	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-column-stacked-axis-titles	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-column-stacked-data-labels	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-column-stacked-number-format	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-doughnut-data-labels	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-line-axis-titles	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-line-data-labels	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-line-markers-axis-titles	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-line-markers-data-labels	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-line-markers-number-format	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-line-number-format	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-pie-data-labels	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-scatter-axis-titles	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-scatter-data-labels	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+p6-scatter-number-format	R15	360	216	xlsx					Excel's own chart (CR-036 P6), its layout	
+c35-filtered	R15	360	216	xlsx					Excel's own chart with a series filtered out (CR-035's p2-filtered), its layout	

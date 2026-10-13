@@ -55,10 +55,26 @@ public class ChartRenderGateTest {
 					+ " at the inside's top, and its gridline; ours draws none");
 		}
 		OPEN.put("r2-max-set", "a maximum set, the labels hanging from a zero line near the bottom: the inside 0.55pt shorter");
-		for (String p : new String[] { "r1-scatter", "r1-scatter.pptx", "r14-scatter-lines", "r14-scatter-smooth", "r14-sweep-scatter" }) {
+		for (String p : new String[] { "r1-scatter", "r1-scatter.pptx", "r14-scatter-lines", "r14-scatter-smooth", "r14-sweep-scatter",
+				"r15-axis-titles-scatter", "r15-labels-scatter", "r15-labels-scatter-t" }) {
 			OPEN.put(p, "the title \"Y-Values\": Excel kerns its \"Va\" but not its \"Y-\" in Calibri (in Aptos Narrow, p1-scatter, both),"
 					+ " though Calibri's own tables have the pair as Carlito's do: the box 0.4pt narrower than Office's");
 		}
+		for (String p : new String[] { "r10-column-style-202", "r10-pie-style-254" }) {
+			OPEN.put(p, "text in tx1 lumMod 50% lumOff 50%: Office draws 7F7F7F, docx4j 808080 (127.5 rounded up); CR-034's known one-unit"
+					+ " luminance cases: rounding half down would fix lum, lumMod and the picker but not hueMod, satMod and satOff (measured)");
+		}
+		for (String p : new String[] { "r6-pie-outEnd", "r6-pie-bestFit", "r8-pie-labels-outside", "r15-labels-pie-everything", "r15-labels-pie-percent",
+				"r15-labels-pie-twelve-bestFit", "r15-labels-pie-twelve-outEnd", "r15-labels-pie-moved", "p6-pie-data-labels" }) {
+			OPEN.put(p, "a pie's labels outside it (outEnd) or at best fit: Office's places are not found; outside, 3.1 to 4.6pt off the arc"
+					+ " with crowded labels pushed aside (Excel's collision avoidance), best fit on whole pixels at 96 dpi and wrapped (R15)");
+		}
+		for (String p : new String[] { "r15-title-factor", "r15-legend-factor", "r15-plot-inner-factor" }) {
+			OPEN.put(p, "the title, legend or plot area placed in factor mode: Excel's offsets are not the spec's shares of the chart from"
+					+ " Office's own place (0.10 is 39.1pt, not 43.2, for the title); edge mode, which Excel writes, is drawn exactly");
+		}
+		OPEN.put("r15-labels-linked-format", "numbers linked to their source: Excel formats them as the cells (General), Word as the chart's"
+				+ " cache (#,##0.00); the probe's cache and cells disagree on purpose, and docx4j draws the cache's, as Word does");
 		for (String p : new String[] { "r14-markers-symbols", "r14-markers-sizes" }) {
 			OPEN.put(p, "Word's PDF puts markers on its 0.24pt grid, flooring a circle's or square's box and rounding a diamond's: up to"
 					+ " 0.48pt from the marker at its size on its point (PowerPoint's PDF has them at their size, P4)");
@@ -81,6 +97,23 @@ public class ChartRenderGateTest {
 		return chart(probe, ".xlsx");
 	}
 
+	/**
+	 * A chart still refused (CR-037 section 4.6: secondary axes are left for later): R1's clustered
+	 * column with a second value axis, made in memory
+	 */
+	static ChartRef refused() throws Exception {
+		ChartRef c = chart("r1-column-clustered");
+		org.docx4j.dml.chart.CTPlotArea plot = ((org.docx4j.openpackaging.parts.DrawingML.Chart) c.getChartPart()).getContents().getChart().getPlotArea();
+		for (Object o : new ArrayList<>(plot.getValAxOrCatAxOrDateAx())) {
+			if (!(o instanceof org.docx4j.dml.chart.CTValAx)) continue;
+			org.docx4j.dml.chart.CTValAx second = org.docx4j.XmlUtils.deepCopy((org.docx4j.dml.chart.CTValAx) o, org.docx4j.jaxb.Context.jc);
+			second.getAxId().setVal(4242);
+			plot.getValAxOrCatAxOrDateAx().add(second);
+			break;
+		}
+		return c;
+	}
+
 	static ChartRef chart(String probe, String ext) throws Exception {
 		try (InputStream is = ChartRenderGateTest.class.getClassLoader().getResourceAsStream(DIR + "probes/" + probe + ext)) {
 			return Charts.in(OpcPackage.load(is)).get(0);
@@ -94,8 +127,8 @@ public class ChartRenderGateTest {
 		String[] rows = text("probes.tsv").split("\r?\n");
 		for (int i = 1; i < rows.length; i++) {
 			String[] r = rows[i].split("\t", -1);
-			if (!r[6].isEmpty()) continue; // R10's styles are phase 4's
-			ChartRef ref = chart(r[0]);
+			// R10: the chart once Excel applied its gallery style (Excel's save of it)
+			ChartRef ref = r[6].isEmpty() ? chart(r[0]) : chart(r[0] + "-styled");
 			ChartModel m = ref.read();
 			if (!renderer.check(m, ref.getHostTheme()).isDrawn()) continue;
 			double w = Double.parseDouble(r[2]), h = Double.parseDouble(r[3]);

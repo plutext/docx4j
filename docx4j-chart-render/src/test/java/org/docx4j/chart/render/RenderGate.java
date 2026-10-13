@@ -148,6 +148,11 @@ final class RenderGate {
 				// a blank point's box is far off the chart (no geometry)
 				if (b == null || b.getMinX() < -1 || b.getMinY() < -1 || b.getMaxX() > cw + 1 || b.getMaxY() > ch + 1) continue;
 				same(r, "point " + s + "." + p, b, d.boxes.get("point." + s + "." + p));
+				// its data label's box, an element (from the inner frame in every application)
+				Object dl = Json.object(points.get(p)).get("dataLabel");
+				if (dl != null || d.boxes.containsKey("label." + s + "." + p)) {
+					same(r, "label " + s + "." + p, box(dl, ORIGIN), d.boxes.get("label." + s + "." + p));
+				}
 				// a pie's slice, by the places Office reports (PieSliceLocation 1 to 9, finding 7)
 				Object at = Json.object(points.get(p)).get("slice");
 				double[][] ours = d.slices.get("point." + s + "." + p);
@@ -169,6 +174,11 @@ final class RenderGate {
 		}
 		for (Object o : Json.list(dump.get("axes"))) {
 			Map<String, Object> a = Json.object(o);
+			// its title's box (an element)
+			if (Boolean.TRUE.equals(a.get("hasTitle")) || d.boxes.containsKey("axisTitle." + Json.number(a.get("type")).intValue())) {
+				int type = Json.number(a.get("type")).intValue();
+				same(r, "axis title " + type, Boolean.TRUE.equals(a.get("hasTitle")) ? box(a.get("title"), ORIGIN) : null, d.boxes.get("axisTitle." + type));
+			}
 			if (a.get("categoryType") != null || a.get("minimumScale") == null || a.get("tickLabels") == null) continue;
 			double[] office = { Json.number(a.get("minimumScale")), Json.number(a.get("maximumScale")), Json.number(a.get("majorUnit")) };
 			// a scatter chart's x axis is Office's "category" axis (type 1), a value axis
@@ -276,7 +286,7 @@ final class RenderGate {
 				double bestD = Double.MAX_VALUE;
 				for (int i = 0; i < areas.size(); i++) {
 					Drawing.Area a = areas.get(i);
-					Color c = fill ? a.fill : a.line;
+					Color c = fill ? (a.gradient != null ? null : a.fill) : (a.lineGradient != null ? null : a.line);
 					if ((fill ? usedFill[i] : usedLine[i]) || c == null || !hex(c).equals(colour)) continue;
 					double e = edge(office, bounds(a.shape));
 					if (e < bestD) {
@@ -294,11 +304,59 @@ final class RenderGate {
 				r.check(bestD <= GEOMETRY, String.format("%s off by %.2f", what, bestD));
 			}
 		}
+		// a gradient is a shading in Word's PDF (CR-037 finding 6), in the shape's clip: ours by its box
+		List<Object> images = trace.get("images") == null ? new ArrayList<>() : Json.list(trace.get("images"));
+		List<Rectangle2D> pictures = new ArrayList<>();
+		for (Object o : images) {
+			Map<String, Object> im = Json.object(o);
+			if (!"fill_shade".equals(im.get("kind"))) {
+				pictures.add(rect(Json.list(im.get("box"))));
+				continue;
+			}
+			for (Object p : Json.list(im.get("parts"))) {
+				Rectangle2D office = rect(Json.list(Json.object(p).get("box")));
+				if (office.getMinX() < -2 || office.getMinY() < -2 || office.getMaxX() > d.width + 2 || office.getMaxY() > d.height + 2) continue;
+				int best = -1;
+				double bestD = Double.MAX_VALUE;
+				for (int i = 0; i < areas.size(); i++) {
+					Drawing.Area a = areas.get(i);
+					// a gradient fill, or a gradient line (its stroke's outline)
+					if (a.gradient != null ? usedFill[i] : a.lineGradient == null || usedLine[i]) continue;
+					Rectangle2D ab = a.gradient != null ? bounds(a.shape)
+							: new java.awt.BasicStroke((float) a.lineWidth, java.awt.BasicStroke.CAP_BUTT, java.awt.BasicStroke.JOIN_MITER).createStrokedShape(a.shape).getBounds2D();
+					double e = edge(office, ab);
+					if (e < bestD) {
+						bestD = e;
+						best = i;
+					}
+				}
+				String what = "shading at " + str(office);
+				if (best < 0 || bestD > 5) {
+					r.check(false, what + " not drawn");
+					continue;
+				}
+				if (areas.get(best).gradient != null) usedFill[best] = true;
+				else usedLine[best] = true;
+				r.check(bestD <= GEOMETRY, String.format("%s off by %.2f", what, bestD));
+			}
+		}
 		for (int i = 0; i < areas.size(); i++) {
 			Drawing.Area a = areas.get(i);
-			if (a.fill != null && !usedFill[i]) r.check(false, a.role + " drawn (fill " + hex(a.fill) + "), Office has none");
-			if (a.line != null && a.lineWidth > 0 && !usedLine[i]) r.check(false, a.role + " drawn (line " + hex(a.line) + "), Office has none");
+			// what Word makes a picture of (a shadow, a glow, a bevel: finding 6; a pattern's tiles) is the picture's to check (D4)
+			boolean pictured = a.pattern != null && !pictures.isEmpty();
+			Rectangle2D b = bounds(a.shape);
+			for (Rectangle2D p : pictures) pictured |= p.getMinX() - 3 <= b.getMinX() && p.getMinY() - 3 <= b.getMinY() && b.getMaxX() <= p.getMaxX() + 3
+					&& b.getMaxY() <= p.getMaxY() + 3 && p.getWidth() < 0.9 * d.width;
+			if (a.fill != null && !usedFill[i] && !pictured) {
+				r.check(false, a.role + " drawn (" + (a.gradient != null ? "gradient" : "fill " + hex(a.fill)) + "), Office has none");
+			}
+			if (a.line != null && a.lineWidth > 0 && !usedLine[i] && !pictured) r.check(false, a.role + " drawn (line " + hex(a.line) + "), Office has none");
 		}
+	}
+
+	private static Rectangle2D rect(List<Object> b) {
+		return new Rectangle2D.Double(Json.number(b.get(0)), Json.number(b.get(1)), Json.number(b.get(2)) - Json.number(b.get(0)),
+				Json.number(b.get(3)) - Json.number(b.get(1)));
 	}
 
 	/** A shape's box, its curves flattened (as chart_trace.py samples Office's), not their control points' */
