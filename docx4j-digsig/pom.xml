@@ -20,7 +20,7 @@
 		<!-- Pinned: a Santuario version change is a signing change and gets the Office check
 		     (CR-033 section 4.5; 2.3.0 signed invalidly on the old javax branch). -->
 		<version.xmlsec>3.0.6</version.xmlsec>
-		<version.bouncycastle>1.78.1</version.bouncycastle>
+		<version.bouncycastle>1.86</version.bouncycastle>
 	</properties>
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>

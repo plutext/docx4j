@@ -1,6 +1,6 @@
 # CR-033: Digital signatures in docx4j — the `docx4j-digsig` module
 
-Status: SHIPPED in docx4j 17.3.2 (Maven Central, 2026-10-09); DONE 2026-10-09. Accepted 2026-10-08 (Jason: "i accept the recommendations in CR-033";
+Status: SHIPPED in docx4j 17.3.2 (Maven Central, 2026-10-09); DONE 2026-10-09. Amended 2026-10-14 (§11): BouncyCastle 1.86 for 17.3.3; Santuario stays 3.0.6. Accepted 2026-10-08 (Jason: "i accept the recommendations in CR-033";
 proposed the same day). Phases 0 to 4 shipped 2026-10-08/09 on branch `CR-033-digsig`, rebased onto
 `VERSION_17_3_2` at c8a6094ea and merged fast-forward (df1e535b1, 12b3530ca, 19ec762ee and the
 closing commit); the
@@ -259,7 +259,8 @@ knows DigSig's class names.
 - **Santuario 3.0.6**, pinned. It is what CR-002 measured against Office; 2.3.0 signed invalidly
   on `master` (`notes_2026.txt`), so a version change is a signing change and gets the Office
   check. Santuario 4.0.x (latest 4.0.4) exists, is Jakarta and Java 11+, and ships a
-  `module-info`; moving to it is a separate, later item, not part of a move.
+  `module-info`; moving to it is a separate, later item, not part of a move. Revisited 2026-10-14
+  (§11.2): stays 3.0.6, since 4.x does not export the `binding.xmldsig` package the module's API uses.
 - **BouncyCastle** from `bcpkix-jdk15on` / `bcprov-ext-jdk15on` 1.54 (2016; the `jdk15on` line is
   discontinued) to `bcpkix-jdk18on` current (1.86 on Central; 1.78.1 in the local repository),
   which brings `bcprov-jdk18on` and `bcutil-jdk18on`. Java 8+ bytecode, fine for the Java 11
@@ -268,7 +269,7 @@ knows DigSig's class names.
   since 1.5x; compile errors, if any, are in `TSPTimeStampService` and `XAdESXLSignatureFacet`,
   neither of which the tests exercise (XAdES-T needs a timestamp server), so phase 1 compiles them
   and phase 3's Office check includes one XAdES-T signature if a free TSA is reachable
-  (`notes_2026.txt` TODO).
+  (`notes_2026.txt` TODO). The move took 1.78.1; 1.86 from 17.3.3 (§11.1).
 - **`xercesImpl` dropped** unless phase 0 shows a difference. `notes_2026.txt` notes a Xerces
   behaviour (`getDocumentElement()` unset while an event is dispatched) that the JDK's internal
   Xerces shares; the tests tell.
@@ -621,3 +622,72 @@ and complete, the Excel line shows the signed image, and Word shows the XAdES-T 
   three `template.potx` cases of `RoundTripTest`).
 - Still open after this CR: the competition analysis note (§4.11), left to the portfolio's
   owner session since that document carries other sessions' uncommitted edits.
+
+## 11. Amendment (2026-10-14): dependency versions revisited
+
+Jason, 2026-10-14: "with regard to CR-033 4.5 Dependency versions, shall we bump Santuario and
+BouncyCastle?" Measured the same day; the recommendation (BouncyCastle now, Santuario not) was
+accepted the same day.
+
+### 11.1 BouncyCastle: 1.78.1 to 1.86
+
+§4.5 named 1.86; the move took 1.78.1 because that was in the local repository. OSV
+(`api.osv.dev`, 2026-10-14) lists six advisories against 1.78.1 and none against 1.86:
+
+| Advisory | Severity | Artifact | Fixed in | What |
+|---|---|---|---|---|
+| CVE-2026-8763 | critical | bcprov | 1.85 | name constraints bypassed by a trailing dot in rfc822Name and URI |
+| CVE-2025-14813 | critical | bcprov | 1.84 (1.80.2, 1.81.1) | GOST 28147 CTR mode reuses the keystream after 255 blocks |
+| CVE-2026-13506 | high | bcprov | 1.85 | forcing a lazy ASN.1 sequence resets the nesting-depth guard |
+| CVE-2025-8916 | moderate | bcpkix | 1.79 | excessive allocation |
+| CVE-2026-5588 | moderate | bcpkix | 1.84 | use of a broken or risky cryptographic algorithm |
+| CVE-2026-0636 | moderate | bcprov | 1.84 | LDAP injection |
+
+The module's own exposure is small. BouncyCastle builds the time-stamp request and reads the
+TSA's response (`TSPTimeStampService`, XAdES-T) and reads OCSP responses
+(`XAdESXLSignatureFacet`, XAdES-XL), both at signing. Validation is Santuario's, trust is the
+JDK's PKIX (`DefaultCertificateTrustChecker`), and the module registers no BouncyCastle
+provider, so the name-constraints bypass reaches only an application that installs BouncyCastle
+as its PKIX provider. The upgrade is for the scanners every user of the module runs, and for the
+ASN.1 fixes on the TSA path.
+
+Measured: no source change (the `tsp`, `cms`, `cert.ocsp`, `operator` and `asn1` API the module
+uses is unchanged); the module names are unchanged (`org.bouncycastle.provider`, `.pkix`,
+`.util`) and `module-info` compiles; `mvn install -pl docx4j-digsig,docx4j-samples-digsig`: 138
+tests, 0 failures, 1 skipped (as on 1.78.1), samples compile. The tests do not reach
+BouncyCastle, so `sign-me-please.docx` was signed XAdES-T against `http://timestamp.digicert.com`
+twice, with a throwaway certificate and with `plutext-digsig-test.pfx`: both VALID, `sig1.xml`
+with `xd:SignatureTimeStamp` and its `EncapsulatedTimeStamp`.
+
+The change: `version.bouncycastle` in `docx4j-digsig/pom.xml`; the CHANGELOG for 17.3.3.
+
+Office check: `docx4j-signed-xades-t-bc186.docx` (the pfx one) on the share,
+`fidelity/cr033-bc186/` with its `CHECK.txt`, the same check as phase 3's XAdES-T file; awaits
+Jason.
+
+### 11.2 Santuario: stays 3.0.6
+
+- 3.0.6 (2025-04-11) is the newest 3.x and OSV lists no advisory against it; the last,
+  CVE-2023-44483 (a private key in debug logs), was fixed in 3.0.3. Upstream keeps both lines:
+  3.0.6 and 4.0.4 were released the same day, and Java 3.0.7, 4.0.5 and 4.1.0 are open versions
+  in its JIRA (`main` is 4.0.5-SNAPSHOT).
+- 4.x cannot be compiled against as a module. Its `module-info` opens
+  `org.apache.xml.security.binding.xmldsig` (and the other binding packages) but does not export
+  them, and this module's public API uses those types: `XmlSignaturePart` (`SignatureType`) and
+  the XAdES classes in `org.docx4j.org.etsi.uri.x01903.v13` (`DigestMethodType`,
+  `X509IssuerSerialType`, `CanonicalizationMethodType`, ...). javac 21 on a one-class probe module
+  against 4.0.4: "package org.apache.xml.security.binding.xmldsig is not visible (package
+  org.apache.xml.security.binding.xmldsig is declared in module org.apache.santuario.xmlsec, which
+  does not export it)". On the classpath it compiles (a jar there is in the unnamed module).
+  3.0.6 is an automatic module, which exports every package, so this is new in 4.x. Upstream
+  `main` exports none of the binding packages either; SANTUARIO-627 (fixed for 4.0.5) changed
+  only its jakarta `requires` to `static`.
+- Also different in 4.x: it logs through `System.Logger` (so to java.util.logging unless the
+  application bridges it, e.g. with `slf4j-jdk-platform-logging`), not slf4j; Java 11, as docx4j;
+  jakarta.xml.bind optional, which docx4j supplies.
+- Two ways to 4.x, both later: (a) Santuario exports the binding packages (the request is drafted,
+  to be filed on Jason's approval); (b) this module binds XML-DSig itself (its own JAXB classes for
+  the XML-DSig schema, the XAdES classes moved onto them), a public type change and an
+  adding-a-schema CR. (a) first. A move to 4.x is then the version property, `module-info`
+  (Santuario no longer an automatic module) and the full Office check of phase 3's seven files,
+  as for any Santuario change.
