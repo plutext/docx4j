@@ -686,3 +686,18 @@ Jason: "Please start phase 3 (docs and hand-offs) when you are ready".
     inheriting as one), which their catalogues mirror; Word's TOC Hyperlink rule.
   - docx4j-mcp: nothing to carry; it reports no colours.
   - The Enterprise fidelity register: D4 entered as the cause `drawingml-fills-not-painted`.
+
+### Follow-up: luminance rounding (2026-10-13, found by CR-037 phase 4)
+
+CR-037's chart gate found two Excel chart styles whose `tx1` at `lumMod 50000 lumOff 50000` Office
+draws 7F7F7F and docx4j drew 808080.  In P3 every luminance case one unit off had docx4j one high, at
+a channel whose exact value ends in .5, and Office went both ways at those halves; rounding half down
+alone fixed 8 cases per host and broke 3.  What fits: the colour converted back from HSL as Foley and
+van Dam do (m2 = l(1 + s) or l + s - ls, m1 = 2l - m2), `lumMod` taken as l x val / 100000, and a
+half rounded down.  The direction then follows the floating-point error of that form, which
+`hslToRgb`'s form does not share.  Applied where a colour's last change is a luminance transform
+(`DrawingMLColors.transform`; `ColorMath.hslToRgbFoley`, `channelHalfDown`): P3 luminance and picker
+cases exact in 97 of 98 per host (was 85), the one left `T239` (`tx2 lumMod 25000`, red 3.5000000000000018,
+Office 3), no case in any family worse.  `ThemeColourProbesTest` now holds the luminance families to
+that.  Hue and saturation keep `hslToRgb` and round half up; WordprocessingML's themeTint and
+themeShade (`WordColors`) are unchanged.

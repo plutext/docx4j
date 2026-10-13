@@ -50,6 +50,11 @@ final class ColorMath {
 		return (int) Math.floor(clamp01(v) * 255 + 0.5);
 	}
 
+	/** a channel, 0 to 1, as 0 to 255, rounded half down (Office's luminance transforms) */
+	static int channelHalfDown(double v) {
+		return (int) Math.ceil(clamp01(v) * 255 - 0.5);
+	}
+
 	// ------------------------------------------------------------------ HSL
 
 	/** {h, s, l}, each 0 to 1, from sRGB channels 0 to 1; a grey's hue is 0 */
@@ -77,6 +82,27 @@ final class ColorMath {
 	 */
 	static double[] hslToRgb(double h, double s, double l) {
 		return new double[] { hslChannel(0, h, s, l), hslChannel(8, h, s, l), hslChannel(4, h, s, l) };
+	}
+
+	/**
+	 * sRGB channels (0 to 1, not clamped) from HSL as Foley and van Dam give it: the same colour as
+	 * {@link #hslToRgb} but not the same rounding error, and the one Office's luminance transforms
+	 * round as (CR-037 §11).
+	 */
+	static double[] hslToRgbFoley(double h, double s, double l) {
+		// keep this form and its order of operations, and don't fold it into hslToRgb: a channel that is
+		// exactly half a unit rounds (channelHalfDown) the way this form's floating-point error leans, which
+		// is the way Office rounds it (CR-034 §11, follow-up: 29 of 30 halves; hslToRgb's error leans otherwise)
+		double m2 = l <= 0.5 ? l * (1 + s) : l + s - l * s, m1 = 2 * l - m2;
+		return new double[] { foley(m1, m2, h + 1 / 3.0), foley(m1, m2, h), foley(m1, m2, h - 1 / 3.0) };
+	}
+
+	private static double foley(double m1, double m2, double h) {
+		h -= Math.floor(h);
+		if (h < 1 / 6.0) return m1 + (m2 - m1) * 6 * h;
+		if (h < 1 / 2.0) return m2;
+		if (h < 2 / 3.0) return m1 + (m2 - m1) * (2 / 3.0 - h) * 6;
+		return m1;
 	}
 
 	private static double hslChannel(int n, double h, double s, double l) {

@@ -60,10 +60,6 @@ public class ChartRenderGateTest {
 			OPEN.put(p, "the title \"Y-Values\": Excel kerns its \"Va\" but not its \"Y-\" in Calibri (in Aptos Narrow, p1-scatter, both),"
 					+ " though Calibri's own tables have the pair as Carlito's do: the box 0.4pt narrower than Office's");
 		}
-		for (String p : new String[] { "r10-column-style-202", "r10-pie-style-254" }) {
-			OPEN.put(p, "text in tx1 lumMod 50% lumOff 50%: Office draws 7F7F7F, docx4j 808080 (127.5 rounded up); CR-034's known one-unit"
-					+ " luminance cases: rounding half down would fix lum, lumMod and the picker but not hueMod, satMod and satOff (measured)");
-		}
 		List<String> bestFit = new ArrayList<>(java.util.Arrays.asList("r6-pie-bestFit", "r15-labels-pie-everything", "r15-labels-pie-percent",
 				"r15-labels-pie-twelve-bestFit", "p6-pie-data-labels"));
 		// (at 105 degrees the approximation is within tolerance)

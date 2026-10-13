@@ -133,6 +133,16 @@ public class ThemeColourProbesTest {
 			for (int[] f : families.values()) n += f[column];
 			return n;
 		}
+
+		/** the luminance transforms (and the picker's, which are luminance) not exact */
+		int luminanceOff() {
+			int n = 0;
+			for (String f : new String[] { "lum", "lumMod", "lumOff", "picker" }) {
+				int[] c = families.get(f);
+				if (c != null) n += c[1] + c[2];
+			}
+			return n;
+		}
 	}
 
 	// ------------------------------------------------------------------ the docx probes, read as XML
@@ -251,6 +261,7 @@ public class ThemeColourProbesTest {
 		Tally t = new Tally();
 		wordShapes("tc-p3-transforms.docx", t);
 		check("P3, Word", t, 403);
+		assertTrue("P3, Word: luminance exact but T239 (CR-034 §11, follow-up)", t.luminanceOff() <= 1);
 	}
 
 	@Test
@@ -277,6 +288,7 @@ public class ThemeColourProbesTest {
 			}
 		}
 		check("P3, PowerPoint", t, 403);
+		assertTrue("P3, PowerPoint: luminance exact but T239 (CR-034 §11, follow-up)", t.luminanceOff() <= 1);
 	}
 
 	private static String label(Shape sp) {

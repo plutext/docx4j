@@ -53,13 +53,16 @@ import org.slf4j.LoggerFactory;
  *     {@code Off}/{@code Mod}: linear RGB; {@code gamma} and {@code invGamma}: the sRGB transfer
  *     function each way;</li>
  * <li>{@code hue}, {@code sat}, {@code lum} and their {@code Off}/{@code Mod}, {@code comp}: HSL of
- *     the sRGB colour, the saturation not clamped (the channels are, afterwards);</li>
+ *     the sRGB colour, the saturation not clamped (the channels are, afterwards); a colour whose last
+ *     change is a luminance transform converted back as Foley and van Dam do and rounded half down,
+ *     as Office rounds it (so {@code tx1} at {@code lumMod 50000 lumOff 50000} is 7F7F7F);</li>
  * <li>{@code gray}: Rec.709 luma of the sRGB channels;</li>
  * <li>{@code alpha}, {@code alphaOff}, {@code alphaMod}: the alpha.</li>
  * </ul>
  * MS-OI29500 says {@code lumOff} and {@code satOff} are not supported by Office; Office 365 applies
  * both as above in every case measured.  Known differences from Office: a saturation set on a grey
- * (Office gives a grey's hue about 40 degrees), and some hue and luminance cases one unit off.
+ * (Office gives a grey's hue about 40 degrees), and some hue, saturation and luminance cases one
+ * unit off.
  *
  * @since 17.3.3 (CR-034)
  */
@@ -176,9 +179,11 @@ public final class DrawingMLColors {
 		if (transforms == null || transforms.isEmpty()) return base;
 		double r = base.getRed() / 255.0, g = base.getGreen() / 255.0, b = base.getBlue() / 255.0;
 		double alpha = base.getAlpha() / 100000.0;
+		boolean lumLast = false;   // the last change to the colour a luminance transform: it rounds half down
 		for (JAXBElement<?> t : transforms) {
 			String name = t.getName().getLocalPart();
 			double v = value(t.getValue()) / 100000.0;
+			if (!name.startsWith("alpha")) lumLast = name.startsWith("lum");
 			switch (name) {
 			case "tint":
 				r = ColorMath.toSrgb(1 - (1 - ColorMath.toLinear(r)) * v);
@@ -244,12 +249,14 @@ public final class DrawingMLColors {
 				case "satMod": s *= v; break;
 				case "lum": l = v; break;
 				case "lumOff": l += v; break;
-				case "lumMod": l *= v; break;
+				// l x val / 100000 in this order, not l *= v: with hslToRgbFoley and channelHalfDown, which way an exact
+				// half rounds follows this form's floating-point error, as Office's does (CR-034 §11, follow-up: measured)
+				case "lumMod": l = l * raw / 100000.0; break;
 				default: break;
 				}
 				h = h % 1;
 				if (h < 0) h += 1;
-				double[] rgb = ColorMath.hslToRgb(h, s, ColorMath.clamp01(l));
+				double[] rgb = lumLast ? ColorMath.hslToRgbFoley(h, s, ColorMath.clamp01(l)) : ColorMath.hslToRgb(h, s, ColorMath.clamp01(l));
 				r = rgb[0];
 				g = rgb[1];
 				b = rgb[2];
@@ -259,6 +266,8 @@ public final class DrawingMLColors {
 				log.debug("Ignoring an unknown colour transform " + name);
 			}
 		}
+		if (lumLast) return ResolvedColor.rgb(ColorMath.channelHalfDown(r), ColorMath.channelHalfDown(g), ColorMath.channelHalfDown(b))
+				.withAlpha((int) Math.round(ColorMath.clamp01(alpha) * 100000));
 		return ResolvedColor.rgb(ColorMath.channel(r), ColorMath.channel(g), ColorMath.channel(b))
 				.withAlpha((int) Math.round(ColorMath.clamp01(alpha) * 100000));
 	}
