@@ -63,9 +63,6 @@ from xercesImpl 2.11.0.  The ASF licenses this file under the Apache License, Ve
 org.docx4j.org.apache.xml.security repackages code in org.apache.xml.security,
 which the ASF licenses under the Apache License, Version 2.0 
 
-org.docx4j.services.client.MyRetryHandler is a modified version of Apache's http client DefaultHttpRequestRetryHandler.
-The ASF licenses that file under the Apache License, Version 2.0 
-
 docx4j-diffx uses the Diff-X library (org.pageseeder.diffx:pso-diffx) as a
 Maven dependency, copyright Allette Systems (Australia) and licensed under
 the Apache License, Version 2.0.  (docx4j 17.0.x and earlier instead bundled

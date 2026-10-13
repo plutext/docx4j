@@ -145,8 +145,6 @@
 
 
 
-	<logger name="org.docx4j.services.client" level="INFO" />
-
 	<logger name="org.docx4j.toc" level="WARN" />
 
 	<logger name="org.docx4j.wml" level="WARN" />

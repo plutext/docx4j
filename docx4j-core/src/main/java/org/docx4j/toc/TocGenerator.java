@@ -22,10 +22,7 @@ package org.docx4j.toc;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.StringWriter;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -76,7 +73,7 @@ import org.slf4j.LoggerFactory;
  * the docx in Word to do so), is a challenge.
  * 
  * This class supports generating the page numbers using 
- * export-fo (or the no-longer-available Converter).
+ * docx4j-export-fo.
  * 
  * If you are using docx4j-export-documents4j-local|remote,
  * you can use that for ToC generation.  
@@ -682,87 +679,12 @@ public class TocGenerator {
     	
     	if (Docx4J.pdfViaFO()) {
     		return getPageNumbersMapViaFOP();
-    	} else if (Docx4J.pdfViaLegacyConverter()) {
-    		try {
-    			return getPageNumbersMapViaService();
-    		} catch (TocException e) {
-    			throw new TocException("Page number service not available; try using docx4j-export-documents4j-local|remote or docx4j-export-fo");
-    		}
     	} else {
-    		throw new TocException("For page numbering, try using docx4j-export-documents4j-local|remote or docx4j-export-fo");
+    		throw new TocException("For page numbering, put docx4j-export-fo on the classpath (or have Word update the TOC,"
+    				+ " through docx4j-documents4j-local or -remote)");
     	}
     }
 
-    private Map<String, Integer> getPageNumbersMapViaService() throws TocException {
-    	
-    	log.debug("getPageNumbersMapViaService() starting..");
-    	
-    	// We always have to save the pkg, since we always update the entire table
-    	// (which might alter the document length)
-    	
-//    	File tmpDocxFile = null;
-		ByteArrayOutputStream tmpDocxFile = new ByteArrayOutputStream(); 
-		try {
-//			tmpDocxFile = TempDir.getTemporaryFile();
-			Docx4J.save(wordMLPackage, tmpDocxFile, Docx4J.FLAG_SAVE_ZIP_FILE);
-		} catch (Exception e) {
-			throw new TocException("Error saving pkg as tmp file; " + e.getMessage(),e);
-		}  
-		
-		// Not working?  Check your input
-//		try {
-//			File save_ToCEntries = new File( System.getProperty("java.io.tmpdir") 
-//					+ "/foo_tocEntries.docx"); 
-//			Docx4J.save(wordMLPackage, save_ToCEntries, Docx4J.FLAG_SAVE_ZIP_FILE);
-//			log.debug("Saved: " + save_ToCEntries);
-//		} catch (Exception e) {
-//			log.error(e.getMessage(), e);
-//		}
-    	    	
-    	// 
-		String documentServicesEndpoint = Docx4jProperties.getProperty("com.plutext.converter.URL", 
-				"http://localhost:9016/v1/00000000-0000-0000-0000-000000000000/convert");
-
-		ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-			
-		try {
-			
-			//Converter converter = new ConverterHttp(documentServicesEndpoint); 
-			Class<?> clazz = Class.forName("org.docx4j.services.client.ConverterHttp");		
-			Constructor constructor =
-					clazz.getConstructor(new Class[]{String.class});
-			Object converter = constructor.newInstance(documentServicesEndpoint);
-			Method method = converter.getClass().getMethod("convert", byte[].class, OutputStream.class);
-			// converter.convert(tmpDocxFile.toByteArray(), Format.DOCX, Format.TOC, baos);
-			method.invoke(converter, tmpDocxFile.toByteArray(),  baos);
-			baos.close();
-			
-			log.debug("page numbers successfully received from service");
-			
-		} catch (Exception e) {
-			throw new TocException("Error in toc web service at " 
-						+ documentServicesEndpoint + "\n" + e.getMessage(),e);
-		}
-		
-
-		/* DocumentServices 2.0-x
-		 * {"bookmarks":{"_Toc299924107":"68","_Toc318272803":"1"}}
-		 */
-		
-		byte[] json = baos.toByteArray();
-		try {
-			Class<?> clazz = Class.forName("org.docx4j.services.client.JsonUtil");		
-			Method method = clazz.getMethod("bytesToMap", byte[].class);
-			Map<String,Integer> map = (Map<String,Integer>)method.invoke(null, json);
-			log.debug("page number map size " + map.size());
-			return map;
-		} catch (Exception e) {
-			throw new TocException("Error reading toc json; \n" + json + "\n"+ e.getMessage(),e);
-		}
-
-    }
-    
-    
     /**
      * Invoke FOP to calculate page numbers: since 17.2.0 (CR-012 phase 3) through
      * {@link Paginate#compute}, the general pagination query, of which the page a

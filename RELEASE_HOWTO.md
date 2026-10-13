@@ -165,7 +165,6 @@ That should complete with something like:
 		[INFO] docx4j-samples-documents4j-remote .................. SUCCESS [  0.356 s]
 		[INFO] docx4j-samples-documents4j-local ................... SUCCESS [  0.504 s]
 		[INFO] docx4j-bundle ...................................... SUCCESS [  3.399 s]
-		[INFO] docx4j-legacy-service .............................. SUCCESS [06:13 min]
 		[INFO] ------------------------------------------------------------------------
 		[INFO] BUILD SUCCESS
 		[INFO] ------------------------------------------------------------------------

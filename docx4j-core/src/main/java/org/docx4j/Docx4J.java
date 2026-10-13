@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -894,31 +893,6 @@ public class Docx4J {
 			
 			log.error("Microsoft Graph can't be invoked via this interface.  Use it directly; see https://github.com/plutext/java-docx-to-pdf-using-Microsoft-Graph   ");
 
-		} else if (pdfViaLegacyConverter()) {
-			
-			// Configure this property to point to your own Converter instance.
-			// Since this converter is no longer available, this will only suit existing users
-			String URL = Docx4jProperties.getProperty("com.plutext.converter.URL", "http://localhost:9016/v1/00000000-0000-0000-0000-000000000000/convert");
-			
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			save(wmlPackage, baos);
-			
-			try {
-				// Converter converter = new ConverterHttp(URL); 
-				Class<?> clazz = Class.forName("org.docx4j.services.client.ConverterHttp");		
-				Constructor constructor =
-						clazz.getConstructor(new Class[]{String.class});
-				Object converter = constructor.newInstance(URL);
-				Method method = converter.getClass().getMethod("convert", byte[].class, OutputStream.class);
-				//converter.convert(baos.toByteArray(),  outputStream);
-				method.invoke(converter, baos.toByteArray(),  outputStream);
-				baos.close();
-			} catch (Exception e) {
-				throw new Docx4JException(e.getMessage(), e);
-			} finally {
-				new EventFinished(startEvent).publish();
-			}
-			
 		} else {
 
 			throw new Docx4JException("No PDF Converter found; see https://www.docx4java.org/blog/2020/09/office-pptxxlsxdocx-to-pdf-to-in-docx4j-8-2-3/" );
@@ -931,32 +905,7 @@ public class Docx4J {
 	public static Boolean EXPORT_DOCUMENTS4J_REMOTE_DETECTED = null;
 	public static Boolean EXPORT_DOCUMENTS4J_LOCAL_DETECTED = null;
 	public static Boolean EXPORT_MICROSOFT_GRAPH_DETECTED = null;
-	public static Boolean EXPORT_LEGACY_CONVERTER_DETECTED = null;
 
-	
-	/**
-	 * If the docx4j-legacy-converter project is present, 
-	 * we'll use it for PDF export.
-	 *  
-	 * @return
-	 * @since 8.3.1
-	 */
-	public static boolean pdfViaLegacyConverter() {
-		
-		if (EXPORT_LEGACY_CONVERTER_DETECTED==null) {
-			
-			try {
-				// Use reflection so docx4j-core doesn't depend on docx4j-legacy-service
-				Class<?> clazz = Class.forName("org.docx4j.services.client.ConverterHttp");			
-				EXPORT_LEGACY_CONVERTER_DETECTED = Boolean.TRUE;
-			} catch (Exception e) {
-				EXPORT_LEGACY_CONVERTER_DETECTED = Boolean.FALSE;
-			}
-		}
-		
-		return EXPORT_LEGACY_CONVERTER_DETECTED;
-	}
-	
 	/**
 	 * If the docx4j-export-fo project is present, 
 	 * we'll use FO for PDF export.
@@ -1072,7 +1021,7 @@ public class Docx4J {
 			return (Exporter<FOSettings>)method.invoke(null, null);
 			
 		} catch (Exception e) {
-			throw new Docx4JException("org.docx4j.convert.out.fo.FOExporterVisitor not found; if you want it, add docx4j-export-FO to your path.  Doing so will disable Plutext's PDF Converter." + "/n" + e.getMessage(), e);
+			throw new Docx4JException("org.docx4j.convert.out.fo.FOExporterVisitor not found; if you want it, add docx4j-export-FO to your path." + "/n" + e.getMessage(), e);
 		}			
 	}
 

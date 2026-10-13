@@ -1266,8 +1266,6 @@ So which should you choose? The following table covers some of the things you mi
 
 Best results are achieved using Microsoft Graph or if Microsoft Word is available -locally or remotely - to perform the conversion.  If this is the case, you can put docx4j-documents4j-local  or docx4j-documents4j-remote on your classpath, and rely on Microsoft Word to do the conversion.
 
-Note: For a period to 2019, Plutext offered a commercial PDF Converter.  That product is no longer available.
-
 The Docx4J facade can be used to convert to PDF:
 
 &#9;`public`` ``static`` ``void``  toPDF(WordprocessingMLPackage  ``wmlPackage``, OutputStream ``outputStream``) `

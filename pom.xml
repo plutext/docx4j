@@ -74,8 +74,6 @@
         <module>docx4j-samples-documents4j-local</module>        
 
         <module>docx4j-bundle</module>        
-
-        <module>docx4j-legacy-service</module>        
         
     </modules>
 	
@@ -177,9 +175,8 @@
 		</dependency>
 
 		<!-- docx4j-core gets commons-codec through commons-compress, but Santuario's xmlsec
-		     (docx4j-digsig) and httpclient (docx4j-legacy-service) ask for older versions, nearer.
-		     Left unmanaged, each is a dependency convergence error for anyone who depends on
-		     those modules. -->
+		     (docx4j-digsig) asks for an older version, nearer.  Left unmanaged, it is a dependency
+		     convergence error for anyone who depends on that module. -->
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>

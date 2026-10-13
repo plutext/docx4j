@@ -101,6 +101,10 @@ Changes in Version 17.3.3
   border colours, and w:fill="auto" no longer draws a 1px box.
 - HTML output: a simple field whose run has a w:lang is no longer dropped, nor does it leave its
   formatting on the next table converted in the thread.
+- The legacy PDF converter is gone: docx4j-legacy-service is no longer released (17.3.2 is its
+  last version), and Docx4J.pdfViaLegacyConverter() and EXPORT_LEGACY_CONVERTER_DETECTED are
+  removed; for PDF use docx4j-export-fo, documents4j or Microsoft Graph, and for a TOC's page
+  numbers docx4j-export-fo.  CR-038.
 
 
 Version 17.3.2
