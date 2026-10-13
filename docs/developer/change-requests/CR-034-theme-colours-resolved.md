@@ -700,4 +700,5 @@ half rounded down.  The direction then follows the floating-point error of that 
 cases exact in 97 of 98 per host (was 85), the one left `T239` (`tx2 lumMod 25000`, red 3.5000000000000018,
 Office 3), no case in any family worse.  `ThemeColourProbesTest` now holds the luminance families to
 that.  Hue and saturation keep `hslToRgb` and round half up; WordprocessingML's themeTint and
-themeShade (`WordColors`) are unchanged.
+themeShade (`WordColors`) are unchanged.  Handed to the ports the same day (core-ts CR-008.2,
+python CR-009): the rule, its order of operations and the cases now exact.
