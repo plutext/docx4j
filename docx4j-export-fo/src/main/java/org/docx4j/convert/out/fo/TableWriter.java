@@ -201,14 +201,32 @@ public class TableWriter extends AbstractTableWriter {
 	 * margin.  Then the grid edge is the negative half-overflow, and no cell margin
 	 * is taken off (Word centres the grid, not the text).</p>
 	 *
+	 * <p><b>A right-aligned table</b> (w:jc right or end; start is left) puts its grid's end
+	 * on the column's end, w:tblInd ignored, and below mode 15 one right cell margin past it,
+	 * mirroring the left shift: measured (CR-041, probes table-align-survey and
+	 * table-align-p0), a 4500-twip table's first cell text at 303.7pt in mode 15 and 309.2 in
+	 * mode 14 on a 72..523.3 column, w:jc end and w:tblInd 1440 or -720 alike.  A table wider
+	 * than the column keeps its end there and overhangs the left margin, off the page if need
+	 * be.  docx4j drew every one of them at the left margin until 17.3.3.  Not a floating
+	 * table, whose own position stands, nor a w:bidiVisual one, which Word places from the
+	 * right (CR-041 phase 3).</p>
+	 *
+	 * <p>A centred or right-aligned table nested in a cell is placed against that cell's
+	 * content, not the page's column ({@link WordLayoutFixups#nestedTableAlignment}): its
+	 * alignment and width are stamped here for that pass.</p>
+	 *
 	 * @since 17.0.5
 	 */
 	private void applyStartIndent(AbstractWmlConversionContext context, AbstractTableWriterModel table, Element tableRoot) {
 
 		org.docx4j.wml.CTTblPrBase tblPr = table.getEffectiveTableStyle().getTblPr();
 
-		boolean centred = tblPr != null && tblPr.getJc() != null
-				&& org.docx4j.wml.JcEnumeration.CENTER.equals(tblPr.getJc().getVal());
+		org.docx4j.wml.JcEnumeration jc = tblPr == null || tblPr.getJc() == null ? null : tblPr.getJc().getVal();
+		boolean centred = org.docx4j.wml.JcEnumeration.CENTER.equals(jc);
+		boolean floating = tblPr != null && tblPr.getTblpPr() != null && floatingTablesEnabled();
+		boolean bidiVisual = tblPr != null && tblPr.getBidiVisual() != null && tblPr.getBidiVisual().isVal();
+		boolean rightAligned = !floating && !bidiVisual
+				&& (org.docx4j.wml.JcEnumeration.RIGHT.equals(jc) || org.docx4j.wml.JcEnumeration.END.equals(jc));
 		int width = table.getTableWidth();
 		int available = writableWidthTwips(context);
 		int indent;
@@ -222,11 +240,16 @@ public class TableWriter extends AbstractTableWriter {
 		 * one, and half of it is the centring offset in both directions.  @since 17.1.0 */
 		if (centred && width > 0 && available > 0) {
 			indent = (available - width) / 2;
+			stampAlignment(tableRoot, "center", width);
+		} else if (rightAligned && width > 0 && available > 0) {
+			indent = available - width;
+			if (compatibilityMode(context) < 15) indent += rightCellMarginTwips(table, tblPr);
+			stampAlignment(tableRoot, "right", width);
 		} else {
 			// Word ignores w:tblInd on a centred or right aligned table (as PropertyFactory does)
 			indent = 0;
-			if (!centred && (tblPr == null || tblPr.getJc() == null
-					|| !org.docx4j.wml.JcEnumeration.RIGHT.equals(tblPr.getJc().getVal()))) {
+			if (!centred && !org.docx4j.wml.JcEnumeration.RIGHT.equals(jc)
+					&& !org.docx4j.wml.JcEnumeration.END.equals(jc)) {
 				org.docx4j.wml.TblWidth tblInd = tblPr == null ? null : tblPr.getTblInd();
 				if (tblInd != null && tblInd.getW() != null
 						&& (tblInd.getType() == null || "dxa".equals(tblInd.getType()))) {
@@ -637,6 +660,49 @@ public class TableWriter extends AbstractTableWriter {
 			}
 		}
 		// the built-in Normal Table's 108 is in the effective tblPr where it applies (17.2.0); none otherwise
+		return 0;
+	}
+
+	/** The alignment and width {@link WordLayoutFixups#nestedTableAlignment} needs, should
+	 *  this table turn out to be nested in a cell.  @since 17.3.3 */
+	private static void stampAlignment(Element tableRoot, String align, int widthTwips) {
+		tableRoot.setAttribute(WordLayoutFixups.HINT_TABLE_ALIGN, align);
+		tableRoot.setAttribute(WordLayoutFixups.HINT_TABLE_WIDTH, UnitsOfMeasurement.twipToBest(widthTwips));
+	}
+
+	/**
+	 * The right cell margin a right-aligned table overhangs the column's end by below mode
+	 * 15: w:tcMar/w:right on the first row's last cell, else w:tblCellMar/w:right, as
+	 * {@link #leftCellMarginTwips(AbstractTableWriterModel, org.docx4j.wml.CTTblPrBase)} is
+	 * for the left.  @since 17.3.3
+	 */
+	private static int rightCellMarginTwips(AbstractTableWriterModel table,
+			org.docx4j.wml.CTTblPrBase tblPr) {
+		try {
+			if (table != null && table.getRows() != null && !table.getRows().isEmpty()) {
+				org.docx4j.model.table.TableModelRow row = table.getRows().get(0);
+				for (int c = row == null ? -1 : row.size() - 1; c >= 0; c--) {
+					org.docx4j.model.table.TableModelCell cell = row.get(c);
+					if (cell == null || cell.isDummy()) continue;
+					if (cell.getTcPr() != null && cell.getTcPr().getTcMar() != null) {
+						org.docx4j.wml.TblWidth right = cell.getTcPr().getTcMar().getRight();
+						if (right != null && right.getW() != null
+								&& (right.getType() == null || "dxa".equals(right.getType()))) {
+							return right.getW().intValue();
+						}
+					}
+					break;
+				}
+			}
+		} catch (Exception e) {
+			logger.debug("No last-cell margin: " + e.getMessage());
+		}
+		if (tblPr != null && tblPr.getTblCellMar() != null && tblPr.getTblCellMar().getRight() != null) {
+			org.docx4j.wml.TblWidth right = tblPr.getTblCellMar().getRight();
+			if (right.getW() != null && (right.getType() == null || "dxa".equals(right.getType()))) {
+				return right.getW().intValue();
+			}
+		}
 		return 0;
 	}
 

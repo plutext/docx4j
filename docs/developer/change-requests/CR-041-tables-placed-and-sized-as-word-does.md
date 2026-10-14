@@ -2,7 +2,7 @@
 
 Status: ACCEPTED 2026-10-14 (Jason: "D1: phases 1 and 2 in 17.3.3; D2: (a); D3 to D6 agreed"; D7
 open); phase 0 DONE the same day (§7: the census, FOP, HTML, and Word's readings of the phase-0 probes;
-§3 amended by them).  Proposed 2026-10-14, raised by a user report (via Jason, 2026-10-14: "table content
+§3 amended by them); phase 1 DONE the same day (§11, gate b228: 0 movers).  Proposed 2026-10-14, raised by a user report (via Jason, 2026-10-14: "table content
 alignment (left, right, and center) is broken in 17.x in our xsl-fo output", and the reporter
 "fixed the table width issue by using percentages instead of inches").  Measured the same day
 with a new probe pair cut by Word (§1).  Reviewed the same day by the docx4j-b0 session at
@@ -378,7 +378,9 @@ the D6 helper if taken; the registry.
 then start phase 0."**  So phases 1 and 2 ship in 17.3.3 (phase 0 first, as phase 2 needs its
 counts); the width rule is (a); the switch is `refitStaleGrid`; `distribute` justifies on word
 spaces; phase 5 is handed off with its commit; the helper goes in phase 6.  D7 (the reply to the
-reporter) is not yet decided.  As proposed:
+reporter) is not yet decided.  **D2 as narrowed by phase 0** (§3's amended rule: a grid short
+of the stated width, or cells agreeing with the grid against it, by more than 1%; F8's shape
+excluded): accepted 2026-10-14 (Jason: "start phase 1 based on the narrowed rule").  As proposed:
 
 - **D1. Order and release.**  Recommended: phase 1's in-column cases first (they need nothing
   beyond §2), then phase 0, then phase 2; for 17.3.3, phases 1 and 2 (the reporter's two) if
@@ -527,7 +529,35 @@ hand-offs.  Phase 6: half a day.
 
 ## 11. Implementation record
 
-(None yet.)
+### Phase 1 (2026-10-14): the table's position
+
+- `TableWriter.applyStartIndent` (FO): `w:jc` right or end puts the table's end on the column's end
+  (`available - width`), one right cell margin further below mode 15 (`rightCellMarginTwips`: the
+  first row's last cell's `w:tcMar/w:right`, else `w:tblCellMar/w:right`); `w:tblInd` ignored for end as
+  for right; a table wider than the column overhangs the left margin.  Floating tables and
+  `w:bidiVisual` tables keep their old path (the latter is phase 3).  Centred and right-aligned tables
+  are stamped with their alignment and width (`HINT_TABLE_ALIGN`, `HINT_TABLE_WIDTH`).
+- `WordLayoutFixups.nestedTableAlignment`: a stamped table inside an `fo:table-cell` is centred or
+  right-aligned within the cell's content (`cellContentWidthPt`), before `cellLineWidth` touches the
+  padding; the hints are removed from every table.
+- `PropertyFactory`: `w:tblInd` dropped for end as for center and right (both exporters).
+- HTML (`html.TableWriter`): `margin-left`/`margin-right` auto for center, `margin-left: auto;
+  margin-right: 0` for right and end; not for `w:bidiVisual`.
+- Tests: export-fo-tests `TableAlignmentTest` (7, both pathways: right and end with `w:tblInd` 1440
+  and -720, mode 14's overhang, over-wide, start, from the table style, `w:bidiVisual` unchanged,
+  nested centred and right); core-tests `HtmlTableAlignmentTest` (4, both pathways).  Suites:
+  export-fo-tests 801/0 (9 skipped), core-tests 1562/0 (11 skipped).
+- Against Word (`table-align-survey-*`, `table-align-p0-*`, re-rendered on the change): every right and
+  end case within 0.3pt in modes 15 and 14 (G4, G6, G8, G11, G13, G15, P2, P3; mode 14's 309.2
+  included), the over-wide P1 within 0.5pt, nested centred I2 and P7 within 0.4pt (I2 was +5.7),
+  nested right P6 within 0.9pt (mode 14 0.3pt); B and J (`w:bidiVisual`) unchanged.  HTML printed
+  by Chrome: centred, right and nested tables placed; `w:tblInd` and `w:bidiVisual` unchanged.
+- Gate b228 against b227 (`~/fidelity-cr030/gate-b227-b228.sh`, jars frozen, docx4j renderer
+  2.11-docx4j.6): **0 movers** over real, real2, real3 and real-c2, every event count equal; the
+  existing probes identical (the six new `table-align-*` probes are the only new rows, 0.96 to 1.00).
+  Line parity does not see a table move sideways, so the corpus's three right-aligned tables were
+  read directly: real2 2274's at x 108.4 (b227) against Word's 143.8, now 143.8; real3 10976's at
+  215.8 against 204.6, now 204.4.
 
 ## 12. Review (docx4j-b0 session, 2026-10-14, at Jason's request)
 

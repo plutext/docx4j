@@ -195,6 +195,7 @@ public final class WordLayoutFixups {
 		headerFooterPartIndent(doc);
 		retainSpaceAfterInAlignedFlow(doc);
 		retainSpacingAtCellEdges(doc, compatibilityMode);
+		nestedTableAlignment(doc); // before cellLineWidth, which gives some of a cell's padding back
 		cellLineWidth(doc);
 		nestedTableGridEdge(doc);
 		fixLists(doc);
@@ -4930,6 +4931,38 @@ public final class WordLayoutFixups {
 			if (shift == 0 || !insideTableCell(tbl)) continue;
 			double indent = lengthPt(tbl.getAttribute("start-indent"));
 			tbl.setAttribute("start-indent", org.docx4j.fonts.WordLineMetrics.format(indent + shift));
+		}
+	}
+
+	/** "center" or "right" on an fo:table TableWriter.applyStartIndent aligned on the page's
+	 *  text column; {@link #HINT_TABLE_WIDTH} its width.  @since 17.3.3 */
+	public static final String HINT_TABLE_ALIGN = "docx4j-table-align";
+	public static final String HINT_TABLE_WIDTH = "docx4j-table-width";
+
+	/**
+	 * A centred or right-aligned table nested in a cell is aligned within that cell's
+	 * content, not the page's text column.  Measured (CR-041, probes table-align-survey
+	 * and table-align-p0): a 4000-twip table centred in a full-width cell has Word's inner
+	 * grid edge at 197.65pt, the cell content's centre, where docx4j, centring on the page's
+	 * column from the cell's content edge, put it at 203.4; right-aligned, its end is on the
+	 * cell content's end (Word's last column 417.7..517.7 on a content edge of 517.9), where
+	 * docx4j drew it at the cell's start.  Nesting is only known here (see
+	 * {@link #nestedTableGridEdge}).  The cell's padding is read before {@link #cellLineWidth}
+	 * gives some of it back.  @since 17.3.3
+	 */
+	static void nestedTableAlignment(Document doc) {
+		for (Element tbl : elements(doc, "table")) {
+			if (!tbl.hasAttribute(HINT_TABLE_ALIGN)) continue;
+			String align = tbl.getAttribute(HINT_TABLE_ALIGN);
+			double width = lengthPt(tbl.getAttribute(HINT_TABLE_WIDTH));
+			tbl.removeAttribute(HINT_TABLE_ALIGN);
+			tbl.removeAttribute(HINT_TABLE_WIDTH);
+			Element cell = ancestorCell(tbl);
+			if (cell == null || width <= 0) continue;
+			double content = cellContentWidthPt(cell);
+			if (content <= 0) continue;
+			double indent = "right".equals(align) ? content - width : (content - width) / 2;
+			tbl.setAttribute("start-indent", org.docx4j.fonts.WordLineMetrics.format(indent));
 		}
 	}
 

@@ -154,14 +154,30 @@ public class TableWriter extends AbstractTableWriter {
 		// Hebrew: columns appear in reverse order
 		// see http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/bidiVisual.html
 		// @since 3.0.2
-		if ((table.getEffectiveTableStyle().getTblPr() != null) 
-				&& (table.getEffectiveTableStyle().getTblPr().getBidiVisual()!=null) 
-				&& (table.getEffectiveTableStyle().getTblPr().getBidiVisual().isVal()) ) {
+		boolean bidiVisual = (table.getEffectiveTableStyle().getTblPr() != null)
+				&& (table.getEffectiveTableStyle().getTblPr().getBidiVisual()!=null)
+				&& (table.getEffectiveTableStyle().getTblPr().getBidiVisual().isVal());
+		if (bidiVisual) {
 
 			HtmlCssHelper.appendStyle(tableRoot, Property.composeCss("direction", "rtl"));
-			
+
 		}
-		
+
+		// w:jc center, right or end: the table placed in its container as Word places it
+		// (PropertyFactory drops w:tblInd for these, as Word does); start is left.  A
+		// w:bidiVisual table, which Word places from the right, is CR-041 phase 3.
+		// @since 17.3.3 (CR-041)
+		org.docx4j.wml.CTTblPrBase tblPr = table.getEffectiveTableStyle().getTblPr();
+		org.docx4j.wml.JcEnumeration jc = tblPr == null || tblPr.getJc() == null ? null : tblPr.getJc().getVal();
+		if (!bidiVisual && org.docx4j.wml.JcEnumeration.CENTER.equals(jc)) {
+			HtmlCssHelper.appendStyle(tableRoot, Property.composeCss("margin-left", "auto"));
+			HtmlCssHelper.appendStyle(tableRoot, Property.composeCss("margin-right", "auto"));
+		} else if (!bidiVisual && (org.docx4j.wml.JcEnumeration.RIGHT.equals(jc)
+				|| org.docx4j.wml.JcEnumeration.END.equals(jc))) {
+			HtmlCssHelper.appendStyle(tableRoot, Property.composeCss("margin-left", "auto"));
+			HtmlCssHelper.appendStyle(tableRoot, Property.composeCss("margin-right", "0"));
+		}
+
 	}
 
 	/**

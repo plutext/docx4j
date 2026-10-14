@@ -123,6 +123,10 @@ Changes in Version 17.3.3
   (their getVal() the number).  CR-040.
 - docx4j-digsig: BouncyCastle 1.78.1 to 1.86 (six advisories against 1.78.1, among them
   CVE-2026-8763 and CVE-2026-13506); Santuario stays 3.0.6.  CR-033 §11.
+- PDF and HTML output place a table with w:jc right or end against the right margin (w:tblInd
+  ignored, as Word does; below mode 15 one cell margin past it), where it was drawn at the left
+  margin; a centred or right-aligned table nested in a cell is placed within that cell; HTML
+  centres a w:jc center table.  CR-041.
 
 
 Version 17.3.2

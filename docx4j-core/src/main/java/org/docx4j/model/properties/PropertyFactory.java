@@ -143,11 +143,13 @@ public class PropertyFactory {
 		List<Property> properties = new ArrayList<Property>();
 
 		if (tblPr.getJc()!=null
-				&& 
-				(tblPr.getJc().getVal().equals(JcEnumeration.CENTER)
-						|| tblPr.getJc().getVal().equals(JcEnumeration.RIGHT)))
-		{ 
-			// ignore TblInd (since docx4j 3.0.1)
+				&&
+				(JcEnumeration.CENTER.equals(tblPr.getJc().getVal())
+						|| JcEnumeration.RIGHT.equals(tblPr.getJc().getVal())
+						|| JcEnumeration.END.equals(tblPr.getJc().getVal())))
+		{
+			// ignore TblInd (since docx4j 3.0.1), as Word does; end too, which Word reads
+			// as right (CR-041, probe table-align-p0 P3)
 		} else {
 			if (tblPr.getTblInd()!=null) 
 				properties.add(new org.docx4j.model.properties.table.Indent(tblPr.getTblInd()) );
