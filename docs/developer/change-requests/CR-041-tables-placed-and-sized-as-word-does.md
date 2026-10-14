@@ -1,8 +1,8 @@
 # CR-041: Tables placed and sized as Word does - right-aligned and `bidiVisual` tables, a generator's stale grid, `w:jc` end and distribute, percentages below mode 15, and two table-style conditions
 
 Status: ACCEPTED 2026-10-14 (Jason: "D1: phases 1 and 2 in 17.3.3; D2: (a); D3 to D6 agreed"; D7
-open); phase 0 in progress: the census, the FOP check and the HTML render read (§7), Word's goldens of the
-phase-0 probes awaited.  Proposed 2026-10-14, raised by a user report (via Jason, 2026-10-14: "table content
+open); phase 0 DONE the same day (§7: the census, FOP, HTML, and Word's readings of the phase-0 probes;
+§3 amended by them).  Proposed 2026-10-14, raised by a user report (via Jason, 2026-10-14: "table content
 alignment (left, right, and center) is broken in 17.x in our xsl-fo output", and the reporter
 "fixed the table width issue by using percentages instead of inches").  Measured the same day
 with a new probe pair cut by Word (§1).  Reviewed the same day by the docx4j-b0 session at
@@ -211,8 +211,9 @@ docx4j version they compare with, and a sample would (D7).
 `w:jc` right or end puts the table's grid end on the text column's end:
 `start-indent = available - width`, plus one right cell margin below mode 15 (the overhang
 measured), `w:tblInd` ignored for both right and end; start reads as left.  An over-wide
-right-aligned table (presumably overhanging the left margin) waits for its phase-0 reading; the
-in-column case needs nothing beyond §2.  A nested table's centring or right alignment is taken
+right-aligned table keeps its right edge there and overhangs the left margin, off the page if need
+be (P1, §7.4).  A nested right-aligned table puts its right edge on the containing cell's content
+edge, below mode 15 one cell margin beyond it (P6).  A nested table's centring or right alignment is taken
 against the containing cell's content width in `WordLayoutFixups`, beside `nestedTableGridEdge`.
 HTML: `margin-left` and `margin-right` auto for center, `margin-left: auto; margin-right: 0` for
 right and end.
@@ -232,14 +233,28 @@ percentages), else to the grid's, else by content - autofit and fixed alike (F11
 - The shape is absent from Word-written files by §6.4's count in one direction; phase 0 counts
   the other (a grid wider than `w:tblW`, F8) and the percentage case before anything changes.
 - `w:tblW auto` tables keep today's rules.
-- **Amended by phase 0's census (§7.1, 2026-10-14): one direction only, top-level tables only.**  The
-  grid gives way where its sum falls **short** of the stated width by more than 2% (findings F6,
-  F7, F11, F12); a grid **wider** than the stated width stands, F8 included, because three
-  Word-written tables of exactly F8's shape (cells summing to `w:tblW`, grid wider) were kept by
-  Word.  A nested table is bounded by its cell and is left alone.  Below mode 15 a percentage width
-  is compared on finding 3's base.  F15 (percentage cells over an equal grid summing to the table's
-  width) is not a contradiction of the table's width, and stays as it is: it is §6.3's
-  `table-cell-pct` conflict, where the corpus says the opposite.
+- **Amended by phase 0 (§7.1, §7.4, 2026-10-14): the rule as it will be implemented.**  A top-level
+  table with an absolute or percentage `w:tblW` (the percentage on finding 3's base below mode 15)
+  is laid out at that width, not on its grid, where
+  - (i) the grid's sum falls **short** of the stated width by more than 1%; or
+  - (ii) every column states a width, the cells agree with the grid (within 1%), and the stated width
+    differs from both by more than 1%, in either direction.
+
+  Not where the cells agree with the stated width and the grid is wider (F8's shape): Word kept
+  five of the corpus's six such tables, so the grid stands there.  Over the three corpora the rule
+  fires on no Word-written table with an absolute width, and on two with a percentage width (real2
+  3117, already drawn at their percentage width).  The threshold is 1%, the existing test's: the
+  probes show Word re-laying a generator's grid only 1.9% off (W11, W13), and the corpus has no
+  Word-written table in either of the rule's shapes between 1% and 2%.  A nested table (bounded by
+  its cell) is left alone.  F15 (percentage cells over an equal grid summing to the table's width)
+  is outside the rule and stays as it is (§6.3's `table-cell-pct` conflict).
+- **How such a table is laid out** (Word's re-saves, §7.4): at the stated width, the columns the
+  cells' widths scaled to it (W1 and W6: cells 3000/2000/1000 under 9026 give 4513/3009/1504, the
+  grid's 1000/2000/3000 ignored; a percentage cell is a percentage of the table, W9 1805/2708/4513),
+  the grid's proportions where a column states none, and no column below its content's minimum (W4:
+  three 2500-twip cells holding words of about 2240 under a 4000 `w:tblW` give 3 x 2243).  That is the
+  autofit pass with the stated width as the table's preference, which FO has; HTML, which measures
+  nothing, scales the cells' proportions to the stated width.  Fixed layout alike (W6, F11, F12).
 - One switch restores the grid: the existing `docx4j.convert.out.fo.tables.refitStaleGrid=false`
   (D3).
 - Finding 3: below mode 15 a percentage `w:tblW` is of the text column plus the table's left and
@@ -250,21 +265,29 @@ set back to left-to-right so a paragraph keeps its own direction (in HTML `direc
 the cells).  In FO, an `fo:block-container writing-mode="lr-tb"` per cell if FOP honours it
 there (phase 0 checks, on Apache FOP and the docx4j renderer), else an explicit `text-align`
 and the start and end indents mapped for each cell block.  The table's position mirrors finding
-1: no `w:jc`, left or start against the right margin, right or end against the left, and
-`w:tblInd` from the right (to be measured).
+1: no `w:jc`, left or start against the right margin with `w:tblInd` measured from it (B1); center
+centred (B2); right or end against the left margin, `w:tblInd` ignored (B4, B5).  Below mode 15 the
+table's outer edge moves out by the cell margin on whichever side it sits, mirroring §6.1 (§7.4).
 
 **Finding 4, `w:jc` values (FO and CSS, both pathways).**  start and end to `text-align` start
-and end (the paragraph's own direction decides, as Word's J2 shows for left and right);
-distribute and thaiDistribute to justify with `text-align-last` justify (CSS adds `text-justify:
-inter-character`); the kashida values to justify; numTab left.  FOP stretches word spaces only,
+and end (the paragraph's own direction decides: in a `w:bidi` paragraph Word draws start, and left,
+at the right, and end, and right, at the left, J1 to J4); distribute to justify with
+`text-align-last` justify (CSS adds `text-justify: inter-character`): Word spreads every line,
+even a lone short one (J5); thaiDistribute to justify alone (Word left a one-line Latin
+thaiDistribute paragraph unspread, J7); the kashida values to justify; numTab left.  FOP stretches word spaces only,
 so a distributed line of one word stays unspread (D4).  **After finding 5**: in today's `rl-tb`
 tables an `end` paragraph writes nothing and inherits the right; written as `end`, it would go
 to the left until the cells are left-to-right.
 
 **Findings 6 and 7, table-style conditions (the resolver, `TableStyleConditions`).**  As phase
-0's probes settle them: finding 6 most likely "the first row (last row, first column, last
-column) is left out of the bands only where the style chain gives that condition a format";
-finding 7 whatever the probes show.  These change what `PropertyResolver` reports in a table
+0's probes settled finding 6 (§7.4): **the first row, or first column, is left out of the bands
+only where the style chain gives that condition a format with something in it** (N1, N6 excluded;
+N2's empty firstRow `w:tblStylePr` and N5's column with no format banded from the first).
+Finding 7 is part-settled: below mode 15 the conditional `w:vAlign` applies, as docx4j has it;
+in mode 15 a whole-table `w:vAlign` center beats a firstRow bottom (V2, V3) but a whole-table top
+does not (V5).  Whether "any whole-table value but top wins" or "center wins" needs a further
+probe (whole-table bottom with a conditional center, whole-table center with a conditional top),
+which phase 5 adds before its change; no corpus table is affected.  These change what `PropertyResolver` reports in a table
 context, so the ports that mirror CR-030 (core-ts, python, mcp) follow (D5).
 
 ## 4. Population and risk
@@ -324,8 +347,8 @@ kept or reverted.
   needs them.
 
 **Phase 1 - the table's position (findings 1, 8), FO and HTML.**  `applyStartIndent` (right and
-end, `w:tblInd` ignored for both), the nested case in `WordLayoutFixups`, HTML margins.  The
-in-column cases first; the over-wide right-aligned case after its phase-0 reading.  Tests in
+end, `w:tblInd` ignored for both; an over-wide one overhanging the left margin), the nested case in
+`WordLayoutFixups` (centred, and right-aligned on the cell's content edge), HTML margins.  Tests in
 export-fo-tests (FO) and core-tests (HTML).
 
 **Phase 2 - the width (findings 2, 3), FO and HTML.**  The contradiction test at the head of
@@ -339,8 +362,9 @@ by case, each kept, re-pinned with the reason, or retired.
 **Phase 4 - `w:jc` values (finding 4).**  `Justification`'s FO and CSS output; both pathways.
 Lands with or after phase 3 (§3).
 
-**Phase 5 - table-style conditions (findings 6, 7).**  `TableStyleConditions` (and whatever phase
-0 shows finding 7 needs); `TableContextResolutionTest` cases; the hand-offs (D5).
+**Phase 5 - table-style conditions (findings 6, 7).**  `TableStyleConditions`: the first row and
+column banded unless the style gives them a non-empty format (§3); finding 7 after one more Word
+probe (§3); `TableContextResolutionTest` cases; the hand-offs (D5).
 
 **Phase 6 - the record.**  `word-layout-rules.md` §6.1 (right and nested alignment,
 `w:bidiVisual`), §6.3 (the contradiction rule; the fixed-layout advice corrected), §6.4 (the
@@ -439,11 +463,48 @@ finding 2 holds (F6 and F7 at their 300pt grid, F8 at its wider grid, F15's colu
 holds for centred tables too (G3, G4, G6 all at the left margin); finding 4 holds (`end` left,
 `distribute` ragged); F12 (fixed, 100%) is drawn full width, as Word does, unlike FO.
 
-### 7.4 Word probes
+### 7.4 Word probes (goldens and re-saves cut by Jason, 2026-10-14)
 
-`table-align-p0-compat15`, `-compat15-override0`, `-compat14`, `-compat12` (W widths, P positions,
-B `w:bidiVisual`, J `w:jc` values, N banding, V conditional `w:vAlign`) on the share since 2026-10-14;
-Word's goldens and re-saves awaited.
+`table-align-p0-compat15`, `-compat15-override0`, `-compat14`, `-compat12`.  Mode 15 with the setting
+stated 0 is identical to mode 15 in every case, and mode 12 to mode 14: the setting decides none of
+this, and below mode 15 is one case.  Positions as in §1; "re-saved" is Word's grid.
+
+| case | Word | docx4j |
+|---|---|---|
+| W1: 9026 dxa, grid 1000/2000/3000, cells 3000/2000/1000 | re-saved 4513/3009/1504 (the cells, scaled) | the grid, 6000 |
+| W2: the same, cells = grid 1000/2000/3000 | 1504/3009/4513 (scaled) | 6000 |
+| W3: grid 1000/2000/3000, no `w:tcW` | 2636/3381/3009 (content and §6.4) | matches |
+| W4: 4000 dxa, cells and grid 3 x 2500, a ~2240-twip word in each | 3 x 2243 (the content's minimum) | the grid, 7500 |
+| W5: 4000 dxa, grid 3 x 2500, no `w:tcW` | 1169/1498/1333 | matches |
+| W6: W1 in fixed layout | 4513/3009/1504 | the grid |
+| W7: 100%, grid 1000/2000/3000, no `w:tcW` | 2634/3377/3006 | matches |
+| W8: 9026 dxa, cells 2000 / auto / 2000 | 2000/5026/2000 | matches |
+| W9: 9026 dxa, grid 3 x 2000, cells 20/30/50% | 1805/2708/4513 | 6000 |
+| W10: 100%, cells and grid 3 x 3081 (9243) | mode 15: 3005/3008/3004; mode 14: kept, 3 x 3081 (finding 3) | mode 15 matches; 14 matches |
+| W11 / W12: 9026 dxa, cells and grid 1.9% / 3.0% over | 3007/3011/3008, 3007/3012/3007 (re-laid) | the grid: +8.5pt, +13.7pt |
+| W13 / W14: the same 1.9% / 2.9% under | 3008/3009/3009 both | the grid: -9.1, -13.6pt |
+| P1: `w:jc` right, 11000 dxa | right edge on the margin, overhanging the left (off the page) | at the left margin |
+| P2: right, `w:tblInd` -720 / P3: end, `w:tblInd` 1440 | both at 303.7 (mode 14 309.2): the indent ignored, end = right | 77.7 / 149.7 |
+| P4: center, `w:tblInd` -720 / P5: start, `w:tblInd` 1440 | indent ignored / applied | matches |
+| P6: nested, right | inner right edge on the cell's content edge (322.9; mode 14 328.9) | 83.3 |
+| P7: nested, center | as the survey's I: 203.1 | +5.7 (mode 14 matches) |
+| B1: `w:bidiVisual`, `w:tblInd` 1440 | against the right margin less 72pt (356.3; mode 14 362.3) | +60 |
+| B2: `w:bidiVisual`, center | centred (352.9) | +67 |
+| B3 / B4: start / end | right margin (428.3) / left (77.3 for c) | -84 / +67 |
+| B5: right, `w:tblInd` 1440 | as B4: the indent ignored | +67 |
+| J1 to J4: `w:bidi` paragraphs, start / end / left / right | right / **left** / right / left | end drawn right (+398); the rest match |
+| J5 / J6: distribute, one short line / several | every line spread, the lone line too | not spread (-16pt on J6's lines) |
+| J7: thaiDistribute, one Latin line | not spread | matches |
+| J8, J9: mediumKashida / both, Arabic | inconclusive from the label's position (2.7 to 6pt apart in both) | - |
+| N1: firstRow bold + band1Horz | row 1 out of the bands | matches |
+| N2: an empty firstRow `w:tblStylePr` + band1Horz | row 1 **banded** | row 1 left out (+-100) |
+| N3, N4: lastRow without and with a format | indistinguishable (band 2 has no format) | - |
+| N5: band1Vert, firstColumn on, no firstCol format | column 1 **banded** | column 1 left out (+-100) |
+| N6: firstCol bold + band1Vert | column 1 out of the bands | matches |
+| V1: firstRow bottom only | bottom, both modes | matches |
+| V2, V3: whole center + firstRow bottom (V3 shaded) | mode 15 **centre**; mode 14 bottom | bottom both |
+| V4: firstRow shaded, no `w:vAlign` | top | matches |
+| V5: whole top + firstRow bottom | bottom, both modes | matches |
 
 ## 8. Hand-offs
 
