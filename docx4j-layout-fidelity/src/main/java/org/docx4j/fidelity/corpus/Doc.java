@@ -1048,6 +1048,55 @@ public final class Doc {
 	}
 
 	/**
+	 * A generated, numbered PNG anchored with every setting stated, for the page- and
+	 * margin-anchored wrap probes (fop/CR-024 item 11, docx4j CR-032 phase 4): {@code wrap}
+	 * "square", "topAndBottom" or "none" (behind the text); {@code wrapText} the side text
+	 * may take ("bothSides", "left", "right", "largest"); the four wrap distances in EMU;
+	 * {@code wp:positionH} and {@code wp:positionV} each relative to the frame named
+	 * ("page", "margin", "column", "paragraph"), at an offset in EMU or, where the
+	 * alignment is not null, at that alignment.
+	 * @since 17.3.3
+	 */
+	public R positionedImage(int wPx, int hPx, long cxEmu, long cyEmu, String wrap, String wrapText,
+			long distT, long distB, long distL, long distR,
+			String hRelativeFrom, String hAlign, long hOffsetEmu,
+			String vRelativeFrom, String vAlign, long vOffsetEmu, int number) throws Exception {
+		imageCounter++;
+		BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(pkg, mdp, png(wPx, hPx, number));
+		String rId = imagePart.getSourceRelationship().getId();
+		String wrapXml = "square".equals(wrap) ? "<wp:wrapSquare wrapText=\"" + wrapText + "\"/>"
+				: "topAndBottom".equals(wrap) ? "<wp:wrapTopAndBottom/>" : "<wp:wrapNone/>";
+		String posH = hAlign != null ? "<wp:align>" + hAlign + "</wp:align>" : "<wp:posOffset>" + hOffsetEmu + "</wp:posOffset>";
+		String posV = vAlign != null ? "<wp:align>" + vAlign + "</wp:align>" : "<wp:posOffset>" + vOffsetEmu + "</wp:posOffset>";
+		String xml = "<wp:anchor xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
+				+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
+				+ " xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\""
+				+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\""
+				+ " distT=\"" + distT + "\" distB=\"" + distB + "\" distL=\"" + distL + "\" distR=\"" + distR + "\""
+				+ " simplePos=\"0\" relativeHeight=\"" + (251658240 + imageCounter) + "\""
+				+ " behindDoc=\"" + ("none".equals(wrap) ? 1 : 0) + "\" locked=\"0\" layoutInCell=\"1\" allowOverlap=\"1\">"
+				+ "<wp:simplePos x=\"0\" y=\"0\"/>"
+				+ "<wp:positionH relativeFrom=\"" + hRelativeFrom + "\">" + posH + "</wp:positionH>"
+				+ "<wp:positionV relativeFrom=\"" + vRelativeFrom + "\">" + posV + "</wp:positionV>"
+				+ "<wp:extent cx=\"" + cxEmu + "\" cy=\"" + cyEmu + "\"/><wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>"
+				+ wrapXml
+				+ "<wp:docPr id=\"" + imageCounter + "\" name=\"positioned" + imageCounter + "\"/>"
+				+ "<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect=\"1\"/></wp:cNvGraphicFramePr>"
+				+ "<a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:pic>"
+				+ "<pic:nvPicPr><pic:cNvPr id=\"" + (300 + imageCounter) + "\" name=\"positioned" + imageCounter + "\"/><pic:cNvPicPr/></pic:nvPicPr>"
+				+ "<pic:blipFill><a:blip r:embed=\"" + rId + "\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>"
+				+ "<pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"" + cxEmu + "\" cy=\"" + cyEmu + "\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr>"
+				+ "</pic:pic></a:graphicData></a:graphic></wp:anchor>";
+		Object anchor = XmlUtils.unmarshalString(xml, Context.jc, org.docx4j.dml.wordprocessingDrawing.Anchor.class);
+		if (anchor instanceof jakarta.xml.bind.JAXBElement) anchor = ((jakarta.xml.bind.JAXBElement<?>) anchor).getValue();
+		R r = F.createR();
+		Drawing d = F.createDrawing();
+		d.getAnchorOrInline().add((org.docx4j.dml.wordprocessingDrawing.Anchor) anchor);
+		r.getContent().add(d);
+		return r;
+	}
+
+	/**
 	 * A generated PNG anchored to the PAGE, behind the text, at the given offsets in EMU
 	 * from the page's top left corner - the shape a cover background has. Word clamps a
 	 * picture whose offsets put it off the page; the raw offsets are what the docx says.

@@ -1052,6 +1052,183 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		// ------------------------- CR-032 phase 4 and fop/CR-024 item 11: page-anchored objects
+
+		/*
+		 * CR-032 phase 4 (2026-10-15), from a user's letterhead (m1.docx) and corpus 1616 and
+		 * 8362.  A page- or margin-anchored table is placed at its tblpY and Word runs the flow
+		 * around it, below it where it is full width.  docx4j draws a section-opening one in a
+		 * positioned container with the flow starting underneath it, and leaves one after
+		 * content in the flow at whatever height the flow has reached.  One case a section, so
+		 * that each opener really opens its page.  A4, 72pt margins: the body top is 72pt.
+		 */
+		PROBES.add(new Probe("table-floating-page-opener",
+				"page- and margin-anchored full-width tables opening their section, one case a section; mode 15: "
+				+ "1 tblpY 92pt (20pt below the body top) then a 7pt paragraph, an empty one and text; 2 tblpY 36pt "
+				+ "(in the top margin) then an in-flow table; 3 margin-anchored tblpY 30pt; 4 a 40% page-anchored "
+				+ "table at the right, tblpY 144pt, with text after; 5 a two-row table at tblpY 0 (its foot above the "
+				+ "body top); 6 an opener after a page break, not a section break.  Read the table's y and where the "
+				+ "flow resumes: above it in the gap, below its foot, or at the body top", () -> {
+			Doc d = Doc.create(15);
+			// 1. m1's first table: 20pt below the body top, a small paragraph that fits the gap
+			Doc.Table a = new Doc.Table(4513, 4513).fixedLayout().floating("page", "margin", 0, null, 1840, null);
+			a.row(SERIF, 24, false, "opener 1", "tblpY 92pt").row(SERIF, 24, false, prose(1, 1), "b")
+					.row(SERIF, 24, false, "third row", "c");
+			d.add(a.build());
+			d.para("small 7pt anchor").font(SERIF, 14).after(0).add();
+			d.emptyParagraph();
+			d.para("text after opener 1. " + prose(3, 2)).after(160).add();
+			d.para(prose(3, 3)).after(160).add();
+			d.endSection("nextPage");
+			// 2. 1616's shape: the table in the top margin, an in-flow table after it
+			Doc.Table b = new Doc.Table(4513, 4513).fixedLayout().floating("page", "margin", 0, null, 720, null);
+			b.row(SERIF, 24, false, "opener 2", "tblpY 36pt").row(SERIF, 24, false, prose(1, 4), "b")
+					.row(SERIF, 24, false, "third row", "c");
+			d.add(b.build());
+			Doc.Table b2 = new Doc.Table(4513, 4513).fixedLayout();
+			b2.row(SERIF, 24, false, "in-flow table", "after opener 2").row(SERIF, 24, false, "second row", "d");
+			d.add(b2.build());
+			d.para("text after the in-flow table. " + prose(3, 5)).after(160).add();
+			d.endSection("nextPage");
+			// 3. margin-anchored, 30pt below the margin
+			Doc.Table c = new Doc.Table(4513, 4513).fixedLayout().floating("margin", "margin", 0, null, 600, null);
+			c.row(SERIF, 24, false, "opener 3", "margin, tblpY 30pt").row(SERIF, 24, false, prose(1, 6), "b");
+			d.add(c.build());
+			d.para("anchor after opener 3. " + prose(4, 7)).after(160).add();
+			d.para(prose(3, 8)).after(160).add();
+			d.endSection("nextPage");
+			// 4. a narrow opener at the right: text beside it, above it?
+			Doc.Table e = new Doc.Table(1805, 1805).fixedLayout().floating("page", "margin", null, "right", 2880, null);
+			e.row(SERIF, 20, false, "opener 4", "narrow").row(SERIF, 20, false, "tblpY", "144pt");
+			d.add(e.build());
+			for (int i = 0; i < 4; i++) d.para((i == 0 ? "anchor after opener 4. " : "") + prose(4, 9 + i)).after(160).add();
+			d.endSection("nextPage");
+			// 5. at the page's top edge, two rows: its foot is above the body top
+			Doc.Table g = new Doc.Table(4513, 4513).fixedLayout().floating("page", "margin", 0, null, 0, null);
+			g.row(SERIF, 20, false, "opener 5", "tblpY 0").row(SERIF, 20, false, "second row", "e");
+			d.add(g.build());
+			d.para("anchor after opener 5. " + prose(3, 13)).after(160).add();
+			d.para(prose(3, 14)).after(160).add();
+			d.endSection("nextPage");
+			// 6. after a page break rather than a section break (corpus 5893)
+			d.para("the page before opener 6. " + prose(1, 15)).after(160).add();
+			d.pageBreak();
+			Doc.Table h = new Doc.Table(4513, 4513).fixedLayout().floating("page", "margin", 0, null, 1840, null);
+			h.row(SERIF, 24, false, "opener 6", "after a page break, tblpY 92pt").row(SERIF, 24, false, prose(1, 16), "b");
+			d.add(h.build());
+			d.para("anchor after opener 6. " + prose(3, 17)).after(160).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("table-floating-page-after",
+				"page- and margin-anchored tables after content, one case a section; mode 15: 1 m1's pair (a "
+				+ "page-anchored opener at 92pt, a 7pt and an empty paragraph, a second page-anchored table at "
+				+ "200pt); 2 a full-width table at tblpY 300pt after two short paragraphs, its anchor a long "
+				+ "paragraph; 3 a full-width table at tblpY 150pt after seven paragraphs (the flow past it); 4 case 3 "
+				+ "with a 40% table at the right; 5 margin-anchored at 200pt after two short paragraphs.  Read the "
+				+ "table's y, whether the anchor's lines fill the gap above it, and in 3 and 4 what Word does with "
+				+ "the paragraphs before the table that its position covers", () -> {
+			Doc d = Doc.create(15);
+			// 1. m1's pair
+			Doc.Table a = new Doc.Table(4513, 4513).fixedLayout().floating("page", "margin", 0, null, 1840, null);
+			a.row(SERIF, 24, false, "pair, first", "tblpY 92pt").row(SERIF, 24, false, prose(1, 1), "b")
+					.row(SERIF, 24, false, "third row", "c");
+			d.add(a.build());
+			d.para("small 7pt anchor").font(SERIF, 14).after(0).add();
+			d.emptyParagraph();
+			Doc.Table b = new Doc.Table(4513, 4513).fixedLayout().floating("page", "margin", 0, null, 4000, null);
+			b.row(SERIF, 24, false, "pair, second", "tblpY 200pt").row(SERIF, 24, false, prose(1, 2), "b")
+					.row(SERIF, 24, false, "third row", "c");
+			d.add(b.build());
+			d.para("anchor after the second table. " + prose(3, 3)).after(160).add();
+			d.para(prose(3, 4)).after(160).add();
+			d.endSection("nextPage");
+			// 2. the anchor below the flow
+			d.para("short one. " + prose(1, 5)).after(160).add();
+			d.para("short two. " + prose(1, 6)).after(160).add();
+			Doc.Table c = new Doc.Table(4513, 4513).fixedLayout().floating("page", "margin", 0, null, 6000, null);
+			c.row(SERIF, 24, false, "below the flow", "tblpY 300pt").row(SERIF, 24, false, prose(1, 7), "b");
+			d.add(c.build());
+			d.para("the long anchor paragraph. " + prose(8, 8)).after(160).add();
+			d.para(prose(3, 9)).after(160).add();
+			d.endSection("nextPage");
+			// 3. the flow past the anchor, full width
+			for (int i = 0; i < 7; i++) d.para((i == 0 ? "case 3, before the table. " : "") + prose(3, 10 + i)).after(160).add();
+			Doc.Table e = new Doc.Table(4513, 4513).fixedLayout().floating("page", "margin", 0, null, 3000, null);
+			e.row(SERIF, 24, false, "flow past it", "tblpY 150pt").row(SERIF, 24, false, prose(1, 11), "b");
+			d.add(e.build());
+			d.para("anchor after the passed table. " + prose(3, 12)).after(160).add();
+			d.endSection("nextPage");
+			// 4. the same, narrow, at the right
+			for (int i = 0; i < 7; i++) d.para((i == 0 ? "case 4, before the table. " : "") + prose(3, 10 + i)).after(160).add();
+			Doc.Table g = new Doc.Table(1805, 1805).fixedLayout().floating("page", "margin", null, "right", 3000, null);
+			g.row(SERIF, 20, false, "narrow, past", "tblpY 150pt").row(SERIF, 20, false, "b", "c");
+			d.add(g.build());
+			d.para("anchor after the passed narrow table. " + prose(3, 13)).after(160).add();
+			d.endSection("nextPage");
+			// 5. margin-anchored after content
+			d.para("short one. " + prose(1, 14)).after(160).add();
+			d.para("short two. " + prose(1, 15)).after(160).add();
+			Doc.Table h = new Doc.Table(4513, 4513).fixedLayout().floating("margin", "margin", 0, null, 4000, null);
+			h.row(SERIF, 24, false, "margin, after content", "tblpY 200pt").row(SERIF, 24, false, prose(1, 16), "b");
+			d.add(h.build());
+			d.para("anchor after the margin table. " + prose(6, 17)).after(160).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * fop/CR-024 item 11 (the fork's "obstacles in the line", decision 3): a picture anchored
+		 * to the page or the margin with square wrap, and the lines it covers.  What the fork needs
+		 * from each case: the picture's rectangle, Word's line origins and widths beside and under
+		 * it, and the wrap distances it was given.  One case a page; A4, 72pt margins (the column
+		 * is 72 to 523.3); a numbered 150 x 100pt picture unless stated.
+		 */
+		PROBES.add(new Probe("picture-page-square",
+				"page- and margin-anchored pictures with square wrap over paragraph text, one case a page; mode 15: "
+				+ "1 page x 373.3 y 200 (flush with the right margin), both sides; 2 margin centred y 120; 3 margin "
+				+ "x 100 y 120, largest; 4 the same, left only; 5 right only; 6 case 1 with distT 12 distB 18 distL 24 "
+				+ "distR 6; 7 a full-width 451.3 x 80pt picture at page y 250; 8 case 1 top and bottom; 9 case 1 at "
+				+ "page y 150 anchored in the seventh paragraph (the flow past it).  Read the picture's rectangle and "
+				+ "the lines beside and below it", () -> {
+			Doc d = Doc.create(15);
+			final long W = 1905000L, H = 1270000L, D9 = 114300L;   // 150 x 100pt; 9pt
+			Object[][] cases = {
+					{ "1 page x 373.3 y 200, both sides", "square", "bothSides", 0L, 0L, D9, D9, "page", null, 4740910L, "page", 2540000L },
+					{ "2 margin centred, margin y 120, both sides", "square", "bothSides", 0L, 0L, D9, D9, "margin", "center", 0L, "margin", 1524000L },
+					{ "3 margin x 100 y 120, largest", "square", "largest", 0L, 0L, D9, D9, "margin", null, 1270000L, "margin", 1524000L },
+					{ "4 margin x 100 y 120, left only", "square", "left", 0L, 0L, D9, D9, "margin", null, 1270000L, "margin", 1524000L },
+					{ "5 margin x 100 y 120, right only", "square", "right", 0L, 0L, D9, D9, "margin", null, 1270000L, "margin", 1524000L },
+					{ "6 case 1 with distT 12 distB 18 distL 24 distR 6", "square", "bothSides", 152400L, 228600L, 304800L, 76200L, "page", null, 4740910L, "page", 2540000L },
+					{ "8 case 1, top and bottom", "topAndBottom", null, 0L, 0L, 0L, 0L, "page", null, 4740910L, "page", 2540000L } };
+			for (Object[] c : cases) {
+				int number = Integer.parseInt(((String) c[0]).split(" ")[0]);
+				d.para("case " + c[0] + ". " + prose(1, number)).after(160).add();
+				R pic = d.positionedImage(300, 200, W, H, (String) c[1], (String) c[2], (Long) c[3], (Long) c[4],
+						(Long) c[5], (Long) c[6], (String) c[7], (String) c[8], (Long) c[9], (String) c[10], null,
+						(Long) c[11], number);
+				d.para().run(pic).text("the anchor paragraph. " + prose(3, number + 1)).after(160).add();
+				for (int i = 0; i < 4; i++) d.para(prose(4, number + 2 + i)).after(160).add();
+				d.pageBreak();
+				if (number == 6) {
+					// 7. a full-width picture: no room beside it
+					d.para("case 7 a full-width 451.3 x 80pt picture at page y 250, both sides. " + prose(1, 20)).after(160).add();
+					R wide = d.positionedImage(900, 160, 5731510L, 1016000L, "square", "bothSides", 0L, 0L, D9, D9,
+							"margin", null, 0L, "page", null, 3175000L, 7);
+					d.para().run(wide).text("the anchor paragraph. " + prose(3, 21)).after(160).add();
+					for (int i = 0; i < 4; i++) d.para(prose(4, 22 + i)).after(160).add();
+					d.pageBreak();
+				}
+			}
+			// 9. the picture above where its anchor paragraph lands
+			d.para("case 9 page x 373.3 y 150, anchored in the seventh paragraph. " + prose(2, 30)).after(160).add();
+			for (int i = 0; i < 5; i++) d.para(prose(3, 31 + i)).after(160).add();
+			R late = d.positionedImage(300, 200, W, H, "square", "bothSides", 0L, 0L, D9, D9,
+					"page", null, 4740910L, "page", null, 1905000L, 9);
+			d.para().run(late).text("the anchor paragraph, seventh on the page. " + prose(3, 36)).after(160).add();
+			d.para(prose(3, 37)).after(160).add();
+			return d.pkg();
+		}));
+
 		// A negative offset: mid-page over the paragraph before, and on the first paragraph
 		// of a page (into the top margin, or the previous page's space?).
 		PROBES.add(new Probe("table-floating-negative",

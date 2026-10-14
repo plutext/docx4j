@@ -1,6 +1,6 @@
 # CR-032: floating tables laid out as Word lays them - the band at its offset, the wide table's band, the paragraphs behind it
 
-Status: IN PROGRESS - phases 1 and 2 SHIPPED in docx4j 17.3.2 (Maven Central, 2026-10-09), on 2.11-docx4j.6 (the export-fo bump
+Status: IN PROGRESS - phases 4 and 5 PROPOSED 2026-10-15 (page- and margin-anchored tables, §4.4 and §4.5; phase 4's probes cut and on the share for a Word run, D4 decided yes by Jason; phase 5 waits on fop/CR-024 phase A); phases 1 and 2 SHIPPED in docx4j 17.3.2 (Maven Central, 2026-10-09), on 2.11-docx4j.6 (the export-fo bump
 409392c9a); phase 2 DONE 2026-10-08 (docx4j side in three commits gated on the fork's float-offset:
 fox:float-offset on a floating table's float, each float of an anchor at its own offset, a text box's band,
 anchored-picture and framePr floats; fop/CR-023 merged to 2.11-docx4j.6 at 3339fc1cf, unreleased, so the
@@ -341,6 +341,63 @@ remaining suspect; deferred (the document is at Word's pages on both renderers, 
 - The page-anchored container's row height (Word 28pt rows against 30pt, `tall` pages 5-7).
 - 5936 and 6705 re-read on the documents (the in-cell wrap and the overlap the register recorded).
 
+### 4.4 Phase 4, page- and margin-anchored tables that open their section (2026-10-15)
+
+**What prompted it.** A user's letterhead (m1.docx, 2026-10-15) has two full-width page-anchored tables: the
+first opens the section at `tblpY` 486 (24.3pt, the body top at 18pt), the second follows a 5pt and an empty
+paragraph at `tblpY` 2011 (100.55pt). docx4j puts the first in a positioned container and starts the flow at the
+body top underneath it (`opensThePage`: no band reserved), and leaves the second in the flow (content precedes it
+and its anchor is in the upper half, so `reservesItsBand` declines). The second table starts at y 31 on top of the
+first, and the rest of the page is about 70pt above Word's. Corpus 1616 is the first half of that (its next table
+is drawn over its cover table, +1 page; register cause `section-opener-page-anchored-table`, open since
+2026-10-05), and §4.1's last bullet planned its fix ("a wide one should [reserve its band]") without building it.
+
+**The population.** Page- or margin-anchored tables in the bodies of real, real2 and real3: 18 in 18 documents
+(15 page, 3 with no `vertAnchor`, which phase 1 reads as margin). Several first diverge on page 1 at that table:
+1616 and 8362 (+1 page each), 5075 (+1), 13544 (line parity 0.68), 4253 (0.94). Small in the corpus; common in
+letterheads and forms that users generate from templates.
+
+**The rule.** An opener's flow position is known: the region body's top. So a full-width (not narrow)
+page- or margin-anchored table that opens its section goes **into the flow**, its top at `tblpY` (made page-
+relative) less the body top, by a retained `space-before` (`space-before.conditionality="retain"`, positive or
+negative), with `inFlowOffset`'s rule for what follows: the paragraphs after it that fit in a positive gap are
+laid above it. The fork measured the FO on 2.11-docx4j.6 (2026-10-15): a retained `space-before` of -54pt on the
+flow's first block draws it 54pt above the body top, unclipped, with what follows laid straight after it; +30pt
+puts it 30pt below; without `retain` the space is discarded at the page start. Where the table's foot is above the
+body top (opener 5 of the probe: two rows at `tblpY` 0), the flow should still begin at the body top: a wrapper
+with `block-progression-dimension.minimum` = the gap's magnitude keeps it there, if Word does so (the probe says).
+A narrow opener, a `tblpYSpec` frame (the cover page aligned to the bottom) and an opener after a page break keep
+today's positioned container unless the probes say otherwise.
+
+**Probes (cut 2026-10-15, on the share for one Word run with fop/CR-024's).**
+
+| probe | what it settles |
+|---|---|
+| `table-floating-page-opener` | openers, one a section: 1 `tblpY` 92pt (20pt below the body top) then a 7pt paragraph that fits the gap, an empty one and text (m1's first table); 2 `tblpY` 36pt, in the top margin, then an in-flow table (1616); 3 margin-anchored `tblpY` 30pt; 4 a 40% table at the right, `tblpY` 144pt; 5 a two-row table at `tblpY` 0, its foot above the body top; 6 an opener after a page break (5893) |
+| `table-floating-page-after` | after content, one a section, for §4.5: 1 m1's pair (92pt, then 200pt); 2 a full-width table at 300pt after two short paragraphs, its anchor a long paragraph (do the anchor's lines fill the gap above?); 3 at 150pt after seven paragraphs, **the flow past it**; 4 case 3 with a 40% table; 5 margin-anchored at 200pt after content |
+| `picture-page-square` | fop/CR-024 item 11 (its decision 3): page- and margin-anchored square-wrapped pictures over text, one a page, by side rule (both, largest, left, right) and with distances, a full-width picture, top-and-bottom, and a picture above where its anchor paragraph lands |
+
+Gate: the four corpora and the probes against b231, read with `movers.py`; tests in `FloatingTablePositionTest`.
+
+### 4.5 Phase 5, page- and margin-anchored tables after content (2026-10-15)
+
+The flow's position at such a table is not known before layout, which is why 17.1.0 left them in the flow and
+measured worse every way it tried to place them (the "flow already past the anchor" cases, §1). Three routes were
+weighed with the fork session (2026-10-15): a docx4j measuring pre-pass (lay the FO out once, read the table's y,
+insert the spacer), rejected as fragile (the spacer moves the layout it was measured on: a line, a break, the table
+onto the next page) and costly (a second full layout); a fork hook `fox:page-y` (the page breaker gives each
+candidate part the gap the block needs; 3 to 5 days); and **fop/CR-024 phase A**, the fork's obstacle model, in
+which a page-anchored object is a rectangle on its page that the lines are narrowed around or pushed below, so the
+table stays in docx4j's positioned container and neither a spacer nor a second pass is needed. Jason started
+fop/CR-024 phase A on 2026-10-15, page-anchored objects first; phase 5 is docx4j's side of it: write
+`fox:wrap="square"`, `fox:wrap-sides` and the distances on the positioned container (CR-024 §4.4) on capability
+`obstacles-in-the-line`, take the per-line width and start indent in `WordLineLayoutManager`'s greedy loop and its
+tab stops, and lift `opensThePage`/`reservesItsBand`'s declines where the capability is present. What Word does when
+the flow is already past the table (probe `table-floating-page-after` cases 3 and 4) decides whether the obstacle
+moves the earlier lines too, which is the fork's restart from the page's first break. docx4j writes each positioned
+object at its anchor (a page-anchored picture at its paragraph's head, a frame where its paragraphs were, a table
+where it stands), not first in its section, so that restart is needed in general.
+
 ## 5. Gates and acceptance
 
 Every phase is a batch item, gated as the fidelity work is: the four corpora and the probes on
@@ -370,6 +427,9 @@ except where phase 1 applies.
    briefed with §4.2 the same day.
 3. **D3**: the 60% rule's fate on Apache FOP once phase 2 lands (keep, as the fallback).
    **DECIDED keep (Jason, 2026-10-08).**
+4. **D4**: phase 4 (the probes, and openers in the flow). **DECIDED yes (Jason, 2026-10-15).**
+5. **D5**: phase 5's route: fop/CR-024 phase A (started by Jason 2026-10-15), rather than `fox:page-y` or a
+   docx4j pre-pass (§4.5).
 
 ## 8. Risks
 
