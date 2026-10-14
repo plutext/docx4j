@@ -345,6 +345,11 @@ public class XsltFOFunctions {
 	    			= context.getSections().getCurrentSection().getPageDimensions();
 	    	Element container = FOTextBoxes.createVmlPictureContainer(doc, props,
 	    			(wrapType==null || wrapType.length()==0) ? "none" : wrapType, pd);
+	    	// in a table cell Word measures the position from the cell; the shape's
+	    	// o:allowincell is not to hand here, so below mode 15 the page's reading stays
+	    	// (@since 17.3.3)
+	    	FOTextBoxes.stampCellPlacement(container, props, org.docx4j.openpackaging.parts.WordprocessingML
+	    			.DocumentSettingsPart.getCompatibilityMode(context.getWmlPackage()) >= 15);
 
 	    	// the picture at the shape's own extent (E10 rounds the style to whole points)
 	    	double w = FOTextBoxes.pts(props.get("width"), 0);

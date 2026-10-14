@@ -409,4 +409,55 @@ public class FramePrTest extends AbstractXSLFOTest {
 		}
 		return n;
 	}
+
+	/**
+	 * A frame in a table cell stays in its cell: Word positions no frame there.  Word writes
+	 * the outer table's position into the paragraphs of a table nested in a floating table
+	 * (m1.docx: w:framePr w:vAnchor="page" w:hAnchor="margin" w:y="2011", the outer table's
+	 * w:tblpY), and lays the nested rows out one below another; docx4j drew all of them at
+	 * y=100.55, one over another.  A top-level table's cell and a nested one alike.
+	 * @since 17.3.3
+	 */
+	private void inACellStaysInTheCell(int flags) throws Exception {
+		String framePr = "<w:framePr w:hSpace=\"180\" w:wrap=\"around\" w:vAnchor=\"page\""
+				+ " w:hAnchor=\"margin\" w:y=\"2011\"/>";
+		StringBuilder rows = new StringBuilder();
+		for (int i = 1; i <= 3; i++) {
+			rows.append("<w:tr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr>")
+				.append(framePr).append("</w:pPr><w:r><w:t>row ").append(i).append("</w:t></w:r></w:p></w:tc></w:tr>");
+		}
+		String nested = "<w:tbl><w:tblPr><w:tblW w:w=\"4000\" w:type=\"dxa\"/></w:tblPr>"
+				+ "<w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid>" + rows + "</w:tbl>";
+		String body = "<w:tbl><w:tblPr><w:tblW w:w=\"9000\" w:type=\"dxa\"/></w:tblPr>"
+				+ "<w:tblGrid><w:gridCol w:w=\"4500\"/><w:gridCol w:w=\"4500\"/></w:tblGrid><w:tr>"
+				+ "<w:tc><w:tcPr><w:tcW w:w=\"4500\" w:type=\"dxa\"/></w:tcPr>" + nested + "<w:p/></w:tc>"
+				+ "<w:tc><w:tcPr><w:tcW w:w=\"4500\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr>" + framePr
+				+ "</w:pPr><w:r><w:t>row 4</w:t></w:r></w:p></w:tc></w:tr></w:tbl><w:p/>";
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>" + body + SECT_PR + "</w:body></w:document>"));
+		org.w3c.dom.Document fo = fo(pkg, flags);
+		assertTrue("no frame is positioned", absoluteContainer(fo) == null);
+		NodeList blocks = fo.getElementsByTagNameNS(FO, "block");
+		int found = 0;
+		for (int i = 0; i < blocks.getLength(); i++) {
+			Element b = (Element) blocks.item(i);
+			String text = b.getTextContent().trim();
+			if (!text.matches("row \\d")) continue;
+			found++;
+			assertTrue(text + " in its cell", b.getParentNode() instanceof Element
+					&& "table-cell".equals(((Element) b.getParentNode()).getLocalName()));
+		}
+		assertTrue("the four paragraphs: " + found, found >= 4);
+	}
+
+	@Test
+	public void inACellStaysInTheCellVisitor() throws Exception {
+		inACellStaysInTheCell(Docx4J.FLAG_NONE);
+	}
+
+	@Test
+	public void inACellStaysInTheCellXslt() throws Exception {
+		inACellStaysInTheCell(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
 }

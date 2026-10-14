@@ -130,6 +130,10 @@ Changes in Version 17.3.3
 - PDF and HTML output lay out a table at its own w:tblW where its w:tblGrid contradicts it (as when
   code sets the width and leaves TblFactory's grid), as Word does, where the grid was drawn
   (docx4j.convert.out.fo.tables.refitStaleGrid=false keeps the grid).  CR-041.
+- PDF output places a picture, chart or shape anchored in a table cell at a position relative to the
+  page or margin from the cell, as Word does (in mode 15 whatever layoutInCell says), where it was
+  placed on the page; a page- or margin-anchored w:framePr paragraph in a table cell stays in its cell
+  (Word writes them into tables nested in a floating table) where all of them were drawn at one point.
 
 
 Version 17.3.2

@@ -423,6 +423,13 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     public static final String HINT_ANCHOR_BEHIND = "docx4j-anchor-behind";
     public static final String HINT_ANCHOR_COL = "docx4j-anchor-col";
     public static final String HINT_ANCHOR_ML = "docx4j-anchor-ml";
+    /** Where the object goes when its anchor is in a table cell and Word lays it out in the
+     *  cell: "&lt;h&gt; &lt;v&gt;", h being "edge:" (from the cell's left edge) or "text:" (from
+     *  its text, inside the left cell margin) followed by the offset in pt or "@" and the
+     *  alignment, v "top:" and the offset in pt from the cell's top; "-" for a reference
+     *  Word's reading in a cell is not known for, which keeps the column/page reading.
+     *  @since 17.3.3 */
+    public static final String HINT_ANCHOR_CELL = "docx4j-anchor-cell";
 
     /** The property WordLayoutFixups (docx4j-export-fo) is enabled by. */
     private static final String WORD_LAYOUT_FIXUPS_PROPERTY = "docx4j.convert.out.fo.wordLayoutFixups";
@@ -537,6 +544,37 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 	    	if (anchor.isBehindDoc()) g.setAttribute(HINT_ANCHOR_BEHIND, "1");
 	    	g.setAttribute(HINT_ANCHOR_COL, fmt(colW));
 	    	g.setAttribute(HINT_ANCHOR_ML, fmt(mL));
+	    	/* In a table cell Word measures the position from the cell: "page" from the cell's
+	    	 * left edge and top, "margin" and "column" from its text and top.  Measured on Word's
+	    	 * own PDFs: a 125.7pt wrapSquare picture at margin 30.3 / 6.5pt in a cell whose text
+	    	 * starts at x=14.4 and whose top is at 114.26 is drawn at (44.7, 120.71); a header
+	    	 * logo at page 6.8 / 3.1pt in a cell whose edge is at 47.8 and top at 23.0, at
+	    	 * (54.75, 26.1); and in mode 15 the same holds where layoutInCell is 0 - a
+	    	 * full-page picture at page -421.55 / -98pt in a cell whose edge is at 386.8 and top
+	    	 * at 98 is drawn at (-34.75, 0), and a text box at column 54.15 / page 25.8pt at
+	    	 * 131.55, 25.8 below its cell's top.  Word 2013 treats every anchor in a cell as
+	    	 * laid out in it; below mode 15 the attribute is taken at its word (not measured).
+	    	 * The fixups apply it where the anchor turns out to be in a cell.  @since 17.3.3 */
+	    	if (anchor.isLayoutInCell() || org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart
+	    			.getCompatibilityMode(context.getWmlPackage()) >= 15) {
+	    		String cellH = "-", cellV = "-";
+	    		if (relH==org.docx4j.dml.wordprocessingDrawing.STRelFromH.PAGE
+	    				|| relH==org.docx4j.dml.wordprocessingDrawing.STRelFromH.MARGIN
+	    				|| relH==org.docx4j.dml.wordprocessingDrawing.STRelFromH.COLUMN
+	    				|| relH==org.docx4j.dml.wordprocessingDrawing.STRelFromH.CHARACTER || relH==null) {
+	    			String ref = relH==org.docx4j.dml.wordprocessingDrawing.STRelFromH.PAGE ? "edge:" : "text:";
+	    			if (ph!=null && ph.getAlign()!=null) cellH = ref + "@" + ph.getAlign().value();
+	    			else cellH = ref + fmt(ph!=null && ph.getPosOffset()!=null ? ph.getPosOffset() / EMU_PER_PT : 0);
+	    		}
+	    		if (relV==org.docx4j.dml.wordprocessingDrawing.STRelFromV.PAGE
+	    				|| relV==org.docx4j.dml.wordprocessingDrawing.STRelFromV.MARGIN) {
+	    			// an alignment other than top needs the cell's height, which is not known
+	    			if (pv.getAlign()==null) cellV = "top:" + fmt(off);
+	    			else if (pv.getAlign()==org.docx4j.dml.wordprocessingDrawing.STAlignV.TOP
+	    					|| pv.getAlign()==org.docx4j.dml.wordprocessingDrawing.STAlignV.INSIDE) cellV = "top:0";
+	    		}
+	    		if (!"-".equals(cellH) || !"-".equals(cellV)) g.setAttribute(HINT_ANCHOR_CELL, cellH + " " + cellV);
+	    	}
     	} catch (Exception e) {
     		log.warn("Anchored picture left in the flow: " + e.getMessage(), e);
     	}

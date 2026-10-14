@@ -240,6 +240,16 @@ public abstract class FOPictWriterAbstract extends AbstractPictWriter {
 		Element container = FOTextBoxes.createVmlContainer(doc, props, wrapType,
 				FOTextBoxes.withStroke(FOTextBoxes.inset(textBox.getInset()), FOTextBoxes.vmlStrokePt(shape)),
 				pageDimensions, textBox.getStyle(), org.docx4j.jaxb.McSelection.isOwnContent(shape));
+		// in a table cell Word measures the position from the cell: in mode 15 always,
+		// below it unless o:allowincell="f" (@since 17.3.3)
+		boolean allowInCell = true;
+		if (shape instanceof org.docx4j.vml.VmlAllCoreAttributes) {
+			org.docx4j.vml.officedrawing.STTrueFalse a = ((org.docx4j.vml.VmlAllCoreAttributes)shape).getAllowincell();
+			allowInCell = a == null || !(a == org.docx4j.vml.officedrawing.STTrueFalse.F
+					|| a == org.docx4j.vml.officedrawing.STTrueFalse.FALSE);
+		}
+		FOTextBoxes.stampCellPlacement(container, props, allowInCell || org.docx4j.openpackaging.parts.WordprocessingML
+				.DocumentSettingsPart.getCompatibilityMode(context.getWmlPackage()) >= 15);
 
 		if (stroked(shape)) {
 			setBorders(container);

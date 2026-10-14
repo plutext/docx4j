@@ -281,6 +281,44 @@ public class FOTextBoxes {
 	}
 
 	/**
+	 * Where Word puts a VML shape anchored in a table cell, as
+	 * WordXmlPictureE20.stampAnchorHints has it for a DrawingML anchor: measured from the
+	 * cell ({@link WordLayoutFixups#HINT_ANCHOR_CELL}).  Measured on Word's PDF of a
+	 * mode-15 document whose text box (the mc:Fallback docx4j draws, o:allowincell="f",
+	 * margin-left 54.15pt relative to the text, margin-top 25.8pt relative to the page)
+	 * Word draws at its cell's text + 54.15 and its top + 25.8.
+	 *
+	 * @param layoutInCell whether Word lays the shape out in its cell: in mode 15 always,
+	 *        below it as o:allowincell says
+	 * @since 17.3.3
+	 */
+	public static void stampCellPlacement(Element container, Map<String, String> props, boolean layoutInCell) {
+		if (!layoutInCell || container == null || props == null) return;
+		String relH = props.get("mso-position-horizontal-relative");
+		String posH = props.get("mso-position-horizontal");
+		String cellH = "-", cellV = "-";
+		if (relH == null || "text".equals(relH) || "margin".equals(relH) || "page".equals(relH)) {
+			String ref = "page".equals(relH) ? "edge:" : "text:";
+			if ("center".equals(posH) || "right".equals(posH) || "left".equals(posH)
+					|| "inside".equals(posH) || "outside".equals(posH)) {
+				cellH = ref + "@" + posH;
+			} else {
+				cellH = ref + fmt(pts(props.get("margin-left"), 0));
+			}
+		}
+		String relV = props.get("mso-position-vertical-relative");
+		String posV = props.get("mso-position-vertical");
+		if ("page".equals(relV) || "margin".equals(relV)) {
+			// an alignment other than top needs the cell's height, which is not known
+			if (posV == null || "absolute".equals(posV)) cellV = "top:" + fmt(pts(props.get("margin-top"), 0));
+			else if ("top".equals(posV) || "inside".equals(posV)) cellV = "top:0";
+		}
+		if (!"-".equals(cellH) || !"-".equals(cellV)) {
+			container.setAttribute(WordLayoutFixups.HINT_ANCHOR_CELL, cellH + " " + cellV);
+		}
+	}
+
+	/**
 	 * {@code layout-flow:vertical}: a text box whose text Word turns on its side, as it
 	 * turns a table cell's for {@code w:textDirection}.  The line runs down the box's
 	 * <b>height</b>, so that is the measure; {@code mso-layout-flow-alt:bottom-to-top}

@@ -929,9 +929,12 @@ public final class WordLayoutFixups {
 	 *  distances left, right and bottom in pt, and the side text may take ("both", "left",
 	 *  "right" or "largest").  @see #textBesideBand  @since 17.3.1 */
 	public static final String HINT_TEXTBOX_BESIDE = "docx4j-textbox-beside";
+	/** An anchor in a table cell: where Word puts it, measured from the cell
+	 *  (WordXmlPictureE20.HINT_ANCHOR_CELL; {@link #placeInCell}).  @since 17.3.3 */
+	public static final String HINT_ANCHOR_CELL = "docx4j-anchor-cell";
 	private static final String[] ANCHOR_HINTS = { HINT_ANCHOR, HINT_ANCHOR_W, HINT_ANCHOR_H,
 			HINT_ANCHOR_X, HINT_ANCHOR_Y, "docx4j-anchor-dist", "docx4j-anchor-behind",
-			HINT_ANCHOR_COL, HINT_ANCHOR_ML, HINT_TEXTBOX_BESIDE };
+			HINT_ANCHOR_COL, HINT_ANCHOR_ML, HINT_TEXTBOX_BESIDE, HINT_ANCHOR_CELL };
 
 	// ------------------------------------------------------------ 0e. text frames
 
@@ -1098,6 +1101,15 @@ public final class WordLayoutFixups {
 		// fo:float ({@link #floatFrame}).
 		boolean absolute = ("page".equals(vAnchor) || "margin".equals(vAnchor))
 				&& !"inline".equals(yAlign);
+		/* Word does not position a frame in a table cell: the paragraph stays in its cell.
+		 * Word writes w:framePr into the paragraphs of a table nested in a floating table,
+		 * repeating the outer table's position (w:vAnchor="page" w:y = its w:tblpY); m1's
+		 * seven such rows are laid out one below another in Word, where docx4j drew all
+		 * seven at the one point and their text over itself.  The text-anchored case was
+		 * already left in its cell ({@link #floatFrame}).  No corpus paragraph is both in a
+		 * cell and page- or margin-anchored in effect (census 2026-10-15, styles included).
+		 * @since 17.3.3 */
+		if (absolute && ancestorCell(first) != null) return;
 		if (!absolute) {
 			floatFrame(doc, group, w, left - marginLeft, y, measure, hSpace, vSpace, wrap);
 			return;
@@ -1572,7 +1584,21 @@ public final class WordLayoutFixups {
 		double distL = Double.parseDouble(dist[0]), distR = Double.parseDouble(dist[1]),
 				distB = Double.parseDouble(dist[3]);
 
-		if (whollyOffThePage(g, pageY, off, h)) {
+		// in a table cell Word measures the position from the cell (@since 17.3.3)
+		Element cell = ancestorCell(g);
+		double[] inCell = cell == null ? null : placeInCell(cell, g.getAttribute(HINT_ANCHOR_CELL), w);
+		if (inCell != null) {
+			if (!Double.isNaN(inCell[0])) x = inCell[0];
+			if (!Double.isNaN(inCell[1])) {
+				off = inCell[1];
+				pageY = false;
+				kind = "none";
+			} else {
+				inCell = null; // the vertical reading is the paragraph's, as before
+			}
+		}
+
+		if (inCell == null && whollyOffThePage(g, pageY, off, h)) {
 			log.debug("An anchored picture is wholly off the page; Word paints none of it");
 			g.getParentNode().removeChild(g);
 			return;
@@ -1716,7 +1742,8 @@ public final class WordLayoutFixups {
 			abs.appendChild(holder);
 			wrapper.appendChild(abs);
 		}
-		insertAnchorWrapper(para, wrapper);
+		if (inCell != null) insertAtCellTop(cell, wrapper);
+		else insertAnchorWrapper(para, wrapper);
 	}
 
 	/**
@@ -1868,6 +1895,64 @@ public final class WordLayoutFixups {
 		abs.setAttribute("overflow", "visible");
 		if (holder != null) abs.appendChild(holder);
 		return abs;
+	}
+
+	/**
+	 * Where Word puts an object anchored in a table cell, read from its
+	 * {@link #HINT_ANCHOR_CELL}: Word measures the position from the cell rather than from
+	 * the page or the text column - {@code relativeFrom="page"} from the cell's left edge
+	 * and its top, {@code "margin"} and {@code "column"} from its text (inside the left
+	 * cell margin) and its top - in mode 15 whatever {@code layoutInCell} says (the
+	 * measurements are on WordXmlPictureE20.stampAnchorHints).
+	 *
+	 * <p>So docx4j drew m1's letterhead logo, {@code page} 0.75pt below and
+	 * {@code margin} 139.25pt right, at the top of the page and 139.25pt from its margin,
+	 * across the table's first cell, where Word draws it in the second.</p>
+	 *
+	 * @param cell the fo:table-cell the anchor is in
+	 * @param hint the hint's value ("" where there is none)
+	 * @param w the object's width
+	 * @return {x, top}, x from the cell's content edge and top from its content top, or NaN
+	 *         for a reading the hint does not give; null where it gives neither
+	 * @since 17.3.3
+	 */
+	private static double[] placeInCell(Element cell, String hint, double w) {
+		if (hint == null || hint.length() == 0) return null;
+		String[] parts = hint.trim().split("\\s+");
+		if (parts.length != 2) return null;
+		double padL = lengthPt(cell.getAttribute("padding-left"));
+		double padR = lengthPt(cell.getAttribute("padding-right"));
+		double padT = lengthPt(cell.getAttribute("padding-before"));
+		if (padT == 0) padT = lengthPt(cell.getAttribute("padding-top"));
+		double x = Double.NaN, top = Double.NaN;
+		String h = parts[0];
+		if (h.startsWith("edge:") || h.startsWith("text:")) {
+			boolean edge = h.startsWith("edge:");
+			String v = h.substring(5);
+			double base = edge ? -padL : 0;
+			if (v.startsWith("@")) {
+				double content = cellContentWidthPt(cell);
+				double room = (edge ? content + padL + padR : content) - w;
+				String align = v.substring(1);
+				if ("center".equals(align)) x = base + room / 2;
+				else if ("right".equals(align) || "outside".equals(align)) x = base + room;
+				else x = base;                   // left, inside
+			} else {
+				x = base + lengthPt(v + "pt");
+			}
+		}
+		if (parts[1].startsWith("top:")) top = lengthPt(parts[1].substring(4) + "pt") - padT;
+		if (Double.isNaN(x) && Double.isNaN(top)) return null;
+		return new double[] { x, top };
+	}
+
+	/** Puts the wrapper of an object positioned from its cell's top at the head of the
+	 *  cell, after any such wrapper already there, so they keep their document order.
+	 *  @since 17.3.3 */
+	private static void insertAtCellTop(Element cell, Element wrapper) {
+		Node at = cell.getFirstChild();
+		while (at != null && (!(at instanceof Element) || takesNoSpace((Element) at))) at = at.getNextSibling();
+		cell.insertBefore(wrapper, at);
 	}
 
 	private static void insertAnchorWrapper(Element para, Element wrapper) {
@@ -2858,7 +2943,22 @@ public final class WordLayoutFixups {
 		boolean pageY = y.startsWith("page:");
 		double off = lengthPt(y.substring(y.indexOf(':') + 1));
 
-		if (whollyOffThePage(box, pageY, off, h)) {
+		// in a table cell Word measures the position from the cell (@since 17.3.3)
+		Element cell = ancestorCell(box);
+		double[] inCell = cell == null ? null : placeInCell(cell, box.getAttribute(HINT_ANCHOR_CELL), w);
+		if (inCell != null) {
+			if (!Double.isNaN(inCell[0])) x = inCell[0];
+			if (!Double.isNaN(inCell[1])) {
+				off = inCell[1];
+				pageY = false;
+				kind = "none";
+				y = "c:" + y; // not "t:": no space-before to step back over
+			} else {
+				inCell = null;
+			}
+		}
+
+		if (inCell == null && whollyOffThePage(box, pageY, off, h)) {
 			log.debug("A positioned shape is wholly off the page; Word paints none of it");
 			box.getParentNode().removeChild(box);
 			return;
@@ -2948,7 +3048,8 @@ public final class WordLayoutFixups {
 		resetTextBox(box);
 		box.getParentNode().removeChild(box);
 		wrapper.appendChild(box);
-		insertAnchorWrapper(para, wrapper);
+		if (inCell != null) insertAtCellTop(cell, wrapper);
+		else insertAnchorWrapper(para, wrapper);
 		if (band != null) para.insertBefore(band, wrapper.getNextSibling());
 		if (cleared != null) cleared.setAttribute("clear", band.getAttribute("float"));
 	}
