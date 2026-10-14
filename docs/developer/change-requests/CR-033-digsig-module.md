@@ -690,8 +690,8 @@ there.
 - Also different in 4.x: it logs through `System.Logger` (so to java.util.logging unless the
   application bridges it, e.g. with `slf4j-jdk-platform-logging`), not slf4j; Java 11, as docx4j;
   jakarta.xml.bind optional, which docx4j supplies.
-- Two ways to 4.x, both later: (a) Santuario exports the binding packages (the request is drafted,
-  to be filed on Jason's approval); (b) this module binds XML-DSig itself (its own JAXB classes for
+- Two ways to 4.x, both later: (a) Santuario exports the binding packages
+  ([SANTUARIO-636](https://issues.apache.org/jira/browse/SANTUARIO-636), filed 2026-10-14); (b) this module binds XML-DSig itself (its own JAXB classes for
   the XML-DSig schema, the XAdES classes moved onto them), a public type change and an
   adding-a-schema CR. (a) first. A move to 4.x is then the version property, `module-info`
   (Santuario no longer an automatic module) and the full Office check of phase 3's seven files,
