@@ -71,7 +71,26 @@ public final class TableAlignmentProbes {
 	}
 
 	static List<Probe> probes() {
-		return Arrays.asList(probe(15), probe(14));
+		return Arrays.asList(probe(15), probe(14),
+				phase0("compat15"), phase0("compat15-override0"), phase0("compat14"), phase0("compat12"));
+	}
+
+	/**
+	 * CR-041 phase 0: what the survey left open.  W, the widths (proportions under a
+	 * contradicting w:tblW, a grid content forces past w:tblW, the 2% threshold); P, the
+	 * position (over-wide and indented right-aligned tables, w:jc end with w:tblInd, nested);
+	 * B, w:bidiVisual; J, w:jc values in body paragraphs (start and end in a w:bidi paragraph,
+	 * distribute, thaiDistribute, a kashida value); N, banding against first and last row and
+	 * column formats; V, conditional w:vAlign.  Four documents: mode 15, mode 15 with
+	 * overrideTableStyleFontSizeAndJustification stated 0, mode 14 without it, and mode 12
+	 * (no w:compatSetting at all, as Word 2007 writes it).
+	 */
+	private static Probe phase0(String variant) {
+		return new Probe("table-align-p0-" + variant,
+				"CR-041 phase 0: table widths (proportions, forced grids, the 2% threshold), right-aligned, "
+				+ "indented, nested and bidiVisual tables, w:jc start/end/distribute/thaiDistribute/kashida, "
+				+ "banding against first/last row and column formats, conditional w:vAlign; " + variant,
+				() -> buildPhase0(variant));
 	}
 
 	private static Probe probe(int mode) {
@@ -245,11 +264,222 @@ public final class TableAlignmentProbes {
 		return d.pkg();
 	}
 
+	private static WordprocessingMLPackage buildPhase0(String variant) throws Exception {
+		Doc d = Doc.create(variant.startsWith("compat15") ? 15 : variant.equals("compat14") ? 14 : 15);
+		org.docx4j.wml.CTCompat compat = d.mdp().getDocumentSettingsPart().getContents().getCompat();
+		if (variant.equals("compat12")) {
+			compat.getCompatSetting().clear();
+		} else if (variant.equals("compat14")) {
+			compat.getCompatSetting().removeIf(cs -> "overrideTableStyleFontSizeAndJustification".equals(cs.getName()));
+		} else if (variant.equals("compat15-override0")) {
+			for (org.docx4j.wml.CTCompatSetting cs : compat.getCompatSetting()) {
+				if ("overrideTableStyleFontSizeAndJustification".equals(cs.getName())) cs.setVal("0");
+			}
+		}
+		d.documentDefaultRun(Doc.SERIF, 24);
+		compactDefaults(d);
+		addStyles(d);
+		addPhase0Styles(d);
+
+		// W - widths.  Cells left / centre / right aligned, as in section F.
+		widthCase(d, "W1", "w:tblW " + TEXT_WIDTH + " dxa; grid 1000/2000/3000; w:tcW 3000/2000/1000 (both unequal, opposite)",
+				tblW("dxa", TEXT_WIDTH), new int[] { 1000, 2000, 3000 }, null, 0, 0, 0, new int[] { 3000, 2000, 1000 });
+		widthCase(d, "W2", "w:tblW " + TEXT_WIDTH + " dxa; grid and w:tcW 1000/2000/3000 (agree, short of the table)",
+				tblW("dxa", TEXT_WIDTH), new int[] { 1000, 2000, 3000 }, "dxa", 1000, 2000, 3000);
+		widthCase(d, "W3", "w:tblW " + TEXT_WIDTH + " dxa; grid 1000/2000/3000; no w:tcW",
+				tblW("dxa", TEXT_WIDTH), new int[] { 1000, 2000, 3000 }, null, 0, 0, 0);
+		caption(d, "W4: w:tblW 4000 dxa; grid and w:tcW 3 x 2500; each cell holds a word about 2300 twips wide");
+		d.add(tbl(tblW("dxa", 4000), grid(2500, 2500, 2500),
+				tr(cell(2500, p("", "W4a Antidisestablishment")), cell(2500, p("", "W4b Antidisestablishment")),
+						cell(2500, p("", "W4c Antidisestablishment")))));
+		widthCase(d, "W5", "w:tblW 4000 dxa; grid 3 x 2500; no w:tcW; short text",
+				tblW("dxa", 4000), new int[] { 2500, 2500, 2500 }, null, 0, 0, 0);
+		widthCase(d, "W6", "fixed layout; w:tblW " + TEXT_WIDTH + " dxa; grid 1000/2000/3000; w:tcW 3000/2000/1000",
+				tblW("dxa", TEXT_WIDTH) + FIXED, new int[] { 1000, 2000, 3000 }, null, 0, 0, 0, new int[] { 3000, 2000, 1000 });
+		widthCase(d, "W7", "w:tblW 100% (pct 5000); grid 1000/2000/3000; no w:tcW",
+				tblW("pct", 5000), new int[] { 1000, 2000, 3000 }, null, 0, 0, 0);
+		caption(d, "W8: w:tblW " + TEXT_WIDTH + " dxa; grid 3 x 2000; w:tcW 2000, auto, 2000 (mixed)");
+		d.add(tbl(tblW("dxa", TEXT_WIDTH), grid(2000, 2000, 2000),
+				tr(cell("dxa", 2000, "", p(jc("left"), "W8 left")), cell("auto", 0, "", p(jc("center"), "W8 centre")),
+						cell("dxa", 2000, "", p(jc("right"), "W8 right")))));
+		widthCase(d, "W9", "w:tblW " + TEXT_WIDTH + " dxa; grid 3 x 2000; w:tcW 20%, 30%, 50% (pct)",
+				tblW("dxa", TEXT_WIDTH), new int[] { 2000, 2000, 2000 }, null, 0, 0, 0, null, new int[] { 1000, 1500, 2500 });
+		widthCase(d, "W10", "w:tblW 100% (pct 5000); grid and w:tcW 3 x 3081 (= 9243, the column plus two cell margins)",
+				tblW("pct", 5000), new int[] { 3081, 3081, 3081 }, "dxa", 3081, 3081, 3081);
+		widthCase(d, "W11", "w:tblW 9026 dxa; grid and w:tcW 3 x 3067 (= 9201, 1.9% over)",
+				tblW("dxa", TEXT_WIDTH), new int[] { 3067, 3067, 3067 }, "dxa", 3067, 3067, 3067);
+		widthCase(d, "W12", "w:tblW 9026 dxa; grid and w:tcW 3 x 3100 (= 9300, 3.0% over)",
+				tblW("dxa", TEXT_WIDTH), new int[] { 3100, 3100, 3100 }, "dxa", 3100, 3100, 3100);
+		widthCase(d, "W13", "w:tblW 9026 dxa; grid and w:tcW 3 x 2950 (= 8850, 1.9% under)",
+				tblW("dxa", TEXT_WIDTH), new int[] { 2950, 2950, 2950 }, "dxa", 2950, 2950, 2950);
+		widthCase(d, "W14", "w:tblW 9026 dxa; grid and w:tcW 3 x 2920 (= 8760, 2.9% under)",
+				tblW("dxa", TEXT_WIDTH), new int[] { 2920, 2920, 2920 }, "dxa", 2920, 2920, 2920);
+
+		d.pageBreak();
+		String narrow = tblW("dxa", 4500);
+		caption(d, "P1: w:jc right; w:tblW 11000 dxa (wider than the column); grid 3 x 3667");
+		d.add(tbl(tblW("dxa", 11000) + tblJc("right"), grid(3667, 3667, 3667),
+				tr(cell(3667, p("", "P1 a")), cell(3667, p("", "P1 b")), cell(3667, p("", "P1 c")))));
+		positionCase(d, "P2", "w:jc right and w:tblInd -720", narrow + tblJc("right") + tblInd(-720));
+		positionCase(d, "P3", "w:jc end and w:tblInd 1440", narrow + tblJc("end") + tblInd(1440));
+		positionCase(d, "P4", "w:jc center and w:tblInd -720", narrow + tblJc("center") + tblInd(-720));
+		positionCase(d, "P5", "w:jc start and w:tblInd 1440", narrow + tblJc("start") + tblInd(1440));
+		caption(d, "P6: a table nested in a cell, w:jc right and 4000 dxa wide");
+		d.add(nestedCase("P6", tblJc("right")));
+		caption(d, "P7: a table nested in a cell, w:jc center and 4000 dxa wide");
+		d.add(nestedCase("P7", tblJc("center")));
+
+		caption(d, "B1: w:bidiVisual, w:tblW 6000 dxa, w:tblInd 1440, no w:jc");
+		d.add(bidiCase("B1", tblInd(1440)));
+		caption(d, "B2: w:bidiVisual with w:jc center");
+		d.add(bidiCase("B2", tblJc("center")));
+		caption(d, "B3: w:bidiVisual with w:jc start");
+		d.add(bidiCase("B3", tblJc("start")));
+		caption(d, "B4: w:bidiVisual with w:jc end");
+		d.add(bidiCase("B4", tblJc("end")));
+		caption(d, "B5: w:bidiVisual with w:jc right and w:tblInd 1440");
+		d.add(bidiCase("B5", tblJc("right") + tblInd(1440)));
+
+		d.pageBreak();
+		caption(d, "J1 to J4: body paragraphs with w:bidi and w:jc start, end, left, right");
+		d.add(bodyP("<w:bidi/>" + jc("start"), "J1 bidi start"));
+		d.add(bodyP("<w:bidi/>" + jc("end"), "J2 bidi end"));
+		d.add(bodyP("<w:bidi/>" + jc("left"), "J3 bidi left"));
+		d.add(bodyP("<w:bidi/>" + jc("right"), "J4 bidi right"));
+		caption(d, "J5 to J7: distribute on one line, on several, and thaiDistribute");
+		d.add(bodyP(jc("distribute"), "J5 distribute, one short line"));
+		d.add(bodyP(jc("distribute"), "J6 distribute: " + Doc.prose(2)));
+		d.add(bodyP(jc("thaiDistribute"), "J7 thaiDistribute, one short line"));
+		caption(d, "J8: w:jc mediumKashida in a w:bidi paragraph of Arabic (Arial)");
+		d.add(arabicP("J8", "mediumKashida"));
+		caption(d, "J9: the same Arabic paragraph with w:jc both (control)");
+		d.add(arabicP("J9", "both"));
+
+		d.pageBreak();
+		caption(d, "N1: BandHdr - firstRow bold, band1Horz right; firstRow on, row bands on");
+		d.add(bandTable("N1", "BandHdr", look6(true, false, false, false, false, true), 4));
+		caption(d, "N2: BandEmptyHdr - an empty firstRow w:tblStylePr, band1Horz right; firstRow on, row bands on");
+		d.add(bandTable("N2", "BandEmptyHdr", look6(true, false, false, false, false, true), 4));
+		caption(d, "N3: AlignBand (no lastRow format), lastRow on, firstRow off, row bands on");
+		d.add(bandTable("N3", "AlignBand", look6(false, true, false, false, false, true), 4));
+		caption(d, "N4: BandLast - lastRow bold, band1Horz right; lastRow on, row bands on");
+		d.add(bandTable("N4", "BandLast", look6(false, true, false, false, false, true), 4));
+		caption(d, "N5: BandCol - band1Vert right, column band size 1, no firstCol format; firstColumn on, column bands on");
+		d.add(bandTable("N5", "BandCol", look6(false, false, true, false, true, false), 3));
+		caption(d, "N6: BandColFirst - firstCol bold, band1Vert right; firstColumn on, column bands on");
+		d.add(bandTable("N6", "BandColFirst", look6(false, false, true, false, true, false), 3));
+
+		caption(d, "V1: VCondOnly - firstRow w:vAlign bottom, no whole-table w:vAlign; rows at least 0.75in");
+		d.add(vTable("V1", "VCondOnly"));
+		caption(d, "V2: VCentre - whole table w:vAlign center, firstRow bottom");
+		d.add(vTable("V2", "VCentre"));
+		caption(d, "V3: VCondShd - whole table center, firstRow bottom and shaded");
+		d.add(vTable("V3", "VCondShd"));
+		caption(d, "V4: ShdOnly - firstRow shaded, no w:vAlign anywhere");
+		d.add(vTable("V4", "ShdOnly"));
+		caption(d, "V5: VTop - whole table w:vAlign top, firstRow bottom");
+		d.add(vTable("V5", "VTop"));
+		d.para("after.").before(240).add();
+		return d.pkg();
+	}
+
+	private static Tbl nestedCase(String id, String innerTblPr) throws Exception {
+		String inner = tblXml(tblW("dxa", 4000) + innerTblPr, grid(2000, 2000),
+				tr(cell(2000, p("", id + " inner a")), cell(2000, p("", id + " inner b"))));
+		return tbl(tblW("pct", 5000), grid(TEXT_WIDTH),
+				tr("<w:tc><w:tcPr>" + tcW("dxa", TEXT_WIDTH) + "</w:tcPr>" + p("", id + " outer")
+						+ inner + p("", id + " outer, after") + "</w:tc>"));
+	}
+
+	private static Tbl bidiCase(String id, String extra) throws Exception {
+		return tbl(BIDI + tblW("dxa", 6000) + extra, grid(2000, 2000, 2000),
+				tr(cell(2000, p("", id + " a")), cell(2000, p("", id + " b")), cell(2000, p("", id + " c"))));
+	}
+
+	private static Tbl bandTable(String id, String styleId, String look, int rows) throws Exception {
+		String[] row = new String[rows];
+		for (int r = 0; r < rows; r++) {
+			row[r] = tr(cell(3008, p("", id + " r" + (r + 1) + "c1")), cell(3008, p("", id + " r" + (r + 1) + "c2")),
+					cell(3008, p("", id + " r" + (r + 1) + "c3")));
+		}
+		return tbl(style(styleId) + tblW("auto", 0) + look, grid(3008, 3008, 3008), row);
+	}
+
+	private static Tbl vTable(String id, String styleId) throws Exception {
+		return tbl(style(styleId) + tblW("pct", 5000) + look(true, false, true), grid(3008, 3008, 3008),
+				tr(trHeight(1080), cell(3008, p("", id + " header a")), cell(3008, p("", id + " header b")),
+						cell(3008, vAlign("top"), p("", id + " header direct top"))),
+				tr(trHeight(1080), cell(3008, p("", id + " body a")), cell(3008, p("", id + " body b")),
+						cell(3008, vAlign("top"), p("", id + " body direct top"))));
+	}
+
+	/** A body paragraph (no label: its text starts with its case id). */
+	private static org.docx4j.wml.P bodyP(String pPr, String text) throws Exception {
+		return (org.docx4j.wml.P) XmlUtils.unmarshalString(p(pPr, text).replaceFirst("<w:p>", "<w:p" + NS + ">"));
+	}
+
+	private static org.docx4j.wml.P arabicP(String id, String jcVal) throws Exception {
+		String arabic = "\u0647\u0630\u0627 \u0646\u0635 \u0639\u0631\u0628\u064a \u0644\u0644\u0627\u062e\u062a\u0628\u0627\u0631 ";
+		StringBuilder text = new StringBuilder();
+		for (int i = 0; i < 9; i++) text.append(arabic);
+		String rPr = "<w:rPr><w:rFonts w:ascii=\"Arial\" w:hAnsi=\"Arial\" w:cs=\"Arial\"/><w:rtl/><w:sz w:val=\"24\"/><w:szCs w:val=\"24\"/></w:rPr>";
+		String xml = "<w:p" + NS + "><w:pPr><w:bidi/>" + jc(jcVal) + "</w:pPr>"
+				+ "<w:r><w:t xml:space=\"preserve\">" + id + " </w:t></w:r>"
+				+ "<w:r>" + rPr + "<w:t xml:space=\"preserve\">" + text.toString().trim() + "</w:t></w:r></w:p>";
+		return (org.docx4j.wml.P) XmlUtils.unmarshalString(xml);
+	}
+
+	private static void addPhase0Styles(Doc d) throws Exception {
+		String band1Horz = "<w:tblStylePr w:type=\"band1Horz\"><w:pPr>" + jc("right") + "</w:pPr></w:tblStylePr>";
+		String band1Vert = "<w:tblStylePr w:type=\"band1Vert\"><w:pPr>" + jc("right") + "</w:pPr></w:tblStylePr>";
+		String rowBand = "<w:tblPr><w:tblStyleRowBandSize w:val=\"1\"/></w:tblPr>";
+		String colBand = "<w:tblPr><w:tblStyleColBandSize w:val=\"1\"/></w:tblPr>";
+		String bold = "<w:rPr><w:b/></w:rPr>";
+		String xml = "<w:styles" + NS + ">"
+				+ tableStyle("BandHdr", rowBand + "<w:tblStylePr w:type=\"firstRow\">" + bold + "</w:tblStylePr>" + band1Horz)
+				+ tableStyle("BandEmptyHdr", rowBand + "<w:tblStylePr w:type=\"firstRow\"/>" + band1Horz)
+				+ tableStyle("BandLast", rowBand + "<w:tblStylePr w:type=\"lastRow\">" + bold + "</w:tblStylePr>" + band1Horz)
+				+ tableStyle("BandCol", colBand + band1Vert)
+				+ tableStyle("BandColFirst", colBand + "<w:tblStylePr w:type=\"firstCol\">" + bold + "</w:tblStylePr>" + band1Vert)
+				+ tableStyle("VCondOnly", "<w:tblStylePr w:type=\"firstRow\"><w:tcPr><w:vAlign w:val=\"bottom\"/></w:tcPr></w:tblStylePr>")
+				+ tableStyle("VCondShd", "<w:tcPr><w:vAlign w:val=\"center\"/></w:tcPr>"
+						+ "<w:tblStylePr w:type=\"firstRow\"><w:tcPr><w:shd w:val=\"clear\" w:color=\"auto\" w:fill=\"D9D9D9\"/>"
+						+ "<w:vAlign w:val=\"bottom\"/></w:tcPr></w:tblStylePr>")
+				+ tableStyle("ShdOnly", "<w:tblStylePr w:type=\"firstRow\"><w:tcPr><w:shd w:val=\"clear\" w:color=\"auto\" w:fill=\"D9D9D9\"/></w:tcPr></w:tblStylePr>")
+				+ tableStyle("VTop", "<w:tcPr><w:vAlign w:val=\"top\"/></w:tcPr>"
+						+ "<w:tblStylePr w:type=\"firstRow\"><w:tcPr><w:vAlign w:val=\"bottom\"/></w:tcPr></w:tblStylePr>")
+				+ "</w:styles>";
+		Styles mine = (Styles) XmlUtils.unmarshalString(xml);
+		d.mdp().getStyleDefinitionsPart().getJaxbElement().getStyle().addAll(mine.getStyle());
+	}
+
 	// ------------------------------------------------------------------ the cases
 
 	/** A labelled caption paragraph before a case. */
 	private static void caption(Doc d, String text) {
 		d.para(text).before(240).after(60).add();
+	}
+
+	/** As {@link #widthCase(Doc, String, String, String, int[], String, int, int, int)}, the cells'
+	 *  w:tcW given as dxa widths, or (where those are null) as pct widths. */
+	private static void widthCase(Doc d, String id, String what, String tblPr, int[] grid, String unused,
+			int u1, int u2, int u3, int[] dxa) throws Exception {
+		widthCase(d, id, what, tblPr, grid, unused, u1, u2, u3, dxa, null);
+	}
+
+	private static void widthCase(Doc d, String id, String what, String tblPr, int[] grid, String unused,
+			int u1, int u2, int u3, int[] dxa, int[] pct) throws Exception {
+		if (dxa == null && pct == null) {
+			widthCase(d, id, what, tblPr, grid, null, 0, 0, 0);
+			return;
+		}
+		String type = dxa != null ? "dxa" : "pct";
+		int[] w = dxa != null ? dxa : pct;
+		caption(d, id + ": " + what);
+		d.add(tbl(tblPr, grid(grid),
+				tr(cell(type, w[0], "", p(jc("left"), id + " left")),
+						cell(type, w[1], "", p(jc("center"), id + " centre")),
+						cell(type, w[2], "", p(jc("right"), id + " right")))));
 	}
 
 	/** Three columns whose cells are left, centre and right aligned: what width does the table take? */
@@ -378,6 +608,13 @@ public final class TableAlignmentProbes {
 		return "<w:tblLook w:firstRow=\"" + (firstRow ? 1 : 0) + "\" w:lastRow=\"0\" w:firstColumn=\""
 				+ (firstColumn ? 1 : 0) + "\" w:lastColumn=\"0\" w:noHBand=\"" + (noHBand ? 1 : 0)
 				+ "\" w:noVBand=\"1\"/>";
+	}
+
+	private static String look6(boolean firstRow, boolean lastRow, boolean firstColumn, boolean lastColumn,
+			boolean noHBand, boolean noVBand) {
+		return "<w:tblLook w:firstRow=\"" + (firstRow ? 1 : 0) + "\" w:lastRow=\"" + (lastRow ? 1 : 0)
+				+ "\" w:firstColumn=\"" + (firstColumn ? 1 : 0) + "\" w:lastColumn=\"" + (lastColumn ? 1 : 0)
+				+ "\" w:noHBand=\"" + (noHBand ? 1 : 0) + "\" w:noVBand=\"" + (noVBand ? 1 : 0) + "\"/>";
 	}
 
 	private static int[] grid(int... widths) {

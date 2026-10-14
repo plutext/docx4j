@@ -1,7 +1,8 @@
 # CR-041: Tables placed and sized as Word does - right-aligned and `bidiVisual` tables, a generator's stale grid, `w:jc` end and distribute, percentages below mode 15, and two table-style conditions
 
 Status: ACCEPTED 2026-10-14 (Jason: "D1: phases 1 and 2 in 17.3.3; D2: (a); D3 to D6 agreed"; D7
-open); phase 0 started the same day.  Proposed 2026-10-14, raised by a user report (via Jason, 2026-10-14: "table content
+open); phase 0 in progress: the census, the FOP check and the HTML render read (§7), Word's goldens of the
+phase-0 probes awaited.  Proposed 2026-10-14, raised by a user report (via Jason, 2026-10-14: "table content
 alignment (left, right, and center) is broken in 17.x in our xsl-fo output", and the reporter
 "fixed the table width issue by using percentages instead of inches").  Measured the same day
 with a new probe pair cut by Word (§1).  Reviewed the same day by the docx4j-b0 session at
@@ -231,6 +232,14 @@ percentages), else to the grid's, else by content - autofit and fixed alike (F11
 - The shape is absent from Word-written files by §6.4's count in one direction; phase 0 counts
   the other (a grid wider than `w:tblW`, F8) and the percentage case before anything changes.
 - `w:tblW auto` tables keep today's rules.
+- **Amended by phase 0's census (§7.1, 2026-10-14): one direction only, top-level tables only.**  The
+  grid gives way where its sum falls **short** of the stated width by more than 2% (findings F6,
+  F7, F11, F12); a grid **wider** than the stated width stands, F8 included, because three
+  Word-written tables of exactly F8's shape (cells summing to `w:tblW`, grid wider) were kept by
+  Word.  A nested table is bounded by its cell and is left alone.  Below mode 15 a percentage width
+  is compared on finding 3's base.  F15 (percentage cells over an equal grid summing to the table's
+  width) is not a contradiction of the table's width, and stays as it is: it is §6.3's
+  `table-cell-pct` conflict, where the corpus says the opposite.
 - One switch restores the grid: the existing `docx4j.convert.out.fo.tables.refitStaleGrid=false`
   (D3).
 - Finding 3: below mode 15 a percentage `w:tblW` is of the text column plus the table's left and
@@ -381,7 +390,60 @@ reporter) is not yet decided.  As proposed:
 
 ## 7. Readings
 
-(Phase 0 adds its readings here.)
+### 7.1 The corpus census (2026-10-14)
+
+`TableWidthCensus` (new in `docx4j-layout-fidelity`'s `golden` package): every table of the three
+corpora (real, real2, real3; 450 documents, 371 with tables, 5,723 tables, 5 documents skipped where the
+re-save's table count differs) against Word's re-save, each top-level table's width stated against its
+own section's text column (the gutter subtracted; multi-column sections, equal or unequal, set aside).
+
+| shape (top-level tables) | Word kept | Word rewrote |
+|---|---|---|
+| absolute `w:tblW`, grid within 1% | 1,256 | 10 |
+| absolute `w:tblW`, grid 1-2% wider | 2 | 0 |
+| absolute `w:tblW`, grid >2% **short** of it | **0** | 0 |
+| absolute `w:tblW`, grid >2% wider, every cell stating a width summing to `w:tblW` (F8's shape) | **3** (real 2852, real 5478, real2 1587) | 0 |
+| absolute `w:tblW`, grid >5% wider, otherwise | 2 | 1 |
+| percentage `w:tblW`, grid within 1% of finding 3's base | 1,204 | 9 |
+| percentage `w:tblW`, grid 1-2% wider | 1 | 0 |
+| percentage `w:tblW`, grid >2% short | 2 (real2 3117, unexplained: the register's documents/3117.md) | 0 |
+| percentage `w:tblW`, grid >2% wider | 0 | 7 (5 autofit, 2 fixed) |
+
+(real3 11657's 273 percentage tables are left out of the percentage rows; see below.)
+
+- So the contradiction test fires on no Word-written top-level table with an absolute width, and on
+  two (one document) with a percentage width, which today's code already draws at that width
+  (an autofit percentage table is; only a fixed one is drawn at its grid, F12).
+- The nested tables are the only Word-written ones whose grid is short of `w:tblW` (real3 3081, four
+  tables, bounded by their cell): hence "top-level only".
+- **Finding 3 confirmed**: below mode 15, top-level percentage tables whose grid matches the column
+  plus both cell margins only: 288; both bases (small margins): 121; the plain column only: **0**.
+  real3 11657's landscape section (270 tables) is set aside: its grids match the page less both
+  margins with the gutter *not* subtracted, though its portrait section's subtract it (the register's
+  documents/11657.md; outside this CR).
+- Findings 5, 6, 7 have **no corpus population**: no `w:bidiVisual` table; no table banding with a
+  first or last row or column on whose style gives that condition no format; no conditional
+  `w:vAlign`.  Finding 1: 3 right-aligned tables in 3 documents (one nested); finding 8: 8 nested
+  centred tables in 3 documents and the 1 nested right one.
+
+### 7.2 FOP and `writing-mode` (finding 5)
+
+An `fo:block-container writing-mode="lr-tb"` in a cell of an `fo:table writing-mode="rl-tb"`: its text
+at the cell's left (172.25) where a plain block in the same table is at the right (331.07), on Apache
+FOP 2.11 and on the docx4j renderer 2.11-docx4j.6 alike.  §3's per-cell reset stands.
+
+### 7.3 HTML in a browser
+
+The survey's HTML (`FLAG_EXPORT_PREFER_NONXSL`) printed by headless Chrome and read as the PDFs were:
+finding 2 holds (F6 and F7 at their 300pt grid, F8 at its wider grid, F15's columns equal); finding 1
+holds for centred tables too (G3, G4, G6 all at the left margin); finding 4 holds (`end` left,
+`distribute` ragged); F12 (fixed, 100%) is drawn full width, as Word does, unlike FO.
+
+### 7.4 Word probes
+
+`table-align-p0-compat15`, `-compat15-override0`, `-compat14`, `-compat12` (W widths, P positions,
+B `w:bidiVisual`, J `w:jc` values, N banding, V conditional `w:vAlign`) on the share since 2026-10-14;
+Word's goldens and re-saves awaited.
 
 ## 8. Hand-offs
 
