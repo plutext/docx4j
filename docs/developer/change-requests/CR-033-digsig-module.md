@@ -600,7 +600,8 @@ So XAdES-T works end to end against a public RFC 3161 server after the BouncyCas
 (`xd:SignatureTimeStamp` with an `EncapsulatedTimeStamp` is in the signature); that was the one
 untested path of §4.5. The gate: Word, Excel and PowerPoint report each file's signature valid
 and complete, the Excel line shows the signed image, and Word shows the XAdES-T one as valid
-(Office labels any XAdES level "XAdES-EPES" in its details, per CR-002 §6.6).
+(CR-002 §6.6 found Office labels XAdES-BES "XAdES-EPES"; not so for XAdES-T, which Word
+labels "XAdES-T", §11.1).
 
 **Passed (Jason, 2026-10-09): all seven.** Phase 3 complete.
 
@@ -662,8 +663,12 @@ with `xd:SignatureTimeStamp` and its `EncapsulatedTimeStamp`.
 The change: `version.bouncycastle` in `docx4j-digsig/pom.xml`; the CHANGELOG for 17.3.3.
 
 Office check: `docx4j-signed-xades-t-bc186.docx` (the pfx one) on the share,
-`fidelity/cr033-bc186/` with its `CHECK.txt`, the same check as phase 3's XAdES-T file; awaits
-Jason.
+`fidelity/cr033-bc186/` with its `CHECK.txt`, the same check as phase 3's XAdES-T file. **Passed
+(Jason, 2026-10-14):** Word's Signature Details say "Valid Signature - The signed content has not
+changed and the signer's certificate is valid", "Signature type: XAdES-T", signing as Plutext
+DigSig Test. So Word labels an XAdES-T signature XAdES-T; phase 3's note that it labels any
+XAdES level "XAdES-EPES" generalised CR-002 §6.6, which measured XAdES-BES, and is corrected
+there.
 
 ### 11.2 Santuario: stays 3.0.6
 
