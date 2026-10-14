@@ -2,7 +2,8 @@
 
 Status: ACCEPTED 2026-10-14 (Jason: "D1: phases 1 and 2 in 17.3.3; D2: (a); D3 to D6 agreed"; D7
 open); phase 0 DONE the same day (§7: the census, FOP, HTML, and Word's readings of the phase-0 probes;
-§3 amended by them); phase 1 DONE the same day (§11, gate b228: 0 movers).  Proposed 2026-10-14, raised by a user report (via Jason, 2026-10-14: "table content
+§3 amended by them); phase 1 DONE the same day (§11, gate b228: 0 movers); phase 2 DONE the same day
+(§11, gate b229: 0 movers; finding 3 withdrawn, §2.2).  Proposed 2026-10-14, raised by a user report (via Jason, 2026-10-14: "table content
 alignment (left, right, and center) is broken in 17.x in our xsl-fo output", and the reporter
 "fixed the table width issue by using percentages instead of inches").  Measured the same day
 with a new probe pair cut by Word (§1).  Reviewed the same day by the docx4j-b0 session at
@@ -132,6 +133,16 @@ content-autofit table but not to a percentage width.  It must land with finding 
 mode-14 documents a contradiction test using the wrong base would see every 100% table 2.4% off.
 FO only: HTML's `autofitGridAllowanceTwips` is zero and its `width: N%` is a browser's.
 
+**Withdrawn by phase 2 (2026-10-14): docx4j already does this.**  `AbstractTableWriter.widenedPercentageWidth`
+(17.3.1) resolves a percentage below mode 15 on the column and both cell margins, for the autofit pass
+and the grid's scaling alike.  The docx4j renders this finding was read from (the survey's at 11:40,
+the phase-0 probes' at 12:49) ran on older jars: the harness's `target/lib` then held 17.2.1 and 17.3.0
+SNAPSHOT jars beside 17.3.3's, and `target/lib/*` loads one of each at random (the stale jars were
+deleted later that day).  Rendered on 17.3.3's jars alone, before phase 2's change and after it, every
+case named above is within 0.4pt of Word in modes 14 and 12 (A, E1, F4, F5, F9, G10, H, I, W7, W10);
+F12 and F15, which were further out, are finding 2's (§11).  Word's rule stands as §7.1 counts it, and
+phase 2's contradiction test uses it.
+
 ### 2.3 A paragraph's `w:jc` values
 
 **4. `w:jc` end is drawn left (-67pt), and `distribute` as ordinary justification.**
@@ -258,7 +269,7 @@ percentages), else to the grid's, else by content - autofit and fixed alike (F11
 - One switch restores the grid: the existing `docx4j.convert.out.fo.tables.refitStaleGrid=false`
   (D3).
 - Finding 3: below mode 15 a percentage `w:tblW` is of the text column plus the table's left and
-  right cell margins (FO only).
+  right cell margins (FO only).  Already so since 17.3.1 (§2.2, withdrawn).
 
 **Finding 5, `w:bidiVisual` (FO and HTML).**  The columns stay reversed; the cells' content is
 set back to left-to-right so a paragraph keeps its own direction (in HTML `direction: ltr` on
@@ -558,6 +569,78 @@ hand-offs.  Phase 6: half a day.
   Line parity does not see a table move sideways, so the corpus's three right-aligned tables were
   read directly: real2 2274's at x 108.4 (b227) against Word's 143.8, now 143.8; real3 10976's at
   215.8 against 204.6, now 204.4.
+
+### Phase 2 (2026-10-14): the width
+
+- `AbstractTableWriter.statedWidthColumns` (new, protected) is §3's amended rule.  A table directly in the
+  body, with a `dxa` or `pct` `w:tblW` (a percentage resolved on the column, below mode 15 plus the first
+  cell's left margin and the last cell's right margin, `percentageBaseAllowanceTwips`; and not in a section
+  of several columns), whose grid falls more than 1% short of that width, or whose
+  every column states a width while the widest all-`dxa` row agrees with the grid within 1% and the width
+  differs from the grid by more than 1%.  Its columns: each column's widest single-column `w:tcW` (in
+  twips, or a percentage of the table's width), the grid's where none, scaled to the width by
+  `AutofitLayout.scaleToTotal` (new; largest-remainder rounding, which gives W1's and W9's re-saved grids
+  to the twip).
+- Where it applies: in `computeAutofitColumnWidths` at the two places the grid would otherwise stand (every
+  cell stating a width; `gridIsAuthoritative`), as `AutofitLayout.distributePreferredAsMaximum(min, stated,
+  width)`, so that no column is below its content (W4); and in `toNode`, ahead of
+  `scaleGridToPercentageWidth`, for what the autofit pass leaves to the grid (fixed layout, and HTML, which
+  measures nothing).  A table with an auto column whose grid falls short already went to the content pass
+  and is unchanged (W3, W5, W7).  `refitStaleGrid=false` turns it off (D3).
+- "Directly in the body" (`inBody`): the visitor pathway follows the `w:tbl`'s JAXB parents (a table built
+  in code has them: content lists set them); the XSLT pathway's `w:tbl` is unmarshalled on its own, so
+  `AbstractWriterRegistry` now keeps the source node on the context
+  (`AbstractWmlConversionContext.getCurrentSourceNode()`) for the length of the writer's call, and its DOM
+  parents are read: the FO stylesheet's body is the unqualified `sections/section` its blocks are
+  marshalled into, the HTML stylesheet's `w:body`.
+- Narrower than §3 in two places, both where the census did not measure: headers, footers, notes and text
+  boxes (the census counted the body's tables), and a percentage in a
+  section of several columns, which this writer resolves against the page's text column, not the section's
+  column (real3 9539's three 98% fixed tables, in a three-column section, would have come out three times as
+  wide; the merged page-sequence takes the most columns of its parts, so the guard can only hold the rule
+  back).
+- The percentage base is the edge cells' margins, not `autofitGridAllowanceTwips`'s twice the left margin:
+  the first gate run (jars of 15:29) moved one document, real3 7396 (-5 lines, 0.9492 to 0.9474), where two
+  mode-14 tables state 4943 pct of a 9498-twip column with the table's cell margins 0 and the first cell's
+  113 each side.  Word's grid is 9506: the column and 113 at 98.86% is 9501, the column and 226 is 9613, so
+  twice the left margin read Word's own grid as 1.1% short and laid the tables out 107 twips wider.  (Until
+  then `scaleGridToPercentageWidth`'s over-100% guard, which compares the widened percentage with the plain
+  column, had kept that grid.)  `autofitGridAllowanceTwips` itself, which the content-autofit pass also uses,
+  is unchanged.  Pinned by `TableStatedWidthTest.aPercentageOnTheEdgeCellsMarginsKeepsWordsGrid`.
+- Finding 3 withdrawn: 17.3.1 already resolves a percentage on Word's base below mode 15 (§2.2).
+- Tests: export-fo-tests `TableStatedWidthTest` (14: F6, F7, W1 and W6, W9, F12 in modes 15 and 14, W4, F8,
+  a grid within 1%, a nested table of absolute width (both pathways) and of percentage width (visitor), a
+  percentage in three columns (9539's shape), 7396's edge-cell margins, a table built with `TblFactory`,
+  the switch); core-tests
+  `HtmlTableStatedWidthTest` (4: F6, W1, F8, nested; both pathways).  Re-pinned with the reason in each
+  javadoc: `TableWidthTest` (percentage cells under an 8000-twip width now W9's reading, 133.35 / 266.65pt,
+  where the grid's 50 / 100pt was pinned; fixed layout: a grid that agrees stands, one that falls short
+  gives way; renamed `fixedLayoutGrid*`), `PercentageTableWidthTest` (`aFixedGridItsCellsRepeatTakesThePercentage`:
+  the table-grid-pct probe's P7 and P8 reading restored, 451.3pt for both; its corpus ground, 9539, pinned
+  in its own shape), `TableOverWideExemptionsTest` (the over-100% table's cells state the percentage's width,
+  F8's shape, where the exemption still applies; its measured table is a header's).
+  `TableGridAuthoritativeTest`, `TableAlignmentTest` and the rest unchanged.  Suites: export-fo-tests
+  815/0 (9 skipped), core-tests 1566/0 (11 skipped).
+- Against Word (the probes re-rendered on the change, 17.3.3's jars alone): F6, F7, F11 and F12 within 0.4pt
+  in modes 15 and 14 (the right cell was 151pt out, F12's 162pt in mode 14); F15 in mode 14 within 0.2pt
+  (was +69.5; its grid falls short of the widened percentage); W1, W2, W6, W9 and W11 to W14 within 0.4pt in
+  modes 15, 14 and 12 (were up to 201pt out); W4's columns start at 77.7 / 189.9 / 302.2 against Word's 77.8 /
+  189.9 / 302.0 (were 125pt apart); F8, and F15 in mode 15, unchanged, as the rule intends.  Nothing else
+  in the probes moved by more than 0.15pt; page counts unchanged.  HTML printed by Chrome: F6, F7 and F11 at
+  the column's width beside F3; F8 at its grid, as in PDF.
+- Gate b229 against b228 (`~/fidelity-cr030/gate-b228-b229.sh`, jars frozen at 15:45, renderer
+  2.11-docx4j.6): **0 movers** over real, real2, real3 and real-c2, every row's line parity, pages and
+  matched lines identical, every event count equal; the probes identical row for row.  Where the rule fires
+  in the corpora, counted with its debug line over the four corpora's re-saves and the three corpora's
+  originals (1,011 documents converted to FO, one refused by the default zip-bomb limit: real3 217's
+  original): real2 3117's two percentage tables, in the re-save and the original alike, and no other - the
+  census's prediction exactly; docx4j already drew those two at their percentage.  Line parity does not
+  see a column's width where the lines keep their breaks, so the probes were read directly (above).
+- Found on the way, outside this CR: `containingCellWidthTwips` subtracts the enclosing table's own
+  `w:tblCellMar` only, not a style's or Word's default 108 twips, so a nested percentage table in a cell whose
+  margins are not stated on its table is resolved against the whole cell (a 100% table: 9026, where the
+  17.2.0 rule, the cell less its margins, gives 8810; Word's reading of this shape not taken).
+  `TableStatedWidthTest` states the margins; the register has it as a lead.
 
 ## 12. Review (docx4j-b0 session, 2026-10-14, at Jason's request)
 

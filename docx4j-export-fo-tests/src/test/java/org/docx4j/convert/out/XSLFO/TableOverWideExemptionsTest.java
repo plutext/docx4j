@@ -56,9 +56,14 @@ public class TableOverWideExemptionsTest extends AbstractXSLFOTest {
 	/** grid 6000+6000 = 12000 twips = 600pt, 1.33 x the text column - past
 	 *  GRID_OVERHANG_LIMIT, so an ordinary table of this shape is scaled into the column */
 	private static String table(String tblPrExtra) {
+		return table(tblPrExtra, 6000);
+	}
+
+	/** the same grid, with cells of the given width */
+	private static String table(String tblPrExtra, int cellW) {
 		return "<w:tbl><w:tblPr>" + tblPrExtra + "</w:tblPr>"
 				+ "<w:tblGrid><w:gridCol w:w=\"6000\"/><w:gridCol w:w=\"6000\"/></w:tblGrid>"
-				+ "<w:tr>" + cell(6000, "one") + cell(6000, "two") + "</w:tr></w:tbl>";
+				+ "<w:tr>" + cell(cellW, "one") + cell(cellW, "two") + "</w:tr></w:tbl>";
 	}
 
 	private static List<Element> columns(String body) throws Exception {
@@ -114,10 +119,16 @@ public class TableOverWideExemptionsTest extends AbstractXSLFOTest {
 	/**
 	 * A percentage over 100 leaves the grid alone; the same table at 50% is still scaled
 	 * to the percentage, which is the behaviour the table-grid-pct golden measures.
+	 *
+	 * <p>The cells state the percentage's width (2 x 5105 = 113.12% of the column), not the
+	 * grid's: since 17.3.3 a body table whose cells repeat a grid its percentage
+	 * contradicts is laid out at the percentage (CR-041 phase 2,
+	 * {@code AbstractTableWriter.statedWidthColumns}), and the corpus table this was
+	 * measured on is in a header, which that rule does not reach.</p>
 	 */
 	@Test
 	public void aPercentageOverOneHundredKeepsTheGrid() throws Exception {
-		List<Element> over = columns(table("<w:tblW w:w=\"5656\" w:type=\"pct\"/>"));
+		List<Element> over = columns(table("<w:tblW w:w=\"5656\" w:type=\"pct\"/>", 5105));
 		assertEquals(2, over.size());
 		assertEquals("over 100%: column 1 is its declared 6000 twips", 300.0, pt(over.get(0)), 0.5);
 		assertEquals("over 100%: column 2 is its declared 6000 twips", 300.0, pt(over.get(1)), 0.5);

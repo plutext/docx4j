@@ -113,16 +113,16 @@ public class TableWidthTest {
 	}
 
 	/**
-	 * Cells declaring pct widths make every column preferred (a98854400, 8 Sep 2026),
-	 * and the grid is then the layout: 50 and 100pt, the 3000 twips as written, not
-	 * widened to the 8000-twip w:tblW.  The widening this test asserted until
-	 * 2026-09-11 (section 6.4, "in the grid's proportions where any cell declares a
-	 * width") was measured on probe goldens whose 154pt grid the harness generated
-	 * under a 400pt w:tblW - a grid Word did not write, which Word refits on open.  In
-	 * Word-written documents the shape does not occur: of the three corpora's 1280
-	 * tables with an absolute w:tblW, none is more than 2 per cent wider than its grid
-	 * (446 documents, 5146 tables), since Word writes the grid to the width it laid the
-	 * table out at.  So the grid rule costs nothing there and this pins it.
+	 * Cells declaring pct widths make every column preferred (a98854400, 8 Sep 2026); under
+	 * a w:tblW their 3000-twip grid falls far short of, they are percentages of the
+	 * table's 8000 twips: 2667 and 5333 (CR-041 phase 2, 17.3.3).  Until 17.3.3 this pinned
+	 * the grid as written, 50 and 100pt, on the ground that a Word-written table does not
+	 * have this shape (of the three corpora's tables with an absolute w:tblW, none has a
+	 * grid more than 2 per cent short of it) and that the probe goldens which showed Word
+	 * widening it had a grid the harness generated, which Word refits on open.  That is
+	 * the point: a generated grid is what a table built in code has, and Word refits it -
+	 * measured on Word's re-save of table-align-p0's W9, cells of 20 / 30 / 50% over a
+	 * grid of 3 x 2000 under 9026 twips come back 1805 / 2708 / 4513.
 	 */
 	private void checkDeclaredWidthsWidenOnTheGrid(int flags) throws Exception {
 		String pct = table("<w:tblW w:type=\"dxa\" w:w=\"8000\"/>",
@@ -130,21 +130,35 @@ public class TableWidthTest {
 				cell("1667", "pct", "") + cell("3333", "pct", "wide content in the second column"));
 		double[] cols = columnsPt(fo(pct, flags));
 		assertEquals(2, cols.length);
-		assertEquals("the grid as written, not widened to w:tblW", 150.0, cols[0] + cols[1], 0.05);
-		assertEquals("the grid's 1000 twips", 50.0, cols[0], 0.1);
-		assertEquals("the grid's 2000 twips", 100.0, cols[1], 0.1);
+		assertEquals("w:tblW, not the grid", 400.0, cols[0] + cols[1], 0.05);
+		assertEquals("33.34% of 8000 twips", 133.35, cols[0], 0.1);
+		assertEquals("66.66% of 8000 twips", 266.65, cols[1], 0.1);
 	}
 
-	private void checkFixedLayoutKeepsTheGrid(int flags) throws Exception {
-		// w:tblLayout fixed: the grid stands, whatever w:tblW asks for
-		String fixed = table("<w:tblLayout w:type=\"fixed\"/><w:tblW w:type=\"dxa\" w:w=\"8000\"/>",
-				"<w:gridCol w:w=\"1500\"/><w:gridCol w:w=\"1500\"/>",
+	/**
+	 * w:tblLayout fixed: the grid stands where it agrees with w:tblW (here 3000 under
+	 * 3000), and gives way to a w:tblW it falls short of, its columns scaled to it (CR-041
+	 * phase 2, 17.3.3: Word re-lays such a grid, F11 and W6).  Until 17.3.3 the grid stood
+	 * whatever w:tblW asked for.
+	 */
+	private void checkFixedLayoutGrid(int flags) throws Exception {
+		String agrees = table("<w:tblLayout w:type=\"fixed\"/><w:tblW w:type=\"dxa\" w:w=\"3000\"/>",
+				"<w:gridCol w:w=\"1000\"/><w:gridCol w:w=\"2000\"/>",
 				cell(null, "one") + cell(null, "two"));
-		org.w3c.dom.Document doc = fo(fixed, flags);
+		org.w3c.dom.Document doc = fo(agrees, flags);
 		assertEquals(150.0, pt(foTable(doc).getAttribute("width")), 0.01);
 		double[] cols = columnsPt(doc);
-		assertEquals(75.0, cols[0], 0.01);
-		assertEquals(75.0, cols[1], 0.01);
+		assertEquals(50.0, cols[0], 0.01);
+		assertEquals(100.0, cols[1], 0.01);
+
+		String contradicts = table("<w:tblLayout w:type=\"fixed\"/><w:tblW w:type=\"dxa\" w:w=\"8000\"/>",
+				"<w:gridCol w:w=\"1500\"/><w:gridCol w:w=\"1500\"/>",
+				cell(null, "one") + cell(null, "two"));
+		doc = fo(contradicts, flags);
+		assertEquals(400.0, pt(foTable(doc).getAttribute("width")), 0.01);
+		cols = columnsPt(doc);
+		assertEquals(200.0, cols[0], 0.01);
+		assertEquals(200.0, cols[1], 0.01);
 	}
 
 	private void checkAutoWidthShrinksToContent(int flags) throws Exception {
@@ -200,13 +214,13 @@ public class TableWidthTest {
 	}
 
 	@Test
-	public void fixedLayoutKeepsTheGridVisitor() throws Exception {
-		checkFixedLayoutKeepsTheGrid(Docx4J.FLAG_NONE);
+	public void fixedLayoutGridVisitor() throws Exception {
+		checkFixedLayoutGrid(Docx4J.FLAG_NONE);
 	}
 
 	@Test
-	public void fixedLayoutKeepsTheGridXslt() throws Exception {
-		checkFixedLayoutKeepsTheGrid(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	public void fixedLayoutGridXslt() throws Exception {
+		checkFixedLayoutGrid(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
 	@Test

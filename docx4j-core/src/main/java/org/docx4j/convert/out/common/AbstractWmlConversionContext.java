@@ -469,6 +469,31 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 		this.currentPPr = currentPPr;
 	}
 
+	private org.w3c.dom.Node currentSourceNode = null;
+
+	/**
+	 * In the XSLT pathway, the source node a Writer is converting, or null.
+	 *
+	 * Set immediately before a Writer is invoked from a stylesheet, and cleared
+	 * afterwards.  The writer is given that node unmarshalled on its own, so its JAXB
+	 * parent pointers lead nowhere; this is where it can ask what the node sits in (the
+	 * table writer: whether a w:tbl is in the body, a cell or a text box).  Null in the
+	 * visitor pathway, whose objects keep their parents.
+	 *
+	 * @since 17.3.3
+	 */
+	public org.w3c.dom.Node getCurrentSourceNode() {
+		return currentSourceNode;
+	}
+
+	/**
+	 * @see #getCurrentSourceNode()
+	 * @since 17.3.3
+	 */
+	public void setCurrentSourceNode(org.w3c.dom.Node currentSourceNode) {
+		this.currentSourceNode = currentSourceNode;
+	}
+
 	@Override
 	public void handleHyperlink(ConversionHyperlinkHandler.Model model) throws Docx4JException {
 		getHyperlinkHandler().handleHyperlink(model, getOpcPackage(), getCurrentPart());

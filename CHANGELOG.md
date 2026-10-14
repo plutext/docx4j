@@ -127,6 +127,9 @@ Changes in Version 17.3.3
   ignored, as Word does; below mode 15 one cell margin past it), where it was drawn at the left
   margin; a centred or right-aligned table nested in a cell is placed within that cell; HTML
   centres a w:jc center table.  CR-041.
+- PDF and HTML output lay out a table at its own w:tblW where its w:tblGrid contradicts it (as when
+  code sets the width and leaves TblFactory's grid), as Word does, where the grid was drawn
+  (docx4j.convert.out.fo.tables.refitStaleGrid=false keeps the grid).  CR-041.
 
 
 Version 17.3.2

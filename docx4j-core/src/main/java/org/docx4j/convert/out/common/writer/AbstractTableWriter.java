@@ -226,7 +226,10 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
     	table.setAutofitColumnWidths(autofit);
     	table.setContentSizedColumns(true);
     } else {
-    	int[] scaled = scaleGridToPercentageWidth(context, table);
+    	// a fixed-layout table, or one this format cannot measure, whose own width
+    	// contradicts its grid (CR-041); else a percentage width the grid is scaled to
+    	int[] scaled = statedWidthColumns(context, table);
+    	if (scaled == null) scaled = scaleGridToPercentageWidth(context, table);
     	if (scaled != null) table.setAutofitColumnWidths(scaled);
     }
     int[] fitted = fitToAvailableWidth(context, table);
@@ -527,7 +530,13 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			// kept whether or not the pass goes on to size the columns: the page fit and the
 			// diagnostic dump (DUMP_AUTOFIT) both read it
 			table.setAutofitInputs(new AbstractTableWriterModel.AutofitInputs(mi, ma, pref, floor, available));
+			// where the grid would stand, unless the table's own width contradicts it: then
+			// the cells' widths scaled to that width, no column below its content (CR-041)
+			int[] stated = statedWidthColumns(context, table);
 			if (!anyAuto) {
+				if (stated != null) {
+					return org.docx4j.model.table.AutofitLayout.distributePreferredAsMaximum(mi, stated, sum(stated));
+				}
 				// every cell states a width: the grid is what Word uses - unless the grid
 				// cannot be a layout of those widths, in which case Word lays the table out
 				// on them afresh (see gridContradictsPreferences)
@@ -557,7 +566,10 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 				int[] grid = anyDeclared ? null : gridWidths(table, cols);
 				if (grid != null && gridFitsContent(grid, mi, ma)) return autoGridWidths(grid, ma, room);
 			}
-			if (gridIsAuthoritative(table, tblPr, cols, pref, declared, gridPreferred)) return null;
+			if (gridIsAuthoritative(table, tblPr, cols, pref, declared, gridPreferred)) {
+				return stated == null ? null
+						: org.docx4j.model.table.AutofitLayout.distributePreferredAsMaximum(mi, stated, sum(stated));
+			}
 			if (available <= 0) return null;
 			int[] widths = org.docx4j.model.table.AutofitLayout.distribute(mi, ma, pref, available);
 			boolean anyDeclared = false;
@@ -581,6 +593,24 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * @since 17.1.0
 	 */
 	protected int autofitGridAllowanceTwips(AbstractWmlConversionContext context,
+			AbstractTableWriterModel table, org.docx4j.wml.CTTblPrBase tblPr) {
+		return 0;
+	}
+
+	/**
+	 * What a percentage {@code w:tblW} is a percentage of beyond the text column, for
+	 * {@link #statedWidthColumns}, in twips: zero here; the FO writer returns, below
+	 * compatibility mode 15, the first cell's left margin and the last cell's right margin
+	 * (the cell content spans the column there).  Not {@link #autofitGridAllowanceTwips},
+	 * which takes the left margin twice: measured on a mode-14 corpus table whose own cell
+	 * margins are 0 and whose first cell states 113 twips each side, 4943 pct of a 9498-twip
+	 * column, Word's grid is 9506, which is 98.86% of the column and 113 twips (9501), where
+	 * twice the left margin makes the percentage 9613 and reads Word's own grid as 1.1%
+	 * short of it.
+	 *
+	 * @since 17.3.3
+	 */
+	protected int percentageBaseAllowanceTwips(AbstractWmlConversionContext context,
 			AbstractTableWriterModel table, org.docx4j.wml.CTTblPrBase tblPr) {
 		return 0;
 	}
@@ -745,12 +775,209 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	/** docx4j.convert.out.fo.tables.refitStaleGrid: an autofit table of auto width, every
 	 *  cell of which states a {@code w:tcW}, whose {@code w:tblGrid} cannot be a layout of
 	 *  those widths ({@link #gridContradictsPreferences}) is laid out on the widths, as Word
-	 *  lays it out, rather than on the grid.  {@code false} keeps the grid, as 17.1.0 did.
-	 *  @since 17.2.0 */
+	 *  lays it out, rather than on the grid; and (since 17.3.3) a table whose own
+	 *  {@code w:tblW} contradicts its grid is laid out at that width
+	 *  ({@link #statedWidthColumns}), in PDF and HTML alike.  {@code false} keeps the grid
+	 *  as written in both cases, as 17.1.0 did.  @since 17.2.0 */
 	public static final String REFIT_STALE_GRID = "docx4j.convert.out.fo.tables.refitStaleGrid";
 
 	private static boolean refitStaleGrid() {
 		return org.docx4j.Docx4jProperties.getProperty(REFIT_STALE_GRID, true);
+	}
+
+	/**
+	 * The columns of a table whose own {@code w:tblW} contradicts its {@code w:tblGrid}:
+	 * the cells' widths scaled to the table's width, as Word lays such a table out - or null
+	 * where the grid stands.  (CR-041 finding 2.)
+	 *
+	 * <p>A grid Word wrote is the layout Word draws (&#xa7;6.3), and this class has trusted
+	 * it since 17.1.0 wherever every column states a width, and under
+	 * {@code w:tblLayout fixed}.  A generator's grid is another matter: code that sets a
+	 * table's width, or its cells', and leaves the grid as {@code TblFactory} wrote it,
+	 * gets a grid Word recomputes on open, and was drawn here at the grid's width.
+	 * Measured on Word's re-saves of the table-align probes: a 9026-twip {@code w:tblW}
+	 * over a grid of 3 x 2000, its cells repeating the grid, comes back 3008 / 3009 / 3009,
+	 * autofit and fixed alike, and so does a 100% table in either layout; cells of 3000 /
+	 * 2000 / 1000 under the same width, over a grid of 1000 / 2000 / 3000, come back 4513 /
+	 * 3009 / 1504 (the cells scaled, the grid ignored), and cells of 20 / 30 / 50% 1805 /
+	 * 2708 / 4513.  docx4j drew all of them 6000 twips wide.</p>
+	 *
+	 * <p>The grid gives way where the table is directly in the body, states an absolute
+	 * or percentage width (a percentage of the text column, and below compatibility mode
+	 * 15 of the column and the cell margins, {@link #percentageBaseAllowanceTwips}), and
+	 * either</p>
+	 * <ul>
+	 * <li>the grid falls short of that width by more than 1%; or</li>
+	 * <li>every column states a width, the cells agree with the grid (the widest row
+	 *     whose every cell states a width in twips, within 1%), and the table's width
+	 *     differs from both by more than 1%.</li>
+	 * </ul>
+	 * <p>Over the three corpora and Word's re-saves of them (CR-041 &#xa7;7.1, 5,723
+	 * tables) that fires on no Word-written table with an absolute width and on two with
+	 * a percentage width, which Word keeps at their grids but which docx4j already drew at
+	 * the percentage.  Not where the cells agree with the table's width and the grid is
+	 * wider (Word kept five of the corpora's six such grids), nor on a table nested in a
+	 * cell or in a text box, whose grid answers to its container (the only Word-written
+	 * grids short of a stated width are four nested tables'), nor in a header, footer or
+	 * note, which the census did not count; nor a percentage in a section of several
+	 * columns, which this class resolves against the page's text column rather than the
+	 * section's column (a three-column document's 98% tables would come out three times
+	 * too wide).  1% is the threshold of {@link #gridIsAuthoritative}'s own test: Word
+	 * re-lays a generator's grid 1.9% off its width, and no Word-written grid of either
+	 * shape lies between 1 and 2%.</p>
+	 *
+	 * <p>A column's width is its widest single-column {@code w:tcW} (in twips, or a
+	 * percentage of the table's width), its grid width where no cell states one.  A
+	 * caller that measures content keeps every column at least its content's minimum:
+	 * three 2500-twip cells whose words need about 2240 each, under a 4000-twip
+	 * {@code w:tblW}, come back from Word 3 x 2243.  {@link #REFIT_STALE_GRID}
+	 * {@code false} draws the grid as written.</p>
+	 *
+	 * @return column widths in twips summing to the table's width, or null
+	 * @since 17.3.3
+	 */
+	protected int[] statedWidthColumns(AbstractWmlConversionContext context, AbstractTableWriterModel table) {
+		if (!refitStaleGrid()) return null;
+		try {
+			org.docx4j.wml.CTTblPrBase tblPr = table.getEffectiveTableStyle().getTblPr();
+			org.docx4j.wml.TblWidth tblW = tblPr == null ? null : tblPr.getTblW();
+			if (tblW == null || tblW.getW() == null || tblW.getW().intValue() <= 0) return null;
+			boolean pct = "pct".equals(tblW.getType());
+			if (!pct && !"dxa".equals(tblW.getType())) return null;
+			if (!Boolean.TRUE.equals(inBody(context, table))) return null;
+			int cols = table.getColCount();
+			int[] grid = gridWidths(table, cols);
+			if (grid == null) return null;
+			int stated;
+			if (pct) {
+				if (multiColumnSection(context)) return null;
+				int column = containerWidthTwips(context);
+				if (column <= 0) return null;
+				stated = preferredTableWidthTwips(tblPr, column + percentageBaseAllowanceTwips(context, table, tblPr));
+			} else {
+				stated = tblW.getW().intValue();
+			}
+			if (stated <= 0) return null;
+
+			int[] pref = new int[cols];
+			java.util.Arrays.fill(pref, -1);
+			long cells = 0;   // the widest row whose every cell states a width in twips
+			for (TableModelRow row : table.getRows()) {
+				long rowSum = 0;
+				boolean all = true, any = false;
+				for (int c = 0; c < row.size() && c < cols; c++) {
+					TableModelCell cell = row.get(c);
+					if (cell == null || cell.isDummy()) continue;
+					any = true;
+					org.docx4j.wml.TblWidth tcW = cell.getTcPr() == null ? null : cell.getTcPr().getTcW();
+					int w = -1;
+					boolean dxa = false;
+					if (tcW != null && tcW.getW() != null && tcW.getW().intValue() > 0) {
+						if (tcW.getType() == null || "dxa".equals(tcW.getType())) {
+							w = tcW.getW().intValue();
+							dxa = true;
+						} else if ("pct".equals(tcW.getType())) {
+							w = (int) ((long) stated * tcW.getW().intValue() / 5000);
+						}
+					}
+					if (dxa) rowSum += w; else all = false;
+					if (w > 0 && Math.max(1, cell.getColspan()) == 1) pref[c] = Math.max(pref[c], w);
+				}
+				if (any && all) cells = Math.max(cells, rowSum);
+			}
+			boolean everyColumn = cols > 0;
+			for (int p : pref) if (p <= 0) everyColumn = false;
+			long gridSum = sum(grid);
+			boolean gridShort = gridSum < stated && (stated - gridSum) * 100 > stated;
+			boolean cellsOnGrid = everyColumn && cells > 0 && Math.abs(cells - gridSum) * 100 <= gridSum
+					&& Math.abs(stated - gridSum) * 100 > stated;
+			if (!gridShort && !cellsOnGrid) return null;
+			int[] basis = new int[cols];
+			for (int i = 0; i < cols; i++) basis[i] = pref[i] > 0 ? pref[i] : grid[i];
+			if (log.isDebugEnabled()) {
+				log.debug("w:tblW " + stated + " contradicts w:tblGrid " + gridSum + "; laying the table out at its width");
+			}
+			return org.docx4j.model.table.AutofitLayout.scaleToTotal(basis, stated);
+		} catch (Exception e) {
+			log.warn("Stated table width skipped: " + e.getMessage(), e);
+			return null;
+		}
+	}
+
+	private static int sum(int[] a) {
+		int s = 0;
+		for (int v : a) s += v;
+		return s;
+	}
+
+	/**
+	 * Whether the table stands directly in the document's body - not in a table cell, a
+	 * text box, a header, a footer or a note - or null where that cannot be told.  The
+	 * visitor pathway follows the {@code w:tbl}'s JAXB parents; in the XSLT pathway, whose
+	 * {@code w:tbl} was unmarshalled on its own, the source node's DOM parents
+	 * ({@link AbstractWmlConversionContext#getCurrentSourceNode()}), where the FO
+	 * stylesheet's body is the unqualified {@code sections/section} and the HTML
+	 * stylesheet's {@code w:body}.
+	 *
+	 * @since 17.3.3
+	 */
+	static Boolean inBody(AbstractWmlConversionContext context, AbstractTableWriterModel table) {
+		org.docx4j.wml.Tbl tbl = table.getTbl();
+		Object o = (tbl instanceof org.jvnet.jaxb.lang.Child)
+				? ((org.jvnet.jaxb.lang.Child) tbl).getParent() : null;
+		if (o != null) {
+			for (int guard = 0; o != null && guard < 64; guard++) {
+				if (o instanceof org.docx4j.wml.Body) return Boolean.TRUE;
+				if (o instanceof org.docx4j.wml.Tc
+						|| o instanceof org.docx4j.wml.CTTxbxContent
+						|| o instanceof org.docx4j.wml.Hdr
+						|| o instanceof org.docx4j.wml.Ftr
+						|| o instanceof org.docx4j.wml.CTFtnEdn) {
+					return Boolean.FALSE;
+				}
+				o = (o instanceof org.jvnet.jaxb.lang.Child)
+						? ((org.jvnet.jaxb.lang.Child) o).getParent() : null;
+			}
+			return null;
+		}
+		Node n = context == null ? null : context.getCurrentSourceNode();
+		if (n == null || !"tbl".equals(n.getLocalName())) return null;
+		n = n.getParentNode();
+		for (int guard = 0; n != null && guard < 64; guard++, n = n.getParentNode()) {
+			if (n.getNodeType() != Node.ELEMENT_NODE) return null;
+			String name = n.getLocalName();
+			if (n.getNamespaceURI() == null || n.getNamespaceURI().isEmpty()) {
+				// the FO stylesheet's body: its blocks, marshalled one by one into the
+				// sections model (ConversionSectionWrappers.createSections)
+				if ("section".equals(name) && n.getParentNode() != null
+						&& "sections".equals(n.getParentNode().getLocalName())) {
+					return Boolean.TRUE;
+				}
+				continue;
+			}
+			if (!Namespaces.NS_WORD12.equals(n.getNamespaceURI())) continue;
+			if ("body".equals(name)) return Boolean.TRUE;
+			if ("tc".equals(name) || "txbxContent".equals(name) || "hdr".equals(name)
+					|| "ftr".equals(name) || "footnote".equals(name) || "endnote".equals(name)) {
+				return Boolean.FALSE;
+			}
+		}
+		return null;
+	}
+
+	/** Whether the section (the page-sequence, where continuous sections are merged, which
+	 *  takes the most columns of its parts) has more than one column.  @since 17.3.3 */
+	private static boolean multiColumnSection(AbstractWmlConversionContext context) {
+		try {
+			org.docx4j.wml.CTColumns cols = context.getSections().getCurrentSection()
+					.getPageDimensions().getCols();
+			if (cols == null) return false;
+			if (cols.getNum() != null && cols.getNum().intValue() > 1) return true;
+			return cols.getCol() != null && cols.getCol().size() > 1;
+		} catch (Exception e) {
+			log.debug("No section columns: " + e.getMessage());
+			return true;
+		}
 	}
 
 	/** How much wider than its {@code w:tcW} a grid column may be, where the content does

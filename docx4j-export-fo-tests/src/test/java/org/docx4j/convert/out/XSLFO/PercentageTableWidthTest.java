@@ -27,9 +27,9 @@ import org.w3c.dom.NodeList;
  * <li>{@code w:tblW 5000 pct} with a fixed layout and a grid of 4614+4614 = 9228 (2.2
  *     per cent over) gives Word two columns of 224.98 and 225.22pt - the grid scaled by
  *     9026/9228 - and the twin whose grid is 3000+3000 comes out at the same widths,
- *     the grid scaled up by 1.504.  <b>Superseded</b> where the cells repeat the grid
- *     in dxa: the corpora show Word keeping a grid it wrote, and the probe's grids are
- *     ones it did not (see {@link #aFixedGridItsCellsRepeatStandsAtItsOwnWidth}).</li>
+ *     the grid scaled up by 1.504.  Superseded from 17.2.0 to 17.3.2 where the cells
+ *     repeat the grid in dxa, and restored in 17.3.3 (see
+ *     {@link #aFixedGridItsCellsRepeatTakesThePercentage}).</li>
  * <li>{@code w:tblW 6000 pct} - 120 per cent - is drawn 541.2pt wide, from the left
  *     margin to x=613.2 on a 523.2pt column, where docx4j clamped it to the column.</li>
  * <li>{@code w:tblW 5000 pct} with {@code w:tblInd 720} is the full 9026 twips wide
@@ -105,26 +105,28 @@ public class PercentageTableWidthTest extends AbstractXSLFOTest {
 	}
 
 	/**
-	 * A fixed-layout table whose dxa cells repeat its grid keeps that grid, whether the
-	 * grid is 2.2 per cent over the percentage width or 33 per cent under it
-	 * (&#xa7;6.5, "where table-grid-pct and the real documents part company", 17.2.0).
-	 * The probe's P7 and P8 show Word scaling such grids to the percentage, but those
-	 * grids are the harness's own, so Word has no cached layout to keep and falls back
-	 * to the w:tblW; a grid Word wrote is a layout Word keeps, and nothing in the file
-	 * tells the two apart.  Measured on the corpora: Word kept 100 of the 110 stated-width
-	 * tables whose grid is wider than the percentage asks for and all 10 whose grid is
-	 * narrower, and a landscape document whose three tables state 98 per cent against a
-	 * 6693-twip grid their cells repeat went from 0.6928 to 0.8807 of Word's lines when
-	 * docx4j stopped scaling them.  The two tests this replaces asserted the probe's
-	 * reading (451.3pt in both cases) and were retired on 2026-09-11.  @since 17.2.0
+	 * A fixed-layout table whose dxa cells repeat a grid 2.2 per cent over its percentage
+	 * width, or 33 per cent under it, is laid out at the percentage, as the probe's P7 and
+	 * P8 show Word doing (CR-041 phase 2, 17.3.3).
+	 *
+	 * <p>From 17.2.0 to 17.3.2 such a grid stood (&#xa7;6.5, "where table-grid-pct and the
+	 * real documents part company"), on a corpus count that Word kept 100 of 110
+	 * stated-width tables whose grid is wider than the percentage and all 10 whose grid is
+	 * narrower.  Counted again with each table's width taken against its own section's
+	 * text column (CR-041 &#xa7;7.1: the gutter subtracted, below mode 15 the cell margins
+	 * added, sections of several columns set aside), no Word-written table in the body has
+	 * cells repeating a grid more than 1% off its percentage.  The landscape document which
+	 * went from 0.6928 to 0.8807 of Word's lines when docx4j stopped scaling its three 98%
+	 * tables is in a section of three columns; it is pinned by
+	 * TableStatedWidthTest.aPercentageInSeveralColumnsKeepsItsGrid.</p>
 	 */
 	@Test
-	public void aFixedGridItsCellsRepeatStandsAtItsOwnWidth() throws Exception {
+	public void aFixedGridItsCellsRepeatTakesThePercentage() throws Exception {
 		for (int flags : FLAGS) {
-			assertEquals(flagName(flags) + ": 9228 twips of grid, 2.2 per cent over the percentage, stands",
-					461.4, tableWidthPt(fo(pkg(5000, 4614, true, 0), flags)), 0.3);
-			assertEquals(flagName(flags) + ": 6000 twips of grid, 33 per cent under the percentage, stands",
-					300.0, tableWidthPt(fo(pkg(5000, 3000, true, 0), flags)), 0.3);
+			assertEquals(flagName(flags) + ": 9228 twips of grid, 2.2 per cent over the percentage",
+					451.3, tableWidthPt(fo(pkg(5000, 4614, true, 0), flags)), 0.3);
+			assertEquals(flagName(flags) + ": 6000 twips of grid, 33 per cent under the percentage",
+					451.3, tableWidthPt(fo(pkg(5000, 3000, true, 0), flags)), 0.3);
 		}
 	}
 

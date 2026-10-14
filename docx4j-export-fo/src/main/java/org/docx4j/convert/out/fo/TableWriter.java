@@ -616,6 +616,20 @@ public class TableWriter extends AbstractTableWriter {
 	}
 
 	/**
+	 * Below compatibility mode 15, the first cell's left margin and the last cell's right
+	 * margin: the cell content spans the text column there, so a percentage width is of the
+	 * column and those two (see {@link AbstractTableWriter#percentageBaseAllowanceTwips}).
+	 *
+	 * @since 17.3.3
+	 */
+	@Override
+	protected int percentageBaseAllowanceTwips(AbstractWmlConversionContext context,
+			AbstractTableWriterModel table, org.docx4j.wml.CTTblPrBase tblPr) {
+		if (compatibilityMode(context) >= 15) return 0;
+		return leftCellMarginTwips(table, tblPr) + rightCellMarginTwips(table, tblPr);
+	}
+
+	/**
 	 * The left cell margin the grid edge is measured from, in twips: the <em>first
 	 * cell's</em> own w:tcMar/w:left where it has one, else w:tblPr/w:tblCellMar/w:left
 	 * (the table style's is already merged into the effective tblPr, and since 17.2.0

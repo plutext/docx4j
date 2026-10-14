@@ -106,7 +106,14 @@ public abstract class AbstractWriterRegistry {
 			log.error("Cannot unmarshall " + node.getNodeName(), e);
 		}
 		if (unmarshalledNode != null) {
-			ret = toNode(context, unmarshalledNode, node.getNodeName(), content, doc);
+			// what the node sits in, which its unmarshalled copy cannot say (@since 17.3.3)
+			org.w3c.dom.Node previous = context.getCurrentSourceNode();
+			context.setCurrentSourceNode(node);
+			try {
+				ret = toNode(context, unmarshalledNode, node.getNodeName(), content, doc);
+			} finally {
+				context.setCurrentSourceNode(previous);
+			}
 		}
 		return ret;
 	}

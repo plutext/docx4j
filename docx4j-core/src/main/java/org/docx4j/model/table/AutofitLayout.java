@@ -216,6 +216,35 @@ public final class AutofitLayout {
 	}
 
 	/**
+	 * Column widths in the proportions of {@code basis}, summing to {@code total}: how Word
+	 * lays out a table whose own {@code w:tblW} contradicts a generator's {@code w:tblGrid}
+	 * (CR-041).  Measured on Word's re-saves of the table-align-p0 probes: cells of 3000 /
+	 * 2000 / 1000 twips under a 9026-twip {@code w:tblW} come back 4513 / 3009 / 1504, and
+	 * cells of 20 / 30 / 50% 1805 / 2708 / 4513 - this to the twip, with the rounding of
+	 * {@link #squeeze}.
+	 *
+	 * @param basis the proportions (a column's stated width, or its grid width where it
+	 *        states none)
+	 * @param total the width to fill
+	 * @return column widths summing to {@code total} (the basis itself where it has no width)
+	 * @since 17.3.3
+	 */
+	public static int[] scaleToTotal(int[] basis, int total) {
+		int n = basis.length;
+		int[] out = new int[n];
+		long sum = 0;
+		for (int b : basis) sum += Math.max(0, b);
+		if (n == 0 || sum <= 0 || total <= 0) {
+			System.arraycopy(basis, 0, out, 0, n);
+			return out;
+		}
+		double[] exact = new double[n];
+		for (int i = 0; i < n; i++) exact[i] = (double) Math.max(0, basis[i]) * total / sum;
+		roundToTotal(exact, out, total);
+		return out;
+	}
+
+	/**
 	 * Whole twips from exact shares, summing to {@code total}: each column takes the
 	 * whole part of its share (at least 1), and the twips that leaves over go one each to
 	 * the columns with the largest fractional parts, earlier columns first - which is
