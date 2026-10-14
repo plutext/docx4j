@@ -7764,6 +7764,11 @@ public final class Corpus {
 
 	}
 
+	static {
+		// The 2026-10-14 report of table alignment broken in 17.x, and widths right only in percent
+		PROBES.addAll(TableAlignmentProbes.probes());
+	}
+
 	public static List<Probe> all() {
 		return Collections.unmodifiableList(PROBES);
 	}
