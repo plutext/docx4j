@@ -624,6 +624,27 @@ public final class Doc {
 		ppr.setFramePr(fp);
 	}
 
+	/**
+	 * {@code w:framePr} with its position and size, all in twips: {@code w:x}, {@code w:y},
+	 * {@code w:w}, {@code w:h} and {@code w:hRule} ("auto", "atLeast", "exact"); a null
+	 * argument leaves its attribute off.  CR-032 phase 5's frame probes.
+	 *
+	 * @since 17.3.3
+	 */
+	public static void framePr(PPr ppr, String wrap, String hAnchor, String vAnchor, Integer xTwips,
+			Integer yTwips, Integer wTwips, Integer hTwips, String hRule) {
+		CTFramePr fp = F.createCTFramePr();
+		if (wrap != null) fp.setWrap(STWrap.fromValue(wrap));
+		if (hAnchor != null) fp.setHAnchor(STHAnchor.fromValue(hAnchor));
+		if (vAnchor != null) fp.setVAnchor(STVAnchor.fromValue(vAnchor));
+		if (xTwips != null) fp.setX(BigInteger.valueOf(xTwips));
+		if (yTwips != null) fp.setY(BigInteger.valueOf(yTwips));
+		if (wTwips != null) fp.setW(BigInteger.valueOf(wTwips));
+		if (hTwips != null) fp.setH(BigInteger.valueOf(hTwips));
+		if (hRule != null) fp.setHRule(org.docx4j.wml.STHeightRule.fromValue(hRule));
+		ppr.setFramePr(fp);
+	}
+
 	/** {@code w:suppressOverlap}, written bare as Word writes it (a CT_OnOff with no
 	 *  {@code w:val} is on): this frame may not be overlapped by another.
 	 *  @since 17.2.0 */
@@ -2317,6 +2338,15 @@ public final class Doc {
 		public Para framePr(Integer hSpaceTwips, String wrap, String hAnchor, String vAnchor,
 				String xAlign, Integer yTwips, String yAlign) {
 			Doc.framePr(ppr, hSpaceTwips, wrap, hAnchor, vAnchor, xAlign, yTwips, yAlign);
+			return this;
+		}
+
+		/** {@code w:framePr} with its position and size: see
+		 *  {@link Doc#framePr(PPr, String, String, String, Integer, Integer, Integer, Integer, String)}.
+		 *  @since 17.3.3 */
+		public Para frame(String wrap, String hAnchor, String vAnchor, Integer xTwips, Integer yTwips,
+				Integer wTwips, Integer hTwips, String hRule) {
+			Doc.framePr(ppr, wrap, hAnchor, vAnchor, xTwips, yTwips, wTwips, hTwips, hRule);
 			return this;
 		}
 

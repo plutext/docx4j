@@ -1229,6 +1229,64 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		/*
+		 * CR-032 phase 5's frames: where Word lays the body round page-anchored w:framePr frames.
+		 * On corpus 6603 (a letterhead, frames 85pt to 276pt, anchored at the page's top) Word
+		 * starts the body below the lowest frame; on 5218 (frames anchored at the page's top too,
+		 * form rows at 553pt to 698pt) Word lays the body above the low ones.  A frame's band from
+		 * its anchor to its foot ("below") fits the first, its own band (top-and-bottom) the second.
+		 * Each case a page, its frame paragraphs first unless stated, the body prose after them.
+		 */
+		PROBES.add(new Probe("frame-page-bands",
+				"page-anchored w:framePr frames and the body round them, one case a page (w:pageBreakBefore on "
+				+ "its title line); mode 15, A4, 1in margins (body 72pt to 769.9pt).  Frames x 72pt w 200pt h 60pt "
+				+ "exact w:wrap notBeside, their paragraphs straight after the title line, unless stated: 1 y 200; "
+				+ "2 y 500; 3 y 110 (some 17pt below the title line); 4 two, y 150 and y 260 (a 70pt gap); 5 two "
+				+ "overlapping, y 150 x 72 and y 190 x 300 (w 150); 6 y 200 hRule auto, three lines; 7 y 150 "
+				+ "after the sixth body paragraph; 8 y 600 after the third; 9 w:wrap around; 10 w:wrap none; "
+				+ "11 around on the right (x 427 w 129 y 148, h 91 no hRule); 12 vAnchor margin y 100 (172pt).  "
+				+ "Read the body's lines above, beside, between and below the frames", () -> {
+			Doc d = Doc.create(15);
+			final int PT = 20;
+			// {case, wrap, x, y, w, h, hRule, body paragraphs before it, vAnchor}
+			Object[][] frames = {
+					{ 1, "notBeside", 72, 200, 200, 60, "exact", 0, "page" },
+					{ 2, "notBeside", 72, 500, 200, 60, "exact", 0, "page" },
+					{ 3, "notBeside", 72, 110, 200, 60, "exact", 0, "page" },
+					{ 4, "notBeside", 72, 150, 200, 40, "exact", 0, "page" },
+					{ 4, "notBeside", 72, 260, 200, 40, "exact", 0, "page" },
+					{ 5, "notBeside", 72, 150, 150, 60, "exact", 0, "page" },
+					{ 5, "notBeside", 300, 190, 150, 60, "exact", 0, "page" },
+					{ 6, "notBeside", 72, 200, 200, null, "auto", 0, "page" },
+					{ 7, "notBeside", 72, 150, 200, 60, "exact", 6, "page" },
+					{ 8, "notBeside", 72, 600, 200, 60, "exact", 3, "page" },
+					{ 9, "around", 72, 200, 200, 60, "exact", 0, "page" },
+					{ 10, "none", 72, 200, 200, 60, "exact", 0, "page" },
+					{ 11, "around", 427, 148, 129, 91, null, 0, "page" },
+					{ 12, "notBeside", 72, 100, 200, 60, "exact", 0, "margin" } };
+			for (int c = 1; c <= 12; c++) {
+				Doc.Para title = d.para("case " + c + ". " + prose(1, c)).after(160);
+				if (c > 1) title.pageBreakBefore();
+				title.add();
+				for (int i = 0; i < 9; i++) {   // nine body paragraphs: the case fills most of its page
+					for (Object[] fr : frames) {
+						if ((Integer) fr[0] != c || (Integer) fr[7] != i) continue;
+						Integer h = fr[5] == null ? null : (Integer) fr[5] * PT;
+						String lines = c == 6 ? "frame " + c + " line one\nline two\nline three"
+								: "frame " + c + " at y " + fr[3] + ", " + fr[1];
+						for (String line : lines.split("\n")) {
+							d.para(line).font(SERIF, 18)
+									.frame((String) fr[1], "page", (String) fr[8], (Integer) fr[2] * PT,
+											(Integer) fr[3] * PT, (Integer) fr[4] * PT, h, (String) fr[6])
+									.add();
+						}
+					}
+					d.para("p" + (i + 1) + " of case " + c + ". " + prose(3, c * 13 + i)).after(160).add();
+				}
+			}
+			return d.pkg();
+		}));
+
 		// A negative offset: mid-page over the paragraph before, and on the first paragraph
 		// of a page (into the top margin, or the previous page's space?).
 		PROBES.add(new Probe("table-floating-negative",
