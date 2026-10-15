@@ -458,6 +458,11 @@ finding). Its restart variant returns finished for a paragraph with no Knuth par
 frames on one page were not all taken up (6603's body 86pt above Word's), the renderer's limit of one obstacle at
 a time; the fork's r36 lifts it and is the gate for when frames return. (3955's "frame wrapped round itself" on
 those gates was a reading artefact: the comparison paired Word's address with our footer, which repeats it.)
+Frames as obstacles were gated again on r37 (b249 against b248: 3955 -2, 6603 -2, 5218 failing in the renderer)
+and r38 (b251 against its control b250: 3955 -2 and 6603 -2, nothing else moved; 5218 fixed by the fork), so
+they stay out. The FO of both is with the fork (a frame with no height, `hRule` auto, is not the cause: the
+renderer takes an auto-height container's extent from its laid-out content). The r38 control b250 against b248 moved only table-floating-anchor, +4 back to 0.9000 (the
+fork's fix of its early narrowing).
 
 **Gates** (the four corpora and the probes; each candidate against a control of the same renderer with docx4j
 HEAD, so the renderer and docx4j are measured apart; register `attempts.md`): r31 control b233 0 movers, candidate

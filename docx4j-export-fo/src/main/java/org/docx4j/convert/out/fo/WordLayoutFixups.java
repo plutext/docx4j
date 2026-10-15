@@ -1191,11 +1191,9 @@ public final class WordLayoutFixups {
 			abs.setAttribute("start-indent", "0pt");
 			abs.setAttribute("end-indent", "0pt");
 			wrapper.appendChild(abs);
-			/* Not on the fork's obstacles yet (CR-032 phase 5): a frame's own paragraphs wrapped
-			 * round the frame itself (3955's address frame drawn 609pt low) and a letterhead's
-			 * several frames on one page were not all taken up (6603's body 86pt high, the
-			 * obstacles' limit 2), where the hidden band copy below is measured.  Gate b239,
-			 * fork r33. */
+			/* Not on the fork's obstacles yet (CR-032 phase 5): written as obstacles, frames lost
+			 * lines on 3955 and 6603 (-2 each) on every fork build gated, last r38 (gate b251).
+			 * The fork is reading why; the hidden band copy below stays meanwhile. */
 			reserveBand(parent, after, group, f[9], top, reservedTo);
 			moveInto(abs, group);
 			parent.insertBefore(wrapper, after); // insertBefore(w, null) appends

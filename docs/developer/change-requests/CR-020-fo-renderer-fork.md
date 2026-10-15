@@ -239,6 +239,15 @@ as §3.1.
    Word does it (22). Each gets its own design note in this CR when reached;
    these are the changes that would never be accepted upstream as they stand,
    and the reason a fork is worth more than a patch queue.
+   **Re-homed (recorded 2026-10-15):** the items were taken up one by one rather than as a
+   phase - the column model and unequal columns as fop/CR-026 (released in 2.11-docx4j.6);
+   floating tables at an offset as fop/CR-023 (released in .6); wrap around a page-positioned
+   object as fop/CR-024 phase A (merged to 2.11-docx4j.7, unreleased; docx4j CR-032 phase 5);
+   GDI rounding on docx4j's side (the GDI line metrics of Enterprise CR-001 §4.2, carried to
+   docx4j's own line manager); hyphenation partly on docx4j's side (WordLineLayoutManager's
+   hyphenation zone and consecutive-hyphen limit). Still open: text on both sides of an object
+   (§6.6 item 10, fop/CR-024 phase B), in-front-of-text z-order (item 12), hyphenation as Word
+   does it in full (item 22). The registry's docx4j/CR-020.3 is done on that split.
 4. **Upstreaming, ongoing.** Every general fix goes to Apache as a PR with the
    JIRA text drafted for Jason to file (the FOP-3328 pattern); the fork's
    README lists what is still fork-only and why.
