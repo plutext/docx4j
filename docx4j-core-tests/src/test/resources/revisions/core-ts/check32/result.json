@@ -1,0 +1,334 @@
+{
+  "host": {
+    "host": "Word",
+    "version": "16.0.20430.20118",
+    "platform": "PC"
+  },
+  "caseA": {
+    "A1-word-form": {
+      "before": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:ins w:id=\"0\" w:author=\"Claude\" w:date=\"2026-09-30T13:34:00Z\"><w:r><w:t xml:space=\"preserve\">The tenant pays rent </w:t></w:r><w:commentRangeStart w:id=\"1\"/><w:r><w:t>monthly</w:t></w:r></w:ins><w:commentRangeEnd w:id=\"1\"/><w:r><w:rPr><w:rStyle w:val=\"CommentReference\"/><w:sz w:val=\"22\"/><w:szCs w:val=\"22\"/></w:rPr><w:commentReference w:id=\"1\"/></w:r><w:ins w:id=\"2\" w:author=\"Claude\" w:date=\"2026-09-30T13:34:00Z\"><w:r><w:t xml:space=\"preserve\"> in advance.</w:t></w:r></w:ins></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rThe tenant pays rent monthly in advance.",
+        "listed": [
+          {
+            "i": 0,
+            "type": "Added",
+            "author": "Claude",
+            "text": "The tenant pays rent monthly in advance."
+          }
+        ],
+        "comments": [
+          {
+            "content": "On monthly.",
+            "author": "Reviewer",
+            "anchoredText": "monthly"
+          }
+        ],
+        "commentsPart": [
+          {
+            "id": "1",
+            "text": "On monthly."
+          }
+        ]
+      },
+      "thatOneWas": {
+        "type": "Added",
+        "text": "The tenant pays rent monthly in advance.",
+        "action": "reject"
+      },
+      "thatOne": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listed": [],
+        "comments": [],
+        "commentsPart": null
+      },
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listed": [],
+        "comments": [],
+        "commentsPart": null
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t xml:space=\"preserve\">The tenant pays rent </w:t></w:r><w:commentRangeStart w:id=\"0\"/><w:r><w:t>monthly</w:t></w:r><w:commentRangeEnd w:id=\"0\"/><w:r><w:rPr><w:rStyle w:val=\"CommentReference\"/><w:sz w:val=\"22\"/><w:szCs w:val=\"22\"/></w:rPr><w:commentReference w:id=\"0\"/></w:r><w:r><w:t xml:space=\"preserve\"> in advance.</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rThe tenant pays rent monthly in advance.",
+        "listed": [],
+        "comments": [
+          {
+            "content": "On monthly.",
+            "author": "Reviewer",
+            "anchoredText": "monthly"
+          }
+        ],
+        "commentsPart": [
+          {
+            "id": "0",
+            "text": "On monthly."
+          }
+        ]
+      }
+    },
+    "A2-editor-form": {
+      "before": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:ins w:id=\"0\" w:author=\"A\" w:date=\"2026-10-01T09:45:00Z\"><w:r><w:t xml:space=\"preserve\">alpha </w:t></w:r><w:commentRangeStart w:id=\"1\"/><w:r><w:t>beta</w:t></w:r></w:ins><w:commentRangeEnd w:id=\"1\"/><w:r><w:rPr><w:rStyle w:val=\"CommentReference\"/><w:sz w:val=\"22\"/><w:szCs w:val=\"22\"/></w:rPr><w:commentReference w:id=\"1\"/></w:r><w:ins w:id=\"2\" w:author=\"A\" w:date=\"2026-10-01T09:45:00Z\"><w:r><w:t xml:space=\"preserve\"> gamma </w:t></w:r></w:ins><w:r><w:t>Some text.</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\ralpha beta gamma Some text.",
+        "listed": [
+          {
+            "i": 0,
+            "type": "Added",
+            "author": "A",
+            "text": "alpha beta gamma "
+          }
+        ],
+        "comments": [
+          {
+            "content": "On beta.",
+            "author": "Reviewer",
+            "anchoredText": "beta"
+          }
+        ],
+        "commentsPart": [
+          {
+            "id": "1",
+            "text": "On beta."
+          }
+        ]
+      },
+      "thatOneWas": {
+        "type": "Added",
+        "text": "alpha beta gamma ",
+        "action": "reject"
+      },
+      "thatOne": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>Some text.</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rSome text.",
+        "listed": [],
+        "comments": [],
+        "commentsPart": null
+      },
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>Some text.</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rSome text.",
+        "listed": [],
+        "comments": [],
+        "commentsPart": null
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t xml:space=\"preserve\">alpha </w:t></w:r><w:commentRangeStart w:id=\"0\"/><w:r><w:t>beta</w:t></w:r><w:commentRangeEnd w:id=\"0\"/><w:r><w:rPr><w:rStyle w:val=\"CommentReference\"/><w:sz w:val=\"22\"/><w:szCs w:val=\"22\"/></w:rPr><w:commentReference w:id=\"0\"/></w:r><w:r><w:t xml:space=\"preserve\"> gamma Some text.</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\ralpha beta gamma Some text.",
+        "listed": [],
+        "comments": [
+          {
+            "content": "On beta.",
+            "author": "Reviewer",
+            "anchoredText": "beta"
+          }
+        ],
+        "commentsPart": [
+          {
+            "id": "0",
+            "text": "On beta."
+          }
+        ]
+      }
+    },
+    "A3-deletion": {
+      "before": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:del w:id=\"0\" w:author=\"Claude\" w:date=\"2026-09-30T13:34:00Z\"><w:r><w:delText xml:space=\"preserve\">The tenant pays rent </w:delText></w:r><w:commentRangeStart w:id=\"1\"/><w:r><w:delText>monthly</w:delText></w:r></w:del><w:commentRangeEnd w:id=\"1\"/><w:r><w:rPr><w:rStyle w:val=\"CommentReference\"/><w:sz w:val=\"22\"/><w:szCs w:val=\"22\"/></w:rPr><w:commentReference w:id=\"1\"/></w:r><w:del w:id=\"2\" w:author=\"Claude\" w:date=\"2026-09-30T13:34:00Z\"><w:r><w:delText xml:space=\"preserve\"> in advance.</w:delText></w:r></w:del><w:r><w:t>Kept after.</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rThe tenant pays rent monthly in advance.Kept after.",
+        "listed": [
+          {
+            "i": 0,
+            "type": "Deleted",
+            "author": "Claude",
+            "text": "The tenant pays rent monthly in advance."
+          }
+        ],
+        "comments": [
+          {
+            "content": "On monthly.",
+            "author": "Reviewer",
+            "anchoredText": "monthly"
+          }
+        ],
+        "commentsPart": [
+          {
+            "id": "1",
+            "text": "On monthly."
+          }
+        ]
+      },
+      "thatOneWas": {
+        "type": "Deleted",
+        "text": "The tenant pays rent monthly in advance.",
+        "action": "accept"
+      },
+      "thatOne": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>Kept after.</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rKept after.",
+        "listed": [],
+        "comments": [],
+        "commentsPart": null
+      },
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t xml:space=\"preserve\">The tenant pays rent </w:t></w:r><w:commentRangeStart w:id=\"0\"/><w:r><w:t>monthly</w:t></w:r><w:commentRangeEnd w:id=\"0\"/><w:r><w:rPr><w:rStyle w:val=\"CommentReference\"/><w:sz w:val=\"22\"/><w:szCs w:val=\"22\"/></w:rPr><w:commentReference w:id=\"0\"/></w:r><w:r><w:t xml:space=\"preserve\"> in advance.Kept after.</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rThe tenant pays rent monthly in advance.Kept after.",
+        "listed": [],
+        "comments": [
+          {
+            "content": "On monthly.",
+            "author": "Reviewer",
+            "anchoredText": "monthly"
+          }
+        ],
+        "commentsPart": [
+          {
+            "id": "0",
+            "text": "On monthly."
+          }
+        ]
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>Kept after.</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rKept after.",
+        "listed": [],
+        "comments": [],
+        "commentsPart": null
+      }
+    }
+  },
+  "caseBApi": {
+    "setup": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:r><w:t xml:space=\"preserve\">Read the </w:t></w:r><w:hyperlink r:id=\"rId4\" w:history=\"1\"><w:r><w:t>lease</w:t></w:r></w:hyperlink><w:r><w:t xml:space=\"preserve\"> today.</w:t></w:r></w:p>",
+        "<w:p/>"
+      ],
+      "text": "Kept.\rRead the lease today.",
+      "listed": [],
+      "comments": [],
+      "commentsPart": null
+    },
+    "afterX": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:r><w:t xml:space=\"preserve\">Read the </w:t></w:r><w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText>HYPERLINK \"https://example.com/lease\"</w:instrText></w:r><w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:r><w:t>le</w:t></w:r><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-10-02T06:07:00Z\"><w:r><w:t>x</w:t></w:r></w:ins><w:r><w:t>ase</w:t></w:r><w:r><w:fldChar w:fldCharType=\"end\"/></w:r><w:r><w:t xml:space=\"preserve\"> today.</w:t></w:r></w:p>",
+        "<w:p/>"
+      ],
+      "text": "Kept.\rRead the lexase today.",
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "x"
+        }
+      ],
+      "comments": [],
+      "commentsPart": null
+    },
+    "afterY": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:r><w:t xml:space=\"preserve\">Read the </w:t></w:r><w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText>HYPERLINK \"https://example.com/lease\"</w:instrText></w:r><w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:r><w:t>le</w:t></w:r><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-10-02T06:07:00Z\"><w:r><w:t>x</w:t></w:r></w:ins><w:r><w:t>ase</w:t></w:r><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-10-02T06:07:00Z\"><w:r><w:t>y</w:t></w:r></w:ins><w:r><w:fldChar w:fldCharType=\"end\"/></w:r><w:r><w:t xml:space=\"preserve\"> today.</w:t></w:r></w:p>",
+        "<w:p/>"
+      ],
+      "text": "Kept.\rRead the lexasey today.",
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "x"
+        },
+        {
+          "i": 1,
+          "type": "Added",
+          "author": "Author B",
+          "text": "y"
+        }
+      ],
+      "comments": [],
+      "commentsPart": null
+    },
+    "afterZ": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:r><w:t xml:space=\"preserve\">Read the </w:t></w:r><w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText>HYPERLINK \"https://example.com/lease\"</w:instrText></w:r><w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-10-02T06:07:00Z\"><w:r><w:t>z</w:t></w:r></w:ins><w:r><w:t>le</w:t></w:r><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-10-02T06:07:00Z\"><w:r><w:t>x</w:t></w:r></w:ins><w:r><w:t>ase</w:t></w:r><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-10-02T06:07:00Z\"><w:r><w:t>y</w:t></w:r></w:ins><w:r><w:fldChar w:fldCharType=\"end\"/></w:r><w:r><w:t xml:space=\"preserve\"> today.</w:t></w:r></w:p>",
+        "<w:p/>"
+      ],
+      "text": "Kept.\rRead the zlexasey today.",
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "z"
+        },
+        {
+          "i": 1,
+          "type": "Added",
+          "author": "Author B",
+          "text": "x"
+        },
+        {
+          "i": 2,
+          "type": "Added",
+          "author": "Author B",
+          "text": "y"
+        }
+      ],
+      "comments": [],
+      "commentsPart": null
+    }
+  }
+}

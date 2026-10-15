@@ -1,0 +1,202 @@
+{
+  "host": {
+    "host": "Word",
+    "version": "16.0.20326.20158",
+    "platform": "PC"
+  },
+  "steps": {
+    "blank": {
+      "text": "",
+      "listed": [],
+      "ooxmlLength": 63264,
+      "head": "<?xml version=\"1.0\" standalone=\"yes\"?>\r\n<?mso-application progid=\"Word.Document\"?>\r\n<pkg:package xmlns:pkg=\"http://schemas.microsoft.com/office/2006/xmlPackage\"><pkg:part pkg:name=\"/_rels/.rels\" pkg:contentType=\"application/vnd.openxmlformats-package.relationships+xml\" pkg:padding=\"512\"><pkg:xmlData",
+      "parseError": null,
+      "parts": [
+        "/_rels/.rels",
+        "/word/document.xml",
+        "/word/_rels/document.xml.rels",
+        "/word/webextensions/taskpanes.xml",
+        "/word/webextensions/webextension1.xml",
+        "/word/theme/theme1.xml",
+        "/word/webextensions/_rels/taskpanes.xml.rels",
+        "/word/settings.xml",
+        "/word/styles.xml",
+        "/word/webSettings.xml",
+        "/word/fontTable.xml"
+      ],
+      "blockNames": [
+        "p",
+        "p"
+      ],
+      "blocks": [
+        "<w:p/>",
+        "<w:p/>"
+      ]
+    },
+    "body-start-untracked": {
+      "text": "before link after\r(end of insertion)Kept.\r",
+      "listed": [],
+      "ooxmlLength": 61990,
+      "head": "<?xml version=\"1.0\" standalone=\"yes\"?>\r\n<?mso-application progid=\"Word.Document\"?>\r\n<pkg:package xmlns:pkg=\"http://schemas.microsoft.com/office/2006/xmlPackage\"><pkg:part pkg:name=\"/_rels/.rels\" pkg:contentType=\"application/vnd.openxmlformats-package.relationships+xml\" pkg:padding=\"512\"><pkg:xmlData",
+      "parseError": null,
+      "parts": [
+        "/_rels/.rels",
+        "/word/document.xml",
+        "/word/_rels/document.xml.rels",
+        "/word/theme/theme1.xml",
+        "/word/settings.xml",
+        "/word/styles.xml",
+        "/word/webSettings.xml",
+        "/word/fontTable.xml"
+      ],
+      "blockNames": [
+        "p",
+        "p",
+        "p",
+        "p"
+      ],
+      "blocks": [
+        "<w:p><w:r><w:t xml:space=\"preserve\">before </w:t></w:r><w:hyperlink w:anchor=\"target\"><w:r><w:t>link</w:t></w:r></w:hyperlink><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:p>",
+        "<w:p><w:r><w:t>(end of insertion)Kept.</w:t></w:r></w:p>",
+        "<w:p/>",
+        "<w:p/>"
+      ]
+    },
+    "body-end-untracked": {
+      "text": "Kept.\rbefore link after\r(end of insertion)",
+      "listed": [],
+      "ooxmlLength": 62017,
+      "head": "<?xml version=\"1.0\" standalone=\"yes\"?>\r\n<?mso-application progid=\"Word.Document\"?>\r\n<pkg:package xmlns:pkg=\"http://schemas.microsoft.com/office/2006/xmlPackage\"><pkg:part pkg:name=\"/_rels/.rels\" pkg:contentType=\"application/vnd.openxmlformats-package.relationships+xml\" pkg:padding=\"512\"><pkg:xmlData",
+      "parseError": null,
+      "parts": [
+        "/_rels/.rels",
+        "/word/document.xml",
+        "/word/_rels/document.xml.rels",
+        "/word/theme/theme1.xml",
+        "/word/settings.xml",
+        "/word/styles.xml",
+        "/word/webSettings.xml",
+        "/word/fontTable.xml"
+      ],
+      "blockNames": [
+        "p",
+        "p",
+        "p",
+        "p"
+      ],
+      "blocks": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:r><w:t xml:space=\"preserve\">before </w:t></w:r><w:hyperlink w:anchor=\"target\"><w:r><w:t>link</w:t></w:r></w:hyperlink><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:p>",
+        "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+        "<w:p/>"
+      ]
+    },
+    "paragraph-after-untracked": {
+      "error": "InvalidArgument",
+      "debug": "{\"code\":\"InvalidArgument\",\"message\":\"InvalidArgument\",\"errorLocation\":\"Paragraph.insertOoxml\",\"statement\":\"var insertOoxml = first.insertOoxml(...);\",\"surroundingStatements\":[\"var v = context.root._getObjectByReferenceId(\\\"004!000001E3\\\");\",\"var paragraphs = v.paragraphs;\",\"// Instantiate {paragraphs}\",\"var first = paragraphs.getFirst();\",\"// Instantiate {first}\",\"// >>>>>\",\"var insertOoxml = first.insertOoxml(...);\",\"// <<<<<\",\"// Instantiate {insertOoxml}\"],\"fullStatements\":[\"Please enable config.extendedErrorLogging to see full statements.\"]}"
+    },
+    "body-end-tracked": {
+      "text": "Kept.\rbefore link after\r(end of insertion)",
+      "listed": [
+        {
+          "type": "Added",
+          "author": "Author B",
+          "text": "before link after\r(end of insertion)"
+        }
+      ],
+      "ooxmlLength": 65496,
+      "head": "<?xml version=\"1.0\" standalone=\"yes\"?>\r\n<?mso-application progid=\"Word.Document\"?>\r\n<pkg:package xmlns:pkg=\"http://schemas.microsoft.com/office/2006/xmlPackage\"><pkg:part pkg:name=\"/_rels/.rels\" pkg:contentType=\"application/vnd.openxmlformats-package.relationships+xml\" pkg:padding=\"512\"><pkg:xmlData",
+      "parseError": null,
+      "parts": [
+        "/_rels/.rels",
+        "/word/document.xml",
+        "/word/_rels/document.xml.rels",
+        "/word/theme/theme1.xml",
+        "/word/settings.xml",
+        "/word/styles.xml",
+        "/word/webSettings.xml",
+        "/word/fontTable.xml",
+        "/word/people.xml"
+      ],
+      "blockNames": [
+        "p",
+        "p",
+        "p",
+        "p"
+      ],
+      "blocks": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-09-30T12:08:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-09-30T12:08:00Z\"><w:r><w:t xml:space=\"preserve\">before </w:t></w:r><w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText>HYPERLINK \\l \"target\" \\h</w:instrText></w:r><w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:r><w:t>link</w:t></w:r><w:r><w:fldChar w:fldCharType=\"end\"/></w:r><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:ins></w:p>",
+        "<w:p><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-09-30T12:08:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ]
+    },
+    "body-start-tracked": {
+      "text": "before link after\r(end of insertion)Kept.\r",
+      "listed": [
+        {
+          "type": "Added",
+          "author": "Author B",
+          "text": "before link after\r(end of insertion)"
+        }
+      ],
+      "ooxmlLength": 65724,
+      "head": "<?xml version=\"1.0\" standalone=\"yes\"?>\r\n<?mso-application progid=\"Word.Document\"?>\r\n<pkg:package xmlns:pkg=\"http://schemas.microsoft.com/office/2006/xmlPackage\"><pkg:part pkg:name=\"/_rels/.rels\" pkg:contentType=\"application/vnd.openxmlformats-package.relationships+xml\" pkg:padding=\"512\"><pkg:xmlData",
+      "parseError": null,
+      "parts": [
+        "/_rels/.rels",
+        "/word/document.xml",
+        "/word/_rels/document.xml.rels",
+        "/word/theme/theme1.xml",
+        "/word/settings.xml",
+        "/word/styles.xml",
+        "/word/webSettings.xml",
+        "/word/fontTable.xml",
+        "/word/people.xml"
+      ],
+      "blockNames": [
+        "p",
+        "p",
+        "p",
+        "p"
+      ],
+      "blocks": [
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-09-30T12:08:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-09-30T12:08:00Z\"><w:r><w:t xml:space=\"preserve\">before </w:t></w:r><w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText>HYPERLINK \\l \"target\" \\h</w:instrText></w:r><w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:r><w:t>link</w:t></w:r><w:r><w:fldChar w:fldCharType=\"end\"/></w:r><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:ins></w:p>",
+        "<w:p><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-09-30T12:08:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p/>",
+        "<w:p/>"
+      ]
+    },
+    "paragraph-after-tracked": {
+      "error": "InvalidArgument",
+      "debug": "{\"code\":\"InvalidArgument\",\"message\":\"InvalidArgument\",\"errorLocation\":\"Paragraph.insertOoxml\",\"statement\":\"var insertOoxml = v.insertOoxml(...);\",\"surroundingStatements\":[\"var v = context.root._getObjectByReferenceId(\\\"06E!000001F8\\\");\",\"// >>>>>\",\"var insertOoxml = v.insertOoxml(...);\",\"// <<<<<\",\"// Instantiate {insertOoxml}\"],\"fullStatements\":[\"Please enable config.extendedErrorLogging to see full statements.\"]}"
+    },
+    "cleared": {
+      "text": "Kept.\r",
+      "listed": [],
+      "ooxmlLength": 61935,
+      "head": "<?xml version=\"1.0\" standalone=\"yes\"?>\r\n<?mso-application progid=\"Word.Document\"?>\r\n<pkg:package xmlns:pkg=\"http://schemas.microsoft.com/office/2006/xmlPackage\"><pkg:part pkg:name=\"/_rels/.rels\" pkg:contentType=\"application/vnd.openxmlformats-package.relationships+xml\" pkg:padding=\"512\"><pkg:xmlData",
+      "parseError": null,
+      "parts": [
+        "/_rels/.rels",
+        "/word/document.xml",
+        "/word/_rels/document.xml.rels",
+        "/word/theme/theme1.xml",
+        "/word/settings.xml",
+        "/word/styles.xml",
+        "/word/webSettings.xml",
+        "/word/fontTable.xml"
+      ],
+      "blockNames": [
+        "p",
+        "p",
+        "p"
+      ],
+      "blocks": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p/>",
+        "<w:p/>"
+      ]
+    }
+  }
+}

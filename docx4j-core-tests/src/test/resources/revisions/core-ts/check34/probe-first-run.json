@@ -1,0 +1,60 @@
+{
+  "host": {
+    "host": "Word",
+    "version": "16.0.20430.20118",
+    "platform": "PC"
+  },
+  "cases": [
+    {
+      "name": "2a-selection",
+      "part": {
+        "id": "{E6FE37BF-5B17-4A62-875A-C0163FEEE2C8}",
+        "namespaceUri": "",
+        "partsBefore": 3
+      },
+      "controlBefore": {
+        "text": "quick brown",
+        "type": "PlainText",
+        "subtype": "PlainTextInline"
+      },
+      "error": {
+        "error": "The property 'placeholderText' is not available. Before reading the property's value, call the load method on the containing object and call \"context.sync()\" on the associated request context.",
+        "debug": "{\"code\":\"PropertyNotLoaded\",\"message\":\"The property 'placeholderText' is not available. Before reading the property's value, call the load method on the containing object and call \\\"context.sync()\\\" on the associated request context.\",\"errorLocation\":\"ContentControl.placeholderText\"}"
+      }
+    },
+    {
+      "name": "2b-caret",
+      "part": {
+        "id": "{EAAF1C20-D6C2-47EF-BD68-C731E7E0D932}",
+        "namespaceUri": "",
+        "partsBefore": 4
+      },
+      "controlBefore": {
+        "text": "",
+        "type": "PlainText",
+        "subtype": "PlainTextInline"
+      },
+      "error": {
+        "error": "The property 'placeholderText' is not available. Before reading the property's value, call the load method on the containing object and call \"context.sync()\" on the associated request context.",
+        "debug": "{\"code\":\"PropertyNotLoaded\",\"message\":\"The property 'placeholderText' is not available. Before reading the property's value, call the load method on the containing object and call \\\"context.sync()\\\" on the associated request context.\",\"errorLocation\":\"ContentControl.placeholderText\"}"
+      }
+    },
+    {
+      "name": "2b-already-Ann",
+      "part": {
+        "id": "{B36C3F3B-DB48-43C5-BBF2-8399974105D7}",
+        "namespaceUri": "",
+        "partsBefore": 5
+      },
+      "controlBefore": {
+        "text": "Ann",
+        "type": "PlainText",
+        "subtype": "PlainTextInline"
+      },
+      "error": {
+        "error": "The property 'placeholderText' is not available. Before reading the property's value, call the load method on the containing object and call \"context.sync()\" on the associated request context.",
+        "debug": "{\"code\":\"PropertyNotLoaded\",\"message\":\"The property 'placeholderText' is not available. Before reading the property's value, call the load method on the containing object and call \\\"context.sync()\\\" on the associated request context.\",\"errorLocation\":\"ContentControl.placeholderText\"}"
+      }
+    }
+  ]
+}

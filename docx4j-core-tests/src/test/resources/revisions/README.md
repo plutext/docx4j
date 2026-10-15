@@ -1,0 +1,49 @@
+# Tracked-change fixtures (CR-043)
+
+The oracle for docx4j's accept/reject API (`docs/developer/change-requests/CR-043-tracked-changes-accept-reject-api.md`)
+is what Word does: these are documents Word made with tracking on, and Word's own Accept All and Reject All of them,
+saved. None is a business document: each began as a test file a docx4j port's engine built, edited in Word by Jason.
+
+## `core-ts/checkNN/` - docx4j-core-ts's Word checks
+
+Copied 2026-10-16 from docx4j-core-ts `test/fixtures/revisions/` at ab9041f (committed files only). Each check's
+procedure and findings are in that repository's `test/README.md` ("Word acceptance (manual)", check NN) and its
+`docs/change-requests/CR-002-content-api.md` (sections 29, 32, 35, 37, 38); Word 365 16.0.20326.20158 for checks
+18 to 31, 16.0.20430.20118 from check 32 (portfolio `docs/office_output_methods.md` section 2).
+
+| Check | What | Word's resolution |
+|---|---|---|
+| 18 | a moved paragraph (the editor's `revisions-word15.docx`, section 3) | `accept-all`, `reject-all`, and each half of the move accepted and rejected |
+| 20 | edited and broken moves | each case's `-accept` and `-reject` |
+| 21 | typing inside another author's revision | - |
+| 22 | an insertion deleted by another author | whole and across, accepted and rejected |
+| 24, 25, 26 | run formatting, list changes, paragraph properties, changed and changed back | their saves |
+| 28 | bold over two runs; two tables' property records (`w:trPrChange` included) | `28a-accept-all`, `28a-reject-all` |
+| 29 | Enter at a paragraph's end | - |
+| 30, 31 | run holders and inserted fields; inserted tables (Office JS listings, JSON) | recorded in the JSON |
+| 32 | comments inside resolved revisions (a docx and JSON) | recorded in the JSON |
+| 33 | a whole paragraph deleted | `33b-accepted` |
+| 34 | a data-bound control changed with tracking on (`w:customXmlInsRangeStart`, block-level revisions in `w:sdtContent`) | - |
+| 36 | `w16du:dateUtc`, declared and undeclared | - |
+
+## `editor/` - docx4j-ts-editor's fixtures
+
+Copied 2026-10-16 from docx4j-ts-editor `packages/editor-model/test/fixtures/` at 3a515ef.
+
+- `revisions/`: `revisions-base.docx` (the editor's engine-built base, its twelve sections' instructions in it),
+  `revisions-word2010.docx` and `revisions-word15.docx` (Word 2010's and Word 15's edits of it); its `README.md`
+  says what each section yields.
+- `review/`: the editor's review session through Word 2010 and Word 15, each untouched, `-accepted` and
+  `-rejected`; its `README.md`. The two notes referenced from inside an insertion and a deletion show that Word
+  removes a note whose reference goes (CR-043 section 3.2).
+
+## `cr043/` - CR-043 phase 0's own probe
+
+`cr043-base.docx` is built by `org.docx4j.model.revisions.Cr043ProbeBuilder` (docx4j-core-tests' test sources), one
+case per paragraph or table, each tagged C01, C02, ...: the cases no fixture above holds (CR-043 section 4.2).
+`cr043-probe.ps1` makes each case's tracked edit through Word's object model on the VM and saves Word's Accept All
+and Reject All; `RUN.txt` is how it is run (`X:\revisions\cr043\` on the share). Word's outputs, from Jason's run of
+2026-10-16 10:17 (Word 16.0.20326): `cr043-tracked.docx`, `cr043-accept-all.docx`, `cr043-reject-all.docx`,
+`equations-accept-all.docx` and `equations-reject-all.docx` (Word's resolution of `../tracked-changes-equations.docx`,
+CR-010's equations), and `cr043-log.txt` (Word's build, each case's outcome, the revisions left in each story). What
+they show is CR-043 section 4.4.

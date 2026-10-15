@@ -1,0 +1,19 @@
+CR-043 phase 0 (docx4j): Word's tracked edits, Accept All and Reject All, for docx4j's accept/reject API.
+
+On the VM, in Windows PowerShell (Word closed):
+
+  powershell -ExecutionPolicy Bypass -File X:\revisions\cr043\cr043-probe.ps1
+
+Add -Visible to watch Word (a dialog then shows). Expected time: about a minute.
+
+What it does: opens cr043-base.docx (a copy in %TEMP%\cr043-probe), adds a text box untracked, turns
+tracking on, makes 26 tracked edits through Word's object model (each case logged "ok" or "FAILED"),
+saves cr043-tracked.docx here; then Word's Accept All and Reject All of it (Document.AcceptAllRevisions
+and RejectAllRevisions) saved as cr043-accept-all.docx and cr043-reject-all.docx, and the same for
+tracked-changes-equations.docx (equations-accept-all.docx, equations-reject-all.docx). Everything it
+does goes to cr043-log.txt here, Word's version and build first. Word's user name is not changed.
+
+If it hangs: end WINWORD.EXE in Task Manager and run it again. Outputs already here are skipped, so it
+resumes; to redo everything, delete the outputs (cr043-tracked.docx, the four *-all.docx, cr043-log.txt).
+
+Then tell the docx4j session "cr043 done".

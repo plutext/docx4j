@@ -1,0 +1,23 @@
+{
+  "host": { "host": "Word", "version": "16.0.20430.20118", "platform": "PC" },
+  "cases": [
+    { "name": "2a-selection", "part": { "id": "{9E8F9DCF-941D-417A-9337-83BFF84845F8}", "namespaceUri": "", "partsBefore": 3 },
+      "controlBefore": { "text": "quick brown", "type": "PlainText", "subtype": "PlainTextInline" },
+      "api": { "hasXmlMapping": true },
+      "mappingApi": "customXmlNode,customXmlPart,isMapped,prefixMappings,xpath,set,update,delete,setMapping,setMappingByNode,load,retrieve,track,untrack,toJSON",
+      "setMapping": true, "controlAfter": "Ann",
+      "markupAfter": "<w:p><w:r><w:t xml:space=\"preserve\">The </w:t></w:r><w:sdt><w:sdtPr><w:id w:val=\"-21566514\"/><w:placeholder><w:docPart w:val=\"8B6403DB8F914C0DB3E03F0FA972EC5B\"/></w:placeholder><w:dataBinding w:xpath=\"/data/name\" w:storeItemID=\"{9E8F9DCF-941D-417A-9337-83BFF84845F8}\"/><w:text/></w:sdtPr><w:sdtContent><w:r><w:t>Ann</w:t></w:r></w:sdtContent></w:sdt><w:r><w:t xml:space=\"preserve\"> fox.</w:t></w:r></w:p>",
+      "partXmlAfter": "<data><name>Ann</name><empty/></data>" },
+    { "name": "2b-caret", "part": { "id": "{CAE9DC2B-FE2C-4741-8A82-94F0E17B6E75}", "namespaceUri": "", "partsBefore": 4 },
+      "controlBefore": { "text": "", "type": "PlainText", "subtype": "PlainTextInline" },
+      "setMapping": true, "controlAfter": "Ann",
+      "markupAfter": "<w:p><w:r><w:t>The quick</w:t></w:r><w:sdt><w:sdtPr><w:id w:val=\"236289866\"/><w:placeholder><w:docPart w:val=\"6B6DC1149AB74B00B82DF8646B95EB67\"/></w:placeholder><w:dataBinding w:xpath=\"/data/name\" w:storeItemID=\"{9E8F9DCF-941D-417A-9337-83BFF84845F8}\"/><w:text/></w:sdtPr><w:sdtContent><w:r><w:t>Ann</w:t></w:r></w:sdtContent></w:sdt><w:r><w:t xml:space=\"preserve\"> </w:t></w:r><w:r><w:rPr><w:b/></w:rPr><w:t>brown</w:t></w:r><w:r><w:t xml:space=\"preserve\"> fox.</w:t></w:r></w:p>",
+      "partXmlAfter": "<data><name>Ann</name><empty/></data>" },
+    { "name": "2b-already-Ann", "part": { "id": "{EC51A93A-9F88-4B04-8495-E2B242B33D85}", "namespaceUri": "", "partsBefore": 5 },
+      "controlBefore": { "text": "Ann", "type": "PlainText", "subtype": "PlainTextInline" },
+      "setMapping": true, "controlAfter": "Ann",
+      "markupAfter": "<w:p><w:r><w:t xml:space=\"preserve\">The </w:t></w:r><w:sdt><w:sdtPr><w:id w:val=\"1760867439\"/><w:placeholder><w:docPart w:val=\"11B6EC2CC08142CA8AE85CF8001A6CC5\"/></w:placeholder><w:dataBinding w:xpath=\"/data/name\" w:storeItemID=\"{9E8F9DCF-941D-417A-9337-83BFF84845F8}\"/><w:text/></w:sdtPr><w:sdtContent><w:r><w:t>Ann</w:t></w:r></w:sdtContent></w:sdt><w:r><w:t xml:space=\"preserve\"> fox.</w:t></w:r></w:p>",
+      "partXmlAfter": "<data><name>Ann</name><empty/></data>" }
+  ],
+  "note": "The second run of the probe, 2026-10-03; the first run (probe-first-run.json) read an unloaded property before reaching the mapping. Office JS has ContentControl.xmlMapping with setMapping, setMappingByNode, delete, customXmlNode, customXmlPart, isMapped, prefixMappings and xpath. setMapping('/data/name') returned true, put the node's value into the control (the control's text and an empty control alike) and left the part unchanged; the binding is written with the XPath as given and the storeItemID of the first part in which it selects a node, not the part most recently added."
+}

@@ -1,0 +1,855 @@
+{
+  "host": {
+    "host": "Word",
+    "version": "16.0.20326.20158",
+    "platform": "PC"
+  },
+  "probe": {
+    "sentLength": 1044,
+    "sentHead": "<pkg:package xmlns:pkg=\"http://schemas.microsoft.com/office/2006/xmlPackage\"><pkg:part pkg:name=\"/_rels/.rels\" pkg:conte",
+    "text": "Kept.\rbefore link after\r(end of insertion)",
+    "ooxmlLength": 65496,
+    "head": "<?xml version=\"1.0\" standalone=\"yes\"?>\r\n<?mso-application progid=\"Word.Document\"?>\r\n<pkg:package xmlns:pkg=\"http://schemas.microsoft.com/office/2006/xmlPackage\"",
+    "parseError": null,
+    "parts": [
+      "/_rels/.rels",
+      "/word/document.xml",
+      "/word/_rels/document.xml.rels",
+      "/word/theme/theme1.xml",
+      "/word/settings.xml",
+      "/word/styles.xml",
+      "/word/webSettings.xml",
+      "/word/fontTable.xml",
+      "/word/people.xml"
+    ],
+    "bodyFound": true,
+    "markup": [
+      "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+      "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t xml:space=\"preserve\">before </w:t></w:r><w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText>HYPERLINK \\l \"target\" \\h</w:instrText></w:r><w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:r><w:t>link</w:t></w:r><w:r><w:fldChar w:fldCharType=\"end\"/></w:r><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:ins></w:p>",
+      "<w:p><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+      "<w:p/>"
+    ]
+  },
+  "wordInserts": {
+    "hyperlink": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t xml:space=\"preserve\">before </w:t></w:r><w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText>HYPERLINK \\l \"target\" \\h</w:instrText></w:r><w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:r><w:t>link</w:t></w:r><w:r><w:fldChar w:fldCharType=\"end\"/></w:r><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:ins></w:p>",
+        "<w:p><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "before link after\r(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t xml:space=\"preserve\">before </w:t></w:r><w:hyperlink w:anchor=\"target\"><w:r><w:t>link</w:t></w:r></w:hyperlink><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rbefore link after\r(end of insertion)",
+        "listedAfter": []
+      }
+    },
+    "field": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t xml:space=\"preserve\">page </w:t></w:r><w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText xml:space=\"preserve\"> PAGE </w:instrText></w:r><w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:r><w:t>7</w:t></w:r><w:r><w:fldChar w:fldCharType=\"end\"/></w:r><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:ins></w:p>",
+        "<w:p><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "page 7 after\r(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t xml:space=\"preserve\">page </w:t></w:r><w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText xml:space=\"preserve\"> PAGE </w:instrText></w:r><w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:r><w:t>7</w:t></w:r><w:r><w:fldChar w:fldCharType=\"end\"/></w:r><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rpage 7 after\r(end of insertion)",
+        "listedAfter": []
+      }
+    },
+    "control-inline": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t xml:space=\"preserve\">before </w:t></w:r></w:ins><w:customXmlInsRangeStart w:id=\"2\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/><w:sdt><w:sdtPr><w:alias w:val=\"Inline\"/><w:tag w:val=\"inline\"/><w:id w:val=\"101\"/></w:sdtPr><w:sdtContent><w:customXmlInsRangeEnd w:id=\"2\"/><w:ins w:id=\"3\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>control</w:t></w:r></w:ins><w:customXmlInsRangeStart w:id=\"4\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:sdtContent></w:sdt><w:customXmlInsRangeEnd w:id=\"4\"/><w:ins w:id=\"5\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:ins></w:p>",
+        "<w:p><w:ins w:id=\"6\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "before control after\r(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t xml:space=\"preserve\">before </w:t></w:r><w:sdt><w:sdtPr><w:alias w:val=\"Inline\"/><w:tag w:val=\"inline\"/><w:id w:val=\"101\"/></w:sdtPr><w:sdtContent><w:r><w:t>control</w:t></w:r></w:sdtContent></w:sdt><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rbefore control after\r(end of insertion)",
+        "listedAfter": []
+      }
+    },
+    "smart-tag": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t xml:space=\"preserve\">in </w:t></w:r><w:smartTag w:uri=\"urn:schemas-microsoft-com:office:smarttags\" w:element=\"City\"><w:r><w:t>Sydney</w:t></w:r></w:smartTag><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:ins></w:p>",
+        "<w:p><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "in Sydney after\r(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t xml:space=\"preserve\">in </w:t></w:r><w:smartTag w:uri=\"urn:schemas-microsoft-com:office:smarttags\" w:element=\"City\"><w:r><w:t>Sydney</w:t></w:r></w:smartTag><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rin Sydney after\r(end of insertion)",
+        "listedAfter": []
+      }
+    },
+    "custom-xml": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>in custom after</w:t></w:r></w:ins></w:p>",
+        "<w:p><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "in custom after\r(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>in custom after</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rin custom after\r(end of insertion)",
+        "listedAfter": []
+      }
+    },
+    "control-block": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>before the control</w:t></w:r></w:ins></w:p>",
+        "<w:customXmlInsRangeStart w:id=\"2\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/>",
+        "<w:sdt><w:sdtPr><w:alias w:val=\"Block\"/><w:tag w:val=\"block\"/><w:id w:val=\"102\"/></w:sdtPr><w:sdtContent><w:customXmlInsRangeEnd w:id=\"2\"/><w:p><w:pPr><w:rPr><w:ins w:id=\"3\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"4\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>in a block control</w:t></w:r></w:ins></w:p><w:customXmlInsRangeStart w:id=\"5\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:sdtContent></w:sdt>",
+        "<w:customXmlInsRangeEnd w:id=\"5\"/>",
+        "<w:p><w:ins w:id=\"6\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "before the control\rin a block control\r(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>before the control</w:t></w:r></w:p>",
+          "<w:sdt><w:sdtPr><w:alias w:val=\"Block\"/><w:tag w:val=\"block\"/><w:id w:val=\"102\"/></w:sdtPr><w:sdtContent><w:p><w:r><w:t>in a block control</w:t></w:r></w:p></w:sdtContent></w:sdt>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rbefore the control\rin a block control\r(end of insertion)",
+        "listedAfter": []
+      }
+    },
+    "table": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>before the table</w:t></w:r></w:ins></w:p>",
+        "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"3\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"4\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>cell</w:t></w:r></w:ins></w:p></w:tc></w:tr></w:tbl>",
+        "<w:p><w:ins w:id=\"5\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "before the table\rcell\r\n(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>before the table</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>cell</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rbefore the table\rcell\r\n(end of insertion)",
+        "listedAfter": []
+      }
+    },
+    "nested-table": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"2000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"2000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"3\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>nested</w:t></w:r></w:ins></w:p></w:tc></w:tr></w:tbl><w:p><w:pPr><w:rPr><w:ins w:id=\"4\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"5\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>outer cell</w:t></w:r></w:ins></w:p></w:tc></w:tr></w:tbl>",
+        "<w:p><w:ins w:id=\"6\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "nested\r\nouter cell\r\n(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"2000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"2000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>nested</w:t></w:r></w:p></w:tc></w:tr></w:tbl><w:p><w:r><w:t>outer cell</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rnested\r\nouter cell\r\n(end of insertion)",
+        "listedAfter": []
+      }
+    }
+  },
+  "gestures": {
+    "new-control-typed": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r><w:customXmlInsRangeStart w:id=\"0\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/><w:sdt><w:sdtPr><w:id w:val=\"1153570171\"/><w:placeholder><w:docPart w:val=\"8E288A6EC4DF41B785B1AB3D0A5AD0FD\"/></w:placeholder></w:sdtPr><w:sdtContent><w:customXmlInsRangeEnd w:id=\"0\"/><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>typed in a new control</w:t></w:r></w:ins><w:customXmlInsRangeStart w:id=\"2\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:sdtContent></w:sdt><w:customXmlInsRangeEnd w:id=\"2\"/></w:p>",
+        "<w:p/>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "typed in a new control"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r><w:sdt><w:sdtPr><w:id w:val=\"-2074502070\"/><w:placeholder><w:docPart w:val=\"6CA0F8F718D243A4A5CD333FEB871589\"/></w:placeholder></w:sdtPr><w:sdtContent><w:r><w:t>typed in a new control</w:t></w:r></w:sdtContent></w:sdt></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.typed in a new control\r",
+        "listedAfter": []
+      }
+    },
+    "inserted-text-wrapped": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r><w:customXmlInsRangeStart w:id=\"0\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/><w:sdt><w:sdtPr><w:id w:val=\"-1091690012\"/><w:placeholder><w:docPart w:val=\"4337FE95D58F4059BA1A44CCF6C68E33\"/></w:placeholder></w:sdtPr><w:sdtContent><w:customXmlInsRangeEnd w:id=\"0\"/><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t xml:space=\"preserve\"> inserted words</w:t></w:r></w:ins><w:customXmlInsRangeStart w:id=\"2\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"/></w:sdtContent></w:sdt><w:customXmlInsRangeEnd w:id=\"2\"/></w:p>",
+        "<w:p/>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": " inserted words"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r><w:sdt><w:sdtPr><w:id w:val=\"-343317621\"/><w:placeholder><w:docPart w:val=\"E3230BDE231C4E638CF256478F0C6633\"/></w:placeholder></w:sdtPr><w:sdtContent><w:r><w:t xml:space=\"preserve\"> inserted words</w:t></w:r></w:sdtContent></w:sdt></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept. inserted words\r",
+        "listedAfter": []
+      }
+    },
+    "existing-control-typed": {
+      "setup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r><w:sdt><w:sdtPr><w:id w:val=\"527065486\"/><w:placeholder><w:docPart w:val=\"ABBAF4854A794EE585A17F1FD6E0A26D\"/></w:placeholder><w:showingPlcHdr/></w:sdtPr><w:sdtContent><w:r><w:rPr><w:rStyle w:val=\"PlaceholderText\"/></w:rPr><w:t>Click or tap here to enter text.</w:t></w:r></w:sdtContent></w:sdt></w:p>",
+        "<w:p/>",
+        "<w:p/>"
+      ],
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r><w:sdt><w:sdtPr><w:id w:val=\"527065486\"/><w:placeholder><w:docPart w:val=\"7EF621AB55444535BF6A7B1FF55F3D79\"/></w:placeholder></w:sdtPr><w:sdtContent><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:t>typed into an existing control</w:t></w:r></w:ins></w:sdtContent></w:sdt></w:p>",
+        "<w:p/>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "typed into an existing control"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r><w:sdt><w:sdtPr><w:id w:val=\"-1850471300\"/><w:placeholder><w:docPart w:val=\"9ED3304445464957BD7B2BA8D406453F\"/></w:placeholder><w:showingPlcHdr/></w:sdtPr><w:sdtContent><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:rPr><w:rStyle w:val=\"PlaceholderText\"/></w:rPr><w:t>Click or tap here to enter text.</w:t></w:r></w:ins></w:sdtContent></w:sdt></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": [
+          {
+            "i": 0,
+            "type": "Added",
+            "author": "Author B",
+            "text": ""
+          }
+        ]
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r><w:sdt><w:sdtPr><w:id w:val=\"-1938823470\"/><w:placeholder><w:docPart w:val=\"5B9BD689A9F1455195BF9157BC26926C\"/></w:placeholder></w:sdtPr><w:sdtContent><w:r><w:t>typed into an existing control</w:t></w:r></w:sdtContent></w:sdt></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.typed into an existing control\r",
+        "listedAfter": []
+      }
+    },
+    "field-inserted": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText xml:space=\"preserve\"> PAGE  \\* MERGEFORMAT </w:instrText></w:r></w:ins><w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:r><w:rPr><w:noProof/></w:rPr><w:t>1</w:t></w:r><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:fldChar w:fldCharType=\"end\"/></w:r></w:ins></w:p>",
+        "<w:p/>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "1"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r><w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText xml:space=\"preserve\"> PAGE  \\* MERGEFORMAT </w:instrText></w:r><w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:r><w:rPr><w:noProof/></w:rPr><w:t>1</w:t></w:r><w:r><w:fldChar w:fldCharType=\"end\"/></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.1\r",
+        "listedAfter": []
+      }
+    },
+    "link-on-inserted-text": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-09-30T12:13:00Z\"><w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText>HYPERLINK \"https://example.com/\"</w:instrText></w:r><w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:r><w:rPr><w:rStyle w:val=\"Hyperlink\"/></w:rPr><w:t xml:space=\"preserve\"> a link</w:t></w:r><w:r><w:fldChar w:fldCharType=\"end\"/></w:r></w:ins></w:p>",
+        "<w:p/>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": " a link"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r><w:hyperlink r:id=\"rId4\" w:history=\"1\"><w:r><w:rPr><w:rStyle w:val=\"Hyperlink\"/></w:rPr><w:t xml:space=\"preserve\"> a link</w:t></w:r></w:hyperlink></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept. a link\r",
+        "listedAfter": []
+      }
+    }
+  },
+  "engine": {
+    "hyperlink": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t xml:space=\"preserve\">before </w:t></w:r></w:ins><w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText>HYPERLINK \\l \"target\" \\h</w:instrText></w:r><w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:ins w:id=\"2\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>link</w:t></w:r></w:ins><w:r><w:fldChar w:fldCharType=\"end\"/></w:r><w:ins w:id=\"3\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:ins></w:p>",
+        "<w:p><w:ins w:id=\"4\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author A",
+          "text": "before "
+        },
+        {
+          "i": 1,
+          "type": "Added",
+          "author": "Author A",
+          "text": "link"
+        },
+        {
+          "i": 2,
+          "type": "Added",
+          "author": "Author A",
+          "text": " after\r(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:hyperlink w:anchor=\"target\"/></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t xml:space=\"preserve\">before </w:t></w:r><w:hyperlink w:anchor=\"target\"><w:r><w:t>link</w:t></w:r></w:hyperlink><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rbefore link after\r(end of insertion)",
+        "listedAfter": []
+      }
+    },
+    "field": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t xml:space=\"preserve\">page </w:t></w:r></w:ins><w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText xml:space=\"preserve\"> PAGE </w:instrText></w:r><w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:ins w:id=\"2\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>7</w:t></w:r></w:ins><w:r><w:fldChar w:fldCharType=\"end\"/></w:r><w:ins w:id=\"3\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:ins></w:p>",
+        "<w:p><w:ins w:id=\"4\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author A",
+          "text": "page "
+        },
+        {
+          "i": 1,
+          "type": "Added",
+          "author": "Author A",
+          "text": "7"
+        },
+        {
+          "i": 2,
+          "type": "Added",
+          "author": "Author A",
+          "text": " after\r(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText xml:space=\"preserve\"> PAGE </w:instrText></w:r><w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:r><w:fldChar w:fldCharType=\"end\"/></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t xml:space=\"preserve\">page </w:t></w:r><w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText xml:space=\"preserve\"> PAGE </w:instrText></w:r><w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:r><w:t>7</w:t></w:r><w:r><w:fldChar w:fldCharType=\"end\"/></w:r><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rpage 7 after\r(end of insertion)",
+        "listedAfter": []
+      }
+    },
+    "control-inline": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t xml:space=\"preserve\">before </w:t></w:r></w:ins><w:sdt><w:sdtPr><w:alias w:val=\"Inline\"/><w:tag w:val=\"inline\"/><w:id w:val=\"101\"/></w:sdtPr><w:sdtContent><w:ins w:id=\"2\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>control</w:t></w:r></w:ins></w:sdtContent></w:sdt><w:ins w:id=\"3\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:ins></w:p>",
+        "<w:p><w:ins w:id=\"4\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author A",
+          "text": "before "
+        },
+        {
+          "i": 1,
+          "type": "Added",
+          "author": "Author A",
+          "text": "control"
+        },
+        {
+          "i": 2,
+          "type": "Added",
+          "author": "Author A",
+          "text": " after\r(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:sdt><w:sdtPr><w:alias w:val=\"Inline\"/><w:tag w:val=\"inline\"/><w:id w:val=\"101\"/><w:showingPlcHdr/></w:sdtPr><w:sdtContent><w:r><w:t xml:space=\"preserve\">     </w:t></w:r></w:sdtContent></w:sdt></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t xml:space=\"preserve\">before </w:t></w:r><w:sdt><w:sdtPr><w:alias w:val=\"Inline\"/><w:tag w:val=\"inline\"/><w:id w:val=\"101\"/></w:sdtPr><w:sdtContent><w:r><w:t>control</w:t></w:r></w:sdtContent></w:sdt><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rbefore control after\r(end of insertion)",
+        "listedAfter": []
+      }
+    },
+    "smart-tag": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t xml:space=\"preserve\">in </w:t></w:r><w:smartTag w:uri=\"urn:schemas-microsoft-com:office:smarttags\" w:element=\"City\"><w:r><w:t>Sydney</w:t></w:r></w:smartTag><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:ins></w:p>",
+        "<w:p><w:ins w:id=\"2\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author A",
+          "text": "in Sydney after\r(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t xml:space=\"preserve\">in </w:t></w:r><w:smartTag w:uri=\"urn:schemas-microsoft-com:office:smarttags\" w:element=\"City\"><w:r><w:t>Sydney</w:t></w:r></w:smartTag><w:r><w:t xml:space=\"preserve\"> after</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rin Sydney after\r(end of insertion)",
+        "listedAfter": []
+      }
+    },
+    "custom-xml": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>in custom after</w:t></w:r></w:ins></w:p>",
+        "<w:p><w:ins w:id=\"2\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author A",
+          "text": "in custom after\r(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>in custom after</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rin custom after\r(end of insertion)",
+        "listedAfter": []
+      }
+    },
+    "control-block": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>before the control</w:t></w:r></w:ins></w:p>",
+        "<w:sdt><w:sdtPr><w:alias w:val=\"Block\"/><w:tag w:val=\"block\"/><w:id w:val=\"102\"/></w:sdtPr><w:sdtContent><w:p><w:pPr><w:rPr><w:ins w:id=\"2\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"3\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>in a block control</w:t></w:r></w:ins></w:p></w:sdtContent></w:sdt>",
+        "<w:p><w:ins w:id=\"4\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author A",
+          "text": "before the control\r"
+        },
+        {
+          "i": 1,
+          "type": "Added",
+          "author": "Author A",
+          "text": "in a block control"
+        },
+        {
+          "i": 2,
+          "type": "Added",
+          "author": "Author A",
+          "text": "\r(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:sdt><w:sdtPr><w:alias w:val=\"Block\"/><w:tag w:val=\"block\"/><w:id w:val=\"102\"/><w:showingPlcHdr/></w:sdtPr><w:sdtContent><w:p><w:r><w:t xml:space=\"preserve\">     </w:t></w:r></w:p></w:sdtContent></w:sdt>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>before the control</w:t></w:r></w:p>",
+          "<w:sdt><w:sdtPr><w:alias w:val=\"Block\"/><w:tag w:val=\"block\"/><w:id w:val=\"102\"/></w:sdtPr><w:sdtContent><w:p><w:r><w:t>in a block control</w:t></w:r></w:p></w:sdtContent></w:sdt>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rbefore the control\rin a block control\r(end of insertion)",
+        "listedAfter": []
+      }
+    },
+    "table": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>before the table</w:t></w:r></w:ins></w:p>",
+        "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"2\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"3\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"4\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>cell</w:t></w:r></w:ins></w:p></w:tc></w:tr></w:tbl>",
+        "<w:p><w:ins w:id=\"5\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author A",
+          "text": "before the table\rcell\r\n(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>before the table</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>cell</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rbefore the table\rcell\r\n(end of insertion)",
+        "listedAfter": []
+      }
+    },
+    "nested-table": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"0\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"2000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"1\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"2000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"2\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"3\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>nested</w:t></w:r></w:ins></w:p></w:tc></w:tr></w:tbl><w:p><w:pPr><w:rPr><w:ins w:id=\"4\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"5\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>outer cell</w:t></w:r></w:ins></w:p></w:tc></w:tr></w:tbl>",
+        "<w:p><w:ins w:id=\"6\" w:author=\"Author A\" w:date=\"2026-09-29T11:00:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "revisions": [],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author A",
+          "text": "nested\r\nouter cell\r\n(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"2000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"2000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>nested</w:t></w:r></w:p></w:tc></w:tr></w:tbl><w:p><w:r><w:t>outer cell</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rnested\r\nouter cell\r\n(end of insertion)",
+        "listedAfter": []
+      }
+    }
+  }
+}

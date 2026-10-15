@@ -1,0 +1,485 @@
+{
+  "host": {
+    "host": "Word",
+    "version": "16.0.20326.20158",
+    "platform": "PC"
+  },
+  "wordInserts": {
+    "table-between": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>before the table</w:t></w:r></w:ins></w:p>",
+        "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"3\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"4\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>row one</w:t></w:r></w:ins></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"5\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"6\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"7\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>row two</w:t></w:r></w:ins></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"8\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"9\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"10\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>row three</w:t></w:r></w:ins></w:p></w:tc></w:tr></w:tbl>",
+        "<w:p><w:ins w:id=\"11\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "before the table\rrow one\r\nrow two\r\nrow three\r\n(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>before the table</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rbefore the table\rrow one\r\nrow two\r\nrow three\r\n(end of insertion)",
+        "listedAfter": []
+      }
+    },
+    "table-alone": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>row one</w:t></w:r></w:ins></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"3\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"4\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"5\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>row two</w:t></w:r></w:ins></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"6\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"7\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"8\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>row three</w:t></w:r></w:ins></w:p></w:tc></w:tr></w:tbl>",
+        "<w:p/>",
+        "<w:p/>"
+      ],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "row one\r\nrow two\r\nrow three\r\n"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rrow one\r\nrow two\r\nrow three\r\n",
+        "listedAfter": []
+      }
+    },
+    "two-tables": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>a1</w:t></w:r></w:ins></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"3\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"4\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"5\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>a2</w:t></w:r></w:ins></w:p></w:tc></w:tr></w:tbl>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"6\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"7\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>between</w:t></w:r></w:ins></w:p>",
+        "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"8\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"9\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"10\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>b1</w:t></w:r></w:ins></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"11\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"12\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"13\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>b2</w:t></w:r></w:ins></w:p></w:tc></w:tr></w:tbl>",
+        "<w:p><w:ins w:id=\"14\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "a1\r\na2\r\nbetween\rb1\r\nb2\r\n(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>a1</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>a2</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p><w:r><w:t>between</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>b1</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>b2</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\ra1\r\na2\r\nbetween\rb1\r\nb2\r\n(end of insertion)",
+        "listedAfter": []
+      }
+    }
+  },
+  "gestures": {
+    "addRows-end-two": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>new one</w:t></w:r></w:ins></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"3\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"4\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"5\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>new two</w:t></w:r></w:ins></w:p></w:tc></w:tr></w:tbl>",
+        "<w:p/>",
+        "<w:p/>"
+      ],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "new one\r\nnew two\r\n"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rrow one\r\nrow two\r\nrow three\r\n",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"0000\" w:firstRow=\"0\" w:lastRow=\"0\" w:firstColumn=\"0\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"0\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>new one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>new two</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rrow one\r\nrow two\r\nrow three\r\nnew one\r\nnew two\r\n",
+        "listedAfter": []
+      }
+    },
+    "addRows-start-two": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>new one</w:t></w:r></w:ins></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"3\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"4\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"5\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>new two</w:t></w:r></w:ins></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+        "<w:p/>",
+        "<w:p/>"
+      ],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "new one\r\nnew two\r\n"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rrow one\r\nrow two\r\nrow three\r\n",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>new one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>new two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rnew one\r\nnew two\r\nrow one\r\nrow two\r\nrow three\r\n",
+        "listedAfter": []
+      }
+    },
+    "rows-apart": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>new after first</w:t></w:r></w:ins></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"3\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"4\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"5\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>new after third</w:t></w:r></w:ins></w:p></w:tc></w:tr></w:tbl>",
+        "<w:p/>",
+        "<w:p/>"
+      ],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "new after first\r\n"
+        },
+        {
+          "i": 1,
+          "type": "Added",
+          "author": "Author B",
+          "text": "new after third\r\n"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rrow one\r\nrow two\r\nrow three\r\n",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"0000\" w:firstRow=\"0\" w:lastRow=\"0\" w:firstColumn=\"0\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"0\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>new after first</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>new after third</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rrow one\r\nnew after first\r\nrow two\r\nrow three\r\nnew after third\r\n",
+        "listedAfter": []
+      }
+    },
+    "text-then-rows": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>typed before the table</w:t></w:r></w:ins></w:p>",
+        "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"3\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>new first</w:t></w:r></w:ins></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+        "<w:p/>",
+        "<w:p/>"
+      ],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "typed before the table"
+        },
+        {
+          "i": 1,
+          "type": "Added",
+          "author": "Author B",
+          "text": "new first\r\n"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r\rrow one\r\nrow two\r\nrow three\r\n",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>typed before the table</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>new first</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rtyped before the table\rnew first\r\nrow one\r\nrow two\r\nrow three\r\n",
+        "listedAfter": []
+      }
+    },
+    "rows-then-text": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"0\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"1\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"2\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>new last</w:t></w:r></w:ins></w:p></w:tc></w:tr></w:tbl>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"3\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"4\" w:author=\"Author B\" w:date=\"2026-10-01T07:23:00Z\"><w:r><w:t>typed after the table</w:t></w:r></w:ins></w:p>",
+        "<w:p/>",
+        "<w:p/>"
+      ],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author B",
+          "text": "new last\r\ntyped after the table\r"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rrow one\r\nrow two\r\nrow three\r\n",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"0000\" w:firstRow=\"0\" w:lastRow=\"0\" w:firstColumn=\"0\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"0\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>new last</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p><w:r><w:t>typed after the table</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rrow one\r\nrow two\r\nrow three\r\nnew last\r\ntyped after the table\r",
+        "listedAfter": []
+      }
+    }
+  },
+  "engine": {
+    "engine-table-between": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"><w:r><w:t>before the table</w:t></w:r></w:ins></w:p>",
+        "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"2\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"3\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"4\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"><w:r><w:t>row one</w:t></w:r></w:ins></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"5\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"6\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"7\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"><w:r><w:t>row two</w:t></w:r></w:ins></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"8\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"9\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"10\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"><w:r><w:t>row three</w:t></w:r></w:ins></w:p></w:tc></w:tr></w:tbl>",
+        "<w:p><w:ins w:id=\"11\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author A",
+          "text": "before the table\rrow one\r\nrow two\r\nrow three\r\n(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>before the table</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rbefore the table\rrow one\r\nrow two\r\nrow three\r\n(end of insertion)",
+        "listedAfter": []
+      }
+    },
+    "engine-two-authors": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:pPr><w:rPr><w:ins w:id=\"0\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"1\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"><w:r><w:t>before the table</w:t></w:r></w:ins></w:p>",
+        "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"2\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"3\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"4\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"><w:r><w:t>row one</w:t></w:r></w:ins></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"5\" w:author=\"Author B\" w:date=\"2026-10-01T11:00:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"6\" w:author=\"Author B\" w:date=\"2026-10-01T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"7\" w:author=\"Author B\" w:date=\"2026-10-01T11:00:00Z\"><w:r><w:t>row two</w:t></w:r></w:ins></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"8\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"9\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"10\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"><w:r><w:t>row three</w:t></w:r></w:ins></w:p></w:tc></w:tr></w:tbl>",
+        "<w:p><w:ins w:id=\"11\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"><w:r><w:t>(end of insertion)</w:t></w:r></w:ins></w:p>",
+        "<w:p/>"
+      ],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author A",
+          "text": "before the table\rrow one\r\n"
+        },
+        {
+          "i": 1,
+          "type": "Added",
+          "author": "Author A",
+          "text": "row three\r\n(end of insertion)"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p/>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\r",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>before the table</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p><w:r><w:t>(end of insertion)</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rbefore the table\rrow one\r\nrow two\r\nrow three\r\n(end of insertion)",
+        "listedAfter": []
+      }
+    },
+    "engine-rows-added": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:r><w:t>Plain paragraph.</w:t></w:r></w:p>",
+        "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"0\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"1\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"2\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"><w:r><w:t>row two</w:t></w:r></w:ins></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"3\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"4\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"5\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"><w:r><w:t>row three</w:t></w:r></w:ins></w:p></w:tc></w:tr></w:tbl>",
+        "<w:p><w:r><w:t>Plain after.</w:t></w:r></w:p>",
+        "<w:p/>"
+      ],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author A",
+          "text": "row two\r\nrow three\r\n"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>Plain paragraph.</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p><w:r><w:t>Plain after.</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rPlain paragraph.\rrow one\r\nPlain after.",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>Plain paragraph.</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row three</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p><w:r><w:t>Plain after.</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rPlain paragraph.\rrow one\r\nrow two\r\nrow three\r\nPlain after.",
+        "listedAfter": []
+      }
+    },
+    "engine-rows-apart": {
+      "markup": [
+        "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+        "<w:p><w:r><w:t>Plain paragraph.</w:t></w:r></w:p>",
+        "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"0\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"1\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"2\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"><w:r><w:t>new first</w:t></w:r></w:ins></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:trPr><w:ins w:id=\"3\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:pPr><w:rPr><w:ins w:id=\"4\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"/></w:rPr></w:pPr><w:ins w:id=\"5\" w:author=\"Author A\" w:date=\"2026-10-01T11:00:00Z\"><w:r><w:t>new last</w:t></w:r></w:ins></w:p></w:tc></w:tr></w:tbl>",
+        "<w:p><w:r><w:t>Plain after.</w:t></w:r></w:p>",
+        "<w:p/>"
+      ],
+      "listed": [
+        {
+          "i": 0,
+          "type": "Added",
+          "author": "Author A",
+          "text": "new first\r\n"
+        },
+        {
+          "i": 1,
+          "type": "Added",
+          "author": "Author A",
+          "text": "new last\r\n"
+        }
+      ],
+      "rejectAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>Plain paragraph.</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p><w:r><w:t>Plain after.</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rPlain paragraph.\rrow one\r\nrow two\r\nPlain after.",
+        "listedAfter": []
+      },
+      "acceptAll": {
+        "markup": [
+          "<w:p><w:r><w:t>Kept.</w:t></w:r></w:p>",
+          "<w:p><w:r><w:t>Plain paragraph.</w:t></w:r></w:p>",
+          "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblInd w:w=\"-5\" w:type=\"dxa\"/><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/></w:tblBorders><w:tblCellMar><w:left w:w=\"10\" w:type=\"dxa\"/><w:right w:w=\"10\" w:type=\"dxa\"/></w:tblCellMar><w:tblLook w:val=\"04A0\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"1\" w:lastColumn=\"0\" w:noHBand=\"0\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"4000\"/></w:tblGrid><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>new first</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row one</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>row two</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tblPrEx><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/></w:tblCellMar></w:tblPrEx><w:tc><w:tcPr><w:tcW w:w=\"4000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>new last</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+          "<w:p><w:r><w:t>Plain after.</w:t></w:r></w:p>",
+          "<w:p/>"
+        ],
+        "text": "Kept.\rPlain paragraph.\rnew first\r\nrow one\r\nrow two\r\nnew last\r\nPlain after.",
+        "listedAfter": []
+      }
+    }
+  }
+}
