@@ -21,9 +21,10 @@ import org.w3c.dom.NodeList;
  * cell's borders off the content width as well - half of each collapsed border - so
  * exactly those lines were re-broken: all three columns of that probe wrapped, and in
  * the {@code pbdr-space} probe a cell holding 47.1pt of text in a 47.1pt column came
- * out on two lines.  The border allowance is given back as a smaller end padding,
- * which leaves the text's start (the grid edge plus half the border plus the left cell
- * margin) where it was.</p>
+ * out on two lines.  The border allowance is given back as smaller padding: since
+ * 17.3.3 each side its own half (CR-044 phase 3), which puts the text where Word's is,
+ * the grid line plus the larger of the cell margin and half the border; until then
+ * the end padding took both halves.</p>
  *
  * <p>17.1.0 generalised it: {@code table-cell-measure} shows Word charging a collapsed
  * border nothing against the measure in a grid-sized cell either, so the allowance is
@@ -120,13 +121,13 @@ public class CellLineWidthTest extends AbstractXSLFOTest {
 			Element cell = firstCell(doc);
 			double start = pt(cell.getAttribute("padding-left"));
 			double end = pt(cell.getAttribute("padding-right"));
-			// Word's default cell margin, 108 twips
-			assertEquals(flagName(flags) + ": the start padding places the text and must not move",
-					5.4, start, 0.05);
-			// half of each collapsed border is charged to this cell
+			// Word's default cell margin, 108 twips, less half the collapsed border FOP adds
 			// (the FO carries two decimal places)
-			assertEquals(flagName(flags) + ": the end padding gives the borders back",
-					start - BORDER_PT, end, 0.01);
+			assertEquals(flagName(flags) + ": the start padding puts the text where Word's is",
+					5.4 - BORDER_PT / 2, start, 0.05);
+			// half of each collapsed border is charged to this cell, and given back
+			assertEquals(flagName(flags) + ": the two paddings give the borders back",
+					2 * 5.4 - BORDER_PT, start + end, 0.06);
 			assertEquals(flagName(flags) + ": the hint must not reach FOP", "",
 					((Element) doc.getElementsByTagNameNS(FO, "table").item(0))
 							.getAttribute("docx4j-content-sized"));
@@ -149,10 +150,10 @@ public class CellLineWidthTest extends AbstractXSLFOTest {
 			Element cell = firstCell(fo(pkg(true), flags));
 			double start = pt(cell.getAttribute("padding-left"));
 			double end = pt(cell.getAttribute("padding-right"));
-			assertEquals(flagName(flags) + ": the start padding places the text and must not move",
-					5.4, start, 0.05);
+			assertEquals(flagName(flags) + ": the start padding puts the text where Word's is",
+					5.4 - BORDER_PT / 2, start, 0.05);
 			assertEquals(flagName(flags) + ": one whole border back",
-					start - BORDER_PT, end, 0.01);
+					2 * 5.4 - BORDER_PT, start + end, 0.06);
 		}
 	}
 

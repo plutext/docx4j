@@ -151,6 +151,10 @@ Changes in Version 17.3.3
   front of the text or behind it), as Word does, with the picture's distB below it in mode 15, where the row ended at
   its text (a letterhead's logo row: the rest of the page 22pt high); and such a picture no longer covers its cell's
   top and right borders.  CR-044.
+- PDF output places a table's vertical borders and its cells' text as Word does: in mode 15 the left border starts at
+  the table's indent (it was half a border further left), a cell's text is the larger of its margin and half its start
+  border inside its grid line (below mode 15 it was half a border right of Word's), and a picture aligned to its
+  cell's edge stays inside the borders.  CR-044 phase 3.
 
 
 Version 17.3.2

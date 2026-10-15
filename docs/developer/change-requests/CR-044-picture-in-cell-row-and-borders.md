@@ -1,14 +1,16 @@
 # CR-044: A floating picture in a table cell - the row it grows, the borders it clears - and table borders drawn where Word draws them
 
-Status: IN PROGRESS - proposed 2026-10-16 (Jason: "let's make a CR for this, recording what we have done for
+Status: DONE 2026-10-16, all phases, shipping in 17.3.3 - proposed 2026-10-16 (Jason: "let's make a CR for this, recording what we have done for
 17.3.3 shipping on .7, and what we might do in .8").  D1, D2 and D3 DECIDED by Jason 2026-10-16 ("D1 and D2 yes,
 please commit; D3 make the border probe now"), §6.  Phase 0 DONE (probes anchor-in-cell-row-height and -compat14,
 Word goldens 2026-10-16 05:43, §2); phase 1 DONE for 17.3.3 on 2.11-docx4j.7 (§3.1, §8; gates b275 and b276);
 phase 2 DONE the same day (the border probe read, §7.1: Word's rule needs no renderer change, and docx4j's cell text
-is off it today in mode 14 and beside unequal borders); phases 3 and 4 PROPOSED, route (b) - docx4j alone - now
-recommended (§3.2) and DECIDED (D4, Jason 2026-10-16: "D4 yes; do the census first"); the census DONE the same day
+is off it today in mode 14 and beside unequal borders); phases 3 and 4 by route (b) - docx4j alone - recommended
+(§3.2) and DECIDED (D4, Jason 2026-10-16: "D4 yes; do the census first"); the census DONE the same day
 (§5); a renderer change would have been 2.11-docx4j.8 only (Jason, 2026-10-16: "any such change would be part of
-2.11-docx4j.8, not the imminent 2.11-docx4j.7").  D5 open (§6).  Owner: Jason Harrop.
+2.11-docx4j.8, not the imminent 2.11-docx4j.7").  Modes 12 and 11 read the same day: as mode 14 (§7.1).  Phase 3
+DONE 2026-10-16 (§3.2 "As built", §8; gates b277 to b280), phase 4 with it (no .8 bump: route (b) is docx4j alone);
+D5 DECIDED: 17.3.3 (Jason, 2026-10-16).  Left for later: §9.  Owner: Jason Harrop.
 
 Scope: found on a user's letter (local only, not in the corpora; "the letter" below).  Its page 2 opens with a
 one-row table of two 284.4pt cells whose second holds a 139.65 x 36pt logo, floating (`wp:anchor`, wrapSquare,
@@ -138,6 +140,27 @@ Recommended before the probe: (a).  **Recommended after it: (b)**, which the pro
 
 (a) would move the painted borders only, leaving the text errors of §7.1.  Either way `clearOfCellEnd` goes.
 
+**As built (phase 3, §8)**, docx4j-export-fo alone:
+
+- `TableWriter.applyStartIndent` stamps which edge of the table Word puts on the position it computed
+  (`WordLayoutFixups.HINT_BORDER_EDGE`): `start` (mode 15, left-aligned, `w:tblInd`, a floating table at `w:tblpX`),
+  `end` (mode 15, right-aligned, `w:jc` or `w:tblpXSpec`), `text` / `text-end` (below mode 15, the first column's
+  text / the last column's text end).  None on a centred table - Word centres the grid (table-floating-offset-sides:
+  Word's borders within 0.1pt of docx4j's) - nor on a `w:bidiVisual` one.  The borders are only resolved in the FO,
+  so the fixups move the table.
+- `WordLayoutFixups.tableBorderEdges` (after `nestedTableAlignment`, before `cellLineWidth`): `start` + half the left
+  border (the wider of the table's and the first cell's), `end` - half the right border; `text` / `text-end` out by
+  what half the border exceeds the edge cell's margin by, not for a nested table.  A floating table moves inside the
+  container or float the fixups put it in.  The first row's borders decide.
+- `cellLineWidth`: each side's padding is `max(margin, w/2) - w/2` for that side's collapsed border `w` (the wider
+  of the cell's and its neighbour's, or the table's at the table's edge), to the millipoint.  A `w:bidiVisual` table
+  keeps the old allowance (from its end padding).
+- `placeInCell`: `edge:` from the left border's inner edge, an alignment within the borders' inner edges; `text:`
+  within the cell's text, as before.  `clearOfCellEnd` and its call removed.
+
+Departures from the design above: a floating table below mode 15 is not moved (Word's grid there was measured in
+mode 15 only); a right-aligned floating table is mirrored from the flow's rule (not measured).
+
 ## 4. Phases
 
 - **Phase 0 - measure.**  DONE 2026-10-16 (§2).
@@ -148,13 +171,15 @@ Recommended before the probe: (a).  **Recommended after it: (b)**, which the pro
   3 and 6pt; double; a cell's border wider than its neighbour's (the collapsed winner on each side); nil borders;
   outer and inside; a table with `w:tblInd` and with `w:jc` right; a picture flush with each cell edge.  Read each
   border's painted extent against its grid line, and the text against the grid.
-- **Phase 3 - the borders and the cell text** (D4, D5): route (b), recommended - docx4j alone (§3.2): a census of
+- **Phase 3 - the borders and the cell text** (D4, D5; DONE 2026-10-16 for 17.3.3, §3.2 "As built", §8): route (b),
+  recommended - docx4j alone (§3.2): a census of
   the corpora's bordered tables (mode 14; mode 15 with a column's start border unlike the table's left one; no cell
   margins), then the table's shift or outdent, the cells' start and end padding, `placeInCell`'s edges, and a gate
   read by border rectangles as well as text.  Or route (a): the renderer, 2.11-docx4j.8 only, a fop CR the fork
   session opens.
-- **Phase 4 - tidy**: remove `clearOfCellEnd`; under route (a) also the property, the export-fo bump to .8 and a gate
-  against a .8 control.
+- **Phase 4 - tidy**: remove `clearOfCellEnd`.  Done with phase 3: route (b) needs no renderer change, so nothing
+  waits on 2.11-docx4j.8 (Jason, 2026-10-16: "phase 4 does not need any export-fo bump to .8 since we're going the
+  docx4j route only here").
 
 ## 5. Population and risk
 
@@ -194,6 +219,8 @@ Recommended before the probe: (a).  **Recommended after it: (b)**, which the pro
 - **D5** If (b): when.  It needs no renderer, so it could go in 17.3.3 (on .7) or wait; it moves every bordered table's
   painted vertical borders by up to half a border width and, in mode 14 and beside unequal borders, its cell text by
   up to half one (1.5pt for a 3pt border).  A census of the corpora's bordered tables and a gate come first.
+  Recommended after gate b280 (x alone, no line moved): 17.3.3.  DECIDED: 17.3.3 (Jason, 2026-10-16: "phase 3 ships
+  in 17.3.3").
 
 ## 7. Readings
 
@@ -252,6 +279,9 @@ does the same: its FO differs between the three modes only in an unused footnote
 temporary file names, and its PDFs read the same.  So mode 14's rule above is Word's below mode 15, and phase 3
 applies it to modes 14, 12 and 11 alike.
 
+After phase 3 (§8): every border and cell text of the four probes within Word's jitter, case 5's double border
+apart.
+
 ### 7.2 The letter
 
 The letter's page 2 (Word's PDF on the share's `__tmp`, local): §1.  On phase 1 (gate-b276 jars, r46): the row 18.0
@@ -282,6 +312,40 @@ and 211 dpi the top and bottom borders show in both, the right one at 211 dpi, f
   parity moved by more than 0.05pt, the corpora and the probes (the holder's 0.045pt is below that).
 - Register (Enterprise, uncommitted): attempts 2026-10-16, cause anchor-in-cell-from-page (findings, status).
 
+### Phase 3, with phase 4 (2026-10-16; D5: 17.3.3)
+
+- docx4j-export-fo `TableWriter` (`HINT_BORDER_EDGE` from `applyStartIndent` and `applyFloatingPosition`, only
+  with the fixups on); `WordLayoutFixups`: `tableBorderEdges` (+ `firstRow`), `cellLineWidth` (`textStartPaddingPt`,
+  `allowanceEndPt`, `collapsedSideBordersPt`, `cellMarginPt`, `wordPaddingPt`), `placeInCell`, the hint in
+  `stripHints`; `clearOfCellEnd` and its call removed (phase 4).
+- **The measure is the allowance's, exactly**: the start padding puts the text where Word's starts (the margin read
+  back to the twip: `AbstractCellMargin` writes 108 twips as 1.91mm = 5.414pt), and the end padding takes what the
+  start padding gave up, so a cell's lines are what they were (§5 said so; the first three candidates did not keep
+  it, below).
+- Tests: `WordLayoutFixupsTest` +2 (`aCellsPaddingIsTheLargerOfItsMarginAndHalfItsBorderLessHalfTheBorder`,
+  `aTableMovesSoItsBordersAreWhereWordDrawsThem`) and `aNeighboursCollapsedBorderIsGivenBack` (the right cell gives
+  its neighbour's half back from its start); `CellLineWidthTest` (the start padding is the margin less half the
+  border; the two together give the borders back); `AnchorPositionedFromCellTest` +1 (`alignedByThePageWithinTheBorders`).
+  export-fo-tests 852, 8 failures - the eight of the 2.11-docx4j.7 pom line in Jason's working tree
+  (`FloatingTablePositionTest` 5, `FramePrTest` 3, their bands; §8 phase 1), none new.
+- The border probes on the candidate, all four modes: every vertical border and cell text within Word's column
+  jitter - text within 0.28pt (mode 15) and 0.20pt (below 15), where docx4j was 1.72pt and 2.99pt out; case 5's
+  double border apart (0.64pt, §9) - and case 12's pictures within 0.06pt.  Modes 12 and 11 render as mode 14.  The
+  letter's page 2: borders from 21.60 / 306.00 / 590.40 (Word 21.6 / 306.1 / 590.6, b276 21.36 / 305.76 / 590.16); the
+  logo, ending at 590.44, covers 0.04pt of the 0.48pt right border.
+- Gates (the fork's r46, against b276; the changed classes compiled to the session scratchpad ahead of b276's jars;
+  `~/fidelity-cr030/gate-b276-b277.sh` to `-b280.sh`):
+  - b277, the paddings to two decimals: 13 movers, net +75 lines - but the rounding moved the measure by up to
+    0.004pt, and lines on the edge with it (1654 -2, 11398 +50);
+  - b278, to the millipoint from the margins as written: 9 movers, net +16; 64 new 0.003pt line overflows (6749);
+  - b279, the margins read to the twip on both sides, Word's measure exactly: 25 movers - 11398 +64, 8814 +9, but
+    12301 -194 and 6380 -143 and a page short (77 against Word's 78); line overflows 17614 to 13830.  So docx4j's
+    measure, 0.024pt short of Word's, is holding some long documents' pagination where FOP's text runs narrower
+    than Word's: a question of its own (§9);
+  - **b280, as built**: 3 movers - 10730 -2, 8362 +1, 7042 +2, each with every word and its height unchanged (x
+    alone, which the scorer's line segmentation reads); FOP's events equal everywhere; the probes 0 movers.
+- Register (Enterprise): cause `table-vertical-border-grid`, attempts 2026-10-16; findings in 12301, 6380, 11398.
+
 ## 9. Not in scope
 
 - Mode 14, `layoutInCell` 0 with a wrap: the object leaves the cell and the table goes below it (case 7).  No corpus
@@ -289,8 +353,17 @@ and 211 dpi the top and bottom borders show in both, the right one at 211 dpi, f
 - Text boxes in cells (not measured); an object aligned in its cell other than at the top (the cell's height is not
   known); an anchor in a cell spanning rows; the top of an anchor's paragraph below other content in its cell (a
   lower bound, §3.1).
+- A double border's width (probe table-border-geometry case 5): Word draws `w:val="double" w:sz="4"` as two 0.48pt
+  lines and a 0.48pt gap, 1.44pt in all; docx4j writes the FO border as 0.48pt, which FOP draws as a 0.48pt double.
+  In mode 15 the cell text is then 0.6pt left of Word's (as before phase 3), and the rows are 0.96pt short at each
+  such horizontal border.  For a CR of its own (every compound border style, horizontal and vertical).
+- Floating tables below mode 15 and right-aligned floating tables (§3.2, "Departures"); tables whose border on one
+  side differs from row to row (the first row's decides).
+- A cell's measure: docx4j's is 0.024pt short of Word's (the column less the two margins), the margin being written
+  in millimetres.  Making it Word's (gate b279, §8) moved lines on the edge both ways, and a page in 6380; which way
+  FOP's text runs against Word's in those documents is the question.
 
 ## 10. Hand-offs
 
-- The fork: phase 3, for 2.11-docx4j.8 only, once phase 2's rule is read.  Nothing for .7.
+- The fork: none - route (b) is docx4j alone (D4), so nothing for .7 or .8.
 - The ports (core-ts, python): none; they write no PDF.

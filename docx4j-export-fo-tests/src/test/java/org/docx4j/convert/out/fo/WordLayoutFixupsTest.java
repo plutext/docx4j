@@ -526,7 +526,8 @@ public class WordLayoutFixupsTest {
 	/**
 	 * The collapsed border FOP charges a cell is the wider of its own and its neighbour's, so
 	 * that is what cellLineWidth gives back: table-cell-measure-neighbour's right cell, with no
-	 * left border of its own beside a 1pt one, keeps Word's measure (17.3.1).
+	 * left border of its own beside a 1pt one, keeps Word's measure (17.3.1).  Each side gives
+	 * its own half back since 17.3.3 (CR-044 phase 3): the right cell's from its start.
 	 */
 	@Test
 	public void aNeighboursCollapsedBorderIsGivenBack() throws Exception {
@@ -538,9 +539,76 @@ public class WordLayoutFixupsTest {
 		org.w3c.dom.Document doc = parse(fo);
 		WordLayoutFixups.cellLineWidth(doc);
 		org.w3c.dom.NodeList cells = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "table-cell");
-		assertEquals("its own 1pt", "4.9pt", ((org.w3c.dom.Element) cells.item(0)).getAttribute("padding-right"));
-		assertEquals("the neighbour's 1pt, its own being none", "4.9pt",
-				((org.w3c.dom.Element) cells.item(1)).getAttribute("padding-right"));
+		org.w3c.dom.Element left = (org.w3c.dom.Element) cells.item(0), right = (org.w3c.dom.Element) cells.item(1);
+		assertEquals("its own 1pt", "4.9pt", left.getAttribute("padding-right"));
+		assertEquals("no border at its start", "5.4pt", left.getAttribute("padding-left"));
+		assertEquals("the neighbour's 1pt, its own being none", "4.9pt", right.getAttribute("padding-left"));
+		assertEquals("no border at its end", "5.4pt", right.getAttribute("padding-right"));
+	}
+
+	/**
+	 * Word's cell text is at the grid line plus the larger of the cell margin and half the
+	 * collapsed border, so the padding is that less the half FOP adds: probe
+	 * table-border-geometry (CR-044 phase 3), 3pt borders with Word's 5.4pt margins (case 3)
+	 * and with none (case 11); at the table's edge the table's border counts.
+	 */
+	@Test
+	public void aCellsPaddingIsTheLargerOfItsMarginAndHalfItsBorderLessHalfTheBorder() throws Exception {
+		String cell = "<fo:table-cell padding-left=\"%1$s\" padding-right=\"%1$s\" border-left-style=\"solid\""
+				+ " border-left-width=\"3pt\" border-right-style=\"solid\" border-right-width=\"3pt\"><fo:block>x</fo:block></fo:table-cell>";
+		String fo = flow("<fo:table border-collapse=\"collapse\"><fo:table-body><fo:table-row>"
+				+ String.format(cell, "5.4pt") + String.format(cell, "0pt")
+				+ "</fo:table-row></fo:table-body></fo:table>"
+				+ "<fo:table border-collapse=\"collapse\" border-left-style=\"solid\" border-left-width=\"6pt\">"
+				+ "<fo:table-body><fo:table-row>" + String.format(cell, "5.4pt")
+				+ "</fo:table-row></fo:table-body></fo:table>");
+		org.w3c.dom.Document doc = parse(fo);
+		WordLayoutFixups.cellLineWidth(doc);
+		org.w3c.dom.NodeList cells = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "table-cell");
+		org.w3c.dom.Element margins = (org.w3c.dom.Element) cells.item(0), none = (org.w3c.dom.Element) cells.item(1),
+				edge = (org.w3c.dom.Element) cells.item(2);
+		assertEquals("5.4 - 1.5", "3.9pt", margins.getAttribute("padding-left"));
+		assertEquals("5.4 - 1.5", "3.9pt", margins.getAttribute("padding-right"));
+		assertEquals("half the border is the text's inset", "0pt", none.getAttribute("padding-left"));
+		assertEquals("half the border is the text's inset", "0pt", none.getAttribute("padding-right"));
+		assertEquals("the table's 6pt: 5.4 - 3", "2.4pt", edge.getAttribute("padding-left"));
+	}
+
+	/**
+	 * Where Word puts a table's grid (CR-044 phase 3, probe table-border-geometry): in mode 15
+	 * its left border starts at the position, so the table moves right by half that border
+	 * (a right-aligned one left by half its right border); below 15 the first column's text
+	 * is at the position, so the table goes out further only by what half the border exceeds
+	 * the cell margin by, and a nested one not at all.  A centred table has no edge stamped.
+	 */
+	@Test
+	public void aTableMovesSoItsBordersAreWhereWordDrawsThem() throws Exception {
+		String table = "<fo:table border-collapse=\"collapse\" start-indent=\"%1$s\" docx4j-border-edge=\"%2$s\""
+				+ " border-left-style=\"solid\" border-left-width=\"3pt\" border-right-style=\"solid\""
+				+ " border-right-width=\"1pt\"><fo:table-body><fo:table-row>"
+				+ "<fo:table-cell padding-left=\"%3$s\" padding-right=\"%3$s\" border-left-style=\"solid\""
+				+ " border-left-width=\"3pt\">%4$s</fo:table-cell>"
+				+ "</fo:table-row></fo:table-body></fo:table>";
+		String nested = String.format(table, "0pt", "text", "0pt", "<fo:block>nested</fo:block>");
+		String fo = flow(String.format(table, "36pt", "start", "5.4pt", "<fo:block>x</fo:block>")
+				+ String.format(table, "100pt", "end", "5.4pt", "<fo:block>x</fo:block>")
+				+ String.format(table, "-5.4pt", "text", "5.4pt", "<fo:block>x</fo:block>")
+				+ String.format(table, "0pt", "text", "0pt", nested)
+				+ String.format(table, "10pt", "", "5.4pt", "<fo:block>x</fo:block>"));
+		org.w3c.dom.Document doc = parse(fo);
+		WordLayoutFixups.tableBorderEdges(doc);
+		org.w3c.dom.NodeList tables = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "table");
+		java.util.function.IntFunction<String> indent = i -> ((org.w3c.dom.Element) tables.item(i)).getAttribute("start-indent");
+		assertEquals("mode 15: + half the 3pt left border", "37.5pt", indent.apply(0));
+		assertEquals("mode 15, right aligned: - half the 1pt right border", "99.5pt", indent.apply(1));
+		assertEquals("below 15: the margin is the wider, no move", "-5.4pt", indent.apply(2));
+		assertEquals("below 15, no margin: out by half the border", "-1.5pt", indent.apply(3));
+		assertEquals("nested below 15: its grid is its cell's content edge", "0pt", indent.apply(4));
+		assertEquals("centred: no edge stamped", "10pt", indent.apply(5));
+		for (int i = 0; i < tables.getLength(); i++) {
+			assertEquals("the hint must not reach FOP", "",
+					((org.w3c.dom.Element) tables.item(i)).getAttribute("docx4j-border-edge"));
+		}
 	}
 
 	private static org.w3c.dom.Document parse(String fo) throws Exception {

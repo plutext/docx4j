@@ -215,6 +215,14 @@ public class TableWriter extends AbstractTableWriter {
 	 * content, not the page's column ({@link WordLayoutFixups#nestedTableAlignment}): its
 	 * alignment and width are stamped here for that pass.</p>
 	 *
+	 * <p><b>The borders</b>: the position is that of FOP's grid edge, on which FOP centres a
+	 * collapsed border.  Word puts the left border's outer edge there in mode 15 (the right
+	 * border's, right aligned), and the first column's text below 15, where the grid is the
+	 * larger of the cell margin and half the border out from it (CR-044 phase 3).  Which edge
+	 * is stamped here ({@link WordLayoutFixups#HINT_BORDER_EDGE}); the borders and the cells'
+	 * margins are only resolved in the FO, so {@link WordLayoutFixups#tableBorderEdges} moves
+	 * the table.</p>
+	 *
 	 * @since 17.0.5
 	 */
 	private void applyStartIndent(AbstractWmlConversionContext context, AbstractTableWriterModel table, Element tableRoot) {
@@ -245,6 +253,10 @@ public class TableWriter extends AbstractTableWriter {
 			indent = available - width;
 			if (compatibilityMode(context) < 15) indent += rightCellMarginTwips(table, tblPr);
 			stampAlignment(tableRoot, "right", width);
+			if (WordLayoutFixups.isEnabled()) {
+				tableRoot.setAttribute(WordLayoutFixups.HINT_BORDER_EDGE,
+						compatibilityMode(context) < 15 ? "text-end" : "end");
+			}
 		} else {
 			// Word ignores w:tblInd on a centred or right aligned table (as PropertyFactory does)
 			indent = 0;
@@ -254,6 +266,10 @@ public class TableWriter extends AbstractTableWriter {
 				if (tblInd != null && tblInd.getW() != null
 						&& (tblInd.getType() == null || "dxa".equals(tblInd.getType()))) {
 					indent = tblInd.getW().intValue();
+				}
+				if (!bidiVisual && WordLayoutFixups.isEnabled()) {
+					tableRoot.setAttribute(WordLayoutFixups.HINT_BORDER_EDGE,
+							compatibilityMode(context) < 15 ? "text" : "start");
 				}
 			}
 			int mode = compatibilityMode(context);
@@ -417,6 +433,23 @@ public class TableWriter extends AbstractTableWriter {
 			// the frame's own position, with no grid-edge shift in it
 			indent = frameLeft - marginLeft + xInFrame;
 			gridShift = 0;
+			/* and the edge of the table Word puts there (WordLayoutFixups.tableBorderEdges):
+			 * in mode 15 the left border starts at w:tblpX (Word's goldens of probes
+			 * table-floating and -negative: the left border from 297.0 and 72.0, FOP's half
+			 * of it further left) and a centred table's grid is centred (-offset-sides, within
+			 * 0.1pt); right is mirrored from the flow's rule.  Below 15 the grid stays on the
+			 * position (not measured).  @since 17.3.3 */
+			org.docx4j.wml.CTTblPrBase tblPr = table.getEffectiveTableStyle().getTblPr();
+			boolean bidiVisual = tblPr != null && tblPr.getBidiVisual() != null && tblPr.getBidiVisual().isVal();
+			org.docx4j.wml.STXAlign xSpec = tblpPr.getTblpXSpec();
+			if (compatibilityMode(context) < 15 || bidiVisual || org.docx4j.wml.STXAlign.CENTER.equals(xSpec)
+					|| !WordLayoutFixups.isEnabled()) {
+				tableRoot.removeAttribute(WordLayoutFixups.HINT_BORDER_EDGE);
+			} else {
+				tableRoot.setAttribute(WordLayoutFixups.HINT_BORDER_EDGE,
+						org.docx4j.wml.STXAlign.RIGHT.equals(xSpec) || org.docx4j.wml.STXAlign.OUTSIDE.equals(xSpec)
+								? "end" : "start");
+			}
 		}
 
 		// vertical: only a position measured from the page or the margin box takes the

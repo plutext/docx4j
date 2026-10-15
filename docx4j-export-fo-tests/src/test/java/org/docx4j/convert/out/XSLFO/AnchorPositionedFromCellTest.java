@@ -115,11 +115,17 @@ public class AnchorPositionedFromCellTest extends AbstractXSLFOTest {
 	/** As above, the row with the given w:trPr ("" for none). */
 	private org.w3c.dom.Document fo(WordprocessingMLPackage pkg, int flags, int mode, String run, String trPr)
 			throws Exception {
+		return fo(pkg, flags, mode, run, trPr, "");
+	}
+
+	/** As above, the table with the given w:tblBorders ("" for none). */
+	private org.w3c.dom.Document fo(WordprocessingMLPackage pkg, int flags, int mode, String run, String trPr,
+			String tblBorders) throws Exception {
 		pkg.getMainDocumentPart().getDocumentSettingsPart().setCompatibilityMode(mode);
 		String cellPr = "<w:tcPr><w:tcW w:w=\"5760\" w:type=\"dxa\"/></w:tcPr>";
 		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
 				"<w:document " + W + "><w:body>"
-				+ "<w:tbl><w:tblPr><w:tblW w:w=\"11520\" w:type=\"dxa\"/></w:tblPr>"
+				+ "<w:tbl><w:tblPr><w:tblW w:w=\"11520\" w:type=\"dxa\"/>" + tblBorders + "</w:tblPr>"
 				+ "<w:tblGrid><w:gridCol w:w=\"5760\"/><w:gridCol w:w=\"5760\"/></w:tblGrid><w:tr>" + trPr
 				+ "<w:tc>" + cellPr + "<w:p><w:r><w:t>Sample Processing Center</w:t></w:r></w:p></w:tc>"
 				+ "<w:tc>" + cellPr + "<w:p><w:pPr><w:jc w:val=\"right\"/></w:pPr>"
@@ -262,6 +268,48 @@ public class AnchorPositionedFromCellTest extends AbstractXSLFOTest {
 			assertEquals(pathway(flags) + "top", 10, pt(abs.getAttribute("top")), 0.01);
 			Node holder = abs.getParentNode().getParentNode();
 			assertEquals(pathway(flags) + "at the paragraph's head", "block", holder.getLocalName());
+		}
+	}
+
+	/** 1.5pt single borders all round and inside. */
+	private static final String BORDERS = "<w:tblBorders>"
+			+ "<w:top w:val=\"single\" w:sz=\"12\" w:space=\"0\" w:color=\"000000\"/>"
+			+ "<w:left w:val=\"single\" w:sz=\"12\" w:space=\"0\" w:color=\"000000\"/>"
+			+ "<w:bottom w:val=\"single\" w:sz=\"12\" w:space=\"0\" w:color=\"000000\"/>"
+			+ "<w:right w:val=\"single\" w:sz=\"12\" w:space=\"0\" w:color=\"000000\"/>"
+			+ "<w:insideH w:val=\"single\" w:sz=\"12\" w:space=\"0\" w:color=\"000000\"/>"
+			+ "<w:insideV w:val=\"single\" w:sz=\"12\" w:space=\"0\" w:color=\"000000\"/></w:tblBorders>";
+
+	/**
+	 * A cell's edges are its borders' inner edges (CR-044 phase 3; probe table-border-geometry
+	 * case 12, 1.5pt borders): a picture aligned right by the page ends at the right border's
+	 * inner edge, one aligned left starts at the left border's, where until 17.3.3 the right
+	 * one ran over the whole of its border.  Read from the cell's grid line: half the
+	 * collapsed border (FOP centres it on the line), the cell's padding, the picture's left.
+	 */
+	@Test
+	public void alignedByThePageWithinTheBorders() throws Exception {
+		for (int flags : FLAGS) {
+			for (String align : new String[] { "left", "right" }) {
+				WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+				String relId = org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage
+						.createImagePart(pkg, png()).getSourceRelationship().getId();
+				Element abs = positioned(fo(pkg, flags, 15, anchored(relId, "1", NONE, pos("H", "page", "@" + align),
+						pos("V", "page", "0")), "", BORDERS), pathway(flags));
+				assertNotNull(pathway(flags) + align + " positioned", abs);
+				Element cell = (Element) abs.getParentNode().getParentNode();
+				assertEquals(pathway(flags) + align, "table-cell", cell.getLocalName());
+				double border = pt(cell.getAttribute("border-left-width"));
+				assertEquals(pathway(flags) + align + ": the right border is the left's", border,
+						pt(cell.getAttribute("border-right-width")), 0.001);
+				double from = border / 2 + pt(cell.getAttribute("padding-left")) + pt(abs.getAttribute("left"));
+				if ("left".equals(align)) {
+					assertEquals(pathway(flags) + "left: at the left border's inner edge", border / 2, from, 0.02);
+				} else {
+					assertEquals(pathway(flags) + "right: ends at the right border's inner edge",
+							288 - border / 2, from + 139.65, 0.02);
+				}
+			}
 		}
 	}
 

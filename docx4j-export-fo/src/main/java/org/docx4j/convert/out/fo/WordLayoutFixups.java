@@ -196,6 +196,7 @@ public final class WordLayoutFixups {
 		retainSpaceAfterInAlignedFlow(doc);
 		retainSpacingAtCellEdges(doc, compatibilityMode);
 		nestedTableAlignment(doc); // before cellLineWidth, which gives some of a cell's padding back
+		tableBorderEdges(doc); // after nestedTableAlignment (it places a nested aligned table), before cellLineWidth (it reads the cell margin)
 		cellLineWidth(doc);
 		nestedTableGridEdge(doc);
 		fixLists(doc);
@@ -1736,7 +1737,6 @@ public final class WordLayoutFixups {
 		// in a table cell Word measures the position from the cell (@since 17.3.3)
 		Element cell = ancestorCell(g);
 		double[] inCell = cell == null ? null : placeInCell(cell, g.getAttribute(HINT_ANCHOR_CELL), w);
-		final boolean cellX = inCell != null && !Double.isNaN(inCell[0]);  // x from the cell's text
 		if (inCell != null) {
 			if (!Double.isNaN(inCell[0])) x = inCell[0];
 			if (!Double.isNaN(inCell[1])) {
@@ -1903,7 +1903,6 @@ public final class WordLayoutFixups {
 			 * 18.52; a normal line 0.014pt below, into the border under a row grown to it.
 			 * Positioned, the line moves nothing else.  @since 17.3.3 */
 			holder.setAttribute("font-size", "0pt");
-			if (cellX && !pageY) clearOfCellEnd(abs, cell, x, w);
 			abs.appendChild(holder);
 			wrapper.appendChild(abs);
 			// on the fork's obstacles the page's lines wrap round it (CR-032 phase 5); behind the
@@ -2101,10 +2100,27 @@ public final class WordLayoutFixups {
 		if (h.startsWith("edge:") || h.startsWith("text:")) {
 			boolean edge = h.startsWith("edge:");
 			String v = h.substring(5);
-			double base = edge ? -padL : 0;
+			double content = cellContentWidthPt(cell);
+			// x is from the content edge cellLineWidth leaves, the cell's text; the cell's own
+			// edges are its borders' inner edges (probe table-border-geometry case 12: a picture
+			// aligned left in its cell starts at the left border's inner edge, one aligned right
+			// ends at the right border's), where until 17.3.3 the right-aligned one ran over the
+			// whole border
+			double inner = content + padL + padR, start = padL, text = content;
+			Element tbl = ancestorTable(cell);
+			if (tbl != null && "collapse".equals(tbl.getAttribute("border-collapse"))
+					&& !"rl-tb".equals(writingMode(cell))) {
+				// the paddings cellLineWidth will write: the text where Word's starts, the measure
+				// the border allowance's
+				boolean spans = spansRows(tbl);
+				double[] border = collapsedSideBordersPt(cell, tbl, spans);
+				start = textStartPaddingPt(cell, tbl, spans);
+				inner -= (border[0] + border[1]) / 2;
+				text = inner - padL - allowanceEndPt(cell, "padding-right", spans);
+			}
+			double base = edge ? -start : 0;
 			if (v.startsWith("@")) {
-				double content = cellContentWidthPt(cell);
-				double room = (edge ? content + padL + padR : content) - w;
+				double room = (edge ? inner : text) - w;
 				String align = v.substring(1);
 				if ("center".equals(align)) x = base + room / 2;
 				else if ("right".equals(align) || "outside".equals(align)) x = base + room;
@@ -2146,33 +2162,6 @@ public final class WordLayoutFixups {
 		String property = row.hasAttribute("block-progression-dimension.minimum")
 				? "block-progression-dimension.minimum" : "height";
 		if (need > lengthPt(row.getAttribute(property))) row.setAttribute(property, pt(need));
-	}
-
-	/**
-	 * Word draws a cell's end border beside its grid line, outside the cell, so an object flush
-	 * with the cell's end stays clear of it: m1's logo ends at the table's last grid line,
-	 * 590.4pt, and Word's right border is drawn from 590.6pt.  FOP draws a collapsed border
-	 * centred on the grid line, half of it inside the cell, and paints a cell's content over its
-	 * borders, so the logo covered 0.28pt of the 0.48pt border - at screen resolutions all of
-	 * it.  An object reaching into its cell's end border by no more than that border's width is
-	 * cut at the border's inner edge; one reaching further, which Word draws over its border
-	 * too, is left.
-	 *
-	 * @param abs the object's positioned container
-	 * @param x the object's left, from the cell's content edge
-	 * @param w its width
-	 * @since 17.3.3
-	 */
-	private static void clearOfCellEnd(Element abs, Element cell, double x, double w) {
-		Element tbl = ancestorTable(cell);
-		double share = tbl != null && "separate".equals(tbl.getAttribute("border-collapse")) ? 1 : 0.5;
-		double end = outerBorderPt(cell, "right");
-		double inner = cellContentWidthPt(cell) + lengthPt(cell.getAttribute("padding-right"))
-				- share * (outerBorderPt(cell, "left") + end);
-		double excess = x + w - inner;
-		if (excess <= 0 || excess > end) return;
-		abs.setAttribute("width", pt(w - excess));
-		abs.setAttribute("overflow", "hidden");
 	}
 
 	/** Where the paragraph holding an anchor starts below its cell's text top, at least: a
@@ -4295,6 +4284,7 @@ public final class WordLayoutFixups {
 			for (String hint : TBLP_HINTS) tbl.removeAttribute(hint);
 			tbl.removeAttribute(HINT_CONTENT_SIZED);
 			tbl.removeAttribute(HINT_GRID_SHIFT);
+			tbl.removeAttribute(HINT_BORDER_EDGE);
 		}
 		for (Element span : elements(doc, "inline")) {
 			span.removeAttribute(org.docx4j.fonts.RunFontSelector.HINT_FONT);
@@ -5408,6 +5398,77 @@ public final class WordLayoutFixups {
 	 *  @since 17.1.0 */
 	public static final String HINT_GRID_SHIFT = "docx4j-grid-shift";
 
+	/** On an fo:table: which of its edges Word puts where TableWriter.applyStartIndent placed
+	 *  it - "start", its left border's outer edge (mode 15: a left-aligned table, w:tblInd, a
+	 *  floating table at w:tblpX); "end", its right border's outer edge (mode 15, right
+	 *  aligned); "text", the first column's text (below mode 15); "text-end", the last
+	 *  column's text end (below mode 15, right aligned).  None on a centred table, whose grid
+	 *  Word centres, nor on a w:bidiVisual one.  @since 17.3.3 */
+	public static final String HINT_BORDER_EDGE = "docx4j-border-edge";
+
+	/**
+	 * Word centres each vertical border of a table on its grid line, as FOP does, but lays the
+	 * grid elsewhere (CR-044 phase 3; probes {@code table-border-geometry}, modes 15, 14, 12 and
+	 * 11, and the floating-table probes' goldens):
+	 *
+	 * <ul>
+	 * <li>in mode 15 the table's left border <em>starts</em> at the margin + {@code w:tblInd}
+	 * (or a floating table's {@code w:tblpX}), so its grid is half the left border further
+	 * right than the start-indent puts FOP's (0.24pt for a 0.5pt border, 1.5pt for 3pt); a
+	 * right-aligned table's right border ends on the column's end, so its grid is half the
+	 * right border further left;</li>
+	 * <li>below mode 15 the first column's text is at the margin + {@code w:tblInd}, so the grid
+	 * is the larger of the cell margin and half the left border out from it, where
+	 * TableWriter took the margin: it goes out further only where the border's half is the
+	 * wider (no cell margins: case 11, 1.5pt for a 3pt border); a right-aligned table's last
+	 * text ends on the column's end, mirrored.  Not a nested table, whose grid Word puts on its
+	 * cell's content edge ({@link #nestedTableGridEdge}).</li>
+	 * </ul>
+	 *
+	 * <p>A centred table's grid is centred, as TableWriter has it (table-floating-offset-sides:
+	 * Word's borders within 0.1pt of docx4j's).  The cell text is {@link #cellLineWidth}'s.
+	 * Where the borders on one side differ from row to row, the first row's decides.  Before
+	 * {@link #cellLineWidth}, which changes the margins read here.</p>
+	 *
+	 * @since 17.3.3
+	 */
+	static void tableBorderEdges(Document doc) {
+		for (Element tbl : elements(doc, "table")) {
+			String edge = tbl.getAttribute(HINT_BORDER_EDGE);
+			tbl.removeAttribute(HINT_BORDER_EDGE);
+			if (edge.length() == 0 || !"collapse".equals(tbl.getAttribute("border-collapse"))) continue;
+			Element row = firstRow(tbl);
+			if (row == null) continue;
+			List<Element> cells = new ArrayList<>();
+			for (Element c : childElements(row)) if (isFo(c, "table-cell")) cells.add(c);
+			if (cells.isEmpty()) continue;
+			boolean end = edge.endsWith("end");
+			Element cell = cells.get(end ? cells.size() - 1 : 0);
+			String side = end ? "right" : "left";
+			double half = Math.max(outerBorderPt(tbl, side), cellBorderPt(cell, side)) / 2;
+			double shift;
+			if (edge.startsWith("text")) {
+				if (insideTableCell(tbl)) continue;
+				shift = Math.max(0, half - cellMarginPt(cell, side));
+				if (!end) shift = -shift;
+			} else {
+				shift = end ? -half : half;
+			}
+			if (shift == 0) continue;
+			double indent = lengthPt(tbl.getAttribute("start-indent"));
+			tbl.setAttribute("start-indent", org.docx4j.fonts.WordLineMetrics.format(indent + shift));
+		}
+	}
+
+	/** A table's first row: its header's, else its body's.  @since 17.3.3 */
+	private static Element firstRow(Element tbl) {
+		for (Element part : childElements(tbl)) {
+			if (!isFo(part, "table-header") && !isFo(part, "table-body")) continue;
+			for (Element row : childElements(part)) if (isFo(row, "table-row")) return row;
+		}
+		return null;
+	}
+
 	/**
 	 * Word applies the mode-14 grid-edge shift to a <em>top-level</em> table only.  A
 	 * table nested in a w:tc has its grid edge on the containing cell's content edge,
@@ -5521,29 +5582,110 @@ public final class WordLayoutFixups {
 	 * account (64 lines).  Not where a row-spanning cell leaves the rows' siblings out of
 	 * step with the columns.</p>
 	 *
+	 * <p><b>Where the text starts</b> (CR-044 phase 3, 17.3.3).  Word puts a cell's text at its
+	 * grid line plus the larger of its cell margin and half the collapsed border at its start,
+	 * whatever the other borders are: measured on the {@code table-border-geometry} probes (modes
+	 * 15, 14, 12 and 11; 0.5 to 6pt borders, a 3pt border between 0.5pt ones, no cell margins).
+	 * FOP puts it at the grid line plus half that border plus the start padding, so the start
+	 * padding is the larger of the margin and half the border, less half the border: the margin
+	 * less half the border, as a rule.  At the table's edge the border is the wider of the cell's
+	 * and the table's, as FOP collapses it.  Until 17.3.3 the start padding kept the margin,
+	 * which put the text half its start border right of Word's below mode 15 (0.24pt for a 0.5pt
+	 * border, 1.5pt for 3pt), and beside a start border unlike the table's left one in mode 15,
+	 * where the grid was also half the left border out ({@link #tableBorderEdges}).</p>
+	 *
+	 * <p><b>The measure stays the allowance's</b>: what the start padding gives up, the end
+	 * padding takes, so only where the text starts moves.  Word's own measure is the column less
+	 * the two margins, which docx4j's is 0.024pt short of (the margin is written in millimetres,
+	 * {@link #cellMarginPt}); making it Word's moved lines on the edge of fitting both ways and
+	 * more than a little (gate b279: 11398 +64 lines, 12301 -194, 6380 -143 and a page short), so
+	 * that is a question of its own.  A right-to-left table ({@code w:bidiVisual}; not measured)
+	 * keeps its start padding as well.</p>
+	 *
 	 * @since 17.1.0
 	 */
 	static void cellLineWidth(Document doc) {
+		java.util.Map<Element, Boolean> rowSpans = new java.util.HashMap<>();
 		for (Element cell : elements(doc, "table-cell")) {
 			Element tbl = ancestorTable(cell);
 			if (tbl == null) continue;
 			// a separate border is Word's charge as well as FOP's; only a collapsed one
 			// (which FOP charges half of to each of the two cells it separates) is free
 			if ("separate".equals(tbl.getAttribute("border-collapse"))) continue;
-			double left = cellBorderPt(cell, "left"), right = cellBorderPt(cell, "right");
-			if (!spansRows(tbl)) {
-				Element before = siblingCell(cell, false), after = siblingCell(cell, true);
-				if (before != null) left = Math.max(left, cellBorderPt(before, "right"));
-				if (after != null) right = Math.max(right, cellBorderPt(after, "left"));
-			}
-			double give = 0.5 * (left + right);
-			if (give <= 0) continue;
+			boolean spans = rowSpans.computeIfAbsent(tbl, WordLayoutFixups::spansRows);
 			// the end side is the one to take it from: the start padding places the text
-			String end = "rl-tb".equals(writingMode(cell)) ? "padding-left" : "padding-right";
-			double padding = lengthPt(cell.getAttribute(end));
-			if (padding <= 0) continue;   // nothing to give back; FO padding cannot go negative
-			cell.setAttribute(end, pt(Math.max(0, padding - give)));
+			boolean rtl = "rl-tb".equals(writingMode(cell));
+			String endSide = rtl ? "padding-left" : "padding-right";
+			double end = allowanceEndPt(cell, endSide, spans);
+			if (rtl || collapsedSideBordersPt(cell, tbl, spans)[0] <= 0) {
+				if (end != lengthPt(cell.getAttribute(endSide))) cell.setAttribute(endSide, pt(end));
+				continue;
+			}
+			double start = textStartPaddingPt(cell, tbl, spans);
+			// to the millipoint, so the measure is the allowance's exactly
+			end += lengthPt(cell.getAttribute("padding-left")) - start;
+			cell.setAttribute("padding-left", org.docx4j.fonts.WordLineMetrics.format(start));
+			cell.setAttribute("padding-right", org.docx4j.fonts.WordLineMetrics.format(Math.max(0, end)));
 		}
+	}
+
+	/**
+	 * The end padding the border allowance leaves: the padding less half of each collapsed side
+	 * border (the wider of the cell's own and its neighbour's), as {@link #cellLineWidth} has
+	 * written it since 17.1.0.  @since 17.3.3
+	 */
+	private static double allowanceEndPt(Element cell, String endSide, boolean spans) {
+		double left = cellBorderPt(cell, "left"), right = cellBorderPt(cell, "right");
+		if (!spans) {
+			Element before = siblingCell(cell, false), after = siblingCell(cell, true);
+			if (before != null) left = Math.max(left, cellBorderPt(before, "right"));
+			if (after != null) right = Math.max(right, cellBorderPt(after, "left"));
+		}
+		double give = 0.5 * (left + right);
+		double padding = lengthPt(cell.getAttribute(endSide));
+		// nothing to give back; FO padding cannot go negative
+		if (give <= 0 || padding <= 0) return padding;
+		return lengthPt(pt(Math.max(0, padding - give)));
+	}
+
+	/** The start padding that puts a left-to-right cell's text where Word's is: the larger of
+	 *  its margin and half its collapsed start border, less that half.  @since 17.3.3 */
+	private static double textStartPaddingPt(Element cell, Element tbl, boolean spans) {
+		double border = collapsedSideBordersPt(cell, tbl, spans)[0];
+		return border > 0 ? wordPaddingPt(cellMarginPt(cell, "left"), border) : lengthPt(cell.getAttribute("padding-left"));
+	}
+
+	/**
+	 * The collapsed border FOP draws at a cell's left and right, in points: the wider of the
+	 * cell's own and its neighbour's, or the table's at the table's edge.  The cell's own alone
+	 * where a row-spanning cell leaves the rows' siblings out of step with the columns.
+	 *
+	 * @since 17.3.3
+	 */
+	private static double[] collapsedSideBordersPt(Element cell, Element tbl, boolean spansRows) {
+		double left = cellBorderPt(cell, "left"), right = cellBorderPt(cell, "right");
+		if (!spansRows) {
+			Element before = siblingCell(cell, false), after = siblingCell(cell, true);
+			left = Math.max(left, before != null ? cellBorderPt(before, "right") : outerBorderPt(tbl, "left"));
+			right = Math.max(right, after != null ? cellBorderPt(after, "left") : outerBorderPt(tbl, "right"));
+		}
+		return new double[] { left, right };
+	}
+
+	/**
+	 * A cell's margin at a side, as the docx has it: in twips.  AbstractCellMargin writes it in
+	 * millimetres to two decimals, Word's default 108 twips as 1.91mm = 5.414pt, which would put
+	 * the text 0.014pt right of Word's; the rounding is under half a twip, so the nearest twip is
+	 * the margin.  Read before {@link #cellLineWidth} rewrites the padding.  @since 17.3.3
+	 */
+	private static double cellMarginPt(Element cell, String side) {
+		return Math.round(lengthPt(cell.getAttribute("padding-" + side)) * 20) / 20.0;
+	}
+
+	/** Word's text inset at a side of a cell as FO padding: the larger of the cell margin and
+	 *  half the collapsed border there, less the half FOP adds itself.  @since 17.3.3 */
+	private static double wordPaddingPt(double margin, double border) {
+		return Math.max(margin, border / 2) - border / 2;
 	}
 
 	/** A cell border's width in points, 0 where its style draws nothing.  @since 17.3.1 */
