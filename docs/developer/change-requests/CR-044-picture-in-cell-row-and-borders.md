@@ -4,8 +4,11 @@ Status: IN PROGRESS - proposed 2026-10-16 (Jason: "let's make a CR for this, rec
 17.3.3 shipping on .7, and what we might do in .8").  D1, D2 and D3 DECIDED by Jason 2026-10-16 ("D1 and D2 yes,
 please commit; D3 make the border probe now"), §6.  Phase 0 DONE (probes anchor-in-cell-row-height and -compat14,
 Word goldens 2026-10-16 05:43, §2); phase 1 DONE for 17.3.3 on 2.11-docx4j.7 (§3.1, §8; gates b275 and b276);
-phase 2 STARTED (the border probe); phases 3 and 4 PROPOSED for 2.11-docx4j.8 only (Jason, 2026-10-16: "any such
-change would be part of 2.11-docx4j.8, not the imminent 2.11-docx4j.7"), §3.2 and §4.  D4 open.  Owner: Jason Harrop.
+phase 2 DONE the same day (the border probe read, §7.1: Word's rule needs no renderer change, and docx4j's cell text
+is off it today in mode 14 and beside unequal borders); phases 3 and 4 PROPOSED, route (b) - docx4j alone - now
+recommended (§3.2) and DECIDED (D4, Jason 2026-10-16: "D4 yes; do the census first"); the census DONE the same day
+(§5); a renderer change would have been 2.11-docx4j.8 only (Jason, 2026-10-16: "any such change would be part of
+2.11-docx4j.8, not the imminent 2.11-docx4j.7").  D5 open (§6).  Owner: Jason Harrop.
 
 Scope: found on a user's letter (local only, not in the corpora; "the letter" below).  Its page 2 opens with a
 one-row table of two 284.4pt cells whose second holds a 139.65 x 36pt logo, floating (`wp:anchor`, wrapSquare,
@@ -41,7 +44,7 @@ picture after (page 2's content stream: 17 border fills, then the image).  Geome
   | bottom | 54.5 | 54.50 to 54.98 | 54.52 to 55.00 |
 
 - **FOP centres a collapsed border on its grid line** (XSL 1.1's model).  docx4j already moves a table down by half
-  its outer border (`WordLayoutFixups.outerBorderStack`, 17.1.x: the top and bottom borders are Word's) and gives
+  its outer border (`WordLayoutFixups.outerBordersOutsideTables`, 17.1.x: the top and bottom borders are Word's) and gives
   the half-borders' charge back to the cell's text measure (`cellLineWidth`, the end padding 4.93pt for Word's
   5.4pt; `clipExactRows` likewise), so the text is where Word's is; nothing moves the *vertical* borders, which are
   painted half their width left of Word's.  The logo ends at the table's last grid line, 590.4pt, in Word and in
@@ -108,32 +111,49 @@ Top-and-bottom puts the paragraph below the object (docx4j already did).  In mod
    shows; at 144 dpi it is still faint (a 242 grey for Word's 59), since FOP's border starts at the picture's edge
    pixel.
 
-### 3.2 2.11-docx4j.8 (phases 2 to 4)
+### 3.2 Borders where Word paints them (phases 3 and 4)
 
-Borders painted where Word paints them, decided by phase 2's probe.  Two routes:
+Proposed before phase 2's probe, which settled it (§7.1): Word's model is FOP's - every vertical border centred on a
+grid line - with the grid moved, so route (b) is exact, needs no renderer change and is not tied to .8; and it
+also puts the cell text where Word's is in the two cases docx4j has it wrong today.  The two routes as proposed:
 
 - **(a) The renderer** paints a collapsed border on Word's side of its grid line, opted into by a property docx4j
   writes (a `fox:` extension on `fo:table`, so the renderer's XSL behaviour is unchanged for anyone else), with the
   cells' content left where it is: docx4j's compensations (§1.2) already put the text where Word's is, so if the
   probe shows Word's difference is in painting only, only painting changes.
 - **(b) docx4j alone**: move each table right by half its start border and take that from the cells' start padding
-  (giving it to the end padding), as `outerBorderStack` does vertically.  No renderer change, but per cell and
+  (giving it to the end padding), as `outerBordersOutsideTables` does vertically.  No renderer change, but per cell and
   inexact where border widths differ along a column or cells span.
 
-Recommended: (a), if the probe confirms painting only.  Either way `clearOfCellEnd` goes.
+Recommended before the probe: (a).  **Recommended after it: (b)**, which the probe shows is exact (§7.1):
+
+- mode 15: move the table right by half its left outer border (the grid's lines then lie where Word centres its
+  borders), as `outerBordersOutsideTables` moves it down by half its top one;
+- mode 14: outdent the table by the larger of the first cell's start margin and half the left border (today: the
+  margin), so its text stays at the margin + `w:tblInd`;
+- each cell's start padding the larger of its cell margin and half its start border, less half that border (FOP
+  adds the half back); the end padding likewise (`cellLineWidth` already does the end);
+- an object aligned to its cell's edge (`placeInCell`'s "edge:") measured from the borders' inner edges;
+- `clearOfCellEnd` removed: the right border is then Word's, clear of a picture ending at the grid line.
+
+(a) would move the painted borders only, leaving the text errors of §7.1.  Either way `clearOfCellEnd` goes.
 
 ## 4. Phases
 
 - **Phase 0 - measure.**  DONE 2026-10-16 (§2).
-- **Phase 1 - 17.3.3 on .7.**  DONE 2026-10-16 (§3.1, §8).
-- **Phase 2 - the border probe** (Word, for .8; STARTED 2026-10-16, D3): `table-border-geometry`, modes 15 and 14 - single borders 0.5, 1.5,
+- **Phase 1 - 17.3.3 on .7.**  DONE 2026-10-16 (§3.1, §8): docx4j 0614d1133, the probes 92e4ce623.
+- **Phase 2 - the border probe** (Word; D3; DONE 2026-10-16, §7.1 - `table-border-geometry` and `-compat14`, 12
+  cases each): `table-border-geometry`, modes 15 and 14 - single borders 0.5, 1.5,
   3 and 6pt; double; a cell's border wider than its neighbour's (the collapsed winner on each side); nil borders;
   outer and inside; a table with `w:tblInd` and with `w:jc` right; a picture flush with each cell edge.  Read each
   border's painted extent against its grid line, and the text against the grid.
-- **Phase 3 - the renderer** (route (a)), 2.11-docx4j.8 only: a fop CR the fork session opens from phase 2's rule.
-- **Phase 4 - docx4j on .8**: write the property where the renderer has the capability; remove `clearOfCellEnd`;
-  revisit `outerBorderStack`, `cellLineWidth` and `clipExactRows`' allowances only if the rule moves content; the
-  export-fo bump to .8; gate against a .8 control.
+- **Phase 3 - the borders and the cell text** (D4, D5): route (b), recommended - docx4j alone (§3.2): a census of
+  the corpora's bordered tables (mode 14; mode 15 with a column's start border unlike the table's left one; no cell
+  margins), then the table's shift or outdent, the cells' start and end padding, `placeInCell`'s edges, and a gate
+  read by border rectangles as well as text.  Or route (a): the renderer, 2.11-docx4j.8 only, a fop CR the fork
+  session opens.
+- **Phase 4 - tidy**: remove `clearOfCellEnd`; under route (a) also the property, the export-fo bump to .8 and a gate
+  against a .8 control.
 
 ## 5. Population and risk
 
@@ -142,7 +162,26 @@ Recommended: (a), if the probe confirms painting only.  Either way `clearOfCellE
   holder (§3.1 item 2) moves every positioned picture down 0.045pt.
 - Phases 3 and 4: every bordered table's painted borders move by up to half a border width.  The fidelity score
   compares text only, so a gate will not see them: reading them needs the border rectangles (mutool's trace) or a
-  raster comparison - a harness check to add with phase 2.
+  raster comparison - a harness check to add with phase 3.
+- **The census for phase 3** (2026-10-16, from docx4j's own FO of the b276 gate - the cells' borders and padding as
+  resolved, styles and conditional formats included; real, real2 and real3, 449 documents, 391 with tables; a
+  table's own rows only; 30 separate-border tables left out).  "Text off" is the cell text's distance from Word's
+  under §7.1's rule:
+
+  | mode | documents with tables / bordered | tables / with vertical borders | cells | text off <0.3pt | 0.3 to 0.8 | >=0.8 | padding under half the border |
+  |---|---|---|---|---|---|---|---|
+  | 15 | 144 / 120 | 2443 / 1593 | 43090 | 1858 | 4519 | 138 | 672 (19 documents) |
+  | 14 | 112 / 86 | 2161 / 1710 | 57074 | 45761 | 2916 | 39 | 652 (19) |
+  | 12 | 114 / 92 | 1051 / 818 | 25121 | 13917 | 7059 | 235 | 2853 (23) |
+  | 11 | 21 / 18 | 391 / 353 | 11637 | 2446 | 170 | 6649 | 6802 (5) |
+
+  In mode 15 the text is off only beside a start border unlike the table's left one (in 55 documents at most), but
+  the painted vertical borders of 1568 tables move (1427 by under 0.3pt, the 0.5pt borders; 135 by 0.3 to 0.8; 6
+  more).  Below mode 15 nearly every bordered cell's text is off by half its start border - 0.24pt for the usual
+  0.5pt.  **Modes 12 and 11 are counted under mode 14's rule, which the probe did not measure for them** (39% of the
+  documents with tables): phase 3 needs a `table-border-geometry-compat12` (and 11) reading before it applies the
+  rule there.  The cell measure is unchanged (`cellLineWidth`), so the text moves sideways without rewrapping: the
+  line scores should barely move, which is why the gate must read x as well.
 
 ## 6. Decisions for Jason
 
@@ -150,18 +189,71 @@ Recommended: (a), if the probe confirms painting only.  Either way `clearOfCellE
 - **D2** Ship item 3 (`clearOfCellEnd`) in 17.3.3, though phase 4 removes it.  Recommended: yes - it is what keeps
   a logo flush with its cell's edge off the border on .7.  DECIDED yes (Jason, 2026-10-16).
 - **D3** Phase 2's probe now: it is the input to the fork's .8 design.  DECIDED: now (Jason, 2026-10-16).
-- **D4** For .8: route (a), an opt-in renderer property, or (b), docx4j alone.  Recommended (a), settled after phase 2.
+- **D4** Route (a), an opt-in renderer property for .8, or (b), docx4j alone.  Recommended after phase 2: (b) (§3.2,
+  §7.1).  DECIDED (b) (Jason, 2026-10-16), the census first.
+- **D5** If (b): when.  It needs no renderer, so it could go in 17.3.3 (on .7) or wait; it moves every bordered table's
+  painted vertical borders by up to half a border width and, in mode 14 and beside unequal borders, its cell text by
+  up to half one (1.5pt for a 3pt border).  A census of the corpora's bordered tables and a gate come first.
 
 ## 7. Readings
 
-- The letter, page 2 (Word's PDF on the share's `__tmp`, local): §1.  On phase 1 (gate-b276 jars, r46): the row 18.0
-  to 54.76 (stroke centres), the logo 18.52 to 54.52, "List of Acceptable Documents" 58.6 (Word 58.7); sampled at 144
-  and 211 dpi the top and bottom borders show in both; the right one at 211 dpi, faint at 144.
-- The probes: §2.
+### 7.1 Phase 2: where Word paints a table's borders (probes table-border-geometry and -compat14)
+
+Word's goldens 2026-10-16 07:07; A4, 1in margins (72pt), a table of three 100pt columns, so the grid's vertical
+lines are at 72, 172, 272, 372pt before any shift.  Extents in pt (Word's are fills; FOP's strokes, given as their
+painted extent); text x is the first glyph's origin (Word's carry about +0.13pt in mode 15, +0.02 in mode 14 of
+column jitter).  docx4j is HEAD with phase 1 on r46.
+
+Mode 15:
+
+| case | borders | left border: Word / docx4j | column 1-2 border: Word / docx4j | text c1, c2: Word / docx4j |
+|---|---|---|---|---|
+| 1 | 0.5pt | 72.02-72.50 / 71.76-72.24 | 172.15-172.63 / 171.76-172.24 | 77.78, 177.67 / 77.65, 177.65 |
+| 2 | 1.5pt | 72.02-73.46 / 71.28-72.72 | 172.15-173.59 / 171.28-172.72 | 78.26, 178.15 / 78.13, 178.13 |
+| 3 | 3pt | 72.02-74.90 / 70.56-73.44 | 172.15-175.03 / 170.56-173.44 | 78.98, 178.87 / 78.85, 178.85 |
+| 4 | 6pt | 72.02-78.02 / 69.00-75.00 | 171.91-177.91 / 169.00-175.00 | 80.42, 180.55 / 80.41, 180.41 |
+| 6 | 3pt outer, 0.5pt inside | 72.02-74.90 / 70.56-73.44 | 173.35-173.83 / 171.76-172.24 | 78.98, 178.87 / 78.85, **177.65** |
+| 7 | 1.5pt outer, inside nil | 72.02-73.46 / 71.28-72.72 | - | 78.26, 178.15 / 78.13, **177.41** |
+| 8 | 0.5pt, r1c1's right 3pt | 72.02-72.50 / 71.76-72.24 | 170.95-173.83 / 170.56-173.44 | 77.78, 177.67 / 77.65, **178.85** |
+| 11 | 3pt, no cell margins | 72.02-74.90 / 70.56-73.44 | 172.15-175.03 / 170.56-173.44 | **75.14** / **73.44** |
+
+Mode 14:
+
+| case | borders | left border: Word / docx4j | column 1-2 border: Word / docx4j | text c1, c2: Word / docx4j |
+|---|---|---|---|---|
+| 1 | 0.5pt | 66.26-66.74 / 66.36-66.84 | 166.39-166.87 / 166.36-166.84 | 72.02, 172.15 / **72.25**, 172.25 |
+| 3 | 3pt | 65.06-67.94 / 65.16-68.04 | 165.19-168.07 / 165.16-168.04 | 72.02, 172.15 / **73.45**, **173.45** |
+| 4 | 6pt | 63.38-69.38 / 63.60-69.60 | 163.51-169.51 / 163.60-169.60 | 72.02, 172.15 / **75.01**, **175.01** |
+| 8 | 0.5pt, r1c1's right 3pt | 66.26-66.74 / 66.36-66.84 | 165.19-168.07 / 165.16-168.04 | 72.02, 172.15 / 72.25, **173.45** |
+| 11 | 3pt, no cell margins | **69.14-72.02** / 70.56-73.44 | - | 72.02 / **73.44** |
+
+**Word's rule**, both modes: every vertical border is centred on a grid line (two widths meeting at one edge, case
+8, are both centred on it; a double border is its three widths, case 5), and a cell's text is at its grid line plus
+the larger of the cell margin and half the cell's start border (case 11), whatever the other borders are.  What
+differs is where the grid lies: **in mode 15 the table's left border starts at the margin + `w:tblInd`**, so every
+grid line is half the left border to the right of where docx4j has it; **in mode 14 the first column's text is at
+the margin + `w:tblInd`**, so the grid lies the larger of the cell margin and half the left border to its left.
+Horizontal borders match docx4j's within 0.2pt (`outerBordersOutsideTables`); so do `w:tblInd` (case 9) and `w:jc` right
+(case 10) apart from the same shift.
+
+So docx4j today: in mode 15 paints every vertical border half the left border's width left of Word's (the letter's
+right border, §1.2), and puts the text of a column whose start border is wider or narrower than the table's left
+border off Word's by half the difference (cases 6 to 8: up to 1.2pt); in mode 14 puts every cell's text half its
+start border right of Word's (0.25pt at 0.5pt borders, 1.5pt at 3pt).  With no cell margins (case 11) both modes
+differ.  Pictures aligned to a cell's edge (case 12) sit inside Word's borders - the right-aligned one ends at the
+right border's inner edge (372.0, the border from 372.14), the left-aligned one starts at the left border's (73.5) -
+where docx4j's overlap its borders by up to 0.72pt.
+
+### 7.2 The letter
+
+The letter's page 2 (Word's PDF on the share's `__tmp`, local): §1.  On phase 1 (gate-b276 jars, r46): the row 18.0
+to 54.76 (stroke centres), the logo 18.52 to 54.52, "List of Acceptable Documents" 58.6 (Word 58.7); sampled at 144
+and 211 dpi the top and bottom borders show in both, the right one at 211 dpi, faint at 144.  The row-height probes:
+§2.
 
 ## 8. Implementation record
 
-### Phase 1 (2026-10-16)
+### Phase 1 (2026-10-16; docx4j 0614d1133, harness 92e4ce623, register Enterprise 0d983e8, registry portfolio e98e06e)
 
 - docx4j-core `WordXmlPictureE20` (`HINT_ANCHOR_CELL_FOOT`); docx4j-export-fo `WordLayoutFixups` (`growRowToContain`,
   `paragraphTopInCell`, `clearOfCellEnd`, the positioned holder's 0pt font; the hint in `ANCHOR_HINTS`).

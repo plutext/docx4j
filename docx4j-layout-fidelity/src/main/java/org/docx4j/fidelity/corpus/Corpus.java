@@ -1432,6 +1432,82 @@ public final class Corpus {
 			}));
 		}
 
+		/*
+		 * CR-044 phase 2: where Word paints a table's borders against its grid.  On a user's letter
+		 * Word drew each border beside its grid line - a vertical one to its right, a horizontal one
+		 * below it, so the table's right and bottom borders lie outside the grid - where FOP centres
+		 * a collapsed border on the line.  Widths, a double border, outer against inside, a nil
+		 * inside, two widths meeting at one edge, an indented and a right-aligned table, no cell
+		 * margins, and pictures flush with a cell's edges; in mode 15 and mode 14.
+		 */
+		for (int mode : new int[] { 15, 14 }) {
+			PROBES.add(new Probe(mode == 15 ? "table-border-geometry" : "table-border-geometry-compat14",
+					"where Word paints a table's borders against its grid; mode " + mode + ", A4, 1in margins, "
+					+ "every line exact 14pt, one case a page: a title line, then a three-column, two-row table of "
+					+ "100pt columns whose cells hold one line each (case, row, column).  1 single 0.5pt (sz 4) all "
+					+ "round and inside; 2 1.5pt; 3 3pt; 4 6pt; 5 double sz 4; 6 outer 3pt, inside 0.5pt; 7 outer "
+					+ "1.5pt, inside nil; 8 0.5pt, with r1c1's right border and r2c2's left border 3pt (tcBorders); "
+					+ "9 1.5pt, w:tblInd 36pt; 10 1.5pt, w:jc right; 11 3pt, no cell margins; 12 1.5pt, a 40 x 20pt "
+					+ "floating picture (square, page-relative) flush with r1c3's top right and another with "
+					+ "r2c1's top left.  Read each border's painted extent against its grid line, the text against "
+					+ "the grid, the pictures against the borders", () -> {
+				Doc d = Doc.create(mode);
+				for (int c = 1; c <= 12; c++) {
+					Doc.Para title = d.para("case " + c + " title").line(280, STLineSpacingRule.EXACT);
+					if (c > 1) title.pageBreakBefore();
+					title.add();
+					int sz = c == 1 || c == 5 || c == 8 ? 4 : c == 2 || c == 7 || c == 9 || c == 10 || c == 12 ? 12
+							: c == 4 ? 48 : 24;
+					int insideSz = c == 6 ? 4 : c == 7 ? 0 : sz;
+					org.docx4j.wml.STBorder val = c == 5 ? org.docx4j.wml.STBorder.DOUBLE : org.docx4j.wml.STBorder.SINGLE;
+					Doc.Table t = new Doc.Table(2000, 2000, 2000).fixedLayout();
+					org.docx4j.wml.TblBorders tb = F.createTblBorders();
+					tb.setTop(tableBorder(val, sz));
+					tb.setLeft(tableBorder(val, sz));
+					tb.setBottom(tableBorder(val, sz));
+					tb.setRight(tableBorder(val, sz));
+					tb.setInsideH(tableBorder(val, insideSz));
+					tb.setInsideV(tableBorder(val, insideSz));
+					t.tblPr.setTblBorders(tb);
+					if (c == 9) t.indent(720);
+					if (c == 10) {
+						org.docx4j.wml.Jc jc = F.createJc();
+						jc.setVal(org.docx4j.wml.JcEnumeration.RIGHT);
+						t.tblPr.setJc(jc);
+					}
+					if (c == 11) t.cellMargins(0, 0);
+					for (int r = 1; r <= 2; r++) {
+						org.docx4j.wml.Tc[] cells = new org.docx4j.wml.Tc[3];
+						for (int k = 1; k <= 3; k++) {
+							Doc.Para p = d.para("c" + c + " r" + r + "c" + k).noLabel().line(280, STLineSpacingRule.EXACT);
+							if (c == 12 && ((r == 1 && k == 3) || (r == 2 && k == 1))) {
+								long emu = 12700;
+								p.run(d.positionedImage(80, 40, 40 * emu, 20 * emu, "square", "bothSides", false, true,
+										0, 0, 0, 0, "page", k == 3 ? "right" : "left", 0, "page", null, 0, r));
+							}
+							cells[k - 1] = t.cellOf(2000, null, p.build());
+						}
+						if (c == 8 && r == 1) {
+							org.docx4j.wml.TcPrInner.TcBorders b = F.createTcPrInnerTcBorders();
+							b.setRight(tableBorder(val, 24));
+							cells[0].getTcPr().setTcBorders(b);
+						}
+						if (c == 8 && r == 2) {
+							org.docx4j.wml.TcPrInner.TcBorders b = F.createTcPrInnerTcBorders();
+							b.setLeft(tableBorder(val, 24));
+							cells[1].getTcPr().setTcBorders(b);
+						}
+						t.rowOf(null, null, cells);
+					}
+					d.add(t.build());
+					for (int i = 1; i <= 2; i++) {
+						d.para("a" + i + " after the table of case " + c).line(280, STLineSpacingRule.EXACT).add();
+					}
+				}
+				return d.pkg();
+			}));
+		}
+
 		// A negative offset: mid-page over the paragraph before, and on the first paragraph
 		// of a page (into the top margin, or the previous page's space?).
 		PROBES.add(new Probe("table-floating-negative",
@@ -9354,6 +9430,13 @@ public final class Corpus {
 			d.para("after. " + prose(1)).before(240).add();
 			return d.pkg();
 		});
+	}
+
+	/** A table or cell border of the given style, eighthsOfPoint wide, or w:val="nil" where 0.  @since 17.3.3 */
+	private static org.docx4j.wml.CTBorder tableBorder(org.docx4j.wml.STBorder val, int eighthsOfPoint) {
+		org.docx4j.wml.CTBorder b = cellBorder(eighthsOfPoint);
+		if (eighthsOfPoint > 0) b.setVal(val);
+		return b;
 	}
 
 	/** A border for a w:tcBorders side: single, eighthsOfPoint wide, or w:val="nil" where 0. */
