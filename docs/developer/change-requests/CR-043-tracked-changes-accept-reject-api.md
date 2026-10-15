@@ -87,7 +87,16 @@ A new package, `org.docx4j.model.revisions` (name to settle, D1):
   in it out as a change of its own and resolving a broken move leaves plain `w:ins`/`w:del`; then
   **sweep** what is never listed (a `w:cellMerge`, a `w:numberingChange`, records that change
   nothing).
-- `TrackedChanges.report(pkg)`: counts by kind, author and part, with a JSON form for docx4j-mcp.
+- **Text boxes are listed once**: Word writes a text box's revisions in both `mc:AlternateContent` branches with
+  different ids (C22: 50 and 51 in `mc:Choice`, 52 and 53 in `mc:Fallback`). `in()` lists the Choice branch's; a
+  per-change accept or reject also resolves the Fallback's twin, paired by position in the twin `w:txbxContent` (the
+  n-th revision of its kind), never by id; `acceptAll`/`rejectAll` walk both branches (§10 item 2).
+- **A `TrackedChange` view is valid until the next accept or reject on its package** (a join removes a paragraph;
+  Office JS throws on a stale one); `acceptAll` relists as it goes.
+- `TrackedChanges.report(pkg)`: counts by kind, author and part, with a JSON form for docx4j-mcp. Until phase 2 lands,
+  phase 1's `acceptAll` leaves table, grid, row, cell and section records in the file (Word still shows them as
+  tracked): `report` counts them under kinds of their own (`TABLE_PROPERTIES`, `SECTION_PROPERTIES`) marked
+  unresolved, so the ports' agreement run is not misread (§10 item 5).
 
 The vocabulary is Office JS's, as python's and core-ts's are, so that the ports agree and
 docx4j-mcp's tool can present one model. Where Office JS and Word's Review tab differ (core-ts
@@ -98,7 +107,8 @@ insertions while its formatting change is pending, omits another author's insert
 ### 3.2 What accepting and rejecting do
 
 Each row's source is the Word check that measured it (core-ts `test/README.md` checks N; ED-005's
-section; this CR's own probe, cases CNN, §4.4) or "unmeasured", in which case the rule is core-ts's choice (D5).
+section; this CR's own probe, cases CNN, §4.4) or "unmeasured", in which case the rule is core-ts's choice or
+docx4j's reading (D5), and the row is on §11's running list.
 
 | Markup | Accept | Reject | Source |
 |---|---|---|---|
@@ -107,6 +117,7 @@ section; this CR's own probe, cases CNN, §4.4) or "unmeasured", in which case t
 | `w:del` nested in another author's `w:ins` | accepting the deletion removes the text for real | rejecting the deletion leaves the text, still inserted | 22 |
 | a **field** whose begin and end both lie in insertions (Word writes `w:ins` around begin + instruction and around end; separate and result plain) | keep it whole | **remove the whole field**, separate and result included | 30; C01 (PAGE), C16 (a hyperlink, which the object model inserts as a HYPERLINK field) (core-ts resolves it in halves and leaves a broken field: a defect it found) |
 | a deleted field (`w:del` around the whole field, `w:delInstrText`) | remove it whole | restore it, `w:delInstrText` to `w:instrText` | C02 |
+| a field straddling a revision's edge (begin or end alone in a revision) | the halves resolve as runs | the same | unmeasured (D5; not made in phase 0) |
 | **moves**: `w:moveFrom`/`w:moveTo`, the four range markers, the moved marks | either half accepts the whole move: the destination unwrapped, the source removed, content and mark; all four markers go | either half rejects the whole move, mirrored | 16-18 |
 | move pairing | by `w:name` on the two range starts; each start pairs with its end by id; a half belongs to the move whose start of its side is open where it stands | | 18 |
 | edited move | accept leaves text typed inside it (`w:ins`) and deletions nested in it pending | removes everything in the destination's range, typed text and nested deletions too, and restores the source plain (the Conflict dialog's default, "Keep original location text") | 20 |
@@ -115,6 +126,7 @@ section; this CR's own probe, cases CNN, §4.4) or "unmeasured", in which case t
 | deleted mark of a paragraph that is not a cell's last | join within the cell | drop the marker | C09 |
 | a whole paragraph deleted (text and mark) | the paragraph goes; nothing carries to the next | drop the markers | 33 |
 | deleted mark before a table, or at a cell's end | drop the marker; the paragraph stays | drop the marker | **Word refuses both edits** (C08 recorded nothing; C09's cell end: "Cannot edit Range"), so no Word file has them; the rule is core-ts's for other producers' markup |
+| a deleted or inserted mark with **no following `w:p` in the same content list** (a story's end: the body's last paragraph before `w:sectPr`, a cell's, a note's, a text box's, a block `w:sdtContent`'s last; or a next sibling that is a table or a block control) | drop the marker, no join; **a join never crosses a container boundary** | drop the marker | unmeasured (D5; §10 item 4) |
 | inserted paragraph mark | drop the marker | join with the next paragraph; **the result keeps the next paragraph's properties** (core-ts's and the editor's code alike: `removeParagraphMark` in the editor's `review.mts`) | C10 |
 | `w:rPrChange` on a run | drop | replace the run's `w:rPr` with the recorded one, wholesale | 24, 28 |
 | `w:rPrChange` on a mark (`w:pPr/w:rPr`) | drop | replace the mark's run properties, keeping its `w:ins`/`w:del`/`w:moveFrom`/`w:moveTo` | 27 |
@@ -130,14 +142,15 @@ section; this CR's own probe, cases CNN, §4.4) or "unmeasured", in which case t
 | `w:numberingChange` (`w:numPr`, `w:fldChar`) | drop | drop (it records the old number's text, not its definition) | Word writes `w:pPrChange` for a list change (18, 25) |
 | `w:numPr/w:ins` | drop the marker | remove the `w:numPr` | unmeasured: docx4j's reading |
 | `w:customXmlInsRangeStart`/`End` (Word's form around an inserted content control: a pair at the control's start and one at its end, its text in `w:ins`) | a piece of the insertion: the markers go, the control stays | **the whole control goes** | 30, 34; C16b |
-| `w:ins`/`w:del` in math (around `m:r`) | as runs | as runs | `tracked-changes-equations.docx` (CR-010), Word's accept and reject 2026-10-16 |
-| an inserted math structure (a `w:ins` in its `m:ctrlPr`, `EG_RPrMath`: `m:sSup` in that file) | the `w:ins` goes, its `w:rPr` kept | **the structure goes whole**, as a paragraph goes with its inserted mark | the same; a deleted structure by symmetry (unmeasured) |
-| **comments** | a comment whose range start lies inside removed content goes: markers, reference run and entry | the same | 32 (a comment's own text: Word does not track edits to it, C18) |
+| `w:ins`/`w:del` in math: Word writes them **inside** `m:r` (`m:r` > `w:ins` > `m:rPr`, `w:rPr`, `m:t`; `JAXBElement<CTMathRunTrackChange>` in `CTR.getContent()`) | `w:ins`: unwrap its content into the `m:r`; `w:del`: remove it (an `m:r` left empty goes) | mirrored | `tracked-changes-equations.docx` (CR-010), Word's accept and reject 2026-10-16 (§10 item 1) |
+| an inserted math structure (a `w:ins` in its `m:ctrlPr`, `EG_RPrMath`: `CTCtrlPr.getIns()`, a `CTRPrChange`; `m:sSup` in that file) | the `w:ins` goes, its `w:rPr` kept (copied from the `CTRPrChange.RPr` list form into a live `RPr`, `CTCtrlPr.setRPr`) | **the structure goes whole** - the `m:ctrlPr`'s grandparent (`m:sSup`, `m:d`, `m:acc`, ...) removed from the list that holds it - as a paragraph goes with its inserted mark | the same; a deleted structure by symmetry (unmeasured) |
+| `w:ins`/`w:del` holding `m:r` or `m:oMath` (`m:EG_OMathMathElements` in `CT_RunTrackChange`) | as runs | as runs | schema-legal, in no fixture (§10 item 1) |
+| **comments** | a comment whose range start lies inside removed content goes: markers, reference run and entry; with it its entries in `commentsExtended`, `commentsIds` and `commentsExtensible`, and its replies (`w15:paraIdParent`) | the same | 32 (a comment's own text: Word does not track edits to it, C18); the extended parts and replies unmeasured (§10 item 4) |
 | | a comment whose markers lie outside: the range markers inside removed content go, the reference run and entry stay | | the editor, Word 2010 and 15 |
 | **footnotes and endnotes** | a note whose reference run goes is **removed from its part** (Word also marks the note's own content deleted or inserted with its reference) | the same | the editor's `review/` saves (footnotes, Word 2010 and 15); endnotes C12, C12b |
 | a **bookmark** with its start or its end inside removed content | **removed whole** (C11: start before a deletion, end inside it, accepted) | the same (C11b: a bookmark around an insertion, rejected) | C11, C11b (core-ts drops only the markers inside, which leaves half a bookmark) |
-| a drawing inside removed content | the run goes; **its relationship and part go** when nothing else references them (Word's saves keep no unreferenced image, C04, C05) | | C04, C05 |
-| a deleted **section break** (a deleted mark whose `w:pPr` carries `w:sectPr`) | the join takes the next paragraph's `w:pPr`, so the two sections merge: **the merged section has the following section's properties, header and footer references included**; the first section's headers are dropped | drop the marker | C06 |
+| a drawing (or any related part) inside removed content | the run goes; **its relationship and part go** when nothing else references them - counting every part's relationships, not the story's alone, and every relationship the removed subtree references: `a:blip` `r:embed`/`r:link`, `v:imagedata` `r:id`, chart parts, `w:object`'s OLE part and preview (Word's saves keep no unreferenced image, C04, C05) | | C04, C05; the wider scope unmeasured (D7, §10 item 4) |
+| a deleted **section break** (a deleted mark whose `w:pPr` carries `w:sectPr`) | the join takes the next paragraph's `w:pPr`, so the two sections merge: **the merged section has the following section's properties, header and footer references included**; the first section's headers are dropped, and their parts with them (D7: the tracked file's six header and six footer parts are three and three in Word's accepted save) | drop the marker | C06 |
 
 Everything above applies in every story: the main document, headers, footers, footnotes,
 endnotes, comments, and inside content controls, text boxes (DrawingML and VML), and **both**
@@ -178,8 +191,16 @@ ids are renumbered; every section is written with explicit header and footer ref
   paragraph, at block level (`Body`, `Tc`, `CTSdtContentBlock`: `EG_BlockLevelElts` admits
   `EG_RunLevelElements`) and inside run holders. Remove from the live list that holds the element
   now (core-ts's `currentOwner`), and fix up the `Child` parents after splicing.
-- **Math**: `org.docx4j.math.CTR.getContent()` holds the math run's `w:rPr` with its `w:ins`/`w:del`
-  (`EG_RPrMath`), and `CTMathRunTrackChange` the run-level kind.
+- **Math**: three forms (§3.2): `w:ins`/`w:del` inside `m:r` as `JAXBElement<CTMathRunTrackChange>` in
+  `CTR.getContent()`; in a structure's `m:ctrlPr` as `CTCtrlPr.getIns()`/`getDel()` (`CTRPrChange`, its `getRPr()`
+  the list form); and `RunIns`/`RunDel` holding math elements. `AcceptTrackedChanges` handles none of them today, so
+  phase 3 also fixes PDF output of tracked equations.
+- **Also** (§10 item 6): export `org.docx4j.model.revisions` in docx4j-core's `module-info.java`; a structural
+  comparator in docx4j-core-tests for §3.5 (none exists), merging adjacent runs of equal `w:rPr` (Word resplits runs on
+  save) and allowing §3.2's normalisations; `getDate()` tolerates a null date (diffx writes `w:date=""`);
+  `w:customXmlInsRangeStart` is a `JAXBElement<CTTrackChange>` declared per scope (`P`, `Tr`, ...); `ParaRPr` carries
+  `moveFrom`/`moveTo` as `CTTrackChange`; handle nesting generically (no fixture has a mark with both `w:ins` and
+  `w:del`).
 - **Walking**: one resolver over every story part (main, headers, footers, footnotes, endnotes,
   comments), descending `w:txbxContent`, both `mc:AlternateContent` branches, `w:sdtContent` and
   `m:oMath` - what core-ts would do if starting again, its own words.
@@ -328,7 +349,8 @@ and its code is the model; the critical path to 17.3.3 is phase 0's Word run.
 
 ## 7. Decisions for Jason
 
-1. **D1**: the package and names (`org.docx4j.model.revisions`, `TrackedChanges`).
+1. **D1**: the package and names (`org.docx4j.model.revisions`, `TrackedChanges`). DECIDED: as proposed (Jason,
+   2026-10-16: "D1: ok").
 2. **D2**: whether a conversion with `PP_COMMON_ACCEPT_TRACKED_CHANGES` also accepts in headers,
    footers and notes once the code can, which would change PDF and HTML output for documents
    tracked there.
@@ -337,13 +359,15 @@ and its code is the model; the critical path to 17.3.3 is phase 0's Word run.
    `w:numberingChange`, `w:numPr/w:ins`): resolve them by check 27's rules and docx4j's reading,
    with handwritten tests. Recommended: yes (a few hours; Word still reads them; core-ts does).
 5. **D5**: where Word is unmeasured and phase 0 does not reach, follow core-ts's choice so the
-   ports agree. Recommended: yes, except where Word's files say otherwise (notes, fields).
+   ports agree. Recommended: yes, except where Word's files say otherwise (notes, fields). DECIDED: yes, with a
+   running list of what is unmeasured kept (Jason, 2026-10-16: "D5: ok, but keep a running list of things which are
+   unmeasured"): §11.
 6. **D6**: 17.3.3's scope: the whole CR, or phases 0, 1 and 3 with phase 2 (table, section and cell
    records, filters) after. Recommended: the whole CR if phase 0's Word run comes early; phase 2 is
    the smaller.
 7. **D7**: a drawing removed with its run: remove its relationship and image part when nothing
    else references them, or leave them. Word's saves keep no unreferenced image (C04, C05).
-   Recommended: remove.
+   Recommended: remove. DECIDED: remove (Jason, 2026-10-16: "D7: yes"), in the wider scope of §3.2's row.
 
 ## 8. Hand-offs
 
@@ -372,3 +396,82 @@ and its code is the model; the critical path to 17.3.3 is phase 0's Word run.
   `docs/word-divergences.md`; its session's answers of 2026-10-16.
 - docx4j: `xsd/wml/wml.xsd` (the revision types and their containers), the generated
   `org.docx4j.wml` and `org.docx4j.math` classes; CR-010, CR-012, CR-021, CR-023.
+
+## 10. Review before phase 1 (2026-10-16, a second session, Fable 5.1)
+
+Read against the generated sources, the fixtures and the probe's files. Phase 0 is as described; every type claim in
+§3.4 holds; the id-space claim holds (the Word 15 fixture numbers revisions 0 to 45, then the bookmark 48 and the
+comments from 49). The corrections and the rules still unstated, for the implementer:
+
+1. **Math: §3.2's rows and §3.4's bullet describe the wrong structure.** Word writes `w:ins`/`w:del` *inside*
+   `m:r`, not around it: `tracked-changes-equations.docx` has `m:r` > `w:ins` > (`m:rPr`, `w:rPr`, `m:t`), bound
+   as `JAXBElement<org.docx4j.wml.CTMathRunTrackChange>` in `org.docx4j.math.CTR.getContent()` (CR-010's
+   `CT_MathRunTrackChange`, `EG_MathRunTrackChanges`). Three forms, all to handle:
+   - inside `m:r`: that wrapper. Accept `w:ins` = unwrap its content into the `m:r`; accept `w:del` = remove it
+     (an `m:r` left empty goes); reject mirrored.
+   - in `m:ctrlPr` (`EG_RPrMath`): `CTCtrlPr.getIns()`/`getDel()`, typed `CTRPrChange`, whose `getRPr()` is the
+     `CTRPrChange.RPr` list form - so "its `w:rPr` kept" on accept is the list-to-live-`RPr` copy of §3.4's first
+     bullet (`CTCtrlPr.setRPr` takes `RPr`). Rejecting an inserted structure removes the ctrlPr's grandparent
+     (`m:sSup`, `m:d`, `m:acc`, ...) from the list that holds it (`m:oMath`'s content or an enclosing `m:e`).
+   - `RunIns`/`RunDel` holding `m:r` or `m:oMath` elements (`m:EG_OMathMathElements` in `CT_RunTrackChange`,
+     `JAXBElement`s in `getCustomXmlOrSmartTagOrSdt()`): schema-legal, in no fixture; as runs.
+   The existing `AcceptTrackedChanges` handles none of these (it knows `RunIns`/`RunDel`/`Tr` only), so phase 3
+   also fixes PDF output of tracked equations.
+2. **Text boxes list twice unless paired.** In C22 the `mc:Choice` branch's revisions have ids 50 and 51 and the
+   `mc:Fallback`'s twins 52 and 53: different ids. Rule: `TrackedChanges.in()` lists the Choice branch's only; a
+   per-change accept or reject also resolves the Fallback twin, paired by position in the twin `w:txbxContent`
+   (the n-th revision of that kind), never by id; counts are per listed change; `acceptAll`/`rejectAll` walk both
+   branches (`McMode.ALL`) as §3.2 says.
+3. **§7 records recommendations, not decisions.** Phase 1 needs D1, D5 and D7 answered (or "take the
+   recommendations" from Jason) before code; D2 and D3 by phase 3; D4 and D6 by phase 2.
+4. **Rules the table leaves unstated** (state them in §3.2 as unmeasured, D5):
+   - a deleted or inserted mark with no following `w:p` in the same content list - a story's end (the body's last
+     paragraph before `w:sectPr`, a cell's, a note's, a text box's, a block `w:sdtContent`'s last), or a next sibling
+     that is a table or a block control: drop the marker, no join. A join never crosses a container boundary
+     (§4.2's "at a story's end" is closed by nothing: C08 and C09 are the table and the cell).
+   - a field straddling a revision's edge (not made, §4.2): the halves resolve as runs.
+   - D7's "nothing else references them": count every part's relationships, not the story's alone, and cover every
+     relationship referenced from the removed subtree - `a:blip` `r:embed`/`r:link`, `v:imagedata` `r:id`, chart
+     parts, `w:object`'s OLE part and its preview - not only pictures.
+   - a removed comment's entries in commentsExtended, commentsIds and commentsExtensible go with it; its replies
+     (commentsExtended `w15:paraIdParent`) go with the parent. Unmeasured (C18 did not reach it).
+   - a dropped section's header and footer parts (C06) are left unreferenced: they follow D7.
+5. **API contract.** A `TrackedChange` view is valid until the next accept or reject on the package (a join removes
+   a paragraph; Office JS throws on a stale one); `acceptAll` relists. Phase 1's `acceptAll` leaves table, grid, row,
+   cell and section records in the file, so Word still shows the document as tracked until phase 2 lands: `report`
+   counts them under a kind of their own (`TABLE_PROPERTIES`, `SECTION_PROPERTIES`) marked unresolved, so the ports'
+   agreement run is not misread.
+6. **Implementer's checklist.** Export `org.docx4j.model.revisions` in docx4j-core's `module-info.java`
+   (docx4j-core-tests has no module-info). No structural comparator exists in docx4j-core-tests: write one for §3.5,
+   merging adjacent runs of equal `w:rPr` (Word resplits runs on save) and allowing §3.2's normalisations. The diffx
+   oracle meets diffx's known `w:date=""` output, so `getDate()` must tolerate a null date. `w:customXmlInsRangeStart`
+   is a `JAXBElement<CTTrackChange>` declared per scope (`P`, `Tr`, ...); `ParaRPr` carries `moveFrom`/`moveTo` as
+   `CTTrackChange`. No fixture has a mark carrying both `w:ins` and `w:del`; handle nesting generically rather than
+   by case.
+
+Folded into §3.1, §3.2 and §3.4 the same day by the first session (items 1, 2, 4, 5, 6; the math structure was
+checked against `tracked-changes-equations.docx`: 28 revisions inside `m:r`, none around it). Item 3 - D1, D5 and D7
+before phase 1 - is Jason's.
+
+## 11. Unmeasured: the running list (D5)
+
+Where docx4j follows a rule Word has not been seen to apply, it is listed here (Jason, 2026-10-16, D5), with where
+the rule comes from and how it could be measured. Phases 1 to 3 add to it as they meet cases, and a probe that
+settles one moves it into §3.2 with its source. Kept current; dated where added after 2026-10-16.
+
+| # | Case | The rule docx4j follows | From | How to measure |
+|---|---|---|---|---|
+| U1 | a mark with no following `w:p` in its content list (a story's, cell's, note's, text box's or block control's last paragraph; a mark before a table or block control) | drop the marker, no join; never across a container boundary | core-ts; §10 | Word refuses the table and cell-end cases (C08, C09): only a story's or a block control's last paragraph is left to probe, by hand markup |
+| U2 | a field straddling a revision's edge | the halves resolve as runs | core-ts; §10 | a probe case deleting from text into a field's result |
+| U3 | a removed comment's `commentsExtended`/`commentsIds`/`commentsExtensible` entries and its replies | go with it | §10 | a probe case with a reply on a comment inside a deletion (Word 365, not the object model's C18 edit) |
+| U4 | D7's scope beyond images: `v:imagedata`, chart parts, `w:object`'s OLE part and preview, `r:link` | removed with the last reference | §10; Word's saves for images (C04, C05) | a probe case with a chart and an OLE object inside a deletion |
+| U5 | a dropped section's header and footer parts (C06) | removed when unreferenced (D7) | - | **settled 2026-10-16**: Word's accepted save keeps three of six header and three of six footer parts; in §3.2 |
+| U6 | a deleted math structure (`w:del` in its `m:ctrlPr`) | accept removes the structure whole | symmetry with the inserted one | a probe deleting a structure in an equation |
+| U7 | `w:ins`/`w:del` holding `m:r` or `m:oMath` | as runs | the schema; §10 | Word does not write it (checks so far): handwritten markup, Word's resolution |
+| U8 | `w:cellMerge` | accept drops it; reject restores `w:vMerge` from `w:vMergeOrig` | docx4j's reading (Office JS cannot list it) | handwritten markup through COM, Word's resolution |
+| U9 | `w:numberingChange`, `w:numPr/w:ins` | `w:numberingChange` dropped either way; `w:numPr/w:ins`: accept drops the marker, reject removes the `w:numPr` | core-ts; docx4j's reading | handwritten markup through COM |
+| U10 | `w:cellIns`/`w:cellDel` in a saved file | check 27's rules (Office JS, handwritten) | check 27 | handwritten markup through COM, Word's file-level resolution |
+| U11 | a mark carrying both `w:ins` and `w:del` (an inserted mark another author deleted) | resolved as nested revisions are (check 22's rule for runs) | §10; check 22 | a probe: Enter by one author, the mark deleted by another |
+| U12 | typing into a move's source, then accepting | the typed `w:ins` left pending, as for the destination (check 20) | core-ts leaves it alone | a probe after check 20's form |
+| U13 | `w:sectPrChange` rejected: what becomes of header and footer references | untouched (the record is `CT_SectPrBase`) | core-ts | a probe changing a section's headers with tracking on |
+| U14 | a run-level `w:fldSimple` inside a revision | as a run holder (check 30's listing) | check 30 (Office JS); core-ts | a probe case with a simple field inserted |
