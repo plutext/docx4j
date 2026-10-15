@@ -3683,7 +3683,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      */
     private int[] linesAcrossSoftReturns() {
         if (!WordLayoutCustomizer.widowsAcrossSoftReturns()) return null;
-        if (handlingFloat() || knuthParagraphs.size() < 2) return null;
+        if (relaxedForFloat() || knuthParagraphs.size() < 2) return null;
         if (fobj.getOrphans() <= 1 && fobj.getWidows() <= 1) return null;
         int n = knuthParagraphs.size();
         int[] before = new int[n + 1];
@@ -3693,7 +3693,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
             before[p + 1] = before[p];
             if (seq.isInlineSequence()) {
                 before[p + 1] += lineLayoutsList[p].getChosenLineCount();
-            } else if (isSoftReturn(seq)) {
+            } else if (isSoftReturn(seq, this)) {
                 softReturn = true;
             } else {
                 return null;
@@ -3710,18 +3710,25 @@ public class WordLineLayoutManager extends LineLayoutManager {
         return line >= fobj.getOrphans() && line <= total - fobj.getWidows();
     }
 
-    /** Whether this block-level Knuth sequence is a soft return's nested block.  @since 17.3.1 */
-    private static boolean isSoftReturn(KnuthSequence seq) {
+    /** Whether this block-level Knuth sequence is a soft return's nested block: the innermost
+     *  block on each element's position chain, the line manager's own position passed by.  Its
+     *  first reading wraps each element's position in one of its own (postProcessLineBreaks), so
+     *  on a second reading - the re-read after a band's edge (fork CR-024) - the chain began with
+     *  the paragraph's block and the soft return went uncounted (3955: a list item's body split
+     *  2+1 at it).  @since 17.3.1 */
+    private static boolean isSoftReturn(KnuthSequence seq, LayoutManager self) {
         boolean found = false;
         for (Object o : seq) {
             // the element reports the fo:inline the block is nested in; the block's own
             // manager is further down its position chain
             // (a TableContentPosition answers itself as its own sub-position, so the walk
             // stops where the chain does not advance)
+            // the innermost block on the chain: positions an outer manager wrapped round the
+            // element (the line manager's own, or its parents' on a re-read) come first
             org.apache.fop.fo.flow.Block b = null;
-            for (Position pos = ((ListElement) o).getPosition(); pos != null && b == null; ) {
+            for (Position pos = ((ListElement) o).getPosition(); pos != null; ) {
                 LayoutManager lm = pos.getLM();
-                if (lm != null && lm.getFObj() instanceof org.apache.fop.fo.flow.Block) {
+                if (lm != null && lm != self && lm.getFObj() instanceof org.apache.fop.fo.flow.Block) {
                     b = (org.apache.fop.fo.flow.Block) lm.getFObj();
                 }
                 Position sub = pos.getPosition();
@@ -3776,6 +3783,40 @@ public class WordLineLayoutManager extends LineLayoutManager {
      */
     private BreakElement edgeOnly(Position position, LayoutContext context) {
         return new BreakElement(position, KnuthElement.INFINITE, Constants.EN_LINE, context);
+    }
+
+    /**
+     * Whether the float the page breaker is handling is the band of an object the lines wrap
+     * round (fork CR-024: {@code PageSequenceLayoutManager.handlingObstacle()}, read
+     * reflectively; false on a renderer without it).  FOP sets widows and orphans to 1 while it
+     * handles a float, so that a float's edges can be found at any line; a band's edges are the
+     * edge-only elements' ({@link #edgeOnly}), so there the block's own widows and orphans stand,
+     * as on the first reading (the fork keeps them in its own line manager likewise).  Relaxed, a
+     * list item's three-line body on corpus 3955 was split 2+1 at the foot of a page with a
+     * page-anchored frame on it, where Word and the plain reading keep it whole; the counting
+     * across its soft return had to survive the re-read too ({@link #isSoftReturn}).
+     * @since 17.3.3
+     */
+    private boolean handlingObstacle() {
+        // not pageSequenceHasObstacles(), which a manager answers once, at its first reading:
+        // a band registered after that (its anchor later in the flow) is still one to keep
+        // the widows beside
+        if (!handlingFloat() || getPSLM() == null || !org.docx4j.convert.out.fo.FopCapabilities.has(
+                org.docx4j.convert.out.fo.FopCapabilities.Capability.OBSTACLES_IN_THE_LINE)) {
+            return false;
+        }
+        try {
+            Object r = getPSLM().getClass().getMethod("handlingObstacle").invoke(getPSLM());
+            return Boolean.TRUE.equals(r);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return false;
+        }
+    }
+
+    /** Whether widows and orphans are relaxed to 1 for a float FOP is handling: not for an
+     *  obstacle's band ({@link #handlingObstacle}).  @since 17.3.3 */
+    private boolean relaxedForFloat() {
+        return handlingFloat() && !handlingObstacle();
     }
 
     private List<ListElement> postProcessLineBreaks(int alignment, LayoutContext context) {
@@ -3849,7 +3890,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                         i++) {
                     int orphans = fobj.getOrphans();
                     int widows = fobj.getWidows();
-                    if (handlingFloat()) {
+                    if (relaxedForFloat()) {
                         orphans = 1;
                         widows = 1;
                     }
@@ -4130,7 +4171,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
             //log.debug("demerits of the chosen layout: " + llPoss.getChosenDemerits());
             int orphans = fobj.getOrphans();
             int widows = fobj.getWidows();
-            if (handlingFloat()) {
+            if (relaxedForFloat()) {
                 orphans = 1;
                 widows = 1;
             }
@@ -4139,6 +4180,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
                         && i <= llPoss.getChosenLineCount() - widows) {
                     // null penalty allowing a page break between lines
                     returnList.add(new KnuthPenalty(0, 0, false, new Position(this), false));
+                } else if (i > 0 && pageSequenceHasObstacles()) {
+                    // within the widows or orphans: no page break, but a band's edge, as on the
+                    // first reading ({@link #edgeOnly}; a penalty of the break element's class)
+                    returnList.add(new KnuthPenalty(0, KnuthElement.INFINITE, false, Constants.EN_LINE,
+                            new Position(this), false));
                 }
                 LineBreakPosition lbp = llPoss.getChosenPosition(i);
                 //log.debug("LLM.getChangedKnuthElements> lineWidth= "

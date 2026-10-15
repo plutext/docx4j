@@ -1,6 +1,6 @@
 # CR-032: floating tables laid out as Word lays them - the band at its offset, the wide table's band, the paragraphs behind it
 
-Status: IN PROGRESS - phase 4 DONE 2026-10-15 (openers in the flow, §4.4; probes read; gate b232: 1616 +19 lines, nothing else moved); phase 5's docx4j side DONE 2026-10-15 (page- and margin-anchored pictures, text boxes and tables wrapped on the fork's obstacles, §4.5; gated on the fork's r31 to r35, last pair b244/b245: 13 movers, no line lost; frames to follow on r36), active only on a renderer with the capability obstacles-in-the-line: fop/CR-024 phase A merged to 2.11-docx4j.7 on 2026-10-15 (f98834c2c), unreleased; phases 1 and 2 SHIPPED in docx4j 17.3.2 (Maven Central, 2026-10-09), on 2.11-docx4j.6 (the export-fo bump
+Status: IN PROGRESS - phase 4 DONE 2026-10-15 (openers in the flow, §4.4; probes read; gate b232: 1616 +19 lines, nothing else moved); phase 5's docx4j side DONE 2026-10-15 (page- and margin-anchored pictures, text boxes and tables wrapped on the fork's obstacles, §4.5; gated on the fork's r31 to r35, last pair b244/b245: 13 movers, no line lost; frames added the same day on Word's rule read from probe frame-page-bands, §4.5.2, gate b268 on r43: the probe +32 lines, nothing lost), active only on a renderer with the capability obstacles-in-the-line: fop/CR-024 phase A merged to 2.11-docx4j.7 on 2026-10-15 (f98834c2c), unreleased; phases 1 and 2 SHIPPED in docx4j 17.3.2 (Maven Central, 2026-10-09), on 2.11-docx4j.6 (the export-fo bump
 409392c9a); phase 2 DONE 2026-10-08 (docx4j side in three commits gated on the fork's float-offset:
 fox:float-offset on a floating table's float, each float of an anchor at its own offset, a text box's band,
 anchored-picture and framePr floats; fop/CR-023 merged to 2.11-docx4j.6 at 3339fc1cf, unreleased, so the
@@ -454,7 +454,7 @@ distB, distL, distR) on the fixed container of:
 or end, without which it began a line late where its top fell inside a paragraph's first line (the fork's r32
 finding). Its restart variant returns finished for a paragraph with no Knuth paragraphs.
 
-**Frames are left out for now**: their hidden band copy stays. On r33 and r34 a letterhead's seven top-and-bottom
+**Frames were left out at first** (they are in since §4.5.2): their hidden band copy stayed. On r33 and r34 a letterhead's seven top-and-bottom
 frames on one page were not all taken up (6603's body 86pt above Word's), the renderer's limit of one obstacle at
 a time; the fork's r36 lifts it and is the gate for when frames return. (3955's "frame wrapped round itself" on
 those gates was a reading artefact: the comparison paired Word's address with our footer, which repeats it.)
@@ -481,6 +481,9 @@ core-tests 1566/0.
 
 #### 4.5.1 Frames on r39/r40 (2026-10-15)
 
+(Superseded by §4.5.2: the probe showed Word's rule is plain top-and-bottom; "below" and its page-half cut
+were dropped, and the held changes went in with it.)
+
 - **Frames grouped as Word groups them** - COMMITTED (renderer-independent). Consecutive paragraphs with the same
   page- or margin-anchored `w:framePr` are one frame even where paragraph shading put a block round only some of
   them, and a `w:h` that `w:hRule` auto ignores does not split one (an omitted `w:hRule` beside a `w:h` counts as
@@ -506,6 +509,62 @@ core-tests 1566/0.
   it too); the fork's change set touches none of the managers docx4j copies. The fork offered to compare the item's
   element lists with the stock managers'. The candidate is kept as a patch (the session's
   `frames-r40-candidate.patch`); Jason, 2026-10-15: "Grouping now, rest held".
+
+#### 4.5.2 Frames as Word lays them: probe frame-page-bands (2026-10-15)
+
+Jason reopened frames as obstacles with a probe. **frame-page-bands** (docx4j-layout-fidelity `Corpus`; mode 15, A4,
+1in margins; one case a page, the frames' paragraphs straight after the page's title line; Word's golden 2026-10-15
+18:08) sets page-anchored frames (x 72pt, w 200pt, h 60pt exact, `notBeside` unless stated) against prose:
+1 y 200; 2 y 500; 3 y 110; 4 two, y 150 and y 260 (a 70pt gap); 5 two overlapping (y 150 x 72, y 190 x 300); 6
+`hRule` auto, three lines; 7 y 150 anchored after the sixth body paragraph; 8 y 600 after the third; 9 `around`; 10
+`none`; 11 `around` on the right (x 427 w 129 y 148, h 91 with no `hRule`, 3955's frame); 12 `vAnchor` margin.
+
+**Word's rule** (read against the body's lines, to 0.3pt):
+- `notBeside`: a plain **top-and-bottom** band of the frame's own height. The body runs above the frame, in a gap
+  between two frames (case 4: 193pt to 253pt), and below; overlapping frames are their union (case 5); an
+  auto-height frame bands its text (case 6); a frame above or below its anchor bands only itself (cases 7, 8).
+  The "below" of §4.5.1 (the band from the anchor) and its page-half cut were wrong: half matched 3 cases of
+  12, below 4. 6603's "body below the lowest frame" is the same rule: its gaps are less than a line (229.7pt
+  to 241.05pt is 11.35pt; the lines are 12pt), and its first empty paragraph (12.649pt) sits in the 14.2pt
+  gap above the first frames, which is why "below" set its heading a line low.
+- `around` (and auto, tight, through): text beside it (square), case 9.
+- `none`: **no band** - the frame lies over the text, which runs on under it (case 10). The hidden band copy on
+  the released renderer reserved one; it no longer does.
+- A `w:h` with no `w:hRule` is atLeast, as Word takes it: the band is at least that high
+  (case 11: the lines beside the frame narrowed down to 254pt). Written as
+  `block-progression-dimension.minimum`, which the fork's r42 honours on a positioned container (its viewport
+  and its band are the greater of the minimum and the content); FOP 2.11 and the .6 renderer ignore it.
+
+**The fork** (fop/CR-024 §11.15 to §11.18): r41 (3a572c729) fixed the clearance chain - every clearance after
+the first on a page was lost in the float part (`PageBreaker.addAreasForFloats`), so 6603's top-and-bottom
+bands were laid through; r42 (70329626b) dropped `fox:wrap="below"` and honours the minimum.
+
+**docx4j**: `positionFrame` writes `top-and-bottom` for `notBeside`, `square` for the rest, nothing for `none`;
+`height` for exact and `.minimum` for atLeast; `reserveBand` skips `none`; and `fitsBelowItsTop` measures against
+the page's foot (§4.5.1). `WordLineLayoutManager` keeps a block's widows and orphans while the float the page
+breaker handles is an obstacle's band (`relaxedForFloat`: FOP relaxes them to 1 for a float, so that its edges
+can be found at any line; a band's edges are the edge-only elements'; `handlingObstacle()` read from the fork's
+PSLM, r43), emits the edge-only penalty within the widows on its changed-elements path too, and `isSoftReturn`
+takes the innermost block on an element's position chain, its own position passed by - the first reading wraps
+every position in one of its own, so on the re-read after a band's edge the soft return went uncounted.
+
+**Gates** (each candidate against a control on the same renderer; `~/fidelity-cr030/gate-bNNN-bMMM.sh`):
+- r41: control b261 against b258 (r40): 6603 +4 x2 only (the grouping, 565895f29); candidate b262 (atLeast as
+  `height`): frame-page-bands +32, 3955 -2.
+- r42: control b264 0 movers; candidate b265 (`.minimum`): the same.
+- r43 (a367207fb: a band's top inside the first line after an edge; widows kept beside an obstacle): control
+  b267 0 movers against b264; **candidate b268 against b267: frame-page-bands 0.9304 to 0.9979 (+32), nothing
+  else**; 6603's worst line 22.8pt to 0.3pt from Word's in both corpora (its heading 302.25pt, Word 302.2pt as
+  read), 3955 and 5218 at Word's lines and pages.
+- The released .6: b263 (`height` form) and b266 (`.minimum`) against b260, 0 movers; b269 (with the line
+  manager's changes) against b266, 0 movers, the probes unchanged.
+- Tests: `WordLayoutFixupsTest` (`aPageAnchoredFrameIsAnObstacle`, `aFrameIsAsHighAsItsHeightRuleSays`,
+  `aPageAnchoredTableIntoTheBottomMarginIsPlacedWhole`); export-fo-tests 844/0 (9 skipped).
+
+**Closed:** 3955's -2 (a list item split 2+1 beside its `around` frame's band: the widows relaxed for a float,
+and the soft return uncounted on the re-read - both above) and 6603's line in the 11.35pt gap (the fork's r43: a
+band's top inside the first line after an edge). Left: 6603's heading about 1.5pt below Word's line, unread
+(Word's PDF has no glyphs for the two empty lines above it).
 
 ## 5. Gates and acceptance
 

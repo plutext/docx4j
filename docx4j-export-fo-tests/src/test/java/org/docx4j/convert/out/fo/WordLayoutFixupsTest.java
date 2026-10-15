@@ -1551,18 +1551,47 @@ public class WordLayoutFixupsTest {
 		}
 	}
 
-	/** A page-anchored frame keeps its hidden band copy on the obstacles renderer too: frames
-	 *  are not yet written as obstacles (CR-032 phase 5, gate b239).  @since 17.3.3 */
+	/** A page-anchored frame on the obstacles renderer goes round as Word's do (probe
+	 *  frame-page-bands): notBeside a band of its own height (top-and-bottom), around beside it
+	 *  (square), none no band at all; its spacing the distances, and no hidden band copy.  Without
+	 *  the capability the copy as before, for notBeside alone.  @since 17.3.3 */
 	@Test
-	public void aPageAnchoredFrameKeepsItsBand() {
+	public void aPageAnchoredFrameIsAnObstacle() {
 		String frame = "<fo:block docx4j-frame=\"page:page:1440:4000:::2926:::notBeside::180:120:\">framed</fo:block>"
 				+ "<fo:block>after</fo:block>";
 		String out = withObstacles(true, flow("<fo:block>before</fo:block>" + frame));
-		assertFalse(out, out.contains("fox:wrap"));
-		assertTrue("the band reserved by the hidden copy", out.contains("visibility=\"hidden\""));
+		assertTrue(out, out.contains("fox:wrap=\"top-and-bottom\""));
+		assertTrue(out, out.contains("fox:wrap-distances=\"6pt 6pt 9pt 9pt\""));
+		assertFalse("the band is the renderer's, not a hidden copy's", out.contains("visibility=\"hidden\""));
+		String beside = withObstacles(true, flow("<fo:block>before</fo:block>" + frame.replace("notBeside", "around")));
+		assertTrue(beside, beside.contains("fox:wrap=\"square\""));
+		assertTrue(beside, beside.contains("fox:wrap-sides=\"both\""));
+		String over = withObstacles(true, flow("<fo:block>before</fo:block>" + frame.replace("notBeside", "none")));
+		assertFalse("none: the frame lies over the text", over.contains("fox:wrap"));
 		String old = withObstacles(false, flow("<fo:block>before</fo:block>" + frame));
 		assertFalse(old.contains("fox:wrap"));
 		assertTrue(old.contains("visibility=\"hidden\""));
+		String oldNone = withObstacles(false, flow("<fo:block>before</fo:block>" + frame.replace("notBeside", "none")));
+		assertFalse("none reserves no band (frame-page-bands case 10)", oldNone.contains("visibility=\"hidden\""));
+	}
+
+	/** A frame's w:h makes its container that high for exact, at least that high for atLeast,
+	 *  stated or by default beside a w:h (frame-page-bands case 11), and nothing for auto.
+	 *  @since 17.3.3 */
+	@Test
+	public void aFrameIsAsHighAsItsHeightRuleSays() {
+		String[][] cases = { { "1820:exact", " height=\"91pt\"" }, { "1820:atLeast", "minimum=\"91pt\"" },
+				{ "1820:", "minimum=\"91pt\"" }, { "1820:auto", null } };
+		for (String[] c : cases) {
+			String out = WordLayoutFixups.apply(flow("<fo:block>before</fo:block>"
+					+ "<fo:block docx4j-frame=\"page:page:8540:2960:::2580:" + c[0] + ":around::::\">framed</fo:block>"
+					+ "<fo:block>after</fo:block>"), 15);
+			if (c[1] != null) {
+				assertTrue(c[0] + ": " + out, out.contains(c[1]));
+			} else {
+				assertFalse(c[0] + ": " + out, out.contains("91pt"));
+			}
+		}
 	}
 
 	/** A page-anchored table after content: positioned at its tblpY with the lines wrapped round
@@ -1580,5 +1609,36 @@ public class WordLayoutFixupsTest {
 		assertTrue(out, out.contains("fox:wrap-distances=\"0pt 0pt 9pt 9pt\""));
 		String old = withObstacles(false, flow("<fo:block>before</fo:block>" + table));
 		assertFalse("in the upper half with content before it, left in the flow", old.contains("absolute-position"));
+	}
+
+	/** A page-anchored table that runs into the bottom margin but ends on its page is placed
+	 *  whole on the obstacles renderer, with no hidden band copy (6603's footer table: Word
+	 *  draws it there); one that runs off the page keeps the flow's band, since a positioned
+	 *  container does not break across pages.  @since 17.3.3 */
+	@Test
+	public void aPageAnchoredTableIntoTheBottomMarginIsPlacedWhole() {
+		String masters = "<fo:layout-master-set><fo:simple-page-master master-name=\"m\" page-width=\"595.3pt\""
+				+ " page-height=\"841.9pt\" margin-top=\"36pt\" margin-bottom=\"36pt\">"
+				+ "<fo:region-body margin-top=\"34.9pt\" margin-bottom=\"34.9pt\"/>"
+				+ "</fo:simple-page-master></fo:layout-master-set>";
+		String fits = "", runsOff = "";
+		for (int r = 0; r < 4; r++) fits += "<fo:table-row height=\"18pt\"><fo:table-cell><fo:block>row</fo:block></fo:table-cell></fo:table-row>";
+		for (int r = 0; r < 6; r++) runsOff += "<fo:table-row height=\"18pt\"><fo:table-cell><fo:block>row</fo:block></fo:table-cell></fo:table-row>";
+		String before = "<fo:block>before</fo:block>";
+		String[] outs = new String[2];
+		String[] bodies = { fits, runsOff };
+		for (int i = 0; i < 2; i++) {
+			String table = "<fo:table docx4j-tblp-left=\"68pt\" docx4j-tblp-top=\"751.35pt\" docx4j-tblp-dist=\"0pt 0pt 9pt 9pt\">"
+					+ "<fo:table-column column-width=\"490pt\"/><fo:table-body>" + bodies[i] + "</fo:table-body></fo:table>"
+					+ "<fo:block>anchor</fo:block>";
+			outs[i] = withObstacles(true, "<fo:root " + NS + ">" + masters
+					+ "<fo:page-sequence master-reference=\"m\"><fo:flow flow-name=\"xsl-region-body\">"
+					+ before + table + "</fo:flow></fo:page-sequence></fo:root>");
+		}
+		// 751.35 + 72 = 823.35: past the body's foot (771pt), on the page
+		assertTrue(outs[0], outs[0].contains("fox:wrap=\"square\""));
+		assertFalse(outs[0], outs[0].contains("visibility=\"hidden\""));
+		// 751.35 + 108 = 859.35: off the page
+		assertFalse(outs[1], outs[1].contains("fox:wrap"));
 	}
 }

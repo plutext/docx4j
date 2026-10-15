@@ -1249,15 +1249,34 @@ public final class WordLayoutFixups {
 			abs.setAttribute("top", pt(top));
 			abs.setAttribute("left", pt(left));
 			abs.setAttribute("width", pt(w));
-			if (h > 0 && "exact".equals(hRule)) abs.setAttribute("height", pt(h));
+			/* exact: that high.  atLeast (stated, or by default beside a w:h): at least that high,
+			 * growing with its text, as Word's frame and its band do (probe frame-page-bands case 11;
+			 * 6603's address frame, h 121.35pt for four lines), which the fork's renderer honours on a
+			 * positioned container (2.11-docx4j.7); FOP 2.11 and the .6 renderer ignore the minimum,
+			 * which leaves the container its text's height as before. */
+			if (h > 0 && "exact".equals(hRule)) {
+				abs.setAttribute("height", pt(h));
+			} else if (h > 0 && !"auto".equals(hRule)) {
+				abs.setAttribute("block-progression-dimension.minimum", pt(h));
+			}
 			abs.setAttribute("overflow", "visible");
 			abs.setAttribute("start-indent", "0pt");
 			abs.setAttribute("end-indent", "0pt");
 			wrapper.appendChild(abs);
-			/* Not on the fork's obstacles yet (CR-032 phase 5): written as obstacles, frames lost
-			 * lines on 3955 and 6603 (-2 each) on every fork build gated, last r38 (gate b251).
-			 * The fork is reading why; the hidden band copy below stays meanwhile. */
-			reserveBand(parent, after, group, f[9], top, reservedTo);
+			if (obstaclesInTheLine() && inBodyFlow(first)) {
+				/* On the fork's obstacles the page's lines go round the frame as Word's do (probe
+				 * frame-page-bands, CR-032 section 4.5.2): w:wrap notBeside is a band of the frame's
+				 * own height, the body laid above it, in the gaps between such frames and below it
+				 * (top-and-bottom); around, auto, tight and through let text beside it (square);
+				 * none lets the frame lie over the text, which runs on under it.  The band the
+				 * hidden copy reserved is the renderer's then.  CR-032 phase 5. */
+				if (!"none".equals(wrap)) {
+					boolean besideIt = !"notBeside".equals(wrap);
+					wrapAround(abs, besideIt ? "square" : "top-and-bottom", "both", vSpace, vSpace, hSpace, hSpace);
+				}
+			} else {
+				reserveBand(parent, after, group, f[9], top, reservedTo);
+			}
 			moveInto(abs, group);
 			parent.insertBefore(wrapper, after); // insertBefore(w, null) appends
 		}
@@ -1289,7 +1308,8 @@ public final class WordLayoutFixups {
 	 */
 	private static void reserveBand(Node parent, Node after, List<Element> group, String wrap,
 			double top, java.util.Map<Node, Double> reservedTo) {
-		if (!"notBeside".equals(wrap) && !"none".equals(wrap)) return;
+		// none: the frame lies over the text, which runs on under it (probe frame-page-bands case 10)
+		if (!"notBeside".equals(wrap)) return;
 		Double last = reservedTo.get(parent);
 		if (last != null && top <= last.doubleValue()) return;
 		reservedTo.put(parent, Double.valueOf(top));
@@ -2619,16 +2639,17 @@ public final class WordLayoutFixups {
 	}
 
 	/** Whether a table placed at its tblpY surely ends on its page: a positioned container
-	 *  does not break across pages, so a table that runs past the body's foot lost its later
-	 *  rows positioned (probe table-floating-tall's page-anchored table: 7 pages to 5), where
-	 *  in the flow it continues on the next page as Word's does.  @since 17.3.3 */
+	 *  does not break across pages, so a table that runs off the page lost its later rows
+	 *  positioned (probe table-floating-tall's page-anchored table: 7 pages to 5), where in
+	 *  the flow it continues on the next page as Word's does.  The page's foot, not the
+	 *  body's: Word draws a page-anchored table that runs into the bottom margin whole where
+	 *  it is (6603's footer table, at 751pt of an 841.9pt page whose body ends at 771pt).
+	 *  @since 17.3.3 */
 	private static boolean fitsBelowItsTop(Element tbl) {
 		Element rb = regionBody(tbl);
 		if (rb == null || !(rb.getParentNode() instanceof Element)) return true;
-		Element spm = (Element) rb.getParentNode();
-		double bodyFoot = lengthPt(spm.getAttribute("page-height")) - lengthPt(spm.getAttribute("margin-bottom"))
-				- lengthPt(rb.getAttribute("margin-bottom"));
-		return lengthPt(tbl.getAttribute(HINT_TBLP_TOP)) + tableHeightAtLeastPt(tbl) <= bodyFoot;
+		double pageFoot = lengthPt(((Element) rb.getParentNode()).getAttribute("page-height"));
+		return lengthPt(tbl.getAttribute(HINT_TBLP_TOP)) + tableHeightAtLeastPt(tbl) <= pageFoot;
 	}
 
 	/** A lower bound on a table's height before layout: each row at its stated height, or a
