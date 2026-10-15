@@ -566,7 +566,9 @@ and the soft return uncounted on the re-read - both above) and 6603's line in th
 band's top inside the first line after an edge). 6603's heading is at Word's place: glyph top 302.3pt against
 Word's 302.2pt (real-c2; 302.7pt in real's golden), the lines after it within 0.1pt. (A "1.5pt below Word" noted
 on the day came from a misread 300.2pt for Word's heading; the golden says 302.2pt. A copy with its empty
-paragraphs labelled is on the share, `fidelity/frames-6603-labelled/`, to confirm where Word lays each of them.)
+paragraphs labelled, `fidelity/frames-6603-labelled/`, run through Word the same evening: every labelled line within
+0.2pt of docx4j's - PX15 73.5pt (ours 73.7, in the 14.2pt gap above the first frames), PX17 278.6 (278.7) and PX18
+290.5 (290.5) below the lowest frame's foot, the heading 302.2 (302.3), PX20 315.2 (315.1), PX21 327.7 (327.8).)
 
 ## 5. Gates and acceptance
 
