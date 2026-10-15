@@ -1,9 +1,9 @@
 # CR-040: A histogram's bins kept - chartex `cx:binSize` and `cx:binCount` bound as Excel writes them (`@val`), not as [MS-ODRAWXML]'s schema has them (text)
 
-Status: phase 2 PROPOSED 2026-10-15 (`cx:externalData`'s `cx:autoUpdate`, §7; Jason: "a CR-040 follow-up phase"); phase 1 DONE 2026-10-14 (§6); the Office check passed (Jason).  Proposed the same day, raised by the Enterprise session (plutext-enterprise-java-11-44)
+Status: DONE.  Phase 2 DONE 2026-10-15 (`cx:externalData`'s `cx:autoUpdate`, §7; Jason: "a CR-040 follow-up phase", then "please do CR-040 phase 2"); phase 1 DONE 2026-10-14 (§6); the Office check passed (Jason).  Proposed the same day, raised by the Enterprise session (plutext-enterprise-java-11-44)
 from enterprise CR-004 phase 0's measurements on Excel 16.0.20326, and verified here the same
 day.  Jason, 2026-10-14: "commit then implement CR-040 with its three recommended decisions" (D1
-to D3, §3).  Owner: Jason Harrop.  One phase.
+to D3, §3).  Owner: Jason Harrop.  Two phases (the second added 2026-10-15).
 
 ## 1. The finding
 
@@ -108,7 +108,7 @@ Half a day, plus the Office check.
   two files docx4j saved, and `CHECK.txt`): Excel opens each without repair, and shows bin width 10
   and 6 bins.  So Excel takes `val="10.0"`.
 
-## 7. Phase 2 (proposed 2026-10-15): `cx:externalData`'s `cx:autoUpdate`
+## 7. Phase 2 (2026-10-15): `cx:externalData`'s `cx:autoUpdate`
 
 **The finding** (the Enterprise session, enterprise CR-004 phase 3, 2026-10-15; verified here the same
 day). Word and PowerPoint write a chart's link to its embedded workbook as
@@ -147,4 +147,32 @@ published schema.
 
 **Effort:** two to three hours, including the regeneration and the gate (core-tests; the chart
 gate).
+
+### 7.1 Implementation record (2026-10-15)
+
+- **The xsd.**  `CT_ExternalData`'s `autoUpdate` takes `form="qualified"`, with a comment naming
+  Office's form and this phase.  `CTExternalData` now binds
+  `@XmlAttribute(name = "autoUpdate", namespace = "http://schemas.microsoft.com/office/drawing/2014/chartex")`;
+  `isAutoUpdate()` and `setAutoUpdate()` keep their types.
+- **The regeneration** was clean, checked as phase 1's was.  `CTExternalData` is the only change.
+  Twelve VML classes, `CTChangesData` (its fields in another order, the same members) and the
+  episode file differ as XJC's run-to-run noise.  `CTNumericDimension`, `CTStringDimension` and
+  `CTTextData` differ in their source text only: their compiled classes are byte-identical.
+- **`ChartExExternalDataTest` (3, core-tests).**
+  - `charts/waterfall.pptx` and `charts/waterfall.docx` loaded and saved with no edit: Office's
+    `cx:autoUpdate="0"` reads as `false`, is written back in the chartex namespace (and not
+    unqualified), and reads back as `false`.
+  - A `CTExternalData` made in code with `setAutoUpdate(false)` marshals to
+    `cx:autoUpdate="false"`.  Both forms are `xsd:boolean`; Office's own is `0`.
+- **The Office check** was not run (optional, §7): the Enterprise session's Office pass already
+  opens docx4j-saved chartex files, and Office's re-save writes the attribute itself.
+- **Gate:**
+  - docx4j-generated-objects installed after a clean regeneration;
+  - core-tests 1569/0 (11 skipped), docx4j-chart-render 23/0, export-fo-tests 840/0 (9 skipped);
+  - the corpora and the probes on the released renderer (2.11-docx4j.6) against b232: b252 (the
+    jars of 597b168c9 frozen as gate b243, plus the regenerated docx4j-generated-objects, 15:18):
+    0 movers, every event count equal, the probes' scoreboard byte-identical.
+- **Hand-offs:** docx4j-generated-objects-ts and docx4j-python (the same xsd); the Enterprise
+  session, whose CR-004 phase 4 creator writes `setAutoUpdate(false)` and depends on this phase
+  (`docx4j/CR-040.2` in the registry).
 

@@ -121,6 +121,8 @@ Changes in Version 17.3.3
   bound with @val, as Excel writes them, where they were read as text (as [MS-ODRAWXML]'s schema
   has them) and lost.  CTBinning.getBinSize() and getBinCount() now return CTBinSize and CTBinCount
   (their getVal() the number).  CR-040.
+- A chart's cx:externalData keeps its cx:autoUpdate on save: Office writes it qualified with the chartex
+  namespace, where the schema has it unqualified, so it was dropped.  CR-040 phase 2.
 - docx4j-digsig: BouncyCastle 1.78.1 to 1.86 (six advisories against 1.78.1, among them
   CVE-2026-8763 and CVE-2026-13506); Santuario stays 3.0.6.  CR-033 §11.
 - PDF and HTML output place a table with w:jc right or end against the right margin (w:tblInd

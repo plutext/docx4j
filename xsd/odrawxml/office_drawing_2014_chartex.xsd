@@ -82,7 +82,11 @@
    </xsd:complexType>
    <xsd:complexType name="CT_ExternalData">
      <xsd:attribute ref="r:id" use="required"/>
-     <xsd:attribute name="autoUpdate" type="xsd:boolean" use="optional"/>
+     <!-- docx4j (CR-040 phase 2): Word and PowerPoint write this attribute qualified,
+          cx:autoUpdate="0"; under this schema's attributeFormDefault="unqualified" it was bound
+          without a namespace, so it was dropped on load and lost on save.  Office's form is the
+          only one seen. -->
+     <xsd:attribute name="autoUpdate" type="xsd:boolean" use="optional" form="qualified"/>
    </xsd:complexType>
    <xsd:simpleType name="ST_FormulaDirection">
      <xsd:restriction base="xsd:string">
