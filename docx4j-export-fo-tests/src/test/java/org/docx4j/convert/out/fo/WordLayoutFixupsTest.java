@@ -1503,6 +1503,54 @@ public class WordLayoutFixupsTest {
 		assertTrue(p.contains("float=\"right\""));
 	}
 
+	/** Consecutive paragraphs with the same page-anchored w:framePr are one frame even where
+	 *  paragraph shading put a block round the first of them (6603: "Hauspost-Code",
+	 *  "Internal-Code" shaded, "&lt;HPC&gt;" not; Word stacks the three in one frame).
+	 *  @since 17.3.3 */
+	@Test
+	public void aFrameRunsOnOutOfItsShadingBlock() throws Exception {
+		String spec = "page:page:10003:3743:::1191:709:exact:notBeside::::";
+		String out = WordLayoutFixups.apply(flow("<fo:block>before</fo:block>"
+				+ "<fo:block background-color=\"#FFFFFF\">"
+				+ "<fo:block docx4j-frame=\"" + spec + "\">one</fo:block>"
+				+ "<fo:block docx4j-frame=\"" + spec + "\">two</fo:block></fo:block>"
+				+ "<fo:block docx4j-frame=\"" + spec + "\">three</fo:block>"
+				+ "<fo:block>after</fo:block>"), 15);
+		org.w3c.dom.Document d = parse(out);
+		org.w3c.dom.NodeList bcs = d.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "block-container");
+		int fixed = 0;
+		for (int i = 0; i < bcs.getLength(); i++) {
+			org.w3c.dom.Element bc = (org.w3c.dom.Element) bcs.item(i);
+			if (!"fixed".equals(bc.getAttribute("absolute-position"))) continue;
+			fixed++;
+			String text = bc.getTextContent();
+			assertTrue(out, text.indexOf("one") < text.indexOf("two") && text.indexOf("two") < text.indexOf("three"));
+		}
+		assertEquals("one frame", 1, fixed);
+	}
+
+	/** A w:h that w:hRule auto ignores does not split a frame (6603's "Our reference", h 567
+	 *  from its style, and "&lt;Kurzzeichen HR&gt;", no h: one frame in Word); an exact one does.
+	 *  @since 17.3.3 */
+	@Test
+	public void aFrameIgnoresTheHeightAutoIgnores() {
+		String auto567 = "page:page:4242:4821:::2722:567:auto:notBeside::::";
+		String autoNone = "page:page:4242:4821:::2722:::notBeside::::";
+		String exact = "page:page:4242:4821:::2722:567:exact:notBeside::::";
+		// an omitted hRule beside a w:h is atLeast: that height counts
+		String atLeast567 = "page:page:4242:4821:::2722:567::notBeside::::";
+		String atLeast600 = "page:page:4242:4821:::2722:600::notBeside::::";
+		String[][] cases = { { auto567, autoNone, "1" }, { exact, autoNone, "2" },
+				{ atLeast567, atLeast600, "2" }, { atLeast567, atLeast567.replace("567::", "567:atLeast:"), "1" } };
+		for (String[] c : cases) {
+			String out = WordLayoutFixups.apply(flow("<fo:block>before</fo:block>"
+					+ "<fo:block docx4j-frame=\"" + c[0] + "\">one</fo:block>"
+					+ "<fo:block docx4j-frame=\"" + c[1] + "\">two</fo:block>"
+					+ "<fo:block>after</fo:block>"), 15);
+			assertEquals(out, Integer.parseInt(c[2]), count(out, "absolute-position=\"fixed\""));
+		}
+	}
+
 	/** A page-anchored frame keeps its hidden band copy on the obstacles renderer too: frames
 	 *  are not yet written as obstacles (CR-032 phase 5, gate b239).  @since 17.3.3 */
 	@Test

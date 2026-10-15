@@ -459,10 +459,11 @@ frames on one page were not all taken up (6603's body 86pt above Word's), the re
 a time; the fork's r36 lifts it and is the gate for when frames return. (3955's "frame wrapped round itself" on
 those gates was a reading artefact: the comparison paired Word's address with our footer, which repeats it.)
 Frames as obstacles were gated again on r37 (b249 against b248: 3955 -2, 6603 -2, 5218 failing in the renderer)
-and r38 (b251 against its control b250: 3955 -2 and 6603 -2, nothing else moved; 5218 fixed by the fork), so
-they stay out. The FO of both is with the fork (a frame with no height, `hRule` auto, is not the cause: the
-renderer takes an auto-height container's extent from its laid-out content). The r38 control b250 against b248 moved only table-floating-anchor, +4 back to 0.9000 (the
-fork's fix of its early narrowing).
+and r38 (b251 against its control b250: 3955 -2 and 6603 -2; 5218 fixed by the fork). The fork's r39 (ba77807a7)
+fixed the clearance over overlapping bands and added `fox:wrap="below"` (a frame whose text follows it: the band
+runs from its anchor to its foot), r40 (7bf13d689) two smaller band fixes; controls b253 (r39) and b258 (r40), 0
+movers each. Three docx4j changes were gated with them (§4.5.1); on r40, b259 against b258: 6603 +4 in both corpora
+(to 1.0000), **3955 -2**, nothing else, the probes unchanged.
 
 **Gates** (the four corpora and the probes; each candidate against a control of the same renderer with docx4j
 HEAD, so the renderer and docx4j are measured apart; register `attempts.md`): r31 control b233 0 movers, candidate
@@ -477,6 +478,34 @@ table at its 200pt), table-floating-page-opener +6, table-floating-anchor 0.8222
 +1, 5075 to Word's 2 pages. Events equal but for one line overflow each in 4253 and 5075. Tests:
 `WordLayoutFixupsTest` +5 (an `obstaclesForTest` switch stands in for the capability), export-fo-tests 840/0,
 core-tests 1566/0.
+
+#### 4.5.1 Frames on r39/r40 (2026-10-15)
+
+- **Frames grouped as Word groups them** - COMMITTED (renderer-independent). Consecutive paragraphs with the same
+  page- or margin-anchored `w:framePr` are one frame even where paragraph shading put a block round only some of
+  them, and a `w:h` that `w:hRule` auto ignores does not split one (an omitted `w:hRule` beside a `w:h` counts as
+  atLeast). 6603's "Hauspost-Code"/"Internal-Code" and "&lt;HPC&gt;", "Our reference" and "&lt;Kurzzeichen HR&gt;",
+  "Datum/Date" and "&lt;Systemdatum&gt;" were drawn over one another; now at Word's y (206.3/206.1, 260.0/259.9).
+  Gates on the released .6 against b252: b257, and b260 as committed (an omitted `w:hRule` beside a `w:h` read as
+  atLeast): 6603 +4 lines in both corpora (0.8710 and 0.8788 to 1.0000), nothing else, events equal but
+  one harmless overflow (the grouped exact-height frame, 2.2pt, drawn as Word draws it), the probes byte-identical. Tests: `WordLayoutFixupsTest` +2, export-fo-tests 842/0.
+- **Frames as obstacles** - HELD. Frames that keep text off their sides (`notBeside`, `none`) are written
+  `fox:wrap="below"` in the page's upper half and `top-and-bottom` in its lower half, others `square`. "below" alone
+  (b254) sent 5218's page 2 body past its foot (4 pages to 5, Word 4): its form-row frames (553pt to 698pt) are
+  anchored with its heading frames at the page's top, and Word lays the body above them. The page-half cut fits
+  6603 (85pt to 276pt, body below the lowest) and 5218; it is a reading of two documents, not a rule of Word's
+  measured by a probe.
+- **A page-anchored table that ends on its page is placed whole** - HELD with the frames. `fitsBelowItsTop`
+  measured against the body's foot, so 6603's footer table (751pt, body foot 771pt, page 841.9pt; Word draws it whole)
+  kept a 68pt hidden band copy in the flow, its heading 81pt low; against the page's foot, 314.9pt (Word 302.2pt).
+  b255 against b254: 0 movers. Without frames as obstacles the copy offsets the frames' own hidden copies, so the two
+  go together.
+- **Why held:** 3955 -2. Its one frame is `w:wrap="around"`; with it an obstacle, a 3-line list item at page 1's foot
+  is split 2+1 where Word and the control move it whole to page 2 (widows and orphans 1, no keep in the docx or the
+  FO; Word leaves the page's last 77pt empty). Not docx4j's edge-only break elements (a trial emitting none splits
+  it too); the fork's change set touches none of the managers docx4j copies. The fork offered to compare the item's
+  element lists with the stock managers'. The candidate is kept as a patch (the session's
+  `frames-r40-candidate.patch`); Jason, 2026-10-15: "Grouping now, rest held".
 
 ## 5. Gates and acceptance
 

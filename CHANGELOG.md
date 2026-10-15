@@ -142,6 +142,9 @@ Changes in Version 17.3.3
 - On a docx4j FO renderer with the capability obstacles-in-the-line (2.11-docx4j.7, unreleased), PDF output wraps
   the text round page- and margin-anchored pictures, text boxes and tables as Word does, including text laid
   before their anchor on the page, and places such a table at its position wherever the flow is.  CR-032 phase 5.
+- PDF output makes one frame of consecutive paragraphs with the same page- or margin-anchored w:framePr even
+  where paragraph shading groups only some of them, or a w:h that w:hRule auto ignores differs, as Word does,
+  where the later ones were drawn over the earlier (a letterhead's reference and date frames).
 
 
 Version 17.3.2

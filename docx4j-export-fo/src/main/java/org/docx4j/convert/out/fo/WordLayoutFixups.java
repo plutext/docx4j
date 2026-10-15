@@ -1077,11 +1077,15 @@ public final class WordLayoutFixups {
 			List<Element> group = new ArrayList<Element>();
 			group.add(first);
 			int j = i + 1;
+			boolean positioned = framePositioned(spec);
 			while (j < framed.size()) {
 				Element next = framed.get(j);
-				if (!spec.equals(next.getAttribute(HINT_FRAME))) break;
-				if (next.getParentNode() != first.getParentNode()) break;
-				if (nextElementSibling(group.get(group.size() - 1)) != next) break;
+				if (!sameFrame(spec, next.getAttribute(HINT_FRAME))) break;
+				Element last = group.get(group.size() - 1);
+				if (positioned ? nextInTheFlow(last) != next
+						: next.getParentNode() != first.getParentNode() || nextElementSibling(last) != next) {
+					break;
+				}
 				group.add(next);
 				j++;
 			}
@@ -1093,6 +1097,61 @@ public final class WordLayoutFixups {
 			}
 			for (Element block : group) block.removeAttribute(HINT_FRAME);
 		}
+	}
+
+	/** Whether two paragraphs' {@link #HINT_FRAME}s make one frame: equal, but for a w:h
+	 *  that a w:hRule of auto says is ignored, the height being the content's.  6603's "Our
+	 *  reference" (h 567 from its style, hRule auto) and "&lt;Kurzzeichen HR&gt;" (no h) are
+	 *  one frame in Word.  An omitted w:hRule is auto only where there is no w:h; beside one,
+	 *  Word takes it as atLeast, so that height still counts.  @since 17.3.3 */
+	private static boolean sameFrame(String a, String b) {
+		if (a.equals(b)) return true;
+		String[] x = a.split(":", -1), y = b.split(":", -1);
+		if (x.length != y.length || x.length < 9) return false;
+		for (String[] f : new String[][] { x, y }) {
+			String rule = f[8];
+			if (rule.isEmpty()) rule = f[7].isEmpty() || twips(f[7]) == 0 ? "auto" : "atLeast";
+			if ("auto".equals(rule)) {
+				f[7] = "";
+				f[8] = "";
+			} else {
+				f[8] = rule;
+			}
+		}
+		return java.util.Arrays.equals(x, y);
+	}
+
+	/** Whether a frame's {@link #HINT_FRAME} anchors it to the page or the margin, out of
+	 *  the flow ({@link #positionFrame}).  @since 17.3.3 */
+	private static boolean framePositioned(String spec) {
+		String[] f = spec.split(":", -1);
+		return f.length >= 11 && ("page".equals(f[1]) || "margin".equals(f[1])) && !"inline".equals(f[5]);
+	}
+
+	/**
+	 * The block after a frame's paragraph in the document's order, through the fo:blocks
+	 * that paragraph shading puts round consecutive paragraphs: Word makes one frame of
+	 * consecutive paragraphs with the same w:framePr whether or not their shading groups
+	 * them.  6603's "Hauspost-Code" and "Internal-Code" (style Standard2, shaded) and
+	 * "&lt;HPC&gt;" (no shading) are one frame in Word, the third below the first two; split
+	 * by the shading's block, the third was drawn over the first.  @since 17.3.3
+	 */
+	private static Element nextInTheFlow(Element block) {
+		Element at = block;
+		Element next = nextElementSibling(at);
+		while (next == null) {
+			if (!(at.getParentNode() instanceof Element)) return null;
+			Element p = (Element) at.getParentNode();
+			if (!isFo(p, "block") || p.getAttribute(HINT_FRAME).length() > 0) return null;
+			at = p;
+			next = nextElementSibling(at);
+		}
+		while (next.getAttribute(HINT_FRAME).length() == 0 && isFo(next, "block")) {
+			Element child = firstElementChild(next);
+			if (child == null || !isFo(child, "block")) break;
+			next = child;
+		}
+		return next;
 	}
 
 	/** Whether some ancestor of this block carries {@link #HINT_FRAME} too. */
@@ -1147,7 +1206,11 @@ public final class WordLayoutFixups {
 
 		Node parent = first.getParentNode();
 		if (parent == null) return;
-		Node after = group.get(group.size() - 1).getNextSibling();
+		// the frame's place is after its last paragraph in its first's parent: a frame's
+		// paragraphs may run on out of the block paragraph shading put round the first ones
+		Element lastHere = first;
+		for (Element block : group) if (block.getParentNode() == parent) lastHere = block;
+		Node after = lastHere.getNextSibling();
 
 		// A frame anchored to the page or to the margin is taken out of the flow into a
 		// positioned container; a w:vAnchor="text" frame is positioned against the
