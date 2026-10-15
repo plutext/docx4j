@@ -1287,6 +1287,151 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		/*
+		 * CR-032 phase 5: what of a paragraph Word tests against a page-anchored table's top.  On
+		 * m1.docx an empty paragraph after a letterhead's floating table, with a bottom border
+		 * w:space 30, sits in the flow some 14pt above the table's top: its line fits there, its
+		 * border space and rule do not, and Word lays the whole paragraph below the table (the rule
+		 * under the table), where docx4j's line fits above and the rule crosses the table.
+		 */
+		PROBES.add(new Probe("table-floating-page-border-above",
+				"a full-width page-anchored floating table with a paragraph after it in the document whose line "
+				+ "fits in the gap above the table's top; mode 15, A4, 1in margins, every line exact 14pt, one case "
+				+ "a page: a title and four lines end the flow at 142pt, the table at page y 158 (a 16pt gap) unless "
+				+ "stated, then P, then four lines.  P: 1 bottom border sz 12 w:space 30 (m1's); 2 spacing after "
+				+ "30pt; 3 plain; 4 bottom border w:space 0; 5 bottom border w:space 2; 6 spacing before 30pt; 7 "
+				+ "empty, a bookmark only, bottom border w:space 30 (m1's exactly); 8 two lines, bottom border "
+				+ "w:space 30, the table at y 172 (a 30pt gap); 9 bottom border w:space 30, the table at y 202 (a "
+				+ "60pt gap); 10 spacing after 30pt, the table at y 202.  Read P's line, its rule and the first line "
+				+ "after it against the table", () -> {
+			Doc d = Doc.create(15);
+			for (int c = 1; c <= 10; c++) {
+				int tableY = c == 8 ? 172 : c >= 9 ? 202 : 158;
+				Doc.Para title = d.para("case " + c + " title").line(280, STLineSpacingRule.EXACT).before(0).after(0);
+				if (c > 1) title.pageBreakBefore();
+				title.add();
+				for (int i = 1; i <= 4; i++) {
+					d.para("f" + i + " of case " + c).line(280, STLineSpacingRule.EXACT).before(0).after(0).add();
+				}
+				Doc.Table t = new Doc.Table(4513, 4513).fixedLayout().floating("page", "margin", 0, null, tableY * 20, null);
+				for (int r = 1; r <= 3; r++) t.row(SERIF, 22, false, "table row " + r + " of case " + c, "at y " + tableY);
+				d.add(t.build());
+				String text = c == 8 ? "P of case " + c + ", two lines: " + prose(2, c) : c == 7 ? null : "P of case " + c;
+				Doc.Para p = (text == null ? d.para() : d.para(text)).line(280, STLineSpacingRule.EXACT).before(0).after(0);
+				if (c == 1 || c == 7 || c == 8 || c == 9) p.bottomBorder(12, 30);
+				if (c == 2 || c == 10) p.after(600);
+				if (c == 4) p.bottomBorder(12, 0);
+				if (c == 5) p.bottomBorder(12, 2);
+				if (c == 6) p.before(600);
+				if (c == 7) p.noLabel().bookmark("_Hlk_case7");   // empty, as m1's: its rule and a1 show where it went
+				p.add();
+				for (int i = 1; i <= 4; i++) {
+					d.para("a" + i + " after P of case " + c).line(280, STLineSpacingRule.EXACT).before(0).after(0).add();
+				}
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * CR-032 phase 5, the second reading of a bordered paragraph above a band (CR-032 §4.5.3):
+		 * whether the border's width counts with its w:space, and whether a longer paragraph's last
+		 * line moves below the table alone or takes lines before it along (with widow control off,
+		 * as in the first probe, which sets none, and on).
+		 */
+		PROBES.add(new Probe("table-floating-page-border-above-2",
+				"a full-width page-anchored floating table with a bordered paragraph after it in the document "
+				+ "whose lines fit in the gap above the table's top; mode 15, A4, 1in margins, every line exact "
+				+ "14pt, one case a page: a title and four lines end the flow at 142pt, then the table, then P, "
+				+ "then four lines.  1 to 3, one line, the table at y 158 (a 16pt gap): 1 bottom border sz 24 "
+				+ "(3pt) w:space 0; 2 sz 12 w:space 1; 3 sz 4 w:space 1 (fits either way).  4 to 6, two lines, "
+				+ "the table at y 172 (a 30pt gap): 4 sz 12 w:space 30, widow control off; 5 the same, on; 6 no "
+				+ "border.  7 and 8, three lines, sz 12 w:space 30, the table at y 186 (a 44pt gap): 7 widow "
+				+ "control off; 8 on.  Read P's lines, its rule and the first line after it against the table",
+				() -> {
+			Doc d = Doc.create(15);
+			for (int c = 1; c <= 8; c++) {
+				int tableY = c <= 3 ? 158 : c <= 6 ? 172 : 186;
+				Doc.Para title = d.para("case " + c + " title").line(280, STLineSpacingRule.EXACT).before(0).after(0);
+				if (c > 1) title.pageBreakBefore();
+				title.add();
+				for (int i = 1; i <= 4; i++) {
+					d.para("f" + i + " of case " + c).line(280, STLineSpacingRule.EXACT).before(0).after(0).add();
+				}
+				Doc.Table t = new Doc.Table(4513, 4513).fixedLayout().floating("page", "margin", 0, null, tableY * 20, null);
+				for (int r = 1; r <= 3; r++) t.row(SERIF, 22, false, "table row " + r + " of case " + c, "at y " + tableY);
+				d.add(t.build());
+				// some 88 characters a line: two lines end a quarter in, three half way
+				String text = c <= 3 ? "P of case " + c
+						: c <= 6 ? "P of case " + c + ", two lines: " + prose(1, 0)
+						: "P of case " + c + ", three lines: " + prose(1, 0) + " " + prose(1, 2);
+				Doc.Para p = d.para(text).line(280, STLineSpacingRule.EXACT).before(0).after(0);
+				if (c == 1) p.bottomBorder(24, 0);
+				if (c == 2) p.bottomBorder(12, 1);
+				if (c == 3) p.bottomBorder(4, 1);
+				if (c == 4 || c == 5 || c >= 7) p.bottomBorder(12, 30);
+				if (c == 5 || c == 8) p.widowControl(true);
+				p.add();
+				for (int i = 1; i <= 4; i++) {
+					d.para("a" + i + " after P of case " + c).line(280, STLineSpacingRule.EXACT).before(0).after(0).add();
+				}
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * A floating picture in a table cell and the row's height: on a user's letterhead Word
+		 * grows a one-line row to the foot of the logo in its second cell (behindDoc="1" beside
+		 * wrapSquare, layoutInCell 1), where docx4j's zero-height wrapper leaves the row one line
+		 * and the page's body 22pt high (register cause anchor-in-cell-from-page).  Which anchors
+		 * grow a cell, and by what: the wrap, behindDoc, layoutInCell, an offset, distB, the cell
+		 * margins, a cell already taller, the row's height rule; in mode 15 and mode 14.
+		 */
+		for (int mode : new int[] { 15, 14 }) {
+			PROBES.add(new Probe(mode == 15 ? "anchor-in-cell-row-height" : "anchor-in-cell-row-height-compat14",
+					"a one-row two-cell table (225.65pt cells, 0.5pt borders, no top or bottom cell margin) whose "
+					+ "first cell holds one line and whose second holds an empty paragraph with a floating picture "
+					+ "100 x 60pt (column-relative 10pt, paragraph-relative 0, distL/distR 9pt) unless stated; mode "
+					+ mode + ", A4, 1in margins, every line exact 14pt, one case a page: a title line, the table, "
+					+ "four lines after it.  1 wrapSquare; 2 wrapSquare behindDoc 1, margin-relative 20pt and "
+					+ "page-relative 0 (the letterhead's logo); 3 wrapTopAndBottom; 4 wrapNone (in front); 5 wrapNone "
+					+ "behindDoc 1 (behind); 6 wrapTight; 7 wrapSquare layoutInCell 0; 8 wrapNone layoutInCell 0; 9 "
+					+ "wrapSquare 20pt below the paragraph; 10 wrapSquare distB 10pt; 11 wrapSquare, cell margins top "
+					+ "and bottom 5pt; 12 wrapSquare, the first cell six lines (84pt, taller than the picture); 13 "
+					+ "wrapSquare, the row exact 20pt; 14 wrapSquare, the row at least 20pt.  Read the row's bottom "
+					+ "border, the picture's top and the first line after the table", () -> {
+				Doc d = Doc.create(mode);
+				for (int c = 1; c <= 14; c++) {
+					Doc.Para title = d.para("case " + c + " title").line(280, STLineSpacingRule.EXACT);
+					if (c > 1) title.pageBreakBefore();
+					title.add();
+					String wrap = c == 3 ? "topAndBottom" : c == 4 || c == 5 || c == 8 ? "none" : c == 6 ? "tight" : "square";
+					boolean behind = c == 2 || c == 5;
+					boolean inCell = c != 7 && c != 8;
+					long emu = 12700;
+					R pic = d.positionedImage(200, 120, 100 * emu, 60 * emu, wrap, "bothSides", behind, inCell,
+							0, c == 10 ? 10 * emu : 0, 114300, 114300,
+							c == 2 ? "margin" : "column", null, (c == 2 ? 20 : 10) * emu,
+							c == 2 ? "page" : "paragraph", null, c == 9 ? 20 * emu : 0, c);
+					Doc.Table t = new Doc.Table(4513, 4513).fixedLayout();
+					if (c == 11) t.cellMargins(108, 100);
+					java.util.List<P> first = new java.util.ArrayList<>();
+					for (int i = 1; i <= (c == 12 ? 6 : 1); i++) {
+						first.add(d.para("cell 1 line " + i + " of case " + c).line(280, STLineSpacingRule.EXACT).build());
+					}
+					P second = d.para().noLabel().line(280, STLineSpacingRule.EXACT).run(pic).build();
+					Integer rowH = c == 13 || c == 14 ? 400 : null;
+					org.docx4j.wml.STHeightRule rule = c == 13 ? org.docx4j.wml.STHeightRule.EXACT
+							: c == 14 ? org.docx4j.wml.STHeightRule.AT_LEAST : null;
+					t.rowOf(rowH, rule, t.cellOf(4513, null, first.toArray(new P[0])), t.cellOf(4513, null, second));
+					d.add(t.build());
+					for (int i = 1; i <= 4; i++) {
+						d.para("a" + i + " after the table of case " + c).line(280, STLineSpacingRule.EXACT).add();
+					}
+				}
+				return d.pkg();
+			}));
+		}
+
 		// A negative offset: mid-page over the paragraph before, and on the first paragraph
 		// of a page (into the top margin, or the previous page's space?).
 		PROBES.add(new Probe("table-floating-negative",

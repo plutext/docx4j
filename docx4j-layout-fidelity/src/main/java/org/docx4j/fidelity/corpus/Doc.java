@@ -1082,10 +1082,29 @@ public final class Doc {
 			long distT, long distB, long distL, long distR,
 			String hRelativeFrom, String hAlign, long hOffsetEmu,
 			String vRelativeFrom, String vAlign, long vOffsetEmu, int number) throws Exception {
+		return positionedImage(wPx, hPx, cxEmu, cyEmu, wrap, wrapText, "none".equals(wrap), true,
+				distT, distB, distL, distR, hRelativeFrom, hAlign, hOffsetEmu, vRelativeFrom, vAlign, vOffsetEmu, number);
+	}
+
+	/**
+	 * {@link #positionedImage(int, int, long, long, String, String, long, long, long, long, String, String, long, String, String, long, int)}
+	 * with {@code behindDoc} and {@code layoutInCell} stated rather than implied (a letterhead's
+	 * logo carries {@code behindDoc="1"} beside wrapSquare), and {@code wrap} "tight" too (a
+	 * rectangular wrap polygon).
+	 * @since 17.3.3 (the anchor-in-cell-row-height probe)
+	 */
+	public R positionedImage(int wPx, int hPx, long cxEmu, long cyEmu, String wrap, String wrapText,
+			boolean behind, boolean layoutInCell,
+			long distT, long distB, long distL, long distR,
+			String hRelativeFrom, String hAlign, long hOffsetEmu,
+			String vRelativeFrom, String vAlign, long vOffsetEmu, int number) throws Exception {
 		imageCounter++;
 		BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(pkg, mdp, png(wPx, hPx, number));
 		String rId = imagePart.getSourceRelationship().getId();
 		String wrapXml = "square".equals(wrap) ? "<wp:wrapSquare wrapText=\"" + wrapText + "\"/>"
+				: "tight".equals(wrap) ? "<wp:wrapTight wrapText=\"" + wrapText + "\"><wp:wrapPolygon edited=\"0\">"
+						+ "<wp:start x=\"0\" y=\"0\"/><wp:lineTo x=\"0\" y=\"21600\"/><wp:lineTo x=\"21600\" y=\"21600\"/>"
+						+ "<wp:lineTo x=\"21600\" y=\"0\"/><wp:lineTo x=\"0\" y=\"0\"/></wp:wrapPolygon></wp:wrapTight>"
 				: "topAndBottom".equals(wrap) ? "<wp:wrapTopAndBottom/>" : "<wp:wrapNone/>";
 		String posH = hAlign != null ? "<wp:align>" + hAlign + "</wp:align>" : "<wp:posOffset>" + hOffsetEmu + "</wp:posOffset>";
 		String posV = vAlign != null ? "<wp:align>" + vAlign + "</wp:align>" : "<wp:posOffset>" + vOffsetEmu + "</wp:posOffset>";
@@ -1095,7 +1114,7 @@ public final class Doc {
 				+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\""
 				+ " distT=\"" + distT + "\" distB=\"" + distB + "\" distL=\"" + distL + "\" distR=\"" + distR + "\""
 				+ " simplePos=\"0\" relativeHeight=\"" + (251658240 + imageCounter) + "\""
-				+ " behindDoc=\"" + ("none".equals(wrap) ? 1 : 0) + "\" locked=\"0\" layoutInCell=\"1\" allowOverlap=\"1\">"
+				+ " behindDoc=\"" + (behind ? 1 : 0) + "\" locked=\"0\" layoutInCell=\"" + (layoutInCell ? 1 : 0) + "\" allowOverlap=\"1\">"
 				+ "<wp:simplePos x=\"0\" y=\"0\"/>"
 				+ "<wp:positionH relativeFrom=\"" + hRelativeFrom + "\">" + posH + "</wp:positionH>"
 				+ "<wp:positionV relativeFrom=\"" + vRelativeFrom + "\">" + posV + "</wp:positionV>"
@@ -2311,6 +2330,15 @@ public final class Doc {
 		public Para leftBorder(int eighthsOfPoint, int spacePt) {
 			PPrBase.PBdr bdr = ppr.getPBdr()==null ? F.createPPrBasePBdr() : ppr.getPBdr();
 			bdr.setLeft(paraBorder(eighthsOfPoint, spacePt));
+			ppr.setPBdr(bdr);
+			return this;
+		}
+
+		/** {@code w:pBdr/w:bottom} alone: sz in eighths of a point, {@code w:space} in points
+		 *  (a rule under the paragraph, as a letterhead draws one).  @since 17.3.3 */
+		public Para bottomBorder(int eighthsOfPoint, int spacePt) {
+			PPrBase.PBdr bdr = ppr.getPBdr()==null ? F.createPPrBasePBdr() : ppr.getPBdr();
+			bdr.setBottom(paraBorder(eighthsOfPoint, spacePt));
 			ppr.setPBdr(bdr);
 			return this;
 		}
