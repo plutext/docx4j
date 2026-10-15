@@ -9,6 +9,7 @@ module org.docx4j.chart.render {
 
 	requires org.apache.xmlgraphics.batik.svggen;
 	requires org.apache.xmlgraphics.batik.dom;
+	requires org.apache.xmlgraphics.batik.awt.util; // SVGGraphics2D's superclass (Eclipse wants it named)
 
 	// the renderer's frame, for a renderer of other charts (a chartex renderer: CR-039, CR-037 D7);
 	// the renderer itself stays internal, reached through docx4j-core's ChartRenderer

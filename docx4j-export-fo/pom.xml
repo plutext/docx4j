@@ -246,6 +246,26 @@
 			</exclusions>
 		</dependency>
 
+		<!-- batik-awt-util: AbstractGraphics2D, batik-svggen's SVGGraphics2D's superclass.  It arrived
+		     only transitively (through docx4j-chart-render), which javac accepts but Eclipse does
+		     not ("The type org.apache.batik.ext.awt.g2d.AbstractGraphics2D cannot be resolved. It
+		     is indirectly referenced from required type org.apache.batik.svggen.SVGGraphics2D"). -->
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-awt-util</artifactId>
+			<version>1.19</version>
+			<exclusions>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis-ext</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
 		<!-- Need to declare this explicitly, since fop 2.11 doesn't; it pulls in lots of batik deps -->
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>

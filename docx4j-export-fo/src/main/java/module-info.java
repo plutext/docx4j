@@ -22,6 +22,7 @@ module org.docx4j.export_fo {
 //			requires org.apache.xmlgraphics.batik.svg.dom;
 		requires org.apache.xmlgraphics.batik.util;
 		requires org.apache.xmlgraphics.batik.svggen; // WMF/EMF/EMF+ -> SVG (CR-011)
+		requires org.apache.xmlgraphics.batik.awt.util; // SVGGraphics2D's superclass (Eclipse wants it named)
 		requires org.apache.xmlgraphics.batik.constants;
 		requires org.apache.xmlgraphics.batik.i18n;
 		requires jakarta.xml.bind;
