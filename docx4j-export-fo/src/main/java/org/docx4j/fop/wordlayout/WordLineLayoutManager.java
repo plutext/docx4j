@@ -2430,6 +2430,16 @@ public class WordLineLayoutManager extends LineLayoutManager {
             restartPositionIdx = restartPosition.getIndex();
         }
 
+        /* Nothing to restart: a paragraph with no content made no Knuth paragraphs (or was
+         * never asked for its elements), and a restart at it - a block read again from its start
+         * after a forced page break, fork CR-024 r33's restart at an obstacle's page, with a
+         * position of index -1 - threw here, and corpus 3475's last page lost its text.
+         * @since 17.3.3 */
+        if (knuthParagraphs == null || knuthParagraphs.isEmpty()) {
+            setFinished(true);
+            return null;
+        }
+
         for (int i = 0; i < parIndex; i++) {
             if (knuthParagraphs.size() > 1) {
                 knuthParagraphs.remove(0);
@@ -3733,6 +3743,41 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * @param context the layout context
      * @return the newly built element list
      */
+    /** Whether this page sequence holds an object the lines wrap round (fork CR-024:
+     *  PageSequenceLayoutManager.hasObstacles(), read reflectively since the released
+     *  renderer has no such method).  @since 17.3.3 */
+    private Boolean obstacles;
+
+    private boolean pageSequenceHasObstacles() {
+        if (obstacles == null) {
+            boolean has = false;
+            if (org.docx4j.convert.out.fo.FopCapabilities.has(
+                    org.docx4j.convert.out.fo.FopCapabilities.Capability.OBSTACLES_IN_THE_LINE)
+                    && getPSLM() != null) {
+                try {
+                    Object r = getPSLM().getClass().getMethod("hasObstacles").invoke(getPSLM());
+                    has = Boolean.TRUE.equals(r);
+                } catch (ReflectiveOperationException | RuntimeException e) {
+                    has = false;
+                }
+            }
+            obstacles = has;
+        }
+        return obstacles;
+    }
+
+    /**
+     * Between two lines widow and orphan control keep together: never a page break (penalty
+     * INFINITE), but a line break the page breaker may take as the top or foot of a band
+     * round a page-anchored object, which the fork's renderer considers only where a band is
+     * pending.  Without it the band began after a paragraph's second line where its top fell
+     * inside the first (fork CR-024 r32; probe picture-page-square cases 3 to 6 and 9).
+     * @since 17.3.3
+     */
+    private BreakElement edgeOnly(Position position, LayoutContext context) {
+        return new BreakElement(position, KnuthElement.INFINITE, Constants.EN_LINE, context);
+    }
+
     private List<ListElement> postProcessLineBreaks(int alignment, LayoutContext context) {
 
         List<ListElement> returnList = new LinkedList<>();
@@ -3747,7 +3792,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
             // penalty between paragraphs
             if (p > 0 && linesBefore != null && !breakAllowedBefore(linesBefore[p], linesBefore)) {
                 // within the widows or orphans counted across the soft returns (17.3.1)
-                returnList.add(new KnuthPenalty(0, KnuthElement.INFINITE, false, new Position(this), false));
+                if (pageSequenceHasObstacles()) {
+                    returnList.add(edgeOnly(new Position(this), context));
+                } else {
+                    returnList.add(new KnuthPenalty(0, KnuthElement.INFINITE, false, new Position(this), false));
+                }
                 if (pendingLeading > 0) {
                     returnList.add(new LeadingGlue(pendingLeading));
                     pendingLeading = 0;
@@ -3817,6 +3866,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
                                     keep.getPenalty(),
                                     keep.getContext(),
                                     context));
+                    } else if (returnList.size() > 0 && i > 0 && pageSequenceHasObstacles()) {
+                        // within the widows or orphans: no page break, but the place where a
+                        // band round a page-anchored object may begin or end (fork CR-024; the
+                        // glue after it cannot become a break either)
+                        returnList.add(edgeOnly(new LeafPosition(this, p, endIndex), context));
                     } else if (i > 0 && pendingLeading > 0) {
                         // no break allowed here: the glue must not become one
                         returnList.add(new KnuthPenalty(0, KnuthElement.INFINITE, false, null, true));

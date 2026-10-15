@@ -137,6 +137,9 @@ Changes in Version 17.3.3
 - PDF output lays a full-width page- or margin-anchored table that opens its page in the flow at its position,
   so the text after it starts below it as in Word, where it was drawn over the table (a letterhead's next
   table on top of it); a page or margin anchor with no w:tblpY is at 0.  CR-032 phase 4.
+- On a docx4j FO renderer with the capability obstacles-in-the-line (2.11-docx4j.7, unreleased), PDF output wraps
+  the text round page- and margin-anchored pictures, text boxes and tables as Word does, including text laid
+  before their anchor on the page, and places such a table at its position wherever the flow is.  CR-032 phase 5.
 
 
 Version 17.3.2

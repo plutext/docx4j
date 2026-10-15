@@ -1456,4 +1456,81 @@ public class WordLayoutFixupsTest {
 		assertTrue("body-start() changed", out.contains("start-indent=\"body-start()\""));
 		assertFalse("hint left", out.contains("docx4j-textbox-start"));
 	}
+
+	// ------------------------------------------------- CR-032 phase 5: fop/CR-024's obstacles
+
+	/** On the obstacles renderer, the fixups' output; the switch restored after. */
+	private static String withObstacles(boolean on, String fo) {
+		WordLayoutFixups.obstaclesForTest = on;
+		try {
+			return WordLayoutFixups.apply(fo, 15);
+		} finally {
+			WordLayoutFixups.obstaclesForTest = null;
+		}
+	}
+
+	/**
+	 * A page-anchored square-wrapped picture: on fop/CR-024's renderer its fixed container says
+	 * the page's lines wrap round it, on the side its wrapText names, its rectangle grown by its
+	 * distances (Word: the lines beside a picture at 373.3/200 stop at its left less distL,
+	 * probe picture-page-square case 1).  @since 17.3.3
+	 */
+	@Test
+	public void aPageAnchoredSquarePictureWrapsOnTheObstaclesRenderer() {
+		String out = withObstacles(true, flow(anchored("square", "301.3", "page:200", " docx4j-anchor-sides=\"largest\"")));
+		assertTrue(out, out.contains("absolute-position=\"fixed\""));
+		assertTrue(out, out.contains("fox:wrap=\"square\""));
+		assertTrue(out, out.contains("fox:wrap-sides=\"largest\""));
+		assertTrue("before after start end", out.contains("fox:wrap-distances=\"0pt 0pt 9pt 9pt\""));
+		assertFalse("hints stripped", out.contains("docx4j-anchor"));
+	}
+
+	@Test
+	public void topAndBottomIsTopAndBottom() {
+		String out = withObstacles(true, flow(anchored("topAndBottom", "301.3", "page:200", "")));
+		assertTrue(out, out.contains("fox:wrap=\"top-and-bottom\""));
+		assertFalse(out.contains("fox:wrap-sides"));
+	}
+
+	/** Behind the text Word applies no wrap, and a renderer without the hook gets nothing. */
+	@Test
+	public void noWrapBehindTheTextOrWithoutTheHook() {
+		assertFalse(withObstacles(true, flow(anchored("square", "301.3", "page:200", " docx4j-anchor-behind=\"1\""))).contains("fox:wrap"));
+		assertFalse(withObstacles(false, flow(anchored("square", "301.3", "page:200", ""))).contains("fox:wrap"));
+		// relative to its paragraph a picture floats, as before
+		String p = withObstacles(true, flow(anchored("square", "337.91", "p:0", "")));
+		assertFalse(p.contains("fox:wrap"));
+		assertTrue(p.contains("float=\"right\""));
+	}
+
+	/** A page-anchored frame keeps its hidden band copy on the obstacles renderer too: frames
+	 *  are not yet written as obstacles (CR-032 phase 5, gate b239).  @since 17.3.3 */
+	@Test
+	public void aPageAnchoredFrameKeepsItsBand() {
+		String frame = "<fo:block docx4j-frame=\"page:page:1440:4000:::2926:::notBeside::180:120:\">framed</fo:block>"
+				+ "<fo:block>after</fo:block>";
+		String out = withObstacles(true, flow("<fo:block>before</fo:block>" + frame));
+		assertFalse(out, out.contains("fox:wrap"));
+		assertTrue("the band reserved by the hidden copy", out.contains("visibility=\"hidden\""));
+		String old = withObstacles(false, flow("<fo:block>before</fo:block>" + frame));
+		assertFalse(old.contains("fox:wrap"));
+		assertTrue(old.contains("visibility=\"hidden\""));
+	}
+
+	/** A page-anchored table after content: positioned at its tblpY with the lines wrapped round
+	 *  it, where it stayed in the flow (probe table-floating-page-after: Word places it at its
+	 *  tblpY whatever precedes it).  @since 17.3.3 */
+	@Test
+	public void aPageAnchoredTableAfterContentIsPlacedOnTheObstaclesRenderer() {
+		String table = "<fo:table docx4j-tblp-left=\"72pt\" docx4j-tblp-top=\"150pt\" docx4j-tblp-dist=\"0pt 0pt 9pt 9pt\">"
+				+ "<fo:table-column column-width=\"440pt\"/><fo:table-body><fo:table-row><fo:table-cell><fo:block>cell</fo:block>"
+				+ "</fo:table-cell></fo:table-row></fo:table-body></fo:table><fo:block>anchor</fo:block>";
+		String out = withObstacles(true, flow("<fo:block>before</fo:block>" + table));
+		assertTrue(out, out.contains("absolute-position=\"fixed\""));
+		assertTrue(out, out.contains("top=\"150pt\""));
+		assertTrue(out, out.contains("fox:wrap=\"square\""));
+		assertTrue(out, out.contains("fox:wrap-distances=\"0pt 0pt 9pt 9pt\""));
+		String old = withObstacles(false, flow("<fo:block>before</fo:block>" + table));
+		assertFalse("in the upper half with content before it, left in the flow", old.contains("absolute-position"));
+	}
 }

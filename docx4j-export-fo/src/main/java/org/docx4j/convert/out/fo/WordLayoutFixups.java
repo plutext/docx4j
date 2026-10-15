@@ -932,9 +932,63 @@ public final class WordLayoutFixups {
 	/** An anchor in a table cell: where Word puts it, measured from the cell
 	 *  (WordXmlPictureE20.HINT_ANCHOR_CELL; {@link #placeInCell}).  @since 17.3.3 */
 	public static final String HINT_ANCHOR_CELL = "docx4j-anchor-cell";
+	/** A square, tight or through wrap's side (WordXmlPictureE20.HINT_ANCHOR_SIDES).  @since 17.3.3 */
+	public static final String HINT_ANCHOR_SIDES = "docx4j-anchor-sides";
 	private static final String[] ANCHOR_HINTS = { HINT_ANCHOR, HINT_ANCHOR_W, HINT_ANCHOR_H,
 			HINT_ANCHOR_X, HINT_ANCHOR_Y, "docx4j-anchor-dist", "docx4j-anchor-behind",
-			HINT_ANCHOR_COL, HINT_ANCHOR_ML, HINT_TEXTBOX_BESIDE, HINT_ANCHOR_CELL };
+			HINT_ANCHOR_COL, HINT_ANCHOR_ML, HINT_TEXTBOX_BESIDE, HINT_ANCHOR_CELL, HINT_ANCHOR_SIDES };
+
+	/** Tests only: what {@link #obstaclesInTheLine} answers, null to ask the renderer.  @since 17.3.3 */
+	static Boolean obstaclesForTest;
+
+	/**
+	 * Whether a positioned container may carry {@code fox:wrap} (CR-032 phase 5): on fop/CR-024's
+	 * renderer ({@link FopCapabilities.Capability#OBSTACLES_IN_THE_LINE}), unless
+	 * {@code docx4j.convert.out.fo.wrapPageAnchored=false}.  @since 17.3.3
+	 */
+	static boolean obstaclesInTheLine() {
+		if (obstaclesForTest != null) return obstaclesForTest;
+		return FopCapabilities.has(FopCapabilities.Capability.OBSTACLES_IN_THE_LINE)
+				&& org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.fo.wrapPageAnchored", true);
+	}
+
+	/**
+	 * Word wraps the page's text round an object it positions against the page or the margin:
+	 * beside it where it leaves room ({@code square}, on the side its wrapText names) or below it
+	 * ({@code top-and-bottom}), the object's rectangle grown by its distances from the text, and
+	 * lines laid before its anchor on that page as well as after (probes picture-page-square and
+	 * table-floating-page-after, Word 365, 2026-10-15: the lines crossing a 150 x 100pt picture at
+	 * 373.3/200 stop at its left less distL, 364.3; a full-width table at tblpY 150pt after seven
+	 * paragraphs has the paragraph crossing it continue below it).  On fop/CR-024's renderer the
+	 * positioned container says so: {@code fox:wrap}, {@code fox:wrap-sides} and
+	 * {@code fox:wrap-distances} (before after start end).  Where it did not, the text ran under
+	 * the object (pictures, text boxes, frames that let text beside them) or docx4j guessed a band
+	 * (a frame that does not, a table in the lower half) or left the object in the flow (a table
+	 * with content before it in the upper half).  @since 17.3.3 (CR-032 phase 5)
+	 */
+	private static void wrapAround(Element container, String wrap, String sides,
+			double before, double after, double start, double end) {
+		container.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS, "fox:wrap", wrap);
+		if ("square".equals(wrap) && sides != null && sides.length() > 0) {
+			container.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS, "fox:wrap-sides", sides);
+		}
+		container.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS, "fox:wrap-distances",
+				pt(Math.max(0, before)) + " " + pt(Math.max(0, after)) + " " + pt(Math.max(0, start)) + " " + pt(Math.max(0, end)));
+	}
+
+	/** Whether the element is in the body's flow: not in a header or footer, a table cell, a
+	 *  footnote or a float, where the fork's obstacles do not reach.  @since 17.3.3 */
+	private static boolean inBodyFlow(Element el) {
+		for (Node n = el.getParentNode(); n instanceof Element; n = n.getParentNode()) {
+			Element e = (Element) n;
+			if (isFo(e, "flow")) return true;
+			if (isFo(e, "static-content") || isFo(e, "table-cell") || isFo(e, "footnote-body")
+					|| isFo(e, "float")) {
+				return false;
+			}
+		}
+		return false;
+	}
 
 	// ------------------------------------------------------------ 0e. text frames
 
@@ -1137,6 +1191,11 @@ public final class WordLayoutFixups {
 			abs.setAttribute("start-indent", "0pt");
 			abs.setAttribute("end-indent", "0pt");
 			wrapper.appendChild(abs);
+			/* Not on the fork's obstacles yet (CR-032 phase 5): a frame's own paragraphs wrapped
+			 * round the frame itself (3955's address frame drawn 609pt low) and a letterhead's
+			 * several frames on one page were not all taken up (6603's body 86pt high, the
+			 * obstacles' limit 2), where the hidden band copy below is measured.  Gate b239,
+			 * fork r33. */
 			reserveBand(parent, after, group, f[9], top, reservedTo);
 			moveInto(abs, group);
 			parent.insertBefore(wrapper, after); // insertBefore(w, null) appends
@@ -1513,9 +1572,13 @@ public final class WordLayoutFixups {
 	 *  CR-032 phase 1).  @since 17.3.2 */
 	public static final String HINT_TBLP_INFLOW_Y = "docx4j-tblp-inflow-y";
 
+	/** On an fo:table positioned against the page or the margin: its distances from the text,
+	 *  "top bottom left right" (topFromText ...), for {@link #wrapAround}.  @since 17.3.3 */
+	public static final String HINT_TBLP_DIST = "docx4j-tblp-dist";
+
 	private static final String[] TBLP_HINTS = { HINT_TBLP_LEFT, HINT_TBLP_TOP,
 			HINT_TBLP_FRAME, HINT_TBLP_ALIGN, HINT_TBLP_FLOAT, HINT_TBLP_PAD,
-			HINT_TBLP_NARROW, HINT_TBLP_INFLOW_Y };
+			HINT_TBLP_NARROW, HINT_TBLP_INFLOW_Y, HINT_TBLP_DIST };
 
 	/**
 	 * Word positions an anchored picture (wp:anchor) relative to its paragraph,
@@ -1620,6 +1683,8 @@ public final class WordLayoutFixups {
 		holder.setAttribute("line-height", "0pt");
 		holder.appendChild(g); // moves it out of its run
 
+		final String wrapKind = kind;  // Word's wrap, before the cases below override it
+		final boolean behind = "1".equals(g.getAttribute("docx4j-anchor-behind"));
 		if (pageY) kind = "none"; // FOP cannot wrap text around a page-positioned object
 		/* A picture Word draws *behind* the text (wp:anchor/@behindDoc="1") displaces
 		 * nothing: its wrap element is not applied, the text runs over it, and it
@@ -1741,6 +1806,13 @@ public final class WordLayoutFixups {
 			abs.setAttribute("overflow", "visible");
 			abs.appendChild(holder);
 			wrapper.appendChild(abs);
+			// on the fork's obstacles the page's lines wrap round it (CR-032 phase 5); behind the
+			// text, Word applies no wrap (above)
+			if (pageY && !behind && ("square".equals(wrapKind) || "topAndBottom".equals(wrapKind))
+					&& obstaclesInTheLine() && inBodyFlow(para)) {
+				wrapAround(abs, "square".equals(wrapKind) ? "square" : "top-and-bottom",
+						g.getAttribute(HINT_ANCHOR_SIDES), Double.parseDouble(dist[2]), distB, distL, distR);
+			}
 		}
 		if (inCell != null) insertAtCellTop(cell, wrapper);
 		else insertAnchorWrapper(para, wrapper);
@@ -2485,6 +2557,19 @@ public final class WordLayoutFixups {
 		return true;
 	}
 
+	/** Whether a table placed at its tblpY surely ends on its page: a positioned container
+	 *  does not break across pages, so a table that runs past the body's foot lost its later
+	 *  rows positioned (probe table-floating-tall's page-anchored table: 7 pages to 5), where
+	 *  in the flow it continues on the next page as Word's does.  @since 17.3.3 */
+	private static boolean fitsBelowItsTop(Element tbl) {
+		Element rb = regionBody(tbl);
+		if (rb == null || !(rb.getParentNode() instanceof Element)) return true;
+		Element spm = (Element) rb.getParentNode();
+		double bodyFoot = lengthPt(spm.getAttribute("page-height")) - lengthPt(spm.getAttribute("margin-bottom"))
+				- lengthPt(rb.getAttribute("margin-bottom"));
+		return lengthPt(tbl.getAttribute(HINT_TBLP_TOP)) + tableHeightAtLeastPt(tbl) <= bodyFoot;
+	}
+
 	/** A lower bound on a table's height before layout: each row at its stated height, or a
 	 *  line for each paragraph of its tallest cell where that is more.  @since 17.3.3 */
 	private static double tableHeightAtLeastPt(Element tbl) {
@@ -2507,7 +2592,10 @@ public final class WordLayoutFixups {
 	private static void anchorFloatingTable(Document doc, Element tbl) {
 		Node parent = tbl.getParentNode();
 		if (!(parent instanceof Element) || !isFo((Element) parent, "flow")) return;
-		boolean reserve = !opensThePage(tbl);
+		// on the fork's obstacles a table placed at its tblpY has the page's lines wrapped round
+		// it wherever the flow is, so neither the decline nor the band applies (CR-032 phase 5)
+		boolean obstacle = tbl.hasAttribute(HINT_TBLP_TOP) && obstaclesInTheLine() && fitsBelowItsTop(tbl);
+		boolean reserve = !obstacle && !opensThePage(tbl);
 		if (reserve && !reservesItsBand(tbl)) return;
 
 		double left = lengthPt(tbl.getAttribute(HINT_TBLP_LEFT));
@@ -2544,6 +2632,11 @@ public final class WordLayoutFixups {
 		}
 		wrapper.appendChild(abs);
 
+		if (obstacle) {
+			String[] d = tbl.getAttribute(HINT_TBLP_DIST).trim().split("\\s+");
+			wrapAround(abs, "square", "both", d.length == 4 ? lengthPt(d[0]) : 0, d.length == 4 ? lengthPt(d[1]) : 0,
+					d.length == 4 ? lengthPt(d[2]) : 0, d.length == 4 ? lengthPt(d[3]) : 0);
+		}
 		parent.insertBefore(wrapper, tbl);
 		if (reserve) {
 			// the band the table occupies in the flow, so what follows is pushed down
@@ -3152,6 +3245,17 @@ public final class WordLayoutFixups {
 			double above = y.startsWith("t:") ? spaceBeforePt(para) : 0;
 			box.setAttribute("top", pt(off - above + lengthPt(box.getAttribute("padding-top"))));
 			box.setAttribute("left", pt(pageY ? x + ml : x));
+			// a box Word wraps square, tight or through: on the fork's obstacles the page's lines
+			// wrap round it (CR-032 phase 5)
+			String beside = box.getAttribute(HINT_TEXTBOX_BESIDE).trim();
+			if (pageY && beside.length() > 0 && obstaclesInTheLine() && inBodyFlow(para)) {
+				String[] b = beside.split("\\s+");
+				String[] d = box.getAttribute("docx4j-anchor-dist").trim().split("\\s+");
+				double distT = d.length == 4 ? lengthPt(d[2] + "pt") : 0;
+				if (b.length == 4) {
+					wrapAround(box, "square", b[3], distT, lengthPt(b[2]), lengthPt(b[0]), lengthPt(b[1]));
+				}
+			}
 		} else {
 			// wrapped: reserve the box's height where Word puts it.  The indent goes on
 			// the wrapper, whose reference area the box then starts at (the box resets

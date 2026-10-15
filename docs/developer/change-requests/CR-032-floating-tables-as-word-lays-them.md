@@ -1,6 +1,6 @@
 # CR-032: floating tables laid out as Word lays them - the band at its offset, the wide table's band, the paragraphs behind it
 
-Status: IN PROGRESS - phase 4 DONE 2026-10-15 (openers in the flow, §4.4; probes read; gate b232: 1616 +19 lines, nothing else moved); phase 5 PROPOSED 2026-10-15 (tables after content, §4.5, on fop/CR-024 phase A, whose r29/r30 are built); phases 1 and 2 SHIPPED in docx4j 17.3.2 (Maven Central, 2026-10-09), on 2.11-docx4j.6 (the export-fo bump
+Status: IN PROGRESS - phase 4 DONE 2026-10-15 (openers in the flow, §4.4; probes read; gate b232: 1616 +19 lines, nothing else moved); phase 5's docx4j side DONE 2026-10-15 (page- and margin-anchored pictures, text boxes and tables wrapped on the fork's obstacles, §4.5; gated on the fork's r31 to r35, last pair b244/b245: 13 movers, no line lost; frames to follow on r36), active only on a renderer with the capability obstacles-in-the-line: fop/CR-024 phase A merged to 2.11-docx4j.7 on 2026-10-15 (f98834c2c), unreleased; phases 1 and 2 SHIPPED in docx4j 17.3.2 (Maven Central, 2026-10-09), on 2.11-docx4j.6 (the export-fo bump
 409392c9a); phase 2 DONE 2026-10-08 (docx4j side in three commits gated on the fork's float-offset:
 fox:float-offset on a floating table's float, each float of an anchor at its own offset, a text box's band,
 anchored-picture and framePr floats; fop/CR-023 merged to 2.11-docx4j.6 at 3339fc1cf, unreleased, so the
@@ -433,6 +433,45 @@ it goes below. The picture probe's case 9 the same for a picture. The fork's r30
 from its start with the band known. docx4j writes each positioned
 object at its anchor (a page-anchored picture at its paragraph's head, a frame where its paragraphs were, a table
 where it stands), not first in its section, so that restart is needed in general.
+
+**As built (2026-10-15).** On a renderer with `obstacles-in-the-line` (`FopCapabilities`), and in the body only (not
+in a header, footer, table cell, footnote or float), `WordLayoutFixups.wrapAround` writes `fox:wrap` (`square` or
+`top-and-bottom`), `fox:wrap-sides` (the wrapText: both, left, right, largest) and `fox:wrap-distances` (distT,
+distB, distL, distR) on the fixed container of:
+
+- a picture or chart anchored to the page or margin with square, tight, through or top-and-bottom wrap, not behind
+  the text (`WordXmlPictureE20.HINT_ANCHOR_SIDES` carries the side);
+- a DrawingML or VML text box likewise (its `HINT_TEXTBOX_BESIDE`);
+- a page- or margin-anchored table that phase 4 does not lay in the flow (`TableWriter.HINT_TBLP_DIST`): it is now
+  positioned at its `tblpY` wherever the flow is, with no hidden band copy and without `opensThePage` /
+  `reservesItsBand`'s declines - except where a lower bound on its height runs past the body's foot
+  (`fitsBelowItsTop`), since a positioned container does not break across pages (probe `table-floating-tall`: 7
+  pages to 5 positioned).
+
+`WordLineLayoutManager` emits, between a paragraph's lines that widow and orphan control keep together, a
+`BreakElement` of penalty INFINITE and class `EN_LINE` where the page sequence holds an obstacle
+(`PageSequenceLayoutManager.hasObstacles()`, read reflectively): never a page break, but a place the band may start
+or end, without which it began a line late where its top fell inside a paragraph's first line (the fork's r32
+finding). Its restart variant returns finished for a paragraph with no Knuth paragraphs.
+
+**Frames are left out for now**: their hidden band copy stays. On r33 and r34 a letterhead's seven top-and-bottom
+frames on one page were not all taken up (6603's body 86pt above Word's), the renderer's limit of one obstacle at
+a time; the fork's r36 lifts it and is the gate for when frames return. (3955's "frame wrapped round itself" on
+those gates was a reading artefact: the comparison paired Word's address with our footer, which repeats it.)
+
+**Gates** (the four corpora and the probes; each candidate against a control of the same renderer with docx4j
+HEAD, so the renderer and docx4j are measured apart; register `attempts.md`): r31 control b233 0 movers, candidate
+b234 21 movers mostly losses (the band a line late; a full-width object laid as one-word lines; 3003 failing in an
+LMiter); r32 control b235 (2189 -2, the fork's foot rule; read and kept), candidate b236 (the probes to Word's
+lines; 3475's last page emptied and 8362's page 3 emptied, both renderer defects); r33 control b238 0, candidate
+b239 (8362 fixed; 3475 still); r34 control b241 0, candidate b242 (3475 fixed in FOP's FlowLayoutManager restart),
+candidate b243 frames out (13 movers, none lost); r35 control b244 0, **candidate b245: 13 movers, none lost** -
+picture-page-square 0.7273 to 0.9564 (+63 lines), table-floating-page-after 0.8085 to 0.9504 (+20; m1's second
+table at its 200pt), table-floating-page-opener +6, table-floating-anchor 0.8222 to 0.9000; 13544 0.6759 to 0.9815
+(+33; but 4 pages against Word's 3: page 2 begins 25pt below Word's), 4621 and 4253 to 1.0, 9919 +4, 13102 +1, 8362
++1, 5075 to Word's 2 pages. Events equal but for one line overflow each in 4253 and 5075. Tests:
+`WordLayoutFixupsTest` +5 (an `obstaclesForTest` switch stands in for the capability), export-fo-tests 840/0,
+core-tests 1566/0.
 
 ## 5. Gates and acceptance
 

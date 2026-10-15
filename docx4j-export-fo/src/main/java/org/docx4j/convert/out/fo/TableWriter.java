@@ -469,6 +469,10 @@ public class TableWriter extends AbstractTableWriter {
 
 		tableRoot.setAttribute(WordLayoutFixups.HINT_TBLP_LEFT,
 				UnitsOfMeasurement.twipToBest(marginLeft + indent));
+		// the distances Word keeps the text from it, for the fork's obstacles (CR-032 phase 5)
+		tableRoot.setAttribute(WordLayoutFixups.HINT_TBLP_DIST,
+				twips(tblpPr.getTopFromText()) + " " + twips(tblpPr.getBottomFromText()) + " "
+				+ twips(tblpPr.getLeftFromText()) + " " + twips(tblpPr.getRightFromText()));
 		if (topTwips != null) {
 			tableRoot.setAttribute(WordLayoutFixups.HINT_TBLP_TOP, UnitsOfMeasurement.twipToBest(topTwips));
 		} else {
@@ -479,6 +483,11 @@ public class TableWriter extends AbstractTableWriter {
 		// the start-indent stands: the fixups zero it only where they do position the
 		// table (which they decline to do for a table with text before it)
 		return indent;
+	}
+
+	/** A twips value as a length, 0 where absent.  @since 17.3.3 */
+	private static String twips(java.math.BigInteger v) {
+		return UnitsOfMeasurement.twipToBest(v == null ? 0 : v.intValue());
 	}
 
 	/**

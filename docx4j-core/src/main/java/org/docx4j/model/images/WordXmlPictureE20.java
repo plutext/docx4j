@@ -430,6 +430,9 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      *  Word's reading in a cell is not known for, which keeps the column/page reading.
      *  @since 17.3.3 */
     public static final String HINT_ANCHOR_CELL = "docx4j-anchor-cell";
+    /** A square, tight or through wrap's side: "both", "left", "right" or "largest" (the
+     *  wrapText of wp:wrapSquare and its kin).  @since 17.3.3 */
+    public static final String HINT_ANCHOR_SIDES = "docx4j-anchor-sides";
 
     /** The property WordLayoutFixups (docx4j-export-fo) is enabled by. */
     private static final String WORD_LAYOUT_FIXUPS_PROPERTY = "docx4j.convert.out.fo.wordLayoutFixups";
@@ -542,6 +545,13 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 	    	g.setAttribute(HINT_ANCHOR_DIST, fmt(emu(anchor.getDistL())) + " " + fmt(emu(anchor.getDistR()))
 	    			+ " " + fmt(emu(anchor.getDistT())) + " " + fmt(emu(anchor.getDistB())));
 	    	if (anchor.isBehindDoc()) g.setAttribute(HINT_ANCHOR_BEHIND, "1");
+	    	org.docx4j.dml.wordprocessingDrawing.STWrapText wrapText = anchor.getWrapSquare()!=null ? anchor.getWrapSquare().getWrapText()
+	    			: anchor.getWrapTight()!=null ? anchor.getWrapTight().getWrapText()
+	    			: anchor.getWrapThrough()!=null ? anchor.getWrapThrough().getWrapText() : null;
+	    	if (wrapText!=null) {
+	    		g.setAttribute(HINT_ANCHOR_SIDES, wrapText==org.docx4j.dml.wordprocessingDrawing.STWrapText.BOTH_SIDES
+	    				? "both" : wrapText.value());
+	    	}
 	    	g.setAttribute(HINT_ANCHOR_COL, fmt(colW));
 	    	g.setAttribute(HINT_ANCHOR_ML, fmt(mL));
 	    	/* In a table cell Word measures the position from the cell: "page" from the cell's

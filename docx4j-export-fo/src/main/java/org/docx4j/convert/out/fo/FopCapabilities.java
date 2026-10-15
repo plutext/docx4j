@@ -182,7 +182,14 @@ public final class FopCapabilities {
 		 *  phase B); with it the region body takes a section's near-equal widths too (within 5%, Word's
 		 *  rounding of equal columns), which without balancing cost 11126 a page: with it 11126 is at
 		 *  1.0 (r27).  @since 17.3.2 */
-		COLUMN_BALANCING("column-balancing");
+		COLUMN_BALANCING("column-balancing"),
+		/** {@code fox:wrap}, {@code fox:wrap-sides} and {@code fox:wrap-distances} on an absolutely
+		 *  positioned block-container (fork CR-024 phase A): the lines of the page it lands on wrap
+		 *  around its rectangle grown by the distances - narrowed beside it, on its wider side where
+		 *  the side is "both", or set below it - including lines laid before its anchor on that page,
+		 *  as Word wraps text round a page-anchored picture, text box, frame or table.  docx4j writes
+		 *  them on the containers it positions against the page (CR-032 phase 5).  @since 17.3.3 */
+		OBSTACLES_IN_THE_LINE("obstacles-in-the-line");
 
 		private final String key;
 
