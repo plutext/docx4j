@@ -554,8 +554,8 @@ every position in one of its own, so on the re-read after a band's edge the soft
 - r42: control b264 0 movers; candidate b265 (`.minimum`): the same.
 - r43 (a367207fb: a band's top inside the first line after an edge; widows kept beside an obstacle): control
   b267 0 movers against b264; **candidate b268 against b267: frame-page-bands 0.9304 to 0.9979 (+32), nothing
-  else**; 6603's worst line 22.8pt to 0.3pt from Word's in both corpora (its heading 302.25pt, Word 302.2pt as
-  read), 3955 and 5218 at Word's lines and pages.
+  else**; 6603's worst line 22.8pt to 0.3pt from Word's in both corpora (its heading 302.25pt, Word
+  302.2pt), 3955 and 5218 at Word's lines and pages.
 - The released .6: b263 (`height` form) and b266 (`.minimum`) against b260, 0 movers; b269 (with the line
   manager's changes) against b266, 0 movers, the probes unchanged.
 - Tests: `WordLayoutFixupsTest` (`aPageAnchoredFrameIsAnObstacle`, `aFrameIsAsHighAsItsHeightRuleSays`,
@@ -563,8 +563,10 @@ every position in one of its own, so on the re-read after a band's edge the soft
 
 **Closed:** 3955's -2 (a list item split 2+1 beside its `around` frame's band: the widows relaxed for a float,
 and the soft return uncounted on the re-read - both above) and 6603's line in the 11.35pt gap (the fork's r43: a
-band's top inside the first line after an edge). Left: 6603's heading about 1.5pt below Word's line, unread
-(Word's PDF has no glyphs for the two empty lines above it).
+band's top inside the first line after an edge). 6603's heading is at Word's place: glyph top 302.3pt against
+Word's 302.2pt (real-c2; 302.7pt in real's golden), the lines after it within 0.1pt. (A "1.5pt below Word" noted
+on the day came from a misread 300.2pt for Word's heading; the golden says 302.2pt. A copy with its empty
+paragraphs labelled is on the share, `fidelity/frames-6603-labelled/`, to confirm where Word lays each of them.)
 
 ## 5. Gates and acceptance
 
