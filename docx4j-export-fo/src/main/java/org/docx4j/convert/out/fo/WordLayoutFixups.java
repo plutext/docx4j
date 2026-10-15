@@ -2065,7 +2065,7 @@ public final class WordLayoutFixups {
 					&& (tbl.hasAttribute(HINT_TBLP_TOP) || tbl.hasAttribute(HINT_TBLP_FRAME));
 			try {
 				if (positioned) {
-					anchorFloatingTable(doc, tbl);
+					if (!openerInTheFlow(doc, tbl)) anchorFloatingTable(doc, tbl);
 				} else {
 					boolean floated = tbl.hasAttribute(HINT_TBLP_FLOAT) && floatFloatingTable(doc, tbl);
 					if (!floated && tbl.hasAttribute(HINT_TBLP_INFLOW_Y)) inFlowOffset(doc, tbl);
@@ -2381,6 +2381,127 @@ public final class WordLayoutFixups {
 		double pitch = lengthPt(b.getAttribute("line-height"));
 		if (pitch <= 0) pitch = lengthPt(b.getAttribute(HINT_LINE_BOX));
 		return pitch;
+	}
+
+	/**
+	 * A full-width page- or margin-anchored table that opens its page is laid <b>in the
+	 * flow</b> at its position, where it was drawn in a positioned container with the flow
+	 * starting underneath it (CR-032 phase 4).  Word puts such a table at its {@code tblpY}
+	 * and the text below it, the lines that fit in the gap above it first.  For a table that
+	 * opens its page the flow's position is known - the body's top, below any empty
+	 * paragraphs before it - so the gap is too.
+	 *
+	 * <p>Measured on Word's PDFs of the probe {@code table-floating-page-opener}: case 1
+	 * ({@code tblpY} 92pt, 20pt below the body top, then a 7pt paragraph, an empty one and
+	 * text) has the 7pt paragraph above the table and the text after it at 179.0, where
+	 * docx4j drew that text at 96.2 over the table; case 2 ({@code tblpY} 36pt, in the top
+	 * margin) the in-flow table after it at 110.2, right below it, where docx4j had it at
+	 * 75.2 over it (corpus 1616: the next table over the cover table, a page); case 5 (at
+	 * the page's top edge, its foot above the body top) the text at the body top; case 6,
+	 * after a page break, as case 1.</p>
+	 *
+	 * <p>A positive gap is {@link #inFlowOffset}'s, the rule a text-anchored table's offset
+	 * already takes: the empty paragraphs that fit move above the table, a spacer keeps the
+	 * rest.  A negative one - the table above the body top - is a wrapper with a negative
+	 * {@code margin-top}, which FOP draws that far above the body top with what follows laid
+	 * after it (measured by the fork session on 2.11-docx4j.6, 2026-10-15), and at least as
+	 * tall as the overhang, so the text never starts above the body top.  A narrow table,
+	 * which Word runs text beside, and a {@code tblpYSpec} frame keep the positioned
+	 * container.  {@code docx4j.convert.out.fo.tables.openerInFlow=false} keeps it for all.</p>
+	 *
+	 * @return whether the table was laid in the flow
+	 * @since 17.3.3
+	 */
+	private static boolean openerInTheFlow(Document doc, Element tbl) {
+		if (!org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.fo.tables.openerInFlow", true)) return false;
+		Node parent = tbl.getParentNode();
+		if (!(parent instanceof Element) || !isFo((Element) parent, "flow")) return false;
+		if ("true".equals(tbl.getAttribute(HINT_TBLP_NARROW)) || !tbl.hasAttribute(HINT_TBLP_TOP)) return false;
+		Element rb = regionBody(tbl);
+		if (rb == null || !(rb.getParentNode() instanceof Element)) return false;
+		double bodyTop = lengthPt(((Element) rb.getParentNode()).getAttribute("margin-top"))
+				+ lengthPt(rb.getAttribute("margin-top"));
+		// where the flow is when it reaches the table: the body's top, below the empty
+		// paragraphs before it on its page; a page break's own paragraph takes no line on the
+		// new page (mergePageBreakParagraphs folds it into what follows)
+		double flowY = bodyTop;
+		Element breakBlock = null;
+		if (!"page".equals(tbl.getAttribute("break-before"))) {
+			for (Node n = tbl.getPreviousSibling(); n != null; n = n.getPreviousSibling()) {
+				if (!(n instanceof Element)) continue;
+				Element el = (Element) n;
+				if (takesNoSpace(el)) continue;
+				if ("page".equals(el.getAttribute("break-after"))) break;
+				if (!isFo(el, "block") || !blankBlock(el)) return false;
+				if ("page".equals(el.getAttribute("break-before"))) {
+					if (flowY == bodyTop) breakBlock = el;
+					break;
+				}
+				flowY += blockHeightPt(el);
+			}
+		}
+		double gap = lengthPt(tbl.getAttribute(HINT_TBLP_TOP)) - flowY;
+		/* A table starting above the body top whose foot may be above it too: Word starts the
+		 * text at the body top (probe case 5, a two-row table at the page's top edge), which is
+		 * what the positioned container gives, and FOP has no "at least" for the in-flow form
+		 * (it ignores block-progression-dimension.minimum on the wrapper: case 5's text began
+		 * at 27.2 against Word's 74.6).  So the table goes in the flow only where it surely
+		 * reaches below the body top. */
+		if (gap < 0 && tableHeightAtLeastPt(tbl) <= -gap) return false;
+		if (breakBlock != null) {
+			// the page break's own paragraph takes no line on the new page: it is folded into
+			// what follows it (mergePageBreakParagraphs), which is no longer the table once a
+			// spacer or the empties go before it, so the break moves to what then opens the page
+			Node before = breakBlock.getPreviousSibling();
+			parent.removeChild(breakBlock);
+			if (gap >= 0) {
+				tbl.setAttribute(HINT_TBLP_INFLOW_Y, pt(gap));
+				inFlowOffset(doc, tbl);
+			}
+			Node first = before == null ? parent.getFirstChild() : before.getNextSibling();
+			while (first != null && !(first instanceof Element)) first = first.getNextSibling();
+			if (first != null) ((Element) first).setAttribute("break-before", "page");
+			if (gap >= 0) return true;
+		} else if (gap >= 0) {
+			tbl.setAttribute(HINT_TBLP_INFLOW_Y, pt(gap));
+			inFlowOffset(doc, tbl);
+		}
+		if (gap < 0) {
+			Element wrapper = doc.createElementNS(FO_NS, "fo:block-container");
+			wrapper.setAttribute("margin-top", pt(gap));
+			wrapper.setAttribute("block-progression-dimension.minimum", pt(-gap));
+			wrapper.setAttribute("start-indent", "0pt");
+			wrapper.setAttribute("end-indent", "0pt");
+			if (tbl.hasAttribute("break-before")) {
+				wrapper.setAttribute("break-before", tbl.getAttribute("break-before"));
+				tbl.removeAttribute("break-before");
+			}
+			parent.insertBefore(wrapper, tbl);
+			wrapper.appendChild(tbl);
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Page-anchored table opening its page laid in the flow, " + gap + "pt from where the flow is");
+		}
+		return true;
+	}
+
+	/** A lower bound on a table's height before layout: each row at its stated height, or a
+	 *  line for each paragraph of its tallest cell where that is more.  @since 17.3.3 */
+	private static double tableHeightAtLeastPt(Element tbl) {
+		double h = 0;
+		for (Element row : descendants(tbl, "table-row")) {
+			if (ancestorTable(row) != tbl) continue;
+			double rowH = lengthPt(row.getAttribute("height"));
+			if (rowH <= 0) rowH = lengthPt(row.getAttribute("block-progression-dimension.minimum"));
+			for (Node c = row.getFirstChild(); c != null; c = c.getNextSibling()) {
+				if (!(c instanceof Element) || !isFo((Element) c, "table-cell")) continue;
+				double cellH = 0;
+				for (Element b : childBlocks((Element) c)) cellH += Math.max(linePitchPt(b), 0);
+				rowH = Math.max(rowH, cellH);
+			}
+			h += rowH;
+		}
+		return h;
 	}
 
 	private static void anchorFloatingTable(Document doc, Element tbl) {

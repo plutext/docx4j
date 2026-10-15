@@ -1,6 +1,6 @@
 # CR-032: floating tables laid out as Word lays them - the band at its offset, the wide table's band, the paragraphs behind it
 
-Status: IN PROGRESS - phases 4 and 5 PROPOSED 2026-10-15 (page- and margin-anchored tables, §4.4 and §4.5; phase 4's probes cut and on the share for a Word run, D4 decided yes by Jason; phase 5 waits on fop/CR-024 phase A); phases 1 and 2 SHIPPED in docx4j 17.3.2 (Maven Central, 2026-10-09), on 2.11-docx4j.6 (the export-fo bump
+Status: IN PROGRESS - phase 4 DONE 2026-10-15 (openers in the flow, §4.4; probes read; gate b232: 1616 +19 lines, nothing else moved); phase 5 PROPOSED 2026-10-15 (tables after content, §4.5, on fop/CR-024 phase A, whose r29/r30 are built); phases 1 and 2 SHIPPED in docx4j 17.3.2 (Maven Central, 2026-10-09), on 2.11-docx4j.6 (the export-fo bump
 409392c9a); phase 2 DONE 2026-10-08 (docx4j side in three commits gated on the fork's float-offset:
 fox:float-offset on a floating table's float, each float of an anchor at its own offset, a text box's band,
 anchored-picture and framePr floats; fop/CR-023 merged to 2.11-docx4j.6 at 3339fc1cf, unreleased, so the
@@ -379,6 +379,36 @@ today's positioned container unless the probes say otherwise.
 
 Gate: the four corpora and the probes against b231, read with `movers.py`; tests in `FloatingTablePositionTest`.
 
+**Measured (Word 365, goldens cut 2026-10-15 10:40; y = the top of the line, pt).** Openers: case 1 the 7pt
+paragraph above the table (73.9), the table at 92 (95.1), the text after it at 179.0; case 2 the table at 36 (39.2)
+and the in-flow table right after it (110.2); case 3 (margin-anchored) the anchor's first two lines above the table
+(74.6, 88.3), the table at 102, the rest below; case 4 (narrow) as docx4j already drew it, within 0.3pt; case 5 (a
+two-row table at the page's top edge) the text at the body top (74.6); case 6 (after a page break) as case 1, the
+anchor's first line above the table. Word's re-save writes no `w:tblpY` for 0 and no `w:vertAnchor` for `margin`
+(cases 3 and 5), so a re-saved margin anchor reaches docx4j with no `vertAnchor` (phase 1's rule) and a page anchor
+at 0 with no `tblpY`, which docx4j read as text-anchored.
+
+**As built (2026-10-15, `WordLayoutFixups.openerInTheFlow`, `TableWriter`).** A full-width page- or margin-anchored
+table with a `tblpY` that opens its page (nothing before it on the page but empty paragraphs and positioned objects,
+back to the flow's start or a page break) goes into the flow: a gap at or below the body top by `inFlowOffset`;
+above it, in a block-container with that negative `margin-top`, provided a lower bound on the table's height (each
+row at its stated height or one line a paragraph of its tallest cell) reaches below the body top - otherwise it
+stays positioned, which starts the text at the body top as case 5 measures (FOP ignores
+`block-progression-dimension.minimum` on the wrapper, which would have expressed "at least the body top"). After a
+page break the break moves to what now opens the page, so the break's own paragraph takes no line there. A page or
+margin anchor with no `tblpY` is at 0. `docx4j.convert.out.fo.tables.openerInFlow=false` keeps the positioned
+container.
+
+**Against Word (re-rendered from Word's re-saves).** Case 2 within 0.3pt throughout; case 5 within 0.3pt; case 6
+the text below the table within 0.2pt (the table itself 13.6pt high: the anchor's first line, which Word lays in the
+gap, comes after it in docx4j); case 1 the text after the table 8pt high (171.0 against 179.0: `inFlowOffset` keeps
+the gap modulo the anchor's line pitch, assuming two of its lines fit where the 7pt paragraph has one) - a limit of
+that rule, shared with text-anchored tables and left as it is. m1.docx: the second table now starts below the
+first, about 10pt above Word's, where it was drawn over it. Gate b232 against b231 (four corpora and the probes,
+`~/fidelity-cr030/gate-b231-b232.sh`): 1616 (real3, and its real-c2 copy) 0.9632 to 0.9873, +19 lines, its first
+page within 0.7pt of Word's (its pages 14 against Word's 13, as before); no other mover, every event count equal.
+`FloatingTablePositionTest` +9 (both pathways), export-fo-tests 835/0.
+
 ### 4.5 Phase 5, page- and margin-anchored tables after content (2026-10-15)
 
 The flow's position at such a table is not known before layout, which is why 17.1.0 left them in the flow and
@@ -393,8 +423,14 @@ fop/CR-024 phase A on 2026-10-15, page-anchored objects first; phase 5 is docx4j
 `fox:wrap="square"`, `fox:wrap-sides` and the distances on the positioned container (CR-024 §4.4) on capability
 `obstacles-in-the-line`, take the per-line width and start indent in `WordLineLayoutManager`'s greedy loop and its
 tab stops, and lift `opensThePage`/`reservesItsBand`'s declines where the capability is present. What Word does when
-the flow is already past the table (probe `table-floating-page-after` cases 3 and 4) decides whether the obstacle
-moves the earlier lines too, which is the fork's restart from the page's first break. docx4j writes each positioned
+the flow is already past the table (probe `table-floating-page-after` cases 3 and 4) decided whether the obstacle
+moves the earlier lines too, which is the fork's restart from the page's first break: **it does** (Word, 2026-10-15).
+Case 3, a full-width table at `tblpY` 150pt after seven paragraphs: the paragraph that crosses it keeps its first
+line above (137.9) and continues below the table (209.4); case 4, a 40% table, the earlier lines narrowed beside it.
+Case 1 (m1's pair) and case 2 (`tblpY` 300pt after two short paragraphs): the anchor's lines fill the gap above the
+table (179.0 above a table at 200; ten lines from 145.9 to 270.3 above one at 300) and the next line that would cross
+it goes below. The picture probe's case 9 the same for a picture. The fork's r30 (increment 2) re-reads the page
+from its start with the band known. docx4j writes each positioned
 object at its anchor (a page-anchored picture at its paragraph's head, a frame where its paragraphs were, a table
 where it stands), not first in its section, so that restart is needed in general.
 

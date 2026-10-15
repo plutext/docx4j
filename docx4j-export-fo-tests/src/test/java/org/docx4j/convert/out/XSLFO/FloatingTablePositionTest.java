@@ -628,6 +628,129 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 		emptyParagraphBeforeIsStillTheStart(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
+	// ------------------------------------------- CR-032 phase 4: openers in the flow
+
+	/** A full-width (8800 of 9026 twips) table carrying the given w:tblpPr, with the given
+	 *  number of one-line rows. */
+	private static String wideTable(String tblpPr, int rows) {
+		StringBuilder sb = new StringBuilder("<w:tbl><w:tblPr>" + tblpPr + "<w:tblLayout w:type=\"fixed\"/>"
+				+ "<w:tblW w:type=\"dxa\" w:w=\"8800\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"8800\"/></w:tblGrid>");
+		for (int i = 1; i <= rows; i++) {
+			sb.append("<w:tr><w:tc><w:tcPr><w:tcW w:type=\"dxa\" w:w=\"8800\"/></w:tcPr>"
+					+ "<w:p><w:r><w:t>row " + i + "</w:t></w:r></w:p></w:tc></w:tr>");
+		}
+		return sb.append("</w:tbl>").toString();
+	}
+
+	private static final String AFTER = "<w:p/><w:p/><w:p><w:r><w:t>after</w:t></w:r></w:p>";
+
+	/** The element before the table in the flow (its spacer, a moved empty paragraph). */
+	private static Element before(Element table) {
+		for (Node n = table.getPreviousSibling(); n != null; n = n.getPreviousSibling()) {
+			if (n instanceof Element) return (Element) n;
+		}
+		return null;
+	}
+
+	/**
+	 * A full-width page-anchored table that opens its section, 20pt below the body top (the
+	 * probe table-floating-page-opener's case 1, m1.docx's letterhead): laid in the flow at
+	 * that offset, not positioned with the flow starting underneath it.  Word draws the text
+	 * after it below it (case 1: 179.0, where the positioned table had it at 96.2 over it).
+	 * @since 17.3.3 (CR-032 phase 4)
+	 */
+	private void aWideOpenerIsInTheFlow(int flags) throws Exception {
+		org.w3c.dom.Document doc = fo(wideTable("<w:tblpPr w:vertAnchor=\"page\" w:horzAnchor=\"margin\""
+				+ " w:tblpX=\"0\" w:tblpY=\"1840\"/>", 3) + AFTER, flags);
+		assertNull("a full-width opener is laid in the flow", positioningContainer(doc));
+		Element table = foTable(doc);
+		assertEquals("in the flow", "flow", table.getParentNode().getLocalName());
+		// the 20pt gap: the empty paragraphs that fit go above the table, a spacer keeps the rest
+		double above = 0;
+		for (Element e = before(table); e != null; e = before(e)) {
+			above += "block-container".equals(e.getLocalName()) ? len(e.getAttribute("height"))
+					: len(e.getAttribute("line-height")) + len(e.getAttribute("space-before"))
+							+ len(e.getAttribute("space-after"));
+		}
+		assertEquals("what goes before it fills the gap", 20.0, above, 0.5);
+	}
+
+	@Test public void wideOpenerVisitor() throws Exception { aWideOpenerIsInTheFlow(Docx4J.FLAG_NONE); }
+	@Test public void wideOpenerXslt() throws Exception { aWideOpenerIsInTheFlow(Docx4J.FLAG_EXPORT_PREFER_XSL); }
+
+	/**
+	 * Above the body top (1616's shape, the probe's case 2: tblpY 36pt): in the flow inside a
+	 * wrapper pulled up by the 36pt, so what follows comes right after the table (Word: the
+	 * next table at 110.2, right below it, where docx4j drew it at 75.2 over it).
+	 * @since 17.3.3 (CR-032 phase 4)
+	 */
+	private void aWideOpenerAboveTheBodyTopIsPulledUp(int flags) throws Exception {
+		org.w3c.dom.Document doc = fo(wideTable("<w:tblpPr w:vertAnchor=\"page\" w:horzAnchor=\"margin\""
+				+ " w:tblpX=\"0\" w:tblpY=\"720\"/>", 4) + AFTER, flags);
+		assertNull("in the flow", positioningContainer(doc));
+		Element wrapper = (Element) foTable(doc).getParentNode();
+		assertEquals("block-container", wrapper.getLocalName());
+		assertEquals("pulled up by the gap", -36.0, pt(wrapper.getAttribute("margin-top")), 0.01);
+		assertEquals("flow", wrapper.getParentNode().getLocalName());
+	}
+
+	@Test public void openerAboveTheBodyTopVisitor() throws Exception { aWideOpenerAboveTheBodyTopIsPulledUp(Docx4J.FLAG_NONE); }
+	@Test public void openerAboveTheBodyTopXslt() throws Exception { aWideOpenerAboveTheBodyTopIsPulledUp(Docx4J.FLAG_EXPORT_PREFER_XSL); }
+
+	/**
+	 * A one-row opener at the page's top edge, its foot above the body top: positioned as
+	 * before, which starts the text at the body top, as Word does (the probe's case 5).  Word
+	 * writes no w:tblpY for 0, which is read as 0 for a page anchor, not as a text anchor.
+	 * @since 17.3.3 (CR-032 phase 4)
+	 */
+	private void aWideOpenerWhoseFootIsAboveTheBodyIsPositioned(int flags) throws Exception {
+		org.w3c.dom.Document doc = fo(wideTable("<w:tblpPr w:vertAnchor=\"page\" w:horzAnchor=\"margin\"/>", 1)
+				+ AFTER, flags);
+		Element abs = positioningContainer(doc);
+		assertNotNull("positioned", abs);
+		assertEquals("no w:tblpY is 0", 0.0, pt(abs.getAttribute("top")), 0.01);
+	}
+
+	@Test public void openerFootAboveTheBodyVisitor() throws Exception { aWideOpenerWhoseFootIsAboveTheBodyIsPositioned(Docx4J.FLAG_NONE); }
+	@Test public void openerFootAboveTheBodyXslt() throws Exception { aWideOpenerWhoseFootIsAboveTheBodyIsPositioned(Docx4J.FLAG_EXPORT_PREFER_XSL); }
+
+	/**
+	 * After a page break: in the flow too (the probe's case 6), and the page break moves to
+	 * what now opens the page, so the break's own paragraph takes no line there.
+	 * @since 17.3.3 (CR-032 phase 4)
+	 */
+	private void aWideOpenerAfterAPageBreak(int flags) throws Exception {
+		org.w3c.dom.Document doc = fo("<w:p><w:r><w:t>page one</w:t></w:r></w:p><w:p><w:r><w:br w:type=\"page\"/></w:r></w:p>"
+				+ wideTable("<w:tblpPr w:vertAnchor=\"page\" w:horzAnchor=\"margin\" w:tblpX=\"0\" w:tblpY=\"1840\"/>", 3)
+				+ AFTER, flags);
+		assertNull("in the flow", positioningContainer(doc));
+		// the table's place in the flow (by now inside the wrapper its outer borders get)
+		Element at = foTable(doc);
+		while (!"flow".equals(((Element) at.getParentNode()).getLocalName())) at = (Element) at.getParentNode();
+		Element breaks = "page".equals(at.getAttribute("break-before")) ? at : null;
+		for (Element e = before(at); breaks == null && e != null && !e.getTextContent().contains("page one"); e = before(e)) {
+			if ("page".equals(e.getAttribute("break-before"))) breaks = e;
+		}
+		assertNotNull("a page break opens the table's page", breaks);
+		assertTrue("on the table or on what was put before it (its spacer), not on an empty paragraph: "
+				+ breaks.getLocalName(), breaks == at || "block-container".equals(breaks.getLocalName()));
+	}
+
+	@Test public void openerAfterAPageBreakVisitor() throws Exception { aWideOpenerAfterAPageBreak(Docx4J.FLAG_NONE); }
+	@Test public void openerAfterAPageBreakXslt() throws Exception { aWideOpenerAfterAPageBreak(Docx4J.FLAG_EXPORT_PREFER_XSL); }
+
+	/** docx4j.convert.out.fo.tables.openerInFlow=false keeps the positioned container. */
+	@Test public void openerInFlowCanBeTurnedOff() throws Exception {
+		org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.tables.openerInFlow", false);
+		try {
+			org.w3c.dom.Document doc = fo(wideTable("<w:tblpPr w:vertAnchor=\"page\" w:horzAnchor=\"margin\""
+					+ " w:tblpX=\"0\" w:tblpY=\"1840\"/>", 3) + AFTER, Docx4J.FLAG_NONE);
+			assertNotNull(positioningContainer(doc));
+		} finally {
+			org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.tables.openerInFlow", true);
+		}
+	}
+
 	/** A table with no w:tblpPr is untouched. */
 	private void checkPlainTableUnaffected(int flags) throws Exception {
 		org.w3c.dom.Document doc = fo(body(""), flags);

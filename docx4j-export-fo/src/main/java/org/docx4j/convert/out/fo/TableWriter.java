@@ -436,9 +436,12 @@ public class TableWriter extends AbstractTableWriter {
 				case BOTTOM: case OUTSIDE: align = "after"; break;
 				default: align = "before"; break; // top, inside
 			}
-		} else if (tblpPr.getTblpY() != null
-				&& (vertPage || org.docx4j.wml.STVAnchor.MARGIN.equals(tblpPr.getVertAnchor()))) {
-			topTwips = (vertPage ? 0 : marginTop) + tblpPr.getTblpY().intValue();
+		} else if (vertPage || org.docx4j.wml.STVAnchor.MARGIN.equals(tblpPr.getVertAnchor())) {
+			/* No w:tblpY is 0: Word writes none for 0 (its re-save of probe
+			 * table-floating-page-opener case 5, a page-anchored table it draws at the page's
+			 * top edge), where docx4j took the table as text-anchored.  @since 17.3.3 */
+			topTwips = (vertPage ? 0 : marginTop)
+					+ (tblpPr.getTblpY() == null ? 0 : tblpPr.getTblpY().intValue());
 		} else if (tblpPr.getTblpY() != null && tblpPr.getVertAnchor() == null
 				&& marginTop + tblpPr.getTblpY().intValue() > pageH / 2) {
 			/* No w:vertAnchor is the margin box, not the text: measured on

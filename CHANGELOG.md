@@ -134,6 +134,9 @@ Changes in Version 17.3.3
   page or margin from the cell, as Word does (in mode 15 whatever layoutInCell says), where it was
   placed on the page; a page- or margin-anchored w:framePr paragraph in a table cell stays in its cell
   (Word writes them into tables nested in a floating table) where all of them were drawn at one point.
+- PDF output lays a full-width page- or margin-anchored table that opens its page in the flow at its position,
+  so the text after it starts below it as in Word, where it was drawn over the table (a letterhead's next
+  table on top of it); a page or margin anchor with no w:tblpY is at 0.  CR-032 phase 4.
 
 
 Version 17.3.2
