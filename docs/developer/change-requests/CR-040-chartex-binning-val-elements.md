@@ -1,6 +1,6 @@
 # CR-040: A histogram's bins kept - chartex `cx:binSize` and `cx:binCount` bound as Excel writes them (`@val`), not as [MS-ODRAWXML]'s schema has them (text)
 
-Status: DONE 2026-10-14 (§6); the Office check passed (Jason).  Proposed the same day, raised by the Enterprise session (plutext-enterprise-java-11-44)
+Status: phase 2 PROPOSED 2026-10-15 (`cx:externalData`'s `cx:autoUpdate`, §7; Jason: "a CR-040 follow-up phase"); phase 1 DONE 2026-10-14 (§6); the Office check passed (Jason).  Proposed the same day, raised by the Enterprise session (plutext-enterprise-java-11-44)
 from enterprise CR-004 phase 0's measurements on Excel 16.0.20326, and verified here the same
 day.  Jason, 2026-10-14: "commit then implement CR-040 with its three recommended decisions" (D1
 to D3, §3).  Owner: Jason Harrop.  One phase.
@@ -107,3 +107,44 @@ Half a day, plus the Office check.
 - **the Office check** passed (Jason, 2026-10-14), on the share's `fidelity/cr040-binning/` (the
   two files docx4j saved, and `CHECK.txt`): Excel opens each without repair, and shows bin width 10
   and 6 bins.  So Excel takes `val="10.0"`.
+
+## 7. Phase 2 (proposed 2026-10-15): `cx:externalData`'s `cx:autoUpdate`
+
+**The finding** (the Enterprise session, enterprise CR-004 phase 3, 2026-10-15; verified here the same
+day). Word and PowerPoint write a chart's link to its embedded workbook as
+`<cx:externalData r:id="rId1" cx:autoUpdate="0"/>`, the attribute **qualified** with the chartex
+namespace. The xsd declares it unqualified (`CT_ExternalData`, under the schema's
+`attributeFormDefault="unqualified"`), so `CTExternalData` binds `@XmlAttribute(name = "autoUpdate")`
+with no namespace. Unmarshalling passes Office's attribute by, `isAutoUpdate()` is null, and docx4j's
+save writes `<cx:externalData r:id="rId1"/>`. It is phase 1's mechanism: Office's form against the
+published schema.
+
+- **Where Office writes it:** in all 14 chartex parts on this machine that carry the element (the
+  core-tests fixtures `charts/waterfall.docx` and `waterfall.pptx`, and the Enterprise session's
+  Word and PowerPoint inserts), always qualified. No other chartex attribute is written qualified
+  in them.
+- **What it costs:** little. The Enterprise session's Office pass (Office 16.0.20326) opened every
+  docx4j-saved chartex file without repair and drew it from the caches, and Office's own re-save
+  writes `cx:autoUpdate="0"` back. It is a round-trip fidelity fix: a document docx4j loads and
+  saves should keep what Office wrote.
+
+**The change** (the recipe of §2):
+
+- **The xsd:** `autoUpdate`'s declaration takes `form="qualified"`, with a comment naming Office's
+  form and this CR, so that `CTExternalData` binds
+  `@XmlAttribute(name = "autoUpdate", namespace = "http://schemas.microsoft.com/office/drawing/2014/chartex")`.
+  Office's form is the only one seen; an unqualified attribute, should a producer write one, would
+  then be dropped as Office's is today. Not worth a second binding unless one is found.
+- **Regeneration**, clean, checked against the checksums of every generated source as phase 1 was.
+- **Tests (core-tests):** both waterfall fixtures loaded and saved with no edit keep
+  `cx:autoUpdate="0"`; `isAutoUpdate()` reads `false`; a `CTExternalData` made in code with
+  `setAutoUpdate(false)` marshals to Office's form.
+- **No API change:** `isAutoUpdate()`/`setAutoUpdate()` keep their types.
+- **Office check:** optional, given the Enterprise session's result. A docx4j-saved waterfall that
+  keeps the attribute should open as before.
+- **Hand-offs:** docx4j-generated-objects-ts and docx4j-python, which bind the same xsd; the
+  Enterprise session (enterprise CR-004's log refers to this phase).
+
+**Effort:** two to three hours, including the regeneration and the gate (core-tests; the chart
+gate).
+
