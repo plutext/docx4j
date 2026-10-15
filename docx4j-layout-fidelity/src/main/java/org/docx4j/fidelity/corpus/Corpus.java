@@ -1438,10 +1438,11 @@ public final class Corpus {
 		 * below it, so the table's right and bottom borders lie outside the grid - where FOP centres
 		 * a collapsed border on the line.  Widths, a double border, outer against inside, a nil
 		 * inside, two widths meeting at one edge, an indented and a right-aligned table, no cell
-		 * margins, and pictures flush with a cell's edges; in mode 15 and mode 14.
+		 * margins, and pictures flush with a cell's edges; in modes 15, 14, 12 (Word 2007) and
+		 * 11 (Word 2003).
 		 */
-		for (int mode : new int[] { 15, 14 }) {
-			PROBES.add(new Probe(mode == 15 ? "table-border-geometry" : "table-border-geometry-compat14",
+		for (int mode : new int[] { 15, 14, 12, 11 }) {
+			PROBES.add(new Probe(mode == 15 ? "table-border-geometry" : "table-border-geometry-compat" + mode,
 					"where Word paints a table's borders against its grid; mode " + mode + ", A4, 1in margins, "
 					+ "every line exact 14pt, one case a page: a title line, then a three-column, two-row table of "
 					+ "100pt columns whose cells hold one line each (case, row, column).  1 single 0.5pt (sz 4) all "

@@ -129,8 +129,8 @@ Recommended before the probe: (a).  **Recommended after it: (b)**, which the pro
 
 - mode 15: move the table right by half its left outer border (the grid's lines then lie where Word centres its
   borders), as `outerBordersOutsideTables` moves it down by half its top one;
-- mode 14: outdent the table by the larger of the first cell's start margin and half the left border (today: the
-  margin), so its text stays at the margin + `w:tblInd`;
+- modes 14, 12 and 11 (§7.1: Word draws the three alike): outdent the table by the larger of the first cell's start
+  margin and half the left border (today: the margin), so its text stays at the margin + `w:tblInd`;
 - each cell's start padding the larger of its cell margin and half its start border, less half that border (FOP
   adds the half back); the end padding likewise (`cellLineWidth` already does the end);
 - an object aligned to its cell's edge (`placeInCell`'s "edge:") measured from the borders' inner edges;
@@ -143,7 +143,8 @@ Recommended before the probe: (a).  **Recommended after it: (b)**, which the pro
 - **Phase 0 - measure.**  DONE 2026-10-16 (§2).
 - **Phase 1 - 17.3.3 on .7.**  DONE 2026-10-16 (§3.1, §8): docx4j 0614d1133, the probes 92e4ce623.
 - **Phase 2 - the border probe** (Word; D3; DONE 2026-10-16, §7.1 - `table-border-geometry` and `-compat14`, 12
-  cases each): `table-border-geometry`, modes 15 and 14 - single borders 0.5, 1.5,
+  cases each; `-compat12` and `-compat11` read the same day, as mode 14): `table-border-geometry`, modes 15 and 14 -
+  single borders 0.5, 1.5,
   3 and 6pt; double; a cell's border wider than its neighbour's (the collapsed winner on each side); nil borders;
   outer and inside; a table with `w:tblInd` and with `w:jc` right; a picture flush with each cell edge.  Read each
   border's painted extent against its grid line, and the text against the grid.
@@ -178,9 +179,8 @@ Recommended before the probe: (a).  **Recommended after it: (b)**, which the pro
   In mode 15 the text is off only beside a start border unlike the table's left one (in 55 documents at most), but
   the painted vertical borders of 1568 tables move (1427 by under 0.3pt, the 0.5pt borders; 135 by 0.3 to 0.8; 6
   more).  Below mode 15 nearly every bordered cell's text is off by half its start border - 0.24pt for the usual
-  0.5pt.  **Modes 12 and 11 are counted under mode 14's rule, which the probe did not measure for them** (39% of the
-  documents with tables): phase 3 needs a `table-border-geometry-compat12` (and 11) reading before it applies the
-  rule there.  The cell measure is unchanged (`cellLineWidth`), so the text moves sideways without rewrapping: the
+  0.5pt.  Modes 12 and 11 are counted under mode 14's rule (39% of the documents with tables), which the
+  `-compat12` and `-compat11` probes since confirm (§7.1).  The cell measure is unchanged (`cellLineWidth`), so the text moves sideways without rewrapping: the
   line scores should barely move, which is why the gate must read x as well.
 
 ## 6. Decisions for Jason
@@ -243,6 +243,14 @@ start border right of Word's (0.25pt at 0.5pt borders, 1.5pt at 3pt).  With no c
 differ.  Pictures aligned to a cell's edge (case 12) sit inside Word's borders - the right-aligned one ends at the
 right border's inner edge (372.0, the border from 372.14), the left-aligned one starts at the left border's (73.5) -
 where docx4j's overlap its borders by up to 0.72pt.
+
+**Modes 12 and 11** (probes `table-border-geometry-compat12` and `-compat11`, the same document as `-compat14` with
+only `compatibilityMode` changed - modes 12 and 11 carry none of Word 2010's compat settings; Word's goldens
+2026-10-16 07:30): Word draws them exactly as mode 14 - every word's position (`pdftotext -bbox`) and every drawing
+operation (`mutool draw -F trace`) on all twelve pages is the same in the three PDFs.  docx4j (b276's jars on r46)
+does the same: its FO differs between the three modes only in an unused footnote separator and the pictures'
+temporary file names, and its PDFs read the same.  So mode 14's rule above is Word's below mode 15, and phase 3
+applies it to modes 14, 12 and 11 alike.
 
 ### 7.2 The letter
 
