@@ -70,11 +70,17 @@ public class AnchorPositionedFromCellTest extends AbstractXSLFOTest {
 
 	/** A 139.65 x 36pt picture (m1's logo) anchored with the given position elements. */
 	private static String anchored(String relId, String layoutInCell, String wrap, String positionH, String positionV) {
+		return anchored(relId, layoutInCell, wrap, positionH, positionV, 0);
+	}
+
+	/** As above, with a distB (EMU). */
+	private static String anchored(String relId, String layoutInCell, String wrap, String positionH, String positionV,
+			long distB) {
 		return "<w:r><w:drawing xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
 				+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
 				+ " xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\""
 				+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
-				+ "<wp:anchor distT=\"0\" distB=\"0\" distL=\"114300\" distR=\"114300\" simplePos=\"0\""
+				+ "<wp:anchor distT=\"0\" distB=\"" + distB + "\" distL=\"114300\" distR=\"114300\" simplePos=\"0\""
 				+ " relativeHeight=\"251683845\" behindDoc=\"1\" locked=\"0\" layoutInCell=\"" + layoutInCell
 				+ "\" allowOverlap=\"1\"><wp:simplePos x=\"0\" y=\"0\"/>" + positionH + positionV
 				+ "<wp:extent cx=\"1773555\" cy=\"457200\"/><wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>"
@@ -103,12 +109,18 @@ public class AnchorPositionedFromCellTest extends AbstractXSLFOTest {
 	}
 
 	private org.w3c.dom.Document fo(WordprocessingMLPackage pkg, int flags, int mode, String run) throws Exception {
+		return fo(pkg, flags, mode, run, "");
+	}
+
+	/** As above, the row with the given w:trPr ("" for none). */
+	private org.w3c.dom.Document fo(WordprocessingMLPackage pkg, int flags, int mode, String run, String trPr)
+			throws Exception {
 		pkg.getMainDocumentPart().getDocumentSettingsPart().setCompatibilityMode(mode);
 		String cellPr = "<w:tcPr><w:tcW w:w=\"5760\" w:type=\"dxa\"/></w:tcPr>";
 		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
 				"<w:document " + W + "><w:body>"
 				+ "<w:tbl><w:tblPr><w:tblW w:w=\"11520\" w:type=\"dxa\"/></w:tblPr>"
-				+ "<w:tblGrid><w:gridCol w:w=\"5760\"/><w:gridCol w:w=\"5760\"/></w:tblGrid><w:tr>"
+				+ "<w:tblGrid><w:gridCol w:w=\"5760\"/><w:gridCol w:w=\"5760\"/></w:tblGrid><w:tr>" + trPr
 				+ "<w:tc>" + cellPr + "<w:p><w:r><w:t>Sample Processing Center</w:t></w:r></w:p></w:tc>"
 				+ "<w:tc>" + cellPr + "<w:p><w:pPr><w:jc w:val=\"right\"/></w:pPr>"
 				+ run + "</w:p></w:tc>"
@@ -250,6 +262,80 @@ public class AnchorPositionedFromCellTest extends AbstractXSLFOTest {
 			assertEquals(pathway(flags) + "top", 10, pt(abs.getAttribute("top")), 0.01);
 			Node holder = abs.getParentNode().getParentNode();
 			assertEquals(pathway(flags) + "at the paragraph's head", "block", holder.getLocalName());
+		}
+	}
+
+	/** The row a positioned picture's cell is in. */
+	private static Element rowOf(Element abs) {
+		for (Node n = abs.getParentNode(); n instanceof Element; n = n.getParentNode()) {
+			if ("table-row".equals(n.getLocalName())) return (Element) n;
+		}
+		return null;
+	}
+
+	private org.w3c.dom.Document fo(int flags, int mode, String layoutInCell, String wrap, String positionH,
+			String positionV, long distB, String trPr) throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		String relId = org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage
+				.createImagePart(pkg, png()).getSourceRelationship().getId();
+		return fo(pkg, flags, mode, anchored(relId, layoutInCell, wrap, positionH, positionV, distB), trPr);
+	}
+
+	/** m1's page 2: Word grows the one-line row to the foot of the logo its cell wraps the
+	 *  text round (behindDoc="1" beside wrapSquare), 0.04 + 36pt below the cell's top, where
+	 *  docx4j's row ended at its line and the page's body 22pt high (probe
+	 *  anchor-in-cell-row-height cases 1 and 2). */
+	@Test
+	public void theRowGrowsToThePicturesFoot() throws Exception {
+		for (int flags : FLAGS) {
+			Element abs = positioned(fo(flags, 15, "1", SQUARE, pos("H", "margin", "1768475"),
+					pos("V", "page", "545"), 0, ""), pathway(flags));
+			assertNotNull(pathway(flags) + "positioned", abs);
+			assertEquals(pathway(flags) + "the row's height", 36.04, pt(rowOf(abs).getAttribute("height")), 0.01);
+		}
+	}
+
+	/** From the paragraph: its offset below the cell's first paragraph, then the picture. */
+	@Test
+	public void aParagraphRelativePictureGrowsItsRow() throws Exception {
+		for (int flags : FLAGS) {
+			Element abs = positioned(fo(flags, 15, "1", SQUARE, pos("H", "margin", "0"),
+					pos("V", "paragraph", "127000"), 0, ""), pathway(flags));
+			assertNotNull(pathway(flags) + "positioned", abs);
+			assertEquals(pathway(flags) + "the row's height", 46, pt(rowOf(abs).getAttribute("height")), 0.01);
+		}
+	}
+
+	/** distB below the picture in mode 15 (probe case 10: 10pt more), not in mode 14. */
+	@Test
+	public void distBCountsInMode15Only() throws Exception {
+		for (int flags : FLAGS) {
+			Element abs = positioned(fo(flags, 15, "1", SQUARE, pos("H", "margin", "0"),
+					pos("V", "page", "545"), 127000, ""), pathway(flags));
+			assertEquals(pathway(flags) + "mode 15", 46.04, pt(rowOf(abs).getAttribute("height")), 0.01);
+			abs = positioned(fo(flags, 14, "1", SQUARE, pos("H", "margin", "0"),
+					pos("V", "page", "545"), 127000, ""), pathway(flags));
+			assertEquals(pathway(flags) + "mode 14", 36.04, pt(rowOf(abs).getAttribute("height")), 0.01);
+		}
+	}
+
+	/** In front of the text or behind it with no wrap, the row keeps to its text (cases 4, 5). */
+	@Test
+	public void noWrapLeavesTheRow() throws Exception {
+		for (int flags : FLAGS) {
+			Element abs = positioned(fo(flags, 15, "1", NONE, pos("H", "margin", "0"),
+					pos("V", "page", "545"), 0, ""), pathway(flags));
+			assertEquals(pathway(flags) + "no height", "", rowOf(abs).getAttribute("height"));
+		}
+	}
+
+	/** An exact row keeps its height (case 13: Word clips the picture, the row 20pt). */
+	@Test
+	public void anExactRowKeepsItsHeight() throws Exception {
+		for (int flags : FLAGS) {
+			Element abs = positioned(fo(flags, 15, "1", SQUARE, pos("H", "margin", "0"), pos("V", "page", "545"), 0,
+					"<w:trPr><w:trHeight w:val=\"400\" w:hRule=\"exact\"/></w:trPr>"), pathway(flags));
+			assertTrue(pathway(flags) + "at most its 20pt", pt(rowOf(abs).getAttribute("height")) <= 20.001);
 		}
 	}
 

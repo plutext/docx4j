@@ -433,6 +433,10 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     /** A square, tight or through wrap's side: "both", "left", "right" or "largest" (the
      *  wrapText of wp:wrapSquare and its kin).  @since 17.3.3 */
     public static final String HINT_ANCHOR_SIDES = "docx4j-anchor-sides";
+    /** On an object Word lays out in a table cell and wraps the cell's text round (square,
+     *  tight or through): how far below the object's foot the cell's text reaches, in pt -
+     *  its distB in mode 15, 0 below.  Word grows the row to that.  @since 17.3.3 */
+    public static final String HINT_ANCHOR_CELL_FOOT = "docx4j-anchor-cell-foot";
 
     /** The property WordLayoutFixups (docx4j-export-fo) is enabled by. */
     private static final String WORD_LAYOUT_FIXUPS_PROPERTY = "docx4j.convert.out.fo.wordLayoutFixups";
@@ -565,8 +569,9 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 	    	 * 131.55, 25.8 below its cell's top.  Word 2013 treats every anchor in a cell as
 	    	 * laid out in it; below mode 15 the attribute is taken at its word (not measured).
 	    	 * The fixups apply it where the anchor turns out to be in a cell.  @since 17.3.3 */
-	    	if (anchor.isLayoutInCell() || org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart
-	    			.getCompatibilityMode(context.getWmlPackage()) >= 15) {
+	    	int mode = org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart
+	    			.getCompatibilityMode(context.getWmlPackage());
+	    	if (anchor.isLayoutInCell() || mode >= 15) {
 	    		String cellH = "-", cellV = "-";
 	    		if (relH==org.docx4j.dml.wordprocessingDrawing.STRelFromH.PAGE
 	    				|| relH==org.docx4j.dml.wordprocessingDrawing.STRelFromH.MARGIN
@@ -584,6 +589,15 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 	    					|| pv.getAlign()==org.docx4j.dml.wordprocessingDrawing.STAlignV.INSIDE) cellV = "top:0";
 	    		}
 	    		if (!"-".equals(cellH) || !"-".equals(cellV)) g.setAttribute(HINT_ANCHOR_CELL, cellH + " " + cellV);
+	    		/* Word grows the row so that an object its cell lays out and wraps the cell's
+	    		 * text round ends inside the cell, below it the cell's bottom margin.  Measured on
+	    		 * the anchor-in-cell-row-height probes (a 100 x 60pt picture in the second cell of
+	    		 * a one-line row): square, tight, square behind the text (a letterhead's logo) and,
+	    		 * in mode 15, square with layoutInCell 0 take the row to the picture's foot (146.7
+	    		 * where the line ends at 100.6); in mode 15 its distB below that too (10pt: 156.5),
+	    		 * in mode 14 not (146.7); wrapNone in front or behind, none.  topAndBottom puts
+	    		 * the paragraph below the picture, which the flow already does.  @since 17.3.3 */
+	    		if ("square".equals(kind)) g.setAttribute(HINT_ANCHOR_CELL_FOOT, fmt(mode >= 15 ? emu(anchor.getDistB()) : 0));
 	    	}
     	} catch (Exception e) {
     		log.warn("Anchored picture left in the flow: " + e.getMessage(), e);

@@ -147,6 +147,10 @@ Changes in Version 17.3.3
 - PDF output makes one frame of consecutive paragraphs with the same page- or margin-anchored w:framePr even
   where paragraph shading groups only some of them, or a w:h that w:hRule auto ignores differs, as Word does,
   where the later ones were drawn over the earlier (a letterhead's reference and date frames).
+- PDF output grows a table row to contain a picture its cell wraps the text round (square, tight or through, in
+  front of the text or behind it), as Word does, with the picture's distB below it in mode 15, where the row ended at
+  its text (a letterhead's logo row: the rest of the page 22pt high); and such a picture no longer covers its cell's
+  top and right borders.  CR-044.
 
 
 Version 17.3.2

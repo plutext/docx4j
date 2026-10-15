@@ -934,9 +934,14 @@ public final class WordLayoutFixups {
 	public static final String HINT_ANCHOR_CELL = "docx4j-anchor-cell";
 	/** A square, tight or through wrap's side (WordXmlPictureE20.HINT_ANCHOR_SIDES).  @since 17.3.3 */
 	public static final String HINT_ANCHOR_SIDES = "docx4j-anchor-sides";
+	/** An anchor its cell lays out and wraps the cell's text round: how far below its foot the
+	 *  cell's text reaches (WordXmlPictureE20.HINT_ANCHOR_CELL_FOOT; {@link #growRowToContain}).
+	 *  @since 17.3.3 */
+	public static final String HINT_ANCHOR_CELL_FOOT = "docx4j-anchor-cell-foot";
 	private static final String[] ANCHOR_HINTS = { HINT_ANCHOR, HINT_ANCHOR_W, HINT_ANCHOR_H,
 			HINT_ANCHOR_X, HINT_ANCHOR_Y, "docx4j-anchor-dist", "docx4j-anchor-behind",
-			HINT_ANCHOR_COL, HINT_ANCHOR_ML, HINT_TEXTBOX_BESIDE, HINT_ANCHOR_CELL, HINT_ANCHOR_SIDES };
+			HINT_ANCHOR_COL, HINT_ANCHOR_ML, HINT_TEXTBOX_BESIDE, HINT_ANCHOR_CELL, HINT_ANCHOR_SIDES,
+			HINT_ANCHOR_CELL_FOOT };
 
 	/** Tests only: what {@link #obstaclesInTheLine} answers, null to ask the renderer.  @since 17.3.3 */
 	static Boolean obstaclesForTest;
@@ -1731,6 +1736,7 @@ public final class WordLayoutFixups {
 		// in a table cell Word measures the position from the cell (@since 17.3.3)
 		Element cell = ancestorCell(g);
 		double[] inCell = cell == null ? null : placeInCell(cell, g.getAttribute(HINT_ANCHOR_CELL), w);
+		final boolean cellX = inCell != null && !Double.isNaN(inCell[0]);  // x from the cell's text
 		if (inCell != null) {
 			if (!Double.isNaN(inCell[0])) x = inCell[0];
 			if (!Double.isNaN(inCell[1])) {
@@ -1740,6 +1746,11 @@ public final class WordLayoutFixups {
 			} else {
 				inCell = null; // the vertical reading is the paragraph's, as before
 			}
+		}
+		// Word grows the row to contain it (@since 17.3.3)
+		if (cell != null) {
+			double top = inCell != null ? off : pageY ? Double.NaN : paragraphTopInCell(cell, g) + off;
+			growRowToContain(cell, g.getAttribute(HINT_ANCHOR_CELL_FOOT), top, h);
 		}
 
 		if (inCell == null && whollyOffThePage(g, pageY, off, h)) {
@@ -1885,6 +1896,14 @@ public final class WordLayoutFixups {
 			abs.setAttribute("width", pt(w));
 			abs.setAttribute("height", pt(h));
 			abs.setAttribute("overflow", "visible");
+			/* The picture at the container's top: on a 0pt line of a 0.1pt font FOP sets it
+			 * 0.045pt above it (a 36pt logo at 18.475 for a top of 18.52), into the border of a
+			 * cell whose top it is placed at - which at screen resolutions then lost that border
+			 * under it, where Word's, 0.02pt above its picture, shows.  A 0pt font puts it at
+			 * 18.52; a normal line 0.014pt below, into the border under a row grown to it.
+			 * Positioned, the line moves nothing else.  @since 17.3.3 */
+			holder.setAttribute("font-size", "0pt");
+			if (cellX && !pageY) clearOfCellEnd(abs, cell, x, w);
 			abs.appendChild(holder);
 			wrapper.appendChild(abs);
 			// on the fork's obstacles the page's lines wrap round it (CR-032 phase 5); behind the
@@ -2097,6 +2116,79 @@ public final class WordLayoutFixups {
 		if (parts[1].startsWith("top:")) top = lengthPt(parts[1].substring(4) + "pt") - padT;
 		if (Double.isNaN(x) && Double.isNaN(top)) return null;
 		return new double[] { x, top };
+	}
+
+	/**
+	 * Word grows a table row so that an object its cell lays out and wraps the cell's text
+	 * round (square, tight or through; {@link #HINT_ANCHOR_CELL_FOOT}) ends inside the cell,
+	 * where docx4j's zero-height wrapper let the row end at its text: a letterhead's one-line
+	 * row holding a 36pt logo ended 22pt above Word's, and everything below it on the page
+	 * with it.  So the row's height - which FOP takes as a minimum for each cell's content,
+	 * its padding and borders added - becomes at least the object's foot below the cell's
+	 * text top, plus what the hint says below it (distB in mode 15).  An exact row keeps its
+	 * height, as Word's does (probe anchor-in-cell-row-height case 13); a cell spanning rows
+	 * is left, its foot being in another row.
+	 *
+	 * @param cell the fo:table-cell the anchor is in
+	 * @param foot the hint's value ("" where Word does not grow the cell for it)
+	 * @param top the object's top below the cell's text top, NaN where not known
+	 * @param h the object's height
+	 * @since 17.3.3
+	 */
+	private static void growRowToContain(Element cell, String foot, double top, double h) {
+		if (foot == null || foot.length() == 0 || Double.isNaN(top)) return;
+		if (!(cell.getParentNode() instanceof Element)) return;
+		Element row = (Element) cell.getParentNode();
+		if (!isFo(row, "table-row") || exactRow(row)) return;
+		String spanned = cell.getAttribute("number-rows-spanned");
+		if (spanned.length() > 0 && !"1".equals(spanned)) return;
+		double need = top + h + lengthPt(foot + "pt");
+		String property = row.hasAttribute("block-progression-dimension.minimum")
+				? "block-progression-dimension.minimum" : "height";
+		if (need > lengthPt(row.getAttribute(property))) row.setAttribute(property, pt(need));
+	}
+
+	/**
+	 * Word draws a cell's end border beside its grid line, outside the cell, so an object flush
+	 * with the cell's end stays clear of it: m1's logo ends at the table's last grid line,
+	 * 590.4pt, and Word's right border is drawn from 590.6pt.  FOP draws a collapsed border
+	 * centred on the grid line, half of it inside the cell, and paints a cell's content over its
+	 * borders, so the logo covered 0.28pt of the 0.48pt border - at screen resolutions all of
+	 * it.  An object reaching into its cell's end border by no more than that border's width is
+	 * cut at the border's inner edge; one reaching further, which Word draws over its border
+	 * too, is left.
+	 *
+	 * @param abs the object's positioned container
+	 * @param x the object's left, from the cell's content edge
+	 * @param w its width
+	 * @since 17.3.3
+	 */
+	private static void clearOfCellEnd(Element abs, Element cell, double x, double w) {
+		Element tbl = ancestorTable(cell);
+		double share = tbl != null && "separate".equals(tbl.getAttribute("border-collapse")) ? 1 : 0.5;
+		double end = outerBorderPt(cell, "right");
+		double inner = cellContentWidthPt(cell) + lengthPt(cell.getAttribute("padding-right"))
+				- share * (outerBorderPt(cell, "left") + end);
+		double excess = x + w - inner;
+		if (excess <= 0 || excess > end) return;
+		abs.setAttribute("width", pt(w - excess));
+		abs.setAttribute("overflow", "hidden");
+	}
+
+	/** Where the paragraph holding an anchor starts below its cell's text top, at least: a
+	 *  line for each paragraph before it (the lower bound {@link #tableHeightAtLeastPt}
+	 *  takes); NaN where something else comes before it.  @since 17.3.3 */
+	private static double paragraphTopInCell(Element cell, Element anchor) {
+		Node own = anchor;
+		while (own != null && own.getParentNode() != cell) own = own.getParentNode();
+		if (own == null) return Double.NaN;
+		double y = 0;
+		for (Node n = cell.getFirstChild(); n != null && n != own; n = n.getNextSibling()) {
+			if (!(n instanceof Element) || takesNoSpace((Element) n)) continue;
+			if (!isFo((Element) n, "block")) return Double.NaN;
+			y += Math.max(linePitchPt((Element) n), 0);
+		}
+		return y;
 	}
 
 	/** Puts the wrapper of an object positioned from its cell's top at the head of the
