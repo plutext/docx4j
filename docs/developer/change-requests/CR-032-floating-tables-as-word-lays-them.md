@@ -570,6 +570,60 @@ paragraphs labelled, `fidelity/frames-6603-labelled/`, run through Word the same
 0.2pt of docx4j's - PX15 73.5pt (ours 73.7, in the 14.2pt gap above the first frames), PX17 278.6 (278.7) and PX18
 290.5 (290.5) below the lowest frame's foot, the heading 302.2 (302.3), PX20 315.2 (315.1), PX21 327.7 (327.8).)
 
+#### 4.5.3 A bordered paragraph above a band: probes table-floating-page-border-above and -2 (2026-10-16)
+
+Seen in a user's letter (local only, not in the corpora) on the fork's r44: the empty paragraph after a
+page-anchored table, with a bottom border 30pt below it (`w:pBdr/w:bottom w:space="30"`), had its line laid in the
+14pt gap above the table's top; its padding and rule ran on into the band, the rule drawn across the table, and
+everything after it stood 42pt above Word's. Word lays the paragraph below the table.
+
+**The probe** (`Corpus`; mode 15, A4, 1in margins; one case a page; exact 14pt lines; Word's golden 2026-10-16
+03:55): a title and four lines end the flow at 142pt; a full-width page-anchored table (`tblpY` 158pt, three rows,
+158pt to 198pt) follows; then P, one line (142pt to 156pt, so it fits the gap); then four lines a1 to a4. P has:
+1 a bottom border, 1.5pt, `w:space` 30pt; 2 spacing after 30pt; 3 nothing; 4 the border, space 0; 5 the border,
+space 2pt; 6 spacing before 30pt; 7 the letter's paragraph (empty, a bookmark, the border with space 30pt); 8
+the border with space 30pt on a longer paragraph, the table at 172pt; 9 and 10 cases 1 and 2 with the table at
+202pt, where everything fits.
+
+**Word's rule** (baselines, to 0.3pt): a paragraph's bottom border and its `w:space` go with its last line when
+the line is fitted above a band. Where the line fits and they do not (cases 1, 5, 7), the line goes below the band
+(209.35pt; the table's foot is 198.05pt) and the rule follows it (242.0pt in cases 1 and 7, 213.9pt in case 5);
+where they fit, both stay above (case 4: rule at 156.05pt; case 9: rule at 186.05pt, a1 between it and the table).
+Spacing after does not count (case 2: P above, a1 at the table's foot, as in case 3; case 10: a1 30pt below P,
+above the table at 202pt). Spacing before does (case 6: P below the table, 30pt below its foot). Case 8 wrapped to
+three lines: lines 1 and 2 above the table, line 3 below with the rule after it (255.9pt), the split of §4.5's
+case 3.
+
+**The second probe** (`table-floating-page-border-above-2`, Word's golden 2026-10-16 04:51; the same page, P's lines
+filling the gap) answered what the first left open:
+- **The border's width counts.** One line with a 3pt border and space 0 (156 + 3 = 159pt) goes below the table, and
+  so does one with a 1.5pt border and space 1pt (158.44pt); a 0.5pt border with space 1pt (157.5pt) stays above,
+  its rule at 157.0pt. (The first probe's case 5, 156 + 2 = 158pt, needed the width to move.)
+- **The last line moves alone.** Two lines in a 30pt gap (the table at 172pt), border space 30pt: the first stays
+  above, the second goes below the table with the rule after it (255.9pt); three lines in a 44pt gap (186pt): two
+  above, one below (rule 270.1pt). Widow control on changes nothing (cases 5 and 8: one line each side of the
+  band), so it governs page breaks, not a band's edges. The two lines without the border stay above.
+
+So the test is the last line's: its bottom, plus the paragraph's bottom border space and width, against the band's
+top. Spacing after is not part of it.
+
+**docx4j on r45** (Word's re-save rendered on the gate-b268 jars): seven cases at Word's lines, within 0.25pt.
+Cases 1, 5 and 7 lay P's line above the table (153.3pt) with the padding and the rule run on into the band (the rule
+at 186.0pt in cases 1 and 7, across the table; at 158.0pt in case 5, on its top edge), and a1 at the table's foot:
+45.6pt above Word's in cases 1 and 7, 17.5pt in case 5. The FO is right (`padding-bottom` and `border-bottom` on P's
+block); the fit is the renderer's, which measures the last line against the band without the block's after-padding
+and border that end with it. On the second probe r45 lays every line above the table: cases 3 and 6 at Word's
+lines, the rest 16.6pt (one line) to 45.7pt (the last line and its border space) above Word's at a1. Handed to the
+fork (fop/CR-024) on 2026-10-16 with both probes' FO, for 2.11-docx4j.7 (Jason's call, the same day); nothing to
+change in docx4j.
+
+**The fork's r46** (2adfbfc2c on 2.11-docx4j.7, CR-024 §11.21): the band-top test adds the after border and padding
+the block closes with to its last line's text bottom (space-after not), and the edge falls before that line. Gate
+b273 on r46 with the gate-b268 jars against b271 (r45; the probes against b272, r45 with the harness that knows
+probe -2, 0 movers against b271): the four corpora 0 movers, events equal; table-floating-page-border-above 0.9876
+to 1.0000 (+2) and -2 0.9556 to 1.0000 (+6), nothing else; all 18 cases at Word's lines and rules within 0.25pt.
+The letter: the 42pt offset gone, its rule at 307.7pt (Word 308.3pt), the body within 0.8pt.
+
 ## 5. Gates and acceptance
 
 Every phase is a batch item, gated as the fidelity work is: the four corpora and the probes on
