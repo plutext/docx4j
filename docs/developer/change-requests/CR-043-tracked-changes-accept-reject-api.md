@@ -389,15 +389,18 @@ and its code is the model; the critical path to 17.3.3 is phase 0's Word run.
 - **docx4j-core-ts** (sent 2026-10-16, after phase 0): where Word differs from its code - a bookmark touching removed
   content goes whole, an inserted math structure goes whole, endnotes go with their reference - and what phase 0
   confirmed of its rules.
-- **docx4j-python**: the measured rules of §3.2 against its 0.1.0 accept and reject (it covers runs,
-  moves, marks, formatting and rows; tables, sections, cells, notes and fields are new to it), and what the agreement
-  run found (§14).
-- **docx4j-core-ts** (after phase 3): the agreement run's findings (§14): C23's grid columns no row reaches and a row's
-  redundant `w:tblPrEx`, a bookmark left empty around removed content (C11b), unreferenced parts (D7), and its known
-  scope (notes, text boxes, math).
-- **docx4j-mcp**: a `tracked-changes` tool over `report`, `acceptAll`, `rejectAll` and `TrackedChangeFilter` (the
-  portfolio's proposed `mcp/tracked-changes-tools`): the API is in docx4j 17.3.3.
-- **The portfolio**: the registry entry (CR-043 and its phases done, this session's commits).
+- **docx4j-python** (sent 2026-10-16, after phase 3): the measured rules of §3.2 against its 0.1.0 accept and reject (it
+  covers runs, moves, marks, formatting and rows; tables, sections, cells, notes and fields are new to it), and what the
+  agreement run found (§14).
+- **docx4j-core-ts** (sent 2026-10-16, after phase 3): the agreement run's findings (§14): C23's grid columns no row
+  reaches and a row's redundant `w:tblPrEx`, unreferenced parts (D7), and its known scope (notes, text boxes, math);
+  its bookmarks agree (C11, C11b).
+- **docx4j-ts-editor** (sent 2026-10-16, after phase 3): its review file passes against Word's saves, and core-ts agrees
+  there; the core-ts findings went to core-ts.
+- **docx4j-mcp** (sent 2026-10-16, through the portfolio session): a `tracked-changes` tool over `report`, `acceptAll`,
+  `rejectAll` and `TrackedChangeFilter` (the portfolio's proposed `mcp/tracked-changes-tools`): the API is in docx4j
+  17.3.3.
+- **The portfolio** (sent 2026-10-16): the registry entry (CR-043 and its phases done, this session's commits).
 
 ## 9. Sources
 
