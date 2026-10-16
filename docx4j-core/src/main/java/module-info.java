@@ -93,6 +93,7 @@ module org.docx4j.core {
     exports org.docx4j.model.properties.table.tblStyle;
     exports org.docx4j.model.properties.table.tc;
     exports org.docx4j.model.properties.table.tr;
+    exports org.docx4j.model.revisions;
     exports org.docx4j.model.sdt;
     exports org.docx4j.model.shapes;
     exports org.docx4j.model.structure;

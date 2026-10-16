@@ -155,6 +155,9 @@ Changes in Version 17.3.3
   the table's indent (it was half a border further left), a cell's text is the larger of its margin and half its start
   border inside its grid line (below mode 15 it was half a border right of Word's), and a picture aligned to its
   cell's edge stays inside the borders.  CR-044 phase 3.
+- New org.docx4j.model.revisions.TrackedChanges: list, accept and reject tracked changes in every story (headers,
+  footers, notes, comments, text boxes, content controls and equations too), held to Word 365's own Accept All and
+  Reject All; table, cell and section property records are listed but not yet resolved.  CR-043.
 
 
 Version 17.3.2

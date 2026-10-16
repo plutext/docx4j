@@ -3,8 +3,9 @@
 Status: IN PROGRESS - proposed 2026-10-15 (drafted at Jason's request, relayed by the portfolio session for its
 "Aspose to docx4j" comparison); refined 2026-10-16; phase 0 DONE 2026-10-16 (Jason: "start CR-043 phase 0"): the
 fixtures copied in, the Word probe run (Word 16.0.20326) and read, every "unmeasured" row of §3.2 that Word can produce
-now measured (§4.4).  For 17.3.3.  Four phases (§5); decisions
-in §7.
+now measured (§4.4); phase 1 DONE 2026-10-16 (Jason: "start CR-043 phase 1"): `org.docx4j.model.revisions` lists,
+accepts and rejects every kind but the table, cell and section records, held to Word's saves by 66 tests (§12). For
+17.3.3.  Four phases (§5); decisions in §7.
 
 Refined 2026-10-16 (no implementation yet; Jason: "it would be good to include CR-043 tracked changes in our
 17.3.3 release ... do not implement anything yet"), from what docx4j-ts-editor and docx4j-core-ts have built and
@@ -148,7 +149,7 @@ docx4j's reading (D5), and the row is on §11's running list.
 | **comments** | a comment whose range start lies inside removed content goes: markers, reference run and entry; with it its entries in `commentsExtended`, `commentsIds` and `commentsExtensible`, and its replies (`w15:paraIdParent`) | the same | 32 (a comment's own text: Word does not track edits to it, C18); the extended parts and replies unmeasured (§10 item 4) |
 | | a comment whose markers lie outside: the range markers inside removed content go, the reference run and entry stay | | the editor, Word 2010 and 15 |
 | **footnotes and endnotes** | a note whose reference run goes is **removed from its part** (Word also marks the note's own content deleted or inserted with its reference) | the same | the editor's `review/` saves (footnotes, Word 2010 and 15); endnotes C12, C12b |
-| a **bookmark** with its start or its end inside removed content | **removed whole** (C11: start before a deletion, end inside it, accepted) | the same (C11b: a bookmark around an insertion, rejected) | C11, C11b (core-ts drops only the markers inside, which leaves half a bookmark) |
+| a **bookmark** with its start or its end inside removed content, or around content that goes and left empty by it | **removed whole** (C11: start before a deletion, end inside it, accepted) | the same (C11b: a bookmark around an insertion, rejected); a bookmark empty before stays | C11, C11b (core-ts drops only the markers inside, which leaves half a bookmark); a deletion accepted under a bookmark, U15 |
 | a drawing (or any related part) inside removed content | the run goes; **its relationship and part go** when nothing else references them - counting every part's relationships, not the story's alone, and every relationship the removed subtree references: `a:blip` `r:embed`/`r:link`, `v:imagedata` `r:id`, chart parts, `w:object`'s OLE part and preview (Word's saves keep no unreferenced image, C04, C05) | | C04, C05; the wider scope unmeasured (D7, §10 item 4) |
 | a deleted **section break** (a deleted mark whose `w:pPr` carries `w:sectPr`) | the join takes the next paragraph's `w:pPr`, so the two sections merge: **the merged section has the following section's properties, header and footer references included**; the first section's headers are dropped, and their parts with them (D7: the tracked file's six header and six footer parts are three and three in Word's accepted save) | drop the marker | C06 |
 
@@ -186,8 +187,8 @@ ids are renumbered; every section is written with explicit header and footer ref
   `SectPr`, `TblPr`, `TblGrid`, `TrPr`, `TcPr` (deep copies, `XmlUtils.deepCopy`), keeping what the
   base type lacks (`w:pPr`'s `w:rPr`, `w:sectPr`, `w:pPrChange`).
 - **Holders are `JAXBElement`s where the schema has a choice**: `w:moveFrom`/`w:moveTo` are
-  `JAXBElement<RunTrackChange>`, the range starts `JAXBElement<CTMoveBookmark>`, `w:delText` and
-  `w:delInstrText` `JAXBElement<Text>` in `R.getContent()`; run-level revisions can stand in a
+  `JAXBElement<RunTrackChange>`, the range starts `JAXBElement<CTMoveBookmark>`, `w:delInstrText` a
+  `JAXBElement<Text>` in `R.getContent()` (but `w:delText` is a class of its own, `DelText`, not a `Text`: phase 1); run-level revisions can stand in a
   paragraph, at block level (`Body`, `Tc`, `CTSdtContentBlock`: `EG_BlockLevelElts` admits
   `EG_RunLevelElements`) and inside run holders. Remove from the live list that holds the element
   now (core-ts's `currentOwner`), and fix up the `Child` parents after splicing.
@@ -329,7 +330,7 @@ markup tracked, accepted and rejected), they settle §3.2's rows as marked there
 | Phase | Content | Estimate |
 |---|---|---|
 | 0 | DONE 2026-10-16: §4.1's fixtures copied in with their provenance (`docx4j-core-tests/src/test/resources/revisions/`, its `README.md`); §4.3's probe built, run by Jason and read (§4.4); §3.2's rows settled | 1 day + Jason's Word run |
-| 1 | the API (`TrackedChanges`, `TrackedChange`, grouping, ordering, the sweep, report) for runs at any holder depth, fields as units, moves, paragraph marks, run, mark and paragraph formatting, rows; the side effects (comments, notes, bookmarks, drawings); every story part, text boxes, both `mc:AlternateContent` branches, content controls, math | 3 days |
+| 1 | DONE 2026-10-16 (§12): the API (`TrackedChanges`, `TrackedChange`, grouping, ordering, the sweep, report) for runs at any holder depth, fields as units, moves, paragraph marks, run, mark and paragraph formatting, rows; the side effects (comments, notes, bookmarks, drawings); every story part, text boxes, both `mc:AlternateContent` branches, content controls, math | 3 days |
 | 2 | table, grid, row, cell and section property records; cell insertions and deletions, the legacy forms; the filters | 1.5 days |
 | 3 | `AcceptTrackedChanges` on the new code; the samples repointed and `TrackChangesReject` added; the XSLT retired; Getting Started; the ports' agreement run; hand-offs | 1 day |
 
@@ -357,14 +358,15 @@ and its code is the model; the critical path to 17.3.3 is phase 0's Word run.
 3. **D3**: retire `AcceptChanges.xslt` outright, or keep it deprecated for a release.
 4. **D4**: the forms Word no longer writes (`w:cellIns`, `w:cellDel`, `w:cellMerge`,
    `w:numberingChange`, `w:numPr/w:ins`): resolve them by check 27's rules and docx4j's reading,
-   with handwritten tests. Recommended: yes (a few hours; Word still reads them; core-ts does).
+   with handwritten tests. Recommended: yes (a few hours; Word still reads them; core-ts does). DECIDED: yes (Jason,
+   2026-10-16).
 5. **D5**: where Word is unmeasured and phase 0 does not reach, follow core-ts's choice so the
    ports agree. Recommended: yes, except where Word's files say otherwise (notes, fields). DECIDED: yes, with a
    running list of what is unmeasured kept (Jason, 2026-10-16: "D5: ok, but keep a running list of things which are
    unmeasured"): §11.
 6. **D6**: 17.3.3's scope: the whole CR, or phases 0, 1 and 3 with phase 2 (table, section and cell
    records, filters) after. Recommended: the whole CR if phase 0's Word run comes early; phase 2 is
-   the smaller.
+   the smaller. DECIDED: the whole CR (Jason, 2026-10-16).
 7. **D7**: a drawing removed with its run: remove its relationship and image part when nothing
    else references them, or leave them. Word's saves keep no unreferenced image (C04, C05).
    Recommended: remove. DECIDED: remove (Jason, 2026-10-16: "D7: yes"), in the wider scope of §3.2's row.
@@ -466,7 +468,7 @@ settles one moves it into §3.2 with its source. Kept current; dated where added
 | U3 | a removed comment's `commentsExtended`/`commentsIds`/`commentsExtensible` entries and its replies | go with it | §10 | a probe case with a reply on a comment inside a deletion (Word 365, not the object model's C18 edit) |
 | U4 | D7's scope beyond images: `v:imagedata`, chart parts, `w:object`'s OLE part and preview, `r:link` | removed with the last reference | §10; Word's saves for images (C04, C05) | a probe case with a chart and an OLE object inside a deletion |
 | U5 | a dropped section's header and footer parts (C06) | removed when unreferenced (D7) | - | **settled 2026-10-16**: Word's accepted save keeps three of six header and three of six footer parts; in §3.2 |
-| U6 | a deleted math structure (`w:del` in its `m:ctrlPr`) | accept removes the structure whole | symmetry with the inserted one | a probe deleting a structure in an equation |
+| U6 | a deleted math structure (`w:del` in its `m:ctrlPr`) | accept removes the structure whole | symmetry with the inserted one | **settled 2026-10-16** (phase 1): `tracked-changes-equations.docx` has one (a deleted `m:acc`), and Word's Accept All removed it whole, its Reject All kept it with its `m:ctrlPr`'s run properties |
 | U7 | `w:ins`/`w:del` holding `m:r` or `m:oMath` | as runs | the schema; §10 | Word does not write it (checks so far): handwritten markup, Word's resolution |
 | U8 | `w:cellMerge` | accept drops it; reject restores `w:vMerge` from `w:vMergeOrig` | docx4j's reading (Office JS cannot list it) | handwritten markup through COM, Word's resolution |
 | U9 | `w:numberingChange`, `w:numPr/w:ins` | `w:numberingChange` dropped either way; `w:numPr/w:ins`: accept drops the marker, reject removes the `w:numPr` | core-ts; docx4j's reading | handwritten markup through COM |
@@ -475,3 +477,65 @@ settles one moves it into §3.2 with its source. Kept current; dated where added
 | U12 | typing into a move's source, then accepting | the typed `w:ins` left pending, as for the destination (check 20) | core-ts leaves it alone | a probe after check 20's form |
 | U13 | `w:sectPrChange` rejected: what becomes of header and footer references | untouched (the record is `CT_SectPrBase`) | core-ts | a probe changing a section's headers with tracking on |
 | U14 | a run-level `w:fldSimple` inside a revision | as a run holder (check 30's listing) | check 30 (Office JS); core-ts | a probe case with a simple field inserted |
+| U15 | a bookmark around a deletion that is accepted (added 2026-10-16, phase 1) | goes with it, left empty, as one around a rejected insertion does (C11b); a bookmark that was empty already stays | C11b by symmetry | a probe case bookmarking deleted text whole |
+| U16 | an equation argument's own `m:ctrlPr` (an `m:e`'s) carrying `w:ins`/`w:del` (added 2026-10-16) | the marker goes and its run properties stay, either way: no structure is two up | docx4j's reading | Word does not write it (the equations fixture has none): handwritten markup |
+| U17 | a run holder (`w:hyperlink`, `w:smartTag`, `w:fldSimple`) left empty by resolving (added 2026-10-16) | stays, empty; a hyperlink's relationship stays while it does | core-ts (it keeps them too) | a probe rejecting a hyperlink's text inserted inside an existing link; Word's save may drop the empty element |
+| U18 | a move's listing (added 2026-10-16) | each half of each moved paragraph is listed as a change of its own (Office JS cannot list a move, checks 16 and 17); resolving any one resolves the whole move, and the others are then stale | core-ts | Word's Review pane: how many "Moved" entries a three-paragraph move (C15) shows |
+
+## 12. Phase 1 (2026-10-16)
+
+**What was built**, in `docx4j-core` `org.docx4j.model.revisions` (exported in `module-info.java`):
+
+- `TrackedChanges`: `in(pkg)` (the listing, story by story: main document, footnotes, endnotes, comments, then headers
+  and footers in the order the sections reference them; a text box's changes after the story it is in, its
+  `mc:Fallback` twins attached, not listed), `acceptAll`/`rejectAll` (last first, relisting until nothing is left,
+  both branches walked, the stray `w:customXmlIns*` markers swept; each returns how many `in` listed), `report`.
+- `TrackedChange`: `getType()` (`ADDED`, `DELETED`, `FORMATTED`), `getKind()` (the CR's kinds, plus `INSERTION`,
+  `DELETION` and `FORMATTING` for a group whose pieces are of different kinds, `FIELD_INSERTION`,
+  `CONTENT_CONTROL_INSERTION`, `MATH_STRUCTURE_INSERTION`/`DELETION`), `getAuthor()`, `getDate()` (an `Instant`, null
+  when there is none), `getId()`, `getText()`, `getPart()`, `getPieces()`, `isResolvable()`, `accept()`, `reject()`.
+  A stale view throws `IllegalStateException`; a phase 2 kind `UnsupportedOperationException`.
+- `TrackedChangesReport`: total, unresolved (the phase 2 kinds, `Kind.isResolvable()` false), by kind, author and
+  part; `toJson()`.
+- Inside: `Lister` (the walk and Office JS's grouping), `Resolver` (the operations, moves included), `Removals` (what
+  removed content takes with it, settled once a resolution is done: notes whose references went, comments whose
+  anchors went with their extended entries and replies, bookmarks touching removed content, relationships nothing
+  references and the parts only they targeted), `Props` (a recorded `w:rPr`/`w:pPr` back into the live type through
+  its XML), `Trees` (the live lists, names, text, and a reflective walk for what a subtree references).
+
+**How it is held to Word** (docx4j-core-tests, 66 tests, and docx4j-diffx-tests):
+
+- `TrackedChangesWordTest`: docx4j's Accept All and Reject All against Word's on the probe (`cr043-tracked.docx`), the
+  equations, check 18, the editor's review file (both Words), checks 26, 28 and 33, compared by
+  `DocumentDescription` (each story's paragraphs - style, alignment, indent, list, the mark's revision - and their
+  runs of one formatting and revision merged, tables, notes, comments, text boxes in every branch, equations,
+  bookmarks, each section's effective headers and footers, the image, header and footer parts). It allows what Word's
+  save normalises: ids, dates, rsids, field codes, inherited header references, the order of comments, list numbers
+  (Word renumbers them), the empty headers, footers and notes parts Word's save adds. Table, cell and section
+  properties are left out until phase 2 (`DocumentDescription.of(pkg, true)` shows them). And every Word-made fixture
+  (about 120) accepted all and rejected all, then resolved one change at a time, relisting after each: nothing
+  resolvable left, the listing shrinking each time, the result saved and loaded again.
+- `TrackedChangesOneChangeTest`: Accept This Change and Reject Change on check 18's move from either half, check 20's
+  edited and broken moves (from the destination; case 14 from both), check 22's deleted paragraph and deletion across
+  a mark, check 25's list levels.
+- `TrackedChangesTest`: the contract (grouping across authors and types, dates, a stale view, a piece resolved on its
+  own, the phase 2 kinds and the report) and the unmeasured rules on handwritten markup (U1, U2, U3, U15, a hyperlink's relationship in a
+  deleted row, the text box twin, an equation structure); the equations list as 12 changes, as Word counts them.
+- docx4j-diffx-tests `AcceptRejectOracleTest` (§3.5's second oracle): every pair of diffx's eight test paragraphs, and
+  two bodies, accepted give the newer's text and rejected the older's.
+
+**Found on the way:**
+
+- Word removes a bookmark put around content that goes when that content goes (C11b; §3.2's row said only "a bookmark
+  with its start or its end inside"): docx4j drops a bookmark left empty by a removal, one that was empty before stays.
+- The equations fixture settles U6 (a deleted structure accepted goes whole).
+- docx4j-diffx, as the second oracle found it: a paragraph the newer has and the older does not is written with no
+  `w:ins` (so rejecting cannot take it away; the oracle's `anInsertedParagraph` is `@Ignore`d for it); a deleted
+  paragraph's mark is never marked, so accepting leaves an empty paragraph; deleted text is written as `w:t`, not
+  `w:delText`, inside `w:del`; and the runs of its `w:ins` and `w:del` lose their run properties. Its own limitations,
+  for a diffx CR if wanted; the oracle compares text and ignores empty paragraphs.
+- §3.4 had `w:delText` as `JAXBElement<Text>`: it is `DelText`, a class of its own (corrected above).
+
+**Left for phase 2** as planned: table, grid, row, cell and section records (listed, unresolved), `w:cellIns`/
+`w:cellDel`, the legacy forms (`w:cellMerge`, `w:numberingChange`, `w:numPr/w:ins`), the filters. The existing
+`AcceptTrackedChanges` and the samples are untouched until phase 3.
