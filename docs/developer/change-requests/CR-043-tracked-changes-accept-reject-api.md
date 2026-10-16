@@ -633,6 +633,14 @@ counts only headers and footers that say something, since Word's save adds empty
 core-ts's 6, 6 and 2. C12's endnote, removed with its reference, agrees (its CR-002 §44); what core-ts leaves in the
 endnotes is their content revisions. Its §45 takes up §3.2's bookmark rule.
 
+core-ts follows D7 since 2026-10-17 (its 7e1da04, not pushed; its CR-002 §46). Content that an accept or reject
+removes records the relationship ids it referenced, including those in a `w:sectPr` that a join drops. At the end, a
+recorded relationship that nothing left in the part uses is removed, and so is its target part once nothing in the
+package targets it. On the probe, the core-ts session reports that its counts now match Word's saves: 3, 3 and 1 after
+Accept All, and 6, 6 and 1 after Reject All, with no header, footer or image relationship left unreferenced. That is
+its run; the agreement run was not repeated here. Still open there: whatever a removed note or comment itself
+references (settled here by `Removals.flush`), and C23.
+
 The python session confirmed its items (2026-10-16, its CR-003 §22; its tracking code unchanged since 0.1.0), and
 found three more: math is not seen at all (the equations fixture lists no change, and its 25 `w:ins` and 14 `w:del`, in
 `m:r` and `m:ctrlPr`, all remain); C01 rejected leaves a broken field, a lone `w:fldChar` separate and its result with
