@@ -8,7 +8,8 @@ Version 17.3.3
 Release date
 ------------
 
-[]
+16 October 2026
+
 
 Contributors to this release
 ----------------------------
@@ -21,151 +22,32 @@ Claude Opus 5.5
 Changes in Version 17.3.3
 --------------------------
 
-- A TOC update no longer leaves its temporary image files open (undeletable on Windows):
-  docx4j sets xmlgraphics' AbstractImageSessionContext.no-source-reuse true unless already
-  set.  PNGs in PDF output wait on xmlgraphics-commons XGC-150.  Issue 609.
-- A w:lvl without w:ilvl (which the schema requires) no longer throws a NullPointerException:
-  as in Word, it is read as an empty level 0, so paragraphs at level 0 get no number.  Issue 593.
-- A chart keeps its space in PDF and HTML output (and pptx's SVG-in-HTML) as an empty box of its
-  extent, inline or floating as a picture would be; it was dropped, and the text after it moved
-  up into its place.  New org.docx4j.model.chart.ChartBox.  CR-035.
-- ChartStylePart, ChartColorStylePart and ChartExSpacePart are typed (CTChartStyle, CTColorStyle,
-  chartex CTChartSpace); they lose their type parameter, so code declaring one must drop it.  CR-035.
-- An absent xs:list attribute stays absent when docx4j saves a part it has read: a chart style
-  part no longer gains mods="" (48 generated attribute-list fields start null).  CR-035.
-- New chart read model (org.docx4j.model.chart): Charts.in finds every chart in a docx, pptx or xlsx;
-  ChartModel and ChartExModel read one (groups, series, data by point, colours, axes, title, legend,
-  and what Office shows where it derives it), with a versioned JSON form; ChartCells compares the
-  caches with the cells.  CR-035.
-- A chart is described in markdown output as its title and a table of its data (categories down,
-  series across, numbers in their format), and in HTML the same table on the property
-  docx4j.convert.out.html.chartDataTable; new ChartTable.  CR-035.
-- New ChartDataEditor: a chart's data edited as Excel edits it (values, categories, series names;
-  categories and series added and removed, or the whole data set), keeping the cells, the table,
-  the references and the caches in step; with new cell writers in org.xlsx4j.model (CellRef,
-  AreaRef, SheetCells, Tables).  CR-035.
-- ChartDataEditor edits a chart in a docx or pptx too (ChartDataEditor.of(chart), try-with-resources):
-  the workbook embedded with it, which EmbeddedPackagePart now keeps live (getEmbeddedPackage) and
-  writes whenever the document is saved; linked charts refused; a pie's new point formatted as
-  Word formats it.  New docx sample EditChartData; pptx sample EditEmbeddedCharts uses it.  CR-036.
-- New ChartCreator: charts made in an xlsx as Excel's Insert Chart makes them, from data written as
-  a table (ChartDefinition: twelve types, text, number or date categories) or over cells already
-  there (read as Excel reads a selection); each from Excel's own parts for its type.  New
-  ChartSettings sets a chart's title, legend, axis titles, number format and data labels, on any
-  chart.  Tables.create, SheetCells.setNumberFormat.  New xlsx sample CreateCharts.  CR-036.
-- ChartCreator makes charts in docx and pptx too, as Word's and PowerPoint's Insert Chart makes
-  them: the data in an embedded workbook (Edit Data opens it), the chart Word's or PowerPoint's
-  own of its type (inDocument, inNewParagraph, inSlide); ChartCreator.delete removes a chart and
-  its parts from any host.  New samples CreateChart (docx and pptx).  CR-036.
-- New module docx4j-chart-render draws a chart as Office lays it out, to a Graphics2D, SVG (its
-  text kept as text) or a picture, through the new SPI org.docx4j.model.chart.ChartRenderer (with
-  ChartRenderCheck: what it refuses or draws simplified, and why; ChartFonts: a chart's theme fonts
-  as AWT fonts).  This first part draws the clustered column; docx4j-export-fo depends on the
-  module, and the outputs keep a chart's box empty until a later part.  CR-037.
-- docx4j-chart-render draws the other eleven classic types: bars, stacked and 100% stacked, lines
-  (markers, smoothing, gaps), areas, pies, doughnuts, scatter charts, and date axes.  New
-  ChartColorStyles: the colour Office shows for a series with none of its own.  New
-  docx4j.properties setting docx4j.chart.render.shortDate.  CR-037.
+Chart support - creating/editing/rendering - in xlsx/docx/pptx; see https://github.com/plutext/docx4j/blob/VERSION_17_3_3/docs/Docx4j_GettingStarted.md#charts
+
+org.docx4j.model.revisions.TrackedChanges: list, accept and reject tracked changes in every story.
+See https://github.com/plutext/docx4j/blob/VERSION_17_3_3/docs/Docx4j_GettingStarted.md#tracked-changes-accept-and-reject
+
+PDF via XSL FO improvements; uses docx4j-fo-renderer 2.11-docx4j.7 (was .6)
+
+Miscellaneous:
+
 - docx4j-export-fo-fonts-theme2023 adds Intos Narrow, a metric clone of Aptos Narrow (Excel 365's
-  body font), which mapped to Arimo before.  CR-037.
-- Charts are drawn in PDF output (as SVG, text as text; outlines with
-  docx4j.chart.render.textAsShapes), HTML output (an inline svg; a PNG with
-  docx4j.convert.out.html.chartAsPng) and pptx's SVG-in-HTML, where docx4j-chart-render is on the
-  classpath (docx4j-export-fo brings it); a chart it doesn't draw yet keeps its empty box.  New
-  ChartImages: any chart in a docx, pptx or xlsx as SVG or PNG, and why one isn't drawn.  CR-037.
-- docx4j-chart-render draws a chart's data labels, axis titles, manual layouts, axis options
-  (crossings, reversed orders, tick label positions, minor gridlines and tick marks), deleted
-  legend entries, fills (gradients, patterns), dashed lines, shadows and glows, and titles of
-  several runs; it refuses only combinations, secondary axes, 3-D and the other kinds.  CR-037.
-- PDF output: a chart's or picture's bold face declared to FOP late no longer makes the regular
-  text of its family bold.  CR-037.
+  body font), which mapped to Arimo before. 
+
 - New docx4j.properties setting docx4j.dcterms.write (default false): true sets dcterms:modified
-  to the current time on save, and dcterms:created on a new document.  CR-036.
-- A TOC update no longer adds another Hyperlink style to the styles part each time (TocStyles
-  didn't see the one already there).
+  to the current time on save, and dcterms:created on a new document. 
+
 - New org.docx4j.model.color: theme colours resolved as Office draws them - DrawingML colours and
-  transforms, WordprocessingML theme attributes, SpreadsheetML theme/tint/indexed - checked against
-  Word's, PowerPoint's and Excel's own renderings.  CR-034.
-- PDF and HTML output draw a WordprocessingML theme colour (w:themeColor/w:themeFill, with tint
-  and shade) as Word does, not the value written beside it, which Word keeps as a cache that can be
-  stale; new PropertyResolver.getThemeColors() and resolveColor/resolveFill.  CR-034.
-- Style inheritance: a colour inherits as one, so a run's own w:color (or a border's, a shading's,
-  an underline's) no longer keeps a style's theme reference; a w:color stating only a theme colour
-  is inherited, where it was dropped.  CR-034.
-- PDF and HTML output leave the Hyperlink character style off where Word does: a REF or PAGEREF
-  result, and a table of contents' hyperlinks (new preprocess feature
-  PP_COMMON_FIELD_HYPERLINK_STYLE, on by default).  The XSLT pathways resolve a run inside a
-  w:hyperlink with its paragraph's style.
-- HTML output: a paragraph's own top and bottom borders are drawn, and adjacent paragraphs with the
-  same borders make one box (TagSingleBox, now registered by default); a shaded paragraph keeps its
-  border colours, and w:fill="auto" no longer draws a 1px box.
-- HTML output: a simple field whose run has a w:lang is no longer dropped, nor does it leave its
-  formatting on the next table converted in the thread.
+  transforms, WordprocessingML theme attributes, SpreadsheetML theme/tint/indexed
+
 - The legacy PDF converter is gone: docx4j-legacy-service is no longer released (17.3.2 is its
   last version), and Docx4J.pdfViaLegacyConverter() and EXPORT_LEGACY_CONVERTER_DETECTED are
   removed; for PDF use docx4j-export-fo, documents4j or Microsoft Graph, and for a TOC's page
-  numbers docx4j-export-fo.  CR-038.
-- New SPI org.docx4j.model.chart.ChartExRenderer, for a renderer of chartex charts (waterfall,
-  histogram, ...), found apart from ChartRenderer: where one is present and draws the chart, PDF,
-  HTML and pptx SVG-in-HTML output draw the chart's mc:Choice, else its Fallback picture as before
-  (docx4j.properties setting docx4j.chart.chartex.branch: auto, fallback or choice).  New
-  ChartExModel.getPart().  CR-039.
-- docx4j-chart-render exports org.docx4j.chart.render.api, its frame for a renderer of other
-  charts: Excel's axis scale, text measured and wrapped, a shape's fills, the title's and legend's
-  places, and the drawing with its SVG writer.  CR-039.
-- New ChartHosting, ChartCreator's host steps opened: the embedded workbook and its data, a chart's
-  frame in a docx, on a slide and in a sheet (for a chartex chart, the Choice of an
-  mc:AlternateContent with the Fallback given), part names and Office's ids.  ChartCreator.delete
-  takes a chartex chart's mc:AlternateContent whole, with its Fallback's picture.  CR-039.
-- A histogram's bins (chartex cx:binSize, cx:binCount) are kept when docx4j saves a file: they are
-  bound with @val, as Excel writes them, where they were read as text (as [MS-ODRAWXML]'s schema
-  has them) and lost.  CTBinning.getBinSize() and getBinCount() now return CTBinSize and CTBinCount
-  (their getVal() the number).  CR-040.
-- A chart's cx:externalData keeps its cx:autoUpdate on save: Office writes it qualified with the chartex
-  namespace, where the schema has it unqualified, so it was dropped.  CR-040 phase 2.
-- docx4j-digsig: BouncyCastle 1.78.1 to 1.86 (six advisories against 1.78.1, among them
-  CVE-2026-8763 and CVE-2026-13506); Santuario stays 3.0.6.  CR-033 §11.
-- PDF and HTML output place a table with w:jc right or end against the right margin (w:tblInd
-  ignored, as Word does; below mode 15 one cell margin past it), where it was drawn at the left
-  margin; a centred or right-aligned table nested in a cell is placed within that cell; HTML
-  centres a w:jc center table.  CR-041.
-- PDF and HTML output lay out a table at its own w:tblW where its w:tblGrid contradicts it (as when
-  code sets the width and leaves TblFactory's grid), as Word does, where the grid was drawn
-  (docx4j.convert.out.fo.tables.refitStaleGrid=false keeps the grid).  CR-041.
-- PDF output places a picture, chart or shape anchored in a table cell at a position relative to the
-  page or margin from the cell, as Word does (in mode 15 whatever layoutInCell says), where it was
-  placed on the page; a page- or margin-anchored w:framePr paragraph in a table cell stays in its cell
-  (Word writes them into tables nested in a floating table) where all of them were drawn at one point.
-- PDF output lays a full-width page- or margin-anchored table that opens its page in the flow at its position,
-  so the text after it starts below it as in Word, where it was drawn over the table (a letterhead's next
-  table on top of it); a page or margin anchor with no w:tblpY is at 0.  CR-032 phase 4.
-- docx4j-fo-renderer 2.11-docx4j.7 (was .6): the hooks this release's rules need, including text wrapped round
-  page-anchored objects (obstacles-in-the-line).
-- On a docx4j FO renderer with the capability obstacles-in-the-line (2.11-docx4j.7), PDF output wraps
-  the text round page- and margin-anchored pictures, text boxes, tables and w:framePr frames as Word does, including
-  text laid before their anchor on the page, and places such a table at its position wherever the flow is.  CR-032 phase 5.
-- PDF output reserves no band for a page- or margin-anchored w:framePr frame with w:wrap="none": Word lays the text
-  under it.  CR-032 phase 5 (probe frame-page-bands).
-- PDF output makes one frame of consecutive paragraphs with the same page- or margin-anchored w:framePr even
-  where paragraph shading groups only some of them, or a w:h that w:hRule auto ignores differs, as Word does,
-  where the later ones were drawn over the earlier (a letterhead's reference and date frames).
-- PDF output grows a table row to contain a picture its cell wraps the text round (square, tight or through, in
-  front of the text or behind it), as Word does, with the picture's distB below it in mode 15, where the row ended at
-  its text (a letterhead's logo row: the rest of the page 22pt high); and such a picture no longer covers its cell's
-  top and right borders.  CR-044.
-- PDF output places a table's vertical borders and its cells' text as Word does: in mode 15 the left border starts at
-  the table's indent (it was half a border further left), a cell's text is the larger of its margin and half its start
-  border inside its grid line (below mode 15 it was half a border right of Word's), and a picture aligned to its
-  cell's edge stays inside the borders.  CR-044 phase 3.
-- New org.docx4j.model.revisions.TrackedChanges: list, accept and reject tracked changes in every story (headers,
-  footers, notes, comments, text boxes, content controls and equations too), held to Word 365's own Accept All and
-  Reject All; with TrackedChangeFilter, those by an author, of a type or kind, between dates, in a part, or inside
-  a content control or bookmark.  CR-043.
-- PDF and HTML output with ConversionFeatures.PP_COMMON_ACCEPT_TRACKED_CHANGES (so Paginate and a TOC's page
-  numbers too) lay out the accepted view of every story - headers, footers, notes, text boxes and equations - where
-  it was the main document part's runs, marks and rows only.  CR-043.
-- Samples TrackChangesAccept and TrackChangesReject use TrackedChanges; AcceptChanges.xslt is deprecated (it accepts
-  only, in the main document part, and does not join a paragraph whose mark is deleted).  CR-043.
+  numbers docx4j-export-fo. 
+
+- docx4j-digsig: BouncyCastle 1.78.1 to 1.86
+
+For more details, see https://github.com/plutext/docx4j/blob/62d1b2fd2f131c65dc60ed323714f44771e3e0a3/CHANGELOG.md
 
 
 Version 17.3.2
