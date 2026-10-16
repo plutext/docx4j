@@ -301,6 +301,14 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 				org.docx4j.convert.out.fo.FopCapabilities.Capability.SIDE_FLOAT_EDGES);
 	}
 
+	/** Whether the renderer lays the page's lines round a positioned table
+	 *  (FopCapabilities OBSTACLES_IN_THE_LINE, the docx4j renderer from 2.11-docx4j.7). */
+	private static boolean obstacles() {
+		return org.docx4j.convert.out.fo.FopCapabilities.has(
+				org.docx4j.convert.out.fo.FopCapabilities.Capability.OBSTACLES_IN_THE_LINE)
+				&& org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.fo.wrapPageAnchored", true);
+	}
+
 	private static boolean floatOffset() {
 		return org.docx4j.convert.out.fo.FopCapabilities.has(
 				org.docx4j.convert.out.fo.FopCapabilities.Capability.FLOAT_OFFSET);
@@ -528,11 +536,22 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 
 	/** A page-anchored table with text before it is mid-flow, where Word wraps the text
 	 *  after it around (in practice below) the table: it stays in the flow, since taking
-	 *  it out would draw it over that text.  Measured on two corpus documents. */
+	 *  it out would draw it over that text.  Measured on two corpus documents.  On the docx4j
+	 *  renderer from 2.11-docx4j.7 the page's lines go round it (fox:wrap), so it is placed at
+	 *  its anchor wherever the flow is (CR-032 phase 5). */
 	private void midFlowTableStaysInFlow(int flags) throws Exception {
 		org.w3c.dom.Document doc = fo("<w:p><w:r><w:t>before</w:t></w:r></w:p>"
 				+ body("<w:tblpPr w:vertAnchor=\"page\" w:horzAnchor=\"margin\""
 						+ " w:tblpXSpec=\"center\" w:tblpY=\"2880\"/>"), flags);
+		if (obstacles()) {
+			Element abs = positioningContainer(doc);
+			assertNotNull("placed at its anchor, the lines round it", abs);
+			assertEquals("square", abs.getAttributeNS(FOX_NS, "wrap"));
+			assertEquals("tblpY from the page top", 144.0, pt(abs.getAttribute("top")), 0.01);
+			// the horizontal position is Word's, from the page's edge
+			assertEquals(72 + (COLUMN_PT - TABLE_PT) / 2, pt(abs.getAttribute("left")), 0.01);
+			return;
+		}
 		assertNull("a table with text before it stays in the flow", positioningContainer(doc));
 		// the horizontal position is still Word's
 		assertEquals((COLUMN_PT - TABLE_PT) / 2, pt(foTable(doc).getAttribute("start-indent")), 0.01);
@@ -550,6 +569,9 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 	 * copy is in an fo:block with visibility="hidden", since FOP honours the property on a
 	 * block only: marked on the table itself, the copy was drawn too (corpus document 5075,
 	 * its table twice; Enterprise CR-001 &#xa7;6.6 item 43).  @since 17.3.1 for the block
+	 *
+	 * <p>On the docx4j renderer from 2.11-docx4j.7 the band is the renderer's: the one table
+	 * carries fox:wrap and nothing is copied (CR-032 phase 5).</p>
 	 */
 	private void aWideMidFlowTableIsPositionedAndReserved(int flags) throws Exception {
 		String wide = "<w:tbl><w:tblPr>"
@@ -561,6 +583,14 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 		org.w3c.dom.Document doc = fo("<w:p><w:r><w:t>before</w:t></w:r></w:p>"
 				+ wide + "<w:p><w:r><w:t>after</w:t></w:r></w:p>", flags);
 		NodeList tables = doc.getElementsByTagNameNS(FO_NS, "table");
+		if (obstacles()) {
+			assertEquals("one table: no invisible band", 1, tables.getLength());
+			Element abs = positioningContainer(doc);
+			assertNotNull("positioned at the anchor", abs);
+			assertEquals("tblpY from the page top", 600.0, pt(abs.getAttribute("top")), 0.01);
+			assertEquals("the lines round it", "square", abs.getAttributeNS(FOX_NS, "wrap"));
+			return;
+		}
 		assertEquals("the table and its invisible band", 2, tables.getLength());
 		int hidden = 0, positioned = 0;
 		for (int i = 0; i < tables.getLength(); i++) {
@@ -592,9 +622,11 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 	}
 
 	/** docx4j.convert.out.fo.tables.reserveBand=false leaves it in the flow, as b2-batch18
-	 *  did. */
+	 *  did.  The band is only reserved where the renderer does not wrap the lines round the
+	 *  table, so that is turned off too (docx4j.convert.out.fo.wrapPageAnchored=false). */
 	@Test public void reserveBandCanBeTurnedOff() throws Exception {
 		org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.tables.reserveBand", false);
+		org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.wrapPageAnchored", false);
 		try {
 			org.w3c.dom.Document doc = fo("<w:p><w:r><w:t>before</w:t></w:r></w:p>"
 					+ "<w:tbl><w:tblPr><w:tblpPr w:vertAnchor=\"page\" w:horzAnchor=\"margin\""
@@ -609,6 +641,7 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 			assertNull(positioningContainer(doc));
 		} finally {
 			org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.tables.reserveBand", true);
+			org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.wrapPageAnchored", true);
 		}
 	}
 

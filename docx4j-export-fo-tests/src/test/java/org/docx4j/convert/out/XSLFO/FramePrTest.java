@@ -346,12 +346,32 @@ public class FramePrTest extends AbstractXSLFOTest {
 	 * frame's own blocks, left where they were: FOP honours {@code visibility="hidden"},
 	 * so the area keeps its size and paints nothing, which reserves exactly the height
 	 * the frame occupies where {@code w:h} cannot (w:hRule="auto" is the common case).
+	 *
+	 * <p>On the docx4j renderer from 2.11-docx4j.7 the band is the renderer's: the frame
+	 * carries {@code fox:wrap="top-and-bottom"}, the page's lines laid above and below it as
+	 * Word lays them, and nothing is copied (CR-032 phase 5).</p>
 	 */
 	private void notBesideReservesItsBand(int flags) throws Exception {
 		org.w3c.dom.Document fo = fo(pkg(PAGE_ANCHORED, 1), flags);
-		assertNotNull(absoluteContainer(fo));
-		assertEquals("one invisible copy in the flow", 1, hiddenCopies(fo));
+		Element abs = absoluteContainer(fo);
+		assertNotNull(abs);
+		if (obstacles()) {
+			assertEquals("the lines above and below it", "top-and-bottom", abs.getAttributeNS(FOX, "wrap"));
+			assertEquals("no invisible copy", 0, hiddenCopies(fo));
+		} else {
+			assertEquals("one invisible copy in the flow", 1, hiddenCopies(fo));
+		}
 	}
+
+	/** Whether the renderer lays the page's lines round a positioned frame
+	 *  (FopCapabilities OBSTACLES_IN_THE_LINE, the docx4j renderer from 2.11-docx4j.7). */
+	private static boolean obstacles() {
+		return org.docx4j.convert.out.fo.FopCapabilities.has(
+				org.docx4j.convert.out.fo.FopCapabilities.Capability.OBSTACLES_IN_THE_LINE)
+				&& org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.fo.wrapPageAnchored", true);
+	}
+
+	private static final String FOX = "http://xmlgraphics.apache.org/fop/extensions";
 
 	@Test
 	public void notBesideReservesItsBandVisitor() throws Exception {
@@ -373,7 +393,9 @@ public class FramePrTest extends AbstractXSLFOTest {
 		assertEquals("nothing reserved", 0, hiddenCopies(fo));
 	}
 
-	/** Two frames at the same w:y share one band: Word steps over the pair once. */
+	/** Two frames at the same w:y share one band: Word steps over the pair once.  On the
+	 *  docx4j renderer from 2.11-docx4j.7 each is an obstacle the lines go above and below,
+	 *  which is the one band again, and nothing is copied. */
 	@Test
 	public void framesAtOneAnchorShareTheirBand() throws Exception {
 		StringBuilder body = new StringBuilder();
@@ -388,7 +410,17 @@ public class FramePrTest extends AbstractXSLFOTest {
 				"<w:document " + W + "><w:body>" + body + SECT_PR + "</w:body></w:document>"));
 		org.w3c.dom.Document fo = fo(pkg, Docx4J.FLAG_NONE);
 		assertEquals("both frames positioned", 2, positionedContainers(fo));
-		assertEquals("but only one band reserved", 1, hiddenCopies(fo));
+		if (obstacles()) {
+			NodeList containers = fo.getElementsByTagNameNS(FO, "block-container");
+			int wrapped = 0;
+			for (int i = 0; i < containers.getLength(); i++) {
+				if ("top-and-bottom".equals(((Element) containers.item(i)).getAttributeNS(FOX, "wrap"))) wrapped++;
+			}
+			assertEquals("both obstacles to the lines", 2, wrapped);
+			assertEquals("no invisible copy", 0, hiddenCopies(fo));
+		} else {
+			assertEquals("but only one band reserved", 1, hiddenCopies(fo));
+		}
 	}
 
 	/** fo:blocks left in the flow with visibility="hidden": the reserved bands. */

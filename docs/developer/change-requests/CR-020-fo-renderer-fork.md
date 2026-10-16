@@ -1,6 +1,6 @@
 # CR-020: `docx4j-fo-renderer` — an upstream-tracking fork of Apache FOP, with graceful degradation to Apache's own
 
-Status: ACTIVE; the switch SHIPPED in docx4j 17.3.0 (Maven Central, 2026-10-02) on docx4j-fo-renderer 2.11-docx4j.2; 17.3.1 (2026-10-07) ships on 2.11-docx4j.5 and 17.3.2 (2026-10-09) on 2.11-docx4j.6 (§8). Accepted by Jason Harrop 2026-09-18. Phases 0 and 1 landed
+Status: ACTIVE; the switch SHIPPED in docx4j 17.3.0 (Maven Central, 2026-10-02) on docx4j-fo-renderer 2.11-docx4j.2; 17.3.1 (2026-10-07) ships on 2.11-docx4j.5, 17.3.2 (2026-10-09) on 2.11-docx4j.6 and 17.3.3 on 2.11-docx4j.7 (§8). Accepted by Jason Harrop 2026-09-18. Phases 0 and 1 landed
 the same day; phase 2's classification report landed 2026-09-19 (§8, tables in
 §9) and its cherry-picks are queued as batch items; the first release,
 2.11-docx4j.1, shipped 2026-09-25; the switch of docx4j-export-fo's default to
@@ -242,7 +242,7 @@ as §3.1.
    **Re-homed (recorded 2026-10-15):** the items were taken up one by one rather than as a
    phase - the column model and unequal columns as fop/CR-026 (released in 2.11-docx4j.6);
    floating tables at an offset as fop/CR-023 (released in .6); wrap around a page-positioned
-   object as fop/CR-024 phase A (merged to 2.11-docx4j.7, unreleased; docx4j CR-032 phase 5);
+   object as fop/CR-024 phase A (released in 2.11-docx4j.7; docx4j CR-032 phase 5);
    GDI rounding on docx4j's side (the GDI line metrics of Enterprise CR-001 §4.2, carried to
    docx4j's own line manager); hyphenation partly on docx4j's side (WordLineLayoutManager's
    hyphenation zone and consecutive-hyphen limit). Still open: text on both sides of an object
@@ -1248,6 +1248,30 @@ float-offset gets `fox:float-offset` on the float and the band at the box's heig
 clear after a text box's band lands on the table itself where it has no wrapper block. Each
 test now asserts the shape for the capability the renderer on the classpath reports, so the
 same tests pass on Apache FOP 2.11 (the fallback) and on the fork.
+
+### docx4j moves to 2.11-docx4j.7 for 17.3.3 (2026-10-16)
+
+The fork released 2.11-docx4j.7 to Maven Central on 2026-10-16 (Jason, from the version commit ecaa37c40 above
+2adfbfc2c, the harness's r46; tag v2.11-docx4j.7). Core jar sha256
+4161643c1cc8eb27a530a924dcc6fdef12ca875a3309fcdcc98f3b000bd04680, resolved from Central (`_remote.repositories`
+says central) after the local install of the same source, built on another JDK, was moved aside. It carries
+fop/CR-024 (obstacles-in-the-line: text wrapped round page- and margin-anchored objects; a positioned container's
+minimum height; a bordered paragraph's last line fitted above a band with its border, CR-032 §4.5.3): twenty-six
+capabilities, all of which `FopCapabilities` reports from the released core. docx4j-export-fo's
+`fo.renderer.version` moves to it, so CR-032 phase 5 reaches users with 17.3.3.
+
+**Gate on the released artifact:** b281 = HEAD's docx4j (b280's classes, CR-044 phase 3) on the three Central jars
+(core, events, util; copied to the session scratchpad), against b280 = the same docx4j on r46: 0 movers on real,
+real2, real3, real-c2 and the probes; every event count equal (line 17614, clip 1552, bcov 1273, body 19).
+Baseline on .7: b281 (`~/fidelity-cr030/gate-b280-b281.sh`).
+
+Reactor on .7: export-fo-tests 852/0 (9 skipped) after two test classes were made capability-aware (8 failures
+before): `FloatingTablePositionTest` and `FramePrTest` had pinned the .6 shape - a page-anchored table with text
+before it kept in the flow, a wide one positioned with an invisible copy reserving its band, a notBeside frame's
+band an invisible copy - where a renderer with obstacles-in-the-line gets the object positioned with `fox:wrap`
+and nothing copied. Each now asserts the shape for the capability the renderer on the classpath reports (passing on
+.6 and .7 alike, checked on both); `reserveBandCanBeTurnedOff` also turns `wrapPageAnchored` off, so it still
+tests its property on either renderer.
 
 ## 9. Phase 2 classification (2026-09-19)
 
