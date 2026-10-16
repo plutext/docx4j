@@ -1791,6 +1791,20 @@ Paginate.paginate(wordMLPackage, settings) does that and also rewrites the docum
 
 The layout is of the document as if its tracked changes were accepted, and the pages are FOP's, with the fonts the package's font mapper resolves (Appendix 1): where those metrics differ from Word's, the page a paragraph lands on can differ too, so the markers are advisory, as Word's own are.  Docx4J.updateToc uses the same layout for the page numbers of a table of contents.
 
+# Tracked changes: accept and reject
+
+From 17.3.3, org.docx4j.model.revisions lists, accepts and rejects a document's tracked changes, in every story - the main document, headers, footers, footnotes, endnotes and comments, and inside content controls, text boxes and equations - as Word's Review tab does: Word 365's own Accept All and Reject All are what its tests compare with.
+
+&#9;`for (TrackedChange change : TrackedChanges.in(wordMLPackage)) System.out.println(change);`
+
+&#9;`TrackedChanges.acceptAll(wordMLPackage);   // or rejectAll`
+
+TrackedChanges.in lists the changes as Word's Reviewing Pane and Office JS group them (touching insertions, deletions or formatting changes by one author are one change), each with its type (added, deleted, formatted), a finer kind, its author, date, text and part; accept() and reject() resolve one, and a listing is valid until the next accept or reject on the package.  What goes takes with it what Word removes with it: a note whose reference is deleted, a comment on deleted text, a bookmark touching it, a picture no longer referenced.  A TrackedChangeFilter limits acceptAll and rejectAll to an author, a type or kind, a date range, a part, or what lies inside a content control or a bookmark:
+
+&#9;`TrackedChanges.rejectAll(wordMLPackage, new TrackedChangeFilter().authors("Author B"));`
+
+TrackedChanges.report gives the counts by kind, author and part, with a JSON form.  The samples TrackChangesAccept and TrackChangesReject show the API (AcceptChanges.xslt, which earlier samples used, is deprecated).  For PDF and HTML output, ConversionFeatures.PP\_COMMON\_ACCEPT\_TRACKED\_CHANGES lays out the accepted view, in every story since 17.3.3.
+
 # Text extraction
 
 A quick way to extract the text from a docx, is to use `TextUtils‘  `

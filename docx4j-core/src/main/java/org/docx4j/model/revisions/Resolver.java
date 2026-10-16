@@ -483,6 +483,11 @@ final class Resolver {
 			para.p.getContent().clear();
 			next.getContent().addAll(0, moved);
 			Trees.setParents(moved, next);
+			if (removals.conversion && para.p.getParaId() != null) {
+				// a conversion's layout keys a joined paragraph by its first (Paginate, CR-012)
+				next.setParaId(para.p.getParaId());
+				next.setTextId(para.p.getTextId());
+			}
 			for (int k = j - 1; k >= i; k--) container.remove(k);
 		}
 

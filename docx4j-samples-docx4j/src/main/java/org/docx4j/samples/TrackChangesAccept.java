@@ -23,30 +23,23 @@ package org.docx4j.samples;
 
 import java.io.File;
 
-import javax.xml.transform.Source;
-import javax.xml.transform.Templates;
-import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.stream.StreamSource;
-
 import org.docx4j.Docx4J;
-import org.docx4j.XmlUtils;
+import org.docx4j.model.revisions.TrackedChange;
+import org.docx4j.model.revisions.TrackedChanges;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.utils.ResourceUtils;
-import org.docx4j.wml.Document;
-import org.w3c.dom.Element;
-
 
 /**
- * Accept changes (r:ins, r:del) in the Main Document Part, via XSLT
- * 
- * @author jharrop
- * @since 3.3.6
+ * Accepts a document's tracked changes, as Word's Accept All does, in every story: the main
+ * document, headers, footers, footnotes, endnotes, comments, text boxes and equations (CR-043).
+ * Lists them first; {@link TrackChangesReject} is the other way round, and
+ * {@code TrackedChanges.acceptAll(pkg, filter)} accepts only some (by author, type, kind, date,
+ * part, or inside a content control or bookmark).
+ *
+ * <p>Until 17.3.3 this sample ran AcceptChanges.xslt over the main document part, which accepted
+ * insertions and deletions there only, and missed paragraph marks and formatting changes.</p>
  */
 public class TrackChangesAccept extends AbstractSample {
-	
-	
-	
+
 	public static void main(String[] args) throws Exception {
 
 		try {
@@ -54,41 +47,25 @@ public class TrackChangesAccept extends AbstractSample {
 		} catch (IllegalArgumentException e) {
 	    	inputfilepath = System.getProperty("user.dir") + "/OUT_CompareRsid_Newer.docx";
 		}
-		System.out.println(inputfilepath);	    	
-		boolean SAVE = false;
-		
-		// Load the docx
+		System.out.println(inputfilepath);
+		boolean SAVE = true;
+
 		WordprocessingMLPackage wordMLPackage = Docx4J.load(new java.io.File(inputfilepath));
-		
-		// Load the XLST
-		Source xsltSource  = new StreamSource(
-				ResourceUtils.getResource(
-						"AcceptChanges.xslt")
-				);
-		Templates xslt = XmlUtils.getTransformerTemplate(xsltSource);
-		
-		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
-		
-		DOMResult contentAccepted = new DOMResult(); 
-		
-		// perform the transformation
-		mdp.transform(xslt, null, contentAccepted);
-		
-		// replace the contents in the WordprocessingMLPackage
-		org.w3c.dom.Document domDoc = (org.w3c.dom.Document)contentAccepted.getNode();
-		mdp.setContents(
-				mdp.unmarshal(domDoc.getDocumentElement()));
-		
-		System.out.println(mdp.getXML());
-				
-		// Save it
+
+		// what there is, grouped as Word's Review pane and Office JS list it
+		for (TrackedChange change : TrackedChanges.in(wordMLPackage)) {
+			System.out.println(change.getType() + " " + change.getKind() + " by " + change.getAuthor()
+					+ " at " + change.getDate() + ": " + change.getText());
+		}
+		System.out.println(TrackedChanges.report(wordMLPackage).toJson());
+
+		int n = TrackedChanges.acceptAll(wordMLPackage);
+		System.out.println("Accepted " + n);
+
 		if (SAVE) {
 			String outputfilepath = System.getProperty("user.dir") + "/OUT_TrackChangesAccept.docx";
-			Docx4J.save(wordMLPackage, new File(outputfilepath), Docx4J.FLAG_NONE); //(FLAG_NONE == default == zipped docx)
-			
+			Docx4J.save(wordMLPackage, new File(outputfilepath), Docx4J.FLAG_NONE);
 			System.out.println("Saved: " + outputfilepath);
 		}
 	}
-		
-
 }

@@ -69,6 +69,13 @@ final class Removals {
 	private static Logger log = LoggerFactory.getLogger(Removals.class);
 
 	private final WordprocessingMLPackage pkg;
+	/**
+	 * True for a conversion's working copy, which shares its content type manager, relationship
+	 * objects and the parts it did not copy deep (the comments' extended parts among them) with the
+	 * package it was copied from: nothing outside the story parts is touched, and a joined paragraph
+	 * keeps the first paragraph's {@code w14:paraId} (a layout keyed by paragraph needs it: Paginate).
+	 */
+	final boolean conversion;
 
 	private final Set<BigInteger> footnotes = new LinkedHashSet<BigInteger>();
 	private final Set<BigInteger> endnotes = new LinkedHashSet<BigInteger>();
@@ -80,7 +87,12 @@ final class Removals {
 	private final Map<Part, Set<String>> relationships = new IdentityHashMap<Part, Set<String>>();
 
 	Removals(WordprocessingMLPackage pkg) {
+		this(pkg, false);
+	}
+
+	Removals(WordprocessingMLPackage pkg, boolean conversion) {
 		this.pkg = pkg;
+		this.conversion = conversion;
 	}
 
 	/** Records what {@code subtree}, about to be removed from a story, references. */
@@ -244,7 +256,7 @@ final class Removals {
 		}
 		discard(commentsPart, entry.getContent());
 		commentsPart.getJaxbElement().getComment().remove(entry);
-		if (paraId == null) return;
+		if (paraId == null || conversion) return;
 		CommentsExtendedPart extended = main.getCommentsExtendedPart();
 		if (extended != null && extended.getJaxbElement() != null) {
 			List<org.docx4j.w15.CTCommentEx> list = extended.getJaxbElement().getCommentEx();
@@ -366,6 +378,10 @@ final class Removals {
 	 */
 	private void flushRelationships() {
 		if (relationships.isEmpty()) return;
+		if (conversion) {
+			relationships.clear();
+			return;
+		}
 		Map<Part, Set<String>> todo = new IdentityHashMap<Part, Set<String>>(relationships);
 		relationships.clear();
 		for (Map.Entry<Part, Set<String>> e : todo.entrySet()) {

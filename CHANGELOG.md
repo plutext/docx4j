@@ -159,6 +159,11 @@ Changes in Version 17.3.3
   footers, notes, comments, text boxes, content controls and equations too), held to Word 365's own Accept All and
   Reject All; with TrackedChangeFilter, those by an author, of a type or kind, between dates, in a part, or inside
   a content control or bookmark.  CR-043.
+- PDF and HTML output with ConversionFeatures.PP_COMMON_ACCEPT_TRACKED_CHANGES (so Paginate and a TOC's page
+  numbers too) lay out the accepted view of every story - headers, footers, notes, text boxes and equations - where
+  it was the main document part's runs, marks and rows only.  CR-043.
+- Samples TrackChangesAccept and TrackChangesReject use TrackedChanges; AcceptChanges.xslt is deprecated (it accepts
+  only, in the main document part, and does not join a paragraph whose mark is deleted).  CR-043.
 
 
 Version 17.3.2

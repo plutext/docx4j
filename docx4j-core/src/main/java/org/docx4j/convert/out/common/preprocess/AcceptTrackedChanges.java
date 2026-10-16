@@ -25,6 +25,7 @@ import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.TraversalUtil;
 import org.docx4j.jaxb.McMode;
+import org.docx4j.model.revisions.TrackedChanges;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.ContentAccessor;
@@ -39,24 +40,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The accepted view of the main document part's tracked changes, for a conversion that
- * should lay out what the document says rather than its markup (CR-012:
- * {@code ConversionFeatures.PP_COMMON_ACCEPT_TRACKED_CHANGES}):
+ * The accepted view of a document's tracked changes, for a conversion that should lay out what the
+ * document says rather than its markup (CR-012:
+ * {@code ConversionFeatures.PP_COMMON_ACCEPT_TRACKED_CHANGES}).
  *
- * <ul>
- * <li>{@code w:del} and {@code w:moveFrom} content is removed; {@code w:ins} and
- *     {@code w:moveTo} are unwrapped into their parent.</li>
- * <li>A paragraph whose mark is deleted ({@code w:pPr/w:rPr/w:del}) is joined with the
- *     paragraph after it: the joined paragraph keeps the first one's content first and
- *     its {@code w14:paraId}, and takes the second one's properties, the mark that
- *     survives being the second's.</li>
- * <li>A table row whose {@code w:trPr} says {@code w:del} is removed.</li>
- * </ul>
- *
- * Formatting revisions ({@code w:rPrChange}, {@code w:pPrChange} and the like) need
- * nothing: the current properties are what the document shows.  Text boxes are reached
- * through their runs; headers, footers and notes are not touched.  Meant for the working
- * copy the preprocessing makes ({@code PP_COMMON_DEEP_COPY}).
+ * <p>Since 17.3.3 this is {@link TrackedChanges#acceptAllForConversion(WordprocessingMLPackage)}
+ * (CR-043): every story is accepted - the main document, headers, footers, footnotes, endnotes and
+ * comments (CR-043 D2), with text boxes in both {@code mc:AlternateContent} branches, content
+ * controls and equations - as Word's Accept All does it: deletions go, insertions and moves stay, a
+ * deleted paragraph mark joins its paragraph with the next (the joined paragraph keeps the first's
+ * {@code w14:paraId}, by which Paginate keys it, and takes the next's properties), deleted rows
+ * go, formatting records are dropped (the current formatting is what the document shows), a field
+ * or note goes whole with its reference. Before 17.3.3 only the main document part's runs, marks
+ * and rows were accepted. Meant for the working copy the preprocessing makes
+ * ({@code PP_COMMON_DEEP_COPY}): no part, relationship or content type is removed from it, since it
+ * shares them with the document it was copied from.</p>
  *
  * @since 17.2.0
  */
@@ -65,14 +63,18 @@ public class AcceptTrackedChanges {
 	private static Logger log = LoggerFactory.getLogger(AcceptTrackedChanges.class);
 
 	public static void process(WordprocessingMLPackage wmlPackage) {
-		process(wmlPackage.getMainDocumentPart().getJaxbElement().getBody().getContent(),
-				wmlPackage.getMainDocumentPart().getJaxbElement().getBody());
+		int n = TrackedChanges.acceptAllForConversion(wmlPackage);
+		if (log.isDebugEnabled()) log.debug("Accepted " + n + " tracked changes for the conversion");
 	}
 
 	/**
 	 * Accept the tracked changes in this content list (recursively), whose items belong
-	 * to {@code container}.
+	 * to {@code container}: runs, deleted paragraph marks and deleted rows only, as before 17.3.3.
+	 *
+	 * @deprecated since 17.3.3: use {@link TrackedChanges#acceptAll(WordprocessingMLPackage)}, which
+	 * accepts every kind of change in every story, as Word does (CR-043)
 	 */
+	@Deprecated
 	public static void process(List<Object> content, Object container) {
 
 		if (content == null) return;

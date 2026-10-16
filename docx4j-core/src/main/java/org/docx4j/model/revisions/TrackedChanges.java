@@ -89,22 +89,35 @@ public final class TrackedChanges {
 
 	/** Accepts every change; returns how many {@link #in} listed. */
 	public static int acceptAll(WordprocessingMLPackage pkg) {
-		return resolveAll(pkg, true, null);
+		return resolveAll(pkg, true, null, false);
 	}
 
 	/** Rejects every change; returns how many {@link #in} listed. */
 	public static int rejectAll(WordprocessingMLPackage pkg) {
-		return resolveAll(pkg, false, null);
+		return resolveAll(pkg, false, null, false);
+	}
+
+	/**
+	 * Accepts every change in a copy of a document made for a conversion, which is laid out and not
+	 * saved ({@code ConversionFeatures.PP_COMMON_ACCEPT_TRACKED_CHANGES} on the exporter's working
+	 * copy): as {@link #acceptAll(WordprocessingMLPackage)}, except that nothing outside the story
+	 * parts is touched - no part, relationship, content type or extended comment entry is removed,
+	 * since a working copy shares them with the document it was copied from - and a paragraph joined
+	 * with the next keeps the first one's {@code w14:paraId}, by which a layout keyed by paragraph
+	 * (Paginate) knows it.
+	 */
+	public static int acceptAllForConversion(WordprocessingMLPackage pkg) {
+		return resolveAll(pkg, true, null, true);
 	}
 
 	/** Accepts the changes the filter matches; returns how many of those {@link #in} listed. */
 	public static int acceptAll(WordprocessingMLPackage pkg, TrackedChangeFilter filter) {
-		return resolveAll(pkg, true, filter);
+		return resolveAll(pkg, true, filter, false);
 	}
 
 	/** Rejects the changes the filter matches; returns how many of those {@link #in} listed. */
 	public static int rejectAll(WordprocessingMLPackage pkg, TrackedChangeFilter filter) {
-		return resolveAll(pkg, false, filter);
+		return resolveAll(pkg, false, filter, false);
 	}
 
 	/** Counts by kind, author and part. */
@@ -127,11 +140,11 @@ public final class TrackedChanges {
 	 * listed is swept. Both branches of a text box's {@code mc:AlternateContent} are walked. A filter's
 	 * range is read once, before anything is resolved.
 	 */
-	private static int resolveAll(WordprocessingMLPackage pkg, boolean accept, TrackedChangeFilter filter) {
+	private static int resolveAll(WordprocessingMLPackage pkg, boolean accept, TrackedChangeFilter filter, boolean conversion) {
 		Set<Object> range = filter == null ? null : filter.range(pkg);
 		int count = 0;
 		for (TrackedChange change : new Lister(pkg, true).list()) if (!matching(change, filter, range).isEmpty()) count++;
-		Removals removals = new Removals(pkg);
+		Removals removals = new Removals(pkg, conversion);
 		int left = Integer.MAX_VALUE;
 		int stalled = 0;
 		for (int round = 0; round < 20 && stalled < 2; round++) {

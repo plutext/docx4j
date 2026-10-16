@@ -1,12 +1,15 @@
 # CR-043: Accepting and rejecting tracked changes - a docx4j-core API
 
-Status: IN PROGRESS - proposed 2026-10-15 (drafted at Jason's request, relayed by the portfolio session for its
+Status: DONE 2026-10-16, all four phases (phase 3: Jason, "commit phase 2 then start phase 3"; D2 and D3 decided) -
+proposed 2026-10-15 (drafted at Jason's request, relayed by the portfolio session for its
 "Aspose to docx4j" comparison); refined 2026-10-16; phase 0 DONE 2026-10-16 (Jason: "start CR-043 phase 0"): the
 fixtures copied in, the Word probe run (Word 16.0.20326) and read, every "unmeasured" row of §3.2 that Word can produce
 now measured (§4.4); phase 1 DONE 2026-10-16 (Jason: "start CR-043 phase 1"): `org.docx4j.model.revisions` lists,
 accepts and rejects every kind but the table, cell and section records, held to Word's saves by 66 tests (§12);
 phase 2 DONE 2026-10-16 (Jason: "commence phase 2"; D4 and D6 decided): those records, cells inserted and deleted, the
-legacy forms and the filters (§13). For 17.3.3, the whole CR (D6).  Four phases (§5); decisions in §7.
+legacy forms and the filters (§13); phase 3 DONE 2026-10-16: `AcceptTrackedChanges` on the new code in every story
+(D2), the samples, the XSLT deprecated (D3), Getting Started, the ports' agreement run (§14). For 17.3.3, the whole CR
+(D6).  Four phases (§5); decisions in §7.
 
 Refined 2026-10-16 (no implementation yet; Jason: "it would be good to include CR-043 tracked changes in our
 17.3.3 release ... do not implement anything yet"), from what docx4j-ts-editor and docx4j-core-ts have built and
@@ -168,13 +171,15 @@ ids are renumbered; every section is written with explicit header and footer ref
 
 ### 3.3 What becomes of the existing pieces
 
-- `AcceptTrackedChanges` becomes a client of the new code. The conversion keeps its own semantics
-  (the accepted view, main part, formatting revisions left as they are), so PDF and HTML output
-  with `PP_COMMON_ACCEPT_TRACKED_CHANGES` do not change unless D2 says the other parts should be
-  accepted for a conversion too.
+- `AcceptTrackedChanges` becomes a client of the new code (done, phase 3): with D2 it accepts in every story, so PDF
+  and HTML output with `PP_COMMON_ACCEPT_TRACKED_CHANGES` - Paginate and a TOC's page numbers too - lay out accepted
+  headers, footers, notes, text boxes and equations. It runs `TrackedChanges.acceptAllForConversion`, which on a
+  conversion's working copy keeps the first paragraph's `w14:paraId` on a join (Paginate keys by it) and touches
+  nothing outside the story parts (the copy shares its content types, relationship objects and the parts not copied
+  deep with the original).
 - The `TrackChangesAccept` sample is repointed to `TrackedChanges.acceptAll`, and a
-  `TrackChangesReject` sample is added. `AcceptChanges.xslt` is retired (D3), its two bugs noted
-  in the CHANGELOG.
+  `TrackChangesReject` sample is added. `AcceptChanges.xslt` stays, with a comment saying it is deprecated since
+  17.3.3 and what to use (D3), its limits noted in the CHANGELOG.
 - `w:trackRevisions` in the settings part is not changed by accepting or rejecting; an option
   turns tracking off.
 
@@ -333,7 +338,7 @@ markup tracked, accepted and rejected), they settle §3.2's rows as marked there
 | 0 | DONE 2026-10-16: §4.1's fixtures copied in with their provenance (`docx4j-core-tests/src/test/resources/revisions/`, its `README.md`); §4.3's probe built, run by Jason and read (§4.4); §3.2's rows settled | 1 day + Jason's Word run |
 | 1 | DONE 2026-10-16 (§12): the API (`TrackedChanges`, `TrackedChange`, grouping, ordering, the sweep, report) for runs at any holder depth, fields as units, moves, paragraph marks, run, mark and paragraph formatting, rows; the side effects (comments, notes, bookmarks, drawings); every story part, text boxes, both `mc:AlternateContent` branches, content controls, math | 3 days |
 | 2 | DONE 2026-10-16 (§13): table, grid, row, cell and section property records; cell insertions and deletions, the legacy forms; the filters | 1.5 days |
-| 3 | `AcceptTrackedChanges` on the new code; the samples repointed and `TrackChangesReject` added; the XSLT retired; Getting Started; the ports' agreement run; hand-offs | 1 day |
+| 3 | DONE 2026-10-16 (§14): `AcceptTrackedChanges` on the new code; the samples repointed and `TrackChangesReject` added; the XSLT deprecated (D3); Getting Started; the ports' agreement run; hand-offs | 1 day |
 
 About a week and a half in all: less than proposed, since core-ts's checks have settled the rules
 and its code is the model; the critical path to 17.3.3 is phase 0's Word run.
@@ -355,8 +360,9 @@ and its code is the model; the critical path to 17.3.3 is phase 0's Word run.
    2026-10-16: "D1: ok").
 2. **D2**: whether a conversion with `PP_COMMON_ACCEPT_TRACKED_CHANGES` also accepts in headers,
    footers and notes once the code can, which would change PDF and HTML output for documents
-   tracked there.
-3. **D3**: retire `AcceptChanges.xslt` outright, or keep it deprecated for a release.
+   tracked there. DECIDED: yes (Jason, 2026-10-16).
+3. **D3**: retire `AcceptChanges.xslt` outright, or keep it deprecated for a release. DECIDED: keep it - it is
+   harmless - with a comment saying that since 17.3.3 it is deprecated and what to use instead (Jason, 2026-10-16).
 4. **D4**: the forms Word no longer writes (`w:cellIns`, `w:cellDel`, `w:cellMerge`,
    `w:numberingChange`, `w:numPr/w:ins`): resolve them by check 27's rules and docx4j's reading,
    with handwritten tests. Recommended: yes (a few hours; Word still reads them; core-ts does). DECIDED: yes (Jason,
@@ -384,10 +390,14 @@ and its code is the model; the critical path to 17.3.3 is phase 0's Word run.
   content goes whole, an inserted math structure goes whole, endnotes go with their reference - and what phase 0
   confirmed of its rules.
 - **docx4j-python**: the measured rules of §3.2 against its 0.1.0 accept and reject (it covers runs,
-  moves, marks, formatting and rows; tables, sections, cells, notes and fields are new to it).
-- **docx4j-mcp**: a `tracked-changes` tool over `report`, `acceptAll` and `rejectAll` (the
-  portfolio's proposed `mcp/tracked-changes-tools`).
-- **The portfolio**: the registry entry (its session holds CR-043's entry).
+  moves, marks, formatting and rows; tables, sections, cells, notes and fields are new to it), and what the agreement
+  run found (§14).
+- **docx4j-core-ts** (after phase 3): the agreement run's findings (§14): C23's grid columns no row reaches and a row's
+  redundant `w:tblPrEx`, a bookmark left empty around removed content (C11b), unreferenced parts (D7), and its known
+  scope (notes, text boxes, math).
+- **docx4j-mcp**: a `tracked-changes` tool over `report`, `acceptAll`, `rejectAll` and `TrackedChangeFilter` (the
+  portfolio's proposed `mcp/tracked-changes-tools`): the API is in docx4j 17.3.3.
+- **The portfolio**: the registry entry (CR-043 and its phases done, this session's commits).
 
 ## 9. Sources
 
@@ -570,3 +580,46 @@ one change at a time.
 **Found:** C23's reject needs more than core-ts's grid collapse: Word dropped the grid columns no row's cells reach
 (the first row's `w:gridAfter` went with them), and a row's `w:tblPrEx` repeating the table's `w:tblPr` (in §3.2's
 row now; for core-ts, with phase 3's hand-offs).
+
+## 14. Phase 3 (2026-10-16)
+
+**The conversion.** `AcceptTrackedChanges.process(pkg)` is `TrackedChanges.acceptAllForConversion(pkg)`: every story
+accepted (D2), as `acceptAll` does, except that nothing outside the story parts is touched and a join keeps the first
+paragraph's `w14:paraId`. Both found by reading the callers: `PartialDeepCopy` hands the working copy the original's
+`ContentTypeManager`, the same `Relationship` objects and the parts it does not copy deep (the comments' extended parts
+among them), so removing an override or an extended comment entry there would change the document being converted;
+and Paginate keys a joined paragraph by its first (its `fo:block` id), where Word's rule, which `acceptAll` follows,
+keeps the next's. Its seven tests pass unchanged; `everyStoryOnTheWorkingCopyOnly` adds that the probe's working copy
+is left with no change in any story while the original keeps its changes, parts, content types and relationships. The
+list-only `process(List, Object)` is deprecated, unchanged. docx4j-export-fo-tests 852/0 (Paginate and the TOC's page
+numbers through it).
+
+**The rest.** The samples (`TrackChangesAccept` lists, reports, accepts and saves; `TrackChangesReject` rejects one
+author's with a filter, then one change at a time, then the rest), run on the probe. `AcceptChanges.xslt` keeps its
+templates under a comment saying it is deprecated and what to use (D3). Getting Started: a section "Tracked changes:
+accept and reject" after Pagination, in the docx (inserted with docx4j, its TOC updated with `Docx4J.updateToc`) and
+patched into the md and html as earlier sections were; the PDF follows at release (`etc/GenGettingStartedDocs.java`).
+`ConversionFeatures.PP_COMMON_ACCEPT_TRACKED_CHANGES`'s Javadoc and the CHANGELOG say what changed.
+
+**The ports' agreement run** (`docx4j-core-tests/src/test/resources/revisions/agreement/`, `PortsAgreement`): docx4j's
+Accept All and Reject All of eleven Word-made fixtures against docx4j-core-ts 0.4.0's (its main body, headers and
+footers) and docx4j-python 0.1.0's (its body), compared by `DocumentDescription`. Lines differing, accept / reject:
+
+| Fixture | core-ts | python |
+|---|---|---|
+| `cr043-tracked` (the probe) | 10 / 14 | 42 / 60 |
+| `tracked-changes-equations` | 10 / 10 | 10 / 10 |
+| `revisions-word15` (check 18's) | 2 / 0 | 15 / 24 |
+| `review-for-word` (the editor's) | 0 / 0 | 2 / 4 |
+| check 28 | 0 / 0 | 12 / 12 |
+| check 25 `25a`, `25e` | 0 / 0, 0 / 0 | 0 / 6, 0 / 2 |
+| checks 22, 26 (two), 33 | 0 | 0 |
+
+Every difference is a port's: each fixture above but `25a`'s and `25e`'s accept (which no Word save covers, and where
+all three agree) is one of the Word tests docx4j passes, so Word's own save takes docx4j's side. core-ts: its known
+scope (notes, text boxes and math are not walked; parts are not removed, D7), and C23 (its grid collapse keeps the
+column no row reaches and the first row's `w:gridAfter`). python: moves Word wrote (with range markers between the
+paragraphs) are left unresolved; check 25's list rules on reject (a restored `w:ind` equal to the level's dropped, the
+recorded `w:ilvl` 0 written) are not applied; a note whose reference went is left; an emptied comment range is kept;
+table, section and header/footer changes, bookmarks, the content-control markers and text boxes are outside what it
+resolves. No difference was docx4j's. The hand-offs (§8) carry them.

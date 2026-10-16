@@ -118,4 +118,50 @@ public class AcceptTrackedChangesTest {
 		assertEquals(2, content.size());
 		assertEquals("a", TextUtils.getText(XmlUtils.unwrap(content.get(0))));
 	}
+
+	/**
+	 * Since 17.3.3 (CR-043 D2) every story is accepted, and the conversion's working copy is
+	 * accepted without touching the document it was copied from (which shares its content types,
+	 * relationship objects and the parts not copied deep).
+	 */
+	@Test
+	public void everyStoryOnTheWorkingCopyOnly() throws Exception {
+		WordprocessingMLPackage original;
+		try (java.io.InputStream is = org.docx4j.utils.ResourceUtils.getResource("revisions/cr043/cr043-tracked.docx")) {
+			original = WordprocessingMLPackage.load(is);
+		}
+		int before = org.docx4j.model.revisions.TrackedChanges.in(original).size();
+		int parts = original.getParts().getParts().size();
+		String types = types(original);
+		String rels = rels(original);
+
+		java.util.Set<String> features = new java.util.HashSet<String>();
+		features.add(org.docx4j.convert.out.ConversionFeatures.PP_COMMON_DEEP_COPY);
+		features.add(org.docx4j.convert.out.ConversionFeatures.PP_COMMON_ACCEPT_TRACKED_CHANGES);
+		WordprocessingMLPackage copy = org.docx4j.convert.out.common.Preprocess.process(original, features);
+
+		assertTrue(copy != original);
+		assertEquals("headers, footers, endnotes and text boxes accepted too", 0,
+				org.docx4j.model.revisions.TrackedChanges.in(copy).size());
+		assertEquals(before, org.docx4j.model.revisions.TrackedChanges.in(original).size());
+		assertEquals(parts, original.getParts().getParts().size());
+		assertEquals(types, types(original));
+		assertEquals(rels, rels(original));
+	}
+
+	/** The main part's relationships, by id: target and type. */
+	private static String rels(WordprocessingMLPackage pkg) {
+		java.util.TreeMap<String, String> out = new java.util.TreeMap<String, String>();
+		for (org.docx4j.relationships.Relationship r : pkg.getMainDocumentPart().getRelationshipsPart().getRelationships().getRelationship()) {
+			out.put(r.getId(), r.getTarget() + " " + r.getType());
+		}
+		return out.toString();
+	}
+
+	private static String types(WordprocessingMLPackage pkg) throws Exception {
+		java.io.ByteArrayOutputStream os = new java.io.ByteArrayOutputStream();
+		pkg.getContentTypeManager().marshal(os);
+		// the Default and Override entries: the declarations vary with the marshaller
+		return os.toString("UTF-8").replaceAll(" xmlns(:\\w+)?=\"[^\"]*\"", "");
+	}
 }

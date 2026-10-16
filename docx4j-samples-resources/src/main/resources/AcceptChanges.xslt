@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  DEPRECATED since docx4j 17.3.3: use org.docx4j.model.revisions.TrackedChanges instead
+  (TrackedChanges.acceptAll / rejectAll, and per change TrackedChanges.in(pkg) then accept() or
+  reject(); see the TrackChangesAccept and TrackChangesReject samples).  That API accepts and rejects
+  every kind of tracked change in every story, as Word does (CR-043).
+
+  This stylesheet only accepts, over the main document part only.  It leaves formatting changes
+  (w:rPrChange, w:pPrChange, ...) and move markup, drops a deleted paragraph mark without joining
+  its paragraph to the next (Word joins them), and drops a whole table when its first row is deleted
+  while keeping any other deleted row.  It is kept, unchanged, for code that still uses it.
+-->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
   xmlns:o="urn:schemas-microsoft-com:office:office"
