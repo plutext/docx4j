@@ -626,3 +626,13 @@ paragraphs) are left unresolved; check 25's list rules on reject (a restored `w:
 recorded `w:ilvl` 0 written) are not applied; a note whose reference went is left; an emptied comment range is kept;
 table, section and header/footer changes, bookmarks, the content-control markers and text boxes are outside what it
 resolves. No difference was docx4j's. The hand-offs (§8) carry them.
+
+The core-ts session confirmed C23 and D7 on its own build (2026-10-16). In raw part counts (`DocumentDescription`
+counts only headers and footers that say something, since Word's save adds empty ones), Accept All leaves 3 headers,
+3 footers and 1 image in Word's save and docx4j's, 6, 6 and 2 in core-ts's; Reject All leaves 6, 6 and 1 against
+core-ts's 6, 6 and 2. C12's endnote, removed with its reference, agrees (its CR-002 §44); what core-ts leaves in the
+endnotes is their content revisions. Its §45 takes up §3.2's bookmark rule.
+
+**The Word-open check** (Jason, 2026-10-16, Word 365): docx4j's own Accept All and Reject All saves of four fixtures -
+the probe, the equations, the editor's review file (notes, comments, a reply) and check 18's (a move, list changes,
+tables, a section) - each open with no repair prompt and with no revision left. Word 2010 was not tried.
