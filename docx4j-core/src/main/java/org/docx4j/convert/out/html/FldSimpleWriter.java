@@ -40,6 +40,10 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 	
 	//In HTML there is only one page - therefore the result is always a (more or less formatted) "1"
 	//to keep it consistent with what fo does, it uses the formatting of the page numbers
+	//TODO: a \* format switch on the field itself (model.getFldParameters()) overrides
+	//the section format, and is ignored here (as in the fo equivalents; see
+	//pageNumberSample in the fo FldSimpleWriter).  The section format is the
+	//overwhelmingly common case.
 	protected abstract static class AbstractPageHandler implements FldSimpleStringWriterHandler {
 
 		@Override
@@ -100,5 +104,20 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 	@Override
 	protected void applyProperties(List<Property> properties, Node node) {
 		HtmlCssHelper.applyAttributes(properties, (Element)node);
+	}
+
+	/**
+	 * RunFontSelector puts the font in @style (as font-family); append that
+	 * to the style of the span we generated.
+	 *
+	 * @since 17.0.3
+	 */
+	@Override
+	protected void applyFont(Element source, Element target) {
+
+		String style = source.getAttribute("style");
+		if ((style != null) && (style.length() > 0)) {
+			HtmlCssHelper.appendStyle(target, style);
+		}
 	}
 }

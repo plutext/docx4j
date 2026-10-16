@@ -2,6 +2,42 @@ CHANGELOG
 =========
 
 
+Version 11.5.13-1
+=================
+
+Release date
+------------
+
+Not yet released
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+Claude Opus 5 and Opus 5.5
+
+Changes in Version 11.5.13-1
+----------------------------
+
+A patch release of 11.5.13, backporting font fixes from 17.0.3.
+
+PDF/HTML output:
+- PAGE, NUMPAGES and SECTIONPAGES fields (and DATE, TIME, DOCPROPERTY) are now rendered in the font which applies to them, not the renderer's default font.
+- likewise footnote and endnote numbers, tab leaders, and the space in an otherwise empty paragraph.
+- digit-based non-Latin page number formats (thaiNumbers, hindiNumbers, decimalFullWidth, decimalZero) now give those digits instead of 1, 2, 3.
+- text docx4j generates (eg a page number) is no longer given a font which lacks its glyphs, such as a subsetted embedded font; it uses the inherited font instead.
+
+Fonts:
+- BestMatchingMapper now uses a font installed under the requested name before trying a panose match, and breaks panose ties by name rather than arbitrarily.
+- a font the document embeds (or an installed Calibri) is no longer replaced by a metric-compatible substitute such as Carlito.
+- glyph checks now ask the font a document font is mapped to, so embedded and substituted fonts no longer look as if they lack characters.
+- no more spurious "TODO: how to handle char" warnings during font discovery.
+
+PDF output:
+- header/footer extents are no longer lost (falling back to much too large defaults) when a document embeds a subsetted font.
+
+
 Version 11.5.13
 ===============
 

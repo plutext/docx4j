@@ -30,7 +30,9 @@ import org.docx4j.convert.out.common.writer.AbstractPagerefHandler;
 import org.docx4j.convert.out.common.writer.HyperlinkUtil;
 import org.docx4j.convert.out.common.writer.RefHandler;
 import org.docx4j.model.fields.FldSimpleModel;
+import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.properties.Property;
+import org.docx4j.utils.FoNumberFormatUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
@@ -40,6 +42,24 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 	protected static final String FO_NS = "http://www.w3.org/1999/XSL/Format";
 	protected static final String XSL_NS = "http://www.w3.org/1999/XSL/Transform";
 	
+	/** What the page number will render as, per the section's page number format -
+	 *  eg "๑" for thaiNumbers - so the right font can be selected for it.
+	 *  (NUMPAGES/SECTIONPAGES use the page number format too; see the comment in
+	 *  AbstractFOExporter.getSectionPageInformation.)
+	 *
+	 *  TODO: a \* format switch on the field itself (model.getFldParameters())
+	 *  overrides the section format, and is ignored here.  Note that honouring it
+	 *  for PAGE would take more than a different sample: fo:page-number is
+	 *  formatted by FOP per the page-sequence's @format, which is per section.
+	 *  The section format is the overwhelmingly common case.
+	 *
+	 * @since 17.0.3
+	 */
+	protected static String pageNumberSample(AbstractWmlConversionContext context) {
+		String pageFormat = context.getSections().getCurrentSection().getPageNumberInformation().getPageFormat();
+		return FoNumberFormatUtil.format(1, FormattingSwitchHelper.getFoPageNumberFormat(pageFormat));
+	}
+
 	protected static class PageHandler implements FldSimpleNodeWriterHandler {
 		@Override
 		public String getName() { return "PAGE"; }
@@ -49,6 +69,11 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		@Override
 		public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException {
 			return doc.createElementNS(FO_NS, "fo:page-number");
+		}
+
+		@Override
+		public String getSampleText(AbstractWmlConversionContext context, FldSimpleModel model) {
+			return pageNumberSample(context);
 		}
 	}
 	
@@ -94,6 +119,11 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 				
 			}
 			return ret;
+		}
+
+		@Override
+		public String getSampleText(AbstractWmlConversionContext context, FldSimpleModel model) {
+			return pageNumberSample(context);
 		}
 
 		protected abstract String getRefid(AbstractWmlConversionContext context);
@@ -174,5 +204,22 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 	@Override
 	protected void applyProperties(List<Property> properties, Node node) {
 		XsltFOFunctions.applyFoAttributes(properties, (Element)node);
+	}
+
+	/**
+	 * RunFontSelector puts the physical font in @font-family; copy that
+	 * to the node we generated (an fo:page-number, or the fo:wrapper
+	 * containing an fo:page-number-citation-last).
+	 *
+	 * @since 17.0.3
+	 */
+	@Override
+	protected void applyFont(Element source, Element target) {
+
+		String fontFamily = source.getAttribute("font-family");
+		if ((fontFamily != null) && (fontFamily.length() > 0)
+				&& (target.getAttribute("font-family").length() == 0)) {
+			target.setAttribute("font-family", fontFamily);
+		}
 	}
 }

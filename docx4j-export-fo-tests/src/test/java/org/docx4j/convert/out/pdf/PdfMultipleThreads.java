@@ -233,8 +233,6 @@ public class PdfMultipleThreads  {
 			Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);			
 			System.out.println("Saved " + inputfilepath + Thread.currentThread().getName() + ".pdf");
 
-		 } catch (InterruptedException e) {
-			 e.printStackTrace();
 		 } catch (Exception e) {
 			 PdfMultipleThreads.abort=true;
 			 e.printStackTrace();

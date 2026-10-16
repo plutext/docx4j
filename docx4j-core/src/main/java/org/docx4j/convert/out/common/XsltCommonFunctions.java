@@ -23,7 +23,14 @@ package org.docx4j.convert.out.common;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.docx4j.XmlUtils;
+import org.docx4j.fonts.GlyphCheck;
+import org.docx4j.fonts.Mapper;
+import org.docx4j.fonts.PhysicalFont;
+import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -41,6 +48,7 @@ import org.docx4j.wml.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -64,61 +72,10 @@ public class XsltCommonFunctions {
     		NodeIterator rPrNodeIt,
     		NodeIterator textNodeIt) {
 
-		PPr pPr = null;
-		RPr rPr = null;
+		PPr pPr = toPPr(pPrNodeIt);
+		RPr rPr = toRPr(conversionContext, rPrNodeIt, pPr);
 		Text text = null;
-    	
-//    	if (rPrNodeIt!=null) 
-		{ 
-    		Node n = pPrNodeIt.nextNode(); //It is never null
-    		if (n!=null) {
-    			try {
-        			Unmarshaller u = Context.jc.createUnmarshaller();			
-        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-        			Object jaxb = u.unmarshal(n);
-    				pPr =  (PPr)jaxb;
-    			} catch (ClassCastException e) {
-    				log.error("Couldn't cast  to RPr!");
-    			} catch (JAXBException e) {
-    				log.error(e.getMessage(), e);
-				}        	        			
-    		}
-    	}
-    	
-//    	if (rPrNodeIt!=null) 
-		{ 
-    		Node n = rPrNodeIt.nextNode();
-    		if (n!=null) {
-    			try {
-        			Unmarshaller u = Context.jc.createUnmarshaller();			
-        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-        			Object jaxb = u.unmarshal(n);
-    				//rPr =  (RPr)jaxb;
-    				
-    				if (jaxb instanceof RPr) {
-    					//rPrDirect =  (RPr)jaxbR;
-    					rPr = (RPr)jaxb;
-    				} else if (jaxb instanceof ParaRPr) {
-//    					if (log.isDebugEnabled()) {
-//    						Throwable t = new Throwable();
-//    						log.debug("passed ParaRPr", t);
-//    					}
-    					rPr = conversionContext.getPropertyResolver().getEffectiveRPr(null, pPr); 
-//    	    			System.out.println("p rpr-->" + XmlUtils.marshaltoString(pPrDirect.getRPr()));
-    	        		
-    	        		StyleUtil.apply((ParaRPr)jaxb, rPr); 				
-    					
-    				}    				
-    				
-    				
-    			} catch (ClassCastException e) {
-    				log.error("Couldn't cast  to RPr!");
-    			} catch (JAXBException e) {
-    				log.error(e.getMessage(), e);
-				}        	        			
-    		}
-    	}
-		
+
 		{ 
     		Node n = textNodeIt.nextNode();
     		if (n!=null) {
@@ -139,6 +96,195 @@ public class XsltCommonFunctions {
     	return (DocumentFragment) conversionContext.getRunFontSelector().fontSelector(pPr, rPr, text);
 
     }
+
+    /** As above, but for text we generate ourselves (a footnote or endnote number),
+     *  as opposed to the contents of a w:t.
+     *
+     *  Without this, the number would be rendered in the renderer's default font,
+     *  rather than the font of the run it belongs to.
+     *
+     * @param conversionContext
+     * @param pPrNodeIt the w:pPr of the containing w:p (may be empty)
+     * @param rPrNodeIt the w:rPr of the containing w:r (may be empty)
+     * @param text the text to be rendered
+     * @since 17.0.3
+     */
+    public static DocumentFragment fontSelectorForGeneratedText(AbstractWmlConversionContext conversionContext, 
+    		NodeIterator pPrNodeIt,
+    		NodeIterator rPrNodeIt,
+    		String text) {
+
+		PPr pPr = toPPr(pPrNodeIt);
+		RPr rPr = toRPr(conversionContext, rPrNodeIt, pPr);
+
+    	/* Pass the text as a w:t with no xml:space, rather than as a String: the
+    	 * String overload doesn't reset RunFontSelector's spacePreserve flag, so
+    	 * generated text would otherwise inherit xml:space="preserve" from whatever
+    	 * w:t that instance (which lives for the conversion) was last used for. */
+    	Text wmlText = Context.getWmlObjectFactory().createText();
+    	wmlText.setValue(text);
+
+    	DocumentFragment df =
+    			(DocumentFragment) conversionContext.getRunFontSelector().fontSelector(pPr, rPr, wmlText);
+
+    	// the font we resolved may not actually have these characters; see fontCanRender
+    	if (df!=null && df.getFirstChild() instanceof Element) {
+    		Element styled = (Element)df.getFirstChild();
+    		if (!fontCanRender(conversionContext.getWmlPackage().getFontMapper(), styled, text)) {
+    			removeFont(styled);
+    		}
+    	}
+    	return df;
+    }
+
+    private static final Pattern FONT_FAMILY_IN_CSS = Pattern.compile("font-family:\\s*([^;]*);?");
+
+    /** Whether the font RunFontSelector chose for 'styled' can actually render this text.
+     *
+     *  Only worth asking for text we generate ourselves.  For the contents of a w:t the
+     *  question doesn't arise: where the document embeds a subsetted font (w:subsetted="1"),
+     *  the subset covers the text it was subsetted from.  But a page number, a footnote
+     *  number or a tab leader is produced at render time, so there is no guarantee the
+     *  author's subset contains it.  Apache FOP doesn't fall back to another font; it
+     *  warns 'Glyph "1" (0x31, one) not available in font ...' and renders .notdef.
+     *
+     *  Where this returns false, the caller should leave the font unset, so that the text
+     *  is rendered in whatever font it inherits - legible, if not what was asked for.
+     *
+     * @since 17.0.3
+     */
+    public static boolean fontCanRender(Mapper fontMapper, Element styled, String text) {
+
+    	if ((styled==null) || (text==null) || (text.length()==0)) return true;
+
+    	String fontName = physicalFontNameOf(styled);
+    	if ((fontName==null) || (fontName.length()==0)) return true;  // no font was set anyway
+
+    	PhysicalFont pf = physicalFontFor(fontMapper, fontName);
+    	if (pf==null) {
+    		// We can't tell, so use the font: dropping it would be worse.
+    		log.debug("Couldn't resolve " + fontName + "; assuming it can render " + text);
+    		return true;
+    	}
+
+    	try {
+    		for (int i=0; i<text.length(); ) {
+    			int cp = text.codePointAt(i);
+    			if (!GlyphCheck.hasCodepoint(pf, cp)) {
+    				log.debug(fontName + " has no glyph for '" + new String(Character.toChars(cp))
+    						+ "'; leaving the font unset");
+    				return false;
+    			}
+    			i += Character.charCount(cp);
+    		}
+    	} catch (Exception e) {
+    		// not fatal; better to set the font than to fail the conversion
+    		log.warn("Couldn't glyph check " + fontName + ": " + e.getMessage(), e);
+    	}
+    	return true;
+    }
+
+    /** The PhysicalFont this name refers to.
+     *
+     *  A font embedded in the document is deliberately NOT added to PhysicalFonts (those are
+     *  available to all documents; see ObfuscatedFontPart.extract), so it has to be found via
+     *  this document's Mapper.  The Mapper is keyed by the name the document uses, whereas what
+     *  we have is the name of the physical font it was mapped to, so we look at the values.
+     */
+    private static PhysicalFont physicalFontFor(Mapper fontMapper, String physicalFontName) {
+
+    	if (fontMapper!=null) {
+    		for (PhysicalFont pf : fontMapper.getFontMappings().values()) {
+    			if ((pf!=null) && physicalFontName.equals(pf.getName())) return pf;
+    		}
+    	}
+    	return PhysicalFonts.get(physicalFontName);
+    }
+
+    /** The physical font name RunFontSelector put on this element: @font-family for fo,
+     *  or the font-family declaration in @style for html. */
+    private static String physicalFontNameOf(Element styled) {
+
+    	String fontFamily = styled.getAttribute("font-family");  // fo
+    	if ((fontFamily!=null) && (fontFamily.length()>0)) return fontFamily;
+
+    	String style = styled.getAttribute("style");  // html, eg font-family:'Courier New';
+    	if (style==null) return null;
+    	Matcher m = FONT_FAMILY_IN_CSS.matcher(style);
+    	return (m.find() ? m.group(1).trim().replace("'", "") : null);
+    }
+
+    /** Undo the font RunFontSelector set, leaving the text in whatever font it inherits.
+     *
+     * @since 17.0.3
+     */
+    public static void removeFont(Element styled) {
+
+    	styled.removeAttribute("font-family");
+    	String style = styled.getAttribute("style");
+    	if ((style!=null) && (style.length()>0)) {
+    		String stripped = FONT_FAMILY_IN_CSS.matcher(style).replaceAll("");
+    		if (stripped.length()==0) {
+    			styled.removeAttribute("style");
+    		} else {
+    			styled.setAttribute("style", stripped);
+    		}
+    	}
+    }
+
+    /** Unmarshal the w:pPr, if there is one. */
+    private static PPr toPPr(NodeIterator pPrNodeIt) {
+
+    	PPr pPr = null;
+		if (pPrNodeIt!=null) 
+		{ 
+    		Node n = pPrNodeIt.nextNode(); 
+    		if (n!=null) {
+    			try {
+        			Unmarshaller u = Context.jc.createUnmarshaller();			
+        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+        			Object jaxb = u.unmarshal(n);
+    				pPr =  (PPr)jaxb;
+    			} catch (ClassCastException e) {
+    				log.error("Couldn't cast  to PPr!");
+    			} catch (JAXBException e) {
+    				log.error(e.getMessage(), e);
+				}        	        			
+    		}
+    	}
+		return pPr;
+    }
+
+    /** Unmarshal the w:rPr, if there is one.  A w:paraRPr (ie the properties of the
+     *  paragraph mark) is applied to the effective rPr of the paragraph. */
+    private static RPr toRPr(AbstractWmlConversionContext conversionContext, NodeIterator rPrNodeIt, PPr pPr) {
+
+    	RPr rPr = null;
+		if (rPrNodeIt!=null) 
+		{ 
+    		Node n = rPrNodeIt.nextNode();
+    		if (n!=null) {
+    			try {
+        			Unmarshaller u = Context.jc.createUnmarshaller();			
+        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+        			Object jaxb = u.unmarshal(n);
+    				
+    				if (jaxb instanceof RPr) {
+    					rPr = (RPr)jaxb;
+    				} else if (jaxb instanceof ParaRPr) {
+    					rPr = conversionContext.getPropertyResolver().getEffectiveRPr(null, pPr); 
+    	        		StyleUtil.apply((ParaRPr)jaxb, rPr); 				
+    				}    				
+    				
+    			} catch (ClassCastException e) {
+    				log.error("Couldn't cast  to RPr!");
+    			} catch (JAXBException e) {
+    				log.error(e.getMessage(), e);
+				}        	        			
+    		}
+    	}
+		return rPr;
+    }
 	
 	
 	/** Conversion of Nodes via Models and Converters
@@ -150,6 +296,30 @@ public class XsltCommonFunctions {
 	 */
 	public static Node toNode(AbstractWmlConversionContext context, Node node, NodeList childResults) {
 		return context.getWriterRegistry().toNode(context, node, childResults);
+	}
+
+	/** As above, but also making the pPr of the containing w:p available to the writer.
+	 *
+	 *  A writer which generates content of its own (a field) has no w:t to hang a font
+	 *  off, and can't reach the containing paragraph itself (it is given the node
+	 *  unmarshalled on its own), so it needs this in order to resolve the font the
+	 *  same way an ordinary run's text is resolved.
+	 *
+	 * @param context
+	 * @param node
+	 * @param childResults the already transformed node (element) content
+	 * @param pPrNodeIt the w:pPr of the containing w:p (may be empty)
+	 * @since 17.0.3
+	 */
+	public static Node toNode(AbstractWmlConversionContext context, Node node, NodeList childResults,
+			NodeIterator pPrNodeIt) {
+
+		context.setCurrentPPr(toPPr(pPrNodeIt));
+		try {
+			return context.getWriterRegistry().toNode(context, node, childResults);
+		} finally {
+			context.setCurrentPPr(null);
+		}
 	}
 	
 	/** Next number of a footnote
