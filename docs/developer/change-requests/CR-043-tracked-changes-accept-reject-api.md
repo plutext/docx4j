@@ -633,6 +633,12 @@ counts only headers and footers that say something, since Word's save adds empty
 core-ts's 6, 6 and 2. C12's endnote, removed with its reference, agrees (its CR-002 §44); what core-ts leaves in the
 endnotes is their content revisions. Its §45 takes up §3.2's bookmark rule.
 
+The python session confirmed its items (2026-10-16, its CR-003 §22; its tracking code unchanged since 0.1.0), and
+found three more: math is not seen at all (the equations fixture lists no change, and its 25 `w:ins` and 14 `w:del`, in
+`m:r` and `m:ctrlPr`, all remain); C01 rejected leaves a broken field, a lone `w:fldChar` separate and its result with
+no begin or end; and after its accept-all its listing reports no change on the probe and on check 28 while markup
+remains (text boxes, mark-level moves and `w:rPrChange`, table and section records, `w:customXmlInsRangeStart`, math).
+
 **The Word-open check** (Jason, 2026-10-16, Word 365): docx4j's own Accept All and Reject All saves of four fixtures -
 the probe, the equations, the editor's review file (notes, comments, a reply) and check 18's (a move, list changes,
 tables, a section) - each open with no repair prompt and with no revision left. Word 2010 was not tried.
