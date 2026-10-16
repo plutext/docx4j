@@ -42,6 +42,9 @@ import org.docx4j.model.revisions.TrackedChange.ParaPropsT;
 import org.docx4j.model.revisions.TrackedChange.RowT;
 import org.docx4j.model.revisions.TrackedChange.RunPropsT;
 import org.docx4j.model.revisions.TrackedChange.RunT;
+import org.docx4j.model.revisions.TrackedChange.SectionT;
+import org.docx4j.model.revisions.TrackedChange.TableT;
+import org.docx4j.model.revisions.TrackedChange.CellT;
 import org.docx4j.model.revisions.Trees.Revision;
 import org.docx4j.wml.CTBookmark;
 import org.docx4j.wml.CTMarkup;
@@ -102,7 +105,25 @@ final class Resolver {
 			else if (t instanceof HolderT) holder((HolderT) t, accept);
 			else if (t instanceof MathRunT) mathRun((MathRunT) t, accept);
 			else if (t instanceof MathStructT) mathStructure((MathStructT) t, accept);
-			else throw new UnsupportedOperationException(change.getKind() + " (CR-043 phase 2)");
+			else if (t instanceof TableT) {
+				if (accept) Tables.accept(((TableT) t).tbl);
+				else Tables.reject(((TableT) t).tbl);
+			} else if (t instanceof SectionT) {
+				if (accept) ((SectionT) t).sectPr.setSectPrChange(null);
+				else Tables.rejectSection(((SectionT) t).sectPr);
+			} else if (t instanceof CellT) cell((CellT) t, accept);
+		}
+
+		/** An inserted cell stays when accepted, a deleted one goes; rejected the other way round (check 27). */
+		void cell(CellT t, boolean accept) {
+			org.docx4j.wml.TcPr tcPr = t.tc.getTcPr();
+			if (tcPr == null) return;
+			if (t.ins == accept) {
+				if (t.ins) tcPr.setCellIns(null);
+				else tcPr.setCellDel(null);
+			} else {
+				Tables.removeCell(t.tc, t.tr, removals, story);
+			}
 		}
 
 		// --- runs ----------------------------------------------------------------------------------

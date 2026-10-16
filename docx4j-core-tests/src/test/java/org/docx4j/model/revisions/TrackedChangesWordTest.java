@@ -57,8 +57,9 @@ public class TrackedChangesWordTest {
 		WordprocessingMLPackage pkg = load(tracked);
 		if (accept) TrackedChanges.acceptAll(pkg);
 		else TrackedChanges.rejectAll(pkg);
-		// nothing this release resolves is left, in any story or branch
-		for (TrackedChange left : new Lister(pkg, false).list()) assertFalse(left.toString(), left.isResolvable());
+		// nothing is left, in any story or branch
+		List<TrackedChange> left = new Lister(pkg, false).list();
+		assertTrue(tracked + ": " + left, left.isEmpty());
 		String ours = DocumentDescription.of(roundTrip(pkg));
 		String word = DocumentDescription.of(load(golden));
 		dump(tracked + (accept ? ".accept" : ".reject"), word, ours);
@@ -75,8 +76,8 @@ public class TrackedChangesWordTest {
 	}
 
 	/**
-	 * Every Word-made fixture, accepted all and rejected all: nothing this release resolves is left in
-	 * any story or branch, and the result saves and loads again.
+	 * Every Word-made fixture, accepted all and rejected all: nothing is left in any story or branch,
+	 * and the result saves and loads again.
 	 */
 	@Test
 	public void everyFixtureResolves() throws Exception {
@@ -91,7 +92,8 @@ public class TrackedChangesWordTest {
 				try {
 					if (accept) TrackedChanges.acceptAll(pkg);
 					else TrackedChanges.rejectAll(pkg);
-					for (TrackedChange left : new Lister(pkg, false).list()) assertFalse(file + ": " + left, left.isResolvable());
+					List<TrackedChange> left = new Lister(pkg, false).list();
+					assertTrue(file + ": " + left, left.isEmpty());
 					roundTrip(pkg);
 				} catch (RuntimeException e) {
 					throw new AssertionError((accept ? "accept all of " : "reject all of ") + file, e);
@@ -119,7 +121,6 @@ public class TrackedChangesWordTest {
 					TrackedChange next = null;
 					int resolvable = 0;
 					for (TrackedChange change : TrackedChanges.in(pkg)) {
-						if (!change.isResolvable()) continue;
 						resolvable++;
 						if (next == null) next = change;
 					}
@@ -129,7 +130,7 @@ public class TrackedChangesWordTest {
 					else next.reject();
 					accept = !accept;
 					int after = 0;
-					for (TrackedChange change : TrackedChanges.in(pkg)) if (change.isResolvable()) after++;
+					after = TrackedChanges.in(pkg).size();
 					assertTrue(file + ": " + next + " left " + after + " of " + resolvable, after < resolvable);
 				}
 				roundTrip(pkg);
@@ -189,7 +190,7 @@ public class TrackedChangesWordTest {
 		assertAll("revisions/editor/review/review-for-word.docx", "revisions/editor/review/review-for-word-word2010-rejected.docx", false);
 	}
 
-	/** Check 28: bold over two runs, and two tables' records (phase 2: their properties are not compared yet). */
+	/** Check 28: bold over two runs, and two tables' records ({@code w:trPrChange} included). */
 	@Test
 	public void check28AcceptAll() throws Exception {
 		assertAll("revisions/core-ts/check28/28a-changes.docx", "revisions/core-ts/check28/28a-accept-all.docx", true);

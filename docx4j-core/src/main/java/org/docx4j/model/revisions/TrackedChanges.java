@@ -20,9 +20,23 @@ package org.docx4j.model.revisions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.wml.CTPPrChange;
+import org.docx4j.wml.CTRPrChange;
+import org.docx4j.wml.CTSectPrChange;
+import org.docx4j.wml.CTTblGridChange;
+import org.docx4j.wml.CTTblPrChange;
+import org.docx4j.wml.CTTblPrExChange;
+import org.docx4j.wml.CTTcPrChange;
+import org.docx4j.wml.CTTrPrChange;
+import org.docx4j.wml.FldChar;
+import org.docx4j.wml.PPrBase;
+import org.docx4j.wml.ParaRPrChange;
+import org.docx4j.wml.Tbl;
+import org.docx4j.wml.TcPr;
 
 /**
  * Listing, accepting and rejecting a document's tracked changes, in every story: the main
@@ -34,12 +48,8 @@ import org.docx4j.openpackaging.parts.JaxbXmlPart;
  * <pre>
  * for (TrackedChange change : TrackedChanges.in(pkg)) System.out.println(change);
  * TrackedChanges.acceptAll(pkg);   // or rejectAll
+ * TrackedChanges.rejectAll(pkg, new TrackedChangeFilter().authors("Author B"));
  * </pre>
- *
- * <p>This release lists table, grid, row, cell and section property records
- * ({@code w:tblPrChange}, {@code w:sectPrChange}, ...) but does not yet resolve them (CR-043 phase 2):
- * {@code acceptAll} and {@code rejectAll} leave them, and {@link #report} counts them as
- * unresolved.</p>
  *
  * @since 17.3.3
  */
@@ -61,6 +71,14 @@ public final class TrackedChanges {
 		return changes;
 	}
 
+	/** The changes {@link #in(WordprocessingMLPackage)} lists that the filter matches (any of their pieces). */
+	public static List<TrackedChange> in(WordprocessingMLPackage pkg, TrackedChangeFilter filter) {
+		Set<Object> range = filter.range(pkg);
+		List<TrackedChange> out = new ArrayList<TrackedChange>();
+		for (TrackedChange change : in(pkg)) if (!matching(change, filter, range).isEmpty()) out.add(change);
+		return out;
+	}
+
 	/** A change, and the pieces it groups (each a view that can be resolved on its own), valid from now. */
 	private static void stamp(TrackedChange change, Generation generation) {
 		change.generation = generation;
@@ -69,65 +87,113 @@ public final class TrackedChanges {
 		}
 	}
 
-	/** Accepts every change this release resolves; returns how many {@link #in} listed. */
+	/** Accepts every change; returns how many {@link #in} listed. */
 	public static int acceptAll(WordprocessingMLPackage pkg) {
-		return resolveAll(pkg, true);
+		return resolveAll(pkg, true, null);
 	}
 
-	/** Rejects every change this release resolves; returns how many {@link #in} listed. */
+	/** Rejects every change; returns how many {@link #in} listed. */
 	public static int rejectAll(WordprocessingMLPackage pkg) {
-		return resolveAll(pkg, false);
+		return resolveAll(pkg, false, null);
 	}
 
-	/** Counts by kind, author and part; the kinds this release does not resolve counted as unresolved. */
+	/** Accepts the changes the filter matches; returns how many of those {@link #in} listed. */
+	public static int acceptAll(WordprocessingMLPackage pkg, TrackedChangeFilter filter) {
+		return resolveAll(pkg, true, filter);
+	}
+
+	/** Rejects the changes the filter matches; returns how many of those {@link #in} listed. */
+	public static int rejectAll(WordprocessingMLPackage pkg, TrackedChangeFilter filter) {
+		return resolveAll(pkg, false, filter);
+	}
+
+	/** Counts by kind, author and part. */
 	public static TrackedChangesReport report(WordprocessingMLPackage pkg) {
 		return new TrackedChangesReport(in(pkg));
+	}
+
+	/** The pieces of a change the filter matches (all of them with no filter). */
+	private static List<TrackedChange> matching(TrackedChange change, TrackedChangeFilter filter, Set<Object> range) {
+		List<TrackedChange> out = new ArrayList<TrackedChange>();
+		for (TrackedChange piece : change.getPieces()) if (filter == null || filter.matches(piece, range)) out.add(piece);
+		return out;
 	}
 
 	/**
 	 * Last change first, so that a paragraph join never disturbs a change still to do; then the list
 	 * is read again and the pass repeated until nothing is left, since resolving a move can carry a
 	 * deletion nested in it out as a change of its own, and resolving a broken move leaves plain
-	 * {@code w:ins}/{@code w:del} (core-ts {@code Body.resolveAll}); then what is never listed is swept.
-	 * Both branches of a text box's {@code mc:AlternateContent} are walked.
+	 * {@code w:ins}/{@code w:del} (core-ts {@code Body.resolveAll}); then, with no filter, what is never
+	 * listed is swept. Both branches of a text box's {@code mc:AlternateContent} are walked. A filter's
+	 * range is read once, before anything is resolved.
 	 */
-	private static int resolveAll(WordprocessingMLPackage pkg, boolean accept) {
-		int count = resolvable(new Lister(pkg, true).list()).size();
+	private static int resolveAll(WordprocessingMLPackage pkg, boolean accept, TrackedChangeFilter filter) {
+		Set<Object> range = filter == null ? null : filter.range(pkg);
+		int count = 0;
+		for (TrackedChange change : new Lister(pkg, true).list()) if (!matching(change, filter, range).isEmpty()) count++;
 		Removals removals = new Removals(pkg);
-		List<TrackedChange> changes = resolvable(new Lister(pkg, false).list());
+		int left = Integer.MAX_VALUE;
 		int stalled = 0;
-		for (int round = 0; !changes.isEmpty() && round < 20 && stalled < 2; round++) {
-			for (int i = changes.size() - 1; i >= 0; i--) Resolver.resolve(changes.get(i), accept, removals);
-			List<TrackedChange> left = resolvable(new Lister(pkg, false).list());
-			stalled = left.size() >= changes.size() ? stalled + 1 : 0;
-			changes = left;
+		for (int round = 0; round < 20 && stalled < 2; round++) {
+			List<TrackedChange> changes = new Lister(pkg, false).list();
+			int matched = 0;
+			for (int i = changes.size() - 1; i >= 0; i--) {
+				TrackedChange change = changes.get(i);
+				List<TrackedChange> pieces = matching(change, filter, range);
+				if (pieces.isEmpty()) continue;
+				matched++;
+				if (pieces.size() == change.getPieces().size()) Resolver.resolve(change, accept, removals);
+				else Resolver.pieces(pieces, accept, removals);
+			}
+			if (matched == 0) break;
+			stalled = matched >= left ? stalled + 1 : 0;
+			left = matched;
 		}
-		sweep(pkg, removals);
+		if (filter == null) sweep(pkg, accept, removals);
 		removals.flush();
 		Generation.of(pkg).advance();
 		return count;
 	}
 
-	private static List<TrackedChange> resolvable(List<TrackedChange> changes) {
-		List<TrackedChange> out = new ArrayList<TrackedChange>();
-		for (TrackedChange change : changes) if (change.isResolvable()) out.add(change);
-		return out;
-	}
-
 	/**
-	 * What is never listed: a {@code w:customXmlInsRangeStart} or {@code End} left without the form
-	 * of an inserted control marks nothing that can be found, and goes either way (core-ts
-	 * {@code resolveUnlisted}).
+	 * What is never listed (core-ts {@code resolveUnlisted}): a table's records that change nothing,
+	 * dropped either way; a {@code w:cellMerge}, which Office JS cannot list, a rejected one giving the
+	 * merge it recorded back (U8); a {@code w:numberingChange}, which records the old number's text and
+	 * not its definition, dropped either way; a {@code w:numPr/w:ins}, accepted dropped, rejected taking
+	 * its {@code w:numPr} with it (U9); a {@code w:customXmlInsRangeStart} or {@code End} left without
+	 * the form of an inserted control, which marks nothing that can be found.
 	 */
-	private static void sweep(WordprocessingMLPackage pkg, Removals removals) {
+	private static void sweep(WordprocessingMLPackage pkg, boolean accept, Removals removals) {
 		List<JaxbXmlPart<?>> done = new ArrayList<JaxbXmlPart<?>>();
 		for (Story story : new Lister(pkg, false).stories()) {
 			if (done.contains(story.part)) continue;
 			done.add(story.part);
-			removals.removeFrom(story.part.getJaxbElement(), item -> {
+			Object root = story.part.getJaxbElement();
+			removals.removeFrom(root, item -> {
 				String name = Trees.name(item);
 				return "customXmlInsRangeStart".equals(name) || "customXmlInsRangeEnd".equals(name);
 			}, null);
+			Trees.walk(root, new Trees.Visitor() {
+				@Override boolean enter(Object value, Object item) {
+					// a record's own content is what was, not what is
+					if (value instanceof CTPPrChange || value instanceof CTRPrChange || value instanceof ParaRPrChange
+							|| value instanceof CTSectPrChange || value instanceof CTTblPrChange || value instanceof CTTrPrChange
+							|| value instanceof CTTcPrChange || value instanceof CTTblPrExChange || value instanceof CTTblGridChange) return false;
+					if (value instanceof Tbl && Tables.hasRecords((Tbl) value)) Tables.accept((Tbl) value);
+					if (value instanceof TcPr && ((TcPr) value).getCellMerge() != null) Tables.resolveCellMerge((TcPr) value, accept);
+					if (value instanceof FldChar) ((FldChar) value).setNumberingChange(null);
+					if (value instanceof PPrBase && ((PPrBase) value).getNumPr() != null) {
+						PPrBase pPr = (PPrBase) value;
+						PPrBase.NumPr numPr = pPr.getNumPr();
+						numPr.setNumberingChange(null);
+						if (numPr.getIns() != null) {
+							if (accept) numPr.setIns(null);
+							else pPr.setNumPr(null);
+						}
+					}
+					return true;
+				}
+			});
 		}
 	}
 }

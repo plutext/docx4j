@@ -27,43 +27,32 @@ import java.util.Map;
 import org.docx4j.model.revisions.TrackedChange.Kind;
 
 /**
- * A document's tracked changes counted (CR-043 section 3.1): by kind, by author and by part, with
- * the changes this release lists but does not resolve (table, section and cell records, CR-043
- * phase 2) counted apart, so that a document that still shows them in Word after
- * {@code acceptAll} is not misread. {@link #toJson()} is the form docx4j-mcp reports.
+ * A document's tracked changes counted (CR-043 section 3.1): by kind, by author and by part.
+ * {@link #toJson()} is the form docx4j-mcp reports.
  *
  * @since 17.3.3
  */
 public final class TrackedChangesReport {
 
 	private final int total;
-	private final int unresolved;
 	private final Map<Kind, Integer> byKind = new EnumMap<Kind, Integer>(Kind.class);
 	private final Map<String, Integer> byAuthor = new LinkedHashMap<String, Integer>();
 	private final Map<String, Integer> byPart = new LinkedHashMap<String, Integer>();
 
 	TrackedChangesReport(List<TrackedChange> changes) {
-		int unresolved = 0;
 		for (TrackedChange change : changes) {
 			Kind kind = change.getKind();
 			byKind.merge(kind, 1, Integer::sum);
 			byAuthor.merge(String.valueOf(change.getAuthor()), 1, Integer::sum);
 			String part = change.getPart() == null ? "" : change.getPart().getPartName().getName();
 			byPart.merge(part, 1, Integer::sum);
-			if (!kind.isResolvable()) unresolved++;
 		}
 		this.total = changes.size();
-		this.unresolved = unresolved;
 	}
 
 	/** How many changes are listed. */
 	public int getTotal() {
 		return total;
-	}
-
-	/** How many of them this release does not resolve (their kinds' {@link Kind#isResolvable()} is false). */
-	public int getUnresolved() {
-		return unresolved;
 	}
 
 	public Map<Kind, Integer> getByKind() {
@@ -81,30 +70,20 @@ public final class TrackedChangesReport {
 
 	/**
 	 * <pre>
-	 * {"total":3,"unresolved":1,
-	 *  "byKind":{"RUN_INSERTION":2,"TABLE_PROPERTIES":1},
-	 *  "unresolvedKinds":["TABLE_PROPERTIES"],
+	 * {"total":3,"byKind":{"RUN_INSERTION":2,"TABLE_PROPERTIES":1},
 	 *  "byAuthor":{"Jason":3},"byPart":{"/word/document.xml":3}}
 	 * </pre>
 	 */
 	public String toJson() {
 		StringBuilder out = new StringBuilder();
-		out.append("{\"total\":").append(total).append(",\"unresolved\":").append(unresolved).append(",\"byKind\":{");
+		out.append("{\"total\":").append(total).append(",\"byKind\":{");
 		boolean first = true;
 		for (Map.Entry<Kind, Integer> e : byKind.entrySet()) {
 			if (!first) out.append(',');
 			first = false;
 			out.append(quote(e.getKey().name())).append(':').append(e.getValue());
 		}
-		out.append("},\"unresolvedKinds\":[");
-		first = true;
-		for (Kind kind : byKind.keySet()) {
-			if (kind.isResolvable()) continue;
-			if (!first) out.append(',');
-			first = false;
-			out.append(quote(kind.name()));
-		}
-		out.append("],\"byAuthor\":");
+		out.append("},\"byAuthor\":");
 		object(byAuthor, out);
 		out.append(",\"byPart\":");
 		object(byPart, out);

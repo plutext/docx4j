@@ -329,9 +329,9 @@ final class Lister {
 
 	private void tableTokens(Tbl tbl, Object tblItem, List<Object> tblOwner, List<Object> into, Ctx ctx) {
 		// Its property records are one change of their own where the table stands (core-ts CR-002
-		// section 35), kept apart; resolved in CR-043 phase 2, listed now.
-		if (hasTableRecords(tbl)) {
-			CTTrackChange record = tableRecord(tbl);
+		// section 35), kept apart; records that change nothing are not listed, and the sweep drops them.
+		CTTrackChange record = Tables.recordOf(tbl);
+		if (record != null) {
 			into.add(BREAK);
 			into.add(change(new TableT(tbl, record), null, ctx));
 			into.add(BREAK);
@@ -368,26 +368,6 @@ final class Lister {
 				}
 			}
 		}
-	}
-
-	/** True when a table has a property record (core-ts hasTableRecords; its no-difference test is phase 2's). */
-	static boolean hasTableRecords(Tbl tbl) {
-		return (tbl.getTblGrid() != null && tbl.getTblGrid().getTblGridChange() != null) || tableRecord(tbl) != null;
-	}
-
-	/** The record a table's property change reports: the table's, else the first row's or cell's; null for a grid's alone (it has no author). */
-	static CTTrackChange tableRecord(Tbl tbl) {
-		if (tbl.getTblPr() != null && tbl.getTblPr().getTblPrChange() != null) return tbl.getTblPr().getTblPrChange();
-		for (Row row : rowsOf(tbl)) {
-			Tr tr = row.tr;
-			if (tr.getTrPr() != null && tr.getTrPr().getTrPrChange() != null) return tr.getTrPr().getTrPrChange();
-			if (tr.getTblPrEx() != null && tr.getTblPrEx().getTblPrExChange() != null) return tr.getTblPrEx().getTblPrExChange();
-			for (Row cell : cellsOf(tr)) {
-				TcPr tcPr = ((Tc) Trees.unwrap(cell.item)).getTcPr();
-				if (tcPr != null && tcPr.getTcPrChange() != null) return tcPr.getTcPrChange();
-			}
-		}
-		return null;
 	}
 
 	// --- paragraphs and run level --------------------------------------------------------------------

@@ -61,6 +61,50 @@ final class Props {
 		}
 	}
 
+	/**
+	 * {@code value}'s XML as {@code w:<local>}, canonical: attributes sorted, rsids left out, and the
+	 * child elements named in {@code skip} (the record itself, a revision's markers) left out; "" for
+	 * an element with nothing in it, or none. Two properties compare equal when these are.
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	static String canonical(Object value, Class<?> type, String local, java.util.Set<String> skip) {
+		if (value == null) return "";
+		try {
+			Marshaller m = Context.jc.createMarshaller();
+			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
+			m.marshal(new JAXBElement(new QName(Trees.W_NS, local), type, value), doc);
+			StringBuilder out = new StringBuilder();
+			inner(doc.getDocumentElement(), skip, out);
+			return out.toString();
+		} catch (Exception e) {
+			throw new RuntimeException("Could not compare " + local, e);
+		}
+	}
+
+	/** An element's attributes and children, canonical; {@code skip} applies to its own children. */
+	static void inner(org.w3c.dom.Element e, java.util.Set<String> skip, StringBuilder out) {
+		java.util.TreeMap<String, String> attributes = new java.util.TreeMap<String, String>();
+		for (int i = 0; i < e.getAttributes().getLength(); i++) {
+			org.w3c.dom.Node a = e.getAttributes().item(i);
+			if ("http://www.w3.org/2000/xmlns/".equals(a.getNamespaceURI())) continue;
+			String name = a.getLocalName() == null ? a.getNodeName() : a.getLocalName();
+			if (name.startsWith("rsid")) continue;
+			attributes.put("{" + a.getNamespaceURI() + "}" + name, a.getNodeValue());
+		}
+		for (java.util.Map.Entry<String, String> a : attributes.entrySet()) out.append(' ').append(a.getKey()).append("=\"").append(a.getValue()).append('"');
+		for (org.w3c.dom.Node c = e.getFirstChild(); c != null; c = c.getNextSibling()) {
+			if (c.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+				if (!c.getNodeValue().trim().isEmpty()) out.append(c.getNodeValue());
+				continue;
+			}
+			if (c.getNodeType() != org.w3c.dom.Node.ELEMENT_NODE) continue;
+			if (skip != null && skip.contains(c.getLocalName())) continue;
+			out.append("<{").append(c.getNamespaceURI()).append('}').append(c.getLocalName());
+			inner((org.w3c.dom.Element) c, null, out);
+			out.append('>');
+		}
+	}
+
 	/** A run's recorded formatting ({@code w:rPrChange/w:rPr}) as a live {@code w:rPr}; null when it records none. */
 	static RPr rPrOf(CTRPrChange.RPr recorded) {
 		RPr rPr = convert(recorded, CTRPrChange.RPr.class, "rPr", RPr.class);

@@ -71,14 +71,7 @@ final class Texts {
 			}
 			return out.toString();
 		}
-		if (t instanceof TableT) {
-			StringBuilder out = new StringBuilder();
-			for (Object item : ((TableT) t).tbl.getContent()) {
-				Object v = Trees.unwrap(item);
-				if (v instanceof Tr) out.append(rowText((Tr) v, View.ACCEPTED));
-			}
-			return out.toString();
-		}
+		if (t instanceof TableT) return Tables.changeText(((TableT) t).tbl);
 		if (t instanceof CellT) return rowText(((CellT) t).tr, View.ACCEPTED);
 		if (t instanceof SectionT) return ((SectionT) t).text;
 		return "";

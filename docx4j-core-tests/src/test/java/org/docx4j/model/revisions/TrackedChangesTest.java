@@ -203,33 +203,178 @@ public class TrackedChangesTest {
 		assertEquals("a two", TextOf.paragraph(paragraphs(pkg).get(0)));
 	}
 
-	/** Phase 1 lists table and section records but leaves them: unresolved in the report. */
+	private static final String TABLE_RECORD = "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/>"
+			+ "<w:tblPrChange w:id=\"1\" w:author=\"A\"><w:tblPr><w:tblW w:w=\"5000\" w:type=\"pct\"/></w:tblPr></w:tblPrChange></w:tblPr>"
+			+ "<w:tblGrid><w:gridCol w:w=\"1000\"/></w:tblGrid><w:tr><w:tc><w:p>" + run("cell") + "</w:p></w:tc></w:tr></w:tbl>";
+
+	/** A table's records: one change, accepted kept as they are, rejected restored; the report counts them. */
 	@Test
-	public void recordsArePhase2() throws Exception {
-		WordprocessingMLPackage pkg = withBody("<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/>"
-				+ "<w:tblPrChange w:id=\"1\" w:author=\"A\"><w:tblPr><w:tblW w:w=\"5000\" w:type=\"pct\"/></w:tblPr></w:tblPrChange></w:tblPr>"
-				+ "<w:tblGrid><w:gridCol w:w=\"1000\"/></w:tblGrid><w:tr><w:tc><w:p>" + run("cell") + "</w:p></w:tc></w:tr></w:tbl>"
-				+ "<w:p>" + ins(2, "A", "text") + "</w:p>");
+	public void tableRecords() throws Exception {
+		WordprocessingMLPackage pkg = withBody(TABLE_RECORD + "<w:p>" + ins(2, "A", "text") + "</w:p>");
 		List<TrackedChange> changes = TrackedChanges.in(pkg);
 		assertEquals(2, changes.size());
-		TrackedChange table = changes.get(0);
-		assertEquals(TrackedChange.Kind.TABLE_PROPERTIES, table.getKind());
-		assertFalse(table.isResolvable());
-		try {
-			table.accept();
-			fail("phase 2's kind resolved");
-		} catch (UnsupportedOperationException expected) {
-			// phase 2
-		}
-		TrackedChangesReport report = TrackedChanges.report(pkg);
-		assertEquals(2, report.getTotal());
-		assertEquals(1, report.getUnresolved());
-		assertEquals(1, TrackedChanges.acceptAll(pkg));
+		assertEquals(TrackedChange.Kind.TABLE_PROPERTIES, changes.get(0).getKind());
+		assertEquals("cell\r\n", changes.get(0).getText());
+		String json = TrackedChanges.report(pkg).toJson();
+		assertEquals("{\"total\":2,\"byKind\":{\"RUN_INSERTION\":1,\"TABLE_PROPERTIES\":1},\"byAuthor\":{\"A\":2},\"byPart\":{\"/word/document.xml\":2}}", json);
+		changes.get(0).reject();
+		String xml = bodyXml(pkg);
+		assertTrue(xml, xml.contains("w:w=\"5000\" w:type=\"pct\""));
+		assertFalse(xml, xml.contains("tblPrChange"));
+		assertEquals(1, TrackedChanges.in(pkg).size());
+
+		WordprocessingMLPackage accepted = withBody(TABLE_RECORD);
+		assertEquals(1, TrackedChanges.acceptAll(accepted));
+		xml = bodyXml(accepted);
+		assertTrue(xml, xml.contains("w:w=\"0\" w:type=\"auto\""));
+		assertFalse(xml, xml.contains("tblPrChange"));
+	}
+
+	/** Records that change nothing are no change (checks 24, 26): not listed, and swept either way. */
+	@Test
+	public void recordsThatChangeNothing() throws Exception {
+		WordprocessingMLPackage pkg = withBody("<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/>"
+				+ "<w:tblPrChange w:id=\"1\" w:author=\"A\"><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/></w:tblPr></w:tblPrChange></w:tblPr>"
+				+ "<w:tblGrid><w:gridCol w:w=\"1000\"/></w:tblGrid><w:tr><w:tc><w:p>" + run("cell") + "</w:p></w:tc></w:tr></w:tbl><w:p/>");
+		assertEquals(0, TrackedChanges.in(pkg).size());
+		TrackedChanges.rejectAll(pkg);
+		assertFalse(bodyXml(pkg).contains("tblPrChange"));
+	}
+
+	/** A section's record rejected: the recorded members laid over it, a docGrid of pitch 0 meaning none (C07). */
+	@Test
+	public void sectionRecordMerges() throws Exception {
+		WordprocessingMLPackage pkg = withBody("<w:p>" + run("text") + "</w:p><w:sectPr><w:headerReference w:type=\"default\" r:id=\"rId99\"/>"
+				+ "<w:pgSz w:w=\"11906\" w:h=\"16838\"/><w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"720\" w:header=\"708\" w:footer=\"708\" w:gutter=\"0\"/>"
+				+ "<w:docGrid w:linePitch=\"299\"/><w:sectPrChange w:id=\"1\" w:author=\"A\"><w:sectPr>"
+				+ "<w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"2160\" w:header=\"708\" w:footer=\"708\" w:gutter=\"0\"/>"
+				+ "<w:docGrid w:linePitch=\"0\"/></w:sectPr></w:sectPrChange></w:sectPr>");
+		List<TrackedChange> changes = TrackedChanges.in(pkg);
+		assertEquals(1, changes.size());
+		assertEquals(TrackedChange.Kind.SECTION_PROPERTIES, changes.get(0).getKind());
+		assertEquals("text", changes.get(0).getText());
+		changes.get(0).reject();
+		org.docx4j.wml.SectPr sectPr = pkg.getMainDocumentPart().getJaxbElement().getBody().getSectPr();
+		assertEquals(2160, sectPr.getPgMar().getLeft().intValue());
+		assertEquals(11906, sectPr.getPgSz().getW().intValue());
+		assertNull(sectPr.getDocGrid());
+		assertNull(sectPr.getSectPrChange());
+		assertEquals(1, sectPr.getEGHdrFtrReferences().size());
+	}
+
+	private static final String CELLS = "<w:tbl><w:tblGrid><w:gridCol w:w=\"1000\"/><w:gridCol w:w=\"2000\"/></w:tblGrid><w:tr>"
+			+ "<w:tc><w:tcPr><w:tcW w:w=\"1000\" w:type=\"dxa\"/></w:tcPr><w:p>" + run("one") + "</w:p></w:tc>"
+			+ "<w:tc><w:tcPr><w:tcW w:w=\"2000\" w:type=\"dxa\"/><w:cellIns w:id=\"1\" w:author=\"A\"/></w:tcPr><w:p>" + run("two") + "</w:p></w:tc>"
+			+ "</w:tr></w:tbl><w:p/>";
+
+	/** U10: an inserted cell accepted stays; rejected it goes, the cell before spanning its column, the widths added (check 27). */
+	@Test
+	public void cellsInsertedAndDeleted() throws Exception {
+		WordprocessingMLPackage pkg = withBody(CELLS);
+		List<TrackedChange> changes = TrackedChanges.in(pkg);
+		assertEquals(1, changes.size());
+		assertEquals(TrackedChange.Kind.CELL_INSERTION, changes.get(0).getKind());
+		changes.get(0).reject();
+		String xml = bodyXml(pkg);
+		assertFalse(xml, xml.contains("two"));
+		assertTrue(xml, xml.contains("<w:tcW w:w=\"3000\" w:type=\"dxa\"/><w:gridSpan w:val=\"2\"/>"));
+
+		WordprocessingMLPackage accepted = withBody(CELLS);
+		TrackedChanges.acceptAll(accepted);
+		xml = bodyXml(accepted);
+		assertTrue(xml, xml.contains("two"));
+		assertFalse(xml, xml.contains("cellIns"));
+
+		WordprocessingMLPackage deleted = withBody(CELLS.replace("cellIns", "cellDel"));
+		TrackedChanges.acceptAll(deleted);
+		assertFalse(bodyXml(deleted).contains("two"));
+	}
+
+	/** U8 and U9: a cell merge, a numbering change and an inserted numPr, which nothing lists, swept. */
+	@Test
+	public void legacyFormsSwept() throws Exception {
+		String body = "<w:tbl><w:tblGrid><w:gridCol w:w=\"1000\"/></w:tblGrid>"
+				+ "<w:tr><w:tc><w:tcPr><w:cellMerge w:id=\"1\" w:author=\"A\" w:vMerge=\"cont\" w:vMergeOrig=\"rest\"/></w:tcPr><w:p>" + run("merged") + "</w:p></w:tc></w:tr></w:tbl>"
+				+ "<w:p><w:pPr><w:numPr><w:ilvl w:val=\"0\"/><w:numId w:val=\"1\"/><w:numberingChange w:id=\"2\" w:author=\"A\" w:original=\"%1.\"/></w:numPr></w:pPr>" + run("numbered") + "</w:p>"
+				+ "<w:p><w:pPr><w:numPr><w:ilvl w:val=\"0\"/><w:numId w:val=\"1\"/><w:ins w:id=\"3\" w:author=\"A\"/></w:numPr></w:pPr>" + run("listed") + "</w:p>";
+		WordprocessingMLPackage rejected = withBody(body);
+		assertEquals(0, TrackedChanges.in(rejected).size());
+		TrackedChanges.rejectAll(rejected);
+		String xml = bodyXml(rejected);
+		assertFalse(xml, xml.contains("cellMerge") || xml.contains("numberingChange"));
+		assertTrue(xml, xml.contains("<w:vMerge w:val=\"restart\"/>"));
+		assertEquals(1, xml.split("<w:numPr>", -1).length - 1);
+
+		WordprocessingMLPackage accepted = withBody(body);
+		TrackedChanges.acceptAll(accepted);
+		xml = bodyXml(accepted);
+		assertFalse(xml, xml.contains("cellMerge") || xml.contains("numberingChange") || xml.contains("<w:ins"));
+		assertFalse(xml, xml.contains("vMerge"));
+		assertEquals(2, xml.split("<w:numPr>", -1).length - 1);
+	}
+
+	// --- filters ---------------------------------------------------------------------------------------
+
+	@Test
+	public void filterByAuthorAndType() throws Exception {
+		WordprocessingMLPackage pkg = withBody("<w:p>" + ins(1, "A", "a1 ") + run("x ") + del(2, "A", "a2 ") + run("y ") + ins(3, "B", "b1") + "</w:p>");
+		assertEquals(2, TrackedChanges.acceptAll(pkg, new TrackedChangeFilter().authors("A")));
+		assertEquals("a1 x y ", TextOf.paragraph(paragraphs(pkg).get(0)).substring(0, 7));
 		List<TrackedChange> left = TrackedChanges.in(pkg);
 		assertEquals(1, left.size());
-		assertEquals(TrackedChange.Kind.TABLE_PROPERTIES, left.get(0).getKind());
-		String json = TrackedChanges.report(pkg).toJson();
-		assertTrue(json, json.startsWith("{\"total\":1,\"unresolved\":1,\"byKind\":{\"TABLE_PROPERTIES\":1},\"unresolvedKinds\":[\"TABLE_PROPERTIES\"],\"byAuthor\":{\"A\":1},\"byPart\":{\"/word/document.xml\":1}}"));
+		assertEquals("B", left.get(0).getAuthor());
+
+		WordprocessingMLPackage typed = withBody("<w:p>" + ins(1, "A", "a1 ") + run("x ") + del(2, "A", "a2 ") + "</w:p>");
+		TrackedChanges.rejectAll(typed, new TrackedChangeFilter().types(TrackedChange.Type.ADDED));
+		assertEquals(1, TrackedChanges.in(typed).size());
+		assertEquals(TrackedChange.Type.DELETED, TrackedChanges.in(typed).get(0).getType());
+	}
+
+	/** A group partly matched: only its matching pieces resolve. */
+	@Test
+	public void filterByKindSplitsAGroup() throws Exception {
+		WordprocessingMLPackage pkg = withBody("<w:p><w:pPr><w:rPr><w:ins w:id=\"2\" w:author=\"A\"/></w:rPr></w:pPr>" + run("kept ") + ins(1, "A", "inserted") + "</w:p><w:p>" + run("next") + "</w:p>");
+		assertEquals(1, TrackedChanges.in(pkg).size());
+		TrackedChanges.rejectAll(pkg, new TrackedChangeFilter().kinds(TrackedChange.Kind.RUN_INSERTION));
+		List<TrackedChange> left = TrackedChanges.in(pkg);
+		assertEquals(1, left.size());
+		assertEquals(TrackedChange.Kind.PARAGRAPH_MARK_INSERTION, left.get(0).getKind());
+		assertEquals(2, paragraphs(pkg).size());
+	}
+
+	@Test
+	public void filterByDate() throws Exception {
+		WordprocessingMLPackage pkg = withBody("<w:p><w:ins w:id=\"1\" w:author=\"A\" w16du:dateUtc=\"2026-01-01T00:00:00Z\">" + run("old ") + "</w:ins>"
+				+ run("| ") + "<w:ins w:id=\"2\" w:author=\"A\" w16du:dateUtc=\"2026-06-01T00:00:00Z\">" + run("new") + "</w:ins></w:p>");
+		TrackedChanges.rejectAll(pkg, new TrackedChangeFilter().between(Instant.parse("2026-03-01T00:00:00Z"), null));
+		assertEquals("old | ", TextOf.paragraph(paragraphs(pkg).get(0)));
+		assertEquals(1, TrackedChanges.in(pkg).size());
+	}
+
+	/** A bookmark's extent: changes between its start and its end, a paragraph's mark after its text. */
+	@Test
+	public void filterWithinABookmark() throws Exception {
+		WordprocessingMLPackage pkg = withBody("<w:p>" + ins(1, "A", "before ") + run("| ") + "<w:bookmarkStart w:id=\"9\" w:name=\"here\"/>" + ins(2, "A", "inside")
+				+ "<w:bookmarkEnd w:id=\"9\"/>" + run(" | ") + ins(3, "A", "after") + "</w:p>");
+		assertEquals(3, TrackedChanges.in(pkg).size());
+		assertEquals(1, TrackedChanges.in(pkg, new TrackedChangeFilter().withinBookmark("here")).size());
+		TrackedChanges.rejectAll(pkg, new TrackedChangeFilter().withinBookmark("here"));
+		assertEquals("before |  | after", TextOf.paragraph(paragraphs(pkg).get(0)));
+	}
+
+	/** A content control's content. */
+	@Test
+	public void filterWithinAControl() throws Exception {
+		WordprocessingMLPackage pkg = withBody("<w:p>" + run("one ") + "</w:p><w:sdt><w:sdtPr/><w:sdtContent><w:p>" + ins(1, "A", "inside") + "</w:p></w:sdtContent></w:sdt>"
+				+ "<w:p>" + ins(2, "A", "outside") + "</w:p>");
+		org.docx4j.wml.SdtBlock sdt = null;
+		for (Object o : pkg.getMainDocumentPart().getJaxbElement().getBody().getContent()) {
+			if (XmlUtils.unwrap(o) instanceof org.docx4j.wml.SdtBlock) sdt = (org.docx4j.wml.SdtBlock) XmlUtils.unwrap(o);
+		}
+		TrackedChanges.rejectAll(pkg, new TrackedChangeFilter().within(sdt));
+		List<TrackedChange> left = TrackedChanges.in(pkg);
+		assertEquals(1, left.size());
+		assertEquals("outside", left.get(0).getText());
 	}
 
 	// --- the unmeasured rules (CR-043 section 11) ------------------------------------------------------------

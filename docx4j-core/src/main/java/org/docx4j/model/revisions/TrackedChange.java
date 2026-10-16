@@ -100,23 +100,18 @@ public final class TrackedChange {
 		DELETION,
 		/** A group of run and mark formatting changes. */
 		FORMATTING,
-		/** A table's property records ({@code w:tblPrChange}, {@code w:tblGridChange}, {@code w:trPrChange}, {@code w:tcPrChange}, {@code w:tblPrExChange}): CR-043 phase 2. */
-		TABLE_PROPERTIES,
-		/** {@code w:sectPrChange}: CR-043 phase 2. */
-		SECTION_PROPERTIES,
-		/** {@code w:cellIns}: CR-043 phase 2. */
-		CELL_INSERTION,
-		/** {@code w:cellDel}: CR-043 phase 2. */
-		CELL_DELETION;
-
 		/**
-		 * False for the kinds this release lists but does not yet resolve (table, section and cell
-		 * records, CR-043 phase 2): {@code acceptAll} and {@code rejectAll} leave them, and
-		 * {@link TrackedChangesReport} counts them as unresolved.
+		 * A table's property records ({@code w:tblPrChange}, {@code w:tblGridChange},
+		 * {@code w:trPrChange}, {@code w:tcPrChange}, {@code w:tblPrExChange}), which Word writes as
+		 * one set: one change per table.
 		 */
-		public boolean isResolvable() {
-			return this != TABLE_PROPERTIES && this != SECTION_PROPERTIES && this != CELL_INSERTION && this != CELL_DELETION;
-		}
+		TABLE_PROPERTIES,
+		/** {@code w:sectPrChange}: a section's properties (the body's last section, or a paragraph's). */
+		SECTION_PROPERTIES,
+		/** {@code w:cellIns} (Word no longer writes it, but reads it). */
+		CELL_INSERTION,
+		/** {@code w:cellDel} (Word no longer writes it, but reads it). */
+		CELL_DELETION
 	}
 
 	// --- what a change is over ---------------------------------------------------------------------
@@ -294,7 +289,7 @@ public final class TrackedChange {
 		CTTrackChange value() { return value; }
 	}
 
-	/** A table's property records (phase 2: listed, not resolved). */
+	/** A table's property records. */
 	static final class TableT extends Target {
 		final Tbl tbl;
 		final CTTrackChange value;
@@ -305,7 +300,7 @@ public final class TrackedChange {
 		CTTrackChange value() { return value; }
 	}
 
-	/** {@code w:sectPrChange} (phase 2: listed, not resolved). */
+	/** {@code w:sectPrChange}. */
 	static final class SectionT extends Target {
 		final SectPr sectPr;
 		final CTSectPrChange value;
@@ -318,7 +313,7 @@ public final class TrackedChange {
 		CTTrackChange value() { return value; }
 	}
 
-	/** {@code w:cellIns} or {@code w:cellDel} (phase 2: listed, not resolved). */
+	/** {@code w:cellIns} or {@code w:cellDel}. */
 	static final class CellT extends Target {
 		final boolean ins;
 		final Tc tc;
@@ -348,6 +343,25 @@ public final class TrackedChange {
 		this.target = target;
 		this.para = para;
 		this.story = story;
+	}
+
+	/**
+	 * Where the change stands, for a range filter: the markup object its position is taken from (a
+	 * {@code w:ins}, a mark's record, a run, a row, a table, a section's properties).
+	 */
+	Object anchor() {
+		Target t = target;
+		if (t instanceof RunT) return ((RunT) t).value;
+		if (t instanceof RunPropsT) return ((RunPropsT) t).run;
+		if (t instanceof RowT) return ((RowT) t).tr;
+		if (t instanceof FieldT) return Trees.unwrap(((FieldT) t).span.get(0));
+		if (t instanceof HolderT) return Trees.unwrap(((HolderT) t).holder);
+		if (t instanceof MathStructT) return ((MathStructT) t).ctrlPr;
+		if (t instanceof TableT) return ((TableT) t).tbl;
+		if (t instanceof SectionT) return ((SectionT) t).sectPr;
+		if (t instanceof CellT) return ((CellT) t).tc;
+		if (t instanceof GroupT) return ((GroupT) t).pieces.get(0).anchor();
+		return t.value();
 	}
 
 	/** Office JS's {@code Word.TrackedChange.type}. */
@@ -469,11 +483,6 @@ public final class TrackedChange {
 		return Collections.singletonList(this);
 	}
 
-	/** True when this release can accept and reject this change (see {@link Kind#isResolvable()}). */
-	public boolean isResolvable() {
-		return getKind().isResolvable();
-	}
-
 	/**
 	 * Keeps the change, as Word's Review tab does: an insertion stays and loses its markup, a
 	 * deletion goes (a deleted paragraph mark joins its paragraph with the next), a formatting
@@ -482,7 +491,6 @@ public final class TrackedChange {
 	 * references (CR-043 section 3.2).
 	 *
 	 * @throws IllegalStateException when the package has been changed by an accept or reject since this was listed
-	 * @throws UnsupportedOperationException for a kind this release does not resolve
 	 */
 	public void accept() {
 		resolve(true);
@@ -493,16 +501,12 @@ public final class TrackedChange {
 	 * formatting change's recorded properties come back; either half of a move rejects the whole move.
 	 *
 	 * @throws IllegalStateException when the package has been changed by an accept or reject since this was listed
-	 * @throws UnsupportedOperationException for a kind this release does not resolve
 	 */
 	public void reject() {
 		resolve(false);
 	}
 
 	private void resolve(boolean accept) {
-		if (!isResolvable()) {
-			throw new UnsupportedOperationException(getKind() + " is listed but not yet resolved (CR-043 phase 2)");
-		}
 		if (generation == null || !generation.isCurrent()) {
 			throw new IllegalStateException("This tracked change was listed before the last accept or reject on its package: list again");
 		}

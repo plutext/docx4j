@@ -157,7 +157,8 @@ Changes in Version 17.3.3
   cell's edge stays inside the borders.  CR-044 phase 3.
 - New org.docx4j.model.revisions.TrackedChanges: list, accept and reject tracked changes in every story (headers,
   footers, notes, comments, text boxes, content controls and equations too), held to Word 365's own Accept All and
-  Reject All; table, cell and section property records are listed but not yet resolved.  CR-043.
+  Reject All; with TrackedChangeFilter, those by an author, of a type or kind, between dates, in a part, or inside
+  a content control or bookmark.  CR-043.
 
 
 Version 17.3.2

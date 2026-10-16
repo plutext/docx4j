@@ -4,8 +4,9 @@ Status: IN PROGRESS - proposed 2026-10-15 (drafted at Jason's request, relayed b
 "Aspose to docx4j" comparison); refined 2026-10-16; phase 0 DONE 2026-10-16 (Jason: "start CR-043 phase 0"): the
 fixtures copied in, the Word probe run (Word 16.0.20326) and read, every "unmeasured" row of §3.2 that Word can produce
 now measured (§4.4); phase 1 DONE 2026-10-16 (Jason: "start CR-043 phase 1"): `org.docx4j.model.revisions` lists,
-accepts and rejects every kind but the table, cell and section records, held to Word's saves by 66 tests (§12). For
-17.3.3.  Four phases (§5); decisions in §7.
+accepts and rejects every kind but the table, cell and section records, held to Word's saves by 66 tests (§12);
+phase 2 DONE 2026-10-16 (Jason: "commence phase 2"; D4 and D6 decided): those records, cells inserted and deleted, the
+legacy forms and the filters (§13). For 17.3.3, the whole CR (D6).  Four phases (§5); decisions in §7.
 
 Refined 2026-10-16 (no implementation yet; Jason: "it would be good to include CR-043 tracked changes in our
 17.3.3 release ... do not implement anything yet"), from what docx4j-ts-editor and docx4j-core-ts have built and
@@ -81,8 +82,9 @@ A new package, `org.docx4j.model.revisions` (name to settle, D1):
 - **Dates**: `w16du:dateUtc` where present (Word 365 writes both); else `w:date`, which Word means
   as local wall-clock time (core-ts `revisionDateOf`; check 36).
 - `TrackedChanges.acceptAll(pkg)` and `rejectAll(pkg)`, each returning the count, with an optional
-  `TrackedChangeFilter`: author, date range, kinds, parts, a range (a content control's or a
-  bookmark's extent). **Order** (core-ts's, and why): last change first, so a paragraph join never
+  `TrackedChangeFilter`: authors, types, kinds, a date range, parts, a range (a content control's content or a
+  bookmark's extent, read once before anything is resolved). Every condition set must hold, and they apply to the
+  single changes: of a group only the pieces that match are resolved (U19). **Order** (core-ts's, and why): last change first, so a paragraph join never
   disturbs a change still to be done; within a group, runs last first, then marks last first; then
   **list again and repeat until nothing is left**, since accepting a move carries a deletion nested
   in it out as a change of its own and resolving a broken move leaves plain `w:ins`/`w:del`; then
@@ -94,10 +96,9 @@ A new package, `org.docx4j.model.revisions` (name to settle, D1):
   n-th revision of its kind), never by id; `acceptAll`/`rejectAll` walk both branches (§10 item 2).
 - **A `TrackedChange` view is valid until the next accept or reject on its package** (a join removes a paragraph;
   Office JS throws on a stale one); `acceptAll` relists as it goes.
-- `TrackedChanges.report(pkg)`: counts by kind, author and part, with a JSON form for docx4j-mcp. Until phase 2 lands,
-  phase 1's `acceptAll` leaves table, grid, row, cell and section records in the file (Word still shows them as
-  tracked): `report` counts them under kinds of their own (`TABLE_PROPERTIES`, `SECTION_PROPERTIES`) marked
-  unresolved, so the ports' agreement run is not misread (§10 item 5).
+- `TrackedChanges.report(pkg)`: counts by kind, author and part, with a JSON form for docx4j-mcp. (Between phases 1
+  and 2 it also counted the table and section records as unresolved, §10 item 5; phase 2 resolves them and that
+  count went.)
 
 The vocabulary is Office JS's, as python's and core-ts's are, so that the ports agree and
 docx4j-mcp's tool can present one model. Where Office JS and Word's Review tab differ (core-ts
@@ -134,7 +135,7 @@ docx4j's reading (D5), and the row is on §11's running list.
 | `w:pPrChange` | drop | replace `w:pPr` with the recorded `CT_PPrBase`, keeping the current `w:rPr` and `w:sectPr`; for a list paragraph, a restored `w:ind` equal to the level's is dropped, and a `w:numPr` with `w:numId` and no `w:ilvl` gets `w:ilvl` 0 | 18 section 9, 25, 26 |
 | a record whose properties equal the current ones | no change: dropped by either | | 24, 26 |
 | `w:sectPrChange` (the body's and a paragraph's) | drop | **merge**: lay the recorded members over the section, the rest left (Word records only what changed); a recorded `w:docGrid` with pitch 0 means none; header and footer references untouched | 18, 27; a paragraph's section C07 |
-| `w:tblPrChange`, `w:tblGridChange`, `w:tcPrChange`, `w:trPrChange`, `w:tblPrExChange` (Word writes them as a set: every cell of the affected rows recorded, the old value even where unchanged; a `w:trPrChange` only for a row that had properties; a row's indent writes `w:tblPrExChange` with its row's `w:trPrChange` and `w:tcPrChange` and a merged grid, C23) | drop every record; a `w:trPr` left empty goes | **replace wholesale**: table, grid, row and cell properties back; a row in the change with no `w:trPrChange` has its `w:trPr` cleared (its `w:jc`, `w:trHeight`, `w:cnfStyle`); a merged grid collapsed (grid columns no row keeps apart become one, the spans recounted: C23's five columns back to two) | 27, 28; C23 |
+| `w:tblPrChange`, `w:tblGridChange`, `w:tcPrChange`, `w:trPrChange`, `w:tblPrExChange` (Word writes them as a set: every cell of the affected rows recorded, the old value even where unchanged; a `w:trPrChange` only for a row that had properties; a row's indent writes `w:tblPrExChange` with its row's `w:trPrChange` and `w:tcPrChange` and a merged grid, C23) | drop every record; a `w:trPr` left empty goes | **replace wholesale**: table, grid, row and cell properties back; a row in the change with no `w:trPrChange` has its `w:trPr` cleared (its `w:jc`, `w:trHeight`, `w:cnfStyle`); a merged grid collapsed (grid columns no row keeps apart become one, and those past every row's last cell go with the rows' `w:gridAfter` and `w:wAfter`; the spans recounted: C23's five columns back to two). Either way, a row's `w:tblPrEx` left saying only what the table's `w:tblPr` says goes (Word wrote none for C23's row after either) | 27, 28; C23 |
 | inserted row (`w:trPr/w:ins`) | drop the marker | remove the row; a table left without rows goes (check 30: Word also removed the paragraph before an inserted table whose mark was inserted) | 30, 31; an inserted table, C25 |
 | deleted row (`w:trPr/w:del`) | remove the row; a table left without rows goes | drop the marker | base section 7; a table deleted whole (every row, cell text and mark deleted), C13 |
 | a column added | the table change plus a `w:ins` of the new cells' text (no `w:cellIns`); added through the object model with its cells empty, nothing is recorded at all (C14) | Reject All left the column, empty | 27; C14 |
@@ -331,7 +332,7 @@ markup tracked, accepted and rejected), they settle §3.2's rows as marked there
 |---|---|---|
 | 0 | DONE 2026-10-16: §4.1's fixtures copied in with their provenance (`docx4j-core-tests/src/test/resources/revisions/`, its `README.md`); §4.3's probe built, run by Jason and read (§4.4); §3.2's rows settled | 1 day + Jason's Word run |
 | 1 | DONE 2026-10-16 (§12): the API (`TrackedChanges`, `TrackedChange`, grouping, ordering, the sweep, report) for runs at any holder depth, fields as units, moves, paragraph marks, run, mark and paragraph formatting, rows; the side effects (comments, notes, bookmarks, drawings); every story part, text boxes, both `mc:AlternateContent` branches, content controls, math | 3 days |
-| 2 | table, grid, row, cell and section property records; cell insertions and deletions, the legacy forms; the filters | 1.5 days |
+| 2 | DONE 2026-10-16 (§13): table, grid, row, cell and section property records; cell insertions and deletions, the legacy forms; the filters | 1.5 days |
 | 3 | `AcceptTrackedChanges` on the new code; the samples repointed and `TrackChangesReject` added; the XSLT retired; Getting Started; the ports' agreement run; hand-offs | 1 day |
 
 About a week and a half in all: less than proposed, since core-ts's checks have settled the rules
@@ -470,9 +471,9 @@ settles one moves it into §3.2 with its source. Kept current; dated where added
 | U5 | a dropped section's header and footer parts (C06) | removed when unreferenced (D7) | - | **settled 2026-10-16**: Word's accepted save keeps three of six header and three of six footer parts; in §3.2 |
 | U6 | a deleted math structure (`w:del` in its `m:ctrlPr`) | accept removes the structure whole | symmetry with the inserted one | **settled 2026-10-16** (phase 1): `tracked-changes-equations.docx` has one (a deleted `m:acc`), and Word's Accept All removed it whole, its Reject All kept it with its `m:ctrlPr`'s run properties |
 | U7 | `w:ins`/`w:del` holding `m:r` or `m:oMath` | as runs | the schema; §10 | Word does not write it (checks so far): handwritten markup, Word's resolution |
-| U8 | `w:cellMerge` | accept drops it; reject restores `w:vMerge` from `w:vMergeOrig` | docx4j's reading (Office JS cannot list it) | handwritten markup through COM, Word's resolution |
-| U9 | `w:numberingChange`, `w:numPr/w:ins` | `w:numberingChange` dropped either way; `w:numPr/w:ins`: accept drops the marker, reject removes the `w:numPr` | core-ts; docx4j's reading | handwritten markup through COM |
-| U10 | `w:cellIns`/`w:cellDel` in a saved file | check 27's rules (Office JS, handwritten) | check 27 | handwritten markup through COM, Word's file-level resolution |
+| U8 | `w:cellMerge` | accept drops it; reject restores `w:vMerge` from `w:vMergeOrig` | docx4j's reading (Office JS cannot list it); phase 2's `legacyFormsSwept` | handwritten markup through COM, Word's resolution |
+| U9 | `w:numberingChange`, `w:numPr/w:ins` | `w:numberingChange` dropped either way; `w:numPr/w:ins`: accept drops the marker, reject removes the `w:numPr` (neither listed: swept) | core-ts; docx4j's reading; `legacyFormsSwept` | handwritten markup through COM |
+| U10 | `w:cellIns`/`w:cellDel` in a saved file | check 27's rules (Office JS, handwritten): listed, one change per cell; the cell removed widens the cell before it (else after) | check 27; `cellsInsertedAndDeleted` | handwritten markup through COM, Word's file-level resolution |
 | U11 | a mark carrying both `w:ins` and `w:del` (an inserted mark another author deleted) | resolved as nested revisions are (check 22's rule for runs) | §10; check 22 | a probe: Enter by one author, the mark deleted by another |
 | U12 | typing into a move's source, then accepting | the typed `w:ins` left pending, as for the destination (check 20) | core-ts leaves it alone | a probe after check 20's form |
 | U13 | `w:sectPrChange` rejected: what becomes of header and footer references | untouched (the record is `CT_SectPrBase`) | core-ts | a probe changing a section's headers with tracking on |
@@ -481,6 +482,8 @@ settles one moves it into §3.2 with its source. Kept current; dated where added
 | U16 | an equation argument's own `m:ctrlPr` (an `m:e`'s) carrying `w:ins`/`w:del` (added 2026-10-16) | the marker goes and its run properties stay, either way: no structure is two up | docx4j's reading | Word does not write it (the equations fixture has none): handwritten markup |
 | U17 | a run holder (`w:hyperlink`, `w:smartTag`, `w:fldSimple`) left empty by resolving (added 2026-10-16) | stays, empty; a hyperlink's relationship stays while it does | core-ts (it keeps them too) | a probe rejecting a hyperlink's text inserted inside an existing link; Word's save may drop the empty element |
 | U18 | a move's listing (added 2026-10-16) | each half of each moved paragraph is listed as a change of its own (Office JS cannot list a move, checks 16 and 17); resolving any one resolves the whole move, and the others are then stale | core-ts | Word's Review pane: how many "Moved" entries a three-paragraph move (C15) shows |
+| U19 | a filter on a group (added 2026-10-16, phase 2) | applies to its single changes: a group partly matched has only its matching pieces resolved (a kind filter on a deleted paragraph resolves its text and leaves its mark, or the other way round) | docx4j's choice; Word's Review tab has no such filter (its "show changes by" reviewer filter is display only) | none needed: an API choice |
+| U20 | a table's records that change nothing, a grid's record alone (added 2026-10-16) | not listed (checks 24 and 26's rule for runs and paragraphs, core-ts's for tables); dropped by the sweep either way | core-ts | a probe changing a table property and back with tracking on |
 
 ## 12. Phase 1 (2026-10-16)
 
@@ -536,6 +539,34 @@ settles one moves it into §3.2 with its source. Kept current; dated where added
   for a diffx CR if wanted; the oracle compares text and ignores empty paragraphs.
 - §3.4 had `w:delText` as `JAXBElement<Text>`: it is `DelText`, a class of its own (corrected above).
 
-**Left for phase 2** as planned: table, grid, row, cell and section records (listed, unresolved), `w:cellIns`/
-`w:cellDel`, the legacy forms (`w:cellMerge`, `w:numberingChange`, `w:numPr/w:ins`), the filters. The existing
-`AcceptTrackedChanges` and the samples are untouched until phase 3.
+**Left for phase 2** as planned (done, §13): table, grid, row, cell and section records (listed, unresolved),
+`w:cellIns`/`w:cellDel`, the legacy forms (`w:cellMerge`, `w:numberingChange`, `w:numPr/w:ins`), the filters. The
+existing `AcceptTrackedChanges` and the samples are untouched until phase 3.
+
+## 13. Phase 2 (2026-10-16)
+
+**What was built:** `Tables` (docx4j-core, inside the package): a table's records listed as one change when they
+change anything (compared as canonical XML, the markers and records left out), its text the table's rows where its
+own properties or grid changed, else the changed rows'; accepted, every record dropped and an emptied `w:trPr` with
+it; rejected, restored wholesale (through the records' XML, as phase 1's run and paragraph records) and a merged grid
+collapsed; cells inserted and deleted (`removeCell`, check 27's widening); a section's record laid over the section
+(C07, check 18). The sweep now also takes a table's records that change nothing, `w:cellMerge`, `w:numberingChange`
+(in `w:numPr` and `w:fldChar`) and `w:numPr/w:ins` (D4). `TrackedChangeFilter` (public): authors, types, kinds, a date
+range, parts, `within(SdtElement)`, `withinBookmark(name)`; `TrackedChanges.in(pkg, filter)`,
+`acceptAll(pkg, filter)`, `rejectAll(pkg, filter)` (no sweep with a filter: what is swept belongs to no change). Phase
+1's `Kind.isResolvable()` and the report's unresolved count are gone: every kind listed is resolved.
+
+**How it is held to Word:** `DocumentDescription` now shows table, row, cell and section properties (canonical XML)
+and the records' presence, and every Word test compares them: the probe's C23 (a row indent: `w:tblPrExChange`,
+`w:trPrChange`, `w:tcPrChange` and a merged grid) and C07 (a paragraph's section) both ways, check 18's table and the
+body's section, check 28's two tables. What Word's save adds was found on the way and is allowed for in the comparator,
+not done by the API: a `w:tblLook` on a table with none, `w:tcW` auto 0 on a cell with no width, `w:cols w:space=720`
+on a section with none, and a row's `w:tblPrEx` of zero top and bottom cell margins (C25's inserted rows, accepted).
+`TrackedChangesTest` adds the records (listed, accepted, rejected, reported; records that change nothing), a section
+merge, cells inserted and deleted, the legacy forms swept, and each filter (author and type, a kind splitting a
+group, dates, a bookmark's extent, a control's content). 75 tests in all, and every fixture still resolves whole and
+one change at a time.
+
+**Found:** C23's reject needs more than core-ts's grid collapse: Word dropped the grid columns no row's cells reach
+(the first row's `w:gridAfter` went with them), and a row's `w:tblPrEx` repeating the table's `w:tblPr` (in §3.2's
+row now; for core-ts, with phase 3's hand-offs).

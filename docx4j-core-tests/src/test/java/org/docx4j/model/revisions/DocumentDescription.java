@@ -60,16 +60,20 @@ import org.docx4j.wml.Tr;
 /**
  * A document described for comparison with Word's saves (CR-043 section 3.5): each story's
  * paragraphs - style, alignment, indent, list, the mark's revision - with their text in runs of one
- * formatting and one revision (adjacent runs merged, since Word resplits runs on save); tables,
- * notes, comments, text boxes, equations, bookmarks, and each section's effective headers and
- * footers. What Word's save normalises does not show: ids, dates, rsids, field codes (a field is
- * its result, so an accepted HYPERLINK field and Word's {@code w:hyperlink} read alike), and
- * whether a section's header reference is explicit or inherited.
+ * formatting and one revision (adjacent runs merged, since Word resplits runs on save); tables with
+ * their table, row and cell properties, notes, comments, text boxes, equations, bookmarks, and each
+ * section's properties and effective headers and footers. What Word's save normalises does not
+ * show: ids, dates, rsids, field codes (a field is its result, so an accepted HYPERLINK field and
+ * Word's {@code w:hyperlink} read alike), whether a section's header reference is explicit or
+ * inherited, the order of comments, list numbers, empty headers, footers and notes parts, and the
+ * defaults Word writes out (a table's {@code w:tblLook}, a cell's {@code w:tcW} auto 0, a section's
+ * {@code w:cols w:space="720"}, a row's {@code w:tblPrEx} repeating the table or holding zero top
+ * and bottom cell margins).
  */
 public final class DocumentDescription {
 
 	private final StringBuilder out = new StringBuilder();
-	/** Whether table, row, cell and section property records ({@code *PrChange}) show: CR-043 phase 2 resolves them. */
+	/** Whether table, row, cell and section properties and their records ({@code *PrChange}) show. */
 	private final boolean records;
 
 	private DocumentDescription(boolean records) {
@@ -77,7 +81,7 @@ public final class DocumentDescription {
 	}
 
 	public static String of(WordprocessingMLPackage pkg) {
-		return of(pkg, false);
+		return of(pkg, true);
 	}
 
 	public static String of(WordprocessingMLPackage pkg, boolean records) {
@@ -173,7 +177,10 @@ public final class DocumentDescription {
 								: ((org.docx4j.wml.FooterReference) ref).getType());
 				effective.put(kind, rels.getPart(ref.getId()));
 			}
-			if (records && sectPr.getSectPrChange() != null) line(0, "== section " + n + " sectPrChange");
+			if (records) {
+				line(0, "== section " + n + (sectPr.getSectPrChange() != null ? " sectPrChange" : "") + " ["
+						+ props(sectPr, SectPr.class, "sectPr", SECTION_SKIP).replace("<w:cols w:space=\"720\">", "") + "]");
+			}
 			for (Map.Entry<String, Part> e : effective.entrySet()) {
 				Part part = e.getValue();
 				List<Object> content = part instanceof HeaderPart ? ((HeaderPart) part).getJaxbElement().getContent()
@@ -220,18 +227,90 @@ public final class DocumentDescription {
 		}
 	}
 
+	/** Word's save writes a w:tblLook where a table has none: not compared. */
+	private static final java.util.Set<String> TABLE_SKIP = set("tblPrChange", "tblLook");
+	private static final java.util.Set<String> ROW_SKIP = set("ins", "del", "trPrChange");
+	private static final java.util.Set<String> EX_SKIP = set("tblPrExChange");
+	private static final java.util.Set<String> CELL_SKIP = set("tcPrChange");
+	private static final java.util.Set<String> SECTION_SKIP = set("headerReference", "footerReference", "sectPrChange");
+
+	private static java.util.Set<String> set(String... names) {
+		return new java.util.HashSet<String>(java.util.Arrays.asList(names));
+	}
+
+	/** Properties as canonical XML, the WordprocessingML namespace shortened. */
+	private static String props(Object value, Class<?> type, String local, java.util.Set<String> skip) {
+		return Props.canonical(value, type, local, skip).replace("{" + Trees.W_NS + "}", "w:");
+	}
+
+	/**
+	 * A row's w:tblPrEx, without what Word's save drops: a member the table's w:tblPr says the same,
+	 * and cell margins of 0 above and below, the default (C23, C25).
+	 */
+	private static String exceptions(Tr tr, Tbl tbl) {
+		if (tr.getTblPrEx() == null) return "";
+		StringBuilder out = new StringBuilder();
+		try {
+			org.w3c.dom.Element ex = dom(tr.getTblPrEx(), org.docx4j.wml.CTTblPrEx.class, "tblPrEx");
+			org.w3c.dom.Element tblPr = dom(tbl.getTblPr(), org.docx4j.wml.TblPr.class, "tblPr");
+			for (org.w3c.dom.Node c = ex.getFirstChild(); c != null; c = c.getNextSibling()) {
+				if (c.getNodeType() != org.w3c.dom.Node.ELEMENT_NODE || EX_SKIP.contains(c.getLocalName())) continue;
+				StringBuilder mine = new StringBuilder();
+				Props.inner((org.w3c.dom.Element) c, null, mine);
+				boolean same = false;
+				for (org.w3c.dom.Node t = tblPr == null ? null : tblPr.getFirstChild(); t != null; t = t.getNextSibling()) {
+					if (t.getNodeType() != org.w3c.dom.Node.ELEMENT_NODE || !t.getLocalName().equals(c.getLocalName())) continue;
+					StringBuilder theirs = new StringBuilder();
+					Props.inner((org.w3c.dom.Element) t, null, theirs);
+					same = mine.toString().equals(theirs.toString());
+				}
+				String text = mine.toString().replace("{" + Trees.W_NS + "}", "w:");
+				if (same || ("tblCellMar".equals(c.getLocalName())
+						&& text.equals("<w:top w:type=\"dxa\" w:w=\"0\"><w:bottom w:type=\"dxa\" w:w=\"0\">"))) continue;
+				out.append("<w:").append(c.getLocalName()).append(text).append('>');
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		return out.toString();
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private static org.w3c.dom.Element dom(Object value, Class<?> type, String local) throws Exception {
+		if (value == null) return null;
+		jakarta.xml.bind.Marshaller m = org.docx4j.jaxb.Context.jc.createMarshaller();
+		org.w3c.dom.Document doc = org.docx4j.XmlUtils.getNewDocumentBuilder().newDocument();
+		m.marshal(new JAXBElement(new javax.xml.namespace.QName(Trees.W_NS, local), type, value), doc);
+		return doc.getDocumentElement();
+	}
+
 	private void table(Tbl tbl, int depth) {
-		line(depth, "TABLE" + (records && Lister.hasTableRecords(tbl) ? " records" : ""));
+		String head = "TABLE";
+		if (records) {
+			if (Tables.hasRecords(tbl)) head += " records";
+			head += " tblPr[" + props(tbl.getTblPr(), org.docx4j.wml.TblPr.class, "tblPr", TABLE_SKIP) + "] grid[";
+			if (tbl.getTblGrid() != null) for (org.docx4j.wml.TblGridCol col : tbl.getTblGrid().getGridCol()) head += col.getW() + " ";
+			head = head.trim() + "]";
+		}
+		line(depth, head);
 		for (Lister.Row row : Lister.rowsOf(tbl)) {
 			Tr tr = row.tr;
 			String rev = "";
 			if (tr.getTrPr() != null && tr.getTrPr().getIns() != null) rev += " ins(" + tr.getTrPr().getIns().getAuthor() + ")";
 			if (tr.getTrPr() != null && tr.getTrPr().getDel() != null) rev += " del(" + tr.getTrPr().getDel().getAuthor() + ")";
+			if (records) {
+				if (Tables.inChange(tr)) rev += " records";
+				rev += " trPr[" + props(tr.getTrPr(), org.docx4j.wml.TrPr.class, "trPr", ROW_SKIP) + "]";
+				String ex = exceptions(tr, tbl);
+				if (!ex.isEmpty()) rev += " tblPrEx[" + ex + "]";
+			}
 			line(depth + 1, "ROW" + rev);
 			for (Lister.Row cell : Lister.cellsOf(tr)) {
 				Tc tc = (Tc) unwrap(cell.item);
-				String span = records && tc.getTcPr() != null && tc.getTcPr().getGridSpan() != null ? " span=" + tc.getTcPr().getGridSpan().getVal() : "";
-				line(depth + 2, "CELL" + span);
+				// Word's save writes w:tcW auto 0 where a cell has no width
+				String props = records ? " tcPr[" + props(tc.getTcPr(), org.docx4j.wml.TcPr.class, "tcPr", CELL_SKIP)
+						.replace("<w:tcW w:type=\"auto\" w:w=\"0\">", "") + "]" : "";
+				line(depth + 2, "CELL" + props);
 				blocks(tc.getContent(), depth + 3);
 			}
 		}
