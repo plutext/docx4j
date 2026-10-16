@@ -8,7 +8,7 @@ Version 11.5.13-1
 Release date
 ------------
 
-Not yet released
+16 October 2026
 
 
 Contributors to this release
