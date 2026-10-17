@@ -14,8 +14,8 @@
 	<property environment="env"/>
 	<property name="dist" value="./dist"/>
 
-	<property name="version" value="17.3.2"/>
-	<property name="docx4j-fo-renderer-version" value="2.11-docx4j.6"/>
+	<property name="version" value="17.3.3"/>
+	<property name="docx4j-fo-renderer-version" value="2.11-docx4j.7"/>
 
 
 	<property name="importxhtml-version" value="17.0.4"/>
@@ -92,9 +92,23 @@
         <pathelement location="${m2Repository}/org/slf4j/slf4j-api/2.0.18/slf4j-api-2.0.18.jar"/>
 		
 	</path>
+	
+	<!-- since 17.3.3: charts drawn as SVG/PNG, for PDF, HTML and pptx output and ChartImages;
+	     docx4j-export-fo depends on it -->
+	<path id="docx4j-chart-render.classpath">
+		<pathelement location="${m2Repository}/org/docx4j/docx4j-chart-render/${version}/docx4j-chart-render-${version}.jar"/>
 
-
-
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.19/batik-svggen-1.19.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-dom/1.19/batik-dom-1.19.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-awt-util/1.19/batik-awt-util-1.19.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-shared-resources/1.19/batik-shared-resources-1.19.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-util/1.19/batik-util-1.19.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-constants/1.19/batik-constants-1.19.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-i18n/1.19/batik-i18n-1.19.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.19/batik-css-1.19.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-ext/1.19/batik-ext-1.19.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-xml/1.19/batik-xml-1.19.jar"/>
+	</path>
 
 	<path id="docx4j-export-fo.classpath">
 
@@ -109,18 +123,9 @@
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-gvt/1.19/batik-gvt-1.19.jar"/>	
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-bridge/1.19/batik-bridge-1.19.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-anim/1.19/batik-anim-1.19.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-ext/1.19/batik-ext-1.19.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-awt-util/1.19/batik-awt-util-1.19.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.19/batik-css-1.19.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-dom/1.19/batik-dom-1.19.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-parser/1.19/batik-parser-1.19.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-script/1.19/batik-script-1.19.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-shared-resources/1.19/batik-shared-resources-1.19.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.19/batik-svg-dom-1.19.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-util/1.19/batik-util-1.19.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-constants/1.19/batik-constants-1.19.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-i18n/1.19/batik-i18n-1.19.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-xml/1.19/batik-xml-1.19.jar"/>
 
 		<!-- docx4j version of FOP -->
         <pathelement location="${m2Repository}/org/docx4j/docx4j-fo-renderer/${docx4j-fo-renderer-version}/docx4j-fo-renderer-${docx4j-fo-renderer-version}.jar"/>
@@ -129,7 +134,6 @@
         <pathelement location="${m2Repository}/org/docx4j/docx4j-fo-renderer-events/${docx4j-fo-renderer-version}/docx4j-fo-renderer-events-${docx4j-fo-renderer-version}.jar"/>
         
 		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-transcoder/1.19/batik-transcoder-1.19.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.19/batik-svggen-1.19.jar"/>
         <pathelement location="${m2Repository}/xml-apis/xml-apis-ext/1.3.04/xml-apis-ext-1.3.04.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-codec/1.19/batik-codec-1.19.jar"/>
 		
@@ -137,6 +141,7 @@
         <pathelement location="${m2Repository}/de/rototor/jeuclid/jeuclid-fop/3.1.14/jeuclid-fop-3.1.14.jar"/>
         <pathelement location="${m2Repository}/de/rototor/jeuclid/jeuclid-core/3.1.14/jeuclid-core-3.1.14.jar"/>
 		
+		<!-- since 17.3.3, docx4j-export-fo also needs docx4j-chart-render.classpath (optional/chart-render) -->
 		
 	</path>
 
@@ -150,7 +155,23 @@
         <pathelement location="${m2Repository}/org/commonmark/commonmark-ext-footnotes/0.30.0/commonmark-ext-footnotes-0.30.0.jar"/>
         <pathelement location="${m2Repository}/org/commonmark/commonmark-ext-yaml-front-matter/0.30.0/commonmark-ext-yaml-front-matter-0.30.0.jar"/>
 	</path>
-
+	
+	<!-- since 17.3.3 -->
+	<path id="docx4j-digsig.classpath">
+		<pathelement location="${m2Repository}/org/docx4j/docx4j-digsig/${version}/docx4j-digsig-${version}.jar"/>
+		
+        <pathelement location="${m2Repository}/org/apache/santuario/xmlsec/3.0.6/xmlsec-3.0.6.jar"/>
+        <pathelement location="${m2Repository}/com/fasterxml/woodstox/woodstox-core/6.5.1/woodstox-core-6.5.1.jar"/>
+        <pathelement location="${m2Repository}/org/codehaus/woodstox/stax2-api/4.2.1/stax2-api-4.2.1.jar"/>
+		
+        <pathelement location="${m2Repository}/org/bouncycastle/bcpkix-jdk18on/1.86/bcpkix-jdk18on-1.86.jar"/>
+        <pathelement location="${m2Repository}/org/bouncycastle/bcutil-jdk18on/1.86/bcutil-jdk18on-1.86.jar"/>
+        <pathelement location="${m2Repository}/org/bouncycastle/bcprov-jdk18on/1.86/bcprov-jdk18on-1.86.jar"/>
+		
+        <pathelement location="${m2Repository}/org/docx4j/org/capaxit/textimage/TextImageGen/1.9/TextImageGen-1.9.jar"/>
+        <pathelement location="${m2Repository}/org/ccil/cowan/tagsoup/tagsoup/1.2.1/tagsoup-1.2.1.jar"/>
+	</path>
+		
 	<path id="docx4j-ImportXHTML.classpath">
 		
 		<pathelement location="${m2Repository}/org/docx4j/docx4j-ImportXHTML-core/${importxhtml-version}/docx4j-ImportXHTML-core-${importxhtml-version}.jar" />
@@ -166,8 +187,6 @@
 
 	<target name="release" depends="release-main,release-JAXB-ReferenceImpl,release-JAXB-MOXy,release-samples" />
 	<target name="release-samples" depends="release-samples-docx4j,release-samples-pptx4j,release-samples-xlsx4j,release-documents4j-local,release-documents4j-remote" />
-	
-	
 
 	<target name="release-main"  >
 
@@ -219,6 +238,14 @@
 		
 		<copy file="${importxhtml-dir}/docx4j-ImportXHTML-samples/src/main/resources/docx4j-ImportXHTML.properties" todir="${release.dir}/optional/ImportXHTML"/>
 		
+		<!-- chart-render (since 17.3.3; export-fo needs it too) -->
+		<mkdir dir="${release.dir}/optional/chart-render"/>
+		<copy todir="${release.dir}/optional/chart-render" flatten="true">
+			<!-- requires Ant 1.7.0 -->
+			<path>
+				<path refid="docx4j-chart-render.classpath"/>
+			</path>
+		</copy>
 
 		<!-- export-fo -->
 		<mkdir dir="${release.dir}/optional/export-fo"/>
@@ -241,7 +268,16 @@
 		<!-- diffx -->
 		<mkdir dir="${release.dir}/optional/diffx"/>
 		<copy file="${m2Repository}/org/docx4j/docx4j-diffx/${version}/docx4j-diffx-${version}.jar" todir="${release.dir}/optional/diffx"/>
-				
+
+		<!-- digsig -->
+		<mkdir dir="${release.dir}/optional/digsig"/>
+		<copy todir="${release.dir}/optional/digsig" flatten="true">
+			<!-- requires Ant 1.7.0 -->
+			<path>
+				<path refid="docx4j-digsig.classpath"/>
+			</path>
+		</copy>
+		
 		<!-- resources -->
 		<mkdir dir="${release.dir}/resources"/>
 		<copy file="docx4j-samples-resources/src/main/resources/docx4j.properties" todir="${release.dir}/resources"/>
