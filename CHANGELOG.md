@@ -2,6 +2,31 @@ CHANGELOG
 =========
 
 
+Version 17.3.4
+===============
+
+Release date
+------------
+
+[]
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Claude Opus 5.5
+
+
+Changes in Version 17.3.4
+--------------------------
+
+- DOCPROPERTY: LastSavedBy and LastSavedTime no longer return each other's values; an absent
+  core property (Title, Comments, Author, ...) or properties part gives no value instead of an NPE;
+  a custom property named like part of a built-in one (Page, Time) is found; LastPrinted and
+  HyperlinkBase now resolve.
+
+
 Version 17.3.3
 ===============
 

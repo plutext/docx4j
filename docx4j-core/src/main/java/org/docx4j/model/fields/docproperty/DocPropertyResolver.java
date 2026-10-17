@@ -3,7 +3,13 @@ package org.docx4j.model.fields.docproperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.xml.datatype.XMLGregorianCalendar;
+
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
@@ -41,11 +47,15 @@ public class DocPropertyResolver {
 	private org.docx4j.docProps.core.CoreProperties coreProperties;
 	private org.docx4j.docProps.extended.Properties extendedProperties;
 	
-	private final static String BUILT_IN_FIELDS_CORE = "Author, Comments, CreateTime, LastPrinted, LastSavedBy, LastSavedTime, RevisionNumber, Subject, Title";
+	// matched whole, so a custom property whose name is part of one of these (Page, Time) is still found
+	private final static Set<String> BUILT_IN_FIELDS_CORE = new HashSet<String>(Arrays.asList(
+			"Author", "Comments", "CreateTime", "LastPrinted", "LastSavedBy", "LastSavedTime", "RevisionNumber", "Subject", "Title"));
 
-	private final static String BUILT_IN_FIELDS_EXTENDED = "Characters, CharactersWithSpaces, Company, Lines, NameofApplication, Pages, Paragraphs, Security, Template, TotalEditingTime, Words";
+	private final static Set<String> BUILT_IN_FIELDS_EXTENDED = new HashSet<String>(Arrays.asList(
+			"Characters", "CharactersWithSpaces", "Company", "HyperlinkBase", "Lines", "NameofApplication", "Pages", "Paragraphs",
+			"Security", "Template", "TotalEditingTime", "Words"));
 
-	private final static String BUILT_IN_FIELDS_UNSUPPORTED = "Bytes";
+	private final static Set<String> BUILT_IN_FIELDS_UNSUPPORTED = new HashSet<String>(Arrays.asList("Bytes"));
 	
 	public DocPropertyResolver(WordprocessingMLPackage wordMLPackage) {
 		
@@ -82,6 +92,9 @@ public class DocPropertyResolver {
 				return (String)value;
 			} else if (value instanceof Integer) {
 				return ((Integer)value).toString();
+			} else if (value instanceof XMLGregorianCalendar) {
+				// LastPrinted; as a custom property's date below
+				return ((XMLGregorianCalendar)value).toXMLFormat();
 			} else if (value instanceof org.docx4j.docProps.custom.Properties.Property) {
 				
 				org.docx4j.docProps.custom.Properties.Property property = (org.docx4j.docProps.custom.Properties.Property)value;
@@ -108,16 +121,18 @@ public class DocPropertyResolver {
 	}
 
 	private Object getCoreValue(String key) {
+		
+		if (coreProperties==null) return null;
 				
 		if ("Author".equals(key)) return getFirstValue(coreProperties.getCreator());
-		else if ("Comments".equals(key)) return getFirstValue(coreProperties.getDescription().getValue());
+		else if ("Comments".equals(key)) return getFirstValue(coreProperties.getDescription());
 		else if ("CreateTime".equals(key)) return getFirstValue(coreProperties.getCreated());
 		else if ("LastPrinted".equals(key)) return coreProperties.getLastPrinted(); // XMLGregorianCalendar
-		else if ("LastSavedBy".equals(key)) return getFirstValue(coreProperties.getModified());
-		else if ("LastSavedTime".equals(key)) return coreProperties.getLastModifiedBy();
+		else if ("LastSavedBy".equals(key)) return coreProperties.getLastModifiedBy();
+		else if ("LastSavedTime".equals(key)) return getFirstValue(coreProperties.getModified());
 		else if ("RevisionNumber".equals(key)) return coreProperties.getRevision();
 		else if ("Subject".equals(key)) return getFirstValue(coreProperties.getSubject());
-		else if ("Title".equals(key)) return getFirstValue(coreProperties.getTitle().getValue());
+		else if ("Title".equals(key)) return getFirstValue(coreProperties.getTitle());
 		else {
 			log.error("Handle " + key);
 			return null;
@@ -126,6 +141,8 @@ public class DocPropertyResolver {
 	}
 	
 	private Object getExtendedValue(String key) {
+	
+		if (extendedProperties==null) return null;
 	
 		if ("Characters".equals(key)) return extendedProperties.getCharacters();
 		else if ("CharactersWithSpaces".equals(key)) return extendedProperties.getCharactersWithSpaces();
@@ -146,9 +163,14 @@ public class DocPropertyResolver {
 		
 	}
 	
+	private String getFirstValue(JAXBElement<SimpleLiteral> element) {
+		
+		return element==null ? null : getFirstValue(element.getValue());
+	}
+	
 	private String getFirstValue(SimpleLiteral simpleLiteral) {
 		
-		if (simpleLiteral.getContent().size()==0) {
+		if (simpleLiteral==null || simpleLiteral.getContent().size()==0) {
 			return null;
 		} else {
 			return simpleLiteral.getContent().get(0);
