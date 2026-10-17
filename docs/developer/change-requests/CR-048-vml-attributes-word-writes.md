@@ -1,6 +1,6 @@
 # CR-048: VML attributes Word writes kept on a round trip - `w14:anchorId` on the shapes, `o:gfxdata` beyond `v:shape`
 
-Status: ACCEPTED 2026-10-18 (Jason: "i accept the recommendations provided for decisions D1 to D5;
+Status: IMPLEMENTED 2026-10-18, Word-open check passed (§5). Accepted the same day (Jason: "i accept the recommendations provided for decisions D1 to D5;
 please commit then implement"). Drafted at Jason's request ("the generated-objects-ts session is also
 concerned about w14:anchorId; please ask it, then draft a CR addressing the issue"). Reported by the
 docx4j-core-ts session (its CR-010 section 10.2, core-ts 328439e) and the docx4j-generated-objects-ts
@@ -166,6 +166,50 @@ the `anchorId`s and `o:gfxdata`. One open of each; no layout measurement.
   asks for it before review), and `objects-ts/CR-009` depending on it.
 
 **Acceptance:** the tests above, the existing suites, and the Word-open check.
+
+**Implementation, 18 October 2026:**
+- `xsd/vml/vml-main.xsd`: `xmlns:w14` and its import (placed before the other imports; the clean
+  regeneration resolved it with no complaint), `w14:anchorId` in `AG_AllCoreAttributes`, `o:gfxdata` on
+  the nine types, and the head comment. Twenty inserted lines, LF; the file's CRLF lines untouched.
+- The regeneration gives all eleven VML shape classes `String getAnchorId()`/`setAnchorId`, and the nine
+  `byte[] getGfxdata()`/`setGfxdata`. Compared member by member (`javap -p`, every class) with the
+  17.3.3 jar, from which the xsd had not changed: those 60 members are the only difference, and nothing
+  is removed. No hand-written code needed changing.
+- `VmlAttributesRoundTripTest` (docx4j-core-tests):
+  - `wordsVmlAttributesSurvive`: every fixture with VML, 1,839 elements; no attribute lost; `o:spt` and
+    `o:gfxdata`'s layout the only differences, and their values equal. Run with the 17.3.3 generated
+    classes in place of the new ones, it reports 52 problems: the 46 `anchorId`s and the 6 `o:gfxdata`s
+    of §1.
+  - `namedCases`: loadAndSave's `7969C50B`; the probe's Word save keeps its nine (eight regenerated
+    `v:shape`, one `v:shapetype`); the wps `v:rect` keeps both attributes.
+  - `savedPartsListW14Ignorable`: the saved `document.xml` (loadAndSave) and `numbering.xml`
+    (numPicBullet-word365) declare `w14`, list it in `mc:Ignorable`, and keep the attribute.
+  - The class passes on the reference implementation in the suite, and once by hand with the MOXy
+    selector on the classpath (`Context.getJaxbImplementation()` = `ECLIPSELINK_MOXy`).
+- The existing suites pass with the regenerated classes (18 October 2026): docx4j-core-tests 1,690
+  run, 0 failures, 11 skipped; docx4j-export-fo-tests 852 run, 0 failures, 9 skipped.
+- The Word-open check's inputs are on the share in `cr048/` with a `RUN.txt`: docx4j's re-saves of
+  loadAndSave, the probe's Word save, `2010-mcAlternateContent` and `DrawingML_GraphicData_wps`.
+
+**Word-open check (Jason, 18 October 2026, Word 16): passed.** All four re-saves opened; no repair prompt
+was reported. Word's unedited saves of three of them keep every VML `w14:anchorId`, with the same
+values, and every `o:gfxdata`:
+
+| docx4j re-save | `w14:anchorId`, docx4j / Word (values equal) | `o:gfxdata`, docx4j / Word |
+|---|---|---|
+| loadAndSave (`v:shapetype`) | 1 / 1 | 1 / 1 |
+| the probe's Word save, `document.xml` (8 `v:shape`, 1 `v:shapetype`) | 9 / 9 | 9 / 9 |
+| the probe's Word save, `header2.xml` | 1 / 1 | 1 / 1 |
+| `DrawingML_GraphicData_wps` (`v:rect`) | 1 / 1 | 1 / 1 |
+
+Word could not save the fourth, `2010-mcAlternateContent`, in its own format, and that is the fixture,
+not this CR. The file is a Word 2007 document (empty `w:compat`, `AppVersion` 12.0000) holding a Word 2010
+DrawingML shape in a comment. Saving it, Word's Compatibility Checker said shapes and text boxes would
+be converted; on Continue, it refused with "You can't put drawing objects into a text box, callout,
+comment, footnote, or endnote". docx4j's re-save has the same `comments.xml` as the original, element for
+element (60 elements, same order), so the original behaves the same. So Word's handling of
+`o:gfxdata` on a `v:oval` is not observed. docx4j's keeping it is pinned by `VmlAttributesRoundTripTest`,
+and `o:gfxdata` beyond `v:shape` is observed through Word on the wps `v:rect`.
 
 ## 6. Decisions
 

@@ -2,6 +2,13 @@
 <!--  This schema is from ECMA-376 1st ed 
 
 		To compile with XJC, compile vml__ROOT.xsd instead.	 		
+
+		Changed for docx4j CR-048 (2026-10-18), to admit attributes Word writes that
+		the sources omit ([MS-DOCX] 2.2.6 extends only w:pict and w:object with w14:anchorId;
+		ECMA-376 admits o:gfxdata on v:shape only):
+		- w14:anchorId on AG_AllCoreAttributes, so on every shape type and v:group;
+		- o:gfxdata on CT_Rect, CT_RoundRect, CT_Oval, CT_Line, CT_PolyLine, CT_Arc,
+		  CT_Curve, CT_Image and CT_Group (CT_Shape had it already).
 -->
 <xsd:schema targetNamespace="urn:schemas-microsoft-com:vml" 
 xmlns="urn:schemas-microsoft-com:vml" 
@@ -11,6 +18,7 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 elementFormDefault="qualified" 
 attributeFormDefault="unqualified" 
 xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
+xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"
 xmlns:wvml="urn:schemas-microsoft-com:office:word" 
 xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" 
 xmlns:x="urn:schemas-microsoft-com:office:excel"
@@ -23,6 +31,8 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
 
 
 
+  <xsd:import namespace="http://schemas.microsoft.com/office/word/2010/wordml"
+  schemaLocation="../wml/w14_word_2010_wordml.xsd" /><!-- CR-048: w14:anchorId -->
   <xsd:import namespace="urn:schemas-microsoft-com:office:office" 
   schemaLocation="vml-officedrawing.xsd" />
   <xsd:import namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
@@ -371,6 +381,7 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
   <xsd:attributeGroup name="AG_AllCoreAttributes">
     <xsd:attributeGroup ref="AG_CoreAttributes" />
     <xsd:attributeGroup ref="AG_OfficeCoreAttributes" />
+    <xsd:attribute ref="w14:anchorId" use="optional" /><!-- CR-048 -->
   </xsd:attributeGroup>
   <xsd:attributeGroup name="AG_AllShapeAttributes">
     <xsd:attributeGroup ref="AG_ShapeAttributes" />
@@ -732,6 +743,7 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
         <xsd:documentation>Table Row Height Limits</xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
+    <xsd:attribute ref="o:gfxdata" /><!-- CR-048 -->
   </xsd:complexType>
   <xsd:complexType name="CT_Background">
     <xsd:sequence>
@@ -1338,6 +1350,7 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
         <xsd:documentation>Ending Angle</xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
+    <xsd:attribute ref="o:gfxdata" /><!-- CR-048 -->
   </xsd:complexType>
   <xsd:complexType name="CT_Curve">
     <xsd:annotation>
@@ -1372,6 +1385,7 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
         <xsd:documentation>Curve Ending Point</xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
+    <xsd:attribute ref="o:gfxdata" /><!-- CR-048 -->
   </xsd:complexType>
   <xsd:complexType name="CT_Image">
     <xsd:annotation>
@@ -1387,6 +1401,7 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
     <xsd:attributeGroup ref="AG_AllCoreAttributes" />
     <xsd:attributeGroup ref="AG_AllShapeAttributes" />
     <xsd:attributeGroup ref="AG_ImageAttributes" />
+    <xsd:attribute ref="o:gfxdata" /><!-- CR-048 -->
   </xsd:complexType>
   <xsd:complexType name="CT_Line">
     <xsd:annotation>
@@ -1411,6 +1426,7 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
         <xsd:documentation>Line End Point</xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
+    <xsd:attribute ref="o:gfxdata" /><!-- CR-048 -->
   </xsd:complexType>
   <xsd:complexType name="CT_Oval">
     <xsd:annotation>
@@ -1437,6 +1453,7 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
     </xsd:choice>
     <xsd:attributeGroup ref="AG_AllCoreAttributes" />
     <xsd:attributeGroup ref="AG_AllShapeAttributes" />
+    <xsd:attribute ref="o:gfxdata" /><!-- CR-048 -->
   </xsd:complexType>
   <xsd:complexType name="CT_PolyLine">
     <xsd:annotation>
@@ -1469,6 +1486,7 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
         <xsd:documentation>Points for Compound Line</xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
+    <xsd:attribute ref="o:gfxdata" /><!-- CR-048 -->
   </xsd:complexType>
   <xsd:complexType name="CT_Rect">
     <xsd:annotation>
@@ -1495,6 +1513,7 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
     </xsd:choice>
     <xsd:attributeGroup ref="AG_AllCoreAttributes" />
     <xsd:attributeGroup ref="AG_AllShapeAttributes" />
+    <xsd:attribute ref="o:gfxdata" /><!-- CR-048 -->
   </xsd:complexType>
   <xsd:complexType name="CT_RoundRect">
     <xsd:annotation>
@@ -1526,6 +1545,7 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
         <xsd:documentation>Rounded Corner Arc Size</xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
+    <xsd:attribute ref="o:gfxdata" /><!-- CR-048 -->
   </xsd:complexType>
   <xsd:simpleType name="ST_Ext">
     <xsd:annotation>

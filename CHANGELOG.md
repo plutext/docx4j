@@ -25,6 +25,8 @@ Changes in Version 17.3.4
   original or markup (CriticMarkup) views as Accept/Reject All would leave the text, without changing the
   package; text boxes after their anchor; notes as `[n]`; `mc:AlternateContent` read by the ISO rule over
   the published understood set (`McPurpose.TEXT`, `org/docx4j/jaxb/understood-namespaces.txt`).
+- VML: `w14:anchorId` (on every shape type and `v:group`) and `o:gfxdata` (beyond `v:shape`) are kept when
+  a part is re-saved; before, a re-save dropped them from Word's text-box and shape Fallbacks (CR-048).
 - DOCPROPERTY: LastSavedBy and LastSavedTime no longer return each other's values; an absent
   core property (Title, Comments, Author, ...) or properties part gives no value instead of an NPE;
   a custom property named like part of a built-in one (Page, Time) is found; LastPrinted and
