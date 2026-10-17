@@ -493,7 +493,8 @@ implements XPathEnabled<E> {
 			        }
 			        
 					log.debug("Unmarshalling " + this.partName.getName());
-					unwrapUsually(getConfiguredUnmarshaller(false).unmarshal( inputStreamToXSR(is) ));						
+					XMLStreamReader xsr = inputStreamToXSR(is);
+					unwrapUsually(getConfiguredUnmarshaller(false, xsr).unmarshal( xsr ));
 					
 				}
 			} catch (org.xml.sax.SAXParseException e) {

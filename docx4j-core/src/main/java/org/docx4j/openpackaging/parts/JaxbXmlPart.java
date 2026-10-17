@@ -1089,6 +1089,17 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * @throws JAXBException
 	 */
 	protected Unmarshaller getConfiguredUnmarshaller(boolean eventHandlerContinue) throws JAXBException {
+		return getConfiguredUnmarshaller(eventHandlerContinue, null);
+	}
+
+	/**
+	 * As {@link #getConfiguredUnmarshaller(boolean)}, for unmarshalling from this reader: the
+	 * listener resolves each {@code mc:Choice}'s {@code Requires} by URI through the reader's
+	 * namespace context (CR-046).
+	 *
+	 * @since 17.3.4
+	 */
+	protected Unmarshaller getConfiguredUnmarshaller(boolean eventHandlerContinue, XMLStreamReader reader) throws JAXBException {
 		
 		Unmarshaller u = jc.createUnmarshaller();
 		
@@ -1096,7 +1107,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		eventHandler.setContinue(eventHandlerContinue);
 		u.setEventHandler(eventHandler);
 		
-		Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
+		Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this, reader);
 		u.setListener(docx4jUnmarshallerListener);
 		
 		return u;		
@@ -1134,8 +1145,9 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	        }
 	        									
 			try {
+				XMLStreamReader xsr = inputStreamToXSR(is);
 				jaxbElement = (E) XmlUtils.unwrap(						
-						getConfiguredUnmarshaller(false).unmarshal( inputStreamToXSR(is) ));
+						getConfiguredUnmarshaller(false, xsr).unmarshal( xsr ));
 				
 				// unmarshalled, so no need to flag for later.
 				this.getPackage().getDrawingPropsIdTracker().deregisterPart(this);

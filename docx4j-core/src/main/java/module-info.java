@@ -100,6 +100,7 @@ module org.docx4j.core {
     exports org.docx4j.model.structure.jaxb;
     exports org.docx4j.model.styles;
     exports org.docx4j.model.table;
+    exports org.docx4j.model.text;
     exports org.docx4j.openpackaging;
     exports org.docx4j.openpackaging.contenttype;    
     exports org.docx4j.openpackaging.exceptions;

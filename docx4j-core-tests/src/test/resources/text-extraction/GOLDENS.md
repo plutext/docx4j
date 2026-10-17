@@ -42,10 +42,12 @@ A standalone run of `ExtractionConformance <fixture-directory> <report.tsv>` doe
 same extraction checks. Every unsupported assertion appears as PENDING with its
 requirements and implementation phase. No extraction conformance is claimed by phase 0.
 
-Phase 1 supplies an `ExtractionConformance.Engine` implementation through
-`-Dtextextraction.adapter=<public-class-with-no-arg-constructor>`. The adapter calls
+Phase 1 supplies the `ExtractionConformance.Engine`: `TextsAdapter`, the default
+(`-Dtextextraction.adapter=<public-class-with-no-arg-constructor>` names another;
+`-Dtextextraction.adapter=none` runs the protocol checks with every row pending). The adapter calls
 `Texts`, translates the scenario into typed options, and advertises only implemented
-statements. Scenario `default` has no XHTML importer. `xhtml importer present/absent`
+statements (CR-046 phase 1's). A scenario's option needs its own statement too (WD section 10's
+table: `embedded: true` needs REQ-512, whatever the row cites). Scenario `default` has no XHTML importer. `xhtml importer present/absent`
 requires the corresponding isolated classpath; it is not a TextOptions key. Missing
 advertised capabilities remain pending. Exceptions from enabled assertions fail the test.
 The axis-title row additionally requires capability `CR-047`. Inspector rows require
@@ -63,7 +65,10 @@ Warnings, inspection findings and metadata live separately in `expected-findings
 A warning selector is its chunk content type; an inspector's external selector is its target.
 
 Comparison follows REQ-1201: strip whitespace, CriticMarkup delimiters, Markdown emphasis
-characters, backslash, braces and dollar sign from both text and marker. No Unicode
+characters, backslash, braces and dollar sign from both text and marker. An occurrence inside a
+longer marker token of the suite is not counted: once underscores are stripped, `FLD19_RESULT` is
+also found inside `FLD19_RESULT_TWO`, and `MCE8_OUTER` inside `MCE8_OUTER_FALLBACK` (found by
+CR-046 phase 1, 18 October 2026; the ports' harnesses need the same rule). No Unicode
 normalization, hyphen folding or removal of U+200B/tag characters is performed.
 Case 48 additionally checks the tag-character suffix verbatim. Supplemental scenarios
 pin nested exclusions, disabled altChunks, and non-evaluation of external fields.

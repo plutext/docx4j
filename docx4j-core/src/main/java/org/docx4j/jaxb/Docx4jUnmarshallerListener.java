@@ -1,5 +1,7 @@
 package org.docx4j.jaxb;
 
+import javax.xml.stream.XMLStreamReader;
+
 import jakarta.xml.bind.Unmarshaller;
 
 import org.docx4j.dml.CTNonVisualDrawingProps;
@@ -13,11 +15,28 @@ public class Docx4jUnmarshallerListener extends Unmarshaller.Listener {
 
 	protected static Logger log = LoggerFactory.getLogger(Docx4jUnmarshallerListener.class);
 	
+	private static final String MCE_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+
 	private JaxbXmlPart part;
+
+	private XMLStreamReader reader;
 
 	public Docx4jUnmarshallerListener(JaxbXmlPart part) {
 		this.part = part;
 		log.debug(part.getClass().getName());
+	}
+
+	/**
+	 * The reader the unmarshaller pulls from, whose namespace context resolves each
+	 * {@code mc:Choice}'s {@code Requires} prefixes by URI as it is unmarshalled
+	 * ({@link McSelection#recordRequiresNamespaces}; CR-046). Without one (a DOM source), the
+	 * prefixes are resolved by docx4j's conventional table when they are read.
+	 *
+	 * @since 17.3.4
+	 */
+	public Docx4jUnmarshallerListener(JaxbXmlPart part, XMLStreamReader reader) {
+		this(part);
+		this.reader = reader;
 	}
 	
 //	@Override
@@ -31,6 +50,12 @@ public class Docx4jUnmarshallerListener extends Unmarshaller.Listener {
 		if (target instanceof AlternateContent.Choice) {
 			
 			AlternateContent.Choice choice = (AlternateContent.Choice)target;
+			// the reader stands at the element's end tag, where the declarations in force at
+			// the element are still in scope; anywhere else, record nothing
+			if (reader != null && reader.isEndElement() && "Choice".equals(reader.getLocalName())
+					&& MCE_NS.equals(reader.getNamespaceURI())) {
+				McSelection.recordRequiresNamespaces(choice, reader.getNamespaceContext());
+			}
 			if (choice.getRequires()!=null) {
 				part.addMcChoiceNamespace(choice.getRequires());
 				if (log.isDebugEnabled()) {

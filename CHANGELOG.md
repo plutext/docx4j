@@ -21,6 +21,10 @@ Claude Opus 5.5
 Changes in Version 17.3.4
 --------------------------
 
+- Text model (CR-046 phase 1): `org.docx4j.model.text` (`Texts`, `TextOptions`, `PlainText`). Accepted,
+  original or markup (CriticMarkup) views as Accept/Reject All would leave the text, without changing the
+  package; text boxes after their anchor; notes as `[n]`; `mc:AlternateContent` read by the ISO rule over
+  the published understood set (`McPurpose.TEXT`, `org/docx4j/jaxb/understood-namespaces.txt`).
 - DOCPROPERTY: LastSavedBy and LastSavedTime no longer return each other's values; an absent
   core property (Title, Comments, Author, ...) or properties part gives no value instead of an NPE;
   a custom property named like part of a built-in one (Page, Time) is found; LastPrinted and

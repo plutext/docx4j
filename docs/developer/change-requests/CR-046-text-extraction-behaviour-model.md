@@ -5,6 +5,7 @@ Status: PROPOSED 2026-10-17, drafted at Jason's request ("please draft the text-
 are REQ numbers"). D1 to D7 decided 2026-10-17 (Jason: "D1–D7: i accept the recommendations").
 Phase 0 suite implemented 18 October 2026; the original 52-case Word checks passed.
 Cases 53–54 are now added; Jason completed the extended main DOCX r3 open/save check.
+Phase 1 implemented 18 October 2026 (§4).
 Five phases (§4); decisions in §6.
 
 The specification is the portfolio's *WordprocessingML Text Extraction*, working draft 0.6
@@ -354,6 +355,63 @@ The commit is the one WD's [PROBE] cites.
 - REQ-1201 for every row whose statements are in this list: cases 1 to 22 (case 21's
   plain-text rows; its Markdown row is phase 3's), 24 and 26 to 30, and the parts of 25 that
   are text boxes.
+
+**Phase 1 implementation, 18 October 2026:**
+- `org.docx4j.model.text`, exported: `TextView`, `TextOptions` (every WD option, `of(Map)`, `set`),
+  `Texts` (`of` a package, a story part, content in a package, content alone; `ofResolved` for the copy
+  route), `TextResult`, `TextBlock`/`TextRow`/`TextCell`, `TextRun`, `TextField`, `TextComment`,
+  `TextRevision`, `TextWarning`, and `PlainText`. The walk is `Extractor`, package-private.
+- Resolve: `McPurpose` (`TEXT`, `DRAW`, `ALL`) and `McSelection.selectedBranch(McPurpose, AlternateContent)`
+  (purpose first: `selectedBranch(ac, null)` would otherwise be ambiguous for existing callers),
+  `select`, `branches`, `understands`, `requiresNamespaces`, `understoodNamespaces`.
+  - The spike settled on the existing `Docx4jUnmarshallerListener`: `JaxbXmlPart` hands it the
+    `XMLStreamReader` it unmarshals from, and at each `mc:Choice`'s end tag (checked, so a runtime that
+    calls back elsewhere records nothing) the reader's namespace context resolves the `Requires`
+    prefixes. The URIs are kept by identity in a weak map. Measured on the reference implementation
+    and on MOXy. A Choice built in code, deep-copied, or unmarshalled from a DOM (the binder, the
+    `mc-preprocessor.xslt` rescue) falls back to the conventional prefix table, as REQ-303 permits;
+    the javadoc says so.
+  - `org/docx4j/jaxb/understood-namespaces.txt` and its README: core-ts's 107 URIs, then 11 that
+    docx4j's JAXB contexts bind and core-ts's list lacks (`dgm1611`, `w16sdtdh`, `w16du`, `w16sdtfl`,
+    `x14ac`, `xr2`, `xr3`, `xr6`, `xr9`, `xr10`, `xr16`). Left out on purpose: the six OpenDoPE
+    namespaces (custom XML only, REQ-516), content types, the XML namespace.
+    `UnderstoodNamespacesTest` asserts the format, the set equal to the file, and every namespace the
+    three contexts bind in it but those eight.
+- View (D2): `org.docx4j.model.revisions.ResolvedView`, public, answers `removes(item)`,
+  `removesMark(p)` and `removesComment(id)` from CR-043's own `Lister`, recording what `Resolver`
+  would do without doing it. Moves are replayed per story in `resolveAll`'s order (last half first),
+  since the outcome depends on it: a source in no range after an orphaned destination turns the
+  destination into a plain insertion (`check20/moveFrom-no-ranges.docx`). A comment whose range
+  started on a revision taken away goes with it once its range is empty, as `removeRevision` does.
+- `ViewAgreementTest` (REQ-406, REQ-1202): 136 files (CR-043's `revisions/` and the probe's
+  `text-extraction/`), both views, the default scope and every story included: 544 comparisons, all
+  equal. The copy is the fixture loaded again, not `clone()`: docx4j's save drops the declaration of
+  a `Requires` prefix bound to an unconventional namespace (probe case 6, `shape2010`), so a saved copy
+  takes the Fallback. That save defect is CR-021's and is not fixed here.
+- The suite: `TextsAdapter` is the harness's default engine. 420 assertions pass, none fail, 513 are
+  pending (phases 2 and 3, the inspector). Two harness fixes: an occurrence of a marker inside a
+  longer marker of the suite no longer counts (`FLD19_RESULT` inside `FLD19_RESULT_TWO`,
+  `MCE8_OUTER` inside `MCE8_OUTER_FALLBACK`), and a scenario's option needs its own statement
+  (`embedded: true` ran on case 51's row, which cites only REQ-902). Case 25's text-box rows are
+  phase 1 (section 4); its WordArt row stays phase 2. No fixture changed.
+- Unit tests: `MarkupCompatibilityTest` (REQ-301 to REQ-305, REQ-307), `TextsTest` (REQ-203, REQ-204,
+  REQ-401, REQ-402, REQ-405, REQ-501 to REQ-505, REQ-507, REQ-508, REQ-510, REQ-518, REQ-601 to
+  REQ-603, REQ-702, REQ-706, REQ-707, REQ-801, REQ-802, REQ-1001), on the reference implementation and
+  on MOXy.
+
+Choices the WD leaves open, made here and to be confirmed (portfolio):
+- `field_codes: true` writes the instruction as written, then the result, with no braces (braces
+  would be extractor-added text, which REQ-707 does not list).
+- A comment is rendered at its `w:commentReference` (Word writes it right after the range end), its
+  text plain inside `{>>...<<}`; a reply after its parent, never at its own reference.
+- A section's headers are written first-page, default, even; each part once, at the first section
+  that displays it.
+- Footnotes and endnotes are numbered apart, in Arabic numerals (Word shows endnotes as i, ii, ... by
+  default). A custom-mark reference has no number; its note is still read, in reference order.
+- Until phase 2's listed and grid forms, every table is written tab-separated, a multi-paragraph
+  cell's paragraphs a space apart.
+- In `markup`, a `w:delText` outside any holder is a deletion with no author or date.
+- A block's `text` holds no list label; a table block's text is its tab-separated form.
 
 ### Phase 2: the remaining content classes and options
 

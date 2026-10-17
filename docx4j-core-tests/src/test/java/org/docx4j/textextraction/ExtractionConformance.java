@@ -23,7 +23,7 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.regex.*;
 
-/** Phase 0's table/golden protocol. A phase 1 adapter supplies the engine without a core API stub. */
+/** Phase 0's table/golden protocol; {@link TextsAdapter} supplies the engine (CR-046 phase 1). */
 public final class ExtractionConformance {
     /** The adapter must advertise only statements it implements. Unsupported rows remain visible. */
     public interface Engine {
@@ -61,28 +61,46 @@ public final class ExtractionConformance {
                 .replaceAll("[\\s\\p{Z}*_\\\\{}$]", "");
     }
     public static int count(String text, String marker) {
+        return count(text, marker, Set.of());
+    }
+    /**
+     * Occurrences of a marker, not counting those inside a longer marker token of the suite: after
+     * REQ-1201's normalisation removes underscores and whitespace, FLD19_RESULT is also found inside
+     * FLD19_RESULT_TWO, and MCE8_OUTER inside MCE8_OUTER_FALLBACK.
+     */
+    public static int count(String text, String marker, Collection<String> suite) {
         String haystack = normalize(text), needle = normalize(marker);
         if (needle.isEmpty()) throw new IllegalArgumentException("Empty marker");
+        boolean[] covered = new boolean[haystack.length()];
+        for (String other : suite) {
+            String longer = normalize(other);
+            if (longer.length() <= needle.length() || !longer.contains(needle)) continue;
+            for (int i = 0; (i = haystack.indexOf(longer, i)) >= 0; i += longer.length())
+                java.util.Arrays.fill(covered, i, i + longer.length(), true);
+        }
         int result = 0;
-        for (int i = 0; (i = haystack.indexOf(needle, i)) >= 0; i += needle.length()) result++;
+        for (int i = 0; (i = haystack.indexOf(needle, i)) >= 0; i += needle.length()) if (!covered[i]) result++;
         return result;
     }
     static void equal(Object expected, Object actual, String context) {
         if (!Objects.equals(expected, actual)) throw new AssertionError(context + ": expected " + expected + ", got " + actual);
     }
     static void verify(String text, String token, String expected, String context) {
+        verify(text, token, expected, context, Set.of());
+    }
+    static void verify(String text, String token, String expected, String context, Collection<String> suite) {
         if (expected.matches("\\d+")) {
-            equal(Integer.parseInt(expected), count(text, token), context); return;
+            equal(Integer.parseInt(expected), count(text, token, suite), context); return;
         }
         String[] kinds = expected.split("\\+");
-        equal(kinds.length, count(text, token), context + " total");
+        equal(kinds.length, count(text, token, suite), context + " total");
         for (String kind : kinds) {
             String opening = kind.equals("ins") ? "{++" : kind.equals("del") ? "{--" : kind.equals("cmt") ? "{>>" : null;
             if (opening == null) throw new IllegalArgumentException("Unknown marking: " + kind);
             String closing = kind.equals("ins") ? "++}" : kind.equals("del") ? "--}" : "<<}";
             Matcher matches = Pattern.compile(Pattern.quote(opening) + "(.*?)" + Pattern.quote(closing), Pattern.DOTALL).matcher(text);
             int marked = 0;
-            while (matches.find()) marked += count(matches.group(1), token);
+            while (matches.find()) marked += count(matches.group(1), token, suite);
             equal(1, marked, context + " marking " + kind);
         }
     }
@@ -92,7 +110,40 @@ public final class ExtractionConformance {
         req.remove("REQ-902"); // Extractor class does not claim inspector conformance.
         if (row.get("token").equals("CHT34_AXIS_TITLE")) req.add("CR-047");
         if (row.get("case").equals("21") && format.equals("txt")) req.remove("REQ-703");
+        // CR-046 section 4: case 25's text boxes are phase 1; only its legacy WordArt needs REQ-511
+        if (row.get("case").equals("25") && !row.get("token").startsWith("WA25")) req.remove("REQ-511");
         return req;
+    }
+    /** The statement a scenario's option belongs to (WD section 10), which the engine must implement too. */
+    static Set<String> scenarioRequirements(String scenario) {
+        if (scenario == null || scenario.equals("default")) return Set.of();
+        if (scenario.startsWith("xhtml importer")) return Set.of("REQ-513");
+        if (scenario.equals("markdown")) return Set.of("REQ-703");
+        String name = scenario.split(":", 2)[0].trim(), value = scenario.contains(":") ? scenario.split(":", 2)[1].trim() : "";
+        switch (name) {
+            case "include": return value.contains("glossary") ? Set.of("REQ-516") : value.contains("comments") ? Set.of("REQ-504") : Set.of("REQ-502");
+            case "text_boxes": return Set.of("REQ-518");
+            case "notes": case "note_references": return Set.of("REQ-503");
+            case "comments": return Set.of("REQ-504");
+            case "hidden": return Set.of("REQ-507");
+            case "field_codes": return Set.of("REQ-505");
+            case "fields": return Set.of("REQ-506");
+            case "placeholders": return Set.of("REQ-508");
+            case "bindings": return Set.of("REQ-509");
+            case "list_labels": return Set.of("REQ-510");
+            case "charts": case "smartart": return Set.of("REQ-511");
+            case "embedded": return Set.of("REQ-512");
+            case "altchunks": return Set.of("REQ-513");
+            case "alt_text": return Set.of("REQ-514");
+            case "metadata": return Set.of("REQ-515");
+            case "symbols": return Set.of("REQ-601");
+            case "math": return Set.of("REQ-604");
+            case "tables": return Set.of("REQ-605");
+            case "markup_detail": return Set.of("REQ-702");
+            case "page_markers": return Set.of("REQ-708");
+            case "layout": return Set.of("REQ-709");
+            default: throw new IllegalArgumentException("Unknown scenario: " + scenario);
+        }
     }
     static int phase(Set<String> requirements) {
         int result = 1;
@@ -108,6 +159,7 @@ public final class ExtractionConformance {
 
     static final class Run {
         final Engine engine;
+        final Set<String> tokens = new LinkedHashSet<>();
         final Map<String, Output> outputs = new HashMap<>();
         final List<String> report = new ArrayList<>();
         int passed, pending;
@@ -137,6 +189,7 @@ public final class ExtractionConformance {
 
     public static void run(Path dir, Path report, Engine engine) throws Exception {
         Run run = new Run(engine);
+        for (Map<String, String> row : table(dir.resolve("expected-tokens.tsv"))) run.tokens.add(row.get("token"));
         for (Map<String, String> row : table(dir.resolve("expected-tokens.tsv"))) {
             for (String view : List.of("accepted", "original", "markup")) {
                 // MHT's default scenario explicitly runs without the optional importer.
@@ -195,9 +248,11 @@ public final class ExtractionConformance {
         System.out.println("CR-046: " + run.passed + " assertions passed, " + run.pending + " pending; " + report);
     }
     static void checkToken(Run run, Path dir, Map<String, String> row, String view, String scenario, String format, String expected) throws Exception {
-        if (!run.ready(row, row.get("token"), view, scenario, textRequirements(row, format))) return;
+        Set<String> requirements = textRequirements(row, format);
+        requirements.addAll(scenarioRequirements(scenario));
+        if (!run.ready(row, row.get("token"), view, scenario, requirements)) return;
         Output output = run.output(dir, row, view, scenario, format);
-        verify(output.text, row.get("token"), expected, row.get("case") + ":" + row.get("token") + ":" + view + ":" + scenario);
+        verify(output.text, row.get("token"), expected, row.get("case") + ":" + row.get("token") + ":" + view + ":" + scenario, run.tokens);
         if (row.get("token").equals("TAG48_MARK"))
             equal(true, output.text.contains("TAG48_MARK\udb40\udc41\udb40\udc42"), "REQ-602 tag characters retained");
         run.pass(row, row.get("token"), view, scenario);
@@ -216,9 +271,10 @@ public final class ExtractionConformance {
     public static void verifyGolden(Path file, String actual) throws Exception {
         equal(normalize(Files.readString(file, StandardCharsets.UTF_8)), normalize(actual), file.toString());
     }
+    /** The engine: {@link TextsAdapter} unless {@code -Dtextextraction.adapter} names another, or {@code none}. */
     public static Engine engine() throws Exception {
-        String name = System.getProperty("textextraction.adapter");
-        return name == null ? null : (Engine) Class.forName(name).getConstructor().newInstance();
+        String name = System.getProperty("textextraction.adapter", TextsAdapter.class.getName());
+        return name.isEmpty() || name.equals("none") ? null : (Engine) Class.forName(name).getConstructor().newInstance();
     }
     public static void main(String[] args) throws Exception {
         run(Path.of(args[0]), Path.of(args[1]), engine());

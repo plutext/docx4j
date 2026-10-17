@@ -26,7 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** Phase 0 checks the corpus and protocol; later phases enable extraction assertions through Engine. */
+/** Phase 0 checks the corpus and protocol; extraction assertions run through {@link TextsAdapter} (CR-046 phase 1). */
 public class ExtractionConformanceTest {
     @Rule public TemporaryFolder temporary = new TemporaryFolder();
 
@@ -167,11 +167,15 @@ public class ExtractionConformanceTest {
         Path report = Path.of("target/text-extraction/conformance.tsv");
         ExtractionConformance.run(fixtures(), report, ExtractionConformance.engine());
         String results = Files.readString(report);
-        if (ExtractionConformance.engine() == null) {
-            assertTrue(results.contains("PENDING"));
-            assertTrue(results.contains("later inspector CR"));
-            assertTrue(results.contains("VBA51_MODULE_MARK"));
-            assertTrue(results.contains("ALT47_NESTED_CHUNK"));
+        assertTrue(results.contains("PENDING"));
+        assertTrue(results.contains("later inspector CR"));
+        assertTrue(results.contains("VBA51_MODULE_MARK"));
+        assertTrue(results.contains("ALT47_NESTED_CHUNK"));
+        if (ExtractionConformance.engine() != null) {
+            // CR-046 phase 1: its rows checked, phase 2's (charts, embedded, altChunks...) still pending
+            assertTrue(results.contains("\tCHOICE_ALPHA_123\tmarkup\tdefault\tPASS"));
+            assertTrue(results.contains("\tTBX25_IN_CELL\toriginal\ttext_boxes: false\tPASS"));
+            assertTrue(results.contains("\tCHT34_TITLE\taccepted\tdefault\tPENDING\tphase 2"));
         }
     }
 }
