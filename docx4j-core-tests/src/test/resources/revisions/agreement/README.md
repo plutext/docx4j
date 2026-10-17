@@ -6,7 +6,7 @@ which side Word's own saves take where they differ, are CR-043 section 14.
 
 ```
 node ts-resolve.mjs ../docx4j-core-ts <ts-out> <fixture.docx>...          # core-ts: main body, headers, footers
-../docx4j-python/.venv-fork/bin/python py_resolve.py ../docx4j-python <py-out> <fixture.docx>...   # python: the body
+../docx4j-python/.venv-fork/bin/python py_resolve.py ../docx4j-python <py-out> <fixture.docx>...   # python: every story
 java -cp <core-tests test-classes:docx4j-core:deps> org.docx4j.model.revisions.PortsAgreement <out> <ts-out> <py-out> <fixture.docx>...
 diff <out>/<name>.accept.docx4j.txt <out>/<name>.accept.ts.txt
 ```

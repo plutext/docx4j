@@ -647,6 +647,18 @@ found three more: math is not seen at all (the equations fixture lists no change
 no begin or end; and after its accept-all its listing reports no change on the probe and on check 28 while markup
 remains (text boxes, mark-level moves and `w:rPrChange`, table and section records, `w:customXmlInsRangeStart`, math).
 
+**Python's column rerun (2026-10-18)**, at the python session's request, after its CR-010 ported this CR
+(`docx4j_py.model.revisions`, docx4j-python e690217, unpushed). `py_resolve.py` now calls
+`revisions.accept_all`/`reject_all`, every story, as `TrackedChanges` resolves; it called `Body.accept_all`, the
+body alone. Against docx4j (HEAD 1b3a68ccf with CR-048's regenerated classes; `PortsAgreement`, the same eleven
+fixtures: check 26's `26a-centred` and `26d-indented`, the editor's `review-for-word.docx`): **0 lines differ in
+all 22 comparisons**, where the table above has python's column at 42/60 on the probe. Through the body alone
+the probe still differs by 12/18 and check 18 by 2/0, and every one of those lines is in a header, a footer,
+the footnotes or the endnotes: python's body resolves only its own story, by design (its CR-010 §3.3), as
+Office JS's `body.getTrackedChanges()` does. The python session measured the same against Word's saves.
+Its recorded departures (its CR-010 §§10.3, 11.3) are a reading of `w:date` as UTC, which Jason is asked
+about, and Python naming; neither is a rule that disagrees with Word.
+
 **The Word-open check** (Jason, 2026-10-16, Word 365): docx4j's own Accept All and Reject All saves of four fixtures -
 the probe, the equations, the editor's review file (notes, comments, a reply) and check 18's (a move, list changes,
 tables, a section) - each open with no repair prompt and with no revision left. Word 2010 was not tried.
