@@ -50,6 +50,7 @@ public class ExtractionConformanceTest {
         ExtractionFixtureChecks.check(Files.readAllBytes(dir.resolve("extraction-probe.docx")),
                 Files.readAllBytes(dir.resolve("extraction-probe-external.docm")), catalogue);
         assertEquals(ExtractionFixtureChecks.findings(), Files.readString(dir.resolve("expected-findings.tsv")));
+        assertEquals(ExtractionAdditionalCases.orders(), Files.readString(dir.resolve("expected-order.tsv")));
     }
     @Test public void docxAltChunkRequiresItsImportContentType() throws Exception {
         Map<String, byte[]> entries = ExtractionFixtureChecks.entries(
@@ -80,7 +81,11 @@ public class ExtractionConformanceTest {
         Path dir = fixtures();
         List<Map<String, String>> appendix = ExtractionConformance.table(dir.getParent().resolve("support/appendix-a-statements.tsv"));
         List<Map<String, String>> generated = ExtractionConformance.table(dir.resolve("case-statements.tsv"));
-        assertEquals(52, appendix.size()); assertEquals(52, generated.size());
+        assertEquals(52, appendix.size());
+        List<Map<String, String>> additions = ExtractionConformance.table(dir.getParent().resolve("support/additional-case-statements.tsv"));
+        assertEquals(2, additions.size());
+        appendix.addAll(additions);
+        assertEquals(54, generated.size());
         String readme = Files.readString(dir.resolve("README.md"));
         for (int i = 0; i < appendix.size(); i++) {
             assertEquals(appendix.get(i).get("case"), generated.get(i).get("case"));
@@ -134,6 +139,29 @@ public class ExtractionConformanceTest {
         Files.writeString(dir.resolve("fixture.accepted.txt"), "BROKEN\n");
         try { ExtractionConformance.run(dir, report, engine); fail("Golden mismatch passed"); }
         catch (AssertionError expected) { assertTrue(expected.getMessage().contains("fixture.accepted.txt")); }
+    }
+    @Test public void presentationAndGlossaryOrderAssertionsRunInEveryView() throws Exception {
+        Path dir = temporary.newFolder("ordered-suite").toPath();
+        Files.writeString(dir.resolve("expected-tokens.tsv"), "case\ttoken\taccepted\toriginal\tmarkup\toption\twith_option\tfixture\tstatements\n");
+        Files.writeString(dir.resolve("expected-findings.tsv"), "case\tfixture\tchannel\tkind\tselector\tscenario\texpected\tstatements\n");
+        Files.writeString(dir.resolve("goldens.tsv"), "fixture\tcase\tview\tscenario\tformat\tgolden\tstatements\n");
+        Files.writeString(dir.resolve("expected-order.tsv"), "case\tfixture\tscenario\ttokens\tstatements\n"
+                + "53\tfixture.docx\tembedded: true\tFIRST53_SHAPE > LAST53_SHAPE\tREQ-512\n");
+        final boolean[] reversed = {false};
+        ExtractionConformance.Engine engine = new ExtractionConformance.Engine() {
+            public Set<String> implementedStatements() { return Set.of("REQ-512"); }
+            public ExtractionConformance.Output extract(Path p, String view, String scenario, String format) {
+                assertEquals("embedded: true", scenario);
+                return new ExtractionConformance.Output(reversed[0] ? "LAST53_SHAPE FIRST53_SHAPE" : "FIRST53_SHAPE LAST53_SHAPE", Map.of());
+            }
+        };
+        Path report = dir.resolve("report.tsv");
+        ExtractionConformance.run(dir, report, engine);
+        assertEquals(4, Files.readAllLines(report).size());
+        assertFalse(Files.readString(report).contains("PENDING"));
+        reversed[0] = true;
+        try { ExtractionConformance.run(dir, report, engine); fail("Reordered shapes passed"); }
+        catch (AssertionError expected) { assertTrue(expected.getMessage().contains("wrong order")); }
     }
     @Test public void extractionRequirementsAreCheckedOrReportedPending() throws Exception {
         Path report = Path.of("target/text-extraction/conformance.tsv");

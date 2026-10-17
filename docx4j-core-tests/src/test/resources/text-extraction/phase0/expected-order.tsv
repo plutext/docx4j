@@ -1,0 +1,3 @@
+case	fixture	scenario	tokens	statements
+53	extraction-probe.docx	embedded: true	EMB53_SLIDE_ONE > EMB53_GROUP_FIRST > EMB53_GROUP_NESTED > EMB53_AFTER_GROUP > EMB53_TABLE_A > EMB53_TABLE_B > EMB53_TABLE_C > EMB53_TABLE_D > EMB53_SLIDE_TWO	REQ-512, REQ-605
+54	extraction-probe.docx	include: glossary	EN27_NOTE_TEXT > GLS54_ENTRY_ONE > GLS54_ENTRY_TWO	REQ-501, REQ-503, REQ-516

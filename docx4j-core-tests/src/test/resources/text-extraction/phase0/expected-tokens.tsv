@@ -157,3 +157,16 @@ case	token	accepted	original	markup	option	with_option	note	fixture	statements
 51	VBA51_MODULE_MARK	0	0	0			inspection: macro; never extracted under any option	extraction-probe-external.docm	REQ-902
 52	CPR52_CUSTOM	0	0	0	metadata: true	1	always in block-model metadata	extraction-probe-external.docm	REQ-515
 52	APP52_COMPANY	0	0	0	metadata: true	1	always in block-model metadata	extraction-probe-external.docm	REQ-515
+53	EMB53_SLIDE_ONE	0	0	0	embedded: true	1	slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605)	extraction-probe.docx	REQ-512, REQ-605
+53	EMB53_GROUP_FIRST	0	0	0	embedded: true	1	slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605)	extraction-probe.docx	REQ-512, REQ-605
+53	EMB53_GROUP_NESTED	0	0	0	embedded: true	1	slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605)	extraction-probe.docx	REQ-512, REQ-605
+53	EMB53_AFTER_GROUP	0	0	0	embedded: true	1	slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605)	extraction-probe.docx	REQ-512, REQ-605
+53	EMB53_TABLE_A	0	0	0	embedded: true	1	slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605)	extraction-probe.docx	REQ-512, REQ-605
+53	EMB53_TABLE_B	0	0	0	embedded: true	1	slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605)	extraction-probe.docx	REQ-512, REQ-605
+53	EMB53_TABLE_C	0	0	0	embedded: true	1	slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605)	extraction-probe.docx	REQ-512, REQ-605
+53	EMB53_TABLE_D	0	0	0	embedded: true	1	slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605)	extraction-probe.docx	REQ-512, REQ-605
+53	EMB53_SLIDE_TWO	0	0	0	embedded: true	1	slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605)	extraction-probe.docx	REQ-512, REQ-605
+53	EMB53_HIDDEN_SLIDE	0	0	0			hidden slide show=0; absent by default and with embedded: true	extraction-probe.docx	REQ-512, REQ-605
+53	EMB53_SPEAKER_NOTES	0	0	0			speaker notes omitted, including with embedded: true	extraction-probe.docx	REQ-512, REQ-605
+54	GLS54_ENTRY_ONE	0	0	0	include: glossary	1	glossary comes last, after endnotes; first docPart (REQ-501, REQ-516)	extraction-probe.docx	REQ-501, REQ-516
+54	GLS54_ENTRY_TWO	0	0	0	include: glossary	1	second docPart, after the first (REQ-501, REQ-516)	extraction-probe.docx	REQ-501, REQ-516

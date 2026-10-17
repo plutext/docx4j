@@ -267,6 +267,12 @@ SPV48\_SEPARATOR
 
 DDE49\_RESULT INC49\_RESULT Local file link
 
+## Case 53: an embedded presentation with groups, a table, a hidden slide and speaker notes
+
+## Case 54: a glossary document with two building-block entries
+
+The glossary holds two entries; neither is inserted into the main story.
+
 [^1]: TC17\_NOTE\_BASE 
 
 [^2]: FN27\_NOTE\_TEXT

@@ -84,11 +84,13 @@ Three cases had no rule in the paper when the probe was built; it has since rule
 
 ## Phase 0 extension
 
-Cases 39–49 extend the main probe; cases 50–52 are in `extraction-probe-external.docm`.
-Jason confirmed the r2 main DOCX opens without repair (18 October 2026), with field updates declined.
-The external DOCM check also passed after declining its SQL prompt. The Word findings above describe the original 38-case
+Cases 39–49 and 53–54 extend the main probe; cases 50–52 are in `extraction-probe-external.docm`.
+Jason checked the earlier 52-case r2 DOCX without repair, declining field updates (18 October 2026).
+The unchanged external DOCM also passed. Jason completed the r3 check for cases 53–54 (18 October 2026).
+The Word findings above describe the original 38-case
 fixture, retained in the parent directory with its re-save.
-`case-statements.tsv` mirrors WD 0.3 Appendix A; `expected-findings.tsv` separates warnings,
+`case-statements.tsv` maps the original WD Appendix A plus the approved cases 53–54 (WD 0.5).
+`expected-order.tsv` pins presentation and glossary order. `expected-findings.tsv` separates warnings,
 metadata and future inspector findings from text counts. Inspector requirements are pending a later CR.
 The default test environment has no XHTML importer. The MHT row's capability scenario supplies one.
 All external targets are deliberately missing local files. Nothing is fetched by the suite.
@@ -516,4 +518,27 @@ Golden conventions and baseline commands are in `../GOLDENS.md`.
 |---|---|---|---|---|---|---|---|
 | `CPR52_CUSTOM` | – | – | – | `metadata: true` | yes | always in block-model metadata | REQ-515 |
 | `APP52_COMPANY` | – | – | – | `metadata: true` | yes | always in block-model metadata | REQ-515 |
+
+### Case 53: an embedded presentation with groups, a table, a hidden slide and speaker notes
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `EMB53_SLIDE_ONE` | – | – | – | `embedded: true` | yes | slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605) | REQ-512, REQ-605 |
+| `EMB53_GROUP_FIRST` | – | – | – | `embedded: true` | yes | slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605) | REQ-512, REQ-605 |
+| `EMB53_GROUP_NESTED` | – | – | – | `embedded: true` | yes | slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605) | REQ-512, REQ-605 |
+| `EMB53_AFTER_GROUP` | – | – | – | `embedded: true` | yes | slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605) | REQ-512, REQ-605 |
+| `EMB53_TABLE_A` | – | – | – | `embedded: true` | yes | slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605) | REQ-512, REQ-605 |
+| `EMB53_TABLE_B` | – | – | – | `embedded: true` | yes | slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605) | REQ-512, REQ-605 |
+| `EMB53_TABLE_C` | – | – | – | `embedded: true` | yes | slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605) | REQ-512, REQ-605 |
+| `EMB53_TABLE_D` | – | – | – | `embedded: true` | yes | slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605) | REQ-512, REQ-605 |
+| `EMB53_SLIDE_TWO` | – | – | – | `embedded: true` | yes | slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605) | REQ-512, REQ-605 |
+| `EMB53_HIDDEN_SLIDE` | – | – | – |  |  | hidden slide show=0; absent by default and with embedded: true | REQ-512, REQ-605 |
+| `EMB53_SPEAKER_NOTES` | – | – | – |  |  | speaker notes omitted, including with embedded: true | REQ-512, REQ-605 |
+
+### Case 54: a glossary document with two building-block entries
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `GLS54_ENTRY_ONE` | – | – | – | `include: glossary` | yes | glossary comes last, after endnotes; first docPart (REQ-501, REQ-516) | REQ-501, REQ-516 |
+| `GLS54_ENTRY_TWO` | – | – | – | `include: glossary` | yes | second docPart, after the first (REQ-501, REQ-516) | REQ-501, REQ-516 |
 

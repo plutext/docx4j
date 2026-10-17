@@ -1,9 +1,10 @@
 # CR-046 phase 0 suite and golden protocol
 
 The original 38-case probe, its README/TSV and its checked Word re-save remain in this
-folder unchanged. `phase0/` contains the replacement 52-case suite. Jason confirmed the
-r2 main DOCX opens without repair on 18 October 2026, declining field updates. The external
-DOCM check also passed after declining its blank mail-merge SQL prompt; no repair was reported. Use `phase0/expected-tokens.tsv` with its two named input files.
+folder unchanged. `phase0/` contains the replacement 54-case suite. Jason confirmed the
+earlier 52-case r2 main DOCX opens without repair on 18 October 2026, declining field updates. The external
+DOCM check also passed after declining its blank mail-merge SQL prompt; no repair was reported. Jason also completed the main DOCX r3 check with cases 53–54; the external DOCM is unchanged.
+Use `phase0/expected-tokens.tsv` with its two named input files.
 Do not use the original Word re-save as a re-save of the extended probe.
 
 The builder regenerates both documents, README, token and finding tables, and case
@@ -11,7 +12,9 @@ statement mappings together. Build into a scratch directory first; JAXB namespac
 ordering means that rebuilt document bytes need not match checked files. The checked extended
 suite remains in `phase0/`, preserving the original suite and its matching Word re-save.
 `support/appendix-a-statements.tsv` is an independent transcription of WD 0.3 Appendix A
-(portfolio e8f14e1); the test compares every case's mapping and README rows against it.
+(portfolio e8f14e1); `support/additional-case-statements.tsv` records Jason's approved
+53–54 additions against WD 0.5. The test compares every case's mapping and README rows
+against those independent tables.
 
 ## Build and run
 
@@ -117,7 +120,13 @@ Case 39 intentionally pins the brief's narrow embedded-XLSX behavior despite CR-
 broader SpreadsheetML exclusion. This needs an explicit wording exception in that CR.
 Cases 40 and 47 test same-kind nesting at one level. Cross-kind recursion depth remains
 unspecified and is not silently decided by these fixtures. Case 41 is implemented;
-there was no need to use the allowed one-hour drop exception. 
+there was no need to use the allowed one-hour drop exception.
+
+Both questions are answered in WD 0.4 (portfolio 2062e86, 18 October 2026), and CR-046 follows
+it. REQ-512 now defines how an embedded workbook is read (each sheet's used range as a simple
+table, after its name), the one SpreadsheetML reading in scope. Nesting is one level across
+kinds: content reached through an embedded package or an `altChunk` has neither expanded
+(REQ-512, REQ-513).
 
 ## Word repair and r2 retry (18 October 2026)
 
@@ -139,8 +148,52 @@ Only four existing ZIP members change: content types, the case 42 heading, Activ
 Flat OPC payload. Two members are added for ActiveX binary storage and its relationship.
 All other input members are byte-identical. Baselines were recaptured for the r2 bytes.
 Jason confirmed `extraction-probe-r2.docx` opened fine on 18 October 2026 and declined
-field updates. The staged bytes match `phase0/extraction-probe.docx`; the main DOCX open
+field updates. The checked bytes are archived in `phase0/evidence/checked-52/extraction-probe.docx`; the main DOCX open
 check passes. Jason then completed the external DOCM check after declining the blank SQL
 prompt, with no repair problem reported. Both open checks pass. Word's saves of both r2 files
 are retained in `phase0/evidence/`; the main save drops case 42's control again. The full Word
 build is still not recorded. See `phase0/evidence/word-open-results.md`.
+
+
+## Cases 53–54 (18 October 2026)
+
+Jason requested both additions after the 52-case suite's Word checks passed. Their new input
+is staged as `extraction-probe-r3.docx`; the canonical authored copy is
+`phase0/extraction-probe.docx`. The external DOCM remains byte-identical and retains its check.
+The checked 52-case input and catalogues are preserved under `phase0/evidence/checked-52/`.
+
+Case 53 embeds an actual PPTX with two visible slides, a hidden slide between them, speaker
+notes, nested groups, and a 2x2 table. Visible markers are absent in every default view and
+appear once under `embedded: true`; the hidden-slide and speaker-note markers stay absent.
+The glossary in case 54 has two entries, excluded by default and included once each under
+`include: glossary`. It must follow endnotes and keep entry order.
+
+`expected-order.tsv` adds whole-output ordering assertions in all three views. Its columns
+are case, fixture, scenario, tokens (separated by ` > `), and statements. Case 53 pins
+slide/shape/depth-first/table-cell order; case 54 pins endnote-before-glossary and entry order.
+These assert exact single occurrences and sequence after REQ-1201 normalization. Tests enable
+an adapter to prove the order assertions execute, and deliberately reverse shapes to check
+that incorrect ordering fails. The fixture checks also read the nested PPTX package and verify
+its slide list, hidden state, groups, table, notes, and glossary payloads.
+
+WD 0.6 (portfolio 97fce95) records these cases in Appendix A.2. The approved additions map to:
+
+| Case | Construct | Statements |
+|---|---|---|
+| 53 | Embedded presentation, slide order, groups, table, hidden slide and notes | REQ-512, REQ-605 |
+| 54 | Two glossary entries, opt-in inclusion after endnotes | REQ-501, REQ-516 |
+
+WD 0.6 adopted these rows.
+
+
+### R3 Word result
+
+Jason completed the requested r3 open/save check on 18 October 2026; no repair issue was
+reported. Its returned `extraction-probe-r3-saved.docx` is retained as
+`phase0/evidence/extraction-probe-r3-word-save.docx`. Word preserves the embedded presentation
+bytes exactly, renaming its part to `Microsoft_PowerPoint_Presentation.pptx`. All slide/group/
+table/hidden-slide/notes markers remain in that package. The glossary part and its relationship
+are absent from the save, with neither glossary marker inserted into the body. The cause of
+that loss is not established. The authored fixture still contains the glossary and remains
+the conformance input; Word's save is evidence of its behavior, not the expected extraction.
+The full Word build remains unknown (`AppVersion` is only 16.0000).

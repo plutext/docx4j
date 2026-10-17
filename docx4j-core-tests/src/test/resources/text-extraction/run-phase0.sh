@@ -12,6 +12,7 @@ trap 'rm -rf "$probeClasses"' EXIT
 javac --release 11 -cp "$probeClasspath" -d "$probeClasses" \
   "$probeSources/ExtractionProbeBuilder.java" \
   "$probeSources/ExtractionPhase0Cases.java" \
+  "$probeSources/ExtractionAdditionalCases.java" \
   "$probeSources/ExtractionFixtureChecks.java" \
   "$probeSources/ProbeVbaProject.java" \
   "$probeSources/ProbeActiveXControl.java"

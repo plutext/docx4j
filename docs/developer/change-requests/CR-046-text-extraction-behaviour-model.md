@@ -3,11 +3,12 @@
 Status: PROPOSED 2026-10-17, drafted at Jason's request ("please draft the text-extraction CR
 (CR-046) against docs/text_extraction_specification_wd.md, so each phase's acceptance criteria
 are REQ numbers"). D1 to D7 decided 2026-10-17 (Jason: "D1–D7: i accept the recommendations").
-Phase 0 suite implemented 18 October 2026; both Word-open checks passed.
+Phase 0 suite implemented 18 October 2026; the original 52-case Word checks passed.
+Cases 53–54 are now added; Jason completed the extended main DOCX r3 open/save check.
 Five phases (§4); decisions in §6.
 
-The specification is the portfolio's *WordprocessingML Text Extraction*, working draft 0.3
-(`docx4j-portfolio/docs/text_extraction_specification_wd.md`, commit e8f14e1), cited here as
+The specification is the portfolio's *WordprocessingML Text Extraction*, working draft 0.6
+(`docx4j-portfolio/docs/text_extraction_specification_wd.md`, commit 97fce95), cited here as
 **WD**. It records the decisions D1 to D31 of the portfolio's discussion paper
 (`docs/text_extraction_behaviour_model.md`, 2d8fd36), all of which Jason accepted on 17 October
 2026. docx4j is its first implementation (D15: Java first, since it cuts the goldens the ports
@@ -153,6 +154,8 @@ structure.
 - then the footnotes and the endnotes, in reference order, `[n]` on each side (REQ-503);
 - under `include`, each section's displayed headers and footers, in section order, with a
   header no section references skipped (REQ-502);
+- under `include: glossary`, the glossary document, last, after the endnotes (REQ-501,
+  REQ-516);
 - comments: in `MARKUP`, at the end of their range (REQ-504).
 
 **Content classes**, each where WD §5.2 puts it:
@@ -166,10 +169,12 @@ structure.
 | charts | `ChartTable`, axis titles once CR-047 adds them | REQ-511 |
 | SmartArt | a new reader of the diagram data part, depth-first from the `doc` point along `parOf` by `@srcOrd`, over `node` and `asst` points | REQ-511 |
 | legacy WordArt | its `v:textpath/@string`, as a one-paragraph text box | REQ-511 |
-| embedded packages | under `embedded: true`, an `EmbeddedPackagePart` loaded and read through the model one level deep; an OLE 1.0 package holding plain text read from its `Ole10Native` stream; no other OLE binary opened | REQ-512 |
-| `altChunk` | `convertAltChunks`' type dispatch, applied to a detached result, never the package: text as lines; XHTML and MHT through docx4j-ImportXHTML when it is on the classpath (reflectively, as `convertAltChunks` reaches it); HTML tidied by jsoup when it is on the classpath and read as blocks directly, its tags stripped otherwise (D5); a docx or Flat OPC chunk as a nested package one level deep; RTF never; `altchunk.not_expanded` for whatever is not expanded | REQ-513 |
+| embedded packages | under `embedded: true`, an `EmbeddedPackagePart` loaded and read at its reference: a WordprocessingML document through the model; a workbook through xlsx4j, each sheet's used range (from the cells holding values, not `dimension`) as a simple table (REQ-605), each cell as displayed (its cached value through xlsx4j's `DataFormatter`, as `ChartTable` uses it; formulas never recomputed), sheets in workbook order, each after its name on its own line; a presentation through pptx4j (`MainPresentationPart.getSlide`), each slide's text in slide order, hidden slides omitted, shapes in `p:spTree` order with groups depth-first, a table as REQ-605, speaker notes omitted; an OLE 1.0 package holding plain text read from its `Ole10Native` stream; no other OLE binary opened. One level deep across kinds: content reached through an embedded package or an `altChunk` has neither expanded | REQ-512 |
+| `altChunk` | `convertAltChunks`' type dispatch, applied to a detached result, never the package: text as lines; XHTML and MHT through docx4j-ImportXHTML when it is on the classpath (reflectively, as `convertAltChunks` reaches it); HTML tidied by jsoup when it is on the classpath and read as blocks directly, its tags stripped otherwise (D5); a docx or Flat OPC chunk as a nested package, one level deep across kinds as for embedded packages; RTF never; `altchunk.not_expanded` for whatever is not expanded | REQ-513 |
 | image descriptions | a new `ImageDescriber` interface, `AltTextDescriber` the default: `@descr`, else `@name`, else VML `@alt`, and nothing for `adec:decorative`; provenance carried | REQ-514 |
 | properties | the `metadata` object always; in the text only under `metadata: true` | REQ-515 |
+| glossary | `GlossaryDocumentPart`, only under `include: glossary` | REQ-516 |
+| custom XML parts, settings | never text (bound values aside, REQ-509) | REQ-516 |
 
 ### 2.5 Characters and serialisation
 
@@ -235,8 +240,8 @@ after phase 3 (REQ-202's terms for a compatibility getter).
 
 ## 3. Tests and the oracle
 
-- **The probe** (`docx4j-core-tests/src/test/resources/text-extraction/`) is the conformance
-  suite of WD §12.2. `expected-tokens.tsv` gives each marker token's count per view and under
+- **The probe** (`docx4j-core-tests/src/test/resources/text-extraction/phase0/`, c0c72ecef) is
+  the conformance suite of WD §12.2. `expected-tokens.tsv` gives each marker token's count per view and under
   its gating option.
 - **`ExtractionConformanceTest`** reads the table, extracts with `Texts`, applies REQ-1201's
   normalisation, and asserts each row. Rows whose statements belong to a later phase are listed
@@ -291,7 +296,7 @@ a labelled paragraph per case, the builder self-checking, and a Word-open check 
 The commit is the one WD's [PROBE] cites.
 
 **Phase 0 implementation, 18 October 2026 (both Word-open checks passed):**
-- The extended 52-case suite is staged in
+- The suite (initially 52 cases, now extended to 54) is in
   `docx4j-core-tests/src/test/resources/text-extraction/phase0/`; the original checked
   38-case probe and its Word re-save remain unchanged in the parent directory.
 - The builder writes both documents, token/finding tables, README and case-to-REQ mappings.
@@ -307,7 +312,7 @@ The commit is the one WD's [PROBE] cites.
   and Markdown source, with released 17.3.3 generated-object/JAXB dependencies.
 - The golden manifest is header-only until phase 3's reviewed goldens exist. The format,
   adapter contract, capture commands and two specification questions are in
-  `text-extraction/GOLDENS.md`. Case 38's core properties now also have metadata-option rows.
+  `text-extraction/GOLDENS.md`; WD 0.4 answered both. Case 38's core properties now also have metadata-option rows.
 - Jason confirmed the r2 main DOCX opened without repair on 18 October 2026, with field
   updates declined. Jason also completed the external DOCM check after declining its blank
   mail-merge SQL prompt; no repair problem was reported. Both open checks pass. The first extended DOCX triggered unreadable-content repair; its repaired save is retained
@@ -356,7 +361,9 @@ The commit is the one WD's [PROBE] cites.
 - `fields: update` on a copy, and `fields_update_on_open`;
 - bound values;
 - charts, SmartArt and WordArt;
-- embedded packages;
+- embedded packages: documents through the model, workbooks through xlsx4j, presentations
+  through pptx4j;
+- the glossary under `include: glossary`;
 - `altChunk` expansion;
 - `ImageDescriber`;
 - metadata;
@@ -411,7 +418,7 @@ The portfolio registry is updated through the portfolio session.
 **Acceptance:** no statements. The hand-offs are sent with the commit hashes, and each
 receiving session has acknowledged.
 
-## 5. Every statement of WD 0.3, and where it is met
+## 5. Every statement of WD 0.6, and where it is met
 
 | Statement | Subject | Phase | Probe cases (WD Appendix A) |
 |---|---|---|---|
@@ -430,7 +437,7 @@ receiving session has acknowledged.
 | REQ-404 | the rules by construct | 1 | 10, 13 to 17 |
 | REQ-405 | the joined paragraph's `paraId` | 1 | 11 |
 | REQ-406 | the agreement test | 1 | CR-043 fixtures, all |
-| REQ-501 | the default stories | 1 | 1 to 8, 17, 25, 27 |
+| REQ-501 | the default stories | 1 (default), 2 (glossary option) | 1 to 8, 17, 25, 27, 54 |
 | REQ-502 | headers and footers per section | 1 | 25, 26 |
 | REQ-503 | notes and `[n]` | 1 | 17, 27 |
 | REQ-504 | comments | 1 | 28 |
@@ -441,18 +448,18 @@ receiving session has acknowledged.
 | REQ-509 | bound values | 2 | 23 |
 | REQ-510 | list labels | 1 | 29 |
 | REQ-511 | charts, SmartArt, WordArt | 2 (case 34's axis title after CR-047) | 25, 34, 35 |
-| REQ-512 | embedded objects | 2 | 39 to 42 |
-| REQ-513 | `altChunk` | 2 | 36, 43 to 47 |
+| REQ-512 | embedded objects; a document, workbook or presentation read under `embedded: true`; one level across kinds | 2 | 39 to 42, 53 |
+| REQ-513 | `altChunk`; one level across kinds | 2 | 36, 43 to 47 |
 | REQ-514 | image descriptions | 2 | 33 |
 | REQ-515 | properties and metadata | 2 | 38, 52 |
-| REQ-516 | glossary, custom XML, settings: no text | 2 | 38 |
+| REQ-516 | custom XML and settings: no text; the glossary only under `include`, last | 2 | 38, 54 |
 | REQ-517 | transparent containers | 1 | 24 |
 | REQ-518 | text boxes after the anchor; the address grammar | 1 | 1, 17, 25, 48 |
 | REQ-601 | run content | 1 (`symbols: unicode` not implemented) | 29, 30 |
 | REQ-602 | no normalisation | 1 | 30, 48 |
 | REQ-603 | one line per paragraph and break | 1 | 30 |
 | REQ-604 | math as LaTeX; ruby's base | 2 (`math: unicodemath` not implemented) | 32, 37 |
-| REQ-605 | tables | 1 (simple), 2 (listed, grid) | 13, 24, 31 |
+| REQ-605 | tables | 1 (simple), 2 (listed, grid, embedded presentation) | 13, 24, 31, 53 |
 | REQ-606 | story and document order | 1 | all |
 | REQ-701, REQ-702 | plain text; CriticMarkup | 1 | 9 to 17, 28 |
 | REQ-703, REQ-704 | Markdown; front matter | 3 | 21, 38, 52, all |
@@ -502,6 +509,31 @@ recommendations"). Each item is kept as proposed, recommendation included, as th
 - **D7. The JSON form of the block model** lives in docx4j-mcp, not docx4j-core.
   Recommended: yes; docx4j-core carries the Java blocks. **Accepted.**
 
+### 6.1 Questions for the WD (18 October 2026)
+
+Phase 0 left four points open in WD 0.4. The portfolio session put them in WD 0.5 (0069d6a):
+
+- **Q1. Where the glossary goes.** Ruled: last, after the endnotes (REQ-501).
+- **Q2. An embedded workbook's cells.** Ruled (REQ-512):
+  - each cell as the spreadsheet application displays it, its cached value through its number
+    format, with formulas never recomputed. docx4j uses xlsx4j's `DataFormatter` with
+    `Locale.US`, as `ChartTable` does;
+  - the used range taken from the cells that hold values, not the `dimension` element.
+- **Q3. An embedded presentation's reading order.** Ruled (REQ-512): shapes in `p:spTree` order,
+  group shapes depth-first, a table in REQ-605's form, speaker notes and hidden slides
+  (`show="0"`) omitted.
+- **Q4. Cases for an embedded presentation (53) and a glossary (54).** Accepted by Jason
+  on 18 October 2026 ("can we add case 53 ... and case 54 ..."). Both are now in the main
+  DOCX, with regenerated token/statement tables and legacy baselines. Case 53 includes
+  visible slides, nested groups, a 2x2 table, a hidden slide and speaker notes; case 54 has
+  two glossary entries. `expected-order.tsv` pins their reading order. WD 0.6 (97fce95) records
+  them in Appendix A.2.
+  Jason completed the r3 Word-open/save check. Its save preserves the embedded PPTX byte-for-byte
+  (part renamed), but drops the glossary part and relationship. The cause of the glossary loss
+  is not established; the authored input remains the conformance fixture. The external DOCM
+  is unchanged. The returned save and observations are retained in `phase0/evidence/`.
+
+
 ## 7. Dependencies, risks and out of scope
 
 **Dependencies:**
@@ -522,18 +554,24 @@ recommendations"). Each item is kept as proposed, recommendation included, as th
 **Out of scope:**
 - the inspect operation (WD §9; a later CR, D29);
 - the JSON verbs `outline`, `find` and `read` (docx4j-mcp);
-- SpreadsheetML and PresentationML;
+- SpreadsheetML and PresentationML as documents in their own right (an embedded workbook or
+  presentation is read, REQ-512);
 - rendering;
 - evaluating fields that need layout or fetching.
 
 ## 8. Sources
 
-- WD 0.3: `docx4j-portfolio/docs/text_extraction_specification_wd.md`, e8f14e1 (0.2 at 2566012 answered
-  this CR's first questions; 0.3 adds REQ-307's citation of REQ-1201's normalisation).
+- WD 0.6: `docx4j-portfolio/docs/text_extraction_specification_wd.md`, 97fce95.
+  - 0.2 (2566012) answered this CR's first questions.
+  - 0.3 (e8f14e1) added REQ-307's citation of REQ-1201's normalisation.
+  - 0.4 (2062e86; [PROBE] corrected in c52b031) answered phase 0's questions: embedded
+    workbooks and presentations, nesting across kinds, `include` against custom XML.
+  - 0.5 (0069d6a) ruled on §6.1's Q1 to Q3.
+  - 0.6 recorded cases 53 and 54 in Appendix A.2 and [PROBE].
 - The paper: `docx4j-portfolio/docs/text_extraction_behaviour_model.md`, decisions §9 (2d8fd36),
   where it lands §10.
 - CR-043 (the views and their fixtures); CR-021 §8.5 (Word and the Fallback; the `altChunk`
   rule, 17 October 2026).
 - The probe: `docx4j-core-tests/src/test/resources/text-extraction/`, 4a89a5967, and its
-  README's Word section.
+  README's Word section; the phase 0 suite in its `phase0/` directory, c0c72ecef.
 - docx4j-core-ts CR-002 §3.3 (addresses) and its `UNDERSTOOD_NAMESPACES`.

@@ -153,7 +153,7 @@ public final class ExtractionConformance {
         for (String scenario : List.of("embedded: true", "altchunks: false", "fields: update", "xhtml importer present", "metadata: true", "field_codes: true")) {
             for (Map<String, String> row : table(dir.resolve("expected-tokens.tsv"))) {
                 int n = Integer.parseInt(row.get("case"));
-                boolean applies = scenario.equals("embedded: true") && n >= 39 && n <= 42
+                boolean applies = scenario.equals("embedded: true") && (n >= 39 && n <= 42 || n == 53)
                         || scenario.equals("altchunks: false") && n >= 43 && n <= 47
                         || scenario.equals("fields: update") && n >= 49 && n <= 51
                         || scenario.equals("xhtml importer present") && n == 47
@@ -171,6 +171,15 @@ public final class ExtractionConformance {
                 String key = row.get("channel") + "\t" + row.get("kind") + "\t" + row.get("selector");
                 equal(row.get("expected"), output.findings.get(key), item);
                 run.pass(row, item, view, row.get("scenario"));
+            }
+        }
+        Path orders = dir.resolve("expected-order.tsv");
+        if (Files.exists(orders)) for (Map<String, String> row : table(orders)) {
+            for (String view : List.of("accepted", "original", "markup")) {
+                if (!run.ready(row, "order", view, row.get("scenario"), requirements(row.get("statements")))) continue;
+                Output output = run.output(dir, row, view, row.get("scenario"), "txt");
+                verifyOrder(output.text, row.get("tokens"), row.get("case") + ":" + view);
+                run.pass(row, "order", view, row.get("scenario"));
             }
         }
         // Empty manifest is an explicit phase 0 state. Every published entry must be checked.
@@ -192,6 +201,17 @@ public final class ExtractionConformance {
         if (row.get("token").equals("TAG48_MARK"))
             equal(true, output.text.contains("TAG48_MARK\udb40\udc41\udb40\udc42"), "REQ-602 tag characters retained");
         run.pass(row, row.get("token"), view, scenario);
+    }
+    static void verifyOrder(String text, String markers, String context) {
+        String normalized = normalize(text);
+        int after = 0;
+        for (String token : markers.split("\\s*>\\s*")) {
+            String marker = normalize(token);
+            equal(1, count(text, token), context + ": order marker " + token);
+            int position = normalized.indexOf(marker);
+            if (position < after) throw new AssertionError(context + ": wrong order at " + token);
+            after = position + marker.length();
+        }
     }
     public static void verifyGolden(Path file, String actual) throws Exception {
         equal(normalize(Files.readString(file, StandardCharsets.UTF_8)), normalize(actual), file.toString());

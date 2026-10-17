@@ -182,6 +182,7 @@ public class ExtractionProbeBuilder {
 		ExtractionProbeBuilder b = new ExtractionProbeBuilder();
 		byte[] docx = b.build(gloxFile());
         byte[] external = ExtractionPhase0Cases.external(b);
+        b.cases.sort(java.util.Comparator.comparingInt(c -> c.n));
         ExtractionFixtureChecks.check(docx, external, b.cases);
         WordprocessingMLPackage.load(new ByteArrayInputStream(docx));
         WordprocessingMLPackage.load(new ByteArrayInputStream(external));
@@ -189,6 +190,7 @@ public class ExtractionProbeBuilder {
         Files.write(new File(out, "extraction-probe-external.docm").toPath(), external);
         Files.writeString(new File(out, "expected-tokens.tsv").toPath(), b.tsv(), StandardCharsets.UTF_8);
         Files.writeString(new File(out, "expected-findings.tsv").toPath(), ExtractionFixtureChecks.findings(), StandardCharsets.UTF_8);
+        Files.writeString(new File(out, "expected-order.tsv").toPath(), ExtractionAdditionalCases.orders(), StandardCharsets.UTF_8);
         Files.writeString(new File(out, "case-statements.tsv").toPath(), b.statements(), StandardCharsets.UTF_8);
         Files.writeString(new File(out, "README.md").toPath(), b.readme(), StandardCharsets.UTF_8);
         java.nio.file.Path goldens = new File(out, "goldens.tsv").toPath();
@@ -656,6 +658,7 @@ public class ExtractionProbeBuilder {
 		never("CXP38_DATA", "customXml/item1.xml (#22)");
 
 		ExtractionPhase0Cases.add(this, pkg);
+        ExtractionAdditionalCases.add(this, pkg);
 
 		body.append("<w:sectPr><w:headerReference w:type='default' r:id='" + rel(mdp, hSection2) + "'/>" + PAGE + "</w:sectPr>");
 
@@ -1282,11 +1285,13 @@ public class ExtractionProbeBuilder {
 				+ "- Case 21: Markdown gives a hyperlink's target as `[text](target)` for both forms, the HYPERLINK\n"
 				+ "  field's too, whatever `field_codes` says: the instruction supplies the address, not text.\n\n");
 		s.append("## Phase 0 extension\n\n"
-                + "Cases 39–49 extend the main probe; cases 50–52 are in `extraction-probe-external.docm`.\n"
-                + "Jason confirmed the r2 main DOCX opens without repair (18 October 2026), with field updates declined.\n"
-                + "The external DOCM check also passed after declining its SQL prompt. The Word findings above describe the original 38-case\n"
+                + "Cases 39–49 and 53–54 extend the main probe; cases 50–52 are in `extraction-probe-external.docm`.\n"
+                + "Jason checked the earlier 52-case r2 DOCX without repair, declining field updates (18 October 2026).\n"
+                + "The unchanged external DOCM also passed. Jason completed the r3 check for cases 53–54 (18 October 2026).\n"
+                + "The Word findings above describe the original 38-case\n"
                 + "fixture, retained in the parent directory with its re-save.\n"
-                + "`case-statements.tsv` mirrors WD 0.3 Appendix A; `expected-findings.tsv` separates warnings,\n"
+                + "`case-statements.tsv` maps the original WD Appendix A plus the approved cases 53–54 (WD 0.5).\n"
+                + "`expected-order.tsv` pins presentation and glossary order. `expected-findings.tsv` separates warnings,\n"
                 + "metadata and future inspector findings from text counts. Inspector requirements are pending a later CR.\n"
                 + "The default test environment has no XHTML importer. The MHT row's capability scenario supplies one.\n"
                 + "All external targets are deliberately missing local files. Nothing is fetched by the suite.\n"

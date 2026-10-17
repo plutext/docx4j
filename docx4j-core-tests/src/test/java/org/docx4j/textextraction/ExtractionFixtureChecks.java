@@ -32,7 +32,7 @@ import org.docx4j.org.apache.poi.poifs.filesystem.*;
 /** Structural checks independent of the extraction engine and Word's open/repair check. */
 final class ExtractionFixtureChecks {
     static void check(byte[] main, byte[] external, List<ExtractionProbeBuilder.Case> cases) throws Exception {
-        if (cases.size() != 52) throw new IllegalStateException("Expected 52 cases");
+        if (cases.size() != 54) throw new IllegalStateException("Expected 54 cases");
         Map<String, byte[]> a = entries(main), b = entries(external);
         validatePackage(a); validatePackage(b);
         String mainText = payloadText(a), externalText = payloadText(b);
@@ -41,7 +41,7 @@ final class ExtractionFixtureChecks {
             ExtractionProbeBuilder.Case c = cases.get(i);
             require(c.n == i + 1, "Case sequence");
             require(!ExtractionPhase0Cases.statements(c.n).isEmpty(), "Missing requirements");
-            String payload = c.n >= 50 ? externalText : mainText;
+            String payload = ExtractionPhase0Cases.fixture(c.n).endsWith(".docm") ? externalText : mainText;
             for (ExtractionProbeBuilder.Token t : c.tokens) {
                 require(tokens.add(c.n + ":" + t.name), "Duplicate expectation " + t.name);
                 // Case 30's hyphens are elements separating the two token fragments.
@@ -63,6 +63,8 @@ final class ExtractionFixtureChecks {
         require(story.contains("<w:specVanish"), "Style separator");
         require(!story.contains("EMB39_XLSX_CELL") && !story.contains("EMB40_DOCX_TEXT"), "Embedded token leaked to body");
         require(!story.contains("ACX42_CAPTION"), "Control token leaked to body");
+        require(!story.contains("EMB53_") && !story.contains("GLS54_"), "New payload marker leaked to body");
+        checkAdditionalCases(a);
         require(text(a, "word/activeX/activeX42.xml").contains("persistStorage"), "ActiveX persistence");
         ProbeActiveXControl.check(a.get("word/activeX/activeX42.bin"));
         require(text(a, "word/chunk46.xml").startsWith("<?xml version=\"1.0\""), "Flat OPC declaration");
@@ -75,6 +77,47 @@ final class ExtractionFixtureChecks {
         require(text(b, "word/settings.xml").contains("<w:updateFields w:val=\"true\""), "Update-on-open metadata");
         ProbeVbaProject.check(b.get("word/vbaProject.bin"));
         require(!text(b, "word/document.xml").contains("VBA51_MODULE_MARK"), "VBA marker leaked to body");
+    }
+
+    static void checkAdditionalCases(Map<String, byte[]> main) throws Exception {
+        Map<String, byte[]> pptx = entries(main.get("word/embeddings/probe53.pptx"));
+        OpcPackage loaded = OpcPackage.load(new ByteArrayInputStream(main.get("word/embeddings/probe53.pptx")));
+        require(loaded instanceof org.docx4j.openpackaging.packages.PresentationMLPackage, "Embedded presentation type");
+        String p = ExtractionAdditionalCases.P, a = ExtractionAdditionalCases.A;
+        Document presentation = xml(pptx.get("ppt/presentation.xml"));
+        NodeList slideIds = presentation.getElementsByTagNameNS(p, "sldId");
+        require(slideIds.getLength() == 3, "Expected three presentation slides");
+        Map<String, String> relationships = new HashMap<>();
+        NodeList rels = xml(pptx.get("ppt/_rels/presentation.xml.rels")).getDocumentElement().getChildNodes();
+        for (int i = 0; i < rels.getLength(); i++) if (rels.item(i) instanceof Element) {
+            Element r = (Element) rels.item(i); relationships.put(r.getAttribute("Id"), r.getAttribute("Target"));
+        }
+        List<String> visible = new ArrayList<>();
+        for (int i = 0; i < slideIds.getLength(); i++) {
+            String id = ((Element) slideIds.item(i)).getAttributeNS(ExtractionPhase0Cases.REL.substring(0, ExtractionPhase0Cases.REL.length() - 1), "id");
+            String target = URI.create("/ppt/presentation.xml").resolve(relationships.get(id)).normalize().getPath().substring(1);
+            require(target.equals("ppt/slides/slide" + new int[] {9, 4, 1}[i] + ".xml"), "Slide order must differ from filename order");
+            Document slide = xml(pptx.get(target));
+            String show = slide.getDocumentElement().getAttribute("show");
+            NodeList runs = slide.getElementsByTagNameNS(a, "t");
+            if (i == 1) {
+                require(show.equals("false") || show.equals("0"), "Expected hidden middle slide");
+                require(slide.getDocumentElement().getTextContent().contains("EMB53_HIDDEN_SLIDE"), "Missing hidden-slide marker");
+            } else for (int j = 0; j < runs.getLength(); j++) visible.add(runs.item(j).getTextContent());
+            if (i == 0) {
+                require(slide.getElementsByTagNameNS(p, "grpSp").getLength() == 2, "Nested group structure");
+                require(slide.getElementsByTagNameNS(a, "tr").getLength() == 2
+                        && slide.getElementsByTagNameNS(a, "tc").getLength() == 4, "Expected 2x2 slide table");
+            }
+        }
+        require(visible.equals(Arrays.asList(ExtractionAdditionalCases.VISIBLE)), "Visible-slide shape/table order");
+        require(text(pptx, "ppt/notesSlides/notesSlide1.xml").contains("EMB53_SPEAKER_NOTES"), "Missing speaker-note marker");
+        Document glossary = xml(main.get("word/glossary/document.xml"));
+        String w = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+        NodeList entries = glossary.getElementsByTagNameNS(w, "docPart");
+        require(entries.getLength() == 2, "Expected two glossary entries");
+        require(entries.item(0).getTextContent().equals("GLS54_ENTRY_ONE")
+                && entries.item(1).getTextContent().equals("GLS54_ENTRY_TWO"), "Glossary entry order and payload");
     }
 
     static Map<String, byte[]> entries(byte[] zipBytes) throws Exception {
@@ -116,7 +159,7 @@ final class ExtractionFixtureChecks {
             if (!name.equals("[Content_Types].xml")) require(types.contains(name)
                     || defaults.contains(name.substring(name.lastIndexOf('.') + 1)), "Missing content type " + name);
             if (name.endsWith(".xml") || name.endsWith(".rels")) xml(part.getValue());
-            if (name.endsWith(".docx") || name.endsWith(".xlsx")) validatePackage(entries(part.getValue()));
+            if (name.endsWith(".docx") || name.endsWith(".xlsx") || name.endsWith(".pptx")) validatePackage(entries(part.getValue()));
             if (!name.endsWith(".rels")) continue;
             String owner = name.equals("_rels/.rels") ? "" : name.replace("/_rels/", "/").substring(0, name.replace("/_rels/", "/").length()-5);
             URI base = URI.create("/" + owner);
@@ -154,7 +197,7 @@ final class ExtractionFixtureChecks {
         StringBuilder out = new StringBuilder();
         for (Map.Entry<String, byte[]> part : entries.entrySet()) {
             String name = part.getKey(); byte[] bytes = part.getValue();
-            if (name.endsWith(".docx") || name.endsWith(".xlsx")) out.append(payloadText(entries(bytes)));
+            if (name.endsWith(".docx") || name.endsWith(".xlsx") || name.endsWith(".pptx")) out.append(payloadText(entries(bytes)));
             else if (name.equals("word/embeddings/probe41.bin")) {
                 try (POIFSFileSystem fs = new POIFSFileSystem(new ByteArrayInputStream(bytes))) {
                     out.append(new String(Ole10Native.createFromEmbeddedOleObject(fs).getDataBuffer(), StandardCharsets.UTF_8));

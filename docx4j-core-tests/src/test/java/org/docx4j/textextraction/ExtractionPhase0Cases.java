@@ -33,7 +33,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.*;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.org.apache.poi.poifs.filesystem.*;
 
-/** Cases 39–52. The authored packages, rather than Word's normalized saves, are the fixtures. */
+/** Cases 39–52 (53–54 are in ExtractionAdditionalCases). The authored packages, rather than Word's normalized saves, are the fixtures. */
 final class ExtractionPhase0Cases {
     static final String REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/";
     static final String DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
@@ -46,7 +46,7 @@ final class ExtractionPhase0Cases {
         "507,902", "505", "505", "703", "508", "509", "517", "518,511,502", "502",
         "503,402", "504", "601,510", "601,603", "605", "604", "514", "511", "511",
         "513", "604", "515,516", "512", "512", "512", "512,902", "513", "513", "513",
-        "513", "513", "902,602,518,507", "506,902", "506,801,902", "902", "515"
+        "513", "513", "902,602,518,507", "506,902", "506,801,902", "902", "515", "512,605", "501,516"
     };
 
     static String statements(int n) {
@@ -55,7 +55,7 @@ final class ExtractionPhase0Cases {
         return out.toString();
     }
 
-    static String fixture(int n) { return n >= 50 ? "extraction-probe-external.docm" : "extraction-probe.docx"; }
+    static String fixture(int n) { return n >= 50 && n <= 52 ? "extraction-probe-external.docm" : "extraction-probe.docx"; }
 
     static void add(ExtractionProbeBuilder b, WordprocessingMLPackage pkg) throws Exception {
         MainDocumentPart mdp = pkg.getMainDocumentPart();
