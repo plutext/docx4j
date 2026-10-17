@@ -1,0 +1,27 @@
+case	fixture	channel	kind	selector	scenario	expected	statements
+42	extraction-probe.docx	inspect	activex	ACX42_CAPTION	default	1	REQ-902
+48	extraction-probe.docx	inspect	colour near background	SHD48_SHADED	default	1	REQ-902
+48	extraction-probe.docx	inspect	zero-width characters	ZW48_SP​LIT	default	1	REQ-902
+48	extraction-probe.docx	inspect	tag characters	TAG48_MARK	default	1	REQ-902
+48	extraction-probe.docx	inspect	off page	OFF48_BOX	default	1	REQ-902
+48	extraction-probe.docx	inspect	zero size	ZER48_BOX	default	1	REQ-902
+49	extraction-probe.docx	inspect	external	DDE49_INSTR	default	1	REQ-902
+49	extraction-probe.docx	inspect	external	INC49_INSTR	default	1	REQ-902
+49	extraction-probe.docx	inspect	external	file:///FLD49_FILE_MARK	default	1	REQ-902
+50	extraction-probe-external.docm	inspect	external	file:///CR046-MISSING/TPL50_MARK.dotx	default	1	REQ-902
+50	extraction-probe-external.docm	inspect	external	file:///CR046-MISSING/MRG50_MARK.txt	default	1	REQ-902
+50	extraction-probe-external.docm	inspect	external	file:///CR046-MISSING/LNK50_MARK.png	default	1	REQ-902
+50	extraction-probe-external.docm	inspect	external	file:///CR046-MISSING/OLE50_LINK_MARK.xlsx	default	1	REQ-902
+51	extraction-probe-external.docm	inspect	macro	word/vbaProject.bin	default	1	REQ-902
+50	extraction-probe-external.docm	metadata	fields_update_on_open		default	true	REQ-506
+52	extraction-probe-external.docm	metadata	ProbeCustom		default	CPR52_CUSTOM	REQ-515
+52	extraction-probe-external.docm	metadata	Company		default	APP52_COMPANY	REQ-515
+36	extraction-probe.docx	warning	altchunk.not_expanded	text/html	altchunks: false	1	REQ-513
+43	extraction-probe.docx	warning	altchunk.not_expanded	text/plain	altchunks: false	1	REQ-513
+44	extraction-probe.docx	warning	altchunk.not_expanded	message/rfc822	xhtml importer absent	1	REQ-513
+44	extraction-probe.docx	warning	altchunk.not_expanded	message/rfc822	altchunks: false	1	REQ-513
+45	extraction-probe.docx	warning	altchunk.not_expanded	application/rtf	default	1	REQ-513
+45	extraction-probe.docx	warning	altchunk.not_expanded	application/rtf	altchunks: false	1	REQ-513
+46	extraction-probe.docx	warning	altchunk.not_expanded	application/xml	altchunks: false	1	REQ-513
+47	extraction-probe.docx	warning	altchunk.not_expanded	text/html	default	1	REQ-513
+47	extraction-probe.docx	warning	altchunk.not_expanded	application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml	altchunks: false	1	REQ-513

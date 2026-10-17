@@ -1,0 +1,43 @@
+CR-046 phase 0: Word 365 open check (two files, about 5 minutes)
+
+Inputs (keep these authored files unchanged):
+  extraction-probe.docx           cases 1-49
+  extraction-probe-external.docm  cases 50-52
+
+Use Word 365 first. No PDF or Script Lab run is required.
+Record the full Word version/build from File > Account > About Word and the machine.
+
+1. Copy ONLY these two inputs to a fresh local Windows folder, for example
+   %TEMP%\cr046-phase0. Office should open local files rather than share paths.
+2. Open extraction-probe.docx normally (do not choose Open and Repair).
+   Record any repair dialog or unreadable-content error. Security prompts concerning
+   ActiveX are separate observations; leave controls disabled. Decline any request
+   to update fields or links. Do not activate embedded objects.
+3. Save As extraction-probe.word365.docx into a local out subfolder, then Ctrl+S.
+   Close it. Word will expand altChunks and may regenerate text-box Fallbacks;
+   these normalizations are expected and do not replace the authored fixture.
+4. Open extraction-probe-external.docm normally. Leave macros disabled, decline
+   requests to update fields, links or template/data sources, and record prompts.
+   Targets are deliberately missing local file URLs. There are no VBA procedures.
+   Record any repair dialog or unreadable-content error.
+5. Save As extraction-probe-external.word365.docm into the local out subfolder,
+   keeping the macro-enabled format, then Ctrl+S. Close it.
+6. Copy back ONLY those two saved files and word-open-results.txt into the out
+   subfolder beside these inputs. Do not overwrite either authored input.
+
+Record in word-open-results.txt:
+  Date:
+  Machine:
+  Full Word version/build:
+  Main DOCX opened without repair: yes/no
+  Main DOCX prompts or other observations:
+  External DOCM opened without repair: yes/no
+  External DOCM prompts or other observations:
+  Both separate saves completed: yes/no
+
+If Word hangs, record the last action and visible dialog, close that Word instance,
+and retry only the failed file. Keep any completed result.
+
+Acceptance: both files open without repair. A blocked control or macro banner is
+recorded separately; this is a package-open check, not a test that macros execute.
+If Save As fails, return the open observations and exact error before modifying inputs.

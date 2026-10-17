@@ -1,0 +1,53 @@
+case	fixture	statements
+1	extraction-probe.docx	REQ-301, REQ-302, REQ-518
+2	extraction-probe.docx	REQ-302
+3	extraction-probe.docx	REQ-302
+4	extraction-probe.docx	REQ-302
+5	extraction-probe.docx	REQ-302
+6	extraction-probe.docx	REQ-303
+7	extraction-probe.docx	REQ-302
+8	extraction-probe.docx	REQ-301
+9	extraction-probe.docx	REQ-402, REQ-403
+10	extraction-probe.docx	REQ-404
+11	extraction-probe.docx	REQ-402, REQ-405
+12	extraction-probe.docx	REQ-402
+13	extraction-probe.docx	REQ-404
+14	extraction-probe.docx	REQ-404
+15	extraction-probe.docx	REQ-404
+16	extraction-probe.docx	REQ-404
+17	extraction-probe.docx	REQ-404, REQ-518, REQ-503
+18	extraction-probe.docx	REQ-507, REQ-902
+19	extraction-probe.docx	REQ-505
+20	extraction-probe.docx	REQ-505
+21	extraction-probe.docx	REQ-703
+22	extraction-probe.docx	REQ-508
+23	extraction-probe.docx	REQ-509
+24	extraction-probe.docx	REQ-517
+25	extraction-probe.docx	REQ-518, REQ-511, REQ-502
+26	extraction-probe.docx	REQ-502
+27	extraction-probe.docx	REQ-503, REQ-402
+28	extraction-probe.docx	REQ-504
+29	extraction-probe.docx	REQ-601, REQ-510
+30	extraction-probe.docx	REQ-601, REQ-603
+31	extraction-probe.docx	REQ-605
+32	extraction-probe.docx	REQ-604
+33	extraction-probe.docx	REQ-514
+34	extraction-probe.docx	REQ-511
+35	extraction-probe.docx	REQ-511
+36	extraction-probe.docx	REQ-513
+37	extraction-probe.docx	REQ-604
+38	extraction-probe.docx	REQ-515, REQ-516
+39	extraction-probe.docx	REQ-512
+40	extraction-probe.docx	REQ-512
+41	extraction-probe.docx	REQ-512
+42	extraction-probe.docx	REQ-512, REQ-902
+43	extraction-probe.docx	REQ-513
+44	extraction-probe.docx	REQ-513
+45	extraction-probe.docx	REQ-513
+46	extraction-probe.docx	REQ-513
+47	extraction-probe.docx	REQ-513
+48	extraction-probe.docx	REQ-902, REQ-602, REQ-518, REQ-507
+49	extraction-probe.docx	REQ-506, REQ-902
+50	extraction-probe-external.docm	REQ-506, REQ-801, REQ-902
+51	extraction-probe-external.docm	REQ-902
+52	extraction-probe-external.docm	REQ-515

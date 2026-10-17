@@ -1,0 +1,146 @@
+# CR-046 phase 0 suite and golden protocol
+
+The original 38-case probe, its README/TSV and its checked Word re-save remain in this
+folder unchanged. `phase0/` contains the replacement 52-case suite. Jason confirmed the
+r2 main DOCX opens without repair on 18 October 2026, declining field updates. The external
+DOCM check also passed after declining its blank mail-merge SQL prompt; no repair was reported. Use `phase0/expected-tokens.tsv` with its two named input files.
+Do not use the original Word re-save as a re-save of the extended probe.
+
+The builder regenerates both documents, README, token and finding tables, and case
+statement mappings together. Build into a scratch directory first; JAXB namespace
+ordering means that rebuilt document bytes need not match checked files. The checked extended
+suite remains in `phase0/`, preserving the original suite and its matching Word re-save.
+`support/appendix-a-statements.tsv` is an independent transcription of WD 0.3 Appendix A
+(portfolio e8f14e1); the test compares every case's mapping and README rows against it.
+
+## Build and run
+
+Run from the repository root. With the repository's dependencies installed:
+
+```
+mvn -q -pl docx4j-core-tests test-compile
+mvn -q -pl docx4j-core-tests dependency:build-classpath -Dmdep.outputFile=cp.txt
+```
+
+Use `docx4j-core-tests/target/test-classes` plus that classpath to run
+`org.docx4j.textextraction.ExtractionProbeBuilder <scratch-output-directory>`.
+`run-phase0.sh <classpath> <scratch-output-directory>` also compiles and runs the builder
+against the brief's released 17.3.3 core/JAXB jars. The classpath must include logback.
+It compiles the helper sources together; Java's single-source-file launch is no longer sufficient.
+The VBA support file, LegacyForms.docx ActiveX seed and Hier2Level.glox are read relative to the repository root.
+
+```
+mvn -pl docx4j-core-tests -Dtest=ExtractionConformanceTest test
+```
+
+This validates both packages and the fixture protocol and writes
+`target/text-extraction/conformance.tsv` (relative to the test working directory).
+A standalone run of `ExtractionConformance <fixture-directory> <report.tsv>` does the
+same extraction checks. Every unsupported assertion appears as PENDING with its
+requirements and implementation phase. No extraction conformance is claimed by phase 0.
+
+Phase 1 supplies an `ExtractionConformance.Engine` implementation through
+`-Dtextextraction.adapter=<public-class-with-no-arg-constructor>`. The adapter calls
+`Texts`, translates the scenario into typed options, and advertises only implemented
+statements. Scenario `default` has no XHTML importer. `xhtml importer present/absent`
+requires the corresponding isolated classpath; it is not a TextOptions key. Missing
+advertised capabilities remain pending. Exceptions from enabled assertions fail the test.
+The axis-title row additionally requires capability `CR-047`. Inspector rows require
+REQ-902 and stay pending in this CR. Output finding keys are
+`channel<TAB>kind<TAB>selector`; values are counts or literal metadata values.
+
+## Expected tables
+
+Token rows contain case, token, accepted/original/markup expectation, gating option,
+with-option expectation, explanatory note, fixture and REQ statements. Numeric
+expectations are exact occurrence counts. `ins`, `del`, `cmt`, and `del+ins` require
+CriticMarkup of that kind before normalization, as well as the correct total count.
+Default MHT counts refer to importer absent; the gating scenario refers to importer present.
+Warnings, inspection findings and metadata live separately in `expected-findings.tsv`.
+A warning selector is its chunk content type; an inspector's external selector is its target.
+
+Comparison follows REQ-1201: strip whitespace, CriticMarkup delimiters, Markdown emphasis
+characters, backslash, braces and dollar sign from both text and marker. No Unicode
+normalization, hyphen folding or removal of U+200B/tag characters is performed.
+Case 48 additionally checks the tag-character suffix verbatim. Supplemental scenarios
+pin nested exclusions, disabled altChunks, and non-evaluation of external fields.
+
+## Published goldens (REQ-1203)
+
+`phase0/goldens.tsv` is the manifest. UTF-8, tab-separated, with this header:
+
+```
+fixture	case	view	scenario	format	golden	statements
+```
+
+Views are `accepted`, `original`, `markup`; formats are `txt`, `md`. Case `0` means a
+whole-fixture comparison. Paths are relative to the fixture directory. Plain-text names
+are `<stem>.accepted.txt`, `<stem>.original.txt`, `<stem>.markup.txt`; the Markdown
+is `<stem>.md`, accepted/default unless its manifest row specifies otherwise. Files use
+UTF-8 without BOM and LF, with one terminal LF. A row names all implementation statements
+needed for that golden, so it can remain pending before its phase is enabled.
+
+The reader compares the complete serialization after REQ-1201 normalization and fails
+on any difference. Tests exercise both a matching golden and a deliberate mismatch.
+The manifest is initially header-only: reviewed reference goldens are cut in phase 3,
+as CR-046 section 3 specifies. The builder preserves an existing golden manifest.
+Legacy baseline outputs must never be copied into this manifest as conformance goldens.
+
+## Legacy baseline
+
+`phase0/baseline/` records all three readers' defaults for each authored fixture, with
+raw output and per-marker counts (including zeroes), grouped by case in `counts.tsv`.
+TextUtils receives the main document JAXB element; Markdown and HTML receive a fresh
+package per reader with their normal defaults. HTML uses an inline-image handler;
+its text count excludes attributes, scripts and styles, with a separate raw-serialization
+count for diagnosis. Markdown's count is against its serialization, including link targets.
+A failed conversion writes a `.failed.txt` and ERROR rows rather than zero counts.
+
+Capture explicitly with `ExtractionBaseline <fixture-directory> <output-directory>`,
+adding docx4j-markdown and its commonmark dependencies to the runtime classpath.
+The recorded baseline uses core and Markdown sources from docx4j 23cb5bf662c10e4b459944a71f8ae860fca964a1,
+compiled with `javac --release 11`, run on Java 21.0.12. All 1,420 core source files
+were compiled into a fresh scratch directory; existing Eclipse output was not used.
+Released 17.3.3 JAXB/generated-object dependencies supplied the fixture APIs.
+`manifest.txt` records fixture hashes, class hashes, source-tree hashes and classpath provenance.
+These measurements describe existing behavior, not WD expectations.
+
+## Office check
+
+Follow `phase0/RUN.txt`. No PDF, layout measurements, Office JS, field evaluation or
+macro execution is needed. The two authored files must open without a repair prompt.
+Security/update prompts are recorded separately. Keep returned saves separate from inputs.
+
+## Specification notes for the portfolio hand-off
+
+Case 39 intentionally pins the brief's narrow embedded-XLSX behavior despite CR-046's
+broader SpreadsheetML exclusion. This needs an explicit wording exception in that CR.
+Cases 40 and 47 test same-kind nesting at one level. Cross-kind recursion depth remains
+unspecified and is not silently decided by these fixtures. Case 41 is implemented;
+there was no need to use the allowed one-hour drop exception. 
+
+## Word repair and r2 retry (18 October 2026)
+
+Jason reported unreadable content in the first extended DOCX and supplied its repaired save.
+The exact input and returned file are retained in `phase0/evidence/`, with the comparison
+findings there. Word discarded case 42's control, leaving its preview picture; all three OLE
+objects survived. Word expanded case 47 and its nested chunk, while case 46 became literal
+XML text. This evidence points to the control, but does not establish the cause independently.
+
+The r2 retry changes case 42 to Word-authored Label control storage with the marker as its
+caption, gives case 46 an XML declaration and the Word processing instruction emitted by
+FlatOpcXmlCreator, and corrects case 47's import MIME type. The last correction is required by
+[Microsoft's SDK definition](https://github.com/dotnet/Open-XML-SDK/blob/main/src/DocumentFormat.OpenXml/Packaging/AlternativeFormatImportPartType.cs),
+which uses `application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml`
+for WordprocessingML altChunks; embedded DOCX packages retain their package MIME type.
+A regression test rejects the previous mismatch.
+
+Only four existing ZIP members change: content types, the case 42 heading, ActiveX XML and
+Flat OPC payload. Two members are added for ActiveX binary storage and its relationship.
+All other input members are byte-identical. Baselines were recaptured for the r2 bytes.
+Jason confirmed `extraction-probe-r2.docx` opened fine on 18 October 2026 and declined
+field updates. The staged bytes match `phase0/extraction-probe.docx`; the main DOCX open
+check passes. Jason then completed the external DOCM check after declining the blank SQL
+prompt, with no repair problem reported. Both open checks pass. Word's saves of both r2 files
+are retained in `phase0/evidence/`; the main save drops case 42's control again. The full Word
+build is still not recorded. See `phase0/evidence/word-open-results.md`.

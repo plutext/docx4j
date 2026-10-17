@@ -1,0 +1,22 @@
+Baseline only; no WD conformance claimed.
+java=21.0.12
+TextUtils.scope=main document JAXB element, unmodified
+Markdown.scope=MarkdownExporter defaults, unmodified
+HTML.scope=Docx4J.toHTML defaults with inline images, unmodified
+counts=REQ-1201 normalization; HTML text excludes attributes, styles and scripts
+org.docx4j.TextUtils=file:/tmp/cr046/checkout/
+org.docx4j.TextUtils.class.sha256=15bda242753ef35197675d7269292b62aaadea37292e9a911ebe6e0372122ff7
+org.docx4j.Docx4J=file:/tmp/cr046/core/
+org.docx4j.Docx4J.class.sha256=5dd6716278bbb3e504f0a2807b1dc77709905e4111c61e684c055be241c3ac8f
+org.docx4j.markdown.MarkdownExporter=file:/tmp/cr046/checkout/
+org.docx4j.markdown.MarkdownExporter.class.sha256=221bec226091e7780a4eb1c5cc1ce6b475ba41cc416b0c8f34e63e83f0e5d3df
+org.docx4j.markdown.WmlToMarkdown=file:/tmp/cr046/checkout/
+org.docx4j.markdown.WmlToMarkdown.class.sha256=c926189239f70e801a6e2b6ce4ca0ece80d16782068cffe82b88cb52516fcd71
+org.docx4j.jaxb.McSelection=file:/tmp/cr046/checkout/
+org.docx4j.jaxb.McSelection.class.sha256=cbd55ba33ab3d5a5e22af0733bf2e9f6c511efa64ad281959317480b0d25522e
+extraction-probe.docx.sha256=9854395e9b74e5e2d70d17390dc6673a2751bc12334494c0258f4a04a7e1e025
+extraction-probe-external.docm.sha256=87b82a2bb1ec336eaa65cb3c8527fd0edbe0bdd0f967b0df627f8535d0702bd9
+checkout=23cb5bf662c10e4b459944a71f8ae860fca964a1
+compile=javac --release 11; fresh core and markdown outputs; no Eclipse classes
+docx4j-core.sourceTree.sha256=b381f7af5ac865a23aa9ded6b3b235ab33bc82cd9f3986fcd41c8b788364a211
+docx4j-markdown.sourceTree.sha256=294e110f143c1b2b606bc77878c9fc0f0e6056b21a24a11269d6660b3772a4b0

@@ -3,7 +3,8 @@
 Status: PROPOSED 2026-10-17, drafted at Jason's request ("please draft the text-extraction CR
 (CR-046) against docs/text_extraction_specification_wd.md, so each phase's acceptance criteria
 are REQ numbers"). D1 to D7 decided 2026-10-17 (Jason: "D1–D7: i accept the recommendations").
-No implementation yet. Five phases (§4); decisions in §6.
+Phase 0 suite implemented 18 October 2026; both Word-open checks passed.
+Five phases (§4); decisions in §6.
 
 The specification is the portfolio's *WordprocessingML Text Extraction*, working draft 0.3
 (`docx4j-portfolio/docs/text_extraction_specification_wd.md`, commit e8f14e1), cited here as
@@ -288,6 +289,41 @@ a labelled paragraph per case, the builder self-checking, and a Word-open check 
 - The Word-open check of both probe files passes.
 
 The commit is the one WD's [PROBE] cites.
+
+**Phase 0 implementation, 18 October 2026 (both Word-open checks passed):**
+- The extended 52-case suite is staged in
+  `docx4j-core-tests/src/test/resources/text-extraction/phase0/`; the original checked
+  38-case probe and its Word re-save remain unchanged in the parent directory.
+- The builder writes both documents, token/finding tables, README and case-to-REQ mappings.
+  Case 41 is implemented with Ole10Native; the optional drop was not needed. Case 42 uses
+  Word-authored Label control storage (the initial property-bag attempt was removed by Word). Case 51 has a rebuilt VBA project with a comment marker,
+  attribute-only modules and no executable procedures.
+- `ExtractionConformanceTest` validates the packages and statement mappings, exercises
+  normalization, revision marking and the golden reader, and reports every unsupported
+  extraction/inspection assertion as pending. Later phases connect `Texts` through its
+  test adapter. REQ-902 remains outside this CR; CR-047 is an explicit axis-title dependency.
+- Raw TextUtils, Markdown and HTML baselines and per-case token counts are recorded in
+  `phase0/baseline/`. The baseline was cut from fresh compilations of this checkout's core
+  and Markdown source, with released 17.3.3 generated-object/JAXB dependencies.
+- The golden manifest is header-only until phase 3's reviewed goldens exist. The format,
+  adapter contract, capture commands and two specification questions are in
+  `text-extraction/GOLDENS.md`. Case 38's core properties now also have metadata-option rows.
+- Jason confirmed the r2 main DOCX opened without repair on 18 October 2026, with field
+  updates declined. Jason also completed the external DOCM check after declining its blank
+  mail-merge SQL prompt; no repair problem was reported. Both open checks pass. The first extended DOCX triggered unreadable-content repair; its repaired save is retained
+  under `phase0/evidence/`. An r2 retry changes case 42's control storage, the Flat OPC
+  identification and the DOCX altChunk MIME type; r2 opens without repair, but Word's save of
+  it drops case 42's control again. Neither the old Word re-save nor the legacy reader baseline is a
+  conformance oracle for the extended suite. The checked suite remains under `phase0/`
+  alongside the preserved original suite in the parent directory.
+- Word's saves of both r2 files are retained under `phase0/evidence/` (18 October 2026), with
+  what each lost in `word-open-results.md`:
+  - the main DOCX save drops case 42's control (its `w:control` and ActiveX parts), keeping only
+    the preview picture;
+  - the DOCM save drops the `vbaProject` (case 51), the attached template, the mail-merge data
+    source and `w:updateFields`.
+  The causes are not established. The full Word build is still not recorded: both saves give
+  only `AppVersion` 16.0000.
 
 ### Phase 1: the text model in plain text
 

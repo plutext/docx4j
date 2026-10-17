@@ -181,13 +181,20 @@ public class ExtractionProbeBuilder {
 		out.mkdirs();
 		ExtractionProbeBuilder b = new ExtractionProbeBuilder();
 		byte[] docx = b.build(gloxFile());
-		Files.write(new File(out, "extraction-probe.docx").toPath(), docx);
-		Files.write(new File(out, "expected-tokens.tsv").toPath(), b.tsv().getBytes(StandardCharsets.UTF_8));
-		Files.write(new File(out, "README.md").toPath(), b.readme().getBytes(StandardCharsets.UTF_8));
-		b.check(docx);
-		WordprocessingMLPackage.load(new ByteArrayInputStream(docx));   // docx4j reads it back
-		System.out.println("wrote " + new File(out, "extraction-probe.docx") + ", " + b.cases.size() + " cases, "
-				+ b.tokenCount() + " tokens");
+        byte[] external = ExtractionPhase0Cases.external(b);
+        ExtractionFixtureChecks.check(docx, external, b.cases);
+        WordprocessingMLPackage.load(new ByteArrayInputStream(docx));
+        WordprocessingMLPackage.load(new ByteArrayInputStream(external));
+        Files.write(new File(out, "extraction-probe.docx").toPath(), docx);
+        Files.write(new File(out, "extraction-probe-external.docm").toPath(), external);
+        Files.writeString(new File(out, "expected-tokens.tsv").toPath(), b.tsv(), StandardCharsets.UTF_8);
+        Files.writeString(new File(out, "expected-findings.tsv").toPath(), ExtractionFixtureChecks.findings(), StandardCharsets.UTF_8);
+        Files.writeString(new File(out, "case-statements.tsv").toPath(), b.statements(), StandardCharsets.UTF_8);
+        Files.writeString(new File(out, "README.md").toPath(), b.readme(), StandardCharsets.UTF_8);
+        java.nio.file.Path goldens = new File(out, "goldens.tsv").toPath();
+        if (!Files.exists(goldens)) Files.writeString(goldens,
+                "fixture\tcase\tview\tscenario\tformat\tgolden\tstatements\n", StandardCharsets.UTF_8);
+        System.out.println("wrote " + out + ", " + b.cases.size() + " cases, " + b.tokenCount() + " tokens");
 	}
 
 	static File gloxFile() {
@@ -480,7 +487,7 @@ public class ExtractionProbeBuilder {
 		box("TBX25_VML_ONLY", "");
 		box("TBX25_IN_CELL", "after the table (the anchoring paragraph is in a cell)");
 		gated("TBX25_IN_HEADER", "include: headers", "a box in section 1's default header");
-		token("WA25_TEXTPATH", "1", "1", "1", "smartart: false", "0", "v:textpath/@string, as a one-paragraph box (#20b)");
+		token("WA25_TEXTPATH", "1", "1", "1", "text_boxes: false", "0", "v:textpath/@string, as a one-paragraph box (#20b)");
 
 		// ---------------------------------------------------------- stories
 		begin(26, "headers and footers over two sections, and a header no section uses");
@@ -617,7 +624,7 @@ public class ExtractionProbeBuilder {
 							+ "the chart's embedded workbook holds these strings too"
 					: "");
 		}
-		gated("CHT34_AXIS_TITLE", "chart description (proposed)", "the value axis title: not in ChartTable today (#20a)");
+		token("CHT34_AXIS_TITLE", "1", "1", "1", "charts: false", "0", "REQ-511; pending CR-047 axis-title support");
 
 		begin(35, "SmartArt: a root and two children, stored out of reading order");
 		body.append(p(r("The diagram: ") + smartArt));
@@ -631,8 +638,7 @@ public class ExtractionProbeBuilder {
 		begin(36, "an altChunk holding HTML");
 		body.append("<w:altChunk r:id='" + chunkId + "'/>");
 		body.append(pt("After the altChunk."));
-		never("ALT36_CHUNK_TEXT", "not expanded, a warning altchunk.not_expanded (#20d); Word imports it on open, and "
-				+ "its re-save holds the text as ordinary paragraphs");
+		token("ALT36_CHUNK_TEXT", "1", "1", "1", "altchunks: false", "0", "HTML expanded; disabled chunks warn altchunk.not_expanded");
 
 		begin(37, "ruby");
 		body.append(p(r("Ruby: ") + "<w:r><w:ruby><w:rubyPr><w:rubyAlign w:val='distributeSpace'/><w:hps w:val='10'/>"
@@ -645,9 +651,11 @@ public class ExtractionProbeBuilder {
 		begin(38, "document properties and a custom XML part");
 		body.append(pt("The core properties hold a title and a subject; the custom XML part case 23 binds to holds "
 				+ "one more value."));
-		never("PRP38_TITLE", "docProps/core.xml (#22)");
-		never("PRP38_SUBJECT", "docProps/core.xml (#22)");
+		gated("PRP38_TITLE", "metadata: true", "docProps/core.xml (#22)");
+		gated("PRP38_SUBJECT", "metadata: true", "docProps/core.xml (#22)");
 		never("CXP38_DATA", "customXml/item1.xml (#22)");
+
+		ExtractionPhase0Cases.add(this, pkg);
 
 		body.append("<w:sectPr><w:headerReference w:type='default' r:id='" + rel(mdp, hSection2) + "'/>" + PAGE + "</w:sectPr>");
 
@@ -1174,12 +1182,13 @@ public class ExtractionProbeBuilder {
 	}
 
 	String tsv() {
-		StringBuilder s = new StringBuilder("case\ttoken\taccepted\toriginal\tmarkup\toption\twith_option\tnote\n");
+		StringBuilder s = new StringBuilder("case\ttoken\taccepted\toriginal\tmarkup\toption\twith_option\tnote\tfixture\tstatements\n");
 		for (Case c : cases) {
 			for (Token t : c.tokens) {
 				s.append(c.n).append('\t').append(t.name).append('\t').append(t.accepted).append('\t').append(t.original)
 						.append('\t').append(t.markup).append('\t').append(t.option).append('\t').append(t.withOption)
-						.append('\t').append(t.note).append('\n');
+						.append('\t').append(t.note).append('\t').append(ExtractionPhase0Cases.fixture(c.n))
+                        .append('\t').append(ExtractionPhase0Cases.statements(c.n)).append('\n');
 			}
 		}
 		return s.toString();
@@ -1197,6 +1206,13 @@ public class ExtractionProbeBuilder {
 		default: return v;
 		}
 	}
+
+    String statements() {
+        StringBuilder out = new StringBuilder("case\tfixture\tstatements\n");
+        for (Case c : cases) out.append(c.n).append('\t').append(ExtractionPhase0Cases.fixture(c.n))
+                .append('\t').append(ExtractionPhase0Cases.statements(c.n)).append('\n');
+        return out.toString();
+    }
 
 	String readme() {
 		StringBuilder s = new StringBuilder();
@@ -1218,7 +1234,7 @@ public class ExtractionProbeBuilder {
 				+ "mvn -q -pl docx4j-core-tests test-compile\n"
 				+ "mvn -q -pl docx4j-core-tests dependency:build-classpath -Dmdep.outputFile=cp.txt\n"
 				+ "java -cp docx4j-core-tests/target/test-classes:$(cat docx4j-core-tests/cp.txt) \\\n"
-				+ "  org.docx4j.textextraction.ExtractionProbeBuilder docx4j-core-tests/src/test/resources/text-extraction\n"
+				+ "  org.docx4j.textextraction.ExtractionProbeBuilder docx4j-core-tests/src/test/resources/text-extraction/phase0\n"
 				+ "```\n\n"
 				+ "The story parts are written by the builder as XML text: JAXB would drop the namespace declarations\n"
 				+ "the `mc` cases' `Requires` attributes name. The SmartArt layout is `Hier2Level.glox` from\n"
@@ -1238,7 +1254,7 @@ public class ExtractionProbeBuilder {
 				+ "- **option**: the option that changes the token's result, and **with option** that result (in every\n"
 				+ "  view, except a comment's, which is markup's). \"markdown\" marks text only Markdown carries.\n\n");
 		s.append("## Word\n\n"
-				+ "Word 365 opens the probe without a repair prompt (checked 17 October 2026).\n"
+				+ "Word 365 opened the original 38-case probe without a repair prompt (checked 17 October 2026).\n"
 				+ "`extraction-probe.word-resave.docx` is its save of the probe, unedited. The tables below are for\n"
 				+ "the probe. What Word changed on the way, read from the re-save:\n\n"
 				+ "- Every wps text box is now an `mc:AlternateContent` whose VML Fallback Word wrote from the Choice.\n"
@@ -1265,16 +1281,28 @@ public class ExtractionProbeBuilder {
 				+ "- Case 28: a resolved comment (`w15:done`) is a comment like any other; JSON adds `resolved: true`.\n"
 				+ "- Case 21: Markdown gives a hyperlink's target as `[text](target)` for both forms, the HYPERLINK\n"
 				+ "  field's too, whatever `field_codes` says: the instruction supplies the address, not text.\n\n");
-		s.append("## Cases\n\n");
+		s.append("## Phase 0 extension\n\n"
+                + "Cases 39–49 extend the main probe; cases 50–52 are in `extraction-probe-external.docm`.\n"
+                + "Jason confirmed the r2 main DOCX opens without repair (18 October 2026), with field updates declined.\n"
+                + "The external DOCM check also passed after declining its SQL prompt. The Word findings above describe the original 38-case\n"
+                + "fixture, retained in the parent directory with its re-save.\n"
+                + "`case-statements.tsv` mirrors WD 0.3 Appendix A; `expected-findings.tsv` separates warnings,\n"
+                + "metadata and future inspector findings from text counts. Inspector requirements are pending a later CR.\n"
+                + "The default test environment has no XHTML importer. The MHT row's capability scenario supplies one.\n"
+                + "All external targets are deliberately missing local files. Nothing is fetched by the suite.\n"
+                + "The VBA project has attribute-only modules and a comment marker; it contains no executable procedures.\n"
+                + "See `../support/README.md` for its provenance and rebuild command.\n\n"
+                + "Golden conventions and baseline commands are in `../GOLDENS.md`.\n\n");
+        s.append("## Cases\n\n");
 		for (Case c : cases) {
 			s.append("### Case ").append(c.n).append(": ").append(c.title).append("\n\n");
-			s.append("| Token | accepted | original | markup | option | with option | note |\n");
-			s.append("|---|---|---|---|---|---|---|\n");
+			s.append("| Token | accepted | original | markup | option | with option | note | statements |\n");
+			s.append("|---|---|---|---|---|---|---|---|\n");
 			for (Token t : c.tokens) {
 				s.append("| `").append(t.name).append("` | ").append(cell(t.accepted)).append(" | ").append(cell(t.original))
 						.append(" | ").append(cell(t.markup)).append(" | ").append(t.option.isEmpty() ? "" : "`" + t.option + "`")
 						.append(" | ").append(t.withOption.isEmpty() ? "" : cell(t.withOption)).append(" | ")
-						.append(t.note.replace("|", "\\|")).append(" |\n");
+						.append(t.note.replace("|", "\\|")).append(" | ").append(ExtractionPhase0Cases.statements(c.n)).append(" |\n");
 			}
 			s.append('\n');
 		}

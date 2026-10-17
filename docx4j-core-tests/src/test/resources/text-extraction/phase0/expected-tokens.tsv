@@ -1,0 +1,159 @@
+case	token	accepted	original	markup	option	with_option	note	fixture	statements
+1	CHOICE_ALPHA_123	1	1	1	text_boxes: false	0		extraction-probe.docx	REQ-301, REQ-302, REQ-518
+1	FALLBACK_BETA_456	0	0	0			the Fallback; Word never shows it	extraction-probe.docx	REQ-301, REQ-302, REQ-518
+2	CHOICE_ONLY_789	1	1	1	text_boxes: false	0		extraction-probe.docx	REQ-302
+3	UNSUPPORTED_GAMMA	0	0	0			Requires zz9, which no reader understands	extraction-probe.docx	REQ-302
+3	SUPPORTED_DELTA	1	1	1				extraction-probe.docx	REQ-302
+4	CHOICE1_UNKNOWN_ZETA	0	0	0				extraction-probe.docx	REQ-302
+4	CHOICE2_WPS_ETA	1	1	1	text_boxes: false	0	the first Choice whose Requires is understood	extraction-probe.docx	REQ-302
+4	FALLBACK_EPSILON	0	0	0				extraction-probe.docx	REQ-302
+5	MCE5_FIRST_SUPPORTED	1	1	1			the first understood Choice wins	extraction-probe.docx	REQ-302
+5	MCE5_SECOND_SUPPORTED	0	0	0				extraction-probe.docx	REQ-302
+5	MCE5_FALLBACK	0	0	0				extraction-probe.docx	REQ-302
+6	MCE6_REBOUND_CHOICE	1	1	1	text_boxes: false	0	the namespace URI decides, not the prefix: a reader matching the prefix wps takes the Fallback	extraction-probe.docx	REQ-303
+6	MCE6_FALLBACK	0	0	0				extraction-probe.docx	REQ-303
+7	MCE7_TWO_REQ_CHOICE	0	0	0			every namespace a Choice requires must be understood	extraction-probe.docx	REQ-302
+7	MCE7_FALLBACK	1	1	1	text_boxes: false	0		extraction-probe.docx	REQ-302
+8	MCE8_OUTER	1	1	1	text_boxes: false	0		extraction-probe.docx	REQ-301
+8	MCE8_INNER_CHOICE	1	1	1	text_boxes: false	0		extraction-probe.docx	REQ-301
+8	MCE8_INNER_FALLBACK	0	0	0				extraction-probe.docx	REQ-301
+8	MCE8_OUTER_FALLBACK	0	0	0			the outer Fallback (a VML box)	extraction-probe.docx	REQ-301
+9	TC9_BASE	1	1	1				extraction-probe.docx	REQ-402, REQ-403
+9	TC9_INSERTED	1	0	ins				extraction-probe.docx	REQ-402, REQ-403
+9	TC9_DELETED	0	1	del				extraction-probe.docx	REQ-402, REQ-403
+10	TC10_PARA_A	1	1	1				extraction-probe.docx	REQ-404
+10	TC10_PARA_B	1	1	1				extraction-probe.docx	REQ-404
+10	TC10_MOVED	1	1	del+ins			in the file twice (moveFrom, moveTo); accepted: once, after TC10_PARA_B; original: once, after TC10_PARA_A; markup: {--…--} after A and {++…++} after B	extraction-probe.docx	REQ-404
+11	TC11_FIRST	1	1	1			accepted: one line, TC11_FIRST TC11_SECOND; original and markup: two lines	extraction-probe.docx	REQ-402, REQ-405
+11	TC11_SECOND	1	1	1				extraction-probe.docx	REQ-402, REQ-405
+12	TC12_ONE	1	1	1			accepted and markup: two lines; original: one line, TC12_ONE TC12_TWO	extraction-probe.docx	REQ-402
+12	TC12_TWO	1	1	1				extraction-probe.docx	REQ-402
+13	TC13_PLAIN_ROW	1	1	1				extraction-probe.docx	REQ-404
+13	TC13_DELETED_ROW	0	1	del			the row is gone in accepted	extraction-probe.docx	REQ-404
+13	TC13_INSERTED_ROW	1	0	ins			the row is gone in original	extraction-probe.docx	REQ-404
+14	TC14_INS_KEPT	1	0	ins				extraction-probe.docx	REQ-404
+14	TC14_DEL_IN_INS	0	0	del			the innermost change wins in markup	extraction-probe.docx	REQ-404
+15	TC15_INSERTED_FIELD	1	0	ins			the field's result	extraction-probe.docx	REQ-404
+15	TC15_DELETED_FIELD	0	1	del			the field's result; w:delInstrText is code, never text	extraction-probe.docx	REQ-404
+16	TC16_FORMAT_ONLY	1	1	1			no marker in markup	extraction-probe.docx	REQ-404
+17	TC17_BOX_BASE	1	1	1	text_boxes: false	0		extraction-probe.docx	REQ-404, REQ-518, REQ-503
+17	TC17_BOX_INS	1	0	ins	text_boxes: false	0		extraction-probe.docx	REQ-404, REQ-518, REQ-503
+17	TC17_BOX_DEL	0	1	del	text_boxes: false	0		extraction-probe.docx	REQ-404, REQ-518, REQ-503
+17	TC17_NOTE_REF_HERE	1	1	1				extraction-probe.docx	REQ-404, REQ-518, REQ-503
+17	TC17_NOTE_BASE	1	1	1	notes: false	0		extraction-probe.docx	REQ-404, REQ-518, REQ-503
+17	TC17_NOTE_DEL	0	1	del	notes: false	0		extraction-probe.docx	REQ-404, REQ-518, REQ-503
+18	HID18_VANISH	0	0	0	hidden: true	1		extraction-probe.docx	REQ-507, REQ-902
+18	HID18_STYLE_VANISH	0	0	0	hidden: true	1	the style's w:vanish (the paper's phase 2 resolves styles)	extraction-probe.docx	REQ-507, REQ-902
+18	HID18_HIDDEN_PARA	0	0	0	hidden: true	1	runs and mark hidden: no line at all	extraction-probe.docx	REQ-507, REQ-902
+18	HID18_WHITE_TEXT	1	1	1			not hidden	extraction-probe.docx	REQ-507, REQ-902
+18	HID18_TINY	1	1	1			not hidden	extraction-probe.docx	REQ-507, REQ-902
+18	HID18_WEBHIDDEN	1	1	1			web view only, not hidden (#3)	extraction-probe.docx	REQ-507, REQ-902
+19	FLD19_RESULT	1	1	1	field_codes: true	2	in the code and the cached result	extraction-probe.docx	REQ-505
+19	FLD19_INSTR_ONLY	0	0	0	field_codes: true	1	in the code only	extraction-probe.docx	REQ-505
+19	FLD19_RESULT_TWO	1	1	1				extraction-probe.docx	REQ-505
+20	FLD20_SIMPLE_INSTR	0	0	0	field_codes: true	1	w:fldSimple/@instr	extraction-probe.docx	REQ-505
+20	FLD20_SIMPLE_RESULT	1	1	1				extraction-probe.docx	REQ-505
+21	FLD21_LINK_TEXT	1	1	1				extraction-probe.docx	REQ-703
+21	FLD21_URL_MARK	0	0	0	markdown	1	the target, in the relationship: Markdown [text](target), not plain text	extraction-probe.docx	REQ-703
+21	FLD21_FIELD_LINK_TEXT	1	1	1				extraction-probe.docx	REQ-703
+21	FLD21_FIELD_URL_MARK	0	0	0	markdown	1	the target, in the field code: Markdown carries it whatever field_codes says	extraction-probe.docx	REQ-703
+22	PLC22_PLACEHOLDER	1	1	1	placeholders: false	0	Word shows it (#4)	extraction-probe.docx	REQ-508
+23	BND23_XML_VALUE	1	1	1	bindings: surface	0	the value in customXml/item1.xml, which Word shows (it refreshes the control on open) (#4a)	extraction-probe.docx	REQ-509
+23	BND23_SURFACE_STALE	0	0	0	bindings: surface	1	the stale cached surface in w:sdtContent	extraction-probe.docx	REQ-509
+24	SDT24_CONTENT	1	1	1				extraction-probe.docx	REQ-517
+24	SDT24_IN_CELL	1	1	1				extraction-probe.docx	REQ-517
+25	TBX25_FLOAT	1	1	1	text_boxes: false	0		extraction-probe.docx	REQ-518, REQ-511, REQ-502
+25	TBX25_INLINE	1	1	1	text_boxes: false	0		extraction-probe.docx	REQ-518, REQ-511, REQ-502
+25	TBX25_VML_ONLY	1	1	1	text_boxes: false	0		extraction-probe.docx	REQ-518, REQ-511, REQ-502
+25	TBX25_IN_CELL	1	1	1	text_boxes: false	0	after the table (the anchoring paragraph is in a cell)	extraction-probe.docx	REQ-518, REQ-511, REQ-502
+25	TBX25_IN_HEADER	0	0	0	include: headers	1	a box in section 1's default header	extraction-probe.docx	REQ-518, REQ-511, REQ-502
+25	WA25_TEXTPATH	1	1	1	text_boxes: false	0	v:textpath/@string, as a one-paragraph box (#20b)	extraction-probe.docx	REQ-518, REQ-511, REQ-502
+26	HDR26_DEFAULT	0	0	0	include: headers	1	section 1	extraction-probe.docx	REQ-502
+26	HDR26_FIRST	0	0	0	include: headers	1	section 1's first page (w:titlePg)	extraction-probe.docx	REQ-502
+26	HDR26_EVEN	0	0	0	include: headers	1	even pages (w:evenAndOddHeaders), section 2's too: it has no even header of its own	extraction-probe.docx	REQ-502
+26	FTR26_DEFAULT	0	0	0	include: footers	1	section 2 inherits it	extraction-probe.docx	REQ-502
+26	HDR26_SECTION2	0	0	0	include: headers	1		extraction-probe.docx	REQ-502
+26	HDR26_ORPHAN	0	0	0			related from the document but no section references it: Word shows none of it	extraction-probe.docx	REQ-502
+27	FN27_REF_HERE	1	1	1				extraction-probe.docx	REQ-503, REQ-402
+27	FN27_NOTE_TEXT	1	1	1	notes: false	0	after the body, [n] at the reference (#7)	extraction-probe.docx	REQ-503, REQ-402
+27	EN27_REF_HERE	1	1	1				extraction-probe.docx	REQ-503, REQ-402
+27	EN27_NOTE_TEXT	1	1	1	notes: false	0	after the footnotes	extraction-probe.docx	REQ-503, REQ-402
+27	FN27_DELETED_REF_HERE	1	1	1				extraction-probe.docx	REQ-503, REQ-402
+27	FN27_DELETED_REF_NOTE	0	1	1	notes: false	0	its reference is deleted: gone in accepted; in markup the note is there, its reference {--[n]--}	extraction-probe.docx	REQ-503, REQ-402
+28	CMT28_ANCHOR	1	1	1				extraction-probe.docx	REQ-504
+28	CMT28_RESOLVED_ANCHOR	1	1	1				extraction-probe.docx	REQ-504
+28	CMT28_COMMENT_TEXT	0	0	cmt	comments: true	cmt	{>>…<<} at the end of the commented range (#8)	extraction-probe.docx	REQ-504
+28	CMT28_REPLY	0	0	cmt	comments: true	cmt	a reply (commentsExtended paraIdParent), after its parent	extraction-probe.docx	REQ-504
+28	CMT28_RESOLVED_COMMENT	0	0	cmt	comments: true	cmt	resolved (w15:done): a comment like any other; JSON adds resolved: true	extraction-probe.docx	REQ-504
+29	SYM29_MARK	1	1	1			then w:sym U+F0FC (Wingdings) and U+F061 (Symbol), as written (#14)	extraction-probe.docx	REQ-601, REQ-510
+29	LST29_ITEM_A	1	1	1			the labels 1. 2. 3. are not text by default (#9)	extraction-probe.docx	REQ-601, REQ-510
+29	LST29_ITEM_B	1	1	1				extraction-probe.docx	REQ-601, REQ-510
+29	LST29_ITEM_C	1	1	1				extraction-probe.docx	REQ-601, REQ-510
+29	LST29_BULLET_ONE	1	1	1			the bullet (Symbol U+F0B7) is not text by default	extraction-probe.docx	REQ-601, REQ-510
+29	LST29_BULLET_TWO	1	1	1				extraction-probe.docx	REQ-601, REQ-510
+30	BRK30_BEFORE	1	1	1			a text-wrapping w:br: \n (#11)	extraction-probe.docx	REQ-601, REQ-603
+30	BRK30_AFTER	1	1	1				extraction-probe.docx	REQ-601, REQ-603
+30	BRK30_PAGE	1	1	1			after a page break: \n (#12)	extraction-probe.docx	REQ-601, REQ-603
+30	BRK30_COLUMN	1	1	1			after a column break: \n	extraction-probe.docx	REQ-601, REQ-603
+30	TAB30_LEFT	1	1	1			\t between the two (#10)	extraction-probe.docx	REQ-601, REQ-603
+30	TAB30_RIGHT	1	1	1				extraction-probe.docx	REQ-601, REQ-603
+30	HY30_NON‑BREAK	1	1	1			w:noBreakHyphen is U+2011 (#13)	extraction-probe.docx	REQ-601, REQ-603
+30	HY30_SO­FT	1	1	1			w:softHyphen is U+00AD (#13)	extraction-probe.docx	REQ-601, REQ-603
+31	TBL31_HEADER	1	1	1			a row is one line, its cells tab-separated (#18)	extraction-probe.docx	REQ-605
+31	TBL31_CELL_P1	1	1	1			a cell's paragraphs joined by \n	extraction-probe.docx	REQ-605
+31	TBL31_CELL_P2	1	1	1				extraction-probe.docx	REQ-605
+31	TBL31_NESTED	1	1	1			flattened into its cell	extraction-probe.docx	REQ-605
+31	TBL31_MERGED	1	1	1			w:gridSpan 2	extraction-probe.docx	REQ-605
+31	TBL31_LAST_CELL	1	1	1				extraction-probe.docx	REQ-605
+32	MTH32_A	1	1	1			the m:t runs in document order (#15); Markdown: LaTeX	extraction-probe.docx	REQ-604
+32	MTH32_B	1	1	1				extraction-probe.docx	REQ-604
+33	IMG33_ALT_TEXT	0	0	0	alt_text: true	1	wp:docPr/@descr: plain text [image: descr] with the option; Markdown ![descr](…) by default (#20)	extraction-probe.docx	REQ-514
+33	IMG33_TITLE	0	0	0			wp:docPr/@title is never read (#20)	extraction-probe.docx	REQ-514
+33	IMG33_DECORATIVE_DESCR	0	0	0			marked decorative (adec:decorative): no alt text under any option (D22)	extraction-probe.docx	REQ-514
+33	IMG33_SVG_ALT	0	0	0	alt_text: true	1	as IMG33_ALT_TEXT	extraction-probe.docx	REQ-514
+33	SVG33_INNER_TEXT	0	0	0			a <text> element in the SVG part: an image's, never text (#20)	extraction-probe.docx	REQ-514
+34	CHT34_TITLE	1	1	1	charts: false	0	ChartTable: the title on its own line, then tab-separated rows, after the anchoring paragraph (#20a); the chart's embedded workbook holds these strings too	extraction-probe.docx	REQ-511
+34	CHT34_SERIES_ONE	1	1	1	charts: false	0		extraction-probe.docx	REQ-511
+34	CHT34_SERIES_TWO	1	1	1	charts: false	0		extraction-probe.docx	REQ-511
+34	CHT34_CAT_A	1	1	1	charts: false	0		extraction-probe.docx	REQ-511
+34	CHT34_CAT_B	1	1	1	charts: false	0		extraction-probe.docx	REQ-511
+34	CHT34_AXIS_TITLE	1	1	1	charts: false	0	REQ-511; pending CR-047 axis-title support	extraction-probe.docx	REQ-511
+35	SMA35_ROOT	1	1	1	smartart: false	0	reading order ROOT, CHILD_ONE, CHILD_TWO (parOf, srcOrd); ptLst order CHILD_TWO, ROOT, CHILD_ONE; cxnLst order ROOT, CHILD_TWO, CHILD_ONE (#20b)	extraction-probe.docx	REQ-511
+35	SMA35_CHILD_ONE	1	1	1	smartart: false	0		extraction-probe.docx	REQ-511
+35	SMA35_CHILD_TWO	1	1	1	smartart: false	0		extraction-probe.docx	REQ-511
+36	ALT36_CHUNK_TEXT	1	1	1	altchunks: false	0	HTML expanded; disabled chunks warn altchunk.not_expanded	extraction-probe.docx	REQ-513
+37	RBY37_BASE	1	1	1				extraction-probe.docx	REQ-604
+37	RBY37_RUBY	0	0	0			the annotation: base text only (#16)	extraction-probe.docx	REQ-604
+38	PRP38_TITLE	0	0	0	metadata: true	1	docProps/core.xml (#22)	extraction-probe.docx	REQ-515, REQ-516
+38	PRP38_SUBJECT	0	0	0	metadata: true	1	docProps/core.xml (#22)	extraction-probe.docx	REQ-515, REQ-516
+38	CXP38_DATA	0	0	0			customXml/item1.xml (#22)	extraction-probe.docx	REQ-515, REQ-516
+39	EMB39_XLSX_CELL	0	0	0	embedded: true	1	worksheet row at the reference; REQ-512's embedded-workbook case	extraction-probe.docx	REQ-512
+40	EMB40_DOCX_TEXT	0	0	0	embedded: true	1	one level only	extraction-probe.docx	REQ-512
+40	EMB40_NESTED_TEXT	0	0	0			nested embedded document is not read, including with embedded: true	extraction-probe.docx	REQ-512
+41	OLE41_NATIVE_TEXT	0	0	0	embedded: true	1	Ole10Native stream holding probe.txt	extraction-probe.docx	REQ-512
+42	ACX42_CAPTION	0	0	0			never extracted, including embedded: true; inspection: activex	extraction-probe.docx	REQ-512, REQ-902
+43	ALT43_TEXT_LINE_ONE	1	1	1	altchunks: false	0	disabled chunks warn altchunk.not_expanded	extraction-probe.docx	REQ-513
+43	ALT43_TEXT_LINE_TWO	1	1	1	altchunks: false	0	disabled chunks warn altchunk.not_expanded	extraction-probe.docx	REQ-513
+44	ALT44_MHT_CHUNK	0	0	0	xhtml importer present	1	without importer: altchunk.not_expanded; altchunks: false also omits it	extraction-probe.docx	REQ-513
+45	ALT45_RTF_CHUNK	0	0	0			never expanded; warning altchunk.not_expanded	extraction-probe.docx	REQ-513
+46	ALT46_FLATOPC_CHUNK	1	1	1	altchunks: false	0	disabled chunks warn altchunk.not_expanded	extraction-probe.docx	REQ-513
+47	ALT47_DOCX_CHUNK	1	1	1	altchunks: false	0	disabled chunks warn altchunk.not_expanded	extraction-probe.docx	REQ-513
+47	ALT47_NESTED_CHUNK	0	0	0			one-level limit; warning altchunk.not_expanded for nested HTML	extraction-probe.docx	REQ-513
+48	SHD48_SHADED	1	1	1			inspection: colour near background	extraction-probe.docx	REQ-902, REQ-602, REQ-518, REQ-507
+48	ZW48_SP​LIT	1	1	1			U+200B retained; inspection: zero-width characters	extraction-probe.docx	REQ-902, REQ-602, REQ-518, REQ-507
+48	TAG48_MARK	1	1	1			followed by U+E0041 U+E0042, retained; inspection: tag characters	extraction-probe.docx	REQ-902, REQ-602, REQ-518, REQ-507
+48	OFF48_BOX	1	1	1	text_boxes: false	0	position -5000pt; inspection: off page (position requires layout)	extraction-probe.docx	REQ-902, REQ-602, REQ-518, REQ-507
+48	ZER48_BOX	1	1	1	text_boxes: false	0	width and height zero; inspection: zero size	extraction-probe.docx	REQ-902, REQ-602, REQ-518, REQ-507
+48	SPV48_SEPARATOR	1	1	1			specVanish is a style separator, not hidden text	extraction-probe.docx	REQ-902, REQ-602, REQ-518, REQ-507
+49	DDE49_INSTR	0	0	0	field_codes: true	1	inspection: external; never evaluated under fields: update	extraction-probe.docx	REQ-506, REQ-902
+49	DDE49_RESULT	1	1	1			cached result, including fields: update	extraction-probe.docx	REQ-506, REQ-902
+49	INC49_INSTR	0	0	0	field_codes: true	1	inspection: external; never fetched under fields: update	extraction-probe.docx	REQ-506, REQ-902
+49	INC49_RESULT	1	1	1			cached result, including fields: update	extraction-probe.docx	REQ-506, REQ-902
+49	FLD49_FILE_MARK	0	0	0	field_codes: true	1	inspection: external; Markdown also carries the link target	extraction-probe.docx	REQ-506, REQ-902
+50	TPL50_MARK	0	0	0			external target; inspection: external; never fetched under any option	extraction-probe-external.docm	REQ-506, REQ-801, REQ-902
+50	MRG50_MARK	0	0	0			external target; inspection: external; never fetched under any option	extraction-probe-external.docm	REQ-506, REQ-801, REQ-902
+50	LNK50_MARK	0	0	0			external target; inspection: external; never fetched under any option	extraction-probe-external.docm	REQ-506, REQ-801, REQ-902
+50	OLE50_LINK_MARK	0	0	0			external target; inspection: external; never fetched under any option	extraction-probe-external.docm	REQ-506, REQ-801, REQ-902
+51	VBA51_MODULE_MARK	0	0	0			inspection: macro; never extracted under any option	extraction-probe-external.docm	REQ-902
+52	CPR52_CUSTOM	0	0	0	metadata: true	1	always in block-model metadata	extraction-probe-external.docm	REQ-515
+52	APP52_COMPANY	0	0	0	metadata: true	1	always in block-model metadata	extraction-probe-external.docm	REQ-515

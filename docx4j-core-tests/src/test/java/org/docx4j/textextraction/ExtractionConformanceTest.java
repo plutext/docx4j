@@ -1,0 +1,149 @@
+/*
+ *  Copyright 2026, Plutext Pty Ltd.
+ *
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+ */
+package org.docx4j.textextraction;
+
+import static org.junit.Assert.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.util.*;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+/** Phase 0 checks the corpus and protocol; later phases enable extraction assertions through Engine. */
+public class ExtractionConformanceTest {
+    @Rule public TemporaryFolder temporary = new TemporaryFolder();
+
+    static Path fixtures() {
+        for (Path dir : List.of(Path.of("src/test/resources/text-extraction/phase0"),
+                Path.of("docx4j-core-tests/src/test/resources/text-extraction/phase0")))
+            if (Files.isDirectory(dir)) return dir;
+        throw new IllegalStateException("Run from repository root or docx4j-core-tests");
+    }
+    @Test public void corpusHasEveryCaseAndValidPayloads() throws Exception {
+        Path dir = fixtures();
+        List<ExtractionProbeBuilder.Case> catalogue = new ArrayList<>();
+        for (Map<String, String> row : ExtractionConformance.table(dir.resolve("expected-tokens.tsv"))) {
+            int n = Integer.parseInt(row.get("case"));
+            while (catalogue.size() < n) catalogue.add(new ExtractionProbeBuilder.Case(catalogue.size() + 1, ""));
+            catalogue.get(n - 1).tokens.add(new ExtractionProbeBuilder.Token(row.get("token"), row.get("accepted"), row.get("original"),
+                    row.get("markup"), row.get("option"), row.get("with_option"), row.get("note")));
+            assertEquals(ExtractionPhase0Cases.fixture(n), row.get("fixture"));
+            assertEquals(ExtractionPhase0Cases.statements(n), row.get("statements"));
+        }
+        ExtractionFixtureChecks.check(Files.readAllBytes(dir.resolve("extraction-probe.docx")),
+                Files.readAllBytes(dir.resolve("extraction-probe-external.docm")), catalogue);
+        assertEquals(ExtractionFixtureChecks.findings(), Files.readString(dir.resolve("expected-findings.tsv")));
+    }
+    @Test public void docxAltChunkRequiresItsImportContentType() throws Exception {
+        Map<String, byte[]> entries = ExtractionFixtureChecks.entries(
+                Files.readAllBytes(fixtures().resolve("extraction-probe.docx")));
+        assertEquals(ExtractionPhase0Cases.DOCX_CHUNK,
+                ExtractionFixtureChecks.contentType(entries, "word/chunk47.docx"));
+        assertEquals(ExtractionPhase0Cases.DOCX,
+                ExtractionFixtureChecks.contentType(entries, "word/embeddings/probe40.docx"));
+        org.w3c.dom.Document types = ExtractionFixtureChecks.xml(entries.get("[Content_Types].xml"));
+        org.w3c.dom.NodeList declarations = types.getDocumentElement().getChildNodes();
+        for (int i = 0; i < declarations.getLength(); i++) if (declarations.item(i) instanceof org.w3c.dom.Element) {
+            org.w3c.dom.Element e = (org.w3c.dom.Element) declarations.item(i);
+            if (e.getAttribute("PartName").equals("/word/chunk47.docx"))
+                e.setAttribute("ContentType", ExtractionPhase0Cases.DOCX);
+        }
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        javax.xml.transform.TransformerFactory.newInstance().newTransformer().transform(
+                new javax.xml.transform.dom.DOMSource(types), new javax.xml.transform.stream.StreamResult(out));
+        entries.put("[Content_Types].xml", out.toByteArray());
+        try {
+            ExtractionFixtureChecks.validatePackage(entries);
+            fail("Package MIME type incorrectly accepted for a DOCX altChunk");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage().contains("DOCX altChunk content type"));
+        }
+    }
+    @Test public void requirementsAndReadmeMatchAppendixA() throws Exception {
+        Path dir = fixtures();
+        List<Map<String, String>> appendix = ExtractionConformance.table(dir.getParent().resolve("support/appendix-a-statements.tsv"));
+        List<Map<String, String>> generated = ExtractionConformance.table(dir.resolve("case-statements.tsv"));
+        assertEquals(52, appendix.size()); assertEquals(52, generated.size());
+        String readme = Files.readString(dir.resolve("README.md"));
+        for (int i = 0; i < appendix.size(); i++) {
+            assertEquals(appendix.get(i).get("case"), generated.get(i).get("case"));
+            assertEquals(appendix.get(i).get("statements"), generated.get(i).get("statements"));
+            String section = readme.split("### Case " + (i + 1) + ":", 2)[1].split("### Case ", 2)[0];
+            for (String line : section.split("\n")) if (line.startsWith("| `"))
+                assertTrue(line.endsWith("| " + appendix.get(i).get("statements") + " |"));
+        }
+    }
+    @Test public void normalizationRetainsSignificantCharacters() {
+        assertEquals("MTH32A", ExtractionConformance.normalize("{++ $MTH32\\_A$ ++}"));
+        assertEquals("ZW48SP\u200bLIT", ExtractionConformance.normalize("ZW48_SP\u200bLIT"));
+        assertEquals("TAG48MARK\udb40\udc41\udb40\udc42", ExtractionConformance.normalize("TAG48_MARK\udb40\udc41\udb40\udc42"));
+        assertNotEquals(ExtractionConformance.normalize("a\u00adb"), ExtractionConformance.normalize("ab"));
+        assertNotEquals(ExtractionConformance.normalize("a\u2011b"), ExtractionConformance.normalize("ab"));
+        assertEquals(1, ExtractionConformance.count("MTH32\\_A", "MTH32_A"));
+    }
+    @Test public void markingMustBeRightBeforeNormalization() {
+        ExtractionConformance.verify("{-- TC10_MOVED --}{++ TC10_MOVED ++}", "TC10_MOVED", "del+ins", "move");
+        try {
+            ExtractionConformance.verify("{-- TC9_NEW --}", "TC9_NEW", "ins", "wrong marking");
+            fail("Wrong marking passed");
+        } catch (AssertionError expected) { assertTrue(expected.getMessage().contains("marking ins")); }
+    }
+    @Test public void goldenReaderUsesRequiredNormalizationAndDetectsChanges() throws Exception {
+        Path golden = temporary.newFile("example.accepted.txt").toPath();
+        Files.writeString(golden, "A_B\n", StandardCharsets.UTF_8);
+        ExtractionConformance.verifyGolden(golden, "A\\_B");
+        try { ExtractionConformance.verifyGolden(golden, "A_C"); fail("Changed golden passed"); }
+        catch (AssertionError expected) { assertTrue(expected.getMessage().contains("expected AB")); }
+    }
+    @Test public void enabledAdapterAndPublishedGoldenAreActuallyChecked() throws Exception {
+        Path dir = temporary.newFolder("suite").toPath();
+        Files.writeString(dir.resolve("expected-tokens.tsv"),
+                "case\ttoken\taccepted\toriginal\tmarkup\toption\twith_option\tfixture\tstatements\n"
+                + "9\tTC9_NEW\t1\t0\tins\t\t\tfixture.docx\tREQ-402, REQ-403\n");
+        Files.writeString(dir.resolve("expected-findings.tsv"), "case\tfixture\tchannel\tkind\tselector\tscenario\texpected\tstatements\n");
+        Files.writeString(dir.resolve("goldens.tsv"), "fixture\tcase\tview\tscenario\tformat\tgolden\tstatements\n"
+                + "fixture.docx\t0\taccepted\tdefault\ttxt\tfixture.accepted.txt\tREQ-402\n");
+        Files.writeString(dir.resolve("fixture.accepted.txt"), "TC9_NEW\n");
+        ExtractionConformance.Engine engine = new ExtractionConformance.Engine() {
+            public Set<String> implementedStatements() { return Set.of("REQ-402", "REQ-403"); }
+            public ExtractionConformance.Output extract(Path p, String view, String scenario, String format) {
+                return new ExtractionConformance.Output(view.equals("original") ? "" : view.equals("markup") ? "{++ TC9_NEW ++}" : "TC9_NEW", Map.of());
+            }
+        };
+        Path report = dir.resolve("report.tsv");
+        ExtractionConformance.run(dir, report, engine);
+        assertEquals(5, Files.readAllLines(report).size()); // header, three views and golden
+        assertFalse(Files.readString(report).contains("PENDING"));
+        Files.writeString(dir.resolve("fixture.accepted.txt"), "BROKEN\n");
+        try { ExtractionConformance.run(dir, report, engine); fail("Golden mismatch passed"); }
+        catch (AssertionError expected) { assertTrue(expected.getMessage().contains("fixture.accepted.txt")); }
+    }
+    @Test public void extractionRequirementsAreCheckedOrReportedPending() throws Exception {
+        Path report = Path.of("target/text-extraction/conformance.tsv");
+        ExtractionConformance.run(fixtures(), report, ExtractionConformance.engine());
+        String results = Files.readString(report);
+        if (ExtractionConformance.engine() == null) {
+            assertTrue(results.contains("PENDING"));
+            assertTrue(results.contains("later inspector CR"));
+            assertTrue(results.contains("VBA51_MODULE_MARK"));
+            assertTrue(results.contains("ALT47_NESTED_CHUNK"));
+        }
+    }
+}
