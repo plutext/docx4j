@@ -165,7 +165,14 @@ gate).
   - A `CTExternalData` made in code with `setAutoUpdate(false)` marshals to
     `cx:autoUpdate="false"`.  Both forms are `xsd:boolean`; Office's own is `0`.
 - **The Office check** was not run (optional, §7): the Enterprise session's Office pass already
-  opens docx4j-saved chartex files, and Office's re-save writes the attribute itself.
+  opens docx4j-saved chartex files, and Office's re-save writes the attribute itself.  Later the
+  same day, the Enterprise session's tenth Office pass covered it (found 2026-10-17).  Its
+  `ChartExCreator` files on the share (`office_charts/enterprise-cr004/create-phase4`) were written
+  with this binding: the 16 docx and 11 pptx carry `cx:autoUpdate="false"`.  Word and PowerPoint
+  16.0.20326 opened them all without an error, and their PDFs of these charts match their PDFs of
+  their own charts pixel for pixel (enterprise CR-004, phase 4).  The 22 xlsx have no
+  `cx:externalData`.  Office's own `"0"` survives a load and save unchanged (17.3.3, both
+  waterfall fixtures).
 - **Gate:**
   - docx4j-generated-objects installed after a clean regeneration;
   - core-tests 1569/0 (11 skipped), docx4j-chart-render 23/0, export-fo-tests 840/0 (9 skipped);
