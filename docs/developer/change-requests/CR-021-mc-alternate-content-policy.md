@@ -465,6 +465,28 @@ read from the golden's text.
   docx4j this settles 8.6 item 4 and adds two consequences, 8.6 items 6
   and 7.
 
+  **Update, 17 October 2026: Word has now been seen to do the opposite.**
+  Word 365 opened and saved, unedited, the text extraction probe
+  (docx4j-core-tests `text-extraction/extraction-probe.docx` and its
+  `.word-resave.docx`). On that save it wrote a new VML Fallback, copied
+  from the Choice, for every wps text box. The four authored Fallbacks,
+  whose text differed from their Choices, are gone. The wps boxes that had
+  no `mc` gained one, with a Fallback. No box was edited. So both
+  outcomes have been seen on a plain save: verbatim and stale in these
+  probes, and regenerated in that one. Why they differ is not established.
+  The candidates are an inline box against a floating one (the probe's
+  authored Fallbacks were all on inline boxes) and the Word build. The
+  rule "a shape it does not edit keeps its fallback" therefore does not
+  hold in general. Nothing decided here changes: the drawn branch is still
+  authoritative, and a reader still takes one branch, never both.
+
+  In all eight of the probe's `mc` cases, Word selected the branch
+  ISO/IEC 29500-3 selects. Every `mc:AlternateContent` that was not a text
+  box it wrote as that branch alone. A Choice requiring an unknown
+  namespace was dropped. Of two understood Choices, the first was kept. A
+  Choice requiring `wps` through another prefix was taken. A Choice
+  requiring `wps` and an unknown namespace fell to its Fallback.
+
 docx4j today, measured on the two:
 
 | pathway | result |

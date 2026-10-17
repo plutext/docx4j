@@ -1,0 +1,129 @@
+case	token	accepted	original	markup	option	with_option	note
+1	CHOICE_ALPHA_123	1	1	1	text_boxes: false	0	
+1	FALLBACK_BETA_456	0	0	0			the Fallback; Word never shows it
+2	CHOICE_ONLY_789	1	1	1	text_boxes: false	0	
+3	UNSUPPORTED_GAMMA	0	0	0			Requires zz9, which no reader understands
+3	SUPPORTED_DELTA	1	1	1			
+4	CHOICE1_UNKNOWN_ZETA	0	0	0			
+4	CHOICE2_WPS_ETA	1	1	1	text_boxes: false	0	the first Choice whose Requires is understood
+4	FALLBACK_EPSILON	0	0	0			
+5	MCE5_FIRST_SUPPORTED	1	1	1			the first understood Choice wins
+5	MCE5_SECOND_SUPPORTED	0	0	0			
+5	MCE5_FALLBACK	0	0	0			
+6	MCE6_REBOUND_CHOICE	1	1	1	text_boxes: false	0	the namespace URI decides, not the prefix: a reader matching the prefix wps takes the Fallback
+6	MCE6_FALLBACK	0	0	0			
+7	MCE7_TWO_REQ_CHOICE	0	0	0			every namespace a Choice requires must be understood
+7	MCE7_FALLBACK	1	1	1	text_boxes: false	0	
+8	MCE8_OUTER	1	1	1	text_boxes: false	0	
+8	MCE8_INNER_CHOICE	1	1	1	text_boxes: false	0	
+8	MCE8_INNER_FALLBACK	0	0	0			
+8	MCE8_OUTER_FALLBACK	0	0	0			the outer Fallback (a VML box)
+9	TC9_BASE	1	1	1			
+9	TC9_INSERTED	1	0	ins			
+9	TC9_DELETED	0	1	del			
+10	TC10_PARA_A	1	1	1			
+10	TC10_PARA_B	1	1	1			
+10	TC10_MOVED	1	1	del+ins			in the file twice (moveFrom, moveTo); accepted: once, after TC10_PARA_B; original: once, after TC10_PARA_A; markup: {--…--} after A and {++…++} after B
+11	TC11_FIRST	1	1	1			accepted: one line, TC11_FIRST TC11_SECOND; original and markup: two lines
+11	TC11_SECOND	1	1	1			
+12	TC12_ONE	1	1	1			accepted and markup: two lines; original: one line, TC12_ONE TC12_TWO
+12	TC12_TWO	1	1	1			
+13	TC13_PLAIN_ROW	1	1	1			
+13	TC13_DELETED_ROW	0	1	del			the row is gone in accepted
+13	TC13_INSERTED_ROW	1	0	ins			the row is gone in original
+14	TC14_INS_KEPT	1	0	ins			
+14	TC14_DEL_IN_INS	0	0	del			the innermost change wins in markup
+15	TC15_INSERTED_FIELD	1	0	ins			the field's result
+15	TC15_DELETED_FIELD	0	1	del			the field's result; w:delInstrText is code, never text
+16	TC16_FORMAT_ONLY	1	1	1			no marker in markup
+17	TC17_BOX_BASE	1	1	1	text_boxes: false	0	
+17	TC17_BOX_INS	1	0	ins	text_boxes: false	0	
+17	TC17_BOX_DEL	0	1	del	text_boxes: false	0	
+17	TC17_NOTE_REF_HERE	1	1	1			
+17	TC17_NOTE_BASE	1	1	1	notes: false	0	
+17	TC17_NOTE_DEL	0	1	del	notes: false	0	
+18	HID18_VANISH	0	0	0	hidden: true	1	
+18	HID18_STYLE_VANISH	0	0	0	hidden: true	1	the style's w:vanish (the paper's phase 2 resolves styles)
+18	HID18_HIDDEN_PARA	0	0	0	hidden: true	1	runs and mark hidden: no line at all
+18	HID18_WHITE_TEXT	1	1	1			not hidden
+18	HID18_TINY	1	1	1			not hidden
+18	HID18_WEBHIDDEN	1	1	1			web view only, not hidden (#3)
+19	FLD19_RESULT	1	1	1	field_codes: true	2	in the code and the cached result
+19	FLD19_INSTR_ONLY	0	0	0	field_codes: true	1	in the code only
+19	FLD19_RESULT_TWO	1	1	1			
+20	FLD20_SIMPLE_INSTR	0	0	0	field_codes: true	1	w:fldSimple/@instr
+20	FLD20_SIMPLE_RESULT	1	1	1			
+21	FLD21_LINK_TEXT	1	1	1			
+21	FLD21_URL_MARK	0	0	0	markdown	1	the target, in the relationship: Markdown [text](target), not plain text
+21	FLD21_FIELD_LINK_TEXT	1	1	1			
+21	FLD21_FIELD_URL_MARK	0	0	0	markdown	1	the target, in the field code: Markdown carries it whatever field_codes says
+22	PLC22_PLACEHOLDER	1	1	1	placeholders: false	0	Word shows it (#4)
+23	BND23_XML_VALUE	1	1	1	bindings: surface	0	the value in customXml/item1.xml, which Word shows (it refreshes the control on open) (#4a)
+23	BND23_SURFACE_STALE	0	0	0	bindings: surface	1	the stale cached surface in w:sdtContent
+24	SDT24_CONTENT	1	1	1			
+24	SDT24_IN_CELL	1	1	1			
+25	TBX25_FLOAT	1	1	1	text_boxes: false	0	
+25	TBX25_INLINE	1	1	1	text_boxes: false	0	
+25	TBX25_VML_ONLY	1	1	1	text_boxes: false	0	
+25	TBX25_IN_CELL	1	1	1	text_boxes: false	0	after the table (the anchoring paragraph is in a cell)
+25	TBX25_IN_HEADER	0	0	0	include: headers	1	a box in section 1's default header
+25	WA25_TEXTPATH	1	1	1	smartart: false	0	v:textpath/@string, as a one-paragraph box (#20b)
+26	HDR26_DEFAULT	0	0	0	include: headers	1	section 1
+26	HDR26_FIRST	0	0	0	include: headers	1	section 1's first page (w:titlePg)
+26	HDR26_EVEN	0	0	0	include: headers	1	even pages (w:evenAndOddHeaders), section 2's too: it has no even header of its own
+26	FTR26_DEFAULT	0	0	0	include: footers	1	section 2 inherits it
+26	HDR26_SECTION2	0	0	0	include: headers	1	
+26	HDR26_ORPHAN	0	0	0			related from the document but no section references it: Word shows none of it
+27	FN27_REF_HERE	1	1	1			
+27	FN27_NOTE_TEXT	1	1	1	notes: false	0	after the body, [n] at the reference (#7)
+27	EN27_REF_HERE	1	1	1			
+27	EN27_NOTE_TEXT	1	1	1	notes: false	0	after the footnotes
+27	FN27_DELETED_REF_HERE	1	1	1			
+27	FN27_DELETED_REF_NOTE	0	1	1	notes: false	0	its reference is deleted: gone in accepted; in markup the note is there, its reference {--[n]--}
+28	CMT28_ANCHOR	1	1	1			
+28	CMT28_RESOLVED_ANCHOR	1	1	1			
+28	CMT28_COMMENT_TEXT	0	0	cmt	comments: true	cmt	{>>…<<} at the end of the commented range (#8)
+28	CMT28_REPLY	0	0	cmt	comments: true	cmt	a reply (commentsExtended paraIdParent), after its parent
+28	CMT28_RESOLVED_COMMENT	0	0	cmt	comments: true	cmt	resolved (w15:done): a comment like any other; JSON adds resolved: true
+29	SYM29_MARK	1	1	1			then w:sym U+F0FC (Wingdings) and U+F061 (Symbol), as written (#14)
+29	LST29_ITEM_A	1	1	1			the labels 1. 2. 3. are not text by default (#9)
+29	LST29_ITEM_B	1	1	1			
+29	LST29_ITEM_C	1	1	1			
+29	LST29_BULLET_ONE	1	1	1			the bullet (Symbol U+F0B7) is not text by default
+29	LST29_BULLET_TWO	1	1	1			
+30	BRK30_BEFORE	1	1	1			a text-wrapping w:br: \n (#11)
+30	BRK30_AFTER	1	1	1			
+30	BRK30_PAGE	1	1	1			after a page break: \n (#12)
+30	BRK30_COLUMN	1	1	1			after a column break: \n
+30	TAB30_LEFT	1	1	1			\t between the two (#10)
+30	TAB30_RIGHT	1	1	1			
+30	HY30_NON‑BREAK	1	1	1			w:noBreakHyphen is U+2011 (#13)
+30	HY30_SO­FT	1	1	1			w:softHyphen is U+00AD (#13)
+31	TBL31_HEADER	1	1	1			a row is one line, its cells tab-separated (#18)
+31	TBL31_CELL_P1	1	1	1			a cell's paragraphs joined by \n
+31	TBL31_CELL_P2	1	1	1			
+31	TBL31_NESTED	1	1	1			flattened into its cell
+31	TBL31_MERGED	1	1	1			w:gridSpan 2
+31	TBL31_LAST_CELL	1	1	1			
+32	MTH32_A	1	1	1			the m:t runs in document order (#15); Markdown: LaTeX
+32	MTH32_B	1	1	1			
+33	IMG33_ALT_TEXT	0	0	0	alt_text: true	1	wp:docPr/@descr: plain text [image: descr] with the option; Markdown ![descr](…) by default (#20)
+33	IMG33_TITLE	0	0	0			wp:docPr/@title is never read (#20)
+33	IMG33_DECORATIVE_DESCR	0	0	0			marked decorative (adec:decorative): no alt text under any option (D22)
+33	IMG33_SVG_ALT	0	0	0	alt_text: true	1	as IMG33_ALT_TEXT
+33	SVG33_INNER_TEXT	0	0	0			a <text> element in the SVG part: an image's, never text (#20)
+34	CHT34_TITLE	1	1	1	charts: false	0	ChartTable: the title on its own line, then tab-separated rows, after the anchoring paragraph (#20a); the chart's embedded workbook holds these strings too
+34	CHT34_SERIES_ONE	1	1	1	charts: false	0	
+34	CHT34_SERIES_TWO	1	1	1	charts: false	0	
+34	CHT34_CAT_A	1	1	1	charts: false	0	
+34	CHT34_CAT_B	1	1	1	charts: false	0	
+34	CHT34_AXIS_TITLE	0	0	0	chart description (proposed)	1	the value axis title: not in ChartTable today (#20a)
+35	SMA35_ROOT	1	1	1	smartart: false	0	reading order ROOT, CHILD_ONE, CHILD_TWO (parOf, srcOrd); ptLst order CHILD_TWO, ROOT, CHILD_ONE; cxnLst order ROOT, CHILD_TWO, CHILD_ONE (#20b)
+35	SMA35_CHILD_ONE	1	1	1	smartart: false	0	
+35	SMA35_CHILD_TWO	1	1	1	smartart: false	0	
+36	ALT36_CHUNK_TEXT	0	0	0			not expanded, a warning altchunk.not_expanded (#20d); Word imports it on open, and its re-save holds the text as ordinary paragraphs
+37	RBY37_BASE	1	1	1			
+37	RBY37_RUBY	0	0	0			the annotation: base text only (#16)
+38	PRP38_TITLE	0	0	0			docProps/core.xml (#22)
+38	PRP38_SUBJECT	0	0	0			docProps/core.xml (#22)
+38	CXP38_DATA	0	0	0			customXml/item1.xml (#22)
