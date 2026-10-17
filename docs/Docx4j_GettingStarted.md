@@ -5,7 +5,7 @@ Contents
   
 
 
-**This guide is for docx4j 17.3.1 (Java 11 and later); most of it applies to 11.5.x as well.   **
+**This guide is for docx4j 17.3.3 (Java 11 and later); most of it applies to 11.5.x as well.   **
 
 Version numbering jumped from 11.5.14 to 17.0.0 in part because of the following API changes:
 
@@ -44,18 +44,18 @@ There is also a commercial enterprise edition of docx4j, which comes with commer
 - Open existing docx (from filesystem, SMB/CIFS, WebDAV using VFS), pptx, xlsx
 - Create new docx, pptx, xlsx
 - Programmatically manipulate the above (of course)
+- Anonymize/sanitize a docx/pptx/xlsx
 - Create charts, edit their data, and draw them in PDF and HTML output or as images (docx, pptx, xlsx)
 - Save to various media zipped, or unzipped
 - Protection settings
 - Produce/consume  the Flat OPC XML format
-- Do all this on Android.
 
 Specific to docx4j (as opposed to pptx4j, xlsx4j):
 
 - Import XHTML
 - Import and export Markdown (from 17.0.4), including TeX math to/from native equations
 - Export as (X)HTML or PDF, including charts
-- Template substitution; CustomXML binding
+- Template substitution; CustomXML binding (with support for pictures, rich text, checkboxes, and OpenDoPE extensions for repeats \& conditionals, and importing XHTML) 
 - Mail merge
 - Apply transforms, including common filters
 - Diff/compare documents, paragraphs or sdt (content controls)
@@ -77,7 +77,7 @@ Programs based on docx4j can be converted to a Graal native image, and run "serv
 
 # docx4j.NET
 
-If you want to process docx/pptx/xlsx on the .NET platform, you should consider Microsoft's OpenXML SDK.  That said, docx4j can be used in a .NET environment via IKVM, and there are several reasons you might wish to do this:
+If you want to process docx/pptx/xlsx on the .NET platform, you should consider NPOI or Microsoft's OpenXML SDK.  That said, docx4j can be used in a .NET environment via IKVM, and there are several reasons you might wish to do this:
 
 - Where you need docx4j’s capabilities, for example:
   - XHTML import/export/roundtrip
@@ -151,7 +151,7 @@ To use docx4j 11.4 or later, ensure any code references **jakarta.xml.bind** (no
 
 &#9;		`<artifactId>``docx4j-JAXB-``ReferenceImpl``</artifactId>`
 
-&#9;		`<version>``17.3.1``</version>`
+&#9;		`<version>``17.3.3``</version>`
 
 &#9;	`</dependency>`
 
@@ -165,7 +165,7 @@ To use docx4j 11.4 or later, ensure any code references **jakarta.xml.bind** (no
 
 &#9;		`<artifactId>``docx4j-JAXB-``MOXy``</artifactId>`
 
-&#9;		`<version>``17.3.1``</version>`
+&#9;		`<version>``17.3.3``</version>`
 
 &#9;	`</dependency>`
 
@@ -1262,7 +1262,16 @@ The three approaches:
 
 So which should you choose? The following table covers some of the things you might want to consider:
 
-![Table&#10;&#10;Description automatically generated](Docx4j_GettingStarted_files/image1.png)
+||export-FO|Microsoft Graph|documents4j|
+|---:|:---:|:---:|:---:|
+|**Overview**|Conversion of docx to XSL FO, then uses our FO-renderer (based on Apache FOP) to convert to PDF|Uses Microsoft’s cloud|Uses your Microsoft Office installation|
+|**Fidelity**|Rapidly improving (2026)|100% (Microsoft’s fidelity)|100% (Microsoft’s fidelity)|
+|**Suitability**|docx|docx, pptx, xlsx|docx, pptx, xlsx|
+|**License considerations**|ASL v2|Refer applicable Microsoft cloud terms|Refer Microsoft EULA governing your Office install (increasingly restricted with each release)|
+|**Cost**|Free|Microsoft cloud costs|(Microsoft Office)|
+|**Confidentiality**|documents don’t leave your server|documents go to Microsoft cloud|documents need not leave your servers|
+|**Other advantages**|– Fast XSL FO/PDF templating for high volume PDF creation<br>– Open source, so can be extended|– Microsoft encourages this approach<br>– Microsoft cloud handles scalability|– Can update a docx table of contents<br>– Can convert RTF and binary .doc|
+|**Other disadvantages**|Fidelity lacking for some long tail features|– Dependency on 3rd party cloud<br>– Currently can’t update docx table of contents|– Not supported by Microsoft|
 
 Best results are achieved using Microsoft Graph or if Microsoft Word is available -locally or remotely - to perform the conversion.  If this is the case, you can put docx4j-documents4j-local  or docx4j-documents4j-remote on your classpath, and rely on Microsoft Word to do the conversion.
 
@@ -1307,7 +1316,7 @@ PDF output via XSL FO is substantially improved in 17.0.5 and again in 17.1.0 an
 
 See the sample code at [https://github.com/plutext/docx4j/tree/VERSION\_17\_2\_1/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples](https://github.com/plutext/docx4j/tree/VERSION_17_2_1/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples) 
 
-These jars are in the zip file, in dir optional/export-fo  
+These jars are in the zip file, in dirs optional/export-fo and optional/chart-render (from 17.3.3 docx4j-export-fo needs both).
 
 **Equations.  **From 17.0.4, equations in the docx are rendered in the PDF.  Both FO pathways emit the equation as MathML inside fo:instream-foreign-object, and the JEuclid FOP plugin lays it out and draws it as vector paths, so no maths font has to be present and nothing needs configuring per document.
 
@@ -1710,7 +1719,7 @@ FORMCHECKBOX \| FORMDROPDOWN \| FORMTEXT
 
 Since the introduction of content controls in Word 2007, Word (References \> Table of Contents) inserts the TOC field in a content control:
 
-![Picture 6](Docx4j_GettingStarted_files/image2.png)
+![Picture 6](Docx4j_GettingStarted_files/image1.png)
 
 When inserting a TOC, both approaches documented here insert it in a content control.
 
@@ -2046,7 +2055,7 @@ Similar functionality exists for pptx and xlsx.  `ChartCreator.inSlide` puts a c
 
 ## Drawing charts
 
-docx4j’s PDF and HTML output draw a chart as Office lays it out: its title, legend, axes, gridlines and series, with data labels and axis titles, in the chart’s own colours, fills (gradients and patterns), shadows and fonts.  The drawing is done by docx4j-chart-render, which docx4j-export-fo brings with it.  It draws the types above, in docx, pptx and xlsx, whether docx4j or Office made the chart.
+docx4j’s PDF and HTML output draw a chart as Office lays it out: its title, legend, axes, gridlines and series, with data labels and axis titles, in the chart’s own colours, fills (gradients and patterns), shadows and fonts.  The drawing is done by docx4j-chart-render, which docx4j-export-fo brings with it.  For charts in HTML output, or from ChartImages, without docx4j-export-fo, add docx4j-chart-render yourself (in the zip file, its jars are in optional/chart-render).  It draws the types above, in docx, pptx and xlsx, whether docx4j or Office made the chart.
 
 In a PDF a chart is drawn as vectors, with its text kept as text (`docx4j.chart.render.textAsShapes=true` draws the text as outlines instead); in HTML it is an inline svg element (`docx4j.convert.out.html.chartAsPng=true` writes a PNG instead).  pptx’s SVG-in-HTML output draws charts too.
 
