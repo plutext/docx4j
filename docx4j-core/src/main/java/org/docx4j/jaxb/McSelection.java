@@ -231,7 +231,7 @@ public final class McSelection {
 		Set<String> set = understood;
 		if (set != null) return set;
 		Set<String> read = new LinkedHashSet<String>();
-		try (java.io.InputStream is = McSelection.class.getClassLoader().getResourceAsStream(UNDERSTOOD_NAMESPACES_RESOURCE)) {
+		try (java.io.InputStream is = McSelection.class.getResourceAsStream("understood-namespaces.txt")) {
 			if (is == null) throw new IllegalStateException("Missing resource " + UNDERSTOOD_NAMESPACES_RESOURCE);
 			java.io.BufferedReader reader = new java.io.BufferedReader(
 					new java.io.InputStreamReader(is, java.nio.charset.StandardCharsets.UTF_8));

@@ -8,8 +8,8 @@ Cases 53–54 are now added; Jason completed the extended main DOCX r3 open/save
 Phase 1 implemented 18 October 2026 (§4).
 Five phases (§4); decisions in §6.
 
-The specification is the portfolio's *WordprocessingML Text Extraction*, working draft 0.6
-(`docx4j-portfolio/docs/text_extraction_specification_wd.md`, commit 97fce95), cited here as
+The specification is the portfolio's *WordprocessingML Text Extraction*, working draft 0.7
+(`docx4j-portfolio/docs/text_extraction_specification_wd.md`, commit b871d1f), cited here as
 **WD**. It records the decisions D1 to D31 of the portfolio's discussion paper
 (`docs/text_extraction_behaviour_model.md`, 2d8fd36), all of which Jason accepted on 17 October
 2026. docx4j is its first implementation (D15: Java first, since it cuts the goldens the ports
@@ -399,19 +399,45 @@ The commit is the one WD's [PROBE] cites.
   REQ-603, REQ-702, REQ-706, REQ-707, REQ-801, REQ-802, REQ-1001), on the reference implementation and
   on MOXy.
 
-Choices the WD leaves open, made here and to be confirmed (portfolio):
-- `field_codes: true` writes the instruction as written, then the result, with no braces (braces
-  would be extractor-added text, which REQ-707 does not list).
-- A comment is rendered at its `w:commentReference` (Word writes it right after the range end), its
-  text plain inside `{>>...<<}`; a reply after its parent, never at its own reference.
-- A section's headers are written first-page, default, even; each part once, at the first section
-  that displays it.
-- Footnotes and endnotes are numbered apart, in Arabic numerals (Word shows endnotes as i, ii, ... by
-  default). A custom-mark reference has no number; its note is still read, in reference order.
-- Until phase 2's listed and grid forms, every table is written tab-separated, a multi-paragraph
-  cell's paragraphs a space apart.
-- In `markup`, a `w:delText` outside any holder is a deletion with no author or date.
-- A block's `text` holds no list label; a table block's text is its tab-separated form.
+Review (Claude Fable 5.1, docx4j-44, 18 October 2026, of f71cdd299). It confirmed the tests,
+the 420/513 split, the listener's end-tag position on the JDK's StAX reader (a prefix declared on the
+`mc:Choice` itself included), the join rule against `Resolver.joinWithNext`, and the reflective walk
+on the module path. Its findings, and what was done:
+- REQ-204 was broken for a package with no styles part: asking for a `PropertyResolver` added a default
+  styles part and its relationship. The walk now asks only when the package has a styles part
+  (`TextsTest.noStylesPartAdded`).
+- The understood set is now read relative to `McSelection`'s class. `org.docx4j.jaxb` is opened
+  unconditionally in `module-info`, so the class loader's lookup worked too, but the relative form
+  does not depend on that.
+- Each `Texts.of` reads the package's tracked changes once, whatever it is given. That is now
+  documented in `Texts`. A reader that keeps the view across calls is left until docx4j-mcp needs one
+  (phase 4).
+- Residual risk, recorded: the listener's end-tag position was checked on MOXy by hand only
+  (core-tests runs the reference implementation). Its guard turns a MOXy change into the prefix table,
+  silently, which is the right default but would hide a regression.
+
+The choices phase 1 made where WD 0.6 was silent are statements in WD 0.7 (portfolio 14e43a6,
+corrected in b871d1f):
+- REQ-505: under `field_codes: true`, the instruction as it stands, then the result, with no braces
+  or other added characters.
+- REQ-504: a comment at its `w:commentReference`, its text plain inside `{>>...<<}`; a reply after its
+  parent, never at its own reference.
+- REQ-502: a section's headers first-page, default, even; each part once, at the first section that
+  displays it.
+- REQ-503: footnotes and endnotes numbered apart, both in Arabic numerals; a custom-mark reference
+  unnumbered, its note still read in reference order.
+- REQ-404's table: a `w:delText` outside any holder is, in `markup`, a deletion with no author.
+- REQ-306: the published list's path and composition (core-ts's 107, then docx4j's 11; OpenDoPE,
+  content types and the XML namespace left out on purpose).
+- REQ-1201: the harness's two rules. No occurrence inside a longer token of the suite counts. A check
+  made under an option belongs to that option's statement as well as the row's, and is pending
+  until the option is implemented.
+- A NOTE under REQ-303: the save defect with a rebound `Requires` prefix is CR-021's, and is why
+  REQ-406's copy is a reload, not a clone.
+
+Not WD matters, and unchanged: until phase 2's listed and grid forms, every table is written
+tab-separated, a multi-paragraph cell's paragraphs a space apart; a block's `text` holds no list
+label, and a table block's text is its tab-separated form.
 
 ### Phase 2: the remaining content classes and options
 
@@ -476,7 +502,7 @@ The portfolio registry is updated through the portfolio session.
 **Acceptance:** no statements. The hand-offs are sent with the commit hashes, and each
 receiving session has acknowledged.
 
-## 5. Every statement of WD 0.6, and where it is met
+## 5. Every statement of WD 0.7, and where it is met
 
 | Statement | Subject | Phase | Probe cases (WD Appendix A) |
 |---|---|---|---|
@@ -619,13 +645,15 @@ Phase 0 left four points open in WD 0.4. The portfolio session put them in WD 0.
 
 ## 8. Sources
 
-- WD 0.6: `docx4j-portfolio/docs/text_extraction_specification_wd.md`, 97fce95.
+- WD 0.7: `docx4j-portfolio/docs/text_extraction_specification_wd.md`, b871d1f.
   - 0.2 (2566012) answered this CR's first questions.
   - 0.3 (e8f14e1) added REQ-307's citation of REQ-1201's normalisation.
   - 0.4 (2062e86; [PROBE] corrected in c52b031) answered phase 0's questions: embedded
     workbooks and presentations, nesting across kinds, `include` against custom XML.
   - 0.5 (0069d6a) ruled on §6.1's Q1 to Q3.
-  - 0.6 recorded cases 53 and 54 in Appendix A.2 and [PROBE].
+  - 0.6 (97fce95) recorded cases 53 and 54 in Appendix A.2 and [PROBE].
+  - 0.7 (14e43a6, REQ-1201 corrected in b871d1f) made phase 1's choices statements and recorded its
+    findings (the published list, the harness's rules, the `Requires` save defect).
 - The paper: `docx4j-portfolio/docs/text_extraction_behaviour_model.md`, decisions §9 (2d8fd36),
   where it lands §10.
 - CR-043 (the views and their fixtures); CR-021 §8.5 (Word and the Fallback; the `altChunk`

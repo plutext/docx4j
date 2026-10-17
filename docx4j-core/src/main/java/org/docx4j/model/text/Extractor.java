@@ -155,7 +155,9 @@ final class Extractor {
 			plan = null;
 		}
 		PropertyResolver pr = null;
-		if (pkg != null && pkg.getMainDocumentPart() != null) {
+		// a package with no styles part has nothing to resolve, and asking for a resolver would
+		// add a default styles part to it (REQ-204)
+		if (pkg != null && pkg.getMainDocumentPart() != null && pkg.getMainDocumentPart().getStyleDefinitionsPart(false) != null) {
 			try {
 				pr = pkg.getMainDocumentPart().getPropertyResolver();
 			} catch (Exception e) {

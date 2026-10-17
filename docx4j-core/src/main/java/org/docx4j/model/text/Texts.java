@@ -48,6 +48,11 @@ import org.docx4j.relationships.Relationship;
  * comments where included; hidden text excluded; placeholders included.</li>
  * </ul>
  *
+ * <p><b>Cost.</b> Each call reads the package's tracked changes once, in the {@code accepted} and
+ * {@code original} views, to know what Accept All or Reject All would remove or join, whether it
+ * reads the whole package or one paragraph of it. Read a document once and use the blocks, rather
+ * than calling {@link #of(WordprocessingMLPackage, Object, TextOptions)} per paragraph.</p>
+ *
  * <p>The package is never changed (REQ-204). In CR-046 phase 1, charts, SmartArt, legacy WordArt,
  * bound values, embedded objects, {@code altChunk}s, image descriptions and document properties
  * contribute nothing yet, and math is its runs' text; options asking for them are refused
@@ -102,7 +107,8 @@ public final class Texts {
 	/**
 	 * The text of content in a package (a paragraph, a table, a body, a header's content), as the
 	 * main story: the view is the package's, so a join or a move is resolved as in the whole
-	 * document. Its addresses start {@code content}.
+	 * document. Its addresses start {@code content}. Each call reads the whole package's tracked
+	 * changes (the class description's "Cost").
 	 */
 	public static TextResult of(WordprocessingMLPackage pkg, Object content, TextOptions options) {
 		TextOptions o = options == null ? new TextOptions() : options;

@@ -104,6 +104,17 @@ public class TextsTest {
 		return out;
 	}
 
+	/** REQ-204: a package with no styles part is not given one (asking for a property resolver would add it). */
+	@Test
+	public void noStylesPartAdded() throws Exception {
+		WordprocessingMLPackage pkg = MiniDocx.body("<w:p><w:r><w:t>TEXT</w:t></w:r></w:p>").load();
+		int parts = pkg.getParts().getParts().size();
+		assertNull(pkg.getMainDocumentPart().getStyleDefinitionsPart(false));
+		for (TextView view : TextView.values()) assertEquals("TEXT\n", text(pkg, TextOptions.of(view).listLabels(true)));
+		assertNull(pkg.getMainDocumentPart().getStyleDefinitionsPart(false));
+		assertEquals(parts, pkg.getParts().getParts().size());
+	}
+
 	/** REQ-203: a strict document extracts as its transitional equivalent (docx4j converts it on load). */
 	@Test
 	public void strictAsTransitional() throws Exception {
