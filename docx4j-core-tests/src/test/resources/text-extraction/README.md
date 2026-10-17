@@ -57,8 +57,9 @@ the probe. What Word changed on the way, read from the re-save:
 - Every wps text box is now an `mc:AlternateContent` whose VML Fallback Word wrote from the Choice.
   The authored Fallbacks are gone (FALLBACK_BETA_456, FALLBACK_EPSILON, MCE6_FALLBACK,
   MCE8_OUTER_FALLBACK), and each box's tokens are in the file twice, so a reader that takes both
-  branches shows them twice. The boxes that had no `mc` (cases 17 and 25) got one too. This differs
-  from CR-021 section 8.5, where Word kept an untouched box's Fallback verbatim; why is not known.
+  branches shows them twice. The boxes that had no `mc` (cases 17 and 25) got one too. The cause is
+  case 36: with a `w:altChunk` in the document, Word regenerates every Fallback on save; without one
+  it keeps an unedited box's authored Fallback (CR-021 section 8.5).
 - Every other `mc:AlternateContent` is resolved to its selected branch alone: UNSUPPORTED_GAMMA,
   CHOICE1_UNKNOWN_ZETA, MCE5_SECOND_SUPPORTED, MCE5_FALLBACK, MCE7_TWO_REQ_CHOICE and
   MCE8_INNER_FALLBACK are gone, and case 7's Fallback box is a plain `w:pict`.

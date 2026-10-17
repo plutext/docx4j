@@ -456,8 +456,12 @@ read from the golden's text.
   - and verbatim means stale: Word renumbered the lists on save (`w:num`
     80 and 81 became 1 and 2 in the numbering part and in every paragraph
     it processed, the Choice's included), but the untouched Fallback still
-    names 80 and 81, which no longer exist. Word treats an undrawn branch
-    as opaque bytes, references and all.
+    names 80 and 81, which no longer exist. Word keeps an undrawn branch
+    as it found it, references and all. It does write the XML out again:
+    redundant namespace declarations go, every namespace in scope that
+    Word's root does not declare is redeclared on `mc:Fallback`, and
+    relationship ids inside are renumbered with the rest (a real document's
+    `r:embed` went from rId9 to rId10). Numbering ids are not.
 
   So Word's rule is: the drawn branch is authoritative; a shape it edits
   gets its fallback regenerated; a shape it does not edit keeps its
@@ -465,20 +469,49 @@ read from the golden's text.
   docx4j this settles 8.6 item 4 and adds two consequences, 8.6 items 6
   and 7.
 
-  **Update, 17 October 2026: Word has now been seen to do the opposite.**
-  Word 365 opened and saved, unedited, the text extraction probe
-  (docx4j-core-tests `text-extraction/extraction-probe.docx` and its
-  `.word-resave.docx`). On that save it wrote a new VML Fallback, copied
-  from the Choice, for every wps text box. The four authored Fallbacks,
-  whose text differed from their Choices, are gone. The wps boxes that had
-  no `mc` gained one, with a Fallback. No box was edited. So both
-  outcomes have been seen on a plain save: verbatim and stale in these
-  probes, and regenerated in that one. Why they differ is not established.
-  The candidates are an inline box against a floating one (the probe's
-  authored Fallbacks were all on inline boxes) and the Word build. The
-  rule "a shape it does not edit keeps its fallback" therefore does not
-  hold in general. Nothing decided here changes: the drawn branch is still
-  authoritative, and a reader still takes one branch, never both.
+  **Update, 17 October 2026: the exception, measured.** On a plain save
+  of the text extraction probe (docx4j-core-tests
+  `text-extraction/extraction-probe.docx` and its `.word-resave.docx`),
+  Word 365 regenerated every Fallback, though it edited no box. Two
+  rounds of re-saves found why. They ran on Word 365, `Application.Build`
+  16.0.20326; the inputs, the saves and the variants are on the share in
+  `X:\text-extraction\fallback-rule\`.
+  - **Word keeps an authored Fallback** when it has not edited the shape
+    and the document has no `w:altChunk`. That held for both ways of
+    saving: the golden runner's (a hidden Word, the file opened
+    read-only, `SaveAs` format 12) and a Save As by hand. It held for
+    every shape tried:
+    - inline and anchored boxes;
+    - a `v:shape` id that is not the drawing's name;
+    - no `w10:anchorlock`;
+    - a `v:shapetype` inside the Fallback;
+    - the probe's own Fallback form.
+
+    Real documents' Fallbacks came back unchanged too, in the golden
+    runner's re-saves of 9 September and 6 October.
+  - **Word regenerates a Fallback from the Choice when it edits the
+    shape.** One keystroke in the box was enough, as was refreshing a
+    bound control inside it (above).
+  - **A `w:altChunk` anywhere in the document makes Word regenerate
+    every Fallback in it**, edited or not:
+    - adding one HTML altChunk to `mc-textbox-branches-numbered` was
+      enough;
+    - taking the probe's altChunk away was enough to keep all its
+      Fallbacks.
+
+    Nothing else in the probe made a difference.
+  - **Boxes without an authored Fallback:**
+    - a `wps` drawing with no `mc` gains one, with a generated Fallback,
+      on every save;
+    - an `mc` whose `wps` Choice has no Fallback is written back as the
+      bare drawing, with none, unless the document has an altChunk.
+
+  The rule above therefore holds with one exception, the altChunk. For
+  a reader, the Fallback of a Word-saved document is Word's copy of the
+  Choice only if the shape was edited, or the document held an altChunk,
+  when Word last saved it. Otherwise it is whatever its author wrote,
+  possibly stale. Nothing decided here changes: the drawn branch is
+  authoritative, and a reader takes one branch, never both.
 
   In all eight of the probe's `mc` cases, Word selected the branch
   ISO/IEC 29500-3 selects. Every `mc:AlternateContent` that was not a text
