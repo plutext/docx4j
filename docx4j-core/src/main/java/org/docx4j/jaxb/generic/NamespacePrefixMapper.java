@@ -42,6 +42,10 @@ public class NamespacePrefixMapper implements NamespacePrefixMapperInterface, Mc
 	public void setMcIgnorable(String mcIgnorable) {
 		this.mcIgnorable = mcIgnorable;
 	}
+	@Override
+	public String getMcIgnorable() {
+		return this.mcIgnorable;
+	}
 
 	/**
      * Returns a preferred prefix for the given namespace URI.

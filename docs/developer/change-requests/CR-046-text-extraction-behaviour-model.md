@@ -617,7 +617,9 @@ Findings outside CR-046, not fixed here:
   `isFldLock()` (and `isDirty()`), so it reports every complex field locked.
 - `XmlUtils`' marshal methods set a `wml.Document`'s `mc:Ignorable` prefixes on the shared prefix
   mapper and never reset them (`JaxbXmlPart`'s path does), so what is marshalled next declares those
-  namespaces. `TextsPhase2Test`'s REQ-204 snapshot leaves namespace declarations out for this reason.
+  namespaces. `TextsPhase2Test`'s REQ-204 snapshot leaves namespace declarations out for this reason. **Fixed by CR-049**
+  (19 October 2026): a marshal now leaves the prefix mapper as it found it and declares what its own
+  root's `mc:Ignorable` names, and the snapshot compares every part's declarations again.
 
 Review, 18 October 2026 (Fable 5.1, session docx4j-44, at Jason's request): it found no correctness
 defect in the walk. It checked the suite (876 PASS, 57 PENDING), docx4j-markdown with `OmmlToLatex`
@@ -888,7 +890,7 @@ or proposes is its own, and waits on Jason.
 |---|---|---|---|
 | docx4j-core-ts: its text-model CR (CR-012 the next free number) | docx4j-core-ts-5b | yes | yes, 18 October 2026, receipt only: opening CR-012 is Jason's call. Noted for it: the agreement test, REQ-519's address kinds, a TSV adapter. REQ-510 will move labels in its Emulator's parity goldens, a port item apart from the text CR |
 | docx4j-python: its CR-011 | docx4j-python-cd | yes | yes, 18 October 2026: commits, goldens and WD 0.14 checked in the local clone; CR-011 being written (its first phase an adapter over the TSVs), implementation on Jason's go |
-| docx4j-generated-objects-ts: `textOf` follows the rules, or core-ts stops using it (theirs and core-ts's to agree) | docx4j-generated-objects-ts-82 | yes | yes, 18 October 2026. It proposes the second, mirroring section 2.7: `textOf` stays as it is, documented as not the text model; core-ts's text-model CR moves its readers off it; deprecated once none uses it. A tree helper can't meet REQ-507 (hidden text from styles) or REQ-506's `fields: update`. Undecided: Jason and core-ts |
+| docx4j-generated-objects-ts: `textOf` follows the rules, or core-ts stops using it (theirs and core-ts's to agree) | docx4j-generated-objects-ts-82 | yes | yes, 18 October 2026. It proposed the second, mirroring section 2.7. **Decided by Jason, 19 October 2026:** `textOf` stays as it is, TextUtils's counterpart with its output unchanged, and is not deprecated: its callers are core-ts's Office JS readers (`Paragraph.text`, `ContentControl.text`, tables' text), held to what Word's Office JS returns, not to the WD. The text model goes into core-ts as its CR-012. objects-ts c31cb83 documents `textOf` as not the text model; no objects-ts CR |
 | the editor: the section 10 options on its text verbs | docx4j-ts-editor-50 | yes | yes, 18 October 2026, with ED-008 (editor 37c8565, proposed): section 10's options on outline, find and read; an unimplemented value refused naming its statement, as section 2.6 does; every reader on core-ts's text model once its CR lands, the editor adding nothing to the text |
 | docx4j-mcp: the engine bump (on 17.1.0; 17.3.4 not released), `extract_text`'s options, the block model's JSON | docx4j-mcp-a1 (started for it) | yes | yes, 18 October 2026, with CR-mcp-server §19 (proposed, uncommitted). Three phases: the bump to 17.3.4 (33 tests pass on a trial against the snapshot); `extract_text` and `docx_to_markdown` on the model, with the goldens copied verbatim; the block model's JSON and outline / find / read, matching ED-008. Its decisions T1 to T6 wait on Jason. It may ask docx4j-markdown for per-block address comments |
 

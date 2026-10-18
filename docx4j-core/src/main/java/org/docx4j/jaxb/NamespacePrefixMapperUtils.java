@@ -195,6 +195,49 @@ public class NamespacePrefixMapperUtils {
 	
     private static final String[] EMPTY_STRING = new String[0];
 	
+    private static final java.util.concurrent.ConcurrentHashMap<Class<?>, java.lang.reflect.Method> IGNORABLE_GETTERS
+    		= new java.util.concurrent.ConcurrentHashMap<Class<?>, java.lang.reflect.Method>();
+    private static final java.lang.reflect.Method NO_GETTER;
+    static {
+    	try {
+    		NO_GETTER = Object.class.getMethod("hashCode");
+    	} catch (NoSuchMethodException e) {
+    		throw new IllegalStateException(e);
+    	}
+    }
+
+    /**
+     * A root object's mc:Ignorable value, via its {@code getIgnorable()} if its class has one (a
+     * {@code JAXBElement} unwrapped first); null otherwise.  Every such getter in docx4j is XJC's
+     * binding of mc:Ignorable (CR-024).  The prefixes it names are what a marshal of that root
+     * pre-declares on it, through the prefix mapper's Ignorable value.
+     *
+     * @since 17.3.4 (CR-049): moved from {@code JaxbXmlPart} (17.2.0), which delegates to it, so that
+     *        {@code XmlUtils}' marshal methods apply the same rule to every root
+     */
+    public static String ignorableOf(Object root) {
+    	root = org.docx4j.XmlUtils.unwrap(root);
+    	if (root == null) return null;
+    	Class<?> c = root.getClass();
+    	java.lang.reflect.Method m = IGNORABLE_GETTERS.get(c);
+    	if (m == null) {
+    		try {
+    			m = c.getMethod("getIgnorable");
+    			if (m.getReturnType() != String.class) m = NO_GETTER;
+    		} catch (NoSuchMethodException e) {
+    			m = NO_GETTER;
+    		}
+    		IGNORABLE_GETTERS.put(c, m);
+    	}
+    	if (m == NO_GETTER) return null;
+    	try {
+    		return (String) m.invoke(root);
+    	} catch (Exception e) {
+    		log.warn("getIgnorable() on " + c.getName() + ": " + e);
+    		return null;
+    	}
+    }
+
     public static String[] getPreDeclaredNamespaceUris(String mcIgnorable) {
     	
     	if (mcIgnorable==null) {    	

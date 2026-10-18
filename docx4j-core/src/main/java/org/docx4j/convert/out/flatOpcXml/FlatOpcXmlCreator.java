@@ -252,13 +252,17 @@ public class FlatOpcXmlCreator implements Output {
 	}
 	
 	private byte[] marshalBytes(Object o, JAXBContext jc, String ignorables) {
+		McIgnorableNamespaceDeclarator declarator = null;
+		String previous = null;
 		try {
 
 			Marshaller marshaller = jc.createMarshaller();
 
 			NamespacePrefixMapperUtils.setProperty(marshaller, 
 					NamespacePrefixMapperUtils.getPrefixMapper());	
-			((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()).setMcIgnorable(ignorables);
+			declarator = (McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper();
+			previous = declarator.getMcIgnorable(); // put back in the finally (CR-049)
+			declarator.setMcIgnorable(ignorables);
 			
 			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
 			marshaller.marshal(o, doc);
@@ -290,6 +294,8 @@ public class FlatOpcXmlCreator implements Output {
 				
 		} catch (Exception e) {
 		    throw new RuntimeException(e);
+		} finally {
+			if (declarator!=null) declarator.setMcIgnorable(previous);
 		}
 	}
 	
@@ -406,13 +412,17 @@ public class FlatOpcXmlCreator implements Output {
 	 */
 	@Deprecated
 	private static org.w3c.dom.Document marshaltoW3CDomDocument(Object o, JAXBContext jc, String ignorables) {
+		McIgnorableNamespaceDeclarator declarator = null;
+		String previous = null;
 		try {
 
 			Marshaller marshaller = jc.createMarshaller();
 
 			NamespacePrefixMapperUtils.setProperty(marshaller, 
 					NamespacePrefixMapperUtils.getPrefixMapper());	
-			((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()).setMcIgnorable(ignorables);
+			declarator = (McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper();
+			previous = declarator.getMcIgnorable(); // put back in the finally (CR-049)
+			declarator.setMcIgnorable(ignorables);
 			
 			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
 			marshaller.marshal(o, doc);
@@ -447,6 +457,8 @@ public class FlatOpcXmlCreator implements Output {
 				
 		} catch (Exception e) {
 		    throw new RuntimeException(e);
+		} finally {
+			if (declarator!=null) declarator.setMcIgnorable(previous);
 		}
 	}	
 	

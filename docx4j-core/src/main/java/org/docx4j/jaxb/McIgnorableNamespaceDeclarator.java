@@ -35,4 +35,17 @@ public interface McIgnorableNamespaceDeclarator {
 	
 	public void setMcIgnorable(String mcIgnorable);
 
+	/**
+	 * The value {@link #setMcIgnorable} last set (on this thread, for the runtime mappers), so
+	 * that a marshal can put back what it found when it is done: a marshal nested in another
+	 * then leaves the outer one's value in place, and one on its own leaves the thread as it was
+	 * (CR-049).  Null where none is set, and for a mapper that keeps none (the relationships
+	 * part's).
+	 *
+	 * @since 17.3.4
+	 */
+	default String getMcIgnorable() {
+		return null;
+	}
+
 }

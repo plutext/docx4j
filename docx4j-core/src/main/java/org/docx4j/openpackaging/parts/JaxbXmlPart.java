@@ -705,7 +705,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
     public void marshal(org.w3c.dom.Node node, 
     		Object namespacePrefixMapper) throws JAXBException {
 
-    	
+    	// what this marshal found on the mapper, put back when it is done (CR-049)
+    	String previous = ((McIgnorableNamespaceDeclarator) namespacePrefixMapper).getMcIgnorable();
 		try {
 			Marshaller marshaller = jc.createMarshaller();
 //			marshaller.setProperty("com.sun.xml.internal.bind.c14n",true);
@@ -714,6 +715,9 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			
 			NamespacePrefixMapperUtils.setProperty(marshaller, namespacePrefixMapper);
 			getContents();
+			// nothing borrowed: setMceIgnorable's default sets a value only where the root's
+			// mc:Ignorable names a prefix, so start from none (CR-049)
+			((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(null);
 	    	setMceIgnorable( (McIgnorableNamespaceDeclarator) namespacePrefixMapper);
 	    		// this method needs to be suitably overridden in a subclass,
 	    		// to .setMcIgnorable
@@ -730,12 +734,13 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 				marshaller.marshal(jaxbElement, node);
 //			}
 			
-			// Now unset it
-			((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(null);
-			
 		} catch (Docx4JException e) {
 			throw new JAXBException(e);  // avoid change to method signature
-		} 
+		} finally {
+			// put back what was there, whether or not the marshal succeeded (before 17.3.4, cleared
+			// to null after a successful marshal only)
+			((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(previous);
+		}
 	}
     
     /**
@@ -767,7 +772,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 */
     public void marshal(java.io.OutputStream os, Object namespacePrefixMapper) throws JAXBException {
 
-    	
+    	// what this marshal found on the mapper, put back when it is done (CR-049)
+    	String previous = ((McIgnorableNamespaceDeclarator) namespacePrefixMapper).getMcIgnorable();
 		try {
 			Marshaller marshaller = jc.createMarshaller();
 			if (Docx4jProperties.getProperty("docx4j.jaxb.formatted.output", true)) {
@@ -932,14 +938,14 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	            xsw.close();
 	    	}
 	    	
-			// Now unset it - prob not nec
-			((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(null);
-	    	
-
 		} catch (Docx4JException e) {
 			throw new JAXBException(e);  // avoid change to method signature
 		} catch (Exception e) {
 			throw new JAXBException(e);  // avoid change to method signature
+		} finally {
+			// put back what was there, whether or not the marshal succeeded (before 17.3.4, cleared
+			// to null after a successful marshal only)
+			((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(previous);
 		}
 	}
     
@@ -961,39 +967,13 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
     	return ignorable == null ? "" : ignorable;
     }
 
-    private static final java.util.concurrent.ConcurrentHashMap<Class<?>, java.lang.reflect.Method> IGNORABLE_GETTERS
-    		= new java.util.concurrent.ConcurrentHashMap<Class<?>, java.lang.reflect.Method>();
-    private static final java.lang.reflect.Method NO_GETTER;
-    static {
-    	try {
-    		NO_GETTER = Object.class.getMethod("hashCode");
-    	} catch (NoSuchMethodException e) {
-    		throw new IllegalStateException(e);
-    	}
-    }
-
-    /** The root object's mc:Ignorable value, via its {@code getIgnorable()} if it has one; null otherwise. */
+    /**
+     * The root object's mc:Ignorable value, via its {@code getIgnorable()} if it has one; null otherwise.
+     * Since 17.3.4 (CR-049) {@link NamespacePrefixMapperUtils#ignorableOf}, which {@code XmlUtils}' marshal
+     * methods use too.
+     */
     protected static String ignorableOf(Object root) {
-    	root = XmlUtils.unwrap(root);
-    	if (root == null) return null;
-    	Class<?> c = root.getClass();
-    	java.lang.reflect.Method m = IGNORABLE_GETTERS.get(c);
-    	if (m == null) {
-    		try {
-    			m = c.getMethod("getIgnorable");
-    			if (m.getReturnType() != String.class) m = NO_GETTER;
-    		} catch (NoSuchMethodException e) {
-    			m = NO_GETTER;
-    		}
-    		IGNORABLE_GETTERS.put(c, m);
-    	}
-    	if (m == NO_GETTER) return null;
-    	try {
-    		return (String) m.invoke(root);
-    	} catch (Exception e) {
-    		log.warn("getIgnorable() on " + c.getName() + ": " + e);
-    		return null;
-    	}
+    	return NamespacePrefixMapperUtils.ignorableOf(root);
     }
     
     /**

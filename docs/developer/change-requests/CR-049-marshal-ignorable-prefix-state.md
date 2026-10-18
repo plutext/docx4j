@@ -1,6 +1,6 @@
 # CR-049: `XmlUtils`' marshal methods leave a `wml.Document`'s `mc:Ignorable` prefixes on the shared prefix mapper, and drop the Choice namespaces for every other root
 
-Status: ACCEPTED 2026-10-19 (Jason: "i accept D1 to D4.  please commit"), to implement as recommended. Drafted at Jason's request ("write the CR please") by Claude Fable 5.1
+Status: DONE 2026-10-19, the one phase (§5), for 17.3.4: implemented by the docx4j-25 session (Claude Opus 5.5) at Jason's request ("commit, then do CR-049 yourself"). ACCEPTED 2026-10-19 (Jason: "i accept D1 to D4.  please commit"), to implement as recommended. Drafted at Jason's request ("write the CR please") by Claude Fable 5.1
 (session docx4j-43) from its assessment of the finding CR-046's phase 4 record lists under "Findings
 outside CR-046, not fixed here" (the docx4j-25 session found it writing `TextsPhase2Test`'s REQ-204
 snapshot, which strips namespace declarations to work around it). One phase (§5); decisions in §6.
@@ -105,15 +105,22 @@ One contract: **a marshal leaves the prefix mapper as it found it, and declares 
    when its class has one (the reflective, per-class-cached `ignorableOf` now in `JaxbXmlPart`,
    moved to `NamespacePrefixMapperUtils` as a public static and delegated to from `JaxbXmlPart`),
    `XmlUtils.unwrap`ping a `JAXBElement` first, with `mcChoiceNamespace` appended as today. A root
-   with neither sets nothing. The returned string still feeds `trimNamespaces` on the canonicalize
-   path.
+   with neither sets null for the duration of its own marshal, so nothing is borrowed from an
+   enclosing marshal or from the thread; the previous value comes back in the `finally` (§4.2).
+   The returned string still feeds `trimNamespaces` on the canonicalize path, and the canonicalize
+   paths' nested `marshaltoW3CDomDocument` call receives the caller's `mcChoiceNamespace`, which it
+   does not today: under the restore the inner marshal's value is the one the written DOM sees
+   (docx4j-25, 2026-10-19).
 2. Each of the five `XmlUtils` methods reads the mapper's current value before setting it and restores
-   it in a `finally`. `McIgnorableNamespaceDeclarator` gains `String getMcIgnorable()` for that (both
-   runtime mappers and the two generic ones implement it; the relationships-part mappers return null).
+   it in a `finally`. `McIgnorableNamespaceDeclarator` gains `String getMcIgnorable()` for that, a
+   default method returning null so an implementor outside docx4j keeps compiling; the two runtime
+   mappers and the two generic ones override it, the relationships-part mappers keep the default.
    Restoring the previous value rather than clearing to null keeps nesting safe: the canonicalize
    path of `marshaltoString` calls `marshaltoW3CDomDocument` inside its own set.
 3. `JaxbXmlPart.marshal(Node, mapper)` and `marshal(OutputStream)` move their clearing into a
-   `finally`, so a marshal that throws leaves nothing behind either. `FlatOpcXmlCreator`'s two methods
+   `finally`, so a marshal that throws leaves nothing behind either, and the Node path sets null
+   before `setMceIgnorable`, so a part whose root has no Ignorable declares nothing borrowed (the
+   subclass overrides still set their own value). `FlatOpcXmlCreator`'s two methods
    restore the same way.
 4. `TextsPhase2Test.snapshot` stops stripping declarations, so REQ-204 compares every part's
    declarations too. CR-046's "not fixed here" line names this CR.
@@ -139,6 +146,8 @@ fails on a41de133b:
 - A `HeaderPart` whose `addMcChoiceNamespace("wps")` was called (as `Docx4jUnmarshallerListener` does
   for a kept Choice): `getXML()` declares `wps`.
 - After a Flat OPC export of a package, a bare `w:p` through `marshaltoString` declares nothing.
+- A bare `w:p` marshalled while the mapper holds another value declares none of it, and the value is
+  there again afterwards (the contract of §4.1's "sets null for its own duration").
 - The mapper's value after each of these is what it was before (null on a fresh thread).
 
 Existing tests that pin the part path and must stay green: `W15Test` (settings' `w15` declared on the
@@ -162,6 +171,53 @@ classpath, as CR-048's were, and the result recorded here.
   same contract applies; if their declarations come from the root object alone, nothing to do. The
   REQ-204 snapshot with declarations is the oracle either way.
 - docx4j-portfolio: this CR's entry.
+
+**Implemented 19 October 2026** (docx4j-25, on top of 3dcbb3764), as §4 has it, with the two
+amendments above (a root with neither sets null for its own marshal; the nested canonicalize call gets
+the Choice namespaces):
+- `XmlUtils.setMcIgnorable` reads `NamespacePrefixMapperUtils.ignorableOf(o)` and appends the Choice
+  namespaces; each of the five methods takes the mapper's value first and puts it back in a `finally`.
+- `NamespacePrefixMapperUtils.ignorableOf` is the moved method (its per-class cache with it);
+  `JaxbXmlPart.ignorableOf` delegates to it.
+- `McIgnorableNamespaceDeclarator.getMcIgnorable()` is a default method returning null. Three mappers
+  keep a value and override it: the RI's and MOXy's (their thread-locals) and the generic
+  `NamespacePrefixMapper` (a field). The generic relationships mapper keeps the default along with the
+  RI's and MOXy's relationships mappers, so "the two generic ones" of §4.2 is one in the code.
+- `JaxbXmlPart.marshal(Node, mapper)` starts from null, then `setMceIgnorable`; it and
+  `marshal(OutputStream, mapper)` put the previous value back in a `finally` (they cleared it to null
+  after a successful marshal). The OutputStream path's canonicalize branch marshals through
+  `XmlUtils.marshaltoW3CDomDocument`, which now sets the root's own value and restores it.
+- `FlatOpcXmlCreator.marshalBytes` and its deprecated `marshaltoW3CDomDocument` restore the same way.
+- `TextsPhase2Test.snapshot` compares every part's declarations again (D4), and passes; CR-046's
+  "not fixed here" line names this CR.
+
+**What the tests had to observe.** The reference implementation declares every namespace of the main
+context (`Context.jc`) on a root it marshals, `w14` and `w15` among them, so a bare `w:p` shows no
+borrowed declaration either way: the leak shows on a root of another context, and the mirror defect in
+the canonicalize path, which trims each unused namespace except those the mapper's value names.
+`McIgnorableMarshalStateTest`'s six cases (§5's five and the nested one) therefore use a relationships
+part's `Relationships` (`Context.jcRelationships`) for "borrows nothing", and canonicalization for "its
+own Ignorable" (Hdr, CTSettings, CTFootnotes) and for `getXML()`'s Choice namespace; the Flat OPC case
+writes the main document part through `createRawXmlPart` (a whole Flat OPC export leaves only its last
+part's prefixes, which may be none), then a whole Flat OPC save. All six fail against a pre-CR-049
+build (the phase 3 gate's jars, whose marshal code is a41de133b's; the variant run without the
+`getMcIgnorable()` checks, which the old interface lacks) and pass on the new code, with the RI and,
+run once by hand, with the MOXy selector (6 of 6; `org.eclipse.persistence.jaxb.JAXBContext` and
+`moxy.NamespacePrefixMapper` confirmed on that class path).
+
+**One test changed with it.** `AnonymizeXlsxCorpusTest.pivotsSlicersTimelinesAndTheirReferencesGo`
+looked for `/slicer` and `timeslicer` in each drawing part's `getXML()` to find a slicer still drawn.
+`getXML()` now declares the part's Choice namespaces, which the parts recorded when read (`sle15`, `tsle`,
+whose URIs contain those strings), as a save always has; nothing is drawn. The check now strips
+namespace declarations first. Whether the anonymiser should forget a Choice namespace once the content
+requiring it is gone is a separate question (the declaration is harmless).
+
+**Tests:** docx4j-core-tests 1750 run (11 skipped; 1744 before, the six new), all passing with the
+anonymiser check corrected; W15Test, IgnorablePrefixesDeclaredTest, CommentsExtensiblePartTest,
+SettingsDocIdOrderTest, MarkupCompatibilityTest and McSelectionTest among them; the text-extraction
+suite 972 pass, 51 pending. docx4j-digsig 138 (1 skipped), its goldens unchanged; docx4j-markdown 166;
+docx4j-export-fo-tests 853 (9 skipped); docx4j-diffx-tests 8 (1 skipped). No saved byte changed, so
+no Office check and no fidelity gate (§5).
 
 ## 6. Decisions
 

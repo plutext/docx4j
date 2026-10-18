@@ -807,34 +807,33 @@ public class XmlUtils {
 	}
 	
 	/**
-	 * Knows how to setMcIgnorable on wml.Document only.
-	 * 
-	 * @param prefixMapper
-	 * @param o
+	 * Sets the prefix mapper's Ignorable value for a marshal of {@code o}: the prefixes its root's
+	 * {@code mc:Ignorable} names (any root whose class has {@code getIgnorable()}, a
+	 * {@code JAXBElement} unwrapped first: CR-024's general rule, which the part path applies), then
+	 * the Choice namespaces the caller passes.  A root with neither sets null, so that the marshal
+	 * declares nothing borrowed from an enclosing marshal or from the thread.  The caller restores
+	 * the value it found when its marshal is done ({@link McIgnorableNamespaceDeclarator#getMcIgnorable()}).
+	 *
+	 * <p>Before 17.3.4 (CR-049) this knew only {@code wml.Document}: any other root set nothing, its
+	 * Choice namespaces were dropped, and nothing was put back, so every later marshal on the thread
+	 * declared the last document's prefixes.</p>
+	 *
+	 * @return the value set (the namespaces {@link #trimNamespaces} keeps), or null
 	 * @since 3.1.1
 	 */
 	private static String setMcIgnorable(McIgnorableNamespaceDeclarator prefixMapper, Object o, 
 			String mcChoiceNamespace ) {
 
-		if (o instanceof org.docx4j.wml.Document) {
-			String ignorables = ((org.docx4j.wml.Document)o).getIgnorable();
-			
-			if (mcChoiceNamespace!=null) {
-				if (ignorables==null) {
-					ignorables = mcChoiceNamespace; 					
-				} else {
-					ignorables = ignorables + mcChoiceNamespace; 					
-				}
+		String ignorables = NamespacePrefixMapperUtils.ignorableOf(o);
+		if (mcChoiceNamespace!=null) {
+			if (ignorables==null) {
+				ignorables = mcChoiceNamespace; 					
+			} else {
+				ignorables = ignorables + mcChoiceNamespace; 					
 			}
-			if (ignorables!=null) {
-				prefixMapper.setMcIgnorable(ignorables);	
-			}
-			return ignorables;
-		} else if (log.isDebugEnabled()){
-			log.debug("Not declaring mc ignorable or choice namespaces on " + o.getClass().getName() );
 		}
-		
-		return null;
+		prefixMapper.setMcIgnorable(ignorables);
+		return ignorables;
 	}
 	
 	/** Removes superflouous namespaces.
@@ -892,12 +891,15 @@ public class XmlUtils {
 			return null;			
 		}
 		
+		McIgnorableNamespaceDeclarator declarator = null;
+		String previous = null;
 		try {			
 			Marshaller m=jc.createMarshaller();
 			NamespacePrefixMapperUtils.setProperty(m, 
 					NamespacePrefixMapperUtils.getPrefixMapper());	
-			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), 
-					o, mcChoiceNamespace);
+			declarator = (McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper();
+			previous = declarator.getMcIgnorable(); // put back in the finally (CR-049)
+			String ignorables = setMcIgnorable(declarator, o, mcChoiceNamespace);
 			
 			// WARNING: that won't guarantee you have all the top level declarations you need
 			// if you are using MOXy. This is a TODO, using XMLStreamWriterWrapper 
@@ -927,7 +929,7 @@ public class XmlUtils {
 			
 			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
 				
-				org.w3c.dom.Document doc = marshaltoW3CDomDocument( o,  jc); 
+				org.w3c.dom.Document doc = marshaltoW3CDomDocument( o,  jc, mcChoiceNamespace); // the Choice prefixes too (CR-049)
 				byte[] bytes = trimNamespaces(doc, ignorables);
 				
 				return new String(bytes, "UTF-8"); 
@@ -948,6 +950,8 @@ public class XmlUtils {
 			
 		} catch (Exception e) {
                     throw new RuntimeException(e);
+		} finally {
+			if (declarator!=null) declarator.setMcIgnorable(previous);
 		}
 	}
 
@@ -969,13 +973,16 @@ public class XmlUtils {
 			JAXBContext jc,
 			String uri, String local, Class declaredType, String mcChoiceNamespace ) {
 		// TODO - refactor this.
+		McIgnorableNamespaceDeclarator declarator = null;
+		String previous = null;
 		try {
 
 			Marshaller m = jc.createMarshaller();
 			NamespacePrefixMapperUtils.setProperty(m, 
 					NamespacePrefixMapperUtils.getPrefixMapper());	
-			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), 
-					o, mcChoiceNamespace);
+			declarator = (McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper();
+			previous = declarator.getMcIgnorable(); // put back in the finally (CR-049)
+			String ignorables = setMcIgnorable(declarator, o, mcChoiceNamespace);
 			
 			if (prettyprint) {
 				m.setProperty("jaxb.formatted.output", true);
@@ -987,7 +994,7 @@ public class XmlUtils {
 			
 			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
 				
-				org.w3c.dom.Document doc = marshaltoW3CDomDocument( o,  jc, uri, local, declaredType);  
+				org.w3c.dom.Document doc = marshaltoW3CDomDocument( o,  jc, uri, local, declaredType, mcChoiceNamespace); // the Choice prefixes too (CR-049)
 				byte[] bytes = trimNamespaces(doc, ignorables);
 				
 				return new String(bytes, "UTF-8"); 
@@ -1005,6 +1012,8 @@ public class XmlUtils {
 			
 		} catch (Exception e) {
                     throw new RuntimeException(e);
+		} finally {
+			if (declarator!=null) declarator.setMcIgnorable(previous);
 		} 
 	}
 	
@@ -1032,12 +1041,15 @@ public class XmlUtils {
 		 * 
 		 */
 		
+		McIgnorableNamespaceDeclarator declarator = null;
+		String previous = null;
 		try {			
 			Marshaller m=jc.createMarshaller();
 			NamespacePrefixMapperUtils.setProperty(m, 
 					NamespacePrefixMapperUtils.getPrefixMapper());
-			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), 
-					o, mcChoiceNamespace);
+			declarator = (McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper();
+			previous = declarator.getMcIgnorable(); // put back in the finally (CR-049)
+			String ignorables = setMcIgnorable(declarator, o, mcChoiceNamespace);
 						
 			if (suppressDeclaration) {
 				m.setProperty(Marshaller.JAXB_FRAGMENT,true);
@@ -1048,7 +1060,7 @@ public class XmlUtils {
 
 			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
 
-				org.w3c.dom.Document doc = marshaltoW3CDomDocument( o,  jc);  
+				org.w3c.dom.Document doc = marshaltoW3CDomDocument( o,  jc, mcChoiceNamespace); // the Choice prefixes too (CR-049)
 				byte[] bytes = trimNamespaces(doc, ignorables);
 				return new java.io.ByteArrayInputStream(bytes);
 				
@@ -1061,6 +1073,8 @@ public class XmlUtils {
 			
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		} finally {
+			if (declarator!=null) declarator.setMcIgnorable(previous);
 		}
 	}
 
@@ -1084,14 +1098,17 @@ public class XmlUtils {
 	 */
 	public static org.w3c.dom.Document marshaltoW3CDomDocument(Object o, JAXBContext jc, String mcChoiceNamespace) {
 		// TODO - refactor this.
+		McIgnorableNamespaceDeclarator declarator = null;
+		String previous = null;
 		try {
 
 			Marshaller marshaller = jc.createMarshaller();
 
 			NamespacePrefixMapperUtils.setProperty(marshaller, 
 					NamespacePrefixMapperUtils.getPrefixMapper());	
-			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), 
-					o, mcChoiceNamespace);
+			declarator = (McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper();
+			previous = declarator.getMcIgnorable(); // put back in the finally (CR-049)
+			String ignorables = setMcIgnorable(declarator, o, mcChoiceNamespace);
 			
 			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
 			marshaller.marshal(o, doc);
@@ -1122,6 +1139,8 @@ public class XmlUtils {
 			}
 		} catch (Exception e) {
 		    throw new RuntimeException(e);
+		} finally {
+			if (declarator!=null) declarator.setMcIgnorable(previous);
 		}
 	}
 
@@ -1140,14 +1159,17 @@ public class XmlUtils {
 	public static org.w3c.dom.Document marshaltoW3CDomDocument(Object o, JAXBContext jc,
 			String uri, String local, Class declaredType, String mcChoiceNamespace) {
 		// TODO - refactor this.
+		McIgnorableNamespaceDeclarator declarator = null;
+		String previous = null;
 		try {
 
 			Marshaller marshaller = jc.createMarshaller();
 
 			NamespacePrefixMapperUtils.setProperty(marshaller, 
 					NamespacePrefixMapperUtils.getPrefixMapper());			
-			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), 
-					o, mcChoiceNamespace);
+			declarator = (McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper();
+			previous = declarator.getMcIgnorable(); // put back in the finally (CR-049)
+			String ignorables = setMcIgnorable(declarator, o, mcChoiceNamespace);
 
 			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
 			// See http://weblogs.java.net/blog/kohsuke/archive/2006/03/why_does_jaxb_p.html
@@ -1170,6 +1192,8 @@ public class XmlUtils {
 
 		} catch (Exception e) {
 		    throw new RuntimeException(e);
+		} finally {
+			if (declarator!=null) declarator.setMcIgnorable(previous);
 		}
 	}
 	

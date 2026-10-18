@@ -192,7 +192,10 @@ public class AnonymizeXlsxCorpusTest {
 				assertFalse(p.getPartName() + ": " + xml, xml.contains("slicerList") || xml.contains("timelineRefs"));
 			}
 			if (p instanceof org.docx4j.openpackaging.parts.DrawingML.Drawing) {
-				String xml = ((org.docx4j.openpackaging.parts.DrawingML.Drawing) p).getXML();
+				// what is drawn, not what is declared: since CR-049 getXML() declares the part's Choice
+				// namespaces (sle15, tsle, recorded when it was read), as a save always has
+				String xml = ((org.docx4j.openpackaging.parts.DrawingML.Drawing) p).getXML()
+						.replaceAll(" xmlns(:\\w+)?=\"[^\"]*\"", "");
 				assertFalse(p.getPartName() + " still draws a slicer", xml.contains("/slicer") || xml.contains("timeslicer"));
 			}
 		}

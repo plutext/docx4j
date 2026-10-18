@@ -760,10 +760,10 @@ public class TextsPhase2Test {
 	}
 
 	/**
-	 * Every part's content: the XML of a JAXB part, the bytes of a binary one, by part name. Namespace
-	 * declarations are left out: XmlUtils' marshal methods leave a {@code wml.Document}'s
-	 * {@code mc:Ignorable} prefixes set on the shared prefix mapper, so what is marshalled after the
-	 * main document part declares w14 and w15 (a docx4j defect outside CR-046).
+	 * Every part's content, namespace declarations included: the XML of a JAXB part, the bytes of a
+	 * binary one, by part name.  Until CR-049 the declarations were left out, since XmlUtils' marshal
+	 * methods left a {@code wml.Document}'s {@code mc:Ignorable} prefixes on the shared prefix mapper and
+	 * what was marshalled after the main document part declared them.
 	 */
 	static String snapshot(WordprocessingMLPackage pkg) throws Exception {
 		StringBuilder sb = new StringBuilder();
@@ -778,6 +778,8 @@ public class TextsPhase2Test {
 			if (part.getRelationshipsPart(false) != null) sb.append(XmlUtils.marshaltoString(part.getRelationshipsPart(false).getJaxbElement(), true, false, org.docx4j.jaxb.Context.jcRelationships));
 			sb.append('\n');
 		}
-		return sb.toString().replaceAll(" xmlns(:\\w+)?=\"[^\"]*\"", "");
+		// the declarations too: XmlUtils' marshal leaves the prefix mapper as it found it (CR-049), so
+		// what a part declares no longer depends on what the thread marshalled before
+		return sb.toString();
 	}
 }
