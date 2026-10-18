@@ -105,6 +105,16 @@ public final class ExtractionConformance {
         }
     }
     static Set<String> requirements(String value) { return new LinkedHashSet<>(Arrays.asList(value.split(",\\s*"))); }
+    /**
+     * A findings, order or golden row's requirements: its statements and its scenario's, as a token check
+     * has (checkToken). Without the scenario's, a row for "xhtml importer absent" ran with the importer on
+     * the class path, which the adapter cannot take away.
+     */
+    static Set<String> rowRequirements(Map<String, String> row) {
+        Set<String> req = requirements(row.get("statements"));
+        req.addAll(scenarioRequirements(row.get("scenario")));
+        return req;
+    }
     static Set<String> textRequirements(Map<String, String> row, String format) {
         Set<String> req = requirements(row.get("statements"));
         req.remove("REQ-902"); // Extractor class does not claim inspector conformance.
@@ -139,6 +149,7 @@ public final class ExtractionConformance {
             case "field_codes": return Set.of("REQ-505");
             case "fields": return Set.of("REQ-506");
             case "placeholders": return Set.of("REQ-508");
+            case "toc": return Set.of("REQ-520");
             case "bindings": return Set.of("REQ-509");
             case "list_labels": return Set.of("REQ-510");
             case "charts": case "smartart": return Set.of("REQ-511");
@@ -217,7 +228,7 @@ public final class ExtractionConformance {
         for (String scenario : List.of("embedded: true", "altchunks: false", "fields: update", "xhtml importer present", "metadata: true", "field_codes: true")) {
             for (Map<String, String> row : table(dir.resolve("expected-tokens.tsv"))) {
                 int n = Integer.parseInt(row.get("case"));
-                boolean applies = scenario.equals("embedded: true") && (n >= 39 && n <= 42 || n == 53)
+                boolean applies = scenario.equals("embedded: true") && (n >= 39 && n <= 42 || n == 53 || n == 57)
                         || scenario.equals("altchunks: false") && n >= 43 && n <= 47
                         || scenario.equals("fields: update") && n >= 49 && n <= 51
                         || scenario.equals("xhtml importer present") && n == 47
@@ -230,7 +241,7 @@ public final class ExtractionConformance {
         for (Map<String, String> row : table(dir.resolve("expected-findings.tsv"))) {
             String item = row.get("channel") + ":" + row.get("kind") + ":" + row.get("selector");
             for (String view : List.of("accepted", "original", "markup")) {
-                if (!run.ready(row, item, view, row.get("scenario"), requirements(row.get("statements")))) continue;
+                if (!run.ready(row, item, view, row.get("scenario"), rowRequirements(row))) continue;
                 Output output = run.output(dir, row, view, row.get("scenario"), "txt");
                 String key = row.get("channel") + "\t" + row.get("kind") + "\t" + row.get("selector");
                 equal(row.get("expected"), output.findings.get(key), item);
@@ -240,7 +251,7 @@ public final class ExtractionConformance {
         Path orders = dir.resolve("expected-order.tsv");
         if (Files.exists(orders)) for (Map<String, String> row : table(orders)) {
             for (String view : List.of("accepted", "original", "markup")) {
-                if (!run.ready(row, "order", view, row.get("scenario"), requirements(row.get("statements")))) continue;
+                if (!run.ready(row, "order", view, row.get("scenario"), rowRequirements(row))) continue;
                 Output output = run.output(dir, row, view, row.get("scenario"), "txt");
                 verifyOrder(output.text, row.get("tokens"), row.get("case") + ":" + view);
                 run.pass(row, "order", view, row.get("scenario"));
@@ -249,7 +260,11 @@ public final class ExtractionConformance {
         // Empty manifest is an explicit phase 0 state. Every published entry must be checked.
         for (Map<String, String> row : table(dir.resolve("goldens.tsv"))) {
             String item = "golden:" + row.get("golden");
-            if (!run.ready(row, item, row.get("view"), row.get("scenario"), requirements(row.get("statements")))) continue;
+            // a golden is cut without an XHTML importer (GOLDENS.md: scenario default has none), so with one
+            // on the class path, which expands case 44's MHT chunk, it is pending, as case 44's default rows are
+            Set<String> required = rowRequirements(row);
+            if ("default".equals(row.get("scenario"))) required.add(XHTML_IMPORTER_ABSENT);
+            if (!run.ready(row, item, row.get("view"), row.get("scenario"), required)) continue;
             Output output = run.output(dir, row, row.get("view"), row.get("scenario"), row.get("format"));
             verifyGolden(dir.resolve(row.get("golden")), output.text);
             run.pass(row, item, row.get("view"), row.get("scenario"));

@@ -48,7 +48,8 @@ public class ExtractionConformanceTest {
             assertEquals(ExtractionPhase0Cases.statements(n), row.get("statements"));
         }
         ExtractionFixtureChecks.check(Files.readAllBytes(dir.resolve("extraction-probe.docx")),
-                Files.readAllBytes(dir.resolve("extraction-probe-external.docm")), catalogue);
+                Files.readAllBytes(dir.resolve("extraction-probe-external.docm")),
+                Files.readAllBytes(dir.resolve(ExtractionStructureCases.FIXTURE)), catalogue);
         assertEquals(ExtractionFixtureChecks.findings(), Files.readString(dir.resolve("expected-findings.tsv")));
         assertEquals(ExtractionAdditionalCases.orders(), Files.readString(dir.resolve("expected-order.tsv")));
     }
@@ -83,9 +84,9 @@ public class ExtractionConformanceTest {
         List<Map<String, String>> generated = ExtractionConformance.table(dir.resolve("case-statements.tsv"));
         assertEquals(52, appendix.size());
         List<Map<String, String>> additions = ExtractionConformance.table(dir.getParent().resolve("support/additional-case-statements.tsv"));
-        assertEquals(2, additions.size());
+        assertEquals(5, additions.size()); // 53-54 (WD 0.5), 55-57 (extraction-probe-structure.docx, 19 October 2026)
         appendix.addAll(additions);
-        assertEquals(54, generated.size());
+        assertEquals(57, generated.size());
         String readme = Files.readString(dir.resolve("README.md"));
         for (int i = 0; i < appendix.size(); i++) {
             assertEquals(appendix.get(i).get("case"), generated.get(i).get("case"));
@@ -141,7 +142,8 @@ public class ExtractionConformanceTest {
                 + "fixture.docx\t0\taccepted\tdefault\ttxt\tfixture.accepted.txt\tREQ-402\n");
         Files.writeString(dir.resolve("fixture.accepted.txt"), "TC9_NEW\n");
         ExtractionConformance.Engine engine = new ExtractionConformance.Engine() {
-            public Set<String> implementedStatements() { return Set.of("REQ-402", "REQ-403"); }
+            // an engine says which of the two XHTML-importer capabilities it has; the goldens need "absent"
+            public Set<String> implementedStatements() { return Set.of("REQ-402", "REQ-403", ExtractionConformance.XHTML_IMPORTER_ABSENT); }
             public ExtractionConformance.Output extract(Path p, String view, String scenario, String format) {
                 return new ExtractionConformance.Output(view.equals("original") ? "" : view.equals("markup") ? "{++ TC9_NEW ++}" : "TC9_NEW", Map.of());
             }

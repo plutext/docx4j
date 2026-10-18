@@ -77,3 +77,21 @@ requested open check is recorded as passed.
 
 The save is diagnostic evidence and does not replace the authored input or its expectations.
 Both current input files have completed their Word-open checks.
+
+## extraction-probe-structure.docx: cases 55–57 (19 October 2026)
+
+Jason opened the new fixture in Word 365: no repair prompt. He saved it unchanged beside it as
+`extraction-probe-structure-word365.docx`, copied here.
+
+- Fixture SHA-256: `9137bfdaa23bf032c843ef822e8e095f451e019e376aa5b08631bf9e6a5c5550`.
+- Word's save SHA-256: `859da9ac300bf8a40a72a9b06360cf604d9df110f1f4ed051030efbc529f7654`.
+
+What Word kept: case 55's TOC field (`TOC \o "1-3" \h \z \u`), its two entries' links and their
+PAGEREF fields, and the headings' `_Toc55001` and `_Toc55002` bookmarks; case 56's numbering (six
+items on the first list, one on the second); case 57's object (`Excel.Sheet.12`, Embed), whose workbook
+is byte-identical, its sheets' states (`hidden`, `veryHidden`) included. Word renamed the workbook's
+part (`Microsoft_Excel_Worksheet.xlsx`) and the preview (`image1.png`), and added the theme, settings,
+web settings, font table and document properties a save always adds.
+
+docx4j reads the save exactly as it reads the fixture, in plain text under the defaults, in plain text
+under `toc`, `embedded`, `hidden` and `list_labels` together, and in Markdown.

@@ -582,11 +582,36 @@ format he ruled on 18 October). Checking them then found two gaps, both fixed:
   ac06ed7) now calls it a proposal that follows core-ts's text-model CR, to which core-ts CR-010's D8
   gives the text-box view and its addresses (section 2.1).
 
+**A third fixture, 19 October 2026** (Jason: "build the separate fixture"). The three cases left for
+the next probe build are in `extraction-probe-structure.docx`, built by `ExtractionStructureCases`
+(registered with `ExtractionProbeBuilder`, which writes all three fixtures; only the new one was copied
+in, and the committed `extraction-probe.docx` and `.docm`, which Word checked, are unchanged):
+- case 55, a table of contents: a TOC field whose cached entries link the headings' bookmarks, and a
+  TOC Heading paragraph that is not the field's. `HEAD55_ONE` and `HEAD55_TWO` are read once by
+  default and twice under `toc: true` (REQ-520, REQ-505);
+- case 56, a list interrupted by a margin paragraph, an indented one, an empty one, a margin paragraph
+  inside its nested list, and a second list straight after: one line each in plain text, and REQ-703's
+  rules in the Markdown golden (`2.`, the follow-on, `4. 2.`, `1)`; REQ-510's labels `4.2.`);
+- case 57, an embedded workbook with a hidden and a very hidden sheet among two visible ones, read under
+  `embedded: true; hidden: true` (REQ-512, REQ-507), absent under `embedded: true` alone.
+The suite: 972 pass, 51 pending (75 rows and 4 goldens new); the eight goldens cut byte-identical. The
+`toc` option's statement joins the harness (`scenarioRequirements`, `TextsAdapter`'s REQ-520). Jason's
+Word-open check passed the same day: no repair prompt. His unchanged save is in `phase0/evidence/`
+(`extraction-probe-structure-word365.docx`): Word kept every case, and docx4j reads it as it reads the
+fixture (`word-open-results.md`).
+
 Findings outside CR-046, not fixed here:
 - docx4j-ImportXHTML (17.1.1-SNAPSHOT, f8c8695): `MHTContentHandler.body` keeps mime4j's body stream
   and reads it after `body()` returns, when mime4j has consumed it, so `convertMHT` gives an empty
   document ("Premature end of file"). With it on the class path, case 44 is still not expanded (and
-  warns); its "present" rows would fail.
+  warns); its "present" rows would fail. **Fixed** in docx4j-ImportXHTML (VERSION_17_1_1, uncommitted on
+  19 October 2026): the first text/html part, decoded by mime4j. mime4j has closed the body stream
+  when body() returns since 0.8.9, and the bump to 0.8.10 (7dddaaf, in 11.5.3) broke it. Verified on 19
+  October with its compiled classes on the class path: all nine "xhtml importer present" rows pass
+  (case 44 in three views; case 47). The run found two gaps in this suite's harness, fixed the same day:
+  a findings, order or golden row now needs its scenario's capability as a token row does, and a golden
+  (cut without an importer) needs "xhtml importer absent". With the importer present: 888 pass, 56
+  pending; without it, as Maven runs it: 893 and 51.
 - The generated `FldChar.isFldLock()` and `CTSimpleField.isFldLock()` answer true when `w:fldLock` is
   absent, as `isCustomMarkFollows()` does. The walk reads the attribute as written. `FieldRef` copies
   `isFldLock()` (and `isDirty()`), so it reports every complex field locked.

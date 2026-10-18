@@ -52,7 +52,10 @@ apart (`embedded: true; hidden: true`, case 53's hidden slide): the adapter sets
 each one's statement. Scenario `default` has no XHTML importer. `xhtml importer present/absent`
 requires the corresponding classpath; it is not a TextOptions key. Each is a capability the adapter
 advertises when docx4j-ImportXHTML is (or is not) on the class path, so a run checks one of the two
-(CR-046 phase 2). Missing advertised capabilities remain pending. Exceptions from enabled assertions
+(CR-046 phase 2). The goldens are cut without an importer, so a golden is checked only by an engine
+advertising `xhtml importer absent`, and a findings, order or golden row needs its scenario's
+capability as a token row does (19 October 2026: a run with the importer present had checked the
+`xhtml importer absent` rows, and compared case 44's expanded MHT chunk with goldens that hold none). Missing advertised capabilities remain pending. Exceptions from enabled assertions
 fail the test. The axis-title row additionally requires capability `CR-047`. Inspector rows require REQ-902 and stay pending in this CR. Output finding keys are
 `channel<TAB>kind<TAB>selector`; values are counts or literal metadata values.
 
@@ -108,6 +111,15 @@ test classes; it writes the files and the manifest through `TextsAdapter`), and 
 hand against WD 0.10 sections 3 to 7 before they were committed. A recut is a change to what
 the ports are held to: cut into a scratch copy of the directory, diff against the committed
 files, and review each difference before replacing them.
+
+**The third fixture's goldens (cut 19 October 2026).** `extraction-probe-structure.docx` (cases 55
+to 57, `ExtractionStructureCases`) has the same four: `extraction-probe-structure.accepted.txt`,
+`.original.txt`, `.markup.txt` (the three alike: it has no tracked changes) and
+`extraction-probe-structure.md`, whose lists are REQ-703's interrupted-list rules (WD 0.14). They were cut
+the same way, the other eight cutting byte-identical beside them, and reviewed against WD 0.15. The
+fixture is its own file so that the main probe is never rebuilt: the builder writes all three
+fixtures, but only the new one was copied in (the committed `extraction-probe.docx` and `.docm` are
+the files Word checked).
 
 ## Legacy baseline
 

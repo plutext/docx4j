@@ -1,0 +1,21 @@
+Text extraction probe, structure cases (55 to 57)
+Built by docx4j (ExtractionStructureCases, in docx4j-core-tests), beside extraction-probe.docx. Each case starts with a heading, Case and its number.
+Case 55: a table of contents
+TOC55_TITLE
+HEAD55_ONE
+Text under the first heading the contents list.
+HEAD55_TWO
+Text under the second.
+Case 56: a list interrupted by paragraphs
+LST56_APPLES
+LST56_MARGIN_NOTE
+LST56_PEARS
+LST56_INDENTED_NOTE
+LST56_PLUMS
+
+LST56_QUINCES
+LST56_QUINCE_ONE
+LST56_NESTED_NOTE
+LST56_QUINCE_TWO
+LST56_OTHER_LIST
+Case 57: an embedded workbook with hidden sheets

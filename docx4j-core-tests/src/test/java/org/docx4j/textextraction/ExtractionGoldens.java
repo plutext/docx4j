@@ -36,7 +36,7 @@ import java.util.List;
  */
 public final class ExtractionGoldens {
 
-	static final String[] FIXTURES = { "extraction-probe.docx", "extraction-probe-external.docm" };
+	static final String[] FIXTURES = { "extraction-probe.docx", "extraction-probe-external.docm", ExtractionStructureCases.FIXTURE };
 	static final String[] VIEWS = { "accepted", "original", "markup" };
 
 	public static void main(String[] args) throws Exception {

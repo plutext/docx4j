@@ -84,12 +84,14 @@ Three cases had no rule in the paper when the probe was built; it has since rule
 
 ## Phase 0 extension
 
-Cases 39–49 and 53–54 extend the main probe; cases 50–52 are in `extraction-probe-external.docm`.
+Cases 39–49 and 53–54 extend the main probe; cases 50–52 are in `extraction-probe-external.docm`;
+cases 55–57 (a table of contents, an interrupted list, an embedded workbook with hidden sheets) are in
+`extraction-probe-structure.docx`, a fixture of their own so that the main probe is not rebuilt (19 October 2026).
 Jason checked the earlier 52-case r2 DOCX without repair, declining field updates (18 October 2026).
 The unchanged external DOCM also passed. Jason completed the r3 check for cases 53–54 (18 October 2026).
 The Word findings above describe the original 38-case
 fixture, retained in the parent directory with its re-save.
-`case-statements.tsv` maps the original WD Appendix A plus the approved cases 53–54 (WD 0.5).
+`case-statements.tsv` maps the original WD Appendix A plus the approved cases 53–54 (WD 0.5) and 55–57.
 `expected-order.tsv` pins presentation and glossary order. `expected-findings.tsv` separates warnings,
 metadata and future inspector findings from text counts. Inspector requirements are pending a later CR.
 The default test environment has no XHTML importer. The MHT row's capability scenario supplies one.
@@ -541,4 +543,36 @@ Golden conventions and baseline commands are in `../GOLDENS.md`.
 |---|---|---|---|---|---|---|---|
 | `GLS54_ENTRY_ONE` | – | – | – | `include: glossary` | yes | glossary comes last, after endnotes; first docPart (REQ-501, REQ-516) | REQ-501, REQ-516 |
 | `GLS54_ENTRY_TWO` | – | – | – | `include: glossary` | yes | second docPart, after the first (REQ-501, REQ-516) | REQ-501, REQ-516 |
+
+### Case 55: a table of contents
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `TOC55_TITLE` | yes | yes | yes |  |  | the contents heading is not the field's (REQ-520), so it is always read | REQ-520, REQ-505 |
+| `HEAD55_ONE` | yes | yes | yes | `toc: true` | twice | a heading the table of contents lists: its entry is read only under toc: true | REQ-520, REQ-505 |
+| `HEAD55_TWO` | yes | yes | yes | `toc: true` | twice | the same for the second heading | REQ-520, REQ-505 |
+
+### Case 56: a list interrupted by paragraphs
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `LST56_APPLES` | yes | yes | yes |  |  | one line each in plain text; the Markdown golden holds the list markers (REQ-703) | REQ-703, REQ-510 |
+| `LST56_MARGIN_NOTE` | yes | yes | yes |  |  | one line each in plain text; the Markdown golden holds the list markers (REQ-703) | REQ-703, REQ-510 |
+| `LST56_PEARS` | yes | yes | yes |  |  | one line each in plain text; the Markdown golden holds the list markers (REQ-703) | REQ-703, REQ-510 |
+| `LST56_INDENTED_NOTE` | yes | yes | yes |  |  | one line each in plain text; the Markdown golden holds the list markers (REQ-703) | REQ-703, REQ-510 |
+| `LST56_PLUMS` | yes | yes | yes |  |  | one line each in plain text; the Markdown golden holds the list markers (REQ-703) | REQ-703, REQ-510 |
+| `LST56_QUINCES` | yes | yes | yes |  |  | one line each in plain text; the Markdown golden holds the list markers (REQ-703) | REQ-703, REQ-510 |
+| `LST56_QUINCE_ONE` | yes | yes | yes |  |  | one line each in plain text; the Markdown golden holds the list markers (REQ-703) | REQ-703, REQ-510 |
+| `LST56_NESTED_NOTE` | yes | yes | yes |  |  | one line each in plain text; the Markdown golden holds the list markers (REQ-703) | REQ-703, REQ-510 |
+| `LST56_QUINCE_TWO` | yes | yes | yes |  |  | one line each in plain text; the Markdown golden holds the list markers (REQ-703) | REQ-703, REQ-510 |
+| `LST56_OTHER_LIST` | yes | yes | yes |  |  | one line each in plain text; the Markdown golden holds the list markers (REQ-703) | REQ-703, REQ-510 |
+
+### Case 57: an embedded workbook with hidden sheets
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `SHT57_SHOWN` | – | – | – | `embedded: true` | yes | the first sheet, visible | REQ-512, REQ-507 |
+| `SHT57_HIDDEN` | – | – | – | `embedded: true; hidden: true` | yes | sheet state hidden: absent under embedded: true alone; read under hidden: true, as hidden text is | REQ-512, REQ-507 |
+| `SHT57_VERY_HIDDEN` | – | – | – | `embedded: true; hidden: true` | yes | sheet state veryHidden: as the hidden sheet | REQ-512, REQ-507 |
+| `SHT57_LAST` | – | – | – | `embedded: true` | yes | the last sheet, visible after the hidden two | REQ-512, REQ-507 |
 

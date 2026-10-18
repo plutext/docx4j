@@ -170,3 +170,20 @@ case	token	accepted	original	markup	option	with_option	note	fixture	statements
 53	EMB53_SPEAKER_NOTES	0	0	0			speaker notes omitted, including with embedded: true	extraction-probe.docx	REQ-512, REQ-605
 54	GLS54_ENTRY_ONE	0	0	0	include: glossary	1	glossary comes last, after endnotes; first docPart (REQ-501, REQ-516)	extraction-probe.docx	REQ-501, REQ-516
 54	GLS54_ENTRY_TWO	0	0	0	include: glossary	1	second docPart, after the first (REQ-501, REQ-516)	extraction-probe.docx	REQ-501, REQ-516
+55	TOC55_TITLE	1	1	1			the contents heading is not the field's (REQ-520), so it is always read	extraction-probe-structure.docx	REQ-520, REQ-505
+55	HEAD55_ONE	1	1	1	toc: true	2	a heading the table of contents lists: its entry is read only under toc: true	extraction-probe-structure.docx	REQ-520, REQ-505
+55	HEAD55_TWO	1	1	1	toc: true	2	the same for the second heading	extraction-probe-structure.docx	REQ-520, REQ-505
+56	LST56_APPLES	1	1	1			one line each in plain text; the Markdown golden holds the list markers (REQ-703)	extraction-probe-structure.docx	REQ-703, REQ-510
+56	LST56_MARGIN_NOTE	1	1	1			one line each in plain text; the Markdown golden holds the list markers (REQ-703)	extraction-probe-structure.docx	REQ-703, REQ-510
+56	LST56_PEARS	1	1	1			one line each in plain text; the Markdown golden holds the list markers (REQ-703)	extraction-probe-structure.docx	REQ-703, REQ-510
+56	LST56_INDENTED_NOTE	1	1	1			one line each in plain text; the Markdown golden holds the list markers (REQ-703)	extraction-probe-structure.docx	REQ-703, REQ-510
+56	LST56_PLUMS	1	1	1			one line each in plain text; the Markdown golden holds the list markers (REQ-703)	extraction-probe-structure.docx	REQ-703, REQ-510
+56	LST56_QUINCES	1	1	1			one line each in plain text; the Markdown golden holds the list markers (REQ-703)	extraction-probe-structure.docx	REQ-703, REQ-510
+56	LST56_QUINCE_ONE	1	1	1			one line each in plain text; the Markdown golden holds the list markers (REQ-703)	extraction-probe-structure.docx	REQ-703, REQ-510
+56	LST56_NESTED_NOTE	1	1	1			one line each in plain text; the Markdown golden holds the list markers (REQ-703)	extraction-probe-structure.docx	REQ-703, REQ-510
+56	LST56_QUINCE_TWO	1	1	1			one line each in plain text; the Markdown golden holds the list markers (REQ-703)	extraction-probe-structure.docx	REQ-703, REQ-510
+56	LST56_OTHER_LIST	1	1	1			one line each in plain text; the Markdown golden holds the list markers (REQ-703)	extraction-probe-structure.docx	REQ-703, REQ-510
+57	SHT57_SHOWN	0	0	0	embedded: true	1	the first sheet, visible	extraction-probe-structure.docx	REQ-512, REQ-507
+57	SHT57_HIDDEN	0	0	0	embedded: true; hidden: true	1	sheet state hidden: absent under embedded: true alone; read under hidden: true, as hidden text is	extraction-probe-structure.docx	REQ-512, REQ-507
+57	SHT57_VERY_HIDDEN	0	0	0	embedded: true; hidden: true	1	sheet state veryHidden: as the hidden sheet	extraction-probe-structure.docx	REQ-512, REQ-507
+57	SHT57_LAST	0	0	0	embedded: true	1	the last sheet, visible after the hidden two	extraction-probe-structure.docx	REQ-512, REQ-507

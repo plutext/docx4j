@@ -31,17 +31,18 @@ import org.docx4j.org.apache.poi.poifs.filesystem.*;
 
 /** Structural checks independent of the extraction engine and Word's open/repair check. */
 final class ExtractionFixtureChecks {
-    static void check(byte[] main, byte[] external, List<ExtractionProbeBuilder.Case> cases) throws Exception {
-        if (cases.size() != 54) throw new IllegalStateException("Expected 54 cases");
-        Map<String, byte[]> a = entries(main), b = entries(external);
-        validatePackage(a); validatePackage(b);
-        String mainText = payloadText(a), externalText = payloadText(b);
+    static void check(byte[] main, byte[] external, byte[] structure, List<ExtractionProbeBuilder.Case> cases) throws Exception {
+        if (cases.size() != 57) throw new IllegalStateException("Expected 57 cases");
+        Map<String, byte[]> a = entries(main), b = entries(external), s = entries(structure);
+        validatePackage(a); validatePackage(b); validatePackage(s);
+        String mainText = payloadText(a), externalText = payloadText(b), structureText = payloadText(s);
         Set<String> tokens = new HashSet<>();
         for (int i = 0; i < cases.size(); i++) {
             ExtractionProbeBuilder.Case c = cases.get(i);
             require(c.n == i + 1, "Case sequence");
             require(!ExtractionPhase0Cases.statements(c.n).isEmpty(), "Missing requirements");
-            String payload = ExtractionPhase0Cases.fixture(c.n).endsWith(".docm") ? externalText : mainText;
+            String fixture = ExtractionPhase0Cases.fixture(c.n);
+            String payload = fixture.endsWith(".docm") ? externalText : fixture.equals(ExtractionStructureCases.FIXTURE) ? structureText : mainText;
             for (ExtractionProbeBuilder.Token t : c.tokens) {
                 require(tokens.add(c.n + ":" + t.name), "Duplicate expectation " + t.name);
                 // Case 30's hyphens are elements separating the two token fragments.
@@ -50,7 +51,7 @@ final class ExtractionFixtureChecks {
                 require(payload.contains(marker) || text.contains(marker), "Marker missing from intended fixture: " + t.name);
             }
         }
-        for (Map<String, byte[]> pkg : List.of(a, b)) {
+        for (Map<String, byte[]> pkg : List.of(a, b, s)) {
             NodeList children = xml(pkg.get("word/document.xml")).getElementsByTagNameNS(
                     "http://schemas.openxmlformats.org/wordprocessingml/2006/main", "body").item(0).getChildNodes();
             for (int i = 0; i < children.getLength(); i++) if (children.item(i) instanceof Element)
@@ -65,6 +66,7 @@ final class ExtractionFixtureChecks {
         require(!story.contains("ACX42_CAPTION"), "Control token leaked to body");
         require(!story.contains("EMB53_") && !story.contains("GLS54_"), "New payload marker leaked to body");
         checkAdditionalCases(a);
+        checkStructureCases(s);
         require(text(a, "word/activeX/activeX42.xml").contains("persistStorage"), "ActiveX persistence");
         ProbeActiveXControl.check(a.get("word/activeX/activeX42.bin"));
         require(text(a, "word/chunk46.xml").startsWith("<?xml version=\"1.0\""), "Flat OPC declaration");
@@ -77,6 +79,18 @@ final class ExtractionFixtureChecks {
         require(text(b, "word/settings.xml").contains("<w:updateFields w:val=\"true\""), "Update-on-open metadata");
         ProbeVbaProject.check(b.get("word/vbaProject.bin"));
         require(!text(b, "word/document.xml").contains("VBA51_MODULE_MARK"), "VBA marker leaked to body");
+    }
+
+    /** Cases 55-57: the TOC field and its entries' bookmarks, the lists' numbering, the workbook's sheet states. */
+    static void checkStructureCases(Map<String, byte[]> structure) throws Exception {
+        String story = text(structure, "word/document.xml");
+        require(story.contains("TOC \\o"), "TOC field code");
+        for (String bookmark : new String[] {"_Toc55001", "_Toc55002"})
+            require(story.contains("w:anchor=\"" + bookmark + "\"") && story.contains("w:name=\"" + bookmark + "\""), "TOC entry and its heading's bookmark " + bookmark);
+        require(text(structure, "word/numbering.xml").contains("w:numId=\"2\""), "Second list");
+        require(!story.contains("SHT57_"), "Workbook token leaked to body");
+        String workbook = text(entries(structure.get("word/embeddings/structure57.xlsx")), "xl/workbook.xml");
+        require(workbook.contains("state=\"hidden\"") && workbook.contains("state=\"veryHidden\""), "Hidden sheet states");
     }
 
     static void checkAdditionalCases(Map<String, byte[]> main) throws Exception {

@@ -182,12 +182,17 @@ public class ExtractionProbeBuilder {
 		ExtractionProbeBuilder b = new ExtractionProbeBuilder();
 		byte[] docx = b.build(gloxFile());
         byte[] external = ExtractionPhase0Cases.external(b);
+        byte[] structure = ExtractionStructureCases.build(b);
         b.cases.sort(java.util.Comparator.comparingInt(c -> c.n));
-        ExtractionFixtureChecks.check(docx, external, b.cases);
+        ExtractionFixtureChecks.check(docx, external, structure, b.cases);
         WordprocessingMLPackage.load(new ByteArrayInputStream(docx));
         WordprocessingMLPackage.load(new ByteArrayInputStream(external));
+        WordprocessingMLPackage.load(new ByteArrayInputStream(structure));
+        // Each fixture is written here, but the committed extraction-probe.docx and .docm are the files Word
+        // checked: never copy a rebuild of them over the committed ones (rebuilds are not byte-identical).
         Files.write(new File(out, "extraction-probe.docx").toPath(), docx);
         Files.write(new File(out, "extraction-probe-external.docm").toPath(), external);
+        Files.write(new File(out, ExtractionStructureCases.FIXTURE).toPath(), structure);
         Files.writeString(new File(out, "expected-tokens.tsv").toPath(), b.tsv(), StandardCharsets.UTF_8);
         Files.writeString(new File(out, "expected-findings.tsv").toPath(), ExtractionFixtureChecks.findings(), StandardCharsets.UTF_8);
         Files.writeString(new File(out, "expected-order.tsv").toPath(), ExtractionAdditionalCases.orders(), StandardCharsets.UTF_8);
@@ -1285,12 +1290,14 @@ public class ExtractionProbeBuilder {
 				+ "- Case 21: Markdown gives a hyperlink's target as `[text](target)` for both forms, the HYPERLINK\n"
 				+ "  field's too, whatever `field_codes` says: the instruction supplies the address, not text.\n\n");
 		s.append("## Phase 0 extension\n\n"
-                + "Cases 39–49 and 53–54 extend the main probe; cases 50–52 are in `extraction-probe-external.docm`.\n"
+                + "Cases 39–49 and 53–54 extend the main probe; cases 50–52 are in `extraction-probe-external.docm`;\n"
+                + "cases 55–57 (a table of contents, an interrupted list, an embedded workbook with hidden sheets) are in\n"
+                + "`extraction-probe-structure.docx`, a fixture of their own so that the main probe is not rebuilt (19 October 2026).\n"
                 + "Jason checked the earlier 52-case r2 DOCX without repair, declining field updates (18 October 2026).\n"
                 + "The unchanged external DOCM also passed. Jason completed the r3 check for cases 53–54 (18 October 2026).\n"
                 + "The Word findings above describe the original 38-case\n"
                 + "fixture, retained in the parent directory with its re-save.\n"
-                + "`case-statements.tsv` maps the original WD Appendix A plus the approved cases 53–54 (WD 0.5).\n"
+                + "`case-statements.tsv` maps the original WD Appendix A plus the approved cases 53–54 (WD 0.5) and 55–57.\n"
                 + "`expected-order.tsv` pins presentation and glossary order. `expected-findings.tsv` separates warnings,\n"
                 + "metadata and future inspector findings from text counts. Inspector requirements are pending a later CR.\n"
                 + "The default test environment has no XHTML importer. The MHT row's capability scenario supplies one.\n"

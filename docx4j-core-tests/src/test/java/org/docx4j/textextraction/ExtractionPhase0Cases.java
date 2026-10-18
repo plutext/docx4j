@@ -46,7 +46,8 @@ final class ExtractionPhase0Cases {
         "507,902", "505", "505", "703", "508", "509", "517", "518,511,502", "502",
         "503,402", "504", "601,510", "601,603", "605", "604", "514", "511", "511",
         "513", "604", "515,516", "512", "512", "512", "512,902", "513", "513", "513",
-        "513", "513", "902,602,518,507", "506,902", "506,801,902", "902", "515", "512,605", "501,516"
+        "513", "513", "902,602,518,507", "506,902", "506,801,902", "902", "515", "512,605", "501,516",
+        "520,505", "703,510", "512,507"
     };
 
     static String statements(int n) {
@@ -55,7 +56,10 @@ final class ExtractionPhase0Cases {
         return out.toString();
     }
 
-    static String fixture(int n) { return n >= 50 && n <= 52 ? "extraction-probe-external.docm" : "extraction-probe.docx"; }
+    static String fixture(int n) {
+        if (n >= 55) return ExtractionStructureCases.FIXTURE; // 19 October 2026, a fixture of their own
+        return n >= 50 && n <= 52 ? "extraction-probe-external.docm" : "extraction-probe.docx";
+    }
 
     static void add(ExtractionProbeBuilder b, WordprocessingMLPackage pkg) throws Exception {
         MainDocumentPart mdp = pkg.getMainDocumentPart();

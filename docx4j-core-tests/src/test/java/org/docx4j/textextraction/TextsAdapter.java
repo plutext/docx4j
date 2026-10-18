@@ -47,7 +47,7 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 			"REQ-301", "REQ-302", "REQ-303", "REQ-304", "REQ-305", "REQ-306", "REQ-307",
 			"REQ-401", "REQ-402", "REQ-403", "REQ-404", "REQ-405", "REQ-406",
 			"REQ-501", "REQ-502", "REQ-503", "REQ-504", "REQ-505", "REQ-506", "REQ-507", "REQ-508", "REQ-509", "REQ-510",
-			"REQ-511", "REQ-512", "REQ-513", "REQ-514", "REQ-515", "REQ-516", "REQ-517", "REQ-518",
+			"REQ-511", "REQ-512", "REQ-513", "REQ-514", "REQ-515", "REQ-516", "REQ-517", "REQ-518", "REQ-520",
 			"REQ-601", "REQ-602", "REQ-603", "REQ-604", "REQ-605", "REQ-606",
 			"REQ-701", "REQ-702", "REQ-703", "REQ-704", "REQ-705", "REQ-706", "REQ-707", "REQ-708", "REQ-709",
 			"REQ-801", "REQ-802", "REQ-1001", "REQ-1202", "REQ-1203",
