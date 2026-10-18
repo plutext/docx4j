@@ -1,13 +1,13 @@
 # CR-046: Text extraction behaviour model - one text model for docx4j
 
-Status: PROPOSED 2026-10-17, drafted at Jason's request ("please draft the text-extraction CR
+Status: DONE 2026-10-18, all five phases, for 17.3.4 - proposed 2026-10-17, drafted at Jason's request ("please draft the text-extraction CR
 (CR-046) against docs/text_extraction_specification_wd.md, so each phase's acceptance criteria
 are REQ numbers"). D1 to D7 decided 2026-10-17 (Jason: "D1–D7: i accept the recommendations").
 Phase 0 suite implemented 18 October 2026; the original 52-case Word checks passed.
 Cases 53–54 are now added; Jason completed the extended main DOCX r3 open/save check.
 Phase 1 implemented 18 October 2026 (§4). Phase 2 implemented 18 October 2026 (§4), with CR-047; its listed-format rules for
 spanning headers ruled the same day (§4), and proposed to the WD. Phase 3 implemented 18 October 2026 (§4);
-D12 decided the same day (§6).
+D12 decided the same day (§6). Phase 4 done 18 October 2026: the hand-offs sent and all five acknowledged (§4).
 Five phases (§4); decisions in §6.
 
 The specification is the portfolio's *WordprocessingML Text Extraction*, working draft 0.8
@@ -830,6 +830,26 @@ The portfolio registry is updated through the portfolio session.
 
 **Acceptance:** no statements. The hand-offs are sent with the commit hashes, and each
 receiving session has acknowledged.
+
+**Sent 18 October 2026** (Jason: "let's do CR-046 phase 4"), against WD 0.14 (portfolio cf56600)
+and the goldens at d9acdf5e2. Every message names the phase commits (c0c72ecef, 65a527d47,
+f71cdd299, 8da15bb8c, 608e40023, 187e5a367, f59828e62, d9acdf5e2; from 608e40023 on not yet
+pushed, so the local clone is the oracle), the goldens and fixtures in `text-extraction/phase0/`,
+and the harness to mirror (`ExtractionConformance`, `TextsAdapter`). (The messages put GOLDENS.md in
+`phase0/`; it is in `text-extraction/`, corrected to every receiver the same day.) Each also names what WD 0.14
+added since the last sync: REQ-510's numbering ownership with its three Word goldens
+(`LevelOwnerTest`), REQ-706's numbering object, REQ-703's list rules and REQ-520's `toc`.
+
+Every receiver acknowledged the same day, which is the acceptance; phase 4 is done. What each opened
+or proposes is its own, and waits on Jason.
+
+| Receiver | Session | Sent | Acknowledged |
+|---|---|---|---|
+| docx4j-core-ts: its text-model CR (CR-012 the next free number) | docx4j-core-ts-5b | yes | yes, 18 October 2026, receipt only: opening CR-012 is Jason's call. Noted for it: the agreement test, REQ-519's address kinds, a TSV adapter. REQ-510 will move labels in its Emulator's parity goldens, a port item apart from the text CR |
+| docx4j-python: its CR-011 | docx4j-python-cd | yes | yes, 18 October 2026: commits, goldens and WD 0.14 checked in the local clone; CR-011 being written (its first phase an adapter over the TSVs), implementation on Jason's go |
+| docx4j-generated-objects-ts: `textOf` follows the rules, or core-ts stops using it (theirs and core-ts's to agree) | docx4j-generated-objects-ts-82 | yes | yes, 18 October 2026. It proposes the second, mirroring section 2.7: `textOf` stays as it is, documented as not the text model; core-ts's text-model CR moves its readers off it; deprecated once none uses it. A tree helper can't meet REQ-507 (hidden text from styles) or REQ-506's `fields: update`. Undecided: Jason and core-ts |
+| the editor: the section 10 options on its text verbs | docx4j-ts-editor-50 | yes | yes, 18 October 2026, with ED-008 (editor 37c8565, proposed): section 10's options on outline, find and read; an unimplemented value refused naming its statement, as section 2.6 does; every reader on core-ts's text model once its CR lands, the editor adding nothing to the text |
+| docx4j-mcp: the engine bump (on 17.1.0; 17.3.4 not released), `extract_text`'s options, the block model's JSON | docx4j-mcp-a1 (started for it) | yes | yes, 18 October 2026, with CR-mcp-server §19 (proposed, uncommitted). Three phases: the bump to 17.3.4 (33 tests pass on a trial against the snapshot); `extract_text` and `docx_to_markdown` on the model, with the goldens copied verbatim; the block model's JSON and outline / find / read, matching ED-008. Its decisions T1 to T6 wait on Jason. It may ask docx4j-markdown for per-block address comments |
 
 ## 5. Every statement of WD 0.8, and where it is met
 
