@@ -32,6 +32,10 @@ public final class TextNumbering {
 	private final String format;
 	private final String levelText;
 	private final int start;
+	/** Set by the extractor once the numbering emulator has counted the paragraph. */
+	Integer value;
+	/** Set by the extractor from the numbering definitions. */
+	String abstractNumId;
 
 	TextNumbering(String numId, int level, String format, String levelText, int start) {
 		this.numId = numId;
@@ -56,6 +60,24 @@ public final class TextNumbering {
 	/** The level's {@code w:start}: 1 where it has none. */
 	public int getStart() { return start; }
 
+	/**
+	 * The count the paragraph's level shows, as the list labels count it: the 3 of "1.3."
+	 * (a start override, a w:lvlRestart, a paragraph Word does not count, all applied). Null
+	 * where the definitions don't let it be counted.
+	 *
+	 * @since 17.3.4
+	 */
+	public Integer getValue() { return value; }
+
+	/**
+	 * The list the paragraph belongs to: its {@code w:abstractNum}'s id. Two {@code w:num} on one
+	 * {@code w:abstractNum} are one list, counting on from each other (CR-014 P1); a {@code w:numStyleLink}
+	 * definition is a list of its own (P2). Null where the definitions don't give one.
+	 *
+	 * @since 17.3.4
+	 */
+	public String getAbstractNumId() { return abstractNumId; }
+
 	/** True for a bullet level. */
 	public boolean isBullet() { return "bullet".equals(format); }
 
@@ -70,6 +92,6 @@ public final class TextNumbering {
 
 	@Override
 	public String toString() {
-		return numId + "/" + level + " " + format + " '" + levelText + "' from " + start;
+		return numId + "/" + level + " " + format + " '" + levelText + "' from " + start + (value == null ? "" : " = " + value);
 	}
 }

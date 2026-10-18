@@ -148,7 +148,7 @@ public class StyleLinkedLevelTest {
 	public void anUnlinkedLevelIsNumberedThroughAnyStyle() throws Exception {
 		WordprocessingMLPackage p = pkg();
 		Emulator.ResultTriple t = Emulator.getNumber(p, "Plain", "21", null, false);
-		assertNotNull("numId 21's level names no style", t);
+		assertNotNull("numId 21's level names no style, and no style carries it (LevelOwnerTest)", t);
 		assertEquals("1.", t.getNumString());
 	}
 

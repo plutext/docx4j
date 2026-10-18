@@ -34,6 +34,10 @@ Changes in Version 17.3.4
 - Markdown export (CR-046 phase 3) writes the text model: hidden text left out, text boxes after their
   anchor, endnotes (`[^e1]`), HYPERLINK fields as links, YAML front matter under `metadata`. Its markup view
   is CriticMarkup, not `~~`; `MarkdownExportOptions.setView` adds `original` (`TrackedChangesPolicy` deprecated).
+  A picture is never dropped: an SVG one with no PNG copy is written with its SVG, a linked one as `![alt]()` (#699).
+  Lists keep Word's count: one interrupted by a paragraph at the margin resumes at its number (`5.`), an unlabelled
+  paragraph indented to an item's text continues the item, an empty paragraph leaves the list alone, and two
+  adjacent lists stay two (`1.` then `1)`). `TextNumbering.getValue()` and `getAbstractNumId()` are new.
 - HTML export marks tracked changes `<ins>`/`<del>` with `data-author` and `datetime`; HTML and PDF take
   `settings.setView(TextView)`, markup by default as before (`PP_COMMON_REJECT_TRACKED_CHANGES` is new).
 - `TextUtils` is deprecated (output unchanged): use `org.docx4j.model.text.Texts`.
@@ -52,6 +56,9 @@ Changes in Version 17.3.4
   core property (Title, Comments, Author, ...) or properties part gives no value instead of an NPE;
   a custom property named like part of a built-in one (Page, Time) is found; LastPrinted and
   HyperlinkBase now resolve.
+- List numbering: a level that names no paragraph style belongs to the first style in styles.xml carrying
+  it, as in Word; a second style carrying the same level is no longer numbered (labels, PDF, HTML, text model).
+  A paragraph with no `w:pPr` in a numbered default style is numbered, as one with an empty `w:pPr` was.
 
 
 Version 17.3.3

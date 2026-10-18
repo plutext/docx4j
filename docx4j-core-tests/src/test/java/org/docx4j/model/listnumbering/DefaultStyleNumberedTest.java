@@ -20,6 +20,7 @@ package org.docx4j.model.listnumbering;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -74,6 +75,34 @@ public class DefaultStyleNumberedTest {
 		assertEquals("1.", Emulator.getNumber(pkg, noStyle).getNumString());
 		assertEquals("2.", Emulator.getNumber(pkg, noStyle).getNumString());
 		assertEquals("3.", Emulator.getNumber(pkg, noStyle).getNumString());
+	}
+
+	/**
+	 * The way the FO writer asks (XsltFOFunctions.numberFor): the w:numId the effective pPr has,
+	 * marked as the style's, and no w:pStyle.  The default style owns its level (it is the first
+	 * style carrying it, Emulator.levelStyleId), and a paragraph naming no style is in it.
+	 */
+	@Test
+	public void paragraphsNamingNoStyleAreTheDefaultStylesAsTheFoWriterAsks() throws Exception {
+		WordprocessingMLPackage pkg = packageWithNumberedNormal();
+		assertEquals("Normal", Emulator.levelStyleId(pkg.getMainDocumentPart().getNumberingDefinitionsPart(), "1", "0"));
+		Emulator.NumberingResult t = Emulator.getNumber(pkg, null, "1", null, false);
+		assertNotNull(t);
+		assertEquals("1.", t.getNumString());
+	}
+
+	/** And the text model gives them a TextNumbering and a label. */
+	@Test
+	public void theTextModelNumbersThem() throws Exception {
+		WordprocessingMLPackage pkg = packageWithNumberedNormal();
+		for (int k = 0; k < 3; k++) pkg.getMainDocumentPart().addParagraphOfText("no w:pStyle");
+		int numbered = 0;
+		for (org.docx4j.model.text.TextBlock b : org.docx4j.model.text.Texts.of(pkg,
+				new org.docx4j.model.text.TextOptions().listLabels(true)).blocks()) {
+			assertNotNull(b.getNumbering());
+			assertEquals((++numbered) + ".", b.getListLabel().trim());
+		}
+		assertEquals(3, numbered);
 	}
 
 	@Test

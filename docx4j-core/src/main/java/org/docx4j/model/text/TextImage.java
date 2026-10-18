@@ -58,7 +58,11 @@ public final class TextImage {
 	public boolean isDecorative() { return decorative; }
 	/** True for a VML picture ({@code v:shape} with {@code v:imagedata}). */
 	public boolean isVml() { return vml; }
-	/** The image part ({@code a:blip/@r:embed}, {@code v:imagedata/@r:id}), or null for a linked or missing one. */
+	/**
+	 * The image part ({@code a:blip/@r:embed}, {@code v:imagedata/@r:id}), or null for a linked or missing one.
+	 * An SVG picture with no PNG copy ({@code a:blip} with only its {@code asvg:svgBlip}) gives its SVG part,
+	 * which docx4j loads as a {@code DefaultXmlPart} of content type {@code image/svg+xml} (issue 699).
+	 */
 	public Part getPart() { return part; }
 	/** The JAXB object the picture is read from: a {@code wp:inline}, {@code wp:anchor}, {@code pic:pic} or {@code v:shape}. */
 	public Object getSource() { return source; }

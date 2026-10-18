@@ -222,7 +222,7 @@ Word once, before phase 2.
 | 2 | `w:startOverride` applies once, on the first encounter of that `w:num` (`ListNumberingDefinition` ctor; `ListLevel.IncrementCounter`) | `setStartValue` clears `startAtUsed`; `IncrementCounter` resets the shared counter to the start value the first time and sets `encounteredAlready`; `StartOverrideTest` covers it with `startOverride.docx` (a Word document) | `StartOverrideTest` asserts the labels Word shows for that docx | CONFIRMED (code + test docx) |
 | 3 | A `w:numStyleLink` abstractNum is a separate list with independent counters (`NumberingDefinitionsPart.resolveLinkedAbstractNum`) | `updateDefinitionFromLinkedStyle` calls `readListLevelsFromAbsNode(linkedNum)`, which builds fresh `ListLevel` objects (fresh `Counter`s) for the referencing abstractNum; the JAXB `w:lvl`s are copied into it. `StyleLinkedLevelTest` exercises the resolution but not counter independence | none | CONFIRMED (code + golden P2: Y 1 2 3, X 1 2 3, Y 4 5 6) |
 | 4 | The override level's `w:rPr` is deliberately not returned; Word bolds the number only, not the text (`Emulator.getNumber`, 17.1.0, "measured") | `triple.lvl = listLevel.getJaxbAbstractLvl()`; `triple.rPr = triple.getLvl().getRPr()` — abstract level only | the 17.1.0 measurement was on a corpus document (not redistributable); no probe golden | HALF RIGHT (golden P3): Word does format the number only, not the text - but with the override level's rPr (labels Calibri Bold 18pt from w:b + w:sz 36; text 12pt regular), which docx4j never applies (12pt labels). The override REPLACES the abstract level's rPr: abstract w:i + override w:b gives bold, no italic run in the PDF. Phase 4's `labelRPr` |
-| 5 | A level whose `w:lvl/w:pStyle` names a different style than the one that brought the numbering paints no label and is not counted (`Emulator.styleLinkedElsewhere`) | implemented 17.1.0; returns null before `IncrementCounter` | golden `numbering-label-ilvl0.pdf` on the share (probe in `Corpus.java` line 1803); b62-batch41 scores it parity 1.0000, 3/3 pages | CONFIRMED (golden) |
+| 5 | A level whose `w:lvl/w:pStyle` names a different style than the one that brought the numbering paints no label and is not counted (`Emulator.styleLinkedElsewhere`) | implemented 17.1.0; returns null before `IncrementCounter` | golden `numbering-label-ilvl0.pdf` on the share (probe in `Corpus.java` line 1803); b62-batch41 scores it parity 1.0000, 3/3 pages | CONFIRMED (golden), and half the rule: goldens `numbering-linked-level-other-style` and `numbering-unlinked-level-claim` (2026-10-18) confirm it case by case and show that a level naming **no** style belongs to the first paragraph style in styles.xml carrying it, so a second style on that level is unlabelled and uncounted too (17.3.4, `Emulator.levelStyleId`; see Decisions) |
 | 6 | "style reference in pPr but not as a sibling of pPr → no number appears at all; TODO ShouldNotBeNumbered" (`NumberingDefinitionsPart.getInd`) | the method returns null, which callers read as *no indent*, not *not numbered*; the numbering decision is made in `Emulator`, where #5 now covers the style-linked case | none for the pPr-vs-sibling wording; it predates #5 and reads as an earlier description of the same rule | SETTLED (golden P4): a level's `w:pPr/w:pStyle` numbers nothing by itself (LevelStyle paragraphs with no w:numPr paint no label, x = margin) and does not stop a direct w:numPr painting the label at the level's indent (label 99pt, text 126pt = 1080/540); docx4j = Word on both, so getInd's null is right and the TODO closes |
 | 7 | Level's own `w:ind` before the linked style's (`NumberingDefinitionsPart.getIndFromLvl`, 17.1.0, "measured") | as documented: `lvl.getPPr().getInd()` first, then the style's | 17.1.0 measurement on a corpus document; `IndentationTest` / `ListNumberIndTest` cover the code paths against saved XML, not Word | CONFIRMED (the 17.1.0 measurement for attributes both state; golden P5 for disjoint ones: level w:hanging + style w:left combine, both ways round, label 126pt / text 144pt, docx4j = Word) |
 | 8 | `Emulator.getInd` 2024 TODO: style indent should trump the level's, attribute by attribute | not implemented (a TODO) | contradicted by #7's measurement for the case measured | REJECTED by #7 for the precedence; golden P5 CONFIRMS the attribute-by-attribute half: the level's w:ind and the style's merge per attribute, the level winning where both state one (#7) |
@@ -659,6 +659,26 @@ per-read "counter: n" line is gone).  `package-info.java` written.
 
 - 2026-09-12 (Jason): write the CR; phase 0 (Unix line endings) is the
   explicit preliminary step, done before any code change.
+- 2026-10-18 (Jason asked for the proof of row 5, CR-046 phase 3 having put it in the
+  text model): probes `numbering-linked-level-other-style` and
+  `numbering-unlinked-level-claim` cut (goldens in `docx4j-layout-fidelity/goldens/word`, the
+  documents in `LevelOwnerTest`).  A level belongs to one paragraph style: the one its
+  `w:pStyle` names, else the first in styles.xml whose own `w:numPr` names it (not the first by
+  name or the first used; a style no paragraph uses can own it).  Any other style carrying it
+  is unlabelled and uncounted, with `w:ilvl 0` or none, and through a second `w:num` on the
+  same `w:abstractNum`; a style a level names but whose `w:numPr` reads another level is read
+  at its `w:numPr`'s level, against ECMA-376 17.9.24.  Word's re-save takes the `w:numPr` out
+  of the other style and writes the level's indent in, which the effective indent already
+  gave.  docx4j matched every case but the unlinked level's owner, now
+  `Emulator.levelStyleId` (17.3.4), which the text model shares.  Since a numbered default
+  style now owns its level, a paragraph naming no style is read as the default style's in the
+  owner check (the FO writer passes no `w:pStyle` for one; `DefaultStyleNumberedTest`), and
+  `getNumber(pkg, pPr)` resolves a paragraph with no `w:pPr` as one with an empty one (it
+  returned null).  A third probe, `numbering-shared-abstract-styles` (Jason: is it a level of
+  the `w:num` or of the `w:abstractNum`?), settles that it is the abstractNum's: of two styles
+  each using its own `w:num` over one abstractNum at a level naming no style, the second is
+  unlabelled, and so it is where the second `w:num` overrides the level with a `w:lvl` of its
+  own (Word draws neither the override's label nor a count for it); docx4j already read it so.
 - 2026-09-12: phase 5 done; the CR is complete.
 - 2026-09-12: phase 4 done (see the phase for particulars); the label
   precedence (level over paragraph mark) is a further behaviour change

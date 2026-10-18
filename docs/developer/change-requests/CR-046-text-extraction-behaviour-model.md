@@ -745,10 +745,80 @@ CHANGELOG and Getting Started record the output changes of §2.8.
   and its Markdown, cut by `ExtractionGoldens` and reviewed by hand against WD 0.10 sections 3 to 7
   (GOLDENS.md). Nothing in them departs from the WD.
 
+**After the phase 3 commit (f59828e62), 18 October 2026, at Jason's request ("fix the markdown drop
+now"):** the Markdown export dropped a picture with no image part, alt text and all. That happened to
+an SVG picture written as docx4j's `ImageAddSVG` sample writes it (an `a:blip` with only its
+`asvg:svgBlip`), and to a linked or missing picture (issue 699). Now:
+- the text model's picture part is `a:blip/@r:embed`'s, else its svgBlip's (`TextImage.getPart()`: an
+  `image/svg+xml` `DefaultXmlPart`, as docx4j loads one);
+- Markdown writes an SVG part's SVG (a `data:image/svg+xml` URI, or `imageN.svg` under `imageDirPath`),
+  and a picture whose image the package doesn't hold (linked, or a missing relationship) as its alt
+  text with an empty destination, `![alt]()`. The external target is never written: a renderer would
+  fetch it (WD section 11, "no serialization follows a link").
+
+One golden changes with it: `extraction-probe-external.md` gains case 50's linked picture,
+`![Picture 17](…)`, recut by `ExtractionGoldens` and reviewed (the other seven are unchanged).
+
+**Review of phase 3 (Claude Fable 5.1, session docx4j-43, at Jason's request, 18 October 2026):** sound,
+matching this record and D12. Two follow-ups, fixed:
+1. `TextNumbering` read the abstract definition's level, so a `w:lvlOverride` (a `w:startOverride`, an
+   overriding `w:lvl`) wasn't seen; it now reads the num instance's level, the overrides applied
+   (`ListNumberingDefinition.getLevel`), the abstract's only where that is missing
+   (`MarkdownTextModelTest.numberingOverrides`). `WmlToMarkdown` before phase 3 had the same fault.
+2. Under `field_codes: true`, a TOC's code taken out left the paragraph's merge floor raised, so the text
+   after the field began a new run; the floor is put back (`TextsTocTest`).
+3. Asked by the portfolio for the WD (REQ-510): the numbering-style indirection (`w:numStyleLink` to a
+   numbering style whose `w:numPr` names the `w:num` holding the levels) is followed, and a `w:numPr`
+   from the paragraph's style counts (the effective `w:numPr`, through `w:basedOn`). But a level linked to
+   a paragraph style (`w:lvl/w:pStyle`) gave a list marker to a paragraph whose other style merely carries
+   the same `w:numPr`, where Word gives it no number and the list labels gave none; `TextNumbering` now
+   applies the labels' rule (`MarkdownTextModelTest.numberingThroughStyles`).
+4. Jason asked for proof of item 3's rule, and two Word goldens followed (layout-fidelity probes
+   `numbering-linked-level-other-style`, `numbering-unlinked-level-claim` and
+   `numbering-shared-abstract-styles`, 18 October 2026; the
+   documents in core-tests' `LevelOwnerTest`, the rule in CR-014's row 5 and word-layout-rules
+   section 2.8). A level belongs to one paragraph style: the one its `w:pStyle` names, else the first
+   in styles.xml whose own `w:numPr` names it. Any other style carrying it is unlabelled and uncounted,
+   with `w:ilvl 0` or none, and through a second `w:num` on the same `w:abstractNum`; and a style
+   that a level names, but whose `w:numPr` names another level, is read at its `w:numPr`'s level (not
+   at the naming level, as ECMA-376 17.9.24 has it). The labels and `TextNumbering` had every
+   case right except a level that names no style: both numbered every style carrying it. Both now
+   share `Emulator.levelStyleId`. The unlabelled paragraph keeps the level's indent, as Word's re-save
+   writes it, which the text model's indents already gave.
+5. Markdown and an interrupted list (Jason chose option (c) of three, 18 October 2026). The export
+   had closed a list at any paragraph that wasn't an item, the next item opening a new list at `1.`,
+   so Word's count was lost (Word: 1. note 2.). Now:
+   - an unlabelled paragraph indented at least to an open item's text (its left indent, not at the
+     margin), or in the ListParagraph style as before, is a follow-on paragraph of the deepest such
+     item, the lists deeper than it closed;
+   - any other paragraph ends the lists, and the list goes on at its own count where it resumes
+     (`2. Pears`); a nested list resumes under an empty item showing its parent's count
+     (`2. 2. B.2`), since Markdown can't continue a nested list without its parent item;
+   - an empty paragraph neither ends a list nor joins it;
+   - an ordered list's items are consecutive from its start, so an item whose count isn't the next
+     one begins a new list at its count; two `w:num` on one `w:abstractNum` are one list (CR-014 P1),
+     and a level drawn as the other kind (bullet or number) is a list of that kind;
+   - a list directly after another of its kind takes the other delimiter (`1.` or `1)`, `-` or `*`),
+     which CommonMark reads as a new list. Before, two such lists ran together: in
+     `numberingThroughStyles` "3. Linked" and "3. Styled", Word's III. and III., rendered as 3 and 4.
+   The block model gains `TextNumbering.getValue()` (the count the label shows, from the emulator,
+   which now counts once per paragraph for the label and the value alike) and `getAbstractNumId()`.
+   Tests: `MarkdownTextModelTest` (six), `LevelOwnerTest.theTextModelsCountIsTheLabels`; the eight
+   goldens are unchanged (recut, byte-identical).
+It also found Eclipse's classes in docx4j-core-tests' `target/test-classes` compiled without
+docx4j-markdown (a Maven project update in Eclipse is needed), which fails a maven run without `clean`.
+
+Tests: docx4j-markdown 160 (`svgPictureWithNoPngCopy`, `pictureWithNoImageKeepsItsAltText`,
+`numberingOverrides`, `numberingThroughStyles`); core-tests 1734 (11 skipped); the suite 890/0/51.
+With item 4, `LevelOwnerTest` (6).
+`AnonymizeXlsxProbesTest.textNumbersFormulasAndNames` failed once and passed on three reruns: its
+scramble's `Random` is unseeded, so a two-letter value can come back unchanged; not this work's.
+
 ### Phase 4: hand-offs
 
 The goldens' commit goes to:
-- **docx4j-core-ts**, for its CR-011: structural `getText` and `outline`, text boxes, hidden
+- **docx4j-core-ts**, for its text-model CR (the next free number: its CR-011 is tracked changes in
+  every story): structural `getText` and `outline`, text boxes, hidden
   text, notes, the agreement test;
 - **docx4j-python**, for its CR-011: one text model in place of five;
 - **docx4j-generated-objects-ts**: `textOf` follows the rules, or core-ts stops using it;

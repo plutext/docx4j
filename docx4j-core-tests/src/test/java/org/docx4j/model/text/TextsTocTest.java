@@ -133,5 +133,11 @@ public class TextsTocTest {
 		for (TextView view : TextView.values()) {
 			assertEquals(view.toString(), "See:  (end)\nBody\n", text(pkg, TextOptions.of(view)));
 		}
+		// under field_codes too, and the text either side of the field is one run, as it is without codes
+		for (TextOptions options : new TextOptions[] { new TextOptions(), new TextOptions().fieldCodes(true) }) {
+			TextBlock first = Texts.of(pkg, options).blocks().get(0);
+			assertEquals(options.toString(), 1, first.getRuns().size());
+			assertEquals("See:  (end)", first.getRuns().get(0).getText());
+		}
 	}
 }

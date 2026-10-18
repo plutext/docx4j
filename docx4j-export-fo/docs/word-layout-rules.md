@@ -627,20 +627,40 @@ the page and Word's two pages came out as four. Where the override states no ind
 abstract level's stands. 20 documents
 of the three corpora carry a `w:lvlOverride/w:lvl` at all.
 
-<a id="s28pstyle"></a>**A level which names a paragraph style numbers only that style.**
-`w:pStyle` inside a `w:lvl` (ECMA-376 17.9.24) links the level to a paragraph style.
-Where the numbering reaches a paragraph through a *different* style's `w:numPr`, Word
-paints no label at all and does not count the paragraph. Measured on
-`numbering-label-ilvl0`, whose level 0 of numId 20 is linked to the style `NumLinked`: a
-paragraph using a second style which carries the same `w:numPr` gets no number from Word
-and no indent from the level (every one of its lines starts at the margin, x=72.0), and
-the next paragraph of the list is numbered 6 where docx4j had counted it and reached 7.
-Direct formatting is never suppressed - a paragraph whose **own** `w:numPr` names a
-numbering whose level is linked to a style it does not use is numbered (the probe's numId
-22, linked to a style nothing uses, prints "1."), and neither is a style the level names
-or one it is based on. `Emulator.styleLinkedElsewhere`; the FO writer tells the two apart
-by whether the `w:numId` came from the paragraph's own `w:pPr`
-(`XsltFOFunctions.numberFor`), and HTML already passed the direct value.
+<a id="s28pstyle"></a>**A numbering level belongs to one paragraph style, and numbers only that style.**
+The owner is the style the level's `w:pStyle` names (ECMA-376 17.9.24), else - where the
+level names none - the **first paragraph style in styles.xml** whose own `w:numPr` names it.
+Where the numbering reaches a paragraph through any *other* style's `w:numPr`, Word paints no
+label at all and does not count the paragraph. Measured on `numbering-label-ilvl0`, whose
+level 0 of numId 20 is linked to the style `NumLinked`: a paragraph using a second style which
+carries the same `w:numPr` gets no number from Word, and the next paragraph of the list is
+numbered 6 where docx4j had counted it and reached 7. Taken apart on
+`numbering-linked-level-other-style`, `numbering-unlinked-level-claim` and
+`numbering-shared-abstract-styles` (2026-10-18, goldens
+in `docx4j-layout-fidelity/goldens/word`, the documents in core-tests' `LevelOwnerTest`):
+the other style is unlabelled whether its `w:numPr` states `w:ilvl 0` or no `w:ilvl`, before
+the owner's first paragraph as after it, and through a second `w:num` on the same
+`w:abstractNum`; of two styles on a level that names none, the first in styles.xml numbers,
+whatever the names, whichever the document uses first, and even when no paragraph uses it;
+the owner is a level of the `w:abstractNum`, not of a `w:num`: a second style using its own
+`w:num` over the same abstractNum is unlabelled, linked level or not, and even where that
+`w:num` overrides the level with a `w:lvl` of its own (`w:lvlOverride`; the override's label is
+never drawn, and Word's re-save writes the owner's `w:pStyle` into the override too);
+a style which a level names but whose `w:numPr` names another level is read at its
+`w:numPr`'s level (`w:ilvl`, else 0), not at the naming level as 17.9.24 has it, so it is
+unlabelled where that level is another style's. A style based on the owner, a style at a level
+nobody else carries, and a paragraph's **own** `w:numPr` (direct formatting is never
+suppressed; the first probe's numId 22, linked to a style nothing uses, prints "1.") are
+numbered. Word's re-save shows the model: it writes the owner into each level's `w:pStyle`,
+takes the `w:numPr` out of every other style and writes the level's indent into it instead -
+so **the unlabelled paragraph keeps the level's indent** (left 720 hanging 720: Word wraps the
+probe's line at 36pt), the style's own `w:ind` over it as for a numbered paragraph
+(`numbering-label-ilvl0`'s second style states `w:ind left 0 firstLine 0`, so its lines start at
+the margin, x=72.0). `Emulator.levelStyleId` and `Emulator.styleLinkedElsewhere` (the owner
+of a level naming no style since 17.3.4); the effective indent already carries the level's;
+the FO writer tells direct and style numbering apart by whether the `w:numId` came from the
+paragraph's own `w:pPr` (`XsltFOFunctions.numberFor`), and HTML already passed the direct
+value.
 
 <a id="s28effind"></a>**The label sits on the *effective* indent**, which style resolution
 has built from the level's `w:ind`, the paragraph style's own and the paragraph's direct

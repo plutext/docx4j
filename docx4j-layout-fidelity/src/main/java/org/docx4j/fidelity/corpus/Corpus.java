@@ -2895,6 +2895,205 @@ public final class Corpus {
 		}));
 
 		/*
+		 * Is it right that a level linked to one paragraph style (w:lvl/w:pStyle) numbers no
+		 * paragraph of another style carrying the same w:numPr?  numbering-label-ilvl0 says
+		 * so for one case only, a second style with no w:ilvl and a w:ind of its own, so this
+		 * probe takes the rule apart (Jason, 2026-10-18; CR-046 phase 3, WD REQ-510).  Every
+		 * label names its list, level and counter, so the golden's text layer is the answer:
+		 * abstractNum 100 is list A, level 0 linked to LinkA, level 1 linked to nothing,
+		 * level 2 linked to LinkL2, level 3 to LinkL3 (labels A0-n .. A3-n); abstractNum 102
+		 * is list C, linked to nothing (C0-n).  w:num 100 and 101 are both on abstractNum 100;
+		 * w:num 102 on 102.  A LinkA paragraph follows each case, so its counter says whether
+		 * the case was counted.  No paragraph or style states a w:ind.
+		 */
+		PROBES.add(new Probe("numbering-linked-level-other-style",
+				"list A's level 0 is linked (w:lvl/w:pStyle) to LinkA, level 1 to nothing, levels 2 and "
+				+ "3 to LinkL2 and LinkL3; list C to nothing.  Does a style other than LinkA carrying "
+				+ "list A's w:numPr get a label: with no w:ilvl, with w:ilvl 0, before LinkA's first "
+				+ "use, through a second w:num, at the unlinked level 1; does one based on LinkA; does "
+				+ "a style named by level 2 or 3 but whose w:numPr says level 0 (or none) take that "
+				+ "level; does direct w:numPr apply; is an unlabelled paragraph counted (the next LinkA "
+				+ "label says); control: two styles sharing list C", () -> {
+			Doc d = Doc.create(15);
+			d.numberingXml(linkedAbstract(100, "A", "LinkA", null, "LinkL2", "LinkL3")
+					+ linkedAbstract(102, "C", null, null, null, null)
+					+ num(100, 100) + num(101, 100) + num(102, 102));
+			d.addParagraphStyle("LinkA", "Normal", ppr -> ppr.setNumPr(numPrOf(100, null)));
+			d.addParagraphStyle("OtherNoIlvl", "Normal", ppr -> ppr.setNumPr(numPrOf(100, null)));
+			d.addParagraphStyle("OtherIlvl0", "Normal", ppr -> ppr.setNumPr(numPrOf(100, 0)));
+			d.addParagraphStyle("OtherIlvl1", "Normal", ppr -> ppr.setNumPr(numPrOf(100, 1)));
+			d.addParagraphStyle("DerivedA", "LinkA", ppr -> { });
+			d.addParagraphStyle("OtherInst", "Normal", ppr -> ppr.setNumPr(numPrOf(101, null)));
+			d.addParagraphStyle("LinkL2", "Normal", ppr -> ppr.setNumPr(numPrOf(100, 0)));
+			d.addParagraphStyle("LinkL3", "Normal", ppr -> ppr.setNumPr(numPrOf(100, null)));
+			d.addParagraphStyle("FirstC", "Normal", ppr -> ppr.setNumPr(numPrOf(102, null)));
+			d.addParagraphStyle("SecondC", "Normal", ppr -> ppr.setNumPr(numPrOf(102, null)));
+			d.addParagraphStyle("Plain", "Normal", ppr -> { });
+
+			d.para("Labels: A0-n is list A level 0 (linked to LinkA), A1-n level 1 (unlinked), "
+					+ "A2-n level 2 (LinkL2), A3-n level 3 (LinkL3); C0-n list C (unlinked).")
+					.style("Plain").after(120).add();
+			String[][] cases = {
+				{ "OtherNoIlvl", "OtherNoIlvl (w:num 100, no ilvl), before any LinkA" },
+				{ "LinkA", "LinkA" },
+				{ "OtherNoIlvl", "OtherNoIlvl (w:num 100, no ilvl)" },
+				{ "LinkA", "LinkA" },
+				{ "OtherIlvl0", "OtherIlvl0 (w:num 100, ilvl 0)" },
+				{ "LinkA", "LinkA" },
+				{ "OtherIlvl1", "OtherIlvl1 (w:num 100, ilvl 1, level 1 unlinked)" },
+				{ "LinkA", "LinkA" },
+				{ "DerivedA", "DerivedA (based on LinkA, no w:numPr of its own)" },
+				{ "LinkA", "LinkA" },
+				{ "OtherInst", "OtherInst (w:num 101, a second w:num on list A)" },
+				{ "LinkA", "LinkA" },
+				{ "LinkL2", "LinkL2 (w:num 100, ilvl 0; level 2 names it)" },
+				{ "LinkA", "LinkA" },
+				{ "LinkL3", "LinkL3 (w:num 100, no ilvl; level 3 names it)" },
+				{ "LinkA", "LinkA" },
+				{ "Plain", "Plain, direct w:numPr 100 ilvl 0" },
+				{ "OtherNoIlvl", "OtherNoIlvl, direct w:numPr 100 ilvl 0" },
+				{ "OtherNoIlvl", "OtherNoIlvl, direct w:numPr 100, no ilvl" },
+				{ "LinkA", "LinkA" },
+				{ "FirstC", "FirstC (w:num 102, no ilvl)" },
+				{ "SecondC", "SecondC (w:num 102, no ilvl)" },
+				{ "FirstC", "FirstC (w:num 102, no ilvl)" },
+				{ "LinkA", "LinkA" },
+			};
+			for (String[] c : cases) {
+				Doc.Para p = d.para(c[1]).style(c[0]);
+				if (c[1].contains("direct w:numPr 100 ilvl 0")) p.numPr(100, 0);
+				else if (c[1].contains("direct w:numPr 100, no ilvl")) p.numPr(100, null);
+				p.add();
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * numbering-linked-level-other-style's answer (Word 2026-10-18): a level belongs to one
+		 * paragraph style.  Word wrote w:pStyle FirstC into list C's unlinked level 0, took
+		 * w:numPr out of SecondC, and gave SecondC's paragraph no label and no count.  Which
+		 * style claims a level that names none?  FirstC was first in styles.xml, first in the
+		 * document and first by name, so here each list puts its two styles in a different
+		 * order (styles.xml order is the order they are added):
+		 *
+		 *   list D: styles.xml DZebra, DAlpha; the document uses DAlpha first
+		 *   list E: styles.xml EAlpha, EZebra; the document uses EZebra first
+		 *   list F: styles.xml FZebra, FAlpha; the document uses FZebra first
+		 *
+		 * so the owners read off the labels are, for (D, E, F): first by name (Alpha, Alpha,
+		 * Alpha); first in styles.xml (Zebra, Alpha, Zebra); last in styles.xml (Alpha, Zebra,
+		 * Alpha); first used (Alpha, Zebra, Zebra); last used (Zebra, Alpha, Alpha).  List G's
+		 * first style in styles.xml and by name is used by no paragraph.  List H's HDerived is
+		 * based on HBase and carries the same w:numPr itself.  List I's second style holds a
+		 * paragraph that wraps, so the golden shows whether a style that lost the level keeps
+		 * the level's indent (left 720 hanging 720: second line at 36pt) as the resave says.
+		 * List J is Jason's case: level 0 linked to JLinked, and two styles, OtherIlvl1 and
+		 * OtherIlvl1B, each carrying w:ilvl 1 of it, level 1 naming no style (styles.xml and
+		 * name order OtherIlvl1 first; the document uses OtherIlvl1B first, and no level 0
+		 * paragraph comes between them, so level 1's counter runs on if both are numbered).
+		 */
+		PROBES.add(new Probe("numbering-unlinked-level-claim",
+				"two paragraph styles carry one list whose levels name no style (w:lvl/w:pStyle "
+				+ "absent): which style does Word give the level to - first or last by name, in "
+				+ "styles.xml or in the document (lists D, E, F order their styles differently), a "
+				+ "style no paragraph uses (G), a style based on the other one (H) - and does the "
+				+ "other style's paragraph keep the level's indent (I, a wrapping paragraph); J: two "
+				+ "styles carrying w:ilvl 1 of a list whose level 0 is linked to a third", () -> {
+			Doc d = Doc.create(15);
+			StringBuilder nx = new StringBuilder();
+			String[] lists = { "D", "E", "F", "G", "H", "I" };
+			for (int k = 0; k < lists.length; k++) nx.append(linkedAbstract(110 + k, lists[k], new String[1]));
+			// list J (Jason's case): level 0 linked to JLinked, level 1 to nothing
+			nx.append(linkedAbstract(116, "J", "JLinked", null));
+			for (int k = 0; k <= lists.length; k++) nx.append(num(110 + k, 110 + k));
+			d.numberingXml(nx.toString());
+			String[][] styles = {
+				{ "DZebra", "110" }, { "DAlpha", "110" },
+				{ "EAlpha", "111" }, { "EZebra", "111" },
+				{ "FZebra", "112" }, { "FAlpha", "112" },
+				{ "GAlphaUnused", "113" }, { "GZebra", "113" },
+				{ "HBase", "114" }, { "HDerived", "114" },
+				{ "IOwner", "115" }, { "IOther", "115" },
+				{ "JLinked", "116" }, { "OtherIlvl1", "116", "1" }, { "OtherIlvl1B", "116", "1" },
+			};
+			for (String[] s : styles) {
+				int numId = Integer.parseInt(s[1]);
+				Integer ilvl = s.length > 2 ? Integer.valueOf(s[2]) : null;
+				d.addParagraphStyle(s[0], s[0].equals("HDerived") ? "HBase" : "Normal",
+						ppr -> ppr.setNumPr(numPrOf(numId, ilvl)));
+			}
+			d.addParagraphStyle("Plain", "Normal", ppr -> { });
+
+			d.para("Labels: D0-n is list D, E0-n list E, and so on; each list's two styles carry "
+					+ "its w:numPr with no w:ilvl, and none of its levels names a style.")
+					.style("Plain").after(120).add();
+			String[] order = {
+				"DAlpha", "DZebra", "DAlpha", "DZebra",
+				"EZebra", "EAlpha", "EZebra", "EAlpha",
+				"FZebra", "FAlpha", "FZebra", "FAlpha",
+				"GZebra", "GZebra",
+				"HBase", "HDerived", "HBase", "HDerived",
+				"IOwner", "IOther", "IOwner",
+				"JLinked", "OtherIlvl1B", "OtherIlvl1", "OtherIlvl1B", "OtherIlvl1",
+			};
+			for (String s : order) {
+				String text = s;
+				if (s.equals("HDerived")) text += " (based on HBase, the same w:numPr)";
+				if (s.startsWith("OtherIlvl1")) text += " (w:num 116, ilvl 1; level 1 names no style)";
+				if (s.equals("GZebra")) text += " (GAlphaUnused, first in styles.xml, is used by no paragraph)";
+				if (s.equals("IOther")) text += ". This paragraph is long enough to wrap, so the golden "
+						+ "shows where its second line starts: at the margin, or at 36pt, the level's indent.";
+				d.para(text).style(s).add();
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * Jason, 2026-10-18: a level belongs to one paragraph style - but a level of what?  In
+		 * numbering-linked-level-other-style a style using its own w:num over list A's
+		 * abstractNum (OtherInst) lost the label to LinkA, whose w:pStyle the abstract level
+		 * carries.  Two cases left: a level that names no style, carried by two styles through
+		 * two w:num on one abstractNum (list K: KFirst on w:num 120, KSecond on 121, both over
+		 * abstractNum 120); and the same where the second w:num overrides the level with a
+		 * w:lvl of its own (list L: LFirst on w:num 122, LSecond on 123, whose w:lvlOverride
+		 * replaces level 0 with labels M0-n).  If the owner is per abstract level, the second
+		 * style's paragraphs are unlabelled; if per w:num, both styles number (sharing one
+		 * counter, as CR-014 P1 has two w:num share one, or not).  An M label says the
+		 * override level is drawn.
+		 */
+		PROBES.add(new Probe("numbering-shared-abstract-styles",
+				"two styles each with its own w:num over one abstractNum, at a level naming no style: "
+				+ "list K plain w:num 120 and 121; list L w:num 122 and 123, 123 overriding level 0 with "
+				+ "a w:lvl of its own (labels M0-n) - is the second style's paragraph labelled, and on "
+				+ "which counter?", () -> {
+			Doc d = Doc.create(15);
+			d.numberingXml(linkedAbstract(120, "K", new String[1])
+					+ linkedAbstract(122, "L", new String[1])
+					+ num(120, 120) + num(121, 120) + num(122, 122)
+					+ "<w:num w:numId=\"123\"><w:abstractNumId w:val=\"122\"/>"
+					+ "<w:lvlOverride w:ilvl=\"0\"><w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/>"
+					+ "<w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"M0-%1\"/><w:lvlJc w:val=\"left\"/>"
+					+ "<w:pPr><w:ind w:left=\"720\" w:hanging=\"720\"/></w:pPr></w:lvl></w:lvlOverride></w:num>");
+			d.addParagraphStyle("KFirst", "Normal", ppr -> ppr.setNumPr(numPrOf(120, null)));
+			d.addParagraphStyle("KSecond", "Normal", ppr -> ppr.setNumPr(numPrOf(121, null)));
+			d.addParagraphStyle("LFirst", "Normal", ppr -> ppr.setNumPr(numPrOf(122, null)));
+			d.addParagraphStyle("LSecond", "Normal", ppr -> ppr.setNumPr(numPrOf(123, null)));
+			d.addParagraphStyle("Plain", "Normal", ppr -> { });
+
+			d.para("Labels: K0-n is list K (abstractNum 120, through w:num 120 or 121); L0-n is list L "
+					+ "(abstractNum 122, through w:num 122); M0-n is w:num 123's overriding level 0 on list L.")
+					.style("Plain").after(120).add();
+			String[][] cases = {
+				{ "KFirst", "KFirst (w:num 120)" }, { "KSecond", "KSecond (w:num 121, same abstractNum)" },
+				{ "KFirst", "KFirst (w:num 120)" }, { "KSecond", "KSecond (w:num 121, same abstractNum)" },
+				{ "LFirst", "LFirst (w:num 122)" }, { "LSecond", "LSecond (w:num 123, overriding level 0)" },
+				{ "LFirst", "LFirst (w:num 122)" }, { "LSecond", "LSecond (w:num 123, overriding level 0)" },
+			};
+			for (String[] c : cases) d.para(c[1]).style(c[0]).add();
+			return d.pkg();
+		}));
+
+		/*
 		 * CR-015's probe set (docs/developer/change-requests/CR-015-property-resolution.md,
 		 * "Are the comments accurate?").  Style resolution: unless a case says otherwise the
 		 * runs carry no w:rPr of their own and the paragraphs no direct w:spacing, so what a
@@ -5077,6 +5276,22 @@ public final class Corpus {
 				+ Doc.decimalLevel(1, null, 1440, 360)
 				+ Doc.decimalLevel(2, null, 2160, 360)
 				+ "</w:abstractNum>";
+	}
+
+	/** A four-level list for numbering-linked-level-other-style: labels {@code <list><ilvl>-<n>}
+	 *  (A0-1, A1-1 ..), so the label names the list, the level and the counter; each level
+	 *  linked by {@code w:pStyle} to the style given for it, or to none where null; indents
+	 *  720 a level, hanging 720. */
+	private static String linkedAbstract(int abstractNumId, String list, String... links) {
+		StringBuilder sb = new StringBuilder("<w:abstractNum w:abstractNumId=\"" + abstractNumId
+				+ "\"><w:multiLevelType w:val=\"multilevel\"/>");
+		for (int ilvl = 0; ilvl < links.length; ilvl++) {
+			sb.append("<w:lvl w:ilvl=\"" + ilvl + "\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/>");
+			if (links[ilvl] != null) sb.append("<w:pStyle w:val=\"" + links[ilvl] + "\"/>");
+			sb.append("<w:lvlText w:val=\"" + list + ilvl + "-%" + (ilvl + 1) + "\"/><w:lvlJc w:val=\"left\"/>"
+					+ "<w:pPr><w:ind w:left=\"" + (720 + 720 * ilvl) + "\" w:hanging=\"720\"/></w:pPr></w:lvl>");
+		}
+		return sb.append("</w:abstractNum>").toString();
 	}
 
 	/** A w:num with no overrides. */

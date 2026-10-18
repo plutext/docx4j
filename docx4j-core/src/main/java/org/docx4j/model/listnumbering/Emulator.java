@@ -134,10 +134,10 @@ public class Emulator {
      */
     public static ResultTriple getNumber(WordprocessingMLPackage wmlPackage, PPr pPr, NumberingState state) {
     	
-		if (pPr==null) return null;
 		// a paragraph naming no style is resolved against the default paragraph
 		// style, which may be numbered (CR-014 P6, measured; before 17.2.0 it was
-		// assumed not to be)
+		// assumed not to be) - a paragraph with no w:pPr at all as well (17.3.4)
+		if (pPr==null) return getNumber(wmlPackage, null, null, null, false, state);
 
 		String pStyleVal = null;
 		if (pPr.getPStyle()!=null) {
@@ -313,6 +313,9 @@ public class Emulator {
 			 * @since 17.1.0 (the override's rPr followed in 17.2.0: labelRPr below) */
 			ListLevel listLevel = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId);
 			triple.lvl = listLevel.getJaxbAbstractLvl();
+			if (listLevel.counter(state).getCurrentValue() != null) {
+				triple.value = listLevel.counter(state).getCurrentValue().intValue();
+			}
 
 			triple.ind = indOf(listLevel.getJaxbOverrideLvl());
 			if (triple.ind==null) triple.ind = indOf(triple.getLvl());
@@ -364,14 +367,36 @@ public class Emulator {
      * {@code w:numPr} names a numbering whose level is linked to a style it does not
      * use - direct formatting always applies.</p>
      *
-     * @since 17.1.0
+     * <p>A level which names no style belongs to one all the same: the first paragraph
+     * style in styles.xml whose own {@code w:numPr} names it ({@link #levelStyleId}).
+     * Measured 2026-10-18 on the layout-fidelity probes
+     * {@code numbering-linked-level-other-style} and {@code numbering-unlinked-level-claim}
+     * (Word 365): of two styles carrying one such level, Word numbers the first in
+     * styles.xml - whatever their names, and whichever the document uses first, or
+     * whether it uses that style at all - and gives the other style's paragraphs no label
+     * and no count.  Its re-save writes the owner into the level's {@code w:pStyle} and
+     * takes the {@code w:numPr} out of the other style, writing the level's indent in its
+     * place: the paragraph keeps the level's indent without the label, which is what the
+     * effective indent ({@link org.docx4j.model.styles.StyleUtil}) already gives it.  A
+     * style based on the owner is the owner's (its own {@code w:numPr} goes, and it
+     * inherits the owner's), and a level that a style's {@code w:numPr} reaches through a
+     * second {@code w:num} on the same {@code w:abstractNum} is the same level, even where
+     * that {@code w:num} overrides it with a {@code w:lvl} of its own (probe
+     * {@code numbering-shared-abstract-styles}).  A style
+     * which a level names but whose {@code w:numPr} names another level is read at its
+     * {@code w:numPr}'s level, as Word reads it (not at the naming level, as ECMA-376
+     * 17.9.24 has it).</p>
+     *
+     * @since 17.1.0 (the unlinked level's owner 17.3.4)
      */
     private static boolean styleLinkedElsewhere(
     		org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart numberingPart,
     		PropertyResolver propertyResolver, String numId, String levelId, String pStyleVal) {
 
-    	String linked = numberingPart.getLinkedStyleId(numId, levelId);
+    	String linked = levelStyleId(numberingPart, numId, levelId);
     	if (linked == null || linked.equals("")) return false;
+    	// a paragraph naming no style is in the default paragraph style, which can own a level
+    	if (pStyleVal == null && propertyResolver != null) pStyleVal = propertyResolver.getDefaultParagraphStyleId();
     	if (pStyleVal == null) return true;
     	// the style itself, or any style it is based on, is the level's own
     	java.util.Set<String> seen = new java.util.HashSet<String>();
@@ -382,6 +407,50 @@ public class Emulator {
     		id = (s == null || s.getBasedOn() == null) ? null : s.getBasedOn().getVal();
     	}
     	return true;
+    }
+
+    /**
+     * The paragraph style a numbering level belongs to: the one its {@code w:lvl/w:pStyle}
+     * names (the {@code w:num}'s override level's first, as
+     * {@link org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart#getLinkedStyleId}
+     * reads it), else the first paragraph style in styles.xml whose own {@code w:numPr}
+     * names a {@code w:num} on the same {@code w:abstractNum} at that level (its
+     * {@code w:ilvl}, 0 where it states none).  Null where neither: no style carries the
+     * level, so a paragraph reaches it only through its own {@code w:numPr}.  Word numbers
+     * a paragraph whose numbering comes from its style only where the style is this one
+     * or is based on it ({@link #styleLinkedElsewhere}).
+     *
+     * @param numId a {@code w:numId} (not 0)
+     * @param levelId a {@code w:ilvl}; null or empty for 0
+     * @since 17.3.4
+     */
+    public static String levelStyleId(
+    		org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart numberingPart,
+    		String numId, String levelId) {
+
+    	String linked = numberingPart.getLinkedStyleId(numId, levelId);
+    	if (linked != null && !linked.equals("")) return linked;
+
+    	ListNumberingDefinition lnd = numberingPart.getInstanceListDefinitions().get(numId);
+    	if (lnd == null || lnd.getAbstractListDefinition() == null) return null;
+    	String ilvl = (levelId == null || levelId.equals("")) ? "0" : levelId;
+    	if (!(numberingPart.getPackage() instanceof WordprocessingMLPackage)) return null;
+    	org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart sdp =
+    		((WordprocessingMLPackage) numberingPart.getPackage()).getMainDocumentPart().getStyleDefinitionsPart();
+    	if (sdp == null || sdp.getJaxbElement() == null) return null;
+    	for (org.docx4j.wml.Style s : sdp.getJaxbElement().getStyle()) {
+    		if (!"paragraph".equals(s.getType()) || s.getStyleId() == null
+    				|| s.getPPr() == null || s.getPPr().getNumPr() == null) continue;
+    		NumPr own = s.getPPr().getNumPr();
+    		if (own.getNumId() == null || own.getNumId().getVal() == null) continue;
+    		ListNumberingDefinition other = numberingPart.getInstanceListDefinitions().get(
+    				own.getNumId().getVal().toString());
+    		if (other == null || other.getAbstractListDefinition() != lnd.getAbstractListDefinition()) continue;
+    		String ownLevel = (own.getIlvl() == null || own.getIlvl().getVal() == null)
+    				? "0" : own.getIlvl().getVal().toString();
+    		if (ownLevel.equals(ilvl)) return s.getStyleId();
+    	}
+    	return null;
     }
 
     /**
@@ -586,6 +655,13 @@ public class Emulator {
      */
     public static class NumberingResult {
     	
+    	Integer value;
+    	/** The count this paragraph's level shows: its counter once this paragraph is counted
+    	 *  (the 3 of "1.3."); null where the level could not be counted.  @since 17.3.4 */
+		public Integer getValue() {
+			return value;
+		}
+
     	String numString;
     	/** The label text, the level's {@code w:lvlText} with its counters filled in
     	 *  ("1.2.", "(c)"); null for a list or level with no definition. */

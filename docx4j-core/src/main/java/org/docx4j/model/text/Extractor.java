@@ -532,6 +532,9 @@ final class Extractor {
 		/** Where its code's runs begin, for a table of contents' to be taken out again. */
 		TextBlock codeBlock;
 		int codeStart;
+		/** The paragraph whose merge floor its code raised, and the floor before: put back once the code is taken out. */
+		Paragraph floorParagraph;
+		int previousFloor;
 	}
 
 	/** The state of a run-level walk: the revision and the control the runs are in. */
@@ -675,7 +678,12 @@ final class Extractor {
 			endSection(last, story);
 			return;
 		}
-		if (options.isListLabels() && pkg != null) block.listLabel = listLabel(last, story);
+		// one count per paragraph: the label (list_labels) and the numbering's value come from it
+		if (pkg != null && (options.isListLabels() || block.numbering != null)) {
+			Emulator.NumberingResult counted = count(last, story);
+			if (options.isListLabels()) block.listLabel = listLabel(counted);
+			if (block.numbering != null && counted != null) block.numbering.value = counted.getValue();
+		}
 		block.section = story.sections == null ? 0 : story.sections.size();
 		sink.add(block);
 		flushIfOutsideTable(story, sink);
@@ -828,23 +836,35 @@ final class Extractor {
 			if (level >= 0 && level <= 8) block.outlineLevel = level; // 9 is body text
 		}
 		if (effective.getContextualSpacing() != null) block.contextualSpacing = effective.getContextualSpacing().isVal();
-		block.numbering = numbering(effective.getNumPr());
+		boolean directNumId = own != null && own.getNumPr() != null && own.getNumPr().getNumId() != null;
+		block.numbering = numbering(effective.getNumPr(), directNumId, own != null && own.getPStyle() != null ? own.getPStyle().getVal() : null);
 	}
 
-	/** A paragraph's numbering from its effective {@code w:numPr} and the numbering definitions; null for none, or {@code w:numId} 0. */
-	private TextNumbering numbering(PPrBase.NumPr numPr) {
+	/**
+	 * A paragraph's numbering from its effective {@code w:numPr} and the numbering definitions; null for
+	 * none, for {@code w:numId} 0, and where Word gives the paragraph no number: a {@code w:numId} its
+	 * style brought, whose level belongs to another paragraph style (the one its {@code w:lvl/w:pStyle}
+	 * names, else the first in styles.xml carrying it; not the paragraph's own or one it is based on), the
+	 * list labels' rule ({@code Emulator}, word-layout-rules section 2.8).
+	 */
+	private TextNumbering numbering(PPrBase.NumPr numPr, boolean directNumId, String pStyle) {
 		if (numPr == null || numPr.getNumId() == null || numPr.getNumId().getVal() == null) return null;
 		BigInteger numId = numPr.getNumId().getVal();
 		if (BigInteger.ZERO.equals(numId)) return null;
 		int ilvl = numPr.getIlvl() != null && numPr.getIlvl().getVal() != null ? numPr.getIlvl().getVal().intValue() : 0;
-		String format = null, text = null;
+		String format = null, text = null, abstractNumId = null;
 		int start = 1;
 		try {
 			org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart ndp = pkg == null || pkg.getMainDocumentPart() == null
 					? null : pkg.getMainDocumentPart().getNumberingDefinitionsPart();
+			if (ndp != null && !directNumId && linkedElsewhere(ndp, numId.toString(), Integer.toString(ilvl), pStyle)) return null;
 			org.docx4j.model.listnumbering.ListNumberingDefinition lnd = ndp == null ? null : ndp.getInstanceListDefinitions().get(numId.toString());
-			org.docx4j.model.listnumbering.ListLevel level = lnd == null || lnd.getAbstractListDefinition() == null ? null
-					: lnd.getAbstractListDefinition().getListLevels().get(Integer.toString(ilvl));
+			if (lnd != null && lnd.getAbstractListDefinition() != null) abstractNumId = lnd.getAbstractListDefinition().getID();
+			// the instance's level, its w:lvlOverride (a start override, an overriding w:lvl) applied
+			org.docx4j.model.listnumbering.ListLevel level = lnd == null ? null : lnd.getLevel(ilvl);
+			if (level == null && lnd != null && lnd.getAbstractListDefinition() != null) {
+				level = lnd.getAbstractListDefinition().getListLevels().get(Integer.toString(ilvl));
+			}
 			if (level != null) {
 				format = level.getNumFmt() == null ? (level.isBullet() ? "bullet" : null) : level.getNumFmt().value();
 				text = level.getLevelText();
@@ -854,16 +874,45 @@ final class Extractor {
 		} catch (RuntimeException e) {
 			log.debug("Couldn't read the numbering of " + numId + ": " + e.getMessage());
 		}
-		return new TextNumbering(numId.toString(), ilvl, format, text, start);
+		TextNumbering numbering = new TextNumbering(numId.toString(), ilvl, format, text, start);
+		numbering.abstractNumId = abstractNumId;
+		return numbering;
+	}
+
+	/** Whether the level belongs to a paragraph style that is neither the paragraph's nor one its style is
+	 *  based on: the style its {@code w:lvl/w:pStyle} names, else the first in styles.xml carrying it
+	 *  ({@link Emulator#levelStyleId}). */
+	private boolean linkedElsewhere(org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart ndp,
+			String numId, String ilvl, String pStyle) {
+		String linked = Emulator.levelStyleId(ndp, numId, ilvl);
+		if (linked == null || linked.isEmpty()) return false;
+		// a paragraph naming no style is in the default paragraph style, which can own a level
+		if (pStyle == null && propertyResolver != null) pStyle = propertyResolver.getDefaultParagraphStyleId();
+		java.util.Set<String> seen = new java.util.HashSet<String>();
+		for (String id = pStyle; id != null && seen.add(id); ) {
+			if (linked.equals(id)) return false;
+			org.docx4j.wml.Style s = propertyResolver == null ? null : propertyResolver.getStyle(id);
+			id = s == null || s.getBasedOn() == null ? null : s.getBasedOn().getVal();
+		}
+		return true;
 	}
 
 	private static Integer twips(BigInteger value) {
 		return value == null ? null : value.intValue();
 	}
 
-	private String listLabel(P p, Story story) {
+	/** The paragraph counted in its story's numbering state; null where it is not numbered. */
+	private Emulator.NumberingResult count(P p, Story story) {
 		try {
-			Emulator.ResultTriple triple = Emulator.getNumber(pkg, p.getPPr(), story.numbering());
+			return Emulator.getNumber(pkg, p.getPPr(), story.numbering());
+		} catch (RuntimeException e) {
+			log.debug("Couldn't count a paragraph's numbering: " + e.getMessage());
+			return null;
+		}
+	}
+
+	private static String listLabel(Emulator.NumberingResult triple) {
+		try {
 			if (triple == null) return null;
 			String label = triple.getNumString();
 			if (label == null || label.isEmpty()) label = triple.getBullet();
@@ -1100,7 +1149,11 @@ final class Extractor {
 				f.ffData = fc.getFfData();
 				f.codeBlock = para.block;
 				f.codeStart = para.block.runs.size();
-				if (!options.isToc() && options.isFieldCodes()) para.mergeFloor = para.block.runs.size();
+				if (!options.isToc() && options.isFieldCodes()) {
+					f.floorParagraph = para;
+					f.previousFloor = para.mergeFloor;
+					para.mergeFloor = para.block.runs.size();
+				}
 				fields.push(f);
 			} else if (type == STFldCharType.SEPARATE) {
 				if (!fields.isEmpty()) {
@@ -1315,6 +1368,8 @@ final class Extractor {
 
 	/** A table of contents' code, shown under {@code field_codes} until it was known to be one, taken out again. */
 	private static void removeFieldCode(FieldState f, Paragraph para) {
+		// what follows the field may merge with what preceded it, as it would with no field codes
+		if (f.floorParagraph != null) f.floorParagraph.mergeFloor = f.previousFloor;
 		if (f.codeBlock != null) {
 			List<TextRun> runs = f.codeBlock.runs;
 			for (int k = runs.size() - 1; k >= Math.min(f.codeStart, runs.size()); k--) {
@@ -1833,7 +1888,30 @@ final class Extractor {
 
 	private static Part blipPart(Pic pic, Paragraph para) {
 		if (pic.getBlipFill() == null || pic.getBlipFill().getBlip() == null) return null;
-		return related(para.story.part, pic.getBlipFill().getBlip().getEmbed());
+		org.docx4j.dml.CTBlip blip = pic.getBlipFill().getBlip();
+		Part part = related(para.story.part, blip.getEmbed());
+		// an SVG picture with no PNG copy (r:embed is optional; the ImageAddSVG sample writes it so): its svgBlip's (#699)
+		return part != null ? part : related(para.story.part, svgBlipEmbed(blip));
+	}
+
+	/** The extension Office 2016 writes an SVG picture's SVG in, beside the PNG copy {@code a:blip/@r:embed} names. */
+	static final String SVG_BLIP_EXTENSION = "{96DAC541-7B7A-43D3-8B79-37D633B846F1}";
+
+	/** An {@code a:blip}'s {@code asvg:svgBlip/@r:embed}, or null. */
+	static String svgBlipEmbed(org.docx4j.dml.CTBlip blip) {
+		if (blip == null || blip.getExtLst() == null) return null;
+		for (org.docx4j.dml.CTOfficeArtExtension ext : blip.getExtLst().getExt()) {
+			if (!SVG_BLIP_EXTENSION.equalsIgnoreCase(ext.getUri())) continue;
+			Object v = unwrap(ext.getAny());
+			if (v instanceof org.docx4j.com.microsoft.schemas.office.drawing.x2016.SVG.main.CTSVGBlip) {
+				return ((org.docx4j.com.microsoft.schemas.office.drawing.x2016.SVG.main.CTSVGBlip) v).getEmbed();
+			}
+			if (v instanceof org.w3c.dom.Element) {
+				String id = ((org.w3c.dom.Element) v).getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "embed");
+				if (!id.isEmpty()) return id;
+			}
+		}
+		return null;
 	}
 
 	/** The part a relationship of {@code host} names, without adding a relationships part. */

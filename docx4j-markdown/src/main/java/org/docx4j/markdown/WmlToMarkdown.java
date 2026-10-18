@@ -84,14 +84,21 @@ class WmlToMarkdown {
 	// open-list state (spans consecutive numbered paragraphs)
 	private static final class OpenList {
 		final ListBlock node;
+		/** The list: its abstractNum where the text model gives one, else its numId. */
 		final String numId;
 		ListItem lastItem;
+		/** The last item's left indent, where its text starts (twips). */
+		int itemIndent;
+		/** The count the next item must show for this list to go on, else a new list starts at it; null for a bullet list. */
+		Integer nextValue;
 		OpenList(ListBlock node, String numId) {
 			this.node = node;
 			this.numId = numId;
 		}
 	}
 	private final Deque<OpenList> openLists = new ArrayDeque<>();
+	/** The count each list level last showed ("numId/ilvl"), for a parent item reopened after an interruption. */
+	private final java.util.Map<String, Integer> lastValues = new java.util.HashMap<>();
 
 	// open-quote state (spans consecutive Quote paragraphs)
 	private BlockQuote openQuote;
@@ -247,12 +254,16 @@ class WmlToMarkdown {
 			return index;
 		}
 
-		// follow-on paragraph inside a loose list item (indented, unnumbered)
-		if (!openLists.isEmpty() && ImportStyles.LIST_PARAGRAPH.equals(style)) {
-			OpenList top = openLists.peek();
-			if (top.lastItem != null) {
-				top.node.setTight(false);
-				top.lastItem.appendChild(inlineParagraph(block, true));
+		// an unlabelled paragraph inside a list (WD REQ-703): Markdown has no empty paragraphs, so an empty
+		// one neither ends the list nor joins it; one indented at least to an open item's text (or in the
+		// ListParagraph style) is a follow-on paragraph of the deepest such item; any other ends the
+		// lists, and the list goes on at its own count where it resumes (listParagraph)
+		if (!openLists.isEmpty() && !ImportStyles.QUOTE.equals(style) && !"IntenseQuote".equals(style)) {
+			if (isEmpty(block)) return index;
+			OpenList into = followOnItem(block, style);
+			if (into != null) {
+				into.node.setTight(false);
+				into.lastItem.appendChild(inlineParagraph(block, true));
 				return index;
 			}
 		}
@@ -423,35 +434,70 @@ class WmlToMarkdown {
 
 	// ---------------------------------------------------------------- lists
 
+	/**
+	 * The open list whose last item an unlabelled paragraph continues: the deepest whose item's text
+	 * the paragraph is indented to (its left indent at least the item's, and not at the margin), or
+	 * the deepest open list for a ListParagraph-styled paragraph; the lists deeper than it are closed.
+	 * Null where none: the paragraph ends the lists.
+	 */
+	private OpenList followOnItem(TextBlock block, String style) {
+		int indent = value(block.getIndentLeft());
+		boolean listParagraph = ImportStyles.LIST_PARAGRAPH.equals(style);
+		int deeper = 0;
+		for (OpenList open : openLists) { // deepest first
+			if (open.lastItem != null && (listParagraph || indent > 0 && indent >= open.itemIndent)) {
+				for (int k = 0; k < deeper; k++) openLists.pop();
+				return open;
+			}
+			deeper++;
+		}
+		return null;
+	}
+
 	private void listParagraph(TextBlock block, TextNumbering numbering, Node container) {
 
 		int ilvl = numbering.getLevel();
-		String numId = numbering.getNumId();
+		// the list: two w:num on one w:abstractNum are one list, counting on from each other
+		String numId = numbering.getAbstractNumId() != null ? numbering.getAbstractNumId() : numbering.getNumId();
+		Integer value = numbering.getValue();
+		boolean bullet = numbering.isBullet() || numbering.getFormat() == null;
 
 		// close any deeper (or same-level-but-different-list) contexts
 		while (openLists.size() > ilvl + 1) {
 			openLists.pop();
 		}
-		if (openLists.size() == ilvl + 1 && !openLists.peek().numId.equals(numId)
-				&& ilvl == 0) {
+		if (openLists.size() == ilvl + 1 && !openLists.peek().numId.equals(numId) && ilvl == 0) {
 			openLists.pop(); // a different top-level list: restart
+		}
+		if (openLists.size() == ilvl + 1 && (openLists.peek().node instanceof BulletList) != bullet) {
+			openLists.pop(); // a level drawn as the other kind (a w:num overriding it): a list of that kind
 		}
 
 		boolean tight = !Boolean.FALSE.equals(block.getContextualSpacing());
 
-		// open missing levels (a level skipped over takes the paragraph's kind of list)
+		// the list's items show consecutive counts from its start; an item whose count is not the
+		// next one (the list resumed after a paragraph that ended it, a w:num sharing the count, a
+		// start override) begins a new list at its count
+		if (openLists.size() == ilvl + 1 && value != null && openLists.peek().nextValue != null
+				&& !value.equals(openLists.peek().nextValue)) {
+			openLists.pop();
+		}
+
+		// open missing levels (a level skipped over takes the paragraph's kind of list); a parent
+		// level reopened after an interruption is an empty item showing the parent's last count
 		while (openLists.size() < ilvl + 1) {
 			int level = openLists.size();
-			ListBlock listBlock = createListBlock(numbering, level == ilvl, tight);
+			ListBlock listBlock = createListBlock(numbering, level == ilvl, tight,
+					level == ilvl ? value : lastValues.get(numId + "/" + level));
 			if (openLists.isEmpty()) {
-				container.appendChild(listBlock);
+				appendList(container, listBlock);
 			} else {
 				OpenList parent = openLists.peek();
 				if (parent.lastItem == null) {
 					parent.lastItem = new ListItem();
 					parent.node.appendChild(parent.lastItem);
 				}
-				parent.lastItem.appendChild(listBlock);
+				appendList(parent.lastItem, listBlock);
 			}
 			openLists.push(new OpenList(listBlock, numId));
 		}
@@ -464,10 +510,19 @@ class WmlToMarkdown {
 		item.appendChild(inlineParagraph(block, false));
 		target.node.appendChild(item);
 		target.lastItem = item;
+		target.itemIndent = value(block.getIndentLeft());
+		if (target.node instanceof OrderedList && value != null) {
+			target.nextValue = value + 1;
+			lastValues.put(numId + "/" + ilvl, value);
+		}
 	}
 
-	/** A list block; the start number only for the paragraph's own level, at the top level. */
-	private ListBlock createListBlock(TextNumbering numbering, boolean own, boolean tight) {
+	/**
+	 * A list block.  An ordered one starts at the count given (the item's own, or a reopened parent's
+	 * last), else - the paragraph's own level at the top - at the level's w:start; Markdown numbers
+	 * the items on from there.
+	 */
+	private ListBlock createListBlock(TextNumbering numbering, boolean own, boolean tight, Integer count) {
 		// a level the numbering definitions don't give is a bullet list
 		boolean bullet = numbering.isBullet() || numbering.getFormat() == null;
 		ListBlock listBlock;
@@ -475,13 +530,30 @@ class WmlToMarkdown {
 			listBlock = new BulletList();
 		} else {
 			OrderedList ordered = new OrderedList();
-			if (own && numbering.getLevel() == 0 && numbering.getStart() > 1) {
+			if (count != null) {
+				if (count != 1) ordered.setMarkerStartNumber(count);
+			} else if (own && numbering.getLevel() == 0 && numbering.getStart() > 1) {
 				ordered.setMarkerStartNumber(numbering.getStart());
 			}
 			listBlock = ordered;
 		}
 		listBlock.setTight(tight);
 		return listBlock;
+	}
+
+	/**
+	 * Appends a list.  Markdown runs two adjacent lists of one kind together, numbering the second on
+	 * from the first; a list that directly follows another of its kind therefore takes the other
+	 * delimiter (1. or 1)) or bullet (- or *), which CommonMark reads as a new list.
+	 */
+	private static void appendList(Node parent, ListBlock list) {
+		Node previous = parent.getLastChild();
+		if (list instanceof OrderedList && previous instanceof OrderedList) {
+			((OrderedList) list).setMarkerDelimiter(")".equals(((OrderedList) previous).getMarkerDelimiter()) ? "." : ")");
+		} else if (list instanceof BulletList && previous instanceof BulletList) {
+			((BulletList) list).setMarker("*".equals(((BulletList) previous).getMarker()) ? "-" : "*");
+		}
+		parent.appendChild(list);
 	}
 
 	private void closeLists() {
@@ -963,19 +1035,25 @@ class WmlToMarkdown {
 
 	// ---------------------------------------------------------------- images
 
-	/** A picture with the describer's text (REQ-703, REQ-514); one that isn't in an image part is dropped. */
+	/**
+	 * A picture with the describer's text (REQ-703, REQ-514): its image part's bytes, or an SVG picture's
+	 * SVG where it has no PNG copy (issue 699); a picture whose image can't be had keeps its alt text, with
+	 * an empty destination.
+	 */
 	private void image(TextRun run, InlineSink sink) {
 		Part part = run.getImage() == null ? null : run.getImage().getPart();
-		if (!(part instanceof BinaryPartAbstractImage)) {
-			log.debug("Dropping a picture with no image part");
-			return;
-		}
-		String destination;
+		String destination = "";
 		try {
-			destination = imageDestination((BinaryPartAbstractImage) part);
+			if (part instanceof BinaryPartAbstractImage) {
+				destination = imageDestination(((BinaryPartAbstractImage) part).getBytes(), part.getContentType(), part);
+			} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart && SVG.equals(part.getContentType())) {
+				destination = imageDestination(((org.docx4j.openpackaging.parts.XmlPart) part).getXML()
+						.getBytes(java.nio.charset.StandardCharsets.UTF_8), SVG, part);
+			} else {
+				log.debug("A picture with no image part: its alt text, with no destination");
+			}
 		} catch (Exception e) {
-			log.warn("Could not extract image; dropping it", e);
-			return;
+			log.warn("Could not extract an image: its alt text, with no destination", e);
 		}
 		ImageDescription description = run.getDescription();
 		org.commonmark.node.Image image = new org.commonmark.node.Image(destination, null);
@@ -983,11 +1061,10 @@ class WmlToMarkdown {
 		sink.node(image);
 	}
 
-	/** Data URI by default; a file in imageDirPath (with a relative link) when set. */
-	private String imageDestination(BinaryPartAbstractImage imagePart) throws Exception {
+	private static final String SVG = "image/svg+xml";
 
-		byte[] bytes = imagePart.getBytes();
-		String contentType = imagePart.getContentType();
+	/** Data URI by default; a file in imageDirPath (with a relative link) when set. */
+	private String imageDestination(byte[] bytes, String contentType, Part imagePart) throws Exception {
 
 		if (options.getImageDirPath() == null) {
 			return "data:" + contentType + ";base64,"
@@ -1006,7 +1083,7 @@ class WmlToMarkdown {
 				: options.getImageTargetUri() + "/" + fileName;
 	}
 
-	private static String extensionFor(String contentType, BinaryPartAbstractImage part) {
+	private static String extensionFor(String contentType, Part part) {
 		switch (contentType == null ? "" : contentType) {
 		case "image/png": return "png";
 		case "image/jpeg": return "jpg";
