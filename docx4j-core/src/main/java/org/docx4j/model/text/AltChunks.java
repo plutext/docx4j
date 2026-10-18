@@ -151,16 +151,28 @@ final class AltChunks {
 	/**
 	 * Leaves the importer unable to fetch (WD section 11: an extraction never follows a link): an
 	 * image handler that adds nothing for an {@code img}, so that neither a URL nor a local file is
-	 * read (nor a data URI decoded), and a user agent that refuses every resource, a stylesheet's
-	 * {@code link} and {@code @import} included, and resolves no URI. Null when done, else why it
-	 * couldn't be: docx4j-ImportXHTML on the module path, which doesn't open its renderer to docx4j,
-	 * or a version without these hooks.
+	 * read (nor a data URI decoded), and no resource opened, a stylesheet's {@code link} and
+	 * {@code @import} included. From docx4j-ImportXHTML 17.3.4 that is its
+	 * {@code setExternalResourcesAllowed(false)}; before, a user agent, reached through the protected
+	 * {@code getRenderer}, that refuses every resource and resolves no URI. Null when done, else why
+	 * it couldn't be: an earlier docx4j-ImportXHTML on the module path, which doesn't open its
+	 * renderer to docx4j, or a version without these hooks.
 	 */
 	private static String neverFetch(Class<?> importer, Object instance) {
 		try {
 			ClassLoader loader = importer.getClassLoader();
 			Class<?> handler = Class.forName("org.docx4j.convert.in.xhtml.XHTMLImageHandler", false, loader);
 			importer.getMethod("setXHTMLImageHandler", handler).invoke(instance, nothing(handler));
+			Method allowed = null;
+			try {
+				allowed = importer.getMethod("setExternalResourcesAllowed", boolean.class);
+			} catch (NoSuchMethodException e) {
+				// before 17.3.4
+			}
+			if (allowed != null) {
+				allowed.invoke(instance, false);
+				return null;
+			}
 
 			// The renderer the conversion will use: getRenderer makes it once, with the scratch
 			// package's styles as CSS.

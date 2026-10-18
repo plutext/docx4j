@@ -639,7 +639,14 @@ an `object` and an `iframe` were never fetched. `AltChunkNoFetchTest` counts the
 loopback listener with the importer absent (as Maven runs it) and present (a hand run). Before the
 fix, with the importer present, it saw `/link.css`, `/import.css`, `/image.png`, `/mht.css` and
 `/mht.png`. After it, there are none, and the MHT chunk is still read through the importer. The
-importer-present suite is unchanged by it (963 pass, 60 pending, before and after).
+importer-present suite is unchanged by it (963 pass, 60 pending, before and after). Committed as
+0847b3df3. At Jason's word ("ask the ImportXHTML session for a public 'never fetch' setting"),
+docx4j-ImportXHTML 17.3.4 adds `XHTMLImporterImpl.setExternalResourcesAllowed(boolean)` (c8dc938 on
+its VERSION_17_3_4, with `ExternalResourcesTest`): public, in an exported package, JDK types only.
+`AltChunks` calls it where `getMethod` finds it, which covers the module path, and keeps the hooks for
+earlier releases. It still sets its own image handler, so a data URI's image is left out as before.
+Checked both ways with `AltChunkNoFetchTest` (3 pass each): with the setter, it is called and the
+renderer is not reached into; with docx4j-ImportXHTML's d2fb510, which has no setter, the hooks run.
 
 Review, 18 October 2026 (Fable 5.1, session docx4j-44, at Jason's request): it found no correctness
 defect in the walk. It checked the suite (876 PASS, 57 PENDING), docx4j-markdown with `OmmlToLatex`
