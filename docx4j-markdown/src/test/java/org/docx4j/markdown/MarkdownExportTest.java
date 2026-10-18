@@ -203,16 +203,24 @@ public class MarkdownExportTest {
 		assertEquals("**NOTE** The label is not a number.\n\n1. But this is a list.\n", md);
 	}
 
-	/** A table-of-contents entry is dropped: its link goes to a Word bookmark no
-	 *  markdown renderer has, and headings are navigable anyway. */
+	/** A table of contents is left out: its links go to Word bookmarks no markdown renderer has,
+	 *  and headings are navigable anyway.  Since 17.3.4 the text model's rule for every format
+	 *  (CR-046 D12): a TOC field's result, under toc: false, the default; toc: true keeps it. */
 	@Test
 	public void tocEntriesAreDropped() throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		addStyle(pkg, "<w:style " + W + " w:type=\"paragraph\" w:styleId=\"TOC1\"><w:name w:val=\"toc 1\"/></w:style>");
 		addP(pkg, "<w:p " + W + "><w:pPr><w:pStyle w:val=\"TOC1\"/></w:pPr>"
+				+ "<w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText xml:space=\"preserve\"> TOC \\o \"1-3\" \\h </w:instrText></w:r>"
+				+ "<w:r><w:fldChar w:fldCharType=\"separate\"/></w:r>"
 				+ "<w:hyperlink w:anchor=\"_Toc1004\"><w:r><w:t>1.1</w:t></w:r><w:r><w:tab/></w:r>"
 				+ "<w:r><w:t>Overview</w:t></w:r><w:r><w:tab/></w:r><w:r><w:t>3</w:t></w:r></w:hyperlink></w:p>");
+		addP(pkg, "<w:p " + W + "><w:r><w:fldChar w:fldCharType=\"end\"/></w:r></w:p>");
 		pkg.getMainDocumentPart().addStyledParagraphOfText("Heading1", "Overview");
 		assertEquals("# Overview\n", export(pkg));
+
+		MarkdownExportOptions options = new MarkdownExportOptions();
+		options.getTextOptions().toc(true);
+		assertEquals("[1.1\tOverview\t3](#_Toc1004)\n\n# Overview\n", new MarkdownExporter(options).export(pkg));
 	}
 }

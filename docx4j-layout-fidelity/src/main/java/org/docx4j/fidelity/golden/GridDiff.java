@@ -79,7 +79,7 @@ public final class GridDiff {
 	private static List<int[]> grids(File docx) throws Exception {
 		WordprocessingMLPackage pkg = Docx4J.load(docx);
 		ClassFinder finder = new ClassFinder(Tbl.class);
-		new TraversalUtil(pkg.getMainDocumentPart().getContent(), finder);
+		new TraversalUtil(pkg.getMainDocumentPart().getContent(), finder, org.docx4j.jaxb.McMode.DRAW); // the tables docx4j draws (CR-046 phase 3)
 		List<int[]> out = new ArrayList<int[]>();
 		for (Object o : finder.results) {
 			Tbl tbl = (Tbl) o;

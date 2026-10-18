@@ -270,7 +270,7 @@ public final class RowGridDiff {
 
 	static List<TableGeom> tables(WordprocessingMLPackage pkg) {
 		ClassFinder finder = new ClassFinder(Tbl.class);
-		new TraversalUtil(pkg.getMainDocumentPart().getContent(), finder);
+		new TraversalUtil(pkg.getMainDocumentPart().getContent(), finder, org.docx4j.jaxb.McMode.DRAW); // the tables docx4j draws (CR-046 phase 3)
 		List<TableGeom> out = new ArrayList<TableGeom>();
 		int index = 0;
 		for (Object o : finder.results) {
@@ -294,7 +294,7 @@ public final class RowGridDiff {
 			}
 			t.cols = t.grid == null ? 0 : t.grid.length;
 			TrFinder trFinder = new TrFinder();
-			new TraversalUtil(tbl, trFinder);
+			new TraversalUtil(tbl, trFinder, org.docx4j.jaxb.McMode.DRAW);
 			boolean[] colPref = new boolean[t.cols];
 			int r = 0;
 			for (Tr tr : trFinder.getTrList()) {
@@ -329,7 +329,7 @@ public final class RowGridDiff {
 		g.wBefore = width(tr, "wBefore");
 		g.wAfter = width(tr, "wAfter");
 		TcFinder tcFinder = new TcFinder();
-		new TraversalUtil(tr, tcFinder);
+		new TraversalUtil(tr, tcFinder, org.docx4j.jaxb.McMode.DRAW);
 		int n = tcFinder.tcList.size();
 		g.tcW = new int[n];
 		g.start = new int[n];

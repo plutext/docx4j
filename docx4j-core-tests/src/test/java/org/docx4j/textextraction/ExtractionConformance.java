@@ -274,7 +274,21 @@ public final class ExtractionConformance {
         }
     }
     public static void verifyGolden(Path file, String actual) throws Exception {
-        equal(normalize(Files.readString(file, StandardCharsets.UTF_8)), normalize(actual), file.toString());
+        String golden = Files.readString(file, StandardCharsets.UTF_8);
+        if (file.getFileName().toString().endsWith(".md")) {
+            golden = imageDestinations(golden);
+            actual = imageDestinations(actual);
+        }
+        equal(normalize(golden), normalize(actual), file.toString());
+    }
+    private static final Pattern IMAGE = Pattern.compile("!\\[((?:\\\\.|[^\\]\\\\])*)\\]\\([^)]*\\)");
+    /**
+     * Markdown with each image's destination written {@code …}: WD REQ-703 writes {@code ![alt](…)},
+     * leaving the destination to the implementation (docx4j writes a data URI, or a file's name under
+     * {@code imageDirPath}), so a golden's isn't compared (CR-046 phase 3).
+     */
+    public static String imageDestinations(String markdown) {
+        return IMAGE.matcher(markdown).replaceAll(m -> Matcher.quoteReplacement("![" + m.group(1) + "](\u2026)"));
     }
     /** The engine: {@link TextsAdapter} unless {@code -Dtextextraction.adapter} names another, or {@code none}. */
     public static Engine engine() throws Exception {

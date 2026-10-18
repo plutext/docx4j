@@ -281,6 +281,7 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 
 	// ---- the visitor
 
+	@SuppressWarnings("deprecation") // TextUtils: a length for the scramble, not a reading of text (CR-046)
 	@Override
 	public Action visit(Object o, JAXBElement<?> wrapper) {
 

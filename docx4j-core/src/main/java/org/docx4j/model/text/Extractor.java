@@ -135,7 +135,11 @@ final class Extractor {
 
 	private static final String W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 
-	/** Fonts whose glyphs are all one width, for the block model's {@code monospace}. */
+	/**
+	 * Fonts whose glyphs are all one width, for the block model's {@code monospace} and Markdown's code.
+	 * The WD's definition of a monospaced font (1.3.2, from 0.11) is this list: a change here goes to
+	 * the portfolio for the WD, and the ports follow.
+	 */
 	private static final Set<String> MONOSPACE = new LinkedHashSet<String>(java.util.Arrays.asList(
 			"courier new", "courier", "consolas", "lucida console", "lucida sans typewriter", "menlo", "monaco",
 			"cascadia mono", "cascadia code", "source code pro", "dejavu sans mono", "liberation mono",
@@ -521,6 +525,13 @@ final class Extractor {
 		String computed;
 		/** A form field's data, on its beginning: a FORMTEXT's default text (REQ-506). */
 		CTFFData ffData;
+		/** A HYPERLINK field's target, once its code is read: its result's text is in the link (REQ-703). */
+		String link;
+		/** A table of contents under {@code toc: false} (D12): nothing of it is read. */
+		boolean toc;
+		/** Where its code's runs begin, for a table of contents' to be taken out again. */
+		TextBlock codeBlock;
+		int codeStart;
 	}
 
 	/** The state of a run-level walk: the revision and the control the runs are in. */
@@ -630,11 +641,14 @@ final class Extractor {
 		block.noteNumber = story.noteNumber;
 		block.noteId = story.noteId;
 		Boolean monospace = null;
+		boolean toc = false;
 		for (int c = 0; c < chain.size(); c++) {
 			P p = chain.get(c);
 			block.revisions += markRevisions(p);
 			Paragraph para = new Paragraph(block, p, addresses.get(c), story);
+			boolean startsInToc = inToc(story);
 			runs(p.getContent(), para, state);
+			if (startsInToc || para.toc || inToc(story)) toc = true;
 			if (para.monospace != null) monospace = monospace == null ? para.monospace : monospace && para.monospace;
 		}
 		for (Bookmark b : openBookmarks.values()) b.paragraphEnded = true;
@@ -654,6 +668,12 @@ final class Extractor {
 		block.hidden = hiddenParagraph;
 		if (!options.isHidden()) {
 			for (int k = block.runs.size() - 1; k >= 0; k--) if (block.runs.get(k).hidden) block.runs.remove(k);
+		}
+		if (toc && block.runs.isEmpty()) {
+			// a table of contents' paragraph, under toc: false (D12): no line at all
+			flushIfOutsideTable(story, sink);
+			endSection(last, story);
+			return;
 		}
 		if (options.isListLabels() && pkg != null) block.listLabel = listLabel(last, story);
 		block.section = story.sections == null ? 0 : story.sections.size();
@@ -784,21 +804,57 @@ final class Extractor {
 	}
 
 	private void properties(TextBlock block, P p) {
-		if (propertyResolver == null) return;
-		try {
-			PPr effective = propertyResolver.getEffectivePPr(p.getPPr());
-			if (effective == null) return;
-			PPrBase.Ind ind = effective.getInd();
-			if (ind != null) {
-				block.indentLeft = twips(ind.getLeft() != null ? ind.getLeft() : ind.getStart());
-				block.indentHanging = twips(ind.getHanging());
-				block.indentFirstLine = twips(ind.getFirstLine());
+		PPr own = p.getPPr();
+		block.bottomBorder = own != null && own.getPBdr() != null && own.getPBdr().getBottom() != null;
+		PPr effective = own;
+		if (propertyResolver != null) {
+			try {
+				effective = propertyResolver.getEffectivePPr(own);
+			} catch (Exception e) {
+				log.debug("Couldn't resolve paragraph properties of " + block.address + ": " + e.getMessage());
 			}
-			Jc jc = effective.getJc();
-			if (jc != null && jc.getVal() != null) block.alignment = jc.getVal().value();
-		} catch (Exception e) {
-			log.debug("Couldn't resolve paragraph properties of " + block.address + ": " + e.getMessage());
 		}
+		if (effective == null) return;
+		PPrBase.Ind ind = effective.getInd();
+		if (ind != null) {
+			block.indentLeft = twips(ind.getLeft() != null ? ind.getLeft() : ind.getStart());
+			block.indentHanging = twips(ind.getHanging());
+			block.indentFirstLine = twips(ind.getFirstLine());
+		}
+		Jc jc = effective.getJc();
+		if (jc != null && jc.getVal() != null) block.alignment = jc.getVal().value();
+		if (effective.getOutlineLvl() != null && effective.getOutlineLvl().getVal() != null) {
+			int level = effective.getOutlineLvl().getVal().intValue();
+			if (level >= 0 && level <= 8) block.outlineLevel = level; // 9 is body text
+		}
+		if (effective.getContextualSpacing() != null) block.contextualSpacing = effective.getContextualSpacing().isVal();
+		block.numbering = numbering(effective.getNumPr());
+	}
+
+	/** A paragraph's numbering from its effective {@code w:numPr} and the numbering definitions; null for none, or {@code w:numId} 0. */
+	private TextNumbering numbering(PPrBase.NumPr numPr) {
+		if (numPr == null || numPr.getNumId() == null || numPr.getNumId().getVal() == null) return null;
+		BigInteger numId = numPr.getNumId().getVal();
+		if (BigInteger.ZERO.equals(numId)) return null;
+		int ilvl = numPr.getIlvl() != null && numPr.getIlvl().getVal() != null ? numPr.getIlvl().getVal().intValue() : 0;
+		String format = null, text = null;
+		int start = 1;
+		try {
+			org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart ndp = pkg == null || pkg.getMainDocumentPart() == null
+					? null : pkg.getMainDocumentPart().getNumberingDefinitionsPart();
+			org.docx4j.model.listnumbering.ListNumberingDefinition lnd = ndp == null ? null : ndp.getInstanceListDefinitions().get(numId.toString());
+			org.docx4j.model.listnumbering.ListLevel level = lnd == null || lnd.getAbstractListDefinition() == null ? null
+					: lnd.getAbstractListDefinition().getListLevels().get(Integer.toString(ilvl));
+			if (level != null) {
+				format = level.getNumFmt() == null ? (level.isBullet() ? "bullet" : null) : level.getNumFmt().value();
+				text = level.getLevelText();
+				// ListLevel's start value is w:start less one, a counter's
+				if (level.getStartValue() != null) start = level.getStartValue().intValue() + 1;
+			}
+		} catch (RuntimeException e) {
+			log.debug("Couldn't read the numbering of " + numId + ": " + e.getMessage());
+		}
+		return new TextNumbering(numId.toString(), ilvl, format, text, start);
 	}
 
 	private static Integer twips(BigInteger value) {
@@ -921,6 +977,16 @@ final class Extractor {
 		int boxes, charts, smartArts, objects;
 		/** Whether every run with text so far is in a monospaced font; null before the first. */
 		Boolean monospace;
+		/** The formatting of the run being read (a run carrying only it), or null outside a run. */
+		TextRun format;
+		/** The target of the {@code w:hyperlink} being read, or null. */
+		String link;
+		/** An equation being written, and whether it is a display one. */
+		boolean math, displayMath;
+		/** Whether a table of contents left out (D12) is in the paragraph: one with nothing else in it is no paragraph. */
+		boolean toc;
+		/** The first of the block's runs a run may be merged into: a field's code starts a run of its own where it may be taken out. */
+		int mergeFloor;
 		Paragraph(TextBlock block, P p, String address, Story story) {
 			this.block = block;
 			this.p = p;
@@ -962,6 +1028,15 @@ final class Extractor {
 				simpleField((CTSimpleField) v, para, state);
 			} else if (isMath(v)) {
 				math(v, para, state);
+			} else if (v instanceof P.Hyperlink) {
+				String saved = para.link;
+				String target = hyperlinkTarget((P.Hyperlink) v, para.story);
+				if (target != null) para.link = target;
+				try {
+					runs(((P.Hyperlink) v).getContent(), para, state);
+				} finally {
+					para.link = saved;
+				}
 			} else {
 				List<Object> children = runItemsOf(v);
 				if (children != null) runs(children, para, state);
@@ -992,7 +1067,13 @@ final class Extractor {
 	private void run(R r, Paragraph para, RunState state) {
 		boolean hidden = isHiddenRun(r, para.p);
 		int before = textLength(para.block);
-		for (Object item : r.getContent()) runItem(item, r, hidden, para, state);
+		TextRun saved = para.format;
+		para.format = formatOf(r, para.p);
+		try {
+			for (Object item : r.getContent()) runItem(item, r, hidden, para, state);
+		} finally {
+			para.format = saved;
+		}
 		if (textLength(para.block) > before) {
 			boolean mono = isMonospace(runFont(r, para.p));
 			para.monospace = para.monospace == null ? mono : para.monospace && mono;
@@ -1017,11 +1098,21 @@ final class Extractor {
 				FieldState f = new FieldState();
 				f.locked = written(fc, "fldLock");
 				f.ffData = fc.getFfData();
+				f.codeBlock = para.block;
+				f.codeStart = para.block.runs.size();
+				if (!options.isToc() && options.isFieldCodes()) para.mergeFloor = para.block.runs.size();
 				fields.push(f);
 			} else if (type == STFldCharType.SEPARATE) {
 				if (!fields.isEmpty()) {
 					FieldState f = fields.peek();
 					f.separated = true;
+					f.link = fieldHyperlinkTarget(f.instr.toString());
+					if (!options.isToc() && !suppressed(para.story) && isTocField(f.instr.toString())) {
+						f.toc = true;
+						para.toc = true;
+						removeFieldCode(f, para);
+						return;
+					}
 					String value = suppressed(para.story) ? null : update(f);
 					if (value != null) {
 						text(para, value, hidden, state);
@@ -1033,6 +1124,11 @@ final class Extractor {
 					FieldState f = fields.pop();
 					// a field inside a computed field's cached result is not read, nor recorded
 					if (suppressed(para.story)) return;
+					if (f.toc || !options.isToc() && isTocField(f.instr.toString())) {
+						if (!f.toc) removeFieldCode(f, para);
+						para.toc = true;
+						return;
+					}
 					if (!f.separated) {
 						String value = update(f);
 						if (value != null) {
@@ -1201,8 +1297,35 @@ final class Extractor {
 	 * text, note and comment references, pictures, page markers, field codes and nested fields alike.
 	 */
 	private static boolean suppressed(Story story) {
-		for (FieldState f : story.fields) if (f.computed != null) return true;
+		for (FieldState f : story.fields) if (f.computed != null || f.toc) return true;
 		return false;
+	}
+
+	/** Inside a table of contents left out (D12). */
+	private static boolean inToc(Story story) {
+		for (FieldState f : story.fields) if (f.toc) return true;
+		return false;
+	}
+
+	/** A TOC field's instruction: a table of contents, of figures ({@code \c}), of anything it collects. */
+	static boolean isTocField(String instr) {
+		List<String> tokens = fieldTokens(instr);
+		return !tokens.isEmpty() && "TOC".equalsIgnoreCase(tokens.get(0));
+	}
+
+	/** A table of contents' code, shown under {@code field_codes} until it was known to be one, taken out again. */
+	private static void removeFieldCode(FieldState f, Paragraph para) {
+		if (f.codeBlock != null) {
+			List<TextRun> runs = f.codeBlock.runs;
+			for (int k = runs.size() - 1; k >= Math.min(f.codeStart, runs.size()); k--) {
+				if (runs.get(k).kind == TextRun.Kind.FIELD_CODE) runs.remove(k);
+			}
+		}
+		if (para.block != f.codeBlock) {
+			// a code over more than one paragraph: this one's code too
+			List<TextRun> runs = para.block.runs;
+			for (int k = runs.size() - 1; k >= 0; k--) if (runs.get(k).kind == TextRun.Kind.FIELD_CODE) runs.remove(k);
+		}
 	}
 
 	/** A field's result under {@code fields: update}, or null to keep its cached one (REQ-506). */
@@ -1249,22 +1372,105 @@ final class Extractor {
 	}
 
 	private void addText(Paragraph para, String s, TextRun.Kind kind, boolean hidden, RunState state) {
+		TextRun run = new TextRun(kind, s, state.revision);
+		run.hidden = hidden;
+		run.placeholder = state.placeholder;
+		if (kind == TextRun.Kind.TEXT) {
+			if (para.format != null) run.copyFormat(para.format);
+			run.link = link(para);
+			run.math = para.math;
+			run.displayMath = para.displayMath;
+		}
 		List<TextRun> runs = para.block.runs;
-		if (!runs.isEmpty()) {
+		if (runs.size() > para.mergeFloor && !run.math) {
 			TextRun last = runs.get(runs.size() - 1);
 			if (last.kind == kind && last.hidden == hidden && last.placeholder == state.placeholder
-					&& java.util.Objects.equals(last.revision, state.revision)) {
+					&& java.util.Objects.equals(last.revision, state.revision) && last.sameFormat(run)) {
 				TextRun merged = new TextRun(kind, last.text + s, last.revision);
 				merged.hidden = hidden;
 				merged.placeholder = last.placeholder;
+				merged.copyFormat(last);
 				runs.set(runs.size() - 1, merged);
 				return;
 			}
 		}
-		TextRun run = new TextRun(kind, s, state.revision);
-		run.hidden = hidden;
-		run.placeholder = state.placeholder;
 		runs.add(run);
+	}
+
+	/** The link text being read is in: the {@code w:hyperlink}'s, else the innermost HYPERLINK field's whose result it is. */
+	private static String link(Paragraph para) {
+		if (para.link != null) return para.link;
+		for (FieldState f : para.story.fields) if (f.separated && f.link != null) return f.link;
+		return null;
+	}
+
+	/** A {@code w:hyperlink}'s target: its relationship's target, and {@code #} and its anchor; else {@code #} and its anchor. */
+	private static String hyperlinkTarget(P.Hyperlink h, Story story) {
+		String target = null;
+		if (h.getId() != null && story.part != null && story.part.getRelationshipsPart(false) != null) {
+			org.docx4j.relationships.Relationship rel = story.part.getRelationshipsPart(false).getRelationshipByID(h.getId());
+			if (rel != null && rel.getTarget() != null && !rel.getTarget().isEmpty()) target = rel.getTarget();
+		}
+		String anchor = h.getAnchor() == null || h.getAnchor().isEmpty() ? null : h.getAnchor();
+		if (anchor != null) return target == null ? "#" + anchor : target + "#" + anchor;
+		return target;
+	}
+
+	/**
+	 * A HYPERLINK field's target from its instruction (WD REQ-703): its address, and {@code #} and the
+	 * bookmark its {@code \l} names; null for any other field, or one with neither.
+	 */
+	static String fieldHyperlinkTarget(String instr) {
+		List<String> tokens = fieldTokens(instr);
+		if (tokens.isEmpty() || !"HYPERLINK".equalsIgnoreCase(tokens.get(0))) return null;
+		String address = null, bookmark = null;
+		for (int i = 1; i < tokens.size(); i++) {
+			String t = tokens.get(i);
+			if (t.length() == 2 && t.charAt(0) == '\\') {
+				char sw = Character.toLowerCase(t.charAt(1));
+				// \l, \o, \t take an argument; \m and \n don't
+				if ((sw == 'l' || sw == 'o' || sw == 't') && i + 1 < tokens.size()) {
+					String arg = tokens.get(++i);
+					if (sw == 'l') bookmark = arg;
+				}
+			} else if (address == null) {
+				address = t;
+			}
+		}
+		if (address != null && address.isEmpty()) address = null;
+		if (bookmark != null && bookmark.isEmpty()) bookmark = null;
+		if (bookmark != null) return address == null ? "#" + bookmark : address + "#" + bookmark;
+		return address;
+	}
+
+	/** A field instruction's words: a quoted argument is one, its quotes removed and {@code \\} and {@code \"} unescaped. */
+	private static List<String> fieldTokens(String instr) {
+		List<String> tokens = new ArrayList<String>();
+		if (instr == null) return tokens;
+		int i = 0, n = instr.length();
+		while (i < n) {
+			char c = instr.charAt(i);
+			if (Character.isWhitespace(c)) {
+				i++;
+			} else if (c == '"') {
+				StringBuilder sb = new StringBuilder();
+				i++;
+				while (i < n && instr.charAt(i) != '"') {
+					char d = instr.charAt(i);
+					if (d == '\\' && i + 1 < n && (instr.charAt(i + 1) == '\\' || instr.charAt(i + 1) == '"')) d = instr.charAt(++i);
+					sb.append(d);
+					i++;
+				}
+				i++; // the closing quote
+				tokens.add(sb.toString());
+			} else {
+				int j = i;
+				while (j < n && !Character.isWhitespace(instr.charAt(j)) && instr.charAt(j) != '"') j++;
+				tokens.add(instr.substring(i, j));
+				i = j;
+			}
+		}
+		return tokens;
 	}
 
 	private void endField(String instr, String result, Paragraph para) {
@@ -1275,6 +1481,10 @@ final class Extractor {
 	private void simpleField(CTSimpleField field, Paragraph para, RunState state) {
 		if (suppressed(para.story)) return; // inside a computed field's cached result
 		String instr = field.getInstr() == null ? "" : field.getInstr();
+		if (!options.isToc() && isTocField(instr)) {
+			para.toc = true; // a table of contents left out (D12): nothing of it is read
+			return;
+		}
 		if (options.isFieldCodes() && !inCode(para.story)) addText(para, instr, TextRun.Kind.FIELD_CODE, false, state);
 		if (options.getFields() == TextOptions.Fields.UPDATE && !written(field, "fldLock") && pkg != null && !inCode(para.story)
 				&& !suppressed(para.story)) {
@@ -1286,16 +1496,17 @@ final class Extractor {
 			}
 		}
 		int before = para.block.runs.size();
-		String text = resultOf(field.getContent(), para, state);
+		String text = resultOf(field.getContent(), para, state, fieldHyperlinkTarget(instr));
 		boolean hasResult = text != null && !text.isEmpty() || para.block.runs.size() > before;
 		para.block.fields.add(new TextField(instr, hasResult ? text : null));
 		if (!hasResult) warn(TextWarning.FIELD_NO_RESULT, para.block.address, null);
 	}
 
 	/** The runs of a simple field's result, added to the paragraph; their text. */
-	private String resultOf(List<Object> content, Paragraph para, RunState state) {
+	private String resultOf(List<Object> content, Paragraph para, RunState state, String link) {
 		FieldState capture = new FieldState();
 		capture.separated = true;
+		capture.link = link;
 		para.story.fields.addLast(capture);
 		try {
 			runs(content, para, state);
@@ -1320,6 +1531,18 @@ final class Extractor {
 	 */
 	private void math(Object v, Paragraph para, RunState state) {
 		boolean display = v instanceof org.docx4j.math.CTOMathPara;
+		boolean savedMath = para.math, savedDisplay = para.displayMath;
+		para.math = true;
+		para.displayMath = display;
+		try {
+			mathText(v, display, para, state);
+		} finally {
+			para.math = savedMath;
+			para.displayMath = savedDisplay;
+		}
+	}
+
+	private void mathText(Object v, boolean display, Paragraph para, RunState state) {
 		if (view == TextView.MARKUP && mode == Mode.VIEW) {
 			TextRevision[] revisions = mathRevisions(v);
 			if (revisions[0] != null || revisions[1] != null) {
@@ -1765,6 +1988,13 @@ final class Extractor {
 					break;
 				}
 			}
+			// every block of the note says whose it is, a table's and a chart's too
+			for (TextBlock b : blocks) {
+				if (b.noteType != null) continue;
+				b.noteType = type;
+				b.noteNumber = e.getValue();
+				b.noteId = e.getKey();
+			}
 			out.addAll(blocks);
 		}
 	}
@@ -1923,6 +2153,32 @@ final class Extractor {
 		return style != null && style.getVanish() != null && style.getVanish().isVal();
 	}
 
+	/**
+	 * A run's formatting beyond its paragraph style's (CR-046 phase 3): bold, italic, struck through,
+	 * monospaced, each as the run's own property gives it, else its styles', where the paragraph style
+	 * alone doesn't give it. A run carrying only that.
+	 */
+	private TextRun formatOf(R r, P p) {
+		RPr own = r.getRPr();
+		RPr styles = styleRPr(r, p);
+		RPr paragraph = paragraphStyleRPr(p);
+		TextRun f = new TextRun(TextRun.Kind.TEXT, "", null);
+		f.bold = on(own == null ? null : own.getB(), styles == null ? null : styles.getB())
+				&& !on(null, paragraph == null ? null : paragraph.getB());
+		f.italic = on(own == null ? null : own.getI(), styles == null ? null : styles.getI())
+				&& !on(null, paragraph == null ? null : paragraph.getI());
+		f.strike = on(own == null ? null : own.getStrike(), styles == null ? null : styles.getStrike())
+				&& !on(null, paragraph == null ? null : paragraph.getStrike());
+		f.monospace = isMonospace(runFont(r, p)) && !isMonospace(asciiFont(paragraph));
+		return f;
+	}
+
+	/** An on/off property: the run's own where it has one, else its styles'. */
+	private static boolean on(org.docx4j.wml.BooleanDefaultTrue own, org.docx4j.wml.BooleanDefaultTrue styles) {
+		if (own != null) return own.isVal();
+		return styles != null && styles.isVal();
+	}
+
 	/** The run's font for {@code monospace}: its own {@code w:rFonts/@w:ascii}, else its styles'. */
 	private String runFont(R r, P p) {
 		String font = asciiFont(r.getRPr());
@@ -1932,10 +2188,18 @@ final class Extractor {
 
 	/** The effective run properties of the run's paragraph style and character style, cached by their ids; null without styles. */
 	private RPr styleRPr(R r, P p) {
+		return styleRPr(r.getRPr() == null ? null : r.getRPr().getRStyle(), p);
+	}
+
+	/** The effective run properties of the paragraph's style alone (with the document defaults); null without styles. */
+	private RPr paragraphStyleRPr(P p) {
+		return styleRPr((org.docx4j.wml.RStyle) null, p);
+	}
+
+	private RPr styleRPr(org.docx4j.wml.RStyle rStyleElement, P p) {
 		if (propertyResolver == null) return null;
-		RPr rPr = r.getRPr();
 		String pStyle = p.getPPr() != null && p.getPPr().getPStyle() != null ? p.getPPr().getPStyle().getVal() : null;
-		String rStyle = rPr != null && rPr.getRStyle() != null ? rPr.getRStyle().getVal() : null;
+		String rStyle = rStyleElement == null ? null : rStyleElement.getVal();
 		String key = pStyle + "|" + rStyle;
 		if (styleRPr.containsKey(key)) return styleRPr.get(key);
 		RPr effective = null;
@@ -1943,7 +2207,7 @@ final class Extractor {
 			RPr styleOnly = null;
 			if (rStyle != null) {
 				styleOnly = new RPr();
-				styleOnly.setRStyle(rPr.getRStyle());
+				styleOnly.setRStyle(rStyleElement);
 			}
 			PPr pPrStyle = null;
 			if (pStyle != null) {

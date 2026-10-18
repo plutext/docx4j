@@ -9,6 +9,8 @@ import java.nio.file.Files;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.text.TextOptions;
+import org.docx4j.model.text.TextView;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.P;
 import org.docx4j.wml.Tbl;
@@ -93,6 +95,8 @@ public class MarkdownExportExtensionsTest {
 		assertEquals("keep added\n", export(pkg));
 	}
 
+	/** Since 17.3.4 (CR-046 D6): CriticMarkup, not ~~ (WD REQ-703); the policy is the view's alias. */
+	@SuppressWarnings("deprecation")
 	@Test
 	public void trackedChangesMarkup() throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
@@ -100,7 +104,24 @@ public class MarkdownExportExtensionsTest {
 		String md = new MarkdownExporter(new MarkdownExportOptions()
 				.setTrackedChangesPolicy(MarkdownExportOptions.TrackedChangesPolicy.MARKUP))
 				.export(pkg);
-		assertEquals("keep added~~ removed~~\n", md);
+		assertEquals("keep {++added++}{-- removed--}\n", md);
+		assertEquals(md, new MarkdownExporter(new MarkdownExportOptions().setView(TextView.MARKUP)).export(pkg));
+	}
+
+	@Test
+	public void trackedChangesOriginal() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().getContent().add(trackedP());
+		assertEquals("keep  removed\n", new MarkdownExporter(new MarkdownExportOptions().setView(TextView.ORIGINAL)).export(pkg));
+	}
+
+	@Test
+	public void trackedChangesMarkupDetail() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().getContent().add(trackedP());
+		MarkdownExportOptions options = new MarkdownExportOptions().setView(TextView.MARKUP);
+		options.getTextOptions().markupDetail(TextOptions.MarkupDetail.AUTHOR);
+		assertEquals("keep {++a: added++}{--a:  removed--}\n", new MarkdownExporter(options).export(pkg));
 	}
 
 	/** 1x1 px PNG. */

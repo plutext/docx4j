@@ -1169,7 +1169,7 @@ public class ConversionSectionWrapperFactory {
 		// but here we avoid introducing a dependency on
 		// XSLT (Xalan) for PDF output.
 		SdtBlockFinder sbr = new SdtBlockFinder();
-		new TraversalUtil(document.getContent(), sbr);
+		new TraversalUtil(document.getContent(), sbr, org.docx4j.jaxb.McMode.DRAW); // what is drawn (CR-046 phase 3)
 		for( int i=sbr.sdtBlocks.size()-1 ; i>=0; i--) {
 			// Have to process in reverse order
 			// so that parentList is correct for nested sdt

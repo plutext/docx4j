@@ -75,6 +75,10 @@ public final class TextBlock {
 	String alignment;
 	boolean monospace;
 	String listLabel;
+	Integer outlineLevel;
+	TextNumbering numbering;
+	Boolean contextualSpacing;
+	boolean bottomBorder;
 	String noteType;
 	int noteNumber;
 	String noteId;
@@ -143,6 +147,14 @@ public final class TextBlock {
 	public boolean isMonospace() { return monospace; }
 	/** The paragraph's list label from the numbering model, under {@code list_labels: true}; else null. */
 	public String getListLabel() { return listLabel; }
+	/** The effective outline level ({@code w:outlineLvl}), 0 to 8, or null for body text (CR-046 phase 3). */
+	public Integer getOutlineLevel() { return outlineLevel; }
+	/** The paragraph's numbering (its effective {@code w:numPr} with a {@code w:numId} other than 0), or null (CR-046 phase 3). */
+	public TextNumbering getNumbering() { return numbering; }
+	/** The effective {@code w:contextualSpacing}, or null where neither the paragraph nor its styles set it (CR-046 phase 3). */
+	public Boolean getContextualSpacing() { return contextualSpacing; }
+	/** True when the paragraph has a bottom border of its own ({@code w:pBdr/w:bottom} in its {@code w:pPr}; CR-046 phase 3). */
+	public boolean hasBottomBorder() { return bottomBorder; }
 	/** For a note's block: {@link TextRun#FOOTNOTE} or {@link TextRun#ENDNOTE}; else null. */
 	public String getNoteType() { return noteType; }
 	/** For a note's block: the note's number in reference order; else 0. */

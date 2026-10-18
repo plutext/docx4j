@@ -23,9 +23,16 @@ package org.docx4j.jaxb;
  * branch, or every branch.
  *
  * <p>{@link #READ} is for a reader - text extraction, numbering emulation, a
- * layout or parity measurement, anything that counts or draws: it sees the one
- * branch docx4j draws ({@link McSelection#selectedBranch}), so a text box's
- * paragraphs are visited once, as Word lays them out once.</p>
+ * search, anything that counts: it sees one branch, so a text box's paragraphs are
+ * visited once, as Word lays them out once.  Since 17.3.4 that branch is the one
+ * docx4j reads for text ({@link McPurpose#TEXT}: the first Choice whose
+ * {@code Requires} namespaces are all in the published understood set, else the
+ * Fallback; CR-046 phase 3); before, the one it draws.</p>
+ *
+ * <p>{@link #DRAW} is for a walk that serves an output's layout: it sees the branch
+ * docx4j draws ({@link McSelection#selectedBranch}, {@code docx4j.jaxb.mc.preferChoice},
+ * the Fallback by default), which is not always one docx4j can read: the FO exporter
+ * does not yet draw an inline {@code wps} text box (CR-021 section 8.6).</p>
  *
  * <p>{@link #ALL} is for a mutator - data binding, field update, mail merge,
  * anonymisation, find and replace, anything that edits: it sees every
@@ -40,9 +47,20 @@ package org.docx4j.jaxb;
  */
 public enum McMode {
 
-	/** One branch: the one {@link McSelection} selects. */
+	/**
+	 * One branch: the one read for text ({@link McSelection#selectedBranch(McPurpose, org.docx4j.mce.AlternateContent)}
+	 * for {@link McPurpose#TEXT}); before 17.3.4, the one drawn ({@link #DRAW}).
+	 */
 	READ,
 
 	/** Every {@code mc:Choice}, then the {@code mc:Fallback}: the walk of docx4j before 17.2.0. */
-	ALL
+	ALL,
+
+	/**
+	 * One branch: the one drawn ({@link McSelection#selectedBranch(org.docx4j.mce.AlternateContent)},
+	 * {@link McPurpose#DRAW}), for a walk that serves an output's layout.
+	 *
+	 * @since 17.3.4 (CR-046 phase 3)
+	 */
+	DRAW
 }

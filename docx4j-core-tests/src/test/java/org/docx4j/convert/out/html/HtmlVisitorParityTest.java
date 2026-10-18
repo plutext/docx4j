@@ -44,10 +44,16 @@ public class HtmlVisitorParityTest {
 	}
 
 	/** the text appears within a span with this class (possibly with spans between) */
-	private static boolean inSpanWithClass(String html, String cls, String text) {
-		return Pattern.compile(
-				"<span class=\"" + cls + "\"[^>]*>(<span[^>]*>)*" + Pattern.quote(text))
-				.matcher(html).find();
+	/** is text inside an {@code <ins>} or {@code <del>} (element, its class the same) carrying the
+	 *  change's author and date (CR-046 phase 3, WD REQ-705)? */
+	private static boolean inSpanWithClass(String html, String element, String text) {
+		java.util.regex.Matcher m = Pattern.compile(
+				"<" + element + "( [^>]*)>(<span[^>]*>)*" + Pattern.quote(text))
+				.matcher(html);
+		if (!m.find()) return false;
+		String attributes = m.group(1);
+		return attributes.contains("class=\"" + element + "\"") && attributes.contains("data-author=\"a\"")
+				&& attributes.contains("datetime=\"2026-09-01T00:00:00Z\"");
 	}
 
 	/** is text somewhere inside a span whose start tag contains cssFragment?

@@ -639,26 +639,44 @@
    
 <xsl:template match="w:bookmarkEnd" />
 
+  <!-- <ins> and <del>, with the change's author and date (CR-046 phase 3, WD REQ-705);
+       before 17.3.4 a span of the class, which is kept for the stylesheet -->
   <xsl:template match="w:ins|w:moveTo">
-  	<span class="ins">
+  	<ins class="ins">
+  		<xsl:call-template name="revision-attributes"/>
   		<xsl:apply-templates/>
-  	</span>
+  	</ins>
   </xsl:template>  	
 
   <xsl:template match="w:del">
+  	<del class="del">
+  		<xsl:call-template name="revision-attributes"/>
   		<xsl:apply-templates/>
+  	</del>
   </xsl:template>  	
 
+  <xsl:template name="revision-attributes">
+  	<xsl:if test="@w:author"><xsl:attribute name="data-author"><xsl:value-of select="@w:author"/></xsl:attribute></xsl:if>
+  	<xsl:if test="@w:date"><xsl:attribute name="datetime"><xsl:value-of select="@w:date"/></xsl:attribute></xsl:if>
+  </xsl:template>
+
   <xsl:template match="w:delText">
-  	<span class="del">
-  		<xsl:apply-templates/>
-  	</span>
+  	<xsl:choose>
+  		<!-- in a <del> already -->
+  		<xsl:when test="ancestor::w:del or ancestor::w:moveFrom"><xsl:apply-templates/></xsl:when>
+  		<xsl:otherwise>
+  			<span class="del">
+  				<xsl:apply-templates/>
+  			</span>
+  		</xsl:otherwise>
+  	</xsl:choose>
   </xsl:template>  	
   
   <xsl:template match="w:moveFrom">
-  	<span class="del">
+  	<del class="del">
+  		<xsl:call-template name="revision-attributes"/>
   		<xsl:apply-templates select=".//w:r"/>
-  	</span>
+  	</del>
   </xsl:template>  	
   
   <xsl:template match="w:moveFromRangeStart|w:moveFromRangeEnd|w:moveToRangeStart|w:moveToRangeEnd" />

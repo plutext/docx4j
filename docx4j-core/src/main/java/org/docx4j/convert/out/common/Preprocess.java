@@ -110,7 +110,8 @@ public class Preprocess extends ConversionFeatures {
 		if (features.contains(PP_COMMON_MOVE_BOOKMARKS) || 
 			features.contains(PP_COMMON_CONTAINERIZATION) ||
 			features.contains(PP_COMMON_COMBINE_FIELDS) ||
-			features.contains(PP_COMMON_ACCEPT_TRACKED_CHANGES)) {
+			features.contains(PP_COMMON_ACCEPT_TRACKED_CHANGES) ||
+			features.contains(PP_COMMON_REJECT_TRACKED_CHANGES)) {
 			
 			relationshipTypes.add(Namespaces.DOCUMENT);
 			relationshipTypes.add(Namespaces.HEADER);
@@ -174,6 +175,11 @@ public class Preprocess extends ConversionFeatures {
 			// first: the other steps see the accepted content
 			log.debug("PP_COMMON_ACCEPT_TRACKED_CHANGES");
 			AcceptTrackedChanges.process(ret);
+		} else if (features.contains(PP_COMMON_REJECT_TRACKED_CHANGES)) {
+			// first: the other steps see the original content
+			log.debug("PP_COMMON_REJECT_TRACKED_CHANGES");
+			int n = org.docx4j.model.revisions.TrackedChanges.rejectAllForConversion(ret);
+			if (log.isDebugEnabled()) log.debug("Rejected " + n + " tracked changes for the conversion");
 		}
 		if (features.contains(PP_COMMON_FIELD_HYPERLINK_STYLE)) {
 			// before the fields are combined: it reads the fields' instructions

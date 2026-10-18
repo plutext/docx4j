@@ -17,6 +17,7 @@
  */
 package org.docx4j.markdown;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
@@ -45,13 +46,16 @@ public class MarkdownChartTest {
 		assertTrue(md, md.contains("\\[chart: pie\\]\n\nSales\n\n||Sales|\n|---|---:|\n|1st Qtr|8.2|\n|2nd Qtr|3.2|\n|3rd Qtr|1.4|\n|4th Qtr|1.2|\n"));
 	}
 
-	/** A chartex chart: Word's picture of it stays, and its data follows from the part's caches */
+	/**
+	 * A chartex chart: its data from the part's caches.  Since 17.3.4 the text is the text model's,
+	 * which reads one branch of the mc:AlternateContent, the chartex Choice (WD REQ-301, REQ-302), so
+	 * Word's picture of the chart, its Fallback, is no longer written before it.
+	 */
 	@Test
 	public void waterfall() throws Exception {
 		String md = markdown("waterfall.docx");
-		int picture = md.indexOf("![Chart 1](data:image/png;base64,");
-		int table = md.indexOf("\\[chart: waterfall\\]\n\nChart Title\n\n||Series1|\n|---|---:|\n|Category 1|100|");
-		assertTrue(md, picture >= 0 && table > picture);
+		assertTrue(md, md.contains("\\[chart: waterfall\\]\n\nChart Title\n\n||Series1|\n|---|---:|\n|Category 1|100|"));
 		assertTrue(md, md.contains("|Category 4|-40|"));
+		assertFalse(md, md.contains("![Chart 1]"));
 	}
 }

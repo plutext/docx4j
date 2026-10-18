@@ -133,6 +133,40 @@ public class CompressPicturesTest {
 		assertNull("nothing left to crop", pic.getBlipFill().getSrcRect());
 	}
 
+	/**
+	 * One picture in an mc:Choice and in its mc:Fallback, as Word writes a shape: when the bitmap is
+	 * cut to the crop, both uses lose the crop (CR-046 phase 3: a walk of one branch left the other
+	 * use cropping the bitmap a second time).
+	 */
+	@Test
+	public void cropsAreDeletedInEveryBranch() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		BinaryPartAbstractImage part = BinaryPartAbstractImage.createImagePart(pkg, quadrants());
+		Pic inChoice = addPicture(pkg, part, 1, 1, srcRect(50000, 0, 0, 50000));
+		Pic inFallback = addPicture(pkg, part, 1, 1, srcRect(50000, 0, 0, 50000));
+		// the two runs' drawings, made the two branches of one mc:AlternateContent
+		java.util.List<Object> body = pkg.getMainDocumentPart().getContent();
+		Object choiceDrawing = ((R) ((P) body.get(body.size() - 2)).getContent().get(0)).getContent().get(0);
+		Object fallbackDrawing = ((R) ((P) body.get(body.size() - 1)).getContent().get(0)).getContent().get(0);
+		body.remove(body.size() - 1);
+		R r = (R) ((P) body.get(body.size() - 1)).getContent().get(0);
+		r.getContent().clear();
+		org.docx4j.mce.AlternateContent ac = new org.docx4j.mce.AlternateContent();
+		org.docx4j.mce.AlternateContent.Choice choice = new org.docx4j.mce.AlternateContent.Choice();
+		choice.setRequires("wps");
+		choice.getAny().add(choiceDrawing);
+		ac.getChoice().add(choice);
+		org.docx4j.mce.AlternateContent.Fallback fallback = new org.docx4j.mce.AlternateContent.Fallback();
+		fallback.getAny().add(fallbackDrawing);
+		ac.setFallback(fallback);
+		r.getContent().add(ac);
+
+		CompressPictures.compress(pkg, "high-fidelity", true);
+		assertEquals(200, image(part).getWidth());
+		assertNull("the Choice's crop", inChoice.getBlipFill().getSrcRect());
+		assertNull("the Fallback's crop", inFallback.getBlipFill().getSrcRect());
+	}
+
 	@Test
 	public void anEdgeWhichMovesOutStays() throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();

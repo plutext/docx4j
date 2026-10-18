@@ -88,19 +88,23 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 		} else if (o instanceof DelText) {
 
 			if (!conversionContext.isInComplexFieldDefinition()) {
-				Element span = createNode(document, NODE_INLINE);
-				span.setAttribute("class", "del");
-				span.setTextContent(((DelText)o).getValue());
-				getCurrentParent().appendChild(span);
+				if (deletionDepth > 0) {
+					// in a <del> already (CR-046 phase 3)
+					getCurrentParent().appendChild(document.createTextNode(((DelText)o).getValue()));
+				} else {
+					Element span = createNode(document, NODE_INLINE);
+					span.setAttribute("class", "del");
+					span.setTextContent(((DelText)o).getValue());
+					getCurrentParent().appendChild(span);
+				}
 			}
 			return null;
 
 		} else if (o instanceof RunIns || o instanceof RunDel
 				|| o instanceof RunTrackChange) {
 
-			// w:ins/w:moveTo/w:moveFrom get their span wrapper in walkJAXBElements
-			// (their runs are appended while walking); w:del content is just
-			// traversed, with the visible marking on the w:delText above
+			// w:ins/w:moveTo and w:del/w:moveFrom get their <ins> or <del> wrapper in
+			// walkJAXBElements (their runs are appended while walking)
 			return null;
 
 		} else if (o instanceof R.SoftHyphen) {
@@ -462,10 +466,18 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 		getCurrentParent().appendChild(span);
 	}
 
-	/** the span class for a tracked-changes wrapper element, or null if o isn't one */
-	private String trackChangeClass(Object o) {
+	/** inside a {@code <del>}: a w:delText there is its text, not a span of its own */
+	private int deletionDepth;
+
+	/**
+	 * The element for a tracked-changes wrapper element, {@code ins} (w:ins, w:moveTo) or
+	 * {@code del} (w:del, w:moveFrom), or null if o isn't one.  Before 17.3.4 a span, of the
+	 * class this names; the class is kept for the stylesheet.
+	 */
+	private String trackChangeElement(Object o) {
 
 		if (o instanceof RunIns) return "ins";
+		if (o instanceof RunDel) return "del";
 		if (o instanceof RunTrackChange) {
 			// w:moveTo and w:moveFrom share this class; the JAXBElement wrapper
 			// in the parent's content list distinguishes them
@@ -479,22 +491,29 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 	@Override
 	public void walkJAXBElements(Object o) {
 
-		String trackClass = trackChangeClass(o);
-		if (trackClass!=null
+		String trackElement = trackChangeElement(o);
+		if (trackElement!=null
 				&& !conversionContext.isInComplexFieldDefinition()) {
 
-			Element wrapper = createNode(document, NODE_INLINE);
-			wrapper.setAttribute("class", trackClass);
+			// <ins>/<del> with the change's author and date (CR-046 phase 3, WD REQ-705)
+			Element wrapper = document.createElement(trackElement);
+			wrapper.setAttribute("class", trackElement);
+			org.docx4j.wml.CTTrackChange change = (org.docx4j.wml.CTTrackChange)o;
+			if (change.getAuthor() != null) wrapper.setAttribute("data-author", change.getAuthor());
+			if (change.getDate() != null) wrapper.setAttribute("datetime", change.getDate().toXMLFormat());
 			(currentP != null ? currentP : parentNode).appendChild(wrapper);
 
-			// the w:ins/w:moveTo/w:moveFrom contains runs; have them append their
+			// the w:ins/w:del/w:moveTo/w:moveFrom contains runs; have them append their
 			// spans to the wrapper
 			Element savedP = currentP;
 			Element savedSpan = currentSpan;
 			currentP = wrapper;
+			boolean deletion = "del".equals(trackElement);
+			if (deletion) deletionDepth++;
 			try {
 				super.walkJAXBElements(o);
 			} finally {
+				if (deletion) deletionDepth--;
 				currentP = savedP;
 				currentSpan = savedSpan;
 			}

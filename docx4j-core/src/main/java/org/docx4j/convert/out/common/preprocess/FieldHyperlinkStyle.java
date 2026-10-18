@@ -161,7 +161,8 @@ public class FieldHyperlinkStyle {
 			} else if (u instanceof P.Hyperlink) {
 				n += walk(((P.Hyperlink) u).getContent(), fields, true, ids);
 			} else {
-				List<Object> children = TraversalUtil.getChildrenImpl(u);
+				// ALL: it rewrites the exporter's copy, every branch (CR-021's convention; CR-046 phase 3)
+				List<Object> children = TraversalUtil.getChildrenImpl(u, org.docx4j.jaxb.McMode.ALL);
 				if (children != null) n += walk(children, fields, inLink, ids);
 			}
 		}

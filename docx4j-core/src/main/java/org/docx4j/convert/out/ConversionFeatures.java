@@ -170,6 +170,13 @@ public abstract class ConversionFeatures {
 	 *  @since 17.2.0 */
 	public static final String PP_COMMON_ACCEPT_TRACKED_CHANGES = "pp.common.accepttrackedchanges";
 
+	/** Lay out the original view of the document's tracked changes, as Word's Reject All
+	 *  leaves it ({@code org.docx4j.model.revisions.TrackedChanges#rejectAllForConversion}, every
+	 *  story).  Off by default; ignored where {@link #PP_COMMON_ACCEPT_TRACKED_CHANGES} is set.
+	 *  {@link AbstractConversionSettings#setView} sets one, the other or neither.
+	 *  @since 17.3.4 (CR-046 phase 3) */
+	public static final String PP_COMMON_REJECT_TRACKED_CHANGES = "pp.common.rejecttrackedchanges";
+
 	/** Leave the Hyperlink character style off where Word does: a cross-reference's result
 	 *  (REF, PAGEREF) and a table of contents' hyperlinks (FieldHyperlinkStyle).  On by default
 	 *  for PDF and HTML.

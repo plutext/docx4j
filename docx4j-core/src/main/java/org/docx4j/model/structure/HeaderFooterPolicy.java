@@ -346,7 +346,7 @@ public class HeaderFooterPolicy {
 		}
 		List<Object> children;
 		try {
-			children = org.docx4j.TraversalUtil.getChildrenImpl(o);
+			children = org.docx4j.TraversalUtil.getChildrenImpl(o, org.docx4j.jaxb.McMode.DRAW); // what is drawn (CR-046 phase 3)
 		} catch (RuntimeException e) {
 			return true; // don't claim "empty" for something we can't walk
 		}

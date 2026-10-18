@@ -6,7 +6,8 @@ are REQ numbers"). D1 to D7 decided 2026-10-17 (Jason: "D1–D7: i accept the re
 Phase 0 suite implemented 18 October 2026; the original 52-case Word checks passed.
 Cases 53–54 are now added; Jason completed the extended main DOCX r3 open/save check.
 Phase 1 implemented 18 October 2026 (§4). Phase 2 implemented 18 October 2026 (§4), with CR-047; its listed-format rules for
-spanning headers ruled the same day (§4), and proposed to the WD.
+spanning headers ruled the same day (§4), and proposed to the WD. Phase 3 implemented 18 October 2026 (§4);
+D12 decided the same day (§6).
 Five phases (§4); decisions in §6.
 
 The specification is the portfolio's *WordprocessingML Text Extraction*, working draft 0.8
@@ -100,8 +101,8 @@ spelling when core-ts CR-010 phase 3 settles it.
 
 | Purpose | Rule | Used by |
 |---|---|---|
-| `TEXT` | **New.** The ISO rule (REQ-302): the first Choice whose every `Requires` prefix resolves to a URI in the understood set, else the Fallback, else (an element with no understood Choice and no Fallback) the first Choice from the kept element (REQ-305). | The text model (phase 1); every other reader (phase 3). |
-| `DRAW` | **Unchanged:** `docx4j.jaxb.mc.preferChoice`, empty by default, so the Fallback is drawn. It stays so until the FO exporter draws an inline `wps` text box (CR-021 §8.6). | The FO and HTML exporters' layout. |
+| `TEXT` | **New.** The ISO rule (REQ-302): the first Choice whose every `Requires` prefix resolves to a URI in the understood set, else the Fallback, else (an element with no understood Choice and no Fallback) the first Choice from the kept element (REQ-305). | The text model (phase 1); every other reader (phase 3: `McMode.READ`, `TraversalUtil`'s default). |
+| `DRAW` | **Unchanged:** `docx4j.jaxb.mc.preferChoice`, empty by default, so the Fallback is drawn. It stays so until the FO exporter draws an inline `wps` text box (CR-021 §8.6). | The FO and HTML exporters' layout, and the walks that serve it (`McMode.DRAW`, phase 3). |
 | `ALL` | **Unchanged:** every branch (`McMode.ALL`). | Mutators: binding, field update, anonymisation. |
 
 **The understood set** is a published resource, `org/docx4j/jaxb/understood-namespaces.txt`
@@ -643,6 +644,107 @@ moved, REQ-509, 511, 512, 513, 514 and 708 against WD 0.8, `ResolvedView.unwraps
 With that, docx4j conforms as a plain-text, Markdown and block-model extractor (WD §12.1).
 CHANGELOG and Getting Started record the output changes of §2.8.
 
+**Phase 3 implementation, 18 October 2026:**
+- Tests: core-tests 1734 (11 skipped), docx4j-markdown 156, export-fo-tests 853 (9 skipped), none failing.
+- The suite: 890 assertions pass, none fail, 51 are pending: the inspector's rows (REQ-902, 42) and
+  case 44's "xhtml importer present" rows (9, the class path). Markdown's six rows pass, and so do the
+  eight goldens (below). `ViewAgreementTest` stays 544/544. The adapter advertises REQ-703, REQ-704,
+  REQ-705 and REQ-1203; docx4j-core-tests has docx4j-markdown as a test dependency.
+- Markdown (REQ-703, REQ-704, D6): `WmlToMarkdown` writes a `TextResult`, so its text is the text
+  model's. It keeps its presentation rules, now read from the block model, which gains what they need:
+  - a run's `isBold()`, `isItalic()`, `isStrike()` and `isMonospace()`, each what the run adds to its
+    paragraph's style (the rule `WmlToMarkdown` had); `getLink()`, a `w:hyperlink`'s target (its
+    relationship's, then `#` and its anchor) or a HYPERLINK field's (its address, then `#` and its `\l`
+    bookmark), whatever `field_codes` says; `isMath()` and `isDisplayMath()`;
+  - a block's `getOutlineLevel()`, `getNumbering()` (`TextNumbering`: the `w:numId`, level, format,
+    level text and start), `getContextualSpacing()` and `hasBottomBorder()`; every block of a note,
+    a table's and a chart's too, carries the note's type, number and id.
+
+  `MarkdownExporter.export(TextResult)` (and `export(TextResult, pkg)`, the package asked for a quote
+  style's own indent) writes a reading the caller already has. `MarkdownExportOptions.getTextOptions()`
+  holds the text model's options; `setView` is the view, `TrackedChangesPolicy` its deprecated alias.
+  Under `metadata: true` the Markdown begins with YAML front matter.
+- The `toc` option (D12): `TextOptions.toc`, `isToc()`, the name `toc` after `fields`. A TOC field
+  under `toc: false` is suppressed as a recomputed field's cached result is (nothing in it read, no
+  record, no `field.no_result`); its code, shown under `field_codes` until the field is known to be a
+  TOC at its separator, is taken out again; a paragraph the field touches and nothing else fills is
+  left out (`TextsTocTest`). `WmlToMarkdown` no longer drops TOC1 to TOC9 paragraphs itself.
+- What changes in docx4j's Markdown (each pinned by a docx4j-markdown test; §2.8 listed the first four):
+  - the `markup` view writes CriticMarkup, not `~~`; comments are `{>> <<}` at their reference;
+  - the `original` view;
+  - hidden text is left out;
+  - a text box's paragraphs follow the paragraph it is anchored in (before: not written);
+  - endnotes are notes, `[^e1]` (before: left out); a HYPERLINK field's result is a link (before: its
+    text);
+  - a chartex chart's Choice is the one branch read (REQ-301), so Word's picture of the chart, its
+    Fallback, is no longer written before the chart's table (`MarkdownChartTest.waterfall`);
+  - an equation outside `OmmlToLatex`'s subset is its runs' text inside `$...$` (phase 2's REQ-604
+    rule), not plain text;
+  - the GFM header is the `w:tblHeader` rows, else the first row (before: always the first); several
+    header rows are one, their cells' texts ` / ` apart; a nested table's paragraphs are in its cell
+    (before: dropped); a cell's empty paragraphs leave no `<br>`; a column's alignment is its topmost
+    header cell's first paragraph's effective `w:jc`, empty or not (GFM aligns a column from its
+    header cell; before: that paragraph's own `w:jc`);
+  - a table of contents is left out by the text model's rule (D12, `toc`): a TOC field's result, not a
+    paragraph in a TOC style, so a table of contents whose field was unlinked is now written;
+  - fields, bound values, SmartArt, WordArt, `altChunk`s and the options of WD section 10 are the text
+    model's.
+- Where WD 0.10 is silent, phase 3 chose as follows. WD 0.11 adopted each (portfolio 69779bf, corrected
+  in 336ff86 with the alignment rule and the definition of a monospaced font, `Extractor.MONOSPACE`'s
+  list), but D12, which it recorded as open until decided (below):
+  - REQ-703, notes: a footnote is `[^n]`, an endnote `[^en]` (the two are numbered apart, REQ-503), a
+    note whose reference carries a custom mark `[^f-<id>]` or `[^e-<id>]`; a note's definitions are where
+    the text model reads the note, after the main story;
+  - REQ-703, presentation beyond the WD's list, all of it `WmlToMarkdown`'s before: an outline level
+    above 5 is a paragraph; a numbering level that is a label (`none`, or no `%n`: "NOTE") is that
+    label in bold before the paragraph; a paragraph in the Quote or IntenseQuote style is a block quote,
+    nested one level for each 720 twips of indent beyond the style's own; a paragraph in a code style,
+    or in a named style whose own font is monospaced, is a fenced code block, consecutive ones in one
+    fence; an empty paragraph with a bottom border of its own is a thematic break;
+  - D12's `toc` option, a TOC field's result left out by default in every serialisation (docx4j's
+    Markdown left out TOC1 to TOC9 paragraphs instead);
+  - REQ-704: the front matter is a mapping for each kind of property, `core`, `app` and `custom`, each
+    property's value a double-quoted string;
+  - REQ-1203: a Markdown golden's image destinations aren't compared (REQ-703 writes `![alt](…)`).
+- HTML (REQ-705, D11): insertions and moves to are `<ins>`, deletions and moves from `<del>`, each with
+  `data-author` and `datetime` and its class kept (`ins`, `del`) for the stylesheet, on both pathways
+  (before: spans); a `w:delText` in a `<del>` is its text. `AbstractConversionSettings.setView(TextView)`
+  and `getView()` are the HTML and FO exporters' `view`: `markup` the default (as before), `accepted`
+  through `PP_COMMON_ACCEPT_TRACKED_CHANGES`, `original` through the new
+  `PP_COMMON_REJECT_TRACKED_CHANGES` and `TrackedChanges.rejectAllForConversion`, each on the
+  exporter's working copy (`HtmlViewTest`, docx4j-export-fo-tests' `FoViewTest`, both pathways).
+- `TraversalUtil` (§2.8): `McMode.READ`, the default, takes the `TEXT` purpose
+  (`McSelection.branches(ac, READ)` is `selectedBranch(TEXT, ac)`); the new `McMode.DRAW` is the old
+  READ, the drawn branch (`docx4j.jaxb.mc.preferChoice`). The layout-fidelity gate was run first, as
+  §2.8 asks: b282 (HEAD 187e5a367, the released renderer 2.11-docx4j.7) equals b281, 0 movers; b283,
+  the switch alone, and b284, as built (with the walks below), each 0 movers on the four corpora, every
+  event count equal, the probes unchanged (`~/fidelity-cr030/gate-b282-b283.sh`, `-b284.sh`). A
+  review of every walk in READ (Claude Fable 5.1, a subagent of this session) found the exporters'
+  own walks drawing already (`AbstractVisitorExporterGenerator.walkJAXBElements` selects the drawn
+  branch itself), no numbering or fonts pass on the FO path that the switch reaches (numbering is
+  computed in the exporter's walk; `FontsAnalysis` and `fontsInUse` are `ALL`), and these, now explicit:
+  - `DRAW`, walks serving an output's layout: `PageNumberInformationCollector`,
+    `AbstractWmlConversionContext.hasBookmark` (a reference must target what is drawn),
+    `Paginate.bodyParagraphs`, `HeaderFooterPolicy`'s emptiness test, `ConversionSectionWrapperFactory`'s
+    control finder, the table models' row and cell finders, the visitor exporters' generators (their
+    constructor), and the layout-fidelity harness's table walks;
+  - `ALL`, mutators: `CompressPictures` (a latent fault: it re-cropped one branch's picture of a
+    bitmap it cut, the other keeping the old crop), `ChartCreator`'s removal searches,
+    `FieldHyperlinkStyle`;
+  - `READ` kept, with the reason said: `isMissingBookmark` (Word looks in the branch it reads) and
+    `UpdateXmlFromDocumentSurface` (a control's value is in the branch Word reads, now the Choice).
+
+  On Word's files READ now reads the Choice almost everywhere (the understood set holds `wps`, `wpg`,
+  `wpc`, `w14`, `wp14`, `w15`, VML and chartex; `wpi` and `a14` fall back). A walk over a deep copy
+  (the exporters' working copies) matches `Requires` by the conventional prefix table, since the
+  recorded URIs are keyed by the original's Choice objects; Word's own prefixes make that the same.
+- `TextUtils` is deprecated, its output unchanged; its javadoc says it is not the text model and points
+  to `Texts`. Its remaining callers are no text readers (the anonymiser's scramble length, the binding's
+  surface written back, a core property's literal) and keep it, the deprecation suppressed.
+- The goldens (REQ-1203): `phase0/goldens.tsv` names eight, each fixture's plain text in the three views
+  and its Markdown, cut by `ExtractionGoldens` and reviewed by hand against WD 0.10 sections 3 to 7
+  (GOLDENS.md). Nothing in them departs from the WD.
+
 ### Phase 4: hand-offs
 
 The goldens' commit goes to:
@@ -749,6 +851,22 @@ recommendations"). Each item is kept as proposed, recommendation included, as th
   their default (D11). **Accepted.**
 - **D7. The JSON form of the block model** lives in docx4j-mcp, not docx4j-core.
   Recommended: yes; docx4j-core carries the Java blocks. **Accepted.**
+
+- **D12 (proposed in phase 3, 18 October 2026). A table of contents in Markdown.** `WmlToMarkdown`
+  has left out a paragraph in a TOC1 to TOC9 style since 17.2.0 (CR-005, `tocEntriesAreDropped`): its
+  entry links to a Word bookmark no Markdown renderer has, with a tab and a page number, and the
+  headings it lists are navigable in Markdown anyway. Plain text keeps them (REQ-505: a field's result
+  is text), and REQ-202 asks every reader for the same text. Options: (a) keep leaving them out, and
+  propose the WD allow a Markdown serialisation to omit a TOC field's entries, as it re-renders headings
+  and lists; (b) write them, each a link to its `#_Toc` anchor; (c) a scope option for every
+  serialisation. Recommended: (a), the rule stated by style as docx4j has it. **Decided 18 October 2026:
+  (c), an option `toc`, false by default** (Jason: "maybe we should have an option (applicable to all
+  formats) which specifies whether the TOC is included or not?", then "i agree with false"). A table of
+  contents is the result of a TOC field (a table of figures too), not a paragraph style: under
+  `toc: false` nothing of the field is read, its code included under `field_codes`, and a paragraph
+  with nothing else in it is no paragraph; a TOC heading is not the field's; an unlinked table of
+  contents is text. The probe has no table of contents, so no golden turns on it. WD 0.12 states it as
+  REQ-520 (portfolio c5e4236), with `toc` in §10 after `fields`.
 
 ### 6.1 Questions for the WD (18 October 2026)
 

@@ -6,10 +6,12 @@ Markdown import (markdown→docx) and export (docx→markdown) for docx4j.
   AST directly into WordprocessingML — real heading/quote/code styles, real
   list numbering, real footnotes; no HTML detour.  Entry point:
   `org.docx4j.markdown.MarkdownImporter`.
-- **Export**: a TraversalUtil-based walker builds a commonmark AST which
-  commonmark-java's `MarkdownRenderer` serializes (so markdown escaping is
-  handled by the reference implementation).  Entry point:
-  `org.docx4j.markdown.MarkdownExporter`.
+- **Export**: since 17.3.4 the text is docx4j's text model's
+  (`org.docx4j.model.text.Texts`, CR-046): its block model is written as a
+  commonmark AST which commonmark-java's `MarkdownRenderer` serializes (so
+  markdown escaping is handled by the reference implementation).  So the
+  Markdown says what the plain text says: the same view, the same stories, the
+  same hidden text left out.  Entry point: `org.docx4j.markdown.MarkdownExporter`.
 
 Dialect: **CommonMark + the GFM extensions** (tables, strikethrough, task list
 items, footnotes) plus YAML front matter and TeX math.  Deliberately nothing
@@ -45,7 +47,8 @@ sizing dropped) · function names (`\sin`, `\log`, `\lim`, …) · escapes
 delimiters preserved — to its literal source in the `CodeChar` style, and is
 reported through `MarkdownImportOptions.setIssueListener(...)` (source +
 reason; collect into a list for programmatic triage).  On export, OMML
-outside the subset flattens to its text with a warning.
+outside the subset is its runs' text inside the delimiters (the text model's
+rule, WD REQ-604).
 `MathPolicy.LITERAL` skips translation entirely;
 `Extension.MATH` turns recognition off.
 
@@ -66,8 +69,21 @@ new MarkdownImporter(new MarkdownImportOptions()
         .setImageHandler(new DefaultMarkdownImageHandler("/base/dir")));
 new MarkdownExporter(new MarkdownExportOptions()
         .setImageDirPath("/out/images").setImageTargetUri("images")
-        .setTrackedChangesPolicy(MarkdownExportOptions.TrackedChangesPolicy.MARKUP));
+        .setView(TextView.MARKUP));   // CriticMarkup: {++added++}{--deleted--}
+
+// the text model's options, under the WD's names: stories, hidden text, metadata ...
+MarkdownExportOptions options = new MarkdownExportOptions();
+options.getTextOptions().include(TextOptions.Include.HEADERS).metadata(true);  // YAML front matter
+// ... or one reading, written as plain text and as Markdown:
+TextResult result = Texts.of(pkg, TextOptions.of(TextView.ACCEPTED));
+String text = PlainText.of(result), md = new MarkdownExporter().export(result, pkg);
 ```
+
+Tracked changes are written in the text model's views: `accepted` (the
+default: as Word's Accept All leaves the document), `original` (Reject All), or
+`markup`, CriticMarkup's `{++ ++}`, `{-- --}` and `{>> <<}` for comments.
+Before 17.3.4 the markup policy struck deletions through with `~~`;
+`setTrackedChangesPolicy` is now a deprecated alias of `setView`.
 
 Convenience facade (docx4j-core), when docx4j-markdown is on the classpath:
 `Docx4J.fromMarkdown(String)` and `Docx4J.toMarkdown(pkg)`.
@@ -86,13 +102,16 @@ it also offers the reverse direction (docx→markdown), which flexmark does not.
 
 Markdown has no styles, columns, sections, headers/footers or floating
 objects.  Exporting a docx that uses them is lossy: fields become their cached
-result text, content controls their content; headers/footers, textboxes and
-VML are dropped.  Everything outside CommonMark+GFM degrades to the nearest
-construct rather than inventing syntax.
+result text (a HYPERLINK field a link), content controls their content (or
+their bound value), a text box its paragraphs after the paragraph it is
+anchored in; headers and footers are left out unless the text options include
+them, and so is a table of contents unless `toc` is set.  Everything outside CommonMark+GFM degrades to the nearest construct
+rather than inventing syntax.
 
 A table style's formatting is not carried either: a cell's bold, italic and
-alignment are its paragraphs' and runs' own (and their styles'), and the first
-row is the GFM header whatever the table style makes of it.  GFM has no table
+alignment are its paragraphs' and runs' own (and their styles'), and the
+`w:tblHeader` rows (else the first row) are the GFM header whatever the table
+style makes of it.  GFM has no table
 styling to carry it in.  (docx4j's `PropertyResolver` gives a cell paragraph's
 formatting with its table style, given its `CellContext`, should that change:
 CR-030 decision 4.)

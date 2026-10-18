@@ -320,7 +320,7 @@ public class TableModel {
 		
 		
 		TrFinder trFinder = new TrFinder();
-		new TraversalUtil(tbl, trFinder);
+		new TraversalUtil(tbl, trFinder, org.docx4j.jaxb.McMode.DRAW); // what is drawn (CR-046 phase 3)
 		
 		
 		int r = 0;
@@ -557,7 +557,7 @@ public class TableModel {
 		}
 		
 		TcFinder tcFinder = new TcFinder();
-		new TraversalUtil(tr, tcFinder);
+		new TraversalUtil(tr, tcFinder, org.docx4j.jaxb.McMode.DRAW);
 		
 		//add dummy cell for gridBefore
 		if (gridBefore > 0) {

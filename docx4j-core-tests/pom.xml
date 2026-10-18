@@ -141,6 +141,15 @@
 			<artifactId>jsoup</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- the Markdown serialisation, for the conformance suite's Markdown rows and goldens
+		     (CR-046 phase 3, WD REQ-703, REQ-1203) -->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-markdown</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		
 	</dependencies>
 

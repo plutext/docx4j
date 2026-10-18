@@ -226,6 +226,7 @@ public class UpdateXmlFromDocumentSurface {
 	
 	
 
+	@SuppressWarnings("deprecation") // TextUtils: the control's surface written back as it always was (CR-046)
 	private void handleSdt(SdtElement sdt) {
 
 		log.debug(sdt.getParent().getClass().getName());
@@ -437,7 +438,8 @@ public class UpdateXmlFromDocumentSurface {
 
 	private void findSdtsInPart(ContentAccessor content, SdtFinder sdtFinder) throws Docx4JException {
 		
-		// CR-021: READ - Word reads the drawn branch only (CR-021 §8.5); a control in the undrawn branch is not the document's value
+		// READ: the branch read for text, the Choice Word reads where it understands it, so the control
+		// there holds the value a user typed (CR-046 phase 3; before, the drawn branch, CR-021 section 8.5)
 		new TraversalUtil(content.getContent(), sdtFinder);
 	}	
 	

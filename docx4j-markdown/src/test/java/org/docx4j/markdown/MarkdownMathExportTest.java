@@ -102,10 +102,9 @@ public class MarkdownMathExportTest {
 				(P) XmlUtils.unmarshalString(pXml, Context.jc, P.class));
 
 		String md = new MarkdownExporter().export(pkg);
-		// flattened to its text, not emitted as math
-		assertTrue(md.contains("cosech"));
-		assertTrue(md.contains("x"));
-		assertFalse(md.contains("$"));
+		// since 17.3.4 the text model's rule (WD REQ-604): an equation outside the converter's
+		// subset is its runs' text, inside the delimiters
+		assertEquals("$cosechx$\n", md);
 	}
 
 	@Test

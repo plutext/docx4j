@@ -64,6 +64,9 @@ public final class TextRun {
 	ImageDescription description;
 	String progId;
 	int pageNumber;
+	boolean bold, italic, strike, monospace;
+	String link;
+	boolean math, displayMath;
 
 	TextRun(Kind kind, String text, TextRevision revision) {
 		this.kind = kind;
@@ -108,6 +111,54 @@ public final class TextRun {
 
 	/** For a page marker: the number of the page that begins there, from 2 (the first marker starts the second page). */
 	public int getPageNumber() { return pageNumber; }
+
+	/**
+	 * True for text that is bold where its paragraph's style is not: emphasis, as Markdown writes it
+	 * (a heading's own bold is not). The run's {@code w:b}, else its styles' (CR-046 phase 3).
+	 */
+	public boolean isBold() { return bold; }
+
+	/** True for text that is italic where its paragraph's style is not ({@code w:i}; see {@link #isBold()}). */
+	public boolean isItalic() { return italic; }
+
+	/** True for text struck through where its paragraph's style is not ({@code w:strike}; see {@link #isBold()}). */
+	public boolean isStrike() { return strike; }
+
+	/**
+	 * True for text in a monospaced font where its paragraph's style is not in one: code, as Markdown
+	 * writes it. A paragraph whose style is monospaced has {@link TextBlock#isMonospace()} instead.
+	 */
+	public boolean isMonospace() { return monospace; }
+
+	/**
+	 * For text in a link: its target, whether the link is a {@code w:hyperlink} (its relationship's
+	 * target, else {@code #} and its {@code w:anchor}) or a HYPERLINK field's result (its instruction's
+	 * address, and {@code #} and its {@code \l} bookmark), whatever {@code field_codes} says (WD REQ-703);
+	 * else null.
+	 */
+	public String getLink() { return link; }
+
+	/** True for an equation (WD REQ-604): the text is its LaTeX, delimited {@code $...$}, or {@code $$...$$} where {@link #isDisplayMath()}. */
+	public boolean isMath() { return math; }
+
+	/** True for a display equation ({@code m:oMathPara}), delimited {@code $$...$$}. */
+	public boolean isDisplayMath() { return displayMath; }
+
+	/** Whether two runs' text can be one run: the same formatting, link and equation. */
+	boolean sameFormat(TextRun o) {
+		return bold == o.bold && italic == o.italic && strike == o.strike && monospace == o.monospace
+				&& java.util.Objects.equals(link, o.link) && math == o.math && displayMath == o.displayMath;
+	}
+
+	void copyFormat(TextRun from) {
+		bold = from.bold;
+		italic = from.italic;
+		strike = from.strike;
+		monospace = from.monospace;
+		link = from.link;
+		math = from.math;
+		displayMath = from.displayMath;
+	}
 
 	@Override
 	public String toString() {

@@ -41,7 +41,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  */
 public class TextsAdapter implements ExtractionConformance.Engine {
 
-	/** The statements CR-046 has implemented, phase 1's and phase 2's (its section 4), and capability CR-047. */
+	/** The statements CR-046 has implemented, phases 1 to 3 (its section 4), and capability CR-047. */
 	static final Set<String> IMPLEMENTED = Collections.unmodifiableSet(new LinkedHashSet<String>(java.util.Arrays.asList(
 			"REQ-201", "REQ-202", "REQ-203", "REQ-204",
 			"REQ-301", "REQ-302", "REQ-303", "REQ-304", "REQ-305", "REQ-306", "REQ-307",
@@ -49,8 +49,8 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 			"REQ-501", "REQ-502", "REQ-503", "REQ-504", "REQ-505", "REQ-506", "REQ-507", "REQ-508", "REQ-509", "REQ-510",
 			"REQ-511", "REQ-512", "REQ-513", "REQ-514", "REQ-515", "REQ-516", "REQ-517", "REQ-518",
 			"REQ-601", "REQ-602", "REQ-603", "REQ-604", "REQ-605", "REQ-606",
-			"REQ-701", "REQ-702", "REQ-706", "REQ-707", "REQ-708", "REQ-709",
-			"REQ-801", "REQ-802", "REQ-1001", "REQ-1202",
+			"REQ-701", "REQ-702", "REQ-703", "REQ-704", "REQ-705", "REQ-706", "REQ-707", "REQ-708", "REQ-709",
+			"REQ-801", "REQ-802", "REQ-1001", "REQ-1202", "REQ-1203",
 			// the chart's description, which case 34's axis title needs
 			"CR-047")));
 
@@ -75,7 +75,7 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 
 	@Override
 	public ExtractionConformance.Output extract(Path fixture, String view, String scenario, String format) throws Exception {
-		if (!"txt".equals(format)) throw new UnsupportedOperationException("format " + format + " is CR-046 phase 3");
+		if (!"txt".equals(format) && !"md".equals(format)) throw new UnsupportedOperationException("format " + format);
 		WordprocessingMLPackage pkg = packages.get(fixture);
 		if (pkg == null) packages.put(fixture, pkg = WordprocessingMLPackage.load(fixture.toFile()));
 		TextOptions options = options(view, scenario);
@@ -94,13 +94,14 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 				findings.put("metadata\t" + e.getKey() + "\t", String.valueOf(e.getValue()));
 			}
 		}
-		return new ExtractionConformance.Output(PlainText.of(result), findings);
+		String text = "md".equals(format) ? new org.docx4j.markdown.MarkdownExporter().export(result, pkg) : PlainText.of(result);
+		return new ExtractionConformance.Output(text, findings);
 	}
 
-	/** A scenario's options: {@code default}, or one WD option as {@code name: value}. */
+	/** A scenario's options: {@code default} (and {@code markdown}, the default read as Markdown), or one WD option as {@code name: value}. */
 	static TextOptions options(String view, String scenario) {
 		TextOptions options = TextOptions.of(TextView.of(view));
-		if (scenario == null || scenario.equals("default") || scenario.startsWith("xhtml importer")) return options;
+		if (scenario == null || scenario.equals("default") || scenario.equals("markdown") || scenario.startsWith("xhtml importer")) return options;
 		int colon = scenario.indexOf(':');
 		if (colon < 0) throw new IllegalArgumentException("Unknown scenario: " + scenario);
 		options.set(scenario.substring(0, colon).trim(), scenario.substring(colon + 1).trim());

@@ -25,6 +25,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.docx4j.model.images.ConversionImageHandler;
+import org.docx4j.model.text.TextView;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 
@@ -69,6 +70,31 @@ public abstract class AbstractConversionSettings { //implements ConversionFeatur
 	 *  XSL FO needs image files - see also
 	 *  {@link org.docx4j.model.images.DataUriConversionImageHandler}).
 	 */
+	/**
+	 * The revision view the document is converted in (CR-046 phase 3, D11): {@link TextView#MARKUP}
+	 * (the default), insertions and deletions shown as they are stored, the HTML marking them
+	 * {@code <ins>} and {@code <del>} (WD REQ-705); {@link TextView#ACCEPTED}, the document Word's
+	 * Accept All leaves ({@link ConversionFeatures#PP_COMMON_ACCEPT_TRACKED_CHANGES}); or
+	 * {@link TextView#ORIGINAL}, the one its Reject All leaves
+	 * ({@link ConversionFeatures#PP_COMMON_REJECT_TRACKED_CHANGES}).  Either is applied to the
+	 * exporter's working copy ({@link ConversionFeatures#PP_COMMON_DEEP_COPY}), never the document.
+	 *
+	 * @since 17.3.4
+	 */
+	public void setView(TextView view) {
+		features.remove(ConversionFeatures.PP_COMMON_ACCEPT_TRACKED_CHANGES);
+		features.remove(ConversionFeatures.PP_COMMON_REJECT_TRACKED_CHANGES);
+		if (view == TextView.ACCEPTED) features.add(ConversionFeatures.PP_COMMON_ACCEPT_TRACKED_CHANGES);
+		else if (view == TextView.ORIGINAL) features.add(ConversionFeatures.PP_COMMON_REJECT_TRACKED_CHANGES);
+	}
+
+	/** The revision view, from the features {@link #setView} sets: {@link TextView#MARKUP} unless one is set.  @since 17.3.4 */
+	public TextView getView() {
+		if (features.contains(ConversionFeatures.PP_COMMON_ACCEPT_TRACKED_CHANGES)) return TextView.ACCEPTED;
+		if (features.contains(ConversionFeatures.PP_COMMON_REJECT_TRACKED_CHANGES)) return TextView.ORIGINAL;
+		return TextView.MARKUP;
+	}
+
 	public void setImageDirPath(String imageDirPath) {
 		settings.put(IMAGE_DIR_PATH, imageDirPath);
 	}

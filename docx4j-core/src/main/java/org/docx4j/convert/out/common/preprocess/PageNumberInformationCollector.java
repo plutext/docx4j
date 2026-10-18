@@ -47,7 +47,8 @@ public class PageNumberInformationCollector {
 		//the result will allways be a single pass conversion.
 		if (!dummyPageNumbering) {
 			fldVisitor = new FieldVisitor(ret);
-			TraversalUtil.visit(sectionWrapper.getContent(), fldVisitor);
+			// DRAW: the fields of the branch the exporter draws (CR-046 phase 3)
+			TraversalUtil.visit(sectionWrapper.getContent(), fldVisitor, org.docx4j.jaxb.McMode.DRAW);
 			process(headerFooterPolicy.getFirstHeader(), fldVisitor);
 			process(headerFooterPolicy.getFirstFooter(), fldVisitor);
 			process(headerFooterPolicy.getDefaultHeader(), fldVisitor);
@@ -60,13 +61,13 @@ public class PageNumberInformationCollector {
 	
 	protected static void process(FooterPart footer, FieldVisitor fldVisitor) {
 		if ((footer != null) && (!footer.getContent().isEmpty())) {
-			TraversalUtil.visit(footer.getContent(), fldVisitor);
+			TraversalUtil.visit(footer.getContent(), fldVisitor, org.docx4j.jaxb.McMode.DRAW);
 		}
 	}
 	
 	protected static void process(HeaderPart header, FieldVisitor fldVisitor) {
 		if ((header != null) && (!header.getContent().isEmpty())) {
-			TraversalUtil.visit(header.getContent(), fldVisitor);
+			TraversalUtil.visit(header.getContent(), fldVisitor, org.docx4j.jaxb.McMode.DRAW);
 		}
 	}
 

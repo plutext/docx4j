@@ -104,7 +104,7 @@ public final class TableWidthCensus {
 				}
 				count(summary, docs, "docs", corpus + "/" + id);
 				ClassFinder finder = new ClassFinder(Tbl.class);
-				new TraversalUtil(pkg.getMainDocumentPart().getContent(), finder);
+				new TraversalUtil(pkg.getMainDocumentPart().getContent(), finder, org.docx4j.jaxb.McMode.DRAW); // the tables docx4j draws (CR-046 phase 3)
 				if (finder.results.size() != word.size()) {
 					count(summary, docs, "docs skipped (table count differs)", corpus + "/" + id);
 					continue;

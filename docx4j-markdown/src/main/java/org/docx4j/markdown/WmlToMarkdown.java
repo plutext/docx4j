@@ -1,12 +1,14 @@
 package org.docx4j.markdown;
 
-import java.math.BigInteger;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.commonmark.ext.footnotes.FootnoteDefinition;
@@ -25,6 +27,7 @@ import org.commonmark.node.Emphasis;
 import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.node.HardLineBreak;
 import org.commonmark.node.Heading;
+import org.commonmark.node.HtmlInline;
 import org.commonmark.node.Link;
 import org.commonmark.node.ListBlock;
 import org.commonmark.node.ListItem;
@@ -33,51 +36,38 @@ import org.commonmark.node.OrderedList;
 import org.commonmark.node.StrongEmphasis;
 import org.commonmark.node.Text;
 import org.commonmark.node.ThematicBreak;
-import org.docx4j.XmlUtils;
-import org.docx4j.model.PropertyResolver;
-import org.docx4j.model.listnumbering.ListLevel;
-import org.docx4j.model.listnumbering.ListNumberingDefinition;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.model.text.ImageDescription;
+import org.docx4j.model.text.TextBlock;
+import org.docx4j.model.text.TextCell;
+import org.docx4j.model.text.TextComment;
+import org.docx4j.model.text.TextNumbering;
+import org.docx4j.model.text.TextOptions;
+import org.docx4j.model.text.TextResult;
+import org.docx4j.model.text.TextRevision;
+import org.docx4j.model.text.TextRow;
+import org.docx4j.model.text.TextRun;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
-import org.docx4j.relationships.Relationship;
+import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
-import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart;
-import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.wml.BooleanDefaultTrue;
-import org.docx4j.wml.Br;
-import org.docx4j.wml.CTFtnEdn;
-import org.docx4j.wml.CTFtnEdnRef;
-import org.docx4j.wml.CTSimpleField;
-import org.docx4j.wml.Drawing;
-import org.docx4j.wml.FldChar;
-import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
-import org.docx4j.wml.PPrBase;
-import org.docx4j.wml.R;
-import org.docx4j.wml.RPr;
-import org.docx4j.wml.RunDel;
-import org.docx4j.wml.RunIns;
-import org.docx4j.wml.SdtElement;
-import org.docx4j.wml.STFldCharType;
-import org.docx4j.wml.Tbl;
-import org.docx4j.wml.Tc;
-import org.docx4j.wml.TcPrInner;
-import org.docx4j.wml.Tr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Walks the JAXB content tree of the main document part, building a
- * commonmark AST (which MarkdownRenderer then serializes — so markdown
- * escaping is the reference implementation's job, not ours).
+ * Writes the text model's block model ({@link TextResult}) as a commonmark AST, which
+ * MarkdownRenderer then serializes - so markdown escaping is the reference implementation's job,
+ * not ours.
  *
- * <p>Detection choices (see the CR): headings via effective outlineLvl, not
- * style names; bold/italic/code from effective rPr relative to the paragraph
- * style's baseline (so a Heading's inherent bold doesn't become **markers**);
- * lists via the numbering model.  Content controls contribute their content;
- * fields their cached result text; headers/footers are out of scope.</p>
+ * <p>Since 17.3.4 (CR-046 phase 3) the text is the text model's (WD REQ-202): its view, its
+ * stories (the main story, each text box after its anchor, the notes), its hidden text left out,
+ * its fields' results, its bound values, charts and equations. This class decides only how a block
+ * is written (WD REQ-703): a heading from its outline level, not its style's name; a list from its
+ * numbering; bold, italic, struck-through and code text from what a run adds to its paragraph's
+ * style (so a Heading's inherent bold doesn't become **markers**); links from a {@code w:hyperlink}
+ * or a HYPERLINK field; images with the describer's text; notes as {@code [^n]}; in the
+ * {@code markup} view, CriticMarkup ({@code {++ ++}}, {@code {-- --}}, {@code {>> <<}}).  A table of
+ * contents is the text model's to leave out ({@code toc: false}, the default), as it has been
+ * Markdown's since 17.2.0.</p>
  */
 class WmlToMarkdown {
 
@@ -85,22 +75,18 @@ class WmlToMarkdown {
 
 	private static final int TWIPS_PER_LEVEL = 720;
 
-	private static final Set<String> MONO_FONTS = new HashSet<>(Arrays.asList(
-			"consolas", "courier new", "courier", "lucida console", "monaco",
-			"menlo", "dejavu sans mono", "source code pro", "fira code"));
-
-	private final WordprocessingMLPackage pkg;
+	private final TextResult result;
+	private final TextOptions textOptions;
 	private final MarkdownExportOptions options;
-	private final MainDocumentPart mdp;
-	private PropertyResolver resolver;
-	private NumberingDefinitionsPart ndp;
+	/** For a style's own indent (a block quote's depth); may be null. */
+	private final WordprocessingMLPackage pkg;
 
 	// open-list state (spans consecutive numbered paragraphs)
 	private static final class OpenList {
 		final ListBlock node;
-		final BigInteger numId;
+		final String numId;
 		ListItem lastItem;
-		OpenList(ListBlock node, BigInteger numId) {
+		OpenList(ListBlock node, String numId) {
 			this.node = node;
 			this.numId = numId;
 		}
@@ -111,86 +97,78 @@ class WmlToMarkdown {
 	private BlockQuote openQuote;
 	private int openQuoteDepth;
 
-	// field state: emit only cached results, skip instructions
-	private int fieldDepth;
-	private int awaitingSeparate;
-
-	// tracked changes: >0 while inside w:del under the MARKUP policy
-	private int delMarkupDepth;
-
 	// >0 while building a GFM table header row (its bold is convention, not markup)
 	private int tableHeaderDepth;
 
-	// footnotes referenced by the document, in reference order (id -> label)
-	private final java.util.Map<BigInteger, String> footnoteLabels = new java.util.LinkedHashMap<>();
-
-	// the rels of the part whose content is being walked (footnotes have their own)
-	private RelationshipsPart currentRels;
-
 	private int imageCounter;
 
-	// a chart's title and table (CR-035 phase 3): blocks, so they wait for the end of the
-	// paragraph the chart is in
-	private final java.util.List<Node> pendingCharts = new java.util.ArrayList<>();
-
-	WmlToMarkdown(WordprocessingMLPackage pkg, MarkdownExportOptions options) {
-		this.pkg = pkg;
+	WmlToMarkdown(TextResult result, WordprocessingMLPackage pkg, MarkdownExportOptions options) {
+		this.result = result;
+		this.textOptions = result.options();
 		this.options = options;
-		this.mdp = pkg.getMainDocumentPart();
+		this.pkg = pkg;
 	}
 
-	Document convert() throws Docx4JException {
-		resolver = mdp.getPropertyResolver();
-		ndp = mdp.getNumberingDefinitionsPart();
-		currentRels = mdp.getRelationshipsPart();
-
+	Document convert() {
 		Document document = new Document();
-		processBlocks(mdp.getContent(), document);
-		flushCharts(document);
+		List<TextBlock> blocks = result.blocks();
+		for (int i = 0; i < blocks.size(); i++) {
+			TextBlock block = blocks.get(i);
+			if (isNote(block)) {
+				// a note's blocks are its definition, at the place the text model reads it (after the main story)
+				closeLists();
+				closeQuote();
+				int last = i;
+				while (last + 1 < blocks.size() && sameNote(block, blocks.get(last + 1))) last++;
+				FootnoteDefinition definition = new FootnoteDefinition(
+						noteLabel(block.getNoteType(), block.getNoteNumber(), block.getNoteId()));
+				body(blocks.subList(i, last + 1), definition);
+				closeLists();
+				closeQuote();
+				trimLeadingMarkerSpace(definition);
+				document.appendChild(definition);
+				i = last;
+			} else {
+				i = block(blocks, i, document);
+			}
+		}
 		closeLists();
 		closeQuote();
-		appendFootnoteDefinitions(document);
 		return document;
 	}
 
 	// ---------------------------------------------------------------- blocks
 
-	private void processBlocks(List<Object> blocks, Node container) throws Docx4JException {
+	private void body(List<TextBlock> blocks, Node container) {
+		for (int i = 0; i < blocks.size(); i++) i = block(blocks, i, container);
+	}
 
-		for (int i = 0; i < blocks.size(); i++) {
-			Object block = XmlUtils.unwrap(blocks.get(i));
-
-			if (block instanceof P) {
-				i = processParagraph(blocks, i, container);
-				flushCharts(container);
-			} else if (block instanceof SdtElement) {
-				// content controls contribute their content
-				closeLists();
-				closeQuote();
-				processBlocks(((SdtElement) block).getSdtContent().getContent(), container);
-			} else if (block instanceof Tbl) {
-				closeLists();
-				closeQuote();
-				table((Tbl) block, container);
-				flushCharts(container);   // a chart in a cell: after the table
-			} else {
-				log.debug("Dropping unmapped block {}", block.getClass().getSimpleName());
-			}
+	/** @return the index of the last block consumed (code blocks span several) */
+	private int block(List<TextBlock> blocks, int index, Node container) {
+		TextBlock block = blocks.get(index);
+		switch (block.getKind()) {
+		case TABLE:
+			closeLists();
+			closeQuote();
+			table(block, container);
+			return index;
+		case CHART:
+			closeLists();
+			closeQuote();
+			chart(block, container);
+			return index;
+		default:
+			return paragraph(blocks, index, container);
 		}
 	}
 
-	/** @return the index of the last paragraph consumed (code blocks span several) */
-	private int processParagraph(List<Object> blocks, int index, Node container)
-			throws Docx4JException {
+	private int paragraph(List<TextBlock> blocks, int index, Node container) {
 
-		P p = (P) XmlUtils.unwrap(blocks.get(index));
-		PPr directPPr = p.getPPr();
-		PPr effPPr = resolver.getEffectivePPr(directPPr);
-		String pStyleId = (directPPr != null && directPPr.getPStyle() != null)
-				? directPPr.getPStyle().getVal() : null;
+		TextBlock block = blocks.get(index);
+		String style = block.getStyle();
 
-		// thematic break: empty paragraph carrying a bottom border
-		if (isThematicBreak(p, directPPr)) {
+		// thematic break: an empty paragraph carrying a bottom border of its own
+		if (block.hasBottomBorder() && isEmpty(block)) {
 			closeLists();
 			closeQuote();
 			ThematicBreak thematicBreak = new ThematicBreak();
@@ -200,45 +178,27 @@ class WmlToMarkdown {
 		}
 
 		// display math: a paragraph which IS one m:oMathPara
-		org.docx4j.math.CTOMathPara oMathPara = soleOMathPara(p);
-		if (oMathPara != null) {
+		TextRun displayMath = soleDisplayMath(block);
+		if (displayMath != null) {
 			closeLists();
 			closeQuote();
-			try {
-				org.docx4j.markdown.math.DisplayMath displayMath =
-						new org.docx4j.markdown.math.DisplayMath();
-				displayMath.setLiteral(new org.docx4j.model.math.OmmlToLatex()
-						.convertOMathPara(oMathPara));
-				container.appendChild(displayMath);
-			} catch (org.docx4j.model.math.OmmlMathException e) {
-				log.warn("Equation outside the OMML->LaTeX subset ({}); flattened to its text",
-						e.getMessage());
-				org.commonmark.node.Paragraph flat = new org.commonmark.node.Paragraph();
-				flat.appendChild(new Text(flattenMathText(oMathPara)));
-				container.appendChild(flat);
-			}
+			org.docx4j.markdown.math.DisplayMath node = new org.docx4j.markdown.math.DisplayMath();
+			node.setLiteral(latex(displayMath));
+			container.appendChild(node);
 			return index;
 		}
 
-		// code block: a code-styled paragraph, or one whose paragraph style's own
-		// font is mono; consecutive ones merged into one fence, one line each
-		if (isCodeParagraph(p, directPPr, pStyleId)) {
+		// code block: a code-styled paragraph, or one whose paragraph style's own font is mono;
+		// consecutive ones merged into one fence, one line each
+		if (isCodeParagraph(block)) {
 			closeLists();
 			closeQuote();
 			StringBuilder literal = new StringBuilder();
 			int last = index;
 			for (int j = index; j < blocks.size(); j++) {
-				Object o = XmlUtils.unwrap(blocks.get(j));
-				if (!(o instanceof P)) {
-					break;
-				}
-				P q = (P) o;
-				PPr qPPr = q.getPPr();
-				String qStyle = (qPPr != null && qPPr.getPStyle() != null) ? qPPr.getPStyle().getVal() : null;
-				if (!isCodeParagraph(q, qPPr, qStyle)) {
-					break;
-				}
-				appendCodeLines(q, literal);
+				TextBlock b = blocks.get(j);
+				if (b.getKind() != TextBlock.Kind.PARAGRAPH || !isCodeParagraph(b) || !sameStory(block, b)) break;
+				literal.append(codeText(b)).append('\n');
 				last = j;
 			}
 			FencedCodeBlock code = new FencedCodeBlock();
@@ -247,42 +207,29 @@ class WmlToMarkdown {
 			return last;
 		}
 
-		// a table-of-contents entry: its field result links to a Word bookmark no
-		// markdown renderer has, with the tab and the page number; headings are
-		// navigable in every renderer, so the entry is dropped (lossy, documented)
-		if (pStyleId != null && TOC_STYLE.matcher(pStyleId).matches()) {
-			closeLists();
-			closeQuote();
-			return index;
-		}
-
-		// heading via effective outlineLvl (0..5 -> #..######); checked BEFORE
-		// numbering, since built-in Heading styles can carry legacy numPr
-		Integer outlineLvl = outlineLevel(effPPr);
-		if (outlineLvl != null && outlineLvl <= 5) {
+		// heading via effective outlineLvl (0..5 -> #..######); checked BEFORE numbering, since
+		// built-in Heading styles can carry legacy numPr
+		Integer outlineLevel = block.getOutlineLevel();
+		if (outlineLevel != null && outlineLevel <= 5) {
 			closeLists();
 			closeQuote();
 			Heading heading = new Heading();
-			heading.setLevel(outlineLvl + 1);
-			processInlines(p.getContent(), heading, p.getPPr());
+			heading.setLevel(outlineLevel + 1);
+			inlines(block, heading, true);
 			container.appendChild(heading);
 			return index;
 		}
 
 		// list paragraph?
-		PPrBase.NumPr numPr = (effPPr != null) ? effPPr.getNumPr() : null;
-		BigInteger numId = (numPr != null && numPr.getNumId() != null)
-				? numPr.getNumId().getVal() : null;
-		if (numId != null && !BigInteger.ZERO.equals(numId)) {
+		TextNumbering numbering = block.getNumbering();
+		if (numbering != null) {
 			closeQuote();
-			int ilvl = (numPr.getIlvl() != null && numPr.getIlvl().getVal() != null)
-					? numPr.getIlvl().getVal().intValue() : 0;
-			String label = labelText(numId, ilvl);
-			if (label != null) {
-				// a level with numFmt none, or a lvlText with no %n, is a label ("NOTE",
-				// "EXAMPLE"), not a list: emit it bold at the head of the paragraph
+			if (numbering.isLabel()) {
+				// a level with numFmt none, or a lvlText with no %n, is a label ("NOTE", "EXAMPLE"),
+				// not a list: emit it bold at the head of the paragraph
 				closeLists();
-				org.commonmark.node.Paragraph labelled = inlineParagraph(p);
+				String label = numbering.getLevelText() == null ? "" : numbering.getLevelText().trim();
+				org.commonmark.node.Paragraph labelled = inlineParagraph(block, false);
 				if (label.length() > 0) {
 					if (labelled.getFirstChild() != null) {
 						labelled.prependChild(new Text(" "));
@@ -296,198 +243,158 @@ class WmlToMarkdown {
 				}
 				return index;
 			}
-			listParagraph(p, effPPr, numId, ilvl, container);
+			listParagraph(block, numbering, container);
 			return index;
 		}
 
 		// follow-on paragraph inside a loose list item (indented, unnumbered)
-		if (!openLists.isEmpty() && ImportStyles.LIST_PARAGRAPH.equals(pStyleId)) {
+		if (!openLists.isEmpty() && ImportStyles.LIST_PARAGRAPH.equals(style)) {
 			OpenList top = openLists.peek();
 			if (top.lastItem != null) {
 				top.node.setTight(false);
-				top.lastItem.appendChild(inlineParagraph(p));
+				top.lastItem.appendChild(inlineParagraph(block, true));
 				return index;
 			}
 		}
 
 		closeLists();
 
-		// block quote (nesting depth from the direct indent)
-		if (ImportStyles.QUOTE.equals(pStyleId) || "IntenseQuote".equals(pStyleId)) {
-			int depth = 1;
-			if (directPPr != null && directPPr.getInd() != null
-					&& directPPr.getInd().getLeft() != null) {
-				depth += directPPr.getInd().getLeft().intValue() / TWIPS_PER_LEVEL;
-			}
-			appendToQuote(depth, inlineParagraph(p), container);
+		// block quote (nesting depth from the indent beyond the quote style's own)
+		if (ImportStyles.QUOTE.equals(style) || "IntenseQuote".equals(style)) {
+			int beyond = value(block.getIndentLeft()) - styleIndentLeft(style);
+			int depth = 1 + Math.max(0, beyond) / TWIPS_PER_LEVEL;
+			appendToQuote(depth, inlineParagraph(block, true), container);
 			return index;
 		}
 
 		closeQuote();
 
-		org.commonmark.node.Paragraph paragraph = inlineParagraph(p);
+		org.commonmark.node.Paragraph paragraph = inlineParagraph(block, true);
 		if (paragraph.getFirstChild() != null) {
 			container.appendChild(paragraph);
 		} // markdown has no empty paragraphs; drop them
 		return index;
 	}
 
-	private org.commonmark.node.Paragraph inlineParagraph(P p) throws Docx4JException {
+	private org.commonmark.node.Paragraph inlineParagraph(TextBlock block, boolean withListLabel) {
 		org.commonmark.node.Paragraph paragraph = new org.commonmark.node.Paragraph();
-		// NB the DIRECT pPr: getEffectiveRPr resolves the paragraph style via pPr.getPStyle()
-		processInlines(p.getContent(), paragraph, p.getPPr());
+		inlines(block, paragraph, withListLabel);
 		return paragraph;
 	}
 
-	// ---------------------------------------------------------------- math
-
-	private void inlineOMath(org.docx4j.math.CTOMath oMath, InlineSink sink) {
-		try {
-			String latex = new org.docx4j.model.math.OmmlToLatex().convertOMath(oMath);
-			if (!latex.isEmpty()) {
-				sink.node(new org.docx4j.markdown.math.InlineMath(latex, false));
-			}
-		} catch (org.docx4j.model.math.OmmlMathException e) {
-			log.warn("Equation outside the OMML->LaTeX subset ({}); flattened to its text",
-					e.getMessage());
-			sink.text(flattenMathText(oMath), false, false, false);
+	private static boolean isEmpty(TextBlock block) {
+		for (TextRun r : block.getRuns()) {
+			if (r.getKind() == TextRun.Kind.TEXT && !r.getText().isEmpty()) return false;
+			if (r.getKind() == TextRun.Kind.IMAGE || r.getKind() == TextRun.Kind.NOTE_REFERENCE) return false;
 		}
+		return true;
 	}
 
-	private static final java.util.regex.Pattern M_T_PATTERN =
-			java.util.regex.Pattern.compile("<m:t[^>]*>(.*?)</m:t>", java.util.regex.Pattern.DOTALL);
-
-	/** m:t text of an equation we can't translate (documented lossiness). */
-	private String flattenMathText(Object mathObject) {
-		org.docx4j.math.ObjectFactory mathFactory = new org.docx4j.math.ObjectFactory();
-		Object wrapped;
-		if (mathObject instanceof org.docx4j.math.CTOMath) {
-			wrapped = mathFactory.createOMath((org.docx4j.math.CTOMath) mathObject);
-		} else if (mathObject instanceof org.docx4j.math.CTOMathPara) {
-			wrapped = mathFactory.createOMathPara((org.docx4j.math.CTOMathPara) mathObject);
-		} else {
-			return "";
-		}
-		String xml;
-		try {
-			xml = XmlUtils.marshaltoString(wrapped, true, org.docx4j.jaxb.Context.jc);
-		} catch (Exception e) {
-			log.warn("Could not marshal equation for flattening", e);
-			return "";
-		}
-		StringBuilder sb = new StringBuilder();
-		java.util.regex.Matcher matcher = M_T_PATTERN.matcher(xml);
-		while (matcher.find()) {
-			sb.append(matcher.group(1)
-					.replace("&lt;", "<").replace("&gt;", ">")
-					.replace("&quot;", "\"").replace("&amp;", "&"));
-		}
-		return sb.toString();
-	}
-
-	private org.docx4j.math.CTOMathPara soleOMathPara(P p) {
-		org.docx4j.math.CTOMathPara found = null;
-		for (Object o : p.getContent()) {
-			Object u = XmlUtils.unwrap(o);
-			if (u instanceof org.docx4j.math.CTOMathPara) {
-				if (found != null) {
-					return null;
-				}
-				found = (org.docx4j.math.CTOMathPara) u;
-			} else {
-				return null; // mixed content: handled inline
-			}
+	/** The paragraph's one run, a display equation with no revision; else null. */
+	private static TextRun soleDisplayMath(TextBlock block) {
+		TextRun found = null;
+		for (TextRun r : block.getRuns()) {
+			if (r.getKind() == TextRun.Kind.TEXT && r.getText().isEmpty()) continue;
+			if (found != null || !r.isDisplayMath() || r.getRevision() != null) return null;
+			found = r;
 		}
 		return found;
 	}
 
-	private boolean isThematicBreak(P p, PPr directPPr) {
-		if (directPPr == null || directPPr.getPBdr() == null
-				|| directPPr.getPBdr().getBottom() == null) {
-			return false;
-		}
-		return textOf(p).isEmpty();
+	/** An equation's LaTeX: its text without the delimiters. */
+	private static String latex(TextRun run) {
+		String s = run.getText();
+		int d = run.isDisplayMath() ? 2 : 1;
+		if (s.length() >= 2 * d) return s.substring(d, s.length() - d);
+		return s;
 	}
-
-	private static boolean hasPStyle(P p, String styleId) {
-		return p.getPPr() != null && p.getPPr().getPStyle() != null
-				&& styleId.equals(p.getPPr().getPStyle().getVal());
-	}
-
-	/** Word's table-of-contents paragraph styles, {@code TOC1}..{@code TOC9}. */
-	private static final java.util.regex.Pattern TOC_STYLE = java.util.regex.Pattern.compile("TOC[1-9]");
 
 	/** Paragraph styles which are code blocks by name, whatever their font. */
 	private static final Set<String> CODE_STYLES = new HashSet<>(Arrays.asList(
 			ImportStyles.SOURCE_CODE, "Code", "HTMLPreformatted", "MacroText"));
 
 	/**
-	 * A code paragraph: styled as one, or in a named paragraph style whose own
-	 * effective font is mono.  Inline code is detected against the paragraph
-	 * style's baseline, so a paragraph whose baseline is already mono would get
-	 * no code marks at all; this is the paragraph-level counterpart.  A mono
-	 * <em>document default</em> does not count - a document set in Courier New
-	 * throughout is prose, not one fence - which is why a named style is
-	 * required.
+	 * A code paragraph: styled as one, or in a named paragraph style whose own font is mono (every
+	 * run monospaced, none of them beyond the style).  Inline code is what a run adds to its
+	 * paragraph style, so a paragraph whose style is already mono would get no code marks at all;
+	 * this is the paragraph-level counterpart.  A mono <em>document default</em> does not count - a
+	 * document set in Courier New throughout is prose, not one fence - which is why a named style
+	 * is required.
 	 *
 	 * @since 17.2.0 (CR-005, the export enhancements of 2026-09-18)
 	 */
-	private boolean isCodeParagraph(P p, PPr directPPr, String pStyleId) throws Docx4JException {
-		if (pStyleId == null) {
+	private static boolean isCodeParagraph(TextBlock block) {
+		String style = block.getStyle();
+		if (style == null) {
 			return false;
 		}
-		if (CODE_STYLES.contains(pStyleId)) {
+		if (CODE_STYLES.contains(style)) {
 			return true;
 		}
-		return isMono(baselineFor(directPPr));
+		if (!block.isMonospace()) {
+			return false;
+		}
+		for (TextRun r : block.getRuns()) {
+			if (r.getKind() == TextRun.Kind.TEXT && r.isMonospace()) return false;
+		}
+		return true;
 	}
 
-	/**
-	 * The level's text where the level is a label rather than a list: its
-	 * {@code numFmt} is {@code none}, or its {@code lvlText} carries no {@code %n}
-	 * placeholder ("NOTE", "EXAMPLE").  Null for a list level, or where the
-	 * numbering cannot be read.  A bullet level is a list.
-	 *
-	 * @since 17.2.0 (CR-005, the export enhancements of 2026-09-18)
-	 */
-	private String labelText(BigInteger numId, int ilvl) {
-		ListLevel level = listLevel(numId, ilvl);
-		if (level == null || level.isBullet()) {
-			return null;
-		}
-		String text = level.getLevelText() == null ? "" : level.getLevelText();
-		boolean none = level.getNumFmt() == org.docx4j.wml.NumberFormat.NONE;
-		if (!none && text.indexOf('%') >= 0) {
-			return null;
-		}
-		return text.trim();
+	private static boolean sameStory(TextBlock a, TextBlock b) {
+		return a.getStory() == b.getStory() && Objects.equals(a.getNoteId(), b.getNoteId());
 	}
 
-	private void appendCodeLines(P p, StringBuilder literal) {
-		StringBuilder line = new StringBuilder();
-		for (Object o : p.getContent()) {
-			Object u = XmlUtils.unwrap(o);
-			if (u instanceof R) {
-				for (Object rc : ((R) u).getContent()) {
-					Object ru = XmlUtils.unwrap(rc);
-					if (ru instanceof org.docx4j.wml.Text) {
-						line.append(((org.docx4j.wml.Text) ru).getValue());
-					} else if (ru instanceof Br) {
-						literal.append(line).append('\n');
-						line.setLength(0);
-					}
+	/** A code paragraph's text, unescaped; in {@code markup}, its revisions marked. */
+	private String codeText(TextBlock block) {
+		StringBuilder sb = new StringBuilder();
+		List<TextRun> runs = block.getRuns();
+		int i = 0;
+		while (i < runs.size()) {
+			TextRevision revision = runs.get(i).getRevision();
+			int j = i;
+			while (j < runs.size() && sameMarker(revision, runs.get(j).getRevision())) j++;
+			if (revision != null) sb.append(open(revision));
+			for (int k = i; k < j; k++) {
+				TextRun r = runs.get(k);
+				if (r.getKind() == TextRun.Kind.TEXT || r.getKind() == TextRun.Kind.FIELD_CODE) sb.append(r.getText());
+			}
+			if (revision != null) sb.append(close(revision));
+			i = j;
+		}
+		return sb.toString();
+	}
+
+	private static int value(Integer i) {
+		return i == null ? 0 : i;
+	}
+
+	private final Map<String, Integer> styleIndents = new HashMap<>();
+
+	/** A paragraph style's own left indent, in twips: 0 where it has none, or there are no styles to ask. */
+	private int styleIndentLeft(String styleId) {
+		Integer cached = styleIndents.get(styleId);
+		if (cached != null) return cached;
+		int left = 0;
+		try {
+			// asking a package with no styles part for a resolver would add one to it
+			if (pkg != null && pkg.getMainDocumentPart() != null
+					&& pkg.getMainDocumentPart().getStyleDefinitionsPart(false) != null) {
+				PPr pPr = new PPr();
+				PPr.PStyle pStyle = new PPr.PStyle();
+				pStyle.setVal(styleId);
+				pPr.setPStyle(pStyle);
+				PPr effective = pkg.getMainDocumentPart().getPropertyResolver().getEffectivePPr(pPr);
+				if (effective != null && effective.getInd() != null) {
+					java.math.BigInteger l = effective.getInd().getLeft() != null ? effective.getInd().getLeft()
+							: effective.getInd().getStart();
+					if (l != null) left = l.intValue();
 				}
 			}
+		} catch (Exception e) {
+			log.debug("No indent for style {}: {}", styleId, e.getMessage());
 		}
-		literal.append(line).append('\n');
-	}
-
-	private Integer outlineLevel(PPr effPPr) {
-		if (effPPr == null || effPPr.getOutlineLvl() == null
-				|| effPPr.getOutlineLvl().getVal() == null) {
-			return null;
-		}
-		return effPPr.getOutlineLvl().getVal().intValue();
+		styleIndents.put(styleId, left);
+		return left;
 	}
 
 	// ---------------------------------------------------------------- quotes
@@ -516,8 +423,10 @@ class WmlToMarkdown {
 
 	// ---------------------------------------------------------------- lists
 
-	private void listParagraph(P p, PPr effPPr, BigInteger numId, int ilvl, Node container)
-			throws Docx4JException {
+	private void listParagraph(TextBlock block, TextNumbering numbering, Node container) {
+
+		int ilvl = numbering.getLevel();
+		String numId = numbering.getNumId();
 
 		// close any deeper (or same-level-but-different-list) contexts
 		while (openLists.size() > ilvl + 1) {
@@ -528,12 +437,12 @@ class WmlToMarkdown {
 			openLists.pop(); // a different top-level list: restart
 		}
 
-		boolean tight = isTight(effPPr);
+		boolean tight = !Boolean.FALSE.equals(block.getContextualSpacing());
 
-		// open missing levels
+		// open missing levels (a level skipped over takes the paragraph's kind of list)
 		while (openLists.size() < ilvl + 1) {
 			int level = openLists.size();
-			ListBlock listBlock = createListBlock(numId, level, tight);
+			ListBlock listBlock = createListBlock(numbering, level == ilvl, tight);
 			if (openLists.isEmpty()) {
 				container.appendChild(listBlock);
 			} else {
@@ -552,48 +461,27 @@ class WmlToMarkdown {
 			target.node.setTight(false);
 		}
 		ListItem item = new ListItem();
-		item.appendChild(inlineParagraph(p));
+		item.appendChild(inlineParagraph(block, false));
 		target.node.appendChild(item);
 		target.lastItem = item;
 	}
 
-	private ListBlock createListBlock(BigInteger numId, int level, boolean tight) {
-		ListLevel listLevel = listLevel(numId, level);
-		boolean bullet = (listLevel == null) || listLevel.isBullet();
+	/** A list block; the start number only for the paragraph's own level, at the top level. */
+	private ListBlock createListBlock(TextNumbering numbering, boolean own, boolean tight) {
+		// a level the numbering definitions don't give is a bullet list
+		boolean bullet = numbering.isBullet() || numbering.getFormat() == null;
 		ListBlock listBlock;
 		if (bullet) {
 			listBlock = new BulletList();
 		} else {
 			OrderedList ordered = new OrderedList();
-			// NB ListLevel.getStartValue() is w:start minus one (counter semantics)
-			if (level == 0 && listLevel.getStartValue() != null
-					&& listLevel.getStartValue().intValue() + 1 > 1) {
-				ordered.setMarkerStartNumber(listLevel.getStartValue().intValue() + 1);
+			if (own && numbering.getLevel() == 0 && numbering.getStart() > 1) {
+				ordered.setMarkerStartNumber(numbering.getStart());
 			}
 			listBlock = ordered;
 		}
 		listBlock.setTight(tight);
 		return listBlock;
-	}
-
-	private ListLevel listLevel(BigInteger numId, int ilvl) {
-		if (ndp == null) {
-			return null;
-		}
-		ListNumberingDefinition lnd = ndp.getInstanceListDefinitions().get(numId.toString());
-		if (lnd == null || lnd.getAbstractListDefinition() == null) {
-			return null;
-		}
-		return lnd.getAbstractListDefinition().getListLevels().get(Integer.toString(ilvl));
-	}
-
-	private boolean isTight(PPr effPPr) {
-		// our import writes contextualSpacing true for tight, false for loose;
-		// absent -> assume tight (most Word lists read best tight)
-		if (effPPr == null || effPPr.getContextualSpacing() == null) {
-			return true;
-		}
-		return effPPr.getContextualSpacing().isVal();
 	}
 
 	private void closeLists() {
@@ -603,51 +491,41 @@ class WmlToMarkdown {
 	// ---------------------------------------------------------------- tables
 
 	/**
-	 * GFM pipes: first row is the header; block content in cells flattens to
-	 * inline with &lt;br&gt;; vMerge/gridSpan degrade (top-left wins, empty
-	 * cells elsewhere) — GFM has no spans.
+	 * GFM pipes: the header row is the table's {@code w:tblHeader} row, else its first (several
+	 * {@code w:tblHeader} rows are one header, their cells' texts {@code  / } apart, as plain text's
+	 * listed format joins them); block content in cells flattens to inline with &lt;br&gt;, a
+	 * nested table's paragraphs included; vMerge/gridSpan degrade (top-left wins, empty cells
+	 * elsewhere) - GFM has no spans.
 	 *
-	 * <p>The table style's formatting is left out on purpose (CR-030 decision 4):
-	 * the cells' runs are resolved without a CellContext, so a header row the
-	 * style makes bold is not written as **bold** (its being the GFM header says
-	 * as much), and GFM has no table styling for the rest.</p>
+	 * <p>The table style's formatting is left out on purpose (CR-030 decision 4): a header row the
+	 * style makes bold is not written as **bold** (its being the GFM header says as much), and GFM
+	 * has no table styling for the rest.</p>
 	 */
-	private void table(Tbl tbl, Node container) throws Docx4JException {
+	private void table(TextBlock table, Node container) {
 
 		TableBlock tableBlock = new TableBlock();
 		TableHead head = new TableHead();
 		TableBody body = new TableBody();
 		tableBlock.appendChild(head);
 
-		boolean first = true;
-		for (Object rowObj : tbl.getContent()) {
-			Object rowU = XmlUtils.unwrap(rowObj);
-			if (!(rowU instanceof Tr)) {
-				continue;
-			}
+		List<TextRow> rows = table.getRows();
+		int headerRows = 0;
+		while (headerRows < rows.size() && rows.get(headerRows).isHeader()) headerRows++;
+		if (headerRows == 0 && !rows.isEmpty()) headerRows = 1;
+
+		if (headerRows > 0) {
+			head.appendChild(headerRow(rows.subList(0, headerRows)));
+		}
+		for (int r = headerRows; r < rows.size(); r++) {
 			TableRow row = new TableRow();
-			for (Object cellObj : ((Tr) rowU).getContent()) {
-				Object cellU = XmlUtils.unwrap(cellObj);
-				if (!(cellU instanceof Tc)) {
-					continue;
-				}
-				Tc tc = (Tc) cellU;
-				row.appendChild(tableCell(tc, first));
+			for (TextCell cell : rows.get(r).getCells()) {
+				row.appendChild(tableCell(cell, false));
 				// gridSpan: pad with empty cells so columns stay aligned
-				TcPrInner tcPr = tc.getTcPr();
-				if (tcPr != null && tcPr.getGridSpan() != null
-						&& tcPr.getGridSpan().getVal() != null) {
-					for (int s = 1; s < tcPr.getGridSpan().getVal().intValue(); s++) {
-						row.appendChild(emptyCell(first));
-					}
+				for (int s = 1; s < cell.getGridSpan(); s++) {
+					row.appendChild(emptyCell(false));
 				}
 			}
-			if (first) {
-				head.appendChild(row);
-				first = false;
-			} else {
-				body.appendChild(row);
-			}
+			body.appendChild(row);
 		}
 		if (body.getFirstChild() != null) {
 			tableBlock.appendChild(body);
@@ -655,14 +533,79 @@ class WmlToMarkdown {
 		container.appendChild(tableBlock);
 	}
 
-	private TableCell tableCell(Tc tc, boolean header) throws Docx4JException {
+	/** The header: one row's cells, or several rows' cells by grid column, {@code  / } apart. */
+	private TableRow headerRow(List<TextRow> rows) {
+		TableRow row = new TableRow();
+		if (rows.size() == 1) {
+			for (TextCell cell : rows.get(0).getCells()) {
+				row.appendChild(tableCell(cell, true));
+				for (int s = 1; s < cell.getGridSpan(); s++) {
+					row.appendChild(emptyCell(true));
+				}
+			}
+			return row;
+		}
+		// each grid column's cells, from the top: a cell is in the column it starts in
+		int width = 0;
+		for (TextRow r : rows) {
+			int w = 0;
+			for (TextCell c : r.getCells()) w += Math.max(1, c.getGridSpan());
+			width = Math.max(width, w);
+		}
+		List<List<TextCell>> columns = new ArrayList<>();
+		for (int g = 0; g < width; g++) columns.add(new ArrayList<>());
+		for (TextRow r : rows) {
+			int g = 0;
+			for (TextCell c : r.getCells()) {
+				if (!c.isMergeContinue()) columns.get(g).add(c);
+				g += Math.max(1, c.getGridSpan());
+			}
+		}
+		for (List<TextCell> column : columns) {
+			TableCell cell = emptyCell(true);
+			// the column's alignment is its topmost header cell's, as with one header row
+			TableCell.Alignment alignment = null;
+			if (!column.isEmpty()) {
+				List<TextBlock> first = paragraphsOf(column.get(0));
+				if (!first.isEmpty()) alignment = cellAlignment(first.get(0));
+			}
+			InlineSink sink = new InlineSink(cell);
+			tableHeaderDepth++;
+			try {
+				boolean first = true;
+				for (TextCell c : column) {
+					if (isEmpty(c)) continue;
+					if (!first) sink.text(" / ", false, false, false);
+					first = false;
+					cellContent(c, cell, sink);
+				}
+			} finally {
+				tableHeaderDepth--;
+			}
+			sink.flush();
+			cell.setAlignment(alignment);
+			row.appendChild(cell);
+		}
+		return row;
+	}
+
+	private static boolean isEmpty(TextCell cell) {
+		for (TextBlock b : cell.getBlocks()) {
+			if (b.getKind() == TextBlock.Kind.TABLE) {
+				for (TextRow r : b.getRows()) for (TextCell c : r.getCells()) if (!isEmpty(c)) return false;
+			} else if (b.getKind() == TextBlock.Kind.PARAGRAPH && !isEmpty(b)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private TableCell tableCell(TextCell textCell, boolean header) {
 
 		TableCell cell = emptyCell(header);
 
 		// vMerge continuation: the merge's top cell already holds the content
-		TcPrInner tcPr = tc.getTcPr();
-		if (tcPr != null && tcPr.getVMerge() != null
-				&& !"restart".equals(tcPr.getVMerge().getVal())) {
+		if (textCell.isMergeContinue()) {
 			return cell;
 		}
 
@@ -670,30 +613,51 @@ class WmlToMarkdown {
 		if (header) {
 			tableHeaderDepth++;
 		}
-		boolean firstP = true;
-		for (Object o : tc.getContent()) {
-			Object u = XmlUtils.unwrap(o);
-			if (u instanceof P) {
-				P p = (P) u;
-				if (!firstP) {
-					sink.node(htmlBr()); // GFM cells are single-line
-				}
-				firstP = false;
-				if (cell.getAlignment() == null) {
-					cell.setAlignment(cellAlignment(p));
-				}
-				processInlines(p.getContent(), sink, p.getPPr(), baselineFor(p.getPPr()));
-			} else if (u instanceof SdtElement) {
-				log.debug("Flattening cell content control");
-			} else if (u instanceof Tbl) {
-				log.warn("Nested table dropped (GFM cells are inline-only)");
+		try {
+			cellContent(textCell, cell, sink);
+		} finally {
+			if (header) {
+				tableHeaderDepth--;
 			}
 		}
 		sink.flush();
-		if (header) {
-			tableHeaderDepth--;
-		}
 		return cell;
+	}
+
+	/**
+	 * A cell's paragraphs, a nested table's included, &lt;br&gt; apart (GFM cells are single-line);
+	 * its empty paragraphs left out, as plain text leaves them out (Word ends every cell with a
+	 * paragraph, so a nested table or a block-level control comes with an empty one after it).
+	 *
+	 * <p>A cell's alignment is its first paragraph's effective {@code w:jc}, empty or not; GFM aligns
+	 * a column, from its header cell's (the renderer's delimiter row), so a body cell's is not seen.</p>
+	 */
+	private void cellContent(TextCell textCell, TableCell cell, InlineSink sink) {
+		boolean first = true;
+		List<TextBlock> paragraphs = paragraphsOf(textCell);
+		if (cell.getAlignment() == null && !paragraphs.isEmpty()) {
+			cell.setAlignment(cellAlignment(paragraphs.get(0)));
+		}
+		for (TextBlock b : paragraphs) {
+			if (isEmpty(b)) continue;
+			if (!first) {
+				sink.node(htmlBr());
+			}
+			first = false;
+			runs(b, sink);
+		}
+	}
+
+	private static List<TextBlock> paragraphsOf(TextCell cell) {
+		List<TextBlock> out = new ArrayList<>();
+		for (TextBlock b : cell.getBlocks()) {
+			if (b.getKind() == TextBlock.Kind.TABLE) {
+				for (TextRow r : b.getRows()) for (TextCell c : r.getCells()) out.addAll(paragraphsOf(c));
+			} else if (b.getKind() == TextBlock.Kind.PARAGRAPH) {
+				out.add(b);
+			}
+		}
+		return out;
 	}
 
 	private TableCell emptyCell(boolean header) {
@@ -702,65 +666,102 @@ class WmlToMarkdown {
 		return cell;
 	}
 
-	private static org.commonmark.node.HtmlInline htmlBr() {
-		org.commonmark.node.HtmlInline br = new org.commonmark.node.HtmlInline();
-		br.setLiteral("<br>");
-		return br;
+	private static HtmlInline htmlBr() {
+		return raw("<br>");
 	}
 
-	private TableCell.Alignment cellAlignment(P p) {
-		if (p.getPPr() == null || p.getPPr().getJc() == null) {
+	private static HtmlInline raw(String literal) {
+		HtmlInline node = new HtmlInline();
+		node.setLiteral(literal);
+		return node;
+	}
+
+	private static TableCell.Alignment cellAlignment(TextBlock block) {
+		if (block.getAlignment() == null) {
 			return null;
 		}
-		switch (p.getPPr().getJc().getVal()) {
-		case CENTER:
+		switch (block.getAlignment()) {
+		case "center":
 			return TableCell.Alignment.CENTER;
-		case RIGHT:
+		case "right":
+		case "end":
 			return TableCell.Alignment.RIGHT;
 		default:
 			return null; // LEFT is GFM's default
 		}
 	}
 
-	// ---------------------------------------------------------------- footnotes
+	// ---------------------------------------------------------------- charts
 
-	private void appendFootnoteDefinitions(Document document) throws Docx4JException {
-
-		if (footnoteLabels.isEmpty()) {
-			return;
+	/**
+	 * A chart: its note (CR-047: {@code [chart: clustered column; value axis: Revenue]}), its title
+	 * and its data as a table (CR-035 phase 3), after the paragraph it is in, the categories down
+	 * and the series across, numbers formatted by their format codes
+	 * ({@link org.docx4j.model.chart.ChartDescription}, {@link org.docx4j.model.chart.ChartTable}).
+	 */
+	private void chart(TextBlock block, Node container) {
+		if (block.getChart() != null) {
+			org.commonmark.node.Paragraph note = new org.commonmark.node.Paragraph();
+			note.appendChild(new Text(block.getChart().getNote()));
+			container.appendChild(note);
 		}
-		FootnotesPart footnotesPart = mdp.getFootnotesPart();
-		if (footnotesPart == null) {
-			return;
+		if (block.getChartTitle() != null && !block.getChartTitle().isEmpty()) {
+			org.commonmark.node.Paragraph title = new org.commonmark.node.Paragraph();
+			title.appendChild(new Text(block.getChartTitle()));
+			container.appendChild(title);
 		}
-
-		RelationshipsPart savedRels = currentRels;
-		currentRels = footnotesPart.getRelationshipsPart(); // may be null
-
-		for (java.util.Map.Entry<BigInteger, String> entry : footnoteLabels.entrySet()) {
-			CTFtnEdn footnote = null;
-			for (CTFtnEdn candidate : footnotesPart.getJaxbElement().getFootnote()) {
-				if (entry.getKey().equals(candidate.getId())) {
-					footnote = candidate;
-					break;
-				}
-			}
-			if (footnote == null) {
-				log.warn("footnoteReference to missing footnote {}", entry.getKey());
-				continue;
-			}
-			FootnoteDefinition definition = new FootnoteDefinition(entry.getValue());
-			processBlocks(footnote.getContent(), definition);
-			closeLists();
-			closeQuote();
-			trimLeadingMarkerSpace(definition);
-			document.appendChild(definition);
+		if (block.getChartHeader().isEmpty()) return;
+		TableBlock table = new TableBlock();
+		TableHead head = new TableHead();
+		head.appendChild(chartRow(block.getChartHeader(), true, block.getChartHeader()));
+		table.appendChild(head);
+		if (!block.getChartRows().isEmpty()) {
+			TableBody body = new TableBody();
+			for (List<String> r : block.getChartRows()) body.appendChild(chartRow(r, false, block.getChartHeader()));
+			table.appendChild(body);
 		}
-
-		currentRels = savedRels;
+		container.appendChild(table);
 	}
 
-	/** Drop the leading space left behind by the footnoteRef marker run. */
+	private static TableRow chartRow(List<String> cells, boolean header, List<String> headings) {
+		TableRow row = new TableRow();
+		int labels = 0;
+		while (labels < headings.size() && headings.get(labels).isEmpty()) labels++;
+		for (int i = 0; i < cells.size(); i++) {
+			TableCell cell = new TableCell();
+			cell.setHeader(header);
+			if (i >= Math.max(labels, 1)) cell.setAlignment(TableCell.Alignment.RIGHT);
+			if (!cells.get(i).isEmpty()) cell.appendChild(new Text(cells.get(i)));
+			row.appendChild(cell);
+		}
+		return row;
+	}
+
+	// ---------------------------------------------------------------- notes
+
+	private static boolean isNote(TextBlock block) {
+		return block.getNoteType() != null
+				&& (block.getStory() == TextBlock.Story.FOOTNOTE || block.getStory() == TextBlock.Story.ENDNOTE
+						|| block.getStory() == TextBlock.Story.TEXT_BOX);
+	}
+
+	private static boolean sameNote(TextBlock a, TextBlock b) {
+		return isNote(b) && a.getNoteType().equals(b.getNoteType()) && Objects.equals(a.getNoteId(), b.getNoteId());
+	}
+
+	/**
+	 * A note's label: a footnote's number ({@code [^1]}), an endnote's prefixed {@code e}
+	 * ({@code [^e1]}), since the two are numbered apart (WD REQ-503); a note whose reference
+	 * carries a custom mark has no number, so its {@code w:id} labels it ({@code [^f-5]},
+	 * {@code [^e-5]}).
+	 */
+	private static String noteLabel(String type, int number, String id) {
+		boolean foot = TextRun.FOOTNOTE.equals(type);
+		if (number > 0) return foot ? Integer.toString(number) : "e" + number;
+		return (foot ? "f-" : "e-") + id;
+	}
+
+	/** Drop the leading space left behind by the note's own mark. */
 	private static void trimLeadingMarkerSpace(FootnoteDefinition definition) {
 		Node paragraph = definition.getFirstChild();
 		if (paragraph instanceof org.commonmark.node.Paragraph
@@ -824,307 +825,162 @@ class WmlToMarkdown {
 		}
 	}
 
-	// effective run properties of a paragraph style, computed once per
-	// styleId rather than once per paragraph ("" = no style); a null value
-	// is cached too, hence containsKey
-	private final java.util.Map<String, RPr> baselineRPrByStyle = new java.util.HashMap<>();
-
-	/**
-	 * The paragraph style's own formatting is the baseline: only formatting
-	 * beyond it becomes markdown markers.
-	 */
-	private RPr baselineFor(PPr directPPr) throws Docx4JException {
-		String key;
-		if (directPPr == null) {
-			key = "";
-		} else if (directPPr.getPStyle() != null) {
-			key = directPPr.getPStyle().getVal();
-		} else if (directPPr.getRPr() != null) {
-			// paragraph-mark rPr can contribute when there is no pStyle:
-			// per-paragraph, so not cacheable
-			return resolver.getEffectiveRPr(null, directPPr);
-		} else {
-			key = "";
-		}
-		if (!baselineRPrByStyle.containsKey(key)) {
-			baselineRPrByStyle.put(key, resolver.getEffectiveRPr(null, directPPr));
-		}
-		return baselineRPrByStyle.get(key);
-	}
-
-	private void processInlines(List<Object> content, Node parent, PPr directPPr)
-			throws Docx4JException {
-
+	private void inlines(TextBlock block, Node parent, boolean withListLabel) {
 		InlineSink sink = new InlineSink(parent);
-		processInlines(content, sink, directPPr, baselineFor(directPPr));
+		// under list_labels: true, the label the numbering model computes leads a paragraph that
+		// isn't written as a list item (a numbered heading's "1.2")
+		if (withListLabel && block.getListLabel() != null && !block.getListLabel().trim().isEmpty()) {
+			sink.text(block.getListLabel().replace('\t', ' '), false, false, false);
+		}
+		runs(block, sink);
 		sink.flush();
 	}
 
-	private void processInlines(List<Object> content, InlineSink sink, PPr directPPr, RPr baseline)
-			throws Docx4JException {
+	/** A block's runs, in {@code markup} each revision's between its CriticMarkup marks (REQ-703, REQ-702). */
+	private void runs(TextBlock block, InlineSink sink) {
+		List<TextRun> runs = block.getRuns();
+		int i = 0;
+		while (i < runs.size()) {
+			TextRevision revision = runs.get(i).getRevision();
+			int j = i;
+			while (j < runs.size() && sameMarker(revision, runs.get(j).getRevision())) j++;
+			if (revision != null) sink.node(raw(open(revision)));
+			linked(runs.subList(i, j), sink);
+			if (revision != null) sink.node(raw(close(revision)));
+			i = j;
+		}
+	}
 
-		for (Object o : content) {
-			Object u = XmlUtils.unwrap(o);
-
-			if (u instanceof R) {
-				run((R) u, sink, directPPr, baseline);
-			} else if (u instanceof P.Hyperlink) {
-				P.Hyperlink h = (P.Hyperlink) u;
-				String target = hyperlinkTarget(h);
-				if (target == null) {
-					processInlines(h.getContent(), sink, directPPr, baseline);
-				} else {
-					Link link = new Link(target, null);
-					InlineSink linkSink = new InlineSink(link);
-					processInlines(h.getContent(), linkSink, directPPr, baseline);
-					linkSink.flush();
-					sink.node(link);
-				}
-			} else if (u instanceof CTSimpleField) {
-				// a field's content is its cached result
-				processInlines(((CTSimpleField) u).getContent(), sink, directPPr, baseline);
-			} else if (u instanceof SdtElement) {
-				processInlines(((SdtElement) u).getSdtContent().getContent(), sink, directPPr, baseline);
-			} else if (u instanceof org.docx4j.math.CTOMath) {
-				inlineOMath((org.docx4j.math.CTOMath) u, sink);
-			} else if (u instanceof org.docx4j.math.CTOMathPara) {
-				// oMathPara mixed with other inline content: degrade to inline
-				for (org.docx4j.math.CTOMath oMath
-						: ((org.docx4j.math.CTOMathPara) u).getOMath()) {
-					inlineOMath(oMath, sink);
-				}
-			} else if (u instanceof RunIns) {
-				// an insertion's content, under both policies
-				processInlines(((RunIns) u).getCustomXmlOrSmartTagOrSdt(), sink, directPPr, baseline);
-			} else if (u instanceof RunDel) {
-				if (options.getTrackedChangesPolicy() == MarkdownExportOptions.TrackedChangesPolicy.MARKUP) {
-					delMarkupDepth++;
-					processInlines(((RunDel) u).getCustomXmlOrSmartTagOrSdt(), sink, directPPr, baseline);
-					delMarkupDepth--;
-				} // ACCEPT: deletions dropped
+	/** Runs, those with the same link target in one link. */
+	private void linked(List<TextRun> runs, InlineSink sink) {
+		int i = 0;
+		while (i < runs.size()) {
+			String target = runs.get(i).getLink();
+			int j = i;
+			while (j < runs.size() && Objects.equals(target, runs.get(j).getLink())) j++;
+			if (target == null) {
+				for (int k = i; k < j; k++) run(runs.get(k), sink);
 			} else {
-				log.debug("Dropping unmapped inline {}", u.getClass().getSimpleName());
+				Link link = new Link(target, null);
+				InlineSink linkSink = new InlineSink(link);
+				for (int k = i; k < j; k++) run(runs.get(k), linkSink);
+				linkSink.flush();
+				sink.node(link);
+			}
+			i = j;
+		}
+	}
+
+	private void run(TextRun run, InlineSink sink) {
+		switch (run.getKind()) {
+		case TEXT:
+			text(run, sink);
+			return;
+		case FIELD_CODE:
+		case LIST_LABEL:
+			sink.text(run.getText(), false, false, false);
+			return;
+		case NOTE_REFERENCE:
+			if (textOptions.isNotes() && textOptions.isNoteReferences()) {
+				sink.node(new FootnoteReference(noteLabel(run.getNoteType(), run.getNoteNumber(), run.getNoteId())));
+			}
+			return;
+		case COMMENT_REFERENCE: {
+			TextComment comment = result.comments().get(run.getCommentId());
+			// a reply is written after its parent, never at its own reference (REQ-504)
+			if (comment == null || comment.getParentId() != null && result.comments().containsKey(comment.getParentId())) return;
+			comment(comment, sink);
+			for (TextComment reply : comment.getReplies()) comment(reply, sink);
+			return;
+		}
+		case IMAGE:
+			image(run, sink);
+			return;
+		case PAGE_MARKER:
+			if (textOptions.isPageMarkers()) sink.text("[page " + run.getPageNumber() + "]", false, false, false);
+			return;
+		default:
+			// a note's own mark (its definition's label carries it), an object (no text)
+		}
+	}
+
+	private void text(TextRun run, InlineSink sink) {
+		String value = run.getText();
+		if (value.isEmpty()) return;
+		if (run.isMath()) {
+			String latex = latex(run);
+			if (!latex.isEmpty()) sink.node(new org.docx4j.markdown.math.InlineMath(latex, false));
+			return;
+		}
+		boolean bold = run.isBold() && tableHeaderDepth == 0; // header-row bold is convention, not markup
+		String[] lines = value.split("\n", -1);
+		for (int l = 0; l < lines.length; l++) {
+			if (l > 0) sink.node(new HardLineBreak());
+			if (lines[l].isEmpty()) continue;
+			if (run.isMonospace()) {
+				sink.node(new Code(lines[l]));
+			} else {
+				sink.text(lines[l], bold, run.isItalic(), run.isStrike());
 			}
 		}
 	}
 
-	private void run(R r, InlineSink sink, PPr directPPr, RPr baseline) throws Docx4JException {
+	private void comment(TextComment comment, InlineSink sink) {
+		sink.node(raw("{>>" + detail(comment.getAuthor(), comment.getDate())));
+		sink.text(comment.getText(), false, false, false);
+		sink.node(raw("<<}"));
+	}
 
-		// a run with no rPr of its own resolves to the baseline by definition
-		// (most runs), sparing a PropertyResolver call per run
-		RPr effRPr = (r.getRPr() == null) ? baseline
-				: resolver.getEffectiveRPr(r.getRPr(), directPPr);
-
-		boolean code = isCode(r.getRPr(), effRPr, baseline);
-		boolean bold = isOn(effRPr == null ? null : effRPr.getB())
-				&& !isOn(baseline == null ? null : baseline.getB())
-				&& tableHeaderDepth == 0; // header-row bold is convention, not markup
-		boolean italic = isOn(effRPr == null ? null : effRPr.getI())
-				&& !isOn(baseline == null ? null : baseline.getI());
-		boolean strike = (isOn(effRPr == null ? null : effRPr.getStrike())
-				&& !isOn(baseline == null ? null : baseline.getStrike()))
-				|| delMarkupDepth > 0;
-
-		for (Object rc : r.getContent()) {
-			Object u = XmlUtils.unwrap(rc);
-
-			if (u instanceof FldChar) {
-				STFldCharType type = ((FldChar) u).getFldCharType();
-				if (type == STFldCharType.BEGIN) {
-					fieldDepth++;
-					awaitingSeparate++;
-				} else if (type == STFldCharType.SEPARATE) {
-					if (awaitingSeparate > 0) {
-						awaitingSeparate--;
-					}
-				} else if (type == STFldCharType.END) {
-					if (fieldDepth > 0) {
-						fieldDepth--;
-					}
-					if (awaitingSeparate > fieldDepth) {
-						awaitingSeparate = fieldDepth;
-					}
-				}
-			} else if (awaitingSeparate > 0) {
-				// between a field's begin and separate: instruction, not result
-				continue;
-			} else if (u instanceof org.docx4j.wml.Text
-					|| u instanceof org.docx4j.wml.DelText) {
-				String value = (u instanceof org.docx4j.wml.Text)
-						? ((org.docx4j.wml.Text) u).getValue()
-						: ((org.docx4j.wml.DelText) u).getValue();
-				if (value != null && !value.isEmpty()) {
-					if (code) {
-						sink.node(new Code(value));
-					} else {
-						sink.text(value, bold, italic, strike);
-					}
-				}
-			} else if (u instanceof Br) {
-				sink.node(new HardLineBreak());
-			} else if (u instanceof R.Tab) {
-				sink.text("\t", bold, italic, strike);
-			} else if (u instanceof CTFtnEdnRef
-					&& isFootnoteReference(rc)) {
-				CTFtnEdnRef ref = (CTFtnEdnRef) u;
-				if (ref.getId() != null) {
-					String label = footnoteLabels.computeIfAbsent(ref.getId(), BigInteger::toString);
-					sink.node(new FootnoteReference(label));
-				}
-			} else if (u instanceof Drawing) {
-				drawing((Drawing) u, sink);
-			} else if (u instanceof org.docx4j.mce.AlternateContent) {
-				// CR-021: one branch, the one docx4j draws; a w:drawing there is drawn,
-				// a VML w:pict (the usual fallback) is not - a text box's own text is
-				// not exported to markdown from either branch
-				for (Object b : org.docx4j.jaxb.McSelection.select((org.docx4j.mce.AlternateContent) u)) {
-					Object bu = XmlUtils.unwrap(b);
-					if (bu instanceof Drawing) {
-						drawing((Drawing) bu, sink);
-					}
-				}
-				// a chartex chart is in a Choice docx4j does not select, its Fallback a picture of
-				// it: the picture stays, and its data follows the paragraph
-				for (org.docx4j.mce.AlternateContent.Choice c : ((org.docx4j.mce.AlternateContent) u).getChoice()) {
-					for (Object b : c.getAny()) {
-						Object bu = XmlUtils.unwrap(b);
-						if (bu instanceof Drawing) {
-							for (Object a : ((Drawing) bu).getAnchorOrInline()) chart(a);
-						}
-					}
-				}
-			}
-			// instrText and other run content dropped
+	/** Runs under one marker: the same type, and the same author and date where the detail shows them. */
+	private boolean sameMarker(TextRevision a, TextRevision b) {
+		if (a == null || b == null) return a == b;
+		if (a.getType() != b.getType()) return false;
+		switch (textOptions.getMarkupDetail()) {
+		case AUTHOR: return Objects.equals(a.getAuthor(), b.getAuthor());
+		case AUTHOR_DATE: return Objects.equals(a.getAuthor(), b.getAuthor()) && Objects.equals(a.getDate(), b.getDate());
+		default: return true;
 		}
 	}
 
-	/** CTFtnEdnRef is also the endnoteReference type; check the element name. */
-	private static boolean isFootnoteReference(Object rawContent) {
-		return rawContent instanceof jakarta.xml.bind.JAXBElement
-				&& "footnoteReference".equals(
-						((jakarta.xml.bind.JAXBElement<?>) rawContent).getName().getLocalPart());
+	private String open(TextRevision revision) {
+		return (revision.getType() == TextRevision.Type.INSERTION ? "{++" : "{--") + detail(revision.getAuthor(), revision.getDate());
+	}
+
+	private static String close(TextRevision revision) {
+		return revision.getType() == TextRevision.Type.INSERTION ? "++}" : "--}";
+	}
+
+	private String detail(String author, String date) {
+		switch (textOptions.getMarkupDetail()) {
+		case AUTHOR:
+			return (author == null ? "" : author) + ": ";
+		case AUTHOR_DATE:
+			return (author == null ? "" : author) + ", " + (date == null ? "" : date) + ": ";
+		default:
+			return "";
+		}
 	}
 
 	// ---------------------------------------------------------------- images
 
-	private void drawing(Drawing drawing, InlineSink sink) {
-
-		for (Object o : drawing.getAnchorOrInline()) {
-			if (chart(o)) {
-				continue;
-			}
-			org.docx4j.dml.Graphic graphic = null;
-			org.docx4j.dml.CTNonVisualDrawingProps docPr = null;
-			if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
-				graphic = ((org.docx4j.dml.wordprocessingDrawing.Inline) o).getGraphic();
-				docPr = ((org.docx4j.dml.wordprocessingDrawing.Inline) o).getDocPr();
-			} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
-				graphic = ((org.docx4j.dml.wordprocessingDrawing.Anchor) o).getGraphic();
-				docPr = ((org.docx4j.dml.wordprocessingDrawing.Anchor) o).getDocPr();
-			}
-			if (graphic == null || graphic.getGraphicData() == null
-					|| graphic.getGraphicData().getPic() == null
-					|| graphic.getGraphicData().getPic().getBlipFill() == null
-					|| graphic.getGraphicData().getPic().getBlipFill().getBlip() == null) {
-				log.debug("Dropping non-picture drawing");
-				continue;
-			}
-			String embed = graphic.getGraphicData().getPic().getBlipFill().getBlip().getEmbed();
-			if (embed == null || currentRels == null) {
-				continue;
-			}
-			Relationship rel = currentRels.getRelationshipByID(embed);
-			if (rel == null || !(currentRels.getPart(rel) instanceof BinaryPartAbstractImage)) {
-				log.warn("Dropping image with unresolvable relationship {}", embed);
-				continue;
-			}
-			BinaryPartAbstractImage imagePart = (BinaryPartAbstractImage) currentRels.getPart(rel);
-
-			String destination;
-			try {
-				destination = imageDestination(imagePart);
-			} catch (Exception e) {
-				log.warn("Could not extract image; dropping it", e);
-				continue;
-			}
-
-			String alt = null;
-			if (docPr != null) {
-				alt = (docPr.getDescr() != null && !docPr.getDescr().isEmpty())
-						? docPr.getDescr() : docPr.getName();
-			}
-			org.commonmark.node.Image image = new org.commonmark.node.Image(destination, null);
-			image.appendChild(new Text(alt == null ? "" : alt));
-			sink.node(image);
+	/** A picture with the describer's text (REQ-703, REQ-514); one that isn't in an image part is dropped. */
+	private void image(TextRun run, InlineSink sink) {
+		Part part = run.getImage() == null ? null : run.getImage().getPart();
+		if (!(part instanceof BinaryPartAbstractImage)) {
+			log.debug("Dropping a picture with no image part");
+			return;
 		}
-	}
-
-	/**
-	 * A chart: its note (CR-047: {@code [chart: clustered column; value axis: Revenue]}), its title
-	 * and its data as a table (CR-035 phase 3), each after the paragraph it is in, the categories down
-	 * and the series across, numbers formatted by their format codes
-	 * ({@link org.docx4j.model.chart.ChartDescription}, {@link org.docx4j.model.chart.ChartTable}).
-	 *
-	 * @return whether the anchor placed a chart
-	 */
-	private boolean chart(Object anchor) {
-		if (currentRels == null) return false;
-		org.docx4j.model.chart.ChartRef ref = org.docx4j.model.chart.ChartRef.of(
-				currentRels.getSourceP() instanceof org.docx4j.openpackaging.parts.Part ? (org.docx4j.openpackaging.parts.Part) currentRels.getSourceP() : null, anchor);
-		if (ref == null) return false;
+		String destination;
 		try {
-			org.docx4j.model.chart.ChartDescription d = ref.isChartEx()
-					? org.docx4j.model.chart.ChartDescription.of(ref.readChartEx())
-					: org.docx4j.model.chart.ChartDescription.of(ref.read());
-			org.docx4j.model.chart.ChartTable t = d.getTable();
-			org.commonmark.node.Paragraph note = new org.commonmark.node.Paragraph();
-			note.appendChild(new Text(d.getNote()));
-			pendingCharts.add(note);
-			if (t.getTitle() != null && !t.getTitle().isEmpty()) {
-				org.commonmark.node.Paragraph title = new org.commonmark.node.Paragraph();
-				title.appendChild(new Text(t.getTitle()));
-				pendingCharts.add(title);
-			}
-			if (!t.getHeader().isEmpty()) pendingCharts.add(chartTable(t));
+			destination = imageDestination((BinaryPartAbstractImage) part);
 		} catch (Exception e) {
-			log.warn("Couldn't describe the chart {}: {}", ref.getName(), e.getMessage());
+			log.warn("Could not extract image; dropping it", e);
+			return;
 		}
-		return true;
-	}
-
-	private static TableBlock chartTable(org.docx4j.model.chart.ChartTable t) {
-		TableBlock block = new TableBlock();
-		TableHead head = new TableHead();
-		head.appendChild(chartRow(t.getHeader(), true, t));
-		block.appendChild(head);
-		if (!t.getRows().isEmpty()) {
-			TableBody body = new TableBody();
-			for (List<String> r : t.getRows()) body.appendChild(chartRow(r, false, t));
-			block.appendChild(body);
-		}
-		return block;
-	}
-
-	private static TableRow chartRow(List<String> cells, boolean header, org.docx4j.model.chart.ChartTable t) {
-		TableRow row = new TableRow();
-		int labels = 0;
-		while (labels < t.getHeader().size() && t.getHeader().get(labels).isEmpty()) labels++;
-		for (int i = 0; i < cells.size(); i++) {
-			TableCell cell = new TableCell();
-			cell.setHeader(header);
-			if (i >= Math.max(labels, 1)) cell.setAlignment(TableCell.Alignment.RIGHT);
-			if (!cells.get(i).isEmpty()) cell.appendChild(new Text(cells.get(i)));
-			row.appendChild(cell);
-		}
-		return row;
-	}
-
-	private void flushCharts(Node container) {
-		if (pendingCharts.isEmpty()) return;
-		closeLists();
-		closeQuote();
-		for (Node n : pendingCharts) container.appendChild(n);
-		pendingCharts.clear();
+		ImageDescription description = run.getDescription();
+		org.commonmark.node.Image image = new org.commonmark.node.Image(destination, null);
+		image.appendChild(new Text(description == null ? "" : description.getText()));
+		sink.node(image);
 	}
 
 	/** Data URI by default; a file in imageDirPath (with a relative link) when set. */
@@ -1166,53 +1022,4 @@ class WmlToMarkdown {
 			return (dot >= 0) ? name.substring(dot + 1) : "bin";
 		}
 	}
-
-	private boolean isCode(RPr directRPr, RPr effRPr, RPr baseline) {
-		if (directRPr != null && directRPr.getRStyle() != null
-				&& ImportStyles.CODE_CHAR.equals(directRPr.getRStyle().getVal())) {
-			return true;
-		}
-		return isMono(effRPr) && !isMono(baseline);
-	}
-
-	private static boolean isMono(RPr rPr) {
-		if (rPr == null || rPr.getRFonts() == null || rPr.getRFonts().getAscii() == null) {
-			return false;
-		}
-		return MONO_FONTS.contains(rPr.getRFonts().getAscii().toLowerCase(Locale.ROOT));
-	}
-
-	private String hyperlinkTarget(P.Hyperlink h) {
-		if (h.getId() != null && mdp.getRelationshipsPart() != null) {
-			Relationship rel = mdp.getRelationshipsPart().getRelationshipByID(h.getId());
-			if (rel != null) {
-				return rel.getTarget();
-			}
-		}
-		if (h.getAnchor() != null) {
-			return "#" + h.getAnchor();
-		}
-		return null;
-	}
-
-	private static boolean isOn(BooleanDefaultTrue b) {
-		return b != null && b.isVal();
-	}
-
-	private String textOf(P p) {
-		StringBuilder sb = new StringBuilder();
-		for (Object o : p.getContent()) {
-			Object u = XmlUtils.unwrap(o);
-			if (u instanceof R) {
-				for (Object rc : ((R) u).getContent()) {
-					Object ru = XmlUtils.unwrap(rc);
-					if (ru instanceof org.docx4j.wml.Text) {
-						sb.append(((org.docx4j.wml.Text) ru).getValue());
-					}
-				}
-			}
-		}
-		return sb.toString();
-	}
-
 }

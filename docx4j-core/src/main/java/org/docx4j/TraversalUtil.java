@@ -78,8 +78,10 @@ import org.slf4j.LoggerFactory;
  * and CompoundTraversalUtilVisitorCallback
  * 
  * <p><b>mc:AlternateContent</b> (since 17.2.0, CR-021): a walk visits ONE branch of
- * each mc:AlternateContent by default - the branch docx4j draws, see
- * {@link McSelection} - which is {@link McMode#READ}.  A walk that edits the tree
+ * each mc:AlternateContent by default, which is {@link McMode#READ}: since 17.3.4 the
+ * branch docx4j reads for text ({@link org.docx4j.jaxb.McPurpose#TEXT}, CR-046 phase 3),
+ * before it the branch docx4j draws, which a walk serving an output's layout asks for
+ * with {@link McMode#DRAW} (see {@link McSelection}).  A walk that edits the tree
  * (binding, field update, merge, anonymisation, find and replace) must ask for
  * {@link McMode#ALL} through the constructor or visit overload that takes a mode,
  * or by {@link CallbackImpl#setMcMode}, so its edit reaches every branch.  Before
@@ -380,9 +382,10 @@ public class TraversalUtil {
 
 	/**
 	 * As {@link #getChildrenImpl(Object)}, with the treatment of mc:AlternateContent:
-	 * in {@link McMode#READ} its children are the one branch docx4j draws
-	 * ({@link McSelection#selectedBranch}); in {@link McMode#ALL} every Choice and the
-	 * Fallback.  Everything else is the same in both modes.
+	 * in {@link McMode#READ} its children are the one branch docx4j reads for text (since
+	 * 17.3.4; {@link McSelection#branches(AlternateContent, McMode)}), in {@link McMode#DRAW}
+	 * the one it draws ({@link McSelection#selectedBranch}); in {@link McMode#ALL} every
+	 * Choice and the Fallback.  Everything else is the same in every mode.
 	 * 
 	 * @since 17.2.0 (CR-021)
 	 */

@@ -110,6 +110,19 @@ public final class TrackedChanges {
 		return resolveAll(pkg, true, null, true);
 	}
 
+	/**
+	 * Rejects every change in a copy of a document made for a conversion, which is laid out and not
+	 * saved ({@code ConversionFeatures.PP_COMMON_REJECT_TRACKED_CHANGES}, the exporters' {@code original}
+	 * view): as {@link #rejectAll(WordprocessingMLPackage)}, with {@link #acceptAllForConversion}'s
+	 * terms - nothing outside the story parts touched, and a paragraph joined with the next keeping
+	 * the first one's {@code w14:paraId}.
+	 *
+	 * @since 17.3.4 (CR-046 phase 3)
+	 */
+	public static int rejectAllForConversion(WordprocessingMLPackage pkg) {
+		return resolveAll(pkg, false, null, true);
+	}
+
 	/** Accepts the changes the filter matches; returns how many of those {@link #in} listed. */
 	public static int acceptAll(WordprocessingMLPackage pkg, TrackedChangeFilter filter) {
 		return resolveAll(pkg, true, filter, false);

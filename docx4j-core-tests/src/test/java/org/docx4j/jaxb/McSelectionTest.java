@@ -165,19 +165,34 @@ public class McSelectionTest {
 	public void branchesByMode() throws Exception {
 		AlternateContent ac = alternateContent(run(RUN));
 		assertEquals(1, McSelection.branches(ac, McMode.READ).size());
+		// since 17.3.4 READ is the branch read for text, the wps Choice (CR-046 phase 3); DRAW the drawn one
+		assertSame(ac.getChoice().get(0), McSelection.branches(ac, McMode.READ).get(0));
+		assertSame(ac.getFallback(), McSelection.branches(ac, McMode.DRAW).get(0));
 		assertEquals(2, McSelection.branches(ac, McMode.ALL).size());
 		assertSame(ac.getChoice().get(0), McSelection.branches(ac, McMode.ALL).get(0));
 		assertSame(ac.getFallback(), McSelection.branches(ac, McMode.ALL).get(1));
 	}
 
+	/** Since 17.3.4 the default, READ, is the branch read for text: the wps Choice, whatever the drawing property says (CR-046 phase 3). */
 	@Test
 	public void traversalReadsOneBranchByDefault() throws Exception {
 		R r = run(RUN);
 		List<String> texts = paragraphs(r, null);
+		assertEquals("the Choice's one paragraph: " + texts, 1, texts.size());
+		assertEquals("choice para", texts.get(0));
+		Docx4jProperties.setProperty(McSelection.PROPERTY, "wps");
+		assertEquals(texts, paragraphs(r, null));
+	}
+
+	/** DRAW is the drawn branch: the Fallback by default, the Choice where the property prefers it (READ before 17.3.4). */
+	@Test
+	public void traversalDrawModeSeesTheDrawnBranch() throws Exception {
+		R r = run(RUN);
+		List<String> texts = paragraphs(r, McMode.DRAW);
 		assertEquals("the Fallback's two paragraphs, once: " + texts, 2, texts.size());
 		assertEquals("fallback para one", texts.get(0));
 		Docx4jProperties.setProperty(McSelection.PROPERTY, "wps");
-		texts = paragraphs(r, null);
+		texts = paragraphs(r, McMode.DRAW);
 		assertEquals("the Choice's one paragraph: " + texts, 1, texts.size());
 		assertEquals("choice para", texts.get(0));
 	}
@@ -189,7 +204,7 @@ public class McSelectionTest {
 		assertEquals("Choice then Fallback: " + texts, 3, texts.size());
 		assertEquals("choice para", texts.get(0));
 		assertEquals("fallback para two", texts.get(2));
-		assertEquals("explicit READ is the default", 2, paragraphs(r, McMode.READ).size());
+		assertEquals("explicit READ is the default", paragraphs(r, null), paragraphs(r, McMode.READ));
 	}
 
 	@Test
@@ -203,7 +218,10 @@ public class McSelectionTest {
 			}
 		};
 		TraversalUtil.visit(r, visitor);
-		assertEquals(2, count[0]);
+		assertEquals(1, count[0]); // the Choice's (READ)
+		count[0] = 0;
+		TraversalUtil.visit(r, visitor, McMode.DRAW);
+		assertEquals(2, count[0]); // the Fallback's
 		count[0] = 0;
 		TraversalUtil.visit(r, visitor, McMode.ALL);
 		assertEquals(3, count[0]);

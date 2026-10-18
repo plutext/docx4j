@@ -149,7 +149,8 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 			bookmarkNamesCollected = true;
 			try {
 				org.docx4j.finders.RangeFinder finder = new org.docx4j.finders.RangeFinder();
-				new org.docx4j.TraversalUtil(getWmlPackage().getMainDocumentPart().getContent(), finder);
+				// DRAW: a reference is made to what the exporter draws (CR-046 phase 3)
+				new org.docx4j.TraversalUtil(getWmlPackage().getMainDocumentPart().getContent(), finder, org.docx4j.jaxb.McMode.DRAW);
 				java.util.Set<String> names = new java.util.HashSet<String>();
 				for (org.docx4j.wml.CTBookmark bm : finder.getStarts()) {
 					if (bm.getName() != null) names.add(bm.getName());
@@ -185,7 +186,8 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 				/* the document as it was handed over, not the preprocessed copy: FieldsCombiner
 				 * collapses a complex field whole, and a bookmark between its begin and separate -
 				 * where Word puts a form field's own bookmark - went with it (corpus document 2823,
-				 * REF Text1 to a FORMTEXT, which Word resolves). */
+				 * REF Text1 to a FORMTEXT, which Word resolves).  READ: Word looks in the branch it
+				 * reads, the Choice it understands, which is the one read for text (CR-046 phase 3). */
 				WordprocessingMLPackage pkg = getConversionSettings() != null
 						&& getConversionSettings().getOpcPackage() instanceof WordprocessingMLPackage
 						? (WordprocessingMLPackage) getConversionSettings().getOpcPackage() : getWmlPackage();

@@ -37,7 +37,8 @@ public enum McPurpose {
 	/**
 	 * Drawing: {@code docx4j.jaxb.mc.preferChoice}, empty by default, so that the Fallback is
 	 * drawn ({@link McSelection#selectedBranch(org.docx4j.mce.AlternateContent)}); the FO and
-	 * HTML exporters' layout, and {@link McMode#READ} walks until CR-046 phase 3.
+	 * HTML exporters' layout, and {@link McMode#DRAW} walks ({@link McMode#READ} walks until
+	 * CR-046 phase 3).
 	 */
 	DRAW,
 

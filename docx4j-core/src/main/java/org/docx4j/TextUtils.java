@@ -42,6 +42,17 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ * The character content of an object's XML, as its marshalled form gives it.
+ *
+ * @deprecated since 17.3.4: this is not docx4j's text model, and no reader docx4j ships uses it
+ * (CR-046 phase 3, WD REQ-202).  It returns the text of whatever it is given, in whatever view the
+ * object is (deleted text included), with no stories, no hidden text left out, no separators
+ * between paragraphs, and field codes for some objects.  Use {@link org.docx4j.model.text.Texts}
+ * ({@code Texts.plainText(pkg, options)}, or {@code Texts.of(part or content, options)} for the
+ * block model), which reads a document as the text model specifies.  Its output is unchanged.
+ */
+@Deprecated
 public class TextUtils {
 	
 	private static Logger log = LoggerFactory.getLogger(TextUtils.class);	
@@ -52,7 +63,9 @@ public class TextUtils {
 	 * @param o
 	 * @return String
 	 * @since 6.0.0
+	 * @deprecated since 17.3.4: not the text model; see {@link org.docx4j.model.text.Texts}
 	 */
+	@Deprecated
 	public static String getText(Object o)  {
 
 		StringWriter w = new StringWriter();
@@ -71,7 +84,9 @@ public class TextUtils {
 	 * @param o
 	 * @param jcSVG JAXBContext
 	 * @return
+	 * @deprecated since 17.3.4: not the text model; see {@link org.docx4j.model.text.Texts}
 	 */
+	@Deprecated
 	public static void extractText(Object o, Writer w) throws Docx4JException {
 
 		extractText(o, w, Context.jc);
@@ -84,7 +99,9 @@ public class TextUtils {
 	 * @param jc JAXBContext
 	 * @return
 	 * @throws Docx4JException 
+	 * @deprecated since 17.3.4: not the text model; see {@link org.docx4j.model.text.Texts}
 	 */
+	@Deprecated
 	public static void extractText(Object o, Writer w, JAXBContext jc) throws Docx4JException  {
 		
 		if (o==null) {
@@ -112,7 +129,9 @@ public class TextUtils {
 	 * @param local
 	 * @param declaredType
 	 * @throws Exception
+	 * @deprecated since 17.3.4: not the text model; see {@link org.docx4j.model.text.Texts}
 	 */
+	@Deprecated
 	public static void extractText(Object o, Writer w, JAXBContext jc,
 			String uri, String local, Class declaredType) throws Docx4JException {
 		

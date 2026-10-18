@@ -437,7 +437,7 @@ public class AbstractTableWriterModel extends TableModel {
 		NodeList cellContents = content.getChildNodes(); // the w:tr
 		
 		TrFinder trFinder = new TrFinder();
-		new TraversalUtil(tbl, trFinder);
+		new TraversalUtil(tbl, trFinder, org.docx4j.jaxb.McMode.DRAW); // what is drawn (CR-046 phase 3)
 
 		ensureFoTableBody(trFinder.getTrList()); // this is currently applied to HTML etc as well
 		
@@ -557,7 +557,7 @@ public class AbstractTableWriterModel extends TableModel {
 		}
 		
 		TcFinder tcFinder = new TcFinder();
-		new TraversalUtil(tr, tcFinder);
+		new TraversalUtil(tr, tcFinder, org.docx4j.jaxb.McMode.DRAW);
 		
 		//add dummy cell for gridBefore
 		if (gridBefore > 0) {

@@ -117,6 +117,20 @@ public class ExtractionConformanceTest {
         try { ExtractionConformance.verifyGolden(golden, "A_C"); fail("Changed golden passed"); }
         catch (AssertionError expected) { assertTrue(expected.getMessage().contains("expected AB")); }
     }
+    /** WD REQ-703 writes ![alt](…): a Markdown golden's image destinations aren't compared, its alt text is (CR-046 phase 3). */
+    @Test public void markdownGoldenIgnoresImageDestinations() throws Exception {
+        Path golden = temporary.newFile("example.md").toPath();
+        Files.writeString(golden, "See ![IMG\\_ALT \\[1\\]](\u2026) here.\n", StandardCharsets.UTF_8);
+        ExtractionConformance.verifyGolden(golden, "See ![IMG\\_ALT \\[1\\]](data:image/png;base64,iVBORw0KGgo=) here.\n");
+        ExtractionConformance.verifyGolden(golden, "See ![IMG\\_ALT \\[1\\]](images/image1.png) here.\n");
+        try { ExtractionConformance.verifyGolden(golden, "See ![IMG\\_OTHER](images/image1.png) here.\n"); fail("Changed alt text passed"); }
+        catch (AssertionError expected) { assertTrue(expected.getMessage(), expected.getMessage().contains("IMGALT")); }
+        // a plain-text golden compares everything
+        Path text = temporary.newFile("example.accepted.txt").toPath();
+        Files.writeString(text, "![a](\u2026)\n", StandardCharsets.UTF_8);
+        try { ExtractionConformance.verifyGolden(text, "![a](x.png)"); fail("A plain-text golden ignored a destination"); }
+        catch (AssertionError expected) { }
+    }
     @Test public void enabledAdapterAndPublishedGoldenAreActuallyChecked() throws Exception {
         Path dir = temporary.newFolder("suite").toPath();
         Files.writeString(dir.resolve("expected-tokens.tsv"),

@@ -29,6 +29,18 @@ Changes in Version 17.3.4
   (`embedded: true`), the glossary, image descriptions (`ImageDescriber`), math as LaTeX, listed and grid
   tables, document properties, `fields: update`, page markers and indents. jsoup is an optional dependency
   (HTML chunks are tidied with it where present).
+- Text model option `toc` (CR-046 D12): a table of contents (a TOC field's result) is left out unless
+  `toc: true`, in plain text and Markdown alike.
+- Markdown export (CR-046 phase 3) writes the text model: hidden text left out, text boxes after their
+  anchor, endnotes (`[^e1]`), HYPERLINK fields as links, YAML front matter under `metadata`. Its markup view
+  is CriticMarkup, not `~~`; `MarkdownExportOptions.setView` adds `original` (`TrackedChangesPolicy` deprecated).
+- HTML export marks tracked changes `<ins>`/`<del>` with `data-author` and `datetime`; HTML and PDF take
+  `settings.setView(TextView)`, markup by default as before (`PP_COMMON_REJECT_TRACKED_CHANGES` is new).
+- `TextUtils` is deprecated (output unchanged): use `org.docx4j.model.text.Texts`.
+- `TraversalUtil`'s default `McMode.READ` reads the `mc:AlternateContent` branch understood for text (the
+  Choice, for Word's text boxes); the new `McMode.DRAW` is the drawn branch, as READ was. PDF output unchanged.
+- `CompressPictures` crops a picture's use in every `mc:AlternateContent` branch, not only one.
+- Text model goldens (WD REQ-1203) for the ports: `text-extraction/phase0/*.txt`, `*.md`.
 - `OmmlToLatex` moved to docx4j-core as `org.docx4j.model.math.OmmlToLatex`; docx4j-markdown's class
   forwards to it and is deprecated.
 - Charts: `ChartDescription` gives a chart's kind (Excel's names), the axis titles Excel shows and

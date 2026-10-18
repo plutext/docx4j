@@ -1,0 +1,174 @@
+Text extraction probe
+Built by docx4j (ExtractionProbeBuilder, in docx4j-core-tests). Each case starts with a heading, Case and its number. Marker tokens are upper-case words joined by underscores; the README beside this file says where each should appear.
+Case 1: a text box: a wps Choice and a VML Fallback with different text
+The box: 
+CHOICE_ALPHA_123
+Case 2: a wps Choice and no Fallback
+The box: 
+CHOICE_ONLY_789
+Case 3: a Choice requiring an unknown namespace, and a Fallback, each a run
+The runs: SUPPORTED_DELTA 
+Case 4: two Choices, the first requiring an unknown namespace, the second wps; a Fallback
+The box: 
+CHOICE2_WPS_ETA
+Case 5: two Choices both understood (w14, then wps), each a run; a Fallback
+The runs: MCE5_FIRST_SUPPORTED 
+Case 6: the wps namespace bound to another prefix (shape2010)
+The box: 
+MCE6_REBOUND_CHOICE
+Case 7: a Choice requiring two namespaces, one unknown (wps zz9)
+The box: 
+MCE7_FALLBACK
+Case 8: nested: a text box in a wps Choice whose paragraph holds another AlternateContent
+The box: 
+MCE8_OUTER MCE8_INNER_CHOICE 
+Case 9: an insertion and a deletion in one paragraph
+TC9_BASE {++TC9_INSERTED ++}{--TC9_DELETED--}
+Case 10: a move from paragraph A to paragraph B, with its range markers
+TC10_PARA_A {--TC10_MOVED--}
+TC10_PARA_B {++TC10_MOVED++}
+Case 11: a deleted paragraph mark between two paragraphs
+TC11_FIRST 
+TC11_SECOND
+Case 12: an inserted paragraph mark splitting a paragraph
+TC12_ONE 
+TC12_TWO
+Case 13: a table with a plain row, a deleted row and an inserted row
+TC13_PLAIN_ROW
+{--TC13_DELETED_ROW--}
+{++TC13_INSERTED_ROW++}
+After the table.
+Case 14: a deletion inside an insertion (a second author deletes part of the first author’s insertion)
+{++TC14_INS_KEPT ++}{--TC14_DEL_IN_INS--}
+Case 15: an inserted field and a deleted field
+Inserted: {++TC15_INSERTED_FIELD++} Deleted: {--TC15_DELETED_FIELD--}
+Case 16: a formatting-only change
+A run made bold, the change tracked: TC16_FORMAT_ONLY
+Case 17: tracked changes in a text box and in a footnote
+The box (wps, no mc): 
+TC17_BOX_BASE {++TC17_BOX_INS ++}{--TC17_BOX_DEL--}
+TC17_NOTE_REF_HERE [1]
+Case 18: hidden and near-hidden text
+A run with w:vanish: 
+A run whose character style is hidden: 
+White text: HID18_WHITE_TEXT
+1pt text: HID18_TINY
+w:webHidden: HID18_WEBHIDDEN
+Case 19: complex fields: a marker in the code and the result, and one in the code only
+QUOTE: FLD19_RESULT
+DOCVARIABLE: FLD19_RESULT_TWO
+Case 20: a simple field
+fldSimple: FLD20_SIMPLE_RESULT
+Case 21: hyperlinks: a w:hyperlink with r:id, and a HYPERLINK field
+w:hyperlink: FLD21_LINK_TEXT
+HYPERLINK field: FLD21_FIELD_LINK_TEXT
+Case 22: a content control showing its placeholder
+The control: PLC22_PLACEHOLDER
+Case 23: a content control bound to a custom XML part, its surface text stale
+The control: BND23_XML_VALUE
+Case 24: a rich text control, and a block-level control in a table cell
+Inline: SDT24_CONTENT
+SDT24_IN_CELL
+After the table.
+Case 25: text boxes and legacy WordArt
+A floating DrawingML box: 
+TBX25_FLOAT
+An inline DrawingML box: 
+TBX25_INLINE
+A VML box, no mc: 
+TBX25_VML_ONLY
+In a cell: 
+TBX25_IN_CELL
+Legacy WordArt (v:textpath): 
+WA25_TEXTPATH
+Case 26: headers and footers over two sections, and a header no section uses
+Section 1 has a default, a first-page and an even-page header, and a default footer (header1 also holds the box of case 25). The next paragraph starts section 2, on a new page, with its own default header.
+The last paragraph of section 1.
+The first paragraph of section 2.
+Case 27: a footnote, an endnote, and a footnote whose reference is deleted
+FN27_REF_HERE [2]
+EN27_REF_HERE [1]
+FN27_DELETED_REF_HERE {--[3]--}
+Case 28: comments: one with a reply, and one resolved
+CMT28_ANCHOR{>>CMT28_COMMENT_TEXT<<}{>>CMT28_REPLY<<} and CMT28_RESOLVED_ANCHOR{>>CMT28_RESOLVED_COMMENT<<}
+Case 29: symbols, a numbered list and a Symbol-font bulleted list
+SYM29_MARK  
+LST29_ITEM_A
+LST29_ITEM_B
+LST29_ITEM_C
+LST29_BULLET_ONE
+LST29_BULLET_TWO
+Case 30: breaks, a tab and hyphens
+BRK30_BEFORE
+BRK30_AFTER
+
+BRK30_PAGE
+
+BRK30_COLUMN
+TAB30_LEFT	TAB30_RIGHT
+HY30_NON‑BREAK HY30_SO­FT
+Case 31: a table: header row, two-paragraph cell, nested table, merged cell, empty cell
+[table: listed format]
+TBL31_HEADER
+TBL31_CELL_P1; TBL31_CELL_P2	TBL31_NESTED
+TBL31_MERGED	TBL31_LAST_CELL
+After the table.
+Case 32: an equation with a fraction
+$$MTH32\_A+\frac{MTH32\_B}{2}$$
+Case 33: pictures: alt text and a title, decorative, and an SVG with text in it
+Alt text and title: 
+Decorative: 
+SVG, its PNG fallback in a:blip: 
+Case 34: a chart
+The chart: 
+[chart: clustered column; value axis: CHT34_AXIS_TITLE]
+CHT34_TITLE
+	CHT34_SERIES_ONE	CHT34_SERIES_TWO
+CHT34_CAT_A	3	4
+CHT34_CAT_B	5	2
+Case 35: SmartArt: a root and two children, stored out of reading order
+The diagram: 
+SMA35_ROOT
+SMA35_CHILD_ONE
+SMA35_CHILD_TWO
+Case 36: an altChunk holding HTML
+ALT36_CHUNK_TEXT
+After the altChunk.
+Case 37: ruby
+Ruby: RBY37_BASE
+Case 38: document properties and a custom XML part
+The core properties hold a title and a subject; the custom XML part case 23 binds to holds one more value.
+Case 39: an embedded workbook
+
+Case 40: an embedded document containing another embedded document
+
+Case 41: an OLE package containing a plain-text file
+
+Case 42: an ActiveX label with a preview
+
+Case 43: a plain-text altChunk
+ALT43_TEXT_LINE_ONE
+ALT43_TEXT_LINE_TWO
+Case 44: an MHT altChunk
+Case 45: an RTF altChunk
+Case 46: a Flat OPC altChunk
+ALT46_FLATOPC_CHUNK
+Case 47: a document altChunk containing an HTML altChunk
+ALT47_DOCX_CHUNK
+Case 48: inspection kinds and characters preserved in extraction
+SHD48_SHADED ZW48_SP​LIT TAG48_MARK󠁁󠁂 
+
+OFF48_BOX
+
+ZER48_BOX
+SPV48_SEPARATOR
+Case 49: external fields with cached results
+DDE49_RESULT INC49_RESULT Local file link
+Case 53: an embedded presentation with groups, a table, a hidden slide and speaker notes
+
+Case 54: a glossary document with two building-block entries
+The glossary holds two entries; neither is inserted into the main story.
+[1] TC17_NOTE_BASE {--TC17_NOTE_DEL--}
+[2] FN27_NOTE_TEXT
+[3] FN27_DELETED_REF_NOTE
+[1] EN27_NOTE_TEXT

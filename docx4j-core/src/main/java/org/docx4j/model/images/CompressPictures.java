@@ -141,7 +141,9 @@ public final class CompressPictures {
 					list.add(new Use(pic, extent));
 					return null;
 				}
-			});
+			// ALL: every branch's use of a picture is cropped with it (CR-046 phase 3: a walk in
+			// READ saw one branch, the other kept a crop of the bitmap before it was cut)
+			}, org.docx4j.jaxb.McMode.ALL);
 		}
 
 		Report report = new Report();

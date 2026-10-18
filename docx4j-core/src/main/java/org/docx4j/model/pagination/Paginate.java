@@ -358,6 +358,7 @@ public final class Paginate {
 	public static List<P> bodyParagraphs(MainDocumentPart mdp) {
 
 		final List<P> paragraphs = new ArrayList<P>();
+		// DRAW: the paragraphs the FO layout has (CR-046 phase 3)
 		new TraversalUtil(mdp.getContent(), new TraversalUtil.CallbackImpl() {
 			@Override
 			public List<Object> apply(Object o) {
@@ -368,7 +369,7 @@ public final class Paginate {
 			public boolean shouldTraverse(Object o) {
 				return !(o instanceof P);
 			}
-		});
+		}, McMode.DRAW);
 		return paragraphs;
 	}
 

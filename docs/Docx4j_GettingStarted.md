@@ -368,7 +368,9 @@ docx4j can open documents which contain Word 2010 and later content.  The key ex
 
 Since docx4j 17.2.0 the whole element is kept at load wherever Word writes it, and written back with both branches, so a document you save says the same thing to every reader.  
 
-When docx4j draws, walks or extracts text, it takes one branch: the first mc:Choice whose Requires prefixes are all named in the **docx4j.jaxb.mc.preferChoice** property, otherwise the mc:Fallback.  The property is empty by default, so docx4j draws the fallback (what the producer wrote for a reader which understands nothing extra); set it, for example to wps, or to a14 for PowerPoint equations, to draw the choice instead.  The rule lives in org.docx4j.jaxb.McSelection.  
+When docx4j draws, it takes one branch: the first mc:Choice whose Requires prefixes are all named in the **docx4j.jaxb.mc.preferChoice** property, otherwise the mc:Fallback.  The property is empty by default, so docx4j draws the fallback (what the producer wrote for a reader which understands nothing extra); set it, for example to wps, or to a14 for PowerPoint equations, to draw the choice instead.  The rule lives in org.docx4j.jaxb.McSelection.  
+
+When docx4j reads text (the text model, the Markdown export, and a TraversalUtil walk by default) it takes, from 17.3.4, the branch ECMA-376 Part 3 prescribes: the first mc:Choice whose Requires namespaces are all ones docx4j can read, from the published list org/docx4j/jaxb/understood-namespaces.txt, otherwise the mc:Fallback.  A branch docx4j can read is not always one it can draw: it reads a wps text box from the Choice, and draws its VML fallback.  McSelection.selectedBranch(McPurpose, AlternateContent) gives either.
 
 Where a producer has written the element somewhere the schema does not admit it (Word's own output has not been seen to), the load-time preprocessor resolves that one element to the branch docx4j draws, and logs a warning naming the parent.
 
@@ -1137,7 +1139,7 @@ ImageConvertEmbeddedToLinked sample contains an example of the use of the above.
 
 `public`` ``class``  CompoundTraversalUtilVisitorCallback  `
 
-**mc:AlternateContent in a traversal.  **Since docx4j 17.2.0 a TraversalUtil walk visits one branch of each mc:AlternateContent by default, the branch docx4j draws (McMode.READ), so a text box's paragraphs are visited once, not once as the wps shape and again as its VML fallback.  
+**mc:AlternateContent in a traversal.  **Since docx4j 17.2.0 a TraversalUtil walk visits one branch of each mc:AlternateContent by default (McMode.READ), so a text box's paragraphs are visited once, not once as the wps shape and again as its VML fallback.  From 17.3.4 that branch is the one docx4j reads for text (see Markup compatibility, above); before, it was the branch docx4j draws, which a walk serving an output's layout asks for with McMode.DRAW.  
 
 A callback which edits the document (find and replace, field update, anything whose result must reach every reader) should ask for every branch with McMode.ALL, through the TraversalUtil constructor or visit overload which takes a mode, or CallbackImpl.setMcMode.  Before 17.2.0 every walk saw every branch.
 
@@ -1177,7 +1179,7 @@ See the samples at [https://github.com/plutext/docx4j-ImportXHTML/tree/master/sr
 
 # Markdown import and export
 
-New in 17.0.4, the docx4j-markdown module converts Markdown to docx, and docx to Markdown.  The import (CommonMark plus the GFM extensions: tables, task lists, real footnotes, YAML front matter) produces a real Word document – actual heading/quote/code styles and real numbering, with no HTML detour.  The export includes image extraction and a tracked-changes option.
+New in 17.0.4, the docx4j-markdown module converts Markdown to docx, and docx to Markdown.  The import (CommonMark plus the GFM extensions: tables, task lists, real footnotes, YAML front matter) produces a real Word document – actual heading/quote/code styles and real numbering, with no HTML detour.  The export includes image extraction; from 17.3.4 it writes docx4j's text model (see Text extraction), so its text is the plain text's, in the same view, with tracked changes as CriticMarkup in the markup view (before 17.3.4, deletions were struck through).
 
 TeX math is supported in both directions: \$...\$ and \$\$...\$\$ translate to native OMML equations, for a published LaTeX subset (fractions, scripts, radicals, n-ary operators with limits, delimiters, matrices, aligned equations and cases, accents, and more).  An equation outside the subset never disappears silently: it falls back whole to its literal source, and is reported via an issue listener.  Combined with the equation support in the HTML and PDF output (see below), this makes docx4j a clean pipeline for LLM output: markdown with math in, Word/HTML/PDF with real equations out.
 
@@ -1812,17 +1814,21 @@ TrackedChanges.in lists the changes as Word's Reviewing Pane and Office JS group
 
 &#9;`TrackedChanges.rejectAll(wordMLPackage, new TrackedChangeFilter().authors("Author B"));`
 
-TrackedChanges.report gives the counts by kind, author and part, with a JSON form.  The samples TrackChangesAccept and TrackChangesReject show the API (AcceptChanges.xslt, which earlier samples used, is deprecated).  For PDF and HTML output, ConversionFeatures.PP\_COMMON\_ACCEPT\_TRACKED\_CHANGES lays out the accepted view, in every story since 17.3.3.
+TrackedChanges.report gives the counts by kind, author and part, with a JSON form.  The samples TrackChangesAccept and TrackChangesReject show the API (AcceptChanges.xslt, which earlier samples used, is deprecated).  For PDF and HTML output, ConversionFeatures.PP\_COMMON\_ACCEPT\_TRACKED\_CHANGES lays out the accepted view, in every story since 17.3.3.  From 17.3.4 the conversion settings' setView(TextView) chooses the view: markup, the default, as before (the HTML marks insertions &lt;ins&gt; and deletions &lt;del&gt;, with data-author and datetime); accepted; or original, as Reject All leaves the document.
 
 # Text extraction
 
-A quick way to extract the text from a docx, is to use `TextUtils‘  `
+From 17.3.4, org.docx4j.model.text reads a document's text as the WordprocessingML Text Extraction specification defines it (CR-046): one text model, from which the plain text, the Markdown and the block model are all written.
 
-`  ``public static void ``extractText(Object o, Writer w)`
+&#9;`String text = Texts.plainText(wordMLPackage, TextOptions.of(TextView.ACCEPTED));`
 
-which marshals the object it is passed via a SAX ContentHandler, in order to output the text to the Writer.
+The view is accepted (the default: as Word's Accept All would leave the document), original (as Reject All would) or markup, CriticMarkup's {++inserted++}, {--deleted--} and {&gt;&gt;comment&lt;&lt;}.  By default the text is the main story, each text box's paragraphs after the paragraph it is anchored in, and the footnotes and endnotes, [n] at each end; headers, footers, comments and the glossary come in under the include option, hidden text under hidden, embedded documents, workbooks and presentations under embedded, and a table of contents under toc.  TextOptions.of(Map) takes the specification's option names and values.  The package is not changed.
 
-Since docx4j 17.2.0 the text of one branch of each mc:AlternateContent is written, the branch docx4j draws, so a text box's text appears once; before that, both branches' text was written.
+&#9;`TextResult result = Texts.of(wordMLPackage, options);`
+
+gives the block model: result.blocks(), the paragraphs, tables and charts, each with its address, style, runs and flags; result.warnings() (an mc:AlternateContent whose branches differ, a field with no result, ...); and result.metadata(), the document properties.  PlainText.of(result) writes it as plain text, and docx4j-markdown's MarkdownExporter.export(result) as Markdown.
+
+TextUtils.extractText(Object o, Writer w), which marshals the object it is passed via a SAX ContentHandler and writes its character content, is deprecated from 17.3.4: it is not the text model (it gives the text of whatever it is passed, deleted text included).  Its output is unchanged.
 
 # Text substitution/document generation/reporting
 

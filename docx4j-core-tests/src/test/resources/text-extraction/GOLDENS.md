@@ -90,9 +90,22 @@ needed for that golden, so it can remain pending before its phase is enabled.
 
 The reader compares the complete serialization after REQ-1201 normalization and fails
 on any difference. Tests exercise both a matching golden and a deliberate mismatch.
-The manifest is initially header-only: reviewed reference goldens are cut in phase 3,
-as CR-046 section 3 specifies. The builder preserves an existing golden manifest.
+A Markdown golden's image destinations are not compared: WD REQ-703 writes `![alt](…)`,
+leaving the destination to the implementation (docx4j writes a data URI, or a file under
+`imageDirPath`), so the golden stores `…` and the reader writes every image's destination
+`…` on both sides before normalizing; the alt text is compared.
+The builder preserves an existing golden manifest.
 Legacy baseline outputs must never be copied into this manifest as conformance goldens.
+
+**The goldens (cut 18 October 2026, CR-046 phase 3).** For each of the two fixtures, its
+plain text in the three views (`extraction-probe.accepted.txt`, `.original.txt`,
+`.markup.txt`; `extraction-probe-external.*`) and its Markdown in the `accepted` view
+(`extraction-probe.md`, `extraction-probe-external.md`), all under the defaults (no
+XHTML importer). They were cut by `ExtractionGoldens <fixture-directory>` (docx4j-core-tests'
+test classes; it writes the files and the manifest through `TextsAdapter`), and reviewed by
+hand against WD 0.10 sections 3 to 7 before they were committed. A recut is a change to what
+the ports are held to: cut into a scratch copy of the directory, diff against the committed
+files, and review each difference before replacing them.
 
 ## Legacy baseline
 

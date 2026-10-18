@@ -953,6 +953,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	/**
 	 * @since 3.0.0
 	 */	
+	@SuppressWarnings("deprecation") // TextUtils: a core property's literal, not document text (CR-046)
 	public String getTitle() {
 		
 		if (this.getDocPropsCorePart()==null) {

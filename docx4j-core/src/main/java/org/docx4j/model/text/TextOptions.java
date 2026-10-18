@@ -77,7 +77,7 @@ public final class TextOptions {
 	/** The option names of WD section 10, in its order. */
 	public static final List<String> NAMES = Collections.unmodifiableList(java.util.Arrays.asList(
 			"view", "include", "text_boxes", "notes", "note_references", "comments", "hidden", "field_codes",
-			"fields", "placeholders", "bindings", "list_labels", "charts", "smartart", "embedded", "altchunks",
+			"fields", "toc", "placeholders", "bindings", "list_labels", "charts", "smartart", "embedded", "altchunks",
 			"alt_text", "metadata", "symbols", "math", "tables", "markup_detail", "page_markers", "layout",
 			"warnings"));
 
@@ -90,6 +90,7 @@ public final class TextOptions {
 	private boolean hidden = false;
 	private boolean fieldCodes = false;
 	private Fields fields = Fields.CACHED;
+	private boolean toc = false;
 	private boolean placeholders = true;
 	private Bindings bindings = Bindings.BOUND;
 	private boolean listLabels = false;
@@ -148,6 +149,7 @@ public final class TextOptions {
 		case "hidden": hidden = bool(n, value); break;
 		case "field_codes": fieldCodes = bool(n, value); break;
 		case "fields": fields = choice(n, value, Fields.class); break;
+		case "toc": toc = bool(n, value); break;
 		case "placeholders": placeholders = bool(n, value); break;
 		case "bindings": bindings = choice(n, value, Bindings.class); break;
 		case "list_labels": listLabels = bool(n, value); break;
@@ -211,6 +213,8 @@ public final class TextOptions {
 	public TextOptions hidden(boolean b) { this.hidden = b; return this; }
 	public TextOptions fieldCodes(boolean b) { this.fieldCodes = b; return this; }
 	public TextOptions fields(Fields f) { this.fields = f; return this; }
+	/** Whether a table of contents is read (CR-046 D12): see {@link #isToc()}. */
+	public TextOptions toc(boolean b) { this.toc = b; return this; }
 	public TextOptions placeholders(boolean b) { this.placeholders = b; return this; }
 	public TextOptions bindings(Bindings b) { this.bindings = b; return this; }
 	public TextOptions listLabels(boolean b) { this.listLabels = b; return this; }
@@ -251,6 +255,14 @@ public final class TextOptions {
 	public boolean isHidden() { return hidden; }
 	public boolean isFieldCodes() { return fieldCodes; }
 	public Fields getFields() { return fields; }
+	/**
+	 * Whether a table of contents is read: false by default (WD REQ-520; CR-046 D12). A table of
+	 * contents is the result of a TOC field (a table of figures too, {@code TOC \c}); under
+	 * {@code toc: false} nothing of the field is read, its code included under {@code field_codes}, and
+	 * a paragraph with nothing else in it is no paragraph. A TOC heading is not the field's, so stays;
+	 * a table of contents whose field was unlinked is the document's text.
+	 */
+	public boolean isToc() { return toc; }
 	public boolean isPlaceholders() { return placeholders; }
 	public Bindings getBindings() { return bindings; }
 	public boolean isListLabels() { return listLabels; }
@@ -281,6 +293,7 @@ public final class TextOptions {
 		o.hidden = hidden;
 		o.fieldCodes = fieldCodes;
 		o.fields = fields;
+		o.toc = toc;
 		o.placeholders = placeholders;
 		o.bindings = bindings;
 		o.listLabels = listLabels;
@@ -315,6 +328,7 @@ public final class TextOptions {
 		m.put("hidden", hidden);
 		m.put("field_codes", fieldCodes);
 		m.put("fields", lower(fields));
+		m.put("toc", toc);
 		m.put("placeholders", placeholders);
 		m.put("bindings", lower(bindings));
 		m.put("list_labels", listLabels);

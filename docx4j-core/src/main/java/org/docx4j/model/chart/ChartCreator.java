@@ -505,7 +505,7 @@ public final class ChartCreator {
 				}
 				return null;
 			}
-		});
+		}, org.docx4j.jaxb.McMode.ALL); // the drawing is found in whichever branch it is (CR-046 phase 3)
 		if (found[0] == null) return false;
 		R run = (R) found[0];
 		run.getContent().remove(found[1]);
@@ -532,7 +532,7 @@ public final class ChartCreator {
 			public boolean shouldTraverse(Object o) {
 				return !done[0];
 			}
-		});
+		}, org.docx4j.jaxb.McMode.ALL); // in whichever branch it is (CR-046 phase 3)
 		return done[0];
 	}
 

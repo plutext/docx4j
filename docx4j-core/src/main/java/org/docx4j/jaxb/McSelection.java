@@ -55,10 +55,11 @@ import org.slf4j.LoggerFactory;
  * docx4j cannot draw is worse than the fallback the producer wrote for exactly
  * that case.</p>
  *
- * <p>Callers: {@link org.docx4j.TraversalUtil} in its {@link McMode#READ} mode, the
- * visitor exporters (FO, HTML), {@code docx2fo.xslt} and {@code docx2xhtml-core.xslt}
- * through {@link org.docx4j.utils.XSLTUtils#mcPrefersChoice}, {@link org.docx4j.TextUtils},
- * the markdown exporter; for PresentationML the placeholder walks of the slide, layout
+ * <p>Callers: {@link org.docx4j.TraversalUtil} in its {@link McMode#DRAW} mode (its
+ * {@link McMode#READ} mode until 17.3.4), the visitor exporters (FO, HTML),
+ * {@code docx2fo.xslt} and {@code docx2xhtml-core.xslt} through
+ * {@link org.docx4j.utils.XSLTUtils#mcPrefersChoice}, {@link org.docx4j.TextUtils}
+ * (deprecated); for PresentationML the placeholder walks of the slide, layout
  * and master parts ({@link #selectedContent}) and {@code pptx2svginhtml.xslt}.  The
  * property is the one switch for every format: a PowerPoint slide's
  * {@code Requires="a14"} Choice (an equation, ink) is drawn with
@@ -197,8 +198,9 @@ public final class McSelection {
 	/**
 	 * The branches a tree walk in this mode visits, as the Choice and Fallback objects
 	 * themselves (their content is the next level down): in {@link McMode#READ} the one
-	 * {@link #selectedBranch}; in {@link McMode#ALL} every Choice in document order, then
-	 * the Fallback if there is one.
+	 * read for text ({@link McPurpose#TEXT}; since 17.3.4, CR-046 phase 3); in
+	 * {@link McMode#DRAW} the one drawn ({@link #selectedBranch(AlternateContent)}); in
+	 * {@link McMode#ALL} every Choice in document order, then the Fallback if there is one.
 	 */
 	public static List<Object> branches(AlternateContent ac, McMode mode) {
 		List<Object> list = new ArrayList<Object>();
@@ -207,7 +209,7 @@ public final class McSelection {
 			list.addAll(ac.getChoice());
 			if (ac.getFallback() != null) list.add(ac.getFallback());
 		} else {
-			Object branch = selectedBranch(ac);
+			Object branch = mode == McMode.DRAW ? selectedBranch(ac) : selectedBranch(McPurpose.TEXT, ac);
 			if (branch != null) list.add(branch);
 		}
 		return list;
