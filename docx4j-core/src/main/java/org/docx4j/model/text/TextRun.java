@@ -39,7 +39,13 @@ public final class TextRun {
 		/** A comment's reference, where the comment is rendered in plain text ({@link #getCommentId()}; REQ-504). */
 		COMMENT_REFERENCE,
 		/** A list label from the numbering model, under {@code list_labels: true} (REQ-510). */
-		LIST_LABEL
+		LIST_LABEL,
+		/** A picture ({@link #getImage()}), with its description where the describer gives one ({@link #getDescription()}; REQ-514). */
+		IMAGE,
+		/** An embedded object, OLE link or ActiveX control ({@code w:object}; {@link #getProgId()}; REQ-512): no text. */
+		OBJECT,
+		/** A {@code w:lastRenderedPageBreak}: where the page {@link #getPageNumber()} began when Word last laid the document out (REQ-708). */
+		PAGE_MARKER
 	}
 
 	/** {@code footnote} or {@code endnote}. */
@@ -54,6 +60,10 @@ public final class TextRun {
 	int noteNumber;
 	String noteId;
 	String commentId;
+	TextImage image;
+	ImageDescription description;
+	String progId;
+	int pageNumber;
 
 	TextRun(Kind kind, String text, TextRevision revision) {
 		this.kind = kind;
@@ -86,6 +96,18 @@ public final class TextRun {
 
 	/** For a comment reference: the comment's {@code w:id}. */
 	public String getCommentId() { return commentId; }
+
+	/** For an image: what the document says of it (alt text, name, whether it is decorative). */
+	public TextImage getImage() { return image; }
+
+	/** For an image: the describer's description, with its provenance; null for none (a decorative picture's). */
+	public ImageDescription getDescription() { return description; }
+
+	/** For an object: its ProgID ({@code o:OLEObject/@ProgID}), or null (an ActiveX control's is in its part). */
+	public String getProgId() { return progId; }
+
+	/** For a page marker: the number of the page that begins there, from 2 (the first marker starts the second page). */
+	public int getPageNumber() { return pageNumber; }
 
 	@Override
 	public String toString() {

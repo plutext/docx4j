@@ -1,0 +1,18 @@
+{
+  "kind": "doughnut",
+  "groups": [
+    {
+      "kind": "doughnut",
+      "element": "doughnutChart",
+      "barDirection": null,
+      "grouping": null,
+      "series": [
+        "Series 1"
+      ],
+      "secondary": false
+    }
+  ],
+  "axes": [],
+  "secondarySeries": [],
+  "note": "[chart: doughnut]"
+}

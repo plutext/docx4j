@@ -146,12 +146,60 @@ public final class ChartExModel {
 		}
 	}
 
+	/**
+	 * An axis ({@code cx:axis}): its id, whether it is a category or a value axis, whether it is
+	 * hidden, and its title.
+	 *
+	 * @since 17.3.4 (CR-047)
+	 */
+	public static final class Axis {
+		long id;
+		String kind;
+		boolean hidden;
+		boolean hasTitle;
+		String titleText;
+		private Object source;
+
+		public long getId() {
+			return id;
+		}
+
+		/** "category" ({@code cx:catScaling}), "value" ({@code cx:valScaling}), or null for neither */
+		public String getKind() {
+			return kind;
+		}
+
+		/** {@code @hidden} */
+		public boolean isHidden() {
+			return hidden;
+		}
+
+		/** Whether the axis has a title ({@code cx:title}) */
+		public boolean hasTitle() {
+			return hasTitle;
+		}
+
+		/** The title's text as written; null where it states none */
+		public String getTitleText() {
+			return titleText;
+		}
+
+		/** The title Office shows: its text, or "Axis Title" where it states none; null for no title */
+		public String getShownTitle() {
+			return !hasTitle ? null : titleText != null ? titleText : "Axis Title";
+		}
+
+		public Object getSource() {
+			return source;
+		}
+	}
+
 	private final CTChartSpace chartSpace;
 	private ChartExSpacePart part;
 	String titleText;
 	boolean hasTitle;
 	List<Series> series = new ArrayList<Series>();
-	List<String[]> axes = new ArrayList<String[]>();
+	List<Axis> axes = new ArrayList<Axis>();
 	String legendPosition;
 
 	private ChartExModel(CTChartSpace cs) {
@@ -205,9 +253,16 @@ public final class ChartExModel {
 				}
 			}
 			for (CTAxis a : chart.getPlotArea().getAxis()) {
-				m.axes.add(new String[] { String.valueOf(a.getId()),
-						a.getCatScaling() != null ? "category" : a.getValScaling() != null ? "value" : null,
-						String.valueOf(a.isHidden()) });
+				Axis x = new Axis();
+				x.source = a;
+				x.id = a.getId();
+				x.kind = a.getCatScaling() != null ? "category" : a.getValScaling() != null ? "value" : null;
+				x.hidden = a.isHidden();
+				if (a.getTitle() != null) {
+					x.hasTitle = true;
+					x.titleText = text(a.getTitle().getTx())[0];
+				}
+				m.axes.add(x);
 			}
 		}
 		if (chart.getLegend() != null) {
@@ -295,6 +350,15 @@ public final class ChartExModel {
 		return Collections.unmodifiableList(series);
 	}
 
+	/**
+	 * The axes ({@code cx:axis}), in document order
+	 *
+	 * @since 17.3.4 (CR-047)
+	 */
+	public List<Axis> getAxes() {
+		return Collections.unmodifiableList(axes);
+	}
+
 	/** The legend's {@code @pos}; null for no legend */
 	public String getLegendPosition() {
 		return legendPosition;
@@ -367,11 +431,14 @@ public final class ChartExModel {
 		}
 		j.closeArray();
 		j.openArray("axes");
-		for (String[] a : axes) {
+		for (Axis a : axes) {
 			j.open(null);
-			j.put("id", Long.valueOf(a[0]));
-			j.put("kind", a[1]);
-			j.put("hidden", Boolean.valueOf(a[2]));
+			j.put("id", a.id);
+			j.put("kind", a.kind);
+			j.put("hidden", a.hidden);
+			j.put("hasTitle", a.hasTitle);
+			j.put("titleText", a.titleText);
+			j.put("shownTitle", a.getShownTitle());
 			j.close();
 		}
 		j.closeArray();

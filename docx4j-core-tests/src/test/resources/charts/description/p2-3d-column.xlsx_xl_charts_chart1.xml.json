@@ -1,0 +1,36 @@
+{
+  "kind": "3-D column",
+  "groups": [
+    {
+      "kind": "3-D column",
+      "element": "bar3DChart",
+      "barDirection": "col",
+      "grouping": "standard",
+      "series": [
+        "Series 1",
+        "Series 2",
+        "Series 3"
+      ],
+      "secondary": false
+    }
+  ],
+  "axes": [
+    {
+      "role": "category axis",
+      "position": "b",
+      "title": null
+    },
+    {
+      "role": "value axis",
+      "position": "l",
+      "title": null
+    },
+    {
+      "role": "depth axis",
+      "position": "b",
+      "title": null
+    }
+  ],
+  "secondarySeries": [],
+  "note": "[chart: 3-D column]"
+}

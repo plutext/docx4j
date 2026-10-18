@@ -83,12 +83,18 @@
     {
       "id": 0,
       "kind": "category",
-      "hidden": false
+      "hidden": false,
+      "hasTitle": false,
+      "titleText": null,
+      "shownTitle": null
     },
     {
       "id": 1,
       "kind": "value",
-      "hidden": false
+      "hidden": false,
+      "hasTitle": false,
+      "titleText": null,
+      "shownTitle": null
     }
   ]
 }

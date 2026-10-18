@@ -114,10 +114,14 @@ public final class ExtractionConformance {
         if (row.get("case").equals("25") && !row.get("token").startsWith("WA25")) req.remove("REQ-511");
         return req;
     }
+    /** Capabilities of the class path, not of an engine: whether docx4j-ImportXHTML is on it (REQ-513). */
+    static final String XHTML_IMPORTER_PRESENT = "xhtml importer present", XHTML_IMPORTER_ABSENT = "xhtml importer absent";
+
     /** The statement a scenario's option belongs to (WD section 10), which the engine must implement too. */
     static Set<String> scenarioRequirements(String scenario) {
         if (scenario == null || scenario.equals("default")) return Set.of();
-        if (scenario.startsWith("xhtml importer")) return Set.of("REQ-513");
+        if (scenario.equals(XHTML_IMPORTER_PRESENT)) return Set.of("REQ-513", XHTML_IMPORTER_PRESENT);
+        if (scenario.equals(XHTML_IMPORTER_ABSENT)) return Set.of("REQ-513", XHTML_IMPORTER_ABSENT);
         if (scenario.equals("markdown")) return Set.of("REQ-703");
         String name = scenario.split(":", 2)[0].trim(), value = scenario.contains(":") ? scenario.split(":", 2)[1].trim() : "";
         switch (name) {
@@ -148,7 +152,8 @@ public final class ExtractionConformance {
     static int phase(Set<String> requirements) {
         int result = 1;
         for (String req : requirements) {
-            if (req.equals("CR-047")) { result = Math.max(result, 2); continue; }
+            // a dependency (CR-047), a class path, or a ruling still to come
+            if (!req.startsWith("REQ-")) { result = Math.max(result, 2); continue; }
             int n = Integer.parseInt(req.substring(4));
             if (n >= 901 && n <= 904) return 9;
             if (Set.of(506,509,511,512,513,514,515,516,604,605,708,709).contains(n)) result = Math.max(result, 2);

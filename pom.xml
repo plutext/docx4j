@@ -152,6 +152,14 @@
 			<version>3.0.8</version>
 		</dependency>
 
+		<!-- optional in docx4j-core: the text model tidies an HTML altChunk with it where it is
+		     present (CR-046 D5) -->
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.22.1</version>
+		</dependency>
+
 		<!-- docx4j-copy, docx4j-generated-objects and docx4j-core get jaxb-core (and, through it,
 		     txw2) transitively from org.jvnet.jaxb:jaxb-plugins-runtime, which asks for an older
 		     version than docx4j-JAXB-ReferenceImpl declares. Left unmanaged, that is a dependency

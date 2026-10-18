@@ -48,7 +48,7 @@ import org.junit.Test;
  */
 public class ChartModelTest {
 
-	private static final String[] FIXTURES = { "bar-chart.docx", "bar-chart-style-2.docx", "bar-chart-style-2.xlsx",
+	static final String[] FIXTURES = { "bar-chart.docx", "bar-chart-style-2.docx", "bar-chart-style-2.xlsx",
 			"bar-chart.xlsx", "clustered-column.docx", "clustered-column.xlsx", "line-chart.docx", "line-chart.xlsx",
 			"pie-chart.docx", "pie-chart.xlsx", "stacked-column.docx", "stacked-column.xlsx", "waterfall.docx",
 			"waterfall.pptx", "waterfall.xlsx", "p2-3d-column.xlsx", "p2-area.xlsx", "p2-bar-of-pie.xlsx",

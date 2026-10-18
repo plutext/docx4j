@@ -117,7 +117,7 @@ case	token	accepted	original	markup	option	with_option	note	fixture	statements
 34	CHT34_SERIES_TWO	1	1	1	charts: false	0		extraction-probe.docx	REQ-511
 34	CHT34_CAT_A	1	1	1	charts: false	0		extraction-probe.docx	REQ-511
 34	CHT34_CAT_B	1	1	1	charts: false	0		extraction-probe.docx	REQ-511
-34	CHT34_AXIS_TITLE	1	1	1	charts: false	0	REQ-511; pending CR-047 axis-title support	extraction-probe.docx	REQ-511
+34	CHT34_AXIS_TITLE	1	1	1	charts: false	0	REQ-511; with CR-047, the note [chart: clustered column; value axis: CHT34_AXIS_TITLE]	extraction-probe.docx	REQ-511
 35	SMA35_ROOT	1	1	1	smartart: false	0	reading order ROOT, CHILD_ONE, CHILD_TWO (parOf, srcOrd); ptLst order CHILD_TWO, ROOT, CHILD_ONE; cxnLst order ROOT, CHILD_TWO, CHILD_ONE (#20b)	extraction-probe.docx	REQ-511
 35	SMA35_CHILD_ONE	1	1	1	smartart: false	0		extraction-probe.docx	REQ-511
 35	SMA35_CHILD_TWO	1	1	1	smartart: false	0		extraction-probe.docx	REQ-511

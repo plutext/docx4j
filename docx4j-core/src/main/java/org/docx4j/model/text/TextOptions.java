@@ -32,15 +32,20 @@ import java.util.Set;
  * What a text includes and how it is written: one setter per option of WD section 10, under the
  * WD's names in {@link #of(Map)} (REQ-1001). Mutable; {@link Texts#of} reads it once.
  *
- * <p>Every option name and value of WD section 10 is accepted. Values this implementation does not
- * yet honour are rejected by {@link Texts#of} with a message naming REQ-1001, rather than silently
- * ignored: in CR-046 phase 1, {@code fields: update}, {@code embedded: true}, {@code metadata: true},
- * {@code alt_text: true}, {@code include: glossary}, {@code tables: grid}, {@code page_markers: true}
- * and {@code layout: indent} (phase 2); {@code math: unicodemath} and {@code symbols: unicode} are not
- * implemented by CR-046 at all (its section 2.6). A default is never rejected: until phase 2, charts,
- * SmartArt, legacy WordArt, bound values and {@code altChunk}s contribute nothing.</p>
+ * <p>Every option name and value of WD section 10 is accepted. Two values are not implemented,
+ * and are rejected by {@link Texts#of} with a message naming REQ-1001 rather than silently ignored
+ * (CR-046 section 2.6): {@code math: unicodemath} (docx4j has no OMML-to-UnicodeMath converter) and
+ * {@code symbols: unicode} (docx4j has no glyph tables for Symbol and Wingdings).</p>
  *
- * @since 17.3.4 (CR-046 phase 1)
+ * <p>Under {@code fields: update} (REQ-506), docx4j computes DOCPROPERTY, the core-property fields
+ * (AUTHOR, TITLE, SUBJECT, KEYWORDS, COMMENTS, LASTSAVEDBY, REVNUM, CREATEDATE, SAVEDATE), DOCVARIABLE,
+ * SEQ, REF to a bookmark and QUOTE, with their {@code \*}, {@code \#} and {@code \@} switches. It
+ * computes no MERGEFIELD (no data is supplied) and no FORMTEXT (its result is what the user typed),
+ * and never a field with {@code w:fldLock}; every other field keeps its cached result.</p>
+ *
+ * <p>Beyond WD section 10, a host may give the {@link ImageDescriber} (REQ-514).</p>
+ *
+ * @since 17.3.4 (CR-046 phase 1; phase 2 implemented the values)
  */
 public final class TextOptions {
 
@@ -100,6 +105,7 @@ public final class TextOptions {
 	private boolean pageMarkers = false;
 	private Layout layout = Layout.NONE;
 	private boolean warnings = true;
+	private ImageDescriber imageDescriber = AltTextDescriber.INSTANCE;
 
 	/** The defaults of WD section 10. */
 	public TextOptions() {}
@@ -217,9 +223,17 @@ public final class TextOptions {
 	public TextOptions math(MathFormat m) { this.math = m; return this; }
 	public TextOptions tables(Tables t) { this.tables = t; return this; }
 	public TextOptions markupDetail(MarkupDetail d) { this.markupDetail = d; return this; }
+	/**
+	 * {@code page_markers} (REQ-708): {@code [page n]} at each {@code w:lastRenderedPageBreak}. The
+	 * markers are where Word's pages began when it last laid the document out: they are current only
+	 * when the package was last paginated (saved by Word) after its last edit, and an extractor
+	 * cannot tell whether it was.
+	 */
 	public TextOptions pageMarkers(boolean b) { this.pageMarkers = b; return this; }
 	public TextOptions layout(Layout l) { this.layout = l; return this; }
 	public TextOptions warnings(boolean b) { this.warnings = b; return this; }
+	/** The describer images take their text from (REQ-514); {@link AltTextDescriber} by default, and for null. */
+	public TextOptions imageDescriber(ImageDescriber d) { this.imageDescriber = d == null ? AltTextDescriber.INSTANCE : d; return this; }
 
 	public TextView getView() { return view; }
 	/** The stories {@code include} names; {@code comments: true} adds {@link Include#COMMENTS}. */
@@ -252,6 +266,39 @@ public final class TextOptions {
 	public boolean isPageMarkers() { return pageMarkers; }
 	public Layout getLayout() { return layout; }
 	public boolean isWarnings() { return warnings; }
+	public ImageDescriber getImageDescriber() { return imageDescriber; }
+
+	/** A copy, for a reading one level down (an embedded package's, an {@code altChunk}'s; REQ-512, REQ-513). */
+	TextOptions copy() {
+		TextOptions o = new TextOptions();
+		o.view = view;
+		o.include.addAll(include);
+		o.textBoxes = textBoxes;
+		o.notes = notes;
+		o.noteReferences = noteReferences;
+		o.comments = comments;
+		o.hidden = hidden;
+		o.fieldCodes = fieldCodes;
+		o.fields = fields;
+		o.placeholders = placeholders;
+		o.bindings = bindings;
+		o.listLabels = listLabels;
+		o.charts = charts;
+		o.smartart = smartart;
+		o.embedded = embedded;
+		o.altchunks = altchunks;
+		o.altText = altText;
+		o.metadata = metadata;
+		o.symbols = symbols;
+		o.math = math;
+		o.tables = tables;
+		o.markupDetail = markupDetail;
+		o.pageMarkers = pageMarkers;
+		o.layout = layout;
+		o.warnings = warnings;
+		o.imageDescriber = imageDescriber;
+		return o;
+	}
 
 	/** The options as the WD names them, with their values, in WD section 10's order. */
 	public Map<String, Object> toMap() {
@@ -296,27 +343,15 @@ public final class TextOptions {
 	}
 
 	/**
-	 * Throws for a value this implementation does not honour yet (REQ-1001: documented, and refused
-	 * rather than ignored). See the class description for the list.
+	 * Throws for a value this implementation does not honour (REQ-1001: documented, and refused
+	 * rather than ignored). See the class description for the two.
 	 */
 	void checkImplemented() {
-		List<String> refused = new ArrayList<String>();
-		if (fields == Fields.UPDATE) refused.add("fields: update");
-		if (embedded) refused.add("embedded: true");
-		if (metadata) refused.add("metadata: true");
-		if (altText) refused.add("alt_text: true");
-		if (include.contains(Include.GLOSSARY)) refused.add("include: glossary");
-		if (tables == Tables.GRID) refused.add("tables: grid");
-		if (pageMarkers) refused.add("page_markers: true");
-		if (layout == Layout.INDENT) refused.add("layout: indent");
 		List<String> never = new ArrayList<String>();
 		if (math == MathFormat.UNICODEMATH) never.add("math: unicodemath");
 		if (symbols == Symbols.UNICODE) never.add("symbols: unicode");
-		if (refused.isEmpty() && never.isEmpty()) return;
-		StringBuilder sb = new StringBuilder("Not implemented (WD REQ-1001): ");
-		if (!refused.isEmpty()) sb.append(String.join(", ", refused)).append(" (CR-046 phase 2)");
-		if (!refused.isEmpty() && !never.isEmpty()) sb.append("; ");
-		if (!never.isEmpty()) sb.append(String.join(", ", never)).append(" (CR-046 section 2.6: no converter)");
-		throw new UnsupportedOperationException(sb.toString());
+		if (never.isEmpty()) return;
+		throw new UnsupportedOperationException("Not implemented (WD REQ-1001): " + String.join(", ", never)
+				+ " (CR-046 section 2.6: no converter)");
 	}
 }

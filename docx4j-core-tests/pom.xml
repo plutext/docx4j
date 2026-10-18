@@ -133,6 +133,14 @@
 			<artifactId>tika-core</artifactId>
 			<version>3.2.2</version>
 		</dependency>	  
+
+		<!-- docx4j-core's optional HTML tidier, so that the text model's HTML altChunk path is
+		     tested as a consumer who adds it gets it (CR-046 D5) -->
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<scope>test</scope>
+		</dependency>
 		
 	</dependencies>
 

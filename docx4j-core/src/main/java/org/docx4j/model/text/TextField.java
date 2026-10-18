@@ -27,20 +27,30 @@ public final class TextField {
 
 	private final String instr;
 	private final String result;
+	private final boolean updated;
 
 	public TextField(String instr, String result) {
+		this(instr, result, false);
+	}
+
+	/** @param updated whether the result was computed under {@code fields: update} (REQ-506) */
+	public TextField(String instr, String result, boolean updated) {
 		this.instr = instr;
 		this.result = result;
+		this.updated = updated;
 	}
 
 	/** The instruction ({@code w:instrText}, {@code w:fldSimple/@instr}), as written. */
 	public String getInstr() { return instr; }
 
-	/** The cached result's text in the view, or null for a field with none. */
+	/** The cached result's text in the view, or the result computed under {@code fields: update}; null for a field with none. */
 	public String getResult() { return result; }
+
+	/** True when {@link #getResult()} was computed under {@code fields: update}, rather than the cached result (REQ-506). */
+	public boolean isUpdated() { return updated; }
 
 	@Override
 	public String toString() {
-		return "field{" + instr + " -> " + result + "}";
+		return "field{" + instr + (updated ? " => " : " -> ") + result + "}";
 	}
 }

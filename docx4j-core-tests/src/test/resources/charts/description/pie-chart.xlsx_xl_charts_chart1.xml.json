@@ -1,0 +1,18 @@
+{
+  "kind": "pie",
+  "groups": [
+    {
+      "kind": "pie",
+      "element": "pieChart",
+      "barDirection": null,
+      "grouping": null,
+      "series": [
+        "Sales"
+      ],
+      "secondary": false
+    }
+  ],
+  "axes": [],
+  "secondarySeries": [],
+  "note": "[chart: pie]"
+}

@@ -46,12 +46,12 @@ Phase 1 supplies the `ExtractionConformance.Engine`: `TextsAdapter`, the default
 (`-Dtextextraction.adapter=<public-class-with-no-arg-constructor>` names another;
 `-Dtextextraction.adapter=none` runs the protocol checks with every row pending). The adapter calls
 `Texts`, translates the scenario into typed options, and advertises only implemented
-statements (CR-046 phase 1's). A scenario's option needs its own statement too (WD section 10's
+statements (CR-046 phases 1 and 2's). A scenario's option needs its own statement too (WD section 10's
 table: `embedded: true` needs REQ-512, whatever the row cites). Scenario `default` has no XHTML importer. `xhtml importer present/absent`
-requires the corresponding isolated classpath; it is not a TextOptions key. Missing
-advertised capabilities remain pending. Exceptions from enabled assertions fail the test.
-The axis-title row additionally requires capability `CR-047`. Inspector rows require
-REQ-902 and stay pending in this CR. Output finding keys are
+requires the corresponding classpath; it is not a TextOptions key. Each is a capability the adapter
+advertises when docx4j-ImportXHTML is (or is not) on the class path, so a run checks one of the two
+(CR-046 phase 2). Missing advertised capabilities remain pending. Exceptions from enabled assertions
+fail the test. The axis-title row additionally requires capability `CR-047`. Inspector rows require REQ-902 and stay pending in this CR. Output finding keys are
 `channel<TAB>kind<TAB>selector`; values are counts or literal metadata values.
 
 ## Expected tables

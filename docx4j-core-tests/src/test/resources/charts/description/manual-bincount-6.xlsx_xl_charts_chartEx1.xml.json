@@ -1,0 +1,29 @@
+{
+  "kind": "histogram",
+  "groups": [
+    {
+      "kind": "histogram",
+      "element": "clusteredColumn",
+      "barDirection": null,
+      "grouping": null,
+      "series": [
+        "Score"
+      ],
+      "secondary": false
+    }
+  ],
+  "axes": [
+    {
+      "role": "category axis",
+      "position": null,
+      "title": null
+    },
+    {
+      "role": "value axis",
+      "position": null,
+      "title": null
+    }
+  ],
+  "secondarySeries": [],
+  "note": "[chart: histogram]"
+}

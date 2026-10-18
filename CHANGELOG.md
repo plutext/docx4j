@@ -25,6 +25,15 @@ Changes in Version 17.3.4
   original or markup (CriticMarkup) views as Accept/Reject All would leave the text, without changing the
   package; text boxes after their anchor; notes as `[n]`; `mc:AlternateContent` read by the ISO rule over
   the published understood set (`McPurpose.TEXT`, `org/docx4j/jaxb/understood-namespaces.txt`).
+- Text model (CR-046 phase 2): bound values, charts, SmartArt, WordArt, `altChunk`s, embedded docx/xlsx/pptx
+  (`embedded: true`), the glossary, image descriptions (`ImageDescriber`), math as LaTeX, listed and grid
+  tables, document properties, `fields: update`, page markers and indents. jsoup is an optional dependency
+  (HTML chunks are tidied with it where present).
+- `OmmlToLatex` moved to docx4j-core as `org.docx4j.model.math.OmmlToLatex`; docx4j-markdown's class
+  forwards to it and is deprecated.
+- Charts: `ChartDescription` gives a chart's kind (Excel's names), the axis titles Excel shows and
+  secondary-axis series, and a note; Markdown's chart output gains a line, e.g. `[chart: clustered
+  column; value axis: Revenue]`. `ChartExModel.getAxes()` (CR-047).
 - VML: `w14:anchorId` (on every shape type and `v:group`) and `o:gfxdata` (beyond `v:shape`) are kept when
   a part is re-saved; before, a re-save dropped them from Word's text-box and shape Fallbacks (CR-048).
 - DOCPROPERTY: LastSavedBy and LastSavedTime no longer return each other's values; an absent

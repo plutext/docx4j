@@ -309,7 +309,7 @@ public class TextsTest {
 		assertEquals(Boolean.FALSE, result.metadata().get("fields_update_on_open"));
 	}
 
-	/** REQ-1001: every WD option name and value accepted; anything else refused; what is not implemented yet refused, naming REQ-1001. */
+	/** REQ-1001: every WD option name and value accepted; anything else refused; the two values not implemented refused, naming REQ-1001. */
 	@Test
 	public void optionsByWdName() throws Exception {
 		TextOptions defaults = new TextOptions();
@@ -333,9 +333,13 @@ public class TextsTest {
 				assertTrue(expected.getMessage().contains("REQ-1001"));
 			}
 		}
-		for (String[] later : new String[][] { { "fields", "update" }, { "embedded", "true" }, { "metadata", "true" }, { "alt_text", "true" },
-				{ "include", "glossary" }, { "tables", "grid" }, { "page_markers", "true" }, { "layout", "indent" },
-				{ "math", "unicodemath" }, { "symbols", "unicode" } }) {
+		// implemented in phase 2
+		for (String[] now : new String[][] { { "fields", "update" }, { "embedded", "true" }, { "metadata", "true" }, { "alt_text", "true" },
+				{ "include", "glossary" }, { "tables", "grid" }, { "page_markers", "true" }, { "layout", "indent" } }) {
+			Texts.of(probe, new TextOptions().set(now[0], now[1]));
+		}
+		// not implemented by CR-046 (its section 2.6)
+		for (String[] later : new String[][] { { "math", "unicodemath" }, { "symbols", "unicode" } }) {
 			try {
 				Texts.of(probe, new TextOptions().set(later[0], later[1]));
 				fail(later[0]);

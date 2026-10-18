@@ -626,7 +626,7 @@ public class ExtractionProbeBuilder {
 							+ "the chart's embedded workbook holds these strings too"
 					: "");
 		}
-		token("CHT34_AXIS_TITLE", "1", "1", "1", "charts: false", "0", "REQ-511; pending CR-047 axis-title support");
+		token("CHT34_AXIS_TITLE", "1", "1", "1", "charts: false", "0", "REQ-511; with CR-047, the note [chart: clustered column; value axis: CHT34_AXIS_TITLE]");
 
 		begin(35, "SmartArt: a root and two children, stored out of reading order");
 		body.append(p(r("The diagram: ") + smartArt));

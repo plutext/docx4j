@@ -1,0 +1,31 @@
+{
+  "kind": "clustered bar",
+  "groups": [
+    {
+      "kind": "clustered bar",
+      "element": "barChart",
+      "barDirection": "bar",
+      "grouping": "clustered",
+      "series": [
+        "Series 1",
+        "Series 2",
+        "Series 3"
+      ],
+      "secondary": false
+    }
+  ],
+  "axes": [
+    {
+      "role": "category axis",
+      "position": "l",
+      "title": null
+    },
+    {
+      "role": "value axis",
+      "position": "b",
+      "title": null
+    }
+  ],
+  "secondarySeries": [],
+  "note": "[chart: clustered bar]"
+}

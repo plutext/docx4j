@@ -207,10 +207,10 @@ class WmlToMarkdown {
 			try {
 				org.docx4j.markdown.math.DisplayMath displayMath =
 						new org.docx4j.markdown.math.DisplayMath();
-				displayMath.setLiteral(new org.docx4j.markdown.math.OmmlToLatex()
+				displayMath.setLiteral(new org.docx4j.model.math.OmmlToLatex()
 						.convertOMathPara(oMathPara));
 				container.appendChild(displayMath);
-			} catch (org.docx4j.markdown.math.OmmlMathException e) {
+			} catch (org.docx4j.model.math.OmmlMathException e) {
 				log.warn("Equation outside the OMML->LaTeX subset ({}); flattened to its text",
 						e.getMessage());
 				org.commonmark.node.Paragraph flat = new org.commonmark.node.Paragraph();
@@ -343,11 +343,11 @@ class WmlToMarkdown {
 
 	private void inlineOMath(org.docx4j.math.CTOMath oMath, InlineSink sink) {
 		try {
-			String latex = new org.docx4j.markdown.math.OmmlToLatex().convertOMath(oMath);
+			String latex = new org.docx4j.model.math.OmmlToLatex().convertOMath(oMath);
 			if (!latex.isEmpty()) {
 				sink.node(new org.docx4j.markdown.math.InlineMath(latex, false));
 			}
-		} catch (org.docx4j.markdown.math.OmmlMathException e) {
+		} catch (org.docx4j.model.math.OmmlMathException e) {
 			log.warn("Equation outside the OMML->LaTeX subset ({}); flattened to its text",
 					e.getMessage());
 			sink.text(flattenMathText(oMath), false, false, false);
@@ -1060,9 +1060,10 @@ class WmlToMarkdown {
 	}
 
 	/**
-	 * A chart: its title as a paragraph and its data as a table (CR-035 phase 3), after the
-	 * paragraph it is in, the categories down and the series across, numbers formatted by their
-	 * format codes ({@link org.docx4j.model.chart.ChartTable}).
+	 * A chart: its note (CR-047: {@code [chart: clustered column; value axis: Revenue]}), its title
+	 * and its data as a table (CR-035 phase 3), each after the paragraph it is in, the categories down
+	 * and the series across, numbers formatted by their format codes
+	 * ({@link org.docx4j.model.chart.ChartDescription}, {@link org.docx4j.model.chart.ChartTable}).
 	 *
 	 * @return whether the anchor placed a chart
 	 */
@@ -1072,9 +1073,13 @@ class WmlToMarkdown {
 				currentRels.getSourceP() instanceof org.docx4j.openpackaging.parts.Part ? (org.docx4j.openpackaging.parts.Part) currentRels.getSourceP() : null, anchor);
 		if (ref == null) return false;
 		try {
-			org.docx4j.model.chart.ChartTable t = ref.isChartEx()
-					? org.docx4j.model.chart.ChartTable.of(ref.readChartEx())
-					: org.docx4j.model.chart.ChartTable.of(ref.read());
+			org.docx4j.model.chart.ChartDescription d = ref.isChartEx()
+					? org.docx4j.model.chart.ChartDescription.of(ref.readChartEx())
+					: org.docx4j.model.chart.ChartDescription.of(ref.read());
+			org.docx4j.model.chart.ChartTable t = d.getTable();
+			org.commonmark.node.Paragraph note = new org.commonmark.node.Paragraph();
+			note.appendChild(new Text(d.getNote()));
+			pendingCharts.add(note);
 			if (t.getTitle() != null && !t.getTitle().isEmpty()) {
 				org.commonmark.node.Paragraph title = new org.commonmark.node.Paragraph();
 				title.appendChild(new Text(t.getTitle()));

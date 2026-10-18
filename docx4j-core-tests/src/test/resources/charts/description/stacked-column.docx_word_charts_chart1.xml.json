@@ -1,0 +1,31 @@
+{
+  "kind": "stacked column",
+  "groups": [
+    {
+      "kind": "stacked column",
+      "element": "barChart",
+      "barDirection": "col",
+      "grouping": "stacked",
+      "series": [
+        "Series 1",
+        "Series 2",
+        "Series 3"
+      ],
+      "secondary": false
+    }
+  ],
+  "axes": [
+    {
+      "role": "category axis",
+      "position": "b",
+      "title": null
+    },
+    {
+      "role": "value axis",
+      "position": "l",
+      "title": null
+    }
+  ],
+  "secondarySeries": [],
+  "note": "[chart: stacked column]"
+}

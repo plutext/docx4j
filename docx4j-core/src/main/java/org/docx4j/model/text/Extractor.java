@@ -39,27 +39,50 @@ import javax.xml.namespace.QName;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+import org.docx4j.dml.CTNonVisualDrawingProps;
+import org.docx4j.dml.CTOfficeArtExtension;
+import org.docx4j.dml.Graphic;
+import org.docx4j.dml.picture.Pic;
+import org.docx4j.dml.wordprocessingDrawing.Anchor;
+import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.McPurpose;
 import org.docx4j.jaxb.McSelection;
 import org.docx4j.mce.AlternateContent;
 import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.chart.ChartDescription;
+import org.docx4j.model.chart.ChartRef;
+import org.docx4j.model.chart.ChartTable;
+import org.docx4j.model.math.OmmlMathException;
+import org.docx4j.model.math.OmmlToLatex;
 import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.NumberingState;
 import org.docx4j.model.listnumbering.NumberingStates;
 import org.docx4j.model.revisions.ResolvedView;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.DrawingML.DiagramDataPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsExtendedPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.EmbeddedPackagePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.w15.CTCommentEx;
 import org.docx4j.wml.Body;
+import org.docx4j.wml.CTAltChunk;
+import org.docx4j.wml.CTBookmark;
+import org.docx4j.wml.CTControl;
+import org.docx4j.wml.CTDataBinding;
+import org.docx4j.wml.CTDocPart;
+import org.docx4j.wml.CTMarkupRange;
+import org.docx4j.wml.CTObject;
 import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.CTFtnEdnRef;
 import org.docx4j.wml.CTRel;
@@ -130,6 +153,17 @@ final class Extractor {
 	final Map<String, Integer> endnotes = new LinkedHashMap<String, Integer>();
 	private int footnoteCount, endnoteCount;
 
+	/** What every address this extraction makes starts with: empty, or an embedded package's or chunk's address and a slash. */
+	String root = "";
+	/** True for a reading one level down (an embedded package's, an {@code altChunk}'s): none of its own are expanded (REQ-512, REQ-513). */
+	boolean nested;
+	private BoundValues boundValues;
+	private FieldValues fieldValues;
+	/** The {@code w:lastRenderedPageBreak}s of the main story so far (REQ-708). */
+	private int pageMarkers;
+	/** Bookmarks open in the walk, by id: their name, and their text so far (REQ-506's REF). */
+	private final Map<String, Bookmark> openBookmarks = new LinkedHashMap<String, Bookmark>();
+
 	private final NumberingStates numberingStates = new NumberingStates();
 	/** The run properties a paragraph style and character style give, by their ids. */
 	private final Map<String, RPr> styleRPr = new HashMap<String, RPr>();
@@ -174,17 +208,19 @@ final class Extractor {
 		List<TextBlock> out = new ArrayList<TextBlock>();
 		Map<String, TextComment> comments = new LinkedHashMap<String, TextComment>();
 		Map<String, Object> metadata = new LinkedHashMap<String, Object>();
-		metadata.put("fields_update_on_open", fieldsUpdateOnOpen());
+		metadata.put(TextResult.FIELDS_UPDATE_ON_OPEN, fieldsUpdateOnOpen());
+		if (!nested) Metadata.read(pkg, metadata);
 		if (main == null || main.getJaxbElement() == null || main.getJaxbElement().getBody() == null) {
 			return new TextResult(out, comments, warnings, metadata, options);
 		}
 		Body body = main.getJaxbElement().getBody();
+		if (options.getFields() == TextOptions.Fields.UPDATE && mode != Mode.RESOLVED) firstReading();
 
 		// the main story, each text box after its anchor; sections recorded as they end
-		Story story = new Story(TextBlock.Story.MAIN, "body", main);
+		Story story = new Story(TextBlock.Story.MAIN, root + "body", main);
 		story.sections = new ArrayList<SectPr>();
 		List<TextBlock> mainBlocks = new ArrayList<TextBlock>();
-		blocks(body.getContent(), "body", story, mainBlocks);
+		blocks(body.getContent(), root + "body", story, mainBlocks);
 		story.sections.add(body.getSectPr());
 
 		boolean headers = options.getInclude().contains(TextOptions.Include.HEADERS);
@@ -203,10 +239,86 @@ final class Extractor {
 					endnotes, TextRun.ENDNOTE, main.getEndNotesPart(), out);
 		}
 
+		// the glossary, last (REQ-501, REQ-516)
+		if (options.getInclude().contains(TextOptions.Include.GLOSSARY)) glossary(main.getGlossaryDocumentPart(), out);
+
 		// comments, rendered at their references (REQ-504)
 		if (commentsIncluded()) comments(main, comments);
 
 		return new TextResult(out, comments, warnings, metadata, options);
+	}
+
+	/**
+	 * Under {@code fields: update}, the bookmarks' text for REF (REQ-506), from a reading of the
+	 * document with its cached results, since a REF may come before its bookmark.
+	 */
+	private void firstReading() {
+		TextOptions o = options.copy();
+		o.fields(TextOptions.Fields.CACHED);
+		o.embedded(false);
+		o.altchunks(false);
+		Extractor first = new Extractor(pkg, o, mode);
+		first.nested = true;
+		first.collectBookmarks = true;
+		first.extract();
+		fieldValues().bookmarks.putAll(first.bookmarkTexts);
+	}
+
+	/** Whether this reading keeps its bookmarks' text (the first reading under {@code fields: update}). */
+	private boolean collectBookmarks;
+	private final Map<String, String> bookmarkTexts = new HashMap<String, String>();
+
+	private FieldValues fieldValues() {
+		if (fieldValues == null) fieldValues = new FieldValues(pkg);
+		return fieldValues;
+	}
+
+	private BoundValues boundValues() {
+		if (boundValues == null) boundValues = new BoundValues(pkg);
+		return boundValues;
+	}
+
+	// --- the glossary (REQ-516) ---------------------------------------------------------------------
+
+	private void glossary(GlossaryDocumentPart part, List<TextBlock> out) {
+		if (part == null || part.getJaxbElement() == null || part.getJaxbElement().getDocParts() == null) return;
+		List<CTDocPart> parts = part.getJaxbElement().getDocParts().getDocPart();
+		for (int i = 0; i < parts.size(); i++) {
+			Body body = parts.get(i).getDocPartBody();
+			if (body == null) continue;
+			String prefix = root + "glossary:" + i;
+			blocks(body.getContent(), prefix, new Story(TextBlock.Story.GLOSSARY, prefix, part), out);
+		}
+	}
+
+	// --- one level down (REQ-512, REQ-513) -----------------------------------------------------------
+
+	/**
+	 * A package read one level down, an embedded document's or a chunk's: the same options, but none
+	 * of its own embedded packages or chunks expanded (its chunks raising {@code altchunk.not_expanded}),
+	 * and no metadata. Its addresses start {@code prefix/}, its warnings join this result's, and its
+	 * main story's blocks take {@code story}.
+	 */
+	List<TextBlock> nested(WordprocessingMLPackage nestedPkg, String prefix, TextBlock.Story story) {
+		TextOptions o = options.copy();
+		o.embedded(false);
+		o.altchunks(false);
+		o.metadata(false);
+		Extractor x = new Extractor(nestedPkg, o, Mode.VIEW);
+		x.root = prefix + "/";
+		x.nested = true;
+		TextResult r = x.extract();
+		for (TextWarning w : r.warnings()) warn(w);
+		List<TextBlock> blocks = new ArrayList<TextBlock>(r.blocks());
+		if (story != null) restory(blocks, story);
+		return blocks;
+	}
+
+	private static void restory(List<TextBlock> blocks, TextBlock.Story story) {
+		for (TextBlock b : blocks) {
+			if (b.story == TextBlock.Story.MAIN) b.story = story;
+			for (TextRow r : b.rows) for (TextCell c : r.cells) restory(c.blocks, story);
+		}
 	}
 
 	/** A part's or object's content as one story, for {@link Texts#of(Object, TextOptions)}. */
@@ -248,8 +360,8 @@ final class Extractor {
 		final Part part;
 		/** Open complex fields, outermost first; a field may span paragraphs. */
 		final Deque<FieldState> fields = new ArrayDeque<FieldState>();
-		/** Text boxes found since the last flush, to follow their anchor (or its table). */
-		final List<Box> pending = new ArrayList<Box>();
+		/** What was anchored since the last flush (text boxes, charts, SmartArt, embedded packages), to follow its anchor (or its table). */
+		final List<Anchored> pending = new ArrayList<Anchored>();
 		int tableDepth;
 		/** The sections ended so far (the main story only). */
 		List<SectPr> sections;
@@ -270,13 +382,113 @@ final class Extractor {
 		}
 	}
 
-	/** A text box: its content, and the address it is reached by. */
-	static final class Box {
-		final CTTxbxContent content;
+	/**
+	 * What follows its anchoring paragraph, or the table its anchor is in (REQ-511, REQ-512,
+	 * REQ-518), in anchor order: a text box, legacy WordArt, a chart, SmartArt, an embedded package.
+	 */
+	abstract static class Anchored {
 		final String prefix;
-		Box(CTTxbxContent content, String prefix) {
-			this.content = content;
+		Anchored(String prefix) {
 			this.prefix = prefix;
+		}
+		/** Its blocks, in the story that anchors it. */
+		abstract void emit(Extractor x, Story anchoring, List<TextBlock> sink);
+	}
+
+	/** A text box: its content, read as a story of its own. */
+	static final class Box extends Anchored {
+		final CTTxbxContent content;
+		Box(CTTxbxContent content, String prefix) {
+			super(prefix);
+			this.content = content;
+		}
+		@Override void emit(Extractor x, Story anchoring, List<TextBlock> sink) {
+			Story inner = x.new Story(TextBlock.Story.TEXT_BOX, prefix, anchoring.part);
+			inner.noteType = anchoring.noteType;
+			inner.noteNumber = anchoring.noteNumber;
+			inner.noteId = anchoring.noteId;
+			x.blocks(content.getContent(), prefix, inner, sink);
+		}
+	}
+
+	/** Legacy VML WordArt: a one-paragraph text box holding its {@code v:textpath/@string} (REQ-511). */
+	static final class WordArt extends Anchored {
+		final String text;
+		WordArt(String text, String prefix) {
+			super(prefix);
+			this.text = text;
+		}
+		@Override void emit(Extractor x, Story anchoring, List<TextBlock> sink) {
+			sink.add(Embedded.paragraph(TextBlock.Story.TEXT_BOX, prefix + "/0", text));
+		}
+	}
+
+	/** A chart: its description, title and {@link ChartTable} (REQ-511; CR-047). */
+	static final class Chart extends Anchored {
+		final ChartRef ref;
+		Chart(ChartRef ref, String prefix) {
+			super(prefix);
+			this.ref = ref;
+		}
+		@Override void emit(Extractor x, Story anchoring, List<TextBlock> sink) {
+			ChartDescription d;
+			try {
+				d = ref.isChartEx() ? ChartDescription.of(ref.readChartEx()) : ChartDescription.of(ref.read());
+			} catch (Exception e) {
+				log.warn("Couldn't read the chart at " + prefix + ": " + e.getMessage());
+				return;
+			}
+			ChartTable t = d.getTable();
+			TextBlock b = new TextBlock(TextBlock.Kind.CHART, anchoring.kind, prefix);
+			b.chart = d;
+			b.chartTitle = t.getTitle();
+			b.chartHeader = new ArrayList<String>(t.getHeader());
+			List<List<String>> rows = new ArrayList<List<String>>();
+			for (List<String> r : t.getRows()) rows.add(new ArrayList<String>(r));
+			b.chartRows = rows;
+			sink.add(b);
+		}
+	}
+
+	/** SmartArt: its data part's text in reading order, a line a paragraph (REQ-511). */
+	static final class SmartArt extends Anchored {
+		final DiagramDataPart part;
+		SmartArt(DiagramDataPart part, String prefix) {
+			super(prefix);
+			this.part = part;
+		}
+		@Override void emit(Extractor x, Story anchoring, List<TextBlock> sink) {
+			List<String> lines = Drawings.smartArt(part.getJaxbElement());
+			for (int i = 0; i < lines.size(); i++) sink.add(Embedded.paragraph(TextBlock.Story.SMARTART, prefix + "/" + i, lines.get(i)));
+		}
+	}
+
+	/** An embedded package or OLE 1.0 package, read under {@code embedded: true} (REQ-512). */
+	static final class EmbeddedObject extends Anchored {
+		final BinaryPart part;
+		EmbeddedObject(BinaryPart part, String prefix) {
+			super(prefix);
+			this.part = part;
+		}
+		@Override void emit(Extractor x, Story anchoring, List<TextBlock> sink) {
+			byte[] bytes;
+			try {
+				bytes = part.getBytes();
+			} catch (RuntimeException e) {
+				return;
+			}
+			if (part instanceof EmbeddedPackagePart) sink.addAll(Embedded.pkg(x, bytes, prefix));
+			else sink.addAll(Embedded.ole10Native(bytes, prefix));
+		}
+	}
+
+	/** A bookmark open in the walk. */
+	static final class Bookmark {
+		final String name;
+		final StringBuilder text = new StringBuilder();
+		boolean paragraphEnded;
+		Bookmark(String name) {
+			this.name = name;
 		}
 	}
 
@@ -285,6 +497,10 @@ final class Extractor {
 		final StringBuilder instr = new StringBuilder();
 		final StringBuilder result = new StringBuilder();
 		boolean separated;
+		/** {@code w:fldLock} on its beginning: never recomputed (REQ-506). */
+		boolean locked;
+		/** Its result computed under {@code fields: update} (REQ-506): the cached result's text is not read. */
+		String computed;
 	}
 
 	/** The state of a run-level walk: the revision and the control the runs are in. */
@@ -336,12 +552,29 @@ final class Extractor {
 				i = j;
 			} else if (v instanceof Tbl) {
 				table((Tbl) v, address, story, sink, state);
+			} else if (v instanceof SdtElement && unwraps(item)) {
+				// an inserted control rejected: its content in its place, its properties gone
+				SdtElement sdt = (SdtElement) v;
+				if (sdt.getSdtContent() != null) blocks(sdt.getSdtContent().getContent(), address, story, sink, state);
 			} else if (v instanceof SdtElement) {
 				SdtElement sdt = (SdtElement) v;
+				String bound = bound(sdt, address);
+				if (bound != null) {
+					// a plain-text control bound at block level: its bound value as one paragraph (REQ-509)
+					TextBlock block = Embedded.paragraph(story.kind, address, bound);
+					block.section = story.sections == null ? 0 : story.sections.size();
+					sink.add(block);
+					flushIfOutsideTable(story, sink);
+					continue;
+				}
 				boolean placeholder = showingPlaceholder(sdt.getSdtPr());
 				if (placeholder && !options.isPlaceholders()) continue;
 				if (sdt.getSdtContent() != null) blocks(sdt.getSdtContent().getContent(), address, story, sink,
 						placeholder ? state.withPlaceholder() : state);
+			} else if (v instanceof CTAltChunk) {
+				altChunk((CTAltChunk) v, address, story, sink);
+			} else if (isBookmarkMarker(item)) {
+				bookmark(item);
 			} else if (v instanceof AlternateContent) {
 				AlternateContent ac = (AlternateContent) v;
 				compareBranches(ac, address);
@@ -384,6 +617,7 @@ final class Extractor {
 			runs(p.getContent(), para, state);
 			if (para.monospace != null) monospace = monospace == null ? para.monospace : monospace && para.monospace;
 		}
+		for (Bookmark b : openBookmarks.values()) b.paragraphEnded = true;
 		block.monospace = Boolean.TRUE.equals(monospace);
 		properties(block, last);
 		boolean markHidden = isHiddenMark(last.getPPr());
@@ -416,18 +650,105 @@ final class Extractor {
 
 	private void flushIfOutsideTable(Story story, List<TextBlock> sink) {
 		if (story.tableDepth > 0 || story.pending.isEmpty()) return;
-		List<Box> boxes = new ArrayList<Box>(story.pending);
+		List<Anchored> items = new ArrayList<Anchored>(story.pending);
 		story.pending.clear();
-		for (Box box : boxes) {
-			Story inner = new Story(TextBlock.Story.TEXT_BOX, box.prefix, story.part);
-			inner.noteType = story.noteType;
-			inner.noteNumber = story.noteNumber;
-			inner.noteId = story.noteId;
-			List<TextBlock> boxBlocks = new ArrayList<TextBlock>();
-			blocks(box.content.getContent(), box.prefix, inner, boxBlocks);
+		for (Anchored item : items) {
+			List<TextBlock> blocks = new ArrayList<TextBlock>();
+			item.emit(this, story, blocks);
 			int section = story.sections == null ? 0 : story.sections.size();
-			for (TextBlock b : boxBlocks) b.section = section;
-			sink.addAll(boxBlocks);
+			for (TextBlock b : blocks) b.section = section;
+			sink.addAll(blocks);
+		}
+	}
+
+	// --- altChunk (REQ-513) ----------------------------------------------------------------------------
+
+	private void altChunk(CTAltChunk chunk, String address, Story story, List<TextBlock> sink) {
+		Part part = story.part == null || chunk.getId() == null || story.part.getRelationshipsPart(false) == null ? null
+				: story.part.getRelationshipsPart(false).getPart(chunk.getId());
+		if (!(part instanceof AlternativeFormatInputPart)) return;
+		AlternativeFormatInputPart afip = (AlternativeFormatInputPart) part;
+		String contentType = AltChunks.contentType(afip);
+		List<TextBlock> blocks = options.isAltchunks() ? AltChunks.expand(this, afip, story.kind, address + "/altchunk:0") : null;
+		if (blocks == null) {
+			warn(TextWarning.ALTCHUNK_NOT_EXPANDED, address, null, contentType);
+			return;
+		}
+		int section = story.sections == null ? 0 : story.sections.size();
+		for (TextBlock b : blocks) b.section = section;
+		sink.addAll(blocks);
+	}
+
+	// --- bound values (REQ-509) ------------------------------------------------------------------------
+
+	/**
+	 * A plain-text control's bound value where its binding resolves and is what Word shows: not where
+	 * the value is empty and the control shows its placeholder, nor under {@code bindings: surface}.
+	 * Null to read the surface. Raises {@code sdt.binding_differs} where the two differ.
+	 */
+	private String bound(SdtElement sdt, String address) {
+		SdtPr pr = sdt.getSdtPr();
+		if (pkg == null || pr == null || !isPlainText(pr)) return null;
+		CTDataBinding binding = pr.getDataBinding();
+		if (binding == null) return null;
+		String value = boundValues().value(binding);
+		if (value == null) return null;
+		boolean placeholder = showingPlaceholder(pr);
+		if (value.isEmpty() && placeholder) return null;
+		String surface = placeholder ? null : surfaceText(sdt);
+		if (!value.equals(surface)) warn(TextWarning.SDT_BINDING_DIFFERS, address, null);
+		return options.getBindings() == TextOptions.Bindings.SURFACE ? null : value;
+	}
+
+	private static boolean isPlainText(SdtPr pr) {
+		for (Object o : pr.getRPrOrAliasOrLock()) {
+			if (o instanceof JAXBElement && "text".equals(((JAXBElement<?>) o).getName().getLocalPart())) return true;
+		}
+		return false;
+	}
+
+	/** A control's surface in the view: its {@code w:t}, tabs and breaks, what the view removes left out. */
+	private String surfaceText(SdtElement sdt) {
+		StringBuilder sb = new StringBuilder();
+		if (sdt.getSdtContent() == null) return "";
+		for (Object o : sdt.getSdtContent().getContent()) {
+			if (removes(o)) continue;
+			walk(unwrap(o), 0, new Visitor() {
+				@Override boolean item(Object item) {
+					if (removes(item)) return false;
+					String name = name(item);
+					Object v = unwrap(item);
+					if ("t".equals(name) && v instanceof Text) sb.append(((Text) v).getValue());
+					else if ("tab".equals(name)) sb.append('\t');
+					else if ("br".equals(name) || "cr".equals(name)) sb.append('\n');
+					return !"instrText".equals(name);
+				}
+			});
+		}
+		return sb.toString();
+	}
+
+	// --- bookmarks, for REF under fields: update (REQ-506) ----------------------------------------------
+
+	private static boolean isBookmarkMarker(Object item) {
+		String name = name(item);
+		return "bookmarkStart".equals(name) || "bookmarkEnd".equals(name);
+	}
+
+	private void bookmark(Object item) {
+		if (options.getFields() != TextOptions.Fields.UPDATE && !collectBookmarks) return;
+		Object v = unwrap(item);
+		if (v instanceof CTBookmark && "bookmarkStart".equals(name(item))) {
+			CTBookmark b = (CTBookmark) v;
+			if (b.getId() != null && b.getName() != null) openBookmarks.put(b.getId().toString(), new Bookmark(b.getName()));
+		} else if (v instanceof CTMarkupRange && ((CTMarkupRange) v).getId() != null) {
+			Bookmark b = openBookmarks.remove(((CTMarkupRange) v).getId().toString());
+			if (b != null) {
+				String key = b.name.toLowerCase(Locale.ROOT);
+				if (collectBookmarks) bookmarkTexts.put(key, b.text.toString());
+				// for a later REF, on every route (a part's or content's has no first reading)
+				if (options.getFields() == TextOptions.Fields.UPDATE && pkg != null) fieldValues().bookmarks.put(key, b.text.toString());
+			}
 		}
 	}
 
@@ -547,7 +868,10 @@ final class Extractor {
 				RunState cellState = state;
 				if (tcPr != null) {
 					if (tcPr.getGridSpan() != null && tcPr.getGridSpan().getVal() != null) cell.gridSpan = tcPr.getGridSpan().getVal().intValue();
-					if (tcPr.getVMerge() != null && !"restart".equals(tcPr.getVMerge().getVal())) cell.mergeContinue = true;
+					if (tcPr.getVMerge() != null) {
+						if ("restart".equals(tcPr.getVMerge().getVal())) cell.mergeRestart = true;
+						else cell.mergeContinue = true;
+					}
 					if (view == TextView.MARKUP && mode == Mode.VIEW) {
 						if (tcPr.getCellIns() != null) cellState = state.withRevision(revision(tcPr.getCellIns(), TextRevision.Type.INSERTION), false);
 						if (tcPr.getCellDel() != null) cellState = state.withRevision(revision(tcPr.getCellDel(), TextRevision.Type.DELETION), false);
@@ -573,7 +897,8 @@ final class Extractor {
 		final P p;
 		final String address;
 		final Story story;
-		int boxes;
+		/** The text boxes (WordArt among them), charts, SmartArt and objects anchored in it so far, each counted apart. */
+		int boxes, charts, smartArts, objects;
 		/** Whether every run with text so far is in a monospaced font; null before the first. */
 		Boolean monospace;
 		Paragraph(TextBlock block, P p, String address, Story story) {
@@ -598,11 +923,21 @@ final class Extractor {
 				AlternateContent ac = (AlternateContent) v;
 				compareBranches(ac, para.block.address);
 				runs(McSelection.select(McPurpose.TEXT, ac), para, state);
+			} else if (v instanceof SdtElement && unwraps(item)) {
+				SdtElement sdt = (SdtElement) v;
+				if (sdt.getSdtContent() != null) runs(sdt.getSdtContent().getContent(), para, state);
 			} else if (v instanceof SdtElement) {
 				SdtElement sdt = (SdtElement) v;
+				String bound = bound(sdt, para.block.address);
+				if (bound != null) {
+					text(para, bound, false, state);
+					continue;
+				}
 				boolean placeholder = showingPlaceholder(sdt.getSdtPr());
 				if (placeholder && !options.isPlaceholders()) continue;
 				if (sdt.getSdtContent() != null) runs(sdt.getSdtContent().getContent(), para, placeholder ? state.withPlaceholder() : state);
+			} else if (isBookmarkMarker(item)) {
+				bookmark(item);
 			} else if (v instanceof CTSimpleField) {
 				simpleField((CTSimpleField) v, para, state);
 			} else if (isMath(v)) {
@@ -659,13 +994,33 @@ final class Extractor {
 			STFldCharType type = fc.getFldCharType();
 			Deque<FieldState> fields = para.story.fields;
 			if (type == STFldCharType.BEGIN) {
-				fields.push(new FieldState());
+				FieldState f = new FieldState();
+				f.locked = written(fc, "fldLock");
+				fields.push(f);
 			} else if (type == STFldCharType.SEPARATE) {
-				if (!fields.isEmpty()) fields.peek().separated = true;
+				if (!fields.isEmpty()) {
+					FieldState f = fields.peek();
+					f.separated = true;
+					String value = suppressed(para.story) ? null : update(f);
+					if (value != null) {
+						text(para, value, hidden, state);
+						f.computed = value; // the cached result that follows is not read
+					}
+				}
 			} else if (type == STFldCharType.END) {
 				if (!fields.isEmpty()) {
 					FieldState f = fields.pop();
-					endField(f.instr.toString(), f.separated ? f.result.toString() : null, para);
+					// a field inside a computed field's cached result is not read, nor recorded
+					if (suppressed(para.story)) return;
+					if (!f.separated) {
+						String value = update(f);
+						if (value != null) {
+							text(para, value, hidden, state);
+							f.computed = value;
+						}
+					}
+					if (f.computed != null) para.block.fields.add(new TextField(f.instr.toString(), f.computed, true));
+					else endField(f.instr.toString(), f.separated ? f.result.toString() : null, para);
 				}
 			}
 			return;
@@ -677,7 +1032,7 @@ final class Extractor {
 			if (s == null) return;
 			Deque<FieldState> fields = para.story.fields;
 			if (!fields.isEmpty()) fields.peek().instr.append(s);
-			if (options.isFieldCodes()) addText(para, s, TextRun.Kind.FIELD_CODE, hidden, state);
+			if (options.isFieldCodes() && !suppressed(para.story)) addText(para, s, TextRun.Kind.FIELD_CODE, hidden, state);
 			return;
 		}
 		case "t": {
@@ -723,7 +1078,8 @@ final class Extractor {
 		}
 		case "footnoteReference":
 		case "endnoteReference": {
-			if (inCode(para.story)) return;
+			// in a computed field's cached result, a copy of a reference: neither written nor numbered
+			if (inCode(para.story) || suppressed(para.story)) return;
 			boolean foot = "footnoteReference".equals(name);
 			CTFtnEdnRef ref = (CTFtnEdnRef) v;
 			String id = ref.getId() == null ? "" : ref.getId().toString();
@@ -755,7 +1111,7 @@ final class Extractor {
 			return;
 		}
 		case "commentReference": {
-			if (!commentsIncluded() || inCode(para.story)) return;
+			if (!commentsIncluded() || inCode(para.story) || suppressed(para.story)) return;
 			R.CommentReference ref = (R.CommentReference) v;
 			if (plan != null && plan.removesComment(ref.getId())) return; // gone with the revision it was on
 			TextRun run = new TextRun(TextRun.Kind.COMMENT_REFERENCE, "", state.revision);
@@ -767,8 +1123,16 @@ final class Extractor {
 		case "drawing":
 		case "pict":
 		case "object":
-			if (options.isTextBoxes() && !inCode(para.story) && !(hidden && !options.isHidden())) findBoxes(v, para);
+			if (!inCode(para.story) && !suppressed(para.story) && !(hidden && !options.isHidden())) anchored(v, para, state);
 			return;
+		case "lastRenderedPageBreak": {
+			if (para.story.kind != TextBlock.Story.MAIN || inCode(para.story) || hidden && !options.isHidden()) return;
+			if (suppressed(para.story)) return;
+			TextRun run = new TextRun(TextRun.Kind.PAGE_MARKER, "", state.revision);
+			run.pageNumber = ++pageMarkers + 1;
+			para.block.runs.add(run);
+			return;
+		}
 		case "AlternateContent": {
 			AlternateContent ac = (AlternateContent) v;
 			compareBranches(ac, para.block.address);
@@ -799,10 +1163,31 @@ final class Extractor {
 			if (options.isFieldCodes()) addText(para, s, TextRun.Kind.FIELD_CODE, hidden, state);
 			return;
 		}
+		if (suppressed(para.story)) return;
 		if (!(hidden && !options.isHidden())) {
 			for (FieldState f : para.story.fields) f.result.append(s);
+			for (Bookmark b : openBookmarks.values()) {
+				if (b.paragraphEnded && b.text.length() > 0) b.text.append('\n');
+				b.paragraphEnded = false;
+				b.text.append(s);
+			}
 		}
 		addText(para, s, TextRun.Kind.TEXT, hidden, state);
+	}
+
+	/**
+	 * Inside the cached result of a field whose result was computed (REQ-506): nothing there is read,
+	 * text, note and comment references, pictures, page markers, field codes and nested fields alike.
+	 */
+	private static boolean suppressed(Story story) {
+		for (FieldState f : story.fields) if (f.computed != null) return true;
+		return false;
+	}
+
+	/** A field's result under {@code fields: update}, or null to keep its cached one (REQ-506). */
+	private String update(FieldState f) {
+		if (options.getFields() != TextOptions.Fields.UPDATE || f.locked || pkg == null) return null;
+		return fieldValues().compute(f.instr.toString());
 	}
 
 	private void addText(Paragraph para, String s, TextRun.Kind kind, boolean hidden, RunState state) {
@@ -830,8 +1215,18 @@ final class Extractor {
 	}
 
 	private void simpleField(CTSimpleField field, Paragraph para, RunState state) {
+		if (suppressed(para.story)) return; // inside a computed field's cached result
 		String instr = field.getInstr() == null ? "" : field.getInstr();
 		if (options.isFieldCodes() && !inCode(para.story)) addText(para, instr, TextRun.Kind.FIELD_CODE, false, state);
+		if (options.getFields() == TextOptions.Fields.UPDATE && !written(field, "fldLock") && pkg != null && !inCode(para.story)
+				&& !suppressed(para.story)) {
+			String value = fieldValues().compute(instr);
+			if (value != null) {
+				text(para, value, false, state);
+				para.block.fields.add(new TextField(instr, value, true));
+				return;
+			}
+		}
 		int before = para.block.runs.size();
 		String text = resultOf(field.getContent(), para, state);
 		boolean hasResult = text != null && !text.isEmpty() || para.block.runs.size() > before;
@@ -852,30 +1247,114 @@ final class Extractor {
 		return capture.result.toString();
 	}
 
-	// --- math: phase 1 reads the runs' text (LaTeX is CR-046 phase 2, REQ-604) ------------------------
+	// --- math (REQ-604) ---------------------------------------------------------------------------------
 
 	private static boolean isMath(Object v) {
 		return v instanceof org.docx4j.math.CTOMath || v instanceof org.docx4j.math.CTOMathPara;
 	}
 
+	/**
+	 * An equation as LaTeX, {@code $...$} ({@code $$...$$} for an {@code m:oMathPara}), by
+	 * {@link OmmlToLatex} in the view. In {@code markup}, an equation with tracked changes is its
+	 * Reject All form deleted and its Accept All form inserted, each as CR-043's plan for that view
+	 * leaves it (a structure inserted whole goes with its runs). An equation outside the converter's
+	 * subset is its runs' text, delimited the same way.
+	 */
 	private void math(Object v, Paragraph para, RunState state) {
-		StringBuilder sb = new StringBuilder();
-		mathText(v, sb, 0);
-		text(para, sb.toString(), false, state);
+		boolean display = v instanceof org.docx4j.math.CTOMathPara;
+		if (view == TextView.MARKUP && mode == Mode.VIEW) {
+			TextRevision[] revisions = mathRevisions(v);
+			if (revisions[0] != null || revisions[1] != null) {
+				ResolvedView original = markupPlan(false), accepted = markupPlan(true);
+				String before = latex(v, o -> !original.removes(o));
+				String after = latex(v, o -> !accepted.removes(o));
+				if (!before.equals(after)) {
+					if (!before.isEmpty()) text(para, delimit(before, display), false, state.withRevision(
+							revisions[0] != null ? revisions[0] : new TextRevision(TextRevision.Type.DELETION, null, null), false));
+					if (!after.isEmpty()) text(para, delimit(after, display), false, state.withRevision(
+							revisions[1] != null ? revisions[1] : new TextRevision(TextRevision.Type.INSERTION, null, null), false));
+					return;
+				}
+				if (!after.isEmpty()) text(para, delimit(after, display), false, state);
+				return;
+			}
+		}
+		String latex = latex(v, this::keepMathInView);
+		if (!latex.isEmpty()) text(para, delimit(latex, display), false, state);
 	}
 
-	private void mathText(Object v, StringBuilder sb, int depth) {
+	private static String delimit(String latex, boolean display) {
+		return display ? "$$" + latex + "$$" : "$" + latex + "$";
+	}
+
+	private String latex(Object v, java.util.function.Predicate<Object> keep) {
+		OmmlToLatex converter = new OmmlToLatex().keep(keep);
+		try {
+			return v instanceof org.docx4j.math.CTOMathPara ? converter.convertOMathPara((org.docx4j.math.CTOMathPara) v)
+					: converter.convertOMath((org.docx4j.math.CTOMath) v);
+		} catch (OmmlMathException | RuntimeException e) {
+			log.debug("An equation outside the LaTeX converter's subset is read as its text: " + e.getMessage());
+			StringBuilder sb = new StringBuilder();
+			mathText(v, sb, 0, keep);
+			return sb.toString();
+		}
+	}
+
+	/** The view's rule for an equation's list members: what the plan removes goes; without a plan, a revision by its type. */
+	private boolean keepMathInView(Object o) {
+		if (removes(o)) return false;
+		if (mode != Mode.PLANLESS || view == TextView.MARKUP) return true;
+		Boolean ins = mathRevisionType(o);
+		return ins == null || ins == (view == TextView.ACCEPTED);
+	}
+
+	private ResolvedView markupAccepted, markupOriginal;
+
+	/** In {@code markup}, the plans of the other two views, made when an equation with tracked changes needs them. */
+	private ResolvedView markupPlan(boolean accepted) {
+		if (accepted) {
+			if (markupAccepted == null) markupAccepted = ResolvedView.accepted(pkg);
+			return markupAccepted;
+		}
+		if (markupOriginal == null) markupOriginal = ResolvedView.original(pkg);
+		return markupOriginal;
+	}
+
+	/** For a {@code w:ins} or {@code w:del} in an equation's run, whether it is an insertion; else null. */
+	private static Boolean mathRevisionType(Object o) {
+		if (o instanceof JAXBElement && ((JAXBElement<?>) o).getValue() instanceof org.docx4j.wml.CTMathRunTrackChange) {
+			return "ins".equals(((JAXBElement<?>) o).getName().getLocalPart());
+		}
+		return null;
+	}
+
+	/** The first deletion's and the first insertion's revision in an equation, each null where there is none. */
+	private static TextRevision[] mathRevisions(Object v) {
+		TextRevision[] out = new TextRevision[2];
+		walk(v, 0, new Visitor() {
+			@Override boolean item(Object item) {
+				Boolean ins = mathRevisionType(item);
+				if (ins != null) {
+					org.docx4j.wml.CTMathRunTrackChange tc = (org.docx4j.wml.CTMathRunTrackChange) ((JAXBElement<?>) item).getValue();
+					int i = ins ? 1 : 0;
+					if (out[i] == null) out[i] = new TextRevision(ins ? TextRevision.Type.INSERTION : TextRevision.Type.DELETION,
+							tc.getAuthor(), tc.getDate() == null ? null : tc.getDate().toXMLFormat());
+				}
+				return true;
+			}
+		});
+		return out;
+	}
+
+	/** An equation's runs' text, for one outside the converter's subset. */
+	private static void mathText(Object v, StringBuilder sb, int depth, java.util.function.Predicate<Object> keep) {
 		if (v == null || depth > 64) return;
-		if (removes(v)) return;
 		if (v instanceof org.docx4j.math.CTR) {
 			for (Object o : ((org.docx4j.math.CTR) v).getContent()) {
+				if (!keep.test(o)) continue;
 				Object ov = unwrap(o);
-				if (removes(o)) continue;
 				if (ov instanceof org.docx4j.wml.CTMathRunTrackChange) {
-					// a plan has removed what its view does not keep; a resolved copy has none left
-					boolean ins = "ins".equals(name(o));
-					boolean shown = mode != Mode.PLANLESS || view == TextView.MARKUP || ins == (view == TextView.ACCEPTED);
-					if (shown) for (Object inner : ((org.docx4j.wml.CTMathRunTrackChange) ov).getRest()) mathItem(inner, sb);
+					for (Object inner : ((org.docx4j.wml.CTMathRunTrackChange) ov).getRest()) mathItem(inner, sb);
 					continue;
 				}
 				mathItem(o, sb);
@@ -883,7 +1362,10 @@ final class Extractor {
 			return;
 		}
 		if (v instanceof org.docx4j.math.CTCtrlPr) return;
-		for (Object child : children(v)) mathText(unwrap(child), sb, depth + 1);
+		for (Object child : children(v)) {
+			if (!keep.test(child)) continue;
+			mathText(unwrap(child), sb, depth + 1, keep);
+		}
 	}
 
 	private static void mathItem(Object o, StringBuilder sb) {
@@ -897,14 +1379,21 @@ final class Extractor {
 		}
 	}
 
-	// --- text boxes (REQ-518) ------------------------------------------------------------------------
+	// --- what a run anchors: text boxes (REQ-518), charts, SmartArt and WordArt (REQ-511), pictures (REQ-514), objects (REQ-512)
 
-	/** The text boxes under a run's drawing, picture or object, in document order, branches selected for text. */
-	private void findBoxes(Object v, Paragraph para) {
+	private static final String DECORATIVE_EXT = "{C183D7F6-B498-43B3-948B-1728B52AA6E4}";
+	private static final String DIAGRAM_NS = "http://schemas.openxmlformats.org/drawingml/2006/diagram";
+
+	/**
+	 * What a run's drawing, picture or object holds, in document order, branches selected for text:
+	 * text boxes, WordArt, charts, SmartArt and embedded packages to follow the paragraph; pictures
+	 * and objects as runs where they are.
+	 */
+	private void anchored(Object v, Paragraph para, RunState state) {
 		walk(v, 0, new Visitor() {
 			@Override public boolean enter(Object value) {
 				if (value instanceof CTTxbxContent) {
-					para.story.pending.add(new Box((CTTxbxContent) value, para.address + "/textbox:" + para.boxes++));
+					if (options.isTextBoxes()) para.story.pending.add(new Box((CTTxbxContent) value, para.address + "/textbox:" + para.boxes++));
 					return false;
 				}
 				if (value instanceof AlternateContent) {
@@ -913,9 +1402,161 @@ final class Extractor {
 					for (Object o : McSelection.select(McPurpose.TEXT, ac)) walk(unwrap(o), 1, this);
 					return false;
 				}
+				if (value instanceof CTObject) {
+					object((CTObject) value, para, state);
+					return false;
+				}
+				if (value instanceof CTControl) {
+					objectRun(para, null, state);
+					return false;
+				}
+				if (value instanceof Inline || value instanceof Anchor) return graphic(value, para, state);
+				if (value instanceof Pic) {
+					Pic pic = (Pic) value;
+					image(pic.getNvPicPr() == null ? null : pic.getNvPicPr().getCNvPr(), blipPart(pic, para), false, pic, para, state);
+					return false;
+				}
+				if (value instanceof org.docx4j.vml.CTShape) return vmlShape((org.docx4j.vml.CTShape) value, para, state);
 				return true;
 			}
 		});
+	}
+
+	/** A {@code wp:inline} or {@code wp:anchor}: a chart, SmartArt, a picture, or a shape to walk into. */
+	private boolean graphic(Object anchor, Paragraph para, RunState state) {
+		ChartRef chart = ChartRef.of(para.story.part, anchor);
+		if (chart != null) {
+			if (options.isCharts()) para.story.pending.add(new Chart(chart, para.address + "/chart:" + para.charts++));
+			return false;
+		}
+		Graphic graphic = anchor instanceof Inline ? ((Inline) anchor).getGraphic() : ((Anchor) anchor).getGraphic();
+		CTNonVisualDrawingProps docPr = anchor instanceof Inline ? ((Inline) anchor).getDocPr() : ((Anchor) anchor).getDocPr();
+		if (graphic == null || graphic.getGraphicData() == null) return false;
+		for (Object o : graphic.getGraphicData().getAny()) {
+			Object v = unwrap(o);
+			if (v instanceof org.docx4j.dml.diagram.CTRelIds) {
+				if (options.isSmartart()) {
+					Part dm = related(para.story.part, ((org.docx4j.dml.diagram.CTRelIds) v).getDm());
+					if (dm instanceof DiagramDataPart) para.story.pending.add(new SmartArt((DiagramDataPart) dm, para.address + "/smartart:" + para.smartArts++));
+				}
+				return false;
+			}
+			if (v instanceof Pic) {
+				image(docPr, blipPart((Pic) v, para), false, anchor, para, state);
+				return false;
+			}
+		}
+		return true; // a shape, group or canvas: its text boxes and pictures
+	}
+
+	/** A VML shape: legacy WordArt, a picture, or a shape to walk into for its text box. */
+	private boolean vmlShape(org.docx4j.vml.CTShape shape, Paragraph para, RunState state) {
+		org.docx4j.vml.CTImageData imageData = null;
+		for (JAXBElement<?> e : shape.getPathOrFormulasOrHandles()) {
+			Object v = e.getValue();
+			if (v instanceof org.docx4j.vml.CTTextPath) {
+				String string = ((org.docx4j.vml.CTTextPath) v).getString();
+				if (string != null && !string.isEmpty()) {
+					if (options.isTextBoxes()) para.story.pending.add(new WordArt(string, para.address + "/textbox:" + para.boxes++));
+					return false;
+				}
+			} else if (v instanceof org.docx4j.vml.CTImageData) {
+				imageData = (org.docx4j.vml.CTImageData) v;
+			}
+		}
+		if (imageData != null) image(shape.getAlt(), null, null, false, true,
+				related(para.story.part, imageData.getId()), shape, para, state);
+		return true;
+	}
+
+	/** A {@code w:object}: an object run with its ProgID, and under {@code embedded: true} its package to follow (REQ-512). */
+	private void object(CTObject object, Paragraph para, RunState state) {
+		if (object.getControl() != null) {
+			objectRun(para, null, state);
+			return;
+		}
+		for (Object o : object.getAnyAndAny()) {
+			Object v = unwrap(o);
+			if (v instanceof org.docx4j.vml.officedrawing.CTOLEObject) {
+				org.docx4j.vml.officedrawing.CTOLEObject ole = (org.docx4j.vml.officedrawing.CTOLEObject) v;
+				objectRun(para, ole.getProgID(), state);
+				if (!options.isEmbedded() || nested) return;
+				Part part = related(para.story.part, ole.getId());
+				boolean ole1 = ole.getProgID() != null && ole.getProgID().toLowerCase(Locale.ROOT).startsWith("package");
+				if (part instanceof EmbeddedPackagePart || ole1 && part instanceof BinaryPart) {
+					para.story.pending.add(new EmbeddedObject((BinaryPart) part, para.address + "/object:" + para.objects++));
+				}
+				return;
+			}
+			if (v instanceof CTControl) {
+				objectRun(para, null, state);
+				return;
+			}
+		}
+	}
+
+	private void objectRun(Paragraph para, String progId, RunState state) {
+		TextRun run = new TextRun(TextRun.Kind.OBJECT, "", state.revision);
+		run.progId = progId;
+		para.block.runs.add(run);
+	}
+
+	/** A DrawingML picture: its {@code wp:docPr} (or a nested picture's {@code pic:cNvPr}). */
+	private void image(CTNonVisualDrawingProps nv, Part part, boolean vml, Object source, Paragraph para, RunState state) {
+		image(nv == null ? null : nv.getDescr(), nv == null ? null : nv.getName(), nv == null ? null : nv.getTitle(),
+				decorative(nv), vml, part, source, para, state);
+	}
+
+	private void image(String descr, String name, String title, boolean decorative, boolean vml, Part part, Object source,
+			Paragraph para, RunState state) {
+		TextImage image = new TextImage(descr, name, title, decorative, vml, part, source);
+		TextRun run = new TextRun(TextRun.Kind.IMAGE, "", state.revision);
+		run.image = image;
+		try {
+			run.description = options.getImageDescriber().describe(image);
+		} catch (RuntimeException e) {
+			log.warn("The image describer failed at " + para.block.address + ": " + e.getMessage());
+		}
+		run.placeholder = state.placeholder;
+		para.block.runs.add(run);
+	}
+
+	/** {@code adec:decorative val="1"} among the properties' extensions. */
+	private static boolean decorative(CTNonVisualDrawingProps nv) {
+		if (nv == null || nv.getExtLst() == null) return false;
+		for (CTOfficeArtExtension ext : nv.getExtLst().getExt()) {
+			if (!DECORATIVE_EXT.equalsIgnoreCase(ext.getUri())) continue;
+			Object any = ext.getAny();
+			String val = null;
+			if (any instanceof org.w3c.dom.Element) {
+				val = ((org.w3c.dom.Element) any).getAttribute("val");
+			} else if (any != null) {
+				// adec:decorative is bound (CTDecorative, isVal); read reflectively, as its package is the binding's
+				Object d = unwrap(any);
+				for (String getter : new String[] { "isVal", "getVal" }) {
+					try {
+						Object x = d.getClass().getMethod(getter).invoke(d);
+						val = x == null ? null : x.toString();
+						break;
+					} catch (ReflectiveOperationException | RuntimeException e) {
+						val = null;
+					}
+				}
+			}
+			if ("1".equals(val) || "true".equalsIgnoreCase(val)) return true;
+		}
+		return false;
+	}
+
+	private static Part blipPart(Pic pic, Paragraph para) {
+		if (pic.getBlipFill() == null || pic.getBlipFill().getBlip() == null) return null;
+		return related(para.story.part, pic.getBlipFill().getBlip().getEmbed());
+	}
+
+	/** The part a relationship of {@code host} names, without adding a relationships part. */
+	private static Part related(Part host, String rId) {
+		if (host == null || rId == null || rId.isEmpty() || host.getRelationshipsPart(false) == null) return null;
+		return host.getRelationshipsPart(false).getPart(rId);
 	}
 
 	// --- markup compatibility: REQ-307 -----------------------------------------------------------------
@@ -960,7 +1601,14 @@ final class Extractor {
 	}
 
 	private void warn(String kind, String address, String branch) {
-		TextWarning w = new TextWarning(kind, address, branch);
+		warn(new TextWarning(kind, address, branch));
+	}
+
+	private void warn(String kind, String address, String branch, String contentType) {
+		warn(new TextWarning(kind, address, branch, contentType));
+	}
+
+	private void warn(TextWarning w) {
 		if (warned.add(w)) warnings.add(w);
 	}
 
@@ -1010,7 +1658,7 @@ final class Extractor {
 		if (part instanceof HeaderPart) root = ((HeaderPart) part).getJaxbElement();
 		else if (part instanceof FooterPart) root = ((FooterPart) part).getJaxbElement();
 		if (root == null) return;
-		String prefix = (kind == TextBlock.Story.HEADER ? "header:" : "footer:") + rId;
+		String prefix = root + (kind == TextBlock.Story.HEADER ? "header:" : "footer:") + rId;
 		Story story = new Story(kind, prefix, part);
 		blocks(blockItems(root), prefix, story, out);
 	}
@@ -1025,7 +1673,7 @@ final class Extractor {
 			CTFtnEdn note = byId.get(e.getKey());
 			if (note == null) continue;
 			if (note.getType() != null && !"normal".equals(note.getType().value())) continue;
-			String prefix = type + ":" + e.getKey();
+			String prefix = root + type + ":" + e.getKey();
 			Story story = new Story(TextBlock.Story.valueOf(type.toUpperCase(Locale.ROOT)), prefix, part);
 			story.noteType = type;
 			story.noteNumber = e.getValue();
@@ -1069,7 +1717,7 @@ final class Extractor {
 			comment.author = c.getAuthor();
 			comment.initials = c.getInitials();
 			comment.date = c.getDate() == null ? null : c.getDate().toXMLFormat();
-			String prefix = "comment:" + id;
+			String prefix = root + "comment:" + id;
 			blocks(c.getContent(), prefix, new Story(TextBlock.Story.COMMENT, prefix, part), comment.blocks);
 			String paraId = lastParaId(c.getContent());
 			if (paraId != null) {
@@ -1112,6 +1760,11 @@ final class Extractor {
 			return ins != (view == TextView.ACCEPTED);
 		}
 		return false;
+	}
+
+	/** Whether the view takes a content control away and leaves its content (an inserted one, rejected). */
+	private boolean unwraps(Object item) {
+		return plan != null && plan.unwraps(item);
 	}
 
 	private boolean joinsNext(P p) {
@@ -1174,11 +1827,18 @@ final class Extractor {
 
 	/** {@code w:customMarkFollows} as written: the generated getter answers true when it is absent. */
 	private static boolean customMarkFollows(CTFtnEdnRef ref) {
+		return written(ref, "customMarkFollows");
+	}
+
+	/**
+	 * An on/off attribute as written, false when absent: the generated getters of
+	 * {@code w:customMarkFollows} and {@code w:fldLock} answer true when it is absent.
+	 */
+	private static boolean written(Object o, String attribute) {
 		try {
-			Field f = CTFtnEdnRef.class.getDeclaredField("customMarkFollows");
+			Field f = o.getClass().getDeclaredField(attribute);
 			f.setAccessible(true);
-			Object v = f.get(ref);
-			return Boolean.TRUE.equals(v);
+			return Boolean.TRUE.equals(f.get(o));
 		} catch (ReflectiveOperationException | RuntimeException e) {
 			return false;
 		}

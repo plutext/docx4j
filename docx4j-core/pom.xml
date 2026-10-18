@@ -86,6 +86,9 @@
                             org.apache.xmlgraphics.image.loader.cache;resolution:=optional,
                             org.apache.xmlgraphics.image.loader.impl;resolution:=optional,
                             org.apache.xmlgraphics.java2d;resolution:=optional,
+                            org.jsoup;resolution:=optional,
+                            org.jsoup.helper;resolution:=optional,
+                            org.jsoup.nodes;resolution:=optional,
 
                             org.slf4j;version="[1.6,2)";resolution:=optional,
                             org.slf4j.impl;version="[1.6,2)";resolution:=optional,
@@ -410,6 +413,14 @@
 					<artifactId>commons-logging</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+
+		<!-- optional (CR-046 D5): where it is on the class path, the text model tidies an HTML
+		     altChunk with it and reads it as blocks; without it, the chunk's tags are stripped -->
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<optional>true</optional>
 		</dependency>
 
 		<!--  for repackaged fop-events. 1.12.1 is last of 1.x series. 

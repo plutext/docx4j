@@ -23,9 +23,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * A block of the block model (WD REQ-706): a paragraph, or a table whose cells hold blocks. A
- * paragraph's text is its runs' in the view; what an extractor adds in plain text (note numbers, a
- * table-format note) is not in it, but carried as fields (REQ-707).
+ * A block of the block model (WD REQ-706): a paragraph, a table whose cells hold blocks, or a chart.
+ * A paragraph's text is its runs' in the view; what an extractor adds in plain text (note numbers, a
+ * table-format note, an image's bracket) is not in it, but carried as fields (REQ-707).
  *
  * <p>Addresses are docx4j-core-ts CR-002 section 3.3's ordinal form, on the unresolved document
  * (REQ-405, REQ-518): {@code body/3} (the fourth child of the body), {@code body/4/1/0/2} (a
@@ -34,17 +34,35 @@ import java.util.List;
  * box anchored in {@code body/3}, its second block). A paragraph joined to the next in the
  * {@code accepted} view (a deleted mark) takes the first paragraph's address and {@code w14:paraId}.</p>
  *
+ * <p>What follows an anchoring paragraph is addressed from it in the same way, each kind counted
+ * apart (proposed forms, CR-046 phase 2): a chart {@code body/3/chart:0}; SmartArt's lines
+ * {@code body/3/smartart:0/1}; legacy WordArt, a text box, {@code body/3/textbox:1/0}; an embedded
+ * package's content {@code body/3/object:0/} and its own address ({@code body/0} in a document,
+ * {@code sheet:0} and {@code sheet:0/table} in a workbook, {@code slide:0/2} in a presentation). An
+ * {@code altChunk}'s content is addressed from the chunk, {@code body/7/altchunk:0/} and its own address.
+ * The glossary's blocks are {@code glossary:0/1} (the first entry's second block).</p>
+ *
  * @since 17.3.4 (CR-046 phase 1)
  */
 public final class TextBlock {
 
-	public enum Kind { PARAGRAPH, TABLE }
+	public enum Kind {
+		PARAGRAPH,
+		TABLE,
+		/** A chart (REQ-511): {@link #getChartTitle()}, {@link #getChartHeader()} and {@link #getChartRows()}, after its anchoring paragraph. */
+		CHART
+	}
 
-	/** The story a block is in (WD section 5.1). */
-	public enum Story { MAIN, TEXT_BOX, FOOTNOTE, ENDNOTE, HEADER, FOOTER, COMMENT, GLOSSARY }
+	/**
+	 * The story a block is in (WD section 5.1). SmartArt's text and an embedded package's content
+	 * follow their anchoring paragraph but are kept apart from its story; an {@code altChunk}'s
+	 * content is in the story the chunk is in, as Word expands it there.
+	 */
+	public enum Story { MAIN, TEXT_BOX, FOOTNOTE, ENDNOTE, HEADER, FOOTER, COMMENT, GLOSSARY, SMARTART, EMBEDDED }
 
 	final Kind kind;
-	final Story story;
+	/** Not final: the content of an embedded package or an {@code altChunk} takes the story it is read into. */
+	Story story;
 	final String address;
 	String paraId;
 	String style;
@@ -62,6 +80,12 @@ public final class TextBlock {
 	String noteId;
 	/** The section the block ends or is in (main story only). */
 	int section;
+	/** A table written in REQ-605's simple form whatever its shape (an embedded workbook's sheet). */
+	boolean simpleForm;
+	String chartTitle;
+	org.docx4j.model.chart.ChartDescription chart;
+	List<String> chartHeader = Collections.emptyList();
+	List<List<String>> chartRows = Collections.emptyList();
 
 	TextBlock(Kind kind, Story story, String address) {
 		this.kind = kind;
@@ -92,8 +116,19 @@ public final class TextBlock {
 	public boolean isHidden() { return hidden; }
 	/** True for a block in a text box (REQ-518). */
 	public boolean isTextbox() { return story == Story.TEXT_BOX; }
-	/** True for a decorative picture's block; always false until images are blocks (CR-046 phase 2). */
-	public boolean isDecorative() { return false; }
+	/** True for a paragraph whose only content is one or more pictures marked decorative (REQ-514). */
+	public boolean isDecorative() {
+		boolean decorative = false;
+		for (TextRun r : runs) {
+			if (r.kind == TextRun.Kind.IMAGE) {
+				if (r.image == null || !r.image.isDecorative()) return false;
+				decorative = true;
+			} else if (r.kind == TextRun.Kind.TEXT && !r.text.isEmpty()) {
+				return false;
+			}
+		}
+		return decorative;
+	}
 	/** How many revisions (run-level revisions and paragraph marks) the block's paragraphs hold, in any view. */
 	public int getRevisions() { return revisions; }
 	/** The effective left indent in twips, or null. */
@@ -115,12 +150,41 @@ public final class TextBlock {
 	/** For a note's block: the note's {@code w:id}; else null. */
 	public String getNoteId() { return noteId; }
 
+	/** For a table: true when it is always written in REQ-605's simple form (an embedded workbook's sheet). */
+	public boolean isSimpleForm() { return simpleForm; }
+
+	/** For a chart: its title as Office shows it ({@code ChartTable.getTitle()}), or null for none. */
+	public String getChartTitle() { return chartTitle; }
+
+	/**
+	 * For a chart: its description (CR-047), whose kind, axes and secondary series are the chart
+	 * block's fields of WD REQ-706 ({@link org.docx4j.model.chart.ChartDescription#getKind()},
+	 * {@code getAxes()}, {@code getSecondarySeries()}); null for any other block. Its note, which plain
+	 * text writes before the title, is not in the block's text (REQ-707).
+	 */
+	public org.docx4j.model.chart.ChartDescription getChart() { return chart; }
+
+	/** For a chart: its table's column headings ({@code ChartTable.getHeader()}): the categories' columns, then the series shown. */
+	public List<String> getChartHeader() { return Collections.unmodifiableList(chartHeader); }
+
+	/** For a chart: its table's rows, each number in its format code ({@code ChartTable.getRows()}). */
+	public List<List<String>> getChartRows() { return Collections.unmodifiableList(chartRows); }
+
 	/**
 	 * The block's text in the view: its text runs (and field codes, where included); for a table, its
 	 * rows a line apart, their cells a tab apart. No list label, note number or comment.
 	 */
 	public String getText() {
 		StringBuilder sb = new StringBuilder();
+		if (kind == Kind.CHART) {
+			if (chartTitle != null && !chartTitle.isEmpty()) sb.append(chartTitle);
+			if (!chartHeader.isEmpty()) {
+				if (sb.length() > 0) sb.append('\n');
+				sb.append(String.join("\t", chartHeader));
+			}
+			for (List<String> row : chartRows) sb.append('\n').append(String.join("\t", row));
+			return sb.toString();
+		}
 		if (kind == Kind.TABLE) {
 			for (int r = 0; r < rows.size(); r++) {
 				if (r > 0) sb.append('\n');

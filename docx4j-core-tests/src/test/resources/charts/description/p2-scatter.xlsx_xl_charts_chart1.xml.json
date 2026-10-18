@@ -1,0 +1,29 @@
+{
+  "kind": "scatter",
+  "groups": [
+    {
+      "kind": "scatter",
+      "element": "scatterChart",
+      "barDirection": null,
+      "grouping": null,
+      "series": [
+        "Y"
+      ],
+      "secondary": false
+    }
+  ],
+  "axes": [
+    {
+      "role": "x axis",
+      "position": "b",
+      "title": null
+    },
+    {
+      "role": "y axis",
+      "position": "l",
+      "title": null
+    }
+  ],
+  "secondarySeries": [],
+  "note": "[chart: scatter]"
+}

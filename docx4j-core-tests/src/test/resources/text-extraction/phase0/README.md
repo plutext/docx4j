@@ -388,7 +388,7 @@ Golden conventions and baseline commands are in `../GOLDENS.md`.
 | `CHT34_SERIES_TWO` | yes | yes | yes | `charts: false` | – |  | REQ-511 |
 | `CHT34_CAT_A` | yes | yes | yes | `charts: false` | – |  | REQ-511 |
 | `CHT34_CAT_B` | yes | yes | yes | `charts: false` | – |  | REQ-511 |
-| `CHT34_AXIS_TITLE` | yes | yes | yes | `charts: false` | – | REQ-511; pending CR-047 axis-title support | REQ-511 |
+| `CHT34_AXIS_TITLE` | yes | yes | yes | `charts: false` | – | REQ-511; with CR-047, the note [chart: clustered column; value axis: CHT34_AXIS_TITLE] | REQ-511 |
 
 ### Case 35: SmartArt: a root and two children, stored out of reading order
 

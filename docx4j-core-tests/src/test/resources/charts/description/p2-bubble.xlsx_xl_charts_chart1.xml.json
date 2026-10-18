@@ -1,0 +1,30 @@
+{
+  "kind": "bubble",
+  "groups": [
+    {
+      "kind": "bubble",
+      "element": "bubbleChart",
+      "barDirection": null,
+      "grouping": null,
+      "series": [
+        "Series1",
+        "Series2"
+      ],
+      "secondary": false
+    }
+  ],
+  "axes": [
+    {
+      "role": "x axis",
+      "position": "b",
+      "title": null
+    },
+    {
+      "role": "y axis",
+      "position": "l",
+      "title": null
+    }
+  ],
+  "secondarySeries": [],
+  "note": "[chart: bubble]"
+}

@@ -1,0 +1,29 @@
+{
+  "kind": "waterfall",
+  "groups": [
+    {
+      "kind": "waterfall",
+      "element": "waterfall",
+      "barDirection": null,
+      "grouping": null,
+      "series": [
+        "Series 1"
+      ],
+      "secondary": false
+    }
+  ],
+  "axes": [
+    {
+      "role": "category axis",
+      "position": null,
+      "title": null
+    },
+    {
+      "role": "value axis",
+      "position": null,
+      "title": null
+    }
+  ],
+  "secondarySeries": [],
+  "note": "[chart: waterfall]"
+}

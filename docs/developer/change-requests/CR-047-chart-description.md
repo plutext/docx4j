@@ -1,6 +1,8 @@
 # CR-047: A chart's description - its kind, axis titles and each series' axis, beside `ChartTable`
 
-Status: ACCEPTED 2026-10-18 (Jason: "D1 to D7, each with a recommendation - accepted"). Drafted the same
+Status: ACCEPTED 2026-10-18 (Jason: "D1 to D7, each with a recommendation - accepted"). Implemented
+18 October 2026 (§5); the Office check answered the same day: Excel shows a deleted axis's title,
+and a hidden chartex axis's (§2.3). Drafted the same
 day at his request ("please draft CR-047"). Numbered 17 October 2026
 (Jason: "this will be its CR-047"), as the extension of the text extraction paper's D18. CR-046 phase 2
 depends on it for the probe's case 34 axis title. One phase (§5); decisions in §6.
@@ -109,9 +111,11 @@ read. A combination chart names its groups in order, joined by "and".
 
 ### 2.3 The axes (D3)
 
-Only axes Office shows, and only their titles: an axis with `c:delete val="1"` is left out. Whether
-Office then still draws a title the deleted axis carries is to be measured (§5's Office check); the
-rule follows the measurement. Roles, in this order:
+Only the axes Office shows, or shows the title of, and only their titles. An axis with
+`c:delete val="1"` loses its line and labels but not its title: Excel still draws the title where the
+axis would be, the text it states or its default "Axis Title" (§5's Office check, 18 October 2026). So a
+deleted axis with a `c:title` is listed with its title, and one without is left out. Roles, in this
+order:
 - for a category chart: category axis (`c:catAx` and `c:dateAx`), value axis, then secondary value
   axis and secondary category axis where shown, then depth axis (`c:serAx`);
 - for scatter and bubble, both axes are `c:valAx`: x axis (the one at the bottom or top), y axis, and
@@ -121,7 +125,9 @@ A title is its shown text, Office's default "Axis Title" included, as `ChartTitl
 gives it. An axis with no `c:title` has none. Pie, doughnut and of-pie charts have no axes.
 
 For chartex, `ChartExModel` gains the axes it lacks (id, hidden, title from `cx:axis/cx:title`), and the
-same rule applies.
+same rule applies to a hidden `cx:axis` (`hidden="1"`, which is how Excel writes an axis removed with
+*Chart Elements*): Excel draws its title, not its labels, and draws "Axis Title" for a `cx:title` with no
+text, on a hidden axis and a shown one alike (§5's Office check, second round).
 
 ### 2.4 How text writes it (D4; a WD matter)
 
@@ -195,7 +201,7 @@ when scheduled.
 
 **Office check** (Jason, Excel): one workbook with a value axis that carries a title and is deleted
 (`c:delete val="1"`). Does Excel show the title? §2.3's rule for deleted axes follows the answer. The
-docx4j session builds the workbook and stages it on the share.
+docx4j session builds the workbook and stages it on the share. Answered 18 October 2026: it does (§2.3).
 
 **Hand-offs:**
 - the portfolio session: the WD proposal of §2.4 (REQ-511's note, REQ-707's `[chart: ...]`) and the
@@ -204,6 +210,51 @@ docx4j session builds the workbook and stages it on the share.
 - the text model: CR-046 phase 2.
 
 **Acceptance:** the tests above, and the Office check's answer reflected in §2.3.
+
+**Implementation, 18 October 2026:**
+- `ChartDescription` (`org.docx4j.model.chart`): §2.2's names, §2.3's roles and rule, §2.4's note in
+  WD 0.8's spelling (REQ-511), `getTable()` (`ChartTable.of`, unchanged), `toJson()`. A chartex chart
+  is one group: its kind, its first series' `layoutId` as the element, its shown series; its value
+  axes are the value axis then the secondary value axis; it names no secondary series.
+- `ChartExModel.getAxes()`: `Axis` (id, kind, hidden, title: `hasTitle`, `getTitleText()`,
+  `getShownTitle()`, "Axis Title" where a `cx:title` states no text). Its JSON's axes gain `hasTitle`,
+  `titleText` and `shownTitle`; the three chartex goldens in `charts/json/` are re-cut (that, and
+  nothing else, changed in them).
+- JSON (D5): the members of §2.5, in docx4j's camelCase, `secondarySeries` among them. The block
+  model's JSON, which docx4j-mcp writes (CR-046 D7), spells it as WD REQ-706 does,
+  `secondary_series`; this description is the ports' golden, not the block model.
+- `WmlToMarkdown` (D6) writes the note as a paragraph before the title. The Markdown renderer escapes
+  its brackets (`\[chart: pie\]`), so that no document can make it a link.
+- The text model (CR-046 phase 2): a chart block carries its description (`TextBlock.getChart()`,
+  REQ-706's fields), and plain text writes the note before the title. The probe's case 34 rows pass:
+  `[chart: clustered column; value axis: CHT34_AXIS_TITLE]`; `TextsAdapter` claims `CR-047`.
+- Tests: `ChartDescriptionTest` (11): the six of §5 (bar-chart, p2-combo-secondary with its deleted
+  secondary category axis, p2-3d-column's depth axis, a pie's none, p2-scatter's and p2-bubble's x
+  and y axes, the probe's chart, the waterfall); every fixture's kind, and the kinds no fixture has
+  from their elements; a chartex Pareto with axis titles and hidden axes, titled and not; the Office
+check's five workbooks (below); the JSON goldens, 33 chart
+  parts in `charts/description/` (`-Ddocx4j.chartDescriptionGoldens.write=...`), written once and
+  reviewed by hand. `MarkdownChartTest` gains the note.
+- The Office check: `cr047-deleted-axis-titled.xlsx` and `cr047-deleted-axis-default-title.xlsx`,
+  staged in the share's `Office 2016/cr047/` with `RUN.txt`: bar-chart.xlsx with its value axis
+  deleted, titled CR047_DELETED_AXIS_TITLE in the first and with no title text in the second, the
+  category axis titled CR047_SHOWN_AXIS_TITLE. Jason's screenshots in Excel (same folder, 18 October
+  2026): both workbooks open, and Excel draws CR047_DELETED_AXIS_TITLE, and "Axis Title" in the
+  second, below the bars where the value axis would be, with no value labels. §2.3 changed to match:
+  a deleted axis with a title is listed. The two workbooks are fixtures now (`charts/`,
+  `ChartDescriptionTest.deletedAxisTitleShows`): `[chart: clustered bar; category axis:
+  CR047_SHOWN_AXIS_TITLE; value axis: CR047_DELETED_AXIS_TITLE]`, and `value axis: Axis Title` in the
+  second. No fixture of the 33 goldens has a deleted axis with a title, so none changed.
+- The Office check's second round, for chartex (same folder, 18 October 2026): a Pareto chart Jason
+  made in Excel, its left value axis hidden (`hidden="1"`) by docx4j, titled CR047_HIDDEN_AXIS_TITLE
+  in `cr047-pareto-hidden-axis-titled.xlsx`, and in `-default-title.xlsx` with a `cx:title` stating no
+  text, as is the shown right axis's. Jason's screenshots: Excel draws CR047_HIDDEN_AXIS_TITLE at the
+  left with no value labels, and "Axis Title" at the left and at the right in the second. So §2.3's
+  rule holds for chartex, and so does `ChartExModel`'s "Axis Title" default. Both are fixtures
+  (`ChartDescriptionTest.hiddenChartexAxisTitleShows`). Jason also removed the value axes in Excel
+  itself (*Chart Elements*, the left and then the right, `cr047-pareto-excel-deleted.xlsx`): Excel
+  wrote `hidden="1"` on each, and docx4j leaves both out (no titles): `[chart: pareto]`. A fixture
+  too, in the same test.
 
 ## 6. Decisions
 
@@ -226,7 +277,8 @@ the WD, which decides its spelling (§2.4).
   grouping, for a machine.
 - **D3. Which axes.** Recommended: only the axes Office shows, titles as `getShownText()` gives them
   (Office's "Axis Title" default included), in §2.3's order and roles. Whether a deleted axis's title
-  shows is settled by the Office check.
+  shows is settled by the Office check. (Measured 18 October 2026: it shows, so a titled deleted axis
+  is listed; §2.3.)
 - **D4. Plain text's form.** Options:
   - a `[chart: ...]` note before the title (§2.4);
   - the axis titles as plain lines after the title, and the kind only in the block model;

@@ -42,11 +42,16 @@ final class MiniDocx {
 			+ " xmlns:wps=\"http://schemas.microsoft.com/office/word/2010/wordprocessingShape\""
 			+ " xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
 			+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
-			+ " xmlns:v=\"urn:schemas-microsoft-com:vml\"";
+			+ " xmlns:v=\"urn:schemas-microsoft-com:vml\""
+			+ " xmlns:o=\"urn:schemas-microsoft-com:office:office\""
+			+ " xmlns:m=\"http://schemas.openxmlformats.org/officeDocument/2006/math\""
+			+ " xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"";
 
 	private final Map<String, String> parts = new LinkedHashMap<String, String>();
+	private final Map<String, byte[]> entries = new LinkedHashMap<String, byte[]>();
 	private final StringBuilder types = new StringBuilder();
 	private final StringBuilder rels = new StringBuilder();
+	private final StringBuilder packageRels = new StringBuilder();
 
 	private MiniDocx(String body) {
 		parts.put("word/document.xml", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><w:document " + NS + "><w:body>" + body + "</w:body></w:document>");
@@ -62,6 +67,35 @@ final class MiniDocx {
 		parts.put("word/" + name, xml);
 		types.append("<Override PartName=\"/word/").append(name).append("\" ContentType=\"").append(contentType).append("\"/>");
 		rels.append("<Relationship Id=\"").append(rId).append("\" Type=\"").append(relType).append("\" Target=\"").append(name).append("\"/>");
+		return this;
+	}
+
+	/** Adds a binary part related from the main document part. */
+	MiniDocx part(String name, String contentType, String relType, String rId, byte[] bytes) {
+		entries.put("word/" + name, bytes);
+		types.append("<Override PartName=\"/word/").append(name).append("\" ContentType=\"").append(contentType).append("\"/>");
+		rels.append("<Relationship Id=\"").append(rId).append("\" Type=\"").append(relType).append("\" Target=\"").append(name).append("\"/>");
+		return this;
+	}
+
+	/** Adds a part related from the package (document properties). */
+	MiniDocx packagePart(String path, String contentType, String relType, String rId, String xml) {
+		parts.put(path, xml);
+		types.append("<Override PartName=\"/").append(path).append("\" ContentType=\"").append(contentType).append("\"/>");
+		packageRels.append("<Relationship Id=\"").append(rId).append("\" Type=\"").append(relType).append("\" Target=\"").append(path).append("\"/>");
+		return this;
+	}
+
+	/** Adds a zip entry as it is, with its content type (a part's relationships, a part another part relates). */
+	MiniDocx entry(String path, String contentType, String xml) {
+		parts.put(path, xml);
+		if (contentType != null) types.append("<Override PartName=\"/").append(path).append("\" ContentType=\"").append(contentType).append("\"/>");
+		return this;
+	}
+
+	/** Adds a relationship from the main document part to a target outside {@code word/}, given relative to it. */
+	MiniDocx relationship(String rId, String relType, String target) {
+		rels.append("<Relationship Id=\"").append(rId).append("\" Type=\"").append(relType).append("\" Target=\"").append(target).append("\"/>");
 		return this;
 	}
 
@@ -84,10 +118,15 @@ final class MiniDocx {
 			put(zip, "_rels/.rels", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
 					+ "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
 					+ "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"word/document.xml\"/>"
-					+ "</Relationships>");
+					+ packageRels + "</Relationships>");
 			put(zip, "word/_rels/document.xml.rels", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
 					+ "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" + rels + "</Relationships>");
 			for (Map.Entry<String, String> e : parts.entrySet()) put(zip, e.getKey(), e.getValue());
+			for (Map.Entry<String, byte[]> e : entries.entrySet()) {
+				zip.putNextEntry(new ZipEntry(e.getKey()));
+				zip.write(e.getValue());
+				zip.closeEntry();
+			}
 		}
 		return WordprocessingMLPackage.load(new ByteArrayInputStream(bytes.toByteArray()));
 	}

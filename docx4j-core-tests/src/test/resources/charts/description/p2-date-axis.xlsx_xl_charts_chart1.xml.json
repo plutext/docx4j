@@ -1,0 +1,29 @@
+{
+  "kind": "line",
+  "groups": [
+    {
+      "kind": "line",
+      "element": "lineChart",
+      "barDirection": null,
+      "grouping": "standard",
+      "series": [
+        "Visits"
+      ],
+      "secondary": false
+    }
+  ],
+  "axes": [
+    {
+      "role": "category axis",
+      "position": "b",
+      "title": null
+    },
+    {
+      "role": "value axis",
+      "position": "l",
+      "title": null
+    }
+  ],
+  "secondarySeries": [],
+  "note": "[chart: line]"
+}

@@ -1,0 +1,31 @@
+{
+  "kind": "stock",
+  "groups": [
+    {
+      "kind": "stock",
+      "element": "stockChart",
+      "barDirection": null,
+      "grouping": null,
+      "series": [
+        "High",
+        "Low",
+        "Close"
+      ],
+      "secondary": false
+    }
+  ],
+  "axes": [
+    {
+      "role": "category axis",
+      "position": "b",
+      "title": null
+    },
+    {
+      "role": "value axis",
+      "position": "l",
+      "title": null
+    }
+  ],
+  "secondarySeries": [],
+  "note": "[chart: stock]"
+}

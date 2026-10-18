@@ -39,6 +39,7 @@ module org.docx4j.core {
 	requires org.apache.commons.collections4;
 	requires com.zaxxer.sparsebitset;
     requires org.jvnet.jaxb.plugins.runtime;
+    requires static org.jsoup; // optional: the text model tidies an HTML altChunk with it (CR-046 D5)
     
     exports org.docx4j;
     exports org.docx4j.anon; // the anonymiser (CR-019), in core since 17.2.1
@@ -85,6 +86,7 @@ module org.docx4j.core {
     exports org.docx4j.model.fields.seq;
     exports org.docx4j.model.images;
     exports org.docx4j.model.listnumbering;
+    exports org.docx4j.model.math;
     exports org.docx4j.model.pagination;
     exports org.docx4j.model.properties;
     exports org.docx4j.model.properties.paragraph;

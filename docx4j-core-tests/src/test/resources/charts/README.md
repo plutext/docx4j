@@ -93,6 +93,24 @@ types (`column-clustered`, `-stacked`, `-stacked-100`, `bar-...`, `line`, `line-
 Their PDFs (Word's and PowerPoint's own) and Excel's chart PNGs are on the share,
 `office_charts\cr036`.
 
+## CR-047's Office check (made by docx4j, 2026-10-18)
+
+`cr047-deleted-axis-titled.xlsx` and `cr047-deleted-axis-default-title.xlsx` are `bar-chart.xlsx` with
+its value axis deleted (`c:delete val="1"` in `xl/charts/chart1.xml`, nothing else changed), titled
+CR047_DELETED_AXIS_TITLE in the first and with a title stating no text in the second; the category
+axis is titled CR047_SHOWN_AXIS_TITLE.  Jason opened both in Excel: it draws the deleted axis's title
+("Axis Title" in the second) and not its labels.  The oracle of `ChartDescriptionTest`'s
+`deletedAxisTitleShows`; Excel's screenshots are on the share, `Office 2016\cr047`.
+
+`cr047-pareto-hidden-axis-titled.xlsx` and `cr047-pareto-hidden-axis-default-title.xlsx` are the same for
+chartex: a Pareto chart Jason made in Excel, with its left value axis hidden (`cx:axis id="1"
+hidden="1"` in `xl/charts/chartEx1.xml`) and axis titles added by docx4j.  The hidden axis is titled
+CR047_HIDDEN_AXIS_TITLE in the first; in the second its `cx:title`, and the shown right axis's, state
+no text.  Excel draws the hidden axis's title (and "Axis Title" for both in the second), not its
+labels.  `cr047-pareto-excel-deleted.xlsx` is Jason's Pareto chart with both value axes removed in
+Excel (*Chart Elements*, the left and then the right): Excel wrote `hidden="1"` on each.  The
+oracles of `ChartDescriptionTest`'s `hiddenChartexAxisTitleShows`.
+
 ## The render oracle (CR-037)
 
 The render probes (docx4j's charts) with Office's drawings of them as numbers, the oracle of the

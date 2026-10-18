@@ -172,10 +172,18 @@ public class ExtractionConformanceTest {
         assertTrue(results.contains("VBA51_MODULE_MARK"));
         assertTrue(results.contains("ALT47_NESTED_CHUNK"));
         if (ExtractionConformance.engine() != null) {
-            // CR-046 phase 1: its rows checked, phase 2's (charts, embedded, altChunks...) still pending
+            // CR-046 phases 1 and 2 and CR-047: their rows checked; Markdown's wait on phase 3, the importer's
+            // rows on the class path, the inspector's on its CR
             assertTrue(results.contains("\tCHOICE_ALPHA_123\tmarkup\tdefault\tPASS"));
             assertTrue(results.contains("\tTBX25_IN_CELL\toriginal\ttext_boxes: false\tPASS"));
-            assertTrue(results.contains("\tCHT34_TITLE\taccepted\tdefault\tPENDING\tphase 2"));
+            assertTrue(results.contains("\tCHT34_TITLE\taccepted\tdefault\tPASS"));
+            assertTrue(results.contains("\tEMB53_TABLE_D\tmarkup\tembedded: true\tPASS"));
+            assertTrue(results.contains("\tGLS54_ENTRY_TWO\toriginal\tinclude: glossary\tPASS"));
+            assertTrue(results.contains("\tCHT34_AXIS_TITLE\taccepted\tdefault\tPASS"));
+            assertTrue(results.contains("\tTBL31_HEADER\taccepted\tdefault\tPASS"));
+            for (String line : results.split("\n"))
+                if (line.contains("\tPENDING\t")) assertTrue(line, line.contains("later inspector CR") || line.contains("phase 3; REQ-70")
+                        || line.contains("xhtml importer"));
         }
     }
 }

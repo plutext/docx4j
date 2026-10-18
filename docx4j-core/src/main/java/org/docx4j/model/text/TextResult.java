@@ -33,6 +33,15 @@ import java.util.Map;
  */
 public final class TextResult {
 
+	/** {@link #metadata()}'s key for the settings' {@code w:updateFields} (REQ-506, REQ-801): a {@link Boolean}. */
+	public static final String FIELDS_UPDATE_ON_OPEN = "fields_update_on_open";
+	/** {@link #metadata()}'s key for the core properties (REQ-515): a map from each property's element name ({@code title}, {@code creator}, ...) to its value. */
+	public static final String CORE = "core";
+	/** {@link #metadata()}'s key for the application properties (REQ-515): a map from element name ({@code Company}, {@code Template}, ...) to value; the statistics left out. */
+	public static final String APP = "app";
+	/** {@link #metadata()}'s key for the custom properties (REQ-515): a map from each property's name to its typed value. */
+	public static final String CUSTOM = "custom";
+
 	private final List<TextBlock> blocks;
 	private final Map<String, TextComment> comments;
 	private final List<TextWarning> warnings;
@@ -58,8 +67,12 @@ public final class TextResult {
 	public List<TextWarning> warnings() { return warnings; }
 
 	/**
-	 * The result's metadata (REQ-801): {@code fields_update_on_open} (a {@link Boolean}, the
-	 * settings' {@code w:updateFields}). The document properties join it in CR-046 phase 2 (REQ-515).
+	 * The result's metadata (REQ-801, REQ-515), whatever the options: {@link #FIELDS_UPDATE_ON_OPEN},
+	 * and the document properties under {@link #CORE}, {@link #APP} and {@link #CUSTOM}, each a map,
+	 * present when the package has that part (the core and application properties in their schema's
+	 * order, the custom ones in the part's). The statistics (pages, words,
+	 * characters, lines, paragraphs) are left out: they are as of the last save, and depend on layout.
+	 * Property values are document text, and are in the text stream only under {@code metadata: true}.
 	 */
 	public Map<String, Object> metadata() { return metadata; }
 

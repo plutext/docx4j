@@ -34,6 +34,7 @@ import org.docx4j.model.revisions.Resolver.Moves.Piece;
 import org.docx4j.model.revisions.TrackedChange.CellT;
 import org.docx4j.model.revisions.TrackedChange.FieldT;
 import org.docx4j.model.revisions.TrackedChange.GroupT;
+import org.docx4j.model.revisions.TrackedChange.HolderT;
 import org.docx4j.model.revisions.TrackedChange.MarkT;
 import org.docx4j.model.revisions.TrackedChange.MathRunT;
 import org.docx4j.model.revisions.TrackedChange.MathStructT;
@@ -58,8 +59,9 @@ import org.docx4j.wml.R;
  * {@code mc:AlternateContent}) and records, change by change, what {@code Resolver} would do to the
  * text: a revision taken away, a move's halves and the text typed into a rejected move's destination,
  * an inserted field rejected whole, a row or cell taken away, an equation's run-level revision or
- * structure, and a paragraph mark taken away. What a resolution does to properties, range markers,
- * comments' entries and parts is not recorded. The agreement test ({@code ViewAgreementTest}, WD
+ * structure, a paragraph mark taken away, and an inserted content control rejected (its content left
+ * in its place). What a resolution does to properties, range markers, comments' entries and parts is
+ * not recorded. The agreement test ({@code ViewAgreementTest}, WD
  * REQ-406) holds a walk over this view equal to the text of a resolved copy; where they differ, this
  * class is wrong.</p>
  *
@@ -72,6 +74,8 @@ public final class ResolvedView {
 	private final boolean accepted;
 	/** List members gone, by identity of their values (a {@code JAXBElement}'s value, or the member). */
 	private final Set<Object> removed = Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());
+	/** Content controls and custom XML elements gone, their content standing in their place. */
+	private final Set<Object> unwrapped = Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());
 	/** Paragraphs whose mark is gone. */
 	private final Set<Object> marksGone = Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());
 	/** Moved paragraphs whose mark is gone: gone themselves when nothing is left in them, else joined. */
@@ -139,6 +143,16 @@ public final class ResolvedView {
 	}
 
 	/**
+	 * Whether a content control or custom XML element is gone in this view with its content left in its
+	 * place: one inserted under tracking ({@code w:customXmlInsRangeStart} around it), rejected. Its
+	 * properties go with it, a data binding among them (CR-046 phase 2, REQ-509).
+	 */
+	public boolean unwraps(Object item) {
+		Object v = Trees.unwrap(item);
+		return v != null && unwrapped.contains(v);
+	}
+
+	/**
 	 * Whether a paragraph's mark is gone in this view: a deletion accepted, an insertion rejected, a
 	 * move's mark on the side not kept. Such a paragraph joins the next one in its list, past range
 	 * markers and what this view removes, when that is a paragraph; with no paragraph next (a table,
@@ -192,7 +206,11 @@ public final class ResolvedView {
 			CellT c = (CellT) t;
 			if (c.ins != accepted) removed.add(c.tc);
 		}
-		// a content control inserted keeps its content either way; property records change no text
+		else if (t instanceof HolderT) {
+			// a content control inserted keeps its content either way; rejected, the control itself goes
+			if (!accepted) unwrapped.add(Trees.unwrap(((HolderT) t).holder));
+		}
+		// property records change no text
 	}
 
 	private void runRevision(TrackedChange change, RunT t) {

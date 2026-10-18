@@ -5,11 +5,12 @@ Status: PROPOSED 2026-10-17, drafted at Jason's request ("please draft the text-
 are REQ numbers"). D1 to D7 decided 2026-10-17 (Jason: "D1–D7: i accept the recommendations").
 Phase 0 suite implemented 18 October 2026; the original 52-case Word checks passed.
 Cases 53–54 are now added; Jason completed the extended main DOCX r3 open/save check.
-Phase 1 implemented 18 October 2026 (§4).
+Phase 1 implemented 18 October 2026 (§4). Phase 2 implemented 18 October 2026 (§4), with CR-047; its listed-format rules for
+spanning headers ruled the same day (§4), and proposed to the WD.
 Five phases (§4); decisions in §6.
 
-The specification is the portfolio's *WordprocessingML Text Extraction*, working draft 0.7
-(`docx4j-portfolio/docs/text_extraction_specification_wd.md`, commit b871d1f), cited here as
+The specification is the portfolio's *WordprocessingML Text Extraction*, working draft 0.8
+(`docx4j-portfolio/docs/text_extraction_specification_wd.md`, commit 2c00660), cited here as
 **WD**. It records the decisions D1 to D31 of the portfolio's discussion paper
 (`docs/text_extraction_behaviour_model.md`, 2d8fd36), all of which Jason accepted on 17 October
 2026. docx4j is its first implementation (D15: Java first, since it cuts the goldens the ports
@@ -167,7 +168,7 @@ structure.
 | placeholders | `w:showingPlcHdr` | REQ-508 |
 | bound values | a read-only evaluation of the binding's XPath against its custom XML part, `BindingTraverser`'s rule without its mutation | REQ-509 |
 | list labels | the numbering emulator (`model.listnumbering`), off by default | REQ-510 |
-| charts | `ChartTable`, axis titles once CR-047 adds them | REQ-511 |
+| charts | `ChartTable`, with CR-047's `ChartDescription` (the kind, axis titles, secondary series) | REQ-511 |
 | SmartArt | a new reader of the diagram data part, depth-first from the `doc` point along `parOf` by `@srcOrd`, over `node` and `asst` points | REQ-511 |
 | legacy WordArt | its `v:textpath/@string`, as a one-paragraph text box | REQ-511 |
 | embedded packages | under `embedded: true`, an `EmbeddedPackagePart` loaded and read at its reference: a WordprocessingML document through the model; a workbook through xlsx4j, each sheet's used range (from the cells holding values, not `dimension`) as a simple table (REQ-605), each cell as displayed (its cached value through xlsx4j's `DataFormatter`, as `ChartTable` uses it; formulas never recomputed), sheets in workbook order, each after its name on its own line; a presentation through pptx4j (`MainPresentationPart.getSlide`), each slide's text in slide order, hidden slides omitted, shapes in `p:spTree` order with groups depth-first, a table as REQ-605, speaker notes omitted; an OLE 1.0 package holding plain text read from its `Ole10Native` stream; no other OLE binary opened. One level deep across kinds: content reached through an embedded package or an `altChunk` has neither expanded | REQ-512 |
@@ -467,6 +468,140 @@ label, and a table block's text is its tab-separated form.
 `layout: indent` waits on a case of hand-indented clauses that the portfolio has yet to
 request; REQ-709 is pinned by a unit test until then.
 
+**Phase 2 implementation, 18 October 2026:**
+- The suite: 876 assertions pass, none fail, 57 are pending (phase 1: 420 and 513). What is pending:
+  the inspector's rows (REQ-902), Markdown's (phase 3), and case 44's "xhtml importer present" rows
+  (the class path; below). Case 31's header passes under the listed format's ruled rules (below). Case 34's axis title passes with
+  CR-047 (implemented the same day; `TextsAdapter` claims it).
+  The harness's two "xhtml importer" scenarios are now capabilities of the class path, which the
+  adapter advertises (`ExtractionConformance.XHTML_IMPORTER_PRESENT`, `_ABSENT`). `ViewAgreementTest`
+  stays 544/544. `TextsPhase2Test` pins what the token rows don't (18 tests). No fixture changed.
+- Content classes (§2.4), all read into blocks apart from the package (REQ-204):
+  - bound values (`BoundValues`): a plain-text control's (`w:text`) binding, by its own XPath
+    evaluation over the custom XML part's DOM (or the core or application properties, by their store
+    item ids), since `BindingHandler.xpathGetString` gives "" both for a node that is empty and for
+    none. It resolves when the part exists and the XPath selects a node. An empty value where the
+    control shows its placeholder gives the placeholder, with no warning. `sdt.binding_differs` is
+    raised under either `bindings` value. A bound block-level control is one paragraph.
+  - charts: a `CHART` block after the paragraph, carrying CR-047's `ChartDescription` (REQ-706's kind,
+    axes and secondary series, `getChart()`), and `ChartTable`'s title and rows; plain text writes the
+    description's note before the title (REQ-511, REQ-707).
+  - SmartArt (`Drawings.smartArt`): REQ-511's walk; a point whose paragraphs are all empty gives
+    nothing. Legacy WordArt: a `TEXT_BOX` paragraph, under `text_boxes`.
+  - embedded packages (`Embedded`): as §2.4 says. Also: a hidden sheet (`state` not visible) and a
+    hidden slide are read under `hidden: true`, as hidden text is; a chart sheet is skipped; an
+    OLE 1.0 package is opened only for ProgID `Package`, and read only when its file is `.txt`; a
+    workbook's used range keeps the empty rows and columns inside it.
+  - `altChunk` (`AltChunks`, `HtmlText`): dispatch by the declared content type, then the
+    extension, then the bytes (a zip, a Flat OPC package). An XHTML chunk without docx4j-ImportXHTML
+    is read as HTML. jsoup is an optional dependency of docx4j-core (D5), and a test dependency of
+    docx4j-core-tests. The importer runs on a scratch package (it adds parts to the one it is given).
+  - images: `ImageDescriber`, `AltTextDescriber`, `ImageDescription` (with its `Provenance`) and
+    `TextImage` (public); a picture is an `IMAGE` run, an object an `OBJECT` run with its ProgID.
+    `TextOptions.imageDescriber` is the host's hook (REQ-514's "MAY replace or wrap").
+  - metadata (`Metadata`): `TextResult.metadata()` gains `core`, `app` and `custom` maps, by element
+    or property name. The statistics are left out.
+  - the glossary: each `w:docPart`'s body, `glossary:i/j`, after the endnotes.
+- `fields: update` (`FieldValues`) computes in the walk from `FieldUpdater`'s resolvers and
+  `FormattingSwitchHelper`, not on a copy as §2.6 said: the result is the same, and REQ-204 holds
+  without a copy to discard. Computed: DOCPROPERTY, DOCVARIABLE, AUTHOR, TITLE, SUBJECT, KEYWORDS,
+  COMMENTS, LASTSAVEDBY, REVNUM, CREATEDATE, SAVEDATE, SEQ (`\r`, `\c`, `\h`; not `\s`), REF (from a
+  first reading of the document, since a REF may come before its bookmark; not with `\n`, `\r`,
+  `\w`, `\p` or `\f`) and QUOTE. Not computed: MERGEFIELD (no data is supplied), FORMTEXT (its result
+  is what was typed), and everything REQ-506 excludes.
+- Math (D3): `OmmlToLatex` and its exception are `org.docx4j.model.math` in docx4j-core, with the
+  symbol tables they share with `LatexToOmml` (`LatexSymbols`). docx4j-markdown's
+  `org.docx4j.markdown.math.OmmlToLatex` forwards to it, deprecated. `OmmlToLatex.keep(Predicate)`
+  lets the text model read an equation in its view. In `markup`, an equation with tracked changes is
+  its Reject All form deleted and its Accept All form inserted, each from CR-043's plan for that view.
+  An equation outside the converter's subset is its runs' text inside the delimiters.
+- Tables (REQ-605): the listed and grid forms in `PlainText`; `tables: tsv` writes a cell's non-empty
+  paragraphs a space apart.
+- `[page n]` (REQ-708) from 2 at the first marker, main story only; `layout: indent` (REQ-709) four
+  spaces a 720-twip stop of the first line's indent (left plus first line less hanging), rounded,
+  outside tables.
+- `TextOptions.checkImplemented` refuses only `math: unicodemath` and `symbols: unicode`.
+- `ResolvedView.unwraps(item)` (new): a content control inserted under tracking is gone after Reject
+  All, its content left in its place, and its binding with it. The agreement test found it on core-ts's
+  `check34/34b-tracked.docx`.
+
+Where WD 0.8 is silent, phase 2 chose as follows; each is sent to the portfolio for the WD:
+- addresses: a chart `body/3/chart:0`; SmartArt's lines `body/3/smartart:0/1`; WordArt
+  `body/3/textbox:0/0`; an embedded package `body/3/object:0/` and its own address (`body/0`,
+  `sheet:0`, `sheet:0/table`, `slide:0/2`); a chunk `body/7/altchunk:0/` and its own; the glossary
+  `glossary:0/1`.
+- REQ-605, a simple table: a cell is merged or split when it crosses a column edge another row has,
+  or is in a vertical merge. A span every row shares merges nothing (Word leaves such columns behind;
+  CR-043's `cr043-tracked.docx` C23, whose rows Reject All restores without spans). Empty
+  paragraphs don't count toward "one paragraph per cell" (a block control in a cell comes with Word's
+  empty paragraph).
+- REQ-605, the listed format (ruled by Jason, 18 October 2026, on the recommendation of this session
+  and of a Fable 5.1 review, session docx4j-44):
+  - every cell is labelled by the header over its first grid column, or rather the first of its
+    columns' headers that has text, once a cell: a cell spanning two headed columns takes the first's
+    header, and a header spanning two columns labels each cell under it (`AB: P1; P2; AB: N`), so that
+    every cell's start shows where a cell's paragraphs, also `; ` apart, end;
+  - several header rows' texts are joined ` / ` (`Sales / 2024: 1`); a cell under a header with no
+    text is its value alone;
+  - a row whose one cell spans every grid column, a header row or a body row (a title, a divider such
+    as "Part A"), is that cell's text alone, and labels nothing; when every header row is such a row
+    the body is unlabelled: the WD's "else the first row" is for a table with no `w:tblHeader` row,
+    and no data row is promoted to header;
+  - a table with no labels (a table of header rows only, or whose headers span the grid or have no
+    text) has its cells a tab apart, as the simple form does, `; ` staying between a cell's
+    paragraphs;
+  - a cell with no value is left out; a vertical merge's value is on every row it covers.
+
+  An earlier rule (a spanning header labelling the cells under it once a row) wrote case 31's
+  `TBL31_HEADER` once per row; the probe, cut before the listed format, expects it once, as the ruled
+  rules write it: `[table: listed format]`, `TBL31_HEADER`, then `TBL31_CELL_P1; TBL31_CELL_P2`, a
+  tab, `TBL31_NESTED`, then `TBL31_MERGED`, a tab, `TBL31_LAST_CELL`. `TextsPhase2Test.listedFormatHeaders`
+  pins each rule.
+- REQ-605, `tables: grid`: pandoc's grid table, column and row spans drawn, the header separator
+  after the `w:tblHeader` rows else the first row, a nested table as a grid in its cell.
+- REQ-515: the plain-text block is a line a kind of property that has any, before the body:
+  `[core properties: title: ...; subject: ...]`, `[application properties: Company: ...]`,
+  `[custom properties: name: value]`.
+- REQ-604: the markup form of an equation with tracked changes (above).
+- REQ-512: hidden sheets and slides under `hidden: true`; the OLE 1.0 rule (above).
+
+Findings outside CR-046, not fixed here:
+- docx4j-ImportXHTML (17.1.1-SNAPSHOT, f8c8695): `MHTContentHandler.body` keeps mime4j's body stream
+  and reads it after `body()` returns, when mime4j has consumed it, so `convertMHT` gives an empty
+  document ("Premature end of file"). With it on the class path, case 44 is still not expanded (and
+  warns); its "present" rows would fail.
+- The generated `FldChar.isFldLock()` and `CTSimpleField.isFldLock()` answer true when `w:fldLock` is
+  absent, as `isCustomMarkFollows()` does. The walk reads the attribute as written. `FieldRef` copies
+  `isFldLock()` (and `isDirty()`), so it reports every complex field locked.
+- `XmlUtils`' marshal methods set a `wml.Document`'s `mc:Ignorable` prefixes on the shared prefix
+  mapper and never reset them (`JaxbXmlPart`'s path does), so what is marshalled next declares those
+  namespaces. `TextsPhase2Test`'s REQ-204 snapshot leaves namespace declarations out for this reason.
+
+Review, 18 October 2026 (Fable 5.1, session docx4j-44, at Jason's request): it found no correctness
+defect in the walk. It checked the suite (876 PASS, 57 PENDING), docx4j-markdown with `OmmlToLatex`
+moved, REQ-509, 511, 512, 513, 514 and 708 against WD 0.8, `ResolvedView.unwraps` against
+`Resolver.holder`, and `TextOptions.copy()`. It raised six items:
+1. REQ-506 names "FORMTEXT defaults" among the fields `fields: update` recomputes, and docx4j keeps
+   what was typed. Which is right turns on what Word's update does to a FORMTEXT field (it is believed
+   to reset it to its default text, unless the form is protected), so an Office check is staged on the
+   share (`Office 2016/cr046-formtext/`: a FORMTEXT with a default, one without, a `= 2+3` control,
+   unprotected and protected for forms). The code, or the WD, follows its answer.
+2. A computed field's cached result was only partly left unread: its text was, but a copy of a note
+   reference there was written and numbered, and a comment reference, a picture, a nested field's code
+   (under `field_codes`) and the nested field's record came through. Fixed: nothing in it is read
+   (`TextsPhase2Test.computedResultSuppressed`).
+3. Cost: `fields: update` reads a package twice, and `markup` reads its tracked changes twice more
+   for an equation with tracked changes; now in `Texts`' "Cost". A part's or content's route has no
+   first reading, so a REF there is computed only when its bookmark comes before it; now said on those
+   overloads. That route recorded a bookmark's text only once a field had been computed before it
+   ended; fixed (`TextsPhase2Test.refOnThePartRoute`).
+4. A chart that fails to read is left out with a log line and no warning: the WD has no kind for it, a
+   gap sent to the portfolio (a `chart.not_read`?).
+5. The tree holds three pieces of work, to be committed apart, in order: CR-047, the D3 move of
+   `OmmlToLatex`, and phase 2.
+6. The three findings above deserve issues of their own (the ImportXHTML one is now with its own
+   session).
+
 ### Phase 3: every reader on the model
 
 **Build:**
@@ -502,7 +637,7 @@ The portfolio registry is updated through the portfolio session.
 **Acceptance:** no statements. The hand-offs are sent with the commit hashes, and each
 receiving session has acknowledged.
 
-## 5. Every statement of WD 0.7, and where it is met
+## 5. Every statement of WD 0.8, and where it is met
 
 | Statement | Subject | Phase | Probe cases (WD Appendix A) |
 |---|---|---|---|
@@ -621,7 +756,8 @@ Phase 0 left four points open in WD 0.4. The portfolio session put them in WD 0.
 ## 7. Dependencies, risks and out of scope
 
 **Dependencies:**
-- CR-047, the chart kind, axis titles and series axes, for case 34's axis title in phase 2.
+- CR-047, the chart kind, axis titles and series axes, for case 34's axis title in phase 2. Met:
+  CR-047 implemented 18 October 2026, its Office check answered the same day; case 34's rows pass.
 - The address grammar's text-box form (core-ts CR-010 phase 3) may rename the form; at most a
   spelling change.
 
@@ -645,7 +781,7 @@ Phase 0 left four points open in WD 0.4. The portfolio session put them in WD 0.
 
 ## 8. Sources
 
-- WD 0.7: `docx4j-portfolio/docs/text_extraction_specification_wd.md`, b871d1f.
+- WD 0.8: `docx4j-portfolio/docs/text_extraction_specification_wd.md`, 2c00660.
   - 0.2 (2566012) answered this CR's first questions.
   - 0.3 (e8f14e1) added REQ-307's citation of REQ-1201's normalisation.
   - 0.4 (2062e86; [PROBE] corrected in c52b031) answered phase 0's questions: embedded
@@ -654,6 +790,8 @@ Phase 0 left four points open in WD 0.4. The portfolio session put them in WD 0.
   - 0.6 (97fce95) recorded cases 53 and 54 in Appendix A.2 and [PROBE].
   - 0.7 (14e43a6, REQ-1201 corrected in b871d1f) made phase 1's choices statements and recorded its
     findings (the published list, the harness's rules, the `Requires` save defect).
+  - 0.8 (2c00660) adopted CR-047's chart note: its spelling in REQ-511, `[chart: ...]` in REQ-707,
+    the chart block's fields in REQ-706, case 34's expected note.
 - The paper: `docx4j-portfolio/docs/text_extraction_behaviour_model.md`, decisions §9 (2d8fd36),
   where it lands §10.
 - CR-043 (the views and their fixtures); CR-021 §8.5 (Word and the Fallback; the `altChunk`

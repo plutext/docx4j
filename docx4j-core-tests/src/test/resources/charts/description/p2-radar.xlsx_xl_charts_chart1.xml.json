@@ -1,0 +1,31 @@
+{
+  "kind": "radar",
+  "groups": [
+    {
+      "kind": "radar",
+      "element": "radarChart",
+      "barDirection": null,
+      "grouping": null,
+      "series": [
+        "Series 1",
+        "Series 2",
+        "Series 3"
+      ],
+      "secondary": false
+    }
+  ],
+  "axes": [
+    {
+      "role": "category axis",
+      "position": "b",
+      "title": null
+    },
+    {
+      "role": "value axis",
+      "position": "l",
+      "title": null
+    }
+  ],
+  "secondarySeries": [],
+  "note": "[chart: radar]"
+}

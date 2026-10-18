@@ -1,0 +1,47 @@
+{
+  "kind": "clustered column and line",
+  "groups": [
+    {
+      "kind": "clustered column",
+      "element": "barChart",
+      "barDirection": "col",
+      "grouping": "clustered",
+      "series": [
+        "Series 1",
+        "Series 2"
+      ],
+      "secondary": false
+    },
+    {
+      "kind": "line",
+      "element": "lineChart",
+      "barDirection": null,
+      "grouping": "standard",
+      "series": [
+        "Share"
+      ],
+      "secondary": true
+    }
+  ],
+  "axes": [
+    {
+      "role": "category axis",
+      "position": "b",
+      "title": null
+    },
+    {
+      "role": "value axis",
+      "position": "l",
+      "title": null
+    },
+    {
+      "role": "secondary value axis",
+      "position": "r",
+      "title": null
+    }
+  ],
+  "secondarySeries": [
+    "Share"
+  ],
+  "note": "[chart: clustered column and line; secondary axis: Share]"
+}
