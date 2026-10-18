@@ -604,8 +604,9 @@ Findings outside CR-046, not fixed here:
 - docx4j-ImportXHTML (17.1.1-SNAPSHOT, f8c8695): `MHTContentHandler.body` keeps mime4j's body stream
   and reads it after `body()` returns, when mime4j has consumed it, so `convertMHT` gives an empty
   document ("Premature end of file"). With it on the class path, case 44 is still not expanded (and
-  warns); its "present" rows would fail. **Fixed** in docx4j-ImportXHTML (VERSION_17_1_1, uncommitted on
-  19 October 2026): the first text/html part, decoded by mime4j. mime4j has closed the body stream
+  warns); its "present" rows would fail. **Fixed** in docx4j-ImportXHTML, committed as d2fb510 on 19 October
+  2026 (its branch VERSION_17_1_1 renamed VERSION_17_3_4: 17.1.1 is not released, and the fix ships in
+  17.3.4): the first text/html part, decoded by mime4j. mime4j has closed the body stream
   when body() returns since 0.8.9, and the bump to 0.8.10 (7dddaaf, in 11.5.3) broke it. Verified on 19
   October with its compiled classes on the class path: all nine "xhtml importer present" rows pass
   (case 44 in three views; case 47). The run found two gaps in this suite's harness, fixed the same day:

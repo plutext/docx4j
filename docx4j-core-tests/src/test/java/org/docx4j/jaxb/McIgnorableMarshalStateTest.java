@@ -143,7 +143,8 @@ public class McIgnorableMarshalStateTest {
 		onFreshThread(() -> canonicalized(true, () -> {
 			Hdr hdr = F.createHdr();
 			hdr.setIgnorable("w14");
-			assertTrue(startTag(XmlUtils.marshaltoString(hdr, true, false)), startTag(XmlUtils.marshaltoString(hdr, true, false)).contains("xmlns:w14"));
+			String hdrTag = startTag(XmlUtils.marshaltoString(hdr, true, false));
+			assertTrue(hdrTag, hdrTag.contains("xmlns:w14"));
 			org.docx4j.wml.CTSettings settings = F.createCTSettings();
 			settings.setIgnorable("w14");
 			assertTrue(startTag(XmlUtils.marshaltoString(settings, true, false)).contains("xmlns:w14"));

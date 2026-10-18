@@ -172,6 +172,15 @@ classpath, as CR-048's were, and the result recorded here.
   REQ-204 snapshot with declarations is the oracle either way.
 - docx4j-portfolio: this CR's entry.
 
+**Hand-offs sent 19 October 2026 with ba40c53f4:**
+
+| Receiver | Session | Answer |
+|---|---|---|
+| docx4j-mcp | docx4j-mcp-a1 | nothing changes. Its one piece of part XML, describe_template's skeleton_xml, is a custom XML part's DOM through w3CDomNodeToString, no marshal; no fixture pins declarations. Confirmed by a run against the snapshot holding this change: 33 tests pass, skeleton_xml identical to 17.1.0's for its three templates after the warm-up marshal, the twelve goldens pass |
+| docx4j-python | docx4j-python-cd | no shared state: each call renders from a module-constant prefix table and its own tree's mc:Ignorable, then lxml's namespace cleanup. Measured on core-ts check28's 28a-changes.docx: a paragraph after the document declares w and w14 only; styles.xml its own nine prefixes. Its own gap: a Choice prefix only Requires names is dropped by the cleanup (its CR-011, Q11), waiting on Jason |
+| docx4j-core-ts | docx4j-core-ts-5b | no shared state: each marshal takes a fresh prefix table and its own derived context, and mc:Ignorable comes from the root being marshalled. But the question found a defect there: since its CR-010 phase 4 (3228fef, unreleased) keeps every mc:AlternateContent, the save's cleanup drops a declaration that only a Choice's Requires names (waterfall.docx's cx1, content in cx). Measured over 483 packages: 18 of 297 Requires prefixes left undeclared in 11 (cx1 11, x14 4, a14, sle15, tsle), none under its resolving load. The fix goes to the objects session: a Requires prefix counts as used. What Office does with such a file is not checked. Python has the same gap (its Q11) |
+| docx4j-portfolio | docx4j-portfolio-9d | in progress 77356f7, done 7bbd56d |
+
 **Implemented 19 October 2026** (docx4j-25, on top of 3dcbb3764), as §4 has it, with the two
 amendments above (a root with neither sets null for its own marshal; the nested canonicalize call gets
 the Choice namespaces):
