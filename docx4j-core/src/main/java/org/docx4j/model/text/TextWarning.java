@@ -22,8 +22,9 @@ import java.util.Objects;
 
 /**
  * Where a result is not the whole document (WD section 8, REQ-801): a kind, the address it is at
- * where there is one, for {@code mce.branches_differ} the name of the branch selected, and for
- * {@code altchunk.not_expanded} the chunk's content type. Never the document's text (REQ-802).
+ * where there is one, and its selector: for {@code mce.branches_differ} the name of the branch
+ * selected, for {@code altchunk.not_expanded} the chunk's content type, for {@code content.not_read}
+ * and {@code image.not_described} the part's name. Never the document's text (REQ-802).
  *
  * @since 17.3.4 (CR-046 phase 1)
  */
@@ -37,21 +38,34 @@ public final class TextWarning {
 	public static final String SDT_BINDING_DIFFERS = "sdt.binding_differs";
 	/** An {@code altChunk} not expanded (REQ-513). */
 	public static final String ALTCHUNK_NOT_EXPANDED = "altchunk.not_expanded";
+	/**
+	 * A chart, a SmartArt data part, or an embedded package or a part inside it, that can't be read: it
+	 * contributes nothing (REQ-511, REQ-512, REQ-801).
+	 */
+	public static final String CONTENT_NOT_READ = "content.not_read";
+	/** An image the {@link ImageDescriber} failed to describe: it has no description (REQ-514, REQ-801). */
+	public static final String IMAGE_NOT_DESCRIBED = "image.not_described";
 
 	private final String kind;
 	private final String address;
 	private final String branch;
 	private final String contentType;
+	private final String partName;
 
 	public TextWarning(String kind, String address, String branch) {
 		this(kind, address, branch, null);
 	}
 
 	public TextWarning(String kind, String address, String branch, String contentType) {
+		this(kind, address, branch, contentType, null);
+	}
+
+	public TextWarning(String kind, String address, String branch, String contentType, String partName) {
 		this.kind = Objects.requireNonNull(kind);
 		this.address = address;
 		this.branch = branch;
 		this.contentType = contentType;
+		this.partName = partName;
 	}
 
 	public String getKind() { return kind; }
@@ -61,23 +75,33 @@ public final class TextWarning {
 	public String getBranch() { return branch; }
 	/** For {@code altchunk.not_expanded}, the chunk's content type as the package declares it ({@code application/rtf}); else null. */
 	public String getContentType() { return contentType; }
+	/**
+	 * For {@code content.not_read}, the name of the part that can't be read (for a part inside an
+	 * embedded package, the embedded package part's); for {@code image.not_described}, the image
+	 * part's ({@code /word/media/image1.png}); else null.
+	 */
+	public String getPartName() { return partName; }
+	/** The selector of REQ-801: the branch, the content type or the part's name, whichever the kind has; else null. */
+	public String getSelector() {
+		return branch != null ? branch : contentType != null ? contentType : partName;
+	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof TextWarning)) return false;
 		TextWarning w = (TextWarning) o;
 		return kind.equals(w.kind) && Objects.equals(address, w.address) && Objects.equals(branch, w.branch)
-				&& Objects.equals(contentType, w.contentType);
+				&& Objects.equals(contentType, w.contentType) && Objects.equals(partName, w.partName);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(kind, address, branch, contentType);
+		return Objects.hash(kind, address, branch, contentType, partName);
 	}
 
 	@Override
 	public String toString() {
 		return kind + (address == null ? "" : " at " + address) + (branch == null ? "" : " (" + branch + ")")
-				+ (contentType == null ? "" : " (" + contentType + ")");
+				+ (contentType == null ? "" : " (" + contentType + ")") + (partName == null ? "" : " (" + partName + ")");
 	}
 }

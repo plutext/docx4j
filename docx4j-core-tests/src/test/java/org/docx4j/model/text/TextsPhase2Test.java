@@ -469,6 +469,84 @@ public class TextsPhase2Test {
 		assertEquals("Target\nTarget\n", PlainText.of(Texts.of(before, update)));
 	}
 
+	// --- content.not_read and image.not_described (REQ-801) ----------------------------------------------
+
+	private static boolean warned(TextResult r, String kind, String address, String partName) {
+		return r.warnings().contains(new TextWarning(kind, address, null, null, partName));
+	}
+
+	/** REQ-801: content that can't be read contributes nothing and raises content.not_read, the part's name its selector, the anchor's address its address */
+	@Test
+	public void contentNotRead() throws Exception {
+		// an embedded package that isn't one
+		WordprocessingMLPackage object = MiniDocx.body("<w:p><w:r><w:t>Before</w:t></w:r><w:r><w:object><o:OLEObject Type=\"Embed\" ProgID=\"Excel.Sheet.12\" r:id=\"rIdE\"/></w:object></w:r></w:p>")
+				.part("embeddings/broken.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+						"http://schemas.openxmlformats.org/officeDocument/2006/relationships/package", "rIdE",
+						"not a zip".getBytes(java.nio.charset.StandardCharsets.UTF_8)).load();
+		TextResult r = Texts.of(object, new TextOptions().embedded(true));
+		assertTrue(r.warnings().toString(), warned(r, TextWarning.CONTENT_NOT_READ, "body/0", "/word/embeddings/broken.xlsx"));
+		assertEquals("Before\n", PlainText.of(r));
+		assertTrue(Texts.of(object, new TextOptions()).warnings().isEmpty()); // not read at all without embedded: true
+		// a chart part and a SmartArt data part that can't be read
+		String inline = "<w:p><w:r><w:t>Chart</w:t></w:r><w:r><w:drawing><wp:inline><wp:extent cx=\"1\" cy=\"1\"/><wp:docPr id=\"1\" name=\"C\"/><a:graphic>"
+				+ "<a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/chart\"><c:chart xmlns:c=\"http://schemas.openxmlformats.org/drawingml/2006/chart\" r:id=\"rIdC\"/>"
+				+ "</a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>"
+				+ "<w:p><w:r><w:t>Diagram</w:t></w:r><w:r><w:drawing><wp:inline><wp:extent cx=\"1\" cy=\"1\"/><wp:docPr id=\"2\" name=\"D\"/><a:graphic>"
+				+ "<a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/diagram\"><dgm:relIds xmlns:dgm=\"http://schemas.openxmlformats.org/drawingml/2006/diagram\" r:dm=\"rIdD\" r:lo=\"\" r:qs=\"\" r:cs=\"\"/>"
+				+ "</a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>";
+		WordprocessingMLPackage drawings = MiniDocx.body(inline)
+				.part("charts/chart1.xml", "application/vnd.openxmlformats-officedocument.drawingml.chart+xml",
+						"http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart", "rIdC",
+						"<notAChart/>")
+				.part("diagrams/data1.xml", "application/vnd.openxmlformats-officedocument.drawingml.diagramData+xml",
+						"http://schemas.openxmlformats.org/officeDocument/2006/relationships/diagramData", "rIdD",
+						"<notData/>").load();
+		r = Texts.of(drawings, new TextOptions());
+		assertTrue(r.warnings().toString(), warned(r, TextWarning.CONTENT_NOT_READ, "body/0", "/word/charts/chart1.xml"));
+		assertTrue(r.warnings().toString(), warned(r, TextWarning.CONTENT_NOT_READ, "body/1", "/word/diagrams/data1.xml"));
+		assertEquals("Chart\nDiagram\n", PlainText.of(r));
+	}
+
+	/** REQ-514, REQ-801: a describer that fails leaves the image undescribed and raises image.not_described, the image part's name its selector */
+	@Test
+	public void imageNotDescribed() {
+		ImageDescriber failing = image -> {
+			throw new IllegalStateException("the describing service is down");
+		};
+		TextResult r = Texts.of(probe, new TextOptions().altText(true).imageDescriber(failing));
+		boolean found = false;
+		for (TextWarning w : r.warnings()) {
+			if (TextWarning.IMAGE_NOT_DESCRIBED.equals(w.getKind())) {
+				found = true;
+				assertTrue(w.getSelector(), w.getSelector().startsWith("/word/media/"));
+			}
+		}
+		assertTrue(r.warnings().toString(), found);
+		assertFalse(PlainText.of(r).contains("[image"));
+	}
+
+	/**
+	 * REQ-506: FORMTEXT under fields: update as Word's update leaves it, Word's own save after F9 the
+	 * oracle (text-extraction/formtext): its default text, or five en spaces where it has none; in a
+	 * document protected for forms, what was typed
+	 */
+	@Test
+	public void formTextAsWordUpdatesIt() throws Exception {
+		Path dir = ViewAgreementTest.resources().resolve("text-extraction/formtext");
+		WordprocessingMLPackage before = WordprocessingMLPackage.load(dir.resolve("cr046-formtext-unprotected.docx").toFile());
+		WordprocessingMLPackage word = WordprocessingMLPackage.load(dir.resolve("cr046-formtext-unprotected-after-f9.docx").toFile());
+		TextOptions update = new TextOptions().fields(TextOptions.Fields.UPDATE);
+		String ours = PlainText.of(Texts.of(before, update));
+		String words = PlainText.of(Texts.of(word, new TextOptions()));
+		String a = "A: typed over a default: FT_DEFAULT\n", b = "B: typed, no default: \u2002\u2002\u2002\u2002\u2002\n";
+		assertTrue(words, words.startsWith(a + b));
+		assertTrue(ours, ours.startsWith(a + b)); // C, a formula, docx4j doesn't compute
+		String typed = "A: typed over a default: FT_TYPED\nB: typed, no default: FT_TYPED_NO_DEFAULT\n";
+		assertTrue(PlainText.of(Texts.of(before, new TextOptions())).startsWith(typed));
+		WordprocessingMLPackage protectedForm = WordprocessingMLPackage.load(dir.resolve("cr046-formtext-protected-update-on-open.docx").toFile());
+		assertTrue(PlainText.of(Texts.of(protectedForm, update)).startsWith(typed));
+	}
+
 	// --- altChunk (REQ-513) -------------------------------------------------------------------------------
 
 	private static final String HTML = "<html><head><title>T</title><style>p{}</style></head><body><p>One &amp; two</p>"

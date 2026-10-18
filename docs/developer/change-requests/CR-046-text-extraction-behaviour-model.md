@@ -507,8 +507,8 @@ request; REQ-709 is pinned by a unit test until then.
   without a copy to discard. Computed: DOCPROPERTY, DOCVARIABLE, AUTHOR, TITLE, SUBJECT, KEYWORDS,
   COMMENTS, LASTSAVEDBY, REVNUM, CREATEDATE, SAVEDATE, SEQ (`\r`, `\c`, `\h`; not `\s`), REF (from a
   first reading of the document, since a REF may come before its bookmark; not with `\n`, `\r`,
-  `\w`, `\p` or `\f`) and QUOTE. Not computed: MERGEFIELD (no data is supplied), FORMTEXT (its result
-  is what was typed), and everything REQ-506 excludes.
+  `\w`, `\p` or `\f`) and QUOTE; and FORMTEXT as Word's update leaves it (below, review item 1).
+  Not computed: MERGEFIELD (no data is supplied), and everything REQ-506 excludes.
 - Math (D3): `OmmlToLatex` and its exception are `org.docx4j.model.math` in docx4j-core, with the
   symbol tables they share with `LatexToOmml` (`LatexSymbols`). docx4j-markdown's
   `org.docx4j.markdown.math.OmmlToLatex` forwards to it, deprecated. `OmmlToLatex.keep(Predicate)`
@@ -585,7 +585,29 @@ moved, REQ-509, 511, 512, 513, 514 and 708 against WD 0.8, `ResolvedView.unwraps
    what was typed. Which is right turns on what Word's update does to a FORMTEXT field (it is believed
    to reset it to its default text, unless the form is protected), so an Office check is staged on the
    share (`Office 2016/cr046-formtext/`: a FORMTEXT with a default, one without, a `= 2+3` control,
-   unprotected and protected for forms). The code, or the WD, follows its answer.
+   unprotected and protected for forms). The code, or the WD, follows its answer. First answer
+   (Jason, 18 October 2026): in the unprotected document Ctrl+A, F9 reset the FORMTEXT to its default
+   text (FT_DEFAULT), the one with none to a blank form field, and the control to 5, so the WD is
+   right and docx4j follows it. Word 365 has no "Update fields before printing" (only "Allow fields
+   containing tracked changes to update before printing"), so in the protected document the print
+   preview updated nothing (the control stayed WRONG). Second answer, the same day: Word's save after
+   F9 holds five en spaces (U+2002) for the blank; and on open, with `w:updateFields`, Word updated the
+   unprotected document as F9 does, while in the one protected for filling in forms it updated the
+   control (5) and kept what was typed. So under `fields: update` a FORMTEXT is its default text, or
+   five en spaces where it has none, except in a document protected for forms
+   (`w:documentProtection w:edit="forms"`, enforced), where it keeps what was typed. A text input of
+   another type (number, date, calculated) or with a format keeps its cached result: Word's update of
+   those hasn't been seen. `w:enforcement` is read as written: like `isFldLock()` (#697), the
+   generated `isEnforcement()` answers true when it's absent. The three documents are fixtures
+   (`text-extraction/formtext/`, `TextsPhase2Test.formTextAsWordUpdatesIt`, Word's save after F9 the
+   oracle).
+4b. WD 0.9 (portfolio a195eae) took up item 4 as two kinds, implemented here: `content.not_read`
+   (REQ-801), where a chart, a SmartArt data part, or an embedded package or a part inside it can't
+   be read, which then contributes nothing (a workbook that fails halfway no longer keeps its first
+   sheets), the part's name the selector (the embedded package part's, for a part inside it) and the
+   anchor's address the address; and `image.not_described` (REQ-514), where the describer throws, the
+   image part's name the selector. `TextWarning.getSelector()` gives a warning's selector, whatever its
+   kind (`TextsPhase2Test.contentNotRead`, `imageNotDescribed`).
 2. A computed field's cached result was only partly left unread: its text was, but a copy of a note
    reference there was written and numbered, and a comment reference, a picture, a nested field's code
    (under `field_codes`) and the nested field's record came through. Fixed: nothing in it is read

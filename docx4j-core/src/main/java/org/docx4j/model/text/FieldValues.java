@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  * <li>QUOTE, its argument.</li>
  * </ul>
  *
- * Nothing else: not MERGEFIELD (no data is supplied), FORMTEXT (its result is what was typed), DATE,
+ * Nothing else (FORMTEXT is the walk's, from its form field data): not MERGEFIELD (no data is supplied), DATE,
  * TIME, PRINTDATE, the layout fields or the external ones, and never a field with {@code w:fldLock}.
  * A field whose value can't be found keeps its cached result.
  */

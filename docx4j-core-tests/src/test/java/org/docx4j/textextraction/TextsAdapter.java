@@ -82,7 +82,7 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 		TextResult result = Texts.of(pkg, options);
 		Map<String, String> findings = new LinkedHashMap<String, String>();
 		for (TextWarning w : result.warnings()) {
-			String selector = w.getBranch() != null ? w.getBranch() : w.getContentType() != null ? w.getContentType() : "";
+			String selector = w.getSelector() == null ? "" : w.getSelector();
 			String key = "warning\t" + w.getKind() + "\t" + selector;
 			findings.merge(key, "1", (a, b) -> String.valueOf(Integer.parseInt(a) + 1));
 		}

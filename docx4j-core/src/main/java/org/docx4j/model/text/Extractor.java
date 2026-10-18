@@ -81,6 +81,9 @@ import org.docx4j.wml.CTBookmark;
 import org.docx4j.wml.CTControl;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTDocPart;
+import org.docx4j.wml.CTDocProtect;
+import org.docx4j.wml.CTFFData;
+import org.docx4j.wml.CTFFTextInput;
 import org.docx4j.wml.CTMarkupRange;
 import org.docx4j.wml.CTObject;
 import org.docx4j.wml.CTFtnEdn;
@@ -104,6 +107,8 @@ import org.docx4j.wml.RPr;
 import org.docx4j.wml.RunDel;
 import org.docx4j.wml.RunIns;
 import org.docx4j.wml.RunTrackChange;
+import org.docx4j.wml.STDocProtect;
+import org.docx4j.wml.STFFTextType;
 import org.docx4j.wml.STFldCharType;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
@@ -391,6 +396,10 @@ final class Extractor {
 		Anchored(String prefix) {
 			this.prefix = prefix;
 		}
+		/** The address of the block that anchors it. */
+		String anchor() {
+			return prefix.substring(0, prefix.lastIndexOf('/'));
+		}
 		/** Its blocks, in the story that anchors it. */
 		abstract void emit(Extractor x, Story anchoring, List<TextBlock> sink);
 	}
@@ -435,7 +444,7 @@ final class Extractor {
 			try {
 				d = ref.isChartEx() ? ChartDescription.of(ref.readChartEx()) : ChartDescription.of(ref.read());
 			} catch (Exception e) {
-				log.warn("Couldn't read the chart at " + prefix + ": " + e.getMessage());
+				x.notRead(anchor(), ref.getChartPart(), "the chart", e);
 				return;
 			}
 			ChartTable t = d.getTable();
@@ -458,7 +467,15 @@ final class Extractor {
 			this.part = part;
 		}
 		@Override void emit(Extractor x, Story anchoring, List<TextBlock> sink) {
-			List<String> lines = Drawings.smartArt(part.getJaxbElement());
+			List<String> lines;
+			try {
+				org.docx4j.dml.diagram.CTDataModel model = part.getJaxbElement();
+				if (model == null) throw new IllegalStateException("no data model");
+				lines = Drawings.smartArt(model);
+			} catch (RuntimeException e) {
+				x.notRead(anchor(), part, "the SmartArt data part", e);
+				return;
+			}
 			for (int i = 0; i < lines.size(); i++) sink.add(Embedded.paragraph(TextBlock.Story.SMARTART, prefix + "/" + i, lines.get(i)));
 		}
 	}
@@ -471,14 +488,15 @@ final class Extractor {
 			this.part = part;
 		}
 		@Override void emit(Extractor x, Story anchoring, List<TextBlock> sink) {
-			byte[] bytes;
+			List<TextBlock> blocks;
 			try {
-				bytes = part.getBytes();
-			} catch (RuntimeException e) {
+				byte[] bytes = part.getBytes();
+				blocks = part instanceof EmbeddedPackagePart ? Embedded.pkg(x, bytes, prefix) : Embedded.ole10Native(bytes, prefix);
+			} catch (Exception e) {
+				x.notRead(anchor(), part, "the embedded object", e);
 				return;
 			}
-			if (part instanceof EmbeddedPackagePart) sink.addAll(Embedded.pkg(x, bytes, prefix));
-			else sink.addAll(Embedded.ole10Native(bytes, prefix));
+			sink.addAll(blocks);
 		}
 	}
 
@@ -501,6 +519,8 @@ final class Extractor {
 		boolean locked;
 		/** Its result computed under {@code fields: update} (REQ-506): the cached result's text is not read. */
 		String computed;
+		/** A form field's data, on its beginning: a FORMTEXT's default text (REQ-506). */
+		CTFFData ffData;
 	}
 
 	/** The state of a run-level walk: the revision and the control the runs are in. */
@@ -996,6 +1016,7 @@ final class Extractor {
 			if (type == STFldCharType.BEGIN) {
 				FieldState f = new FieldState();
 				f.locked = written(fc, "fldLock");
+				f.ffData = fc.getFfData();
 				fields.push(f);
 			} else if (type == STFldCharType.SEPARATE) {
 				if (!fields.isEmpty()) {
@@ -1187,7 +1208,44 @@ final class Extractor {
 	/** A field's result under {@code fields: update}, or null to keep its cached one (REQ-506). */
 	private String update(FieldState f) {
 		if (options.getFields() != TextOptions.Fields.UPDATE || f.locked || pkg == null) return null;
-		return fieldValues().compute(f.instr.toString());
+		String instr = f.instr.toString().trim();
+		if (f.ffData != null && instr.regionMatches(true, 0, "FORMTEXT", 0, 8)) return formText(f.ffData);
+		return fieldValues().compute(instr);
+	}
+
+	/** What Word's update writes in a FORMTEXT with no default text: five en spaces (measured). */
+	static final String EMPTY_FORM_FIELD = "\u2002\u2002\u2002\u2002\u2002";
+
+	/**
+	 * A FORMTEXT's result under {@code fields: update}, as Word's update gives it (REQ-506; measured in
+	 * Word, CR-046 phase 2): its default text, or five en spaces where it has none, replacing what was
+	 * typed; but in a document protected for filling in forms Word keeps what was typed, and so does
+	 * this (null). Null too for a text input that isn't regular text or has a format, which Word's
+	 * update hasn't been seen to treat.
+	 */
+	private String formText(CTFFData ffData) {
+		if (formsProtected()) return null;
+		CTFFTextInput input = null;
+		for (JAXBElement<?> j : ffData.getNameOrEnabledOrCalcOnExit()) {
+			if (j.getValue() instanceof CTFFTextInput) input = (CTFFTextInput) j.getValue();
+		}
+		if (input == null) return null;
+		if (input.getType() != null && input.getType().getVal() != null && input.getType().getVal() != STFFTextType.REGULAR) return null;
+		if (input.getFormat() != null && input.getFormat().getVal() != null && !input.getFormat().getVal().isEmpty()) return null;
+		String text = input.getDefault() == null ? null : input.getDefault().getVal();
+		return text == null || text.isEmpty() ? EMPTY_FORM_FIELD : text;
+	}
+
+	private Boolean formsProtected;
+
+	/** {@code w:documentProtection w:edit="forms"}, enforced (the attribute as written: its getter answers true when it's absent). */
+	private boolean formsProtected() {
+		if (formsProtected == null) {
+			DocumentSettingsPart settings = pkg.getMainDocumentPart() == null ? null : pkg.getMainDocumentPart().getDocumentSettingsPart();
+			CTDocProtect protect = settings == null || settings.getJaxbElement() == null ? null : settings.getJaxbElement().getDocumentProtection();
+			formsProtected = protect != null && protect.getEdit() == STDocProtect.FORMS && written(protect, "enforcement");
+		}
+		return formsProtected;
 	}
 
 	private void addText(Paragraph para, String s, TextRun.Kind kind, boolean hidden, RunState state) {
@@ -1438,6 +1496,7 @@ final class Extractor {
 				if (options.isSmartart()) {
 					Part dm = related(para.story.part, ((org.docx4j.dml.diagram.CTRelIds) v).getDm());
 					if (dm instanceof DiagramDataPart) para.story.pending.add(new SmartArt((DiagramDataPart) dm, para.address + "/smartart:" + para.smartArts++));
+					else if (dm != null) notRead(para.address, dm, "the SmartArt data part", null);
 				}
 				return false;
 			}
@@ -1516,6 +1575,7 @@ final class Extractor {
 			run.description = options.getImageDescriber().describe(image);
 		} catch (RuntimeException e) {
 			log.warn("The image describer failed at " + para.block.address + ": " + e.getMessage());
+			warn(new TextWarning(TextWarning.IMAGE_NOT_DESCRIBED, para.block.address, null, null, partName(part)));
 		}
 		run.placeholder = state.placeholder;
 		para.block.runs.add(run);
@@ -1610,6 +1670,16 @@ final class Extractor {
 
 	private void warn(TextWarning w) {
 		if (warned.add(w)) warnings.add(w);
+	}
+
+	/** Content that can't be read contributes nothing and raises {@code content.not_read} (REQ-801). */
+	private void notRead(String anchor, Part part, String what, Exception e) {
+		log.warn("Couldn't read " + what + " at " + anchor + (e == null ? "" : ": " + e.getMessage()));
+		warn(new TextWarning(TextWarning.CONTENT_NOT_READ, anchor, null, null, partName(part)));
+	}
+
+	private static String partName(Part part) {
+		return part == null || part.getPartName() == null ? null : part.getPartName().getName();
 	}
 
 	// --- headers and footers by section (REQ-502) ---------------------------------------------------------

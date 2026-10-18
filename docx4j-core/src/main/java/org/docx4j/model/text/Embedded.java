@@ -82,15 +82,15 @@ final class Embedded {
 
 	private Embedded() {}
 
-	/** An embedded OOXML package's blocks (an {@code EmbeddedPackagePart}'s bytes), or none for another kind. */
-	static List<TextBlock> pkg(Extractor x, byte[] bytes, String prefix) {
-		OpcPackage opc;
-		try {
-			opc = OpcPackage.load(new ByteArrayInputStream(bytes));
-		} catch (Exception e) {
-			log.warn("Couldn't load the embedded package at " + prefix + ": " + e.getMessage());
-			return new ArrayList<TextBlock>();
-		}
+	/**
+	 * An embedded OOXML package's blocks (an {@code EmbeddedPackagePart}'s bytes), or none for another
+	 * kind.
+	 *
+	 * @throws Exception where the package, or a workbook or presentation in it, can't be read: then it
+	 *         contributes nothing ({@code content.not_read})
+	 */
+	static List<TextBlock> pkg(Extractor x, byte[] bytes, String prefix) throws Exception {
+		OpcPackage opc = OpcPackage.load(new ByteArrayInputStream(bytes));
 		if (opc instanceof WordprocessingMLPackage) return x.nested((WordprocessingMLPackage) opc, prefix, TextBlock.Story.EMBEDDED);
 		if (opc instanceof SpreadsheetMLPackage) return workbook(x, (SpreadsheetMLPackage) opc, prefix);
 		if (opc instanceof PresentationMLPackage) return presentation(x, (PresentationMLPackage) opc, prefix);
@@ -107,28 +107,24 @@ final class Embedded {
 
 	private static List<TextBlock> workbook(Extractor x, SpreadsheetMLPackage xl, String prefix) {
 		List<TextBlock> out = new ArrayList<TextBlock>();
-		try {
-			WorkbookPart wb = xl.getWorkbookPart();
-			Workbook w = wb.getJaxbElement();
-			if (w.getSheets() == null) return out;
-			boolean date1904 = w.getWorkbookPr() != null && w.getWorkbookPr().isDate1904();
-			List<CTRst> strings = wb.getSharedStrings() == null ? new ArrayList<CTRst>() : wb.getSharedStrings().getJaxbElement().getSi();
-			CTStylesheet styles = wb.getStylesPart() == null ? null : wb.getStylesPart().getJaxbElement();
-			DataFormatter df = new DataFormatter(Locale.US);
-			List<Sheet> sheets = w.getSheets().getSheet();
-			for (int i = 0; i < sheets.size(); i++) {
-				Sheet s = sheets.get(i);
-				if (s.getState() != null && s.getState() != STSheetState.VISIBLE && !x.options.isHidden()) continue;
-				Part part = s.getId() == null ? null : wb.getRelationshipsPart().getPart(s.getId());
-				if (!(part instanceof WorksheetPart)) continue; // a chart sheet
-				Worksheet ws = ((WorksheetPart) part).getJaxbElement();
-				String address = prefix + "/sheet:" + i;
-				out.add(paragraph(TextBlock.Story.EMBEDDED, address, s.getName()));
-				TextBlock table = sheet(ws, strings, styles, df, date1904, address + "/table");
-				if (table != null) out.add(table);
-			}
-		} catch (Exception e) {
-			log.warn("Couldn't read the embedded workbook at " + prefix + ": " + e.getMessage());
+		WorkbookPart wb = xl.getWorkbookPart();
+		Workbook w = wb.getJaxbElement();
+		if (w.getSheets() == null) return out;
+		boolean date1904 = w.getWorkbookPr() != null && w.getWorkbookPr().isDate1904();
+		List<CTRst> strings = wb.getSharedStrings() == null ? new ArrayList<CTRst>() : wb.getSharedStrings().getJaxbElement().getSi();
+		CTStylesheet styles = wb.getStylesPart() == null ? null : wb.getStylesPart().getJaxbElement();
+		DataFormatter df = new DataFormatter(Locale.US);
+		List<Sheet> sheets = w.getSheets().getSheet();
+		for (int i = 0; i < sheets.size(); i++) {
+			Sheet s = sheets.get(i);
+			if (s.getState() != null && s.getState() != STSheetState.VISIBLE && !x.options.isHidden()) continue;
+			Part part = s.getId() == null ? null : wb.getRelationshipsPart().getPart(s.getId());
+			if (!(part instanceof WorksheetPart)) continue; // a chart sheet
+			Worksheet ws = ((WorksheetPart) part).getJaxbElement();
+			String address = prefix + "/sheet:" + i;
+			out.add(paragraph(TextBlock.Story.EMBEDDED, address, s.getName()));
+			TextBlock table = sheet(ws, strings, styles, df, date1904, address + "/table");
+			if (table != null) out.add(table);
 		}
 		return out;
 	}
@@ -238,21 +234,17 @@ final class Embedded {
 
 	private static List<TextBlock> presentation(Extractor x, PresentationMLPackage pp, String prefix) {
 		List<TextBlock> out = new ArrayList<TextBlock>();
-		try {
-			MainPresentationPart main = pp.getMainPresentationPart();
-			Presentation p = main.getJaxbElement();
-			if (p.getSldIdLst() == null) return out;
-			List<Presentation.SldIdLst.SldId> ids = p.getSldIdLst().getSldId();
-			for (int i = 0; i < ids.size(); i++) {
-				Part part = main.getRelationshipsPart().getPart(ids.get(i).getRid());
-				if (!(part instanceof SlidePart)) continue;
-				Sld sld = ((SlidePart) part).getJaxbElement();
-				if (sld == null || !sld.isShow() && !x.options.isHidden()) continue;
-				if (sld.getCSld() == null || sld.getCSld().getSpTree() == null) continue;
-				shapes(x, sld.getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame(), prefix + "/slide:" + i, out, new int[1]);
-			}
-		} catch (Exception e) {
-			log.warn("Couldn't read the embedded presentation at " + prefix + ": " + e.getMessage());
+		MainPresentationPart main = pp.getMainPresentationPart();
+		Presentation p = main.getJaxbElement();
+		if (p.getSldIdLst() == null) return out;
+		List<Presentation.SldIdLst.SldId> ids = p.getSldIdLst().getSldId();
+		for (int i = 0; i < ids.size(); i++) {
+			Part part = main.getRelationshipsPart().getPart(ids.get(i).getRid());
+			if (!(part instanceof SlidePart)) continue;
+			Sld sld = ((SlidePart) part).getJaxbElement();
+			if (sld == null || !sld.isShow() && !x.options.isHidden()) continue;
+			if (sld.getCSld() == null || sld.getCSld().getSpTree() == null) continue;
+			shapes(x, sld.getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame(), prefix + "/slide:" + i, out, new int[1]);
 		}
 		return out;
 	}

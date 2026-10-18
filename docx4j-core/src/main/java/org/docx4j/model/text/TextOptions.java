@@ -39,9 +39,10 @@ import java.util.Set;
  *
  * <p>Under {@code fields: update} (REQ-506), docx4j computes DOCPROPERTY, the core-property fields
  * (AUTHOR, TITLE, SUBJECT, KEYWORDS, COMMENTS, LASTSAVEDBY, REVNUM, CREATEDATE, SAVEDATE), DOCVARIABLE,
- * SEQ, REF to a bookmark and QUOTE, with their {@code \*}, {@code \#} and {@code \@} switches. It
- * computes no MERGEFIELD (no data is supplied) and no FORMTEXT (its result is what the user typed),
- * and never a field with {@code w:fldLock}; every other field keeps its cached result.</p>
+ * SEQ, REF to a bookmark and QUOTE, with their {@code \*}, {@code \#} and {@code \@} switches, and
+ * FORMTEXT as Word's update leaves it: its default text, or five en spaces where it has none, but what
+ * was typed in a document protected for forms. It computes no MERGEFIELD (no data is supplied), and
+ * never a field with {@code w:fldLock}; every other field keeps its cached result.</p>
  *
  * <p>Beyond WD section 10, a host may give the {@link ImageDescriber} (REQ-514).</p>
  *
