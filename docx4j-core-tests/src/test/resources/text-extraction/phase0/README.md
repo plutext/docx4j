@@ -532,7 +532,7 @@ Golden conventions and baseline commands are in `../GOLDENS.md`.
 | `EMB53_TABLE_C` | – | – | – | `embedded: true` | yes | slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605) | REQ-512, REQ-605 |
 | `EMB53_TABLE_D` | – | – | – | `embedded: true` | yes | slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605) | REQ-512, REQ-605 |
 | `EMB53_SLIDE_TWO` | – | – | – | `embedded: true` | yes | slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605) | REQ-512, REQ-605 |
-| `EMB53_HIDDEN_SLIDE` | – | – | – |  |  | hidden slide show=0; absent by default and with embedded: true | REQ-512, REQ-605 |
+| `EMB53_HIDDEN_SLIDE` | – | – | – | `embedded: true; hidden: true` | yes | hidden slide show=0; absent by default and with embedded: true; read with embedded: true and hidden: true, as hidden text is | REQ-512, REQ-605 |
 | `EMB53_SPEAKER_NOTES` | – | – | – |  |  | speaker notes omitted, including with embedded: true | REQ-512, REQ-605 |
 
 ### Case 54: a glossary document with two building-block entries

@@ -98,13 +98,18 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 		return new ExtractionConformance.Output(text, findings);
 	}
 
-	/** A scenario's options: {@code default} (and {@code markdown}, the default read as Markdown), or one WD option as {@code name: value}. */
+	/**
+	 * A scenario's options: {@code default} (and {@code markdown}, the default read as Markdown), or WD
+	 * options as {@code name: value}, several {@code "; "} apart ({@code embedded: true; hidden: true}).
+	 */
 	static TextOptions options(String view, String scenario) {
 		TextOptions options = TextOptions.of(TextView.of(view));
 		if (scenario == null || scenario.equals("default") || scenario.equals("markdown") || scenario.startsWith("xhtml importer")) return options;
-		int colon = scenario.indexOf(':');
-		if (colon < 0) throw new IllegalArgumentException("Unknown scenario: " + scenario);
-		options.set(scenario.substring(0, colon).trim(), scenario.substring(colon + 1).trim());
+		for (String option : scenario.split(";")) {
+			int colon = option.indexOf(':');
+			if (colon < 0) throw new IllegalArgumentException("Unknown scenario: " + scenario);
+			options.set(option.substring(0, colon).trim(), option.substring(colon + 1).trim());
+		}
 		return options;
 	}
 }

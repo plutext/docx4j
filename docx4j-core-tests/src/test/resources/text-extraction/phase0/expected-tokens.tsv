@@ -166,7 +166,7 @@ case	token	accepted	original	markup	option	with_option	note	fixture	statements
 53	EMB53_TABLE_C	0	0	0	embedded: true	1	slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605)	extraction-probe.docx	REQ-512, REQ-605
 53	EMB53_TABLE_D	0	0	0	embedded: true	1	slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605)	extraction-probe.docx	REQ-512, REQ-605
 53	EMB53_SLIDE_TWO	0	0	0	embedded: true	1	slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605)	extraction-probe.docx	REQ-512, REQ-605
-53	EMB53_HIDDEN_SLIDE	0	0	0			hidden slide show=0; absent by default and with embedded: true	extraction-probe.docx	REQ-512, REQ-605
+53	EMB53_HIDDEN_SLIDE	0	0	0	embedded: true; hidden: true	1	hidden slide show=0; absent by default and with embedded: true; read with embedded: true and hidden: true, as hidden text is	extraction-probe.docx	REQ-512, REQ-605
 53	EMB53_SPEAKER_NOTES	0	0	0			speaker notes omitted, including with embedded: true	extraction-probe.docx	REQ-512, REQ-605
 54	GLS54_ENTRY_ONE	0	0	0	include: glossary	1	glossary comes last, after endnotes; first docPart (REQ-501, REQ-516)	extraction-probe.docx	REQ-501, REQ-516
 54	GLS54_ENTRY_TWO	0	0	0	include: glossary	1	second docPart, after the first (REQ-501, REQ-516)	extraction-probe.docx	REQ-501, REQ-516

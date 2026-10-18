@@ -93,7 +93,8 @@ written from it, so the readers cannot drift apart (REQ-202).
 
 Addresses use docx4j-core-ts CR-002 §3.3's grammar (REQ-518), which docx4j-python and the
 editor also adopt. The text-box form `body/3/textbox:0/1` is still a proposal, and may change in
-spelling when core-ts CR-010 phase 3 settles it.
+spelling when core-ts's text-model CR settles it (core-ts CR-010's D8, 18 October 2026, gives that CR
+the text-box view and its addresses; CR-010 phase 3 is done).
 
 ### 2.2 Resolve: `McSelection` by purpose
 
@@ -566,6 +567,21 @@ Where WD 0.8 is silent, phase 2 chose as follows; each is sent to the portfolio 
 - REQ-604: the markup form of an equation with tracked changes (above).
 - REQ-512: hidden sheets and slides under `hidden: true`; the OLE 1.0 rule (above).
 
+WD 0.9 adopted each of these as a statement (REQ-519 new; REQ-605, 515, 604, 512). Jason confirmed on
+19 October 2026 that they are decided and normative, not docx4j's choices awaiting a ruling (the listed
+format he ruled on 18 October). Checking them then found two gaps, both fixed:
+- The suite hadn't tested REQ-512's `hidden: true` branch, and the WD's Appendix A row for case 53 said
+  the hidden slide was absent under every option. A scenario may now combine options `; ` apart
+  (`ExtractionConformance.scenarioRequirements`, `TextsAdapter.options`, GOLDENS.md's adapter
+  contract), and `EMB53_HIDDEN_SLIDE`'s row (`ExtractionAdditionalCases`, `expected-tokens.tsv`,
+  README) is read under `embedded: true; hidden: true`: 893 pass, 51 pending. Hidden sheets have no
+  case in the fixture, so `TextsPhase2Test.hiddenSheets` tests them (hidden and veryHidden left out,
+  read under `hidden: true`, each sheet keeping its workbook index in its address). The Appendix A row
+  is corrected in the WD.
+- REQ-519 stated the text-box form `body/3/textbox:0/1` as settled. A NOTE in WD 0.15 (portfolio
+  ac06ed7) now calls it a proposal that follows core-ts's text-model CR, to which core-ts CR-010's D8
+  gives the text-box view and its addresses (section 2.1).
+
 Findings outside CR-046, not fixed here:
 - docx4j-ImportXHTML (17.1.1-SNAPSHOT, f8c8695): `MHTContentHandler.body` keeps mime4j's body stream
   and reads it after `body()` returns, when mime4j has consumed it, so `convertMHT` gives an empty
@@ -988,8 +1004,8 @@ Phase 0 left four points open in WD 0.4. The portfolio session put them in WD 0.
 **Dependencies:**
 - CR-047, the chart kind, axis titles and series axes, for case 34's axis title in phase 2. Met:
   CR-047 implemented 18 October 2026, its Office check answered the same day; case 34's rows pass.
-- The address grammar's text-box form (core-ts CR-010 phase 3) may rename the form; at most a
-  spelling change.
+- The address grammar's text-box form (core-ts's text-model CR, by CR-010's D8) may rename the form;
+  at most a spelling change.
 
 **Risks:**
 - **JAXB drops namespace declarations.** URI matching needs them recorded at unmarshal; the

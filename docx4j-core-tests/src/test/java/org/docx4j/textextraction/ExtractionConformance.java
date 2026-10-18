@@ -123,6 +123,12 @@ public final class ExtractionConformance {
         if (scenario.equals(XHTML_IMPORTER_PRESENT)) return Set.of("REQ-513", XHTML_IMPORTER_PRESENT);
         if (scenario.equals(XHTML_IMPORTER_ABSENT)) return Set.of("REQ-513", XHTML_IMPORTER_ABSENT);
         if (scenario.equals("markdown")) return Set.of("REQ-703");
+        if (scenario.contains(";")) {
+            // several options, "; " apart: each one's statement
+            Set<String> all = new LinkedHashSet<>();
+            for (String option : scenario.split(";")) all.addAll(scenarioRequirements(option.trim()));
+            return all;
+        }
         String name = scenario.split(":", 2)[0].trim(), value = scenario.contains(":") ? scenario.split(":", 2)[1].trim() : "";
         switch (name) {
             case "include": return value.contains("glossary") ? Set.of("REQ-516") : value.contains("comments") ? Set.of("REQ-504") : Set.of("REQ-502");

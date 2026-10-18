@@ -47,7 +47,9 @@ Phase 1 supplies the `ExtractionConformance.Engine`: `TextsAdapter`, the default
 `-Dtextextraction.adapter=none` runs the protocol checks with every row pending). The adapter calls
 `Texts`, translates the scenario into typed options, and advertises only implemented
 statements (CR-046 phases 1 and 2's). A scenario's option needs its own statement too (WD section 10's
-table: `embedded: true` needs REQ-512, whatever the row cites). Scenario `default` has no XHTML importer. `xhtml importer present/absent`
+table: `embedded: true` needs REQ-512, whatever the row cites). A scenario may combine options, `; `
+apart (`embedded: true; hidden: true`, case 53's hidden slide): the adapter sets each, and the row needs
+each one's statement. Scenario `default` has no XHTML importer. `xhtml importer present/absent`
 requires the corresponding classpath; it is not a TextOptions key. Each is a capability the adapter
 advertises when docx4j-ImportXHTML is (or is not) on the class path, so a run checks one of the two
 (CR-046 phase 2). Missing advertised capabilities remain pending. Exceptions from enabled assertions

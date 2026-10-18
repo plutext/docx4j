@@ -51,7 +51,8 @@ final class ExtractionAdditionalCases {
         b.shapeId = shapeId;
         for (String marker : VISIBLE)
             b.gated(marker, "embedded: true", "slide order, p:spTree order; groups depth-first; table cells row-major (REQ-512, REQ-605)");
-        b.never("EMB53_HIDDEN_SLIDE", "hidden slide show=0; absent by default and with embedded: true");
+        b.token("EMB53_HIDDEN_SLIDE", "0", "0", "0", "embedded: true; hidden: true", "1",
+                "hidden slide show=0; absent by default and with embedded: true; read with embedded: true and hidden: true, as hidden text is");
         b.never("EMB53_SPEAKER_NOTES", "speaker notes omitted, including with embedded: true");
 
         b.begin(54, "a glossary document with two building-block entries");

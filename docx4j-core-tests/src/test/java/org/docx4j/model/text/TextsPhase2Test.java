@@ -617,6 +617,56 @@ public class TextsPhase2Test {
 		assertTrue(text(probe, new TextOptions().embedded(true).hidden(true)).contains("EMB53_HIDDEN_SLIDE"));
 	}
 
+	/**
+	 * REQ-512: an embedded workbook's hidden sheets (state hidden or veryHidden) are left out as hidden text
+	 * is, and read under hidden: true, in workbook order, each preceded by its name; a sheet keeps its
+	 * workbook index in its address either way.
+	 */
+	@Test
+	public void hiddenSheets() throws Exception {
+		org.docx4j.openpackaging.packages.SpreadsheetMLPackage xl = org.docx4j.openpackaging.packages.SpreadsheetMLPackage.createPackage();
+		String[][] sheets = { { "Shown", null, "SHT_SHOWN" }, { "Hidden", "hidden", "SHT_HIDDEN" },
+				{ "VeryHidden", "veryHidden", "SHT_VERY_HIDDEN" }, { "Last", null, "SHT_LAST" } };
+		for (int i = 0; i < sheets.length; i++) {
+			org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart ws = xl.createWorksheetPart(
+					new org.docx4j.openpackaging.parts.PartName("/xl/worksheets/sheet" + (i + 1) + ".xml"), sheets[i][0], i + 1);
+			org.xlsx4j.sml.Row row = new org.xlsx4j.sml.Row();
+			row.setR(1L);
+			org.xlsx4j.sml.Cell c = cell(org.xlsx4j.sml.STCellType.STR, sheets[i][2], 0);
+			c.setR("A1");
+			row.getC().add(c);
+			ws.getJaxbElement().getSheetData().getRow().add(row);
+			if (sheets[i][1] != null) {
+				xl.getWorkbookPart().getJaxbElement().getSheets().getSheet().get(i)
+						.setState(org.xlsx4j.sml.STSheetState.fromValue(sheets[i][1]));
+			}
+		}
+		java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+		xl.save(bytes);
+		WordprocessingMLPackage doc = MiniDocx.body("<w:p><w:r><w:t>Before</w:t></w:r><w:r><w:object><o:OLEObject Type=\"Embed\" ProgID=\"Excel.Sheet.12\" r:id=\"rIdE\"/></w:object></w:r></w:p>")
+				.part("embeddings/book.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+						"http://schemas.openxmlformats.org/officeDocument/2006/relationships/package", "rIdE", bytes.toByteArray()).load();
+
+		String shown = text(doc, new TextOptions().embedded(true));
+		assertTrue(shown, shown.contains("SHT_SHOWN") && shown.contains("SHT_LAST"));
+		assertFalse(shown, shown.contains("SHT_HIDDEN") || shown.contains("SHT_VERY_HIDDEN") || shown.contains("VeryHidden"));
+		assertFalse(text(doc, new TextOptions().hidden(true)).contains("SHT_HIDDEN")); // nothing opened without embedded: true
+
+		TextResult all = Texts.of(doc, new TextOptions().embedded(true).hidden(true));
+		Map<String, String> texts = new LinkedHashMap<String, String>();
+		for (TextBlock b : blocks(all, TextBlock.Story.EMBEDDED)) texts.put(b.getAddress().replaceFirst("^body/\\d+/", ""), b.getText());
+		assertEquals(Arrays.asList("object:0/sheet:0", "object:0/sheet:0/table", "object:0/sheet:1", "object:0/sheet:1/table",
+				"object:0/sheet:2", "object:0/sheet:2/table", "object:0/sheet:3", "object:0/sheet:3/table"), new ArrayList<String>(texts.keySet()));
+		assertEquals("Hidden", texts.get("object:0/sheet:1"));
+		assertEquals("SHT_HIDDEN", texts.get("object:0/sheet:1/table"));
+		assertEquals("SHT_VERY_HIDDEN", texts.get("object:0/sheet:2/table"));
+		// and without hidden: true the last sheet keeps its index
+		Map<String, String> visible = new LinkedHashMap<String, String>();
+		for (TextBlock b : blocks(Texts.of(doc, new TextOptions().embedded(true)), TextBlock.Story.EMBEDDED))
+			visible.put(b.getAddress().replaceFirst("^body/\\d+/", ""), b.getText());
+		assertEquals("SHT_LAST", visible.get("object:0/sheet:3/table"));
+	}
+
 	/** REQ-512: a workbook's cells as Excel displays them, by their number formats in the US locale; a formula's cached value. */
 	@Test
 	public void workbookCells() {
