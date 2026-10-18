@@ -2,7 +2,8 @@
 
 Status: PROPOSED 2026-10-19, drafted at Jason's request ("consider section 12 ... of
 ../docx4j-portfolio/docs/text_extraction_behaviour_model.md then draft a CR to create that tool");
-revised the same day after two reviews (§9), and to state its objective (§0, Jason: "frame it that way").
+revised the same day after three reviews (§9), to state its objective (§0, Jason: "frame it that way"),
+and for text an embedded font draws as other text or as nothing (§9, Jason's question).
 Four phases (§5); decisions in §6, none taken yet.
 
 The specification is the portfolio's *WordprocessingML Text Extraction*, WD 0.16
@@ -21,8 +22,10 @@ document a person sees and from the file Office would open. Three divergences, e
 group of findings:
 
 1. **Unseen: in the text, not seen by a person.** White-on-white and 1pt text, zero-width, tag and
-   bidi characters, a text box off the page or of zero size, a collapsed heading's body: all of it is
-   in the default extraction, so an agent reads it while a person reviewing the document does not.
+   bidi characters, a text box off the page or of zero size, a collapsed heading's body, characters an
+   embedded font draws as nothing or as other letters: all of it is in the default extraction, so an
+   agent reads it while a person reviewing the document does not (or, for the font, reads one word
+   where a person sees another).
    This is the prompt-injection channel: the July 2026 Copilot-for-Word worm's white and tiny text
    (the paper's §12.1) reaches an agent through an ordinary extraction today; `w:vanish` text is the
    exception, since REQ-507 keeps it out by default.
@@ -75,11 +78,12 @@ ports and the editor. Nothing in extraction changes (REQ-904).
 | Need | Where docx4j has it | What it lacks for `inspect` |
 |---|---|---|
 | addresses, property resolution, views | the text model (`org.docx4j.model.text`, CR-046): `TextBlock` addresses in REQ-518/519's grammar, the three views, `McSelection` by the TEXT purpose, hidden runs and paragraphs resolved through styles, text boxes, notes, comments, headers, alt text, charts, SmartArt, `altChunk`s, embedded packages, the glossary, bound controls (`sdt.binding_differs`), `mce.branches_differ` (REQ-307) | it reads what it selects: one branch, the headers sections use (case 26's `HDR26_ORPHAN` is read under no option), the notes references reach, a bound control's value in place of its surface; colour, shading, size and geometry are not kept |
-| an inventory of every part | the anonymiser (CR-019, `org.docx4j.anon`): `PartsAnalyzer` (each part's class: macro, ActiveX, custom XML, embeddings, people, comments, ...), `JaxbGraphWalker` (every object reachable from a root, `w:rPrChange` authors and settings included), `DmlVmlAnalyzer`, `FieldInstructions` (keywords), `Verify` (external targets, text-bearing attributes) | positions in the reading order |
+| an inventory of every part | the anonymiser (CR-019, `org.docx4j.anon`): `PartsAnalyzer` (each part's class: macro, ActiveX, custom XML, embeddings, people, comments, ...), `JaxbGraphWalker` (every object reachable from a root, `w:rPrChange` authors and settings included), `DmlVmlAnalyzer`, `FieldInstructions` (keywords), `MetadataScrubber.scrubExternalTargets` and `Verify.externalTargets` (every relationship whose TargetMode is External), `Verify` (text-bearing attributes) | positions in the reading order |
 | the external fields | WD REQ-506's list; `FieldInstructions`; `TextField` codes | an "external" classification |
 | tracked changes | `TrackedChangesReport` (CR-043) | per-occurrence locations |
 | effective properties | `PropertyResolver` (CR-015); CR-030's table contexts | a colour comparison |
 | geometry | `w:pgSz`, `w:pgMar`; `wp:anchor`/`wp:inline`; VML `style` | an off-page test without layout |
+| embedded fonts | `FontTablePart.processEmbeddings`, `ObfuscatedFontPart.deObfuscate` (the `.odttf` faces), `org.docx4j.fonts.fop.fonts.truetype.TTFFile` (cmap, advance widths, glyph boxes); `RunFontSelector` (the font a character is drawn in); `Mapper`'s precedence for docx4j's own output (an installed font of the same name first, then the embedded face) | any check of what a glyph draws; the text model reads a run's font name only (`Extractor.MONOSPACE`), so its text is the characters stored, whatever a font draws for them |
 | the probe | `expected-findings.tsv`: 14 inspector rows (channel `inspect`), pending in three views (42 of the suite's 51 pending) | rows for the other kinds; fixtures for a few; and the harness checks only the expected keys, so an unexpected finding passes unnoticed |
 | no external access | WD §11, REQ-506, REQ-513 | met by the text model since 19 October 2026. Before, when docx4j-ImportXHTML was on the class path, an `application/xhtml+xml` or MHT `altChunk` went through `XHTMLImporterImpl`, whose default image handler and user agent fetched `<img src>` and `<link href>` (measured: one stylesheet and four image requests to a local listener from one `Texts.plainText` call, and `[MISSING IMAGE: x, x ]` in the text). A defect of CR-046's extraction, fixed there (§7); the inspector never calls an importer |
 
@@ -104,7 +108,10 @@ Three passes make one `Inspection`:
 2. **The package inventory**, from the anonymiser's `PartsAnalyzer` and the relationship parts:
    macros, ActiveX, custom XML, `people.xml`, `w:docVars`, `w:updateFields`, `w:rsids`, the
    properties, every relationship (external, broken, or to a part of an unknown or unsupported
-   kind), every embedded and `altChunk` part.
+   kind), every embedded and `altChunk` part, every ink part (`w14:contentPart`, an internal
+   relationship to an `InkmlPart`), and every embedded font: each face de-obfuscated and read (its
+   cmap, advance widths, outlines and substitution lookups) for the characters the runs drawn in it
+   hold (D18).
 3. **The payloads**, decoded by the inspector itself and never converted: an HTML or XHTML chunk is
    scanned for `<script>`, event-handler attributes and external `src`/`href` references (jsoup's
    parser where present, else a tag scanner); an MHT chunk's parts are read for the same; a docx,
@@ -138,7 +145,8 @@ counts. The JSON form is docx4j-mcp's (CR-046 D7).
 
 **Membership** decides each finding's group. An occurrence is *in the output* for given options,
 format and capabilities when every container on its chain lets it through:
-- its story is in scope: a header or footer under `include`, a comment under `comments`, the
+- its story is in scope: a header or footer under `include`, a comment under `comments: true` or in
+  the markup view (`Extractor.commentsIncluded`: the markup view writes comments by default), the
   glossary under `include: glossary`, a note under `notes`, a text box under `text_boxes`; an unused
   story never is;
 - its branch is the selected one (REQ-302); an unselected branch's content never is;
@@ -151,7 +159,8 @@ format and capabilities when every container on its chain lets it through:
   only with an XHTML importer present), `embedded` for the packages REQ-512 reads;
 - the format writes it: an image's description in plain text only under `alt_text: true`, in Markdown
   always (as the image's alt text), in the block model always (its `description`); a field's code
-  only under `field_codes: true`; properties only under `metadata: true`.
+  only under `field_codes: true`; properties in the block model always (its `metadata` object,
+  REQ-515), in plain text and Markdown only under `metadata: true`.
 
 White text inside a hidden run in an unused header is therefore not in the output under any options,
 whatever `text.near_background`'s reveal says; deleted text is in the output under `markup` as well as
@@ -169,10 +178,15 @@ options; else **unseen** when the occurrence is in the output and `visible` is `
 `indeterminate` (an agent is warned of what a person may not see); else **omitted** when it has text
 and is not in the output; else **info** (in the output and seen, or an inventory kind with no text of
 its own: an `altchunk` or `object.embedded` container, whose content is found in its own right,
-`revision.author`, `rsids`, `people`, `relationship.broken`, `part.unknown`). So a comment is omitted
-under the defaults and info under `comments: true`, `text.hidden` omitted under the defaults and
-unseen under `hidden: true`, `text.near_background` unseen where its run is in the output and omitted
-where it is not.
+`font.embedded`, `ink`, `revision.author`, `rsids`, `people`, `relationship.broken`, `part.unknown`).
+One exception to unseen: content an output carries as labelled metadata, apart from the document's
+text, is info while it is in the output. That is the properties: the block model's `metadata` object,
+and the property lines or front matter of plain text and Markdown under `metadata: true`. The agent
+holding them is told they are not the page's text; their `visible` stays `no`, since a person sees
+them only through File, Info. So a comment is omitted under the defaults and info under `comments:
+true` or in the markup view, `text.hidden` omitted under the defaults and unseen under `hidden: true`,
+`text.near_background` unseen where its run is in the output and omitted where it is not, and the
+properties info in the block model and omitted from plain text until `metadata: true`.
 
 **The display profile** (D15) behind `visible`: Word 365 opening the file with its installation
 defaults: Print Layout; revisions as Simple Markup (deleted text not shown, insertions shown);
@@ -188,15 +202,17 @@ no importer, and the probe cases that hold them (*new*: a case §3 adds):
 | Kind | What | Visible | Reveal | Group (defaults, plain text) | Case |
 |---|---|---|---|---|---|
 | `text.near_background` | colour within the threshold of its effective background (D3) | differently | included | unseen | 18, 48, *new* |
-| `text.tiny` | drawn under 2pt | differently | included | unseen | 18, *new* (exactly 2pt: no finding) |
-| `chars.zero_width`, `chars.tag`, `chars.bidi`, `chars.private_use` | U+200B-U+200F, U+2060, U+FEFF; U+E0000-U+E007F; U+202A-U+202E, U+2066-U+2069; U+E000-U+F8FF and planes 15-16 outside a symbol font (`w:sym`, Symbol, Wingdings, Webdings) | no | included | unseen | 48, *new*; 29 the negative |
+| `text.tiny` | drawn under 2pt: `w:szCs` where the run's characters are drawn in the complex-script slot, `w:sz` otherwise | differently | included | unseen | 18, *new* (exactly 2pt: no finding) |
+| `chars.zero_width`, `chars.tag`, `chars.bidi`, `chars.private_use` | U+200B-U+200F, U+2060, U+FEFF; U+E0000-U+E007F; U+202A-U+202E, U+2066-U+2069; U+E000-U+F8FF and planes 15-16, except under `w:sym` and in a symbol or icon font (D17) | no | included | unseen | 48, *new*; 29 the negative |
+| `font.glyph_blank` | a character drawn in an embedded font whose glyph has no outline or no advance (whitespace, format and combining characters excepted): in the text, nothing on the page | no | included | unseen | *new* |
+| `font.glyph_mismatch` | a character drawn in an embedded font whose glyph is not that character's (D18's tests: an installed font of the same name draws it otherwise; two letters share a glyph; a letter's advance is over 1.5 em; a substitution the viewer applies unasked makes it another letter); symbol and icon fonts (D17) excepted | differently, or indeterminate where no test can decide | included | unseen | *new* |
 | `paragraph.collapsed` | the body of a heading marked collapsed (`w15:collapsed`), not shown on open | no | included | unseen | *new* |
 | `shape.zero_size`, `shape.off_page`, `shape.hidden` | a text box or shape of extent 0 in a dimension; wholly off the page for every position its anchor could have on the page (D4); `wp:docPr/@hidden` or VML `visibility:hidden` | no | included where it holds text (`text_boxes: true` is the default), else unextractable | unseen where it holds text, else info | 48, *new* |
 | `smartart.data` | SmartArt data its drawing does not show | no | included (`smartart: true`) | unseen | 35 |
 | `text.hidden`, `paragraph.hidden` | `w:vanish` on the run or through its styles; a paragraph whose runs and mark are hidden | no | options: `hidden: true` | omitted | 18 |
 | `revision.deleted`, `revision.moved_from` | deleted and moved-from runs and paragraphs (Word's default Simple Markup does not show them) | no | options: `view: original` | omitted | 9-15, 17 |
 | `mce.branch` | content in an unselected branch, every other kind looked for in it, its text compared with the selected one's | no (an older Office would show it) | unextractable | omitted | 1, 3-8, *new* |
-| `story.unused` | a header or footer no section references; a note no reference reaches; a comment with no anchor | no | unextractable | omitted | 26, 27, *new* |
+| `story.unused` | a header or footer no section references; a note no reference reaches (not the separator, continuation-separator and continuation-notice notes every notes part holds unreferenced by design: a `w:type` other than `normal`, which extraction skips too); a comment with no anchor | no | unextractable | omitted | 26, 27, *new* |
 | `sdt.stored_surface` | a bound control's stored surface where it differs from its value, every other kind looked for in it | yes (until Word refreshes the binding) | options: `bindings: surface` | omitted | 23, *new* |
 | `field.code` | a field's instruction text (every field; the external ones are also `field.external`) | no | options: `field_codes: true` | omitted | 19, 20, 49 |
 | `glossary` | the glossary's entries | no | options: `include: glossary` | omitted | 54 |
@@ -204,36 +220,49 @@ no importer, and the probe cases that hold them (*new*: a case §3 adds):
 | `embedded.sheet_hidden`, `embedded.sheet_very_hidden`, `embedded.slide_hidden` | inside an embedded workbook or presentation (D10) | no | options: `embedded: true` + `hidden: true` | omitted | 53, 57 |
 | `embedded.row_hidden`, `embedded.column_hidden` | a hidden row or column of an embedded workbook (the worksheet reader reads its cells: `Embedded.sheet` checks the sheet's state only) | no | options: `embedded: true` | omitted (unseen under `embedded: true`) | *new* |
 | `embedded.notes` | a slide's speaker notes in an embedded presentation | no | unextractable (REQ-512 omits them) | omitted | 53 |
-| `field.external` | REQ-506's INCLUDETEXT, INCLUDEPICTURE, LINK, IMPORT, DDE, DDEAUTO; a HYPERLINK to a scheme other than http, https or mailto, or to a file or UNC path (a `\l` bookmark is not external); simple and complex forms, keywords in any case, arguments quoted or not | - | options: `field_codes: true` | active | 49, *new* |
+| `field.external` | REQ-506's INCLUDETEXT, INCLUDEPICTURE, LINK, IMPORT, DDE, DDEAUTO; a HYPERLINK under the link rule below (a `\l` bookmark is not external); simple and complex forms, keywords in any case, arguments quoted or not | - | options: `field_codes: true` | active | 49, *new* |
 | `settings.update_fields` | `w:updateFields` | - | unextractable | active | 50 |
-| `relationship.external` | an external target: hyperlink, linked image, attached template, mail-merge source, OLE link, subdocument | - | unextractable (never fetched) | active | 49, 50 |
+| `relationship.external` | an external target: a linked image, attached template, mail-merge source, OLE link or subdocument; a `w:hyperlink` under the link rule below | - | unextractable (never fetched) | active | 49, 50 |
+| `hyperlink.web` | a hyperlink, either form (`w:hyperlink`'s relationship, a HYPERLINK field), to http, https or mailto: Office fetches nothing until a click | yes (its text; its target on hover) | the target included in Markdown (`[text](target)`, REQ-703); else `field_codes: true` for the field form, unextractable for the relationship's | info | 21 (both forms) |
 | `part.macro`, `part.activex` | `vbaProject`; an ActiveX control part | - | unextractable | active | 51, 42 |
 | `altchunk.script`, `altchunk.external_ref` | `<script>` or an event handler in an HTML, XHTML or MHT chunk; an external `src` or `href` in one | - | unextractable | active | *new* |
-| `comment` | a comment, with its author | yes (its presence; its text on click) | options: `comments: true` | omitted (info under `comments: true`) | 28 |
+| `comment` | a comment, with its author | yes (its presence; its text on click) | options: `comments: true` or `view: markup` | omitted (info under `comments: true` and in the markup view) | 28 |
 | `header_footer`, `watermark` | a header or footer a section uses; a watermark's text | yes | options: `include: headers`, `include: footers` | omitted | 26 |
 | `note`, `sdt.placeholder`, `chart.cached` | a footnote or endnote; a control showing its placeholder; a chart's cached strings | yes | included | info | 27, 22, 34 |
 | `text.web_hidden` | `w:webHidden` (D8) | yes (not in Web Layout) | included | info | 18 |
 | `altchunk`, `object.embedded` | each chunk, with its content type; each embedded object, with its ProgID | yes (as Word converts it; as its preview) | options: `altchunks: true` (default) or `embedded: true` for the types REQ-513 and REQ-512 read; unextractable for RTF and other OLE binaries | info | 36, 39-47, 53 |
 | `alt_text.title` | a picture's or shape's title | no | unextractable | omitted | 33 |
 | `alt_text.name` | its name: the description where `descr` is empty and the picture is not decorative, else not extracted | no | per occurrence: as `alt_text.description` where it is the description, else unextractable | omitted | 33, *new* (a named picture with no `descr`; a decorative one) |
-| `properties` | core, app and custom properties | no (File, Info shows them) | options: `metadata: true` | omitted | 38, 52 |
+| `properties` | core, app and custom properties | no (File, Info shows them) | included in the block model (`metadata`, REQ-515); options: `metadata: true` in plain text and Markdown | omitted (info in the block model, and under `metadata: true`: labelled metadata) | 38, 52 |
+| `font.embedded` | a font face embedded in the package (`w:embedRegular` and its kin) that runs are drawn in, with the number of characters it draws. What a person sees depends on the viewer: whether it uses embedded fonts, and which it prefers where a font of that name is installed (docx4j's PDF output: the installed one, `Mapper`; Word: not yet measured, §3) | - | unextractable (extraction has characters, never glyphs) | info | *new* |
+| `ink` | an ink part (`w14:contentPart`), whose strokes may be handwriting (as a picture's pixels may be text) | yes | unextractable | info | *new* |
 | `doc_vars`, `custom_xml` | `w:docVars`; each custom XML part | no | unextractable (`bindings: bound` shows what a control binds) | omitted | *new*, 23 and 38 |
 | `people` | `people.xml` (the authors' identities) | no | unextractable | info | *new* |
 | `revision.author`, `rsids` | each author of the tracked changes, with the dates' range; the revision-session identifiers, one finding with their number | no | options: `view: markup` + `markup_detail: author_date` for authors; else unextractable | info | 9-17; any Word save |
 | `relationship.broken`, `part.unknown` | a relationship whose internal target is missing; a part of an unknown or unsupported kind | - | unextractable | info | *new* |
+
+**The link rule**, one for both forms of a hyperlink (`w:hyperlink` and the HYPERLINK field): a
+target with the scheme http, https or mailto is `hyperlink.web`, info; any other target (a file or
+UNC path, a relative path, any other scheme) is active, as `relationship.external` for the
+relationship's form and `field.external` for the field's. A bookmark (`w:anchor`, `\l`) is neither.
 
 ### 2.4 Identity, location and counting (D6)
 
 - **A finding is a kind at a stored location.** The location is where the content is stored: the
   chain of containing packages (none for the document itself; an embedded or `altChunk` part's name
   for each level), the part name within the innermost one, an element path within it, and, for text,
-  a code-point range within the paragraph's stored text; plus the extraction address (REQ-518/519)
-  where extraction has one. Two embedded documents that both hold `/word/vbaProject.bin` are two
-  locations. A header used
-  by three sections is stored once and found once; a field code is at its `w:instrText` runs; an
-  unselected branch's run is at its element path inside the branch.
+  a code-point range within the run at that path (its `w:t`, `w:delText` or `w:instrText` text, in
+  document order; for a finding merged across runs, its first run's path and offset and its last's);
+  plus the extraction address (REQ-518/519) where extraction has one. Two embedded documents that
+  both hold `/word/vbaProject.bin` are two locations. A header used by three sections is stored once
+  and found once; a field code is at its `w:instrText` runs; an unselected branch's run is at its
+  element path inside the branch.
 - **Kinds are kept apart.** One run that is hidden, tiny and holds tag characters is three findings,
-  one per kind, at the same range.
+  one per kind, at the same range. The exception is a hidden paragraph: a paragraph whose runs and
+  mark are all hidden is one `paragraph.hidden` finding, not that and a `text.hidden` for each run, since
+  it is one divergence.
+- **Fonts.** `font.embedded` is found once per embedded face; `font.glyph_blank` and
+  `font.glyph_mismatch` per run, merged as below, naming the characters affected.
 - **Runs are merged, so run splitting does not count.** Adjacent stored runs in one paragraph are one
   finding when their kind and every attribute the finding reports (author and date, colour, size,
   branch) are equal; adjacent revisions of different authors are two.
@@ -256,8 +285,9 @@ no importer, and the probe cases that hold them (*new*: a case §3 adds):
 - An excerpt is at most 200 Unicode code points, and records its original length in code points and
   whether it was cut.
 - The inspection as a whole is bounded, each limit enforced while decoding or walking, not after:
-  at most 10,000 findings; 16 MB decoded from any one payload and 64 MB in all; 5,000,000 elements
-  walked in all; embedded packages and chunks one level deep.
+  at most 10,000 findings; 16 MB decoded from any one payload and 64 MB in all (an embedded font's
+  de-obfuscated bytes are a payload); 5,000,000 elements walked in all; embedded packages and chunks
+  one level deep.
 - A per-payload limit stops that payload and the inspection goes on. A global limit (findings, total
   bytes, total elements) stops the inspection: the sources not yet inspected are listed in
   `skipped()`.
@@ -304,11 +334,18 @@ text is, or is not, an attack (§0). docx4j has a layout
   | characters | a supplementary private-use character; a bidi override split across runs; Symbol and Wingdings characters (no finding) |
   | fields | INCLUDEPICTURE and LINK, simple and complex, keywords in mixed case, arguments quoted and bare; HYPERLINK `\l` (no finding) beside a file and a UNC target |
   | background | highlight against shading; `auto` and transparent fills; table-style shading; a page colour (`w:background`); a background docx4j cannot determine (no finding, a limitation) |
-  | inventory | a part of an unknown content type; a broken relationship; an unreferenced note and an unanchored comment; `w:docVars`; `people.xml`; an HTML chunk with a `<script>`, an event handler and an external image and stylesheet; an embedded docx holding hidden text |
+  | inventory | a part of an unknown content type; a broken relationship; an unreferenced note and an unanchored comment; the separator notes (no finding); `w:docVars`; `people.xml`; an ink part; an HTML chunk with a `<script>`, an event handler and an external image and stylesheet; an embedded docx holding hidden text |
+  | links | case 21's https links in both forms (`hyperlink.web`); a `w:hyperlink` to a file path and one to a UNC path (active) |
+  | fonts | an open-licence font, renamed, embedded with its glyphs altered so that one word is drawn as another (a wide glyph drawing the word, the word's own letters blank); the same font named like a font the viewer has installed; a run whose every glyph is blank; an embedded symbol font and an icon font's private-use characters (no finding); a private-use character in a font of neither kind |
+  | geometry, further | a shape placed by `wp:align` (on the page by construction: no finding); a shape in an unused header (no section, so no page size: indeterminate) |
 
-  Case 48's off-page box is column-relative (its VML style has no `mso-position-*-relative`); D4's
-  rule judges it off page for every anchor position (its offset is 5000pt), but the rule's proof is the
-  new page-relative case, not case 48. Jason's Word-open check, as for every fixture. (CR-046 phase
+  Case 48's off-page box (`ExtractionPhase0Cases`) is column-relative horizontally and
+  paragraph-relative vertically, since its VML style has no `mso-position-*-relative`. D4's rule judges
+  it off page for every anchor position (its offset is 5000pt), but the rule's proof is the new
+  page-relative case, not case 48. Jason's Word-open check, as for every fixture; for the font cases
+  it also records what each viewer shows (Word 365, LibreOffice, Word for the web, docx4j's PDF and
+  HTML output), the embedded glyphs or a substitute's, and so Word's precedence where a font of the
+  embedded one's name is installed, not yet measured. (CR-046 phase
   0's cases 39-52, which carry macro, DDE and ActiveX content, were stopped in an earlier docx4j
   session by the model's safety classifier and built by another agent; if a case here is refused the
   same way, it is built elsewhere and recorded so.)
@@ -332,9 +369,9 @@ text is, or is not, an attack (§0). docx4j has a layout
   are byte-identical with the inspection counts on and off, except the block model's `inspect`
   metadata entry; the document's own content appears in them as it always did (a white-text run is in
   the plain text, hidden text under `hidden: true`). No test searches an output for an excerpt.
-- **Bounds.** A fixture of many small payloads (2,000 chunks of 40 KB, each under the per-payload
-  limit, 80 MB in all) ends `PARTIAL` at the total-bytes limit with the rest in `skipped()`, and its
-  counts marked lower bounds; one payload over 16 MB is stopped while it is decoded, the rest inspected;
+- **Bounds.** A document of many small payloads (2,000 chunks of 40 KB, each under the per-payload
+  limit, 80 MB in all), built by the test as it runs and never committed, ends `PARTIAL` at the
+  total-bytes limit with the rest in `skipped()`, and its counts marked lower bounds; one payload over 16 MB is stopped while it is decoded, the rest inspected;
   a document past the findings limit ends `PARTIAL`; `skipped()` stops at 1,000 entries and counts the
   rest.
 - **Nested locations.** Two embedded documents each holding `/word/vbaProject.bin` and hidden text at
@@ -357,9 +394,12 @@ gains them.
 
 - The objective (§0), the groups and their counts (D14), the kind identifiers (D2), the colour
   threshold (D3), the off-page rule (D4), the bounds (D5, D11), identity and counting (D6) and the
-  reveal contract (D12), proposed to the WD: REQ-902 names no kind and leaves the threshold to "a
-  documented threshold", REQ-901's `severity` and `how_to_see` become `visible`, `reveal` and the
-  group, and REQ-903's three counts become D14's four.
+  reveal contract (D12), the symbol and icon fonts (D17) and the font kinds (D18), proposed to the WD:
+  REQ-902 names no kind and leaves the threshold to "a documented threshold", REQ-901's `severity` and
+  `how_to_see` become `visible`, `reveal` and the group, and REQ-903's three counts become D14's four.
+  And a sentence for the WD's section 11: extraction returns characters, never glyphs; an embedded
+  font can draw a character as another or as nothing, and viewers differ in whether they use it; the
+  inspection reports it.
 - `expected-findings.tsv` (every kind, today's names renamed) and `expected-inspection.tsv`; the
   harness's exact-set comparison.
 - `extraction-probe-inspect.docx` (§3), its rows, its Word-open check.
@@ -383,8 +423,11 @@ fields hold; the no-access, read-only, cross-check, bounds and nested-location t
 - `TextResult.metadata()`'s `inspect` (REQ-903 as D14 has it), the four counts against the result's own
   options for the block model, plain text and Markdown, from the inspection run with the extraction; its cost
   measured on the probe and on the layout-fidelity corpora (the real-document sets), and recorded here.
-- A docx4j option to skip the counts where the cost matters (D9), documented as making the result
-  not an inspector's (WD §12.1).
+- `inspect: false`, a docx4j option that skips the counts (D9), shipped with them and documented as
+  making the result not an inspector's (WD §12.1); the measured cost chooses its default.
+- A result with no package has no counts: `Texts.of(Part, options)` and `Texts.of(Object, options)`
+  carry no `inspect` entry, since the stored-story pass and the inventory need the package; their
+  javadoc says so.
 
 **Acceptance:** REQ-903 once the WD has adopted D14's counts (D16); the inspector conformance class of
 WD §12.1 claimed then, and not before.
@@ -443,9 +486,15 @@ Each with a recommendation; Jason decides.
   (REQ-507 is `w:vanish`). Recommended: `info`, `visible: yes`, `reveal: included`: a person reading
   the page sees it, so it is not a divergence.
 - **D9. Skipping the counts.** Options: (a) a docx4j-only option (`inspect: false`, outside WD §10, as
-  REQ-1001 allows), the result then not an inspector's; (b) counts always. Recommended: decide at
-  phase 2 from the measured cost; (a) if the inspection costs more than a fifth of the extraction on
-  the real-document corpora.
+  REQ-1001 allows), the result then not an inspector's; (b) counts always. Recommended: (a), to be
+  decided now rather than at phase 2, with the default chosen there from the measured cost (off if
+  the inspection costs more than a fifth of the extraction on the real-document corpora). The cost is
+  structural, not only
+  measured: once counts ride on every result, every `Texts.of(pkg)` runs the three passes, opening
+  every embedded package, chunk and font up to §2.5's bounds even under `embedded: false` and
+  `altchunks: false`, so the bounds that keep a hostile document from exhausting the inspector
+  become the price of every extraction, docx4j-mcp's `extract_text` included. A part's or a
+  fragment's result carries no counts (§5, phase 2).
 - **D10. Spreadsheets and presentations.** Inside a docx, an embedded workbook's and presentation's
   hidden content is inspected (§2.3's `embedded.*` kinds, cases 53 and 57 and new ones). A
   standalone xlsx or pptx is outside the WD, which is WordprocessingML's. Recommended: a later CR for
@@ -467,7 +516,9 @@ Each with a recommendation; Jason decides.
   severities. Recommended: (a), proposed to the WD. Under (b) "hidden" holds both `w:vanish` text,
   which the agent does not hold, and white text, which it does; for an agent reading the text the
   second is the urgent one, and only (a) counts it apart, and counts it again when an option moves
-  hidden content into the text.
+  hidden content into the text. Under (a), content an output carries as labelled metadata (the
+  properties) is info, not unseen (§2.3): otherwise every block-model result would report its title
+  and author as unseen, for every document.
 - **D15. Visibility's reference.** Options: (a) §2.3's display profile (Word 365 with its installation
   defaults: Print Layout, Simple Markup, comment markers, hidden text and field codes off, collapsed
   headings collapsed), with `visible: indeterminate` where the document or a user option decides and
@@ -484,6 +535,33 @@ Each with a recommendation; Jason decides.
   reveal's options, `included`, or `unextractable`; the counts likewise); (b) implement only the WD as
   it stands. Recommended: (a): the gate keeps docx4j honest about what it conforms to, and the mapping
   lets docx4j-mcp ship before the WD moves.
+- **D17. Symbol and icon fonts** (for `chars.private_use` and `font.glyph_mismatch`). docx4j has no
+  glyph tables for them (`TextOptions`: "docx4j has no glyph tables for Symbol and Wingdings"), so the
+  list is the whole rule. Options: (a) a documented list, `w:sym` always exempt, and an installed or
+  embedded font whose cmap is symbol-encoded (platform 3, encoding 0) a symbol font too; (b) the list
+  alone; (c) the three fonts of the previous draft. Recommended: (a), the list being Word's symbol
+  fonts (Symbol, Wingdings, Wingdings 2, Wingdings 3, Webdings, Marlett, MT Extra, Bookshelf Symbol 7,
+  MS Outlook, MS Reference Specialty) and the icon fonts that keep their glyphs in the private-use
+  area (Segoe MDL2 Assets and Segoe Fluent Icons at U+E700-U+F8FF, Font Awesome's families), proposed
+  to the WD. (c) would cry wolf on every document using an icon font.
+- **D18. Embedded fonts** (Jason's question: a font whose glyphs are swapped makes one word look like
+  another, and only to the viewers that use the embedded font). The text holds the characters stored;
+  a font maps each to a glyph that can draw anything, so one glyph can draw a whole word and the
+  word's own letters can be blank. Options: (a) `font.embedded` for every embedded face in use;
+  `font.glyph_blank` for a character drawn with no outline or advance; `font.glyph_mismatch` by four
+  static tests: an installed font of the same name draws the character with a different outline
+  (compared after normalising the units per em); two letters share a glyph (letters that are the same
+  letter in another script, as Latin A and Greek Alpha are, or Unicode-equivalent, excepted); a
+  letter's advance is over 1.5 em; a substitution lookup in a feature the viewer applies unasked
+  replaces a letter with a glyph the cmap gives another letter (for Word, which features those are is
+  the probe's to measure). `indeterminate` where none of them can decide, as for a font with no
+  installed namesake and nothing anomalous. Symbol and icon fonts (D17) are excepted from the
+  mismatch tests, not from the blank one. (b) `font.embedded` and `font.glyph_blank` only. (c) (a)
+  plus a rendering test: each glyph drawn and recognised against a reference font, a classifier, in a
+  later CR. Recommended: (a) now and (c) later: the blank test is exact and cheap, and the hidden
+  instruction is its case; the mismatch tests catch the crude swaps and say `indeterminate` where they
+  cannot know, which is the truth; only recognition sees a careful swap. A document can only deliver a
+  font by embedding it, so the fonts a document names but does not embed are out of scope.
 
 ## 7. Dependencies, risks and out of scope
 
@@ -493,14 +571,17 @@ Each with a recommendation; Jason decides.
   through docx4j-ImportXHTML when it is on the class path (§1's last row), against WD §11, REQ-506 and
   REQ-513, and lets its `[MISSING IMAGE ...]` placeholder into the text. docx4j-mcp ships
   ImportXHTML, so its `extract_text` does the same. **Fixed** in CR-046's text model on 19 October 2026
-  (an image handler that adds nothing and a user agent that refuses every resource; CR-046 records
-  it). docx4j-mcp has the fix once its engine is 17.3.4.
+  (an image handler that adds nothing and a user agent that refuses every resource, from
+  docx4j-ImportXHTML 17.3.4 through its `setExternalResourcesAllowed(false)`; CR-046 records it).
+  docx4j-mcp has the fix once its engine is 17.3.4.
 - **False positives** are the risk that matters to an agent: a report that cries wolf is ignored. The
   exact-set comparison, the boundary cases of §3, and the colour rule's resolution of theme colours,
-  table-style shading and `auto` before it compares are the guard.
+  table-style shading and `auto` before it compares are the guard; for characters and fonts, D17's
+  list and D18's exceptions.
 - **Cost:** phase 2's inspection on every extraction, measured before D9 is decided.
 - **Fixture content:** §3's note on the classifier.
-- **Out of scope:** layout-based detection (D7); standalone xlsx and pptx (D10); judging intent;
+- **Out of scope:** layout-based detection (D7); recognising what a glyph draws by rendering it
+  (D18 (c), a later CR); standalone xlsx and pptx (D10); judging intent;
   changing any extraction default or option (REQ-904); a CLI (`AnonymizeCli` could gain an
   `--inspect` mode later).
 
@@ -516,6 +597,9 @@ Each with a recommendation; Jason decides.
 - The suite: `text-extraction/phase0/expected-findings.tsv`, the cases' README, GOLDENS.md's adapter
   contract.
 - WCAG 2.2, the contrast ratio (relative luminance).
+- docx4j's fonts: `FontTablePart`, `ObfuscatedFontPart`, `org.docx4j.fonts.fop.fonts.truetype.TTFFile`,
+  `RunFontSelector`, `Mapper`; the OpenType specification's cmap, hmtx, glyf and GSUB tables.
+- docx4j's anonymiser: `MetadataScrubber.scrubExternalTargets`, `Verify.externalTargets`.
 
 ## 9. Review, 19 October 2026
 
@@ -580,3 +664,42 @@ image description only under `alt_text: true` while `WmlToMarkdown` writes it as
 6. **Nested locations.** §2.4's package chain; the exact comparison by occurrence, with multiplicity.
 
 And D15's display profile with `indeterminate`, and D16's gate on the WD's adoption of D12 and D14.
+
+**A third review, of e99f79600**, from the docx4j-43 session at Jason's request (Jason had the same
+findings): three contract errors, two decisions to revisit, nine nits and an open item, each checked
+against the code before it was taken.
+
+1. **Comments in the markup view.** Confirmed: `Extractor.commentsIncluded` is `view == MARKUP ||
+   comments`, and the suite reads case 28's comments under markup. The membership bullet and the
+   `comment` row now say so.
+2. **Properties in the block model.** Confirmed: `Metadata.read` runs for every top-level result
+   (REQ-515). As written, every block-model result would have reported the properties as unseen. Taken
+   as the review recommends: labelled metadata is info while in the output (§2.3, D14), and `visible`
+   stays `no`.
+3. **Hyperlinks.** Confirmed: the field form had a scheme rule and the relationship form none, so case
+   21's https `w:hyperlink` would have been an unexpected active finding. One link rule for both forms
+   (§2.3), and `hyperlink.web` (info) for case 21's two.
+4. **D9's cost.** Taken: D9 now recommends deciding (a) at once, the measurement choosing only the
+   default; and a part's or fragment's result carries no counts.
+5. **Private-use characters.** Taken as D17: a documented list with the icon fonts, `w:sym` exempt, a
+   symbol-encoded cmap a symbol font.
+
+Eight of the nine nits are taken: `story.unused` leaves out the separator notes (`Extractor` skips
+every note whose type is not `normal`); `text.tiny` names `w:szCs`; the bounds test builds its
+document; a text range is within its run; a hidden paragraph is one finding; D4's `wp:align` and
+orphan-header cases are in §3's table; ink is inventoried (`InkmlPart` is a known part, so not `part.unknown`); case 48 is
+column- and paragraph-relative. One nit did not hold: §1's citation of `Verify` for external targets
+is right (`Verify.externalTargets` reads every relationship whose TargetMode is External), and
+`MetadataScrubber.scrubExternalTargets` is now cited beside it. (`Verify.java` holds a NUL byte in a
+string literal, at line 291, so grep treats the file as binary and skips it.) The open item, the fetch
+defect recorded only here, is answered: CR-046 records it, fixed as 0847b3df3.
+
+**Embedded fonts**, Jason's question the same day: a malicious font whose glyphs are swapped makes a
+document show one word in the viewers that use the embedded font and another in those that
+substitute, while the extracted text is always the characters stored. Nothing in the draft saw it,
+and no character test can, since the characters are ordinary letters. D18, the `font.*` kinds, the
+fixture's font cases and the viewer measurement are the answer; a sentence for the WD's section 11 is
+among phase 0's proposals. The text model's output is Unicode as stored (Java strings, UTF-8 when
+written), neither transcoded nor normalised, so every character the document holds reaches the
+agent: private-use, zero-width, bidi and tag characters are reported by the `chars.*` kinds, and a
+`w:sym` is its code point as written.
