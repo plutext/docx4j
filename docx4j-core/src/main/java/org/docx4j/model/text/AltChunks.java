@@ -20,12 +20,16 @@ package org.docx4j.model.text;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.BiPredicate;
 
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -38,10 +42,10 @@ import org.slf4j.LoggerFactory;
  * apart from the package (REQ-204): {@code JaxbXmlPartAltChunkHost.convertAltChunks}' kinds, read
  * rather than converted in place. A plain-text chunk is its lines; an HTML chunk tidied by jsoup
  * where it is present and read as blocks, else its text with the tags stripped; an XHTML chunk
- * through docx4j-ImportXHTML where it is on the class path (into a scratch package), else read as
- * HTML; an MHT chunk through docx4j-ImportXHTML only; a WordprocessingML or Flat OPC chunk as a
- * package read one level down. An RTF chunk, a Word 2003 XML chunk and anything else are not
- * expanded.
+ * through docx4j-ImportXHTML where it is on the class path (into a scratch package, and never
+ * fetching: no image, no stylesheet, WD section 11), else read as HTML; an MHT chunk through
+ * docx4j-ImportXHTML only; a WordprocessingML or Flat OPC chunk as a package read one level down.
+ * An RTF chunk, a Word 2003 XML chunk and anything else are not expanded.
  */
 final class AltChunks {
 
@@ -127,14 +131,69 @@ final class AltChunks {
 			WordprocessingMLPackage scratch = WordprocessingMLPackage.createPackage();
 			Constructor<?> ctor = importer.getConstructor(WordprocessingMLPackage.class);
 			Object instance = ctor.newInstance(scratch);
+			String fetches = neverFetch(importer, instance);
+			if (fetches != null) {
+				log.warn("docx4j-ImportXHTML couldn't be stopped from fetching (" + fetches + "), so the altChunk at "
+						+ prefix + " is read without it");
+				return null;
+			}
 			Method convert = importer.getMethod(mht ? "convertMHT" : "convert", InputStream.class, String.class);
 			List<Object> content = (List<Object>) convert.invoke(instance, new ByteArrayInputStream(bytes), null);
 			scratch.getMainDocumentPart().getContent().addAll(content);
 			return x.nested(scratch, prefix, story);
 		} catch (Exception | LinkageError e) {
-			Throwable cause = e instanceof java.lang.reflect.InvocationTargetException && e.getCause() != null ? e.getCause() : e;
+			Throwable cause = e instanceof InvocationTargetException && e.getCause() != null ? e.getCause() : e;
 			log.warn("docx4j-ImportXHTML couldn't read the altChunk at " + prefix + ": " + cause);
 			return null;
 		}
+	}
+
+	/**
+	 * Leaves the importer unable to fetch (WD section 11: an extraction never follows a link): an
+	 * image handler that adds nothing for an {@code img}, so that neither a URL nor a local file is
+	 * read (nor a data URI decoded), and a user agent that refuses every resource, a stylesheet's
+	 * {@code link} and {@code @import} included, and resolves no URI. Null when done, else why it
+	 * couldn't be: docx4j-ImportXHTML on the module path, which doesn't open its renderer to docx4j,
+	 * or a version without these hooks.
+	 */
+	private static String neverFetch(Class<?> importer, Object instance) {
+		try {
+			ClassLoader loader = importer.getClassLoader();
+			Class<?> handler = Class.forName("org.docx4j.convert.in.xhtml.XHTMLImageHandler", false, loader);
+			importer.getMethod("setXHTMLImageHandler", handler).invoke(instance, nothing(handler));
+
+			// The renderer the conversion will use: getRenderer makes it once, with the scratch
+			// package's styles as CSS.
+			Method getRenderer = importer.getDeclaredMethod("getRenderer");
+			getRenderer.setAccessible(true);
+			Object renderer = getRenderer.invoke(instance);
+			Object agent = renderer.getClass().getMethod("getDocx4jUserAgent").invoke(renderer);
+			Class<?> naive = Class.forName("com.openhtmltopdf.swing.NaiveUserAgent", false, loader);
+			Class<?> priority = Class.forName("com.openhtmltopdf.outputdevice.helper.ExternalResourceControlPriority", false, loader);
+			Method control = naive.getMethod("setAccessController", priority, BiPredicate.class);
+			BiPredicate<String, Object> refuse = (uri, type) -> false;
+			for (Object when : priority.getEnumConstants()) control.invoke(agent, when, refuse);
+			Class<?> resolver = Class.forName("com.openhtmltopdf.extend.FSUriResolver", false, loader);
+			naive.getMethod("setUriResolver", resolver).invoke(agent, nothing(resolver));
+			return null;
+		} catch (Exception | LinkageError e) { // InaccessibleObjectException on the module path
+			Throwable cause = e instanceof InvocationTargetException && e.getCause() != null ? e.getCause() : e;
+			return cause.toString();
+		}
+	}
+
+	/** An implementation of the interface whose every method does nothing and returns null, false or 0. */
+	private static Object nothing(Class<?> type) {
+		return Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] { type }, (proxy, method, args) -> {
+			if (method.getDeclaringClass() == Object.class) {
+				switch (method.getName()) {
+				case "equals": return proxy == args[0];
+				case "hashCode": return System.identityHashCode(proxy);
+				default: return "nothing " + type.getName();
+				}
+			}
+			Class<?> returns = method.getReturnType();
+			return returns.isPrimitive() && returns != void.class ? Array.get(Array.newInstance(returns, 1), 0) : null;
+		});
 	}
 }

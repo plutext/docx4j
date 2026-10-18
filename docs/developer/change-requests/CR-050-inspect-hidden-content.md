@@ -81,7 +81,7 @@ ports and the editor. Nothing in extraction changes (REQ-904).
 | effective properties | `PropertyResolver` (CR-015); CR-030's table contexts | a colour comparison |
 | geometry | `w:pgSz`, `w:pgMar`; `wp:anchor`/`wp:inline`; VML `style` | an off-page test without layout |
 | the probe | `expected-findings.tsv`: 14 inspector rows (channel `inspect`), pending in three views (42 of the suite's 51 pending) | rows for the other kinds; fixtures for a few; and the harness checks only the expected keys, so an unexpected finding passes unnoticed |
-| no external access | WD §11, REQ-506, REQ-513 | **not met by the text model today when docx4j-ImportXHTML is on the class path**: an `application/xhtml+xml` or MHT `altChunk` goes through `XHTMLImporterImpl`, whose default image handler and user agent fetch `<img src>` and `<link href>` (measured 19 October 2026: one stylesheet and four image requests to a local listener from one `Texts.plainText` call, and `[MISSING IMAGE: x, x ]` in the text). A defect of CR-046's extraction, reported apart (§7); the inspector never calls an importer |
+| no external access | WD §11, REQ-506, REQ-513 | met by the text model since 19 October 2026. Before, when docx4j-ImportXHTML was on the class path, an `application/xhtml+xml` or MHT `altChunk` went through `XHTMLImporterImpl`, whose default image handler and user agent fetched `<img src>` and `<link href>` (measured: one stylesheet and four image requests to a local listener from one `Texts.plainText` call, and `[MISSING IMAGE: x, x ]` in the text). A defect of CR-046's extraction, fixed there (§7); the inspector never calls an importer |
 
 ## 2. Design
 
@@ -492,8 +492,9 @@ Each with a recommendation; Jason decides.
 - **A defect found while drafting, outside this CR:** CR-046's extraction fetches external resources
   through docx4j-ImportXHTML when it is on the class path (§1's last row), against WD §11, REQ-506 and
   REQ-513, and lets its `[MISSING IMAGE ...]` placeholder into the text. docx4j-mcp ships
-  ImportXHTML, so its `extract_text` does the same. The fix belongs to CR-046's text model (an image
-  handler and user agent that never fetch, or no importer for XHTML), raised with Jason separately.
+  ImportXHTML, so its `extract_text` does the same. **Fixed** in CR-046's text model on 19 October 2026
+  (an image handler that adds nothing and a user agent that refuses every resource; CR-046 records
+  it). docx4j-mcp has the fix once its engine is 17.3.4.
 - **False positives** are the risk that matters to an agent: a report that cries wolf is ignored. The
   exact-set comparison, the boundary cases of §3, and the colour rule's resolution of theme colours,
   table-style shading and `auto` before it compares are the guard.
@@ -528,7 +529,7 @@ Each was checked against the code and the suite; all seven are taken:
    `sdt.stored_surface`, `field.code`, `alt_text.title`/`name` added; a physical location where no
    address exists (§2.4).
 2. **Independence from importers and external access.** Confirmed, and wider than the inspector:
-   measured, extraction itself fetches through ImportXHTML (§1, §7). §2.1's third pass decodes
+   measured, extraction itself fetched through ImportXHTML (§1, §7; fixed in CR-046). §2.1's third pass decodes
    payloads itself and never converts, resolves or fetches; §3's no-access test.
 3. **The `how_to_see` contract.** Taken: three forms with composed options (§2.3, D12), each kind's
    reveal corrected (near-background, tiny and webHidden text are `included`; RTF chunks, titles and

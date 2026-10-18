@@ -174,7 +174,7 @@ structure.
 | SmartArt | a new reader of the diagram data part, depth-first from the `doc` point along `parOf` by `@srcOrd`, over `node` and `asst` points | REQ-511 |
 | legacy WordArt | its `v:textpath/@string`, as a one-paragraph text box | REQ-511 |
 | embedded packages | under `embedded: true`, an `EmbeddedPackagePart` loaded and read at its reference: a WordprocessingML document through the model; a workbook through xlsx4j, each sheet's used range (from the cells holding values, not `dimension`) as a simple table (REQ-605), each cell as displayed (its cached value through xlsx4j's `DataFormatter`, as `ChartTable` uses it; formulas never recomputed), sheets in workbook order, each after its name on its own line; a presentation through pptx4j (`MainPresentationPart.getSlide`), each slide's text in slide order, hidden slides omitted, shapes in `p:spTree` order with groups depth-first, a table as REQ-605, speaker notes omitted; an OLE 1.0 package holding plain text read from its `Ole10Native` stream; no other OLE binary opened. One level deep across kinds: content reached through an embedded package or an `altChunk` has neither expanded | REQ-512 |
-| `altChunk` | `convertAltChunks`' type dispatch, applied to a detached result, never the package: text as lines; XHTML and MHT through docx4j-ImportXHTML when it is on the classpath (reflectively, as `convertAltChunks` reaches it); HTML tidied by jsoup when it is on the classpath and read as blocks directly, its tags stripped otherwise (D5); a docx or Flat OPC chunk as a nested package, one level deep across kinds as for embedded packages; RTF never; `altchunk.not_expanded` for whatever is not expanded | REQ-513 |
+| `altChunk` | `convertAltChunks`' type dispatch, applied to a detached result, never the package: text as lines; XHTML and MHT through docx4j-ImportXHTML when it is on the classpath (reflectively, as `convertAltChunks` reaches it), never fetching (an image handler that adds nothing, a user agent that refuses every resource); HTML tidied by jsoup when it is on the classpath and read as blocks directly, its tags stripped otherwise (D5); a docx or Flat OPC chunk as a nested package, one level deep across kinds as for embedded packages; RTF never; `altchunk.not_expanded` for whatever is not expanded | REQ-513 |
 | image descriptions | a new `ImageDescriber` interface, `AltTextDescriber` the default: `@descr`, else `@name`, else VML `@alt`, and nothing for `adec:decorative`; provenance carried | REQ-514 |
 | properties | the `metadata` object always; in the text only under `metadata: true` | REQ-515 |
 | glossary | `GlossaryDocumentPart`, only under `include: glossary` | REQ-516 |
@@ -621,6 +621,25 @@ Findings outside CR-046, not fixed here:
   namespaces. `TextsPhase2Test`'s REQ-204 snapshot leaves namespace declarations out for this reason. **Fixed by CR-049**
   (19 October 2026): a marshal now leaves the prefix mapper as it found it and declares what its own
   root's `mc:Ignorable` names, and the snapshot compares every part's declarations again.
+
+A defect in this CR's own extraction, found on 19 October 2026 while drafting CR-050 (its §1 and §7):
+with docx4j-ImportXHTML on the class path, an XHTML or MHT chunk went through `XHTMLImporterImpl` with
+its default image handler and user agent, which fetched a stylesheet's `link` and `@import`, and an
+`img` by URL or local file, against WD section 11 and REQ-513 (one `Texts.plainText` call made one
+stylesheet and four image requests to a local listener, and wrote `[MISSING IMAGE: x, x ]` into the
+text). **Fixed** the same day (Jason: "give the importer an image handler and user agent that never
+fetch"). `AltChunks` sets an image handler that adds nothing, so such a chunk's images are left out (a
+data URI's too: decoding one is no fetch, but the importer would make an image part of it, and
+docx4j may shell out to ImageMagick for an unsupported format). It also has the renderer's user agent
+refuse every resource: openhtmltopdf's access controller, at both priorities, and a URI resolver that
+resolves nothing. Where it can't do this, the chunk is read as if the importer were absent, with a
+warning in the log. That is the module path, where docx4j-ImportXHTML doesn't open its renderer to
+docx4j (reasoned, not run). A DTD, an external entity (by URL or `file:`), a font, a CSS background,
+an `object` and an `iframe` were never fetched. `AltChunkNoFetchTest` counts the requests to a
+loopback listener with the importer absent (as Maven runs it) and present (a hand run). Before the
+fix, with the importer present, it saw `/link.css`, `/import.css`, `/image.png`, `/mht.css` and
+`/mht.png`. After it, there are none, and the MHT chunk is still read through the importer. The
+importer-present suite is unchanged by it (963 pass, 60 pending, before and after).
 
 Review, 18 October 2026 (Fable 5.1, session docx4j-44, at Jason's request): it found no correctness
 defect in the walk. It checked the suite (876 PASS, 57 PENDING), docx4j-markdown with `OmmlToLatex`

@@ -63,6 +63,8 @@ Changes in Version 17.3.4
   marshalled after a `wml.Document` no longer declares the document's `mc:Ignorable` prefixes, and any root
   (`getXML()` of a header, footnotes or settings part) declares its own Ignorable and Choice prefixes.
   Saved files are unchanged. A caller relying on the old carry-over declarations no longer gets them.
+- Text model: an XHTML or MHT `altChunk` read through docx4j-ImportXHTML no longer fetches its stylesheets
+  or images (by URL or local file); its images are left out. On the module path the chunk is read without it.
 
 
 Version 17.3.3
