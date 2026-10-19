@@ -86,14 +86,17 @@ Three cases had no rule in the paper when the probe was built; it has since rule
 
 Cases 39–49 and 53–54 extend the main probe; cases 50–52 are in `extraction-probe-external.docm`;
 cases 55–57 (a table of contents, an interrupted list, an embedded workbook with hidden sheets) are in
-`extraction-probe-structure.docx`, a fixture of their own so that the main probe is not rebuilt (19 October 2026).
+`extraction-probe-structure.docx`, a fixture of their own so that the main probe is not rebuilt (19 October 2026);
+cases 58–67, the inspector's boundary cases (CR-050 phase 0), are in `extraction-probe-inspect.docx`.
 Jason checked the earlier 52-case r2 DOCX without repair, declining field updates (18 October 2026).
 The unchanged external DOCM also passed. Jason completed the r3 check for cases 53–54 (18 October 2026).
 The Word findings above describe the original 38-case
 fixture, retained in the parent directory with its re-save.
 `case-statements.tsv` maps the original WD Appendix A plus the approved cases 53–54 (WD 0.5) and 55–57.
 `expected-order.tsv` pins presentation and glossary order. `expected-findings.tsv` separates warnings,
-metadata and future inspector findings from text counts. Inspector requirements are pending a later CR.
+metadata and inspector findings from text counts. `expected-inspection.tsv` lists every finding an inspector
+makes, by location, and `expected-inspection-status.tsv` each fixture's status (`../INSPECTION.md`).
+Inspector requirements are pending CR-050 phase 1.
 The default test environment has no XHTML importer. The MHT row's capability scenario supplies one.
 All external targets are deliberately missing local files. Nothing is fetched by the suite.
 The VBA project has attribute-only modules and a comment marker; it contains no executable procedures.
@@ -444,7 +447,7 @@ Golden conventions and baseline commands are in `../GOLDENS.md`.
 
 | Token | accepted | original | markup | option | with option | note | statements |
 |---|---|---|---|---|---|---|---|
-| `ACX42_CAPTION` | – | – | – |  |  | never extracted, including embedded: true; inspection: activex | REQ-512, REQ-902 |
+| `ACX42_CAPTION` | – | – | – |  |  | never extracted, including embedded: true; inspection: part.activex | REQ-512, REQ-902 |
 
 ### Case 43: a plain-text altChunk
 
@@ -482,37 +485,37 @@ Golden conventions and baseline commands are in `../GOLDENS.md`.
 
 | Token | accepted | original | markup | option | with option | note | statements |
 |---|---|---|---|---|---|---|---|
-| `SHD48_SHADED` | yes | yes | yes |  |  | inspection: colour near background | REQ-902, REQ-602, REQ-518, REQ-507 |
-| `ZW48_SP​LIT` | yes | yes | yes |  |  | U+200B retained; inspection: zero-width characters | REQ-902, REQ-602, REQ-518, REQ-507 |
-| `TAG48_MARK` | yes | yes | yes |  |  | followed by U+E0041 U+E0042, retained; inspection: tag characters | REQ-902, REQ-602, REQ-518, REQ-507 |
-| `OFF48_BOX` | yes | yes | yes | `text_boxes: false` | – | position -5000pt; inspection: off page (position requires layout) | REQ-902, REQ-602, REQ-518, REQ-507 |
-| `ZER48_BOX` | yes | yes | yes | `text_boxes: false` | – | width and height zero; inspection: zero size | REQ-902, REQ-602, REQ-518, REQ-507 |
+| `SHD48_SHADED` | yes | yes | yes |  |  | inspection: text.near_background | REQ-902, REQ-602, REQ-518, REQ-507 |
+| `ZW48_SP​LIT` | yes | yes | yes |  |  | U+200B retained; inspection: chars.zero_width | REQ-902, REQ-602, REQ-518, REQ-507 |
+| `TAG48_MARK` | yes | yes | yes |  |  | followed by U+E0041 U+E0042, retained; inspection: chars.tag | REQ-902, REQ-602, REQ-518, REQ-507 |
+| `OFF48_BOX` | yes | yes | yes | `text_boxes: false` | – | position -5000pt; inspection: shape.off_page | REQ-902, REQ-602, REQ-518, REQ-507 |
+| `ZER48_BOX` | yes | yes | yes | `text_boxes: false` | – | width and height zero; inspection: shape.zero_size | REQ-902, REQ-602, REQ-518, REQ-507 |
 | `SPV48_SEPARATOR` | yes | yes | yes |  |  | specVanish is a style separator, not hidden text | REQ-902, REQ-602, REQ-518, REQ-507 |
 
 ### Case 49: external fields with cached results
 
 | Token | accepted | original | markup | option | with option | note | statements |
 |---|---|---|---|---|---|---|---|
-| `DDE49_INSTR` | – | – | – | `field_codes: true` | yes | inspection: external; never evaluated under fields: update | REQ-506, REQ-902 |
+| `DDE49_INSTR` | – | – | – | `field_codes: true` | yes | inspection: field.external; never evaluated under fields: update | REQ-506, REQ-902 |
 | `DDE49_RESULT` | yes | yes | yes |  |  | cached result, including fields: update | REQ-506, REQ-902 |
-| `INC49_INSTR` | – | – | – | `field_codes: true` | yes | inspection: external; never fetched under fields: update | REQ-506, REQ-902 |
+| `INC49_INSTR` | – | – | – | `field_codes: true` | yes | inspection: field.external; never fetched under fields: update | REQ-506, REQ-902 |
 | `INC49_RESULT` | yes | yes | yes |  |  | cached result, including fields: update | REQ-506, REQ-902 |
-| `FLD49_FILE_MARK` | – | – | – | `field_codes: true` | yes | inspection: external; Markdown also carries the link target | REQ-506, REQ-902 |
+| `FLD49_FILE_MARK` | – | – | – | `field_codes: true` | yes | inspection: field.external; Markdown also carries the link target | REQ-506, REQ-902 |
 
 ### Case 50: external relationships and updateFields
 
 | Token | accepted | original | markup | option | with option | note | statements |
 |---|---|---|---|---|---|---|---|
-| `TPL50_MARK` | – | – | – |  |  | external target; inspection: external; never fetched under any option | REQ-506, REQ-801, REQ-902 |
-| `MRG50_MARK` | – | – | – |  |  | external target; inspection: external; never fetched under any option | REQ-506, REQ-801, REQ-902 |
-| `LNK50_MARK` | – | – | – |  |  | external target; inspection: external; never fetched under any option | REQ-506, REQ-801, REQ-902 |
-| `OLE50_LINK_MARK` | – | – | – |  |  | external target; inspection: external; never fetched under any option | REQ-506, REQ-801, REQ-902 |
+| `TPL50_MARK` | – | – | – |  |  | external target; inspection: relationship.external; never fetched under any option | REQ-506, REQ-801, REQ-902 |
+| `MRG50_MARK` | – | – | – |  |  | external target; inspection: relationship.external; never fetched under any option | REQ-506, REQ-801, REQ-902 |
+| `LNK50_MARK` | – | – | – |  |  | external target; inspection: relationship.external; never fetched under any option | REQ-506, REQ-801, REQ-902 |
+| `OLE50_LINK_MARK` | – | – | – |  |  | external target; inspection: relationship.external; never fetched under any option | REQ-506, REQ-801, REQ-902 |
 
 ### Case 51: a VBA module
 
 | Token | accepted | original | markup | option | with option | note | statements |
 |---|---|---|---|---|---|---|---|
-| `VBA51_MODULE_MARK` | – | – | – |  |  | inspection: macro; never extracted under any option | REQ-902 |
+| `VBA51_MODULE_MARK` | – | – | – |  |  | inspection: part.macro; never extracted under any option | REQ-902 |
 
 ### Case 52: custom and application properties
 
@@ -575,4 +578,151 @@ Golden conventions and baseline commands are in `../GOLDENS.md`.
 | `SHT57_HIDDEN` | – | – | – | `embedded: true; hidden: true` | yes | sheet state hidden: absent under embedded: true alone; read under hidden: true, as hidden text is | REQ-512, REQ-507 |
 | `SHT57_VERY_HIDDEN` | – | – | – | `embedded: true; hidden: true` | yes | sheet state veryHidden: as the hidden sheet | REQ-512, REQ-507 |
 | `SHT57_LAST` | – | – | – | `embedded: true` | yes | the last sheet, visible after the hidden two | REQ-512, REQ-507 |
+
+### Case 58: formatting: hidden text, tiny text, colours at the threshold, a collapsed heading
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `VAN58_SHOWN` | yes | yes | yes |  |  | w:vanish false over a hidden character style: shown; no inspection finding | REQ-902, REQ-507 |
+| `VAN58_INHERITED` | – | – | – | `hidden: true` | yes | hidden through its character style; inspection: text.hidden | REQ-902, REQ-507 |
+| `PAR58_VISIBLE` | yes | yes | yes |  |  | the shown part of a partly hidden paragraph | REQ-902, REQ-507 |
+| `PAR58_PART_HIDDEN` | – | – | – | `hidden: true` | yes | inspection: text.hidden (its paragraph mark is not hidden) | REQ-902, REQ-507 |
+| `PAR58_WHOLE` | – | – | – | `hidden: true` | yes | runs and mark hidden; inspection: paragraph.hidden, one finding | REQ-902, REQ-507 |
+| `SZ58_TWO` | yes | yes | yes |  |  | exactly 2pt: no inspection finding | REQ-902, REQ-507 |
+| `SZ58_ONE_HALF` | yes | yes | yes |  |  | 1.5pt; inspection: text.tiny | REQ-902, REQ-507 |
+| `SZ58_COMPLEX` | yes | yes | yes |  |  | w:cs: drawn at w:szCs, 1.5pt; inspection: text.tiny | REQ-902, REQ-507 |
+| `SZ58_NOT_COMPLEX` | yes | yes | yes |  |  | drawn at w:sz, 12pt (w:szCs 1.5pt unused): no inspection finding | REQ-902, REQ-507 |
+| `COL58_NEAR` | yes | yes | yes |  |  | D3D3D3 on white, contrast 1.497:1; inspection: text.near_background | REQ-902, REQ-507 |
+| `COL58_FAR` | yes | yes | yes |  |  | D2D2D2 on white, contrast 1.512:1: no inspection finding | REQ-902, REQ-507 |
+| `HEAD58_COLLAPSED` | yes | yes | yes |  |  | a heading 3 collapsed by default (w15:collapsed) | REQ-902, REQ-507 |
+| `BODY58_FIRST` | yes | yes | yes |  |  | inspection: paragraph.collapsed, from here to BODY58_LAST | REQ-902, REQ-507 |
+| `HEAD58_NESTED` | yes | yes | yes |  |  | a collapsed heading inside the collapsed body: no finding of its own | REQ-902, REQ-507 |
+| `BODY58_LAST` | yes | yes | yes |  |  | the collapsed body ends here, at the next heading 3 | REQ-902, REQ-507 |
+| `HEAD58_AFTER` | yes | yes | yes |  |  |  | REQ-902, REQ-507 |
+
+### Case 59: geometry: off the page, partly on it, flat, indeterminate, aligned, hidden, in an unused header
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `GEO59_OFF_PAGE` | yes | yes | yes | `text_boxes: false` | – | page-relative, wholly right of the page; inspection: shape.off_page | REQ-902, REQ-518 |
+| `GEO59_PARTLY` | yes | yes | yes | `text_boxes: false` | – | page-relative, partly on the page: no inspection finding | REQ-902, REQ-518 |
+| `GEO59_FLAT` | yes | yes | yes | `text_boxes: false` | – | height zero; inspection: shape.zero_size | REQ-902, REQ-518 |
+| `GEO59_INDETERMINATE` | yes | yes | yes | `text_boxes: false` | – | 9000000 EMU below its paragraph: on the page or not as the paragraph falls; no finding, undecided | REQ-902, REQ-518 |
+| `GEO59_ALIGNED` | yes | yes | yes | `text_boxes: false` | – | wp:align right and top, page-relative: on the page by construction, no finding | REQ-902, REQ-518 |
+| `GEO59_HIDDEN` | yes | yes | yes | `text_boxes: false` | – | wp:docPr hidden on an inline box: Word 365 shows it (19 October 2026), so no inspection finding | REQ-902, REQ-518 |
+| `HDR59_UNUSED` | – | – | – |  |  | a header no section uses; inspection: story.unused | REQ-902, REQ-518 |
+| `HDR59_BOX` | – | – | – |  |  | a page-relative box in the unused header: no section, no page size, undecided | REQ-902, REQ-518 |
+
+### Case 60: characters: supplementary private use, a bidi override split across runs, symbol and icon fonts
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `PUA60_SUPPLEMENTARY` | yes | yes | yes |  |  | followed by U+F0041 (plane 15) in a text font; inspection: chars.private_use | REQ-902, REQ-602 |
+| `BIDI60_SPLIT` | yes | yes | yes |  |  | U+202E ends this bold run, U+202C starts the next; inspection: chars.bidi, one finding over both runs | REQ-902, REQ-602 |
+| `BIDI60_AFTER` | yes | yes | yes |  |  |  | REQ-902, REQ-602 |
+| `SYM60_SYMBOL_FONTS` | yes | yes | yes |  |  | w:sym in Symbol and Wingdings, and U+F04A in a Wingdings run: no inspection finding | REQ-902, REQ-602 |
+| `SYM60_TEXT_FONT` | yes | yes | yes |  |  | w:sym U+F041 in Arial, a text font; inspection: chars.private_use | REQ-902, REQ-602 |
+| `ICN60_ICON_FONT` | yes | yes | yes |  |  | U+E700 in Segoe MDL2 Assets, an icon font (D17): no inspection finding | REQ-902, REQ-602 |
+
+### Case 61: fields: INCLUDEPICTURE and LINK in both forms, and HYPERLINK to a bookmark, a file and a UNC path
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `FLD61_INCPIC_SIMPLE` | – | – | – | `field_codes: true` | yes | a simple field, keyword in mixed case, argument quoted; inspection: field.code, field.external | REQ-902, REQ-505, REQ-506 |
+| `FLD61_SIMPLE_RESULT` | yes | yes | yes |  |  | its cached result | REQ-902, REQ-505, REQ-506 |
+| `FLD61_INCPIC_COMPLEX` | – | – | – | `field_codes: true` | yes | a complex field, argument bare; inspection: field.code, field.external | REQ-902, REQ-505, REQ-506 |
+| `FLD61_COMPLEX_RESULT` | yes | yes | yes |  |  |  | REQ-902, REQ-505, REQ-506 |
+| `FLD61_LINK_BARE` | – | – | – | `field_codes: true` | yes | LINK, simple, keyword lower case, a bare relative path; inspection: field.code, field.external | REQ-902, REQ-505, REQ-506 |
+| `FLD61_LINK_SIMPLE_RESULT` | yes | yes | yes |  |  |  | REQ-902, REQ-505, REQ-506 |
+| `FLD61_LINK_QUOTED` | – | – | – | `field_codes: true` | yes | LINK, complex, a quoted path; inspection: field.code, field.external | REQ-902, REQ-505, REQ-506 |
+| `FLD61_LINK_COMPLEX_RESULT` | yes | yes | yes |  |  |  | REQ-902, REQ-505, REQ-506 |
+| `FLD61_TARGET` | yes | yes | yes |  |  | the bookmark the \l link goes to | REQ-902, REQ-505, REQ-506 |
+| `FLD61_BOOKMARK_RESULT` | yes | yes | yes |  |  | HYPERLINK \l: inspection: field.code only, neither external nor web | REQ-902, REQ-505, REQ-506 |
+| `FLD61_FILE` | – | – | – | `field_codes: true` | yes | HYPERLINK to a file: inspection: field.code, field.external; Markdown also carries the link target | REQ-902, REQ-505, REQ-506 |
+| `FLD61_FILE_RESULT` | yes | yes | yes |  |  |  | REQ-902, REQ-505, REQ-506 |
+| `FLD61_UNC` | – | – | – | `field_codes: true` | yes | HYPERLINK to a UNC path: inspection: field.code, field.external; Markdown also carries the link target | REQ-902, REQ-505, REQ-506 |
+| `FLD61_UNC_RESULT` | yes | yes | yes |  |  |  | REQ-902, REQ-505, REQ-506 |
+
+### Case 62: backgrounds: highlight, shading, auto, a table style, the page colour, a pattern
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `BG62_HIGHLIGHT` | yes | yes | yes |  |  | yellow on its yellow highlight; inspection: text.near_background | REQ-902 |
+| `BG62_HIGHLIGHT_OVER_SHADING` | yes | yes | yes |  |  | white on a white highlight over black shading (the highlight is drawn); inspection: text.near_background | REQ-902 |
+| `BG62_SHADED_CONTRAST` | yes | yes | yes |  |  | white on black shading: no inspection finding | REQ-902 |
+| `BG62_AUTO_COLOUR` | yes | yes | yes |  |  | an auto colour on black shading (Word draws it in contrast): no inspection finding | REQ-902 |
+| `BG62_AUTO_FILL` | yes | yes | yes |  |  | C00000 on a run fill of auto over its paragraph's C00000; inspection: text.near_background | REQ-902 |
+| `BG62_TABLE_STYLE` | yes | yes | yes |  |  | 1F3864 on its table style's 1F3864 cell shading; inspection: text.near_background | REQ-902 |
+| `BG62_PAGE` | yes | yes | yes |  |  | the page colour on the page colour (Word 365 shows the page colour); inspection: text.near_background | REQ-902 |
+| `BG62_PAGE_NOT_WHITE` | yes | yes | yes |  |  | C8C8C8: 1.67:1 on white, 1.44:1 on the page colour; inspection: text.near_background | REQ-902 |
+| `BG62_PATTERN` | yes | yes | yes |  |  | white on a 50% pattern: a background docx4j cannot determine; no finding, undecided | REQ-902 |
+
+### Case 63: inventory: an unknown part, notes, comments, docVars, people, ink, a watermark, a scripted chunk, an embedded document holding hidden text
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `NOTE63_HERE` | yes | yes | yes |  |  |  | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
+| `NOTE63_REFERENCED` | yes | yes | yes | `notes: false` | – | a footnote; inspection: note | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
+| `NOTE63_UNREFERENCED` | – | – | – |  |  | a footnote no reference reaches; inspection: story.unused | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
+| `CMT63_HERE` | yes | yes | yes |  |  |  | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
+| `CMT63_ANCHORED` | – | – | `{>>…<<}` | `comments: true` | `{>>…<<}` | inspection: comment | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
+| `CMT63_UNANCHORED` | – | – | – |  |  | a comment with no anchor; inspection: story.unused | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
+| `INK63_HERE` | yes | yes | yes |  |  | an ink part (w14:contentPart) after it; inspection: ink | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
+| `CHK63_SCRIPTED` | yes | yes | yes | `altchunks: false` | – | an HTML chunk holding a script, an event handler and two external references; inspection: altchunk, altchunk.script, altchunk.external_ref; nothing fetched | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
+| `EMB63_HERE` | yes | yes | yes |  |  |  | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
+| `EMB63_VISIBLE` | – | – | – | `embedded: true` | yes | the embedded document's shown text | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
+| `EMB63_HIDDEN` | – | – | – | `embedded: true; hidden: true` | yes | hidden text inside the embedded document; inspection: text.hidden in its chain | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
+| `VAR63_VALUE` | – | – | – |  |  | w:docVars; inspection: doc_vars | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
+| `HDR63_USED` | – | – | – | `include: headers` | yes | the header the section uses; inspection: header_footer | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
+| `WMK63_WATERMARK` | – | – | – | `include: headers` | yes | its watermark (PowerPlusWaterMarkObject, v:textpath); inspection: watermark | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
+
+### Case 64: links: w:hyperlink to a file, a UNC path, the web, mail, and a bookmark
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `LNK64_FILE_TEXT` | yes | yes | yes |  |  | a w:hyperlink to a file; inspection: relationship.external | REQ-902, REQ-703 |
+| `LNK64_UNC_TEXT` | yes | yes | yes |  |  | a w:hyperlink to a UNC path; inspection: relationship.external | REQ-902, REQ-703 |
+| `LNK64_WEB_TEXT` | yes | yes | yes |  |  | https; inspection: hyperlink.web | REQ-902, REQ-703 |
+| `LNK64_MAIL_TEXT` | yes | yes | yes |  |  | mailto; inspection: hyperlink.web | REQ-902, REQ-703 |
+| `LNK64_BOOKMARK_TEXT` | yes | yes | yes |  |  | w:anchor: no inspection finding | REQ-902, REQ-703 |
+
+### Case 65: embedded fonts that draw text as other text or as nothing, a careful swap, symbol and plain faces
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `FNT65_WORD` | yes | yes | yes |  |  | CAT drawn DOG: C an over-wide glyph drawing DOG, A and T blank; inspection: font.glyph_mismatch, font.glyph_blank | REQ-902, REQ-602 |
+| `FNT65_TWIN` | yes | yes | yes |  |  | as FNT65_WORD, in a face named like the unaltered one support/inspect-fonts gives to install | REQ-902, REQ-602 |
+| `FNT65_BLANK` | yes | yes | yes |  |  | INVISIBLE INK, every letter blank; inspection: font.glyph_blank | REQ-902, REQ-602 |
+| `FNT65_ZERO` | yes | yes | yes |  |  | MIXED, X at zero advance with an outline; inspection: font.glyph_mismatch | REQ-902, REQ-602 |
+| `FNT65_NAMED` | yes | yes | yes |  |  | MAT drawn AMT, the glyphs' names kept; inspection: font.glyph_mismatch | REQ-902, REQ-602 |
+| `FNT65_SHARED` | yes | yes | yes |  |  | FEE drawn FFF, E sharing F's glyph; inspection: font.glyph_mismatch | REQ-902, REQ-602 |
+| `FNT65_CAREFUL` | yes | yes | yes |  |  | SIZE drawn ZISE, a careful swap: font.embedded only, a limitation | REQ-902, REQ-602 |
+| `FNT65_PLAIN` | yes | yes | yes |  |  | PLAIN, the glyphs as made: font.embedded only | REQ-902, REQ-602 |
+| `FNT65_SYMBOL` | yes | yes | yes |  |  | U+F041 U+F061 U+F06B in an embedded symbol-encoded face: no chars.private_use | REQ-902, REQ-602 |
+| `FNT65_CCMP` | yes | yes | yes |  |  | BOB drawn POP through ccmp; inspection: font.glyph_mismatch (Word's use of ccmp is the check's to measure) | REQ-902, REQ-602 |
+| `FNT65_LIGA` | yes | yes | yes |  |  | DOT drawn OOT through liga, w14:ligatures standard; inspection: font.glyph_mismatch | REQ-902, REQ-602 |
+| `FNT65_NO_LIGA` | yes | yes | yes |  |  | ODD, liga not applied (no w14:ligatures): no inspection finding | REQ-902, REQ-602 |
+| `FNT65_PUA_PLAIN` | yes | yes | yes |  |  | U+E123 in a face of neither kind, which does not map it; inspection: chars.private_use | REQ-902, REQ-602 |
+
+### Case 66: a picture named and not described, a decorative one, a workbook with a hidden row and column
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `PIC66_NAME_ONLY` | – | – | – | `alt_text: true` | yes | a picture's name, no descr: its description (AltTextDescriber); inspection: alt_text.name | REQ-902, REQ-514, REQ-512 |
+| `PIC66_DECOR_NAME` | – | – | – |  |  | a decorative picture's name; inspection: alt_text.name, unextractable | REQ-902, REQ-514, REQ-512 |
+| `PIC66_DECOR_DESCR` | – | – | – |  |  | a decorative picture's descr; inspection: alt_text.description, unextractable | REQ-902, REQ-514, REQ-512 |
+| `ROW66_SHOWN` | – | – | – | `embedded: true` | yes | A1 | REQ-902, REQ-514, REQ-512 |
+| `COL66_HIDDEN_CELL` | – | – | – | `embedded: true` | yes | B1, in hidden column B: read (Embedded.sheet checks the sheet's state only); inspection: embedded.column_hidden | REQ-902, REQ-514, REQ-512 |
+| `ROW66_HIDDEN` | – | – | – | `embedded: true` | yes | A2, in hidden row 2: read; inspection: embedded.row_hidden | REQ-902, REQ-514, REQ-512 |
+
+### Case 67: stored content: a Fallback holding near-background text, the stale surface of a bound control holding tag characters
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `MCE67_HERE` | yes | yes | yes |  |  |  | REQ-902, REQ-302, REQ-509 |
+| `MCE67_CHOICE` | yes | yes | yes |  |  | the selected Choice (w14) | REQ-902, REQ-302, REQ-509 |
+| `MCE67_FALLBACK_WHITE` | – | – | – |  |  | white text in the unselected Fallback; inspection: mce.branch, and text.near_background in it | REQ-902, REQ-302, REQ-509 |
+| `SDT67_HERE` | yes | yes | yes |  |  |  | REQ-902, REQ-302, REQ-509 |
+| `SDT67_VALUE` | yes | yes | yes | `bindings: surface` | – | the bound value, read by default | REQ-902, REQ-302, REQ-509 |
+| `SDT67_SURFACE` | – | – | – | `bindings: surface` | yes | the stale surface, followed by U+E0041 U+E0042, which Word 365 replaces with the bound value on open; inspection: sdt.stored_surface, and chars.tag in it | REQ-902, REQ-302, REQ-509 |
 

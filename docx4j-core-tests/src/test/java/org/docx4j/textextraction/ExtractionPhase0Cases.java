@@ -47,7 +47,10 @@ final class ExtractionPhase0Cases {
         "503,402", "504", "601,510", "601,603", "605", "604", "514", "511", "511",
         "513", "604", "515,516", "512", "512", "512", "512,902", "513", "513", "513",
         "513", "513", "902,602,518,507", "506,902", "506,801,902", "902", "515", "512,605", "501,516",
-        "520,505", "703,510", "512,507"
+        "520,505", "703,510", "512,507",
+        // 58-67, extraction-probe-inspect.docx (CR-050 phase 0)
+        "902,507", "902,518", "902,602", "902,505,506", "902", "902,503,504,512,513", "902,703", "902,602", "902,514,512",
+        "902,302,509"
     };
 
     static String statements(int n) {
@@ -57,6 +60,7 @@ final class ExtractionPhase0Cases {
     }
 
     static String fixture(int n) {
+        if (n >= 58) return ExtractionInspectCases.FIXTURE; // CR-050 phase 0, 19 October 2026
         if (n >= 55) return ExtractionStructureCases.FIXTURE; // 19 October 2026, a fixture of their own
         return n >= 50 && n <= 52 ? "extraction-probe-external.docm" : "extraction-probe.docx";
     }
@@ -102,7 +106,7 @@ final class ExtractionPhase0Cases {
         int shape = b.shapeId++;
         b.body.append("<w:p><w:r><w:object>" + previewShape(shape, preview)
                 + "<w:control r:id='" + control + "' w:name='ProbeButton' w:shapeid='_x0000_i" + shape + "'/></w:object></w:r></w:p>");
-        b.never("ACX42_CAPTION", "never extracted, including embedded: true; inspection: activex");
+        b.never("ACX42_CAPTION", "never extracted, including embedded: true; inspection: part.activex");
 
         b.begin(43, "a plain-text altChunk");
         chunk(b, mdp, "43.txt", "text/plain", "ALT43_TEXT_LINE_ONE\r\nALT43_TEXT_LINE_TWO\r\n".getBytes(StandardCharsets.UTF_8));
@@ -138,22 +142,22 @@ final class ExtractionPhase0Cases {
         b.body.append(p("<w:r>" + b.vmlBox(pt("OFF48_BOX")).replace("width:216pt;height:36pt", "position:absolute;margin-left:-5000pt;margin-top:-5000pt;width:216pt;height:36pt") + "</w:r>"));
         b.body.append(p("<w:r>" + b.vmlBox(pt("ZER48_BOX")).replace("width:216pt;height:36pt", "width:0pt;height:0pt") + "</w:r>"));
         b.body.append("<w:p><w:pPr><w:rPr><w:specVanish/></w:rPr></w:pPr>" + r("SPV48_SEPARATOR") + "</w:p>");
-        b.always("SHD48_SHADED", "inspection: colour near background");
-        b.always("ZW48_SP\u200bLIT", "U+200B retained; inspection: zero-width characters");
-        b.always("TAG48_MARK", "followed by U+E0041 U+E0042, retained; inspection: tag characters");
-        b.box("OFF48_BOX", "position -5000pt; inspection: off page (position requires layout)");
-        b.box("ZER48_BOX", "width and height zero; inspection: zero size");
+        b.always("SHD48_SHADED", "inspection: text.near_background");
+        b.always("ZW48_SP\u200bLIT", "U+200B retained; inspection: chars.zero_width");
+        b.always("TAG48_MARK", "followed by U+E0041 U+E0042, retained; inspection: chars.tag");
+        b.box("OFF48_BOX", "position -5000pt; inspection: shape.off_page");
+        b.box("ZER48_BOX", "width and height zero; inspection: shape.zero_size");
         b.always("SPV48_SEPARATOR", "specVanish is a style separator, not hidden text");
 
         b.begin(49, "external fields with cached results");
         b.body.append(p(field(" DDEAUTO ProbeServer DDE49_INSTR Item ", "DDE49_RESULT", "") + r(" ")
                 + field(" INCLUDETEXT &quot;file:///INC49_INSTR.docx&quot; ", "INC49_RESULT", "") + r(" ")
                 + field(" HYPERLINK &quot;file:///FLD49_FILE_MARK&quot; ", "Local file link", "")));
-        b.gated("DDE49_INSTR", "field_codes: true", "inspection: external; never evaluated under fields: update");
+        b.gated("DDE49_INSTR", "field_codes: true", "inspection: field.external; never evaluated under fields: update");
         b.always("DDE49_RESULT", "cached result, including fields: update");
-        b.gated("INC49_INSTR", "field_codes: true", "inspection: external; never fetched under fields: update");
+        b.gated("INC49_INSTR", "field_codes: true", "inspection: field.external; never fetched under fields: update");
         b.always("INC49_RESULT", "cached result, including fields: update");
-        b.gated("FLD49_FILE_MARK", "field_codes: true", "inspection: external; Markdown also carries the link target");
+        b.gated("FLD49_FILE_MARK", "field_codes: true", "inspection: field.external; Markdown also carries the link target");
     }
 
     static byte[] external(ExtractionProbeBuilder b) throws Exception {
@@ -163,10 +167,10 @@ final class ExtractionPhase0Cases {
         body.append(p(b.picture("rId4", null, "", "").replace("r:embed=", "r:link=")));
         body.append(p(object(b, "rId5", "rId2", "Excel.Sheet.12", true)));
         for (String marker : new String[] {"TPL50_MARK", "MRG50_MARK", "LNK50_MARK", "OLE50_LINK_MARK"})
-            b.never(marker, "external target; inspection: external; never fetched under any option");
+            b.never(marker, "external target; inspection: relationship.external; never fetched under any option");
         b.begin(51, "a VBA module");
         body.append(pt("Case 51: a VBA module containing a comment marker and no executable procedures"));
-        b.never("VBA51_MODULE_MARK", "inspection: macro; never extracted under any option");
+        b.never("VBA51_MODULE_MARK", "inspection: part.macro; never extracted under any option");
         b.begin(52, "custom and application properties");
         body.append(pt("Case 52: custom and application properties"));
         b.gated("CPR52_CUSTOM", "metadata: true", "always in block-model metadata");

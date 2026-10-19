@@ -1,11 +1,15 @@
 # CR-050: Inspect - hidden and near-hidden content as a first-class report
 
-Status: PROPOSED 2026-10-19, drafted at Jason's request ("consider section 12 ... of
+Status: IN PROGRESS. Phase 0 done 2026-10-19 (§5, "Phase 0 record", Jason: "implement CR-050 phase 0"):
+the contract (`docx4j-core-tests/src/test/resources/text-extraction/INSPECTION.md`), an oracle of every
+finding on the suite's four fixtures, the harness's exact comparison, and a new fixture,
+`extraction-probe-inspect.docx` (cases 58 to 67), checked in Word 365; phases 1 to 3 to come.
+Proposed 2026-10-19, drafted at Jason's request ("consider section 12 ... of
 ../docx4j-portfolio/docs/text_extraction_behaviour_model.md then draft a CR to create that tool");
 revised the same day after three reviews (§9), to state its objective (§0, Jason: "frame it that way"),
 and for text an embedded font draws as other text or as nothing (§9, Jason's question).
 Four phases (§5); decisions in §6: D2 to D6, D11, D12, D14, D15, D17 and D18 taken by Jason on 19 October
-2026 (D11 with 1,000 findings); D1, D7 to D10, D13 and D16 open.
+2026 (D11 with 1,000 findings); D1, D7 to D10, D13, D16 and D19 (phase 0's) open.
 
 The specification is the portfolio's *WordprocessingML Text Extraction*, WD 0.16
 (`docx4j-portfolio/docs/text_extraction_specification_wd.md`, dae90bf), cited as **WD**: its §9,
@@ -209,13 +213,13 @@ no importer, and the probe cases that hold them (*new*: a case §3 adds):
 | `font.glyph_blank` | a character an embedded face maps to a glyph with no outline (whitespace, format and combining characters excepted; a character the face does not map is not tested, since the viewer draws it in another font): in the text, nothing on the page | no | included | unseen | *new* |
 | `font.glyph_mismatch` | a character an embedded face draws as something else, on positive evidence from the face itself (D18's four tests: a glyph shared with another letter or digit; a letter's advance zero or over 1.5 em; the glyph named for another character; a substitution Word applies making it another letter's glyph), naming what is drawn where a test says; no evidence, no finding; symbol and icon fonts (D17) excepted | differently | included | unseen | *new* |
 | `paragraph.collapsed` | the body of a heading marked collapsed (`w15:collapsed`, Word's "Collapsed by default", through its style or direct; a paragraph with an outline level): every paragraph and table after it until the next paragraph at its outline level or above, not shown on open | differently (the heading and its expand arrow shown, the body on a click) | included | unseen | *new* |
-| `shape.zero_size`, `shape.off_page`, `shape.hidden` | a text box or shape of extent 0 in a dimension; wholly off the page for every position its anchor could have on the page (D4); `wp:docPr/@hidden` or VML `visibility:hidden` | no | included where it holds text (`text_boxes: true` is the default), else unextractable | unseen where it holds text, else info | 48, *new* |
-| `smartart.data` | SmartArt data its drawing does not show | no | included (`smartart: true`) | unseen | 35 |
+| `shape.zero_size`, `shape.off_page`, `shape.hidden` | a text box or shape of extent 0 in a dimension; wholly off the page for every position its anchor could have on the page (D4); `wp:docPr/@hidden` on an anchored shape (Word 365 shows an inline one, phase 0) or VML `visibility:hidden` | no | included where it holds text (`text_boxes: true` is the default), else unextractable | unseen where it holds text, else info | 48, *new* |
+| `smartart.data` | SmartArt data its drawing does not show | no | included (`smartart: true`) | unseen | none (case 35 has no drawing part, and Word lays it out from the data) |
 | `text.hidden`, `paragraph.hidden` | `w:vanish` on the run or through its styles; a paragraph whose runs and mark are hidden | no | options: `hidden: true` | omitted | 18 |
 | `revision.deleted`, `revision.moved_from` | deleted and moved-from runs and paragraphs (Word's default Simple Markup does not show them) | no | options: `view: original` | omitted | 9-15, 17 |
 | `mce.branch` | content in an unselected branch, every other kind looked for in it, its text compared with the selected one's | no (an older Office would show it) | unextractable | omitted | 1, 3-8, *new* |
-| `story.unused` | a header or footer no section references; a note no reference reaches (not the separator, continuation-separator and continuation-notice notes every notes part holds unreferenced by design: a `w:type` other than `normal`, which extraction skips too); a comment with no anchor | no | unextractable | omitted | 26, 27, *new* |
-| `sdt.stored_surface` | a bound control's stored surface where it differs from its value, every other kind looked for in it | yes (until Word refreshes the binding) | options: `bindings: surface` | omitted | 23, *new* |
+| `story.unused` | a header or footer no section references; a note no reference reaches (not the separator, continuation-separator and continuation-notice notes every notes part holds unreferenced by design: a `w:type` other than `normal`, which extraction skips too); a comment with no anchor. A note whose only reference is deleted (case 27's) is `note`, in the output under `view: original` | no | unextractable | omitted | 26, *new* |
+| `sdt.stored_surface` | a bound control's stored surface where it differs from its value, every other kind looked for in it | no (Word 365 shows the bound value on open, phase 0) | options: `bindings: surface` | omitted | 23, *new* |
 | `field.code` | a field's instruction text (every field; the external ones are also `field.external`) | no | options: `field_codes: true` | omitted | 19, 20, 49 |
 | `glossary` | the glossary's entries | no | options: `include: glossary` | omitted | 54 |
 | `alt_text.description` | a picture's or shape's `descr` (a decorative picture's: unextractable) | no (read aloud by a screen reader) | options: `alt_text: true` in plain text; included in Markdown and the block model | omitted | 33 |
@@ -229,7 +233,7 @@ no importer, and the probe cases that hold them (*new*: a case §3 adds):
 | `part.macro`, `part.activex` | `vbaProject`; an ActiveX control part | - | unextractable | active | 51, 42 |
 | `altchunk.script`, `altchunk.external_ref` | `<script>` or an event handler in an HTML, XHTML or MHT chunk; an external `src` or `href` in one | - | unextractable | active | *new* |
 | `comment` | a comment, with its author | yes (its presence; its text on click) | options: `comments: true` or `view: markup` | omitted (info under `comments: true` and in the markup view) | 28 |
-| `header_footer`, `watermark` | a header or footer a section uses; a watermark's text | yes | options: `include: headers`, `include: footers` | omitted | 26 |
+| `header_footer`, `watermark` | a header or footer a section uses; a watermark's text | yes | options: `include: headers`, `include: footers` | omitted | 26, *new* (the watermark) |
 | `note`, `sdt.placeholder`, `chart.cached` | a footnote or endnote; a control showing its placeholder; a chart's cached strings | yes | included | info | 27, 22, 34 |
 | `text.web_hidden` | `w:webHidden` (D8) | yes (not in Web Layout) | included | info | 18 |
 | `altchunk`, `object.embedded` | each chunk, with its content type; each embedded object, with its ProgID | yes (as Word converts it; as its preview) | options: `altchunks: true` (default) or `embedded: true` for the types REQ-513 and REQ-512 read; unextractable for RTF and other OLE binaries | info | 36, 39-47, 53 |
@@ -329,8 +333,8 @@ a font draws; and it does not judge intent: no finding says its text is, or is n
   asserted.
 - **The rows.** `expected-findings.tsv` gains a row for every kind against the fixtures that hold it
   (§2.3); today's eight kind names are renamed to §2.3's identifiers (D2), in the TSV, the builder's
-  source and the WD's Appendix A. The adapter advertises REQ-901, REQ-902 and REQ-904, so the 42
-  pending rows run with the new ones.
+  source and the WD's Appendix A. The adapter advertises REQ-901, REQ-902 and REQ-904 to REQ-907 (WD
+  0.17), so the pending inspector rows run with the new ones.
 - **A new fixture**, `extraction-probe-inspect.docx` (cases 58 on), built by the docx4j session with
   its own builder class as `extraction-probe-structure.docx` was (3dcbb3764), so the Word-checked
   probes are not rebuilt, with the boundary cases the review lists:
@@ -342,7 +346,7 @@ a font draws; and it does not judge intent: no finding says its text is, or is n
   | characters | a supplementary private-use character; a bidi override split across runs; Symbol and Wingdings characters (no finding); a `w:sym` whose `w:font` is a text font (a finding) |
   | fields | INCLUDEPICTURE and LINK, simple and complex, keywords in mixed case, arguments quoted and bare; HYPERLINK `\l` (no finding) beside a file and a UNC target |
   | background | highlight against shading; `auto` and transparent fills; table-style shading; a page colour (`w:background`); a background docx4j cannot determine (no finding, a limitation) |
-  | inventory | a part of an unknown content type; a broken relationship; an unreferenced note and an unanchored comment; the separator notes (no finding); `w:docVars`; `people.xml`; an ink part; an HTML chunk with a `<script>`, an event handler and an external image and stylesheet; an embedded docx holding hidden text |
+  | inventory | a part of an unknown content type; a broken relationship (built by phase 1's test: docx4j's loader refuses such a package, phase 0); an unreferenced note and an unanchored comment; the separator notes (no finding); `w:docVars`; `people.xml`; an ink part; an HTML chunk with a `<script>`, an event handler and an external image and stylesheet; an embedded docx holding hidden text |
   | links | case 21's https links in both forms (`hyperlink.web`); a `w:hyperlink` to a file path and one to a UNC path (active) |
   | fonts | an open-licence font, renamed, embedded with its glyphs altered so that one word is drawn as another (a wide glyph drawing the word, the word's own letters blank); the same font named like a font the viewer has installed; a run whose every glyph is blank; a letter mapped to a zero-width glyph that has an outline; a glyph named for another letter; two letters sharing a glyph; a careful swap (unique, ordinary glyphs, names stripped: `font.embedded` only, and the limitation); an embedded font left as its foundry made it (`font.embedded` only); an embedded symbol font and an icon font's private-use characters (no finding); a private-use character in a font of neither kind |
   | geometry, further | a shape placed by `wp:align` (on the page by construction: no finding); a shape in an unused header (no section, so no page size: indeterminate) |
@@ -415,12 +419,78 @@ gains them.
 **Acceptance:** the rows run as pending (no inspector yet), the suite's other results unchanged; the
 new fixture opens in Word without repair.
 
+**Phase 0 record, 19 October 2026.** Built by the docx4j-25 session (Claude Opus 5.5) at Jason's word
+("implement CR-050 phase 0"); uncommitted until he says so.
+
+- *The contract*, `text-extraction/INSPECTION.md`: locations (package chain, part, a path with every
+  step positioned, code-point ranges within a run's text), excerpts, identity and merging, the branch
+  read, membership and the six named outputs, reveal, groups, and every kind's scope, location and
+  excerpt. The choices it makes where this CR left them open are marked "(phase 0)" there, for the
+  WD proposals and for review: among them `hyperlink.web` is an inventory kind (info whatever the
+  output, as the table above has it); case 27's note is `note` under `view: original`, not
+  `story.unused`; text deleted inside an insertion is in the markup view only; a TOC field's
+  content needs `toc: true`; a column-relative anchor in a one-column section is at the left margin
+  (D4's rule otherwise unchanged); a payload the inspector never decodes (an ActiveX binary, an OLE
+  binary, a VBA project, a part of unknown type) is reported by its kind and its content is a
+  limitation, while a chunk of an undecoded type (RTF) and content beyond one level are `skipped`.
+- *The oracle*: `phase0/expected-inspection.tsv`, 209 findings over the four fixtures (54 kinds; none
+  of `smartart.data`, `relationship.broken` or `rsids`, whose fixtures the contract explains), and
+  `expected-inspection-status.tsv` (the main probe `PARTIAL`: two payloads beyond one level and the
+  RTF chunk; three undecided occurrences in the new fixture). Written by
+  `support/inspect_oracle.py`, a second reading of the contract in Python (lxml, fontTools), reviewed
+  case by case; `ExtractionInspection` fills the extraction addresses from the text model and checks
+  every row against its fixture. `expected-findings.tsv`'s inspect rows (kind, selector, count) are
+  derived from it, the eight old kind names renamed to §2.3's (D2).
+- *The harness*: `Engine.inspect` and `ExtractionConformance.compareInspection`, exact by occurrence
+  (a finding missing, unexpected or doubled fails), then each finding's fields, the status and the
+  limitations; an inspect row is checked once (an inspection is the package's, whatever the view). The
+  rows need REQ-901, 902 and 904 to 907 (WD 0.17), so all stay pending: the suite reports 1345 assertions passing (972
+  before, and 373 from the new fixture's token rows, all passing on CR-046's text model) and 222
+  pending (the 9 that were pending besides the inspector's, 209 inspect rows and 4 fixture inspections).
+- *The fixture*, `extraction-probe-inspect.docx`, cases 58 to 67 (`ExtractionInspectCases`), §3's
+  table but the broken relationship: docx4j's `Load3` refuses a package whose relationship names a
+  missing part ("cannot find part"), so phase 1 builds that case in its test, and must load such a
+  package to report it. A watermark case was added (no fixture had one). Ten embedded faces made from
+  Liberation Sans by `support/inspect-fonts/make_fonts.py`, embedded with `FontEmbedder`.
+- *Word 365* (`phase0/evidence/word-open-results.md`): no prompt of any kind on open (Jason confirmed). What it measured,
+  and what changed here because of it: a stale bound surface is replaced by the bound value on open,
+  so `sdt.stored_surface` is not seen (the table above said "yes until Word refreshes"); the page
+  colour is shown (with `w:displayBackgroundShape`), so a page-colour background is `differently`,
+  not `indeterminate` (D15's example); an inline shape's `wp:docPr/@hidden` is ignored, so it is no
+  finding; `w:cs` draws a run at `w:szCs`; a collapsed heading is collapsed on open; Word applies
+  `ccmp` always and `liga` only under `w14:ligatures`; Word uses an embedded face, but prefers an
+  installed face of the same name (as docx4j's `Mapper` does), so `FNT65_TWIN` drew CAT where
+  `FNT65_WORD` drew DOG; Word made the HTML chunk's external image a linked picture and tried to load
+  it (a red cross), which `altchunk.external_ref` reports; Word drops the unanchored comment and the
+  unreferenced note on save. One result questions D17: Word did not draw the embedded
+  symbol-encoded face (U+F041 and kin came out as other symbols) and did not keep its embedding on
+  save, so the embedded-face exemption covers characters Word draws from a substitute (for Jason).
+  LibreOffice 26.2.5.2 drew none of the embedded faces and ignored `w:cs` for the size. docx4j's PDF
+  drew every embedded face (the symbol face too), applied `liga` but not `ccmp`, and showed the stale
+  surface; its HTML embeds no font, so a browser draws the stored characters. What a person sees of
+  an embedded font therefore depends on the viewer and the machine, which is why D18's tests read the
+  face alone. Word for the web is still to record (Jason, later).
+- *A defect in CR-046's text model, found by the oracle's address check and fixed*: every header and
+  footer block's address began with its part's content's `toString()`
+  (`org.docx4j.wml.Ftr@50bb1c1ffooter:rId9/0`): `Extractor.headerOrFooter`'s local variable shadowed
+  the address prefix. Now `header:rId4/0`; `TextsTest.headersBySection` asserts the form.
+- *Proposed to the WD* (sent to the portfolio session): §0's objective and D14's groups and counts;
+  D2's identifiers; D3, D4, D5, D6, D11, D12, D15, D17, D18; REQ-901's fields, REQ-903's four counts,
+  §11's sentence (characters, never glyphs), REQ-902's `altchunk.external_ref`, and the oracle's
+  format as the suite's. WD 0.17 (portfolio f79bf8b, the same day) adopted the first eight: section 9
+  is now 9.1 REQ-901 (the finding, its location and the display profile, with the Word measurements),
+  9.2 REQ-902 (the kinds and their rules), 9.3 REQ-905 (membership and the group) and REQ-903 (the four
+  counts), 9.4 REQ-906 (identity), REQ-907 (bounds and status) and REQ-904 (the limitation ids); §11
+  has the glyph sentence. It records phase 0's own choices (INSPECTION.md's "(phase 0)") as adopted but
+  not yet ratified by Jason, and D8, D13, D17's face test and D19 as pending him. Appendix A.4 (cases
+  58 to 67), [PROBE] and REQ-1201's inspection rows follow once phase 0 is committed.
+
 ### Phase 1: the inspector
 
 - `Inspect`, `Inspection`, `InspectFinding`, `Group`, `Visible`, `Reveal` in `org.docx4j.model.text`; the
   stored-story pass on the text model's resolution; the inventory; the payload scanner; bounds and
   status; `limitations()`.
-- The adapter advertises REQ-901, REQ-902 and REQ-904.
+- The adapter advertises REQ-901, REQ-902 and REQ-904 to REQ-907 (WD 0.17).
 
 **Acceptance:** REQ-902 and REQ-904; REQ-901 once the WD has adopted D12's reveal contract (D16).
 Every inspector row passes, the exact comparison holds on every fixture, `expected-inspection.tsv`'s
@@ -633,6 +703,14 @@ Each with a recommendation; Jason decides.
   and stay silent otherwise. Phase 1 calibrates them on the real-document corpora (§5): no finding in
   a font as its foundry made it.
   **Decided** (Jason, 19 October 2026): as recommended, (a) now and (c) later.
+- **D19. A drawing's name** (phase 0). Every `wp:docPr` carries a name, and most are the ones Word or a
+  producer gives ("Text Box 3", "Picture 7"): `alt_text.name` is 28 of the oracle's 209 findings,
+  nearly all default names, each counted omitted. Options: (a) every name, as §2.3 reads (the oracle
+  today); (b) a name only where extraction can carry it (a picture with no `descr`, its description)
+  or where it is not of the form a word or words, a space and a number; (c) only where extraction can
+  carry it. Recommended: (b): the omitted count is the signal an agent reads, and a default name is no
+  divergence, while a name that is text (case 66's `PIC66_NAME_ONLY`, or an instruction) is kept.
+  (b)'s pattern is language-independent but not exact; (c) loses a name holding text on a shape.
 
 ## 7. Dependencies, risks and out of scope
 

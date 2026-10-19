@@ -49,9 +49,50 @@ public class ExtractionConformanceTest {
         }
         ExtractionFixtureChecks.check(Files.readAllBytes(dir.resolve("extraction-probe.docx")),
                 Files.readAllBytes(dir.resolve("extraction-probe-external.docm")),
-                Files.readAllBytes(dir.resolve(ExtractionStructureCases.FIXTURE)), catalogue);
-        assertEquals(ExtractionFixtureChecks.findings(), Files.readString(dir.resolve("expected-findings.tsv")));
+                Files.readAllBytes(dir.resolve(ExtractionStructureCases.FIXTURE)),
+                Files.readAllBytes(dir.resolve(ExtractionInspectCases.FIXTURE)), catalogue);
+        assertEquals(ExtractionInspection.findingsTable(dir), Files.readString(dir.resolve("expected-findings.tsv")));
         assertEquals(ExtractionAdditionalCases.orders(), Files.readString(dir.resolve("expected-order.tsv")));
+    }
+    /** CR-050 phase 0: every row of the inspection oracle is where its fixture has it (text-extraction/INSPECTION.md) */
+    @Test public void inspectionOracleMatchesTheFixtures() throws Exception {
+        ExtractionInspection.check(fixtures());
+    }
+    /** The inspection is compared by occurrence: a finding missing, unexpected, doubled or with another group fails. */
+    @Test public void inspectionComparisonIsExactByOccurrence() throws Exception {
+        Path dir = temporary.newFolder("inspected").toPath();
+        Files.writeString(dir.resolve("expected-tokens.tsv"), "case\ttoken\taccepted\toriginal\tmarkup\toption\twith_option\tfixture\tstatements\n");
+        Files.writeString(dir.resolve("expected-findings.tsv"), "case\tfixture\tchannel\tkind\tselector\tscenario\texpected\tstatements\n");
+        Files.writeString(dir.resolve("goldens.tsv"), "fixture\tcase\tview\tscenario\tformat\tgolden\tstatements\n");
+        String header = "fixture\tcase\tkind\tchain\tpart\tpath\tstart\tend_path\tend\taddress\tvisible\treveal\tplain\tmarkdown"
+                + "\tblocks\thidden\tembedded\tcomments\texcerpt_length\texcerpt_cut\tselector\tsummary\n";
+        String one = "f.docx\t1\ttext.hidden\t\t/word/document.xml\t/w:document[1]/w:body[1]/w:p[1]/w:r[1]\t0\t\t4\tbody/0\tno"
+                + "\toptions: hidden: true\tomitted\tomitted\tomitted\tunseen\tomitted\tomitted\t4\tfalse\tA_B\t\n";
+        String two = one.replace("w:p[1]", "w:p[2]").replace("body/0", "body/1");
+        Files.writeString(dir.resolve(ExtractionInspection.TABLE), header + one + two);
+        Files.writeString(dir.resolve(ExtractionInspection.STATUS), "fixture\tstatus\tskipped\tundecided\nf.docx\tCOMPLETE\t\t\n");
+        List<Map<String, String>> expected = ExtractionConformance.table(dir.resolve(ExtractionInspection.TABLE));
+        final List<List<Map<String, String>>> reported = new ArrayList<>();
+        ExtractionConformance.Engine engine = new ExtractionConformance.Engine() {
+            public Set<String> implementedStatements() { return Set.of("REQ-901", "REQ-902", "REQ-904", "REQ-905", "REQ-906", "REQ-907"); }
+            public ExtractionConformance.Output extract(Path p, String view, String scenario, String format) { throw new AssertionError(); }
+            public ExtractionConformance.Inspection inspect(Path fixture) {
+                return new ExtractionConformance.Inspection(reported.get(0), "COMPLETE", List.of(), List.of(),
+                        ExtractionInspection.LIMITATIONS);
+            }
+        };
+        Path report = dir.resolve("report.tsv");
+        reported.add(expected);
+        ExtractionConformance.run(dir, report, engine);
+        assertTrue(Files.readString(report).contains("f.docx\t0\tinspection\t-\tdefault\tPASS"));
+        Map<String, String> moved = new LinkedHashMap<>(expected.get(1));
+        moved.put("plain", "unseen");
+        for (List<Map<String, String>> wrong : List.of(List.of(expected.get(0)), List.of(expected.get(0), expected.get(1), expected.get(1)),
+                List.of(expected.get(0), moved))) {
+            reported.set(0, wrong);
+            try { ExtractionConformance.run(dir, report, engine); fail("A wrong inspection passed: " + wrong.size()); }
+            catch (AssertionError e) { assertTrue(e.getMessage(), e.getMessage().contains("inspection differs")); }
+        }
     }
     @Test public void docxAltChunkRequiresItsImportContentType() throws Exception {
         Map<String, byte[]> entries = ExtractionFixtureChecks.entries(
@@ -84,9 +125,10 @@ public class ExtractionConformanceTest {
         List<Map<String, String>> generated = ExtractionConformance.table(dir.resolve("case-statements.tsv"));
         assertEquals(52, appendix.size());
         List<Map<String, String>> additions = ExtractionConformance.table(dir.getParent().resolve("support/additional-case-statements.tsv"));
-        assertEquals(5, additions.size()); // 53-54 (WD 0.5), 55-57 (extraction-probe-structure.docx, 19 October 2026)
+        // 53-54 (WD 0.5), 55-57 (extraction-probe-structure.docx, 19 October 2026), 58-67 (extraction-probe-inspect.docx, CR-050)
+        assertEquals(15, additions.size());
         appendix.addAll(additions);
-        assertEquals(57, generated.size());
+        assertEquals(67, generated.size());
         String readme = Files.readString(dir.resolve("README.md"));
         for (int i = 0; i < appendix.size(); i++) {
             assertEquals(appendix.get(i).get("case"), generated.get(i).get("case"));

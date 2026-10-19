@@ -218,6 +218,16 @@ public class TextsTest {
 		assertTrue(endOfSection1 < footer && footer < section2 && section2 < body2);
 		assertEquals(text.lastIndexOf("HDR26_EVEN"), even);
 		assertFalse(text.contains("HDR26_ORPHAN"));
+		// REQ-519: a header's block is header:<rId>/<n>, a footer's footer:<rId>/<n> (CR-050 phase 0 found the part's
+		// content's toString() before them)
+		TextResult result = Texts.of(probe, new TextOptions().include(TextOptions.Include.HEADERS, TextOptions.Include.FOOTERS));
+		int stories = 0;
+		for (TextBlock b : result.blocks()) {
+			if (b.getStory() != TextBlock.Story.HEADER && b.getStory() != TextBlock.Story.FOOTER) continue;
+			stories++;
+			assertTrue(b.getAddress(), b.getAddress().matches("(header|footer):rId\\d+/\\d+"));
+		}
+		assertTrue(stories >= 5);
 	}
 
 	/** REQ-504: comments in markup at the end of their range, replies after them, resolved flagged; otherwise only under comments: true. */

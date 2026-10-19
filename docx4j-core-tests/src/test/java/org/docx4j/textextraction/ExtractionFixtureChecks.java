@@ -31,18 +31,19 @@ import org.docx4j.org.apache.poi.poifs.filesystem.*;
 
 /** Structural checks independent of the extraction engine and Word's open/repair check. */
 final class ExtractionFixtureChecks {
-    static void check(byte[] main, byte[] external, byte[] structure, List<ExtractionProbeBuilder.Case> cases) throws Exception {
-        if (cases.size() != 57) throw new IllegalStateException("Expected 57 cases");
-        Map<String, byte[]> a = entries(main), b = entries(external), s = entries(structure);
-        validatePackage(a); validatePackage(b); validatePackage(s);
-        String mainText = payloadText(a), externalText = payloadText(b), structureText = payloadText(s);
+    static void check(byte[] main, byte[] external, byte[] structure, byte[] inspect, List<ExtractionProbeBuilder.Case> cases) throws Exception {
+        if (cases.size() != 67) throw new IllegalStateException("Expected 67 cases");
+        Map<String, byte[]> a = entries(main), b = entries(external), s = entries(structure), n = entries(inspect);
+        validatePackage(a); validatePackage(b); validatePackage(s); validatePackage(n);
+        String mainText = payloadText(a), externalText = payloadText(b), structureText = payloadText(s), inspectText = payloadText(n);
         Set<String> tokens = new HashSet<>();
         for (int i = 0; i < cases.size(); i++) {
             ExtractionProbeBuilder.Case c = cases.get(i);
             require(c.n == i + 1, "Case sequence");
             require(!ExtractionPhase0Cases.statements(c.n).isEmpty(), "Missing requirements");
             String fixture = ExtractionPhase0Cases.fixture(c.n);
-            String payload = fixture.endsWith(".docm") ? externalText : fixture.equals(ExtractionStructureCases.FIXTURE) ? structureText : mainText;
+            String payload = fixture.endsWith(".docm") ? externalText : fixture.equals(ExtractionStructureCases.FIXTURE) ? structureText
+                    : fixture.equals(ExtractionInspectCases.FIXTURE) ? inspectText : mainText;
             for (ExtractionProbeBuilder.Token t : c.tokens) {
                 require(tokens.add(c.n + ":" + t.name), "Duplicate expectation " + t.name);
                 // Case 30's hyphens are elements separating the two token fragments.
@@ -51,7 +52,7 @@ final class ExtractionFixtureChecks {
                 require(payload.contains(marker) || text.contains(marker), "Marker missing from intended fixture: " + t.name);
             }
         }
-        for (Map<String, byte[]> pkg : List.of(a, b, s)) {
+        for (Map<String, byte[]> pkg : List.of(a, b, s, n)) {
             NodeList children = xml(pkg.get("word/document.xml")).getElementsByTagNameNS(
                     "http://schemas.openxmlformats.org/wordprocessingml/2006/main", "body").item(0).getChildNodes();
             for (int i = 0; i < children.getLength(); i++) if (children.item(i) instanceof Element)
@@ -67,6 +68,7 @@ final class ExtractionFixtureChecks {
         require(!story.contains("EMB53_") && !story.contains("GLS54_"), "New payload marker leaked to body");
         checkAdditionalCases(a);
         checkStructureCases(s);
+        checkInspectCases(n);
         require(text(a, "word/activeX/activeX42.xml").contains("persistStorage"), "ActiveX persistence");
         ProbeActiveXControl.check(a.get("word/activeX/activeX42.bin"));
         require(text(a, "word/chunk46.xml").startsWith("<?xml version=\"1.0\""), "Flat OPC declaration");
@@ -91,6 +93,26 @@ final class ExtractionFixtureChecks {
         require(!story.contains("SHT57_"), "Workbook token leaked to body");
         String workbook = text(entries(structure.get("word/embeddings/structure57.xlsx")), "xl/workbook.xml");
         require(workbook.contains("state=\"hidden\"") && workbook.contains("state=\"veryHidden\""), "Hidden sheet states");
+    }
+
+    /** Cases 58-67: what the inspector's boundary cases rest on, which a rebuild could lose silently */
+    static void checkInspectCases(Map<String, byte[]> inspect) throws Exception {
+        String story = text(inspect, "word/document.xml");
+        require(story.contains("<w:background w:color=\"" + ExtractionInspectCases.PAGE_COLOUR + "\""), "Page colour");
+        require(story.contains("<w15:collapsed/>"), "Collapsed heading");
+        require(story.contains("PUA60_SUPPLEMENTARY \udb80\udc41") && story.contains("\u202e</w:t>") && story.contains(">\u202c"), "Characters");
+        require(story.contains("hidden=\"1\"") && story.contains("<wp:align>right</wp:align>"), "Shape geometry");
+        require(story.contains("SDT67_SURFACE\udb40\udc41\udb40\udc42"), "Surface tag characters");
+        require(!story.contains("HDR59_") && !story.contains("NOTE63_UNREFERENCED") && !story.contains("CMT63_UNANCHORED"), "Unused story leaked to body");
+        require(!story.contains("EMB63_VISIBLE") && !story.contains("EMB63_HIDDEN"), "Embedded token leaked to body");
+        require(text(inspect, "word/settings.xml").contains("<w:docVars>") && text(inspect, "word/settings.xml").contains("<w:embedTrueTypeFonts/>"),
+                "docVars and embedTrueTypeFonts");
+        require(text(inspect, "word/chunk63.htm").contains("<script>") && text(inspect, "word/chunk63.htm").contains(".invalid/"), "Scripted chunk");
+        int fonts = 0;
+        for (String name : inspect.keySet()) if (name.startsWith("word/fonts/") && name.endsWith(".odttf")) fonts++;
+        require(fonts == ExtractionInspectCases.FACES.length, "Embedded fonts: " + fonts);
+        String workbook = text(entries(inspect.get("word/embeddings/probe66.xlsx")), "xl/worksheets/sheet1.xml");
+        require(workbook.contains("hidden=\"1\" customWidth") && workbook.contains("<row r=\"2\" hidden=\"1\">"), "Hidden row and column");
     }
 
     static void checkAdditionalCases(Map<String, byte[]> main) throws Exception {
@@ -234,18 +256,12 @@ final class ExtractionFixtureChecks {
     static String text(Map<String, byte[]> entries, String name) { return new String(entries.get(name), StandardCharsets.UTF_8); }
     static void require(boolean condition, String message) { if (!condition) throw new IllegalStateException(message); }
 
+    /**
+     * The warning and metadata rows of {@code expected-findings.tsv}. Its inspect rows are derived from
+     * {@code expected-inspection.tsv} ({@link ExtractionInspection#findingsTable}, CR-050 phase 0).
+     */
     static String findings() {
         StringBuilder out = new StringBuilder("case\tfixture\tchannel\tkind\tselector\tscenario\texpected\tstatements\n");
-        finding(out, 42, "inspect", "activex", "ACX42_CAPTION", "default", "1", "REQ-902");
-        for (String[] row : new String[][] {
-            {"colour near background", "SHD48_SHADED"}, {"zero-width characters", "ZW48_SP\u200bLIT"},
-            {"tag characters", "TAG48_MARK"}, {"off page", "OFF48_BOX"}, {"zero size", "ZER48_BOX"}})
-            finding(out, 48, "inspect", row[0], row[1], "default", "1", "REQ-902");
-        for (String s : new String[] {"DDE49_INSTR", "INC49_INSTR", "file:///FLD49_FILE_MARK"})
-            finding(out, 49, "inspect", "external", s, "default", "1", "REQ-902");
-        for (String s : new String[] {"TPL50_MARK.dotx", "MRG50_MARK.txt", "LNK50_MARK.png", "OLE50_LINK_MARK.xlsx"})
-            finding(out, 50, "inspect", "external", "file:///CR046-MISSING/" + s, "default", "1", "REQ-902");
-        finding(out, 51, "inspect", "macro", "word/vbaProject.bin", "default", "1", "REQ-902");
         finding(out, 50, "metadata", "fields_update_on_open", "", "default", "true", "REQ-506");
         finding(out, 52, "metadata", "ProbeCustom", "", "default", "CPR52_CUSTOM", "REQ-515");
         finding(out, 52, "metadata", "Company", "", "default", "APP52_COMPANY", "REQ-515");

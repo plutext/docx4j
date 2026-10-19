@@ -2025,13 +2025,14 @@ final class Extractor {
 	private void headerOrFooter(RelationshipsPart rels, String rId, TextBlock.Story kind, Set<String> emitted, List<TextBlock> out) {
 		if (rId == null || rels == null || !emitted.add(rId)) return;
 		Part part = rels.getPart(rId);
-		Object root = null;
-		if (part instanceof HeaderPart) root = ((HeaderPart) part).getJaxbElement();
-		else if (part instanceof FooterPart) root = ((FooterPart) part).getJaxbElement();
-		if (root == null) return;
+		Object content = null;
+		if (part instanceof HeaderPart) content = ((HeaderPart) part).getJaxbElement();
+		else if (part instanceof FooterPart) content = ((FooterPart) part).getJaxbElement();
+		if (content == null) return;
+		// the address prefix is the field root (an embedded package's), not the part's content (CR-050 phase 0 found it here)
 		String prefix = root + (kind == TextBlock.Story.HEADER ? "header:" : "footer:") + rId;
 		Story story = new Story(kind, prefix, part);
-		blocks(blockItems(root), prefix, story, out);
+		blocks(blockItems(content), prefix, story, out);
 	}
 
 	// --- notes (REQ-503) -------------------------------------------------------------------------------

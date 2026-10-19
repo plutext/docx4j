@@ -183,17 +183,21 @@ public class ExtractionProbeBuilder {
 		byte[] docx = b.build(gloxFile());
         byte[] external = ExtractionPhase0Cases.external(b);
         byte[] structure = ExtractionStructureCases.build(b);
+        byte[] inspect = ExtractionInspectCases.build(b);
         b.cases.sort(java.util.Comparator.comparingInt(c -> c.n));
-        ExtractionFixtureChecks.check(docx, external, structure, b.cases);
+        ExtractionFixtureChecks.check(docx, external, structure, inspect, b.cases);
         WordprocessingMLPackage.load(new ByteArrayInputStream(docx));
         WordprocessingMLPackage.load(new ByteArrayInputStream(external));
         WordprocessingMLPackage.load(new ByteArrayInputStream(structure));
+        WordprocessingMLPackage.load(new ByteArrayInputStream(inspect));
         // Each fixture is written here, but the committed extraction-probe.docx and .docm are the files Word
         // checked: never copy a rebuild of them over the committed ones (rebuilds are not byte-identical).
         Files.write(new File(out, "extraction-probe.docx").toPath(), docx);
         Files.write(new File(out, "extraction-probe-external.docm").toPath(), external);
         Files.write(new File(out, ExtractionStructureCases.FIXTURE).toPath(), structure);
+        Files.write(new File(out, ExtractionInspectCases.FIXTURE).toPath(), inspect);
         Files.writeString(new File(out, "expected-tokens.tsv").toPath(), b.tsv(), StandardCharsets.UTF_8);
+        // its warning and metadata rows; ExtractionInspection adds the inspect rows (text-extraction/INSPECTION.md)
         Files.writeString(new File(out, "expected-findings.tsv").toPath(), ExtractionFixtureChecks.findings(), StandardCharsets.UTF_8);
         Files.writeString(new File(out, "expected-order.tsv").toPath(), ExtractionAdditionalCases.orders(), StandardCharsets.UTF_8);
         Files.writeString(new File(out, "case-statements.tsv").toPath(), b.statements(), StandardCharsets.UTF_8);
@@ -1292,14 +1296,17 @@ public class ExtractionProbeBuilder {
 		s.append("## Phase 0 extension\n\n"
                 + "Cases 39–49 and 53–54 extend the main probe; cases 50–52 are in `extraction-probe-external.docm`;\n"
                 + "cases 55–57 (a table of contents, an interrupted list, an embedded workbook with hidden sheets) are in\n"
-                + "`extraction-probe-structure.docx`, a fixture of their own so that the main probe is not rebuilt (19 October 2026).\n"
+                + "`extraction-probe-structure.docx`, a fixture of their own so that the main probe is not rebuilt (19 October 2026);\n"
+                + "cases 58–67, the inspector's boundary cases (CR-050 phase 0), are in `extraction-probe-inspect.docx`.\n"
                 + "Jason checked the earlier 52-case r2 DOCX without repair, declining field updates (18 October 2026).\n"
                 + "The unchanged external DOCM also passed. Jason completed the r3 check for cases 53–54 (18 October 2026).\n"
                 + "The Word findings above describe the original 38-case\n"
                 + "fixture, retained in the parent directory with its re-save.\n"
                 + "`case-statements.tsv` maps the original WD Appendix A plus the approved cases 53–54 (WD 0.5) and 55–57.\n"
                 + "`expected-order.tsv` pins presentation and glossary order. `expected-findings.tsv` separates warnings,\n"
-                + "metadata and future inspector findings from text counts. Inspector requirements are pending a later CR.\n"
+                + "metadata and inspector findings from text counts. `expected-inspection.tsv` lists every finding an inspector\n"
+                + "makes, by location, and `expected-inspection-status.tsv` each fixture's status (`../INSPECTION.md`).\n"
+                + "Inspector requirements are pending CR-050 phase 1.\n"
                 + "The default test environment has no XHTML importer. The MHT row's capability scenario supplies one.\n"
                 + "All external targets are deliberately missing local files. Nothing is fetched by the suite.\n"
                 + "The VBA project has attribute-only modules and a comment marker; it contains no executable procedures.\n"

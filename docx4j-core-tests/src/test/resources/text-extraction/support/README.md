@@ -52,3 +52,16 @@ slide is hidden. The first slide's shape coordinates disagree with its tree orde
 contains two nested groups and a 2x2 table. Every slide and note part is registered through
 pptx4j and the embedded ZIP is dated 1980. Case 54 uses a real GlossaryDocumentPart with two
 AutoText building-block entries. Neither case's marker occurs in the main document story.
+
+`additional-case-statements.tsv` also records cases 58 to 67 (CR-050 phase 0, 19 October 2026),
+in `extraction-probe-inspect.docx`, built by `ExtractionInspectCases`: the inspector's boundary
+cases. Their fonts are made by `inspect-fonts/make_fonts.py` from Liberation Sans (SIL OFL 1.1;
+`inspect-fonts/README.md` gives each face's alteration and SHA-256) and embedded whole by docx4j's
+`FontEmbedder`, whose obfuscation key is random: a rebuild of the fixture is not byte-identical,
+so the committed one is the file Word checked (`../phase0/evidence/word-open-results.md`).
+Docx4j's loader refuses a package whose relationship names a missing part, so the broken
+relationship of CR-050's section 3 is not in it.
+
+`inspect_oracle.py` is the reference generator of `../phase0/expected-inspection.tsv` and
+`expected-inspection-status.tsv`; `../INSPECTION.md` is the contract it follows and says how the
+tables are regenerated (the builder, then this script, then `ExtractionInspection`).

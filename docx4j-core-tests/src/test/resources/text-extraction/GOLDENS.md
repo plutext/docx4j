@@ -56,8 +56,18 @@ advertises when docx4j-ImportXHTML is (or is not) on the class path, so a run ch
 advertising `xhtml importer absent`, and a findings, order or golden row needs its scenario's
 capability as a token row does (19 October 2026: a run with the importer present had checked the
 `xhtml importer absent` rows, and compared case 44's expanded MHT chunk with goldens that hold none). Missing advertised capabilities remain pending. Exceptions from enabled assertions
-fail the test. The axis-title row additionally requires capability `CR-047`. Inspector rows require REQ-902 and stay pending in this CR. Output finding keys are
+fail the test. The axis-title row additionally requires capability `CR-047`. Output finding keys are
 `channel<TAB>kind<TAB>selector`; values are counts or literal metadata values.
+
+An inspector (CR-050) also implements `Engine.inspect(fixture)`, returning its findings with the
+columns of `phase0/expected-inspection.tsv`, the fixture's status, what it skipped and could not
+decide, and its limitations. Every inspection row (the `inspect` channel's (kind, selector) counts,
+checked once, the view being irrelevant to an inspection, and each fixture's exact comparison) needs
+REQ-901, REQ-902 and REQ-904 to REQ-907 (WD 0.17's section 9), and stays pending until an engine
+advertises them (CR-050 phase 1).
+The exact comparison is by occurrence: the multiset of (kind, chain, part, path, start, end_path,
+end), then each finding's address, visible, reveal, groups and excerpt length, then the status. Its
+contract, and how the tables are made, is `INSPECTION.md`.
 
 ## Expected tables
 

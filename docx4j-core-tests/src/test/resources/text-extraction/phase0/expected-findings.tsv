@@ -1,18 +1,213 @@
 case	fixture	channel	kind	selector	scenario	expected	statements
-42	extraction-probe.docx	inspect	activex	ACX42_CAPTION	default	1	REQ-902
-48	extraction-probe.docx	inspect	colour near background	SHD48_SHADED	default	1	REQ-902
-48	extraction-probe.docx	inspect	zero-width characters	ZW48_SP​LIT	default	1	REQ-902
-48	extraction-probe.docx	inspect	tag characters	TAG48_MARK	default	1	REQ-902
-48	extraction-probe.docx	inspect	off page	OFF48_BOX	default	1	REQ-902
-48	extraction-probe.docx	inspect	zero size	ZER48_BOX	default	1	REQ-902
-49	extraction-probe.docx	inspect	external	DDE49_INSTR	default	1	REQ-902
-49	extraction-probe.docx	inspect	external	INC49_INSTR	default	1	REQ-902
-49	extraction-probe.docx	inspect	external	file:///FLD49_FILE_MARK	default	1	REQ-902
-50	extraction-probe-external.docm	inspect	external	file:///CR046-MISSING/TPL50_MARK.dotx	default	1	REQ-902
-50	extraction-probe-external.docm	inspect	external	file:///CR046-MISSING/MRG50_MARK.txt	default	1	REQ-902
-50	extraction-probe-external.docm	inspect	external	file:///CR046-MISSING/LNK50_MARK.png	default	1	REQ-902
-50	extraction-probe-external.docm	inspect	external	file:///CR046-MISSING/OLE50_LINK_MARK.xlsx	default	1	REQ-902
-51	extraction-probe-external.docm	inspect	macro	word/vbaProject.bin	default	1	REQ-902
+1	extraction-probe.docx	inspect	mce.branch	FALLBACK_BETA_456	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+3	extraction-probe.docx	inspect	mce.branch	UNSUPPORTED_GAMMA	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+4	extraction-probe.docx	inspect	mce.branch	CHOICE1_UNKNOWN_ZETA	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+4	extraction-probe.docx	inspect	mce.branch	FALLBACK_EPSILON	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+5	extraction-probe.docx	inspect	mce.branch	MCE5_SECOND_SUPPORTED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+5	extraction-probe.docx	inspect	mce.branch	MCE5_FALLBACK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+6	extraction-probe.docx	inspect	mce.branch	MCE6_FALLBACK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+7	extraction-probe.docx	inspect	mce.branch	MCE7_TWO_REQ_CHOICE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+8	extraction-probe.docx	inspect	mce.branch	MCE8_OUTER_FALLBACK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+8	extraction-probe.docx	inspect	mce.branch	MCE8_INNER_FALLBACK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+18	extraction-probe.docx	inspect	text.hidden	HID18_VANISH	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+18	extraction-probe.docx	inspect	text.hidden	HID18_STYLE_VANISH	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+18	extraction-probe.docx	inspect	paragraph.hidden	HID18_HIDDEN_PARA	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+18	extraction-probe.docx	inspect	text.near_background	HID18_WHITE_TEXT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+18	extraction-probe.docx	inspect	text.tiny	HID18_TINY	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+18	extraction-probe.docx	inspect	text.web_hidden	HID18_WEBHIDDEN	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+48	extraction-probe.docx	inspect	text.near_background	SHD48_SHADED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+48	extraction-probe.docx	inspect	chars.zero_width	ZW48_SP​LIT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+48	extraction-probe.docx	inspect	chars.tag	TAG48_MARK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+15	extraction-probe.docx	inspect	field.code	QUOTE inserted	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+15	extraction-probe.docx	inspect	field.code	QUOTE deleted	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+19	extraction-probe.docx	inspect	field.code	FLD19_RESULT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+19	extraction-probe.docx	inspect	field.code	FLD19_INSTR_ONLY	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+20	extraction-probe.docx	inspect	field.code	FLD20_SIMPLE_INSTR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+21	extraction-probe.docx	inspect	field.code	FLD21_FIELD_URL_MARK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+21	extraction-probe.docx	inspect	hyperlink.web	https://example.com/FLD21_FIELD_URL_MARK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+49	extraction-probe.docx	inspect	field.code	DDE49_INSTR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+49	extraction-probe.docx	inspect	field.external	DDE49_INSTR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+49	extraction-probe.docx	inspect	field.code	INC49_INSTR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+49	extraction-probe.docx	inspect	field.external	INC49_INSTR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+49	extraction-probe.docx	inspect	field.code	FLD49_FILE_MARK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+49	extraction-probe.docx	inspect	field.external	FLD49_FILE_MARK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+1	extraction-probe.docx	inspect	alt_text.name	Text Box 3	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+2	extraction-probe.docx	inspect	alt_text.name	Text Box 4	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+4	extraction-probe.docx	inspect	alt_text.name	Text Box 5	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+6	extraction-probe.docx	inspect	alt_text.name	Text Box 6	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+7	extraction-probe.docx	inspect	alt_text.name	Text Box 7	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+8	extraction-probe.docx	inspect	alt_text.name	Text Box 8	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+17	extraction-probe.docx	inspect	alt_text.name	Text Box 9	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+25	extraction-probe.docx	inspect	alt_text.name	Text Box 10	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+25	extraction-probe.docx	inspect	alt_text.name	Text Box 11	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+25	extraction-probe.docx	inspect	alt_text.name	Text Box 12	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+33	extraction-probe.docx	inspect	alt_text.description	IMG33_ALT_TEXT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+33	extraction-probe.docx	inspect	alt_text.title	IMG33_TITLE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+33	extraction-probe.docx	inspect	alt_text.name	Picture 14	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+33	extraction-probe.docx	inspect	alt_text.description	IMG33_DECORATIVE_DESCR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+33	extraction-probe.docx	inspect	alt_text.name	Picture 15	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+33	extraction-probe.docx	inspect	alt_text.description	IMG33_SVG_ALT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+33	extraction-probe.docx	inspect	alt_text.name	Picture 16	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+34	extraction-probe.docx	inspect	alt_text.name	Chart 2	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+34	extraction-probe.docx	inspect	chart.cached	CHT34_TITLE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+35	extraction-probe.docx	inspect	alt_text.name	Diagram 1	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+48	extraction-probe.docx	inspect	shape.off_page	OFF48_BOX	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+48	extraction-probe.docx	inspect	shape.zero_size	ZER48_BOX	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+22	extraction-probe.docx	inspect	sdt.placeholder	PLC22_PLACEHOLDER	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+23	extraction-probe.docx	inspect	sdt.stored_surface	BND23_SURFACE_STALE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+9	extraction-probe.docx	inspect	revision.deleted	TC9_DELETED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+13	extraction-probe.docx	inspect	revision.deleted	TC13_DELETED_ROW	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+14	extraction-probe.docx	inspect	revision.deleted	TC14_DEL_IN_INS	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+15	extraction-probe.docx	inspect	revision.deleted	TC15_DELETED_FIELD	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+17	extraction-probe.docx	inspect	revision.deleted	TC17_BOX_DEL	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+10	extraction-probe.docx	inspect	revision.moved_from	TC10_MOVED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+26	extraction-probe.docx	inspect	header_footer	FTR26_DEFAULT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+26	extraction-probe.docx	inspect	header_footer	HDR26_DEFAULT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+26	extraction-probe.docx	inspect	alt_text.name	Text Box 13	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+26	extraction-probe.docx	inspect	header_footer	HDR26_FIRST	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+26	extraction-probe.docx	inspect	header_footer	HDR26_EVEN	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+26	extraction-probe.docx	inspect	header_footer	HDR26_SECTION2	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+26	extraction-probe.docx	inspect	story.unused	HDR26_ORPHAN	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+17	extraction-probe.docx	inspect	note	TC17_NOTE_BASE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+17	extraction-probe.docx	inspect	revision.deleted	TC17_NOTE_DEL	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+27	extraction-probe.docx	inspect	note	FN27_NOTE_TEXT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+27	extraction-probe.docx	inspect	note	FN27_DELETED_REF_NOTE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+27	extraction-probe.docx	inspect	note	EN27_NOTE_TEXT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+28	extraction-probe.docx	inspect	comment	CMT28_COMMENT_TEXT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+28	extraction-probe.docx	inspect	comment	CMT28_REPLY	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+28	extraction-probe.docx	inspect	comment	CMT28_RESOLVED_COMMENT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+54	extraction-probe.docx	inspect	glossary	GLS54_ENTRY_ONE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+54	extraction-probe.docx	inspect	glossary	GLS54_ENTRY_TWO	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+9	extraction-probe.docx	inspect	revision.author	Probe	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+14	extraction-probe.docx	inspect	revision.author	Probe Two	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+23	extraction-probe.docx	inspect	custom_xml	BND23_XML_VALUE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+38	extraction-probe.docx	inspect	properties	PRP38_SUBJECT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+42	extraction-probe.docx	inspect	part.activex	/word/activeX/activeX42.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+36	extraction-probe.docx	inspect	altchunk	/word/afchunk.htm	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+43	extraction-probe.docx	inspect	altchunk	/word/chunk43.txt	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+44	extraction-probe.docx	inspect	altchunk	/word/chunk44.mht	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+45	extraction-probe.docx	inspect	altchunk	/word/chunk45.rtf	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+46	extraction-probe.docx	inspect	altchunk	/word/chunk46.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+47	extraction-probe.docx	inspect	altchunk	/word/chunk47.docx	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+47	extraction-probe.docx	inspect	altchunk	/word/chunk47.docx>/word/nested.html	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+39	extraction-probe.docx	inspect	object.embedded	/word/embeddings/probe39.xlsx	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+40	extraction-probe.docx	inspect	object.embedded	/word/embeddings/probe40.docx	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+40	extraction-probe.docx	inspect	object.embedded	/word/embeddings/probe40.docx>/word/embeddings/nested.docx	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+41	extraction-probe.docx	inspect	object.embedded	/word/embeddings/probe41.bin	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+53	extraction-probe.docx	inspect	object.embedded	/word/embeddings/probe53.pptx	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+53	extraction-probe.docx	inspect	embedded.notes	EMB53_SPEAKER_NOTES	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+53	extraction-probe.docx	inspect	embedded.slide_hidden	EMB53_HIDDEN_SLIDE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+21	extraction-probe.docx	inspect	hyperlink.web	https://example.com/FLD21_URL_MARK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+50	extraction-probe-external.docm	inspect	alt_text.name	Picture 17	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+50	extraction-probe-external.docm	inspect	settings.update_fields	/word/settings.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+52	extraction-probe-external.docm	inspect	properties	APP52_COMPANY	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+52	extraction-probe-external.docm	inspect	properties	CPR52_CUSTOM	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+51	extraction-probe-external.docm	inspect	part.macro	/word/vbaProject.bin	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+50	extraction-probe-external.docm	inspect	relationship.external	file:///CR046-MISSING/LNK50_MARK.png	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+50	extraction-probe-external.docm	inspect	relationship.external	file:///CR046-MISSING/OLE50_LINK_MARK.xlsx	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+50	extraction-probe-external.docm	inspect	relationship.external	file:///CR046-MISSING/TPL50_MARK.dotx	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+50	extraction-probe-external.docm	inspect	relationship.external	file:///CR046-MISSING/MRG50_MARK.txt	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+55	extraction-probe-structure.docx	inspect	field.code	PAGEREF _Toc55001 \h	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+55	extraction-probe-structure.docx	inspect	field.code	PAGEREF _Toc55002 \h	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+55	extraction-probe-structure.docx	inspect	field.code	TOC \o "1-3" \h \z \u	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+57	extraction-probe-structure.docx	inspect	object.embedded	/word/embeddings/structure57.xlsx	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+57	extraction-probe-structure.docx	inspect	embedded.sheet_hidden	SHT57_HIDDEN	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+57	extraction-probe-structure.docx	inspect	embedded.sheet_very_hidden	SHT57_VERY_HIDDEN	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	mce.branch	/word/document.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+67	extraction-probe-inspect.docx	inspect	mce.branch	MCE67_FALLBACK_WHITE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+58	extraction-probe-inspect.docx	inspect	text.hidden	VAN58_INHERITED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+58	extraction-probe-inspect.docx	inspect	text.hidden	PAR58_PART_HIDDEN	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+58	extraction-probe-inspect.docx	inspect	paragraph.hidden	PAR58_WHOLE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+58	extraction-probe-inspect.docx	inspect	text.tiny	SZ58_ONE_HALF	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+58	extraction-probe-inspect.docx	inspect	text.tiny	SZ58_COMPLEX	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+58	extraction-probe-inspect.docx	inspect	text.near_background	COL58_NEAR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+60	extraction-probe-inspect.docx	inspect	chars.private_use	PUA60_SUPPLEMENTARY	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+60	extraction-probe-inspect.docx	inspect	chars.bidi	BIDI60_SPLIT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+60	extraction-probe-inspect.docx	inspect	chars.private_use	SYM60_TEXT_FONT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+62	extraction-probe-inspect.docx	inspect	text.near_background	BG62_HIGHLIGHT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+62	extraction-probe-inspect.docx	inspect	text.near_background	BG62_HIGHLIGHT_OVER_SHADING	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+62	extraction-probe-inspect.docx	inspect	text.near_background	BG62_AUTO_FILL	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+62	extraction-probe-inspect.docx	inspect	text.near_background	BG62_TABLE_STYLE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+62	extraction-probe-inspect.docx	inspect	text.near_background	BG62_PAGE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+62	extraction-probe-inspect.docx	inspect	text.near_background	BG62_PAGE_NOT_WHITE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.glyph_blank	FNT65_WORD	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.glyph_mismatch	FNT65_WORD	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.glyph_blank	FNT65_TWIN	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.glyph_mismatch	FNT65_TWIN	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.glyph_blank	FNT65_BLANK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.glyph_mismatch	FNT65_ZERO	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.glyph_mismatch	FNT65_NAMED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.glyph_mismatch	FNT65_SHARED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.glyph_mismatch	FNT65_CCMP	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.glyph_mismatch	FNT65_LIGA	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	chars.private_use	FNT65_PUA_PLAIN	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+67	extraction-probe-inspect.docx	inspect	text.near_background	MCE67_FALLBACK_WHITE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+67	extraction-probe-inspect.docx	inspect	chars.tag	SDT67_SURFACE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+61	extraction-probe-inspect.docx	inspect	field.code	FLD61_INCPIC_SIMPLE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+61	extraction-probe-inspect.docx	inspect	field.external	FLD61_INCPIC_SIMPLE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+61	extraction-probe-inspect.docx	inspect	field.code	FLD61_INCPIC_COMPLEX	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+61	extraction-probe-inspect.docx	inspect	field.external	FLD61_INCPIC_COMPLEX	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+61	extraction-probe-inspect.docx	inspect	field.code	FLD61_LINK_BARE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+61	extraction-probe-inspect.docx	inspect	field.external	FLD61_LINK_BARE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+61	extraction-probe-inspect.docx	inspect	field.code	FLD61_LINK_QUOTED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+61	extraction-probe-inspect.docx	inspect	field.external	FLD61_LINK_QUOTED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+61	extraction-probe-inspect.docx	inspect	field.code	HYPERLINK \l "fld61target"	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+61	extraction-probe-inspect.docx	inspect	field.code	FLD61_FILE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+61	extraction-probe-inspect.docx	inspect	field.external	FLD61_FILE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+61	extraction-probe-inspect.docx	inspect	field.code	FLD61_UNC	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+61	extraction-probe-inspect.docx	inspect	field.external	FLD61_UNC	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+59	extraction-probe-inspect.docx	inspect	shape.off_page	GEO59_OFF_PAGE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+59	extraction-probe-inspect.docx	inspect	alt_text.name	Text Box 1	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+59	extraction-probe-inspect.docx	inspect	alt_text.name	Text Box 2	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+59	extraction-probe-inspect.docx	inspect	shape.zero_size	GEO59_FLAT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+59	extraction-probe-inspect.docx	inspect	alt_text.name	Text Box 3	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+59	extraction-probe-inspect.docx	inspect	alt_text.name	Text Box 4	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+59	extraction-probe-inspect.docx	inspect	alt_text.name	Text Box 5	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+59	extraction-probe-inspect.docx	inspect	alt_text.name	Text Box 6	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	alt_text.name	Ink 7	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	alt_text.name	Ink 8	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+66	extraction-probe-inspect.docx	inspect	alt_text.name	PIC66_NAME_ONLY	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+66	extraction-probe-inspect.docx	inspect	alt_text.description	PIC66_DECOR_DESCR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+66	extraction-probe-inspect.docx	inspect	alt_text.name	PIC66_DECOR_NAME	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+67	extraction-probe-inspect.docx	inspect	sdt.stored_surface	SDT67_SURFACE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+58	extraction-probe-inspect.docx	inspect	paragraph.collapsed	BODY58_FIRST	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+59	extraction-probe-inspect.docx	inspect	story.unused	HDR59_UNUSED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+59	extraction-probe-inspect.docx	inspect	alt_text.name	Text Box 11	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	header_footer	HDR63_USED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	watermark	WMK63_WATERMARK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	note	NOTE63_REFERENCED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	story.unused	NOTE63_UNREFERENCED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	comment	CMT63_ANCHORED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	story.unused	CMT63_UNANCHORED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	doc_vars	VAR63_VALUE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.embedded	Inspect Probe Word	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.embedded	Inspect Probe Twin	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.embedded	Inspect Probe Blank	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.embedded	Inspect Probe Zero	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.embedded	Inspect Probe Named	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.embedded	Inspect Probe Shared	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.embedded	Inspect Probe Careful	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.embedded	Inspect Probe Plain	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.embedded	Inspect Probe Symbol	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	font.embedded	Inspect Probe Substitution	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+67	extraction-probe-inspect.docx	inspect	custom_xml	SDT67_VALUE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+0	extraction-probe-inspect.docx	inspect	properties	/docProps/app.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+0	extraction-probe-inspect.docx	inspect	properties	/docProps/core.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	altchunk	/word/chunk63.htm	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	altchunk.script	/word/chunk63.htm	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	altchunk.external_ref	/word/chunk63.htm	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	object.embedded	/word/embeddings/probe63.docx	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	text.hidden	EMB63_HIDDEN	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+66	extraction-probe-inspect.docx	inspect	object.embedded	/word/embeddings/probe66.xlsx	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+66	extraction-probe-inspect.docx	inspect	embedded.row_hidden	ROW66_HIDDEN	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+66	extraction-probe-inspect.docx	inspect	embedded.column_hidden	COL66_HIDDEN_CELL	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	ink	/word/ink/ink1.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	people	Probe	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	part.unknown	/word/probe63.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+64	extraction-probe-inspect.docx	inspect	relationship.external	file:///C:/CR050-MISSING/LNK64_FILE.docx	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+64	extraction-probe-inspect.docx	inspect	relationship.external	file:///\\cr050-missing\share\LNK64_UNC.docx	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+64	extraction-probe-inspect.docx	inspect	hyperlink.web	https://example.com/LNK64_WEB	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+64	extraction-probe-inspect.docx	inspect	hyperlink.web	mailto:probe@example.com?subject=LNK64_MAIL	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 50	extraction-probe-external.docm	metadata	fields_update_on_open		default	true	REQ-506
 52	extraction-probe-external.docm	metadata	ProbeCustom		default	CPR52_CUSTOM	REQ-515
 52	extraction-probe-external.docm	metadata	Company		default	APP52_COMPANY	REQ-515

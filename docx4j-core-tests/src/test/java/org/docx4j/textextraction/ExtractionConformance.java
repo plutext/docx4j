@@ -29,6 +29,29 @@ public final class ExtractionConformance {
     public interface Engine {
         Set<String> implementedStatements();
         Output extract(Path fixture, String view, String scenario, String format) throws Exception;
+        /** A fixture's inspection (WD section 9, CR-050); needed only by an engine that advertises REQ-901, 902 and 904. */
+        default Inspection inspect(Path fixture) throws Exception {
+            throw new UnsupportedOperationException("not an inspector");
+        }
+    }
+    /** An inspection as the harness compares it with {@code expected-inspection.tsv} (text-extraction/INSPECTION.md). */
+    public static final class Inspection {
+        /** Each finding's columns, named as the table names them: its KEY and FIELDS ({@link ExtractionInspection}) at least. */
+        public final List<Map<String, String>> findings;
+        /** COMPLETE or PARTIAL */
+        public final String status;
+        /** {@code reason@chain|part|path} entries */
+        public final List<String> skipped, undecided;
+        /** The statements of REQ-904, each starting with its id ({@code layout.covered: ...}) */
+        public final List<String> limitations;
+        public Inspection(List<Map<String, String>> findings, String status, List<String> skipped, List<String> undecided,
+                List<String> limitations) {
+            this.findings = List.copyOf(findings);
+            this.status = status;
+            this.skipped = List.copyOf(skipped);
+            this.undecided = List.copyOf(undecided);
+            this.limitations = List.copyOf(limitations);
+        }
     }
     public static final class Output {
         public final String text;
@@ -172,7 +195,7 @@ public final class ExtractionConformance {
             // a dependency (CR-047), a class path, or a ruling still to come
             if (!req.startsWith("REQ-")) { result = Math.max(result, 2); continue; }
             int n = Integer.parseInt(req.substring(4));
-            if (n >= 901 && n <= 904) return 9;
+            if (n >= 901 && n <= 907) return 9;   // WD section 9, the inspector (CR-050)
             if (Set.of(506,509,511,512,513,514,515,516,604,605,708,709).contains(n)) result = Math.max(result, 2);
             if (n == 703 || n == 704 || n == 705) result = Math.max(result, 3);
         }
@@ -240,7 +263,8 @@ public final class ExtractionConformance {
         }
         for (Map<String, String> row : table(dir.resolve("expected-findings.tsv"))) {
             String item = row.get("channel") + ":" + row.get("kind") + ":" + row.get("selector");
-            for (String view : List.of("accepted", "original", "markup")) {
+            // an inspection is the package's, whatever the view (CR-050): its rows are checked once
+            for (String view : row.get("channel").equals("inspect") ? List.of("accepted") : List.of("accepted", "original", "markup")) {
                 if (!run.ready(row, item, view, row.get("scenario"), rowRequirements(row))) continue;
                 Output output = run.output(dir, row, view, row.get("scenario"), "txt");
                 String key = row.get("channel") + "\t" + row.get("kind") + "\t" + row.get("selector");
@@ -257,6 +281,7 @@ public final class ExtractionConformance {
                 run.pass(row, "order", view, row.get("scenario"));
             }
         }
+        inspections(run, dir);
         // Empty manifest is an explicit phase 0 state. Every published entry must be checked.
         for (Map<String, String> row : table(dir.resolve("goldens.tsv"))) {
             String item = "golden:" + row.get("golden");
@@ -272,6 +297,60 @@ public final class ExtractionConformance {
         Files.createDirectories(report.toAbsolutePath().getParent());
         Files.write(report, run.report, StandardCharsets.UTF_8);
         System.out.println("CR-046: " + run.passed + " assertions passed, " + run.pending + " pending; " + report);
+    }
+    /**
+     * CR-050 phase 0: each fixture's inspection compared with {@code expected-inspection.tsv} as multisets of
+     * (kind, location), so that a finding missing, one unexpected and one of two at a location all fail; then
+     * each matched finding's fields, the fixture's status and the limitations every inspector states.
+     */
+    static void inspections(Run run, Path dir) throws Exception {
+        Path table = dir.resolve(ExtractionInspection.TABLE);
+        if (!Files.exists(table)) return;
+        Map<String, List<Map<String, String>>> expected = new LinkedHashMap<>();
+        for (Map<String, String> row : table(table)) expected.computeIfAbsent(row.get("fixture"), k -> new ArrayList<>()).add(row);
+        for (Map<String, String> status : table(dir.resolve(ExtractionInspection.STATUS))) {
+            String fixture = status.get("fixture");
+            Map<String, String> row = Map.of("fixture", fixture, "case", "0", "statements", ExtractionInspection.STATEMENTS);
+            if (!run.ready(row, "inspection", "-", "default", requirements(ExtractionInspection.STATEMENTS))) continue;
+            compareInspection(fixture, expected.getOrDefault(fixture, List.of()), status, run.engine.inspect(dir.resolve(fixture)));
+            run.pass(row, "inspection", "-", "default");
+        }
+    }
+    static void compareInspection(String fixture, List<Map<String, String>> expected, Map<String, String> status, Inspection actual) {
+        Map<String, List<String>> want = occurrences(expected), got = occurrences(actual.findings);
+        List<String> problems = new ArrayList<>();
+        Set<String> keys = new TreeSet<>(want.keySet());
+        keys.addAll(got.keySet());
+        for (String key : keys) {
+            List<String> w = want.getOrDefault(key, List.of()), g = got.getOrDefault(key, List.of());
+            if (w.size() != g.size()) {
+                problems.add((w.size() > g.size() ? "missing " : "unexpected ") + Math.abs(w.size() - g.size()) + ": " + key);
+            } else if (!w.equals(g)) {
+                problems.add("fields of " + key + ": expected " + w + ", got " + g + " (" + String.join(", ", ExtractionInspection.FIELDS) + ")");
+            }
+        }
+        if (!problems.isEmpty()) throw new AssertionError(fixture + ": inspection differs (" + problems.size() + "):\n  "
+                + String.join("\n  ", problems.subList(0, Math.min(40, problems.size()))));
+        equal(status.get("status"), actual.status, fixture + ": status");
+        equal(status.get("skipped"), String.join("; ", new TreeSet<>(actual.skipped)), fixture + ": skipped");
+        equal(status.get("undecided"), String.join("; ", new TreeSet<>(actual.undecided)), fixture + ": undecided");
+        for (String id : ExtractionInspection.LIMITATIONS) {
+            boolean stated = false;
+            for (String l : actual.limitations) stated |= l.startsWith(id + ":") || l.equals(id);
+            if (!stated) throw new AssertionError(fixture + ": limitation not stated: " + id);
+        }
+    }
+    /** location key -> the sorted field tuples of the findings there (a multiset) */
+    private static Map<String, List<String>> occurrences(List<Map<String, String>> findings) {
+        Map<String, List<String>> out = new TreeMap<>();
+        for (Map<String, String> f : findings) {
+            StringJoiner key = new StringJoiner(" | "), fields = new StringJoiner(" | ");
+            for (String k : ExtractionInspection.KEY) key.add(f.getOrDefault(k, ""));
+            for (String k : ExtractionInspection.FIELDS) fields.add(f.getOrDefault(k, ""));
+            out.computeIfAbsent(key.toString(), k -> new ArrayList<>()).add(fields.toString());
+        }
+        for (List<String> l : out.values()) Collections.sort(l);
+        return out;
     }
     static void checkToken(Run run, Path dir, Map<String, String> row, String view, String scenario, String format, String expected) throws Exception {
         Set<String> requirements = textRequirements(row, format);

@@ -1,0 +1,5 @@
+fixture	status	skipped	undecided
+extraction-probe.docx	PARTIAL	depth@/word/chunk47.docx|/word/nested.html|; depth@/word/embeddings/probe40.docx|/word/embeddings/nested.docx|; not_decoded@|/word/chunk45.rtf|	
+extraction-probe-external.docm	COMPLETE		
+extraction-probe-structure.docx	COMPLETE		
+extraction-probe-inspect.docx	COMPLETE		background.indeterminate@|/word/document.xml|/w:document[1]/w:body[1]/w:p[37]/w:r[1]; position.indeterminate@|/word/document.xml|/w:document[1]/w:body[1]/w:p[20]/w:r[2]/mc:AlternateContent[1]/mc:Choice[1]/w:drawing[1]/wp:anchor[1]; position.no_section@|/word/header1.xml|/w:hdr[1]/w:p[2]/w:r[1]/mc:AlternateContent[1]/mc:Choice[1]/w:drawing[1]/wp:anchor[1]
