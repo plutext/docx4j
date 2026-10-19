@@ -69,6 +69,9 @@ Changes in Version 17.3.4
 - Inspector (CR-050 phase 1): `Inspect.of(pkg)` reports where a docx's text diverges from what a person sees
   (white, tiny or zero-width text, embedded-font glyph swaps), what extraction leaves out, and what Office would
   fetch or run; read-only, fetching nothing, bounded. `Inspection.counts` groups findings for an extraction's options.
+- Text model (CR-050 phase 2): `TextOptions.inspect(true)` puts the inspection counts (unseen, omitted, active,
+  info) in `Texts.of`'s result metadata (`TextResult.counts`); off by default, as it costs about as much as the
+  extraction. A comment with no anchor in the document is no longer among `TextResult.comments()`.
 - `PropertyResolver` no longer adds a `DefaultParagraphFont` style to a styles part that has no default
   character style (so `Texts.of` changes nothing in such a package); output and merge paths still add it.
 

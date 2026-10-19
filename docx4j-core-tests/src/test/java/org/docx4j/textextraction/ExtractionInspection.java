@@ -64,8 +64,17 @@ public final class ExtractionInspection {
     static final List<String> FIELDS = List.of("address", "visible", "reveal", "plain", "markdown", "blocks", "hidden",
             "embedded", "comments", "excerpt_length", "excerpt_cut");
 
-    /** The statements a row of the inspector needs: WD 0.17's section 9 (f79bf8b), but REQ-903's counts in a result */
+    /**
+     * The statements a row of the inspector needs: WD 0.17's section 9 (f79bf8b), but REQ-903's counts in a result,
+     * which have their own check (CR-050 phase 2: each output's counts against the table's groups)
+     */
     static final String STATEMENTS = "REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907";
+
+    /**
+     * The six outputs the table gives each finding's group under (INSPECTION.md): plain text, Markdown and the block
+     * model under the defaults; plain text under {@code hidden: true}, {@code embedded: true} and {@code comments: true}
+     */
+    static final List<String> OUTPUTS = List.of("plain", "markdown", "blocks", "hidden", "embedded", "comments");
 
     /**
      * What every inspector says it does not detect (REQ-904, CR-050 section 2.6), by the id each limitation

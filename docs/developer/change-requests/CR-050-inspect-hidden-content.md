@@ -5,14 +5,17 @@ the contract (`docx4j-core-tests/src/test/resources/text-extraction/INSPECTION.m
 finding on the suite's four fixtures, the harness's exact comparison, and a new fixture,
 `extraction-probe-inspect.docx` (cases 58 to 67), checked in Word 365. Phase 1 done 2026-10-19 (§5,
 "Phase 1 record", Jason: "implement CR-050 phase 1"): `org.docx4j.model.text.Inspect`, every inspector
-row passing; D18's tests calibrated on the corpora (for Jason's ruling); phases 2 and 3 to come.
+row passing; D18's tests calibrated on the corpora (for Jason's ruling). Phase 2 done 2026-10-19 (§5,
+"Phase 2 record", Jason: "start CR-050 phase 2"): the counts in an extraction's result under docx4j's
+`inspect: true`, off by default by D9's rule (the counts cost about four fifths of an extraction); the
+rulings before it; REQ-903 checked. Phase 3 to come.
 Proposed 2026-10-19, drafted at Jason's request ("consider section 12 ... of
 ../docx4j-portfolio/docs/text_extraction_behaviour_model.md then draft a CR to create that tool");
 revised the same day after three reviews (§9), to state its objective (§0, Jason: "frame it that way"),
 and for text an embedded font draws as other text or as nothing (§9, Jason's question).
 Four phases (§5); decisions in §6: D1 to D8 and D11 to D20 taken by Jason on 19 October 2026 (D11 with
 1,000 findings; D17 revised to the list alone after phase 0's Word check; D16 closed, overtaken by WD
-0.17); D9 and D10 open.
+0.17); D9 (a) taken before phase 2, with the faces' bound and the unanchored comment (§5); D10 open.
 
 The specification is the portfolio's *WordprocessingML Text Extraction*, WD 0.16
 (`docx4j-portfolio/docs/text_extraction_specification_wd.md`, dae90bf), cited as **WD**: its §9,
@@ -621,7 +624,16 @@ test changed for them.
   - Open, for Jason: the faces' maps are kept for the walk, so a package of many small hostile faces
     (each mapping 262,144 code points, of the order of 20 MB in memory) has no bound across faces. A
     limit on the faces read, or the maps' size charged to `limit.total_bytes`, would close it; either
-    is REQ-907's to state.
+    is REQ-907's to state. Ruled before phase 2 (below): the latter.
+
+**Rulings before phase 2, 19 October 2026** (Jason):
+- D9 (a): `inspect: false`, a docx4j-only option; the measured cost chooses its default (§6).
+- Each embedded face's character map counts, by its size, against the 64 MB of `limit.total_bytes`
+  (REQ-907), with no new limit: phase 2's first step, the maps held compactly. To the WD.
+- A comment with no anchor in the document (no `w:commentReference` and no range, case 63) is left out
+  of the text model's comments, the block model's included, since Word drops it on save; the
+  inspector's `story.unused` (never in an output) then holds for every format. A text-model change in
+  phase 2, and a line for REQ-504 to the WD.
 
 ### Phase 2: the counts in every extraction result
 
@@ -633,15 +645,130 @@ test changed for them.
 - A result with no package has no counts: `Texts.of(Part, options)` and `Texts.of(Object, options)`
   carry no `inspect` entry, since the stored-story pass and the inventory need the package; their
   javadoc says so.
+- First, from the rulings above: each face's character map held compactly and charged to
+  `limit.total_bytes`; an unanchored comment left out of the text model's comments.
+- The counts need no addresses (`InspectFinding.group` reads a finding's requirements, `visible` and
+  its excerpt's length), so the inspection run with an extraction skips `InspectAddresses`.
 
 **Acceptance:** REQ-903 once the WD has adopted D14's counts (D16); the inspector conformance class of
 WD §12.1 claimed then, and not before.
+
+**Phase 2 record, 19 October 2026.** Built by the docx4j-25 session (Claude Opus 5.5) at Jason's word
+("start CR-050 phase 2"); uncommitted until he says so.
+
+- *The counts* (§2.2, REQ-903, WD 0.17's D14 form): `Texts.of(WordprocessingMLPackage, TextOptions)`,
+  under `inspect: true`, inspects the package after extracting it, and its result's metadata carries
+  `inspect` (`TextResult.INSPECT`): `status` (`COMPLETE` or `PARTIAL`), `lower_bound`, and for `plain`,
+  `markdown` and `blocks` the four counts, unseen first, under the result's own options;
+  `TextResult.counts(Inspection.Format)` gives them typed. The capability is docx4j-ImportXHTML on the
+  class path. That inspection makes no addresses (`InspectAddresses.findings(.., false)`: a group needs a
+  finding's requirements, `visible` and excerpt length alone), so it costs the three passes and no text
+  model reading. One that fails (an exception, not a limit) does not fail the extraction: what it found
+  is counted, it is `PARTIAL` with `unreadable` at the main document, and it is logged. A part's, a
+  fragment's (`Texts.of(pkg, content, ..)`) and a resolved copy's results carry none (javadoc). The
+  counts stay out of the text: `PlainText` and `MarkdownExporter` write the core, app and custom
+  properties only (REQ-802).
+- *`inspect`* (D9 (a)): `TextOptions.inspect(boolean)`, by name through `TextOptions.of(Map)` and
+  `set`; outside `NAMES` and `toMap()` (WD §10's), shown by `toString()` when on. **Off by default, by
+  D9's rule**, measured with a scratch driver (score only; the corpora are not committed), each
+  document loaded, then `Texts.of` with `inspect: false` timed against the counts' inspection alone,
+  over two passes with the second timed (a warm JVM):
+  - the layout-fidelity corpus, 453 documents (a 454th refused by the loader's zip-bomb guard):
+    extraction 11.5 s, inspection 9.5 s, **0.83** of the extraction; per document, median 0.75, 90th
+    percentile 0.94, at most 5.0;
+  - Word's re-saves of its first batch, 191 documents: 2.3 s and 1.7 s, **0.73**; median 0.74, at most 1.29;
+  - the fixtures (median of ten): the main probe 19 ms and 24 ms (phase 1's 1.9 s was the address
+    readings, a cold JVM); `extraction-probe-inspect.docx` 8 and 12 ms; the other two 1 to 4 ms.
+
+  So the counts cost about four fifths of an extraction, over D9's fifth, and the cost is the walk
+  itself (every story, branch, payload and face up to the bounds, whatever the options), not anything
+  optional in it. A host whose reader is an agent asks for them: docx4j-mcp's `extract_text` (phase 3).
+  docx4j's default results are therefore not an inspector's (WD §12.1); docx4j claims the inspector class
+  under `inspect: true`, as `TextsAdapter` runs.
+- *Found by the measurement, for Jason*: two of the 453 documents end `PARTIAL` at `limit.findings`
+  (D11's 1,000), each with a long table of contents: one `field.code` finding for each entry's PAGEREF
+  field (850 and 1,000) and a `text.web_hidden` for each entry's tab and page number (150). An
+  ordinary document's counts are then lower bounds. Options: count a TOC field's own fields and
+  web-hidden runs as one finding per TOC (as a collapsed heading's body is one), or raise the limit.
+  Recommended: the former, a TOC being generated content; a change to REQ-906 and the oracle. As the
+  review below refines it: what the TOC's own code generates (its PAGEREF fields, its HYPERLINK fields
+  to a `_Toc` bookmark, the web-hidden runs inside its span) is one `field.code` (at the TOC's begin,
+  its excerpt the TOC's own instruction, its summary the number of fields) and one `text.web_hidden` a
+  TOC; any other field inside the span (an external HYPERLINK, INCLUDETEXT, every REQ-506 kind) stays
+  its own finding, an active kind never swallowed. Raising the limit would only move the cliff.
+- *The faces' tables, charged to the total* (the ruling before phase 2; REQ-907): `InspectFace` holds
+  its character map as three arrays (the code points sorted, a glyph for each, the indices by glyph in
+  the map's order), 10 bytes a code point where a map of objects took some 80; with it are charged its
+  outlines and advances (5 bytes a glyph) and its glyph names (each its length and 48 bytes: 65,535
+  glyphs given one 255-character name become 65,535 names, fontTools' `#n` making them unique, some
+  20 MB from a small face), and its table directory keeps only the nine tables read. What a face holds
+  is charged to `limit.total_bytes` as it is read, after its bytes as a payload; one that would pass
+  what the total has left stops the inspection, as a payload past the total does. Checked against
+  phase 1's map (its code compiled beside the new) on the corpora's 97 faces and the fixture's 11:
+  every code point's glyph, every glyph's code points in order and every name equal. The 97 hold 0.22
+  of their bytes in all, one face at most 1.5 times its own (431 KB). `InspectCountsTest`: 40 faces of
+  half a megabyte, each mapping 262,144 code points, their bytes 21 MB, stop at the total after some
+  twenty, where phase 1 held 40 maps of the order of 20 MB each.
+- *An unanchored comment* (the ruling): `Extractor` leaves out of `TextResult.comments()` a comment
+  with no `w:commentReference` or `w:commentRangeStart` in the main document, a header or footer, or a
+  note, in any branch. The inspector's anchors gain the notes too: a comment anchored in a footnote was
+  `story.unused`, and is `comment` (oracle, `INSPECTION.md` **(phase 2)**, `InspectWalk`).
+- *A note read through its best reference* (a phase 1 defect, from the docx4j-portfolio session's
+  question the same day): the walk kept "every reference deleted" and "the best story" apart, so a note
+  whose main-document reference is deleted and whose used header's is live needed `notes` alone, in the
+  default output, which the text model leaves it out of. Now each reference brings its own
+  requirements (its story's option, and what its containers need: its revision's view, a text box, a
+  TOC, a stale control's surface, `hidden: true` for a hidden run; one in an unselected branch reaches
+  nothing), and the note takes its best reference's: the fewest requirements beyond the defaults, then
+  live, inserted, deleted, deleted inside an insertion, then main, header, footer. REQ-905 is a
+  conjunction, so two references of different requirements are approximated by the best's: under
+  options that meet another's and not the best's, the text holds the note and the counts have it out
+  (a note hidden in the body and live in a header, read with `include: headers`). `INSPECTION.md`
+  states the rule **(phase 2)**; the oracle follows; its output is unchanged (186 findings).
+- *The suite*: a REQ-903 check, for each fixture and each of `expected-inspection.tsv`'s six outputs,
+  that the counts a result carries are the tally of the table's groups there, with the fixture's
+  status (24 assertions; `Engine.counts`). `TextsAdapter` advertises REQ-903 and extracts with
+  `inspect: true`. 1559 assertions pass, 9 pending (the XHTML-importer-present rows, as before).
+- *Tests* (`InspectCountsTest`, 9): every result's counts equal `Inspect.of`'s under nine option sets
+  on the four fixtures, in each format, the metadata map's form and order with them; the counts follow
+  the options and their sum does not; nothing changed (REQ-204's snapshot); `inspect` off by default,
+  by name, the text the same either way; parts, fragments and a resolved copy carry none; a face's
+  compact map and its allowance; many wide faces reaching the total; an unanchored comment, and one
+  anchored in a note; a note's best reference against the text model, under the defaults and its
+  reveal's options always, under six option sets where its references agree.
+- *Review*, 19 October 2026: the docx4j-43 session, at Jason's request, ran `InspectCountsTest`,
+  `InspectTest`, `ExtractionConformanceTest` and `TextsPhase2Test` green from the working tree and found
+  no defect to fix before commit; five lesser points, taken or recorded:
+  - a format 12 group's start glyph is unsigned: read signed, 0xFFFFFFFE passed the filter and the
+    compact map's `char` made it glyph 65534, a real glyph in a full face (phase 1 held -2, no outline).
+    Now a glyph read negative is dropped as past the face's glyphs; `InspectCountsTest` builds one;
+  - the REQ-903 check tallied the table's groups with no capability while the result's counts take the
+    class path's: it now requires the importer absent, pending with docx4j-ImportXHTML present, as the
+    goldens do;
+  - the WD: the note's best-reference rule supersedes WD 0.19's NOTE (phase 1's rule), and `inspect` is
+    proposed as a NOTE to REQ-903 (an implementation MAY make the counts an option of its own under
+    REQ-1001, MUST document its default, and claims the inspector class for the extractions made with
+    it on, its other results an extractor's; docx4j's name `inspect`, so that the ports share it), with
+    the faces' charge (REQ-907) and the unanchored comment (REQ-504): all sent with this phase's commit;
+  - under `inspect: true` an embedded package is loaded twice, by the extraction and by the inspection:
+    a later saving (the measurement includes it);
+  - after a failed walk the package was left on the walking stack: cleared (nothing read it).
+
+  Confirmed by the review: the compact map's packing (fewer than 2^20 pairs under the one budget; code
+  points within 21 bits; glyph, place and index unambiguous) and its order, the phase 1 map's;
+  `TraversalUtil` read-only for REQ-204 (a parent pointer set in memory only) and reaching every place
+  an anchor can be (text boxes of both kinds, controls, both branches, range markers in a body, table,
+  row or cell); the walk's hidden test the rule its `text.hidden` applies; the ranking, and a stale
+  control's reference given `bindings: surface` (the stale set is filled before the references are
+  collected). D9's default stands; the claim's configuration (`inspect: true`, as `TextsAdapter` runs) is
+  stated above.
 
 ### Phase 3: hand-offs
 
 - **docx4j-mcp**: an `inspect` tool (the WD's verb, D29), the findings as JSON, and `extract_text`'s
   result carrying the four counts and the status, the unseen count first: it is the one an agent
-  reading the text needs before it acts on it.
+  reading the text needs before it acts on it. `extract_text` turns docx4j's `inspect` on by default
+  (phase 2: off in docx4j-core for its cost), its reader being the agent §0 is about.
 - **docx4j-core-ts** (its CR-012), **docx4j-python** (its CR-011) and **the editor** (ED-008's verbs):
   the kinds, the reveal contract, the fixtures and the rows; each says what its engine can and cannot
   see.
@@ -699,7 +826,9 @@ Each with a recommendation; Jason decides.
   (REQ-507 is `w:vanish`). Recommended: `info`, `visible: yes`, `reveal: included`: a person reading
   the page sees it, so it is not a divergence.
   **Decided** (Jason, 19 October 2026): as recommended.
-- **D9. Skipping the counts.** Options: (a) a docx4j-only option (`inspect: false`, outside WD §10, as
+- **D9. Skipping the counts.** **Decided (a)** (Jason, 19 October 2026, before phase 2; the default
+  from phase 2's measurement: **off**, the counts costing 0.73 to 0.83 of an extraction on the
+  real-document corpora, §5's phase 2 record; asked for by `inspect: true`). Options: (a) a docx4j-only option (`inspect: false`, outside WD §10, as
   REQ-1001 allows), the result then not an inspector's; (b) counts always. Recommended: (a), to be
   decided now rather than at phase 2, with the default chosen there from the measured cost (off if
   the inspection costs more than a fifth of the extraction on the real-document corpora). The cost is

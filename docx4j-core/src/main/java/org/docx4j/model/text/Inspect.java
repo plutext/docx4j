@@ -19,9 +19,15 @@
 package org.docx4j.model.text;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * docx4j's inspector (WD section 9; CR-050): where the text an agent holds diverges from the document
@@ -69,9 +75,16 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * {@link Inspection#skipped()} (the first {@value #MAX_SKIPPED}). Either makes the inspection
  * {@code PARTIAL}, and its counts lower bounds.</p>
  *
+ * <p><b>In an extraction</b> (REQ-903, CR-050 phase 2): under {@code inspect: true},
+ * {@link Texts#of(WordprocessingMLPackage, TextOptions)} inspects the package too, and its result's
+ * metadata carries the counts for its own options ({@link TextResult#INSPECT}). That inspection makes no
+ * addresses, which the counts do not need.</p>
+ *
  * @since 17.3.4 (CR-050 phase 1)
  */
 public final class Inspect {
+
+	private static final Logger log = LoggerFactory.getLogger(Inspect.class);
 
 	/** An excerpt's bound, in code points (D5). */
 	public static final int EXCERPT = 200;
@@ -90,22 +103,55 @@ public final class Inspect {
 
 	/** The inspection of a package. */
 	public static Inspection of(WordprocessingMLPackage pkg) {
-		return of(pkg, new InspectRun(MAX_FINDINGS, MAX_PAYLOAD_BYTES, MAX_TOTAL_BYTES, MAX_ELEMENTS));
+		return of(pkg, run());
+	}
+
+	private static InspectRun run() {
+		return new InspectRun(MAX_FINDINGS, MAX_PAYLOAD_BYTES, MAX_TOTAL_BYTES, MAX_ELEMENTS);
 	}
 
 	static Inspection of(WordprocessingMLPackage pkg, InspectRun run) {
 		if (pkg == null) throw new IllegalArgumentException("No package");
-		InspectPackage store = new InspectPackage(pkg, new ArrayList<String>(), run);
-		boolean stopped = false;
-		try {
-			new InspectWalk(store, run, 0, new java.util.HashSet<String>()).run();
-		} catch (InspectRun.Stop stop) {
-			run.stopped(stop.reason);
-			stopped = true;
-		}
 		// a report a global limit stopped carries no addresses: reading the package through the text model
 		// is the cost the limit refused
-		List<InspectFinding> findings = InspectAddresses.findings(pkg, run, !stopped);
-		return new Inspection(findings, run.skipped, run.skippedBeyond, run.undecided);
+		boolean stopped = walk(pkg, run);
+		return new Inspection(InspectAddresses.findings(pkg, run, !stopped), run.skipped, run.skippedBeyond, run.undecided);
+	}
+
+	/** The three passes; true when a global limit stopped them. */
+	private static boolean walk(WordprocessingMLPackage pkg, InspectRun run) {
+		InspectPackage store = new InspectPackage(pkg, new ArrayList<String>(), run);
+		try {
+			new InspectWalk(store, run, 0, new java.util.HashSet<String>()).run();
+			return false;
+		} catch (InspectRun.Stop stop) {
+			run.stopped(stop.reason);
+			return true;
+		}
+	}
+
+	/**
+	 * The counts of REQ-903 for an extraction of a package under its options, in each format, as
+	 * {@link Texts#of(WordprocessingMLPackage, TextOptions)} carries them: the inspection with no
+	 * addresses (a finding's group needs none). An inspection that fails is reported, not thrown: what it
+	 * found before is counted, and it is {@code PARTIAL} ({@code unreadable} at the main document), so
+	 * that the extraction it rides on still completes and its counts read as lower bounds.
+	 */
+	static Map<Inspection.Format, Inspection.Counts> counts(WordprocessingMLPackage pkg, TextOptions options) {
+		InspectRun run = run();
+		try {
+			walk(pkg, run);
+		} catch (RuntimeException e) {
+			log.warn("The inspection for the counts failed; its counts are lower bounds: " + e, e);
+			run.walking.clear(); // the packages it was walking when it failed; only a global stop reads them
+			String main = pkg.getMainDocumentPart() == null ? "" : pkg.getMainDocumentPart().getPartName().getName();
+			run.skip(Inspection.UNREADABLE, "|" + main + "|");
+		}
+		Inspection i = new Inspection(InspectAddresses.findings(pkg, run, false), run.skipped, run.skippedBeyond, run.undecided);
+		Set<Inspection.Capability> capabilities = AltChunks.importerPresent() ? EnumSet.of(Inspection.Capability.XHTML_IMPORTER)
+				: EnumSet.noneOf(Inspection.Capability.class);
+		Map<Inspection.Format, Inspection.Counts> out = new EnumMap<Inspection.Format, Inspection.Counts>(Inspection.Format.class);
+		for (Inspection.Format f : Inspection.Format.values()) out.put(f, i.counts(options, f, capabilities));
+		return out;
 	}
 }

@@ -2119,9 +2119,13 @@ final class Extractor {
 			for (CTCommentEx ex : ext.getJaxbElement().getCommentEx()) if (ex.getParaId() != null) extended.put(ex.getParaId().toUpperCase(Locale.ROOT), ex);
 		}
 		Map<String, String> idByParaId = new HashMap<String, String>();
+		Set<String> anchored = anchoredComments(main);
 		for (Comments.Comment c : part.getJaxbElement().getComment()) {
 			if (plan != null && plan.removesComment(c.getId())) continue;
 			String id = c.getId() == null ? "" : c.getId().toString();
+			// a comment with no anchor in the document (no reference, no range) is none of its text: Word drops it
+			// on save, and the inspector reports it as an unused story (CR-050's ruling before phase 2)
+			if (!anchored.contains(id)) continue;
 			TextComment comment = new TextComment(id);
 			comment.author = c.getAuthor();
 			comment.initials = c.getInitials();
@@ -2145,6 +2149,39 @@ final class Extractor {
 			comment.parentId = parent;
 			if (parent != null && out.get(parent) != null) out.get(parent).replies.add(comment);
 		}
+	}
+
+	/**
+	 * The ids of the comments anchored in the document: a {@code w:commentReference} or a
+	 * {@code w:commentRangeStart} in the main document, a header or footer, or a note, in any branch.
+	 */
+	private static Set<String> anchoredComments(MainDocumentPart main) {
+		Set<String> ids = new java.util.HashSet<String>();
+		List<Object> roots = new ArrayList<Object>();
+		roots.add(main.getJaxbElement());
+		RelationshipsPart rels = main.getRelationshipsPart(false);
+		if (rels != null) {
+			for (org.docx4j.relationships.Relationship rel : rels.getRelationships().getRelationship()) {
+				Part p = "External".equals(rel.getTargetMode()) ? null : rels.getPart(rel);
+				if (p instanceof HeaderPart) roots.add(((HeaderPart) p).getJaxbElement());
+				else if (p instanceof FooterPart) roots.add(((FooterPart) p).getJaxbElement());
+				else if (p instanceof FootnotesPart) roots.add(((FootnotesPart) p).getJaxbElement().getFootnote());
+				else if (p instanceof EndnotesPart) roots.add(((EndnotesPart) p).getJaxbElement().getEndnote());
+			}
+		}
+		org.docx4j.TraversalUtil.CallbackImpl anchors = new org.docx4j.TraversalUtil.CallbackImpl() {
+			@Override
+			public List<Object> apply(Object o) {
+				Object v = unwrap(o);
+				BigInteger id = v instanceof R.CommentReference ? ((R.CommentReference) v).getId()
+						: v instanceof org.docx4j.wml.CommentRangeStart ? ((org.docx4j.wml.CommentRangeStart) v).getId() : null;
+				if (id != null) ids.add(id.toString());
+				return null;
+			}
+		};
+		anchors.setMcMode(org.docx4j.jaxb.McMode.ALL);
+		for (Object root : roots) if (root != null) new org.docx4j.TraversalUtil(root, anchors);
+		return ids;
 	}
 
 	private static String lastParaId(List<Object> content) {

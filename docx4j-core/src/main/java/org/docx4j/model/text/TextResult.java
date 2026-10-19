@@ -19,8 +19,10 @@
 package org.docx4j.model.text;
 
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -41,20 +43,53 @@ public final class TextResult {
 	public static final String APP = "app";
 	/** {@link #metadata()}'s key for the custom properties (REQ-515): a map from each property's name to its typed value. */
 	public static final String CUSTOM = "custom";
+	/**
+	 * {@link #metadata()}'s key for the inspection counts (WD REQ-903, CR-050 phase 2): a map with
+	 * {@code status} ({@code COMPLETE} or {@code PARTIAL}), {@code lower_bound} (a {@link Boolean}: true
+	 * for a partial inspection, whose counts are lower bounds), and for each format, {@code plain},
+	 * {@code markdown} and {@code blocks}, a map of the four counts {@code unseen}, {@code omitted},
+	 * {@code active} and {@code info} under this result's options ({@link #counts(Inspection.Format)}).
+	 * Present in a package's result under {@code inspect: true} (docx4j's option, off by default); never in
+	 * a part's or fragment's.
+	 */
+	public static final String INSPECT = "inspect";
 
 	private final List<TextBlock> blocks;
 	private final Map<String, TextComment> comments;
 	private final List<TextWarning> warnings;
 	private final Map<String, Object> metadata;
 	private final TextOptions options;
+	private final Map<Inspection.Format, Inspection.Counts> counts;
 
 	TextResult(List<TextBlock> blocks, Map<String, TextComment> comments, List<TextWarning> warnings,
 			Map<String, Object> metadata, TextOptions options) {
+		this(blocks, comments, warnings, metadata, options, null);
+	}
+
+	private TextResult(List<TextBlock> blocks, Map<String, TextComment> comments, List<TextWarning> warnings,
+			Map<String, Object> metadata, TextOptions options, Map<Inspection.Format, Inspection.Counts> counts) {
 		this.blocks = Collections.unmodifiableList(blocks);
 		this.comments = Collections.unmodifiableMap(new LinkedHashMap<String, TextComment>(comments));
 		this.warnings = Collections.unmodifiableList(warnings);
 		this.metadata = Collections.unmodifiableMap(metadata);
 		this.options = options;
+		this.counts = counts;
+	}
+
+	/** This result with the inspection counts in its metadata, under {@link #INSPECT}. */
+	TextResult withCounts(Map<Inspection.Format, Inspection.Counts> counts) {
+		Map<String, Object> m = new LinkedHashMap<String, Object>(metadata);
+		Map<String, Object> inspect = new LinkedHashMap<String, Object>();
+		boolean lowerBound = counts.values().iterator().next().isLowerBound();
+		inspect.put("status", (lowerBound ? Inspection.Status.PARTIAL : Inspection.Status.COMPLETE).name());
+		inspect.put("lower_bound", lowerBound);
+		for (Map.Entry<Inspection.Format, Inspection.Counts> e : counts.entrySet()) {
+			Map<String, Object> c = new LinkedHashMap<String, Object>();
+			for (Group g : Group.values()) c.put(g.id(), e.getValue().get(g));
+			inspect.put(e.getKey().name().toLowerCase(Locale.ROOT), Collections.unmodifiableMap(c));
+		}
+		m.put(INSPECT, Collections.unmodifiableMap(inspect));
+		return new TextResult(blocks, comments, warnings, m, options, new EnumMap<Inspection.Format, Inspection.Counts>(counts));
 	}
 
 	/** The blocks in reading order (REQ-501, REQ-502, REQ-518, REQ-606). Comments are not among them. */
@@ -78,4 +113,14 @@ public final class TextResult {
 
 	/** The options the result was made with. */
 	public TextOptions options() { return options; }
+
+	/**
+	 * The inspection counts for this result's options in a format (WD REQ-903): the number of findings
+	 * an inspection of the package ({@link Inspect}) puts in each group for the output, lower bounds where
+	 * the inspection was partial. Null where the result has none: without {@code inspect: true}, or a
+	 * part's or fragment's result. {@link #INSPECT} carries the same in the metadata.
+	 */
+	public Inspection.Counts counts(Inspection.Format format) {
+		return counts == null ? null : counts.get(format);
+	}
 }

@@ -95,6 +95,12 @@ final class InspectRun {
 		if (elements > maxElements) throw new Stop(Inspection.LIMIT_ELEMENTS);
 	}
 
+	/** Bytes held for the inspection beyond a payload's own (an embedded face's tables): past the total, the inspection stops. */
+	void charge(long n) {
+		totalBytes += n;
+		if (totalBytes > maxTotalBytes) throw new Stop(Inspection.LIMIT_TOTAL_BYTES);
+	}
+
 	/** A payload being decoded: its bytes are counted as they come. */
 	Payload payload() {
 		return new Payload();

@@ -276,18 +276,19 @@ final class InspectWalk {
 				if (t != null) used.put(t, is(ref, W, "headerReference") ? "header" : "footer");
 			}
 		}
-		Map<String, Map<String, Boolean>> notesRefs = new HashMap<String, Map<String, Boolean>>();
-		notesRefs.put("footnote", new HashMap<String, Boolean>());
-		notesRefs.put("endnote", new HashMap<String, Boolean>());
-		Map<String, String> notesFrom = new HashMap<String, String>();
+		Map<String, Set<String>> reach = new HashMap<String, Set<String>>();
+		Map<String, int[]> reachRank = new HashMap<String, int[]>();
 		Set<String> commentRefs = new HashSet<String>();
-		collectReferences(doc, "main", notesRefs, notesFrom, commentRefs);
+		collectReferences(main, doc, "main", reach, reachRank, commentRefs);
 		List<String> headersFooters = new ArrayList<String>(pkg.byType(main, "/header"));
 		headersFooters.addAll(pkg.byType(main, "/footer"));
 		for (String p : headersFooters) {
 			Element x = pkg.xml(p);
-			if (x != null) collectReferences(x, used.get(p), notesRefs, notesFrom, commentRefs);
+			if (x != null) collectReferences(p, x, used.get(p), reach, reachRank, commentRefs);
 		}
+		// a comment anchored in a note is anchored (phase 2)
+		for (String p : pkg.byType(main, "/footnotes")) if (pkg.xml(p) != null) collectReferences(p, pkg.xml(p), null, reach, reachRank, commentRefs);
+		for (String p : pkg.byType(main, "/endnotes")) if (pkg.xml(p) != null) collectReferences(p, pkg.xml(p), null, reach, reachRank, commentRefs);
 
 		story(main, doc, needs(), "main");
 		pkg.done.add(main);
@@ -312,16 +313,14 @@ final class InspectWalk {
 					String t = w(note, "type");
 					if (t != null && !t.equals("normal")) continue;
 					String id = w(note, "id");
-					Map<String, Boolean> refs = notesRefs.get(kind);
-					if (!refs.containsKey(id)) {
+					Set<String> best = reach.get(kind + " " + id);
+					if (best == null) {
 						add(found("story.unused", p, path(p, note), text(note), needs(InspectFinding.NEVER), note));
 						story(p, note, needs(InspectFinding.NEVER), "unused");
 					} else {
-						Set<String> n = refs.get(id) ? needs(InspectFinding.NOTES, InspectFinding.VIEW_ORIGINAL) : needs(InspectFinding.NOTES);
-						// referenced from no story but a header or footer: read with it alone
-						String from = notesFrom.get(kind + " " + id);
-						if ("header".equals(from)) n.add(InspectFinding.HEADERS);
-						else if ("footer".equals(from)) n.add(InspectFinding.FOOTERS);
+						// read through its best reference: what reading that reference needs
+						Set<String> n = needs(InspectFinding.NOTES);
+						n.addAll(best);
 						add(found("note", p, path(p, note), text(note), n, note));
 						story(p, note, n, "note");
 					}
@@ -394,28 +393,55 @@ final class InspectWalk {
 	}
 
 	/**
-	 * A story's note and comment references. The text model reads a note through a reference it reads:
-	 * the main document's, or a header's or footer's that a section uses ({@code story} null for one
-	 * none does, whose references reach no note); {@code from} keeps, for each note, the best story
-	 * referring to it, the main document before a header before a footer.
+	 * A story's note and comment references (phase 2). The text model reads a note through a reference
+	 * it reads: in the main document, or in a header or footer a section uses ({@code story} null for
+	 * one none does, whose references reach no note), where the reference itself is read. Each reference
+	 * needs what reading it needs: its story's option, its revision's view, a text box, hidden text, a
+	 * table of contents, a stale control's surface; one in an unselected branch reaches nothing.
+	 * {@code reach} keeps, for each note, its best reference's needs ({@link #reachRank}).
 	 */
-	private void collectReferences(Element root, String story, Map<String, Map<String, Boolean>> notes, Map<String, String> from,
+	private void collectReferences(String p, Element root, String story, Map<String, Set<String>> reach, Map<String, int[]> ranks,
 			Set<String> comments) {
 		if (story != null) {
+			String savedPart = part;
+			Set<Element> savedToc = tocRuns;
+			part = p;
+			tocRuns = tocSpans(root);
+			Set<String> base = "header".equals(story) ? needs(InspectFinding.HEADERS) : "footer".equals(story) ? needs(InspectFinding.FOOTERS) : needs();
 			for (Element e : iter(root, W, "footnoteReference", W, "endnoteReference")) {
-				String kind = is(e, W, "footnoteReference") ? "footnote" : "endnote";
-				boolean deleted = InspectXml.ancestor(e, W, "del", W, "moveFrom") != null;
-				Map<String, Boolean> m = notes.get(kind);
-				String id = w(e, "id");
-				m.put(id, (m.containsKey(id) ? m.get(id) : true) && deleted);
-				String key = kind + " " + id, was = from.get(key);
-				if (was == null || STORY_ORDER.indexOf(story) < STORY_ORDER.indexOf(was)) from.put(key, story);
+				Set<String> n = contextNeeds(e, root, base);
+				if (n.contains(InspectFinding.NEVER)) continue;
+				Element r = InspectXml.ancestor(e, W, "r");
+				if (r != null && Boolean.TRUE.equals(on(prop(layers(paragraphOf(r), r), "vanish")))) n.add(InspectFinding.HIDDEN);
+				String key = (is(e, W, "footnoteReference") ? "footnote" : "endnote") + " " + w(e, "id");
+				int[] rank = reachRank(n, story);
+				int[] was = ranks.get(key);
+				if (was == null || Arrays.compare(rank, was) < 0) {
+					ranks.put(key, rank);
+					reach.put(key, n);
+				}
 			}
+			part = savedPart;
+			tocRuns = savedToc;
 		}
 		for (Element e : iter(root, W, "commentReference", W, "commentRangeStart")) comments.add(w(e, "id"));
 	}
 
 	private static final List<String> STORY_ORDER = Arrays.asList("main", "header", "footer");
+
+	/**
+	 * A note's references in order of preference (REQ-905): the fewest options beyond the defaults; then a
+	 * live reference before an inserted one, an inserted before a deleted, a deleted before one deleted
+	 * inside an insertion; then the main document before a header before a footer; then the fewest needs.
+	 * The first met in document order wins a tie.
+	 */
+	private static int[] reachRank(Set<String> needs, String story) {
+		int beyond = 0;
+		for (String n : needs) if (!InspectFinding.DEFAULT_ON.contains(n)) beyond++;
+		int revision = needs.contains(InspectFinding.VIEW_MARKUP) ? 3 : needs.contains(InspectFinding.VIEW_ORIGINAL) ? 2
+				: needs.contains(InspectFinding.NOT_ORIGINAL) ? 1 : 0;
+		return new int[] { beyond, revision, STORY_ORDER.indexOf(story), needs.size() };
+	}
 
 	// --- text ---------------------------------------------------------------------------------------
 
@@ -1067,9 +1093,15 @@ final class InspectWalk {
 					for (int i = 0; i < 32; i++) face[i] ^= k[15 - i % 16];
 				}
 				try {
-					InspectFace f = InspectFace.read(face);
+					// what the face holds is charged to the total (REQ-907): a small face can map far more than its bytes
+					InspectFace f = InspectFace.read(face, run.maxTotalBytes - run.totalBytes);
+					run.charge(f.held());
 					faces.put(name.toLowerCase(Locale.ROOT) + "|" + style, f);
 					facePart.put(f, p);
+				} catch (InspectFace.OverBudget over) {
+					throw new InspectRun.Stop(Inspection.LIMIT_TOTAL_BYTES);
+				} catch (InspectRun.Stop stop) {
+					throw stop;
 				} catch (InspectFace.NotTrueType nt) {
 					run.skip(Inspection.NOT_DECODED, where);
 				} catch (java.io.IOException | RuntimeException bad) {

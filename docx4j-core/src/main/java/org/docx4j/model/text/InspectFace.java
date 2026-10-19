@@ -20,10 +20,10 @@ package org.docx4j.model.text;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +37,12 @@ import org.apache.xmlgraphics.fonts.Glyphs;
  * advances ({@code hmtx}), their names ({@code post} format 2) and the single and multiple
  * substitutions of its {@code GSUB} features. TrueType outlines only: a face of another kind is not
  * read ({@link NotTrueType}). Only the package's own bytes are read, never an installed font.
+ *
+ * <p>What it holds from the bytes is charged to the inspection's {@code limit.total_bytes} (REQ-907,
+ * CR-050's ruling before phase 2), since a small hostile face can make tables far larger than itself:
+ * {@link #held()}, its character map compact (10 bytes a code point), 5 bytes a glyph for outlines and
+ * advances, a glyph's name by its length. A face that would hold more than the inspection has left is
+ * not read ({@link OverBudget}).</p>
  */
 final class InspectFace {
 
@@ -48,14 +54,30 @@ final class InspectFace {
 		}
 	}
 
+	/** A face whose tables, as held, would pass what the inspection's total has left. */
+	static final class OverBudget extends Exception {
+		private static final long serialVersionUID = 1L;
+		OverBudget() {
+			super(Inspection.LIMIT_TOTAL_BYTES, null, false, false);
+		}
+	}
+
+	/** The tables read; any other in the directory is not kept, so a directory of 65,535 entries costs nothing. */
+	private static final Set<String> TABLES = new HashSet<String>(Arrays.asList("head", "maxp", "loca", "glyf", "hhea", "hmtx",
+			"cmap", "post", "GSUB"));
+
 	private final byte[] data;
 	private final Map<String, int[]> tables = new HashMap<String, int[]>();
 	final int unitsPerEm;
 	private final int numGlyphs;
-	/** code point to glyph */
-	private final Map<Integer, Integer> cmap = new LinkedHashMap<Integer, Integer>();
-	/** glyph to the code points mapping to it */
-	private final Map<Integer, List<Integer>> codes = new HashMap<Integer, List<Integer>>();
+	/** What the face may hold, and holds: {@link #held()}. */
+	private final long allowance;
+	private long held;
+	/** The character map, compact: the code points it maps in order, and each one's glyph. */
+	private int[] mapped = new int[0];
+	private char[] glyphs = new char[0];
+	/** The indices into {@link #mapped}, by glyph and then in the map's order (the first subtable to map a code winning). */
+	private int[] byGlyph = new int[0];
 	private final int[] advances;
 	private final boolean[] outlines;
 	/** the post table's names (format 2), unique as fontTools makes them; null for another format */
@@ -74,8 +96,9 @@ final class InspectFace {
 	/** The {@code GSUB} subtables one glyph's substitutions read, at most. */
 	private static final int GSUB_BUDGET = 4096;
 
-	private InspectFace(byte[] data) throws IOException {
+	private InspectFace(byte[] data, long allowance) throws IOException, OverBudget {
 		this.data = data;
+		this.allowance = allowance;
 		int version = u32(0);
 		if (version == 0x4F54544F) throw new NotTrueType("CFF outlines (OTTO)");
 		if (version == 0x74746366) throw new NotTrueType("a font collection (ttcf)");
@@ -86,13 +109,14 @@ final class InspectFace {
 			String tag = new String(data, rec, 4, java.nio.charset.StandardCharsets.ISO_8859_1);
 			int offset = u32(rec + 8), length = u32(rec + 12);
 			if (offset < 0 || length < 0 || (long) offset + length > data.length) throw new IOException("table " + tag + " out of range");
-			tables.put(tag, new int[] { offset, length });
+			if (TABLES.contains(tag)) tables.put(tag, new int[] { offset, length });
 		}
 		if (!tables.containsKey("glyf")) throw new NotTrueType("no glyf table");
 		int head = table("head");
 		unitsPerEm = u16(head + 18);
 		int indexToLocFormat = s16(head + 50);
 		numGlyphs = u16(table("maxp") + 4);
+		hold(5L * numGlyphs);
 		outlines = new boolean[numGlyphs];
 		int loca = table("loca"), glyf = table("glyf");
 		for (int g = 0; g < numGlyphs; g++) {
@@ -109,18 +133,38 @@ final class InspectFace {
 		names = readPost();
 	}
 
-	/** A face read from its de-obfuscated bytes. */
-	static InspectFace read(byte[] data) throws IOException {
+	/** A face read from its de-obfuscated bytes, holding at most {@code allowance} bytes of tables. */
+	static InspectFace read(byte[] data, long allowance) throws IOException, OverBudget {
 		try {
-			return new InspectFace(data);
+			return new InspectFace(data, allowance);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new IOException("a truncated font", e);
 		}
 	}
 
+	/** A face read with no bound on what it holds. */
+	static InspectFace read(byte[] data) throws IOException {
+		try {
+			return read(data, Long.MAX_VALUE);
+		} catch (OverBudget e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	/** The bytes its tables hold, as charged to the inspection's total. */
+	long held() {
+		return held;
+	}
+
+	private void hold(long n) throws OverBudget {
+		held += n;
+		if (held > allowance) throw new OverBudget();
+	}
+
 	/** The glyph a code point maps to, or null; 0 is {@code .notdef}. */
 	Integer glyph(int codePoint) {
-		return cmap.get(codePoint);
+		int i = Arrays.binarySearch(mapped, codePoint);
+		return i < 0 ? null : (int) glyphs[i];
 	}
 
 	boolean outline(int glyph) {
@@ -133,8 +177,15 @@ final class InspectFace {
 
 	/** The code points that map to a glyph, in the {@code cmap}'s order. */
 	List<Integer> codes(int glyph) {
-		List<Integer> l = codes.get(glyph);
-		return l == null ? Collections.<Integer>emptyList() : l;
+		int lo = 0, hi = byGlyph.length;
+		while (lo < hi) {
+			int mid = (lo + hi) >>> 1;
+			if (glyphs[byGlyph[mid]] < glyph) lo = mid + 1;
+			else hi = mid;
+		}
+		List<Integer> l = new ArrayList<Integer>();
+		for (int k = lo; k < byGlyph.length && glyphs[byGlyph[k]] == glyph; k++) l.add(mapped[byGlyph[k]]);
+		return l;
 	}
 
 	/** Whether the face names its glyphs ({@code post} format 2). */
@@ -186,11 +237,29 @@ final class InspectFace {
 
 	// --- cmap ---------------------------------------------------------------------------------------
 
-	private void readCmap() throws IOException {
+	/** The {@code (code, glyph)} pairs the subtables give, in their order, each with its subtable's ordinal. */
+	private static final class Pairs {
+		int n, subtable;
+		int[] code = new int[1024], glyph = new int[1024], sub = new int[1024];
+
+		void add(int c, int g) {
+			if (n == code.length) {
+				code = Arrays.copyOf(code, 2 * n);
+				glyph = Arrays.copyOf(glyph, 2 * n);
+				sub = Arrays.copyOf(sub, 2 * n);
+			}
+			code[n] = c;
+			glyph[n] = g;
+			sub[n++] = subtable;
+		}
+	}
+
+	private void readCmap() throws IOException, OverBudget {
 		int cmapTable = table("cmap");
 		int n = Math.min(u16(cmapTable + 2), CMAP_RECORDS);
 		int[] budget = { CMAP_BUDGET }; // the face's, whatever its records
 		Set<Integer> read = new HashSet<Integer>();
+		Pairs pairs = new Pairs();
 		for (int i = 0; i < n && budget[0] > 0; i++) {
 			int platform = u16(cmapTable + 4 + 8 * i), encoding = u16(cmapTable + 6 + 8 * i);
 			int offset = cmapTable + u32(cmapTable + 8 + 8 * i);
@@ -198,28 +267,59 @@ final class InspectFace {
 			boolean unicode = platform == 0 || platform == 3 && (encoding == 0 || encoding == 1 || encoding == 10);
 			if (!unicode) continue;
 			if (!read.add(offset)) continue; // a subtable two records share adds nothing the first did not
+			pairs.subtable++;
 			int format = u16(offset);
-			Map<Integer, Integer> sub = new LinkedHashMap<Integer, Integer>();
-			if (format == 4) format4(offset, sub, budget);
-			else if (format == 12) format12(offset, sub, budget);
-			else if (format == 0) for (int c = 0; c < 256 && budget[0]-- > 0; c++) put(sub, c, data[offset + 6 + c] & 0xff);
+			if (format == 4) format4(offset, pairs, budget);
+			else if (format == 12) format12(offset, pairs, budget);
+			else if (format == 0) for (int c = 0; c < 256 && budget[0]-- > 0; c++) put(pairs, c, data[offset + 6 + c] & 0xff);
 			else if (format == 6) {
 				int first = u16(offset + 6), count = u16(offset + 8);
-				for (int c = 0; c < count && budget[0]-- > 0; c++) put(sub, first + c, u16(offset + 10 + 2 * c));
-			}
-			for (Map.Entry<Integer, Integer> e : sub.entrySet()) {
-				if (cmap.containsKey(e.getKey())) continue;
-				cmap.put(e.getKey(), e.getValue());
-				codes.computeIfAbsent(e.getValue(), k -> new ArrayList<Integer>()).add(e.getKey());
+				for (int c = 0; c < count && budget[0]-- > 0; c++) put(pairs, first + c, u16(offset + 10 + 2 * c));
 			}
 		}
+		map(pairs);
 	}
 
-	private void put(Map<Integer, Integer> sub, int code, int glyph) {
-		if (glyph != 0 && glyph < numGlyphs) sub.put(code, glyph);
+	/**
+	 * The character map from the pairs, as fontTools merges the subtables: a code takes the glyph the
+	 * first subtable mapping it gives (that subtable's last pair for it), and its place in the map's
+	 * order is its first pair's.
+	 */
+	private void map(Pairs p) throws OverBudget {
+		long[] keys = new long[p.n];
+		for (int i = 0; i < p.n; i++) keys[i] = (long) p.code[i] << 20 | i; // fewer than 2^20 pairs: CMAP_BUDGET
+		Arrays.sort(keys);
+		int entries = 0;
+		for (int k = 0; k < p.n; k++) if (k == 0 || keys[k] >>> 20 != keys[k - 1] >>> 20) entries++;
+		hold(10L * entries);
+		mapped = new int[entries];
+		glyphs = new char[entries];
+		int[] place = new int[entries];
+		int e = -1, winner = -1;
+		for (int k = 0; k < p.n; k++) {
+			int i = (int) (keys[k] & 0xFFFFF), code = (int) (keys[k] >>> 20);
+			if (e < 0 || mapped[e] != code) {
+				mapped[++e] = code;
+				place[e] = i;
+				winner = p.sub[i];
+				glyphs[e] = (char) p.glyph[i];
+			} else if (p.sub[i] == winner) {
+				glyphs[e] = (char) p.glyph[i];
+			}
+		}
+		long[] inverse = new long[entries];
+		for (int j = 0; j < entries; j++) inverse[j] = (long) glyphs[j] << 40 | (long) place[j] << 20 | j;
+		Arrays.sort(inverse);
+		byGlyph = new int[entries];
+		for (int j = 0; j < entries; j++) byGlyph[j] = (int) (inverse[j] & 0xFFFFF);
 	}
 
-	private void format4(int offset, Map<Integer, Integer> sub, int[] budget) {
+	private void put(Pairs pairs, int code, int glyph) {
+		// a format 12 glyph is unsigned: one read negative is past numGlyphs, and dropped like any other there
+		if (glyph > 0 && glyph < numGlyphs) pairs.add(code, glyph);
+	}
+
+	private void format4(int offset, Pairs sub, int[] budget) {
 		int segX2 = u16(offset + 6);
 		int ends = offset + 14, starts = ends + segX2 + 2, deltas = starts + segX2, ranges = deltas + segX2;
 		for (int s = 0; s < segX2 / 2; s++) {
@@ -237,7 +337,7 @@ final class InspectFace {
 		}
 	}
 
-	private void format12(int offset, Map<Integer, Integer> sub, int[] budget) {
+	private void format12(int offset, Pairs sub, int[] budget) {
 		int groups = u32(offset + 12);
 		for (int i = 0; i < groups && budget[0] > 0; i++) {
 			int start = u32(offset + 16 + 12 * i), end = u32(offset + 20 + 12 * i), g = u32(offset + 24 + 12 * i);
@@ -279,7 +379,7 @@ final class InspectFace {
 	};
 
 
-	private String[] readPost() {
+	private String[] readPost() throws OverBudget {
 		if (!tables.containsKey("post")) return null;
 		int post = tables.get("post")[0];
 		if (u32(post) != 0x00020000) return null;
@@ -294,6 +394,7 @@ final class InspectFace {
 			extra.add(new String(data, at + 1, len, java.nio.charset.StandardCharsets.ISO_8859_1));
 			at += 1 + len;
 		}
+		hold(8L * numGlyphs);
 		String[] out = new String[numGlyphs];
 		Map<String, Integer> all = new HashMap<String, Integer>();
 		for (int g = 0; g < numGlyphs; g++) {
@@ -312,6 +413,7 @@ final class InspectFace {
 				name = name + "#" + k;
 			}
 			all.put(name, 1);
+			hold(name.length() + 48L);
 			out[g] = name;
 		}
 		return out;

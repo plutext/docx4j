@@ -165,7 +165,7 @@ public final class InspectFinding {
 			{ EMBEDDED, "embedded: true" }, { ALTCHUNKS, "altchunks: true" }, { ALT_TEXT, "alt_text: true" },
 			{ METADATA, "metadata: true" }, { MARKUP_DETAIL, "markup_detail: author_date" }, { IMPORTER, "xhtml importer: present" } };
 	/** The needs the default options meet. */
-	private static final Set<String> DEFAULT_ON = new HashSet<String>(Arrays.asList(NOTES, TEXT_BOXES, PLACEHOLDERS,
+	static final Set<String> DEFAULT_ON = new HashSet<String>(Arrays.asList(NOTES, TEXT_BOXES, PLACEHOLDERS,
 			ALTCHUNKS, CHARTS, SMARTART, NOT_ORIGINAL));
 
 	/**

@@ -147,6 +147,19 @@ def q(el):
     return PREFIX.get(ns, ns) + ':' + local
 
 
+def reach_rank(needs, story):
+    """A note's references in order of preference (REQ-905; phase 2): the fewest options beyond the defaults;
+    then a live reference before an inserted one, an inserted before a deleted, a deleted before one deleted
+    inside an insertion; then the main document before a header before a footer; then the fewest needs. The
+    first met in document order wins a tie."""
+    revision = 3 if 'view:markup' in needs else 2 if 'view:original' in needs else 1 if 'not:original' in needs else 0
+    return (len(needs - DEFAULT_ON), revision, ('main', 'header', 'footer').index(story), len(needs))
+
+
+def paragraph_of(r):
+    return next((a for a in r.iterancestors() if a.tag in (wq('p'), '{%s}p' % A)), None)
+
+
 def path_of(el):
     steps = []
     while el is not None:
@@ -556,12 +569,17 @@ class Inspector:
                 if t:
                     used[t] = 'header' if ref.tag.endswith('headerReference') else 'footer'
         self.used = used
-        refs = {'footnote': {}, 'endnote': {}, 'comment': set(), 'from': {}}
-        self.collect_references(doc, refs, 'main')
+        refs = {'footnote': {}, 'endnote': {}, 'comment': set()}
+        self.collect_references(main, doc, refs, 'main')
         for part in self.pkg.by_type(main, '/header') + self.pkg.by_type(main, '/footer'):
             x = self.pkg.xml(part)
             if x is not None:
-                self.collect_references(x, refs, used.get(part))
+                self.collect_references(part, x, refs, used.get(part))
+        # a comment anchored in a note is anchored (phase 2)
+        for part in self.pkg.by_type(main, '/footnotes') + self.pkg.by_type(main, '/endnotes'):
+            x = self.pkg.xml(part)
+            if x is not None:
+                self.collect_references(part, x, refs, None)
         self.refs = refs
         self.authors = {}
 
@@ -587,9 +605,8 @@ class Inspector:
                         self.add(Finding('story.unused', self.chain, part, path_of(note), excerpt=self.text(note), needs={'never'}))
                         self.story(part, note, needs={'never'}, story='unused')
                     else:
-                        needs = {'notes'} | ({'view:original'} if refs[kind][nid] else set())
-                        # referenced from no story but a header or footer: read with it alone (phase 1)
-                        needs |= {'header': {'include:headers'}, 'footer': {'include:footers'}}.get(refs['from'][(kind, nid)], set())
+                        # read through its best reference: what reading that reference needs (phase 2)
+                        needs = {'notes'} | refs[kind][nid][1]
                         self.add(Finding('note', self.chain, part, path_of(note), excerpt=self.text(note), needs=needs))
                         self.story(part, note, needs=needs, story='note')
         for part in self.pkg.by_type(main, '/comments'):
@@ -631,19 +648,30 @@ class Inspector:
             f = self.add(Finding('font.embedded', self.chain, part, excerpt='', needs={'never'}, selector=face))
             f.anchor = first
 
-    def collect_references(self, root, refs, story):
-        """A story's note and comment references; a note is read through the main document's references,
-        or a used header's or footer's (story None for an unused one, whose references reach no note),
-        refs['from'] keeping the best story for each note: main, then header, then footer (phase 1)"""
-        order = ('main', 'header', 'footer')
-        for e in root.iter(wq('footnoteReference'), wq('endnoteReference')) if story else ():
-            kind = 'footnote' if e.tag.endswith('footnoteReference') else 'endnote'
-            deleted = any(a.tag in (wq('del'), wq('moveFrom')) for a in e.iterancestors())
-            nid = e.get(wq('id'))
-            refs[kind][nid] = refs[kind].get(nid, True) and deleted
-            was = refs['from'].get((kind, nid))
-            if was is None or order.index(story) < order.index(was):
-                refs['from'][(kind, nid)] = story
+    def collect_references(self, part, root, refs, story):
+        """A story's note and comment references (phase 2). The text model reads a note through a reference it
+        reads: in the main document, or in a header or footer a section uses (story None for one none does, whose
+        references reach no note), where the reference itself is read. Each reference needs what reading it needs:
+        its story's option, its revision's view, a text box, hidden text, a TOC, a stale control's surface; one in
+        an unselected branch reaches nothing. refs[kind][id] keeps the best reference's (rank, needs): reach_rank"""
+        if story:
+            saved = (self.part, getattr(self, 'toc_runs', set()))
+            self.part, self.toc_runs = part, self.toc_spans(part, root)
+            base = {'header': {'include:headers'}, 'footer': {'include:footers'}}.get(story, set())
+            for e in root.iter(wq('footnoteReference'), wq('endnoteReference')):
+                kind = 'footnote' if e.tag.endswith('footnoteReference') else 'endnote'
+                n = self.context_needs(e, root, base)
+                if 'never' in n:
+                    continue
+                r = next((a for a in e.iterancestors() if a.tag == wq('r')), None)
+                if r is not None and on(prop(self.layers(paragraph_of(r), r), 'vanish')):
+                    n.add('hidden')
+                nid = e.get(wq('id'))
+                rank = reach_rank(n, story)
+                was = refs[kind].get(nid)
+                if was is None or rank < was[0]:
+                    refs[kind][nid] = (rank, n)
+            self.part, self.toc_runs = saved
         for e in root.iter(wq('commentReference'), wq('commentRangeStart')):
             refs['comment'].add(e.get(wq('id')))
 

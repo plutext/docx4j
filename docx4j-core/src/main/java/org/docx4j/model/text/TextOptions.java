@@ -44,7 +44,9 @@ import java.util.Set;
  * was typed in a document protected for forms. It computes no MERGEFIELD (no data is supplied), and
  * never a field with {@code w:fldLock}; every other field keeps its cached result.</p>
  *
- * <p>Beyond WD section 10, a host may give the {@link ImageDescriber} (REQ-514).</p>
+ * <p>Beyond WD section 10, a host may give the {@link ImageDescriber} (REQ-514), and docx4j accepts
+ * one option of its own, as REQ-1001 allows: {@code inspect} ({@link #inspect(boolean)}), whether the
+ * result carries the inspection counts of REQ-903.</p>
  *
  * @since 17.3.4 (CR-046 phase 1; phase 2 implemented the values)
  */
@@ -107,7 +109,14 @@ public final class TextOptions {
 	private boolean pageMarkers = false;
 	private Layout layout = Layout.NONE;
 	private boolean warnings = true;
+	private boolean inspect = INSPECT_DEFAULT;
 	private ImageDescriber imageDescriber = AltTextDescriber.INSTANCE;
+
+	/**
+	 * {@code inspect}'s default: off (CR-050 D9, by its rule: off where the inspection costs more than a
+	 * fifth of the extraction on the real-document corpora; measured in phase 2 at about four fifths).
+	 */
+	static final boolean INSPECT_DEFAULT = false;
 
 	/** The defaults of WD section 10. */
 	public TextOptions() {}
@@ -166,8 +175,10 @@ public final class TextOptions {
 		case "page_markers": pageMarkers = bool(n, value); break;
 		case "layout": layout = choice(n, value, Layout.class); break;
 		case "warnings": warnings = bool(n, value); break;
+		case "inspect": inspect = bool(n, value); break;
 		default:
-			throw new IllegalArgumentException("Unknown text option '" + name + "'; the options are " + NAMES + " (WD REQ-1001)");
+			throw new IllegalArgumentException("Unknown text option '" + name + "'; the options are " + NAMES
+					+ " (WD REQ-1001), and docx4j's inspect");
 		}
 		return this;
 	}
@@ -237,6 +248,16 @@ public final class TextOptions {
 	public TextOptions pageMarkers(boolean b) { this.pageMarkers = b; return this; }
 	public TextOptions layout(Layout l) { this.layout = l; return this; }
 	public TextOptions warnings(boolean b) { this.warnings = b; return this; }
+	/**
+	 * {@code inspect}, docx4j's own option (CR-050 D9; outside WD section 10, as REQ-1001 allows): whether
+	 * {@link Texts#of(org.docx4j.openpackaging.packages.WordprocessingMLPackage, TextOptions)} inspects the
+	 * package for the counts its result's metadata carries ({@link TextResult#INSPECT}, WD REQ-903). Off by
+	 * default, since the inspection costs nearly what the extraction does: it reads every story, branch,
+	 * chunk, embedded package and font up to its bounds, whatever the other options (measured at about four
+	 * fifths of the extraction's time on real documents, CR-050 phase 2). Off, the result has no counts
+	 * and is not an inspector's (WD section 12.1); a host whose reader is an agent turns it on.
+	 */
+	public TextOptions inspect(boolean b) { this.inspect = b; return this; }
 	/** The describer images take their text from (REQ-514); {@link AltTextDescriber} by default, and for null. */
 	public TextOptions imageDescriber(ImageDescriber d) { this.imageDescriber = d == null ? AltTextDescriber.INSTANCE : d; return this; }
 
@@ -279,6 +300,7 @@ public final class TextOptions {
 	public boolean isPageMarkers() { return pageMarkers; }
 	public Layout getLayout() { return layout; }
 	public boolean isWarnings() { return warnings; }
+	public boolean isInspect() { return inspect; }
 	public ImageDescriber getImageDescriber() { return imageDescriber; }
 
 	/** A copy, for a reading one level down (an embedded package's, an {@code altChunk}'s; REQ-512, REQ-513). */
@@ -310,11 +332,12 @@ public final class TextOptions {
 		o.pageMarkers = pageMarkers;
 		o.layout = layout;
 		o.warnings = warnings;
+		o.inspect = inspect;
 		o.imageDescriber = imageDescriber;
 		return o;
 	}
 
-	/** The options as the WD names them, with their values, in WD section 10's order. */
+	/** The options as the WD names them, with their values, in WD section 10's order; docx4j's {@code inspect} is not among them. */
 	public Map<String, Object> toMap() {
 		Map<String, Object> m = new LinkedHashMap<String, Object>();
 		m.put("view", view.wdName());
@@ -354,7 +377,8 @@ public final class TextOptions {
 
 	@Override
 	public String toString() {
-		return toMap().toString();
+		String s = toMap().toString();
+		return inspect == INSPECT_DEFAULT ? s : s.substring(0, s.length() - 1) + ", inspect=" + inspect + "}";
 	}
 
 	/**

@@ -53,6 +53,16 @@ final class AltChunks {
 
 	private AltChunks() {}
 
+	/** Whether docx4j-ImportXHTML is on the class path: an extraction's capability, for its counts (REQ-905). */
+	static boolean importerPresent() {
+		try {
+			Class.forName("org.docx4j.convert.in.xhtml.XHTMLImporterImpl");
+			return true;
+		} catch (ClassNotFoundException | LinkageError e) {
+			return false;
+		}
+	}
+
 	/** The chunk's content type as the package declares it, without parameters; the warning's selector. */
 	static String contentType(AlternativeFormatInputPart part) {
 		String ct = part.getContentType() == null ? "" : part.getContentType();

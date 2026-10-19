@@ -65,6 +65,14 @@ import org.docx4j.relationships.Relationship;
  * blocks apart from it, and {@code fields: update} computes in the walk. Two option values are not
  * implemented and are refused ({@link TextOptions}).</p>
  *
+ * <p><b>Inspection counts</b> (REQ-903, CR-050 phase 2). Under docx4j's option {@code inspect: true}
+ * ({@link TextOptions#inspect(boolean)}; off by default, for its cost), a package's result carries in
+ * its metadata ({@link TextResult#INSPECT}, {@link TextResult#counts(Inspection.Format)}) the number of
+ * findings an inspection of the package ({@link Inspect}) puts in each group, unseen, omitted, active
+ * and info, for the result's own options, in plain text, Markdown and the block model: unseen first,
+ * since it is the number an agent reading the text needs before it acts on it. A part's or fragment's
+ * result carries none: the inspection is the package's.</p>
+ *
  * @since 17.3.4 (CR-046 phases 1 and 2)
  */
 public final class Texts {
@@ -77,7 +85,8 @@ public final class Texts {
 	}
 
 	/**
-	 * The text of a package.
+	 * The text of a package, with the inspection counts (the class description) under
+	 * {@code inspect: true}.
 	 *
 	 * @throws UnsupportedOperationException for an option value not implemented yet (REQ-1001)
 	 */
@@ -85,14 +94,15 @@ public final class Texts {
 		if (pkg == null) throw new IllegalArgumentException("No package");
 		TextOptions o = options == null ? new TextOptions() : options;
 		o.checkImplemented();
-		return new Extractor(pkg, o, Extractor.Mode.VIEW).extract();
+		TextResult result = new Extractor(pkg, o, Extractor.Mode.VIEW).extract();
+		return o.isInspect() ? result.withCounts(Inspect.counts(pkg, o)) : result;
 	}
 
 	/**
 	 * The text of one story part: the main document part (its story and text boxes; no notes), a
 	 * header or a footer. Under {@code fields: update} there is no first reading for bookmarks, so a
 	 * REF is computed only when its bookmark comes before it in the part; otherwise it keeps its cached
-	 * result.
+	 * result. No inspection counts: they are the package's.
 	 *
 	 * @throws IllegalArgumentException for any other part
 	 */
@@ -118,7 +128,7 @@ public final class Texts {
 	 * main story: the view is the package's, so a join or a move is resolved as in the whole
 	 * document. Its addresses start {@code content}. Each call reads the whole package's tracked
 	 * changes (the class description's "Cost"). Under {@code fields: update}, a REF is computed only
-	 * when its bookmark comes before it in the content.
+	 * when its bookmark comes before it in the content. No inspection counts: they are the package's.
 	 */
 	public static TextResult of(WordprocessingMLPackage pkg, Object content, TextOptions options) {
 		TextOptions o = options == null ? new TextOptions() : options;
@@ -129,7 +139,8 @@ public final class Texts {
 	/**
 	 * The text of content with no package: in the {@code accepted} and {@code original} views only
 	 * run-level revisions are resolved (no paragraph is joined, a move is its two halves), and hidden
-	 * text is only what the runs themselves hide, since there are no styles.
+	 * text is only what the runs themselves hide, since there are no styles. No inspection counts:
+	 * the inspection needs the package.
 	 */
 	public static TextResult of(Object content, TextOptions options) {
 		TextOptions o = options == null ? new TextOptions() : options;
@@ -142,6 +153,7 @@ public final class Texts {
 	 * ({@link org.docx4j.model.revisions.TrackedChanges}), read with no view logic: the copy route of
 	 * WD REQ-406, which the view walk of {@link #of(WordprocessingMLPackage, TextOptions)} is held
 	 * equal to. The options' view says which resolution it was ({@code accepted} or {@code original}).
+	 * No inspection counts: the resolved copy is not the document a person opens.
 	 */
 	public static TextResult ofResolved(WordprocessingMLPackage resolved, TextOptions options) {
 		TextOptions o = options == null ? new TextOptions() : options;

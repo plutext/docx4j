@@ -33,6 +33,14 @@ public final class ExtractionConformance {
         default Inspection inspect(Path fixture) throws Exception {
             throw new UnsupportedOperationException("not an inspector");
         }
+        /**
+         * The inspection counts an extraction result of a fixture carries (REQ-903) for one of the outputs of
+         * {@code expected-inspection.tsv} ({@link ExtractionInspection#OUTPUTS}): {@code unseen}, {@code omitted},
+         * {@code active}, {@code info}, and {@code status}; needed only by an engine that advertises REQ-903.
+         */
+        default Map<String, String> counts(Path fixture, String output) throws Exception {
+            throw new UnsupportedOperationException("not an inspector");
+        }
     }
     /** An inspection as the harness compares it with {@code expected-inspection.tsv} (text-extraction/INSPECTION.md). */
     public static final class Inspection {
@@ -316,6 +324,26 @@ public final class ExtractionConformance {
             if (!run.ready(row, "inspection", "-", "default", requirements(statements))) continue;
             compareInspection(fixture, expected.getOrDefault(fixture, List.of()), status, run.engine.inspect(dir.resolve(fixture)));
             run.pass(row, "inspection", "-", "default");
+        }
+        // CR-050 phase 2: every extraction result's counts (REQ-903), for each output the table names a group under,
+        // are the number of the table's findings in each group there, with the fixture's status. The table's groups
+        // are for an extraction with no XHTML importer (INSPECTION.md), so with one on the class path the check pends
+        Set<String> countsRequire = requirements("REQ-903");
+        countsRequire.add(XHTML_IMPORTER_ABSENT);
+        for (Map<String, String> status : table(dir.resolve(ExtractionInspection.STATUS))) {
+            String fixture = status.get("fixture");
+            Map<String, String> row = Map.of("fixture", fixture, "case", "0", "statements", "REQ-903");
+            for (String output : ExtractionInspection.OUTPUTS) {
+                if (!run.ready(row, "counts", "-", output, countsRequire)) continue;
+                Map<String, String> want = new LinkedHashMap<>();
+                for (String group : List.of("unseen", "omitted", "active", "info")) {
+                    long n = expected.getOrDefault(fixture, List.of()).stream().filter(f -> group.equals(f.get(output))).count();
+                    want.put(group, String.valueOf(n));
+                }
+                want.put("status", status.get("status"));
+                equal(want, run.engine.counts(dir.resolve(fixture), output), fixture + ": counts under " + output);
+                run.pass(row, "counts", "-", output);
+            }
         }
     }
     static void compareInspection(String fixture, List<Map<String, String>> expected, Map<String, String> status, Inspection actual) {

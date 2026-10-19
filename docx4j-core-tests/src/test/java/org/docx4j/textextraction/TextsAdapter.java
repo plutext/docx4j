@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.docx4j.model.text.Group;
 import org.docx4j.model.text.Inspect;
 import org.docx4j.model.text.InspectFinding;
 import org.docx4j.model.text.Inspection;
@@ -62,9 +63,8 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 			"REQ-801", "REQ-802", "REQ-1001", "REQ-1202", "REQ-1203",
 			// the chart's description, which case 34's axis title needs
 			"CR-047",
-			// the inspector (CR-050 phase 1; WD 0.17's section 9 but REQ-903's counts in a result, phase 2), and the
-			// suite's check of it
-			"REQ-901", "REQ-902", "REQ-904", "REQ-905", "REQ-906", "REQ-907", "REQ-1204")));
+			// the inspector (CR-050 phase 1; REQ-903's counts in every result, phase 2), and the suite's check of it
+			"REQ-901", "REQ-902", "REQ-903", "REQ-904", "REQ-905", "REQ-906", "REQ-907", "REQ-1204")));
 
 	private final Map<Path, WordprocessingMLPackage> packages = new HashMap<Path, WordprocessingMLPackage>();
 	private final Map<Path, Inspection> inspections = new HashMap<Path, Inspection>();
@@ -104,8 +104,10 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 		for (InspectFinding f : inspection(fixture).findings()) {
 			findings.merge("inspect\t" + f.getKind() + "\t" + selector(entries, f), "1", (a, b) -> String.valueOf(Integer.parseInt(a) + 1));
 		}
-		// the properties (core, app, custom) by their own names, as the findings table names them
+		// the properties (core, app, custom) by their own names, as the findings table names them; the inspection
+		// counts are checked apart (counts())
 		for (Map.Entry<String, Object> e : result.metadata().entrySet()) {
+			if (e.getKey().equals(TextResult.INSPECT)) continue;
 			if (e.getValue() instanceof Map) {
 				for (Map.Entry<?, ?> p : ((Map<?, ?>) e.getValue()).entrySet()) findings.put("metadata\t" + p.getKey() + "\t", String.valueOf(p.getValue()));
 			} else {
@@ -114,6 +116,34 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 		}
 		String text = "md".equals(format) ? new org.docx4j.markdown.MarkdownExporter().export(result, pkg) : PlainText.of(result);
 		return new ExtractionConformance.Output(text, findings);
+	}
+
+	@Override
+	public Map<String, String> counts(Path fixture, String output) throws Exception {
+		WordprocessingMLPackage pkg = packages.get(fixture);
+		if (pkg == null) packages.put(fixture, pkg = WordprocessingMLPackage.load(fixture.toFile()));
+		TextResult result = Texts.of(pkg, outputOptions(output));
+		Inspection.Counts c = result.counts(outputFormat(output));
+		Map<String, String> out = new LinkedHashMap<String, String>();
+		for (Group g : Group.values()) out.put(g.id(), String.valueOf(c.get(g)));
+		out.put("status", String.valueOf(((Map<?, ?>) result.metadata().get(TextResult.INSPECT)).get("status")));
+		return out;
+	}
+
+	/** The options of one of {@code expected-inspection.tsv}'s outputs (INSPECTION.md), with docx4j's inspect: true. */
+	static TextOptions outputOptions(String output) {
+		TextOptions o = new TextOptions().inspect(true);
+		switch (output) {
+		case "hidden": return o.hidden(true);
+		case "embedded": return o.embedded(true);
+		case "comments": return o.comments(true);
+		default: return o;
+		}
+	}
+
+	/** The format of one of {@code expected-inspection.tsv}'s outputs. */
+	static Inspection.Format outputFormat(String output) {
+		return output.equals("markdown") ? Inspection.Format.MARKDOWN : output.equals("blocks") ? Inspection.Format.BLOCKS : Inspection.Format.PLAIN;
 	}
 
 	@Override
@@ -133,9 +163,6 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 		return i;
 	}
 
-	/** The six outputs of {@code expected-inspection.tsv} (INSPECTION.md): plain text, Markdown and the block model under the defaults, plain text under three options. */
-	static final String[] OUTPUTS = { "plain", "markdown", "blocks", "hidden", "embedded", "comments" };
-
 	/** A finding as {@code expected-inspection.tsv} writes it: its location, address, visibility, reveal, its group under each output, its excerpt's length. */
 	static Map<String, String> row(InspectFinding f) {
 		Map<String, String> row = new LinkedHashMap<String, String>();
@@ -151,12 +178,7 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 		row.put("visible", f.getVisible().id());
 		row.put("reveal", f.getReveal().toString());
 		Set<Inspection.Capability> none = EnumSet.noneOf(Inspection.Capability.class);
-		row.put("plain", f.group(new TextOptions(), Inspection.Format.PLAIN, none).id());
-		row.put("markdown", f.group(new TextOptions(), Inspection.Format.MARKDOWN, none).id());
-		row.put("blocks", f.group(new TextOptions(), Inspection.Format.BLOCKS, none).id());
-		row.put("hidden", f.group(new TextOptions().hidden(true), Inspection.Format.PLAIN, none).id());
-		row.put("embedded", f.group(new TextOptions().embedded(true), Inspection.Format.PLAIN, none).id());
-		row.put("comments", f.group(new TextOptions().comments(true), Inspection.Format.PLAIN, none).id());
+		for (String output : ExtractionInspection.OUTPUTS) row.put(output, f.group(outputOptions(output), outputFormat(output), none).id());
 		row.put("excerpt_length", String.valueOf(f.getExcerptLength()));
 		row.put("excerpt_cut", String.valueOf(f.isExcerptCut()));
 		return row;
@@ -233,7 +255,8 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 	 * options as {@code name: value}, several {@code "; "} apart ({@code embedded: true; hidden: true}).
 	 */
 	static TextOptions options(String view, String scenario) {
-		TextOptions options = TextOptions.of(TextView.of(view));
+		// this engine claims the inspector class (REQ-903), so it extracts as one: docx4j's inspect: true (CR-050 D9)
+		TextOptions options = TextOptions.of(TextView.of(view)).inspect(true);
 		if (scenario == null || scenario.equals("default") || scenario.equals("markdown") || scenario.startsWith("xhtml importer")) return options;
 		for (String option : scenario.split(";")) {
 			int colon = option.indexOf(':');

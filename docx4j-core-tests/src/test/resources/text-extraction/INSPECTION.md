@@ -15,7 +15,9 @@ ratified them all on 19 October 2026, with D19, D17's list alone and D20 (CR-050
 CR-050 phase 1 changed (D18's calibration; inserted content's membership; and, after docx4j-43's
 review, SmartArt data, the marks of rows and cells, placeholder content, notes a header alone reaches,
 a chunk's encoding and `javascript:` URIs) is marked **(phase 1)** or **phase 1's calibration**, for
-Jason's ruling; none of it moves a finding of the four fixtures.
+Jason's ruling; none of it moves a finding of the four fixtures. What phase 2 changed (a note read
+through its best reference, after the docx4j-portfolio session's question; a comment anchored in a note)
+is marked **(phase 2)**, and moves none either.
 
 ## Files and how they are made
 
@@ -119,8 +121,8 @@ output when the output meets them all:
 | Container | Requirement |
 |---|---|
 | a header, a footer a section uses | `include: headers` / `include: footers` |
-| a footnote or endnote | `notes: true` (default); and `view: original` when every reference to it is deleted; and `include: headers` (`footers`) when no reference but a used header's (footer's) reaches it, the main document's before a header's before a footer's **(phase 1)** |
-| a comment with an anchor | `comments: true` (or the markup view) |
+| a footnote or endnote | `notes: true` (default), and what reading its best reference needs **(phase 2)**: a reference in the main document, or in a header (footer) a section uses (`include: headers`, `include: footers`), needs what its own containers need (its revision's view, a text box, a TOC, a stale control's surface, `hidden: true` for a hidden run); one in an unselected branch reaches nothing. The best is the one with the fewest requirements beyond the defaults; then a live reference before an inserted one, an inserted before a deleted, a deleted before one deleted inside an insertion; then the main document's before a header's before a footer's; then the fewest requirements; then the first in document order. Two references of different requirements are approximated by the best's: under options that meet another's and not the best's, the text holds the note and its findings are counted out of the output |
+| a comment with an anchor (a `w:commentReference` or `w:commentRangeStart` in the main document, a header or footer, or a note **(phase 2)**) | `comments: true` (or the markup view) |
 | a glossary entry | `include: glossary` |
 | a story no section or reference uses (a note an unused header alone refers to among them **(phase 1)**); an unselected branch | never |
 | deleted or moved-from content | `view: original` (or markup); inside an insertion as well, `view: markup` only |
