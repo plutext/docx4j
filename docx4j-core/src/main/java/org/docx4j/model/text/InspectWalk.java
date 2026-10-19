@@ -249,7 +249,9 @@ final class InspectWalk {
 		if (main != null) {
 			String ctype = pkg.contentType(main);
 			ctype = ctype == null ? "" : ctype;
-			if (ctype.contains("wordprocessingml") || ctype.contains("ms-word")) word();
+			boolean word = ctype.contains("wordprocessingml") || ctype.contains("ms-word");
+			activeFirst(word);
+			if (word) word();
 			else if (ctype.contains("spreadsheetml")) workbook(main);
 			else if (ctype.contains("presentationml")) presentation(main);
 			inventory();
@@ -370,8 +372,7 @@ final class InspectWalk {
 				for (Element d : children(dv, W, "docVar")) vals.add(w(d, "val") == null ? "" : w(d, "val"));
 				add(found("doc_vars", sp, path(sp, dv), String.join("\n", vals), needs(InspectFinding.NEVER), dv));
 			}
-			Element uf = child(settings, W, "updateFields");
-			if (isOn(uf)) add(found("settings.update_fields", sp, path(sp, uf), "", needs(InspectFinding.NEVER), uf));
+			place(sp + "#updateFields"); // found first (activeFirst)
 			Element rs = child(settings, W, "rsids");
 			if (rs != null) {
 				Found f = add(found("rsids", sp, path(sp, rs), "", needs(InspectFinding.NEVER), rs));
@@ -1915,6 +1916,64 @@ final class InspectWalk {
 
 	// --- the inventory ------------------------------------------------------------------------------
 
+	// --- what Office would run or fetch, found first (phase 2) -----------------------------------------
+
+	/** The findings made ahead of their place in the report, by the key {@link #place} is called with. */
+	private final Map<String, List<Found>> early = new HashMap<String, List<Found>>();
+
+	/**
+	 * What Office would run or fetch that the package holds outside its stories, found before them so that
+	 * a global limit reached in the stories never drops it (Jason, 20 October 2026): a macro project, an
+	 * ActiveX control, every external relationship (a web link's with them), {@code w:updateFields}. Each
+	 * is counted at once and placed in the report where the inventory (the settings, for
+	 * {@code w:updateFields}) puts it. An external field and a chunk's script are found where they are read.
+	 */
+	private void activeFirst(boolean word) {
+		for (String p : pkg.partNames()) {
+			String ctype = pkg.contentType(p) == null ? "" : pkg.contentType(p);
+			if (ctype.equals("application/vnd.ms-office.vbaProject")) {
+				early(p, found("part.macro", p, "", "", needs(InspectFinding.NEVER), null));
+				pkg.done.add(p); // its content is not decoded by design (payload.opaque)
+			} else if (ctype.equals("application/vnd.ms-office.activeX+xml")) {
+				early(p, found("part.activex", p, "", "", needs(InspectFinding.NEVER), null));
+				pkg.done.add(p);
+			}
+		}
+		List<String> sources = new ArrayList<String>();
+		sources.add("/");
+		sources.addAll(pkg.partNames());
+		for (String p : sources) {
+			String rp = pkg.relsPart(p);
+			for (InspectPackage.Rel r : pkg.rels(p)) {
+				if (!r.external) continue;
+				boolean webLink = r.type.endsWith("/hyperlink") && web(r.target);
+				early(rp, found(webLink ? "hyperlink.web" : "relationship.external", rp, path(rp, r.element), r.target, needs(InspectFinding.NEVER),
+						r.element)).subject = r.target;
+			}
+			pkg.done.add(rp); // a relationships part holds nothing else the inspection reads
+		}
+		if (word) {
+			List<String> st = pkg.byType(main, "/settings");
+			Element settings = st.isEmpty() ? null : pkg.xml(st.get(0));
+			Element uf = child(settings, W, "updateFields");
+			if (isOn(uf)) early(st.get(0) + "#updateFields", found("settings.update_fields", st.get(0), path(st.get(0), uf), "", needs(InspectFinding.NEVER), uf));
+		}
+	}
+
+	private Found early(String key, Found f) {
+		f.needs.addAll(baseNeeds);
+		f.store = pkg;
+		run.addEarly(f);
+		early.computeIfAbsent(key, k -> new ArrayList<Found>()).add(f);
+		return f;
+	}
+
+	/** The findings made ahead for this key, at their place in the report. */
+	private void place(String key) {
+		List<Found> l = early.remove(key);
+		if (l != null) for (Found f : l) run.place(f);
+	}
+
 	private void inventory() {
 		List<String> parts = pkg.partNames();
 		Map<String, String> objects = oleObjects();
@@ -1922,10 +1981,8 @@ final class InspectWalk {
 		for (String p : parts) for (InspectPackage.Rel r : pkg.rels(p)) if (r.type.endsWith("/aFChunk") && !r.external) chunks.add(r.target);
 		for (String p : parts) {
 			String ctype = pkg.contentType(p) == null ? "" : pkg.contentType(p);
-			if (ctype.equals("application/vnd.ms-office.vbaProject")) {
-				add(found("part.macro", p, "", "", needs(InspectFinding.NEVER), null));
-			} else if (ctype.equals("application/vnd.ms-office.activeX+xml")) {
-				add(found("part.activex", p, "", "", needs(InspectFinding.NEVER), null));
+			if (ctype.equals("application/vnd.ms-office.vbaProject") || ctype.equals("application/vnd.ms-office.activeX+xml")) {
+				place(p); // found first (activeFirst)
 			} else if (ctype.equals("application/inkml+xml")) {
 				add(found("ink", p, "", "", needs(InspectFinding.NEVER), null));
 			} else if (ctype.endsWith("wordprocessingml.people+xml")) {
@@ -1952,12 +2009,7 @@ final class InspectWalk {
 		sources.addAll(parts);
 		for (String p : sources) {
 			String rp = pkg.relsPart(p);
-			for (InspectPackage.Rel r : pkg.rels(p)) {
-				if (!r.external) continue;
-				boolean webLink = r.type.endsWith("/hyperlink") && web(r.target);
-				Found f = add(found(webLink ? "hyperlink.web" : "relationship.external", rp, path(rp, r.element), r.target, needs(InspectFinding.NEVER), r.element));
-				f.subject = r.target;
-			}
+			place(rp); // its external relationships, found first (activeFirst)
 			pkg.done.add(rp);
 		}
 	}

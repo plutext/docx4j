@@ -277,6 +277,47 @@ public class InspectCountsTest {
 		assertTrue(c.isLowerBound());
 	}
 
+	// --- what Office would run or fetch, found first (Jason, 20 October 2026) ------------------------------
+
+	static final List<String> FIRST = Arrays.asList(InspectFinding.PART_MACRO, InspectFinding.PART_ACTIVEX,
+			InspectFinding.RELATIONSHIP_EXTERNAL, InspectFinding.SETTINGS_UPDATE_FIELDS);
+
+	/**
+	 * A macro project, external relationships and {@code w:updateFields} are found before the stories, so
+	 * that a findings limit reached in the stories keeps them; a complete report lists them in the
+	 * inventory's place, after every story's findings, as before.
+	 */
+	@Test
+	public void whatOfficeRunsOrFetchesIsFoundFirst() throws Exception {
+		WordprocessingMLPackage pkg = fixture("extraction-probe-external.docm");
+		List<InspectFinding> complete = Inspect.of(pkg).findings();
+		int lastStory = -1, firstActive = Integer.MAX_VALUE, active = 0;
+		for (int n = 0; n < complete.size(); n++) {
+			InspectFinding f = complete.get(n);
+			if (FIRST.contains(f.getKind())) {
+				firstActive = Math.min(firstActive, n);
+				active++;
+			} else if (f.getLocation().getChain().isEmpty() && f.getLocation().getPart().equals("/word/document.xml")) {
+				lastStory = n;
+			}
+		}
+		assertEquals(6, active);
+		assertTrue("in the inventory's place: " + lastStory + " < " + firstActive, lastStory < firstActive);
+
+		for (int n = 0; n < 300; n++) {
+			pkg.getMainDocumentPart().getContent().add(XmlUtils.unmarshalString("<w:p" + NS + ">" + InspectTest.hidden("PAST_" + n) + "</w:p>"));
+		}
+		Inspection stopped = Inspect.of(pkg, new InspectRun(100, Inspect.MAX_PAYLOAD_BYTES, Inspect.MAX_TOTAL_BYTES, Inspect.MAX_ELEMENTS));
+		assertEquals(Inspection.Status.PARTIAL, stopped.status());
+		assertTrue(reasons(stopped).toString(), reasons(stopped).contains(Inspection.LIMIT_FINDINGS));
+		assertEquals(100, stopped.findings().size());
+		List<String> kept = new ArrayList<String>();
+		for (InspectFinding f : stopped.findings()) if (FIRST.contains(f.getKind())) kept.add(f.getKind());
+		assertEquals("the macro project, four external relationships, w:updateFields", 6, kept.size());
+		assertTrue(kept.toString(), kept.contains(InspectFinding.PART_MACRO) && kept.contains(InspectFinding.SETTINGS_UPDATE_FIELDS));
+		for (InspectFinding f : stopped.findings().subList(94, 100)) assertTrue(f.getKind(), FIRST.contains(f.getKind()));
+	}
+
 	// --- an unanchored comment (CR-050's ruling before phase 2) --------------------------------------------
 
 	/**

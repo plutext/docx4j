@@ -73,7 +73,9 @@ import org.slf4j.LoggerFactory;
  * #MAX_ELEMENTS} elements walked; embedded packages and chunks one level deep. A payload's limit stops
  * that payload; a global limit stops the inspection, and what was not inspected is listed in
  * {@link Inspection#skipped()} (the first {@value #MAX_SKIPPED}). Either makes the inspection
- * {@code PARTIAL}, and its counts lower bounds.</p>
+ * {@code PARTIAL}, and its counts lower bounds. What Office would run or fetch outside the stories (a
+ * macro project, an ActiveX control, an external relationship, {@code w:updateFields}) is found before
+ * the stories, so that a limit reached in them never drops it; the report lists it in its place.</p>
  *
  * <p><b>In an extraction</b> (REQ-903, CR-050 phase 2): under {@code inspect: true},
  * {@link Texts#of(WordprocessingMLPackage, TextOptions)} inspects the package too, and its result's
@@ -88,8 +90,8 @@ public final class Inspect {
 
 	/** An excerpt's bound, in code points (D5). */
 	public static final int EXCERPT = 200;
-	/** The findings an inspection makes at most (D11). */
-	public static final int MAX_FINDINGS = 1000;
+	/** The findings an inspection makes at most (D11; 10,000 from CR-050 phase 2, where ordinary field-heavy documents passed 1,000). */
+	public static final int MAX_FINDINGS = 10000;
 	/** The bytes decoded from any one payload at most: 16 MB. */
 	public static final long MAX_PAYLOAD_BYTES = 16L * 1024 * 1024;
 	/** The bytes decoded from payloads in all at most: 64 MB. */
@@ -127,6 +129,8 @@ public final class Inspect {
 		} catch (InspectRun.Stop stop) {
 			run.stopped(stop.reason);
 			return true;
+		} finally {
+			run.placeRest();
 		}
 	}
 

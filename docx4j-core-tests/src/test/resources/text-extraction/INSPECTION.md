@@ -14,8 +14,9 @@ an output. Where the CR left a choice open, the choice made here is marked **(ph
 ratified them all on 19 October 2026, with D19, D17's list alone and D20 (CR-050 section 6). What
 CR-050 phase 1 changed (D18's calibration; inserted content's membership; and, after docx4j-43's
 review, SmartArt data, the marks of rows and cells, placeholder content, notes a header alone reaches,
-a chunk's encoding and `javascript:` URIs) is marked **(phase 1)** or **phase 1's calibration**, for
-Jason's ruling; none of it moves a finding of the four fixtures. What phase 2 changed (a note read
+a chunk's encoding and `javascript:` URIs) is marked **(phase 1)**, for Jason's ruling, or **phase 1's
+calibration**, which Jason ratified on 20 October 2026 (D18); none of it moves a finding of the four
+fixtures. What phase 2 changed (a note read
 through its best reference, after the docx4j-portfolio session's question; a comment anchored in a note)
 is marked **(phase 2)**, and moves none either.
 

@@ -5,7 +5,7 @@ the contract (`docx4j-core-tests/src/test/resources/text-extraction/INSPECTION.m
 finding on the suite's four fixtures, the harness's exact comparison, and a new fixture,
 `extraction-probe-inspect.docx` (cases 58 to 67), checked in Word 365. Phase 1 done 2026-10-19 (§5,
 "Phase 1 record", Jason: "implement CR-050 phase 1"): `org.docx4j.model.text.Inspect`, every inspector
-row passing; D18's tests calibrated on the corpora (for Jason's ruling). Phase 2 done 2026-10-19 (§5,
+row passing; D18's tests calibrated on the corpora (ratified by Jason, 20 October 2026). Phase 2 done 2026-10-19 (§5,
 "Phase 2 record", Jason: "start CR-050 phase 2"): the counts in an extraction's result under docx4j's
 `inspect: true`, off by default by D9's rule (the counts cost about four fifths of an extraction); the
 rulings before it; REQ-903 checked. Phase 3 to come.
@@ -14,7 +14,7 @@ Proposed 2026-10-19, drafted at Jason's request ("consider section 12 ... of
 revised the same day after three reviews (§9), to state its objective (§0, Jason: "frame it that way"),
 and for text an embedded font draws as other text or as nothing (§9, Jason's question).
 Four phases (§5); decisions in §6: D1 to D8 and D11 to D20 taken by Jason on 19 October 2026 (D11 with
-1,000 findings; D17 revised to the list alone after phase 0's Word check; D16 closed, overtaken by WD
+1,000 findings, revised to 10,000 on 20 October; D17 revised to the list alone after phase 0's Word check; D16 closed, overtaken by WD
 0.17); D9 (a) taken before phase 2, with the faces' bound and the unanchored comment (§5); D10 open.
 
 The specification is the portfolio's *WordprocessingML Text Extraction*, WD 0.16
@@ -301,7 +301,7 @@ relationship's form and `field.external` for the field's. A bookmark (`w:anchor`
 - An excerpt is at most 200 Unicode code points, and records its original length in code points and
   whether it was cut.
 - The inspection as a whole is bounded, each limit enforced while decoding or walking, not after:
-  at most 1,000 findings (D11); 16 MB decoded from any one payload and 64 MB in all (an embedded font's
+  at most 10,000 findings (D11; 1,000 until phase 2); 16 MB decoded from any one payload and 64 MB in all (an embedded font's
   de-obfuscated bytes are a payload); 5,000,000 elements walked in all; embedded packages and chunks
   one level deep.
 - A per-payload limit stops that payload and the inspection goes on. A global limit (findings, total
@@ -587,7 +587,8 @@ test changed for them.
   letters (і and palochka, ѐ and Ѝ); Arial's Arabic high hamza (U+0674) with no advance. Each fires only
   where a document uses that letter in that face. The Java and Python readings agree on all 97 faces (69
   letters). The fixture's ten faces give the same findings as before. To the WD: REQ-902's Embedded
-  faces paragraph, as INSPECTION.md now reads.
+  faces paragraph, as INSPECTION.md now reads. Ratified by Jason on 20 October 2026, the four faces as
+  they are (D18).
 - *Deviations from the oracle*, none moving a fixture's finding: inserted content's need (above);
   `font.embedded` one finding per face part (the oracle keyed faces by font name; §2.4 says per face),
   its summary the characters it draws; the tag scanner takes single-quoted and bare attribute values.
@@ -686,16 +687,31 @@ WD §12.1 claimed then, and not before.
   docx4j's default results are therefore not an inspector's (WD §12.1); docx4j claims the inspector class
   under `inspect: true`, as `TextsAdapter` runs.
 - *Found by the measurement, for Jason*: two of the 453 documents end `PARTIAL` at `limit.findings`
-  (D11's 1,000), each with a long table of contents: one `field.code` finding for each entry's PAGEREF
-  field (850 and 1,000) and a `text.web_hidden` for each entry's tab and page number (150). An
-  ordinary document's counts are then lower bounds. Options: count a TOC field's own fields and
-  web-hidden runs as one finding per TOC (as a collapsed heading's body is one), or raise the limit.
-  Recommended: the former, a TOC being generated content; a change to REQ-906 and the oracle. As the
-  review below refines it: what the TOC's own code generates (its PAGEREF fields, its HYPERLINK fields
-  to a `_Toc` bookmark, the web-hidden runs inside its span) is one `field.code` (at the TOC's begin,
-  its excerpt the TOC's own instruction, its summary the number of fields) and one `text.web_hidden` a
-  TOC; any other field inside the span (an external HYPERLINK, INCLUDETEXT, every REQ-506 kind) stays
-  its own finding, an active kind never swallowed. Raising the limit would only move the cliff.
+  (D11's 1,000), each for its fields: one `field.code` finding a field. With the limit lifted (score
+  only), one holds 1,350 findings, 1,178 of them field codes (683 REF cross-references, 337 XE index
+  entries, 150 PAGEREF of its table of contents, 8 others) and 150 web-hidden runs of that table; the
+  other, a mail-merge template, 1,343, 1,340 of them MERGEFIELD. (First written here as long tables of
+  contents, from the first 1,000 findings' kinds; a count of the fields corrected it on 20 October.)
+  Past the limit a report is partial and what was not reached is skipped: the first document stopped
+  in its main story, so its six headers and footers and the whole inventory (macros, external
+  relationships, `w:updateFields`) went unread; neither holds an active item there. Options: (a) the
+  limit 10,000 (D11's first recommendation): both complete, no change but the number, a finding being
+  small (its excerpt at most 200 code points), the other bounds still stopping a hostile document;
+  (b) routine field codes merged by keyword (the 1,340 MERGEFIELDs one finding), which changes REQ-906's
+  identity and buries an instruction's text in a count; (c) 1,000 kept, ordinary field-heavy documents
+  partial (2 of 453). Recommended: (a); with any of them, the inventory's active kinds walked first, so
+  that a limit never drops a macro or an external link. Collapsing a table of contents into one finding
+  (first recommended here) would bring neither document under the limit. The limit is a constant
+  (`Inspect.MAX_FINDINGS`), not configurable.
+  **Ruled** (Jason, 20 October 2026): (a), with macros and external links walked first. Built:
+  `Inspect.MAX_FINDINGS` 10,000; each package's walk begins with what Office would run or fetch outside
+  its stories (a macro project, an ActiveX control, every external relationship, a web link's with
+  them, `w:updateFields`), each counted against the limit at once (`InspectRun.addEarly`) and placed in
+  the report where the inventory puts it, so the report's order (§2.4) is unchanged; a stop leaves
+  what was not placed at the report's end, the inventory's place. An external field and a chunk's
+  script are still found where they are read (the stories, the payload). Both documents now complete
+  (1,350 and 1,343 findings). `InspectCountsTest`: a document past a findings limit keeps its macro
+  project and external relationship.
 - *The faces' tables, charged to the total* (the ruling before phase 2; REQ-907): `InspectFace` holds
   its character map as three arrays (the code points sorted, a glyph for each, the indices by glyph in
   the map's order), 10 bytes a code point where a map of objects took some 80; with it are charged its
@@ -761,7 +777,8 @@ WD §12.1 claimed then, and not before.
   row or cell); the walk's hidden test the rule its `text.hidden` applies; the ranking, and a stale
   control's reference given `bindings: surface` (the stale set is filled before the references are
   collected). D9's default stands; the claim's configuration (`inspect: true`, as `TextsAdapter` runs) is
-  stated above.
+  stated above. Its refinement of the table-of-contents collapse first recommended for the findings
+  limit is moot, that premise being wrong (above).
 
 ### Phase 3: hand-offs
 
@@ -846,6 +863,9 @@ Each with a recommendation; Jason decides.
   deep, with `PARTIAL` past either; or no bounds. Recommended: the bounds, so a hostile document cannot
   make the inspection the denial of service.
   **Decided** (Jason, 19 October 2026): the bounds, with at most 1,000 findings (not 10,000).
+  **Revised** (Jason, 20 October 2026, after phase 2's measurement): 10,000 findings, ordinary
+  field-heavy documents having passed 1,000; and what Office would run or fetch outside the stories found
+  before them, so that a limit never drops it (§5, "Phase 2 record").
 - **D12. The reveal contract.** Options: (a) §2.3's three forms, with composed option lists, proposed
   to the WD as REQ-901's `how_to_see`; (b) one option name per finding, as REQ-901 reads now.
   Recommended: (a): (b) would tell an agent that `alt_text: true` reveals a picture's title, or that
@@ -855,7 +875,7 @@ Each with a recommendation; Jason decides.
   §2.3: a collapsed heading's body is text not shown on open; the rsids are one `info` finding, their
   number, since they identify editing sessions. A collapsed body is one finding per collapsed heading,
   not one per paragraph (§2.4), so that a long section neither floods the counts nor spends D11's
-  1,000 findings. Only `w15:collapsed` counts: Word's "Collapsed by default", which the file stores. A
+  findings. Only `w15:collapsed` counts: Word's "Collapsed by default", which the file stores. A
   heading collapsed while editing is view state that Word does not save, so most documents have
   none. Other viewers may ignore it; the fixture's Word-open check records what Word does.
   **Decided** (Jason, 19 October 2026): both in. Word 365 collapsed case 58's heading on open.
@@ -970,6 +990,13 @@ Each with a recommendation; Jason decides.
   (§5, "Phase 1 record"): test 1's exceptions extended to every test with a base-letter comparison,
   compatibility characters untested, modifier letters' advances and titlecase widths untested; four
   faces of 97 still flag a letter (a barcode face among them), none of 861 documents; for Jason.
+  **Calibration ratified** (Jason, 20 October 2026), the four faces accepted as they are. True
+  findings: the Code 39 barcode face's letters and digits (bars 2 em wide: a person sees a barcode, the
+  agent the text), and TeleGrotesk Headline Ultra's wrong glyphs (Ї and ї drawn with ҷ's, Ѝ and ѐ with
+  one glyph). False and rare (none of the 861 documents uses them): Cambria's Ӫ and ӫ through fita's
+  glyph and TeleGrotesk's І and і through palochka's (look-alikes), and Arial's high hamza (U+0674) at
+  zero advance, as designed. No confusables rule, no zero-advance exception, and no exemption of
+  barcode faces by name, which a hostile face could take.
 - **D19. A drawing's name** (phase 0). Every `wp:docPr` carries a name, and most are the ones Word or a
   producer gives ("Text Box 3", "Picture 7"): `alt_text.name` is 28 of the oracle's 209 findings,
   nearly all default names, each counted omitted. Options: (a) every name, as §2.3 reads (the oracle

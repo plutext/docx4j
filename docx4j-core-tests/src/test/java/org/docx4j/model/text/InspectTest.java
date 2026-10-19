@@ -303,8 +303,8 @@ public class InspectTest {
 	/**
 	 * 800 chunks of 100 KB, each under the payload limit and 80 MB in all, end PARTIAL at the total: the
 	 * chunks not decoded are skipped, and the counts are lower bounds. (CR-050 section 3 has 2,000 chunks
-	 * of 40 KB, written before D11 set 1,000 findings: each chunk is an {@code altchunk} finding, so the
-	 * findings limit would stop those first, at 40 MB.)
+	 * of 40 KB, written before D11: each chunk an {@code altchunk} finding, D11's first limit of 1,000
+	 * findings stopped those first, at 40 MB.)
 	 */
 	@Test
 	public void theTotalBytesStopTheInspection() throws Exception {
@@ -356,11 +356,11 @@ public class InspectTest {
 		assertEquals("the embedded package is not inspected", 1, of(i, InspectFinding.TEXT_HIDDEN).size());
 	}
 
-	/** Past 1,000 findings the inspection stops, PARTIAL, what it had not inspected skipped. */
+	/** Past {@value Inspect#MAX_FINDINGS} findings the inspection stops, PARTIAL, what it had not inspected skipped. */
 	@Test
 	public void theFindingsLimitStopsTheInspection() throws Exception {
 		Doc d = new Doc();
-		for (int n = 0; n < 1200; n++) d.p(hidden("HIDDEN_" + n));
+		for (int n = 0; n < Inspect.MAX_FINDINGS + 200; n++) d.p(hidden("HIDDEN_" + n));
 		Inspection i = Inspect.of(d.done());
 		assertEquals(Inspect.MAX_FINDINGS, i.findings().size());
 		assertEquals(Inspection.Status.PARTIAL, i.status());

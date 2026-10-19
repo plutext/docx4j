@@ -22,8 +22,10 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.Part;
@@ -58,6 +60,12 @@ final class InspectRun {
 	long totalBytes, elements;
 
 	final List<InspectWalk.Found> found = new ArrayList<InspectWalk.Found>();
+	/**
+	 * Findings made ahead of their place in the report (what Office would run or fetch outside the
+	 * stories, found before them), counted against the limit at once and placed where the inventory
+	 * puts them; a global stop leaves the rest at the report's end, the inventory's place.
+	 */
+	final Set<InspectWalk.Found> early = new LinkedHashSet<InspectWalk.Found>();
 	final List<Inspection.Entry> skipped = new ArrayList<Inspection.Entry>();
 	int skippedBeyond;
 	final List<Inspection.Entry> undecided = new ArrayList<Inspection.Entry>();
@@ -74,8 +82,25 @@ final class InspectRun {
 	}
 
 	void add(InspectWalk.Found f) {
-		if (found.size() >= maxFindings) throw new Stop(Inspection.LIMIT_FINDINGS);
+		if (found.size() + early.size() >= maxFindings) throw new Stop(Inspection.LIMIT_FINDINGS);
 		found.add(f);
+	}
+
+	/** A finding made ahead of its place: counted now, placed by {@link #place}. */
+	void addEarly(InspectWalk.Found f) {
+		if (found.size() + early.size() >= maxFindings) throw new Stop(Inspection.LIMIT_FINDINGS);
+		early.add(f);
+	}
+
+	/** An early finding at its place in the report. */
+	void place(InspectWalk.Found f) {
+		if (early.remove(f)) found.add(f);
+	}
+
+	/** The early findings not placed (the walk stopped, or failed, before their place), at the report's end. */
+	void placeRest() {
+		found.addAll(early);
+		early.clear();
 	}
 
 	void skip(String reason, String location) {
