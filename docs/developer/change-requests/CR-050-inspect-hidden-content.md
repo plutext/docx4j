@@ -4,7 +4,8 @@ Status: PROPOSED 2026-10-19, drafted at Jason's request ("consider section 12 ..
 ../docx4j-portfolio/docs/text_extraction_behaviour_model.md then draft a CR to create that tool");
 revised the same day after three reviews (§9), to state its objective (§0, Jason: "frame it that way"),
 and for text an embedded font draws as other text or as nothing (§9, Jason's question).
-Four phases (§5); decisions in §6, none taken yet.
+Four phases (§5); decisions in §6: D2 to D6, D11, D12, D14, D15, D17 and D18 taken by Jason on 19 October
+2026 (D11 with 1,000 findings); D1, D7 to D10, D13 and D16 open.
 
 The specification is the portfolio's *WordprocessingML Text Extraction*, WD 0.16
 (`docx4j-portfolio/docs/text_extraction_specification_wd.md`, dae90bf), cited as **WD**: its §9,
@@ -110,8 +111,9 @@ Three passes make one `Inspection`:
    properties, every relationship (external, broken, or to a part of an unknown or unsupported
    kind), every embedded and `altChunk` part, every ink part (`w14:contentPart`, an internal
    relationship to an `InkmlPart`), and every embedded font: each face de-obfuscated and read (its
-   cmap, advance widths, outlines and substitution lookups) for the characters the runs drawn in it
-   hold (D18).
+   cmap, advance widths, outlines, glyph names and substitution lookups) for the characters the runs
+   drawn in it hold (D18). Only the package's own faces are read, never an installed font, so a
+   finding is the same on every machine.
 3. **The payloads**, decoded by the inspector itself and never converted: an HTML or XHTML chunk is
    scanned for `<script>`, event-handler attributes and external `src`/`href` references (jsoup's
    parser where present, else a tag scanner); an MHT chunk's parts are read for the same; a docx,
@@ -203,10 +205,10 @@ no importer, and the probe cases that hold them (*new*: a case §3 adds):
 |---|---|---|---|---|---|
 | `text.near_background` | colour within the threshold of its effective background (D3) | differently | included | unseen | 18, 48, *new* |
 | `text.tiny` | drawn under 2pt: `w:szCs` where the run's characters are drawn in the complex-script slot, `w:sz` otherwise | differently | included | unseen | 18, *new* (exactly 2pt: no finding) |
-| `chars.zero_width`, `chars.tag`, `chars.bidi`, `chars.private_use` | U+200B-U+200F, U+2060, U+FEFF; U+E0000-U+E007F; U+202A-U+202E, U+2066-U+2069; U+E000-U+F8FF and planes 15-16, except under `w:sym` and in a symbol or icon font (D17) | no | included | unseen | 48, *new*; 29 the negative |
-| `font.glyph_blank` | a character drawn in an embedded font whose glyph has no outline or no advance (whitespace, format and combining characters excepted): in the text, nothing on the page | no | included | unseen | *new* |
-| `font.glyph_mismatch` | a character drawn in an embedded font whose glyph is not that character's (D18's tests: an installed font of the same name draws it otherwise; two letters share a glyph; a letter's advance is over 1.5 em; a substitution the viewer applies unasked makes it another letter); symbol and icon fonts (D17) excepted | differently, or indeterminate where no test can decide | included | unseen | *new* |
-| `paragraph.collapsed` | the body of a heading marked collapsed (`w15:collapsed`), not shown on open | no | included | unseen | *new* |
+| `chars.zero_width`, `chars.tag`, `chars.bidi`, `chars.private_use` | U+200B-U+200F, U+2060, U+FEFF; U+E0000-U+E007F; U+202A-U+202E, U+2066-U+2069; U+E000-U+F8FF and planes 15-16, except in a symbol or icon font (D17: the document's font for the character, `w:sym`'s or the run's) | no | included | unseen | 48, *new*; 29 the negative |
+| `font.glyph_blank` | a character an embedded face maps to a glyph with no outline (whitespace, format and combining characters excepted; a character the face does not map is not tested, since the viewer draws it in another font): in the text, nothing on the page | no | included | unseen | *new* |
+| `font.glyph_mismatch` | a character an embedded face draws as something else, on positive evidence from the face itself (D18's four tests: a glyph shared with another letter or digit; a letter's advance zero or over 1.5 em; the glyph named for another character; a substitution Word applies making it another letter's glyph), naming what is drawn where a test says; no evidence, no finding; symbol and icon fonts (D17) excepted | differently | included | unseen | *new* |
+| `paragraph.collapsed` | the body of a heading marked collapsed (`w15:collapsed`, Word's "Collapsed by default", through its style or direct; a paragraph with an outline level): every paragraph and table after it until the next paragraph at its outline level or above, not shown on open | differently (the heading and its expand arrow shown, the body on a click) | included | unseen | *new* |
 | `shape.zero_size`, `shape.off_page`, `shape.hidden` | a text box or shape of extent 0 in a dimension; wholly off the page for every position its anchor could have on the page (D4); `wp:docPr/@hidden` or VML `visibility:hidden` | no | included where it holds text (`text_boxes: true` is the default), else unextractable | unseen where it holds text, else info | 48, *new* |
 | `smartart.data` | SmartArt data its drawing does not show | no | included (`smartart: true`) | unseen | 35 |
 | `text.hidden`, `paragraph.hidden` | `w:vanish` on the run or through its styles; a paragraph whose runs and mark are hidden | no | options: `hidden: true` | omitted | 18 |
@@ -261,6 +263,10 @@ relationship's form and `field.external` for the field's. A bookmark (`w:anchor`
   one per kind, at the same range. The exception is a hidden paragraph: a paragraph whose runs and
   mark are all hidden is one `paragraph.hidden` finding, not that and a `text.hidden` for each run, since
   it is one divergence.
+- **Collapsed headings.** `paragraph.collapsed` is one finding per collapsed heading: its location runs
+  from the body's first paragraph to its last, its summary gives their number, and its excerpt is the
+  body's start. A collapsed heading inside another's collapsed body adds nothing. The body's other
+  kinds (white text in it, say) are found in their own right.
 - **Fonts.** `font.embedded` is found once per embedded face; `font.glyph_blank` and
   `font.glyph_mismatch` per run, merged as below, naming the characters affected.
 - **Runs are merged, so run splitting does not count.** Adjacent stored runs in one paragraph are one
@@ -285,7 +291,7 @@ relationship's form and `field.external` for the field's. A bookmark (`w:anchor`
 - An excerpt is at most 200 Unicode code points, and records its original length in code points and
   whether it was cut.
 - The inspection as a whole is bounded, each limit enforced while decoding or walking, not after:
-  at most 10,000 findings; 16 MB decoded from any one payload and 64 MB in all (an embedded font's
+  at most 1,000 findings (D11); 16 MB decoded from any one payload and 64 MB in all (an embedded font's
   de-obfuscated bytes are a payload); 5,000,000 elements walked in all; embedded packages and chunks
   one level deep.
 - A per-payload limit stops that payload and the inspection goes on. A global limit (findings, total
@@ -304,8 +310,10 @@ relationship's form and `field.external` for the field's. A bookmark (`w:anchor`
 object covered by another object; text placed where the page does not show it for a reason only a
 layout knows (a shape whose position relative to its paragraph or line leaves it on the page or not
 depending on where that paragraph falls, text clipped by a fixed-height row or frame, text behind an
-image); white text whose background is an image; and it does not judge intent: no finding says its
-text is, or is not, an attack (§0). docx4j has a layout
+image); white text whose background is an image; an embedded font whose glyphs are swapped with
+care (each letter given another letter's glyph, every glyph unique, of ordinary width and with no
+glyph names), which only recognising each glyph would see (D18): `font.embedded` marks the text such
+a font draws; and it does not judge intent: no finding says its text is, or is not, an attack (§0). docx4j has a layout
 (the FO pass), so a later CR can add position findings; this one does not use it (D7).
 
 ## 3. Tests and the oracle
@@ -331,12 +339,12 @@ text is, or is not, an attack (§0). docx4j has a layout
   |---|---|
   | formatting | a direct `w:vanish w:val="false"` over an inherited hidden; a paragraph part hidden, part visible; text at exactly 2pt (no finding) and at 1.5pt; colours just above and just below the threshold; a collapsed heading's body |
   | geometry | a page-relative shape wholly off the page; one partly on it (no finding); one zero in one dimension only; a paragraph-relative position that is indeterminate (no finding, a limitation) |
-  | characters | a supplementary private-use character; a bidi override split across runs; Symbol and Wingdings characters (no finding) |
+  | characters | a supplementary private-use character; a bidi override split across runs; Symbol and Wingdings characters (no finding); a `w:sym` whose `w:font` is a text font (a finding) |
   | fields | INCLUDEPICTURE and LINK, simple and complex, keywords in mixed case, arguments quoted and bare; HYPERLINK `\l` (no finding) beside a file and a UNC target |
   | background | highlight against shading; `auto` and transparent fills; table-style shading; a page colour (`w:background`); a background docx4j cannot determine (no finding, a limitation) |
   | inventory | a part of an unknown content type; a broken relationship; an unreferenced note and an unanchored comment; the separator notes (no finding); `w:docVars`; `people.xml`; an ink part; an HTML chunk with a `<script>`, an event handler and an external image and stylesheet; an embedded docx holding hidden text |
   | links | case 21's https links in both forms (`hyperlink.web`); a `w:hyperlink` to a file path and one to a UNC path (active) |
-  | fonts | an open-licence font, renamed, embedded with its glyphs altered so that one word is drawn as another (a wide glyph drawing the word, the word's own letters blank); the same font named like a font the viewer has installed; a run whose every glyph is blank; an embedded symbol font and an icon font's private-use characters (no finding); a private-use character in a font of neither kind |
+  | fonts | an open-licence font, renamed, embedded with its glyphs altered so that one word is drawn as another (a wide glyph drawing the word, the word's own letters blank); the same font named like a font the viewer has installed; a run whose every glyph is blank; a letter mapped to a zero-width glyph that has an outline; a glyph named for another letter; two letters sharing a glyph; a careful swap (unique, ordinary glyphs, names stripped: `font.embedded` only, and the limitation); an embedded font left as its foundry made it (`font.embedded` only); an embedded symbol font and an icon font's private-use characters (no finding); a private-use character in a font of neither kind |
   | geometry, further | a shape placed by `wp:align` (on the page by construction: no finding); a shape in an unused header (no section, so no page size: indeterminate) |
 
   Case 48's off-page box (`ExtractionPhase0Cases`) is column-relative horizontally and
@@ -416,7 +424,10 @@ new fixture opens in Word without repair.
 
 **Acceptance:** REQ-902 and REQ-904; REQ-901 once the WD has adopted D12's reveal contract (D16).
 Every inspector row passes, the exact comparison holds on every fixture, `expected-inspection.tsv`'s
-fields hold; the no-access, read-only, cross-check, bounds and nested-location tests pass.
+fields hold; the no-access, read-only, cross-check, bounds and nested-location tests pass. D18's
+tests, run over the embedded fonts of the layout-fidelity corpora (scored only, never committed),
+find nothing in a font as its foundry made it; any that do are recorded here with the threshold or
+test changed for them.
 
 ### Phase 2: the counts in every extraction result
 
@@ -460,6 +471,7 @@ Each with a recommendation; Jason decides.
   eight names renamed; (b) keep the suite's phrases and name the rest alike. Recommended: (a), as
   the warnings' (`mce.branches_differ`); a JSON consumer needs stable tokens, and the suite's
   spelling (`colour`) differs from the WD's (`color`).
+  **Decided** (Jason, 19 October 2026): (a).
 - **D3. The colour threshold.** Options: (a) the WCAG 2 contrast ratio between the run's effective
   colour and its effective background below 1.5:1 (white on white is 1.0, yellow on white 1.07,
   `#EEEEEE` on white 1.16; the palette's "Background 1, Darker 5%" (`#F2F2F2`) 1.12 and "Darker 15%"
@@ -469,6 +481,7 @@ Each with a recommendation; Jason decides.
   style in context), else the page colour, else white; an `auto` colour is never near its background
   (Word draws it in contrast); a background docx4j cannot determine gives no finding, and is a
   limitation.
+  **Decided** (Jason, 19 October 2026): (a).
 - **D4. Off page without layout.** Options: (a) a shape is `off page` when it lies wholly outside the
   page for every position its anchor could have on the page: for an offset relative to the page,
   exactly; relative to the margin, from `w:pgMar`; relative to a column, paragraph, line or character,
@@ -477,9 +490,13 @@ Each with a recommendation; Jason decides.
   margin-relative positions; (c) judge paragraph-relative positions from where the paragraph falls,
   which needs layout. Recommended: (a). (The first draft's (b) would not have found case 48's box,
   which the suite expects.)
+  **Decided** (Jason, 19 October 2026): (a). A layout-aware position test, (c), is a possible
+  later enhancement (D7).
 - **D5. The excerpt.** 200 code points, its original length and a cut flag. Options: 200, 100,
   unbounded. Recommended: 200.
+  **Decided** (Jason, 19 October 2026): 200 code points.
 - **D6. Identity and counting.** Recommended as §2.4.
+  **Decided** (Jason, 19 October 2026): as §2.4.
 - **D7. Layout findings.** Options: (a) none here, REQ-904's statement given; (b) a phase using the FO
   pass. Recommended: (a); a layout phase is its own CR with its own gate.
 - **D8. `w:webHidden`.** Word shows it on the page and hides it only in Web Layout; extraction reads it
@@ -502,13 +519,19 @@ Each with a recommendation; Jason decides.
 - **D11. The whole report's bounds.** Options: 10,000 findings and 16 MB decoded per payload, one level
   deep, with `PARTIAL` past either; or no bounds. Recommended: the bounds, so a hostile document cannot
   make the inspection the denial of service.
+  **Decided** (Jason, 19 October 2026): the bounds, with at most 1,000 findings (not 10,000).
 - **D12. The reveal contract.** Options: (a) §2.3's three forms, with composed option lists, proposed
   to the WD as REQ-901's `how_to_see`; (b) one option name per finding, as REQ-901 reads now.
   Recommended: (a): (b) would tell an agent that `alt_text: true` reveals a picture's title, or that
   `altchunks: true` reveals an RTF chunk, neither of which is so.
+  **Decided** (Jason, 19 October 2026): (a).
 - **D13. Collapsed headings and rsids** (in the paper's §12.3, not in REQ-902). Recommended: both in, as
   §2.3: a collapsed heading's body is text not shown on open; the rsids are one `info` finding, their
-  number, since they identify editing sessions.
+  number, since they identify editing sessions. A collapsed body is one finding per collapsed heading,
+  not one per paragraph (§2.4), so that a long section neither floods the counts nor spends D11's
+  1,000 findings. Only `w15:collapsed` counts: Word's "Collapsed by default", which the file stores. A
+  heading collapsed while editing is view state that Word does not save, so most documents have
+  none. Other viewers may ignore it; the fixture's Word-open check records what Word does.
 - **D14. Groups and counts by objective** (Jason, 19 October 2026: frame the CR by its objective).
   Options: (a) §2.3's four groups, unseen, omitted, active and info, from each finding's `visible` and
   `reveal` against a set of options, with REQ-903's counts `{unseen, omitted, active, info}` against
@@ -519,6 +542,7 @@ Each with a recommendation; Jason decides.
   hidden content into the text. Under (a), content an output carries as labelled metadata (the
   properties) is info, not unseen (§2.3): otherwise every block-model result would report its title
   and author as unseen, for every document.
+  **Decided** (Jason, 19 October 2026): (a).
 - **D15. Visibility's reference.** Options: (a) §2.3's display profile (Word 365 with its installation
   defaults: Print Layout, Simple Markup, comment markers, hidden text and field codes off, collapsed
   headings collapsed), with `visible: indeterminate` where the document or a user option decides and
@@ -527,6 +551,7 @@ Each with a recommendation; Jason decides.
   honoured" could conflict with itself; the profile fixes one reading, and `indeterminate` says where
   a static inspector cannot know.) An `indeterminate` occurrence in the output counts as unseen, since
   the warning is that a person may not see it.
+  **Decided** (Jason, 19 October 2026): (a).
 - **D16. Conformance against the WD as it stands.** WD 0.16's REQ-901 asks for `severity` and
   `how_to_see`, and REQ-903 for `{hidden, external, info}`; D12 and D14 propose a different contract.
   Options: (a) claim REQ-901 and REQ-903 only once the WD has adopted D12 and D14, and until then
@@ -535,33 +560,79 @@ Each with a recommendation; Jason decides.
   reveal's options, `included`, or `unextractable`; the counts likewise); (b) implement only the WD as
   it stands. Recommended: (a): the gate keeps docx4j honest about what it conforms to, and the mapping
   lets docx4j-mcp ship before the WD moves.
-- **D17. Symbol and icon fonts** (for `chars.private_use` and `font.glyph_mismatch`). docx4j has no
-  glyph tables for them (`TextOptions`: "docx4j has no glyph tables for Symbol and Wingdings"), so the
-  list is the whole rule. Options: (a) a documented list, `w:sym` always exempt, and an installed or
-  embedded font whose cmap is symbol-encoded (platform 3, encoding 0) a symbol font too; (b) the list
-  alone; (c) the three fonts of the previous draft. Recommended: (a), the list being Word's symbol
-  fonts (Symbol, Wingdings, Wingdings 2, Wingdings 3, Webdings, Marlett, MT Extra, Bookshelf Symbol 7,
-  MS Outlook, MS Reference Specialty) and the icon fonts that keep their glyphs in the private-use
-  area (Segoe MDL2 Assets and Segoe Fluent Icons at U+E700-U+F8FF, Font Awesome's families), proposed
-  to the WD. (c) would cry wolf on every document using an icon font.
+- **D17. Symbol and icon fonts** (for `chars.private_use` and `font.glyph_mismatch`). A private-use
+  character is no divergence where the font it is set in keeps its glyphs there by design. That font
+  is the document's font name for the character, as `RunFontSelector` chooses it before any mapping
+  to an installed face: a `w:sym`'s `w:font`, else the run's font for the character's slot. A `w:sym`
+  has no exemption of its own, since one set in a text font draws a box or nothing, as a run would.
+  docx4j already knows five such fonts: `RunFontSelector.symbolFontName` recognises Symbol,
+  Webdings, Wingdings, Wingdings 2 and Wingdings 3 (case-insensitively), and `SymbolMapper` holds a
+  Unicode table for each, which the HTML and PDF output use. The text model's `symbols: unicode`
+  (REQ-601) could use the same tables; `TextOptions` rejects it saying docx4j has none, which is
+  wrong, and is a CR-046 follow-up. `PhysicalFonts.isSymbolEncoded` tests a face (glyphs at both
+  U+F041 and U+F061; measured on the five Windows faces and the Noto, DejaVu and Liberation sets).
+  Options:
+  - (a) a documented list, plus an embedded face that passes `isSymbolEncoded`'s test; installed
+    fonts are never consulted. The list: Word's symbol fonts (the five, Marlett, MT Extra, Bookshelf
+    Symbol 7, MS Outlook, MS Reference Specialty) and the icon fonts that keep their glyphs in the
+    private-use area (Segoe MDL2 Assets and Segoe Fluent Icons at U+E700-U+F8FF, Font Awesome's
+    families by the prefixes "Font Awesome" and "FontAwesome"), names compared as `symbolFontName`
+    does. Proposed to the WD, so the ports share it;
+  - (b) (a), with installed faces tested too. This catches a symbol font that is on no list, but
+    makes a finding depend on the inspecting machine's fonts, so two machines, or docx4j and a port,
+    disagree on one document, and §3's exact comparison cannot hold;
+  - (c) the list alone, with no face test. An embedded symbol-encoded font that is not on the list
+    is then a false finding;
+  - (d) Symbol, Wingdings, Webdings and `w:sym` only, as the second draft had it, which cries wolf on
+    every icon font.
+  Recommended: (a). Its inputs, the document's font names and the package's own embedded faces,
+  are the same on every machine, which (b) gives up; it differs from (c) only where the document
+  carries the evidence itself.
+  **Decided** (Jason, 19 October 2026): (a).
 - **D18. Embedded fonts** (Jason's question: a font whose glyphs are swapped makes one word look like
   another, and only to the viewers that use the embedded font). The text holds the characters stored;
   a font maps each to a glyph that can draw anything, so one glyph can draw a whole word and the
-  word's own letters can be blank. Options: (a) `font.embedded` for every embedded face in use;
-  `font.glyph_blank` for a character drawn with no outline or advance; `font.glyph_mismatch` by four
-  static tests: an installed font of the same name draws the character with a different outline
-  (compared after normalising the units per em); two letters share a glyph (letters that are the same
-  letter in another script, as Latin A and Greek Alpha are, or Unicode-equivalent, excepted); a
-  letter's advance is over 1.5 em; a substitution lookup in a feature the viewer applies unasked
-  replaces a letter with a glyph the cmap gives another letter (for Word, which features those are is
-  the probe's to measure). `indeterminate` where none of them can decide, as for a font with no
-  installed namesake and nothing anomalous. Symbol and icon fonts (D17) are excepted from the
-  mismatch tests, not from the blank one. (b) `font.embedded` and `font.glyph_blank` only. (c) (a)
-  plus a rendering test: each glyph drawn and recognised against a reference font, a classifier, in a
-  later CR. Recommended: (a) now and (c) later: the blank test is exact and cheap, and the hidden
-  instruction is its case; the mismatch tests catch the crude swaps and say `indeterminate` where they
-  cannot know, which is the truth; only recognition sees a careful swap. A document can only deliver a
-  font by embedding it, so the fonts a document names but does not embed are out of scope.
+  word's own letters can be blank. A document can only deliver a font by embedding it, so the fonts
+  a document names but does not embed are out of scope. Every test reads the package's own faces and
+  nothing installed, as D17 does, so a finding is the same on every machine. Options:
+  - (a) Three kinds:
+    - `font.embedded` (info), once per embedded face that text is drawn in;
+    - `font.glyph_blank` (unseen), for a character the face maps to a glyph with no outline;
+      whitespace, format and combining characters are excepted, and a character the face does not
+      map is not tested, since the viewer draws it in another font;
+    - `font.glyph_mismatch` (unseen, visible `differently`), on positive evidence only, from four
+      tests:
+      - two letters or digits (general categories L and Nd) share a glyph, excepting the same letter
+        in another script (Latin A and Greek Alpha) and Unicode-equivalent pairs (NFKC);
+      - a letter's advance is zero while its glyph has an outline (it overprints the next), or is
+        over 1.5 em;
+      - the glyph's name in the face's post table is the Adobe Glyph List name of another character
+        (the glyph for A named M). An attacker can strip the names, and then this test finds nothing;
+        a name outside the list (glyph23) is no evidence;
+      - a substitution lookup replaces a letter with a glyph the cmap gives another letter, in a
+        feature Word applies to the run: the ones it applies always, and ligatures and contextual
+        alternates as the run's `w14:ligatures` and `w14:cntxtAlts` say. Which ones Word applies
+        always is the probe's to measure (§3).
+
+      A finding names what is drawn where a test says (the other letter, the glyph's name). Where no
+      test fires there is no finding: a careful swap, with every glyph unique, of ordinary width and
+      unnamed, passes them all. That is a limitation (§2.6), with `font.embedded` marking where it
+      could be. Symbol and icon fonts (D17) are excepted from the mismatch tests, not from the blank
+      one.
+  - (b) `font.embedded` and `font.glyph_blank` only.
+  - (c) (a), plus a rendering test: each glyph drawn and recognised against a reference font by a
+    classifier, the one test that sees a careful swap. A later CR.
+  - (d) The previous form of (a): `indeterminate` where no test decides, and a fifth test that
+    compares outlines with an installed font of the same name. Not recommended: D15 counts an
+    indeterminate occurrence as unseen, so every character of every embedded font would be reported
+    as unseen. And the installed comparison makes a finding depend on the inspecting machine, as
+    D17's (b) would.
+
+  Recommended: (a) now, and (c) later. The blank test is exact and cheap, and it is the hidden
+  instruction's case. The mismatch tests catch the crude swaps on evidence the file itself carries,
+  and stay silent otherwise. Phase 1 calibrates them on the real-document corpora (§5): no finding in
+  a font as its foundry made it.
+  **Decided** (Jason, 19 October 2026): as recommended, (a) now and (c) later.
 
 ## 7. Dependencies, risks and out of scope
 
@@ -681,8 +752,12 @@ against the code before it was taken.
    (§2.3), and `hyperlink.web` (info) for case 21's two.
 4. **D9's cost.** Taken: D9 now recommends deciding (a) at once, the measurement choosing only the
    default; and a part's or fragment's result carries no counts.
-5. **Private-use characters.** Taken as D17: a documented list with the icon fonts, `w:sym` exempt, a
-   symbol-encoded cmap a symbol font.
+5. **Private-use characters.** Taken as D17: a documented list with the icon fonts, and a
+   symbol-encoded face a symbol font. D17 was then corrected the same day (Jason asked how docx4j knows
+   which symbol font to use). docx4j has Unicode tables for the five fonts it recognises
+   (`SymbolMapper`), so `TextOptions`' "no glyph tables" is wrong. Only an embedded face is tested,
+   so that a finding does not depend on the inspecting machine. A `w:sym` is judged by its font, like
+   a run.
 
 Eight of the nine nits are taken: `story.unused` leaves out the separator notes (`Extractor` skips
 every note whose type is not `normal`); `text.tiny` names `w:szCs`; the bounds test builds its
@@ -699,7 +774,11 @@ document show one word in the viewers that use the embedded font and another in 
 substitute, while the extracted text is always the characters stored. Nothing in the draft saw it,
 and no character test can, since the characters are ordinary letters. D18, the `font.*` kinds, the
 fixture's font cases and the viewer measurement are the answer; a sentence for the WD's section 11 is
-among phase 0's proposals. The text model's output is Unicode as stored (Java strings, UTF-8 when
+among phase 0's proposals. D18 was then revised the same day. As first written it said `indeterminate`
+where no test decided, which D15 counts as unseen, so every embedded font would have been reported.
+It also compared outlines with an installed namesake, which depends on the machine. It now finds a
+mismatch on positive evidence only, adds a test of glyph names, and says what the static tests cannot
+see (§2.6). The text model's output is Unicode as stored (Java strings, UTF-8 when
 written), neither transcoded nor normalised, so every character the document holds reaches the
 agent: private-use, zero-width, bidi and tag characters are reported by the `chars.*` kinds, and a
 `w:sym` is its code point as written.
