@@ -10,8 +10,8 @@ row, derived from this table, for an adapter that cannot report locations.
 
 This file is the contract both tables follow. It was written for CR-050 phase 0 and states, for each
 kind of the CR's section 2.3, what is one finding, where it is, what its excerpt is, and when it is in
-an output. Where the CR leaves a choice open, the choice made here is marked **(phase 0)**, for the
-WD proposals and for Jason's review.
+an output. Where the CR left a choice open, the choice made here is marked **(phase 0)**; Jason
+ratified them all on 19 October 2026, with D19, D17's list alone and D20 (CR-050 section 6).
 
 ## Files and how they are made
 
@@ -141,7 +141,7 @@ section 10's order (`view: original; include: headers; hidden: true`).
 **The group** under an output: `active` for the active kinds (`field.external`,
 `settings.update_fields`, `relationship.external`, `part.macro`, `part.activex`, `altchunk.script`,
 `altchunk.external_ref`); `info` for the inventory kinds (`altchunk`, `object.embedded`,
-`font.embedded`, `ink`, `revision.author`, `rsids`, `people`, `relationship.broken`, `part.unknown`,
+`font.embedded`, `ink`, `revision.author`, `rsids`, `people`, `part.unknown`,
 and `hyperlink.web` **(phase 0: the CR's table has it info, which the group rule alone would make
 omitted)**); for `properties`, `info` while in the output (labelled metadata) and `omitted` otherwise;
 else `unseen` when in the output and `visible` is `no`, `differently` or `indeterminate`, `omitted`
@@ -158,9 +158,9 @@ Each row: what is one finding, its location, its excerpt (where it is not the el
 | `paragraph.hidden` | as Identity says | `w:p` | |
 | `text.near_background` | a run with display text that is not all whitespace, its colour (not `auto`) within WCAG 1.5:1 of its background | run | Background: the highlight; else the run's shading; else the paragraph's (direct or style); else the cell's (direct, then table style); else a text box's solid fill; else the page colour (`w:background`); else white. On the page colour, `visible` is `differently` where the settings have `w:displayBackgroundShape` (Word 365 shows the colour then, measured 19 October 2026) and `indeterminate` otherwise (D15). A shading pattern other than `clear`/`solid`/`nil`, or a gradient, picture or pattern fill, is a background docx4j cannot determine: no finding, and `background.indeterminate@` in `undecided`. A fill of `auto` is no fill. |
 | `text.tiny` | a run every non-space character of which is drawn under 2pt | run | The size is `w:szCs` for a character in the complex-script slot (the run's `w:cs` or `w:rtl` on, or the character in a complex script), `w:sz` otherwise; 20 half-points when neither is set. |
-| `chars.zero_width`, `chars.tag`, `chars.bidi`, `chars.private_use` | a run whose display text holds characters of the kind | run, range: first such character to the last | The CR's ranges. A private-use character is excepted when its font (the `w:sym`'s `w:font`, else the run's for the character's slot) is on D17's list, or is an embedded face that maps U+F041 and U+F061. |
+| `chars.zero_width`, `chars.tag`, `chars.bidi`, `chars.private_use` | a run whose display text holds characters of the kind | run, range: first such character to the last | The CR's ranges. A private-use character is excepted when its font (the `w:sym`'s `w:font`, else the run's for the character's slot) is on D17's list (the list alone: Word 365 did not draw an embedded symbol-encoded face, so a face's own mapping exempts nothing, D17 as revised). |
 | `font.glyph_blank` | a run with characters its embedded face maps to a glyph with no outline (whitespace and categories Cf, Mn, Mc, Me excepted; a character the face does not map is not tested) | run, range | The face: the font for the character's slot, its style from the run's bold and italic; only faces the package embeds. |
-| `font.glyph_mismatch` | a run with a letter or digit one of D18's tests finds drawn as another | run, range | The tests consider glyphs with an outline only. (1) another letter or digit maps to the same glyph, NFKC-equal and different-script pairs excepted (the script read from the character's Unicode name's first word **(phase 0)**); (2) a letter's advance is 0 or over 1.5 em; (3) post format 2 names the glyph for another character (AGL, `uniXXXX`, suffixes stripped); (4) a single (type 1) or multiple (type 2) substitution, directly in a feature Word applies, gives a glyph the cmap gives another letter or digit: `ccmp`, `locl` and `rlig` always **(phase 0, until the Word check measures it)**, `liga`, `clig`, `hlig`, `dlig` as `w14:ligatures` says, `calt` under `w14:cntxtAlts`. Ligature and contextual lookups are not tested yet (phase 1 calibrates). Symbol and icon faces (D17) are excepted. |
+| `font.glyph_mismatch` | a run with a letter or digit one of D18's tests finds drawn as another | run, range | The tests consider glyphs with an outline only. (1) another letter or digit maps to the same glyph, NFKC-equal and different-script pairs excepted (the script read from the character's Unicode name's first word **(phase 0)**); (2) a letter's advance is 0 or over 1.5 em; (3) post format 2 names the glyph for another character (AGL, `uniXXXX`, suffixes stripped); (4) a single (type 1) or multiple (type 2) substitution, directly in a feature Word applies, gives a glyph the cmap gives another letter or digit: `ccmp`, `locl` and `rlig` always **(phase 0, until the Word check measures it)**, `liga`, `clig`, `hlig`, `dlig` as `w14:ligatures` says, `calt` under `w14:cntxtAlts`. Ligature and contextual lookups are not tested yet (phase 1 calibrates). Fonts on D17's list are excepted. |
 | `font.embedded` | an embedded face some run's text is drawn in | the font part | |
 | `paragraph.collapsed` | a paragraph with an outline level below 9 and `w15:collapsed` (direct, else its style's), not itself in another's collapsed body, with a body | first body block to the last (`end_path`) | The body: the body-level paragraphs and tables after it up to the next paragraph whose outline level is the same or higher. |
 | `shape.zero_size` | a `wp:inline`/`wp:anchor` with an extent 0 in a dimension; a VML shape whose style width or height is 0 | the drawing (`wp:inline`/`wp:anchor`), or the VML shape | Excerpt: the shape's text (its `w:txbxContent`s, or a `v:textpath` string). In the output, under `text_boxes`, only where it holds text; else never. |
@@ -182,8 +182,7 @@ Each row: what is one finding, its location, its excerpt (where it is not the el
 | `field.external` | a field whose keyword (case-insensitive) is INCLUDETEXT, INCLUDEPICTURE, LINK, IMPORT, DDE or DDEAUTO, or a HYPERLINK whose target is not `http`, `https` or `mailto`; `\l` is a bookmark, neither | as `field.code` | Arguments quoted (`\\` and `\"` unescaped) or bare. |
 | `hyperlink.web` | an external hyperlink relationship, or a HYPERLINK field, to `http`, `https` or `mailto` | the relationship element, or the field | Excerpt: the target (so a field's excerpt is not its range's text). |
 | `relationship.external` | every other relationship with `TargetMode="External"`, in any relationships part | the `rel:Relationship` in its part | |
-| `relationship.broken` | an internal relationship whose target part is missing | as above | Not in a fixture: docx4j's loader refuses such a package (`Load3`, "cannot find part"); phase 1 builds the case in its test. |
-| `alt_text.description`, `alt_text.title`, `alt_text.name` | a non-empty `wp:docPr` `descr`, `title`, `name`; a VML shape's `alt`, an `v:imagedata`'s `o:title` | the `wp:docPr` (or VML element) | A description is extractable for a picture (`pic:pic`) not decorative; a name where it is that picture's description (`descr` empty); a title never. Every `wp:docPr` has a name, so every drawing gives an `alt_text.name` (D19). |
+| `alt_text.description`, `alt_text.title`, `alt_text.name` | a non-empty `wp:docPr` `descr`, `title`, `name`; a VML shape's `alt`, an `v:imagedata`'s `o:title` | the `wp:docPr` (or VML element) | A description is extractable for a picture (`pic:pic`) not decorative; a name where it is that picture's description (`descr` empty); a title never. A name is a finding only where it is that description, or where it is not a default name: one matching `[^0-9]+ [0-9]+` in full ("Text Box 3", "Picture 7"), D19 (b). |
 | `chart.cached` | a chart a drawing shows | the chart part | Excerpt: its `c:strCache` values and `a:t` text, LF apart. |
 | `doc_vars`, `rsids`, `settings.update_fields` | `w:docVars`; `w:rsids`; `w:updateFields` on | the element in the settings part | Excerpts: the variables' values; none; none. |
 | `custom_xml` | a custom XML part (`application/xml`, a `customXml` relationship) | the part | Excerpt: its text nodes, trimmed, LF apart. |
@@ -209,6 +208,7 @@ and do not make the report partial.
 
 ## What the fixtures do not hold
 
-`smartart.data`, `relationship.broken` and `rsids` have no row: see their notes above (Word writes
-`w:rsids` on every save; a fixture with one, and the broken relationship, are phase 1's to build in
-its test).
+`smartart.data` and `rsids` have no row: see their notes above (Word writes `w:rsids` on every save;
+a fixture with one is phase 1's to build in its test). There is no `relationship.broken` kind (D20):
+docx4j's loader refuses a package whose relationship names a missing part, so no package the
+inspector is given has one.

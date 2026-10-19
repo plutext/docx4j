@@ -88,7 +88,7 @@ UNDERSTOOD = set()
 ACTIVE = {'field.external', 'settings.update_fields', 'relationship.external', 'part.macro', 'part.activex',
           'altchunk.script', 'altchunk.external_ref'}
 INVENTORY = {'altchunk', 'object.embedded', 'font.embedded', 'ink', 'revision.author', 'rsids', 'people',
-             'relationship.broken', 'part.unknown', 'hyperlink.web'}
+             'part.unknown', 'hyperlink.web'}
 VISIBLE = {
     'text.near_background': 'differently', 'text.tiny': 'differently', 'chars.zero_width': 'no', 'chars.tag': 'no',
     'chars.bidi': 'no', 'chars.private_use': 'no', 'font.glyph_blank': 'no', 'font.glyph_mismatch': 'differently',
@@ -103,7 +103,7 @@ VISIBLE = {
     'header_footer': 'yes', 'watermark': 'yes', 'note': 'yes', 'sdt.placeholder': 'yes', 'chart.cached': 'yes',
     'text.web_hidden': 'yes', 'altchunk': 'yes', 'object.embedded': 'yes', 'properties': 'no', 'font.embedded': '-',
     'ink': 'yes', 'doc_vars': 'no', 'custom_xml': 'no', 'people': 'no', 'revision.author': 'no', 'rsids': 'no',
-    'relationship.broken': '-', 'part.unknown': '-',
+    'part.unknown': '-',
 }
 
 # the named outputs of expected-inspection.tsv: the options each sets beyond the defaults, and its format
@@ -131,6 +131,8 @@ KNOWN_TYPES = ('application/vnd.openxmlformats-', 'application/vnd.ms-', 'image/
                'message/rfc822', 'application/xml', 'application/rtf', 'application/inkml+xml', 'font/',
                'application/x-font', 'application/pdf', 'application/vnd.oasis.opendocument.')
 EMU_PER_PT = 12700
+# D19 (b): a name of this form ("Text Box 3", "Picture 7") is no finding unless extraction carries it
+DEFAULT_NAME = re.compile(r'[^0-9]+ [0-9]+')
 WHITE = 'FFFFFF'
 
 
@@ -983,12 +985,8 @@ class Inspector:
         return f.get(wq('hAnsi'))
 
     def symbol_char(self, p, r, c):
-        layers = self.layers(p, r)
-        name = self.font_of(p, r, c, layers)
-        if symbol_font(name):
-            return True
-        face = self.face(name, layers)
-        return face is not None and face['symbol']
+        """D17 (c), Jason 19 October 2026: the documented list alone (Word 365 did not draw an embedded symbol face)"""
+        return symbol_font(self.font_of(p, r, c, self.layers(p, r)))
 
     # ------------------------------------------------------------ embedded fonts (D17, D18)
 
@@ -1027,8 +1025,7 @@ class Inspector:
             return gl.numberOfContours != 0
         names = tt['post'].formatType == 2.0
         return {'tt': tt, 'part': part, 'cmap': cmap, 'outline': outline, 'names': names,
-                'em': tt['head'].unitsPerEm, 'hmtx': tt['hmtx'],
-                'symbol': cmap.get(0xF041) not in (None, '.notdef') and cmap.get(0xF061) not in (None, '.notdef')}
+                'em': tt['head'].unitsPerEm, 'hmtx': tt['hmtx']}
 
     def face(self, name, layers):
         if not name:
@@ -1054,7 +1051,7 @@ class Inspector:
                 if not (c.isspace() or cat in ('Zs', 'Cf', 'Mn', 'Me', 'Mc')):
                     blank.append(i)
                 continue
-            if symbol_font(name) or face['symbol']:
+            if symbol_font(name):
                 continue
             if self.mismatch(face, c, glyph, t, layers):
                 mismatch.append(i)
@@ -1263,8 +1260,8 @@ class Inspector:
                              needs=dn | ({'alt_text'} if picture and not decorative else {'never'})))
         if title:
             self.add(Finding('alt_text.title', self.chain, part, path_of(docpr), excerpt=title, needs=dn | {'never'}))
-        if name:
-            described = picture and not decorative and not descr
+        described = picture and not decorative and not descr
+        if name and (described or not DEFAULT_NAME.fullmatch(name)):   # D19 (b)
             self.add(Finding('alt_text.name', self.chain, part, path_of(docpr), excerpt=name,
                              needs=dn | ({'alt_text'} if described else {'never'})))
 
@@ -1509,8 +1506,6 @@ class Inspector:
                     else:
                         self.add(Finding('relationship.external', self.chain, rp, path_of(e), excerpt=target,
                                          needs={'never'}, selector=target))
-                elif not pkg.has(target):
-                    self.add(Finding('relationship.broken', self.chain, rp, path_of(e), excerpt=target, needs={'never'}))
 
     def is_custom_xml(self, part):
         for owner in [self.main] if self.main else []:

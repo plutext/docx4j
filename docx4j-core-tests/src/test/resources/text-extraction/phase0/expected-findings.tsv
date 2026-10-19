@@ -31,26 +31,11 @@ case	fixture	channel	kind	selector	scenario	expected	statements
 49	extraction-probe.docx	inspect	field.external	INC49_INSTR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 49	extraction-probe.docx	inspect	field.code	FLD49_FILE_MARK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 49	extraction-probe.docx	inspect	field.external	FLD49_FILE_MARK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-1	extraction-probe.docx	inspect	alt_text.name	Text Box 3	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-2	extraction-probe.docx	inspect	alt_text.name	Text Box 4	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-4	extraction-probe.docx	inspect	alt_text.name	Text Box 5	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-6	extraction-probe.docx	inspect	alt_text.name	Text Box 6	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-7	extraction-probe.docx	inspect	alt_text.name	Text Box 7	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-8	extraction-probe.docx	inspect	alt_text.name	Text Box 8	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-17	extraction-probe.docx	inspect	alt_text.name	Text Box 9	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-25	extraction-probe.docx	inspect	alt_text.name	Text Box 10	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-25	extraction-probe.docx	inspect	alt_text.name	Text Box 11	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-25	extraction-probe.docx	inspect	alt_text.name	Text Box 12	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 33	extraction-probe.docx	inspect	alt_text.description	IMG33_ALT_TEXT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 33	extraction-probe.docx	inspect	alt_text.title	IMG33_TITLE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-33	extraction-probe.docx	inspect	alt_text.name	Picture 14	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 33	extraction-probe.docx	inspect	alt_text.description	IMG33_DECORATIVE_DESCR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-33	extraction-probe.docx	inspect	alt_text.name	Picture 15	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 33	extraction-probe.docx	inspect	alt_text.description	IMG33_SVG_ALT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-33	extraction-probe.docx	inspect	alt_text.name	Picture 16	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-34	extraction-probe.docx	inspect	alt_text.name	Chart 2	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 34	extraction-probe.docx	inspect	chart.cached	CHT34_TITLE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-35	extraction-probe.docx	inspect	alt_text.name	Diagram 1	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 48	extraction-probe.docx	inspect	shape.off_page	OFF48_BOX	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 48	extraction-probe.docx	inspect	shape.zero_size	ZER48_BOX	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 22	extraction-probe.docx	inspect	sdt.placeholder	PLC22_PLACEHOLDER	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
@@ -63,7 +48,6 @@ case	fixture	channel	kind	selector	scenario	expected	statements
 10	extraction-probe.docx	inspect	revision.moved_from	TC10_MOVED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 26	extraction-probe.docx	inspect	header_footer	FTR26_DEFAULT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 26	extraction-probe.docx	inspect	header_footer	HDR26_DEFAULT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-26	extraction-probe.docx	inspect	alt_text.name	Text Box 13	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 26	extraction-probe.docx	inspect	header_footer	HDR26_FIRST	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 26	extraction-probe.docx	inspect	header_footer	HDR26_EVEN	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 26	extraction-probe.docx	inspect	header_footer	HDR26_SECTION2	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
@@ -138,6 +122,7 @@ case	fixture	channel	kind	selector	scenario	expected	statements
 65	extraction-probe-inspect.docx	inspect	font.glyph_mismatch	FNT65_ZERO	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 65	extraction-probe-inspect.docx	inspect	font.glyph_mismatch	FNT65_NAMED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 65	extraction-probe-inspect.docx	inspect	font.glyph_mismatch	FNT65_SHARED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+65	extraction-probe-inspect.docx	inspect	chars.private_use	FNT65_SYMBOL	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 65	extraction-probe-inspect.docx	inspect	font.glyph_mismatch	FNT65_CCMP	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 65	extraction-probe-inspect.docx	inspect	font.glyph_mismatch	FNT65_LIGA	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 65	extraction-probe-inspect.docx	inspect	chars.private_use	FNT65_PUA_PLAIN	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
@@ -157,14 +142,7 @@ case	fixture	channel	kind	selector	scenario	expected	statements
 61	extraction-probe-inspect.docx	inspect	field.code	FLD61_UNC	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 61	extraction-probe-inspect.docx	inspect	field.external	FLD61_UNC	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 59	extraction-probe-inspect.docx	inspect	shape.off_page	GEO59_OFF_PAGE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-59	extraction-probe-inspect.docx	inspect	alt_text.name	Text Box 1	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-59	extraction-probe-inspect.docx	inspect	alt_text.name	Text Box 2	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 59	extraction-probe-inspect.docx	inspect	shape.zero_size	GEO59_FLAT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-59	extraction-probe-inspect.docx	inspect	alt_text.name	Text Box 3	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-59	extraction-probe-inspect.docx	inspect	alt_text.name	Text Box 4	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-59	extraction-probe-inspect.docx	inspect	alt_text.name	Text Box 5	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-59	extraction-probe-inspect.docx	inspect	alt_text.name	Text Box 6	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-63	extraction-probe-inspect.docx	inspect	alt_text.name	Ink 7	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 63	extraction-probe-inspect.docx	inspect	alt_text.name	Ink 8	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 66	extraction-probe-inspect.docx	inspect	alt_text.name	PIC66_NAME_ONLY	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 66	extraction-probe-inspect.docx	inspect	alt_text.description	PIC66_DECOR_DESCR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
@@ -172,7 +150,6 @@ case	fixture	channel	kind	selector	scenario	expected	statements
 67	extraction-probe-inspect.docx	inspect	sdt.stored_surface	SDT67_SURFACE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 58	extraction-probe-inspect.docx	inspect	paragraph.collapsed	BODY58_FIRST	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 59	extraction-probe-inspect.docx	inspect	story.unused	HDR59_UNUSED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-59	extraction-probe-inspect.docx	inspect	alt_text.name	Text Box 11	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 63	extraction-probe-inspect.docx	inspect	header_footer	HDR63_USED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 63	extraction-probe-inspect.docx	inspect	watermark	WMK63_WATERMARK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 63	extraction-probe-inspect.docx	inspect	note	NOTE63_REFERENCED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907

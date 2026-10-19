@@ -267,7 +267,7 @@ case	token	accepted	original	markup	option	with_option	note	fixture	statements
 65	FNT65_SHARED	1	1	1			FEE drawn FFF, E sharing F's glyph; inspection: font.glyph_mismatch	extraction-probe-inspect.docx	REQ-902, REQ-602
 65	FNT65_CAREFUL	1	1	1			SIZE drawn ZISE, a careful swap: font.embedded only, a limitation	extraction-probe-inspect.docx	REQ-902, REQ-602
 65	FNT65_PLAIN	1	1	1			PLAIN, the glyphs as made: font.embedded only	extraction-probe-inspect.docx	REQ-902, REQ-602
-65	FNT65_SYMBOL	1	1	1			U+F041 U+F061 U+F06B in an embedded symbol-encoded face: no chars.private_use	extraction-probe-inspect.docx	REQ-902, REQ-602
+65	FNT65_SYMBOL	1	1	1			U+F041 U+F061 U+F06B in an embedded symbol-encoded face Word 365 does not draw, not on D17's list; inspection: chars.private_use	extraction-probe-inspect.docx	REQ-902, REQ-602
 65	FNT65_CCMP	1	1	1			BOB drawn POP through ccmp; inspection: font.glyph_mismatch (Word's use of ccmp is the check's to measure)	extraction-probe-inspect.docx	REQ-902, REQ-602
 65	FNT65_LIGA	1	1	1			DOT drawn OOT through liga, w14:ligatures standard; inspection: font.glyph_mismatch	extraction-probe-inspect.docx	REQ-902, REQ-602
 65	FNT65_NO_LIGA	1	1	1			ODD, liga not applied (no w14:ligatures): no inspection finding	extraction-probe-inspect.docx	REQ-902, REQ-602

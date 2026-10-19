@@ -8,8 +8,9 @@ Proposed 2026-10-19, drafted at Jason's request ("consider section 12 ... of
 ../docx4j-portfolio/docs/text_extraction_behaviour_model.md then draft a CR to create that tool");
 revised the same day after three reviews (§9), to state its objective (§0, Jason: "frame it that way"),
 and for text an embedded font draws as other text or as nothing (§9, Jason's question).
-Four phases (§5); decisions in §6: D2 to D6, D11, D12, D14, D15, D17 and D18 taken by Jason on 19 October
-2026 (D11 with 1,000 findings); D1, D7 to D10, D13, D16 and D19 (phase 0's) open.
+Four phases (§5); decisions in §6: D1 to D8 and D11 to D20 taken by Jason on 19 October 2026 (D11 with
+1,000 findings; D17 revised to the list alone after phase 0's Word check; D16 closed, overtaken by WD
+0.17); D9 and D10 open.
 
 The specification is the portfolio's *WordprocessingML Text Extraction*, WD 0.16
 (`docx4j-portfolio/docs/text_extraction_specification_wd.md`, dae90bf), cited as **WD**: its §9,
@@ -112,8 +113,8 @@ Three passes make one `Inspection`:
    physically (§2.4).
 2. **The package inventory**, from the anonymiser's `PartsAnalyzer` and the relationship parts:
    macros, ActiveX, custom XML, `people.xml`, `w:docVars`, `w:updateFields`, `w:rsids`, the
-   properties, every relationship (external, broken, or to a part of an unknown or unsupported
-   kind), every embedded and `altChunk` part, every ink part (`w14:contentPart`, an internal
+   properties, every relationship (external, or to a part of an unknown or unsupported kind; a
+   broken one is no kind, D20), every embedded and `altChunk` part, every ink part (`w14:contentPart`, an internal
    relationship to an `InkmlPart`), and every embedded font: each face de-obfuscated and read (its
    cmap, advance widths, outlines, glyph names and substitution lookups) for the characters the runs
    drawn in it hold (D18). Only the package's own faces are read, never an installed font, so a
@@ -184,7 +185,7 @@ options; else **unseen** when the occurrence is in the output and `visible` is `
 `indeterminate` (an agent is warned of what a person may not see); else **omitted** when it has text
 and is not in the output; else **info** (in the output and seen, or an inventory kind with no text of
 its own: an `altchunk` or `object.embedded` container, whose content is found in its own right,
-`font.embedded`, `ink`, `revision.author`, `rsids`, `people`, `relationship.broken`, `part.unknown`).
+`font.embedded`, `ink`, `revision.author`, `rsids`, `people`, `part.unknown`).
 One exception to unseen: content an output carries as labelled metadata, apart from the document's
 text, is info while it is in the output. That is the properties: the block model's `metadata` object,
 and the property lines or front matter of plain text and Markdown under `metadata: true`. The agent
@@ -209,7 +210,7 @@ no importer, and the probe cases that hold them (*new*: a case §3 adds):
 |---|---|---|---|---|---|
 | `text.near_background` | colour within the threshold of its effective background (D3) | differently | included | unseen | 18, 48, *new* |
 | `text.tiny` | drawn under 2pt: `w:szCs` where the run's characters are drawn in the complex-script slot, `w:sz` otherwise | differently | included | unseen | 18, *new* (exactly 2pt: no finding) |
-| `chars.zero_width`, `chars.tag`, `chars.bidi`, `chars.private_use` | U+200B-U+200F, U+2060, U+FEFF; U+E0000-U+E007F; U+202A-U+202E, U+2066-U+2069; U+E000-U+F8FF and planes 15-16, except in a symbol or icon font (D17: the document's font for the character, `w:sym`'s or the run's) | no | included | unseen | 48, *new*; 29 the negative |
+| `chars.zero_width`, `chars.tag`, `chars.bidi`, `chars.private_use` | U+200B-U+200F, U+2060, U+FEFF; U+E0000-U+E007F; U+202A-U+202E, U+2066-U+2069; U+E000-U+F8FF and planes 15-16, except in a symbol or icon font on D17's list (the document's font for the character, `w:sym`'s or the run's) | no | included | unseen | 48, *new*; 29 the negative |
 | `font.glyph_blank` | a character an embedded face maps to a glyph with no outline (whitespace, format and combining characters excepted; a character the face does not map is not tested, since the viewer draws it in another font): in the text, nothing on the page | no | included | unseen | *new* |
 | `font.glyph_mismatch` | a character an embedded face draws as something else, on positive evidence from the face itself (D18's four tests: a glyph shared with another letter or digit; a letter's advance zero or over 1.5 em; the glyph named for another character; a substitution Word applies making it another letter's glyph), naming what is drawn where a test says; no evidence, no finding; symbol and icon fonts (D17) excepted | differently | included | unseen | *new* |
 | `paragraph.collapsed` | the body of a heading marked collapsed (`w15:collapsed`, Word's "Collapsed by default", through its style or direct; a paragraph with an outline level): every paragraph and table after it until the next paragraph at its outline level or above, not shown on open | differently (the heading and its expand arrow shown, the body on a click) | included | unseen | *new* |
@@ -238,14 +239,14 @@ no importer, and the probe cases that hold them (*new*: a case §3 adds):
 | `text.web_hidden` | `w:webHidden` (D8) | yes (not in Web Layout) | included | info | 18 |
 | `altchunk`, `object.embedded` | each chunk, with its content type; each embedded object, with its ProgID | yes (as Word converts it; as its preview) | options: `altchunks: true` (default) or `embedded: true` for the types REQ-513 and REQ-512 read; unextractable for RTF and other OLE binaries | info | 36, 39-47, 53 |
 | `alt_text.title` | a picture's or shape's title | no | unextractable | omitted | 33 |
-| `alt_text.name` | its name: the description where `descr` is empty and the picture is not decorative, else not extracted | no | per occurrence: as `alt_text.description` where it is the description, else unextractable | omitted | 33, *new* (a named picture with no `descr`; a decorative one) |
+| `alt_text.name` | its name: the description where `descr` is empty and the picture is not decorative, else not extracted; a default name (matching `[^0-9]+ [0-9]+` in full) only where it is the description (D19) | no | per occurrence: as `alt_text.description` where it is the description, else unextractable | omitted | 33, *new* (a named picture with no `descr`; a decorative one) |
 | `properties` | core, app and custom properties | no (File, Info shows them) | included in the block model (`metadata`, REQ-515); options: `metadata: true` in plain text and Markdown | omitted (info in the block model, and under `metadata: true`: labelled metadata) | 38, 52 |
 | `font.embedded` | a font face embedded in the package (`w:embedRegular` and its kin) that runs are drawn in, with the number of characters it draws. What a person sees depends on the viewer: whether it uses embedded fonts, and which it prefers where a font of that name is installed (docx4j's PDF output: the installed one, `Mapper`; Word: not yet measured, §3) | - | unextractable (extraction has characters, never glyphs) | info | *new* |
 | `ink` | an ink part (`w14:contentPart`), whose strokes may be handwriting (as a picture's pixels may be text) | yes | unextractable | info | *new* |
 | `doc_vars`, `custom_xml` | `w:docVars`; each custom XML part | no | unextractable (`bindings: bound` shows what a control binds) | omitted | *new*, 23 and 38 |
 | `people` | `people.xml` (the authors' identities) | no | unextractable | info | *new* |
 | `revision.author`, `rsids` | each author of the tracked changes, with the dates' range; the revision-session identifiers, one finding with their number | no | options: `view: markup` + `markup_detail: author_date` for authors; else unextractable | info | 9-17; any Word save |
-| `relationship.broken`, `part.unknown` | a relationship whose internal target is missing; a part of an unknown or unsupported kind | - | unextractable | info | *new* |
+| `part.unknown` | a part of an unknown or unsupported kind (a broken relationship is no kind: D20) | - | unextractable | info | *new* |
 
 **The link rule**, one for both forms of a hyperlink (`w:hyperlink` and the HYPERLINK field): a
 target with the scheme http, https or mailto is `hyperlink.web`, info; any other target (a file or
@@ -346,7 +347,7 @@ a font draws; and it does not judge intent: no finding says its text is, or is n
   | characters | a supplementary private-use character; a bidi override split across runs; Symbol and Wingdings characters (no finding); a `w:sym` whose `w:font` is a text font (a finding) |
   | fields | INCLUDEPICTURE and LINK, simple and complex, keywords in mixed case, arguments quoted and bare; HYPERLINK `\l` (no finding) beside a file and a UNC target |
   | background | highlight against shading; `auto` and transparent fills; table-style shading; a page colour (`w:background`); a background docx4j cannot determine (no finding, a limitation) |
-  | inventory | a part of an unknown content type; a broken relationship (built by phase 1's test: docx4j's loader refuses such a package, phase 0); an unreferenced note and an unanchored comment; the separator notes (no finding); `w:docVars`; `people.xml`; an ink part; an HTML chunk with a `<script>`, an event handler and an external image and stylesheet; an embedded docx holding hidden text |
+  | inventory | a part of an unknown content type; a broken relationship (dropped: D20); an unreferenced note and an unanchored comment; the separator notes (no finding); `w:docVars`; `people.xml`; an ink part; an HTML chunk with a `<script>`, an event handler and an external image and stylesheet; an embedded docx holding hidden text |
   | links | case 21's https links in both forms (`hyperlink.web`); a `w:hyperlink` to a file path and one to a UNC path (active) |
   | fonts | an open-licence font, renamed, embedded with its glyphs altered so that one word is drawn as another (a wide glyph drawing the word, the word's own letters blank); the same font named like a font the viewer has installed; a run whose every glyph is blank; a letter mapped to a zero-width glyph that has an outline; a glyph named for another letter; two letters sharing a glyph; a careful swap (unique, ordinary glyphs, names stripped: `font.embedded` only, and the limitation); an embedded font left as its foundry made it (`font.embedded` only); an embedded symbol font and an icon font's private-use characters (no finding); a private-use character in a font of neither kind |
   | geometry, further | a shape placed by `wp:align` (on the page by construction: no finding); a shape in an unused header (no section, so no page size: indeterminate) |
@@ -485,6 +486,11 @@ new fixture opens in Word without repair.
   not yet ratified by Jason, and D8, D13, D17's face test and D19 as pending him. Appendix A.4 (cases
   58 to 67), [PROBE] and REQ-1201's inspection rows follow once phase 0 is committed.
 
+**Rulings, 19 October 2026** (Jason: rule "as recommended"): D1 (a), D7 (a), D8, D13, D19 (b), D20
+(c) decided; D17 revised to the list alone; D16 closed; the choices `INSPECTION.md` marks "(phase 0)"
+ratified. The oracle follows: 186 findings (24 default names gone by D19; case 65's `FNT65_SYMBOL` a
+`chars.private_use` finding by D17), no `relationship.broken` kind.
+
 ### Phase 1: the inspector
 
 - `Inspect`, `Inspection`, `InspectFinding`, `Group`, `Visible`, `Reveal` in `org.docx4j.model.text`; the
@@ -537,6 +543,7 @@ Each with a recommendation; Jason decides.
   `w:vanish`, effective colour and size, table-style shading); the anonymiser's walker visits
   objects without either. This refines D29's "on the anonymiser's walker"; the paper's §12.4 would
   say so.
+  **Decided** (Jason, 19 October 2026): (a).
 - **D2. Kind identifiers.** Options: (a) dotted identifiers (§2.3), proposed to the WD, the suite's
   eight names renamed; (b) keep the suite's phrases and name the rest alike. Recommended: (a), as
   the warnings' (`mce.branches_differ`); a JSON consumer needs stable tokens, and the suite's
@@ -569,9 +576,11 @@ Each with a recommendation; Jason decides.
   **Decided** (Jason, 19 October 2026): as §2.4.
 - **D7. Layout findings.** Options: (a) none here, REQ-904's statement given; (b) a phase using the FO
   pass. Recommended: (a); a layout phase is its own CR with its own gate.
+  **Decided** (Jason, 19 October 2026): (a).
 - **D8. `w:webHidden`.** Word shows it on the page and hides it only in Web Layout; extraction reads it
   (REQ-507 is `w:vanish`). Recommended: `info`, `visible: yes`, `reveal: included`: a person reading
   the page sees it, so it is not a divergence.
+  **Decided** (Jason, 19 October 2026): as recommended.
 - **D9. Skipping the counts.** Options: (a) a docx4j-only option (`inspect: false`, outside WD §10, as
   REQ-1001 allows), the result then not an inspector's; (b) counts always. Recommended: (a), to be
   decided now rather than at phase 2, with the default chosen there from the measured cost (off if
@@ -602,6 +611,7 @@ Each with a recommendation; Jason decides.
   1,000 findings. Only `w15:collapsed` counts: Word's "Collapsed by default", which the file stores. A
   heading collapsed while editing is view state that Word does not save, so most documents have
   none. Other viewers may ignore it; the fixture's Word-open check records what Word does.
+  **Decided** (Jason, 19 October 2026): both in. Word 365 collapsed case 58's heading on open.
 - **D14. Groups and counts by objective** (Jason, 19 October 2026: frame the CR by its objective).
   Options: (a) §2.3's four groups, unseen, omitted, active and info, from each finding's `visible` and
   `reveal` against a set of options, with REQ-903's counts `{unseen, omitted, active, info}` against
@@ -630,6 +640,9 @@ Each with a recommendation; Jason decides.
   reveal's options, `included`, or `unextractable`; the counts likewise); (b) implement only the WD as
   it stands. Recommended: (a): the gate keeps docx4j honest about what it conforms to, and the mapping
   lets docx4j-mcp ship before the WD moves.
+  **Closed** (Jason, 19 October 2026): overtaken. WD 0.17 (portfolio f79bf8b) adopted D12's reveal and
+  D14's counts, so docx4j claims REQ-901 to 907 against the WD as it reads, with no mapping to
+  `severity` and `how_to_see`.
 - **D17. Symbol and icon fonts** (for `chars.private_use` and `font.glyph_mismatch`). A private-use
   character is no divergence where the font it is set in keeps its glyphs there by design. That font
   is the document's font name for the character, as `RunFontSelector` chooses it before any mapping
@@ -658,7 +671,11 @@ Each with a recommendation; Jason decides.
   Recommended: (a). Its inputs, the document's font names and the package's own embedded faces,
   are the same on every machine, which (b) gives up; it differs from (c) only where the document
   carries the evidence itself.
-  **Decided** (Jason, 19 October 2026): (a).
+  **Decided** (Jason, 19 October 2026): (a). **Revised** the same day, after phase 0's Word check: (c),
+  the list alone. Word 365 did not draw case 65's embedded symbol-encoded face (other symbols came
+  out) and dropped its embedding on save, so a face's own mapping is no evidence that a person sees
+  the characters as the font intends; docx4j's PDF did draw it. An embedded symbol font off the list
+  is then a finding, as (c) said; to reopen if a symbol font Word embeds itself is shown drawn.
 - **D18. Embedded fonts** (Jason's question: a font whose glyphs are swapped makes one word look like
   another, and only to the viewers that use the embedded font). The text holds the characters stored;
   a font maps each to a glyph that can draw anything, so one glyph can draw a whole word and the
@@ -711,6 +728,15 @@ Each with a recommendation; Jason decides.
   carry it. Recommended: (b): the omitted count is the signal an agent reads, and a default name is no
   divergence, while a name that is text (case 66's `PIC66_NAME_ONLY`, or an instruction) is kept.
   (b)'s pattern is language-independent but not exact; (c) loses a name holding text on a shape.
+  **Decided** (Jason, 19 October 2026): (b), a default name being one that matches `[^0-9]+ [0-9]+`
+  in full (ASCII digits). The oracle loses 24 of its 28 names.
+- **D20. A broken relationship** (phase 0). docx4j's loader refuses a package whose internal
+  relationship names a missing part (`Load3`: "cannot find part"), so `Inspect.of(pkg)` never sees
+  one. Options: (a) make `Load3` tolerate a dangling relationship it does not need (widely shared
+  code; whether Word opens such a file is unmeasured); (b) an entry point that inspects the zip
+  without loading it; (c) drop `relationship.broken`: a package docx4j cannot load gives a load
+  error, not an inspection. Recommended: (c).
+  **Decided** (Jason, 19 October 2026): (c).
 
 ## 7. Dependencies, risks and out of scope
 

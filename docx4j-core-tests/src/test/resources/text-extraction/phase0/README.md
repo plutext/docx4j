@@ -698,7 +698,7 @@ Golden conventions and baseline commands are in `../GOLDENS.md`.
 | `FNT65_SHARED` | yes | yes | yes |  |  | FEE drawn FFF, E sharing F's glyph; inspection: font.glyph_mismatch | REQ-902, REQ-602 |
 | `FNT65_CAREFUL` | yes | yes | yes |  |  | SIZE drawn ZISE, a careful swap: font.embedded only, a limitation | REQ-902, REQ-602 |
 | `FNT65_PLAIN` | yes | yes | yes |  |  | PLAIN, the glyphs as made: font.embedded only | REQ-902, REQ-602 |
-| `FNT65_SYMBOL` | yes | yes | yes |  |  | U+F041 U+F061 U+F06B in an embedded symbol-encoded face: no chars.private_use | REQ-902, REQ-602 |
+| `FNT65_SYMBOL` | yes | yes | yes |  |  | U+F041 U+F061 U+F06B in an embedded symbol-encoded face Word 365 does not draw, not on D17's list; inspection: chars.private_use | REQ-902, REQ-602 |
 | `FNT65_CCMP` | yes | yes | yes |  |  | BOB drawn POP through ccmp; inspection: font.glyph_mismatch (Word's use of ccmp is the check's to measure) | REQ-902, REQ-602 |
 | `FNT65_LIGA` | yes | yes | yes |  |  | DOT drawn OOT through liga, w14:ligatures standard; inspection: font.glyph_mismatch | REQ-902, REQ-602 |
 | `FNT65_NO_LIGA` | yes | yes | yes |  |  | ODD, liga not applied (no w14:ligatures): no inspection finding | REQ-902, REQ-602 |

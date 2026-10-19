@@ -544,7 +544,8 @@ final class ExtractionInspectCases {
         b.always("FNT65_SHARED", "FEE drawn FFF, E sharing F's glyph; inspection: font.glyph_mismatch");
         b.always("FNT65_CAREFUL", "SIZE drawn ZISE, a careful swap: font.embedded only, a limitation");
         b.always("FNT65_PLAIN", "PLAIN, the glyphs as made: font.embedded only");
-        b.always("FNT65_SYMBOL", "U+F041 U+F061 U+F06B in an embedded symbol-encoded face: no chars.private_use");
+        b.always("FNT65_SYMBOL", "U+F041 U+F061 U+F06B in an embedded symbol-encoded face Word 365 does not draw, not on D17's list; "
+                + "inspection: chars.private_use");
         b.always("FNT65_CCMP", "BOB drawn POP through ccmp; inspection: font.glyph_mismatch (Word's use of ccmp is the check's to measure)");
         b.always("FNT65_LIGA", "DOT drawn OOT through liga, w14:ligatures standard; inspection: font.glyph_mismatch");
         b.always("FNT65_NO_LIGA", "ODD, liga not applied (no w14:ligatures): no inspection finding");
