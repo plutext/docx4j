@@ -18,14 +18,23 @@
  */
 package org.docx4j.textextraction;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.docx4j.model.text.Inspect;
+import org.docx4j.model.text.InspectFinding;
+import org.docx4j.model.text.Inspection;
 import org.docx4j.model.text.PlainText;
 import org.docx4j.model.text.TextOptions;
 import org.docx4j.model.text.TextResult;
@@ -52,9 +61,13 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 			"REQ-701", "REQ-702", "REQ-703", "REQ-704", "REQ-705", "REQ-706", "REQ-707", "REQ-708", "REQ-709",
 			"REQ-801", "REQ-802", "REQ-1001", "REQ-1202", "REQ-1203",
 			// the chart's description, which case 34's axis title needs
-			"CR-047")));
+			"CR-047",
+			// the inspector (CR-050 phase 1; WD 0.17's section 9 but REQ-903's counts in a result, phase 2), and the
+			// suite's check of it
+			"REQ-901", "REQ-902", "REQ-904", "REQ-905", "REQ-906", "REQ-907", "REQ-1204")));
 
 	private final Map<Path, WordprocessingMLPackage> packages = new HashMap<Path, WordprocessingMLPackage>();
+	private final Map<Path, Inspection> inspections = new HashMap<Path, Inspection>();
 
 	@Override
 	public Set<String> implementedStatements() {
@@ -86,6 +99,11 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 			String key = "warning\t" + w.getKind() + "\t" + selector;
 			findings.merge(key, "1", (a, b) -> String.valueOf(Integer.parseInt(a) + 1));
 		}
+		// the inspection's findings by kind and selector, for the inspect rows (an inspection is the package's, whatever the view)
+		Map<String, byte[]> entries = ExtractionFixtureChecks.entries(Files.readAllBytes(fixture));
+		for (InspectFinding f : inspection(fixture).findings()) {
+			findings.merge("inspect\t" + f.getKind() + "\t" + selector(entries, f), "1", (a, b) -> String.valueOf(Integer.parseInt(a) + 1));
+		}
 		// the properties (core, app, custom) by their own names, as the findings table names them
 		for (Map.Entry<String, Object> e : result.metadata().entrySet()) {
 			if (e.getValue() instanceof Map) {
@@ -96,6 +114,118 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 		}
 		String text = "md".equals(format) ? new org.docx4j.markdown.MarkdownExporter().export(result, pkg) : PlainText.of(result);
 		return new ExtractionConformance.Output(text, findings);
+	}
+
+	@Override
+	public ExtractionConformance.Inspection inspect(Path fixture) throws Exception {
+		Inspection i = inspection(fixture);
+		List<Map<String, String>> rows = new ArrayList<Map<String, String>>();
+		for (InspectFinding f : i.findings()) rows.add(row(f));
+		List<String> skipped = new ArrayList<String>(), undecided = new ArrayList<String>();
+		for (Inspection.Entry e : i.skipped()) skipped.add(e.toString());
+		for (Inspection.Entry e : i.undecided()) undecided.add(e.toString());
+		return new ExtractionConformance.Inspection(rows, i.status().name(), skipped, undecided, i.limitations());
+	}
+
+	private Inspection inspection(Path fixture) throws Exception {
+		Inspection i = inspections.get(fixture);
+		if (i == null) inspections.put(fixture, i = Inspect.of(WordprocessingMLPackage.load(fixture.toFile())));
+		return i;
+	}
+
+	/** The six outputs of {@code expected-inspection.tsv} (INSPECTION.md): plain text, Markdown and the block model under the defaults, plain text under three options. */
+	static final String[] OUTPUTS = { "plain", "markdown", "blocks", "hidden", "embedded", "comments" };
+
+	/** A finding as {@code expected-inspection.tsv} writes it: its location, address, visibility, reveal, its group under each output, its excerpt's length. */
+	static Map<String, String> row(InspectFinding f) {
+		Map<String, String> row = new LinkedHashMap<String, String>();
+		InspectFinding.Location l = f.getLocation();
+		row.put("kind", f.getKind());
+		row.put("chain", String.join(">", l.getChain()));
+		row.put("part", l.getPart());
+		row.put("path", l.getPath());
+		row.put("start", l.getStart() == null ? "" : l.getStart().toString());
+		row.put("end_path", l.getEndPath());
+		row.put("end", l.getEnd() == null ? "" : l.getEnd().toString());
+		row.put("address", f.getAddress() == null ? "" : f.getAddress());
+		row.put("visible", f.getVisible().id());
+		row.put("reveal", f.getReveal().toString());
+		Set<Inspection.Capability> none = EnumSet.noneOf(Inspection.Capability.class);
+		row.put("plain", f.group(new TextOptions(), Inspection.Format.PLAIN, none).id());
+		row.put("markdown", f.group(new TextOptions(), Inspection.Format.MARKDOWN, none).id());
+		row.put("blocks", f.group(new TextOptions(), Inspection.Format.BLOCKS, none).id());
+		row.put("hidden", f.group(new TextOptions().hidden(true), Inspection.Format.PLAIN, none).id());
+		row.put("embedded", f.group(new TextOptions().embedded(true), Inspection.Format.PLAIN, none).id());
+		row.put("comments", f.group(new TextOptions().comments(true), Inspection.Format.PLAIN, none).id());
+		row.put("excerpt_length", String.valueOf(f.getExcerptLength()));
+		row.put("excerpt_cut", String.valueOf(f.isExcerptCut()));
+		return row;
+	}
+
+	private static final Pattern TOKEN = Pattern.compile("[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+");
+
+	/**
+	 * A finding's selector in {@code expected-findings.tsv}, as {@code inspect_oracle.py} chooses it: what it
+	 * names (a target, an author, a font); for a character, text or font finding in a run, the marker token
+	 * its range starts in; else a token in its excerpt, then in its paragraph; its excerpt when short; its part.
+	 */
+	static String selector(Map<String, byte[]> entries, InspectFinding f) throws Exception {
+		if (f.getSubject() != null) return f.getSubject();
+		InspectFinding.Location l = f.getLocation();
+		String kind = f.getKind();
+		boolean chars = kind.startsWith("chars.");
+		if (l.getStart() != null && !l.getPath().isEmpty() && (chars || kind.startsWith("text.") || kind.startsWith("font.")) && l.getChain().isEmpty()) {
+			org.w3c.dom.Element r = ExtractionInspection.resolve(ExtractionFixtureChecks.xml(entries.get(l.getPart().substring(1))), l.getPath());
+			if (r != null) {
+				int[] text = ExtractionInspection.runText(r).codePoints().toArray();
+				int pos = 0;
+				while (pos < text.length) {
+					int end = pos;
+					boolean space = isSpace(text[pos]);
+					while (end < text.length && isSpace(text[end]) == space) end++;
+					if (!space && pos <= l.getStart() && l.getStart() < end) {
+						int stop = end;
+						while (chars && stop > pos && of(kind, text[stop - 1])) stop--;
+						String word = new String(text, pos, end - pos);
+						String stripped = new String(text, pos, stop - pos);
+						String candidate = chars ? stripped : word;
+						if (TOKEN.matcher(candidate).lookingAt()) return candidate;
+					}
+					pos = end;
+				}
+				Matcher m = TOKEN.matcher(f.getExcerpt());
+				if (m.find()) return m.group();
+				for (org.w3c.dom.Node a = r.getParentNode(); a instanceof org.w3c.dom.Element; a = a.getParentNode()) {
+					if (!"p".equals(a.getLocalName()) || !ExtractionInspection.W.equals(a.getNamespaceURI())) continue;
+					StringBuilder sb = new StringBuilder();
+					org.w3c.dom.NodeList ts = ((org.w3c.dom.Element) a).getElementsByTagNameNS(ExtractionInspection.W, "t");
+					for (int i = 0; i < ts.getLength(); i++) sb.append(ts.item(i).getTextContent());
+					m = TOKEN.matcher(sb);
+					if (m.find()) return m.group();
+					break;
+				}
+			}
+		}
+		Matcher m = TOKEN.matcher(f.getExcerpt());
+		if (m.find()) return m.group();
+		String e = f.getExcerpt();
+		if (!e.isEmpty() && e.codePointCount(0, e.length()) <= 80 && !e.contains("\n")) return e.strip();
+		return (l.getChain().isEmpty() ? "" : String.join(">", l.getChain()) + ">") + l.getPart();
+	}
+
+	/** Python's {@code str.isspace}. */
+	private static boolean isSpace(int c) {
+		return Character.isSpaceChar(c) || c >= 0x09 && c <= 0x0D || c >= 0x1C && c <= 0x1F || c == 0x85;
+	}
+
+	/** Whether a character is of a character kind's class. */
+	private static boolean of(String kind, int c) {
+		switch (kind) {
+		case "chars.zero_width": return c >= 0x200B && c <= 0x200F || c == 0x2060 || c == 0xFEFF;
+		case "chars.tag": return c >= 0xE0000 && c <= 0xE007F;
+		case "chars.bidi": return c >= 0x202A && c <= 0x202E || c >= 0x2066 && c <= 0x2069;
+		default: return c >= 0xE000 && c <= 0xF8FF || c >= 0xF0000 && c <= 0xFFFFD || c >= 0x100000 && c <= 0x10FFFD;
+		}
 	}
 
 	/**

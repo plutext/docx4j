@@ -760,6 +760,25 @@ public class TextsPhase2Test {
 	}
 
 	/**
+	 * REQ-204 for a styles part with no default character style (the structure probe's, as docx4j's builder
+	 * writes it): until CR-050 phase 1, the property resolver's creation added a {@code DefaultParagraphFont}
+	 * style to it (StyleDefinitionsPart.getDefaultCharacterStyle), which the inspector's read-only check found.
+	 */
+	@Test
+	public void packageUnchangedWithoutADefaultCharacterStyle() throws Exception {
+		WordprocessingMLPackage structure = WordprocessingMLPackage.load(
+				ViewAgreementTest.resources().resolve("text-extraction/phase0/extraction-probe-structure.docx").toFile());
+		boolean declared = false;
+		for (org.docx4j.wml.Style s : structure.getMainDocumentPart().getStyleDefinitionsPart().getJaxbElement().getStyle()) {
+			declared |= s.isDefault() && "character".equals(s.getType());
+		}
+		assertFalse("the probe declares no default character style", declared);
+		String before = snapshot(structure);
+		for (TextView view : TextView.values()) Texts.of(structure, everything(view));
+		assertEquals(before, snapshot(structure));
+	}
+
+	/**
 	 * Every part's content, namespace declarations included: the XML of a JAXB part, the bytes of a
 	 * binary one, by part name.  Until CR-049 the declarations were left out, since XmlUtils' marshal
 	 * methods left a {@code wml.Document}'s {@code mc:Ignorable} prefixes on the shared prefix mapper and

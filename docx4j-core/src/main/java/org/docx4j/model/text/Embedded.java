@@ -89,8 +89,9 @@ final class Embedded {
 	 * @throws Exception where the package, or a workbook or presentation in it, can't be read: then it
 	 *         contributes nothing ({@code content.not_read})
 	 */
-	static List<TextBlock> pkg(Extractor x, byte[] bytes, String prefix) throws Exception {
-		OpcPackage opc = OpcPackage.load(new ByteArrayInputStream(bytes));
+	static List<TextBlock> pkg(Extractor x, Part part, byte[] bytes, String prefix) throws Exception {
+		// an inspection's own reading of the package, where it made one (CR-050)
+		OpcPackage opc = x.packages != null && x.packages.containsKey(part) ? x.packages.get(part) : OpcPackage.load(new ByteArrayInputStream(bytes));
 		if (opc instanceof WordprocessingMLPackage) return x.nested((WordprocessingMLPackage) opc, prefix, TextBlock.Story.EMBEDDED);
 		if (opc instanceof SpreadsheetMLPackage) return workbook(x, (SpreadsheetMLPackage) opc, prefix);
 		if (opc instanceof PresentationMLPackage) return presentation(x, (PresentationMLPackage) opc, prefix);
@@ -123,17 +124,18 @@ final class Embedded {
 			Worksheet ws = ((WorksheetPart) part).getJaxbElement();
 			String address = prefix + "/sheet:" + i;
 			out.add(paragraph(TextBlock.Story.EMBEDDED, address, s.getName()));
-			TextBlock table = sheet(ws, strings, styles, df, date1904, address + "/table");
+			TextBlock table = sheet(x, ws, strings, styles, df, date1904, address + "/table");
 			if (table != null) out.add(table);
 		}
 		return out;
 	}
 
 	/** A sheet's used range, from the cells that hold values (not {@code dimension}), as a simple table; null for none. */
-	private static TextBlock sheet(Worksheet ws, List<CTRst> strings, CTStylesheet styles, DataFormatter df, boolean date1904,
+	private static TextBlock sheet(Extractor x, Worksheet ws, List<CTRst> strings, CTStylesheet styles, DataFormatter df, boolean date1904,
 			String address) {
 		if (ws == null || ws.getSheetData() == null) return null;
 		TreeMap<Integer, TreeMap<Integer, String>> values = new TreeMap<Integer, TreeMap<Integer, String>>();
+		TreeMap<Integer, TreeMap<Integer, Cell>> sources = new TreeMap<Integer, TreeMap<Integer, Cell>>();
 		int minCol = Integer.MAX_VALUE, maxCol = -1;
 		int rowIndex = 0;
 		for (Row row : ws.getSheetData().getRow()) {
@@ -146,6 +148,7 @@ final class Embedded {
 				String v = display(c, strings, styles, df, date1904);
 				if (v == null || v.isEmpty()) continue;
 				values.computeIfAbsent(r, k -> new TreeMap<Integer, String>()).put(colIndex, v);
+				sources.computeIfAbsent(r, k -> new TreeMap<Integer, Cell>()).put(colIndex, c);
 				minCol = Math.min(minCol, colIndex);
 				maxCol = Math.max(maxCol, colIndex);
 			}
@@ -159,6 +162,7 @@ final class Embedded {
 			for (int c = minCol; c <= maxCol; c++) {
 				TextCell cell = new TextCell(row.address + "/" + (c - minCol));
 				cell.blocks.add(paragraph(TextBlock.Story.EMBEDDED, cell.address + "/0", cells == null ? null : cells.get(c)));
+				if (cells != null && cells.containsKey(c)) x.record(sources.get(r).get(c), cell.address + "/0");
 				row.cells.add(cell);
 			}
 			table.rows.add(row);
@@ -254,7 +258,10 @@ final class Embedded {
 		for (Object o : items) {
 			Object v = Extractor.unwrap(o);
 			if (v instanceof Shape) {
-				for (String line : Drawings.lines(((Shape) v).getTxBody())) out.add(paragraph(TextBlock.Story.EMBEDDED, prefix + "/" + n[0]++, line));
+				for (String line : Drawings.lines(((Shape) v).getTxBody())) {
+					x.record(v, prefix + "/" + n[0]);
+					out.add(paragraph(TextBlock.Story.EMBEDDED, prefix + "/" + n[0]++, line));
+				}
 			} else if (v instanceof GroupShape) {
 				shapes(x, ((GroupShape) v).getSpOrGrpSpOrGraphicFrame(), prefix, out, n);
 			} else if (v instanceof CTGraphicalObjectFrame) {

@@ -11,7 +11,11 @@ row, derived from this table, for an adapter that cannot report locations.
 This file is the contract both tables follow. It was written for CR-050 phase 0 and states, for each
 kind of the CR's section 2.3, what is one finding, where it is, what its excerpt is, and when it is in
 an output. Where the CR left a choice open, the choice made here is marked **(phase 0)**; Jason
-ratified them all on 19 October 2026, with D19, D17's list alone and D20 (CR-050 section 6).
+ratified them all on 19 October 2026, with D19, D17's list alone and D20 (CR-050 section 6). What
+CR-050 phase 1 changed (D18's calibration; inserted content's membership; and, after docx4j-43's
+review, SmartArt data, the marks of rows and cells, placeholder content, notes a header alone reaches,
+a chunk's encoding and `javascript:` URIs) is marked **(phase 1)** or **phase 1's calibration**, for
+Jason's ruling; none of it moves a finding of the four fixtures.
 
 ## Files and how they are made
 
@@ -115,11 +119,14 @@ output when the output meets them all:
 | Container | Requirement |
 |---|---|
 | a header, a footer a section uses | `include: headers` / `include: footers` |
-| a footnote or endnote | `notes: true` (default); and `view: original` when every reference to it is deleted |
+| a footnote or endnote | `notes: true` (default); and `view: original` when every reference to it is deleted; and `include: headers` (`footers`) when no reference but a used header's (footer's) reaches it, the main document's before a header's before a footer's **(phase 1)** |
 | a comment with an anchor | `comments: true` (or the markup view) |
 | a glossary entry | `include: glossary` |
-| a story no section or reference uses; an unselected branch | never |
+| a story no section or reference uses (a note an unused header alone refers to among them **(phase 1)**); an unselected branch | never |
 | deleted or moved-from content | `view: original` (or markup); inside an insertion as well, `view: markup` only |
+| inserted or moved-to content | not `view: original` (WD REQ-905; the defaults meet it, so no reveal names it) **(phase 1)** |
+| a row deleted (inserted) by its `w:trPr/w:del` (`w:ins`), a cell by `w:cellDel` (`w:cellIns`), its runs in no revision | as deleted (inserted) content: Accept All removes the row, Reject All the inserted one **(phase 1)** |
+| a control showing its placeholder (`w:showingPlcHdr`) | `placeholders: true` (default) **(phase 1)** |
 | a TOC field's instruction and result (REQ-520) | `toc: true` |
 | a bound control's stored surface | `bindings: surface` |
 | a hidden run, paragraph, sheet or slide | `hidden: true` |
@@ -129,6 +136,7 @@ output when the output meets them all:
 | a picture's description (or name, where it is the description) | `alt_text: true` in plain text; always in Markdown and the block model |
 | a field's instruction | `field_codes: true` |
 | a chart's strings | `charts: true` (default) |
+| SmartArt's data | `smartart: true` (default) **(phase 1)** |
 | the properties | always in the block model; `metadata: true` in plain text and Markdown |
 
 The six outputs are the defaults (accepted view, no importer) in plain text, Markdown and the block
@@ -160,13 +168,13 @@ Each row: what is one finding, its location, its excerpt (where it is not the el
 | `text.tiny` | a run every non-space character of which is drawn under 2pt | run | The size is `w:szCs` for a character in the complex-script slot (the run's `w:cs` or `w:rtl` on, or the character in a complex script), `w:sz` otherwise; 20 half-points when neither is set. |
 | `chars.zero_width`, `chars.tag`, `chars.bidi`, `chars.private_use` | a run whose display text holds characters of the kind | run, range: first such character to the last | The CR's ranges. A private-use character is excepted when its font (the `w:sym`'s `w:font`, else the run's for the character's slot) is on D17's list (the list alone: Word 365 did not draw an embedded symbol-encoded face, so a face's own mapping exempts nothing, D17 as revised). |
 | `font.glyph_blank` | a run with characters its embedded face maps to a glyph with no outline (whitespace and categories Cf, Mn, Mc, Me excepted; a character the face does not map is not tested) | run, range | The face: the font for the character's slot, its style from the run's bold and italic; only faces the package embeds. |
-| `font.glyph_mismatch` | a run with a letter or digit one of D18's tests finds drawn as another | run, range | The tests consider glyphs with an outline only. (1) another letter or digit maps to the same glyph, NFKC-equal and different-script pairs excepted (the script read from the character's Unicode name's first word **(phase 0)**); (2) a letter's advance is 0 or over 1.5 em; (3) post format 2 names the glyph for another character (AGL, `uniXXXX`, suffixes stripped); (4) a single (type 1) or multiple (type 2) substitution, directly in a feature Word applies, gives a glyph the cmap gives another letter or digit: `ccmp`, `locl` and `rlig` always **(phase 0, until the Word check measures it)**, `liga`, `clig`, `hlig`, `dlig` as `w14:ligatures` says, `calt` under `w14:cntxtAlts`. Ligature and contextual lookups are not tested yet (phase 1 calibrates). Fonts on D17's list are excepted. |
+| `font.glyph_mismatch` | a run with a letter or digit one of D18's tests finds drawn as another | run, range | The tests consider glyphs with an outline only, and a letter or digit that is no compatibility character (one NFKC changes: a presentation form, a ligature, a width variant, a superscript, whose glyph is a variant by design). "Drawn as" another character `d` is evidence only where `d` is a letter or digit, no compatibility character, and not **the same letter**: two characters are the same letter when their bases are equal, either has no base (a mark-like letter), or their scripts differ (the script read from the character's Unicode name's first word **(phase 0)**). A character's base is its NFKD with marks (Mn, Mc, Me), modifier letters (Lm) and spaces dropped, each character upper- then lower-cased (one-character mappings), and ı, ȷ, ĸ, ð and đ folded to i, j, k, d and d. (1) another character maps to the same glyph; (2) a letter's advance is 0, or over 1.5 em, a modifier letter excepted and a titlecase letter from the second; (3) post format 2 names the glyph for a single other character (fontTools' `agl.toUnicode`: the full AGL, `uniXXXX`, `uXXXX[XX]`, a suffix after a full stop stripped); (4) a single (type 1) or multiple (type 2) substitution, directly in a feature Word applies, gives a glyph the cmap gives another character: `ccmp`, `locl` and `rlig` always **(phase 0, until the Word check measures it)**, `liga`, `clig`, `hlig`, `dlig` as `w14:ligatures` says, `calt` under `w14:cntxtAlts`. Ligature and contextual lookups are not tested. Fonts on D17's list are excepted. The base, compatibility and titlecase rules are **phase 1's calibration** (CR-050 section 5): as first written, the tests found 27 runs in four real documents drawn in faces as their foundries made them (an all-capitals face draws a and A alike), and as calibrated none. |
 | `font.embedded` | an embedded face some run's text is drawn in | the font part | |
 | `paragraph.collapsed` | a paragraph with an outline level below 9 and `w15:collapsed` (direct, else its style's), not itself in another's collapsed body, with a body | first body block to the last (`end_path`) | The body: the body-level paragraphs and tables after it up to the next paragraph whose outline level is the same or higher. |
 | `shape.zero_size` | a `wp:inline`/`wp:anchor` with an extent 0 in a dimension; a VML shape whose style width or height is 0 | the drawing (`wp:inline`/`wp:anchor`), or the VML shape | Excerpt: the shape's text (its `w:txbxContent`s, or a `v:textpath` string). In the output, under `text_boxes`, only where it holds text; else never. |
 | `shape.off_page` | an anchored shape wholly outside the page for every position its anchor can have (D4) | as above | Page: the section after the paragraph; a header's or footer's sections (one size, or undecided). Anchors: `page` exact; `margin` from `w:pgMar`; a `column` in a one-column section is the left margin **(phase 0, refining D4)**; `paragraph`, `line`, `character` and a column of several anywhere in the text area (between the margins). `wp:align` is on the page. VML: `position:absolute` with `margin-left`/`margin-top`, `mso-position-*-relative` defaulting to column and paragraph, an `mso-position-*` alignment on the page. Neither provably off nor provably on: `position.indeterminate@`; no section: `position.no_section@`. |
 | `shape.hidden` | `wp:docPr/@hidden` on an anchored drawing; VML `visibility:hidden` | as above | Word 365 shows an inline drawing whose `wp:docPr` is hidden (measured 19 October 2026, case 59): no finding **(phase 0)**. |
-| `smartart.data` | data a SmartArt drawing part does not hold, where the package has one | | No fixture has one: case 35 has no drawing part, and Word lays it out from the data (all shown). |
+| `smartart.data` | each point the text model reads (of type `node` or `asst`, from the `doc` point along `parOf` connections, by `@srcOrd`) with a line no paragraph of the diagram's drawing part holds, where the data part names one (`dsp:dataModelExt/@relId`, a relationship of the story part) | the `dgm:pt` in the data part | A line: an `a:p`'s runs' and fields' `a:t`, an `a:br` a line feed; empty lines are none. Each paragraph of the drawing part's `dsp:txBody`s holds one data line. Excerpt: the point's lines the drawing lacks, LF apart. No drawing part, no finding: Word lays the diagram out from the data. No fixture has one: case 35 has no drawing part, Word's save of the probe shows every line, and `InspectTest` makes that save's drawing stale **(phase 1)**. |
 | `revision.deleted`, `revision.moved_from` | a run with display text in `w:del` (`w:moveFrom`) | run | A deleted paragraph mark or table-row mark alone is none. |
 | `revision.author` | each author of a revision mark (`w:ins`, `w:del`, `w:moveFrom`, `w:moveTo`, `w:*PrChange`, `w:cell*`, `w:numberingChange`) | the first mark by that author | Excerpt: the author. Reveal: `view: markup; markup_detail: author_date`. No address. |
 | `mce.branch` | an unselected `mc:Choice` or `mc:Fallback` not itself in another unselected branch | the branch | Every other kind is found inside, never in an output. |
@@ -189,8 +197,8 @@ Each row: what is one finding, its location, its excerpt (where it is not the el
 | `properties` | a core, app or custom properties part with a value | the part | Excerpt as `custom_xml`. In an embedded package, never in an output. |
 | `people` | `people.xml` | the part | Excerpt: the authors. |
 | `part.macro`, `part.activex`, `ink`, `part.unknown` | a part of type `vbaProject`, `activeX+xml`, `inkml+xml`, or of none of the known families (`application/vnd.openxmlformats-`, `application/vnd.ms-`, `image/`, `audio/`, `video/`, `text/`, `font/`, `message/rfc822`, `application/xml`, `application/rtf`, `application/inkml+xml`, `application/x-font`, `application/pdf`, `application/vnd.oasis.opendocument.`) | the part | |
-| `altchunk` | an `altChunk` part | the part | Its content, one level deep: a docx or Flat OPC chunk's stories (chain: the chunk); an HTML, XHTML or MHT chunk scanned; plain text read; any other type `not_decoded`. |
-| `altchunk.script`, `altchunk.external_ref` | a chunk holding a `<script>` or an `on*` handler; a chunk holding a `src`, `href` or `background` that is not a fragment or a `data:`, `cid:`, `mailto:` or `javascript:` URI | the part | One finding a chunk each. |
+| `altchunk` | an `altChunk` part | the part | Its content, one level deep: a docx or Flat OPC chunk's stories (chain: the chunk); an HTML, XHTML or MHT chunk scanned, read in its encoding (a byte order mark; UTF-16 by its first `<`; an XML declaration's `encoding` or a `meta` element's `charset` in its first 1,024 bytes; else UTF-8; an MHT part by its `charset` first) **(phase 1)**; plain text read; any other type `not_decoded`. |
+| `altchunk.script`, `altchunk.external_ref` | a chunk holding a `<script>`, an `on*` handler, or a `javascript:` URI in a `src`, `href` or `background` (tabs, line breaks and leading spaces and controls ignored, as a browser reads it) **(phase 1)**; a chunk holding a `src`, `href` or `background` that is not a fragment or a `data:`, `cid:`, `mailto:` or `javascript:` URI | the part | One finding a chunk each. |
 | `object.embedded` | a part an `o:OLEObject` of `Type="Embed"` refers to | the part | Its content one level deep: a docx's stories, a workbook's and a presentation's kinds. |
 | `embedded.sheet_hidden`, `embedded.sheet_very_hidden` | a `x:sheet` of state `hidden`, `veryHidden` | the `x:sheet` in the workbook part | Excerpt: its cells, tab apart, rows LF apart. In the output under `embedded` and `hidden`. |
 | `embedded.row_hidden`, `embedded.column_hidden` | a `x:row` or `x:col` with `hidden` on | it, in the worksheet part | Under `embedded` (and `hidden` in a hidden sheet). |
@@ -209,6 +217,8 @@ and do not make the report partial.
 ## What the fixtures do not hold
 
 `smartart.data` and `rsids` have no row: see their notes above (Word writes `w:rsids` on every save;
-a fixture with one is phase 1's to build in its test). There is no `relationship.broken` kind (D20):
+a fixture with one is phase 1's to build in its test). Phase 1's `InspectTest` builds both, and the
+marks of rows and cells, placeholder content and notes a header alone reaches, which the fixtures hold
+none of either **(phase 1)**. There is no `relationship.broken` kind (D20):
 docx4j's loader refuses a package whose relationship names a missing part, so no package the
 inspector is given has one.

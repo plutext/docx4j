@@ -83,6 +83,11 @@ final class Drawings {
 	 * order, and the drawing part's cached shapes are not read.
 	 */
 	static List<String> smartArt(CTDataModel model) {
+		return smartArt(model, null);
+	}
+
+	/** As {@link #smartArt(CTDataModel)}, with each point that gives lines mapped to the index of its first (where {@code starts} is not null). */
+	static List<String> smartArt(CTDataModel model, Map<Object, Integer> starts) {
 		List<String> lines = new ArrayList<String>();
 		if (model == null || model.getPtLst() == null) return lines;
 		Map<String, CTPt> points = new HashMap<String, CTPt>();
@@ -101,19 +106,23 @@ final class Drawings {
 			}
 		}
 		for (List<CTCxn> list : children.values()) Collections.sort(list, Comparator.comparingLong(CTCxn::getSrcOrd));
-		visit(doc, points, children, new LinkedHashSet<String>(), lines);
+		visit(doc, points, children, new LinkedHashSet<String>(), lines, starts);
 		return lines;
 	}
 
 	private static void visit(CTPt pt, Map<String, CTPt> points, Map<String, List<CTCxn>> children, Set<String> seen,
-			List<String> lines) {
+			List<String> lines, Map<Object, Integer> starts) {
 		if (!seen.add(pt.getModelId())) return; // a cycle
-		if (pt.getType() == STPtType.NODE || pt.getType() == STPtType.ASST) lines.addAll(lines(pt.getT()));
+		if (pt.getType() == STPtType.NODE || pt.getType() == STPtType.ASST) {
+			List<String> own = lines(pt.getT());
+			if (starts != null && !own.isEmpty()) starts.put(pt, lines.size());
+			lines.addAll(own);
+		}
 		List<CTCxn> list = children.get(pt.getModelId());
 		if (list == null) return;
 		for (CTCxn c : list) {
 			CTPt child = points.get(c.getDestId());
-			if (child != null) visit(child, points, children, seen, lines);
+			if (child != null) visit(child, points, children, seen, lines, starts);
 		}
 	}
 }

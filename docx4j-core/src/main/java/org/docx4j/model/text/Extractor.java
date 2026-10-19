@@ -25,6 +25,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -166,6 +167,16 @@ final class Extractor {
 	String root = "";
 	/** True for a reading one level down (an embedded package's, an {@code altChunk}'s): none of its own are expanded (REQ-512, REQ-513). */
 	boolean nested;
+	/**
+	 * The inspector's record (CR-050): each source object (a paragraph, a table, a WordArt shape, a
+	 * chart part, a workbook cell, a slide's shape) to the address of the first block made from it;
+	 * null when no inspection asks.
+	 */
+	Map<Object, String> sources;
+	/** The packages an inspection loaded one level down, by the part holding each: read here as they are. */
+	Map<Part, org.docx4j.openpackaging.packages.OpcPackage> packages;
+	/** An inspection's reading: no importer is called, so an XHTML chunk is read as HTML and an MHT chunk not at all. */
+	boolean noImporter;
 	private BoundValues boundValues;
 	private FieldValues fieldValues;
 	/** The {@code w:lastRenderedPageBreak}s of the main story so far (REQ-708). */
@@ -316,6 +327,9 @@ final class Extractor {
 		Extractor x = new Extractor(nestedPkg, o, Mode.VIEW);
 		x.root = prefix + "/";
 		x.nested = true;
+		x.sources = sources;
+		x.packages = packages;
+		x.noImporter = noImporter;
 		TextResult r = x.extract();
 		for (TextWarning w : r.warnings()) warn(w);
 		List<TextBlock> blocks = new ArrayList<TextBlock>(r.blocks());
@@ -427,11 +441,14 @@ final class Extractor {
 	/** Legacy VML WordArt: a one-paragraph text box holding its {@code v:textpath/@string} (REQ-511). */
 	static final class WordArt extends Anchored {
 		final String text;
-		WordArt(String text, String prefix) {
+		final Object shape;
+		WordArt(String text, Object shape, String prefix) {
 			super(prefix);
 			this.text = text;
+			this.shape = shape;
 		}
 		@Override void emit(Extractor x, Story anchoring, List<TextBlock> sink) {
+			x.record(shape, prefix + "/0");
 			sink.add(Embedded.paragraph(TextBlock.Story.TEXT_BOX, prefix + "/0", text));
 		}
 	}
@@ -459,6 +476,7 @@ final class Extractor {
 			List<List<String>> rows = new ArrayList<List<String>>();
 			for (List<String> r : t.getRows()) rows.add(new ArrayList<String>(r));
 			b.chartRows = rows;
+			x.record(ref.getChartPart(), prefix);
 			sink.add(b);
 		}
 	}
@@ -472,14 +490,16 @@ final class Extractor {
 		}
 		@Override void emit(Extractor x, Story anchoring, List<TextBlock> sink) {
 			List<String> lines;
+			Map<Object, Integer> starts = x.sources == null ? null : new IdentityHashMap<Object, Integer>();
 			try {
 				org.docx4j.dml.diagram.CTDataModel model = part.getJaxbElement();
 				if (model == null) throw new IllegalStateException("no data model");
-				lines = Drawings.smartArt(model);
+				lines = Drawings.smartArt(model, starts);
 			} catch (RuntimeException e) {
 				x.notRead(anchor(), part, "the SmartArt data part", e);
 				return;
 			}
+			if (starts != null) for (Map.Entry<Object, Integer> e : starts.entrySet()) x.record(e.getKey(), prefix + "/" + e.getValue());
 			for (int i = 0; i < lines.size(); i++) sink.add(Embedded.paragraph(TextBlock.Story.SMARTART, prefix + "/" + i, lines.get(i)));
 		}
 	}
@@ -495,7 +515,7 @@ final class Extractor {
 			List<TextBlock> blocks;
 			try {
 				byte[] bytes = part.getBytes();
-				blocks = part instanceof EmbeddedPackagePart ? Embedded.pkg(x, bytes, prefix) : Embedded.ole10Native(bytes, prefix);
+				blocks = part instanceof EmbeddedPackagePart ? Embedded.pkg(x, part, bytes, prefix) : Embedded.ole10Native(bytes, prefix);
 			} catch (Exception e) {
 				x.notRead(anchor(), part, "the embedded object", e);
 				return;
@@ -597,6 +617,7 @@ final class Extractor {
 					// a plain-text control bound at block level: its bound value as one paragraph (REQ-509)
 					TextBlock block = Embedded.paragraph(story.kind, address, bound);
 					block.section = story.sections == null ? 0 : story.sections.size();
+					record(sdt, address);
 					sink.add(block);
 					flushIfOutsideTable(story, sink);
 					continue;
@@ -685,9 +706,15 @@ final class Extractor {
 			if (block.numbering != null && counted != null) block.numbering.value = counted.getValue();
 		}
 		block.section = story.sections == null ? 0 : story.sections.size();
+		for (P p : chain) record(p, block.address);
 		sink.add(block);
 		flushIfOutsideTable(story, sink);
 		endSection(last, story);
+	}
+
+	/** The inspector's record: the first block made from a source object (CR-050). */
+	void record(Object source, String address) {
+		if (sources != null && source != null) sources.putIfAbsent(source, address);
 	}
 
 	private void endSection(P last, Story story) {
@@ -941,7 +968,10 @@ final class Extractor {
 		} finally {
 			story.tableDepth--;
 		}
-		if (!block.rows.isEmpty()) sink.add(block); // a table left with no rows goes (CR-043)
+		if (!block.rows.isEmpty()) {
+			record(tbl, address);
+			sink.add(block); // a table left with no rows goes (CR-043)
+		}
 		flushIfOutsideTable(story, sink);
 	}
 
@@ -1794,7 +1824,7 @@ final class Extractor {
 			if (v instanceof org.docx4j.vml.CTTextPath) {
 				String string = ((org.docx4j.vml.CTTextPath) v).getString();
 				if (string != null && !string.isEmpty()) {
-					if (options.isTextBoxes()) para.story.pending.add(new WordArt(string, para.address + "/textbox:" + para.boxes++));
+					if (options.isTextBoxes()) para.story.pending.add(new WordArt(string, shape, para.address + "/textbox:" + para.boxes++));
 					return false;
 				}
 			} else if (v instanceof org.docx4j.vml.CTImageData) {

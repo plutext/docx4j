@@ -82,7 +82,7 @@ final class AltChunks {
 			return imported != null ? imported : HtmlText.blocks(Embedded.decode(bytes), story, prefix);
 		}
 		if (ct.equals("message/rfc822") || ext.equals("mht") || ext.equals("mhtml")) return imported(x, bytes, true, story, prefix);
-		if (zip || isFlatOpc(bytes)) return document(x, bytes, story, prefix);
+		if (zip || isFlatOpc(bytes)) return document(x, part, bytes, story, prefix);
 		return null;
 	}
 
@@ -102,10 +102,11 @@ final class AltChunks {
 	}
 
 	/** A WordprocessingML or Flat OPC chunk, read one level down; null for a package of another kind. */
-	private static List<TextBlock> document(Extractor x, byte[] bytes, TextBlock.Story story, String prefix) {
+	private static List<TextBlock> document(Extractor x, AlternativeFormatInputPart part, byte[] bytes, TextBlock.Story story, String prefix) {
 		OpcPackage opc;
 		try {
-			opc = OpcPackage.load(new ByteArrayInputStream(bytes));
+			// an inspection's own reading of the chunk, where it made one (CR-050)
+			opc = x.packages != null && x.packages.containsKey(part) ? x.packages.get(part) : OpcPackage.load(new ByteArrayInputStream(bytes));
 		} catch (Exception e) {
 			log.warn("Couldn't load the altChunk at " + prefix + ": " + e.getMessage());
 			return null;
@@ -121,6 +122,8 @@ final class AltChunks {
 	 */
 	@SuppressWarnings("unchecked")
 	private static List<TextBlock> imported(Extractor x, byte[] bytes, boolean mht, TextBlock.Story story, String prefix) {
+		// an inspection's reading calls no importer (CR-050 section 2.1)
+		if (x.noImporter) return null;
 		Class<?> importer;
 		try {
 			importer = Class.forName("org.docx4j.convert.in.xhtml.XHTMLImporterImpl");

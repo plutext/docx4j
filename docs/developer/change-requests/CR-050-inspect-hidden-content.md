@@ -3,7 +3,9 @@
 Status: IN PROGRESS. Phase 0 done 2026-10-19 (§5, "Phase 0 record", Jason: "implement CR-050 phase 0"):
 the contract (`docx4j-core-tests/src/test/resources/text-extraction/INSPECTION.md`), an oracle of every
 finding on the suite's four fixtures, the harness's exact comparison, and a new fixture,
-`extraction-probe-inspect.docx` (cases 58 to 67), checked in Word 365; phases 1 to 3 to come.
+`extraction-probe-inspect.docx` (cases 58 to 67), checked in Word 365. Phase 1 done 2026-10-19 (§5,
+"Phase 1 record", Jason: "implement CR-050 phase 1"): `org.docx4j.model.text.Inspect`, every inspector
+row passing; D18's tests calibrated on the corpora (for Jason's ruling); phases 2 and 3 to come.
 Proposed 2026-10-19, drafted at Jason's request ("consider section 12 ... of
 ../docx4j-portfolio/docs/text_extraction_behaviour_model.md then draft a CR to create that tool");
 revised the same day after three reviews (§9), to state its objective (§0, Jason: "frame it that way"),
@@ -505,6 +507,122 @@ tests, run over the embedded fonts of the layout-fidelity corpora (scored only, 
 find nothing in a font as its foundry made it; any that do are recorded here with the threshold or
 test changed for them.
 
+**Phase 1 record, 19 October 2026.** Built by the docx4j-25 session (Claude Opus 5.5) at Jason's word
+("implement CR-050 phase 1"); uncommitted until he says so.
+
+- *The API* (§2.2): `Inspect.of(WordprocessingMLPackage)`; `Inspection` (`findings()`,
+  `counts(options, format, capabilities)` with `Format` PLAIN, MARKDOWN, BLOCKS and `Capability`
+  XHTML_IMPORTER, `status()`, `skipped()` and `skippedBeyond()`, `undecided()`, `limitations()` = the
+  eight REQ-904 statements); `InspectFinding` (the kind constants, `Location`, `getAddress()`,
+  `getVisible()`, `getReveal()`, the excerpt bounded at 200 code points with its length,
+  `getSummary()`, `getSubject()` (a target, an author, a face's name), `isIn` and `group` for an
+  output); `Group`, `Visible` (`-` is `NOT_CONTENT`), `Reveal`. Bounds as §2.5 (`Inspect.MAX_*`).
+- *How it reads* (§2.1): each part as a DOM, a JAXB part marshalled as docx4j writes it. Checked first:
+  the oracle run on docx4j's resave of the four fixtures gives the same 186 findings, so the marshalled
+  form is the stored one for the inspection. The walk is a port of `support/inspect_oracle.py` (package
+  private `InspectWalk`, with `InspectPackage`, `InspectXml`, `InspectFace` (its own TrueType reader:
+  cmap, glyf, hmtx, post, GSUB single and multiple substitutions, with work caps for a hostile face),
+  `InspectPayloads` (jsoup where present, else a tag scanner that skips comments and script bodies; an
+  MHT chunk's MIME parts; a zip payload decompressed once against the budgets before docx4j loads it)
+  and `InspectRun`). An `mc:AlternateContent`'s branch is the text model's: the marshal links the
+  elements the inspector needs to their objects (a `Marshaller.Listener`, each element to the first
+  object of its class not yet taken; JAXB's `Binder` linked no `w:p`), and `McSelection.selectedBranch(TEXT)`
+  decides, with Requires prefixes resolved where the part was read (case 6's unconventional prefix).
+- *Addresses*: the text model's. `Extractor` gains an inert record (`sources`: each paragraph, table,
+  bound control, WordArt shape, chart part, workbook cell and slide shape to the first block made from
+  it), and the inspection reads the package through it once for each set of options its findings'
+  reveals name, calling no importer (`noImporter`: an XHTML chunk read as HTML, an MHT chunk not at
+  all; no block's address depends on a chunk's expansion), with the packages it loaded one level down
+  (`packages`, so that `Embedded` and `AltChunks` read the same instances). A finding's address is its
+  element's nearest recorded ancestor (a run's paragraph) or first recorded descendant (a text box's
+  first paragraph, a header's first block); a hidden column's, its first recorded cell's. A report a
+  global limit stopped carries none.
+- *Results*: all 186 findings, the four fixtures' status, skipped and undecided entries, exact, under
+  docx4j-JAXB-ReferenceImpl and (a hand run) docx4j-JAXB-MOXy; the suite 1535 assertions passing and 9
+  pending (the XHTML-importer-present rows; with docx4j-ImportXHTML on the class path the four
+  inspections pass too). The whole-fixture item cites REQ-1204 with REQ-901, 902 and 904 to 907, which
+  `TextsAdapter` now advertises; its selector for `expected-findings.tsv` is the oracle's rule.
+- *Tests* (`InspectTest`, 15; 22 after the review below): read-only (REQ-204's snapshot) on the four fixtures; nothing fetched, a
+  loopback listener named by HTML, XHTML and MHT chunks, INCLUDEPICTURE, INCLUDETEXT and HYPERLINK fields,
+  an external image and an embedded document's own chunk (also run by hand with docx4j-ImportXHTML's
+  no-fetch build on the class path: 17 tests with `AltChunkNoFetchTest`, no request); the anonymiser's
+  inventory (19 parts PartsAnalyzer treats, every external relationship `Verify.extract` reads); bounds:
+  800 chunks of 100 KB end PARTIAL at `limit.total_bytes` with the rest skipped and the counts lower
+  bounds (§3's 2,000 chunks of 40 KB predate D11: at one `altchunk` finding a chunk, the 1,000-findings
+  limit stops them first, at 40 MB), a 17 MB chunk and an embedded docx that decompresses to 17 MB each
+  stopped alone, 1,200 hidden paragraphs stopped at 1,000 findings, the elements counted as a part is
+  marshalled and the inspection stopped past them (with a budget of 500, the 5,000,000 being the same
+  code), 1,100 RTF chunks giving 1,000 skipped entries and the rest counted; two embedded documents each with a VBA project and hidden text
+  at one path, four locations; `w:rsids`; membership under the views and options (inserted content is
+  not in the original view, WD REQ-905, which INSPECTION.md's table lacked and now has); on the fixtures,
+  a description, a comment, the properties and a hidden row; counts equal to the groups' tally and
+  unchanged by splitting every run in two; the tag scanner agreeing with jsoup. File access is not
+  tested apart: no code path resolves a target.
+- *A defect in the text model, found by the read-only test and fixed*: `Texts.of` added a
+  `DefaultParagraphFont` style to `extraction-probe-structure.docx`, whose styles declare no default
+  character style: `PropertyResolver`'s creation called `StyleDefinitionsPart.getDefaultCharacterStyle()`,
+  which makes one and adds it to the part. `PropertyResolver.init` now reads the declared default only
+  (the id it used only as `activateStyle`'s stop); output and merge paths that call
+  `getDefaultCharacterStyle()` still add it. Shared code: for review. `TextsPhase2Test` asserts it.
+- *D18's calibration* (§6). The layout-fidelity corpora hold 861 documents with embedded fonts, 97
+  unique faces, all TrueType. As first written, the tests found 27 runs in four documents drawn in
+  faces as their foundries made them (all-capitals faces draw `telefoonnummer` with the capitals'
+  glyphs), and over every letter and digit the faces map, 59 of the 97 faces: ambiguous AGL names
+  (Omega names U+2126, mu U+00B5, Tcommaaccent U+0162), stylistic suffixes (`h.sups` for ʰ), `ccmp`
+  decomposing À into A and an accent, Arabic presentation forms sharing glyphs, zero-width modifier
+  letters. Changed, in `InspectWalk.mismatch`, the oracle and INSPECTION.md (marked "phase 1's
+  calibration"): a compatibility character (one NFKC changes) is not tested; "drawn as" another
+  character is evidence only where that one is a letter or digit, no compatibility character, and not
+  the same letter, two being the same letter when their bases match (NFKD with marks, modifier letters
+  and spaces dropped, case folded, ı ȷ ĸ ð đ folded to i j k d d), when either has no base, or when
+  their scripts differ (test 1's exceptions, now every test's); a modifier letter's advance is not
+  tested, nor a titlecase letter's width; glyph names are read against the full AGL (xmlgraphics-commons'
+  `glyphlist.txt`, fontTools' list). Now: none of the 861 documents has a finding, and 4 of the 97
+  faces have a letter flagged: a Code 39 barcode face, whose letters are bars 2 em wide (a person sees
+  a barcode, not the text: arguably a true finding, for Jason); Cambria's `ccmp` drawing Ӫ and ӫ
+  through fita's glyph, a Cyrillic look-alike; a display face sharing glyphs between unrelated Cyrillic
+  letters (і and palochka, ѐ and Ѝ); Arial's Arabic high hamza (U+0674) with no advance. Each fires only
+  where a document uses that letter in that face. The Java and Python readings agree on all 97 faces (69
+  letters). The fixture's ten faces give the same findings as before. To the WD: REQ-902's Embedded
+  faces paragraph, as INSPECTION.md now reads.
+- *Deviations from the oracle*, none moving a fixture's finding: inserted content's need (above);
+  `font.embedded` one finding per face part (the oracle keyed faces by font name; §2.4 says per face),
+  its summary the characters it draws; the tag scanner takes single-quoted and bare attribute values.
+- *Cost*, for phase 2 (D9): the main probe's inspection takes about 1.9 s on a cold JVM, most of it
+  the text model read once per distinct reveal (13 on the main probe); the other fixtures 10 to 150 ms.
+  The review below adds: the counts need no addresses (`InspectFinding.group` reads a finding's
+  requirements, `visible` and its excerpt's length alone), so phase 2 can run the walk without
+  `InspectAddresses`, which is most of that time, and keep the address reads for `Inspect.of`.
+- *Review*, 19 October 2026: the docx4j-43 session, at Jason's request, ran 18 classes (144
+  tests) green from the working tree, checked the DOM reading, the importer left uncalled, the zip
+  budgets, CR-049's prefixes and the `PropertyResolver` change, and found two defects and six lesser
+  points, all taken. The oracle follows each, its output unchanged (186 findings); `INSPECTION.md`
+  marks them **(phase 1)**; `InspectTest` gains seven tests.
+  - `smartart.data` was never made, though REQ-902 names it. Now each point the text model reads
+    with a line no paragraph of the diagram's drawing part holds is one finding, at its `dgm:pt`,
+    where the data part names a drawing part (`dsp:dataModelExt`); its address is the point's first
+    line's block (`Extractor` records each point). Word's save of the main probe has none; that save
+    with its drawing made stale has one, at `body/105/smartart:0/2`.
+  - `InspectFace`'s cmap work cap was a subtable's: a face whose 65,535 encoding records each name a
+    large table cost 65,535 caps. Now one cap a face, at most 64 records read, a table two records
+    share read once; and the cap is 262,144 code points (from 2,228,224), nine times the most any of
+    the corpora's 97 faces maps (28,737), so that one hostile face's map stays small. A face with
+    65,535 records of the whole of Unicode reads in milliseconds.
+  - Membership, each checked against the text model's output: a row deleted (inserted) by its own
+    `w:trPr` mark, its runs in no revision, and a cell by `w:cellDel` (`w:cellIns`), is out of the
+    accepted (original) view, as Accept All (Reject All) removes it, where the walk had it in; content
+    of a control showing its placeholder needs `placeholders: true`; a note an unused header alone
+    refers to is `story.unused`, and one a used header (footer) alone refers to needs
+    `include: headers` (`footers`), where the walk had both as notes of the default output.
+  - Chunks: an HTML or XHTML chunk is read in its encoding (a byte order mark, UTF-16 by its first
+    `<`, a declared `encoding` or `charset`, else UTF-8), where a UTF-16 one scanned as nothing; a
+    `javascript:` URI in a `src`, `href` or `background` is `altchunk.script`; the tag scanner's
+    search for a script's end no longer lower-cases the whole chunk at each script.
+  - Open, for Jason: the faces' maps are kept for the walk, so a package of many small hostile faces
+    (each mapping 262,144 code points, of the order of 20 MB in memory) has no bound across faces. A
+    limit on the faces read, or the maps' size charged to `limit.total_bytes`, would close it; either
+    is REQ-907's to state.
+
 ### Phase 2: the counts in every extraction result
 
 - `TextResult.metadata()`'s `inspect` (REQ-903 as D14 has it), the four counts against the result's own
@@ -719,7 +837,10 @@ Each with a recommendation; Jason decides.
   instruction's case. The mismatch tests catch the crude swaps on evidence the file itself carries,
   and stay silent otherwise. Phase 1 calibrates them on the real-document corpora (§5): no finding in
   a font as its foundry made it.
-  **Decided** (Jason, 19 October 2026): as recommended, (a) now and (c) later.
+  **Decided** (Jason, 19 October 2026): as recommended, (a) now and (c) later. **Calibrated** in phase 1
+  (§5, "Phase 1 record"): test 1's exceptions extended to every test with a base-letter comparison,
+  compatibility characters untested, modifier letters' advances and titlecase widths untested; four
+  faces of 97 still flag a letter (a barcode face among them), none of 861 documents; for Jason.
 - **D19. A drawing's name** (phase 0). Every `wp:docPr` carries a name, and most are the ones Word or a
   producer gives ("Text Box 3", "Picture 7"): `alt_text.name` is 28 of the oracle's 209 findings,
   nearly all default names, each counted omitted. Options: (a) every name, as §2.3 reads (the oracle

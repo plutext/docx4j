@@ -223,11 +223,17 @@ public class PropertyResolver {
 		} catch (NullPointerException npe) {
 			log.warn("No default paragraph style!!");
 		}
-		try {
-			defaultCharacterStyleId = this.styleDefinitionsPart.getDefaultCharacterStyle().getStyleId();
-		} catch (NullPointerException npe) {
-			log.warn("No default character style!!");
+		// the declared default character style, else the id StyleDefinitionsPart gives the one it would
+		// make: not getDefaultCharacterStyle(), which adds that style to a styles part that has none, so that
+		// resolving changes nothing in the package (REQ-204: the text model and its inspector, CR-050)
+		org.docx4j.wml.Styles declared = this.styleDefinitionsPart.getJaxbElement();
+		if (declared != null) for (Style s : declared.getStyle()) {
+			if (s.isDefault() && "character".equals(s.getType())) {
+				defaultCharacterStyleId = s.getStyleId();
+				break;
+			}
 		}
+		if (defaultCharacterStyleId == null) defaultCharacterStyleId = "DefaultParagraphFont";
 		Style defaultTableStyle = this.styleDefinitionsPart.getDefaultTableStyle();
 		defaultTableStyleId = defaultTableStyle == null ? null : defaultTableStyle.getStyleId();
 

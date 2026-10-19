@@ -18,6 +18,7 @@ from docx4j's text model.
     python3 docx4j-core-tests/src/test/resources/text-extraction/support/inspect_oracle.py \
         docx4j-core-tests/src/test/resources/text-extraction/phase0
 """
+import codecs
 import io
 import posixpath
 import re
@@ -67,6 +68,8 @@ R = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
 MC = 'http://schemas.openxmlformats.org/markup-compatibility/2006'
 WP = 'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing'
 A = 'http://schemas.openxmlformats.org/drawingml/2006/main'
+DGM = 'http://schemas.openxmlformats.org/drawingml/2006/diagram'
+DSP = 'http://schemas.microsoft.com/office/drawing/2008/diagram'
 V = 'urn:schemas-microsoft-com:vml'
 O = 'urn:schemas-microsoft-com:office:office'
 M = 'http://schemas.openxmlformats.org/officeDocument/2006/math'
@@ -109,7 +112,8 @@ VISIBLE = {
 # the named outputs of expected-inspection.tsv: the options each sets beyond the defaults, and its format
 OUTPUTS = [('plain', set(), 'plain'), ('markdown', set(), 'markdown'), ('blocks', set(), 'blocks'),
            ('hidden', {'hidden'}, 'plain'), ('embedded', {'embedded'}, 'plain'), ('comments', {'comments'}, 'plain')]
-DEFAULT_ON = {'notes', 'text_boxes', 'placeholders', 'altchunks', 'charts', 'smartart'}
+# 'not:original' is inserted or moved-to content's (WD REQ-905; CR-050 phase 1): the defaults meet it
+DEFAULT_ON = {'notes', 'text_boxes', 'placeholders', 'altchunks', 'charts', 'smartart', 'not:original'}
 # option order, WD section 10; each need's option text in a reveal
 REVEAL = [('view:original', 'view: original'), ('view:markup', 'view: markup'), ('include:headers', 'include: headers'),
           ('include:footers', 'include: footers'), ('include:glossary', 'include: glossary'),
@@ -552,12 +556,12 @@ class Inspector:
                 if t:
                     used[t] = 'header' if ref.tag.endswith('headerReference') else 'footer'
         self.used = used
-        refs = {'footnote': {}, 'endnote': {}, 'comment': set()}
-        self.collect_references(doc, refs)
+        refs = {'footnote': {}, 'endnote': {}, 'comment': set(), 'from': {}}
+        self.collect_references(doc, refs, 'main')
         for part in self.pkg.by_type(main, '/header') + self.pkg.by_type(main, '/footer'):
             x = self.pkg.xml(part)
             if x is not None:
-                self.collect_references(x, refs)
+                self.collect_references(x, refs, used.get(part))
         self.refs = refs
         self.authors = {}
 
@@ -584,6 +588,8 @@ class Inspector:
                         self.story(part, note, needs={'never'}, story='unused')
                     else:
                         needs = {'notes'} | ({'view:original'} if refs[kind][nid] else set())
+                        # referenced from no story but a header or footer: read with it alone (phase 1)
+                        needs |= {'header': {'include:headers'}, 'footer': {'include:footers'}}.get(refs['from'][(kind, nid)], set())
                         self.add(Finding('note', self.chain, part, path_of(note), excerpt=self.text(note), needs=needs))
                         self.story(part, note, needs=needs, story='note')
         for part in self.pkg.by_type(main, '/comments'):
@@ -625,12 +631,19 @@ class Inspector:
             f = self.add(Finding('font.embedded', self.chain, part, excerpt='', needs={'never'}, selector=face))
             f.anchor = first
 
-    def collect_references(self, root, refs):
-        for e in root.iter(wq('footnoteReference'), wq('endnoteReference')):
+    def collect_references(self, root, refs, story):
+        """A story's note and comment references; a note is read through the main document's references,
+        or a used header's or footer's (story None for an unused one, whose references reach no note),
+        refs['from'] keeping the best story for each note: main, then header, then footer (phase 1)"""
+        order = ('main', 'header', 'footer')
+        for e in root.iter(wq('footnoteReference'), wq('endnoteReference')) if story else ():
             kind = 'footnote' if e.tag.endswith('footnoteReference') else 'endnote'
             deleted = any(a.tag in (wq('del'), wq('moveFrom')) for a in e.iterancestors())
             nid = e.get(wq('id'))
             refs[kind][nid] = refs[kind].get(nid, True) and deleted
+            was = refs['from'].get((kind, nid))
+            if was is None or order.index(story) < order.index(was):
+                refs['from'][(kind, nid)] = story
         for e in root.iter(wq('commentReference'), wq('commentRangeStart')):
             refs['comment'].add(e.get(wq('id')))
 
@@ -767,15 +780,26 @@ class Inspector:
                 inserted = True
             elif a.tag in (wq('del'), wq('moveFrom')):
                 deleted = True
+            elif a.tag == wq('tr'):
+                # a row's own mark: Accept All removes a deleted row, Reject All an inserted one (phase 1)
+                deleted |= a.find('%s/%s' % (wq('trPr'), wq('del'))) is not None
+                inserted |= a.find('%s/%s' % (wq('trPr'), wq('ins'))) is not None
+            elif a.tag == wq('tc'):
+                deleted |= a.find('%s/%s' % (wq('tcPr'), wq('cellDel'))) is not None
+                inserted |= a.find('%s/%s' % (wq('tcPr'), wq('cellIns'))) is not None
             elif a.tag == wq('sdtContent'):
                 if (self.part, path_of(a.getparent())) in self.stale:
                     n.add('bindings:surface')
+                if on(a.getparent().find('%s/%s' % (wq('sdtPr'), wq('showingPlcHdr')))):
+                    n.add('placeholders')   # placeholder content: placeholders: true (phase 1)
             elif a.tag == wq('txbxContent'):
                 n.add('text_boxes')
             elif a.tag == '{%s}textpath' % V:
                 n.add('text_boxes')
         if deleted:
             n.add('view:markup' if inserted else 'view:original')   # deleted inside an insertion: markup only
+        elif inserted:
+            n.add('not:original')   # inserted content: not the original view (phase 1)
         return n
 
     def walk_branches(self, part, root, needs):
@@ -1061,33 +1085,27 @@ class Inspector:
             self.emit_run(groups, 'font.glyph_mismatch', r, t, mismatch[0], mismatch[-1] + 1, needs, ())
 
     def mismatch(self, face, c, glyph, t, layers):
+        """D18's four tests as calibrated on the layout-fidelity corpora's embedded faces (CR-050 phase 1): a
+        compatibility character is not tested; "drawn as" another character is evidence only where the two are
+        not the same letter (same_letter) and the other is a letter or digit and no compatibility form; a
+        modifier letter's advance is not tested, nor a titlecase letter's width"""
         cat = unicodedata.category(c)
-        letter_or_digit = cat.startswith('L') or cat == 'Nd'
-        if not letter_or_digit:
+        if not (cat.startswith('L') or cat == 'Nd') or compatibility(c):
             return False
-        others = [chr(code) for code, g in face['cmap'].items() if g == glyph and chr(code) != c]
-        for d in others:
-            dc = unicodedata.category(d)
-            if not (dc.startswith('L') or dc == 'Nd'):
-                continue
-            if unicodedata.normalize('NFKC', d) == unicodedata.normalize('NFKC', c):
-                continue
-            if script(d) != script(c):
-                continue
-            return True                                      # test 1: a shared glyph
+        for code, g in face['cmap'].items():
+            if g == glyph and chr(code) != c and evidence(c, chr(code)):
+                return True                                  # test 1: a shared glyph
         adv = face['hmtx'][glyph][0]
-        if cat.startswith('L') and (adv == 0 or adv > 1.5 * face['em']):
-            return True                                      # test 2: zero or over-wide advance
+        if cat.startswith('L') and cat != 'Lm' and base_letter(c) and (adv == 0 or (adv > 1.5 * face['em'] and cat != 'Lt')):
+            return True                                      # test 2: zero, or over 1.5 em
         if face['names']:
             u = agl.toUnicode(glyph)
-            if len(u) == 1 and u != c:
+            if len(u) == 1 and u != c and evidence(c, u):
                 return True                                  # test 3: named for another character
         for out in self.substitutions(face, glyph, layers):
             for code, g in face['cmap'].items():
-                if g == out and chr(code) != c:
-                    oc = unicodedata.category(chr(code))
-                    if oc.startswith('L') or oc == 'Nd':
-                        return True                          # test 4: a substitution Word applies
+                if g == out and chr(code) != c and evidence(c, chr(code)):
+                    return True                              # test 4: a substitution Word applies
         return False
 
     def substitutions(self, face, glyph, layers):
@@ -1184,6 +1202,38 @@ class Inspector:
 
     # ------------------------------------------------------------ drawings: shapes and alt text
 
+    def smartart(self, part, rel_ids, dn):
+        """SmartArt data its drawing part does not show: where the data part names a drawing part
+        (dsp:dataModelExt, its relId the story part's), each point the text model reads with a line no
+        paragraph of the drawing part holds, each drawing line holding one (phase 1)"""
+        data = self.pkg.target(part, rel_ids.get('{%s}dm' % R))
+        if not data or not self.pkg.has(data):
+            return
+        model = self.pkg.xml(data)
+        ext = next(model.iter('{%s}dataModelExt' % DSP), None)
+        drawing = self.pkg.target(part, ext.get('relId')) if ext is not None else None
+        if not drawing or not self.pkg.has(drawing):
+            return   # no drawing part: Word lays the diagram out from the data
+        shown = {}
+        for body in self.pkg.xml(drawing).iter('{%s}txBody' % DSP):
+            for ap in body.findall('{%s}p' % A):
+                line = dml_line(ap)
+                shown[line] = shown.get(line, 0) + 1
+        for pt in smartart_points(model):
+            missing = []
+            t = pt.find('{%s}t' % DGM)
+            for ap in (t.findall('{%s}p' % A) if t is not None else []):
+                line = dml_line(ap)
+                if not line:
+                    continue
+                if shown.get(line, 0) > 0:
+                    shown[line] -= 1
+                else:
+                    missing.append(line)
+            if missing:
+                self.add(Finding('smartart.data', self.chain, data, path_of(pt), excerpt='\n'.join(missing),
+                                 needs=dn | {'smartart'}))
+
     def walk_drawings(self, part, root, needs):
         for d in root.iter('{%s}inline' % WP, '{%s}anchor' % WP):
             dn = self.context_needs(d, root, needs)
@@ -1213,6 +1263,9 @@ class Inspector:
                     strings = [e.text or '' for e in cx_.iter('{%s}v' % C, '{%s}t' % A)
                                if e.tag == '{%s}t' % A or any(a.tag == '{%s}strCache' % C for a in e.iterancestors())]
                     self.add(Finding('chart.cached', self.chain, target, excerpt='\n'.join(strings), needs=dn | {'charts'}))
+            rel_ids = d.find('{%s}graphic/{%s}graphicData/{%s}relIds' % (A, A, DGM))
+            if rel_ids is not None:
+                self.smartart(part, rel_ids, dn)
         for s in root.iter('{%s}shape' % V, '{%s}rect' % V, '{%s}roundrect' % V, '{%s}oval' % V):
             dn = self.context_needs(s, root, needs)
             style = vml_style(s)
@@ -1540,12 +1593,16 @@ class Inspector:
             return
         html = []
         if ctype in ('text/html', 'application/xhtml+xml'):
-            html.append(data.decode('utf-8', 'replace'))
+            html.append(decode_html(data))
         elif ctype == 'message/rfc822':
             msg = message_from_bytes(data)
             for sub in msg.walk():
                 if sub.get_content_type() in ('text/html', 'application/xhtml+xml'):
-                    html.append(sub.get_payload(decode=True).decode(sub.get_content_charset() or 'utf-8', 'replace'))
+                    payload, charset = sub.get_payload(decode=True), sub.get_content_charset()
+                    try:
+                        html.append(payload.decode(charset, 'replace') if charset else decode_html(payload))
+                    except LookupError:
+                        html.append(decode_html(payload))
         elif ctype in (OFFICE_CHUNK_DOCX,):
             inner = Package(data, self.chain + [part])
             Inspector(inner, self.out, self.status, self.depth + 1, self.base_needs | {'altchunks'}).run()
@@ -1565,7 +1622,9 @@ class Inspector:
             scripts += re.findall(r'\son[a-z]+\s*=\s*"([^"]*)"', h, re.I)
             for m in re.finditer(r'\s(?:src|href|background)\s*=\s*"([^"]*)"', h, re.I):
                 v = m.group(1).strip()
-                if v and not v.startswith('#') and not re.match(r'(data|cid|mailto|javascript):', v, re.I):
+                if javascript_uri(m.group(1)):
+                    scripts.append(v)   # a handler, as a script is (phase 1)
+                elif v and not v.startswith('#') and not re.match(r'(data|cid|mailto|javascript):', v, re.I):
                     refs.append(v)
         if scripts:
             self.add(Finding('altchunk.script', self.chain, part, excerpt='', needs={'never'}))
@@ -1639,6 +1698,45 @@ OFFICE_CHUNK_DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessin
 def script(c):
     name = unicodedata.name(c, '')
     return name.split(' ')[0] if name else ''
+
+
+# Latin letters a face draws as another by design: dotless i and j (ccmp puts them under an accent), kra, eth
+# and d with stroke (a capitals face draws them as K and D)
+FOLD = {'\u0131': 'i', '\u0237': 'j', '\u0138': 'k', '\u00f0': 'd', '\u0111': 'd'}
+
+
+def simple(x, f):
+    """A one-character case mapping (Java's Character.toUpperCase), not Python's full one (ß to SS)"""
+    y = f(x)
+    return y if len(y) == 1 else x
+
+
+def base_letter(c):
+    """A character's base letter: its compatibility decomposition, marks, modifier letters and spaces dropped,
+    case folded, FOLD applied"""
+    out = []
+    for x in unicodedata.normalize('NFKD', c):
+        if unicodedata.category(x) in ('Mn', 'Mc', 'Me', 'Lm') or x.isspace():
+            continue
+        f = simple(simple(x, str.upper), str.lower)
+        out.append(FOLD.get(f, f))
+    return ''.join(out)
+
+
+def same_letter(c, d):
+    """One letter for D18: the same base, either with none (a mark-like letter), or different scripts"""
+    bc, bd = base_letter(c), base_letter(d)
+    return not bc or not bd or bc == bd or script(c) != script(d)
+
+
+def compatibility(c):
+    return unicodedata.normalize('NFKC', c) != c
+
+
+def evidence(c, d):
+    """c drawn as d is evidence: d a letter or digit, no compatibility form, another letter"""
+    cat = unicodedata.category(d)
+    return (cat.startswith('L') or cat == 'Nd') and not compatibility(d) and not same_letter(c, d)
 
 
 def web(target):
@@ -1745,6 +1843,85 @@ def sheet_text(ws, strings):
     for row in ws.iter('{%s}row' % X):
         rows.append('\t'.join(cell_text(c, strings) for c in row.iter('{%s}c' % X)))
     return '\n'.join(rows)
+
+
+def javascript_uri(v):
+    """A javascript: URI as a browser reads one: tabs, line feeds and leading controls and spaces ignored"""
+    v = re.sub(r'[\t\n\r]', '', v).lstrip(''.join(chr(c) for c in range(0x21)))
+    return v[:11].lower() == 'javascript:'
+
+
+def decode_html(data):
+    """An HTML or XHTML chunk's characters: by its byte order mark; else UTF-16 where its first
+    character is < so encoded; else the charset its start declares (an XML declaration's encoding, a
+    meta element's charset); else UTF-8 (phase 1)"""
+    for bom, enc in ((b'\xef\xbb\xbf', 'utf-8'), (b'\xff\xfe', 'utf-16-le'), (b'\xfe\xff', 'utf-16-be')):
+        if data.startswith(bom):
+            return data[len(bom):].decode(enc, 'replace')
+    if data[:2] == b'<\x00':
+        return data.decode('utf-16-le', 'replace')
+    if data[:2] == b'\x00<':
+        return data.decode('utf-16-be', 'replace')
+    m = re.search(r'<\?xml[^>]*?\sencoding\s*=\s*["\']([A-Za-z0-9._:-]+)|<meta\b[^>]*?charset\s*=\s*["\']?([A-Za-z0-9._:-]+)',
+                  data[:1024].decode('latin-1'), re.I)
+    if m:
+        try:
+            name = codecs.lookup(m.group(1) or m.group(2)).name
+            if not name.startswith(('utf-16', 'utf-32')):
+                return data.decode(name, 'replace')
+        except LookupError:
+            pass
+    return data.decode('utf-8', 'replace')
+
+
+def dml_line(ap):
+    """A DrawingML paragraph's line: its runs' and fields' a:t, an a:br a line feed"""
+    out = []
+    for c in ap:
+        if c.tag in ('{%s}r' % A, '{%s}fld' % A):
+            t = c.find('{%s}t' % A)
+            out.append(t.text or '' if t is not None else '')
+        elif c.tag == '{%s}br' % A:
+            out.append('\n')
+    return ''.join(out)
+
+
+def smartart_points(model):
+    """The points whose text the text model reads: from the doc point depth-first along parOf
+    connections, each point's children by srcOrd, those of type node (the default) and asst"""
+    points, doc = {}, None
+    pt_lst = model.find('{%s}ptLst' % DGM)
+    for pt in (pt_lst.findall('{%s}pt' % DGM) if pt_lst is not None else []):
+        mid = pt.get('modelId')
+        if mid is None:
+            continue
+        points[mid] = pt
+        if doc is None and pt.get('type') == 'doc':
+            doc = pt
+    if doc is None:
+        return []
+    kids = {}
+    cxn_lst = model.find('{%s}cxnLst' % DGM)
+    for c in (cxn_lst.findall('{%s}cxn' % DGM) if cxn_lst is not None else []):
+        if c.get('type', 'parOf') != 'parOf' or c.get('srcId') is None:
+            continue
+        kids.setdefault(c.get('srcId'), []).append(c)
+    for l in kids.values():
+        l.sort(key=lambda c: int(c.get('srcOrd') or 0))
+    out, seen = [], set()
+
+    def visit(pt):
+        if pt.get('modelId') in seen:
+            return   # a cycle
+        seen.add(pt.get('modelId'))
+        if pt.get('type', 'node') in ('node', 'asst'):
+            out.append(pt)
+        for c in kids.get(pt.get('modelId'), []):
+            child = points.get(c.get('destId'))
+            if child is not None:
+                visit(child)
+    visit(doc)
+    return out
 
 
 def drawing_text(root):

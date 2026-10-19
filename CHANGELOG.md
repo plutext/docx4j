@@ -66,6 +66,11 @@ Changes in Version 17.3.4
 - Text model: an XHTML or MHT `altChunk` read through docx4j-ImportXHTML no longer fetches its stylesheets
   or images (by URL or local file); its images are left out. With a docx4j-ImportXHTML before 17.3.4 on the
   module path, the chunk is read without it.
+- Inspector (CR-050 phase 1): `Inspect.of(pkg)` reports where a docx's text diverges from what a person sees
+  (white, tiny or zero-width text, embedded-font glyph swaps), what extraction leaves out, and what Office would
+  fetch or run; read-only, fetching nothing, bounded. `Inspection.counts` groups findings for an extraction's options.
+- `PropertyResolver` no longer adds a `DefaultParagraphFont` style to a styles part that has no default
+  character style (so `Texts.of` changes nothing in such a package); output and merge paths still add it.
 
 
 Version 17.3.3

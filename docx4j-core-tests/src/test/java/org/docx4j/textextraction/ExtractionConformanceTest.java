@@ -74,7 +74,7 @@ public class ExtractionConformanceTest {
         List<Map<String, String>> expected = ExtractionConformance.table(dir.resolve(ExtractionInspection.TABLE));
         final List<List<Map<String, String>>> reported = new ArrayList<>();
         ExtractionConformance.Engine engine = new ExtractionConformance.Engine() {
-            public Set<String> implementedStatements() { return Set.of("REQ-901", "REQ-902", "REQ-904", "REQ-905", "REQ-906", "REQ-907"); }
+            public Set<String> implementedStatements() { return Set.of("REQ-901", "REQ-902", "REQ-904", "REQ-905", "REQ-906", "REQ-907", "REQ-1204"); }
             public ExtractionConformance.Output extract(Path p, String view, String scenario, String format) { throw new AssertionError(); }
             public ExtractionConformance.Inspection inspect(Path fixture) {
                 return new ExtractionConformance.Inspection(reported.get(0), "COMPLETE", List.of(), List.of(),
@@ -226,12 +226,11 @@ public class ExtractionConformanceTest {
         ExtractionConformance.run(fixtures(), report, ExtractionConformance.engine());
         String results = Files.readString(report);
         assertTrue(results.contains("PENDING"));
-        assertTrue(results.contains("later inspector CR"));
         assertTrue(results.contains("VBA51_MODULE_MARK"));
         assertTrue(results.contains("ALT47_NESTED_CHUNK"));
         if (ExtractionConformance.engine() != null) {
-            // CR-046 phases 1 and 2 and CR-047: their rows checked; Markdown's wait on phase 3, the importer's
-            // rows on the class path, the inspector's on its CR
+            // CR-046 phases 1 and 2, CR-047 and CR-050 phase 1: their rows checked; Markdown's wait on phase 3,
+            // the importer's rows on the class path
             assertTrue(results.contains("\tCHOICE_ALPHA_123\tmarkup\tdefault\tPASS"));
             assertTrue(results.contains("\tTBX25_IN_CELL\toriginal\ttext_boxes: false\tPASS"));
             assertTrue(results.contains("\tCHT34_TITLE\taccepted\tdefault\tPASS"));
@@ -239,9 +238,15 @@ public class ExtractionConformanceTest {
             assertTrue(results.contains("\tGLS54_ENTRY_TWO\toriginal\tinclude: glossary\tPASS"));
             assertTrue(results.contains("\tCHT34_AXIS_TITLE\taccepted\tdefault\tPASS"));
             assertTrue(results.contains("\tTBL31_HEADER\taccepted\tdefault\tPASS"));
+            // CR-050 phase 1: the inspector's rows and each fixture's whole inspection
+            assertTrue(results.contains("extraction-probe-inspect.docx\t0\tinspection\t-\tdefault\tPASS"));
+            assertTrue(results.contains("extraction-probe.docx\t0\tinspection\t-\tdefault\tPASS"));
+            assertTrue(results.contains("\tinspect:font.glyph_mismatch:"));
+            assertFalse(results.contains("the inspector (CR-050)"));
             for (String line : results.split("\n"))
-                if (line.contains("\tPENDING\t")) assertTrue(line, line.contains("later inspector CR") || line.contains("phase 3; REQ-70")
-                        || line.contains("xhtml importer"));
+                if (line.contains("\tPENDING\t")) assertTrue(line, line.contains("phase 3; REQ-70") || line.contains("xhtml importer"));
+        } else {
+            assertTrue(results.contains("the inspector (CR-050)"));
         }
     }
 }

@@ -216,7 +216,7 @@ public final class ExtractionConformance {
             if (!ready) {
                 pending++;
                 report.add(row.get("fixture") + "\t" + row.get("case") + "\t" + item + "\t" + view + "\t" + scenario
-                        + "\tPENDING\t" + (phase(requirements) == 9 ? "later inspector CR" : "phase " + phase(requirements))
+                        + "\tPENDING\t" + (phase(requirements) == 9 ? "the inspector (CR-050)" : "phase " + phase(requirements))
                         + "; " + String.join(", ", missing) + (engine == null ? "; Texts adapter not installed" : ""));
             }
             return ready;
@@ -310,8 +310,10 @@ public final class ExtractionConformance {
         for (Map<String, String> row : table(table)) expected.computeIfAbsent(row.get("fixture"), k -> new ArrayList<>()).add(row);
         for (Map<String, String> status : table(dir.resolve(ExtractionInspection.STATUS))) {
             String fixture = status.get("fixture");
-            Map<String, String> row = Map.of("fixture", fixture, "case", "0", "statements", ExtractionInspection.STATEMENTS);
-            if (!run.ready(row, "inspection", "-", "default", requirements(ExtractionInspection.STATEMENTS))) continue;
+            // the whole fixture's comparison is REQ-1204's, its checks REQ-901, 902 and 904 to 907's
+            String statements = ExtractionInspection.STATEMENTS + ", REQ-1204";
+            Map<String, String> row = Map.of("fixture", fixture, "case", "0", "statements", statements);
+            if (!run.ready(row, "inspection", "-", "default", requirements(statements))) continue;
             compareInspection(fixture, expected.getOrDefault(fixture, List.of()), status, run.engine.inspect(dir.resolve(fixture)));
             run.pass(row, "inspection", "-", "default");
         }
