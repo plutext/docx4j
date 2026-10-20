@@ -188,12 +188,15 @@ case	fixture	channel	kind	selector	scenario	expected	statements
 50	extraction-probe-external.docm	metadata	fields_update_on_open		default	true	REQ-506
 52	extraction-probe-external.docm	metadata	ProbeCustom		default	CPR52_CUSTOM	REQ-515
 52	extraction-probe-external.docm	metadata	Company		default	APP52_COMPANY	REQ-515
+36	extraction-probe.docx	warning	altchunk.not_expanded	text/html	html reader absent	2	REQ-513
 36	extraction-probe.docx	warning	altchunk.not_expanded	text/html	altchunks: false	1	REQ-513
 43	extraction-probe.docx	warning	altchunk.not_expanded	text/plain	altchunks: false	1	REQ-513
-44	extraction-probe.docx	warning	altchunk.not_expanded	message/rfc822	xhtml importer absent	1	REQ-513
+44	extraction-probe.docx	warning	altchunk.not_expanded	message/rfc822	html reader absent	1	REQ-513
 44	extraction-probe.docx	warning	altchunk.not_expanded	message/rfc822	altchunks: false	1	REQ-513
 45	extraction-probe.docx	warning	altchunk.not_expanded	application/rtf	default	1	REQ-513
 45	extraction-probe.docx	warning	altchunk.not_expanded	application/rtf	altchunks: false	1	REQ-513
 46	extraction-probe.docx	warning	altchunk.not_expanded	application/xml	altchunks: false	1	REQ-513
-47	extraction-probe.docx	warning	altchunk.not_expanded	text/html	default	1	REQ-513
+47	extraction-probe.docx	warning	altchunk.not_expanded	text/html	html reader present	1	REQ-513
 47	extraction-probe.docx	warning	altchunk.not_expanded	application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml	altchunks: false	1	REQ-513
+63	extraction-probe-inspect.docx	warning	altchunk.not_expanded	text/html	html reader absent	1	REQ-513
+63	extraction-probe-inspect.docx	warning	altchunk.not_expanded	text/html	altchunks: false	1	REQ-513

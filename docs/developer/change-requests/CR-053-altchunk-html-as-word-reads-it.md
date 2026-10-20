@@ -5,11 +5,13 @@ as recommended. Phase 0 done (Jason: "start phase 0"): tests, design checks and 
 probes, rounds 5 to 7 (§10). D9 is (iii), D2 stands, D11 is decided (50,000) and D4's rewrite
 (§10.7) is approved. Phase 1 built (Jason: "start CR-053 phase 1"; §11): the strip, the UTF-8
 binding and D6, its five calls confirmed; Word opens what it writes (`p1-9`'s repair is the
-binding template's own Flat OPC chunk). Proposed 2026-10-20 (Jason: "lets start
-the altchunk work"), reviewed the same day by docx4j-64 (§9). It gathers his ruling on adding a
-chunk (strip the XML declaration, 2026-10-20) and what the text extraction WD 0.23 to 0.25 asks of
-docx4j (portfolio 6cdb966, 016963e, 1865f10). Drafted by Claude Opus 5.5 (session docx4j-25), with
-§1 measured first. Phases in §5; decisions in §6.
+binding template's own Flat OPC chunk). Phase 2 built (on ImportXHTML's notice, Jason's standing
+instruction; §12), against ImportXHTML's CR-002 phases 1 to 3 (468a760); its suite rows pend WD 0.26;
+Word opens its conversions cleanly, with the hidden text of its own import (§12.5). Proposed
+2026-10-20 (Jason: "lets start the altchunk work"), reviewed the same day by docx4j-64 (§9). It
+gathers his ruling on adding a chunk (strip the XML declaration, 2026-10-20) and what the text
+extraction WD 0.23 to 0.25 asks of docx4j (portfolio 6cdb966, 016963e, 1865f10). Drafted by Claude
+Opus 5.5 (session docx4j-25), with §1 measured first. Phases in §5; decisions in §6.
 
 ## 0. Summary
 
@@ -324,6 +326,8 @@ Tests:
 ImportXHTML's own suite is to stay unchanged with the option off (its side).
 
 The suite rows from phase 0 pass or are recorded as pending, with the reason.
+
+Built 20 October 2026 (§12).
 
 ### Phase 3: the inspector
 
@@ -1057,3 +1061,163 @@ Jason's run, the same day (screenshots and `*-word365.docx` saves in the folder)
 So Word opens everything phase 1 writes. The Flat OPC value is `TextBindParityTest`'s fixture, which
 checks only that the chunk holds the text. docx4j's text model agrees with Word about it: the chunk
 is not expanded (`altchunk.not_expanded`), since `FlatOpcXmlImporter` needs `/_rels/.rels` (:209).
+
+## 12. Phase 2 (20 October 2026)
+
+Built on VERSION_17_3_4 after 35e304770, against docx4j-ImportXHTML's installed 17.1.1-SNAPSHOT with
+its CR-002 phases 1 to 3 (then uncommitted there; 468a760 since, from the same sources), jsoup 1.22.1
+and openhtmltopdf 1.1.31. Started on ImportXHTML's notice that its phase 2 was installed, as Jason asked.
+
+### 12.1 The reader
+
+`HtmlChunkImport` (public, `org.docx4j.model.text`) is the one path for the text model and
+`convertAltChunks`; `HtmlChunks` (package-private) holds what names neither jsoup nor the importer.
+For a chunk:
+- **decoded** by the WD's Chunks rule with Word's last step (`HtmlChunks.decode`, which
+  `InspectPayloads.decode` now is): the BOM; UTF-16 where the first two bytes are `<` so encoded; an
+  XML declaration's or a `meta`'s charset (`charset` or `http-equiv`) within 1,024 bytes; UTF-8 where
+  valid; else windows-1252. The labels ISO-8859-1 and US-ASCII are read as windows-1252, by WHATWG
+  Encoding's label table, not measured in Word. An MHT chunk's first HTML part is decoded in its MIME
+  charset by the same labels. The WD's last step is the portfolio's ask (f), in WD 0.26;
+- **parsed** by jsoup whatever its kind (D9 (iii)), nested no deeper than 256 where jsoup can be told
+  (1.22.1), and with a leading U+FEFF dropped: ImportXHTML found that jsoup keeps it as text, closes
+  the head before it, and so loses the chunk's `style` elements;
+- **rewritten** as Word reads it (§10.7, D4), in place, nodes moved and never copied:
+  - a `style` element in the body moves to the head;
+  - each `style` element keeps the rules Word applies. `@media` and the other conditional group
+    rules go, and so does `@import`. A selector goes where it has a child or sibling combinator, an
+    attribute selector, a pseudo-class or pseudo-element, `*`, or two classes on one element. A
+    type selector alone or a class selector alone goes where the host's styles part defines, by
+    name and in any case, the style Word would apply it through: Normal (Web) for `p`, Heading *n*,
+    HTML Address, the HTML styles by inference beyond those three, or the class's own name;
+  - an element outside HTML 4.01, or outside the XHTML namespace (`svg`, `math`), is unwrapped, its
+    attributes with it;
+  - `colspan` is clamped to 1 to 1,000, `rowspan` to 0 to 65,534, by WHATWG's integer parsing,
+    and a value that is not a number removed; each element in the body gains
+    `float: none !important`;
+- **limited**: a tree of more elements than `docx4j.model.text.HtmlChunkImport.maxElements`
+  (50,000, D11), counted after the rewrite, is not imported;
+- **imported** through `convert(Node)` with the `Document`, so the importer lays out docx4j's own
+  tree, and with `setDisplayNoneAsHidden(true)` where the importer has it. An earlier importer leaves
+  what `display: none` hides out, as before;
+- **guarded**: anything the import throws, an `Error` included, is caught and the chunk not read;
+  with `docx4j.model.text.HtmlChunkImport.timeoutMillis` set (D10 (b), off by default), an import that
+  takes longer is abandoned on its daemon thread;
+- **renumbered**: the target's numbering maps are rebuilt from what the import wrote (below).
+
+Choices made where the measurements stop, each unmeasured in Word:
+- a selector list keeps the selectors Word applies (Word may instead drop the whole rule);
+- `*` and the conditional group rules other than `@media` go with what was measured;
+- the host-style match is by name, case-insensitive.
+
+**Found on the way: an `li value` left later lists without labels.** In docx4j's model, the lists
+after an `li value` had no labels, in the text model and in `convertAltChunks`' output alike, until a
+save and a reload. ImportXHTML's XML is right. Its session found the cause, which is older than
+`value`:
+- the importer adds a `w:num` before its abstract's levels;
+- `NumberingDefinitionsPart` copies the levels when the `w:num` is added, so the cached instance
+  definition has none;
+- a `restart()` (`value` uses one) builds the maps mid-import, and the lists after it stay stale.
+
+Without a restart, docx4j's first reading rebuilt the maps and hid it. ImportXHTML fixed it in the
+same day's snapshot (in 468a760): it calls `initialiseMaps()` at the end of a convert that changed the numbering.
+`HtmlChunkImport` also calls it after each import, for an importer before that fix.
+
+### 12.2 The text model, the inspector and `convertAltChunks`
+
+- **The text model (D3, D5, D7).** An HTML, XHTML or MHT chunk is expanded through the reader into
+  a scratch package, never fetching; without jsoup or the importer it is not expanded, with
+  `altchunk.not_expanded`. `HtmlText` is removed; `JsoupHtml` is the parse step and jsoup's presence
+  check. The inspector's own extraction still calls no importer (CR-050; phase 3 changes that).
+- **The capability.** `Inspection.Capability.XHTML_IMPORTER` is `HTML_READER`: jsoup and the importer
+  both, as the portfolio's map has it (§10.5). Its reveal reads `html reader: present`. The text model
+  has not shipped, so nothing released changes.
+- **`convertAltChunks` (D8).** HTML, XHTML and MHT chunks go through `HtmlChunkImport.convert`. With
+  jsoup, that is the reader, with hidden text kept. Without jsoup, an XHTML or MHT chunk is read by the
+  importer's own XML parser as before, with the option on, and an HTML chunk is left. It goes on
+  fetching what a chunk refers to, as Word does (`altchunk-html-fetch`, round 1). A chunk it cannot
+  convert is left, and the others are still converted, where it returned before (§10.2).
+
+### 12.3 Tests
+
+Two configurations:
+- the build's, with jsoup and without the importer;
+- a hand run with the importer, with ImportXHTML's class path appended:
+  `mvn test -pl docx4j-core-tests -am -Dmaven.test.additionalClasspath=<its jars, comma-separated>`.
+
+Each reading test asserts its result in both: with a reader, Word's result; without one, not expanded.
+- `AltChunkHtmlTest`'s seven reading tests now assert phase 2's results, and their Javadoc says what
+  phase 0 found:
+  - `htmlChunkDisplayNoneIsHiddenText`;
+  - `xhtmlChunkIsReadAsHtml`;
+  - `xhtmlChunkNotWellFormedIsRepairedAsHtml`;
+  - `mhtChunkIsReadAsItsHtml`;
+  - `htmlChunkShowsTemplateAndNoscript`;
+  - `htmlChunkRowSpanHasItsContinuationCell`;
+  - `extractionAndInspectionDecodeAChunkAlike`.
+
+  The inspector's parts are unchanged; they are phase 3's.
+- `AltChunkHtmlReadingTest` is new, with 15 tests:
+  - with jsoup alone: the decoder in Word's order, the CSS filter and the host-style rule, the
+    rewrite (nodes moved, unwrapping, clamps, floats), the element limit, an `Error` caught, the
+    timeout, and `convertAltChunks` going on past a chunk it cannot convert;
+  - with the importer: css-1's cascade, css-2's and css-5's structure, host-2's style, encoding by
+    `meta` and by a loaded chunk's declaration, an MHT chunk that is not well-formed, §1a's chunk with
+    its labels, and `convertAltChunks` keeping hidden text (D8).
+- `AltChunkNoFetchTest`: a stylesheet that `link` and `@import` name, served with
+  `.fetched { display: none }`, hides nothing, and nothing is requested (D4).
+- `TextsPhase2Test.altChunks` and `AltChunkHtmlWritingTest`'s round trip: the HTML chunk is expanded
+  only with a reader.
+
+Not tested: an importer without the option. The only one to hand was ImportXHTML's own target jar, and
+its rebuild has replaced it. The path is a `NoSuchMethodException` that is caught and logged.
+
+Measured through the reader, each with its guard, timings taken while the suite ran:
+- 5,000 nested `div`s: 1.7 s;
+- 20,000 floats: 1.9 s (7 s in phase 0);
+- spans of 2^31−1, clamped to 1,000 by 65,534: 6.6 s;
+- 60,000 paragraphs: refused by the element limit in 0.1 s.
+
+### 12.4 The suite (pending WD 0.26)
+
+Along the portfolio's 2a8eb26 map, which its answer on 20 October confirmed while WD 0.26 waits on
+Jason:
+- `html reader present` and `html reader absent` replace both `xhtml importer` scenarios;
+- `ALT36_CHUNK_TEXT` and `CHK63_SCRIPTED` are gated on `html reader present`, as `ALT44_MHT_CHUNK`
+  is. A gated row's default scenario runs reader-absent, and `altchunks: false` joins the
+  supplemental scenario for both;
+- the warnings: `html reader absent` gives 2 `text/html` in `extraction-probe.docx` (case 36's chunk
+  and case 47's nested one) and 1 in `extraction-probe-inspect.docx`. Case 47's single nested warning
+  now needs `html reader present`;
+- the goldens are recut with no reader. Regenerated into a scratch copy, the diff was case 36's line
+  alone, as the portfolio said it would be. The fixtures (`.docx`) are not regenerated.
+
+Results:
+- in the build: 1,565 checks passed, 18 pending (the reader-present rows);
+- with the importer: 1,529 passed, 54 pending (the reader-absent rows, the goldens and the counts).
+
+`ExtractionConformanceTest` accepts the counts pending for `html reader absent` when a reader is
+present. Before, it failed whenever the importer was on the class path.
+
+### 12.5 Office check
+
+`~/vbShares/Office 2016/altchunk-fun/phase2/`, with a README (round 9). There are four pairs, each a
+chunk for Word to import and docx4j's `convertAltChunks` of it:
+- inline, class and span hiding;
+- css-1's cascade;
+- css-2's structure;
+- XHTML that is not well-formed.
+
+Run by Jason on 21 October 2026. Word opened all four converted files cleanly. His saves are in the
+same directory (`-word365`), with screenshots. For each pair, a comparison of Word's import of the
+chunk with its save of docx4j's conversion found:
+- the same text in the same order;
+- the same runs hidden, whether by `w:vanish` or a style: P1_INLINE_NONE, P1_CLASS_NONE, SPAN_NONE,
+  P2_ID_HIDDEN, P2_DESCENDANT_HIDDEN, P2_IMPORTANT_HIDDEN, P2_BODY_STYLE_HIDDEN, the hidden row, cell
+  and list item, P3_PLAIN_HIDDEN and P4_NONE;
+- every other marker shown, including P3_BLOCK_SHOWS inside the hidden div;
+- the same table: four rows of two cells, with P3_R3_B in the second column;
+- the hidden list item kept in the list.
+
+Formatting differs, as the README said it would: docx4j-ImportXHTML's styles and table borders, not
+Word's HTML styles.

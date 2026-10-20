@@ -33,6 +33,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.docx4j.model.text.Group;
+import org.docx4j.model.text.HtmlChunkImport;
 import org.docx4j.model.text.Inspect;
 import org.docx4j.model.text.InspectFinding;
 import org.docx4j.model.text.Inspection;
@@ -72,18 +73,9 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 	@Override
 	public Set<String> implementedStatements() {
 		Set<String> implemented = new LinkedHashSet<String>(IMPLEMENTED);
-		// the "xhtml importer" scenarios are the class path's: this run can check one of them
-		implemented.add(xhtmlImporter() ? ExtractionConformance.XHTML_IMPORTER_PRESENT : ExtractionConformance.XHTML_IMPORTER_ABSENT);
+		// the "html reader" scenarios are the class path's: this run can check one of them
+		implemented.add(HtmlChunkImport.readerPresent() ? ExtractionConformance.HTML_READER_PRESENT : ExtractionConformance.HTML_READER_ABSENT);
 		return implemented;
-	}
-
-	private static boolean xhtmlImporter() {
-		try {
-			Class.forName("org.docx4j.convert.in.xhtml.XHTMLImporterImpl");
-			return true;
-		} catch (ClassNotFoundException | LinkageError e) {
-			return false;
-		}
 	}
 
 	@Override
@@ -257,7 +249,7 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 	static TextOptions options(String view, String scenario) {
 		// this engine claims the inspector class (REQ-903), so it extracts as one: docx4j's inspect: true (CR-050 D9)
 		TextOptions options = TextOptions.of(TextView.of(view)).inspect(true);
-		if (scenario == null || scenario.equals("default") || scenario.equals("markdown") || scenario.startsWith("xhtml importer")) return options;
+		if (scenario == null || scenario.equals("default") || scenario.equals("markdown") || scenario.startsWith("html reader")) return options;
 		for (String option : scenario.split(";")) {
 			int colon = option.indexOf(':');
 			if (colon < 0) throw new IllegalArgumentException("Unknown scenario: " + scenario);

@@ -19,18 +19,15 @@
  */
 package org.docx4j.openpackaging.parts;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.docx4j.TraversalUtil;
 import org.docx4j.jaxb.McMode;
+import org.docx4j.model.text.HtmlChunkImport;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -254,47 +251,23 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 				
 				log.warn("Unrecognized type for part " + afip.getPartName().getName() );
 				
-			} else if (type.equals(AltChunkType.Xhtml)
+			} else if (type.equals(AltChunkType.Html)
+					|| type.equals(AltChunkType.Xhtml)
 					|| type.equals(AltChunkType.Mht)  ) {
 				
-				Object xHTMLImporter= null;
-				Method convertMethod = null;
-			    try {
-			    	Class<?> xhtmlImporterClass = Class.forName("org.docx4j.convert.in.xhtml.XHTMLImporterImpl");
-				    Constructor<?> ctor = xhtmlImporterClass.getConstructor(WordprocessingMLPackage.class);
-				    xHTMLImporter = ctor.newInstance(this.getPackage()); // OpcPackage, but that's ok.
-				    if (type.equals(AltChunkType.Xhtml)) {
-				    	convertMethod = xhtmlImporterClass.getMethod("convert", InputStream.class, String.class );
-				    } else {
-				    	convertMethod = xhtmlImporterClass.getMethod("convertMHT", InputStream.class, String.class );				    	
-				    }
-			        
-			        if (convertMethod==null) {
-			        	throw new Docx4JException("XHTMLImporterImpl convertMethod not found");
-			        }
-			    } catch (Exception e) {
-			        log.warn("docx4j-XHTMLImport jar not found. Please add this to your classpath.");
-					log.warn(e.getMessage(), e);
-					return;
-			    }		
-				
-	            List<Object> results = null;
-				try {
-					// results = xHTMLImporter.convert(toString(afip.getBuffer()), null);
-					ByteArrayInputStream bais = new ByteArrayInputStream(afip.getBytes());
-			        results = (List<Object>)convertMethod.invoke(xHTMLImporter, bais, null);					
-					
-				} catch (Exception e) {
-					log.error(e.getMessage(), e);
-					// Skip this one
+				// As Word imports it (CR-053): parsed by jsoup, the CSS Word applies, what display:none
+				// hides as hidden text (D8). Needs docx4j-ImportXHTML (LGPL), reached by reflection.
+				List<Object> results = HtmlChunkImport.convert((WordprocessingMLPackage)this.getPackage(), afip);
+				if (results == null) {
+					// logged; this chunk is left, the others are still converted
 					continue;
-				} 
+				}
 				
 				int index = locatedChunk.getIndex(); 
 				locatedChunk.getContentList().remove(index); // handles case where it is nested eg in a tc
 				locatedChunk.getContentList().addAll(index, results);	
 				
-				log.info(afip.getPartName().getName() + "; Converted altChunk of type XHTML ");
+				log.info(afip.getPartName().getName() + "; Converted altChunk of type " + type);
 				
 				deleteThisAltChunk = true;
 				
@@ -346,11 +319,6 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 			} else if (type.equals(AltChunkType.Rtf) ) {
 				log.warn(afip.getPartName().getName() + "; skipping altChunk of type RTF ");
 				continue;
-			} else if (type.equals(AltChunkType.Html) ) {
-				log.warn(afip.getPartName().getName() + "; skipping altChunk of type HTML ");
-				continue;
-				// if there was a pretty printer on class path,
-				// could use it via reflection?
 			}
 					
 			

@@ -97,7 +97,7 @@ fixture, retained in the parent directory with its re-save.
 metadata and inspector findings from text counts. `expected-inspection.tsv` lists every finding an inspector
 makes, by location, and `expected-inspection-status.tsv` each fixture's status (`../INSPECTION.md`).
 Inspector requirements are pending CR-050 phase 1.
-The default test environment has no XHTML importer. The MHT row's capability scenario supplies one.
+The default test environment has no HTML reader (jsoup and docx4j-ImportXHTML). The HTML and MHT chunk rows' capability scenario supplies one.
 All external targets are deliberately missing local files. Nothing is fetched by the suite.
 The VBA project has attribute-only modules and a comment marker; it contains no executable procedures.
 See `../support/README.md` for its provenance and rebuild command.
@@ -407,7 +407,7 @@ Golden conventions and baseline commands are in `../GOLDENS.md`.
 
 | Token | accepted | original | markup | option | with option | note | statements |
 |---|---|---|---|---|---|---|---|
-| `ALT36_CHUNK_TEXT` | yes | yes | yes | `altchunks: false` | – | HTML expanded; disabled chunks warn altchunk.not_expanded | REQ-513 |
+| `ALT36_CHUNK_TEXT` | – | – | – | `html reader present` | yes | without an HTML reader: altchunk.not_expanded; altchunks: false also omits it (CR-053 D7, pending WD 0.26) | REQ-513 |
 
 ### Case 37: ruby
 
@@ -460,7 +460,7 @@ Golden conventions and baseline commands are in `../GOLDENS.md`.
 
 | Token | accepted | original | markup | option | with option | note | statements |
 |---|---|---|---|---|---|---|---|
-| `ALT44_MHT_CHUNK` | – | – | – | `xhtml importer present` | yes | without importer: altchunk.not_expanded; altchunks: false also omits it | REQ-513 |
+| `ALT44_MHT_CHUNK` | – | – | – | `html reader present` | yes | without an HTML reader: altchunk.not_expanded; altchunks: false also omits it | REQ-513 |
 
 ### Case 45: an RTF altChunk
 
@@ -668,7 +668,7 @@ Golden conventions and baseline commands are in `../GOLDENS.md`.
 | `CMT63_ANCHORED` | – | – | `{>>…<<}` | `comments: true` | `{>>…<<}` | inspection: comment | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
 | `CMT63_UNANCHORED` | – | – | – |  |  | a comment with no anchor; inspection: story.unused | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
 | `INK63_HERE` | yes | yes | yes |  |  | an ink part (w14:contentPart) after it; inspection: ink | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
-| `CHK63_SCRIPTED` | yes | yes | yes | `altchunks: false` | – | an HTML chunk holding a script, an event handler and two external references; inspection: altchunk, altchunk.script, altchunk.external_ref; nothing fetched | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
+| `CHK63_SCRIPTED` | – | – | – | `html reader present` | yes | an HTML chunk holding a script, an event handler and two external references; inspection: altchunk, altchunk.script, altchunk.external_ref; nothing fetched; without an HTML reader: altchunk.not_expanded (CR-053 D7, pending WD 0.26) | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
 | `EMB63_HERE` | yes | yes | yes |  |  |  | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
 | `EMB63_VISIBLE` | – | – | – | `embedded: true` | yes | the embedded document's shown text | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
 | `EMB63_HIDDEN` | – | – | – | `embedded: true; hidden: true` | yes | hidden text inside the embedded document; inspection: text.hidden in its chain | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |

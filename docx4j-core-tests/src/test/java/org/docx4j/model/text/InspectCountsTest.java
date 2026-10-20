@@ -88,7 +88,7 @@ public class InspectCountsTest {
 	 */
 	@Test
 	public void everyResultCarriesTheInspectorsCounts() throws Exception {
-		Set<Inspection.Capability> capabilities = AltChunks.importerPresent() ? EnumSet.of(Inspection.Capability.XHTML_IMPORTER)
+		Set<Inspection.Capability> capabilities = HtmlChunkImport.readerPresent() ? EnumSet.of(Inspection.Capability.HTML_READER)
 				: EnumSet.noneOf(Inspection.Capability.class);
 		for (String name : InspectTest.FIXTURES) {
 			WordprocessingMLPackage pkg = fixture(name);

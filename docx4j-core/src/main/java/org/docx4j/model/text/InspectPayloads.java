@@ -50,19 +50,9 @@ final class InspectPayloads {
 		final List<String> refs = new ArrayList<String>();
 	}
 
-	private static Boolean jsoup;
-
 	/** Whether jsoup is on the class path. */
 	static boolean jsoup() {
-		if (jsoup == null) {
-			try {
-				Class.forName("org.jsoup.Jsoup", false, InspectPayloads.class.getClassLoader());
-				jsoup = Boolean.TRUE;
-			} catch (ClassNotFoundException | LinkageError e) {
-				jsoup = Boolean.FALSE;
-			}
-		}
-		return jsoup;
+		return JsoupHtml.present();
 	}
 
 	/** A chunk's markup: a {@code <script>} or an {@code on*} handler; each external {@code src}, {@code href} or {@code background}. */
@@ -106,34 +96,10 @@ final class InspectPayloads {
 		return sb.toString().toLowerCase(Locale.ROOT).equals("javascript:");
 	}
 
-	/**
-	 * An HTML or XHTML chunk's characters: by its byte order mark; else UTF-16 where its first
-	 * character is {@code <} so encoded; else the charset its start declares (an XML declaration's
-	 * {@code encoding}, a {@code meta} element's {@code charset}); else UTF-8.
-	 */
+	/** An HTML or XHTML chunk's characters, as the text model reads them ({@link HtmlChunks#decode}). */
 	static String decode(byte[] data) {
-		int n = data.length;
-		if (n >= 3 && (data[0] & 0xff) == 0xEF && (data[1] & 0xff) == 0xBB && (data[2] & 0xff) == 0xBF) return new String(data, 3, n - 3, StandardCharsets.UTF_8);
-		if (n >= 2 && (data[0] & 0xff) == 0xFF && (data[1] & 0xff) == 0xFE) return new String(data, 2, n - 2, StandardCharsets.UTF_16LE);
-		if (n >= 2 && (data[0] & 0xff) == 0xFE && (data[1] & 0xff) == 0xFF) return new String(data, 2, n - 2, StandardCharsets.UTF_16BE);
-		if (n >= 2 && data[0] == '<' && data[1] == 0) return new String(data, StandardCharsets.UTF_16LE);
-		if (n >= 2 && data[0] == 0 && data[1] == '<') return new String(data, StandardCharsets.UTF_16BE);
-		Matcher m = DECLARED.matcher(new String(data, 0, Math.min(n, 1024), StandardCharsets.ISO_8859_1));
-		if (m.find()) {
-			try {
-				Charset cs = Charset.forName(m.group(1) != null ? m.group(1) : m.group(2));
-				// a declaration read as ASCII can name no charset that is not ASCII's superset
-				if (!cs.name().startsWith("UTF-16") && !cs.name().startsWith("UTF-32")) return new String(data, cs);
-			} catch (RuntimeException e) {
-				// an unknown charset: UTF-8
-			}
-		}
-		return new String(data, StandardCharsets.UTF_8);
+		return HtmlChunks.decode(data);
 	}
-
-	private static final Pattern DECLARED = Pattern.compile(
-			"<\\?xml[^>]*?\\sencoding\\s*=\\s*[\"']([A-Za-z0-9._:-]+)|<meta\\b[^>]*?charset\\s*=\\s*[\"']?([A-Za-z0-9._:-]+)",
-			Pattern.CASE_INSENSITIVE);
 
 	/** jsoup's reading, kept apart so that the class loads only where jsoup is present. */
 	private static final class JsoupScan {
@@ -244,12 +210,8 @@ final class InspectPayloads {
 		} else if (encoding.equals("quoted-printable")) {
 			decoded = quotedPrintable(body);
 		}
-		Charset cs = null;
-		try {
-			if (params.containsKey("charset")) cs = Charset.forName(params.get("charset"));
-		} catch (RuntimeException e) {
-			// an unknown charset: as the part's own bytes say
-		}
+		// an unknown charset: as the part's own bytes say
+		Charset cs = HtmlChunks.charset(params.get("charset"));
 		out.add(cs != null ? new String(decoded, cs) : decode(decoded));
 	}
 

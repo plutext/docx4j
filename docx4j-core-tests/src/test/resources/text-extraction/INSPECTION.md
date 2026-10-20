@@ -135,7 +135,7 @@ output when the output meets them all:
 | a hidden run, paragraph, sheet or slide | `hidden: true` |
 | a text box | `text_boxes: true` (default) |
 | an embedded package | `embedded: true` |
-| an `altChunk` | `altchunks: true` (default); an MHT chunk also an XHTML importer |
+| an `altChunk` | `altchunks: true` (default); an HTML, XHTML or MHT chunk also an HTML reader (CR-053, pending WD 0.26) |
 | a picture's description (or name, where it is the description) | `alt_text: true` in plain text; always in Markdown and the block model |
 | a field's instruction | `field_codes: true` |
 | a chart's strings | `charts: true` (default) |

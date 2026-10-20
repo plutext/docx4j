@@ -154,7 +154,7 @@ public final class InspectFinding {
 	static final String ALT_TEXT = "alt_text";
 	static final String METADATA = "metadata";
 	static final String MARKUP_DETAIL = "markup_detail";
-	static final String IMPORTER = "importer";
+	static final String HTML_READER = "html_reader";
 
 	/** Each need a reveal names, in the WD's section 10 order, with its text; the defaults meet the rest. */
 	private static final String[][] REVEAL = { { VIEW_ORIGINAL, "view: original" }, { VIEW_MARKUP, "view: markup" },
@@ -163,7 +163,7 @@ public final class InspectFinding {
 			{ FIELD_CODES, "field_codes: true" }, { TOC, "toc: true" }, { PLACEHOLDERS, "placeholders: true" },
 			{ SURFACE, "bindings: surface" }, { CHARTS, "charts: true" }, { SMARTART, "smartart: true" },
 			{ EMBEDDED, "embedded: true" }, { ALTCHUNKS, "altchunks: true" }, { ALT_TEXT, "alt_text: true" },
-			{ METADATA, "metadata: true" }, { MARKUP_DETAIL, "markup_detail: author_date" }, { IMPORTER, "xhtml importer: present" } };
+			{ METADATA, "metadata: true" }, { MARKUP_DETAIL, "markup_detail: author_date" }, { HTML_READER, "html reader: present" } };
 	/** The needs the default options meet. */
 	static final Set<String> DEFAULT_ON = new HashSet<String>(Arrays.asList(NOTES, TEXT_BOXES, PLACEHOLDERS,
 			ALTCHUNKS, CHARTS, SMARTART, NOT_ORIGINAL));
@@ -331,7 +331,7 @@ public final class InspectFinding {
 			case ALT_TEXT: met = format != Inspection.Format.PLAIN || o.isAltText(); break;
 			case METADATA: met = format == Inspection.Format.BLOCKS || o.isMetadata(); break;
 			case MARKUP_DETAIL: met = o.getMarkupDetail() != TextOptions.MarkupDetail.TYPE; break;
-			case IMPORTER: met = capabilities != null && capabilities.contains(Inspection.Capability.XHTML_IMPORTER); break;
+			case HTML_READER: met = capabilities != null && capabilities.contains(Inspection.Capability.HTML_READER); break;
 			default: throw new IllegalStateException("Unknown need: " + need);
 			}
 			if (!met) return false;

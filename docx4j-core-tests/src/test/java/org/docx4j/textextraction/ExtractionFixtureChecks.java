@@ -265,10 +265,15 @@ final class ExtractionFixtureChecks {
         finding(out, 50, "metadata", "fields_update_on_open", "", "default", "true", "REQ-506");
         finding(out, 52, "metadata", "ProbeCustom", "", "default", "CPR52_CUSTOM", "REQ-515");
         finding(out, 52, "metadata", "Company", "", "default", "APP52_COMPANY", "REQ-515");
-        for (int n : new int[] {36, 43, 44, 45, 46, 47}) {
-            String type = n == 36 || n == 47 ? "text/html" : n == 43 ? "text/plain" : n == 44 ? "message/rfc822" : n == 45 ? "application/rtf" : "application/xml";
-            if (n == 44 || n == 45 || n == 47)
-                finding(out, n, "warning", "altchunk.not_expanded", type, n == 44 ? "xhtml importer absent" : "default", "1", "REQ-513");
+        for (int n : new int[] {36, 43, 44, 45, 46, 47, 63}) {
+            String type = n == 36 || n == 47 || n == 63 ? "text/html" : n == 43 ? "text/plain" : n == 44 ? "message/rfc822" : n == 45 ? "application/rtf" : "application/xml";
+            String absent = ExtractionConformance.HTML_READER_ABSENT, present = ExtractionConformance.HTML_READER_PRESENT;
+            // without an HTML reader, case 36's chunk and case 47's nested one, in the same fixture, are not
+            // expanded (CR-053 D7, pending WD 0.26); with one, only case 47's, one level down
+            if (n == 36) finding(out, n, "warning", "altchunk.not_expanded", type, absent, "2", "REQ-513");
+            if (n == 44 || n == 63) finding(out, n, "warning", "altchunk.not_expanded", type, absent, "1", "REQ-513");
+            if (n == 45) finding(out, n, "warning", "altchunk.not_expanded", type, "default", "1", "REQ-513");
+            if (n == 47) finding(out, n, "warning", "altchunk.not_expanded", type, present, "1", "REQ-513");
             finding(out, n, "warning", "altchunk.not_expanded", n == 47 ? ExtractionPhase0Cases.DOCX_CHUNK : type, "altchunks: false", "1", "REQ-513");
         }
         return out.toString();

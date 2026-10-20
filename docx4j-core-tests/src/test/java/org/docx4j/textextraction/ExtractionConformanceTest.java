@@ -184,8 +184,8 @@ public class ExtractionConformanceTest {
                 + "fixture.docx\t0\taccepted\tdefault\ttxt\tfixture.accepted.txt\tREQ-402\n");
         Files.writeString(dir.resolve("fixture.accepted.txt"), "TC9_NEW\n");
         ExtractionConformance.Engine engine = new ExtractionConformance.Engine() {
-            // an engine says which of the two XHTML-importer capabilities it has; the goldens need "absent"
-            public Set<String> implementedStatements() { return Set.of("REQ-402", "REQ-403", ExtractionConformance.XHTML_IMPORTER_ABSENT); }
+            // an engine says which of the two HTML-reader capabilities it has; the goldens need "absent"
+            public Set<String> implementedStatements() { return Set.of("REQ-402", "REQ-403", ExtractionConformance.HTML_READER_ABSENT); }
             public ExtractionConformance.Output extract(Path p, String view, String scenario, String format) {
                 return new ExtractionConformance.Output(view.equals("original") ? "" : view.equals("markup") ? "{++ TC9_NEW ++}" : "TC9_NEW", Map.of());
             }
@@ -230,7 +230,7 @@ public class ExtractionConformanceTest {
         assertTrue(results.contains("ALT47_NESTED_CHUNK"));
         if (ExtractionConformance.engine() != null) {
             // CR-046 phases 1 and 2, CR-047 and CR-050 phase 1: their rows checked; Markdown's wait on phase 3,
-            // the importer's rows on the class path
+            // the HTML reader's rows on the class path (CR-053)
             assertTrue(results.contains("\tCHOICE_ALPHA_123\tmarkup\tdefault\tPASS"));
             assertTrue(results.contains("\tTBX25_IN_CELL\toriginal\ttext_boxes: false\tPASS"));
             assertTrue(results.contains("\tCHT34_TITLE\taccepted\tdefault\tPASS"));
@@ -242,9 +242,11 @@ public class ExtractionConformanceTest {
             assertTrue(results.contains("extraction-probe-inspect.docx\t0\tinspection\t-\tdefault\tPASS"));
             assertTrue(results.contains("extraction-probe.docx\t0\tinspection\t-\tdefault\tPASS"));
             assertTrue(results.contains("\tinspect:font.glyph_mismatch:"));
-            assertFalse(results.contains("the inspector (CR-050)"));
+            // the counts' oracle is for an extraction with no HTML reader, so with one they pend for that alone
             for (String line : results.split("\n"))
-                if (line.contains("\tPENDING\t")) assertTrue(line, line.contains("phase 3; REQ-70") || line.contains("xhtml importer"));
+                if (line.contains("the inspector (CR-050)")) assertTrue(line, line.contains("html reader absent"));
+            for (String line : results.split("\n"))
+                if (line.contains("\tPENDING\t")) assertTrue(line, line.contains("phase 3; REQ-70") || line.contains("html reader"));
         } else {
             assertTrue(results.contains("the inspector (CR-050)"));
         }

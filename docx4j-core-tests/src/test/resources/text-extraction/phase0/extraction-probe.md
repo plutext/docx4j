@@ -256,8 +256,6 @@ SMA35\_CHILD\_TWO
 
 ## Case 36: an altChunk holding HTML
 
-ALT36\_CHUNK\_TEXT
-
 After the altChunk.
 
 ## Case 37: ruby

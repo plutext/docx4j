@@ -45,9 +45,10 @@ import com.sun.net.httpserver.HttpServer;
 /**
  * An {@code altChunk} is expanded without fetching anything (WD section 11, REQ-513), whether
  * docx4j-ImportXHTML is absent, as the build runs it, or present, as a hand run puts it on the
- * class path: its XHTML and MHT chunks then go through the importer, which {@code AltChunks} stops
- * from fetching (until 17.3.4 it fetched a stylesheet's {@code link} and {@code @import}, and an
- * {@code img} by URL or local file). A listener on the loopback interface counts the requests.
+ * class path: its HTML, XHTML and MHT chunks then go through the importer, which
+ * {@code HtmlChunkImport} stops from fetching (until 17.3.4 it fetched a stylesheet's {@code link}
+ * and {@code @import}, and an {@code img} by URL or local file). So a stylesheet the chunk names
+ * hides nothing (CR-053 D4). A listener on the loopback interface counts the requests.
  */
 public class AltChunkNoFetchTest {
 
@@ -67,7 +68,7 @@ public class AltChunkNoFetchTest {
 			String path = exchange.getRequestURI().getPath();
 			requests.add(path);
 			byte[] body = path.endsWith(".png") ? PNG
-					: (path.endsWith(".css") ? "p { color: red }" : "LEAKED_OVER_HTTP").getBytes(StandardCharsets.UTF_8);
+					: (path.endsWith(".css") ? "p { color: red } .fetched { display: none }" : "LEAKED_OVER_HTTP").getBytes(StandardCharsets.UTF_8);
 			exchange.sendResponseHeaders(200, body.length);
 			try (OutputStream out = exchange.getResponseBody()) {
 				out.write(body);
@@ -93,13 +94,9 @@ public class AltChunkNoFetchTest {
 		requests.clear();
 	}
 
-	private static boolean importer() {
-		try {
-			Class.forName("org.docx4j.convert.in.xhtml.XHTMLImporterImpl");
-			return true;
-		} catch (ClassNotFoundException | LinkageError e) {
-			return false;
-		}
+	/** An HTML reader present (jsoup and docx4j-ImportXHTML): the chunks are expanded, else not (CR-053 D7). */
+	private static boolean reader() {
+		return HtmlChunkImport.readerPresent();
 	}
 
 	private static TextResult expand(AltChunkType type, String chunk) throws Exception {
@@ -133,14 +130,16 @@ public class AltChunkNoFetchTest {
 				+ "<head><link rel='stylesheet' href='" + base + "link.css'/>"
 				+ "<style>@import url(" + base + "import.css); @font-face { font-family: F; src: url(" + base + "font.ttf) }"
 				+ " p { font-family: F; background-image: url(" + base + "background.png) }</style></head>"
-				+ "<body><p>CHUNK_TEXT</p>"
+				+ "<body><p>CHUNK_TEXT</p><p class='fetched'>NOT_HIDDEN</p>"
 				+ "<p><img src='" + base + "image.png' alt='over http'/></p>"
 				+ "<p><img src='" + png.toURI() + "' alt='local file'/></p>"
 				+ "<p><img src='data:image/png;base64," + Base64.getEncoder().encodeToString(PNG) + "' alt='data uri'/></p>"
 				+ "</body></html>");
 		assertEquals("requests", Collections.emptyList(), requests);
 		String text = text(result);
-		assertTrue(text, text.contains("CHUNK_TEXT"));
+		assertEquals(text, reader(), text.contains("CHUNK_TEXT"));
+		// the fetched stylesheets' display: none applies to nothing (D4)
+		assertEquals(text, reader(), text.contains("NOT_HIDDEN"));
 		assertFalse(text, text.contains("MISSING IMAGE"));
 		assertEquals("images", 0, images(result));
 	}
@@ -166,9 +165,9 @@ public class AltChunkNoFetchTest {
 				+ "--B--\r\n");
 		assertEquals("requests", Collections.emptyList(), requests);
 		String text = text(result);
-		// read through the importer where it is present (so the hooks that stop it fetching took),
-		// else not expanded
-		assertEquals(text, importer(), text.contains("CHUNK_TEXT"));
+		// read through the importer where an HTML reader is present (so the hooks that stop it
+		// fetching took), else not expanded
+		assertEquals(text, reader(), text.contains("CHUNK_TEXT"));
 		assertFalse(text, text.contains("MISSING IMAGE"));
 		assertEquals("images", 0, images(result));
 	}

@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.docx4j.Docx4J;
+import org.docx4j.model.text.HtmlChunkImport;
 import org.docx4j.model.text.PlainText;
 import org.docx4j.model.text.Texts;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -197,8 +198,9 @@ public class AltChunkHtmlWritingTest {
 		AlternativeFormatInputPart again = (AlternativeFormatInputPart) loaded.getParts().get(part.getPartName());
 		assertArrayEquals(concat(UTF8_BOM, utf8(BODY)), again.getBytes());
 		assertEquals(AltChunkType.Html, again.getAltChunkType());
+		// read where an HTML reader (jsoup and docx4j-ImportXHTML) is present; else not expanded (CR-053 D7)
 		String text = PlainText.of(Texts.of(loaded));
-		assertTrue(text, text.contains("café “quoted”"));
+		assertEquals(text, HtmlChunkImport.readerPresent(), text.contains("café “quoted”"));
 	}
 
 	/** The binding's markup: a BOM character, white space and the declaration cut, metas UTF-8, UTF-8 with a BOM. */

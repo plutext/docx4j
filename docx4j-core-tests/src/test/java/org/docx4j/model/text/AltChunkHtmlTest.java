@@ -55,8 +55,10 @@ import org.w3c.dom.Element;
  * docx4j-ImportXHTML, so the cases that need the importer (section 1's 3 to 5, section 1a's
  * importer column) are scratch-driver evidence recorded in the CR, and the tests that read a chunk
  * are skipped where the importer is on the class path. A test whose result a later phase changes
- * says so ("Phase n changes this"), with what the result becomes. Phase 1 changed the three
- * writing tests, which now say what phase 0 found.
+ * says so ("Phase n changes this"), with what the result becomes. Phases 1 and 2 changed the
+ * writing and reading tests, which now say what phase 0 found. A reading test asserts both of
+ * phase 2's results: with an HTML reader (jsoup and docx4j-ImportXHTML, a hand run's class path)
+ * and without one (the build's).
  */
 public class AltChunkHtmlTest {
 
@@ -106,136 +108,182 @@ public class AltChunkHtmlTest {
 		return out;
 	}
 
-	private static void readable() {
+	/** Where docx4j-ImportXHTML is on the class path, the binding imports XHTML rather than writing a chunk. */
+	private static void noImporter() {
 		assumeFalse("docx4j-ImportXHTML is on the class path", AltChunks.importerPresent());
+	}
+
+	/** An HTML reader present: jsoup and docx4j-ImportXHTML (the build has jsoup only). */
+	private static boolean reader() {
+		return HtmlChunkImport.readerPresent();
+	}
+
+	/** Without an HTML reader, an HTML, XHTML or MHT chunk is not expanded, with the warning (D7). */
+	private static void notExpanded(TextResult result, String contentType) {
+		assertEquals(new ArrayList<String>(), blocks(result));
+		assertEquals(Arrays.asList("altchunk.not_expanded " + contentType), warnings(result));
+	}
+
+	private static List<String> nonEmpty(List<String> blocks) {
+		List<String> out = new ArrayList<String>();
+		for (String b : blocks) if (!b.isEmpty()) out.add(b);
+		return out;
 	}
 
 	// --- reading ----------------------------------------------------------------------------------
 
 	/**
-	 * Section 1, case 1: an HTML chunk's display:none text comes out as ordinary text, and
-	 * {@code hidden: true} flags none of it; the inspector reports the chunk and nothing hidden in it.
-	 * Phase 2 changes this: without the importer the chunk is not expanded
-	 * ({@code altchunk.not_expanded}, D7); with it, the four hidden texts are hidden text, out by
-	 * default. Phase 3: with the importer, a {@code text.hidden} finding for each of the three
-	 * outermost elements and {@code parsed: html}; without it, the chunk is skipped as
-	 * {@code not_decoded}.
+	 * Section 1, case 1, as phase 2 leaves it: with an HTML reader, the four display:none texts are
+	 * hidden text, out by default and flagged hidden under {@code hidden: true} (D5); without one,
+	 * the chunk is not expanded (D7). Phase 0 found them ordinary text. The inspector is phase 3's:
+	 * it reports the chunk and nothing hidden in it, and with the reader it is to report a
+	 * {@code text.hidden} for each of the three outermost elements and {@code parsed: html}; without
+	 * it, to skip the chunk as {@code not_decoded}.
 	 */
 	@Test
-	public void htmlChunkDisplayNoneIsOrdinaryText() throws Exception {
-		readable();
+	public void htmlChunkDisplayNoneIsHiddenText() throws Exception {
 		WordprocessingMLPackage pkg = chunk(AltChunkType.Html, "<html><head>" + HIDING);
-		List<String> expected = Arrays.asList("VISIBLE_A", "INLINE_NONE", "CLASS_NONE", "VISIBLE_SPAN_NONEB");
 		TextResult result = Texts.of(pkg, new TextOptions());
-		assertEquals(expected, blocks(result));
-		assertEquals(new ArrayList<String>(), warnings(result));
-		assertEquals(expected, blocks(Texts.of(pkg, new TextOptions().hidden(true))));
+		if (reader()) {
+			assertEquals(Arrays.asList("VISIBLE_A", "VISIBLE_B"), blocks(result));
+			assertEquals(new ArrayList<String>(), warnings(result));
+			assertEquals(Arrays.asList("VISIBLE_A", "{H}{H}INLINE_NONE{H}", "{H}{H}CLASS_NONE{H}", "VISIBLE_{H}SPAN_NONE{H}B"),
+					blocks(Texts.of(pkg, new TextOptions().hidden(true))));
+		} else {
+			notExpanded(result, "text/html");
+		}
 		Inspection inspection = Inspect.of(pkg);
 		assertEquals(Arrays.asList("altchunk"), kinds(inspection));
 		assertTrue(inspection.skipped().toString(), inspection.skipped().isEmpty());
 	}
 
 	/**
-	 * Section 1, case 2: without the importer an XHTML chunk is read by jsoup, as case 1 is.
-	 * Phase 2 changes this: not expanded without the importer (D7). The inspector also reports the
-	 * chunk's part as {@code part.unknown}: the WD's known families (REQ-902) have no
-	 * {@code application/xhtml+xml}, which the portfolio is asked to add (CR-053 phase 0).
+	 * Section 1, cases 2 and 3, as phase 2 leaves them: an XHTML chunk is read as an HTML one is, by
+	 * jsoup and the importer, as Word reads it (D9 (iii)); without an HTML reader it is not expanded.
+	 * Phase 0 found it read by jsoup alone without the importer, and with the importer its hidden text
+	 * lost. The inspector reports the chunk's part as {@code part.unknown}: the WD's known families
+	 * (REQ-902) have no {@code application/xhtml+xml} yet (WD 0.26).
 	 */
 	@Test
-	public void xhtmlChunkWithoutTheImporterIsReadAsHtml() throws Exception {
-		readable();
+	public void xhtmlChunkIsReadAsHtml() throws Exception {
 		WordprocessingMLPackage pkg = chunk(AltChunkType.Xhtml, XHTML + "<head>" + HIDING);
-		List<String> expected = Arrays.asList("VISIBLE_A", "INLINE_NONE", "CLASS_NONE", "VISIBLE_SPAN_NONEB");
-		assertEquals(expected, blocks(Texts.of(pkg, new TextOptions())));
-		assertEquals(expected, blocks(Texts.of(pkg, new TextOptions().hidden(true))));
+		TextResult result = Texts.of(pkg, new TextOptions());
+		if (reader()) {
+			assertEquals(Arrays.asList("VISIBLE_A", "VISIBLE_B"), blocks(result));
+			assertEquals(Arrays.asList("VISIBLE_A", "{H}{H}INLINE_NONE{H}", "{H}{H}CLASS_NONE{H}", "VISIBLE_{H}SPAN_NONE{H}B"),
+					blocks(Texts.of(pkg, new TextOptions().hidden(true))));
+		} else {
+			notExpanded(result, "application/xhtml+xml");
+		}
 		assertEquals(Arrays.asList("part.unknown", "altchunk"), kinds(Inspect.of(pkg)));
 	}
 
 	/**
-	 * Section 1, case 5 without the importer: an XHTML chunk that is not well-formed (an unclosed
+	 * Section 1, case 5, as phase 2 leaves it: an XHTML chunk that is not well-formed (an unclosed
 	 * {@code p}, a stray {@code </div>}) is repaired by jsoup as Word repairs it (round 4's
-	 * {@code xhtml-14}), its display:none text ordinary text. Phase 2 changes this: not expanded
-	 * without the importer (D7); with it, read as HTML, NONE hidden.
+	 * {@code xhtml-14}), NONE hidden; without an HTML reader, not expanded. Phase 0 found the importer
+	 * failing on it, and jsoup's reading with NONE ordinary text.
 	 */
 	@Test
 	public void xhtmlChunkNotWellFormedIsRepairedAsHtml() throws Exception {
-		readable();
 		WordprocessingMLPackage pkg = chunk(AltChunkType.Xhtml, XHTML + "<head><style>.h{display:none}</style></head>"
 				+ "<body><p>BEFORE</p><p class='h'>NONE<p>UNCLOSED<p>AFTER_UNCLOSED</div><p>AFTER_STRAY</p></body></html>");
-		assertEquals(Arrays.asList("BEFORE", "NONE", "UNCLOSED", "AFTER_UNCLOSED", "AFTER_STRAY"),
-				blocks(Texts.of(pkg, new TextOptions())));
+		TextResult result = Texts.of(pkg, new TextOptions());
+		if (reader()) {
+			assertEquals(Arrays.asList("BEFORE", "UNCLOSED", "AFTER_UNCLOSED", "AFTER_STRAY"), blocks(result));
+			assertEquals(Arrays.asList("BEFORE", "{H}{H}NONE{H}", "UNCLOSED", "AFTER_UNCLOSED", "AFTER_STRAY"),
+					blocks(Texts.of(pkg, new TextOptions().hidden(true))));
+		} else {
+			notExpanded(result, "application/xhtml+xml");
+		}
 	}
 
 	/**
-	 * An MHT chunk without the importer is not expanded, with the warning; that stays (D7). The
-	 * inspector scans its first HTML part today. Phase 3 changes the inspector's: without the
-	 * importer, the chunk is skipped as {@code not_decoded} (its scripts and references still found).
+	 * An MHT chunk: its first HTML part, read as an HTML chunk is, its display:none text hidden; without
+	 * an HTML reader, not expanded, with the warning, as before. The inspector scans its first HTML part
+	 * today. Phase 3 changes the inspector's: without the reader, the chunk is skipped as
+	 * {@code not_decoded} (its scripts and references still found).
 	 */
 	@Test
-	public void mhtChunkWithoutTheImporterIsNotExpanded() throws Exception {
-		readable();
+	public void mhtChunkIsReadAsItsHtml() throws Exception {
 		WordprocessingMLPackage pkg = chunk(AltChunkType.Mht, "MIME-Version: 1.0\r\n"
 				+ "Content-Type: multipart/related; boundary=\"B\"\r\n\r\n"
 				+ "--B\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n"
 				+ "<html><body><p>MHT_TEXT</p><p style='display:none'>MHT_NONE</p></body></html>\r\n--B--\r\n");
 		TextResult result = Texts.of(pkg, new TextOptions());
-		assertEquals(new ArrayList<String>(), blocks(result));
-		assertEquals(Arrays.asList("altchunk.not_expanded message/rfc822"), warnings(result));
+		if (reader()) {
+			assertEquals(Arrays.asList("MHT_TEXT"), blocks(result));
+			assertEquals(Arrays.asList("MHT_TEXT", "{H}{H}MHT_NONE{H}"), blocks(Texts.of(pkg, new TextOptions().hidden(true))));
+		} else {
+			notExpanded(result, "message/rfc822");
+		}
 		Inspection inspection = Inspect.of(pkg);
 		assertEquals(Arrays.asList("altchunk"), kinds(inspection));
 		assertTrue(inspection.skipped().toString(), inspection.skipped().isEmpty());
 	}
 
 	/**
-	 * What a browser hides and Word shows (section 2): jsoup's reading drops {@code template} and
-	 * {@code noscript} content, and keeps the {@code hidden} attribute's and a closed
-	 * {@code details}' text. Phase 2 changes this: the importer, whose default stylesheet hides only
-	 * {@code head}, {@code script} and a {@code select}'s options, shows all four, as Word does.
+	 * What a browser hides and Word shows (section 2), as phase 2 leaves it: the importer, whose
+	 * default stylesheet hides only {@code head}, {@code script} and a {@code select}'s options, shows
+	 * {@code template}, {@code noscript}, the {@code hidden} attribute's and a closed {@code details}'
+	 * text, as Word does. Phase 0 found {@code template} and {@code noscript} dropped by jsoup's reading.
 	 */
 	@Test
-	public void htmlChunkDropsTemplateAndNoscript() throws Exception {
-		readable();
+	public void htmlChunkShowsTemplateAndNoscript() throws Exception {
 		WordprocessingMLPackage pkg = chunk(AltChunkType.Html, "<html><body><p>FIRST</p>"
 				+ "<template><p>TEMPLATE_TEXT</p></template><noscript><p>NOSCRIPT_TEXT</p></noscript>"
 				+ "<p hidden='hidden'>HIDDEN_ATTRIBUTE</p><details><summary>SUMMARY</summary><p>DETAILS_CLOSED</p></details>"
 				+ "<p>LAST</p></body></html>");
-		assertEquals(Arrays.asList("FIRST", "HIDDEN_ATTRIBUTE", "SUMMARY", "DETAILS_CLOSED", "LAST"),
-				blocks(Texts.of(pkg, new TextOptions())));
+		TextResult result = Texts.of(pkg, new TextOptions());
+		if (reader()) {
+			assertEquals(Arrays.asList("FIRST", "TEMPLATE_TEXT", "NOSCRIPT_TEXT", "HIDDEN_ATTRIBUTE", "SUMMARY", "DETAILS_CLOSED", "LAST"),
+					nonEmpty(blocks(result)));
+		} else {
+			notExpanded(result, "text/html");
+		}
 	}
 
 	/**
-	 * Section 1a: jsoup's reading of a row span marks the first cell and gives the next row no
-	 * continuation cell, so that row is a column short. Phase 2 changes this: {@code HtmlText}
-	 * goes (D7); the importer gives the continuation cell.
+	 * Section 1a, as phase 2 leaves it: the importer gives a row span's continuation cell, so the
+	 * second row has its two cells. Phase 0 found jsoup's reading a cell short.
 	 */
 	@Test
-	public void htmlChunkRowSpanHasNoContinuationCell() throws Exception {
-		readable();
+	public void htmlChunkRowSpanHasItsContinuationCell() throws Exception {
 		WordprocessingMLPackage pkg = chunk(AltChunkType.Html, "<html><body><table>"
 				+ "<tr><td rowspan='2'>SPAN_A</td><td>CELL_B</td></tr><tr><td>CELL_C</td></tr></table></body></html>");
-		List<TextBlock> blocks = Texts.of(pkg, new TextOptions()).blocks();
+		TextResult result = Texts.of(pkg, new TextOptions());
+		if (!reader()) {
+			notExpanded(result, "text/html");
+			return;
+		}
+		List<TextBlock> blocks = result.blocks();
 		assertEquals(1, blocks.size());
 		List<TextRow> rows = blocks.get(0).getRows();
 		assertEquals(2, rows.size());
 		assertEquals(2, rows.get(0).getCells().size());
 		assertTrue(rows.get(0).getCells().get(0).isMergeRestart());
-		assertEquals(1, rows.get(1).getCells().size());
-		assertEquals("CELL_C", rows.get(1).getCells().get(0).getBlocks().get(0).getText());
+		assertEquals(2, rows.get(1).getCells().size());
+		assertEquals("CELL_C", rows.get(1).getCells().get(1).getBlocks().get(0).getText());
 	}
 
 	/**
-	 * Section 1: the text model decodes a chunk with no BOM that is not UTF-8 as windows-1252, and
-	 * the inspector by the {@code meta} charset (the WD's Chunks rule), so the two read one byte as
-	 * different characters: here 0xD0, which ISO-8859-5 makes U+0430. Phase 2 changes this: one
-	 * decoder, the inspector's, so the text model reads U+0430 too.
+	 * Section 1, as phase 2 leaves it: one decoder, the inspector's (the WD's Chunks rule, with Word's
+	 * last step), so the text model and the inspector read 0xD0 under {@code meta charset='ISO-8859-5'}
+	 * alike, as U+0430. Phase 0 found the text model reading it as windows-1252's U+00D0.
 	 */
 	@Test
-	public void extractionAndInspectionDecodeAChunkDifferently() throws Exception {
-		readable();
+	public void extractionAndInspectionDecodeAChunkAlike() throws Exception {
 		byte[] bytes = ("<html><head><meta charset='ISO-8859-5'></head><body><p>CYRILLIC_Ð</p>"
 				+ "<p><img src='http://cr053.invalid/Ð.png' alt=''></p></body></html>").getBytes(StandardCharsets.ISO_8859_1);
+		assertEquals(InspectPayloads.decode(bytes), HtmlChunks.decode(bytes));
+		assertTrue(HtmlChunks.decode(bytes).contains("CYRILLIC_а"));
 		WordprocessingMLPackage pkg = chunk(AltChunkType.Html, bytes);
-		assertEquals(Arrays.asList("CYRILLIC_Ð"), blocks(Texts.of(pkg, new TextOptions())));
+		TextResult result = Texts.of(pkg, new TextOptions());
+		if (reader()) {
+			assertEquals(Arrays.asList("CYRILLIC_а"), nonEmpty(blocks(result)));
+		} else {
+			notExpanded(result, "text/html");
+		}
 		String refs = null;
 		for (InspectFinding f : Inspect.of(pkg).findings()) {
 			if (f.getKind().equals(InspectFinding.ALTCHUNK_EXTERNAL_REF)) refs = f.getSummary();
@@ -295,7 +343,7 @@ public class AltChunkHtmlTest {
 	 */
 	@Test
 	public void boundXhtmlValueIsUtf8WithoutItsDeclaration() throws Exception {
-		readable();
+		noImporter();
 		String body = "<html><head><meta charset='windows-1252'/></head><body><p>BOUND_é</p></body></html>";
 		String value = DECLARATION + body;
 		String impl = "docx4j.model.datastorage.BindingHandler.Implementation";
@@ -360,8 +408,11 @@ public class AltChunkHtmlTest {
 		// the declared content type is kept, not replaced by the type's own
 		assertEquals("application/rtf", rels.getPart("rIdC").getContentType());
 		assertEquals("application/octet-stream", rels.getPart("rIdD").getContentType());
-		if (!AltChunks.importerPresent()) {
+		if (reader()) {
 			assertEquals(Arrays.asList("CHUNK_A", "CHUNK_B"), blocks(Texts.of(pkg, new TextOptions())));
+		} else {
+			// without an HTML reader, the XHTML chunk is not expanded (D7)
+			assertEquals(Arrays.asList("CHUNK_B"), blocks(Texts.of(pkg, new TextOptions())));
 		}
 
 		WordprocessingMLPackage plain = MiniDocx.body("<w:altChunk r:id='rIdB'/>")

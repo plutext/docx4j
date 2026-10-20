@@ -44,8 +44,11 @@ public final class Inspection {
 
 	/** What an extraction may have beyond docx4j-core (REQ-513). */
 	public enum Capability {
-		/** docx4j-ImportXHTML on the class path: an MHT chunk is converted. */
-		XHTML_IMPORTER
+		/**
+		 * An HTML reader present: jsoup and docx4j-ImportXHTML on the class path, so an HTML, XHTML or
+		 * MHT chunk is expanded (REQ-513, CR-053 D7).
+		 */
+		HTML_READER
 	}
 
 	// --- skipped and undecided reasons (REQ-907) -------------------------------------------------------
@@ -187,7 +190,7 @@ public final class Inspection {
 
 	/**
 	 * The number of findings in each group for an output: its options (null for the defaults), its
-	 * format, and what its extraction had (an XHTML importer or not). Lower bounds where the inspection
+	 * format, and what its extraction had (an HTML reader or not). Lower bounds where the inspection
 	 * is {@code PARTIAL}.
 	 */
 	public Counts counts(TextOptions options, Format format, Set<Capability> capabilities) {

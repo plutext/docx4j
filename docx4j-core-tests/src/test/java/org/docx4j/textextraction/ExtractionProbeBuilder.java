@@ -649,7 +649,8 @@ public class ExtractionProbeBuilder {
 		begin(36, "an altChunk holding HTML");
 		body.append("<w:altChunk r:id='" + chunkId + "'/>");
 		body.append(pt("After the altChunk."));
-		token("ALT36_CHUNK_TEXT", "1", "1", "1", "altchunks: false", "0", "HTML expanded; disabled chunks warn altchunk.not_expanded");
+		gated("ALT36_CHUNK_TEXT", ExtractionConformance.HTML_READER_PRESENT,
+				"without an HTML reader: altchunk.not_expanded; altchunks: false also omits it (CR-053 D7, pending WD 0.26)");
 
 		begin(37, "ruby");
 		body.append(p(r("Ruby: ") + "<w:r><w:ruby><w:rubyPr><w:rubyAlign w:val='distributeSpace'/><w:hps w:val='10'/>"
@@ -1307,7 +1308,7 @@ public class ExtractionProbeBuilder {
                 + "metadata and inspector findings from text counts. `expected-inspection.tsv` lists every finding an inspector\n"
                 + "makes, by location, and `expected-inspection-status.tsv` each fixture's status (`../INSPECTION.md`).\n"
                 + "Inspector requirements are pending CR-050 phase 1.\n"
-                + "The default test environment has no XHTML importer. The MHT row's capability scenario supplies one.\n"
+                + "The default test environment has no HTML reader (jsoup and docx4j-ImportXHTML). The HTML and MHT chunk rows' capability scenario supplies one.\n"
                 + "All external targets are deliberately missing local files. Nothing is fetched by the suite.\n"
                 + "The VBA project has attribute-only modules and a comment marker; it contains no executable procedures.\n"
                 + "See `../support/README.md` for its provenance and rebuild command.\n\n"

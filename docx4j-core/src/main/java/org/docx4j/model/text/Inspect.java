@@ -152,7 +152,7 @@ public final class Inspect {
 			run.skip(Inspection.UNREADABLE, "|" + main + "|");
 		}
 		Inspection i = new Inspection(InspectAddresses.findings(pkg, run, false), run.skipped, run.skippedBeyond, run.undecided);
-		Set<Inspection.Capability> capabilities = AltChunks.importerPresent() ? EnumSet.of(Inspection.Capability.XHTML_IMPORTER)
+		Set<Inspection.Capability> capabilities = HtmlChunkImport.readerPresent() ? EnumSet.of(Inspection.Capability.HTML_READER)
 				: EnumSet.noneOf(Inspection.Capability.class);
 		Map<Inspection.Format, Inspection.Counts> out = new EnumMap<Inspection.Format, Inspection.Counts>(Inspection.Format.class);
 		for (Inspection.Format f : Inspection.Format.values()) out.put(f, i.counts(options, f, capabilities));

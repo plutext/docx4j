@@ -154,7 +154,11 @@ public interface AltChunkInterface {
 	/**
 	 * Convert altChunks in this part to ordinary docx WordML content.
 	 * 
-	 * To convert an altChunk of type XHTML, this method requires docx4j-XHTMLImport.jar (LGPL) and its dependencies.
+	 * To convert an altChunk of type HTML, XHTML or MHT, this method requires docx4j-ImportXHTML (LGPL) and its
+ * dependencies. Since 17.3.4 such a chunk is converted as Word imports it (CR-053): parsed by jsoup where
+ * it is on the class path (else an HTML chunk is left, and an XHTML or MHT chunk read as XML, as before),
+ * the CSS Word applies, and what display:none hides kept as hidden text (docx4j-ImportXHTML 17.3.4 on).
+ * A chunk that can't be converted is left as it is, and the others are still converted.
 	 * 
 	 * Since 11.4.8, this method does the conversion in situ (ie rather than cloning the pkg), 
 	 * and does not convert docx altChunks.  To handle those, use the MergeDocx component of Docx4j Enterprise.

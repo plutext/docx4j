@@ -168,7 +168,7 @@ public final class ExtractionInspection {
         if (!reveal.equals("included") && !reveal.startsWith("options: ")) return "";
         // an author and the properties are in no block (metadata, markup's author detail)
         if (row.get("kind").equals("revision.author") || row.get("kind").equals("properties")) return "";
-        if (reveal.contains("xhtml importer")) return "";   // a capability the default run has not
+        if (reveal.contains("html reader")) return "";   // a capability the default run has not
         String key = row.get("fixture") + "\t" + reveal;
         List<TextBlock> blocks = outputs.get(key);
         if (blocks == null) {

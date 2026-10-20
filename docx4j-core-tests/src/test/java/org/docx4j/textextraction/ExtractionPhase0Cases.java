@@ -115,7 +115,7 @@ final class ExtractionPhase0Cases {
         chunk(b, mdp, "44.mht", "message/rfc822", ("MIME-Version: 1.0\r\nContent-Type: multipart/related; boundary=probe44\r\n\r\n"
                 + "--probe44\r\nContent-Type: text/html; charset=utf-8\r\nContent-Transfer-Encoding: 8bit\r\n"
                 + "Content-Location: file:///probe44.htm\r\n\r\n<html><body><p>ALT44_MHT_CHUNK</p></body></html>\r\n--probe44--\r\n").getBytes(StandardCharsets.UTF_8));
-        b.gated("ALT44_MHT_CHUNK", "xhtml importer present", "without importer: altchunk.not_expanded; altchunks: false also omits it");
+        b.gated("ALT44_MHT_CHUNK", ExtractionConformance.HTML_READER_PRESENT, "without an HTML reader: altchunk.not_expanded; altchunks: false also omits it");
         b.begin(45, "an RTF altChunk");
         chunk(b, mdp, "45.rtf", "application/rtf", "{\\rtf1\\ansi ALT45_RTF_CHUNK\\par}".getBytes(StandardCharsets.US_ASCII));
         b.never("ALT45_RTF_CHUNK", "never expanded; warning altchunk.not_expanded");

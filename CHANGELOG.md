@@ -101,6 +101,11 @@ Changes in Version 17.3.4
   which Word refuses (it repaired the document), its encoding kept with a byte order mark (`AltChunkHtml`, CR-053
   phase 1); the binding's chunk is UTF-8, not the platform charset. A loaded chunk's `AltChunkType` follows its
   declared content type, the part name's extension the fallback, so `convertAltChunks` converts it as that kind.
+- HTML, XHTML and MHT `altChunk`s are read as Word reads them (CR-053 phase 2): parsed by jsoup, the CSS Word applies,
+  `display: none` as hidden text, through docx4j-ImportXHTML (`HtmlChunkImport`). The text model expands them only with
+  both on the class path (`HtmlText` is gone); `convertAltChunks` now converts HTML chunks too, keeps hidden text, and
+  goes on past a chunk it can't convert. Limits: `docx4j.model.text.HtmlChunkImport.maxElements` (50,000) and
+  `.timeoutMillis` (off). `Inspection.Capability.XHTML_IMPORTER` is now `HTML_READER`.
 
 
 Version 17.3.3

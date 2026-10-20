@@ -138,7 +138,7 @@ public final class ExtractionConformance {
     static Set<String> requirements(String value) { return new LinkedHashSet<>(Arrays.asList(value.split(",\\s*"))); }
     /**
      * A findings, order or golden row's requirements: its statements and its scenario's, as a token check
-     * has (checkToken). Without the scenario's, a row for "xhtml importer absent" ran with the importer on
+     * has (checkToken). Without the scenario's, a row for "html reader absent" ran with a reader on
      * the class path, which the adapter cannot take away.
      */
     static Set<String> rowRequirements(Map<String, String> row) {
@@ -155,14 +155,18 @@ public final class ExtractionConformance {
         if (row.get("case").equals("25") && !row.get("token").startsWith("WA25")) req.remove("REQ-511");
         return req;
     }
-    /** Capabilities of the class path, not of an engine: whether docx4j-ImportXHTML is on it (REQ-513). */
-    static final String XHTML_IMPORTER_PRESENT = "xhtml importer present", XHTML_IMPORTER_ABSENT = "xhtml importer absent";
+    /**
+     * Capabilities of the class path, not of an engine: whether an HTML reader is present (REQ-513), a parser
+     * implementing [HTML]'s algorithm and what reads its tree as blocks; for docx4j, jsoup and
+     * docx4j-ImportXHTML (CR-053, pending WD 0.26, which folds "xhtml importer present" into it).
+     */
+    static final String HTML_READER_PRESENT = "html reader present", HTML_READER_ABSENT = "html reader absent";
 
     /** The statement a scenario's option belongs to (WD section 10), which the engine must implement too. */
     static Set<String> scenarioRequirements(String scenario) {
         if (scenario == null || scenario.equals("default")) return Set.of();
-        if (scenario.equals(XHTML_IMPORTER_PRESENT)) return Set.of("REQ-513", XHTML_IMPORTER_PRESENT);
-        if (scenario.equals(XHTML_IMPORTER_ABSENT)) return Set.of("REQ-513", XHTML_IMPORTER_ABSENT);
+        if (scenario.equals(HTML_READER_PRESENT)) return Set.of("REQ-513", HTML_READER_PRESENT);
+        if (scenario.equals(HTML_READER_ABSENT)) return Set.of("REQ-513", HTML_READER_ABSENT);
         if (scenario.equals("markdown")) return Set.of("REQ-703");
         if (scenario.contains(";")) {
             // several options, "; " apart: each one's statement
@@ -245,8 +249,8 @@ public final class ExtractionConformance {
         for (Map<String, String> row : table(dir.resolve("expected-tokens.tsv"))) run.tokens.add(row.get("token"));
         for (Map<String, String> row : table(dir.resolve("expected-tokens.tsv"))) {
             for (String view : List.of("accepted", "original", "markup")) {
-                // MHT's default scenario explicitly runs without the optional importer.
-                String scenario = row.get("case").equals("44") ? "xhtml importer absent" : "default";
+                // a row gated on an HTML reader (an HTML or MHT chunk) runs its default scenario without one
+                String scenario = HTML_READER_PRESENT.equals(row.get("option")) ? HTML_READER_ABSENT : "default";
                 checkToken(run, dir, row, view, scenario, "txt", row.get(view));
                 String option = row.get("option");
                 if (!option.isEmpty() && (!option.equals("comments: true") || view.equals("markup"))) {
@@ -256,13 +260,13 @@ public final class ExtractionConformance {
             }
         }
         // Supplemental scenarios pin combined capabilities, no-fetch fields, and character retention.
-        for (String scenario : List.of("embedded: true", "altchunks: false", "fields: update", "xhtml importer present", "metadata: true", "field_codes: true")) {
+        for (String scenario : List.of("embedded: true", "altchunks: false", "fields: update", HTML_READER_PRESENT, "metadata: true", "field_codes: true")) {
             for (Map<String, String> row : table(dir.resolve("expected-tokens.tsv"))) {
                 int n = Integer.parseInt(row.get("case"));
                 boolean applies = scenario.equals("embedded: true") && (n >= 39 && n <= 42 || n == 53 || n == 57)
-                        || scenario.equals("altchunks: false") && n >= 43 && n <= 47
+                        || scenario.equals("altchunks: false") && (n >= 43 && n <= 47 || n == 36 || row.get("token").equals("CHK63_SCRIPTED"))
                         || scenario.equals("fields: update") && n >= 49 && n <= 51
-                        || scenario.equals("xhtml importer present") && n == 47
+                        || scenario.equals(HTML_READER_PRESENT) && n == 47
                         || (scenario.equals("metadata: true") || scenario.equals("field_codes: true") || scenario.equals("embedded: true")) && n >= 50 && n <= 51;
                 if (!applies || row.get("option").equals(scenario)) continue;
                 for (String view : List.of("accepted", "original", "markup"))
@@ -293,10 +297,10 @@ public final class ExtractionConformance {
         // Empty manifest is an explicit phase 0 state. Every published entry must be checked.
         for (Map<String, String> row : table(dir.resolve("goldens.tsv"))) {
             String item = "golden:" + row.get("golden");
-            // a golden is cut without an XHTML importer (GOLDENS.md: scenario default has none), so with one
-            // on the class path, which expands case 44's MHT chunk, it is pending, as case 44's default rows are
+            // a golden is cut without an HTML reader (GOLDENS.md: scenario default has none), so with one on
+            // the class path, which expands cases 36's and 44's chunks, it is pending, as their default rows are
             Set<String> required = rowRequirements(row);
-            if ("default".equals(row.get("scenario"))) required.add(XHTML_IMPORTER_ABSENT);
+            if ("default".equals(row.get("scenario"))) required.add(HTML_READER_ABSENT);
             if (!run.ready(row, item, row.get("view"), row.get("scenario"), required)) continue;
             Output output = run.output(dir, row, row.get("view"), row.get("scenario"), row.get("format"));
             verifyGolden(dir.resolve(row.get("golden")), output.text);
@@ -327,9 +331,9 @@ public final class ExtractionConformance {
         }
         // CR-050 phase 2: every extraction result's counts (REQ-903), for each output the table names a group under,
         // are the number of the table's findings in each group there, with the fixture's status. The table's groups
-        // are for an extraction with no XHTML importer (INSPECTION.md), so with one on the class path the check pends
+        // are for an extraction with no HTML reader (INSPECTION.md), so with one on the class path the check pends
         Set<String> countsRequire = requirements("REQ-903");
-        countsRequire.add(XHTML_IMPORTER_ABSENT);
+        countsRequire.add(HTML_READER_ABSENT);
         for (Map<String, String> status : table(dir.resolve(ExtractionInspection.STATUS))) {
             String fixture = status.get("fixture");
             Map<String, String> row = Map.of("fixture", fixture, "case", "0", "statements", "REQ-903");

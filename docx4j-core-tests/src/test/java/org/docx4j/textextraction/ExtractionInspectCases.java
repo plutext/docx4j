@@ -427,9 +427,10 @@ final class ExtractionInspectCases {
         b.token("CMT63_ANCHORED", "0", "0", "cmt", "comments: true", "cmt", "inspection: comment");
         b.never("CMT63_UNANCHORED", "a comment with no anchor; inspection: story.unused");
         b.always("INK63_HERE", "an ink part (w14:contentPart) after it; inspection: ink");
-        b.token("CHK63_SCRIPTED", "1", "1", "1", "altchunks: false", "0",
+        b.gated("CHK63_SCRIPTED", ExtractionConformance.HTML_READER_PRESENT,
                 "an HTML chunk holding a script, an event handler and two external references; inspection: altchunk, "
-                + "altchunk.script, altchunk.external_ref; nothing fetched");
+                + "altchunk.script, altchunk.external_ref; nothing fetched; without an HTML reader: altchunk.not_expanded "
+                + "(CR-053 D7, pending WD 0.26)");
         b.always("EMB63_HERE", "");
         b.gated("EMB63_VISIBLE", "embedded: true", "the embedded document's shown text");
         b.token("EMB63_HIDDEN", "0", "0", "0", "embedded: true; hidden: true", "1",

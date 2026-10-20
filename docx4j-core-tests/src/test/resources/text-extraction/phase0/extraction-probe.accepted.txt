@@ -130,7 +130,6 @@ SMA35_ROOT
 SMA35_CHILD_ONE
 SMA35_CHILD_TWO
 Case 36: an altChunk holding HTML
-ALT36_CHUNK_TEXT
 After the altChunk.
 Case 37: ruby
 Ruby: RBY37_BASE

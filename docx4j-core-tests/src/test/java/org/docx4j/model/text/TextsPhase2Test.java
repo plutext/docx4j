@@ -552,20 +552,13 @@ public class TextsPhase2Test {
 	private static final String HTML = "<html><head><title>T</title><style>p{}</style></head><body><p>One &amp; two</p>"
 			+ "<div>Three<br>Four</div><table><tr><td>a</td><td>b</td></tr></table><script>no()</script></body></html>";
 
-	/** REQ-513: HTML read as blocks through jsoup where present, its tags stripped otherwise; text chunks as lines; RTF never; altchunks: false; one level. */
+	/**
+	 * REQ-513: text chunks as lines; HTML through an HTML reader (jsoup and docx4j-ImportXHTML), and
+	 * not expanded without one (CR-053 D7); RTF never; altchunks: false; one level.
+	 */
 	@Test
 	public void altChunks() throws Exception {
-		List<String> stripped = new ArrayList<String>();
-		for (TextBlock b : HtmlText.stripped(HTML, TextBlock.Story.MAIN, "c")) stripped.add(b.getText());
-		assertEquals(Arrays.asList("One & two", "Three\nFour", "a\tb"), stripped);
-		assertTrue(HtmlText.hasJsoup()); // a test dependency of docx4j-core-tests
-		List<TextBlock> tidied = HtmlText.blocks(HTML, TextBlock.Story.MAIN, "c");
-		assertEquals(3, tidied.size());
-		assertEquals("One & two", tidied.get(0).getText());
-		assertEquals("Three\nFour", tidied.get(1).getText());
-		assertEquals(TextBlock.Kind.TABLE, tidied.get(2).getKind());
-		assertEquals("a\tb", tidied.get(2).getText());
-
+		assertTrue(JsoupHtml.present()); // a test dependency of docx4j-core-tests
 		String aFChunk = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk";
 		WordprocessingMLPackage pkg = MiniDocx.body(p("Before.") + "<w:altChunk r:id=\"rIdT\"/><w:altChunk r:id=\"rIdR\"/><w:altChunk r:id=\"rIdH\"/>" + p("After."))
 				.part("t.txt", "text/plain", aFChunk, "rIdT", "line one\r\nline two\r\n".getBytes(java.nio.charset.StandardCharsets.UTF_8))
@@ -573,8 +566,14 @@ public class TextsPhase2Test {
 				.part("h.htm", "text/html", aFChunk, "rIdH", HTML.getBytes(java.nio.charset.StandardCharsets.UTF_8)).load();
 		String before = snapshot(pkg);
 		TextResult r = Texts.of(pkg, new TextOptions());
-		assertEquals("Before.\nline one\nline two\nOne & two\nThree\nFour\na\tb\nAfter.\n", PlainText.of(r));
-		assertEquals("[altchunk.not_expanded at body/2 (application/rtf)]", r.warnings().toString());
+		if (HtmlChunkImport.readerPresent()) {
+			assertEquals("Before.\nline one\nline two\nOne & two\nThree\nFour\na\tb\nAfter.\n", PlainText.of(r));
+			assertEquals("[altchunk.not_expanded at body/2 (application/rtf)]", r.warnings().toString());
+		} else {
+			assertEquals("Before.\nline one\nline two\nAfter.\n", PlainText.of(r));
+			assertEquals("[altchunk.not_expanded at body/2 (application/rtf), altchunk.not_expanded at body/3 (text/html)]",
+					r.warnings().toString());
+		}
 		assertEquals("body/1/altchunk:0/1", r.blocks().get(2).getAddress());
 		TextResult off = Texts.of(pkg, new TextOptions().altchunks(false));
 		assertEquals("Before.\nAfter.\n", PlainText.of(off));

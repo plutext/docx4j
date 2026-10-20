@@ -49,13 +49,14 @@ Phase 1 supplies the `ExtractionConformance.Engine`: `TextsAdapter`, the default
 statements (CR-046 phases 1 and 2's). A scenario's option needs its own statement too (WD section 10's
 table: `embedded: true` needs REQ-512, whatever the row cites). A scenario may combine options, `; `
 apart (`embedded: true; hidden: true`, case 53's hidden slide): the adapter sets each, and the row needs
-each one's statement. Scenario `default` has no XHTML importer. `xhtml importer present/absent`
+each one's statement. Scenario `default` has no HTML reader. `html reader present/absent`
 requires the corresponding classpath; it is not a TextOptions key. Each is a capability the adapter
-advertises when docx4j-ImportXHTML is (or is not) on the class path, so a run checks one of the two
-(CR-046 phase 2). The goldens are cut without an importer, so a golden is checked only by an engine
-advertising `xhtml importer absent`, and a findings, order or golden row needs its scenario's
+advertises when an HTML reader is (or is not) on the class path, for docx4j jsoup and docx4j-ImportXHTML
+both (CR-053, pending WD 0.26, which folds the earlier `xhtml importer present/absent` into it), so a run
+checks one of the two. The goldens are cut without a reader, so a golden is checked only by an engine
+advertising `html reader absent`, and a findings, order or golden row needs its scenario's
 capability as a token row does (19 October 2026: a run with the importer present had checked the
-`xhtml importer absent` rows, and compared case 44's expanded MHT chunk with goldens that hold none). Missing advertised capabilities remain pending. Exceptions from enabled assertions
+importer-absent rows, and compared case 44's expanded MHT chunk with goldens that hold none). Missing advertised capabilities remain pending. Exceptions from enabled assertions
 fail the test. The axis-title row additionally requires capability `CR-047`. Output finding keys are
 `channel<TAB>kind<TAB>selector`; values are counts or literal metadata values.
 
@@ -116,7 +117,8 @@ Legacy baseline outputs must never be copied into this manifest as conformance g
 plain text in the three views (`extraction-probe.accepted.txt`, `.original.txt`,
 `.markup.txt`; `extraction-probe-external.*`) and its Markdown in the `accepted` view
 (`extraction-probe.md`, `extraction-probe-external.md`), all under the defaults (no
-XHTML importer). They were cut by `ExtractionGoldens <fixture-directory>` (docx4j-core-tests'
+HTML reader; recut 20 October 2026 for CR-053 phase 2, which leaves case 36's HTML chunk unexpanded without
+one: the diff was case 36's line alone). They were cut by `ExtractionGoldens <fixture-directory>` (docx4j-core-tests'
 test classes; it writes the files and the manifest through `TextsAdapter`), and reviewed by
 hand against WD 0.10 sections 3 to 7 before they were committed. A recut is a change to what
 the ports are held to: cut into a scratch copy of the directory, diff against the committed

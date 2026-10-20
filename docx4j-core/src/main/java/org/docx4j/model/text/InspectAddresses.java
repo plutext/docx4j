@@ -66,7 +66,7 @@ final class InspectAddresses {
 
 	/** An extractable finding with a block: not an author or the properties (metadata), nor what needs a capability. */
 	private static boolean addressable(InspectWalk.Found f) {
-		return !f.needs.contains(InspectFinding.NEVER) && !f.needs.contains(InspectFinding.IMPORTER)
+		return !f.needs.contains(InspectFinding.NEVER) && !f.needs.contains(InspectFinding.HTML_READER)
 				&& !f.kind.equals(InspectFinding.REVISION_AUTHOR) && !f.kind.equals(InspectFinding.PROPERTIES);
 	}
 
