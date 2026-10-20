@@ -1,10 +1,12 @@
 # CR-052: a save declares the `mc` prefixes the source bound, wherever the content goes
 
-Status: PROPOSED 2026-10-20. Requested by the docx4j-generated-objects-ts session at Jason's word
-("send the CR request, and ask it for its opinion on priority, to be written into the CR"); the same
+Status: ACCEPTED 2026-10-20 (Jason: "accept the recommendations and commit the CRs"), D1 to D5
+as recommended, D4 as (c) after core-ts's count of Word's saves; phase 0 next, in §7's order.
+Proposed 2026-10-20. Requested by the docx4j-generated-objects-ts session at Jason's word ("send
+the CR request, and ask it for its opinion on priority, to be written into the CR"); the same
 defect is objects CR-011 (`docs/change-requests/CR-011-declare-source-only-prefixes.md` there, 3db3613).
 Drafted by Claude Opus 5.5 (session docx4j-25), with the request's points measured first (§1). Phases
-in §5; decisions in §6, for Jason; priority in §7, as asked. Touches the marshal path (`XmlUtils`,
+in §5; decisions in §6; priority in §7, as asked. Touches the marshal path (`XmlUtils`,
 `JaxbXmlPart`), which CLAUDE.md lists among the widely-shared code to change on Fable.
 
 ## 0. Summary
@@ -120,22 +122,48 @@ python (CR-049's table records its CR-011 Q11 as the same family). Acceptance: e
 
 ## 6. Decisions (for Jason; each with a recommendation)
 
+All five decided as recommended on 20 October 2026 (Jason: "accept the recommendations and commit
+the CRs"); D4's recommendation had moved to (c) the same day, on core-ts's count of Word's own
+saves.
+
 - **D1. Scope.** (a) `Requires` only; (b) `Requires`, the root's Ignorable, and a Choice's own Ignorable
   and MustUnderstand. **Recommended: (b)**, since docx4j already records all four at unmarshal, and
   objects covers only the first two.
+  **Decided** (Jason, 20 October 2026): (b).
 - **D2. Copies.** (a) Carry the record across `XmlUtils.deepCopy`; (b) accept the loss and document
   it. **Recommended: (a).** Copying is how merges move content, and case 4b is the common way in.
+  **Decided** (Jason, 20 October 2026): (a).
 - **D3. Resolution order.** Source, then table, then aliases, the tree's own conflicting declaration
   winning with a warning. **Recommended,** as objects decided it.
-- **D4. Where a `Requires` prefix is declared.** (a) On the `mc:AlternateContent`; (b) on the root.
-  **Recommended: (a):** what docx4j does for a loaded part now, local, and it moves with the element.
-  A local declaration also handles one prefix bound two ways in one part, which a root declaration can
-  only warn about. objects CR-011 declares on the root, under its CR-001 convention; its Consumers
-  section records the difference for Jason. If the ports are to agree, objects would change for the
-  prefixes the tree does not use (generated-objects-ts, 2026-10-20).
+  **Decided** (Jason, 20 October 2026): as recommended.
+- **D4. Where a `Requires` prefix is declared.** (a) On the `mc:AlternateContent`; (b) on the root;
+  (c) where Word 365 puts it: a prefix in Word's fixed root set (docx4j's table) on the root, any other
+  on the `mc:Choice` that names it. **Recommended: (c),** after core-ts's count of Word's own saves
+  (below); before it, (a). (a) is what docx4j does for a loaded part now: it is local and moves with the
+  element. Any local declaration, (a) or (c)'s Choice, also handles one prefix bound two ways in one
+  part, which a root declaration can only warn about. objects CR-011 declares on the root, under its
+  CR-001 convention; its Consumers section records the difference for Jason. If the ports are to
+  agree, objects would change for the prefixes the tree does not use (generated-objects-ts,
+  2026-10-20).
+  - *Measured* (core-ts, sent at Jason's request 2026-10-20; core-ts CR-010 §14.9, uncommitted):
+    2,728 Word 365 saves, 24,075 WordprocessingML parts.
+  - A `Requires` prefix in Word's fixed root set is declared on the root, 664 of 664 (`wps` 432,
+    `cx1` 140, `wpg` 73, `cx2` 10, `v` 5, `wpi` 2, `wpc` 1, `wp14` 1).
+  - A prefix outside the set goes on the `mc:Choice` that names it, 3 of 3. These are all `zz9`, in
+    Word's resaves of the fallback-rule probes (`text-extraction/fallback-rule/round2/`, build
+    16.0.20326). The sources declare it on `mc:AlternateContent`; Word moved it onto the Choice and
+    onto a sibling `mc:Fallback`, and did not add it to `mc:Ignorable`.
+  - In a WordprocessingML part, Word never declares anything on `mc:AlternateContent`. In chart
+    parts, `xmlns:mc` is on it and `c14` on the Choice, 37 of 37.
+  - The three placements are equivalent XML; whether Word reads them alike has not been checked. The
+    sample for (c)'s Choice is three saves of docx4j's own probes.
+
+  **Decided** (Jason, 20 October 2026): (c), after core-ts's count of Word's own saves.
 - **D5. A tree set from code.** (a) `XmlUtils`' unmarshal methods record the root's and the Choices'
   bindings when docx4j's listener is set; (b) document that such a tree's private prefixes are the
   caller's to declare. **Recommended: (a)** where it costs nothing more than the listener already
+  does; otherwise (b).
+  **Decided** (Jason, 20 October 2026): (a) where it costs nothing more than the listener already
   does; otherwise (b).
 
 ## 7. Priority (docx4j-25's view, as the request asked)
