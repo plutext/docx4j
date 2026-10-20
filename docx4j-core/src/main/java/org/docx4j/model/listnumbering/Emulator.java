@@ -169,13 +169,13 @@ public class Emulator {
      * {@link #getNumber(WordprocessingMLPackage, PPr, NumberingState)} acts on; a
      * parity harness (docx4j-core-ts, docx4j-python) records it per paragraph.
      *
-     * @param pPr the paragraph's properties; null resolves as not numbered
+     * @param pPr the paragraph's properties; null resolves as an empty {@code w:pPr}, against
+     *        the default paragraph style, as {@code getNumber} resolves it (17.3.4)
      * @return never null; {@link NumRef#notNumbered} with a {@link NumRef#reason}
      *         where the package has no numbering part or the paragraph no list
      * @since 17.2.0
      */
     public static NumRef numRefFor(WordprocessingMLPackage wmlPackage, PPr pPr) {
-    	if (pPr == null) return new NumRef("no pPr");
     	org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart numberingPart =
     		wmlPackage.getMainDocumentPart().getNumberingDefinitionsPart();
     	if (numberingPart == null) return new NumRef("no numbering part");
@@ -186,9 +186,9 @@ public class Emulator {
     	} catch (Docx4JException e) {
     		return new NumRef("no property resolver: " + e.getMessage());
     	}
-    	String pStyleVal = pPr.getPStyle() == null ? null : pPr.getPStyle().getVal();
+    	String pStyleVal = pPr == null || pPr.getPStyle() == null ? null : pPr.getPStyle().getVal();
     	String numIdStr = null, levelIdStr = null;
-    	if (pPr.getNumPr() != null) {
+    	if (pPr != null && pPr.getNumPr() != null) {
     		if (pPr.getNumPr().getNumId() != null && pPr.getNumPr().getNumId().getVal() != null) {
     			numIdStr = pPr.getNumPr().getNumId().getVal().toString();
     		}

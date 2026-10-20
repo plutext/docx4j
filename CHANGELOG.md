@@ -60,7 +60,8 @@ Changes in Version 17.3.4
   HyperlinkBase now resolve.
 - List numbering: a level that names no paragraph style belongs to the first style in styles.xml carrying
   it, as in Word; a second style carrying the same level is no longer numbered (labels, PDF, HTML, text model).
-  A paragraph with no `w:pPr` in a numbered default style is numbered, as one with an empty `w:pPr` was.
+  A paragraph with no `w:pPr` in a numbered default style is numbered, as one with an empty `w:pPr` was
+  (`Emulator.numRefFor` too).
 - `XmlUtils`' marshal methods leave the shared prefix mapper as they found it (CR-049): a fragment or part
   marshalled after a `wml.Document` no longer declares the document's `mc:Ignorable` prefixes, and any root
   (`getXML()` of a header, footnotes or settings part) declares its own Ignorable and Choice prefixes.

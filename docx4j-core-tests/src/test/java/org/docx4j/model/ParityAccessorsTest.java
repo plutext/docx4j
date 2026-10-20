@@ -122,7 +122,13 @@ public class ParityAccessorsTest {
 		assertNotNull(unlinked.reason);
 		assertTrue(unlinked.reason, unlinked.reason.contains("Unlinked"));
 
-		assertTrue(Emulator.numRefFor(pkg, null).notNumbered);
+		// no w:pPr at all resolves as an empty one, against the default paragraph style, as getNumber does (17.3.4)
+		Emulator.NumRef noPPr = Emulator.numRefFor(pkg, null);
+		assertFalse(noPPr.notNumbered);
+		assertFalse(noPPr.direct);
+		assertEquals("1", noPPr.numId);
+		assertEquals("0", noPPr.ilvl);
+		assertNotNull("and getNumber numbers it", Emulator.getNumber(pkg, (org.docx4j.wml.PPr) null).getNumString());
 		WordprocessingMLPackage noNumbering = WordprocessingMLPackage.createPackage();
 		Emulator.NumRef none = Emulator.numRefFor(noNumbering, F.createPPr());
 		assertTrue(none.notNumbered);
