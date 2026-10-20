@@ -1,7 +1,9 @@
 # CR-053: HTML, XHTML and MHT altChunks, written as Word opens them and read as Word reads them
 
 Status: ACCEPTED 2026-10-20 (Jason: "accept the recommendations and commit the CRs"), D1 to D10
-as recommended; phase 0 next, and phase 1 may land alone. Proposed 2026-10-20 (Jason: "lets start
+as recommended. Phase 0 done (Jason: "start phase 0"): tests, design checks and Word
+probes, rounds 5 to 7 (§10). D9 is (iii), D2 stands, D11 is decided (50,000) and D4's rewrite
+(§10.7) is approved; phase 1 may land alone. Proposed 2026-10-20 (Jason: "lets start
 the altchunk work"), reviewed the same day by docx4j-64 (§9). It gathers his ruling on adding a
 chunk (strip the XML declaration, 2026-10-20) and what the text extraction WD 0.23 to 0.25 asks of
 docx4j (portfolio 6cdb966, 016963e, 1865f10). Drafted by Claude Opus 5.5 (session docx4j-25), with
@@ -109,7 +111,7 @@ OpenXML.
   (`xhtml-14`, and `xhtml-15` as the `text/html` control).
 - Not measured: selectors other than a class; `@media` rules; `display: none` on a table row or
   cell; how Word decodes a chunk with no BOM, declaration or `meta` charset; whether a BOM before the
-  declaration, or white space before it, changes the refusal.
+  declaration, or white space before it, changes the refusal. All measured in phase 0 (§10.6).
 
 ## 3. What the WD says (0.25, portfolio 1865f10)
 
@@ -232,8 +234,11 @@ limits:
 - a `data:` image, which `XHTMLImporterImpl.addImage` still admits with external resources
   disallowed (:2030), so an image bomb reaches the decoder.
 
-Today `AltChunks.imported` catches `Exception | LinkageError` only (:160), so a `StackOverflowError`
-or `OutOfMemoryError` escapes the extraction, and would escape the inspector. The guard, in both:
+Today `AltChunks.imported` catches `Exception | LinkageError` only (:160). It reaches the importer
+through `Method.invoke`, though, which wraps an `Error` in an `InvocationTargetException`, so a
+`StackOverflowError` is caught and the chunk falls back to jsoup with no warning (phase 0, §10.2).
+Anything that calls the importer directly, as the inspector may, has no such wrapping. The guard, in
+both:
 - before the import:
   - the span clamps;
   - a nesting-depth cap;
@@ -375,6 +380,7 @@ the CRs").
   body whose `meta` declares ISO-8859-1, and whether Word honours a `meta` over the bytes is
   unmeasured (§2).
   **Decided** (Jason, 20 October 2026): (c), with (b)'s `meta` rewrite, subject to phase 0's probe.
+  The probe confirms it (§10.7). The strip also takes leading white space before the declaration.
 - **D3. How the three kinds are read for text.** **Recommended: (a'), with REQ-901 relaxed** (Jason's
   direction, 2026-10-20, once (b) had been sized and REQ-901's relaxation and the ImportXHTML release
   were on the table). The options:
@@ -440,13 +446,14 @@ the CRs").
   openhtmltopdf treats it, to be compared with Word in phase 0's probe; where they differ, the
   pre-pass follows Word.
   **Decided** (Jason, 20 October 2026): as recommended; `@media` follows Word once phase 0's probe has
-  measured it.
+  measured it. Measured (§10.6): Word ignores `@media`, and several selectors openhtmltopdf applies;
+  the rewrite in §10.7 follows Word. Jason approved the rewrite the same day ("D4: ok").
 - **D5. Granularity.** A hidden `span` makes hidden runs in its paragraph; a hidden block makes hidden
   paragraphs, their marks hidden too; a table keeps its shape, with the text of a hidden row or cell
   hidden. **Recommended,** since it is what Word builds (the class becomes a style with `w:vanish`);
   the importer emits it (§4a). A row or cell is to be checked against the phase 0 probe.
   **Decided** (Jason, 20 October 2026): as recommended; a row, a cell and a list item are checked
-  against phase 0's probe.
+  against phase 0's probe. Checked (§10.6): they agree, a hidden cell keeping its column.
 - **D6. A loaded chunk's type.** (a) From the declared content type, with the extension as the fallback;
   (b) as now, the extension only. **Recommended: (a).** It changes `convertAltChunks` for a chunk whose
   name and type disagree, which today it converts as the wrong kind or skips. The text model already
@@ -485,7 +492,7 @@ the CRs").
   `AFTER`, it reads XHTML as HTML: (iii), the simplest, with no XML parser at all. If not, (i), which
   follows the WD as written. (ii) is the fallback if (i)'s entity handling proves fragile.
   **Decided** (Jason, 20 October 2026): settled by phase 0's probe: (iii) if Word hides `AFTER`, else
-  (i); (ii) the fallback.
+  (i); (ii) the fallback. Word hides it (§10.6), so (iii).
 - **D10. A wall-clock budget for the import.** openhtmltopdf cannot be interrupted, so a watchdog can
   only abandon the thread, which runs on to its end.
   - (a) No budget: §4b's caps bound the work by the element limit.
@@ -495,7 +502,10 @@ the CRs").
   a few seconds; then (b), as an opt-in for servers.** An abandoned thread keeps its CPU, so (b) is
   not a default.
   **Decided** (Jason, 20 October 2026): (a), unless phase 0's worst case takes more than a few
-  seconds; then (b), as an opt-in.
+  seconds; then (b), as an opt-in. Phase 0 measured minutes (§10.4), so (b) applies.
+- **D11. An element limit for the import** (from phase 0, §10.4). **Recommended: 50,000 elements,
+  set by a docx4j property.**
+  **Decided** (Jason, 20 October 2026): 50,000.
 
 ## 7. Questions for the WD (to the portfolio session)
 
@@ -539,3 +549,380 @@ kept (D7), the D6 precedent, the D1 sites, the anonymiser, `convertAltChunks`' c
 phase ordering and tests. It verified §1's readings against the code, the unshipped text model and
 inspector, ImportXHTML's unreleased HEAD, the default stylesheet, `setExternalResourcesAllowed`, and
 the WD text. It did not rerun the drivers or check §1a.
+
+## 10. Phase 0 results (20 October 2026)
+
+Measured on VERSION_17_3_4 at 0f6e60d00, with the installed 17.3.4-SNAPSHOT, jsoup 1.22.1, and
+docx4j-ImportXHTML at c8dc938 compiled from its commit (its target jar is older), with openhtmltopdf
+1.1.31. The scratch drivers (`W3CDomCheck`, `Hostile`, `SoeToday`, `EpsChunk`, `ProbeCheck`) are
+kept with the earlier ones outside the repository.
+
+### 10.1 Tests of today
+
+`AltChunkHtmlTest` (core-tests, `org.docx4j.model.text`) holds §1's cases as the build can run them:
+jsoup present, ImportXHTML absent. The tests that read a chunk are skipped where the importer is on
+the class path. Each test says which phase changes its result, and what the result becomes:
+
+| Test | Today | Changed by |
+|---|---|---|
+| `htmlChunkDisplayNoneIsOrdinaryText` (case 1) | the four hidden texts are ordinary text, with `hidden: true` too; the inspector has `altchunk` only | phase 2 (not expanded without the importer), phase 3 |
+| `xhtmlChunkWithoutTheImporterIsReadAsHtml` (case 2) | the same, and the inspector also reports `part.unknown` (§10.2) | phase 2; the WD (§10.5) |
+| `xhtmlChunkNotWellFormedIsRepairedAsHtml` (case 5, no importer) | jsoup's repairs, `display: none` text ordinary | phase 2 |
+| `mhtChunkWithoutTheImporterIsNotExpanded` | not expanded, `altchunk.not_expanded`; the inspector scans it | phase 3 (inspector: `not_decoded`) |
+| `htmlChunkDropsTemplateAndNoscript` | `template` and `noscript` text dropped; `hidden` and closed `details` text kept | phase 2 (all four kept, as Word keeps them) |
+| `htmlChunkRowSpanHasNoContinuationCell` (§1a) | the second row is a cell short | phase 2 |
+| `extractionAndInspectionDecodeAChunkDifferently` | 0xD0 under `meta charset='ISO-8859-5'`: `Ð` in the text, `а` in the inspector | phase 2 (one decoder) |
+| `addAltChunkWritesTheDeclaration` (case 6) | all four `addAltChunk` paths write `Html`, `Xhtml` and Flat OPC byte for byte | phase 1 (`Html`, `Xhtml`); Flat OPC stays |
+| `boundXhtmlValueKeepsItsDeclaration` | the binding's `text/html` chunk keeps the declaration, in the platform charset | phase 1 |
+| `loadedChunkTypeFollowsTheExtension` | `.htm` declared XHTML is `Html`; `.dat` declared `text/plain` has no type, and `convertAltChunks` leaves it, though the text model reads it | phase 1 (D6) |
+
+### 10.2 Found on the way
+
+- **The `Error` is caught today, by accident.** A well-formed XHTML chunk of 2,000 nested `div`s
+  overflows the stack in openhtmltopdf, but `Texts.of` returns its text: `Method.invoke` wraps the
+  `StackOverflowError`, `AltChunks` catches the wrapper, logs a warning and reads the chunk with
+  jsoup, which caps the nesting (§10.4). The result carries no `TextWarning`. §4b is corrected.
+  Phase 2's `catch (Throwable)` still stands, and the chunk is then not expanded, with the warning,
+  rather than read another way.
+- **The inspector reports an XHTML chunk's part as `part.unknown`.** REQ-902's known families have no
+  `application/xhtml+xml`, and docx4j follows them; every XHTML chunk `addAltChunk` makes draws the
+  finding. A question for the WD (§10.5). No fixture holds an XHTML chunk, so the suite never met it.
+- **`convertAltChunks` stops at the first XHTML or MHT chunk when the importer is missing.** It
+  returns rather than skipping that chunk, so the chunks it has not reached yet (it works from the
+  last) stay unconverted, a plain-text chunk included. For phase 2, which changes this method.
+- `addAltChunk` names a new chunk `/chunk.<ext>`, at the package root, not under `/word/`. Word opens
+  it; nothing in this CR depends on it.
+
+### 10.3 The jsoup tree through `convert(Node)` (§5's first check)
+
+Three chunks, each well-formed XHTML, went through the importer three ways: parsed as XML, parsed by
+jsoup through `W3CDom`, and parsed by the importer itself. The output was the same each way:
+- §1a's chunk (lists, inline formatting, a row and column span), plus a table without `tbody`, to
+  which jsoup adds one;
+- `template`, `noscript`, `hidden` and a closed `details`: the `template` and `noscript` content
+  survives `W3CDom` and is imported;
+- CSS by class, child selector and `style` attribute.
+
+jsoup renames or drops attribute names XML rejects (`a<b` became `a_b`, `foo"bar` became `foo_bar`,
+`1x` was dropped). The paragraph's `class` and `style` still applied, and the import was unharmed.
+The elements of an HTML chunk carry the XHTML namespace in `W3CDom`'s tree, as the importer needs.
+ImportXHTML's CR-002 adds that `convert(Node)` lays out the caller's own tree only when given a
+`Document`, so docx4j passes the `Document`.
+
+### 10.4 §4b's vectors, and D10
+
+Each vector ran in its own JVM (`-Xmx2g`, the default 1 MB stack), through jsoup, `W3CDom` and
+`convert(Document)` with external resources off, under `catch (Throwable)`. The start-up and an
+empty import take about 1.3 seconds; the times are the import's.
+
+| Vector | Result |
+|---|---|
+| Nesting, parsed by jsoup | jsoup's tree builder caps the depth at about 512 and makes deeper elements siblings: 5,000 nested `div`s import in 2 s. With a 256 KB stack, even that depth overflows. |
+| Nesting, parsed as XML | no cap: 900 nested `div`s (10 KB) overflow the stack in openhtmltopdf's style and box building (`CalculatedStyle.valueByName`, `BoxBuilder.createChildren`); 800 do not |
+| `rowspan` or `colspan` 2^31−1 | a 163-byte chunk exhausts a 2 GB heap; 65,534 and 1,000, WHATWG's clamps, import in under 1.5 s |
+| Widths, font sizes, line heights, margins, indents of 2×10^9 | harmless |
+| Floats | quadratic: 20,000 in 7 s, 50,000 (1.1 MB) in 41 s. `float:none !important` in each element's `style` attribute brings 20,000 back to 2 s |
+| Paragraphs | linear, about 0.09 ms and 4.8 KB of heap each: 200,000 in 19.5 s (0.9 GB), 500,000 (4 MB) in 45 s (2.4 GB) |
+| Table cells | 100,000 in 7.7 s |
+| A `data:` pixel bomb (a 25,000² RGBA PNG, 2.4 MB) | not decoded: the importer's default image handler reads its header (100 MB of heap), and the no-op handler adds nothing |
+| A `data:` image in CSS | refused by openhtmltopdf under the deny-all access controller, as ImportXHTML reports |
+| A `data:` EPS image, default handler | refused by the importer's user agent ("Unrecognized Image format"), so it never reaches `BinaryPartAbstractImage`'s conversion through ImageMagick |
+
+What follows for phase 2's guard:
+- the span clamps are needed;
+- the depth cap is needed for a chunk parsed as XML (D9 (i)), and below 512 for small stacks.
+  Recommended: 256, deeper elements made siblings as jsoup does;
+- the pre-pass adds `float:none !important` to every element's `style`. It changes no text;
+- `img` needs nothing beyond the no-op image handler `neverFetch` already sets.
+
+**D10.** Its condition is met: at REQ-907's maxima, a 16 MB chunk of paragraphs would take about three
+minutes and ten gigabytes. So (b), the opt-in timeout, applies as decided. But a timeout abandons a
+thread that keeps its heap, and the heap runs out first.
+
+- **D11 (new; decided by Jason the same day: 50,000). An element limit for the import.** A chunk whose tree, after the parse and
+  the repairs, has more elements than the limit is not imported: the extraction raises
+  `altchunk.not_expanded`, and the inspector skips the chunk as `limit.elements`. **Recommended:
+  50,000 elements (about 5 seconds and 250 MB at worst, floats defused), set by a docx4j property.**
+  REQ-907's own limit (5,000,000) stays for the rest of the walk. The WD needs a line on it (§10.5).
+
+### 10.5 The suite rows that change, and questions for the WD
+
+The suite is the portfolio's. In docx4j's build run (jsoup present, ImportXHTML absent), phases 2
+and 3 change these rows (sent to the portfolio session):
+- **Case 36** (`ALT36_CHUNK_TEXT`, an HTML chunk) and **case 63's** `CHK63_SCRIPTED`: not expanded
+  without the importer. They take case 44's form: 0 in the default rows, which need the capability
+  "an HTML parser absent", and 1 under "an HTML parser present". docx4j advertises a parser only with
+  both jsoup and ImportXHTML, since it reads HTML through the importer. Each gains a warning row,
+  `altchunk.not_expanded` `text/html`. `altchunks: false` joins the supplemental scenario for both
+  (`ExtractionConformance`:249 and :262-266).
+- **The goldens** of `extraction-probe.docx` (`.accepted.txt`, `.original.txt`, `.markup.txt`,
+  `.md`) hold `ALT36_CHUNK_TEXT`. docx4j can no longer make them without the importer, and with the
+  importer, case 44's MHT chunk expands too. Recommended: recut them with neither an HTML parser nor
+  an importer, so case 36's line goes. A port then compares the goldens in a run with neither.
+- **The inspection.** Without the importer, the HTML and MHT chunks are skipped as `not_decoded`:
+  `extraction-probe.docx` adds `not_decoded@|/word/afchunk.htm|` and
+  `not_decoded@|/word/chunk44.mht|`, and `extraction-probe-inspect.docx` goes from `COMPLETE` to
+  `PARTIAL` with `not_decoded@|/word/chunk63.htm|`. Its counts become lower bounds. Case 63's
+  `altchunk.script` and `altchunk.external_ref` stay (the tag scanner). With the importer, each
+  `altchunk` finding carries `parsed`, which needs a column or a field in `expected-inspection.tsv`.
+- **Case 45** (RTF) does not change in docx4j, which has no RTF reader. Its note, "never expanded",
+  predates WD 0.23.
+- Case 44's MHT rows and case 47's nested HTML chunk (one level) are unchanged.
+
+Questions for the WD:
+- `application/xhtml+xml` among REQ-902's known families (§10.2);
+- the capability "an HTML parser present" in the suite, with REQ-1201's note that an implementation
+  may need more than a parser for it;
+- the goldens recut as above (REQ-1203);
+- REQ-907: a line for an import's own element limit (D11).
+
+The portfolio's answer (2a8eb26, the same day), for Jason to rule on with WD 0.26. It agrees, with
+five changes, which this CR takes:
+- the capability is named "an HTML reader present", defined in REQ-513 as a parser that implements
+  [HTML]'s parsing algorithm plus whatever reads its tree as blocks. As REQ-513 stands, an
+  implementation with a parser present that does not expand would break it, rather than lack a
+  capability. The capability takes in "an XHTML importer present" (case 44, REQ-1203, REQ-1204),
+  since all three kinds go through the same reader under D3;
+- the goldens are recut with no HTML reader present, and the diff is case 36's line alone;
+- the inspection oracle stays reader-absent, with the new `not_decoded` skips, so `parsed` needs no
+  column there. A supplemental inspection scenario under "an HTML reader present" checks phase 3's
+  result (`text.hidden` inside a chunk, the outermost element, `parsed`). Its new fixture holds an
+  HTML chunk with inline and class `display: none`, and a well-formed XHTML chunk;
+- `application/xhtml+xml` joins REQ-902's known families;
+- if Jason takes D11, the WD fixes the number for conformance, as with REQ-907's other limits, and
+  REQ-513 gains the extraction's warning over the limit.
+
+Two caveats, sent back:
+- The capability fits docx4j exactly under D9 (iii). Under D9 (i), docx4j with ImportXHTML but
+  without jsoup still expands a well-formed XHTML chunk, so that configuration advertises neither
+  "present" nor "absent".
+- docx4j's build cannot check the reader-present rows, since core-tests has no ImportXHTML. A phase 2
+  question: a test-scope ImportXHTML (17.3.4, once released) in a second surefire execution, or a
+  small test module of its own.
+
+### 10.6 The Word probes
+
+`~/vbShares/Office 2016/altchunk-fun/encoding/`, 16 files, with a README in the style of the earlier
+rounds:
+- for D2: `enc-1` to `enc-11`, covering UTF-8 with and without a BOM; windows-1252 with nothing
+  declared, by `meta charset` and by `http-equiv`; a `meta` that disagrees with the bytes, with and
+  without a BOM; a BOM or white space before the declaration; UTF-16 with a BOM; XHTML with a BOM;
+- for D9: `d9-1` to `d9-3`, the empty `display:none` `div` as XHTML without and with a DOCTYPE, and
+  as `text/html`;
+- for D4 and D5: `css-1-selectors` (element, id, descendant, child, attribute, two classes,
+  `:first-child`, `@media screen` and `print`, later and more specific rules, `!important` against
+  `style`, a `style` element in the body) and `css-2-table-list-nesting` (a row, a cell, a list item,
+  a `display:block` inside a hidden block, a span).
+
+Jason ran them in Word 365 the same day; his screenshots and `*-word365.docx` saves are in the
+folder. Everything opened cleanly except `enc-8` and `enc-9`.
+
+**Encoding.**
+- **Opened and read right:**
+  - `enc-1`, UTF-8 with nothing declared;
+  - `enc-2`, UTF-8 with a BOM;
+  - `enc-3`, windows-1252 bytes with nothing declared;
+  - `enc-4` and `enc-5`, windows-1252 declared by `meta charset` and by `http-equiv`;
+  - `enc-7`, UTF-8 with a BOM and a `meta` naming windows-1252: the BOM wins;
+  - `enc-10`, UTF-16LE with a BOM;
+  - `enc-11`, XHTML with a UTF-8 BOM.
+- **Garbled:** `enc-6`, UTF-8 bytes with no BOM and a `meta` naming windows-1252, came out
+  `cafÃ©` (Word followed the `meta`).
+- **Refused:**
+  - `enc-8`, a BOM before the declaration: unreadable content, repaired as plain paragraphs with
+    the `title` among them;
+  - `enc-9`, white space before the declaration: unreadable content, not recovered (the chunk is
+    lost).
+
+So Word decodes a chunk by its BOM, then a `meta` charset in either form, then as UTF-8 where the
+bytes are valid UTF-8, else as windows-1252. Windows-1252 may be the machine's ANSI code page rather
+than a fixed choice; one English-language machine cannot tell the two apart.
+
+**D9.** `D9_AFTER` is hidden in all three, with and without the DOCTYPE: Word reads well-formed XHTML
+as HTML.
+
+**`display: none`.** In `css-1`, Word hides:
+- the id selector (`#hid`);
+- the descendant selector (`div.box p`);
+- `!important` against the `style` attribute;
+- the `style` element in the body.
+
+It does not hide:
+- `article { display: none }`. `article` is an HTML5 element; an HTML4 element is unmeasured;
+- the child selector (`>`);
+- the attribute selector;
+- two classes (`.a.b`);
+- `:first-child`;
+- anything inside `@media`, `screen` or `print`.
+
+The overrides behave as a browser's:
+- a later rule wins over an earlier one;
+- `p.os { display: block }` wins over a later `.os { display: none }`;
+- `style="display:block"` wins over a class rule.
+
+Word writes those last two as `w:vanish w:val="0"` over a style that has `w:vanish`.
+
+In `css-2`:
+- the hidden row's text is hidden, and the row carries `w:trPr/w:hidden`;
+- the hidden cell stays in the grid, so `C2_R3_B` is in the second column, and its text is hidden;
+- the hidden list item stays numbered, with formatting marks shown, so `C2_ITEM_THREE` reads `3.`.
+  The number with the marks hidden is unmeasured;
+- `C2_BLOCK_INSIDE_HIDDEN`, a `display:block` paragraph inside a `display:none` `div`, shows;
+- the span is a hidden run.
+
+openhtmltopdf's answers differ from Word's in these places:
+- it hides `article`, the child, attribute, two-class and `:first-child` rules, and `@media print`.
+  Word hides none of them;
+- it ignores a `style` element in the body, which Word applies;
+- it drops the block inside the hidden `div`, and the hidden cell with its column. Word shows the
+  first and keeps the second.
+
+### 10.7 What the probes settle
+
+- **D2** stands at (c): Word lets a BOM outrank a `meta` (`enc-7`), and follows a `meta` over the
+  bytes (`enc-6`). So a transcoded chunk needs the BOM, or the rewritten `meta`. Phase 1's strip
+  removes the declaration after a BOM and after leading white space too (`enc-8`, `enc-9`), and keeps
+  or adds the BOM.
+- **Phase 2's shared decoder** is Word's: the BOM, then a `meta` charset (`charset` or
+  `http-equiv`), then UTF-8 where valid, else windows-1252. Neither of today's decoders is that rule:
+  - `Embedded.decode` has no `meta`;
+  - the WD's Chunks rule (`InspectPayloads.decode`) falls back to UTF-8 rather than windows-1252.
+
+  The second is a WD question (below).
+- **D9** is (iii), as decided for this answer:
+  - every chunk is parsed by jsoup, and `parsed` is always `html`. REQ-901's XML-tree rule goes,
+    and so does `parsed: xml` (a WD question);
+  - the D9 (i) entity-expansion test is dropped;
+  - the depth cap is jsoup's own: `Parser.setMaxDepth` exists in 1.22.1. Recommended 256, set
+    where the method is present, since jsoup is optional and an older one may lack it;
+  - the portfolio's first caveat (§10.5) no longer arises.
+- **D4.** Word's cascade is narrower than openhtmltopdf's, and D4 says the pre-pass follows Word.
+  Recommended: before the import, docx4j rewrites the chunk's `style` elements as Word reads them:
+  - rules inside `@media` dropped;
+  - rules whose selector has a child or sibling combinator, an attribute selector, a pseudo-class,
+    or two classes on one element dropped;
+  - `style` elements in the body moved to the head.
+
+  - elements Word does not know unwrapped, their content kept in their place (`css-4`). The set
+    Word knows is taken to be HTML 4.01's elements. Its only measurements are `article`,
+    `section`, `zz` and `yy` outside it, and `p`, `span`, `address` and `h6` (`css-3`) and
+    `noscript` inside it; `template` and `details` showing in round 1 fit.
+
+  Unwrapping drops the element's own attributes with it (`class`, `id`, `style`), which is what
+  the portfolio's wording of transparency says (measured in `css-6`). REQ-901's locations still count
+  the tree jsoup built, `/html[1]/body[1]/article[2]/p[1]`, so docx4j records each element's path
+  before the rewrite, and the rewrite moves nodes rather than copying them.
+
+  - a type or single-class rule dropped where the host's styles part already defines the
+    paragraph style Word maps it to (`host-1`, `host-2`): Normal (Web) for `p`, Heading *n* for
+    `h`*n*, HTML Address for `address`, the class's name for a class. The table beyond the three
+    measured elements is Word's HTML style set, by inference. The rule's other properties go with
+    it, which is unmeasured.
+
+  The rewrite applies to every property, not only `display`. Word's handling of other properties
+  under those selectors is unmeasured, but a rule it ignores for `display` it presumably ignores for
+  the rest. It keeps one CSS engine. Type selectors on elements Word knows count (`css-3`).
+- **D5** stands, with Word's structure:
+  - a hidden row's text hidden;
+  - a hidden cell kept in its column, its text hidden. Re-showing the cell, as ImportXHTML's CR-002
+    does, restores Word's grid;
+  - a hidden list item kept and numbered.
+- **A new rule for ImportXHTML.** Word treats `display: none` as hiding that an element's own
+  explicit `display` (by `style` or a rule) undoes for its content: `C2_BLOCK_INSIDE_HIDDEN` shows,
+  where `d9`'s plain `p` inside the hidden `div` is hidden. CR-002's dedupe by marked ancestor hides
+  both. It is sent to that session.
+
+Questions for the WD (with §10.5's):
+- REQ-513's NOTE ("selectors other than a class were not measured"): the measured list above;
+- the Chunks rule's last step: UTF-8 where valid, else windows-1252, and `http-equiv` beside
+  `charset`;
+- D9 (iii): `parsed` is always `html`, and REQ-901 counts the HTML tree for every chunk;
+- REQ-513's hiding rule: which selectors count, `@media` ignored, a body `style` element counted, and
+  an explicit `display` on a descendant showing its content.
+
+**Round 6**, the same folder, built the same day at the portfolio's and ImportXHTML's asks:
+- `css-3-type-selectors`: type selectors on HTML4 elements (`p`, `span`, `address`, `h6`). Is
+  `article`'s rule ignored because type selectors do not count, or because Word does not know
+  `article`?
+- `css-4-html5-and-unknown-elements`: `article` with no rule and with a class rule, `section`, and
+  unknown elements with and without a rule;
+- `css-5-reveal-and-table-groups`: `display:inline` and `display:inherit` inside a hidden `div`, a
+  hidden span inside a re-shown block (ImportXHTML's CR-002 D11), and a hidden `table`, `thead` and
+  `tbody`.
+
+openhtmltopdf drops every marker these hide, and the three nested ones of `css-5` besides.
+
+Word's answer to `css-5` (Jason, the same day):
+- inside a `display:none` `div`:
+  - the `div`'s own text is hidden;
+  - a `display:inline` span shows, as round 5's `display:block` paragraph did;
+  - a `display:inherit` span stays hidden (it inherits `none`);
+  - a `display:none` span inside a re-shown block is hidden.
+
+  So an explicit `display` other than `none` or `inherit` undoes an ancestor's hiding for its own
+  content, and a `display: none` inside it hides again. ImportXHTML's CR-002 D11 proposes this rule.
+- a hidden `table`, `thead` or `tbody`: its rows stay, each with its text hidden and
+  `w:trPr/w:hidden`. A wholly hidden table's column collapses to almost nothing, and Word puts a
+  paragraph with a hidden mark between adjacent tables.
+
+Word's answer to `css-3`:
+- `p`, `span`, `address` and `h6` with `display: none` are all hidden, and the text around the
+  span shows. So type selectors on HTML4 elements count, and `css-1`'s `article` rule most likely
+  failed because Word does not know the element;
+- Word writes these rules into its built-in paragraph styles: `w:vanish` in Normal (Web), HTML
+  Address and Heading 6. The probe has no styles of its own. Whether such a rule also hides the main
+  document's own paragraphs in those styles is unmeasured.
+
+Word's answer to `css-4`: an element Word does not know (`article`, `section`, and the made-up `zz`
+and `yy`) is transparent:
+- its content is kept. The paragraph inside an `article` stays a paragraph. The text of `zz` and
+  `yy`, which stand in the body, runs together into one paragraph, as inline content does;
+- no rule aimed at the element applies. Neither `section { display: none }` nor
+  `zz { display: none }` hides anything, nor does a class rule on an `article` (`.ak`).
+
+openhtmltopdf knows `article` and `section` as blocks, and applies all three rules. An inline
+`style="display:none"` on an unknown element is unmeasured.
+
+Jason ran round 6 the same day.
+
+**Round 7**, at the portfolio's ask: can a chunk's rule hide the host document's own text? `css-3`
+showed that Word writes a type rule into a built-in style, and round 2 that a class rule becomes a
+style named after the class. Each of the two hosts has a styles part, with paragraphs before and
+after the chunk in the styles a chunk rule targets:
+- `host-1-heading6-and-normal-web`: the host's Heading 6 and Normal (Web) paragraphs, and a chunk
+  hiding `h6` and `p`;
+- `host-2-custom-style-named-like-a-class`: the host's custom style named `hid`, and a chunk hiding
+  `.hid`;
+- `css-6-unknown-element-own-attributes`: whether an unknown element's own `style` attribute and `id`
+  count for nothing, as css-4's rules did. The portfolio's wording of transparency predicts they do.
+
+If Word hides the host's paragraphs, the WD needs a rule: an inspector reports the host's text that
+a chunk's rule hides.
+
+Word's answer to `css-6`: all three markers show, with no `w:vanish`. An unknown element's own
+`style` attribute and `id` count for nothing, as its class did in `css-4`. So Word's transparency is
+total, as the portfolio predicted, and unwrapping the element follows it.
+
+Word's answer to `host-1` and `host-2` is the reverse of the risk the probes tested for. Nothing is
+hidden anywhere, the host's text or the chunk's:
+- in `host-1`, the chunk's `h6` and `p` show, in the host's Heading 6 (italic) and Normal (Web);
+- in `host-2`, the chunk's `.hid` paragraph shows, in the host's `hid` style (bold);
+- the saved styles are the host's definitions, with no `w:vanish`. Word renamed the host's styleId
+  `Hid` to `hid` on save, and the host's paragraphs moved with it (the portfolio's check). In
+  `host-2`, whose host had no Normal (Web), Word made one for the chunk's plain `p` elements.
+
+So where the host already defines the style Word maps a rule onto, the host's definition wins, and
+the rule's `display: none` is lost. A chunk cannot hide the host's text this way. Its own text that
+such a rule hides in a host without the style (`css-3`, round 2) shows in a host with it.
+
+Word applies a type rule on `p`, `h6` and `address`, and a class rule, through a paragraph style
+(Normal (Web), Heading 6, HTML Address, a style named after the class). It applies the inline style,
+the id selector, the descendant selector and the type rule on `span` as direct formatting, which a
+host style cannot override. Unmeasured:
+- whether a defined but unused host style counts;
+- whether the name match is case-sensitive (the host's `hid` had styleId `Hid`, and its name matched);
+- which other elements map to built-in styles. Word's HTML styles suggest `h1` to `h6`, `pre`
+  (HTML Preformatted), and character styles for `code`, `kbd`, `samp`, `var`, `cite`, `dfn`;
+- whether a rule's other properties are lost with its `display`.
+
+The probes are done, and with them phase 0. The JUnit tests stand as they are.
