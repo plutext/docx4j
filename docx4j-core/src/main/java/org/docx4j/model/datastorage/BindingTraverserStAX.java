@@ -252,7 +252,7 @@ public class BindingTraverserStAX extends BindingTraverserCommonImpl {
 						this.xpathInjectImage(
 								(WordprocessingMLPackage)pkg, part,
 								sdtPr.getDataBinding(), sdt,
-								stack.peek()));
+								contextName())); // past the mc wrappers of a branch (CR-051 section 10.3, item 6)
 
 			} else if (sdtPr.getDataBinding()!=null
 					&& sdtPr.getByClass(org.docx4j.w14.CTSdtCheckbox.class)!=null) {

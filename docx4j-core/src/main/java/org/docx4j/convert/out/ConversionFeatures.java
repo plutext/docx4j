@@ -183,11 +183,21 @@ public abstract class ConversionFeatures {
 	 *  @since 17.3.3 */
 	public static final String PP_COMMON_FIELD_HYPERLINK_STYLE = "pp.common.fieldhyperlinkstyle";
 
+	/** Resolve each block-, row- and cell-level {@code mc:AlternateContent} of the working copy
+	 *  to the branch the exporter draws (ResolveAlternateContent, immediately after the deep
+	 *  copy), so that no later step or exporter meets such an element (CR-051 D6).  Forced on:
+	 *  {@code checkParams} adds it to every feature set, since the section model and the header
+	 *  and footer pre-pass depend on it, and it asks for the headers, footers, notes and comments
+	 *  to be copied.  A name for tests and logs, not a switch a caller can turn off.
+	 *  @since 17.3.4 (CR-051 phase 1) */
+	public static final String PP_COMMON_RESOLVE_ALTERNATE_CONTENT = "pp.common.resolvealternatecontent";
+
 	
 	/** Default features, that get applied to a PDF conversion
 	 */
 	public static final String[] DEFAULT_PDF_FEATURES = {
 		PP_COMMON_DEEP_COPY, 
+		PP_COMMON_RESOLVE_ALTERNATE_CONTENT,
 		PP_COMMON_MOVE_BOOKMARKS,
 		PP_COMMON_MOVE_PAGEBREAK,
 		PP_PDF_PAGEBREAK_PARAGRAPH_LINE,
@@ -205,6 +215,7 @@ public abstract class ConversionFeatures {
 	 */
 	public static final String[] DEFAULT_HTML_FEATURES = {
 		PP_COMMON_DEEP_COPY, 
+		PP_COMMON_RESOLVE_ALTERNATE_CONTENT,
 		PP_COMMON_MOVE_BOOKMARKS,
 		PP_COMMON_MOVE_PAGEBREAK,
 		PP_COMMON_CONTAINERIZATION,
@@ -228,6 +239,9 @@ public abstract class ConversionFeatures {
 		if (features == null) {
 			throw new IllegalArgumentException("The set of the features is null.");
 		}
+		//PP_COMMON_RESOLVE_ALTERNATE_CONTENT is forced on (CR-051 D6): the section model and
+		//the header and footer pre-pass depend on it, and it asks for the parts it visits to be copied
+		features.add(PP_COMMON_RESOLVE_ALTERNATE_CONTENT);
 		//PP_COMMON_DEEP_COPY, isn't required, no check
 		//PP_COMMON_MOVE_BOOKMARKS, isn't required, no check
 		//PP_COMMON_CONTAINERIZATION, isn't required, no check

@@ -47,6 +47,7 @@ import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.BinderListenerUtils;
+import org.docx4j.jaxb.McBranchSdt;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.Docx4jUnmarshallerListener;
 import org.docx4j.jaxb.JAXBAssociation;
@@ -197,6 +198,15 @@ implements XPathEnabled<E> {
 	 * 
 	 * So this is left for you to choose to do via the refreshXmlFirst parameter.   
 	 * 
+	 * <p>In {@link org.docx4j.jaxb.McBlockLevel#PRESERVE} mode a block-, row- or cell-level
+	 * {@code mc:AlternateContent} stands whole in the part, so {@code //w:p} returns every
+	 * branch's paragraphs and {@code w:body/w:p} none inside a branch (CR-051 section 10.3,
+	 * item 13).  In {@code word} mode (the default) the loaded part holds the branch Word
+	 * reads, as ordinary content.  A {@code w:sdt} directly inside a branch kept whole (a
+	 * paragraph-level element's, or a block-level one's in {@code preserve} mode) is bound in the
+	 * tree by its container's kind (CR-051 section 11.3) but has no DOM association, so an XPath
+	 * for {@code w:sdt} does not return it.</p>
+	 * 
 	 * @param xpathExpr
 	 * @param refreshXmlFirst
 	 * @return
@@ -305,6 +315,7 @@ implements XPathEnabled<E> {
 	}	
 	
 	private void unwrapUsually(Binder<Node> binder, Node doc) throws JAXBException {
+		McBranchSdt.rename(doc); // a w:sdt directly in an mc branch, bound by its container afterwards (CR-051 section 11.3)
 		
 		jaxbElement =  (E) XmlUtils.unwrap(binder.unmarshal( doc ));
 		// Unwrap, so we have eg CTEndnotes, not JAXBElement
@@ -479,6 +490,7 @@ implements XPathEnabled<E> {
 					}
 					
 					unwrapUsually(binder,  doc);  // unlikely to need this in the code below
+					afterBinderUnmarshal(docx4jUnmarshallerListener); // CR-051 section 3.2
 					
 				} else {
 					
@@ -494,7 +506,9 @@ implements XPathEnabled<E> {
 			        
 					log.debug("Unmarshalling " + this.partName.getName());
 					XMLStreamReader xsr = inputStreamToXSR(is);
-					unwrapUsually(getConfiguredUnmarshaller(false, xsr).unmarshal( xsr ));
+					Unmarshaller u = getConfiguredUnmarshaller(false, xsr);
+					unwrapUsually(u.unmarshal( xsr ));
+					resolveAlternateContent(u.getListener()); // CR-051 section 3.2
 					
 				}
 			} catch (org.xml.sax.SAXParseException e) {
@@ -635,7 +649,9 @@ implements XPathEnabled<E> {
 							log.error("Couldn't set Docx4jUnmarshallerListener on binder", e1);
 						}
 						
+						McBranchSdt.rename(doc); // CR-051 section 11.3
 						jaxbElement =  (E) XmlUtils.unwrap(binder.unmarshal( doc ));
+						afterBinderUnmarshal(docx4jUnmarshallerListener); // CR-051 section 3.2
 					} catch (ClassCastException cce) {
 						/* 
 						 * Work around for issue with JAXB binder, in Java 1.6 
@@ -660,7 +676,9 @@ implements XPathEnabled<E> {
 						 */
 	
 						log.warn("Binder not available for this docx");
-						unwrapUsually(getConfiguredUnmarshaller(true).unmarshal( doc ));		
+						Unmarshaller u = getConfiguredUnmarshaller(true);
+						unwrapUsually(u.unmarshal( doc ));		
+						resolveAlternateContent(u.getListener()); // CR-051 section 3.2
 						
 					}
 				} else {
@@ -745,7 +763,7 @@ implements XPathEnabled<E> {
 			try {
 //				jaxbElement =  (E) XmlUtils.unwrap(binder.unmarshal( el ));
 				unwrapUsually(binder,  el);  // unlikely to need this in the code below
-				
+				afterBinderUnmarshal(docx4jUnmarshallerListener); // CR-051 section 3.2
 				
 			} catch (Exception ue) {
 				if (ue instanceof UnmarshalException) {
@@ -772,10 +790,22 @@ implements XPathEnabled<E> {
 							.getMcPreprocessor();
 					XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
 					doc = (org.w3c.dom.Document) result.getNode();
+					// a fresh listener: the failed attempt's holds records from a tree now discarded (CR-051 section 3.2)
+					Docx4jUnmarshallerListener retryListener = new Docx4jUnmarshallerListener(this);
+					try {
+						BinderListenerUtils.getBinderListener().setListener(binder, retryListener);
+					} catch (Exception e1) {
+						log.error("Unmarshalling via binder, couldn't set Docx4jUnmarshallerListener. McChoiceNamespace declarations will be affected.");
+						log.error("Couldn't set Docx4jUnmarshallerListener on binder", e1);
+					}
+					McBranchSdt.rename(doc); // CR-051 section 11.3
 					jaxbElement = (E) XmlUtils.unwrap(binder.unmarshal(doc));
+					afterBinderUnmarshal(retryListener); // CR-051 section 3.2
 				} catch (ClassCastException cce) {
 					log.warn("Binder not available for this docx");
-					jaxbElement = (E) XmlUtils.unwrap(getConfiguredUnmarshaller(true).unmarshal( doc ));		
+					Unmarshaller u = getConfiguredUnmarshaller(true);
+					jaxbElement = (E) XmlUtils.unwrap(u.unmarshal( doc ));		
+					resolveAlternateContent(u.getListener()); // CR-051 section 3.2
 				} catch (Exception e) {
 					throw new JAXBException("Preprocessing exception", e);
 				}
@@ -787,6 +817,86 @@ implements XPathEnabled<E> {
 		}
 	}
 
+
+	/**
+	 * CR-051 section 3.2 on a binder path, when the unmarshal returns: each recorded Choice's
+	 * Requires is matched by URI through the declarations in scope at its DOM element (WD REQ-303;
+	 * the listener has no reader here), then the splice ({@link #resolveAlternateContent(List)}),
+	 * and where it changed the tree the binder is re-created over it, so that the DOM an XPath
+	 * query reads matches the tree ({@link #refreshBinder}).
+	 */
+	private void afterBinderUnmarshal(Unmarshaller.Listener listener) {
+		if (!(listener instanceof Docx4jUnmarshallerListener)) return;
+		List<org.docx4j.mce.AlternateContent> found = ((Docx4jUnmarshallerListener) listener).takeBlockLevelElements();
+		List<org.docx4j.mce.AlternateContent> nested = bindBranchSdts(listener); // CR-051 section 11.3
+		found.addAll(nested);
+		// the binder's DOM keeps a kept branch's controls in the private namespace: an XPath for
+		// w:sdt skips them rather than meeting a node with no object association (the javadoc of
+		// getJAXBNodesViaXPath says so)
+		if (!nested.isEmpty() && binder != null) refreshBinder(); // the typed controls are not the binder's DOM's
+		if (found.isEmpty()) return;
+		if (binder != null) {
+			for (org.docx4j.mce.AlternateContent ac : found) {
+				for (org.docx4j.mce.AlternateContent.Choice choice : ac.getChoice()) {
+					try {
+						Node n = binder.getXMLNode(choice);
+						if (n != null) org.docx4j.jaxb.McSelection.recordRequiresNamespaces(choice, new DomNamespaceContext(n));
+					} catch (Exception e) {
+						log.debug("No DOM node for a Choice: " + e);
+					}
+				}
+			}
+		}
+		if (!resolveAlternateContent(found).isEmpty() && binder != null) {
+			refreshBinder();
+		}
+	}
+
+	/**
+	 * The binder re-created over the spliced tree, as {@link #createBinderAndJaxbElement} does:
+	 * the tree is marshalled to a new DOM and unmarshalled again through a new binder, so the
+	 * JAXB objects are new ones (the records of {@link #getResolvedAlternateContent} stay, and
+	 * their promoted objects are then not the tree's).  CR-051 section 10.4 c asked for a fresh
+	 * {@code Binder.marshal} over the same objects instead, and section 3.2 for {@code updateXML};
+	 * measured on jaxb-runtime 4 (20 October 2026), neither gives a usable association:
+	 * {@code Binder.marshal} associates neither the root nor the members of an element list, and
+	 * {@code updateXML} leaves the root associated with the node it removed, so an XPath from the
+	 * root finds nothing (the "once only" of JAXB issue 459 is in fact never, for the root).
+	 */
+	private void refreshBinder() {
+		try {
+			createBinderAndJaxbElement(jaxbElement);
+		} catch (Exception e) {
+			log.warn("Couldn't re-create the binder over the spliced tree; one is created on demand: " + e);
+			binder = null;
+		}
+	}
+
+	/** The namespace declarations in scope at a DOM node, as a NamespaceContext. */
+	private static final class DomNamespaceContext implements javax.xml.namespace.NamespaceContext {
+		private final Node node;
+
+		DomNamespaceContext(Node node) {
+			this.node = node;
+		}
+
+		@Override
+		public String getNamespaceURI(String prefix) {
+			String uri = node.lookupNamespaceURI(prefix == null || prefix.isEmpty() ? null : prefix);
+			return uri == null ? javax.xml.XMLConstants.NULL_NS_URI : uri;
+		}
+
+		@Override
+		public String getPrefix(String namespaceURI) {
+			return node.lookupPrefix(namespaceURI);
+		}
+
+		@Override
+		public java.util.Iterator<String> getPrefixes(String namespaceURI) {
+			String prefix = node.lookupPrefix(namespaceURI);
+			return (prefix == null ? java.util.Collections.<String>emptyList() : java.util.Collections.singletonList(prefix)).iterator();
+		}
+	}
 	
 //	private String toString(ByteBuffer bb) throws UnsupportedEncodingException {
 //

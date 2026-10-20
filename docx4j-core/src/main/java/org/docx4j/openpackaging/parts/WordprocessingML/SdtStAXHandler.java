@@ -56,6 +56,22 @@ public abstract class SdtStAXHandler extends StAXHandlerAbstract  {
 	
 	protected Stack stack = new Stack();
 
+	/**
+	 * The local name of the element the current one stands in, looking past the
+	 * {@code mc:AlternateContent}, {@code mc:Choice} and {@code mc:Fallback} wrappers of a
+	 * branch (CR-051 section 10.3, item 2): a control inside a branch is the kind its
+	 * container's content model says, as it is outside one.
+	 *
+	 * @since 17.3.4
+	 */
+	protected String contextName() {
+		for (int i = stack.list.size() - 1; i >= 0; i--) {
+			String name = stack.list.get(i);
+			if (!"AlternateContent".equals(name) && !"Choice".equals(name) && !"Fallback".equals(name)) return name;
+		}
+		return "";
+	}
+
 	// Reused across sdts, rather than created per intercepted sdt.  (Benchmarks -
 	// see the CR-001-binding-traverser-parity appendix - measured only a few percent
 	// from this; the pipe's per-sdt marshal/write dominates.  Kept as simple waste
@@ -108,23 +124,24 @@ public abstract class SdtStAXHandler extends StAXHandlerAbstract  {
 					Object o=null;
 					try {
 						// To unmarshall to the correct type of sdt, we need to know context
-						if (stack.peek().equals("body")
-								|| stack.peek().equals("tc")
-								|| stack.peek().equals("txbxContent")
-								|| stack.peek().equals("hdr")
-								|| stack.peek().equals("ftr")
-								|| stack.peek().equals("footnote")
-								|| stack.peek().equals("endnote")
+						String context = contextName();
+						if (context.equals("body")
+								|| context.equals("tc")
+								|| context.equals("txbxContent")
+								|| context.equals("hdr")
+								|| context.equals("ftr")
+								|| context.equals("footnote")
+								|| context.equals("endnote")
 								) {
 							o = unmarshaller().unmarshal(xsr, SdtBlock.class);
-						} else if (stack.peek().equals("tbl")) {
+						} else if (context.equals("tbl")) {
 							o = unmarshaller().unmarshal(xsr, CTSdtRow.class);								
-						} else if (stack.peek().equals("tr")) {
+						} else if (context.equals("tr")) {
 							o = unmarshaller().unmarshal(xsr, CTSdtCell.class);								
-						} else if (stack.peek().equals("p")) {
+						} else if (context.equals("p")) {
 							o = unmarshaller().unmarshal(xsr, SdtRun.class);								
 						} else {
-							log.error("TODO stack.peek() " + stack.peek() );
+							log.error("TODO stack.peek() " + context );
 						}
 						// Unmarshalling will be done from this start event to the corresponding end event. 
 						// If this method returns successfully, the reader will be pointing at the token right after the end event.

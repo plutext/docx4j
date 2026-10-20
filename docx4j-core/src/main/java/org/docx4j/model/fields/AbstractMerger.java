@@ -31,6 +31,9 @@ import java.util.regex.Pattern;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.McMode;
+import org.docx4j.jaxb.McSelection;
+import org.docx4j.jaxb.McSplice;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.fields.merge.DataFieldName;
 import org.docx4j.model.fields.merge.MailMerger.OutputField;
@@ -190,7 +193,7 @@ public abstract class AbstractMerger {
             }
 			
 			// add sectPr to final paragraph
-			Object last = content.get( content.size()-1);
+			Object last = lastBlock(content);
 			P lastP = null;
 			if (last instanceof P) {
 				lastP = (P)last;
@@ -249,6 +252,17 @@ public abstract class AbstractMerger {
 	 * @param template
 	 * @return
 	 */
+	/** The list's last block, looking through an {@code mc:AlternateContent} into the branch docx4j draws (CR-051 section 10.3, item 8); null for an empty list. */
+	private static Object lastBlock(List<?> content) {
+		for (int i = content.size() - 1; i >= 0; i--) {
+			Object last = XmlUtils.unwrap(content.get(i));
+			if (!(last instanceof org.docx4j.mce.AlternateContent)) return last;
+			Object inner = lastBlock(McSelection.select((org.docx4j.mce.AlternateContent) last));
+			if (inner != null) return inner;
+		}
+		return null;
+	}
+
 	private static SectPr getDocumentSeparator(WordprocessingMLPackage template) {
 	    	
 		   SectPr sectPr = template.getMainDocumentPart().getJaxbElement().getBody().getSectPr();
@@ -257,7 +271,7 @@ public abstract class AbstractMerger {
 			   // Maybe the last P already contains one?
 			   // Presumably Word would reuse this.
 			   List all = template.getMainDocumentPart().getContent();
-		    	Object last = all.get( all.size()-1 );
+		    	Object last = lastBlock(all);
 		    	if (last instanceof P) {
 		    		if (((P) last).getPPr()!=null 
 		    				&& ((P) last).getPPr().getSectPr() !=null) {
@@ -451,34 +465,18 @@ public abstract class AbstractMerger {
 			List<FieldRef> fieldRefs) throws Docx4JException {
 		for( P p : fl.getStarts() ) {
 			int index;
-			if (p.getParent() instanceof ContentAccessor) {
-				// 2.8.1
-				index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
-				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-				newP.setParent(p.getParent());
-                if(log.isDebugEnabled()) {
-                    log.debug("Canonicalised: " + XmlUtils.marshaltoString(newP, true, true));
-                }
-				((ContentAccessor)p.getParent()).getContent().set(index, newP);
-			} else if (p.getParent() instanceof java.util.List) {
-				// 3.0
-				index = ((java.util.List)p.getParent()).indexOf(p);
-				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-				newP.setParent(p.getParent());
-				log.debug("NewP length: " + newP.getContent().size() );
-				((java.util.List) p.getParent()).set(index, newP);
-			} else if (p.getParent() instanceof CTTextbox) {
-				// 3.0.1
-				index = ((CTTextbox) p.getParent()).getTxbxContent().getContent().indexOf(p);
-				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-				newP.setParent(p.getParent());
-                if(log.isDebugEnabled()) {
-                    log.debug("Canonicalised: " + XmlUtils.marshaltoString(newP, true, true));
-                }
-				((CTTextbox) p.getParent()).getTxbxContent().getContent().set(index, newP);
-			} else {
-				throw new Docx4JException("Unexpected parent: "+ p.getParent().getClass().getName());
+			// the parent's live list, a Choice's or Fallback's included (CR-051 section 10.3, item 1)
+			List<Object> siblings = McSplice.contentOf(p.getParent());
+			if (siblings == null) {
+				throw new Docx4JException("Unexpected parent: " + (p.getParent() == null ? "null" : p.getParent().getClass().getName()));
 			}
+			index = siblings.indexOf(p);
+			P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
+			newP.setParent(p.getParent());
+			if(log.isDebugEnabled()) {
+				log.debug("Canonicalised: " + XmlUtils.marshaltoString(newP, true, true));
+			}
+			siblings.set(index, newP);
 		}
 	}
 	
@@ -556,20 +554,26 @@ public abstract class AbstractMerger {
     		
     	}
     	
-        if (content.getContent().contains(needToBeRemoved)) {
-            content.getContent().remove(needToBeRemoved);
+        recursiveRemove(content.getContent(), needToBeRemoved);
+    }
+
+    /** As {@link #recursiveRemove(ContentAccessor, Object)}, through a list: every branch of an {@code mc:AlternateContent} is searched (CR-051 section 10.3, item 7). */
+    private static void recursiveRemove(List<Object> content, Object needToBeRemoved) {
+
+        if (content.contains(needToBeRemoved)) {
+            content.remove(needToBeRemoved);
             log.debug(".. removed");
             return;
         }
 
         // TODO REVISIT!  I guess this is just trying to match JAXBElement case
-        for (Object object : content.getContent()) {
-            if (object instanceof ContentAccessor) {
-                recursiveRemove((ContentAccessor) object, needToBeRemoved);
-            } else if (object instanceof JAXBElement<?>) {
-                JAXBElement<?> element = (JAXBElement<?>) object;
-                if (element.getValue() instanceof ContentAccessor) {
-                    recursiveRemove((ContentAccessor) element.getValue(), needToBeRemoved);
+        for (Object object : content) {
+            Object value = XmlUtils.unwrap(object);
+            if (value instanceof ContentAccessor) {
+                recursiveRemove(((ContentAccessor) value).getContent(), needToBeRemoved);
+            } else if (value instanceof org.docx4j.mce.AlternateContent) {
+                for (Object branch : McSelection.branches((org.docx4j.mce.AlternateContent) value, McMode.ALL)) {
+                    recursiveRemove(McSplice.contentOf(branch), needToBeRemoved);
                 }
             }
         }

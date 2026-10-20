@@ -38,6 +38,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
 import org.docx4j.jaxb.McMode;
+import org.docx4j.jaxb.McSelection;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -979,7 +980,20 @@ public class OpenDoPEHandler {
 		SdtContent ca = ((SdtElement)repeatingSectionSdt).getSdtContent();
 		
 		// replace its content
-		SdtElement repeatingItem = (SdtElement)XmlUtils.unwrap(ca.getContent().get(0));
+		Object firstItem = ca.getContent().isEmpty() ? null : XmlUtils.unwrap(ca.getContent().get(0));
+		if (firstItem instanceof org.docx4j.mce.AlternateContent) {
+			// the item in the branch docx4j draws (CR-051 section 10.3, item 6)
+			List<Object> drawn = McSelection.select((org.docx4j.mce.AlternateContent) firstItem);
+			firstItem = drawn.isEmpty() ? null : XmlUtils.unwrap(drawn.get(0));
+		}
+		if (!(firstItem instanceof SdtElement)) {
+			log.error("w15 repeating section's first item is not a repeating section item: "
+					+ (firstItem == null ? "nothing" : firstItem.getClass().getName()) + "; left as it is");
+			List<Object> asIs = new ArrayList<Object>();
+			asIs.add(repeatingSectionSdt);
+			return asIs;
+		}
+		SdtElement repeatingItem = (SdtElement) firstItem;
 		
 		try {
 			List<Object> repeatingSectionItems = processRepeat(repeatingItem, customXmlDataStorageParts, storeItemId, xpath, prefixMappings, true);

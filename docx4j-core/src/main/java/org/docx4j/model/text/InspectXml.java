@@ -20,11 +20,14 @@ package org.docx4j.model.text;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
@@ -32,6 +35,7 @@ import jakarta.xml.bind.Marshaller;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
+import org.docx4j.jaxb.ResolvedAlternateContent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -239,7 +243,7 @@ final class InspectXml {
 	static final class Dom {
 		final Document document;
 		final Map<Element, Object> jaxb;
-		final long elements;
+		long elements;
 		final Paths paths = new Paths();
 
 		Dom(Document document, Map<Element, Object> jaxb, long elements) {
@@ -284,6 +288,109 @@ final class InspectXml {
 		return new Dom(b.doc, b.jaxb, b.count);
 	}
 
+	/**
+	 * The record of {@code word} mode put back (CR-051 section 3.2): each {@code mc:AlternateContent}
+	 * a load took out of the part, marshalled into this DOM at the promoted content's place, the
+	 * promoted elements moved into the branch they came from (so they keep their links to the live
+	 * objects the text model recorded), so that the walk finds the element and its unselected
+	 * branches where {@code preserve} mode would, and their {@code mce.branch} findings carry the same
+	 * addresses.  Applied last record first, since each record's address and index describe the tree
+	 * with the records before it applied.  A record whose container the address no longer locates
+	 * (the tree was edited since the load) is skipped.
+	 */
+	static void restore(Dom dom, List<ResolvedAlternateContent> records, JAXBContext jc, InspectRun run) throws Exception {
+		for (int k = records.size() - 1; k >= 0; k--) {
+			ResolvedAlternateContent r = records.get(k);
+			if (r.getBranch() == null || r.getPromotedCount() <= 0) continue; // nothing promoted: no branch to inspect
+			Element container = locate(dom.root(), r.getAddress());
+			if (container == null) continue;
+			List<Element> content = contentChildren(container);
+			int from = r.getIndex(), n = r.getPromotedCount();
+			if (from < 0 || from + n > content.size()) continue;
+			Builder b = new Builder(run, dom.document);
+			Marshaller m = jc.createMarshaller();
+			try {
+				NamespacePrefixMapperUtils.setProperty(m, NamespacePrefixMapperUtils.getPrefixMapper());
+			} catch (Exception e) {
+				// another JAXB implementation's mapper: the prefixes don't matter here
+			}
+			m.setListener(new Marshaller.Listener() {
+				@Override public void beforeMarshal(Object source) {
+					b.pending.add(source instanceof JAXBElement ? ((JAXBElement<?>) source).getValue() : source);
+				}
+			});
+			try {
+				m.marshal(r.getElement(), b);
+			} catch (Exception e) {
+				for (Throwable t = e; t != null; t = t.getCause()) if (t instanceof Budget) throw new InspectRun.Stop(Inspection.LIMIT_ELEMENTS);
+				throw e;
+			}
+			Element ac = null;
+			for (Node c = b.fragment.getFirstChild(); c != null; c = c.getNextSibling()) if (c instanceof Element) { ac = (Element) c; break; }
+			if (ac == null) continue;
+			dom.jaxb.putAll(b.jaxb);
+			dom.elements += b.count;
+			Element branch = null;
+			for (Element c : children(ac)) if (b.jaxb.get(c) == r.getBranch()) { branch = c; break; }
+			Node after = content.get(from + n - 1).getNextSibling();
+			if (branch != null) {
+				while (branch.getFirstChild() != null) branch.removeChild(branch.getFirstChild());
+				for (int i = from; i < from + n; i++) branch.appendChild(content.get(i));
+			}
+			container.insertBefore(ac, after);
+		}
+	}
+
+	/** The names of the property children a container's content list leaves out. */
+	private static final Set<String> PROPERTIES = new HashSet<String>(Arrays.asList("pPr", "rPr", "tcPr", "trPr", "tblPrEx",
+			"tblPr", "tblGrid", "sectPr", "customXmlPr", "sdtPr", "sdtEndPr"));
+
+	/** A container's child elements in content-list order: its property children left out. */
+	private static List<Element> contentChildren(Element container) {
+		List<Element> out = new ArrayList<Element>();
+		for (Element c : children(container)) {
+			if (W.equals(c.getNamespaceURI()) && PROPERTIES.contains(c.getLocalName())) continue;
+			out.add(c);
+		}
+		return out;
+	}
+
+	/**
+	 * The element a {@link org.docx4j.jaxb.McSplice#address} names, from the root: a step with an
+	 * index is that content child of the element before it; one without is its first child of that
+	 * name.  Null where a step finds nothing.
+	 */
+	static Element locate(Element root, String address) {
+		if (root == null || address == null) return null;
+		String[] steps = address.split("/");
+		Element e = root;
+		for (int i = 1; i < steps.length && e != null; i++) {
+			String step = steps[i];
+			int bracket = step.indexOf('[');
+			if (bracket >= 0) {
+				int index = Integer.parseInt(step.substring(bracket + 1, step.length() - 1));
+				List<Element> content = contentChildren(e);
+				e = index < content.size() ? content.get(index) : null;
+				if (e != null && !sameName(e, step.substring(0, bracket))) e = null;
+			} else {
+				Element found = null;
+				for (Element c : children(e)) if (sameName(c, step)) { found = c; break; }
+				e = found;
+			}
+		}
+		return e;
+	}
+
+	/** Whether the element has this {@code prefix:local} name: the local name, and the namespace the conventional prefix names where it is known. */
+	private static boolean sameName(Element e, String name) {
+		int colon = name.indexOf(':');
+		String local = colon < 0 ? name : name.substring(colon + 1);
+		if (!local.equals(e.getLocalName())) return false;
+		if (colon < 0) return true;
+		String ns = new org.docx4j.jaxb.NamespacePrefixMappings().getNamespaceURI(name.substring(0, colon));
+		return ns == null || ns.isEmpty() || ns.equals(e.getNamespaceURI());
+	}
+
 	/** The element budget spent while marshalling, raised through JAXB as a SAX exception. */
 	private static final class Budget extends org.xml.sax.SAXException {
 		private static final long serialVersionUID = 1L;
@@ -324,6 +431,8 @@ final class InspectXml {
 	/** SAX to DOM, linking each element to the bean marshalled just before it. */
 	private static final class Builder extends DefaultHandler {
 		final Document doc;
+		/** Where a marshal into an existing document builds: its elements, under this fragment. */
+		final org.w3c.dom.DocumentFragment fragment;
 		final Map<Element, Object> jaxb = new IdentityHashMap<Element, Object>();
 		Node current;
 		/** The objects whose beforeMarshal has come and that no element has taken, in order. */
@@ -336,7 +445,16 @@ final class InspectXml {
 
 		Builder(InspectRun run) throws Exception {
 			doc = XmlUtils.getNewDocumentBuilder().newDocument();
+			fragment = null;
 			current = doc;
+			allowed = run == null ? Long.MAX_VALUE : run.maxElements - run.elements;
+		}
+
+		/** Builds into this document, under a fragment of it, so the elements can be put among the document's own. */
+		Builder(InspectRun run, Document into) {
+			doc = into;
+			fragment = into.createDocumentFragment();
+			current = fragment;
 			allowed = run == null ? Long.MAX_VALUE : run.maxElements - run.elements;
 		}
 

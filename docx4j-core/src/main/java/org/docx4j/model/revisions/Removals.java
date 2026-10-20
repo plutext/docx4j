@@ -249,11 +249,7 @@ final class Removals {
 		CommentsPart commentsPart = main.getCommentsPart();
 		Comments.Comment entry = commentEntry(id);
 		if (entry == null) return;
-		String paraId = null;
-		for (Object o : entry.getContent()) {
-			Object v = Trees.unwrap(o);
-			if (v instanceof P && ((P) v).getParaId() != null) paraId = ((P) v).getParaId();
-		}
+		String paraId = Trees.lastParaId(entry.getContent());
 		discard(commentsPart, entry.getContent());
 		commentsPart.getJaxbElement().getComment().remove(entry);
 		if (paraId == null || conversion) return;
@@ -295,11 +291,7 @@ final class Removals {
 		CommentsPart part = pkg.getMainDocumentPart().getCommentsPart();
 		if (part == null || part.getJaxbElement() == null) return null;
 		for (Comments.Comment c : part.getJaxbElement().getComment()) {
-			String last = null;
-			for (Object o : c.getContent()) {
-				Object v = Trees.unwrap(o);
-				if (v instanceof P && ((P) v).getParaId() != null) last = ((P) v).getParaId();
-			}
+			String last = Trees.lastParaId(c.getContent());
 			if (paraId.equalsIgnoreCase(last)) return c.getId();
 		}
 		return null;

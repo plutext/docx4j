@@ -48,6 +48,8 @@ import org.docx4j.dml.wordprocessingDrawing.Anchor;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.McPurpose;
 import org.docx4j.jaxb.McSelection;
+import org.docx4j.jaxb.McSplice;
+import org.docx4j.jaxb.ResolvedAlternateContent;
 import org.docx4j.mce.AlternateContent;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.chart.ChartDescription;
@@ -60,6 +62,7 @@ import org.docx4j.model.listnumbering.NumberingState;
 import org.docx4j.model.listnumbering.NumberingStates;
 import org.docx4j.model.revisions.ResolvedView;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.DrawingML.DiagramDataPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
@@ -120,6 +123,7 @@ import org.docx4j.wml.TcPr;
 import org.docx4j.wml.Text;
 import org.docx4j.wml.Tr;
 import org.docx4j.wml.TrPr;
+import org.jvnet.jaxb.lang.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -584,6 +588,7 @@ final class Extractor {
 
 	private void blocks(List<Object> items, String prefix, Story story, List<TextBlock> sink, RunState state) {
 		if (items == null) return;
+		resolvedAlternateContent(items, prefix, story);
 		for (int i = 0; i < items.size(); i++) {
 			Object item = items.get(i);
 			if (removes(item)) continue;
@@ -1953,6 +1958,28 @@ final class Extractor {
 	// --- markup compatibility: REQ-307 -----------------------------------------------------------------
 
 	/**
+	 * The record of {@code word} mode (CR-051 section 3.2): each block-, row- or cell-level
+	 * {@code mc:AlternateContent} a load took out of this container, resolved to the branch Word
+	 * reads, is compared with its other branches ({@code mce.branches_differ}) at the address of the
+	 * promoted content, as the element's would be in {@code preserve} mode.  A container is matched by
+	 * its address from the part's root ({@link McSplice#address}), worked out at the splice and again
+	 * here; a part with no record costs nothing.
+	 */
+	private void resolvedAlternateContent(List<Object> items, String prefix, Story story) {
+		if (items.isEmpty() || !(story.part instanceof JaxbXmlPart)) return;
+		List<ResolvedAlternateContent> records = ((JaxbXmlPart<?>) story.part).getResolvedAlternateContent();
+		if (records.isEmpty()) return;
+		Object first = unwrap(items.get(0));
+		Object owner = first instanceof Child ? ((Child) first).getParent() : null;
+		if (owner == null) return;
+		String here = McSplice.address(owner);
+		for (ResolvedAlternateContent r : records) {
+			if (r.getBranch() == null || !here.equals(r.getAddress())) continue;
+			compareBranches(r.getElement(), prefix + "/" + r.getIndex());
+		}
+	}
+
+	/**
 	 * {@code mce.branches_differ}: where the selected branch and another both hold text, and the texts
 	 * differ after REQ-1201's normalisation.
 	 */
@@ -2189,6 +2216,11 @@ final class Extractor {
 		for (Object o : content) {
 			Object v = unwrap(o);
 			if (v instanceof P && ((P) v).getParaId() != null) id = ((P) v).getParaId();
+			else if (v instanceof AlternateContent) {
+				// the comment's last paragraph may stand in a branch (CR-051 section 10.3, item 8)
+				String inner = lastParaId(McSelection.select(McPurpose.TEXT, (AlternateContent) v));
+				if (inner != null) id = inner;
+			}
 		}
 		return id;
 	}

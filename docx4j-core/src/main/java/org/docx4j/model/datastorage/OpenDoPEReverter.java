@@ -32,6 +32,7 @@ import org.docx4j.jaxb.McSelection;
 import org.docx4j.jaxb.McSelection.BranchStep;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.McSplice;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -362,11 +363,9 @@ public class OpenDoPEReverter {
 			Object parent = child.getParent();
 			log.info("parent: " + parent.getClass().getName() );
 			
-			if (parent instanceof ContentAccessor
-					|| parent instanceof java.util.ArrayList) {
-				
-				List<Object> list = (parent instanceof ContentAccessor) ? 
-										((ContentAccessor)parent).getContent() : (java.util.ArrayList)parent;	
+			// the parent's live list, a Choice's or Fallback's included (CR-051 section 10.3, item 1)
+			List<Object> list = McSplice.contentOf(parent);
+			if (list != null) {
 				
 				int index = 0;
 				boolean found = false;
@@ -411,11 +410,9 @@ public class OpenDoPEReverter {
 			Object parent = child.getParent();
 			log.info("parent: " + parent.getClass().getName() );
 			
-			if (parent instanceof ContentAccessor
-					|| parent instanceof java.util.ArrayList) {
-				
-				List<Object> list = (parent instanceof ContentAccessor) ? 
-										((ContentAccessor)parent).getContent() : (java.util.ArrayList)parent;	
+			// the parent's live list, a Choice's or Fallback's included (CR-051 section 10.3, item 1)
+			List<Object> list = McSplice.contentOf(parent);
+			if (list != null) {
 				
 				int index = 0;
 				boolean found = false;

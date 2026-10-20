@@ -36,6 +36,11 @@ REVISION HISTORY
 20260919 - Add mc:AlternateContent to w:p (EG_PContent) and w:numPicBullet (CR-021 phase 2)
            Add w14 text effects to rPr 
            
+20261020 - Add mc:AlternateContent to EG_ContentBlockContent (every block container: w:body, w:hdr, w:ftr, w:tc,
+           w:footnote, w:endnote, w:comment, w:txbxContent, block-level w:sdtContent and w:customXml, w:docPartBody),
+           EG_ContentRowContent (w:tbl, row-level w:sdtContent and w:customXml) and EG_ContentCellContent (w:tr,
+           cell-level w:sdtContent and w:customXml) (CR-051 phase 1; D1 (a) and D2 (a))
+
 20181124   Add w14 EG_RPrOpenType to rPr. (since docx4j 6.1.0)   
 
 20210104   Add office-word-2006-wordml.xsd    
@@ -8719,6 +8724,14 @@ PRINCIPLES:
 				</xsd:annotation>
 			</xsd:element>
 			<xsd:group ref="EG_RunLevelElts" minOccurs="0" maxOccurs="unbounded"/> <!--  BUG?  run level stuff at block level? -->
+			<!-- docx4j 17.3.4 (CR-051 phase 1): every desktop Word reads mc:AlternateContent at
+			     block level by ISO's rule (the first Choice it understands, else the Fallback),
+			     in the body, a cell, a header, a note, a comment, a text box and a block-level
+			     content control alike; until 17.3.4 the preprocessor resolved it to the Fallback,
+			     or dropped it.  Admitted so that JAXB builds it wherever Word reads it; on load
+			     docx4j then either resolves it as Word does (docx4j.jaxb.mc.blockLevel=word, the
+			     default) or keeps it whole (preserve), through org.docx4j.jaxb.McBlockLevel. -->
+			<xsd:element ref="mc:AlternateContent" minOccurs="0" maxOccurs="unbounded" />
 		</xsd:choice>
 	</xsd:group>
 	
@@ -8830,6 +8843,10 @@ PRINCIPLES:
 				</xsd:annotation>
 			</xsd:element>
 			<xsd:group ref="EG_RunLevelElts" minOccurs="0" maxOccurs="unbounded"/>
+			<!-- docx4j 17.3.4 (CR-051 phase 1, D2 (a)): Word 365 reads mc:AlternateContent among
+			     a table's rows as it does at block level (a Choice holding w:tr); admitted so
+			     that load builds it, and resolves or keeps it as EG_ContentBlockContent's. -->
+			<xsd:element ref="mc:AlternateContent" minOccurs="0" maxOccurs="unbounded" />
 		</xsd:choice>
 	</xsd:group>
 	
@@ -8868,6 +8885,10 @@ PRINCIPLES:
 				</xsd:annotation>
 			</xsd:element>
 			<xsd:group ref="EG_RunLevelElts" minOccurs="0" maxOccurs="unbounded"/>
+			<!-- docx4j 17.3.4 (CR-051 phase 1, D2 (a)): Word 365 reads mc:AlternateContent among
+			     a row's cells as it does at block level (a Choice holding w:tc); admitted so
+			     that load builds it, and resolves or keeps it as EG_ContentBlockContent's. -->
+			<xsd:element ref="mc:AlternateContent" minOccurs="0" maxOccurs="unbounded" />
 		</xsd:choice>
 	</xsd:group>
 	<xsd:complexType name="CT_SdtContentCell">

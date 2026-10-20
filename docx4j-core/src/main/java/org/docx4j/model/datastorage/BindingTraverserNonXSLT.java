@@ -448,6 +448,10 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 			new TraversalUtil(sdt.getSdtContent().getContent(), ef, McMode.ALL);
 			
 			sdtParent = XmlUtils.unwrap(sdtParent);
+			if (sdtParent instanceof org.docx4j.mce.AlternateContent.Choice || sdtParent instanceof org.docx4j.mce.AlternateContent.Fallback) {
+				// a control directly in a branch is shaped by the container the branch is in (CR-051 section 10.3, item 6)
+				sdtParent = XmlUtils.unwrap(org.docx4j.jaxb.McSplice.effectiveContainer(sdt));
+			}
 			//System.out.println("sdt's parent: " + sdtParent.getClass().getName() );
 			
 			// TODO: remove any images in package which are no longer used.

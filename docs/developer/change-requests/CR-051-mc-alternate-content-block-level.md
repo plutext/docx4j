@@ -3,7 +3,8 @@
 Status: ACCEPTED 2026-10-20 (Jason: "accept recommendations for CR-051's D1 to D5"), to implement as
 recommended. Phase 0 done 2026-10-20 (the walker audit, §10); D6, the exporters' copy, decided (a)
 the same day (Jason: "D6 (a)"). Five of the six defects of today the audit found were fixed the same
-day (§10.5); the sixth goes with phase 1. Proposed 2026-10-20, drafted at Jason's request ("write
+day (§10.5); the sixth goes with phase 1. Phase 1 in progress from 2026-10-20 (Jason: "make the
+fixes, then phase 1"). Proposed 2026-10-20, drafted at Jason's request ("write
 the cr to keep body-level mc through load. also check whether we do/should keep mc in sdt content")
 by Claude Opus 5.5 (session docx4j-25), after the portfolio session's measurement of Jason's
 `mc-fun` probes (paper §7.8).
@@ -710,8 +711,10 @@ from phase 0's audit, decided (a) the same day.
   - **A `w:customXml` directly inside a branch** comes back as a DOM `Element`, not a JAXB object:
     `CTCustomXmlBlock`, `CTCustomXmlRow` and `CTCustomXmlCell` carry no `@XmlRootElement`, and a
     branch's content is `@XmlAnyElement(lax = true)`. `Tbl`, `Tr`, `Tc`, `SdtBlock`, `CTSdtRow` and
-    `CTSdtCell` carry one, and bind. The splice would put that `Element` into a content list. Phase
-    1 unmarshals it, or the walkers must expect it.
+    `CTSdtCell` carry one; `Tbl`, `Tr` and `Tc` bind, but the four `w:sdt` classes share one root
+    element name, so a lax binding picks one of them for every level (corrected in phase 1, §11.3:
+    the element is bound by its container's kind). The splice would put that `Element` into a
+    content list. Phase 1 unmarshals it, or the walkers must expect it.
   - **The splice adds bare objects** (a `Tbl`, a `Tc`) to lists whose annotations expect `JAXBElement`
     wrappers (`Body`, `Tr`). docx4j does this everywhere, and its walkers unwrap; the javadoc says
     so.
@@ -1064,3 +1067,281 @@ Seen in passing, not to do with `mc`:
   `SdtElement`.
 - `Containerization.process`:110-132 never containerizes notes or comments. For notes, its list holds
   the notes, not their paragraphs. For comments, the grouped list is a throwaway copy.
+
+## 11. Phase 1 record
+
+### 11.1 Stage A: the load mechanism, 20 October 2026
+
+By a Claude Fable 5.1 subagent of the docx4j-25 session, at Jason's word ("make the fixes, then
+phase 1"). Stage A is the listener fix, the schema, the load-time mode, the preprocessor and §4's
+tests of them; stage B takes the consumers (§10.3), D6's step, the revisions model, the record's
+two readers, the exporter tests and the CHANGELOG.
+
+**What landed, and where it departs from §3.2 and §10.4:**
+
+- **The listener fix** (§1's binder-path defect) is its own change, in
+  `JaxbXmlPartXPathAware.unmarshal(InputStream, boolean)`'s rejected-part branch, with
+  `BinderPathListenerTest`: a part StAX rejects (a `w14` element in `w:pPr`) beside a run-level
+  text box; before the fix it lost the Choice's `wps` prefix (so a save left `xmlns:wps` off the
+  root) and the drawing's id.
+- **The schema:** `mc:AlternateContent` in `EG_ContentBlockContent`, `EG_ContentRowContent` and
+  `EG_ContentCellContent`; the regeneration changed no signature, and each of §3.1's containers
+  (and D2's) binds the element.
+- **The mode** is `org.docx4j.jaxb.McBlockLevel` (`WORD`, `PRESERVE`; the property, a package's
+  own setting through `OpcPackage.setMcBlockLevel`, read when each part unmarshals). The load
+  option is `Load3.setMcBlockLevel`, `OpcPackage.load(File|InputStream, McBlockLevel)`,
+  `WordprocessingMLPackage.load(..., McBlockLevel)` and `Docx4J.load(..., McBlockLevel)`; a Flat
+  OPC load gets it through `FlatOpcXmlImporter.setMcBlockLevel`.
+- **The splice** is `org.docx4j.jaxb.McSplice.apply(elements, rule)`, one implementation with the
+  rule as a parameter, as D6 asks: at load `McSplice.WORD_READS` (TEXT's branch; an element with
+  no understood Choice and no Fallback kept whole, REQ-305); stage B's step gives its own rule
+  (`McSelection.selectedBranch(ac, part)`) and its own finder, with `McSplice.inScope` as the
+  scope test. Elements are applied outermost first (by depth), through the live parent; one inside
+  a branch the splice discarded, or inside an element it kept whole, is skipped and stays whole in
+  there. An element with no branch at all is removed and recorded.
+- **The record** is `ResolvedAlternateContent` on `JaxbXmlPart.getResolvedAlternateContent()`:
+  the element whole, the branch promoted, the container's name, its address from the part's root
+  (`w:document/w:body[0]/w:tbl[3]/w:tr[0]/w:tc[1]`: each step an element name with its index in
+  the parent's content list where the parent has one), the index the element stood at and the
+  count promoted. Appended to, never cleared, so it survives the re-unmarshal a late binder makes
+  (§10.4 b). The promoted branch's objects are moved, not copied: the record's Choice still lists
+  them, and their parent is now the container (on a binder path, after the binder is re-created,
+  they are no longer the tree's objects; see the next item).
+- **The binder, a departure from §10.4 c and §3.2 step 3.** Measured on jaxb-runtime 4.0.x (the
+  RI) with a scratch test: `Binder.marshal` into a new DOM associates neither the root nor the
+  members of an element list (`getXMLNode(root)` null), and `Binder.updateXML(root)` leaves the
+  root associated with the node it removed, so an XPath from the root finds nothing afterwards
+  (JAXB issue 459's "once only" is never, for the root). So after a splice on a binder path the
+  binder is re-created as `createBinderAndJaxbElement` does: the spliced tree marshalled to a DOM
+  and unmarshalled again through a new binder, with new JAXB objects, before the unmarshal
+  returns (so a caller never sees the objects change). The re-unmarshal finds no element and the
+  record stays. On the binder paths each recorded Choice's `Requires` is first matched by URI
+  through `binder.getXMLNode(choice)`'s declarations (§3.2's optional item).
+- **`mc:Ignorable`:** the conventional prefix of each namespace a promoted Choice's `Requires`
+  names (the marshal writes the promoted content with the conventional prefixes), added to the
+  root where not already listed, through its `setIgnorable`; set where the root had none (Jason's
+  probes).
+- **`preserve` until phase 2:** row- and cell-level elements are spliced as in `word` mode, unless
+  they lie inside an element kept whole (there they stay whole with it).
+- **The preprocessor** (D3, D4): the keep rule is the flat list of §3.3 (the `EG_PContent` family,
+  every block container, `w:tbl`, `w:tr`, `w:sdtContent`, `w:customXml`, `mc:Choice` and
+  `mc:Fallback`); an element it still resolves takes its first Choice when it has no Fallback.
+- **The StAX pipe** (§10.4 a): nothing to change in the mechanism; `JaxbXmlPart.pipe`'s javadoc
+  says a pipe meets the element whole and the splice applies at the later unmarshal.
+  `SdtStAXHandler` (§10.3 item 2) is stage B's.
+- **A `w:customXml` directly in a branch** (§7) is unmarshalled by the splice as the container's
+  kind (`CTCustomXmlBlock`, `CTCustomXmlRow`, `CTCustomXmlCell`) and wrapped as the container's
+  binding expects; tested.
+- **Content lists and types:** `Comments.Comment`, `CTFtnEdn` and the `CTCustomXml*` classes are
+  not `ContentAccessor`s; `McSplice.contentOf` knows them. Phase 1's helper for §10.3 item 1 can
+  hoist it.
+
+**Tests** (docx4j-core-tests, `org.docx4j.jaxb`): `BinderPathListenerTest` (1);
+`McBlockLevelLoadTest` (16: every container of §3.1 and D2 in both modes, no Fallback, REQ-305,
+nested, `mc:Ignorable`, no branch, custom XML in a branch, the eager and late binder paths, the
+rejected part's path, the text model in both modes, the option and the override over the
+property); `McBlockLevelProbesTest` (6: Jason's probes, copied to
+`docx4j-core-tests/src/test/resources/mc-fun/` with their Word 365 saves; a load and save in
+`word` mode reads as each Word save reads, the block-level probe's tree and record,
+`mc-block-nofallback`, `mc-mixed`'s three run-level elements kept, every branch kept in `preserve`
+mode). `mc-block-newest-first` has no Word save (paper §7.8's reading, `w16sdtfl`, is asserted
+directly). `VmlAttributesRoundTripTest` now loads its fixtures in `preserve` mode: the default
+resolves the `mc-txbx-*` probes' block-level VML Fallbacks away, as Word's save does, and that
+round trip is about reproducing the input. MOXy: the project has no MOXy test profile; the two
+modes, the saves against Word's and the binder paths were run under docx4j-JAXB-MOXy (4.0.9, on
+the classpath) with a scratch driver over the probes, all passing.
+
+### 11.2 Stage B: the consumers, D6 and the record's readers, 20 October 2026
+
+By a Claude Fable 5.1 subagent of the docx4j-25 session, on stage A's tree. Stage B is D6's step,
+the consumers of §10.3 at block level (with the revisions model at both levels), the tools that
+load in `preserve`, the two readers of the record, §4's exporter tests and the CHANGELOG.
+
+**What landed, and where it departs from §3.2, §6 and §10.3:**
+
+- **D6's step** is `ResolveAlternateContent` (`convert/out/common/preprocess`), its constant
+  `ConversionFeatures.PP_COMMON_RESOLVE_ALTERNATE_CONTENT` in both default arrays and added by
+  `checkParams`; `createRelationshipTypes` copies DOCUMENT, HEADER, FOOTER, FOOTNOTES, ENDNOTES and
+  COMMENTS for it; `Preprocess.process` runs it immediately after the copy, before
+  `AcceptTrackedChanges` or the REJECT branch. Its finder is a `TraversalUtil` walk in DRAW over
+  each drawn part (the main part, then the headers, footers, notes and comments the main part relates
+  to), recording each element whose effective container is in scope; the splice is `McSplice.apply`
+  with `McSelection.selectedBranch(ac, part)`. It adds the promoted Choices' prefixes to the root's
+  `mc:Ignorable`, as the load does, and logs each part it changes at INFO when the deep copy is off.
+  It does not add to the part's `getResolvedAlternateContent()` record (the copy is thrown away; with
+  the copy off, the drawing rule's choices are not the load's). Nothing is gated on the mode.
+- **Nesting, beyond stage A.** Stage A's listener recorded an element only where its direct parent
+  is in scope, so an element directly inside another's Choice was left whole in the container after
+  the outer one was promoted. Now the listener also records an element whose parent is a Choice or
+  Fallback (its branch's own parent is not yet set when the callback fires), and the part's resolve
+  keeps those whose *effective* container (`McSplice.effectiveContainer`: up through the `mc`
+  wrappers) is in scope. Applied outermost first, the inner element then stands in the container and
+  is spliced there; inside a discarded branch, or under a run- or paragraph-level element, it stays
+  whole. D6's finder uses the same test.
+- **The parent's list** (§10.3 item 1) is `McSplice.contentOf`, which now also answers for a
+  `List`, a content control, an `SdtContent`, a VML `v:textbox`, and the lists of a footnotes,
+  endnotes, comments or `w:docParts` root (so addresses index notes and comments). Its users:
+  `FieldUpdater.updateComplex`, `FieldUpdaterSEQ.updateComplex`, `AbstractMerger.canonicaliseStarts`,
+  `FromFormText`, `FromMergeFields`, `OpenDoPEReverter.replaceConditions` and `handleRepeats`,
+  `BookmarkRenumber`'s three removals, `BookmarksIntegrity.check`.
+- **The other consumers:** `SdtStAXHandler.contextName()` looks past the `mc` wrappers on its
+  stack, for its sdt kinds and for `BindingTraverserStAX`'s picture shaping (item 2);
+  `TocHelper.getAllElementsFromObject` descends the drawn branch (item 4); `Paginate.bookmarkKeys`
+  walks DRAW (item 5); `BindingTraverserNonXSLT.xpathInjectImage` shapes by the effective container,
+  and `BindingTraverserCommonImpl`'s shapers and `OpenDoPEHandler.processW15Repeat` look through an
+  element at the start of a control's content into the drawn branch (item 6; `bind.xslt`'s shape
+  tests are left as they are, a `w:sdtContent` starting with an element still shaped as run-level on
+  the XSLT binder); `AbstractMerger.recursiveRemove` searches every branch (item 7);
+  `Extractor.lastParaId`, `Trees.lastParaId` (for `Removals`), `HeaderFooterPolicy.reservesNothing`
+  (through `McSelection.selectedContent`) and `AbstractMerger`'s last-block lookups (item 8);
+  `JaxbXmlPartAltChunkHost` deletes each `altChunk` part once every `altChunk` naming it is converted,
+  and skips one naming no part (item 10); `diffx2wml.xslt` keeps a deleted element's wrappers
+  (item 11); the XPath javadoc note (item 13). Item 12's exporter sites are closed by D6.
+- **The revisions model** (item 3, both levels): `Trees.blockItems` and `runItems` answer an
+  element with the branch the text model reads, so `Texts.cellText`, Resolver's walks and the row and
+  cell finders take it; `Lister` lists that branch's changes where the element stands, kept apart
+  as a block control's are, and pairs each other branch's changes to them as twins by kind and
+  position (`pairTwins`, as a text box's Fallback), listing them on their own for acceptAll. Text
+  boxes in another branch become twins of the listed branch's by position.
+- **The tools:** `AnonymizeCli` loads in `PRESERVE` (and `Anonymize`'s javadoc says so);
+  docx4j-diffx itself loads nothing (its callers do), so the sample `CompareDocuments` loads both
+  sides in `PRESERVE`.
+- **The readers of the record.** The text model: `Extractor.blocks` matches the container it walks
+  against each record's address (`McSplice.address`, worked out at the splice and again at the walk,
+  only when the part has records) and raises `mce.branches_differ` from the record at the promoted
+  content's address (`body/1`, as the element's would be in `preserve`). The inspector:
+  `InspectXml.restore` puts each record back into the part's marshalled DOM, last record first, the
+  element marshalled into that document (`InspectXml.locate` walks the address: an indexed step is
+  that content child, skipping property elements; an unindexed one the first child of that name)
+  and the promoted elements moved into the branch they came from, so they keep their links to the
+  live objects; the walk then finds the element and its unselected branches where `preserve` mode
+  has them. For that, `McSplice.address` names the DrawingML and VML chain to a text box properly
+  (`wp:inline/a:graphic/a:graphicData/wps:wsp/wps:txbx/w:txbxContent`, `w:pict/v:shape/v:textbox`):
+  the element name comes from the parent field's JAXB annotation, or the field's name where it has
+  none. **A correction to §4's wording:** an `mce.branch` finding carries no extraction address in
+  either mode (its content is never extracted; CR-050's NEVER), so what the modes agree on is the
+  finding's location (part and path) and excerpt, which the test compares.
+- **A `w:p` in a branch has different text-model addresses in the two modes** (`body/1/0` in
+  `preserve`, `body/1` in `word`), since the element is a container level in `preserve`. Only the
+  element's own address is the same; §4 asks no more.
+
+**Tests** (docx4j-core-tests unless said): `McBlockLevelReadersTest` (the text model's warnings and
+the inspector's findings equal across the modes for elements in the body, a cell, a block content
+control, a text box, a header, a footnote and a comment; an element directly in a branch);
+`McBlockLevelConsumersTest` (a DOCPROPERTY field, a bookmark remediation, the TOC helper, Paginate's
+keys, a header's blank lines, `contentOf`); `ResolveAlternateContentTest` (a DOCUMENT-only feature
+set copies the header and splices, the caller keeps every element, run twice changes nothing, the
+caller's own package with the copy off, and the HTML exporters in both modes and under
+`preferChoice`); `TrackedChangesAlternateContentTest` (both levels: listed once with twins, accept
+and reject resolve the twin, acceptAll resolves every branch); `AnonymizeCliPreserveTest`;
+docx4j-export-fo-tests `AlternateContentSectionTest` (a section break in a branch's paragraph lays
+out on two pages with each section's header, both exporters, both modes, and under `preferChoice`);
+docx4j-markdown `MarkdownAlternateContentTest`; docx4j-diffx-tests `AlternateContentDeletedTest`.
+`McBlockLevelConsumersTest` also covers, in `preserve` mode with the element at block level: the
+mail merger (a MERGEFIELD paragraph in each branch merged; one emptied by a field with no value
+removed from its branch), `FieldUpdaterSEQ` (each branch numbered from the counter at the element),
+the StAX binder (a bound control directly in a Choice bound as an `SdtBlock`, checked on the
+binder's output in the part store), `OpenDoPEReverter` (a condition control whose parent is a
+Choice or Fallback replaced), `JaxbXmlPartAltChunkHost` (one text/plain `altChunk` named in both
+branches, converted in both, its part deleted once; a loaded part carries no `AltChunkType`, which
+the test sets) and `FromMergeFields` (a MERGEFIELD paragraph in each branch migrated; `FromFormText`
+shares the helper). Nine of the class's thirteen tests were seen to fail with the fixes reverted in
+the working tree (`contentOf` answering null for a Choice or Fallback, `recursiveRemove` without
+its branch case, `SdtStAXHandler` back to `stack.peek()`, the altChunk host deleting inside its
+loop without the null guard), and the diff was byte-identical after the restore. Not shown failing:
+`BookmarkRenumber` (its entry is package-private). The bookmark remediation test first placed its
+orphan start inside a paragraph, whose parent is a `ContentAccessor` either way; it now stands
+directly in the Choice. The extraction probe's block-level cases (§4) are for the WD suite, with
+Word checks.
+
+**`OpcPackage.clone()` keeps the mode:** it saves and reloads, and loaded through `load(InputStream)`
+alone a `preserve` package's clone would be resolved by the property's default; the migrators
+clone. Now the clone is loaded with this package's own setting where it has one (§3.2's
+package-level setting).
+
+**A gap found by these tests, stage A's, open for Jason: a `w:sdt` directly inside a Choice or
+Fallback does not survive an unmarshal.** A branch's content is `@XmlAnyElement(lax = true)`, so
+JAXB binds a child by its root element name alone, and four classes carry
+`@XmlRootElement(name = "sdt")` (`SdtBlock`, `CTSdtRow`, `CTSdtCell`, `SdtRun`): the one the
+context's root map answers with is `CTSdtRow`, whose `w:sdtContent` admits `w:tr` only. Measured on
+a block-level control (a `w:p` in its content) in the body's element: with only a `w:id` in its
+properties the part loads in both modes and the control's paragraphs are *silently dropped* (the
+text model reads nothing of the branch); with a `w:tag` or a `w:dataBinding` the unmarshal fails,
+the preprocessor keeps the element whole (D3) and fails the same way, and the part does not load
+("Preprocessing exception"). `XmlUtils.unmarshalString` fails alike. §7's note that these classes
+"carry one, and bind" was wrong: they bind, but all to one name. Before CR-051 the preprocessor
+resolved such an element to its Fallback before any branch was unmarshalled, so this is a load
+regression for a document with a content control directly in a block-level branch (none in
+CR-021's 835, and none of Jason's probes: `mc-sdt-block-newest-first` has the element inside the
+control). The same holds since 17.2.0 for a run-level control directly in a paragraph-level branch.
+A design, not built here since it touches every unmarshal route: on the way in, make such a
+`w:sdt` unbindable (a private namespace on that one element, through a `StreamReaderDelegate` on
+the StAX path and a DOM pass on the preprocessor and binder paths), so it arrives as a DOM
+`Element` as a `w:customXml` does; then bind it by its effective container's kind (`SdtBlock`,
+`CTSdtRow`, `CTSdtCell`, `SdtRun`, with `unmarshal(Node, Class)`, which ignores the root name) in
+`McSplice.bind` for promoted content and in the part's resolve for elements kept whole, in both
+modes. The two tests that first needed such a control (the StAX binder's, the reverter's) build it in
+memory with a declared-type unmarshal; §11.3 closes the gap.
+
+### 11.3 A `w:sdt` directly in a branch, 20 October 2026
+
+Jason chose the design of §11.2 ("ok, (a) it is"), built by the same subagent as the last part of
+phase 1.
+
+**The measured failure** (§11.2): a block control directly in a block-level branch, with only a
+`w:id`, loaded in both modes with its paragraphs silently dropped; with a `w:tag` or a
+`w:dataBinding` the part failed to load; `XmlUtils.unmarshalString` failed alike; a run control
+directly in a paragraph-level branch had failed the same way since 17.2.0. Before the fix,
+`McBranchSdtTest` failed on every route: three paths dropping the block control's content, the
+`XmlUtils` and DOM-binder cases with "Preprocessing exception".
+
+**The fix** is `org.docx4j.jaxb.McBranchSdt`:
+- **On the way in,** a `w:sdt` that is a direct child of `mc:Choice` or `mc:Fallback` is put in
+  the private namespace `McBranchSdt.NAMESPACE` (`urn:docx4j:mc-branch-sdt`, prefix `mcsdt`), so the
+  lax any-list delivers it as a DOM `Element`, as it does a `w:customXml`. The URN is a name nobody
+  else writes: no producer declares it, no schema docx4j binds names it, and it is never written
+  out, so it cannot collide. The routes:
+  - the StAX path, through `McBranchSdt.wrap`, a `StreamReaderDelegate` that tracks only whether
+    each open element is a branch and answers the private namespace for that one element's start
+    and end (a name test per element, nothing else): `JaxbXmlPart.inputStreamToXSR`, which every
+    part's StAX unmarshal uses, and `XmlUtils.unmarshal(InputStream)`;
+  - the DOMs, through `McBranchSdt.rename`: the preprocessor's result (`JaxbXmlPart.transformToDom`,
+    both `mc-preprocessor` retries in `JaxbXmlPart.unmarshal(Element)` and
+    `JaxbXmlPartXPathAware`), the binder paths' DOMs (`unwrapUsually`, the eager binder, the
+    rejected-part retry), `XmlUtils.unmarshalString` (both overloads, so `unmarshallFromTemplate`
+    too), `XmlUtils.unmarshal(Node)` (both overloads) and the two `XmlUtils` preprocessor retries,
+    which now go through a `DOMResult` instead of a `JAXBResult` (SAX straight into JAXB gave no
+    hook). A caller's DOM (`unmarshal(Node)`, `JaxbXmlPart.unmarshal(Element)`) is put back after
+    the unmarshal, JAXB having copied the subtree it keeps.
+  - Left alone: MOXy's own binder listener path is the same code; nothing else in docx4j-core
+    unmarshals WordprocessingML content by another route (the StAX binder streams, it does not
+    unmarshal, and `SdtStAXHandler` already picks the control's class by context).
+- **Bound by its container's kind** with `Unmarshaller.unmarshal(Node, Class)`, which ignores the
+  root name: `SdtBlock` in block content, `SdtRun` in a paragraph's, `CTSdtRow` in a table's,
+  `CTSdtCell` in a row's (`McBranchSdt.kindFor`, from `McSplice.effectiveContainer`), bare in a
+  branch's list and wrapped as `w:sdt` where a container's list wants a `JAXBElement`
+  (`wrapFor`). Where: the listener (`Docx4jUnmarshallerListener.takeBranchSdtElements`) notes each
+  element holding one, and the part binds them when the unmarshal returns
+  (`JaxbXmlPart.bindBranchSdts`, before the splice, with an unmarshaller of the part's own, whose
+  listener records what is nested in a bound control: further such elements, bound in their turn,
+  and block-level elements, handed to the splice); `XmlUtils` with `McBranchSdt.Collector`; and
+  `McSplice.bind` for an element promoted out of a branch. So an element kept whole (`preserve`
+  mode, REQ-305, every paragraph-level element) holds typed controls, which closes the 17.2.0
+  paragraph-level case too.
+- **Never in output:** a control that cannot be bound is put back in the `w` namespace
+  (`McBranchSdt.restore`) and kept as DOM, so a save writes `w:sdt`; the test checks every saved
+  part and `getXML()` for the URI.
+- **A binder's DOM** keeps a kept branch's controls in the private namespace: a restored `w:sdt`
+  node there has no object association, so an XPath result for it would throw
+  (`XPathBinderAssociationIsPartialException`); hidden, it is skipped, which the
+  `getJAXBNodesViaXPath` javadoc says. The promoted controls, ordinary content after the splice,
+  are found.
+
+**Tests:** `McBranchSdtTest` (5): the StAX, preprocessor (a part StAX rejects) and eager-binder
+paths and `XmlUtils.unmarshalString`/`unmarshal(InputStream)`, in both modes, with a block control
+with a tag and one with a data binding, a run control in a paragraph-level element, a row control
+in a table's and a cell control in a row's: the content survives, each control has its class, a
+save writes `w:sdt` in the `w` namespace and no part nor `getXML()` holds the URI, a reload reads
+the same; and the default (DOM) binder binds a bound control in each kept branch. Row and cell
+level are still resolved in `preserve` mode until phase 2, which the expectations allow for.
+

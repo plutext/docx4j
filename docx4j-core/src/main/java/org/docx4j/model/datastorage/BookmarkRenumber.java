@@ -15,6 +15,7 @@ import org.docx4j.TraversalUtil;
 import org.docx4j.jaxb.McMode;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.McSplice;
 import org.docx4j.finders.RangeFinder;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -137,12 +138,9 @@ public class BookmarkRenumber {
 				try {
 					// Can't just remove the object from the parent,
 					// since in the parent, it may be wrapped in a JAXBElement
-					List<Object> theList = null;
-					if (bm.getParent() instanceof List) {
-						theList = (List)bm.getParent(); // eg blockRange.getContents()
-					} else {
-						theList = ((ContentAccessor)(bm.getParent())).getContent();
-					}
+					// the parent's live list, a Choice's or Fallback's included (CR-051 section 10.3, item 1)
+					List<Object> theList = McSplice.contentOf(bm.getParent());
+					if (theList == null) throw new IllegalStateException("Unexpected parent: " + bm.getParent().getClass().getName());
 					
 					Object deleteMe = null;
 					for (Object ox : theList) {
@@ -173,12 +171,8 @@ public class BookmarkRenumber {
 							// Found it
 							try {				
 								CTMarkupRange mr = (CTMarkupRange)o;
-								List<Object> theList = null;
-								if (mr.getParent() instanceof List) {
-									theList = (List)mr.getParent(); // eg blockRange.getContents()
-								} else {
-									theList = ((ContentAccessor)(mr.getParent())).getContent();
-								}
+								List<Object> theList = McSplice.contentOf(mr.getParent()); // CR-051 section 10.3, item 1
+								if (theList == null) throw new IllegalStateException("Unexpected parent: " + mr.getParent().getClass().getName());
 								
 								Object deleteMe = null;
 								for (Object ox : theList) {
@@ -207,12 +201,8 @@ public class BookmarkRenumber {
 							// Found it
 							try {				
 								CTMarkupRange mr = (CTMarkupRange)o;
-								List<Object> theList = null;
-								if (mr.getParent() instanceof List) {
-									theList = (List)mr.getParent(); // eg blockRange.getContents()
-								} else {
-									theList = ((ContentAccessor)(mr.getParent())).getContent();
-								}
+								List<Object> theList = McSplice.contentOf(mr.getParent()); // CR-051 section 10.3, item 1
+								if (theList == null) throw new IllegalStateException("Unexpected parent: " + mr.getParent().getClass().getName());
 								Object deleteMe = null;
 								for (Object ox : theList) {
 									if (XmlUtils.unwrap(ox).equals(mr)) {

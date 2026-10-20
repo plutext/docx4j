@@ -310,6 +310,8 @@ public class HeaderFooterPolicy {
 			return false;
 		}
 		if (content == null) return true;
+		// an mc:AlternateContent counts as what the branch docx4j draws holds (CR-051 section 10.3, item 8)
+		content = org.docx4j.jaxb.McSelection.selectedContent(content);
 		/* At most one paragraph.  A header or footer Word has been given and then
 		 * cleared is a single empty w:p, and that is the one Word reserves nothing for;
 		 * where the part holds *several* empty paragraphs the author put blank lines

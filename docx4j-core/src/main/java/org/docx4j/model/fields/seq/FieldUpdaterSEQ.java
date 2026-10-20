@@ -11,6 +11,7 @@ import javax.xml.transform.TransformerException;
 import org.docx4j.TraversalUtil;
 import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.McSplice;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.McPurpose;
 import org.docx4j.jaxb.McSelection;
@@ -273,24 +274,15 @@ public class FieldUpdaterSEQ {
 		for( P p : fl.getStarts() ) {
 			int before = fieldRefs.size();
 			int index;
-			if (p.getParent() instanceof ContentAccessor) {
-				index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
-				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-//				log.debug("NewP length: " + newP.getContent().size() );
-				((ContentAccessor)p.getParent()).getContent().set(index, newP);
-			} else if (p.getParent() instanceof java.util.List) {
-				// This does happen!
-				index = ((java.util.List)p.getParent()).indexOf(p);
-				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-//				log.debug("NewP length: " + newP.getContent().size() );
-				((java.util.List)p.getParent()).set(index, newP);				
-			} else if (p.getParent() instanceof CTTextbox) {
-				index = ((CTTextbox) p.getParent()).getTxbxContent().getContent().indexOf(p);
-				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-				((CTTextbox) p.getParent()).getTxbxContent().getContent().set(index, newP);
-			} else {
-				throw new Docx4JException ("Unexpected parent: " + p.getParent().getClass().getName() );
+			// the parent's live list, a Choice's or Fallback's included (CR-051 section 10.3, item 1)
+			List<Object> siblings = McSplice.contentOf(p.getParent());
+			if (siblings == null) {
+				throw new Docx4JException ("Unexpected parent: " + (p.getParent() == null ? "null" : p.getParent().getClass().getName()) );
 			}
+			index = siblings.indexOf(p);
+			P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
+//			log.debug("NewP length: " + newP.getContent().size() );
+			siblings.set(index, newP);
 			for (int k = before; k < fieldRefs.size(); k++) refPaths.put(fieldRefs.get(k), pathOf(paths, p));
 		}
 		

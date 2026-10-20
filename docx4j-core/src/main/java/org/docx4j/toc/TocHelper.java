@@ -73,6 +73,11 @@ public class TocHelper {
 
         if (obj.getClass().equals(toSearch)) {
             result.add(obj);
+        } else if (obj instanceof org.docx4j.mce.AlternateContent) {
+            // the branch the exporters draw, where Paginate's page numbers come from (CR-051 section 10.3, item 4)
+            for (Object child : org.docx4j.jaxb.McSelection.select((org.docx4j.mce.AlternateContent) obj)) {
+                result.addAll(getAllElementsFromObject(child, toSearch));
+            }
         } else if (obj instanceof ContentAccessor) {
             List<?> children = ((ContentAccessor) obj).getContent();
             for (Object child : children) {

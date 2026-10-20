@@ -43,7 +43,10 @@
       
       NB, we do retain mc:AlternateContent in
       some places.  For example, 3.3.8 will retain
-      it in w:r.
+      it in w:r.  Since 17.3.4 (CR-051, D3) the keep rule
+      is the schema's admissions, so in WordprocessingML
+      it is kept wherever Word reads it, and the branch is
+      chosen after unmarshal (org.docx4j.jaxb.McBlockLevel).
       
       -->
 
@@ -369,14 +372,31 @@
 		
   	<xsl:choose>
   	
-	    <xsl:when test="parent::w:r or parent::w:p or parent::w:numPicBullet or parent::x:workbook or parent::x:worksheet or parent::x:controls
+	    <xsl:when test="parent::w:r or parent::w:p or parent::w:hyperlink or parent::w:fldSimple or parent::w:smartTag or parent::w:dir or parent::w:bdo
+	    		or parent::w:numPicBullet
+	    		or parent::w:body or parent::w:hdr or parent::w:ftr or parent::w:tc or parent::w:footnote or parent::w:endnote or parent::w:comment
+	    		or parent::w:txbxContent or parent::w:docPartBody or parent::w:tbl or parent::w:tr
+	    		or parent::w:sdtContent or parent::w:customXml
+	    		or parent::mc:Choice or parent::mc:Fallback
+	    		or parent::x:workbook or parent::x:worksheet or parent::x:controls
 	    		or parent::p:spTree or parent::p:grpSp or parent::p:controls
 	    		or parent::xdr:wsDr or parent::xdr:twoCellAnchor or parent::xdr:oneCellAnchor or parent::xdr:absoluteAnchor or parent::xdr:grpSp
 	    		or parent::c:chartSpace">
 				<!-- The schema admits mc:AlternateContent here (w:r since 3.3.8; w:p and
 				     w:numPicBullet since 17.2.0, CR-021 phase 2; x:workbook, Excel's x15
 				     absPath, in sml.xsd all along), so JAXB keeps both branches and the
-				     consumers choose one through org.docx4j.jaxb.McSelection.  This
+				     consumers choose one through org.docx4j.jaxb.McSelection.
+				     Since 17.3.4 (CR-051, D3) the WordprocessingML list is a flat list of
+				     the schema's admitted parents: the EG_PContent family (w:p, w:hyperlink,
+				     w:fldSimple, w:smartTag, w:dir, w:bdo), every block container (w:body,
+				     w:hdr, w:ftr, w:tc, w:footnote, w:endnote, w:comment, w:txbxContent,
+				     w:docPartBody), w:tbl and w:tr (D2), w:sdtContent and w:customXml at
+				     every level, and mc:Choice and mc:Fallback for nested elements.  A
+				     block-, row- or cell-level element so kept reaches the splice of
+				     org.docx4j.jaxb.McBlockLevel after unmarshal, on every path, so the
+				     branch is chosen in one place; before 17.3.4 a part sent through here
+				     for ANY reason also had its run-level content controls', hyperlinks'
+				     and simple fields' elements resolved (CR-051 section 1).  This
 				     stylesheet is reached for every package format whenever JAXB rejected
 				     an element SOMEWHERE in the part - not only an mc:AlternateContent, so
 				     a workbook with an xr:revisionPtr comes through here too - and an
@@ -397,19 +417,22 @@
 		    </xsl:copy>
 		</xsl:when>
 
-		<!-- Any other parent: in WordprocessingML one the survey of CR-021 phase 0
-		     (835 documents) never saw; in the other formats a parent the schema does
+		<!-- Any other parent: in WordprocessingML a property container (w:rPr, w:pPr,
+		     w:tblPr, w:sectPr), which the survey of CR-021 phase 0 (835 documents) never
+		     saw; in the other formats a parent the schema does
 		     does not admit (since CR-024 none is known: the survey of the
 		     repository's Office files and the corpus found only the hosts
 		     above).  The element is resolved to the one
 		     branch docx4j draws (org.docx4j.jaxb.McSelection's rule, through
 		     XSLTUtils.mcPrefersChoice: the first Choice whose Requires prefixes are all in
-		     docx4j.jaxb.mc.preferChoice, else the Fallback, else dropped), with a warning
+		     docx4j.jaxb.mc.preferChoice, else the Fallback, else - since 17.3.4, CR-051 D4 -
+		     the first Choice, as WD REQ-305's reading rule takes it; until then the element
+		     was dropped, every Choice with it), with a warning
 		     naming the parent.  A VML-first branch that lived here from 2012 never ran
 		     and is gone. -->
 		<xsl:when test="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))]">
 			<xsl:variable name="dummyParent"
-				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor (CR-021/CR-024: kept in w:r, w:p, w:numPicBullet, x:workbook, x:worksheet, x:controls, p:spTree, p:grpSp, p:controls, xdr:wsDr, the xdr anchors, xdr:grpSp, c:chartSpace); resolving it'))" />
+				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor (CR-021/CR-024/CR-051: kept wherever the schema admits it); resolving it'))" />
 
   			<xsl:variable name="chosen"
   				select="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))][1]"/>
@@ -423,19 +446,23 @@
   		<xsl:when test="mc:Fallback">
   		
   			<xsl:variable name="message" 
-  				select="concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor (CR-021/CR-024: kept in w:r, w:p, w:numPicBullet, x:workbook, x:worksheet, x:controls, p:spTree, p:grpSp, p:controls, xdr:wsDr, the xdr anchors, xdr:grpSp, c:chartSpace); selecting its Fallback ', name(mc:Fallback/*[1]))" />  			
+  				select="concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor (CR-021/CR-024/CR-051: kept wherever the schema admits it); selecting its Fallback ', name(mc:Fallback/*[1]))" />  			
 			<xsl:variable name="logging" 
 				select="java:org.docx4j.utils.XSLTUtils.logWarn($message)" />
 				
   			<xsl:copy-of select="mc:Fallback/*"/>
   			
   		</xsl:when>
+  		<xsl:when test="mc:Choice">
+  			<!-- No Fallback, and no Choice preferred (CR-051 D4): the first Choice, as a
+  			     reader applies WD REQ-305, rather than dropping the content. -->
+			<xsl:variable name="logging" 
+				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor and has no mc:Fallback; selecting its first mc:Choice (Requires=', mc:Choice[1]/@Requires, ')'))" />
+  			<xsl:apply-templates select="mc:Choice[1]/*"/>
+  		</xsl:when>
   		<xsl:otherwise> 
 			<xsl:variable name="logging" 
-				select="java:org.docx4j.utils.XSLTUtils.logWarn('Missing mc:Fallback!  Dropping the mc:AlternateContent entirely.')" />
-				<!--   
-  			    <xsl:copy-of select="mc:Choice[1]/*"/>
-  			-->
+				select="java:org.docx4j.utils.XSLTUtils.logWarn('mc:AlternateContent with no branch at all; dropping it.')" />
   		</xsl:otherwise>  		
   	</xsl:choose>    
   </xsl:template>

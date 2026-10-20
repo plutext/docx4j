@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.docx4j.jaxb.McBlockLevel;
 import org.docx4j.convert.out.Documents4jConversionSettings;
 import org.docx4j.jaxb.McMode;
 import org.docx4j.convert.out.FOSettings;
@@ -290,6 +291,28 @@ public class Docx4J {
 	 */	
 	public static WordprocessingMLPackage load(PackageIdentifier pkgIdentifier, InputStream inStream) throws Docx4JException {
 		return (WordprocessingMLPackage)OpcPackage.load(pkgIdentifier, inStream);
+	}
+
+	/**
+	 *  Load a Docx Document from a File, with each part's mc:AlternateContent at block, row or cell
+	 *  level loaded in this mode (CR-051 section 3.2) instead of the property's
+	 *  {@value McBlockLevel#PROPERTY}: {@link McBlockLevel#PRESERVE} for a tool that must reproduce
+	 *  its input.  A null mode is the property's.
+	 *  
+	 *  @since 17.3.4 (CR-051 phase 1)
+	 */	
+	public static WordprocessingMLPackage load(File inFile, McBlockLevel mode) throws Docx4JException {
+		return WordprocessingMLPackage.load(inFile, mode);
+	}
+
+	/**
+	 *  Load a Docx Document from an InputStream, with each part's mc:AlternateContent at block, row
+	 *  or cell level loaded in this mode (CR-051 section 3.2); see {@link #load(File, McBlockLevel)}.
+	 *  
+	 *  @since 17.3.4 (CR-051 phase 1)
+	 */	
+	public static WordprocessingMLPackage load(InputStream inStream, McBlockLevel mode) throws Docx4JException {
+		return WordprocessingMLPackage.load(inStream, mode);
 	}
 	
 	/**

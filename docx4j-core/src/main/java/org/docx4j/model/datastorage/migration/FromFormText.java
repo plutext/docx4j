@@ -22,6 +22,8 @@ package org.docx4j.model.datastorage.migration;
 import org.docx4j.TraversalUtil;
 import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.McSplice;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.model.fields.ComplexFieldLocator;
 import org.docx4j.model.fields.FieldRef;
 import org.docx4j.model.fields.FieldsPreprocessor;
@@ -88,9 +90,14 @@ public class FromFormText extends AbstractMigratorUsingAnswersFormat {
 		// canonicalise and setup fieldRefs 
 		List<FieldRef> fieldRefs = new ArrayList<FieldRef>();
 		for( P p : fl.getStarts() ) {
-			int index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
+			// the parent's live list, a Choice's or Fallback's included (CR-051 section 10.3, item 1)
+			List<Object> siblings = McSplice.contentOf(p.getParent());
+			if (siblings == null) {
+				throw new Docx4JException("Unexpected parent: " + (p.getParent() == null ? "null" : p.getParent().getClass().getName()));
+			}
+			int index = siblings.indexOf(p);
 			P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-			((ContentAccessor)p.getParent()).getContent().set(index, newP);
+			siblings.set(index, newP);
 		}
 		
 		// Populate

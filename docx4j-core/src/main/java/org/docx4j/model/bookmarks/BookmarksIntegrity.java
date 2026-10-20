@@ -10,6 +10,7 @@ import java.util.Map;
 import org.docx4j.TraversalUtil;
 import org.docx4j.jaxb.McMode;
 import org.docx4j.jaxb.McSelection;
+import org.docx4j.jaxb.McSplice;
 import org.docx4j.jaxb.McSelection.BranchStep;
 import org.docx4j.XmlUtils;
 import org.docx4j.finders.RangeFinder;
@@ -75,9 +76,10 @@ public class BookmarksIntegrity {
 				if (o instanceof CTBookmark) {
 					CTBookmark start = (CTBookmark)o;
 					Object parent = start.getParent();
-					if (parent instanceof ContentAccessor) {
+					List<Object> siblings = McSplice.contentOf(parent); // a Choice's or Fallback's too (CR-051 section 10.3, item 1)
+					if (siblings != null) {
 //						write("attempting to remove " + start.getClass().getName());
-						if (remove( ((ContentAccessor)parent).getContent(), o)) {
+						if (remove( siblings, o)) {
 							// ok
 						} else {
 							// shouldn't happen
@@ -94,8 +96,9 @@ public class BookmarksIntegrity {
 						&& (!(o instanceof CTBookmark) /* exclude starts - note inheritance hierarchy */ )) {
 					CTMarkupRange end = (CTMarkupRange)o;
 					Object parent = end.getParent();
-					if (parent instanceof ContentAccessor) {
-						if (remove( ((ContentAccessor)parent).getContent(), o)) {
+					List<Object> siblings = McSplice.contentOf(parent);
+					if (siblings != null) {
+						if (remove( siblings, o)) {
 							
 						} else {
 							// shouldn't happen

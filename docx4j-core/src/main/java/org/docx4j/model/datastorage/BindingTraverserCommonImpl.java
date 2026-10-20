@@ -11,6 +11,7 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.docx4j.TraversalUtil;
 import org.docx4j.jaxb.McMode;
+import org.docx4j.jaxb.McSelection;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
@@ -469,7 +470,7 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 		}
 
 		List<Object> sdtContent = sdt.getSdtContent().getContent();
-		Object first = sdtContent.isEmpty() ? null : XmlUtils.unwrap(sdtContent.get(0));
+		Object first = firstOf(sdtContent);
 		if (first instanceof Tc) {
 			Tc tc = (Tc)first;
 			tc.getContent().clear();
@@ -484,9 +485,22 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 	 * Approximate the $parent/$child strings bind.xslt computes from the sdt's
 	 * ancestors/descendants, from the template content's shape.
 	 */
+	/**
+	 * The first object of a content list, looking through an {@code mc:AlternateContent} into the
+	 * branch docx4j draws (CR-051 section 10.3, item 6): a control whose content starts with such an
+	 * element is shaped by the branch, not taken as run-level.
+	 */
+	private static Object firstOf(List<Object> content) {
+		Object first = content.isEmpty() ? null : XmlUtils.unwrap(content.get(0));
+		if (first instanceof org.docx4j.mce.AlternateContent) {
+			return firstOf(McSelection.select((org.docx4j.mce.AlternateContent) first));
+		}
+		return first;
+	}
+
 	private static String[] shapeHints(SdtElement sdt) {
 		List<Object> content = sdt.getSdtContent().getContent();
-		Object first = content.isEmpty() ? null : XmlUtils.unwrap(content.get(0));
+		Object first = firstOf(content);
 		if (first instanceof P) return new String[]{"body", "p"};
 		if (first instanceof Tc) return new String[]{"tr", "tc"};
 		if (first instanceof Tr) return new String[]{"tbl", "tr"};
@@ -512,7 +526,7 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 	protected void applyBoundContent(SdtElement sdt, List<Object> contents) {
 
 		List<Object> sdtContent = sdt.getSdtContent().getContent();
-		Object first = sdtContent.isEmpty() ? null : XmlUtils.unwrap(sdtContent.get(0));
+		Object first = firstOf(sdtContent);
 
 		if (first instanceof P) {
 			P p = (P)first;

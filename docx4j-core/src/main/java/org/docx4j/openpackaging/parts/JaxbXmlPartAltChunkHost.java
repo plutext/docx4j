@@ -212,6 +212,9 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		CTAltChunk altChunk;
 		boolean encounteredDocxAltChunk = false;
 		log.info("Detected " + bf.getAltChunks().size() );
+		// the parts to delete, once every altChunk naming one is converted: the same r:id may
+		// stand in two branches of an mc:AlternateContent (CR-051 section 10.3, item 10)
+		java.util.Set<org.docx4j.openpackaging.parts.PartName> partsToDelete = new java.util.LinkedHashSet<org.docx4j.openpackaging.parts.PartName>();
 		for (int i = bf.getAltChunks().size() - 1; i >= 0; i--) {
 			LocatedChunk locatedChunk = bf.getAltChunks().get(i);
 			
@@ -221,6 +224,10 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 			AlternativeFormatInputPart afip 
 				=  (AlternativeFormatInputPart)this.getRelationshipsPart().getPart(
 						altChunk.getId() );
+			if (afip == null) {
+				log.warn("altChunk " + altChunk.getId() + " names no part; left as it is");
+				continue;
+			}
 			
 			// Can we process it?
 			AltChunkType type = afip.getAltChunkType();
@@ -330,9 +337,12 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 					
 			
 			if (deleteThisAltChunk) {
-				// Now delete the original part				
-				this.getRelationshipsPart().removePart(afip.getPartName());
+				// the original part, deleted below once every altChunk naming it is converted
+				partsToDelete.add(afip.getPartName());
 			}
+		}
+		for (org.docx4j.openpackaging.parts.PartName name : partsToDelete) {
+			this.getRelationshipsPart().removePart(name);
 		}
 		
 	}

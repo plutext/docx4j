@@ -32,6 +32,10 @@ import java.util.Set;
 import org.docx4j.math.CTCtrlPr;
 import org.docx4j.math.CTOMathArg;
 import org.docx4j.math.CTR;
+import org.docx4j.jaxb.McMode;
+import org.docx4j.jaxb.McPurpose;
+import org.docx4j.jaxb.McSelection;
+import org.docx4j.jaxb.McSplice;
 import org.docx4j.mce.AlternateContent;
 import org.docx4j.model.revisions.TrackedChange.CellT;
 import org.docx4j.model.revisions.TrackedChange.FieldT;
@@ -268,6 +272,11 @@ final class Lister {
 				into.add(BREAK);
 				continue;
 			}
+			if (v instanceof AlternateContent) {
+				// the branch Word reads, its changes kept apart; the other branches' as twins (CR-051 section 10.3, item 3)
+				alternateBlocks((AlternateContent) v, into, ctx);
+				continue;
+			}
 			// a block-level control or custom XML element keeps what is inside it apart; a marker
 			// between paragraphs (a bookmark, a range end) keeps nothing apart
 			List<Object> children = Trees.blockItems(v);
@@ -449,6 +458,11 @@ final class Lister {
 			}
 			if (isMath(v)) {
 				math(para, v, item, items, new ArrayDeque<Object[]>(), out, ctx);
+				continue;
+			}
+			if (v instanceof AlternateContent) {
+				// a paragraph-level element: the branch Word reads, the other branches' changes as twins (CR-051 section 10.5, item 3)
+				alternateRuns((AlternateContent) v, para, out, ctx);
 				continue;
 			}
 			// a run holder that is not itself an insertion - a hyperlink, a simple field, a control
@@ -651,6 +665,81 @@ final class Lister {
 	}
 
 	// --- text boxes ---------------------------------------------------------------------------------
+
+	// --- block- and paragraph-level mc:AlternateContent (CR-051) ------------------------------------------
+
+	/**
+	 * A block-level element's changes: the branch the text model reads ({@link McPurpose#TEXT}, the
+	 * one Word shows) listed where the element stands, kept apart from what is around it as a block
+	 * control's content is; each other branch's changes attached to them as twins, by kind and
+	 * position, as a text box's {@code mc:Fallback} changes are ({@link #pairTwins}), so that
+	 * accepting or rejecting a listed change resolves its twins too.  For acceptAll's listing the
+	 * twins are listed on their own.
+	 */
+	private void alternateBlocks(AlternateContent ac, List<Object> into, Ctx ctx) {
+		Object primary = McSelection.selectedBranch(McPurpose.TEXT, ac);
+		if (primary == null) return;
+		int boxesBefore = ctx.boxes.size();
+		List<Object> tokens = new ArrayList<Object>();
+		visitBlocks(McSplice.contentOf(primary), tokens, ctx);
+		List<TrackedChange> changes = groupTouching(tokens, ctx);
+		for (Object branch : McSelection.branches(ac, McMode.ALL)) {
+			if (branch == primary) continue;
+			Ctx twinCtx = new Ctx(new Story(pkg, ctx.story.part, McSplice.contentOf(branch), branch, true));
+			List<Object> twinTokens = new ArrayList<Object>();
+			visitBlocks(twinCtx.story.root, twinTokens, twinCtx);
+			twins(changes, groupTouching(twinTokens, twinCtx), twinCtx, ctx, boxesBefore, into);
+		}
+		into.add(BREAK);
+		for (TrackedChange c : changes) {
+			into.add(c);
+			into.add(BREAK);
+		}
+	}
+
+	/** As {@link #alternateBlocks}, for an element among a paragraph's runs: each branch holds run-level content. */
+	private void alternateRuns(AlternateContent ac, Para para, List<Object> out, Ctx ctx) {
+		Object primary = McSelection.selectedBranch(McPurpose.TEXT, ac);
+		if (primary == null) return;
+		int boxesBefore = ctx.boxes.size();
+		List<Object> tokens = new ArrayList<Object>();
+		runLevel(para, McSplice.contentOf(primary), tokens, ctx);
+		List<TrackedChange> changes = groupTouching(tokens, ctx);
+		for (Object branch : McSelection.branches(ac, McMode.ALL)) {
+			if (branch == primary) continue;
+			Ctx twinCtx = new Ctx(new Story(pkg, ctx.story.part, McSplice.contentOf(branch), branch, true));
+			List<Object> twinTokens = new ArrayList<Object>();
+			runLevel(para, twinCtx.story.root, twinTokens, twinCtx);
+			twins(changes, groupTouching(twinTokens, twinCtx), twinCtx, ctx, boxesBefore, out);
+		}
+		out.add(BREAK);
+		for (TrackedChange c : changes) {
+			out.add(c);
+			out.add(BREAK);
+		}
+	}
+
+	/**
+	 * A branch's changes made the twins of the listed branch's, or listed on their own for acceptAll;
+	 * the text boxes found in it become the twins of the listed branch's boxes, by position, and any
+	 * beyond those are stories of their own.
+	 */
+	private void twins(List<TrackedChange> primary, List<TrackedChange> twinChanges, Ctx twinCtx, Ctx ctx, int boxesBefore, List<Object> into) {
+		if (attachTwins) {
+			pairTwins(primary, twinChanges);
+		} else {
+			into.add(BREAK);
+			for (TrackedChange c : twinChanges) {
+				into.add(c);
+				into.add(BREAK);
+			}
+		}
+		for (int i = 0; i < twinCtx.boxes.size(); i++) {
+			Box box = twinCtx.boxes.get(i);
+			if (boxesBefore + i < ctx.boxes.size()) ctx.boxes.get(boxesBefore + i).twins.add(box.story);
+			else ctx.boxes.add(box);
+		}
+	}
 
 	/** The text boxes in a run, each a story; in {@code mc:AlternateContent}, the first branch's, with the other branches' as twins. */
 	private void findTextBoxes(R run, Ctx ctx) {

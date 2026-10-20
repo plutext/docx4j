@@ -127,7 +127,10 @@ public class VmlAttributesRoundTripTest {
 		List<String> problems = new ArrayList<String>();
 		int elements = 0, anchorIds = 0, gfxdata = 0;
 		for (Path f : files) {
-			WordprocessingMLPackage pkg = WordprocessingMLPackage.load(f.toFile());
+			// in preserve mode (CR-051): the default resolves a block-level mc:AlternateContent to the
+			// branch Word reads, as Word's save does, which drops a VML Fallback there (mc-fun/mc-txbx-*);
+			// this round trip is about reproducing the input
+			WordprocessingMLPackage pkg = WordprocessingMLPackage.load(f.toFile(), org.docx4j.jaxb.McBlockLevel.PRESERVE);
 			try (ZipFile zip = new ZipFile(f.toFile())) {
 				for (Part part : pkg.getParts().getParts().values()) {
 					if (!(part instanceof JaxbXmlPart) || !part.getPartName().getName().startsWith("/word/")) continue;

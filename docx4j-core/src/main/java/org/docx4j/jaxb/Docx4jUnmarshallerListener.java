@@ -1,5 +1,8 @@
 package org.docx4j.jaxb;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.stream.XMLStreamReader;
 
 import jakarta.xml.bind.Unmarshaller;
@@ -20,6 +23,12 @@ public class Docx4jUnmarshallerListener extends Unmarshaller.Listener {
 	private JaxbXmlPart part;
 
 	private XMLStreamReader reader;
+
+	/** Each mc:AlternateContent whose parent is a block, row or cell container, as unmarshalled (CR-051 section 3.2, step 1). */
+	private final List<AlternateContent> blockLevel = new ArrayList<AlternateContent>();
+
+	/** Each mc:AlternateContent with a w:sdt directly in a branch, delivered as a DOM element to bind once the tree stands (CR-051 section 11.3). */
+	private final List<AlternateContent> branchSdts = new ArrayList<AlternateContent>();
 
 	public Docx4jUnmarshallerListener(JaxbXmlPart part) {
 		this.part = part;
@@ -44,10 +53,53 @@ public class Docx4jUnmarshallerListener extends Unmarshaller.Listener {
 //
 //	}
 
+	/**
+	 * The block-, row- and cell-level {@code mc:AlternateContent} elements this unmarshal built,
+	 * innermost first, as the callback fired; the list is cleared.  The part splices them when the
+	 * unmarshal returns ({@link JaxbXmlPart#resolveAlternateContent}; CR-051 section 3.2).  Nothing
+	 * is edited in the callback itself, which fires child first while the parent's list is still
+	 * filling.
+	 *
+	 * @since 17.3.4 (CR-051 phase 1)
+	 */
+	public List<AlternateContent> takeBlockLevelElements() {
+		List<AlternateContent> taken = new ArrayList<AlternateContent>(blockLevel);
+		blockLevel.clear();
+		return taken;
+	}
+
+	/**
+	 * The {@code mc:AlternateContent} elements, at any level, holding a {@code w:sdt} directly in
+	 * a branch, which arrives as a DOM element in {@link McBranchSdt#NAMESPACE}; the list is
+	 * cleared.  The part binds them by their container's kind when the unmarshal returns
+	 * ({@link McBranchSdt#rebind}; CR-051 section 11.3).
+	 *
+	 * @since 17.3.4
+	 */
+	public List<AlternateContent> takeBranchSdtElements() {
+		List<AlternateContent> taken = new ArrayList<AlternateContent>(branchSdts);
+		branchSdts.clear();
+		return taken;
+	}
+
   @Override
   public void afterUnmarshal(Object target, Object parent) {
 	  
-		if (target instanceof AlternateContent.Choice) {
+		if (target instanceof AlternateContent) {
+			
+			if (McBranchSdt.holdsBranchSdt((AlternateContent) target)) branchSdts.add((AlternateContent) target);
+			
+			// CR-051 section 3.2, step 1: recorded, for the splice when the unmarshal returns.
+			// One directly inside another element's branch is recorded too: whether its
+			// container is in scope is settled at the splice (McSplice.effectiveContainer),
+			// since here the branch's own parent is not yet set (the callback fires child first).
+			Object container = parent != null ? parent : ((AlternateContent) target).getParent();
+			if (McSplice.inScope(container)
+					|| container instanceof AlternateContent.Choice || container instanceof AlternateContent.Fallback) {
+				blockLevel.add((AlternateContent) target);
+			}
+			
+		} else if (target instanceof AlternateContent.Choice) {
 			
 			AlternateContent.Choice choice = (AlternateContent.Choice)target;
 			// the reader stands at the element's end tag, where the declarations in force at

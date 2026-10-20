@@ -78,9 +78,10 @@ public class CompareDocuments {
 		String newerfilepath = System.getProperty("user.dir") + "/sample-docs/test2.docx";
 		String olderfilepath = System.getProperty("user.dir") + "/sample-docs/test.docx";
 		
-		// 1. Load the Packages
-		WordprocessingMLPackage newerPackage = WordprocessingMLPackage.load(new java.io.File(newerfilepath));
-		WordprocessingMLPackage olderPackage = WordprocessingMLPackage.load(new java.io.File(olderfilepath));
+		// 1. Load the Packages, both in the same mc:AlternateContent mode (CR-051 section 10.4 d):
+		//    preserve, so that the difference reports what each producer wrote
+		WordprocessingMLPackage newerPackage = WordprocessingMLPackage.load(new java.io.File(newerfilepath), org.docx4j.jaxb.McBlockLevel.PRESERVE);
+		WordprocessingMLPackage olderPackage = WordprocessingMLPackage.load(new java.io.File(olderfilepath), org.docx4j.jaxb.McBlockLevel.PRESERVE);
 		
 		Body newerBody = ((Document)newerPackage.getMainDocumentPart().getJaxbElement()).getBody();
 		Body olderBody = ((Document)olderPackage.getMainDocumentPart().getJaxbElement()).getBody();

@@ -416,7 +416,7 @@ public final class Paginate {
 			public boolean shouldTraverse(Object o) {
 				return !(o instanceof R);
 			}
-		});
+		}, McMode.DRAW); // the paragraphs bodyParagraphs indexed (CR-051 section 10.3, item 5)
 		return result;
 	}
 

@@ -17,6 +17,8 @@ Jason Harrop
 
 Claude Opus 5.5
 
+Claude Fable 5.1
+
 
 Changes in Version 17.3.4
 --------------------------
@@ -79,6 +81,22 @@ Changes in Version 17.3.4
   duplicates; `OpenDoPEReverter` restores each twin control from its own branch; `TraversalUtil.replaceChildren`
   edits a Choice or Fallback (OpenDoPE in a paragraph-level branch); the anonymiser's inventory reads Fallbacks.
   `McSelection.branchPaths` and `twins` are new.
+- `mc:AlternateContent` at block, row and cell level (CR-051 phase 1): the schema admits it in the body, headers,
+  footers, cells, notes, comments, text boxes, content controls, tables and rows, and a load resolves it as Word
+  reads it (property `docx4j.jaxb.mc.blockLevel=word`, the default) or keeps it whole (`preserve`: the anonymiser's
+  CLI, diffx's inputs), given per load (`WordprocessingMLPackage.load(.., McBlockLevel)`, `Docx4J.load`, `Load3`,
+  `FlatOpcXmlImporter`) or per package (`OpcPackage.setMcBlockLevel`); `preserve` still resolves row and cell level
+  until phase 2. Each element taken out is kept on the part (`JaxbXmlPart.getResolvedAlternateContent()`), which the
+  text model's `mce.branches_differ` and the inspector's `mce.branch` read. The preprocessor keeps the element
+  wherever the schema admits it and never drops one. The exporters resolve their copy to the branch they draw before
+  any other step (`PP_COMMON_RESOLVE_ALTERNATE_CONTENT`, forced on; D6), so a section break in a branch lays out.
+  Field updaters, mail merge, the migrators, bookmark remediation and renumbering, the TOC helper, `Paginate`'s
+  bookmark keys, the binding shapers, `altChunk` conversion and diffx's output now handle an element kept whole;
+  tracked changes in a block- or paragraph-level element are listed once, with the other branches' as twins;
+  `OpcPackage.clone()` keeps the package's mode. `McSplice.contentOf` is the one helper for a parent's live list.
+  A `w:sdt` directly inside a Choice or Fallback, which JAXB's lax rule bound as `CTSdtRow` at every level (its
+  content dropped, or the load failed; since 17.2.0 for a run control in a paragraph-level element), is bound by its
+  container's kind on every unmarshal route (`McBranchSdt`, CR-051 §11.3).
 
 
 Version 17.3.3

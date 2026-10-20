@@ -26,6 +26,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +56,11 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stax.StAXSource;
 
 import org.apache.commons.io.IOUtils;
+import org.docx4j.jaxb.McBlockLevel;
+import org.docx4j.jaxb.McBranchSdt;
+import org.docx4j.jaxb.McSplice;
+import org.docx4j.jaxb.ResolvedAlternateContent;
+import org.docx4j.mce.AlternateContent;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -452,6 +459,12 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * This is most efficient in the case where there has been no need for JAXB to unmarshal
 	 * the contents.  In this case, it is possible to process then save the contents without
 	 * incurring JAXB overhead (you may see 1/4 heap usage).
+	 * 
+	 * <p>A pipe is not an unmarshal (CR-051 section 10.4 a): a part not yet unmarshalled streams
+	 * from the part store as stored, so the handler meets each block-, row- or cell-level
+	 * mc:AlternateContent whole, in both {@link McBlockLevel} modes.  Its output replaces the
+	 * stored part, and the splice of {@link McBlockLevel#WORD} mode applies when the part is
+	 * unmarshalled later.</p>
 	 * 
 	 * @param handler
 	 * @param filter
@@ -1060,6 +1073,128 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	public void addMcChoiceNamespace(String mcChoiceNamespace) {
 		this.mcChoiceNamespaces.add(mcChoiceNamespace);
 	}
+
+	/**
+	 * Each mc:AlternateContent an unmarshal of this part took out of the tree (CR-051 section
+	 * 3.2): at block, row or cell level in {@link McBlockLevel#WORD} mode, and at row or cell
+	 * level in {@link McBlockLevel#PRESERVE} mode until CR-051 phase 2.  Appended to by each
+	 * unmarshal that resolves something and never cleared by one that resolves nothing, so that it
+	 * survives a re-unmarshal (a binder created later marshals and unmarshals the tree again).
+	 */
+	private final List<ResolvedAlternateContent> resolvedAlternateContent = new ArrayList<ResolvedAlternateContent>();
+
+	/**
+	 * The mc:AlternateContent elements a load of this part resolved to the branch Word reads,
+	 * each whole, with where it stood ({@link ResolvedAlternateContent}; CR-051 section 3.2), so
+	 * that nothing is lost to inspection in {@link McBlockLevel#WORD} mode: the inspector and the
+	 * text model's branch comparison read every branch from here.  Empty for a part that held
+	 * none, or loaded in {@link McBlockLevel#PRESERVE} mode (row- and cell-level elements apart,
+	 * until CR-051 phase 2).  Unmodifiable; in the order resolved.
+	 *
+	 * @since 17.3.4 (CR-051 phase 1)
+	 */
+	public List<ResolvedAlternateContent> getResolvedAlternateContent() {
+		return Collections.unmodifiableList(resolvedAlternateContent);
+	}
+
+	/**
+	 * CR-051 section 3.2, step 2, when an unmarshal returns: the block-, row- and cell-level
+	 * mc:AlternateContent elements the listener recorded are spliced by the mode in force for the
+	 * package ({@link McBlockLevel#of}), each replaced at its index in its live parent by the
+	 * content of the branch Word reads ({@link McSplice#WORD_READS}); the selected Choices'
+	 * prefixes are added to the root's mc:Ignorable; and each element taken out is recorded
+	 * ({@link #getResolvedAlternateContent}).  Nothing where the listener is not docx4j's.
+	 *
+	 * @return the records of this unmarshal's splice; empty where nothing changed
+	 * @since 17.3.4 (CR-051 phase 1)
+	 */
+	protected List<ResolvedAlternateContent> resolveAlternateContent(Unmarshaller.Listener listener) {
+		if (!(listener instanceof Docx4jUnmarshallerListener)) return Collections.emptyList();
+		List<AlternateContent> found = ((Docx4jUnmarshallerListener) listener).takeBlockLevelElements();
+		found.addAll(bindBranchSdts(listener));
+		return resolveAlternateContent(found);
+	}
+
+	/**
+	 * CR-051 section 11.3: each {@code w:sdt} directly in a branch, delivered as a DOM element by
+	 * the unmarshal this listener served, is bound by the kind its container asks for, with an
+	 * unmarshaller of this part's own (so its listener records what is nested in the control:
+	 * further such elements, bound in their turn, and block-level elements, which are returned
+	 * for the splice).
+	 *
+	 * @return the block-, row- and cell-level elements found inside the controls bound
+	 * @since 17.3.4
+	 */
+	protected List<AlternateContent> bindBranchSdts(Unmarshaller.Listener listener) {
+		List<AlternateContent> nested = new ArrayList<AlternateContent>();
+		if (!(listener instanceof Docx4jUnmarshallerListener)) return nested;
+		List<AlternateContent> pending = ((Docx4jUnmarshallerListener) listener).takeBranchSdtElements();
+		if (pending.isEmpty()) return nested;
+		try {
+			Unmarshaller u = getConfiguredUnmarshaller(false);
+			Docx4jUnmarshallerListener inner = (Docx4jUnmarshallerListener) u.getListener();
+			int n = 0;
+			for (int round = 0; !pending.isEmpty() && round < 64; round++) {
+				n += McBranchSdt.rebind(pending, u);
+				nested.addAll(inner.takeBlockLevelElements());
+				pending = inner.takeBranchSdtElements();
+			}
+			if (log.isDebugEnabled()) log.debug(n + " w:sdt directly in an mc:AlternateContent branch bound by their containers' kinds");
+		} catch (JAXBException e) {
+			log.warn("Couldn't bind w:sdt directly in an mc:AlternateContent branch: " + e.getMessage());
+		}
+		return nested;
+	}
+
+	/**
+	 * As {@link #resolveAlternateContent(Unmarshaller.Listener)}, for elements already taken from
+	 * the listener (a binder path matches their Choices' Requires by URI first).
+	 *
+	 * @since 17.3.4 (CR-051 phase 1)
+	 */
+	protected List<ResolvedAlternateContent> resolveAlternateContent(List<AlternateContent> found) {
+		if (found == null || found.isEmpty()) return Collections.emptyList();
+		// an element directly inside another's branch counts by the container it would stand in
+		// once that one is resolved (McSplice.effectiveContainer): in a run or a paragraph, it is
+		// not in scope
+		List<AlternateContent> inScope = new ArrayList<AlternateContent>(found.size());
+		for (AlternateContent ac : found) {
+			if (McSplice.inScope(McSplice.effectiveContainer(ac))) inScope.add(ac);
+		}
+		found = inScope;
+		if (found.isEmpty()) return Collections.emptyList();
+		String name = this.getPartName() == null ? this.getClass().getSimpleName() : this.getPartName().getName();
+		McBlockLevel mode = McBlockLevel.of(this.getPackage());
+		List<AlternateContent> toSplice = found;
+		if (mode == McBlockLevel.PRESERVE) {
+			// block-level elements stay whole; until CR-051 phase 2 the row- and cell-level ones are
+			// still resolved (CR-051 section 5, phase 1), unless inside an element kept whole
+			toSplice = new ArrayList<AlternateContent>();
+			for (AlternateContent ac : found) {
+				Object parent = ac.getParent();
+				if ((McSplice.isRowContainer(parent) || McSplice.isCellContainer(parent))
+						&& !McSplice.insideAlternateContent(ac)) {
+					toSplice.add(ac);
+				}
+			}
+			if (toSplice.isEmpty()) {
+				log.info(name + ": " + found.size() + " mc:AlternateContent at block level kept whole ("
+						+ McBlockLevel.PROPERTY + "=preserve)");
+				return Collections.emptyList();
+			}
+		}
+		List<ResolvedAlternateContent> records = McSplice.apply(toSplice, McSplice.WORD_READS);
+		if (records.isEmpty()) {
+			log.info(name + ": " + toSplice.size() + " mc:AlternateContent at block, row or cell level kept whole (no understood Choice and no Fallback, WD REQ-305)");
+			return records;
+		}
+		resolvedAlternateContent.addAll(records);
+		McSplice.addIgnorable(jaxbElement, McSplice.ignorablePrefixes(records));
+		log.info(name + ": " + records.size() + " of " + toSplice.size()
+				+ " mc:AlternateContent at block, row or cell level resolved as Word reads them ("
+				+ McBlockLevel.PROPERTY + "=" + (mode == McBlockLevel.PRESERVE ? "preserve: row and cell level only, until CR-051 phase 2" : "word") + ")");
+		return records;
+	}
     
 	/**
 	 * An Unmarshaller configured with our event handler and listener.
@@ -1126,11 +1261,12 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	        									
 			try {
 				XMLStreamReader xsr = inputStreamToXSR(is);
-				jaxbElement = (E) XmlUtils.unwrap(						
-						getConfiguredUnmarshaller(false, xsr).unmarshal( xsr ));
+				Unmarshaller u = getConfiguredUnmarshaller(false, xsr);
+				jaxbElement = (E) XmlUtils.unwrap(u.unmarshal( xsr ));
 				
 				// unmarshalled, so no need to flag for later.
 				this.getPackage().getDrawingPropsIdTracker().deregisterPart(this);
+				resolveAlternateContent(u.getListener()); // CR-051 section 3.2
 				
 			} catch (UnmarshalException ue) {
 				log.error(ue.getMessage(), ue);
@@ -1183,12 +1319,14 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 
 		// Internally here, we want to unmarshall a DOM node (as opposed to a JAXBResult), since we can set a listener on DOM input.
 		try {
+			Unmarshaller u = getConfiguredUnmarshaller(eventHandlerContinue);
 			jaxbElement = (E) XmlUtils.unwrap(
-					getConfiguredUnmarshaller(eventHandlerContinue).unmarshal( 
+					u.unmarshal( 
 							transformToDom(
 									inputStreamToXSR(is)) ));
 			// unmarshalled, so no need to flag for later.
 			this.getPackage().getDrawingPropsIdTracker().deregisterPart(this);
+			resolveAlternateContent(u.getListener()); // CR-051 section 3.2
 			
 		} catch (Exception e) {
 			throw new JAXBException("Preprocessing exception", e);
@@ -1216,6 +1354,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			XmlUtils.transform(new StAXSource(xsr), 
 					preprocessorXslt, null, result);
 			doc = (org.w3c.dom.Document) result.getNode();
+			McBranchSdt.rename(doc); // CR-051 section 11.3
 			if (log.isDebugEnabled()) {
 				log.debug("Transformation result:");
 				log.debug(XmlUtils.w3CDomNodeToString(doc));
@@ -1246,7 +1385,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 
 		// Guard against XXE
 	    XMLInputFactory xif = StaXInputFactoryUtils.getXMLInputFactory();  
-		return xif.createXMLStreamReader(is);
+		// a w:sdt directly in an mc branch arrives as a DOM element, to bind by its container (CR-051 section 11.3)
+		return McBranchSdt.wrap(xif.createXMLStreamReader(is));
 		
 	}
 	
@@ -1254,13 +1394,16 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
     public E unmarshal(org.w3c.dom.Element el) throws JAXBException {
 
 		try {
-			
+			// a caller's DOM: each w:sdt directly in a branch is renamed for the unmarshal (CR-051
+			// section 11.3) and put back after it (JAXB copies the subtree it keeps)
+			List<org.w3c.dom.Element> renamed = McBranchSdt.rename(el);
 			try {
-				jaxbElement = (E) XmlUtils.unwrap(
-						getConfiguredUnmarshaller(false).unmarshal( el ) );
+				Unmarshaller u = getConfiguredUnmarshaller(false);
+				jaxbElement = (E) XmlUtils.unwrap(u.unmarshal( el ) );
 				
 				// unmarshalled, so no need to flag for later.
 				this.getPackage().getDrawingPropsIdTracker().deregisterPart(this);
+				resolveAlternateContent(u.getListener()); // CR-051 section 3.2
 				
 			} catch (UnmarshalException ue) {
 				log.info("encountered unexpected content; pre-processing");
@@ -1280,17 +1423,22 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 					Templates mcPreprocessorXslt = JaxbValidationEventHandler
 							.getMcPreprocessor();
 					XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
+					McBranchSdt.rename(result.getNode()); // CR-051 section 11.3
 					
+					Unmarshaller u = getConfiguredUnmarshaller(true);
 					jaxbElement = (E) XmlUtils.unwrap(
-							getConfiguredUnmarshaller(true).unmarshal(
+							u.unmarshal(
 									(org.w3c.dom.Document) result.getNode() ));
 					
 					// unmarshalled, so no need to flag for later.
 					this.getPackage().getDrawingPropsIdTracker().deregisterPart(this);
+					resolveAlternateContent(u.getListener()); // CR-051 section 3.2
 					
 				} catch (Exception e) {
 					throw new JAXBException("Preprocessing exception", e);
 				}
+			} finally {
+				McBranchSdt.restore(renamed);
 			}
 			return jaxbElement;
 			

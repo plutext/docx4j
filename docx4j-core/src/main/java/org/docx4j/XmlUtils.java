@@ -73,6 +73,7 @@ import org.apache.commons.io.IOUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JAXBAssociation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
+import org.docx4j.jaxb.McBranchSdt;
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
@@ -477,7 +478,7 @@ public class XmlUtils {
         xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
         XMLStreamReader xsr = null;
         try {
-			xsr = xif.createXMLStreamReader(is);
+			xsr = McBranchSdt.wrap(xif.createXMLStreamReader(is)); // CR-051 section 11.3
 		} catch (XMLStreamException e) {
 			throw new JAXBException(e);
 		}			
@@ -491,8 +492,11 @@ public class XmlUtils {
 //			eventHandler.setContinue(false);
 //		}
 		u.setEventHandler(eventHandler);
+		McBranchSdt.Collector collector = new McBranchSdt.Collector();
+		u.setListener(collector);
 		try {
 			o = u.unmarshal( xsr );
+			McBranchSdt.rebindAll(collector, u);
 			return o;
 		} catch (UnmarshalException ue) {
 			
@@ -519,7 +523,12 @@ public class XmlUtils {
 				try {
 					Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
 					is.reset();
-					JAXBResult result = XmlUtils.prepareJAXBResult(jc);
+					// straight into JAXB (a DOM unmarshal in continue mode trips the RI on a repaired nesting),
+					// each w:sdt directly in a branch renamed on the way (CR-051 section 11.3)
+					Unmarshaller retry = McBranchSdt.unmarshaller(jc);
+					retry.setEventHandler(eventHandler);
+					JAXBResult result = new JAXBResult(retry);
+					javax.xml.transform.sax.SAXResult sink = new javax.xml.transform.sax.SAXResult(McBranchSdt.wrap(result.getHandler()));
 					
 					// StreamSource(is) is vulnerable to XXE, so use StAXSource
 					// (mcPreprocessorXslt could be suitable for an XSLT 3.0 streaming transformation?)
@@ -528,9 +537,10 @@ public class XmlUtils {
 					// DocumentBuilder db = XmlUtils.getNewDocumentBuilder();
 					// Document document = db.parse(is);
 					
-					XmlUtils.transform(new StAXSource(xsr), mcPreprocessorXslt, null, result);
-					return //XmlUtils.unwrap(
-							result.getResult() ;	
+					XmlUtils.transform(new StAXSource(xsr), mcPreprocessorXslt, null, sink);
+					o = result.getResult();
+					McBranchSdt.rebindAll((McBranchSdt.Collector) retry.getListener(), retry);
+					return o;
 				} catch (Exception e) {
 					throw new JAXBException("Preprocessing exception", e);
 				}
@@ -567,7 +577,11 @@ public class XmlUtils {
 			DocumentBuilder db = XmlUtils.getNewDocumentBuilder();
 			try (InputStream is = IOUtils.toInputStream(str, "UTF-8")) {
 				Document document = db.parse(is);
+				McBranchSdt.rename(document); // CR-051 section 11.3
+				McBranchSdt.Collector collector = new McBranchSdt.Collector();
+				u.setListener(collector);
 				o = u.unmarshal( document, declaredType );
+				McBranchSdt.rebindAll(collector, u);
 			}
 		} catch (Exception e) {
 			throw new JAXBException(e);
@@ -592,7 +606,8 @@ public class XmlUtils {
 		
 		JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
 		u.setEventHandler(eventHandler);
-		
+		McBranchSdt.Collector collector = new McBranchSdt.Collector();
+		u.setListener(collector);
 		Document document=null; 
 		try {
 			
@@ -607,7 +622,10 @@ public class XmlUtils {
 			try (InputStream is = IOUtils.toInputStream(str, "UTF-8")) {
 				document = db.parse(is);
 			}
-			return u.unmarshal( document );
+			McBranchSdt.rename(document); // CR-051 section 11.3
+			Object o = u.unmarshal( document );
+			McBranchSdt.rebindAll(collector, u);
+			return o;
 			
 		} catch (IOException e) {
 			throw new UnmarshalException(e);
@@ -657,11 +675,16 @@ public class XmlUtils {
 							
 		try {
 			Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
-			JAXBResult result = XmlUtils.prepareJAXBResult(jc);
+			Unmarshaller retry = McBranchSdt.unmarshaller(jc);
+			retry.setEventHandler(eventHandler);
+			JAXBResult result = new JAXBResult(retry);
+			// straight into JAXB, each w:sdt directly in a branch renamed on the way (CR-051 section 11.3)
 			XmlUtils.transform(
 					document,
-					mcPreprocessorXslt, null, result);
-			return result.getResult();	
+					mcPreprocessorXslt, null, new javax.xml.transform.sax.SAXResult(McBranchSdt.wrap(result.getHandler())));
+			Object o = result.getResult();
+			McBranchSdt.rebindAll((McBranchSdt.Collector) retry.getListener(), retry);
+			return o;	
 		} catch (Exception e) {
 			throw new JAXBException("Preprocessing exception", e);
 		}
@@ -681,8 +704,17 @@ public class XmlUtils {
 		veh.setContinue(true);
 		
 		u.setEventHandler(veh);
-
-		return u.unmarshal( n );
+		// the caller's DOM: each w:sdt directly in a branch renamed for the unmarshal and put back after it (CR-051 section 11.3)
+		McBranchSdt.Collector collector = new McBranchSdt.Collector();
+		u.setListener(collector);
+		java.util.List<org.w3c.dom.Element> renamed = McBranchSdt.rename(n);
+		try {
+			Object o = u.unmarshal( n );
+			McBranchSdt.rebindAll(collector, u);
+			return o;
+		} finally {
+			McBranchSdt.restore(renamed);
+		}
 	}
 
 	
@@ -696,8 +728,16 @@ public class XmlUtils {
 		
 		Unmarshaller u = jc.createUnmarshaller();					
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-		Object o = u.unmarshal(n,
-				declaredType);
+		McBranchSdt.Collector collector = new McBranchSdt.Collector();
+		u.setListener(collector);
+		java.util.List<org.w3c.dom.Element> renamed = McBranchSdt.rename(n); // CR-051 section 11.3
+		Object o;
+		try {
+			o = u.unmarshal(n, declaredType);
+			McBranchSdt.rebindAll(collector, u);
+		} finally {
+			McBranchSdt.restore(renamed);
+		}
 		if ( o instanceof jakarta.xml.bind.JAXBElement) {
 			return ((JAXBElement)o).getValue();
 		} else {

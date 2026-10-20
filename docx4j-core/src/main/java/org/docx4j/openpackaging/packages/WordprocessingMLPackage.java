@@ -35,6 +35,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
 
+import org.docx4j.jaxb.McBlockLevel;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
@@ -183,6 +184,30 @@ public class WordprocessingMLPackage extends OpcPackage {
 	public static WordprocessingMLPackage load(InputStream is) throws Docx4JException {
 		
 		return (WordprocessingMLPackage)OpcPackage.load(is);
+	}
+
+	/**
+	 * As {@link #load(java.io.File)}, loading each part's mc:AlternateContent at block, row or
+	 * cell level in this mode (CR-051 section 3.2) instead of the property's
+	 * {@value McBlockLevel#PROPERTY}: {@link McBlockLevel#PRESERVE} for a tool that must reproduce
+	 * its input.  A null mode is the property's.
+	 *
+	 * @since 17.3.4 (CR-051 phase 1)
+	 */
+	public static WordprocessingMLPackage load(java.io.File docxFile, McBlockLevel mode) throws Docx4JException {
+		
+		return (WordprocessingMLPackage)OpcPackage.load(docxFile, mode);
+	}
+
+	/**
+	 * As {@link #load(InputStream)}, loading each part's mc:AlternateContent at block, row or
+	 * cell level in this mode (CR-051 section 3.2); see {@link #load(java.io.File, McBlockLevel)}.
+	 *
+	 * @since 17.3.4 (CR-051 phase 1)
+	 */
+	public static WordprocessingMLPackage load(InputStream is, McBlockLevel mode) throws Docx4JException {
+		
+		return (WordprocessingMLPackage)OpcPackage.load(is, mode);
 	}
 	
 	

@@ -26,6 +26,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.docx4j.jaxb.McPurpose;
+import org.docx4j.jaxb.McSelection;
+import org.docx4j.jaxb.McSplice;
+import org.docx4j.mce.AlternateContent;
+
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
@@ -151,7 +156,31 @@ final class Trees {
 		if (v instanceof CTSimpleField) return ((CTSimpleField) v).getContent();
 		if (v instanceof P.Bdo) return ((P.Bdo) v).getContent();
 		if (v instanceof P.Dir) return ((P.Dir) v).getContent();
+		// a paragraph-level mc:AlternateContent: the branch Word reads (CR-051 section 10.3, item 3;
+		// Lister lists the other branches' changes as twins)
+		if (v instanceof AlternateContent) return branchItems((AlternateContent) v);
 		return null;
+	}
+
+	/** The content of the branch the text model reads ({@link McPurpose#TEXT}), the live list; null where there is none. */
+	static List<Object> branchItems(AlternateContent ac) {
+		Object branch = McSelection.selectedBranch(McPurpose.TEXT, ac);
+		return branch == null ? null : McSplice.contentOf(branch);
+	}
+
+	/** The last paragraph's {@code w14:paraId} in this content, looking into a branch (CR-051 section 10.3, item 8); null where none has one. */
+	static String lastParaId(List<Object> items) {
+		String id = null;
+		for (Object o : items) {
+			Object v = unwrap(o);
+			if (v instanceof P && ((P) v).getParaId() != null) id = ((P) v).getParaId();
+			else if (v instanceof AlternateContent) {
+				List<Object> branch = branchItems((AlternateContent) v);
+				String inner = branch == null ? null : lastParaId(branch);
+				if (inner != null) id = inner;
+			}
+		}
+		return id;
 	}
 
 	/**
@@ -174,6 +203,8 @@ final class Trees {
 		if (v instanceof CTCustomXmlBlock) return ((CTCustomXmlBlock) v).getContent();
 		if (v instanceof CTCustomXmlRow) return ((CTCustomXmlRow) v).getContent();
 		if (v instanceof CTCustomXmlCell) return ((CTCustomXmlCell) v).getContent();
+		// a block-, row- or cell-level mc:AlternateContent: the branch Word reads (CR-051 section 10.3, item 3)
+		if (v instanceof AlternateContent) return branchItems((AlternateContent) v);
 		return null;
 	}
 

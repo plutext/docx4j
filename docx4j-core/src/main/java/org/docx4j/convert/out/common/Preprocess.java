@@ -33,6 +33,7 @@ import org.docx4j.convert.out.common.preprocess.FopWorkaroundReplacePageBreakInE
 import org.docx4j.convert.out.common.preprocess.PageBreak;
 import org.docx4j.convert.out.common.preprocess.ParagraphStylesInTableFix;
 import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
+import org.docx4j.convert.out.common.preprocess.ResolveAlternateContent;
 import org.docx4j.convert.out.common.preprocess.FieldHyperlinkStyle;
 import org.docx4j.convert.out.html.ListsToContentControls;
 import org.docx4j.events.EventFinished;
@@ -108,6 +109,7 @@ public class Preprocess extends ConversionFeatures {
 		Set<String> relationshipTypes = new TreeSet<String>();
 		
 		if (features.contains(PP_COMMON_MOVE_BOOKMARKS) || 
+			features.contains(PP_COMMON_RESOLVE_ALTERNATE_CONTENT) || // CR-051 D6: it visits these parts
 			features.contains(PP_COMMON_CONTAINERIZATION) ||
 			features.contains(PP_COMMON_COMBINE_FIELDS) ||
 			features.contains(PP_COMMON_ACCEPT_TRACKED_CHANGES) ||
@@ -171,6 +173,13 @@ public class Preprocess extends ConversionFeatures {
 
 //		log.debug(ret.getMainDocumentPart().getXML());
 	
+		if (features.contains(PP_COMMON_RESOLVE_ALTERNATE_CONTENT)) {
+			// immediately after the deep copy, before any other step (CR-051 D6): the steps and the
+			// exporters then meet no block-, row- or cell-level mc:AlternateContent
+			log.debug("PP_COMMON_RESOLVE_ALTERNATE_CONTENT");
+			ResolveAlternateContent.process(ret, !features.contains(PP_COMMON_DEEP_COPY));
+		}
+		
 		if (features.contains(PP_COMMON_ACCEPT_TRACKED_CHANGES)) {
 			// first: the other steps see the accepted content
 			log.debug("PP_COMMON_ACCEPT_TRACKED_CHANGES");

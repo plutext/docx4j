@@ -34,6 +34,7 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
 
+import org.docx4j.jaxb.McBlockLevel;
 import org.docx4j.Docx4J;
 import org.docx4j.TextUtils;
 import org.docx4j.convert.in.FlatOpcXmlImporter;
@@ -98,6 +99,28 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	 */
 	public boolean isWasStrict() {
 		return strict;
+	}
+
+	private McBlockLevel mcBlockLevel;
+
+	/**
+	 * This package's own setting for what an unmarshal does with an mc:AlternateContent at
+	 * block, row or cell level (CR-051 section 3.2), overriding the property
+	 * {@value McBlockLevel#PROPERTY}; null (the default) follows the property.  It is read when
+	 * each part is unmarshalled, which is lazy (on the first {@code getContents()}), so a part
+	 * touched before this is set has already been loaded under the setting then in force.  Give
+	 * it at load instead ({@code WordprocessingMLPackage.load(file, mode)},
+	 * {@code Load3.setMcBlockLevel}) where it must be reliable.
+	 *
+	 * @since 17.3.4 (CR-051 phase 1)
+	 */
+	public void setMcBlockLevel(McBlockLevel mode) {
+		this.mcBlockLevel = mode;
+	}
+
+	/** This package's own mc:AlternateContent mode, or null where it follows the property; see {@link #setMcBlockLevel}. @since 17.3.4 */
+	public McBlockLevel getMcBlockLevel() {
+		return mcBlockLevel;
 	}
 
 	/**
@@ -284,6 +307,29 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	public static OpcPackage load(final java.io.File docxFile) throws Docx4JException {
 		return load(docxFile, "");
 	}
+
+	/**
+	 * As {@link #load(java.io.File)}, with each part's mc:AlternateContent at block, row or cell
+	 * level loaded in this mode (CR-051 section 3.2; {@link McBlockLevel}).  A null mode is the
+	 * property's.
+	 *
+	 * @since 17.3.4 (CR-051 phase 1)
+	 */
+	public static OpcPackage load(final java.io.File docxFile, McBlockLevel mode) throws Docx4JException {
+		PackageIdentifier name = new PackageIdentifierTransient(docxFile.getName());
+		return load(name, docxFile, "", mode);
+	}
+
+	/**
+	 * As {@link #load(InputStream)}, with each part's mc:AlternateContent at block, row or cell
+	 * level loaded in this mode (CR-051 section 3.2; {@link McBlockLevel}).  A null mode is the
+	 * property's.
+	 *
+	 * @since 17.3.4 (CR-051 phase 1)
+	 */
+	public static OpcPackage load(final InputStream inputStream, McBlockLevel mode) throws Docx4JException {
+		return load(null, inputStream, "", mode);
+	}
 	
 	/**
 	 * Convenience method to create a WordprocessingMLPackage
@@ -317,6 +363,11 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	 * @Since 3.1.0         
 	 */	
 	public static OpcPackage load(PackageIdentifier pkgIdentifier, final java.io.File docxFile, String password) throws Docx4JException {
+		return load(pkgIdentifier, docxFile, password, null);
+	}
+
+	/** The worker behind the File loads; the mode is set on the package before any part is unmarshalled (CR-051 section 3.2). */
+	private static OpcPackage load(PackageIdentifier pkgIdentifier, final java.io.File docxFile, String password, McBlockLevel mode) throws Docx4JException {
 		
 		try (FileInputStream fileInputStream = new FileInputStream(docxFile)) {
 			
@@ -338,16 +389,16 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 			if (firstTwobytes[0]=='P' && firstTwobytes[1]=='K') { // 50 4B
 				
 				// Prefer uncompressing file to uncompressing InputStream
-				return loadFile(docxFile, pkgIdentifier);
+				return loadFile(docxFile, pkgIdentifier, mode);
 				
 			} else if  (firstTwobytes[0]==(byte)0xD0 && firstTwobytes[1]==(byte)0xCF) {
 				// password protected docx is a compound file, with signature D0 CF 11 E0 A1 B1 1A E1
 				log.info("Detected compound file");
-				return OpcPackage.load(pkgIdentifier, bis, Filetype.Compound, password);
+				return OpcPackage.load(pkgIdentifier, bis, Filetype.Compound, password, mode);
 			} else {
 				//Assume..
 				log.info("Assuming Flat OPC XML");
-				return OpcPackage.load(pkgIdentifier, bis, Filetype.FlatOPC, null);
+				return OpcPackage.load(pkgIdentifier, bis, Filetype.FlatOPC, null, mode);
 			}		
 			
 		} catch (final FileNotFoundException e) {
@@ -423,6 +474,11 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	 * @Since 3.1.0     
 	 */	
 	private static OpcPackage load(PackageIdentifier pkgIdentifier, final InputStream inputStream, String password) throws Docx4JException {
+		return load(pkgIdentifier, inputStream, password, null);
+	}
+
+	/** The worker behind the InputStream loads; the mode is set on the package before any part is unmarshalled (CR-051 section 3.2). */
+	private static OpcPackage load(PackageIdentifier pkgIdentifier, final InputStream inputStream, String password, McBlockLevel mode) throws Docx4JException {
 		
 		//try to detect the type of file using a bufferedinputstream
 		final BufferedInputStream bis = new BufferedInputStream(inputStream);
@@ -439,15 +495,15 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 			throw new Docx4JException("Error reading from the stream (no bytes available)");
 		}
 		if (firstTwobytes[0]=='P' && firstTwobytes[1]=='K') { // 50 4B
-			return OpcPackage.load(pkgIdentifier, bis, Filetype.ZippedPackage, null);
+			return OpcPackage.load(pkgIdentifier, bis, Filetype.ZippedPackage, null, mode);
 		} else if  (firstTwobytes[0]==(byte)0xD0 && firstTwobytes[1]==(byte)0xCF) {
 			// password protected docx is a compound file, with signature D0 CF 11 E0 A1 B1 1A E1
 			log.info("Detected compound file");
-			return OpcPackage.load(pkgIdentifier, bis, Filetype.Compound, password);
+			return OpcPackage.load(pkgIdentifier, bis, Filetype.Compound, password, mode);
 		} else {
 			//Assume..
 			log.info("Assuming Flat OPC XML");
-			return OpcPackage.load(pkgIdentifier, bis, Filetype.FlatOPC, null);
+			return OpcPackage.load(pkgIdentifier, bis, Filetype.FlatOPC, null, mode);
 		}
 	}
 	
@@ -560,11 +616,16 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	 * @throws Docx4JException
 	 */
 	private static OpcPackage loadFile(final File file, PackageIdentifier pkgIdentifier) throws Docx4JException {
+		return loadFile(file, pkgIdentifier, null);
+	}
+
+	private static OpcPackage loadFile(final File file, PackageIdentifier pkgIdentifier, McBlockLevel mode) throws Docx4JException {
 		StartEvent startEvent = new StartEvent( pkgIdentifier,  WellKnownProcessSteps.PKG_LOAD );
 		startEvent.publish();			
 		
 		final ZipPartStore partLoader = new ZipPartStore(file);
 		final Load3 loader = new Load3(partLoader);
+		loader.setMcBlockLevel(mode);
 		OpcPackage opcPackage = loader.get();
 		
 		opcPackage.setNew(false);
@@ -589,6 +650,10 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	 * @Since 3.3.0      
 	 */
 	private static OpcPackage load(PackageIdentifier pkgIdentifier, final InputStream is, Filetype type, String password) throws Docx4JException {
+		return load(pkgIdentifier, is, type, password, null);
+	}
+
+	private static OpcPackage load(PackageIdentifier pkgIdentifier, final InputStream is, Filetype type, String password, McBlockLevel mode) throws Docx4JException {
 
 		if (pkgIdentifier==null) {
 			pkgIdentifier = new PackageIdentifierTransient("pkg_" + System.currentTimeMillis());
@@ -601,6 +666,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 			
 			final ZipPartStore partLoader = new ZipPartStore(is);
 			final Load3 loader = new Load3(partLoader);
+			loader.setMcBlockLevel(mode);
 			OpcPackage opcPackage = loader.get();
 
 			opcPackage.setNew(false);
@@ -657,6 +723,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 				}
 				final ZipPartStore partLoader = new ZipPartStore(is2);
 				final Load3 loader = new Load3(partLoader);
+				loader.setMcBlockLevel(mode);
 				OpcPackage opcPackage = loader.get();
 
 				opcPackage.setNew(false);
@@ -679,6 +746,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		
 		try {
 			FlatOpcXmlImporter xmlPackage = new FlatOpcXmlImporter(is); 
+			xmlPackage.setMcBlockLevel(mode);
 			return xmlPackage.get(); 
 		} catch (final Exception e) {
 			throw new Docx4JException("Couldn't load xml from stream ",e);
@@ -985,7 +1053,10 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		
 		try {
 			saver.save(baos);
-			result = load(new ByteArrayInputStream(baos.toByteArray()));
+			// the clone keeps this package's mc:AlternateContent mode (CR-051 section 3.2): a
+			// preserve-mode package's clone must not be resolved by the property's default
+			result = mcBlockLevel == null ? load(new ByteArrayInputStream(baos.toByteArray()))
+					: load(new ByteArrayInputStream(baos.toByteArray()), mcBlockLevel);
 			// the clone is the same document for logging purposes (the FO exporter works
 			// on one, and its table sizer's dump names the package)
 			if (result != null && name != null) result.setName(name);

@@ -124,6 +124,10 @@ final class InspectPackage {
 				JaxbXmlPart<?> jp = (JaxbXmlPart<?>) p;
 				Object root = jp.getJaxbElement();
 				if (root != null) dom = InspectXml.marshal(root, jp.getJAXBContext(), run);
+				// word mode's record: the elements a load took out, put back where they stood (CR-051)
+				if (dom != null && !jp.getResolvedAlternateContent().isEmpty()) {
+					InspectXml.restore(dom, jp.getResolvedAlternateContent(), jp.getJAXBContext(), run);
+				}
 			} else if (p instanceof CustomXmlDataStoragePart) {
 				CustomXmlDataStoragePart cp = (CustomXmlDataStoragePart) p;
 				if (cp.getData() != null) dom = InspectXml.of(cp.getData().getDocument());

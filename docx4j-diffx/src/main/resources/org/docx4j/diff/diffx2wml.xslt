@@ -5,6 +5,7 @@
     xmlns:ins="http://www.topologi.com/2005/Diff-X"
     xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage"
     xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
  	xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"    
     xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
     xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
@@ -154,6 +155,15 @@ java.lang.IllegalArgumentException:
   <xsl:template match="@dfx:insert" />
   
   
+  <!-- A deleted mc:AlternateContent keeps its wrappers, so that each branch's deleted
+       paragraphs stay in their branch and the text shows once, not once per branch
+       (CR-051 section 10.3, item 11). -->
+  <xsl:template match="mc:AlternateContent[@dfx:delete] | mc:Choice[@dfx:delete] | mc:Fallback[@dfx:delete]" priority="2">
+    <xsl:copy>
+      <xsl:apply-templates select="@*[not(namespace-uri()='http://www.topologi.com/2005/Diff-X')]|node()"/>
+    </xsl:copy>
+  </xsl:template>
+
   <xsl:template match="*[@dfx:delete and not(self::w:p)]">
     <!-- Drop this element, but retain its children
          unless they to have the dfx:delete attribute.
