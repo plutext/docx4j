@@ -1,7 +1,8 @@
 # CR-051: `mc:AlternateContent` at block level: read as Word reads it on load, or kept whole on request (body, cells, rows, headers, notes, text boxes, content controls)
 
 Status: ACCEPTED 2026-10-20 (Jason: "accept recommendations for CR-051's D1 to D5"), to implement as
-recommended; phase 0's walker audit next. Proposed 2026-10-20, drafted at Jason's request ("write
+recommended. Phase 0 done 2026-10-20: the walker audit (§10) leaves one decision for Jason before
+phase 1, D6 (the exporters' copy). Proposed 2026-10-20, drafted at Jason's request ("write
 the cr to keep body-level mc through load. also check whether we do/should keep mc in sdt content")
 by Claude Opus 5.5 (session docx4j-25), after the portfolio session's measurement of Jason's
 `mc-fun` probes (paper §7.8).
@@ -12,10 +13,11 @@ Revised the same day:
   manage this, since it is only triggered by jaxb".
 
 Reviewed the same day by the docx4j-64 session (Claude Fable 5.1) at Jason's request: nine findings,
-one a defect today. All are taken (§9).
+one a defect today. All are taken (§9). It reviewed D6 after phase 0, at Jason's request: (a), with
+three must-fix points, all taken (§9).
 
 Three phases and hand-offs (§5); decisions in §6, D1 to D5 decided by Jason on 20 October 2026 as
-recommended, D5 being his own proposal. It changes
+recommended, D5 being his own proposal; D6, from phase 0's audit (§10), open. It changes
 the generated object model and the load path, which CLAUDE.md lists among the widely-shared code to
 change on Fable.
 
@@ -337,9 +339,10 @@ what it always saw, with the branch Word reads in place of the Fallback.
 The splice happens in `JaxbXmlPart`'s unmarshal, so content unmarshalled outside a part never passes
 it, and a block-level element there stays whole in both modes. Such content includes:
 - `XmlUtils.unmarshalString`, `unmarshal(InputStream)` and `unmarshallFromTemplate`;
-- diffx;
+- diffx's output. Its inputs are loaded parts, so the mode applies to them, and both must be loaded
+  in the same mode (§10.4);
 - an `altChunk`'s conversion;
-- OpenDoPE's templates.
+- OpenDoPE's templates, and the trees its binding steps set after load (§10.4).
 
 **In `preserve` mode,** a block-level element reaches every walker of block content, as CR-021 phase
 2 made a paragraph-level one reach the walkers of paragraph content. CR-021's machinery applies
@@ -356,21 +359,18 @@ Already block-aware, from reading the code:
   `McSelection` chose, at any depth;
 - the inspector: `InspectWalk` finds every `mc:AlternateContent` in the part's DOM.
 
-Phase 0's audit finds the rest: code that walks block content by type, outside `TraversalUtil`, and
-so would skip an `AlternateContent` it does not expect. It matters for `preserve` mode, and for
-REQ-305's kept elements in either mode. To confirm:
+Phase 0's audit (§10) read the rest, for `preserve` mode and for REQ-305's kept elements in either
+mode:
+- **Already right:** every walker that goes through `TraversalUtil`, and both XSLT exporters, meet
+  the element as their mode says.
+- **What fails** is code that reads a container's list by type, or edits through a block's parent,
+  which inside a branch is a `Choice` or `Fallback`:
+  - in the exporters' pipeline, one splice on their copy closes every site (D6, §10.2);
+  - elsewhere, phase 1's list (§10.3). The field updaters and mergers throw there today.
 
-- `docx2fo.xslt` and `docx2xhtml-core.xslt`: their `mc:AlternateContent` templates at block level;
-- the section model (`DocumentModel`, `HeaderFooterPolicy`): a `w:sectPr` inside a branch;
-- `Paginate`;
-- `MainDocumentPart`'s content helpers;
-- the OpenDoPE handlers that edit a content control's content list: repeats, conditions, removal;
-- `Containerization` and the other `convert/out/common/preprocess` steps;
-- `docx4j-diffx`.
-
-At row and cell level, `preserve` mode also needs `TableModel` and the table writers (FO, HTML,
-Markdown) to build the grid from one branch (phase 2). `word` mode needs none of that: the splice
-leaves ordinary rows and cells.
+At row and cell level, `preserve` mode also needs the table walks that read rows and cells by type
+to take one branch (phase 2, §10.3). `TableModel` already does, and with D6 the table writers meet no
+element. `word` mode needs none of that: the splice leaves ordinary rows and cells.
 
 ### 3.5 Save
 
@@ -437,7 +437,11 @@ The CHANGELOG entry names the property, the override and `selectedContent`.
   - in `word` mode, the branch Word reads is drawn;
   - in `preserve` mode, FO and HTML (visitor and XSLT) draw the Fallback by default and the Choice
     under `preferChoice`;
-  - Markdown follows the text model.
+  - Markdown follows the text model;
+  - with D6 (a), in `preserve` mode: a feature set without the step's constant (the DOCUMENT-only
+    set) still gets the copied header, footer, note and comment parts and the splice, and the caller's
+    package keeps every element. A section break in a branch's paragraph gives the same sections to
+    the pre-pass and the real pass. Run twice, on a copy already spliced, the step changes nothing.
 - **MOXy:** the load and save tests in both modes under docx4j-JAXB-MOXy.
 - **Regression:**
   - the full core-tests and export-fo-tests suites;
@@ -457,8 +461,7 @@ The CHANGELOG entry names the property, the override and `selectedContent`.
   that must learn the element.
 
 **Acceptance:** the table of §1 gains Word's column; D1 and D2 can be decided. Met for Word 365 on
-20 October 2026 (the progress below). The audit, which matters for `preserve` mode (§3.4), is
-still to do.
+20 October 2026 (the progress below). The audit was done the same day (§10).
 
 **Progress, 20 October 2026:**
 
@@ -508,7 +511,12 @@ still to do.
   - `mc:Ignorable`;
   - the record's getter.
 - **The preprocessor** (§3.3: the level rule and D4).
-- **The consumers** the audit names, for block level.
+- **What the audit changes in the mechanism** (§10.4): the StAX pipe, the record kept across a
+  replaced tree, and a fresh binder in place of `updateXML`.
+- **The consumers** the audit names, for block level (§10.3), and D6's step on the exporters' copy,
+  which shares §3.2's splice (§10.2).
+- **The defects of today** the audit found (§10.5) can each land on their own, before the rest, as
+  the listener fix can.
 - **The two readers of the record** (§3.2), each with its test:
   - CR-050's inspector: the recorded elements marshalled and located at the promoted content, giving
     the same `mce.branch` addresses as `preserve` mode;
@@ -522,9 +530,14 @@ CHANGELOG says so.
 
 ### Phase 2: row and cell level in `preserve` mode (if D2 is (a))
 
-`TableModel` and the table writers (FO, HTML, Markdown) build the grid from the branch `McSelection`
-chooses, since a row or cell in an unselected branch is not part of the table. The text model's table
-walk does the same with `McPurpose.TEXT`. Then `preserve` mode keeps those elements whole.
+A row or cell in an unselected branch is not part of the table, so each walk that reads rows and
+cells by type takes one branch (§10.3):
+- the text model's (`Extractor.rows` and `cells`, with `McPurpose.TEXT`);
+- the revisions model's;
+- OpenDoPE's row removal (`RemovalHandler.xslt`) and its table finder.
+
+`TableModel` already builds its grid from the drawn branch, and with D6 (a) the table writers meet no
+element. Then `preserve` mode keeps those elements whole.
 
 **Acceptance:** the row and cell probes kept, extracted and drawn as Word shows them (phase 0).
 
@@ -545,7 +558,8 @@ walk does the same with `McPurpose.TEXT`. Then `preserve` mode keeps those eleme
 
 ## 6. Decisions
 
-Each with a recommendation; Jason decides. All five decided as recommended on 20 October 2026.
+Each with a recommendation; Jason decides. D1 to D5 decided as recommended on 20 October 2026; D6,
+from phase 0's audit, is open.
 
 - **D1. Block level.**
   - **Options:**
@@ -621,6 +635,61 @@ Each with a recommendation; Jason decides. All five decided as recommended on 20
   **Decided** (Jason, 20 October 2026): (a): the property with a load option and a package-level
   override, default `word`, `preserve` on request. The name `docx4j.jaxb.mc.blockLevel` stands
   unless phase 1 finds a reason to change it.
+- **D6. The exporters' copy** (from phase 0's audit, §10.2; reviewed by docx4j-64, §9). Open, for
+  Jason.
+  - **Options:**
+    - (a) a `Preprocess` step, immediately after the deep copy, splices each block-, row- and
+      cell-level element of the copy to the branch the exporter draws;
+    - (b) teach each exporter site the element: about fifteen fixes (§10.2), and the table writers in
+      phase 2.
+  - **For (a):**
+    - one step closes every exporter site, in both modes;
+    - the header and footer pre-pass and the real pass then agree on the sections;
+    - the exporters' share of phase 2 goes away;
+    - no caller sees a change, since the exporters already draw one branch.
+  - **How (a) runs:**
+    - **The rule** is the host-aware drawing rule, `McSelection.selectedBranch(ac, part)` with the
+      copy's part. It is the one the XSLT templates apply (`docx2fo.xslt`:1107,
+      `docx2xhtml-core.xslt`:769: `mcPrefersChoice` or `mcSelectsChoice`, the latter
+      `ChartExBranch.takesChoice`). With nothing preferred and no Fallback it already takes the first
+      Choice (`McSelection.java`:159-163), so REQ-305's element needs no clause of its own.
+    - **Its own feature constant,** in both default arrays. `ConversionFeatures.checkParams` adds it,
+      as it adds a section feature, since the section model depends on it. Its javadoc says it is
+      forced on: a name for tests and logs, not a switch a caller can turn off. `createRelationshipTypes`
+      then deep-copies DOCUMENT, HEADER, FOOTER, FOOTNOTES, ENDNOTES and COMMENTS. Without that, a
+      caller's own feature set copies the main part alone, and every other part is shared with the
+      caller by reference (`PartialDeepCopy`:272-277). The step would then splice the caller's live
+      headers, in `preserve` mode losing what the mode keeps.
+    - **The parts it visits** are exactly those of the copy: the main document part, the headers,
+      the footers, the footnotes, the endnotes and the comments. These are every part both exporter
+      families draw, and both go through `Preprocess.process`. The glossary document is not drawn.
+    - **Its own finder,** since the copy was never unmarshalled and has no listener records. A
+      `TraversalUtil` walk in `McMode.DRAW` records each element whose live parent is a block, row or
+      cell container. DRAW descends into the drawn branch only, so an element in a discarded branch is
+      never recorded. The splice is §3.2's, applied outermost first through the live parent, with the
+      rule as a parameter (TEXT at load, DRAW with the host here): one implementation, two callers.
+    - **Idempotent, and assumes no copy:** the header and footer pre-pass runs `Preprocess` again,
+      in place, on its own copy with `PP_COMMON_DEEP_COPY` removed (`FOPAreaTreeHelper`:564-565,
+      591). The step finds nothing then.
+    - **Immediately after the deep copy, before any other step.** Today that is before
+      `AcceptTrackedChanges`, or the REJECT branch. `FieldHyperlinkStyle` and `BookmarkMover`, which
+      are ALL walks counting across branches, then meet no element either.
+    - **With `PP_COMMON_DEEP_COPY` off** it resolves the caller's package permanently, which in
+      `preserve` mode loses what the mode keeps. The javadoc says so, and an INFO line names each
+      part it splices then, with the count.
+    - **Not gated on the mode** (Jason asked, 2026-10-20). `word` mode still leaves elements for it:
+      - REQ-305's, kept whole in both modes;
+      - content that never passed a part's unmarshal (§3.4): fragments from `XmlUtils`, the trees the
+        OpenDoPE binding steps set after load (`Docx4J.toPDF` on a bound document), diffx's output,
+        an `altChunk`'s conversion, and content a caller builds or copies in from a package loaded
+        in `preserve`.
+
+      What the walk finds is the gate: usually nothing, at the cost of one walk of the copied parts.
+      The forced copy costs extra only for a caller's own DOCUMENT-only feature set, since the
+      defaults already copy those parts. If that is ever measured as significant, a read-only scan of
+      the original could choose the parts to copy; not built without a measurement.
+  - **Left alone:** the REF fields' bookmark check reads the original package by design (§10.4 e).
+  - **Recommended:** (a).
 
 ## 7. Dependencies, risks and out of scope
 
@@ -632,6 +701,7 @@ Each with a recommendation; Jason decides. All five decided as recommended on 20
     another branch. The list is maintained with the text model's (CR-046), and the probes of §1 are
     the check.
   - **A block walker that phase 0's audit misses** skips the element's content in `preserve` mode.
+    The audit read docx4j-core, docx4j-export-fo, docx4j-markdown and docx4j-diffx (§10).
   - **The package-level override and lazy unmarshal:** a part touched before the override is set has
     already been resolved by the global setting. The load option (§3.2) removes the trap for the
     tools that need `preserve`, and the setter's javadoc says so.
@@ -710,3 +780,268 @@ findings, none changing D1 to D5, all taken:
    - bare objects in wrapper-annotated lists (§7);
    - URI matching on the binder path (§3.2);
    - D5 marked as Jason's proposal (the Status).
+
+**D6, reviewed after phase 0** by docx4j-64 at Jason's request, against the code: (a) is right and
+closes the sites §10.2 lists. Three must-fix points and five smaller ones, all taken into D6 and §10:
+1. **The copy is partial.** `PartialDeepCopy` deep-copies only the parts whose relationship types the
+   features ask for, and shares the rest by reference. The DOCUMENT-only features copy the main part
+   alone. The defaults are safe, since `PP_COMMON_MOVE_BOOKMARKS` asks for the headers, footers, notes
+   and comments, but a caller's own feature set may not be. So the step has its own feature constant,
+   which asks for those parts, and it visits exactly them.
+2. **The host-aware rule,** `selectedBranch(ac, part)`, which the XSLT templates apply. It takes the
+   first Choice for REQ-305's element, so the separate reading-rule clause went.
+3. **Its own finder,** sharing §3.2's splice, since the copy has no listener records.
+4. **Smaller points:**
+   - the REF fields' bookmark check reads the original package in READ, by design (§10.4 e);
+   - the pre-pass runs `Preprocess` again, in place, so the step is idempotent;
+   - the slot is "immediately after the deep copy", so a reorder keeps it;
+   - every part both exporter families draw is in the copy. docx4j-markdown reads the text model,
+     not this pipeline;
+   - an INFO line when it splices a package it did not copy.
+
+The choice between a feature constant and an unconditional step was left open by the review. D6
+takes the constant and has `checkParams` add it, so it can be tested by name and a caller's feature
+set cannot drop it. docx4j-64 agreed: `checkParams` runs before `createRelationshipTypes`
+(`Preprocess.java`:77-78), so the parts are copied, and the pre-pass's trimmed feature set gets it
+back too.
+
+## 10. Phase 0 record: the walker audit, 20 October 2026
+
+By the docx4j-25 session (Claude Opus 5.5), at Jason's word ("start CR-051 phase 0"), reading the code
+at 9263b669f. Four slices were read in parallel by forks of the session:
+- the exporters (`convert/out`, docx4j-export-fo, docx4j-markdown);
+- OpenDoPE and fields;
+- the model, the TOC, the parts and the anonymiser;
+- docx4j-diffx, XPath callers and parent casts.
+
+The session checked every finding recorded here as throwing, losing content or a defect today against
+the code. Line numbers are at 9263b669f. Nothing was run but one check: after a load, the `getParent()` of a
+branch's child is the `AlternateContent.Choice` or `.Fallback` (`mc-run-newest-first`, the StAX path).
+
+### 10.1 What holds everywhere
+
+- **`TraversalUtil` walkers see the element already.** `getChildrenImpl` expands an `AlternateContent`
+  at any level by `McMode` (`TraversalUtil.java:599`), and reaches a branch's children by reflection
+  (`getAny()`). So each walker of CR-021 §8.3 meets a block-level element as its mode says:
+  - READ: the branch the text model reads;
+  - DRAW: the branch the exporters draw;
+  - ALL: every branch.
+
+  Every one keeps CR-021's class. The only mode corrections are those below: `Paginate.bookmarkKeys`
+  (10.3, item 5), and the walks that count across branches (`FieldHyperlinkStyle`, `BookmarkMover`,
+  `BookmarksIntegrity`, `FieldUpdaterSEQ`).
+- **The XSLT exporters see it already.** The `mc:AlternateContent` templates of `docx2fo.xslt` (:1104)
+  and `docx2xhtml-core.xslt` (:767) match at any level. Every block container's template applies
+  templates to all its children: `w:body` and a section's content, `w:sdtContent/*`, `w:tbl`, `w:tr`,
+  `w:tc`, `w:hdr`, `w:ftr`, the notes. They choose by the drawing rule.
+- **The visitor exporters, the text model and the inspector** see it, as §3.4 said
+  (`AbstractVisitorExporterGenerator.walkJAXBElements`:247-260, `Extractor.blocks`:633, `InspectWalk`).
+  docx4j-markdown reads the text model (`WmlToMarkdown`:121), so it does too; CR-021 §8.3's "no
+  `AlternateContent` case" is out of date.
+- **Climbs up the tree pass through.** `Choice`, `Fallback` and `AlternateContent` are all `Child`, so
+  `PropertyResolver.cellContextOf`, `AbstractTableWriter.inBody` and the like reach the container.
+- **Nothing in the exporters throws.**
+
+What fails is code that does one of three things:
+- **(B) reads a container's list by type itself:** `instanceof P` or `Tbl` or `SdtBlock`, the first or
+  last item, a count. It skips the element's content.
+- **(P) edits through a block's parent**, as `(ContentAccessor) p.getParent()`. Inside a branch the
+  parent is a `Choice` or `Fallback`, which is not a `ContentAccessor` (its list is `getAny()`). Some
+  of these throw; some log and skip.
+- **(M) pairs walks in two modes,** READ's data with DRAW's. They disagree wherever the two rules do.
+  At block level that is every understood Choice that `preferChoice` does not name (`w16sdtfl` newest
+  first).
+
+All of it matters in `preserve` mode, and in `word` mode for REQ-305's kept elements only.
+
+### 10.2 The exporters: one splice on their copy (D6)
+
+Every B site in the exporters is in the pipeline that draws one branch, after `Preprocess`'s deep copy.
+`PartialDeepCopy` keeps each element whole, and the copy is never spliced, since it is not unmarshalled.
+
+| Site | In `preserve` mode |
+|---|---|
+| `ConversionSectionWrapperFactory.getSectPrs`:1207-1225 (top-level `w:p` only) | a section break in a branch's paragraph is never seen: that section's page setup, columns and headers are lost |
+| `FOPAreaTreeHelper.trimContent`:107-109 (`SectPrFinder`, READ) | the header and footer pre-pass does find it, so its sections no longer line up with the real pass's: every later section gets another section's header and footer extents |
+| `ConversionSectionWrapperFactory.removeContentControls`:1178, `startsPage`:688, `textLength`:613 | a block content control holding a `w:sectPr` in a branch is not unwrapped (logged); a page start or a column-balancing weight in a branch is not seen |
+| `PageBreak.movePageBreaks`:134 (`w:p` and block `w:sdt` only) | a page break in a branch's paragraph is lost |
+| `Containerization.groupBodyContent`:214 | the branch's paragraphs are drawn inside the previous paragraph's border group, and nothing is grouped within the branch |
+| `ListsToContentControls.groupContent`:460 ("TODO: handle") | an HTML list crossing the element restarts; list paragraphs in a branch are not grouped |
+| `CoverPageSectPrMover`:55, `FopWorkaroundDisablePageBreakOnFirstParagraph`:50 (`body.get(0)`) | a leading element defeats them; the second guards FOP's empty-flow exception |
+| `FopWorkaroundReplacePageBreakInEachList`:85, `ColumnBreaks`:75, `UnequalColumns`:165 | a branch's content is not processed |
+| `FOPAreaTreeHelper`'s flatten (:388) and `FloatingDrawingRemover` (:244), `StyleRefMarkers.paintStoredResults`:351 | header content in a branch is measured wrong |
+| `BookmarkMover`:73 (ALL) | a pending bookmark moves into the next paragraph in walk order, across branches |
+| `FieldHyperlinkStyle`:127 (ALL, one stack) | a field opened before the element and closed in each branch is popped twice |
+| `FOExporterVisitorGenerator.firstP`:558 | a container starting with the element takes the next paragraph's properties |
+| `AbstractWmlConversionContext.enterParagraph`:396 | a paragraph in a branch, in a text box in a cell, gets the cell's conditional formatting |
+| rows and cells: `ConversionSectionWrapperFactory.firstParagraph(Tbl)`:713, `Containerization.groupTable`:153, `ParagraphStylesInTableFix`'s row counts, `AbstractTableWriter.cellWidthFromOuterGrid`:1691 | phase 2 |
+
+One `Preprocess` step, immediately after the copy, would close every one of them, the row and cell
+sites included. It splices each block-, row- and cell-level element of the copy to the branch the
+exporter draws (`McSelection.selectedBranch(ac, part)`, the XSLT templates' rule, which takes the first
+Choice for REQ-305's element). D6 says how: the parts the copy must include, the finder, and the
+second run on the pre-pass's copy. With it:
+- the exporters then never meet such an element, in either mode;
+- the pre-pass and the real pass agree, since the pre-pass copies the preprocessed package
+  (`LayoutMasterSetBuilder`:122, :144-159);
+- the step goes before any other, `AcceptTrackedChanges` included, so the revisions model meets none
+  either (10.3, item 3);
+- the visitor and XSLT `mc` templates go on serving run and paragraph level, as today.
+
+The alternative is about fifteen fixes, each a branch case of its own, and phase 2 for the table
+writers. That is D6.
+
+### 10.3 The rest: phase 1's list
+
+These sites throw or lose an edit. Each is for phase 1, in `preserve` mode and for REQ-305's elements.
+
+1. **The parent's list.** One helper giving a parent's live content list fixes this family. It covers
+   `ContentAccessor`, `List`, `SdtElement`, `CTTxbxContent`, `CTTextbox`, and a `Choice`'s or
+   `Fallback`'s `getAny()`; `Resolver.listOf` is the pattern. Its users:
+   - **`TraversalUtil.replaceChildren`:678-711.** For a `Choice` or `Fallback` it logs "Don't know how
+     to replaceChildren" and drops the new list. `OpenDoPEHandler`'s `ShallowTraversor` (:634) and
+     `OpenDoPEHandlerComponents`' `FindComponentsTraversor` (:403) rely on it. For a control directly
+     in a branch:
+     - a repeat shows one instance, its binding already stripped;
+     - a false condition is not removed (without the reverter);
+     - an `od:component` is not replaced.
+
+     It happens at paragraph level already (10.5).
+   - **`FieldUpdater.updateComplex`:216-235, `FieldUpdaterSEQ.updateComplex`:206-222 and
+     `AbstractMerger.canonicaliseStarts`:451-481** (`MailMerger`, `MailMergerWithNext`,
+     `FORMTEXTMerger`). Each throws `Docx4JException` "Unexpected parent: ...AlternateContent$Choice"
+     for a field's paragraph directly in a branch, so the part's whole field update or merge fails.
+   - **`migration/FromFormText`:91 and `FromMergeFields`:90:** an unguarded cast, so a
+     `ClassCastException`.
+   - **Logged and skipped:** `OpenDoPEReverter.replaceConditions`:331-357 and `handleRepeats`:380-441;
+     `BookmarkRenumber`'s `_GoBack` removal (:141-223); `BookmarksIntegrity.check`:75-104.
+2. **`SdtStAXHandler`:110-127** serves the StAX binder (`BindingTraverserStAX`) and OpenDoPE's
+   `ShallowTraversorStAX`. It picks a control's class by its parent's name. Under `mc:Choice` or
+   `mc:Fallback` it logs "TODO stack.peek() Choice" and streams the control through unprocessed. Fix:
+   look past the `mc` wrappers on the stack. It matters in `word` mode too (10.4, a).
+3. **The revisions model** (CR-044):
+   - `Trees.blockItems`:162-178 has no `AlternateContent` case, so `Lister.visitBlocks`:243-276 never
+     enters a block-level element, and Resolver's move pairing (:694) and `Texts.cellText` (:98-113)
+     miss it too;
+   - so tracked changes in a branch are not listed, accepted or rejected;
+   - in the exporters, `AcceptTrackedChanges` (`TrackedChanges.acceptAllForConversion`) would print
+     the deleted text, unless D6's splice comes first;
+   - fix: list one branch and the others' changes as twins, as `Lister.alternate`:673 does for text
+     boxes. `Trees.runItems` has the same gap at paragraph level (10.5).
+4. **The TOC.** `TocHelper.getAllElementsFromObject`:57-82 recurses through `ContentAccessor` only, so
+   `TocGenerator` (:375) leaves out a heading in a branch and does not number it. Fix: an
+   `AlternateContent` case descending one branch, the one Paginate's page numbers come from (item 5).
+5. **`Paginate.bookmarkKeys`:395 (M)** walks READ, while its paragraph index comes from
+   `bodyParagraphs` (DRAW, :372). A bookmark in a Choice's paragraph is dropped, so its TOC entry gets
+   no page. One line: DRAW.
+6. **The bound-content shapers:**
+   - `BindingTraverserNonXSLT.xpathInjectImage`:512-546 and its StAX twin choose a picture's shape by
+     the control's parent. Under a `Choice`, `null` goes into the content list and the picture is lost
+     (on the path taken when `replaceBlipEmbed` fails). Fix: shape by the control's own class.
+   - `BindingTraverserCommonImpl.applyBoundContent`:513-549 and `shapeHints`:487-494, and
+     `bind.xslt`'s shape tests, read only the first child of `w:sdtContent`. Content that starts with
+     an element is taken as run-level.
+   - `OpenDoPEHandler.processW15Repeat`:982 casts the first item to `SdtElement`: a
+     `ClassCastException`.
+7. **`AbstractMerger.recursiveRemove`:535-576** recurses through `ContentAccessor` and `JAXBElement`
+   only, so an emptied merge paragraph in a branch is never removed.
+8. **Small readers by type:**
+   - `Extractor.lastParaId`:2187, and `Removals` at :253 and :299: a comment whose last paragraph is in
+     an element gets the wrong paraId, and its reply thread breaks;
+   - `HeaderFooterPolicy.reservesNothing`:321 counts the element as one item;
+   - `AbstractMerger`:195-200 and `getDocumentSeparator`:255-266.
+9. **`BookmarksIntegrity.inspectBookmarks`:158** (ALL) counts twins in a `Choice` and a `Fallback` as
+   duplicates; it should count per branch. The same happens at run level today (10.5).
+10. **`JaxbXmlPartAltChunkHost`:213-221, with :332.** For the same `altChunk` `r:id` in two branches,
+    the first conversion deletes the part and the second throws a `NullPointerException`.
+11. **diffx:** `diffx2wml.xslt`:157 flattens a deleted block-level element. Its wrappers are lost and
+    every branch's paragraphs are shown deleted, so the text appears once per branch. An inserted or
+    edited element is kept whole, with marks in each branch.
+12. **Positional notes,** each fixed by a climb past the `mc` wrappers:
+    - `AbstractWmlConversionContext.enterParagraph`:396 (closed by D6 for the exporters);
+    - `TableContextTracker.cellContext`:80 (covered already by its story-boundary frame);
+    - `HTMLExporterVisitorGenerator.isInHtmlElementSdt`:403;
+    - `AbstractVisitorExporterGenerator.jaxbElementName`:231: null for a block-level `w:moveFrom`
+      directly in a branch.
+13. **XPath.** `getJAXBNodesViaXPath` has no caller in the main code. In `preserve` mode `//w:p`
+    returns every branch's paragraphs, and `w:body/w:p` none inside a branch. A javadoc note.
+
+**Row and cell level** (phase 2, `preserve` mode):
+- `Extractor.rows`:984-1008 and `cells`:1019-1041: `blockItems` returns null for an element, so its
+  text is lost silently;
+- `Lister`'s rows and cells (:301, :319);
+- `RemovalHandler.xslt`:203-216: a row whose cells all sit in a cell-level element is deleted;
+- OpenDoPE's `TableObjectFinder` (:841, :1277): a `w:tc` found in a cell-level branch is lifted out of
+  it.
+
+`TableModel` already builds its grid from the drawn branch (`TrFinder` and `TcFinder` with
+`McMode.DRAW`, `TableModel.java`:323 and :560), and with D6 the table writers meet no element. So phase
+2 is smaller than §5 first said.
+
+### 10.4 What the audit changes in §3.2's mechanism (phase 1)
+
+a. **The StAX pipe is not an unmarshal.** For a part not yet unmarshalled, `JaxbXmlPart.pipe`
+   (:400-420, :462-475) streams the stored part, so the splice never sees it. The StAX binder (opt-in,
+   `docx4j.model.datastorage.BindingHandler.Implementation`) therefore meets block-level elements in
+   both modes.
+   - With item 2's fix, its bindings land in every branch, and the later unmarshal splices a bound
+     branch.
+   - Without it, `word` mode splices a branch whose controls were never bound.
+b. **The tree is replaced after load, and the record must survive that:**
+   - `BindingHandler` (:397) and the `RemovalHandler` and `OpenDoPEIntegrity` steps set a new tree,
+     unmarshalled through `XmlUtils` without the listener (so outside a part, §3.4);
+   - `getBinder()` on a part whose tree came from StAX marshals it and unmarshals it again
+     (`JaxbXmlPartXPathAware.java`:138-146), through the splice again.
+
+   So the record should hold where each element stood as an address, worked out at splice time, not as
+   live references into the tree. An unmarshal that resolves nothing must not clear it.
+   `McSelection`'s namespaces, keyed by `Choice` instance (`REQUIRES_NAMESPACES`), do not survive those
+   copies either. The Choices are then matched by prefix (REQ-303), as today at every level.
+c. **The binder update.** `XmlUtils` documents `binder.updateXML` as once only (JAXB issue 459,
+   :1636-1650; not checked against today's JAXB), and a user's later `getJAXBNodesViaXPath(...,
+   refreshXmlFirst=true)` would be the second. A fresh `Binder.marshal` of the spliced tree into a new
+   DOM keeps the same JAXB objects and avoids the question.
+d. **diffx's inputs are loaded parts.** `Differencer.diff(Body, Body)` marshals the caller's trees, so
+   the mode applies to them; only diffx's output is unmarshalled outside a part (§3.4, corrected). Both
+   inputs must be loaded in the same mode, or a kept element never pairs with the other side's spliced
+   paragraphs.
+e. **READ against DRAW (M).** With D6, the exporters agree among themselves. `DocumentModel`'s sections
+   (`SectPrFinder`, READ) follow the text model's branch, which is Word's. Wherever the exporters draw
+   another branch, a caller comparing them with a PDF's sections sees the difference; which branch the
+   exporters draw is left out of scope (§7). One exporter read stays on the original package, by
+   design: `AbstractWmlConversionContext.isMissingBookmark` (:181-200) collects the REF fields'
+   bookmark names from the document as handed over, in READ, since Word looks in the branch it reads
+   (CR-046 phase 3). D6 leaves it there. Pointed at the copy, it would lose a form field's bookmark,
+   which `FieldsCombiner` collapses with its field.
+
+### 10.5 Defects today, at every level (from the code, not run)
+
+These turned up on the way. They are not block-level, and none waits for this CR.
+
+1. **The anonymiser never analyses a Fallback.**
+   - `DmlVmlAnalyzer` has its own `getChildren` (:133-398). It ignores the `McMode.ALL` that
+     `Anonymize` (:442) sets, and for an `AlternateContent` falls to reflection, which returns
+     `getChoice()`, its only `List` getter.
+   - It is also the only code that scrubs `v:imagedata`'s `o:title` (:108), so an image's title in a VML
+     Fallback survives anonymisation, and the unsafe-object report misses Fallback content. Text is
+     scrambled in every branch (`JaxbGraphWalker`).
+   - Fix, one line: `return McSelection.branches(ac, getMcMode())`.
+   - CR-021 §8.4 lists it among `getChildrenImpl`'s direct callers; it is not one.
+2. **`replaceChildren` drops a `Choice`'s or `Fallback`'s new list** (10.3, item 1). It drops the
+   result for an OpenDoPE repeat, condition or component in a run-level control inside a
+   paragraph-level branch.
+3. **Tracked changes inside a paragraph-level element are not listed, accepted or rejected.**
+   `Trees.runItems`:142-155 has no `AlternateContent` case, and `Lister.runLevel` enters an element only
+   inside a `w:r`, for text boxes.
+4. **`FieldUpdaterSEQ` counts each branch.** Its ALL walk feeds the counter (:120-138), so a SEQ caption
+   in a text box, written as a `wps` Choice and a VML Fallback, counts twice and the numbering skips.
+5. **`BookmarksIntegrity` counts a text box's twin bookmarks as duplicates** (10.3, item 9).
+6. **`OpenDoPEReverter`'s template maps are keyed by control id** (:204-205), so same-id controls in a
+   Choice and a Fallback get the same replacement object, put into both lists.
+
+Seen in passing, not to do with `mc`:
+- `BindingTraverserNonXSLT.xpathInjectImage`'s fallback path returns null for a control in a header,
+  footer, note or text box. Its parent tests stop at `Body`, `Tc`, `SdtContentBlock`, `Tr`, `P` and
+  `SdtElement`.
+- `Containerization.process`:110-132 never containerizes notes or comments. For notes, its list holds
+  the notes, not their paragraphs. For comments, the grouped list is a throwaway copy.
