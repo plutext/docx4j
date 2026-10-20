@@ -1245,8 +1245,9 @@ removed from its branch), `FieldUpdaterSEQ` (each branch numbered from the count
 the StAX binder (a bound control directly in a Choice bound as an `SdtBlock`, checked on the
 binder's output in the part store), `OpenDoPEReverter` (a condition control whose parent is a
 Choice or Fallback replaced), `JaxbXmlPartAltChunkHost` (one text/plain `altChunk` named in both
-branches, converted in both, its part deleted once; a loaded part carries no `AltChunkType`, which
-the test sets) and `FromMergeFields` (a MERGEFIELD paragraph in each branch migrated; `FromFormText`
+branches, converted in both, its part deleted once; the test sets the loaded part's `AltChunkType`,
+though a loaded part has one already, from its extension: CR-053 §1, measured 2026-10-20) and
+`FromMergeFields` (a MERGEFIELD paragraph in each branch migrated; `FromFormText`
 shares the helper). Nine of the class's thirteen tests were seen to fail with the fixes reverted in
 the working tree (`contentOf` answering null for a Choice or Fallback, `recursiveRemove` without
 its branch case, `SdtStAXHandler` back to `stack.peek()`, the altChunk host deleting inside its
