@@ -57,3 +57,11 @@ and Reject All; `RUN.txt` is how it is run (`X:\revisions\cr043\` on the share).
 `equations-accept-all.docx` and `equations-reject-all.docx` (Word's resolution of `../tracked-changes-equations.docx`,
 CR-010's equations), and `cr043-log.txt` (Word's build, each case's outcome, the revisions left in each story). What
 they show is CR-043 section 4.4.
+
+`comments/`: CR-043's U21 to U23 (section 15), probes built by the docx4j-25 session (`build_round.py`, with CR-052's
+Word check) and resolved by Jason in Word 365 on 21 October 2026. `c43-u21-accept-all-deletion-comment-outside.docx`
+and its Accept All, `c43-u21-word365-accepted.docx`: a comment on a deletion, its markers outside the `w:del`, goes
+whole. `c43-u22-reject-one-last-comment-revisions-left.docx` and `c43-u22-word365-rejected-one.docx`, its one
+insertion rejected: the only comment goes with its parts, and `people.xml` stays while a deletion is left.
+`c43-u23-reject-all-two-paragraph-insertion-commented.docx` and its Reject All, `c43-u23-word365-rejected.docx`: a
+comment on two inserted paragraphs, its start in the first and its end in the second, goes whole.

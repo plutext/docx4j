@@ -10,7 +10,9 @@ rejects every kind but the table, cell and section records, held to Word's saves
 forms and the filters (§13); phase 3 DONE 2026-10-16: `AcceptTrackedChanges` on the new code in every story (D2),
 the samples, the XSLT deprecated (D3), Getting Started, the ports' agreement run (§14). For 17.3.3, the whole CR
 (D6).  Four phases (§5); decisions in §7. Follow-up 2026-10-21 (Jason: "follow Word 365"): a comment whose range a
-resolution empties goes whole wherever its markers were, and the comment parts with the last (§15).
+resolution empties goes whole wherever its markers were, and the comment parts with the last (§15); after Word's
+check of U21 to U23 the same day, a range across paragraphs too (Jason: "fix Resolver.removeRevision to judge the
+range across paragraphs, as a small CR-043 follow-up").
 
 Refined 2026-10-16 (no implementation yet; Jason: "it would be good to include CR-043 tracked changes in our
 17.3.3 release ... do not implement anything yet"), from what docx4j-ts-editor and docx4j-core-ts have built and
@@ -152,7 +154,8 @@ docx4j's reading (D5), and the row is on §11's running list.
 | an inserted math structure (a `w:ins` in its `m:ctrlPr`, `EG_RPrMath`: `CTCtrlPr.getIns()`, a `CTRPrChange`; `m:sSup` in that file) | the `w:ins` goes, its `w:rPr` kept (copied from the `CTRPrChange.RPr` list form into a live `RPr`, `CTCtrlPr.setRPr`) | **the structure goes whole** - the `m:ctrlPr`'s grandparent (`m:sSup`, `m:d`, `m:acc`, ...) removed from the list that holds it - as a paragraph goes with its inserted mark | the same; a deleted structure by symmetry (unmeasured) |
 | `w:ins`/`w:del` holding `m:r` or `m:oMath` (`m:EG_OMathMathElements` in `CT_RunTrackChange`) | as runs | as runs | schema-legal, in no fixture (§10 item 1) |
 | **comments** | a comment whose range start lies inside removed content goes: markers, reference run and entry; with it its entries in `commentsExtended`, `commentsIds` and `commentsExtensible`, and its replies (`w15:paraIdParent`) | the same | 32 (a comment's own text: Word does not track edits to it, C18); the extended parts and replies unmeasured (§10 item 4) |
-| | a comment whose markers lie outside, its range left empty: **goes whole**, as one whose start was inside (§15; Word 2010 and 15 kept the reference run and entry); with the last comment the comment parts go, and `people.xml` where no revision is left | the same (by symmetry, U21) | Word 365, 21 October 2026: `review-for-word-word365-rejected`, docx4j-python's artefact 8 |
+| | a comment whose markers lie outside, its range left empty: **goes whole**, as one whose start was inside (§15; Word 2010 and 15 kept the reference run and entry); with the last comment the comment parts go, and `people.xml` where no revision is left | the same | Word 365, 21 October 2026: `review-for-word-word365-rejected`, docx4j-python's artefact 8; Accept All of a deletion, and `people.xml` kept while a tracked change is left: `c43-u21`, `c43-u22` (§15, U21 and U22) |
+| | a comment whose range spans paragraphs, every one of them removed: as reject, by symmetry (unmeasured) | **goes whole** (two inserted paragraphs commented whole, rejected): its start and end, joined into one paragraph with the marks, have nothing with text between; one whose range still crosses a paragraph mark stays (U24) | Word 365, 21 October 2026: `c43-u23`, Reject All (§15, U23) |
 | **footnotes and endnotes** | a note whose reference run goes is **removed from its part** (Word also marks the note's own content deleted or inserted with its reference) | the same | the editor's `review/` saves (footnotes, Word 2010 and 15); endnotes C12, C12b |
 | a **bookmark** with its start or its end inside removed content, or around content that goes and left empty by it | **removed whole** (C11: start before a deletion, end inside it, accepted) | the same (C11b: a bookmark around an insertion, rejected); a bookmark empty before stays | C11, C11b (core-ts drops only the markers inside, which leaves half a bookmark); a deletion accepted under a bookmark, U15 |
 | a drawing (or any related part) inside removed content | the run goes; **its relationship and part go** when nothing else references them - counting every part's relationships, not the story's alone, and every relationship the removed subtree references: `a:blip` `r:embed`/`r:link`, `v:imagedata` `r:id`, chart parts, `w:object`'s OLE part and preview (Word's saves keep no unreferenced image, C04, C05) | | C04, C05; the wider scope unmeasured (D7, §10 item 4) |
@@ -498,9 +501,7 @@ settles one moves it into §3.2 with its source. Kept current; dated where added
 | U18 | a move's listing (added 2026-10-16) | each half of each moved paragraph is listed as a change of its own (Office JS cannot list a move, checks 16 and 17); resolving any one resolves the whole move, and the others are then stale | core-ts | Word's Review pane: how many "Moved" entries a three-paragraph move (C15) shows |
 | U19 | a filter on a group (added 2026-10-16, phase 2) | applies to its single changes: a group partly matched has only its matching pieces resolved (a kind filter on a deleted paragraph resolves its text and leaves its mark, or the other way round) | docx4j's choice; Word's Review tab has no such filter (its "show changes by" reviewer filter is display only) | none needed: an API choice |
 | U20 | a table's records that change nothing, a grid's record alone (added 2026-10-16) | not listed (checks 24 and 26's rule for runs and paragraphs, core-ts's for tables); dropped by the sweep either way | core-ts | a probe changing a table property and back with tracking on |
-| U21 | Accept All of a deletion whose comment's markers lie outside it (added 2026-10-21, §15) | the comment goes whole once its range is empty, as Reject All of an insertion | symmetry with Word 365's Reject All | a probe deleting a commented phrase whose markers stay outside the `w:del` |
-| U22 | `people.xml` after the last comment goes, with revisions left (added 2026-10-21, §15) | kept while any tracked change is left; removed with the comment parts when none is | Word 365 removed it with none left (artefact 8) | a single change rejected that removes the last comment, others left |
-| U23 | a comment whose range spans paragraphs, every paragraph's text removed (added 2026-10-21, §15) | stays: a range is judged empty only within one content list (as before) | docx4j's reading | a probe rejecting an inserted two-paragraph passage commented whole |
+| U24 | a comment whose range spans paragraphs, its text all removed but a paragraph mark left between start and end (added 2026-10-21, §15) | stays: the range holds the mark | docx4j's reading | a probe rejecting the inserted text, not the marks, of two paragraphs commented whole |
 
 ## 12. Phase 1 (2026-10-16)
 
@@ -663,6 +664,12 @@ Office JS's `body.getTrackedChanges()` does. The python session measured the sam
 Its recorded departures (its CR-010 §§10.3, 11.3) are a reading of `w:date` as UTC, which Jason is asked
 about, and Python naming; neither is a rule that disagrees with Word.
 
+**Rerun again (2026-10-21)**, at the python session's request, with its CR-010 complete (docx4j-python 5a1b463,
+unpushed). Since the last run it has ported §15's comment rule (d18693760), its tracker writes a comment on inserted
+text with the range start inside the `w:ins`, as Word does, and it reads `w:date` as Word's local clock, with
+`w16du:dateUtc` in UTC. Against docx4j at d2d0a3861, over the eleven fixtures plus artefact 8 and Word 365's
+`review-for-word-word365-rejected`: **0 lines differ in all 26 comparisons.**
+
 **The Word-open check** (Jason, 2026-10-16, Word 365): docx4j's own Accept All and Reject All saves of four fixtures -
 the probe, the equations, the editor's review file (notes, comments, a reply) and check 18's (a move, list changes,
 tables, a section) - each open with no repair prompt and with no revision left. Word 2010 was not tried.
@@ -699,3 +706,25 @@ reads comment range ends and references standing together ends first, Word 365's
 The tracked-changes tests and the text model's view agreement (`ViewAgreementTest`): 86 run, 0 failures.
 
 Hand-offs: docx4j-python (its fix 2, waiting on this) and docx4j-core-ts (its CR-002 recorded the case unmeasured).
+
+**U21 to U23 measured** (Jason, Word 365, 21 October 2026; probes built by docx4j-25 with CR-052's Word check,
+`Office 2016/cr052-word-check/c43-*` on the Word VM share). All three move from §11 into §3.2.
+- **U21:** Accept All of a deletion whose comment's markers lie outside the `w:del`. The comment goes whole and a
+  control comment stays, as docx4j does.
+- **U22:** one insertion rejected, which removes the document's only comment while a tracked deletion is left. The
+  comments, commentsExtended and commentsIds parts go and `people.xml` stays, as docx4j does.
+- **U23:** Reject All of two inserted paragraphs, commented whole (the range starts in the first and ends in the
+  second). **Word removes the comment whole.** docx4j kept it, its markers left in the paragraphs either side: the
+  rule that a range is judged within one content list does not hold.
+
+**Fixed** (Jason, the same day: "fix Resolver.removeRevision to judge the range across paragraphs, as a small CR-043
+follow-up"):
+- `Resolver.removeRevision` also makes a candidate of a comment with one marker in the revision's list on the
+  revision's side and the other in another paragraph. Such a comment, and one whose start was inside with its end
+  elsewhere, is judged at the flush (`Removals.removeCommentIfEmptied`). By then the marks taken away have joined
+  the paragraphs, and the comment goes whole when its start and end stand in one list with nothing with text
+  between. A range that still crosses a paragraph mark stays (U24).
+- `ResolvedView` makes the same decision without the joins: the comment goes when every paragraph from the
+  start's up to the end's loses its mark, with only range markers between them and no text in the range.
+- Tests: `TrackedChangesWordTest`'s `u21AcceptAll`, `u22RejectOne` and `u23RejectAll` against Word's saves (the
+  fixtures in `revisions/cr043/comments/`), and `ViewAgreementTest`, which walks them too.

@@ -83,6 +83,8 @@ public final class ResolvedView {
 
 	/** Comments whose range held a revision taken away: gone with it once nothing with text is left in their range. */
 	private final List<CommentCandidate> commentCandidates = new ArrayList<CommentCandidate>();
+	/** The same, with the range's start and end in different paragraphs (CR-043 U23). */
+	private final List<SpanCandidate> spanCandidates = new ArrayList<SpanCandidate>();
 	private final Set<BigInteger> commentsGone = new LinkedHashSet<BigInteger>();
 
 	private ResolvedView(WordprocessingMLPackage pkg, boolean accepted) {
@@ -94,6 +96,7 @@ public final class ResolvedView {
 		for (Map.Entry<Story, List<TrackedChange>> e : moves.entrySet()) new MoveReplay(e.getKey(), e.getValue()).run();
 		for (TrackedChange change : changes) plan(change);
 		for (CommentCandidate c : commentCandidates) if (c.rangeEmpty()) commentsGone.add(c.id);
+		for (SpanCandidate c : spanCandidates) if (c.rangeEmpty()) commentsGone.add(c.id);
 	}
 
 	private static void collectMoves(TrackedChange change, Map<Story, List<TrackedChange>> moves) {
@@ -222,7 +225,8 @@ public final class ResolvedView {
 
 	/**
 	 * {@code Resolver.removeRevision}: the revision goes, and the comments whose range started on it,
-	 * or whose markers lie either side of it in its list, are candidates.
+	 * or whose markers lie either side of it in its list, are candidates; so is one with a marker in
+	 * its list on the revision's side and the other in another paragraph (U23).
 	 */
 	private void removeRevision(Object item, List<Object> owner) {
 		Object v = Trees.unwrap(item);
@@ -233,20 +237,109 @@ public final class ResolvedView {
 		if (at < 0) return;
 		for (Object o : inner) {
 			Object ov = Trees.unwrap(o);
-			if (ov instanceof CommentRangeStart) commentCandidates.add(new CommentCandidate(((CommentRangeStart) ov).getId(), owner, at));
+			if (!(ov instanceof CommentRangeStart)) continue;
+			BigInteger id = ((CommentRangeStart) ov).getId();
+			if (Resolver.markerAt(owner, at + 1, owner.size(), CommentRangeEnd.class, id) >= 0) commentCandidates.add(new CommentCandidate(id, owner, at));
+			else spanCandidates.add(new SpanCandidate(id, item, owner, at, true));
 		}
 		for (int s = 0; s < at; s++) {
 			Object sv = Trees.unwrap(owner.get(s));
 			if (!(sv instanceof CommentRangeStart)) continue;
 			BigInteger id = ((CommentRangeStart) sv).getId();
-			for (int e = at + 1; e < owner.size(); e++) {
-				Object ev = Trees.unwrap(owner.get(e));
-				if (ev instanceof CommentRangeEnd && java.util.Objects.equals(((CommentRangeEnd) ev).getId(), id)) {
-					commentCandidates.add(new CommentCandidate(id, owner, s));
-					break;
+			if (Resolver.markerAt(owner, s + 1, owner.size(), CommentRangeEnd.class, id) < 0) spanCandidates.add(new SpanCandidate(id, item, owner, s + 1, true));
+			else if (Resolver.markerAt(owner, at + 1, owner.size(), CommentRangeEnd.class, id) >= 0) commentCandidates.add(new CommentCandidate(id, owner, s));
+		}
+		for (int e = at + 1; e < owner.size(); e++) {
+			Object ev = Trees.unwrap(owner.get(e));
+			if (ev instanceof CommentRangeEnd && Resolver.markerAt(owner, 0, e, CommentRangeStart.class, ((CommentRangeEnd) ev).getId()) < 0) {
+				spanCandidates.add(new SpanCandidate(((CommentRangeEnd) ev).getId(), item, owner, e, false));
+			}
+		}
+	}
+
+	/**
+	 * A comment whose range held a revision taken away, its start and end in different paragraphs of one
+	 * list: gone, as {@code Removals.removeCommentIfEmptied} judges it once the joins are made, when every
+	 * paragraph from the start's up to the end's loses its mark (so that they join), with nothing between
+	 * them but range markers and what this view removes, and nothing with text in the range.
+	 */
+	private final class SpanCandidate {
+		final BigInteger id;
+		final Object revision;
+		final List<Object> owner;
+		/** In {@code owner}: where the range's text begins to be looked for (the start's side), or the end's index. */
+		final int at;
+		final boolean startHere;
+		SpanCandidate(BigInteger id, Object revision, List<Object> owner, int at, boolean startHere) {
+			this.id = id;
+			this.revision = revision;
+			this.owner = owner;
+			this.at = at;
+			this.startHere = startHere;
+		}
+
+		boolean rangeEmpty() {
+			Object pv = Trees.parentOf(revision);
+			if (!(pv instanceof P) || ((P) pv).getContent() != owner) return false;
+			P here = (P) pv;
+			List<Object> container = Resolver.listOf(Trees.parentOf(here));
+			int k = indexOfValue(container, here);
+			if (k < 0) return false;
+			if (startHere) {
+				for (int i = at; i < owner.size(); i++) if (hasText(owner.get(i))) return false;
+				P p = here;
+				while (true) {
+					if (!removesMark(p)) return false; // a mark left between start and end (U24)
+					k++;
+					while (k < container.size() && skipped(container.get(k))) {
+						if (isMarker(container.get(k), CommentRangeEnd.class)) return true;
+						k++;
+					}
+					if (k >= container.size() || !(Trees.unwrap(container.get(k)) instanceof P)) return false;
+					p = (P) Trees.unwrap(container.get(k));
+					int end = Resolver.markerAt(p.getContent(), 0, p.getContent().size(), CommentRangeEnd.class, id);
+					int to = end < 0 ? p.getContent().size() : end;
+					for (int i = 0; i < to; i++) if (hasText(p.getContent().get(i))) return false;
+					if (end >= 0) return true;
+				}
+			} else {
+				for (int i = 0; i < at; i++) if (hasText(owner.get(i))) return false;
+				while (true) {
+					k--;
+					while (k >= 0 && skipped(container.get(k))) {
+						if (isMarker(container.get(k), CommentRangeStart.class)) return true;
+						k--;
+					}
+					if (k < 0 || !(Trees.unwrap(container.get(k)) instanceof P)) return false;
+					P p = (P) Trees.unwrap(container.get(k));
+					if (!removesMark(p)) return false; // a mark left between start and end (U24)
+					int start = Resolver.markerAt(p.getContent(), 0, p.getContent().size(), CommentRangeStart.class, id);
+					for (int i = start + 1; i < p.getContent().size(); i++) if (hasText(p.getContent().get(i))) return false;
+					if (start >= 0) return true;
 				}
 			}
 		}
+
+		/** A range marker between paragraphs, which a join carries along, or a member this view removes. */
+		private boolean skipped(Object item) {
+			String name = Trees.name(item);
+			return name.endsWith("RangeStart") || name.endsWith("RangeEnd") || "bookmarkStart".equals(name)
+					|| "bookmarkEnd".equals(name) || "permStart".equals(name) || "permEnd".equals(name)
+					|| "proofErr".equals(name) || (!(Trees.unwrap(item) instanceof P) && removes(item));
+		}
+
+		private boolean isMarker(Object item, Class<?> kind) {
+			Object v = Trees.unwrap(item);
+			if (!kind.isInstance(v)) return false;
+			BigInteger at = v instanceof CommentRangeStart ? ((CommentRangeStart) v).getId() : ((CommentRangeEnd) v).getId();
+			return java.util.Objects.equals(at, id);
+		}
+	}
+
+	private static int indexOfValue(List<Object> list, Object value) {
+		if (list == null) return -1;
+		for (int i = 0; i < list.size(); i++) if (Trees.unwrap(list.get(i)) == value) return i;
+		return -1;
 	}
 
 	/** A comment whose range held a revision taken away, and where its range's text begins to be looked for. */

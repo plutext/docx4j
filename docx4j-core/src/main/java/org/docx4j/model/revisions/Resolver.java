@@ -376,7 +376,10 @@ final class Resolver {
 		 * goes whole with the text it was on, markers, reference and entry, once nothing with text is left
 		 * in its range (Word 365: core-ts check 32, and Jason's Reject All of the editor's
 		 * {@code review-for-word} and docx4j-python's artefact 8, 21 October 2026; Word 2010 and 15 kept
-		 * the comment whose markers lie outside, its range markers gone).
+		 * the comment whose markers lie outside, its range markers gone). A comment with one marker in this
+		 * list on the revision's side and the other in another paragraph is judged when the resolution is
+		 * flushed, once the paragraph marks taken away have joined what is left (CR-043 U23: Word 365's
+		 * Reject All of two inserted paragraphs commented whole removes the comment).
 		 */
 		void removeRevision(Object item, List<Object> owner) {
 			List<Object> list = currentOwner(owner, item);
@@ -397,9 +400,13 @@ final class Resolver {
 				Object v = Trees.unwrap(list.get(s));
 				if (!(v instanceof CommentRangeStart)) continue;
 				BigInteger id = ((CommentRangeStart) v).getId();
-				for (int e = i + 1; e < list.size(); e++) {
-					Object ev = Trees.unwrap(list.get(e));
-					if (ev instanceof CommentRangeEnd && Objects.equals(((CommentRangeEnd) ev).getId(), id)) outside.add(id);
+				if (markerAt(list, s + 1, list.size(), CommentRangeEnd.class, id) < 0) outside.add(id); // its end in another paragraph
+				else if (markerAt(list, i + 1, list.size(), CommentRangeEnd.class, id) >= 0) outside.add(id);
+			}
+			for (int e = i + 1; e < list.size(); e++) {
+				Object v = Trees.unwrap(list.get(e));
+				if (v instanceof CommentRangeEnd && markerAt(list, 0, e, CommentRangeStart.class, ((CommentRangeEnd) v).getId()) < 0) {
+					outside.add(((CommentRangeEnd) v).getId()); // its start in another paragraph
 				}
 			}
 			if (inner != null) inner.removeAll(kept);
@@ -412,23 +419,13 @@ final class Resolver {
 			Set<BigInteger> all = new LinkedHashSet<BigInteger>(inside);
 			all.addAll(outside);
 			for (BigInteger id : all) {
-				int start = -1;
-				for (int s = 0; s < list.size(); s++) {
-					Object v = Trees.unwrap(list.get(s));
-					if (v instanceof CommentRangeStart && Objects.equals(((CommentRangeStart) v).getId(), id)) { start = s; break; }
+				int start = markerAt(list, 0, list.size(), CommentRangeStart.class, id);
+				if (start < 0 || markerAt(list, start + 1, list.size(), CommentRangeEnd.class, id) < 0) {
+					removals.removeCommentIfEmptied(id); // start and end in different paragraphs (U23)
+				} else if (rangeIsEmpty(list, start, id)) {
+					removals.removeComment(id);
 				}
-				if (start >= 0 && rangeIsEmpty(list, start, id)) removals.removeComment(id);
 			}
-		}
-
-		/** True when nothing with text stands between a comment's range start and its end in the same list. */
-		private boolean rangeIsEmpty(List<Object> list, int from, BigInteger id) {
-			for (int i = from + 1; i < list.size(); i++) {
-				Object v = Trees.unwrap(list.get(i));
-				if (v instanceof CommentRangeEnd && Objects.equals(((CommentRangeEnd) v).getId(), id)) return true;
-				if (hasText(list.get(i))) return false;
-			}
-			return false; // the end is elsewhere: text may be
 		}
 
 		// --- paragraph marks ---------------------------------------------------------------------------
@@ -526,6 +523,30 @@ final class Resolver {
 	static void removeQuietly(List<Object> list, Object item) {
 		int i = Trees.indexOf(list, item);
 		if (i >= 0) list.remove(i);
+	}
+
+	/**
+	 * True when nothing with text stands between a comment's range start, at {@code from}, and its end in
+	 * the same list; false when text does, or the end is elsewhere.
+	 */
+	static boolean rangeIsEmpty(List<Object> list, int from, BigInteger id) {
+		for (int i = from + 1; i < list.size(); i++) {
+			Object v = Trees.unwrap(list.get(i));
+			if (v instanceof CommentRangeEnd && Objects.equals(((CommentRangeEnd) v).getId(), id)) return true;
+			if (hasText(list.get(i))) return false;
+		}
+		return false; // the end is elsewhere: text may be
+	}
+
+	/** The index in {@code list}, from {@code from} up to {@code to}, of a comment's range start or end, or -1. */
+	static int markerAt(List<Object> list, int from, int to, Class<?> kind, BigInteger id) {
+		for (int i = from; i < to; i++) {
+			Object v = Trees.unwrap(list.get(i));
+			if (!kind.isInstance(v)) continue;
+			BigInteger at = v instanceof CommentRangeStart ? ((CommentRangeStart) v).getId() : ((CommentRangeEnd) v).getId();
+			if (Objects.equals(at, id)) return i;
+		}
+		return -1;
 	}
 
 	/** True when run-level content shows text in the accepted view. */

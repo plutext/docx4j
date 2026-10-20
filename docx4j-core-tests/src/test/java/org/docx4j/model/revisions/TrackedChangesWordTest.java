@@ -240,6 +240,42 @@ public class TrackedChangesWordTest {
 		}
 	}
 
+	private static final String COMMENTS = "revisions/cr043/comments/";
+
+	/** CR-043 U21 (Word 365, 21 October 2026): Accept All of a deletion whose comment's markers lie outside the {@code w:del}; the comment goes whole, a control comment stays. */
+	@Test
+	public void u21AcceptAll() throws Exception {
+		assertAll(COMMENTS + "c43-u21-accept-all-deletion-comment-outside.docx", COMMENTS + "c43-u21-word365-accepted.docx", true);
+	}
+
+	/** U22: one insertion rejected removes the only comment while a tracked deletion is left: the comment parts go, {@code people.xml} stays. */
+	@Test
+	public void u22RejectOne() throws Exception {
+		String tracked = COMMENTS + "c43-u22-reject-one-last-comment-revisions-left.docx";
+		WordprocessingMLPackage pkg = load(tracked);
+		TrackedChange insertion = null;
+		for (TrackedChange c : TrackedChanges.in(pkg)) if (c.getType() == TrackedChange.Type.ADDED) insertion = c;
+		assertTrue(tracked, insertion != null);
+		insertion.reject();
+		WordprocessingMLPackage saved = roundTrip(pkg);
+		String ours = DocumentDescription.of(saved);
+		String word = DocumentDescription.of(load(COMMENTS + "c43-u22-word365-rejected-one.docx"));
+		dump(tracked + ".reject-one", word, ours);
+		assertEquals("the insertion rejected in " + tracked, word, ours);
+		assertNull(saved.getMainDocumentPart().getCommentsPart());
+		assertTrue("people.xml stays while a tracked change is left", saved.getMainDocumentPart().getPeoplePart() != null);
+		assertEquals(1, TrackedChanges.in(saved).size());
+	}
+
+	/** U23: Reject All of two inserted paragraphs commented whole removes the comment, its range start and end in different paragraphs; a control comment stays. */
+	@Test
+	public void u23RejectAll() throws Exception {
+		assertAll(COMMENTS + "c43-u23-reject-all-two-paragraph-insertion-commented.docx", COMMENTS + "c43-u23-word365-rejected.docx", false);
+		WordprocessingMLPackage pkg = load(COMMENTS + "c43-u23-reject-all-two-paragraph-insertion-commented.docx");
+		TrackedChanges.rejectAll(pkg);
+		assertEquals(1, roundTrip(pkg).getMainDocumentPart().getCommentsPart().getJaxbElement().getComment().size());
+	}
+
 	@Test
 	public void reviewWord2010Accepted() throws Exception {
 		assertAll("revisions/editor/review/review-for-word.docx", "revisions/editor/review/review-for-word-word2010-accepted.docx", true);

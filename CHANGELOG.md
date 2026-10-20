@@ -113,8 +113,9 @@ Changes in Version 17.3.4
 - An HTML chunk's CSS as Word 365 reads it (CR-053 §13.8): a rule with any selector Word ignores goes whole, as does a
   rule in any at-rule; a class matches a host style of exactly its name; `pre` and `code` give way to the host's HTML
   Preformatted and HTML Code; UTF-16 without a byte order mark is not sniffed; a `tfoot` keeps its place.
-- Accepting or rejecting tracked changes removes a comment whose range it leaves empty wherever its markers were, and
-  with the last comment the comment parts (and `people.xml` once no revision is left), as Word 365 does (CR-043 §15).
+- Accepting or rejecting tracked changes removes a comment whose range it leaves empty wherever its markers were, its
+  range across paragraphs too, and with the last comment the comment parts (and `people.xml` once no revision is
+  left), as Word 365 does (CR-043 §15).
 
 
 Version 17.3.3

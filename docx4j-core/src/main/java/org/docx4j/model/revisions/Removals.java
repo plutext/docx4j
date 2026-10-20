@@ -84,6 +84,8 @@ final class Removals {
 	private final Set<BigInteger> comments = new LinkedHashSet<BigInteger>();
 	/** Comments to remove whole (their range held removed text, and is now empty). */
 	private final Set<BigInteger> commentsWhole = new LinkedHashSet<BigInteger>();
+	/** Comments whose range held removed text, its start and end in different paragraphs: removed whole at the flush where they are by then in one list, nothing with text between (U23). */
+	private final Set<BigInteger> commentsIfEmptied = new LinkedHashSet<BigInteger>();
 	private final Map<Part, Set<BigInteger>> bookmarks = new IdentityHashMap<Part, Set<BigInteger>>();
 	private final Map<Part, Set<String>> relationships = new IdentityHashMap<Part, Set<String>>();
 
@@ -129,6 +131,16 @@ final class Removals {
 		if (id != null) commentsWhole.add(id);
 	}
 
+	/**
+	 * A comment whose range held removed text, its start and end in different paragraphs: removed whole
+	 * at the flush if the paragraph marks taken away have by then joined its start and end into one list
+	 * with nothing with text between, as Word 365 removes a comment on two inserted paragraphs rejected
+	 * (CR-043 U23). A range still across a paragraph mark is kept (U24, unmeasured).
+	 */
+	void removeCommentIfEmptied(BigInteger id) {
+		if (id != null) commentsIfEmptied.add(id);
+	}
+
 	private static Set<BigInteger> setOf(Map<Part, Set<BigInteger>> map, Part part) {
 		Set<BigInteger> set = map.get(part);
 		if (set == null) map.put(part, set = new LinkedHashSet<BigInteger>());
@@ -143,7 +155,7 @@ final class Removals {
 
 	private boolean pending() {
 		return !footnotes.isEmpty() || !endnotes.isEmpty() || !comments.isEmpty() || !commentsWhole.isEmpty()
-				|| !bookmarks.isEmpty() || !relationships.isEmpty();
+				|| !commentsIfEmptied.isEmpty() || !bookmarks.isEmpty() || !relationships.isEmpty();
 	}
 
 	/** Settles everything recorded; what that removes in turn (a note's own picture) is settled too. */
@@ -174,12 +186,23 @@ final class Removals {
 	// --- comments --------------------------------------------------------------------------------
 
 	private void flushComments() {
-		if (comments.isEmpty() && commentsWhole.isEmpty()) return;
+		if (comments.isEmpty() && commentsWhole.isEmpty() && commentsIfEmptied.isEmpty()) return;
 		Set<BigInteger> candidates = new LinkedHashSet<BigInteger>(comments);
 		Set<BigInteger> whole = new LinkedHashSet<BigInteger>(commentsWhole);
+		Set<BigInteger> ifEmptied = new LinkedHashSet<BigInteger>(commentsIfEmptied);
 		comments.clear();
 		commentsWhole.clear();
+		commentsIfEmptied.clear();
 		List<JaxbXmlPart<?>> parts = storyParts();
+		for (BigInteger id : ifEmptied) {
+			if (whole.contains(id)) continue;
+			for (JaxbXmlPart<?> part : parts) {
+				List<Object> list = listHolding(part.getJaxbElement(), item -> isCommentStart(item, id), 0);
+				if (list == null) continue;
+				if (Resolver.rangeIsEmpty(list, Resolver.markerAt(list, 0, list.size(), CommentRangeStart.class, id), id)) whole.add(id);
+				break;
+			}
+		}
 		Set<BigInteger> references = new HashSet<BigInteger>();
 		Set<BigInteger> starts = new HashSet<BigInteger>();
 		Set<BigInteger> ends = new HashSet<BigInteger>();
@@ -241,6 +264,11 @@ final class Removals {
 		Object v = Trees.unwrap(item);
 		return (v instanceof CommentRangeStart && Objects.equals(((CommentRangeStart) v).getId(), id))
 				|| (v instanceof CommentRangeEnd && Objects.equals(((CommentRangeEnd) v).getId(), id));
+	}
+
+	private static boolean isCommentStart(Object item, BigInteger id) {
+		Object v = Trees.unwrap(item);
+		return v instanceof CommentRangeStart && Objects.equals(((CommentRangeStart) v).getId(), id);
 	}
 
 	private static boolean isCommentReference(Object item, BigInteger id) {
@@ -458,6 +486,38 @@ final class Removals {
 	}
 
 	// --- removing from every list ------------------------------------------------------------------------
+
+	/** The list under {@code value} (block, run and run-content lists, math's) holding an item {@code match} matches, or null. */
+	private static List<Object> listHolding(Object value, Predicate<Object> match, int depth) {
+		if (value == null || depth > 400) return null;
+		value = Trees.unwrap(value);
+		if (value instanceof List) {
+			@SuppressWarnings("unchecked")
+			List<Object> list = (List<Object>) value;
+			for (Object item : list) if (match.test(item)) return list;
+			for (Object item : list) {
+				List<Object> found = listHolding(item, match, depth + 1);
+				if (found != null) return found;
+			}
+			return null;
+		}
+		if (value instanceof String || value instanceof org.w3c.dom.Node) return null;
+		Package p = value.getClass().getPackage();
+		if (p == null || !p.getName().startsWith("org.docx4j.")) return null;
+		for (Field f : Trees.fieldsOf(value.getClass())) {
+			Object fv;
+			try {
+				fv = f.get(value);
+			} catch (IllegalAccessException e) {
+				continue;
+			}
+			if (fv != null && !(fv instanceof String)) {
+				List<Object> found = listHolding(fv, match, depth + 1);
+				if (found != null) return found;
+			}
+		}
+		return null;
+	}
 
 	/**
 	 * Removes the items {@code match} matches from every list under {@code root} (block, run and
