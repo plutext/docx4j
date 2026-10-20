@@ -3,8 +3,8 @@
 Status: ACCEPTED 2026-10-20 (Jason: "accept recommendations for CR-051's D1 to D5"), to implement as
 recommended. Phase 0 done 2026-10-20 (the walker audit, §10); D6, the exporters' copy, decided (a)
 the same day (Jason: "D6 (a)"). Five of the six defects of today the audit found were fixed the same
-day (§10.5); the sixth goes with phase 1. Phase 1 in progress from 2026-10-20 (Jason: "make the
-fixes, then phase 1"). Proposed 2026-10-20, drafted at Jason's request ("write
+day (§10.5, c4894c5b0); the sixth went with phase 1. Phase 1 done 2026-10-20 (Jason: "make the fixes,
+then phase 1"): the listener fix 6687cc4b8, the rest 1cff2cd5c (§11). Phases 2 and 3 open. Proposed 2026-10-20, drafted at Jason's request ("write
 the cr to keep body-level mc through load. also check whether we do/should keep mc in sdt content")
 by Claude Opus 5.5 (session docx4j-25), after the portfolio session's measurement of Jason's
 `mc-fun` probes (paper §7.8).
@@ -502,6 +502,8 @@ The CHANGELOG entry names the property, the override and `selectedContent`.
   branch it reads, and writes again, at run level, only what needs alternatives there.
 
 ### Phase 1: block level, and row and cell level in `word` mode
+
+**Done 2026-10-20:** 6687cc4b8 (the listener fix), 1cff2cd5c (the rest); the record is §11.
 
 - **First, the listener on the binder path** where it is commented out (§1's binder-path defect). It
   is a defect today, so it can land before the rest, on its own.
