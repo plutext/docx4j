@@ -15,7 +15,8 @@ revised the same day after three reviews (§9), to state its objective (§0, Jas
 and for text an embedded font draws as other text or as nothing (§9, Jason's question).
 Four phases (§5); decisions in §6: D1 to D8 and D11 to D20 taken by Jason on 19 October 2026 (D11 with
 1,000 findings, revised to 10,000 on 20 October; D17 revised to the list alone after phase 0's Word check; D16 closed, overtaken by WD
-0.17); D9 (a) taken before phase 2, with the faces' bound and the unanchored comment (§5); D10 open.
+0.17); D9 (a) taken before phase 2, with the faces' bound and the unanchored comment (§5); D10 open; D21 (an SVG's text, proposed 20 October 2026 from Jason's
+`now you see it.docx`) open.
 
 The specification is the portfolio's *WordprocessingML Text Extraction*, WD 0.16
 (`docx4j-portfolio/docs/text_extraction_specification_wd.md`, dae90bf), cited as **WD**: its §9,
@@ -130,6 +131,8 @@ Three passes make one `Inspection`:
    Flat OPC or plain-text chunk and an embedded docx, xlsx or pptx are inspected one level deep. No
    importer is called, no field is recomputed (`fields: cached` always), no external target is
    resolved or fetched, and a payload that cannot be decoded is still reported, with the reason
+   (§2.5). *Proposed (D21):* an SVG image part a picture shows is read for the text it draws
+   (§2.3's `image.svg_text`), from the DOM docx4j's loader already parses it into; it is a payload
    (§2.5).
 
 ### 2.2 The API
@@ -245,6 +248,7 @@ no importer, and the probe cases that hold them (*new*: a case §3 adds):
 | `altchunk`, `object.embedded` | each chunk, with its content type; each embedded object, with its ProgID | yes (as Word converts it; as its preview) | options: `altchunks: true` (default) or `embedded: true` for the types REQ-513 and REQ-512 read; unextractable for RTF and other OLE binaries | info | 36, 39-47, 53 |
 | `alt_text.title` | a picture's or shape's title | no | unextractable | omitted | 33 |
 | `alt_text.name` | its name: the description where `descr` is empty and the picture is not decorative, else not extracted; a default name (matching `[^0-9]+ [0-9]+` in full) only where it is the description (D19) | no | per occurrence: as `alt_text.description` where it is the description, else unextractable | omitted | 33, *new* (a named picture with no `descr`; a decorative one) |
+| `image.svg_text` (*proposed*, D21) | the text an SVG image part draws: its `<text>` elements' characters, their `<tspan>` and `<textPath>` content included, in a part a picture shows through its `asvg:svgBlip` or its `a:blip`. Extraction never reads it (REQ-514), and the picture's raster copy, which an older Office draws instead, may say something else | yes (Word 365 draws the SVG, D15; the SVG's own geometry and paint are not judged, §2.6) | unextractable (REQ-514) | omitted | 33 (`SVG33_INNER_TEXT`), *new* |
 | `properties` | core, app and custom properties | no (File, Info shows them) | included in the block model (`metadata`, REQ-515); options: `metadata: true` in plain text and Markdown | omitted (info in the block model, and under `metadata: true`: labelled metadata) | 38, 52 |
 | `font.embedded` | a font face embedded in the package (`w:embedRegular` and its kin) that runs are drawn in, with the number of characters it draws. What a person sees depends on the viewer: whether it uses embedded fonts, and which it prefers where a font of that name is installed (docx4j's PDF output: the installed one, `Mapper`; Word: not yet measured, §3) | - | unextractable (extraction has characters, never glyphs) | info | *new* |
 | `ink` | an ink part (`w14:contentPart`), whose strokes may be handwriting (as a picture's pixels may be text) | yes | unextractable | info | *new* |
@@ -279,6 +283,13 @@ relationship's form and `field.external` for the field's. A bookmark (`w:anchor`
   kinds (white text in it, say) are found in their own right.
 - **Fonts.** `font.embedded` is found once per embedded face; `font.glyph_blank` and
   `font.glyph_mismatch` per run, merged as below, naming the characters affected.
+- **An SVG's text** (*proposed*, D21). `image.svg_text` is found once per SVG part that draws text,
+  as a part is, where §2.4's order first meets a picture showing it: three pictures showing one part
+  are one finding, its summary giving their number. Its location is the part (in its package chain)
+  and the path of its first `<text>` element; its excerpt the text elements' characters, one line
+  each, whitespace collapsed as SVG's default `xml:space` collapses it; its summary also the number of
+  text elements and, where a picture showing it has a raster copy (`a:blip/@r:embed` naming another
+  part), that part's name. Its address is null, as an unextractable finding's is.
 - **Runs are merged, so run splitting does not count.** Adjacent stored runs in one paragraph are one
   finding when their kind and every attribute the finding reports (author and date, colour, size,
   branch) are equal; adjacent revisions of different authors are two.
@@ -325,6 +336,11 @@ care (each letter given another letter's glyph, every glyph unique, of ordinary 
 glyph names), which only recognising each glyph would see (D18): `font.embedded` marks the text such
 a font draws; and it does not judge intent: no finding says its text is, or is not, an attack (§0). docx4j has a layout
 (the FO pass), so a later CR can add position findings; this one does not use it (D7).
+
+*Proposed (D21):* nor does it detect text a picture draws other than an SVG's `<text>` elements (a
+raster image's pixels, an EMF or WMF's text records, an SVG's text drawn as outlines), nor whether an
+SVG's text is drawn where its picture shows it (its `viewBox` clipping it, its paint, opacity or
+`display`, a `<text>` in `<defs>` that no `<use>` draws): the limitation `image.text`.
 
 ## 3. Tests and the oracle
 
@@ -782,6 +798,18 @@ WD §12.1 claimed then, and not before.
 
 ### Phase 3: hand-offs
 
+- **First, if D21 is taken (a): an SVG's text**, so that the ports receive one set of kinds.
+  `image.svg_text` in `InspectWalk` (the part's DOM, its bytes charged to the payload and total
+  limits) and in `inspect_oracle.py`; the `image.text` limitation in `Inspection.LIMITATIONS` and the
+  class javadoc; INSPECTION.md's row; case 33's `SVG33_INNER_TEXT` found (`expected-findings.tsv`,
+  `expected-inspection.tsv`); new cases in `extraction-probe-inspect.docx` (68 on): an SVG-only
+  picture (no raster copy) whose text has `<tspan>` and `<textPath>`; two pictures showing one SVG
+  part (one finding); an SVG with no text (no finding); an SVG picture in a header; Jason's Word check
+  of each. Jason's `now you see it.docx` (Word-made, its SVG edited by hand: the raster copy says
+  "Now you see it", the SVG "Now you do not (svg)") is the evidence, and Word 365's showing of the
+  edited SVG on open its first check. The WD proposals to the portfolio: REQ-902's kind, REQ-904's
+  `image.text`, and §1's out-of-scope sentence (an SVG's text is out of extraction, not of the
+  inspection). **Acceptance:** the oracle and docx4j agree on every fixture; the suite green.
 - **docx4j-mcp**: an `inspect` tool (the WD's verb, D29), the findings as JSON, and `extract_text`'s
   result carrying the four counts and the status, the unseen count first: it is the one an agent
   reading the text needs before it acts on it. `extract_text` turns docx4j's `inspect` on by default
@@ -1014,6 +1042,26 @@ Each with a recommendation; Jason decides.
   without loading it; (c) drop `relationship.broken`: a package docx4j cannot load gives a load
   error, not an inspection. Recommended: (c).
   **Decided** (Jason, 19 October 2026): (c).
+- **D21. An SVG's text** (proposed 20 October 2026, from Jason's `now you see it.docx`, a picture
+  whose raster copy says "Now you see it" and whose SVG says "Now you do not (svg)": the inspector
+  reported neither, its four findings being the picture's default name, the rsids and the two
+  properties parts). A picture with an SVG holds its image twice: the SVG part its `asvg:svgBlip`
+  names, which Word 365 draws, and usually a raster copy in `a:blip/@r:embed`, which an older Office
+  draws and which REQ-514 names as the picture's image. Extraction reads neither's text (WD §1,
+  REQ-514), and the inspector reads no image (§2.1): a person sees text the agent never holds, and
+  neither the report nor REQ-904's limitations say so. Word draws an SVG's `<text>`, on that
+  document's evidence: its raster copy, which Word makes when an SVG is inserted, shows the text of
+  the SVG first inserted (inferred, not measured: phase 3's first check confirms it). Unlike a
+  raster's pixels, an SVG's text is characters in XML, and reading it is a walk of a DOM docx4j's
+  loader has already parsed.
+  Options: (a) the kind `image.svg_text` (§2.3, §2.4), omitted and unextractable, with the limitation
+  `image.text` for the rest (§2.6); (b) the limitation alone, a picture's text not detected at all;
+  (c) (a), and EMF and WMF text records too (decoded from the metafile's records, a payload decoder
+  the inspector does not have). Recommended: (a): the cheap case found, the rest declared; (c) in a
+  later CR if metafiles turn out to matter. Not drafted, pending a Word measurement: an SVG's
+  `<script>` and its external references (an `<image>`'s `href`, a stylesheet), which would be
+  active as an HTML chunk's are if Word ran or fetched them. To take: phase 3's first bullet, before
+  the hand-offs, and the WD proposals to the portfolio.
 
 ## 7. Dependencies, risks and out of scope
 
