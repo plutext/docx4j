@@ -1413,9 +1413,40 @@ repaired. Word's answers:
   them for 0.27 (§13.6), so they come back;
 - **a rule's other properties** go with its `display` where the host's style wins: `R11_7_P` is not red;
 - **a hidden `tfoot`'s** text is hidden. Word keeps it where the source has it, before the body.
-  docx4j-ImportXHTML lays it out last, which is that session's to weigh;
+  docx4j-ImportXHTML lays it out last: openhtmltopdf's `BoxBuilder.reorderTableContent` moves the first
+  header and footer group. ImportXHTML's CR-003 (`docs/change-requests/CR-003-table-row-groups-in-source-order.md`,
+  accepted by Jason the same day) adds `setTableRowGroupsInSourceOrder`, off by default, which docx4j sets
+  for chunks (§13.8);
 - **a UTF-16LE chunk with no byte order mark** is not read as UTF-16: Word read the bytes as 8-bit text
   and repaired the document. The Chunks rule's UTF-16 step is not Word's.
 
 docx4j's changes (the selector list, the case, `pre` and `code`, the UTF-16 step) wait for WD 0.28,
 which follows Word, and land in their own commit.
+
+### 13.8 WD 0.28
+
+Jason approved 0.28 the same day (portfolio f2046e5): round 11's answers as rules. docx4j follows:
+- **`HtmlChunks.css`**: a rule whose selector list has any selector Word ignores (`applied`: a child or sibling
+  combinator, an attribute selector, a pseudo-class or pseudo-element, `*`, two classes or ids on one element)
+  goes whole. A rule inside any at-rule goes, `@font-face`, `@page`, `@charset` and `@namespace` excepted, which
+  hold no rule;
+- **the host's styles** (`lostToHost`): a class matches the style named exactly as the class, case included; a
+  built-in style its name in any case. `hostStyles` keeps the names as written. The map gains `pre` (HTML
+  Preformatted) and `code` (HTML Code, a character style);
+- **the decoder**: no UTF-16 step. A chunk in UTF-16 with no byte order mark is read as its bytes say, as Word
+  reads it: its markup comes out as text (`r11-9`). The oracle's `decode_html` likewise;
+- **a table's row groups** in source order: `HtmlChunkImport` sets docx4j-ImportXHTML's
+  `setTableRowGroupsInSourceOrder` (its CR-003) by reflection, beside `setDisplayNoneAsHidden`. An importer
+  without it lays a `tfoot` out last.
+
+**Round 12** (21 October 2026, built here for ImportXHTML's CR-003 §4, Jason's choice;
+`altchunk-fun/round12/`): six cases of a table's row groups, each its own chunk. Word 365 keeps source order in
+every one: a visible `tfoot` before the body, a `thead` after it, two `tfoot`s, two `thead`s between bodies, a body
+styled as a footer group, bare rows around a `tfoot`. docx4j through the setter gives the same order, row for row.
+Word marks every `thead` row `w:tblHeader`, wherever it stands (CR-003's D3 records it).
+
+Tests: `AltChunkHtmlReadingTest` (`cssFollowsRound11`, the host rule's case and map, the decoder,
+`tfootStaysWhereTheSourceHasIt`); `InspectTest`'s UTF-16 chunk without a byte order mark holds no script now.
+Round 11 through docx4j with the importer agrees with Word's saves on all 94 markers, and `r11-9` gives its
+markup as text, as Word's save does. With the importer, 160 run, 0 failures; the suite, 1,526 passed and 58
+pending, as before.

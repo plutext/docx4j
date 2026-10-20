@@ -54,8 +54,9 @@ import org.w3c.dom.Document;
  * <li>the tree rewritten so that the importer's CSS engine applies what Word applies (D4), and made
  *     safe to lay out: nesting capped, spans clamped, floats defused (section 4b);</li>
  * <li>not imported where it has more elements, as parsed, than {@link #MAX_ELEMENTS} (D11);</li>
- * <li>imported with what {@code display: none} hides as hidden text, as Word makes it (D5, D8), where
- *     the importer can (17.3.4 on; an earlier one leaves that content out);</li>
+ * <li>imported with what {@code display: none} hides as hidden text, as Word makes it (D5, D8), and a
+ *     table's row groups in source order, where the importer can (17.3.4 on; an earlier one leaves that
+ *     content out, and lays a {@code tfoot} out last);</li>
  * <li>anything the import throws, an {@code Error} included, caught: the chunk is then not read; and
  *     where {@link #TIMEOUT_MILLIS} is set, an import that takes longer abandoned (D10).</li>
  * </ul>
@@ -304,6 +305,12 @@ public final class HtmlChunkImport {
 			importer.getMethod("setDisplayNoneAsHidden", boolean.class).invoke(instance, true);
 		} catch (NoSuchMethodException e) {
 			log.debug("docx4j-ImportXHTML before 17.3.4: what display:none hides in " + where + " is left out");
+		}
+		try {
+			// a table's row groups in source order, a tfoot where it stands, as Word reads a chunk (WD 0.28, r11-8)
+			importer.getMethod("setTableRowGroupsInSourceOrder", boolean.class).invoke(instance, true);
+		} catch (NoSuchMethodException e) {
+			log.debug("docx4j-ImportXHTML before 17.3.4: a tfoot in " + where + " is laid out last");
 		}
 		return instance;
 	}

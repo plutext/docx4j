@@ -98,9 +98,10 @@ public class AltChunkHtmlReadingTest {
 	// --- decoding ----------------------------------------------------------------------------------------
 
 	/**
-	 * The shared decoder (the WD's Chunks rule, 0.27): BOM, then UTF-16 sniffed, then a {@code meta}'s
-	 * charset (or {@code http-equiv}'s), then UTF-8 where valid, else windows-1252; ISO-8859-1 and
-	 * US-ASCII as windows-1252 (WHATWG's labels). An XML declaration names nothing.
+	 * The shared decoder (the WD's Chunks rule, 0.28): BOM, then a {@code meta}'s charset (or
+	 * {@code http-equiv}'s), then UTF-8 where valid, else windows-1252; ISO-8859-1 and US-ASCII as
+	 * windows-1252 (WHATWG's labels). An XML declaration names nothing, and UTF-16 with no BOM is not
+	 * sniffed: Word reads its bytes as 8-bit text ({@code r11-9}).
 	 */
 	@Test
 	public void decoderFollowsWordsOrder() {
@@ -110,7 +111,8 @@ public class AltChunkHtmlReadingTest {
 		assertEquals(body, HtmlChunks.decode(concat(bom, body.getBytes(StandardCharsets.UTF_8))));
 		assertEquals(body, HtmlChunks.decode(concat(new byte[] { (byte) 0xFF, (byte) 0xFE }, body.getBytes(StandardCharsets.UTF_16LE))));
 		assertEquals(body, HtmlChunks.decode(concat(new byte[] { (byte) 0xFE, (byte) 0xFF }, body.getBytes(StandardCharsets.UTF_16BE))));
-		assertEquals(body, HtmlChunks.decode(body.getBytes(StandardCharsets.UTF_16LE)));
+		byte[] utf16 = body.getBytes(StandardCharsets.UTF_16LE);
+		assertEquals(new String(utf16, cp1252), HtmlChunks.decode(utf16));
 		assertEquals(body, HtmlChunks.decode(body.getBytes(StandardCharsets.UTF_8)));
 		// not UTF-8, nothing declared: windows-1252 (enc-3)
 		String latin = "<p>café “quoted” €</p>";
@@ -154,7 +156,7 @@ public class AltChunkHtmlReadingTest {
 	public void cssKeepsTheRulesWordApplies() {
 		Set<String> none = Collections.emptySet();
 		String css = "/* a comment */ p { display: none } .h{display:none} #id { color: red }\n"
-				+ "div.box p, div.kid > p { display: none }\n"
+				+ "div.box p, div.kid > p { display: none } div.box p { display: none }\n"
 				+ "p[data-h], .a.b, p:first-child, a::before, * { display: none }\n"
 				+ "@media screen { .ms { display: none } } @media print { .mp { display: none } }\n"
 				+ "@import url(x.css); @font-face { font-family: F }\n"
@@ -170,14 +172,38 @@ public class AltChunkHtmlReadingTest {
 
 	/**
 	 * A type or single-class rule goes where the host defines the Word style it would go through:
-	 * the host's definition wins in Word (section 10.6, host-1, host-2).
+	 * the host's definition wins in Word (section 10.6, host-1, host-2). A built-in style by its name in
+	 * any case; a class's style by exactly its name ({@code r11-5iii}); {@code pre} and {@code code}
+	 * through HTML Preformatted and HTML Code ({@code r11-6}).
 	 */
 	@Test
 	public void cssDropsARuleTheHostsStyleOverrides() {
-		Set<String> host = new HashSet<String>(Arrays.asList("normal (web)", "heading 6", "hid"));
-		assertEquals("h5 {display:none}\n.other {display:none}\np.hid {display:none}\ndiv p {display:none}\n",
+		Set<String> host = new HashSet<String>(Arrays.asList("Normal (Web)", "heading 6", "hid", "HTML Preformatted", "HTML Code"));
+		assertEquals("h5 {display:none}\n.HID {display:none}\n.other {display:none}\np.hid {display:none}\ndiv p {display:none}\n"
+				+ "kbd {display:none}\n",
 				HtmlChunks.css("p {display:none} h6 {display:none} h5 {display:none} .hid {display:none} .HID {display:none}"
-						+ " .other {display:none} p.hid {display:none} div p {display:none}", host));
+						+ " .other {display:none} p.hid {display:none} div p {display:none} pre {display:none} code {display:none}"
+						+ " kbd {display:none}", host));
+		// a built-in style by its name in any case
+		assertEquals("", HtmlChunks.css("p {display:none}", new HashSet<String>(Arrays.asList("normal (web)"))));
+	}
+
+	/**
+	 * Round 11 (CR-053 section 13.7, WD 0.28): a list with a selector Word ignores loses its whole rule, in
+	 * either order; {@code *} is one; every at-rule's block goes, the rule after it stays.
+	 */
+	@Test
+	public void cssFollowsRound11() {
+		Set<String> none = Collections.emptySet();
+		assertEquals("", HtmlChunks.css(".k, div > p { display: none }", none));
+		assertEquals("", HtmlChunks.css("div > p, .k { display: none }", none));
+		assertEquals("", HtmlChunks.css(".k, div * { display: none }", none));
+		assertEquals("", HtmlChunks.css(".w * { display: none } div * { display: none }", none));
+		assertEquals(".a3a { display: none }\n.a3b { display: none }\n.a3c { display: none }\n",
+				HtmlChunks.css("@supports (display: block) { .s3a { display: none } }\n.a3a { display: none }"
+						+ " @layer base { .s3b { display: none } } .a3b { display: none }"
+						+ " @foo { .s3c { display: none } } .a3c { display: none }", none));
+		assertEquals("p.k4 { display: none }\n", HtmlChunks.css("p.k4 { display: none }", none));
 	}
 
 	// --- the rewrite --------------------------------------------------------------------------------
@@ -444,5 +470,28 @@ public class AltChunkHtmlReadingTest {
 		assertNotNull(table);
 		assertEquals("H1\tH2\nSPAN\tB1\n\tB2\nWIDE", table.getText());
 		assertEquals(2, table.getRows().get(2).getCells().size());
+	}
+
+	/**
+	 * Round 11 (CR-053 section 13.7, WD 0.28): a table's row groups in source order, a {@code tfoot} before
+	 * the body staying there, its text hidden ({@code r11-8}), where docx4j-ImportXHTML has
+	 * {@code setTableRowGroupsInSourceOrder} (its CR-003); an earlier importer lays the {@code tfoot} out last.
+	 */
+	@Test
+	public void tfootStaysWhereTheSourceHasIt() throws Exception {
+		reader();
+		WordprocessingMLPackage pkg = chunk(AltChunkType.Html, "<html><body><table border='1'><thead><tr><td>R_HEAD</td></tr></thead>"
+				+ "<tfoot style='display:none'><tr><td>R_FOOT</td></tr></tfoot><tbody><tr><td>R_BODY</td></tr></tbody></table></body></html>");
+		boolean sourceOrder;
+		try {
+			Class.forName(HtmlChunkImport.IMPORTER).getMethod("setTableRowGroupsInSourceOrder", boolean.class);
+			sourceOrder = true;
+		} catch (NoSuchMethodException e) {
+			sourceOrder = false;
+		}
+		TextBlock table = Texts.of(pkg, new TextOptions().hidden(true)).blocks().get(0);
+		assertEquals(sourceOrder ? "R_HEAD\nR_FOOT\nR_BODY" : "R_HEAD\nR_BODY\nR_FOOT", table.getText());
+		String shown = Texts.of(pkg, new TextOptions()).blocks().get(0).getText();
+		assertTrue(shown, !shown.contains("R_FOOT") && shown.indexOf("R_HEAD") < shown.indexOf("R_BODY"));
 	}
 }

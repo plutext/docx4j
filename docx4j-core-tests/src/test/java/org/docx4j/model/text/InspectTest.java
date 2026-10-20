@@ -709,7 +709,11 @@ public class InspectTest {
 		assertEquals(Integer.valueOf(2), face.glyph(1));
 	}
 
-	/** A chunk is read in its own encoding (UTF-16 with or without a byte order mark, a declared charset), and a {@code javascript:} URI is a handler, not a reference. */
+	/**
+	 * A chunk is read in its own encoding (UTF-16 with a byte order mark, a declared charset), and a
+	 * {@code javascript:} URI is a handler, not a reference. UTF-16 without a byte order mark is read as
+	 * its bytes say, as Word reads it (WD 0.28, CR-053 {@code r11-9}): its handler is no script.
+	 */
 	@Test
 	public void chunkEncodingsAndScriptURIs() throws Exception {
 		Doc d = new Doc();
@@ -720,7 +724,7 @@ public class InspectTest {
 		Inspection i = Inspect.of(d.done());
 		List<String> scripts = new ArrayList<String>();
 		for (InspectFinding f : of(i, InspectFinding.ALTCHUNK_SCRIPT)) scripts.add(f.getLocation().getPart());
-		assertEquals(Arrays.asList("/word/be.htm", "/word/bom.htm", "/word/js.htm"), scripts);
+		assertEquals(Arrays.asList("/word/bom.htm", "/word/js.htm"), scripts);
 		assertTrue(of(i, InspectFinding.ALTCHUNK_EXTERNAL_REF).isEmpty());
 		String declared = "<html><head><meta charset=windows-1252></head><body><p>caf\u00e9</p></body></html>";
 		assertEquals(declared, InspectPayloads.decode(declared.getBytes("windows-1252")));

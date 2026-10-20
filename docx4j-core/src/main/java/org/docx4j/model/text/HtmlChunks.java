@@ -67,21 +67,19 @@ final class HtmlChunks {
 			"iso_8859-1", "iso_8859-1:1987", "l1", "latin1", "us-ascii", "windows-1252", "x-cp1252"));
 
 	/**
-	 * A chunk's markup in its encoding (the WD's Chunks rule, 0.27): by its byte order mark (UTF-8,
-	 * UTF-16LE or UTF-16BE); else as UTF-16 where its first two bytes are {@code <} so encoded (not
-	 * measured in Word); else in the encoding a {@code meta} element's {@code charset} (or
+	 * A chunk's markup in its encoding (the WD's Chunks rule, 0.28): by its byte order mark (UTF-8,
+	 * UTF-16LE or UTF-16BE); else in the encoding a {@code meta} element's {@code charset} (or
 	 * {@code http-equiv} content type's) names within its first 1,024 bytes, a UTF-16 or UTF-32 or
 	 * unknown name ignored; else as UTF-8 where the bytes are valid UTF-8, else as windows-1252, as Word
-	 * reads it (CR-053 section 10.6). An XML declaration names nothing: Word refuses a chunk that has
-	 * one. Bytes the named encoding cannot decode are read as U+FFFD.
+	 * reads it (CR-053 sections 10.6 and 13.7). An XML declaration names nothing: Word refuses a chunk
+	 * that has one. UTF-16 without a byte order mark is read as these bytes say, as Word reads it
+	 * ({@code r11-9}: its markup as text). Bytes the named encoding cannot decode are read as U+FFFD.
 	 */
 	static String decode(byte[] data) {
 		int n = data.length;
 		if (n >= 3 && (data[0] & 0xff) == 0xEF && (data[1] & 0xff) == 0xBB && (data[2] & 0xff) == 0xBF) return new String(data, 3, n - 3, StandardCharsets.UTF_8);
 		if (n >= 2 && (data[0] & 0xff) == 0xFF && (data[1] & 0xff) == 0xFE) return new String(data, 2, n - 2, StandardCharsets.UTF_16LE);
 		if (n >= 2 && (data[0] & 0xff) == 0xFE && (data[1] & 0xff) == 0xFF) return new String(data, 2, n - 2, StandardCharsets.UTF_16BE);
-		if (n >= 2 && data[0] == '<' && data[1] == 0) return new String(data, StandardCharsets.UTF_16LE);
-		if (n >= 2 && data[0] == 0 && data[1] == '<') return new String(data, StandardCharsets.UTF_16BE);
 		Matcher m = DECLARED.matcher(new String(data, 0, Math.min(n, 1024), StandardCharsets.ISO_8859_1));
 		if (m.find()) {
 			Charset cs = charset(m.group(1));
@@ -131,26 +129,32 @@ final class HtmlChunks {
 			"thead", "title", "tr", "tt", "u", "ul", "var"));
 
 	/**
-	 * The paragraph style an element's type rule goes through (WD 0.27's REQ-513; CR-053 section 10.6,
-	 * {@code css-3}, {@code host-1}): {@code p} to Normal (Web), {@code h1} to {@code h6} to Heading 1 to
-	 * 6 ({@code h6} measured, the rest inferred), {@code address} to HTML Address. A type rule on any
-	 * other element counts whatever the host defines.
+	 * The style an element's type rule goes through (WD 0.28's REQ-513; CR-053 sections 10.6 and 13.7,
+	 * {@code css-3}, {@code host-1}, {@code r11-5iv}, {@code r11-6}): {@code p} to Normal (Web), {@code h1}
+	 * to {@code h6} to Heading 1 to 6 ({@code h1} and {@code h6} measured), {@code address} to HTML
+	 * Address, {@code pre} to HTML Preformatted, {@code code} to the character style HTML Code. A type
+	 * rule on any other element counts whatever the host defines.
 	 */
 	static final Map<String, String> WORD_STYLE = new HashMap<String, String>();
 	static {
-		WORD_STYLE.put("p", "normal (web)");
+		WORD_STYLE.put("p", "Normal (Web)");
 		for (int i = 1; i <= 6; i++) WORD_STYLE.put("h" + i, "heading " + i);
-		WORD_STYLE.put("address", "html address");
+		WORD_STYLE.put("address", "HTML Address");
+		WORD_STYLE.put("pre", "HTML Preformatted");
+		WORD_STYLE.put("code", "HTML Code");
 	}
 
-	/** The names of the styles a package's styles part defines, in lower case: those a chunk's rule cannot change. */
+	/**
+	 * The names of the styles a package's styles part defines as {@code w:style}, used or not (a latent
+	 * style alone defines none, {@code r11-5ii}): those a chunk's rule cannot change.
+	 */
 	static Set<String> hostStyles(OpcPackage pkg) {
 		Set<String> out = new HashSet<String>();
 		if (!(pkg instanceof WordprocessingMLPackage) || ((WordprocessingMLPackage) pkg).getMainDocumentPart() == null) return out;
 		StyleDefinitionsPart sdp = ((WordprocessingMLPackage) pkg).getMainDocumentPart().getStyleDefinitionsPart(false);
 		if (sdp == null || sdp.getJaxbElement() == null) return out;
 		for (Style s : sdp.getJaxbElement().getStyle()) {
-			if (s.getName() != null && s.getName().getVal() != null) out.add(s.getName().getVal().toLowerCase(Locale.ROOT));
+			if (s.getName() != null && s.getName().getVal() != null) out.add(s.getName().getVal());
 		}
 		return out;
 	}
@@ -283,18 +287,22 @@ final class HtmlChunks {
 	// --- the CSS Word applies ----------------------------------------------------------------------------
 
 	/**
-	 * A {@code style} element's CSS with only the rules Word applies (CR-053 section 10.6):
+	 * A {@code style} element's CSS with only the rules Word applies (WD 0.28's REQ-513; CR-053 sections
+	 * 10.6 and 13.7):
 	 * <ul>
-	 * <li>a rule inside {@code @media} (screen or print), or another conditional group rule, goes;
-	 *     so does {@code @import}, which nothing fetches;</li>
-	 * <li>a selector goes where it has a child or sibling combinator, an attribute selector, a pseudo-class
-	 *     or pseudo-element, {@code *}, or two classes on one element: Word applies type, class, id and
-	 *     descendant selectors only. A rule keeps the selectors in its list that are left;</li>
-	 * <li>a type selector alone, or a class selector alone, goes where the host's styles part already
-	 *     defines the Word style the rule would go through ({@link #WORD_STYLE}, or the class's name):
-	 *     Word keeps the host's definition ({@code host-1}, {@code host-2}).</li>
+	 * <li>a rule inside an at-rule goes, {@code @media} for any medium, {@code @supports}, {@code @layer}
+	 *     or one Word does not know; a rule after the block stays. {@code @import} goes, which nothing
+	 *     fetches; {@code @font-face}, {@code @page}, {@code @charset} and {@code @namespace}, which hold
+	 *     no rule, stay;</li>
+	 * <li>a rule goes whole where any one of its selectors is one Word ignores ({@link #applied}): Word
+	 *     applies type, class, id and descendant selectors only, and one it ignores loses the rule
+	 *     ({@code r11-1});</li>
+	 * <li>of a rule's selectors, a type selector alone, or a class selector alone, goes where the host's
+	 *     styles part already defines the style the rule would go through ({@link #WORD_STYLE}, or the
+	 *     style named exactly as the class): Word keeps the host's definition, and the rule's other
+	 *     properties with it ({@code host-1}, {@code host-2}, {@code r11-5iii}, {@code r11-7}).</li>
 	 * </ul>
-	 * Comments go; other at-rules are kept as they are.
+	 * Comments go.
 	 */
 	static String css(String css, Set<String> hostStyles) {
 		StringBuilder out = new StringBuilder();
@@ -311,8 +319,7 @@ final class HtmlChunks {
 				while (nameEnd < n && (Character.isLetterOrDigit(s.charAt(nameEnd)) || s.charAt(nameEnd) == '-')) nameEnd++;
 				String name = s.substring(i + 1, nameEnd).toLowerCase(Locale.ROOT);
 				int end = atRuleEnd(s, nameEnd);
-				boolean drop = name.equals("media") || name.equals("supports") || name.equals("document")
-						|| name.equals("layer") || name.equals("container") || name.equals("import");
+				boolean drop = !(name.equals("font-face") || name.equals("page") || name.equals("charset") || name.equals("namespace"));
 				if (!drop) out.append(s, i, end).append('\n');
 				i = end;
 				continue;
@@ -321,9 +328,14 @@ final class HtmlChunks {
 			if (open < 0) break; // a selector with no block: nothing
 			int close = blockEnd(s, open);
 			String prelude = s.substring(i, open);
+			List<String> selectors = splitSelectors(prelude);
+			boolean whole = true;
+			for (String selector : selectors) whole &= applied(selector.trim());
 			List<String> kept = new ArrayList<String>();
-			for (String selector : splitSelectors(prelude)) {
-				if (wordSelector(selector.trim(), hostStyles)) kept.add(selector.trim());
+			if (whole) {
+				for (String selector : selectors) {
+					if (!lostToHost(selector.trim(), hostStyles)) kept.add(selector.trim());
+				}
 			}
 			if (!kept.isEmpty()) out.append(String.join(", ", kept)).append(' ').append(s, open, close).append('\n');
 			i = close;
@@ -333,11 +345,19 @@ final class HtmlChunks {
 
 	private static final Pattern COMPOUND = Pattern.compile("([A-Za-z][A-Za-z0-9]*)?((?:[#.][-_A-Za-z0-9\\u0080-\\uFFFF]+)*)");
 
-	/** Whether Word applies a rule through this selector. */
+	/** Whether Word applies a rule through this selector, with the host's styles: {@link #applied}, and not {@link #lostToHost}. */
 	static boolean wordSelector(String selector, Set<String> hostStyles) {
+		return applied(selector) && !lostToHost(selector, hostStyles);
+	}
+
+	/**
+	 * Whether Word applies a selector: type, class, id and descendant selectors, a compound of one type
+	 * and one class or id. Not a child or sibling combinator, an attribute selector, a pseudo-class or
+	 * pseudo-element, {@code *} ({@code r11-2}), two classes or two ids on one element.
+	 */
+	static boolean applied(String selector) {
 		if (selector.isEmpty() || selector.indexOf('>') >= 0 || selector.indexOf('+') >= 0 || selector.indexOf('~') >= 0) return false;
-		String[] compounds = selector.split("\\s+");
-		for (String compound : compounds) {
+		for (String compound : selector.split("\\s+")) {
 			Matcher m = COMPOUND.matcher(compound);
 			if (!m.matches() || compound.isEmpty()) return false;
 			String rest = m.group(2);
@@ -348,16 +368,23 @@ final class HtmlChunks {
 			}
 			if (classes > 1 || ids > 1) return false;
 		}
-		if (compounds.length == 1 && hostStyles != null && !hostStyles.isEmpty()) {
-			String only = compounds[0];
-			if (only.startsWith(".") && only.indexOf('.', 1) < 0 && only.indexOf('#') < 0) {
-				if (hostStyles.contains(only.substring(1).toLowerCase(Locale.ROOT))) return false;
-			} else if (only.indexOf('.') < 0 && only.indexOf('#') < 0) {
-				String style = WORD_STYLE.get(only.toLowerCase(Locale.ROOT));
-				if (style != null && hostStyles.contains(style)) return false;
-			}
-		}
 		return true;
+	}
+
+	/**
+	 * Whether a type selector alone, or a class selector alone, goes through a style the host already
+	 * defines: the {@link #WORD_STYLE} of its type (by name, in any case), or the style named exactly as
+	 * the class, case included ({@code r11-5iii}).
+	 */
+	static boolean lostToHost(String selector, Set<String> hostStyles) {
+		if (hostStyles == null || hostStyles.isEmpty() || selector.trim().indexOf(' ') >= 0) return false;
+		String only = selector.trim();
+		if (only.startsWith(".") && only.indexOf('.', 1) < 0 && only.indexOf('#') < 0) return hostStyles.contains(only.substring(1));
+		if (only.indexOf('.') >= 0 || only.indexOf('#') >= 0) return false;
+		String style = WORD_STYLE.get(only.toLowerCase(Locale.ROOT));
+		if (style == null) return false;
+		for (String name : hostStyles) if (name.equalsIgnoreCase(style)) return true;
+		return false;
 	}
 
 	private static String withoutComments(String s) {

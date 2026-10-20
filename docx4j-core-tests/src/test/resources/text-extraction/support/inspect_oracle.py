@@ -1891,17 +1891,13 @@ WINDOWS_1252 = {'ansi_x3.4-1968', 'ascii', 'cp1252', 'cp819', 'csisolatin1', 'ib
 
 
 def decode_html(data):
-    """An HTML or XHTML chunk's characters (WD 0.27's Chunks rule): by its byte order mark; else UTF-16
-    where its first character is < so encoded; else the charset a meta element names in its first
-    1,024 bytes (its charset, or its http-equiv content type's), an [ENCODING] label; else UTF-8 where
-    the bytes are valid UTF-8; else windows-1252. An XML declaration names nothing (CR-053 phase 3)"""
+    """An HTML or XHTML chunk's characters (WD 0.28's Chunks rule): by its byte order mark; else the
+    charset a meta element names in its first 1,024 bytes (its charset, or its http-equiv content
+    type's), an [ENCODING] label; else UTF-8 where the bytes are valid UTF-8; else windows-1252. An XML
+    declaration names nothing, and UTF-16 without a byte order mark is read as its bytes say (CR-053)"""
     for bom, enc in ((b'\xef\xbb\xbf', 'utf-8'), (b'\xff\xfe', 'utf-16-le'), (b'\xfe\xff', 'utf-16-be')):
         if data.startswith(bom):
             return data[len(bom):].decode(enc, 'replace')
-    if data[:2] == b'<\x00':
-        return data.decode('utf-16-le', 'replace')
-    if data[:2] == b'\x00<':
-        return data.decode('utf-16-be', 'replace')
     m = re.search(r'<meta\b[^>]*?charset\s*=\s*["\']?([A-Za-z0-9._:-]+)', data[:1024].decode('latin-1'), re.I)
     if m:
         label = m.group(1).strip().lower()
