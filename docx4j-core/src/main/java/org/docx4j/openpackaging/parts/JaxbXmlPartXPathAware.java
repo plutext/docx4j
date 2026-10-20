@@ -624,9 +624,16 @@ implements XPathEnabled<E> {
 						binder = jc.createBinder();
 						binder.setEventHandler(eventHandler);
 						
-						// TODO: binder doesn't support listener
-//						Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
-//						((Unmarshaller) binder).setListener(docx4jUnmarshallerListener);
+						// the listener, as on the other binder paths (CR-051 section 1: until 17.3.4 it was
+						// left out here, so a part StAX rejected lost its Choice prefixes and drawing ids)
+						// https://github.com/eclipse-ee4j/jaxb-ri/issues/1631
+						Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
+						try {
+							BinderListenerUtils.getBinderListener().setListener(binder, docx4jUnmarshallerListener);
+						} catch (Exception e1) {
+							log.error("Unmarshalling via binder, couldn't set Docx4jUnmarshallerListener. McChoiceNamespace declarations will be affected.");
+							log.error("Couldn't set Docx4jUnmarshallerListener on binder", e1);
+						}
 						
 						jaxbElement =  (E) XmlUtils.unwrap(binder.unmarshal( doc ));
 					} catch (ClassCastException cce) {
