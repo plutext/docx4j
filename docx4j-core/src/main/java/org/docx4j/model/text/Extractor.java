@@ -179,8 +179,11 @@ final class Extractor {
 	Map<Object, String> sources;
 	/** The packages an inspection loaded one level down, by the part holding each: read here as they are. */
 	Map<Part, org.docx4j.openpackaging.packages.OpcPackage> packages;
-	/** An inspection's reading: no importer is called, so an XHTML chunk is read as HTML and an MHT chunk not at all. */
-	boolean noImporter;
+	/**
+	 * An inspection's reading (CR-053 phase 3): no importer is called; an HTML, XHTML or MHT chunk is read
+	 * from the inspector's import of it, by its part, and not at all where there is none. Null otherwise.
+	 */
+	Map<Part, WordprocessingMLPackage> chunks;
 	private BoundValues boundValues;
 	private FieldValues fieldValues;
 	/** The {@code w:lastRenderedPageBreak}s of the main story so far (REQ-708). */
@@ -333,7 +336,7 @@ final class Extractor {
 		x.nested = true;
 		x.sources = sources;
 		x.packages = packages;
-		x.noImporter = noImporter;
+		x.chunks = chunks;
 		TextResult r = x.extract();
 		for (TextWarning w : r.warnings()) warn(w);
 		List<TextBlock> blocks = new ArrayList<TextBlock>(r.blocks());

@@ -123,7 +123,7 @@ REVEAL = [('view:original', 'view: original'), ('view:markup', 'view: markup'), 
           ('bindings:surface', 'bindings: surface'), ('charts', 'charts: true'), ('smartart', 'smartart: true'),
           ('embedded', 'embedded: true'), ('altchunks', 'altchunks: true'), ('alt_text', 'alt_text: true'),
           ('metadata', 'metadata: true'), ('markup_detail', 'markup_detail: author_date'),
-          ('importer', 'xhtml importer: present')]
+          ('html_reader', 'html reader: present')]
 
 SYMBOL_FONTS = {'symbol', 'webdings', 'wingdings', 'wingdings 2', 'wingdings 3', 'marlett', 'mt extra',
                 'bookshelf symbol 7', 'ms outlook', 'ms reference specialty', 'segoe mdl2 assets', 'segoe fluent icons'}
@@ -132,7 +132,7 @@ HIGHLIGHT = {'black': '000000', 'blue': '0000FF', 'cyan': '00FFFF', 'green': '00
              'darkGreen': '008000', 'darkMagenta': '800080', 'darkRed': '800000', 'darkYellow': '808000',
              'darkGray': '808080', 'lightGray': 'C0C0C0'}
 KNOWN_TYPES = ('application/vnd.openxmlformats-', 'application/vnd.ms-', 'image/', 'audio/', 'video/', 'text/',
-               'message/rfc822', 'application/xml', 'application/rtf', 'application/inkml+xml', 'font/',
+               'message/rfc822', 'application/xml', 'application/xhtml+xml', 'application/rtf', 'application/inkml+xml', 'font/',
                'application/x-font', 'application/pdf', 'application/vnd.oasis.opendocument.')
 EMU_PER_PT = 12700
 # D19 (b): a name of this form ("Text Box 3", "Picture 7") is no finding unless extraction carries it
@@ -1628,7 +1628,8 @@ class Inspector:
                 if sub.get_content_type() in ('text/html', 'application/xhtml+xml'):
                     payload, charset = sub.get_payload(decode=True), sub.get_content_charset()
                     try:
-                        html.append(payload.decode(charset, 'replace') if charset else decode_html(payload))
+                        html.append(payload.decode('cp1252' if charset.lower() in WINDOWS_1252 else charset, 'replace')
+                                    if charset else decode_html(payload))
                     except LookupError:
                         html.append(decode_html(payload))
         elif ctype in (OFFICE_CHUNK_DOCX,):
@@ -1659,6 +1660,10 @@ class Inspector:
         if refs:
             self.add(Finding('altchunk.external_ref', self.chain, part, excerpt='', needs={'never'},
                              summary=' '.join(refs)))
+        # The oracle has no HTML reader (CR-053 phase 3, WD 0.27): it cannot tell what display:none
+        # hides, so the chunk is skipped as not decoded, its scripts and references found all the same
+        # (REQ-902's Chunks rule). A reader-present inspection is expected-inspection-html.tsv's.
+        self.status['skipped'].append('not_decoded@' + loc)
 
     def embedded(self, part, ctype, prog):
         self.add(Finding('object.embedded', self.chain, part, excerpt='', needs={'never'}, summary=prog or ''))
@@ -1879,10 +1884,17 @@ def javascript_uri(v):
     return v[:11].lower() == 'javascript:'
 
 
+# The labels WHATWG's Encoding standard reads as windows-1252 ([ENCODING]), ISO-8859-1 and US-ASCII among them
+WINDOWS_1252 = {'ansi_x3.4-1968', 'ascii', 'cp1252', 'cp819', 'csisolatin1', 'ibm819', 'iso-8859-1', 'iso-ir-100',
+                'iso8859-1', 'iso88591', 'iso_8859-1', 'iso_8859-1:1987', 'l1', 'latin1', 'us-ascii', 'windows-1252',
+                'x-cp1252'}
+
+
 def decode_html(data):
-    """An HTML or XHTML chunk's characters: by its byte order mark; else UTF-16 where its first
-    character is < so encoded; else the charset its start declares (an XML declaration's encoding, a
-    meta element's charset); else UTF-8 (phase 1)"""
+    """An HTML or XHTML chunk's characters (WD 0.27's Chunks rule): by its byte order mark; else UTF-16
+    where its first character is < so encoded; else the charset a meta element names in its first
+    1,024 bytes (its charset, or its http-equiv content type's), an [ENCODING] label; else UTF-8 where
+    the bytes are valid UTF-8; else windows-1252. An XML declaration names nothing (CR-053 phase 3)"""
     for bom, enc in ((b'\xef\xbb\xbf', 'utf-8'), (b'\xff\xfe', 'utf-16-le'), (b'\xfe\xff', 'utf-16-be')):
         if data.startswith(bom):
             return data[len(bom):].decode(enc, 'replace')
@@ -1890,16 +1902,19 @@ def decode_html(data):
         return data.decode('utf-16-le', 'replace')
     if data[:2] == b'\x00<':
         return data.decode('utf-16-be', 'replace')
-    m = re.search(r'<\?xml[^>]*?\sencoding\s*=\s*["\']([A-Za-z0-9._:-]+)|<meta\b[^>]*?charset\s*=\s*["\']?([A-Za-z0-9._:-]+)',
-                  data[:1024].decode('latin-1'), re.I)
+    m = re.search(r'<meta\b[^>]*?charset\s*=\s*["\']?([A-Za-z0-9._:-]+)', data[:1024].decode('latin-1'), re.I)
     if m:
+        label = m.group(1).strip().lower()
         try:
-            name = codecs.lookup(m.group(1) or m.group(2)).name
+            name = 'cp1252' if label in WINDOWS_1252 else codecs.lookup(label).name
             if not name.startswith(('utf-16', 'utf-32')):
                 return data.decode(name, 'replace')
         except LookupError:
             pass
-    return data.decode('utf-8', 'replace')
+    try:
+        return data.decode('utf-8')
+    except UnicodeDecodeError:
+        return data.decode('cp1252', 'replace')
 
 
 def dml_line(ap):

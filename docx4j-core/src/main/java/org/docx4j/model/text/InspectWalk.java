@@ -108,6 +108,10 @@ final class InspectWalk {
 		Element anchor;
 		/** Where a finding has no one element (a hidden column's cells), the elements its content is in. */
 		List<Element> scope;
+		/** A chunk's finding (CR-053 phase 3): the paragraph or table of the inspector's import that holds its text. */
+		Object block;
+		/** An HTML, XHTML or MHT chunk's {@code altchunk} finding: how it was parsed ({@code html}), or null. */
+		String parsed;
 		/** What merging compares, the paragraph and the index of the last run merged, the runs' texts. */
 		List<Object> attrs;
 		Element para;
@@ -157,7 +161,7 @@ final class InspectWalk {
 	}
 	/** The content-type families of a known part (INSPECTION.md, {@code part.unknown}). */
 	private static final String[] KNOWN_TYPES = { "application/vnd.openxmlformats-", "application/vnd.ms-", "image/", "audio/",
-			"video/", "text/", "message/rfc822", "application/xml", "application/rtf", "application/inkml+xml", "font/",
+			"video/", "text/", "message/rfc822", "application/xml", "application/xhtml+xml", "application/rtf", "application/inkml+xml", "font/",
 			"application/x-font", "application/pdf", "application/vnd.oasis.opendocument." };
 	private static final String DOCX_CHUNK = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
 	private static final long EMU_PER_PT = 12700;
@@ -2094,6 +2098,31 @@ final class InspectWalk {
 		if (!refs.isEmpty()) {
 			Found r = add(found("altchunk.external_ref", p, "", "", needs(InspectFinding.NEVER), null));
 			r.summary = String.join(" ", refs);
+		}
+		hidden(p, ctype, data, f, where);
+	}
+
+	/**
+	 * What {@code display: none} hides in an HTML, XHTML or MHT chunk (CR-053 phase 3, WD REQ-902): the
+	 * chunk read through the import its extraction runs ({@link InspectChunks}), a {@code text.hidden}
+	 * finding for each outermost hidden element with text, at its path in the parsed tree. The import is
+	 * kept for the addresses, so that the extraction reads the chunk as it was inspected. Without an
+	 * HTML reader, and where the chunk cannot be read, it is skipped; its scripts and references are found
+	 * all the same.
+	 */
+	private void hidden(String p, String ctype, byte[] data, Found chunk, String where) {
+		InspectChunks.Read read = InspectChunks.read(data, ctype.equals("message/rfc822"), pkg.pkg, p, run);
+		if (read.parsed) chunk.parsed = InspectFinding.PARSED_HTML;
+		if (read.skipped != null) {
+			run.skip(read.skipped, where);
+			return;
+		}
+		Part part = pkg.part(p);
+		if (part != null) run.chunks.put(part, read.scratch);
+		for (InspectChunks.Hidden h : read.hidden) {
+			Found t = add(found(InspectFinding.TEXT_HIDDEN, p, h.path, h.text,
+					needs(InspectFinding.ALTCHUNKS, InspectFinding.HIDDEN, InspectFinding.HTML_READER), null));
+			t.block = h.block;
 		}
 	}
 

@@ -407,7 +407,7 @@ Golden conventions and baseline commands are in `../GOLDENS.md`.
 
 | Token | accepted | original | markup | option | with option | note | statements |
 |---|---|---|---|---|---|---|---|
-| `ALT36_CHUNK_TEXT` | – | – | – | `html reader present` | yes | without an HTML reader: altchunk.not_expanded; altchunks: false also omits it (CR-053 D7, pending WD 0.26) | REQ-513 |
+| `ALT36_CHUNK_TEXT` | – | – | – | `html reader present` | yes | without an HTML reader: altchunk.not_expanded; altchunks: false also omits it (CR-053 D7, WD 0.27) | REQ-513 |
 
 ### Case 37: ruby
 
@@ -668,7 +668,7 @@ Golden conventions and baseline commands are in `../GOLDENS.md`.
 | `CMT63_ANCHORED` | – | – | `{>>…<<}` | `comments: true` | `{>>…<<}` | inspection: comment | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
 | `CMT63_UNANCHORED` | – | – | – |  |  | a comment with no anchor; inspection: story.unused | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
 | `INK63_HERE` | yes | yes | yes |  |  | an ink part (w14:contentPart) after it; inspection: ink | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
-| `CHK63_SCRIPTED` | – | – | – | `html reader present` | yes | an HTML chunk holding a script, an event handler and two external references; inspection: altchunk, altchunk.script, altchunk.external_ref; nothing fetched; without an HTML reader: altchunk.not_expanded (CR-053 D7, pending WD 0.26) | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
+| `CHK63_SCRIPTED` | – | – | – | `html reader present` | yes | an HTML chunk holding a script, an event handler and two external references; inspection: altchunk, altchunk.script, altchunk.external_ref; nothing fetched; without an HTML reader: altchunk.not_expanded (CR-053 D7, WD 0.27) | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
 | `EMB63_HERE` | yes | yes | yes |  |  |  | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
 | `EMB63_VISIBLE` | – | – | – | `embedded: true` | yes | the embedded document's shown text | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |
 | `EMB63_HIDDEN` | – | – | – | `embedded: true; hidden: true` | yes | hidden text inside the embedded document; inspection: text.hidden in its chain | REQ-902, REQ-503, REQ-504, REQ-512, REQ-513 |

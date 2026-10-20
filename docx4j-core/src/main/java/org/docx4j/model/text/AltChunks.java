@@ -111,12 +111,16 @@ final class AltChunks {
 
 	/**
 	 * An HTML, XHTML or MHT chunk as Word reads it, into a scratch package so that nothing is added to
-	 * the document's; null where it is not expanded: no HTML reader (jsoup and docx4j-ImportXHTML),
-	 * an inspection's own reading, or a chunk the reader refuses.
+	 * the document's; null where it is not expanded: no HTML reader (jsoup and docx4j-ImportXHTML), or a
+	 * chunk the reader refuses. An inspection's reading takes the inspector's import of the chunk.
 	 */
 	private static List<TextBlock> html(Extractor x, AlternativeFormatInputPart part, TextBlock.Story story, String prefix) {
-		// an inspection's reading calls no importer (CR-050 section 2.1)
-		if (x.noImporter || !HtmlChunkImport.readerPresent()) return null;
+		// an inspection's reading calls no importer of its own (CR-053 phase 3)
+		if (x.chunks != null) {
+			WordprocessingMLPackage read = x.chunks.get(part);
+			return read == null ? null : x.nested(read, prefix, story);
+		}
+		if (!HtmlChunkImport.readerPresent()) return null;
 		WordprocessingMLPackage scratch;
 		try {
 			scratch = WordprocessingMLPackage.createPackage();

@@ -74,7 +74,8 @@ public class ExtractionConformanceTest {
         List<Map<String, String>> expected = ExtractionConformance.table(dir.resolve(ExtractionInspection.TABLE));
         final List<List<Map<String, String>>> reported = new ArrayList<>();
         ExtractionConformance.Engine engine = new ExtractionConformance.Engine() {
-            public Set<String> implementedStatements() { return Set.of("REQ-901", "REQ-902", "REQ-904", "REQ-905", "REQ-906", "REQ-907", "REQ-1204"); }
+            public Set<String> implementedStatements() { return Set.of("REQ-901", "REQ-902", "REQ-904", "REQ-905", "REQ-906", "REQ-907", "REQ-1204",
+                    ExtractionConformance.HTML_READER_ABSENT); }
             public ExtractionConformance.Output extract(Path p, String view, String scenario, String format) { throw new AssertionError(); }
             public ExtractionConformance.Inspection inspect(Path fixture) {
                 return new ExtractionConformance.Inspection(reported.get(0), "COMPLETE", List.of(), List.of(),
@@ -238,13 +239,19 @@ public class ExtractionConformanceTest {
             assertTrue(results.contains("\tGLS54_ENTRY_TWO\toriginal\tinclude: glossary\tPASS"));
             assertTrue(results.contains("\tCHT34_AXIS_TITLE\taccepted\tdefault\tPASS"));
             assertTrue(results.contains("\tTBL31_HEADER\taccepted\tdefault\tPASS"));
-            // CR-050 phase 1: the inspector's rows and each fixture's whole inspection
-            assertTrue(results.contains("extraction-probe-inspect.docx\t0\tinspection\t-\tdefault\tPASS"));
-            assertTrue(results.contains("extraction-probe.docx\t0\tinspection\t-\tdefault\tPASS"));
+            // CR-050 phase 1: the inspector's rows and each fixture's whole inspection, whose oracle has no
+            // HTML reader (CR-053 phase 3), so with one it pends for that alone
+            boolean reader = org.docx4j.model.text.HtmlChunkImport.readerPresent();
+            assertEquals(!reader, results.contains("extraction-probe-inspect.docx\t0\tinspection\t-\tdefault\tPASS"));
+            assertEquals(!reader, results.contains("extraction-probe.docx\t0\tinspection\t-\tdefault\tPASS"));
             assertTrue(results.contains("\tinspect:font.glyph_mismatch:"));
-            // the counts' oracle is for an extraction with no HTML reader, so with one they pend for that alone
+            // CR-053 phase 3: the HTML reader's fixture, checked with one; since WD 0.27 none of its rows pends
+            assertEquals(reader, results.contains("extraction-probe-html.docx\t0\tinspection\t-\thtml reader present\tPASS"));
+            assertFalse(results.contains("\tinspect:text.hidden:HTM_"));
+            // the counts' and the inspection's oracles are for an inspector with no HTML reader, the HTML fixture's
+            // for one with it, so each pends for the other alone
             for (String line : results.split("\n"))
-                if (line.contains("the inspector (CR-050)")) assertTrue(line, line.contains("html reader absent"));
+                if (line.contains("the inspector (CR-050)")) assertTrue(line, line.contains(reader ? "html reader absent" : "html reader present"));
             for (String line : results.split("\n"))
                 if (line.contains("\tPENDING\t")) assertTrue(line, line.contains("phase 3; REQ-70") || line.contains("html reader"));
         } else {

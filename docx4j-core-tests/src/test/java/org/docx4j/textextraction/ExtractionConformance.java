@@ -158,7 +158,7 @@ public final class ExtractionConformance {
     /**
      * Capabilities of the class path, not of an engine: whether an HTML reader is present (REQ-513), a parser
      * implementing [HTML]'s algorithm and what reads its tree as blocks; for docx4j, jsoup and
-     * docx4j-ImportXHTML (CR-053, pending WD 0.26, which folds "xhtml importer present" into it).
+     * docx4j-ImportXHTML (CR-053, WD 0.27, which folds "xhtml importer present" into it).
      */
     static final String HTML_READER_PRESENT = "html reader present", HTML_READER_ABSENT = "html reader absent";
 
@@ -237,6 +237,11 @@ public final class ExtractionConformance {
             String key = row.get("fixture") + "\t" + view + "\t" + scenario + "\t" + format;
             if (!outputs.containsKey(key)) outputs.put(key, engine.extract(dir.resolve(row.get("fixture")), view, scenario, format));
             return outputs.get(key);
+        }
+        /** A check left pending for a reason of its own (a rule not yet in the WD), not a missing statement */
+        void pend(Map<String, String> row, String item, String view, String scenario, String reason) {
+            pending++;
+            report.add(row.get("fixture") + "\t" + row.get("case") + "\t" + item + "\t" + view + "\t" + scenario + "\tPENDING\t" + reason);
         }
         void pass(Map<String, String> row, String item, String view, String scenario) {
             passed++;
@@ -322,13 +327,18 @@ public final class ExtractionConformance {
         for (Map<String, String> row : table(table)) expected.computeIfAbsent(row.get("fixture"), k -> new ArrayList<>()).add(row);
         for (Map<String, String> status : table(dir.resolve(ExtractionInspection.STATUS))) {
             String fixture = status.get("fixture");
-            // the whole fixture's comparison is REQ-1204's, its checks REQ-901, 902 and 904 to 907's
+            // the whole fixture's comparison is REQ-1204's, its checks REQ-901, 902 and 904 to 907's. The table is
+            // an inspector's with no HTML reader (CR-053 phase 3, WD 0.27): with one, a chunk's hidden
+            // text is found and the chunk is not skipped, so the comparison pends
             String statements = ExtractionInspection.STATEMENTS + ", REQ-1204";
             Map<String, String> row = Map.of("fixture", fixture, "case", "0", "statements", statements);
-            if (!run.ready(row, "inspection", "-", "default", requirements(statements))) continue;
+            Set<String> inspectionRequires = requirements(statements);
+            inspectionRequires.add(HTML_READER_ABSENT);
+            if (!run.ready(row, "inspection", "-", "default", inspectionRequires)) continue;
             compareInspection(fixture, expected.getOrDefault(fixture, List.of()), status, run.engine.inspect(dir.resolve(fixture)));
             run.pass(row, "inspection", "-", "default");
         }
+        htmlInspections(run, dir);
         // CR-050 phase 2: every extraction result's counts (REQ-903), for each output the table names a group under,
         // are the number of the table's findings in each group there, with the fixture's status. The table's groups
         // are for an extraction with no HTML reader (INSPECTION.md), so with one on the class path the check pends
@@ -350,8 +360,55 @@ public final class ExtractionConformance {
             }
         }
     }
+    /**
+     * CR-053 phase 3: an inspector with an HTML reader, on the fixture whose chunks it reads, compared with
+     * {@code expected-inspection-html.tsv} (written by hand, each row checked against Word 365's save of the
+     * fixture), {@code parsed} with the other fields. A row resting on a rule not yet ruled on (its
+     * {@code pending}) is left out on both sides and reported pending.
+     */
+    static void htmlInspections(Run run, Path dir) throws Exception {
+        Path table = dir.resolve(ExtractionInspection.HTML_TABLE);
+        if (!Files.exists(table)) return;
+        Map<String, List<Map<String, String>>> expected = new LinkedHashMap<>();
+        for (Map<String, String> row : table(table)) expected.computeIfAbsent(row.get("fixture"), k -> new ArrayList<>()).add(row);
+        List<String> fields = new ArrayList<>(ExtractionInspection.FIELDS);
+        fields.add("parsed");
+        for (Map<String, String> status : table(dir.resolve(ExtractionInspection.HTML_STATUS))) {
+            String fixture = status.get("fixture");
+            String statements = ExtractionInspection.STATEMENTS + ", REQ-1204, REQ-513";
+            Map<String, String> row = Map.of("fixture", fixture, "case", "0", "statements", statements);
+            Set<String> requires = requirements(statements);
+            requires.add(HTML_READER_PRESENT);
+            if (!run.ready(row, "inspection", "-", HTML_READER_PRESENT, requires)) continue;
+            List<Map<String, String>> checked = new ArrayList<>();
+            Set<String> pending = new HashSet<>();
+            for (Map<String, String> r : expected.getOrDefault(fixture, List.of())) {
+                if (r.get("pending").isEmpty()) {
+                    checked.add(r);
+                } else {
+                    pending.add(key(r));
+                    run.pend(r, "inspect:" + r.get("kind") + ":" + r.get("selector"), "-", HTML_READER_PRESENT, r.get("pending"));
+                }
+            }
+            Inspection actual = run.engine.inspect(dir.resolve(fixture));
+            List<Map<String, String>> found = new ArrayList<>();
+            for (Map<String, String> f : actual.findings) if (!pending.contains(key(f))) found.add(f);
+            compareInspection(fixture, checked, status, new Inspection(found, actual.status, actual.skipped, actual.undecided,
+                    actual.limitations), fields);
+            run.pass(row, "inspection", "-", HTML_READER_PRESENT);
+        }
+    }
+    private static String key(Map<String, String> finding) {
+        StringJoiner key = new StringJoiner(" | ");
+        for (String k : ExtractionInspection.KEY) key.add(finding.getOrDefault(k, ""));
+        return key.toString();
+    }
     static void compareInspection(String fixture, List<Map<String, String>> expected, Map<String, String> status, Inspection actual) {
-        Map<String, List<String>> want = occurrences(expected), got = occurrences(actual.findings);
+        compareInspection(fixture, expected, status, actual, ExtractionInspection.FIELDS);
+    }
+    static void compareInspection(String fixture, List<Map<String, String>> expected, Map<String, String> status, Inspection actual,
+            List<String> fields) {
+        Map<String, List<String>> want = occurrences(expected, fields), got = occurrences(actual.findings, fields);
         List<String> problems = new ArrayList<>();
         Set<String> keys = new TreeSet<>(want.keySet());
         keys.addAll(got.keySet());
@@ -360,7 +417,7 @@ public final class ExtractionConformance {
             if (w.size() != g.size()) {
                 problems.add((w.size() > g.size() ? "missing " : "unexpected ") + Math.abs(w.size() - g.size()) + ": " + key);
             } else if (!w.equals(g)) {
-                problems.add("fields of " + key + ": expected " + w + ", got " + g + " (" + String.join(", ", ExtractionInspection.FIELDS) + ")");
+                problems.add("fields of " + key + ": expected " + w + ", got " + g + " (" + String.join(", ", fields) + ")");
             }
         }
         if (!problems.isEmpty()) throw new AssertionError(fixture + ": inspection differs (" + problems.size() + "):\n  "
@@ -375,13 +432,12 @@ public final class ExtractionConformance {
         }
     }
     /** location key -> the sorted field tuples of the findings there (a multiset) */
-    private static Map<String, List<String>> occurrences(List<Map<String, String>> findings) {
+    private static Map<String, List<String>> occurrences(List<Map<String, String>> findings, List<String> names) {
         Map<String, List<String>> out = new TreeMap<>();
         for (Map<String, String> f : findings) {
-            StringJoiner key = new StringJoiner(" | "), fields = new StringJoiner(" | ");
-            for (String k : ExtractionInspection.KEY) key.add(f.getOrDefault(k, ""));
-            for (String k : ExtractionInspection.FIELDS) fields.add(f.getOrDefault(k, ""));
-            out.computeIfAbsent(key.toString(), k -> new ArrayList<>()).add(fields.toString());
+            StringJoiner fields = new StringJoiner(" | ");
+            for (String k : names) fields.add(f.getOrDefault(k, ""));
+            out.computeIfAbsent(key(f), k -> new ArrayList<>()).add(fields.toString());
         }
         for (List<String> l : out.values()) Collections.sort(l);
         return out;

@@ -23,8 +23,10 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,10 +55,10 @@ final class HtmlChunks {
 
 	private HtmlChunks() {}
 
-	// --- decoding (the WD's Chunks rule, with Word's last step) ----------------------------------------
+	// --- decoding (the WD's Chunks rule, 0.27) ------------------------------------------------------------
 
-	private static final Pattern DECLARED = Pattern.compile(
-			"<\\?xml[^>]*?\\sencoding\\s*=\\s*[\"']([A-Za-z0-9._:-]+)|<meta\\b[^>]*?charset\\s*=\\s*[\"']?([A-Za-z0-9._:-]+)",
+	/** A {@code meta} element's {@code charset}, or its {@code http-equiv} content type's. */
+	private static final Pattern DECLARED = Pattern.compile("<meta\\b[^>]*?charset\\s*=\\s*[\"']?([A-Za-z0-9._:-]+)",
 			Pattern.CASE_INSENSITIVE);
 
 	/** The labels WHATWG's Encoding standard reads as windows-1252, as an HTML reader does. */
@@ -65,12 +67,13 @@ final class HtmlChunks {
 			"iso_8859-1", "iso_8859-1:1987", "l1", "latin1", "us-ascii", "windows-1252", "x-cp1252"));
 
 	/**
-	 * A chunk's markup in its encoding: by its byte order mark (UTF-8, UTF-16LE or UTF-16BE); else as
-	 * UTF-16 where its first two bytes are {@code <} so encoded; else in the encoding an XML
-	 * declaration's {@code encoding} or a {@code meta} element's {@code charset} (or {@code http-equiv}
-	 * content type's) names within its first 1,024 bytes, a UTF-16 or UTF-32 or unknown name ignored;
-	 * else as UTF-8 where the bytes are valid UTF-8, else as windows-1252, as Word reads it (CR-053
-	 * section 10.6). Bytes the named encoding cannot decode are read as U+FFFD.
+	 * A chunk's markup in its encoding (the WD's Chunks rule, 0.27): by its byte order mark (UTF-8,
+	 * UTF-16LE or UTF-16BE); else as UTF-16 where its first two bytes are {@code <} so encoded (not
+	 * measured in Word); else in the encoding a {@code meta} element's {@code charset} (or
+	 * {@code http-equiv} content type's) names within its first 1,024 bytes, a UTF-16 or UTF-32 or
+	 * unknown name ignored; else as UTF-8 where the bytes are valid UTF-8, else as windows-1252, as Word
+	 * reads it (CR-053 section 10.6). An XML declaration names nothing: Word refuses a chunk that has
+	 * one. Bytes the named encoding cannot decode are read as U+FFFD.
 	 */
 	static String decode(byte[] data) {
 		int n = data.length;
@@ -81,7 +84,7 @@ final class HtmlChunks {
 		if (n >= 2 && data[0] == 0 && data[1] == '<') return new String(data, StandardCharsets.UTF_16BE);
 		Matcher m = DECLARED.matcher(new String(data, 0, Math.min(n, 1024), StandardCharsets.ISO_8859_1));
 		if (m.find()) {
-			Charset cs = charset(m.group(1) != null ? m.group(1) : m.group(2));
+			Charset cs = charset(m.group(1));
 			if (cs != null) return new String(data, cs);
 		}
 		try {
@@ -128,24 +131,16 @@ final class HtmlChunks {
 			"thead", "title", "tr", "tt", "u", "ul", "var"));
 
 	/**
-	 * The Word style an element's type rule goes through (CR-053 section 10.6, {@code css-3},
-	 * {@code host-1}): measured for {@code p}, {@code h6} and {@code address}; the rest is Word's
-	 * set of HTML styles, by inference.
+	 * The paragraph style an element's type rule goes through (WD 0.27's REQ-513; CR-053 section 10.6,
+	 * {@code css-3}, {@code host-1}): {@code p} to Normal (Web), {@code h1} to {@code h6} to Heading 1 to
+	 * 6 ({@code h6} measured, the rest inferred), {@code address} to HTML Address. A type rule on any
+	 * other element counts whatever the host defines.
 	 */
 	static final Map<String, String> WORD_STYLE = new HashMap<String, String>();
 	static {
 		WORD_STYLE.put("p", "normal (web)");
 		for (int i = 1; i <= 6; i++) WORD_STYLE.put("h" + i, "heading " + i);
 		WORD_STYLE.put("address", "html address");
-		WORD_STYLE.put("pre", "html preformatted");
-		WORD_STYLE.put("code", "html code");
-		WORD_STYLE.put("kbd", "html keyboard");
-		WORD_STYLE.put("samp", "html sample");
-		WORD_STYLE.put("var", "html variable");
-		WORD_STYLE.put("cite", "html cite");
-		WORD_STYLE.put("dfn", "html definition");
-		WORD_STYLE.put("acronym", "html acronym");
-		WORD_STYLE.put("tt", "html typewriter");
 	}
 
 	/** The names of the styles a package's styles part defines, in lower case: those a chunk's rule cannot change. */
@@ -198,6 +193,31 @@ final class HtmlChunks {
 			clamp(e, "rowspan", 0, 65534);
 			String style = e.getAttribute("style");
 			e.setAttribute("style", style.isEmpty() ? "float:none !important" : style + ";float:none !important");
+		}
+	}
+
+	/**
+	 * Each element's path in the tree (WD REQ-901), into {@code out}: from the document element down,
+	 * each step the element's local name, unprefixed and in lower case, with its 1-based position among
+	 * its siblings of that name ({@code /html[1]/body[1]/div[2]}).
+	 */
+	static void paths(Document dom, Map<Element, String> out) {
+		Element html = dom.getDocumentElement();
+		if (html == null) return;
+		Deque<Element> todo = new ArrayDeque<Element>();
+		out.put(html, "/" + local(html) + "[1]");
+		todo.push(html);
+		while (!todo.isEmpty()) {
+			Element e = todo.pop();
+			String path = out.get(e);
+			Map<String, Integer> seen = new HashMap<String, Integer>();
+			for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling()) {
+				if (!(n instanceof Element)) continue;
+				String name = local((Element) n);
+				int i = seen.merge(name, 1, Integer::sum);
+				out.put((Element) n, path + "/" + name + "[" + i + "]");
+				todo.push((Element) n);
+			}
 		}
 	}
 

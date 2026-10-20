@@ -102,6 +102,22 @@ public class AltChunkHtmlTest {
 		return out;
 	}
 
+	/** Each {@code text.hidden} finding: its path, excerpt, address and reveal. */
+	private static List<String> hidden(Inspection inspection) {
+		List<String> out = new ArrayList<String>();
+		for (InspectFinding f : inspection.findings()) {
+			if (!f.getKind().equals(InspectFinding.TEXT_HIDDEN)) continue;
+			out.add(f.getLocation().getPath() + " " + f.getExcerpt() + " " + f.getAddress() + " " + f.getReveal());
+		}
+		return out;
+	}
+
+	/** The {@code altchunk} finding's {@code parsed}. */
+	private static String parsed(Inspection inspection) {
+		for (InspectFinding f : inspection.findings()) if (f.getKind().equals(InspectFinding.ALTCHUNK)) return f.getParsed();
+		throw new AssertionError("no altchunk finding");
+	}
+
 	private static List<String> warnings(TextResult result) {
 		List<String> out = new ArrayList<String>();
 		for (TextWarning w : result.warnings()) out.add(w.getKind() + " " + w.getContentType());
@@ -135,10 +151,10 @@ public class AltChunkHtmlTest {
 	/**
 	 * Section 1, case 1, as phase 2 leaves it: with an HTML reader, the four display:none texts are
 	 * hidden text, out by default and flagged hidden under {@code hidden: true} (D5); without one,
-	 * the chunk is not expanded (D7). Phase 0 found them ordinary text. The inspector is phase 3's:
-	 * it reports the chunk and nothing hidden in it, and with the reader it is to report a
-	 * {@code text.hidden} for each of the three outermost elements and {@code parsed: html}; without
-	 * it, to skip the chunk as {@code not_decoded}.
+	 * the chunk is not expanded (D7). Phase 0 found them ordinary text. Phase 3's inspector, with the
+	 * reader, reports a {@code text.hidden} for each of the three outermost elements, at its path in the
+	 * parsed tree and its block's address under {@code hidden: true}, and {@code parsed: html}; without
+	 * it, it skips the chunk as {@code not_decoded}.
 	 */
 	@Test
 	public void htmlChunkDisplayNoneIsHiddenText() throws Exception {
@@ -153,16 +169,29 @@ public class AltChunkHtmlTest {
 			notExpanded(result, "text/html");
 		}
 		Inspection inspection = Inspect.of(pkg);
-		assertEquals(Arrays.asList("altchunk"), kinds(inspection));
-		assertTrue(inspection.skipped().toString(), inspection.skipped().isEmpty());
+		if (reader()) {
+			assertEquals(Arrays.asList("altchunk", "text.hidden", "text.hidden", "text.hidden"), kinds(inspection));
+			assertEquals(Arrays.asList(
+					"/html[1]/body[1]/p[2] INLINE_NONE body/0/altchunk:0/body/1 options: hidden: true; html reader: present",
+					"/html[1]/body[1]/div[1] CLASS_NONE body/0/altchunk:0/body/2 options: hidden: true; html reader: present",
+					"/html[1]/body[1]/p[3]/span[1] SPAN_NONE body/0/altchunk:0/body/3 options: hidden: true; html reader: present"),
+					hidden(inspection));
+			assertEquals(InspectFinding.PARSED_HTML, parsed(inspection));
+			assertTrue(inspection.skipped().toString(), inspection.skipped().isEmpty());
+		} else {
+			assertEquals(Arrays.asList("altchunk"), kinds(inspection));
+			assertNull(parsed(inspection));
+			assertEquals("[not_decoded@|/chunk.html|]", inspection.skipped().toString());
+		}
 	}
 
 	/**
 	 * Section 1, cases 2 and 3, as phase 2 leaves them: an XHTML chunk is read as an HTML one is, by
 	 * jsoup and the importer, as Word reads it (D9 (iii)); without an HTML reader it is not expanded.
 	 * Phase 0 found it read by jsoup alone without the importer, and with the importer its hidden text
-	 * lost. The inspector reports the chunk's part as {@code part.unknown}: the WD's known families
-	 * (REQ-902) have no {@code application/xhtml+xml} yet (WD 0.26).
+	 * lost. With the reader, the inspector reports what the chunk hides at its path in the HTML tree
+	 * (WD 0.26), as for an HTML chunk; {@code application/xhtml+xml} is a known family (WD 0.27), so the
+	 * part is no {@code part.unknown}.
 	 */
 	@Test
 	public void xhtmlChunkIsReadAsHtml() throws Exception {
@@ -175,7 +204,16 @@ public class AltChunkHtmlTest {
 		} else {
 			notExpanded(result, "application/xhtml+xml");
 		}
-		assertEquals(Arrays.asList("part.unknown", "altchunk"), kinds(Inspect.of(pkg)));
+		Inspection inspection = Inspect.of(pkg);
+		if (reader()) {
+			assertEquals(Arrays.asList("altchunk", "text.hidden", "text.hidden", "text.hidden"), kinds(inspection));
+			assertEquals("/html[1]/body[1]/p[2] INLINE_NONE body/0/altchunk:0/body/1 options: hidden: true; html reader: present",
+					hidden(inspection).get(0));
+			assertEquals(InspectFinding.PARSED_HTML, parsed(inspection));
+		} else {
+			assertEquals(Arrays.asList("altchunk"), kinds(inspection));
+			assertEquals("[not_decoded@|/chunk.xhtml|]", inspection.skipped().toString());
+		}
 	}
 
 	/**
@@ -200,9 +238,9 @@ public class AltChunkHtmlTest {
 
 	/**
 	 * An MHT chunk: its first HTML part, read as an HTML chunk is, its display:none text hidden; without
-	 * an HTML reader, not expanded, with the warning, as before. The inspector scans its first HTML part
-	 * today. Phase 3 changes the inspector's: without the reader, the chunk is skipped as
-	 * {@code not_decoded} (its scripts and references still found).
+	 * an HTML reader, not expanded, with the warning, as before. Phase 3's inspector, with the reader,
+	 * reports what its first HTML part hides at its path in that part's tree; without it, it skips the
+	 * chunk as {@code not_decoded} (its scripts and references still found).
 	 */
 	@Test
 	public void mhtChunkIsReadAsItsHtml() throws Exception {
@@ -218,8 +256,15 @@ public class AltChunkHtmlTest {
 			notExpanded(result, "message/rfc822");
 		}
 		Inspection inspection = Inspect.of(pkg);
-		assertEquals(Arrays.asList("altchunk"), kinds(inspection));
-		assertTrue(inspection.skipped().toString(), inspection.skipped().isEmpty());
+		if (reader()) {
+			assertEquals(Arrays.asList("/html[1]/body[1]/p[2] MHT_NONE body/0/altchunk:0/body/1 options: hidden: true; html reader: present"),
+					hidden(inspection));
+			assertEquals(InspectFinding.PARSED_HTML, parsed(inspection));
+			assertTrue(inspection.skipped().toString(), inspection.skipped().isEmpty());
+		} else {
+			assertEquals(Arrays.asList("altchunk"), kinds(inspection));
+			assertEquals("[not_decoded@|/chunk.mht|]", inspection.skipped().toString());
+		}
 	}
 
 	/**

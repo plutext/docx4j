@@ -269,7 +269,7 @@ final class ExtractionFixtureChecks {
             String type = n == 36 || n == 47 || n == 63 ? "text/html" : n == 43 ? "text/plain" : n == 44 ? "message/rfc822" : n == 45 ? "application/rtf" : "application/xml";
             String absent = ExtractionConformance.HTML_READER_ABSENT, present = ExtractionConformance.HTML_READER_PRESENT;
             // without an HTML reader, case 36's chunk and case 47's nested one, in the same fixture, are not
-            // expanded (CR-053 D7, pending WD 0.26); with one, only case 47's, one level down
+            // expanded (CR-053 D7, WD 0.27); with one, only case 47's, one level down
             if (n == 36) finding(out, n, "warning", "altchunk.not_expanded", type, absent, "2", "REQ-513");
             if (n == 44 || n == 63) finding(out, n, "warning", "altchunk.not_expanded", type, absent, "1", "REQ-513");
             if (n == 45) finding(out, n, "warning", "altchunk.not_expanded", type, "default", "1", "REQ-513");

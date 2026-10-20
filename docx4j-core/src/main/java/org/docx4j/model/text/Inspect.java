@@ -48,14 +48,18 @@ import org.slf4j.LoggerFactory;
  * document variables, {@code w:updateFields}, {@code w:rsids}, the properties, every relationship,
  * every chunk and embedded object, ink, parts of an unknown kind, and every embedded font, its faces
  * read for what their glyphs draw (D18). <b>The payloads</b>, decoded by the inspector itself: an
- * HTML, XHTML or MHT chunk scanned for scripts, event handlers and external references; a docx or Flat
+ * HTML, XHTML or MHT chunk scanned for scripts, event handlers and external references, and, with an
+ * HTML reader (jsoup and docx4j-ImportXHTML), read through the import its extraction runs for what
+ * {@code display: none} hides (CR-053 phase 3), else skipped as {@code not_decoded}; a docx or Flat
  * OPC chunk and an embedded docx, xlsx or pptx inspected one level deep.</p>
  *
- * <p>It is read-only (REQ-204's snapshot is the test), and it never fetches, imports or computes: no
- * field is updated, no external target resolved, no importer run. Only the package's own faces are
- * read, never an installed font, so a finding is the same on every machine. Each finding's extraction
- * address is the text model's: the package is read once through it, with no importer, for each set of
- * options the findings' reveals name (not when a global limit stopped the inspection).</p>
+ * <p>It is read-only (REQ-204's snapshot is the test), and it never fetches or computes: no field is
+ * updated, no external target resolved. The one import it runs is a chunk's, as its extraction runs
+ * it (WD 0.26's REQ-901): never fetching, into a package of its own, once REQ-907's limits on the
+ * chunk have passed. Only the package's own faces are read, never an installed font, so a finding is
+ * the same on every machine. Each finding's extraction address is the text model's: the package is
+ * read once through it, calling no importer (a chunk is read from the inspector's import of it), for
+ * each set of options the findings' reveals name (not when a global limit stopped the inspection).</p>
  *
  * <p><b>What it does not detect</b> (REQ-904), as Word's Document Inspector says of itself: an object
  * covered by another; text placed where the page does not show it for a reason only a layout knows (a

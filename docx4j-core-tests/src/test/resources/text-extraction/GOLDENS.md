@@ -52,7 +52,7 @@ apart (`embedded: true; hidden: true`, case 53's hidden slide): the adapter sets
 each one's statement. Scenario `default` has no HTML reader. `html reader present/absent`
 requires the corresponding classpath; it is not a TextOptions key. Each is a capability the adapter
 advertises when an HTML reader is (or is not) on the class path, for docx4j jsoup and docx4j-ImportXHTML
-both (CR-053, pending WD 0.26, which folds the earlier `xhtml importer present/absent` into it), so a run
+both (CR-053, WD 0.27, which folds the earlier `xhtml importer present/absent` into it), so a run
 checks one of the two. The goldens are cut without a reader, so a golden is checked only by an engine
 advertising `html reader absent`, and a findings, order or golden row needs its scenario's
 capability as a token row does (19 October 2026: a run with the importer present had checked the

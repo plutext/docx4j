@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 
 /**
@@ -71,6 +72,11 @@ final class InspectRun {
 	final List<Inspection.Entry> undecided = new ArrayList<Inspection.Entry>();
 	/** A package read one level down, by the part that holds it: the text model reads the same instance. */
 	final Map<Part, OpcPackage> loaded = new IdentityHashMap<Part, OpcPackage>();
+	/**
+	 * An HTML, XHTML or MHT chunk's import, by its part (CR-053 phase 3): the scratch package holding the
+	 * content, which the text model reads in place of an import of its own.
+	 */
+	final Map<Part, WordprocessingMLPackage> chunks = new IdentityHashMap<Part, WordprocessingMLPackage>();
 	/** The packages being walked, outermost first: on a global stop, what each has not inspected is listed. */
 	final Deque<InspectPackage> walking = new ArrayDeque<InspectPackage>();
 

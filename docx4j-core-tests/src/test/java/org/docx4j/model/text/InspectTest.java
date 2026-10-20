@@ -304,13 +304,14 @@ public class InspectTest {
 	 * 800 chunks of 100 KB, each under the payload limit and 80 MB in all, end PARTIAL at the total: the
 	 * chunks not decoded are skipped, and the counts are lower bounds. (CR-050 section 3 has 2,000 chunks
 	 * of 40 KB, written before D11: each chunk an {@code altchunk} finding, D11's first limit of 1,000
-	 * findings stopped those first, at 40 MB.)
+	 * findings stopped those first, at 40 MB.) Plain-text chunks, decoded and counted as HTML chunks are:
+	 * with an HTML reader, an HTML chunk is also imported (CR-053 phase 3), which the total does not need.
 	 */
 	@Test
 	public void theTotalBytesStopTheInspection() throws Exception {
 		Doc d = new Doc();
 		byte[] page = page(100 * 1024);
-		for (int n = 0; n < 800; n++) d.chunk(String.format("/word/c%04d.htm", n), "text/html", page);
+		for (int n = 0; n < 800; n++) d.chunk(String.format("/word/c%04d.txt", n), "text/plain", page);
 		Inspection i = Inspect.of(d.done());
 		assertEquals(Inspection.Status.PARTIAL, i.status());
 		assertTrue(reasons(i).toString(), reasons(i).contains(Inspection.LIMIT_TOTAL_BYTES));
@@ -351,7 +352,11 @@ public class InspectTest {
 		assertEquals(Inspection.Status.PARTIAL, i.status());
 		assertTrue(i.skipped().toString(), i.skipped().contains(new Inspection.Entry(Inspection.LIMIT_PAYLOAD_BYTES, "|/word/a-big.htm|")));
 		assertTrue(i.skipped().toString(), i.skipped().contains(new Inspection.Entry(Inspection.LIMIT_PAYLOAD_BYTES, "|/word/embeddings/big.docx|")));
-		assertEquals(2, i.skipped().size());
+		// without an HTML reader, the small chunk is skipped too, its script found (CR-053 phase 3)
+		if (!HtmlChunkImport.readerPresent()) {
+			assertTrue(i.skipped().toString(), i.skipped().contains(new Inspection.Entry(Inspection.NOT_DECODED, "|/word/b-small.htm|")));
+		}
+		assertEquals(HtmlChunkImport.readerPresent() ? 2 : 3, i.skipped().size());
 		assertEquals(1, of(i, InspectFinding.ALTCHUNK_SCRIPT).size());
 		assertEquals("the embedded package is not inspected", 1, of(i, InspectFinding.TEXT_HIDDEN).size());
 	}

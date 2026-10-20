@@ -196,6 +196,10 @@ public class ExtractionProbeBuilder {
         Files.write(new File(out, "extraction-probe-external.docm").toPath(), external);
         Files.write(new File(out, ExtractionStructureCases.FIXTURE).toPath(), structure);
         Files.write(new File(out, ExtractionInspectCases.FIXTURE).toPath(), inspect);
+        // the HTML reader's inspection fixture (CR-053 phase 3): no tokens rows, its inspection tables by hand
+        byte[] html = ExtractionHtmlCases.build();
+        WordprocessingMLPackage.load(new ByteArrayInputStream(html));
+        Files.write(new File(out, ExtractionHtmlCases.FIXTURE).toPath(), html);
         Files.writeString(new File(out, "expected-tokens.tsv").toPath(), b.tsv(), StandardCharsets.UTF_8);
         // its warning and metadata rows; ExtractionInspection adds the inspect rows (text-extraction/INSPECTION.md)
         Files.writeString(new File(out, "expected-findings.tsv").toPath(), ExtractionFixtureChecks.findings(), StandardCharsets.UTF_8);
@@ -650,7 +654,7 @@ public class ExtractionProbeBuilder {
 		body.append("<w:altChunk r:id='" + chunkId + "'/>");
 		body.append(pt("After the altChunk."));
 		gated("ALT36_CHUNK_TEXT", ExtractionConformance.HTML_READER_PRESENT,
-				"without an HTML reader: altchunk.not_expanded; altchunks: false also omits it (CR-053 D7, pending WD 0.26)");
+				"without an HTML reader: altchunk.not_expanded; altchunks: false also omits it (CR-053 D7, WD 0.27)");
 
 		begin(37, "ruby");
 		body.append(p(r("Ruby: ") + "<w:r><w:ruby><w:rubyPr><w:rubyAlign w:val='distributeSpace'/><w:hps w:val='10'/>"

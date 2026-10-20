@@ -121,7 +121,7 @@ case	token	accepted	original	markup	option	with_option	note	fixture	statements
 35	SMA35_ROOT	1	1	1	smartart: false	0	reading order ROOT, CHILD_ONE, CHILD_TWO (parOf, srcOrd); ptLst order CHILD_TWO, ROOT, CHILD_ONE; cxnLst order ROOT, CHILD_TWO, CHILD_ONE (#20b)	extraction-probe.docx	REQ-511
 35	SMA35_CHILD_ONE	1	1	1	smartart: false	0		extraction-probe.docx	REQ-511
 35	SMA35_CHILD_TWO	1	1	1	smartart: false	0		extraction-probe.docx	REQ-511
-36	ALT36_CHUNK_TEXT	0	0	0	html reader present	1	without an HTML reader: altchunk.not_expanded; altchunks: false also omits it (CR-053 D7, pending WD 0.26)	extraction-probe.docx	REQ-513
+36	ALT36_CHUNK_TEXT	0	0	0	html reader present	1	without an HTML reader: altchunk.not_expanded; altchunks: false also omits it (CR-053 D7, WD 0.27)	extraction-probe.docx	REQ-513
 37	RBY37_BASE	1	1	1				extraction-probe.docx	REQ-604
 37	RBY37_RUBY	0	0	0			the annotation: base text only (#16)	extraction-probe.docx	REQ-604
 38	PRP38_TITLE	0	0	0	metadata: true	1	docProps/core.xml (#22)	extraction-probe.docx	REQ-515, REQ-516
@@ -247,7 +247,7 @@ case	token	accepted	original	markup	option	with_option	note	fixture	statements
 63	CMT63_ANCHORED	0	0	cmt	comments: true	cmt	inspection: comment	extraction-probe-inspect.docx	REQ-902, REQ-503, REQ-504, REQ-512, REQ-513
 63	CMT63_UNANCHORED	0	0	0			a comment with no anchor; inspection: story.unused	extraction-probe-inspect.docx	REQ-902, REQ-503, REQ-504, REQ-512, REQ-513
 63	INK63_HERE	1	1	1			an ink part (w14:contentPart) after it; inspection: ink	extraction-probe-inspect.docx	REQ-902, REQ-503, REQ-504, REQ-512, REQ-513
-63	CHK63_SCRIPTED	0	0	0	html reader present	1	an HTML chunk holding a script, an event handler and two external references; inspection: altchunk, altchunk.script, altchunk.external_ref; nothing fetched; without an HTML reader: altchunk.not_expanded (CR-053 D7, pending WD 0.26)	extraction-probe-inspect.docx	REQ-902, REQ-503, REQ-504, REQ-512, REQ-513
+63	CHK63_SCRIPTED	0	0	0	html reader present	1	an HTML chunk holding a script, an event handler and two external references; inspection: altchunk, altchunk.script, altchunk.external_ref; nothing fetched; without an HTML reader: altchunk.not_expanded (CR-053 D7, WD 0.27)	extraction-probe-inspect.docx	REQ-902, REQ-503, REQ-504, REQ-512, REQ-513
 63	EMB63_HERE	1	1	1				extraction-probe-inspect.docx	REQ-902, REQ-503, REQ-504, REQ-512, REQ-513
 63	EMB63_VISIBLE	0	0	0	embedded: true	1	the embedded document's shown text	extraction-probe-inspect.docx	REQ-902, REQ-503, REQ-504, REQ-512, REQ-513
 63	EMB63_HIDDEN	0	0	0	embedded: true; hidden: true	1	hidden text inside the embedded document; inspection: text.hidden in its chain	extraction-probe-inspect.docx	REQ-902, REQ-503, REQ-504, REQ-512, REQ-513

@@ -106,6 +106,9 @@ Changes in Version 17.3.4
   both on the class path (`HtmlText` is gone); `convertAltChunks` now converts HTML chunks too, keeps hidden text, and
   goes on past a chunk it can't convert. Limits: `docx4j.model.text.HtmlChunkImport.maxElements` (50,000) and
   `.timeoutMillis` (off). `Inspection.Capability.XHTML_IMPORTER` is now `HTML_READER`.
+- The inspector reports what `display: none` hides in an HTML, XHTML or MHT `altChunk` as `text.hidden`, at the
+  element's path in the parsed chunk, through the import the extraction runs (CR-053 phase 3); the `altchunk` finding
+  gains `parsed` (`InspectFinding.getParsed()`). Without an HTML reader such a chunk is skipped as `not_decoded`.
 
 
 Version 17.3.3

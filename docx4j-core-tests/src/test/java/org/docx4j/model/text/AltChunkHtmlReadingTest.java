@@ -98,9 +98,9 @@ public class AltChunkHtmlReadingTest {
 	// --- decoding ----------------------------------------------------------------------------------------
 
 	/**
-	 * The shared decoder (the WD's Chunks rule, Word's last step): BOM, then UTF-16 sniffed, then an
-	 * XML declaration's or a {@code meta}'s charset (or {@code http-equiv}'s), then UTF-8 where valid,
-	 * else windows-1252; ISO-8859-1 and US-ASCII as windows-1252 (WHATWG's labels).
+	 * The shared decoder (the WD's Chunks rule, 0.27): BOM, then UTF-16 sniffed, then a {@code meta}'s
+	 * charset (or {@code http-equiv}'s), then UTF-8 where valid, else windows-1252; ISO-8859-1 and
+	 * US-ASCII as windows-1252 (WHATWG's labels). An XML declaration names nothing.
 	 */
 	@Test
 	public void decoderFollowsWordsOrder() {
@@ -127,8 +127,11 @@ public class AltChunkHtmlReadingTest {
 		// ISO-8859-1 read as windows-1252, its curly quotes kept
 		String iso = "<meta charset='ISO-8859-1'>" + latin;
 		assertEquals(iso, HtmlChunks.decode(iso.getBytes(cp1252)));
+		// an XML declaration names nothing (Word refuses a chunk that has one): the bytes decide
 		String declared = "<?xml version='1.0' encoding='iso-8859-1'?>" + latin;
 		assertEquals(declared, HtmlChunks.decode(declared.getBytes(cp1252)));
+		String declaredUtf8 = "<?xml version='1.0' encoding='windows-1252'?><p>café</p>";
+		assertEquals(declaredUtf8, HtmlChunks.decode(declaredUtf8.getBytes(StandardCharsets.UTF_8)));
 		// a UTF-16 or unknown name ignored
 		String wrong = "<meta charset='UTF-16'>" + body;
 		assertEquals(wrong, HtmlChunks.decode(wrong.getBytes(StandardCharsets.UTF_8)));
@@ -216,7 +219,7 @@ public class AltChunkHtmlReadingTest {
 
 	// --- the guards (section 4b, D10, D11) ----------------------------------------------------------------
 
-	/** A chunk whose tree has more elements than the limit is not read (D11). */
+	/** A chunk whose tree, as parsed, has more elements than the limit is not read (D11, WD 0.27): those the rewrite unwraps count. */
 	@Test
 	public void overTheElementLimitIsNotRead() throws Exception {
 		StringBuilder html = new StringBuilder("<html><body>");
@@ -234,6 +237,16 @@ public class AltChunkHtmlReadingTest {
 			TextResult result = Texts.of(pkg, new TextOptions());
 			assertTrue(result.blocks().isEmpty());
 			assertEquals("altchunk.not_expanded", result.warnings().get(0).getKind());
+			// counted as parsed (WD 0.27's REQ-513): 14 unknown elements count, though the rewrite unwraps them
+			StringBuilder unknown = new StringBuilder("<html><body>");
+			for (int i = 0; i < 14; i++) unknown.append("<zz>");
+			for (int i = 0; i < 5; i++) unknown.append("<p>Q").append(i).append("</p>");
+			WordprocessingMLPackage wrapped = chunk(AltChunkType.Html, unknown.append("</body></html>").toString());
+			AlternativeFormatInputPart wrappedPart = (AlternativeFormatInputPart) wrapped.getMainDocumentPart().getRelationshipsPart()
+					.getRelationships().getRelationship().stream()
+					.map(r -> wrapped.getMainDocumentPart().getRelationshipsPart().getPart(r))
+					.filter(p -> p instanceof AlternativeFormatInputPart).findFirst().get();
+			assertNull("22 elements as parsed, 8 once unwrapped", HtmlChunkImport.tree(wrappedPart, "test"));
 		} finally {
 			Docx4jProperties.setProperty(HtmlChunkImport.MAX_ELEMENTS, was == null ? "50000" : was);
 		}
@@ -352,7 +365,7 @@ public class AltChunkHtmlReadingTest {
 		assertEquals(Arrays.asList("HOST_STYLE_SHOWS", "{H}{H}OTHER_HIDDEN{H}"), all(pkg));
 	}
 
-	/** A chunk's encoding by its meta or a declaration, read as the inspector reads it. */
+	/** A chunk's encoding by its meta, or by its bytes where a declaration names one, read as the inspector reads it. */
 	@Test
 	public void encodingByMetaOrDeclaration() throws Exception {
 		reader();
@@ -360,7 +373,7 @@ public class AltChunkHtmlReadingTest {
 		assertEquals(Arrays.asList("café “quoted”"), shown(chunk(AltChunkType.Html,
 				"<html><head><meta http-equiv='Content-Type' content='text/html; charset=ISO-8859-1'></head><body><p>café “quoted”</p></body></html>"
 						.getBytes(cp1252))));
-		// a loaded chunk keeps its declaration (D1); its encoding is still read
+		// a loaded chunk keeps its declaration (D1), which names nothing (WD 0.27): the bytes, not UTF-8, are windows-1252
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		AlternativeFormatInputPart part = new AlternativeFormatInputPart(AltChunkType.Xhtml);
 		part.setBinaryData(("<?xml version='1.0' encoding='windows-1252'?><html xmlns='http://www.w3.org/1999/xhtml'><body><p>café</p></body></html>")

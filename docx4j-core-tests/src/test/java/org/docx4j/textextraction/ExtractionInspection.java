@@ -57,6 +57,13 @@ public final class ExtractionInspection {
 
     static final String TABLE = "expected-inspection.tsv", STATUS = "expected-inspection-status.tsv";
 
+    /**
+     * An inspector with an HTML reader (CR-053 phase 3): {@link ExtractionHtmlCases#FIXTURE}'s findings, written
+     * by hand and checked against Word 365's save of the fixture, with {@code parsed}, the statements and the
+     * probe each rests on, and {@code pending} where it rests on a rule not yet ruled on (WD 0.27)
+     */
+    static final String HTML_TABLE = "expected-inspection-html.tsv", HTML_STATUS = "expected-inspection-html-status.tsv";
+
     /** A finding's identity: its kind and its stored location (CR-050 section 2.4) */
     static final List<String> KEY = List.of("kind", "chain", "part", "path", "start", "end_path", "end");
 
@@ -250,6 +257,65 @@ public final class ExtractionInspection {
         require(status.size() == fixtures.size(), "a status row for every fixture with findings");
         for (Map<String, String> row : status) require(row.get("status").equals(row.get("skipped").isEmpty() ? "COMPLETE" : "PARTIAL"),
                 STATUS + ": " + row.get("fixture") + " is PARTIAL exactly when something was skipped");
+        checkHtml(dir);
+    }
+
+    /**
+     * Every row of {@value #HTML_TABLE}: its part exists; a path resolves in the tree jsoup builds from the
+     * chunk (an MHT chunk's first HTML part), its elements unprefixed, and holds the selector; the excerpt is
+     * as long as the text the element hides, a block a line feed apart; the reveal names the reader, and a
+     * pending names the WD it waits for.
+     */
+    static void checkHtml(Path dir) throws Exception {
+        Path table = dir.resolve(HTML_TABLE);
+        if (!Files.exists(table)) return;
+        Map<String, org.jsoup.nodes.Document> trees = new HashMap<>();
+        int n = 0;
+        for (Map<String, String> row : ExtractionConformance.table(table)) {
+            n++;
+            String context = HTML_TABLE + ":" + (n + 1) + " " + row.get("kind") + " " + row.get("selector");
+            byte[] part = ExtractionFixtureChecks.entries(Files.readAllBytes(dir.resolve(row.get("fixture")))).get(row.get("part").substring(1));
+            require(part != null, context + ": no part " + row.get("part"));
+            require(row.get("pending").isEmpty() || row.get("pending").startsWith("WD 0.27"), context + ": pending " + row.get("pending"));
+            if (row.get("path").isEmpty()) continue;
+            String key = row.get("fixture") + "|" + row.get("part");
+            org.jsoup.nodes.Document tree = trees.get(key);
+            if (tree == null) trees.put(key, tree = org.jsoup.Jsoup.parse(html(row.get("part"), part)));
+            org.jsoup.nodes.Element e = tree;
+            for (String step : row.get("path").substring(1).split("/")) {
+                String name = step.substring(0, step.indexOf('['));
+                int index = Integer.parseInt(step.substring(step.indexOf('[') + 1, step.length() - 1)), seen = 0;
+                org.jsoup.nodes.Element hit = null;
+                for (org.jsoup.nodes.Element c : e.children()) if (c.normalName().equals(name) && ++seen == index) { hit = c; break; }
+                require(hit != null, context + ": no element " + row.get("path"));
+                e = hit;
+            }
+            require(e.text().contains(row.get("selector")), context + ": the element's text is " + e.text());
+            require(row.get("reveal").equals("options: hidden: true; html reader: present"), context + ": reveal " + row.get("reveal"));
+            require(Integer.parseInt(row.get("excerpt_length")) == codePoints(String.join("\n", texts(e))), context + ": excerpt length");
+        }
+    }
+
+    /** A chunk's HTML: an MHT chunk's first text/html part, else the bytes (UTF-8, as the fixture writes them) */
+    private static String html(String part, byte[] bytes) {
+        String s = new String(bytes, StandardCharsets.UTF_8);
+        if (!part.endsWith(".mht")) return s;
+        int start = s.indexOf("<html"), end = s.indexOf("</html>", start);
+        return s.substring(start, end + "</html>".length());
+    }
+
+    /**
+     * The text an element hides, a block apart: each child block's, or its own where it has none; a child whose
+     * own {@code display} is other than {@code none} or {@code inherit} shows its content (WD 0.27's REQ-513)
+     */
+    private static List<String> texts(org.jsoup.nodes.Element e) {
+        List<String> out = new ArrayList<>();
+        for (org.jsoup.nodes.Element c : e.children()) {
+            if (c.attr("style").matches("(?i).*display\\s*:\\s*(?!none|inherit)[a-z-]+.*")) continue;
+            if (c.isBlock() && !c.text().isEmpty()) out.addAll(texts(c));
+        }
+        if (out.isEmpty()) out.add(e.text());
+        return out;
     }
 
     private static Map<String, byte[]> open(byte[] payload, String context) throws Exception {

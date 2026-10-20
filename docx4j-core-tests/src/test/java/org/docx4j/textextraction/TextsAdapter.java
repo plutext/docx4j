@@ -169,10 +169,13 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 		row.put("address", f.getAddress() == null ? "" : f.getAddress());
 		row.put("visible", f.getVisible().id());
 		row.put("reveal", f.getReveal().toString());
-		Set<Inspection.Capability> none = EnumSet.noneOf(Inspection.Capability.class);
-		for (String output : ExtractionInspection.OUTPUTS) row.put(output, f.group(outputOptions(output), outputFormat(output), none).id());
+		// the class path's: a chunk's hidden text is in an output only with an HTML reader (CR-053 phase 3)
+		Set<Inspection.Capability> capabilities = HtmlChunkImport.readerPresent() ? EnumSet.of(Inspection.Capability.HTML_READER)
+				: EnumSet.noneOf(Inspection.Capability.class);
+		for (String output : ExtractionInspection.OUTPUTS) row.put(output, f.group(outputOptions(output), outputFormat(output), capabilities).id());
 		row.put("excerpt_length", String.valueOf(f.getExcerptLength()));
 		row.put("excerpt_cut", String.valueOf(f.isExcerptCut()));
+		row.put("parsed", f.getParsed() == null ? "" : f.getParsed());
 		return row;
 	}
 

@@ -1,17 +1,19 @@
 # CR-053: HTML, XHTML and MHT altChunks, written as Word opens them and read as Word reads them
 
-Status: ACCEPTED 2026-10-20 (Jason: "accept the recommendations and commit the CRs"), D1 to D10
-as recommended. Phase 0 done (Jason: "start phase 0"): tests, design checks and Word
-probes, rounds 5 to 7 (§10). D9 is (iii), D2 stands, D11 is decided (50,000) and D4's rewrite
-(§10.7) is approved. Phase 1 built (Jason: "start CR-053 phase 1"; §11): the strip, the UTF-8
-binding and D6, its five calls confirmed; Word opens what it writes (`p1-9`'s repair is the
-binding template's own Flat OPC chunk). Phase 2 built (on ImportXHTML's notice, Jason's standing
-instruction; §12), against ImportXHTML's CR-002 phases 1 to 3 (468a760); its suite rows pend WD 0.26;
-Word opens its conversions cleanly, with the hidden text of its own import (§12.5). Proposed
-2026-10-20 (Jason: "lets start the altchunk work"), reviewed the same day by docx4j-64 (§9). It
-gathers his ruling on adding a chunk (strip the XML declaration, 2026-10-20) and what the text
-extraction WD 0.23 to 0.25 asks of docx4j (portfolio 6cdb966, 016963e, 1865f10). Drafted by Claude
-Opus 5.5 (session docx4j-25), with §1 measured first. Phases in §5; decisions in §6.
+Status: ACCEPTED 2026-10-20 (Jason: "accept the recommendations and commit the CRs"), D1 to D10 as
+recommended. Phase 0 done (Jason: "start phase 0"): tests, design checks and Word probes, rounds 5
+to 7 (§10). D9 is (iii), D2 stands, D11 is decided (50,000) and D4's rewrite (§10.7) is approved.
+Phase 1 built (Jason: "start CR-053 phase 1"; §11): the strip, the UTF-8 binding and D6, its five
+calls confirmed; Word opens what it writes (`p1-9`'s repair is the binding template's own Flat OPC
+chunk). Phase 2 built (on ImportXHTML's notice, Jason's standing instruction; §12), against
+ImportXHTML's CR-002 phases 1 to 3 (468a760); Word opens its conversions cleanly, with the hidden
+text of its own import (§12.5). Phase 3 built (Jason's ruling on REQ-901, 21 October: "the inspector
+can run the same HTML import that text extraction runs", WD 0.26; §13); its suite rows and phase 2's
+are WD 0.27's (approved 21 October), and Word's save of its fixture agrees with every row (§13.5).
+Proposed 2026-10-20 (Jason: "lets start the altchunk work"), reviewed the same day by docx4j-64
+(§9). It gathers his ruling on adding a chunk (strip the XML declaration, 2026-10-20) and what the
+text extraction WD 0.23 to 0.25 asks of docx4j (portfolio 6cdb966, 016963e, 1865f10). Drafted by
+Claude Opus 5.5 (session docx4j-25), with §1 measured first. Phases in §5; decisions in §6.
 
 ## 0. Summary
 
@@ -344,6 +346,8 @@ Tests:
 - a chunk over each limit is skipped before the import.
 
 The inspector's address agrees with the extraction under `hidden: true`, block for block.
+
+Built 21 October 2026 (§13).
 
 ### Phase 4: hand-offs
 
@@ -1221,3 +1225,197 @@ chunk with its save of docx4j's conversion found:
 
 Formatting differs, as the README said it would: docx4j-ImportXHTML's styles and table borders, not
 Word's HTML styles.
+
+## 13. Phase 3 (21 October 2026)
+
+Built on VERSION_17_3_4 after 1d108c0af, against the same ImportXHTML (468a760), on Jason's ruling the
+same day: "the inspector can run the same HTML import that text extraction runs". The portfolio
+carried it into WD 0.26 (e683d0c) with D9 (iii): REQ-901 lets an inspector run the import its
+extraction runs, fetching nothing, changing nothing, REQ-907's limits on the chunk checked first, and
+every chunk's location counts the HTML tree.
+
+### 13.1 The reading
+
+`InspectChunks` (package-private) reads an HTML, XHTML or MHT chunk for the inspector, after the tag
+scan, which is unchanged and still finds the scripts and references:
+- **no HTML reader** (jsoup and the importer, as the extraction needs): the chunk is skipped as
+  `not_decoded`;
+- **parsed** as the extraction parses it (`HtmlChunkImport.parsed`, which `tree` now calls): the
+  decoder and jsoup. `HtmlChunks.paths` records each element's path in the tree jsoup built, from the
+  document element down, each step its local name in lower case with its position among its siblings
+  of that name. jsoup failing makes the chunk `unreadable`;
+- **limited** before the rewrite and the import: the payload's bytes as before; the tree's elements,
+  as parsed, counted against the inspection's 5,000,000 (past it the inspection stops, as for any
+  walk); a tree over `HtmlChunkImport.maxElements` (D11) skipped as `limit.elements`;
+- **rewritten** (D4, `HtmlChunkImport.rewritten`). The rewrite moves nodes, so the importer's keys,
+  which are docx4j's own elements, find the paths recorded before it;
+- **imported** as the text model imports it (`HtmlChunkImport.inspected`): a scratch package, never
+  fetching, `setDisplayNoneAsHidden(true)`, guarded, the time limit applying. The importer's
+  `getHiddenContent()` gives each outermost hidden element that produced content. An import that fails
+  or is abandoned is `unreadable`. An importer without `getHiddenContent` (before 17.3.4) makes the
+  chunk `not_decoded`;
+- **kept**: the scratch package goes into `InspectRun.chunks`, by the chunk's part. The address
+  reading (`InspectAddresses.record`) reads the chunk from it (`Extractor.chunks`, which replaces
+  `noImporter`), and reads no chunk the inspector skipped. So an address is a block of the same import.
+
+Each chunk's scratch package is held until the inspection ends, and each chunk costs an import, as it
+does in the extraction. Nothing bounds the number of chunks but REQ-907's findings limit (each chunk is
+an `altchunk` finding) and the total bytes. A document of thousands of small HTML chunks is slow to
+inspect, as it is to extract; the time limit (D10) bounds each import, not their sum. Open.
+
+### 13.2 The findings
+
+- **`text.hidden`**, one for each key of `getHiddenContent()` whose content has text that is not all
+  white space. The importer reports only the outermost hidden element, unless an element between
+  them shows its content again (Word's rule, CR-002 D11). That is REQ-902's "one finding for the
+  outermost such element", and a nested one inside a revealed block is its own:
+  - location: the chunk's part, the element's path, and no range;
+  - excerpt: the content's `w:t`, a run's paragraph the same as the last run's or else a line feed
+    apart, a paragraph or table its paragraphs a line feed apart;
+  - address: the block of the first paragraph that holds text (a run's paragraph, or a table's first
+    recorded paragraph) in the reading under `hidden: true`;
+  - needs `altchunks`, `hidden` and `html_reader`. Its reveal is `options: hidden: true; html reader:
+    present`: §4 had `options: hidden: true`, but REQ-905 puts a chunk's content in an output only with
+    the reader, and the reveal has named the capability since CR-050 (`InspectFinding`'s table);
+  - visible: `no`.
+- **`parsed`** (`InspectFinding.getParsed()`, `PARSED_HTML`): `html` on an HTML, XHTML or MHT chunk's
+  `altchunk` finding once jsoup has parsed it, a chunk then skipped for a limit or a failed import
+  included; absent where it was not decoded. WD 0.26 drops `parsed: xml`.
+- The counts follow (REQ-903, REQ-905): the finding is omitted under the defaults and unseen under
+  `hidden: true`, with the reader; without it, omitted. `Inspect.counts` imports each chunk for the
+  inspection, beside the extraction's own import.
+
+Choices, each where the WD or the CR left it open:
+- "holds text" is text that is not all white space. ImportXHTML reports a white-space-only run, and
+  the white space between a chunk's elements is no text a person reads. In the document itself any
+  display text counts (REQ-902);
+- an importer before 17.3.4 makes the chunk `not_decoded`, not undecided as §4a had it. The WD has no
+  undecided reason for it, and REQ-902 gives the parser's absence `not_decoded` for the same reason:
+  the inspector cannot tell what `display: none` hides;
+- a chunk over D11's limit is `limit.elements`, as the portfolio proposes for WD 0.27.
+
+### 13.3 Tests
+
+- `AltChunkHtmlInspectTest` (new, 8):
+  - jsoup alone (the build): the paths count jsoup's tree before the rewrite, including an unwrapped
+    `article`, a moved body `style`, jsoup's `tbody` and an unclosed `p`; without a reader the chunk is
+    `not_decoded`, with no `parsed` and its script and reference found;
+  - with the importer: one finding for the outermost element, and an inner one where a block is
+    revealed; no finding for an element with no text; the location under each parse (HTML repairs,
+    well-formed XHTML with a DOCTYPE as HTML, an MHT's first part); the address against the extraction
+    under `hidden: true` (a paragraph, a span, a cell, a list item); the counts; the D11 limit
+    (`limit.elements`, parsed, not imported) and the time limit (`unreadable`).
+- `AltChunkHtmlTest`: the HTML, XHTML and MHT reading tests assert the inspector in both
+  configurations, with paths, addresses and reveals.
+- `InspectTest`: the total-bytes test uses plain-text chunks, which are decoded and counted as HTML
+  ones are. With a reader, an HTML chunk is imported too, and the total doesn't need the imports. The
+  payload test's small HTML chunk is `not_decoded` without a reader.
+
+### 13.4 The suite (pending WD 0.27)
+
+Along the portfolio's answer of 21 October:
+- **reader absent**: `inspect_oracle.py` skips each HTML, XHTML or MHT chunk as `not_decoded` after its
+  scan, and its reveal table names `html reader: present`. Regenerated, then addressed by
+  `ExtractionInspection`, only the status table moves, as §10.5 said:
+  - `extraction-probe.docx` gains `not_decoded@|/word/afchunk.htm|` and `not_decoded@|/word/chunk44.mht|`;
+  - `extraction-probe-inspect.docx` goes from `COMPLETE` to `PARTIAL` with `not_decoded@|/word/chunk63.htm|`.
+
+  The whole-fixture comparison now needs `html reader absent`, as the counts already did.
+- **reader present**: `extraction-probe-html.docx` (`ExtractionHtmlCases`, four chunks: A what 0.26
+  rules on, B what is unruled, C d9's XHTML, D an MHT) with `expected-inspection-html.tsv` and its
+  status table, read only under `html reader present`. The 18 rows are written by hand. Each cites
+  its statements and the probe it rests on, and adds `parsed`, which is compared. Six were `pending`
+  WD 0.27 and left out on both sides, until 0.27 (§13.6):
+  - the revealed block;
+  - the hidden cell, row and list item;
+  - the MHT location;
+  - `application/xhtml+xml`'s `part.unknown`.
+
+  `ExtractionInspection.check` resolves each path in jsoup's tree of the fixture's chunk. The adapter
+  computes a finding's groups with the class path's capability.
+- the "pending WD 0.26" notes are now "pending WD 0.27": 0.26 carries REQ-901 and D9 only.
+
+Results:
+- full core-tests without the importer: 1,897 run, 0 failures, 26 skipped (phase 2's 20, and the six
+  of `AltChunkHtmlInspectTest` that need the importer);
+- with the importer, the text model's and the suite's tests and the altChunk writing tests: 158 run,
+  0 failures, 3 skipped (those that need it absent);
+- the suite: 1,565 checks passed and 19 pending in the build (the HTML fixture's inspection the new
+  one); 1,526 and 64 with the importer, the HTML fixture's inspection passing, its six rows pending
+  WD 0.27, and the four reader-absent inspections pending. After 0.27 (§13.6), 1,526 and 58: every
+  row of the HTML fixture checked; the full core-tests again 1,897 run, 0 failures, 26 skipped.
+
+### 13.5 Office check
+
+`~/vbShares/Office 2016/altchunk-fun/phase3/`, with a README (round 10): the fixture, for Jason to
+open and save as `extraction-probe-html-word365.docx`. The portfolio scans the save for effective
+`w:vanish` and checks every row of the table against it.
+
+Jason saved it the same day, with a screenshot; Word opened it cleanly. A scan of the save, the
+effective `w:vanish` resolved through the styles, agrees with every row:
+- A: `INLINE`, `CLASS`, `OUTER`, `NESTED` and `SPAN_HIDDEN` hidden; the rest shows;
+- B: `REVEALED` shows and `STAYS_HIDDEN` is hidden. `CELL_HIDDEN` is hidden and keeps its column, so
+  `CELL_SHOWN` is second. The hidden row's two texts are hidden. `ITEM_HIDDEN` is hidden and keeps its
+  number: the same list, shown as 2.;
+- C: `INLINE` and `AFTER` hidden, so Word read the XHTML as HTML;
+- D: `FIRST_PART` hidden; `SECOND_PART` absent.
+
+One structural detail, not a text finding: Word puts `w:trPr/w:hidden` on the row that holds the hidden
+cell, as well as on the hidden row. docx4j-ImportXHTML marks only a hidden row.
+
+### 13.6 WD 0.27
+
+Jason approved draft 0.27 in the portfolio's session ("draft 27: good", 21 October; portfolio
+804007d). It takes the questions of §10.5 and §10.7, and docx4j aligns with it:
+- **the element count is as parsed** (REQ-513, REQ-907): `HtmlChunkImport.tree` and the inspector
+  count before the rewrite, which unwraps the elements Word does not know. Phase 2 counted after it.
+  `AltChunkHtmlReadingTest` has a chunk of 22 elements as parsed, 8 unwrapped;
+- **the decoder has no XML-declaration step** (the Chunks rule): Word refuses a chunk with a
+  declaration, so a declaration names nothing. `HtmlChunks.decode`, the extraction's and the
+  inspector's, reads only a `meta`. The oracle's `decode_html` follows the rule in full: a `meta`
+  alone, [ENCODING]'s labels for a `meta` and a MIME charset, and windows-1252 where the bytes are not
+  UTF-8. The UTF-16 step stays, unmeasured, as the WD's NOTE says;
+- **the host-style map is the WD's**: `p`, `h1` to `h6` and `address`. Phase 2 also had `pre`,
+  `code`, `kbd`, `samp`, `var`, `cite`, `dfn`, `acronym` and `tt`, by inference;
+- **`application/xhtml+xml` is a known family** (`InspectWalk`, the oracle): an XHTML chunk is no
+  `part.unknown`;
+- the suite's "pending WD 0.27" notes cite 0.27. The HTML table's five pending rows are checked, and
+  C's `part.unknown` row is gone, leaving 17.
+
+Still docx4j's own, and sent to the portfolio, both unmeasured in Word:
+- docx4j drops `*`, pseudo-elements and two ids on one element;
+- docx4j drops the rules inside `@supports`, `@layer`, `@container` and `@document`. 0.27 excludes
+  `@media` alone;
+- docx4j keeps the selectors of a list that Word applies, where 0.27's "a rule whose selector has"
+  could mean the whole rule goes.
+
+A probe would settle them.
+
+### 13.7 Round 11 (21 October 2026)
+
+At the portfolio's ask: what 0.27 left unmeasured, in `~/vbShares/Office 2016/altchunk-fun/round11/`
+(14 files, `build11.py` among the phase 0 drivers). Each case is its own chunk, and a case that turns on
+the host's styles has its own host. Jason saved all 14. All opened cleanly but `r11-9`, which Word
+repaired. Word's answers:
+- **a selector list** with one selector Word ignores (`div > p`) loses the whole rule, in either order.
+  docx4j kept the other selectors, so it changes;
+- **`*`** counts for nothing (`.w *`, `div *`), as docx4j has it;
+- **an at-rule's block** is ignored, `@supports`, `@layer` and an unknown `@foo` as well as `@media`. The
+  rule after the block applies. docx4j already does this;
+- **`p.k`** hides the `p` and not a `div` of the class, as docx4j has it;
+- **the host's styles**:
+  - a defined style counts though no paragraph uses it;
+  - a latent style alone does not;
+  - an `h1` rule goes through Heading 1, as `h6`'s through Heading 6;
+  - a class matches a style's name in its exact case: against a host's `HID`, `.hid` hides, Word making a
+    style `hid` of its own. docx4j matched case-insensitively, so it changes;
+- **`pre` and `code`** go through HTML Preformatted and HTML Code: a host defining them wins. docx4j cut
+  them for 0.27 (§13.6), so they come back;
+- **a rule's other properties** go with its `display` where the host's style wins: `R11_7_P` is not red;
+- **a hidden `tfoot`'s** text is hidden. Word keeps it where the source has it, before the body.
+  docx4j-ImportXHTML lays it out last, which is that session's to weigh;
+- **a UTF-16LE chunk with no byte order mark** is not read as UTF-16: Word read the bytes as 8-bit text
+  and repaired the document. The Chunks rule's UTF-16 step is not Word's.
+
+docx4j's changes (the selector list, the case, `pre` and `code`, the UTF-16 step) wait for WD 0.28,
+which follows Word, and land in their own commit.

@@ -30,6 +30,22 @@ is marked **(phase 2)**, and moves none either.
   derives the inspect rows of `expected-findings.tsv`, and checks every row against its fixture: the
   path resolves, the range lies in the run's text, the excerpt's length is the text's
   (`ExtractionConformanceTest`).
+- Both tables are an inspector's **with no HTML reader**: it skips each HTML, XHTML or MHT chunk as
+  `not_decoded` (CR-053 phase 3, WD 0.27), so with a reader on the class path their comparison
+  pends. An inspector **with one** runs the chunk's import (WD 0.26's REQ-901) and is compared instead on
+  `extraction-probe-html.docx` (`ExtractionHtmlCases`: four chunks, A to D) with
+  `phase0/expected-inspection-html.tsv` and `expected-inspection-html-status.tsv`, read only under
+  `html reader present`. Those rows are written by hand, not by the oracle, which has no reader: each
+  cites its statements and the Word probe it rests on (`evidence`), and is checked against Word 365's
+  save of the fixture (round 10, 21 October 2026: every row agrees). A row resting on a rule not yet
+  in the WD would name the WD it waits for in `pending`, and be left out of the comparison on both
+  sides; since WD 0.27 none does. The table adds `parsed` (compared), `statements`, `evidence` and
+  `pending`. A chunk's
+  `text.hidden` is one finding for its outermost hidden element with text, at the element's path in the
+  tree jsoup builds (unprefixed, `/html[1]/body[1]/div[2]`), with no range; its excerpt is the text the
+  import made, a block a line feed apart; its address the block that holds its text under
+  `hidden: true`, from the same import. `ExtractionInspection` checks each path in the jsoup tree of the
+  fixture's chunk.
 
 After `ExtractionProbeBuilder` (into a scratch directory, its text files copied; never its rebuilt
 fixtures, which are not byte-identical, `GOLDENS.md`), from the repository root:
@@ -135,7 +151,7 @@ output when the output meets them all:
 | a hidden run, paragraph, sheet or slide | `hidden: true` |
 | a text box | `text_boxes: true` (default) |
 | an embedded package | `embedded: true` |
-| an `altChunk` | `altchunks: true` (default); an HTML, XHTML or MHT chunk also an HTML reader (CR-053, pending WD 0.26) |
+| an `altChunk` | `altchunks: true` (default); an HTML, XHTML or MHT chunk also an HTML reader (CR-053, WD 0.27) |
 | a picture's description (or name, where it is the description) | `alt_text: true` in plain text; always in Markdown and the block model |
 | a field's instruction | `field_codes: true` |
 | a chart's strings | `charts: true` (default) |
@@ -199,8 +215,8 @@ Each row: what is one finding, its location, its excerpt (where it is not the el
 | `custom_xml` | a custom XML part (`application/xml`, a `customXml` relationship) | the part | Excerpt: its text nodes, trimmed, LF apart. |
 | `properties` | a core, app or custom properties part with a value | the part | Excerpt as `custom_xml`. In an embedded package, never in an output. |
 | `people` | `people.xml` | the part | Excerpt: the authors. |
-| `part.macro`, `part.activex`, `ink`, `part.unknown` | a part of type `vbaProject`, `activeX+xml`, `inkml+xml`, or of none of the known families (`application/vnd.openxmlformats-`, `application/vnd.ms-`, `image/`, `audio/`, `video/`, `text/`, `font/`, `message/rfc822`, `application/xml`, `application/rtf`, `application/inkml+xml`, `application/x-font`, `application/pdf`, `application/vnd.oasis.opendocument.`) | the part | |
-| `altchunk` | an `altChunk` part | the part | Its content, one level deep: a docx or Flat OPC chunk's stories (chain: the chunk); an HTML, XHTML or MHT chunk scanned, read in its encoding (a byte order mark; UTF-16 by its first `<`; an XML declaration's `encoding` or a `meta` element's `charset` in its first 1,024 bytes; else UTF-8; an MHT part by its `charset` first) **(phase 1)**; plain text read; any other type `not_decoded`. |
+| `part.macro`, `part.activex`, `ink`, `part.unknown` | a part of type `vbaProject`, `activeX+xml`, `inkml+xml`, or of none of the known families (`application/vnd.openxmlformats-`, `application/vnd.ms-`, `image/`, `audio/`, `video/`, `text/`, `font/`, `message/rfc822`, `application/xml`, `application/xhtml+xml` (WD 0.27), `application/rtf`, `application/inkml+xml`, `application/x-font`, `application/pdf`, `application/vnd.oasis.opendocument.`) | the part | |
+| `altchunk` | an `altChunk` part | the part | Its content, one level deep: a docx or Flat OPC chunk's stories (chain: the chunk); an HTML, XHTML or MHT chunk scanned, read in its encoding (a byte order mark; UTF-16 by its first `<`; an XML declaration's `encoding` or a `meta` element's `charset` in its first 1,024 bytes; else UTF-8; an MHT part by its `charset` first) **(phase 1)**, and, the oracle having no HTML reader, then `not_decoded` (CR-053 phase 3, WD 0.27); plain text read; any other type `not_decoded`. An inspector with an HTML reader runs the chunk's import (WD 0.26's REQ-901) and finds what `display: none` hides as `text.hidden` instead: `expected-inspection-html.tsv`'s. |
 | `altchunk.script`, `altchunk.external_ref` | a chunk holding a `<script>`, an `on*` handler, or a `javascript:` URI in a `src`, `href` or `background` (tabs, line breaks and leading spaces and controls ignored, as a browser reads it) **(phase 1)**; a chunk holding a `src`, `href` or `background` that is not a fragment or a `data:`, `cid:`, `mailto:` or `javascript:` URI | the part | One finding a chunk each. |
 | `object.embedded` | a part an `o:OLEObject` of `Type="Embed"` refers to | the part | Its content one level deep: a docx's stories, a workbook's and a presentation's kinds. |
 | `embedded.sheet_hidden`, `embedded.sheet_very_hidden` | a `x:sheet` of state `hidden`, `veryHidden` | the `x:sheet` in the workbook part | Excerpt: its cells, tab apart, rows LF apart. In the output under `embedded` and `hidden`. |
@@ -211,7 +227,8 @@ Each row: what is one finding, its location, its excerpt (where it is not the el
 
 `PARTIAL` when anything is in `skipped`: content beyond one level (`depth@`: a chunk or embedded
 package inside an embedded package or a chunk), and a chunk of a type the inspector does not decode
-(`not_decoded@`: RTF). An ActiveX control's binary, an OLE binary other than a plain-text package, a
+(`not_decoded@`: RTF, and an HTML, XHTML or MHT chunk without an HTML reader, CR-053 phase 3, pending
+WD 0.27). An ActiveX control's binary, an OLE binary other than a plain-text package, a
 VBA project and a part of an unknown type are reported by their kinds, and their content is a
 limitation, not a skip **(phase 0)**. `undecided` lists the occurrences a test could not settle
 (`position.indeterminate`, `position.no_section`, `background.indeterminate`); they are not findings,

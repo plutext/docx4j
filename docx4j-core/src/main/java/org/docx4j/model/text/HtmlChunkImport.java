@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -34,6 +35,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.BiPredicate;
 
 import org.docx4j.Docx4jProperties;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkType;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
@@ -51,7 +53,7 @@ import org.w3c.dom.Document;
  *     (D9);</li>
  * <li>the tree rewritten so that the importer's CSS engine applies what Word applies (D4), and made
  *     safe to lay out: nesting capped, spans clamped, floats defused (section 4b);</li>
- * <li>not imported where it has more elements than {@link #MAX_ELEMENTS} (D11);</li>
+ * <li>not imported where it has more elements, as parsed, than {@link #MAX_ELEMENTS} (D11);</li>
  * <li>imported with what {@code display: none} hides as hidden text, as Word makes it (D5, D8), where
  *     the importer can (17.3.4 on; an earlier one leaves that content out);</li>
  * <li>anything the import throws, an {@code Error} included, caught: the chunk is then not read; and
@@ -131,14 +133,33 @@ public final class HtmlChunkImport {
 	}
 
 	/**
-	 * The tree the importer lays out: the chunk decoded, parsed by jsoup and rewritten; null where it
-	 * cannot be read, or is over the element limit. Needs jsoup.
+	 * The tree the importer lays out: the chunk decoded and parsed by jsoup, its elements counted as
+	 * parsed (WD 0.27's REQ-513), then rewritten; null where it cannot be read, or is over the element
+	 * limit. Needs jsoup.
 	 */
 	static Document tree(AlternativeFormatInputPart chunk, String where) {
+		byte[] bytes;
+		try {
+			bytes = chunk.getBytes();
+		} catch (RuntimeException e) {
+			log.warn("Couldn't read the altChunk " + where + ": " + e);
+			return null;
+		}
+		Document dom = parsed(bytes, mht(chunk), where, null);
+		if (dom == null || over(dom, where) || !rewritten(dom, chunk.getPackage(), where)) return null;
+		return dom;
+	}
+
+	/**
+	 * The chunk's bytes decoded (an MHT chunk's first HTML part) and parsed by jsoup, not yet rewritten;
+	 * null where it cannot be read. With {@code paths}, each element's path in the tree jsoup built (WD
+	 * REQ-901) is recorded there: the rewrite moves nodes rather than copying them, so a path still names
+	 * its element. Needs jsoup.
+	 */
+	static Document parsed(byte[] bytes, boolean mht, String where, Map<org.w3c.dom.Element, String> paths) {
 		String html;
 		try {
-			byte[] bytes = chunk.getBytes();
-			if (mht(chunk)) {
+			if (mht) {
 				List<String> parts = InspectPayloads.mhtHtml(bytes);
 				if (parts.isEmpty()) {
 					log.warn("The MHT chunk " + where + " has no HTML part");
@@ -152,22 +173,40 @@ public final class HtmlChunkImport {
 			log.warn("Couldn't read the altChunk " + where + ": " + e);
 			return null;
 		}
-		Document dom;
 		try {
-			dom = JsoupHtml.parse(html);
-			HtmlChunks.rewrite(dom, HtmlChunks.hostStyles(chunk.getPackage()));
+			Document dom = JsoupHtml.parse(html);
+			if (paths != null) HtmlChunks.paths(dom, paths);
+			return dom;
 		} catch (RuntimeException | StackOverflowError e) {
 			log.warn("jsoup couldn't read the altChunk " + where + ": " + e);
 			return null;
 		}
-		int max = Docx4jProperties.getProperty(MAX_ELEMENTS, 50000);
-		int count = HtmlChunks.count(dom);
-		if (count > max) {
-			log.warn("The altChunk " + where + " has " + count + " elements, over the " + max + " " + MAX_ELEMENTS
-					+ " allows, so it is not read");
-			return null;
+	}
+
+	/** The parsed tree rewritten as Word reads it, the host package's styles counted (D4); false, logged, where that failed. */
+	static boolean rewritten(Document dom, OpcPackage host, String where) {
+		try {
+			HtmlChunks.rewrite(dom, HtmlChunks.hostStyles(host));
+			return true;
+		} catch (RuntimeException | StackOverflowError e) {
+			log.warn("Couldn't rewrite the altChunk " + where + ": " + e);
+			return false;
 		}
-		return dom;
+	}
+
+	/** The most elements a chunk's tree may have to be imported ({@link #MAX_ELEMENTS}). */
+	static int maxElements() {
+		return Docx4jProperties.getProperty(MAX_ELEMENTS, 50000);
+	}
+
+	/** Whether the tree has more elements than {@link #MAX_ELEMENTS} allows; if so, logged. */
+	static boolean over(Document dom, String where) {
+		int max = maxElements();
+		int count = HtmlChunks.count(dom);
+		if (count <= max) return false;
+		log.warn("The altChunk " + where + " has " + count + " elements, over the " + max + " " + MAX_ELEMENTS
+				+ " allows, so it is not read");
+		return true;
 	}
 
 	/** Whether the chunk is an MHT one: by its declared content type, else its type or extension. */
@@ -187,6 +226,54 @@ public final class HtmlChunkImport {
 			Method convert = instance.getClass().getMethod("convert", org.w3c.dom.Node.class, String.class);
 			return numbered(target, content(convert.invoke(instance, dom, null)));
 		});
+	}
+
+	/** An inspection's import of a chunk (CR-053 phase 3): its content, in a scratch package, and what display:none hid. */
+	static final class Inspected {
+		/** The scratch package holding the content in its main document: the extraction's reading of the chunk in that inspection. */
+		final WordprocessingMLPackage scratch;
+		/**
+		 * docx4j-ImportXHTML's {@code getHiddenContent}: each outermost hidden element that produced content, in
+		 * document order, to that content (the paragraphs and tables it made, its hidden runs in others); null
+		 * for an importer before 17.3.4, which leaves that content out.
+		 */
+		final Map<org.w3c.dom.Element, List<Object>> hidden;
+
+		Inspected(WordprocessingMLPackage scratch, Map<org.w3c.dom.Element, List<Object>> hidden) {
+			this.scratch = scratch;
+			this.hidden = hidden;
+		}
+	}
+
+	/**
+	 * The tree imported as the text model imports it ({@link #read}: never fetching, guarded), for the
+	 * inspector, which reports what the import hid; null where the import failed.
+	 */
+	@SuppressWarnings("unchecked")
+	static Inspected inspected(Document dom, String where) {
+		WordprocessingMLPackage scratch;
+		try {
+			scratch = WordprocessingMLPackage.createPackage();
+		} catch (Exception e) {
+			log.warn("Couldn't make a package to read " + where + ": " + e);
+			return null;
+		}
+		Object[] hidden = new Object[1];
+		List<Object> content = guarded(where, () -> {
+			Object instance = importer(scratch, false, where);
+			if (instance == null) return null;
+			Method convert = instance.getClass().getMethod("convert", org.w3c.dom.Node.class, String.class);
+			List<Object> c = numbered(scratch, content(convert.invoke(instance, dom, null)));
+			try {
+				hidden[0] = instance.getClass().getMethod("getHiddenContent").invoke(instance);
+			} catch (NoSuchMethodException e) {
+				// before 17.3.4
+			}
+			return c;
+		});
+		if (content == null) return null;
+		scratch.getMainDocumentPart().getContent().addAll(content);
+		return new Inspected(scratch, (Map<org.w3c.dom.Element, List<Object>>) hidden[0]);
 	}
 
 	/**

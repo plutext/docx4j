@@ -31,13 +31,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.ContentAccessor;
 import org.w3c.dom.Element;
 
 /**
  * Each finding's extraction address (WD REQ-901): the address of the block that holds its content in
  * the output its reveal names, as docx4j's text model gives it. The package is read through the text
- * model, calling no importer, once for each set of options the findings' reveals name, with a record of the block each
+ * model, calling no importer (an HTML chunk is read from the inspector's import of it), once for each set
+ * of options the findings' reveals name, with a record of the block each
  * paragraph, table, WordArt shape, chart, workbook cell and slide shape went into; a finding's
  * address is then its element's, or its nearest recorded ancestor's (a run's paragraph), or its first
  * recorded descendant's (a text box's first paragraph, a header's first block).
@@ -51,7 +54,7 @@ final class InspectAddresses {
 		List<InspectFinding> out = new ArrayList<InspectFinding>();
 		for (InspectWalk.Found f : run.found) {
 			InspectFinding.Location location = new InspectFinding.Location(f.chain, f.part, f.path, f.start, f.endPath, f.end);
-			InspectFinding finding = new InspectFinding(f.kind, location, null, f.visible, f.excerpt, f.summary, f.subject, f.needs);
+			InspectFinding finding = new InspectFinding(f.kind, location, null, f.visible, f.excerpt, f.summary, f.subject, f.parsed, f.needs);
 			if (addresses && addressable(f)) {
 				// one reading for each reveal: needs the defaults meet ask for no other options
 				String key = finding.getReveal().toString();
@@ -64,10 +67,13 @@ final class InspectAddresses {
 		return out;
 	}
 
-	/** An extractable finding with a block: not an author or the properties (metadata), nor what needs a capability. */
+	/**
+	 * An extractable finding with a block: not an author or the properties (metadata). What a chunk hides
+	 * needs an HTML reader, which the inspector then has: it read the chunk through it.
+	 */
 	private static boolean addressable(InspectWalk.Found f) {
-		return !f.needs.contains(InspectFinding.NEVER) && !f.needs.contains(InspectFinding.HTML_READER)
-				&& !f.kind.equals(InspectFinding.REVISION_AUTHOR) && !f.kind.equals(InspectFinding.PROPERTIES);
+		return !f.needs.contains(InspectFinding.NEVER) && !f.kind.equals(InspectFinding.REVISION_AUTHOR)
+				&& !f.kind.equals(InspectFinding.PROPERTIES);
 	}
 
 	/** The options a finding's needs name, the defaults otherwise. */
@@ -90,12 +96,16 @@ final class InspectAddresses {
 		return o;
 	}
 
-	/** One reading through the text model, its blocks' sources recorded; the package is not changed (REQ-204). */
+	/**
+	 * One reading through the text model, its blocks' sources recorded; the package is not changed
+	 * (REQ-204). It calls no importer: an HTML, XHTML or MHT chunk is read from the inspector's own import
+	 * of it, and not at all where the inspector skipped it.
+	 */
 	private static Map<Object, String> record(WordprocessingMLPackage pkg, TextOptions options, InspectRun run) {
 		Extractor x = new Extractor(pkg, options, Extractor.Mode.VIEW);
 		x.sources = new IdentityHashMap<Object, String>();
 		x.packages = run.loaded;
-		x.noImporter = true;
+		x.chunks = run.chunks;
 		try {
 			x.extract();
 		} catch (RuntimeException e) {
@@ -105,6 +115,7 @@ final class InspectAddresses {
 	}
 
 	private static String address(InspectWalk.Found f, Map<Object, String> sources) {
+		if (f.block != null) return block(f.block, sources);
 		if (f.scope != null) {
 			for (Element e : f.scope) {
 				String a = recorded(f, e, sources);
@@ -126,6 +137,17 @@ final class InspectAddresses {
 			if (a == null) a = ancestorOrSelf(f, f.anchor, sources);
 		}
 		return a;
+	}
+
+	/** A chunk's finding: its paragraph's or table's block, else a table's first recorded paragraph's. */
+	private static String block(Object block, Map<Object, String> sources) {
+		String a = sources.get(block);
+		if (a != null || !(block instanceof ContentAccessor)) return a;
+		for (Object c : ((ContentAccessor) block).getContent()) {
+			a = block(XmlUtils.unwrap(c), sources);
+			if (a != null) return a;
+		}
+		return null;
 	}
 
 	/** A finding whose block is its paragraph's: a run's, a paragraph's, a field's, a control's content, a picture's alt text. */

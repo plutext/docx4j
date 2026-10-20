@@ -113,6 +113,8 @@ public final class InspectFinding {
 	public static final String CHART_CACHED = "chart.cached";
 	public static final String TEXT_WEB_HIDDEN = "text.web_hidden";
 	public static final String ALTCHUNK = "altchunk";
+	/** An {@code altchunk} finding's {@link #getParsed()}: an HTML parser ([HTML]'s algorithm) read the chunk. */
+	public static final String PARSED_HTML = "html";
 	public static final String OBJECT_EMBEDDED = "object.embedded";
 	public static final String FONT_EMBEDDED = "font.embedded";
 	public static final String INK = "ink";
@@ -172,7 +174,8 @@ public final class InspectFinding {
 	 * Where a finding is stored (WD REQ-901): the chain of containing packages, outermost first (empty
 	 * for the document itself; an embedded package or {@code altChunk} part is one level), the part name
 	 * within the innermost, an element path with every step positioned under the canonical prefixes
-	 * ({@code /w:document[1]/w:body[1]/w:p[12]/w:r[2]}, empty for a whole part), and for a finding
+	 * ({@code /w:document[1]/w:body[1]/w:p[12]/w:r[2]}, empty for a whole part; in an HTML, XHTML or MHT
+	 * chunk, the path in the tree an HTML parser built, unprefixed: {@code /html[1]/body[1]/div[2]}), and for a finding
 	 * within runs a half-open range of code points: in the first run's text from {@link #getStart()},
 	 * to {@link #getEnd()} in the run at {@link #getEndPath()} (empty where that is the first).
 	 */
@@ -233,16 +236,17 @@ public final class InspectFinding {
 	private final int excerptLength;
 	private final String summary;
 	private final String subject;
+	private final String parsed;
 	final Set<String> needs;
 
 	InspectFinding(String kind, Location location, String address, Visible visible, String excerpt, String summary,
-			String subject, Set<String> needs) {
+			String subject, String parsed, Set<String> needs) {
 		this(kind, location, address, visible, excerpt == null ? "" : excerpt,
-				excerpt == null ? 0 : excerpt.codePointCount(0, excerpt.length()), summary, subject, needs);
+				excerpt == null ? 0 : excerpt.codePointCount(0, excerpt.length()), summary, subject, parsed, needs);
 	}
 
 	private InspectFinding(String kind, Location location, String address, Visible visible, String excerpt, int excerptLength,
-			String summary, String subject, Set<String> needs) {
+			String summary, String subject, String parsed, Set<String> needs) {
 		this.kind = kind;
 		this.location = location;
 		this.address = address;
@@ -252,11 +256,12 @@ public final class InspectFinding {
 				? excerpt.substring(0, excerpt.offsetByCodePoints(0, Inspect.EXCERPT)) : excerpt;
 		this.summary = summary == null ? "" : summary;
 		this.subject = subject;
+		this.parsed = parsed;
 		this.needs = Collections.unmodifiableSet(new LinkedHashSet<String>(needs));
 	}
 
 	InspectFinding withAddress(String address) {
-		return new InspectFinding(kind, location, address, visible, excerpt, excerptLength, summary, subject, needs);
+		return new InspectFinding(kind, location, address, visible, excerpt, excerptLength, summary, subject, parsed, needs);
 	}
 
 	/** Its identifier (WD REQ-902): one of the constants of this class. */
@@ -298,6 +303,13 @@ public final class InspectFinding {
 	 * revision's author, an embedded face's font name; else null.
 	 */
 	public String getSubject() { return subject; }
+
+	/**
+	 * For an HTML, XHTML or MHT chunk's {@code altchunk} finding, how the chunk was parsed (WD REQ-902):
+	 * {@link #PARSED_HTML}, so that its findings' locations count the tree an HTML parser built, repairs
+	 * included; null where it was not decoded (no HTML reader), and for any other finding.
+	 */
+	public String getParsed() { return parsed; }
 
 	/**
 	 * Whether an output holds the content (REQ-905): every container on its chain lets it through
