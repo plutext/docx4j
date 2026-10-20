@@ -19,7 +19,6 @@
  **/
 package org.docx4j.model.datastorage;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +28,8 @@ import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.TraversalUtil;
 import org.docx4j.jaxb.McMode;
+import org.docx4j.jaxb.McSelection;
+import org.docx4j.jaxb.McSelection.BranchStep;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -112,8 +113,26 @@ public class OpenDoPEReverter {
 		Add option to lock it to prevent this from happening?
 	 */
 
-	Map<BigInteger, Object> templateConditionSdtsByID = new HashMap<BigInteger, Object>();  
-	Map<BigInteger, Object> templateRepeatSdtsByID = new HashMap<BigInteger, Object>();  
+	// keyed by sdtKey: the SDT ID, and the mc:AlternateContent branches the SDT is in
+	Map<String, Object> templateConditionSdtsByID = new HashMap<String, Object>();  
+	Map<String, Object> templateRepeatSdtsByID = new HashMap<String, Object>();  
+
+	private static final Class<?>[] SDT_TYPES = { org.docx4j.wml.SdtBlock.class, org.docx4j.wml.SdtRun.class,
+			org.docx4j.wml.CTSdtRow.class, org.docx4j.wml.CTSdtCell.class };
+
+	/**
+	 * An SDT's key: its ID, then the position of each mc:AlternateContent branch it is in. Word
+	 * writes a text box as a wps Choice and a VML Fallback, each with its copy of a control under the
+	 * same ID; each twin is restored from its own branch of the template (CR-051 section 10.5).
+	 */
+	static String sdtKey(Object sdt, Map<Object, List<BranchStep>> paths) {
+		StringBuilder key = new StringBuilder(OpenDoPEHandler.getSdtPr(sdt).getId().getVal().toString());
+		List<BranchStep> path = paths == null ? null : paths.get(sdt);
+		if (path != null) {
+			for (BranchStep step : path) key.append('/').append(step.getIndex());
+		}
+		return key.toString();
+	}
 	
 	public boolean revert() throws Docx4JException {
 		
@@ -188,6 +207,7 @@ public class OpenDoPEReverter {
 	private void findSdtsInTemplatePart(ContentAccessor content, TopLevelSdtTemplateFinder sdtPrFinder, boolean instanceCountOnly) throws Docx4JException {
 				
 		sdtPrFinder.setInstanceCountOnly(instanceCountOnly);
+		sdtPrFinder.paths = McSelection.branchPaths(content, SDT_TYPES);
 		// CR-021: ALL - the revert edits controls in every branch
 		new TraversalUtil(content, sdtPrFinder, McMode.ALL);
 	}	
@@ -202,8 +222,11 @@ public class OpenDoPEReverter {
 				
 		// Separate map for each
 		// Maps are by SDT ID, since 2 distinct SDT could use the one condition or repeat
-		Map<BigInteger, Object> conditionSdtsByID = new HashMap<BigInteger, Object>();  
-		Map<BigInteger, Object> repeatSdtsByID = new HashMap<BigInteger, Object>();  
+		// (with its mc branches: sdtKey)
+		Map<String, Object> conditionSdtsByID = new HashMap<String, Object>();  
+		Map<String, Object> repeatSdtsByID = new HashMap<String, Object>();  
+
+		Map<Object, List<BranchStep>> paths;
 		
 		@Override
 		public List<Object> apply(Object o) {
@@ -228,11 +251,11 @@ public class OpenDoPEReverter {
 
 					if (conditionId != null) {
 
-						conditionSdtsByID.put(sdtPr.getId().getVal(), o);
+						conditionSdtsByID.put(sdtKey(o, paths), o);
 
 					} else if (repeatId != null) {
 
-						repeatSdtsByID.put(sdtPr.getId().getVal(), o);
+						repeatSdtsByID.put(sdtKey(o, paths), o);
 						
 					} else if (instanceCountOnly) {
 						
@@ -242,15 +265,15 @@ public class OpenDoPEReverter {
 						
 						if (resultConditionId != null) {
 
-							conditionSdtsByID.put(sdtPr.getId().getVal(), o);
+							conditionSdtsByID.put(sdtKey(o, paths), o);
 							
 						} else if (resultRptdZeroId != null) {
 
-							repeatSdtsByID.put(sdtPr.getId().getVal(), o);
+							repeatSdtsByID.put(sdtKey(o, paths), o);
 							
 						} else if (resultRepeatId != null) {
 
-							repeatSdtsByID.put(sdtPr.getId().getVal(), o);
+							repeatSdtsByID.put(sdtKey(o, paths), o);
 						} 						
 					}
 					// not bothering to count plain binds
@@ -294,9 +317,11 @@ public class OpenDoPEReverter {
 	}
 
 	private TopLevelSdtInstanceFinder instanceSdtPrFinder;
+	private Map<Object, List<BranchStep>> instancePaths;
 	private void handleSdtsInInstancePart(ContentAccessor content ) throws Docx4JException {
 		
 		instanceSdtPrFinder = new TopLevelSdtInstanceFinder();		
+		instancePaths = McSelection.branchPaths(content.getContent(), SDT_TYPES);
 		// CR-021: ALL - the revert edits controls in every branch
 		new TraversalUtil(content.getContent(), instanceSdtPrFinder, McMode.ALL);
 		
@@ -323,9 +348,14 @@ public class OpenDoPEReverter {
 		
 		for ( Object entry : instanceSdtPrFinder.sdtsByConditionIDtoReplace ) {
 			
-			BigInteger key = OpenDoPEHandler.getSdtPr(entry).getId().getVal(); 
+			String key = sdtKey(entry, instancePaths); 
 			
 			Object replacement = templateConditionSdtsByID.get(key);
+			if (replacement==null) {
+				// as for a repeat below: leave the sdt alone rather than setting null into the content list
+				log.error( OpenDoPEHandler.getSdtPr(entry).getTag().getVal() + " - No replacement SDT with ID " + key );
+				continue;
+			}
 			
 			// ok, replace
 			Child child = (Child)entry;
@@ -365,7 +395,7 @@ public class OpenDoPEReverter {
 		for ( Object entry : instanceSdtPrFinder.repeatSdtToReplace ) {
 			
 //			String key = getRptdId( OpenDoPEHandler.getSdtPr(entry) ); 
-			BigInteger key = OpenDoPEHandler.getSdtPr(entry).getId().getVal(); 
+			String key = sdtKey(entry, instancePaths); 
 //			log.debug("repeat id: " + key);
 			Object replacement = templateRepeatSdtsByID.get(key);
 			if (replacement==null) {

@@ -3,12 +3,14 @@ import java.io.IOException;
 import java.io.Writer;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import org.docx4j.TraversalUtil;
 import org.docx4j.jaxb.McMode;
+import org.docx4j.jaxb.McSelection;
+import org.docx4j.jaxb.McSelection.BranchStep;
 import org.docx4j.XmlUtils;
 import org.docx4j.finders.RangeFinder;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
@@ -147,15 +149,17 @@ public class BookmarksIntegrity {
 
 	private  List<Object> inspectBookmarks(List<Object> paragraphs) throws IOException {
 		
-		Set<String> names = new HashSet<String>();
-		Set<BigInteger> startIds = new HashSet<BigInteger>();
-		Set<BigInteger> endIds = new HashSet<BigInteger>();
+		// what has been seen under each name or id
+		Map<String, List<Object>> names = new HashMap<String, List<Object>>();
+		Map<BigInteger, List<Object>> startIds = new HashMap<BigInteger, List<Object>>();
+		Map<BigInteger, List<Object>> endIds = new HashMap<BigInteger, List<Object>>();
 		
 		List<Object> faulty = new ArrayList<Object>(); 
 
 		RangeFinder rt = new RangeFinder();
 		// CR-021: ALL - bookmark pairs are checked and repaired wherever they are
 		new TraversalUtil(paragraphs, rt, McMode.ALL);
+		Map<Object, List<BranchStep>> paths = McSelection.branchPaths(paragraphs, CTMarkupRange.class);
 
 		write("Checking starts " );
 		
@@ -170,11 +174,11 @@ public class BookmarksIntegrity {
 				
 			} else if (name!=null && id != null) {
 				
-				if (!names.add(name)) {
+				if (!addUnlessDuplicate(names, name, bm, paths)) {
 					write("Already have name '" + name + "'");
 					faulty.add(bm);
 				}
-				if (!startIds.add(id)) {
+				if (!addUnlessDuplicate(startIds, id, bm, paths)) {
 					write("Already have id " + id.longValue());
 					if (!faulty.contains(bm) /* don't add it twice */ ) {
 						faulty.add(bm);
@@ -183,14 +187,14 @@ public class BookmarksIntegrity {
 				
 			} else if (name==null)  {
 				write("Name missing for id " + id.longValue());
-				if (!startIds.add(id)) {
+				if (!addUnlessDuplicate(startIds, id, bm, paths)) {
 					write(".. and already have id " + id.longValue());
 					faulty.add(bm);
 				}
 				
 			} else if (id==null)  {
 				write("ID missing for name " + name);
-				if (!names.add(name)) {
+				if (!addUnlessDuplicate(names, name, bm, paths)) {
 					write(".. and already have name " + name);
 					faulty.add(bm);
 				}
@@ -210,7 +214,7 @@ public class BookmarksIntegrity {
 				
 			} else if (id != null) {
 				
-				if (!endIds.add(id)) {
+				if (!addUnlessDuplicate(endIds, id, bm, paths)) {
 					write("Already have " + id.longValue());
 					faulty.add(bm);
 				}
@@ -220,18 +224,18 @@ public class BookmarksIntegrity {
 		
 
 		write("Matching ends" );
-		for (BigInteger i : startIds) {
+		for (BigInteger i : startIds.keySet()) {
 			
-			if (!endIds.contains(i)) {
+			if (!endIds.containsKey(i)) {
 				write("  Missing end for start " + i.longValue());	
 				faulty.add(find(rt.getStarts(), i)); // so remove the corresponding start
 			}
 		}
 		
 		write("Matching starts" );
-		for (BigInteger i : endIds) {
+		for (BigInteger i : endIds.keySet()) {
 			
-			if (!startIds.contains(i)) {
+			if (!startIds.containsKey(i)) {
 				write("  Missing start for end " + i.longValue());				
 				faulty.add(findEnds(rt.getEnds(), i)); // so remove the corresponding end
 			}
@@ -243,6 +247,26 @@ public class BookmarksIntegrity {
 		
 	}
 	
+	/**
+	 * Records {@code o} under {@code key}; false when one already there is in the same rendering,
+	 * not {@code o}'s twin in another branch of an mc:AlternateContent (a text box written as a wps
+	 * Choice and a VML Fallback holds each bookmark twice; CR-051 section 10.5).
+	 */
+	private static <K> boolean addUnlessDuplicate(Map<K, List<Object>> seen, K key, Object o,
+			Map<Object, List<BranchStep>> paths) {
+		List<Object> earlier = seen.get(key);
+		if (earlier == null) {
+			earlier = new ArrayList<Object>();
+			seen.put(key, earlier);
+		}
+		boolean unique = true;
+		for (Object e : earlier) {
+			if (!McSelection.twins(paths.get(e), paths.get(o))) unique = false;
+		}
+		earlier.add(o);
+		return unique;
+	}
+
 	private CTBookmark find(List<CTBookmark> starts, BigInteger id) {
 		
 		for (CTBookmark bm : starts) {

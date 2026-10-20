@@ -851,4 +851,21 @@ public class AnonymizeProbesTest {
 		assertFalse(n.isBuiltInStyleName("Acme Body Text"));
 	}
 
+	/** CR-051 section 10.5: the inventory walk enters every branch, so a VML Fallback is seen. */
+	@Test
+	public void inventoryReadsTheFallback() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		mdp(pkg).getContent().add(XmlUtils.unmarshalString(
+				"<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
+				+ " xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\""
+				+ " xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\">"
+				+ "<w:r><mc:AlternateContent><mc:Choice Requires=\"wps\"><w:drawing/></mc:Choice>"
+				+ "<mc:Fallback><w:pict><v:shape id=\"s1\" style=\"width:10pt;height:10pt\">"
+				+ "<v:imagedata o:title=\"AcmeFallbackTitle\"/></v:shape></w:pict></mc:Fallback>"
+				+ "</mc:AlternateContent></w:r></w:p>"));
+		AnonymizeResult r = new Anonymize(pkg).go();
+		assertTrue("the VML is in the Fallback only", r.containsVML());
+		assertGone(allXml(pkg), "AcmeFallbackTitle");
+	}
+
 }

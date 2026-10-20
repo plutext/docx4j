@@ -699,6 +699,15 @@ public class TraversalUtil {
 			((org.docx4j.wml.CTTxbxContent) o).getContent().clear();
 			((org.docx4j.wml.CTTxbxContent) o).getContent().addAll(newChildren);
 
+		} else if (o instanceof AlternateContent.Choice) {
+			// a walk in McMode.ALL (OpenDoPE's) edits a branch's content too (CR-051 section 10.5)
+			((AlternateContent.Choice) o).getAny().clear();
+			((AlternateContent.Choice) o).getAny().addAll(newChildren);
+
+		} else if (o instanceof AlternateContent.Fallback) {
+			((AlternateContent.Fallback) o).getAny().clear();
+			((AlternateContent.Fallback) o).getAny().addAll(newChildren);
+
 		} else {
 			
 			log.info("Don't know how to replaceChildren in " + o.getClass().getName() ); 

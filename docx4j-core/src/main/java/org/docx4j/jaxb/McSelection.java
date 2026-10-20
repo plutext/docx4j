@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,8 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.docx4j.Docx4jProperties;
+import org.docx4j.TraversalUtil;
+import org.docx4j.XmlUtils;
 import org.docx4j.mce.AlternateContent;
 import org.docx4j.openpackaging.parts.Part;
 import org.slf4j.Logger;
@@ -365,5 +368,109 @@ public final class McSelection {
 		Object branch = selectedBranch(purpose, ac);
 		if (branch != null) list.add(branch);
 		return list;
+	}
+
+	// --- where an object sits among the branches (CR-051 section 10.5) ------------------------------
+
+	/**
+	 * One step of an object's place among mc:AlternateContent branches: an element it is inside,
+	 * and the branch of that element (its Choice or Fallback) it is in.
+	 *
+	 * @since 17.3.4 (CR-051)
+	 */
+	public static final class BranchStep {
+		private final AlternateContent element;
+		private final Object branch;
+
+		BranchStep(AlternateContent element, Object branch) {
+			this.element = element;
+			this.branch = branch;
+		}
+
+		public AlternateContent getElement() {
+			return element;
+		}
+
+		/** The {@code AlternateContent.Choice} or {@code AlternateContent.Fallback}. */
+		public Object getBranch() {
+			return branch;
+		}
+
+		/** The branch's position in its element: a Choice's index, the Fallback after every Choice. */
+		public int getIndex() {
+			List<AlternateContent.Choice> choices = element.getChoice();
+			for (int i = 0; i < choices.size(); i++) {
+				if (choices.get(i) == branch) return i;
+			}
+			return choices.size();
+		}
+	}
+
+	/**
+	 * Where each object of the given types in {@code content} sits among mc:AlternateContent
+	 * branches, walking every branch ({@link McMode#ALL}): its steps, outermost first. An object
+	 * outside any element is absent from the map.
+	 *
+	 * @since 17.3.4 (CR-051)
+	 */
+	public static Map<Object, List<BranchStep>> branchPaths(Object content, final Class<?>... types) {
+		final Map<Object, List<BranchStep>> paths = new IdentityHashMap<Object, List<BranchStep>>();
+		final List<BranchStep> path = new ArrayList<BranchStep>();
+		final List<AlternateContent> elements = new ArrayList<AlternateContent>();
+		new TraversalUtil(content, new TraversalUtil.CallbackImpl() {
+			@Override
+			public List<Object> apply(Object o) {
+				if (path.isEmpty()) return null;
+				for (Class<?> type : types) {
+					if (type.isInstance(o)) {
+						paths.put(o, new ArrayList<BranchStep>(path));
+						break;
+					}
+				}
+				return null;
+			}
+
+			@Override
+			public void walkJAXBElements(Object parent) {
+				Object v = XmlUtils.unwrap(parent);
+				if (v instanceof AlternateContent) {
+					elements.add((AlternateContent) v);
+					try {
+						super.walkJAXBElements(parent);
+					} finally {
+						elements.remove(elements.size() - 1);
+					}
+				} else if ((v instanceof AlternateContent.Choice || v instanceof AlternateContent.Fallback)
+						&& !elements.isEmpty()) {
+					path.add(new BranchStep(elements.get(elements.size() - 1), v));
+					try {
+						super.walkJAXBElements(parent);
+					} finally {
+						path.remove(path.size() - 1);
+					}
+				} else {
+					super.walkJAXBElements(parent);
+				}
+			}
+		}, McMode.ALL);
+		return paths;
+	}
+
+	/**
+	 * Whether two objects at these places are twins: in different branches of one element, so in two
+	 * renderings of the same content (a text box written as a wps Choice and a VML Fallback, each
+	 * with its copy of a bookmark, a field or a content control). A null path is an object outside
+	 * any element.
+	 *
+	 * @since 17.3.4 (CR-051)
+	 */
+	public static boolean twins(List<BranchStep> a, List<BranchStep> b) {
+		if (a == null || b == null) return false;
+		int n = Math.min(a.size(), b.size());
+		for (int i = 0; i < n; i++) {
+			if (a.get(i).element != b.get(i).element) return false;
+			if (a.get(i).branch != b.get(i).branch) return true;
+		}
+		return false;
 	}
 }

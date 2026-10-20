@@ -2,6 +2,7 @@ package org.docx4j.model.fields.seq;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +12,10 @@ import org.docx4j.TraversalUtil;
 import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.McPurpose;
+import org.docx4j.jaxb.McSelection;
+import org.docx4j.jaxb.McSelection.BranchStep;
+import org.docx4j.mce.AlternateContent;
 import org.docx4j.model.fields.ComplexFieldLocator;
 import org.docx4j.model.fields.FieldRef;
 import org.docx4j.model.fields.FieldsPreprocessor;
@@ -70,6 +75,65 @@ public class FieldUpdaterSEQ {
 		}
 	}
 	
+	/*
+	 * mc:AlternateContent (CR-051 section 10.5): its branches render the same content (a text box
+	 * written as a wps Choice and a VML Fallback), so Word counts a caption there once. Each branch
+	 * is numbered from the counters as they were at the element; after it, the counters are those
+	 * the branch Word reads left.
+	 */
+	private final List<Frame> frames = new ArrayList<Frame>();
+
+	private static final class Frame {
+		final AlternateContent ac;
+		final Object read;
+		final Map<String, Integer> atStart;
+		Object branch;
+		Map<String, Integer> afterRead;
+
+		Frame(AlternateContent ac, Object branch, Map<String, Integer> counters) {
+			this.ac = ac;
+			this.branch = branch;
+			this.read = McSelection.selectedBranch(McPurpose.TEXT, ac);
+			this.atStart = new HashMap<String, Integer>(counters);
+		}
+	}
+
+	/** Brings the counters to a field in these branches, outermost first. */
+	private void enter(List<BranchStep> path) {
+		int m = 0;
+		while (m < frames.size() && m < path.size() && frames.get(m).ac == path.get(m).getElement()
+				&& frames.get(m).branch == path.get(m).getBranch()) m++;
+		boolean sameElement = m < frames.size() && m < path.size() && frames.get(m).ac == path.get(m).getElement();
+		while (frames.size() > (sameElement ? m + 1 : m)) leave(frames.remove(frames.size() - 1));
+		if (sameElement) {
+			// the element's next branch
+			Frame f = frames.get(m);
+			if (f.branch == f.read) f.afterRead = new HashMap<String, Integer>(counters);
+			counters = new HashMap<String, Integer>(f.atStart);
+			f.branch = path.get(m).getBranch();
+			m++;
+		}
+		for (int i = m; i < path.size(); i++) {
+			frames.add(new Frame(path.get(i).getElement(), path.get(i).getBranch(), counters));
+		}
+	}
+
+	private void leave(Frame f) {
+		if (f.branch == f.read) f.afterRead = new HashMap<String, Integer>(counters);
+		counters = f.afterRead != null ? f.afterRead : f.atStart;
+	}
+
+	private void leaveAll() {
+		while (!frames.isEmpty()) leave(frames.remove(frames.size() - 1));
+	}
+
+	private static final List<BranchStep> NO_BRANCHES = new ArrayList<BranchStep>();
+
+	private static List<BranchStep> pathOf(Map<Object, List<BranchStep>> paths, Object o) {
+		List<BranchStep> path = paths.get(o);
+		return path == null ? NO_BRANCHES : path;
+	}
+
 	StringBuilder report = null;	
 	
 	private static final String SEQ = "SEQ";	
@@ -118,6 +182,7 @@ public class FieldUpdaterSEQ {
 		SimpleFieldLocator fl = new SimpleFieldLocator();
 		// CR-021: ALL - field results are written in every branch
 		new TraversalUtil(contentList, fl, McMode.ALL);
+		Map<Object, List<BranchStep>> paths = McSelection.branchPaths(contentList, CTSimpleField.class);
 		
 		report.append("\n\nSimple Fields in " + part.getPartName() + "\n");
 		report.append("============= \n");
@@ -135,6 +200,7 @@ public class FieldUpdaterSEQ {
 				}
 				
 				String key = fsm.getFldParameters().get(0);
+				enter(pathOf(paths, simpleField));
 				String val = getValue(key) +"";
 				
 				// Now format it
@@ -165,6 +231,7 @@ public class FieldUpdaterSEQ {
 				
 			}
 		}
+		leaveAll();
 		
 	}
 	
@@ -201,7 +268,10 @@ public class FieldUpdaterSEQ {
 		
 		// canonicalise and setup fieldRefs 
 		List<FieldRef> fieldRefs = new ArrayList<FieldRef>();
+		Map<Object, List<BranchStep>> paths = McSelection.branchPaths(contentList, P.class);
+		Map<Object, List<BranchStep>> refPaths = new IdentityHashMap<Object, List<BranchStep>>();
 		for( P p : fl.getStarts() ) {
+			int before = fieldRefs.size();
 			int index;
 			if (p.getParent() instanceof ContentAccessor) {
 				index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
@@ -221,6 +291,7 @@ public class FieldUpdaterSEQ {
 			} else {
 				throw new Docx4JException ("Unexpected parent: " + p.getParent().getClass().getName() );
 			}
+			for (int k = before; k < fieldRefs.size(); k++) refPaths.put(fieldRefs.get(k), pathOf(paths, p));
 		}
 		
 		// Populate
@@ -250,6 +321,7 @@ public class FieldUpdaterSEQ {
 					}
 					key = key.replaceAll("\"", "");
 					
+					enter(pathOf(refPaths, fr));
 					val = getValue(key) +"";
 					
 				} else {
@@ -277,6 +349,7 @@ public class FieldUpdaterSEQ {
 				report.append("Ignoring " + fr.getFldName() + "\n");				
 			}
 		}	
+		leaveAll();
 	}
 	
 	private String extractInstr(List<Object> instructions) {

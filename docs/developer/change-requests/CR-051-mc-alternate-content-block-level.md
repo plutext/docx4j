@@ -1,8 +1,9 @@
 # CR-051: `mc:AlternateContent` at block level: read as Word reads it on load, or kept whole on request (body, cells, rows, headers, notes, text boxes, content controls)
 
 Status: ACCEPTED 2026-10-20 (Jason: "accept recommendations for CR-051's D1 to D5"), to implement as
-recommended. Phase 0 done 2026-10-20: the walker audit (§10) leaves one decision for Jason before
-phase 1, D6 (the exporters' copy). Proposed 2026-10-20, drafted at Jason's request ("write
+recommended. Phase 0 done 2026-10-20 (the walker audit, §10); D6, the exporters' copy, decided (a)
+the same day (Jason: "D6 (a)"). Five of the six defects of today the audit found were fixed the same
+day (§10.5); the sixth goes with phase 1. Proposed 2026-10-20, drafted at Jason's request ("write
 the cr to keep body-level mc through load. also check whether we do/should keep mc in sdt content")
 by Claude Opus 5.5 (session docx4j-25), after the portfolio session's measurement of Jason's
 `mc-fun` probes (paper §7.8).
@@ -17,7 +18,8 @@ one a defect today. All are taken (§9). It reviewed D6 after phase 0, at Jason'
 three must-fix points, all taken (§9).
 
 Three phases and hand-offs (§5); decisions in §6, D1 to D5 decided by Jason on 20 October 2026 as
-recommended, D5 being his own proposal; D6, from phase 0's audit (§10), open. It changes
+recommended, D5 being his own proposal; D6, from phase 0's audit (§10), decided (a) the same day.
+It changes
 the generated object model and the load path, which CLAUDE.md lists among the widely-shared code to
 change on Fable.
 
@@ -515,8 +517,8 @@ The CHANGELOG entry names the property, the override and `selectedContent`.
   replaced tree, and a fresh binder in place of `updateXML`.
 - **The consumers** the audit names, for block level (§10.3), and D6's step on the exporters' copy,
   which shares §3.2's splice (§10.2).
-- **The defects of today** the audit found (§10.5) can each land on their own, before the rest, as
-  the listener fix can.
+- **The defects of today** the audit found (§10.5) landed before phase 1, all but item 3, the revisions
+  model at paragraph level, which goes with this phase's revisions item (§10.3, item 3).
 - **The two readers of the record** (§3.2), each with its test:
   - CR-050's inspector: the recorded elements marshalled and located at the promoted content, giving
     the same `mce.branch` addresses as `preserve` mode;
@@ -559,7 +561,7 @@ element. Then `preserve` mode keeps those elements whole.
 ## 6. Decisions
 
 Each with a recommendation; Jason decides. D1 to D5 decided as recommended on 20 October 2026; D6,
-from phase 0's audit, is open.
+from phase 0's audit, decided (a) the same day.
 
 - **D1. Block level.**
   - **Options:**
@@ -635,8 +637,8 @@ from phase 0's audit, is open.
   **Decided** (Jason, 20 October 2026): (a): the property with a load option and a package-level
   override, default `word`, `preserve` on request. The name `docx4j.jaxb.mc.blockLevel` stands
   unless phase 1 finds a reason to change it.
-- **D6. The exporters' copy** (from phase 0's audit, §10.2; reviewed by docx4j-64, §9). Open, for
-  Jason.
+- **D6. The exporters' copy** (from phase 0's audit, §10.2; reviewed by docx4j-64, §9). **Decided:
+  (a)** (Jason, 20 October 2026: "D6 (a)").
   - **Options:**
     - (a) a `Preprocess` step, immediately after the deep copy, splices each block-, row- and
       cell-level element of the copy to the branch the exporter draws;
@@ -906,7 +908,7 @@ These sites throw or lose an edit. Each is for phase 1, in `preserve` mode and f
      - a false condition is not removed (without the reverter);
      - an `od:component` is not replaced.
 
-     It happens at paragraph level already (10.5).
+     It happened at paragraph level already, and is fixed for both levels (10.5, item 2).
    - **`FieldUpdater.updateComplex`:216-235, `FieldUpdaterSEQ.updateComplex`:206-222 and
      `AbstractMerger.canonicaliseStarts`:451-481** (`MailMerger`, `MailMergerWithNext`,
      `FORMTEXTMerger`). Each throws `Docx4JException` "Unexpected parent: ...AlternateContent$Choice"
@@ -927,7 +929,8 @@ These sites throw or lose an edit. Each is for phase 1, in `preserve` mode and f
    - in the exporters, `AcceptTrackedChanges` (`TrackedChanges.acceptAllForConversion`) would print
      the deleted text, unless D6's splice comes first;
    - fix: list one branch and the others' changes as twins, as `Lister.alternate`:673 does for text
-     boxes. `Trees.runItems` has the same gap at paragraph level (10.5).
+     boxes. `Trees.runItems` has the same gap at paragraph level (10.5, item 3), and the two levels are
+     fixed together.
 4. **The TOC.** `TocHelper.getAllElementsFromObject`:57-82 recurses through `ContentAccessor` only, so
    `TocGenerator` (:375) leaves out a heading in a branch and does not number it. Fix: an
    `AlternateContent` case descending one branch, the one Paginate's page numbers come from (item 5).
@@ -950,8 +953,8 @@ These sites throw or lose an edit. Each is for phase 1, in `preserve` mode and f
      an element gets the wrong paraId, and its reply thread breaks;
    - `HeaderFooterPolicy.reservesNothing`:321 counts the element as one item;
    - `AbstractMerger`:195-200 and `getDocumentSeparator`:255-266.
-9. **`BookmarksIntegrity.inspectBookmarks`:158** (ALL) counts twins in a `Choice` and a `Fallback` as
-   duplicates; it should count per branch. The same happens at run level today (10.5).
+9. **`BookmarksIntegrity.inspectBookmarks`:158** (ALL) counted twins in a `Choice` and a `Fallback` as
+   duplicates. Fixed for every level (10.5, item 5); the parent edit in `check` is item 1's.
 10. **`JaxbXmlPartAltChunkHost`:213-221, with :332.** For the same `altChunk` `r:id` in two branches,
     the first conversion deletes the part and the second throws a `NullPointerException`.
 11. **diffx:** `diffx2wml.xslt`:157 flattens a deleted block-level element. Its wrappers are lost and
@@ -1014,30 +1017,46 @@ e. **READ against DRAW (M).** With D6, the exporters agree among themselves. `Do
    (CR-046 phase 3). D6 leaves it there. Pointed at the copy, it would lose a form field's bookmark,
    which `FieldsCombiner` collapses with its field.
 
-### 10.5 Defects today, at every level (from the code, not run)
+### 10.5 Defects today, at every level
 
-These turned up on the way. They are not block-level, and none waits for this CR.
+These turned up on the way. They are not block-level, and none waited for this CR. Five were fixed on
+20 October 2026, before phase 1 (Jason: "make the fixes, then phase 1"). Each has a test that fails
+on 9263b669f's code: `McBranchTwinsTest`, and `AnonymizeProbesTest.inventoryReadsTheFallback`. They
+share a new helper (since 17.3.4):
+- `McSelection.branchPaths` gives each object's branches, outermost first;
+- `McSelection.twins` tells whether two objects are copies in two branches of one element.
 
-1. **The anonymiser never analyses a Fallback.**
-   - `DmlVmlAnalyzer` has its own `getChildren` (:133-398). It ignores the `McMode.ALL` that
-     `Anonymize` (:442) sets, and for an `AlternateContent` falls to reflection, which returns
-     `getChoice()`, its only `List` getter.
-   - It is also the only code that scrubs `v:imagedata`'s `o:title` (:108), so an image's title in a VML
-     Fallback survives anonymisation, and the unsafe-object report misses Fallback content. Text is
-     scrambled in every branch (`JaxbGraphWalker`).
-   - Fix, one line: `return McSelection.branches(ac, getMcMode())`.
+1. **The anonymiser's inventory never read a Fallback.** Fixed.
+   - `DmlVmlAnalyzer` has its own `getChildren` (:133-398). It ignored the `McMode.ALL` that
+     `Anonymize` (:442) sets, and for an `AlternateContent` fell to reflection. Reflection returns
+     `getChoice()`, its only `List` getter. It now returns `McSelection.branches(ac, getMcMode())`.
+   - So `containsVML()`, the fields present and the inventory missed what is only in a Fallback. That
+     is where Word writes VML text boxes and pictures.
+   - **Corrected:** the audit said that an image's `o:title` in a VML Fallback survived
+     anonymisation. A run showed otherwise: `ScrambleText`:457-459 clears every `v:imagedata` title,
+     in every branch, through its own walk. Nothing leaked.
    - CR-021 §8.4 lists it among `getChildrenImpl`'s direct callers; it is not one.
-2. **`replaceChildren` drops a `Choice`'s or `Fallback`'s new list** (10.3, item 1). It drops the
-   result for an OpenDoPE repeat, condition or component in a run-level control inside a
-   paragraph-level branch.
+2. **`replaceChildren` dropped a `Choice`'s or `Fallback`'s new list** (10.3, item 1). An OpenDoPE
+   repeat, condition or component in a run-level control inside a paragraph-level branch lost its
+   result. Fixed: both are edited through `getAny()`.
 3. **Tracked changes inside a paragraph-level element are not listed, accepted or rejected.**
-   `Trees.runItems`:142-155 has no `AlternateContent` case, and `Lister.runLevel` enters an element only
-   inside a `w:r`, for text boxes.
-4. **`FieldUpdaterSEQ` counts each branch.** Its ALL walk feeds the counter (:120-138), so a SEQ caption
-   in a text box, written as a `wps` Choice and a VML Fallback, counts twice and the numbering skips.
-5. **`BookmarksIntegrity` counts a text box's twin bookmarks as duplicates** (10.3, item 9).
-6. **`OpenDoPEReverter`'s template maps are keyed by control id** (:204-205), so same-id controls in a
-   Choice and a Fallback get the same replacement object, put into both lists.
+   `Trees.runItems`:142-155 has no `AlternateContent` case, and `Lister.runLevel` enters an element
+   only inside a `w:r`, for text boxes. **Not fixed yet.** The fix is the design §10.3's item 3 needs
+   at block level: list the branch Word reads, and the other branches' changes as twins, as
+   `Lister.alternate` does for text boxes. So both levels go together, in phase 1.
+4. **`FieldUpdaterSEQ` counted each branch.** Its ALL walk fed the counter, so a SEQ caption in a text
+   box counted twice and the numbering skipped. Fixed:
+   - each branch is numbered from the counters as they were at the element;
+   - after the element, the counters are those the branch Word reads left;
+   - so a caption only in a branch Word does not read is numbered, but not counted.
+5. **`BookmarksIntegrity` counted a text box's twin bookmarks as duplicates** (10.3, item 9). With
+   remediation it removed the Fallback's. Fixed: a name or id seen again is a duplicate unless the
+   earlier one is its twin. Two text boxes holding one bookmark are still duplicates.
+6. **`OpenDoPEReverter`'s template maps were keyed by control id** (:204-205). Same-id controls in a
+   Choice and a Fallback got the same replacement object, put into both lists. Fixed:
+   - the key is the id and the position of each branch the control is in (`sdtKey`), so each twin is
+     restored from its own branch of the template;
+   - a condition with no replacement is left alone, as a repeat already was, rather than set to null.
 
 Seen in passing, not to do with `mc`:
 - `BindingTraverserNonXSLT.xpathInjectImage`'s fallback path returns null for a control in a header,

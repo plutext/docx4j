@@ -151,6 +151,11 @@ public class DmlVmlAnalyzer extends CallbackImpl {
 		} else if (o instanceof org.docx4j.wml.SdtElement) {
 			return ((org.docx4j.wml.SdtElement) o).getSdtContent().getContent();
 			
+		} else if (o instanceof org.docx4j.mce.AlternateContent) {
+			// the walk's mode (ALL, from Anonymize): reflection would find getChoice() alone,
+			// and a VML Fallback's o:title would never be scrubbed (CR-051 section 10.5)
+			return org.docx4j.jaxb.McSelection.branches((org.docx4j.mce.AlternateContent) o, getMcMode());
+			
 		} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
 			
 			// Similar to wordprocessingDrawing.Inline below

@@ -74,6 +74,11 @@ Changes in Version 17.3.4
   extraction. A comment with no anchor in the document is no longer among `TextResult.comments()`.
 - `PropertyResolver` no longer adds a `DefaultParagraphFont` style to a styles part that has no default
   character style (so `Texts.of` changes nothing in such a package); output and merge paths still add it.
+- `mc:AlternateContent` twins (a text box written as a wps Choice and a VML Fallback; CR-051 §10.5):
+  `FieldUpdaterSEQ` counts a caption once; `BookmarksIntegrity` no longer reports twin bookmarks as
+  duplicates; `OpenDoPEReverter` restores each twin control from its own branch; `TraversalUtil.replaceChildren`
+  edits a Choice or Fallback (OpenDoPE in a paragraph-level branch); the anonymiser's inventory reads Fallbacks.
+  `McSelection.branchPaths` and `twins` are new.
 
 
 Version 17.3.3
