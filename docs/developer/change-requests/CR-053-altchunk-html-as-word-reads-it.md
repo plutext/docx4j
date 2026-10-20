@@ -1,19 +1,22 @@
 # CR-053: HTML, XHTML and MHT altChunks, written as Word opens them and read as Word reads them
 
-Status: ACCEPTED 2026-10-20 (Jason: "accept the recommendations and commit the CRs"), D1 to D10 as
-recommended. Phase 0 done (Jason: "start phase 0"): tests, design checks and Word probes, rounds 5
-to 7 (§10). D9 is (iii), D2 stands, D11 is decided (50,000) and D4's rewrite (§10.7) is approved.
-Phase 1 built (Jason: "start CR-053 phase 1"; §11): the strip, the UTF-8 binding and D6, its five
-calls confirmed; Word opens what it writes (`p1-9`'s repair is the binding template's own Flat OPC
-chunk). Phase 2 built (on ImportXHTML's notice, Jason's standing instruction; §12), against
-ImportXHTML's CR-002 phases 1 to 3 (468a760); Word opens its conversions cleanly, with the hidden
-text of its own import (§12.5). Phase 3 built (Jason's ruling on REQ-901, 21 October: "the inspector
-can run the same HTML import that text extraction runs", WD 0.26; §13); its suite rows and phase 2's
-are WD 0.27's (approved 21 October), and Word's save of its fixture agrees with every row (§13.5).
-Proposed 2026-10-20 (Jason: "lets start the altchunk work"), reviewed the same day by docx4j-64
-(§9). It gathers his ruling on adding a chunk (strip the XML declaration, 2026-10-20) and what the
-text extraction WD 0.23 to 0.25 asks of docx4j (portfolio 6cdb966, 016963e, 1865f10). Drafted by
-Claude Opus 5.5 (session docx4j-25), with §1 measured first. Phases in §5; decisions in §6.
+Status: DONE 2026-10-21, all five phases (0 to 4; 17.3.4). ACCEPTED 2026-10-20 (Jason: "accept the
+recommendations and commit the CRs"), D1 to D10 as recommended. Phase 0 done (Jason: "start phase
+0"): tests, design checks and Word probes, rounds 5 to 7 (§10). D9 is (iii), D2 stands, D11 is
+decided (50,000) and D4's rewrite (§10.7) is approved. Phase 1 built (Jason: "start CR-053 phase 1";
+§11): the strip, the UTF-8 binding and D6, its five calls confirmed; Word opens what it writes
+(`p1-9`'s repair is the binding template's own Flat OPC chunk). Phase 2 built (on ImportXHTML's
+notice, Jason's standing instruction; §12), against ImportXHTML's CR-002 phases 1 to 3 (468a760);
+Word opens its conversions cleanly, with the hidden text of its own import (§12.5). Phase 3 built
+(Jason's ruling on REQ-901, 21 October: "the inspector can run the same HTML import that text
+extraction runs", WD 0.26; §13); its suite rows and phase 2's are WD 0.27's (approved 21 October),
+and Word's save of its fixture agrees with every row (§13.5). WD 0.28's rules (rounds 11 and 12) in
+198d015a3 (§13.7, §13.8). Phase 4 (Jason: "start CR-053 phase 4"; §14): the hand-offs sent and
+acknowledged. Proposed 2026-10-20 (Jason: "lets start the altchunk work"), reviewed the same day by
+docx4j-64 (§9). It gathers his ruling on adding a chunk (strip the XML declaration, 2026-10-20) and
+what the text extraction WD 0.23 to 0.25 asks of docx4j (portfolio 6cdb966, 016963e, 1865f10).
+Drafted by Claude Opus 5.5 (session docx4j-25), with §1 measured first. Phases in §5; decisions in
+§6.
 
 ## 0. Summary
 
@@ -1415,7 +1418,8 @@ repaired. Word's answers:
 - **a hidden `tfoot`'s** text is hidden. Word keeps it where the source has it, before the body.
   docx4j-ImportXHTML lays it out last: openhtmltopdf's `BoxBuilder.reorderTableContent` moves the first
   header and footer group. ImportXHTML's CR-003 (`docs/change-requests/CR-003-table-row-groups-in-source-order.md`,
-  accepted by Jason the same day) adds `setTableRowGroupsInSourceOrder`, off by default, which docx4j sets
+  accepted by Jason the same day, phase 1 committed as docx4j-ImportXHTML dd7b913) adds
+  `setTableRowGroupsInSourceOrder`, off by default, which docx4j sets
   for chunks (§13.8);
 - **a UTF-16LE chunk with no byte order mark** is not read as UTF-16: Word read the bytes as 8-bit text
   and repaired the document. The Chunks rule's UTF-16 step is not Word's.
@@ -1450,3 +1454,40 @@ Tests: `AltChunkHtmlReadingTest` (`cssFollowsRound11`, the host rule's case and 
 Round 11 through docx4j with the importer agrees with Word's saves on all 94 markers, and `r11-9` gives its
 markup as text, as Word's save does. With the importer, 160 run, 0 failures; the suite, 1,526 passed and 58
 pending, as before.
+
+## 14. Phase 4: hand-offs (21 October 2026)
+
+Jason: "start CR-053 phase 4". Sent the same day:
+- **docx4j-ImportXHTML**: §4a was its CR-002 (468a760, phases 1 to 3), and r11-8 its CR-003 (dd7b913,
+  `setTableRowGroupsInSourceOrder`), both answered already; their release is 17.3.4, waiting on Jason.
+- **The portfolio**: REQ-901's relaxation and the MHT location went into WD 0.26 to 0.28 (e683d0c, 804007d,
+  f2046e5), with the suite rows and the registry; nothing more is owed.
+- **docx4j-mcp**: `html_to_docx`'s `mode: altchunk` adds an `Xhtml` chunk of jsoup's XML output, which has no
+  declaration (checked with jsoup 1.22.1), so it opens in Word on its pinned docx4j 17.1.0. No change is needed.
+  The message gives it the strip and `AltChunkHtml` for any other write, D6, Word reading XHTML as HTML, and
+  what 17.3.4's text model and inspector do with a chunk where jsoup and ImportXHTML are present, as they are
+  there (expanded, `display: none` hidden).
+- **docx4j-python and docx4j-core-ts**: neither adds an HTML chunk or extracts text yet. The messages set out
+  docx4j as the oracle under WD 0.28: the writing rule (D1, D2, D6), REQ-513's reader, decoder and hiding rule,
+  the inspector's `not_decoded` without a reader and `text.hidden` with one, the 50,000-element limit, and the
+  suite's fifth fixture and harness (`htmlInspections`, `Run.pend`). Their rows are "html reader absent".
+
+Acceptance: each acknowledged. So far:
+- **the portfolio** (21 October, registry 4c7ef08): its part done. WD [PROBE] still cites 4a8833eea; 198d015a3's
+  oracle change goes in at its next revision, nothing a port compares against having moved;
+- **docx4j-core-ts** (21 October): recorded in its CR-012 §13.7 for its phase 5e. Nothing changes there now: it
+  writes no chunk (its html module converts XHTML), and its `AlternativeFormatInputPart` keeps the declared
+  content type, so D6 holds. Its runner has `htmlInspections` and `pend`, and its suite copy is at 198d015a3.
+  Its 1,584 rows equal this run's, in order.
+- **docx4j-python** (21 October): nothing changes now; it adds no chunk and has no extractor or inspector yet. Its
+  proposed text model (CR-011, 723ac0a) records REQ-513's reader rule, "html reader absent" and the decoder, and
+  asks its user (Q12) whether html5lib, an [HTML]-algorithm parser, comes as an optional extra; its earlier plan's
+  lxml.html is not one.
+- **docx4j-mcp** (21 October): recorded in its CR-mcp-server.md §19 and §20. Its jsoup (1.18.3, pinned) writes no
+  declaration either. Applying `enc-6` to its own output, it found a defect of its own (§20): `normalise` keeps an
+  input's `meta charset="windows-1252"` while writing UTF-8, which Word then misreads, and `input_path` is read
+  as UTF-8 alone. Its fix decodes in Word's order and rewrites the `meta`. For the text model: with jsoup and
+  ImportXHTML present it is "html reader present" on 17.3.4, so its goldens with a reader are its phase 2's,
+  and it sets `timeoutMillis` (its T7).
+
+All acknowledged: phase 4 done.
