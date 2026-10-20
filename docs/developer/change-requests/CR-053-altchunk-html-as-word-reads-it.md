@@ -3,7 +3,9 @@
 Status: ACCEPTED 2026-10-20 (Jason: "accept the recommendations and commit the CRs"), D1 to D10
 as recommended. Phase 0 done (Jason: "start phase 0"): tests, design checks and Word
 probes, rounds 5 to 7 (§10). D9 is (iii), D2 stands, D11 is decided (50,000) and D4's rewrite
-(§10.7) is approved; phase 1 may land alone. Proposed 2026-10-20 (Jason: "lets start
+(§10.7) is approved. Phase 1 built (Jason: "start CR-053 phase 1"; §11): the strip, the UTF-8
+binding and D6, its five calls confirmed; Word opens what it writes (`p1-9`'s repair is the
+binding template's own Flat OPC chunk). Proposed 2026-10-20 (Jason: "lets start
 the altchunk work"), reviewed the same day by docx4j-64 (§9). It gathers his ruling on adding a
 chunk (strip the XML declaration, 2026-10-20) and what the text extraction WD 0.23 to 0.25 asks of
 docx4j (portfolio 6cdb966, 016963e, 1865f10). Drafted by Claude Opus 5.5 (session docx4j-25), with
@@ -290,6 +292,8 @@ chunk; the binding with a bound value that has a declaration; Flat OPC untouched
 whose extension disagrees with its content type. Office check: Word opens a chunk added with a
 declaration, with no repair, and its non-ASCII text reads right. CHANGELOG entry. Phase 1 depends on
 nothing in phases 2 to 4, and lands and is committed alone.
+
+Built 20 October 2026 (§11).
 
 ### Phase 2: reading
 
@@ -926,3 +930,130 @@ host style cannot override. Unmeasured:
 - whether a rule's other properties are lost with its `display`.
 
 The probes are done, and with them phase 0. The JUnit tests stand as they are.
+
+## 11. Phase 1 (20 October 2026)
+
+Built on VERSION_17_3_4 at 5c691fc1f.
+
+### 11.1 The strip
+
+`AltChunkHtml` is new and public, in `org.docx4j.openpackaging.parts.WordprocessingML`, so that
+docx4j-mcp and a caller building their own part can use it. The four `addAltChunk` paths in
+`JaxbXmlPartAltChunkHost` call it for `Html` and `Xhtml` (D1 (a)); the two stream paths read the
+stream and take the byte path. `withoutXmlDeclaration`:
+- skips a UTF-8 or UTF-16 BOM, then XML white space, and cuts a `<?xml` declaration that follows
+  (`enc-8`, `enc-9`), with the white space after it. A chunk with no declaration is left as it is, its
+  BOM and white space included. So is `<?xml-stylesheet ...?>`, which is a processing instruction;
+- keeps the encoding the declaration stated (D2 (c), with (b)'s rewrite):
+  - after a UTF-8 BOM, the bytes as they are. The BOM decides, for Word (`enc-7`) as for an XML
+    reader, even against a declaration naming another encoding;
+  - UTF-16, with or without a BOM, is cut in UTF-16 and keeps or gains its BOM. Word reads UTF-16LE
+    with a BOM (`enc-10`); big-endian is in the Office check;
+  - UTF-8, declared or by the XML default: a UTF-8 BOM, where the bytes are valid UTF-8;
+  - another encoding: transcoded to UTF-8, with a BOM. Each `meta` charset, and each `http-equiv`
+    content type's charset, that names an encoding other than UTF-8 is rewritten to `UTF-8`. D2 says
+    "names the old encoding"; after the transcoding any other name is as wrong. ISO-8859-1 and
+    US-ASCII are read as windows-1252, as WHATWG's labels have them, so a Latin-1 chunk's curly
+    quotes survive;
+  - where the declared encoding is one Java does not know, one the bytes cannot be in (UTF-16 named
+    in single bytes), or one they are not in (UTF-8 declared, windows-1252 bytes), only the
+    declaration is cut, with a warning. Word's own order then reads the bytes.
+
+**The open point: where the BOM goes.** D2's wording left open whether a chunk declared UTF-8 gains a
+BOM, or only a transcoded one. Taken: every chunk docx4j cuts gains one (UTF-8 bytes permitting), so
+Word reads it as the declaration said even where a `meta` disagrees (`enc-6`: the `meta` would win).
+A chunk docx4j does not cut is not touched. Narrowing it to transcoded chunks would be a one-line
+change.
+
+Jason confirmed this, with phase 1's other four calls, the same day ("your 5 calls are sound"):
+- the binding's BOM and `meta` rewrite, always (§11.2);
+- the rewrite of any `meta` naming an encoding other than UTF-8, not only the old one;
+- ISO-8859-1 and US-ASCII read as windows-1252;
+- `text/xml` left unmapped (§11.3).
+
+### 11.2 The binding
+
+`BindingTraverserXSLT`:648 writes `AltChunkHtml.utf8WithoutXmlDeclaration(r)`. That is the bound
+value without a leading BOM character, white space or declaration, with its `meta` charsets naming
+UTF-8, in UTF-8 with a BOM. The BOM is always there, since docx4j chose the encoding. Without it, a
+bound value's own `meta` naming another charset would win (`enc-6`). The Flat OPC declaration
+(:2066) and `OpenDoPEHandlerComponents`' `.docx` chunk are unchanged.
+
+### 11.3 D6
+
+`AltChunkType.forContentType` maps each type's own content type, and `application/rtf`, with
+parameters and case ignored. `text/xml` is not mapped: it could be XHTML or Flat OPC, so the
+extension decides. `AlternativeFormatInputPart` overrides `setContentType` to apply it:
+- the loader builds a part by its name and then sets the declared content type
+  (`ContentTypeManager`:349). So a loaded chunk takes the type it declares, with the extension as the
+  fallback;
+- the declared content type is kept as declared: `application/rtf` stays, and does not become
+  `text/rtf`;
+- being in the setter, it also covers Flat OPC import, and a copy that builds a part by name and sets
+  the content type, as Docx4j Enterprise's MergeDocx copies a chunk. Each then agrees with a load.
+
+The constructor's "Unrecognized type" warning for an extension docx4j does not know is now a debug
+line, since the content type set next usually types the part; `convertAltChunks` still warns about a
+chunk left with no type.
+
+What changes for a loaded chunk:
+- `convertAltChunks` converts a `text/plain` chunk whose extension it did not know;
+- a `.htm` chunk declared `application/xhtml+xml` is now `Xhtml`, so it needs the importer, as the
+  text model already treated it;
+- `ZipPartStore.shouldCompress` leaves a docx chunk with an unknown extension uncompressed.
+
+### 11.4 Tests
+
+`AltChunkHtmlTest`'s three writing tests are flipped:
+- `addAltChunkStripsTheDeclaration`;
+- `boundXhtmlValueIsUtf8WithoutItsDeclaration`, whose value now carries a `meta` naming windows-1252;
+- `loadedChunkTypeFollowsTheContentType`, with six chunks: the content type winning, the extension
+  as the fallback, the declared content type kept, parameters and case ignored.
+
+`AltChunkHtmlWritingTest` (core-tests, `org.docx4j.openpackaging.parts.WordprocessingML`) is new,
+with 11 tests. Each case goes through all four paths and both types:
+- UTF-8, declared and by default;
+- a declaration after a BOM and after white space;
+- UTF-16LE and BE, each with and without a BOM;
+- ISO-8859-1, with six `meta` forms, and Shift_JIS;
+- an unknown encoding, a wrong one, and UTF-16 declared in single bytes;
+- no declaration, `<?xml-stylesheet`, a DOCTYPE, an empty chunk;
+- Flat OPC, MHT, plain text and RTF as given;
+- a caller's own part as given;
+- a save and load round trip, read by the text model;
+- the binding's markup;
+- `forContentType`.
+
+`McBlockLevelConsumersTest` no longer gives its loaded chunk a type itself, which its comment, wrong
+since CR-051 §11.2 (§1), said it had to. It now asserts the type the load gives.
+
+The whole of core-tests passes: 1,874 tests, none failing, 13 skipped (assumptions, as before).
+
+### 11.5 Office check
+
+`~/vbShares/Office 2016/altchunk-fun/phase1/`, with a README: nine files that docx4j itself wrote,
+each chunk given to it with a declaration:
+- UTF-8, declared, as HTML and as XHTML;
+- ISO-8859-1 with two `meta` forms;
+- a BOM, then the declaration;
+- white space, then the declaration;
+- UTF-16LE and UTF-16BE with a BOM;
+- Shift_JIS;
+- the binding, with a declared value and a `meta` naming windows-1252.
+
+Only UTF-16BE and the binding's encoding are new to Word; the rest repeat round 5's measured cases in
+the form docx4j now writes.
+
+Jason's run, the same day (screenshots and `*-word365.docx` saves in the folder):
+- `p1-1` to `p1-8` open cleanly, with the text right. That includes UTF-16BE, Shift_JIS transcoded,
+  and the two cases Word refused as given, a declaration after a BOM or after white space;
+- `p1-9` reports unreadable content and recovers. Word's save keeps every `P9` marker, and the bound
+  value's text reads right, but it loses `FLATOPCTEXT`. That text is in the template's other chunk:
+  the Flat OPC chunk the binding makes from another bound value, which phase 1 does not touch. That
+  value is a `pkg:package` holding only `/word/document.xml`, with no `/_rels/.rels` to name the main
+  document. Two variants separate the chunks. `p1-9b`, the HTML chunk alone, opens cleanly, and
+  `p1-9c`, the Flat OPC chunk alone, reports unreadable content and recovers (Jason, the same day).
+
+So Word opens everything phase 1 writes. The Flat OPC value is `TextBindParityTest`'s fixture, which
+checks only that the chunk holds the text. docx4j's text model agrees with Word about it: the chunk
+is not expanded (`altchunk.not_expanded`), since `FlatOpcXmlImporter` needs `/_rels/.rels` (:209).

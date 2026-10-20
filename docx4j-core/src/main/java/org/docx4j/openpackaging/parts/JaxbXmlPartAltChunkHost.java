@@ -20,6 +20,7 @@
 package org.docx4j.openpackaging.parts;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
@@ -34,6 +35,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkHtml;
 import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkInterface;
 import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkType;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
@@ -76,7 +78,7 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		// now that its attached to the package ..
 		afiPart.registerInContentTypeManager();
 		
-		afiPart.setBinaryData(bytes); 		
+		afiPart.setBinaryData(asWordOpens(type, bytes)); 		
 		
 		// .. the bit in document body 
 		CTAltChunk ac = Context.getWmlObjectFactory().createCTAltChunk(); 
@@ -104,6 +106,8 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 	 */
 	@Override
 	public AlternativeFormatInputPart addAltChunk(AltChunkType type, InputStream is, int index)   throws Docx4JException {
+		
+		if (AltChunkHtml.appliesTo(type)) return addAltChunk(type, readAll(is), index);
 		
 		AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(type); 
 		Relationship altChunkRel = this.addTargetPart(afiPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS); 
@@ -147,7 +151,7 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		// now that its attached to the package ..
 		afiPart.registerInContentTypeManager();
 		
-		afiPart.setBinaryData(bytes); 		
+		afiPart.setBinaryData(asWordOpens(type, bytes)); 		
 		
 		// .. the bit in document body 
 		CTAltChunk ac = Context.getWmlObjectFactory().createCTAltChunk(); 
@@ -174,6 +178,8 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 	public AlternativeFormatInputPart addAltChunk(AltChunkType type, InputStream is,
 			ContentAccessor attachmentPoint, int index) throws Docx4JException {
 		
+		if (AltChunkHtml.appliesTo(type)) return addAltChunk(type, readAll(is), attachmentPoint, index);
+		
 		AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(type); 
 		Relationship altChunkRel = this.addTargetPart(afiPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS); 
 		// now that its attached to the package ..
@@ -193,6 +199,18 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		return afiPart;
 	}
 
+	/** An HTML or XHTML chunk without the XML declaration Word refuses (CR-053 D1, D2); any other as it is. */
+	private static byte[] asWordOpens(AltChunkType type, byte[] bytes) {
+		return AltChunkHtml.appliesTo(type) ? AltChunkHtml.withoutXmlDeclaration(bytes) : bytes;
+	}
+
+	private static byte[] readAll(InputStream is) throws Docx4JException {
+		try (InputStream in = is) {
+			return in.readAllBytes();
+		} catch (IOException e) {
+			throw new Docx4JException("Couldn't read the altChunk", e);
+		}
+	}
 		
 	@SuppressWarnings("unchecked")
 	@Override

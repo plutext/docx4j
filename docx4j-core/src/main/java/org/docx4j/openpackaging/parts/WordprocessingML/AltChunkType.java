@@ -40,4 +40,20 @@ public enum AltChunkType {
 		return contentType;
 	}
 
+	/**
+	 * The type of a chunk whose part declares this content type, its parameters and case aside
+	 * (CR-053 D6); null where docx4j knows no type for it. {@code application/rtf} is {@code Rtf},
+	 * as {@code text/rtf} is.
+	 * @since 17.3.4
+	 */
+	public static AltChunkType forContentType(String contentType) {
+		if (contentType == null) return null;
+		int semi = contentType.indexOf(';');
+		String ct = (semi >= 0 ? contentType.substring(0, semi) : contentType).trim();
+		for (AltChunkType type : values()) {
+			if (type.contentType.equalsIgnoreCase(ct)) return type;
+		}
+		return ct.equalsIgnoreCase("application/rtf") ? Rtf : null;
+	}
+
 }

@@ -52,6 +52,7 @@ import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
+import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkHtml;
 import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkType;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
@@ -649,7 +650,8 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			Relationship altChunkRel = pkg.getMainDocumentPart().addTargetPart(afiPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS); 
 			// now that its attached to the package ..
 			afiPart.registerInContentTypeManager();			
-			afiPart.setBinaryData(r.getBytes()); 		
+			// UTF-8 with a BOM, without the XML declaration Word refuses (CR-053 D1, D2)
+			afiPart.setBinaryData(AltChunkHtml.utf8WithoutXmlDeclaration(r)); 		
 			
 			// .. the bit in document body 
 			CTAltChunk ac = Context.getWmlObjectFactory().createCTAltChunk(); 

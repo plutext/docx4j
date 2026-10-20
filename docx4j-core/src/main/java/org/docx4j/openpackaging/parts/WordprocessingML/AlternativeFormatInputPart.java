@@ -49,7 +49,8 @@ public final class AlternativeFormatInputPart extends BinaryPart {
 		}
 		
 		if (altChunkType==null) {
-			log.warn("Unrecognized type: " + extension);
+			// a loaded part's content type, set next, may type it (CR-053 D6)
+			log.debug("No AltChunkType for the extension " + extension);
 		}
 		
 		init();
@@ -83,6 +84,18 @@ public final class AlternativeFormatInputPart extends BinaryPart {
 	}
 	public AltChunkType getAltChunkType() {
 		return altChunkType;
+	}
+
+	/**
+	 * Sets the content type, and the chunk's type to the one it declares, where docx4j knows one
+	 * (CR-053 D6): so a loaded chunk is typed by the content type the package declares, the part
+	 * name's extension the fallback, and a copy whose content type is set agrees with it.
+	 */
+	@Override
+	public void setContentType(ContentType contentType) {
+		super.setContentType(contentType);
+		AltChunkType declared = contentType == null ? null : AltChunkType.forContentType(contentType.toString());
+		if (declared != null) altChunkType = declared;
 	}
 
 	public void registerInContentTypeManager() {

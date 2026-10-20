@@ -29,6 +29,11 @@ import org.docx4j.wml.ContentAccessor;
  * An altChunk can appear wherever EG_BlockLevelElts is allowed 
  * ie in tc, footnotes/endnotes, txbxContent, body, comment, 
  * hdr/ftr.  Also a content control???
+ *
+ * <p>Since 17.3.4, an {@code Html} or {@code Xhtml} chunk is added without a leading XML
+ * declaration, which Word refuses (it repairs the document), and the encoding the declaration
+ * named is kept by a byte order mark (CR-053): see {@link AltChunkHtml}. Other types are added
+ * as they are given.</p>
  * @author jharrop
  * @since 2.8
 

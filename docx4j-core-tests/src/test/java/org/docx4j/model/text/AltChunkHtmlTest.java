@@ -55,7 +55,8 @@ import org.w3c.dom.Element;
  * docx4j-ImportXHTML, so the cases that need the importer (section 1's 3 to 5, section 1a's
  * importer column) are scratch-driver evidence recorded in the CR, and the tests that read a chunk
  * are skipped where the importer is on the class path. A test whose result a later phase changes
- * says so ("Phase n changes this"), with what the result becomes.
+ * says so ("Phase n changes this"), with what the result becomes. Phase 1 changed the three
+ * writing tests, which now say what phase 0 found.
  */
 public class AltChunkHtmlTest {
 
@@ -244,20 +245,33 @@ public class AltChunkHtmlTest {
 
 	// --- writing ----------------------------------------------------------------------------------
 
+	private static final byte[] UTF8_BOM = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
+
+	private static byte[] bom(String markup) {
+		byte[] utf8 = markup.getBytes(StandardCharsets.UTF_8);
+		byte[] out = Arrays.copyOf(UTF8_BOM, UTF8_BOM.length + utf8.length);
+		System.arraycopy(utf8, 0, out, UTF8_BOM.length, utf8.length);
+		return out;
+	}
+
 	/**
-	 * Section 1, case 6: each {@code addAltChunk} path writes an HTML or XHTML chunk byte for byte,
-	 * its XML declaration included, which Word refuses (section 2). Phase 1 changes this for
-	 * {@code Html} and {@code Xhtml}: the declaration is stripped (D1, D2). A Flat OPC chunk keeps
-	 * its declaration, which Word accepts: that stays.
+	 * Section 1, case 6, as phase 1 leaves it (D1, D2): each {@code addAltChunk} path writes an HTML
+	 * or XHTML chunk without its XML declaration, which Word refuses (section 2), and with a UTF-8
+	 * BOM for the UTF-8 the declaration named. A Flat OPC chunk keeps its declaration, which Word
+	 * accepts. Phase 0 found all three written byte for byte. {@code AltChunkHtmlWritingTest} has
+	 * the other encodings.
 	 */
 	@Test
-	public void addAltChunkWritesTheDeclaration() throws Exception {
-		byte[] html = (DECLARATION + "<html><body><p>DECLARED_é</p></body></html>").getBytes(StandardCharsets.UTF_8);
-		byte[] xhtml = (DECLARATION + XHTML + "<body><p>DECLARED_é</p></body></html>").getBytes(StandardCharsets.UTF_8);
+	public void addAltChunkStripsTheDeclaration() throws Exception {
+		String htmlBody = "<html><body><p>DECLARED_é</p></body></html>";
+		String xhtmlBody = XHTML + "<body><p>DECLARED_é</p></body></html>";
+		byte[] html = (DECLARATION + htmlBody).getBytes(StandardCharsets.UTF_8);
+		byte[] xhtml = (DECLARATION + xhtmlBody).getBytes(StandardCharsets.UTF_8);
 		byte[] flatOpc = (DECLARATION + "<pkg:package xmlns:pkg='http://schemas.microsoft.com/office/2006/xmlPackage'/>")
 				.getBytes(StandardCharsets.UTF_8);
 		for (AltChunkType type : new AltChunkType[] { AltChunkType.Html, AltChunkType.Xhtml, AltChunkType.Xml }) {
 			byte[] bytes = type == AltChunkType.Html ? html : type == AltChunkType.Xhtml ? xhtml : flatOpc;
+			byte[] expected = type == AltChunkType.Html ? bom(htmlBody) : type == AltChunkType.Xhtml ? bom(xhtmlBody) : flatOpc;
 			for (int path = 0; path < 4; path++) {
 				WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 				MainDocumentPart main = pkg.getMainDocumentPart();
@@ -268,21 +282,22 @@ public class AltChunkHtmlTest {
 				case 2: part = main.addAltChunk(type, bytes, main); break;
 				default: part = main.addAltChunk(type, new ByteArrayInputStream(bytes), main); break;
 				}
-				assertArrayEquals(type + ", path " + path, bytes, part.getBytes());
+				assertArrayEquals(type + ", path " + path, expected, part.getBytes());
 			}
 		}
 	}
 
 	/**
-	 * Section 1: the OpenDoPE XHTML binding, without the importer, writes the bound value as a
-	 * {@code text/html} chunk, its declaration included, in the platform's charset
-	 * ({@code BindingTraverserXSLT}'s {@code r.getBytes()}). Phase 1 changes this: the declaration
-	 * is stripped and the chunk is UTF-8.
+	 * Section 1, as phase 1 leaves it: the OpenDoPE XHTML binding, without the importer, writes the
+	 * bound value as a {@code text/html} chunk in UTF-8 with a BOM, without its declaration. Phase 0
+	 * found the declaration kept and the value in the platform's charset
+	 * ({@code BindingTraverserXSLT}'s {@code r.getBytes()}).
 	 */
 	@Test
-	public void boundXhtmlValueKeepsItsDeclaration() throws Exception {
+	public void boundXhtmlValueIsUtf8WithoutItsDeclaration() throws Exception {
 		readable();
-		String value = DECLARATION + "<html><body><p>BOUND_é</p></body></html>";
+		String body = "<html><head><meta charset='windows-1252'/></head><body><p>BOUND_é</p></body></html>";
+		String value = DECLARATION + body;
 		String impl = "docx4j.model.datastorage.BindingHandler.Implementation";
 		Docx4jProperties.setProperty(impl, "BindingTraverserXSLT");
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new File(System.getProperty("user.dir")
@@ -309,29 +324,42 @@ public class AltChunkHtmlTest {
 			}
 		}
 		assertNotNull("no HTML chunk", chunk);
-		assertArrayEquals(value.getBytes(Charset.defaultCharset()), chunk);
+		// the value's own meta charset is rewritten, since the bytes are UTF-8
+		assertArrayEquals(new String(chunk, StandardCharsets.UTF_8), bom(body.replace("windows-1252", "UTF-8")), chunk);
 	}
 
 	/**
-	 * Section 1: a loaded chunk's {@code AltChunkType} comes from its part name's extension, so a
-	 * {@code .htm} part declared {@code application/xhtml+xml} is {@code Html}, and a part whose
-	 * extension docx4j does not know has no type, which {@code convertAltChunks} then leaves as it
-	 * is, though the text model, which decides by the content type, reads it. Phase 1 changes this
-	 * (D6): the type from the declared content type, the extension the fallback; the
-	 * {@code text/plain} chunk is then converted.
+	 * Section 1, as phase 1 leaves it (D6): a loaded chunk's {@code AltChunkType} comes from its
+	 * declared content type, the part name's extension the fallback, and the declared content type
+	 * is kept. So a {@code .htm} part declared {@code application/xhtml+xml} is {@code Xhtml}, and
+	 * the {@code text/plain} chunk with an extension docx4j does not know is {@code TextPlain}, which
+	 * {@code convertAltChunks} now converts. Phase 0 found the first {@code Html} and the second
+	 * without a type, left as it was.
 	 */
 	@Test
-	public void loadedChunkTypeFollowsTheExtension() throws Exception {
+	public void loadedChunkTypeFollowsTheContentType() throws Exception {
 		String af = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk";
 		WordprocessingMLPackage pkg = MiniDocx.body("<w:altChunk r:id='rIdA'/><w:altChunk r:id='rIdB'/>")
 				.part("chunkA.htm", "application/xhtml+xml", af, "rIdA", XHTML + "<body><p>CHUNK_A</p></body></html>")
 				.part("chunkB.dat", "text/plain", af, "rIdB", "CHUNK_B".getBytes(StandardCharsets.UTF_8))
+				.part("chunkC.bin", "application/rtf", af, "rIdC", "{\\rtf1 CHUNK_C}".getBytes(StandardCharsets.UTF_8))
+				.part("chunkD.html", "application/octet-stream", af, "rIdD", "<p>CHUNK_D</p>")
+				.part("chunkE.dat", "application/octet-stream", af, "rIdE", "CHUNK_E".getBytes(StandardCharsets.UTF_8))
+				.part("chunkF.txt", "Text/HTML; charset=utf-8", af, "rIdF", "<p>CHUNK_F</p>")
 				.load();
 		RelationshipsPart rels = pkg.getMainDocumentPart().getRelationshipsPart();
 		AlternativeFormatInputPart a = (AlternativeFormatInputPart) rels.getPart("rIdA");
 		AlternativeFormatInputPart b = (AlternativeFormatInputPart) rels.getPart("rIdB");
-		assertEquals(AltChunkType.Html, a.getAltChunkType());
-		assertNull(b.getAltChunkType());
+		assertEquals(AltChunkType.Xhtml, a.getAltChunkType());
+		assertEquals(AltChunkType.TextPlain, b.getAltChunkType());
+		assertEquals(AltChunkType.Rtf, ((AlternativeFormatInputPart) rels.getPart("rIdC")).getAltChunkType());
+		// the extension, where docx4j knows no type for the content type
+		assertEquals(AltChunkType.Html, ((AlternativeFormatInputPart) rels.getPart("rIdD")).getAltChunkType());
+		assertNull(((AlternativeFormatInputPart) rels.getPart("rIdE")).getAltChunkType());
+		assertEquals(AltChunkType.Html, ((AlternativeFormatInputPart) rels.getPart("rIdF")).getAltChunkType());
+		// the declared content type is kept, not replaced by the type's own
+		assertEquals("application/rtf", rels.getPart("rIdC").getContentType());
+		assertEquals("application/octet-stream", rels.getPart("rIdD").getContentType());
 		if (!AltChunks.importerPresent()) {
 			assertEquals(Arrays.asList("CHUNK_A", "CHUNK_B"), blocks(Texts.of(pkg, new TextOptions())));
 		}
@@ -341,7 +369,7 @@ public class AltChunkHtmlTest {
 				.load();
 		plain.getMainDocumentPart().convertAltChunks();
 		String xml = XmlUtils.marshaltoString(plain.getMainDocumentPart().getJaxbElement());
-		assertTrue(xml, xml.contains("altChunk"));
-		assertFalse(xml, xml.contains("CHUNK_B"));
+		assertFalse(xml, xml.contains("altChunk"));
+		assertTrue(xml, xml.contains("CHUNK_B"));
 	}
 }

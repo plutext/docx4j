@@ -365,9 +365,9 @@ public class McBlockLevelConsumersTest {
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		org.docx4j.Docx4J.save(built, bytes);
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(bytes.toByteArray()), McBlockLevel.PRESERVE);
-		// a loaded part carries no AltChunkType (only the setter sets one), so the test gives it its type
+		// the loaded part's AltChunkType comes from its content type (CR-053 D6)
 		Part loaded = pkg.getMainDocumentPart().getRelationshipsPart().getPart(rel.getId());
-		((AlternativeFormatInputPart) loaded).setAltChunkType(AltChunkType.TextPlain);
+		assertEquals(AltChunkType.TextPlain, ((AlternativeFormatInputPart) loaded).getAltChunkType());
 		pkg.getMainDocumentPart().convertAltChunks();
 		String out = xml(pkg.getMainDocumentPart().getJaxbElement());
 		assertEquals(out, 2, countOf(out, "CHUNK TEXT"));
