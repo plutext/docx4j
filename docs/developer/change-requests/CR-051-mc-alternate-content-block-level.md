@@ -1,8 +1,10 @@
 # CR-051: `mc:AlternateContent` at block level: read as Word reads it on load, or kept whole on request (body, cells, rows, headers, notes, text boxes, content controls)
 
-Status: PROPOSED 2026-10-20. Drafted at Jason's request ("write the cr to keep body-level mc through
-load. also check whether we do/should keep mc in sdt content") by Claude Opus 5.5 (session
-docx4j-25), after the portfolio session's measurement of Jason's `mc-fun` probes (paper §7.8).
+Status: ACCEPTED 2026-10-20 (Jason: "accept recommendations for CR-051's D1 to D5"), to implement as
+recommended; phase 0's walker audit next. Proposed 2026-10-20, drafted at Jason's request ("write
+the cr to keep body-level mc through load. also check whether we do/should keep mc in sdt content")
+by Claude Opus 5.5 (session docx4j-25), after the portfolio session's measurement of Jason's
+`mc-fun` probes (paper §7.8).
 Revised the same day:
 - with Word's reading and saving measured (§5, phase 0);
 - around a load-time mode (§3.2), at Jason's suggestion: "a docx4j property which by default mimics
@@ -12,7 +14,8 @@ Revised the same day:
 Reviewed the same day by the docx4j-64 session (Claude Fable 5.1) at Jason's request: nine findings,
 one a defect today. All are taken (§9).
 
-Three phases and hand-offs (§5); decisions in §6, all open, D5 being Jason's own proposal. It changes
+Three phases and hand-offs (§5); decisions in §6, D1 to D5 decided by Jason on 20 October 2026 as
+recommended, D5 being his own proposal. It changes
 the generated object model and the load path, which CLAUDE.md lists among the widely-shared code to
 change on Fable.
 
@@ -542,7 +545,7 @@ walk does the same with `McPurpose.TEXT`. Then `preserve` mode keeps those eleme
 
 ## 6. Decisions
 
-Each with a recommendation; Jason decides.
+Each with a recommendation; Jason decides. All five decided as recommended on 20 October 2026.
 
 - **D1. Block level.**
   - **Options:**
@@ -554,6 +557,7 @@ Each with a recommendation; Jason decides.
     JAXB rejects something (§3.2), and leaves no way to preserve.
   - **Recommended:** (a). Word 365 reads the element in a cell and a block content control as it does
     in the body (§1).
+  **Decided** (Jason, 20 October 2026): (a).
 - **D2. Row and cell level.**
   - **Options:**
     - (a) admit the element in `EG_ContentRowContent` and `EG_ContentCellContent`:
@@ -563,9 +567,12 @@ Each with a recommendation; Jason decides.
     - (b) not now: the preprocessor keeps resolving there (with D4's fix), and a later CR takes it up.
   - **Recommended:** (a). Word 365 reads the element in `w:tbl` and `w:tr` and in row and cell
     content controls (§1), and in `word` mode the table code sees ordinary rows and cells.
+  **Decided** (Jason, 20 October 2026): (a).
 - **D3. The preprocessor's keep rule.** Recommended: follow the schema's admissions (§3.3). With D1
   (a) and D2 (a) that is a flat list of parents; only D2 (b) needs levels. This fixes the collateral
   resolution of §1, a defect today, so it lands in phase 1 whatever else is decided.
+  **Decided** (Jason, 20 October 2026): as recommended, a flat list of the schema's admitted
+  parents.
 - **D4. No Fallback where the element is still not admitted** (in properties; none seen).
   - **Options:**
     - (a) resolve to the first Choice, with the warning;
@@ -573,6 +580,7 @@ Each with a recommendation; Jason decides.
   - **Recommended:** (a). REQ-305 asks for the element kept whole, which only admission gives. Of the
     two resolutions, the first Choice is the one REQ-305's reading rule would take, and dropping
     loses content. Within admitted parents, REQ-305 is met in both modes (§3.2).
+  **Decided** (Jason, 20 October 2026): (a).
 - **D5. The load-time mode: the property and its default** (Jason's proposal).
   - **Options:**
     - (a) a property (`docx4j.jaxb.mc.blockLevel`) with a package-level override, default `word`,
@@ -610,6 +618,9 @@ Each with a recommendation; Jason decides.
     - (d) leaves the tools of reason 4 with no way to keep what the producer wrote.
   - **The name** is open: `docx4j.jaxb.mc.blockLevel` says that run and paragraph level are not
     governed. Its values are `word` and `preserve`.
+  **Decided** (Jason, 20 October 2026): (a): the property with a load option and a package-level
+  override, default `word`, `preserve` on request. The name `docx4j.jaxb.mc.blockLevel` stands
+  unless phase 1 finds a reason to change it.
 
 ## 7. Dependencies, risks and out of scope
 
