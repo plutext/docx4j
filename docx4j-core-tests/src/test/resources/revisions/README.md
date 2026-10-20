@@ -35,7 +35,17 @@ Copied 2026-10-16 from docx4j-ts-editor `packages/editor-model/test/fixtures/` a
   says what each section yields.
 - `review/`: the editor's review session through Word 2010 and Word 15, each untouched, `-accepted` and
   `-rejected`; its `README.md`. The two notes referenced from inside an insertion and a deletion show that Word
-  removes a note whose reference goes (CR-043 section 3.2).
+  removes a note whose reference goes (CR-043 section 3.2). `review-for-word-word365-rejected.docx` is Word 365's
+  Reject All of `review-for-word.docx` (Jason, 21 October 2026, for docx4j-python): it removes the comment on the
+  inserted paragraph whose markers lie outside the `w:ins`, which Word 2010 and Word 15 kept (CR-043 section 15).
+
+## `python/artefact8/` - docx4j-python's acceptance artefact 8
+
+Copied 2026-10-21 from Jason's share (`__tmp/python-8/`). `8-tracked-changes.docx` is docx4j-python's tracker's
+output before its fix 1 (a replace_text, a comment on its inserted half with every marker outside the `w:ins`, a
+table, a deleted paragraph, formatting); `8-word-accepted.docx` and `8-word-rejected.docx` are Word 365's Accept All
+and Reject All of it. Reject All removes the comment, and with the last comment the comments, commentsExtended and
+commentsIds parts and `people.xml` (CR-043 section 15).
 
 ## `cr043/` - CR-043 phase 0's own probe
 

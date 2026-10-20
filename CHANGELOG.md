@@ -110,6 +110,8 @@ Changes in Version 17.3.4
 - The inspector reports what `display: none` hides in an HTML, XHTML or MHT `altChunk` as `text.hidden`, at the
   element's path in the parsed chunk, through the import the extraction runs (CR-053 phase 3); the `altchunk` finding
   gains `parsed` (`InspectFinding.getParsed()`). Without an HTML reader such a chunk is skipped as `not_decoded`.
+- Accepting or rejecting tracked changes removes a comment whose range it leaves empty wherever its markers were, and
+  with the last comment the comment parts (and `people.xml` once no revision is left), as Word 365 does (CR-043 §15).
 
 
 Version 17.3.3

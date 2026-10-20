@@ -378,6 +378,7 @@ public final class DocumentDescription {
 	}
 
 	private static String render(List<Seg> segs) {
+		segs = endsBeforeReferences(segs);
 		List<Seg> merged = new ArrayList<Seg>();
 		for (Seg s : segs) {
 			Seg last = merged.isEmpty() ? null : merged.get(merged.size() - 1);
@@ -393,6 +394,30 @@ public final class DocumentDescription {
 			else out.append('\u00ab').append(s.text.replace("\t", "\\t").replace("\n", "\\n")).append('\u00bb').append(s.format).append(s.context.isEmpty() ? "" : "[" + s.context + "]");
 		}
 		return out.toString();
+	}
+
+	/**
+	 * Comment range ends and references standing together, ends first: Word 365 saves each reply's
+	 * reference after its own range's end (end, reference, end, reference) where the source and Word 2010
+	 * have the ends together (CR-043 section 15, {@code review-for-word-word365-rejected}), which says
+	 * nothing about the comments.
+	 */
+	private static List<Seg> endsBeforeReferences(List<Seg> segs) {
+		List<Seg> out = new ArrayList<Seg>(segs);
+		int i = 0;
+		while (i < out.size()) {
+			int j = i;
+			while (j < out.size() && out.get(j).marker && (out.get(j).text.equals("c\u2046") || out.get(j).text.equals("\u2045cref\u2046"))) j++;
+			if (j - i > 1) {
+				List<Seg> ends = new ArrayList<Seg>(), refs = new ArrayList<Seg>();
+				for (Seg x : out.subList(i, j)) (x.text.equals("c\u2046") ? ends : refs).add(x);
+				List<Seg> run = new ArrayList<Seg>(ends);
+				run.addAll(refs);
+				for (int k = 0; k < run.size(); k++) out.set(i + k, run.get(k));
+			}
+			i = Math.max(j, i + 1);
+		}
+		return out;
 	}
 
 	private void runLevel(List<Object> items, String context, List<Seg> out) {

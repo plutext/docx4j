@@ -81,7 +81,7 @@ public final class ResolvedView {
 	/** Moved paragraphs whose mark is gone: gone themselves when nothing is left in them, else joined. */
 	private final Set<Object> movedMarksGone = Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());
 
-	/** Comments whose range was on a revision taken away: gone with it once nothing with text is left in their range. */
+	/** Comments whose range held a revision taken away: gone with it once nothing with text is left in their range. */
 	private final List<CommentCandidate> commentCandidates = new ArrayList<CommentCandidate>();
 	private final Set<BigInteger> commentsGone = new LinkedHashSet<BigInteger>();
 
@@ -164,7 +164,8 @@ public final class ResolvedView {
 
 	/**
 	 * Whether a comment goes in this view, entry and reference: one whose range started on a revision
-	 * taken away, once nothing with text is left in its range (CR-043, check 32).
+	 * taken away, or whose markers lie either side of one, once nothing with text is left in its range
+	 * (CR-043, check 32; Word 365, 21 October 2026).
 	 */
 	public boolean removesComment(BigInteger id) {
 		return id != null && commentsGone.contains(id);
@@ -219,7 +220,10 @@ public final class ResolvedView {
 		if (!kept) removeRevision(t.item, t.owner);
 	}
 
-	/** {@code Resolver.removeRevision}: the revision goes, and the comments whose range started on it are candidates. */
+	/**
+	 * {@code Resolver.removeRevision}: the revision goes, and the comments whose range started on it,
+	 * or whose markers lie either side of it in its list, are candidates.
+	 */
 	private void removeRevision(Object item, List<Object> owner) {
 		Object v = Trees.unwrap(item);
 		removed.add(v);
@@ -231,9 +235,21 @@ public final class ResolvedView {
 			Object ov = Trees.unwrap(o);
 			if (ov instanceof CommentRangeStart) commentCandidates.add(new CommentCandidate(((CommentRangeStart) ov).getId(), owner, at));
 		}
+		for (int s = 0; s < at; s++) {
+			Object sv = Trees.unwrap(owner.get(s));
+			if (!(sv instanceof CommentRangeStart)) continue;
+			BigInteger id = ((CommentRangeStart) sv).getId();
+			for (int e = at + 1; e < owner.size(); e++) {
+				Object ev = Trees.unwrap(owner.get(e));
+				if (ev instanceof CommentRangeEnd && java.util.Objects.equals(((CommentRangeEnd) ev).getId(), id)) {
+					commentCandidates.add(new CommentCandidate(id, owner, s));
+					break;
+				}
+			}
+		}
 	}
 
-	/** A comment whose range started on a revision taken away, and where that revision stood. */
+	/** A comment whose range held a revision taken away, and where its range's text begins to be looked for. */
 	private final class CommentCandidate {
 		final BigInteger id;
 		final List<Object> owner;

@@ -1,15 +1,16 @@
 # CR-043: Accepting and rejecting tracked changes - a docx4j-core API
 
 Status: DONE 2026-10-16, all four phases (phase 3: Jason, "commit phase 2 then start phase 3"; D2 and D3 decided) -
-proposed 2026-10-15 (drafted at Jason's request, relayed by the portfolio session for its
-"Aspose to docx4j" comparison); refined 2026-10-16; phase 0 DONE 2026-10-16 (Jason: "start CR-043 phase 0"): the
-fixtures copied in, the Word probe run (Word 16.0.20326) and read, every "unmeasured" row of §3.2 that Word can produce
-now measured (§4.4); phase 1 DONE 2026-10-16 (Jason: "start CR-043 phase 1"): `org.docx4j.model.revisions` lists,
-accepts and rejects every kind but the table, cell and section records, held to Word's saves by 66 tests (§12);
-phase 2 DONE 2026-10-16 (Jason: "commence phase 2"; D4 and D6 decided): those records, cells inserted and deleted, the
-legacy forms and the filters (§13); phase 3 DONE 2026-10-16: `AcceptTrackedChanges` on the new code in every story
-(D2), the samples, the XSLT deprecated (D3), Getting Started, the ports' agreement run (§14). For 17.3.3, the whole CR
-(D6).  Four phases (§5); decisions in §7.
+proposed 2026-10-15 (drafted at Jason's request, relayed by the portfolio session for its "Aspose to docx4j"
+comparison); refined 2026-10-16; phase 0 DONE 2026-10-16 (Jason: "start CR-043 phase 0"): the fixtures copied in,
+the Word probe run (Word 16.0.20326) and read, every "unmeasured" row of §3.2 that Word can produce now measured
+(§4.4); phase 1 DONE 2026-10-16 (Jason: "start CR-043 phase 1"): `org.docx4j.model.revisions` lists, accepts and
+rejects every kind but the table, cell and section records, held to Word's saves by 66 tests (§12); phase 2 DONE
+2026-10-16 (Jason: "commence phase 2"; D4 and D6 decided): those records, cells inserted and deleted, the legacy
+forms and the filters (§13); phase 3 DONE 2026-10-16: `AcceptTrackedChanges` on the new code in every story (D2),
+the samples, the XSLT deprecated (D3), Getting Started, the ports' agreement run (§14). For 17.3.3, the whole CR
+(D6).  Four phases (§5); decisions in §7. Follow-up 2026-10-21 (Jason: "follow Word 365"): a comment whose range a
+resolution empties goes whole wherever its markers were, and the comment parts with the last (§15).
 
 Refined 2026-10-16 (no implementation yet; Jason: "it would be good to include CR-043 tracked changes in our
 17.3.3 release ... do not implement anything yet"), from what docx4j-ts-editor and docx4j-core-ts have built and
@@ -151,7 +152,7 @@ docx4j's reading (D5), and the row is on §11's running list.
 | an inserted math structure (a `w:ins` in its `m:ctrlPr`, `EG_RPrMath`: `CTCtrlPr.getIns()`, a `CTRPrChange`; `m:sSup` in that file) | the `w:ins` goes, its `w:rPr` kept (copied from the `CTRPrChange.RPr` list form into a live `RPr`, `CTCtrlPr.setRPr`) | **the structure goes whole** - the `m:ctrlPr`'s grandparent (`m:sSup`, `m:d`, `m:acc`, ...) removed from the list that holds it - as a paragraph goes with its inserted mark | the same; a deleted structure by symmetry (unmeasured) |
 | `w:ins`/`w:del` holding `m:r` or `m:oMath` (`m:EG_OMathMathElements` in `CT_RunTrackChange`) | as runs | as runs | schema-legal, in no fixture (§10 item 1) |
 | **comments** | a comment whose range start lies inside removed content goes: markers, reference run and entry; with it its entries in `commentsExtended`, `commentsIds` and `commentsExtensible`, and its replies (`w15:paraIdParent`) | the same | 32 (a comment's own text: Word does not track edits to it, C18); the extended parts and replies unmeasured (§10 item 4) |
-| | a comment whose markers lie outside: the range markers inside removed content go, the reference run and entry stay | | the editor, Word 2010 and 15 |
+| | a comment whose markers lie outside, its range left empty: **goes whole**, as one whose start was inside (§15; Word 2010 and 15 kept the reference run and entry); with the last comment the comment parts go, and `people.xml` where no revision is left | the same (by symmetry, U21) | Word 365, 21 October 2026: `review-for-word-word365-rejected`, docx4j-python's artefact 8 |
 | **footnotes and endnotes** | a note whose reference run goes is **removed from its part** (Word also marks the note's own content deleted or inserted with its reference) | the same | the editor's `review/` saves (footnotes, Word 2010 and 15); endnotes C12, C12b |
 | a **bookmark** with its start or its end inside removed content, or around content that goes and left empty by it | **removed whole** (C11: start before a deletion, end inside it, accepted) | the same (C11b: a bookmark around an insertion, rejected); a bookmark empty before stays | C11, C11b (core-ts drops only the markers inside, which leaves half a bookmark); a deletion accepted under a bookmark, U15 |
 | a drawing (or any related part) inside removed content | the run goes; **its relationship and part go** when nothing else references them - counting every part's relationships, not the story's alone, and every relationship the removed subtree references: `a:blip` `r:embed`/`r:link`, `v:imagedata` `r:id`, chart parts, `w:object`'s OLE part and preview (Word's saves keep no unreferenced image, C04, C05) | | C04, C05; the wider scope unmeasured (D7, §10 item 4) |
@@ -497,6 +498,9 @@ settles one moves it into §3.2 with its source. Kept current; dated where added
 | U18 | a move's listing (added 2026-10-16) | each half of each moved paragraph is listed as a change of its own (Office JS cannot list a move, checks 16 and 17); resolving any one resolves the whole move, and the others are then stale | core-ts | Word's Review pane: how many "Moved" entries a three-paragraph move (C15) shows |
 | U19 | a filter on a group (added 2026-10-16, phase 2) | applies to its single changes: a group partly matched has only its matching pieces resolved (a kind filter on a deleted paragraph resolves its text and leaves its mark, or the other way round) | docx4j's choice; Word's Review tab has no such filter (its "show changes by" reviewer filter is display only) | none needed: an API choice |
 | U20 | a table's records that change nothing, a grid's record alone (added 2026-10-16) | not listed (checks 24 and 26's rule for runs and paragraphs, core-ts's for tables); dropped by the sweep either way | core-ts | a probe changing a table property and back with tracking on |
+| U21 | Accept All of a deletion whose comment's markers lie outside it (added 2026-10-21, §15) | the comment goes whole once its range is empty, as Reject All of an insertion | symmetry with Word 365's Reject All | a probe deleting a commented phrase whose markers stay outside the `w:del` |
+| U22 | `people.xml` after the last comment goes, with revisions left (added 2026-10-21, §15) | kept while any tracked change is left; removed with the comment parts when none is | Word 365 removed it with none left (artefact 8) | a single change rejected that removes the last comment, others left |
+| U23 | a comment whose range spans paragraphs, every paragraph's text removed (added 2026-10-21, §15) | stays: a range is judged empty only within one content list (as before) | docx4j's reading | a probe rejecting an inserted two-paragraph passage commented whole |
 
 ## 12. Phase 1 (2026-10-16)
 
@@ -662,3 +666,36 @@ about, and Python naming; neither is a rule that disagrees with Word.
 **The Word-open check** (Jason, 2026-10-16, Word 365): docx4j's own Accept All and Reject All saves of four fixtures -
 the probe, the equations, the editor's review file (notes, comments, a reply) and check 18's (a move, list changes,
 tables, a section) - each open with no repair prompt and with no revision left. Word 2010 was not tried.
+
+## 15. Comments as Word 365 resolves them (21 October 2026)
+
+docx4j-python's acceptance artefact 8 brought a case §3.2 had only from Word 2010 and Word 15: a comment on
+inserted text whose markers (range start, end and reference) all lie outside the `w:ins`, as a tracker writes it
+that wraps only the text. Jason ran Word 365's Reject All (16.0, 21 October 2026) on it and on the editor's
+`review-for-word.docx`:
+- Word 365 removes such a comment whole once its range is left empty: markers, reference run and entry. In
+  `review-for-word`, "Changed from arrears, as agreed." goes; Word 2010 and Word 15 kept it, losing only its range
+  markers;
+- with the last comment gone (artefact 8), Word 365 also removes the comments, commentsExtended and commentsIds
+  parts and `people.xml` (core-ts check 32 saw the comments part go the same way);
+- Word 365's save writes each reply's reference after its own range's end, where the source has the ends together,
+  which says nothing about the comments.
+
+Jason's ruling the same day, on docx4j-python's proposal: "follow Word 365". So:
+- `Resolver.removeRevision` removes whole a comment whose range start was inside the revision taken away, or whose
+  markers lie either side of it in its list, once nothing with text is left in its range; a comment empty before is
+  untouched. `ResolvedView` (the text model's views, CR-046) makes the same comments candidates;
+- `Removals` drops the comment parts (comments, commentsExtended, commentsIds, commentsExtensible), their
+  relationships and content types, with the last comment a resolution takes away, and `people.xml` where no tracked
+  change is left (U22). A conversion's working copy is left as it was;
+- Accept All of a deletion follows by symmetry (U21); a range spanning paragraphs is judged within one list, as
+  before (U23).
+
+Tests (`TrackedChangesWordTest`): Word 365's Reject All of `review-for-word` (`reviewWord365Rejected`), and its
+Accept All and Reject All of artefact 8 (`python8AcceptAll`, `python8RejectAll`, the parts gone), the files in
+`revisions/editor/review/` and `revisions/python/artefact8/`. The Word 2010 and Word 15 Reject All comparisons are
+kept, Word's save without that one comment (`assertAllButComment`), the older Words' difference. `DocumentDescription`
+reads comment range ends and references standing together ends first, Word 365's save order being no difference.
+The tracked-changes tests and the text model's view agreement (`ViewAgreementTest`): 86 run, 0 failures.
+
+Hand-offs: docx4j-python (its fix 2, waiting on this) and docx4j-core-ts (its CR-002 recorded the case unmeasured).

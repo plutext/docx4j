@@ -372,11 +372,11 @@ final class Resolver {
 
 		/**
 		 * A revision taken away with its content - an insertion rejected, a deletion accepted - and the
-		 * comments on it, by where their markers were (core-ts {@code removeRevision}, check 32): a
-		 * comment whose range start was inside goes with the text it was on, markers, reference and
-		 * entry, once nothing with text is left in its range; one whose markers lie outside loses only
-		 * its range markers when its range is left empty (Word 2010 and 15, the editor's
-		 * {@code review-for-word} saves).
+		 * comments on it: a comment whose range start was inside, or whose markers lie either side of it,
+		 * goes whole with the text it was on, markers, reference and entry, once nothing with text is left
+		 * in its range (Word 365: core-ts check 32, and Jason's Reject All of the editor's
+		 * {@code review-for-word} and docx4j-python's artefact 8, 21 October 2026; Word 2010 and 15 kept
+		 * the comment whose markers lie outside, its range markers gone).
 		 */
 		void removeRevision(Object item, List<Object> owner) {
 			List<Object> list = currentOwner(owner, item);
@@ -417,16 +417,7 @@ final class Resolver {
 					Object v = Trees.unwrap(list.get(s));
 					if (v instanceof CommentRangeStart && Objects.equals(((CommentRangeStart) v).getId(), id)) { start = s; break; }
 				}
-				if (start < 0 || !rangeIsEmpty(list, start, id)) continue;
-				if (inside.contains(id)) {
-					removals.removeComment(id);
-				} else {
-					for (int s = list.size() - 1; s >= 0; s--) {
-						Object v = Trees.unwrap(list.get(s));
-						if ((v instanceof CommentRangeStart && Objects.equals(((CommentRangeStart) v).getId(), id))
-								|| (v instanceof CommentRangeEnd && Objects.equals(((CommentRangeEnd) v).getId(), id))) list.remove(s);
-					}
-				}
+				if (start >= 0 && rangeIsEmpty(list, start, id)) removals.removeComment(id);
 			}
 		}
 

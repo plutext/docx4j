@@ -41,6 +41,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.CTFtnEdn;
@@ -81,7 +82,7 @@ final class Removals {
 	private final Set<BigInteger> endnotes = new LinkedHashSet<BigInteger>();
 	/** Comments some of whose markup went: removed when nothing references them, else their orphan markers go. */
 	private final Set<BigInteger> comments = new LinkedHashSet<BigInteger>();
-	/** Comments to remove whole (their range start was inside removed text, now empty). */
+	/** Comments to remove whole (their range held removed text, and is now empty). */
 	private final Set<BigInteger> commentsWhole = new LinkedHashSet<BigInteger>();
 	private final Map<Part, Set<BigInteger>> bookmarks = new IdentityHashMap<Part, Set<BigInteger>>();
 	private final Map<Part, Set<String>> relationships = new IdentityHashMap<Part, Set<String>>();
@@ -204,6 +205,36 @@ final class Removals {
 		}
 		Set<BigInteger> done = new HashSet<BigInteger>();
 		for (BigInteger id : whole) removeCommentWhole(id, parts, done);
+		if (!done.isEmpty()) dropEmptyCommentParts();
+	}
+
+	/**
+	 * With the last comment a resolution takes away, the comment parts go, as Word 365 removes them
+	 * (docx4j-python's artefact 8 rejected, core-ts check 32): the comments part, its extended, ids and
+	 * extensible parts, their relationships and content types; and the people part, where no tracked
+	 * change is left to name an author (Word's removal was seen with none left).
+	 */
+	private void dropEmptyCommentParts() {
+		if (conversion) return;
+		MainDocumentPart main = pkg.getMainDocumentPart();
+		CommentsPart commentsPart = main.getCommentsPart();
+		if (commentsPart == null || commentsPart.getJaxbElement() == null || !commentsPart.getJaxbElement().getComment().isEmpty()) return;
+		dropPart(main, commentsPart, Namespaces.COMMENTS);
+		dropPart(main, main.getCommentsExtendedPart(), Namespaces.COMMENTS_EXTENDED);
+		dropPart(main, main.getCommentsIdsPart(), Namespaces.COMMENTS_IDS);
+		dropPart(main, main.getCommentsExtensiblePart(), Namespaces.COMMENTS_EXTENSIBLE);
+		if (main.getPeoplePart() != null && new Lister(pkg, false).list().isEmpty()) {
+			dropPart(main, main.getPeoplePart(), Namespaces.OFFICE_2011_PEOPLE);
+		}
+	}
+
+	private void dropPart(MainDocumentPart main, Part part, String type) {
+		if (part == null) return;
+		RelationshipsPart rels = main.getRelationshipsPart(false);
+		Relationship rel = rels == null ? null : rels.getRel(part.getPartName());
+		if (rel != null) rels.removeRelationship(rel);
+		main.setPartShortcut(null, type);
+		removeIfUntargeted(part);
 	}
 
 	private static boolean isCommentMarker(Object item, BigInteger id) {

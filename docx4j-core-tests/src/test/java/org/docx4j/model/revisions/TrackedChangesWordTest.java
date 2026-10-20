@@ -19,10 +19,12 @@
 package org.docx4j.model.revisions;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
+import java.math.BigInteger;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -175,9 +177,67 @@ public class TrackedChangesWordTest {
 		assertAll("revisions/editor/review/review-for-word.docx", "revisions/editor/review/review-for-word-word15-accepted.docx", true);
 	}
 
+	/**
+	 * Word 2010 and Word 15 keep the comment on the inserted paragraph whose markers lie outside its
+	 * {@code w:ins}, its range markers gone; Word 365 removes it (CR-043 section 15), as docx4j does. So the
+	 * older Words' saves are compared without that comment, the one difference, found by its text (Word
+	 * renumbers comments on save).
+	 */
+	static void assertAllButComment(String tracked, String golden, String comment) throws Exception {
+		WordprocessingMLPackage pkg = load(tracked);
+		TrackedChanges.rejectAll(pkg);
+		String ours = DocumentDescription.of(roundTrip(pkg));
+		WordprocessingMLPackage word = load(golden);
+		BigInteger id = null;
+		for (org.docx4j.wml.Comments.Comment c : word.getMainDocumentPart().getCommentsPart().getJaxbElement().getComment()) {
+			org.docx4j.finders.ClassFinder texts = new org.docx4j.finders.ClassFinder(org.docx4j.wml.Text.class);
+			new org.docx4j.TraversalUtil(c.getContent(), texts);
+			StringBuilder sb = new StringBuilder();
+			for (Object t : texts.results) sb.append(((org.docx4j.wml.Text) t).getValue());
+			if (sb.toString().contains(comment)) id = c.getId();
+		}
+		assertTrue("no comment " + comment + " in " + golden, id != null);
+		Removals older = new Removals(word);
+		older.removeComment(id);
+		older.flush();
+		String theirs = DocumentDescription.of(roundTrip(word));
+		dump(tracked + ".reject-older", theirs, ours);
+		assertEquals("reject all of " + tracked + ", but the comment " + comment, theirs, ours);
+	}
+
 	@Test
 	public void reviewWord15Rejected() throws Exception {
-		assertAll("revisions/editor/review/review-for-word.docx", "revisions/editor/review/review-for-word-word15-rejected.docx", false);
+		assertAllButComment("revisions/editor/review/review-for-word.docx", "revisions/editor/review/review-for-word-word15-rejected.docx",
+				"Changed from arrears, as agreed.");
+	}
+
+	/** Word 365 removes the comment whose range Reject All leaves empty, wherever its markers were (CR-043 section 15). */
+	@Test
+	public void reviewWord365Rejected() throws Exception {
+		assertAll("revisions/editor/review/review-for-word.docx", "revisions/editor/review/review-for-word-word365-rejected.docx", false);
+	}
+
+	/** docx4j-python's artefact 8 (CR-043 section 15): a comment on an insertion's text, every marker outside the {@code w:ins}. */
+	@Test
+	public void python8AcceptAll() throws Exception {
+		assertAll("revisions/python/artefact8/8-tracked-changes.docx", "revisions/python/artefact8/8-word-accepted.docx", true);
+	}
+
+	/** Rejected, the comment goes, and with the last comment its parts and {@code people.xml}. */
+	@Test
+	public void python8RejectAll() throws Exception {
+		assertAll("revisions/python/artefact8/8-tracked-changes.docx", "revisions/python/artefact8/8-word-rejected.docx", false);
+		WordprocessingMLPackage pkg = load("revisions/python/artefact8/8-tracked-changes.docx");
+		TrackedChanges.rejectAll(pkg);
+		WordprocessingMLPackage saved = roundTrip(pkg);
+		org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart main = saved.getMainDocumentPart();
+		assertNull(main.getCommentsPart());
+		assertNull(main.getCommentsExtendedPart());
+		assertNull(main.getCommentsIdsPart());
+		assertNull(main.getPeoplePart());
+		for (String name : new String[] { "/word/comments.xml", "/word/commentsExtended.xml", "/word/commentsIds.xml", "/word/people.xml" }) {
+			assertNull(name, saved.getParts().get(new org.docx4j.openpackaging.parts.PartName(name)));
+		}
 	}
 
 	@Test
@@ -187,7 +247,8 @@ public class TrackedChangesWordTest {
 
 	@Test
 	public void reviewWord2010Rejected() throws Exception {
-		assertAll("revisions/editor/review/review-for-word.docx", "revisions/editor/review/review-for-word-word2010-rejected.docx", false);
+		assertAllButComment("revisions/editor/review/review-for-word.docx", "revisions/editor/review/review-for-word-word2010-rejected.docx",
+				"Changed from arrears, as agreed.");
 	}
 
 	/** Check 28: bold over two runs, and two tables' records ({@code w:trPrChange} included). */
