@@ -9,8 +9,12 @@ Revised the same day:
   Word's behaviour, but can be switched to preserve. we can't rely on mc preprocessing xslt step to
   manage this, since it is only triggered by jaxb".
 
-Three phases and hand-offs (§5); decisions in §6, all open. It changes the generated object model and
-the load path, which CLAUDE.md lists among the widely-shared code to change on Fable.
+Reviewed the same day by the docx4j-64 session (Claude Fable 5.1) at Jason's request: nine findings,
+one a defect today. All are taken (§9).
+
+Three phases and hand-offs (§5); decisions in §6, all open, D5 being Jason's own proposal. It changes
+the generated object model and the load path, which CLAUDE.md lists among the widely-shared code to
+change on Fable.
 
 ## 0. Summary
 
@@ -104,6 +108,20 @@ Fallback:
   too. The text becomes `SDTRUN_FALLBACK`, `HLINK_FALLBACK`, `INP_W14`, and save keeps 1 of the 4
   elements. Word 365 kept the `w14` branch of all four, the body's included (`BODY_W14`).
 
+**A second defect today, on the binder path** (from the code; found in docx4j-64's review, §9).
+`Docx4jUnmarshallerListener` does the unmarshal-time bookkeeping:
+- each Choice's `Requires` prefixes (`addMcChoiceNamespace`) and namespaces;
+- each drawing's id (`DrawingPropsIdTracker`).
+
+It is set on the StAX path and on two of `JaxbXmlPartXPathAware`'s binder paths (lines 475 and 731,
+through `BinderListenerUtils`). On the third it is commented out (line 627, "TODO: binder doesn't
+support listener"). That third path is the one a part takes when StAX rejects it and it goes through
+the preprocessor into a binder. Every part that extends `JaxbXmlPartXPathAware` takes it: the
+`JaxbXmlPartAltChunkHost` parts (the main document, headers and footers), footnotes, endnotes,
+comments, settings, styles, numbering, and others. So such a part, rejected for any reason, loses
+that bookkeeping. Under this CR it would also lose the records §3.2 splices from, and `word` mode
+would do nothing there.
+
 **So, for content controls (Jason's question):**
 
 - **Run-level content:** docx4j keeps the element, unless something else in the part sends it
@@ -172,10 +190,17 @@ built, and `preserve` mode keeps it.
 - `word` (the default): each element is resolved as Word reads it;
 - `preserve`: each element is kept whole.
 
-**A package-level override:** `Docx4jProperties` is one setting for the JVM, and one process may hold
-an inspector and an editor that want different modes. So a package can carry its own setting, read
-when each part is unmarshalled. Parts unmarshal lazily, so the setting is made after load and before
-the part is first touched. Where `Load3` gains a load option, it can be given there instead.
+**A load option, and a package-level override:** `Docx4jProperties` is one setting for the JVM, and one
+process may hold an inspector and an editor that want different modes. So a package carries its own
+setting, read when each part is unmarshalled. It is given at load, in phase 1:
+- a setter on `Load3`, and an overload of `WordprocessingMLPackage.load` and `Docx4J.load`, which give
+  no hook today. The loader sets it on the package, as it sets `OpcPackage.setWasStrict`;
+- parts unmarshal lazily (`JaxbXmlPart.getJaxbElement`, from the part store), so a package-level
+  setter made after load also works, for a part not yet touched. It stays for packages built another
+  way.
+
+The tools that need `preserve` (the anonymiser, diffx, an edit tool that saves) need it reliably, so
+they give it at load.
 
 **Scope:** elements whose parent is a block container (§3.1's table) and, with D2, a row or cell
 container (`w:tbl`, `w:tr`, a row-level or cell-level `w:sdtContent` or `w:customXml`). Elements
@@ -194,11 +219,12 @@ that stay whole.
 **The mechanism**, in four steps:
 
 1. **Collect.** `Docx4jUnmarshallerListener.afterUnmarshal(target, parent)` records each
-   `AlternateContent` whose parent is in scope, with that parent, on the part. The listener is on
-   every unmarshal path:
+   `AlternateContent` whose parent is in scope, on the part. The record holds the element alone,
+   since step 2 reads the parent live. The listener must be on every unmarshal path:
    - the StAX path (`JaxbXmlPart.getConfiguredUnmarshaller`);
    - the DOM the preprocessor produces;
-   - the binder path (`JaxbXmlPartXPathAware`, through `BinderListenerUtils`).
+   - the binder paths (`JaxbXmlPartXPathAware`, through `BinderListenerUtils`), including the one where
+     it is commented out today (§1's binder-path defect, phase 1's first item).
 
    It already records each Choice's `Requires` namespaces there (CR-046). Nothing is edited inside the
    callback: it fires child first, while the parent's content list may still be filling.
@@ -206,9 +232,17 @@ that stay whole.
    and the binder variant).
    - **In `word` mode:** each recorded element is replaced, at its index in its parent's content
      list, by the content of the branch the rule selects, re-parented.
-   - **Nested elements:** the records arrive innermost first, so they are applied outermost first. A
-     record inside a discarded branch is dropped, and one inside the kept branch is applied to its
+   - **The parent is read live,** as `((Child) ac).getParent()` when the record is applied, not as it
+     was at unmarshal. `ArrayListDocx4j` re-parents what is added or set
+     (`ArrayListDocx4j.java:112-163`), so content moved by an earlier splice already answers with its
      new parent.
+   - **Nested elements:** the records arrive innermost first, so they are applied in reverse,
+     outermost first.
+     - An element inside a kept branch then has a live parent in the tree, and is applied there.
+     - An element inside a discarded branch is skipped: going up its parents, the first
+       `AlternateContent` it meets is one already taken out. It stays whole inside that element's
+       discarded branch, in the record, so the inspector still sees the inner element's branches.
+     - Only outermost elements and elements in kept content enter the record.
    - **In `preserve` mode,** nothing is applied.
    - **Cost:** only the records. A part without alternate content pays nothing, and no tree walk is
      needed.
@@ -216,19 +250,39 @@ that stay whole.
    reads (`getJAXBNodesViaXPath`) matches the tree. It is slow, but the binder path is a DOM path
    already, and rare.
 4. **What the splice also does:**
-   - **REQ-305:** where the rule selects nothing (no Choice understood, no Fallback), the element
-     stays whole, in `word` mode too. Readers then apply REQ-305's first-Choice rule at use, and a
-     save writes the element as it came.
-   - **`mc:Ignorable`:** the selected Choice's `Requires` prefixes are added to the part root's
-     `mc:Ignorable`. Promoted content can hold elements of that namespace (`w16du:*`), and Word lists
-     the namespaces of what it writes there. Without them, Word 2010 may refuse a namespace it does
-     not know.
-   - **The record:** each element taken out is kept on the part with its parent and index (a getter,
-     name to settle: `getResolvedAlternateContent()`), so nothing is lost to inspection.
-     - CR-050's inspector reports `mce.branch` for its unselected branches in `word` mode as in
-       `preserve`.
-     - The text model raises `mce.branches_differ` from the record as it does from a kept element.
+   - **REQ-305:** the splice tests the condition itself, before selecting: no Choice understood and no
+     Fallback.
+     - Such an element stays whole, in `word` mode too. Readers apply REQ-305's first-Choice rule at
+       use, and a save writes the element as it came.
+     - It cannot rely on the selection, since `McSelection.selectedBranch(McPurpose.TEXT, ac)`
+       already applies REQ-305's reading rule and returns the first Choice (`McSelection.java:332-347`).
+   - **An element with no branch at all** (neither a Choice nor a Fallback) shows nothing in any
+     reader. In `word` mode it is removed, as Word's save would leave it out, and recorded. In
+     `preserve` mode it is kept. The preprocessor drops it today.
+   - **Namespace declarations, relied on:** the listener already passes every Choice's `Requires`,
+     `Ignorable` and `MustUnderstand` prefixes to `addMcChoiceNamespace`, and the save declares them
+     (CR-049 settled the state).
+     - In `word` mode, the prefixes of discarded Choices are still declared. That is harmless, Word
+       declares its whole set too, and it needs no new code.
+   - **`mc:Ignorable`, new:** the root's `mc:Ignorable` value comes from the source, not from that
+     bookkeeping. Promoted content can hold elements of the selected Choice's namespace
+     (`w14:checkbox`, `w16du:*`), no longer under a Choice that requires it. So where the root does
+     not already list the selected Choice's `Requires` prefixes, the splice adds them to its
+     `mc:Ignorable`, as Word lists the namespaces of what it writes. Without them, an older Word may
+     refuse a namespace it does not know.
+   - **The record:** each element taken out is kept on the part with where it stood (a getter, name
+     to settle: `getResolvedAlternateContent()`), so nothing is lost to inspection. Its two readers
+     are phase 1 work of their own, not "as in `preserve`":
+     - **CR-050's inspector** marshals the JAXB tree to a DOM (`InspectXml.marshal`) and finds branches
+       by DOM element (`InspectWalk`, `iter(root, MC, "AlternateContent")`). In `word` mode it must
+       marshal each recorded element too, located at the promoted content, so that its `mce.branch`
+       findings carry the address they would have in `preserve` mode.
+     - **The text model's** `compareBranches(ac, address)` takes an address. It must be given the
+       promoted content's, to raise `mce.branches_differ` from the record.
    - **Logging:** one line per part, at INFO, with the number resolved.
+   - **The binder path, optionally:** there, `binder.getXMLNode(choice)` gives each Choice's DOM element,
+     so `Requires` can be matched by URI (`lookupNamespaceURI`) instead of falling back to the prefix
+     table (REQ-303).
 
 **Why after unmarshal, and not in the preprocessor:**
 - once the schema admits the element, JAXB no longer rejects it, so `mc-preprocessor.xslt` never runs
@@ -250,11 +304,22 @@ that stay whole.
 ### 3.3 The preprocessor
 
 - **Keep rule (D3):** `mc-preprocessor.xslt` passes the element through whole wherever the schema
-  admits it, decided by the container's level, not by a list of parent names. A `w:sdtContent` is
-  run, row, cell or block content according to its nearest container (`w:p`, `w:tbl`, `w:tr`, or a
-  block container). That fixes the collateral resolution of §1. It also means that a part sent
-  through the preprocessor for any other reason (Strict import, a validity fix) reaches §3.2's splice
-  with its elements whole, so the branch is chosen in one place on every path.
+  admits it. With D1 (a) and D2 (a), `w:sdtContent` and `w:customXml` admit it at every level, so the
+  rule is a flat list of parents, literal to the schema:
+  - `w:r`;
+  - the `EG_PContent` family: `w:p`, `w:hyperlink`, `w:fldSimple`, `w:smartTag`, `w:dir`, `w:bdo`;
+  - `w:numPicBullet`;
+  - §3.1's block containers, `w:tbl` and `w:tr`;
+  - `w:sdtContent` and `w:customXml`;
+  - `mc:Choice` and `mc:Fallback`, for nested elements.
+
+  Everything else (property containers) is resolved per D4. Only if D2 is (b) does the rule need
+  levels: a `w:sdtContent` or `w:customXml` is then kept only when it is not row or cell content (its
+  `w:sdt` or `w:customXml` parent not a `w:tbl` or `w:tr`).
+
+  The rule fixes the collateral resolution of §1. It also means that a part sent through the
+  preprocessor for any other reason (Strict import, a validity fix) reaches §3.2's splice with its
+  elements whole, so the branch is chosen in one place on every path.
 - **Not admitted, and no Fallback (D4):** an element whose parent the schema does not admit (in
   properties, which no survey has seen) is resolved to its first Choice, with the warning, instead of
   being dropped.
@@ -262,9 +327,16 @@ that stay whole.
 
 ### 3.4 The consumers
 
-**In `word` mode,** no block-, row- or cell-level element reaches a walker, except REQ-305's, which
-are kept whole. Code that walks `Body.getContent()` by type therefore sees what it always saw, with
-the branch Word reads in place of the Fallback.
+**In `word` mode,** no block-, row- or cell-level element from a loaded part reaches a walker,
+except REQ-305's, which are kept whole. Code that walks `Body.getContent()` by type therefore sees
+what it always saw, with the branch Word reads in place of the Fallback.
+
+The splice happens in `JaxbXmlPart`'s unmarshal, so content unmarshalled outside a part never passes
+it, and a block-level element there stays whole in both modes. Such content includes:
+- `XmlUtils.unmarshalString`, `unmarshal(InputStream)` and `unmarshallFromTemplate`;
+- diffx;
+- an `altChunk`'s conversion;
+- OpenDoPE's templates.
 
 **In `preserve` mode,** a block-level element reaches every walker of block content, as CR-021 phase
 2 made a paragraph-level one reach the walkers of paragraph content. CR-021's machinery applies
@@ -314,7 +386,8 @@ leaves ordinary rows and cells.
   Fallback. `word` mode resolves them to Word's branch.
   - Text, PDF and HTML output change only for documents that hold block-level alternate content
     (none of CR-021's 835).
-  - Content lists hold no `AlternateContent` at block level, save REQ-305's.
+  - Content lists of loaded parts hold no `AlternateContent` at block level, save REQ-305's. Content
+    unmarshalled outside a part keeps its elements whole (§3.4).
 - **What doesn't:** code that walks content by type keeps working.
 
 **`preserve` mode** is opt-in:
@@ -334,7 +407,11 @@ The CHANGELOG entry names the property, the override and `selectedContent`.
   - nested elements resolve outermost first;
   - the selected Choice's prefixes are in the root's `mc:Ignorable`;
   - the record holds each element taken out, with its parent and index;
-  - the binder path's XPath finds the promoted paragraph, not the element.
+  - the binder path's XPath finds the promoted paragraph, not the element;
+  - the same, on the path a part takes when StAX rejects it for another reason (§1's binder-path
+    defect). The probe holds w14 content where the schema does not admit it, beside a block-level
+    element; the drawing ids and Choice prefixes are recorded there too;
+  - an element with no branch at all is removed and recorded.
 - **`word` mode, against Word.** A load and save of each of Jason's probes gives the text Word 365's
   save gave (`<name>-word365.docx`). For the `mc-txbx-*` probes, it gives the Choice paragraph, with a
   bare `wps` box where Word wrote a regenerated Fallback (§3.5).
@@ -347,8 +424,9 @@ The CHANGELOG entry names the property, the override and `selectedContent`.
   - `Texts.of` takes the first understood Choice at block level, in a cell, a header and a block
     content control, and raises `mce.branches_differ`;
   - with REQ-305's element, it takes the first Choice;
-  - the inspector makes an `mce.branch` finding for each unselected block-level branch;
-  - the package-level override wins over the property.
+  - the inspector makes an `mce.branch` finding for each unselected block-level branch, and the
+    findings' addresses in `word` mode equal `preserve` mode's for the same probe;
+  - the load option and the package-level override win over the property.
 - **The extraction probe** gains block-level cases (numbers assigned when built: CR-050 D21 also
   proposes cases), Word-checked as every probe is. The conformance suite's REQ-301 and REQ-302 rows
   then cover block level.
@@ -416,13 +494,22 @@ still to do.
 
 ### Phase 1: block level, and row and cell level in `word` mode
 
+- **First, the listener on the binder path** where it is commented out (§1's binder-path defect). It
+  is a defect today, so it can land before the rest, on its own.
 - **The schema** (§3.1), with D2 (a) the row and cell groups, and the regeneration.
-- **The load-time mode** (§3.2): the property, the package-level override, the listener's records,
-  the splice, the binder update, REQ-305's kept elements, `mc:Ignorable`, the record's getter.
+- **The load-time mode** (§3.2):
+  - the property, the load option and the package-level override;
+  - the listener's records and the splice;
+  - the binder update;
+  - REQ-305's kept elements, and elements with no branch;
+  - `mc:Ignorable`;
+  - the record's getter.
 - **The preprocessor** (§3.3: the level rule and D4).
-- **The consumers** the audit names, for block level; and the two readers of the record: CR-050's
-  inspector (its `mce.branch` findings for elements taken out) and the text model
-  (`mce.branches_differ` for them).
+- **The consumers** the audit names, for block level.
+- **The two readers of the record** (§3.2), each with its test:
+  - CR-050's inspector: the recorded elements marshalled and located at the promoted content, giving
+    the same `mce.branch` addresses as `preserve` mode;
+  - the text model: `mce.branches_differ` raised from the record.
 - **The tests** of §4, and the CHANGELOG.
 
 Until phase 2, `preserve` mode splices row-level and cell-level elements as `word` mode does, and the
@@ -476,9 +563,9 @@ Each with a recommendation; Jason decides.
     - (b) not now: the preprocessor keeps resolving there (with D4's fix), and a later CR takes it up.
   - **Recommended:** (a). Word 365 reads the element in `w:tbl` and `w:tr` and in row and cell
     content controls (§1), and in `word` mode the table code sees ordinary rows and cells.
-- **D3. The preprocessor's keep rule.** Recommended: by the container's level, following the schema
-  (§3.3). This fixes the collateral resolution of §1, a defect today, so it lands in phase 1 whatever
-  else is decided.
+- **D3. The preprocessor's keep rule.** Recommended: follow the schema's admissions (§3.3). With D1
+  (a) and D2 (a) that is a flat list of parents; only D2 (b) needs levels. This fixes the collateral
+  resolution of §1, a defect today, so it lands in phase 1 whatever else is decided.
 - **D4. No Fallback where the element is still not admitted** (in properties; none seen).
   - **Options:**
     - (a) resolve to the first Choice, with the warning;
@@ -535,8 +622,16 @@ Each with a recommendation; Jason decides.
     the check.
   - **A block walker that phase 0's audit misses** skips the element's content in `preserve` mode.
   - **The package-level override and lazy unmarshal:** a part touched before the override is set has
-    already been resolved by the global setting. The javadoc says so; a load option would remove the
-    trap.
+    already been resolved by the global setting. The load option (§3.2) removes the trap for the
+    tools that need `preserve`, and the setter's javadoc says so.
+  - **A `w:customXml` directly inside a branch** comes back as a DOM `Element`, not a JAXB object:
+    `CTCustomXmlBlock`, `CTCustomXmlRow` and `CTCustomXmlCell` carry no `@XmlRootElement`, and a
+    branch's content is `@XmlAnyElement(lax = true)`. `Tbl`, `Tr`, `Tc`, `SdtBlock`, `CTSdtRow` and
+    `CTSdtCell` carry one, and bind. The splice would put that `Element` into a content list. Phase
+    1 unmarshals it, or the walkers must expect it.
+  - **The splice adds bare objects** (a `Tbl`, a `Tc`) to lists whose annotations expect `JAXBElement`
+    wrappers (`Body`, `Tr`). docx4j does this everywhere, and its walkers unwrap; the javadoc says
+    so.
   - **The binder's `updateXML`** costs a DOM pass in binder mode.
   - **The regeneration** touches every block container's class.
   - **MOXy's handling** of the new element reference and of the listener, checked by §4's MOXy test.
@@ -560,3 +655,47 @@ Each with a recommendation; Jason decides.
 - `JaxbXmlPart.unmarshal`, `JaxbXmlPartXPathAware`, `Docx4jUnmarshallerListener`,
   `BinderListenerUtils`, `McSelection`.
 - WD REQ-301, REQ-302, REQ-303 and REQ-305.
+
+## 9. Review, 20 October 2026
+
+By the docx4j-64 session (Claude Fable 5.1) at Jason's request, against the code. It confirmed:
+- the design;
+- §1's measurements and §3.1's schema groups and containers;
+- the preprocessor's keep rule and drop branch;
+- CR-021 §8.1;
+- the `McSelection` API and the `Extractor`'s block-level handling;
+- the w16 namespaces' presence in the understood set.
+
+`P` binds `AlternateContent` directly (no `JAXBElement`), so a splice by identity works. Nine
+findings, none changing D1 to D5, all taken:
+
+1. **A defect today:** the listener is commented out on one binder path
+   (`JaxbXmlPartXPathAware.java:627`). That path is every `JaxbXmlPartXPathAware` part's when StAX
+   rejects it. Taken into §1, as phase 1's first item, and with a splice test on that path (§4).
+2. **REQ-305 was described wrongly:** `selectedBranch(TEXT)` already returns the first Choice when
+   nothing is understood and there is no Fallback. The splice tests the condition itself. An element
+   with no branch at all is now settled: removed in `word` mode, kept in `preserve` (§3.2).
+3. **The Choice prefixes' declaration is existing behaviour** (`addMcChoiceNamespace`, CR-049): now
+   relied on, with the discarded Choices' prefixes still declared. The new work is the root's
+   `mc:Ignorable` value, which that bookkeeping does not set (§3.2).
+4. **Nested elements need the live parent:** `ArrayListDocx4j` re-parents. The record holds the
+   element only. It is applied outermost first, skipping elements inside a discarded branch, which
+   stay whole in the record (§3.2).
+5. **The record's readers are phase 1 work:** the inspector marshals the tree, and `compareBranches`
+   takes an address. Named in phase 1, with the test that `word` and `preserve` give the same
+   `mce.branch` addresses (§3.2, §4, §5).
+6. **The load option belongs in phase 1:** `WordprocessingMLPackage.load` and `Docx4J.load` give no
+   hook, and the tools that need `preserve` need it reliably. Taken, on the precedent of
+   `setWasStrict` (§3.2). The review's further argument, that the eager-binder property
+   (`...binder.eager.MainDocumentPart`) closes the post-load window, was withdrawn by its author. The
+   property is read inside the lazy unmarshal and only chooses the binder path, and no load path
+   unmarshals a main document part early.
+7. **D3 is simpler:** with D1 (a) and D2 (a), a flat list of parents literal to the schema, including
+   `mc:Choice` and `mc:Fallback` (§3.3, D3).
+8. **Content unmarshalled outside a part** is never spliced, so its elements stay whole in both modes
+   (§3.4, §3.6).
+9. **Smaller points:**
+   - a `w:customXml` in a branch binds as a DOM `Element` (§7);
+   - bare objects in wrapper-annotated lists (§7);
+   - URI matching on the binder path (§3.2);
+   - D5 marked as Jason's proposal (the Status).
