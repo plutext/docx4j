@@ -72,15 +72,28 @@ final class Tables {
 
 	// --- what a table's records are ---------------------------------------------------------------------
 
+	/** A table's rows through every branch of a row-level {@code mc:AlternateContent}: its property records are one change, whichever branch holds them (CR-051 phase 2). */
 	private static List<Tr> rows(Tbl tbl) {
 		List<Tr> out = new ArrayList<Tr>();
-		for (Row row : Lister.rowsOf(tbl)) out.add(row.tr);
+		for (Row row : Lister.allRowsOf(tbl)) out.add(row.tr);
 		return out;
 	}
 
+	/** A row's cells through every branch of a cell-level element, in no grid order; {@link #layouts} where the order matters. */
 	private static List<Tc> cells(Tr tr) {
 		List<Tc> out = new ArrayList<Tc>();
-		for (Row cell : Lister.cellsOf(tr)) out.add((Tc) Trees.unwrap(cell.item));
+		for (Row cell : Lister.allCellsOf(tr)) out.add((Tc) Trees.unwrap(cell.item));
+		return out;
+	}
+
+	/** A row's cells along the grid, one list per branch reading of the row ({@link Lister#cellLayoutsOf}). */
+	private static List<List<Tc>> layouts(Tr tr) {
+		List<List<Tc>> out = new ArrayList<List<Tc>>();
+		for (List<Row> layout : Lister.cellLayoutsOf(tr)) {
+			List<Tc> cells = new ArrayList<Tc>();
+			for (Row cell : layout) cells.add((Tc) Trees.unwrap(cell.item));
+			out.add(cells);
+		}
 		return out;
 	}
 
@@ -337,11 +350,13 @@ final class Tables {
 		TreeSet<Integer> edges = new TreeSet<Integer>();
 		edges.add(0);
 		for (Tr tr : rows) {
-			int at = gridBefore(tr);
-			edges.add(at);
-			for (Tc tc : cells(tr)) {
-				at += span(tc);
+			for (List<Tc> layout : layouts(tr)) {
+				int at = gridBefore(tr);
 				edges.add(at);
+				for (Tc tc : layout) {
+					at += span(tc);
+					edges.add(at);
+				}
 			}
 		}
 		int last = Math.min(edges.last(), cols.size());
@@ -362,24 +377,32 @@ final class Tables {
 		cols.clear();
 		cols.addAll(merged);
 		for (Tr tr : rows) {
-			int at = gridBefore(tr);
-			setRowMember(tr, "gridBefore", "wBefore", kept.indexOf(at));
-			for (Tc tc : cells(tr)) {
-				int next = at + span(tc);
-				int count = kept.indexOf(Math.min(next, last)) - kept.indexOf(Math.min(at, last));
-				if (tc.getTcPr() != null) {
-					if (count > 1) {
-						TcPrInner.GridSpan gs = tc.getTcPr().getGridSpan() != null ? tc.getTcPr().getGridSpan() : new TcPrInner.GridSpan();
-						gs.setVal(BigInteger.valueOf(count));
-						gs.setParent(tc.getTcPr());
-						tc.getTcPr().setGridSpan(gs);
-					} else {
-						tc.getTcPr().setGridSpan(null);
+			List<List<Tc>> layouts = layouts(tr);
+			int before = gridBefore(tr);
+			setRowMember(tr, "gridBefore", "wBefore", kept.indexOf(before));
+			int end = before;
+			// a layout per branch reading of the row: every branch spans the same columns, so the new
+			// spans are counted along each, and the row's members from the branch Word reads (the first)
+			for (int l = layouts.size() - 1; l >= 0; l--) {
+				int at = before;
+				for (Tc tc : layouts.get(l)) {
+					int next = at + span(tc);
+					int count = kept.indexOf(Math.min(next, last)) - kept.indexOf(Math.min(at, last));
+					if (tc.getTcPr() != null) {
+						if (count > 1) {
+							TcPrInner.GridSpan gs = tc.getTcPr().getGridSpan() != null ? tc.getTcPr().getGridSpan() : new TcPrInner.GridSpan();
+							gs.setVal(BigInteger.valueOf(count));
+							gs.setParent(tc.getTcPr());
+							tc.getTcPr().setGridSpan(gs);
+						} else {
+							tc.getTcPr().setGridSpan(null);
+						}
 					}
+					at = next;
 				}
-				at = next;
+				end = at;
 			}
-			setRowMember(tr, "gridAfter", "wAfter", kept.size() - 1 - kept.indexOf(Math.min(at, last)));
+			setRowMember(tr, "gridAfter", "wAfter", kept.size() - 1 - kept.indexOf(Math.min(end, last)));
 		}
 	}
 
@@ -393,7 +416,6 @@ final class Tables {
 	static void removeCell(Tc tc, Tr tr, Removals removals, Story story) {
 		List<Row> cells = Lister.cellsOf(tr);
 		int at = indexOf(cells, tc);
-		boolean inOtherBranch = false;
 		if (at < 0) {
 			// CR-051 phase 2: a cell in a branch of a cell-level mc:AlternateContent that Word does not
 			// read (a twin): its neighbours are its own branch's cells
@@ -402,7 +424,6 @@ final class Tables {
 			cells = Lister.cellsIn(branch, tr);
 			at = indexOf(cells, tc);
 			if (at < 0) return;
-			inOtherBranch = true;
 		}
 		Row self = cells.get(at);
 		Tc neighbour = at > 0 ? (Tc) Trees.unwrap(cells.get(at - 1).item) : at + 1 < cells.size() ? (Tc) Trees.unwrap(cells.get(at + 1).item) : null;
@@ -410,9 +431,9 @@ final class Tables {
 		if (i < 0) return;
 		removals.discard(story, self.item);
 		self.owner.remove(i);
-		// a twin alone in its branch: the row's neighbour was widened once already, when the read
-		// branch's cell went, and every branch spans the same grid columns
-		if (neighbour == null || inOtherBranch && cells.size() == 1) return;
+		// a twin alone in its branch has no neighbour: the row's neighbour was widened once already,
+		// when the read branch's cell went, and every branch spans the same grid columns
+		if (neighbour == null) return;
 		TcPr kept = neighbour.getTcPr();
 		if (kept == null) {
 			kept = new TcPr();

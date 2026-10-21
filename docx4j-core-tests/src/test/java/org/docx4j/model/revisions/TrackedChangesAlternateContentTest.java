@@ -271,6 +271,50 @@ public class TrackedChangesAlternateContentTest {
 		assertTrue("the element stays, its branches now empty of cells", xml.contains("<mc:Choice") && xml.contains("<mc:Fallback"));
 	}
 
+	private static String changedCell(int id, String text) {
+		return cell(text, "<w:tcW w:w=\"1000\" w:type=\"dxa\"/><w:shd w:val=\"clear\" w:fill=\"FF0000\"/>"
+				+ "<w:tcPrChange w:id=\"" + id + "\" w:author=\"A\"><w:tcPr><w:tcW w:w=\"1000\" w:type=\"dxa\"/></w:tcPr></w:tcPrChange>");
+	}
+
+	/**
+	 * A {@code w:tcPrChange} in each branch's cell of a cell-level element (docx4j-python's second
+	 * finding, its CR-012 section 10.10): the table's one property record is listed once; accepted,
+	 * every branch's record goes; rejected, every branch's cell gets its recorded properties back.
+	 */
+	@Test
+	public void resolvingATablePropertyRecordReachesEveryBranchsCell() throws Exception {
+		String body = "<w:tbl>" + TBL_PROPS + "<w:tr>"
+				+ "<mc:AlternateContent><mc:Choice Requires=\"w14\">" + changedCell(1, "C") + "</mc:Choice>"
+				+ "<mc:Fallback>" + changedCell(2, "F") + "</mc:Fallback></mc:AlternateContent></w:tr></w:tbl>";
+		WordprocessingMLPackage pkg = withBody(body);
+		assertEquals(listed(pkg).toString(), 1, listed(pkg).size());
+		TrackedChanges.acceptAll(pkg);
+		String xml = TrackedChangesTest.bodyXml(pkg);
+		assertEquals(xml, 0, count(xml, "tcPrChange"));
+		assertEquals("accepted: both branches keep the shading", 2, count(xml, "w:fill=\"FF0000\""));
+		pkg = withBody(body);
+		TrackedChanges.rejectAll(pkg);
+		xml = TrackedChangesTest.bodyXml(pkg);
+		assertEquals(xml, 0, count(xml, "tcPrChange"));
+		assertEquals("rejected: both branches lose the shading", 0, count(xml, "w:fill=\"FF0000\""));
+		assertEquals(2, count(xml, "<w:tcW w:w=\"1000\""));
+	}
+
+	/** A {@code w:trPrChange} on the row in the branch Word does not read of a row-level element: accepted, the record goes. */
+	@Test
+	public void acceptingATablePropertyRecordReachesARowInAnotherBranch() throws Exception {
+		String changedRow = "<w:tr><w:trPr><w:cantSplit/><w:trPrChange w:id=\"1\" w:author=\"A\"><w:trPr/></w:trPrChange></w:trPr>"
+				+ plainCell("F") + "</w:tr>";
+		WordprocessingMLPackage pkg = withBody("<w:tbl>" + TBL_PROPS
+				+ "<mc:AlternateContent><mc:Choice Requires=\"w14\">" + plainRow("C") + "</mc:Choice><mc:Fallback>" + changedRow + "</mc:Fallback></mc:AlternateContent></w:tbl>");
+		assertEquals(listed(pkg).toString(), 1, listed(pkg).size());
+		TrackedChanges.acceptAll(pkg);
+		String xml = TrackedChangesTest.bodyXml(pkg);
+		assertEquals(xml, 0, count(xml, "trPrChange"));
+		assertTrue(xml, xml.contains("<w:cantSplit/>"));
+		assertEquals(0, listed(pkg).size());
+	}
+
 	/** The text model's view of a cell reads the branch Word reads (Texts.cellText through Trees.blockItems). */
 	@Test
 	public void acceptedViewReadsTheBranchWordReads() throws Exception {

@@ -346,6 +346,111 @@ final class Lister {
 		return false;
 	}
 
+	/**
+	 * A table's rows through every branch of a row-level {@code mc:AlternateContent} (CR-051 phase 2),
+	 * for the table's property records: a {@code w:trPrChange} or {@code w:tcPrChange} in a branch Word
+	 * does not read is part of the table's one record, and resolving it reaches every branch
+	 * (docx4j-python's finding, its CR-012 section 10.10).
+	 */
+	static List<Row> allRowsOf(Tbl tbl) {
+		List<Row> out = new ArrayList<Row>();
+		allRows(tbl.getContent(), out);
+		return out;
+	}
+
+	private static void allRows(List<Object> items, List<Row> out) {
+		for (Object item : items) {
+			Object v = Trees.unwrap(item);
+			if (v instanceof Tr) out.add(new Row((Tr) v, item, items));
+			else if (v instanceof AlternateContent) {
+				for (Object branch : McSelection.branches((AlternateContent) v, McMode.ALL)) {
+					List<Object> children = McSplice.contentOf(branch);
+					if (children != null) allRows(children, out);
+				}
+			} else if (v != null && !(v instanceof Tc)) {
+				List<Object> children = Trees.blockItems(v);
+				if (children != null) allRows(children, out);
+			}
+		}
+	}
+
+	/** A row's cells through every branch of a cell-level element, as {@link #allRowsOf}; the order across branches means nothing. */
+	static List<Row> allCellsOf(Tr tr) {
+		List<Row> out = new ArrayList<Row>();
+		allCells(tr.getContent(), tr, out);
+		return out;
+	}
+
+	private static void allCells(List<Object> items, Tr tr, List<Row> out) {
+		for (Object item : items) {
+			Object v = Trees.unwrap(item);
+			if (v instanceof Tc) out.add(new Row(tr, item, items));
+			else if (v instanceof AlternateContent) {
+				for (Object branch : McSelection.branches((AlternateContent) v, McMode.ALL)) {
+					List<Object> children = McSplice.contentOf(branch);
+					if (children != null) allCells(children, tr, out);
+				}
+			} else if (v != null) {
+				List<Object> children = Trees.blockItems(v);
+				if (children != null) allCells(children, tr, out);
+			}
+		}
+	}
+
+	/**
+	 * A row's cells as laid along the grid, one list per reading of the row: the branch Word reads
+	 * ({@link #cellsOf}) first, then, for each cell-level element among the cells and each of its
+	 * other branches, the row read with that branch in the element's place. Every cell is in some list
+	 * at its grid position, since every branch spans the same columns; for {@link Tables#collapseGrid}.
+	 */
+	static List<List<Row>> cellLayoutsOf(Tr tr) {
+		List<List<Row>> out = new ArrayList<List<Row>>();
+		out.add(cellsOf(tr));
+		List<AlternateContent> elements = new ArrayList<AlternateContent>();
+		cellElements(tr.getContent(), elements);
+		for (AlternateContent ac : elements) {
+			List<Object> read = McSelection.branches(ac, McMode.READ);
+			for (Object branch : McSelection.branches(ac, McMode.ALL)) {
+				if (read.contains(branch)) continue;
+				List<Row> layout = new ArrayList<Row>();
+				cellsReading(tr.getContent(), tr, ac, branch, layout);
+				out.add(layout);
+			}
+		}
+		return out;
+	}
+
+	private static void cellElements(List<Object> items, List<AlternateContent> out) {
+		for (Object item : items) {
+			Object v = Trees.unwrap(item);
+			if (v instanceof AlternateContent) {
+				out.add((AlternateContent) v);
+				for (Object branch : McSelection.branches((AlternateContent) v, McMode.ALL)) {
+					List<Object> children = McSplice.contentOf(branch);
+					if (children != null) cellElements(children, out);
+				}
+			} else if (v != null && !(v instanceof Tc)) {
+				List<Object> children = Trees.blockItems(v);
+				if (children != null) cellElements(children, out);
+			}
+		}
+	}
+
+	/** {@link #cells} with one element read by the given branch instead of the branch Word reads. */
+	private static void cellsReading(List<Object> items, Tr tr, AlternateContent ac, Object branch, List<Row> out) {
+		for (Object item : items) {
+			Object v = Trees.unwrap(item);
+			if (v instanceof Tc) out.add(new Row(tr, item, items));
+			else if (v == ac) {
+				List<Object> children = McSplice.contentOf(branch);
+				if (children != null) cellsReading(children, tr, ac, branch, out);
+			} else if (v != null) {
+				List<Object> children = Trees.blockItems(v);
+				if (children != null) cellsReading(children, tr, ac, branch, out);
+			}
+		}
+	}
+
 	/** A row's cells and where they stand, through cell-level content controls and custom XML, and through a cell-level element by the branch Word reads. */
 	static List<Row> cellsOf(Tr tr) {
 		List<Row> out = new ArrayList<Row>();

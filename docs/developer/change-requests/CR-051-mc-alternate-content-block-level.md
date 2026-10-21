@@ -1620,6 +1620,21 @@ tests (`McBlockLevelProbesTest.preserveModeReadsAsWordsSave`, `McBlockLevelReade
   other notes: its fork needed no code for typing `w:tr` and `w:tc` in a branch (its `w:sdt` hook
   reads the container's binding; names added); OpenDoPE's two cases are not ported, its fill having
   no `od:condition` or `od:repeat`.
+- **docx4j-python ported** the cellDel-twin fix (60bd4b9ad) the same day (dde142e there) and found two
+  more things, both confirmed here by reading and fixed (after 60bd4b9ad): (1) `removeCell`'s guard
+  `inOtherBranch && cells.size() == 1` never decided, since the branch list is built before the removal
+  and holds the twin, so a list of one has no neighbour and `neighbour == null` already returns; the
+  clause is gone, the comment's reasoning kept. (2) The table's property records in a branch Word does
+  not read: `Tables.rows`/`cells` read `Lister.rowsOf`/`cellsOf`, Word's branch, so a `w:tcPrChange`
+  in a cell-level Fallback's cell (or a `w:trPrChange` on a row-level Fallback's row) was never found
+  by `recordOf`, `inChange`, `hasRecords`, `accept`, `reject` or `collapseGrid`: not listed when only
+  that branch held one, and kept after acceptAll or rejectAll. Now `Lister.allRowsOf`/`allCellsOf`
+  read every branch (`McMode.ALL`) for the record paths, and `collapseGrid` counts the grid along
+  `Lister.cellLayoutsOf`, one cell list per branch reading of the row, since every branch spans the
+  same columns. Tests `resolvingATablePropertyRecordReachesEveryBranchsCell` (one record listed;
+  acceptAll drops both branches' records and keeps the shading, rejectAll restores both cells) and
+  `acceptingATablePropertyRecordReachesARowInAnotherBranch` (a record only the Fallback's row holds is
+  listed and accepted); both fail with the one-branch reading, measured. No producer writes either shape.
 - **core-ts ported** the listing as its CR-013 phase 2 (df5b4af there, unpushed, 22 October 2026),
   from 9db1a3cbd: `TrackedChangesAlternateContentTest`'s four shapes (block, paragraph, row and cell
   level) each list the insertion and the deletion from the selected branch, where none was listed
