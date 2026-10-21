@@ -85,7 +85,7 @@ public class ExtractionConformanceTest {
         Path report = dir.resolve("report.tsv");
         reported.add(expected);
         ExtractionConformance.run(dir, report, engine);
-        assertTrue(Files.readString(report).contains("f.docx\t0\tinspection\t-\tdefault\tPASS"));
+        assertTrue(Files.readString(report).contains("f.docx\t0\tinspection\t-\t" + ExtractionConformance.HTML_READER_ABSENT + "\tPASS"));
         Map<String, String> moved = new LinkedHashMap<>(expected.get(1));
         moved.put("plain", "unseen");
         for (List<Map<String, String>> wrong : List.of(List.of(expected.get(0)), List.of(expected.get(0), expected.get(1), expected.get(1)),
@@ -240,19 +240,21 @@ public class ExtractionConformanceTest {
             assertTrue(results.contains("\tGLS54_ENTRY_TWO\toriginal\tinclude: glossary\tPASS"));
             assertTrue(results.contains("\tCHT34_AXIS_TITLE\taccepted\tdefault\tPASS"));
             assertTrue(results.contains("\tTBL31_HEADER\taccepted\tdefault\tPASS"));
-            // CR-050 phase 1: the inspector's rows and each fixture's whole inspection, whose oracle has no
-            // HTML reader (CR-053 phase 3), so with one it pends for that alone
+            // CR-050 phase 1: the inspector's rows and each fixture's whole inspection; since phase 4 the table's
+            // capability column lets either environment check every fixture against the rows that apply to it
             boolean reader = org.docx4j.model.text.HtmlChunkImport.readerPresent();
-            assertEquals(!reader, results.contains("extraction-probe-inspect.docx\t0\tinspection\t-\tdefault\tPASS"));
-            assertEquals(!reader, results.contains("extraction-probe.docx\t0\tinspection\t-\tdefault\tPASS"));
+            String environment = reader ? "html reader present" : "html reader absent", other = reader ? "html reader absent" : "html reader present";
+            assertTrue(results.contains("extraction-probe-inspect.docx\t0\tinspection\t-\t" + environment + "\tPASS"));
+            assertTrue(results.contains("extraction-probe.docx\t0\tinspection\t-\t" + environment + "\tPASS"));
+            assertTrue(results.contains("extraction-probe-html.docx\t0\tinspection\t-\t" + environment + "\tPASS"));
+            assertTrue(results.contains("extraction-probe-external.docm\t0\tinspection\t-\t" + environment + "\tPASS"));
             assertTrue(results.contains("\tinspect:font.glyph_mismatch:"));
-            // CR-053 phase 3: the HTML reader's fixture, checked with one; since WD 0.27 none of its rows pends
-            assertEquals(reader, results.contains("extraction-probe-html.docx\t0\tinspection\t-\thtml reader present\tPASS"));
-            assertFalse(results.contains("\tinspect:text.hidden:HTM_"));
-            // the counts' and the inspection's oracles are for an inspector with no HTML reader, the HTML fixture's
-            // for one with it, so each pends for the other alone
-            for (String line : results.split("\n"))
-                if (line.contains("the inspector (CR-050)")) assertTrue(line, line.contains(reader ? "html reader absent" : "html reader present"));
+            // the other environment's rows pend by count, per fixture with any (the HTML fixture's eleven text.hidden
+            // rows with no reader; the chunks' altchunk rows with one); since WD 0.27 no row pends on a rule
+            assertTrue(results.contains("extraction-probe-html.docx\t0\tinspection\t-\t" + other + "\tPENDING\t"));
+            // a reader-present row's (kind, selector) count is checked by selector with a reader, pends without one
+            assertTrue(results.contains("\tinspect:text.hidden:HTM_A_INLINE\taccepted\thtml reader present\t" + (reader ? "PASS" : "PENDING")));
+            assertTrue(results.contains("\tcounts\t-\tplain\tPASS"));
             for (String line : results.split("\n"))
                 if (line.contains("\tPENDING\t")) assertTrue(line, line.contains("phase 3; REQ-70") || line.contains("html reader"));
         } else {

@@ -87,6 +87,7 @@ Changes in Version 17.3.4
   (raster pixels, outlines, glyph-index, SYMBOL-font, `POLYTEXTOUT` and EMF+ `DrawString` records, metafiles in OLE).
   The suite's inspect fixture gains cases 68 to 74.
 - Inspector: `Inspection.counts(options, format)` now counts with the class path's capabilities (`Inspection.capabilitiesOnClassPath()`, new), as `Texts` does; it counted as if no HTML reader were present (CR-050 phase 3, from docx4j-mcp's review).
+- Text-extraction suite: `expected-inspection.tsv` and its status table carry a `capability` column (`any`, `html reader absent`, `html reader present`), so an engine is compared against the rows of its own environment and a reader-present engine checks every reader-independent row (CR-050 phase 4); `expected-inspection-html.tsv` is now the source the oracle folds in, and `expected-inspection-html-status.tsv` is gone.
 - `PropertyResolver` no longer adds a `DefaultParagraphFont` style to a styles part that has no default
   character style (so `Texts.of` changes nothing in such a package); output and merge paths still add it.
 - `mc:AlternateContent` twins (a text box written as a wps Choice and a VML Fallback; CR-051 §10.5):

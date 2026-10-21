@@ -318,84 +318,75 @@ public final class ExtractionConformance {
     /**
      * CR-050 phase 0: each fixture's inspection compared with {@code expected-inspection.tsv} as multisets of
      * (kind, location), so that a finding missing, one unexpected and one of two at a location all fail; then
-     * each matched finding's fields, the fixture's status and the limitations every inspector states.
+     * each matched finding's fields, the fixture's status and the limitations every inspector states. Since
+     * phase 4 the table carries a {@code capability} column: a fixture is compared against its rows of
+     * {@code any} and of the engine's environment (an HTML reader present or absent, the class path's), with
+     * the status row of that environment; the other environment's rows are reported pending, by count. A row
+     * resting on a rule not yet ruled on (its {@code pending}) is left out on both sides and reported pending.
      */
     static void inspections(Run run, Path dir) throws Exception {
         Path table = dir.resolve(ExtractionInspection.TABLE);
         if (!Files.exists(table)) return;
-        Map<String, List<Map<String, String>>> expected = new LinkedHashMap<>();
-        for (Map<String, String> row : table(table)) expected.computeIfAbsent(row.get("fixture"), k -> new ArrayList<>()).add(row);
-        for (Map<String, String> status : table(dir.resolve(ExtractionInspection.STATUS))) {
-            String fixture = status.get("fixture");
-            // the whole fixture's comparison is REQ-1204's, its checks REQ-901, 902 and 904 to 907's. The table is
-            // an inspector's with no HTML reader (CR-053 phase 3, WD 0.27): with one, a chunk's hidden
-            // text is found and the chunk is not skipped, so the comparison pends
-            String statements = ExtractionInspection.STATEMENTS + ", REQ-1204";
-            Map<String, String> row = Map.of("fixture", fixture, "case", "0", "statements", statements);
-            Set<String> inspectionRequires = requirements(statements);
-            inspectionRequires.add(HTML_READER_ABSENT);
-            if (!run.ready(row, "inspection", "-", "default", inspectionRequires)) continue;
-            compareInspection(fixture, expected.getOrDefault(fixture, List.of()), status, run.engine.inspect(dir.resolve(fixture)));
-            run.pass(row, "inspection", "-", "default");
+        String environment = run.engine != null && run.engine.implementedStatements().contains(HTML_READER_PRESENT)
+                ? HTML_READER_PRESENT : HTML_READER_ABSENT;
+        String other = environment.equals(HTML_READER_PRESENT) ? HTML_READER_ABSENT : HTML_READER_PRESENT;
+        Map<String, List<Map<String, String>>> expected = new LinkedHashMap<>(), others = new LinkedHashMap<>();
+        Map<String, Boolean> environmental = new HashMap<>();
+        for (Map<String, String> row : table(table)) {
+            String capability = row.getOrDefault("capability", ExtractionInspection.ANY);
+            environmental.merge(row.get("fixture"), !capability.equals(ExtractionInspection.ANY), Boolean::logicalOr);
+            if (capability.equals(ExtractionInspection.ANY) || capability.equals(environment))
+                expected.computeIfAbsent(row.get("fixture"), k -> new ArrayList<>()).add(row);
+            else others.computeIfAbsent(row.get("fixture"), k -> new ArrayList<>()).add(row);
         }
-        htmlInspections(run, dir);
-        // CR-050 phase 2: every extraction result's counts (REQ-903), for each output the table names a group under,
-        // are the number of the table's findings in each group there, with the fixture's status. The table's groups
-        // are for an extraction with no HTML reader (INSPECTION.md), so with one on the class path the check pends
-        Set<String> countsRequire = requirements("REQ-903");
-        countsRequire.add(HTML_READER_ABSENT);
+        Map<String, Map<String, String>> statuses = new LinkedHashMap<>();
         for (Map<String, String> status : table(dir.resolve(ExtractionInspection.STATUS))) {
-            String fixture = status.get("fixture");
-            Map<String, String> row = Map.of("fixture", fixture, "case", "0", "statements", "REQ-903");
-            for (String output : ExtractionInspection.OUTPUTS) {
-                if (!run.ready(row, "counts", "-", output, countsRequire)) continue;
-                Map<String, String> want = new LinkedHashMap<>();
-                for (String group : List.of("unseen", "omitted", "active", "info")) {
-                    long n = expected.getOrDefault(fixture, List.of()).stream().filter(f -> group.equals(f.get(output))).count();
-                    want.put(group, String.valueOf(n));
-                }
-                want.put("status", status.get("status"));
-                equal(want, run.engine.counts(dir.resolve(fixture), output), fixture + ": counts under " + output);
-                run.pass(row, "counts", "-", output);
-            }
+            String capability = status.getOrDefault("capability", ExtractionInspection.ANY);
+            if (capability.equals(ExtractionInspection.ANY) || capability.equals(environment)) statuses.put(status.get("fixture"), status);
         }
-    }
-    /**
-     * CR-053 phase 3: an inspector with an HTML reader, on the fixture whose chunks it reads, compared with
-     * {@code expected-inspection-html.tsv} (written by hand, each row checked against Word 365's save of the
-     * fixture), {@code parsed} with the other fields. A row resting on a rule not yet ruled on (its
-     * {@code pending}) is left out on both sides and reported pending.
-     */
-    static void htmlInspections(Run run, Path dir) throws Exception {
-        Path table = dir.resolve(ExtractionInspection.HTML_TABLE);
-        if (!Files.exists(table)) return;
-        Map<String, List<Map<String, String>>> expected = new LinkedHashMap<>();
-        for (Map<String, String> row : table(table)) expected.computeIfAbsent(row.get("fixture"), k -> new ArrayList<>()).add(row);
-        List<String> fields = new ArrayList<>(ExtractionInspection.FIELDS);
-        fields.add("parsed");
-        for (Map<String, String> status : table(dir.resolve(ExtractionInspection.HTML_STATUS))) {
-            String fixture = status.get("fixture");
-            String statements = ExtractionInspection.STATEMENTS + ", REQ-1204, REQ-513";
+        for (Map.Entry<String, Map<String, String>> e : statuses.entrySet()) {
+            String fixture = e.getKey();
+            // the whole fixture's comparison is REQ-1204's, its checks REQ-901, 902 and 904 to 907's; a fixture with
+            // rows of an environment also REQ-513's (the chunk read, or skipped)
+            String statements = ExtractionInspection.STATEMENTS + ", REQ-1204" + (environmental.get(fixture) ? ", REQ-513" : "");
             Map<String, String> row = Map.of("fixture", fixture, "case", "0", "statements", statements);
-            Set<String> requires = requirements(statements);
-            requires.add(HTML_READER_PRESENT);
-            if (!run.ready(row, "inspection", "-", HTML_READER_PRESENT, requires)) continue;
+            if (others.containsKey(fixture))
+                run.pend(row, "inspection", "-", other, others.get(fixture).size() + (others.get(fixture).size() == 1 ? " row of " : " rows of ") + other + ", not this run's environment");
+            if (!run.ready(row, "inspection", "-", environment, requirements(statements))) continue;
             List<Map<String, String>> checked = new ArrayList<>();
             Set<String> pending = new HashSet<>();
             for (Map<String, String> r : expected.getOrDefault(fixture, List.of())) {
-                if (r.get("pending").isEmpty()) {
+                if (r.getOrDefault("pending", "").isEmpty()) {
                     checked.add(r);
                 } else {
                     pending.add(key(r));
-                    run.pend(r, "inspect:" + r.get("kind") + ":" + r.get("selector"), "-", HTML_READER_PRESENT, r.get("pending"));
+                    run.pend(r, "inspect:" + r.get("kind") + ":" + r.get("selector"), "-", environment, r.get("pending"));
                 }
             }
             Inspection actual = run.engine.inspect(dir.resolve(fixture));
             List<Map<String, String>> found = new ArrayList<>();
             for (Map<String, String> f : actual.findings) if (!pending.contains(key(f))) found.add(f);
-            compareInspection(fixture, checked, status, new Inspection(found, actual.status, actual.skipped, actual.undecided,
-                    actual.limitations), fields);
-            run.pass(row, "inspection", "-", HTML_READER_PRESENT);
+            compareInspection(fixture, checked, e.getValue(), new Inspection(found, actual.status, actual.skipped, actual.undecided,
+                    actual.limitations));
+            run.pass(row, "inspection", "-", environment);
+        }
+        // CR-050 phase 2: every extraction result's counts (REQ-903), for each output the table names a group under,
+        // are the number of the table's findings in each group there, with the fixture's status; the rows of this
+        // run's environment (phase 4)
+        for (Map.Entry<String, Map<String, String>> e : statuses.entrySet()) {
+            String fixture = e.getKey();
+            Map<String, String> row = Map.of("fixture", fixture, "case", "0", "statements", "REQ-903");
+            for (String output : ExtractionInspection.OUTPUTS) {
+                if (!run.ready(row, "counts", "-", output, requirements("REQ-903"))) continue;
+                Map<String, String> want = new LinkedHashMap<>();
+                for (String group : List.of("unseen", "omitted", "active", "info")) {
+                    long n = expected.getOrDefault(fixture, List.of()).stream().filter(f -> group.equals(f.get(output))).count();
+                    want.put(group, String.valueOf(n));
+                }
+                want.put("status", e.getValue().get("status"));
+                equal(want, run.engine.counts(dir.resolve(fixture), output), fixture + ": counts under " + output);
+                run.pass(row, "counts", "-", output);
+            }
         }
     }
     private static String key(Map<String, String> finding) {

@@ -1,9 +1,10 @@
 # CR-050: Inspect - hidden and near-hidden content as a first-class report
 
-Status: DONE 2026-10-21 (Jason: "commit both phases"); open for Jason: the two departures of phase 3
-(the SYMBOL-charset limitation, measured; the image part as the location), docx4j-mcp's T9 (excerpts
-off by default over MCP) and its per-row capability column for `expected-inspection.tsv` (§5, "Phase
-3 record"). Phase 0 done 2026-10-19 (§5, "Phase 0 record", Jason: "implement CR-050 phase 0"):
+Status: DONE 2026-10-21 (Jason: "commit both phases"); the items then open for Jason decided the same
+day: the two departures of phase 3 confirmed (the SYMBOL-charset limitation, measured, and
+`EMR_SMALLTEXTOUT` with it; the image part as the location), docx4j-mcp's T9 accepted (excerpts off by
+default over MCP), and its per-row capability column taken as phase 4, option (a), done 2026-10-21 (§5,
+"Phase 4"). Phase 0 done 2026-10-19 (§5, "Phase 0 record", Jason: "implement CR-050 phase 0"):
 the contract (`docx4j-core-tests/src/test/resources/text-extraction/INSPECTION.md`), an oracle of every
 finding on the suite's four fixtures, the harness's exact comparison, and a new fixture,
 `extraction-probe-inspect.docx` (cases 58 to 67), checked in Word 365. Phase 1 done 2026-10-19 (§5,
@@ -942,7 +943,9 @@ registry unchanged until the acks). Acknowledgements:
     per-row capability column in `expected-inspection.tsv`, so a reader-present server could check the
     rows that do not depend on the reader (today all 200 pend there, only
     `expected-inspection-html.tsv` compares): for Jason, with the goldens' version of the question the
-    portfolio holds.
+    portfolio holds. **Decided** (Jason, 21 October 2026): T9 "ok, proposal accepted"; the column "go
+    with option (a)", built as phase 4 below; the goldens' version put to Jason by the portfolio on its
+    own.
   - **The editor** (21 October 2026): acknowledged, recorded as ED-008 §8.6 (committed), verified
     against its code on main (core-ts 0.5.0). It ships no inspector (ED-008 §3.5); its reading verbs
     take the reveal column as their options at ED-008 step 2, on the core-ts release carrying CR-012
@@ -957,6 +960,47 @@ registry unchanged until the acks). Acknowledgements:
     `<textPath>`); agrees on the rest. Nothing active is fetched, updated or run. Decisions it raises
     for Jason, none scheduled: hide or mark hidden text, draw `szCs` and the shadings, prefer `svgBlip`
     as Word does, put the description on the image's alt. No request back to docx4j.
+
+### Phase 4: the capability column (from docx4j-mcp's review of phase 3)
+
+**The problem.** `expected-inspection.tsv` was an inspector's with no HTML reader as a whole, and
+`expected-inspection-html.tsv` a reader-present inspector's on one fixture, each compared only in its
+own environment. On a reader-present engine (docx4j-mcp ships jsoup and docx4j-ImportXHTML) every one
+of the 200 rows pended, though only the rows in or about an HTML, XHTML or MHT chunk depend on the
+reader. Options put to Jason: (a) a per-row `capability` column, one table for both environments;
+(b) two full tables; (c) leave it. **Decided** (Jason, 21 October 2026): (a).
+
+**What was built** (21 October 2026, Claude Fable 5.1, docx4j-25):
+- `expected-inspection.tsv` gains `capability` (`any`, `html reader absent`, `html reader present`,
+  the harness's scenario names), `parsed` (compared, as the reader-present rows' already were),
+  `evidence` and `pending`; `expected-inspection-status.tsv` gains `capability`, one `any` row for a
+  fixture all of whose rows are `any`, else a row per environment. The reader-absent status keeps the
+  `not_decoded` skips of the HTML chunks; the reader-present one drops them (so
+  `extraction-probe-inspect.docx` is COMPLETE with a reader, its undecided entries unchanged).
+- The oracle (`inspect_oracle.py`) writes the `any` and `html reader absent` rows for five fixtures
+  now, `extraction-probe-html.docx` included (its four `altchunk` rows and two `properties` rows);
+  marks each HTML, XHTML or MHT chunk's `altchunk` row `html reader absent` and writes its
+  reader-present twin, `parsed` `html`, the one difference a reader makes to that finding; and folds
+  in the hand-written reader-present rows of `expected-inspection-html.tsv` (a chunk's `text.hidden`),
+  dropping those the oracle already has (the properties). `expected-inspection-html-status.tsv` is
+  gone, computed instead.
+- `ExtractionInspection` keeps a reader-present row's hand-written address, checks each such row's
+  path in the jsoup tree (what `checkHtml` did), checks a status row per (fixture, capability), and
+  derives `expected-findings.tsv` with a `scenario` per capability (`default`, or the environment's
+  name with REQ-513), so a reader-present engine's (kind, selector) counts are checked by selector too.
+- `ExtractionConformance.inspections` reads the engine's environment from its statements (the
+  adapter advertises the class path's, as before), compares each fixture against its `any` rows and
+  its environment's rows with that environment's status row, pends the other environment's rows by
+  count (one line per fixture), and checks the counts the same way; `htmlInspections` is gone. The
+  report's scenario column for an inspection is the environment's name.
+- Verified in both environments: the test class path (no reader) passes 1673 checks with 39 pending,
+  all reader-present items (the token and warning rows as before, 18 selector rows, 3 fixture lines);
+  a hand run with docx4j-ImportXHTML and jsoup on the class path passes 1672 with 40 pending, all
+  reader-absent items and the goldens (cut without a reader; the portfolio's question to Jason).
+  Every fixture's whole inspection and its counts pass in both.
+
+**Acceptance:** both environments as above; the suite green; the WD's REQ-1201 and REQ-1204 take the
+column (the portfolio, WD 0.31); docx4j-mcp told.
 
 ## 6. Decisions
 

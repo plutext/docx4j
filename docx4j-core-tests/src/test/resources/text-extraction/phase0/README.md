@@ -95,7 +95,8 @@ fixture, retained in the parent directory with its re-save.
 `case-statements.tsv` maps the original WD Appendix A plus the approved cases 53–54 (WD 0.5) and 55–57.
 `expected-order.tsv` pins presentation and glossary order. `expected-findings.tsv` separates warnings,
 metadata and inspector findings from text counts. `expected-inspection.tsv` lists every finding an inspector
-makes, by location, and `expected-inspection-status.tsv` each fixture's status (`../INSPECTION.md`).
+makes, by location, with the capability it depends on (`any`, or an HTML reader present or absent), and
+`expected-inspection-status.tsv` each fixture's status per capability (`../INSPECTION.md`).
 Inspector requirements are pending CR-050 phase 1.
 The default test environment has no HTML reader (jsoup and docx4j-ImportXHTML). The HTML and MHT chunk rows' capability scenario supplies one.
 All external targets are deliberately missing local files. Nothing is fetched by the suite.

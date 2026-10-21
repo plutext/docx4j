@@ -1,7 +1,7 @@
 # The inspection oracle (CR-050 phase 0)
 
 `phase0/expected-inspection.tsv` lists every finding an inspector (WD section 9; docx4j CR-050) must
-make on the suite's four fixtures, one row a finding; `phase0/expected-inspection-status.tsv` gives
+make on the suite's five fixtures, one row a finding; `phase0/expected-inspection-status.tsv` gives
 each fixture's status, what was not inspected, and what the inspector could not decide. The harness
 (`ExtractionConformance`) compares an engine's findings with them as multisets of (kind, location), so
 a finding missing, a finding unexpected, and two findings of one kind where one is expected all fail;
@@ -30,22 +30,26 @@ is marked **(phase 2)**, and moves none either.
   derives the inspect rows of `expected-findings.tsv`, and checks every row against its fixture: the
   path resolves, the range lies in the run's text, the excerpt's length is the text's
   (`ExtractionConformanceTest`).
-- Both tables are an inspector's **with no HTML reader**: it skips each HTML, XHTML or MHT chunk as
-  `not_decoded` (CR-053 phase 3, WD 0.27), so with a reader on the class path their comparison
-  pends. An inspector **with one** runs the chunk's import (WD 0.26's REQ-901) and is compared instead on
-  `extraction-probe-html.docx` (`ExtractionHtmlCases`: four chunks, A to D) with
-  `phase0/expected-inspection-html.tsv` and `expected-inspection-html-status.tsv`, read only under
-  `html reader present`. Those rows are written by hand, not by the oracle, which has no reader: each
-  cites its statements and the Word probe it rests on (`evidence`), and is checked against Word 365's
-  save of the fixture (round 10, 21 October 2026: every row agrees). A row resting on a rule not yet
-  in the WD would name the WD it waits for in `pending`, and be left out of the comparison on both
-  sides; since WD 0.27 none does. The table adds `parsed` (compared), `statements`, `evidence` and
-  `pending`. A chunk's
-  `text.hidden` is one finding for its outermost hidden element with text, at the element's path in the
-  tree jsoup builds (unprefixed, `/html[1]/body[1]/div[2]`), with no range; its excerpt is the text the
-  import made, a block a line feed apart; its address the block that holds its text under
-  `hidden: true`, from the same import. `ExtractionInspection` checks each path in the jsoup tree of the
-  fixture's chunk.
+- An inspector's findings differ by one capability of the class path: an **HTML reader** (jsoup and
+  docx4j-ImportXHTML; WD 0.27's `html reader present`). Without one it skips each HTML, XHTML or MHT
+  chunk as `not_decoded`; with one it runs the chunk's import (WD 0.26's REQ-901) and finds the chunk's
+  hidden text. Since CR-050 phase 4 both tables carry a `capability` column, `any`, `html reader absent`
+  or `html reader present`, and the harness compares a fixture against its rows of `any` and of the
+  engine's environment, with the status row of that environment, reporting the other environment's
+  rows pending by count; a reader-present engine therefore checks every row that does not depend on the
+  reader, and the reader-dependent ones of its own environment. The oracle, which has no reader, writes
+  the `any` and `html reader absent` rows; each HTML chunk's `altchunk` row is `html reader absent`, and
+  the oracle writes its reader-present twin (`parsed` `html`, the chunk read). The rest of the
+  reader-present rows, a chunk's `text.hidden`, are written by hand in `phase0/expected-inspection-html.tsv`
+  (`ExtractionHtmlCases`'s fixture, `extraction-probe-html.docx`: four chunks, A to D), which the oracle
+  folds in: each cites its statements and the Word probe it rests on (`evidence`), and is checked
+  against Word 365's save of the fixture (round 10, 21 October 2026: every row agrees). A row resting on
+  a rule not yet in the WD would name the WD it waits for in `pending`, and be left out of the
+  comparison on both sides; since WD 0.27 none does. A chunk's `text.hidden` is one finding for its
+  outermost hidden element with text, at the element's path in the tree jsoup builds (unprefixed,
+  `/html[1]/body[1]/div[2]`), with no range; its excerpt is the text the import made, a block a line
+  feed apart; its address the block that holds its text under `hidden: true`, from the same import.
+  `ExtractionInspection` checks each such path in the jsoup tree of the fixture's chunk.
 
 After `ExtractionProbeBuilder` (into a scratch directory, its text files copied; never its rebuilt
 fixtures, which are not byte-identical, `GOLDENS.md`), from the repository root:
@@ -62,15 +66,17 @@ java -cp <test classes and dependencies> org.docx4j.textextraction.ExtractionIns
 `expected-inspection.tsv`: `fixture`, `case` (0 for a finding of the fixture as a whole), `kind`,
 the location (`chain`, `part`, `path`, `start`, `end_path`, `end`), `address`, `visible`, `reveal`,
 the group under six outputs (`plain`, `markdown`, `blocks`, `hidden`, `embedded`, `comments`),
-`excerpt_length`, `excerpt_cut`, `selector`, `summary` (informative, not compared). The address is
+`excerpt_length`, `excerpt_cut`, `selector`, `summary` (informative, not compared), `capability` (above),
+`parsed` (compared: how an HTML, XHTML or MHT chunk was read, `html`, else empty), `evidence` and
+`pending` (a reader-present row's, informative). The address is
 the REQ-518/519 address of the block that holds the finding's selector in the output its reveal
 names, as docx4j's text model gives it; empty for an unextractable finding, a property part, an
 author, or a finding no block holds. The selector names what the finding is about: the marker token
 in or around it, else its target, its name, its excerpt when short, or its part.
 
-`expected-inspection-status.tsv`: `fixture`, `status` (`COMPLETE` or `PARTIAL`), `skipped` and
-`undecided`, each a `; `-separated sorted list of `reason@location`, a location written
-`chain|part|path`.
+`expected-inspection-status.tsv`: `fixture`, `capability` (`any` where every row of the fixture is,
+else one row per environment), `status` (`COMPLETE` or `PARTIAL`), `skipped` and `undecided`, each a
+`; `-separated sorted list of `reason@location`, a location written `chain|part|path`.
 
 ## Locations
 

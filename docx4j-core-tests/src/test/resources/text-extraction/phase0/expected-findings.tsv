@@ -68,9 +68,9 @@ case	fixture	channel	kind	selector	scenario	expected	statements
 23	extraction-probe.docx	inspect	custom_xml	BND23_XML_VALUE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 38	extraction-probe.docx	inspect	properties	PRP38_SUBJECT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 42	extraction-probe.docx	inspect	part.activex	/word/activeX/activeX42.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-36	extraction-probe.docx	inspect	altchunk	/word/afchunk.htm	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+36	extraction-probe.docx	inspect	altchunk	/word/afchunk.htm	html reader absent	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
 43	extraction-probe.docx	inspect	altchunk	/word/chunk43.txt	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-44	extraction-probe.docx	inspect	altchunk	/word/chunk44.mht	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+44	extraction-probe.docx	inspect	altchunk	/word/chunk44.mht	html reader absent	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
 45	extraction-probe.docx	inspect	altchunk	/word/chunk45.rtf	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 46	extraction-probe.docx	inspect	altchunk	/word/chunk46.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 47	extraction-probe.docx	inspect	altchunk	/word/chunk47.docx	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
@@ -83,6 +83,8 @@ case	fixture	channel	kind	selector	scenario	expected	statements
 53	extraction-probe.docx	inspect	embedded.notes	EMB53_SPEAKER_NOTES	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 53	extraction-probe.docx	inspect	embedded.slide_hidden	EMB53_HIDDEN_SLIDE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 21	extraction-probe.docx	inspect	hyperlink.web	https://example.com/FLD21_URL_MARK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+36	extraction-probe.docx	inspect	altchunk	/word/afchunk.htm	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+44	extraction-probe.docx	inspect	altchunk	/word/chunk44.mht	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
 50	extraction-probe-external.docm	inspect	alt_text.name	Picture 17	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 50	extraction-probe-external.docm	inspect	settings.update_fields	/word/settings.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 52	extraction-probe-external.docm	inspect	properties	APP52_COMPANY	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
@@ -184,7 +186,7 @@ case	fixture	channel	kind	selector	scenario	expected	statements
 67	extraction-probe-inspect.docx	inspect	custom_xml	SDT67_VALUE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 0	extraction-probe-inspect.docx	inspect	properties	/docProps/app.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 0	extraction-probe-inspect.docx	inspect	properties	/docProps/core.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-63	extraction-probe-inspect.docx	inspect	altchunk	/word/chunk63.htm	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	altchunk	/word/chunk63.htm	html reader absent	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
 63	extraction-probe-inspect.docx	inspect	altchunk.script	/word/chunk63.htm	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 63	extraction-probe-inspect.docx	inspect	altchunk.external_ref	/word/chunk63.htm	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 63	extraction-probe-inspect.docx	inspect	object.embedded	/word/embeddings/probe63.docx	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
@@ -199,6 +201,28 @@ case	fixture	channel	kind	selector	scenario	expected	statements
 64	extraction-probe-inspect.docx	inspect	relationship.external	file:///\\cr050-missing\share\LNK64_UNC.docx	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 64	extraction-probe-inspect.docx	inspect	hyperlink.web	https://example.com/LNK64_WEB	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 64	extraction-probe-inspect.docx	inspect	hyperlink.web	mailto:probe@example.com?subject=LNK64_MAIL	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+63	extraction-probe-inspect.docx	inspect	altchunk	/word/chunk63.htm	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	properties	/docProps/app.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+0	extraction-probe-html.docx	inspect	properties	/docProps/core.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+0	extraction-probe-html.docx	inspect	altchunk	/word/chunk-a.htm	html reader absent	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	altchunk	/word/chunk-b.htm	html reader absent	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	altchunk	/word/chunk-c.xhtml	html reader absent	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	altchunk	/word/chunk-d.mht	html reader absent	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	altchunk	/word/chunk-a.htm	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	altchunk	/word/chunk-b.htm	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	altchunk	/word/chunk-c.xhtml	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	altchunk	/word/chunk-d.mht	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	text.hidden	HTM_A_INLINE	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	text.hidden	HTM_A_CLASS	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	text.hidden	HTM_A_OUTER	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	text.hidden	HTM_A_SPAN_HIDDEN	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	text.hidden	HTM_B_STAYS_HIDDEN	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	text.hidden	HTM_B_CELL_HIDDEN	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	text.hidden	HTM_B_ROW_HIDDEN	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	text.hidden	HTM_B_ITEM_HIDDEN	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	text.hidden	HTM_C_INLINE	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	text.hidden	HTM_C_AFTER	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+0	extraction-probe-html.docx	inspect	text.hidden	HTM_D_FIRST_PART	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
 50	extraction-probe-external.docm	metadata	fields_update_on_open		default	true	REQ-506
 52	extraction-probe-external.docm	metadata	ProbeCustom		default	CPR52_CUSTOM	REQ-515
 52	extraction-probe-external.docm	metadata	Company		default	APP52_COMPANY	REQ-515

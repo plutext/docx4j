@@ -34,7 +34,13 @@ from lxml import etree
 
 FIXTURES = [
     'extraction-probe.docx', 'extraction-probe-external.docm', 'extraction-probe-structure.docx',
-    'extraction-probe-inspect.docx']
+    'extraction-probe-inspect.docx', 'extraction-probe-html.docx']
+
+# The capability column (CR-050 phase 4): a row an inspector makes in every environment, or only without an
+# HTML reader (an HTML, XHTML or MHT chunk it cannot decode), or only with one (the hand-written rows of
+# expected-inspection-html.tsv, folded in below). The names are the harness's scenario names.
+ANY, READER_ABSENT, READER_PRESENT = 'any', 'html reader absent', 'html reader present'
+HTML_CHUNK_TYPES = ('text/html', 'application/xhtml+xml', 'message/rfc822')
 
 PREFIX = {
     'http://schemas.openxmlformats.org/wordprocessingml/2006/main': 'w',
@@ -2315,23 +2321,66 @@ def main(directory):
     for line in open(posixpath.join(directory, 'expected-tokens.tsv'), encoding='utf-8').read().splitlines()[1:]:
         cols = line.split('\t')
         cases[cols[1].replace('‑', '').replace('­', '')] = cols[0]
-    rows = ['fixture\tcase\tkind\tchain\tpart\tpath\tstart\tend_path\tend\taddress\tvisible\treveal\t'
-            + '\t'.join(name for name, _, _ in OUTPUTS) + '\texcerpt_length\texcerpt_cut\tselector\tsummary']
-    status_rows = ['fixture\tstatus\tskipped\tundecided']
+    header = ('fixture\tcase\tkind\tchain\tpart\tpath\tstart\tend_path\tend\taddress\tvisible\treveal\t'
+              + '\t'.join(name for name, _, _ in OUTPUTS) + '\texcerpt_length\texcerpt_cut\tselector\tsummary'
+              + '\tcapability\tparsed\tevidence\tpending')
+    columns = header.split('\t')
+    rows = [header]
+    status_rows = ['fixture\tcapability\tstatus\tskipped\tundecided']
+    # the rows an inspector with an HTML reader makes, written by hand (INSPECTION.md), by fixture
+    present = {}
+    for line in open(posixpath.join(directory, 'expected-inspection-html.tsv'), encoding='utf-8').read().splitlines():
+        cols = line.split('\t')
+        if cols[0] == 'fixture':
+            html_columns = cols
+            continue
+        row = dict(zip(html_columns, cols))
+        present.setdefault(row['fixture'], []).append(row)
     for fixture in FIXTURES:
         pkg, findings, status = inspect_fixture(posixpath.join(directory, fixture))
+        keys, html_chunks, absent = set(), [], {}
         for f in findings:
             sel = selector(pkg, f)
             case = case_of(pkg, f, cases) or '0'   # 0: the fixture's, as a golden's case is
             excerpt = f.excerpt or ''
-            rows.append('\t'.join(tsv_value(x) for x in [
+            key = tuple(tsv_value(x) for x in [f.kind, '>'.join(f.chain), f.part, f.path, f.start, f.end_path, f.end])
+            keys.add(key)
+            capability = ANY
+            if f.kind == 'altchunk' and not f.chain and f.summary in HTML_CHUNK_TYPES:
+                capability = READER_ABSENT   # with a reader the chunk is parsed (its twin below) and not skipped
+                html_chunks.append(f.part)
+            line = '\t'.join(tsv_value(x) for x in [
                 fixture, case, f.kind, '>'.join(f.chain), f.part, f.path, f.start, f.end_path, f.end, '',
                 f.visible, f.reveal()] + [f.group(o, fmt) for _, o, fmt in OUTPUTS] + [
                 cps(excerpt), 'true' if cps(excerpt) > 200 else 'false', sel,
-                f.summary.replace('\t', ' ').replace('\n', ' ')]))
-        partial = bool(status['skipped'])
-        status_rows.append('\t'.join([fixture, 'PARTIAL' if partial else 'COMPLETE', '; '.join(sorted(status['skipped'])),
-                                      '; '.join(sorted(status['undecided']))]))
+                f.summary.replace('\t', ' ').replace('\n', ' '), capability, '', '', ''])
+            rows.append(line)
+            if capability == READER_ABSENT:
+                absent[key] = line
+        hand = {}
+        for row in present.get(fixture, []):
+            hand[tuple(row[k] for k in ('kind', 'chain', 'part', 'path', 'start', 'end_path', 'end'))] = row
+        # with a reader, each HTML, XHTML or MHT chunk's altchunk finding is made with parsed 'html' (the chunk read,
+        # CR-053): the absent row's twin, carrying the hand-written row's evidence where there is one
+        for key, absent_row in list(absent.items()):
+            twin = dict(zip(columns, absent_row.split('\t')))
+            twin['capability'], twin['parsed'] = READER_PRESENT, 'html'
+            if key in hand:
+                twin['evidence'], twin['pending'] = hand[key].get('evidence', ''), hand[key].get('pending', '')
+            rows.append('\t'.join(twin.get(c, '') for c in columns))
+        for key, row in hand.items():
+            if key in keys:
+                continue   # the same finding in both environments (a property part, a chunk): the rows above
+            row['capability'] = READER_PRESENT
+            rows.append('\t'.join(row.get(c, '') for c in columns))
+        skipped = sorted(status['skipped'])
+        undecided = '; '.join(sorted(status['undecided']))
+        if not html_chunks:
+            status_rows.append('\t'.join([fixture, ANY, 'PARTIAL' if skipped else 'COMPLETE', '; '.join(skipped), undecided]))
+        else:
+            with_reader = [x for x in skipped if x not in ['not_decoded@|%s|' % p for p in html_chunks]]
+            status_rows.append('\t'.join([fixture, READER_ABSENT, 'PARTIAL' if skipped else 'COMPLETE', '; '.join(skipped), undecided]))
+            status_rows.append('\t'.join([fixture, READER_PRESENT, 'PARTIAL' if with_reader else 'COMPLETE', '; '.join(with_reader), undecided]))
     open(posixpath.join(directory, 'expected-inspection.tsv'), 'w', encoding='utf-8', newline='\n').write('\n'.join(rows) + '\n')
     open(posixpath.join(directory, 'expected-inspection-status.tsv'), 'w', encoding='utf-8', newline='\n').write(
         '\n'.join(status_rows) + '\n')

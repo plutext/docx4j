@@ -27,6 +27,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.docx4j.model.text.TextBlock;
 import org.docx4j.model.text.TextCell;
@@ -58,18 +61,28 @@ public final class ExtractionInspection {
     static final String TABLE = "expected-inspection.tsv", STATUS = "expected-inspection-status.tsv";
 
     /**
-     * An inspector with an HTML reader (CR-053 phase 3): {@link ExtractionHtmlCases#FIXTURE}'s findings, written
-     * by hand and checked against Word 365's save of the fixture, with {@code parsed}, the statements and the
-     * probe each rests on, and {@code pending} where it rests on a rule not yet ruled on (WD 0.27)
+     * The rows an inspector with an HTML reader makes (CR-053 phase 3), written by hand and checked against
+     * Word 365's save of {@link ExtractionHtmlCases#FIXTURE}, with {@code parsed}, the statements and the probe each
+     * rests on, and {@code pending} where it rests on a rule not yet ruled on (WD 0.27). Since CR-050 phase 4 the
+     * oracle folds them into {@value #TABLE} under {@code capability} {@value #READER_PRESENT}; this file is their source.
      */
-    static final String HTML_TABLE = "expected-inspection-html.tsv", HTML_STATUS = "expected-inspection-html-status.tsv";
+    static final String HTML_TABLE = "expected-inspection-html.tsv";
+
+    /**
+     * The {@code capability} column (CR-050 phase 4): a row every inspector makes, or one made only without an
+     * HTML reader (an HTML, XHTML or MHT chunk it cannot decode, skipped), or only with one (the chunk parsed,
+     * its hidden text found). The harness compares a fixture against the rows of {@code any} and of the engine's
+     * environment; a status row exists per (fixture, capability) the same way.
+     */
+    static final String ANY = "any", READER_ABSENT = ExtractionConformance.HTML_READER_ABSENT,
+            READER_PRESENT = ExtractionConformance.HTML_READER_PRESENT;
 
     /** A finding's identity: its kind and its stored location (CR-050 section 2.4) */
     static final List<String> KEY = List.of("kind", "chain", "part", "path", "start", "end_path", "end");
 
-    /** The fields compared for a finding whose identity matched */
+    /** The fields compared for a finding whose identity matched ({@code parsed}: how an HTML chunk was read, CR-053) */
     static final List<String> FIELDS = List.of("address", "visible", "reveal", "plain", "markdown", "blocks", "hidden",
-            "embedded", "comments", "excerpt_length", "excerpt_cut");
+            "embedded", "comments", "excerpt_length", "excerpt_cut", "parsed");
 
     /**
      * The statements a row of the inspector needs: WD 0.17's section 9 (f79bf8b), but REQ-903's counts in a result,
@@ -132,7 +145,8 @@ public final class ExtractionInspection {
         Path dir = Path.of(args[0]);
         List<Map<String, String>> rows = ExtractionConformance.table(dir.resolve(TABLE));
         Map<String, List<TextBlock>> outputs = new HashMap<>();
-        for (Map<String, String> row : rows) row.put("address", address(outputs, dir, row));
+        // a reader-present row's address is hand-written (the block the import makes): the default run cannot compute it
+        for (Map<String, String> row : rows) if (!READER_PRESENT.equals(row.get("capability"))) row.put("address", address(outputs, dir, row));
         write(dir.resolve(TABLE), rows);
         Files.writeString(dir.resolve("expected-findings.tsv"), findingsTable(dir), StandardCharsets.UTF_8);
         System.out.println("wrote addresses for " + rows.size() + " findings, and expected-findings.tsv");
@@ -147,20 +161,24 @@ public final class ExtractionInspection {
     // ------------------------------------------------------------ expected-findings.tsv
 
     /**
-     * {@code expected-findings.tsv}: a row for every (kind, selector) the inspection table holds, its count
-     * the number of findings with that key (for an adapter that cannot report locations), then the
-     * warning and metadata rows {@link ExtractionFixtureChecks#findings()} writes.
+     * {@code expected-findings.tsv}: a row for every (kind, selector, scenario) the inspection table holds, its count
+     * the number of findings with that key (for an adapter that cannot report locations), the scenario
+     * {@code default} for a row of every environment and the environment's name for one of a capability, then
+     * the warning and metadata rows {@link ExtractionFixtureChecks#findings()} writes.
      */
     static String findingsTable(Path dir) throws Exception {
         Map<String, Integer> counts = new LinkedHashMap<>();
         for (Map<String, String> row : ExtractionConformance.table(dir.resolve(TABLE))) {
-            String key = row.get("case") + "\t" + row.get("fixture") + "\tinspect\t" + row.get("kind") + "\t" + row.get("selector");
+            String scenario = ANY.equals(row.get("capability")) ? "default" : row.get("capability");
+            String key = row.get("case") + "\t" + row.get("fixture") + "\tinspect\t" + row.get("kind") + "\t" + row.get("selector") + "\t" + scenario;
             counts.merge(key, 1, Integer::sum);
         }
         String others = ExtractionFixtureChecks.findings();
         StringBuilder out = new StringBuilder(others.substring(0, others.indexOf('\n') + 1));
-        for (Map.Entry<String, Integer> e : counts.entrySet())
-            out.append(e.getKey()).append("\tdefault\t").append(e.getValue()).append('\t').append(STATEMENTS).append('\n');
+        for (Map.Entry<String, Integer> e : counts.entrySet()) {
+            String statements = e.getKey().endsWith("\tdefault") ? STATEMENTS : STATEMENTS + ", REQ-513";
+            out.append(e.getKey()).append('\t').append(e.getValue()).append('\t').append(statements).append('\n');
+        }
         return out.append(others.substring(others.indexOf('\n') + 1)).toString();
     }
 
@@ -220,15 +238,24 @@ public final class ExtractionInspection {
     static void check(Path dir) throws Exception {
         Map<String, Map<String, byte[]>> fixtures = new HashMap<>();
         Map<String, Document> parsed = new HashMap<>();
+        Map<String, org.jsoup.nodes.Document> trees = new HashMap<>();
+        Map<String, Set<String>> capabilities = new HashMap<>();
         int n = 0;
         for (Map<String, String> row : ExtractionConformance.table(dir.resolve(TABLE))) {
             n++;
             String context = TABLE + ":" + (n + 1) + " " + row.get("kind") + " " + row.get("selector");
+            capabilities.computeIfAbsent(row.get("fixture"), k -> new HashSet<>()).add(row.get("capability"));
             Map<String, byte[]> entries = fixtures.get(row.get("fixture"));
             if (entries == null) fixtures.put(row.get("fixture"), entries = ExtractionFixtureChecks.entries(Files.readAllBytes(dir.resolve(row.get("fixture")))));
             if (!row.get("chain").isEmpty()) for (String link : row.get("chain").split(">")) entries = open(entries.get(link.substring(1)), context);
             byte[] part = entries.get(row.get("part").substring(1));
             require(part != null, context + ": no part " + row.get("part"));
+            require(List.of(ANY, READER_ABSENT, READER_PRESENT).contains(row.get("capability")), context + ": capability " + row.get("capability"));
+            if (READER_PRESENT.equals(row.get("capability"))) {
+                checkHtmlRow(row, part, context, trees);
+                continue;
+            }
+            require(row.get("pending").isEmpty() && row.get("parsed").isEmpty(), context + ": pending and parsed are a reader-present row's");
             if (row.get("path").isEmpty()) {
                 require(row.get("start").isEmpty() && row.get("end_path").isEmpty(), context + ": a range without a path");
                 continue;
@@ -252,48 +279,46 @@ public final class ExtractionInspection {
         // the address is the text model's: a change there that moves a block shows here
         Map<String, List<TextBlock>> outputs = new HashMap<>();
         for (Map<String, String> row : ExtractionConformance.table(dir.resolve(TABLE)))
-            equal(row.get("address"), address(outputs, dir, row), TABLE + ": address of " + row.get("kind") + " " + row.get("selector"));
-        List<Map<String, String>> status = ExtractionConformance.table(dir.resolve(STATUS));
-        require(status.size() == fixtures.size(), "a status row for every fixture with findings");
-        for (Map<String, String> row : status) require(row.get("status").equals(row.get("skipped").isEmpty() ? "COMPLETE" : "PARTIAL"),
-                STATUS + ": " + row.get("fixture") + " is PARTIAL exactly when something was skipped");
-        checkHtml(dir);
+            if (!READER_PRESENT.equals(row.get("capability")))
+                equal(row.get("address"), address(outputs, dir, row), TABLE + ": address of " + row.get("kind") + " " + row.get("selector"));
+        // a status row per (fixture, capability): one of 'any' where every row of the fixture is, else one per environment
+        Set<String> want = new TreeSet<>(), have = new TreeSet<>();
+        for (Map.Entry<String, Set<String>> e : capabilities.entrySet()) {
+            if (e.getValue().equals(Set.of(ANY))) want.add(e.getKey() + "\t" + ANY);
+            else { want.add(e.getKey() + "\t" + READER_ABSENT); want.add(e.getKey() + "\t" + READER_PRESENT); }
+        }
+        for (Map<String, String> row : ExtractionConformance.table(dir.resolve(STATUS))) {
+            have.add(row.get("fixture") + "\t" + row.get("capability"));
+            require(row.get("status").equals(row.get("skipped").isEmpty() ? "COMPLETE" : "PARTIAL"),
+                    STATUS + ": " + row.get("fixture") + " is PARTIAL exactly when something was skipped");
+        }
+        equal(want, have, STATUS + ": a status row per fixture and capability");
     }
 
     /**
-     * Every row of {@value #HTML_TABLE}: its part exists; a path resolves in the tree jsoup builds from the
+     * A reader-present row ({@value #HTML_TABLE}'s, folded in): a path resolves in the tree jsoup builds from the
      * chunk (an MHT chunk's first HTML part), its elements unprefixed, and holds the selector; the excerpt is
      * as long as the text the element hides, a block a line feed apart; the reveal names the reader, and a
      * pending names the WD it waits for.
      */
-    static void checkHtml(Path dir) throws Exception {
-        Path table = dir.resolve(HTML_TABLE);
-        if (!Files.exists(table)) return;
-        Map<String, org.jsoup.nodes.Document> trees = new HashMap<>();
-        int n = 0;
-        for (Map<String, String> row : ExtractionConformance.table(table)) {
-            n++;
-            String context = HTML_TABLE + ":" + (n + 1) + " " + row.get("kind") + " " + row.get("selector");
-            byte[] part = ExtractionFixtureChecks.entries(Files.readAllBytes(dir.resolve(row.get("fixture")))).get(row.get("part").substring(1));
-            require(part != null, context + ": no part " + row.get("part"));
-            require(row.get("pending").isEmpty() || row.get("pending").startsWith("WD 0.27"), context + ": pending " + row.get("pending"));
-            if (row.get("path").isEmpty()) continue;
-            String key = row.get("fixture") + "|" + row.get("part");
-            org.jsoup.nodes.Document tree = trees.get(key);
-            if (tree == null) trees.put(key, tree = org.jsoup.Jsoup.parse(html(row.get("part"), part)));
-            org.jsoup.nodes.Element e = tree;
-            for (String step : row.get("path").substring(1).split("/")) {
-                String name = step.substring(0, step.indexOf('['));
-                int index = Integer.parseInt(step.substring(step.indexOf('[') + 1, step.length() - 1)), seen = 0;
-                org.jsoup.nodes.Element hit = null;
-                for (org.jsoup.nodes.Element c : e.children()) if (c.normalName().equals(name) && ++seen == index) { hit = c; break; }
-                require(hit != null, context + ": no element " + row.get("path"));
-                e = hit;
-            }
-            require(e.text().contains(row.get("selector")), context + ": the element's text is " + e.text());
-            require(row.get("reveal").equals("options: hidden: true; html reader: present"), context + ": reveal " + row.get("reveal"));
-            require(Integer.parseInt(row.get("excerpt_length")) == codePoints(String.join("\n", texts(e))), context + ": excerpt length");
+    static void checkHtmlRow(Map<String, String> row, byte[] part, String context, Map<String, org.jsoup.nodes.Document> trees) throws Exception {
+        require(row.get("pending").isEmpty() || row.get("pending").startsWith("WD 0.27"), context + ": pending " + row.get("pending"));
+        if (row.get("path").isEmpty()) return;
+        String key = row.get("fixture") + "|" + row.get("part");
+        org.jsoup.nodes.Document tree = trees.get(key);
+        if (tree == null) trees.put(key, tree = org.jsoup.Jsoup.parse(html(row.get("part"), part)));
+        org.jsoup.nodes.Element e = tree;
+        for (String step : row.get("path").substring(1).split("/")) {
+            String name = step.substring(0, step.indexOf('['));
+            int index = Integer.parseInt(step.substring(step.indexOf('[') + 1, step.length() - 1)), seen = 0;
+            org.jsoup.nodes.Element hit = null;
+            for (org.jsoup.nodes.Element c : e.children()) if (c.normalName().equals(name) && ++seen == index) { hit = c; break; }
+            require(hit != null, context + ": no element " + row.get("path"));
+            e = hit;
         }
+        require(e.text().contains(row.get("selector")), context + ": the element's text is " + e.text());
+        require(row.get("reveal").equals("options: hidden: true; html reader: present"), context + ": reveal " + row.get("reveal"));
+        require(Integer.parseInt(row.get("excerpt_length")) == codePoints(String.join("\n", texts(e))), context + ": excerpt length");
     }
 
     /** A chunk's HTML: an MHT chunk's first text/html part, else the bytes (UTF-8, as the fixture writes them) */
