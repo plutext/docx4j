@@ -7,7 +7,9 @@ mechanism found (§1.1), the tests in core-tests, D4 (c)'s rule as the ports imp
 check: Word repairs a file with an undeclared `Requires` prefix, so the priority stays medium (§5, §7).
 Phase 1 DONE 21 October 2026 (Jason: "commence CR-052 phase 1"; on Fable, CLAUDE.md's marshal path): the rule
 on every marshal path under both runtimes, the record carried through `deepCopy`, 24 tests (§5, §9); Word 365
-opens docx4j's saves of every case cleanly (§5, Jason's run). Phase 2 (hand-offs) next.
+opens docx4j's saves of every case cleanly (§5, Jason's run); committed 5df2e253e. Phase 2 (hand-offs) DONE 21 October 2026
+(Jason: "start CR-052 phase 2"): objects-ts, core-ts and python acknowledged (§5; objects records D1 (b) as a gap
+for 0.4.4, python's CR-011 phase B ports the rule, core-ts takes it with the objects release). CR-052 done.
 Proposed 2026-10-20. Requested by the docx4j-generated-objects-ts session at Jason's word ("send
 the CR request, and ask it for its opinion on priority, to be written into the CR"); the same
 defect is objects CR-011 (`docs/change-requests/CR-011-declare-source-only-prefixes.md` there, 3db3613).
@@ -260,9 +262,60 @@ JAXB's own, with `standalone="yes"`, as every other docx4j save has).
 
 ### Phase 2: hand-offs
 
-objects-ts (its CR-011 is the same rule; the resolution order agrees; it waits on jsonix 3.5.0,
-jsonix CR-008, so the hand-off points at it as it stands), core-ts (it reproduced the editor's case),
+objects-ts (its CR-011 is the same rule; the resolution order agrees; written here as waiting on
+jsonix CR-008, which had in fact shipped in @docx4j/jsonix 3.5.0, and CR-011 in objects 0.4.3, as its
+acknowledgement corrects), core-ts (it reproduced the editor's case),
 python (CR-049's table records its CR-011 Q11 as the same family). Acceptance: each acknowledged.
+
+**Sent** 21 October 2026 (docx4j-25, by session message, at 5df2e253e), each with the rule as built
+(the record and what sets it, D3's order, D4 (c)'s placements with the once-on-the-root and
+mc:Fallback refinements, the clash, the two clauses not implemented), Word's phase 1 result, the
+oracle (`McSourcePrefixesTest`, 24, with its two fixtures) and the CR's sections; to objects-ts with
+its Consumers point (the ports now agree on (c)) and its jsonix CR-008 dependency, to core-ts with six
+cases worth checks and the note that its weekly parity run sees nothing until the push, to python with
+lxml's per-element `nsmap` named as its record and content moved between trees as its risk.
+
+**Acknowledged:**
+- objects-ts (21 October 2026): acknowledged; the rule is the same. It ran objects at fd967f4 over the two
+  fixtures: in the probe's `document.xml`, `zz9` once on each of its three Choices and `shape2010` on its
+  Choice, written `<mc:Choice xmlns:shape2010=".." Requires="shape2010">`, `wps` (6) and `w14` (2) on the
+  root, which matches `anUnmarshalledPartDeclaresEveryPrefixWhereWordDoes`; in its `chart1.xml`, `c14`
+  on the root; in waterfall, `cx1` on the root; nothing undeclared, no warning. Differences: D1 (b) is a
+  gap in objects (on `aChoicesOwnIgnorableAndMustUnderstandAreDeclared`'s input it writes the Choice's
+  `mc:Ignorable="zz9" mc:MustUnderstand="w14"` with neither declared and no warning, the table's `w14`
+  stripped as otherwise unused), recorded as a known difference in objects CR-012 §7 (fd967f4), with a
+  recommendation to Jason that objects close it in 0.4.4 by this rule; objects records only the bindings
+  the table and its aliases would not give (a Choice its `Requires`, the root every source-only binding
+  in scope, a Choice without a record falling back to the root's), with the same output; its order is
+  source, table, `IGNORABLE_PREFIX_ALIASES` (`x` for SpreadsheetML, which docx4j's table holds), then a
+  warning; the `x` clash case differs in spelling only (objects writes SpreadsheetML as `s:`, so its
+  `<s:sheetData/>` does not clash and the Choice keeps the source's `x`); it has no counterpart of
+  `McSourceBindings.set` (a code-built Choice uses the root's record or gets the existing warning).
+  Two corrections to this CR, taken: objects CR-011 no longer waits (jsonix CR-008 shipped in
+  @docx4j/jsonix 3.5.0, CR-011 in objects 0.4.3), and the Choice placement dates from objects 869b725
+  (b03ccb5 recorded Jason's once-on-the-root confirmation). Objects CR-012 is proposed as 0.4.4, not
+  pushed or released.
+
+All three acknowledged: phase 2 done, 21 October 2026.
+- core-ts (21 October 2026): acknowledged. core-ts writes no prefixes itself; its save is the objects
+  facade's (its CR-010 §14.9: "nothing to change but the lockfile"). On objects 0.4.3, the released
+  range it locks, a source-only `Requires` prefix is declared from the source's binding on the part root,
+  with D3's order (source, table, aliases) but not yet D4 (c)'s placement; objects CR-012 (implemented
+  2026-10-20, unreleased) is the (c) placement with the narrowed clash rule (its §7 cites 4b9c71288), and
+  core-ts takes it with a range raise once released. It reads objects CR-012 (lines 90 and 130) as not
+  declaring a Choice's own `mc:Ignorable` and `mc:MustUnderstand`, which D1 (b) does here: put to
+  objects-ts by docx4j-25 to close or record. The six cases are candidates for core-ts tests when the
+  raise lands, against a tarball before the objects release; not scheduled (it is on its CR-012 phase 3).
+- python (21 October 2026): acknowledged, with its save measured at its HEAD (before its CR-011 phase B,
+  in progress). No record for a Choice; the root's `mc:Ignorable` prefixes are re-declared from its table
+  or the source root's `nsmap`; nothing goes on a Choice, and lxml's cleanup drops a declaration used
+  only in an attribute value. Measured consequences: a re-marshalled save of `extraction-probe.docx`
+  leaves `zz9` (3) and `shape2010` (1) undeclared, and of `waterfall.docx` `cx1`, though its source
+  declares it on the root (new to python; its CR-011 Q11 had the shape2010 case). Its CR-011 phase B
+  (Q3, under way) records each Choice's `Requires` URIs at parse in its xsdata fork and re-declares on
+  write, told to follow §4 and §9 (record, order, Word's placement, the clash), held to the applicable
+  `McSourcePrefixesTest` cases, closing Q11 too; its user gets a Word check of the two fixtures saved.
+  Commits to follow when phase B lands.
 
 ## 6. Decisions (for Jason; each with a recommendation)
 
@@ -353,8 +406,8 @@ only from a merge, and Word's own chartex charts are exposed when copied.
 - The scratch drivers: `SourcePrefixes.java`, `MoveCopy.java` (session scratchpad, 2026-10-20); phase
   0's `Cases.java`, `Mech.java`, `Mech2.java`, `Readings.java`, `mccheck.py` (the lxml check) and
   `build_round.py` (the Word check), archived with the session's scratch, 2026-10-21.
-- core-ts check 50 (core-ts CR-010 §14.9) and objects CR-012 (b03ccb5): D4 (c)'s rule as the ports
-  implement it.
+- core-ts check 50 (core-ts CR-010 §14.9) and objects CR-012 (the Choice placement from 869b725; b03ccb5
+  Jason's once-on-the-root confirmation): D4 (c)'s rule as the ports implement it.
 
 ## 9. Phase 1 record, 21 October 2026
 
