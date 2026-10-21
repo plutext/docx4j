@@ -127,6 +127,18 @@ the rest of the process. The per-evaluation context is the whole fix.
 
 Acceptance: the tests above green; `typed-controls-p-prefix.docx` and `typed-controls.docx` bind alike.
 
+**Hand-offs answered (2026-10-22, the same day):** neither port has the defect. core-ts evaluates a
+binding's XPath with its own `w:prefixMappings` alone (`CustomXmlPart.selectSingleNode`, `mappingsFor`;
+no built-in table; with the attribute absent it falls back to the data part's own root declarations),
+probed on its main a85421d with `p` mapped to `urn:mine` on a part that itself binds `p` to
+PresentationML: the `urn:mine` node binds. docx4j-python's `model/customxml/xpath.py` `select()` likewise
+uses the binding's mappings and nothing else (0e05d9d), falling back to the part's declared prefixes when
+the attribute is absent. Both already show a drop-down's or combo box's item text and write `w:lastValue`
+(core-ts `bindings.mts`, python `bindings.py`), and leave an empty `w15:repeatingSection` as it is.
+core-ts's date binding has the zone defect docx4j's had, in its own form (`dateOf()` strips a trailing
+`Z` and parses with `new Date()`, so the shown day moves with the machine's zone); reported to Jason by
+that session, not fixed yet. python reads the nominal day.
+
 ## 6. Decisions
 
 - D1 (proposed): the lookup order is binding's mappings, then the built-in table, then the shared map.
