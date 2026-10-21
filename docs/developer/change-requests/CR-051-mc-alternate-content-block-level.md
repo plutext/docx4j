@@ -1635,6 +1635,17 @@ tests (`McBlockLevelProbesTest.preserveModeReadsAsWordsSave`, `McBlockLevelReade
   acceptAll drops both branches' records and keeps the shading, rejectAll restores both cells) and
   `acceptingATablePropertyRecordReachesARowInAnotherBranch` (a record only the Fallback's row holds is
   listed and accepted); both fail with the one-branch reading, measured. No producer writes either shape.
+  Python then ported that (4cd1798 there) and found `Tables.changeText` had followed `rows` onto every
+  branch, so a whole-table change's text held every branch's rows where Word shows one branch's;
+  unintended, put back on `Lister.rowsOf` (test `aTableChangesTextReadsTheBranchWordReads`).
+  **core-ts**, porting 901a922a3 as its CR-013 phase 3, found by reading that `collapseGrid`'s per-layout
+  loop wrote each layout's spans as it counted them, last layout first, so a cell outside the element,
+  which is in every layout, was read by Word's layout with the span the other layout had already rewritten
+  in new-grid units: its shape (restored grid 6 x 500, current 3 x 1000; X span 2 then Choice C span 4 |
+  Fallback F span 4; a, b, c span 2) lost C's span on rejectAll, measured here (span 1 where 2). Fixed:
+  the counts are taken along every layout from the spans as they were, then written (test
+  `rejectingAGridChangeCountsEveryBranchsSpansFromTheOldOnes`; core-ts's own is the grid collapse in its
+  mc-fun tests).
 - **core-ts ported** the listing as its CR-013 phase 2 (df5b4af there, unpushed, 22 October 2026),
   from 9db1a3cbd: `TrackedChangesAlternateContentTest`'s four shapes (block, paragraph, row and cell
   level) each list the insertion and the deletion from the selected branch, where none was listed

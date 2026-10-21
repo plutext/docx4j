@@ -23,7 +23,9 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -168,7 +170,9 @@ final class Tables {
 	static String changeText(Tbl tbl) {
 		boolean whole = tableDiffers(tbl);
 		StringBuilder out = new StringBuilder();
-		for (Tr tr : rows(tbl)) {
+		// the text is what Word shows: the rows of the branch it reads, not every branch's (Lister.rowsOf, not rows)
+		for (Row row : Lister.rowsOf(tbl)) {
+			Tr tr = row.tr;
 			if (whole || (inChange(tr) && rowDiffers(tr))) out.append(Texts.rowText(tr, View.ACCEPTED));
 		}
 		return out.toString();
@@ -379,29 +383,34 @@ final class Tables {
 		for (Tr tr : rows) {
 			List<List<Tc>> layouts = layouts(tr);
 			int before = gridBefore(tr);
-			setRowMember(tr, "gridBefore", "wBefore", kept.indexOf(before));
 			int end = before;
 			// a layout per branch reading of the row: every branch spans the same columns, so the new
-			// spans are counted along each, and the row's members from the branch Word reads (the first)
+			// spans are counted along each, from the spans as they were (a cell outside the element is in
+			// every layout: core-ts CR-013 phase 3), then written; the row's members from the branch Word
+			// reads (the first)
+			Map<Tc, Integer> counts = new IdentityHashMap<Tc, Integer>();
 			for (int l = layouts.size() - 1; l >= 0; l--) {
 				int at = before;
 				for (Tc tc : layouts.get(l)) {
 					int next = at + span(tc);
-					int count = kept.indexOf(Math.min(next, last)) - kept.indexOf(Math.min(at, last));
-					if (tc.getTcPr() != null) {
-						if (count > 1) {
-							TcPrInner.GridSpan gs = tc.getTcPr().getGridSpan() != null ? tc.getTcPr().getGridSpan() : new TcPrInner.GridSpan();
-							gs.setVal(BigInteger.valueOf(count));
-							gs.setParent(tc.getTcPr());
-							tc.getTcPr().setGridSpan(gs);
-						} else {
-							tc.getTcPr().setGridSpan(null);
-						}
-					}
+					counts.put(tc, kept.indexOf(Math.min(next, last)) - kept.indexOf(Math.min(at, last)));
 					at = next;
 				}
 				end = at;
 			}
+			for (Map.Entry<Tc, Integer> e : counts.entrySet()) {
+				Tc tc = e.getKey();
+				if (tc.getTcPr() == null) continue;
+				if (e.getValue() > 1) {
+					TcPrInner.GridSpan gs = tc.getTcPr().getGridSpan() != null ? tc.getTcPr().getGridSpan() : new TcPrInner.GridSpan();
+					gs.setVal(BigInteger.valueOf(e.getValue()));
+					gs.setParent(tc.getTcPr());
+					tc.getTcPr().setGridSpan(gs);
+				} else {
+					tc.getTcPr().setGridSpan(null);
+				}
+			}
+			setRowMember(tr, "gridBefore", "wBefore", kept.indexOf(before));
 			setRowMember(tr, "gridAfter", "wAfter", kept.size() - 1 - kept.indexOf(Math.min(end, last)));
 		}
 	}

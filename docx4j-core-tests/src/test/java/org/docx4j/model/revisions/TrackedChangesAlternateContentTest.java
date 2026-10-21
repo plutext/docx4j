@@ -315,6 +315,47 @@ public class TrackedChangesAlternateContentTest {
 		assertEquals(0, listed(pkg).size());
 	}
 
+	/** A whole-table change's text is what Word shows: the rows of the branch it reads, not every branch's (docx4j-python, its CR-012 section 10.11). */
+	@Test
+	public void aTableChangesTextReadsTheBranchWordReads() throws Exception {
+		WordprocessingMLPackage pkg = withBody("<w:tbl><w:tblPr><w:jc w:val=\"center\"/><w:tblPrChange w:id=\"1\" w:author=\"A\"><w:tblPr/></w:tblPrChange></w:tblPr>"
+				+ "<w:tblGrid><w:gridCol w:w=\"1000\"/></w:tblGrid>"
+				+ "<mc:AlternateContent><mc:Choice Requires=\"w14\">" + plainRow("C") + "</mc:Choice><mc:Fallback>" + plainRow("F") + "</mc:Fallback></mc:AlternateContent></w:tbl>");
+		List<TrackedChange> changes = listed(pkg);
+		assertEquals(changes.toString(), 1, changes.size());
+		String text = changes.get(0).getText();
+		assertTrue(text, text.contains("C"));
+		assertFalse(text, text.contains("F"));
+	}
+
+	private static String spanned(String text, int span) {
+		return cell(text, "<w:tcW w:w=\"" + (500 * span) + "\" w:type=\"dxa\"/><w:gridSpan w:val=\"" + span + "\"/>");
+	}
+
+	/**
+	 * A rejected grid change collapsed over a row with a cell-level element (core-ts CR-013 phase 3's
+	 * shape): a cell outside the element is in every branch's layout, so the new spans are counted from
+	 * the old ones along every layout before any is written. Restored grid 6 x 500, current 3 x 1000;
+	 * row 1 X (span 2) then Choice C (span 4) | Fallback F (span 4); row 2 a, b, c (span 2 each):
+	 * rejected, the grid is 3 x 1000, X, a, b and c span 1 (no w:gridSpan), C and F span 2.
+	 */
+	@Test
+	public void rejectingAGridChangeCountsEveryBranchsSpansFromTheOldOnes() throws Exception {
+		String currentGrid = "<w:gridCol w:w=\"1000\"/><w:gridCol w:w=\"1000\"/><w:gridCol w:w=\"1000\"/>";
+		String oldGrid = "<w:gridCol w:w=\"500\"/><w:gridCol w:w=\"500\"/><w:gridCol w:w=\"500\"/><w:gridCol w:w=\"500\"/><w:gridCol w:w=\"500\"/><w:gridCol w:w=\"500\"/>";
+		WordprocessingMLPackage pkg = withBody("<w:tbl><w:tblPr><w:jc w:val=\"center\"/><w:tblPrChange w:id=\"1\" w:author=\"A\"><w:tblPr/></w:tblPrChange></w:tblPr>"
+				+ "<w:tblGrid>" + currentGrid + "<w:tblGridChange w:id=\"2\"><w:tblGrid>" + oldGrid + "</w:tblGrid></w:tblGridChange></w:tblGrid>"
+				+ "<w:tr>" + spanned("X", 2) + "<mc:AlternateContent><mc:Choice Requires=\"w14\">" + spanned("C", 4) + "</mc:Choice><mc:Fallback>" + spanned("F", 4) + "</mc:Fallback></mc:AlternateContent></w:tr>"
+				+ "<w:tr>" + spanned("a", 2) + spanned("b", 2) + spanned("c", 2) + "</w:tr></w:tbl>");
+		TrackedChanges.rejectAll(pkg);
+		String xml = TrackedChangesTest.bodyXml(pkg);
+		assertEquals(xml, 3, count(xml, "<w:gridCol "));
+		assertEquals(xml, 3, count(xml, "<w:gridCol w:w=\"1000\"/>"));
+		assertEquals("C and F span 2, the others none", 2, count(xml, "<w:gridSpan "));
+		assertEquals(xml, 2, count(xml, "<w:gridSpan w:val=\"2\"/>"));
+		assertFalse(xml, xml.contains("gridAfter") || xml.contains("gridBefore"));
+	}
+
 	/** The text model's view of a cell reads the branch Word reads (Texts.cellText through Trees.blockItems). */
 	@Test
 	public void acceptedViewReadsTheBranchWordReads() throws Exception {
