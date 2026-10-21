@@ -670,6 +670,11 @@ text with the range start inside the `w:ins`, as Word does, and it reads `w:date
 `w16du:dateUtc` in UTC. Against docx4j at d2d0a3861, over the eleven fixtures plus artefact 8 and Word 365's
 `review-for-word-word365-rejected`: **0 lines differ in all 26 comparisons.**
 
+**Rerun again (2026-10-22)**, at the python session's request, against its CR-012 Phase B (docx4j-python 6a7a03c,
+unpushed: docx4j's 61 WordprocessingML root elements typed inside a kept `mc:AlternateContent` branch, which changes
+what its revisions engine walks there), and after its port of 84b202c5a (b545884). Against docx4j at 84b202c5a, over
+the eleven fixtures and `review-for-word-word365-rejected`: **0 lines differ in all 24 comparisons.**
+
 **The Word-open check** (Jason, 2026-10-16, Word 365): docx4j's own Accept All and Reject All saves of four fixtures -
 the probe, the equations, the editor's review file (notes, comments, a reply) and check 18's (a move, list changes,
 tables, a section) - each open with no repair prompt and with no revision left. Word 2010 was not tried.

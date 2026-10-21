@@ -1655,6 +1655,14 @@ tests (`McBlockLevelProbesTest.preserveModeReadsAsWordsSave`, `McBlockLevelReade
   asserted as they are: Accept All resolves the selected branch only (the Fallback's twins keep their
   revisions), so `acceptingADeletedRowInEveryBranchRemovesTheTable` leaves the table where docx4j
   removes it. A view in a branch is read-only there (its D4); its CR-013 §9.8 lists what phase 3 has.
+- **core-ts ported** the resolution as its CR-013 phase 3 (c8a048f there, unpushed, 22 October 2026),
+  through 84b202c5a: all 20 cases of `TrackedChangesAlternateContentTest` give docx4j's answers there
+  (its mc-fun tests build the shapes in memory as the test does). One departure, its CR-013 §10.1: it
+  pairs twins piece by piece rather than by listed change, since its listing groups the selected
+  branch's changes with what touches the element; the test shapes pair the same either way, but a piece
+  resolved on its own resolves its twin there, where docx4j leaves the twin to acceptAll. A text box's
+  Fallback twin is paired too (docx4j's CR-043 behaviour); a `w:joinWithNext` before an element stays
+  as U1 has it, the mark dropped, not joined across the element.
 - **docx4j-python acknowledged:** its CR-012 phase A (docx4j's phase 1, `preserve` the default) is
   in progress there, from 2853b7280, passing row and cell level by; its phase 2 readers will be a
   follow-up port from 9db1a3cbd once phase A is verified and Jason gives the go (the row- and

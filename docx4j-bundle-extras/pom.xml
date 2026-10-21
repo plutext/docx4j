@@ -49,6 +49,18 @@
 		filters avoid "Invalid signature file digest for Manifest main attributes"
 		https://stackoverflow.com/a/6743609/1031689
 		-->	 
+			<!-- forceCreation: shade replaces target/<module>.jar in place, and without this a
+			     later build without clean can find that fat jar up to date, leave it, and shade it
+			     back into itself (stale contents, the old NOTICE; found by docx4j-ImportXHTML,
+			     2026-10-22). The plain jar is always rebuilt from target/classes. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>${version.maven-jar-plugin}</version>
+				<configuration>
+					<forceCreation>true</forceCreation>
+				</configuration>
+			</plugin>
 			<plugin> 
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -134,8 +146,25 @@
 					             (src/main/resources/META-INF/LICENSE). -->
 					        <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
 					            <projectName>docx4j-bundle-extras</projectName>
+					            <!-- The transformer's defaults name the ASF as this jar's copyright
+					                 holder, in a comment header and a copyright line (found by
+					                 docx4j-ImportXHTML, 2026-10-22): no header, and the holder
+					                 named; the bundled NOTICEs follow with their own attribution. -->
+					            <addHeader>false</addHeader>
+					            <organizationName>Plutext Pty Ltd</organizationName>
+					            <organizationURL>https://www.plutext.com/</organizationURL>
+					            <inceptionYear>2007</inceptionYear>
 					        </transformer>
 					        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+					        <!-- Multi-Release: without it the JVM ignores every class under
+					             META-INF/versions/N/ that a bundled multi-release jar
+					             (BouncyCastle here) ships, and loads the base versions
+					             (found by docx4j-ImportXHTML, 2026-10-22). -->
+					        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+					            <manifestEntries>
+					                <Multi-Release>true</Multi-Release>
+					            </manifestEntries>
+					        </transformer>
 					    </transformers>
 						</configuration>
 					</execution>

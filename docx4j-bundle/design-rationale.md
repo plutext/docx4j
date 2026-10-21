@@ -176,9 +176,10 @@ artifacts; 15.1 MB. Alone it has no docx4j-core (a `NoClassDefFoundError`, by de
   At 17.3.4-SNAPSHOT: base 21,713 entries, extras 5,579, in both 0.
 
   ```
-  comm -12 <(unzip -Z1 docx4j-bundle-<v>.jar | grep -v '^META-INF/' | sort) \
-           <(unzip -Z1 docx4j-bundle-extras-<v>.jar | grep -v '^META-INF/' | sort)
+  comm -12 <(unzip -Z1 docx4j-bundle-<v>.jar | grep -v '^META-INF/' | grep -v '/$' | sort) \
+           <(unzip -Z1 docx4j-bundle-extras-<v>.jar | grep -v '^META-INF/' | grep -v '/$' | sort)
   ```
+  (directory entries such as `org/` are in both and mean nothing; the second `grep` drops them.)
   `META-INF/services/org.apache.xmlgraphics.image.loader.spi.*` is in both (xmlgraphics-commons
   in the base, FOP's loaders in the extras); the ServiceLoader reads both files, which is right.
 - **The FOP clash moves with it.** The extras carry `org.apache.fop` (2,826 entries), so Apache
@@ -187,3 +188,32 @@ artifacts; 15.1 MB. Alone it has no docx4j-core (a `NoClassDefFoundError`, by de
   loads `loadAndSave.docx`, extracts its text, exports Markdown, signs it with a generated RSA
   key and reads the signature back on reload; base plus extras writes its PDF; extras alone
   fails on `WordprocessingMLPackage` as expected.
+
+## 2026-10-22: the manifest, the NOTICE, and a stale target
+
+Two findings from docx4j-ImportXHTML's prototype of its own bundle (its CR-004), measured on the
+installed 17.3.4-SNAPSHOT jars and fixed in both poms:
+
+- **`Multi-Release: true` was missing from the manifest**, so the 149 BouncyCastle classes under
+  `META-INF/versions/{11,15,17,25}/` in the base jar were never loaded and the JVM used the base
+  versions. A `ManifestResourceTransformer` with that manifest entry puts it in (both jars, so the
+  extras are ready for a multi-release input too).
+- **The NOTICE named the ASF as the jar's copyright holder.** `ApacheNoticeResourceTransformer`
+  writes a comment header and then its own entry, `<projectName> / Copyright <inceptionYear>-<year>
+  <organizationName>`, with defaults of 2006 and The Apache Software Foundation. `addHeader=false`
+  removes the header only; the holder comes from `organizationName`, `organizationURL` and
+  `inceptionYear`, now Plutext Pty Ltd, https://www.plutext.com/ and 2007. The bundled NOTICEs
+  follow with their own attribution.
+- **Shade without `clean` shades the previous fat jar back into itself.** `shadedArtifactAttached`
+  is false, so shade replaces `target/<module>-<v>.jar`; on the next build without `clean` the jar
+  plugin finds that jar up to date and does not recreate it from `target/classes`, so the shade
+  input is the previous fat jar. Classes are idempotent, but the previous generated NOTICE is read
+  as a bundled one, and the transformer takes any entry starting with the project name and holding
+  "Copyright" as the copyright entry (its `processResource`), so the old holder survived the first
+  rebuild here. Whether the jar plugin recreates the jar depends on timestamps, so it is not
+  reproducible at will. The fix (docx4j-ImportXHTML's, measured there with jsoup taken out of its
+  includes: 307 stale entries without it, 0 with) is `maven-jar-plugin` `forceCreation=true` in both
+  bundle poms: the plain jar is always rebuilt from `target/classes`, so shade's input is never the
+  previous fat jar. Verified here: a rebuild without `clean` logs "Building jar" for both and the
+  `original-*.jar` shade keeps is the 6 KB plain jar, not the fat one. `clean` is still the habit
+  for a release build.
