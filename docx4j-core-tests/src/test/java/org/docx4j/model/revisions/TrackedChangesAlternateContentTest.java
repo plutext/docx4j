@@ -223,6 +223,54 @@ public class TrackedChangesAlternateContentTest {
 		assertTrue(xml, xml.contains(">F<"));
 	}
 
+	private static String cell(String text, String tcPr) {
+		return "<w:tc><w:tcPr>" + tcPr + "</w:tcPr><w:p><w:r><w:t>" + text + "</w:t></w:r></w:p></w:tc>";
+	}
+
+	private static String deletedCell(int id, String text) {
+		return cell(text, "<w:tcW w:w=\"1000\" w:type=\"dxa\"/><w:cellDel w:id=\"" + id + "\" w:author=\"A\"/>");
+	}
+
+	private static String plainCell(String text) {
+		return cell(text, "<w:tcW w:w=\"1000\" w:type=\"dxa\"/>");
+	}
+
+	/**
+	 * A deleted cell in each branch of a cell-level element, each branch with a plain cell beside it
+	 * (docx4j-python's finding, its CR-012 section 10): accepted, both branches lose their cell and each
+	 * branch's own neighbour is widened, once.
+	 */
+	@Test
+	public void acceptingADeletedCellResolvesItsTwinInItsOwnBranch() throws Exception {
+		WordprocessingMLPackage pkg = withBody("<w:tbl>" + TBL_PROPS + "<w:tr>"
+				+ "<mc:AlternateContent><mc:Choice Requires=\"w14\">" + deletedCell(1, "C") + plainCell("Ckeep") + "</mc:Choice>"
+				+ "<mc:Fallback>" + deletedCell(2, "F") + plainCell("Fkeep") + "</mc:Fallback></mc:AlternateContent></w:tr></w:tbl>");
+		List<TrackedChange> changes = listed(pkg);
+		assertEquals(changes.toString(), 1, changes.size());
+		assertEquals(1, changes.get(0).twins.size());
+		changes.get(0).accept();
+		String xml = TrackedChangesTest.bodyXml(pkg);
+		assertFalse(xml, xml.contains("cellDel") || xml.contains(">C<") || xml.contains(">F<"));
+		assertTrue(xml, xml.contains("Ckeep") && xml.contains("Fkeep"));
+		assertEquals("each branch's neighbour widened once", 2, count(xml, "w:gridSpan w:val=\"2\""));
+		assertEquals(2, count(xml, "w:tcW w:w=\"2000\""));
+		assertEquals(0, listed(pkg).size());
+	}
+
+	/** Each branch holding the deleted cell alone, a plain cell beside the element in the row: the row's neighbour is widened once, not once per branch. */
+	@Test
+	public void acceptingADeletedCellAloneInEachBranchWidensTheRowsNeighbourOnce() throws Exception {
+		WordprocessingMLPackage pkg = withBody("<w:tbl>" + TBL_PROPS + "<w:tr>" + plainCell("keep")
+				+ "<mc:AlternateContent><mc:Choice Requires=\"w14\">" + deletedCell(1, "C") + "</mc:Choice>"
+				+ "<mc:Fallback>" + deletedCell(2, "F") + "</mc:Fallback></mc:AlternateContent></w:tr></w:tbl>");
+		listed(pkg).get(0).accept();
+		String xml = TrackedChangesTest.bodyXml(pkg);
+		assertFalse(xml, xml.contains("cellDel") || xml.contains(">C<") || xml.contains(">F<"));
+		assertEquals("the row's neighbour widened once", 1, count(xml, "w:gridSpan w:val=\"2\""));
+		assertEquals(1, count(xml, "w:tcW w:w=\"2000\""));
+		assertTrue("the element stays, its branches now empty of cells", xml.contains("<mc:Choice") && xml.contains("<mc:Fallback"));
+	}
+
 	/** The text model's view of a cell reads the branch Word reads (Texts.cellText through Trees.blockItems). */
 	@Test
 	public void acceptedViewReadsTheBranchWordReads() throws Exception {

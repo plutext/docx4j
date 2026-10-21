@@ -115,7 +115,8 @@ Changes in Version 17.3.4
 - `mc:AlternateContent` at row and cell level in `preserve` mode (CR-051 phase 2): kept whole like block level;
   the text model, the inspector, tracked changes (listed once, the other branches' as twins; a table goes only when no
   branch has a row left), OpenDoPE's row removal and its emptying of a cell control read or keep the element where
-  they lost its content, deleted the row or lifted one branch's cell out of it.
+  they lost its content, deleted the row or lifted one branch's cell out of it; a deleted cell in a branch Word does not
+  read is removed with its twin (found by docx4j-python).
 - docx4j-bundle now also holds docx4j-digsig and docx4j-markdown. PDF output is the new `docx4j-bundle-extras`
   (docx4j-export-fo, docx4j-chart-render, the docx4j FO renderer fork, Batik, jeuclid and the fonts), a second fat jar
   put beside docx4j-bundle of the same version; its pom depends on docx4j-bundle, so a Maven consumer gets both. It

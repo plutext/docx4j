@@ -1604,6 +1604,31 @@ tests (`McBlockLevelProbesTest.preserveModeReadsAsWordsSave`, `McBlockLevelReade
 - **docx4j-mcp acknowledged:** T8 revised so that every load there names its mode (`WORD` or
   `PRESERVE`) and none relies on the default, so 17.4.0's switch changes no tool's output; its
   `preserve` tools note that row and cell level are kept as well.
+- **docx4j-python ported** phase 2 the same day as its CR-012 phase A2 (8b5ea5b to 5051ccd there,
+  unpushed, its Word check to come) and found a gap docx4j shared: a `w:cellDel` (or `w:cellIns`
+  rejected) in a branch Word does not read was listed as a twin but never resolved, since
+  `Tables.removeCell` found the cell through `Lister.cellsOf`, which reads Word's branch only, so
+  the twin kept its cell and its marker after accept, reject and acceptAll. **Fixed here** (after
+  d53a7f4dc, uncommitted): a cell not among the row's read cells is looked up in its own branch
+  (`Lister.branchOf`, `Lister.cellsIn`) and its branch's neighbour is widened; a twin alone in its
+  branch is removed without widening, since the row's neighbour was widened once when the read
+  branch's cell went, and every branch spans the same grid columns. Tests
+  `acceptingADeletedCellResolvesItsTwinInItsOwnBranch` and
+  `acceptingADeletedCellAloneInEachBranchWidensTheRowsNeighbourOnce` in
+  `TrackedChangesAlternateContentTest`. Left: a read branch with two cells beside a twin branch
+  with one leaves the twin branch's grid a span short, an asymmetry no producer writes. Python's
+  other notes: its fork needed no code for typing `w:tr` and `w:tc` in a branch (its `w:sdt` hook
+  reads the container's binding; names added); OpenDoPE's two cases are not ported, its fill having
+  no `od:condition` or `od:repeat`.
+- **core-ts ported** the listing as its CR-013 phase 2 (df5b4af there, unpushed, 22 October 2026),
+  from 9db1a3cbd: `TrackedChangesAlternateContentTest`'s four shapes (block, paragraph, row and cell
+  level) each list the insertion and the deletion from the selected branch, where none was listed
+  before; `Lister.hasRows` is `rowsOf(tbl, 'every')` there and `Table.deleteColumns` counts cells the
+  same way, so `acceptingADeletedRowKeepsATableWhoseOtherBranchHasARow` agrees; the 13 probes with a
+  Word 365 save read as the save does through its Office JS readers. Two differ until its phase 3,
+  asserted as they are: Accept All resolves the selected branch only (the Fallback's twins keep their
+  revisions), so `acceptingADeletedRowInEveryBranchRemovesTheTable` leaves the table where docx4j
+  removes it. A view in a branch is read-only there (its D4); its CR-013 §9.8 lists what phase 3 has.
 - **docx4j-python acknowledged:** its CR-012 phase A (docx4j's phase 1, `preserve` the default) is
   in progress there, from 2853b7280, passing row and cell level by; its phase 2 readers will be a
   follow-up port from 9db1a3cbd once phase A is verified and Jason gives the go (the row- and

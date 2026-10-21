@@ -353,6 +353,31 @@ final class Lister {
 		return out;
 	}
 
+	/**
+	 * The cells of one branch of a cell-level {@code mc:AlternateContent} (CR-051 phase 2): the
+	 * branch's own cells, in order, through cell-level content controls and custom XML, for a cell
+	 * in a branch Word does not read, whose neighbours are its branch's.
+	 */
+	static List<Row> cellsIn(Object branch, Tr tr) {
+		List<Row> out = new ArrayList<Row>();
+		List<Object> items = McSplice.contentOf(branch);
+		if (items != null) cells(items, tr, out);
+		return out;
+	}
+
+	/**
+	 * The {@code mc:Choice} or {@code mc:Fallback} a cell stands in, below its row, or null for a
+	 * cell standing in the row itself (through content controls and custom XML).
+	 */
+	static Object branchOf(Tc tc, Tr tr) {
+		Object o = tc.getParent();
+		while (o != null && o != tr) {
+			if (o instanceof AlternateContent.Choice || o instanceof AlternateContent.Fallback) return o;
+			o = o instanceof org.jvnet.jaxb.lang.Child ? ((org.jvnet.jaxb.lang.Child) o).getParent() : null;
+		}
+		return null;
+	}
+
 	private static void cells(List<Object> items, Tr tr, List<Row> out) {
 		for (Object item : items) {
 			Object v = Trees.unwrap(item);

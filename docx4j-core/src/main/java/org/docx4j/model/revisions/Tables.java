@@ -392,16 +392,27 @@ final class Tables {
 	 */
 	static void removeCell(Tc tc, Tr tr, Removals removals, Story story) {
 		List<Row> cells = Lister.cellsOf(tr);
-		int at = -1;
-		for (int i = 0; i < cells.size(); i++) if (Trees.unwrap(cells.get(i).item) == tc) at = i;
-		if (at < 0) return;
+		int at = indexOf(cells, tc);
+		boolean inOtherBranch = false;
+		if (at < 0) {
+			// CR-051 phase 2: a cell in a branch of a cell-level mc:AlternateContent that Word does not
+			// read (a twin): its neighbours are its own branch's cells
+			Object branch = Lister.branchOf(tc, tr);
+			if (branch == null) return;
+			cells = Lister.cellsIn(branch, tr);
+			at = indexOf(cells, tc);
+			if (at < 0) return;
+			inOtherBranch = true;
+		}
 		Row self = cells.get(at);
 		Tc neighbour = at > 0 ? (Tc) Trees.unwrap(cells.get(at - 1).item) : at + 1 < cells.size() ? (Tc) Trees.unwrap(cells.get(at + 1).item) : null;
 		int i = Trees.indexOf(self.owner, self.item);
 		if (i < 0) return;
 		removals.discard(story, self.item);
 		self.owner.remove(i);
-		if (neighbour == null) return;
+		// a twin alone in its branch: the row's neighbour was widened once already, when the read
+		// branch's cell went, and every branch spans the same grid columns
+		if (neighbour == null || inOtherBranch && cells.size() == 1) return;
 		TcPr kept = neighbour.getTcPr();
 		if (kept == null) {
 			kept = new TcPr();
@@ -418,6 +429,11 @@ final class Tables {
 				&& mine.getW() != null && theirs.getW() != null) {
 			theirs.setW(theirs.getW().add(mine.getW()));
 		}
+	}
+
+	private static int indexOf(List<Row> cells, Tc tc) {
+		for (int i = 0; i < cells.size(); i++) if (Trees.unwrap(cells.get(i).item) == tc) return i;
+		return -1;
 	}
 
 	/** A {@code w:cellMerge} resolved (never listed: Office JS cannot list one): rejected, the merge it recorded comes back (docx4j's reading, U8). */
