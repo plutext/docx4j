@@ -1375,6 +1375,29 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	}
 	
 	/**
+	 * bind.xslt calls this for a bound drop-down list or combo box: the {@code w:lastValue} Word
+	 * writes, the bound value the shown text stands for ({@link ListControls#lastValueFor}).
+	 *
+	 * @param listNodeIt the {@code w:dropDownList} or {@code w:comboBox} element
+	 * @param shownText the text of the generated content
+	 * @since 17.3.4
+	 */
+	public static String listLastValue(NodeIterator listNodeIt, String shownText) {
+		Node listNode = listNodeIt.nextNode();
+		String text = shownText == null ? null : shownText.trim();
+		if (listNode == null || text == null) return text;
+		// the w:listItem children read from the DOM (the list element is no JAXB root of its own)
+		for (Node child = listNode.getFirstChild(); child != null; child = child.getNextSibling()) {
+			if (child.getNodeType() != Node.ELEMENT_NODE || !"listItem".equals(child.getLocalName())) continue;
+			org.w3c.dom.Element item = (org.w3c.dom.Element) child;
+			String display = item.getAttributeNS(Namespaces.NS_WORD12, "displayText");
+			String value = item.getAttributeNS(Namespaces.NS_WORD12, "value");
+			if (text.equals(display) && value != null && !value.isEmpty()) return value;
+		}
+		return text;
+	}
+
+	/**
 	 * Massage an XPath into the form it is in in our cache, 
 	 * so a hit is likely.  For example, finding[6][1]/assets[1]/asset[32][1] 
 	 * to finding[6]/assets[1]/asset[32] 
@@ -1438,6 +1461,9 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		if (xpath.startsWith("local-name")) {
 			r=XmlNameUtil.descapeXmlTypeName(r);
 		}
+		
+		// a drop-down list or combo box shows the item whose value this is, by its display text (ListControls)
+		r = ListControls.displayTextFor(sdtPr, r);
 		
 		try {
 			log.info(xpath + "\n yielded result '" + r + "'");

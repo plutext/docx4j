@@ -117,6 +117,8 @@ Changes in Version 17.3.4
   branch has a row left), OpenDoPE's row removal and its emptying of a cell control read or keep the element where
   they lost its content, deleted the row or lifted one branch's cell out of it; a deleted cell in a branch Word does not
   read is removed with its twin, and a table property record in such a branch is listed and resolved (both found by docx4j-python).
+- Binding a drop-down list or combo box shows the item whose value is bound, by its display text, and writes the value
+  into `w:lastValue`, as Word does (measured 2026-10-22); the value itself was shown (new `ListControls`, both traversers).
 - OpenDoPE binding, four defects found by reading (docx4j-portfolio, 2026-10-22): a date control's stored value lost the
   character before its `Z`, so `2026-10-22Z` bound as the 2nd (the nominal date is now read as Word shows it, any offset
   read past); the non-XSLT traverser's picture binding returned the base64 text where its run was meant; a tag naming a

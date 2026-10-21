@@ -1138,10 +1138,30 @@
 		    <xsl:apply-templates select="@*|node()"/>
   		</xsl:when>
   		<xsl:otherwise>
-		    <xsl:apply-templates select="@*|node()"/>
+		    <xsl:apply-templates select="@*|node()">
+		    	<xsl:with-param name="content" select="$content"/>
+		    </xsl:apply-templates>
   		</xsl:otherwise>
   	</xsl:choose>
   	
+  </xsl:template>
+
+  <!-- A bound drop-down list or combo box: the content shows the item whose value was bound (its
+       display text, ListControls.displayTextFor in xpathGenerateRuns), and the list gets the
+       w:lastValue Word's save writes, the bound value the shown text stands for (measured in Word
+       365, 2026-10-22). Reached only from the w:sdtPr template above, with the generated content;
+       not when the content is the restored placeholder (that branch passes no content). -->
+  <xsl:template match="w:sdtPr/w:dropDownList | w:sdtPr/w:comboBox">
+  	<xsl:param name="content"></xsl:param>
+    <xsl:copy>
+      <xsl:apply-templates select="@*"/>
+      <xsl:if test="$content and string-length(normalize-space(string($content))) &gt; 0">
+        <xsl:attribute name="w:lastValue">
+          <xsl:value-of select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.listLastValue(., string($content))"/>
+        </xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates select="node()"/>
+    </xsl:copy>
   </xsl:template>
   
   <!-- 

@@ -154,8 +154,25 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 		}
 		if (isPlaceholderContent) {
 			sdtPr.setShowingPlcHdr(true);
+		} else {
+			// a drop-down list or combo box: w:lastValue, as Word's save writes it (bind.xslt's w:dropDownList template)
+			ListControls.setLastValue(sdtPr, textOf(contents));
 		}
 		removeFromSdtPr(sdtPr, org.docx4j.wml.CTPlaceholder.class);
+	}
+
+	private static String textOf(List<Object> contents) {
+		StringBuilder sb = new StringBuilder();
+		for (Object o : contents) {
+			Object u = XmlUtils.unwrap(o);
+			if (u instanceof org.docx4j.wml.R) {
+				for (Object c : ((org.docx4j.wml.R) u).getContent()) {
+					Object t = XmlUtils.unwrap(c);
+					if (t instanceof org.docx4j.wml.Text) sb.append(((org.docx4j.wml.Text) t).getValue());
+				}
+			}
+		}
+		return sb.toString().trim();
 	}
 
 	private static void removeFromSdtPr(SdtPr sdtPr, Class<?> clazz) {
