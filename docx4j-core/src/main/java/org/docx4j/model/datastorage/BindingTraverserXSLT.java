@@ -1919,6 +1919,28 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	 *
 	 * @since 17.0.4
 	 */
+	/**
+	 * The date a date control's binding yields, as Word shows it: the stored value is an xs:dateTime
+	 * or xs:date, {@code 2012-08-19T00:00:00Z}, {@code 2012-08-19Z}, {@code 2012-08-19T10:00:00+10:00}
+	 * or {@code 2012-08-19}, and Word displays its nominal fields (the 19th, whatever the zone), so any
+	 * offset is read past, not applied. Until 17.3.4 the Z was dropped with the character before it,
+	 * so {@code 2012-08-19Z} became the 1st ({@code 2012-08-1}) and a date-time lost a digit of its
+	 * seconds; an offset was left for {@code DateFormat.parse} to ignore (docx4j-portfolio's
+	 * reading, 2026-10-22).
+	 *
+	 * @throws java.time.format.DateTimeParseException when the value is neither
+	 */
+	static Date parseStoredDate(String stored) {
+		String r = stored.trim();
+		java.time.LocalDateTime local;
+		try {
+			local = java.time.LocalDateTime.parse(r, java.time.format.DateTimeFormatter.ISO_DATE_TIME);
+		} catch (java.time.format.DateTimeParseException notADateTime) {
+			local = java.time.LocalDate.parse(r, java.time.format.DateTimeFormatter.ISO_DATE).atStartOfDay();
+		}
+		return Date.from(local.atZone(java.time.ZoneId.systemDefault()).toInstant());
+	}
+
 	public static org.docx4j.wml.R xpathDateRun(
 			Map<String, CustomXmlPart> customXmlDataStorageParts, SdtPr sdtPr) {
 
@@ -1955,14 +1977,6 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 
 		        We need to convert it to the given dateFormat string.
 			 */
-			// Drop the Z
-			if (r.indexOf("Z")>0) {
-				r = r.substring(0, r.indexOf("Z")-1);
-				log.warn("date now " + r);
-			}
-
-			DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-
 			String format = sdtDate.getDateFormat().getVal();
 			log.debug("Using format: " + format);
 
@@ -1978,20 +1992,14 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			Date date;
 			boolean parseException = false;
 			try {
-				date = (Date)dateTimeFormat.parse(r);
-			} catch (ParseException e) {
-				try {
-					// 2012-08-28
-					DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-					date = (Date) dateFormat.parse(r);
-				} catch (ParseException e2) {
-					log.warn(e.getMessage());
-					date = new Date();
+				date = parseStoredDate(r);
+			} catch (java.time.format.DateTimeParseException e) {
+				log.warn(e.getMessage());
+				date = new Date();
 
-					parseException = true;
-					if (rPr==null) {
-						rPr = factory.createRPr();
-					}
+				parseException = true;
+				if (rPr==null) {
+					rPr = factory.createRPr();
 				}
 			}
 

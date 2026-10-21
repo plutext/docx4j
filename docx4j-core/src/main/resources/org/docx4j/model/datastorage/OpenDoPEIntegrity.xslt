@@ -99,13 +99,16 @@
   	</xsl:choose>    
   </xsl:template>
   
-    <!--  remove w15 repeats, so w:sdt structure encountered in bind.xslt is as expected -->
-    <xsl:template match="w:sdt[w:sdtPr/w15:repeatingSection]" priority="5">
+    <!--  remove w15 repeats, so w:sdt structure encountered in bind.xslt is as expected.
+          Not a repeating section OpenDoPEHandler marked w15:resultRepeatZero (its node set was
+          empty): that one stays whole, its template item inside it, so that bind.xslt leaves it
+          as Word shows a repeating section with no items (the identity template copies both). -->
+    <xsl:template match="w:sdt[w:sdtPr/w15:repeatingSection][not(contains(string(w:sdtPr/w:tag/@w:val), 'w15:resultRepeatZero'))]" priority="5">
         <!--  keep contents only -->
         <xsl:apply-templates select="w:sdtContent/*"/>
     </xsl:template>
 
-    <xsl:template match="w:sdt[w:sdtPr/w15:repeatingSectionItem]" priority="5">
+    <xsl:template match="w:sdt[w:sdtPr/w15:repeatingSectionItem][not(ancestor::w:sdt[contains(string(w:sdtPr/w:tag/@w:val), 'w15:resultRepeatZero')])]" priority="5">
         <!--  keep contents only -->
         <xsl:apply-templates select="w:sdtContent/*"/>
     </xsl:template>

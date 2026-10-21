@@ -323,10 +323,21 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 					|| o instanceof org.docx4j.wml.CTSdtRow
 					|| o instanceof org.docx4j.wml.CTSdtCell) { // SdtCell as
 																// well, here
-				handleSdt(o);
+				if (!isRepeatZero((SdtElement) o)) handleSdt(o);
 
 			} 
 			return null;
+		}
+
+		/** A w15 repeating section OpenDoPEHandler marked as having no items: left as it is, template and all, as bind.xslt leaves it. */
+		@Override
+		public boolean shouldTraverse(Object o) {
+			return !(o instanceof SdtElement && isRepeatZero((SdtElement) o));
+		}
+
+		private boolean isRepeatZero(SdtElement sdt) {
+			Tag tag = sdt.getSdtPr() == null ? null : sdt.getSdtPr().getTag();
+			return tag != null && tag.getVal() != null && tag.getVal().contains(OpenDoPEHandler.BINDING_RESULT_RPTD_ZERO_W15);
 		}
 		
 		private void handleSdt(Object o) {
@@ -569,7 +580,7 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 							p.getContent().add(run);
 							return p;						
 						} else if (contentChild instanceof R) {
-							return r;					
+							return run; // until 17.3.4 this returned r, the base64 String (docx4j-portfolio's reading, 2026-10-22)
 						} else {
 							log.error("how to inject image for unexpected sdt's content: " + contentChild.getClass().getName());					
 						}

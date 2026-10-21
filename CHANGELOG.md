@@ -117,6 +117,14 @@ Changes in Version 17.3.4
   branch has a row left), OpenDoPE's row removal and its emptying of a cell control read or keep the element where
   they lost its content, deleted the row or lifted one branch's cell out of it; a deleted cell in a branch Word does not
   read is removed with its twin, and a table property record in such a branch is listed and resolved (both found by docx4j-python).
+- OpenDoPE binding, four defects found by reading (docx4j-portfolio, 2026-10-22): a date control's stored value lost the
+  character before its `Z`, so `2026-10-22Z` bound as the 2nd (the nominal date is now read as Word shows it, any offset
+  read past); the non-XSLT traverser's picture binding returned the base64 text where its run was meant; a tag naming a
+  condition the conditions part lacks, and an XSLT finisher asked for without `FLAG_BIND_BIND_XML`, each failed with a
+  NullPointerException and now with a Docx4JException that says what is missing. A Word repeating section whose node set
+  is empty is left as it is, template item and bound controls untouched, as Word does (measured 2026-10-22; REQ-053): the marker the handler
+  puts on it survived neither the integrity step's unwrapping nor the non-XSLT traverser, so the template was bound against
+  nothing; with the controls removed, the template content stays. Fixtures from docx4j-portfolio's bind-fun probes.
 - Word's table rules documented (docs/developer/word-table-rules.md) and followed: a cell's last block as Word reads
   it, through block-level controls and the branch it reads of an `mc:AlternateContent`, must be a paragraph (measured
   2026-10-22). New `org.docx4j.model.table.TableRules`; OpenDoPE's integrity and removal stylesheets and the unequal-columns

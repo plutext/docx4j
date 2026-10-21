@@ -51,6 +51,16 @@
   
   </xsl:template>  
 
+  <!-- A w15 repeating section OpenDoPEHandler marked w15:resultRepeatZero (no items; left whole,
+       template and all, as Word shows it): binding has passed it by, so the marker comes off and
+       the section's own tag, kept after the marker, goes back; a tag that was the marker alone goes. -->
+  <xsl:template match="w:sdt/w:sdtPr/w:tag[starts-with(@w:val, 'w15:resultRepeatZero=true')]">
+    <xsl:variable name="rest" select="substring-after(@w:val, 'w15:resultRepeatZero=true&amp;')"/>
+    <xsl:if test="string-length($rest) &gt; 0">
+      <w:tag w:val="{$rest}"/>
+    </xsl:if>
+  </xsl:template>
+
   <xsl:template match="/ | @*|node()" mode="skipBookmarkStart">
     <xsl:copy>
       <xsl:apply-templates select="@*|node()" mode="skipBookmarkStart"/>

@@ -712,7 +712,10 @@ public class OpenDoPEHandler {
 			//Condition c = ConditionsPart.getConditionById(conditions, conditionId);
 			Condition c = conditionsMap.get(conditionId);
 			if (c == null) {
-				log.error("Missing condition " + conditionId);
+				// OpenDoPE v3 REQ-030: the condition a tag names must exist; until 17.3.4 this logged and
+				// then failed with a NullPointerException (docx4j-portfolio's reading, 2026-10-22)
+				throw new InputIntegrityException("Missing condition " + conditionId + ": the content control tagged '" + tag.getVal()
+						+ "' names a condition the conditions part does not define (OpenDoPE REQ-030)"); // preprocess() rethrows it as a Docx4JException
 			}
 
 			long startTime = System.currentTimeMillis();
@@ -1046,9 +1049,18 @@ public class OpenDoPEHandler {
 			// So we'll signal to the binding step that it should not process the contents
 			// of the repeat.
 			
+			// The marker leads, the section's own tag (if any) follows it, so that
+			// OpenDoPEIntegrityAfterBinding.xslt can put the tag back once binding has passed the
+			// section by. OpenDoPEIntegrity.xslt keeps a section so marked whole (it unwraps every
+			// other w15 repeating section before binding), bind.xslt copies it untouched, and the
+			// non-XSLT traverser steps over it; until 17.3.4 the integrity step unwrapped it with the
+			// rest, so the marker was lost and the template's controls were bound against nothing
+			// (docx4j-portfolio's reading, 2026-10-22).
 			SdtPr sdtPr = getSdtPr(repeatingSectionSdt);
+			Tag existing = sdtPr.getTag();
 			Tag tag = new Tag();
-			tag.setVal(BINDING_RESULT_RPTD_ZERO_W15 + "=true");
+			tag.setVal(BINDING_RESULT_RPTD_ZERO_W15 + "=true"
+					+ (existing == null || existing.getVal() == null || existing.getVal().isEmpty() ? "" : "&" + existing.getVal()));
 			sdtPr.setTag(tag);
 		}
 		

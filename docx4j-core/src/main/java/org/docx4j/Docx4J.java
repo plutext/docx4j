@@ -604,6 +604,11 @@ public class Docx4J {
 		// User can provide an XSLT to perform some formatting
 		if (xsltProvider!=null) {
 
+			if (bh == null) {
+				// until 17.3.4 a NullPointerException at bh.getXpathsMap() (docx4j-portfolio's reading, 2026-10-22)
+				throw new Docx4JException("An XSLT finisher needs the binding step's XPaths: pass FLAG_BIND_BIND_XML in the flags with the xsltProvider");
+			}
+
 			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_BIND_XML_XsltFinisher );
 			startEvent.publish();
 			
