@@ -39,9 +39,10 @@ import org.slf4j.LoggerFactory;
  * removed.  Each element taken out is kept on the part, with where it stood
  * ({@link org.docx4j.openpackaging.parts.JaxbXmlPart#getResolvedAlternateContent}).</li>
  * <li>{@link #PRESERVE}: the element stays whole in the tree, consumers choose a branch at use
- * (CR-021's rule) and a save writes every branch.  For the tools that must reproduce their input:
- * the anonymiser, diffx, an editor that saves after a small edit.  Until CR-051 phase 2, row- and
- * cell-level elements are resolved as in {@link #WORD} in this mode too.</li>
+ * (CR-021's rule) and a save writes every branch, at block, row and cell level alike (row and
+ * cell level since CR-051 phase 2).  For the tools that must reproduce their input: the
+ * anonymiser, diffx, an editor that saves after a small edit.  It becomes the default at 17.4.0
+ * (CR-051 D5, revised).</li>
  * </ul>
  *
  * <p>The mode is the property {@value #PROPERTY} ({@code word} or {@code preserve}), which a

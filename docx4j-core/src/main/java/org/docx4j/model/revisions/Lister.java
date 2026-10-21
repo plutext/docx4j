@@ -300,7 +300,10 @@ final class Lister {
 		}
 	}
 
-	/** A table's rows, through row-level content controls and custom XML. */
+	/**
+	 * A table's rows, through row-level content controls and custom XML, and through a row-level
+	 * {@code mc:AlternateContent} by the branch Word reads ({@link Trees#blockItems}).
+	 */
 	static List<Row> rowsOf(Tbl tbl) {
 		List<Row> out = new ArrayList<Row>();
 		rows(tbl.getContent(), out);
@@ -318,7 +321,32 @@ final class Lister {
 		}
 	}
 
-	/** A row's cells and where they stand, through cell-level content controls and custom XML. */
+	/**
+	 * Whether any branch of a table's content holds a row (CR-051 phase 2): the test for a table left
+	 * with no rows, which {@link #rowsOf} cannot be, since it reads one branch of a row-level
+	 * {@code mc:AlternateContent}, and a row in another branch still makes the table one.
+	 */
+	static boolean hasRows(Tbl tbl) {
+		return hasRows(tbl.getContent());
+	}
+
+	private static boolean hasRows(List<Object> items) {
+		for (Object item : items) {
+			Object v = Trees.unwrap(item);
+			if (v instanceof Tr) return true;
+			if (v instanceof AlternateContent) {
+				for (Object branch : McSelection.branches((AlternateContent) v, McMode.ALL)) {
+					if (hasRows(McSplice.contentOf(branch))) return true;
+				}
+			} else if (v != null && !(v instanceof Tc)) {
+				List<Object> children = Trees.blockItems(v);
+				if (children != null && hasRows(children)) return true;
+			}
+		}
+		return false;
+	}
+
+	/** A row's cells and where they stand, through cell-level content controls and custom XML, and through a cell-level element by the branch Word reads. */
 	static List<Row> cellsOf(Tr tr) {
 		List<Row> out = new ArrayList<Row>();
 		cells(tr.getContent(), tr, out);
@@ -345,38 +373,79 @@ final class Lister {
 			into.add(change(new TableT(tbl, record), null, ctx));
 			into.add(BREAK);
 		}
-		// A table is no break of its own: an inserted or deleted row groups with the rows and the
-		// inserted text touching it, as Office JS lists them (check 31).
-		for (Row row : rowsOf(tbl)) {
-			List<Object> tokens = new ArrayList<Object>();
-			for (Row cell : cellsOf(row.tr)) {
-				Tc tc = (Tc) Trees.unwrap(cell.item);
-				TcPr tcPr = tc.getTcPr();
-				if (tcPr != null && tcPr.getCellIns() != null) { tokens.add(change(new CellT(true, tc, row.tr), null, ctx)); tokens.add(BREAK); }
-				if (tcPr != null && tcPr.getCellDel() != null) { tokens.add(change(new CellT(false, tc, row.tr), null, ctx)); tokens.add(BREAK); }
-				visitBlocks(tc.getContent(), tokens, ctx);
-				tokens.add(BREAK);
-			}
-			List<TrackedChange> inner = groupTouching(tokens, ctx);
-			// A row that is itself a revision reports as one change, as Office JS does: the markup its
-			// cells carry belongs to that change, which accepts or rejects it with the row.
-			List<TrackedChange> rowChanges = new ArrayList<TrackedChange>();
-			if (row.tr.getTrPr() != null && row.tr.getTrPr().getIns() != null) {
-				rowChanges.add(change(new RowT(true, row.tr, row.item, row.owner, row.tr.getTrPr().getIns(), inner, tblItem, tblOwner), null, ctx));
-			}
-			if (row.tr.getTrPr() != null && row.tr.getTrPr().getDel() != null) {
-				rowChanges.add(change(new RowT(false, row.tr, row.item, row.owner, row.tr.getTrPr().getDel(), inner, tblItem, tblOwner), null, ctx));
-			}
-			if (!rowChanges.isEmpty()) {
-				into.addAll(rowChanges);
-			} else {
-				into.add(BREAK);
-				for (TrackedChange c : inner) {
-					into.add(c);
-					into.add(BREAK);
-				}
+		rowItems(tbl.getContent(), tblItem, tblOwner, into, ctx);
+	}
+
+	/**
+	 * A table's rows in order, through row-level content controls and custom XML; a row-level
+	 * {@code mc:AlternateContent} kept whole (CR-051 phase 2) lists the branch Word reads, with the
+	 * other branches' changes as twins ({@link #alternateRows}).
+	 */
+	private void rowItems(List<Object> items, Object tblItem, List<Object> tblOwner, List<Object> into, Ctx ctx) {
+		for (Object item : items) {
+			Object v = Trees.unwrap(item);
+			if (v instanceof Tr) {
+				rowTokens(new Row((Tr) v, item, items), tblItem, tblOwner, into, ctx);
+			} else if (v instanceof AlternateContent) {
+				alternateRows((AlternateContent) v, tblItem, tblOwner, into, ctx);
+			} else if (v != null && !(v instanceof Tc)) {
+				List<Object> children = Trees.blockItems(v);
+				if (children != null) rowItems(children, tblItem, tblOwner, into, ctx);
 			}
 		}
+	}
+
+	private void rowTokens(Row row, Object tblItem, List<Object> tblOwner, List<Object> into, Ctx ctx) {
+		// A table is no break of its own: an inserted or deleted row groups with the rows and the
+		// inserted text touching it, as Office JS lists them (check 31).
+		List<Object> tokens = new ArrayList<Object>();
+		cellItems(row.tr.getContent(), row.tr, tokens, ctx);
+		List<TrackedChange> inner = groupTouching(tokens, ctx);
+		// A row that is itself a revision reports as one change, as Office JS does: the markup its
+		// cells carry belongs to that change, which accepts or rejects it with the row.
+		List<TrackedChange> rowChanges = new ArrayList<TrackedChange>();
+		if (row.tr.getTrPr() != null && row.tr.getTrPr().getIns() != null) {
+			rowChanges.add(change(new RowT(true, row.tr, row.item, row.owner, row.tr.getTrPr().getIns(), inner, tblItem, tblOwner), null, ctx));
+		}
+		if (row.tr.getTrPr() != null && row.tr.getTrPr().getDel() != null) {
+			rowChanges.add(change(new RowT(false, row.tr, row.item, row.owner, row.tr.getTrPr().getDel(), inner, tblItem, tblOwner), null, ctx));
+		}
+		if (!rowChanges.isEmpty()) {
+			into.addAll(rowChanges);
+		} else {
+			into.add(BREAK);
+			for (TrackedChange c : inner) {
+				into.add(c);
+				into.add(BREAK);
+			}
+		}
+	}
+
+	/**
+	 * A row's cells in order, through cell-level content controls and custom XML; a cell-level
+	 * {@code mc:AlternateContent} kept whole (CR-051 phase 2) lists the branch Word reads, with the
+	 * other branches' changes as twins ({@link #alternateCells}).
+	 */
+	private void cellItems(List<Object> items, Tr tr, List<Object> tokens, Ctx ctx) {
+		for (Object item : items) {
+			Object v = Trees.unwrap(item);
+			if (v instanceof Tc) {
+				cellTokens((Tc) v, tr, tokens, ctx);
+			} else if (v instanceof AlternateContent) {
+				alternateCells((AlternateContent) v, tr, tokens, ctx);
+			} else if (v != null) {
+				List<Object> children = Trees.blockItems(v);
+				if (children != null) cellItems(children, tr, tokens, ctx);
+			}
+		}
+	}
+
+	private void cellTokens(Tc tc, Tr tr, List<Object> tokens, Ctx ctx) {
+		TcPr tcPr = tc.getTcPr();
+		if (tcPr != null && tcPr.getCellIns() != null) { tokens.add(change(new CellT(true, tc, tr), null, ctx)); tokens.add(BREAK); }
+		if (tcPr != null && tcPr.getCellDel() != null) { tokens.add(change(new CellT(false, tc, tr), null, ctx)); tokens.add(BREAK); }
+		visitBlocks(tc.getContent(), tokens, ctx);
+		tokens.add(BREAK);
 	}
 
 	// --- paragraphs and run level --------------------------------------------------------------------
@@ -666,7 +735,7 @@ final class Lister {
 
 	// --- text boxes ---------------------------------------------------------------------------------
 
-	// --- block- and paragraph-level mc:AlternateContent (CR-051) ------------------------------------------
+	// --- block-, paragraph-, row- and cell-level mc:AlternateContent (CR-051) ------------------------------
 
 	/**
 	 * A block-level element's changes: the branch the text model reads ({@link McPurpose#TEXT}, the
@@ -716,6 +785,55 @@ final class Lister {
 		for (TrackedChange c : changes) {
 			out.add(c);
 			out.add(BREAK);
+		}
+	}
+
+	/**
+	 * As {@link #alternateBlocks}, for an element among a table's rows (CR-051 phase 2): each branch
+	 * holds rows.  The listed branch's rows are listed where the element stands; a row of another
+	 * branch that is itself a revision becomes the twin of the listed branch's, by kind and position,
+	 * so accepting or rejecting one resolves both.
+	 */
+	private void alternateRows(AlternateContent ac, Object tblItem, List<Object> tblOwner, List<Object> into, Ctx ctx) {
+		Object primary = McSelection.selectedBranch(McPurpose.TEXT, ac);
+		if (primary == null) return;
+		int boxesBefore = ctx.boxes.size();
+		List<Object> tokens = new ArrayList<Object>();
+		rowItems(McSplice.contentOf(primary), tblItem, tblOwner, tokens, ctx);
+		List<TrackedChange> changes = groupTouching(tokens, ctx);
+		for (Object branch : McSelection.branches(ac, McMode.ALL)) {
+			if (branch == primary) continue;
+			Ctx twinCtx = new Ctx(new Story(pkg, ctx.story.part, McSplice.contentOf(branch), branch, true));
+			List<Object> twinTokens = new ArrayList<Object>();
+			rowItems(twinCtx.story.root, tblItem, tblOwner, twinTokens, twinCtx);
+			twins(changes, groupTouching(twinTokens, twinCtx), twinCtx, ctx, boxesBefore, into);
+		}
+		into.add(BREAK);
+		for (TrackedChange c : changes) {
+			into.add(c);
+			into.add(BREAK);
+		}
+	}
+
+	/** As {@link #alternateRows}, for an element among a row's cells: each branch holds cells. */
+	private void alternateCells(AlternateContent ac, Tr tr, List<Object> into, Ctx ctx) {
+		Object primary = McSelection.selectedBranch(McPurpose.TEXT, ac);
+		if (primary == null) return;
+		int boxesBefore = ctx.boxes.size();
+		List<Object> tokens = new ArrayList<Object>();
+		cellItems(McSplice.contentOf(primary), tr, tokens, ctx);
+		List<TrackedChange> changes = groupTouching(tokens, ctx);
+		for (Object branch : McSelection.branches(ac, McMode.ALL)) {
+			if (branch == primary) continue;
+			Ctx twinCtx = new Ctx(new Story(pkg, ctx.story.part, McSplice.contentOf(branch), branch, true));
+			List<Object> twinTokens = new ArrayList<Object>();
+			cellItems(twinCtx.story.root, tr, twinTokens, twinCtx);
+			twins(changes, groupTouching(twinTokens, twinCtx), twinCtx, ctx, boxesBefore, into);
+		}
+		into.add(BREAK);
+		for (TrackedChange c : changes) {
+			into.add(c);
+			into.add(BREAK);
 		}
 	}
 

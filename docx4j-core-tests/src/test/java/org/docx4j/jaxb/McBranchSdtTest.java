@@ -135,10 +135,9 @@ public class McBranchSdtTest {
 		assertFalse(where + ": private namespace in the tree: " + xml, xml.contains(PRIVATE));
 		assertAllThere(where, xml, CHOICE);
 		if (mode == McBlockLevel.PRESERVE) {
-			// block and paragraph level kept whole; row and cell level still resolved until CR-051 phase 2
-			assertAllThere(where, xml, "BLOCK_TAG_F", "BLOCK_BIND_F", "RUN_F");
-			assertFalse(where + ": " + xml, xml.contains("ROW_F") || xml.contains("CELL_F"));
-			assertEquals(where + ": " + xml, "SdtBlock SdtBlock SdtBlock SdtBlock SdtRun SdtRun CTSdtRow CTSdtCell", classes(controls(mdp.getJaxbElement())));
+			// every level kept whole (row and cell level since CR-051 phase 2): each branch's control, typed by its container
+			assertAllThere(where, xml, FALLBACK);
+			assertEquals(where + ": " + xml, "SdtBlock SdtBlock SdtBlock SdtBlock SdtRun SdtRun CTSdtRow CTSdtRow CTSdtCell CTSdtCell", classes(controls(mdp.getJaxbElement())));
 		} else {
 			// block, row and cell level resolved to the w14 Choice; the paragraph-level element kept whole
 			assertFalse(where + ": " + xml, xml.contains("BLOCK_TAG_F") || xml.contains("ROW_F") || xml.contains("CELL_F"));
@@ -197,8 +196,8 @@ public class McBranchSdtTest {
 			check("binder " + mode, pkg, mode);
 			// an XPath over the binder finds the controls the splice promoted (ordinary content), not
 			// those in a kept branch, which have no DOM association: word mode promotes block, row and
-			// cell level (4), preserve mode row and cell level only (2)
-			assertEquals(mode == McBlockLevel.PRESERVE ? 2 : 4, pkg.getMainDocumentPart().getJAXBNodesViaXPath("//w:sdt", false).size());
+			// cell level (4), preserve mode promotes nothing (CR-051 phase 2)
+			assertEquals(mode == McBlockLevel.PRESERVE ? 0 : 4, pkg.getMainDocumentPart().getJAXBNodesViaXPath("//w:sdt", false).size());
 		}
 	}
 

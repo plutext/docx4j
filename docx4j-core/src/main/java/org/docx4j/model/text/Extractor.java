@@ -984,12 +984,18 @@ final class Extractor {
 	}
 
 	private void rows(List<Object> items, String prefix, Story story, TextBlock table, RunState state) {
+		resolvedAlternateContent(items, prefix, story);
 		for (int i = 0; i < items.size(); i++) {
 			Object item = items.get(i);
 			if (removes(item)) continue;
 			Object v = unwrap(item);
 			String address = prefix + "/" + i;
-			if (v instanceof Tr) {
+			if (v instanceof AlternateContent) {
+				// a row-level element kept whole (CR-051 phase 2): the branch Word reads, compared with the others
+				AlternateContent ac = (AlternateContent) v;
+				compareBranches(ac, address);
+				rows(McSelection.select(McPurpose.TEXT, ac), address, story, table, state);
+			} else if (v instanceof Tr) {
 				Tr tr = (Tr) v;
 				TextRow row = new TextRow(address);
 				TrPr trPr = tr.getTrPr();
@@ -1019,12 +1025,18 @@ final class Extractor {
 	}
 
 	private void cells(List<Object> items, String prefix, Story story, TextRow row, RunState state) {
+		resolvedAlternateContent(items, prefix, story);
 		for (int i = 0; i < items.size(); i++) {
 			Object item = items.get(i);
 			if (removes(item)) continue;
 			Object v = unwrap(item);
 			String address = prefix + "/" + i;
-			if (v instanceof Tc) {
+			if (v instanceof AlternateContent) {
+				// a cell-level element kept whole (CR-051 phase 2): the branch Word reads, compared with the others
+				AlternateContent ac = (AlternateContent) v;
+				compareBranches(ac, address);
+				cells(McSelection.select(McPurpose.TEXT, ac), address, story, row, state);
+			} else if (v instanceof Tc) {
 				Tc tc = (Tc) v;
 				TextCell cell = new TextCell(address);
 				TcPr tcPr = tc.getTcPr();
@@ -1962,9 +1974,10 @@ final class Extractor {
 
 	/**
 	 * The record of {@code word} mode (CR-051 section 3.2): each block-, row- or cell-level
-	 * {@code mc:AlternateContent} a load took out of this container, resolved to the branch Word
-	 * reads, is compared with its other branches ({@code mce.branches_differ}) at the address of the
-	 * promoted content, as the element's would be in {@code preserve} mode.  A container is matched by
+	 * {@code mc:AlternateContent} a load took out of this container (a block container, a table's
+	 * rows or a row's cells), resolved to the branch Word reads, is compared with its other branches
+	 * ({@code mce.branches_differ}) at the address of the promoted content, as the element's would be
+	 * in {@code preserve} mode.  A container is matched by
 	 * its address from the part's root ({@link McSplice#address}), worked out at the splice and again
 	 * here; a part with no record costs nothing.
 	 */

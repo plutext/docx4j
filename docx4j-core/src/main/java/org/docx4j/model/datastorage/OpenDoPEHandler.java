@@ -837,32 +837,65 @@ public class OpenDoPEHandler {
         // we handle this here
         
         
-        TableObjectFinder tableObjectFinder = new TableObjectFinder();
-		// CR-021: ALL - a table in any branch of the control is handled
-		new TraversalUtil(((SdtElement)sdt).getSdtContent().getContent(), tableObjectFinder, McMode.ALL);
-        
-		if (/* not in table */ tableObjectFinder.result==null) {
-	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
-	        
-		} else if (/* contains block level stuff */ tableObjectFinder.result instanceof Tbl) {
-	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
-	        
-		} else if (/* contains row level stuff */ tableObjectFinder.result instanceof Tr) {
-	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
-			
-		} else if (/* contains cell level stuff */ tableObjectFinder.result instanceof Tc) {
-			Tc tc = (Tc)tableObjectFinder.result;
-			tc.getContent().clear();
-			P p = Context.getWmlObjectFactory().createP();
-			tc.getContent().add(p);			
-	        ((SdtElement)sdt).getSdtContent().getContent().clear();
-	        ((SdtElement)sdt).getSdtContent().getContent().add(tc);
-	        
-		} else /* should not happen */ {
-			log.error("unexpected encountered " + tableObjectFinder.result.getClass().getName());			
-		}
+        emptyKeepingTableShape((SdtElement) sdt);
 		
 		return newContent;		
+	}
+
+	/**
+	 * Empties a control whose result is nothing (a repeat of zero items, a false condition), keeping
+	 * the shape a table asks of it: nothing where the control holds blocks or rows (OpenDoPEIntegrity
+	 * fixes a row with no cells), and an emptied cell where it holds a cell, since OpenDoPEIntegrity
+	 * could not restore that cell's tcPr.  A table in any branch of an mc:AlternateContent is found
+	 * (CR-021, ALL); where the control's content is itself a cell-level mc:AlternateContent kept whole
+	 * (CR-051 phase 2, preserve mode), each branch keeps its own cell, emptied, and the element stays,
+	 * so a save still writes every branch.
+	 */
+	static void emptyKeepingTableShape(SdtElement sdt) {
+		List<Object> content = sdt.getSdtContent().getContent();
+		TableObjectFinder tableObjectFinder = new TableObjectFinder();
+		// CR-021: ALL - a table in any branch of the control is handled
+		new TraversalUtil(content, tableObjectFinder, McMode.ALL);
+
+		if (/* not in table */ tableObjectFinder.result == null) {
+			content.clear();
+
+		} else if (/* contains block level stuff */ tableObjectFinder.result instanceof Tbl) {
+			content.clear();
+
+		} else if (/* contains row level stuff */ tableObjectFinder.result instanceof Tr) {
+			content.clear();
+
+		} else if (/* contains cell level stuff */ tableObjectFinder.result instanceof Tc) {
+			Object first = content.isEmpty() ? null : XmlUtils.unwrap(content.get(0));
+			if (first instanceof org.docx4j.mce.AlternateContent) {
+				// a cell-level element kept whole: each branch's cell emptied in place
+				org.docx4j.mce.AlternateContent ac = (org.docx4j.mce.AlternateContent) first;
+				for (Object branch : McSelection.branches(ac, McMode.ALL)) {
+					List<Object> branchContent = org.docx4j.jaxb.McSplice.contentOf(branch);
+					TableObjectFinder inBranch = new TableObjectFinder();
+					new TraversalUtil(branchContent, inBranch, McMode.ALL);
+					branchContent.clear();
+					if (inBranch.result instanceof Tc) branchContent.add(emptied((Tc) inBranch.result));
+				}
+				content.clear();
+				content.add(ac);
+			} else {
+				Tc tc = emptied((Tc) tableObjectFinder.result);
+				content.clear();
+				content.add(tc);
+			}
+
+		} else /* should not happen */ {
+			log.error("unexpected encountered " + tableObjectFinder.result.getClass().getName());
+		}
+	}
+
+	/** The cell with its content replaced by one empty paragraph; its tcPr kept. */
+	private static Tc emptied(Tc tc) {
+		tc.getContent().clear();
+		tc.getContent().add(Context.getWmlObjectFactory().createP());
+		return tc;
 	}
 
 	/**
@@ -1286,30 +1319,7 @@ public class OpenDoPEHandler {
         // .. OpenDoPEIntegrity fixes this where it is not OK, but
         // where it needs to insert a tc, it has no way of adding original tcPr, so
         // we handle this here
-        TableObjectFinder tableObjectFinder = new TableObjectFinder();
-		// CR-021: ALL - a table in any branch of the control is handled
-		new TraversalUtil(((SdtElement)sdt).getSdtContent().getContent(), tableObjectFinder, McMode.ALL);
-        
-		if (/* not in table */ tableObjectFinder.result==null) {
-	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
-	        
-		} else if (/* contains block level stuff */ tableObjectFinder.result instanceof Tbl) {
-	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
-	        
-		} else if (/* contains row level stuff */ tableObjectFinder.result instanceof Tr) {
-	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
-			
-		} else if (/* contains cell level stuff */ tableObjectFinder.result instanceof Tc) {
-			Tc tc = (Tc)tableObjectFinder.result;
-			tc.getContent().clear();
-			P p = Context.getWmlObjectFactory().createP();
-			tc.getContent().add(p);			
-	        ((SdtElement)sdt).getSdtContent().getContent().clear();
-	        ((SdtElement)sdt).getSdtContent().getContent().add(tc);
-	        
-		} else /* should not happen */ {
-			log.error("unexpected encountered " + tableObjectFinder.result.getClass().getName());
-		}
+        emptyKeepingTableShape((SdtElement) sdt);
 
 		
 		return newContent;

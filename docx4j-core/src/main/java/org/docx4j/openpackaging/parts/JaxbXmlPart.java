@@ -1084,10 +1084,11 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 
 	/**
 	 * Each mc:AlternateContent an unmarshal of this part took out of the tree (CR-051 section
-	 * 3.2): at block, row or cell level in {@link McBlockLevel#WORD} mode, and at row or cell
-	 * level in {@link McBlockLevel#PRESERVE} mode until CR-051 phase 2.  Appended to by each
-	 * unmarshal that resolves something and never cleared by one that resolves nothing, so that it
-	 * survives a re-unmarshal (a binder created later marshals and unmarshals the tree again).
+	 * 3.2): at block, row or cell level in {@link McBlockLevel#WORD} mode; nothing in
+	 * {@link McBlockLevel#PRESERVE} mode (since CR-051 phase 2, at every level).  Appended to by
+	 * each unmarshal that resolves something and never cleared by one that resolves nothing, so
+	 * that it survives a re-unmarshal (a binder created later marshals and unmarshals the tree
+	 * again).
 	 */
 	private final List<ResolvedAlternateContent> resolvedAlternateContent = new ArrayList<ResolvedAlternateContent>();
 
@@ -1096,8 +1097,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * each whole, with where it stood ({@link ResolvedAlternateContent}; CR-051 section 3.2), so
 	 * that nothing is lost to inspection in {@link McBlockLevel#WORD} mode: the inspector and the
 	 * text model's branch comparison read every branch from here.  Empty for a part that held
-	 * none, or loaded in {@link McBlockLevel#PRESERVE} mode (row- and cell-level elements apart,
-	 * until CR-051 phase 2).  Unmodifiable; in the order resolved.
+	 * none, or loaded in {@link McBlockLevel#PRESERVE} mode.  Unmodifiable; in the order resolved.
 	 *
 	 * @since 17.3.4 (CR-051 phase 1)
 	 */
@@ -1173,34 +1173,23 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		if (found.isEmpty()) return Collections.emptyList();
 		String name = this.getPartName() == null ? this.getClass().getSimpleName() : this.getPartName().getName();
 		McBlockLevel mode = McBlockLevel.of(this.getPackage());
-		List<AlternateContent> toSplice = found;
 		if (mode == McBlockLevel.PRESERVE) {
-			// block-level elements stay whole; until CR-051 phase 2 the row- and cell-level ones are
-			// still resolved (CR-051 section 5, phase 1), unless inside an element kept whole
-			toSplice = new ArrayList<AlternateContent>();
-			for (AlternateContent ac : found) {
-				Object parent = ac.getParent();
-				if ((McSplice.isRowContainer(parent) || McSplice.isCellContainer(parent))
-						&& !McSplice.insideAlternateContent(ac)) {
-					toSplice.add(ac);
-				}
-			}
-			if (toSplice.isEmpty()) {
-				log.info(name + ": " + found.size() + " mc:AlternateContent at block level kept whole ("
-						+ McBlockLevel.PROPERTY + "=preserve)");
-				return Collections.emptyList();
-			}
+			// every element stays whole, at block, row and cell level (CR-051 phase 2); the
+			// consumers choose a branch at use
+			log.info(name + ": " + found.size() + " mc:AlternateContent at block, row or cell level kept whole ("
+					+ McBlockLevel.PROPERTY + "=preserve)");
+			return Collections.emptyList();
 		}
-		List<ResolvedAlternateContent> records = McSplice.apply(toSplice, McSplice.WORD_READS);
+		List<ResolvedAlternateContent> records = McSplice.apply(found, McSplice.WORD_READS);
 		if (records.isEmpty()) {
-			log.info(name + ": " + toSplice.size() + " mc:AlternateContent at block, row or cell level kept whole (no understood Choice and no Fallback, WD REQ-305)");
+			log.info(name + ": " + found.size() + " mc:AlternateContent at block, row or cell level kept whole (no understood Choice and no Fallback, WD REQ-305)");
 			return records;
 		}
 		resolvedAlternateContent.addAll(records);
 		McSplice.addIgnorable(jaxbElement, McSplice.ignorablePrefixes(records));
-		log.info(name + ": " + records.size() + " of " + toSplice.size()
+		log.info(name + ": " + records.size() + " of " + found.size()
 				+ " mc:AlternateContent at block, row or cell level resolved as Word reads them ("
-				+ McBlockLevel.PROPERTY + "=" + (mode == McBlockLevel.PRESERVE ? "preserve: row and cell level only, until CR-051 phase 2" : "word") + ")");
+				+ McBlockLevel.PROPERTY + "=word)");
 		return records;
 	}
     

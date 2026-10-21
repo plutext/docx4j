@@ -56,8 +56,19 @@ public class McBlockLevelReadersTest {
 				+ "<mc:Fallback>" + p(tag + "_FB") + "</mc:Fallback></mc:AlternateContent>";
 	}
 
-	private static final String TBL = "<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"1000\"/></w:tblGrid>"
-			+ "<w:tr><w:tc>" + p("cell") + ac("CELL") + "</w:tc></w:tr></w:tbl>";
+	private static final String TBL_PROPS = "<w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"1000\"/></w:tblGrid>";
+
+	private static final String TBL = "<w:tbl>" + TBL_PROPS + "<w:tr><w:tc>" + p("cell") + ac("CELL") + "</w:tc></w:tr></w:tbl>";
+
+	/** A row-level element (each branch a row) among a table's rows, and a cell-level one (each branch a cell) among a row's cells (CR-051 phase 2). */
+	private static String acOf(String tag, String open, String close) {
+		return "<mc:AlternateContent><mc:Choice Requires=\"w14\">" + open + p(tag + "_W14") + close + "</mc:Choice>"
+				+ "<mc:Fallback>" + open + p(tag + "_FB") + close + "</mc:Fallback></mc:AlternateContent>";
+	}
+
+	private static final String TBL_ROWS_AND_CELLS = "<w:tbl>" + TBL_PROPS
+			+ "<w:tr><w:tc>" + p("r1") + "</w:tc></w:tr>" + acOf("ROW", "<w:tr><w:tc>", "</w:tc></w:tr>")
+			+ "<w:tr><w:tc>" + p("c1") + "</w:tc>" + acOf("TRC", "<w:tc>", "</w:tc>") + "</w:tr></w:tbl>";
 
 	private static String textBox(String blocks) {
 		return "<w:p><w:r><w:drawing><wp:inline><wp:extent cx=\"1270000\" cy=\"635000\"/><wp:docPr id=\"1\" name=\"Text Box 1\"/>"
@@ -70,7 +81,7 @@ public class McBlockLevelReadersTest {
 
 	/** Elements in the body, a cell, a block content control, a text box, a header, a footnote and a comment, each referenced from the body. */
 	private static McProbeDocx probe() {
-		String body = p("before") + ac("BODY") + TBL
+		String body = p("before") + ac("BODY") + TBL + TBL_ROWS_AND_CELLS
 				+ "<w:sdt><w:sdtPr><w:id w:val=\"1\"/></w:sdtPr><w:sdtContent>" + p("sdt") + ac("SDT") + "</w:sdtContent></w:sdt>"
 				+ textBox(p("box") + ac("TXBX"))
 				+ "<w:p><w:r><w:t>note</w:t></w:r><w:r><w:footnoteReference w:id=\"1\"/></w:r></w:p>"
@@ -103,7 +114,8 @@ public class McBlockLevelReadersTest {
 		TreeSet<String> word = differWarnings(probe().load(McBlockLevel.WORD));
 		TreeSet<String> preserve = differWarnings(probe().load(McBlockLevel.PRESERVE));
 		assertTrue(word.toString(), word.contains("body/1 mc:Choice Requires=\"w14\""));
-		assertTrue("the cell's, the control's, the text box's, the header's, the note's and the comment's too: " + word, word.size() >= 7);
+		assertTrue("the cell's, the control's, the text box's, the header's, the note's and the comment's too: " + word, word.size() >= 9);
+		assertTrue("the row-level and the cell-level elements' (CR-051 phase 2): " + word, word.contains("body/3/1 mc:Choice Requires=\"w14\"") && word.contains("body/3/2/1 mc:Choice Requires=\"w14\""));
 		assertEquals("the same warnings in both modes", preserve, word);
 	}
 
@@ -128,8 +140,8 @@ public class McBlockLevelReadersTest {
 	public void inspectorFindsTheRecordedBranchesWherePreserveModeHasThem() throws Exception {
 		TreeSet<String> preserve = branchFindings(probe().load(McBlockLevel.PRESERVE));
 		TreeSet<String> word = branchFindings(probe().load(McBlockLevel.WORD));
-		assertTrue(preserve.toString(), preserve.size() >= 7);
-		for (String tag : new String[] { "BODY_FB", "CELL_FB", "SDT_FB", "TXBX_FB", "HDR_FB", "FN_FB", "CM_FB" }) {
+		assertTrue(preserve.toString(), preserve.size() >= 9);
+		for (String tag : new String[] { "BODY_FB", "CELL_FB", "ROW_FB", "TRC_FB", "SDT_FB", "TXBX_FB", "HDR_FB", "FN_FB", "CM_FB" }) {
 			boolean found = false;
 			for (String s : preserve) if (s.endsWith(tag)) found = true;
 			assertTrue(tag + " in " + preserve, found);

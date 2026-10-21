@@ -100,8 +100,8 @@ Changes in Version 17.3.4
   footers, cells, notes, comments, text boxes, content controls, tables and rows, and a load resolves it as Word
   reads it (property `docx4j.jaxb.mc.blockLevel=word`, the default) or keeps it whole (`preserve`: the anonymiser's
   CLI, diffx's inputs), given per load (`WordprocessingMLPackage.load(.., McBlockLevel)`, `Docx4J.load`, `Load3`,
-  `FlatOpcXmlImporter`) or per package (`OpcPackage.setMcBlockLevel`); `preserve` still resolves row and cell level
-  until phase 2. Each element taken out is kept on the part (`JaxbXmlPart.getResolvedAlternateContent()`), which the
+  `FlatOpcXmlImporter`) or per package (`OpcPackage.setMcBlockLevel`). Each element taken out is kept on the part
+  (`JaxbXmlPart.getResolvedAlternateContent()`), which the
   text model's `mce.branches_differ` and the inspector's `mce.branch` read. The preprocessor keeps the element
   wherever the schema admits it and never drops one. The exporters resolve their copy to the branch they draw before
   any other step (`PP_COMMON_RESOLVE_ALTERNATE_CONTENT`, forced on; D6), so a section break in a branch lays out.
@@ -112,6 +112,10 @@ Changes in Version 17.3.4
   A `w:sdt` directly inside a Choice or Fallback, which JAXB's lax rule bound as `CTSdtRow` at every level (its
   content dropped, or the load failed; since 17.2.0 for a run control in a paragraph-level element), is bound by its
   container's kind on every unmarshal route (`McBranchSdt`, CR-051 §11.3).
+- `mc:AlternateContent` at row and cell level in `preserve` mode (CR-051 phase 2): kept whole like block level;
+  the text model, the inspector, tracked changes (listed once, the other branches' as twins; a table goes only when no
+  branch has a row left), OpenDoPE's row removal and its emptying of a cell control read or keep the element where
+  they lost its content, deleted the row or lifted one branch's cell out of it.
 - Notice: from 17.4.0 `docx4j.jaxb.mc.blockLevel` will default to `preserve` (block-level `mc:AlternateContent` kept whole on load; the Word view on read), not `word` (CR-051 D5, revised 2026-10-21). 17.3.x keeps `word`; set the property, or pass `McBlockLevel` to `load`, to choose now.
 - `addAltChunk` and the OpenDoPE XHTML binding write an HTML or XHTML chunk without a leading XML declaration,
   which Word refuses (it repaired the document), its encoding kept with a byte order mark (`AltChunkHtml`, CR-053

@@ -199,7 +199,10 @@
 
 	</xsl:template>
 
-  <!-- A table may contain zero rows, but a row may not contain zero cells -->
+  <!-- A table may contain zero rows, but a row may not contain zero cells.
+       A cell counts wherever it stands in the row: directly, in a cell-level content control or
+       custom XML element, or in a branch of a cell-level mc:AlternateContent kept whole
+       (CR-051 phase 2); a nested table's cells only ever stand inside a cell of this row. -->
 	<xsl:template match="w:tr">
 
 		<xsl:variable name="results">
@@ -207,7 +210,7 @@
 		</xsl:variable>
 
 		<xsl:choose>
-			<xsl:when test="count(xalan:nodeset($results)/w:tc)=0" /> <!--  remove this row -->
+			<xsl:when test="count(xalan:nodeset($results)//w:tc)=0" /> <!--  remove this row -->
 			<xsl:otherwise>
 				<xsl:copy>
 					<xsl:copy-of select="$results" />

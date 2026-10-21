@@ -163,20 +163,14 @@ public class McBlockLevelProbesTest {
 		assertFalse(text, text.contains("FALLBACK"));
 	}
 
-	/** In preserve mode every probe's elements survive a load and a save, with every branch and the Choices' prefixes declared. */
+	/** In preserve mode every probe's elements survive a load and a save, at block, row and cell level alike (CR-051 phase 2), with every branch and the Choices' prefixes declared. */
 	@Test
 	public void preserveModeKeepsEveryBranch() throws Exception {
 		for (String name : PROBES) {
 			WordprocessingMLPackage pkg = load(name, McBlockLevel.PRESERVE);
 			String original = McProbeDocx.entry(bytesOf(name), "word/document.xml");
 			int elements = alternateContentCount(original);
-			boolean rowOrCell = name.contains("-row-") || name.contains("-cell-");
 			String saved = McProbeDocx.entry(McProbeDocx.save(pkg), "word/document.xml");
-			if (rowOrCell) {
-				// CR-051 section 5, phase 1: row- and cell-level elements are resolved until phase 2
-				assertEquals(name + ": resolved until phase 2", 0, alternateContentCount(saved));
-				continue;
-			}
 			assertEquals(name + ": every element written", elements, alternateContentCount(saved));
 			assertEquals(name + ": every Choice written", countOf(original, "<mc:Choice "), countOf(saved, "<mc:Choice "));
 			assertEquals(name + ": the Fallbacks written", countOf(original, "<mc:Fallback"), countOf(saved, "<mc:Fallback"));
@@ -189,6 +183,17 @@ public class McBlockLevelProbesTest {
 			}
 			WordprocessingMLPackage again = McProbeDocx.roundTrip(pkg, McBlockLevel.PRESERVE);
 			assertEquals(name + ": and reads the same", text(pkg), text(again));
+		}
+	}
+
+	/** Each probe loaded in preserve mode reads as Word 365's save of it reads: the text model takes Word's branch at use, at every level. */
+	@Test
+	public void preserveModeReadsAsWordsSave() throws Exception {
+		for (String name : WITH_WORD_SAVE) {
+			WordprocessingMLPackage pkg = load(name, McBlockLevel.PRESERVE);
+			WordprocessingMLPackage words = load(name + "-word365", McBlockLevel.WORD);
+			assertEquals(name, text(words), text(pkg));
+			assertEquals(name + " (after a save)", text(words), text(McProbeDocx.roundTrip(pkg, McBlockLevel.PRESERVE)));
 		}
 	}
 

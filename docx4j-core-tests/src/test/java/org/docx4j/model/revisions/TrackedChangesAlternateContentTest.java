@@ -30,9 +30,9 @@ import org.docx4j.wml.Document;
 import org.junit.Test;
 
 /**
- * CR-051 section 10.3 item 3 and section 10.5 item 3: tracked changes inside a block-level and a
- * paragraph-level {@code mc:AlternateContent}, listed once from the branch Word reads, with the
- * other branches' changes as twins that resolve with them.  The trees are unmarshalled outside a
+ * CR-051 section 10.3 item 3 and section 10.5 item 3, and phase 2: tracked changes inside a
+ * block-level, a paragraph-level, a row-level and a cell-level {@code mc:AlternateContent}, listed
+ * once from the branch Word reads, with the other branches' changes as twins that resolve with them.  The trees are unmarshalled outside a
  * part, so the elements stay whole in either {@code McBlockLevel} mode (CR-051 section 3.4).
  */
 public class TrackedChangesAlternateContentTest {
@@ -65,6 +65,28 @@ public class TrackedChangesAlternateContentTest {
 	private static final String PARA = "<w:p><w:r><w:t>x </w:t></w:r>"
 			+ "<mc:AlternateContent><mc:Choice Requires=\"w14\"><w:r><w:t>C </w:t></w:r>" + ins(1, "INSERTED") + del(2, "DELETED") + "</mc:Choice>"
 			+ "<mc:Fallback><w:r><w:t>F </w:t></w:r>" + ins(3, "INSERTED") + del(4, "DELETED") + "</mc:Fallback></mc:AlternateContent></w:p>";
+
+	private static final String TBL_PROPS = "<w:tblPr/><w:tblGrid><w:gridCol w:w=\"1000\"/></w:tblGrid>";
+
+	/** A row-level element among a table's rows (CR-051 phase 2), the same changes in each branch's row. */
+	private static final String ROW = "<w:tbl>" + TBL_PROPS
+			+ "<mc:AlternateContent><mc:Choice Requires=\"w14\"><w:tr><w:tc><w:p><w:r><w:t>C </w:t></w:r>" + ins(1, "INSERTED") + del(2, "DELETED") + "</w:p></w:tc></w:tr></mc:Choice>"
+			+ "<mc:Fallback><w:tr><w:tc><w:p><w:r><w:t>F </w:t></w:r>" + ins(3, "INSERTED") + del(4, "DELETED") + "</w:p></w:tc></w:tr></mc:Fallback></mc:AlternateContent>"
+			+ "</w:tbl>";
+
+	/** A cell-level element among a row's cells, the same changes in each branch's cell. */
+	private static final String CELL = "<w:tbl>" + TBL_PROPS + "<w:tr>"
+			+ "<mc:AlternateContent><mc:Choice Requires=\"w14\"><w:tc><w:p><w:r><w:t>C </w:t></w:r>" + ins(1, "INSERTED") + del(2, "DELETED") + "</w:p></w:tc></mc:Choice>"
+			+ "<mc:Fallback><w:tc><w:p><w:r><w:t>F </w:t></w:r>" + ins(3, "INSERTED") + del(4, "DELETED") + "</w:p></w:tc></mc:Fallback></mc:AlternateContent>"
+			+ "</w:tr></w:tbl>";
+
+	private static String deletedRow(int id, String text) {
+		return "<w:tr><w:trPr><w:del w:id=\"" + id + "\" w:author=\"A\"/></w:trPr><w:tc><w:p><w:r><w:delText>" + text + "</w:delText></w:r></w:p></w:tc></w:tr>";
+	}
+
+	private static String plainRow(String text) {
+		return "<w:tr><w:tc><w:p><w:r><w:t>" + text + "</w:t></w:r></w:p></w:tc></w:tr>";
+	}
 
 	private static List<TrackedChange> listed(WordprocessingMLPackage pkg) {
 		return TrackedChanges.in(pkg);
@@ -137,6 +159,68 @@ public class TrackedChangesAlternateContentTest {
 	@Test
 	public void acceptAllResolvesEveryBranchAtParagraphLevel() throws Exception {
 		acceptAllResolvesEveryBranch(PARA);
+	}
+
+	@Test
+	public void rowLevelChangesAreListedOnceWithTwins() throws Exception {
+		listedOnceWithTwins(ROW);
+	}
+
+	@Test
+	public void cellLevelChangesAreListedOnceWithTwins() throws Exception {
+		listedOnceWithTwins(CELL);
+	}
+
+	@Test
+	public void acceptingARowLevelChangeResolvesItsTwin() throws Exception {
+		acceptingResolvesTheTwin(ROW);
+	}
+
+	@Test
+	public void acceptingACellLevelChangeResolvesItsTwin() throws Exception {
+		acceptingResolvesTheTwin(CELL);
+	}
+
+	@Test
+	public void acceptAllResolvesEveryBranchAtRowLevel() throws Exception {
+		acceptAllResolvesEveryBranch(ROW);
+	}
+
+	@Test
+	public void acceptAllResolvesEveryBranchAtCellLevel() throws Exception {
+		acceptAllResolvesEveryBranch(CELL);
+	}
+
+	/**
+	 * A deleted row in each branch of a row-level element: listed once, with its twin; accepted, both
+	 * rows go, and the table with them, no branch having a row left (core-ts CR-013 section 7.3's shape).
+	 */
+	@Test
+	public void acceptingADeletedRowInEveryBranchRemovesTheTable() throws Exception {
+		WordprocessingMLPackage pkg = withBody("<w:p><w:r><w:t>before</w:t></w:r></w:p><w:tbl>" + TBL_PROPS
+				+ "<mc:AlternateContent><mc:Choice Requires=\"w14\">" + deletedRow(1, "C") + "</mc:Choice><mc:Fallback>" + deletedRow(2, "F") + "</mc:Fallback></mc:AlternateContent></w:tbl>");
+		List<TrackedChange> changes = listed(pkg);
+		assertEquals(changes.toString(), 1, changes.size());
+		assertEquals(1, changes.get(0).twins.size());
+		changes.get(0).accept();
+		String xml = TrackedChangesTest.bodyXml(pkg);
+		assertFalse(xml, xml.contains("<w:tbl") || xml.contains("<w:tr"));
+		assertTrue(xml, xml.contains("before"));
+	}
+
+	/** A deleted row in the branch Word reads, a plain row in the Fallback: accepted, the table stays, since a branch still holds a row. */
+	@Test
+	public void acceptingADeletedRowKeepsATableWhoseOtherBranchHasARow() throws Exception {
+		WordprocessingMLPackage pkg = withBody("<w:tbl>" + TBL_PROPS
+				+ "<mc:AlternateContent><mc:Choice Requires=\"w14\">" + deletedRow(1, "C") + "</mc:Choice><mc:Fallback>" + plainRow("F") + "</mc:Fallback></mc:AlternateContent></w:tbl>");
+		List<TrackedChange> changes = listed(pkg);
+		assertEquals(changes.toString(), 1, changes.size());
+		assertEquals(0, changes.get(0).twins.size());
+		changes.get(0).accept();
+		String xml = TrackedChangesTest.bodyXml(pkg);
+		assertTrue(xml, xml.contains("<w:tbl") && xml.contains("<mc:Fallback>") && xml.contains("<w:tr"));
+		assertFalse(xml, xml.contains("<mc:Choice Requires=\"w14\"><w:tr"));
+		assertTrue(xml, xml.contains(">F<"));
 	}
 
 	/** The text model's view of a cell reads the branch Word reads (Texts.cellText through Trees.blockItems). */

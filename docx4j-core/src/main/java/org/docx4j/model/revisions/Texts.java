@@ -84,12 +84,11 @@ final class Texts {
 	static String rowText(Tr tr, View view) {
 		StringBuilder out = new StringBuilder();
 		boolean first = true;
-		for (Object item : tr.getContent()) {
-			Object v = Trees.unwrap(item);
-			if (!(v instanceof Tc)) continue;
+		// through cell-level content controls, custom XML and a kept mc:AlternateContent (CR-051 phase 2)
+		for (Lister.Row cell : Lister.cellsOf(tr)) {
 			if (!first) out.append('\t');
 			first = false;
-			cellText(((Tc) v).getContent(), view, out, new boolean[1]);
+			cellText(((Tc) Trees.unwrap(cell.item)).getContent(), view, out, new boolean[1]);
 		}
 		return out.append("\r\n").toString();
 	}
@@ -102,10 +101,7 @@ final class Texts {
 				out.append(Trees.paragraphText((P) v, view));
 				afterParagraph[0] = true;
 			} else if (v instanceof Tbl) {
-				for (Object row : ((Tbl) v).getContent()) {
-					Object rv = Trees.unwrap(row);
-					if (rv instanceof Tr) out.append(rowText((Tr) rv, view));
-				}
+				for (Lister.Row row : Lister.rowsOf((Tbl) v)) out.append(rowText(row.tr, view));
 				afterParagraph[0] = false;
 			} else {
 				List<Object> children = Trees.blockItems(v);

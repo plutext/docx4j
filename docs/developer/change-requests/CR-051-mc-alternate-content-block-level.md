@@ -5,9 +5,11 @@ recommended. Phase 0 done 2026-10-20 (the walker audit, §10); D6, the exporters
 the same day (Jason: "D6 (a)"). Five of the six defects of today the audit found were fixed the same
 day (§10.5, c4894c5b0); the sixth went with phase 1. Phase 1 done 2026-10-20 (Jason: "make the fixes,
 then phase 1"): the listener fix 6687cc4b8, the rest 1cff2cd5c (§11). Phase 3 (the hand-offs) done
-2026-10-21, each receiver acknowledged (§5). Phase 2 (row and cell level in `preserve` mode) open,
-to be undertaken soon. D5 revised 2026-10-21 (Jason): `preserve` becomes the default at 17.4.0, after
-phase 2; 17.3.x keeps `word` (D5, "Revised"). Proposed 2026-10-20, drafted at Jason's request ("write
+2026-10-21, each receiver acknowledged (§5). Phase 2 (row and cell level in `preserve` mode) done
+2026-10-21 (Jason: "do CR-051 phase 2"; §12; the Word check of the `preserve` saves passed); its
+hand-offs go with it.
+D5 revised 2026-10-21 (Jason): `preserve` becomes the default at 17.4.0, after phase 2; 17.3.x keeps
+`word` (D5, "Revised"); the switch is recorded in §12.4 for the 17.4.0 branch to make. Proposed 2026-10-20, drafted at Jason's request ("write
 the cr to keep body-level mc through load. also check whether we do/should keep mc in sdt content")
 by Claude Opus 5.5 (session docx4j-25), after the portfolio session's measurement of Jason's
 `mc-fun` probes (paper §7.8).
@@ -556,6 +558,9 @@ gap). Phase 2 also flips the default to `preserve` for 17.4.0 (D5, "Revised").
 
 **Acceptance:** the row and cell probes kept, extracted and drawn as Word shows them (phase 0); the
 §10 walkers green in `preserve` mode on the mc-fun probes; the default switched.
+
+**Done** 2026-10-21 (§12): the four sites and the two shapes closed, the probes green on every walker
+(§12.3); the switch itself is a 17.4.0 change, recorded in §12.4, since this branch is 17.3.4.
 
 ### Phase 3: hand-offs
 
@@ -1234,7 +1239,8 @@ two readers, the exporter tests and the CHANGELOG.
   root where not already listed, through its `setIgnorable`; set where the root had none (Jason's
   probes).
 - **`preserve` until phase 2:** row- and cell-level elements are spliced as in `word` mode, unless
-  they lie inside an element kept whole (there they stay whole with it).
+  they lie inside an element kept whole (there they stay whole with it). Lifted by phase 2 (§12): in
+  `preserve` mode nothing is spliced at any level.
 - **The preprocessor** (D3, D4): the keep rule is the flat list of §3.3 (the `EG_PContent` family,
   every block container, `w:tbl`, `w:tr`, `w:sdtContent`, `w:customXml`, `mc:Choice` and
   `mc:Fallback`); an element it still resolves takes its first Choice when it has no Fallback.
@@ -1456,5 +1462,120 @@ with a tag and one with a data binding, a run control in a paragraph-level eleme
 in a table's and a cell control in a row's: the content survives, each control has its class, a
 save writes `w:sdt` in the `w` namespace and no part nor `getXML()` holds the URI, a reload reads
 the same; and the default (DOM) binder binds a bound control in each kept branch. Row and cell
-level are still resolved in `preserve` mode until phase 2, which the expectations allow for.
+level were still resolved in `preserve` mode until phase 2, which the expectations allowed for (now
+kept whole: §12).
 
+## 12. Phase 2 record: row and cell level in `preserve` mode, 21 October 2026
+
+By Claude Fable 5.1 (session docx4j-25), at Jason's word ("do CR-051 phase 2"), on the tree at
+296a3b7bd. Phase 1 had left row- and cell-level elements spliced in `preserve` mode (§11.1), since
+the walks that read rows and cells by type would have lost their content. This phase teaches those
+walks the element and lifts the carve-out.
+
+### 12.1 What changed
+
+- **The load path.** `JaxbXmlPart.resolveAlternateContent` splices nothing in `preserve` mode, at
+  any level. The record (`getResolvedAlternateContent()`) is therefore empty for a `preserve` load.
+  The javadocs of `McBlockLevel` and the record say so; the log line names the mode.
+- **The text model** (`Extractor.rows` and `cells`): an `mc:AlternateContent` among a table's rows
+  or a row's cells is compared with its other branches (`mce.branches_differ`, at the element's
+  address) and the branch Word reads (`McPurpose.TEXT`) is walked in its place, as `blocks` does at
+  block level. Both walks also read the `word`-mode record for their container, so a row- or
+  cell-level element taken out at load raises the same warning at the same address as in `preserve`
+  mode (the inspector already did, through `InspectXml.restore`, whose address walk skips `tblPr`
+  and `tblGrid`). Before this, `blockItems` answered null for the element and its text was lost
+  silently (§10.3).
+- **The revisions model** (`Lister`, `Resolver`, `Texts`):
+  - `Lister.tableTokens` walks the rows through `rowItems` and the cells through `cellItems`, each
+    with an `AlternateContent` case (`alternateRows`, `alternateCells`): the branch Word reads is
+    listed where the element stands and each other branch's changes become twins by kind and position
+    (`pairTwins`), listed on their own for acceptAll, as `alternateBlocks` does at block level. A row
+    or cell that is itself a revision in another branch is the twin of the listed branch's, so
+    accepting or rejecting one resolves both.
+  - `Resolver.row` removes a table left with no rows only when no branch has one
+    (`Lister.hasRows`, every branch): `rowsOf` reads one branch, and a row in another branch still
+    makes the table one. This is core-ts's first shape (its CR-013 §7.3: a mutator that counts rows
+    without seeing the element deleting the table); docx4j's `Lister.rowsOf` already saw the element
+    through `Trees.blockItems`, so the table was wrongly removed only where the read branch's rows
+    were all deleted and another branch's were not.
+  - `Texts.rowText` and `cellText` take the rows and cells through `Lister.rowsOf` and `cellsOf`
+    (content controls, custom XML and a kept element), where they tested `w:tr` and `w:tc` directly.
+  - The second shape (a tracked-change listing missing a revision inside a branch) was closed at block
+    and paragraph level in phase 1 and now at row and cell level.
+- **OpenDoPE:**
+  - `RemovalHandler.xslt`'s row template counts the row's cells wherever they stand
+    (`count($results//w:tc)`, where it counted direct children), so a row whose cells are all in a
+    cell-level element, a cell-level content control or custom XML element is no longer deleted. A
+    nested table's cells only ever stand inside a cell of the row, so the descendant count is the
+    direct count wherever the direct count was right.
+  - `OpenDoPEHandler.emptyKeepingTableShape` (new, package-private; the two identical blocks that
+    emptied a repeat-of-zero or a false condition's control now call it): where the control's content
+    is a cell-level element kept whole, each branch keeps its own cell, emptied to one paragraph with
+    its `tcPr`, and the element stays, so a save writes every branch. Before, the first `w:tc` found
+    in any branch was lifted out of the element into the control and the other branches were lost.
+- **Not changed, by survey** (every `instanceof Tr` and `instanceof Tc` in docx4j-core,
+  docx4j-markdown and docx4j-diffx):
+  - `TableModel`, `TcFinder`, `PropertyResolver`'s parent climb (it passes over a `Choice` and the
+    element to reach the `w:tr`), the exporters' `Containerization`, `AcceptTrackedChanges` and
+    `TableContextTracker` (after D6's splice), `BindingTraverserCommonImpl`'s shapers and
+    `BindingTraverserNonXSLT` (phase 1's effective container), `AbstractMerger`;
+  - `UpdateXmlFromDocumentSurface.getAsDocx` reads a cell control's first item for a `w:tc`; with a
+    kept cell-level element first, the element goes into the clone's body as block content. A gap of
+    that tool alone, for a bound cell control whose content is alternate content, left;
+  - `bind.xslt`'s shape tests (phase 1 left them) and `RemovalHandler`'s `JAXBResult` path, which
+    unmarshals the stylesheet's output straight into JAXB (a `w:sdt` directly in a branch of that
+    output would meet §11.3's lax binding there; the handler removes controls, so none should remain).
+
+### 12.2 Tests
+
+`McBlockLevelLoadTest.preserveModeKeepsBlockLevelElements` now holds every container of §3.1 and D2
+to the same expectation (kept whole, every branch and prefix written, whole after a round trip,
+Word's branch in the text in both modes); `McBlockLevelProbesTest.preserveModeKeepsEveryBranch`
+without its row and cell exception, and `preserveModeReadsAsWordsSave` (each probe with a Word 365
+save reads, in `preserve` mode and after a `preserve` save, as Word's save reads);
+`McBranchSdtTest` expects the row and cell controls of both branches typed (`CTSdtRow` twice,
+`CTSdtCell` twice) and no `w:sdt` found by the binder's XPath in `preserve` mode;
+`McBlockLevelReadersTest`'s probe gains a row-level and a cell-level element (`body/3/1`,
+`body/3/2/1`), the warnings and `mce.branch` findings equal across the modes;
+`TrackedChangesAlternateContentTest` gains row and cell level (listed once with twins, accept and
+reject resolve the twin, acceptAll resolves every branch) and the two row-removal cases (a deleted
+row in every branch accepted removes the table; a deleted row in the read branch with a plain row in
+the Fallback keeps it); `McRowCellLevelOpenDoPETest` (new, `org.docx4j.model.datastorage`): the
+removal keeps a row whose only cell is in a kept element and removes the control in the next row;
+emptying a cell control keeps each branch's cell with its `tcPr`; a control without an element is
+emptied as before. The nine classes (94 tests, with `ResolveAlternateContentTest`,
+`McBlockLevelConsumersTest` and `TrackedChangesTest`) pass; the full docx4j-core-tests, export-fo,
+markdown and diffx suites were run (the result in the commit message).
+
+### 12.3 The §10 walkers on the probes
+
+A scratch driver over the 19 `mc-fun/` probes (every one but the Word saves), each loaded in
+`preserve` mode: the text model (`Texts.plainText` and its warnings), the inspector (`Inspect.of`),
+tracked changes (`TrackedChanges.in`, `acceptAll`), `FieldUpdater`, the HTML exporter, the PDF
+exporter (docx4j-export-fo), a save, a reload in `preserve` mode, and the anonymiser (`Anonymize`)
+on a fresh load. On every probe: the text equals `word` mode's and, where a Word 365 save exists,
+Word's (`w16sdtfl` on the newest-first probes at row and cell level too); one `mce.branches_differ`
+per element; one `mce.branch` finding per unselected branch (10 per probe, 9 for the no-Fallback
+probe, 1 per text box); no exception in any walker; the save writes every element and Choice; the
+reload reads the same; the anonymiser's output keeps every element. The exporters draw by their own
+rule (D6, §7): the Fallback by default and the Choice `docx4j.jaxb.mc.preferChoice` names, so with
+Word's namespace preferred (`w16sdtfl`, `w14`, `wps`) the HTML text equals `word` mode's on every
+block-, row-, cell- and text-box probe; run- and paragraph-level probes draw by the same rule in both
+modes, as they are not governed. The PDFs of the row and cell probes were rendered without error.
+The `preserve`-mode saves of the five row and cell probes are on the share (`mc-fun/<name>-docx4j-
+preserve.docx`) for Jason's Word check: each should read as its Word 365 save does, since the XML
+written is the input's with every branch (`REQ-305`, CR-049's declarations). **Checked** by Jason the
+same day in Word 365: each reads `w16sdtfl` ("Each should read w16sdtfl: yes").
+
+### 12.4 The 17.4.0 switch
+
+This branch is 17.3.4, where `word` stays the default (D5, "Revised"). The 17.4.0 branch makes one
+change, with its CHANGELOG line: `McBlockLevel.fromProperty()` answers `PRESERVE` where the property
+is unset or names neither mode (its two `WORD` returns today); the javadocs of `McBlockLevel`,
+`McBlockLevel.PROPERTY`, `WordprocessingMLPackage.load(.., McBlockLevel)`, `Docx4J.load(..,
+McBlockLevel)`, `Load3.setMcBlockLevel` and `OpcPackage.setMcBlockLevel`, the reference
+`docx4j.properties` (docx4j-samples-resources: `docx4j.jaxb.mc.blockLevel=preserve`, with the
+comment that `word` gives Word's view in the tree) and the test `McBlockLevelLoadTest`'s property
+case follow. The §10 walkers are green in `preserve` mode on the probes (§12.3), which D5 asked
+for before the switch. The ports and docx4j-mcp hear of it with this phase's hand-off (docx4j-mcp
+loads in `word` by its T8, unaffected).

@@ -199,7 +199,7 @@ final class Resolver {
 			} else {
 				remove(t.owner, t.item);
 				Object tblValue = Trees.unwrap(t.tblItem);
-				if (tblValue instanceof Tbl && Lister.rowsOf((Tbl) tblValue).isEmpty()) remove(t.tblOwner, t.tblItem);
+				if (tblValue instanceof Tbl && !Lister.hasRows((Tbl) tblValue)) remove(t.tblOwner, t.tblItem); // no branch left with a row
 			}
 		}
 

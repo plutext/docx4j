@@ -265,6 +265,12 @@ public class McBlockLevelLoadTest {
 		return cases;
 	}
 
+	private static String text(WordprocessingMLPackage pkg) {
+		org.docx4j.model.text.TextOptions options = new org.docx4j.model.text.TextOptions();
+		for (org.docx4j.model.text.TextOptions.Include i : org.docx4j.model.text.TextOptions.Include.values()) options.include(i);
+		return org.docx4j.model.text.Texts.plainText(pkg, options);
+	}
+
 	private static int alternateContentCount(Object root) {
 		final int[] n = { 0 };
 		new TraversalUtil(root, new TraversalUtil.CallbackImpl() {
@@ -530,7 +536,7 @@ public class McBlockLevelLoadTest {
 
 	// --- preserve mode -----------------------------------------------------------------------------------
 
-	/** Each block container's element survives load, a save writes every branch, the prefixes stay declared; row and cell containers' are resolved until phase 2. */
+	/** Each container's element, block, row and cell level alike (CR-051 phase 2), survives load, a save writes every branch, the prefixes stay declared. */
 	@Test
 	public void preserveModeKeepsBlockLevelElements() throws Exception {
 		for (Case c : cases()) {
@@ -539,28 +545,27 @@ public class McBlockLevelLoadTest {
 			List<Object> content = c.locator.content(pkg);
 			assertEquals(c.toString(), 3, content.size());
 			Object at = XmlUtils.unwrap(content.get(1));
-			if (c.kind == Kind.BLOCK) {
-				assertTrue(c + ": kept whole, but " + at.getClass().getSimpleName(), at instanceof AlternateContent);
-				AlternateContent ac = (AlternateContent) at;
-				assertEquals(2, ac.getChoice().size());
-				assertNotNull(ac.getFallback());
-				assertTrue(c + ": nothing recorded", part.getResolvedAlternateContent().isEmpty());
+			assertTrue(c + ": kept whole, but " + at.getClass().getSimpleName(), at instanceof AlternateContent);
+			AlternateContent ac = (AlternateContent) at;
+			assertEquals(2, ac.getChoice().size());
+			assertNotNull(ac.getFallback());
+			assertTrue(c + ": nothing recorded", part.getResolvedAlternateContent().isEmpty());
 
-				byte[] saved = McProbeDocx.save(pkg);
-				String partXml = McProbeDocx.entry(saved, part.getPartName().getName().substring(1));
-				assertTrue(c + ": every branch written", partXml.contains("Requires=\"wpi\"") && partXml.contains("Requires=\"w14\"") && partXml.contains("<mc:Fallback>"));
-				assertTrue(c + ": the content of each", partXml.contains(c.tag + "_WPI") && partXml.contains(c.tag + "_W14") && partXml.contains(c.tag + "_FB"));
-				String root = McProbeDocx.rootTag(partXml);
-				assertTrue(c + ": the Choices' prefixes declared on the root: " + root, root.contains("xmlns:wpi=") && root.contains("xmlns:w14="));
+			byte[] saved = McProbeDocx.save(pkg);
+			String partXml = McProbeDocx.entry(saved, part.getPartName().getName().substring(1));
+			assertTrue(c + ": every branch written", partXml.contains("Requires=\"wpi\"") && partXml.contains("Requires=\"w14\"") && partXml.contains("<mc:Fallback>"));
+			assertTrue(c + ": the content of each", partXml.contains(c.tag + "_WPI") && partXml.contains(c.tag + "_W14") && partXml.contains(c.tag + "_FB"));
+			String root = McProbeDocx.rootTag(partXml);
+			assertTrue(c + ": the Choices' prefixes declared on the root: " + root, root.contains("xmlns:wpi=") && root.contains("xmlns:w14="));
 
-				WordprocessingMLPackage again = McProbeDocx.roundTrip(pkg, McBlockLevel.PRESERVE);
-				assertTrue(c + ": still whole after the round trip", XmlUtils.unwrap(c.locator.content(again).get(1)) instanceof AlternateContent);
-			} else {
-				// CR-051 section 5, phase 1: row- and cell-level elements resolved as in word mode until phase 2
-				assertTrue(c + ": resolved until phase 2, but " + at.getClass().getSimpleName(), c.promotedType.isInstance(at));
-				assertTrue(xml(at).contains(c.tag + "_W14"));
-				assertEquals(c + ": recorded", 1, part.getResolvedAlternateContent().size());
-			}
+			WordprocessingMLPackage again = McProbeDocx.roundTrip(pkg, McBlockLevel.PRESERVE);
+			assertTrue(c + ": still whole after the round trip", XmlUtils.unwrap(c.locator.content(again).get(1)) instanceof AlternateContent);
+			// and the text model reads Word's branch of it, in both modes (every container the text
+			// model reaches; a note or a text box is reached from the body, a glossary entry only on request)
+			String preserveText = text(pkg);
+			assertEquals(c + ": the text", text(c.docx.load(McBlockLevel.WORD)), preserveText);
+			assertTrue(c + ": " + preserveText, preserveText.contains(c.tag + "_W14") || c.name.startsWith("w:docPartBody"));
+			assertFalse(c + ": " + preserveText, preserveText.contains(c.tag + "_FB") || preserveText.contains(c.tag + "_WPI"));
 		}
 	}
 
