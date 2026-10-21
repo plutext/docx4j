@@ -1,6 +1,7 @@
 # CR-051: `mc:AlternateContent` at block level: read as Word reads it on load, or kept whole on request (body, cells, rows, headers, notes, text boxes, content controls)
 
-Status: ACCEPTED 2026-10-20 (Jason: "accept recommendations for CR-051's D1 to D5"), to implement as
+Status: DONE 2026-10-21 (9db1a3cbd; every phase done, each hand-off acknowledged). ACCEPTED
+2026-10-20 (Jason: "accept recommendations for CR-051's D1 to D5"), to implement as
 recommended. Phase 0 done 2026-10-20 (the walker audit, §10); D6, the exporters' copy, decided (a)
 the same day (Jason: "D6 (a)"). Five of the six defects of today the audit found were fixed the same
 day (§10.5, c4894c5b0); the sixth went with phase 1. Phase 1 done 2026-10-20 (Jason: "make the fixes,
@@ -1579,3 +1580,33 @@ comment that `word` gives Word's view in the tree) and the test `McBlockLevelLoa
 case follow. The §10 walkers are green in `preserve` mode on the probes (§12.3), which D5 asked
 for before the switch. The ports and docx4j-mcp hear of it with this phase's hand-off (docx4j-mcp
 loads in `word` by its T8, unaffected).
+
+### 12.5 Hand-offs
+
+Sent 21 October 2026 after the commit (9db1a3cbd) to the portfolio (CR-051.2 done, CR-051 done, the
+Status line to re-baseline), core-ts, python and docx4j-mcp, each pointing at §12 and the oracle
+tests (`McBlockLevelProbesTest.preserveModeReadsAsWordsSave`, `McBlockLevelReadersTest`,
+`TrackedChangesAlternateContentTest`, `McRowCellLevelOpenDoPETest`); nothing asked of any.
+
+- **core-ts acknowledged** the same day: its text model addresses the element itself as `preserve`
+  mode does, at row and cell level, measured on its copies of the probes (the table being `body/1`):
+  `mc-row-newest-first`'s element `body/1/1`, its selected row `body/1/1/0`; `mc-cell-newest-first`'s
+  `body/1/0/1`, its cell `body/1/0/1/0`; in a content control the control is a level too
+  (`body/1/1/0`, `body/1/0/1/0`); `mce.branches_differ` at the element's address in each. Its CR-013
+  D2 decided the same form for its content API. It maps `Lister.hasRows` onto its CR-013 phase 3's
+  first item (`removeRow` and `Table.deleteColumns`) and the row and cell twins onto its phase 2's
+  listing, and notes 9db1a3cbd and the three test classes as the oracle for those phases. Its CR-012
+  phase 4 (readers of kept branches at run and paragraph level, text boxes at `textbox:` addresses)
+  is implemented there, uncommitted; row and cell level stay CR-013's.
+- **The portfolio** applied the registry (0f39335): CR-051.2 and CR-051 done, all five entries done,
+  the Status line re-baselined at 9db1a3cbd; it noted the line still began "ACCEPTED" where CR-050's
+  begins "DONE", so the line now leads with DONE (to re-baseline with the commit of this section).
+- **docx4j-mcp acknowledged:** T8 revised so that every load there names its mode (`WORD` or
+  `PRESERVE`) and none relies on the default, so 17.4.0's switch changes no tool's output; its
+  `preserve` tools note that row and cell level are kept as well.
+- **docx4j-python acknowledged:** its CR-012 phase A (docx4j's phase 1, `preserve` the default) is
+  in progress there, from 2853b7280, passing row and cell level by; its phase 2 readers will be a
+  follow-up port from 9db1a3cbd once phase A is verified and Jason gives the go (the row- and
+  cell-level text model with the element's address, the twins and the table-removal rule,
+  `preserveModeReadsAsWordsSave`); OpenDoPE's row and cell cases depend on what its customxml fill
+  covers; it will cite the commit once pushed.
