@@ -675,6 +675,11 @@ unpushed: docx4j's 61 WordprocessingML root elements typed inside a kept `mc:Alt
 what its revisions engine walks there), and after its port of 84b202c5a (b545884). Against docx4j at 84b202c5a, over
 the eleven fixtures and `review-for-word-word365-rejected`: **0 lines differ in all 24 comparisons.**
 
+**Rerun again (2026-10-22, later)**, at the python session's request, against its CR-012 Phase C (docx4j-python 30abcd2,
+unpushed: docx4j's five VML schemas in its schema copy, so VML is typed everywhere, a Fallback's text box down to its
+`w:ins` and `w:del` among them). Against docx4j at f62314d3b, the same twelve fixtures: **0 lines differ in all 24
+comparisons.**
+
 **The Word-open check** (Jason, 2026-10-16, Word 365): docx4j's own Accept All and Reject All saves of four fixtures -
 the probe, the equations, the editor's review file (notes, comments, a reply) and check 18's (a move, list changes,
 tables, a section) - each open with no repair prompt and with no revision left. Word 2010 was not tried.
