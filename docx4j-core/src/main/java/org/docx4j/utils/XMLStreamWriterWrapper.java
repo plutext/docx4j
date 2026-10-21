@@ -47,23 +47,71 @@ public class XMLStreamWriterWrapper implements XMLStreamWriter {
     }
     private List<Event> queue = new ArrayList<Event>();	
     
+    /** Namespace declarations to write on the next start element (CR-052), prefix to URI; null where none. */
+    private java.util.Map<String, String> pendingDeclarations;
+    /** The prefixes declared on the element being started, with their URIs, so a later declaration of one is not duplicated. */
+    private final java.util.Map<String, String> declaredOnCurrent = new java.util.HashMap<String, String>();
+    /** Of those, the ones declareOnNextStartElement put there, which the marshaller's own declaration of the prefix displaces. */
+    private final java.util.Set<String> oursOnCurrent = new java.util.HashSet<String>();
+
+    /**
+     * Has the next start element declare these namespaces, each written ahead of the element's
+     * attributes: how a marshal declares a prefix on the {@code mc:Choice} that names it
+     * ({@link org.docx4j.jaxb.McDeclarations}; CR-052).  The marshaller's listener calls it
+     * before the element is marshalled.
+     *
+     * @since 17.3.4
+     */
+    public void declareOnNextStartElement(java.util.Map<String, String> declarations) {
+    	if (declarations == null || declarations.isEmpty()) return;
+    	if (pendingDeclarations == null) {
+    		pendingDeclarations = new java.util.LinkedHashMap<String, String>(declarations);
+    	} else {
+    		pendingDeclarations.putAll(declarations);
+    	}
+    }
+
+    private void started() throws XMLStreamException {
+    	declaredOnCurrent.clear();
+    	oursOnCurrent.clear();
+    	if (pendingDeclarations == null) return;
+    	java.util.Map<String, String> decls = pendingDeclarations;
+    	pendingDeclarations = null;
+    	for (java.util.Map.Entry<String, String> e : decls.entrySet()) {
+    		writeNamespace(e.getKey(), e.getValue());
+    		oursOnCurrent.add(e.getKey());
+    	}
+    }
+
+    /** Drops a queued declaration of the prefix on the element being started. */
+    private void unqueueNamespace(String prefix) {
+    	for (java.util.Iterator<Event> it = queue.iterator(); it.hasNext();) {
+    		Event e = it.next();
+    		if ("writeNamespace".equals(e.m.getName()) && prefix.equals(e.args[0])) it.remove();
+    	}
+    }
+
+    /** Writes out whatever is queued (a start element awaiting its attributes), without closing. @since 17.3.4 */
+    public void flushQueue() throws XMLStreamException {
+    	fq();
+    }
     	
 	@Override
 	public void writeStartElement(String localName) throws XMLStreamException {
         d(e(m("writeStartElement",String.class)), localName);
-		
+        started();
 	}
 
 	@Override
 	public void writeStartElement(String namespaceURI, String localName) throws XMLStreamException {
         d(e(m("writeStartElement",String.class,String.class)), namespaceURI, localName);
-		
+        started();
 	}
 
 	@Override
 	public void writeStartElement(String prefix, String localName, String namespaceURI) throws XMLStreamException {
         d(e(m("writeStartElement",String.class,String.class,String.class)), prefix, localName, namespaceURI);
-		
+        started();
 	}
 
 	@Override
@@ -161,7 +209,23 @@ public class XMLStreamWriterWrapper implements XMLStreamWriter {
 			if (log.isDebugEnabled()) {
 				log.debug("Dropping empty for prefix '" + prefix + "'");
 			}
+		} else if (!queue.isEmpty() && prefix != null && declaredOnCurrent.containsKey(prefix)) {
+			// already declared on this element
+			String have = declaredOnCurrent.get(prefix);
+			if (namespaceURI.equals(have)) {
+				if (log.isDebugEnabled()) log.debug("Not declaring {} again on this element", prefix);
+			} else if (oursOnCurrent.remove(prefix)) {
+				// the marshaller binds the prefix otherwise for its content: its binding stands (CR-052, D3)
+				log.warn("Prefix '" + prefix + "' declared as " + have + " on this mc:Choice by its source, but the content binds it to "
+						+ namespaceURI + "; the content's binding stands");
+				unqueueNamespace(prefix);
+				declaredOnCurrent.put(prefix, namespaceURI);
+		        d(e(m("writeNamespace",String.class, String.class)), prefix, namespaceURI);
+			} else {
+				log.warn("Prefix '" + prefix + "' declared twice on one element, as " + have + " and " + namespaceURI + "; keeping the first");
+			}
 		} else {
+			if (!queue.isEmpty() && prefix != null) declaredOnCurrent.put(prefix, namespaceURI);
 			if (log.isDebugEnabled()) {
 				log.debug("Writing {}={}", prefix, namespaceURI);
 			}

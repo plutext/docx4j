@@ -116,6 +116,8 @@ public class Context {
 	static {
 		JAXBContext tempContext = null;
 
+		McSourceBindings.install(); // the copy listener, before any record exists to carry (CR-052)
+
 		// Display diagnostic info about version of JAXB being used.
 		log.info("java.vendor="+System.getProperty("java.vendor"));
 		log.info("java.version="+System.getProperty("java.version"));

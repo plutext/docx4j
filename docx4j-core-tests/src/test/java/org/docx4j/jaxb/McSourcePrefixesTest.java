@@ -43,38 +43,44 @@ import java.util.zip.ZipOutputStream;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.mce.AlternateContent;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.P;
 import org.junit.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
- * CR-052 phase 0: where docx4j declares, today, the prefixes a part's {@code mc} attributes name
- * (the root's {@code mc:Ignorable}, a Choice's {@code Requires}, {@code mc:Ignorable} and
- * {@code mc:MustUnderstand}), as the CR's section 1 measured it.  Each case saves a package and
- * checks every such prefix of {@code word/document.xml} against the declarations in scope where it
- * is named.  A test whose result phase 1 changes says so ("Phase 1 changes this"), with what the
- * result becomes.
+ * CR-052: a save declares every prefix a part's {@code mc} attributes name (the root's
+ * {@code mc:Ignorable}, a Choice's {@code Requires}, {@code mc:Ignorable} and
+ * {@code mc:MustUnderstand}), where Word 365 puts it (D4 (c)): a prefix bound as docx4j's table
+ * binds it on the root, as Word's fixed set; any other on the {@code mc:Choice} that names it, with
+ * the source's binding, ahead of {@code Requires}; a prefix the root's {@code mc:Ignorable} names
+ * once, on the root.  Each case saves a package and checks every such prefix of the saved
+ * {@code word/document.xml} against the declarations in scope where it is named, and on which
+ * element the declaration sits.
  *
- * <p>The mechanism (CR section 1.1): at unmarshal, {@link Docx4jUnmarshallerListener} adds each
- * Choice's prefixes, as strings, to the part ({@code addMcChoiceNamespace}), and records the URIs a
- * Choice's {@code Requires} resolved to on the Choice ({@link McSelection#requiresNamespaces}); at
- * marshal, the part's prefixes and its root's {@code mc:Ignorable} are declared on the root through
- * docx4j's prefix table alone.  So a prefix the table lacks is never declared once the part has been
- * unmarshalled; a part nobody unmarshalled is saved from its source bytes, which is why it keeps
- * every declaration; and content moved or copied into another part brings nothing with it, the
- * destination part's own prefixes being all its marshal declares.</p>
+ * <p>Phase 0 of the CR measured what the same cases did before (its section 1): once a part was
+ * unmarshalled, a prefix the table lacked was never declared, and content moved or copied into
+ * another part brought nothing with it.  The mechanism now (section 1.1 and {@link McSourceBindings},
+ * {@link McDeclarations}): at unmarshal each Choice, and the root, records what its prefixes were
+ * bound to in the source; a copy gets the record; at marshal the tree is read once and each prefix
+ * placed from its record, the table only where there is none.</p>
  */
 public class McSourcePrefixesTest {
 
 	private static final String MCE_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+	private static final String W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 	private static final String ZZ9 = "http://example.com/zz9";
 	private static final String WPS = "http://schemas.microsoft.com/office/word/2010/wordprocessingShape";
 	private static final String CX1 = "http://schemas.microsoft.com/office/drawing/2015/9/8/chartex";
+	private static final String SML = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+	private static final String EXCEL_VML = "urn:schemas-microsoft-com:office:excel";
 
 	/** core-tests' text extraction probe: Choices naming zz9 (three) and shape2010 (one), each declared on its mc:AlternateContent. */
 	private static final String PROBE = "text-extraction/extraction-probe.docx";
@@ -84,17 +90,28 @@ public class McSourcePrefixesTest {
 	private static final Predicate<AlternateContent.Choice> ZZ9_ONLY = c -> "zz9".equals(c.getRequires());
 	private static final Predicate<AlternateContent.Choice> ANY = c -> true;
 
-	/** What the check found in one part: each named prefix that resolves, and each that does not with how often. */
+	/**
+	 * What the check found in one part: each named prefix that resolves, with the local names of
+	 * the elements declaring it where it is named; and each that does not, with how often.
+	 */
 	private static final class Found {
 		final Set<String> resolved = new TreeSet<String>();
+		final Map<String, Set<String>> declaredOn = new TreeMap<String, Set<String>>();
 		final Map<String, Integer> undeclared = new TreeMap<String, Integer>();
 		final Element root;
 		Found(Element root) {
 			this.root = root;
 		}
+		/** The one kind of element declaring the prefix wherever it is named. */
+		String on(String prefix) {
+			Set<String> s = declaredOn.get(prefix);
+			assertNotNull(prefix + " resolved: " + this, s);
+			assertEquals(prefix + " declared on one kind of element: " + this, 1, s.size());
+			return s.iterator().next();
+		}
 		@Override
 		public String toString() {
-			return "resolved " + resolved + ", undeclared " + undeclared;
+			return "resolved " + resolved + " on " + declaredOn + ", undeclared " + undeclared;
 		}
 	}
 
@@ -120,12 +137,18 @@ public class McSourcePrefixesTest {
 		throw new AssertionError(name + " not in the package");
 	}
 
-	/** Every prefix an mc attribute of the saved main document part names, resolved where it is named. */
-	private static Found check(byte[] docx) throws Exception {
+	private static Element parse(byte[] xml) throws Exception {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setNamespaceAware(true);
-		Element root = dbf.newDocumentBuilder()
-				.parse(new ByteArrayInputStream(entry(docx, "word/document.xml"))).getDocumentElement();
+		return dbf.newDocumentBuilder().parse(new ByteArrayInputStream(xml)).getDocumentElement();
+	}
+
+	/** Every prefix an mc attribute of the saved main document part names, resolved where it is named. */
+	private static Found check(byte[] docx) throws Exception {
+		return check(parse(entry(docx, "word/document.xml")));
+	}
+
+	private static Found check(Element root) {
 		Found found = new Found(root);
 		walk(root, found);
 		return found;
@@ -142,13 +165,25 @@ public class McSourcePrefixesTest {
 		for (String value : named) {
 			for (String prefix : value.trim().split("\\s+")) {
 				if (prefix.isEmpty()) continue;
-				if (el.lookupNamespaceURI(prefix) != null) found.resolved.add(prefix);
-				else found.undeclared.merge(prefix, 1, Integer::sum);
+				if (el.lookupNamespaceURI(prefix) != null) {
+					found.resolved.add(prefix);
+					found.declaredOn.computeIfAbsent(prefix, k -> new TreeSet<String>()).add(declarer(el, prefix).getLocalName());
+				} else {
+					found.undeclared.merge(prefix, 1, Integer::sum);
+				}
 			}
 		}
 		for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
 			if (n instanceof Element) walk((Element) n, found);
 		}
+	}
+
+	/** The nearest element, from {@code el} up, declaring the prefix. */
+	private static Element declarer(Element el, String prefix) {
+		for (Node n = el; n instanceof Element; n = n.getParentNode()) {
+			if (((Element) n).hasAttributeNS("http://www.w3.org/2000/xmlns/", prefix)) return (Element) n;
+		}
+		throw new AssertionError("no declaration of " + prefix + " above " + el.getTagName());
 	}
 
 	private static Map<String, Integer> counts(Object... prefixAndCount) {
@@ -179,6 +214,13 @@ public class McSourcePrefixesTest {
 		return out;
 	}
 
+	/** A paragraph with one mc:AlternateContent, its Choice's attributes as given, the fragment declaring the prefixes it names. */
+	private static String paragraphWithChoice(String choiceAttributes, String declarations, String choiceContent) {
+		return "<w:p xmlns:w=\"" + W_NS + "\" xmlns:mc=\"" + MCE_NS + "\" " + declarations + ">"
+				+ "<w:r><mc:AlternateContent><mc:Choice " + choiceAttributes + ">" + choiceContent + "</mc:Choice>"
+				+ "<mc:Fallback><w:t>f</w:t></mc:Fallback></mc:AlternateContent></w:r></w:p>";
+	}
+
 	// ---- section 1, case 1: a part saved as loaded
 
 	/** A part nobody unmarshalled is saved from its source bytes, so every declaration the source made stays where it was. */
@@ -189,24 +231,39 @@ public class McSourcePrefixesTest {
 		Found f = check(save(pkg));
 		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
 		assertTrue(f.toString(), f.resolved.containsAll(Arrays.asList("zz9", "shape2010", "wps", "w14")));
+		assertEquals("AlternateContent", f.on("zz9")); // the source's placement
 	}
 
 	/**
-	 * Once unmarshalled, the same part loses zz9 (three Choices) and shape2010 (one): the table knows
-	 * neither prefix, and the URIs recorded on each Choice are not read at marshal.  wps and w14, which
-	 * the table knows, are declared on the root.
+	 * Once unmarshalled, the same part declares every prefix: wps and w14, which the table binds as
+	 * the source did, on the root; zz9 (three Choices) and shape2010 (one, an alias for the wps
+	 * namespace), which it does not, on the Choice naming each, with the source's binding, written
+	 * ahead of Requires as Word writes it.  The content keeps the table's prefix (wps:wsp under a
+	 * Choice Requires="shape2010"), which is fine: the alias is declared beside it.
 	 *
-	 * <p>Phase 1 changes this: all declared, zz9 and shape2010 on the Choice naming each, with the
-	 * source's binding (D4 (c)).</p>
+	 * <p>Phase 0 measured zz9 and shape2010 undeclared.</p>
 	 */
 	@Test
-	public void anUnmarshalledPartLosesThePrefixesTheTableLacks() throws Exception {
+	public void anUnmarshalledPartDeclaresEveryPrefixWhereWordDoes() throws Exception {
 		WordprocessingMLPackage pkg = load(PROBE);
 		pkg.getMainDocumentPart().getContent();
-		Found f = check(save(pkg));
-		assertEquals(f.toString(), counts("shape2010", 1, "zz9", 3), f.undeclared);
-		assertTrue(f.toString(), f.resolved.containsAll(Arrays.asList("wps", "w14")));
+		byte[] docx = save(pkg);
+		Found f = check(docx);
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("document", f.on("wps"));
+		assertEquals("document", f.on("w14"));
+		assertEquals("Choice", f.on("zz9"));
+		assertEquals("Choice", f.on("shape2010"));
 		assertEquals(WPS, f.root.lookupNamespaceURI("wps"));
+		assertNull("not on the root", f.root.getAttributeNodeNS("http://www.w3.org/2000/xmlns/", "zz9"));
+
+		String xml = new String(entry(docx, "word/document.xml"), StandardCharsets.UTF_8);
+		assertTrue("declared ahead of Requires, as Word writes it: " + xml.substring(xml.indexOf("Requires=\"zz9\"") - 60, xml.indexOf("Requires=\"zz9\"") + 14),
+				xml.contains("<mc:Choice xmlns:zz9=\"" + ZZ9 + "\" Requires=\"zz9\">"));
+		assertTrue(xml.contains("<mc:Choice xmlns:shape2010=\"" + WPS + "\" Requires=\"shape2010\">"));
+		assertTrue("wps content keeps the table's prefix", xml.contains("<wps:wsp>"));
+		assertEquals("one declaration per Choice naming zz9", 3, xml.split("xmlns:zz9=").length - 1);
+		assertFalse("nothing on mc:Fallback", xml.contains("<mc:Fallback xmlns"));
 	}
 
 	// ---- section 1, case 2: the root's mc:Ignorable naming a private prefix
@@ -241,28 +298,22 @@ public class McSourcePrefixesTest {
 
 	/**
 	 * Case 2a: the tree set from code ({@code XmlUtils.unmarshalString}, {@code setJaxbElement}): the
-	 * root keeps {@code mc:Ignorable="zz9"} and declares nothing for it.
-	 *
-	 * <p>Phase 1 changes this, where {@code XmlUtils}' unmarshal sets docx4j's listener (D5): declared
-	 * on the root.</p>
+	 * unmarshal records what the DOM declares for the root's Ignorable prefixes (D5 (a)), so the save
+	 * declares zz9 on the root, with the source's binding.
 	 */
 	@Test
-	public void aRootIgnorablePrefixSetFromCodeIsUndeclared() throws Exception {
+	public void aRootIgnorablePrefixSetFromCodeIsDeclaredOnTheRoot() throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		pkg.getMainDocumentPart().setJaxbElement((org.docx4j.wml.Document) XmlUtils.unmarshalString(rootIgnorableZz9()));
 		Found f = check(save(pkg));
-		assertEquals(f.toString(), counts("zz9", 1), f.undeclared);
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("document", f.on("zz9"));
+		assertEquals(ZZ9, f.root.lookupNamespaceURI("zz9"));
 	}
 
-	/**
-	 * Case 2b: the same part loaded from a package.  Saved unread, declared (its bytes); unmarshalled
-	 * and saved, undeclared, as case 2a: the part records the root's Ignorable prefixes, not their
-	 * bindings.
-	 *
-	 * <p>Phase 1 changes the second: declared on the root.</p>
-	 */
+	/** Case 2b: the same part loaded from a package: declared whether saved unread (its bytes) or unmarshalled first (the record). */
 	@Test
-	public void aRootIgnorablePrefixLoadedIsLostOnceUnmarshalled() throws Exception {
+	public void aRootIgnorablePrefixLoadedIsDeclaredOnTheRoot() throws Exception {
 		byte[] source = withDocument(rootIgnorableZz9());
 		Found unread = check(save(WordprocessingMLPackage.load(new ByteArrayInputStream(source))));
 		assertEquals(unread.toString(), Collections.emptyMap(), unread.undeclared);
@@ -271,42 +322,87 @@ public class McSourcePrefixesTest {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(source));
 		pkg.getMainDocumentPart().getContent();
 		Found f = check(save(pkg));
-		assertEquals(f.toString(), counts("zz9", 1), f.undeclared);
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("document", f.on("zz9"));
+		assertEquals(ZZ9, f.root.lookupNamespaceURI("zz9"));
 		assertEquals("the Ignorable value itself is kept", "zz9",
 				f.root.getAttributeNS(MCE_NS, "Ignorable").trim().split("\\s+")[0]);
+	}
+
+	/**
+	 * A prefix the root's mc:Ignorable names and a Choice also names, bound alike: declared once,
+	 * on the root, and not again on the Choice (Jason, 20 October 2026, for both ports).
+	 */
+	@Test
+	public void aPrefixTheRootIgnorableNamesIsDeclaredOnceOnTheRoot() throws Exception {
+		String xml = rootIgnorableZz9();
+		String p = paragraphWithChoice("Requires=\"zz9\"", "", "<w:t>c</w:t>");
+		xml = xml.replace("</w:body>", p + "</w:body>");
+		// the paragraph declares no zz9 of its own: the root's is in scope
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(withDocument(xml)));
+		pkg.getMainDocumentPart().getContent();
+		byte[] docx = save(pkg);
+		Found f = check(docx);
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("document", f.on("zz9"));
+		assertEquals(1, new String(entry(docx, "word/document.xml"), StandardCharsets.UTF_8).split("xmlns:zz9=").length - 1);
 	}
 
 	// ---- section 1, case 3: a Choice built in code
 
 	/**
-	 * A Choice built in code saying {@code Requires="cx1"} is not declared, though the table knows
-	 * cx1: no listener saw it, so the part's prefixes do not include it.
-	 *
-	 * <p>Phase 1 changes this: declared on the root (a table prefix, D4 (c)).</p>
+	 * A Choice built in code saying {@code Requires="cx1"}: the table binds cx1, so it goes on the
+	 * root, whether or not the part's registered prefixes include it (phase 0 measured it undeclared:
+	 * no listener saw it).
 	 */
 	@Test
-	public void aChoiceBuiltInCodeIsUndeclaredThoughTheTableKnowsIt() throws Exception {
+	public void aChoiceBuiltInCodeNamingATablePrefixIsDeclaredOnTheRoot() throws Exception {
 		assertEquals(CX1, new NamespacePrefixMappings().getNamespaceURI("cx1"));
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		pkg.getMainDocumentPart().getContent().add(XmlUtils.unmarshalString(
-				"<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
-				+ " xmlns:mc=\"" + MCE_NS + "\" xmlns:cx1=\"" + CX1 + "\">"
-				+ "<w:r><mc:AlternateContent><mc:Choice Requires=\"cx1\"><w:t>c</w:t></mc:Choice>"
-				+ "<mc:Fallback><w:t>f</w:t></mc:Fallback></mc:AlternateContent></w:r></w:p>"));
+				paragraphWithChoice("Requires=\"cx1\"", "xmlns:cx1=\"" + CX1 + "\"", "<w:t>c</w:t>")));
 		Found f = check(save(pkg));
-		assertEquals(f.toString(), counts("cx1", 1), f.undeclared);
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("document", f.on("cx1"));
+		assertEquals(CX1, f.root.lookupNamespaceURI("cx1"));
+	}
+
+	/**
+	 * A Choice built in code naming a private prefix: {@code XmlUtils.unmarshalString} records what
+	 * its fragment declared (D5 (a)), so the save declares it on the Choice.  Built without a
+	 * declaration anywhere, the prefix is left undeclared with a warning, as before, unless the
+	 * code sets the Choice's bindings itself ({@link McSourceBindings#set}).
+	 */
+	@Test
+	public void aChoiceBuiltInCodeNamingAPrivatePrefix() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().getContent().add(XmlUtils.unmarshalString(
+				paragraphWithChoice("Requires=\"zz9\"", "xmlns:zz9=\"" + ZZ9 + "\"", "<w:t>c</w:t>")));
+		Found f = check(save(pkg));
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("Choice", f.on("zz9"));
+
+		// nothing declared it, so nothing is recorded: undeclared, as before
+		pkg = WordprocessingMLPackage.createPackage();
+		P p = (P) XmlUtils.unmarshalString(paragraphWithChoice("Requires=\"zz8\"", "xmlns:zz8=\"" + ZZ9 + "\"", "<w:t>c</w:t>"));
+		AlternateContent.Choice choice = choices(p, ANY).get(0);
+		choice.setRequires("zz9"); // renamed after the unmarshal: the record knows zz8, not zz9
+		pkg.getMainDocumentPart().getContent().add(p);
+		f = check(save(pkg));
+		assertEquals(f.toString(), counts("zz9", 1), f.undeclared);
+
+		// unless the code says what the prefix means
+		McSourceBindings.set(choice, Collections.singletonMap("zz9", ZZ9));
+		f = check(save(pkg));
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("Choice", f.on("zz9"));
 	}
 
 	// ---- section 1, case 4: content moved or copied into another package
 
-	/**
-	 * Cases 4a and 4b: the probe's two zz9-only paragraphs moved (the same objects) and deep-copied
-	 * into a new package: zz9 undeclared both ways.
-	 *
-	 * <p>Phase 1 changes this: declared on each Choice, with the source's binding.</p>
-	 */
+	/** Cases 4a and 4b: the probe's two zz9-only paragraphs moved (the same objects) and deep-copied into a new package: zz9 declared on each Choice. */
 	@Test
-	public void zz9MovedOrCopiedIsUndeclared() throws Exception {
+	public void zz9MovedOrCopiedIsDeclaredOnTheChoice() throws Exception {
 		for (boolean copy : new boolean[] { false, true }) {
 			WordprocessingMLPackage source = load(PROBE);
 			WordprocessingMLPackage dest = WordprocessingMLPackage.createPackage();
@@ -314,89 +410,379 @@ public class McSourcePrefixesTest {
 			assertEquals(2, ps.size());
 			for (Object p : ps) dest.getMainDocumentPart().getContent().add(copy ? XmlUtils.deepCopy(p) : p);
 			Found f = check(save(dest));
-			assertEquals((copy ? "copied: " : "moved: ") + f, counts("zz9", 2), f.undeclared);
+			assertEquals((copy ? "copied: " : "moved: ") + f, Collections.emptyMap(), f.undeclared);
+			assertEquals("Choice", f.on("zz9"));
+			assertEquals(ZZ9, declarer((Element) f.root.getElementsByTagNameNS(MCE_NS, "Choice").item(0), "zz9").lookupNamespaceURI("zz9"));
 		}
 	}
 
-	/**
-	 * Case 4c: every paragraph holding a Choice deep-copied into a new package.  wps and w14 are
-	 * declared (createPackage's part predeclares both); zz9 and shape2010 are not.
-	 *
-	 * <p>Phase 1 changes this: all declared.</p>
-	 */
+	/** Case 4c: every paragraph holding a Choice deep-copied into a new package: all declared, each where Word puts it. */
 	@Test
-	public void everyChoiceCopiedKeepsOnlyThePredeclaredPrefixes() throws Exception {
+	public void everyChoiceCopiedIsDeclared() throws Exception {
 		WordprocessingMLPackage source = load(PROBE);
 		WordprocessingMLPackage dest = WordprocessingMLPackage.createPackage();
 		for (Object p : paragraphs(source, ANY)) dest.getMainDocumentPart().getContent().add(XmlUtils.deepCopy(p));
 		Found f = check(save(dest));
-		assertEquals(f.toString(), counts("shape2010", 1, "zz9", 3), f.undeclared);
-		assertTrue(f.toString(), f.resolved.containsAll(Arrays.asList("wps", "w14")));
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("document", f.on("wps"));
+		assertEquals("document", f.on("w14"));
+		assertEquals("Choice", f.on("zz9"));
+		assertEquals("Choice", f.on("shape2010"));
 	}
 
 	// ---- section 2's Office case: Word's chartex chart
 
-	/** Word's chartex document, unmarshalled and saved: cx1 is declared on the root (the listener saw the Choice; the table knows cx1). */
+	/** Word's chartex document, unmarshalled and saved: cx1 is declared on the root (the table binds it as Word does). */
 	@Test
 	public void wordsChartexChartResavedKeepsCx1() throws Exception {
 		WordprocessingMLPackage pkg = load(WATERFALL);
 		assertEquals(1, choices(pkg.getMainDocumentPart().getJaxbElement(), c -> "cx1".equals(c.getRequires())).size());
 		Found f = check(save(pkg));
 		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("document", f.on("cx1"));
 		assertEquals(CX1, f.root.lookupNamespaceURI("cx1"));
 	}
 
 	/**
 	 * The chart's paragraph deep-copied into a new package, and moved into another loaded document
-	 * (the probe, a merge): cx1 is undeclared both ways, the destination part's prefixes being all its
-	 * marshal declares.  (Only the namespaces are checked: the chart part itself is not carried.)
-	 *
-	 * <p>Phase 1 changes this: declared on the root.</p>
+	 * (the probe, a merge): cx1 declared on the root both ways, the probe's own prefixes still where
+	 * they go.  (Only the namespaces are checked: the chart part itself is not carried.)
 	 */
 	@Test
-	public void wordsChartexChartCopiedOrMergedLosesCx1() throws Exception {
+	public void wordsChartexChartCopiedOrMergedKeepsCx1() throws Exception {
 		WordprocessingMLPackage source = load(WATERFALL);
 		WordprocessingMLPackage dest = WordprocessingMLPackage.createPackage();
 		for (Object p : paragraphs(source, ANY)) dest.getMainDocumentPart().getContent().add(XmlUtils.deepCopy(p));
 		Found copied = check(save(dest));
-		assertEquals(copied.toString(), counts("cx1", 1), copied.undeclared);
+		assertEquals(copied.toString(), Collections.emptyMap(), copied.undeclared);
+		assertEquals("document", copied.on("cx1"));
 
 		source = load(WATERFALL);
 		WordprocessingMLPackage probe = load(PROBE);
 		for (Object p : paragraphs(source, ANY)) probe.getMainDocumentPart().getContent().add(p);
 		Found merged = check(save(probe));
-		assertEquals(merged.toString(), counts("cx1", 1, "shape2010", 1, "zz9", 3), merged.undeclared);
+		assertEquals(merged.toString(), Collections.emptyMap(), merged.undeclared);
+		assertEquals("document", merged.on("cx1"));
+		assertEquals("document", merged.on("wps"));
+		assertEquals("Choice", merged.on("zz9"));
+		assertEquals("Choice", merged.on("shape2010"));
 	}
 
-	// ---- the mechanism (CR section 1.1)
+	// ---- D1 (b): a Choice's own mc:Ignorable and mc:MustUnderstand
+
+	/** A Choice's own mc:Ignorable and mc:MustUnderstand follow the Requires rule on that Choice: a private prefix on the Choice, a table prefix on the root. */
+	@Test
+	public void aChoicesOwnIgnorableAndMustUnderstandAreDeclared() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().getContent().add(XmlUtils.unmarshalString(paragraphWithChoice(
+				"Requires=\"wps\" mc:Ignorable=\"zz9\" mc:MustUnderstand=\"w14\"",
+				"xmlns:zz9=\"" + ZZ9 + "\" xmlns:wps=\"" + WPS + "\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\"",
+				"<w:t>c</w:t>")));
+		Found f = check(save(pkg));
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("document", f.on("wps"));
+		assertEquals("document", f.on("w14"));
+		assertEquals("Choice", f.on("zz9"));
+	}
+
+	// ---- D3: the source's binding first; a clash with the Choice's own content
 
 	/**
-	 * What a load records: the part keeps the Choices' prefixes as strings, which the table resolves
-	 * at marshal, and each Choice the URIs its Requires resolved to, which nothing reads at marshal.
-	 * The table has no zz9.
+	 * A table prefix the source bound to another namespace ({@code x}: Excel's VML binds it to
+	 * urn:schemas-microsoft-com:office:excel; the table maps it to SpreadsheetML main) is declared
+	 * on the Choice with the source's binding, as long as the Choice's content does not use the
+	 * table's namespace; where it does, a declaration there would rebind that content, so the
+	 * content's binding stands (a warning is logged) and the prefix resolves to the table's.
 	 */
 	@Test
-	public void aLoadRecordsPrefixesOnThePartAndBindingsOnTheChoice() throws Exception {
+	public void aTablePrefixTheSourceBoundOtherwise() throws Exception {
+		assertEquals(SML, new NamespacePrefixMappings().getNamespaceURI("x"));
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().getContent().add(XmlUtils.unmarshalString(
+				paragraphWithChoice("Requires=\"x\"", "xmlns:x=\"" + EXCEL_VML + "\"", "<w:t>c</w:t>")));
+		byte[] docx = save(pkg);
+		Found f = check(docx);
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("Choice", f.on("x"));
+		Element choice = (Element) f.root.getElementsByTagNameNS(MCE_NS, "Choice").item(0);
+		assertEquals(EXCEL_VML, choice.lookupNamespaceURI("x"));
+
+		// the clash: the Choice's content is in the namespace the table binds x to
+		pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().getContent().add(XmlUtils.unmarshalString(
+				paragraphWithChoice("Requires=\"x\"", "xmlns:x=\"" + EXCEL_VML + "\" xmlns:s=\"" + SML + "\"",
+						"<s:sheetData/>")));
+		docx = save(pkg);
+		f = check(docx);
+		choice = (Element) f.root.getElementsByTagNameNS(MCE_NS, "Choice").item(0);
+		assertFalse("not rebound on the Choice: " + f, EXCEL_VML.equals(choice.lookupNamespaceURI("x")));
+		String content = XmlUtils.w3CDomNodeToString(choice);
+		assertTrue("the content keeps its namespace: " + content, content.contains(SML));
+	}
+
+	/**
+	 * A Choice inside a content control that is itself directly in a branch (CR-051 section 11.3
+	 * binds such a control from its DOM element once the read is over): its bindings are recorded
+	 * from that element, on the StAX path, the DOM path and the binder path alike.
+	 */
+	@Test
+	public void aChoiceInsideABranchControlIsRecordedAndDeclared() throws Exception {
+		String inner = "<mc:AlternateContent xmlns:zz9=\"" + ZZ9 + "\"><mc:Choice Requires=\"zz9\"><w:r><w:t>in</w:t></w:r></mc:Choice>"
+				+ "<mc:Fallback><w:r><w:t>out</w:t></w:r></mc:Fallback></mc:AlternateContent>";
+		String sdt = "<w:sdt><w:sdtPr><w:tag w:val=\"t\"/></w:sdtPr><w:sdtContent><w:r><w:t>s</w:t></w:r>" + inner + "</w:sdtContent></w:sdt>";
+		String p = paragraphWithChoice("Requires=\"wps\"", "xmlns:wps=\"" + WPS + "\"", sdt);
+		String xml = rootIgnorableZz9().replace("</w:body>", p + "</w:body>");
+
+		// the StAX path
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(withDocument(xml)));
+		pkg.getMainDocumentPart().getContent();
+		List<AlternateContent.Choice> zz9 = choices(pkg.getMainDocumentPart().getJaxbElement(), ZZ9_ONLY);
+		assertEquals(1, zz9.size());
+		assertEquals(Collections.singletonMap("zz9", ZZ9), McSourceBindings.of(zz9.get(0)));
+		Found f = check(save(pkg));
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("declared once, on the root, which names it in mc:Ignorable", "document", f.on("zz9"));
+
+		// the same without the root's Ignorable naming zz9: on the inner Choice
+		String xml2 = xml.replace("mc:Ignorable=\"zz9 ", "mc:Ignorable=\"").replace("mc:Ignorable=\"zz9\"", "")
+				.replace("xmlns:zz9=\"" + ZZ9 + "\" ", "");
+		assertFalse(xml2.substring(0, xml2.indexOf("<w:body>")), xml2.substring(0, xml2.indexOf("<w:body>")).contains("zz9"));
+		pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(withDocument(xml2)));
+		pkg.getMainDocumentPart().getContent();
+		f = check(save(pkg));
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("Choice", f.on("zz9"));
+
+		// the DOM path
+		org.docx4j.wml.Document doc = (org.docx4j.wml.Document) XmlUtils.unmarshalString(xml2);
+		zz9 = choices(doc, ZZ9_ONLY);
+		assertEquals(1, zz9.size());
+		assertEquals(Collections.singletonMap("zz9", ZZ9), McSourceBindings.of(zz9.get(0)));
+
+		// the binder path
+		String key = "docx4j.openpackaging.parts.JaxbXmlPartXPathAware.binder.eager.MainDocumentPart";
+		boolean before = Docx4jProperties.getProperty(key, false);
+		Docx4jProperties.setProperty(key, true);
+		try {
+			pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(withDocument(xml2)));
+			pkg.getMainDocumentPart().getContent();
+			f = check(save(pkg));
+			assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+			assertEquals("Choice", f.on("zz9"));
+		} finally {
+			Docx4jProperties.setProperty(key, before);
+		}
+	}
+
+	/**
+	 * A prefix the root binds one way (a source-only binding, so a pair on the root) and a Choice's
+	 * source bound another: the Choice gets its own declaration, unless its content uses the root's
+	 * namespace through that prefix (content moved in from a document where the root bound it so),
+	 * which a declaration on the Choice would rebind; then the content's binding stands.
+	 */
+	@Test
+	public void aChoiceDoesNotRebindAPrefixItsContentUsesAsTheRootBindsIt() throws Exception {
+		String x = "http://example.com/x", y = "http://example.com/y";
+		String xml = rootIgnorableZz9().replace("xmlns:zz9=\"" + ZZ9 + "\"", "xmlns:zz9=\"" + x + "\"");
+		xml = xml.replace("</w:body>", paragraphWithChoice("Requires=\"zz9\"", "xmlns:zz9=\"" + y + "\"", "<w:t>c</w:t>") + "</w:body>");
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(withDocument(xml)));
+		pkg.getMainDocumentPart().getContent();
+		Found f = check(save(pkg));
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals(x, f.root.lookupNamespaceURI("zz9"));
+		Element choice = (Element) f.root.getElementsByTagNameNS(MCE_NS, "Choice").item(0);
+		assertEquals("the Choice's own binding", y, choice.lookupNamespaceURI("zz9"));
+
+		// content in the root's namespace, by the prefix the root binds (as content moved in from
+		// a document that bound zz9 so would be): a DOM element with no declaration of its own
+		AlternateContent.Choice c = choices(pkg.getMainDocumentPart().getJaxbElement(), ZZ9_ONLY).get(0);
+		Element thing = parse(("<zz9:thing xmlns:zz9=\"" + x + "\"/>").getBytes(StandardCharsets.UTF_8));
+		thing.removeAttributeNS("http://www.w3.org/2000/xmlns/", "zz9");
+		assertEquals(x, thing.getNamespaceURI());
+		c.getAny().clear();
+		c.getAny().add(thing);
+		f = check(save(pkg));
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("document", f.on("zz9"));
+		choice = (Element) f.root.getElementsByTagNameNS(MCE_NS, "Choice").item(0);
+		assertEquals("the content's binding stands", x, choice.lookupNamespaceURI("zz9"));
+		Node first = choice.getFirstChild();
+		while (first != null && !(first instanceof Element)) first = first.getNextSibling(); // past the indentation
+		assertNotNull(first);
+		assertEquals(x, first.getNamespaceURI());
+	}
+
+	/** The stream writer: a declaration the plan puts on a Choice gives way to the marshaller's own binding of that prefix. */
+	@Test
+	public void theWriterLetsTheMarshallersBindingStand() throws Exception {
+		java.io.StringWriter sw = new java.io.StringWriter();
+		org.docx4j.utils.XMLStreamWriterWrapper w = new org.docx4j.utils.XMLStreamWriterWrapper(null,
+				javax.xml.stream.XMLOutputFactory.newFactory().createXMLStreamWriter(sw));
+		w.declareOnNextStartElement(Collections.singletonMap("p", "urn:one"));
+		w.writeStartElement("mc", "Choice", MCE_NS);
+		w.writeNamespace("mc", MCE_NS);
+		w.writeNamespace("p", "urn:two"); // the marshaller's, for content it writes as p:
+		w.writeAttribute("Requires", "p");
+		w.writeStartElement("p", "e", "urn:two");
+		w.writeEndElement();
+		w.writeEndElement();
+		w.close();
+		String out = sw.toString();
+		assertTrue(out, out.contains("xmlns:p=\"urn:two\""));
+		assertFalse(out, out.contains("urn:one"));
+		assertEquals(out, 1, out.split("xmlns:p=").length - 1);
+
+		// and the same binding twice is written once
+		sw = new java.io.StringWriter();
+		w = new org.docx4j.utils.XMLStreamWriterWrapper(null, javax.xml.stream.XMLOutputFactory.newFactory().createXMLStreamWriter(sw));
+		w.declareOnNextStartElement(Collections.singletonMap("p", "urn:one"));
+		w.writeStartElement("mc", "Choice", MCE_NS);
+		w.writeNamespace("p", "urn:one");
+		w.writeEndElement();
+		w.close();
+		assertEquals(sw.toString(), 1, sw.toString().split("xmlns:p=").length - 1);
+	}
+
+	// ---- every marshal path (section 4.1)
+
+	/** The paragraphs of the probe with a private prefix, in a package of their own. */
+	private static WordprocessingMLPackage zz9Package() throws Exception {
+		WordprocessingMLPackage source = load(PROBE);
+		WordprocessingMLPackage dest = WordprocessingMLPackage.createPackage();
+		for (Object p : paragraphs(source, ANY)) dest.getMainDocumentPart().getContent().add(p);
+		return dest;
+	}
+
+	/** getXML() and XmlUtils' marshal to a String declare on the Choice too. */
+	@Test
+	public void marshalToStringDeclaresOnTheChoice() throws Exception {
+		MainDocumentPart mdp = zz9Package().getMainDocumentPart();
+		Found f = check(parse(mdp.getXML().getBytes(StandardCharsets.UTF_8)));
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("Choice", f.on("zz9"));
+		assertEquals("Choice", f.on("shape2010"));
+		assertEquals("document", f.on("wps"));
+
+		// the stream route writes the declaration the default path writes
+		String whole = XmlUtils.marshaltoString(mdp.getJaxbElement(), false, false);
+		assertTrue(whole.substring(0, 80), whole.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"));
+		assertEquals(1, whole.split("<\\?xml").length - 1);
+
+		// a fragment: the paragraph alone, its Choice naming zz9
+		Object p = paragraphs(zz9Package(), ZZ9_ONLY).get(0);
+		String xml = XmlUtils.marshaltoString(p, true, false);
+		assertTrue(xml, xml.contains("<mc:Choice xmlns:zz9=\"" + ZZ9 + "\" Requires=\"zz9\">"));
+		// and not pretty-printed inside w:t
+		assertTrue(xml, xml.contains("<w:t>") || xml.contains("<w:t xml:space=\"preserve\">"));
+
+		// the variant for an object without @XmlRootElement
+		String xml2 = XmlUtils.marshaltoString(XmlUtils.unwrap(p), true, true, Context.jc, W_NS, "p", P.class);
+		assertTrue(xml2, xml2.contains("xmlns:zz9=\"" + ZZ9 + "\" Requires=\"zz9\""));
+	}
+
+	/** A marshal to a DOM (the binder's, the XSLT pathways') declares on the Choice. */
+	@Test
+	public void marshalToDomDeclaresOnTheChoice() throws Exception {
+		MainDocumentPart mdp = zz9Package().getMainDocumentPart();
+		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(mdp.getJaxbElement());
+		Found f = check(doc.getDocumentElement());
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("Choice", f.on("zz9"));
+		assertEquals("document", f.on("wps"));
+
+		org.w3c.dom.Document doc2 = XmlUtils.neww3cDomDocument();
+		mdp.marshal(doc2);
+		f = check(doc2.getDocumentElement());
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("Choice", f.on("zz9"));
+
+		// and the stream the pipe reads
+		Found piped = check(parse(XmlUtils.marshaltoInputStream(mdp.getJaxbElement(), false, Context.jc).readAllBytes()));
+		assertEquals("Choice", piped.on("zz9"));
+	}
+
+	/** The Flat OPC form (trimmed namespaces) keeps a Choice's own declaration. */
+	@Test
+	public void flatOpcDeclaresOnTheChoice() throws Exception {
+		WordprocessingMLPackage pkg = zz9Package();
+		FlatOpcXmlCreator creator = new FlatOpcXmlCreator(pkg);
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		creator.marshal(os);
+		Element flat = parse(os.toByteArray());
+		Element document = (Element) flat.getElementsByTagNameNS(W_NS, "document").item(0);
+		assertNotNull(document);
+		Found f = check(document);
+		assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+		assertEquals("Choice", f.on("zz9"));
+		assertEquals("Choice", f.on("shape2010"));
+	}
+
+	/** The binder path (the XPath-aware part's eager binder) records the bindings from its DOM and declares them. */
+	@Test
+	public void theBinderPathRecordsAndDeclares() throws Exception {
+		String key = "docx4j.openpackaging.parts.JaxbXmlPartXPathAware.binder.eager.MainDocumentPart";
+		boolean before = Docx4jProperties.getProperty(key, false);
+		Docx4jProperties.setProperty(key, true);
+		try {
+			WordprocessingMLPackage pkg = load(PROBE);
+			pkg.getMainDocumentPart().getContent();
+			assertNotNull("a binder", pkg.getMainDocumentPart().getBinder());
+			List<AlternateContent.Choice> zz9 = choices(pkg.getMainDocumentPart().getJaxbElement(), ZZ9_ONLY);
+			assertEquals(2, zz9.size());
+			for (AlternateContent.Choice c : zz9) assertEquals(Collections.singletonList(ZZ9), McSelection.requiresNamespaces(c));
+			Found f = check(save(pkg));
+			assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+			assertEquals("Choice", f.on("zz9"));
+			assertEquals("Choice", f.on("shape2010"));
+			assertEquals("document", f.on("wps"));
+		} finally {
+			Docx4jProperties.setProperty(key, before);
+		}
+	}
+
+	/** A document saved twice (the canonicalizing path) still declares where Word does. */
+	@Test
+	public void theCanonicalizingPathDeclares() throws Exception {
+		boolean before = Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false);
+		Docx4jProperties.setProperty("docx4j.jaxb.marshal.canonicalize", true);
+		try {
+			Found f = check(save(zz9Package()));
+			assertEquals(f.toString(), Collections.emptyMap(), f.undeclared);
+			assertEquals("Choice", f.on("zz9"));
+			assertEquals("document", f.on("wps"));
+		} finally {
+			Docx4jProperties.setProperty("docx4j.jaxb.marshal.canonicalize", before);
+		}
+	}
+
+	// ---- the mechanism (CR section 1.1, as it now is)
+
+	/** What a load records: each Choice's bindings, and the root's. */
+	@Test
+	public void aLoadRecordsTheBindingsOnTheChoiceAndTheRoot() throws Exception {
 		WordprocessingMLPackage pkg = load(PROBE);
 		pkg.getMainDocumentPart().getContent();
-		List<String> partPrefixes = Arrays.asList(pkg.getMainDocumentPart().getMcChoiceNamespaces().trim().split("\\s+"));
-		assertTrue(partPrefixes.toString(), partPrefixes.containsAll(Arrays.asList("zz9", "shape2010", "wps", "w14")));
 		String table = new NamespacePrefixMappings().getNamespaceURI("zz9");
 		assertTrue("the table has no zz9: " + table, table == null || table.isEmpty());
 
 		List<AlternateContent.Choice> zz9 = choices(pkg.getMainDocumentPart().getJaxbElement(), ZZ9_ONLY);
 		assertEquals(2, zz9.size());
-		for (AlternateContent.Choice c : zz9) assertEquals(Collections.singletonList(ZZ9), McSelection.requiresNamespaces(c));
+		for (AlternateContent.Choice c : zz9) {
+			assertEquals(Collections.singletonList(ZZ9), McSelection.requiresNamespaces(c));
+			assertEquals(Collections.singletonMap("zz9", ZZ9), McSourceBindings.of(c));
+		}
+		AlternateContent.Choice both = choices(pkg.getMainDocumentPart().getJaxbElement(), c -> "wps zz9".equals(c.getRequires())).get(0);
+		assertEquals(Arrays.asList(WPS, ZZ9), McSelection.requiresNamespaces(both));
+
+		Map<String, String> root = McSourceBindings.of(pkg.getMainDocumentPart().getJaxbElement());
+		assertNotNull("the root's Ignorable bindings", root);
+		assertEquals("http://schemas.microsoft.com/office/word/2010/wordml", root.get("w14"));
+		assertEquals("http://schemas.microsoft.com/office/word/2012/wordml", root.get("w15"));
 	}
 
-	/**
-	 * A move keeps the Choice's record (the same object); a deep copy does not, so the copy's Requires
-	 * resolves through the table, to nothing for zz9.
-	 *
-	 * <p>Phase 1 changes the copy (D2 (a)): the copy carries the record.</p>
-	 */
+	/** A move keeps the Choice's record (the same object); a deep copy carries it (D2 (a)). */
 	@Test
-	public void aDeepCopyLosesTheChoicesRecord() throws Exception {
+	public void aDeepCopyCarriesTheChoicesRecord() throws Exception {
 		WordprocessingMLPackage pkg = load(PROBE);
 		Object p = paragraphs(pkg, ZZ9_ONLY).get(0);
 		AlternateContent.Choice moved = choices(XmlUtils.unwrap(p), ZZ9_ONLY).get(0);
@@ -404,6 +790,37 @@ public class McSourcePrefixesTest {
 
 		AlternateContent.Choice copied = choices(XmlUtils.unwrap(XmlUtils.deepCopy(p)), ZZ9_ONLY).get(0);
 		assertEquals("zz9", copied.getRequires());
-		assertNull(McSelection.requiresNamespaces(copied).get(0));
+		assertEquals(Collections.singletonList(ZZ9), McSelection.requiresNamespaces(copied));
+
+		// the element itself copied
+		AlternateContent ac = (AlternateContent) moved.getParent();
+		AlternateContent acCopy = XmlUtils.deepCopy(ac);
+		assertEquals(Collections.singletonList(ZZ9), McSelection.requiresNamespaces(acCopy.getChoice().get(0)));
+		// and a Choice on its own
+		assertEquals(Collections.singletonList(ZZ9), McSelection.requiresNamespaces(XmlUtils.deepCopy(moved)));
+		// and the root
+		org.docx4j.wml.Document docCopy = XmlUtils.deepCopy(pkg.getMainDocumentPart().getJaxbElement());
+		assertNotNull(McSourceBindings.of(docCopy));
+	}
+
+	/** The plan a marshal of the probe makes, read directly. */
+	@Test
+	public void thePlanPlacesEachPrefix() throws Exception {
+		WordprocessingMLPackage pkg = load(PROBE);
+		MainDocumentPart mdp = pkg.getMainDocumentPart();
+		McDeclarations.Plan plan = McDeclarations.plan(mdp.getJaxbElement(), mdp.getMcChoiceNamespaces());
+		assertTrue(plan.toString(), plan.declaresOnChoices());
+		assertEquals(plan.toString(), Collections.emptySet(), plan.undeclared());
+		assertTrue(plan.toString(), Arrays.asList(plan.tablePrefixes().split(" ")).containsAll(Arrays.asList("w14", "w15", "wps")));
+		assertEquals(Collections.emptyMap(), plan.rootPairs());
+		assertFalse(plan.onRoot().containsKey("zz9"));
+		int onChoice = 0;
+		for (AlternateContent.Choice c : choices(mdp.getJaxbElement(), ANY)) {
+			Map<String, String> d = plan.onChoice(c);
+			if (d == null) continue;
+			onChoice++;
+			for (String p : d.keySet()) assertTrue(p, p.equals("zz9") || p.equals("shape2010"));
+		}
+		assertEquals(4, onChoice);
 	}
 }

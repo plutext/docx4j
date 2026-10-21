@@ -254,6 +254,8 @@ public class FlatOpcXmlCreator implements Output {
 	private byte[] marshalBytes(Object o, JAXBContext jc, String ignorables) {
 		McIgnorableNamespaceDeclarator declarator = null;
 		String previous = null;
+		java.util.Map<String, String> previousPairs = null;
+		boolean pairsInstalled = false;
 		try {
 
 			Marshaller marshaller = jc.createMarshaller();
@@ -262,10 +264,19 @@ public class FlatOpcXmlCreator implements Output {
 					NamespacePrefixMapperUtils.getPrefixMapper());	
 			declarator = (McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper();
 			previous = declarator.getMcIgnorable(); // put back in the finally (CR-049)
-			declarator.setMcIgnorable(ignorables);
+
+			// every prefix the tree's mc attributes name, placed from the tree (CR-052)
+			org.docx4j.jaxb.McDeclarations.Plan plan = org.docx4j.jaxb.McDeclarations.plan(o, ignorables);
+			declarator.setMcIgnorable(plan.tablePrefixes());
+			previousPairs = org.docx4j.jaxb.McDeclarations.installRootPairs(plan.rootPairs());
+			pairsInstalled = true;
 			
 			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
-			marshaller.marshal(o, doc);
+			if (plan.declaresOnChoices()) {
+				org.docx4j.jaxb.McDeclarations.marshal(marshaller, o, plan, doc, false, false, false);
+			} else {
+				marshaller.marshal(o, doc);
+			}
 			
 			// For FlatOPC, always canonicalize, since we want to
 			// trim namespaces to make the file as small as possible
@@ -275,7 +286,8 @@ public class FlatOpcXmlCreator implements Output {
 //			if (true /* always canonicalize! */
 //					|| Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
 
-			return XmlUtils.trimNamespaces(doc, ignorables);
+			// every declared prefix inclusive, so a Choice's own declaration stays on the Choice
+			return XmlUtils.trimNamespaces(doc, plan.allPrefixes());
 				
 				//log.debug(new String(bytes, "UTF-8"));
 				
@@ -296,6 +308,7 @@ public class FlatOpcXmlCreator implements Output {
 		    throw new RuntimeException(e);
 		} finally {
 			if (declarator!=null) declarator.setMcIgnorable(previous);
+			if (pairsInstalled) org.docx4j.jaxb.McDeclarations.restoreRootPairs(previousPairs);
 		}
 	}
 	
@@ -332,6 +345,7 @@ public class FlatOpcXmlCreator implements Output {
 	        partResult.setXmlData(dataResult);
 			
 			String mceIgnorable = ((JaxbXmlPart)part).getMceIgnorable(); 
+			if (mceIgnorable == null) mceIgnorable = ""; // a root with no mc:Ignorable (before CR-052, the token "null" was warned about)
 
 			try {
 //				w3cDoc = XmlUtils.getNewDocumentBuilder().newDocument();
@@ -489,6 +503,7 @@ public class FlatOpcXmlCreator implements Output {
 	        partResult.setXmlData(dataResult);
 			
 			String mceIgnorable = ((JaxbXmlPart)part).getMceIgnorable(); 
+			if (mceIgnorable == null) mceIgnorable = ""; // a root with no mc:Ignorable (before CR-052, the token "null" was warned about)
 
 			try {
 

@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.io.Writer;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -74,7 +75,9 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JAXBAssociation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.jaxb.McBranchSdt;
+import org.docx4j.jaxb.McDeclarations;
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
+import org.docx4j.jaxb.McSourceBindings;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;
@@ -492,7 +495,8 @@ public class XmlUtils {
 //			eventHandler.setContinue(false);
 //		}
 		u.setEventHandler(eventHandler);
-		McBranchSdt.Collector collector = new McBranchSdt.Collector();
+		// the reader's context records each Choice's and the root's mc bindings (CR-052)
+		McBranchSdt.Collector collector = new McBranchSdt.Collector(xsr);
 		u.setListener(collector);
 		try {
 			o = u.unmarshal( xsr );
@@ -581,6 +585,7 @@ public class XmlUtils {
 				McBranchSdt.Collector collector = new McBranchSdt.Collector();
 				u.setListener(collector);
 				o = u.unmarshal( document, declaredType );
+				McSourceBindings.recordFromDom(o, document.getDocumentElement(), collector.takeChoices()); // CR-052, before the rebind binds the controls' own
 				McBranchSdt.rebindAll(collector, u);
 			}
 		} catch (Exception e) {
@@ -624,6 +629,9 @@ public class XmlUtils {
 			}
 			McBranchSdt.rename(document); // CR-051 section 11.3
 			Object o = u.unmarshal( document );
+			// what the DOM declares for the root's and each Choice's mc prefixes (CR-052, D5), before
+			// the rebind binds the controls in branches, whose Choices are recorded as each is bound
+			McSourceBindings.recordFromDom(o, document.getDocumentElement(), collector.takeChoices());
 			McBranchSdt.rebindAll(collector, u);
 			return o;
 			
@@ -710,6 +718,7 @@ public class XmlUtils {
 		java.util.List<org.w3c.dom.Element> renamed = McBranchSdt.rename(n);
 		try {
 			Object o = u.unmarshal( n );
+			McSourceBindings.recordFromDom(o, elementOf(n), collector.takeChoices()); // CR-052, before the rebind
 			McBranchSdt.rebindAll(collector, u);
 			return o;
 		} finally {
@@ -734,6 +743,7 @@ public class XmlUtils {
 		Object o;
 		try {
 			o = u.unmarshal(n, declaredType);
+			McSourceBindings.recordFromDom(o, elementOf(n), collector.takeChoices()); // CR-052, before the rebind
 			McBranchSdt.rebindAll(collector, u);
 		} finally {
 			McBranchSdt.restore(renamed);
@@ -745,6 +755,13 @@ public class XmlUtils {
 		}
 	}
 	
+	/** The element a DOM unmarshal read: the node itself, or a document's element. */
+	private static org.w3c.dom.Element elementOf(Node n) {
+		if (n instanceof org.w3c.dom.Document) return ((org.w3c.dom.Document) n).getDocumentElement();
+		if (n instanceof org.w3c.dom.Element) return (org.w3c.dom.Element) n;
+		return null;
+	}
+
     /**
 	 * Give a string of wml containing ${key1}, ${key2}, return a suitable
 	 * object.  
@@ -847,33 +864,39 @@ public class XmlUtils {
 	}
 	
 	/**
-	 * Sets the prefix mapper's Ignorable value for a marshal of {@code o}: the prefixes its root's
-	 * {@code mc:Ignorable} names (any root whose class has {@code getIgnorable()}, a
-	 * {@code JAXBElement} unwrapped first: CR-024's general rule, which the part path applies), then
-	 * the Choice namespaces the caller passes.  A root with neither sets null, so that the marshal
-	 * declares nothing borrowed from an enclosing marshal or from the thread.  The caller restores
-	 * the value it found when its marshal is done ({@link McIgnorableNamespaceDeclarator#getMcIgnorable()}).
+	 * The one marshal behind {@code marshaltoString}, {@code marshaltoInputStream} and
+	 * {@code marshaltoW3CDomDocument} (CR-052): the prefixes the tree's {@code mc} attributes name
+	 * are placed from the tree ({@link McDeclarations#plan}), the root's through the prefix mapper
+	 * as before (its Ignorable value, set here in place of {@link #setMcIgnorable}; the caller
+	 * restores what it found), a Choice's own on the Choice through an {@code XMLStreamWriter}
+	 * where one is needed.
 	 *
-	 * <p>Before 17.3.4 (CR-049) this knew only {@code wml.Document}: any other root set nothing, its
-	 * Choice namespaces were dropped, and nothing was put back, so every later marshal on the thread
-	 * declared the last document's prefixes.</p>
-	 *
-	 * @return the value set (the namespaces {@link #trimNamespaces} keeps), or null
-	 * @since 3.1.1
+	 * @param o the object (what the plan reads)
+	 * @param root what is marshalled: {@code o}, or a {@code JAXBElement} wrapping it
+	 * @param target a {@link Writer}, an {@link OutputStream} or a DOM {@link Node}
+	 * @return the plan, whose {@link McDeclarations.Plan#allPrefixes()} a canonicalizer keeps
 	 */
-	private static String setMcIgnorable(McIgnorableNamespaceDeclarator prefixMapper, Object o, 
-			String mcChoiceNamespace ) {
-
-		String ignorables = NamespacePrefixMapperUtils.ignorableOf(o);
-		if (mcChoiceNamespace!=null) {
-			if (ignorables==null) {
-				ignorables = mcChoiceNamespace; 					
+	private static McDeclarations.Plan marshal(Marshaller m, Object o, Object root, String mcChoiceNamespace,
+			McIgnorableNamespaceDeclarator declarator, boolean prettyprint, Object target) throws Exception {
+		McDeclarations.Plan plan = McDeclarations.plan(o, mcChoiceNamespace);
+		declarator.setMcIgnorable(plan.tablePrefixes());
+		Map<String, String> previousPairs = McDeclarations.installRootPairs(plan.rootPairs());
+		try {
+			if (plan.declaresOnChoices()) {
+				if (target instanceof Writer) McDeclarations.marshal(m, root, plan, (Writer) target, prettyprint, false, false);
+				else if (target instanceof OutputStream) McDeclarations.marshal(m, root, plan, (OutputStream) target, prettyprint, false, false);
+				else McDeclarations.marshal(m, root, plan, (Node) target, prettyprint, false, false);
+			} else if (target instanceof Writer) {
+				m.marshal(root, (Writer) target);
+			} else if (target instanceof OutputStream) {
+				m.marshal(root, (OutputStream) target);
 			} else {
-				ignorables = ignorables + mcChoiceNamespace; 					
+				m.marshal(root, (Node) target);
 			}
+		} finally {
+			McDeclarations.restoreRootPairs(previousPairs);
 		}
-		prefixMapper.setMcIgnorable(ignorables);
-		return ignorables;
+		return plan;
 	}
 	
 	/** Removes superflouous namespaces.
@@ -893,7 +916,7 @@ public class XmlUtils {
     		
     		Init.init();
     		Canonicalizer c = Canonicalizer.getInstance(CanonicalizationMethod.EXCLUSIVE);
-    		return  c.canonicalizeSubtree(doc, ignorables);
+    		return  c.canonicalizeSubtree(doc, ignorables == null ? "" : ignorables);
 
 	}
 	
@@ -939,10 +962,6 @@ public class XmlUtils {
 					NamespacePrefixMapperUtils.getPrefixMapper());	
 			declarator = (McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper();
 			previous = declarator.getMcIgnorable(); // put back in the finally (CR-049)
-			String ignorables = setMcIgnorable(declarator, o, mcChoiceNamespace);
-			
-			// WARNING: that won't guarantee you have all the top level declarations you need
-			// if you are using MOXy. This is a TODO, using XMLStreamWriterWrapper 
 			
 			if (prettyprint) {
 				m.setProperty("jaxb.formatted.output", true);
@@ -970,13 +989,13 @@ public class XmlUtils {
 			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
 				
 				org.w3c.dom.Document doc = marshaltoW3CDomDocument( o,  jc, mcChoiceNamespace); // the Choice prefixes too (CR-049)
-				byte[] bytes = trimNamespaces(doc, ignorables);
+				byte[] bytes = trimNamespaces(doc, McDeclarations.plan(o, mcChoiceNamespace).allPrefixes());
 				
 				return new String(bytes, "UTF-8"); 
 				
 			} else {
 				StringWriter sWriter = new StringWriter();
-				m.marshal(o, sWriter);
+				marshal(m, o, o, mcChoiceNamespace, declarator, prettyprint, sWriter); // CR-052
 				return sWriter.toString();
 			}
 			
@@ -1022,7 +1041,6 @@ public class XmlUtils {
 					NamespacePrefixMapperUtils.getPrefixMapper());	
 			declarator = (McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper();
 			previous = declarator.getMcIgnorable(); // put back in the finally (CR-049)
-			String ignorables = setMcIgnorable(declarator, o, mcChoiceNamespace);
 			
 			if (prettyprint) {
 				m.setProperty("jaxb.formatted.output", true);
@@ -1035,7 +1053,7 @@ public class XmlUtils {
 			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
 				
 				org.w3c.dom.Document doc = marshaltoW3CDomDocument( o,  jc, uri, local, declaredType, mcChoiceNamespace); // the Choice prefixes too (CR-049)
-				byte[] bytes = trimNamespaces(doc, ignorables);
+				byte[] bytes = trimNamespaces(doc, McDeclarations.plan(o, mcChoiceNamespace).allPrefixes());
 				
 				return new String(bytes, "UTF-8"); 
 				
@@ -1043,9 +1061,8 @@ public class XmlUtils {
 			
 				StringWriter sWriter = new StringWriter();
 	
-				m.marshal( 
-						new JAXBElement(new QName(uri,local), declaredType, o ),
-						sWriter);
+				marshal(m, o, new JAXBElement(new QName(uri,local), declaredType, o ),
+						mcChoiceNamespace, declarator, prettyprint, sWriter); // CR-052
 	
 				return sWriter.toString();
 			}
@@ -1089,19 +1106,18 @@ public class XmlUtils {
 					NamespacePrefixMapperUtils.getPrefixMapper());
 			declarator = (McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper();
 			previous = declarator.getMcIgnorable(); // put back in the finally (CR-049)
-			String ignorables = setMcIgnorable(declarator, o, mcChoiceNamespace);
 						
 			if (suppressDeclaration) {
 				m.setProperty(Marshaller.JAXB_FRAGMENT,true);
 			}
 			
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			m.marshal(o, os);			
+			McDeclarations.Plan plan = marshal(m, o, o, mcChoiceNamespace, declarator, false, os); // CR-052
 
 			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
 
 				org.w3c.dom.Document doc = marshaltoW3CDomDocument( o,  jc, mcChoiceNamespace); // the Choice prefixes too (CR-049)
-				byte[] bytes = trimNamespaces(doc, ignorables);
+				byte[] bytes = trimNamespaces(doc, plan.allPrefixes());
 				return new java.io.ByteArrayInputStream(bytes);
 				
 			} else {
@@ -1148,14 +1164,13 @@ public class XmlUtils {
 					NamespacePrefixMapperUtils.getPrefixMapper());	
 			declarator = (McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper();
 			previous = declarator.getMcIgnorable(); // put back in the finally (CR-049)
-			String ignorables = setMcIgnorable(declarator, o, mcChoiceNamespace);
 			
 			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
-			marshaller.marshal(o, doc);
+			McDeclarations.Plan plan = marshal(marshaller, o, o, mcChoiceNamespace, declarator, false, doc); // CR-052
 
 			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
 
-				byte[] bytes = trimNamespaces(doc, ignorables);
+				byte[] bytes = trimNamespaces(doc, plan.allPrefixes());
 				
 				//log.debug(new String(bytes, "UTF-8"));
 				/*MOXy issue where it looks like trimNamespaces drops w namespace!
@@ -1209,18 +1224,16 @@ public class XmlUtils {
 					NamespacePrefixMapperUtils.getPrefixMapper());			
 			declarator = (McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper();
 			previous = declarator.getMcIgnorable(); // put back in the finally (CR-049)
-			String ignorables = setMcIgnorable(declarator, o, mcChoiceNamespace);
 
 			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
 			// See http://weblogs.java.net/blog/kohsuke/archive/2006/03/why_does_jaxb_p.html
-			marshaller.marshal( 
-					new JAXBElement(new QName(uri,local), declaredType, o ),
-					doc);
+			McDeclarations.Plan plan = marshal(marshaller, o, new JAXBElement(new QName(uri,local), declaredType, o ),
+					mcChoiceNamespace, declarator, false, doc); // CR-052
 
 			
 			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
 
-				byte[] bytes = trimNamespaces(doc, ignorables);
+				byte[] bytes = trimNamespaces(doc, plan.allPrefixes());
 				
 				DocumentBuilder builder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder();
 				return builder.parse(new ByteArrayInputStream(bytes));
@@ -1344,6 +1357,7 @@ public class XmlUtils {
 			return deepCopyClassic(value, Context.getJAXBContext(wrapped));	
 		}
 		Object copy = ((Copyable) wrapped).copy();
+		McSourceBindings.carryTopLevel(wrapped, copy); // the record kept beside the object follows it (CR-052)
 		if (value instanceof JAXBElement<?>) {
 			JAXBElement<?> jaxbElementValue = (JAXBElement<?>) value;
 			JAXBElement jaxbElementCopy = new JAXBElement(jaxbElementValue.getName(), jaxbElementValue.getDeclaredType(), jaxbElementValue.getScope(), copy);

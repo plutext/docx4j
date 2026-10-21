@@ -282,13 +282,8 @@ public class NamespacePrefixMapperUtils {
      */
     public static String[] getPreDeclaredNamespaceUris2(String mcIgnorable) {
 
-    	if (mcIgnorable==null) {
-    		return EMPTY_STRING;
-    	}
     	java.util.List<String> pairs = new java.util.ArrayList<String>();
-		StringTokenizer st = new StringTokenizer(mcIgnorable, " ");
-		while (st.hasMoreTokens()) {
-			String prefix = st.nextToken();
+		for (String prefix : McSourceBindings.prefixes(mcIgnorable)) {
 			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
 			if (uri==null || uri.contentEquals(XMLConstants.NULL_NS_URI)) {
 				continue;  // warned about in getPreDeclaredNamespaceUris
@@ -297,6 +292,14 @@ public class NamespacePrefixMapperUtils {
 			if (!prefix.equals(preferred)) {
 				pairs.add(prefix);
 				pairs.add(uri);
+			}
+		}
+		// the root declarations the table does not give, with the source's binding (CR-052):
+		// a producer's private prefix the root's mc:Ignorable names, planned by McDeclarations
+		for (Map.Entry<String, String> e : McDeclarations.currentRootPairs().entrySet()) {
+			if (!pairs.contains(e.getKey())) {
+				pairs.add(e.getKey());
+				pairs.add(e.getValue());
 			}
 		}
 		return pairs.toArray(new String[pairs.size()]);

@@ -401,7 +401,7 @@ public class TraversalUtil {
 			o = XmlUtils.unwrap(o);
 		}
 		
-		log.debug("getting children of " + o.getClass().getName() );
+		if (log.isDebugEnabled()) log.debug("getting children of " + o.getClass().getName() );
 		if (o instanceof org.docx4j.wml.Text) return null;
 		
 		// Short circuit for common elements
@@ -613,14 +613,25 @@ public class TraversalUtil {
 
 		// OK, what is this? Use reflection ..
 		// This should work for things including w:drawing
-		log.debug(o.getClass().getName() + " .. looking for method which returns list "  );
+		if (log.isDebugEnabled()) log.debug(o.getClass().getName() + " .. looking for method which returns list "  );
 		try {
-			Method[] methods = o.getClass().getDeclaredMethods();
-			for (int i = 0; i<methods.length; i++) {
-				Method m = methods[i];
-				if (m.getReturnType().getName().equals("java.util.List") ) {					
-					return (List<Object>)m.invoke(o);					
+			// the first List-returning method of the class, looked up once per class (before
+			// 17.3.4 on every call, which made a walk's cost mostly reflection: CR-052 phase 1)
+			Method listGetter = LIST_GETTERS.get(o.getClass());
+			if (listGetter == null) {
+				listGetter = NO_LIST_GETTER;
+				Method[] methods = o.getClass().getDeclaredMethods();
+				for (int i = 0; i<methods.length; i++) {
+					Method m = methods[i];
+					if (m.getReturnType().getName().equals("java.util.List") && m.getParameterCount() == 0) {					
+						listGetter = m;
+						break;
+					}
 				}
+				LIST_GETTERS.put(o.getClass(), listGetter);
+			}
+			if (listGetter != NO_LIST_GETTER) {
+				return (List<Object>)listGetter.invoke(o);
 			}
 			
 		} catch (Exception e) {
@@ -628,6 +639,17 @@ public class TraversalUtil {
 		}
 		log.debug(".. no list member");
 		return null;
+	}
+
+	private static final java.util.concurrent.ConcurrentHashMap<Class<?>, Method> LIST_GETTERS
+			= new java.util.concurrent.ConcurrentHashMap<Class<?>, Method>();
+	private static final Method NO_LIST_GETTER;
+	static {
+		try {
+			NO_LIST_GETTER = Object.class.getMethod("hashCode");
+		} catch (NoSuchMethodException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 	
 

@@ -93,12 +93,27 @@ public final class McBranchSdt {
 		return reader instanceof Delegate ? reader : new Delegate(reader);
 	}
 
+	/**
+	 * The namespace declarations on the root element of what a wrapped reader read, prefix to URI,
+	 * once the reader has passed the root's start tag; null for a reader {@link #wrap} did not
+	 * wrap.  The root's {@code mc:Ignorable} bindings are recorded from it when the unmarshal
+	 * completes the root ({@link McSourceBindings}; CR-052): the RI fires that callback at the
+	 * root's end tag, MOXy only at the end of the document, where the declarations are gone.
+	 *
+	 * @since 17.3.4
+	 */
+	public static java.util.Map<String, String> rootNamespaces(XMLStreamReader reader) {
+		return reader instanceof Delegate ? ((Delegate) reader).rootNamespaces : null;
+	}
+
 	private static final class Delegate extends StreamReaderDelegate {
 		/** For each open element: whether it is a Choice or a Fallback. */
 		private boolean[] branch = new boolean[64];
 		private int depth; // the number of open elements
 		/** Whether the current START_ELEMENT or END_ELEMENT is a renamed one. */
 		private boolean renamed;
+		/** The root element's own namespace declarations, taken at its start tag (CR-052). */
+		private java.util.Map<String, String> rootNamespaces;
 
 		Delegate(XMLStreamReader reader) {
 			super(reader);
@@ -120,6 +135,14 @@ public final class McBranchSdt {
 
 		private void track(int event) {
 			if (event == START_ELEMENT) {
+				if (depth == 0 && rootNamespaces == null) {
+					java.util.Map<String, String> m = new java.util.LinkedHashMap<String, String>();
+					for (int i = 0; i < super.getNamespaceCount(); i++) {
+						String prefix = super.getNamespacePrefix(i);
+						m.put(prefix == null ? "" : prefix, super.getNamespaceURI(i));
+					}
+					rootNamespaces = java.util.Collections.unmodifiableMap(m);
+				}
 				String ns = super.getNamespaceURI();
 				String local = super.getLocalName();
 				boolean parentIsBranch = depth > 0 && branch[depth - 1];
@@ -282,13 +305,24 @@ public final class McBranchSdt {
 		Class<? extends org.docx4j.wml.SdtElement> kind = kindFor(container);
 		try {
 			rename(el); // nested branches inside the control
+			pendingChoices(u.getListener()); // none of an earlier unmarshal's are this one's
 			JAXBElement<? extends org.docx4j.wml.SdtElement> bound = u.unmarshal(el, kind);
+			// the Choices inside the control, bound from the DOM once the read was over: their
+			// bindings from their elements (CR-052; a nested renamed control's wait for its own bind)
+			McSourceBindings.recordFromDom(bound.getValue(), el, pendingChoices(u.getListener()));
 			return bound.getValue();
 		} catch (Exception e) {
 			log.warn("w:sdt directly in an mc:AlternateContent branch could not be bound as " + kind.getSimpleName()
 					+ "; left as a DOM element: " + e.getMessage());
 			return restore(el);
 		}
+	}
+
+	/** The Choices a listener saw and could not record (no reader at their end tag), in order; the listener's list is cleared. */
+	private static List<AlternateContent.Choice> pendingChoices(Unmarshaller.Listener listener) {
+		if (listener instanceof Collector) return ((Collector) listener).takeChoices();
+		if (listener instanceof Docx4jUnmarshallerListener) return ((Docx4jUnmarshallerListener) listener).takeChoices();
+		return new ArrayList<AlternateContent.Choice>();
 	}
 
 	/** The bound control as the container's content list holds one: bare for block content, wrapped as {@code w:sdt} elsewhere. */
@@ -347,10 +381,37 @@ public final class McBranchSdt {
 	 */
 	public static class Collector extends Unmarshaller.Listener {
 		private final List<AlternateContent> found = new ArrayList<AlternateContent>();
+		/** Every mc:Choice, where there is no reader: the caller records their bindings from its DOM (CR-052). */
+		private final List<AlternateContent.Choice> choices = new ArrayList<AlternateContent.Choice>();
+		private final javax.xml.stream.XMLStreamReader reader;
+
+		public Collector() {
+			this(null);
+		}
+
+		/**
+		 * A collector for a StAX unmarshal, which records on each mc:Choice, and on the root, what
+		 * their {@code mc} attributes' prefixes are bound to, from the reader's namespace context at
+		 * the element's end tag ({@link McSourceBindings}; CR-052).
+		 *
+		 * @since 17.3.4
+		 */
+		public Collector(javax.xml.stream.XMLStreamReader reader) {
+			this.reader = reader;
+		}
 
 		@Override
 		public void afterUnmarshal(Object target, Object parent) {
 			if (target instanceof AlternateContent && holdsBranchSdt((AlternateContent) target)) found.add((AlternateContent) target);
+			boolean recorded = reader != null && McSourceBindings.record(target, parent, reader);
+			if (!recorded && target instanceof AlternateContent.Choice) choices.add((AlternateContent.Choice) target);
+		}
+
+		/** The Choices seen and not recorded (no reader, or one elsewhere than their end tag), in the order completed; the list is cleared. @since 17.3.4 */
+		public List<AlternateContent.Choice> takeChoices() {
+			List<AlternateContent.Choice> taken = new ArrayList<AlternateContent.Choice>(choices);
+			choices.clear();
+			return taken;
 		}
 
 		/** The elements noted so far; the list is cleared. */

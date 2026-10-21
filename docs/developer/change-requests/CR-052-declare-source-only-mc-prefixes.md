@@ -5,7 +5,9 @@ as recommended, D4 as (c) after core-ts's count of Word's saves. Phase 0 DONE 21
 "start CR-052 phase 0, with the Word round (4) folded into CR-052's own Word check"): §1 corrected and the
 mechanism found (§1.1), the tests in core-tests, D4 (c)'s rule as the ports implement it (§4), and Word's
 check: Word repairs a file with an undeclared `Requires` prefix, so the priority stays medium (§5, §7).
-Phase 1 next.
+Phase 1 DONE 21 October 2026 (Jason: "commence CR-052 phase 1"; on Fable, CLAUDE.md's marshal path): the rule
+on every marshal path under both runtimes, the record carried through `deepCopy`, 24 tests (§5, §9); Word 365
+opens docx4j's saves of every case cleanly (§5, Jason's run). Phase 2 (hand-offs) next.
 Proposed 2026-10-20. Requested by the docx4j-generated-objects-ts session at Jason's word ("send
 the CR request, and ask it for its opinion on priority, to be written into the CR"); the same
 defect is objects CR-011 (`docs/change-requests/CR-011-declare-source-only-prefixes.md` there, 3db3613).
@@ -91,6 +93,26 @@ things to do:
 - carry the record through `deepCopy` (D2);
 - record a Choice's `mc:Ignorable` and `mc:MustUnderstand`, and the root's `mc:Ignorable`, as well (D1 (b));
 - declare table prefixes without depending on the part's set.
+
+**As it is after phase 1** (21 October 2026; §9 has the record):
+- **The record** is `org.docx4j.jaxb.McSourceBindings`: for each `mc:Choice` the bindings of every prefix
+  its `Requires`, `mc:Ignorable` and `mc:MustUnderstand` name, and for each part root the bindings of
+  its `mc:Ignorable` prefixes; keyed by the object's identity, weakly. `McSelection.requiresNamespaces`
+  (CR-046) reads it. It is written by the StAX listener (a Choice at its end tag; the root from the
+  declarations its start tag made, which the reader wrapper keeps, since MOXy fires the root's callback
+  only at the end of the document), by the binder paths from the DOM (every Choice, and the root), and by
+  `XmlUtils`' DOM unmarshals (D5 (a): the root from the document element; the Choices paired with the
+  DOM's `mc:Choice` elements in completion order, checked by `Requires`).
+- **A copy carries it** (D2): docx4j-copy's `CopyUtils` tells one listener of each copy it makes, and
+  `XmlUtils.deepCopy` reports the object it copies; docx4j-core's listener pairs a copied
+  `mc:AlternateContent`'s Choices with the original's by position.
+- **At marshal** `McDeclarations.plan` reads the tree once and places every prefix (§4.4): the table's
+  on the root through the prefix mapper's Ignorable value as before, a source-only root prefix as a
+  (prefix, URI) pair the mapper pre-declares, any other on the Choice. A marshal with a declaration to
+  put on a Choice goes through an `XMLStreamWriter`: the marshaller's listener is told of each Choice
+  before its start tag and the writer wrapper puts the declarations there, ahead of `Requires`. A
+  marshal with none keeps its usual path. The part's set (`addMcChoiceNamespace`) still works and is
+  no longer needed for a Choice in the tree.
 
 ## 2. What it affects, and what it does not
 
@@ -211,6 +233,31 @@ conflict case; the copy carries the record. A cross-port reference for case 3: o
 table-known `Requires` prefix since 0.4.2 (its CR-001 §3.2: a `Requires` prefix counts as used), with
 the `cx1` case in `test/smoke.mjs`'s CR-001 §3.2 block.
 
+**Built** 21 October 2026 (§9). `McSourcePrefixesTest` is now 24 tests: §1's cases declared where Word
+puts them, the chartex copy and merge, Choices built in code (a table prefix, a private one, one set
+with `McSourceBindings.set`), a Choice's own Ignorable and MustUnderstand, the `x` conflict both ways,
+every marshal path (`getXML`, `XmlUtils` to a String, a DOM and a stream, Flat OPC, the binder, the
+canonicalizing path), the record on load and through `deepCopy`, and the plan read directly. Green on
+the RI (the suite) and on MOXy (run by hand, with `McIgnorableMarshalStateTest`, `McSelectionTest`
+and `McBlockLevelLoadTest`, 53 tests).
+
+**Word check** staged for Jason, `Office 2016/cr052-word-check/phase1/` (README there; the runner's
+corpus in `runner-phase1/`): docx4j's new saves of the probe unmarshalled (phase 0's `c52-3`) and
+copied, four Choices built in code (cx1, zz9, shape2010, wps, each line naming the branch taken), a root
+Ignorable naming zz9, and Word's chartex chart copied beside itself. Expected: all open without a
+repair prompt.
+
+**Result** (Jason, 21 October 2026, 10:44, Word 365 through the golden runner, fields off): **all five
+open cleanly**, a PDF and a re-save each, where phase 0's `c52-3` had failed with a repair. The probe
+re-saved by phase 1 renders the same tokens as phase 0's untouched control (every marker token, identical
+counts). `c52p1-3` shows `CX1_CHOICE_TAKEN`, `SHAPE2010_CHOICE_TAKEN`, `WPS_CHOICE_TAKEN` and
+`ZZ9_FALLBACK_TAKEN`: Word reads a prefix declared on the Choice (the alias, the private one) as it
+reads one declared on the root. Word's own re-saves declare every prefix (the lxml check) and
+normalise: the probe's eleven Choices become nine `Requires="wps"` text boxes with VML fallbacks, and
+the root's `mc:Ignorable` goes back to Word's fixed set, `zz9` dropped from it. The files were built
+before the review round of §9, which changed nothing in their markup but the XML declaration (now
+JAXB's own, with `standalone="yes"`, as every other docx4j save has).
+
 ### Phase 2: hand-offs
 
 objects-ts (its CR-011 is the same rule; the resolution order agrees; it waits on jsonix 3.5.0,
@@ -283,6 +330,8 @@ fine" holds only for a part docx4j never read. Office's unmoved files still do n
 section's rule the priority stays medium. Against that, the prompt now follows from any edit, not
 only from a merge, and Word's own chartex charts are exposed when copied.
 
+**Phase 1 (21 October 2026) closes the exposure:** docx4j's saves of the same cases open cleanly (§5).
+
 - **For a higher place:** the exposure is wider than the source-only case. Content that moves between
   packages loses the declaration (cases 3 and 4), and Word's own chartex charts carry a `Requires`
   prefix their content does not use, so a docx4j merge of a document with a chartex chart is the
@@ -306,3 +355,92 @@ only from a merge, and Word's own chartex charts are exposed when copied.
   `build_round.py` (the Word check), archived with the session's scratch, 2026-10-21.
 - core-ts check 50 (core-ts CR-010 §14.9) and objects CR-012 (b03ccb5): D4 (c)'s rule as the ports
   implement it.
+
+## 9. Phase 1 record, 21 October 2026
+
+Built on Fable (CLAUDE.md: `XmlUtils`, `JaxbXmlPart` and the io3 save path are its territory). The
+design points the phase 1 brief left open, as decided and measured:
+
+- **How to write a declaration on a specific `mc:Choice`.** JAXB's prefix mapper pre-declares on the
+  root only, so a marshal with a Choice declaration goes through an `XMLStreamWriter`: a
+  `Marshaller.Listener` is told of each Choice in `beforeMarshal`, and the existing
+  `XMLStreamWriterWrapper` (the property path `MarshalToOutputStreamViaXMLStreamWriter`, off by
+  default since 6.1.0) writes the declarations right after the element's start, so they come ahead of
+  `Requires` as Word writes them. Probed first (scratch `XswProbe`): both runtimes fire the listener
+  before the Choice's start tag; the RI's output is `<mc:Choice xmlns:zz9=".." Requires="zz9">`; an
+  `XMLStreamWriter` over a `DOMResult` serves the DOM-output paths (`marshal(Node)`,
+  `marshaltoW3CDomDocument`, the binder's DOM, Flat OPC) and round-trips; the root carries the same 74
+  declarations on either path. A marshal with no Choice declaration keeps its usual path (the RI's
+  fast `OutputStream` writer with `MainDocumentPartFilterOutputStream`), so the common case, every
+  Office-produced file included, is byte-for-byte what it was apart from the plan's root prefixes.
+  The stream-writer route writes `<?xml version="1.0" encoding="UTF-8"?>` without `standalone="yes"`
+  and indents through `XMLStreamWriterWrapperIndenting`.
+- **Where the record lives, so `deepCopy` carries it.** Three candidates: a field on the generated
+  Choice through `<inheritance:extends>` (rejected: the copy plugin runs before `-Xinheritance`, so a
+  generated `copyTo` never calls `super.copyTo`; `CTSdtContentRun` shows it), a lockstep walk of source
+  and copy after every `deepCopy` (rejected: a walk on a hot path), and a copy hook. Taken: docx4j-copy's
+  `CopyUtils` gets a `CopyListener` told of each copy it makes (the members of untyped lists, which is
+  where `mc:AlternateContent` lives), and `XmlUtils.deepCopyFast` reports its top-level copy;
+  docx4j-core registers the listener at `Context`'s start-up. Not covered: the seven generated classes
+  with a typed single-valued `AlternateContent` field (`Numbering`, `CTChartSpace`, the three
+  spreadsheet drawing anchors, `CTControlList`, `Workbook`), whose `copyTo` calls `copy()` directly;
+  their Choices carry Office's own prefixes, which the table gives, so nothing is lost. A plugin change
+  routing typed copies through `CopyUtils` would close it.
+- **The root's bindings on MOXy.** The RI fires the root's `afterUnmarshal` at the root's end tag, with
+  its declarations in scope; MOXy fires it at `END_DOCUMENT`, where the namespace context is empty
+  (measured, scratch `RootProbe`). So the reader wrapper `McBranchSdt.wrap` keeps the root element's
+  own declarations from its start tag, and the record is made from those on either runtime.
+- **The plan's cost.** `McDeclarations.plan` walks the tree once per marshal (`TraversalUtil`,
+  `McMode.ALL`). On a 3.6 MB main document part of 40,835 objects it takes 3.8 ms of an 87 ms marshal
+  (4.3%); on the probe 0.6 of 13.7 ms. A first measurement of 36% was `TraversalUtil` writing DEBUG
+  log lines under the scratch classpath's default logging; two of its unconditional `log.debug` string
+  concatenations are now guarded, and its reflection fallback (the first `List`-returning method of an
+  unknown class) is cached per class, which every walk in docx4j gains from.
+- **D5 (a) on the DOM paths.** `XmlUtils.unmarshalString` and `unmarshal(Node)` parse a DOM, so the
+  root's Ignorable bindings are read from the document element and each Choice's from its
+  `mc:Choice` element, the Choices paired with the DOM's elements in completion order (document order
+  of end tags) and the pairing checked by `Requires`, abandoned where it does not hold (a Choice inside
+  content JAXB kept as a DOM element has no object). The mc-preprocessor retry paths (an XSLT into a
+  `JAXBResult`) record nothing: D5 (b) there.
+- **The clash (D3).** Declaring a table prefix on a Choice with another binding while the Choice's
+  content uses the table's namespace would rebind that content (the stream writer does not consult
+  JAXB's namespace context), so the plan checks the Choice's subtree for an element in that namespace
+  (JAXB class annotations, `JAXBElement` names, DOM elements and their attributes) and, on a hit, leaves
+  the prefix to the table with a warning. Tested with `x` (Excel's VML binding against SpreadsheetML).
+- **Two clauses of §4.4 not implemented, as they do not arise here:** "or the tree uses it there" (a
+  source-only binding the root keeps because its own content uses it: JAXB-bound content uses only
+  namespaces the table knows, and a DOM element kept in lax content declares its own where it is), and
+  the `mc:AlternateContent` element's own `mc:Ignorable` and `mc:MustUnderstand`, outside D1 (b)'s
+  scope (a Choice's and the root's); the test's check walks every element, so either would show.
+- **Not changed:** `JaxbXmlPart.addMcChoiceNamespace` and the subclasses' `setMceIgnorable` overrides
+  still feed the plan's root prefixes; `ChartHosting` and `SlidePart` need no change. The
+  `docx4j.jaxb.marshal.canonicalize` path declares the plan's root pairs on the DOM and passes every
+  declared prefix as the canonicalizer's inclusive list, so a Choice's declaration survives exclusive
+  c14n. `FlatOpcXmlCreator` no longer concatenates a null `getMceIgnorable()` into the token `null`.
+- **Review** (a `/code-review` pass on the diff, 21 October 2026, ten findings; taken unless said):
+  a Choice inside a content control directly in a branch (CR-051 §11.3 binds the control from its
+  DOM element after the read) got no record on any path, since the reader had moved on; now the
+  listeners keep a Choice they could not record and `McBranchSdt.bind` records those from the
+  control's element, and the DOM paths record before the rebind, skipping the renamed controls
+  whose Choices JAXB has not bound (which had made the positional pairing fail). The stream
+  writer dropped a marshaller's redeclaration of a prefix the plan had put on the Choice, URI
+  unchecked; now a different binding displaces the plan's with a warning (D3: the content's
+  binding stands), and the plan's own clash check also tests the root's binding of the prefix, not
+  the table's only. The copy listener touched the record for every object copied; now only for an
+  `mc:AlternateContent` or a Choice, `deepCopy`'s top-level object aside. The binder path asked the
+  binder for a wrapped root; unwrapped. One `XMLOutputFactory` is shared; the stream route writes
+  JAXB's own XML declaration (`standalone="yes"`) and marshals the rest as a fragment, so a
+  marshal's header no longer depends on whether a Choice needed a declaration (its indentation
+  still comes from the wrapper); `McSelection` and the mapper use the one prefix tokenizer;
+  `McDeclarations.marshal`'s javadoc matches the code. Not taken: the plan's walk on every
+  `marshaltoString` (measured above at 4% of a marshal; the canonicalizing branch plans twice, off
+  by default). Tests added for the nested control on the three paths, the root-binding clash and
+  the writer's displacement.
+- **Code:** `McSourceBindings`, `McDeclarations` (new, `org.docx4j.jaxb`); `McSelection` delegates its
+  record; `Docx4jUnmarshallerListener`, `McBranchSdt` (the `Collector` and the reader wrapper),
+  `JaxbXmlPartXPathAware.afterBinderUnmarshal` record; `JaxbXmlPart.marshal` (both), `XmlUtils`' six
+  marshal methods (one helper behind them) and `FlatOpcXmlCreator.marshalBytes` plan;
+  `NamespacePrefixMapperUtils.getPreDeclaredNamespaceUris2` adds the plan's root pairs;
+  `Docx4jMarshallerListener` and `XMLStreamWriterWrapper` write a Choice's declarations;
+  `CopyUtils` (docx4j-copy) gains the listener. Tests: `McSourcePrefixesTest` (24).
+

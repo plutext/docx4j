@@ -27,7 +27,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
@@ -251,29 +250,16 @@ public final class McSelection {
 	}
 
 	/**
-	 * What each Choice's {@code Requires} prefixes resolved to where it was unmarshalled, by identity:
-	 * JAXB keeps the attribute's string, not the declarations in scope at the element.
-	 */
-	private static final Map<AlternateContent.Choice, List<String>> REQUIRES_NAMESPACES =
-			Collections.synchronizedMap(new WeakHashMap<AlternateContent.Choice, List<String>>());
-
-	/**
 	 * Records the namespace URIs a Choice's {@code Requires} prefixes resolve to, through the
 	 * declarations in force at the element; the unmarshaller listener calls it while its reader is
-	 * at the element. A null context records nothing.
+	 * at the element. A null context records nothing.  Since CR-052 the record is
+	 * {@link McSourceBindings}', which keeps the Choice's {@code mc:Ignorable} and
+	 * {@code mc:MustUnderstand} bindings too and is read at marshal; this method records all three.
 	 *
 	 * @since 17.3.4 (CR-046 phase 1)
 	 */
 	public static void recordRequiresNamespaces(AlternateContent.Choice choice, javax.xml.namespace.NamespaceContext context) {
-		if (choice == null || context == null) return;
-		List<String> prefixes = requiresPrefixes(choice.getRequires());
-		if (prefixes.isEmpty()) return;
-		List<String> uris = new ArrayList<String>(prefixes.size());
-		for (String prefix : prefixes) {
-			String uri = context.getNamespaceURI(prefix);
-			uris.add(uri == null || uri.isEmpty() ? null : uri);
-		}
-		REQUIRES_NAMESPACES.put(choice, Collections.unmodifiableList(uris));
+		McSourceBindings.record(choice, context);
 	}
 
 	/**
@@ -281,31 +267,36 @@ public final class McSelection {
 	 * prefix that resolves to nothing; empty for an empty or whitespace-only {@code Requires}.
 	 *
 	 * <p>Matched by URI (WD REQ-303): for a Choice unmarshalled from a part, through the namespace
-	 * declarations in scope at the element, recorded at unmarshal. Where none were recorded - a
-	 * Choice built in code or deep-copied, one unmarshalled from a DOM (the binder and
-	 * {@code mc-preprocessor.xslt} pathways) - docx4j's conventional prefix table
+	 * declarations in scope at the element, recorded at unmarshal ({@link McSourceBindings}; since
+	 * CR-052 the record follows the Choice through {@code XmlUtils.deepCopy}, and the binder and
+	 * DOM pathways record it too). Where none was recorded - a Choice built in code, one unmarshalled
+	 * where no declarations were to hand - docx4j's conventional prefix table
 	 * ({@link NamespacePrefixMappings}) is used instead, as REQ-303 permits; a producer that binds a
-	 * namespace to an unconventional prefix is then not understood there.</p>
+	 * namespace to an unconventional prefix is then not understood there.  A prefix the source left
+	 * undeclared stays null; one the record does not mention falls back to the table.</p>
 	 *
 	 * @since 17.3.4 (CR-046 phase 1)
 	 */
 	public static List<String> requiresNamespaces(AlternateContent.Choice choice) {
 		if (choice == null) return Collections.emptyList();
-		List<String> recorded = REQUIRES_NAMESPACES.get(choice);
-		if (recorded != null) return recorded;
+		Map<String, String> recorded = McSourceBindings.of(choice);
 		List<String> prefixes = requiresPrefixes(choice.getRequires());
 		List<String> uris = new ArrayList<String>(prefixes.size());
-		NamespacePrefixMappings table = new NamespacePrefixMappings();
+		NamespacePrefixMappings table = null;
 		for (String prefix : prefixes) {
+			if (recorded != null && recorded.containsKey(prefix)) {
+				uris.add(recorded.get(prefix));
+				continue;
+			}
+			if (table == null) table = new NamespacePrefixMappings();
 			String uri = table.getNamespaceURI(prefix);
 			uris.add(uri == null || uri.isEmpty() ? null : uri);
 		}
-		return uris;
+		return Collections.unmodifiableList(uris);
 	}
 
 	private static List<String> requiresPrefixes(String requires) {
-		if (requires == null || requires.trim().isEmpty()) return Collections.emptyList();
-		return Arrays.asList(requires.trim().split("\\s+"));
+		return McSourceBindings.prefixes(requires);
 	}
 
 	/**

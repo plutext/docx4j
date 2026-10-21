@@ -561,6 +561,20 @@ element. Then `preserve` mode keeps those elements whole.
 
 **Acceptance:** each receiver has acknowledged.
 
+- **docx4j-python acknowledged** (21 October 2026, to docx4j-25, ahead of the hand-off at Jason's
+  request): taken into its CR-012 (f4e3f4c, proposed; implementation on Jason's go). It measured on
+  the 25 mc-fun probes that its schema copy (ours at 58cce65a8) admits `mc:AlternateContent` only in
+  run and paragraph content and `numPicBullet`; at block, row and cell level its parser skips the
+  element, strict mode raises, and a part read and saved loses it whole (14 of the 25 probes). It has
+  the `McBranchSdt` defect too (a run-level control directly in a paragraph's branch loses its runs),
+  and its `mce_preprocess` takes `w16cid` where Word takes `w16sdtfl`, its understood set lacking
+  `w16sdtfl`, `w16sdtdh`, `w16du` and `w16cex`. Its CR-012 phase A ports phase 1: the three schema
+  admissions (a schema refresh at 1cff2cd5c or later), the branch `w:sdt` by its container's kind,
+  `LoadOptions(mc_block_level="word"|"preserve")` as an lxml splice over the published list (REQ-305
+  keep-whole, the no-branch removal, `mc:Ignorable` gaining the selected prefixes, a record on the
+  part), `mce_preprocess` on the list, a readers' audit for `preserve`, and the paragraph-level
+  revisions twins; its probes are copies of `mc-fun/`.
+
 ## 6. Decisions
 
 Each with a recommendation; Jason decides. D1 to D5 decided as recommended on 20 October 2026; D6,

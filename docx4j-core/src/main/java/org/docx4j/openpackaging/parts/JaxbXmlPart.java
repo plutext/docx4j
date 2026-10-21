@@ -67,6 +67,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.Docx4jMarshallerListener;
 import org.docx4j.jaxb.Docx4jUnmarshallerListener;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
+import org.docx4j.jaxb.McDeclarations;
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -719,40 +720,47 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
     		Object namespacePrefixMapper) throws JAXBException {
 
     	// what this marshal found on the mapper, put back when it is done (CR-049)
-    	String previous = ((McIgnorableNamespaceDeclarator) namespacePrefixMapper).getMcIgnorable();
+    	McIgnorableNamespaceDeclarator declarator = (McIgnorableNamespaceDeclarator) namespacePrefixMapper;
+    	String previous = declarator.getMcIgnorable();
+    	Map<String, String> previousPairs = null;
+    	boolean pairsInstalled = false;
 		try {
 			Marshaller marshaller = jc.createMarshaller();
 //			marshaller.setProperty("com.sun.xml.internal.bind.c14n",true);
-			
-//			marshaller.setListener(Docx4jMarshallerListener);
 			
 			NamespacePrefixMapperUtils.setProperty(marshaller, namespacePrefixMapper);
 			getContents();
 			// nothing borrowed: setMceIgnorable's default sets a value only where the root's
 			// mc:Ignorable names a prefix, so start from none (CR-049)
-			((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(null);
-	    	setMceIgnorable( (McIgnorableNamespaceDeclarator) namespacePrefixMapper);
+			declarator.setMcIgnorable(null);
+	    	setMceIgnorable(declarator);
 	    		// this method needs to be suitably overridden in a subclass,
 	    		// to .setMcIgnorable
 	    	
-	    	// Commented out, since I'm not sure it is ever useful to do this?
-//			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
-//	    	
-//				org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement, jc);
-//				node.appendChild(
-//						node.getOwnerDocument().importNode(doc.getDocumentElement(), true));
-//				
-//			} else {
+	    	// CR-052: every prefix the tree's mc attributes name, placed from the tree: the
+	    	// table's on the root through the mapper as before, a source-only one on the root
+	    	// (the root's Ignorable) as a pair, or on the mc:Choice naming it
+	    	McDeclarations.Plan plan = McDeclarations.plan(jaxbElement,
+	    			(declarator.getMcIgnorable() == null ? "" : declarator.getMcIgnorable() + " ") + getMcChoiceNamespaces());
+	    	declarator.setMcIgnorable(plan.tablePrefixes());
+	    	previousPairs = McDeclarations.installRootPairs(plan.rootPairs());
+	    	pairsInstalled = true;
 
+	    	if (plan.declaresOnChoices()) {
+	    		McDeclarations.marshal(marshaller, jaxbElement, plan, node, false, false, false);
+	    	} else {
 				marshaller.marshal(jaxbElement, node);
-//			}
+	    	}
 			
 		} catch (Docx4JException e) {
 			throw new JAXBException(e);  // avoid change to method signature
+		} catch (javax.xml.stream.XMLStreamException e) {
+			throw new JAXBException(e);
 		} finally {
 			// put back what was there, whether or not the marshal succeeded (before 17.3.4, cleared
 			// to null after a successful marshal only)
-			((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(previous);
+			declarator.setMcIgnorable(previous);
+			if (pairsInstalled) McDeclarations.restoreRootPairs(previousPairs);
 		}
 	}
     
@@ -786,7 +794,10 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
     public void marshal(java.io.OutputStream os, Object namespacePrefixMapper) throws JAXBException {
 
     	// what this marshal found on the mapper, put back when it is done (CR-049)
-    	String previous = ((McIgnorableNamespaceDeclarator) namespacePrefixMapper).getMcIgnorable();
+    	McIgnorableNamespaceDeclarator declarator = (McIgnorableNamespaceDeclarator) namespacePrefixMapper;
+    	String previous = declarator.getMcIgnorable();
+    	Map<String, String> previousPairs = null;
+    	boolean pairsInstalled = false;
 		try {
 			Marshaller marshaller = jc.createMarshaller();
 			if (Docx4jProperties.getProperty("docx4j.jaxb.formatted.output", true)) {
@@ -802,7 +813,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 //				log.error("No JAXBElement has been created for this part, yet!");
 //				throw new JAXBException("No JAXBElement has been created for this part, yet!");
 //			}
-	    	setMceIgnorable( (McIgnorableNamespaceDeclarator) namespacePrefixMapper);
+	    	setMceIgnorable(declarator);
 	    	
 	    	String mceIgnorable = "";
 	    	if (this.getMceIgnorable()!=null) {
@@ -813,16 +824,25 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	    		mceIgnorable = this.getMceIgnorable();
 	    	}
 	    	
+	    	// CR-052: every prefix the tree's mc attributes name, placed from the tree (McDeclarations):
+	    	// the table's on the root through the mapper as before (the root's Ignorable, the part's
+	    	// registered Choice prefixes, and now every Choice in the tree, moved or copied in or built
+	    	// in code); a source-only one on the root (the root's Ignorable) as a pair the mapper
+	    	// pre-declares; any other on the mc:Choice naming it, which needs the XMLStreamWriter route
+	    	McDeclarations.Plan plan = McDeclarations.plan(jaxbElement, mceIgnorable + " " + getMcChoiceNamespaces());
+	    	previousPairs = McDeclarations.installRootPairs(plan.rootPairs());
+	    	pairsInstalled = true;
+	    	
 			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
 				
 				// We currently canonicalize twice:
 				// 1. trim namespaces
 				// 2. add mcIgnorable
 	    		
-	    		Document doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement, jc); // NB that code trims namespaces
+	    		Document doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement, jc, getMcChoiceNamespaces()); // NB that code trims namespaces
 
-	    		// Now, we need to add back in the mcIgnorable ones
-	    		NamespacePrefixMapperUtils.declareNamespaces(mceIgnorable + getMcChoiceNamespaces(), doc);
+	    		// Now, we need to add back in the mcIgnorable ones (and, since CR-052, the root's source-only ones)
+	    		plan.declareOnRoot(doc.getDocumentElement());
 	    		/* that generalises the following:
 	    		if (this.getMceIgnorable().contains("w15")) {
 		    		doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/" ,
@@ -855,21 +875,21 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 				*/
 	    		
 	    		
-	    		log.debug( "canonicalizeSubtree with inclusiveNamespaces {}, {}", this.getMceIgnorable(), getMcChoiceNamespaces() );
+	    		log.debug( "canonicalizeSubtree with inclusiveNamespaces {}", plan.allPrefixes() );
 	    		
-	    		byte[] bytes = c.canonicalizeSubtree(doc, this.getMceIgnorable()  + getMcChoiceNamespaces());
+	    		// every declared prefix is inclusive, so a Choice's own declaration stays on the Choice (CR-052)
+	    		byte[] bytes = c.canonicalizeSubtree(doc, plan.allPrefixes() == null ? "" : plan.allPrefixes());
 	    		//byte[] bytes = c.canonicalizeSubtree(doc); // for INCLUSIVE
 	    		
 	    		
 	    		IOUtils.write(bytes, os);
 	    		
-	    	} else if (!Docx4jProperties.getProperty(
+	    	} else if (!plan.declaresOnChoices() && !Docx4jProperties.getProperty(
 	    			"docx4j.openpackaging.parts.JaxbXmlPart.MarshalToOutputStreamViaXMLStreamWriter", false)){
-	    		// The default (except in v6.0.x)
+	    		// The default (except in v6.0.x), and since CR-052 unless a Choice gets a declaration of its own
 	    		log.debug("Marshalling to " + os.getClass().getName());
 	    		
-				((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(
-						mceIgnorable + getMcChoiceNamespaces());  // careful here
+				declarator.setMcIgnorable(plan.tablePrefixes());  // careful here
 				
 				if (this instanceof MainDocumentPart) {
 					
@@ -910,45 +930,29 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 				}
 	    		
 	    	} else {
-	    		// Typically unused in v6.1.0
-	    		log.debug("MarshalToOutputStreamViaXMLStreamWriter set; " + os.getClass().getName());
+	    		// The XMLStreamWriter route: the property's (typically unused since v6.1.0), and since
+	    		// CR-052 any marshal with a declaration to put on an mc:Choice, which JAXB's prefix
+	    		// mapper cannot do (it pre-declares on the root only).  The marshaller's listener is
+	    		// told of each Choice before its start tag and the wrapper puts the declarations there.
+	    		if (log.isDebugEnabled()) {
+	    			log.debug((plan.declaresOnChoices() ? "mc:Choice declarations; " : "MarshalToOutputStreamViaXMLStreamWriter set; ")
+	    					+ os.getClass().getName());
+	    		}
 
 	    		// Possible extension point: let user use their own XMLStreamWriter	    		
 	    		
-	    		XMLOutputFactory xof = XMLOutputFactory.newFactory();
-	            XMLStreamWriter xsw = xof.createXMLStreamWriter(os, "UTF-8");
-	            
-	            // get rid of xmlns="" which com.sun.xml.internal.stream.writers.XMLStreamWriterImpl writes
-	            XMLStreamWriterWrapper xsww = null;
-	            
-	            // An XMLStreamWriter is normally unable to produce empty elements,
-	            // but ours do.
-				if (Docx4jProperties.getProperty("docx4j.jaxb.formatted.output", true)) {
-					xsww = new XMLStreamWriterWrapperIndenting(this, xsw); 
-				} else {
-					xsww = new XMLStreamWriterWrapper(this, xsw); 
-				}
-				// It would also be possible to give user the choice between using
-				// empty-element (aka self-closing) tags or not, but there has
-				// been no demand for HTML style no empty-elements
-
-	            marshaller.setListener(new Docx4jMarshallerListener(xsww, this.getPackage().isNew()));
-	            
 	    		// Word requires certain namespaces to be written at the document level;
 	            // these are the ones used in the top level ignorable attribute, plus any
 	            // used in attribute values in the mc elements themselves.
 	            // JAXB reference implementation and MOXy do this
 	            // with namespace handler's getPreDeclaredNamespaceUris 
-	            
-				((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(mceIgnorable + getMcChoiceNamespaces());
-	            // If necessary, we could do it in our streamwriter; there is some 
-	            // code in git history to do that 
-//	    		xsww.setIgnorableNamespaces(mceIgnorable + getMcChoiceNamespaces());
-	            
-	            marshaller.marshal(jaxbElement, xsww);
-	            
-	            xsww.close();
-	            xsw.close();
+				declarator.setMcIgnorable(plan.tablePrefixes());
+
+				boolean isNew = (this.getPackage()==null) ? true : this.getPackage().isNew(); // handle edge cases eg unit test where there is no package
+	            // the wrapper gets rid of xmlns="" which com.sun.xml.internal.stream.writers.XMLStreamWriterImpl
+	            // writes, produces empty elements (an XMLStreamWriter normally cannot), and indents
+				McDeclarations.marshal(marshaller, jaxbElement, plan, os,
+						Docx4jProperties.getProperty("docx4j.jaxb.formatted.output", true), true, isNew);
 	    	}
 	    	
 		} catch (Docx4JException e) {
@@ -958,7 +962,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		} finally {
 			// put back what was there, whether or not the marshal succeeded (before 17.3.4, cleared
 			// to null after a successful marshal only)
-			((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(previous);
+			declarator.setMcIgnorable(previous);
+			if (pairsInstalled) McDeclarations.restoreRootPairs(previousPairs);
 		}
 	}
     
@@ -1040,7 +1045,10 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 
 	/**
 	 * Prefixes specified in an mc:Choice element. These must be declared, or Word
-	 * can't open the docx. They are collected by Docx4jUnmarshallerListener
+	 * can't open the docx. They are collected by Docx4jUnmarshallerListener.
+	 * Since 17.3.4 (CR-052) a marshal also reads every mc:Choice from the tree
+	 * ({@link McDeclarations}), so a Choice moved, copied or built in code is declared
+	 * whether or not it is registered here; this set still goes on the root.
 	 * 
 	 * @since 6.0.0
 	 */

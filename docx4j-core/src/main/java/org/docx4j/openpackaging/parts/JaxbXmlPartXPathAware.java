@@ -50,6 +50,7 @@ import org.docx4j.jaxb.BinderListenerUtils;
 import org.docx4j.jaxb.McBranchSdt;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.Docx4jUnmarshallerListener;
+import org.docx4j.jaxb.McSourceBindings;
 import org.docx4j.jaxb.JAXBAssociation;
 import org.docx4j.jaxb.JAXBImplementation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
@@ -827,7 +828,28 @@ implements XPathEnabled<E> {
 	 */
 	private void afterBinderUnmarshal(Unmarshaller.Listener listener) {
 		if (!(listener instanceof Docx4jUnmarshallerListener)) return;
-		List<org.docx4j.mce.AlternateContent> found = ((Docx4jUnmarshallerListener) listener).takeBlockLevelElements();
+		Docx4jUnmarshallerListener l = (Docx4jUnmarshallerListener) listener;
+		// what the DOM declares for the root's and every Choice's mc prefixes (CR-052; before it,
+		// the block-level Choices' Requires only, for the splice below)
+		if (binder != null) {
+			try {
+				Node rootNode = binder.getXMLNode(XmlUtils.unwrap(jaxbElement));
+				if (rootNode != null) McSourceBindings.recordRoot(jaxbElement, new McSourceBindings.DomNamespaceContext(rootNode));
+			} catch (Exception e) {
+				log.debug("No DOM node for the root: " + e);
+			}
+			for (org.docx4j.mce.AlternateContent.Choice choice : l.takeChoices()) {
+				try {
+					Node n = binder.getXMLNode(choice);
+					if (n != null) McSourceBindings.record(choice, new McSourceBindings.DomNamespaceContext(n));
+				} catch (Exception e) {
+					log.debug("No DOM node for a Choice: " + e);
+				}
+			}
+		} else {
+			l.takeChoices();
+		}
+		List<org.docx4j.mce.AlternateContent> found = l.takeBlockLevelElements();
 		List<org.docx4j.mce.AlternateContent> nested = bindBranchSdts(listener); // CR-051 section 11.3
 		found.addAll(nested);
 		// the binder's DOM keeps a kept branch's controls in the private namespace: an XPath for
@@ -835,18 +857,6 @@ implements XPathEnabled<E> {
 		// getJAXBNodesViaXPath says so)
 		if (!nested.isEmpty() && binder != null) refreshBinder(); // the typed controls are not the binder's DOM's
 		if (found.isEmpty()) return;
-		if (binder != null) {
-			for (org.docx4j.mce.AlternateContent ac : found) {
-				for (org.docx4j.mce.AlternateContent.Choice choice : ac.getChoice()) {
-					try {
-						Node n = binder.getXMLNode(choice);
-						if (n != null) org.docx4j.jaxb.McSelection.recordRequiresNamespaces(choice, new DomNamespaceContext(n));
-					} catch (Exception e) {
-						log.debug("No DOM node for a Choice: " + e);
-					}
-				}
-			}
-		}
 		if (!resolveAlternateContent(found).isEmpty() && binder != null) {
 			refreshBinder();
 		}
@@ -872,31 +882,6 @@ implements XPathEnabled<E> {
 		}
 	}
 
-	/** The namespace declarations in scope at a DOM node, as a NamespaceContext. */
-	private static final class DomNamespaceContext implements javax.xml.namespace.NamespaceContext {
-		private final Node node;
-
-		DomNamespaceContext(Node node) {
-			this.node = node;
-		}
-
-		@Override
-		public String getNamespaceURI(String prefix) {
-			String uri = node.lookupNamespaceURI(prefix == null || prefix.isEmpty() ? null : prefix);
-			return uri == null ? javax.xml.XMLConstants.NULL_NS_URI : uri;
-		}
-
-		@Override
-		public String getPrefix(String namespaceURI) {
-			return node.lookupPrefix(namespaceURI);
-		}
-
-		@Override
-		public java.util.Iterator<String> getPrefixes(String namespaceURI) {
-			String prefix = node.lookupPrefix(namespaceURI);
-			return (prefix == null ? java.util.Collections.<String>emptyList() : java.util.Collections.singletonList(prefix)).iterator();
-		}
-	}
 	
 //	private String toString(ByteBuffer bb) throws UnsupportedEncodingException {
 //

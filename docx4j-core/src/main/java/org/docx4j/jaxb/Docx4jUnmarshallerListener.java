@@ -18,8 +18,6 @@ public class Docx4jUnmarshallerListener extends Unmarshaller.Listener {
 
 	protected static Logger log = LoggerFactory.getLogger(Docx4jUnmarshallerListener.class);
 	
-	private static final String MCE_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006";
-
 	private JaxbXmlPart part;
 
 	private XMLStreamReader reader;
@@ -29,6 +27,9 @@ public class Docx4jUnmarshallerListener extends Unmarshaller.Listener {
 
 	/** Each mc:AlternateContent with a w:sdt directly in a branch, delivered as a DOM element to bind once the tree stands (CR-051 section 11.3). */
 	private final List<AlternateContent> branchSdts = new ArrayList<AlternateContent>();
+
+	/** Every mc:Choice whose bindings could not be recorded from the reader (none, or one elsewhere than the Choice's end tag): recorded from the DOM afterwards, by the binder path or by the bind of a control in a branch (CR-052). */
+	private final List<AlternateContent.Choice> choices = new ArrayList<AlternateContent.Choice>();
 
 	public Docx4jUnmarshallerListener(JaxbXmlPart part) {
 		this.part = part;
@@ -82,6 +83,20 @@ public class Docx4jUnmarshallerListener extends Unmarshaller.Listener {
 		return taken;
 	}
 
+	/**
+	 * The {@code mc:Choice} elements this unmarshal built where it had no reader to record their
+	 * namespace bindings from (a DOM source: the binder paths), in the order completed; the list
+	 * is cleared.  The part records each from its DOM element when the unmarshal returns
+	 * ({@link McSourceBindings#record(AlternateContent.Choice, javax.xml.namespace.NamespaceContext)}; CR-052).
+	 *
+	 * @since 17.3.4 (CR-052 phase 1)
+	 */
+	public List<AlternateContent.Choice> takeChoices() {
+		List<AlternateContent.Choice> taken = new ArrayList<AlternateContent.Choice>(choices);
+		choices.clear();
+		return taken;
+	}
+
   @Override
   public void afterUnmarshal(Object target, Object parent) {
 	  
@@ -103,10 +118,11 @@ public class Docx4jUnmarshallerListener extends Unmarshaller.Listener {
 			
 			AlternateContent.Choice choice = (AlternateContent.Choice)target;
 			// the reader stands at the element's end tag, where the declarations in force at
-			// the element are still in scope; anywhere else, record nothing
-			if (reader != null && reader.isEndElement() && "Choice".equals(reader.getLocalName())
-					&& MCE_NS.equals(reader.getNamespaceURI())) {
-				McSelection.recordRequiresNamespaces(choice, reader.getNamespaceContext());
+			// the element are still in scope: the bindings its Requires, mc:Ignorable and
+			// mc:MustUnderstand prefixes have there are recorded on the Choice (CR-046, CR-052);
+			// without a reader (a DOM source) the Choice is kept for the part to record from the DOM
+			if (reader == null || !McSourceBindings.record(choice, parent, reader)) {
+				choices.add(choice);
 			}
 			if (choice.getRequires()!=null) {
 				part.addMcChoiceNamespace(choice.getRequires());
@@ -126,6 +142,9 @@ public class Docx4jUnmarshallerListener extends Unmarshaller.Listener {
 			if (part.getPackage()!=null) {
 				part.getPackage().getDrawingPropsIdTracker().registerId(docPr.getId());
 			}
+		} else if (parent == null && reader != null) {
+			// the root, its end tag's declarations still in scope: what its mc:Ignorable prefixes are bound to (CR-052)
+			McSourceBindings.record(target, null, reader);
 		}
 //		else if (log.isDebugEnabled() 
 //				) {

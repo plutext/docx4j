@@ -20,14 +20,17 @@ package org.docx4j.jaxb;
  * In order to pre-declare any namespaces used in mc:Choice (eg Requires="wpg"),
  * an Unmarshaller.Listener (Docx4jUnmarshallerListener) detects and records them.  
  * 
- * This works, except in 3 cases:
+ * Until 17.3.4 this worked except in 3 cases:
  * (i)  where binder is used (should now work in 11.4.7 and later)
  * (ii) where we take the JAXBResult of a transformation (so instead, use a DOMResult) 
  * since you can't register a listener in either of these cases, and
  * (iii)where you have added mc:Choice content to the docx yourself.
  * 
- * If you have mc:Choice content in one of these cases, then you need to 
- * manage the mcChoiceNamespaces manually.  On your part object, invoke addMcChoiceNamespace.  
+ * Since 17.3.4 (CR-052) a marshal reads every mc:Choice from the tree itself
+ * ({@link McDeclarations}), so a Choice added, moved or copied in needs no registration
+ * for a prefix docx4j's table knows; a prefix it does not know is declared on the Choice
+ * with the binding recorded at unmarshal ({@link McSourceBindings}), or the one your code
+ * sets with {@link McSourceBindings#set}.  addMcChoiceNamespace still works, for the root.
  *  
  * @author jharrop
  */

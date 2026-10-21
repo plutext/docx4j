@@ -23,6 +23,12 @@ Claude Fable 5.1
 Changes in Version 17.3.4
 --------------------------
 
+- A save declares every namespace prefix a part's `mc` attributes name, where Word 365 puts it (CR-052 phase 1):
+  a prefix docx4j's table binds as the source did on the root; any other (a producer's private prefix, an alias,
+  a chartex `cx1` on content copied between documents) on the `mc:Choice` naming it, with the source's binding.
+  Each Choice and each root records its bindings at unmarshal (`McSourceBindings`), a deep copy carries them,
+  and `McDeclarations` places them at marshal on every path. Before, an edited document could save with a
+  `Requires` prefix nothing declared, which Word repairs.
 - Text model (CR-046 phase 1): `org.docx4j.model.text` (`Texts`, `TextOptions`, `PlainText`). Accepted,
   original or markup (CriticMarkup) views as Accept/Reject All would leave the text, without changing the
   package; text boxes after their anchor; notes as `[n]`; `mc:AlternateContent` read by the ISO rule over
