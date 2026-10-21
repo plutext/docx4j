@@ -5,9 +5,9 @@ recommended. Phase 0 done 2026-10-20 (the walker audit, §10); D6, the exporters
 the same day (Jason: "D6 (a)"). Five of the six defects of today the audit found were fixed the same
 day (§10.5, c4894c5b0); the sixth went with phase 1. Phase 1 done 2026-10-20 (Jason: "make the fixes,
 then phase 1"): the listener fix 6687cc4b8, the rest 1cff2cd5c (§11). Phase 3 (the hand-offs) done
-2026-10-21, each receiver acknowledged (§5). Phase 2 (row and cell level in `preserve` mode) open. D5's
-default put to Jason again on 2026-10-21 after core-ts relayed his view that docx4j should default to
-`preserve` (§5, core-ts's acknowledgement). Proposed 2026-10-20, drafted at Jason's request ("write
+2026-10-21, each receiver acknowledged (§5). Phase 2 (row and cell level in `preserve` mode) open,
+to be undertaken soon. D5 revised 2026-10-21 (Jason): `preserve` becomes the default at 17.4.0, after
+phase 2; 17.3.x keeps `word` (D5, "Revised"). Proposed 2026-10-20, drafted at Jason's request ("write
 the cr to keep body-level mc through load. also check whether we do/should keep mc in sdt content")
 by Claude Opus 5.5 (session docx4j-25), after the portfolio session's measurement of Jason's
 `mc-fun` probes (paper §7.8).
@@ -547,7 +547,15 @@ cells by type takes one branch (§10.3):
 `TableModel` already builds its grid from the drawn branch, and with D6 (a) the table writers meet no
 element. Then `preserve` mode keeps those elements whole.
 
-**Acceptance:** the row and cell probes kept, extracted and drawn as Word shows them (phase 0).
+Two shapes to check here, from core-ts's audit of the same work (its CR-013 §7.3, 10b20a6,
+21 October 2026): a mutator that counts a table's rows or cells without seeing the element, and so
+deletes the table when the rows it does not count are all inside a row-level element (core-ts's
+accept-all of a deleted row and its column deletion both did); and a tracked-change listing that
+misses a revision inside a block-level branch (§10.3 item 3 found docx4j's revisions model has that
+gap). Phase 2 also flips the default to `preserve` for 17.4.0 (D5, "Revised").
+
+**Acceptance:** the row and cell probes kept, extracted and drawn as Word shows them (phase 0); the
+§10 walkers green in `preserve` mode on the mc-fun probes; the default switched.
 
 ### Phase 3: hand-offs
 
@@ -595,11 +603,14 @@ the commits (6687cc4b8, c4894c5b0, 1cff2cd5c, 86f8f3e93), the CR's sections, `mc
   `mce.branches_differ`), which is docx4j's `preserve` at all levels; `mcePreprocess: true` resolves on
   the DOM before unmarshal at every level, run and paragraph included, by load's understood set, which
   deliberately lacks w16sdtdh, w16sdtfl and w16du (CR-010 §15 kept load's set to what the model binds),
-  so it takes `w16cex` where Word 365 takes `w16sdtfl` on all 13 newest-first probes. Its text model
+  so it took `w16cex` where Word 365 takes `w16sdtfl` on all 13 newest-first probes (superseded the
+  same day: under its CR-013 D3, as recommended, `mcePreprocess` resolves by the readers' set and takes
+  `w16sdtfl` as Word 365 does; implemented, uncommitted there, core-ts 21 October 2026). Its text model
   (default load) reads block level, block-in-sdt, block-in-cell and the four text-box probes as Word 365
   does (w16sdtfl, each with `mce.branches_differ` at the promoted address), reads `mc-block-nofallback`
   whole (REQ-305) and `mc-mixed` as Word; but at row and cell level (the element as a `w:tbl` or `w:tr`
-  child, plain or in an sdt) the content is not read and no warning raised, a reader gap. Its Office JS
+  child, plain or in an sdt) the content was not read and no warning raised, a reader gap (closed by its
+  CR-013 phase 1, 10b20a6: the text model reads row and cell level, all 16 probes as Word 365's saves). Its Office JS
   readers (`Paragraph.text`, `Body.text`, `Body.paragraphs`) do not see a kept block-, row- or cell-level
   element at all (`TableCell.values` does, inconsistently), and miss run-level text (its CR-012 §12, phase
   4). The readers have counted w16sdtdh, w16sdtfl, w16du and x14ac as understood since CR-010 §15 (the
@@ -712,6 +723,33 @@ from phase 0's audit, decided (a) the same day.
   **Decided** (Jason, 20 October 2026): (a): the property with a load option and a package-level
   override, default `word`, `preserve` on request. The name `docx4j.jaxb.mc.blockLevel` stands
   unless phase 1 finds a reason to change it.
+  **Revised** (Jason, 21 October 2026, after core-ts relayed his view and he put it here: "we should
+  change the default to preserve since we are a developer tool/library"): **(b), `preserve` the
+  default, taking effect at a version boundary, 17.4.0**; 17.3.x keeps `word`. The reasons:
+  1. **A library should not drop what it did not touch.** docx4j is a developer tool; a load and a
+     save with nothing edited should reproduce the producer's alternate content, as the python and
+     TypeScript ports do from the start (they keep every branch and select on read). Reason 4's tools
+     (the anonymiser, diffx, an editor, an agent's save) are the common case, not the exception.
+  2. **Why not in 17.3.4.** Before this CR docx4j already resolved block-level alternate content at
+     load (to the Fallback), so no user code has ever met a block-level `AlternateContent` in a
+     content list; a `preserve` default puts one there for the first time, and every walker that
+     dispatches by type, docx4j's and users', skips it silently (the audit's risk, §10). A silent loss
+     of content is not a point-release change. And phase 2 (row and cell level in `preserve` mode) is
+     open, so docx4j's own readers do not yet give the Word view of preserved content at every level.
+  3. **The sequence.** Phase 2 is undertaken soon (Jason). The default changes at 17.4.0 once phase 2
+     is done and the §10 walkers (the exporters' `Preprocess` step of D6, the text model, the binder,
+     the field updater, numbering, the anonymiser, diffx) are shown green in `preserve` mode on the
+     mc-fun probes. 17.3.4's CHANGELOG announces the coming change and the property, so a user who
+     needs `word` sets it before upgrading. Phase 2 records the switch (`McBlockLevel.DEFAULT`,
+     `Docx4jProperties`' default, the javadoc of `WordprocessingMLPackage.load` and `Docx4J.load`, the
+     reference `docx4j.properties`, the hand-offs to the ports and docx4j-mcp, which loads in `word`
+     mode by choice, T8).
+  The ports, told the same day: core-ts's default has kept every branch since its CR-010 phase 4 and
+  its CR-013 D1 kept it, so from 17.4.0 the two agree; docx4j-python's CR-012 (ae992e0, proposed) now
+  recommends `preserve` as its default, its Q7 moved from (a) to (b) for D5's reason and because it
+  has no existing walkers to protect (a block-level element is lost on save there today), its readers
+  (text model, Markdown, outline, describe, the content API) to read Word's branch, an edit inside a
+  kept branch refused until a later CR, row and cell level passed by until phase 2.
 - **D6. The exporters' copy** (from phase 0's audit, §10.2; reviewed by docx4j-64, §9). **Decided:
   (a)** (Jason, 20 October 2026: "D6 (a)").
   - **Options:**

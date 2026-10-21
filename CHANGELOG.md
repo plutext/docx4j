@@ -110,6 +110,7 @@ Changes in Version 17.3.4
   A `w:sdt` directly inside a Choice or Fallback, which JAXB's lax rule bound as `CTSdtRow` at every level (its
   content dropped, or the load failed; since 17.2.0 for a run control in a paragraph-level element), is bound by its
   container's kind on every unmarshal route (`McBranchSdt`, CR-051 §11.3).
+- Notice: from 17.4.0 `docx4j.jaxb.mc.blockLevel` will default to `preserve` (block-level `mc:AlternateContent` kept whole on load; the Word view on read), not `word` (CR-051 D5, revised 2026-10-21). 17.3.x keeps `word`; set the property, or pass `McBlockLevel` to `load`, to choose now.
 - `addAltChunk` and the OpenDoPE XHTML binding write an HTML or XHTML chunk without a leading XML declaration,
   which Word refuses (it repaired the document), its encoding kept with a byte order mark (`AltChunkHtml`, CR-053
   phase 1); the binding's chunk is UTF-8, not the platform charset. A loaded chunk's `AltChunkType` follows its
