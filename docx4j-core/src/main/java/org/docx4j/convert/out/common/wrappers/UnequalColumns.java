@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.table.TableRules;
 import org.docx4j.wml.CTColumn;
 import org.docx4j.wml.CTColumns;
 import org.docx4j.wml.CTTblCellMar;
@@ -338,9 +339,7 @@ class UnequalColumns {
 			tc.getContent().add(F.createP());
 		} else {
 			tc.getContent().addAll(content);
-			if (!(XmlUtils.unwrap(content.get(content.size() - 1)) instanceof P)) {
-				tc.getContent().add(F.createP()); // a cell must end with a paragraph
-			}
+			TableRules.endWithParagraph(tc); // a cell's last block, as Word reads it, must be a paragraph
 		}
 		return tc;
 	}

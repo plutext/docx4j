@@ -280,6 +280,34 @@ public class UnequalColumnsTest extends AbstractXSLFOTest {
 
 	/** FOP puts the two columns' first lines on the same baseline, at Word's x: the
 	 *  golden has column 1 at 51.1 and column 2 at 232.2. */
+	/**
+	 * The columns' cells end as Word's rule asks (docs/developer/word-table-rules.md, rule 2): a column
+	 * whose content ends in a block-level control holding a paragraph gets no spare paragraph; one ending
+	 * in a table gets one.
+	 */
+	@Test
+	public void aColumnEndingInAWrappedParagraphGetsNoSpareParagraph() throws Exception {
+		String sdtP = "<w:sdt><w:sdtPr><w:id w:val=\"1\"/></w:sdtPr><w:sdtContent><w:p><w:r><w:t>in a control</w:t></w:r></w:p></w:sdtContent></w:sdt>";
+		String wrapped = "<w:p><w:r><w:t>first</w:t></w:r></w:p>" + sdtP
+				+ "<w:p><w:r><w:t>second column</w:t></w:r><w:r><w:br w:type=\"column\"/></w:r></w:p>";
+		org.w3c.dom.Document doc = fo(SECT_1 + wrapped + sect2(UNEQUAL), Docx4J.FLAG_EXPORT_PREFER_XSL);
+		NodeList cells = doc.getElementsByTagNameNS(FO_NS, "table-cell");
+		assertEquals(3, cells.getLength());
+		Element first = (Element) cells.item(0);
+		assertEquals("first, the control's paragraph, and the one holding the break: no fourth block",
+				3, first.getElementsByTagNameNS(FO_NS, "block").getLength() - nested(first));
+	}
+
+	/** fo:blocks inside fo:blocks (a run's inline wrappers are not blocks; a paragraph in a control renders as one block). */
+	private static int nested(Element cell) {
+		int n = 0;
+		NodeList blocks = cell.getElementsByTagNameNS(FO_NS, "block");
+		for (int i = 0; i < blocks.getLength(); i++) {
+			if (blocks.item(i).getParentNode() != cell) n++;
+		}
+		return n;
+	}
+
 	@Test
 	public void fopPutsTheColumnsSideBySide() throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();

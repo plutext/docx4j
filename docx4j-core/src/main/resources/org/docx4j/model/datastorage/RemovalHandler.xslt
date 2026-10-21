@@ -28,7 +28,8 @@
   xmlns:WX="http://schemas.microsoft.com/office/word/2003/auxHint"
   xmlns:w10="urn:schemas-microsoft-com:office:word"
 	xmlns:xalan="http://xml.apache.org/xalan"  
-  exclude-result-prefixes="a aml java o pic pkg r v w wp WX w10">
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  exclude-result-prefixes="a aml java o pic pkg r v w wp WX w10 mc">
 
   <xsl:param name="all" select="false" /> <!-- keep contents (unless empty since this triggers that), but remove sdt -->
   <xsl:param name="all_but_placeholders" select="false" />
@@ -176,7 +177,8 @@
 
   
 
-	<!--  Ensure tc has content.  
+	<!--  Ensure tc has content, and ends with a w:p as Word reads it (docs/developer/word-table-rules.md,
+	      rules 1 and 2; the same template as OpenDoPEIntegrity.xslt's).
 	      Although we do something similar in OpenDoPEIntegrity, removing od:resultRepeatZero 
 	      or od:resultConditionFalse w:sdt via this stylesheet might mean that content is now gone. -->
 	<xsl:template match="w:tc">
@@ -184,20 +186,49 @@
 		<xsl:variable name="results">
 			<xsl:apply-templates select="@*|node()" />
 		</xsl:variable>
+		<xsl:variable name="endsWithP">
+			<xsl:call-template name="last-block-is-p"><xsl:with-param name="parent" select="xalan:nodeset($results)"/></xsl:call-template>
+		</xsl:variable>
 
 		<xsl:copy>
-			<xsl:choose>
-				<xsl:when test="count(xalan:nodeset($results)//w:p)=0">
-					<xsl:copy-of select="w:tcPr" />				
-					<w:p />
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:copy-of select="$results" />
-				</xsl:otherwise>
-			</xsl:choose>
+			<xsl:copy-of select="$results" />
+			<xsl:if test="$endsWithP != 'yes'"><w:p /></xsl:if>
 		</xsl:copy>
 
 	</xsl:template>
+
+  <!-- Word's cell rule (docs/developer/word-table-rules.md, rule 2): a cell's last block, as Word
+       reads it, is a w:p. 'yes' when the last block child of $parent is a w:p, looked through w:sdt
+       and w:customXml; an mc:AlternateContent counts only when every branch does (Word checks the
+       branch it reads; a spare paragraph after one it does not read is harmless). 'no' with no block. -->
+  <xsl:template name="last-block-is-p">
+    <xsl:param name="parent"/>
+    <xsl:variable name="blocks" select="$parent/w:p|$parent/w:tbl|$parent/w:sdt|$parent/w:customXml|$parent/mc:AlternateContent"/>
+    <xsl:variable name="last" select="$blocks[last()]"/>
+    <xsl:choose>
+      <xsl:when test="not($last)">no</xsl:when>
+      <xsl:when test="$last/self::w:p">yes</xsl:when>
+      <xsl:when test="$last/self::w:sdt">
+        <xsl:call-template name="last-block-is-p"><xsl:with-param name="parent" select="$last/w:sdtContent"/></xsl:call-template>
+      </xsl:when>
+      <xsl:when test="$last/self::w:customXml">
+        <xsl:call-template name="last-block-is-p"><xsl:with-param name="parent" select="$last"/></xsl:call-template>
+      </xsl:when>
+      <xsl:when test="$last/self::mc:AlternateContent">
+        <xsl:variable name="failing">
+          <xsl:for-each select="$last/mc:Choice|$last/mc:Fallback">
+            <xsl:variable name="branch"><xsl:call-template name="last-block-is-p"><xsl:with-param name="parent" select="."/></xsl:call-template></xsl:variable>
+            <xsl:if test="$branch != 'yes'">x</xsl:if>
+          </xsl:for-each>
+        </xsl:variable>
+        <xsl:choose>
+          <xsl:when test="string-length($failing) = 0">yes</xsl:when>
+          <xsl:otherwise>no</xsl:otherwise>
+        </xsl:choose>
+      </xsl:when>
+      <xsl:otherwise>no</xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
 
   <!-- A table may contain zero rows, but a row may not contain zero cells.
        A cell counts wherever it stands in the row: directly, in a cell-level content control or

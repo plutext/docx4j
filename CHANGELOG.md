@@ -117,11 +117,17 @@ Changes in Version 17.3.4
   branch has a row left), OpenDoPE's row removal and its emptying of a cell control read or keep the element where
   they lost its content, deleted the row or lifted one branch's cell out of it; a deleted cell in a branch Word does not
   read is removed with its twin, and a table property record in such a branch is listed and resolved (both found by docx4j-python).
+- Word's table rules documented (docs/developer/word-table-rules.md) and followed: a cell's last block as Word reads
+  it, through block-level controls and the branch it reads of an `mc:AlternateContent`, must be a paragraph (measured
+  2026-10-22). New `org.docx4j.model.table.TableRules`; OpenDoPE's integrity and removal stylesheets and the unequal-columns
+  PDF table end a cell with a paragraph only when that rule fails (the stylesheets looked for a paragraph anywhere in the
+  cell, and the integrity step padded every control in a cell with none inside it).
 - docx4j-bundle now also holds docx4j-digsig and docx4j-markdown. PDF output is the new `docx4j-bundle-extras`
   (docx4j-export-fo, docx4j-chart-render, the docx4j FO renderer fork, Batik, jeuclid and the fonts), a second fat jar
   put beside docx4j-bundle of the same version; its pom depends on docx4j-bundle, so a Maven consumer gets both. It
   carries `org.apache.fop`: do not put Apache FOP's own jars beside it. No class is in both jars
-  (docx4j-bundle/design-rationale.md).
+  (docx4j-bundle/design-rationale.md). Both jars are `Multi-Release` (BouncyCastle's versioned classes now load) and
+  their NOTICE names Plutext, not the ASF, as the jar's holder (found by docx4j-ImportXHTML).
 - Notice: from 17.4.0 `docx4j.jaxb.mc.blockLevel` will default to `preserve` (block-level `mc:AlternateContent` kept whole on load; the Word view on read), not `word` (CR-051 D5, revised 2026-10-21). 17.3.x keeps `word`; set the property, or pass `McBlockLevel` to `load`, to choose now.
 - `addAltChunk` and the OpenDoPE XHTML binding write an HTML or XHTML chunk without a leading XML declaration,
   which Word refuses (it repaired the document), its encoding kept with a byte order mark (`AltChunkHtml`, CR-053
