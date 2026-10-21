@@ -287,19 +287,33 @@ public final class FopCapabilities {
 
 	/** The probe itself, package-private so a test can run it against a class loader of its own. */
 	static FopCapabilities probe(ClassLoader loader) {
+		return probe(loader, fopVersion());
+	}
+
+	/**
+	 * The probe, given the version the loaded {@code org.apache.fop.Version} reports: the FOP whose
+	 * layout managers will run. The marker class lives only in the docx4j FO renderer's jar, so with
+	 * Apache FOP's jars ahead of it on the classpath the marker is still found while Apache's classes
+	 * do the layout; its hooks would then be written into the FO and ignored (a page-anchored table's
+	 * wrap, the measured region extents), which breaks the page. So the hooks are trusted only when
+	 * the loaded version is the marker's.
+	 */
+	static FopCapabilities probe(ClassLoader loader, String loadedVersion) {
 		List<String> warnings = new ArrayList<String>();
 
-		String version = fopVersion();
+		String version = loadedVersion;
 		String line = lineOf(version);
 
 		boolean fork = false;
+		String markerVersion = null;
 		Set<String> caps = new LinkedHashSet<String>();
 		try {
 			Class<?> marker = Class.forName(MARKER_CLASS, true, loader);
 			fork = true;
 			Object v = marker.getMethod("version").invoke(null);
 			if (v != null) {
-				version = v.toString();
+				markerVersion = v.toString();
+				version = markerVersion;
 				line = lineOf(version);
 			}
 			Object c = marker.getMethod("capabilities").invoke(null);
@@ -317,6 +331,17 @@ public final class FopCapabilities {
 		}
 
 		List<String> copies = fopCopies(loader);
+		if (fork && markerVersion != null && !"unknown".equals(loadedVersion) && !loadedVersion.equals(markerVersion)) {
+			warnings.add("FO renderer: the docx4j FO renderer " + markerVersion + " is on the classpath, but the FOP whose"
+					+ " classes load first is Apache FOP " + loadedVersion + (copies.size() > 1 ? " (" + copies + ")" : "")
+					+ "; its layout managers ignore the renderer's hooks, so the hooks are treated as absent and the"
+					+ " output is Apache FOP's. Remove org.apache.xmlgraphics:fop, fop-core, fop-events and fop-util"
+					+ " (the docx4j FO renderer, org.docx4j:docx4j-fo-renderer, replaces them).");
+			fork = false;
+			caps.clear();
+			version = loadedVersion;
+			line = lineOf(version);
+		}
 		if (copies.size() > 1) {
 			warnings.add("FO renderer: " + copies.size() + " copies of FOP are on the classpath; classpath order"
 					+ " decides which one is used, and a class from the other can still be loaded. Remove one of: "

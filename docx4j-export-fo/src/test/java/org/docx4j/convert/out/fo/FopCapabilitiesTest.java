@@ -72,6 +72,30 @@ public class FopCapabilitiesTest {
 		assertTrue("one FOP on this classpath: " + c.getWarnings(), c.getWarnings().isEmpty());
 	}
 
+	/**
+	 * Apache FOP's jars ahead of the docx4j FO renderer's: the marker is found but Apache's layout
+	 * managers run (the customer case of 21 October 2026: a page-anchored table's wrap and the measured
+	 * footer extent ignored, the body flowing through the boxes). The hooks must then be treated as
+	 * absent, with a warning that names both.
+	 */
+	@Test
+	public void apacheClassesAheadOfTheRendererDisableItsHooks() {
+		FopCapabilities honest = FopCapabilities.probe(FopCapabilities.class.getClassLoader());
+		if (!honest.isDocx4jRenderer()) return;   // Apache FOP alone: nothing to shadow
+		FopCapabilities mixed = FopCapabilities.probe(FopCapabilities.class.getClassLoader(), "2.11");
+		assertFalse(mixed.describe(), mixed.isDocx4jRenderer());
+		assertTrue(mixed.describe(), mixed.getCapabilities().isEmpty());
+		assertEquals("2.11", mixed.getVersion());
+		assertTrue(mixed.getWarnings().toString(), mixed.getWarnings().toString().contains("Apache FOP 2.11")
+				&& mixed.getWarnings().toString().contains(honest.getVersion()));
+		// the same version as the marker's is the renderer, hooks and all
+		FopCapabilities same = FopCapabilities.probe(FopCapabilities.class.getClassLoader(), honest.getVersion());
+		assertTrue(same.isDocx4jRenderer());
+		assertEquals(honest.getCapabilities(), same.getCapabilities());
+		// a version FOP cannot report (no jar manifest) is no evidence either way
+		assertTrue(FopCapabilities.probe(FopCapabilities.class.getClassLoader(), "unknown").isDocx4jRenderer());
+	}
+
 	@Test
 	public void hooksFollowTheRenderer() {
 		FopCapabilities c = FopCapabilities.get();
