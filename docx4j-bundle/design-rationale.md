@@ -135,3 +135,55 @@ avoided by simply not adding another slf4j-api).
   `ossrh-staging-api.central.sonatype.com`, which already publishes through the
   Portal and enforces the same requirements, so no new publishing infra is
   needed. Migrating to `central-publishing-maven-plugin` is orthogonal.
+
+## 2026-10-21: what the base jar holds, and docx4j-bundle-extras
+
+Decided by Jason (2026-10-21, closing the registry's `bundle-digsig` question): the base jar
+also carries **docx4j-digsig** and **docx4j-markdown**; PDF output goes in a second artifact,
+**docx4j-bundle-extras**, put beside the base jar ("Base plus an add-on called
+docx4j-bundle-extras"). Two self-contained fat jars were considered and rejected: both would
+carry core and the JAXB runtime, so a user with both on a classpath would have every core class
+twice; and an add-on is the shape that can later carry LGPL code (docx4j-ImportXHTML) without
+touching the base artifact's licence story.
+
+### The base jar
+
+docx4j-core, docx4j-JAXB-ReferenceImpl, docx4j-digsig (Santuario, BouncyCastle, woodstox,
+TextImageGen) and docx4j-markdown (commonmark and its extensions). 49 artifacts; 34.5 MB at
+17.3.4-SNAPSHOT (21.7 MB at 17.3.3). All permissive licences, as before.
+
+### docx4j-bundle-extras
+
+docx4j-export-fo, docx4j-chart-render, the docx4j FO renderer (the Apache FOP fork:
+`docx4j-fo-renderer`, `-core`, `-util`, `-events`), jaxb-xslfo, Batik, jeuclid, xml-apis-ext and
+the font modules export-fo depends on at compile scope (croscore, crosextra, symbol). 31
+artifacts; 15.1 MB. Alone it has no docx4j-core (a `NoClassDefFoundError`, by design); beside
+`docx4j-bundle` of the same version, `Docx4J.toPDF` works.
+
+- **The deployed pom names `docx4j-bundle`** (compile) as its one resolvable dependency, so a
+  Maven consumer of the extras gets the base jar too. The shaded inputs are declared `optional`
+  and docx4j-core's tree `provided`, neither transitive; flatten runs in `direct` mode there,
+  since the parent's `all` mode would hoist export-fo's whole tree as direct dependencies and
+  hand a consumer every shaded class twice.
+- **The shade is a positive list** (`artifactSet/includes`): export-fo, its font modules,
+  chart-render, `docx4j-fo-renderer*`, jaxb-xslfo, `batik-*`, jeuclid, xml-apis-ext. Measured
+  first with the provided-scope approach alone: shade left out docx4j-core, the RI, digsig and
+  markdown themselves but shaded 26 of their transitive dependencies (generated-objects,
+  commons-io, xalan, fontbox, ...), so "provided" does not give the difference. A dependency
+  export-fo gains and the list lacks fails loudly (`ClassNotFoundException` in the PDF check); a
+  dependency core gains can never leak in.
+- **The check, run before a release:** no class entry outside `META-INF/` may be in both jars.
+  At 17.3.4-SNAPSHOT: base 21,713 entries, extras 5,579, in both 0.
+
+  ```
+  comm -12 <(unzip -Z1 docx4j-bundle-<v>.jar | grep -v '^META-INF/' | sort) \
+           <(unzip -Z1 docx4j-bundle-extras-<v>.jar | grep -v '^META-INF/' | sort)
+  ```
+  `META-INF/services/org.apache.xmlgraphics.image.loader.spi.*` is in both (xmlgraphics-commons
+  in the base, FOP's loaders in the extras); the ServiceLoader reads both files, which is right.
+- **The FOP clash moves with it.** The extras carry `org.apache.fop` (2,826 entries), so Apache
+  FOP's own jars must not be put beside them; `FopCapabilities` warns when they are (17.3.4).
+- **Smoke tests from the jars alone** (2026-10-21, scratch, not in the build): base jar alone
+  loads `loadAndSave.docx`, extracts its text, exports Markdown, signs it with a generated RSA
+  key and reads the signature back on reload; base plus extras writes its PDF; extras alone
+  fails on `WordprocessingMLPackage` as expected.

@@ -116,6 +116,11 @@ Changes in Version 17.3.4
   the text model, the inspector, tracked changes (listed once, the other branches' as twins; a table goes only when no
   branch has a row left), OpenDoPE's row removal and its emptying of a cell control read or keep the element where
   they lost its content, deleted the row or lifted one branch's cell out of it.
+- docx4j-bundle now also holds docx4j-digsig and docx4j-markdown. PDF output is the new `docx4j-bundle-extras`
+  (docx4j-export-fo, docx4j-chart-render, the docx4j FO renderer fork, Batik, jeuclid and the fonts), a second fat jar
+  put beside docx4j-bundle of the same version; its pom depends on docx4j-bundle, so a Maven consumer gets both. It
+  carries `org.apache.fop`: do not put Apache FOP's own jars beside it. No class is in both jars
+  (docx4j-bundle/design-rationale.md).
 - Notice: from 17.4.0 `docx4j.jaxb.mc.blockLevel` will default to `preserve` (block-level `mc:AlternateContent` kept whole on load; the Word view on read), not `word` (CR-051 D5, revised 2026-10-21). 17.3.x keeps `word`; set the property, or pass `McBlockLevel` to `load`, to choose now.
 - `addAltChunk` and the OpenDoPE XHTML binding write an HTML or XHTML chunk without a leading XML declaration,
   which Word refuses (it repaired the document), its encoding kept with a byte order mark (`AltChunkHtml`, CR-053

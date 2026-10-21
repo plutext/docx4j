@@ -13,7 +13,8 @@
 	<name>docx4j-bundle</name>
 	
 	<description>
-		fat jar
+		fat jar: docx4j-core, the JAXB reference implementation, docx4j-digsig and docx4j-markdown.
+		PDF output is docx4j-bundle-extras, a second jar put beside this one.
 	</description>
 
 	<!--
@@ -164,6 +165,24 @@
 			     jakarta.xml.bind API but no implementation, so standalone use
 			     failed with eg "Couldn't get [Content_Types].xml from ZipFile"
 			     (JAXBContext creation having failed underneath) -->
+		</dependency>
+
+		<!-- From 17.3.4 the base bundle also carries the two small, pure-Java
+		     capabilities (Jason, 2026-10-21): digital signatures (Santuario,
+		     BouncyCastle) and Markdown (commonmark).  PDF output, the chart
+		     renderer and the FO renderer fork go in docx4j-bundle-extras, a
+		     second jar put beside this one, since they are large and shade a
+		     copy of org.apache.fop that would clash with a consumer's own FOP.
+		     See design-rationale.md. -->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-digsig</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-markdown</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 
 <!-- 	

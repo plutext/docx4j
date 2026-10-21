@@ -69,16 +69,22 @@ jars:
   published to Maven Central as `org.docx4j:docx4j-bundle`, so you can just
   download `docx4j-bundle-<version>.jar` (eg from
   `https://repo1.maven.org/maven2/org/docx4j/docx4j-bundle/<version>/`).  It
-  contains docx4j-core plus the JAXB reference-implementation runtime, so no
-  other jars are needed for the operations above.  (You can also build it
-  yourself: `mvn install` in the `docx4j-bundle` directory after `mvn install`
-  at the top level — the file is then `target/docx4j-bundle-<version>.jar`.)
+  contains docx4j-core plus the JAXB reference-implementation runtime, and from
+  17.3.4 digital signatures (docx4j-digsig) and Markdown (docx4j-markdown) too,
+  so no other jars are needed for the operations above.  (You can also build it
+  yourself: `mvn install` at the top level — the file is then
+  `docx4j-bundle/target/docx4j-bundle-<version>.jar`.)
   Note: the bundle only contains the JAXB runtime from 17.0.4 on.
-- For **PDF output**, add `docx4j-export-fo` and its dependencies.  The
-  simplest way to collect them is a throwaway Maven pom depending on
-  `org.docx4j:docx4j-export-fo`, then
-  `mvn dependency:copy-dependencies -DoutputDirectory=libs`, and put
-  `libs/*.jar` on the classpath alongside the bundle.
+- For **PDF output**, from 17.3.4 download the second jar,
+  `docx4j-bundle-extras-<version>.jar` (from
+  `https://repo1.maven.org/maven2/org/docx4j/docx4j-bundle-extras/<version>/`),
+  and put it on the classpath beside the bundle of the same version.  It holds
+  docx4j-export-fo, the chart renderer, docx4j's FO renderer (a fork of Apache
+  FOP) and fonts, and nothing the bundle already has; alone it does nothing.  Do
+  not add Apache FOP's own jars beside it.  (Before 17.3.4: a throwaway Maven pom
+  depending on `org.docx4j:docx4j-export-fo`, then
+  `mvn dependency:copy-dependencies -DoutputDirectory=libs`, and `libs/*.jar`
+  on the classpath alongside the bundle.)
 
 ## Example 1: OpenDoPE data binding (bundle jar only)
 
@@ -110,12 +116,12 @@ print(str(sw))                                    # bound values are present
 pkg.save(File("out.docx"))
 ```
 
-## Example 2: docx → PDF (bundle + export-fo jars)
+## Example 2: docx → PDF (bundle + bundle-extras jars)
 
 ```python
-import glob, jpype, jpype.imports
+import jpype, jpype.imports
 
-cp = ["docx4j-bundle-17.0.4.jar"] + glob.glob("libs/*.jar")
+cp = ["docx4j-bundle-17.3.4.jar", "docx4j-bundle-extras-17.3.4.jar"]
 jpype.startJVM(classpath=cp)
 
 from java.io import File, FileOutputStream

@@ -73,7 +73,8 @@
         <module>docx4j-samples-documents4j-remote</module>        
         <module>docx4j-samples-documents4j-local</module>        
 
-        <module>docx4j-bundle</module>        
+        <module>docx4j-bundle</module>
+        <module>docx4j-bundle-extras</module> <!-- PDF output: export-fo, chart-render, the FO renderer fork, fonts; put beside docx4j-bundle -->        
         
     </modules>
 	

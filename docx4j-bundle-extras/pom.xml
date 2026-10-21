@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+  <parent>
+	<groupId>org.docx4j</groupId>
+	<artifactId>docx4j-parent</artifactId>
+	<version>${revision}</version>
+  </parent>
+  
+	<artifactId>docx4j-bundle-extras</artifactId>
+	<packaging>jar</packaging>
+	<name>docx4j-bundle-extras</name>
+	
+	<description>
+		fat jar put beside docx4j-bundle: docx4j-export-fo (docx to PDF), docx4j-chart-render, the docx4j FO renderer
+		(a fork of Apache FOP) and the four font modules, without what docx4j-bundle already holds. Requires
+		docx4j-bundle of the same version. Note that it carries org.apache.fop: do not put Apache FOP's own jars beside it.
+	</description>
+
+	<!--
+		Published to Maven Central as an uber jar (shape B: the shaded fat jar IS
+		the main artifact; the deployed pom carries no dependencies).  See
+		design-rationale.md in this directory.
+
+		The old maven.javadoc.skip / maven.deploy.skip properties are gone: this
+		module has no src/ of its own, so maven-source-plugin and
+		maven-javadoc-plugin each produce an empty (but present, and signed) jar,
+		which is what Central's component validation needs.  The "unnamed module"
+		javadoc error that prompted the skip only occurs when documenting docx4j's
+		real classes; there are none here.
+	-->
+	
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.6.0</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+          <encoding>UTF-8</encoding>
+          <forceJavacCompilerUse>true</forceJavacCompilerUse>
+        </configuration>
+      </plugin>
+	<!--  mvn package 
+		
+		filters avoid "Invalid signature file digest for Manifest main attributes"
+		https://stackoverflow.com/a/6743609/1031689
+		-->	 
+			<plugin> 
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<!-- A positive list: only what docx4j-bundle does not hold.  Shade leaves out
+							     a provided artifact but not its transitive tree (measured 2026-10-21: with
+							     docx4j-core provided, 26 of its dependencies were still shaded), so the
+							     delta is named here.  A new export-fo dependency missing from this list
+							     fails loudly (ClassNotFoundException in the PDF smoke test); a new core
+							     dependency can never leak in.  The check: no class entry may be in both
+							     jars (docx4j-bundle/design-rationale.md, "extras"). -->
+							<artifactSet>
+								<includes>
+									<include>org.docx4j:docx4j-export-fo</include>
+									<include>org.docx4j:docx4j-export-fo-fonts-*</include>
+									<include>org.docx4j:docx4j-chart-render</include>
+									<include>org.docx4j:docx4j-fo-renderer*</include>
+									<include>org.plutext:jaxb-xslfo</include>
+									<include>org.apache.xmlgraphics:batik-*</include>
+									<include>de.rototor.jeuclid:*</include>
+									<include>xml-apis:xml-apis-ext</include>
+								</includes>
+							</artifactSet>
+			              <!-- shape B: the fat jar replaces the main artifact
+			                   (docx4j-bundle-<v>.jar), so it gets the clean Central
+			                   download URL and carries the sources/javadoc/signature
+			                   siblings.  createDependencyReducedPom is irrelevant here
+			                   because flatten (below) writes the deployed pom. -->
+			              <shadedArtifactAttached>false</shadedArtifactAttached>
+			              <!-- Don't let shade write the deployed pom: flatten (below)
+			                   owns it, stripping dependencies entirely.  Leaving this
+			                   at the default (true) would install shade's
+			                   dependency-reduced-pom instead, which still carries a
+			                   test-scope junit. -->
+			              <createDependencyReducedPom>false</createDependencyReducedPom>
+			              <!-- 
+                          <relocations>
+                            <relocation>
+                              <pattern>org.apache.http</pattern>
+                              <shadedPattern>org.docx4j.apache.http</shadedPattern>
+                            </relocation>
+                            <relocation>
+                              <pattern>org.apache.commons.logging</pattern>
+                              <shadedPattern>org.docx4j.slf4j.apache.commons.logging</shadedPattern>
+                            </relocation>
+                          </relocations> --> 
+			              
+					    <filters>
+					        <filter>
+					            <artifact>*:*</artifact>
+					            <excludes>
+					                <exclude>META-INF/*.SF</exclude>
+					                <exclude>META-INF/*.DSA</exclude>
+					                <exclude>META-INF/*.RSA</exclude>
+					                <!-- a fat jar must not carry any single dependency's module descriptor -->
+					                <exclude>module-info.class</exclude>
+					                <exclude>META-INF/versions/*/module-info.class</exclude>
+					            </excludes>
+					        </filter>
+					    </filters>
+					    <transformers>
+					        <!-- The bundled dependencies each ship their own LICENSE/NOTICE
+					             (and, for some, META-INF/services provider files).  Without
+					             these transformers shade keeps only one file per path
+					             (last-wins), which loses attribution and can break service
+					             discovery.
+					             - ApacheNoticeResourceTransformer aggregates every bundled
+					               NOTICE into one META-INF/NOTICE (Apache-2.0 section 4d).
+					             - ServicesResourceTransformer concatenates colliding
+					               META-INF/services/* provider lists instead of dropping all
+					               but one.
+					             We deliberately do NOT use ApacheLicenseResourceTransformer:
+					             in this shade version it merely *consumes* (drops) LICENSE
+					             files without emitting one, which would also delete the
+					             canonical Apache-2.0 LICENSE we ship as a module resource
+					             (src/main/resources/META-INF/LICENSE). -->
+					        <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
+					            <projectName>docx4j-bundle-extras</projectName>
+					        </transformer>
+					        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+					    </transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<!-- The deployed pom names docx4j-bundle (compile) and nothing else a
+			     consumer resolves: the shaded inputs are declared optional (not
+			     transitive) and docx4j-core's tree provided (not transitive, and
+			     not shaded: it is in docx4j-bundle).  The parent runs flatten with
+			     flattenDependencyMode=all, which would hoist export-fo's whole tree
+			     as direct dependencies and so give a Maven consumer every shaded
+			     class twice; "direct" keeps the declarations as they are.  See
+			     docx4j-bundle/design-rationale.md. -->
+			<plugin>
+			    <groupId>org.codehaus.mojo</groupId>
+			    <artifactId>flatten-maven-plugin</artifactId>
+			    <configuration>
+			        <flattenMode>ossrh</flattenMode>
+			        <flattenDependencyMode>direct</flattenDependencyMode>
+			    </configuration>
+			</plugin>
+
+	    </plugins>
+  </build>
+	
+	<dependencies>
+
+		<!-- The base jar: the one dependency the deployed pom carries, so that a Maven
+		     consumer of docx4j-bundle-extras gets docx4j-bundle too.  Excluded from the
+		     shade above. -->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-bundle</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- What docx4j-bundle already shades, declared provided and BEFORE export-fo so
+		     that Maven's nearest-wins mediation gives their whole trees provided scope:
+		     shade then leaves them out, and a consumer never resolves them from here. -->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-core</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-digsig</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-markdown</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- The shaded inputs: export-fo brings docx4j-chart-render, the FO renderer fork
+		     and its events jar, jaxb-xslfo, Batik, jeuclid and the four font modules.
+		     Optional, so the deployed pom does not hand them to a consumer unshaded. -->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-export-fo</artifactId>
+			<version>${project.version}</version>
+			<optional>true</optional>
+		</dependency>
+
+	</dependencies>
+	
+</project>
