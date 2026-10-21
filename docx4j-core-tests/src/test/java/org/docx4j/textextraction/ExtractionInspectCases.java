@@ -147,7 +147,7 @@ final class ExtractionInspectCases {
         }
 
         StringBuilder body = new StringBuilder();
-        body.append(p("<w:pPr><w:pStyle w:val='Title'/></w:pPr>" + r("Text extraction probe, inspection cases (58 to 67)")));
+        body.append(p("<w:pPr><w:pStyle w:val='Title'/></w:pPr>" + r("Text extraction probe, inspection cases (58 to 74)")));
         body.append(pt("Built by docx4j (ExtractionInspectCases, in docx4j-core-tests), beside extraction-probe.docx, for"
                 + " CR-050. Each case starts with a heading, Case and its number. The page colour is pale green."));
 
@@ -161,6 +161,7 @@ final class ExtractionInspectCases {
         fonts(b, pkg, body);
         pictures(b, h, pkg, mdp, body);
         stored(b, mdp, body);
+        String headerPicture = images(b, h, mdp, used, body);
 
         body.append("<w:sectPr><w:headerReference w:type='default' r:id='" + usedId + "'/>" + PAGE + "</w:sectPr>");
         String root = NS.replace(" mc:Ignorable", " xmlns:wpi='" + WPI_URI + "' mc:Ignorable");
@@ -169,7 +170,8 @@ final class ExtractionInspectCases {
         h.raw.put(unused.getPartName().getName(), "<w:hdr" + NS + ">" + pt("HDR59_UNUSED")
                 + p("<w:r>" + ac("", choice("wps", anchorBox(h, "page", 8_000_000L, "page", 914_400L, 1_828_800L, 457_200L, "",
                         pt("HDR59_BOX")))) + "</w:r>") + "</w:hdr>");
-        h.raw.put(used.getPartName().getName(), "<w:hdr" + NS + ">" + pt("HDR63_USED") + watermark(h, "WMK63_WATERMARK") + "</w:hdr>");
+        h.raw.put(used.getPartName().getName(), "<w:hdr" + NS + ">" + pt("HDR63_USED") + watermark(h, "WMK63_WATERMARK")
+                + p(r("Header picture: ") + headerPicture) + "</w:hdr>");
         h.raw.put(footnotes.getPartName().getName(), "<w:footnotes" + NS + ">" + separators("footnote") + fns + "</w:footnotes>");
         h.raw.put(comments.getPartName().getName(), "<w:comments" + NS + ">" + comment(0, "10000063", "CMT63_ANCHORED")
                 + comment(1, "10000064", "CMT63_UNANCHORED") + "</w:comments>");
@@ -593,6 +595,130 @@ final class ExtractionInspectCases {
                 + "<a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x='0' y='0'/>"
                 + "<a:ext cx='914400' cy='457200'/></a:xfrm><a:prstGeom prst='rect'><a:avLst/></a:prstGeom></pic:spPr></pic:pic>"
                 + "</a:graphicData></a:graphic></wp:inline></w:drawing></w:r>";
+    }
+
+    // ------------------------------------------------------------------ 68 to 74: the text a picture draws (D21, decided (c))
+
+    /** The image parts the pictures show, and the picture for the used header (case 71). */
+    static String images(ExtractionProbeBuilder b, ExtractionProbeBuilder h, MainDocumentPart mdp, HeaderPart used,
+            StringBuilder body) throws Exception {
+        b.begin(68, "an SVG-only picture: text with tspan and textPath");
+        body.append(caseHeading(68, b.current.title));
+        String svg68 = image(mdp, "/word/media/svg68.svg", "image/svg+xml", utf8(svg(
+                "<defs><path id='p68' d='M4,88 Q96,40 188,88'/></defs>"
+                + "<text x='4' y='20' font-family='Arial' font-size='10'>SVG68_PLAIN</text>"
+                + "<text x='4' y='44' font-family='Arial' font-size='10'>\n  <tspan>SVG68_TSPAN</tspan>\n  <tspan fill='red'>after</tspan>\n</text>"
+                + "<text font-family='Arial' font-size='10'><textPath xlink:href='#p68' href='#p68'>SVG68_TEXTPATH</textPath></text>")));
+        body.append(p(r("SVG only (a:blip names the SVG, no raster copy): ") + pic(h, blip(svg68, null), "SVG68_DESCR")));
+        b.gated("SVG68_DESCR", "alt_text: true", "the picture's descr");
+        b.never("SVG68_PLAIN", "a <text> element in the SVG part: an image's, never text (REQ-514); inspection: image.svg_text, unextractable (D21)");
+        b.never("SVG68_TSPAN", "a <tspan> in a <text>: one line with the text after it, white space collapsed; inspection: image.svg_text");
+        b.never("SVG68_TEXTPATH", "a <textPath> over a path in <defs>; inspection: image.svg_text");
+
+        b.begin(69, "two pictures showing one SVG part, each with the raster copy Word keeps");
+        body.append(caseHeading(69, b.current.title));
+        String svg69 = image(mdp, "/word/media/svg69.svg", "image/svg+xml", utf8(svg(
+                "<text x='4' y='28' font-family='Arial' font-size='10'>SVG69_SHARED</text>")));
+        String png69 = mdp.addTargetPart(BinaryPartAbstractImage.createImagePart((WordprocessingMLPackage) mdp.getPackage(), png(96, 48, 0x66aa77))).getId();
+        body.append(p(r("First: ") + pic(h, blip(png69, svg69), "SVG69_FIRST_DESCR") + r(" second: ") + pic(h, blip(png69, svg69), "SVG69_SECOND_DESCR")));
+        b.gated("SVG69_FIRST_DESCR", "alt_text: true", "the first picture's descr");
+        b.gated("SVG69_SECOND_DESCR", "alt_text: true", "the second picture's descr");
+        b.never("SVG69_SHARED", "the one SVG part both pictures show: one finding, at the first; inspection: image.svg_text, summary pictures=2, raster named");
+
+        b.begin(70, "an SVG with no text");
+        body.append(caseHeading(70, b.current.title));
+        String svg70 = image(mdp, "/word/media/svg70.svg", "image/svg+xml", utf8(svg(
+                "<title>SVG70_TITLE_ONLY</title><desc>a title and a description, which no viewer draws</desc>"
+                + "<circle cx='96' cy='48' r='30' fill='#5577aa'/>")));
+        body.append(p(r("No text element: ") + pic(h, blip(svg70, null), "SVG70_DESCR")));
+        b.gated("SVG70_DESCR", "alt_text: true", "the picture's descr");
+        b.never("SVG70_TITLE_ONLY", "an SVG <title>, not drawn: no image.svg_text finding");
+
+        b.begin(71, "an SVG picture in the header the section uses");
+        body.append(caseHeading(71, b.current.title));
+        String svg71 = image(used, "/word/media/svg71.svg", "image/svg+xml", utf8(svg(
+                "<text x='4' y='28' font-family='Arial' font-size='10'>SVG71_HEADER</text>")));
+        String headerPicture = pic(h, blip(svg71, null), "a header picture");
+        body.append(pt("The picture is in the header the section uses, after its watermark."));
+        b.never("SVG71_HEADER", "a <text> in an SVG a header's picture shows; inspection: image.svg_text, its part reached from the header");
+
+        b.begin(72, "a WMF picture through VML: text in two character sets, through the object table");
+        body.append(caseHeading(72, b.current.title));
+        String wmf72 = image(mdp, "/word/media/image72.wmf", "image/x-wmf", InspectMetafiles.wmf72());
+        body.append(p(r("WMF (v:imagedata): ") + vmlPicture(h, wmf72)));
+        b.never("WMF72_TEXTOUT", "a META_TEXTOUT record with the ANSI font selected; inspection: image.metafile_text, unextractable (D21)");
+        b.never("WMF72_SJIS", "a META_EXTTEXTOUT record with a Shift-JIS font selected: WMF72_SJIS 年度, decoded in the font's charset; inspection: image.metafile_text");
+        b.never("WMF72_GLYPH_INDEX", "a META_EXTTEXTOUT record of glyph indices (ETO_GLYPH_INDEX): left out (image.text)");
+        b.never("WMF72_SLOT_REUSED", "a META_TEXTOUT after the Shift-JIS font's slot was deleted and reused by an ANSI font; inspection: image.metafile_text");
+        b.never("WMF72_SYMBOL", "a META_TEXTOUT with a SYMBOL-charset font selected: left out (image.text)");
+
+        b.begin(73, "an EMF picture: UTF-16 and ANSI text records, a glyph-index record, a stock font");
+        body.append(caseHeading(73, b.current.title));
+        String emf73 = image(mdp, "/word/media/image73.emf", "image/x-emf", InspectMetafiles.emf73());
+        body.append(p(r("EMF (a:blip): ") + pic(h, blip(emf73, null), "EMF73_DESCR")));
+        b.gated("EMF73_DESCR", "alt_text: true", "the picture's descr");
+        b.never("EMF73_UTF16", "an EMR_EXTTEXTOUTW record: EMF73_UTF16 ünï; inspection: image.metafile_text, unextractable (D21)");
+        b.never("EMF73_ANSI", "an EMR_EXTTEXTOUTA record with the ANSI font at object-table index 1 selected: EMF73_ANSI é; inspection: image.metafile_text");
+        b.never("EMF73_GLYPH_INDEX", "an EMR_EXTTEXTOUTW record of glyph indices: left out (image.text)");
+        b.never("EMF73_STOCK_FONT", "an EMR_EXTTEXTOUTA record with the stock SYSTEM_FONT selected (ANSI); inspection: image.metafile_text");
+
+        b.begin(74, "an EMF+ dual file from Windows (Apache POI's test data): the GDI records carry the text");
+        body.append(caseHeading(74, b.current.title));
+        byte[] dual;
+        try (java.io.InputStream in = InspectMetafiles.class.getResourceAsStream("/metafiles/SimpleEMF_windows.emf")) {
+            dual = ExtractionProbeBuilder.readAll(in);
+        }
+        String emf74 = image(mdp, "/word/media/image74.emf", "image/x-emf", dual);
+        body.append(p(r("EMF+ dual (a:blip): ") + pic(h, blip(emf74, null), "EMF74_DESCR")));
+        b.gated("EMF74_DESCR", "alt_text: true", "the picture's descr");
+        return headerPicture;
+    }
+
+    static String svg(String content) {
+        return "<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='192' height='96' viewBox='0 0 192 96'>"
+                + "<rect width='192' height='96' fill='#eef3ff'/>" + content + "</svg>";
+    }
+
+    static String image(org.docx4j.openpackaging.parts.Part owner, String name, String type, byte[] bytes) throws Exception {
+        BinaryPart part = new BinaryPart(new PartName(name));
+        part.setContentType(new ContentType(type));
+        part.setRelationshipType(REL + "image");
+        part.setBinaryData(bytes);
+        return owner.addTargetPart(part).getId();
+    }
+
+    /** {@code a:blip} naming the raster (or the only) part, and, where given, the SVG in its {@code extLst} as Word writes it. */
+    static String blip(String image, String svg) {
+        return svg == null ? "<a:blip r:embed='" + image + "'/>"
+                : "<a:blip r:embed='" + image + "'><a:extLst><a:ext uri='{96DAC541-7B7A-43D3-8B79-37D633B846F1}'>"
+                        + "<asvg:svgBlip xmlns:asvg='http://schemas.microsoft.com/office/drawing/2016/SVG/main' r:embed='" + svg
+                        + "'/></a:ext></a:extLst></a:blip>";
+    }
+
+    /** An inline picture with a default name and the descr given, 2 x 1 inches. */
+    static String pic(ExtractionProbeBuilder h, String blip, String descr) {
+        int id = h.docPrId++;
+        return "<w:r><w:drawing><wp:inline distT='0' distB='0' distL='0' distR='0'><wp:extent cx='1828800' cy='914400'/>"
+                + "<wp:effectExtent l='0' t='0' r='0' b='0'/><wp:docPr id='" + id + "' name='Picture " + id + "' descr='" + descr + "'/>"
+                + "<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect='1'/></wp:cNvGraphicFramePr>"
+                + "<a:graphic><a:graphicData uri='http://schemas.openxmlformats.org/drawingml/2006/picture'><pic:pic><pic:nvPicPr>"
+                + "<pic:cNvPr id='0' name='Picture " + id + "'/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill>" + blip
+                + "<a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x='0' y='0'/>"
+                + "<a:ext cx='1828800' cy='914400'/></a:xfrm><a:prstGeom prst='rect'><a:avLst/></a:prstGeom></pic:spPr></pic:pic>"
+                + "</a:graphicData></a:graphic></wp:inline></w:drawing></w:r>";
+    }
+
+    /** A VML picture ({@code w:pict}), the form Word gives a WMF in older documents, 2 x 1 inches. */
+    static String vmlPicture(ExtractionProbeBuilder h, String image) {
+        int id = h.shapeId++;
+        return "<w:r><w:pict><v:shapetype id='_x0000_t75' coordsize='21600,21600' o:spt='75' o:preferrelative='t'"
+                + " path='m@4@5l@4@11@9@11@9@5xe' filled='f' stroked='f'><v:stroke joinstyle='miter'/><v:formulas>"
+                + "<v:f eqn='if lineDrawn pixelLineWidth 0'/><v:f eqn='sum @0 1 0'/><v:f eqn='sum 0 0 @1'/><v:f eqn='prod @2 1 2'/>"
+                + "<v:f eqn='prod @3 21600 pixelWidth'/><v:f eqn='prod @3 21600 pixelHeight'/><v:f eqn='sum @0 0 1'/><v:f eqn='prod @6 1 2'/>"
+                + "<v:f eqn='prod @7 21600 pixelWidth'/><v:f eqn='sum @8 21600 0'/><v:f eqn='prod @7 21600 pixelHeight'/><v:f eqn='sum @10 21600 0'/>"
+                + "</v:formulas><v:path o:extrusionok='f' gradientshapeok='t' o:connecttype='rect'/><o:lock v:ext='edit' aspectratio='t'/></v:shapetype>"
+                + "<v:shape id='_x0000_i" + id + "' type='#_x0000_t75' style='width:144pt;height:72pt'>"
+                + "<v:imagedata r:id='" + image + "' o:title=''/></v:shape></w:pict></w:r>";
     }
 
     /** One sheet: A1 and B1 (column B hidden), A2 (row 2 hidden) */

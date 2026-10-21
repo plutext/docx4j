@@ -1135,9 +1135,14 @@ public class ExtractionProbeBuilder {
 		try (ZipInputStream in = new ZipInputStream(new ByteArrayInputStream(docx))) {
 			ZipEntry e;
 			while ((e = in.getNextEntry()) != null) {
+				boolean metafile = e.getName().endsWith(".wmf") || e.getName().endsWith(".emf");
 				if (!(e.getName().endsWith(".xml") || e.getName().endsWith(".rels") || e.getName().endsWith(".svg")
-						|| e.getName().endsWith(".htm") || e.getName().endsWith(".html"))) continue;
-				Matcher m = TOKEN.matcher(new String(readAll(in), StandardCharsets.UTF_8));
+						|| e.getName().endsWith(".htm") || e.getName().endsWith(".html") || metafile)) continue;
+				byte[] data = readAll(in);
+				// a metafile's text records: single-byte and UTF-16 (cases 72 and 73)
+				String text = metafile ? new String(data, StandardCharsets.ISO_8859_1) + "\n" + new String(data, StandardCharsets.UTF_16LE)
+						: new String(data, StandardCharsets.UTF_8);
+				Matcher m = TOKEN.matcher(text);
 				while (m.find()) found.merge(m.group(), 1, Integer::sum);
 			}
 		}
@@ -1302,7 +1307,7 @@ public class ExtractionProbeBuilder {
                 + "Cases 39–49 and 53–54 extend the main probe; cases 50–52 are in `extraction-probe-external.docm`;\n"
                 + "cases 55–57 (a table of contents, an interrupted list, an embedded workbook with hidden sheets) are in\n"
                 + "`extraction-probe-structure.docx`, a fixture of their own so that the main probe is not rebuilt (19 October 2026);\n"
-                + "cases 58–67, the inspector's boundary cases (CR-050 phase 0), are in `extraction-probe-inspect.docx`.\n"
+                + "cases 58–74, the inspector's boundary cases (CR-050 phase 0; 68–74 the text a picture draws, phase 3), are in `extraction-probe-inspect.docx`.\n"
                 + "Jason checked the earlier 52-case r2 DOCX without repair, declining field updates (18 October 2026).\n"
                 + "The unchanged external DOCM also passed. Jason completed the r3 check for cases 53–54 (18 October 2026).\n"
                 + "The Word findings above describe the original 38-case\n"

@@ -1,6 +1,9 @@
 # CR-050: Inspect - hidden and near-hidden content as a first-class report
 
-Status: IN PROGRESS. Phase 0 done 2026-10-19 (§5, "Phase 0 record", Jason: "implement CR-050 phase 0"):
+Status: DONE 2026-10-21 (Jason: "commit both phases"); open for Jason: the two departures of phase 3
+(the SYMBOL-charset limitation, measured; the image part as the location), docx4j-mcp's T9 (excerpts
+off by default over MCP) and its per-row capability column for `expected-inspection.tsv` (§5, "Phase
+3 record"). Phase 0 done 2026-10-19 (§5, "Phase 0 record", Jason: "implement CR-050 phase 0"):
 the contract (`docx4j-core-tests/src/test/resources/text-extraction/INSPECTION.md`), an oracle of every
 finding on the suite's four fixtures, the harness's exact comparison, and a new fixture,
 `extraction-probe-inspect.docx` (cases 58 to 67), checked in Word 365. Phase 1 done 2026-10-19 (§5,
@@ -8,7 +11,9 @@ finding on the suite's four fixtures, the harness's exact comparison, and a new 
 row passing; D18's tests calibrated on the corpora (ratified by Jason, 20 October 2026). Phase 2 done 2026-10-19 (§5,
 "Phase 2 record", Jason: "start CR-050 phase 2"): the counts in an extraction's result under docx4j's
 `inspect: true`, off by default by D9's rule (the counts cost about four fifths of an extraction); the
-rulings before it; REQ-903 checked. Phase 3 to come.
+rulings before it; REQ-903 checked. Phase 3 done 2026-10-21 (§5, "Phase 3 record", Jason: "do CR-050 phase 3"): D21 decided (c) and
+built, `image.svg_text` and `image.metafile_text`, cases 68 to 74 checked in Word 365; the hand-offs
+sent and acknowledged by docx4j-mcp, core-ts, python, the editor and the portfolio (WD 0.30).
 Proposed 2026-10-19, drafted at Jason's request ("consider section 12 ... of
 ../docx4j-portfolio/docs/text_extraction_behaviour_model.md then draft a CR to create that tool");
 revised the same day after three reviews (§9), to state its objective (§0, Jason: "frame it that way"),
@@ -16,7 +21,8 @@ and for text an embedded font draws as other text or as nothing (§9, Jason's qu
 Four phases (§5); decisions in §6: D1 to D8 and D11 to D20 taken by Jason on 19 October 2026 (D11 with
 1,000 findings, revised to 10,000 on 20 October; D17 revised to the list alone after phase 0's Word check; D16 closed, overtaken by WD
 0.17); D9 (a) taken before phase 2, with the faces' bound and the unanchored comment (§5); D10 open; D21 (an SVG's text, proposed 20 October 2026 from Jason's
-`now you see it.docx`) open.
+`now you see it.docx`) decided (c) on 21 October 2026, the text a picture draws as characters, an SVG's and a
+metafile's, built the same day as phase 3's first item (§5).
 
 The specification is the portfolio's *WordprocessingML Text Extraction*, WD 0.16
 (`docx4j-portfolio/docs/text_extraction_specification_wd.md`, dae90bf), cited as **WD**: its §9,
@@ -131,9 +137,10 @@ Three passes make one `Inspection`:
    Flat OPC or plain-text chunk and an embedded docx, xlsx or pptx are inspected one level deep. No
    importer is called, no field is recomputed (`fields: cached` always), no external target is
    resolved or fetched, and a payload that cannot be decoded is still reported, with the reason
-   (§2.5). *Proposed (D21):* an SVG image part a picture shows is read for the text it draws
-   (§2.3's `image.svg_text`), from the DOM docx4j's loader already parses it into; it is a payload
-   (§2.5).
+   (§2.5). An image part a picture shows is read for the text it draws as characters (D21, (c)): an
+   SVG's `<text>` elements, from the DOM docx4j's loader already parses it into, and a WMF's or EMF's
+   text records, through CR-011's decoder (§2.3's `image.svg_text` and `image.metafile_text`). Each is
+   a payload (§2.5); an SVG docx4j parsed at load is charged by its stored size.
 
 ### 2.2 The API
 
@@ -248,7 +255,8 @@ no importer, and the probe cases that hold them (*new*: a case §3 adds):
 | `altchunk`, `object.embedded` | each chunk, with its content type; each embedded object, with its ProgID | yes (as Word converts it; as its preview) | options: `altchunks: true` (default) or `embedded: true` for the types REQ-513 and REQ-512 read; unextractable for RTF and other OLE binaries | info | 36, 39-47, 53 |
 | `alt_text.title` | a picture's or shape's title | no | unextractable | omitted | 33 |
 | `alt_text.name` | its name: the description where `descr` is empty and the picture is not decorative, else not extracted; a default name (matching `[^0-9]+ [0-9]+` in full) only where it is the description (D19) | no | per occurrence: as `alt_text.description` where it is the description, else unextractable | omitted | 33, *new* (a named picture with no `descr`; a decorative one) |
-| `image.svg_text` (*proposed*, D21) | the text an SVG image part draws: its `<text>` elements' characters, their `<tspan>` and `<textPath>` content included, in a part a picture shows through its `asvg:svgBlip` or its `a:blip`. Extraction never reads it (REQ-514), and the picture's raster copy, which an older Office draws instead, may say something else | yes (Word 365 draws the SVG, D15; the SVG's own geometry and paint are not judged, §2.6) | unextractable (REQ-514) | omitted | 33 (`SVG33_INNER_TEXT`), *new* |
+| `image.svg_text` (D21) | the text an SVG image part draws: its `<text>` elements' characters, their `<tspan>` and `<textPath>` content included, in a part a picture shows through its `asvg:svgBlip` or its `a:blip`. Extraction never reads it (REQ-514), and the picture's raster copy, which an older Office draws instead, may say something else | yes (Word 365 draws the SVG, D15, measured 21 October: `now you see it.docx`; a `<textPath>` it does not draw, where LibreOffice does; the SVG's own geometry and paint are not judged, §2.6) | unextractable (REQ-514) | omitted | 33 (`SVG33_INNER_TEXT`), 68 to 71 |
+| `image.metafile_text` (D21) | the text a WMF or EMF image part draws: its `META_TEXTOUT`, `META_EXTTEXTOUT`, `EMR_EXTTEXTOUTA` and `EMR_EXTTEXTOUTW` records' characters, each decoded as its record says (UTF-16, or the character set of the font selected into the device context when it plays), in a part a picture shows through `a:blip` or `v:imagedata` | yes (every Office draws the metafile; its paint is not judged, §2.6) | unextractable (REQ-514) | omitted | 72 to 74 |
 | `properties` | core, app and custom properties | no (File, Info shows them) | included in the block model (`metadata`, REQ-515); options: `metadata: true` in plain text and Markdown | omitted (info in the block model, and under `metadata: true`: labelled metadata) | 38, 52 |
 | `font.embedded` | a font face embedded in the package (`w:embedRegular` and its kin) that runs are drawn in, with the number of characters it draws. What a person sees depends on the viewer: whether it uses embedded fonts, and which it prefers where a font of that name is installed (docx4j's PDF output: the installed one, `Mapper`; Word: not yet measured, §3) | - | unextractable (extraction has characters, never glyphs) | info | *new* |
 | `ink` | an ink part (`w14:contentPart`), whose strokes may be handwriting (as a picture's pixels may be text) | yes | unextractable | info | *new* |
@@ -283,13 +291,17 @@ relationship's form and `field.external` for the field's. A bookmark (`w:anchor`
   kinds (white text in it, say) are found in their own right.
 - **Fonts.** `font.embedded` is found once per embedded face; `font.glyph_blank` and
   `font.glyph_mismatch` per run, merged as below, naming the characters affected.
-- **An SVG's text** (*proposed*, D21). `image.svg_text` is found once per SVG part that draws text,
-  as a part is, where §2.4's order first meets a picture showing it: three pictures showing one part
-  are one finding, its summary giving their number. Its location is the part (in its package chain)
-  and the path of its first `<text>` element; its excerpt the text elements' characters, one line
-  each, whitespace collapsed as SVG's default `xml:space` collapses it; its summary also the number of
-  text elements and, where a picture showing it has a raster copy (`a:blip/@r:embed` naming another
-  part), that part's name. Its address is null, as an unextractable finding's is.
+- **The text a picture draws** (D21, (c)). `image.svg_text` and `image.metafile_text` are found once
+  per image part that draws text, as a part is, where §2.4's order first meets a picture showing it:
+  three pictures showing one part are one finding, its summary counting them. The location is the part
+  (in its package chain) alone, with no path, as `chart.cached`'s is (the proposal named the first
+  `<text>` element's path; dropped in the build, since the finding is unextractable and the SVG
+  namespace has no canonical prefix in Table 9.1). The excerpt: an SVG's `<text>` elements' characters,
+  one line each in document order, white space collapsed as SVG's default `xml:space` collapses it, an
+  element left empty by that left out; a metafile's text records' characters, one line each in record
+  order, trailing NULs (a record's padding) dropped, an all-white-space record left out. The summary:
+  `pictures=<n> texts=<m>`, and `raster=<part>` where the first picture showing an SVG also names a
+  raster copy (`a:blip/@r:embed`). The address is null, as an unextractable finding's is.
 - **Runs are merged, so run splitting does not count.** Adjacent stored runs in one paragraph are one
   finding when their kind and every attribute the finding reports (author and date, colour, size,
   branch) are equal; adjacent revisions of different authors are two.
@@ -337,10 +349,15 @@ glyph names), which only recognising each glyph would see (D18): `font.embedded`
 a font draws; and it does not judge intent: no finding says its text is, or is not, an attack (§0). docx4j has a layout
 (the FO pass), so a later CR can add position findings; this one does not use it (D7).
 
-*Proposed (D21):* nor does it detect text a picture draws other than an SVG's `<text>` elements (a
-raster image's pixels, an EMF or WMF's text records, an SVG's text drawn as outlines), nor whether an
-SVG's text is drawn where its picture shows it (its `viewBox` clipping it, its paint, opacity or
-`display`, a `<text>` in `<defs>` that no `<use>` draws): the limitation `image.text`.
+Nor does it detect (D21, (c)) text a picture draws other than an SVG's `<text>` elements and a
+metafile's text records: a raster image's pixels; an SVG's text drawn as outlines, or whether an SVG's
+text is painted where its picture shows it (its `viewBox` clipping it, its paint, opacity or `display`,
+a `<text>` in `<defs>` that no `<use>` draws); a metafile's `EMR_POLYTEXTOUT`, `EMR_SMALLTEXTOUT` and
+EMF+ `DrawString` records, which the decoder does not implement (an Office-made EMF+ file is usually dual, its GDI
+records carrying the same text); an `ExtTextOut` record of glyph indices (`ETO_GLYPH_INDEX`), which are
+not characters (WD §11); a record drawn with a font of the SYMBOL character set, whose bytes are that
+face's glyph codes; and a metafile inside an OLE object's binary (`payload.opaque`): the limitation
+`image.text`.
 
 ## 3. Tests and the oracle
 
@@ -798,18 +815,39 @@ WD §12.1 claimed then, and not before.
 
 ### Phase 3: hand-offs
 
-- **First, if D21 is taken (a): an SVG's text**, so that the ports receive one set of kinds.
-  `image.svg_text` in `InspectWalk` (the part's DOM, its bytes charged to the payload and total
-  limits) and in `inspect_oracle.py`; the `image.text` limitation in `Inspection.LIMITATIONS` and the
-  class javadoc; INSPECTION.md's row; case 33's `SVG33_INNER_TEXT` found (`expected-findings.tsv`,
-  `expected-inspection.tsv`); new cases in `extraction-probe-inspect.docx` (68 on): an SVG-only
-  picture (no raster copy) whose text has `<tspan>` and `<textPath>`; two pictures showing one SVG
-  part (one finding); an SVG with no text (no finding); an SVG picture in a header; Jason's Word check
-  of each. Jason's `now you see it.docx` (Word-made, its SVG edited by hand: the raster copy says
-  "Now you see it", the SVG "Now you do not (svg)") is the evidence, and Word 365's showing of the
-  edited SVG on open its first check. The WD proposals to the portfolio: REQ-902's kind, REQ-904's
-  `image.text`, and §1's out-of-scope sentence (an SVG's text is out of extraction, not of the
-  inspection). **Acceptance:** the oracle and docx4j agree on every fixture; the suite green.
+- **First, D21 (c): the text a picture draws**, so that the ports receive one set of kinds. Built
+  21 October 2026, the day of the ruling (Claude Fable 5.1, docx4j-25): `image.svg_text` and
+  `image.metafile_text` in `InspectWalk` (through the new `InspectImages`: an SVG's `<text>` elements
+  from the part's DOM; a metafile's text records through CR-011's decoder, the GDI object table tracked
+  for the selected font's character set; the part a payload, an SVG docx4j parsed at load charged by
+  its stored size; a metafile the decoder cannot parse skipped as `unreadable`) and in
+  `inspect_oracle.py` (its own WMF and EMF record reader, independent of POI); the `image.text`
+  limitation in `Inspection.LIMITATIONS` and `Inspect`'s javadoc; INSPECTION.md's two rows and an
+  identity bullet; case 33's `SVG33_INNER_TEXT` found; cases 68 to 74 in `extraction-probe-inspect.docx`:
+  68 an SVG-only picture (`a:blip` names the SVG, no raster copy) with `<tspan>` and `<textPath>`; 69
+  two pictures showing one SVG part, each with the raster copy Word keeps, one finding with
+  `pictures=2`; 70 an SVG with a `<title>` and no `<text>`, no finding; 71 an SVG picture in the header
+  the section uses; 72 a WMF through VML `v:imagedata`, hand-built (`InspectMetafiles`): fonts of the
+  ANSI, Shift-JIS and SYMBOL character sets selected through the object table, a slot deleted and
+  reused, `TEXTOUT` and `EXTTEXTOUT` records, one of glyph indices; 73 a hand-built EMF: an
+  `EXTTEXTOUTW`, an `EXTTEXTOUTA` in the selected font's charset, a glyph-index record, a record under
+  the stock `SYSTEM_FONT`; 74 Apache POI's `SimpleEMF_windows.emf` (already in the test resources), an
+  EMF+ dual file whose GDI records carry its text. The oracle and docx4j agree on every fixture (200
+  findings, 7 of these kinds; `ExtractionConformanceTest` 1660 assertions passing, 19 pending, all the
+  HTML-reader-present rows). **Departures from the proposal:** the location is the part alone, no path
+  (§2.4); the oracle's `PART_CASES` attributes the header's SVG to case 71. **Word's check** (Jason,
+  21 October 2026, `phase0/evidence/word-open-results.md`): cases 68 to 72 and 74 as expected, and
+  `now you see it.docx` shows the edited SVG's text, not the raster copy's, so the picture a reader sees
+  is the `svgBlip`'s target (D15 measured); Word draws `WMF72_SYMBOL` as Greek capitals and
+  `WMF72_GLYPH_INDEX` as unrelated glyphs, which is what `image.text` leaves out; Word does not draw an
+  SVG `<textPath>` (case 68), LibreOffice does, so that text is reported and the kind's row says so;
+  case 73's hand-built EMF drew nothing, a fixture defect (its header's Frame a tenth of the device,
+  fixed in `InspectMetafiles` the same day, LibreOffice drawing the four lines after it; Word's r3
+  check: the UTF-16 and ANSI lines readable, the glyph-index record as wrong glyphs, the stock-font
+  line at `SYSTEM_FONT`'s fixed size). **Pending:** the WD proposals to the portfolio: REQ-902's two
+  kinds, REQ-904's `image.text`, §1's out-of-scope sentence (a picture's text is out of extraction, not
+  of the inspection), Appendix A.4's cases 68 to 74 and REQ-1201's rows. **Acceptance:** the oracle
+  and docx4j agree on every fixture; the suite green; Word's check recorded.
 - **docx4j-mcp**: an `inspect` tool (the WD's verb, D29), the findings as JSON, and `extract_text`'s
   result carrying the four counts and the status, the unseen count first: it is the one an agent
   reading the text needs before it acts on it. `extract_text` turns docx4j's `inspect` on by default
@@ -820,6 +858,105 @@ WD §12.1 claimed then, and not before.
 - **The portfolio**: the WD proposals of phase 0, the registry.
 
 **Acceptance:** no statements; each receiver has acknowledged.
+
+**Hand-offs sent** 21 October 2026, after Word's check (Claude Fable 5.1, docx4j-25), the build
+uncommitted and the hash promised: docx4j-mcp (the `inspect` tool, D29; `extract_text`'s four counts
+and status, unseen first, inspect on by default; asked whether the JSON shape needs a change here),
+core-ts (CR-012), python (CR-011; the oracle's stdlib-only WMF/EMF reader pointed out), the editor
+(ED-008's verbs: the reveal column), the portfolio (the four D21 WD proposals: REQ-902's two rows,
+REQ-904's `image.text`, §1's sentence, Appendix A.4's cases 68 to 74 and REQ-1201's rows; the
+registry unchanged until the acks). Acknowledgements:
+  - **docx4j-python** (21 October 2026): received, no change to its CR-011, which keeps the inspector
+    out of scope (its §3.7); the hand-off to be recorded there once the commit hash is sent ("I won't
+    cite a working tree"). CR-011 cites the suite at 198d015a3, phases A to C done, phase D (the
+    readers, Markdown) in progress; no inspector, so REQ-901 to 907 are not advertised and the 214
+    inspector checks pend (186 inspect rows, 4 inspections, 24 counts); an inspector would be a later
+    CR (the paper's D29), the user's call, with `inspect_oracle.py` noted as its reference. What its
+    data model holds without an inspector: the hidden, revision, `mce.branch`, note, comment,
+    header/footer, watermark, glossary, sdt, field, hyperlink, relationship, alt-text, chart, SmartArt,
+    settings, custom XML, properties, people, part, altChunk and embedded-docx kinds' inputs; data
+    present but no rule for `text.tiny`, `text.near_background` (no contrast rule), the `chars.*` kinds,
+    `paragraph.collapsed`, the shape kinds (no page geometry), `image.svg_text` (an SVG is a binary part
+    there, lxml could read it); cannot see today `image.metafile_text` (no WMF/EMF reader; the oracle's
+    stdlib-only reader noted as portable), the font glyph and embedded-face kinds, the altChunk script
+    and external-reference kinds inside HTML chunks (no HTML reader, its Q12/Q13), and the embedded
+    workbook and presentation kinds (its Q7, `content.not_read` today). Not a decision of the user's.
+  - **docx4j-core-ts** (21 October 2026; main at 2782d2b, CR-012 phase 3 Markdown, unpushed,
+    unreleased since 0.5.0): acknowledged; no inspector there, its CR-012 §9 puts REQ-901 to 907 and
+    REQ-1204 out of scope, so the inspector's 215 rows pend as "the inspector (CR-050)"; whether to
+    have a CR for one is Jason's call. Its copy of text-extraction/ is from 198d015a3 (WD 0.28), before
+    D21; the copy script runs only from a commit, so the re-copy (the two image kinds' rows, 11
+    `alt_text.description` rows where it has 4) waits on the D21 hash, the pinned pending count then
+    updated on purpose. What its engine holds as building blocks: effective run and paragraph
+    properties through its PropertyResolver (parity-tested against docx4j: vanish, webHidden, colour,
+    highlight, shading, sizes, table-style conditions), every story's revisions with author and date,
+    every mce branch (`selectedBranchOf`; Requires matched by prefix, so REQ-303 case 6 differs; row and
+    cell level with its CR-013), the stories and their references, field instructions and hyperlink
+    relationships, bindings and placeholders, typed docPr/extents/VML styles, every part and
+    relationship, an SVG part as XML with the svgBlip target already resolved (its Markdown export uses
+    it), chart and diagram parts (unread until its phase 5c), embedded xlsx/pptx as packages (refused
+    until 5d), altChunk raising `altchunk.not_expanded` (no HTML reader). Cannot see: the font glyph
+    kinds (no font-file parsing), `image.metafile_text` (no WMF/EMF decoder; its recommendation, not a
+    decision, is to declare that kind a limitation rather than build one), `shape.off_page` (no page
+    geometry), `text.near_background` (no contrast test). It will send the re-copy hash once D21 is
+    committed and copied.
+  - **The portfolio** (21 October 2026): WD 0.30 takes all four proposals (REQ-902's rows, REQ-904's
+    `image.text`, a §1.2 sentence after the out-of-scope list's "EMF, WMF and SVG", A.4's cases 68 to
+    74 under a phase 3 sub-heading, [PROBE] "58 to 74", a NOTE with the day's measurements), drafted
+    once the commit and [PROBE] hashes are sent. Its eight review points, answered the same day, two of
+    them changes here: (a) case 68 measures the `a:blip`-alone form, and case 69 the `svgBlip` form; (b)
+    case 33 gets REQ-902 (`ExtractionPhase0Cases`, `case-statements.tsv` and our copy of A.1,
+    `support/appendix-a-statements.tsv`; the fixture rebuilt, its embedded fonts' obfuscation key fresh,
+    so the bytes differ from Jason's r3, the content not); (c) the describer's image (`r:embed`, else
+    `svgBlip`) and the inspector's part (`svgBlip`, else `a:blip`) differ on purpose; (d) the character
+    set table (`InspectImages.CHARSETS` and the oracle's `CHARSETS`, locale-independent: 0, 1 and 255
+    windows-1252, 2 left out, 77 MacRoman, 128 cp932, 129 cp949, 130 Johab, 134 cp936 (GBK), 136 cp950,
+    161 cp1253, 162 cp1254, 163 cp1258, 177 cp1255, 178 cp1256, 186 cp1257, 204 cp1251, 222 cp874,
+    238 cp1250, else windows-1252; no font or a stock font windows-1252; a W record UTF-16LE), for a
+    Pictures rule under REQ-902; the portfolio's second reading found two more: case 71 cited REQ-511
+    (charts) for REQ-502 (headers), a slip, fixed in the three places; and the CJK sets had POI's
+    `FontCharset` names (Shift_JIS, GB2312, Big5) where GDI decodes with Windows' supersets (cp932,
+    cp936, cp950: NEC row 13's ① is in cp932, not Shift_JIS), so docx4j takes its own table in place of
+    `FontCharset.getCharset()` and the oracle the same pages, and case 72's Shift-JIS record gains a ①
+    to pin it (Word draws it, Jason's r4 glance the same day); DEFAULT and OEM fixed to windows-1252 is a deliberate departure from GDI's locale lookup; (e) the excerpt and `texts=m` rules as INSPECTION.md's rows;
+    (f) an OLE object's preview metafile is reported (the walk visits every `v:imagedata`), the
+    limitation is the binary; (g) case 74's painted text is its GDI records' (Jason's screenshot); (h)
+    `EMR_SMALLTEXTOUT`, unimplemented in the decoder, named in `image.text` (the seventh item).
+  - **docx4j-mcp** (21 October 2026): acknowledged; both asks taken as its phase 4 (CR-mcp-server.md
+    §19, registry mcp/text-model.4), after its phases 1 and 2 whose T1 to T9 await Jason: an `inspect`
+    tool (stateless, `Inspect.of` per call, word mode; input the extraction options plus `format`,
+    `groups` and `kinds` filters, `limit` 100, `excerpts`, `output_path`; output status, lower_bound,
+    counts, the findings in docx4j's order with kind, group, location, address, visible, reveal,
+    `reveal_options` as an object for `extract_text`, excerpt, excerpt_length, excerpt_cut, summary,
+    parsed, then total, truncated, skipped, skipped_beyond, undecided, limitations; `selector` left
+    out as the harness's), and the counts with inspect on by default in `extract_text`,
+    `docx_to_markdown` and `read` (REQ-903: every extraction result), `inspect: false` off. Two
+    departures: the counts go as the result's first text content, one line before the text, unseen
+    first (result `_meta` does not reach the model in Claude Code), `meta.inspect` carrying the map
+    too; and excerpts off by default (its T9, Jason's call: over MCP a finding's excerpt lands in the
+    agent's context, handing over what the extraction withheld; `excerpt_length`, `excerpt_cut` and
+    `reveal_options` stay, `excerpts: true` opts in; the portfolio asked whether the WD allows it).
+    Two suggestions: (a) `Inspection.counts(options, format)` assumed no capabilities, so a consumer
+    with the HTML reader counted an expanded chunk as omitted: **taken** the same day, the two-argument
+    form now follows the class path and `Inspection.capabilitiesOnClassPath()` is public; (b) a
+    per-row capability column in `expected-inspection.tsv`, so a reader-present server could check the
+    rows that do not depend on the reader (today all 200 pend there, only
+    `expected-inspection-html.tsv` compares): for Jason, with the goldens' version of the question the
+    portfolio holds.
+  - **The editor** (21 October 2026): acknowledged, recorded as ED-008 §8.6 (committed), verified
+    against its code on main (core-ts 0.5.0). It ships no inspector (ED-008 §3.5); its reading verbs
+    take the reveal column as their options at ED-008 step 2, on the core-ts release carrying CR-012
+    phases 0 to 3, and follow the engine kind for kind. As a viewer (a second reader, so `visible` has
+    an editor column), kind by kind: it shows more than Word for `text.hidden`, `paragraph.hidden`
+    (no `w:vanish` modelled), `paragraph.collapsed`, the deleted and moved-from revisions (All markup),
+    `story.unused` (orphan badges), `comment`, `sdt.stored_surface` (drawn, with a Refresh-or-Keep
+    banner); less for the shape kinds and text boxes, `watermark`, `smartart.data`, `chart.cached`,
+    `altchunk`, `object.embedded` and `embedded.*`, `glossary`, `alt_text.*`, `image.metafile_text`
+    (a browser draws no metafile), parts of `text.near_background` and `text.tiny`; `image.svg_text`
+    differs both ways (it draws the `a:blip`'s part, never the `svgBlip`'s, and a browser draws a
+    `<textPath>`); agrees on the rest. Nothing active is fetched, updated or run. Decisions it raises
+    for Jason, none scheduled: hide or mark hidden text, draw `szCs` and the shadings, prefer `svgBlip`
+    as Word does, put the description on the image's alt. No request back to docx4j.
 
 ## 6. Decisions
 
@@ -1062,6 +1199,20 @@ Each with a recommendation; Jason decides.
   `<script>` and its external references (an `<image>`'s `href`, a stylesheet), which would be
   active as an HTML chunk's are if Word ran or fetched them. To take: phase 3's first bullet, before
   the hand-offs, and the WD proposals to the portfolio.
+  **Decided** (Jason, 21 October 2026): **(c), "with the five limitations above declared"**, after
+  this correction, made when he asked whether docx4j had a metafile decoder: it has, since CR-011
+  (17.1.0), Apache POI's HWMF and HEMF code repackaged under `org.docx4j.org.apache.poi`, which parses
+  the text records (`META_TEXTOUT`, `META_EXTTEXTOUT`, `EMR_EXTTEXTOUTA`, `EMR_EXTTEXTOUTW`), so (c) costs
+  a walk of the records, not a decoder; the option's text above was wrong on that. The five limitations
+  declared at the decision: `EMR_POLYTEXTOUT`; EMF+ `DrawString`; glyph-index records; raster pixels,
+  text as outlines and whether text is painted; metafiles inside OLE objects. A sixth, met in the
+  build and declared with them, for Jason's confirmation: a record drawn with a SYMBOL-charset font,
+  whose bytes are glyph codes of the face, not characters; Word's check the same day bore it out
+  (case 72: `WMF72_SYMBOL` drawn as Greek capitals, the glyph-index record as unrelated glyphs). A
+  seventh, from the portfolio's review of the WD proposals the same day: `EMR_SMALLTEXTOUT`, which
+  the decoder leaves unimplemented too. The
+  kind for metafiles is `image.metafile_text` (§2.3). The SVG `<script>` and external-reference question stays open, pending
+  a Word measurement.
 
 ## 7. Dependencies, risks and out of scope
 

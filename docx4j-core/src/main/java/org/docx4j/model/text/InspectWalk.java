@@ -139,7 +139,7 @@ final class InspectWalk {
 				"doc_vars", "custom_xml", "people", "revision.author", "rsids" };
 		String[] differently = { "text.near_background", "text.tiny", "font.glyph_mismatch", "paragraph.collapsed" };
 		String[] yes = { "hyperlink.web", "comment", "header_footer", "watermark", "note", "sdt.placeholder", "chart.cached",
-				"text.web_hidden", "altchunk", "object.embedded", "ink" };
+				"text.web_hidden", "altchunk", "object.embedded", "ink", "image.svg_text", "image.metafile_text" };
 		String[] none = { "field.external", "settings.update_fields", "relationship.external", "part.macro", "part.activex",
 				"altchunk.script", "altchunk.external_ref", "font.embedded", "part.unknown" };
 		for (String k : no) VISIBLE.put(k, Visible.NO);
@@ -198,6 +198,10 @@ final class InspectWalk {
 	private final Map<String, Object[]> authors = new LinkedHashMap<String, Object[]>();
 	private final Map<Element, Boolean> selected = new IdentityHashMap<Element, Boolean>();
 	private final Map<Element, List<Element>> runsWithText = new IdentityHashMap<Element, List<Element>>();
+	/** The image parts met through a picture (D21): the part's finding, or null where it gave none, so each is read once. */
+	private final Map<String, Found> images = new HashMap<String, Found>();
+	/** For an image finding: the pictures showing the part so far, its lines, and the first picture's raster copy. */
+	private final Map<String, Object[]> imageInfo = new HashMap<String, Object[]>();
 
 	InspectWalk(InspectPackage pkg, InspectRun run, int depth, Set<String> baseNeeds) {
 		this.pkg = pkg;
@@ -1528,6 +1532,15 @@ final class InspectWalk {
 				else if (verdict != null) run.undecided(verdict, loc(p, path(d)));
 			}
 			if (docPr != null) altText(p, d, docPr, dn);
+			for (Element pic : iter(d, PIC, "pic")) {
+				Element blip = InspectXml.first(pic, A, "blip");
+				if (blip == null) continue;
+				// Word 365 draws the SVG asvg:svgBlip names, an older Office the raster copy a:blip names (D21)
+				Element svg = InspectXml.first(blip, ASVG, "svgBlip");
+				String raster = pkg.target(p, attr(blip, R, "embed"));
+				String shown = svg != null && attr(svg, R, "embed") != null ? pkg.target(p, attr(svg, R, "embed")) : raster;
+				imageText(p, shown, shown != null && shown.equals(raster) ? null : raster, dn);
+			}
 			Element chart = InspectXml.first(d, C, "chart");
 			if (chart != null) {
 				String target = pkg.target(p, attr(chart, R, "id"));
@@ -1571,7 +1584,71 @@ final class InspectWalk {
 			Element im = child(s, V, "imagedata");
 			String title = attr(im, O, "title");
 			if (im != null && title != null && !title.isEmpty()) add(found("alt_text.title", p, path(im), title, plus(dn, InspectFinding.NEVER), im));
+			if (im != null) imageText(p, pkg.target(p, attr(im, R, "id")), null, dn);
 		}
+	}
+
+	private static final String ASVG = "http://schemas.microsoft.com/office/drawing/2016/SVG/main";
+
+	/**
+	 * The text an image part a picture shows draws (D21, {@link InspectImages}): one finding per part, where the
+	 * walk first meets a picture showing it; a later picture showing the same part is counted in its summary.
+	 * The part's bytes are a payload (REQ-907); a metafile the decoder cannot parse is skipped as unreadable.
+	 */
+	private void imageText(String p, String target, String raster, Set<String> dn) {
+		if (target == null || !pkg.has(target)) return;
+		if (images.containsKey(target)) {
+			Found f = images.get(target);
+			if (f != null) {
+				Object[] info = imageInfo.get(target);
+				info[0] = ((Integer) info[0]) + 1;
+				f.summary = imageSummary(info);
+			}
+			return;
+		}
+		String ctype = pkg.contentType(target);
+		boolean svg = InspectImages.isSvg(ctype);
+		if (!svg && !InspectImages.isMetafile(ctype)) return;
+		images.put(target, null);
+		byte[] data = pkg.bytes(target); // null for an SVG, which docx4j parses at load (a DefaultXmlPart)
+		String where = loc(target, "");
+		List<String> lines;
+		try {
+			if (svg) {
+				run.payload().add(data != null ? data.length : pkg.storedSize(target));
+				Element root = pkg.xml(target);
+				if (root == null) {
+					run.skip(Inspection.UNREADABLE, where);
+					return;
+				}
+				lines = InspectImages.svgText(root);
+			} else {
+				if (data == null) return;
+				run.payload().add(data.length);
+				lines = InspectImages.metafileText(data);
+			}
+		} catch (InspectRun.PayloadLimit limit) {
+			run.skip(Inspection.LIMIT_PAYLOAD_BYTES, where);
+			return;
+		} catch (InspectRun.Stop stop) {
+			throw stop;
+		} catch (Exception e) {
+			run.skip(Inspection.UNREADABLE, where);
+			return;
+		}
+		if (lines.isEmpty()) return;
+		Found f = found(svg ? InspectFinding.IMAGE_SVG_TEXT : InspectFinding.IMAGE_METAFILE_TEXT, target, "",
+				String.join("\n", lines), plus(dn, InspectFinding.NEVER), null);
+		Object[] info = { Integer.valueOf(1), Integer.valueOf(lines.size()), raster };
+		f.summary = imageSummary(info);
+		imageInfo.put(target, info);
+		images.put(target, f);
+		add(f);
+	}
+
+	/** {@code pictures=<n> texts=<m>}, and {@code raster=<part>} where the first picture showing the part has a raster copy. */
+	private static String imageSummary(Object[] info) {
+		return "pictures=" + info[0] + " texts=" + info[1] + (info[2] == null ? "" : " raster=" + info[2]);
 	}
 
 	private static long number(String v) {

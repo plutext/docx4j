@@ -25,6 +25,7 @@ import re
 import sys
 import unicodedata
 import zipfile
+import struct
 from email import message_from_bytes
 
 from fontTools import agl
@@ -106,7 +107,7 @@ VISIBLE = {
     'header_footer': 'yes', 'watermark': 'yes', 'note': 'yes', 'sdt.placeholder': 'yes', 'chart.cached': 'yes',
     'text.web_hidden': 'yes', 'altchunk': 'yes', 'object.embedded': 'yes', 'properties': 'no', 'font.embedded': '-',
     'ink': 'yes', 'doc_vars': 'no', 'custom_xml': 'no', 'people': 'no', 'revision.author': 'no', 'rsids': 'no',
-    'part.unknown': '-',
+    'part.unknown': '-', 'image.svg_text': 'yes', 'image.metafile_text': 'yes',
 }
 
 # the named outputs of expected-inspection.tsv: the options each sets beyond the defaults, and its format
@@ -1282,6 +1283,15 @@ class Inspector:
                     self.status['undecided'].append(verdict + '@' + self.loc(part, path_of(d)))
             if docpr is not None:
                 self.alt_text(part, d, docpr, dn)
+            for pic in d.iter('{%s}pic' % PIC):
+                blip = pic.find('.//{%s}blip' % A)
+                if blip is None:
+                    continue
+                # Word 365 draws the SVG asvg:svgBlip names, an older Office the raster copy a:blip names (D21)
+                svg = blip.find('.//{%s}svgBlip' % ASVG)
+                raster = self.pkg.target(part, blip.get('{%s}embed' % R))
+                shown = self.pkg.target(part, svg.get('{%s}embed' % R)) if svg is not None and svg.get('{%s}embed' % R) else raster
+                self.image_text(part, shown, None if shown == raster else raster, dn)
             chart = d.find('.//{http://schemas.openxmlformats.org/drawingml/2006/chart}chart')
             if chart is not None:
                 target = self.pkg.target(part, chart.get('{%s}id' % R))
@@ -1322,6 +1332,39 @@ class Inspector:
             im = s.find('{%s}imagedata' % V)
             if im is not None and im.get('{%s}title' % O):
                 self.add(Finding('alt_text.title', self.chain, part, path_of(im), excerpt=im.get('{%s}title' % O), needs=dn | {'never'}))
+            if im is not None:
+                self.image_text(part, self.pkg.target(part, im.get('{%s}id' % R)), None, dn)
+
+    def image_text(self, part, target, raster, dn):
+        """The text an image part a picture shows draws (D21): one finding per part, where the walk first meets a
+        picture showing it; a later picture showing the same part is counted in the finding's summary."""
+        if not hasattr(self, 'images'):
+            self.images = {}
+        if target is None or not self.pkg.has(target):
+            return
+        if target in self.images:
+            f, info = self.images[target]
+            if f is not None:
+                info[0] += 1
+                f.summary = image_summary(info)
+            return
+        ctype = (self.pkg.content_type(target) or '').lower()
+        svg = ctype == 'image/svg+xml'
+        if not svg and ctype not in ('image/x-emf', 'image/x-wmf', 'image/emf', 'image/wmf'):
+            return
+        self.images[target] = (None, None)
+        data = self.pkg.read(target)
+        try:
+            lines = svg_text(etree.fromstring(data)) if svg else metafile_text(data)
+        except Exception:
+            self.status['skipped'].append('unreadable@' + self.loc(target, ''))
+            return
+        if not lines:
+            return
+        info = [1, len(lines), raster]
+        f = self.add(Finding('image.svg_text' if svg else 'image.metafile_text', self.chain, target, excerpt='\n'.join(lines),
+                             needs=dn | {'never'}, summary=image_summary(info)))
+        self.images[target] = (f, info)
 
     def text_of_shape(self, d):
         boxes = [x for x in d.iter(wq('txbxContent'))]
@@ -1999,6 +2042,113 @@ def flat_opc(data, chain):
     return Package(buf.getvalue(), chain)
 
 
+# ---------------------------------------------------------------- the text a picture draws (D21)
+
+SVG_NS = 'http://www.w3.org/2000/svg'
+ASVG = 'http://schemas.microsoft.com/office/drawing/2016/SVG/main'
+# a LOGFONT's lfCharSet to a codec, as docx4j's decoder (POI's FontCharset) maps it; SYMBOL (2) is left out
+CHARSETS = {0: 'cp1252', 1: 'cp1252', 77: 'mac_roman', 128: 'cp932', 129: 'cp949', 130: 'johab', 134: 'gbk',
+            136: 'cp950', 161: 'cp1253', 162: 'cp1254', 163: 'cp1258', 177: 'cp1255', 178: 'cp1256', 186: 'cp1257',
+            204: 'cp1251', 222: 'cp874', 238: 'cp1250', 255: 'cp1252'}
+WMF_OBJECT_RECORDS = {0x02FC, 0x02FB, 0x00F7, 0x01F9, 0x02FA, 0x06FF, 0x0142}   # MS-WMF's object records: each takes a slot
+STOCK_FONTS = {10, 11, 12, 13, 14, 16, 17}                                       # MS-EMF's stock fonts: ANSI
+
+
+def image_summary(info):
+    return 'pictures=%d texts=%d' % (info[0], info[1]) + (' raster=' + info[2] if info[2] else '')
+
+
+def svg_text(root):
+    """One line per <text> element with characters, in document order, white space collapsed as xml:space default"""
+    lines = []
+    for t in root.iter('{%s}text' % SVG_NS):
+        s = re.sub(r'[ \t\r\n]+', ' ', ''.join(t.itertext())).strip(' \t\r\n')
+        if s:
+            lines.append(s)
+    return lines
+
+
+def metafile_text(data):
+    """One line per text record with characters, in record order; a WMF's or an EMF's by the header"""
+    placeable = data[:4] == b'\xd7\xcd\xc6\x9a'
+    wmf = placeable or (data[0] in (1, 2) and data[1] == 0 and data[2] == 9 and data[3] == 0)
+    return wmf_text(data, placeable) if wmf else emf_text(data)
+
+
+def text_line(lines, raw, codec):
+    s = raw.decode(codec, 'replace').rstrip('\x00')
+    if s.strip():
+        lines.append(s)
+
+
+def wmf_text(data, placeable):
+    off = 22 if placeable else 0
+    off += struct.unpack_from('<H', data, off + 2)[0] * 2         # HeaderSize, in words
+    table, charset, symbol, lines = [], 'cp1252', False, []
+    while off + 6 <= len(data):
+        size, func = struct.unpack_from('<IH', data, off)
+        size *= 2
+        if func == 0 or size < 6 or off + size > len(data):
+            break
+        p = off + 6
+        if func in WMF_OBJECT_RECORDS:                               # the lowest free slot
+            entry = ('font', data[p + 13]) if func == 0x02FB else ('other', None)
+            if None in table:
+                table[table.index(None)] = entry
+            else:
+                table.append(entry)
+        elif func == 0x012D:                                         # SELECTOBJECT
+            i = struct.unpack_from('<H', data, p)[0]
+            if i < len(table) and table[i] and table[i][0] == 'font':
+                symbol = table[i][1] == 2
+                charset = CHARSETS.get(table[i][1], 'cp1252')
+        elif func == 0x01F0:                                         # DELETEOBJECT
+            i = struct.unpack_from('<H', data, p)[0]
+            if i < len(table):
+                table[i] = None
+        elif func == 0x0521:                                         # TEXTOUT
+            n = struct.unpack_from('<h', data, p)[0]
+            if not symbol:
+                text_line(lines, data[p + 2:p + 2 + n], charset)
+        elif func == 0x0A32:                                         # EXTTEXTOUT
+            y, x, n, opts = struct.unpack_from('<hhhH', data, p)
+            q = p + 8 + (8 if opts & 0x0006 else 0)
+            if not symbol and not opts & 0x0010:
+                text_line(lines, data[q:q + n], charset)
+        off += size
+    return lines
+
+
+def emf_text(data):
+    off, table, charset, symbol, lines = 0, {}, 'cp1252', False, []
+    while off + 8 <= len(data):
+        t, size = struct.unpack_from('<II', data, off)
+        if size < 8 or off + size > len(data):
+            break
+        p = off + 8
+        if t == 82:                                                  # EXTCREATEFONTINDIRECTW: the slot it names
+            table[struct.unpack_from('<I', data, p)[0]] = ('font', data[p + 4 + 23])
+        elif t == 37:                                                # SELECTOBJECT
+            i = struct.unpack_from('<I', data, p)[0]
+            if i & 0x80000000:
+                if (i & 0x7fffffff) in STOCK_FONTS:
+                    symbol, charset = False, 'cp1252'
+            elif i in table and table[i][0] == 'font':
+                symbol = table[i][1] == 2
+                charset = CHARSETS.get(table[i][1], 'cp1252')
+        elif t == 40:                                                # DELETEOBJECT
+            table.pop(struct.unpack_from('<I', data, p)[0], None)
+        elif t in (83, 84):                                          # EXTTEXTOUTA, EXTTEXTOUTW
+            chars, offs, opts = struct.unpack_from('<III', data, p + 36)
+            raw = data[off + offs:off + offs + (chars * 2 if t == 84 else chars)]
+            if not opts & 0x0010 and (t == 84 or not symbol):
+                text_line(lines, raw, 'utf-16-le' if t == 84 else charset)
+        if t == 14:
+            break
+        off += size
+    return lines
+
+
 # ---------------------------------------------------------------- the tables
 
 def resolve(root, path):
@@ -2024,6 +2174,7 @@ PART_CASES = {
     ('extraction-probe-inspect.docx', '/word/people.xml'): '63',
     ('extraction-probe-inspect.docx', '/word/probe63.xml'): '63',
     ('extraction-probe-inspect.docx', '/word/header1.xml'): '59',
+    ('extraction-probe-inspect.docx', '/word/media/svg71.svg'): '71',   # shown by the used header's picture
 }
 
 

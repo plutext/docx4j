@@ -82,6 +82,10 @@ public final class InspectFinding {
 	public static final String ALT_TEXT_DESCRIPTION = "alt_text.description";
 	public static final String ALT_TEXT_TITLE = "alt_text.title";
 	public static final String ALT_TEXT_NAME = "alt_text.name";
+	/** The text an SVG image part draws, its {@code <text>} elements' characters (D21). */
+	public static final String IMAGE_SVG_TEXT = "image.svg_text";
+	/** The text a WMF or EMF image part draws, its text records' characters (D21). */
+	public static final String IMAGE_METAFILE_TEXT = "image.metafile_text";
 	public static final String EMBEDDED_SHEET_HIDDEN = "embedded.sheet_hidden";
 	public static final String EMBEDDED_SHEET_VERY_HIDDEN = "embedded.sheet_very_hidden";
 	public static final String EMBEDDED_SLIDE_HIDDEN = "embedded.slide_hidden";

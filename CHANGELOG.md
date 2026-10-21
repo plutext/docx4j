@@ -81,6 +81,12 @@ Changes in Version 17.3.4
 - Text model (CR-050 phase 2): `TextOptions.inspect(true)` puts the inspection counts (unseen, omitted, active,
   info) in `Texts.of`'s result metadata (`TextResult.counts`); off by default, as it costs about as much as the
   extraction. A comment with no anchor in the document is no longer among `TextResult.comments()`.
+- Inspector (CR-050 phase 3, D21): the text a picture draws is reported, `image.svg_text` (an SVG part's
+  `<text>` elements) and `image.metafile_text` (a WMF's or EMF's text records, through CR-011's decoder, in the
+  selected font's character set), once per part, unextractable; the limitation `image.text` says what is not read
+  (raster pixels, outlines, glyph-index, SYMBOL-font, `POLYTEXTOUT` and EMF+ `DrawString` records, metafiles in OLE).
+  The suite's inspect fixture gains cases 68 to 74.
+- Inspector: `Inspection.counts(options, format)` now counts with the class path's capabilities (`Inspection.capabilitiesOnClassPath()`, new), as `Texts` does; it counted as if no HTML reader were present (CR-050 phase 3, from docx4j-mcp's review).
 - `PropertyResolver` no longer adds a `DefaultParagraphFont` style to a styles part that has no default
   character style (so `Texts.of` changes nothing in such a package); output and merge paths still add it.
 - `mc:AlternateContent` twins (a text box written as a wps Choice and a VML Fallback; CR-051 §10.5):

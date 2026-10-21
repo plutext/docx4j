@@ -67,7 +67,10 @@ import org.slf4j.LoggerFactory;
  * fixed-height row or frame, text behind an image); white text whose background is an image; an
  * embedded face whose glyphs are swapped with care, which only recognising each glyph would see
  * ({@code font.embedded} marks the text it draws); the content of a payload it does not decode by
- * design (ActiveX, OLE binaries, VBA, parts of an unknown kind); a chart's embedded workbook. And it
+ * design (ActiveX, OLE binaries, VBA, parts of an unknown kind); a chart's embedded workbook; the text a
+ * picture draws beyond an SVG's {@code <text>} elements and a metafile's text records (a raster's pixels,
+ * text as outlines, EMF+, POLYTEXTOUT, SMALLTEXTOUT and glyph-index records, a metafile inside an OLE binary), or whether an SVG's
+ * text is painted where the picture shows it. And it
  * does not judge intent: no finding says its text is, or is not, an attack.
  * {@link Inspection#LIMITATIONS} states each.</p>
  *
@@ -156,8 +159,7 @@ public final class Inspect {
 			run.skip(Inspection.UNREADABLE, "|" + main + "|");
 		}
 		Inspection i = new Inspection(InspectAddresses.findings(pkg, run, false), run.skipped, run.skippedBeyond, run.undecided);
-		Set<Inspection.Capability> capabilities = HtmlChunkImport.readerPresent() ? EnumSet.of(Inspection.Capability.HTML_READER)
-				: EnumSet.noneOf(Inspection.Capability.class);
+		Set<Inspection.Capability> capabilities = Inspection.capabilitiesOnClassPath();
 		Map<Inspection.Format, Inspection.Counts> out = new EnumMap<Inspection.Format, Inspection.Counts>(Inspection.Format.class);
 		for (Inspection.Format f : Inspection.Format.values()) out.put(f, i.counts(options, f, capabilities));
 		return out;

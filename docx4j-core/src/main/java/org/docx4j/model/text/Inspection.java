@@ -87,6 +87,12 @@ public final class Inspection {
 			"payload.opaque: the content of a payload not decoded by design (an ActiveX control's binary, an OLE binary"
 					+ " other than a plain-text package, a VBA project, a part of an unknown type) is not inspected.",
 			"chart.workbook: a chart's embedded workbook is not inspected.",
+			"image.text: the text a picture draws is read only where it is characters an SVG's <text> elements or a"
+					+ " metafile's text records hold (image.svg_text, image.metafile_text). Not detected: a raster image's"
+					+ " pixels; an SVG's text drawn as outlines, or whether its text is painted where the picture shows it"
+					+ " (viewBox, paint, opacity, display, a <text> in <defs> no <use> draws); a metafile's EMR_POLYTEXTOUT,"
+					+ " EMR_SMALLTEXTOUT and EMF+ DrawString records, an ExtTextOut record of glyph indices (ETO_GLYPH_INDEX) or drawn with"
+					+ " a SYMBOL-charset font, and a metafile inside an OLE object's binary (payload.opaque).",
 			"intent: no finding says whether its text is, or is not, an attack."));
 
 	/** A skipped or undecided entry (REQ-907): a reason at a location, {@code reason@chain|part|path}. */
@@ -200,9 +206,21 @@ public final class Inspection {
 				n[Group.INFO.ordinal()], status() == Status.PARTIAL);
 	}
 
-	/** The counts for an output whose extraction had none of the optional capabilities. */
+	/**
+	 * The counts for an output extracted in this JVM: with the capabilities the class path gives it
+	 * ({@link #capabilitiesOnClassPath()}), as {@link Texts} counts. For an output extracted elsewhere,
+	 * pass that extraction's set.
+	 */
 	public Counts counts(TextOptions options, Format format) {
-		return counts(options, format, EnumSet.noneOf(Capability.class));
+		return counts(options, format, capabilitiesOnClassPath());
+	}
+
+	/**
+	 * The optional capabilities the class path gives an extraction in this JVM: {@link Capability#HTML_READER}
+	 * where jsoup and docx4j-ImportXHTML are present (an HTML, XHTML or MHT chunk expanded), else none.
+	 */
+	public static Set<Capability> capabilitiesOnClassPath() {
+		return HtmlChunkImport.readerPresent() ? EnumSet.of(Capability.HTML_READER) : EnumSet.noneOf(Capability.class);
 	}
 
 	/** {@code PARTIAL} when anything was skipped; a partial report never reads as a clean one. */

@@ -107,11 +107,11 @@ case	token	accepted	original	markup	option	with_option	note	fixture	statements
 31	TBL31_LAST_CELL	1	1	1				extraction-probe.docx	REQ-605
 32	MTH32_A	1	1	1			the m:t runs in document order (#15); Markdown: LaTeX	extraction-probe.docx	REQ-604
 32	MTH32_B	1	1	1				extraction-probe.docx	REQ-604
-33	IMG33_ALT_TEXT	0	0	0	alt_text: true	1	wp:docPr/@descr: plain text [image: descr] with the option; Markdown ![descr](…) by default (#20)	extraction-probe.docx	REQ-514
-33	IMG33_TITLE	0	0	0			wp:docPr/@title is never read (#20)	extraction-probe.docx	REQ-514
-33	IMG33_DECORATIVE_DESCR	0	0	0			marked decorative (adec:decorative): no alt text under any option (D22)	extraction-probe.docx	REQ-514
-33	IMG33_SVG_ALT	0	0	0	alt_text: true	1	as IMG33_ALT_TEXT	extraction-probe.docx	REQ-514
-33	SVG33_INNER_TEXT	0	0	0			a <text> element in the SVG part: an image's, never text (#20)	extraction-probe.docx	REQ-514
+33	IMG33_ALT_TEXT	0	0	0	alt_text: true	1	wp:docPr/@descr: plain text [image: descr] with the option; Markdown ![descr](…) by default (#20)	extraction-probe.docx	REQ-514, REQ-902
+33	IMG33_TITLE	0	0	0			wp:docPr/@title is never read (#20)	extraction-probe.docx	REQ-514, REQ-902
+33	IMG33_DECORATIVE_DESCR	0	0	0			marked decorative (adec:decorative): no alt text under any option (D22)	extraction-probe.docx	REQ-514, REQ-902
+33	IMG33_SVG_ALT	0	0	0	alt_text: true	1	as IMG33_ALT_TEXT	extraction-probe.docx	REQ-514, REQ-902
+33	SVG33_INNER_TEXT	0	0	0			a <text> element in the SVG part: an image's, never text (#20)	extraction-probe.docx	REQ-514, REQ-902
 34	CHT34_TITLE	1	1	1	charts: false	0	ChartTable: the title on its own line, then tab-separated rows, after the anchoring paragraph (#20a); the chart's embedded workbook holds these strings too	extraction-probe.docx	REQ-511
 34	CHT34_SERIES_ONE	1	1	1	charts: false	0		extraction-probe.docx	REQ-511
 34	CHT34_SERIES_TWO	1	1	1	charts: false	0		extraction-probe.docx	REQ-511
@@ -284,3 +284,24 @@ case	token	accepted	original	markup	option	with_option	note	fixture	statements
 67	SDT67_HERE	1	1	1				extraction-probe-inspect.docx	REQ-902, REQ-302, REQ-509
 67	SDT67_VALUE	1	1	1	bindings: surface	0	the bound value, read by default	extraction-probe-inspect.docx	REQ-902, REQ-302, REQ-509
 67	SDT67_SURFACE	0	0	0	bindings: surface	1	the stale surface, followed by U+E0041 U+E0042, which Word 365 replaces with the bound value on open; inspection: sdt.stored_surface, and chars.tag in it	extraction-probe-inspect.docx	REQ-902, REQ-302, REQ-509
+68	SVG68_DESCR	0	0	0	alt_text: true	1	the picture's descr	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+68	SVG68_PLAIN	0	0	0			a <text> element in the SVG part: an image's, never text (REQ-514); inspection: image.svg_text, unextractable (D21)	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+68	SVG68_TSPAN	0	0	0			a <tspan> in a <text>: one line with the text after it, white space collapsed; inspection: image.svg_text	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+68	SVG68_TEXTPATH	0	0	0			a <textPath> over a path in <defs>; inspection: image.svg_text	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+69	SVG69_FIRST_DESCR	0	0	0	alt_text: true	1	the first picture's descr	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+69	SVG69_SECOND_DESCR	0	0	0	alt_text: true	1	the second picture's descr	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+69	SVG69_SHARED	0	0	0			the one SVG part both pictures show: one finding, at the first; inspection: image.svg_text, summary pictures=2, raster named	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+70	SVG70_DESCR	0	0	0	alt_text: true	1	the picture's descr	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+70	SVG70_TITLE_ONLY	0	0	0			an SVG <title>, not drawn: no image.svg_text finding	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+71	SVG71_HEADER	0	0	0			a <text> in an SVG a header's picture shows; inspection: image.svg_text, its part reached from the header	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514, REQ-502
+72	WMF72_TEXTOUT	0	0	0			a META_TEXTOUT record with the ANSI font selected; inspection: image.metafile_text, unextractable (D21)	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+72	WMF72_SJIS	0	0	0			a META_EXTTEXTOUT record with a Shift-JIS font selected: WMF72_SJIS 年度, decoded in the font's charset; inspection: image.metafile_text	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+72	WMF72_GLYPH_INDEX	0	0	0			a META_EXTTEXTOUT record of glyph indices (ETO_GLYPH_INDEX): left out (image.text)	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+72	WMF72_SLOT_REUSED	0	0	0			a META_TEXTOUT after the Shift-JIS font's slot was deleted and reused by an ANSI font; inspection: image.metafile_text	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+72	WMF72_SYMBOL	0	0	0			a META_TEXTOUT with a SYMBOL-charset font selected: left out (image.text)	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+73	EMF73_DESCR	0	0	0	alt_text: true	1	the picture's descr	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+73	EMF73_UTF16	0	0	0			an EMR_EXTTEXTOUTW record: EMF73_UTF16 ünï; inspection: image.metafile_text, unextractable (D21)	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+73	EMF73_ANSI	0	0	0			an EMR_EXTTEXTOUTA record with the ANSI font at object-table index 1 selected: EMF73_ANSI é; inspection: image.metafile_text	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+73	EMF73_GLYPH_INDEX	0	0	0			an EMR_EXTTEXTOUTW record of glyph indices: left out (image.text)	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+73	EMF73_STOCK_FONT	0	0	0			an EMR_EXTTEXTOUTA record with the stock SYSTEM_FONT selected (ANSI); inspection: image.metafile_text	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+74	EMF74_DESCR	0	0	0	alt_text: true	1	the picture's descr	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514

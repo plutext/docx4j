@@ -126,10 +126,11 @@ public class ExtractionConformanceTest {
         List<Map<String, String>> generated = ExtractionConformance.table(dir.resolve("case-statements.tsv"));
         assertEquals(52, appendix.size());
         List<Map<String, String>> additions = ExtractionConformance.table(dir.getParent().resolve("support/additional-case-statements.tsv"));
-        // 53-54 (WD 0.5), 55-57 (extraction-probe-structure.docx, 19 October 2026), 58-67 (extraction-probe-inspect.docx, CR-050)
-        assertEquals(15, additions.size());
+        // 53-54 (WD 0.5), 55-57 (extraction-probe-structure.docx, 19 October 2026), 58-67 (extraction-probe-inspect.docx, CR-050),
+        // 68-74 (the same fixture, the text a picture draws, CR-050 phase 3)
+        assertEquals(22, additions.size());
         appendix.addAll(additions);
-        assertEquals(67, generated.size());
+        assertEquals(74, generated.size());
         String readme = Files.readString(dir.resolve("README.md"));
         for (int i = 0; i < appendix.size(); i++) {
             assertEquals(appendix.get(i).get("case"), generated.get(i).get("case"));

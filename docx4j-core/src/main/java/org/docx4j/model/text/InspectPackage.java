@@ -183,6 +183,18 @@ final class InspectPackage {
 		return jaxb.get(e);
 	}
 
+	/**
+	 * The size of a part as stored, for charging a part docx4j parsed at load (an SVG is a {@code DefaultXmlPart})
+	 * to the payload limits; 0 where the store cannot say.
+	 */
+	long storedSize(String name) {
+		try {
+			return pkg.getSourcePartStore() == null ? 0 : pkg.getSourcePartStore().getPartSize(name.startsWith("/") ? name.substring(1) : name);
+		} catch (Exception e) {
+			return 0;
+		}
+	}
+
 	/** A binary part's bytes, or null. */
 	byte[] bytes(String name) {
 		Part p = parts.get(name);

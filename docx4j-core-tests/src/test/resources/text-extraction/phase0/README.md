@@ -87,7 +87,7 @@ Three cases had no rule in the paper when the probe was built; it has since rule
 Cases 39–49 and 53–54 extend the main probe; cases 50–52 are in `extraction-probe-external.docm`;
 cases 55–57 (a table of contents, an interrupted list, an embedded workbook with hidden sheets) are in
 `extraction-probe-structure.docx`, a fixture of their own so that the main probe is not rebuilt (19 October 2026);
-cases 58–67, the inspector's boundary cases (CR-050 phase 0), are in `extraction-probe-inspect.docx`.
+cases 58–74, the inspector's boundary cases (CR-050 phase 0; 68–74 the text a picture draws, phase 3), are in `extraction-probe-inspect.docx`.
 Jason checked the earlier 52-case r2 DOCX without repair, declining field updates (18 October 2026).
 The unchanged external DOCM also passed. Jason completed the r3 check for cases 53–54 (18 October 2026).
 The Word findings above describe the original 38-case
@@ -378,11 +378,11 @@ Golden conventions and baseline commands are in `../GOLDENS.md`.
 
 | Token | accepted | original | markup | option | with option | note | statements |
 |---|---|---|---|---|---|---|---|
-| `IMG33_ALT_TEXT` | – | – | – | `alt_text: true` | yes | wp:docPr/@descr: plain text [image: descr] with the option; Markdown ![descr](…) by default (#20) | REQ-514 |
-| `IMG33_TITLE` | – | – | – |  |  | wp:docPr/@title is never read (#20) | REQ-514 |
-| `IMG33_DECORATIVE_DESCR` | – | – | – |  |  | marked decorative (adec:decorative): no alt text under any option (D22) | REQ-514 |
-| `IMG33_SVG_ALT` | – | – | – | `alt_text: true` | yes | as IMG33_ALT_TEXT | REQ-514 |
-| `SVG33_INNER_TEXT` | – | – | – |  |  | a <text> element in the SVG part: an image's, never text (#20) | REQ-514 |
+| `IMG33_ALT_TEXT` | – | – | – | `alt_text: true` | yes | wp:docPr/@descr: plain text [image: descr] with the option; Markdown ![descr](…) by default (#20) | REQ-514, REQ-902 |
+| `IMG33_TITLE` | – | – | – |  |  | wp:docPr/@title is never read (#20) | REQ-514, REQ-902 |
+| `IMG33_DECORATIVE_DESCR` | – | – | – |  |  | marked decorative (adec:decorative): no alt text under any option (D22) | REQ-514, REQ-902 |
+| `IMG33_SVG_ALT` | – | – | – | `alt_text: true` | yes | as IMG33_ALT_TEXT | REQ-514, REQ-902 |
+| `SVG33_INNER_TEXT` | – | – | – |  |  | a <text> element in the SVG part: an image's, never text (#20) | REQ-514, REQ-902 |
 
 ### Case 34: a chart
 
@@ -725,4 +725,60 @@ Golden conventions and baseline commands are in `../GOLDENS.md`.
 | `SDT67_HERE` | yes | yes | yes |  |  |  | REQ-902, REQ-302, REQ-509 |
 | `SDT67_VALUE` | yes | yes | yes | `bindings: surface` | – | the bound value, read by default | REQ-902, REQ-302, REQ-509 |
 | `SDT67_SURFACE` | – | – | – | `bindings: surface` | yes | the stale surface, followed by U+E0041 U+E0042, which Word 365 replaces with the bound value on open; inspection: sdt.stored_surface, and chars.tag in it | REQ-902, REQ-302, REQ-509 |
+
+### Case 68: an SVG-only picture: text with tspan and textPath
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `SVG68_DESCR` | – | – | – | `alt_text: true` | yes | the picture's descr | REQ-902, REQ-904, REQ-514 |
+| `SVG68_PLAIN` | – | – | – |  |  | a <text> element in the SVG part: an image's, never text (REQ-514); inspection: image.svg_text, unextractable (D21) | REQ-902, REQ-904, REQ-514 |
+| `SVG68_TSPAN` | – | – | – |  |  | a <tspan> in a <text>: one line with the text after it, white space collapsed; inspection: image.svg_text | REQ-902, REQ-904, REQ-514 |
+| `SVG68_TEXTPATH` | – | – | – |  |  | a <textPath> over a path in <defs>; inspection: image.svg_text | REQ-902, REQ-904, REQ-514 |
+
+### Case 69: two pictures showing one SVG part, each with the raster copy Word keeps
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `SVG69_FIRST_DESCR` | – | – | – | `alt_text: true` | yes | the first picture's descr | REQ-902, REQ-904, REQ-514 |
+| `SVG69_SECOND_DESCR` | – | – | – | `alt_text: true` | yes | the second picture's descr | REQ-902, REQ-904, REQ-514 |
+| `SVG69_SHARED` | – | – | – |  |  | the one SVG part both pictures show: one finding, at the first; inspection: image.svg_text, summary pictures=2, raster named | REQ-902, REQ-904, REQ-514 |
+
+### Case 70: an SVG with no text
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `SVG70_DESCR` | – | – | – | `alt_text: true` | yes | the picture's descr | REQ-902, REQ-904, REQ-514 |
+| `SVG70_TITLE_ONLY` | – | – | – |  |  | an SVG <title>, not drawn: no image.svg_text finding | REQ-902, REQ-904, REQ-514 |
+
+### Case 71: an SVG picture in the header the section uses
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `SVG71_HEADER` | – | – | – |  |  | a <text> in an SVG a header's picture shows; inspection: image.svg_text, its part reached from the header | REQ-902, REQ-904, REQ-514, REQ-502 |
+
+### Case 72: a WMF picture through VML: text in two character sets, through the object table
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `WMF72_TEXTOUT` | – | – | – |  |  | a META_TEXTOUT record with the ANSI font selected; inspection: image.metafile_text, unextractable (D21) | REQ-902, REQ-904, REQ-514 |
+| `WMF72_SJIS` | – | – | – |  |  | a META_EXTTEXTOUT record with a Shift-JIS font selected: WMF72_SJIS 年度, decoded in the font's charset; inspection: image.metafile_text | REQ-902, REQ-904, REQ-514 |
+| `WMF72_GLYPH_INDEX` | – | – | – |  |  | a META_EXTTEXTOUT record of glyph indices (ETO_GLYPH_INDEX): left out (image.text) | REQ-902, REQ-904, REQ-514 |
+| `WMF72_SLOT_REUSED` | – | – | – |  |  | a META_TEXTOUT after the Shift-JIS font's slot was deleted and reused by an ANSI font; inspection: image.metafile_text | REQ-902, REQ-904, REQ-514 |
+| `WMF72_SYMBOL` | – | – | – |  |  | a META_TEXTOUT with a SYMBOL-charset font selected: left out (image.text) | REQ-902, REQ-904, REQ-514 |
+
+### Case 73: an EMF picture: UTF-16 and ANSI text records, a glyph-index record, a stock font
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `EMF73_DESCR` | – | – | – | `alt_text: true` | yes | the picture's descr | REQ-902, REQ-904, REQ-514 |
+| `EMF73_UTF16` | – | – | – |  |  | an EMR_EXTTEXTOUTW record: EMF73_UTF16 ünï; inspection: image.metafile_text, unextractable (D21) | REQ-902, REQ-904, REQ-514 |
+| `EMF73_ANSI` | – | – | – |  |  | an EMR_EXTTEXTOUTA record with the ANSI font at object-table index 1 selected: EMF73_ANSI é; inspection: image.metafile_text | REQ-902, REQ-904, REQ-514 |
+| `EMF73_GLYPH_INDEX` | – | – | – |  |  | an EMR_EXTTEXTOUTW record of glyph indices: left out (image.text) | REQ-902, REQ-904, REQ-514 |
+| `EMF73_STOCK_FONT` | – | – | – |  |  | an EMR_EXTTEXTOUTA record with the stock SYSTEM_FONT selected (ANSI); inspection: image.metafile_text | REQ-902, REQ-904, REQ-514 |
+
+### Case 74: an EMF+ dual file from Windows (Apache POI's test data): the GDI records carry the text
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `EMF74_DESCR` | – | – | – | `alt_text: true` | yes | the picture's descr | REQ-902, REQ-904, REQ-514 |
 

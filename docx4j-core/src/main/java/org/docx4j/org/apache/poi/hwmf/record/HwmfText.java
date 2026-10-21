@@ -363,6 +363,11 @@ public class HwmfText {
             return ETO_PDY.isSet(flags);
         }
 
+        /** ETO_GLYPH_INDEX: the string is glyph indices of the font, not characters (docx4j, CR-050 phase 3). */
+        public boolean isGlyphIndex() {
+            return ETO_GLYPH_INDEX.isSet(flags);
+        }
+
         @Override
         public Map<String, Supplier<?>> getGenericProperties() {
             return GenericRecordUtil.getGenericProperties("flags", getBitsAsString(() -> flags, FLAGS_MASKS, FLAGS_NAMES));

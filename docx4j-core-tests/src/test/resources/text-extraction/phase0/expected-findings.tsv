@@ -35,6 +35,7 @@ case	fixture	channel	kind	selector	scenario	expected	statements
 33	extraction-probe.docx	inspect	alt_text.title	IMG33_TITLE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 33	extraction-probe.docx	inspect	alt_text.description	IMG33_DECORATIVE_DESCR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 33	extraction-probe.docx	inspect	alt_text.description	IMG33_SVG_ALT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+33	extraction-probe.docx	inspect	image.svg_text	SVG33_INNER_TEXT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 34	extraction-probe.docx	inspect	chart.cached	CHT34_TITLE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 48	extraction-probe.docx	inspect	shape.off_page	OFF48_BOX	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 48	extraction-probe.docx	inspect	shape.zero_size	ZER48_BOX	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
@@ -147,10 +148,23 @@ case	fixture	channel	kind	selector	scenario	expected	statements
 66	extraction-probe-inspect.docx	inspect	alt_text.name	PIC66_NAME_ONLY	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 66	extraction-probe-inspect.docx	inspect	alt_text.description	PIC66_DECOR_DESCR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 66	extraction-probe-inspect.docx	inspect	alt_text.name	PIC66_DECOR_NAME	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+68	extraction-probe-inspect.docx	inspect	alt_text.description	SVG68_DESCR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+68	extraction-probe-inspect.docx	inspect	image.svg_text	SVG68_PLAIN	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+69	extraction-probe-inspect.docx	inspect	alt_text.description	SVG69_FIRST_DESCR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+69	extraction-probe-inspect.docx	inspect	image.svg_text	SVG69_SHARED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+69	extraction-probe-inspect.docx	inspect	alt_text.description	SVG69_SECOND_DESCR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+70	extraction-probe-inspect.docx	inspect	alt_text.description	SVG70_DESCR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+73	extraction-probe-inspect.docx	inspect	alt_text.description	EMF73_DESCR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+73	extraction-probe-inspect.docx	inspect	image.metafile_text	EMF73_UTF16	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+74	extraction-probe-inspect.docx	inspect	alt_text.description	EMF74_DESCR	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+74	extraction-probe-inspect.docx	inspect	image.metafile_text	/word/media/image74.emf	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+72	extraction-probe-inspect.docx	inspect	image.metafile_text	WMF72_TEXTOUT	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 67	extraction-probe-inspect.docx	inspect	sdt.stored_surface	SDT67_SURFACE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 58	extraction-probe-inspect.docx	inspect	paragraph.collapsed	BODY58_FIRST	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 59	extraction-probe-inspect.docx	inspect	story.unused	HDR59_UNUSED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 63	extraction-probe-inspect.docx	inspect	header_footer	HDR63_USED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+74	extraction-probe-inspect.docx	inspect	alt_text.description	a header picture	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+71	extraction-probe-inspect.docx	inspect	image.svg_text	SVG71_HEADER	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 63	extraction-probe-inspect.docx	inspect	watermark	WMK63_WATERMARK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 63	extraction-probe-inspect.docx	inspect	note	NOTE63_REFERENCED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 63	extraction-probe-inspect.docx	inspect	story.unused	NOTE63_UNREFERENCED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907

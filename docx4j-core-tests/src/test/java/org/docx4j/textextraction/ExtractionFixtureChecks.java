@@ -32,7 +32,7 @@ import org.docx4j.org.apache.poi.poifs.filesystem.*;
 /** Structural checks independent of the extraction engine and Word's open/repair check. */
 final class ExtractionFixtureChecks {
     static void check(byte[] main, byte[] external, byte[] structure, byte[] inspect, List<ExtractionProbeBuilder.Case> cases) throws Exception {
-        if (cases.size() != 67) throw new IllegalStateException("Expected 67 cases");
+        if (cases.size() != 74) throw new IllegalStateException("Expected 74 cases");
         Map<String, byte[]> a = entries(main), b = entries(external), s = entries(structure), n = entries(inspect);
         validatePackage(a); validatePackage(b); validatePackage(s); validatePackage(n);
         String mainText = payloadText(a), externalText = payloadText(b), structureText = payloadText(s), inspectText = payloadText(n);
@@ -234,7 +234,10 @@ final class ExtractionFixtureChecks {
         for (Map.Entry<String, byte[]> part : entries.entrySet()) {
             String name = part.getKey(); byte[] bytes = part.getValue();
             if (name.endsWith(".docx") || name.endsWith(".xlsx") || name.endsWith(".pptx")) out.append(payloadText(entries(bytes)));
-            else if (name.equals("word/embeddings/probe41.bin")) {
+            else if (name.endsWith(".wmf") || name.endsWith(".emf")) {
+                // a metafile's text records, single-byte and UTF-16 (cases 72 and 73)
+                out.append(new String(bytes, StandardCharsets.ISO_8859_1)).append('\n').append(new String(bytes, StandardCharsets.UTF_16LE)).append('\n');
+            } else if (name.equals("word/embeddings/probe41.bin")) {
                 try (POIFSFileSystem fs = new POIFSFileSystem(new ByteArrayInputStream(bytes))) {
                     out.append(new String(Ole10Native.createFromEmbeddedOleObject(fs).getDataBuffer(), StandardCharsets.UTF_8));
                 }

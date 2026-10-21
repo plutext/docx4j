@@ -31,7 +31,7 @@ case	fixture	statements
 30	extraction-probe.docx	REQ-601, REQ-603
 31	extraction-probe.docx	REQ-605
 32	extraction-probe.docx	REQ-604
-33	extraction-probe.docx	REQ-514
+33	extraction-probe.docx	REQ-514, REQ-902
 34	extraction-probe.docx	REQ-511
 35	extraction-probe.docx	REQ-511
 36	extraction-probe.docx	REQ-513
@@ -66,3 +66,10 @@ case	fixture	statements
 65	extraction-probe-inspect.docx	REQ-902, REQ-602
 66	extraction-probe-inspect.docx	REQ-902, REQ-514, REQ-512
 67	extraction-probe-inspect.docx	REQ-902, REQ-302, REQ-509
+68	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+69	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+70	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+71	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514, REQ-502
+72	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+73	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+74	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
