@@ -4,7 +4,10 @@ Status: ACCEPTED 2026-10-20 (Jason: "accept recommendations for CR-051's D1 to D
 recommended. Phase 0 done 2026-10-20 (the walker audit, §10); D6, the exporters' copy, decided (a)
 the same day (Jason: "D6 (a)"). Five of the six defects of today the audit found were fixed the same
 day (§10.5, c4894c5b0); the sixth went with phase 1. Phase 1 done 2026-10-20 (Jason: "make the fixes,
-then phase 1"): the listener fix 6687cc4b8, the rest 1cff2cd5c (§11). Phases 2 and 3 open. Proposed 2026-10-20, drafted at Jason's request ("write
+then phase 1"): the listener fix 6687cc4b8, the rest 1cff2cd5c (§11). Phase 3 (the hand-offs) done
+2026-10-21, each receiver acknowledged (§5). Phase 2 (row and cell level in `preserve` mode) open. D5's
+default put to Jason again on 2026-10-21 after core-ts relayed his view that docx4j should default to
+`preserve` (§5, core-ts's acknowledgement). Proposed 2026-10-20, drafted at Jason's request ("write
 the cr to keep body-level mc through load. also check whether we do/should keep mc in sdt content")
 by Claude Opus 5.5 (session docx4j-25), after the portfolio session's measurement of Jason's
 `mc-fun` probes (paper §7.8).
@@ -574,6 +577,61 @@ element. Then `preserve` mode keeps those elements whole.
   keep-whole, the no-branch removal, `mc:Ignorable` gaining the selected prefixes, a record on the
   part), `mce_preprocess` on the list, a readers' audit for `preserve`, and the paragraph-level
   revisions twins; its probes are copies of `mc-fun/`.
+
+**Hand-offs sent** 21 October 2026 (Claude Fable 5.1, docx4j-25, Jason: "do CR-051 phase 3"), each naming
+the commits (6687cc4b8, c4894c5b0, 1cff2cd5c, 86f8f3e93), the CR's sections, `mc-fun/` (16 probes, 14 Word
+365 saves) and the oracle tests. Each acknowledged the same day:
+
+- **objects-ts acknowledged:** regenerated from `xsd/wml/wml.xsd` at 1cff2cd5c (objects fe6f972, unpushed,
+  to ship with 0.4.4 after core-ts's go): fifteen content lists now name `mc:AlternateContent` (Body, Hdr,
+  Ftr, Tc, CTFtnEdn, Comments.Comment, CTTxbxContent, SdtContentBlock, CTCustomXmlBlock, Tbl,
+  CTSdtContentRow, CTCustomXmlRow, Tr, CTSdtContentCell, CTCustomXmlCell) and admit
+  `TypedNamedValue<AlternateContent>`; no module appeared or disappeared; all 341 corpus hashes identical,
+  since Jsonix already resolved the global element there (the regeneration changes the explicit lists and
+  the TypeScript declarations). A `w:sdt` directly in a branch stays DOM there and round-trips whole;
+  binding it by its container's kind is core-ts's to do.
+- **core-ts acknowledged,** with measurements on the 16 probes (from its main 2782d2b, nothing committed):
+  its default load keeps every element at every level and saves it whole (the `mceKeep` pass, with
+  `mce.branches_differ`), which is docx4j's `preserve` at all levels; `mcePreprocess: true` resolves on
+  the DOM before unmarshal at every level, run and paragraph included, by load's understood set, which
+  deliberately lacks w16sdtdh, w16sdtfl and w16du (CR-010 §15 kept load's set to what the model binds),
+  so it takes `w16cex` where Word 365 takes `w16sdtfl` on all 13 newest-first probes. Its text model
+  (default load) reads block level, block-in-sdt, block-in-cell and the four text-box probes as Word 365
+  does (w16sdtfl, each with `mce.branches_differ` at the promoted address), reads `mc-block-nofallback`
+  whole (REQ-305) and `mc-mixed` as Word; but at row and cell level (the element as a `w:tbl` or `w:tr`
+  child, plain or in an sdt) the content is not read and no warning raised, a reader gap. Its Office JS
+  readers (`Paragraph.text`, `Body.text`, `Body.paragraphs`) do not see a kept block-, row- or cell-level
+  element at all (`TableCell.values` does, inconsistently), and miss run-level text (its CR-012 §12, phase
+  4). The readers have counted w16sdtdh, w16sdtfl, w16du and x14ac as understood since CR-010 §15 (the
+  answer to ED-009 §3.8). A `w:sdt` directly in a branch, built both ways, is read and kept, no loss.
+  Round trip keeps every element and Choice on all 16 probes. Jason then had it open **core-ts CR-013**
+  ("mc:AlternateContent at block, row and cell level: every reader takes the selected branch"; proposed,
+  uncommitted, hash to follow): D1 the default stays, every branch kept; D2 addresses, the element's form
+  `body/2/0` recommended; D3 `mcePreprocess` keeps load's set; D4 a view in a branch read-only; phases 0
+  (audit, probes copied), 1 (the text model's rows and cells), 2 (the content API's readers), 3 (the
+  mutators). It relayed Jason's view on docx4j's default (D5): "the default here is as it is since we want
+  the branches in the editor ... in fact i think docx4j ought to change its default to match what we do
+  here", that is `preserve` by default with `word` on request; put to Jason directly in this session,
+  not acted on (see D5).
+- **docx4j-mcp acknowledged:** decision T8 in its CR-mcp-server.md §19.5 (uncommitted; hash to follow;
+  nothing changes until its engine bump from docx4j 17.1.0, where every tool gets the Fallback): `word`
+  (the default, no code) for the read-only tools (extract_text, docx_to_markdown, convert_to_pdf,
+  convert_to_html, describe_template, update_toc, and the planned outline, find, read and inspect),
+  for markdown_to_docx and html_to_docx (a styles template, body cleared) and, departing from the
+  recommendation with its reasons, for fill_template (its output is a new document for a person to open
+  in Word, and the binders fill the branch Word shows; in `preserve` they would meet the element and
+  §11.2's bind.xslt gap); `preserve` per load for the future tools that save their input with a change
+  (tracked-changes edits, anonymize, compare with both inputs in one mode; merge_documents with its
+  design); the property never set. It copied `mc-block-newest-first.docx` for extract_text ("fallback" on
+  17.1.0, "w16sdtfl" on 17.3.4-SNAPSHOT) and builds fill_template's cases in code after `McProbeDocx`.
+- **docx4j-python:** the formal hand-off sent, pointing at the record above; no new ask, none raised.
+- **The portfolio:** registry updated (CR-051.3 in progress, the three acknowledgements in its notes).
+  Paper §7.8: docx4j's six cells measured (`Texts.plainText` after `WordprocessingMLPackage.load(file,
+  McBlockLevel.WORD)` on Jason's `mc-text`, `mc-run`, `mc-block` and their newest-first copies): `w14`,
+  `w14`, `w14`, `w16sdtfl`, `w16sdtfl`, `w16sdtfl`, Word 365's row exactly; a docx4j row is with Jason
+  (the paper has carried no docx4j results so far, by his rule); `McBlockLevelProbesTest.paperSection78`
+  asserts the six cells, the three original-order probes added to `mc-fun/`. The WD needs no change,
+  agreed.
 
 ## 6. Decisions
 

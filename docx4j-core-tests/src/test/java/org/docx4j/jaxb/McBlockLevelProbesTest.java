@@ -97,6 +97,26 @@ public class McBlockLevelProbesTest {
 		}
 	}
 
+	/**
+	 * Paper section 7.8's docx4j row (CR-051 phase 3, 21 October 2026): Jason's three original-order probes and their
+	 * newest-first copies, read as Word 365 reads them. Text and run level are the text model's selection
+	 * ({@code McPurpose.TEXT}, the published understood set); block level the load-time splice. The original order
+	 * gives the first Choice, w14, at every level; the newest-first order the newest namespace docx4j understands,
+	 * w16sdtfl, as Word 365 shows.
+	 */
+	@Test
+	public void paperSection78() throws Exception {
+		String[][] cells = { { "mc-text", "w14" }, { "mc-run", "w14" }, { "mc-block", "w14" },
+				{ "mc-text-newest-first", "w16sdtfl" }, { "mc-run-newest-first", "w16sdtfl" }, { "mc-block-newest-first", "w16sdtfl" } };
+		for (String[] cell : cells) {
+			String text = text(load(cell[0], McBlockLevel.WORD));
+			assertTrue(cell[0] + ": " + text, text.endsWith(cell[1]));
+			for (String other : new String[] { "w15", "w16se", "w16cid", "w16cex", "w16sdtdh", "w16du", "wp14", "fallback", "TheEarthisround" }) {
+				assertFalse(cell[0] + " shows " + other + ": " + text, text.contains(other));
+			}
+		}
+	}
+
 	/** The block-level probe: Word's branch in the body at the element's index, the record, and the root's mc:Ignorable. */
 	@Test
 	public void blockLevelProbe() throws Exception {
