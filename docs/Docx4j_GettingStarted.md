@@ -5,7 +5,7 @@ Contents
   
 
 
-**This guide is for docx4j 17.3.3 (Java 11 and later); most of it applies to 11.5.x as well.   **
+**This guide is for docx4j 17.3.4 (Java 11 and later); most of it applies to 11.5.x as well.   **
 
 Version numbering jumped from 11.5.14 to 17.0.0 in part because of the following API changes:
 
@@ -151,7 +151,7 @@ To use docx4j 11.4 or later, ensure any code references **jakarta.xml.bind** (no
 
 &#9;		`<artifactId>``docx4j-JAXB-``ReferenceImpl``</artifactId>`
 
-&#9;		`<version>``17.3.3``</version>`
+&#9;		`<version>``17.3.4``</version>`
 
 &#9;	`</dependency>`
 
@@ -165,23 +165,41 @@ To use docx4j 11.4 or later, ensure any code references **jakarta.xml.bind** (no
 
 &#9;		`<artifactId>``docx4j-JAXB-``MOXy``</artifactId>`
 
-&#9;		`<version>``17.3.3``</version>`
+&#9;		`<version>``17.3.4``</version>`
 
 &#9;	`</dependency>`
 
 The blog entry [hello-maven-central](http://www.docx4java.org/blog/2011/10/hello-maven-central/)s \[needs to be updated per above\] shows you what to do, starting with a fresh OS (Win 7 is used, but these steps would work equally well on OSX or Linux).
 
+# Using docx4j bundles
+
+If you want docx4j as one file, with nothing to resolve: from 17.0.4, docx4j-bundle is published to Maven Central as a single shaded fat jar, and from 17.3.4 a second jar, docx4j-bundle-extras, goes beside it for PDF output.  They are for a classpath (a script, JPype from Python, a tool that ships one file), not for the module path: their module descriptors are stripped.
+
+**docx4j-bundle** holds docx4j-core, the JAXB reference implementation runtime, docx4j-digsig and docx4j-markdown, with all their dependencies.  Its published pom declares no dependencies at all, so Maven resolves nothing else.  The slf4j API is inside; a logging provider is not (see slf4j, below).  With it alone you can load, create, edit and save docx, pptx and xlsx, bind data, extract text, export Markdown and HTML, sign documents, and create and edit charts.
+
+**docx4j-bundle-extras** holds what PDF output needs: docx4j-export-fo, docx4j-chart-render (which draws charts, in PDF and HTML output), docx4j's FO renderer (a fork of Apache FOP), jaxb-xslfo, Batik, JEuclid and the font modules export-fo depends on (croscore, crosextra, symbol).  It holds nothing the base jar has, so alone it does nothing: beside docx4j-bundle of the same version, Docx4J.toPDF works and charts are drawn.  Do not put Apache FOP's own jars beside it: the extras carry org.apache.fop, and docx4j warns when both are on the classpath.
+
+With Maven, depend on the extras and the base jar comes with it (its pom names docx4j-bundle as its one dependency):
+
+&#9;`<dependency>`
+
+&#9;&#9;`<groupId>org.docx4j</groupId>`
+
+&#9;&#9;`<artifactId>docx4j-bundle-extras</artifactId>`
+
+&#9;&#9;`<version>17.3.4</version>`
+
+&#9;`</dependency>`
+
+or on docx4j-bundle alone if you do not need PDF.  Do not mix a bundle with the ordinary artifacts (docx4j-core, docx4j-JAXB-ReferenceImpl, docx4j-export-fo and so on): every class would be on the classpath twice.
+
+Not in either bundle: docx4j-ImportXHTML (LGPL), and the PDF converters that drive Word (documents4j, Microsoft Graph).  How the bundles are built, and the checks run on them before a release, are in docx4j-bundle/design-rationale.md in the source tree.
+
 # Using docx4j binaries
 
-If Maven is not for you, you can download the latest version of docx4j from [http://www.docx4java.org/docx4j/](http://www.docx4java.org/docx4j/)
+If Maven (or Gradle) is not for you, the binaries are the two bundle jars described above, downloaded from Maven Central: docx4j-bundle-&lt;version&gt;.jar from https://repo1.maven.org/maven2/org/docx4j/docx4j-bundle/ and, for PDF output, docx4j-bundle-extras-&lt;version&gt;.jar from the directory beside it.  Put them on your classpath with a logging provider (see slf4j, below).  The zip distributions (docx4j-community, the two JAXB zips and the samples zips) end at 17.3.3; the sample sources and their documents are in the docx4j-samples-* modules on GitHub.
 
-Supporting jars can be found in the .tar.gz or zip version, or in the relevant subdirectory.  
-
-You'll need the jars from one and only one of these directories: 
-
-- docx4j-JAXB-Internal, 
-- docx4j-JAXB-ReferenceImpl, 
-- docx4j-JAXB-MOXy
+docx4j-bundle carries the JAXB reference implementation.  MOXy users are the one group the bundles leave out: take the ordinary jars instead, docx4j-core and docx4j-JAXB-MOXy with their dependencies, either through a throwaway pom and `mvn dependency:copy-dependencies -DoutputDirectory=libs`, or jar by jar from Central's directory listing (every artifact is a URL under https://repo1.maven.org/maven2/org/docx4j/).  The same gets you anything not in a bundle: docx4j-diffx, docx4j-ImportXHTML, the documents4j and Microsoft Graph converters.
 
 # docx4j dependencies
 
@@ -220,6 +238,10 @@ For docx4j v11.4 on, the version property should be:
 For docx4j 8.3.8, use `logback-classic 1.2.10.`
 
 A logback.xml config file may be found at [https://github.com/plutext/docx4j/blob/VERSION\_17\_2\_1/docx4j-samples-resources/src/main/resources/logback.xml](https://github.com/plutext/docx4j/blob/VERSION_17_2_1/docx4j-samples-resources/src/main/resources/logback.xml).  Put that on your classpath.
+
+### slf4j and docx4j-bundle
+
+docx4j-bundle (and docx4j-bundle-extras beside it) is a different case: the slf4j API travels inside the jar, and its published pom declares no dependencies, so nothing pulls a logging provider in for you. There is deliberately no provider in the jar. A library should depend on the slf4j API only, and shading a provider into a fat jar would take over the logging of whatever application loads it. So with the bundle alone, slf4j prints one line, "No SLF4J providers were found", and logs nothing. To see docx4j's logging, put one provider on the classpath beside the bundle: logback-classic (with the logback.xml above) or slf4j-simple. For deliberate silence, slf4j-nop removes the warning line too. If your application already has slf4j-api on its classpath, there are two copies of the `org.slf4j` classes and the first wins; that is harmless when yours is 2.x. The one combination that breaks is an application still on slf4j 1.7 with a 1.7 binding: the 2.x API inside the bundle ignores 1.x bindings, so move to a 2.x provider.
 
 See for example [https://github.com/plutext/docx4j/blob/master/docx4j-samples-docx4j/pom.xml#L67](https://github.com/plutext/docx4j/blob/master/docx4j-samples-docx4j/pom.xml)
 
@@ -366,11 +388,20 @@ docx4j can open documents which contain Word 2010 and later content.  The key ex
 
 **Markup compatibility (mc:AlternateContent).  **Word writes some content twice: an mc:Choice for a reader which understands the newer namespace, and an mc:Fallback for one which does not.  For example, a text box is a wps shape with a VML fallback; an equation on a PowerPoint slide is an a14 shape with a picture fallback.  
 
-Since docx4j 17.2.0 the whole element is kept at load wherever Word writes it, and written back with both branches, so a document you save says the same thing to every reader.  
+docx4j has long kept mc:AlternateContent in some specific places. Since docx4j 17.2.0, this has extended to an element in run or paragraph content, and from 17.3.4 (CR-051) the element is admitted everywhere the schema allows it, block, row and cell level included: in the body, headers, footers, footnotes, comments, text boxes, content controls, tables, rows and cells.  
+
+What a load does with those is set by the **docx4j.jaxb.mc.blockLevel** property: 
+
+- **word**, the default in 17.3.x, resolves each one as Word reads it (Word generally keeps it, but does resolve some instances which it would not write itself); 
+- **preserve** keeps each one whole in the tree, which the anonymiser, diffx and an editor that saves ask for.  
+
+The mode can also be given per load (WordprocessingMLPackage.load(.., McBlockLevel), Docx4J.load) or per package (OpcPackage.setMcBlockLevel).  From 17.4.0 the default becomes preserve, with Word's view still what a read gives; set the property to choose now.
 
 When docx4j draws, it takes one branch: the first mc:Choice whose Requires prefixes are all named in the **docx4j.jaxb.mc.preferChoice** property, otherwise the mc:Fallback.  The property is empty by default, so docx4j draws the fallback (what the producer wrote for a reader which understands nothing extra); set it, for example to wps, or to a14 for PowerPoint equations, to draw the choice instead.  The rule lives in org.docx4j.jaxb.McSelection.  
 
-When docx4j reads text (the text model, the Markdown export, and a TraversalUtil walk by default) it takes, from 17.3.4, the branch ECMA-376 Part 3 prescribes: the first mc:Choice whose Requires namespaces are all ones docx4j can read, from the published list org/docx4j/jaxb/understood-namespaces.txt, otherwise the mc:Fallback.  A branch docx4j can read is not always one it can draw: it reads a wps text box from the Choice, and draws its VML fallback.  McSelection.selectedBranch(McPurpose, AlternateContent) gives either.
+When docx4j reads text (the text model, the Markdown export, and a TraversalUtil walk by default) it takes, from 17.3.4, the branch ECMA-376 Part 3 prescribes: the first mc:Choice whose Requires namespaces are all ones docx4j can read, from the published list org/docx4j/jaxb/understood-namespaces.txt, otherwise the mc:Fallback.  
+
+A branch docx4j can read is not always one it can draw: it reads a wps text box from the Choice, and draws its VML fallback.  McSelection.selectedBranch(McPurpose, AlternateContent) gives either.
 
 Where a producer has written the element somewhere the schema does not admit it (Word's own output has not been seen to), the load-time preprocessor resolves that one element to the branch docx4j draws, and logs a warning naming the parent.
 
@@ -1818,7 +1849,29 @@ TrackedChanges.report gives the counts by kind, author and part, with a JSON for
 
 # Text extraction and inspection
 
-Most of what is written about a Word document today is written by a program that first turns it into text: a search index, a compliance check, a summary, a contract review, an LLM answering a question about it.  The text those programs read is rarely the text a person sees in Word.  From 17.3.4, docx4j reads a document's text as a careful reader of the page would, by one explicit model (the WordprocessingML Text Extraction specification, CR-046), and tells you what it left out and why.  Three things make it different from the extractors commonly put in front of an LLM: the view of tracked changes is yours to choose and is marked when you ask for it; what is hidden stays out of the text and is reported beside it; and the answer is the same on every machine, since nothing is fetched and nothing depends on what else is installed.
+Most of what is written about a Word document today is written by a program that first turns it into text: a search index, a compliance check, a summary, a contract review, an LLM answering a question about it.  The text those programs read may not be identical to the text a person sees in Word.
+
+From 17.3.4, docx4j reads a document's text as a careful reader of the page would, by one explicit model (the WordprocessingML Text Extraction specification, CR-046), and tells you what it left out and why.
+
+The model is the composition of four layers, applied as `serialize(scope(view(resolve(package))))`.
+
+Three things make it different from the extractors commonly put in front of an LLM:
+
+- the view of tracked changes is yours to choose and is marked when you ask for it;
+- what is hidden stays out of the text and is reported beside it; and
+- the answer is the same on every machine, since nothing is fetched and nothing depends on what else is installed.
+
+## Motivation
+
+Twenty-one readers and three hosted assistants were measured on the same probe documents.  Where they disagree most is exactly where an agent is most exposed:
+
+- **Alternate content Word never shows.**  Word shows one branch of an `mc:AlternateContent`; Tika reads every Choice, docx2txt and the Open XML SDK read every branch, and almost nothing applies `Requires` as Word does.  A document can show a person one text and hand an agent another.  docx4j reads the branch Word reads, and `warnings()` and the inspector say when the other branches differ.
+- **Hidden and near-hidden text.**  White text, 1pt text, `w:vanish` text and header parts no section uses are in what most readers return.  docx4j keeps them out and the inspector reports each, with where it is and what would reveal it.
+- **`altChunk`, both ways at once.**  Eleven of fourteen automated readers read no chunk at all, so a generated document's sections are missing; the three that do read more than Word shows, down to an MHT chunk's raw MIME source.  docx4j expands HTML, XHTML and MHT chunks as Word does, through docx4j-ImportXHTML, with what `display: none` hides reported rather than read, and fetches none of the stylesheets or images a chunk names.
+- **Bound controls showing one text and storing another.**  Nine of twelve local readers print a control's stale stored text; python-docx prints nothing from any control.  Word, and docx4j, show the value in the custom XML part, in headers and document properties too.
+- **Deleted text read as in force.**  Python-docx drops tracked insertions, POI prints deletions beside insertions with nothing to tell them apart, and the SDK's `InnerText` includes deleted text.  docx4j's views are explicit and its markup view marks every change.
+- **Silent omission.**  Mammoth and pandoc never read headers; pandoc drops block-level branches whole and turns an opening title into metadata it does not print.  docx4j reads every story on request, and every result carries its warnings and, with `inspect: true`, the counts of what was left out.
+- **Answers that depend on the setup.**  Whether Tika also OCRs a picture depends on Tesseract being installed; two pandoc versions give two texts.  docx4j is pure Java, reads the package and nothing else, and gives the same text everywhere.
 
 ## Reading the text
 
@@ -1849,18 +1902,6 @@ Word offers two texts of a document: `Range.Text` in its object model, and Save 
 - The view is yours.  Save As always writes the accepted text; `Range.Text` follows whatever the Review pane shows, and marks nothing.
 
 What it keeps from Word: the accepted view as the default, placeholder text included, a bound control's refreshed value, the `altChunk` expanded in place, list labels out unless asked, and `mc:AlternateContent` read by the branch Word reads.
-
-## Why not the usual tools
-
-Twenty-one readers and three hosted assistants were measured on the same probe documents.  Where they disagree most is exactly where an agent is most exposed:
-
-- **Alternate content Word never shows.**  Word shows one branch of an `mc:AlternateContent`; Tika reads every Choice, docx2txt and the Open XML SDK read every branch, and almost nothing applies `Requires` as Word does.  A document can show a person one text and hand an agent another.  docx4j reads the branch Word reads, and `warnings()` and the inspector say when the other branches differ.
-- **Hidden and near-hidden text.**  White text, 1pt text, `w:vanish` text and header parts no section uses are in what most readers return.  docx4j keeps them out and the inspector reports each, with where it is and what would reveal it.
-- **`altChunk`, both ways at once.**  Eleven of fourteen automated readers read no chunk at all, so a generated document's sections are missing; the three that do read more than Word shows, down to an MHT chunk's raw MIME source.  docx4j expands HTML, XHTML and MHT chunks as Word does, through docx4j-ImportXHTML, with what `display: none` hides reported rather than read, and fetches none of the stylesheets or images a chunk names.
-- **Bound controls showing one text and storing another.**  Nine of twelve local readers print a control's stale stored text; python-docx prints nothing from any control.  Word, and docx4j, show the value in the custom XML part, in headers and document properties too.
-- **Deleted text read as in force.**  Python-docx drops tracked insertions, POI prints deletions beside insertions with nothing to tell them apart, and the SDK's `InnerText` includes deleted text.  docx4j's views are explicit and its markup view marks every change.
-- **Silent omission.**  Mammoth and pandoc never read headers; pandoc drops block-level branches whole and turns an opening title into metadata it does not print.  docx4j reads every story on request, and every result carries its warnings and, with `inspect: true`, the counts of what was left out.
-- **Answers that depend on the setup.**  Whether Tika also OCRs a picture depends on Tesseract being installed; two pandoc versions give two texts.  docx4j is pure Java, reads the package and nothing else, and gives the same text everywhere.
 
 ## Inspecting what the text does not show
 

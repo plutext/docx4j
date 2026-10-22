@@ -134,6 +134,9 @@ Changes in Version 17.3.4
   2026-10-22). New `org.docx4j.model.table.TableRules`; OpenDoPE's integrity and removal stylesheets and the unequal-columns
   PDF table end a cell with a paragraph only when that rule fails (the stylesheets looked for a paragraph anywhere in the
   cell, and the integrity step padded every control in a cell with none inside it).
+- The zip distributions (docx4j-community, docx4j-JAXB-ReferenceImpl, docx4j-JAXB-MOXy and the samples zips, built by
+  etc/build.xml) end at 17.3.3: the binaries are the two bundle jars on Maven Central (Getting Started, "Using docx4j
+  binaries"; MOXy users take the ordinary jars). build.xml stays for its dist.NET target.
 - docx4j-bundle now also holds docx4j-digsig and docx4j-markdown. PDF output is the new `docx4j-bundle-extras`
   (docx4j-export-fo, docx4j-chart-render, the docx4j FO renderer fork, Batik, jeuclid and the fonts), a second fat jar
   put beside docx4j-bundle of the same version; its pom depends on docx4j-bundle, so a Maven consumer gets both. It
