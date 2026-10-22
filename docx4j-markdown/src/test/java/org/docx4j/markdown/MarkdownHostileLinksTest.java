@@ -28,7 +28,6 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.*;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -53,15 +52,14 @@ public class MarkdownHostileLinksTest {
 		return pkg;
 	}
 
-	@Ignore("CR-056 phase 0: red until phase 1 (the link allowlist)")
 	@Test
 	public void noScriptSchemeDestination() throws Exception {
 		String md = Docx4J.toMarkdown(docx());
-		String lower = md.toLowerCase();
-		assertFalse("javascript: destination\n" + md, lower.contains("javascript:"));
-		assertFalse("sneaky javascript: destination\n" + md, lower.contains("scri\npt:") || lower.contains("scri\npt:"));
-		assertFalse("vbscript: destination\n" + md, lower.contains("vbscript:"));
+		assertFalse("javascript: destination\n" + md, md.contains("(javascript:") || md.contains("(<javascript:"));
+		assertFalse("sneaky javascript: destination\n" + md, md.contains("](") && md.contains("scri\npt:alert(2)>)"));
+		assertFalse("vbscript: destination\n" + md, md.contains("(vbscript:") || md.contains("(<vbscript:"));
 		assertTrue("the text kept\n" + md, md.contains("text for javascript:alert(1)"));
+		assertFalse("a link around the refused text\n" + md, md.contains("[text for javascript:alert(1)]"));
 	}
 
 	@Test

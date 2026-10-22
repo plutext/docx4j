@@ -415,6 +415,23 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 
 	/** Whether the content being converted is inside a text box, whose paragraphs are laid
 	 *  out where the box is anchored, not in the flow. @since 17.2.0 */
+	private boolean linkRefused = false;
+
+	/**
+	 * A link target the output refused ({@link org.docx4j.convert.out.common.writer.LinkTargets#isSafe}
+	 * false, CR-056): WARN once per document, naming the first; the rest at DEBUG.
+	 * @since 17.3.5
+	 */
+	public void linkRefused(String target) {
+		String message = org.docx4j.convert.out.common.writer.LinkTargets.refusedMessage(target);
+		if (linkRefused) {
+			log.debug(message);
+		} else {
+			linkRefused = true;
+			log.warn(message);
+		}
+	}
+
 	public boolean isInTextBox() {
 		return textBoxDepth > 0;
 	}

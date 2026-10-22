@@ -144,7 +144,7 @@ returns this HTML and Markdown. `userBodyTop`, `userBodyTail`, `userCSS`, `userS
 | Phase | What | Size |
 |---|---|---|
 | 0 | The probes as red tests: core-tests (HTML both pathways, FO's `external-destination`), markdown, tika. **DONE 2026-10-23** (record in §9); the tika test goes with phase 3 on the `docx4j-tika` branch | 2 h |
-| 1 | `LinkTargets` with the property; `HyperlinkUtil`, the picture link, `WmlToMarkdown`; tests green; CHANGELOG | ½ day |
+| 1 | `LinkTargets` with the property; `HyperlinkUtil`, the picture link, `WmlToMarkdown`; tests green; CHANGELOG. **DONE 2026-10-23** (record in §10) | ½ day |
 | 2 | `CssIdentifiers`, the selectors in `HtmlCssHelper` and `XsltHTMLFunctions`, the `\3c ` guard in the style element handler, `TagClass` on DOM nodes; tests green | ½ day |
 | 3 | docx4j-tika's `href` (on the `docx4j-tika` branch, with CR-055 phase 1); Getting Started; the advisory and the backport as decided (D9, D10) | ½ day |
 | 4 | (optional, D8) the inspector's script-scheme finding, with the portfolio's WD change and the ports' hand-off | ½ day, with the portfolio |
@@ -215,4 +215,29 @@ installed); the red ones carry `@Ignore` naming the phase that turns them on, so
   default, so phase 3 adds the reflective `setLinkSchemesChecked(false)` in `HtmlChunkImport` (the inspector must still
   see a chunk's `javascript:` target as `relationship.external`); it throws `Docx4JException` for malformed input, which
   `guarded()` already catches; it escapes alt text on its side, so CR-057's escaping escapes nothing twice.
+
+## 10. Phase 1 record (2026-10-23, docx4j-25)
+
+- `org.docx4j.convert.out.common.writer.LinkTargets` (docx4j-core): `isSafe(target)`, `scheme(target)`, `schemes()`,
+  `defaultSchemes()`, `excerpt(target)` and `refusedMessage(target)` for the callers' log line. The scheme is read as a
+  browser reads it (leading controls and spaces ignored, tabs and line breaks dropped anywhere, case-insensitive) and is
+  everything up to the first `:` that comes before any `/`, `?` or `#`; a single letter followed by `\` or `/` is a drive
+  path. One reading stricter than a browser's, on purpose: a target whose scheme a browser would reject as malformed and
+  resolve as a relative URL (`java script:x`, a C0 control inside the scheme) is refused rather than second-guessed, since
+  a PDF viewer or a Markdown renderer need not read it the browser's way. The property `docx4j.convert.out.linkSchemes` is
+  read on each call (a comma-separated list, trimmed, lower-cased, a trailing `:` tolerated), so a test can set and restore
+  it; it only adds (D3).
+- `HyperlinkUtil.toHtmlNode` returns a `span`, and `toFoNode` an `fo:inline` (what it already returns for a link with no
+  target), for a refused external target; `toNode` copies the content into either. `AbstractWordXmlPicture
+  .createHtmlImageElement` writes the `img` with no `a` for a refused click target. `WmlToMarkdown.linked` treats a refused
+  target as no target. Each logs once per document at WARN (`AbstractWmlConversionContext.linkRefused`, a field on
+  `WmlToMarkdown`; the picture per picture) and the rest at DEBUG, with `excerpt` (80 characters, controls as spaces).
+- Tests: `LinkTargetsTest` (safe, refused, the scheme reading, the property's add-only semantics, the excerpt);
+  `HtmlOutputHostileTest`'s link rows on, now checking every `href` attribute's scheme rather than the page text (the
+  refused link's text, `java\tscri\npt:…`, is kept in the page, as it should be, so the phase 0 substring assertion could
+  not go green); `propertyAddsAScheme` on both pathways with `HostileDocx.CUSTOM_LINK` (`onenote:`), refused by default;
+  `MarkdownHostileLinksTest` and `FoHostileLinksTest` on, their assertions likewise narrowed to the destination.
+  Green: core-tests `convert.out.html.*`, the hyperlink and field tests, `HtmlVisitorParityTest`; docx4j-markdown (169);
+  `FoHostileLinksTest`. The style-ID tests stay ignored until phase 2.
+- CHANGELOG under 17.3.5; the property documented in `docx4j-samples-resources`' `docx4j.properties`.
 

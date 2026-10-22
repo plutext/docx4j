@@ -32,6 +32,8 @@ import org.w3c.dom.Node;
 
 /** This class combines the generation of hyperlinks for 
  *  html and pdf.  
+ *  A target whose scheme {@link LinkTargets#isSafe} refuses (a script scheme, CR-056)
+ *  gives the link's content without a link.
  *
  */
 public class HyperlinkUtil {
@@ -80,6 +82,11 @@ public class HyperlinkUtil {
 		String location = null;
 		
 		if (model.isExternal()) {
+			if (!LinkTargets.isSafe(externalTarget)) {
+				// CR-056: a script-scheme target; the text, with no link
+				context.linkRefused(externalTarget);
+				return doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");
+			}
 			location = externalTarget;
 			if ((internalTarget != null) && (internalTarget.length() > 0)) {
 				location = location + "#" + internalTarget;
@@ -104,6 +111,11 @@ public class HyperlinkUtil {
 		String location = null;
 		
 		if (model.isExternal()) {
+			if (!LinkTargets.isSafe(externalTarget)) {
+				// CR-056: a script-scheme target; the text, with no link
+				context.linkRefused(externalTarget);
+				return doc.createElement("span");
+			}
 			location = externalTarget;
 			if ((internalTarget != null) && (internalTarget.length() > 0)) {
 				location = location + "#" + internalTarget;

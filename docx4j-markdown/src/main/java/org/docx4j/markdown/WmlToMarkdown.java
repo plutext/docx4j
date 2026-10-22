@@ -36,6 +36,7 @@ import org.commonmark.node.OrderedList;
 import org.commonmark.node.StrongEmphasis;
 import org.commonmark.node.Text;
 import org.commonmark.node.ThematicBreak;
+import org.docx4j.convert.out.common.writer.LinkTargets;
 import org.docx4j.model.text.ImageDescription;
 import org.docx4j.model.text.TextBlock;
 import org.docx4j.model.text.TextCell;
@@ -108,6 +109,8 @@ class WmlToMarkdown {
 	private int tableHeaderDepth;
 
 	private int imageCounter;
+	/** Whether a link target was refused ({@link LinkTargets}): WARN once per document. */
+	private boolean linkRefused;
 
 	WmlToMarkdown(TextResult result, WordprocessingMLPackage pkg, MarkdownExportOptions options) {
 		this.result = result;
@@ -930,6 +933,13 @@ class WmlToMarkdown {
 			String target = runs.get(i).getLink();
 			int j = i;
 			while (j < runs.size() && Objects.equals(target, runs.get(j).getLink())) j++;
+			if (target != null && !LinkTargets.isSafe(target)) {
+				// CR-056: a script-scheme target; the text, with no link
+				String message = LinkTargets.refusedMessage(target);
+				if (linkRefused) log.debug(message); else log.warn(message);
+				linkRefused = true;
+				target = null;
+			}
 			if (target == null) {
 				for (int k = i; k < j; k++) run(runs.get(k), sink);
 			} else {

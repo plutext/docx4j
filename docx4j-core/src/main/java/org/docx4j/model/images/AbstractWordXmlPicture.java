@@ -152,7 +152,13 @@ public abstract class AbstractWordXmlPicture {
             	imageElement.setAttribute("height", Integer.toString((int) Math.round(dimensions.height)));
             }
 
-            if (hlinkRef !=null && !hlinkRef.equals(""))
+            if (hlinkRef !=null && !hlinkRef.equals("")
+            		&& !org.docx4j.convert.out.common.writer.LinkTargets.isSafe(hlinkRef))
+            {
+            	// CR-056: a script-scheme click target; the picture, with no link
+            	log.warn(org.docx4j.convert.out.common.writer.LinkTargets.refusedMessage(hlinkRef));
+            }
+            else if (hlinkRef !=null && !hlinkRef.equals(""))
             {
             	Element linkElement = document.createElement("a");
 

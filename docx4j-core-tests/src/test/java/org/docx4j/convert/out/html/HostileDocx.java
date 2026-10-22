@@ -45,6 +45,8 @@ public final class HostileDocx {
 	public static final String STYLE_ID = "x</style><script>alert('H6_STYLEID')</script>";
 	public static final String TABLE_STYLE_ID = "t</style><script>alert('H7_TBLSTYLE')</script>";
 	public static final String SPACED_STYLE_ID = "Body Text 2";
+	/** A scheme outside the default set: refused unless {@code docx4j.convert.out.linkSchemes} adds it. */
+	public static final String CUSTOM_LINK = "onenote:///C:/notes/section.one#page";
 
 	public static final String[] BENIGN = { "http://example.org/a", "https://example.org/b", "mailto:a@example.org",
 			"ftp://example.org/c", "file:///C:/docs/d.docx", "tel:+61000000", "news:comp.lang.java", "sub/dir/page.html",
@@ -63,7 +65,7 @@ public final class HostileDocx {
 		Style.Name tn = F.createStyleName(); tn.setVal("HostileTable"); ts.setName(tn); ts.setTblPr(F.createCTTblPrBase());
 		styles.getStyle().add(ts);
 		// links by relationship
-		for (String target : new String[] { SCRIPT_LINK, SCRIPT_SNEAKY, VBSCRIPT_LINK, DATA_LINK }) mdp.getContent().add(link(mdp, target, "text for " + target));
+		for (String target : new String[] { SCRIPT_LINK, SCRIPT_SNEAKY, VBSCRIPT_LINK, DATA_LINK, CUSTOM_LINK }) mdp.getContent().add(link(mdp, target, "text for " + target));
 		for (String target : BENIGN) mdp.getContent().add(link(mdp, target, "benign " + target));
 		// a HYPERLINK field
 		mdp.getContent().add(field(SCRIPT_FIELD, "field link"));

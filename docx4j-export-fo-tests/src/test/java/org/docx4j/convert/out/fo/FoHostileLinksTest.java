@@ -32,7 +32,6 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.*;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -67,13 +66,13 @@ public class FoHostileLinksTest {
 		return os.toString(StandardCharsets.UTF_8);
 	}
 
-	@Ignore("CR-056 phase 0: red until phase 1 (the link allowlist)")
 	@Test
 	public void noScriptSchemeExternalDestination() throws Exception {
 		String fo = fo();
 		String lower = fo.toLowerCase();
-		assertFalse("javascript: external-destination\n" + fo, lower.contains("javascript:"));
-		assertFalse("vbscript: external-destination\n" + fo, lower.contains("vbscript:"));
+		assertFalse("javascript: external-destination\n" + fo, lower.contains("url(javascript:"));
+		assertFalse("sneaky javascript: external-destination\n" + fo, lower.contains("url(java") || lower.contains("url(\u0001"));
+		assertFalse("vbscript: external-destination\n" + fo, lower.contains("url(vbscript:"));
 		assertTrue("the text kept\n" + fo, fo.contains("text for javascript:alert(1)"));
 	}
 

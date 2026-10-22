@@ -21,6 +21,9 @@ Claude Fable 5.1
 Changes in Version 17.3.5
 --------------------------
 
+* HTML, PDF and Markdown output: a link whose target is a script scheme (`javascript:` etc) is
+  written as its text, with no link (CR-056; cf apache/poi#1455); the schemes written are http,
+  https, ftp, mailto, file, news, tel and none, plus `docx4j.convert.out.linkSchemes`.
 
 
 Version 17.3.4
