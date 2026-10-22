@@ -28,6 +28,8 @@ Changes in Version 17.3.5
   unchanged), and no `<` is written into the stylesheet docx4j composes, so a crafted style ID
   cannot end the `<style>` element and run script (CR-056); a style ID beginning with a digit
   now gets a valid selector.
+* altChunk HTML import asks docx4j-ImportXHTML (from its CR-005) to keep a chunk's links as written,
+  so the inspector still reports a `javascript:` target; the outputs refuse it where it would run.
 
 
 Version 17.3.4

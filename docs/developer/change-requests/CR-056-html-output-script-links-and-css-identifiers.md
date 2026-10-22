@@ -146,7 +146,7 @@ returns this HTML and Markdown. `userBodyTop`, `userBodyTail`, `userCSS`, `userS
 | 0 | The probes as red tests: core-tests (HTML both pathways, FO's `external-destination`), markdown, tika. **DONE 2026-10-23** (record in §9); the tika test goes with phase 3 on the `docx4j-tika` branch | 2 h |
 | 1 | `LinkTargets` with the property; `HyperlinkUtil`, the picture link, `WmlToMarkdown`; tests green; CHANGELOG. **DONE 2026-10-23** (record in §10) | ½ day |
 | 2 | `CssIdentifiers`, the selectors in `HtmlCssHelper` and `XsltHTMLFunctions`, the `\3c ` guard in the style element handler, `TagClass` on DOM nodes; tests green. **DONE 2026-10-23** (record in §11; two departures and D11 there) | ½ day |
-| 3 | docx4j-tika's `href` (on the `docx4j-tika` branch, with CR-055 phase 1); Getting Started; the advisory and the backport as decided (D9, D10) | ½ day |
+| 3 | docx4j-tika's `href` (on the `docx4j-tika` branch, with CR-055 phase 1); Getting Started; the advisory and the backport as decided (D9, D10). **DONE 2026-10-23** (record in §12; D9 and D10 are "no", so nothing to do there) | ½ day |
 | 4 | (optional, D8) the inspector's script-scheme finding, with the portfolio's WD change and the ports' hand-off | ½ day, with the portfolio |
 
 ## 6. Decisions (D1 to D8 accepted as recommended, 2026-10-23; D9 and D10 decided otherwise, below)
@@ -273,4 +273,25 @@ installed); the red ones carry `@Ignore` naming the phase that turns them on, so
   could never hold, since docx4j's own `toggleDiv` script element is always in the head; it is now "1, and none from the
   document". Green: core-tests `convert.out.html.*`, hyperlink, field, sdt and CSS tests (110).
 - CHANGELOG under 17.3.5.
+
+## 12. Phase 3 record (2026-10-23, docx4j-25)
+
+- **docx4j-tika** (branch `docx4j-tika`, rebased onto VERSION_17_3_5 at 67c44d66a so that its core has `LinkTargets`;
+  it was one commit on 74ca053d5, so the rebase was clean and its merge back will be a fast-forward): `Docx4jWordParser.run`
+  starts an `a` only where `LinkTargets.isSafe` allows the target; otherwise the characters alone, as the other outputs.
+  `HostileLinksTest` (a unit test beside `TikaParityIT`: builds the document, saves and reloads it, parses with
+  `ToXMLContentHandler`; the sneaky target drops its U+0001, which cannot be saved to XML) and the README's "Limits and
+  safety" bullet. `TikaParityIT` unchanged and green (phase 0 tokens 177/177).
+- **`HtmlChunkImport`** (docx4j-core): calls docx4j-ImportXHTML's `setLinkSchemesChecked(false)` reflectively, beside
+  `setDisplayNoneAsHidden`, so a chunk's `javascript:` link becomes a `w:hyperlink` with that target, as Word keeps it,
+  and the inspector reports it as `relationship.external`; the outputs refuse it. An ImportXHTML without the method
+  (before its CR-005) logs at DEBUG and behaves as before. Not testable here: docx4j-core-tests has no ImportXHTML
+  dependency, and the ImportXHTML with the method (ca10f61) is not installed; the ImportXHTML session installs it on
+  this hand-off.
+- **Getting Started**, "docx to (X)HTML": one paragraph (the schemes written, the refusal and why, the property, the
+  CSS escaping), inserted in the canonical docx by XML (the paragraph before "If you have output logging enabled",
+  the section's spacing, Consolas runs for the code tokens) and by hand in the md; html and pdf are regenerated at
+  release.
+- D9 (advisory) and D10 (backport) were decided "no", so the phase has nothing for them; the CHANGELOG entries say
+  what was fixed.
 

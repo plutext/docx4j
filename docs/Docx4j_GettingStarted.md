@@ -1281,6 +1281,8 @@ From 17.0.4, the visitor (non-XSLT) exporter is the default: it reached feature 
 
 See the sample on GitHub at [src/samples/docx4j/org/docx4j/samples/ConvertOutHtml.java](https://github.com/plutext/docx4j/blob/master/src/samples/docx4j/org/docx4j/samples/ConvertOutHtml.java)
 
+From 17.3.5, a hyperlink is written as a link only if its target has no scheme (a relative path or a bookmark), is a drive path, or uses http, https, ftp, mailto, file, news or tel.  Any other target, a `javascript:` one above all, is written as its text with no link, since it would otherwise run in the page serving the HTML; the PDF and Markdown output do the same.  To allow other schemes, list them in docx4j.properties, for example `docx4j.convert.out.linkSchemes=onenote,ms-word`.  A style ID is CSS-escaped in the stylesheet, so it cannot end the `<style>` element; the class attributes are unchanged.
+
 If you have output logging enabled, anything which is not implemented will be obvious in the output document.  ***If debug level logging is not switched on, unsupported elements will be silently dropped.***
 
 # docx to PDF
