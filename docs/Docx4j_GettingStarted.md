@@ -1816,17 +1816,66 @@ TrackedChanges.in lists the changes as Word's Reviewing Pane and Office JS group
 
 TrackedChanges.report gives the counts by kind, author and part, with a JSON form.  The samples TrackChangesAccept and TrackChangesReject show the API (AcceptChanges.xslt, which earlier samples used, is deprecated).  For PDF and HTML output, ConversionFeatures.PP\_COMMON\_ACCEPT\_TRACKED\_CHANGES lays out the accepted view, in every story since 17.3.3.  From 17.3.4 the conversion settings' setView(TextView) chooses the view: markup, the default, as before (the HTML marks insertions &lt;ins&gt; and deletions &lt;del&gt;, with data-author and datetime); accepted; or original, as Reject All leaves the document.
 
-# Text extraction
+# Text extraction and inspection
 
-From 17.3.4, org.docx4j.model.text reads a document's text as the WordprocessingML Text Extraction specification defines it (CR-046): one text model, from which the plain text, the Markdown and the block model are all written.
+Most of what is written about a Word document today is written by a program that first turns it into text: a search index, a compliance check, a summary, a contract review, an LLM answering a question about it.  The text those programs read is rarely the text a person sees in Word.  From 17.3.4, docx4j reads a document's text as a careful reader of the page would, by one explicit model (the WordprocessingML Text Extraction specification, CR-046), and tells you what it left out and why.  Three things make it different from the extractors commonly put in front of an LLM: the view of tracked changes is yours to choose and is marked when you ask for it; what is hidden stays out of the text and is reported beside it; and the answer is the same on every machine, since nothing is fetched and nothing depends on what else is installed.
+
+## Reading the text
 
 &#9;`String text = Texts.plainText(wordMLPackage, TextOptions.of(TextView.ACCEPTED));`
 
-The view is accepted (the default: as Word's Accept All would leave the document), original (as Reject All would) or markup, CriticMarkup's {++inserted++}, {--deleted--} and {&gt;&gt;comment&lt;&lt;}.  By default the text is the main story, each text box's paragraphs after the paragraph it is anchored in, and the footnotes and endnotes, [n] at each end; headers, footers, comments and the glossary come in under the include option, hidden text under hidden, embedded documents, workbooks and presentations under embedded, and a table of contents under toc.  TextOptions.of(Map) takes the specification's option names and values.  The package is not changed.
+That is the document as Word's Accept All would leave it: insertions in, deletions out, a moved paragraph at its destination, a deleted row gone.  It is also what Word itself writes when you Save As plain text, whichever markup view is showing.  The package is not changed.
+
+&#9;`String redline = Texts.plainText(wordMLPackage, TextOptions.of(TextView.MARKUP));`
+
+With tracked changes on, that gives the reviewer's redline in CriticMarkup: `{++inserted text++}`, `{--deleted text--}`, and comments as `{>>the comment<<}` after the text they anchor to.  `markup_detail: author` or `author_date` adds who made each change and when.  A model reading this can tell which words are in force and which are proposed, which a reader of plain text cannot: the hosted assistants, given a contract with tracked changes, have been measured giving three different answers to one document, one of them the deletions as if they were still in force.  The third view, `TextView.ORIGINAL`, is the document as Reject All would leave it.
+
+By default the text is the main story in reading order; each text box's paragraphs after the paragraph it is anchored in; footnotes and endnotes at the end, with `[n]` at the reference and before the note; a simple table as tab-separated rows, any other as one line per row of `Header: value` pairs; charts and SmartArt by their text; math as LaTeX; and an `altChunk` expanded as Word expands it.  Headers, footers, comments and the glossary come in under `include`; hidden text under `hidden`; field codes under `field_codes`; the document's own properties under `metadata`; embedded documents, workbooks and presentations under `embedded`; list labels under `list_labels`; a table of contents under `toc`; and a bound content control shows the value in its custom XML part, as Word shows it, unless `bindings: surface` asks for the stored text.  `TextOptions.of(Map)` takes the specification's option names, so a configuration file or an MCP request can set them.
 
 &#9;`TextResult result = Texts.of(wordMLPackage, options);`
 
-gives the block model: result.blocks(), the paragraphs, tables and charts, each with its address, style, runs and flags; result.warnings() (an mc:AlternateContent whose branches differ, a field with no result, ...); and result.metadata(), the document properties.  PlainText.of(result) writes it as plain text, and docx4j-markdown's MarkdownExporter.export(result) as Markdown.
+gives the block model behind the text: `result.blocks()`, the paragraphs, tables, charts and images, each with its address in the document, its style, its runs and its flags (a placeholder, a list item, a heading level); `result.comments()`; `result.warnings()`, where the text may not be what it seems (an `mc:AlternateContent` whose branches differ, a field with no result, a chunk that could not be read); and `result.metadata()`.  `PlainText.of(result)` writes it as plain text, `Docx4J.toMarkdown(wordMLPackage)` as Markdown from the same model (headings, lists with Word's numbering, GFM tables, footnotes, images with their alt text, YAML front matter), with `MarkdownExportOptions.setView` choosing the view there too.  The HTML and PDF exporters take the same view setting, and the `extract_text` tool of docx4j's MCP server returns the same text, so an agent, a converter and a test read one document the same way.
+
+## Where it differs from Word's own text, on purpose
+
+Word offers two texts of a document: `Range.Text` in its object model, and Save As plain text.  They disagree with each other, and the text model follows neither where a reader of the page is better served (the measurements are in the portfolio's text extraction behaviour model, against Word 365):
+
+- Hidden text (`w:vanish`, a hidden paragraph) is out by default.  Save As includes it; `Range.Text` leaves it out unless asked.  A person does not see it, and in 2026 it carried the first Copilot-for-Word worm.
+- Text boxes are in, after their anchor.  Save As drops every one; `Range.Text` puts each in a story of its own.  A person reads them.
+- Comments are out of the accepted and original views and in the markup view.  Save As writes them into the text with the author's initials.
+- Control characters become readable text: a page or column break is a line break, a cell boundary a tab, a note reference `[n]`.  Word's text carries them as U+000C, U+0007 and U+0002.
+- Chart text, SmartArt text, WordArt, image alt text (`alt_text: true`) and document properties (`metadata: true`) are available.  `Range.Text` has none of them.
+- Fields give their result, never both result and code; a `w:sym` gives its character, where `Range.Text` gives "("; ruby gives its base text, where Word's text gives a stray field mark.
+- The view is yours.  Save As always writes the accepted text; `Range.Text` follows whatever the Review pane shows, and marks nothing.
+
+What it keeps from Word: the accepted view as the default, placeholder text included, a bound control's refreshed value, the `altChunk` expanded in place, list labels out unless asked, and `mc:AlternateContent` read by the branch Word reads.
+
+## Why not the usual tools
+
+Twenty-one readers and three hosted assistants were measured on the same probe documents.  Where they disagree most is exactly where an agent is most exposed:
+
+- **Alternate content Word never shows.**  Word shows one branch of an `mc:AlternateContent`; Tika reads every Choice, docx2txt and the Open XML SDK read every branch, and almost nothing applies `Requires` as Word does.  A document can show a person one text and hand an agent another.  docx4j reads the branch Word reads, and `warnings()` and the inspector say when the other branches differ.
+- **Hidden and near-hidden text.**  White text, 1pt text, `w:vanish` text and header parts no section uses are in what most readers return.  docx4j keeps them out and the inspector reports each, with where it is and what would reveal it.
+- **`altChunk`, both ways at once.**  Eleven of fourteen automated readers read no chunk at all, so a generated document's sections are missing; the three that do read more than Word shows, down to an MHT chunk's raw MIME source.  docx4j expands HTML, XHTML and MHT chunks as Word does, through docx4j-ImportXHTML, with what `display: none` hides reported rather than read, and fetches none of the stylesheets or images a chunk names.
+- **Bound controls showing one text and storing another.**  Nine of twelve local readers print a control's stale stored text; python-docx prints nothing from any control.  Word, and docx4j, show the value in the custom XML part, in headers and document properties too.
+- **Deleted text read as in force.**  Python-docx drops tracked insertions, POI prints deletions beside insertions with nothing to tell them apart, and the SDK's `InnerText` includes deleted text.  docx4j's views are explicit and its markup view marks every change.
+- **Silent omission.**  Mammoth and pandoc never read headers; pandoc drops block-level branches whole and turns an opening title into metadata it does not print.  docx4j reads every story on request, and every result carries its warnings and, with `inspect: true`, the counts of what was left out.
+- **Answers that depend on the setup.**  Whether Tika also OCRs a picture depends on Tesseract being installed; two pandoc versions give two texts.  docx4j is pure Java, reads the package and nothing else, and gives the same text everywhere.
+
+## Inspecting what the text does not show
+
+&#9;`Inspection inspection = Inspect.of(wordMLPackage);`
+
+is Word's own Document Inspector as an API, extended for an agent's needs: read-only, fetching nothing, bounded.  Each `InspectFinding` names a kind, its address in the document, whether a person would see it, an excerpt or summary, and the extraction option that would reveal it.  The kinds fall into four groups:
+
+- text present but not displayed: `text.hidden`, `text.near_background` (white on white), `text.tiny`, `text.web_hidden`, `paragraph.hidden`, `paragraph.collapsed`, `mce.branch` (an unselected branch whose text differs), `revision.deleted` and `revision.moved_from`, `shape.hidden`, `shape.off_page`, `shape.zero_size`, `chars.zero_width`, `chars.tag`, `chars.bidi`, `chars.private_use`, `font.glyph_mismatch` (an embedded font that draws one character as another), `image.svg_text` and `image.metafile_text`;
+- content that fetches or runs: `field.external` (INCLUDETEXT, DDE, a non-http HYPERLINK), `settings.update_fields`, `relationship.external`, `hyperlink.web`, `part.macro`, `part.activex`, `object.embedded`, `altchunk.external_ref`, `altchunk.script`;
+- content the text leaves out by default: `story.unused` (a header no section uses), `sdt.placeholder`, `sdt.stored_surface` (what a bound control stored, against the value it shows), `chart.cached`, `smartart.data`, `revision.author`, `field.code`;
+- in an embedded workbook or presentation: hidden sheets, rows, columns and slides, and slide notes.
+
+`inspection.counts(options, Inspection.Format.PLAIN)` groups the findings for an extraction with those options: `unseen` (in the text a reader gets but not on the page, or the other way about), `omitted` (on the page, left out by the options), `active` (would fetch or run) and `info`.  `TextOptions.inspect(true)` puts those four counts into `Texts.of`'s result metadata, so an agent learns in one line that the text it holds is not the whole file, without the findings reaching the text it is reading.  `inspection.status()` is `PARTIAL` when anything was skipped (a payload over the size limits, a chunk type it does not decode), with `skipped()` saying what, and `limitations()` lists what no static inspection can see: an object covered by another, text the layout would place off the page.
+
+Inspection is advisory.  It judges no intent and changes no default; it tells you what is there.  The suite that checks it, `docx4j-core-tests/src/test/resources/text-extraction/`, is shared with the ports and carries the goldens for every case above, so a reader in Java, TypeScript or Python gives the same text and the same findings.
 
 TextUtils.extractText(Object o, Writer w), which marshals the object it is passed via a SAX ContentHandler and writes its character content, is deprecated from 17.3.4: it is not the text model (it gives the text of whatever it is passed, deleted text included).  Its output is unchanged.
 
