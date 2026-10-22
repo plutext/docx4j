@@ -196,9 +196,10 @@
 			     (JAXBContext creation having failed underneath) -->
 		</dependency>
 
-		<!-- From 17.3.4 the base bundle also carries the two small, pure-Java
-		     capabilities (Jason, 2026-10-21): digital signatures (Santuario,
-		     BouncyCastle) and Markdown (commonmark).  PDF output, the chart
+		<!-- From 17.3.4 the base bundle also carries the small, pure-Java
+		     capabilities (Jason, 2026-10-21 and 2026-10-22): digital signatures
+		     (Santuario, BouncyCastle), Markdown (commonmark) and document
+		     differencing (pso-diffx).  PDF output, the chart
 		     renderer and the FO renderer fork go in docx4j-bundle-extras, a
 		     second jar put beside this one, since they are large and shade a
 		     copy of org.apache.fop that would clash with a consumer's own FOP.
@@ -211,6 +212,11 @@
 		<dependency>
 			<groupId>org.docx4j</groupId>
 			<artifactId>docx4j-markdown</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-diffx</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

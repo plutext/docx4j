@@ -149,8 +149,11 @@ touching the base artifact's licence story.
 ### The base jar
 
 docx4j-core, docx4j-JAXB-ReferenceImpl, docx4j-digsig (Santuario, BouncyCastle, woodstox,
-TextImageGen) and docx4j-markdown (commonmark and its extensions). 49 artifacts; 34.5 MB at
-17.3.4-SNAPSHOT (21.7 MB at 17.3.3). All permissive licences, as before.
+TextImageGen), docx4j-markdown (commonmark and its extensions) and, from 2026-10-22,
+docx4j-diffx (pso-diffx and pso-xmlwriter, Apache-2.0, about 380 KB: Jason, "add it to the base
+bundle for 17.3.4", asked why it had been left out; no reason, the 2026-10-21 decision had not
+considered it). 52 artifacts; 34.9 MB at 17.3.4 (21.7 MB at 17.3.3). All permissive licences, as
+before.
 
 ### docx4j-bundle-extras
 

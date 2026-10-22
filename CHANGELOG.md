@@ -137,7 +137,7 @@ Changes in Version 17.3.4
 - The zip distributions (docx4j-community, docx4j-JAXB-ReferenceImpl, docx4j-JAXB-MOXy and the samples zips, built by
   etc/build.xml) end at 17.3.3: the binaries are the two bundle jars on Maven Central (Getting Started, "Using docx4j
   binaries"; MOXy users take the ordinary jars). build.xml stays for its dist.NET target.
-- docx4j-bundle now also holds docx4j-digsig and docx4j-markdown. PDF output is the new `docx4j-bundle-extras`
+- docx4j-bundle now also holds docx4j-digsig, docx4j-markdown and docx4j-diffx. PDF output is the new `docx4j-bundle-extras`
   (docx4j-export-fo, docx4j-chart-render, the docx4j FO renderer fork, Batik, jeuclid and the fonts), a second fat jar
   put beside docx4j-bundle of the same version; its pom depends on docx4j-bundle, so a Maven consumer gets both. It
   carries `org.apache.fop`: do not put Apache FOP's own jars beside it. No class is in both jars

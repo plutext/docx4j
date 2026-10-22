@@ -229,6 +229,12 @@
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-diffx</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
 
 		<!-- The shaded inputs: export-fo brings docx4j-chart-render, the FO renderer fork
 		     and its events jar, jaxb-xslfo, Batik, jeuclid and the four font modules.
