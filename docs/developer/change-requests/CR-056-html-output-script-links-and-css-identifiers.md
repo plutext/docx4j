@@ -145,7 +145,7 @@ returns this HTML and Markdown. `userBodyTop`, `userBodyTail`, `userCSS`, `userS
 |---|---|---|
 | 0 | The probes as red tests: core-tests (HTML both pathways, FO's `external-destination`), markdown, tika. **DONE 2026-10-23** (record in §9); the tika test goes with phase 3 on the `docx4j-tika` branch | 2 h |
 | 1 | `LinkTargets` with the property; `HyperlinkUtil`, the picture link, `WmlToMarkdown`; tests green; CHANGELOG. **DONE 2026-10-23** (record in §10) | ½ day |
-| 2 | `CssIdentifiers`, the selectors in `HtmlCssHelper` and `XsltHTMLFunctions`, the `\3c ` guard in the style element handler, `TagClass` on DOM nodes; tests green | ½ day |
+| 2 | `CssIdentifiers`, the selectors in `HtmlCssHelper` and `XsltHTMLFunctions`, the `\3c ` guard in the style element handler, `TagClass` on DOM nodes; tests green. **DONE 2026-10-23** (record in §11; two departures and D11 there) | ½ day |
 | 3 | docx4j-tika's `href` (on the `docx4j-tika` branch, with CR-055 phase 1); Getting Started; the advisory and the backport as decided (D9, D10) | ½ day |
 | 4 | (optional, D8) the inspector's script-scheme finding, with the portfolio's WD change and the ports' hand-off | ½ day, with the portfolio |
 
@@ -240,4 +240,37 @@ installed); the red ones carry `@Ignore` naming the phase that turns them on, so
   Green: core-tests `convert.out.html.*`, the hyperlink and field tests, `HtmlVisitorParityTest`; docx4j-markdown (169);
   `FoHostileLinksTest`. The style-ID tests stay ignored until phase 2.
 - CHANGELOG under 17.3.5; the property documented in `docx4j-samples-resources`' `docx4j.properties`.
+
+## 11. Phase 2 record (2026-10-23, docx4j-25)
+
+- `org.docx4j.convert.out.html.CssIdentifiers`: `escape(id)` with CSSOM `CSS.escape()` semantics (NUL to U+FFFD; a
+  control, a leading digit and a digit after a leading `-` as hex escapes; `-` alone as `\-`; `[A-Za-z0-9_-]` and
+  U+0080 and above as they are; the rest backslash-escaped), with one deviation: `<` is a hex escape (`\3c `) rather
+  than `\<`, so that the guard finds nothing to touch in an escaped identifier. `guard(css)` writes every `<` as `\3c `.
+- Applied in `HtmlCssHelper.createCssForStyles` at its three selector sites (`table.`, `.`, `span.`). The derived
+  `<style>-<tbl>-BR` names are synthetic styles in the style tree (`PropertyResolver`, `ParagraphStylesInTableFix`), so
+  they come through the same three sites: `XsltHTMLFunctions` composes no selector of its own (§4's reading was wrong
+  there). Departure from D5's placement: the guard runs inside `createCssForStyles`, on the text it appends, not in
+  `HTMLConversionContext.DEFAULT_STYLE_ELEMENT_HANDLER`. The handler receives the composed buffer with `userCSS` already
+  appended, so guarding there would touch the developer's CSS or need the buffer split; guarding at the source leaves
+  `userCSS` alone, covers a caller's own `ConversionHTMLStyleElementHandler`, and covers the other two callers
+  (`XsltHTMLFunctions.getCssForStyles` for a customised XSLT, and the legacy `HtmlExporterNonXSLT.getCss`).
+- `TagClass.createDiv` builds its `p` and `a` with DOM calls, the alias as a text node (D6).
+- Measured on the probe document: `.x\3c \/style\>\3c script\>alert\(\'H6_STYLEID\'\)\3c \/script\> {display:block;…}`,
+  `table.t\3c \/style\>…`, `.Normal-t\3c \/style\>…-BR`, `.\31 Heading {…}` for a style ID `1Heading` (an invalid
+  selector before, so its rule was dropped; now it matches `class="1Heading …"`), `.Body\ Text\ 2 {…}`; the `class`
+  attributes unchanged; no `<` inside the `<style>` element on either pathway.
+- **D11 (decided, Jason 2026-10-23: leave as is): a style ID with spaces still matches nothing.** The `class` attribute is the style's
+  ancestry joined by spaces (`StyleTree.getHtmlClassAttributeValue`: `class="Body Text 2 DocDefaults "`), so the browser
+  sees the tokens `Body`, `Text`, `2`, and the escaped selector `.Body\ Text\ 2` is a single token. §3's "starts
+  working" was wrong. Making it match needs a class-token mapping applied on both sides (say whitespace to `_`), which
+  changes the `class` attributes a consumer's own stylesheet may target by the raw ID, against D5's "class attributes
+  unchanged". Word never writes a space in a style ID (it strips them), so this is third-party producers only.
+  Recommendation: leave as is (an unmatched rule, as before, now at least not two selectors), and note it here.
+- Tests: `CssIdentifiersTest` (the CSSOM examples, the `<` deviation, the guard); `HtmlOutputHostileTest`'s style rows
+  on, asserting the escaped selectors, the unchanged `class` attributes, and no `<` inside the style element;
+  `userCssUntouched` (a `p > span` rule in `setUserCSS` survives). One phase 0 assertion corrected: "0 script elements"
+  could never hold, since docx4j's own `toggleDiv` script element is always in the head; it is now "1, and none from the
+  document". Green: core-tests `convert.out.html.*`, hyperlink, field, sdt and CSS tests (110).
+- CHANGELOG under 17.3.5.
 

@@ -45,6 +45,8 @@ public final class HostileDocx {
 	public static final String STYLE_ID = "x</style><script>alert('H6_STYLEID')</script>";
 	public static final String TABLE_STYLE_ID = "t</style><script>alert('H7_TBLSTYLE')</script>";
 	public static final String SPACED_STYLE_ID = "Body Text 2";
+	/** A style ID that begins with a digit: an invalid selector unescaped, so its rule was dropped. */
+	public static final String DIGIT_STYLE_ID = "1Heading";
 	/** A scheme outside the default set: refused unless {@code docx4j.convert.out.linkSchemes} adds it. */
 	public static final String CUSTOM_LINK = "onenote:///C:/notes/section.one#page";
 
@@ -61,6 +63,7 @@ public final class HostileDocx {
 		Styles styles = mdp.getStyleDefinitionsPart().getJaxbElement();
 		styles.getStyle().add(paragraphStyle(STYLE_ID));
 		styles.getStyle().add(paragraphStyle(SPACED_STYLE_ID));
+		styles.getStyle().add(paragraphStyle(DIGIT_STYLE_ID));
 		Style ts = F.createStyle(); ts.setType("table"); ts.setStyleId(TABLE_STYLE_ID);
 		Style.Name tn = F.createStyleName(); tn.setVal("HostileTable"); ts.setName(tn); ts.setTblPr(F.createCTTblPrBase());
 		styles.getStyle().add(ts);
@@ -73,6 +76,7 @@ public final class HostileDocx {
 		// the styles in use
 		mdp.getContent().add(styled(STYLE_ID, "styled"));
 		mdp.getContent().add(styled(SPACED_STYLE_ID, "spaced"));
+		mdp.getContent().add(styled(DIGIT_STYLE_ID, "digit"));
 		Tbl tbl = F.createTbl(); TblPr tp = F.createTblPr(); CTTblPrBase.TblStyle tst = F.createCTTblPrBaseTblStyle(); tst.setVal(TABLE_STYLE_ID); tp.setTblStyle(tst); tbl.setTblPr(tp);
 		Tr tr = F.createTr(); Tc tc = F.createTc(); tc.getContent().add(styled(null, "cell")); tr.getContent().add(tc); tbl.getContent().add(tr);
 		mdp.getContent().add(tbl);

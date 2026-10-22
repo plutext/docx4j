@@ -35,14 +35,14 @@ import org.docx4j.Docx4jProperties;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.convert.out.common.writer.LinkTargets;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * CR-056 phase 0: what the HTML output must not write (measured 2026-10-23 on 17.3.4: it writes all of
  * it), on both pathways. The link rows are POI's defect (apache/poi#1455); the style rows are docx4j's own.
  * Red until phases 1 (links) and 2 (style IDs); the benign rows pass today and must keep passing.
- * Phase 1 (2026-10-23) turned the link rows green and added the property's test.
+ * Phase 1 (2026-10-23) turned the link rows green and added the property's test; phase 2 the style rows,
+ * with the escaped selectors and the untouched user CSS.
  */
 public class HtmlOutputHostileTest {
 
@@ -87,9 +87,23 @@ public class HtmlOutputHostileTest {
 
 	static void noRawStyleIds(String html) {
 		assertFalse("a style ID closes the style element\n" + html, html.contains("</style><script>"));
-		assertEquals("script elements\n" + html, 0, HostileDocx.count(html, "<script"));
+		// docx4j's own toggleDiv script is the one script element; none from the document
+		assertEquals("script elements\n" + html, 1, HostileDocx.count(html, "<script"));
+		assertFalse("the document's script\n" + html, html.contains("<script>"));
 		// the class attributes are escaped by the serializer already; the stylesheet must not say otherwise
 		assertTrue("the hostile paragraph's class attribute\n" + html, html.contains("class=\"x&lt;/style&gt;"));
+		// the selectors, CSS.escape'd: they match the class attributes' decoded tokens
+		assertTrue("the hostile paragraph style's selector\n" + html, html.contains(".x\\3c \\/style\\>\\3c script\\>alert\\(\\'H6_STYLEID\\'\\)\\3c \\/script\\> {"));
+		assertTrue("the hostile table style's selector\n" + html, html.contains("table.t\\3c \\/style\\>"));
+		assertTrue("the digit-leading style's selector\n" + html, html.contains(".\\31 Heading {"));
+		assertTrue("the spaced style's selector\n" + html, html.contains(".Body\\ Text\\ 2 {"));
+		assertTrue("the digit-leading paragraph's class attribute\n" + html, html.contains("class=\"1Heading "));
+		// nothing in the stylesheet can end it
+		int style = html.indexOf("<style"), end = html.indexOf("</style>");
+		assertTrue(html, style >= 0 && end > style);
+		String css = html.substring(html.indexOf('>', style) + 1, end);
+		if (css.startsWith("<!--")) css = css.substring(4); // the default handler's comment wrapper
+		assertFalse("a < in the stylesheet\n" + html, css.contains("<"));
 	}
 
 	@Test public void visitorPathwayWritesNoScriptSchemeLink() throws Exception { noScriptSchemeLinks(html(false)); }
@@ -112,8 +126,20 @@ public class HtmlOutputHostileTest {
 	}
 	@Test public void visitorPathwayKeepsBenignLinks() throws Exception { benignLinksKept(html(false)); }
 	@Test public void xsltPathwayKeepsBenignLinks() throws Exception { benignLinksKept(html(true)); }
-	@Ignore("CR-056 phase 0: red until phase 2 (CSS identifier escaping)")
 	@Test public void visitorPathwayEscapesStyleIds() throws Exception { noRawStyleIds(html(false)); }
-	@Ignore("CR-056 phase 0: red until phase 2 (CSS identifier escaping)")
 	@Test public void xsltPathwayEscapesStyleIds() throws Exception { noRawStyleIds(html(true)); }
+
+	/** A caller's own CSS is appended after docx4j's and left alone (D5). */
+	@Test public void userCssUntouched() throws Exception {
+		WordprocessingMLPackage pkg = HostileDocx.build();
+		HTMLSettings settings = Docx4J.createHTMLSettings();
+		settings.setOpcPackage(pkg);
+		settings.setImageDirPath(Files.createTempDirectory("cr056").toString()); settings.setImageTargetUri("img");
+		settings.setUserCSS("p > span { color: red }");
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		Docx4J.toHTML(settings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
+		String html = os.toString(StandardCharsets.UTF_8);
+		assertTrue(html, html.contains("p > span { color: red }"));
+		noRawStyleIds(html.replace("p > span { color: red }", ""));
+	}
 }

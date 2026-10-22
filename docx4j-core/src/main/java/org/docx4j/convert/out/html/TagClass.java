@@ -93,13 +93,17 @@ public class TagClass extends SdtTagHandler {
 		SdtPr.Alias alias = this.getAlias(sdtPr);
 		if (alias!=null) sdtAlias = alias.getVal();
 		
-		if (classVal.equals("collapse") ) {				
-			XmlUtils.appendXmlFragment(document, docfrag, 
-					"<p style=\"padding-left: 30px;\">"
-					+ "<a onmousedown=\"toggleDiv('t" + sdtId +"');\" href=\"javascript:;\">Toggle:" + sdtAlias  
-					+ "</a></p>"
-					);				
-		} 
+		if (classVal.equals("collapse") ) {
+			// CR-056: DOM nodes, not a string the alias could break out of
+			Element p = document.createElement("p");
+			p.setAttribute("style", "padding-left: 30px;");
+			Element a = document.createElement("a");
+			a.setAttribute("onmousedown", "toggleDiv('t" + sdtId + "');");
+			a.setAttribute("href", "javascript:;");
+			a.appendChild(document.createTextNode("Toggle:" + sdtAlias));
+			p.appendChild(a);
+			docfrag.appendChild(p);
+		}
 		
 		Element xhtmlDiv = document.createElement("div");
 		docfrag.appendChild(xhtmlDiv);						

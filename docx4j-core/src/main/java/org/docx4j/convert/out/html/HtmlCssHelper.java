@@ -84,7 +84,23 @@ public class HtmlCssHelper {
 
     }
 
+    /**
+     * The document's styles as CSS class rules, appended to {@code result}. A style ID is a
+     * document value, so it is written through {@link CssIdentifiers#escape} (the {@code class}
+     * attributes, which the serializer escapes, need no change to match), and the text appended
+     * is passed through {@link CssIdentifiers#guard}, so that nothing in it can end the
+     * {@code <style>} element (CR-056). A caller's own CSS is appended after this, by the caller,
+     * and is not touched.
+     */
     public static void createCssForStyles(OpcPackage opcPackage, StyleTree styleTree, StringBuilder result) {
+    	int start = result.length();
+    	appendCssForStyles(opcPackage, styleTree, result);
+    	String guarded = CssIdentifiers.guard(result.substring(start));
+    	result.setLength(start);
+    	result.append(guarded);
+    }
+
+    private static void appendCssForStyles(OpcPackage opcPackage, StyleTree styleTree, StringBuilder result) {
 
 		// First iteration - table styles
 		result.append("\n /* TABLE STYLES */ \n");
@@ -103,7 +119,7 @@ public class HtmlCssHelper {
 
     		Style s = n.getData().getStyle();
 
-    		result.append( "table."+ s.getStyleId()  + " {display:table;" );
+    		result.append( "table."+ CssIdentifiers.escape(s.getStyleId())  + " {display:table;" );
 
     		// TblPr
     		if (s.getTblPr()==null) {
@@ -165,7 +181,7 @@ public class HtmlCssHelper {
 
     		Style s = n.getData().getStyle();
 
-    		result.append( "."+ s.getStyleId()  + " {display:block;" );  // not just p, also inherit on ul|ol
+    		result.append( "."+ CssIdentifiers.escape(s.getStyleId())  + " {display:block;" );  // not just p, also inherit on ul|ol
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
@@ -198,7 +214,7 @@ public class HtmlCssHelper {
 
     		Style s = n.getData().getStyle();
 
-    		result.append( "span."+ s.getStyleId()  + " {display:inline;" );
+    		result.append( "span."+ CssIdentifiers.escape(s.getStyleId())  + " {display:inline;" );
         	if (s.getRPr()==null) {
         		log.warn("! null rPr for character style " + s.getStyleId());
         	} else {
