@@ -1,8 +1,8 @@
 # CR-055: docx4j-tika, a Tika parser for Word documents over the text model
 
 Status: ACCEPTED 2026-10-22 (Jason: "CR-055: recommendations accepted for D1, D2, D3, D4, D5, D6, D7, D8. Commit it,
-then do phase 0"); phase 0 to follow on a branch `docx4j-tika` off `VERSION_17_3_4`, by the docx4j-25 session (Claude
-Fable 5.1). PROPOSED 2026-10-22, drafted by Claude Opus 5.5 (session docx4j-portfolio-9d) at Jason's request
+then do phase 0"); phase 0 DONE 2026-10-22 on branch `docx4j-tika` off `VERSION_17_3_4` (the docx4j-25 session, Claude
+Fable 5.1; record in §8); phases 1 to 3 open. PROPOSED 2026-10-22, drafted by Claude Opus 5.5 (session docx4j-portfolio-9d) at Jason's request
 ("write the docx4j CR"), after a prototype built and measured the same day ("build a prototype against
 17.3.4-SNAPSHOT and compare it with Tika on the probes"). Reviewed by docx4j-25 the same day: the number
 confirmed, and four notes taken (§3.1, §3.7, §4 phase 0, §6). Its commit is the docx4j session's. Phases in §4,
@@ -177,7 +177,7 @@ The text model expands an HTML, XHTML or MHT `altChunk` only with both jsoup (MI
 
 | Phase | What | Size |
 |---|---|---|
-| 0 | The prototype captured on a branch (D8): the module skeleton, the parser as it stands, the service file, and the comparison harness as an integration test (`TikaParityIT`) over the phase 0 fixtures and docx4j-portfolio's `mc-fun`, `bind-fun`, `altchunk-fun` and `svg-fun` probes, with §2's numbers as its baseline. The test runs against tika-core (`provided`) and tika-parsers-standard-package in test scope, the class path a Maven host has, not tika-app's fat jar, and asserts `X-TIKA:Parsed-By` for every Word file (§6) | ½ day |
+| 0 | The prototype captured on a branch (D8): the module skeleton, the parser as it stands, the service file, and the comparison harness as an integration test (`TikaParityIT`) over the phase 0 fixtures and docx4j-portfolio's `mc-fun`, `bind-fun`, `altchunk-fun` and `svg-fun` probes, with §2's numbers as its baseline. The test runs against tika-core (`provided`) and tika-parsers-standard-package in test scope, the class path a Maven host has, not tika-app's fat jar, and asserts `X-TIKA:Parsed-By` for every Word file (§6). **DONE 2026-10-22** on branch `docx4j-tika` (§8) | ½ day |
 | 1 | The production parser: §3.2's full mapping, §3.3's options, §3.4's embedded hand-off, §3.5's metadata, errors as `TikaException`. Tests: the phase 0 conformance suite through `AutoDetectParser` (every claimed row), and Tika's own Word test documents for crashes and metadata parity | 3 to 4 days |
 | 2 | Packaging and documentation: Maven Central with docx4j's release; tika-app and tika-server usage; a `tika-config.xml` example; notes for Spring AI and LangChain4j; what ImportXHTML adds (§3.6) | 1 day |
 | 3 | Tika 4.x: its JSON configuration (parsers named by key; how a third-party parser registers its name is unchecked), the API changes since 3.x | 1 to 2 days, after phase 1 |
@@ -232,3 +232,53 @@ plugin, so reaching them means a modified plugin, not a class-path drop (unverif
   https://tika.apache.org/4.0.0/api/org/apache/tika/parser/microsoft/OfficeParserConfig.html
 - This repository: `docx4j-core` `model/text/Texts.java`, `TextResult.java`, `TextBlock.java`, `AltChunks.java`,
   `JsoupHtml.java`, `BoundValues.java`; `openpackaging/io3/stores/ZipPartStore.java`.
+
+## 8. Phase 0 record (2026-10-22, docx4j-25)
+
+The module `docx4j-tika` on branch `docx4j-tika` off `VERSION_17_3_4` (fe77bea88), in the reactor after
+`docx4j-markdown`. Built with `mvn -Dgpg.skip=true install -pl docx4j-tika` against docx4j-core as reinstalled
+from the branch head; the integration test green, 11 of 11.
+
+- **The parser** is the prototype as it stands (`Docx4jWordParser`, 220 lines with the header), plus
+  `package-info` and a `module-info` (`provides org.apache.tika.parser.Parser`, beside the SPI file). Tika's
+  jars are automatic modules (`org.apache.tika.core`, `org.apache.tika.parser.microsoft`), so failsafe runs
+  the test on the class path (`useModulePath=false`), which is the host the CR targets anyway.
+- **Dependencies** as D1, D2 and D7: docx4j-core; docx4j-JAXB-ReferenceImpl at runtime scope (the README
+  says how to swap in MOXy); tika-core 3.3.3 `provided`, and `tika-parser-microsoft-module` 3.3.3 `provided`
+  too, because `OfficeParserConfig` (§3.3) lives there, not in tika-core. A host with tika-core alone would
+  fail on `context.get(OfficeParserConfig.class)` with `NoClassDefFoundError`: phase 1 guards that (a
+  reflective lookup, or the mapping in a class loaded only when the module is present). Test scope:
+  `tika-parsers-standard-package` 3.3.3 and logback. No jsoup, no ImportXHTML.
+- **`TikaParityIT`** (failsafe, runs at `verify` and `install`, not at `test`): `AutoDetectParser` with a
+  `BodyContentHandler(-1)` over 29 files, the five phase 0 fixtures and the portfolio's 24 probes, copied
+  into `src/test/resources/phase0` and `probes` (a test fails if the phase 0 copies drift from
+  docx4j-core-tests'). Eleven tests: `X-TIKA:Parsed-By` names the docx4j parser for every Word file and
+  never `OOXMLParser`; an xlsx and a pptx (made by docx4j in a temp file) go to `OOXMLParser`; the phase 0
+  tokens by `expected-tokens.tsv`'s `accepted` column (score.py's rule: the token with no word character
+  either side), the rows an HTML reader changes counted when jsoup and ImportXHTML are both present; the
+  eight `mc` probes show Word's branch and no Fallback; the binding probes show Word's value except where
+  the table below says; HTML, XHTML and MHT chunks are not read without the reader (and read, nothing
+  hidden, with it); Flat OPC and docx chunks as Word shows them; the RTF chunk reported, the text chunk
+  read; the SVG picture's text and the PNG's OCR both absent.
+- **The numbers**, against §2's table: phase 0 177 of 177 found, none extra; `mc` 8 of 8; altChunk and SVG
+  as §2 says. Time 1.2 s over the 29 files, the first 1.0 s of it JAXB start-up (§2 measured 0.7 s under
+  tika-app; this is the Maven shape, with logback at WARN).
+- **The binding probes, measured** (the test's `DOCX4J_BIND_DEPARTS`; each a departure from Word the text
+  model makes on purpose, or a known gap, never a silent one):
+
+  | Probe | Word shows | The text model | Why |
+  |---|---|---|---|
+  | `bind-plain` B7 | `B7_XML_VALUE` | `B7_STALE_SURFACE` | the store item ID names no part; Word repairs it |
+  | `bind-plain` B8 | `B10_XML_VALUE` | `B8_RICH_STALE_SURFACE` | a rich-text control bound to a plain value: REQ-509 reads the surface |
+  | `bind-typed` | `DD2_SECOND_ITEM`, `CB3_XML_FREE_TEXT` | `DD2_FIRST_ITEM`, `CB3_FIRST_ITEM` | typed controls: REQ-509 reads the surface |
+  | `bind-repeating-ns0` | items A, B, C | item A | Word expands the repeating section |
+  | `bind-props`, `bind-repeating-zero`, `opendope-template`, the rest of `bind-plain` | | as Word | (`PR4_COVER_ABSTRACT` since fe77bea88) |
+
+  The portfolio's `score2.py` had `B10_XML_VALUE` under `bind-plain`'s shown list with no B10 case in the
+  probe: it is the B8 control's bound value (`/p:root/p:b10`), and the row above says so.
+- **Not in phase 0** (phase 1): lists, images, text boxes placed after their anchor, embedded content handed
+  to the extractor (D4, D5), the full metadata set (D6: only title, creator, modifier and revision now),
+  `Docx4jTikaConfig`, errors beyond the two `TikaException` wraps, tika-app and tika-server as shipped.
+- **Elsewhere:** CHANGELOG line under 17.3.4 on the branch; whether docx4j-tika ships with 17.3.4 or after is
+  Jason's call. Release verification (`release-verification-docx4j.md`) gains a module to cover once it ships.
+
