@@ -129,12 +129,12 @@ public class McBranchSdtTest {
 	}
 
 	/** Every control survives with its class, in every part of the package as it stands, and the saved package writes w:sdt only. */
-	private static void check(String where, WordprocessingMLPackage pkg, McBlockLevel mode) throws Exception {
+	private static void check(String where, WordprocessingMLPackage pkg, McLoadMode mode) throws Exception {
 		MainDocumentPart mdp = pkg.getMainDocumentPart();
 		String xml = XmlUtils.marshaltoString(mdp.getJaxbElement(), true, false);
 		assertFalse(where + ": private namespace in the tree: " + xml, xml.contains(PRIVATE));
 		assertAllThere(where, xml, CHOICE);
-		if (mode == McBlockLevel.PRESERVE) {
+		if (mode == McLoadMode.PRESERVE) {
 			// every level kept whole (row and cell level since CR-051 phase 2): each branch's control, typed by its container
 			assertAllThere(where, xml, FALLBACK);
 			assertEquals(where + ": " + xml, "SdtBlock SdtBlock SdtBlock SdtBlock SdtRun SdtRun CTSdtRow CTSdtRow CTSdtCell CTSdtCell", classes(controls(mdp.getJaxbElement())));
@@ -169,7 +169,7 @@ public class McBranchSdtTest {
 
 	@Test
 	public void staxPath() throws Exception {
-		for (McBlockLevel mode : McBlockLevel.values()) {
+		for (McLoadMode mode : McLoadMode.values()) {
 			WordprocessingMLPackage pkg = McProbeDocx.body(body(false)).load(mode);
 			pkg.getMainDocumentPart().getContents();
 			check("stax " + mode, pkg, mode);
@@ -179,7 +179,7 @@ public class McBranchSdtTest {
 	/** A part StAX rejects (w14 in w:pPr) goes through the preprocessor and the binder. */
 	@Test
 	public void preprocessorPath() throws Exception {
-		for (McBlockLevel mode : McBlockLevel.values()) {
+		for (McLoadMode mode : McLoadMode.values()) {
 			WordprocessingMLPackage pkg = McProbeDocx.body(body(true)).load(mode);
 			pkg.getMainDocumentPart().getContents();
 			check("preprocessor " + mode, pkg, mode);
@@ -190,14 +190,14 @@ public class McBranchSdtTest {
 	@Test
 	public void binderPath() throws Exception {
 		Docx4jProperties.setProperty("docx4j.openpackaging.parts.JaxbXmlPartXPathAware.binder.eager.MainDocumentPart", "true");
-		for (McBlockLevel mode : McBlockLevel.values()) {
+		for (McLoadMode mode : McLoadMode.values()) {
 			WordprocessingMLPackage pkg = McProbeDocx.body(body(false)).load(mode);
 			pkg.getMainDocumentPart().getContents();
 			check("binder " + mode, pkg, mode);
 			// an XPath over the binder finds the controls the splice promoted (ordinary content), not
 			// those in a kept branch, which have no DOM association: word mode promotes block, row and
 			// cell level (4), preserve mode promotes nothing (CR-051 phase 2)
-			assertEquals(mode == McBlockLevel.PRESERVE ? 0 : 4, pkg.getMainDocumentPart().getJAXBNodesViaXPath("//w:sdt", false).size());
+			assertEquals(mode == McLoadMode.PRESERVE ? 0 : 4, pkg.getMainDocumentPart().getJAXBNodesViaXPath("//w:sdt", false).size());
 		}
 	}
 
@@ -217,9 +217,9 @@ public class McBranchSdtTest {
 	/** A bound block control in a kept branch is bound by the default (DOM) binder, in each branch. */
 	@Test
 	public void domBinderBindsAControlInAKeptBranch() throws Exception {
-		WordprocessingMLPackage pkg = McBlockLevelConsumersTest.withCustomXmlFromXml(p("before")
-				+ ac(sdt("<w:dataBinding w:xpath=\"/root/name\" w:storeItemID=\"" + McBlockLevelConsumersTest.STORE_ITEM + "\"/><w:text/>", p("stale")),
-						sdt("<w:dataBinding w:xpath=\"/root/name\" w:storeItemID=\"" + McBlockLevelConsumersTest.STORE_ITEM + "\"/><w:text/>", p("stale")))
+		WordprocessingMLPackage pkg = McLoadModeConsumersTest.withCustomXmlFromXml(p("before")
+				+ ac(sdt("<w:dataBinding w:xpath=\"/root/name\" w:storeItemID=\"" + McLoadModeConsumersTest.STORE_ITEM + "\"/><w:text/>", p("stale")),
+						sdt("<w:dataBinding w:xpath=\"/root/name\" w:storeItemID=\"" + McLoadModeConsumersTest.STORE_ITEM + "\"/><w:text/>", p("stale")))
 				+ p("after"));
 		pkg.getMainDocumentPart().getContents();
 		new BindingHandler(pkg).applyBindings(pkg.getMainDocumentPart());

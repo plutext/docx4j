@@ -60,9 +60,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * CR-051 phase 1, the load-time mode (section 3.2): in {@link McBlockLevel#WORD} mode each
+ * CR-051 phase 1, the load-time mode (section 3.2): in {@link McLoadMode#WORD} mode each
  * block-, row- or cell-level mc:AlternateContent is replaced on load by the branch Word reads
- * (section 4, "word mode, the splice"); in {@link McBlockLevel#PRESERVE} mode it is kept whole
+ * (section 4, "word mode, the splice"); in {@link McLoadMode#PRESERVE} mode it is kept whole
  * ("preserve mode"); the load option and the package-level override win over the property
  * ("both modes").
  *
@@ -71,7 +71,7 @@ import org.junit.Test;
  * holds one block (or row, or cell) with a marker text, so the content at the element's index
  * says which branch was promoted.</p>
  */
-public class McBlockLevelLoadTest {
+public class McLoadModeLoadTest {
 
 	private enum Kind { BLOCK, ROW, CELL }
 
@@ -308,12 +308,12 @@ public class McBlockLevelLoadTest {
 
 	@Before
 	public void rememberProperty() {
-		propertyBefore = Docx4jProperties.getProperty(McBlockLevel.PROPERTY);
+		propertyBefore = Docx4jProperties.getProperty(McLoadMode.PROPERTY);
 	}
 
 	@After
 	public void restoreProperty() {
-		Docx4jProperties.setProperty(McBlockLevel.PROPERTY, propertyBefore == null ? "" : propertyBefore);
+		Docx4jProperties.setProperty(McLoadMode.PROPERTY, propertyBefore == null ? "" : propertyBefore);
 		Docx4jProperties.setProperty("docx4j.openpackaging.parts.JaxbXmlPartXPathAware.binder.eager.MainDocumentPart", "false");
 	}
 
@@ -323,7 +323,7 @@ public class McBlockLevelLoadTest {
 	@Test
 	public void wordModeSplicesEveryContainer() throws Exception {
 		for (Case c : cases()) {
-			WordprocessingMLPackage pkg = c.docx.load(McBlockLevel.WORD);
+			WordprocessingMLPackage pkg = c.docx.load(McLoadMode.WORD);
 			JaxbXmlPart<?> part = c.locator.part(pkg);
 			List<Object> content = c.locator.content(pkg);
 			assertEquals(c + ": three items, the promoted block between the two paragraphs", 3, content.size());
@@ -351,7 +351,7 @@ public class McBlockLevelLoadTest {
 
 			assertTrue(c + ": w14 in the root's mc:Ignorable, but '" + ignorableOf(part) + "'", words(ignorableOf(part)).contains("w14"));
 
-			WordprocessingMLPackage again = McProbeDocx.roundTrip(pkg, McBlockLevel.WORD);
+			WordprocessingMLPackage again = McProbeDocx.roundTrip(pkg, McLoadMode.WORD);
 			List<Object> saved = c.locator.content(again);
 			assertEquals(c + ": the save wrote the promoted block", 3, saved.size());
 			assertTrue(c + ": as ordinary content", xml(XmlUtils.unwrap(saved.get(1))).contains(c.tag + "_W14"));
@@ -365,7 +365,7 @@ public class McBlockLevelLoadTest {
 	public void wordModeTextIsWords() throws Exception {
 		for (Case c : cases()) {
 			if (c.name.equals("w:comment") || c.name.equals("w:docPartBody")) continue; // the defaults leave comments and the glossary out
-			WordprocessingMLPackage pkg = c.docx.load(McBlockLevel.WORD);
+			WordprocessingMLPackage pkg = c.docx.load(McLoadMode.WORD);
 			TextOptions options = new TextOptions().include(TextOptions.Include.HEADERS).include(TextOptions.Include.FOOTERS);
 			String text = Texts.plainText(pkg, options);
 			assertTrue(c + ": " + text, text.contains(c.tag + "_W14"));
@@ -380,7 +380,7 @@ public class McBlockLevelLoadTest {
 		WordprocessingMLPackage pkg = McProbeDocx.body(p("before") + "<mc:AlternateContent>"
 				+ "<mc:Choice Requires=\"wpi\">" + p("WPI") + "</mc:Choice>"
 				+ "<mc:Choice Requires=\"w14\">" + p("W14") + "</mc:Choice>"
-				+ "</mc:AlternateContent>" + p("after")).load(McBlockLevel.WORD);
+				+ "</mc:AlternateContent>" + p("after")).load(McLoadMode.WORD);
 		List<Object> content = pkg.getMainDocumentPart().getContent();
 		assertEquals(3, content.size());
 		assertTrue(xml(content.get(1)).contains("W14"));
@@ -394,7 +394,7 @@ public class McBlockLevelLoadTest {
 				+ "<mc:Choice Requires=\"w99\">" + p("W99") + "</mc:Choice>"
 				+ "<mc:Choice Requires=\"wpi\">" + p("WPI") + "</mc:Choice>"
 				+ "</mc:AlternateContent>" + p("after");
-		for (McBlockLevel mode : McBlockLevel.values()) {
+		for (McLoadMode mode : McLoadMode.values()) {
 			WordprocessingMLPackage pkg = McProbeDocx.body(body).load(mode);
 			List<Object> content = pkg.getMainDocumentPart().getContent();
 			assertEquals(mode + ": the element is still there", 3, content.size());
@@ -416,7 +416,7 @@ public class McBlockLevelLoadTest {
 				+ "<mc:Choice Requires=\"w14\">" + tbl("<w:tr><w:tc>" + p("cell") + inner + "</w:tc></w:tr>") + "</mc:Choice>"
 				+ "<mc:Fallback>" + p("OUTER_FB") + discarded + "</mc:Fallback>"
 				+ "</mc:AlternateContent>";
-		WordprocessingMLPackage pkg = McProbeDocx.body(p("before") + outer + p("after")).load(McBlockLevel.WORD);
+		WordprocessingMLPackage pkg = McProbeDocx.body(p("before") + outer + p("after")).load(McLoadMode.WORD);
 		MainDocumentPart mdp = pkg.getMainDocumentPart();
 		List<Object> content = mdp.getContent();
 		assertEquals(3, content.size());
@@ -441,15 +441,15 @@ public class McBlockLevelLoadTest {
 	@Test
 	public void selectedPrefixesJoinIgnorable() throws Exception {
 		String element = "<mc:AlternateContent><mc:Choice Requires=\"w15\">" + p("W15") + "</mc:Choice><mc:Fallback>" + p("FB") + "</mc:Fallback></mc:AlternateContent>";
-		WordprocessingMLPackage listed = McProbeDocx.body(" mc:Ignorable=\"w14\"", p("x") + element).load(McBlockLevel.WORD);
+		WordprocessingMLPackage listed = McProbeDocx.body(" mc:Ignorable=\"w14\"", p("x") + element).load(McLoadMode.WORD);
 		assertEquals("w14 w15", ((Document) listed.getMainDocumentPart().getJaxbElement()).getIgnorable());
 		String saved = McProbeDocx.rootTag(McProbeDocx.entry(McProbeDocx.save(listed), "word/document.xml"), "w:document");
 		assertTrue(saved, saved.contains("mc:Ignorable=\"w14 w15\"") && saved.contains("xmlns:w15="));
 
-		WordprocessingMLPackage none = McProbeDocx.body(p("x") + element).load(McBlockLevel.WORD);
+		WordprocessingMLPackage none = McProbeDocx.body(p("x") + element).load(McLoadMode.WORD);
 		assertEquals("w15", ((Document) none.getMainDocumentPart().getJaxbElement()).getIgnorable());
 
-		WordprocessingMLPackage already = McProbeDocx.body(" mc:Ignorable=\"w14 w15\"", p("x") + element).load(McBlockLevel.WORD);
+		WordprocessingMLPackage already = McProbeDocx.body(" mc:Ignorable=\"w14 w15\"", p("x") + element).load(McLoadMode.WORD);
 		assertEquals("w14 w15", ((Document) already.getMainDocumentPart().getJaxbElement()).getIgnorable());
 	}
 
@@ -457,7 +457,7 @@ public class McBlockLevelLoadTest {
 	@Test
 	public void elementWithNoBranch() throws Exception {
 		String body = p("before") + "<mc:AlternateContent/>" + p("after");
-		WordprocessingMLPackage word = McProbeDocx.body(body).load(McBlockLevel.WORD);
+		WordprocessingMLPackage word = McProbeDocx.body(body).load(McLoadMode.WORD);
 		assertEquals(2, word.getMainDocumentPart().getContent().size());
 		List<ResolvedAlternateContent> records = word.getMainDocumentPart().getResolvedAlternateContent();
 		assertEquals(1, records.size());
@@ -465,7 +465,7 @@ public class McBlockLevelLoadTest {
 		assertEquals(1, records.get(0).getIndex());
 		assertEquals(0, records.get(0).getPromotedCount());
 
-		WordprocessingMLPackage preserve = McProbeDocx.body(body).load(McBlockLevel.PRESERVE);
+		WordprocessingMLPackage preserve = McProbeDocx.body(body).load(McLoadMode.PRESERVE);
 		assertEquals(3, preserve.getMainDocumentPart().getContent().size());
 		assertTrue(XmlUtils.unwrap(preserve.getMainDocumentPart().getContent().get(1)) instanceof AlternateContent);
 	}
@@ -474,7 +474,7 @@ public class McBlockLevelLoadTest {
 	@Test
 	public void customXmlInBranchIsBound() throws Exception {
 		WordprocessingMLPackage pkg = McProbeDocx.body(p("before") + "<mc:AlternateContent><mc:Choice Requires=\"w14\">"
-				+ "<w:customXml w:element=\"x\">" + p("CX_W14") + "</w:customXml></mc:Choice><mc:Fallback>" + p("FB") + "</mc:Fallback></mc:AlternateContent>").load(McBlockLevel.WORD);
+				+ "<w:customXml w:element=\"x\">" + p("CX_W14") + "</w:customXml></mc:Choice><mc:Fallback>" + p("FB") + "</mc:Fallback></mc:AlternateContent>").load(McLoadMode.WORD);
 		Object at = XmlUtils.unwrap(pkg.getMainDocumentPart().getContent().get(1));
 		assertTrue("bound as CTCustomXmlBlock, but " + at.getClass().getName(), at instanceof CTCustomXmlBlock);
 		assertTrue(xml(((CTCustomXmlBlock) at).getContent().get(0)).contains("CX_W14"));
@@ -490,7 +490,7 @@ public class McBlockLevelLoadTest {
 	@Test
 	public void eagerBinderXPathFindsThePromotedParagraph() throws Exception {
 		Docx4jProperties.setProperty("docx4j.openpackaging.parts.JaxbXmlPartXPathAware.binder.eager.MainDocumentPart", "true");
-		WordprocessingMLPackage pkg = McProbeDocx.body(BODY_PROBE).load(McBlockLevel.WORD);
+		WordprocessingMLPackage pkg = McProbeDocx.body(BODY_PROBE).load(McLoadMode.WORD);
 		MainDocumentPart mdp = pkg.getMainDocumentPart();
 		assertEquals(3, mdp.getContent().size());
 		List<Object> paragraphs = mdp.getJAXBNodesViaXPath("//w:body/w:p", false);
@@ -503,7 +503,7 @@ public class McBlockLevelLoadTest {
 	/** A binder created later marshals the spliced tree: the same answer, and the record survives the re-unmarshal. */
 	@Test
 	public void lateBinderXPathFindsThePromotedParagraph() throws Exception {
-		WordprocessingMLPackage pkg = McProbeDocx.body(BODY_PROBE).load(McBlockLevel.WORD);
+		WordprocessingMLPackage pkg = McProbeDocx.body(BODY_PROBE).load(McLoadMode.WORD);
 		MainDocumentPart mdp = pkg.getMainDocumentPart();
 		assertEquals(3, mdp.getContent().size());
 		assertEquals(3, mdp.getJAXBNodesViaXPath("//w:body/w:p", false).size());
@@ -519,7 +519,7 @@ public class McBlockLevelLoadTest {
 		String element = "<mc:AlternateContent><mc:Choice Requires=\"wpi\">" + p("BODY_WPI") + "</mc:Choice>"
 				+ "<mc:Choice Requires=\"w14\">" + drawingParagraph + "</mc:Choice><mc:Fallback>" + p("BODY_FB") + "</mc:Fallback></mc:AlternateContent>";
 		String rejected = "<w:p><w:pPr><w14:nonsense/></w:pPr><w:r><w:t>before</w:t></w:r></w:p>";
-		WordprocessingMLPackage pkg = McProbeDocx.body(rejected + element + p("after")).load(McBlockLevel.WORD);
+		WordprocessingMLPackage pkg = McProbeDocx.body(rejected + element + p("after")).load(McLoadMode.WORD);
 		MainDocumentPart mdp = pkg.getMainDocumentPart();
 		List<Object> content = mdp.getContent();
 		assertEquals(3, content.size());
@@ -540,7 +540,7 @@ public class McBlockLevelLoadTest {
 	@Test
 	public void preserveModeKeepsBlockLevelElements() throws Exception {
 		for (Case c : cases()) {
-			WordprocessingMLPackage pkg = c.docx.load(McBlockLevel.PRESERVE);
+			WordprocessingMLPackage pkg = c.docx.load(McLoadMode.PRESERVE);
 			JaxbXmlPart<?> part = c.locator.part(pkg);
 			List<Object> content = c.locator.content(pkg);
 			assertEquals(c.toString(), 3, content.size());
@@ -558,12 +558,12 @@ public class McBlockLevelLoadTest {
 			String root = McProbeDocx.rootTag(partXml);
 			assertTrue(c + ": the Choices' prefixes declared on the root: " + root, root.contains("xmlns:wpi=") && root.contains("xmlns:w14="));
 
-			WordprocessingMLPackage again = McProbeDocx.roundTrip(pkg, McBlockLevel.PRESERVE);
+			WordprocessingMLPackage again = McProbeDocx.roundTrip(pkg, McLoadMode.PRESERVE);
 			assertTrue(c + ": still whole after the round trip", XmlUtils.unwrap(c.locator.content(again).get(1)) instanceof AlternateContent);
 			// and the text model reads Word's branch of it, in both modes (every container the text
 			// model reaches; a note or a text box is reached from the body, a glossary entry only on request)
 			String preserveText = text(pkg);
-			assertEquals(c + ": the text", text(c.docx.load(McBlockLevel.WORD)), preserveText);
+			assertEquals(c + ": the text", text(c.docx.load(McLoadMode.WORD)), preserveText);
 			assertTrue(c + ": " + preserveText, preserveText.contains(c.tag + "_W14") || c.name.startsWith("w:docPartBody"));
 			assertFalse(c + ": " + preserveText, preserveText.contains(c.tag + "_FB") || preserveText.contains(c.tag + "_WPI"));
 		}
@@ -572,7 +572,7 @@ public class McBlockLevelLoadTest {
 	/** In preserve mode the text model takes the first understood Choice at use, and compares the branches. */
 	@Test
 	public void preserveModeTextIsWordsToo() throws Exception {
-		WordprocessingMLPackage pkg = McProbeDocx.body(BODY_PROBE).load(McBlockLevel.PRESERVE);
+		WordprocessingMLPackage pkg = McProbeDocx.body(BODY_PROBE).load(McLoadMode.PRESERVE);
 		org.docx4j.model.text.TextResult result = Texts.of(pkg, new TextOptions());
 		String text = org.docx4j.model.text.PlainText.of(result);
 		assertTrue(text, text.contains("BODY_W14") && !text.contains("BODY_FB"));
@@ -585,15 +585,15 @@ public class McBlockLevelLoadTest {
 
 	@Test
 	public void loadOptionWinsOverProperty() throws Exception {
-		Docx4jProperties.setProperty(McBlockLevel.PROPERTY, "preserve");
-		assertEquals(McBlockLevel.PRESERVE, McBlockLevel.fromProperty());
-		WordprocessingMLPackage word = McProbeDocx.body(BODY_PROBE).load(McBlockLevel.WORD);
+		Docx4jProperties.setProperty(McLoadMode.PROPERTY, "preserve");
+		assertEquals(McLoadMode.PRESERVE, McLoadMode.fromProperty());
+		WordprocessingMLPackage word = McProbeDocx.body(BODY_PROBE).load(McLoadMode.WORD);
 		assertTrue(XmlUtils.unwrap(word.getMainDocumentPart().getContent().get(1)) instanceof P);
 		WordprocessingMLPackage byProperty = McProbeDocx.body(BODY_PROBE).load();
 		assertTrue(XmlUtils.unwrap(byProperty.getMainDocumentPart().getContent().get(1)) instanceof AlternateContent);
 
-		Docx4jProperties.setProperty(McBlockLevel.PROPERTY, "word");
-		WordprocessingMLPackage preserve = McProbeDocx.body(BODY_PROBE).load(McBlockLevel.PRESERVE);
+		Docx4jProperties.setProperty(McLoadMode.PROPERTY, "word");
+		WordprocessingMLPackage preserve = McProbeDocx.body(BODY_PROBE).load(McLoadMode.PRESERVE);
 		assertTrue(XmlUtils.unwrap(preserve.getMainDocumentPart().getContent().get(1)) instanceof AlternateContent);
 		WordprocessingMLPackage byProperty2 = McProbeDocx.body(BODY_PROBE).load();
 		assertTrue(XmlUtils.unwrap(byProperty2.getMainDocumentPart().getContent().get(1)) instanceof P);
@@ -601,26 +601,26 @@ public class McBlockLevelLoadTest {
 
 	@Test
 	public void packageOverrideWinsOverProperty() throws Exception {
-		Docx4jProperties.setProperty(McBlockLevel.PROPERTY, "word");
+		Docx4jProperties.setProperty(McLoadMode.PROPERTY, "word");
 		WordprocessingMLPackage pkg = McProbeDocx.body(BODY_PROBE).load();
 		assertFalse("the main document part is unmarshalled lazily", pkg.getMainDocumentPart().isUnmarshalled());
-		pkg.setMcBlockLevel(McBlockLevel.PRESERVE);
+		pkg.setMcLoadMode(McLoadMode.PRESERVE);
 		assertTrue(XmlUtils.unwrap(pkg.getMainDocumentPart().getContent().get(1)) instanceof AlternateContent);
 
-		Docx4jProperties.setProperty(McBlockLevel.PROPERTY, "preserve");
+		Docx4jProperties.setProperty(McLoadMode.PROPERTY, "preserve");
 		WordprocessingMLPackage pkg2 = McProbeDocx.body(BODY_PROBE).load();
-		pkg2.setMcBlockLevel(McBlockLevel.WORD);
+		pkg2.setMcLoadMode(McLoadMode.WORD);
 		assertTrue(XmlUtils.unwrap(pkg2.getMainDocumentPart().getContent().get(1)) instanceof P);
 	}
 
 	@Test
 	public void propertyValues() {
-		assertEquals(McBlockLevel.WORD, McBlockLevel.parse("word"));
-		assertEquals(McBlockLevel.PRESERVE, McBlockLevel.parse(" Preserve "));
-		assertNull(McBlockLevel.parse("other"));
-		Docx4jProperties.setProperty(McBlockLevel.PROPERTY, "");
-		assertEquals("unset: word", McBlockLevel.WORD, McBlockLevel.fromProperty());
-		Docx4jProperties.setProperty(McBlockLevel.PROPERTY, "nonsense");
-		assertEquals("unknown: word", McBlockLevel.WORD, McBlockLevel.fromProperty());
+		assertEquals(McLoadMode.WORD, McLoadMode.parse("word"));
+		assertEquals(McLoadMode.PRESERVE, McLoadMode.parse(" Preserve "));
+		assertNull(McLoadMode.parse("other"));
+		Docx4jProperties.setProperty(McLoadMode.PROPERTY, "");
+		assertEquals("unset: word", McLoadMode.WORD, McLoadMode.fromProperty());
+		Docx4jProperties.setProperty(McLoadMode.PROPERTY, "nonsense");
+		assertEquals("unknown: word", McLoadMode.WORD, McLoadMode.fromProperty());
 	}
 }

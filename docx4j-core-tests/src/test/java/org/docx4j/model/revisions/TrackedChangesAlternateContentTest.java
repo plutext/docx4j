@@ -33,7 +33,7 @@ import org.junit.Test;
  * CR-051 section 10.3 item 3 and section 10.5 item 3, and phase 2: tracked changes inside a
  * block-level, a paragraph-level, a row-level and a cell-level {@code mc:AlternateContent}, listed
  * once from the branch Word reads, with the other branches' changes as twins that resolve with them.  The trees are unmarshalled outside a
- * part, so the elements stay whole in either {@code McBlockLevel} mode (CR-051 section 3.4).
+ * part, so the elements stay whole in either {@code McLoadMode} mode (CR-051 section 3.4).
  */
 public class TrackedChangesAlternateContentTest {
 

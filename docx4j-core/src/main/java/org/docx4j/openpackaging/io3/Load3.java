@@ -32,7 +32,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.io.IOUtils;
-import org.docx4j.jaxb.McBlockLevel;
+import org.docx4j.jaxb.McLoadMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
@@ -94,17 +94,17 @@ public class Load3 extends Load {
 		this.partStore = partLoader;
 	}
 
-	private McBlockLevel mcBlockLevel;
+	private McLoadMode mcLoadMode;
 
 	/**
 	 * What this load does with an mc:AlternateContent at block, row or cell level (CR-051 section
 	 * 3.2): set on the package before any part is unmarshalled, so that it governs every part.
-	 * Null (the default) leaves the package to the property {@value McBlockLevel#PROPERTY}.
+	 * Null (the default) leaves the package to the property {@value McLoadMode#PROPERTY}.
 	 *
 	 * @since 17.3.4 (CR-051 phase 1)
 	 */
-	public void setMcBlockLevel(McBlockLevel mode) {
-		this.mcBlockLevel = mode;
+	public void setMcLoadMode(McLoadMode mode) {
+		this.mcLoadMode = mode;
 	}
 
 	public Load3() {
@@ -198,9 +198,9 @@ public class Load3 extends Load {
 		}
 		log.info("Instantiated package of type " + p.getClass().getName() );
 		p.setSourcePartStore(partStore);
-		if (mcBlockLevel != null) {
+		if (mcLoadMode != null) {
 			// before any part is unmarshalled (CR-051 section 3.2), as setWasStrict below
-			p.setMcBlockLevel(mcBlockLevel);
+			p.setMcLoadMode(mcLoadMode);
 		}
 
 		p.setRelationships(rp);

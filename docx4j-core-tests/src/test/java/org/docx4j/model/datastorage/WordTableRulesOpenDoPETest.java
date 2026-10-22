@@ -22,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.McBlockLevel;
+import org.docx4j.jaxb.McLoadMode;
 import org.docx4j.jaxb.McProbeDocx;
 import org.docx4j.model.datastorage.RemovalHandler.Quantifier;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -56,7 +56,7 @@ public class WordTableRulesOpenDoPETest {
 	}
 
 	private static String integrity(String body) throws Exception {
-		WordprocessingMLPackage pkg = McProbeDocx.body(body).load(McBlockLevel.PRESERVE);
+		WordprocessingMLPackage pkg = McProbeDocx.body(body).load(McLoadMode.PRESERVE);
 		new OpenDoPEIntegrity().process(pkg);
 		return XmlUtils.marshaltoString(pkg.getMainDocumentPart().getJaxbElement(), true, false);
 	}
@@ -103,7 +103,7 @@ public class WordTableRulesOpenDoPETest {
 	/** The removal stylesheet, unwrapping a control that held the cell's last paragraph beside a table: the table is now last, so a paragraph is appended. */
 	@Test
 	public void removalEndsACellWhoseLastParagraphItRemovedWithATheControl() throws Exception {
-		WordprocessingMLPackage pkg = McProbeDocx.body(table(NESTED + sdt("od:condition=c1", NESTED)) + P).load(McBlockLevel.PRESERVE);
+		WordprocessingMLPackage pkg = McProbeDocx.body(table(NESTED + sdt("od:condition=c1", NESTED)) + P).load(McLoadMode.PRESERVE);
 		new RemovalHandler().removeSDTs(pkg, Quantifier.ALL);
 		String xml = XmlUtils.marshaltoString(pkg.getMainDocumentPart().getJaxbElement(), true, false);
 		assertTrue(xml, !xml.contains("<w:sdt>"));
@@ -114,7 +114,7 @@ public class WordTableRulesOpenDoPETest {
 	/** The removal stylesheet leaves a cell that ends with a paragraph alone. */
 	@Test
 	public void removalLeavesACellEndingWithAParagraph() throws Exception {
-		WordprocessingMLPackage pkg = McProbeDocx.body(table(NESTED + sdt("od:condition=c1", P)) + P).load(McBlockLevel.PRESERVE);
+		WordprocessingMLPackage pkg = McProbeDocx.body(table(NESTED + sdt("od:condition=c1", P)) + P).load(McLoadMode.PRESERVE);
 		new RemovalHandler().removeSDTs(pkg, Quantifier.ALL);
 		String xml = XmlUtils.marshaltoString(pkg.getMainDocumentPart().getJaxbElement(), true, false);
 		assertEquals(xml, 0, countOf(xml, "<w:p/>"));

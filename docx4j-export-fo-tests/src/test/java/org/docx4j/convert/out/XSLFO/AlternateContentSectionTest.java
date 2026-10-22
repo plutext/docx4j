@@ -28,7 +28,7 @@ import java.io.ByteArrayOutputStream;
 import org.docx4j.Docx4J;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.McBlockLevel;
+import org.docx4j.jaxb.McLoadMode;
 import org.docx4j.jaxb.McSelection;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
@@ -70,7 +70,7 @@ public class AlternateContentSectionTest extends AbstractXSLFOTest {
 	 * paragraph, with different text in each; the body's section (header TWO) after it.  Built,
 	 * saved and loaded in the mode, so that the load path's splice applies as it would to a file.
 	 */
-	private static WordprocessingMLPackage pkg(McBlockLevel mode) throws Exception {
+	private static WordprocessingMLPackage pkg(McLoadMode mode) throws Exception {
 		WordprocessingMLPackage built = WordprocessingMLPackage.createPackage();
 		Relationship one = built.getMainDocumentPart().addTargetPart(header("/word/header1.xml", "HEADER_ONE"));
 		Relationship two = built.getMainDocumentPart().addTargetPart(header("/word/header2.xml", "HEADER_TWO"));
@@ -124,7 +124,7 @@ public class AlternateContentSectionTest extends AbstractXSLFOTest {
 	@Test
 	public void wordModeDrawsTheBranchWordReads() throws Exception {
 		for (int flag : FLAGS) {
-			org.w3c.dom.Document tree = areaTree(pkg(McBlockLevel.WORD), flag);
+			org.w3c.dom.Document tree = areaTree(pkg(McLoadMode.WORD), flag);
 			String text = text(tree);
 			assertEquals(flag + ": " + text, 2, pages(tree));
 			assertTrue(text, text.contains("CHOICE_W14") && text.contains("HEADER_ONE") && text.contains("HEADER_TWO"));
@@ -136,7 +136,7 @@ public class AlternateContentSectionTest extends AbstractXSLFOTest {
 	@Test
 	public void preserveModeDrawsTheFallbackOrThePreferredChoiceWithItsSection() throws Exception {
 		for (int flag : FLAGS) {
-			WordprocessingMLPackage pkg = pkg(McBlockLevel.PRESERVE);
+			WordprocessingMLPackage pkg = pkg(McLoadMode.PRESERVE);
 			org.w3c.dom.Document tree = areaTree(pkg, flag);
 			String text = text(tree);
 			assertEquals(flag + ": " + text, 2, pages(tree));
@@ -148,7 +148,7 @@ public class AlternateContentSectionTest extends AbstractXSLFOTest {
 
 			Docx4jProperties.setProperty(McSelection.PROPERTY, "w14");
 			try {
-				tree = areaTree(pkg(McBlockLevel.PRESERVE), flag);
+				tree = areaTree(pkg(McLoadMode.PRESERVE), flag);
 				text = text(tree);
 				assertEquals(flag + ": " + text, 2, pages(tree));
 				assertTrue(text, text.contains("CHOICE_W14") && text.contains("HEADER_ONE") && text.contains("HEADER_TWO"));

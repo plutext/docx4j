@@ -44,7 +44,7 @@ import org.junit.Test;
  * {@code preserve} mode gives), an element directly inside another's branch, and the
  * anonymiser's CLI loading in {@code preserve} mode.
  */
-public class McBlockLevelReadersTest {
+public class McLoadModeReadersTest {
 
 	private static String p(String text) {
 		return "<w:p><w:r><w:t>" + text + "</w:t></w:r></w:p>";
@@ -111,8 +111,8 @@ public class McBlockLevelReadersTest {
 	/** The text model raises mce.branches_differ from the record in word mode, at the address preserve mode gives. */
 	@Test
 	public void textModelWarnsFromTheRecord() throws Exception {
-		TreeSet<String> word = differWarnings(probe().load(McBlockLevel.WORD));
-		TreeSet<String> preserve = differWarnings(probe().load(McBlockLevel.PRESERVE));
+		TreeSet<String> word = differWarnings(probe().load(McLoadMode.WORD));
+		TreeSet<String> preserve = differWarnings(probe().load(McLoadMode.PRESERVE));
 		assertTrue(word.toString(), word.contains("body/1 mc:Choice Requires=\"w14\""));
 		assertTrue("the cell's, the control's, the text box's, the header's, the note's and the comment's too: " + word, word.size() >= 9);
 		assertTrue("the row-level and the cell-level elements' (CR-051 phase 2): " + word, word.contains("body/3/1 mc:Choice Requires=\"w14\"") && word.contains("body/3/2/1 mc:Choice Requires=\"w14\""));
@@ -138,8 +138,8 @@ public class McBlockLevelReadersTest {
 	 */
 	@Test
 	public void inspectorFindsTheRecordedBranchesWherePreserveModeHasThem() throws Exception {
-		TreeSet<String> preserve = branchFindings(probe().load(McBlockLevel.PRESERVE));
-		TreeSet<String> word = branchFindings(probe().load(McBlockLevel.WORD));
+		TreeSet<String> preserve = branchFindings(probe().load(McLoadMode.PRESERVE));
+		TreeSet<String> word = branchFindings(probe().load(McLoadMode.WORD));
 		assertTrue(preserve.toString(), preserve.size() >= 9);
 		for (String tag : new String[] { "BODY_FB", "CELL_FB", "ROW_FB", "TRC_FB", "SDT_FB", "TXBX_FB", "HDR_FB", "FN_FB", "CM_FB" }) {
 			boolean found = false;
@@ -159,7 +159,7 @@ public class McBlockLevelReadersTest {
 		String inner = ac("INNER");
 		String outer = "<mc:AlternateContent><mc:Choice Requires=\"w14\">" + p("OUTER_W14") + inner + "</mc:Choice>"
 				+ "<mc:Fallback>" + p("OUTER_FB") + "</mc:Fallback></mc:AlternateContent>";
-		WordprocessingMLPackage pkg = McProbeDocx.body(p("before") + outer + p("after")).load(McBlockLevel.WORD);
+		WordprocessingMLPackage pkg = McProbeDocx.body(p("before") + outer + p("after")).load(McLoadMode.WORD);
 		MainDocumentPart mdp = pkg.getMainDocumentPart();
 		List<Object> content = mdp.getContent();
 		assertEquals(content.toString(), 4, content.size());
@@ -175,7 +175,7 @@ public class McBlockLevelReadersTest {
 		String para = "<w:p><mc:AlternateContent><mc:Choice Requires=\"w14\"><w:r><w:t>R_W14</w:t></w:r>"
 				+ "<mc:AlternateContent><mc:Choice Requires=\"w14\"><w:r><w:t>RI_W14</w:t></w:r></mc:Choice><mc:Fallback><w:r><w:t>RI_FB</w:t></w:r></mc:Fallback></mc:AlternateContent>"
 				+ "</mc:Choice><mc:Fallback><w:r><w:t>R_FB</w:t></w:r></mc:Fallback></mc:AlternateContent></w:p>";
-		WordprocessingMLPackage runs = McProbeDocx.body(para).load(McBlockLevel.WORD);
+		WordprocessingMLPackage runs = McProbeDocx.body(para).load(McLoadMode.WORD);
 		assertEquals(0, runs.getMainDocumentPart().getResolvedAlternateContent().size());
 		P first = (P) XmlUtils.unwrap(runs.getMainDocumentPart().getContent().get(0));
 		assertTrue(XmlUtils.unwrap(first.getContent().get(0)) instanceof AlternateContent);

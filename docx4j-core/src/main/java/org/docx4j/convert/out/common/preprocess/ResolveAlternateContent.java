@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
  * Resolves each block-, row- and cell-level {@code mc:AlternateContent} of the exporters' working
  * copy to the branch the exporter draws (CR-051 D6: {@code ConversionFeatures.PP_COMMON_RESOLVE_ALTERNATE_CONTENT}),
  * so that no later preprocessing step and no exporter meets such an element, in either
- * {@link org.docx4j.jaxb.McBlockLevel} mode.  In {@code word} mode a loaded part holds none but
+ * {@link org.docx4j.jaxb.McLoadMode} mode.  In {@code word} mode a loaded part holds none but
  * those WD REQ-305 keeps whole; in {@code preserve} mode, and for content that never passed a
  * part's unmarshal (CR-051 section 3.4: fragments from {@code XmlUtils}, the trees OpenDoPE's
  * binding sets, an {@code altChunk}'s conversion, diffx's output), it holds them whole, and the

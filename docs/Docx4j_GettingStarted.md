@@ -390,12 +390,12 @@ docx4j can open documents which contain Word 2010 and later content.  The key ex
 
 docx4j has long kept mc:AlternateContent in some specific places. Since docx4j 17.2.0, this has extended to an element in run or paragraph content, and from 17.3.4 (CR-051) the element is admitted everywhere the schema allows it, block, row and cell level included: in the body, headers, footers, footnotes, comments, text boxes, content controls, tables, rows and cells.  
 
-What a load does with those is set by the **docx4j.jaxb.mc.blockLevel** property: 
+What a load does with those is set by the **docx4j.jaxb.mc.onLoad** property: 
 
 - **word**, the default in 17.3.x, resolves each one as Word reads it (Word generally keeps it, but does resolve some instances which it would not write itself); 
 - **preserve** keeps each one whole in the tree, which the anonymiser, diffx and an editor that saves ask for.  
 
-The mode can also be given per load (WordprocessingMLPackage.load(.., McBlockLevel), Docx4J.load) or per package (OpcPackage.setMcBlockLevel).  From 17.4.0 the default becomes preserve, with Word's view still what a read gives; set the property to choose now.
+The mode can also be given per load (WordprocessingMLPackage.load(.., McLoadMode), Docx4J.load) or per package (OpcPackage.setMcLoadMode).  From 17.4.0 the default becomes preserve, with Word's view still what a read gives; set the property to choose now.
 
 When docx4j draws, it takes one branch: the first mc:Choice whose Requires prefixes are all named in the **docx4j.jaxb.mc.preferChoice** property, otherwise the mc:Fallback.  The property is empty by default, so docx4j draws the fallback (what the producer wrote for a reader which understands nothing extra); set it, for example to wps, or to a14 for PowerPoint equations, to draw the choice instead.  The rule lives in org.docx4j.jaxb.McSelection.  
 

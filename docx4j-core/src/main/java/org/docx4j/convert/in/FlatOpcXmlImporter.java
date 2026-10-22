@@ -35,7 +35,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.docx4j.jaxb.McBlockLevel;
+import org.docx4j.jaxb.McLoadMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
@@ -173,17 +173,17 @@ public class FlatOpcXmlImporter  {
 	
 	private OpcPackage packageResult; 
 
-	private McBlockLevel mcBlockLevel;
+	private McLoadMode mcLoadMode;
 
 	/**
 	 * What this import does with an mc:AlternateContent at block, row or cell level (CR-051
 	 * section 3.2): set on the package before its parts are unmarshalled.  Null (the default)
-	 * leaves the package to the property {@value McBlockLevel#PROPERTY}.
+	 * leaves the package to the property {@value McLoadMode#PROPERTY}.
 	 *
 	 * @since 17.3.4 (CR-051 phase 1)
 	 */
-	public void setMcBlockLevel(McBlockLevel mode) {
-		this.mcBlockLevel = mode;
+	public void setMcLoadMode(McLoadMode mode) {
+		this.mcLoadMode = mode;
 	}
 		
 	public OpcPackage get() throws Docx4JException {
@@ -228,8 +228,8 @@ public class FlatOpcXmlImporter  {
 		}
 		
 		packageResult = ctm.createPackage(officeDocument.getContentType());
-		if (mcBlockLevel != null) {
-			packageResult.setMcBlockLevel(mcBlockLevel); // before any part is unmarshalled (CR-051 section 3.2)
+		if (mcLoadMode != null) {
+			packageResult.setMcLoadMode(mcLoadMode); // before any part is unmarshalled (CR-051 section 3.2)
 		}
 		log.info("Creating " + packageResult.getClass().getName() );
 		

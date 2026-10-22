@@ -27,7 +27,7 @@ import java.nio.file.Files;
 import java.util.List;
 
 import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.McBlockLevel;
+import org.docx4j.jaxb.McLoadMode;
 import org.docx4j.jaxb.McProbeDocx;
 import org.docx4j.mce.AlternateContent;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -49,7 +49,7 @@ public class AnonymizeCliPreserveTest {
 					+ "<mc:Fallback>" + p("Fallback text") + "</mc:Fallback></mc:AlternateContent>";
 			Files.write(in.toPath(), McProbeDocx.body(p("before") + element + p("after")).bytes());
 			assertEquals(0, AnonymizeCli.run(new String[] { in.getPath(), out.getPath(), "--no-fonts" }));
-			WordprocessingMLPackage pkg = WordprocessingMLPackage.load(out, McBlockLevel.PRESERVE);
+			WordprocessingMLPackage pkg = WordprocessingMLPackage.load(out, McLoadMode.PRESERVE);
 			List<Object> content = pkg.getMainDocumentPart().getContent();
 			assertEquals(3, content.size());
 			Object element2 = XmlUtils.unwrap(content.get(1));

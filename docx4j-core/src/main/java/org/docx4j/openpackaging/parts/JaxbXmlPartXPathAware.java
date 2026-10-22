@@ -199,7 +199,7 @@ implements XPathEnabled<E> {
 	 * 
 	 * So this is left for you to choose to do via the refreshXmlFirst parameter.   
 	 * 
-	 * <p>In {@link org.docx4j.jaxb.McBlockLevel#PRESERVE} mode a block-, row- or cell-level
+	 * <p>In {@link org.docx4j.jaxb.McLoadMode#PRESERVE} mode a block-, row- or cell-level
 	 * {@code mc:AlternateContent} stands whole in the part, so {@code //w:p} returns every
 	 * branch's paragraphs and {@code w:body/w:p} none inside a branch (CR-051 section 10.3,
 	 * item 13).  In {@code word} mode (the default) the loaded part holds the branch Word

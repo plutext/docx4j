@@ -8,7 +8,8 @@ Version 17.3.4
 Release date
 ------------
 
-[]
+22 October 2026
+
 
 Contributors to this release
 ----------------------------
@@ -23,145 +24,27 @@ Claude Fable 5.1
 Changes in Version 17.3.4
 --------------------------
 
-- A save declares every namespace prefix a part's `mc` attributes name, where Word 365 puts it (CR-052 phase 1):
-  a prefix docx4j's table binds as the source did on the root; any other (a producer's private prefix, an alias,
-  a chartex `cx1` on content copied between documents) on the `mc:Choice` naming it, with the source's binding.
-  Each Choice and each root records its bindings at unmarshal (`McSourceBindings`), a deep copy carries them,
-  and `McDeclarations` places them at marshal on every path. Before, an edited document could save with a
-  `Requires` prefix nothing declared, which Word repairs.
-- Text model (CR-046 phase 1): `org.docx4j.model.text` (`Texts`, `TextOptions`, `PlainText`). Accepted,
-  original or markup (CriticMarkup) views as Accept/Reject All would leave the text, without changing the
-  package; text boxes after their anchor; notes as `[n]`; `mc:AlternateContent` read by the ISO rule over
-  the published understood set (`McPurpose.TEXT`, `org/docx4j/jaxb/understood-namespaces.txt`).
-- Text model (CR-046 phase 2): bound values, charts, SmartArt, WordArt, `altChunk`s, embedded docx/xlsx/pptx
-  (`embedded: true`), the glossary, image descriptions (`ImageDescriber`), math as LaTeX, listed and grid
-  tables, document properties, `fields: update`, page markers and indents. jsoup is an optional dependency
-  (HTML chunks are tidied with it where present).
-- Text model option `toc` (CR-046 D12): a table of contents (a TOC field's result) is left out unless
-  `toc: true`, in plain text and Markdown alike.
-- Markdown export (CR-046 phase 3) writes the text model: hidden text left out, text boxes after their
-  anchor, endnotes (`[^e1]`), HYPERLINK fields as links, YAML front matter under `metadata`. Its markup view
-  is CriticMarkup, not `~~`; `MarkdownExportOptions.setView` adds `original` (`TrackedChangesPolicy` deprecated).
-  A picture is never dropped: an SVG one with no PNG copy is written with its SVG, a linked one as `![alt]()` (#699).
-  Lists keep Word's count: one interrupted by a paragraph at the margin resumes at its number (`5.`), an unlabelled
-  paragraph indented to an item's text continues the item, an empty paragraph leaves the list alone, and two
-  adjacent lists stay two (`1.` then `1)`). `TextNumbering.getValue()` and `getAbstractNumId()` are new.
-- HTML export marks tracked changes `<ins>`/`<del>` with `data-author` and `datetime`; HTML and PDF take
-  `settings.setView(TextView)`, markup by default as before (`PP_COMMON_REJECT_TRACKED_CHANGES` is new).
-- `TextUtils` is deprecated (output unchanged): use `org.docx4j.model.text.Texts`.
-- `TraversalUtil`'s default `McMode.READ` reads the `mc:AlternateContent` branch understood for text (the
-  Choice, for Word's text boxes); the new `McMode.DRAW` is the drawn branch, as READ was. PDF output unchanged.
-- `CompressPictures` crops a picture's use in every `mc:AlternateContent` branch, not only one.
-- Text model goldens (WD REQ-1203) for the ports: `text-extraction/phase0/*.txt`, `*.md`.
-- `OmmlToLatex` moved to docx4j-core as `org.docx4j.model.math.OmmlToLatex`; docx4j-markdown's class
-  forwards to it and is deprecated.
-- Charts: `ChartDescription` gives a chart's kind (Excel's names), the axis titles Excel shows and
-  secondary-axis series, and a note; Markdown's chart output gains a line, e.g. `[chart: clustered
-  column; value axis: Revenue]`. `ChartExModel.getAxes()` (CR-047).
-- VML: `w14:anchorId` (on every shape type and `v:group`) and `o:gfxdata` (beyond `v:shape`) are kept when
-  a part is re-saved; before, a re-save dropped them from Word's text-box and shape Fallbacks (CR-048).
-- DOCPROPERTY: LastSavedBy and LastSavedTime no longer return each other's values; an absent
-  core property (Title, Comments, Author, ...) or properties part gives no value instead of an NPE;
-  a custom property named like part of a built-in one (Page, Time) is found; LastPrinted and
-  HyperlinkBase now resolve.
-- List numbering: a level that names no paragraph style belongs to the first style in styles.xml carrying
-  it, as in Word; a second style carrying the same level is no longer numbered (labels, PDF, HTML, text model).
-  A paragraph with no `w:pPr` in a numbered default style is numbered, as one with an empty `w:pPr` was
-  (`Emulator.numRefFor` too).
-- `XmlUtils`' marshal methods leave the shared prefix mapper as they found it (CR-049): a fragment or part
-  marshalled after a `wml.Document` no longer declares the document's `mc:Ignorable` prefixes, and any root
-  (`getXML()` of a header, footnotes or settings part) declares its own Ignorable and Choice prefixes.
-  Saved files are unchanged. A caller relying on the old carry-over declarations no longer gets them.
-- Text model: an XHTML or MHT `altChunk` read through docx4j-ImportXHTML no longer fetches its stylesheets
-  or images (by URL or local file); its images are left out. With a docx4j-ImportXHTML before 17.3.4 on the
-  module path, the chunk is read without it.
-- Inspector (CR-050 phase 1): `Inspect.of(pkg)` reports where a docx's text diverges from what a person sees
-  (white, tiny or zero-width text, embedded-font glyph swaps), what extraction leaves out, and what Office would
-  fetch or run; read-only, fetching nothing, bounded. `Inspection.counts` groups findings for an extraction's options.
-- Text model (CR-050 phase 2): `TextOptions.inspect(true)` puts the inspection counts (unseen, omitted, active,
-  info) in `Texts.of`'s result metadata (`TextResult.counts`); off by default, as it costs about as much as the
-  extraction. A comment with no anchor in the document is no longer among `TextResult.comments()`.
-- Inspector (CR-050 phase 3, D21): the text a picture draws is reported, `image.svg_text` (an SVG part's
-  `<text>` elements) and `image.metafile_text` (a WMF's or EMF's text records, through CR-011's decoder, in the
-  selected font's character set), once per part, unextractable; the limitation `image.text` says what is not read
-  (raster pixels, outlines, glyph-index, SYMBOL-font, `POLYTEXTOUT` and EMF+ `DrawString` records, metafiles in OLE).
-  The suite's inspect fixture gains cases 68 to 74.
-- Inspector: `Inspection.counts(options, format)` now counts with the class path's capabilities (`Inspection.capabilitiesOnClassPath()`, new), as `Texts` does; it counted as if no HTML reader were present (CR-050 phase 3, from docx4j-mcp's review).
-- Text-extraction suite: `expected-inspection.tsv` and its status table carry a `capability` column (`any`, `html reader absent`, `html reader present`), so an engine is compared against the rows of its own environment and a reader-present engine checks every reader-independent row (CR-050 phase 4); `expected-inspection-html.tsv` is now the source the oracle folds in, and `expected-inspection-html-status.tsv` is gone.
-- docx4j-export-fo: with Apache FOP's jars ahead of the docx4j FO renderer on the classpath, the renderer's hooks are now treated as absent (and a warning names both), since Apache's layout managers ignore them: a page-anchored table or frame lost its wrap and the footer extent went wrong (a customer's PDF, 21 October 2026). Remove org.apache.xmlgraphics:fop, fop-core, fop-events and fop-util; the renderer replaces them.
-- `PropertyResolver` no longer adds a `DefaultParagraphFont` style to a styles part that has no default
-  character style (so `Texts.of` changes nothing in such a package); output and merge paths still add it.
-- `mc:AlternateContent` twins (a text box written as a wps Choice and a VML Fallback; CR-051 §10.5):
-  `FieldUpdaterSEQ` counts a caption once; `BookmarksIntegrity` no longer reports twin bookmarks as
-  duplicates; `OpenDoPEReverter` restores each twin control from its own branch; `TraversalUtil.replaceChildren`
-  edits a Choice or Fallback (OpenDoPE in a paragraph-level branch); the anonymiser's inventory reads Fallbacks.
-  `McSelection.branchPaths` and `twins` are new.
-- `mc:AlternateContent` at block, row and cell level (CR-051 phase 1): the schema admits it in the body, headers,
-  footers, cells, notes, comments, text boxes, content controls, tables and rows, and a load resolves it as Word
-  reads it (property `docx4j.jaxb.mc.blockLevel=word`, the default) or keeps it whole (`preserve`: the anonymiser's
-  CLI, diffx's inputs), given per load (`WordprocessingMLPackage.load(.., McBlockLevel)`, `Docx4J.load`, `Load3`,
-  `FlatOpcXmlImporter`) or per package (`OpcPackage.setMcBlockLevel`). Each element taken out is kept on the part
-  (`JaxbXmlPart.getResolvedAlternateContent()`), which the
-  text model's `mce.branches_differ` and the inspector's `mce.branch` read. The preprocessor keeps the element
-  wherever the schema admits it and never drops one. The exporters resolve their copy to the branch they draw before
-  any other step (`PP_COMMON_RESOLVE_ALTERNATE_CONTENT`, forced on; D6), so a section break in a branch lays out.
-  Field updaters, mail merge, the migrators, bookmark remediation and renumbering, the TOC helper, `Paginate`'s
-  bookmark keys, the binding shapers, `altChunk` conversion and diffx's output now handle an element kept whole;
-  tracked changes in a block- or paragraph-level element are listed once, with the other branches' as twins;
-  `OpcPackage.clone()` keeps the package's mode. `McSplice.contentOf` is the one helper for a parent's live list.
-  A `w:sdt` directly inside a Choice or Fallback, which JAXB's lax rule bound as `CTSdtRow` at every level (its
-  content dropped, or the load failed; since 17.2.0 for a run control in a paragraph-level element), is bound by its
-  container's kind on every unmarshal route (`McBranchSdt`, CR-051 §11.3).
-- `mc:AlternateContent` at row and cell level in `preserve` mode (CR-051 phase 2): kept whole like block level;
-  the text model, the inspector, tracked changes (listed once, the other branches' as twins; a table goes only when no
-  branch has a row left), OpenDoPE's row removal and its emptying of a cell control read or keep the element where
-  they lost its content, deleted the row or lifted one branch's cell out of it; a deleted cell in a branch Word does not
-  read is removed with its twin, and a table property record in such a branch is listed and resolved (both found by docx4j-python).
-- Text model: a control bound to a cover-page property (Abstract, Company address, ...) shows the property, as Word does;
-  it showed its stored surface, the cover-page part being a JAXB part the bound view did not read (found by docx4j-portfolio).
-- Binding a drop-down list or combo box shows the item whose value is bound, by its display text, and writes the value
-  into `w:lastValue`, as Word does (measured 2026-10-22); the value itself was shown (new `ListControls`, both traversers).
-- OpenDoPE binding, four defects found by reading (docx4j-portfolio, 2026-10-22): a date control's stored value lost the
-  character before its `Z`, so `2026-10-22Z` bound as the 2nd (the nominal date is now read as Word shows it, any offset
-  read past); the non-XSLT traverser's picture binding returned the base64 text where its run was meant; a tag naming a
-  condition the conditions part lacks, and an XSLT finisher asked for without `FLAG_BIND_BIND_XML`, each failed with a
-  NullPointerException and now with a Docx4JException that says what is missing. A Word repeating section whose node set
-  is empty is left as it is, template item and bound controls untouched, as Word does (measured 2026-10-22; REQ-053): the marker the handler
-  puts on it survived neither the integrity step's unwrapping nor the non-XSLT traverser, so the template was bound against
-  nothing; with the controls removed, the template content stays. Fixtures from docx4j-portfolio's bind-fun probes.
-- Word's table rules documented (docs/developer/word-table-rules.md) and followed: a cell's last block as Word reads
-  it, through block-level controls and the branch it reads of an `mc:AlternateContent`, must be a paragraph (measured
-  2026-10-22). New `org.docx4j.model.table.TableRules`; OpenDoPE's integrity and removal stylesheets and the unequal-columns
-  PDF table end a cell with a paragraph only when that rule fails (the stylesheets looked for a paragraph anywhere in the
-  cell, and the integrity step padded every control in a cell with none inside it).
-- The zip distributions (docx4j-community, docx4j-JAXB-ReferenceImpl, docx4j-JAXB-MOXy and the samples zips, built by
-  etc/build.xml) end at 17.3.3: the binaries are the two bundle jars on Maven Central (Getting Started, "Using docx4j
-  binaries"; MOXy users take the ordinary jars). build.xml stays for its dist.NET target.
-- docx4j-bundle now also holds docx4j-digsig, docx4j-markdown and docx4j-diffx. PDF output is the new `docx4j-bundle-extras`
-  (docx4j-export-fo, docx4j-chart-render, the docx4j FO renderer fork, Batik, jeuclid and the fonts), a second fat jar
-  put beside docx4j-bundle of the same version; its pom depends on docx4j-bundle, so a Maven consumer gets both. It
-  carries `org.apache.fop`: do not put Apache FOP's own jars beside it. No class is in both jars
-  (docx4j-bundle/design-rationale.md). Both jars are `Multi-Release` (BouncyCastle's versioned classes now load) and
-  their NOTICE names Plutext, not the ASF, as the jar's holder (found by docx4j-ImportXHTML).
-- Notice: from 17.4.0 `docx4j.jaxb.mc.blockLevel` will default to `preserve` (block-level `mc:AlternateContent` kept whole on load; the Word view on read), not `word` (CR-051 D5, revised 2026-10-21). 17.3.x keeps `word`; set the property, or pass `McBlockLevel` to `load`, to choose now.
-- `addAltChunk` and the OpenDoPE XHTML binding write an HTML or XHTML chunk without a leading XML declaration,
-  which Word refuses (it repaired the document), its encoding kept with a byte order mark (`AltChunkHtml`, CR-053
-  phase 1); the binding's chunk is UTF-8, not the platform charset. A loaded chunk's `AltChunkType` follows its
-  declared content type, the part name's extension the fallback, so `convertAltChunks` converts it as that kind.
-- HTML, XHTML and MHT `altChunk`s are read as Word reads them (CR-053 phase 2): parsed by jsoup, the CSS Word applies,
-  `display: none` as hidden text, through docx4j-ImportXHTML (`HtmlChunkImport`). The text model expands them only with
-  both on the class path (`HtmlText` is gone); `convertAltChunks` now converts HTML chunks too, keeps hidden text, and
-  goes on past a chunk it can't convert. Limits: `docx4j.model.text.HtmlChunkImport.maxElements` (50,000) and
-  `.timeoutMillis` (off). `Inspection.Capability.XHTML_IMPORTER` is now `HTML_READER`.
-- The inspector reports what `display: none` hides in an HTML, XHTML or MHT `altChunk` as `text.hidden`, at the
-  element's path in the parsed chunk, through the import the extraction runs (CR-053 phase 3); the `altchunk` finding
-  gains `parsed` (`InspectFinding.getParsed()`). Without an HTML reader such a chunk is skipped as `not_decoded`.
-- An HTML chunk's CSS as Word 365 reads it (CR-053 §13.8): a rule with any selector Word ignores goes whole, as does a
-  rule in any at-rule; a class matches a host style of exactly its name; `pre` and `code` give way to the host's HTML
-  Preformatted and HTML Code; UTF-16 without a byte order mark is not sniffed; a `tfoot` keeps its place.
-- Accepting or rejecting tracked changes removes a comment whose range it leaves empty wherever its markers were, its
-  range across paragraphs too, and with the last comment the comment parts (and `people.xml` once no revision is
-  left), as Word 365 does (CR-043 §15).
+**Text model and inspector** (CR-046, CR-050).
+- A new package, `org.docx4j.model.text`, gives a document's text in accepted, original or CriticMarkup views, paying
+  special attention to the areas which trip up other extraction systems (which include bound content controls,
+  `altChunk`s, and `mc:AlternateContent`). `TextUtils` is deprecated in its favour. Markdown export now writes the text
+  model, and HTML export marks tracked changes.
+- The inspector reports where a document's text diverges from what a person sees: white or tiny text, glyph swaps,
+  hidden content in HTML chunks, and the text pictures draw, with counts an extraction can carry in its metadata.
+
+**Alternate content read as Word reads it** (CR-051, CR-052, CR-049). Block, row and cell level `mc:AlternateContent`
+is admitted everywhere the schema allows and resolved on load as Word does, or kept whole in `preserve` mode
+(`docx4j.jaxb.mc.onLoad`), which will become the default at 17.4.0.
+
+**HTML chunks as Word reads them** (CR-053). HTML, XHTML and MHT chunks are parsed by jsoup with the CSS Word applies
+and written without the XML declaration Word refuses. The text model and the converter read them through
+ImportXHTML, and the inspector reports what their styles hide.
+
+**Packaging.** `docx4j-bundle` gains diffx, digsig and markdown. A second fat jar, `docx4j-bundle-extras`, carries PDF output. The zip distributions end at 17.3.3.
+
+Plus miscellaneous fixes.
+
+See https://github.com/plutext/docx4j/blob/7ee783b729c56488062b52fefc10d1651e7f1f3e/CHANGELOG.md for details
 
 
 Version 17.3.3

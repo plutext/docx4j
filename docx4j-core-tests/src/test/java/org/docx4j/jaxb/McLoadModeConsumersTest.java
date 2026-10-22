@@ -73,7 +73,7 @@ import org.junit.Test;
  * {@code mc:AlternateContent} in {@code preserve} mode (or kept whole by WD REQ-305), each of
  * which threw, logged and skipped, or read past the element before.
  */
-public class McBlockLevelConsumersTest {
+public class McLoadModeConsumersTest {
 
 	private static String p(String text) {
 		return "<w:p><w:r><w:t>" + text + "</w:t></w:r></w:p>";
@@ -92,7 +92,7 @@ public class McBlockLevelConsumersTest {
 	public void fieldUpdaterUpdatesAFieldInABranch() throws Exception {
 		String field = "<w:p><w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText xml:space=\"preserve\"> DOCPROPERTY Foo \\* MERGEFORMAT </w:instrText></w:r>"
 				+ "<w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:r><w:t>stale</w:t></w:r><w:r><w:fldChar w:fldCharType=\"end\"/></w:r></w:p>";
-		WordprocessingMLPackage pkg = McProbeDocx.body(p("before") + ac(field, p("FB")) + p("after")).load(McBlockLevel.PRESERVE);
+		WordprocessingMLPackage pkg = McProbeDocx.body(p("before") + ac(field, p("FB")) + p("after")).load(McLoadMode.PRESERVE);
 		pkg.addDocPropsCustomPart();
 		pkg.getDocPropsCustomPart().setProperty("Foo", "FRESH");
 		new FieldUpdater(pkg).update(true);
@@ -106,7 +106,7 @@ public class McBlockLevelConsumersTest {
 	@Test
 	public void bookmarksIntegrityRemediatesInABranch() throws Exception {
 		String choice = "<w:bookmarkStart w:id=\"7\" w:name=\"orphan\"/>" + p("C");
-		WordprocessingMLPackage pkg = McProbeDocx.body(p("before") + ac(choice, p("FB"))).load(McBlockLevel.PRESERVE);
+		WordprocessingMLPackage pkg = McProbeDocx.body(p("before") + ac(choice, p("FB"))).load(McLoadMode.PRESERVE);
 		MainDocumentPart mdp = pkg.getMainDocumentPart();
 		assertTrue(xml(mdp.getJaxbElement()).contains("orphan"));
 		new BookmarksIntegrity().check(mdp, true);
@@ -129,7 +129,7 @@ public class McBlockLevelConsumersTest {
 	@Test
 	public void paginateKeysABookmarkInTheDrawnBranch() throws Exception {
 		String fallback = "<w:p w14:paraId=\"0000000A\"><w:bookmarkStart w:id=\"1\" w:name=\"inBranch\"/><w:r><w:t>FB</w:t></w:r><w:bookmarkEnd w:id=\"1\"/></w:p>";
-		WordprocessingMLPackage pkg = McProbeDocx.body(p("before") + ac(p("C"), fallback)).load(McBlockLevel.PRESERVE);
+		WordprocessingMLPackage pkg = McProbeDocx.body(p("before") + ac(p("C"), fallback)).load(McLoadMode.PRESERVE);
 		Map<String, String> keys = Paginate.bookmarkKeys(pkg.getMainDocumentPart());
 		assertEquals(keys.toString(), "0000000A", keys.get("inBranch"));
 	}
@@ -197,7 +197,7 @@ public class McBlockLevelConsumersTest {
 	@Test
 	public void mailMergerMergesAFieldInABranch() throws Exception {
 		WordprocessingMLPackage pkg = McProbeDocx.body(p("before")
-				+ ac(complexField("MERGEFIELD NAME", "«NAME»"), complexField("MERGEFIELD NAME", "«NAME»")) + p("after")).load(McBlockLevel.PRESERVE);
+				+ ac(complexField("MERGEFIELD NAME", "«NAME»"), complexField("MERGEFIELD NAME", "«NAME»")) + p("after")).load(McLoadMode.PRESERVE);
 		Map<DataFieldName, String> data = new HashMap<DataFieldName, String>();
 		data.put(new DataFieldName("NAME"), "Alice");
 		MailMerger.performMerge(pkg, data, true);
@@ -211,7 +211,7 @@ public class McBlockLevelConsumersTest {
 	@Test
 	public void mailMergerRemovesAnEmptiedParagraphInABranch() throws Exception {
 		WordprocessingMLPackage pkg = McProbeDocx.body(p("before")
-				+ ac(complexField("MERGEFIELD NOVALUE", "«NOVALUE»"), complexField("MERGEFIELD NOVALUE", "«NOVALUE»")) + p("after")).load(McBlockLevel.PRESERVE);
+				+ ac(complexField("MERGEFIELD NOVALUE", "«NOVALUE»"), complexField("MERGEFIELD NOVALUE", "«NOVALUE»")) + p("after")).load(McLoadMode.PRESERVE);
 		MailMerger.performMerge(pkg, new HashMap<DataFieldName, String>(), true);
 		AlternateContent element = elementAt(pkg, 1);
 		assertEquals("the Choice's emptied paragraph is gone: " + xml(element), 0, element.getChoice().get(0).getAny().size());
@@ -223,7 +223,7 @@ public class McBlockLevelConsumersTest {
 	public void seqUpdaterNumbersFieldsInABranch() throws Exception {
 		WordprocessingMLPackage pkg = McProbeDocx.body(complexField("SEQ Figure \\* ARABIC", "x")
 				+ ac(complexField("SEQ Figure \\* ARABIC", "c"), complexField("SEQ Figure \\* ARABIC", "f"))
-				+ complexField("SEQ Figure \\* ARABIC", "y")).load(McBlockLevel.PRESERVE);
+				+ complexField("SEQ Figure \\* ARABIC", "y")).load(McLoadMode.PRESERVE);
 		new FieldUpdaterSEQ(pkg).update();
 		assertEquals("[1, 2, 2, 3]", runTexts(pkg.getMainDocumentPart().getContent()).toString());
 	}
@@ -270,7 +270,7 @@ public class McBlockLevelConsumersTest {
 		part.addTargetPart(props);
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		org.docx4j.Docx4J.save(built, bytes);
-		return WordprocessingMLPackage.load(new ByteArrayInputStream(bytes.toByteArray()), McBlockLevel.PRESERVE);
+		return WordprocessingMLPackage.load(new ByteArrayInputStream(bytes.toByteArray()), McLoadMode.PRESERVE);
 	}
 
 	/**
@@ -364,7 +364,7 @@ public class McBlockLevelConsumersTest {
 				+ p("before") + ac(altChunk, altChunk) + p("after") + "</w:body></w:document>"));
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		org.docx4j.Docx4J.save(built, bytes);
-		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(bytes.toByteArray()), McBlockLevel.PRESERVE);
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(bytes.toByteArray()), McLoadMode.PRESERVE);
 		// the loaded part's AltChunkType comes from its content type (CR-053 D6)
 		Part loaded = pkg.getMainDocumentPart().getRelationshipsPart().getPart(rel.getId());
 		assertEquals(AltChunkType.TextPlain, ((AlternativeFormatInputPart) loaded).getAltChunkType());
@@ -379,9 +379,9 @@ public class McBlockLevelConsumersTest {
 	@Test
 	public void migratorConvertsAFieldInABranch() throws Exception {
 		WordprocessingMLPackage pkg = McProbeDocx.body(p("before")
-				+ ac(complexField("MERGEFIELD NAME", "«NAME»"), complexField("MERGEFIELD NAME", "«NAME»")) + p("after")).load(McBlockLevel.PRESERVE);
+				+ ac(complexField("MERGEFIELD NAME", "«NAME»"), complexField("MERGEFIELD NAME", "«NAME»")) + p("after")).load(McLoadMode.PRESERVE);
 		WordprocessingMLPackage out = new FromMergeFields().migrate(pkg);
-		assertEquals(McBlockLevel.PRESERVE, out.getMcBlockLevel());
+		assertEquals(McLoadMode.PRESERVE, out.getMcLoadMode());
 		String xml = xml(out.getMainDocumentPart().getJaxbElement());
 		assertTrue(xml, xml.contains("<mc:Choice") && xml.contains("<mc:Fallback"));
 		assertFalse(xml, xml.contains("MERGEFIELD"));

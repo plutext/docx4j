@@ -1035,7 +1035,7 @@ with 11 tests. Each case goes through all four paths and both types:
 - the binding's markup;
 - `forContentType`.
 
-`McBlockLevelConsumersTest` no longer gives its loaded chunk a type itself, which its comment, wrong
+`McLoadModeConsumersTest` no longer gives its loaded chunk a type itself, which its comment, wrong
 since CR-051 §11.2 (§1), said it had to. It now asserts the type the load gives.
 
 The whole of core-tests passes: 1,874 tests, none failing, 13 skipped (assumptions, as before).

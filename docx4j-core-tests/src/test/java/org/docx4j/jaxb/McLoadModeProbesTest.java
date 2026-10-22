@@ -41,12 +41,12 @@ import org.junit.Test;
 /**
  * CR-051 section 4, "word mode, against Word": Jason's probes ({@code mc-fun/} on the share,
  * copied to the test resources) and their Word 365 saves ({@code <name>-word365.docx}, 20 October
- * 2026).  A load and save in {@link McBlockLevel#WORD} mode gives the text Word's save gave; for
+ * 2026).  A load and save in {@link McLoadMode#WORD} mode gives the text Word's save gave; for
  * the {@code mc-txbx-*} probes the Choice paragraph with a bare wps box where Word wrote a
- * regenerated Fallback (section 3.5), which reads the same.  And in {@link McBlockLevel#PRESERVE}
+ * regenerated Fallback (section 3.5), which reads the same.  And in {@link McLoadMode#PRESERVE}
  * mode every branch survives a load and a save.
  */
-public class McBlockLevelProbesTest {
+public class McLoadModeProbesTest {
 
 	private static final String[] PROBES = {
 			"mc-text-newest-first", "mc-run-newest-first", "mc-sdt-run-newest-first",
@@ -67,7 +67,7 @@ public class McBlockLevelProbesTest {
 			"mc-txbx-block", "mc-txbx-sdt-block", "mc-txbx-tc-block", "mc-txbx-run" };
 
 	/** Loaded, with the main document part unmarshalled (a save streams a part not yet unmarshalled as it was stored). */
-	private static WordprocessingMLPackage load(String name, McBlockLevel mode) throws Exception {
+	private static WordprocessingMLPackage load(String name, McLoadMode mode) throws Exception {
 		InputStream is = ResourceUtils.getResource("mc-fun/" + name + ".docx");
 		assertNotNull(name, is);
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(is, mode);
@@ -89,9 +89,9 @@ public class McBlockLevelProbesTest {
 	@Test
 	public void wordModeSaveReadsAsWordsSave() throws Exception {
 		for (String name : WITH_WORD_SAVE) {
-			WordprocessingMLPackage pkg = load(name, McBlockLevel.WORD);
-			WordprocessingMLPackage saved = McProbeDocx.roundTrip(pkg, McBlockLevel.WORD);
-			WordprocessingMLPackage words = load(name + "-word365", McBlockLevel.WORD);
+			WordprocessingMLPackage pkg = load(name, McLoadMode.WORD);
+			WordprocessingMLPackage saved = McProbeDocx.roundTrip(pkg, McLoadMode.WORD);
+			WordprocessingMLPackage words = load(name + "-word365", McLoadMode.WORD);
 			assertEquals(name, text(words), text(saved));
 			assertEquals(name + " (before the save)", text(words), text(pkg));
 		}
@@ -109,7 +109,7 @@ public class McBlockLevelProbesTest {
 		String[][] cells = { { "mc-text", "w14" }, { "mc-run", "w14" }, { "mc-block", "w14" },
 				{ "mc-text-newest-first", "w16sdtfl" }, { "mc-run-newest-first", "w16sdtfl" }, { "mc-block-newest-first", "w16sdtfl" } };
 		for (String[] cell : cells) {
-			String text = text(load(cell[0], McBlockLevel.WORD));
+			String text = text(load(cell[0], McLoadMode.WORD));
 			assertTrue(cell[0] + ": " + text, text.endsWith(cell[1]));
 			for (String other : new String[] { "w15", "w16se", "w16cid", "w16cex", "w16sdtdh", "w16du", "wp14", "fallback", "TheEarthisround" }) {
 				assertFalse(cell[0] + " shows " + other + ": " + text, text.contains(other));
@@ -120,7 +120,7 @@ public class McBlockLevelProbesTest {
 	/** The block-level probe: Word's branch in the body at the element's index, the record, and the root's mc:Ignorable. */
 	@Test
 	public void blockLevelProbe() throws Exception {
-		WordprocessingMLPackage pkg = load("mc-block-newest-first", McBlockLevel.WORD);
+		WordprocessingMLPackage pkg = load("mc-block-newest-first", McLoadMode.WORD);
 		MainDocumentPart mdp = pkg.getMainDocumentPart();
 		List<Object> content = mdp.getContent();
 		assertEquals("two paragraphs, the promoted one, the sectPr apart", 3, countParagraphs(content));
@@ -144,7 +144,7 @@ public class McBlockLevelProbesTest {
 	/** With ten Choices and no Fallback, the first understood Choice, as Word 365 kept it. */
 	@Test
 	public void noFallbackProbe() throws Exception {
-		WordprocessingMLPackage pkg = load("mc-block-nofallback", McBlockLevel.WORD);
+		WordprocessingMLPackage pkg = load("mc-block-nofallback", McLoadMode.WORD);
 		List<Object> content = pkg.getMainDocumentPart().getContent();
 		assertTrue(XmlUtils.marshaltoString(XmlUtils.unwrap(content.get(2))).contains(">w16sdtfl<"));
 		assertEquals(1, pkg.getMainDocumentPart().getResolvedAlternateContent().size());
@@ -153,7 +153,7 @@ public class McBlockLevelProbesTest {
 	/** mc-mixed: the body's element is resolved; the run-level content control's, the hyperlink's and the paragraph's stay whole (section 1's collateral resolution, fixed). */
 	@Test
 	public void mixedProbeResolvesTheBodysElementOnly() throws Exception {
-		WordprocessingMLPackage pkg = load("mc-mixed", McBlockLevel.WORD);
+		WordprocessingMLPackage pkg = load("mc-mixed", McLoadMode.WORD);
 		MainDocumentPart mdp = pkg.getMainDocumentPart();
 		assertEquals(1, mdp.getResolvedAlternateContent().size());
 		String saved = McProbeDocx.entry(McProbeDocx.save(pkg), "word/document.xml");
@@ -167,7 +167,7 @@ public class McBlockLevelProbesTest {
 	@Test
 	public void preserveModeKeepsEveryBranch() throws Exception {
 		for (String name : PROBES) {
-			WordprocessingMLPackage pkg = load(name, McBlockLevel.PRESERVE);
+			WordprocessingMLPackage pkg = load(name, McLoadMode.PRESERVE);
 			String original = McProbeDocx.entry(bytesOf(name), "word/document.xml");
 			int elements = alternateContentCount(original);
 			String saved = McProbeDocx.entry(McProbeDocx.save(pkg), "word/document.xml");
@@ -181,7 +181,7 @@ public class McBlockLevelProbesTest {
 					assertTrue(name + ": xmlns:" + prefix + " declared: " + root, root.contains("xmlns:" + prefix + "="));
 				}
 			}
-			WordprocessingMLPackage again = McProbeDocx.roundTrip(pkg, McBlockLevel.PRESERVE);
+			WordprocessingMLPackage again = McProbeDocx.roundTrip(pkg, McLoadMode.PRESERVE);
 			assertEquals(name + ": and reads the same", text(pkg), text(again));
 		}
 	}
@@ -190,10 +190,10 @@ public class McBlockLevelProbesTest {
 	@Test
 	public void preserveModeReadsAsWordsSave() throws Exception {
 		for (String name : WITH_WORD_SAVE) {
-			WordprocessingMLPackage pkg = load(name, McBlockLevel.PRESERVE);
-			WordprocessingMLPackage words = load(name + "-word365", McBlockLevel.WORD);
+			WordprocessingMLPackage pkg = load(name, McLoadMode.PRESERVE);
+			WordprocessingMLPackage words = load(name + "-word365", McLoadMode.WORD);
 			assertEquals(name, text(words), text(pkg));
-			assertEquals(name + " (after a save)", text(words), text(McProbeDocx.roundTrip(pkg, McBlockLevel.PRESERVE)));
+			assertEquals(name + " (after a save)", text(words), text(McProbeDocx.roundTrip(pkg, McLoadMode.PRESERVE)));
 		}
 	}
 
@@ -218,7 +218,7 @@ public class McBlockLevelProbesTest {
 	/** The load option through a stream and the package override are the same mode for a probe. */
 	@Test
 	public void streamLoadOptionApplies() throws Exception {
-		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(bytesOf("mc-block-newest-first")), McBlockLevel.PRESERVE);
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(bytesOf("mc-block-newest-first")), McLoadMode.PRESERVE);
 		assertTrue(XmlUtils.unwrap(pkg.getMainDocumentPart().getContent().get(2)) instanceof AlternateContent);
 	}
 }

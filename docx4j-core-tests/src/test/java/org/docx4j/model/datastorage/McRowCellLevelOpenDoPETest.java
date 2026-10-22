@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.McBlockLevel;
+import org.docx4j.jaxb.McLoadMode;
 import org.docx4j.jaxb.McProbeDocx;
 import org.docx4j.mce.AlternateContent;
 import org.docx4j.model.datastorage.RemovalHandler.Quantifier;
@@ -72,7 +72,7 @@ public class McRowCellLevelOpenDoPETest {
 				+ "<w:tr>" + ac("ONLY") + "</w:tr>"
 				+ "<w:tr><w:sdt><w:sdtPr><w:tag w:val=\"od:condition=c1\"/></w:sdtPr><w:sdtContent>" + tc("inControl") + "</w:sdtContent></w:sdt></w:tr>"
 				+ "</w:tbl>" + p("after");
-		WordprocessingMLPackage pkg = McProbeDocx.body(body).load(McBlockLevel.PRESERVE);
+		WordprocessingMLPackage pkg = McProbeDocx.body(body).load(McLoadMode.PRESERVE);
 		new RemovalHandler().removeSDTs(pkg, Quantifier.ALL);
 		String xml = XmlUtils.marshaltoString(pkg.getMainDocumentPart().getJaxbElement(), true, false);
 		assertEquals("both rows kept: " + xml, 2, countOf(xml, "<w:tr>"));

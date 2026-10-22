@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import org.docx4j.fonts.IdentityPlusMapper;
-import org.docx4j.jaxb.McBlockLevel;
+import org.docx4j.jaxb.McLoadMode;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
@@ -100,7 +100,7 @@ public class AnonymizeCli {
 		try {
 			// preserve: the output reproduces the document that caused a problem, every
 			// mc:AlternateContent branch included (CR-051 section 3.2, D5)
-			OpcPackage pkg = OpcPackage.load(new File(in), McBlockLevel.PRESERVE);
+			OpcPackage pkg = OpcPackage.load(new File(in), McLoadMode.PRESERVE);
 			if (fonts && pkg instanceof WordprocessingMLPackage) {
 				((WordprocessingMLPackage) pkg).setFontMapper(new IdentityPlusMapper());
 			}

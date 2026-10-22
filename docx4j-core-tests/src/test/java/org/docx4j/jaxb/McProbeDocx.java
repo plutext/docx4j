@@ -32,7 +32,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 /**
  * A docx made from raw XML for the mc:AlternateContent load tests (CR-051), loaded through
- * docx4j's own load path in a given {@link McBlockLevel} mode, so that every part's unmarshal
+ * docx4j's own load path in a given {@link McLoadMode} mode, so that every part's unmarshal
  * meets the listener and the splice as a real load does.
  */
 public final class McProbeDocx {
@@ -107,7 +107,7 @@ public final class McProbeDocx {
 	}
 
 	/** Loaded with this mode given as the load option. */
-	public WordprocessingMLPackage load(McBlockLevel mode) throws Exception {
+	public WordprocessingMLPackage load(McLoadMode mode) throws Exception {
 		return WordprocessingMLPackage.load(new ByteArrayInputStream(bytes()), mode);
 	}
 
@@ -125,7 +125,7 @@ public final class McProbeDocx {
 	}
 
 	/** A package saved and loaded again in this mode. */
-	public static WordprocessingMLPackage roundTrip(WordprocessingMLPackage pkg, McBlockLevel mode) throws Exception {
+	public static WordprocessingMLPackage roundTrip(WordprocessingMLPackage pkg, McLoadMode mode) throws Exception {
 		return WordprocessingMLPackage.load(new ByteArrayInputStream(save(pkg)), mode);
 	}
 

@@ -22,7 +22,7 @@ import org.docx4j.mce.AlternateContent;
 
 /**
  * An {@code mc:AlternateContent} a splice took out of a tree ({@link McSplice}; on load, CR-051
- * section 3.2 in {@link McBlockLevel#WORD} mode), kept so that nothing is lost to inspection: the
+ * section 3.2 in {@link McLoadMode#WORD} mode), kept so that nothing is lost to inspection: the
  * element with every branch, which branch's content was promoted in its place, and where it
  * stood.  Where it stood is an address worked out when it was taken out, not a live reference
  * (CR-051 section 10.4 b), so the record outlives a replaced tree or a re-unmarshal.

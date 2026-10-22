@@ -34,7 +34,7 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
 
-import org.docx4j.jaxb.McBlockLevel;
+import org.docx4j.jaxb.McLoadMode;
 import org.docx4j.Docx4J;
 import org.docx4j.TextUtils;
 import org.docx4j.convert.in.FlatOpcXmlImporter;
@@ -101,26 +101,26 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		return strict;
 	}
 
-	private McBlockLevel mcBlockLevel;
+	private McLoadMode mcLoadMode;
 
 	/**
 	 * This package's own setting for what an unmarshal does with an mc:AlternateContent at
 	 * block, row or cell level (CR-051 section 3.2), overriding the property
-	 * {@value McBlockLevel#PROPERTY}; null (the default) follows the property.  It is read when
+	 * {@value McLoadMode#PROPERTY}; null (the default) follows the property.  It is read when
 	 * each part is unmarshalled, which is lazy (on the first {@code getContents()}), so a part
 	 * touched before this is set has already been loaded under the setting then in force.  Give
 	 * it at load instead ({@code WordprocessingMLPackage.load(file, mode)},
-	 * {@code Load3.setMcBlockLevel}) where it must be reliable.
+	 * {@code Load3.setMcLoadMode}) where it must be reliable.
 	 *
 	 * @since 17.3.4 (CR-051 phase 1)
 	 */
-	public void setMcBlockLevel(McBlockLevel mode) {
-		this.mcBlockLevel = mode;
+	public void setMcLoadMode(McLoadMode mode) {
+		this.mcLoadMode = mode;
 	}
 
-	/** This package's own mc:AlternateContent mode, or null where it follows the property; see {@link #setMcBlockLevel}. @since 17.3.4 */
-	public McBlockLevel getMcBlockLevel() {
-		return mcBlockLevel;
+	/** This package's own mc:AlternateContent mode, or null where it follows the property; see {@link #setMcLoadMode}. @since 17.3.4 */
+	public McLoadMode getMcLoadMode() {
+		return mcLoadMode;
 	}
 
 	/**
@@ -310,24 +310,24 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 
 	/**
 	 * As {@link #load(java.io.File)}, with each part's mc:AlternateContent at block, row or cell
-	 * level loaded in this mode (CR-051 section 3.2; {@link McBlockLevel}).  A null mode is the
+	 * level loaded in this mode (CR-051 section 3.2; {@link McLoadMode}).  A null mode is the
 	 * property's.
 	 *
 	 * @since 17.3.4 (CR-051 phase 1)
 	 */
-	public static OpcPackage load(final java.io.File docxFile, McBlockLevel mode) throws Docx4JException {
+	public static OpcPackage load(final java.io.File docxFile, McLoadMode mode) throws Docx4JException {
 		PackageIdentifier name = new PackageIdentifierTransient(docxFile.getName());
 		return load(name, docxFile, "", mode);
 	}
 
 	/**
 	 * As {@link #load(InputStream)}, with each part's mc:AlternateContent at block, row or cell
-	 * level loaded in this mode (CR-051 section 3.2; {@link McBlockLevel}).  A null mode is the
+	 * level loaded in this mode (CR-051 section 3.2; {@link McLoadMode}).  A null mode is the
 	 * property's.
 	 *
 	 * @since 17.3.4 (CR-051 phase 1)
 	 */
-	public static OpcPackage load(final InputStream inputStream, McBlockLevel mode) throws Docx4JException {
+	public static OpcPackage load(final InputStream inputStream, McLoadMode mode) throws Docx4JException {
 		return load(null, inputStream, "", mode);
 	}
 	
@@ -367,7 +367,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	}
 
 	/** The worker behind the File loads; the mode is set on the package before any part is unmarshalled (CR-051 section 3.2). */
-	private static OpcPackage load(PackageIdentifier pkgIdentifier, final java.io.File docxFile, String password, McBlockLevel mode) throws Docx4JException {
+	private static OpcPackage load(PackageIdentifier pkgIdentifier, final java.io.File docxFile, String password, McLoadMode mode) throws Docx4JException {
 		
 		try (FileInputStream fileInputStream = new FileInputStream(docxFile)) {
 			
@@ -478,7 +478,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	}
 
 	/** The worker behind the InputStream loads; the mode is set on the package before any part is unmarshalled (CR-051 section 3.2). */
-	private static OpcPackage load(PackageIdentifier pkgIdentifier, final InputStream inputStream, String password, McBlockLevel mode) throws Docx4JException {
+	private static OpcPackage load(PackageIdentifier pkgIdentifier, final InputStream inputStream, String password, McLoadMode mode) throws Docx4JException {
 		
 		//try to detect the type of file using a bufferedinputstream
 		final BufferedInputStream bis = new BufferedInputStream(inputStream);
@@ -619,13 +619,13 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		return loadFile(file, pkgIdentifier, null);
 	}
 
-	private static OpcPackage loadFile(final File file, PackageIdentifier pkgIdentifier, McBlockLevel mode) throws Docx4JException {
+	private static OpcPackage loadFile(final File file, PackageIdentifier pkgIdentifier, McLoadMode mode) throws Docx4JException {
 		StartEvent startEvent = new StartEvent( pkgIdentifier,  WellKnownProcessSteps.PKG_LOAD );
 		startEvent.publish();			
 		
 		final ZipPartStore partLoader = new ZipPartStore(file);
 		final Load3 loader = new Load3(partLoader);
-		loader.setMcBlockLevel(mode);
+		loader.setMcLoadMode(mode);
 		OpcPackage opcPackage = loader.get();
 		
 		opcPackage.setNew(false);
@@ -653,7 +653,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		return load(pkgIdentifier, is, type, password, null);
 	}
 
-	private static OpcPackage load(PackageIdentifier pkgIdentifier, final InputStream is, Filetype type, String password, McBlockLevel mode) throws Docx4JException {
+	private static OpcPackage load(PackageIdentifier pkgIdentifier, final InputStream is, Filetype type, String password, McLoadMode mode) throws Docx4JException {
 
 		if (pkgIdentifier==null) {
 			pkgIdentifier = new PackageIdentifierTransient("pkg_" + System.currentTimeMillis());
@@ -666,7 +666,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 			
 			final ZipPartStore partLoader = new ZipPartStore(is);
 			final Load3 loader = new Load3(partLoader);
-			loader.setMcBlockLevel(mode);
+			loader.setMcLoadMode(mode);
 			OpcPackage opcPackage = loader.get();
 
 			opcPackage.setNew(false);
@@ -723,7 +723,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 				}
 				final ZipPartStore partLoader = new ZipPartStore(is2);
 				final Load3 loader = new Load3(partLoader);
-				loader.setMcBlockLevel(mode);
+				loader.setMcLoadMode(mode);
 				OpcPackage opcPackage = loader.get();
 
 				opcPackage.setNew(false);
@@ -746,7 +746,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		
 		try {
 			FlatOpcXmlImporter xmlPackage = new FlatOpcXmlImporter(is); 
-			xmlPackage.setMcBlockLevel(mode);
+			xmlPackage.setMcLoadMode(mode);
 			return xmlPackage.get(); 
 		} catch (final Exception e) {
 			throw new Docx4JException("Couldn't load xml from stream ",e);
@@ -1055,8 +1055,8 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 			saver.save(baos);
 			// the clone keeps this package's mc:AlternateContent mode (CR-051 section 3.2): a
 			// preserve-mode package's clone must not be resolved by the property's default
-			result = mcBlockLevel == null ? load(new ByteArrayInputStream(baos.toByteArray()))
-					: load(new ByteArrayInputStream(baos.toByteArray()), mcBlockLevel);
+			result = mcLoadMode == null ? load(new ByteArrayInputStream(baos.toByteArray()))
+					: load(new ByteArrayInputStream(baos.toByteArray()), mcLoadMode);
 			// the clone is the same document for logging purposes (the FO exporter works
 			// on one, and its table sizer's dump names the package)
 			if (result != null && name != null) result.setName(name);

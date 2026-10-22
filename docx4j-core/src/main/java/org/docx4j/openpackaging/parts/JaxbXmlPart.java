@@ -56,7 +56,7 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stax.StAXSource;
 
 import org.apache.commons.io.IOUtils;
-import org.docx4j.jaxb.McBlockLevel;
+import org.docx4j.jaxb.McLoadMode;
 import org.docx4j.jaxb.McBranchSdt;
 import org.docx4j.jaxb.McSplice;
 import org.docx4j.jaxb.ResolvedAlternateContent;
@@ -463,8 +463,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * 
 	 * <p>A pipe is not an unmarshal (CR-051 section 10.4 a): a part not yet unmarshalled streams
 	 * from the part store as stored, so the handler meets each block-, row- or cell-level
-	 * mc:AlternateContent whole, in both {@link McBlockLevel} modes.  Its output replaces the
-	 * stored part, and the splice of {@link McBlockLevel#WORD} mode applies when the part is
+	 * mc:AlternateContent whole, in both {@link McLoadMode} modes.  Its output replaces the
+	 * stored part, and the splice of {@link McLoadMode#WORD} mode applies when the part is
 	 * unmarshalled later.</p>
 	 * 
 	 * @param handler
@@ -1084,8 +1084,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 
 	/**
 	 * Each mc:AlternateContent an unmarshal of this part took out of the tree (CR-051 section
-	 * 3.2): at block, row or cell level in {@link McBlockLevel#WORD} mode; nothing in
-	 * {@link McBlockLevel#PRESERVE} mode (since CR-051 phase 2, at every level).  Appended to by
+	 * 3.2): at block, row or cell level in {@link McLoadMode#WORD} mode; nothing in
+	 * {@link McLoadMode#PRESERVE} mode (since CR-051 phase 2, at every level).  Appended to by
 	 * each unmarshal that resolves something and never cleared by one that resolves nothing, so
 	 * that it survives a re-unmarshal (a binder created later marshals and unmarshals the tree
 	 * again).
@@ -1095,9 +1095,9 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	/**
 	 * The mc:AlternateContent elements a load of this part resolved to the branch Word reads,
 	 * each whole, with where it stood ({@link ResolvedAlternateContent}; CR-051 section 3.2), so
-	 * that nothing is lost to inspection in {@link McBlockLevel#WORD} mode: the inspector and the
+	 * that nothing is lost to inspection in {@link McLoadMode#WORD} mode: the inspector and the
 	 * text model's branch comparison read every branch from here.  Empty for a part that held
-	 * none, or loaded in {@link McBlockLevel#PRESERVE} mode.  Unmodifiable; in the order resolved.
+	 * none, or loaded in {@link McLoadMode#PRESERVE} mode.  Unmodifiable; in the order resolved.
 	 *
 	 * @since 17.3.4 (CR-051 phase 1)
 	 */
@@ -1108,7 +1108,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	/**
 	 * CR-051 section 3.2, step 2, when an unmarshal returns: the block-, row- and cell-level
 	 * mc:AlternateContent elements the listener recorded are spliced by the mode in force for the
-	 * package ({@link McBlockLevel#of}), each replaced at its index in its live parent by the
+	 * package ({@link McLoadMode#of}), each replaced at its index in its live parent by the
 	 * content of the branch Word reads ({@link McSplice#WORD_READS}); the selected Choices'
 	 * prefixes are added to the root's mc:Ignorable; and each element taken out is recorded
 	 * ({@link #getResolvedAlternateContent}).  Nothing where the listener is not docx4j's.
@@ -1172,12 +1172,12 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		found = inScope;
 		if (found.isEmpty()) return Collections.emptyList();
 		String name = this.getPartName() == null ? this.getClass().getSimpleName() : this.getPartName().getName();
-		McBlockLevel mode = McBlockLevel.of(this.getPackage());
-		if (mode == McBlockLevel.PRESERVE) {
+		McLoadMode mode = McLoadMode.of(this.getPackage());
+		if (mode == McLoadMode.PRESERVE) {
 			// every element stays whole, at block, row and cell level (CR-051 phase 2); the
 			// consumers choose a branch at use
 			log.info(name + ": " + found.size() + " mc:AlternateContent at block, row or cell level kept whole ("
-					+ McBlockLevel.PROPERTY + "=preserve)");
+					+ McLoadMode.PROPERTY + "=preserve)");
 			return Collections.emptyList();
 		}
 		List<ResolvedAlternateContent> records = McSplice.apply(found, McSplice.WORD_READS);
@@ -1189,7 +1189,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		McSplice.addIgnorable(jaxbElement, McSplice.ignorablePrefixes(records));
 		log.info(name + ": " + records.size() + " of " + found.size()
 				+ " mc:AlternateContent at block, row or cell level resolved as Word reads them ("
-				+ McBlockLevel.PROPERTY + "=word)");
+				+ McLoadMode.PROPERTY + "=word)");
 		return records;
 	}
     

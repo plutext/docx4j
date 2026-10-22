@@ -33,7 +33,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.convert.out.common.Preprocess;
-import org.docx4j.jaxb.McBlockLevel;
+import org.docx4j.jaxb.McLoadMode;
 import org.docx4j.jaxb.McProbeDocx;
 import org.docx4j.jaxb.McSelection;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -93,7 +93,7 @@ public class ResolveAlternateContentTest {
 	/** A DOCUMENT-only feature set still gets the header copied and spliced, and the caller's package keeps every element. */
 	@Test
 	public void documentOnlyFeaturesStillCopyTheHeaderAndSplice() throws Exception {
-		WordprocessingMLPackage pkg = probe().load(McBlockLevel.PRESERVE);
+		WordprocessingMLPackage pkg = probe().load(McLoadMode.PRESERVE);
 		header(pkg).getJaxbElement();
 		Set<String> features = new HashSet<String>();
 		features.add(ConversionFeatures.PP_COMMON_DEEP_COPY);
@@ -117,7 +117,7 @@ public class ResolveAlternateContentTest {
 	/** Run again on a copy already spliced (the FO pre-pass runs Preprocess in place), the step changes nothing. */
 	@Test
 	public void runTwiceChangesNothing() throws Exception {
-		WordprocessingMLPackage pkg = probe().load(McBlockLevel.PRESERVE);
+		WordprocessingMLPackage pkg = probe().load(McLoadMode.PRESERVE);
 		Set<String> features = new HashSet<String>();
 		features.add(ConversionFeatures.PP_COMMON_DEEP_COPY);
 		WordprocessingMLPackage copy = Preprocess.process(pkg, features);
@@ -132,7 +132,7 @@ public class ResolveAlternateContentTest {
 	/** Without the deep copy, the caller's own package is resolved. */
 	@Test
 	public void withoutTheDeepCopyTheCallersPackageIsResolved() throws Exception {
-		WordprocessingMLPackage pkg = probe().load(McBlockLevel.PRESERVE);
+		WordprocessingMLPackage pkg = probe().load(McLoadMode.PRESERVE);
 		Set<String> features = new HashSet<String>();
 		features.add(ConversionFeatures.PP_COMMON_MOVE_PAGEBREAK);
 		assertTrue(Preprocess.process(pkg, features) == pkg);
@@ -143,7 +143,7 @@ public class ResolveAlternateContentTest {
 	@Test
 	public void wordModeDrawsTheBranchWordReads() throws Exception {
 		for (int flag : new int[] { Docx4J.FLAG_NONE, Docx4J.FLAG_EXPORT_PREFER_XSL }) {
-			String html = html(probe().load(McBlockLevel.WORD), flag);
+			String html = html(probe().load(McLoadMode.WORD), flag);
 			assertTrue(flag + ": " + html, html.contains("BODY_W14") && html.contains("HDR_W14"));
 			assertFalse(flag + ": " + html, html.contains("BODY_FB") || html.contains("HDR_FB"));
 		}
@@ -154,14 +154,14 @@ public class ResolveAlternateContentTest {
 	public void preserveModeDrawsTheFallbackOrThePreferredChoice() throws Exception {
 		for (int flag : new int[] { Docx4J.FLAG_NONE, Docx4J.FLAG_EXPORT_PREFER_XSL }) {
 			Docx4jProperties.setProperty(McSelection.PROPERTY, "");
-			WordprocessingMLPackage pkg = probe().load(McBlockLevel.PRESERVE);
+			WordprocessingMLPackage pkg = probe().load(McLoadMode.PRESERVE);
 			String html = html(pkg, flag);
 			assertTrue(flag + ": " + html, html.contains("BODY_FB") && html.contains("HDR_FB"));
 			assertFalse(flag + ": " + html, html.contains("BODY_W14") || html.contains("HDR_W14"));
 			assertTrue(xml(pkg.getMainDocumentPart().getJaxbElement()).contains("<mc:AlternateContent"));
 
 			Docx4jProperties.setProperty(McSelection.PROPERTY, "w14");
-			html = html(probe().load(McBlockLevel.PRESERVE), flag);
+			html = html(probe().load(McLoadMode.PRESERVE), flag);
 			assertTrue(flag + ": " + html, html.contains("BODY_W14") && html.contains("HDR_W14"));
 			assertFalse(flag + ": " + html, html.contains("BODY_FB") || html.contains("HDR_FB"));
 		}

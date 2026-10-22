@@ -241,7 +241,7 @@ with `McSourceBindings.set`), a Choice's own Ignorable and MustUnderstand, the `
 every marshal path (`getXML`, `XmlUtils` to a String, a DOM and a stream, Flat OPC, the binder, the
 canonicalizing path), the record on load and through `deepCopy`, and the plan read directly. Green on
 the RI (the suite) and on MOXy (run by hand, with `McIgnorableMarshalStateTest`, `McSelectionTest`
-and `McBlockLevelLoadTest`, 53 tests).
+and `McLoadModeLoadTest`, 53 tests).
 
 **Word check** staged for Jason, `Office 2016/cr052-word-check/phase1/` (README there; the runner's
 corpus in `runner-phase1/`): docx4j's new saves of the probe unmarshalled (phase 0's `c52-3`) and

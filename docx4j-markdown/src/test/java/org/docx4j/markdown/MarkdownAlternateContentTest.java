@@ -26,7 +26,7 @@ import java.io.ByteArrayOutputStream;
 
 import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.McBlockLevel;
+import org.docx4j.jaxb.McLoadMode;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Document;
 import org.junit.Test;
@@ -50,7 +50,7 @@ public class MarkdownAlternateContentTest {
 		return pkg;
 	}
 
-	private static WordprocessingMLPackage loaded(McBlockLevel mode) throws Exception {
+	private static WordprocessingMLPackage loaded(McLoadMode mode) throws Exception {
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		Docx4J.save(built(), bytes);
 		return WordprocessingMLPackage.load(new ByteArrayInputStream(bytes.toByteArray()), mode);
@@ -58,7 +58,7 @@ public class MarkdownAlternateContentTest {
 
 	@Test
 	public void markdownFollowsTheTextModel() throws Exception {
-		for (WordprocessingMLPackage pkg : new WordprocessingMLPackage[] { built(), loaded(McBlockLevel.WORD), loaded(McBlockLevel.PRESERVE) }) {
+		for (WordprocessingMLPackage pkg : new WordprocessingMLPackage[] { built(), loaded(McLoadMode.WORD), loaded(McLoadMode.PRESERVE) }) {
 			String md = new MarkdownExporter().export(pkg);
 			assertTrue(md, md.contains("CHOICEW14"));
 			assertFalse(md, md.contains("FALLBACKTEXT"));

@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Usage:
  * <pre>
- * WordprocessingMLPackage pkg = WordprocessingMLPackage.load(in, McBlockLevel.PRESERVE);
+ * WordprocessingMLPackage pkg = WordprocessingMLPackage.load(in, McLoadMode.PRESERVE);
  * AnonymizeResult result = new Anonymize(pkg).go();
  * if (result.isClean()) pkg.save(out);
  * System.out.println(result.toJson());
@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
  * styles part and no font mapper, so non-Latin replacement characters stay in the
  * character's Unicode block with no glyph check.
  * <p>
- * Load in {@link org.docx4j.jaxb.McBlockLevel#PRESERVE} mode (as the CLI does): the output is a
+ * Load in {@link org.docx4j.jaxb.McLoadMode#PRESERVE} mode (as the CLI does): the output is a
  * reproduction of the document, so a block-level {@code mc:AlternateContent} must come through
  * whole rather than resolved to the branch Word reads (CR-051 section 3.2).
  * <p>

@@ -9,7 +9,7 @@ then phase 1"): the listener fix 6687cc4b8, the rest 1cff2cd5c (§11). Phase 3 (
 2026-10-21, each receiver acknowledged (§5). Phase 2 (row and cell level in `preserve` mode) done
 2026-10-21 (Jason: "do CR-051 phase 2"; §12; the Word check of the `preserve` saves passed); its
 hand-offs go with it.
-D5 revised 2026-10-21 (Jason): `preserve` becomes the default at 17.4.0, after phase 2; 17.3.x keeps
+Renamed 2026-10-22 before release (Jason: "onLoad"): the property is `docx4j.jaxb.mc.onLoad` and the enum `McLoadMode` (were `docx4j.jaxb.mc.blockLevel` and `McBlockLevel`: the old name described phase 1's scope, not what the setting decides); the text below uses the new names throughout. D5 revised 2026-10-21 (Jason): `preserve` becomes the default at 17.4.0, after phase 2; 17.3.x keeps
 `word` (D5, "Revised"); the switch is recorded in §12.4 for the 17.4.0 branch to make. Proposed 2026-10-20, drafted at Jason's request ("write
 the cr to keep body-level mc through load. also check whether we do/should keep mc in sdt content")
 by Claude Opus 5.5 (session docx4j-25), after the portfolio session's measurement of Jason's
@@ -199,7 +199,7 @@ built, and `preserve` mode keeps it.
 
 ### 3.2 The load-time mode
 
-**The property** (D5): `docx4j.jaxb.mc.blockLevel`, with two values:
+**The property** (D5): `docx4j.jaxb.mc.onLoad`, with two values:
 
 - `word` (the default): each element is resolved as Word reads it;
 - `preserve`: each element is kept whole.
@@ -644,9 +644,9 @@ the commits (6687cc4b8, c4894c5b0, 1cff2cd5c, 86f8f3e93), the CR's sections, `mc
 - **docx4j-python:** the formal hand-off sent, pointing at the record above; no new ask, none raised.
 - **The portfolio:** registry updated (CR-051.3 in progress, the three acknowledgements in its notes).
   Paper §7.8: docx4j's six cells measured (`Texts.plainText` after `WordprocessingMLPackage.load(file,
-  McBlockLevel.WORD)` on Jason's `mc-text`, `mc-run`, `mc-block` and their newest-first copies): `w14`,
+  McLoadMode.WORD)` on Jason's `mc-text`, `mc-run`, `mc-block` and their newest-first copies): `w14`,
   `w14`, `w14`, `w16sdtfl`, `w16sdtfl`, `w16sdtfl`, Word 365's row exactly; a docx4j row is with Jason
-  (the paper has carried no docx4j results so far, by his rule); `McBlockLevelProbesTest.paperSection78`
+  (the paper has carried no docx4j results so far, by his rule); `McLoadModeProbesTest.paperSection78`
   asserts the six cells, the three original-order probes added to `mc-fun/`. The WD needs no change,
   agreed.
 
@@ -691,7 +691,7 @@ from phase 0's audit, decided (a) the same day.
   **Decided** (Jason, 20 October 2026): (a).
 - **D5. The load-time mode: the property and its default** (Jason's proposal).
   - **Options:**
-    - (a) a property (`docx4j.jaxb.mc.blockLevel`) with a package-level override, default `word`,
+    - (a) a property (`docx4j.jaxb.mc.onLoad`) with a package-level override, default `word`,
       `preserve` on request;
     - (b) the same property, default `preserve`;
     - (c) no property: always `preserve` (this CR's first draft);
@@ -724,10 +724,10 @@ from phase 0's audit, decided (a) the same day.
       Word never writes;
     - (c) is (b) with no way out, and keeps the compatibility cost of §3.6 for everyone;
     - (d) leaves the tools of reason 4 with no way to keep what the producer wrote.
-  - **The name** is open: `docx4j.jaxb.mc.blockLevel` says that run and paragraph level are not
+  - **The name** is open: `docx4j.jaxb.mc.onLoad` says that run and paragraph level are not
     governed. Its values are `word` and `preserve`.
   **Decided** (Jason, 20 October 2026): (a): the property with a load option and a package-level
-  override, default `word`, `preserve` on request. The name `docx4j.jaxb.mc.blockLevel` stands
+  override, default `word`, `preserve` on request. The name `docx4j.jaxb.mc.onLoad` stands
   unless phase 1 finds a reason to change it.
   **Revised** (Jason, 21 October 2026, after core-ts relayed his view and he put it here: "we should
   change the default to preserve since we are a developer tool/library"): **(b), `preserve` the
@@ -746,7 +746,7 @@ from phase 0's audit, decided (a) the same day.
      is done and the §10 walkers (the exporters' `Preprocess` step of D6, the text model, the binder,
      the field updater, numbering, the anonymiser, diffx) are shown green in `preserve` mode on the
      mc-fun probes. 17.3.4's CHANGELOG announces the coming change and the property, so a user who
-     needs `word` sets it before upgrading. Phase 2 records the switch (`McBlockLevel.DEFAULT`,
+     needs `word` sets it before upgrading. Phase 2 records the switch (`McLoadMode.DEFAULT`,
      `Docx4jProperties`' default, the javadoc of `WordprocessingMLPackage.load` and `Docx4J.load`, the
      reference `docx4j.properties`, the hand-offs to the ports and docx4j-mcp, which loads in `word`
      mode by choice, T8).
@@ -1205,11 +1205,11 @@ two readers, the exporter tests and the CHANGELOG.
 - **The schema:** `mc:AlternateContent` in `EG_ContentBlockContent`, `EG_ContentRowContent` and
   `EG_ContentCellContent`; the regeneration changed no signature, and each of §3.1's containers
   (and D2's) binds the element.
-- **The mode** is `org.docx4j.jaxb.McBlockLevel` (`WORD`, `PRESERVE`; the property, a package's
-  own setting through `OpcPackage.setMcBlockLevel`, read when each part unmarshals). The load
-  option is `Load3.setMcBlockLevel`, `OpcPackage.load(File|InputStream, McBlockLevel)`,
-  `WordprocessingMLPackage.load(..., McBlockLevel)` and `Docx4J.load(..., McBlockLevel)`; a Flat
-  OPC load gets it through `FlatOpcXmlImporter.setMcBlockLevel`.
+- **The mode** is `org.docx4j.jaxb.McLoadMode` (`WORD`, `PRESERVE`; the property, a package's
+  own setting through `OpcPackage.setMcLoadMode`, read when each part unmarshals). The load
+  option is `Load3.setMcLoadMode`, `OpcPackage.load(File|InputStream, McLoadMode)`,
+  `WordprocessingMLPackage.load(..., McLoadMode)` and `Docx4J.load(..., McLoadMode)`; a Flat
+  OPC load gets it through `FlatOpcXmlImporter.setMcLoadMode`.
 - **The splice** is `org.docx4j.jaxb.McSplice.apply(elements, rule)`, one implementation with the
   rule as a parameter, as D6 asks: at load `McSplice.WORD_READS` (TEXT's branch; an element with
   no understood Choice and no Fallback kept whole, REQ-305); stage B's step gives its own rule
@@ -1256,10 +1256,10 @@ two readers, the exporter tests and the CHANGELOG.
   hoist it.
 
 **Tests** (docx4j-core-tests, `org.docx4j.jaxb`): `BinderPathListenerTest` (1);
-`McBlockLevelLoadTest` (16: every container of §3.1 and D2 in both modes, no Fallback, REQ-305,
+`McLoadModeLoadTest` (16: every container of §3.1 and D2 in both modes, no Fallback, REQ-305,
 nested, `mc:Ignorable`, no branch, custom XML in a branch, the eager and late binder paths, the
 rejected part's path, the text model in both modes, the option and the override over the
-property); `McBlockLevelProbesTest` (6: Jason's probes, copied to
+property); `McLoadModeProbesTest` (6: Jason's probes, copied to
 `docx4j-core-tests/src/test/resources/mc-fun/` with their Word 365 saves; a load and save in
 `word` mode reads as each Word save reads, the block-level probe's tree and record,
 `mc-block-nofallback`, `mc-mixed`'s three run-level elements kept, every branch kept in `preserve`
@@ -1344,10 +1344,10 @@ load in `preserve`, the two readers of the record, §4's exporter tests and the 
   `preserve`, `body/1` in `word`), since the element is a container level in `preserve`. Only the
   element's own address is the same; §4 asks no more.
 
-**Tests** (docx4j-core-tests unless said): `McBlockLevelReadersTest` (the text model's warnings and
+**Tests** (docx4j-core-tests unless said): `McLoadModeReadersTest` (the text model's warnings and
 the inspector's findings equal across the modes for elements in the body, a cell, a block content
 control, a text box, a header, a footnote and a comment; an element directly in a branch);
-`McBlockLevelConsumersTest` (a DOCPROPERTY field, a bookmark remediation, the TOC helper, Paginate's
+`McLoadModeConsumersTest` (a DOCPROPERTY field, a bookmark remediation, the TOC helper, Paginate's
 keys, a header's blank lines, `contentOf`); `ResolveAlternateContentTest` (a DOCUMENT-only feature
 set copies the header and splices, the caller keeps every element, run twice changes nothing, the
 caller's own package with the copy off, and the HTML exporters in both modes and under
@@ -1356,7 +1356,7 @@ and reject resolve the twin, acceptAll resolves every branch); `AnonymizeCliPres
 docx4j-export-fo-tests `AlternateContentSectionTest` (a section break in a branch's paragraph lays
 out on two pages with each section's header, both exporters, both modes, and under `preferChoice`);
 docx4j-markdown `MarkdownAlternateContentTest`; docx4j-diffx-tests `AlternateContentDeletedTest`.
-`McBlockLevelConsumersTest` also covers, in `preserve` mode with the element at block level: the
+`McLoadModeConsumersTest` also covers, in `preserve` mode with the element at block level: the
 mail merger (a MERGEFIELD paragraph in each branch merged; one emptied by a field with no value
 removed from its branch), `FieldUpdaterSEQ` (each branch numbered from the counter at the element),
 the StAX binder (a bound control directly in a Choice bound as an `SdtBlock`, checked on the
@@ -1477,7 +1477,7 @@ walks the element and lifts the carve-out.
 
 - **The load path.** `JaxbXmlPart.resolveAlternateContent` splices nothing in `preserve` mode, at
   any level. The record (`getResolvedAlternateContent()`) is therefore empty for a `preserve` load.
-  The javadocs of `McBlockLevel` and the record say so; the log line names the mode.
+  The javadocs of `McLoadMode` and the record say so; the log line names the mode.
 - **The text model** (`Extractor.rows` and `cells`): an `mc:AlternateContent` among a table's rows
   or a row's cells is compared with its other branches (`mce.branches_differ`, at the element's
   address) and the branch Word reads (`McPurpose.TEXT`) is walked in its place, as `blocks` does at
@@ -1529,14 +1529,14 @@ walks the element and lifts the carve-out.
 
 ### 12.2 Tests
 
-`McBlockLevelLoadTest.preserveModeKeepsBlockLevelElements` now holds every container of §3.1 and D2
+`McLoadModeLoadTest.preserveModeKeepsBlockLevelElements` now holds every container of §3.1 and D2
 to the same expectation (kept whole, every branch and prefix written, whole after a round trip,
-Word's branch in the text in both modes); `McBlockLevelProbesTest.preserveModeKeepsEveryBranch`
+Word's branch in the text in both modes); `McLoadModeProbesTest.preserveModeKeepsEveryBranch`
 without its row and cell exception, and `preserveModeReadsAsWordsSave` (each probe with a Word 365
 save reads, in `preserve` mode and after a `preserve` save, as Word's save reads);
 `McBranchSdtTest` expects the row and cell controls of both branches typed (`CTSdtRow` twice,
 `CTSdtCell` twice) and no `w:sdt` found by the binder's XPath in `preserve` mode;
-`McBlockLevelReadersTest`'s probe gains a row-level and a cell-level element (`body/3/1`,
+`McLoadModeReadersTest`'s probe gains a row-level and a cell-level element (`body/3/1`,
 `body/3/2/1`), the warnings and `mce.branch` findings equal across the modes;
 `TrackedChangesAlternateContentTest` gains row and cell level (listed once with twins, accept and
 reject resolve the twin, acceptAll resolves every branch) and the two row-removal cases (a deleted
@@ -1545,7 +1545,7 @@ the Fallback keeps it); `McRowCellLevelOpenDoPETest` (new, `org.docx4j.model.dat
 removal keeps a row whose only cell is in a kept element and removes the control in the next row;
 emptying a cell control keeps each branch's cell with its `tcPr`; a control without an element is
 emptied as before. The nine classes (94 tests, with `ResolveAlternateContentTest`,
-`McBlockLevelConsumersTest` and `TrackedChangesTest`) pass; the full docx4j-core-tests, export-fo,
+`McLoadModeConsumersTest` and `TrackedChangesTest`) pass; the full docx4j-core-tests, export-fo,
 markdown and diffx suites were run (the result in the commit message).
 
 ### 12.3 The §10 walkers on the probes
@@ -1571,12 +1571,12 @@ same day in Word 365: each reads `w16sdtfl` ("Each should read w16sdtfl: yes").
 ### 12.4 The 17.4.0 switch
 
 This branch is 17.3.4, where `word` stays the default (D5, "Revised"). The 17.4.0 branch makes one
-change, with its CHANGELOG line: `McBlockLevel.fromProperty()` answers `PRESERVE` where the property
-is unset or names neither mode (its two `WORD` returns today); the javadocs of `McBlockLevel`,
-`McBlockLevel.PROPERTY`, `WordprocessingMLPackage.load(.., McBlockLevel)`, `Docx4J.load(..,
-McBlockLevel)`, `Load3.setMcBlockLevel` and `OpcPackage.setMcBlockLevel`, the reference
-`docx4j.properties` (docx4j-samples-resources: `docx4j.jaxb.mc.blockLevel=preserve`, with the
-comment that `word` gives Word's view in the tree) and the test `McBlockLevelLoadTest`'s property
+change, with its CHANGELOG line: `McLoadMode.fromProperty()` answers `PRESERVE` where the property
+is unset or names neither mode (its two `WORD` returns today); the javadocs of `McLoadMode`,
+`McLoadMode.PROPERTY`, `WordprocessingMLPackage.load(.., McLoadMode)`, `Docx4J.load(..,
+McLoadMode)`, `Load3.setMcLoadMode` and `OpcPackage.setMcLoadMode`, the reference
+`docx4j.properties` (docx4j-samples-resources: `docx4j.jaxb.mc.onLoad=preserve`, with the
+comment that `word` gives Word's view in the tree) and the test `McLoadModeLoadTest`'s property
 case follow. The §10 walkers are green in `preserve` mode on the probes (§12.3), which D5 asked
 for before the switch. The ports and docx4j-mcp hear of it with this phase's hand-off (docx4j-mcp
 loads in `word` by its T8, unaffected).
@@ -1585,7 +1585,7 @@ loads in `word` by its T8, unaffected).
 
 Sent 21 October 2026 after the commit (9db1a3cbd) to the portfolio (CR-051.2 done, CR-051 done, the
 Status line to re-baseline), core-ts, python and docx4j-mcp, each pointing at §12 and the oracle
-tests (`McBlockLevelProbesTest.preserveModeReadsAsWordsSave`, `McBlockLevelReadersTest`,
+tests (`McLoadModeProbesTest.preserveModeReadsAsWordsSave`, `McLoadModeReadersTest`,
 `TrackedChangesAlternateContentTest`, `McRowCellLevelOpenDoPETest`); nothing asked of any.
 
 - **core-ts acknowledged** the same day: its text model addresses the element itself as `preserve`

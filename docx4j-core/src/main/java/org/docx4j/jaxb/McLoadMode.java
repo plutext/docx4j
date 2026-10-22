@@ -46,13 +46,13 @@ import org.slf4j.LoggerFactory;
  * </ul>
  *
  * <p>The mode is the property {@value #PROPERTY} ({@code word} or {@code preserve}), which a
- * package's own setting overrides ({@link OpcPackage#setMcBlockLevel}); it is read when each part
+ * package's own setting overrides ({@link OpcPackage#setMcLoadMode}); it is read when each part
  * is unmarshalled, so give it at load ({@code WordprocessingMLPackage.load(file, mode)},
- * {@code Docx4J.load(file, mode)}, {@code Load3.setMcBlockLevel}) rather than after.</p>
+ * {@code Docx4J.load(file, mode)}, {@code Load3.setMcLoadMode}) rather than after.</p>
  *
  * @since 17.3.4 (CR-051 phase 1)
  */
-public enum McBlockLevel {
+public enum McLoadMode {
 
 	/** Each element resolved to the branch Word reads, on load. */
 	WORD,
@@ -60,10 +60,10 @@ public enum McBlockLevel {
 	/** Each element kept whole. */
 	PRESERVE;
 
-	private static final Logger log = LoggerFactory.getLogger(McBlockLevel.class);
+	private static final Logger log = LoggerFactory.getLogger(McLoadMode.class);
 
 	/** The property: {@code word} (the default) or {@code preserve}. */
-	public static final String PROPERTY = "docx4j.jaxb.mc.blockLevel";
+	public static final String PROPERTY = "docx4j.jaxb.mc.onLoad";
 
 	private static volatile String warnedAbout;
 
@@ -71,7 +71,7 @@ public enum McBlockLevel {
 	 * The mode a value names ({@code word}, {@code preserve}; case-insensitive, trimmed), or null for
 	 * any other value.
 	 */
-	public static McBlockLevel parse(String value) {
+	public static McLoadMode parse(String value) {
 		if (value == null) return null;
 		String v = value.trim();
 		if (v.equalsIgnoreCase("word")) return WORD;
@@ -80,10 +80,10 @@ public enum McBlockLevel {
 	}
 
 	/** The mode {@value #PROPERTY} names; {@link #WORD} where it is unset or names neither mode (logged once). */
-	public static McBlockLevel fromProperty() {
+	public static McLoadMode fromProperty() {
 		String value = Docx4jProperties.getProperty(PROPERTY);
 		if (value == null || value.trim().isEmpty()) return WORD;
-		McBlockLevel mode = parse(value);
+		McLoadMode mode = parse(value);
 		if (mode == null) {
 			if (!value.equals(warnedAbout)) {
 				warnedAbout = value;
@@ -98,8 +98,8 @@ public enum McBlockLevel {
 	 * The mode in force for a package: its own setting where one was given, else the property's.
 	 * A null package (a part outside any package) answers with the property's.
 	 */
-	public static McBlockLevel of(OpcPackage pkg) {
-		if (pkg != null && pkg.getMcBlockLevel() != null) return pkg.getMcBlockLevel();
+	public static McLoadMode of(OpcPackage pkg) {
+		if (pkg != null && pkg.getMcLoadMode() != null) return pkg.getMcLoadMode();
 		return fromProperty();
 	}
 }

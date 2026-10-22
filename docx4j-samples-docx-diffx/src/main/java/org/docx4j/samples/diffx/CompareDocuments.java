@@ -80,8 +80,8 @@ public class CompareDocuments {
 		
 		// 1. Load the Packages, both in the same mc:AlternateContent mode (CR-051 section 10.4 d):
 		//    preserve, so that the difference reports what each producer wrote
-		WordprocessingMLPackage newerPackage = WordprocessingMLPackage.load(new java.io.File(newerfilepath), org.docx4j.jaxb.McBlockLevel.PRESERVE);
-		WordprocessingMLPackage olderPackage = WordprocessingMLPackage.load(new java.io.File(olderfilepath), org.docx4j.jaxb.McBlockLevel.PRESERVE);
+		WordprocessingMLPackage newerPackage = WordprocessingMLPackage.load(new java.io.File(newerfilepath), org.docx4j.jaxb.McLoadMode.PRESERVE);
+		WordprocessingMLPackage olderPackage = WordprocessingMLPackage.load(new java.io.File(olderfilepath), org.docx4j.jaxb.McLoadMode.PRESERVE);
 		
 		Body newerBody = ((Document)newerPackage.getMainDocumentPart().getJaxbElement()).getBody();
 		Body olderBody = ((Document)olderPackage.getMainDocumentPart().getJaxbElement()).getBody();
