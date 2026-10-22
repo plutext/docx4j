@@ -2,6 +2,27 @@ CHANGELOG
 =========
 
 
+Version 17.3.5
+===============
+
+Release date
+------------
+
+[]
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Claude Fable 5.1
+
+
+Changes in Version 17.3.5
+--------------------------
+
+
+
 Version 17.3.4
 ===============
 
