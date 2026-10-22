@@ -185,7 +185,7 @@ The text model expands an HTML, XHTML or MHT `altChunk` only with both jsoup (MI
 Not in scope: Elasticsearch's and OpenSearch's ingest-attachment plugins. They ship their own Tika inside the
 plugin, so reaching them means a modified plugin, not a class-path drop (unverified in their source).
 
-## 5. Decisions (open, for Jason)
+## 5. Decisions (D1 to D8 accepted as recommended, 2026-10-22)
 
 | # | Decision | Recommendation |
 |---|---|---|

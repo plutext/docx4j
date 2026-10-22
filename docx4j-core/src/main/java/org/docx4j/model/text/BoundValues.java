@@ -95,6 +95,12 @@ final class BoundValues {
 				CustomXmlPart part = pkg.getCustomXmlDataStorageParts().get(storeItemId.toLowerCase(java.util.Locale.ROOT));
 				if (part instanceof CustomXmlDataStoragePart && ((CustomXmlDataStoragePart) part).getData() != null) {
 					doc = ((CustomXmlDataStoragePart) part).getData().getDocument();
+				} else if (part instanceof JaxbXmlPart) {
+					// a part docx4j binds (the cover-page properties, DocPropsCoverPagePart; OpenDoPE's own parts):
+					// marshalled, as the core and extended properties are. Until 17.3.4 it gave null, so a
+					// control bound to a cover-page property showed its stored surface where Word shows the
+					// value (docx4j-portfolio's finding on its bind-props probe, 2026-10-22).
+					doc = marshal((JaxbXmlPart<?>) part);
 				}
 			}
 		} catch (Exception e) {
