@@ -143,7 +143,7 @@ returns this HTML and Markdown. `userBodyTop`, `userBodyTail`, `userCSS`, `userS
 
 | Phase | What | Size |
 |---|---|---|
-| 0 | The probes as red tests: core-tests (HTML both pathways, FO's `external-destination`), markdown, tika | 2 h |
+| 0 | The probes as red tests: core-tests (HTML both pathways, FO's `external-destination`), markdown, tika. **DONE 2026-10-23** (record in §9); the tika test goes with phase 3 on the `docx4j-tika` branch | 2 h |
 | 1 | `LinkTargets` with the property; `HyperlinkUtil`, the picture link, `WmlToMarkdown`; tests green; CHANGELOG | ½ day |
 | 2 | `CssIdentifiers`, the selectors in `HtmlCssHelper` and `XsltHTMLFunctions`, the `\3c ` guard in the style element handler, `TagClass` on DOM nodes; tests green | ½ day |
 | 3 | docx4j-tika's `href` (on the `docx4j-tika` branch, with CR-055 phase 1); Getting Started; the advisory and the backport as decided (D9, D10) | ½ day |
@@ -193,3 +193,26 @@ returns this HTML and Markdown. `userBodyTop`, `userBodyTail`, `userCSS`, `userS
   `HTMLConversionContext.java`, `TagClass.java`, `SdtWriter.java`, `model/text/InspectPayloads.java`
   (`javascript`, `external`); docx4j-markdown `WmlToMarkdown.java`; docx4j-tika `Docx4jWordParser.java`.
 - The probes and their outputs: `~/claude-scratch-archive/docx4j/html-output-xss-probes-2026-10-23`.
+
+## 9. Phase 0 record (2026-10-23, docx4j-25)
+
+Tests written and run against the released 17.3.4 artifacts (`-Drevision=17.3.4`, the 17.3.5 modules not yet
+installed); the red ones carry `@Ignore` naming the phase that turns them on, so the tree stays green until then.
+
+- `docx4j-core-tests`: `org.docx4j.convert.out.html.HostileDocx` builds the document (four script-scheme links by
+  relationship, incl. the sneaky ` \u0001java\tscri\npt:` form, `vbscript:` and `data:`; a script-scheme HYPERLINK
+  field; eleven benign targets: http, https, mailto, ftp, file, tel, news, a relative path, a fragment, a drive path, a
+  UNC path; a hostile paragraph style ID, a hostile table style ID, a style ID with spaces).
+  `HtmlOutputHostileTest`, both pathways: `…WritesNoScriptSchemeLink` RED (a `javascript:` href), `…EscapesStyleIds`
+  RED (`</style><script>` in the stylesheet), `…KeepsBenignLinks` GREEN (every benign href present, and must stay).
+- `docx4j-markdown`: `MarkdownHostileLinksTest.noScriptSchemeDestination` RED (`[text](<javascript:alert(1)>)`),
+  `benignLinksKept` GREEN.
+- `docx4j-export-fo-tests`: `FoHostileLinksTest.noScriptSchemeExternalDestination` RED
+  (`external-destination="url(javascript:alert(1))"`), `benignLinksKept` GREEN.
+- Not in phase 0: the positive cases that need the implementation (a spaced style ID's selector works; the property adds
+  a scheme) are phase 1 and 2 tests; docx4j-tika's test is phase 3, on its branch.
+- ImportXHTML's CR-005 phases 1 and 2 are committed there (ca10f61, 2026-10-23, not installed): its link check is on by
+  default, so phase 3 adds the reflective `setLinkSchemesChecked(false)` in `HtmlChunkImport` (the inspector must still
+  see a chunk's `javascript:` target as `relationship.external`); it throws `Docx4JException` for malformed input, which
+  `guarded()` already catches; it escapes alt text on its side, so CR-057's escaping escapes nothing twice.
+

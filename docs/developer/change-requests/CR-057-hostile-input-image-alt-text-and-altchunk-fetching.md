@@ -76,7 +76,7 @@ schemes), and the output side (CR-056).
 
 | Phase | What | Size |
 |---|---|---|
-| 0 | Red tests for both (core-tests; the altChunk test needs ImportXHTML and jsoup on the test class path, as the existing `AltChunkHtml*Test`s do) | 2 h |
+| 0 | Red tests for both (core-tests; the altChunk test needs ImportXHTML and jsoup on the test class path, as the existing `AltChunkHtml*Test`s do). **DONE 2026-10-23** (record in §7) | 2 h |
 | 1 | The escape in `createImageInline`; tests green; CHANGELOG | 1 h |
 | 2 | The property, the override, `HtmlChunkImport.convert`; tests green; CHANGELOG, Getting Started; the ports' hand-off (their altChunk conversion, if any, mirrors the default) | ½ day |
 
@@ -105,3 +105,20 @@ schemes), and the output side (CR-056).
 - This repository: `BinaryPartAbstractImage.java`, `XmlUtils.unmarshallFromTemplate`,
   `model/text/HtmlChunkImport.java` (`convert`, `read`, `neverFetch`), `JaxbXmlPartAltChunkHost.java`,
   `AltChunkInterface.java`; CR-046 phase 3 (the text model's no-fetch rule, WD §11).
+
+## 7. Phase 0 record (2026-10-23, docx4j-25)
+
+Run against the released 17.3.4 artifacts; the red tests carry `@Ignore` naming their phase.
+
+- `CreateImageInlineEscapingTest` (core-tests, `openpackaging.parts.WordprocessingML`): `plainTextRoundTrips` GREEN;
+  `ampersandAndAngleBracketsRoundTrip` RED (`UnmarshalException`); `quoteInjectsNoAttribute` RED (`descr` came back as
+  `x`, the rest became a `title` attribute).
+- `AltChunkConvertFetchTest` (core-tests, `model.text`): a loopback `HttpServer` records requests while
+  `convertAltChunks` runs on a chunk naming a stylesheet, an image over http and a `file:` image; asserts no request and
+  no image part. It assumes an HTML reader on the class path (`HtmlChunkImport.readerPresent()`), which docx4j-core-tests
+  does not carry, so it is skipped there. Its red result, measured the same day by the same scenario as a JEP 330 run
+  against docx4j-bundle 17.3.4 with docx4j-ImportXHTML-bundle 17.1.1-SNAPSHOT (CR-004 phase 1, core 34089b9) on the
+  class path: `convertAltChunks` requested `/chunk.css` and `/chunk.png` from the loopback server (503 ms) and left two
+  image parts in the package, the one fetched over http and the one read from the local `file:` URL. The test turns on
+  in phase 2, run that way (or with the reader on the test class path).
+
