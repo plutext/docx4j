@@ -166,6 +166,28 @@ public class AltChunkHtmlInspectTest {
 		assertEquals(Inspection.Status.COMPLETE, i.status());
 	}
 
+	/**
+	 * CR-056 phase 3: a chunk's script-scheme link. The import keeps it as written (docx4j-ImportXHTML's
+	 * link check is turned off for the extraction, as Word keeps such a target), so the text model's run
+	 * carries it for the outputs to refuse; the inspector's chunk scan reports it as
+	 * {@code altchunk.script} whether or not a reader is present.
+	 */
+	@Test
+	public void aScriptSchemeLinkIsKeptForTheOutputsToRefuse() throws Exception {
+		reader();
+		WordprocessingMLPackage pkg = html("<p><a href='javascript:alert(1)'>CLICK</a> and <a href='https://example.org/'>WEB</a></p>");
+		Inspection i = Inspect.of(pkg);
+		List<String> kinds = new ArrayList<String>();
+		for (InspectFinding f : i.findings()) kinds.add(f.getKind() + " " + f.getSubject() + " | " + f.getExcerpt());
+		System.out.println("CR056P3 findings: " + kinds);
+		List<String> links = new ArrayList<String>();
+		for (TextBlock b : Texts.of(pkg, new TextOptions()).blocks()) for (TextRun r : b.getRuns()) if (r.getLink() != null) links.add(r.getText() + " -> " + r.getLink());
+		System.out.println("CR056P3 links: " + links);
+		assertEquals(1, of(i, InspectFinding.ALTCHUNK_SCRIPT).size());
+		assertTrue(links.toString(), links.contains("CLICK -> javascript:alert(1)"));
+		assertTrue(links.toString(), links.contains("WEB -> https://example.org/"));
+	}
+
 	/** An element with no text gives no finding: empty, white space alone, a picture alone. */
 	@Test
 	public void anElementWithNoTextGivesNone() throws Exception {

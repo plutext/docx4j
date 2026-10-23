@@ -919,7 +919,7 @@ class WmlToMarkdown {
 			TextRevision revision = runs.get(i).getRevision();
 			int j = i;
 			while (j < runs.size() && sameMarker(revision, runs.get(j).getRevision())) j++;
-			if (revision != null) sink.node(raw(open(revision)));
+			if (revision != null) open(revision, sink);
 			linked(runs.subList(i, j), sink);
 			if (revision != null) sink.node(raw(close(revision)));
 			i = j;
@@ -1008,7 +1008,8 @@ class WmlToMarkdown {
 	}
 
 	private void comment(TextComment comment, InlineSink sink) {
-		sink.node(raw("{>>" + detail(comment.getAuthor(), comment.getDate())));
+		sink.node(raw("{>>"));
+		detail(comment.getAuthor(), comment.getDate(), sink);
 		sink.text(comment.getText(), false, false, false);
 		sink.node(raw("<<}"));
 	}
@@ -1024,8 +1025,24 @@ class WmlToMarkdown {
 		}
 	}
 
+	/** The marker as one string, for a code block, where nothing is markup. */
 	private String open(TextRevision revision) {
 		return (revision.getType() == TextRevision.Type.INSERTION ? "{++" : "{--") + detail(revision.getAuthor(), revision.getDate());
+	}
+
+	private void open(TextRevision revision, InlineSink sink) {
+		sink.node(raw(revision.getType() == TextRevision.Type.INSERTION ? "{++" : "{--"));
+		detail(revision.getAuthor(), revision.getDate(), sink);
+	}
+
+	/**
+	 * The marker's author and date as text, which the renderer escapes as it does any document text
+	 * (CR-056): only the braces are raw. Before, the detail went out raw with them, so an author of
+	 * {@code <script>…</script>} reached a renderer that allows raw HTML as markup.
+	 */
+	private void detail(String author, String date, InlineSink sink) {
+		String d = detail(author, date);
+		if (!d.isEmpty()) sink.text(d, false, false, false);
 	}
 
 	private static String close(TextRevision revision) {

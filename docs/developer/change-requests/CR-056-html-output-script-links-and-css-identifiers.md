@@ -147,7 +147,7 @@ returns this HTML and Markdown. `userBodyTop`, `userBodyTail`, `userCSS`, `userS
 | 1 | `LinkTargets` with the property; `HyperlinkUtil`, the picture link, `WmlToMarkdown`; tests green; CHANGELOG. **DONE 2026-10-23** (record in §10) | ½ day |
 | 2 | `CssIdentifiers`, the selectors in `HtmlCssHelper` and `XsltHTMLFunctions`, the `\3c ` guard in the style element handler, `TagClass` on DOM nodes; tests green. **DONE 2026-10-23** (record in §11; two departures and D11 there) | ½ day |
 | 3 | docx4j-tika's `href` (on the `docx4j-tika` branch, with CR-055 phase 1); Getting Started; the advisory and the backport as decided (D9, D10). **DONE 2026-10-23** (record in §12; D9 and D10 are "no", so nothing to do there) | ½ day |
-| 4 | (optional, D8) the inspector's script-scheme finding, with the portfolio's WD change and the ports' hand-off | ½ day, with the portfolio |
+| 4 | (optional, D8) the inspector's script-scheme finding, with the portfolio's WD change and the ports' hand-off. **Considered and DEFERRED 2026-10-23** (§6 under D10: the kind `hyperlink.script` defined in the WD now, implemented by the three inspectors together when wanted) | ½ day, with the portfolio |
 
 ## 6. Decisions (D1 to D8 accepted as recommended, 2026-10-23; D9 and D10 decided otherwise, below)
 
@@ -163,6 +163,27 @@ returns this HTML and Markdown. `userBodyTop`, `userBodyTail`, `userCSS`, `userS
 | D8 | The inspector | optional phase 4: name the scheme in the existing findings' summary rather than a new kind, unless the WD prefers a kind |
 | D9 | Advisory | recommended a GitHub security advisory (CWE-79). **Decided (Jason, 2026-10-23): no advisory; the CHANGELOG entry under 17.3.5 says what was fixed** |
 | D10 | Backport | recommended the 11.5.x line too. **Decided (Jason, 2026-10-23): no backport; 17.3.5 only** |
+
+**D8, phase 4: considered and deferred (Jason, 2026-10-23).** After phases 1 to 3 the inspector says this of a
+script-scheme link: a `w:hyperlink` whose target is `javascript:alert(1)` is `relationship.external`, the kind of a
+linked image, an attached template or a `C:\` path; a HYPERLINK field with that target is `field.external`, the kind
+of INCLUDETEXT or DDE; a `javascript:` href inside an HTML chunk is `altchunk.script`, by the chunk scan, with or
+without a reader (measured, §12). The target is the finding's excerpt and subject in every case. The gap is triage by
+kind alone: a script link outside a chunk is not named, while the same link inside one is. Deferred because: the sink is
+closed (phases 1 to 3 refuse the target in HTML, PDF, Markdown and tika, and the conversion logs a WARN naming the first
+refused address); the inspector's basis is Word, where a `javascript:` hyperlink is inert (a `file:` or UNC link is more
+active in Word than a `javascript:` one, so promoting the script scheme would describe a browser's behaviour, not the
+document's); the target is already in the finding; and the cost lands mostly in the WD and the two ports (a WD revision,
+an oracle re-baseline, two hand-offs) for a field no consumer has asked for. So that the three inspectors do not each
+invent a kind when it is wanted, the WD takes an item now, proposed to docx4j-portfolio the same day and taken as WD 0.32
+(docx4j-portfolio 55fab92; the registry has CR-056.4 deferred, 8e0ba6d): a `hyperlink.script`
+kind, in the active group with `relationship.external` and `field.external` and taking their place for that target: a
+hyperlink in either form (the relationship's or the field's) whose target is a `javascript:` URI read as `altchunk.script`
+reads one (leading C0 controls and spaces ignored, tab, LF and CR dropped anywhere, the scheme compared
+case-insensitively; everything up to the first `:` that comes before any `/`, `?` or `#`), its subject the target;
+one finding a link; a bookmark is still neither. The kind is defined and not yet implemented by any inspector; when it
+is, all three at once, with the oracle re-baselined. docx4j's reading is `LinkTargets.scheme` (phase 1), the ports have
+it from the hand-off.
 
 ## 7. Risks
 
@@ -283,15 +304,33 @@ installed); the red ones carry `@Ignore` naming the phase that turns them on, so
   `ToXMLContentHandler`; the sneaky target drops its U+0001, which cannot be saved to XML) and the README's "Limits and
   safety" bullet. `TikaParityIT` unchanged and green (phase 0 tokens 177/177).
 - **`HtmlChunkImport`** (docx4j-core): calls docx4j-ImportXHTML's `setLinkSchemesChecked(false)` reflectively, beside
-  `setDisplayNoneAsHidden`, so a chunk's `javascript:` link becomes a `w:hyperlink` with that target, as Word keeps it,
-  and the inspector reports it as `relationship.external`; the outputs refuse it. An ImportXHTML without the method
-  (before its CR-005) logs at DEBUG and behaves as before. Not testable here: docx4j-core-tests has no ImportXHTML
-  dependency, and the ImportXHTML with the method (ca10f61) is not installed; the ImportXHTML session installs it on
-  this hand-off.
+  `setDisplayNoneAsHidden`, so a chunk's `javascript:` link is kept with that target, as Word keeps it: the text
+  model's run carries it and the outputs refuse it. An ImportXHTML without the method (before its CR-005) logs at
+  DEBUG and behaves as before. Measured the same day with ImportXHTML ca10f61 (installed by its session as 17.1.1-SNAPSHOT,
+  run with `-Dmaven.test.additionalClasspath=<its bundle jar>`, the CR-053 §11 recipe): the run is
+  `CLICK -> javascript:alert(1)`, and the inspector's findings for the chunk are `altchunk`, `altchunk.script` (the chunk
+  scan, which sees the `javascript:` href whether or not a reader is present) and `altchunk.external_ref`; **not**
+  `relationship.external`, which §9 and the phase 3 commit message assumed: the import's hyperlinks live in the
+  extraction's scratch package, whose relationships the inspector does not walk. `AltChunkHtmlInspectTest
+  .aScriptSchemeLinkIsKeptForTheOutputsToRefuse` records this (skipped without a reader). The importer-backed altChunk
+  tests: 84 run, 0 failures, 4 skipped (the no-reader variants).
 - **Getting Started**, "docx to (X)HTML": one paragraph (the schemes written, the refusal and why, the property, the
   CSS escaping), inserted in the canonical docx by XML (the paragraph before "If you have output logging enabled",
   the section's spacing, Consolas runs for the code tokens) and by hand in the md; html and pdf are regenerated at
   release.
 - D9 (advisory) and D10 (backport) were decided "no", so the phase has nothing for them; the CHANGELOG entries say
   what was fixed.
+
+## 13. Markdown's other sinks (2026-10-23, Jason: "should CR-056 be addressing any issues in markdown export?")
+
+Measured with a probe document (now `docx4j-markdown`'s `MarkdownHostileMarkupTest`): body text, a link's text, a
+picture's alt text and a comment's text containing `<script>…</script>`, `<img … onerror=…>`, `[x](javascript:…)` or
+`](x)` are all escaped by the commonmark renderer (`\<script\>`, `\[x\]`, `a\](…`), so they reach a downstream
+renderer as text; the image destination is a data URI or a file docx4j wrote, never a document value. One sink was
+open: a revision's or a comment's author and date, under `markup_detail: author` or `author_date`, went into the
+CriticMarkup marker as one raw `HtmlInline` with the braces (`{++<script>alert(1)</script>: inserted++}`), so a renderer
+that passes raw HTML through (commonmark-java's `HtmlRenderer` by default) had the author as markup. Fixed: the
+braces alone are raw; the detail is a text node, escaped like any other (`{++\<script\>…: inserted++}`). The markers'
+`<br>` is a constant. Out of this CR: the OMML-to-LaTeX text (`\text{…}` carries document text into a math renderer,
+which renders it as text) and the Markdown importer (it builds WML from objects).
 

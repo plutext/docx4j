@@ -307,8 +307,9 @@ public final class HtmlChunkImport {
 			log.debug("docx4j-ImportXHTML before 17.3.4: what display:none hides in " + where + " is left out");
 		}
 		try {
-			// CR-056: the chunk's links as written, a javascript: target included, so that the inspector
-			// reports it (relationship.external); the outputs refuse it where it would run (LinkTargets)
+			// CR-056: the chunk's links as written, a javascript: target included, as Word keeps them: the
+			// text model's runs carry the target and the outputs refuse it where it would run (LinkTargets);
+			// the inspector's chunk scan reports it as altchunk.script, import or not
 			importer.getMethod("setLinkSchemesChecked", boolean.class).invoke(instance, false);
 		} catch (NoSuchMethodException e) {
 			log.debug("docx4j-ImportXHTML before its CR-005: a link in " + where + " is taken as written");
