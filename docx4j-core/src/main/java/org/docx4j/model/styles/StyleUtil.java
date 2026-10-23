@@ -1394,7 +1394,10 @@ public class StyleUtil {
 				 isEmpty(framePr.getY()) &&
 				 (framePr.getYAlign() == null) &&
 				 (framePr.getHRule() == null) &&
-				 (framePr.isAnchorLock())
+				 // absent, not false: until 17.3.5 this read isAnchorLock(), which the schema's old default made
+				 // true for an absent attribute; with CR-059's default="false" it would make every framePr non-empty
+				 // (docx4j-python's reading, 2026-10-24)
+				 (org.docx4j.wml.FramePrAccess.getAnchorLock(framePr) == null)
 				 )
 			    );
 	}
@@ -2639,7 +2642,8 @@ public class StyleUtil {
 			destination.setY(apply(source.getY(), destination.getY()));
 			destination.setYAlign(source.getYAlign()==null ? destination.getYAlign() : source.getYAlign());
 			destination.setHRule(source.getHRule()==null ? destination.getHRule() : source.getHRule());
-			destination.setAnchorLock(apply(source.isAnchorLock(), destination.isAnchorLock()));
+			// as stated, so a framePr that omits anchorLock keeps the style's (CR-059; isAnchorLock() can't tell absent from false)
+			destination.setAnchorLock(apply(org.docx4j.wml.FramePrAccess.getAnchorLock(source), org.docx4j.wml.FramePrAccess.getAnchorLock(destination)));
 		}
 		return destination;
 	}

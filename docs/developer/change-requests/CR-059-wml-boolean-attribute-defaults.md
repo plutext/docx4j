@@ -259,3 +259,20 @@ issues closed on GitHub with comments naming the commits. Sent:
 - docx4j-core-ts: the `multiLine` rule, the autospacing inheritance, `equalWidth`/`sep`; its extractor already reads
   `fldLock` as written.
 - docx4j-portfolio: the phase status.
+
+## 11. A regression in ac97b56c5, fixed (2026-10-24)
+
+docx4j-python, reading ac97b56c5 the same day: `StyleUtil.isEmpty(CTFramePr)` ended `&& framePr.isAnchorLock()`, and
+`StyleUtil.apply(CTFramePr, CTFramePr)` passed `isAnchorLock()` from both sides. Both had leant on the old default:
+under it an absent `anchorLock` read true, which made `isEmpty` treat it as nothing set (and, wrongly, an
+`anchorLock="1"` alone as empty too) and made `apply` write `true` into every merged frame. With `default="false"`
+`isEmpty` was false for every `w:framePr` without `anchorLock="1"`, and `apply` wrote `false` over a style's `"1"`.
+Phase 1's caller check had read only `StyleUtil`'s third use, the equality at line 612, which is right as it stands
+(absent and explicit false mean the same).
+
+Fix: `org.docx4j.wml.FramePrAccess.getAnchorLock(CTFramePr)` (new, `@since 17.3.5`, the `AutospacingAccess` pattern:
+the attribute as stated, null when absent); `isEmpty` requires it absent; `apply` merges the stated values, so an
+omitted `anchorLock` keeps the style's. Test `StyleUtilFramePrAnchorLockTest` (a bare `w:framePr` empty;
+`anchorLock="1"` or `"0"` alone not empty; an omitted one keeping the style's `true`; a stated one winning; neither
+stated writing none). Lesson for any later default change: read every call site of the getter, not the first.
+docx4j-python ports the same semantics (its `is_empty_frame_pr` and frame merge mirrored the old getter).

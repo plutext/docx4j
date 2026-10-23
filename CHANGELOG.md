@@ -32,7 +32,9 @@ Changes in Version 17.3.5
   absent: LsdException locked/semiHidden/unhideWhenUsed (they inherit from w:latentStyles),
   CTTrackChangesView markup/comments/insDel/formatting/inkAnnotations (left to the application),
   PPrBase.Spacing beforeAutospacing/afterAutospacing (inherited from the style, as Word reads
-  them). CTColumns equalWidth stays true when absent, as Word lays it out. One output change: the
+  them). CTColumns equalWidth stays true when absent, as Word lays it out. StyleUtil reads
+  w:framePr's anchorLock as stated (FramePrAccess): a w:framePr with nothing set is empty, and one
+  that omits anchorLock keeps the style's. One output change: the
   NonXSLT binder no longer turns a bound value's newline into a line break in a plain-text control
   without w:multiLine; Word and the XSLT binder don't.
 * Fields: isFldLock() and isDirty() (w:fldChar, w:fldSimple) and CTDocProtect.isEnforcement() return
