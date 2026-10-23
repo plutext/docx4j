@@ -1,11 +1,11 @@
 # CR-059: the boolean attribute defaults docx4j added to wml.xsd, checked against ECMA-376
 
-Status: PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at Jason's request ("please write the CR to
+Status: COMPLETE 2026-10-24 (phases 0-2; ac97b56c5). PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at Jason's request ("please write the CR to
 check the remaining 32"), after issue #697 found five such defaults (fixed separately, uncommitted at writing: §2.4).
 The count is 38, not 32 (§2): a line-by-line grep had missed declarations written over several lines. ACCEPTED
 2026-10-24 (Jason: "D1 to D5 recs make sense. Commit all, then implement CR-059"): D1 to D5 as recommended (§6).
-Phases in §5. Phase 0 DONE the same day (§8, Jason's Word 365 run), phase 1 BUILT for all 36 (§9); phase 2, the
-hand-offs, next.
+Phases in §5. COMPLETE 2026-10-24: phase 0 (§8, Jason's Word 365 run) and phase 1 (§9) in ac97b56c5, pushed;
+phase 2, the hand-offs, sent the same day (§10).
 
 ## 0. Summary
 
@@ -157,7 +157,7 @@ docx4j's callers of the autospacing pair: `PropertyFactory`, `XsltFOFunctions` (
 |---|---|---|
 | 0 | DONE 2026-10-24 (§8). Word probes for the open ones, by a generated docx in the share's style: `w:cols w:num="2"` with two `w:col` of different widths and no `equalWidth` (does Word use the `w:col` widths?), and no `sep` (a line?); a plain-text control without `multiLine`, bound to a value with a newline (does Word show the line break?); a paragraph whose style sets `beforeAutospacing="1"` and whose own `w:spacing` omits it (inherited or off?). Red tests for §2's readings, one per reading class, through the getters | 2 h + Jason's Word run |
 | 1 | BUILT 2026-10-24 (§9). The xsd: `default="false"` for every "off"; per D2 for "inherit" and "application"; per phase 0 for the open ones. Clean regeneration of docx4j-generated-objects; the `Style-customStyle-default` patch removed from `ModifyGeneratedSources`; `FontEmbedder`'s workaround simplified; callers adjusted to phase 0's results; tests green; CHANGELOG (one entry naming every getter whose answer changes) | ½ day |
-| 2 | Hand-offs: objects-ts and jsonix (§2's Reading column, "no default" for inherit and application), python, core-ts; the portfolio | 1 h |
+| 2 | DONE 2026-10-24 (§10). Hand-offs: objects-ts and jsonix (§2's Reading column, "no default" for inherit and application), python, core-ts; the portfolio | 1 h |
 
 ## 6. Decisions (accepted as recommended, Jason, 2026-10-24)
 
@@ -241,3 +241,21 @@ So docx4j's XSLT traverser was right about ML1 and ML3, and the NonXSLT traverse
 - Runs: before phase 0's five, the full clean reactor build, BUILD SUCCESS, 3493 tests, 0 failures; after them, the
   defaults, autospacing, binding, output and text suites, 552 tests, 0 failures, and the full clean reactor build
   again: BUILD SUCCESS, 3495 tests, 0 failures (docx4j-core-tests 2047).
+
+## 10. Phase 2 record, hand-offs (2026-10-24)
+
+Jason: "commit then push (closing those issues) then do phase 2". Phases 0 and 1 committed as ac97b56c5 and pushed
+with #697 (77ba784d6), #236/#256 (23f2a32ae), CR-052's update (c37da7ec6) and the accepted CR (1fffc20a3); the
+issues closed on GitHub with comments naming the commits. Sent:
+
+- jsonix-d2: the final readings for the open five (`equalWidth` a real true; `sep`, `multiLine` off; the autospacing
+  pair no default), and that with D2 the regenerated mapping reads right everywhere, no default-removing compiler
+  extension needed for wml (its CR-009 §8 cites §2).
+- docx4j-generated-objects-ts: regenerate wml from this xsd; it changes inert metadata only until jsonix CR-009's
+  reader lands; its CR-007 `customStyle` override becomes redundant.
+- docx4j-python: its `schemas/wml/wml.xsd` copy carries 40 of the old `default="true"` as `schema_default` metadata
+  (its fields default to None, so absent stays absent); regenerate from this xsd; the `multiLine` rule Word measured;
+  #697 and #236/#256.
+- docx4j-core-ts: the `multiLine` rule, the autospacing inheritance, `equalWidth`/`sep`; its extractor already reads
+  `fldLock` as written.
+- docx4j-portfolio: the phase status.
