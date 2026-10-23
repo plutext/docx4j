@@ -90,6 +90,12 @@ public final class TrackedChange {
 		FIELD_INSERTION,
 		/** A content control or custom XML element inserted ({@code w:customXmlInsRangeStart} around it). */
 		CONTENT_CONTROL_INSERTION,
+		/**
+		 * A content control or custom XML element deleted whole ({@code w:customXmlDelRangeStart} around it,
+		 * Word's form for a tracked delete across it; CR-043 section 17, check 54).
+		 * @since 17.3.5
+		 */
+		CONTENT_CONTROL_DELETION,
 		/** An equation's structure ({@code m:sSup}, {@code m:acc}, ...) inserted: a {@code w:ins} in its {@code m:ctrlPr}. */
 		MATH_STRUCTURE_INSERTION,
 		/** An equation's structure deleted: a {@code w:del} in its {@code m:ctrlPr}. */
@@ -234,13 +240,18 @@ public final class TrackedChange {
 		CTTrackChange value() { return value; }
 	}
 
-	/** A content control or custom XML element inserted: its two pairs of {@code w:customXmlIns*} markers. */
+	/**
+	 * A content control or custom XML element inserted or deleted: its two pairs of
+	 * {@code w:customXmlIns*} or {@code w:customXmlDel*} markers (CR-043 section 17, check 54).
+	 */
 	static final class HolderT extends Target {
+		final boolean ins;
 		final Object holder;
 		final List<Object> owner;
 		final Object outerStart, outerEnd, innerEnd, innerStart;
 		final CTTrackChange value;
-		HolderT(Object holder, List<Object> owner, Object outerStart, Object outerEnd, Object innerEnd, Object innerStart) {
+		HolderT(boolean ins, Object holder, List<Object> owner, Object outerStart, Object outerEnd, Object innerEnd, Object innerStart) {
+			this.ins = ins;
 			this.holder = holder;
 			this.owner = owner;
 			this.outerStart = outerStart;
@@ -378,7 +389,8 @@ public final class TrackedChange {
 			return k == GroupKind.INS ? Type.ADDED : k == GroupKind.DEL ? Type.DELETED : Type.FORMATTED;
 		}
 		if (t instanceof CellT) return ((CellT) t).ins ? Type.ADDED : Type.DELETED;
-		if (t instanceof HolderT || t instanceof FieldT) return Type.ADDED;
+		if (t instanceof HolderT) return ((HolderT) t).ins ? Type.ADDED : Type.DELETED;
+		if (t instanceof FieldT) return Type.ADDED;
 		if (t instanceof MathRunT) return ((MathRunT) t).ins ? Type.ADDED : Type.DELETED;
 		if (t instanceof MathStructT) return ((MathStructT) t).ins ? Type.ADDED : Type.DELETED;
 		return Type.FORMATTED;
@@ -400,7 +412,7 @@ public final class TrackedChange {
 		if (t instanceof ParaPropsT) return Kind.PARAGRAPH_PROPERTIES;
 		if (t instanceof RowT) return ((RowT) t).ins ? Kind.ROW_INSERTION : Kind.ROW_DELETION;
 		if (t instanceof FieldT) return Kind.FIELD_INSERTION;
-		if (t instanceof HolderT) return Kind.CONTENT_CONTROL_INSERTION;
+		if (t instanceof HolderT) return ((HolderT) t).ins ? Kind.CONTENT_CONTROL_INSERTION : Kind.CONTENT_CONTROL_DELETION;
 		if (t instanceof MathRunT) return ((MathRunT) t).ins ? Kind.RUN_INSERTION : Kind.RUN_DELETION;
 		if (t instanceof MathStructT) return ((MathStructT) t).ins ? Kind.MATH_STRUCTURE_INSERTION : Kind.MATH_STRUCTURE_DELETION;
 		if (t instanceof TableT) return Kind.TABLE_PROPERTIES;

@@ -666,8 +666,9 @@ final class Extractor {
 		P last = chain.get(chain.size() - 1);
 		TextBlock block = new TextBlock(TextBlock.Kind.PARAGRAPH, story.kind, addresses.get(0));
 		block.paraId = first.getParaId();
-		// a joined paragraph keeps the last one's properties (CR-043's join)
-		PPr pPr = last.getPPr();
+		// a joined paragraph keeps the last one's properties (CR-043's join); under a plan, a paragraph
+		// whose mark is gone with no paragraph next takes what Word gives it (CR-043 section 17)
+		PPr pPr = viewPPr(last);
 		block.style = pPr != null && pPr.getPStyle() != null ? pPr.getPStyle().getVal() : null;
 		block.noteType = story.noteType;
 		block.noteNumber = story.noteNumber;
@@ -847,7 +848,7 @@ final class Extractor {
 	}
 
 	private void properties(TextBlock block, P p) {
-		PPr own = p.getPPr();
+		PPr own = viewPPr(p);
 		block.bottomBorder = own != null && own.getPBdr() != null && own.getPBdr().getBottom() != null;
 		PPr effective = own;
 		if (propertyResolver != null) {
@@ -2263,6 +2264,11 @@ final class Extractor {
 
 	private boolean joinsNext(P p) {
 		return plan != null && plan.removesMark(p);
+	}
+
+	/** The paragraph's properties in the view: its own, or what the plan gives a paragraph whose mark is gone with no paragraph next. */
+	private PPr viewPPr(P p) {
+		return plan != null ? plan.paragraphPropertiesOf(p) : p.getPPr();
 	}
 
 	/** The {@code w:ins}, {@code w:del}, {@code w:moveFrom} or {@code w:moveTo} a list member is, or null. */

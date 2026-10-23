@@ -46,6 +46,8 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.CommentRangeEnd;
 import org.docx4j.wml.CommentRangeStart;
 import org.docx4j.wml.P;
+import org.docx4j.wml.Tbl;
+import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
 
 /**
@@ -142,7 +144,83 @@ public final class ResolvedView {
 		Object v = Trees.unwrap(item);
 		if (v == null) return false;
 		if (removed.contains(v)) return true;
-		return v instanceof P && movedMarksGone.contains(v) && !remainsIn((P) v);
+		if (v instanceof Tbl) return emptiedTable((Tbl) v);
+		if (!(v instanceof P)) return false;
+		P p = (P) v;
+		if (movedMarksGone.contains(p) && !remainsIn(p)) return true;
+		// an emptied paragraph whose mark is gone, with a table next in its list: gone (section 17, case 9)
+		return marksGone.contains(p) && !remainsIn(p) && nextBlock(p) instanceof Tbl;
+	}
+
+	/**
+	 * The paragraph's properties in this view, where its mark is gone and no paragraph follows it in
+	 * its list (Word 365's Accept All, section 17, check 54): a block control next gives it the
+	 * control's first paragraph's properties, as a join would have (case 19); a control's last
+	 * paragraph, emptied, keeps a bare mark, its properties gone (case 13); otherwise its own.
+	 *
+	 * @since 17.3.5
+	 */
+	public PPr paragraphPropertiesOf(P p) {
+		if (p == null) return null;
+		if (!marksGone.contains(p)) return p.getPPr();
+		List<Object> container = Resolver.listOf(Trees.parentOf(p));
+		int k = indexOfValue(container, p);
+		if (k < 0) return p.getPPr();
+		Object next = nextBlock(container, k);
+		if (next instanceof P) return p.getPPr(); // a join: the walk takes the chain's last
+		if (next != null && Trees.isHolder(next)) {
+			List<Object> inner = Trees.children(next);
+			if (inner != null) for (Object o : inner) {
+				Object ov = Trees.unwrap(o);
+				if (ov instanceof P) return ((P) ov).getPPr();
+				if (ov instanceof Tbl) break;
+			}
+		}
+		if (next == null && !remainsIn(p) && Trees.parentOf(p) instanceof org.docx4j.wml.SdtContent) return null;
+		return p.getPPr();
+	}
+
+	/**
+	 * A table whose every row this view removes is gone with them, as the resolver removes an emptied
+	 * table (check 54 case 6: a deletion from a heading across a whole table joins the heading with the
+	 * paragraph after the table).
+	 */
+	private boolean emptiedTable(Tbl tbl) {
+		boolean rows = false;
+		for (Object item : tbl.getContent()) {
+			Object v = Trees.unwrap(item);
+			if (v instanceof org.docx4j.wml.Tr) {
+				rows = true;
+				if (!removed.contains(v)) return false;
+			} else if (!isRangeMarker(item)) {
+				return false;
+			}
+		}
+		return rows;
+	}
+
+	/** The block after {@code p} in its list, past range markers and what this view removes; null at the end. */
+	private Object nextBlock(P p) {
+		List<Object> container = Resolver.listOf(Trees.parentOf(p));
+		int k = indexOfValue(container, p);
+		return k < 0 ? null : nextBlock(container, k);
+	}
+
+	private Object nextBlock(List<Object> container, int k) {
+		for (int i = k + 1; i < container.size(); i++) {
+			Object item = container.get(i);
+			if (isRangeMarker(item) || (!(Trees.unwrap(item) instanceof P) && removes(item))) continue;
+			Object v = Trees.unwrap(item);
+			if (v instanceof P && removes(item)) continue;
+			return v;
+		}
+		return null;
+	}
+
+	private static boolean isRangeMarker(Object item) {
+		String name = Trees.name(item);
+		return name.endsWith("RangeStart") || name.endsWith("RangeEnd") || "bookmarkStart".equals(name)
+				|| "bookmarkEnd".equals(name) || "permStart".equals(name) || "permEnd".equals(name) || "proofErr".equals(name);
 	}
 
 	/**
@@ -211,8 +289,14 @@ public final class ResolvedView {
 			if (c.ins != accepted) removed.add(c.tc);
 		}
 		else if (t instanceof HolderT) {
-			// a content control inserted keeps its content either way; rejected, the control itself goes
-			if (!accepted) unwrapped.add(Trees.unwrap(((HolderT) t).holder));
+			HolderT h = (HolderT) t;
+			if (h.ins) {
+				// a content control inserted keeps its content either way; rejected, the control itself goes
+				if (!accepted) unwrapped.add(Trees.unwrap(h.holder));
+			} else if (accepted) {
+				// one deleted whole goes with everything in it (section 17, check 54)
+				removed.add(Trees.unwrap(h.holder));
+			}
 		}
 		// property records change no text
 	}

@@ -63,6 +63,7 @@ import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RunDel;
 import org.docx4j.wml.RunIns;
+import org.docx4j.XmlUtils;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Text;
 import org.docx4j.wml.TrPr;
@@ -228,7 +229,11 @@ final class Resolver {
 		/**
 		 * A content control or custom XML element inserted: accepted, its four markers go; rejected,
 		 * the element goes and what is left of its content stands in its place - nothing, once the
-		 * insertions inside it have been rejected with it (check 30, C16b).
+		 * insertions inside it have been rejected with it (check 30, C16b). One deleted whole
+		 * ({@code w:customXmlDelRange*}, Word's form): rejected, its four markers go and it stays, the
+		 * deletions inside it rejected as their own pieces; accepted, it goes with everything in it,
+		 * whatever its paragraphs' own marks say (section 17, check 54 cases 15 and 17; Word 365's
+		 * Accept All removed the control and joined the paragraphs either side).
 		 */
 		void holder(HolderT t, boolean accept) {
 			remove(t.owner, t.outerStart);
@@ -238,7 +243,11 @@ final class Resolver {
 				removeQuietly(items, t.innerEnd);
 				removeQuietly(items, t.innerStart);
 			}
-			if (accept) return;
+			if (t.ins == accept) return;
+			if (!t.ins) {
+				remove(t.owner, t.holder); // deleted, accepted: whole
+				return;
+			}
 			List<Object> owner = currentOwner(t.owner, t.holder);
 			int i = Trees.indexOf(owner, t.holder);
 			if (i < 0) return;
@@ -479,7 +488,11 @@ final class Resolver {
 		 * {@code w14:paraId}, for markup Word did not write as well (checks 18, 22, 33; C10, C10b). Range
 		 * markers between the two (a bookmark's end, a comment's) go into the joined paragraph where
 		 * they stood. With no paragraph next in the same list - a story's, a cell's, a control's last, or
-		 * a table next - the mark is only dropped: a join never crosses a container's boundary (U1).
+		 * a table next - a join never crosses a container's boundary (U1), and Word 365's Accept All
+		 * (section 17, check 54) does three things instead: an emptied paragraph with a table next goes
+		 * (case 9); a control's last paragraph, emptied, keeps a bare mark, its properties gone (case 13);
+		 * a paragraph with a block control next joins nothing but takes the properties of the control's
+		 * first paragraph, as a join would have given it (case 19). Otherwise the mark is only dropped.
 		 */
 		void joinWithNext(Para para) {
 			List<Object> container = currentOwner(para.container, para.item);
@@ -489,6 +502,30 @@ final class Resolver {
 			while (j < container.size() && isMarker(container.get(j))) j++;
 			Object nextItem = j < container.size() ? container.get(j) : null;
 			if (!(Trees.unwrap(nextItem) instanceof P)) {
+				Object nextValue = Trees.unwrap(nextItem);
+				boolean emptied = !hasTextOrContent(para.p);
+				if (emptied && nextValue instanceof Tbl) {
+					// case 9: gone, the table follows what came before
+					if (para.p.getPPr() != null) removals.discard(story, para.p.getPPr());
+					container.remove(i);
+					return;
+				}
+				if (nextValue != null && Trees.isHolder(nextValue)) {
+					// case 19: the properties a join would have given it, the control's first paragraph's
+					P first = firstParagraph(Trees.children(nextValue));
+					if (first != null) {
+						if (para.p.getPPr() != null) removals.discard(story, para.p.getPPr());
+						para.p.setPPr(first.getPPr() == null ? null : XmlUtils.deepCopy(first.getPPr()));
+						if (para.p.getPPr() != null) para.p.getPPr().setParent(para.p);
+						return;
+					}
+				}
+				if (emptied && nextItem == null && Trees.parentOf(para.item) instanceof org.docx4j.wml.SdtContent) {
+					// case 13: a control's last paragraph keeps a bare mark
+					if (para.p.getPPr() != null) removals.discard(story, para.p.getPPr());
+					para.p.setPPr(null);
+					return;
+				}
 				ParaRPr rPr = para.p.getPPr() == null ? null : para.p.getPPr().getRPr();
 				if (rPr != null) {
 					rPr.setIns(null);
@@ -512,6 +549,22 @@ final class Resolver {
 				next.setTextId(para.p.getTextId());
 			}
 			for (int k = j - 1; k >= i; k--) container.remove(k);
+		}
+
+		/** Whether anything but range markers is left in the paragraph (a run, a control, a drawing: whatever a join would carry). */
+		private boolean hasTextOrContent(P p) {
+			for (Object o : p.getContent()) if (!isMarker(o)) return true;
+			return false;
+		}
+
+		private static P firstParagraph(List<Object> items) {
+			if (items == null) return null;
+			for (Object o : items) {
+				Object v = Trees.unwrap(o);
+				if (v instanceof P) return (P) v;
+				if (v instanceof Tbl) return null;
+			}
+			return null;
 		}
 
 		private boolean isMarker(Object item) {

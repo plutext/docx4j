@@ -325,6 +325,19 @@ public class TrackedChangesWordTest {
 		assertAll("revisions/core-ts/check57/57-fields-equations-word365.docx", "revisions/core-ts/check57/57-fields-equations-word365-accepted.docx", true);
 	}
 
+	/**
+	 * Check 54 (CR-043 section 17): Word 365's Accept All of 43 tracked writes, among them the four
+	 * rules docx4j lacked until 17.3.5: an emptied paragraph before a table goes (case 9); a control's
+	 * last paragraph deleted whole keeps a bare mark (13); a deleted mark before a block control joins
+	 * nothing but takes the control's first paragraph's properties (19); a control deleted whole, in
+	 * Word's {@code w:customXmlDelRange*} form, goes with its markers, and the mark before it then
+	 * joins what follows (15, 17). Word's Reject All was not saved.
+	 */
+	@Test
+	public void check54AcceptAll() throws Exception {
+		assertAll("revisions/core-ts/check54/54-writes-word365.docx", "revisions/core-ts/check54/54-writes-word365-accepted.docx", true);
+	}
+
 	@Test
 	public void check57DeletedEquationsRejectAll() throws Exception {
 		assertAll("revisions/core-ts/check57/57-fields-equations-word365.docx", "revisions/core-ts/check57/57-fields-equations-word365-rejected.docx", false);

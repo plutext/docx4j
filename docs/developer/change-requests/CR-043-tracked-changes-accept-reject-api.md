@@ -757,8 +757,9 @@ direction already agreed. core-ts fixed its port the same day (`TrackedChange.mt
 
 ## 17. Four Accept All rules from check 54 (23 October 2026; queued after CR-058 phase 1)
 
-Status: ACCEPTED as a follow-up, Jason, 23 October 2026 ("write all four as a CR-043 §17 follow-up; implement after
-CR-058 phase 1"). Sent by docx4j-core-ts (check 54, Word 365 16.0.20326.20232, Jason, committed there as 87bbb38,
+Status: DONE 2026-10-23 (built after CR-058 phase 2, Jason: "commit then start the CR-043 §17 rules"; the record
+at the end of this section). ACCEPTED as a follow-up, Jason, 23 October 2026 ("write all four as a CR-043 §17
+follow-up; implement after CR-058 phase 1"). Sent by docx4j-core-ts (check 54, Word 365 16.0.20326.20232, Jason, committed there as 87bbb38,
 its CR-014 §12.3 and §12.4), at Jason's word; measured here the same day with `DocumentDescription`: docx4j's Accept
 All of Word's save against Word's own Accept All differs in exactly these four regions (and in numbering ids, which
 Word's save renumbers; not a rule).
@@ -798,3 +799,27 @@ only by rule 3. Rule 4's form is what any editor writes when it removes a contro
   core-ts/python agreement goldens must not move except where these rules apply.
 - Hand-offs: core-ts follows through its goldens (its message: "core-ts will then follow through the goldens");
   python's port told; CHANGELOG 17.3.5.
+
+**Record (2026-10-23, Claude Fable 5.1, session docx4j-25).** Built as planned, with two things the plan did not name:
+
+- `Lister.holderInsertionAt` lists Word's `w:customXmlDelRange*` form as it lists the insertion form, `HolderT` carries
+  `ins`, `Kind.CONTENT_CONTROL_DELETION` (type `DELETED`, group kind `DEL`). `Resolver.holder`: a deletion accepted
+  removes the holder whole, a deletion rejected removes the four markers; the insertion cases as before.
+  `Resolver.pieces` already resolves runs and holders before marks, so the mark before a removed control joins what
+  follows (cases 15, 17).
+- `Resolver.joinWithNext`, the no-paragraph-next branch: an emptied paragraph with a table next goes (rule 1); a
+  paragraph with a block control next takes a copy of the control's first paragraph's `w:pPr` (rule 3, whether or not
+  the paragraph is emptied, as Word's case 19 has text left); an emptied last paragraph of a control's content loses
+  its `w:pPr` (rule 2). A paragraph with text left before a table, or a control's last paragraph with text left, keeps
+  today's behaviour (the mark only dropped): unmeasured (§11).
+- `ResolvedView`, the text walk's plan: `removes` covers a deleted holder accepted and rule 1's paragraph;
+  `paragraphPropertiesOf(P)` gives the walk rule 2's and rule 3's properties, through `Extractor.viewPPr`. And a table
+  whose every row the view removes is removed with them, as the resolver removes an emptied table: check 54's case 6
+  (a deletion from a heading across a whole table into the paragraph after it, which Word joins) showed the walk
+  stopping at the table where the resolved copy had joined; a pre-existing gap the new fixture exposed.
+- Tests: `TrackedChangesWordTest.check54AcceptAll`, the whole document against Word's save (the numbering-id drift
+  disappears once rule 2 drops the orphaned `w:numPr`, since `DocumentDescription` numbers instances in order of first
+  use); `ViewAgreementTest` walks the two check 54 files. Fixtures `revisions/core-ts/check54/` (core-ts 87bbb38).
+  Runs: revisions, text, text extraction and agreement suites, 248 tests, 0 failures; the whole docx4j-core-tests
+  module, 2027 tests, 0 failures, 30 skipped.
+- Hand-offs: core-ts (its goldens follow), python; the registry entry docx4j/CR-043.17 done.

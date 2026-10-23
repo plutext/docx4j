@@ -709,17 +709,23 @@ final class Lister {
 	 */
 	private TrackedChange holderInsertionAt(List<Object> items, int i, Para para, Ctx ctx) {
 		Object start = items.get(i);
-		if (!"customXmlInsRangeStart".equals(Trees.name(start)) || i + 2 >= items.size()) return null;
+		String name = Trees.name(start);
+		boolean ins;
+		if ("customXmlInsRangeStart".equals(name)) ins = true;
+		else if ("customXmlDelRangeStart".equals(name)) ins = false; // Word's form for a control deleted whole (section 17, check 54)
+		else return null;
+		if (i + 2 >= items.size()) return null;
+		String endName = ins ? "customXmlInsRangeEnd" : "customXmlDelRangeEnd";
 		Object holder = items.get(i + 1);
 		Object outerEnd = items.get(i + 2);
-		if (!Trees.isHolder(Trees.unwrap(holder)) || !"customXmlInsRangeEnd".equals(Trees.name(outerEnd))) return null;
+		if (!Trees.isHolder(Trees.unwrap(holder)) || !endName.equals(Trees.name(outerEnd))) return null;
 		List<Object> inner = Trees.children(Trees.unwrap(holder));
 		if (inner == null || inner.size() < 2) return null;
 		Object innerEnd = inner.get(0);
 		Object innerStart = inner.get(inner.size() - 1);
-		if (!"customXmlInsRangeEnd".equals(Trees.name(innerEnd)) || !"customXmlInsRangeStart".equals(Trees.name(innerStart))) return null;
+		if (!endName.equals(Trees.name(innerEnd)) || !name.equals(Trees.name(innerStart))) return null;
 		if (!Objects.equals(idOf(innerEnd), idOf(start)) || !Objects.equals(idOf(outerEnd), idOf(innerStart))) return null;
-		return change(new HolderT(holder, items, start, outerEnd, innerEnd, innerStart), para, ctx);
+		return change(new HolderT(ins, holder, items, start, outerEnd, innerEnd, innerStart), para, ctx);
 	}
 
 	private static Object idOf(Object marker) {
@@ -1057,7 +1063,8 @@ final class Lister {
 			return r == Revision.INS ? GroupKind.INS : r == Revision.DEL ? GroupKind.DEL : null;
 		}
 		if (t instanceof RunPropsT || t instanceof MarkPropsT) return GroupKind.FORMAT;
-		if (t instanceof HolderT || t instanceof FieldT) return GroupKind.INS;
+		if (t instanceof HolderT) return ((HolderT) t).ins ? GroupKind.INS : GroupKind.DEL;
+		if (t instanceof FieldT) return GroupKind.INS;
 		if (t instanceof RowT) return ((RowT) t).ins ? GroupKind.INS : GroupKind.DEL;
 		if (t instanceof MathRunT) return ((MathRunT) t).ins ? GroupKind.INS : GroupKind.DEL;
 		if (t instanceof MathStructT) return ((MathStructT) t).ins ? GroupKind.INS : GroupKind.DEL;

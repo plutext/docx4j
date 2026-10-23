@@ -1,0 +1,19 @@
+{
+ "check": 54,
+ "word": "Word 365, 16.0.20326.20232, PC (Jason, 2026-10-22)",
+ "source": "test/fixtures/check54/build.mjs (54-writes.docx, 43 cases), after the Script Lab snippet's \"Run the check\"",
+ "saves": {
+  "54-writes-word365.docx": "saved after a second run the same day (the snippet's JSON was the first run's, case for case: test/fixtures/check54/54-writes-word365-run.json), with File > Save; the first runs' saves were made with Ctrl+S while Script Lab's pane had the focus, and held the document from before the run",
+  "54-writes-word365-accepted.docx": "after the first run, Review > Accept All Changes (the report: test/fixtures/check54/54-writes-word365-accepted.json)"
+ },
+ "files": [
+  {
+   "name": "54-writes-word365.docx",
+   "sha1": "b5e958f9204751488625ca5adafea3d605a89933"
+  },
+  {
+   "name": "54-writes-word365-accepted.docx",
+   "sha1": "5047a128aec36d2933d044ca6ae9b7ce62510daf"
+  }
+ ]
+}

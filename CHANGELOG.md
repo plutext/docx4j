@@ -35,6 +35,12 @@ Changes in Version 17.3.5
   A DATE field's h and hh now run 1 to 12 too (they printed 0 at noon), and am/pm is upper case.
 * Text model: an equation's script base deleted or inserted under tracking is read through the
   change, so the original view and a resolved copy give the same LaTeX (mc^{2}).
+* Tracked changes, four Accept All rules measured in Word 365 (CR-043 section 17, docx4j-core-ts's
+  check 54): an emptied paragraph before a table goes; a control's last paragraph deleted whole keeps
+  a bare mark; a deleted mark before a block control takes the control's first paragraph's
+  properties; a control deleted whole (w:customXmlDelRangeStart around it, a new change kind
+  CONTENT_CONTROL_DELETION) goes with its markers. The text model's accepted and original views
+  follow the same rules.
 * Tracked changes: accepting the deletion of a whole equation (or rejecting its insertion) removes
   the emptied m:oMath and m:oMathPara, as Word does; they were left empty (found by docx4j-core-ts
   against Word 365, check 57).
