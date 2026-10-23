@@ -245,8 +245,15 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			}
 
 			log.debug("Transforming, using " + source.getClass().getName());
+			StoreItemResolver.clearStrictFailure();
 			org.docx4j.XmlUtils.transform(source, xslt, transformParameters, result);
 			log.debug("Transform done");
+			InputIntegrityException strictFailure = StoreItemResolver.strictFailure();
+			if (strictFailure != null) {
+				// raised in an extension function, where Xalan's error listener logs it and goes on (CR-058)
+				StoreItemResolver.clearStrictFailure();
+				throw strictFailure;
+			}
 			
 			if (result instanceof DOMResult) {
 	//			if (log.isDebugEnabled()) {
@@ -1578,7 +1585,8 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		// Needs to be done once after BindingHandler has been done
 		// for all parts for which it is to be called (eg mdp, header parts etc).
 		
-		CustomXmlDataStoragePart part = customXmlDataStorageParts.get(storeItemId.toLowerCase());
+		CustomXmlPart resolved = StoreItemResolver.resolve(customXmlDataStorageParts, storeItemId, xpath, prefixMappings);
+		CustomXmlDataStoragePart part = resolved instanceof CustomXmlDataStoragePart ? (CustomXmlDataStoragePart) resolved : null;
 		if (part==null) {
 			log.error("Couldn't locate part by storeItemId " + storeItemId);
 			return null;
@@ -1788,7 +1796,8 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		// Needs to be done once after BindingHandler has been done
 		// for all parts for which it is to be called (eg mdp, header parts etc).
 		
-		CustomXmlDataStoragePart part = customXmlDataStorageParts.get(storeItemId.toLowerCase());
+		CustomXmlPart resolved = StoreItemResolver.resolve(customXmlDataStorageParts, storeItemId, xpath, prefixMappings);
+		CustomXmlDataStoragePart part = resolved instanceof CustomXmlDataStoragePart ? (CustomXmlDataStoragePart) resolved : null;
 		if (part==null) {
 			log.error("Couldn't locate part by storeItemId " + storeItemId);
 			return null;
@@ -2006,7 +2015,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			return null;
 		}
 
-		CustomXmlPart part = customXmlDataStorageParts.get(dataBinding.getStoreItemID().toLowerCase());
+		CustomXmlPart part = StoreItemResolver.resolve(customXmlDataStorageParts, dataBinding.getStoreItemID(), dataBinding.getXpath(), dataBinding.getPrefixMappings());
 		if (part==null) {
 			log.error("Couldn't locate part by storeItemId " + dataBinding.getStoreItemID());
 			return null;
@@ -2246,7 +2255,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		CTSdtCheckbox sdtCheckbox = (CTSdtCheckbox)sdtPr.getByClass(CTSdtCheckbox.class);
 
 		CTDataBinding dataBinding = sdtPr.getDataBinding();
-		CustomXmlPart part = customXmlDataStorageParts.get(dataBinding.getStoreItemID().toLowerCase());
+		CustomXmlPart part = StoreItemResolver.resolve(customXmlDataStorageParts, dataBinding.getStoreItemID(), dataBinding.getXpath(), dataBinding.getPrefixMappings());
 				
 		if (part==null) {
 			log.error("Couldn't locate part by storeItemId " + dataBinding.getStoreItemID());
@@ -2383,7 +2392,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			Map<String, CustomXmlPart> customXmlDataStorageParts, SdtPr sdtPr) {
 
 		CTDataBinding dataBinding = sdtPr.getDataBinding();
-		CustomXmlPart part = customXmlDataStorageParts.get(dataBinding.getStoreItemID().toLowerCase());
+		CustomXmlPart part = StoreItemResolver.resolve(customXmlDataStorageParts, dataBinding.getStoreItemID(), dataBinding.getXpath(), dataBinding.getPrefixMappings());
 		if (part==null) {
 			log.error("Couldn't locate part by storeItemId " + dataBinding.getStoreItemID());
 			return null;
@@ -2444,7 +2453,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		}
 		
 		CTDataBinding dataBinding = sdtPr.getDataBinding();
-		CustomXmlPart part = customXmlDataStorageParts.get(dataBinding.getStoreItemID().toLowerCase());
+		CustomXmlPart part = StoreItemResolver.resolve(customXmlDataStorageParts, dataBinding.getStoreItemID(), dataBinding.getXpath(), dataBinding.getPrefixMappings());
 				
 		if (part==null) {
 			log.error("Couldn't locate part by storeItemId " + dataBinding.getStoreItemID());

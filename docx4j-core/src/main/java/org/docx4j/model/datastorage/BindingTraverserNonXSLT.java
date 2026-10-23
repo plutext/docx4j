@@ -353,7 +353,12 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 			}			
 			
 			SdtPr.Picture pic = getPicture(sdtPr);
-			if (sdtPr.getDataBinding()!=null && pic!=null
+			if (sdtPr.getDataBinding()!=null && !StoreItemResolver.resolvable(pkg.getCustomXmlDataStorageParts(),
+					sdtPr.getDataBinding().getStoreItemID(), sdtPr.getDataBinding().getXpath(), sdtPr.getDataBinding().getPrefixMappings())) {
+				// CR-058 D4: a w:storeItemID naming no part, with no part the XPath fits: the control is
+				// left as it is (Word shows its surface); bind.xslt's guard does the same. Strict: thrown.
+
+			} else if (sdtPr.getDataBinding()!=null && pic!=null
 					&& replaceBlipEmbed(sdt, pkg, part, xpathsMap)) {
 				// authored drawing preserved; just its image rel was replaced
 				// (as bind.xslt's picture3 mode does)
@@ -470,11 +475,12 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 			// for all parts for which it is to be called (eg mdp, header parts etc).
 			
 			Map<String, CustomXmlPart> customXmlDataStorageParts = pkg.getCustomXmlDataStorageParts();
-			CustomXmlPart part = customXmlDataStorageParts.get(dataBinding.getStoreItemID().toLowerCase());
+			CustomXmlPart part = StoreItemResolver.resolve(customXmlDataStorageParts, dataBinding.getStoreItemID(), dataBinding.getXpath(), dataBinding.getPrefixMappings());
 			if (part==null) {
-				log.error("Couldn't locate part by storeItemId " + dataBinding.getStoreItemID());
+				log.warn("Couldn't locate part by storeItemId " + dataBinding.getStoreItemID() + ", and no custom XML part fits; the picture is left as it is");
 				return null;
 			}
+			writeBackStoreItemId(pkg, sdt.getSdtPr());
 			try {
 				String r = part.xpathGetString(dataBinding.getXpath(), dataBinding.getPrefixMappings());
 				log.debug(dataBinding.getXpath() + " yielded result " + r);

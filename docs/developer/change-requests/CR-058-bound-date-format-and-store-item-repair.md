@@ -1,6 +1,6 @@
 # CR-058: A bound date formatted as Word formats it, and a store item ID that names no part resolved as Word repairs it
 
-Status: ACCEPTED 2026-10-23 (Jason: D1-D5 as recommended; on D5, whether the document with the repaired
+Status: COMPLETE 2026-10-23 (phases 0-2). ACCEPTED 2026-10-23 (Jason: D1-D5 as recommended; on D5, whether the document with the repaired
 `w:storeItemID` is saved is the caller's decision, as with every other change the bind makes in memory). Proposed
 earlier the same day, drafted by Claude Fable 5.1 (session docx4j-25) at Jason's request ("do a cr for the
 remaining binding items the portfolio flagged"), from the two items docx4j-portfolio's text-extraction paper (§12a,
@@ -8,7 +8,7 @@ remaining binding items the portfolio flagged"), from the two items docx4j-portf
 (f62314d3b, 24642aa59). Both confirmed in this repository's source at 64ebb9ae9 (§1). Phases in §4. Phase 0 BUILT
 2026-10-23 (§8): red tests and fixtures in core-tests, three probes run in Word 365 the same day. The Word run
 confirms D1, D3 and D4 and revises D2 (§5a); it raises D6, the time zone of a stored date-time (§5a). D2 (revised)
-and D6 ACCEPTED as recommended (Jason, 2026-10-23). Phase 1 DONE 2026-10-23 (§9); phase 2 next.
+and D6 ACCEPTED as recommended (Jason, 2026-10-23). Phase 1 DONE 2026-10-23 (§9); phase 2 DONE the same day (§10). COMPLETE.
 
 ## 0. Summary
 
@@ -103,7 +103,7 @@ the OpenDoPE `od:xpath` path, which carries the same `w:dataBinding` and goes th
 |---|---|---|
 | 0 | DONE 2026-10-23 (§8). Red tests for both (core-tests): a `TypedControlBindingTest`-style fixture per format (`ddd`, `am/pm`, `de-DE`, a non-date value); `bind-plain.docx` as the B7 fixture, bound through both traversers and read by the text model. Probes for Jason's Word: the §1 "not measured" list, built from `bind-typed.docx` (one control per format, a non-date value) and `bind-plain.docx` (a second custom XML part that also fits; none that fits) | 2 h |
 | 1 | DONE 2026-10-23 (§9). Date (D1-D3, D2 revised, D6): `xpathDateRun` formats through `FormattingSwitchHelper` with `w:lid`; the non-date case per D3 and the measurement; tests green; CHANGELOG | 2 h |
-| 2 | Store item (D4-D5): the resolver, shared by `BindingHandler.xpathGetString`, `xpathDateRun` (and the picture, XHTML and checkbox paths that look the part up themselves) and `BoundValues.document`; the write-back; tests green; CHANGELOG; the ports' hand-off (their binders: date language, missing-part repair) and the portfolio's §12a.3 | ½ day |
+| 2 | DONE 2026-10-23 (§10). Store item (D4-D5): the resolver, shared by `BindingHandler.xpathGetString`, `xpathDateRun` (and the picture, XHTML and checkbox paths that look the part up themselves) and `BoundValues.document`; the write-back; tests green; CHANGELOG; the ports' hand-off (their binders: date language, missing-part repair) and the portfolio's §12a.3 | ½ day |
 
 ## 5. Decisions
 
@@ -285,3 +285,44 @@ Jason: "do CR-058 phase 1". Built and tested; commit on Jason's word.
 - Reference `docx4j.properties` documents `dateTimeZone`; CHANGELOG 17.3.5.
 - Not changed: the text model (`BoundValues`) still reads a date control's surface (the paper's D34 is its own
   item); `w:lid` is not written back where Word's save adds one.
+
+## 10. Phase 2 record (2026-10-23, Claude Fable 5.1, session docx4j-25)
+
+Jason: "start CR-058 phase 2". Built and tested; commit on Jason's word.
+
+- `org.docx4j.model.datastorage.StoreItemResolver` (new, `@since 17.3.5`): `resolve(parts, storeItemId, xpath,
+  prefixMappings[, strict])` gives the part the ID names, else the custom XML part the XPath fits (D4: the
+  `CustomXmlDataStoragePart`s whose root element's namespace and local name match the XPath's first step read with
+  the binding's prefix mappings, docx4j's table as the fallback a lookup would use; an XPath with no named first
+  step fits every part); one fitting part is taken, INFO; of several, in part-name order, the first whose XPath
+  selects a node, else the first, WARN; none, null and WARN (the generator leaves the control as it is, the text
+  model reads its surface). Resolved once per document and XPath (a `WeakHashMap` on the parts map; one stale ID
+  fits different parts for different XPaths, as the two-parts probe showed: B7 part 1, B11 part 2).
+  `resolvedStoreItemId(...)` gives the part's own ID for the write-back; `resolvable(...)` is the guard.
+  `STRICT_PROPERTY` (`docx4j.model.datastorage.BindingHandler.strictStoreItemIds`, default false): a stale ID
+  throws `InputIntegrityException` before any repair, whether or not a part fits; inside Xalan an extension
+  function's exception is logged by the error listener and swallowed, so the resolver also records it in a
+  thread-local that `BindingTraverserXSLT` rethrows after its transform, which makes the failure the same on both
+  traversers.
+- Lookups routed through it: `BindingHandler.xpathGetString` (text; null, not an exception, where none fits),
+  `BindingTraverserXSLT`'s `xpathDateRun`, two picture methods, the two checkbox methods and the flat-OPC/XHTML
+  one, `BindingTraverserNonXSLT`'s picture, `BindingTraverserStAX`'s, `BindingTraverserCommonImpl.replaceBlipEmbed`,
+  `UpdateXmlFromDocumentSurface.getCustomXmlPart` (the surface-to-XML direction writes to the part Word would), and
+  `model/text/BoundValues.document` (strict false; its document cache keyed by the part resolved).
+- Left as it is (D4, none fits): `bind.xslt`'s `w:sdt` template gains a first branch, for `w:dataBinding` and
+  `w15:dataBinding`, that copies the control whole when `resolvable` is false; `BindingTraverserNonXSLT`'s dispatch
+  does the same. Without the guard the XSLT emptied the control and the NonXSLT wrote `[missing!]`.
+- Write-back (D5): `bind.xslt` template `w:dataBinding/@w:storeItemID | w15:dataBinding/@w:storeItemID` writes
+  `resolvedStoreItemId`, reached where the `w:sdtPr` goes through its template (the text and date branches; the
+  branches that `copy-of` the `w:sdtPr`, picture and checkbox, keep the old ID). `BindingTraverserCommonImpl.
+  writeBackStoreItemId(pkg, sdtPr)` (text, date, picture, checkbox paths). In memory only; saving is the caller's.
+- Tests: `StoreItemRepairTest` un-ignored, 6 green: bind-plain B7 bound and its ID rewritten on both traversers,
+  the text model's value, the strict failure on both traversers, two-parts B7 → part 1 and B11 → part 2 with the
+  IDs, no-part B7 and B12 left with their surfaces and stale IDs while B1 binds. Runs: datastorage, text, text
+  extraction, samples, binding, OpenDoPE suites, 372 tests, 0 failures; the whole docx4j-core-tests module, 2026
+  tests, 0 failures, 30 skipped.
+- Reference `docx4j.properties` documents `strictStoreItemIds`; CHANGELOG 17.3.5.
+- Not done: a Word probe for the unmeasured `h` at 12 local (§8 finding 2) and an explicit offset; the OpenDoPE
+  `od:xpath` branch of `bind.xslt` has no "left as it is" guard (its bindings come from the xpaths part, which the
+  generator itself wrote; a stale ID there resolves through `xpathGetString` the same way, and none fitting
+  empties the control as before). The paper's D34 (the text model showing a formatted date) is its own item.

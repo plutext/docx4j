@@ -32,7 +32,6 @@ import org.docx4j.model.text.TextOptions;
 import org.docx4j.model.text.TextView;
 import org.docx4j.model.text.Texts;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -94,7 +93,6 @@ public class StoreItemRepairTest {
 
 	// --- bind-plain B7: one part, which the XPath fits (Word's measured case) ---
 
-	@Ignore("CR-058 phase 2")
 	@Test
 	public void theGeneratorResolvesAStaleStoreItemIdAsWordDoes() throws Exception {
 		for (String implementation : IMPLEMENTATIONS) {
@@ -104,7 +102,6 @@ public class StoreItemRepairTest {
 		}
 	}
 
-	@Ignore("CR-058 phase 2")
 	@Test
 	public void theTextModelShowsTheValueWordShows() throws Exception {
 		String text = text("bind-plain.docx");
@@ -112,7 +109,6 @@ public class StoreItemRepairTest {
 		assertFalse(text, text.contains("B7_STALE_SURFACE"));
 	}
 
-	@Ignore("CR-058 phase 2")
 	@Test
 	public void theStrictPropertyFailsTheBind() throws Exception {
 		Docx4jProperties.setProperty(STRICT_PROPERTY, "true");
@@ -133,7 +129,6 @@ public class StoreItemRepairTest {
 
 	// --- two parts fit (which part Word picks is the phase 0 probe; the rule here is D4's) ---
 
-	@Ignore("CR-058 phase 2")
 	@Test
 	public void whereTwoPartsFitTheFirstThatYieldsANodeIsBound() throws Exception {
 		for (String implementation : IMPLEMENTATIONS) {
@@ -148,7 +143,6 @@ public class StoreItemRepairTest {
 
 	// --- no part fits: the control is left as it is, and the document still binds ---
 
-	@Ignore("CR-058 phase 2")
 	@Test
 	public void whereNoPartFitsTheControlIsLeftAndTheRestBinds() throws Exception {
 		for (String implementation : IMPLEMENTATIONS) {

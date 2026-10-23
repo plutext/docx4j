@@ -451,14 +451,16 @@ public class BindingHandler {
 					return pkg.getDocPropsExtendedPart().xpathGetString(xpath, prefixMappings);
 				} 
 				
-				CustomXmlPart part  = customXmlDataStorageParts.get(storeItemId.toLowerCase());
-					// Also handles cover page properties (since we've allocated it a store item id)
-					// Note that Word does not create that part until the user provides one or more prop values
-				
+				// Also handles cover page properties (since we've allocated it a store item id)
+				// Note that Word does not create that part until the user provides one or more prop values.
+				// A store item ID naming no part resolves to the part the XPath fits, as Word repairs it
+				// (CR-058 D4); none fitting is null here (the control is left as it is), or the
+				// InputIntegrityException of old with StoreItemResolver.STRICT_PROPERTY.
+				CustomXmlPart part = StoreItemResolver.resolve(customXmlDataStorageParts, storeItemId, xpath, prefixMappings);
 				if (part==null) {
-					throw new InputIntegrityException("Couldn't locate part by storeItemId " + storeItemId);
-//					log.error("Couldn't locate part by storeItemId " + storeItemId);
-//					return null;
+					log.warn("Couldn't locate part by storeItemId " + storeItemId + ", and no custom XML part fits " + xpath
+							+ "; the control is left as it is");
+					return null;
 				}
 				
 //				if (log.isDebugEnabled() ) {

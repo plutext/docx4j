@@ -146,6 +146,24 @@
 			     <xsl:copy-of select="."/>  		
 		</xsl:when>  
 
+		<!-- CR-058 D4: a binding whose w:storeItemID names no part, and whose XPath fits no custom XML
+		     part, is left as it is (Word shows its surface); one that fits a part is resolved to it by
+		     StoreItemResolver in every lookup below, and its ID rewritten (the @w:storeItemID template). -->
+  		<xsl:when test="w:sdtPr/w:dataBinding and not(java:org.docx4j.model.datastorage.StoreItemResolver.resolvable(
+  						$customXmlDataStorageParts,
+  						string(w:sdtPr/w:dataBinding/@w:storeItemID),
+  						string(w:sdtPr/w:dataBinding/@w:xpath),
+  						string(w:sdtPr/w:dataBinding/@w:prefixMappings)))">
+			     <xsl:copy-of select="."/>
+		</xsl:when>
+  		<xsl:when test="w:sdtPr/w15:dataBinding and not(java:org.docx4j.model.datastorage.StoreItemResolver.resolvable(
+  						$customXmlDataStorageParts,
+  						string(w:sdtPr/w15:dataBinding/@w:storeItemID),
+  						string(w:sdtPr/w15:dataBinding/@w:xpath),
+  						string(w:sdtPr/w15:dataBinding/@w:prefixMappings)))">
+			     <xsl:copy-of select="."/>
+		</xsl:when>
+
 		<!--  11.1.8 width=n|auto rich text cc containing w:drawing -->
   		<xsl:when test="contains(string(w:sdtPr/w:tag/@w:val), 'od:Handler=picture') and contains(string(w:sdtPr/w:tag/@w:val), 'width=')">
   		
@@ -1106,6 +1124,16 @@
   	</xsl:choose>    
   </xsl:template>
 
+
+  <!-- CR-058 D5: a w:storeItemID that named no part, resolved to the part the XPath fits, is written
+       as Word's save writes it. Reached where the w:sdtPr goes through its template (the text and
+       date branches); a branch that copies w:sdtPr whole keeps the ID as it was. -->
+  <xsl:template match="w:dataBinding/@w:storeItemID | w15:dataBinding/@w:storeItemID">
+    <xsl:attribute name="w:storeItemID">
+      <xsl:value-of select="java:org.docx4j.model.datastorage.StoreItemResolver.resolvedStoreItemId(
+      						$customXmlDataStorageParts, string(.), string(../@w:xpath), string(../@w:prefixMappings))"/>
+    </xsl:attribute>
+  </xsl:template>
 
   <xsl:template match="w:sdtPr">  
   	<xsl:param name="content"></xsl:param>

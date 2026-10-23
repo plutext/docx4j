@@ -64,7 +64,7 @@ final class BoundValues {
 	/** The bound value, or null where the binding doesn't resolve. */
 	String value(CTDataBinding binding) {
 		if (pkg == null || binding == null || binding.getXpath() == null || binding.getStoreItemID() == null) return null;
-		org.w3c.dom.Document doc = document(binding.getStoreItemID());
+		org.w3c.dom.Document doc = document(binding);
 		if (doc == null) return null;
 		try {
 			XPath xpath = XPathFactoryUtil.newXPath();
@@ -82,8 +82,19 @@ final class BoundValues {
 		}
 	}
 
-	private org.w3c.dom.Document document(String storeItemId) {
+	private org.w3c.dom.Document document(CTDataBinding binding) {
+		String storeItemId = binding.getStoreItemID();
 		String key = storeItemId.toUpperCase(java.util.Locale.ROOT);
+		CustomXmlPart part = null;
+		if (!key.equals(BindingHandler.CORE_PROPERTIES_STOREITEMID) && !key.equals(BindingHandler.EXTENDED_PROPERTIES_STOREITEMID)
+				&& pkg.getCustomXmlDataStorageParts() != null) {
+			// the part named, or, where none is, the one the XPath fits, as Word repairs it (CR-058 D4); the
+			// text model writes nothing back and never fails the document (strict = false)
+			part = org.docx4j.model.datastorage.StoreItemResolver.resolve(pkg.getCustomXmlDataStorageParts(),
+					storeItemId, binding.getXpath(), binding.getPrefixMappings(), false);
+			if (part == null) return null;
+			if (part.getItemId() != null) key = part.getItemId().toUpperCase(java.util.Locale.ROOT);
+		}
 		if (documents.containsKey(key)) return documents.get(key);
 		org.w3c.dom.Document doc = null;
 		try {
@@ -91,8 +102,7 @@ final class BoundValues {
 				doc = marshal(pkg.getDocPropsCorePart());
 			} else if (key.equals(BindingHandler.EXTENDED_PROPERTIES_STOREITEMID)) {
 				doc = marshal(pkg.getDocPropsExtendedPart());
-			} else if (pkg.getCustomXmlDataStorageParts() != null) {
-				CustomXmlPart part = pkg.getCustomXmlDataStorageParts().get(storeItemId.toLowerCase(java.util.Locale.ROOT));
+			} else {
 				if (part instanceof CustomXmlDataStoragePart && ((CustomXmlDataStoragePart) part).getData() != null) {
 					doc = ((CustomXmlDataStoragePart) part).getData().getDocument();
 				} else if (part instanceof JaxbXmlPart) {

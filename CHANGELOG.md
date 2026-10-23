@@ -21,6 +21,12 @@ Claude Fable 5.1
 Changes in Version 17.3.5
 --------------------------
 
+* A w:dataBinding whose w:storeItemID names no custom XML part is resolved to the part its XPath
+  fits, as Word repairs it, and the ID is written into the control as Word's save does; where no
+  part fits the control is left as it is (CR-058). One stale ID used to fail the whole bind on the
+  NonXSLT traverser and silently empty the control on the XSLT one;
+  docx4j.model.datastorage.BindingHandler.strictStoreItemIds=true restores the failure. The text
+  model reads the same part.
 * A bound date content control is formatted as Word formats it (CR-058): w:dateFormat is read as
   Word's date picture (ddd is the weekday, am/pm gives AM/PM, h runs 1 to 12) in the language of
   w:lid (else the document's default language), a value that is not a date is shown as stored

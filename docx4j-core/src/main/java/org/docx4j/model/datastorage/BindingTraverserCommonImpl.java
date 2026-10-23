@@ -121,8 +121,26 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 		List<Object> contents = fragmentToJaxb(frag);
 		if (contents!=null) {
 			postBindSdtPrHygiene(sdtPr, contents);
+			writeBackStoreItemId(pkg, sdtPr);
 		}
 		return contents;
+	}
+
+	/**
+	 * CR-058 D5: a {@code w:storeItemID} that named no part, resolved to the part the XPath fits, is
+	 * written into the control's {@code w:dataBinding} as Word's save writes it, so the saved document
+	 * binds without the repair next time. Whether the document is saved is the caller's business.
+	 *
+	 * @since 17.3.5
+	 */
+	protected static void writeBackStoreItemId(org.docx4j.openpackaging.packages.OpcPackage pkg, SdtPr sdtPr) {
+		CTDataBinding db = sdtPr == null ? null : sdtPr.getDataBinding();
+		if (db == null || db.getStoreItemID() == null || pkg == null) return;
+		String id = StoreItemResolver.resolvedStoreItemId(pkg.getCustomXmlDataStorageParts(), db.getStoreItemID(), db.getXpath(), db.getPrefixMappings());
+		if (id != null && !id.equalsIgnoreCase(db.getStoreItemID())) {
+			log.info("Store item " + db.getStoreItemID() + " of " + db.getXpath() + " rewritten to " + id + ", as Word's save does");
+			db.setStoreItemID(id);
+		}
 	}
 
 	/**
@@ -272,13 +290,13 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 		org.opendope.xpaths.Xpaths.Xpath.DataBinding binding = resolveBinding(sdt.getSdtPr(), xpathsMap);
 		if (binding==null) return true; // nothing we can do; leave the drawing alone
 
-		org.docx4j.openpackaging.parts.CustomXmlPart part
-				= (org.docx4j.openpackaging.parts.CustomXmlPart)
-						pkg.getCustomXmlDataStorageParts().get(binding.getStoreItemID().toLowerCase());
+		org.docx4j.openpackaging.parts.CustomXmlPart part = StoreItemResolver.resolve(
+				pkg.getCustomXmlDataStorageParts(), binding.getStoreItemID(), binding.getXpath(), binding.getPrefixMappings());
 		if (part==null) {
-			log.error("Couldn't locate part by storeItemId " + binding.getStoreItemID());
+			log.warn("Couldn't locate part by storeItemId " + binding.getStoreItemID() + ", and no custom XML part fits; the picture is left as it is");
 			return true;
 		}
+		writeBackStoreItemId(pkg, sdt.getSdtPr());
 		try {
 			String base64 = part.xpathGetString(binding.getXpath(), binding.getPrefixMappings());
 			if (base64==null || base64.trim().length()==0) {
@@ -606,6 +624,7 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 			org.docx4j.openpackaging.packages.OpcPackage pkg) {
 
 		SdtPr sdtPr = sdt.getSdtPr();
+		writeBackStoreItemId(pkg, sdt.getSdtPr()); // CR-058 D5; a no-op where the ID names a part
 		Boolean result = BindingTraverserXSLT.getCheckboxResult(
 				pkg.getCustomXmlDataStorageParts(), sdtPr);
 
@@ -638,6 +657,7 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 				pkg.getCustomXmlDataStorageParts(), sdt.getSdtPr(),
 				pkg instanceof WordprocessingMLPackage ? (WordprocessingMLPackage) pkg : null);
 
+		if (run != null) writeBackStoreItemId(pkg, sdt.getSdtPr());
 		List<Object> contents = new ArrayList<Object>(1);
 		if (run != null && run.getContent().isEmpty()) {
 			// an empty stored value: the placeholder, as for an empty text binding (Word 365, CR-058 D3)

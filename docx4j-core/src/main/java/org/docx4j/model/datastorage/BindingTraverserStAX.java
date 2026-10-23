@@ -375,7 +375,7 @@ public class BindingTraverserStAX extends BindingTraverserCommonImpl {
 			// for all parts for which it is to be called (eg mdp, header parts etc).
 			
 			Map<String, CustomXmlPart> customXmlDataStorageParts = pkg.getCustomXmlDataStorageParts();
-			CustomXmlPart part = customXmlDataStorageParts.get(dataBinding.getStoreItemID().toLowerCase());
+			CustomXmlPart part = StoreItemResolver.resolve(customXmlDataStorageParts, dataBinding.getStoreItemID(), dataBinding.getXpath(), dataBinding.getPrefixMappings());
 			if (part==null) {
 				log.error("Couldn't locate part by storeItemId " + dataBinding.getStoreItemID());
 				return null;

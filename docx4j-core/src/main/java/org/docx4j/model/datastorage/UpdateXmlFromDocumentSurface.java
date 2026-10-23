@@ -209,9 +209,10 @@ public class UpdateXmlFromDocumentSurface {
 //				return pkg.getDocPropsExtendedPart().xpathGetString(xpath, prefixMappings);
 //			} 
 			
-			return customXmlDataStorageParts.get(storeItemId.toLowerCase());
-				// Also handles cover page properties (since we've allocated it a store item id)
-				// Note that Word does not create that part until the user provides one or more prop values
+			// Also handles cover page properties (since we've allocated it a store item id)
+			// Note that Word does not create that part until the user provides one or more prop values.
+			// A store item ID naming no part: the part the XPath fits, as Word repairs it (CR-058 D4)
+			return StoreItemResolver.resolve(customXmlDataStorageParts, storeItemId, xpathExp, prefixMappings);
 			
 			}	
 	
