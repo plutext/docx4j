@@ -23,7 +23,10 @@ Changes in Version 17.3.5
 
 * HTML, PDF and Markdown output: a link whose target is a script scheme (`javascript:` etc) is
   written as its text, with no link (CR-056; cf apache/poi#1455); the schemes written are http,
-  https, ftp, mailto, file, news, tel and none, plus `docx4j.convert.out.linkSchemes`.
+  https, ftp, mailto, file, news, tel and none, plus `docx4j.convert.out.linkSchemes`. The target
+  is read as written and with its character references decoded as a CommonMark renderer decodes a
+  link destination, so `javascript&#58;alert(1)` is refused too (found by docx4j-python and
+  docx4j-core-ts against the Markdown output).
 * HTML output: a style ID is CSS-escaped in the stylesheet's selectors (`class` attributes
   unchanged), and no `<` is written into the stylesheet docx4j composes, so a crafted style ID
   cannot end the `<style>` element and run script (CR-056); a style ID beginning with a digit

@@ -46,7 +46,7 @@ public class FoHostileLinksTest {
 	static WordprocessingMLPackage docx() throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		MainDocumentPart mdp = pkg.getMainDocumentPart();
-		for (String target : new String[] { "javascript:alert(1)", " \u0001java\tscri\npt:alert(2)", "vbscript:MsgBox(3)", "https://example.org/ok", "#bookmark1", "sub/page.html" }) {
+		for (String target : new String[] { "javascript:alert(1)", " \u0001java\tscri\npt:alert(2)", "vbscript:MsgBox(3)", "https://example.org/ok", "#bookmark1", "sub/page.html", "javascript&#58;alert(8)" }) {
 			Relationship rel = new org.docx4j.relationships.ObjectFactory().createRelationship();
 			rel.setType(Namespaces.HYPERLINK); rel.setTarget(target); rel.setTargetMode("External");
 			mdp.getRelationshipsPart().addRelationship(rel);
@@ -73,6 +73,8 @@ public class FoHostileLinksTest {
 		assertFalse("javascript: external-destination\n" + fo, lower.contains("url(javascript:"));
 		assertFalse("sneaky javascript: external-destination\n" + fo, lower.contains("url(java") || lower.contains("url(\u0001"));
 		assertFalse("vbscript: external-destination\n" + fo, lower.contains("url(vbscript:"));
+		assertFalse("entity-encoded javascript: external-destination (CR-056 §14)\n" + fo, lower.contains("url(javascript&#58;") || lower.contains("url(javascript&amp;#58;"));
+		assertTrue("the entity-encoded link's text kept\n" + fo, fo.contains("text for javascript&amp;#58;alert(8)") || fo.contains("text for javascript&#58;alert(8)"));
 		assertTrue("the text kept\n" + fo, fo.contains("text for javascript:alert(1)"));
 	}
 

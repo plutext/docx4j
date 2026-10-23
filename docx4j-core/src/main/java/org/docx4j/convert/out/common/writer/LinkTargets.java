@@ -20,8 +20,10 @@ package org.docx4j.convert.out.common.writer;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import org.docx4j.Docx4jProperties;
@@ -44,6 +46,12 @@ import org.docx4j.Docx4jProperties;
  * is {@code javascript:}; the comparison is case-insensitive. Anything up to the first {@code ':'}
  * (where that comes before any {@code '/'}, {@code '?'} or {@code '#'}) is the scheme, so a
  * target whose scheme a browser would reject as malformed is refused too, rather than second-guessed.
+ *
+ * <p>The target is also read with its character references decoded as a CommonMark renderer decodes
+ * a link destination ({@link #decodeCharacterReferences}): {@code javascript&#58;alert(1)},
+ * {@code &#106;avascript:} and {@code javascript&colon;} pass the first reading (no scheme, or none
+ * that is a word) and come out of a Markdown renderer as {@code href="javascript:alert(1)"} (found by
+ * docx4j-python's CR-015 and docx4j-core-ts, 2026-10-23). A target is safe only if both readings are.
  *
  * @since 17.3.5
  */
@@ -81,6 +89,14 @@ public final class LinkTargets {
 	 * (there is nothing to write).
 	 */
 	public static boolean isSafe(String target) {
+		if (target == null || target.isEmpty()) return true;
+		if (!isSafeAsWritten(target)) return false;
+		String decoded = decodeCharacterReferences(target);
+		return decoded.equals(target) || isSafeAsWritten(decoded);
+	}
+
+	/** {@link #isSafe} for one reading of the target. */
+	private static boolean isSafeAsWritten(String target) {
 		String scheme = scheme(target);
 		if (scheme == null) return true;
 		if (scheme.length() == 1 && Character.isLetter(scheme.charAt(0))) {
@@ -105,6 +121,61 @@ public final class LinkTargets {
 			if (c == '/' || c == '?' || c == '#') return null;
 		}
 		return null;
+	}
+
+	/**
+	 * The HTML5 named character references that decode to one ASCII character (from the HTML5 entity
+	 * table; the rest decode to characters no scheme can hold, and are left as written here).
+	 */
+	private static final Map<String, Character> ASCII_NAMED = new HashMap<String, Character>();
+	static {
+		String[][] names = { { "Tab", "\t" }, { "excl", "!" }, { "quot", "\"" }, { "QUOT", "\"" }, { "num", "#" },
+				{ "dollar", "$" }, { "percnt", "%" }, { "amp", "&" }, { "AMP", "&" }, { "apos", "'" }, { "lpar", "(" },
+				{ "rpar", ")" }, { "ast", "*" }, { "midast", "*" }, { "plus", "+" }, { "comma", "," }, { "period", "." },
+				{ "sol", "/" }, { "colon", ":" }, { "semi", ";" }, { "lt", "<" }, { "LT", "<" }, { "equals", "=" },
+				{ "gt", ">" }, { "GT", ">" }, { "quest", "?" }, { "commat", "@" }, { "lbrack", "[" }, { "lsqb", "[" },
+				{ "bsol", "\\" }, { "rbrack", "]" }, { "rsqb", "]" }, { "Hat", "^" }, { "lowbar", "_" }, { "UnderBar", "_" },
+				{ "DiacriticalGrave", "`" }, { "grave", "`" }, { "lbrace", "{" }, { "lcub", "{" }, { "verbar", "|" },
+				{ "vert", "|" }, { "VerticalLine", "|" }, { "rbrace", "}" }, { "rcub", "}" }, { "NewLine", "\n" } };
+		for (String[] n : names) ASCII_NAMED.put(n[0], n[1].charAt(0));
+	}
+
+	/**
+	 * The target with its character references decoded as CommonMark decodes a link destination
+	 * (spec section "Entity and numeric character references"): a decimal ({@code &#58;}) or hex
+	 * ({@code &#x3A;}) reference to its character, U+FFFD for zero or out of range; a named reference
+	 * that stands for one ASCII character ({@code &colon;}, {@code &sol;}, {@code &Tab;}, ...) to that
+	 * character. Other named references, and an {@code &} that begins no reference, stay as written.
+	 * Decoded once, as a renderer decodes once.
+	 * @since 17.3.5
+	 */
+	public static String decodeCharacterReferences(String target) {
+		if (target == null || target.indexOf('&') < 0) return target;
+		StringBuilder sb = new StringBuilder(target.length());
+		int i = 0;
+		while (i < target.length()) {
+			char c = target.charAt(i);
+			if (c != '&') { sb.append(c); i++; continue; }
+			int semi = target.indexOf(';', i);
+			if (semi < 0 || semi - i > 40) { sb.append(c); i++; continue; }
+			String ref = target.substring(i + 1, semi);
+			String out = null;
+			if (ref.length() > 1 && ref.charAt(0) == '#') {
+				boolean hex = ref.charAt(1) == 'x' || ref.charAt(1) == 'X';
+				String digits = ref.substring(hex ? 2 : 1);
+				if (!digits.isEmpty() && digits.length() <= (hex ? 6 : 7) && digits.chars().allMatch(d -> Character.digit(d, hex ? 16 : 10) >= 0)) {
+					int cp = Integer.parseInt(digits, hex ? 16 : 10);
+					out = (cp == 0 || cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) ? "\uFFFD" : new String(Character.toChars(cp));
+				}
+			} else {
+				Character named = ASCII_NAMED.get(ref);
+				if (named != null) out = named.toString();
+			}
+			if (out == null) { sb.append(c); i++; continue; }
+			sb.append(out);
+			i = semi + 1;
+		}
+		return sb.toString();
 	}
 
 	/** Leading controls and spaces removed; tabs and line breaks removed anywhere. */

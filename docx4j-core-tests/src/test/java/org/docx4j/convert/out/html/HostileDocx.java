@@ -42,6 +42,9 @@ public final class HostileDocx {
 	public static final String SCRIPT_SNEAKY = " \u0001java\tscri\npt:alert('H3_SNEAKY')";
 	public static final String VBSCRIPT_LINK = "vbscript:MsgBox('H4_VB')";
 	public static final String DATA_LINK = "data:text/html,<script>alert('H5_DATA')</script>";
+	/** A script scheme written with character references, as a CommonMark renderer decodes them (CR-056 §14). */
+	public static final String ENTITY_LINK = "javascript&#58;alert('H8_ENTITY')";
+	public static final String ENTITY_LINK_2 = "&#106;avascript&colon;alert('H9_ENTITY')";
 	public static final String STYLE_ID = "x</style><script>alert('H6_STYLEID')</script>";
 	public static final String TABLE_STYLE_ID = "t</style><script>alert('H7_TBLSTYLE')</script>";
 	public static final String SPACED_STYLE_ID = "Body Text 2";
@@ -68,7 +71,7 @@ public final class HostileDocx {
 		Style.Name tn = F.createStyleName(); tn.setVal("HostileTable"); ts.setName(tn); ts.setTblPr(F.createCTTblPrBase());
 		styles.getStyle().add(ts);
 		// links by relationship
-		for (String target : new String[] { SCRIPT_LINK, SCRIPT_SNEAKY, VBSCRIPT_LINK, DATA_LINK, CUSTOM_LINK }) mdp.getContent().add(link(mdp, target, "text for " + target));
+		for (String target : new String[] { SCRIPT_LINK, SCRIPT_SNEAKY, VBSCRIPT_LINK, DATA_LINK, CUSTOM_LINK, ENTITY_LINK, ENTITY_LINK_2 }) mdp.getContent().add(link(mdp, target, "text for " + target));
 		for (String target : BENIGN) mdp.getContent().add(link(mdp, target, "benign " + target));
 		// a HYPERLINK field
 		mdp.getContent().add(field(SCRIPT_FIELD, "field link"));

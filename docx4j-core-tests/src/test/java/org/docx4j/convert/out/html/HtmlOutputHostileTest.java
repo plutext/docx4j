@@ -73,8 +73,10 @@ public class HtmlOutputHostileTest {
 		}
 		assertFalse("the sneaky javascript: link has a href\n" + html, hrefs(html).toString().contains("H3_SNEAKY"));
 		assertFalse("the custom-scheme link has a href by default\n" + html, hrefs(html).contains(HostileDocx.CUSTOM_LINK));
+		// a script scheme written with character references has no href either (CR-056 §14)
+		for (String href : hrefs(html)) assertFalse("an entity-encoded script href: " + href + "\n" + html, href.contains("H8_ENTITY") || href.contains("H9_ENTITY"));
 		// the link text stays, as text, and the hostile targets only there
-		for (String kept : new String[] { "text for javascript:alert('H1_LINK')", "H3_SNEAKY", "field link" }) assertTrue(kept + " kept\n" + html, html.contains(kept));
+		for (String kept : new String[] { "text for javascript:alert('H1_LINK')", "H3_SNEAKY", "field link", "H8_ENTITY", "H9_ENTITY" }) assertTrue(kept + " kept\n" + html, html.contains(kept));
 	}
 
 	static void benignLinksKept(String html) {

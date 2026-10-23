@@ -47,6 +47,34 @@ public class LinkTargetsTest {
 		}
 	}
 
+	/**
+	 * A script scheme written with character references, which a CommonMark renderer decodes in a link
+	 * destination (found by docx4j-python's CR-015 and docx4j-core-ts, 2026-10-23): refused.
+	 */
+	@Test
+	public void characterReferencesDecodedAsACommonMarkRendererDecodesThem() {
+		for (String t : new String[] { "javascript&#58;alert(1)", "&#106;avascript:alert(2)", "javascript&colon;alert(3)",
+				"&#x6A;avascript:alert(4)", "&#X6a;avascript:alert(4)", "java&Tab;script:alert(5)", "java&NewLine;script:alert(6)",
+				"&#0000106;avascript:alert(7)", "vb&#115;cript:x", "d&#97;ta:text/html,x",
+				// refused as written already: up to the first ':' is the scheme, and these are no scheme a browser accepts
+				"&unknown;avascript:x", "a&b:c/d" }) {
+			assertFalse(t, LinkTargets.isSafe(t));
+		}
+		for (String t : new String[] { "R&D/report.html", "page.html?a=1&amp;b=2", "https&#58;//example.org",
+				"&colon", "page.html#&#58;", "sub/dir?x=&#58;" }) {
+			assertTrue(t, LinkTargets.isSafe(t));
+		}
+		assertEquals("javascript:alert(1)", LinkTargets.decodeCharacterReferences("javascript&#58;alert(1)"));
+		assertEquals("javascript:x", LinkTargets.decodeCharacterReferences("&#x6A;avascript&colon;x"));
+		assertEquals("decoded once", "&#58;", LinkTargets.decodeCharacterReferences("&amp;#58;"));
+		assertEquals("\uFFFD", LinkTargets.decodeCharacterReferences("&#0;"));
+		assertEquals("\uFFFD", LinkTargets.decodeCharacterReferences("&#xFFFFFF;"));
+		assertEquals("&colon", LinkTargets.decodeCharacterReferences("&colon"));
+		assertEquals("&nbsp;x", LinkTargets.decodeCharacterReferences("&nbsp;x"));
+		assertEquals("R&D", LinkTargets.decodeCharacterReferences("R&D"));
+		assertEquals(null, LinkTargets.decodeCharacterReferences(null));
+	}
+
 	@Test
 	public void schemeAsABrowserReadsIt() {
 		assertEquals("javascript", LinkTargets.scheme(" \u0001java\tscri\npt:alert(2)"));

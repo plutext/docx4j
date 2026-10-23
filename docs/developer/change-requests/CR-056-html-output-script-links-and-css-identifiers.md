@@ -334,3 +334,28 @@ braces alone are raw; the detail is a text node, escaped like any other (`{++\<s
 `<br>` is a constant. Out of this CR: the OMML-to-LaTeX text (`\text{…}` carries document text into a math renderer,
 which renders it as text) and the Markdown importer (it builds WML from objects).
 
+## 14. Post-ship finding: character references in a link destination (2026-10-23)
+
+Reported by docx4j-core-ts (Jason's go), found by docx4j-python's CR-015 draft (its Q3), confirmed by both ports and
+by reading docx4j at 30fb41024. A CommonMark renderer decodes entity and numeric character references in a link
+destination; `WmlToMarkdown` writes the target's `&` as it is (as commonmark-java does) and `LinkTargets.isSafe` read
+the target undecoded, so four forms passed and came out of a renderer as `href="javascript:alert(1)"`:
+`javascript&#58;alert(1)` (the `#` comes before any `:`, so no scheme), `&#106;avascript:alert(2)` and
+`&#x6A;avascript:alert(4)` (an `&` begins no scheme), `javascript&colon;alert(3)` (no `:` at all). docx4j-python saw
+it with markdown-it-py run with no URL check. The HTML and FO outputs write the `&` escaped (`&amp;#58;`), which a
+browser decodes to the literal `&#58;`, so they were inert there; the Markdown output was the hole.
+
+Fix (this repository, with CR-054 in the same session): `LinkTargets.isSafe` now requires both readings to be safe,
+the target as written and with its character references decoded as CommonMark decodes them
+(`decodeCharacterReferences`, public: decimal and hex references, U+FFFD for zero or out of range; the 45 HTML5 named
+references that stand for one ASCII character, `&colon;` `&sol;` `&Tab;` `&NewLine;` and the rest, from commonmark's
+entity table; other named references and a bare `&` left as written, since they can only make the scheme malformed).
+Decoded once, as a renderer decodes once (`&amp;#58;` stays `&#58;`). The rule is in `isSafe` itself rather than a
+separate `isSafeDestination` (core-ts's uncommitted shape) so that every output and docx4j-tika refuse the same
+targets, and the ports have one oracle; `isSafe`'s existing cases are unchanged. Still safe: `R&D/report.html`,
+`page.html?a=1&amp;b=2`, `https&#58;//example.org`, `&unknown;avascript:x`.
+
+Tests: `LinkTargetsTest.characterReferencesDecodedAsACommonMarkRendererDecodesThem` (ten refused, seven kept, the
+decoder's cases); `HostileDocx` gains `ENTITY_LINK` and `ENTITY_LINK_2`, asserted in `HtmlOutputHostileTest`;
+`MarkdownHostileLinksTest.noEntityEncodedScriptSchemeDestination` and three ampersand targets kept as links;
+`FoHostileLinksTest` one entity-encoded target. Hand-off: core-ts and python told the rule lives in `isSafe`.

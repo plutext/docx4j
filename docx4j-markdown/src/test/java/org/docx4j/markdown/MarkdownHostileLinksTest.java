@@ -41,7 +41,9 @@ public class MarkdownHostileLinksTest {
 	static WordprocessingMLPackage docx() throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		MainDocumentPart mdp = pkg.getMainDocumentPart();
-		for (String target : new String[] { "javascript:alert(1)", " \u0001java\tscri\npt:alert(2)", "vbscript:MsgBox(3)", "https://example.org/ok", "#bookmark1", "sub/page.html" }) {
+		for (String target : new String[] { "javascript:alert(1)", " \u0001java\tscri\npt:alert(2)", "vbscript:MsgBox(3)", "https://example.org/ok", "#bookmark1", "sub/page.html",
+				"javascript&#58;alert(4)", "&#106;avascript:alert(5)", "javascript&colon;alert(6)", "&#x6A;avascript:alert(7)",
+				"page.html?a=1&amp;b=2", "R&D/report.html", "https&#58;//example.org/entity" }) {
 			Relationship rel = new org.docx4j.relationships.ObjectFactory().createRelationship();
 			rel.setType(Namespaces.HYPERLINK); rel.setTarget(target); rel.setTargetMode("External");
 			mdp.getRelationshipsPart().addRelationship(rel);
@@ -62,10 +64,31 @@ public class MarkdownHostileLinksTest {
 		assertFalse("a link around the refused text\n" + md, md.contains("[text for javascript:alert(1)]"));
 	}
 
+	/**
+	 * A script scheme written with character references: a CommonMark renderer decodes them in a link
+	 * destination, so {@code [T](<javascript&#58;alert(1)>)} became {@code href="javascript:alert(1)"}
+	 * (docx4j-python's CR-015 Q3, docx4j-core-ts, 2026-10-23). Not a link; the text kept.
+	 */
+	@Test
+	public void noEntityEncodedScriptSchemeDestination() throws Exception {
+		String md = Docx4J.toMarkdown(docx());
+		for (String target : new String[] { "javascript&#58;alert(4)", "&#106;avascript:alert(5)", "javascript&colon;alert(6)", "&#x6A;avascript:alert(7)" }) {
+			assertFalse("a destination a renderer decodes to a script scheme: " + target + "\n" + md,
+					md.contains("](" + target) || md.contains("](<" + target));
+			String asText = "text for " + target.replace("&", "\\&"); // the renderer escapes & in text
+			assertTrue("the text kept: " + target + "\n" + md, md.contains(asText));
+			assertFalse("a link around the refused text\n" + md, md.contains("[" + asText + "]"));
+		}
+	}
+
 	@Test
 	public void benignLinksKept() throws Exception {
 		String md = Docx4J.toMarkdown(docx());
 		assertTrue(md, md.contains("(https://example.org/ok)") || md.contains("(<https://example.org/ok>)"));
+		for (String target : new String[] { "page.html?a=1&amp;b=2", "R&D/report.html", "https&#58;//example.org/entity" }) {
+			assertTrue("a benign target with an ampersand kept as a link: " + target + "\n" + md,
+					md.contains("](" + target + ")") || md.contains("](<" + target + ">)"));
+		}
 		assertTrue(md, md.contains("(#bookmark1)") || md.contains("(<#bookmark1>)"));
 		assertTrue(md, md.contains("(sub/page.html)") || md.contains("(<sub/page.html>)"));
 	}
