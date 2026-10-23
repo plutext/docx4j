@@ -7,7 +7,8 @@ remaining binding items the portfolio flagged"), from the two items docx4j-portf
 22 October 2026) lists as still open against the binding generator after CR-054 and the fixes of 17.3.4
 (f62314d3b, 24642aa59). Both confirmed in this repository's source at 64ebb9ae9 (§1). Phases in §4. Phase 0 BUILT
 2026-10-23 (§8): red tests and fixtures in core-tests, three probes run in Word 365 the same day. The Word run
-confirms D1, D3 and D4 and revises D2 (§5a); it raises D6, the time zone of a stored date-time (§5a), for Jason.
+confirms D1, D3 and D4 and revises D2 (§5a); it raises D6, the time zone of a stored date-time (§5a). D2 (revised)
+and D6 ACCEPTED as recommended (Jason, 2026-10-23); every decision is taken, and phase 1 can start.
 
 ## 0. Summary
 
@@ -118,7 +119,9 @@ Accepted 2026-10-23: D1 to D5 as recommended. On D5 Jason adds that it is the us
 repaired document is saved: the bind writes the resolved ID into the in-memory package, as it writes the bound
 values, and docx4j saves nothing on its own.
 
-### 5a. After the Word run (23 October 2026, §8): one revision, one new decision, for Jason
+### 5a. After the Word run (23 October 2026, §8): one revision, one new decision
+
+Accepted as recommended, Jason, 23 October 2026: D2 (revised) and D6.
 
 | # | Decision | Recommendation |
 |---|---|---|
