@@ -1,9 +1,10 @@
 # CR-060: run properties read as Word reads them (on/off values, values outside an enumeration, w:color)
 
-Status: PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at Jason's word through the portfolio session
-("yes please", to "Shall I ask docx4j-25, the TypeScript session and the Python session each to draft its CR now,
-giving them these rules and the probes?"). docx4j-core-ts and docx4j-python draft theirs in parallel against the same
-rules (§1). Decisions in §6 await Jason; phases in §5; implementation waits for him.
+Status: ACCEPTED 2026-10-24 (Jason: "recommendations accepted, please commit then implement"): D1 to D6 as
+recommended (§6), D1 after the preprocessor alternative was weighed (§3.1). PROPOSED 2026-10-24, drafted by Claude
+Opus 5.5 (session docx4j-25) at Jason's word through the portfolio session ("yes please", to "Shall I ask docx4j-25,
+the TypeScript session and the Python session each to draft its CR now, giving them these rules and the probes?").
+docx4j-core-ts and docx4j-python draft theirs in parallel against the same rules (§1). Phases in §5.
 
 ## 0. Summary
 
@@ -94,9 +95,45 @@ adapter, so CR-059's defaults (what absence means) are untouched. The field and 
 change. Every reader (the resolver's toggles, the text model, both HTML writers, PDF) follows, since all read through
 `isVal()` and the attribute getters.
 
-The alternative (D1) restores `ST_OnOff` as the field's string type with typed accessors beside it: it keeps the
+One alternative (D1) restores `ST_OnOff` as the field's string type with typed accessors beside it: it keeps the
 source's spelling on a save without further work, but changes every generated `getVal()`/`setVal()` and each of the
 47 attributes' accessors, a wide API break for little gain once the reading is right.
+
+A second alternative (Jason, 2026-10-24) is the preprocessor (`mc-preprocessor.xslt`, or the user's
+`custom-preprocessor.xslt`, which replaces it): a template rewriting each on/off value to `0` or `1` as Word reads
+it. The preprocessor runs only when the first unmarshal fails, and these values don't fail it: measured (JAXB RI, an
+event handler counting every event), `w:b w:val="off"`, `w:u w:val="bogus"` and `w:vertAlign w:val="bogus"` raise no
+`ValidationEvent` and unmarshal to null, where `w:sz w:val="12.5"` throws (`NumberFormatException`), which is how the
+number repairs (`w:w`, `w:ind/@w:hanging`) are reached. docx4j already has the way to make a value fail: since 11.5.13
+(39641e21c) `ST_VerticalJc` carries an adapter that throws `UnmarshalException` for a value outside the enumeration,
+so the preprocessor is reached and the samples' `custom-preprocessor.xslt` can drop BIRT's
+`<w:vAlign w:val="baseline"/>`; its TODO is the same adapter on every enumeration through the bindings. Measured on
+VERSION_17_3_5: it fires (one event, the first unmarshal fails, the preprocessor runs); with the default
+`mc-preprocessor.xslt`, which has no `vAlign` template, the second pass gives the same null as before. And the same
+`custom-preprocessor.xslt` already has an on/off template (2024, #585: POI writes `w:val="off"`): `on` to `true`, `off`
+to `false`, on every `@w:val`, reached only when something else fails or the part is listed in
+`docx4j.jaxb.preprocess.always`.
+
+So the route is a throwing adapter on the `Boolean` fields plus a template. The recommendation stays the reading
+adapter, for on/off, because:
+
+- The throwing adapter has to tell exactly `true`, `false`, `1` and `0` from everything else, which is the reading
+  adapter's work; the template then gives the answer the adapter could have. The rule would live in two places, and
+  the template has to name, by element and attribute, every place the type is used (168 element names in `wml.xsd`
+  take `BooleanDefaultTrue` or `BooleanDefaultFalse`, besides the 47 attributes), where the binding reaches them by type.
+- The values aren't rare or invalid in Word's eyes: POI writes `off` (#585), the 1st edition allowed `on`/`off`, and
+  Word opens them without a repair prompt. Through the preprocessor, every such part is parsed twice and logs an error
+  with a stack trace (`JaxbXmlPart.unmarshal`), where the reading adapter costs nothing.
+- The reading would depend on the configured preprocessor. A `custom-preprocessor.xslt` replaces `mc-preprocessor.xslt`
+  whole; a user's copy taken from the samples since 2024 reads `on`/`off` but still reads `" false"` as off, and one
+  taken before reads `off` as on.
+
+The adapter sees the value untrimmed (measured with `ST_VerticalJc`'s: `" top"`, `"top "` and `"Top"` each raise the
+event), so it can tell `" false"` from `false`, as Word's rule needs.
+
+Where 39641e21c's pattern fits is the enumerations Word repairs (D3): values that are invalid, rare, and whose repair
+a user may want to change (as BIRT's `baseline`). It reaches an invalid value but not a missing one (no attribute, no
+adapter call), so it would cover half of D3 by itself.
 
 ### 3.2 Enumerations
 
@@ -135,7 +172,8 @@ remains is spelling (D2, D4) and the elements Word repairs away (D3):
 ## 4. What it affects
 
 - Every on/off getter's answer for a value that isn't `true`, `false`, `1`, `0` or bare. In practice: files whose
-  producer writes `on`/`off` (the 1st edition's `ST_OnOff` allowed them; which producers do is not surveyed here), and
+  producer writes `on`/`off` (the 1st edition's `ST_OnOff` allowed them; Apache POI 5.2.2 writes `off` for
+  `XWPFRun.setStrikeThrough(false)`, #585, and Word 2019 and 365 show it not struck; no wider survey), and
   hand-edited or templated XML with stray whitespace or case. Their meaning changes in docx4j's reading and rendering to Word's; files Word wrote are
   unaffected (Word writes `0`, `1`, `true`, `false` or bare).
 - HTML: `w:u` without a valid value no longer underlines; a colour-only `w:u` no longer underlines (PDF too); colour
@@ -153,11 +191,11 @@ remains is spelling (D2, D4) and the elements Word repairs away (D3):
 | 2 | §3.2 and §3.3: `Underline`, `HighlightColor`, `FontColor` and the colour normaliser; tests green | ½ day |
 | 3 | §3.4 per D2-D4: what a save writes; CHANGELOG; hand-offs (core-ts, python, objects-ts for the schema change, the portfolio) | 2 h |
 
-## 6. Decisions (for Jason; each with a recommendation)
+## 6. Decisions (accepted as recommended, Jason, 2026-10-24)
 
 | # | Decision | Recommendation |
 |---|---|---|
-| D1 | On/off: an adapter on the `Boolean` fields, or `ST_OnOff` restored as the field's string type with typed accessors | the adapter: the reading becomes Word's on every path, no API change, one class and the bindings |
+| D1 | On/off: an adapter on the `Boolean` fields; `ST_OnOff` restored as the field's string type with typed accessors; or the MCE preprocessor rewriting the values (§3.1) | the reading adapter: the reading becomes Word's on every path, no API change, one class and the bindings. The preprocessor would need 39641e21c's throwing adapter on the same fields, then parses each part with such a value twice, and the reading would depend on the configured preprocessor (§3.1) |
 | D2 | What a save writes for on/off | `true`/`false` (JAXB's form, as `1`/`0` today): meaning kept. Word's own form (bare, `0`, dropped) and the source's spelling are both possible later; neither changes meaning |
 | D3 | An invalid or missing value on `highlight`, `vertAlign`, `em` (Word repairs, dropping the element) and on `w:u` (no repair) | read as absent (§3.2); on save, keep `w:u` as JAXB writes it (bare, which Word reads as no direct underline) and drop `highlight`, `vertAlign` and `em` elements whose value is missing or invalid, as Word's repair does, so a docx4j save opens without a repair prompt |
 | D4 | What a save writes for a colour | keep the source value (meaning kept); render it normalised. Writing Word's upper-case hex can come with D2's "Word's form" if wanted |
@@ -169,7 +207,9 @@ remains is spelling (D2, D4) and the elements Word repairs away (D3):
 - Probes, Word's PDFs and saves: `~/vbShares/Office 2016/onoff-fun/` and its README (docx4j-portfolio's build scripts
   `onoff/build.py`, `build4.py`); docx4j-portfolio's summaries of Jason's runs, 24 October 2026.
 - docx4j's measurements: rounds 1 and 2 reported to the portfolio the same day (scratch `onoff/`, `props/`, `colour/`).
-- Code: `xsd/wml/wml.xsd` (`BooleanDefaultTrue`, the `ST_OnOff`-origin attributes); commit 6cbe2e057 (2008);
+- Code: `xsd/wml/wml.xsd` (`BooleanDefaultTrue`, the `ST_OnOff`-origin attributes; `ST_VerticalJc`'s throwing adapter,
+  39641e21c, 11.5.13); commit 6cbe2e057 (2008); `docx4j-samples-resources/.../custom-preprocessor.xslt` (BIRT `vAlign`,
+  POI's `on`/`off`, #585); `JaxbXmlPart.unmarshal` (the preprocessor on `UnmarshalException`);
   `model/properties/run/Underline.java`, `HighlightColor.java`, `FontColor.java`; `StyleUtil.apply(U, U)`.
 - ECMA-376 Part 1: the simple types `ST_OnOff`, `ST_Underline`, `ST_HighlightColor`, `ST_HexColor`; CR-059 (what
   absence means, done).
