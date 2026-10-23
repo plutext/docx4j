@@ -312,3 +312,23 @@ Found on the way:
   changed: annotations only), and the portfolio.
 - Suites with phases 2 and 3: core-tests 2064 run, 0 failures, 30 skipped; docx4j-export-fo-tests 858, 0, 9;
   docx4j-diffx-tests 9, 0, 1.
+
+## 12. Round 5: values over styles (built 2026-10-24, awaiting Word)
+
+Built at Jason's word ("build the round-5 probe") by docx4j-25, for §11's open item and the ports' matching ones
+(core-ts CR-015 D5, docx4j-python CR-018): four probes on the share beside rounds 1 to 4 (`onoff-fun/`, round-5
+section of its README; builder `build5.py` there). `props-u-styles`: an invalid, bare or colour-only `w:u` over
+character and paragraph styles that underline double. `colour-styles`: an invalid, empty or bare `w:color` over
+styles that colour the text. `props-enum-styles`: an invalid or bare `highlight`, `vertAlign` or `em` over styles
+stating all three (a repair expected). `colour-elsewhere`: colour names in `w:u/@w:color`, `w:shd/@w:fill` and a run
+border's `w:color`. LibreOffice opens all four.
+
+docx4j's reading before Word's (868a1797b), to compare with Word's saves when they come:
+
+- Every invalid, bare or colour-only `w:u` over either style reads as the style's double underline (HTML leaves it to
+  the style's class; PDF underlines). A save writes it bare.
+- `w:color` `F00`, `bogus`, `grey`, `0xFF0000`, `FF00000` over a style's colour read automatic (black in PDF); `""` and
+  a bare `<w:color/>` read as the style's colour (`StyleUtil.isEmpty(Color)` treats an empty value as absent).
+- Every invalid or bare `highlight`, `vertAlign` and `em` over either style reads as the style's value.
+- `w:shd/@w:fill` and a border's `w:color` are not normalised: `red`, `Aqua` and `F00` are written into HTML and FO as
+  `#red`, `#Aqua`, `#F00` (CSS draws `#F00` red). An underline's colour is not drawn by either writer.
