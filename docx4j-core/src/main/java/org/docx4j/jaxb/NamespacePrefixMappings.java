@@ -20,14 +20,17 @@
 
 package org.docx4j.jaxb;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 
-import org.apache.commons.lang3.text.StrTokenizer;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.w3c.dom.Node;
 
@@ -50,6 +53,50 @@ import org.w3c.dom.Node;
  *
  */
 public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org.apache.xml.utils.PrefixResolver {
+
+	/**
+	 * The prefix mappings this context was built with (a binding's {@code w:prefixMappings}, an
+	 * OpenDoPE xpath's), consulted before the built-in table; empty for the table alone.
+	 * @since 17.3.5 (CR-054)
+	 */
+	private final Map<String, String> declared;
+
+	/** docx4j's built-in prefix table, and the shared registered mappings behind it. */
+	public NamespacePrefixMappings() {
+		this.declared = Collections.emptyMap();
+	}
+
+	/**
+	 * A context for one evaluation: the given mappings (ECMA-376 17.5.2.24, {@code xmlns:p='uri'}
+	 * whitespace apart, either quote), which win, then the built-in table, then the shared registered
+	 * mappings (CR-054 D1). Null or empty mappings give the table alone.
+	 * @since 17.3.5
+	 */
+	public NamespacePrefixMappings(String prefixMappings) {
+		this.declared = parse(prefixMappings);
+	}
+
+	/** {@link #NamespacePrefixMappings(String)} as a factory. @since 17.3.5 */
+	public static NamespacePrefixMappings of(String prefixMappings) {
+		return new NamespacePrefixMappings(prefixMappings);
+	}
+
+	private static final Pattern MAPPING = Pattern.compile("xmlns:([^=\\s]+)\\s*=\\s*(['\"])(.*?)\\2");
+
+	/**
+	 * A {@code w:prefixMappings} string parsed to prefix &rarr; URI: each {@code xmlns:prefix='uri'} (or
+	 * double-quoted), whatever the whitespace between them (CR-054 D3; the schema's ST_String allows
+	 * either quote; Word writes single quotes and a trailing space). Shared with the text model.
+	 * @return the mappings in order, empty for null or no mapping
+	 * @since 17.3.5
+	 */
+	public static Map<String, String> parse(String prefixMappings) {
+		if (prefixMappings == null || prefixMappings.trim().isEmpty()) return Collections.emptyMap();
+		Map<String, String> m = new java.util.LinkedHashMap<String, String>();
+		Matcher matcher = MAPPING.matcher(prefixMappings);
+		while (matcher.find()) m.put(matcher.group(1), matcher.group(3));
+		return m;
+	}
 
 /* Refer https://github.com/OfficeDev/Open-XML-SDK/blob/master/src/DocumentFormat.OpenXml/Framework/NamespaceIdMap.cs
  * (copied in our xsd dir) for canonical mappings. */
@@ -604,6 +651,11 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
     
 	public String getNamespaceURI(String prefix) {  // implementing NamespaceContext
 		
+		// The mappings this context was built with win (CR-054): a binding's prefix means what the
+		// binding declares, whatever the table says about the same letters
+		String own = declared.get(prefix);
+		if (own != null) return own;
+
 		// Excel uses a default namespace, not a prefix.  But it is convenient
 		// to be able to use a prefix in XPath
 		if (prefix.equals("s"))
@@ -993,6 +1045,9 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 	}
 
 	public String getPrefix(String namespaceURI) {  // implementing NamespaceContext
+		for (Map.Entry<String, String> e : declared.entrySet()) {
+			if (e.getValue().equals(namespaceURI)) return e.getKey();
+		}
 		return getPreferredPrefixStatic(namespaceURI, null, false );
 		
 //		if (namespaceURI.equals(Namespaces.NS_WORD12))
@@ -1008,30 +1063,23 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 		return null;
 	}
 	
-	private static Map<String, String> namespaces = new HashMap<String, String>();	
+	/** Mappings registered JVM-wide; consulted after the built-in table. One map for every document. */
+	private static final Map<String, String> namespaces = new ConcurrentHashMap<String, String>();
+
+	/**
+	 * Register prefix mappings in the map shared by every part and document in the JVM, consulted
+	 * after the built-in table.
+	 *
+	 * @deprecated since 17.3.5 (CR-054): a registration here is global (the last document to register a
+	 *             prefix sets it for every other) and loses to the built-in table for a prefix the table
+	 *             holds ({@code p}, {@code w}, {@code a}, ...). Build a context for the evaluation
+	 *             instead, {@link #of(String)}, as the parts' XPath methods now do; the registered map
+	 *             is still consulted, last.
+	 */
+	@Deprecated
 	public static void registerPrefixMappings(String prefixMappings) {
 		// eg  w:prefixMappings="xmlns:ns0='http://schemas.medchart'"
-		// according to the spec, whitespace is the delimiter
-		
-		if (prefixMappings==null || prefixMappings.equals("") ) return;
-		
-		// we get one of these each time we encounter a w:dataBinding
-		// element in a content control; pity it is not done just
-		// once!
-		
-		// first tokenise on space
-		StrTokenizer tokens = new org.apache.commons.lang3.text.StrTokenizer(prefixMappings);
-		while (tokens.hasNext() ) {
-			String token = tokens.nextToken();
-			//log.debug("Got: " + token);
-			int pos = token.indexOf("=");
-			String prefix = token.substring(6, pos); // drop xmlns:
-			//log.debug("Got: " + prefix);
-			String uri = token.substring(pos+2, token.lastIndexOf("'"));
-			//log.debug("Got: " + uri);
-			namespaces.put(prefix, uri);
-		}
-		
+		namespaces.putAll(parse(prefixMappings));
 	}
 
 

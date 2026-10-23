@@ -83,14 +83,6 @@ public abstract class XmlPart extends Part {
 	private static XPath xPath = XPathFactoryUtil.newXPath();
 //	private static Pattern p = Pattern.compile("\\[.*\\]");
 	
-	private NamespacePrefixMappings nsContext;
-	private NamespacePrefixMappings getNamespaceContext() {
-		if (nsContext==null) {
-			nsContext = new NamespacePrefixMappings();
-			xPath.setNamespaceContext(nsContext);
-		}
-		return nsContext;
-	}
 
 	public void setDocument(InputStream is) throws Docx4JException {
 		try {
@@ -132,20 +124,21 @@ public abstract class XmlPart extends Part {
 			
 			String result;
 			synchronized(xPath) {
-				getNamespaceContext().registerPrefixMappings(prefixMappings);
+				// CR-054: a context for this evaluation, the binding's mappings first
+				xPath.setNamespaceContext(NamespacePrefixMappings.of(prefixMappings));
 				result = xPath.evaluate(xpathString, doc );
-			}
-			if (result.equals("") && log.isWarnEnabled()) {
-				// Provide diagnostics as to cause of '' result 
-				NodeList nl = (NodeList) xPath.evaluate(xpathString, doc, XPathConstants.NODESET );
-				if (nl.getLength()==0) {
-					// empty node-set is converted to empty string
-					log.warn("No match for " + xpathString + " so result is empty string");
+				if (result.equals("") && log.isWarnEnabled()) {
+					// Provide diagnostics as to cause of '' result 
+					NodeList nl = (NodeList) xPath.evaluate(xpathString, doc, XPathConstants.NODESET );
+					if (nl.getLength()==0) {
+						// empty node-set is converted to empty string
+						log.warn("No match for " + xpathString + " so result is empty string");
+					} else {
+						log.debug(xpathString + " ---> '" + result + "'");
+					}
 				} else {
 					log.debug(xpathString + " ---> '" + result + "'");
 				}
-			} else {
-				log.debug(xpathString + " ---> '" + result + "'");
 			}
 			return result;
 		} catch (Exception e) {
@@ -154,33 +147,16 @@ public abstract class XmlPart extends Part {
 	}
 	
 	private CachedXPathAPI cachedXPathAPI = null;
-	private String cachedPrefixMappings = null;
 	
-	private void setupCache(String prefixMappings) {
+	/**
+	 * The CachedXPathAPI, made once per part. The prefix resolver is passed per evaluation
+	 * (CR-054), so no mappings are registered here.
+	 */
+	private void setupCache() {
 		
 		if (cachedXPathAPI==null) {
 			cachedXPathAPI = new CachedXPathAPI();
-
-			// Ignored by CachedXPathAPI in Xalan 2.7.2! 
-			//cachedXPathAPI.getXPathContext().setNamespaceContext(
-			//		getNamespaceContext());
 		}
-		
-		// Init namespace prefix mappings
-		if (cachedPrefixMappings == null
-				&& prefixMappings!=null ) {
-			cachedPrefixMappings = prefixMappings;
-			getNamespaceContext().registerPrefixMappings(prefixMappings);
-						
-		}
-		
-		// Register any new prefixes; simple-minded
-		if (prefixMappings!=null 
-				&& !prefixMappings.equals(cachedPrefixMappings)) {
-			getNamespaceContext().registerPrefixMappings(prefixMappings);
-			
-		}
-		
 	}
 	
 	/**
@@ -210,11 +186,11 @@ public abstract class XmlPart extends Part {
 		
 		// eg org.apache.xpath.jaxp.XPathImpl
 		
-		setupCache(prefixMappings);
+		setupCache();
 				
 		try {
 			
-			XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
+			XObject xo = cachedXPathAPI.eval(doc, xpath, NamespacePrefixMappings.of(prefixMappings));
 
 			if (Docx4jProperties.getProperty("docx4j.openpackaging.parts.XmlPart.cachedXPathGetString.heuristic", true) ) {
 				
@@ -441,7 +417,7 @@ public abstract class XmlPart extends Part {
 			// how would we catch, for example: boolean(//foo) + string(//fileNumber[1])		
 			
 		} else if (approach.equals("cast2") ) {
-			String prefix = getNamespaceContext().getPrefix("http://www.w3.org/2001/XMLSchema");
+			String prefix = NamespacePrefixMappings.of(prefixMappings).getPrefix("http://www.w3.org/2001/XMLSchema");
 			if (prefix==null) {
 				// can't honour intended cast
 				log.debug("http://www.w3.org/2001/XMLSchema not in " + prefixMappings);
@@ -460,11 +436,11 @@ public abstract class XmlPart extends Part {
 		}
 		
 		// eg org.apache.xpath.jaxp.XPathImpl		
-		setupCache(prefixMappings);
+		setupCache();
 
 		XObject xo;
 		try {
-			xo = cachedXPathAPI.eval(doc, booleanXPath, getNamespaceContext());
+			xo = cachedXPathAPI.eval(doc, booleanXPath, NamespacePrefixMappings.of(prefixMappings));
 		} catch (TransformerException e) {
 			log.error(System.getProperty("java.vendor"));
 			log.error(System.getProperty("java.version"));
@@ -491,7 +467,8 @@ public abstract class XmlPart extends Part {
 		
 		Object result;
 		synchronized(xPath) {
-			getNamespaceContext().registerPrefixMappings(prefixMappings);
+			NamespacePrefixMappings context = NamespacePrefixMappings.of(prefixMappings); // CR-054
+			xPath.setNamespaceContext(context);
 			try {
 				result = xPath.evaluate(xpathB, doc, XPathConstants.BOOLEAN );
 			} catch (XPathExpressionException e) {
@@ -516,7 +493,7 @@ public abstract class XmlPart extends Part {
 						throw new Docx4JException("Exception executing " + xpathB + ";" + e.getMessage(), e);					
 					}
 					
-					String prefix = getNamespaceContext().getPrefix("http://www.w3.org/2001/XMLSchema");
+					String prefix = context.getPrefix("http://www.w3.org/2001/XMLSchema");
 					if (setting.equals("cast2")) {
 						if (prefix==null) {
 							// can't honour intended cast
@@ -556,15 +533,12 @@ public abstract class XmlPart extends Part {
 	public void discardCacheXPathObject() {
 		
 		cachedXPathAPI = null;
-		cachedPrefixMappings = null;		
 	}
 	
 	public List<Node> xpathGetNodes(String xpathString, String prefixMappings) {
 		
 		synchronized(xPath) {
-			getNamespaceContext().registerPrefixMappings(prefixMappings);
-			return XmlUtils.xpath(doc, xpathString, 
-					getNamespaceContext() );
+			return XmlUtils.xpath(doc, xpathString, NamespacePrefixMappings.of(prefixMappings)); // CR-054
 		}		
 	}
 	
@@ -583,7 +557,7 @@ public abstract class XmlPart extends Part {
 		try {
 			Node n;
 			synchronized(xPath) {
-				getNamespaceContext().registerPrefixMappings(prefixMappings);
+				xPath.setNamespaceContext(NamespacePrefixMappings.of(prefixMappings)); // CR-054
 				n = (Node)xPath.evaluate(xpath, doc, XPathConstants.NODE );
 			}
 			if (n==null) {

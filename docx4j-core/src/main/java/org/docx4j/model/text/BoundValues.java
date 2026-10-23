@@ -120,9 +120,7 @@ final class BoundValues {
 		private final Map<String, String> uris = new HashMap<String, String>();
 
 		Mappings(String prefixMappings) {
-			if (prefixMappings == null) return;
-			java.util.regex.Matcher m = java.util.regex.Pattern.compile("xmlns:([^=\\s]+)\\s*=\\s*(['\"])(.*?)\\2").matcher(prefixMappings);
-			while (m.find()) uris.put(m.group(1), m.group(3));
+			uris.putAll(org.docx4j.jaxb.NamespacePrefixMappings.parse(prefixMappings)); // the one parser (CR-054)
 		}
 
 		@Override

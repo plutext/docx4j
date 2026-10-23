@@ -51,6 +51,11 @@ Changes in Version 17.3.5
   conversion in the JVM then failed with `NoClassDefFoundError`. `docx4j.fonts.fontcache` is
   now also read from docx4j.properties, where the reference file has listed it since 17.0.0
   (the JVM system property wins).
+* Binding: a `w:dataBinding`'s (or OpenDoPE xpath's) own `w:prefixMappings` now win over docx4j's
+  built-in prefix table when its XPath is evaluated, so a template that binds with `p`, `a`, `x`,
+  `w` or any other prefix the table holds gets its value, not its placeholder (CR-054). The context
+  is built per evaluation (either quote, any whitespace); `NamespacePrefixMappings.registerPrefixMappings`
+  is deprecated, its JVM-wide map consulted last.
 
 
 Version 17.3.4

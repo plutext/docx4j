@@ -88,14 +88,6 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 	}
 	
 	
-	private NamespacePrefixMappings nsContext;
-	private NamespacePrefixMappings getNamespaceContext() {
-		if (nsContext==null) {
-			nsContext = new NamespacePrefixMappings();
-			xPath.setNamespaceContext(nsContext);
-		}
-		return nsContext;
-	}
 	
 	public String xpathGetString(String xpathString, String prefixMappings)  throws Docx4JException {
 		
@@ -106,7 +98,7 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 		try {
 			String result;
 			synchronized(xPath) {
-				getNamespaceContext().registerPrefixMappings(prefixMappings);
+				xPath.setNamespaceContext(NamespacePrefixMappings.of(prefixMappings)); // CR-054
 				result = xPath.evaluate(xpathString, doc );
 			}
 			log.debug(xpathString + " ---> " + result);
@@ -137,7 +129,7 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 		
 		Object result;
 		synchronized(xPath) {
-			getNamespaceContext().registerPrefixMappings(prefixMappings);
+			xPath.setNamespaceContext(NamespacePrefixMappings.of(prefixMappings)); // CR-054
 			try {
 				result = xPath.evaluate(xpathB, doc, XPathConstants.BOOLEAN );
 			} catch (XPathExpressionException e) {
@@ -176,9 +168,7 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 		}
 		
 		synchronized(xPath) {
-			getNamespaceContext().registerPrefixMappings(prefixMappings);
-			return XmlUtils.xpath(doc, xpathString, 
-					getNamespaceContext() );
+			return XmlUtils.xpath(doc, xpathString, NamespacePrefixMappings.of(prefixMappings));
 		}
 		
 	}
@@ -193,7 +183,7 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 		try {
 			Node node;
 			synchronized(xPath) {
-				getNamespaceContext().registerPrefixMappings(prefixMappings);
+				xPath.setNamespaceContext(NamespacePrefixMappings.of(prefixMappings)); // CR-054
 				node = (Node)xPath.evaluate(xpath, doc,  XPathConstants.NODE );
 				
 //				System.out.println(node.getClass().getName());

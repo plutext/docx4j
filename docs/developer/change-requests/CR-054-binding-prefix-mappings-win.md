@@ -3,6 +3,7 @@
 Status: PROPOSED 2026-10-22, drafted by Claude Fable 5.1 (session docx4j-25) at Jason's request ("make the
 CR to fix the seventh defect"), from a defect found the same day building the drop-down binding fix
 (CHANGELOG 17.3.4) against docx4j-portfolio's bind-typed probe. One phase (§5); decisions in §6.
+ACCEPTED 2026-10-23 (Jason: "CR-054 D1 to D3 recs accepted"); DONE 2026-10-23 (record in §6a), for 17.3.5.
 
 ## 0. Summary
 
@@ -148,6 +149,33 @@ that session, not fixed yet. python reads the nominal day.
   removed in 17.3.4; removal is a 17.4.0 question.
 - D3 (proposed): the parser accepts either quote and any whitespace (the text model's regex), and so
   reads what the schema allows, not only what Word writes.
+
+## 6a. Record (2026-10-23, docx4j-25; D1 to D3 accepted by Jason the same day, as recommended)
+
+- `NamespacePrefixMappings`: an instance map `declared`, filled by the new constructor
+  `NamespacePrefixMappings(String prefixMappings)` and the factory `of(String)`; the no-arg constructor
+  keeps the table alone. `getNamespaceURI` consults `declared`, then the `s` special case, then the
+  table (`getNamespaceURIStatic`, whose tail is the shared map); `getPrefix` answers a declared prefix for
+  its URI before `getPreferredPrefixStatic` (so a template that declares `xmlns:xs` gets its `xs:boolean`
+  cast with its own prefix). `parse(String)` is the one parser (D3: the text model's regex, either quote,
+  any whitespace, `LinkedHashMap` in order); `BoundValues.Mappings` now calls it. `registerPrefixMappings`
+  is `@Deprecated`, still filling the shared map, now a `ConcurrentHashMap` (D2); `StrTokenizer` gone.
+- The four parts (`XmlPart`, `JaxbCustomXmlDataStoragePart`, `DocPropsCorePart`, `DocPropsExtendedPart`):
+  the per-instance `nsContext` and `getNamespaceContext()` are gone; each evaluation does
+  `xPath.setNamespaceContext(NamespacePrefixMappings.of(prefixMappings))` inside the existing
+  `synchronized(xPath)` (the diagnostic NODESET re-evaluation in `XmlPart.xpathGetString` moved inside
+  that block, where it belongs), `cachedXPathAPI.eval(doc, xpath, NamespacePrefixMappings.of(prefixMappings))`
+  for the cached path, and `XmlUtils.xpath(doc, xpath, context)` for the node lists. `XmlPart.setupCache`
+  now only makes the `CachedXPathAPI`; `cachedPrefixMappings` is gone.
+- Tests: `PrefixMappingsWinTest` (core-tests, `openpackaging.parts`: `p` and `w` as the binding's prefix
+  on all four evaluation paths; double quotes and no whitespace between mappings; two parts with `p`
+  meaning two namespaces, neither leaking; an undeclared table prefix still resolving; the registered map
+  consulted last and beaten by a declared mapping; the parser's cases). `TypedControlBindingTest` gains the
+  fixture `OpenDoPE/typed-controls-p-prefix.docx` (the `ns0` fixture with `ns0` rewritten to `p` in
+  `word/document.xml`, 12 tokens; the probe as the portfolio's bind-typed.docx has it) and binds it through
+  both traversers with the same assertions as the `ns0` fixture.
+- Not done: removing the shared map (D2: a 17.4.0 question); `InspectWalk.loadBindings` keeps its own
+  `BoundValues.Mappings` context (right already; now parsed by the shared parser).
 
 ## 7. Risks
 

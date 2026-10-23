@@ -105,7 +105,7 @@ public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
 		try {
 			String result;
 			synchronized(xPath) {
-				getNamespaceContext().registerPrefixMappings(prefixMappings);
+				xPath.setNamespaceContext(NamespacePrefixMappings.of(prefixMappings)); // CR-054: the binding's mappings win
 				result = xPath.evaluate(xpathString, doc );
 			}
 			log.debug(xpathString + " ---> " + result);
@@ -113,14 +113,6 @@ public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
 		} catch (Exception e) {
 			throw new Docx4JException("Problems evaluating xpath '" + xpathString + "'", e);
 		}
-	}
-	private NamespacePrefixMappings nsContext;
-	private NamespacePrefixMappings getNamespaceContext() {
-		if (nsContext==null) {
-			nsContext = new NamespacePrefixMappings();
-			xPath.setNamespaceContext(nsContext);
-		}
-		return nsContext;
 	}
 	
 	/**

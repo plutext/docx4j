@@ -46,10 +46,14 @@ public class TypedControlBindingTest {
 	private static final String IMPL_PROPERTY = "docx4j.model.datastorage.BindingHandler.Implementation";
 
 	private static String bind(String implementation) throws Exception {
+		return bind(implementation, "typed-controls.docx");
+	}
+
+	private static String bind(String implementation, String fixture) throws Exception {
 		Docx4jProperties.setProperty(IMPL_PROPERTY, implementation);
 		try {
 			WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new java.io.File(
-					System.getProperty("user.dir") + "/src/test/resources/OpenDoPE/typed-controls.docx"));
+					System.getProperty("user.dir") + "/src/test/resources/OpenDoPE/" + fixture));
 			Docx4J.bind(pkg, (org.w3c.dom.Document) null, Docx4J.FLAG_BIND_BIND_XML);
 			return XmlUtils.marshaltoString(pkg.getMainDocumentPart().getJaxbElement(), true, false);
 		} finally {
@@ -65,7 +69,11 @@ public class TypedControlBindingTest {
 	}
 
 	private static void wordsReading(String implementation) throws Exception {
-		String xml = bind(implementation);
+		wordsReading(implementation, "typed-controls.docx");
+	}
+
+	private static void wordsReading(String implementation, String fixture) throws Exception {
+		String xml = bind(implementation, fixture);
 
 		String dd2 = control(xml, "DD2");
 		assertTrue(implementation + " DD2: " + dd2, dd2.contains(">DD2_SECOND_ITEM</w:t>"));
@@ -92,6 +100,21 @@ public class TypedControlBindingTest {
 	@Test
 	public void boundTypedControlsShowWhatWordShowsNonXSLT() throws Exception {
 		wordsReading("BindingTraverserNonXSLT");
+	}
+
+	/**
+	 * CR-054: the same probe as docx4j-portfolio's bind-typed.docx has it, prefix {@code p}, which docx4j's
+	 * built-in table maps to PresentationML. Until 17.3.5 the table won and every control showed its
+	 * placeholder; the binding's own mappings now win, so the two fixtures bind alike.
+	 */
+	@Test
+	public void aBindingPrefixInDocx4jsTableBindsAlikeXSLT() throws Exception {
+		wordsReading("BindingTraverserXSLT", "typed-controls-p-prefix.docx");
+	}
+
+	@Test
+	public void aBindingPrefixInDocx4jsTableBindsAlikeNonXSLT() throws Exception {
+		wordsReading("BindingTraverserNonXSLT", "typed-controls-p-prefix.docx");
 	}
 
 	/** The mapping on its own: a value in no item is shown as it is; the last value reverses the display text. */
