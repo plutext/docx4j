@@ -17,10 +17,15 @@ Jason Harrop
 
 Claude Fable 5.1
 
+Claude Opus 5.5
+
 
 Changes in Version 17.3.5
 --------------------------
 
+* jsoup 1.22.1 to 1.23.2 (optional; the altChunk HTML reading), with docx4j-ImportXHTML's. Its W3C DOM
+  now gives a prefixed attribute in Word's HTML (o:spid) once and in its namespace, and a mixed-case
+  RCDATA end tag keeps its content as text, as the HTML standard says.
 * Generated getters for 35 more WordprocessingML boolean attributes answer as ECMA-376 reads their
   absence (CR-059; docx4j's schema had given them default="true" since 2008). False when absent:
   CTBorder shadow/frame, CTEastAsianLayout combine/vert/vertCompress, CTFramePr anchorLock,

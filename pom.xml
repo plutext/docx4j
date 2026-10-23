@@ -158,7 +158,7 @@
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.22.1</version>
+			<version>1.23.2</version>
 		</dependency>
 
 		<!-- docx4j-copy, docx4j-generated-objects and docx4j-core get jaxb-core (and, through it,
