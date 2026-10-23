@@ -3048,7 +3048,7 @@ PRINCIPLES:
 					Styles</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="enforcement" type="xsd:boolean" default="true">
+		<xsd:attribute name="enforcement" type="xsd:boolean" default="false"> <!-- absent is off (issue 697); was default="true" -->
 			<xsd:annotation>
 				<xsd:documentation>Enforce Document Protection
 					Settings</xsd:documentation>
@@ -4656,13 +4656,13 @@ PRINCIPLES:
 				<xsd:documentation>Field Codes</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="fldLock" type="xsd:boolean" default="true">
+		<xsd:attribute name="fldLock" type="xsd:boolean" default="false"> <!-- absent is off (issue 697); was default="true" -->
 			<xsd:annotation>
 				<xsd:documentation>Field Should Not Be
 					Recalculated</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="dirty" type="xsd:boolean" default="true">
+		<xsd:attribute name="dirty" type="xsd:boolean" default="false"> <!-- absent is off (issue 697); was default="true" -->
 			<xsd:annotation>
 				<xsd:documentation>Field Result Invalidated</xsd:documentation>
 			</xsd:annotation>
@@ -4814,13 +4814,13 @@ PRINCIPLES:
 				<xsd:documentation>Field Character Type</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="fldLock" type="xsd:boolean" default="true">
+		<xsd:attribute name="fldLock" type="xsd:boolean" default="false"> <!-- absent is off (issue 697); was default="true" -->
 			<xsd:annotation>
 				<xsd:documentation>Field Should Not Be
 					Recalculated</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="dirty" type="xsd:boolean" default="true">
+		<xsd:attribute name="dirty" type="xsd:boolean" default="false"> <!-- absent is off (issue 697); was default="true" -->
 			<xsd:annotation>
 				<xsd:documentation>Field Result Invalidated</xsd:documentation>
 			</xsd:annotation>

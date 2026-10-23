@@ -367,8 +367,6 @@ public class FieldRef {
 	private void processFldBegin() {
 		formFieldProperties = fldCharBegin.getFfData();
 		customFieldData = fldCharBegin.getFldData();
-		dirty = fldCharBegin.isDirty();
-		lock = fldCharBegin.isFldLock();
 	}
 	
 	private Boolean mergeFormat;
@@ -399,37 +397,41 @@ public class FieldRef {
 		return mergeFormat;
 	}
 
-	private boolean dirty;
-
 	/**
 	 * Specifies that this field has been flagged by an application to indicate that its current results
 	 * are invalid (stale) due to other modifications made to the document, and these contents should be 
 	 * updated before they are displayed.
+	 *
+	 * <p>Read from the begin {@code w:fldChar}'s {@code w:dirty}; absent is false. Until 17.3.5 this
+	 * returned a copy taken only once {@link #getFormFieldProperties()} had been called, so false for
+	 * most fields whatever the document said (issue 697).</p>
+	 *
 	 * @return whether stale
 	 * @see <a href="http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/fldChar.html">the spec</a>
 	 */
 	public boolean isDirty() {
-		return dirty;
+		return fldCharBegin != null && fldCharBegin.isDirty();
 	}
 	/**
 	 * @param whether stale
 	 * @see <a href="http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/fldChar.html">the spec</a>
 	 */
 	public void setDirty(boolean dirty) {
-		this.dirty = dirty;
 		fldCharBegin.setDirty(dirty);
 		
 		// Note that this doesn't set dirty on any nested fields.  TODO: Consider whether it should.
 	}
 
-	private boolean lock;
-	
 	/**
+	 * Read from the begin {@code w:fldChar}'s {@code w:fldLock}; absent is false. Until 17.3.5 this
+	 * returned a copy taken only once {@link #getFormFieldProperties()} had been called, so false for
+	 * most fields, a locked one included (issue 697).
+	 *
 	 * @return the lock
 	 * @see <a href="http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/fldChar.html">the spec</a>
 	 */
 	public boolean isLock() {
-		return lock;
+		return fldCharBegin != null && fldCharBegin.isFldLock();
 	}
 	/**
 	 * Specifies that the parent complex field shall not have its field result recalculated, even if 
@@ -440,7 +442,6 @@ public class FieldRef {
 	 * @see <a href="http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/fldChar.html">the spec</a>
 	 */
 	public void setLock(boolean lock) {
-		this.lock = lock;
 		fldCharBegin.setFldLock(lock);
 	}
 

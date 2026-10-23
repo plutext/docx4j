@@ -21,6 +21,11 @@ Claude Fable 5.1
 Changes in Version 17.3.5
 --------------------------
 
+* Fields: isFldLock() and isDirty() (w:fldChar, w:fldSimple) and CTDocProtect.isEnforcement() return
+  false when the attribute is absent; they returned true (#697). FieldRef.isLock() and isDirty() read
+  the field's begin w:fldChar; they were false unless getFormFieldProperties() had been called, so a
+  locked MERGEFIELD or DOCPROPERTY lost its result to FieldUpdater and MailMerger. A
+  documentProtection without w:enforcement is no longer reported as restricting editing.
 * A w:dataBinding whose w:storeItemID names no custom XML part is resolved to the part its XPath
   fits, as Word repairs it, and the ID is written into the control as Word's save does; where no
   part fits the control is left as it is (CR-058). One stale ID used to fail the whole bind on the
