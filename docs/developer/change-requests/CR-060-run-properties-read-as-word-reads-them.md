@@ -313,7 +313,7 @@ Found on the way:
 - Suites with phases 2 and 3: core-tests 2064 run, 0 failures, 30 skipped; docx4j-export-fo-tests 858, 0, 9;
   docx4j-diffx-tests 9, 0, 1.
 
-## 12. Round 5: values over styles (built 2026-10-24, awaiting Word)
+## 12. Round 5: values over styles (built and run 2026-10-24)
 
 Built at Jason's word ("build the round-5 probe") by docx4j-25, for §11's open item and the ports' matching ones
 (core-ts CR-015 D5, docx4j-python CR-018): four probes on the share beside rounds 1 to 4 (`onoff-fun/`, round-5
@@ -332,3 +332,32 @@ docx4j's reading before Word's (868a1797b), to compare with Word's saves when th
 - Every invalid or bare `highlight`, `vertAlign` and `em` over either style reads as the style's value.
 - `w:shd/@w:fill` and a border's `w:color` are not normalised: `red`, `Aqua` and `F00` are written into HTML and FO as
   `#red`, `#Aqua`, `#F00` (CSS draws `#F00` red). An underline's colour is not drawn by either writer.
+
+Word's results (Jason's run, 24 October 2026: PDFs and `-word365.docx` saves on the share; only `props-enum-styles`
+offered a repair, as expected). Read from the saves and the PDFs:
+
+1. **`w:u`.** Over a character or a paragraph style underlining double, a bare `w:u` and the values `bogus`, `Single`,
+   `SINGLE`, `""` and `NONE` read as absent: the style's double underline shows, and Word's save drops the direct
+   `w:u`. docx4j reads them so, and writes them bare, which Word reads as absent: the save keeps meaning (core-ts
+   D5's question). A colour with no valid value (`w:color="FF0000"` alone, or with `bogus`) gives the style's double
+   underline in red, as docx4j's merge has it. **But `true` removes the underline**: Word draws none and saves
+   `w:val="none"`. docx4j reads `true` as absent (JAXB rejects it), so it draws the style's underline, and its save
+   writes a bare `w:u`, which turns the underline on in Word. Whether `1`, `on`, `false`, `0`, `off` or `TRUE` act as
+   `true` does over a style is unmeasured (round 2 tested them only without one, where none and absent look alike).
+2. **`w:color`.** Over a character style's red and a paragraph style's green, `F00`, `bogus`, `""`, a bare
+   `<w:color/>`, `grey`, `0xFF0000` and seven digits read as absent: the style's colour shows, and the save drops
+   them. `auto` overrides (black). docx4j reads the five invalid values that aren't empty as automatic: its PDF draws
+   them black (its HTML happens to show the style's colour, writing nothing). `""` and bare already read as absent.
+   Whether `Auto` or `AUTO` overrides as `auto` does, or reads as absent, is unmeasured (round 3 had no style).
+3. **`highlight`, `vertAlign`, `em`.** An invalid or bare value over either style is repaired away and the style's
+   value shows (superscript, dot emphasis; the paragraph style's yellow), as docx4j reads them since phase 2.
+   **Found: Word drew no highlight from the character style** (M1, the style alone, has none), and its save writes
+   `w:highlight w:val="none"` on every run with that style (except M6, whose own `green` shows), leaving the style
+   as it was. The paragraph style's highlight shows. Whether that is Word's rule for a character style's highlight or
+   the repair's doing is not known from this file: a probe without a repair would tell. docx4j applies a character
+   style's highlight.
+4. **Colour names elsewhere.** Word reads the names in `w:u/@w:color` (`red`, `Navy`), `w:shd/@w:fill` (`red`,
+   `Aqua`) and a border's `w:color` (`red`), and saves them as hex (`FF0000`, `000080`, `00FFFF`). An invalid `F00`:
+   the underline's colour is automatic (the save drops it), the shading is dropped (no shading, the save drops the
+   `w:shd`), the border's colour is automatic (the save writes `auto`). docx4j normalises the underline's colour
+   (not drawn by either writer) but not a fill or a border colour: HTML and PDF get `#red`, `#Aqua`, `#F00`.
