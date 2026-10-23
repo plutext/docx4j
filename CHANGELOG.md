@@ -33,6 +33,10 @@ Changes in Version 17.3.5
 * altChunk HTML import asks docx4j-ImportXHTML (from its CR-005) to keep a chunk's links as written,
   as Word does; the outputs refuse a `javascript:` target where it would run, and the inspector's
   chunk scan reports it as `altchunk.script` as before.
+* `BinaryPartAbstractImage.createImageInline` escapes its alt text and filename hint: `Profit & Loss`
+  no longer fails with an UnmarshalException, and a quote in the alt text no longer adds an attribute
+  to `wp:docPr` (CR-057). A caller that escaped its alt text to survive this now sees `&amp;` in Word;
+  pass the text as is. `XmlUtils.escapeForTemplate` is the helper.
 
 
 Version 17.3.4

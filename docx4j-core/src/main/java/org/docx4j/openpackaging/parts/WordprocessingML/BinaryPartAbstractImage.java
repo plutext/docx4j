@@ -962,8 +962,10 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
         
         mappings.put("cx", Long.toString(cx));
         mappings.put("cy", Long.toString(cy));
-        mappings.put("filenameHint", filenameHint);
-        mappings.put("altText", altText);
+        // The substitution is textual, so these two (any text, per the Javadoc) are escaped,
+        // or an ampersand fails the unmarshal and a quote adds an attribute (CR-057).
+        mappings.put("filenameHint", org.docx4j.XmlUtils.escapeForTemplate(filenameHint));
+        mappings.put("altText", org.docx4j.XmlUtils.escapeForTemplate(altText));
         mappings.put("rEmbedId", rEmbedId);
         mappings.put("id1", Long.toString(id1));
         mappings.put("id2", Integer.toString(id2));

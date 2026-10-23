@@ -790,6 +790,47 @@ public class XmlUtils {
 	   }
 	
 	
+	/**
+	 * Escape a string for use as an XML attribute value (or text) in a template given to
+	 * {@link #unmarshallFromTemplate(String, java.util.Map)}: {@code &}, {@code <}, {@code >},
+	 * {@code "} and {@code '} become character references, and the characters XML 1.0 does not
+	 * allow (control characters other than tab, LF and CR; U+FFFE and U+FFFF; unpaired
+	 * surrogates) are dropped. Template substitution is textual, so a value from outside
+	 * (a user's alt text, a filename) must go through this or it alters the markup (CR-057).
+	 *
+	 * @param value any text, or null
+	 * @return the escaped text; "" for null
+	 * @since 17.3.5
+	 */
+	public static String escapeForTemplate(String value) {
+		if (value == null) {
+			return "";
+		}
+		StringBuilder sb = new StringBuilder(value.length() + 16);
+		int i = 0;
+		int n = value.length();
+		while (i < n) {
+			int cp = value.codePointAt(i);
+			i += Character.charCount(cp);
+			switch (cp) {
+			case '&':  sb.append("&amp;");  break;
+			case '<':  sb.append("&lt;");   break;
+			case '>':  sb.append("&gt;");   break;
+			case '"':  sb.append("&quot;"); break;
+			case '\'': sb.append("&#39;");  break;
+			default:
+				boolean legal = cp == 0x9 || cp == 0xA || cp == 0xD
+						|| (cp >= 0x20 && cp <= 0xD7FF)
+						|| (cp >= 0xE000 && cp <= 0xFFFD)
+						|| (cp >= 0x10000 && cp <= 0x10FFFF);
+				if (legal) {
+					sb.appendCodePoint(cp);
+				}
+			}
+		}
+		return sb.toString();
+	}
+
 	 private static StringBuilder replace(String wmlTemplateString, StringBuilder strB,
 	                                     java.util.Map<String, ?> mappings) {
 		int offset = 0;

@@ -26,14 +26,13 @@ import java.util.Base64;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * CR-057 phase 0: {@code createImageInline} takes alt text and a filename hint as any text (its Javadoc
  * says so) and must put them in the document as given. Measured 2026-10-23 on 17.3.4 (from
- * docx4j-ImportXHTML's CR-005): an ampersand fails the unmarshal, a quote injects an attribute. Red until
- * phase 1.
+ * docx4j-ImportXHTML's CR-005): an ampersand fails the unmarshal, a quote injects an attribute. Green
+ * since phase 1 (the values are escaped at substitution).
  */
 public class CreateImageInlineEscapingTest {
 
@@ -53,7 +52,6 @@ public class CreateImageInlineEscapingTest {
 		assertEquals("plain.png", inline.getDocPr().getName());
 	}
 
-	@Ignore("CR-057 phase 0: red until phase 1 (escaping in createImageInline)")
 	@Test
 	public void ampersandAndAngleBracketsRoundTrip() throws Exception {
 		Inline inline = inline("P&L <2026>.png", "Profit & Loss, a < b");
@@ -62,7 +60,14 @@ public class CreateImageInlineEscapingTest {
 		assertEquals("P&L <2026>.png", inline.getGraphic().getGraphicData().getPic().getNvPicPr().getCNvPr().getName());
 	}
 
-	@Ignore("CR-057 phase 0: red until phase 1 (escaping in createImageInline)")
+	/** A character XML 1.0 forbids (here BEL) is dropped rather than failing the unmarshal; quotes survive. */
+	@Test
+	public void controlCharacterDroppedQuotesKept() throws Exception {
+		Inline inline = inline("it's.png", "bell\u0007here 'quoted'");
+		assertEquals("bellhere 'quoted'", inline.getDocPr().getDescr());
+		assertEquals("it's.png", inline.getDocPr().getName());
+	}
+
 	@Test
 	public void quoteInjectsNoAttribute() throws Exception {
 		Inline inline = inline("f.png", "x\" title=\"INJECTED");

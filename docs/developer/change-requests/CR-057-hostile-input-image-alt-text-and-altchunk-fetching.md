@@ -3,7 +3,7 @@
 Status: PROPOSED 2026-10-23, drafted by Claude Fable 5.1 (session docx4j-25) from two findings docx4j-ImportXHTML's
 CR-005 (hostile input) measured on the released 17.3.4 jars and passed on at Jason's word ("pass docx4j-25 the
 two docx4j findings"). Both confirmed in this repository's source (§1). ACCEPTED 2026-10-23 (Jason: "CR-057 D1 to D4 agree"), as
-recommended; phases in §3, to start on Jason's word.
+recommended; phases in §3, to start on Jason's word. Phase 1 DONE 2026-10-23 (§8); phase 2 next.
 Companion to CR-056, which covers the output side (links and style IDs in HTML, PDF and Markdown).
 
 ## 0. Summary
@@ -77,7 +77,7 @@ schemes), and the output side (CR-056).
 | Phase | What | Size |
 |---|---|---|
 | 0 | Red tests for both (core-tests; the altChunk test needs ImportXHTML and jsoup on the test class path, as the existing `AltChunkHtml*Test`s do). **DONE 2026-10-23** (record in §7) | 2 h |
-| 1 | The escape in `createImageInline`; tests green; CHANGELOG | 1 h |
+| 1 | The escape in `createImageInline`; tests green; CHANGELOG. **DONE 2026-10-23** (record in §8) | 1 h |
 | 2 | The property, the override, `HtmlChunkImport.convert`; tests green; CHANGELOG, Getting Started; the ports' hand-off (their altChunk conversion, if any, mirrors the default) | ½ day |
 
 ## 4. Decisions (D1 to D4 accepted as recommended, 2026-10-23)
@@ -122,3 +122,21 @@ Run against the released 17.3.4 artifacts; the red tests carry `@Ignore` naming 
   image parts in the package, the one fetched over http and the one read from the local `file:` URL. The test turns on
   in phase 2, run that way (or with the reader on the test class path).
 
+## 8. Phase 1 record (2026-10-23, docx4j-25)
+
+- `XmlUtils.escapeForTemplate(String)` (new, `@since 17.3.5`, beside `unmarshallFromTemplate`): `&`, `<`, `>`,
+  `"` and `'` become character references; the characters XML 1.0 does not allow (control characters other than
+  tab, LF and CR; U+FFFE, U+FFFF; unpaired surrogates) are dropped; null gives `""`. Dropping rather than failing
+  follows the method's contract ("any text"): a BEL in a filename is not the caller's fault and the rest of the text
+  is worth keeping.
+- The static `createImageInline` passes `filenameHint` and `altText` through it before the mapping; nothing else
+  in the template is caller text (`rEmbedId` is docx4j's own relationship id, the rest numbers). Every other
+  overload ends there. `createImageAnchor` is commented out in the source and was left so.
+- Not done: the object-factory rebuild (D1 "later, if at all"); the other `unmarshallFromTemplate` callers were not
+  audited (out of this CR's scope; the CR-056/057 probes measured only this sink).
+- Tests: `CreateImageInlineEscapingTest`'s two red tests un-ignored and GREEN, plus a third
+  (`controlCharacterDroppedQuotesKept`: BEL dropped, apostrophes kept); `CompressPicturesTest`,
+  `TemporaryImageCleanupTest`, `CreateImageTest`, `ImageTypeBmpTest`, `ImageJpegXrPartTest`,
+  `MetafileGoldenImageTest` unchanged. The §5 risk on double escaping stands and is named in the CHANGELOG entry.
+- Hand-off: ImportXHTML's CR-005 phase 1 workaround (`""` then `setDescr`) can go once it depends on 17.3.5; told
+  with the commit.
