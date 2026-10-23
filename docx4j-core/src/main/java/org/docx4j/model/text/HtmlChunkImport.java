@@ -79,6 +79,15 @@ public final class HtmlChunkImport {
 	 */
 	public static final String TIMEOUT_MILLIS = "docx4j.model.text.HtmlChunkImport.timeoutMillis";
 
+	/**
+	 * The property saying whether {@code convertAltChunks} lets the importer fetch what a chunk refers to
+	 * (a stylesheet, an image by URL or local file), as Word does on open; {@code false}, the default,
+	 * fetches nothing, since a docx is untrusted input wherever a server converts it (CR-057). A call
+	 * can override it ({@link #convert(WordprocessingMLPackage, AlternativeFormatInputPart, Boolean)}).
+	 * @since 17.3.5
+	 */
+	public static final String FETCH = "docx4j.altchunk.html.fetch";
+
 	private HtmlChunkImport() {}
 
 	/** Whether docx4j-ImportXHTML is on the class path. */
@@ -98,12 +107,25 @@ public final class HtmlChunkImport {
 
 	/**
 	 * The chunk's content as Word imports it, made in {@code target} (its styles, numbering and images
-	 * are added there): what {@code convertAltChunks} puts in the chunk's place. The importer fetches
-	 * what the chunk refers to, as Word does on open. Without jsoup, an XHTML or MHT chunk is read by the
-	 * importer's own XML parser, as before 17.3.4, and an HTML chunk is not read. Null where the chunk is
-	 * not read; why is logged.
+	 * are added there): what {@code convertAltChunks} puts in the chunk's place. Whether the importer
+	 * fetches what the chunk refers to is the {@link #FETCH} property's (never, by default). Without
+	 * jsoup, an XHTML or MHT chunk is read by the importer's own XML parser, as before 17.3.4, and an
+	 * HTML chunk is not read. Null where the chunk is not read; why is logged.
 	 */
 	public static List<Object> convert(WordprocessingMLPackage target, AlternativeFormatInputPart chunk) {
+		return convert(target, chunk, null);
+	}
+
+	/**
+	 * As {@link #convert(WordprocessingMLPackage, AlternativeFormatInputPart)}, with {@code fetch} saying
+	 * whether the importer may fetch what the chunk refers to (a stylesheet's {@code link} and
+	 * {@code @import}, an {@code img} by URL or local file), as Word does on open: {@code true} or
+	 * {@code false} for this call, null for the {@link #FETCH} property (CR-057 D4). Not fetched, an image
+	 * is its alt text or nothing, as in the text model.
+	 * @since 17.3.5
+	 */
+	public static List<Object> convert(WordprocessingMLPackage target, AlternativeFormatInputPart chunk, Boolean fetch) {
+		final boolean fetches = fetch != null ? fetch : Docx4jProperties.getProperty(FETCH, false);
 		String where = chunk.getPartName() == null ? "an altChunk" : chunk.getPartName().getName();
 		if (!importerPresent()) {
 			log.warn("docx4j-ImportXHTML isn't on the class path, so " + where + " is left as it is");
@@ -111,7 +133,7 @@ public final class HtmlChunkImport {
 		}
 		if (JsoupHtml.present()) {
 			Document dom = tree(chunk, where);
-			return dom == null ? null : imported(target, dom, true, where);
+			return dom == null ? null : imported(target, dom, fetches, where);
 		}
 		if (chunk.getAltChunkType() == AltChunkType.Html) {
 			log.warn("jsoup isn't on the class path, so the HTML chunk " + where + " is left as it is");
@@ -120,7 +142,7 @@ public final class HtmlChunkImport {
 		final boolean mht = chunk.getAltChunkType() == AltChunkType.Mht;
 		final byte[] bytes = chunk.getBytes();
 		return guarded(where, () -> {
-			Object instance = importer(target, true, where);
+			Object instance = importer(target, fetches, where);
 			if (instance == null) return null;
 			Method convert = instance.getClass().getMethod(mht ? "convertMHT" : "convert", InputStream.class, String.class);
 			return numbered(target, content(convert.invoke(instance, new ByteArrayInputStream(bytes), null)));

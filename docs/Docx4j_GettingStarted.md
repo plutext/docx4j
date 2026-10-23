@@ -1206,6 +1206,8 @@ XHTML Import functionality is a [separate project on GitHub](https://github.com
 
 If you want this functionality, you have to add these jars to your classpath.
 
+A document's own `altChunk`s (HTML, XHTML or MHT content that Word converts on opening) are converted in place by `convertAltChunks()` on the main document part, a header or a footer, through the same importer.  From 17.3.5 that conversion fetches nothing a chunk refers to, neither a stylesheet nor an image by URL or by local file, since a docx is untrusted input wherever a server converts it; an image not fetched is its alt text, or nothing.  Set `docx4j.altchunk.html.fetch=true` in docx4j.properties to restore Word's fetching, or pass `convertAltChunks(true)` for one call.
+
 See the samples at [https://github.com/plutext/docx4j-ImportXHTML/tree/master/src/samples](https://github.com/plutext/docx4j-ImportXHTML/tree/master/src/samples)
 
 # Markdown import and export

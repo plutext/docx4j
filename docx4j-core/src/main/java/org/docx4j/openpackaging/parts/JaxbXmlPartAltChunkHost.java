@@ -209,9 +209,19 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		}
 	}
 		
-	@SuppressWarnings("unchecked")
 	@Override
 	public void convertAltChunks() throws Docx4JException {
+		convertAltChunks((Boolean) null);
+	}
+
+	@Override
+	public void convertAltChunks(boolean fetch) throws Docx4JException {
+		convertAltChunks(Boolean.valueOf(fetch));
+	}
+
+	/** @param fetch for an HTML chunk's import, true or false for this call, null for the property (CR-057 D4) */
+	@SuppressWarnings("unchecked")
+	private void convertAltChunks(Boolean fetch) throws Docx4JException {
 		
 		if (!(this instanceof ContentAccessor)) {
 				throw new Docx4JException(this.getClass().getName() + " doesn't implement ContentAccessor");
@@ -257,7 +267,7 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 				
 				// As Word imports it (CR-053): parsed by jsoup, the CSS Word applies, what display:none
 				// hides as hidden text (D8). Needs docx4j-ImportXHTML (LGPL), reached by reflection.
-				List<Object> results = HtmlChunkImport.convert((WordprocessingMLPackage)this.getPackage(), afip);
+				List<Object> results = HtmlChunkImport.convert((WordprocessingMLPackage)this.getPackage(), afip, fetch);
 				if (results == null) {
 					// logged; this chunk is left, the others are still converted
 					continue;

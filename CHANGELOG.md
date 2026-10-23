@@ -37,6 +37,11 @@ Changes in Version 17.3.5
   no longer fails with an UnmarshalException, and a quote in the alt text no longer adds an attribute
   to `wp:docPr` (CR-057). A caller that escaped its alt text to survive this now sees `&amp;` in Word;
   pass the text as is. `XmlUtils.escapeForTemplate` is the helper.
+* `convertAltChunks` no longer fetches what an HTML, XHTML or MHT chunk refers to (a stylesheet, an
+  image by URL or by local file): a docx is untrusted input wherever a server converts it (CR-057;
+  SSRF and local file read). An image not fetched is its alt text, or nothing. Behaviour change:
+  `docx4j.altchunk.html.fetch=true` restores the fetching of 17.3.4 and before, and
+  `convertAltChunks(boolean)` decides it for one call.
 
 
 Version 17.3.4

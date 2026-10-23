@@ -159,11 +159,23 @@ public interface AltChunkInterface {
  * it is on the class path (else an HTML chunk is left, and an XHTML or MHT chunk read as XML, as before),
  * the CSS Word applies, and what display:none hides kept as hidden text (docx4j-ImportXHTML 17.3.4 on).
  * A chunk that can't be converted is left as it is, and the others are still converted.
+ * Since 17.3.5 the import fetches nothing a chunk refers to unless the property docx4j.altchunk.html.fetch
+ * is true (CR-057); {@link #convertAltChunks(boolean)} decides it for one call.
 	 * 
 	 * Since 11.4.8, this method does the conversion in situ (ie rather than cloning the pkg), 
 	 * and does not convert docx altChunks.  To handle those, use the MergeDocx component of Docx4j Enterprise.
 	 * */
 	public void convertAltChunks() throws Docx4JException;
+
+	/**
+	 * As {@link #convertAltChunks()}, with {@code fetch} saying for this call whether the import of an
+	 * HTML, XHTML or MHT chunk may fetch what the chunk refers to (a stylesheet's link or @import, an
+	 * image by URL or by local file), as Word does on open, whatever the property
+	 * {@code docx4j.altchunk.html.fetch} (false by default: nothing fetched, CR-057) says. An image not
+	 * fetched is its alt text, or nothing.
+	 * @since 17.3.5
+	 */
+	public void convertAltChunks(boolean fetch) throws Docx4JException;
 		
 	
 }

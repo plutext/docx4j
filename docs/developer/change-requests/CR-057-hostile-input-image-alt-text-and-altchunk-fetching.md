@@ -3,7 +3,7 @@
 Status: PROPOSED 2026-10-23, drafted by Claude Fable 5.1 (session docx4j-25) from two findings docx4j-ImportXHTML's
 CR-005 (hostile input) measured on the released 17.3.4 jars and passed on at Jason's word ("pass docx4j-25 the
 two docx4j findings"). Both confirmed in this repository's source (§1). ACCEPTED 2026-10-23 (Jason: "CR-057 D1 to D4 agree"), as
-recommended; phases in §3, to start on Jason's word. Phase 1 DONE 2026-10-23 (§8); phase 2 next.
+recommended; phases in §3, to start on Jason's word. Phases 1 and 2 DONE 2026-10-23 (§8, §9); CR COMPLETE.
 Companion to CR-056, which covers the output side (links and style IDs in HTML, PDF and Markdown).
 
 ## 0. Summary
@@ -78,7 +78,7 @@ schemes), and the output side (CR-056).
 |---|---|---|
 | 0 | Red tests for both (core-tests; the altChunk test needs ImportXHTML and jsoup on the test class path, as the existing `AltChunkHtml*Test`s do). **DONE 2026-10-23** (record in §7) | 2 h |
 | 1 | The escape in `createImageInline`; tests green; CHANGELOG. **DONE 2026-10-23** (record in §8) | 1 h |
-| 2 | The property, the override, `HtmlChunkImport.convert`; tests green; CHANGELOG, Getting Started; the ports' hand-off (their altChunk conversion, if any, mirrors the default) | ½ day |
+| 2 | The property, the override, `HtmlChunkImport.convert`; tests green; CHANGELOG, Getting Started; the ports' hand-off (their altChunk conversion, if any, mirrors the default). **DONE 2026-10-23** (record in §9) | ½ day |
 
 ## 4. Decisions (D1 to D4 accepted as recommended, 2026-10-23)
 
@@ -140,3 +140,27 @@ Run against the released 17.3.4 artifacts; the red tests carry `@Ignore` naming 
   `MetafileGoldenImageTest` unchanged. The §5 risk on double escaping stands and is named in the CHANGELOG entry.
 - Hand-off: ImportXHTML's CR-005 phase 1 workaround (`""` then `setDescr`) can go once it depends on 17.3.5; told
   with the commit.
+
+## 9. Phase 2 record (2026-10-23, docx4j-25)
+
+- `HtmlChunkImport.FETCH` = `docx4j.altchunk.html.fetch` (D3), read per call with default `false` (D2);
+  `convert(target, chunk)` now delegates to a new `convert(target, chunk, Boolean fetch)`, null meaning the property
+  (D4); both the jsoup path (`imported`) and the no-jsoup path (`importer` on the chunk's bytes) take the flag. `false`
+  routes through the existing `neverFetch` (CR-046 phase 3), so `convertAltChunks` and the text model's `read()` now
+  stop the importer the same way; a `true` call constructs the importer as 17.3.4 did.
+- `AltChunkInterface.convertAltChunks(boolean fetch)` (D4, `@since 17.3.5`), implemented in `JaxbXmlPartAltChunkHost`
+  beside the no-argument one; both call a private `convertAltChunks(Boolean)` that passes the flag through. The
+  interface's Javadoc names the property. `DocumentPart`, `HeaderPart` and `FooterPart` inherit it.
+- Reference `docx4j.properties` (docx4j-samples-resources) gains the key with the reason, after `linkSchemes`.
+- Tests (`AltChunkConvertFetchTest`, core-tests, with the reader on the test class path, run as
+  `-Dmaven.test.additionalClasspath=<docx4j-ImportXHTML-bundle 17.1.1-SNAPSHOT>`): the phase 0 test un-ignored and
+  GREEN (no request, no image part, the chunk's text present); `aCallCanAskForWordsFetching` (`convertAltChunks(true)`:
+  `/chunk.css` and `/chunk.png` requested, two image parts, the http one and the local file's);
+  `thePropertyCanAskForWordsFetching`; `aCallCanRefuseWhatThePropertyAllows`. Without the reader all four skip
+  (the `Assume`). `AltChunkNoFetchTest`, `AltChunkHtmlTest`, `AltChunkHtmlInspectTest`, `AltChunkHtmlReadingTest`
+  unchanged with the reader present.
+- Getting Started (md, and the canonical docx by an XML-inserted paragraph, id 5C057A01, in the section's own
+  idiom): a paragraph under "Importing XHTML" on `convertAltChunks`, the default and the two ways to fetch.
+- CHANGELOG names the behaviour change and the one-line restoration (§5 risk 1).
+- Ports' hand-off (sent with the commit): a port that converts altChunks mirrors the default (never fetch) and the
+  property name; the TypeScript and Python text models already never fetch.
