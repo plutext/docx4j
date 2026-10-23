@@ -1,7 +1,7 @@
 # CR-060: run properties read as Word reads them (on/off values, values outside an enumeration, w:color)
 
 Status: ACCEPTED 2026-10-24 (Jason: "recommendations accepted, please commit then implement"): D1 to D6 as
-recommended (§6), D1 after the preprocessor alternative was weighed (§3.1). PROPOSED 2026-10-24, drafted by Claude
+recommended (§6), D1 after the preprocessor alternative was weighed (§3.1). Phase 0 done 2026-10-24 (§8). PROPOSED 2026-10-24, drafted by Claude
 Opus 5.5 (session docx4j-25) at Jason's word through the portfolio session ("yes please", to "Shall I ask docx4j-25,
 the TypeScript session and the Python session each to draft its CR now, giving them these rules and the probes?").
 docx4j-core-ts and docx4j-python draft theirs in parallel against the same rules (§1). Phases in §5.
@@ -213,3 +213,44 @@ remains is spelling (D2, D4) and the elements Word repairs away (D3):
   `model/properties/run/Underline.java`, `HighlightColor.java`, `FontColor.java`; `StyleUtil.apply(U, U)`.
 - ECMA-376 Part 1: the simple types `ST_OnOff`, `ST_Underline`, `ST_HighlightColor`, `ST_HexColor`; CR-059 (what
   absence means, done).
+
+## 8. Phase 0 record (2026-10-24, Claude Opus 5.5, session docx4j-25)
+
+Fixtures: the twenty probes and Word's twenty saves, in `docx4j-core-tests/src/test/resources/runprops/word365/`
+with a README of provenance (PDFs and screenshots stay on the share).
+
+Tests, red against VERSION_17_3_5 at 5d7564778 and committed `@Ignore`d, each naming the phase that turns it green:
+
+- `org.docx4j.model.properties.run.RunPropertiesWord365Test`. Word's save is the oracle: every marker's reading in a
+  probe must equal its reading in Word's save (Word writes back only values it reads one way, which docx4j reads
+  right). Through the resolver (65 differ: the on/off values, the colour names and the trimmed hex), the text model
+  (8: bold, italic, strike, and `vanish="off"` hidden), the HTML styling of the direct `w:rPr` (99: those, plus every
+  `w:u` without a valid value underlined and `background-color:null`), the PDF styling of the effective `w:rPr` (80),
+  and a docx4j round trip (73, the D2 to D4 checks included). The HTML and PDF comparisons are of what is drawn: an
+  off value is no different from none, colours compare as upper-case hex, and the properties whose values come from
+  the document defaults (font size, language), which Word's save adds and a probe lacks, are left out. Two cases are
+  stated rather than read from the save, since the save keeps the markup: a colour-only `w:u` is no underline; and
+  an invalid or missing `highlight`, `vertAlign` or `em` over a character style leaves the style's value (Word's
+  repair drops the element).
+- `org.docx4j.wml.OnOffAttributesTest`: each of the 48 attributes through unmarshal with fifteen spellings, and a
+  structural check that every `Boolean` attribute in `org.docx4j.wml` is one of the 48 and bound through the adapter.
+- `org.docx4j.model.text.InspectOnOffTest`: the inspector's own reading (below).
+
+Found on the way:
+
+- All 48 `xsd:boolean` attributes in `wml.xsd` are `ST_OnOff` in the 1st edition: 46 attributes, and `CT_OnOff/@val`,
+  which became `BooleanDefaultTrue/@val` and `BooleanDefaultFalse/@val` (the latter used by no element now). §3.1's
+  "47 attributes" counted `CT_OnOff/@val` among them.
+- The inspector (CR-050) reads on/off from the XML itself (`InspectXml.on`), case-insensitively: `FALSE` and `OFF` read
+  off there. It follows Word in phase 1. No other reader parses the strings: the XSLT stylesheets don't read on/off
+  values, and everything else goes through JAXB.
+- The resolver already reads an invalid `highlight` as none, by accident: `StyleUtil.apply(Highlight, Highlight)` calls
+  `Highlight.setVal`, whose patched body nulls a value outside its colour table (and logs an error). Over a style's
+  highlight that wipes the style's value, where Word's repair leaves it. Phase 2 makes `isEmpty(Highlight)` say so.
+- Word's saves drop a `w:u` whose value is invalid or missing (`bogus`, `SINGLE`, `""`, `true`, bare; S11 over an
+  underlining style too, whose underline then shows), and keep a colour-only one. That is evidence for phase 3's
+  `w:u` (D3; the portfolio's caveat: an invalid value over a style stating `w:u` is still unmeasured).
+- Out of scope, noted: `w:tblLook`'s `firstRow` and the rest are `ST_OnOff` in the 2nd edition's shared types, which
+  docx4j binds as an enumeration of the six spellings (`STOnOff`): a value outside them reads null, so `TRUE` reads
+  absent where Word presumably reads on. And `LsdException.isQFormat()` (patched to inherit) throws a
+  `ClassCastException` for an element whose parent is not a `w:latentStyles`; an unmarshalled document never has one.
