@@ -578,7 +578,10 @@ public class OmmlToLatex {
 
 	/**
 	 * A script base: a single-character plain run stays bare ({@code U^{3}});
-	 * anything else is braced.
+	 * anything else is braced. The run is read as {@link #run} reads it, through a
+	 * {@code w:ins}/{@code w:del} inside it and the view's {@link #keep}, so a base deleted under
+	 * tracking reads alike in the original view and in a resolved copy ({@code mc^{2}}, not
+	 * {@code m{c}^{2}}; core-ts check 57's equations, 2026-10-23).
 	 */
 	private void base(CTOMathArg arg, LatexBuilder builder) throws OmmlMathException {
 		if (arg != null && arg.getEGOMathElements().size() == 1) {
@@ -590,18 +593,11 @@ public class OmmlToLatex {
 				elements(arg.getEGOMathElements(), builder, false);
 				return;
 			}
-			if (u instanceof CTR) {
-				CTR r = (CTR) u;
-				String text = null;
-				boolean plain = true;
-				for (Object rc : r.getContent()) {
-					Object ru = (rc instanceof JAXBElement) ? ((JAXBElement<?>) rc).getValue() : rc;
-					if (ru instanceof CTRPR) {
-						plain = false;
-					} else if (ru instanceof CTText) {
-						text = ((CTText) ru).getValue();
-					}
-				}
+			if (u instanceof CTR && keep.test(o)) {
+				RunPieces pieces = new RunPieces();
+				pieces.collect(((CTR) u).getContent());
+				boolean plain = pieces.rPr == null;
+				String text = pieces.text.length() == 0 ? null : pieces.text.toString();
 				if (plain && text != null && text.length() == 1
 						&& !REVERSE_SYMBOLS.containsKey(text)
 						&& "{}_^%$#&\\".indexOf(text.charAt(0)) < 0) {

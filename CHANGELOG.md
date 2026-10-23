@@ -21,6 +21,8 @@ Claude Fable 5.1
 Changes in Version 17.3.5
 --------------------------
 
+* Text model: an equation's script base deleted or inserted under tracking is read through the
+  change, so the original view and a resolved copy give the same LaTeX (mc^{2}).
 * Tracked changes: accepting the deletion of a whole equation (or rejecting its insertion) removes
   the emptied m:oMath and m:oMathPara, as Word does; they were left empty (found by docx4j-core-ts
   against Word 365, check 57).
