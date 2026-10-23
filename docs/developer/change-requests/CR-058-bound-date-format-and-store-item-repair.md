@@ -62,8 +62,8 @@ Measured by docx4j-portfolio (Word 365, Jason, 22 October 2026; `~/vbShares/Offi
 | LibreOffice 26.2.5, ONLYOFFICE on DT1 | the same formatted date | |
 
 All of these were measured in phase 0 (§8, Word 365, Jason, 23 October 2026): `ddd`, `am/pm`, `h:mm`, `de-DE` on
-an English machine; a stored value that is not a date; which part Word picks when two fit; none fitting. Still
-unmeasured: `h` at 12 local (§8 finding 2) and an explicit offset in the stored value.
+an English machine; a stored value that is not a date; which part Word picks when two fit; none fitting; and, on the
+second probe (§8, bind-typed-twelve), `h` at 12 local and explicit offsets in the stored value. Nothing is left unmeasured.
 
 ## 2. What it affects, and what it does not
 
@@ -208,10 +208,9 @@ after the portfolio's bind-fun builder), so the same bytes serve as the core-tes
 2. `FormattingSwitchHelper.DATE_FORMAT_ITEMS_TO_JAVA` maps Word's `h` to Java `K` (hour 0-11) and `hh` to `KK`;
    Word's `h` is 1-12 (17.16.4.1: "12:05 PM" at noon, where `K` gives "0:05 PM"). The DATE field has the same
    defect. Phase 1 corrects the table (`h`→`h`, `hh`→`hh`) for fields and controls alike, with a
-   `DateFieldLanguageTest` case. Not yet measured in Word (the portfolio's reading of the run, 23 October 2026):
-   DF3's value is 23:05 local at UTC+11, where `h` and `K` agree; a value that is 12:xx local there (`01:05Z`, or
-   `12:05+11:00`, which also measures whether Word honours an offset) goes on the next probe. Word's documentation
-   says 1-12.
+   `DateFieldLanguageTest` case. DF3's value is 23:05 local at UTC+11, where `h` and `K` agree (the portfolio's
+   reading of the run), so the second probe, `bind-typed-twelve.docx` (Jason, Word 365 at UTC+11, 23 October
+   2026, the table below), settled it: 1-12.
 3. `am/pm` against `AM/PM`: Word's documentation says both display upper case ("9 AM", "5 PM"); the converter maps
    both to Java `a`, which is upper case in English. DF2 and DF3 measure it; if Word writes "pm" for `am/pm`, the
    converter needs a lower-case variant (a `DateFormatSymbols` with lower-case AM/PM strings).
@@ -240,11 +239,29 @@ after the portfolio's bind-fun builder), so the same bytes serve as the core-tes
 | two-parts B11 (only part 2 has b11) | `B11_XML_VALUE_PART2` | `w:storeItemID` → `{...0002}` | D4: the first whose XPath yields, as expected |
 | no-part B7, B12 | `B7_STALE_SURFACE`, `B12_STALE_SURFACE` (shown as unbound) | binding and stale ID kept as they were | D4: left as it is, as expected |
 
+The second probe, `bind-typed-twelve.docx` (six controls, run by Jason the same evening; `bind-typed-twelve.PNG`,
+`bind-typed-twelve-word365.docx`):
+
+| Control | Stored value, format | Word 365 shows | `w:fullDate` written | Reading |
+|---|---|---|---|---|
+| TW1 | `2026-10-22T01:05:00Z`, `h:mm AM/PM` | `12:05 PM` | `2026-10-22T12:05:00Z` | `h` is 1-12 (Java `K` would give 0:05); the `Z` read as UTC, shown at UTC+11 |
+| TW2 | `...T13:05:00Z`, `hh:mm am/pm` | `12:05 AM` | `2026-10-23T00:05:00Z` | midnight is 12, the next day |
+| TW3 | `...T12:05:00+11:00`, `h:mm AM/PM d MMM` | `12:05 PM 22 Oct` | `2026-10-22T12:05:00Z` | an explicit offset is honoured |
+| TW4 | `...T12:05:00` (no offset) | `12:05 PM 22 Oct` | `2026-10-22T12:05:00Z` | no offset: local time, as written |
+| TW5 | `...T12:05:00-05:00` | `4:05 AM 23 Oct` | `2026-10-23T04:05:00Z` | a western offset honoured: the next day locally |
+| TW6 | `...T01:05:00Z`, `HH:mm` | `12:05` | | as TW1 |
+
+So Word's rule for a stored `dateTime`: an offset or `Z` is an instant, shown in the machine's zone; no offset is
+local time; `w:fullDate` carries the local time labelled `Z`. docx4j's `parseStoredDate(String, ZoneId)` does the
+same with the zone property set (`OffsetDateTime.parse` for a value with an offset or `Z`, the nominal fields
+otherwise), and the nominal fields by default (D6); `BoundDateFormatTest.twelveOClockAndOffsetsAsWordShowsThem`
+holds both readings to this table, with the probe as the fixture `typed-controls-twelve.docx`.
+
 Word also rewrote each `itemProps` with a `ds:schemaRef` for the part's namespace (cosmetic). Findings 5-7, from
 the run:
 
-5. **Time zone.** Word reads the stored `dateTime`'s `Z` as UTC and formats in the machine's zone; docx4j reads
-   the nominal time. D6 (§5a) asks Jason which; the tests expect nominal.
+5. **Time zone.** Word reads the stored `dateTime`'s `Z` (or offset, second probe) as UTC and formats in the
+   machine's zone; docx4j reads the nominal time. D6 (§5a): nominal by default, a zone property converts.
 6. **No `w:lid`.** Word uses its editing language, not the run's. D2 revised (§5a); `BoundDateFormatTest` DF7
    now expects the JVM default locale's names (the document has no `w:docDefaults` language), not French.
 7. **Empty value.** The placeholder, as for an empty text binding; `BoundDateFormatTest` DF10 now expects
@@ -322,7 +339,7 @@ Jason: "start CR-058 phase 2". Built and tested; commit on Jason's word.
   extraction, samples, binding, OpenDoPE suites, 372 tests, 0 failures; the whole docx4j-core-tests module, 2026
   tests, 0 failures, 30 skipped.
 - Reference `docx4j.properties` documents `strictStoreItemIds`; CHANGELOG 17.3.5.
-- Not done: a Word probe for the unmeasured `h` at 12 local (§8 finding 2) and an explicit offset; the OpenDoPE
+- Measured after the phase (the second probe, §8): `h` at 12 local and explicit offsets, both as implemented. The OpenDoPE
   `od:xpath` branch of `bind.xslt` has no "left as it is" guard (its bindings come from the xpaths part, which the
   generator itself wrote; a stale ID there resolves through `xpathGetString` the same way, and none fitting
   empties the control as before). The paper's D34 (the text model showing a formatted date) is its own item.

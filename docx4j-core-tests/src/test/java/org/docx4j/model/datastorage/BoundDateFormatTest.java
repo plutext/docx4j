@@ -59,10 +59,14 @@ public class BoundDateFormatTest {
 
 	/** Bound, after {@code prepare} has had the loaded package (a styles part, a property). */
 	private static String bind(String implementation, java.util.function.Consumer<WordprocessingMLPackage> prepare) throws Exception {
+		return bind(implementation, FIXTURE, prepare);
+	}
+
+	private static String bind(String implementation, String fixture, java.util.function.Consumer<WordprocessingMLPackage> prepare) throws Exception {
 		Docx4jProperties.setProperty(IMPL_PROPERTY, implementation);
 		try {
 			WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new java.io.File(
-					System.getProperty("user.dir") + "/src/test/resources/OpenDoPE/" + FIXTURE));
+					System.getProperty("user.dir") + "/src/test/resources/OpenDoPE/" + fixture));
 			if (prepare != null) prepare.accept(pkg);
 			Docx4J.bind(pkg, (org.w3c.dom.Document) null, Docx4J.FLAG_BIND_BIND_XML);
 			return XmlUtils.marshaltoString(pkg.getMainDocumentPart().getJaxbElement(), true, false);
@@ -180,6 +184,40 @@ public class BoundDateFormatTest {
 				shows(implementation, xml, "DF3", "11:05 PM");
 				shows(implementation, xml, "DF4", "02:05");
 				shows(implementation, xml, "DF11", "2026-10-22");
+			}
+		} finally {
+			Docx4jProperties.setProperty(BindingTraverserXSLT.DATE_TIME_ZONE_PROPERTY, "");
+		}
+	}
+
+	/**
+	 * The twelve o'clock probe (docx4j-portfolio's bind-typed-twelve, Word 365 at UTC+11, 2026-10-23):
+	 * Word's {@code h} runs 1 to 12 ("12:05 PM" at noon, "12:05 AM" five past midnight), an explicit
+	 * offset in the stored value is honoured ({@code +11:00} and {@code -05:00}), and a value with no
+	 * offset is taken as local time. docx4j by default shows the nominal fields, which agree for a
+	 * value with no offset; with the zone property set it gives Word's six values.
+	 */
+	@Test
+	public void twelveOClockAndOffsetsAsWordShowsThem() throws Exception {
+		for (String implementation : new String[] { "BindingTraverserXSLT", "BindingTraverserNonXSLT" }) {
+			String xml = bind(implementation, "typed-controls-twelve.docx", null);
+			shows(implementation, xml, "TW1", "1:05 AM");            // 01:05Z, nominal
+			shows(implementation, xml, "TW2", "01:05 PM");
+			shows(implementation, xml, "TW3", "12:05 PM 22 Oct");    // the offset's own clock time
+			shows(implementation, xml, "TW4", "12:05 PM 22 Oct");    // no offset: as Word
+			shows(implementation, xml, "TW5", "12:05 PM 22 Oct");
+			shows(implementation, xml, "TW6", "01:05");
+		}
+		Docx4jProperties.setProperty(BindingTraverserXSLT.DATE_TIME_ZONE_PROPERTY, "Australia/Sydney");
+		try {
+			for (String implementation : new String[] { "BindingTraverserXSLT", "BindingTraverserNonXSLT" }) {
+				String xml = bind(implementation, "typed-controls-twelve.docx", null);
+				shows(implementation, xml, "TW1", "12:05 PM");           // Word's six, measured
+				shows(implementation, xml, "TW2", "12:05 AM");
+				shows(implementation, xml, "TW3", "12:05 PM 22 Oct");
+				shows(implementation, xml, "TW4", "12:05 PM 22 Oct");
+				shows(implementation, xml, "TW5", "4:05 AM 23 Oct");
+				shows(implementation, xml, "TW6", "12:05");
 			}
 		} finally {
 			Docx4jProperties.setProperty(BindingTraverserXSLT.DATE_TIME_ZONE_PROPERTY, "");
