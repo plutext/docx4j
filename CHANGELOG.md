@@ -26,6 +26,9 @@ Changes in Version 17.3.5
   the field's begin w:fldChar; they were false unless getFormFieldProperties() had been called, so a
   locked MERGEFIELD or DOCPROPERTY lost its result to FieldUpdater and MailMerger. A
   documentProtection without w:enforcement is no longer reported as restricting editing.
+* MailMerger: a MERGEFIELD merged empty in a table cell no longer takes the cell's last paragraph
+  with it where a nested table or bookmark markers stand beside it, which Word reported as a
+  corrupt document (#236, #256).
 * A w:dataBinding whose w:storeItemID names no custom XML part is resolved to the part its XPath
   fits, as Word repairs it, and the ID is written into the control as Word's save does; where no
   part fits the control is left as it is (CR-058). One stale ID used to fail the whole bind on the

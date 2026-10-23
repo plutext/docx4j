@@ -544,8 +544,11 @@ public abstract class AbstractMerger {
     		if (parent==null) {
     			log.debug("Unknown parent");
     		} else if (parent instanceof Tc) {
-    			if ( ((Tc)parent).getContent().size()==1 ) {
-    				// a tc must contain a p; it can't be empty
+    			if (!lastBlockIsAParagraphWithout(((Tc)parent).getContent(), needToBeRemoved)) {
+    				// a w:tc must hold a w:p, and its last block must be one, or Word reports the document
+    				// corrupt (measured, CR-050's cell rule); so this paragraph stays, emptied. Until 17.3.5
+    				// only a cell's sole paragraph was kept: one after a nested table, or between bookmark
+    				// markers, went (issues 236, 256)
         			log.debug("preserving p in tc");
         			return;
     			}
@@ -555,6 +558,24 @@ public abstract class AbstractMerger {
     	}
     	
         recursiveRemove(content.getContent(), needToBeRemoved);
+    }
+
+    /**
+     * Whether a cell's last block would still be a paragraph with {@code without} removed: the last of
+     * its paragraphs, tables, block controls, custom XML blocks and altChunks, range markers (a
+     * bookmark's end, a comment's) passed over.
+     */
+    static boolean lastBlockIsAParagraphWithout(List<Object> cell, Object without) {
+        for (int i = cell.size() - 1; i >= 0; i--) {
+            Object item = cell.get(i);
+            if (item == without || XmlUtils.unwrap(item) == without) continue;
+            Object v = XmlUtils.unwrap(item);
+            if (v instanceof P) return true;
+            if (v instanceof org.docx4j.wml.Tbl || v instanceof org.docx4j.wml.SdtBlock
+                    || v instanceof org.docx4j.wml.CTCustomXmlBlock || v instanceof org.docx4j.wml.CTAltChunk
+                    || v instanceof org.docx4j.mce.AlternateContent) return false;
+        }
+        return false; // no block left at all
     }
 
     /** As {@link #recursiveRemove(ContentAccessor, Object)}, through a list: every branch of an {@code mc:AlternateContent} is searched (CR-051 section 10.3, item 7). */
