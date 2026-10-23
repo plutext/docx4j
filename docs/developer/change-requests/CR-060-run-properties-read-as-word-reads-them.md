@@ -361,3 +361,19 @@ offered a repair, as expected). Read from the saves and the PDFs:
    the underline's colour is automatic (the save drops it), the shading is dropped (no shading, the save drops the
    `w:shd`), the border's colour is automatic (the save writes `auto`). docx4j normalises the underline's colour
    (not drawn by either writer) but not a fill or a border colour: HTML and PDF get `#red`, `#Aqua`, `#F00`.
+
+## 13. Round 6: what round 5 left (built 2026-10-24, awaiting Word)
+
+Built at Jason's word ("do round 6 first", before the fixes §12 points to) by docx4j-25: four probes on the share
+(`onoff-fun/`, round-6 section of its README; builder `build6.py`, which uses `build5.py`). `props-u-onoff-styles`:
+the on/off words (`true`, `True`, `TRUE`, `1`, `on`, `yes`, `false`, `0`, `off`, `no`) as a `w:u` value over
+character and paragraph styles underlining double. `colour-auto-styles`: `auto`, `Auto`, `AUTO`, `" auto"`,
+`"auto "`, `#auto` over a style's colour. `highlight-char-styles`: a character style's highlight with nothing to
+repair (alone, with bold, inherited through `basedOn`, beside a character style's shading and a paragraph style's
+highlight). `colour-elsewhere-styles`: an invalid, named or `auto` shading fill, border colour and underline colour
+over character styles that make them red. LibreOffice opens all four.
+
+docx4j's reading before Word's (round 5's commit): every on/off word reads as absent (the style's double); `Auto`,
+`AUTO`, spaced and `#auto` read automatic, as `auto` does; a character style's highlight is applied (alone, with bold,
+through `basedOn`); a fill or border colour that isn't six hex digits is written as is (`#F00`, `#bogus`, `#Aqua`,
+`#Navy`), and `fill="auto"` is no shading; the underline's colour is not drawn.
