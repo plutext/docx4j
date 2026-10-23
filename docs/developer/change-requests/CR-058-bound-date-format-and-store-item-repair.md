@@ -1,10 +1,11 @@
 # CR-058: A bound date formatted as Word formats it, and a store item ID that names no part resolved as Word repairs it
 
-Status: PROPOSED 2026-10-23, drafted by Claude Fable 5.1 (session docx4j-25) at Jason's request ("do a cr for the
+Status: ACCEPTED 2026-10-23 (Jason: D1-D5 as recommended; on D5, whether the document with the repaired
+`w:storeItemID` is saved is the caller's decision, as with every other change the bind makes in memory). Proposed
+earlier the same day, drafted by Claude Fable 5.1 (session docx4j-25) at Jason's request ("do a cr for the
 remaining binding items the portfolio flagged"), from the two items docx4j-portfolio's text-extraction paper (§12a,
 22 October 2026) lists as still open against the binding generator after CR-054 and the fixes of 17.3.4
-(f62314d3b, 24642aa59). Both confirmed in this repository's source at 64ebb9ae9 (§1). Decisions in §5 await Jason;
-phases in §4.
+(f62314d3b, 24642aa59). Both confirmed in this repository's source at 64ebb9ae9 (§1). Phases in §4; next is phase 0.
 
 ## 0. Summary
 
@@ -106,6 +107,10 @@ the OpenDoPE `od:xpath` path, which carries the same `w:dataBinding` and goes th
 | D3 | A stored value that is not a date | show the stored text as it is, in the control's formatting, with a WARN (Word's behaviour, to be confirmed by the phase 0 probe); today's date in red is a server's date leaking into a document and goes. If Word shows something else, follow Word |
 | D4 | A store item ID naming no part | resolve to the custom XML part the XPath fits: the parts (not the property parts) whose root element's namespace and local name match the XPath's first step read with the binding's prefix mappings; exactly one → use it, INFO once per document; several → the first (part-name order) whose XPath yields a node, else the first that fits, WARN (which one Word picks is a phase 0 probe); none → the control is left as it is (its stored content stays, like Word's surface for an unresolved binding), WARN, no exception. The `InputIntegrityException` becomes opt-in: property `docx4j.model.datastorage.BindingHandler.strictStoreItemIds=true` restores it for a deployment that wants a bad template to fail |
 | D5 | Write-back | the generator writes the resolved ID into the control's `w:dataBinding/@w:storeItemID` as Word's save does, through `postBindSdtPrHygiene` (NonXSLT) and the sdtPr template (XSLT), so the saved document binds without the repair next time. The text model writes nothing |
+
+Accepted 2026-10-23: D1 to D5 as recommended. On D5 Jason adds that it is the user's code that decides whether the
+repaired document is saved: the bind writes the resolved ID into the in-memory package, as it writes the bound
+values, and docx4j saves nothing on its own.
 
 ## 6. Risks
 
