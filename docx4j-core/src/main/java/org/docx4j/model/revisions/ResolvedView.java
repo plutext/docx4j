@@ -148,8 +148,26 @@ public final class ResolvedView {
 		if (!(v instanceof P)) return false;
 		P p = (P) v;
 		if (movedMarksGone.contains(p) && !remainsIn(p)) return true;
-		// an emptied paragraph whose mark is gone, with a table next in its list: gone (section 17, case 9)
-		return marksGone.contains(p) && !remainsIn(p) && nextBlock(p) instanceof Tbl;
+		if (!marksGone.contains(p)) return false;
+		// an emptied paragraph whose mark is gone, with a table or a block control next in its list: gone
+		// (section 17: check 54 case 9, the text-left probe's case 3)
+		Object next = nextBlock(p);
+		// one with text left and a table next is not removed but moved: joinsIntoTable, which the walk applies
+		return !remainsIn(p) && (next instanceof Tbl || (next != null && Trees.isHolder(next)));
+	}
+
+	/**
+	 * The table a paragraph with text left joins into, where its mark is gone and a table is the next
+	 * block in its list (Word 365's Accept All, section 17, the text-left probe's case 1: the content
+	 * lands at the front of the first cell's first paragraph, which keeps its own properties); null
+	 * otherwise.
+	 *
+	 * @since 17.3.5
+	 */
+	public Tbl joinsIntoTable(P p) {
+		if (p == null || !marksGone.contains(p) || !remainsIn(p)) return null;
+		Object next = nextBlock(p);
+		return next instanceof Tbl && Resolver.firstCellParagraph((Tbl) next) != null ? (Tbl) next : null;
 	}
 
 	/**
@@ -176,7 +194,7 @@ public final class ResolvedView {
 				if (ov instanceof Tbl) break;
 			}
 		}
-		if (next == null && !remainsIn(p) && Trees.parentOf(p) instanceof org.docx4j.wml.SdtContent) return null;
+		if (next == null && Trees.parentOf(p) instanceof org.docx4j.wml.SdtContent) return null; // a bare mark, text or not (probe case 2)
 		return p.getPPr();
 	}
 

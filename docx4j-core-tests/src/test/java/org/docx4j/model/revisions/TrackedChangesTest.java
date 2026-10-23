@@ -379,7 +379,11 @@ public class TrackedChangesTest {
 
 	// --- the unmeasured rules (CR-043 section 11) ------------------------------------------------------------
 
-	/** U1: a deleted mark with no paragraph after it in its list is dropped, with no join; nor across a table. */
+	/**
+	 * U1, revised by the text-left probe (CR-043 section 17, Word 365, 23 October 2026): a deleted mark
+	 * with a table next joins its paragraph's content into the table's first cell's first paragraph;
+	 * a cell's last mark and a story's last mark are dropped, with no join.
+	 */
 	@Test
 	public void noJoinAcrossAContainerBoundary() throws Exception {
 		String deletedMark = "<w:pPr><w:rPr><w:del w:id=\"%d\" w:author=\"A\"/></w:rPr></w:pPr>";
@@ -389,11 +393,16 @@ public class TrackedChangesTest {
 				+ "<w:p>" + String.format(deletedMark, 3) + run("the story's last") + "</w:p>"
 				+ "<w:sectPr/>");
 		assertEquals(3, TrackedChanges.acceptAll(pkg));
-		assertEquals(2, paragraphs(pkg).size());
+		assertEquals(1, paragraphs(pkg).size()); // "before a table" went into the cell
 		assertEquals(0, TrackedChanges.in(pkg).size());
 		assertFalse(bodyXml(pkg).contains("w:del "));
 		Body body = pkg.getMainDocumentPart().getJaxbElement().getBody();
 		assertNotNull(body.getSectPr());
+		org.docx4j.wml.Tbl tbl = (org.docx4j.wml.Tbl) XmlUtils.unwrap(body.getContent().get(0));
+		org.docx4j.wml.Tr tr = (org.docx4j.wml.Tr) XmlUtils.unwrap(tbl.getContent().get(0));
+		org.docx4j.wml.Tc tc = (org.docx4j.wml.Tc) XmlUtils.unwrap(tr.getContent().get(0));
+		assertEquals(1, tc.getContent().size());
+		assertEquals("before a tablea cell's last", TextOf.paragraph((P) XmlUtils.unwrap(tc.getContent().get(0))));
 	}
 
 	/** A deleted mark joins: the result keeps the next paragraph's properties and paraId (C10b), and markers between go into it. */

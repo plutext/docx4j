@@ -78,11 +78,18 @@ public class AcceptTrackedChangesTest {
 		assertEquals("abc", TextUtils.getText(XmlUtils.unwrap(body.getContent().get(0))));
 	}
 
+	/**
+	 * A deleted mark with text left and a table next: the text joins the table's first cell's first
+	 * paragraph, as Word 365's Accept All does (CR-043 section 17, the text-left probe's case 1,
+	 * 23 October 2026). Until 17.3.5 the paragraph stayed before the table.
+	 */
 	@Test
-	public void aDeletedMarkBeforeATableStays() throws Exception {
+	public void aDeletedMarkBeforeATableJoinsItsFirstCell() throws Exception {
 		Body body = accept("<w:p><w:pPr><w:rPr><w:del w:id=\"1\" w:author=\"a\"/></w:rPr></w:pPr><w:r><w:t>a</w:t></w:r></w:p>"
 				+ "<w:tbl><w:tr><w:tc><w:p><w:r><w:t>cell</w:t></w:r></w:p></w:tc></w:tr></w:tbl>");
-		assertEquals(2, body.getContent().size());
+		assertEquals(1, body.getContent().size());
+		Tbl tbl = (Tbl) XmlUtils.unwrap(body.getContent().get(0));
+		assertEquals("acell", TextUtils.getText(tbl));
 	}
 
 	@Test

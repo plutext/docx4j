@@ -481,7 +481,7 @@ settles one moves it into §3.2 with its source. Kept current; dated where added
 
 | # | Case | The rule docx4j follows | From | How to measure |
 |---|---|---|---|---|
-| U1 | a mark with no following `w:p` in its content list (a story's, cell's, note's, text box's or block control's last paragraph; a mark before a table or block control) | drop the marker, no join; never across a container boundary | core-ts; §10 | Word refuses the table and cell-end cases (C08, C09): only a story's or a block control's last paragraph is left to probe, by hand markup |
+| U1 | a mark with no following `w:p` in its content list (a story's, cell's, note's, text box's or block control's last paragraph; a mark before a table or block control) | drop the marker, no join; never across a container boundary | core-ts; §10 | MEASURED in part, §17 (23 October 2026): before a table, the content joins the first cell's first paragraph (emptied, the paragraph goes); before a block control, the paragraph takes the control's first paragraph's properties (emptied, it goes); a block control's last paragraph keeps a bare mark. Still as here: a story's, note's or text box's last paragraph (unmeasured); a cell's last paragraph (the probe's synthetic case 4 made Word drop a one-cell table, not followed) |
 | U2 | a field straddling a revision's edge | the halves resolve as runs | core-ts; §10 | a probe case deleting from text into a field's result |
 | U3 | a removed comment's `commentsExtended`/`commentsIds`/`commentsExtensible` entries and its replies | go with it | §10 | a probe case with a reply on a comment inside a deletion (Word 365, not the object model's C18 edit) |
 | U4 | D7's scope beyond images: `v:imagedata`, chart parts, `w:object`'s OLE part and preview, `r:link` | removed with the last reference | §10; Word's saves for images (C04, C05) | a probe case with a chart and an OLE object inside a deletion |
@@ -823,3 +823,28 @@ only by rule 3. Rule 4's form is what any editor writes when it removes a contro
   Runs: revisions, text, text extraction and agreement suites, 248 tests, 0 failures; the whole docx4j-core-tests
   module, 2027 tests, 0 failures, 30 skipped.
 - Hand-offs: core-ts (its goldens follow), python; the registry entry docx4j/CR-043.17 done.
+
+**The unmeasured side, measured (23 October 2026, Jason, Word 365; Claude Fable 5.1, session docx4j-25).** Two
+documents on the share (`Office 2016/cr043-s17/`), both now core-tests fixtures:
+
+1. **Word's Reject All of check 54** (`54-writes-word365-rejected.docx`, in `revisions/core-ts/check54/`): the original
+   everywhere, and `DocumentDescription` of docx4j's Reject All is identical to it (`check54RejectAll`). The reject
+   side of every §17 rule is measured and agrees.
+2. **The text-left probe** (`revisions/cr043/s17/17-text-left.docx`, five cases in Word's tracked form, written by
+   `build-17-text-left.py`; Word's `-accepted` and `-rejected` saves), measured against docx4j as it stood:
+
+| Case | Setup | Word's Accept All | docx4j before | Now |
+|---|---|---|---|---|
+| 1 | a Heading 1 keeps `HEAD1A `, loses the rest and its mark; a table next | the paragraph is gone; the first cell's first paragraph reads `HEAD1A T1R1C1`, with the cell paragraph's own properties | the paragraph stayed, Heading 1 | **the content joins the first cell's first paragraph**, the paragraph goes (`joinWithNext`; the walk: `ResolvedView.joinsIntoTable`, `Extractor.pendingTableJoin`) |
+| 2 | a block control's last paragraph, a numbered item, keeps `LIST2A `, loses the rest and its mark | `<w:p>` with the text and no `w:pPr`: the number and style gone | kept `ListParagraph` and the number | **a bare mark whether or not text is left** (rule 2 generalised) |
+| 3 | a Heading 1 loses all its text and its mark; a centred control next | the paragraph is gone | stayed empty, centred (rule 3 applied to an emptied paragraph) | **an emptied paragraph goes before a control as before a table** (rule 1 generalised); rule 3's properties apply to a paragraph with text left |
+| 4 | a cell's last paragraph, a numbered item, loses all its text and its mark | the one-cell table is gone, its first paragraph left as body text | the cell keeps an empty numbered paragraph | **not followed**: a `w:del` on a cell's last mark is not an edit Word writes (a cell goes by `w:cellDel`, a row by `w:trPr/w:del`), and what Word did with the synthetic form (collapsing a one-cell table) is not a rule to copy without a multi-cell measurement; U1 keeps the cell's paragraph; the test leaves region 4 aside |
+| 5 | a Heading 1 keeps `HEAD5A `, loses the rest and its mark; the control next starts with a numbered item | `HEAD5A ` as a numbered `ListParagraph`, no join | the same | as implemented (rule 3) |
+
+Word's Reject All of the probe: the original, identical to docx4j's (table properties aside: Word's save adds
+`w:tblInd` and `w:tblCellMar` to a table that lacks them, which `assertAllTablePropsAside` discounts).
+`TrackedChangesTest.noJoinAcrossAContainerBoundary` (U1) is revised to the table join; the story's-last and cell's-last
+cases keep U1. Tests `textLeftProbeAcceptAll`, `textLeftProbeRejectAll`, `check54RejectAll`; `ViewAgreementTest`
+walks the new fixtures. `AcceptTrackedChangesTest` (the conversion preprocess, which resolves through the same
+code) is revised likewise: `aDeletedMarkBeforeATableJoinsItsFirstCell`. Runs: the whole docx4j-core-tests module,
+2031 tests, 0 failures, 30 skipped (after that revision).

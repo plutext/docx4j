@@ -25,8 +25,16 @@ procedure and findings are in that repository's `test/README.md` ("Word acceptan
 | 33 | a whole paragraph deleted | `33b-accepted` |
 | 34 | a data-bound control changed with tracking on (`w:customXmlInsRangeStart`, block-level revisions in `w:sdtContent`) | - |
 | 36 | `w16du:dateUtc`, declared and undeclared | - |
-| 54 | tracked writes of 43 cases (whole paragraphs deleted before tables and controls, a control's last paragraph, ranges across a control's edge, controls deleted whole; copied 2026-10-23 from `test/check54/` at core-ts 87bbb38; Word 365 16.0.20326.20232) | `-word365-accepted` (Reject All not saved) |
+| 54 | tracked writes of 43 cases (whole paragraphs deleted before tables and controls, a control's last paragraph, ranges across a control's edge, controls deleted whole; copied 2026-10-23 from `test/check54/` at core-ts 87bbb38; Word 365 16.0.20326.20232) | `-word365-accepted`; `-word365-rejected` (Jason, 23 October 2026, for CR-043 section 17) |
 | 57 | whole equations deleted in Word's form, with fields (copied 2026-10-23 from `test/check57/` at core-ts 906d5e3; Word 365 16.0.20326.20232) | `-word365-accepted`, `-word365-rejected` |
+
+## `cr043/s17/` - the text-left probe (CR-043 section 17)
+
+`17-text-left.docx`, five cases in Word's tracked form written by `build-17-text-left.py` (a deleted mark with text
+left before a table, a control's last paragraph with text left, an emptied paragraph before a control, a cell's
+emptied last paragraph, text left before a control whose first paragraph is numbered); Word 365's Accept All and
+Reject All of it (Jason, 23 October 2026). Word's save adds `w:tblInd` and `w:tblCellMar` to a table that lacks
+them, so the tests compare these with table properties aside.
 
 ## `editor/` - docx4j-ts-editor's fixtures
 

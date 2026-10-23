@@ -504,14 +504,28 @@ final class Resolver {
 			if (!(Trees.unwrap(nextItem) instanceof P)) {
 				Object nextValue = Trees.unwrap(nextItem);
 				boolean emptied = !hasTextOrContent(para.p);
-				if (emptied && nextValue instanceof Tbl) {
-					// case 9: gone, the table follows what came before
+				if (emptied && (nextValue instanceof Tbl || (nextValue != null && Trees.isHolder(nextValue)))) {
+					// check 54 case 9, text-left probe case 3: gone, the table or control follows what came before
 					if (para.p.getPPr() != null) removals.discard(story, para.p.getPPr());
 					container.remove(i);
 					return;
 				}
+				if (nextValue instanceof Tbl) {
+					// text-left probe case 1: its content joins the table's first cell's first paragraph, which keeps its own properties
+					P first = firstCellParagraph((Tbl) nextValue);
+					if (first != null) {
+						List<Object> moved = new ArrayList<Object>(para.p.getContent());
+						for (int k = i + 1; k < j; k++) moved.add(container.get(k));
+						if (para.p.getPPr() != null) removals.discard(story, para.p.getPPr());
+						para.p.getContent().clear();
+						first.getContent().addAll(0, moved);
+						Trees.setParents(moved, first);
+						for (int k = j - 1; k >= i; k--) container.remove(k);
+						return;
+					}
+				}
 				if (nextValue != null && Trees.isHolder(nextValue)) {
-					// case 19: the properties a join would have given it, the control's first paragraph's
+					// case 19, probe case 5: the properties a join would have given it, the control's first paragraph's
 					P first = firstParagraph(Trees.children(nextValue));
 					if (first != null) {
 						if (para.p.getPPr() != null) removals.discard(story, para.p.getPPr());
@@ -520,8 +534,8 @@ final class Resolver {
 						return;
 					}
 				}
-				if (emptied && nextItem == null && Trees.parentOf(para.item) instanceof org.docx4j.wml.SdtContent) {
-					// case 13: a control's last paragraph keeps a bare mark
+				if (nextItem == null && Trees.parentOf(para.item) instanceof org.docx4j.wml.SdtContent) {
+					// case 13, probe case 2: a control's last paragraph keeps a bare mark, its text with it
 					if (para.p.getPPr() != null) removals.discard(story, para.p.getPPr());
 					para.p.setPPr(null);
 					return;
@@ -557,16 +571,6 @@ final class Resolver {
 			return false;
 		}
 
-		private static P firstParagraph(List<Object> items) {
-			if (items == null) return null;
-			for (Object o : items) {
-				Object v = Trees.unwrap(o);
-				if (v instanceof P) return (P) v;
-				if (v instanceof Tbl) return null;
-			}
-			return null;
-		}
-
 		private boolean isMarker(Object item) {
 			String name = Trees.name(item);
 			return name.endsWith("RangeStart") || name.endsWith("RangeEnd") || "bookmarkStart".equals(name)
@@ -576,6 +580,32 @@ final class Resolver {
 	}
 
 	// --- helpers ------------------------------------------------------------------------------------
+
+	/** The first paragraph of a table's first cell, where a paragraph joining into the table lands (section 17); null where the table has none. */
+	static P firstCellParagraph(Tbl tbl) {
+		for (Object r : tbl.getContent()) {
+			Object rv = Trees.unwrap(r);
+			if (!(rv instanceof org.docx4j.wml.Tr)) continue;
+			for (Object c : ((org.docx4j.wml.Tr) rv).getContent()) {
+				Object cv = Trees.unwrap(c);
+				if (!(cv instanceof org.docx4j.wml.Tc)) continue;
+				return firstParagraph(((org.docx4j.wml.Tc) cv).getContent());
+			}
+			return null;
+		}
+		return null;
+	}
+
+	/** The first paragraph of a list, or null where a table comes first or there is none. */
+	static P firstParagraph(List<Object> items) {
+		if (items == null) return null;
+		for (Object o : items) {
+			Object v = Trees.unwrap(o);
+			if (v instanceof P) return (P) v;
+			if (v instanceof Tbl) return null;
+		}
+		return null;
+	}
 
 	/** The changes of a group, or the cells of a row: runs last first, then marks last first, so that a join never strands a piece still to do. */
 	static void pieces(List<TrackedChange> pieces, boolean accept, Removals removals) {

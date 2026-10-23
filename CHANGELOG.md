@@ -39,8 +39,11 @@ Changes in Version 17.3.5
   check 54): an emptied paragraph before a table goes; a control's last paragraph deleted whole keeps
   a bare mark; a deleted mark before a block control takes the control's first paragraph's
   properties; a control deleted whole (w:customXmlDelRangeStart around it, a new change kind
-  CONTENT_CONTROL_DELETION) goes with its markers. The text model's accepted and original views
-  follow the same rules.
+  CONTENT_CONTROL_DELETION) goes with its markers. And from a second probe: a deleted mark with
+  text left and a table next joins the text into the table's first cell; a control's last
+  paragraph with its mark deleted keeps a bare mark whether or not text is left; an emptied
+  paragraph before a control goes. The text model's accepted and original views follow the same
+  rules. Word's Reject All of both probes agrees with docx4j's.
 * Tracked changes: accepting the deletion of a whole equation (or rejecting its insertion) removes
   the emptied m:oMath and m:oMathPara, as Word does; they were left empty (found by docx4j-core-ts
   against Word 365, check 57).

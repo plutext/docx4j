@@ -68,6 +68,31 @@ public class TrackedChangesWordTest {
 		assertEquals((accept ? "accept all of " : "reject all of ") + tracked, word, ours);
 	}
 
+	/**
+	 * As {@link #assertAll}, with table properties aside: Word's save adds {@code w:tblInd} and
+	 * {@code w:tblCellMar} to a table that lacks them (the text-left probe's tables, built by script).
+	 * The probe's case 4 is left out of the comparison: a deleted mark on a cell's last paragraph is
+	 * not an edit Word makes (it deletes a cell with {@code w:cellDel}, a row with {@code w:trPr/w:del}),
+	 * and on that synthetic form Word's Accept All dropped the one-cell table and kept its paragraph as
+	 * text; docx4j keeps the cell's paragraph (section 11).
+	 */
+	static void assertAllTablePropsAside(String tracked, String golden, boolean accept) throws Exception {
+		WordprocessingMLPackage pkg = load(tracked);
+		if (accept) TrackedChanges.acceptAll(pkg);
+		else TrackedChanges.rejectAll(pkg);
+		List<TrackedChange> left = new Lister(pkg, false).list();
+		assertTrue(tracked + ": " + left, left.isEmpty());
+		String ours = tablePropsAside(DocumentDescription.of(roundTrip(pkg)));
+		String word = tablePropsAside(DocumentDescription.of(load(golden)));
+		dump(tracked + (accept ? ".accept" : ".reject"), word, ours);
+		assertEquals((accept ? "accept all of " : "reject all of ") + tracked, word, ours);
+	}
+
+	private static String tablePropsAside(String description) {
+		return description.replaceAll("tblPr\\[.*?\\] grid", "tblPr[] grid")
+				.replaceAll("(?s)P \\| «BEGIN4 .*?P \\| «END4»\n", "");
+	}
+
 	/** With {@code -Dcr043.out=<dir>}, both descriptions are written there for a diff when they differ. */
 	static void dump(String name, String word, String ours) throws Exception {
 		String dir = System.getProperty("cr043.out");
@@ -336,6 +361,30 @@ public class TrackedChangesWordTest {
 	@Test
 	public void check54AcceptAll() throws Exception {
 		assertAll("revisions/core-ts/check54/54-writes-word365.docx", "revisions/core-ts/check54/54-writes-word365-accepted.docx", true);
+	}
+
+	/** Word's Reject All of check 54 (Jason, 23 October 2026): the original everywhere, as docx4j's. */
+	@Test
+	public void check54RejectAll() throws Exception {
+		assertAll("revisions/core-ts/check54/54-writes-word365.docx", "revisions/core-ts/check54/54-writes-word365-rejected.docx", false);
+	}
+
+	/**
+	 * The text-left probe (CR-043 section 17, Jason, 23 October 2026): a deleted mark with text left and
+	 * a table next joins the text into the table's first cell (case 1); a control's last paragraph with
+	 * text left keeps a bare mark, its properties gone (2); an emptied paragraph before a control goes
+	 * (3); a cell's emptied last paragraph, a synthetic edit, made Word drop the one-cell table (4,
+	 * section 11, not followed); text left before a control takes the control's first paragraph's
+	 * numbering (5).
+	 */
+	@Test
+	public void textLeftProbeAcceptAll() throws Exception {
+		assertAllTablePropsAside("revisions/cr043/s17/17-text-left.docx", "revisions/cr043/s17/17-text-left-accepted.docx", true);
+	}
+
+	@Test
+	public void textLeftProbeRejectAll() throws Exception {
+		assertAllTablePropsAside("revisions/cr043/s17/17-text-left.docx", "revisions/cr043/s17/17-text-left-rejected.docx", false);
 	}
 
 	@Test

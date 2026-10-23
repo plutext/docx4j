@@ -605,15 +605,35 @@ final class Extractor {
 				int j = i;
 				while (joinsNext(chain.get(chain.size() - 1))) {
 					int k = nextParagraph(items, j);
-					if (k < 0) break; // no paragraph next: only the mark goes
+					if (k < 0) break; // no paragraph next: only the mark goes, or what the plan says (section 17)
 					chain.add((P) unwrap(items.get(k)));
 					addresses.add(prefix + "/" + k);
 					j = k;
+				}
+				if (pendingTableJoin != null) {
+					// the paragraph before the table whose content joins this, its first cell's first paragraph
+					chain.addAll(0, pendingTableJoin);
+					addresses.addAll(0, pendingTableJoinAddresses);
+					pendingTableJoin = null;
+					pendingTableJoinAddresses = null;
+				}
+				if (plan != null && plan.joinsIntoTable(chain.get(chain.size() - 1)) != null) {
+					// a deleted mark with a table next and text left: into the table's first cell (CR-043 section 17)
+					pendingTableJoin = chain;
+					pendingTableJoinAddresses = addresses;
+					i = j;
+					continue;
 				}
 				paragraph(chain, addresses, story, sink, state);
 				i = j;
 			} else if (v instanceof Tbl) {
 				table((Tbl) v, address, story, sink, state);
+				if (pendingTableJoin != null) {
+					// the table had no paragraph to take it after all: on its own
+					paragraph(pendingTableJoin, pendingTableJoinAddresses, story, sink, state);
+					pendingTableJoin = null;
+					pendingTableJoinAddresses = null;
+				}
 			} else if (v instanceof SdtElement && unwraps(item)) {
 				// an inserted control rejected: its content in its place, its properties gone
 				SdtElement sdt = (SdtElement) v;
@@ -650,6 +670,10 @@ final class Extractor {
 			}
 		}
 	}
+
+	/** A paragraph chain whose deleted mark has a table next: it joins the first cell's first paragraph (CR-043 section 17). */
+	private List<P> pendingTableJoin;
+	private List<String> pendingTableJoinAddresses;
 
 	/** The index of the paragraph a paragraph joins: the next in the list past markers and what the view removes, or -1. */
 	private int nextParagraph(List<Object> items, int from) {
