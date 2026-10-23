@@ -39,14 +39,15 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.docx4j.Docx4jProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.apps.FOPException;
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
-import org.docx4j.fonts.fop.util.LogUtil;
 
 /**
  * Fop cache (currently only used for font info caching)
@@ -123,6 +124,9 @@ public final class FontCache implements Serializable {
     }
 
     private static final String FONT_CACHE_PROPERTY = "docx4j.fonts.fontcache";
+
+    /** Whether a failed cache write has been warned about: once per JVM, the rest at debug. */
+    private static final AtomicBoolean warnedUnwritable = new AtomicBoolean();
     
     /**
      * Returns the default font cache file.
@@ -133,8 +137,12 @@ public final class FontCache implements Serializable {
      */
     public static File getDefaultCacheFile(boolean forWriting) {
 
-        // 1. Explicit override via system property — highest priority
+        // 1. Explicit override: the JVM system property, else (since 17.3.5) docx4j.properties,
+        //    where the reference file has listed the key since 17.0.0
         String explicitCache = System.getProperty(FONT_CACHE_PROPERTY);
+        if (explicitCache == null || explicitCache.trim().isEmpty()) {
+            explicitCache = Docx4jProperties.getProperty(FONT_CACHE_PROPERTY);
+        }
         if (explicitCache != null && !explicitCache.trim().isEmpty()) {
             File override = new File(explicitCache);
 
@@ -269,12 +277,13 @@ public final class FontCache implements Serializable {
     }
 
     /**
-     * Writes the font cache to disk.
+     * Writes the font cache to disk, if it changed. A write that fails is logged (once per JVM at
+     * WARN) and the cache kept in memory; it is not an error (since 17.3.5; before, it threw).
      *
      * @param cacheFile
      *            the file to write to
      * @throws FOPException
-     *             fop exception
+     *             kept for callers' signatures; a failed write no longer throws
      */
     public void saveTo(File cacheFile) throws FOPException {
         synchronized (changeLock) {
@@ -290,7 +299,22 @@ public final class FontCache implements Serializable {
                         IOUtils.closeQuietly(oout);
                     }
                 } catch (IOException ioe) {
-                    LogUtil.handleException(log, ioe, true);
+                    // A cache is an optimisation: a location that can't be written (a read-only
+                    // file system, a full disk, docx4j.fonts.fontcache pointing somewhere
+                    // unwritable) costs the next start its discovery time, not this conversion.
+                    // Until 17.3.5 this threw, from the font mapper's static initialiser, so
+                    // every PDF conversion in the JVM then failed with NoClassDefFoundError:
+                    // Could not initialize class IdentityPlusMapper.  'changed' stays set, so a
+                    // later save at a writable location still happens.
+                    String why = "Couldn't write the font cache to " + cacheFile.getAbsolutePath()
+                            + " (" + ioe + "); font discovery will run again at the next start."
+                            + " Set docx4j.fonts.fontcache to a writable file or directory.";
+                    if (warnedUnwritable.compareAndSet(false, true)) {
+                        log.warn(why);
+                    } else {
+                        log.debug(why);
+                    }
+                    return;
                 }
                 changed = false;
                 log.trace("Cache file written.");

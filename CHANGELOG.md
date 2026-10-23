@@ -42,6 +42,12 @@ Changes in Version 17.3.5
   SSRF and local file read). An image not fetched is its alt text, or nothing. Behaviour change:
   `docx4j.altchunk.html.fetch=true` restores the fetching of 17.3.4 and before, and
   `convertAltChunks(boolean)` decides it for one call.
+* Fonts: a font cache that cannot be written (a read-only file system, a full disk,
+  `docx4j.fonts.fontcache` pointing somewhere unwritable) is logged once at WARN and the
+  conversion goes on; before, the font mapper's class failed to initialise and every PDF
+  conversion in the JVM then failed with `NoClassDefFoundError`. `docx4j.fonts.fontcache` is
+  now also read from docx4j.properties, where the reference file has listed it since 17.0.0
+  (the JVM system property wins).
 
 
 Version 17.3.4
