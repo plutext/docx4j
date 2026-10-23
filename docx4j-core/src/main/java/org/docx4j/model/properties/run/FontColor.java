@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.color.WordColors;
 import org.docx4j.wml.Color;
 import org.docx4j.wml.RPr;
 import org.slf4j.Logger;
@@ -89,19 +90,27 @@ public class FontColor extends AbstractRunProperty {
 	/** The theme colour Word draws, where it differs from w:val (CR-034); else null */
 	private String themed() {
 		Color c = (Color)this.getObject();
-		return themeColour(c.getVal(), c.getThemeColor(), c.getThemeTint(), c.getThemeShade());
+		return themeColour(WordColors.normalise(c.getVal()), c.getThemeColor(), c.getThemeTint(), c.getThemeShade());
+	}
+
+	/** w:val as Word reads it, "#RRGGBB": a colour name or any hex spelling Word accepts; null for automatic, which
+	 *  is "auto" and anything Word rejects ("F00", "#red") (CR-060) */
+	private String written() {
+		String hex = WordColors.normalise(((Color)this.getObject()).getVal());
+		return hex == null ? null : "#" + hex;
 	}
 
 	@Override
 	public String getCssProperty() {
 		
 		String themed = themed();
+		String written = written();
 		if (themed != null) {
 			return composeCss(CSS_NAME, themed);
-		} else if (((Color)this.getObject()).getVal()!=null ) {
-			return composeCss(CSS_NAME, hexColour(((Color)this.getObject()).getVal()));
+		} else if (written != null) {
+			return composeCss(CSS_NAME, written);
 		} else {
-			return CSS_NULL;
+			return CSS_NULL; // automatic
 		}
 	}
 
@@ -110,17 +119,14 @@ public class FontColor extends AbstractRunProperty {
 	public void setXslFO(Element foElement) {
 		
 		String themed = themed();
+		String written = written();
 		if (themed != null) {
 			foElement.setAttribute(FO_NAME, themed);
+		} else if (written != null) {
+			foElement.setAttribute(FO_NAME, written);
 		} else if (((Color)this.getObject()).getVal()!=null ) {
-			if (((Color)this.getObject()).getVal().equals("auto")) {
-				// set it to black
-				foElement.setAttribute(FO_NAME, "black");				
-			} else {
-				foElement.setAttribute(FO_NAME, hexColour(((Color)this.getObject()).getVal()));
-			}
-		} else {
-			//
+			// automatic: set it to black
+			foElement.setAttribute(FO_NAME, "black");
 		}
 
 	}

@@ -109,6 +109,7 @@ import org.docx4j.wml.TextDirection;
 import org.docx4j.wml.TrPr;
 import org.docx4j.wml.U;
 import org.docx4j.wml.UnderlineEnumeration;
+import org.docx4j.wml.WordRepairs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1470,8 +1471,10 @@ public class StyleUtil {
 		    );
 	}
 
+	/** A value outside ST_HighlightColor (YELLOW, bogus) is empty: Word's repair drops it, so a style's highlight
+	 *  beneath still shows (since 17.3.5, CR-060). */
 	public static boolean isEmpty(Highlight highlight) {
-		return (highlight == null) || isEmpty(highlight.getVal());
+		return (highlight == null) || !WordRepairs.isHighlightColor(highlight.getVal());
 	}
 
 	/** @since 17.2.0 */

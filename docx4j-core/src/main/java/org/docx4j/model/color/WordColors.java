@@ -17,6 +17,8 @@
  */
 package org.docx4j.model.color;
 
+import java.util.Locale;
+
 import org.docx4j.wml.CTBorder;
 import org.docx4j.wml.CTShd;
 import org.docx4j.wml.Color;
@@ -75,9 +77,27 @@ public final class WordColors {
 		return resolve(val, themeColor == null ? null : themeColor.value(), themeTint, themeShade, theme);
 	}
 
+	/**
+	 * A run's or an underline's colour value ({@code w:color/@w:val}, {@code w:u/@w:color}) as Word 365 reads it
+	 * (CR-060 section 1, rule 3): surrounding whitespace trimmed, six hex digits in either case with an optional
+	 * leading '#'; else a classic HTML colour name, in any case. Anything else, {@code auto} included, is automatic.
+	 *
+	 * @return six upper-case hex digits, or null for automatic
+	 * @since 17.3.5
+	 */
+	public static String normalise(String val) {
+		if (val == null) return null;
+		String v = val.trim();
+		String hex = v.startsWith("#") ? v.substring(1) : v;
+		if (hex.length() == 6 && hex.chars().allMatch(ch -> Character.digit(ch, 16) >= 0)) {
+			return hex.toUpperCase(Locale.ROOT);
+		}
+		return ColorTables.HTML.get(v.toLowerCase(Locale.ROOT));
+	}
+
 	/** A run's colour ({@code w:color}); null for automatic */
 	public static ResolvedColor of(Color c, ThemeColors theme) {
-		return c == null ? null : resolve(c.getVal(), c.getThemeColor(), c.getThemeTint(), c.getThemeShade(), theme);
+		return c == null ? null : resolve(normalise(c.getVal()), c.getThemeColor(), c.getThemeTint(), c.getThemeShade(), theme);
 	}
 
 	/** A shading's fill ({@code w:fill}, {@code w:themeFill}); null for automatic */
@@ -100,7 +120,7 @@ public final class WordColors {
 
 	/** An underline's colour; null for automatic (the text's colour) */
 	public static ResolvedColor of(U u, ThemeColors theme) {
-		return u == null ? null : resolve(u.getColor(), u.getThemeColor(), u.getThemeTint(), u.getThemeShade(), theme);
+		return u == null ? null : resolve(normalise(u.getColor()), u.getThemeColor(), u.getThemeTint(), u.getThemeShade(), theme);
 	}
 
 	private static Integer hexByte(String s) {

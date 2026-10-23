@@ -94,6 +94,31 @@ public class ModifyGeneratedSources {
 		}
 		System.out.println("  updated " + lazy[0] + " fields");
 
+		/////////////////////////////////////////////////////////
+		// Run properties Word repairs away (CR-060 D3)
+		/////////////////////////////////////////////////////////
+
+		System.out.println("Updating RPr and ParaRPr: a highlight, vertAlign or em Word would repair is not written");
+		String[][] onSave = {
+			{ "Highlight highlight", "HighlightOnSave" },
+			{ "CTVerticalAlignRun vertAlign", "VertAlignOnSave" },
+			{ "CTEm em", "EmOnSave" } };
+		for (String holder : new String[] { "RPr", "ParaRPr" }) {
+			for (String[] f : onSave) {
+				String id = holder + "-" + f[1];
+				patchOnce(id,
+					"    protected " + f[0] + ";",
+					"    @XmlJavaTypeAdapter(WordRepairs." + f[1] + ".class) // docx4j:patched:" + id + "\n"
+					+ "    protected " + f[0] + ";",
+					"org/docx4j/wml/" + holder + ".java");
+			}
+			patchOnce(holder + "-XmlJavaTypeAdapter-import",
+				"import jakarta.xml.bind.annotation.XmlType;\n",
+				"import jakarta.xml.bind.annotation.XmlType;\n"
+				+ "import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter; // docx4j:patched:" + holder + "-XmlJavaTypeAdapter-import\n",
+				"org/docx4j/wml/" + holder + ".java");
+		}
+
 		////////////
 		// Document
 		////////////

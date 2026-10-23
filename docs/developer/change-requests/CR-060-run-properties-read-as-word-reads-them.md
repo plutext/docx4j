@@ -1,10 +1,11 @@
 # CR-060: run properties read as Word reads them (on/off values, values outside an enumeration, w:color)
 
-Status: ACCEPTED 2026-10-24 (Jason: "recommendations accepted, please commit then implement"): D1 to D6 as
-recommended (§6), D1 after the preprocessor alternative was weighed (§3.1). Phases 0 and 1 done 2026-10-24 (§8, §9). PROPOSED 2026-10-24, drafted by Claude
-Opus 5.5 (session docx4j-25) at Jason's word through the portfolio session ("yes please", to "Shall I ask docx4j-25,
-the TypeScript session and the Python session each to draft its CR now, giving them these rules and the probes?").
-docx4j-core-ts and docx4j-python draft theirs in parallel against the same rules (§1). Phases in §5.
+Status: COMPLETE 2026-10-24 (phases 0 to 3, §8 to §11). ACCEPTED 2026-10-24 (Jason: "recommendations accepted, please
+commit then implement"): D1 to D6 as recommended (§6), D1 after the preprocessor alternative was weighed (§3.1).
+PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at Jason's word through the portfolio session
+("yes please", to "Shall I ask docx4j-25, the TypeScript session and the Python session each to draft its CR now,
+giving them these rules and the probes?"). docx4j-core-ts and docx4j-python draft theirs in parallel against the same
+rules (§1). Phases in §5.
 
 ## 0. Summary
 
@@ -273,3 +274,41 @@ Found on the way:
 - Tests: `OnOffAttributesTest` (both), `InspectOnOffTest`, and `RunPropertiesWord365Test.textModelAsWordReadsIt`
   green; `WmlBooleanDefaultsTest` (CR-059) unchanged. The full core-tests suite on this phase: 2063 run, 0
   failures, 36 skipped (six of them this CR's, for phases 2 and 3).
+
+## 10. Phase 2 record (2026-10-24, Claude Opus 5.5, session docx4j-25)
+
+- Colour: `WordColors.normalise(String)`, in `org.docx4j.model.color` beside CR-034's colour code rather than a new
+  `WordColours` in `model.properties.run` (§3.3's name was open): trim; six hex digits in either case with an optional
+  leading `#` give the upper-case hex; else a name in `ColorTables.HTML`, the 140 classic HTML (Netscape) names,
+  case-insensitive (D5); else null, automatic (`auto` among them). Used by `WordColors.of(Color)` and `of(U)` (the
+  resolver's `resolveColor`) and `FontColor` (HTML and PDF). Automatic writes nothing in HTML (it wrote `color:#auto`,
+  which a browser ignores, and `color:#F00` for `F00`, which a browser draws red) and black in PDF, as `auto` did. The
+  other colour attributes (`w:shd`'s fill, the borders) are unchanged: Word's reading of a name there is unmeasured.
+  Nor is it measured whether an invalid `w:color` over a style's colour is automatic or leaves the style's: docx4j
+  keeps what it did (the direct value, so automatic).
+- Underline: `Underline` draws nothing for a `w:u` whose `w:val` is null (bare, colour-only, or a value JAXB rejected),
+  in HTML, PDF and the DrawingML conversion.
+- Highlight: `HighlightColor` writes nothing for a value outside `ST_HighlightColor` (it wrote
+  `background-color:null`), and `StyleUtil.isEmpty(Highlight)` says such a value is empty, so a style's highlight shows
+  beneath it. The list is `WordRepairs.isHighlightColor` in docx4j-generated-objects (phase 3 needs it there).
+- Tests: `RunPropertiesWord365Test` all green, with an end-to-end check through both HTML writers.
+
+## 11. Phase 3 record (2026-10-24, Claude Opus 5.5, session docx4j-25)
+
+- D2: `OnOffAdapter.marshal` writes `true` or `false` (phase 1).
+- D3: `WordRepairs.HighlightOnSave`, `VertAlignOnSave` and `EmOnSave`, adapters on those fields of `RPr` and `ParaRPr`
+  (placed by `ModifyGeneratedSources`: the elements are declared in `EG_RPrBase`, which `CT_ParaRPrOriginal` and
+  `w:rPrChange`'s `w:rPr` repeat as a list, so an annotation in `wml.xsd` would land on those lists too). Reading is
+  identity; marshalling returns null for a missing or invalid value, which JAXB leaves out. The object in memory keeps
+  the element; only what is written changes, on every marshal path. A revision's former run properties are a list
+  and are written as they are. `w:u` is kept as JAXB writes it (bare, which Word reads as no direct underline).
+  Open, from the portfolio and core-ts (their D5): Word's saves drop an invalid or bare `w:u` (§8), but whether an
+  invalid value over a style stating `w:u` overrides it is unmeasured; if it does, the bare write changes meaning
+  there. docx4j wrote it bare before this CR too. A round-5 probe would settle it.
+- D4: a colour's source value is kept (`red` stays `red`); rendered normalised (phase 2).
+- MOXy (docx4j-JAXB-MOXy, EclipseLink 4.0.9, scratch probe): on/off read as Word reads it for eight spellings, a
+  save drops the repaired-away elements and keeps them in memory, and the probes load and save the same.
+- CHANGELOG. Hand-offs sent the same day to core-ts, docx4j-python, objects-ts and jsonix (no schema structure
+  changed: annotations only), and the portfolio.
+- Suites with phases 2 and 3: core-tests 2064 run, 0 failures, 30 skipped; docx4j-export-fo-tests 858, 0, 9;
+  docx4j-diffx-tests 9, 0, 1.

@@ -61,7 +61,6 @@ import org.docx4j.wml.STEm;
 import org.docx4j.wml.Text;
 import org.docx4j.wml.U;
 import org.docx4j.wml.UnderlineEnumeration;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Element;
 
@@ -216,7 +215,6 @@ public class RunPropertiesWord365Test {
 	}
 
 	/** The resolver's effective properties, for every marker */
-	@Ignore("CR-060 phases 1 and 2")
 	@Test
 	public void effectivePropertiesAsWordReadsThem() throws Exception {
 		List<String> diffs = new ArrayList<>();
@@ -270,7 +268,6 @@ public class RunPropertiesWord365Test {
 	 * The HTML styling of a run's direct properties (the HTML writers build a run's CSS from its w:rPr), for every
 	 * marker.
 	 */
-	@Ignore("CR-060 phases 1 and 2")
 	@Test
 	public void htmlStylingAsWordReadsIt() throws Exception {
 		List<String> diffs = new ArrayList<>();
@@ -285,7 +282,6 @@ public class RunPropertiesWord365Test {
 	}
 
 	/** The PDF styling, from a run's effective properties as the FO writer has it, for every marker */
-	@Ignore("CR-060 phases 1 and 2")
 	@Test
 	public void pdfStylingAsWordReadsIt() throws Exception {
 		List<String> diffs = new ArrayList<>();
@@ -303,7 +299,6 @@ public class RunPropertiesWord365Test {
 	 * A w:u stating only a colour is no underline in Word (CR-060 section 1, rule 2); Word's save keeps it as it is,
 	 * so it is stated here rather than read from the save.
 	 */
-	@Ignore("CR-060 phase 2")
 	@Test
 	public void colourOnlyUnderlineIsNotDrawn() throws Exception {
 		Probe pr = probe("props-u-valid");
@@ -318,7 +313,6 @@ public class RunPropertiesWord365Test {
 	 * A highlight, vertAlign or em whose value is missing or invalid is one Word's repair drops (CR-060 section 1,
 	 * rule 2), so over a character style stating the property, the style's value is what Word shows.
 	 */
-	@Ignore("CR-060 phase 2")
 	@Test
 	public void anInvalidValueOverAStyleLeavesTheStyles() throws Exception {
 		String w = "xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"";
@@ -337,6 +331,41 @@ public class RunPropertiesWord365Test {
 			assertEquals(d, "superscript", m.get("vertAlign"));
 			assertEquals(d, "dot", m.get("em"));
 		}
+	}
+
+	/** The same through both HTML writers, end to end, for a few markers. */
+	@Test
+	public void bothHtmlWritersAsWordReadsIt() throws Exception {
+		for (int flag : new int[] { org.docx4j.Docx4J.FLAG_EXPORT_PREFER_XSL, org.docx4j.Docx4J.FLAG_EXPORT_PREFER_NONXSL }) {
+			String u = html(load("props-u-valid.docx"), flag);
+			assertFalse(flag + " U1_BARE", spanStyle(u, "U1_BARE").contains("underline"));
+			assertFalse(flag + " U7_COLOR_ONLY", spanStyle(u, "U7_COLOR_ONLY").contains("underline"));
+			assertTrue(flag + " U2_SINGLE", spanStyle(u, "U2_SINGLE").contains("underline"));
+			String b = html(load("onoff-valid.docx"), flag);
+			assertFalse(flag + " V5_OFF", spanStyle(b, "V5_OFF").contains("bold"));
+			assertTrue(flag + " V4_ON", spanStyle(b, "V4_ON").contains("bold"));
+			String c = html(load("colour-case.docx"), flag);
+			assertTrue(flag + " K4_Red", spanStyle(c, "K4_Red").replace(" ", "").contains("color:#FF0000"));
+			assertFalse(flag + " K1_auto", spanStyle(c, "K1_auto").contains("auto"));
+			String h = html(load("props-enum-other.docx"), flag);
+			assertFalse(flag + " N1_HIGHLIGHT_UPPER", spanStyle(h, "N1_HIGHLIGHT_UPPER").contains("null"));
+		}
+	}
+
+	private static String html(WordprocessingMLPackage pkg, int flag) throws Exception {
+		org.docx4j.convert.out.HTMLSettings settings = org.docx4j.Docx4J.createHTMLSettings();
+		settings.setOpcPackage(pkg);
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		org.docx4j.Docx4J.toHTML(settings, out, flag);
+		return out.toString("UTF-8");
+	}
+
+	/** The style attribute of the span holding the token; "" where it has none */
+	private static String spanStyle(String html, String token) {
+		Matcher m = Pattern.compile("<span([^>]*)>" + token + "<").matcher(html);
+		assertTrue(token + " in " + html, m.find());
+		Matcher style = Pattern.compile("style=\"([^\"]*)\"").matcher(m.group(1));
+		return style.find() ? style.group(1) : "";
 	}
 
 	static Marker marker(Probe pr, String text) {
@@ -428,7 +457,6 @@ public class RunPropertiesWord365Test {
 	 * writes on/off as true or false (D2), keeps a colour's spelling (D4), and drops the highlight, vertAlign and em
 	 * elements whose value is missing or invalid, as Word's repair does (D3).
 	 */
-	@Ignore("CR-060 phases 1 to 3")
 	@Test
 	public void roundTripKeepsWordsReading() throws Exception {
 		List<String> diffs = new ArrayList<>();

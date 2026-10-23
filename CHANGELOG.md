@@ -23,6 +23,14 @@ Claude Opus 5.5
 Changes in Version 17.3.5
 --------------------------
 
+* Run properties read as Word 365 reads them (CR-060). An on/off value (w:b, w:i and every other
+  BooleanDefaultTrue element; 44 attributes such as w:fldChar's dirty and w:text's multiLine) is off
+  for exactly false, off or 0 and on otherwise: w:val="off", which Apache POI writes (#585), read
+  and saved as on, and " false" read off. Saved as true or false. HTML and PDF: a w:u without a valid w:val, or with only a colour,
+  draws no underline; a w:color may be a classic HTML colour name ("red" is FF0000), and a value
+  Word rejects is automatic; a w:highlight outside ST_HighlightColor is none (it wrote
+  background-color:null), and doesn't override a style's. A highlight, vertAlign or em whose value
+  is missing or invalid, which Word repairs away, is left out on save.
 * HTML output (both writers): a toggle property both a run's character style and its paragraph style
   set, which ECMA-376 turns off, is written off on the run (bold, italic, caps, small caps, strike); a
   browser showed it on, where Word and the PDF output have it off. Strike set by the paragraph style is

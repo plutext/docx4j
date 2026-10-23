@@ -67,13 +67,18 @@ public class Underline extends AbstractRunProperty {
 		
 	}
 	
+	/** Whether this w:u draws an underline. A w:u without a w:val (bare, or stating only a colour) or with a value
+	 *  outside ST_Underline (which JAXB reads as null) is no underline of its own: Word draws none, and over an
+	 *  underlining style the style's underline shows (CR-060 section 1, rule 2). Until 17.3.5 it was drawn. */
+	private boolean underlined() {
+		UnderlineEnumeration val = ((U)this.getObject()).getVal();
+		return val != null && val != UnderlineEnumeration.NONE;
+	}
+
 	@Override
 	public String getCssProperty() {
 		
-		if (((U)this.getObject()).getVal()==null ) {
-			// This does happen			
-			return composeCss(CSS_NAME, "underline");
-		} else if (!((U)this.getObject()).getVal().equals( UnderlineEnumeration.NONE ) ) {
+		if (underlined()) {
 			return composeCss(CSS_NAME, "underline");  
 		} else {
 			return CSS_NULL;  // text-decoration is also used for Strike (a la line-through)
@@ -86,13 +91,8 @@ public class Underline extends AbstractRunProperty {
 	@Override
 	public void setXslFO(Element foElement) {
 
-		if (((U)this.getObject()).getVal()==null ) {
-			// This does happen			
+		if (underlined()) {
 			foElement.setAttribute(FO_NAME, "underline");
-		} else if (!((U)this.getObject()).getVal().equals( UnderlineEnumeration.NONE ) ) {
-			foElement.setAttribute(FO_NAME, "underline");
-		} else {
-			//
 		}
 		
 	}
@@ -104,12 +104,8 @@ public class Underline extends AbstractRunProperty {
 
     @Override
     public void set(CTTextCharacterProperties rPr) {
-        if (((U)this.getObject()).getVal()==null ) {
+        if (underlined()) {
             rPr.setU(STTextUnderlineType.SNG);
-        } else if (!((U)this.getObject()).getVal().equals( UnderlineEnumeration.NONE ) ) {
-            rPr.setU(STTextUnderlineType.SNG);
-        } else {
-            //
         }
     }
 	

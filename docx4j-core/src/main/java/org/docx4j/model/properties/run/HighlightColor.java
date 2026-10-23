@@ -23,6 +23,7 @@ import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.wml.Highlight;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.WordRepairs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -43,6 +44,16 @@ public class HighlightColor extends AbstractRunProperty {
 	}
 	
 	
+	/**
+	 * Whether a w:highlight value is one of ST_HighlightColor's, compared case-exactly. Any other value (YELLOW,
+	 * bogus), or a missing one, is a highlight Word's repair drops: it is read as absent (CR-060 section 1, rule 2).
+	 *
+	 * @since 17.3.5
+	 */
+	public static boolean isHighlightColor(String val) {
+		return WordRepairs.isHighlightColor(val);
+	}
+
 	public HighlightColor(Highlight shading) {
 		this.setObject(shading);
 	}
@@ -59,7 +70,7 @@ public class HighlightColor extends AbstractRunProperty {
 		
 		Highlight shd = ((Highlight)this.getObject());
 		
-		if (shd.getVal()!=null &&
+		if (isHighlightColor(shd.getVal()) &&
 		!shd.getVal().equals("none")) {
 			return composeCss(CSS_NAME, shd.getHexVal() );
 		} else {
@@ -73,7 +84,7 @@ public class HighlightColor extends AbstractRunProperty {
 
 		Highlight shd = ((Highlight)this.getObject());
 		
-		if (shd.getVal()!=null &&
+		if (isHighlightColor(shd.getVal()) &&
 				!shd.getVal().equals("none")) {
 			foElement.setAttribute(FO_NAME, shd.getHexVal() );
 		} 
