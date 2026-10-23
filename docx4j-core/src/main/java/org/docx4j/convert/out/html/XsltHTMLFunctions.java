@@ -50,6 +50,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase;
 import org.docx4j.wml.PPrBase.Ind;
+import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBorder;
 import org.docx4j.wml.Style;
@@ -1100,6 +1101,16 @@ public class XsltHTMLFunctions {
      * @since 17.0.4
      */
     public static void composeRunSpan(HTMLConversionContext context, RPr rPr, Element span) {
+    	composeRunSpan(context, null, rPr, span);
+    }
+
+    /**
+     * As {@link #composeRunSpan(HTMLConversionContext, RPr, Element)}, given the run's paragraph style, so that a
+     * toggle property its styles turn off is written off (ECMA-376-1 17.7.3).
+     *
+     * @since 17.3.5
+     */
+    public static void composeRunSpan(HTMLConversionContext context, String pStyleVal, RPr rPr, Element span) {
 
 		Style defaultRunStyle = 
 				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false) != null ?
@@ -1121,7 +1132,7 @@ public class XsltHTMLFunctions {
 	    		Element child = (Element)span.getFirstChild();
 				String existingStyle = child.getAttribute("style");
 				span.setAttribute("style", existingStyle );
-				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span);
+				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span, pStyleVal);
 				while (child.getFirstChild()!=null) {
 					span.insertBefore(child.getFirstChild(), child);
 				}
@@ -1129,7 +1140,7 @@ public class XsltHTMLFunctions {
 
 	    	} else {
 
-				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span);
+				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span, pStyleVal);
 
 				// merge adjacent identical child spans, as createBlockForRPr does
 				DocumentFragment tmp = span.getOwnerDocument().createDocumentFragment();
@@ -1146,6 +1157,55 @@ public class XsltHTMLFunctions {
 
 	/** A pPr carrying just this paragraph style, so that a run's effective properties
 	 *  can be resolved the way the visitor pathway resolves them.  @since 17.0.5 */
+	/**
+	 * A toggle property the run's styles both set, which ECMA-376-1 17.7.3 turns off (a bold character style in a
+	 * bold paragraph style is not bold, as Word, PropertyResolver and the PDF output have it), written off inline:
+	 * the span's class and its paragraph's class each say on, so the browser would show it on. Only where the run
+	 * does not state the property itself (direct formatting isn't toggled, and its own CSS is already written).
+	 *
+	 * <p>Strike set by the paragraph's style is drawn by the paragraph element, which a descendant's CSS can't
+	 * undo; there the run stays struck in HTML. Bold, italic, caps and small caps are fixed in every case.</p>
+	 *
+	 * @since 17.3.5
+	 */
+	private static void appendTogglesTurnedOff(HTMLConversionContext context, String pStyleVal, RPr rPr, StringBuilder css) {
+		boolean styled = (rPr.getRStyle() != null && rPr.getRStyle().getVal() != null) || (pStyleVal != null && pStyleVal.length() > 0);
+		if (!styled) return;
+		RPr effective;
+		try {
+			effective = context.getPropertyResolver().getEffectiveRPr(rPr, pPrForStyle(pStyleVal));
+		} catch (Exception e) {
+			context.getLog().debug("No effective run properties for the toggles: " + e.getMessage());
+			return;
+		}
+		if (effective == null) return;
+		for (org.docx4j.model.styles.PropertyCatalogue.Property<Object, BooleanDefaultTrue> p : org.docx4j.model.styles.PropertyCatalogue.TOGGLES) {
+			if (p.get(rPr) != null) continue; // stated on the run: its own CSS says so
+			BooleanDefaultTrue value = p.get(effective);
+			if (value == null || value.isVal()) continue; // nothing sets it, or it is on
+			String off = toggleOffCss(p.name(), effective);
+			if (off == null) continue;
+			if (css.length() > 0 && css.charAt(css.length() - 1) != ';') css.append(';');
+			css.append(off);
+		}
+	}
+
+	/** The CSS that turns a toggle property off, or null where HTML output doesn't express it. */
+	private static String toggleOffCss(String toggle, RPr effective) {
+		switch (toggle) {
+			case "b": return "font-weight: normal;";
+			case "i": return "font-style: normal;";
+			case "caps": return "text-transform: none;";
+			case "smallCaps": return "font-variant: normal;";
+			case "strike":
+				// keep an underline the same styles give: only the line-through goes
+				boolean underline = effective.getU() != null && effective.getU().getVal() != null
+						&& effective.getU().getVal() != org.docx4j.wml.UnderlineEnumeration.NONE;
+				return "text-decoration-line: " + (underline ? "underline" : "none") + ";";
+			default: return null; // bCs, iCs (complex script), emboss, imprint, outline, shadow (not written), vanish (hidden text is dropped)
+		}
+	}
+
 	private static org.docx4j.wml.PPr pPrForStyle(String pStyleVal) {
 		if (pStyleVal==null || pStyleVal.length()==0) return null;
 		org.docx4j.wml.PPr pPr = Context.getWmlObjectFactory().createPPr();
@@ -1232,7 +1292,7 @@ public class XsltHTMLFunctions {
         		        		
         		String existingStyle = ((Element)n.getChildNodes().item(0)).getAttribute("style");
 				span.setAttribute("style", existingStyle );				
-				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span);
+				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span, pStyleVal);
 				XmlUtils.treeCopy( n.getChildNodes().item(0).getChildNodes(),  span );			
         		
 //        	} else if (!n.getChildNodes().item(0).getLocalName().equals("span")) {
@@ -1242,7 +1302,7 @@ public class XsltHTMLFunctions {
 
         	} else {
         		
-				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span);
+				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span, pStyleVal);
 				//XmlUtils.treeCopy( n,  span );
 				mergeSpans(n.getChildNodes(), document, span);
 				
@@ -1270,7 +1330,7 @@ public class XsltHTMLFunctions {
 	 */
 	private static void setSpanAttr(HTMLConversionContext context,
 			String defaultCharacterStyleId, StyleTree styleTree, RPr rPr,
-			Element span) {
+			Element span, String pStyleVal) {
 		
 		// Set @class	
 		String rStyleVal = defaultCharacterStyleId;
@@ -1297,6 +1357,7 @@ public class XsltHTMLFunctions {
 			// Does our rPr contain anything else?
 			StringBuilder inlineStyle =  new StringBuilder();
 			HtmlCssHelper.createCss(context.getWmlPackage(), rPr, inlineStyle);				
+			appendTogglesTurnedOff(context, pStyleVal, rPr, inlineStyle);
 			if (inlineStyle.toString().equals("") ) {
 				// Do nothing here - just keep existing style
 				// (which if present, is a font definition obtained at w:t level)

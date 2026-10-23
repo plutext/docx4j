@@ -23,6 +23,10 @@ Claude Opus 5.5
 Changes in Version 17.3.5
 --------------------------
 
+* HTML output (both writers): a toggle property both a run's character style and its paragraph style
+  set, which ECMA-376 turns off, is written off on the run (bold, italic, caps, small caps, strike); a
+  browser showed it on, where Word and the PDF output have it off. Strike set by the paragraph style is
+  still drawn by the paragraph element, which the run can't undo.
 * jsoup 1.22.1 to 1.23.2 (optional; the altChunk HTML reading), with docx4j-ImportXHTML's. Its W3C DOM
   now gives a prefixed attribute in Word's HTML (o:spid) once and in its namespace, and a mixed-case
   RCDATA end tag keeps its content as text, as the HTML standard says.

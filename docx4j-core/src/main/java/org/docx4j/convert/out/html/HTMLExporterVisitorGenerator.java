@@ -430,7 +430,14 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			}
 			parent.removeChild(span);
 		} else {
-			XsltHTMLFunctions.composeRunSpan(conversionContext, r.getRPr(), span);
+			// the paragraph's style, for the toggle properties its styles turn off (17.7.3)
+			String pStyleVal = null;
+			Object parent = r.getParent();
+			if (parent instanceof org.docx4j.wml.P && ((org.docx4j.wml.P) parent).getPPr() != null
+					&& ((org.docx4j.wml.P) parent).getPPr().getPStyle() != null) {
+				pStyleVal = ((org.docx4j.wml.P) parent).getPPr().getPStyle().getVal();
+			}
+			XsltHTMLFunctions.composeRunSpan(conversionContext, pStyleVal, r.getRPr(), span);
 		}
 		currentSpan = null;
 	}
