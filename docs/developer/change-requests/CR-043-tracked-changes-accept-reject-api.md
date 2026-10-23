@@ -754,3 +754,47 @@ keeps its places. Reject All of a whole inserted equation takes the same path (n
 by symmetry, as core-ts judged). Tests: `TrackedChangesWordTest.check57DeletedEquationsAcceptAll` and
 `...RejectAll` against Word's saves (`revisions/core-ts/check57/`, copied from core-ts 906d5e3); the reject
 direction already agreed. core-ts fixed its port the same day (`TrackedChange.mts`, `dropEmptiedEquation`).
+
+## 17. Four Accept All rules from check 54 (23 October 2026; queued after CR-058 phase 1)
+
+Status: ACCEPTED as a follow-up, Jason, 23 October 2026 ("write all four as a CR-043 §17 follow-up; implement after
+CR-058 phase 1"). Sent by docx4j-core-ts (check 54, Word 365 16.0.20326.20232, Jason, committed there as 87bbb38,
+its CR-014 §12.3 and §12.4), at Jason's word; measured here the same day with `DocumentDescription`: docx4j's Accept
+All of Word's save against Word's own Accept All differs in exactly these four regions (and in numbering ids, which
+Word's save renumbers; not a rule).
+
+**Oracle**: `~/git/docx4j-core-ts/test/check54/54-writes-word365.docx` (Word's save of the snippet's tracked writes,
+each case a region BEGIN<n>..END<n>) and `54-writes-word365-accepted.docx` (Word's Accept All in the same session);
+SHA-1 manifest beside them; to be copied to core-tests `revisions/core-ts/check54/` when the work starts. Word's
+Reject All was not saved, so the reject side of each rule is unmeasured and stays as it is (D5's running list, §11).
+
+| # | Case | Word's Accept All | docx4j today | Rule |
+|---|---|---|---|---|
+| 1 | 9: a paragraph deleted whole (mark and text) whose next block is a `w:tbl` | the paragraph is gone; the table follows | an empty paragraph stays (its `w:jc` kept) | an emptied paragraph whose deleted mark has no paragraph to join goes when a table follows it (Word's untracked delete of the range does the same, case 8). A story's, cell's or control's last paragraph still stays: it is the container's mark (U1) |
+| 2 | 13: a block control's last paragraph deleted whole | `<w:p/>`, a bare mark | the paragraph stays with its `w:pPr` (`ListParagraph` + `w:numPr`: an empty numbered item) | the control's last paragraph, its mark deleted, keeps the mark only: its properties go |
+| 3 | 19: a deleted mark whose next block is a `w:sdt` (the range ran from the head into the control's first paragraph) | nothing joins; the head keeps its text and takes the control's first paragraph's `w:pPr` (`w:jc=center` for `Heading1`) | the head keeps `Heading1` | at a container boundary the join's property rule still applies: the paragraph takes the properties of the paragraph a join would have given it (Word's untracked delete does the same, cases 18 and 20) |
+| 4 | 15, 17: a tracked delete across a whole block control: `w:customXmlDelRangeStart` before the `w:sdt`, its `End` first in `w:sdtContent`, a second `Start` last in `w:sdtContent` and its `End` after the `w:sdt`; the control's paragraph deleted whole; the head's mark deleted | the control and its markers are gone, and HEAD15A joins BODY15B into one `w:jc=center` paragraph | both marker pairs stay, with an empty control holding an empty paragraph; no join | the deletion twin of check 34's inserted holder (§14, `Lister.holderInsertionAt`): the same shape with `Del` markers lists as one change, kind `CONTENT_CONTROL_DELETION`; accepted, the four markers and the holder go whole (whatever its paragraphs' own marks say); rejected, the markers go and the holder stays, the deletions inside it resolved as their own pieces. Order: runs and holders before marks, so the head's deleted mark, resolved after the holder has gone, joins with the paragraph that now follows (core-ts `resolvePieces`; docx4j's `pieces` resolves `rest` before `marks` already) |
+
+How often (core-ts's sweep of 808 documents with tracked writes, Accept All against the untracked write): 74
+whole-paragraph deletions before a table or a control differ only by rules 1 or 2; two deletions across a control's
+edge (loadAndSave.docx's TOC into the heading after it; hyperlink-binding-test.docx's title into a bound control)
+only by rule 3. Rule 4's form is what any editor writes when it removes a control under tracking (core-ts's writer,
+`markHolderDeleted`, does).
+
+**Plan** (half a day, one commit, after CR-058 phase 1):
+
+- `Lister.holderDeletionAt`, beside `holderInsertionAt`, with the `customXmlDelRange*` names; `HolderT` gains
+  `ins`; `TrackedChange.Kind.CONTENT_CONTROL_DELETION` (`@since 17.3.5`), type `DELETED`; `Resolver.holder` takes
+  the direction from `t.ins == accept` as `mathRun` does. `ResolvedView` reads the deleted holder as absent in the
+  accepted view and present in the original. `TrackedChangesReport` and the text model's views follow through the
+  kind.
+- `Resolver.joinWithNext`, the no-next-paragraph branch: when the next item is a `w:tbl`, the paragraph goes
+  (rule 1); when it is a holder, the paragraph takes the holder's first paragraph's `w:pPr` (rule 3), through
+  `Props`, keeping its own `w:rPr`-less mark; when there is no next item and the list is a control's content, the
+  paragraph keeps a bare mark (rule 2). `ResolvedView` makes the same three decisions without the joins.
+- Tests: `TrackedChangesWordTest.check54AcceptAll` against Word's save, whole document (the numbering-id drift
+  handled by comparing `w:num` by content or by excluding ids from the description for this fixture); the
+  `OneChange` test for each region; `ViewAgreementTest` walks the fixture. The 104 revision tests and the
+  core-ts/python agreement goldens must not move except where these rules apply.
+- Hand-offs: core-ts follows through its goldens (its message: "core-ts will then follow through the goldens");
+  python's port told; CHANGELOG 17.3.5.
