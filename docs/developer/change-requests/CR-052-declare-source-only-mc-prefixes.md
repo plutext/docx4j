@@ -8,8 +8,9 @@ check: Word repairs a file with an undeclared `Requires` prefix, so the priority
 Phase 1 DONE 21 October 2026 (Jason: "commence CR-052 phase 1"; on Fable, CLAUDE.md's marshal path): the rule
 on every marshal path under both runtimes, the record carried through `deepCopy`, 24 tests (§5, §9); Word 365
 opens docx4j's saves of every case cleanly (§5, Jason's run); committed 5df2e253e. Phase 2 (hand-offs) DONE 21 October 2026
-(Jason: "start CR-052 phase 2"): objects-ts, core-ts and python acknowledged (§5; objects records D1 (b) as a gap
-for 0.4.4, python's CR-011 phase B ports the rule, core-ts takes it with the objects release). CR-052 done.
+(Jason: "start CR-052 phase 2"): objects-ts, core-ts and python acknowledged (§5; python's CR-011 phase B ports the
+rule, core-ts takes it with the objects release). Objects closed its D1 (b) gap on 24 October 2026 (Jason "D1 (b):
+yes", objects fe786cb, unpushed, for 0.4.4), with one known difference (§5, phase 2). CR-052 done.
 Proposed 2026-10-20. Requested by the docx4j-generated-objects-ts session at Jason's word ("send
 the CR request, and ask it for its opinion on priority, to be written into the CR"); the same
 defect is objects CR-011 (`docs/change-requests/CR-011-declare-source-only-prefixes.md` there, 3db3613).
@@ -295,6 +296,22 @@ lxml's per-element `nsmap` named as its record and content moved between trees a
   @docx4j/jsonix 3.5.0, CR-011 in objects 0.4.3), and the Choice placement dates from objects 869b725
   (b03ccb5 recorded Jason's once-on-the-root confirmation). Objects CR-012 is proposed as 0.4.4, not
   pushed or released.
+- objects-ts (24 October 2026): **D1 (b) closed in objects** (Jason: "D1 (b): yes"; objects fe786cb, unpushed,
+  for 0.4.4). At unmarshal a typed `mc:Choice` records the source-only bindings of the prefixes its own
+  `mc:Ignorable` and `mc:MustUnderstand` name, with its `Requires` ones; at marshal they follow the `Requires`
+  rule (the source's binding on the Choice, a table or alias prefix on the root, declared once where the root
+  keeps the binding, the clash check against the Choice's content as for `Requires`). On
+  `aChoicesOwnIgnorableAndMustUnderstandAreDeclared`'s input objects writes
+  `<mc:Choice xmlns:zz9="urn:zz9" Requires="wps" mc:Ignorable="zz9" mc:MustUnderstand="w14">` with `wps` and
+  `w14` on the root, docx4j's placement, no warning; a Choice's declarations precede its attributes, and a typed
+  Choice writes `Requires`, `mc:Ignorable`, `mc:MustUnderstand` in that order. The fixtures are unchanged (as
+  above). **One known difference remains**, for a prefix nothing resolves (no source binding, no table entry,
+  no alias): in `mc:MustUnderstand` both keep it with a warning; in a Choice's own `mc:Ignorable` objects drops
+  it from that Choice with a warning, as it has always dropped one from the root's `mc:Ignorable` (its CR-001),
+  where docx4j's `McDeclarations` keeps it, undeclared, logging "No mapping for prefix". Objects recommended
+  dropping, and Jason approved it there with D1 (b); docx4j keeps it until Jason decides whether docx4j should
+  drop it too (Word's handling of an undeclared prefix in a Choice's `mc:Ignorable` is unmeasured; phase 0
+  measured `Requires` only). The other differences above are unchanged.
 
 All three acknowledged: phase 2 done, 21 October 2026.
 - core-ts (21 October 2026): acknowledged. core-ts writes no prefixes itself; its save is the objects
