@@ -13,7 +13,7 @@ Phases: 1. property-driven setters in docx4j-core; 2. programmatic hook
 5. (optional) same for altChunk conversion
 Related: docx4j-ImportXHTML CR-001 (fonts honour the run FormattingOption) —
 required for "styles only" fonts; see interaction 1.  IMPLEMENTED 2026-09-11
-on ImportXHTML `VERSION_17_1_1`, commit a8ec734 (ships in ImportXHTML 17.2.0; verified here:
+on ImportXHTML `VERSION_17_1_1`, commit a8ec734 (first shipped in ImportXHTML 17.3.4, see the note at the end; verified here:
 `RunFormattingFontTest` 5/5 green against docx4j 17.2.0-SNAPSHOT; not
 backported to ImportXHTML 8.3.x — Jason)
 
@@ -82,11 +82,11 @@ fields in `XHTMLImporterImpl`, setters declared on the `XHTMLImporter`
 interface).  Present in ImportXHTML 8.3.15 and 17.x alike, so **no ImportXHTML
 change is needed** for options A and C below to *call* the setters.  (Fonts
 are the exception: making `CLASS_TO_STYLE_ONLY` actually cover `w:rFonts`
-needed an ImportXHTML fix — its CR-001, in 17.2.0; see interaction 1.)
+needed an ImportXHTML fix — its CR-001, in 17.3.4; see interaction 1.)
 
 - Runs (`formatRPr`): `@class` (first token) → `w:rStyle` if a character
   style of that id exists; CSS → direct `rPr` only under `CLASS_PLUS_OTHER`
-  or `IGNORE_CLASS`.  **Before ImportXHTML 17.2.0, `font-family` was applied
+  or `IGNORE_CLASS`.  **Before ImportXHTML 17.3.4, `font-family` was applied
   regardless** of the option (`FontHandler.setRFont` ran after the switch);
   from 17.2.0 it is skipped under `CLASS_TO_STYLE_ONLY` unless
   `docx4j-ImportXHTML.Fonts.IgnoreRunFormattingOption=true`.
@@ -180,7 +180,7 @@ CHANGELOG entry.
    property restores the old behaviour) passes against docx4j
    17.2.0-SNAPSHOT.  Not backported to ImportXHTML 8.3.x.
    Consequences for this CR: "styles only" for fonts in binding needs
-   **ImportXHTML ≥ 17.2.0** (say so in the property comment); with it the
+   **ImportXHTML ≥ 17.3.4** (say so in the property comment); with it the
    wrapper guard here is merely tidy (nothing left to leak) — still
    recommended, but no longer load-bearing.  On the 8.3.16 backport
    (phase 4) the leak remains: see that phase.
@@ -420,7 +420,7 @@ binding keys' values.  Out of scope unless asked.
 
 1. A + C: Jason, 2026-09-11 ("good to implement phases 1 and 2").
 2. Wrapper guard: implemented, per level (see phase 1); the property comment
-   says fonts need ImportXHTML ≥ 17.2.0 (that fix is ImportXHTML CR-001, not
+   says fonts need ImportXHTML ≥ 17.3.4 (that fix is ImportXHTML CR-001, not
    this guard).
 3. Phase 5 (altChunk): out for now, per the recommendation; nobody has
    asked for it.
@@ -438,3 +438,8 @@ binding keys' values.  Out of scope unless asked.
 - Reflection against method names: a future ImportXHTML rename would
   silently disable the setting (warn-and-skip).  Acceptable; the whole
   construction path already has this property.
+
+**Version correction, 24 October 2026** (docx4j-ImportXHTML, at Jason's word): ImportXHTML's CR-001 fix (a8ec734),
+which this CR's fonts option needs, first shipped in ImportXHTML 17.3.4 (released 2026-10-23): ImportXHTML 17.1.1 and
+17.2.0 were never released. The ImportXHTML versions above are corrected to 17.3.4; "docx4j 17.2.0-SNAPSHOT" in item
+1 is docx4j's own version at the time and stays.

@@ -460,7 +460,7 @@ OpenDoPE XHTML binding:
   docx4j.properties (docx4j.model.datastorage.BindingTraverser.XHTML.RunFormatting,
   .ParagraphFormatting, .TableFormatting); binding previously always ran with the
   importer's default.  Under CLASS_TO_STYLE_ONLY the CSS wrapper derived from the content
-  control's rPr/pPr is no longer generated.  Fonts need docx4j-ImportXHTML 17.2.0+.
+  control's rPr/pPr is no longer generated.  Fonts need docx4j-ImportXHTML 17.3.4+.
 - BindingHandler.setXHTMLImporterCustomizer: a hook invoked on each XHTMLImporterImpl
   immediately before convert, for any other importer setting, per content control.
 
