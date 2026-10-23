@@ -46,6 +46,10 @@ REVISION HISTORY
 20210104   Add office-word-2006-wordml.xsd    
 
 20230413   add tblCaption, tblDescription; (tblCaption had previously been added manually to the generated classes)    
+
+20261024   The xsd:boolean attributes (ST_OnOff in the 1st edition, docx4j's xsd:boolean since 2008) read through
+           org.docx4j.wml.OnOffAdapter, as Word reads an on/off value (CR-060 phase 1): 46 of the 48; the two required
+           ones (checkStyle, actualPg) are primitive booleans, which an adapter cannot bind
 	
 USAGE INSTRUCTIONS
 	  
@@ -376,6 +380,9 @@ PRINCIPLES:
 		-->
 		<xsd:attribute name="val" type="xsd:boolean" default="true">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>True/False Value (default is
 					true)</xsd:documentation>
 			</xsd:annotation>
@@ -385,6 +392,9 @@ PRINCIPLES:
 	<xsd:complexType name="BooleanDefaultFalse">
 		<xsd:attribute name="val" type="xsd:boolean" default="false">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>True/False Value (default is
 					false)</xsd:documentation>
 			</xsd:annotation>
@@ -1779,12 +1789,18 @@ PRINCIPLES:
 		<xsd:attribute name="shadow" type="xsd:boolean" default="false"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Border Shadow</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="frame" type="xsd:boolean" default="false"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Create Frame Effect</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -2194,6 +2210,9 @@ PRINCIPLES:
 		<xsd:attribute name="combine" type="xsd:boolean" default="false"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Two Lines in One</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -2206,6 +2225,9 @@ PRINCIPLES:
 		</xsd:attribute>
 		<xsd:attribute name="vert" type="xsd:boolean" default="false" use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Horizontal in Vertical (Rotate
 					Text)</xsd:documentation>
 			</xsd:annotation>
@@ -2213,6 +2235,9 @@ PRINCIPLES:
 		<xsd:attribute name="vertCompress" type="xsd:boolean" default="false"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Compress Rotated Text to Line
 					Height</xsd:documentation>
 			</xsd:annotation>
@@ -2502,6 +2527,9 @@ PRINCIPLES:
 		<xsd:attribute name="anchorLock" type="xsd:boolean" default="false"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Lock Frame Anchor to
 					Paragraph</xsd:documentation>
 			</xsd:annotation>
@@ -2813,11 +2841,14 @@ PRINCIPLES:
 		<xsd:attribute name="nlCheck" type="xsd:boolean" default="false"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Natural Language Grammar
 					Check</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="checkStyle" type="xsd:boolean" use="required">
+		<xsd:attribute name="checkStyle" type="xsd:boolean" use="required"> <!-- CR-060: not through OnOffAdapter; required, so a primitive boolean, which an adapter cannot bind -->
 			<xsd:annotation>
 				<xsd:documentation>Check Stylistic Rules With
 					Grammar</xsd:documentation>
@@ -3044,12 +3075,18 @@ PRINCIPLES:
 		<xsd:attribute name="formatting" type="xsd:boolean" default="false"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Only Allow Formatting With Unlocked
 					Styles</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="enforcement" type="xsd:boolean" default="false"> <!-- absent is off (issue 697); was default="true" -->
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Enforce Document Protection
 					Settings</xsd:documentation>
 			</xsd:annotation>
@@ -3220,6 +3257,9 @@ PRINCIPLES:
 		<xsd:attribute name="markup" type="xsd:boolean"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Display Visual Indicator Of Markup
 					Area</xsd:documentation>
 			</xsd:annotation>
@@ -3227,18 +3267,27 @@ PRINCIPLES:
 		<xsd:attribute name="comments" type="xsd:boolean"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Display Comments</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="insDel" type="xsd:boolean"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Display Content Revisions</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="formatting" type="xsd:boolean"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Display Formatting
 					Revisions</xsd:documentation>
 			</xsd:annotation>
@@ -3246,6 +3295,9 @@ PRINCIPLES:
 		<xsd:attribute name="inkAnnotations" type="xsd:boolean"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Display Ink Annotations</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -4177,6 +4229,9 @@ PRINCIPLES:
 					</xsd:attribute>
 					<xsd:attribute name="beforeAutospacing" type="xsd:boolean" use="optional">
 						<xsd:annotation>
+							<xsd:appinfo>
+								<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+							</xsd:appinfo>
 							<xsd:documentation>Automatically Determine Spacing
 								Above Paragraph</xsd:documentation>
 						</xsd:annotation>
@@ -4197,6 +4252,9 @@ PRINCIPLES:
 					</xsd:attribute>
 					<xsd:attribute name="afterAutospacing" type="xsd:boolean" use="optional">
 						<xsd:annotation>
+							<xsd:appinfo>
+								<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+							</xsd:appinfo>
 							<xsd:documentation>Automatically Determine Spacing
 								Below Paragraph</xsd:documentation>
 						</xsd:annotation>
@@ -4656,12 +4714,18 @@ PRINCIPLES:
 		</xsd:attribute>
 		<xsd:attribute name="fldLock" type="xsd:boolean" default="false"> <!-- absent is off (issue 697); was default="true" -->
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Field Should Not Be
 					Recalculated</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="dirty" type="xsd:boolean" default="false"> <!-- absent is off (issue 697); was default="true" -->
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Field Result Invalidated</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -4814,12 +4878,18 @@ PRINCIPLES:
 		</xsd:attribute>
 		<xsd:attribute name="fldLock" type="xsd:boolean" default="false"> <!-- absent is off (issue 697); was default="true" -->
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Field Should Not Be
 					Recalculated</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="dirty" type="xsd:boolean" default="false"> <!-- absent is off (issue 697); was default="true" -->
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Field Result Invalidated</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -5588,6 +5658,9 @@ PRINCIPLES:
 		<xsd:attribute name="equalWidth" type="xsd:boolean" default="true"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Equal Column Widths</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -5604,6 +5677,9 @@ PRINCIPLES:
 		</xsd:attribute>
 		<xsd:attribute name="sep" type="xsd:boolean" default="false" use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Draw Line Between Columns</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -8149,6 +8225,9 @@ PRINCIPLES:
 	<xsd:complexType name="CT_SdtText">
 		<xsd:attribute name="multiLine" type="xsd:boolean" default="false">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Allow Soft Line Breaks</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -9381,6 +9460,9 @@ PRINCIPLES:
 					<xsd:attribute name="history" type="xsd:boolean"
 						default="false" use="optional">
 						<xsd:annotation>
+							<xsd:appinfo>
+								<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+							</xsd:appinfo>
 							<xsd:documentation>
 								Add To Viewed Hyperlinks
 							</xsd:documentation>
@@ -10609,6 +10691,9 @@ PRINCIPLES:
 		<xsd:attribute name="customMarkFollows" type="xsd:boolean" default="false"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Suppress Footnote/Endnote Reference
 					Mark</xsd:documentation>
 			</xsd:annotation>
@@ -11925,7 +12010,7 @@ PRINCIPLES:
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_ReadingModeInkLockDown">
-		<xsd:attribute name="actualPg" type="xsd:boolean" use="required">
+		<xsd:attribute name="actualPg" type="xsd:boolean" use="required"> <!-- CR-060: not through OnOffAdapter; required, so a primitive boolean, which an adapter cannot bind -->
 			<xsd:annotation>
 				<xsd:documentation>Use Actual Pages, Not Virtual
 					Pages</xsd:documentation>
@@ -11951,6 +12036,9 @@ PRINCIPLES:
 		<xsd:attribute name="recommended" type="xsd:boolean" default="false"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Recommend Write Protection in User
 					Interface</xsd:documentation>
 			</xsd:annotation>
@@ -13139,6 +13227,9 @@ PRINCIPLES:
 					<xsd:attribute name="null" type="xsd:boolean" default="false"
 						use="optional">
 						<xsd:annotation>
+							<xsd:appinfo>
+								<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+							</xsd:appinfo>
 							<xsd:documentation>Level Text Is Null
 								Character</xsd:documentation>
 						</xsd:annotation>
@@ -13169,6 +13260,9 @@ PRINCIPLES:
 					<xsd:attribute name="legacy" type="xsd:boolean" default="false"
 						use="optional">
 						<xsd:annotation>
+							<xsd:appinfo>
+								<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+							</xsd:appinfo>
 							<xsd:documentation>Use Legacy Numbering
 								Properties</xsd:documentation>
 						</xsd:annotation>
@@ -13219,6 +13313,9 @@ PRINCIPLES:
 		<xsd:attribute name="tentative" type="xsd:boolean" default="false"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Tentative Numbering</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -13512,6 +13609,9 @@ PRINCIPLES:
 				</xsd:attribute>
 				<xsd:attribute name="subsetted" type="xsd:boolean" default="false">
 					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+						</xsd:appinfo>
 						<xsd:documentation>Embedded Font Is
 							Subsetted</xsd:documentation>
 					</xsd:annotation>
@@ -14093,6 +14193,9 @@ PRINCIPLES:
 		</xsd:choice>
 		<xsd:attribute name="all" type="xsd:boolean" default="false" use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Entry Is Of All Types</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -14346,6 +14449,9 @@ PRINCIPLES:
 		<xsd:attribute name="decorated" type="xsd:boolean" default="false"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Built-In Entry</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -15144,12 +15250,18 @@ PRINCIPLES:
 			<xsd:attribute name="default" type="xsd:boolean"
 				default="false" use="optional">
 				<xsd:annotation>
+					<xsd:appinfo>
+						<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+					</xsd:appinfo>
 					<xsd:documentation>Default Style</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
 			<xsd:attribute name="customStyle" type="xsd:boolean"
 				default="false" use="optional">
 				<xsd:annotation>
+					<xsd:appinfo>
+						<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+					</xsd:appinfo>
 					<xsd:documentation>
 						User-Defined Style
 					</xsd:documentation>
@@ -15191,6 +15303,9 @@ PRINCIPLES:
 									<xsd:attribute name="locked"
 										type="xsd:boolean">
 										<xsd:annotation>
+											<xsd:appinfo>
+												<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+											</xsd:appinfo>
 											<xsd:documentation>Latent Style
 												Locking
 												Setting</xsd:documentation>
@@ -15206,6 +15321,9 @@ PRINCIPLES:
 									<xsd:attribute name="semiHidden"
 										type="xsd:boolean">
 										<xsd:annotation>
+											<xsd:appinfo>
+												<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+											</xsd:appinfo>
 											<xsd:documentation>Semi hidden text
 												override</xsd:documentation>
 										</xsd:annotation>
@@ -15213,6 +15331,9 @@ PRINCIPLES:
 									<xsd:attribute name="unhideWhenUsed"
 										type="xsd:boolean">
 										<xsd:annotation>
+											<xsd:appinfo>
+												<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+											</xsd:appinfo>
 											<xsd:documentation>Unhide when
 												used</xsd:documentation>
 										</xsd:annotation>
@@ -15222,6 +15343,9 @@ PRINCIPLES:
 										
 										<!-- if omitted, to be determined from ../@defQFormat -->
 										<xsd:annotation>
+											<xsd:appinfo>
+												<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+											</xsd:appinfo>
 											<xsd:documentation>Latent Style
 												Primary Style Setting. If omitted, to
 												be determined from
@@ -15235,6 +15359,9 @@ PRINCIPLES:
 						<xsd:attribute name="defLockedState" type="xsd:boolean"
 							default="false">
 							<xsd:annotation>
+								<xsd:appinfo>
+									<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+								</xsd:appinfo>
 								<xsd:documentation>Default Style Locking
 									Setting</xsd:documentation>
 							</xsd:annotation>
@@ -15249,6 +15376,9 @@ PRINCIPLES:
 						<xsd:attribute name="defSemiHidden" type="xsd:boolean"
 							default="false">
 							<xsd:annotation>
+								<xsd:appinfo>
+									<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+								</xsd:appinfo>
 								<xsd:documentation>Default Semi-Hidden
 									Setting</xsd:documentation>
 							</xsd:annotation>
@@ -15256,6 +15386,9 @@ PRINCIPLES:
 						<xsd:attribute name="defUnhideWhenUsed" type="xsd:boolean"
 							default="false">
 							<xsd:annotation>
+								<xsd:appinfo>
+									<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+								</xsd:appinfo>
 								<xsd:documentation>Default Hidden Until Used
 									Setting</xsd:documentation>
 							</xsd:annotation>
@@ -15263,6 +15396,9 @@ PRINCIPLES:
 						<xsd:attribute name="defQFormat" type="xsd:boolean"
 							default="false"> <!-- per the spec -->
 							<xsd:annotation>
+								<xsd:appinfo>
+									<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+								</xsd:appinfo>
 								<xsd:documentation>Default Primary Style
 									Setting</xsd:documentation>
 							</xsd:annotation>
@@ -15328,6 +15464,9 @@ PRINCIPLES:
 		<xsd:attribute name="chapNum" type="xsd:boolean" default="false"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Include Chapter Number in Field for
 					Caption</xsd:documentation>
 			</xsd:annotation>
@@ -15340,6 +15479,9 @@ PRINCIPLES:
 		<xsd:attribute name="noLabel" type="xsd:boolean" default="false"
 			use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.OnOffAdapter.class)</annox:annotate> <!-- CR-060 -->
+				</xsd:appinfo>
 				<xsd:documentation>Do Not Include Name In Caption</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>

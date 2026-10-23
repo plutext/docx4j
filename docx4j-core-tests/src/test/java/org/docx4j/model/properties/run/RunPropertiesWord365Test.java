@@ -230,7 +230,6 @@ public class RunPropertiesWord365Test {
 	}
 
 	/** The text model's bold, italic and struck through, for every marker */
-	@Ignore("CR-060 phase 1")
 	@Test
 	public void textModelAsWordReadsIt() throws Exception {
 		List<String> diffs = new ArrayList<>();

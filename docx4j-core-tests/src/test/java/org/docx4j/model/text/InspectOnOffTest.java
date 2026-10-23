@@ -22,7 +22,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import org.docx4j.XmlUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Element;
 
@@ -37,7 +36,6 @@ public class InspectOnOffTest {
 		return XmlUtils.getNewDocumentBuilder().parse(new java.io.ByteArrayInputStream(xml.getBytes("UTF-8"))).getDocumentElement();
 	}
 
-	@Ignore("CR-060 phase 1")
 	@Test
 	public void onOffAsWordReadsIt() throws Exception {
 		assertNull(InspectXml.on(null));

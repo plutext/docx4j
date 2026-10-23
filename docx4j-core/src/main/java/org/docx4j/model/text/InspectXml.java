@@ -36,6 +36,7 @@ import jakarta.xml.bind.Marshaller;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.jaxb.ResolvedAlternateContent;
+import org.docx4j.wml.OnOffAdapter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -204,7 +205,10 @@ final class InspectXml {
 		return attr(e, W, local);
 	}
 
-	/** An ST_OnOff element's value: null where the element is absent; on unless {@code w:val} is 0, false or off. */
+	/**
+	 * An ST_OnOff element's value: null where the element is absent; on unless {@code w:val} is exactly 0, false or
+	 * off, as Word reads it ({@link OnOffAdapter}, CR-060).
+	 */
 	static Boolean on(Element e) {
 		return on(e, W, "val");
 	}
@@ -212,7 +216,7 @@ final class InspectXml {
 	static Boolean on(Element e, String ns, String local) {
 		if (e == null) return null;
 		String v = attr(e, ns, local);
-		return v == null || !(v.equalsIgnoreCase("0") || v.equalsIgnoreCase("false") || v.equalsIgnoreCase("off"));
+		return v == null || OnOffAdapter.read(v);
 	}
 
 	static boolean isOn(Element e) {

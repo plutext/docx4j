@@ -34,7 +34,6 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -42,6 +41,10 @@ import org.junit.Test;
  * reads an on/off value: off for exactly {@code false}, {@code off} or {@code 0}, case-sensitive and untrimmed; on
  * for anything else, the empty string included (measured on the run properties, CR-060 section 1, rule 1; the same
  * simple type everywhere). An absent attribute still reads as CR-059 has it.
+ *
+ * <p>Two of the 48 are left as they were: {@code w:activeWritingStyle/@w:checkStyle} and
+ * {@code w:readModeInkLockDown/@w:actualPg} are required, so XJC generates a primitive {@code boolean}, which an
+ * adapter cannot bind; making them {@code Boolean} would change their accessors (CR-060 section 9).</p>
  */
 public class OnOffAttributesTest {
 
@@ -58,7 +61,6 @@ public class OnOffAttributesTest {
 		{ CTEastAsianLayout.class, "isVertCompress", "" },
 		{ CTFramePr.class, "isAnchorLock", "" },
 		{ CTWritingStyle.class, "isNlCheck", "w:lang=\"en-US\" w:vendorID=\"64\" w:dllVersion=\"131078\" w:appName=\"MSWord\"" },
-		{ CTWritingStyle.class, "isCheckStyle", "w:lang=\"en-US\" w:vendorID=\"64\" w:dllVersion=\"131078\" w:appName=\"MSWord\"" },
 		{ CTDocProtect.class, "isFormatting", "" },
 		{ CTDocProtect.class, "isEnforcement", "" },
 		{ CTTrackChangesView.class, "isMarkup", "" },
@@ -77,7 +79,6 @@ public class OnOffAttributesTest {
 		{ CTSdtText.class, "isMultiLine", "" },
 		{ P.Hyperlink.class, "isHistory", "" },
 		{ CTFtnEdnRef.class, "isCustomMarkFollows", "w:id=\"1\"" },
-		{ CTReadingModeInkLockDown.class, "isActualPg", "w:w=\"100\" w:h=\"100\" w:fontSz=\"100\"" },
 		{ CTWriteProtection.class, "isRecommended", "" },
 		{ Lvl.LvlText.class, "isNull", "w:val=\"%1.\"" },
 		{ Lvl.Legacy.class, "isLegacy", "" },
@@ -116,7 +117,6 @@ public class OnOffAttributesTest {
 		return Character.toLowerCase(getter.charAt(2)) + getter.substring(3);
 	}
 
-	@Ignore("CR-060 phase 1")
 	@Test
 	public void everyOnOffAttributeReadsAsWordReadsIt() throws Exception {
 		List<String> diffs = new ArrayList<>();
@@ -136,7 +136,6 @@ public class OnOffAttributesTest {
 	}
 
 	/** The table above is every Boolean attribute in org.docx4j.wml, and each is bound through the adapter. */
-	@Ignore("CR-060 phase 1")
 	@Test
 	public void everyBooleanAttributeIsBoundThroughTheAdapter() throws Exception {
 		Set<String> tested = new HashSet<>();
@@ -145,7 +144,9 @@ public class OnOffAttributesTest {
 		}
 		Set<String> found = new TreeSet<>();
 		List<String> unbound = new ArrayList<>();
-		for (Class<?> c : classes()) {
+		Set<Class<?>> classes = classes();
+		for (Object[] row : ATTRIBUTES) classes.add((Class<?>) row[0]);
+		for (Class<?> c : classes) {
 			for (Field f : c.getDeclaredFields()) {
 				XmlAttribute a = f.getAnnotation(XmlAttribute.class);
 				if (a == null || f.getType() != Boolean.class) continue;
@@ -155,9 +156,11 @@ public class OnOffAttributesTest {
 				if (adapter == null || !adapter.value().getName().equals("org.docx4j.wml.OnOffAdapter")) unbound.add(name);
 			}
 		}
-		assertEquals("Boolean attributes in org.docx4j.wml: " + found, 48, found.size());
+		assertEquals("Boolean attributes in org.docx4j.wml: " + found, 46, found.size());
 		assertEquals("tested: " + found, found, new TreeSet<>(tested));
 		assertTrue("not bound through OnOffAdapter: " + unbound, unbound.isEmpty());
+		assertEquals(boolean.class, CTWritingStyle.class.getDeclaredField("checkStyle").getType());
+		assertEquals(boolean.class, CTReadingModeInkLockDown.class.getDeclaredField("actualPg").getType());
 	}
 
 	/** The classes ObjectFactory creates, with their nested classes */

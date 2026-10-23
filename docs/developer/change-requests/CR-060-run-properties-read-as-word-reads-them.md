@@ -1,7 +1,7 @@
 # CR-060: run properties read as Word reads them (on/off values, values outside an enumeration, w:color)
 
 Status: ACCEPTED 2026-10-24 (Jason: "recommendations accepted, please commit then implement"): D1 to D6 as
-recommended (§6), D1 after the preprocessor alternative was weighed (§3.1). Phase 0 done 2026-10-24 (§8). PROPOSED 2026-10-24, drafted by Claude
+recommended (§6), D1 after the preprocessor alternative was weighed (§3.1). Phases 0 and 1 done 2026-10-24 (§8, §9). PROPOSED 2026-10-24, drafted by Claude
 Opus 5.5 (session docx4j-25) at Jason's word through the portfolio session ("yes please", to "Shall I ask docx4j-25,
 the TypeScript session and the Python session each to draft its CR now, giving them these rules and the probes?").
 docx4j-core-ts and docx4j-python draft theirs in parallel against the same rules (§1). Phases in §5.
@@ -254,3 +254,22 @@ Found on the way:
   docx4j binds as an enumeration of the six spellings (`STOnOff`): a value outside them reads null, so `TRUE` reads
   absent where Word presumably reads on. And `LsdException.isQFormat()` (patched to inherit) throws a
   `ClassCastException` for an element whose parent is not a `w:latentStyles`; an unmarshalled document never has one.
+
+## 9. Phase 1 record (2026-10-24, Claude Opus 5.5, session docx4j-25)
+
+- `org.docx4j.wml.OnOffAdapter` (`XmlAdapter<String, Boolean>`): exactly `false`, `off` or `0` read `FALSE`, any other
+  string `TRUE`; `marshal` writes `true` or `false` (D2). It lives in docx4j-generated-objects, beside the generated
+  classes that name it, not in `org.docx4j.jaxb` as §3.1 had it: that package is docx4j-core's, and a package split
+  across two modules is refused on the module path. `OnOffAdapter.read(String)` is the rule for other readers.
+- Bound in `wml.xsd` with an annox `target="field"` annotation on each attribute, the mechanism 39641e21c used for
+  `ST_VerticalJc`. Generated: `@XmlJavaTypeAdapter(OnOffAdapter.class)` on the field; the getters, setters, field
+  types and CR-059's defaults are unchanged. RI measured: the adapter receives the value untrimmed.
+- 46 of the 48 attributes. Departure: `w:activeWritingStyle/@w:checkStyle` and `w:readModeInkLockDown/@w:actualPg`
+  are `use="required"` without a default, so XJC generates a primitive `boolean`, which an adapter cannot bind (the
+  JAXB context refused it: "Adapter OnOffAdapter is not applicable to the field type boolean"). Making them `Boolean`
+  would change two public signatures, against §3.1's "no API change"; both are settings Word keeps for itself, which
+  docx4j never reads. They keep `xsd:boolean`'s reading; the test pins them as primitives.
+- The inspector's `InspectXml.on` reads through `OnOffAdapter.read` (it ignored case).
+- Tests: `OnOffAttributesTest` (both), `InspectOnOffTest`, and `RunPropertiesWord365Test.textModelAsWordReadsIt`
+  green; `WmlBooleanDefaultsTest` (CR-059) unchanged. The full core-tests suite on this phase: 2063 run, 0
+  failures, 36 skipped (six of them this CR's, for phases 2 and 3).
