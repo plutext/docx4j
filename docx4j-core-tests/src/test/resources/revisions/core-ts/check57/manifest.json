@@ -1,0 +1,24 @@
+{
+ "check": 57,
+ "word": "Word 365, 16.0.20326.20232, PC (Jason, 2026-10-23)",
+ "source": "test/fixtures/check57/build.mjs (57-fields-equations.docx, 10 cases)",
+ "saves": {
+  "57-fields-equations-word365.docx": "57-fields-equations.docx after the Script Lab snippet's \"Run the check\", saved with File > Save (the snippet's JSON: test/fixtures/check57/57-fields-equations-word365-run.json)",
+  "57-fields-equations-word365-accepted.docx": "57-fields-equations-word365.docx after Review > Accept All Changes, saved with File > Save As",
+  "57-fields-equations-word365-rejected.docx": "57-fields-equations-word365.docx opened again, after Review > Reject All Changes, saved with File > Save As"
+ },
+ "files": [
+  {
+   "name": "57-fields-equations-word365.docx",
+   "sha1": "e8ac302be7a8a7551da61c3a1306881ca0bb5fba"
+  },
+  {
+   "name": "57-fields-equations-word365-accepted.docx",
+   "sha1": "ee615f9e9a876a4aeddde7924da8c71ea6ec9d65"
+  },
+  {
+   "name": "57-fields-equations-word365-rejected.docx",
+   "sha1": "ad0937a076ff013b3e6e51c556899f465ebadef0"
+  }
+ ]
+}

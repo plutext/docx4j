@@ -313,4 +313,20 @@ public class TrackedChangesWordTest {
 	public void check33WholeParagraphAccepted() throws Exception {
 		assertAll("revisions/core-ts/check33/33a-deleted.docx", "revisions/core-ts/check33/33b-accepted.docx", true);
 	}
+
+	/**
+	 * Check 57: whole equations deleted in Word's form (a {@code w:del} in each {@code m:r} and
+	 * {@code m:ctrlPr}, the runs either side and the mark in their own). Accept All removes the
+	 * {@code m:oMath} and its {@code m:oMathPara}, not just their content; until 17.3.5 docx4j left
+	 * {@code <m:oMathPara><m:oMath/></m:oMathPara>} (docx4j-core-ts's finding, 23 October 2026).
+	 */
+	@Test
+	public void check57DeletedEquationsAcceptAll() throws Exception {
+		assertAll("revisions/core-ts/check57/57-fields-equations-word365.docx", "revisions/core-ts/check57/57-fields-equations-word365-accepted.docx", true);
+	}
+
+	@Test
+	public void check57DeletedEquationsRejectAll() throws Exception {
+		assertAll("revisions/core-ts/check57/57-fields-equations-word365.docx", "revisions/core-ts/check57/57-fields-equations-word365-rejected.docx", false);
+	}
 }

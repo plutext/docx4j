@@ -738,3 +738,19 @@ follow-up"):
   start's up to the end's loses its mark, with only range markers between them and no text in the range.
 - Tests: `TrackedChangesWordTest`'s `u21AcceptAll`, `u22RejectOne` and `u23RejectAll` against Word's saves (the
   fixtures in `revisions/cr043/comments/`), and `ViewAgreementTest`, which walks them too.
+
+## 16. An emptied equation (23 October 2026)
+
+docx4j-core-ts's check 57 (Word 365 16.0.20326.20232, Jason): Word's tracked delete of a paragraph holding an
+equation, or of a range taking one, writes a `w:del` inside each `m:r`, one in each structure's `m:ctrlPr`, the
+runs either side in their own `w:del`s and the mark's `w:del` where the paragraph went. **Word's Accept All removes
+the `m:oMath` and its `m:oMathPara` entirely**; where the mark was kept it leaves an empty paragraph. docx4j's
+`Resolver.mathRun` and `mathStructure` removed the runs and structures and left `<m:oMathPara><m:oMath/></m:oMathPara>`
+(six of them on Word's save; the paragraph, not empty, then joined the next with the empty equation in it).
+
+**Fixed** (`Resolver.dropEmptiedEquation`, after a run or structure is removed): an `m:oMath` left with nothing in
+it goes, and an `m:oMathPara` left with no `m:oMath` goes with it; an argument left empty stays, since its structure
+keeps its places. Reject All of a whole inserted equation takes the same path (not measured in Word; the same case
+by symmetry, as core-ts judged). Tests: `TrackedChangesWordTest.check57DeletedEquationsAcceptAll` and
+`...RejectAll` against Word's saves (`revisions/core-ts/check57/`, copied from core-ts 906d5e3); the reject
+direction already agreed. core-ts fixed its port the same day (`TrackedChange.mts`, `dropEmptiedEquation`).

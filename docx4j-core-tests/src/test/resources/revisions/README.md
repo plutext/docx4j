@@ -25,6 +25,7 @@ procedure and findings are in that repository's `test/README.md` ("Word acceptan
 | 33 | a whole paragraph deleted | `33b-accepted` |
 | 34 | a data-bound control changed with tracking on (`w:customXmlInsRangeStart`, block-level revisions in `w:sdtContent`) | - |
 | 36 | `w16du:dateUtc`, declared and undeclared | - |
+| 57 | whole equations deleted in Word's form, with fields (copied 2026-10-23 from `test/check57/` at core-ts 906d5e3; Word 365 16.0.20326.20232) | `-word365-accepted`, `-word365-rejected` |
 
 ## `editor/` - docx4j-ts-editor's fixtures
 

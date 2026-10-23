@@ -21,6 +21,9 @@ Claude Fable 5.1
 Changes in Version 17.3.5
 --------------------------
 
+* Tracked changes: accepting the deletion of a whole equation (or rejecting its insertion) removes
+  the emptied m:oMath and m:oMathPara, as Word does; they were left empty (found by docx4j-core-ts
+  against Word 365, check 57).
 * HTML, PDF and Markdown output: a link whose target is a script scheme (`javascript:` etc) is
   written as its text, with no link (CR-056; cf apache/poi#1455); the schemes written are http,
   https, ftp, mailto, file, news, tel and none, plus `docx4j.convert.out.linkSchemes`. The target

@@ -29,6 +29,8 @@ import java.util.Set;
 
 import jakarta.xml.bind.JAXBElement;
 
+import org.docx4j.math.CTOMath;
+import org.docx4j.math.CTOMathPara;
 import org.docx4j.math.CTR;
 import org.docx4j.model.revisions.TrackedChange.FieldT;
 import org.docx4j.model.revisions.TrackedChange.GroupT;
@@ -272,7 +274,39 @@ final class Resolver {
 				for (Object item : content) {
 					if (Trees.itemText(item) != null || Trees.unwrap(item) instanceof CTMathRunTrackChange) text = true;
 				}
-				if (!text && t.runOwner != null) remove(t.runOwner, t.runItem);
+				if (!text && t.runOwner != null) {
+					remove(t.runOwner, t.runItem);
+					dropEmptiedEquation(t.runItem);
+				}
+			}
+		}
+
+		/**
+		 * An {@code m:oMath} left with nothing in it goes, and an {@code m:oMathPara} left with no
+		 * {@code m:oMath} goes with it: Word 365's Accept All of a whole equation deleted in Word's form (a
+		 * {@code w:del} in each {@code m:r} and each {@code m:ctrlPr}) removed both, where docx4j left
+		 * {@code <m:oMathPara><m:oMath/></m:oMathPara>} (core-ts check 57, 23 October 2026; by symmetry,
+		 * Reject All of a whole equation inserted). An argument ({@code m:e}, {@code m:sup}) left empty
+		 * stays: its structure keeps its places.
+		 */
+		void dropEmptiedEquation(Object removed) {
+			Object holder = Trees.parentOf(removed);
+			if (!(holder instanceof CTOMath) || !((CTOMath) holder).getEGOMathElements().isEmpty()) return;
+			Object above = Trees.parentOf(holder);
+			if (above instanceof CTOMathPara) {
+				CTOMathPara para = (CTOMathPara) above;
+				para.getOMath().remove(holder);
+				if (!para.getOMath().isEmpty()) return;
+				holder = para;
+				above = Trees.parentOf(para);
+			}
+			List<Object> list = listOf(above);
+			if (list == null) return;
+			for (int i = 0; i < list.size(); i++) {
+				if (Trees.unwrap(list.get(i)) == holder) {
+					remove(list, list.get(i));
+					return;
+				}
 			}
 		}
 
@@ -303,6 +337,7 @@ final class Resolver {
 				else t.ctrlPr.setDel(null);
 			} else {
 				remove(t.structOwner, t.structItem);
+				dropEmptiedEquation(t.structItem);
 			}
 		}
 
