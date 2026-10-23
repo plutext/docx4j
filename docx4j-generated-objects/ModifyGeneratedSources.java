@@ -350,29 +350,10 @@ public class ModifyGeneratedSources {
 			+ "}",
 			"org/docx4j/wml/Id.java");
 
-		//////////
-		// Style
-		//////////
+		// Style.isCustomStyle(): no patch since CR-059 (17.3.5). wml.xsd now gives customStyle
+		// default="false", which XJC turns into the getter #641 needed: an absent customStyle is a
+		// built-in style.
 
-		System.out.println("Updating Style.java customStyle default");
-		patchOnce("Style-customStyle-default",
-			"    public boolean isCustomStyle() {\n"
-			+ "        if (customStyle == null) {\n"
-			+ "            return true;\n"
-			+ "        } else {\n"
-			+ "            return customStyle;\n"
-			+ "        }\n"
-			+ "    }",
-			"    public boolean isCustomStyle() {\n"
-			+ "        if (customStyle == null) {\n"
-			+ "            // the style shall be assumed to be a built-in style: https://github.com/plutext/docx4j/issues/641\n"
-			+ "            return false;\n"
-			+ "        } else {\n"
-			+ "            return customStyle;\n"
-			+ "        }\n"
-			+ "    }\n"
-			+ "    // docx4j:patched:Style-customStyle-default",
-			"org/docx4j/wml/Style.java");
 
 		//////////////
 		// Highlight

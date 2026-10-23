@@ -306,9 +306,9 @@ public class FontSubsetTest {
 		return pkg;
 	}
 
-	/** Whether the font table marks the embedding subsetted.  (FontRel.isSubsetted() answers true for an
-	 *  absent attribute, the binding's ST_OnOff default, so the marshalled attribute is what is read; the
-	 *  binding writes the plain Boolean as "true", where Word writes "1" - both ST_OnOff.) */
+	/** Whether the font table marks the embedding subsetted, read from the marshalled attribute: the
+	 *  binding writes the plain Boolean as "true", where Word writes "1" (both ST_OnOff).  (Until 17.3.5
+	 *  FontRel.isSubsetted() also answered true for an absent attribute; CR-059.) */
 	static boolean subsetted(WordprocessingMLPackage pkg) throws Exception {
 		String xml = pkg.getMainDocumentPart().getFontTablePart().getXML();
 		return xml.contains("w:subsetted=\"1\"") || xml.contains("w:subsetted=\"true\"");

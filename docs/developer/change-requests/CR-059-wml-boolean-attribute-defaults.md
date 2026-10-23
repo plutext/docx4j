@@ -4,7 +4,8 @@ Status: PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at J
 check the remaining 32"), after issue #697 found five such defaults (fixed separately, uncommitted at writing: §2.4).
 The count is 38, not 32 (§2): a line-by-line grep had missed declarations written over several lines. ACCEPTED
 2026-10-24 (Jason: "D1 to D5 recs make sense. Commit all, then implement CR-059"): D1 to D5 as recommended (§6).
-Phases in §5.
+Phases in §5. Phase 0 DONE the same day (§8, Jason's Word 365 run), phase 1 BUILT for all 36 (§9); phase 2, the
+hand-offs, next.
 
 ## 0. Summary
 
@@ -79,8 +80,8 @@ getters (objects through jsonix's default reader), "inherit" and "application" a
 | `w:revisionView` | `insDel` | none | the same | application | none |
 | `w:revisionView` | `formatting` | none | the same | application | none |
 | `w:revisionView` | `inkAnnotations` | none | the same | application | none |
-| `w:cols` | `equalWidth` | none | defines only "present and true" and "present and false" | **open** | `UnequalColumns`, `LayoutMasterSetBuilder` (column widths in HTML and PDF) |
-| `w:cols` | `sep` | none | "If set to true ... a vertical line shall be drawn"; no rule for absence | open (off by the only rule) | none |
+| `w:cols` | `equalWidth` | none | defines only "present and true" and "present and false" | open → **on** (Word, §8): equal columns; `default="true"` stays | `UnequalColumns`, `LayoutMasterSetBuilder` (column widths in HTML and PDF), unchanged |
+| `w:cols` | `sep` | none | "If set to true ... a vertical line shall be drawn"; no rule for absence | open → **off** (Word, §8) | none |
 | `w:text` (in `w:sdtPr`) | `multiLine` | none | "shall not allow soft line breaks" | off | `BindingTraverserCommonImpl`, `UpdateXmlFromDocumentSurface` (a bound value's line breaks) |
 | `w:hyperlink` | `history` | none | "its value shall be assumed to be false" | off | none |
 | `w:footnoteReference`, `w:endnoteReference` | `customMarkFollows` | none | "the reference mark shall not be skipped" | off | none |
@@ -108,7 +109,7 @@ getters (objects through jsonix's default reader), "inherit" and "application" a
 | off | 24 | every row marked off above |
 | inherit | 3 | `lsdException`: `locked`, `semiHidden`, `unhideWhenUsed` |
 | application | 5 | `revisionView`'s five |
-| open | 2 | `cols`: `equalWidth`, `sep` |
+| open | 2 | `cols`: `equalWidth` (Word: on, unchanged), `sep` (Word: off) |
 
 ### 2.3 `default="false"`, 4 besides #697's
 
@@ -116,7 +117,7 @@ getters (objects through jsonix's default reader), "inherit" and "application" a
 |---|---|---|---|---|
 | `w:style` | `default` | none | absent on a style, it is not the default style | off: agrees |
 | `w:latentStyles` | `defQFormat` | none | "shall be false" | off: agrees |
-| `w:spacing` (in `w:pPr`) | `beforeAutospacing` | "off" | "determined by the setting ... at any level of the style hierarchy" | inherit by the prose; ISO's schema says off. **open**: Word decides |
+| `w:spacing` (in `w:pPr`) | `beforeAutospacing` | "off" | "determined by the setting ... at any level of the style hierarchy" | inherit by the prose; ISO's schema says off. Open → **inherit** (Word, §8): no default |
 | `w:spacing` | `afterAutospacing` | "off" | the same | the same |
 
 docx4j's callers of the autospacing pair: `PropertyFactory`, `XsltFOFunctions` (twice), `ConversionSectionWrapperFactory`.
@@ -154,8 +155,8 @@ docx4j's callers of the autospacing pair: `PropertyFactory`, `XsltFOFunctions` (
 
 | Phase | What | Size |
 |---|---|---|
-| 0 | Word probes for the open ones, by a generated docx in the share's style: `w:cols w:num="2"` with two `w:col` of different widths and no `equalWidth` (does Word use the `w:col` widths?), and no `sep` (a line?); a plain-text control without `multiLine`, bound to a value with a newline (does Word show the line break?); a paragraph whose style sets `beforeAutospacing="1"` and whose own `w:spacing` omits it (inherited or off?). Red tests for §2's readings, one per reading class, through the getters | 2 h + Jason's Word run |
-| 1 | The xsd: `default="false"` for every "off"; per D2 for "inherit" and "application"; per phase 0 for the open ones. Clean regeneration of docx4j-generated-objects; the `Style-customStyle-default` patch removed from `ModifyGeneratedSources`; `FontEmbedder`'s workaround simplified; callers adjusted to phase 0's results; tests green; CHANGELOG (one entry naming every getter whose answer changes) | ½ day |
+| 0 | DONE 2026-10-24 (§8). Word probes for the open ones, by a generated docx in the share's style: `w:cols w:num="2"` with two `w:col` of different widths and no `equalWidth` (does Word use the `w:col` widths?), and no `sep` (a line?); a plain-text control without `multiLine`, bound to a value with a newline (does Word show the line break?); a paragraph whose style sets `beforeAutospacing="1"` and whose own `w:spacing` omits it (inherited or off?). Red tests for §2's readings, one per reading class, through the getters | 2 h + Jason's Word run |
+| 1 | BUILT 2026-10-24 (§9). The xsd: `default="false"` for every "off"; per D2 for "inherit" and "application"; per phase 0 for the open ones. Clean regeneration of docx4j-generated-objects; the `Style-customStyle-default` patch removed from `ModifyGeneratedSources`; `FontEmbedder`'s workaround simplified; callers adjusted to phase 0's results; tests green; CHANGELOG (one entry naming every getter whose answer changes) | ½ day |
 | 2 | Hand-offs: objects-ts and jsonix (§2's Reading column, "no default" for inherit and application), python, core-ts; the portfolio | 1 h |
 
 ## 6. Decisions (accepted as recommended, Jason, 2026-10-24)
@@ -179,3 +180,64 @@ docx4j's callers of the autospacing pair: `PropertyFactory`, `XsltFOFunctions` (
   `name_4`, `style_1`, `lsdException`, `latentStyles`, `caption`, `spacing_1`).
 - Issues #697 (this pattern on fields), #641 (`customStyle`); jsonix-d2's questions of 2026-10-24 (the "no default"
   distinction for the ports).
+
+## 8. Phase 0 record (2026-10-24, Claude Opus 5.5, session docx4j-25)
+
+Probes on the share, `Office 2016/cr059/` (README there), written by a zipfile script (scratch `cr059/probe/build.py`):
+
+- `cr059-cols.docx`: four sections of two columns. C1 has two unequal `w:col` and neither `equalWidth` nor `sep`;
+  C2 has the same with `equalWidth="0" sep="0"` and C3 has `equalWidth="1" sep="1"`, both controls; C4 has neither
+  attribute and no `w:col`.
+- `cr059-multiline.docx`: three plain-text controls bound to `ML_LINE_ONE` + newline + `ML_LINE_TWO`. ML1 has
+  `w:text` with no `multiLine`; ML2 has `multiLine="1"` and ML3 has `multiLine="0"`, both controls.
+- `cr059-autospacing.docx`: style "Auto Spaced" sets both autospacing attributes. AS1 uses the style alone; AS2 has
+  its own `w:spacing before="0" after="0"` without the autospacing attributes; AS3 sets both to `"0"`, a control;
+  AS4 has only `w:line`. Jason reads Format > Paragraph for each.
+
+What docx4j does today with them (before phase 1 touches these five):
+
+| Probe | docx4j today |
+|---|---|
+| C1, C4 (`equalWidth`, `sep` absent) | `isEqualWidth()` true, `isSep()` true: C1's `w:col` widths ignored |
+| ML1 (`multiLine` absent) | **the traversers disagree**: XSLT binds `ML_LINE_ONEML_LINE_TWO`, the newline dropped and the words run together; NonXSLT writes a `w:br` (it reads `isMultiLine()`, true) |
+| ML3 (`multiLine="0"`) | both traversers run the words together, which Word is unlikely to do (to see) |
+| AS2 (autospacing omitted on the paragraph) | `PropertyResolver`'s effective spacing has both autospacing true: inherited from the style, the prose's reading, not ISO's schema default |
+
+**Word 365's answers** (Jason, 2026-10-24; `cr059-cols.pdf`, the two PNGs, the `-word365.docx` saves):
+
+| Probe | Word 365 | Word's save | Reading |
+|---|---|---|---|
+| C1 (`equalWidth`, `sep` absent, two unequal `w:col`) | two **equal** columns, no line | `<w:cols w:num="2" w:space="720"/>`: the `w:col` dropped | `equalWidth` absent = on; `sep` absent = off |
+| C2 (`equalWidth="0" sep="0"`) | unequal, as the `w:col` say | `equalWidth="0"` and the `w:col` kept, `sep` dropped | control |
+| C3 (`equalWidth="1" sep="1"`) | equal, a line | `w:sep="1"`, `equalWidth` **dropped** | Word itself writes an absent `equalWidth` for equal columns |
+| C4 (neither, no `w:col`) | equal, no line | unchanged | as C1 |
+| ML1 (`multiLine` absent) | `ML_LINE_ONEML_LINE_TWO`: the newline dropped, the lines run together | `<w:text/>`, the same text | `multiLine` absent = off |
+| ML2 (`multiLine="1"`) | two lines | a `w:br` between | control |
+| ML3 (`multiLine="0"`) | as ML1 | `multiLine="0"` dropped: `<w:text/>` | Word writes off as absent |
+| AS1, AS2, AS4 (autospacing absent on the paragraph) | Auto spacing before and after (the screenshot's gaps) | AS2's own `w:spacing before="0" after="0"` dropped as redundant | the attribute absent = **inherit** from the style |
+| AS3 (`beforeAutospacing="0" afterAutospacing="0"`) | no space | kept | control |
+
+So docx4j's XSLT traverser was right about ML1 and ML3, and the NonXSLT traverser's `w:br` was the defect. Correcting
+§8's first reading: running the words together is Word's own behaviour, not a defect.
+
+## 9. Phase 1 record (2026-10-24, Claude Opus 5.5, session docx4j-25)
+
+- `xsd/wml/wml.xsd`: 23 attributes `default="true"` → `"false"` (§2.1's "off" rows except `multiLine`); 8 lose
+  their default (`lsdException`'s three, `revisionView`'s five), so their getters are now `Boolean`, null when
+  absent. After phase 0: `sep` and `multiLine` → `"false"`; the autospacing pair loses its default (`Boolean`,
+  null when absent, inherited); `equalWidth` keeps `"true"`, which Word confirms. An XML parse confirms nothing else
+  in the file defaults to true except `BooleanDefaultTrue`'s own `val` and `equalWidth`.
+- The autospacing getters' callers unboxed them and are now null-safe (`Boolean.TRUE.equals`): `PropertyFactory`
+  (two), `ConversionSectionWrapperFactory`, `XsltFOFunctions` (four). `AutospacingAccess` (17.1.0), which read the
+  raw field to get the inherit reading round the old default, now answers as the getters do and stays for callers.
+- `CTSdtText.isMultiLine()` false when absent puts the NonXSLT traverser where Word and the XSLT traverser are; test
+  `MultiLineBindingTest` (both traversers, the probe as fixture `OpenDoPE/text-control-multiline.docx`).
+- `docx4j-generated-objects/ModifyGeneratedSources.java`: the `Style-customStyle-default` patch (#641) removed; XJC
+  now generates the getter it needed. `FontEmbedder`'s and `FontSubsetTest`'s comments no longer describe the old
+  default.
+- Test `org.docx4j.wml.WmlBooleanDefaultsTest`: every "off" attribute absent reads false (32 getters, #697's five
+  included), every "inherit" and "application" one reads null (10), an absent `equalWidth` reads true, a written
+  value reads as written, and an absent attribute is not written back.
+- Runs: before phase 0's five, the full clean reactor build, BUILD SUCCESS, 3493 tests, 0 failures; after them, the
+  defaults, autospacing, binding, output and text suites, 552 tests, 0 failures, and the full clean reactor build
+  again: BUILD SUCCESS, 3495 tests, 0 failures (docx4j-core-tests 2047).

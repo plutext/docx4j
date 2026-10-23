@@ -495,7 +495,7 @@ public class ConversionSectionWrapperFactory {
 		try {
 			org.docx4j.wml.PPr effective = resolver.getEffectivePPr(p.getPPr());
 			if (effective == null || effective.getSpacing() == null) return java.math.BigInteger.ZERO;
-			if (effective.getSpacing().isAfterAutospacing()) return null;
+			if (Boolean.TRUE.equals(effective.getSpacing().isAfterAutospacing())) return null; // null when absent (CR-059)
 			java.math.BigInteger after = effective.getSpacing().getAfter();
 			return after == null ? java.math.BigInteger.ZERO : after;
 		} catch (Exception e) {

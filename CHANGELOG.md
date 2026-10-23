@@ -21,6 +21,20 @@ Claude Fable 5.1
 Changes in Version 17.3.5
 --------------------------
 
+* Generated getters for 35 more WordprocessingML boolean attributes answer as ECMA-376 reads their
+  absence (CR-059; docx4j's schema had given them default="true" since 2008). False when absent:
+  CTBorder shadow/frame, CTEastAsianLayout combine/vert/vertCompress, CTFramePr anchorLock,
+  CTWritingStyle nlCheck, CTDocProtect formatting, Hyperlink history, CTFtnEdnRef
+  customMarkFollows, CTWriteProtection recommended, Lvl tentative, Lvl.LvlText null, Lvl.Legacy
+  legacy, FontRel subsetted, CTDocPartTypes all, CTDocPartName decorated, Style customStyle,
+  LatentStyles defLockedState/defSemiHidden/defUnhideWhenUsed, CTCaption chapNum/noLabel,
+  CTColumns sep, CTSdtText multiLine. No default, so the getter returns a Boolean, null when
+  absent: LsdException locked/semiHidden/unhideWhenUsed (they inherit from w:latentStyles),
+  CTTrackChangesView markup/comments/insDel/formatting/inkAnnotations (left to the application),
+  PPrBase.Spacing beforeAutospacing/afterAutospacing (inherited from the style, as Word reads
+  them). CTColumns equalWidth stays true when absent, as Word lays it out. One output change: the
+  NonXSLT binder no longer turns a bound value's newline into a line break in a plain-text control
+  without w:multiLine; Word and the XSLT binder don't.
 * Fields: isFldLock() and isDirty() (w:fldChar, w:fldSimple) and CTDocProtect.isEnforcement() return
   false when the attribute is absent; they returned true (#697). FieldRef.isLock() and isDirty() read
   the field's begin w:fldChar; they were false unless getFormFieldProperties() had been called, so a

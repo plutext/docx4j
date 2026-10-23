@@ -559,12 +559,12 @@ public class PropertyFactory {
 			// values.  @since 17.0.5
 			boolean autoSpacing = !(wmlPackage instanceof WordprocessingMLPackage)
 					|| !DocumentSettingsPart.isDoNotUseHTMLParagraphAutoSpacing((WordprocessingMLPackage)wmlPackage);
-			if (autoSpacing && spacing.isBeforeAutospacing()) {
+			if (autoSpacing && Boolean.TRUE.equals(spacing.isBeforeAutospacing())) { // null when absent (CR-059)
 				properties.add(new SpaceBefore(HTML_AUTO_SPACING_TWIPS));
 			} else if (spacing.getBefore()!=null) {
 				properties.add(new SpaceBefore(spacing.getBefore()));
 			}
-			if (autoSpacing && spacing.isAfterAutospacing()) {
+			if (autoSpacing && Boolean.TRUE.equals(spacing.isAfterAutospacing())) {
 				properties.add(new SpaceAfter(HTML_AUTO_SPACING_TWIPS));
 			} else if (spacing.getAfter()!=null) {
 				properties.add(new SpaceAfter(spacing.getAfter()));				

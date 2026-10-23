@@ -29,6 +29,11 @@ package org.docx4j.wml;
  * fields are protected, so only a class in this package can tell one from the other -
  * hence this one, rather than reflection on generated code.</p>
  *
+ * <p>Since 17.3.5 (CR-059) the schema gives these attributes no default, so
+ * {@code isBeforeAutospacing()} and {@code isAfterAutospacing()} themselves return a {@code Boolean},
+ * null where the attribute is absent, as Word reads it (inherited from the style, measured in Word 365);
+ * this class now answers as they do, and stays for callers that use it.</p>
+ *
  * @since 17.1.0
  */
 public class AutospacingAccess {

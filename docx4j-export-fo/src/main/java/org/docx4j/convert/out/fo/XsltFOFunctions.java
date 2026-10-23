@@ -1532,9 +1532,9 @@ public class XsltFOFunctions {
 					foBlockElement.setAttribute(WordLayoutFixups.HINT_CONTEXTUAL, "1");
 				}
 				if (pPr!=null && pPr.getSpacing()!=null
-						&& (pPr.getSpacing().isBeforeAutospacing() || pPr.getSpacing().isAfterAutospacing())) {
+						&& (Boolean.TRUE.equals(pPr.getSpacing().isBeforeAutospacing()) || Boolean.TRUE.equals(pPr.getSpacing().isAfterAutospacing()))) {
 					foBlockElement.setAttribute(WordLayoutFixups.HINT_AUTOSPACING,
-							(pPr.getSpacing().isBeforeAutospacing() ? "b" : "") + (pPr.getSpacing().isAfterAutospacing() ? "a" : ""));
+							(Boolean.TRUE.equals(pPr.getSpacing().isBeforeAutospacing()) ? "b" : "") + (Boolean.TRUE.equals(pPr.getSpacing().isAfterAutospacing()) ? "a" : ""));
 				}
 				if (foListBlock!=null) {
 					foBlockElement.setAttribute(WordLayoutFixups.HINT_LIST, "1");

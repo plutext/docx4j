@@ -329,8 +329,8 @@ public final class FontEmbedder {
 		FontRel fontRel = new FontRel();
 		fontRel.setId(rel.getId());
 		fontRel.setFontKey(fontKey);
-		// w:subsetted="1" on a subset, absent on a whole font, as Word writes it.  (FontRel.isSubsetted()
-		// answers true for the absent attribute, the binding's ST_OnOff default; read the XML, not the getter.)
+		// w:subsetted="1" on a subset, absent on a whole font, as Word writes it (FontRel.isSubsetted() is
+		// false for the absent attribute since CR-059; until 17.3.5 the schema's default made it true)
 		if (subsetted) fontRel.setSubsetted(Boolean.TRUE);
 		setEmbed(font, style, fontRel);
 
