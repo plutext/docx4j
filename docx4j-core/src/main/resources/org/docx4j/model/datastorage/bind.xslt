@@ -287,9 +287,23 @@
 		</xsl:when>
 
 		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w:date">
-		<!--  honour w:dataBinding -->
+		<!--  honour w:dataBinding. The content is generated first, so the w:sdtPr template can add
+		      w:showingPlcHdr where an empty value gave the placeholder (CR-058 D3, as Word 365 shows it). -->
+			<xsl:variable name="dateContent"
+				select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathDate(
+							$wmlPackage,
+							$sourcePart,
+							$customXmlDataStorageParts,
+							w:sdtPr,
+							$parent,
+							$child,
+							w:sdtPr/w:date)" />
 			<xsl:copy>
-				<xsl:copy-of select="w:sdtPr"/>
+				<w:sdtPr>
+					<xsl:apply-templates select="w:sdtPr">
+						<xsl:with-param name="content" select="xalan:nodeset($dateContent)"/>
+					</xsl:apply-templates>
+				</w:sdtPr>
 
 				<xsl:if test="w:stdEndPr">
 					<xsl:copy-of select="w:sdtEndPr"/>
@@ -302,27 +316,11 @@
 								<xsl:if test="w:sdtContent/w:tc/w:tcPr">
 									<xsl:copy-of select="w:sdtContent/w:tc/w:tcPr"/>
 								</xsl:if>
-								<xsl:copy-of
-								select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathDate(
-											$wmlPackage,
-											$sourcePart,
-											$customXmlDataStorageParts,
-                                            w:sdtPr,
-											$parent,
-											$child,
-											w:sdtPr/w:date)" />
+								<xsl:copy-of select="$dateContent" />
 							</w:tc>
 						</xsl:when>
 						<xsl:otherwise>
-							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathDate(
-										$wmlPackage,
-										$sourcePart, 
-										$customXmlDataStorageParts,
-                                        w:sdtPr,
-										$parent,
-										$child,
-										w:sdtPr/w:date)" />
+							<xsl:copy-of select="$dateContent" />
 						</xsl:otherwise>
 					</xsl:choose>
 				</w:sdtContent>

@@ -205,9 +205,9 @@ public class FormattingSwitchHelper {
 		DATE_FORMAT_ITEMS_TO_JAVA.put("yyyy","yyyy");	//Year as four digits.
 		DATE_FORMAT_ITEMS_TO_JAVA.put("YYYY","yyyy");	//see above
 		//Hour
-		DATE_FORMAT_ITEMS_TO_JAVA.put("h","K");			//(12h) Hour without a leading 0 (zero) for single-digit hours.
+		DATE_FORMAT_ITEMS_TO_JAVA.put("h","h");			//(12h, 1-12) Hour without a leading 0 (zero) for single-digit hours. Was Java K (0-11) until 17.3.5: "0:05 PM" at noon (CR-058)
 		DATE_FORMAT_ITEMS_TO_JAVA.put("H","H");			//(24h) Hour without a leading 0 (zero) for single-digit hours.
-		DATE_FORMAT_ITEMS_TO_JAVA.put("hh","KK");		//(12h) Hour with a leading 0 (zero) for single-digit hours.
+		DATE_FORMAT_ITEMS_TO_JAVA.put("hh","hh");		//(12h, 01-12) Hour with a leading 0 (zero) for single-digit hours.
 		DATE_FORMAT_ITEMS_TO_JAVA.put("HH","HH");		//(24h) Hour with a leading 0 (zero) for single-digit hours.
 		//Minute
 		DATE_FORMAT_ITEMS_TO_JAVA.put("m","m");			//Minutes without a leading 0 (zero) for single-digit minutes.
@@ -967,6 +967,25 @@ public class FormattingSwitchHelper {
 	public static String formatDate(FldSimpleModel model, String format, Date date) {
 		return formatDate(model, format, date, null);
 	}
+
+	/**
+	 * A date in Word's date picture language ({@code d MMMM yyyy}, {@code h:mm am/pm}: the DATE field's
+	 * {@code \@} switch, ECMA-376 17.16.4.1, and a date content control's {@code w:dateFormat},
+	 * 17.5.2.9), in the language's month, weekday and AM/PM names. Null or empty {@code lang}
+	 * formats in the platform default, as the field path does.
+	 *
+	 * @param wordFormat Word's picture; empty or null gives the platform's short date
+	 * @param lang a BCP 47 / {@code w:lang} tag such as {@code de-DE}, or null
+	 * @since 17.3.5 (CR-058)
+	 */
+	public static String formatDate(String wordFormat, Date date, String lang) {
+		if (wordFormat == null || wordFormat.isEmpty()) {
+			return SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).format(date);
+		}
+		SimpleDateFormat simpleDateFormat = getSimpleDateFormat(lang == null || lang.trim().isEmpty() ? null : lang.trim());
+		simpleDateFormat.applyPattern(convertDatePattern(wordFormat));
+		return simpleDateFormat.format(date);
+	}
 	
 	private static String formatDate(FldSimpleModel model, String format, Date date, String lang) {
 		DateFormat dateFormat = null;
@@ -1060,7 +1079,7 @@ public class FormattingSwitchHelper {
 			// Be Java 6 compatible
 			dateFormat = (SimpleDateFormat)SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, 0, 					
 					localeforLanguageTag(lang));
-			dateFormat.setDateFormatSymbols(wordMonthAbbreviations(dateFormat.getDateFormatSymbols()));
+			dateFormat.setDateFormatSymbols(wordAmPm(wordMonthAbbreviations(dateFormat.getDateFormatSymbols()), lang));
 			dateFormatsMap.put(lang, dateFormat);
 		}
 		return dateFormat;
@@ -1077,6 +1096,22 @@ public class FormattingSwitchHelper {
 	 *
 	 * @since 17.1.0
 	 */
+	/**
+	 * Word's {@code am/pm} and {@code AM/PM} both display the upper-case names ("9 AM", "5 PM"; measured
+	 * in Word 365 with {@code en-AU}, whose CLDR data has "am"/"pm", on a bound date control's
+	 * {@code h:mm am/pm}: "2:05 AM", 2026-10-23, CR-058). The locale's names, upper-cased in the locale.
+	 *
+	 * @since 17.3.5
+	 */
+	private static java.text.DateFormatSymbols wordAmPm(java.text.DateFormatSymbols symbols, String lang) {
+		String[] ampm = symbols.getAmPmStrings();
+		String[] upper = new String[ampm.length];
+		Locale locale = localeforLanguageTag(lang);
+		for (int i = 0; i < ampm.length; i++) upper[i] = ampm[i] == null ? null : ampm[i].toUpperCase(locale);
+		symbols.setAmPmStrings(upper);
+		return symbols;
+	}
+
 	private static java.text.DateFormatSymbols wordMonthAbbreviations(java.text.DateFormatSymbols symbols) {
 		String[] months = symbols.getShortMonths();
 		String[] trimmed = new String[months.length];

@@ -69,4 +69,25 @@ public class DateFieldLanguageTest {
 		// is "Sep", which no installed locale data offers, so that much is a residual
 		assertEquals("06 Sept 2026", FormattingSwitchHelper.formatDate(m, date(), "de-DE"));
 	}
+
+	/**
+	 * Word's {@code h} and {@code hh} are the 12-hour clock's 1 to 12 (ECMA-376 17.16.4.1): noon is
+	 * "12:05 PM" and five past midnight "12:05 AM". Until 17.3.5 they mapped to Java's {@code K}, 0 to
+	 * 11, and noon printed "0:05 PM" (CR-058 phase 0, found on a bound date control). {@code am/pm} and
+	 * {@code AM/PM} both give the upper-case names, as Word 365 does (bind-typed-formats DF2).
+	 */
+	@Test
+	public void twelveHourClockRunsOneToTwelve() throws Exception {
+		Calendar c = Calendar.getInstance();
+		c.clear();
+		c.set(2026, Calendar.OCTOBER, 22, 12, 5);
+		assertEquals("12:05 PM", FormattingSwitchHelper.formatDate("h:mm am/pm", c.getTime(), "en-AU"));
+		assertEquals("12:05 PM", FormattingSwitchHelper.formatDate("hh:mm AM/PM", c.getTime(), null));
+		c.set(2026, Calendar.OCTOBER, 22, 0, 5);
+		assertEquals("12:05 AM", FormattingSwitchHelper.formatDate("h:mm AM/PM", c.getTime(), "en-AU"));
+		assertEquals("00:05", FormattingSwitchHelper.formatDate("HH:mm", c.getTime(), "en-AU"));
+		c.set(2026, Calendar.OCTOBER, 22, 15, 5);
+		assertEquals("3:05 PM", FormattingSwitchHelper.formatDate("h:mm am/pm", c.getTime(), "en-AU"));
+		assertEquals("Thu 22 Oct 2026", FormattingSwitchHelper.formatDate("ddd d MMM yyyy", c.getTime(), "en-AU"));
+	}
 }

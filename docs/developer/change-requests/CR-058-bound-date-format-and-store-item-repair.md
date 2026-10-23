@@ -8,7 +8,7 @@ remaining binding items the portfolio flagged"), from the two items docx4j-portf
 (f62314d3b, 24642aa59). Both confirmed in this repository's source at 64ebb9ae9 (§1). Phases in §4. Phase 0 BUILT
 2026-10-23 (§8): red tests and fixtures in core-tests, three probes run in Word 365 the same day. The Word run
 confirms D1, D3 and D4 and revises D2 (§5a); it raises D6, the time zone of a stored date-time (§5a). D2 (revised)
-and D6 ACCEPTED as recommended (Jason, 2026-10-23); every decision is taken, and phase 1 can start.
+and D6 ACCEPTED as recommended (Jason, 2026-10-23). Phase 1 DONE 2026-10-23 (§9); phase 2 next.
 
 ## 0. Summary
 
@@ -102,7 +102,7 @@ the OpenDoPE `od:xpath` path, which carries the same `w:dataBinding` and goes th
 | Phase | What | Size |
 |---|---|---|
 | 0 | DONE 2026-10-23 (§8). Red tests for both (core-tests): a `TypedControlBindingTest`-style fixture per format (`ddd`, `am/pm`, `de-DE`, a non-date value); `bind-plain.docx` as the B7 fixture, bound through both traversers and read by the text model. Probes for Jason's Word: the §1 "not measured" list, built from `bind-typed.docx` (one control per format, a non-date value) and `bind-plain.docx` (a second custom XML part that also fits; none that fits) | 2 h |
-| 1 | Date (D1-D3): `xpathDateRun` formats through `FormattingSwitchHelper` with `w:lid`; the non-date case per D3 and the measurement; tests green; CHANGELOG | 2 h |
+| 1 | DONE 2026-10-23 (§9). Date (D1-D3, D2 revised, D6): `xpathDateRun` formats through `FormattingSwitchHelper` with `w:lid`; the non-date case per D3 and the measurement; tests green; CHANGELOG | 2 h |
 | 2 | Store item (D4-D5): the resolver, shared by `BindingHandler.xpathGetString`, `xpathDateRun` (and the picture, XHTML and checkbox paths that look the part up themselves) and `BoundValues.document`; the write-back; tests green; CHANGELOG; the ports' hand-off (their binders: date language, missing-part repair) and the portfolio's §12a.3 | ½ day |
 
 ## 5. Decisions
@@ -252,3 +252,36 @@ the run:
 
 D1, D3 (for a non-date text) and D4 (all three cases) are confirmed as accepted; the `StoreItemRepairTest`
 expectations stand.
+
+## 9. Phase 1 record (2026-10-23, Claude Fable 5.1, session docx4j-25)
+
+Jason: "do CR-058 phase 1". Built and tested; commit on Jason's word.
+
+- `FormattingSwitchHelper`: `h`→`h` and `hh`→`hh` in `DATE_FORMAT_ITEMS_TO_JAVA` (were `K`/`KK`, 0-11; finding 2
+  of §8), for the DATE field and the control alike; the AM/PM names upper-cased in the locale (`wordAmPm`; en-AU's
+  CLDR data has "am"/"pm", Word 365 showed "2:05 AM"); a public `formatDate(String wordFormat, Date, String lang)`
+  (`@since 17.3.5`) for a caller with no field model.
+- `BindingTraverserXSLT.xpathDateRun(parts, sdtPr, pkg)` (the two-argument form delegates with a null package):
+  the value formatted by `FormattingSwitchHelper.formatDate` in `dateLanguage` (`w:lid`, else
+  `documentDefaultLanguage`, `w:docDefaults/w:rPrDefault/w:rPr/w:lang/@w:val`, else null = the platform's; D2
+  revised); a value that is not a date (`DateTimeParseException`) is the run's text as stored, WARN, no colour
+  (D3); an empty value returns a run with no content, which `xpathDate` (XSLT) turns into the placeholder through
+  `createPlaceholder` and `applyDateBinding` (NonXSLT) through the same plus `postBindSdtPrHygiene`, so
+  `w:showingPlcHdr` is set (D3 refined); `parseStoredDate(String, ZoneId)` converts a value with an offset or `Z`
+  to the zone `docx4j.model.datastorage.BindingHandler.dateTimeZone` names, else the nominal fields as before
+  (D6; `DATE_TIME_ZONE_PROPERTY`). `bind.xslt`'s `w:date` branch generates the content first and sends the
+  `w:sdtPr` through the `w:sdtPr` template with it (wrapped in `w:sdtPr`, as the text branch does), so the
+  placeholder case gets `w:showingPlcHdr` and `w:placeholder` is stripped as for a text binding.
+- `BindingTraverserCommonImpl.applyDateBinding` passes the package and handles the empty run.
+- Tests: `BoundDateFormatTest` un-ignored (both traversers, DF1-DF13 as §8's table, DF7 in the platform's locale
+  since the fixture has no `w:docDefaults`), plus `withoutALidTheDocumentDefaultLanguageIsUsed` (a German
+  `w:docDefaults` added in the test: DF7 "22 Oktober 2026", DF5's own `w:lid` still wins) and
+  `theDateTimeZonePropertyConvertsAsWordDoes` (`Australia/Sydney`: DF2 "2:05 AM", DF3 "11:05 PM", DF4 "02:05",
+  DF1 and the date-only DF11 unshifted, Word's measured values); `DateFieldLanguageTest.twelveHourClockRunsOneToTwelve`
+  (noon "12:05 PM", five past midnight "12:05 AM", `hh`, `HH`, `ddd`). Runs: the datastorage, fields, samples and
+  binding suites, 232 tests, 0 failures; the wider text, revisions, output and openpackaging suites, 262 tests,
+  one failure unrelated to this phase (`ViewAgreementTest` on the check 57 equation fixture of ebb21c990: the
+  text model's LaTeX reading of a deleted math run, fixed separately).
+- Reference `docx4j.properties` documents `dateTimeZone`; CHANGELOG 17.3.5.
+- Not changed: the text model (`BoundValues`) still reads a date control's surface (the paper's D34 is its own
+  item); `w:lid` is not written back where Word's save adds one.

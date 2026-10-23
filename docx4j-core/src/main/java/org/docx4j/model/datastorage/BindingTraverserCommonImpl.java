@@ -635,10 +635,22 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 			org.docx4j.openpackaging.packages.OpcPackage pkg) {
 
 		org.docx4j.wml.R run = BindingTraverserXSLT.xpathDateRun(
-				pkg.getCustomXmlDataStorageParts(), sdt.getSdtPr());
+				pkg.getCustomXmlDataStorageParts(), sdt.getSdtPr(),
+				pkg instanceof WordprocessingMLPackage ? (WordprocessingMLPackage) pkg : null);
 
 		List<Object> contents = new ArrayList<Object>(1);
-		contents.add(run==null ? missingRun() : run);
+		if (run != null && run.getContent().isEmpty()) {
+			// an empty stored value: the placeholder, as for an empty text binding (Word 365, CR-058 D3)
+			try {
+				contents = fragmentToJaxb(BindingTraverserXSLT.createPlaceholder(run.getRPr(), "p"));
+				postBindSdtPrHygiene(sdt.getSdtPr(), contents);
+			} catch (Exception e) {
+				log.error(e.getMessage(), e);
+				contents.add(run);
+			}
+		} else {
+			contents.add(run==null ? missingRun() : run);
+		}
 		applyBoundContent(sdt, contents);
 	}
 

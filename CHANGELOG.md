@@ -21,6 +21,12 @@ Claude Fable 5.1
 Changes in Version 17.3.5
 --------------------------
 
+* A bound date content control is formatted as Word formats it (CR-058): w:dateFormat is read as
+  Word's date picture (ddd is the weekday, am/pm gives AM/PM, h runs 1 to 12) in the language of
+  w:lid (else the document's default language), a value that is not a date is shown as stored
+  (it was today's date in red), an empty value shows the placeholder. The time is the stored
+  value's nominal time; docx4j.model.datastorage.BindingHandler.dateTimeZone converts as Word does.
+  A DATE field's h and hh now run 1 to 12 too (they printed 0 at noon), and am/pm is upper case.
 * Text model: an equation's script base deleted or inserted under tracking is read through the
   change, so the original view and a resolved copy give the same LaTeX (mc^{2}).
 * Tracked changes: accepting the deletion of a whole equation (or rejecting its insertion) removes

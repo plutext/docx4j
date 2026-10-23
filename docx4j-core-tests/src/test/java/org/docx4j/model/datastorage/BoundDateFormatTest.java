@@ -29,7 +29,6 @@ import org.docx4j.Docx4J;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -55,10 +54,16 @@ public class BoundDateFormatTest {
 	private static final String FIXTURE = "typed-controls-dates.docx";
 
 	private static String bind(String implementation) throws Exception {
+		return bind(implementation, null);
+	}
+
+	/** Bound, after {@code prepare} has had the loaded package (a styles part, a property). */
+	private static String bind(String implementation, java.util.function.Consumer<WordprocessingMLPackage> prepare) throws Exception {
 		Docx4jProperties.setProperty(IMPL_PROPERTY, implementation);
 		try {
 			WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new java.io.File(
 					System.getProperty("user.dir") + "/src/test/resources/OpenDoPE/" + FIXTURE));
+			if (prepare != null) prepare.accept(pkg);
 			Docx4J.bind(pkg, (org.w3c.dom.Document) null, Docx4J.FLAG_BIND_BIND_XML);
 			return XmlUtils.marshaltoString(pkg.getMainDocumentPart().getJaxbElement(), true, false);
 		} finally {
@@ -112,13 +117,11 @@ public class BoundDateFormatTest {
 		shows(implementation, xml, "DF13", "Okt. 2026");                // Word's abbreviation, no CLDR period
 	}
 
-	@Ignore("CR-058 phase 1")
 	@Test
 	public void boundDatesAreFormattedAsWordFormatsThemXSLT() throws Exception {
 		wordsFormatting("BindingTraverserXSLT");
 	}
 
-	@Ignore("CR-058 phase 1")
 	@Test
 	public void boundDatesAreFormattedAsWordFormatsThemNonXSLT() throws Exception {
 		wordsFormatting("BindingTraverserNonXSLT");
@@ -131,6 +134,55 @@ public class BoundDateFormatTest {
 			String xml = bind(implementation);
 			shows(implementation, xml, "DF4", "15:05");
 			shows(implementation, xml, "DF11", "2026-10-22");
+		}
+	}
+
+	/**
+	 * No {@code w:lid}: the document's default language ({@code w:docDefaults}), the nearest thing a
+	 * server has to the editing language Word used (D2 revised); the run's language is not consulted.
+	 */
+	@Test
+	public void withoutALidTheDocumentDefaultLanguageIsUsed() throws Exception {
+		java.util.function.Consumer<WordprocessingMLPackage> germanDefaults = pkg -> {
+			try {
+				org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart styles =
+						new org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart();
+				styles.setJaxbElement((org.docx4j.wml.Styles) XmlUtils.unmarshalString(
+						"<w:styles xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
+						+ "<w:docDefaults><w:rPrDefault><w:rPr><w:lang w:val=\"de-DE\"/></w:rPr></w:rPrDefault></w:docDefaults></w:styles>"));
+				pkg.getMainDocumentPart().addTargetPart(styles);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		};
+		for (String implementation : new String[] { "BindingTraverserXSLT", "BindingTraverserNonXSLT" }) {
+			String xml = bind(implementation, germanDefaults);
+			shows(implementation, xml, "DF7", "22 Oktober 2026");   // no w:lid, run fr-FR: the document's German
+			shows(implementation, xml, "DF5", "22 Oktober 2026");   // its own w:lid still wins
+			shows(implementation, xml, "DF6", "Thursday, 22 October 2026");
+		}
+	}
+
+	/**
+	 * D6: a stored {@code dateTime} carrying {@code Z} is shown at its nominal time by default; with
+	 * {@code docx4j.model.datastorage.BindingHandler.dateTimeZone} set, it is converted to that zone, as
+	 * Word converts to the machine's (the probe's Word 365 run at UTC+11, 2026-10-23: DF2 "2:05 AM",
+	 * DF3 "11:05 PM", DF4 "02:05"; DF1 and the date-only DF11 unshifted).
+	 */
+	@Test
+	public void theDateTimeZonePropertyConvertsAsWordDoes() throws Exception {
+		Docx4jProperties.setProperty(BindingTraverserXSLT.DATE_TIME_ZONE_PROPERTY, "Australia/Sydney");
+		try {
+			for (String implementation : new String[] { "BindingTraverserXSLT", "BindingTraverserNonXSLT" }) {
+				String xml = bind(implementation);
+				shows(implementation, xml, "DF1", "Thu 22 Oct 2026");
+				shows(implementation, xml, "DF2", "2:05 AM");
+				shows(implementation, xml, "DF3", "11:05 PM");
+				shows(implementation, xml, "DF4", "02:05");
+				shows(implementation, xml, "DF11", "2026-10-22");
+			}
+		} finally {
+			Docx4jProperties.setProperty(BindingTraverserXSLT.DATE_TIME_ZONE_PROPERTY, "");
 		}
 	}
 }

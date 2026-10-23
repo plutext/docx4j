@@ -8,9 +8,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
-import java.text.Format;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +44,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io3.stores.UnzippedPartStore;
 import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
@@ -70,7 +69,6 @@ import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTLanguage;
 import org.docx4j.wml.CTSdtDate;
-import org.docx4j.wml.Color;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.PStyle;
@@ -1911,8 +1909,12 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		}
 
 		try {
-			org.docx4j.wml.R run = xpathDateRun(customXmlDataStorageParts, sdtPr);
+			org.docx4j.wml.R run = xpathDateRun(customXmlDataStorageParts, sdtPr, wmlPackage);
 			if (run==null) return nullResultParagraph(sdtParent, "[missing!]");
+			if (run.getContent().isEmpty()) {
+				// an empty stored value: the placeholder, as for an empty text binding (Word 365, CR-058 D3)
+				return createPlaceholder((RPr) sdtPr.getByClass(RPr.class), sdtParent);
+			}
 
 			org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
 			if (sdtParent.equals("p")) {
@@ -1969,6 +1971,30 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 
 	public static org.docx4j.wml.R xpathDateRun(
 			Map<String, CustomXmlPart> customXmlDataStorageParts, SdtPr sdtPr) {
+		return xpathDateRun(customXmlDataStorageParts, sdtPr, null);
+	}
+
+	/** The property naming the zone a stored {@code dateTime} with an offset or {@code Z} is shown in (CR-058 D6). */
+	public static final String DATE_TIME_ZONE_PROPERTY = "docx4j.model.datastorage.BindingHandler.dateTimeZone";
+
+	/**
+	 * The run for a bound date control, as Word 365 shows it (CR-058, measured 2026-10-23 on
+	 * docx4j-portfolio's bind-typed-formats probe): the stored value formatted in Word's date picture
+	 * language ({@code w:dateFormat} is the DATE field's {@code \@} syntax: {@code ddd} the weekday,
+	 * {@code am/pm} upper-case AM/PM, quoted literals) in the language of {@code w:lid}, else the
+	 * document's default language ({@code w:docDefaults}; Word uses its own editing language, never the
+	 * run's), else the platform's. A stored value that is not a date is shown as it is, in the control's
+	 * formatting (until 17.3.5 it became today's date in red). An empty value gives a run with no
+	 * content, which the callers show as the placeholder, as an empty text binding is. The time is
+	 * the stored value's nominal time; with {@link #DATE_TIME_ZONE_PROPERTY} set to a zone ID, a value
+	 * carrying an offset or {@code Z} is converted to that zone, as Word converts to the machine's.
+	 *
+	 * @param pkg the package, for the document default language; may be null
+	 * @return the run; null where the part, the value or usable {@code w:date} settings are missing
+	 * @since 17.3.5
+	 */
+	public static org.docx4j.wml.R xpathDateRun(
+			Map<String, CustomXmlPart> customXmlDataStorageParts, SdtPr sdtPr, WordprocessingMLPackage pkg) {
 
 		RPr rPr = (RPr)sdtPr.getByClass(RPr.class);
 		CTSdtDate sdtDate = (CTSdtDate)sdtPr.getByClass(CTSdtDate.class);
@@ -1991,58 +2017,32 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			log.debug(dataBinding.getXpath() + " yielded result " + r);
 			if (r==null) return null;
 
-			/*
-		        <w:date w:fullDate="2012-08-19T00:00:00Z">
-		          <w:dateFormat w:val="d/MM/yyyy"/>
-		          <w:lid w:val="en-AU"/>
-		          <w:storeMappedDataAs w:val="dateTime"/>
-		          <w:calendar w:val="gregorian"/>
-		        </w:date>
-
-		        Assume our String r contains something like "2012-08-19T00:00:00Z"
-
-		        We need to convert it to the given dateFormat string.
-			 */
-			String format = sdtDate.getDateFormat().getVal();
-			log.debug("Using format: " + format);
-
-			// C# dddd (eg "Monday') needs translation
-			// to "EEEE"
-			if (format.contains("dddd")) {
-				format = format.replace("dddd", "EEEE");
-			}
-
-			Format formatter = new SimpleDateFormat(format);
 			org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();
-
-			Date date;
-			boolean parseException = false;
-			try {
-				date = parseStoredDate(r);
-			} catch (java.time.format.DateTimeParseException e) {
-				log.warn(e.getMessage());
-				date = new Date();
-
-				parseException = true;
-				if (rPr==null) {
-					rPr = factory.createRPr();
-				}
-			}
-
-			String result = formatter.format(date);
-
 			org.docx4j.wml.R  run = factory.createR();
 			if (rPr!=null) {
 				run.setRPr(rPr);
 			}
-			if (parseException) {
-				// <w:color w:val="FF0000"/>
-				Color colorRed = factory.createColor();
-				colorRed.setVal("FF0000");
-				rPr.setColor(colorRed);
+			if (r.trim().isEmpty()) {
+				return run; // the placeholder (Word 365 shows it; bind-plain's B5 for a text binding)
 			}
+
+			String format = sdtDate.getDateFormat().getVal();
+			String lang = dateLanguage(sdtDate, pkg);
+			log.debug("Using format: " + format + ", language " + lang);
+
+			String result;
+			try {
+				Date date = parseStoredDate(r, dateTimeZone());
+				result = FormattingSwitchHelper.formatDate(format, date, lang);
+			} catch (java.time.format.DateTimeParseException e) {
+				// Word 365 shows the stored text as it is (bind-typed-formats DF8, DF9)
+				log.warn("Bound value '" + r + "' of " + dataBinding.getXpath() + " is not a date: " + e.getMessage());
+				result = r;
+			}
+
 			org.docx4j.wml.Text text = factory.createText();
 			text.setValue(result);
+			if (result.startsWith(" ") || result.endsWith(" ")) text.setSpace("preserve");
 			run.getContent().add(text);
 
 			return run;
@@ -2051,6 +2051,63 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			log.error(e.getMessage(), e);
 			return null;
 		}
+	}
+
+	/** {@code w:lid}, else the document's default language, else null (the platform's). */
+	static String dateLanguage(CTSdtDate sdtDate, WordprocessingMLPackage pkg) {
+		if (sdtDate.getLid() != null && sdtDate.getLid().getVal() != null && !sdtDate.getLid().getVal().trim().isEmpty()) {
+			return sdtDate.getLid().getVal().trim();
+		}
+		return documentDefaultLanguage(pkg);
+	}
+
+	/** {@code w:docDefaults/w:rPrDefault/w:rPr/w:lang/@w:val}, or null. */
+	static String documentDefaultLanguage(WordprocessingMLPackage pkg) {
+		try {
+			if (pkg == null || pkg.getMainDocumentPart() == null
+					|| pkg.getMainDocumentPart().getStyleDefinitionsPart() == null) return null;
+			org.docx4j.wml.DocDefaults dd = pkg.getMainDocumentPart().getStyleDefinitionsPart().getJaxbElement().getDocDefaults();
+			if (dd == null || dd.getRPrDefault() == null || dd.getRPrDefault().getRPr() == null
+					|| dd.getRPrDefault().getRPr().getLang() == null) return null;
+			String val = dd.getRPrDefault().getRPr().getLang().getVal();
+			return val == null || val.trim().isEmpty() ? null : val.trim();
+		} catch (Exception e) {
+			log.debug("No document default language: " + e.getMessage());
+			return null;
+		}
+	}
+
+	/** The zone {@link #DATE_TIME_ZONE_PROPERTY} names, or null (the nominal time, the default). */
+	static java.time.ZoneId dateTimeZone() {
+		String id = Docx4jProperties.getProperty(DATE_TIME_ZONE_PROPERTY);
+		if (id == null || id.trim().isEmpty()) return null;
+		try {
+			return java.time.ZoneId.of(id.trim());
+		} catch (java.time.DateTimeException e) {
+			log.warn(DATE_TIME_ZONE_PROPERTY + "=" + id + " is not a zone ID; using the nominal time");
+			return null;
+		}
+	}
+
+	/**
+	 * {@link #parseStoredDate(String)}, converted to {@code zone} when the value carries an offset or
+	 * {@code Z} and a zone is given (Word reads the {@code Z} as UTC and shows the machine's local time:
+	 * on a machine at UTC+11, {@code 2026-10-22T15:05:00Z} shows "2:05 AM" the next day). A value with
+	 * no offset, a date-only value, or no zone: the nominal fields, unchanged.
+	 *
+	 * @since 17.3.5
+	 */
+	static Date parseStoredDate(String stored, java.time.ZoneId zone) {
+		String r = stored.trim();
+		if (zone != null) {
+			try {
+				java.time.LocalDateTime local = java.time.OffsetDateTime.parse(r).atZoneSameInstant(zone).toLocalDateTime();
+				return Date.from(local.atZone(java.time.ZoneId.systemDefault()).toInstant());
+			} catch (java.time.format.DateTimeParseException noOffset) {
+				// no offset to convert from: nominal
+			}
+		}
+		return parseStoredDate(r);
 	}
 	
 	/**
