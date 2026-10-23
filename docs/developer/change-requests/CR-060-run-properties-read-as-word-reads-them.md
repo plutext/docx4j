@@ -362,7 +362,7 @@ offered a repair, as expected). Read from the saves and the PDFs:
    `w:shd`), the border's colour is automatic (the save writes `auto`). docx4j normalises the underline's colour
    (not drawn by either writer) but not a fill or a border colour: HTML and PDF get `#red`, `#Aqua`, `#F00`.
 
-## 13. Round 6: what round 5 left (built 2026-10-24, awaiting Word)
+## 13. Round 6: what round 5 left (built and run 2026-10-24)
 
 Built at Jason's word ("do round 6 first", before the fixes §12 points to) by docx4j-25: four probes on the share
 (`onoff-fun/`, round-6 section of its README; builder `build6.py`, which uses `build5.py`). `props-u-onoff-styles`:
@@ -377,3 +377,34 @@ docx4j's reading before Word's (round 5's commit): every on/off word reads as ab
 `AUTO`, spaced and `#auto` read automatic, as `auto` does; a character style's highlight is applied (alone, with bold,
 through `basedOn`); a fill or border colour that isn't six hex digits is written as is (`#F00`, `#bogus`, `#Aqua`,
 `#Navy`), and `fill="auto"` is no shading; the underline's colour is not drawn.
+
+Word's results (Jason's run, 24 October 2026, with the `PDFand` macro; no file offered a repair). Read from the saves
+and the PDFs:
+
+1. **`w:u` and the on/off words.** Exactly `true`, `false`, `on`, `off`, `1` and `0` (case-sensitive), true and false
+   alike, are read as `none`: over either style no underline is drawn, and Word saves `w:val="none"` (with a
+   `w:color`, `none` and the colour). `True`, `TRUE`, `yes` and `no` are invalid like any other value: absent, the
+   style's double shows, the save drops them. Without a style both come to no underline (round 2).
+2. **`auto`.** Only exactly `auto` is automatic and overrides a style's colour (black). `Auto`, `AUTO`, `" auto"`,
+   `"auto "` and `#auto` are invalid: absent, the style's colour shows, the save drops them. This corrects §1 rule
+   3's "`auto` in any case": round 3 had no style, where automatic and absent look alike.
+3. **A character style's highlight is not drawn.** Alone, with bold, or inherited through `basedOn` (H1 to H3; the
+   style's bold and italic are drawn), with nothing to repair; Word's save writes `w:highlight w:val="none"` on those
+   runs and leaves the style as it was. A paragraph style's highlight is drawn (H5), also under a run whose character
+   style states one (H9); a direct highlight is drawn, over a character style's too (H7 green); a character style's
+   shading is drawn (H4). Round 5's M1 was this rule, not the repair.
+4. **Fill, border colour and underline colour over a style.** A fill names a colour (`Aqua`); an invalid fill (`F00`,
+   `bogus`) is automatic, no shading, and overrides the style's fill: Word saves `w:fill="auto"`. A border colour
+   names a colour (`Navy`); an invalid one is automatic (black) and overrides the style's: Word saves `auto`. An
+   underline colour names a colour (`Navy`); an invalid one (`F00`) is absent: the style's red shows, the save
+   drops it. So an invalid colour is absent in `w:color` and `w:u/@w:color`, and automatic in `w:fill` and a
+   border's `w:color`. `auto` as an underline colour draws automatic (black) over a style's red.
+5. **Two of Word's own saves change meaning.** H7: the direct green over `CharHighlight` is drawn green, but the
+   save drops it (leaving the run to the style's highlight, which isn't drawn). U4: `w:u w:color="auto"` over
+   `CharUnderlineRed` is drawn black, but the save drops the direct `w:u` (leaving the style's red). Tests comparing
+   a probe's reading with Word's save state these two from the PDF instead.
+
+docx4j against these (the rest agrees): it reads the six on/off words as absent (1); `Auto` and the other spellings
+as automatic where Word reads them absent, so over a style it draws black (2); it draws a character style's highlight
+(3); it writes a named or invalid fill and border colour as is (`#Aqua`, `#F00`), and reads an invalid underline
+colour as overriding the style's (4). These are the fixes a phase 4 would take.
