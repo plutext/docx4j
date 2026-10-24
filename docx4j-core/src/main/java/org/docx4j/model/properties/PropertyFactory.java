@@ -44,6 +44,7 @@ import org.docx4j.model.properties.paragraph.Tabs;
 import org.docx4j.model.properties.paragraph.TextAlignmentVertical;
 import org.docx4j.model.properties.run.Bold;
 import org.docx4j.model.properties.run.Caps;
+import org.docx4j.model.properties.run.Emphasis;
 import org.docx4j.model.properties.run.FontColor;
 import org.docx4j.model.properties.run.FontSize;
 import org.docx4j.model.properties.run.HighlightColor;
@@ -53,6 +54,7 @@ import org.docx4j.model.properties.run.RBorder;
 import org.docx4j.model.properties.run.RShading;
 import org.docx4j.model.properties.run.SmallCaps;
 import org.docx4j.model.properties.run.Strike;
+import org.docx4j.model.properties.run.TextDecoration;
 import org.docx4j.model.properties.run.TextDirection;
 import org.docx4j.model.properties.run.Underline;
 import org.docx4j.model.properties.run.VerticalAlignment;
@@ -297,14 +299,10 @@ public class PropertyFactory {
 			properties.add(new FontColor(rPr.getColor()) );
 //		if (rPr.getCs() != null)
 //			dest.setCs(rPr.getCs());
-//		if (rPr.getDstrike() != null)
-//			dest.setDstrike(rPr.getDstrike());
 //		if (rPr.getEastAsianLayout() != null)
 //			dest.setEastAsianLayout(rPr.getEastAsianLayout());
 //		if (rPr.getEffect() != null)
 //			dest.setEffect(rPr.getEffect());
-//		if (rPr.getEm() != null)
-//			dest.setEm(rPr.getEm());
 //		if (rPr.getEmboss() != null)
 //			dest.setEmboss(rPr.getEmboss());
 //		if (rPr.getFitText() != null)
@@ -356,14 +354,15 @@ public class PropertyFactory {
 			properties.add(new org.docx4j.model.properties.run.Spacing(rPr.getSpacing()));
 //		if (rPr.getSpecVanish() != null)
 //			dest.setSpecVanish(rPr.getSpecVanish());
-		if (rPr.getStrike() != null)
-			properties.add(new Strike(rPr.getStrike() ) );
 		if (rPr.getSz() != null)
 			properties.add(new FontSize(rPr.getSz() ) );
 //		if (rPr.getSzCs() != null)
 //			dest.setSzCs(rPr.getSzCs());
-		if (rPr.getU() != null)
-			properties.add(new Underline(rPr.getU() ) );
+		// underline, strike and double strike drawn together (CR-062)
+		if (TextDecoration.stated(rPr.getU(), rPr.getStrike(), rPr.getDstrike()))
+			properties.add(new TextDecoration(rPr.getU(), rPr.getStrike(), rPr.getDstrike()));
+		if (rPr.getEm() != null)
+			properties.add(new Emphasis(rPr.getEm()));
 //		if (rPr.getVanish() != null)
 //			dest.setVanish(rPr.getVanish());
 		if (rPr.getVertAlign() != null)
@@ -396,14 +395,10 @@ public class PropertyFactory {
 			properties.add(new FontColor(rPr.getColor()) );
 //		if (rPr.getCs() != null)
 //			dest.setCs(rPr.getCs());
-//		if (rPr.getDstrike() != null)
-//			dest.setDstrike(rPr.getDstrike());
 //		if (rPr.getEastAsianLayout() != null)
 //			dest.setEastAsianLayout(rPr.getEastAsianLayout());
 //		if (rPr.getEffect() != null)
 //			dest.setEffect(rPr.getEffect());
-//		if (rPr.getEm() != null)
-//			dest.setEm(rPr.getEm());
 //		if (rPr.getEmboss() != null)
 //			dest.setEmboss(rPr.getEmboss());
 //		if (rPr.getFitText() != null)
@@ -452,14 +447,15 @@ public class PropertyFactory {
 		
 //		if (rPr.getSpecVanish() != null)
 //			dest.setSpecVanish(rPr.getSpecVanish());
-		if (rPr.getStrike() != null)
-			properties.add(new Strike(rPr.getStrike() ) );
 		if (rPr.getSz() != null)
 			properties.add(new FontSize(rPr.getSz() ) );
 //		if (rPr.getSzCs() != null)
 //			dest.setSzCs(rPr.getSzCs());
-		if (rPr.getU() != null)
-			properties.add(new Underline(rPr.getU() ) );
+		// underline, strike and double strike drawn together (CR-062)
+		if (TextDecoration.stated(rPr.getU(), rPr.getStrike(), rPr.getDstrike()))
+			properties.add(new TextDecoration(rPr.getU(), rPr.getStrike(), rPr.getDstrike()));
+		if (rPr.getEm() != null)
+			properties.add(new Emphasis(rPr.getEm()));
 //		if (rPr.getVanish() != null)
 //			dest.setVanish(rPr.getVanish());
 		if (rPr.getVertAlign() != null)

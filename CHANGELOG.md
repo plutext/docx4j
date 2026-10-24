@@ -23,6 +23,10 @@ Claude Opus 5.5
 Changes in Version 17.3.5
 --------------------------
 
+* HTML output draws an underline's style (double, dotted, dashed, wavy, thick ...) and colour, a double
+  strike, and emphasis marks (w:em), through CSS text-decoration-* and text-emphasis (CR-062); a run
+  both underlined and struck through keeps both lines, in HTML and PDF (it lost its strike). PDF
+  still draws one underline style, in the text's colour, and no emphasis marks (XSL-FO has none).
 * PropertyFactory (CSS to docx, as docx4j-ImportXHTML uses it): a background colour with an alpha
   (rgba(), hsla(), "/ a", 8-digit hex) of 0 is no fill, as "transparent" is; rgba(0,0,0,0), which
   browsers write for transparent, gave a black fill once a CSS parser read rgba() (openhtmltopdf

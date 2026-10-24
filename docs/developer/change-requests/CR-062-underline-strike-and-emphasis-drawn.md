@@ -1,8 +1,8 @@
 # CR-062: underline styles and colours, strike with underline, double strike and emphasis marks drawn
 
-Status: ACCEPTED 2026-10-24 (Jason: "go ahead with the recommendations"): D1 to D5 as recommended (§6). PROPOSED
-2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at Jason's word ("push then write the small CR"): the small
-CR CR-060's D6 named. Phases in §5.
+Status: ACCEPTED 2026-10-24 (Jason: "go ahead with the recommendations"): D1 to D5 as recommended (§6). Phases 1 and 2
+done 2026-10-24 (§8); phase 0's Word run (round 8) awaits Jason. PROPOSED 2026-10-24, drafted by Claude Opus 5.5
+(session docx4j-25) at Jason's word ("push then write the small CR"): the small CR CR-060's D6 named. Phases in §5.
 
 ## 0. Summary
 
@@ -115,3 +115,23 @@ lines. Nothing else; the ports don't render (core-ts's and python's HTML writers
   `XsltHTMLFunctions.toggleOffCss`.
 - ECMA-376 Part 1, `ST_Underline`, `ST_Em`; CSS Text Decoration Module Level 3 (`text-decoration-*`,
   `text-emphasis-*`); XSL-FO 1.1 §7.17.4 (`text-decoration`).
+
+## 8. Record (2026-10-24, Claude Opus 5.5, session docx4j-25)
+
+- Phase 0, in part: round 8 built (`build8.py` on the share, beside rounds 1 to 7: `underline-styles`,
+  `strike-styles`, `emphasis-marks`), awaiting Jason's run. FOP's drawing of `text-decoration="underline
+  line-through"` checked by a minimal FO file: both lines (§3.3 confirmed). `DecorationAndEmphasisTest` (core-tests)
+  states the CSS each run gets per D1, D2 and D4 and the FO token list per D3; written with phase 1, not run red
+  first.
+- Phase 1: `org.docx4j.model.properties.run.TextDecoration` (one property for a run's `w:u`, `w:strike` and
+  `w:dstrike`; CSS `text-decoration-line`, `-style`, `-thickness`, `-color`; FO `text-decoration` tokens) and
+  `Emphasis` (`text-emphasis-style`, `-position`), in `PropertyFactory.createProperties` for a run's and a paragraph
+  mark's properties, in place of `Strike` and `Underline` (which stay, for the CSS-to-docx direction); the commented-out
+  `w:dstrike` and `w:em` lines went. A `w:u` stating only a colour writes `text-decoration-color` alone, which colours
+  an underline a character style's class draws, as Word does (round 6, U3); found by `RunPropertiesWord365Test`.
+  Checked in headless Chrome over round 8: each style, thickness and colour; strike and underline together; the
+  marks above, `underDot` below.
+- Phase 2: the FO writer's `text-decoration` comes from `TextDecoration` (`underline line-through` together).
+- Open for round 8: Chrome breaks an underline at descenders (`text-decoration-skip-ink`, on by default); if Word
+  draws through them, `text-decoration-skip-ink: none` matches it.
+- Suites: core-tests 2080 run, 0 failures, 30 skipped; docx4j-export-fo-tests 858, 0, 9; docx4j-diffx-tests green.
