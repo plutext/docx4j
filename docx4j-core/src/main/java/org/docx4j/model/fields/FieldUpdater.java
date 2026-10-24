@@ -297,6 +297,7 @@ public class FieldUpdater {
 					report.append( instr + "\n");
 					report.append( "--> " + val + "\n");
 	
+					if (DOCPROPERTY.equals(fldName)) fr.formatNewResult(); // its old result is kept now (FieldsPreprocessor)
 					fr.setResult(val);
 					
 	//				// If doing an actual mail merge, the begin-separate run is removed, as is the end run

@@ -371,28 +371,20 @@ public class FieldRef {
 	
 	private Boolean mergeFormat;
 	/**
+	 * Whether the instruction has {@code \* MERGEFORMAT}. Since 17.3.5 the whole instruction is read, in any case,
+	 * though Word splits it across runs; until then only its first part was.
+	 *
 	 * @return whether \* MERGEFORMAT is set
 	 */
 	public Boolean isMergeFormat() {
 		
 		if (mergeFormat==null) {
-			//Work it out. Assume for now that this is contained in instructions.get(0).
-			mergeFormat = Boolean.FALSE;
-			if (instructions.isEmpty()) {
-				return mergeFormat;
+			StringBuilder instr = new StringBuilder();
+			for (Object o : instructions) {
+				o = XmlUtils.unwrap(o);
+				if (o instanceof Text) instr.append(((Text)o).getValue()); // a nested field's switches aren't this one's
 			}
-			Object o = XmlUtils.unwrap(instructions.get(0));
-			if (o instanceof Text) {
-				String instr = ((Text)o).getValue();
-				if (instr.contains("MERGEFORMAT")) {
-					mergeFormat = Boolean.TRUE;
-				}
-			} else {
-                if(log.isErrorEnabled()) {
-                    log.error("TODO: extract field name from " + o.getClass().getName());
-                    log.error(XmlUtils.marshaltoString(instructions.get(0), true, true));
-                }
-			}
+			mergeFormat = instr.toString().toUpperCase().contains("MERGEFORMAT");
 		}
 		return mergeFormat;
 	}
@@ -543,6 +535,28 @@ public class FieldRef {
 		this.resultsSlot = resultsSlot;
 	}
 	
+	/**
+	 * Empties the result, as a merge does for a field it has no value for.
+	 *
+	 * @since 17.3.5
+	 */
+	public void clearResult() {
+		resultsSlot.getContent().clear();
+	}
+
+	/**
+	 * Gives the result about to be written the formatting it had before 17.3.5, for the fields whose old result
+	 * FieldsPreprocessor dropped then (a MERGEFIELD, a DOCPROPERTY): with {@code \* MERGEFORMAT}, the old result's,
+	 * as Word keeps it (it now has one to keep); without, the end run's. Call before {@link #setResult(String)}.
+	 *
+	 * @since 17.3.5
+	 */
+	public void formatNewResult() {
+		if (!isMergeFormat()) {
+			resultsSlot.setRPr(endRun == null || endRun.getRPr() == null ? null : XmlUtils.deepCopy(endRun.getRPr()));
+		}
+	}
+
 	public void setResult(String val) {
 		
 		resultsSlot.getContent().clear();

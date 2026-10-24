@@ -152,6 +152,8 @@ public class MailMergerWithNext extends MailMerger {
                                 recursiveRemove(shellClone, fr.getParent());
                             }
                         }
+                    } else {
+                        fr.clearResult(); // no value merges as nothing; FieldsPreprocessor keeps «name» since 17.3.5
                     }
                 } else {
 
@@ -169,6 +171,7 @@ public class MailMergerWithNext extends MailMerger {
                         log.warn("Can't format the field", e);
                     }
 
+                    fr.formatNewResult();
                     fr.setResult(val);
                 }
 

@@ -239,7 +239,9 @@ public class MailMerger extends AbstractMerger {
                         if (StringUtils.isBlank(text)) {
                             recursiveRemove(shellClone, fr.getParent());
                         }
-                    }				
+                    } else {
+                        fr.clearResult(); // no value merges as nothing; FieldsPreprocessor keeps «name» since 17.3.5
+                    }
 				} else {
 					
 					// Now format the result
@@ -256,6 +258,7 @@ public class MailMerger extends AbstractMerger {
 						log.warn("Can't format the field", e);
 					}
 					
+					fr.formatNewResult();
 					fr.setResult(val);
 				}
 				

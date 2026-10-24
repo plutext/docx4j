@@ -294,25 +294,13 @@ public class FieldsPreprocessor {
 	}
 	
 	/**
-	 * Its preserved, if it is locked.
-	 * 
-	 * If it isn't locked, it is preserved unless its a MERGEFIELD or a DOCPROPERTY field.
-	 * 
-	 * @param fieldRef
-	 * @return
+	 * A field's result is kept, whatever the field: one its caller doesn't write keeps the result it was read with, and
+	 * a caller that writes one replaces it ({@link FieldRef#setResult(String)}) or empties it
+	 * ({@link FieldRef#clearResult()}). Until 17.3.5 an unlocked MERGEFIELD's or DOCPROPERTY's result was dropped
+	 * here, whoever the caller, so FieldUpdater emptied MERGEFIELDs, MailMerger emptied DOCPROPERTYs, and FieldUpdater
+	 * emptied a DOCPROPERTY whose property it couldn't find.
 	 */
 	private boolean preserveResult(FieldRef fieldRef) {
-		
-		if (fieldRef.isLock()) return true;
-		
-		
-		String fldName = fieldRef.getFldName();
-		if (fldName==null) return true;
-		
-		if (fldName.equals("MERGEFIELD")
-				|| fldName.equals("DOCPROPERTY")) {
-			return false;
-		}
 		return true;
 	}
 
@@ -583,8 +571,8 @@ public class FieldsPreprocessor {
 					newR.getContent().add(o2);
 				}
 
-			} else if (preserveResult(currentField)) {
-				// ie locked, or not MERGEFIELD, or DOCPROPERTY
+			} else {
+				// the result, kept (see preserveResult)
 				log.debug("preserveResult-> adding");
 				newR.getContent().add(o2);		
 				
@@ -593,33 +581,6 @@ public class FieldsPreprocessor {
 				} else if (currentField.getResultsSlot()!=newR) {
 					log.warn("Multiple runs in results slot?");
 				}
-				
-			} else {
-				// result content .. can ignore unless it has \* MERGEFORMAT
-				
-				// if \* MERGEFORMAT, attach the rPr of first run in the result
-				if (o2 instanceof R
-						&& currentField.isMergeFormat() 
-						&& currentField.getResultsSlot()==null) {
-
-					R resultR = Context.getWmlObjectFactory().createR();
-					currentField.setResultsSlot(resultR);
-					resultR.setRPr(((R)o2).getRPr()); // could be null, but that's ok
-					log.debug("MERGEFORMAT Set rPr");
-				}
-				
-				
-				
-				// TODO: a TOC field usually has a PAGEREF wrapped in a hyperlink in its
-				// result part.  We should either keep the entire result, or empty it.
-				// only do this if the field has no nested field; we need a way to look ahead
-				// to see whether a nested field is coming up)
-				
-				// we only want a single run between SEPARATOR and END,
-				// and we added that in the SEPARATE stuff above
-                if(log.isDebugEnabled()) {
-                    log.debug("IGNORING " + XmlUtils.marshaltoString(o2, true, true));
-                }
 				
 			} 
 
