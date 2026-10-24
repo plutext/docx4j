@@ -23,6 +23,10 @@ Claude Opus 5.5
 Changes in Version 17.3.5
 --------------------------
 
+* PropertyFactory (CSS to docx, as docx4j-ImportXHTML uses it): a background colour with an alpha
+  (rgba(), hsla(), "/ a", 8-digit hex) of 0 is no fill, as "transparent" is; rgba(0,0,0,0), which
+  browsers write for transparent, gave a black fill once a CSS parser read rgba() (openhtmltopdf
+  1.1.100). A partial alpha is blended over white.
 * A save writes WordprocessingML colours plainly (CR-061): a value Word accepts ("red", "ff0000",
   "#FF0000") as upper-case RRGGBB; one it rejects ("F00", "Auto") left out of a text or underline
   colour, where Word reads it as absent, and written "auto" in a fill, pattern, border or page

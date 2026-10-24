@@ -655,6 +655,20 @@ public class PropertyFactory {
 			    } else if ( value.getCssText().toLowerCase().equals("transparent")){
 			        return null;
 			    }
+			    double alpha = cssAlpha(value.getCssText());
+			    if (alpha <= 0) {
+			    	return null; // rgba(0,0,0,0) and the like: transparent, not black
+			    } else if (alpha < 1) {
+			    	String hex = overWhite(((org.docx4j.wml.CTShd)new RShading(value).getObject()).getFill(), alpha);
+			    	if (shouldUseHighlightInRPr()) {
+			    		Highlight highlight = org.docx4j.jaxb.Context.getWmlObjectFactory().createHighlight();
+			    		highlight.setVal("#" + hex);
+			    		return highlight.getVal()==null ? null : new HighlightColor(highlight);
+			    	}
+			    	org.docx4j.wml.CTShd shd = org.docx4j.jaxb.Context.getWmlObjectFactory().createCTShd();
+			    	shd.setFill(hex);
+			    	return new RShading(shd);
+			    }
 			    
 			    if (shouldUseHighlightInRPr()) {
 			    	// Highlight needs "red", not "#FF0000", but our code 
@@ -735,8 +749,17 @@ public class PropertyFactory {
 	            if(value.getCssText().toLowerCase().equals("transparent")){
 	                return null;
 	            }
+	            double alpha = cssAlpha(value.getCssText());
+	            if (alpha <= 0) {
+	                return null; // rgba(0,0,0,0) and the like: transparent, not black
+	            }
 	            if(simpleRGBCheck(value.getCssText())){
-	                return new PShading(value);
+	                PShading shading = new PShading(value);
+	                if (alpha < 1) {
+	                    org.docx4j.wml.CTShd shd = (org.docx4j.wml.CTShd)shading.getObject();
+	                    shd.setFill(overWhite(shd.getFill(), alpha));
+	                }
+	                return shading;
 	            }
 	        }
 	    } catch (java.lang.UnsupportedOperationException uoe) {
@@ -749,6 +772,52 @@ public class PropertyFactory {
 	    return null;
 	}
 	
+	/**
+	 * The opacity a CSS colour states: the fourth value of rgba() or hsla(), the value after '/' in rgb() or hsl()
+	 * (a number, or a percentage), or the last byte of an 8- or 4-digit hex colour; 1 where it states none.  A CSS
+	 * parser that reads rgba() (openhtmltopdf from 1.1.100) hands docx4j the red, green and blue alone, so without
+	 * this, rgba(0,0,0,0), which browsers write for transparent, became a black fill.
+	 *
+	 * @since 17.3.5
+	 */
+	static double cssAlpha(String cssText) {
+		if (cssText == null) return 1;
+		String v = cssText.trim().toLowerCase(java.util.Locale.ROOT);
+		try {
+			if (v.startsWith("#")) {
+				String h = v.substring(1);
+				if (h.length() == 8) return Integer.parseInt(h.substring(6), 16) / 255.0;
+				if (h.length() == 4) return Integer.parseInt(h.substring(3), 16) / 15.0;
+				return 1;
+			}
+			int open = v.indexOf('('), close = v.lastIndexOf(')');
+			if (!(v.startsWith("rgb") || v.startsWith("hsl")) || open < 0 || close < open) return 1;
+			String args = v.substring(open + 1, close);
+			String a;
+			if (args.contains("/")) {
+				a = args.substring(args.indexOf('/') + 1);
+			} else {
+				String[] parts = args.split(",");
+				if (parts.length != 4) return 1;
+				a = parts[3];
+			}
+			a = a.trim();
+			double alpha = a.endsWith("%") ? Double.parseDouble(a.substring(0, a.length() - 1)) / 100 : Double.parseDouble(a);
+			return Math.max(0, Math.min(1, alpha));
+		} catch (NumberFormatException e) {
+			return 1;
+		}
+	}
+
+	/** A colour (RRGGBB) at this opacity over white, as RRGGBB: Word has no transparent fill, a page is white */
+	static String overWhite(String hex, double alpha) {
+		int rgb = Integer.parseInt(hex, 16);
+		int r = (int) Math.round(((rgb >> 16) & 0xFF) * alpha + 255 * (1 - alpha));
+		int g = (int) Math.round(((rgb >> 8) & 0xFF) * alpha + 255 * (1 - alpha));
+		int b = (int) Math.round((rgb & 0xFF) * alpha + 255 * (1 - alpha));
+		return String.format("%02X%02X%02X", r, g, b);
+	}
+
 	private static boolean simpleRGBCheck(String cssText){
 	    if(cssText.contains("#") || cssText.contains("rgb")){
 	        return true;
