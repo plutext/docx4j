@@ -353,3 +353,38 @@ glossary's two entries stay two). Full suites green: core-tests, export-fo-tests
 - Dates, drop-down lists and combo boxes naming no entry: Word's entries for them unmeasured (§11).
 - Ports: core-ts follows docx4j on copying `w:docPartBody` and on replacing a missing entry's name (§11);
   docx4j-python told.
+
+## 13. Word's default entry for each kind of control (Word 365, Jason's run, 2026-10-25; D8 proposed)
+
+§11 left the entries Word gives dates and lists unmeasured. Jason made one control of each kind from the Developer tab
+in Word 365 and saved; the file is on the share at `Office 2016/placeholders.docx` (SHA-1
+`9cd6fb70e5af3b6d52eab2e95bd13acfbcf3c2c8`; its settings carry `w:formsDesign`, so Design Mode was on, which bears on
+edits into a placeholder, not on what Word makes). Read by core-ts and by this session, which agree:
+
+| Kind | `w:placeholder` names | Entry text |
+|---|---|---|
+| rich text (no kind element), plain text (`w:text`) | `DefaultPlaceholder_-1854013440` | Click or tap here to enter text. |
+| date picker (`w:date`) | `DefaultPlaceholder_-1854013437` | Click or tap to enter a date. |
+| drop-down list, combo box | `DefaultPlaceholder_-1854013438` | Choose an item. |
+| building block gallery (`w:docPartList`) | `DefaultPlaceholder_-1854013436` | Choose a building block. |
+| repeating section item (`w15:repeatingSectionItem`) | `DefaultPlaceholder_-1854013435` | Enter any content that you want to repeat, including other content controls. You can also insert this control around table rows in order to repeat parts of a table. |
+| repeating section (`w15:repeatingSection`, the outer control) | none, no flag | |
+| picture (`w:picture`) | none; `w:showingPlcHdr` and a stock `w:drawing` (`word/media/image1.png`) | |
+| check box (`w14:checkbox`) | none, no flag; the ☐ glyph in MS Gothic | |
+
+Every entry has the same `w:docPartPr` as the text default (§1): category General, gallery placeholder, type
+`bbPlcHdr`, behavior content, a `w:guid` of its own; each body is one `w:p` with one run in Placeholder Text. Each
+control names its entry, has `w:showingPlcHdr`, and its content is that run. Word also gives a drop-down list and a
+combo box a first `w:listItem` with `w:value="Choose an item."` and no `w:displayText`. `-1854013439` is absent
+(group, citation or equation, not made).
+
+**D8 (proposed): the other kinds get Word's entry for them.**
+
+| # | Question | Options | Recommended |
+|---|---|---|---|
+| D8 | A date, list, building-block or repeating-section-item control naming no entry (or a missing one), empty | (a) Word's entry for its kind, from the table, added to the glossary as D3 adds the text default; picture and check box as today (Word names none for them); group, citation, equation, bibliography (unmeasured) as today; (b) as now: today's run, no reference | (a): the same rule as D3, with Word's own wording; a date no longer says "enter text". The configured run (D4) stays the text kinds' default only, since its wording is written for text. The list controls' first `w:listItem` is Word's authoring, not emulated: the template's list is kept |
+
+Phase 4, if D8 (a): `PlaceholderEntries.referenceFor` maps the kind to its entry name and text (`isTextControl` becomes
+a kind lookup); the date path (`xpathDate` / `applyDateBinding`) already reaches the lookup; a fixture from
+`placeholders.docx`'s entries; the parity test's date control (`DATEOLD`) and `BoundDateFormatTest`'s DF10 move to the
+date wording. 1 h. core-ts would follow (its message of 2026-10-25).
