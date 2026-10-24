@@ -27,6 +27,8 @@ Changes in Version 17.3.5
   strike, and emphasis marks (w:em), through CSS text-decoration-* and text-emphasis (CR-062); a run
   both underlined and struck through keeps both lines, in HTML and PDF (it lost its strike). PDF
   still draws one underline style, in the text's colour, and no emphasis marks (XSL-FO has none).
+* A simple field made complex (MailMerger and the migration helpers do this first) keeps its result
+  as it was: each run with its formatting, and bookmarks inside it (#78).
 * FieldUpdater and MailMerger leave the fields they don't write as they were: FieldUpdater emptied
   a MERGEFIELD's result («name») and a DOCPROPERTY's whose property it couldn't find, and MailMerger
   emptied every DOCPROPERTY's. A merged value with \* MERGEFORMAT takes the old result's formatting.

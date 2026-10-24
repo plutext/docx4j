@@ -54,20 +54,31 @@
 </xsl:template>
       
   <xsl:template match="w:fldSimple" >
+  	<!--  begin, instruction and separate in one run, in the first result run's formatting -->
   	<w:r>
-  	  <!--  Keep any rPr, so we can preserve bold, italic, underline etc -->
-  	  <xsl:copy-of select="w:r/w:rPr" />
-      
+  	  <xsl:copy-of select="w:r[1]/w:rPr" />
       <w:fldChar w:fldCharType="begin"><xsl:copy-of select="@w:fldLock | @w:dirty"/></w:fldChar><!-- the lock and dirty flag kept, since 17.3.5 -->
-        <w:instrText xml:space="preserve"><xsl:value-of select="@w:instr"></xsl:value-of> </w:instrText>
-        <w:fldChar w:fldCharType="separate"/>
-
-		<!--  Word 2010 is happy to open a docx in which this has become
-		      either w:instrText or w:t, but the latter is better.  -->
-		<xsl:apply-templates select="w:r/*[local-name()='t' or local-name()='instrText']" /> 
-		<!-- <xsl:copy-of select="w:r/*[local-name()='t' or local-name()='instrText']" /> -->
-        <w:fldChar w:fldCharType="end"/>
+      <w:instrText xml:space="preserve"><xsl:value-of select="@w:instr"></xsl:value-of> </w:instrText>
+      <w:fldChar w:fldCharType="separate"/>
   	</w:r>
+  	<!--  the result as it was, since 17.3.5: each run with its formatting and content, and what lies between them,
+  	      bookmarks say (#78). Until then the result's text went into one run, in the first run's formatting, and
+  	      anything else was dropped. -->
+  	<xsl:apply-templates select="node()" mode="fldSimpleResult"/>
+  	<w:r>
+  	  <xsl:copy-of select="w:r[1]/w:rPr" />
+      <w:fldChar w:fldCharType="end"/>
+  	</w:r>
+  </xsl:template>
+
+  <xsl:template match="w:r" mode="fldSimpleResult">
+    <w:r>
+      <xsl:apply-templates select="@*|node()"/>
+    </w:r>
+  </xsl:template>
+
+  <xsl:template match="node()" mode="fldSimpleResult">
+    <xsl:apply-templates select="."/>
   </xsl:template>
   
   <xsl:template match="w:instrText[local-name(../..)='fldSimple']" >
