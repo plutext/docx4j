@@ -30,7 +30,11 @@ Changes in Version 17.3.5
   draws no underline; a w:color may be a classic HTML colour name ("red" is FF0000), and a value
   Word rejects is automatic; a w:highlight outside ST_HighlightColor is none (it wrote
   background-color:null), and doesn't override a style's. A highlight, vertAlign or em whose value
-  is missing or invalid, which Word repairs away, is left out on save.
+  is missing or invalid, which Word repairs away, is left out on save. Over styles (Word 365, two
+  more rounds): w:u w:val="true" (and false, on, off, 1, 0) is no underline, and saved as none; a
+  w:color Word rejects, Auto included, leaves a style's colour (only exactly auto is automatic); a
+  character style's highlight isn't drawn; a fill or border colour may be a colour name, and one
+  Word rejects is automatic (no shading, a black border).
 * HTML output (both writers): a toggle property both a run's character style and its paragraph style
   set, which ECMA-376 turns off, is written off on the run (bold, italic, caps, small caps, strike); a
   browser showed it on, where Word and the PDF output have it off. Strike set by the paragraph style is

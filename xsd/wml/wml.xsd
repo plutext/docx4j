@@ -50,6 +50,8 @@ REVISION HISTORY
 20261024   The xsd:boolean attributes (ST_OnOff in the 1st edition, docx4j's xsd:boolean since 2008) read through
            org.docx4j.wml.OnOffAdapter, as Word reads an on/off value (CR-060 phase 1): 46 of the 48; the two required
            ones (checkStyle, actualPg) are primitive booleans, which an adapter cannot bind
+           w:u/@w:val reads through org.docx4j.wml.UnderlineValueAdapter: the six on/off spellings read as none
+           (CR-060 phase 4)
 	
 USAGE INSTRUCTIONS
 	  
@@ -7153,6 +7155,9 @@ PRINCIPLES:
 		<xsd:complexType>
 			<xsd:attribute name="val" type="UnderlineEnumeration" use="optional">
 				<xsd:annotation>
+					<xsd:appinfo>
+						<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.UnderlineValueAdapter.class)</annox:annotate> <!-- CR-060 phase 4 -->
+					</xsd:appinfo>
 					<xsd:documentation>Underline Style</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>

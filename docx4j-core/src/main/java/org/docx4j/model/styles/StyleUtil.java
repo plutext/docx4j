@@ -22,6 +22,7 @@ package org.docx4j.model.styles;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.color.WordColors;
 import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
@@ -1460,11 +1461,12 @@ public class StyleUtil {
 		return (effect == null) || (effect.getVal() == null);
 	}
 
-	/** The theme attributes count (since 17.3.3, CR-034). */
+	/** The theme attributes count (since 17.3.3, CR-034); a colour Word reads as absent doesn't (since 17.3.5,
+	 *  CR-060: {@link WordColors#stated}). */
 	public static boolean isEmpty(U u) {
 		return (u == null) ||
 	       ((u.getVal() == null) &&
-		    isEmpty(u.getColor()) &&
+		    !WordColors.stated(u.getColor()) &&
 		    (u.getThemeColor() == null) &&
 		    isEmpty(u.getThemeTint()) &&
 		    isEmpty(u.getThemeShade())
@@ -1500,10 +1502,11 @@ public class StyleUtil {
 	}
 
 	/** A {@code w:color} stating only a theme colour is not empty (since 17.3.3, CR-034): it is
-	 *  inherited, where it used to be dropped. */
+	 *  inherited, where it used to be dropped.  A value Word reads as absent ("F00", "bogus", "Auto") is empty, so a
+	 *  style's colour beneath still shows (since 17.3.5, CR-060: {@link WordColors#stated}). */
 	public static boolean isEmpty(Color color) {
 		return (color == null) ||
-				(isEmpty(color.getVal()) &&
+				(!WordColors.stated(color.getVal()) &&
 				 (color.getThemeColor() == null) &&
 				 isEmpty(color.getThemeTint()) &&
 				 isEmpty(color.getThemeShade()));
@@ -2782,7 +2785,7 @@ public class StyleUtil {
 			if (destination == null)
 				destination = Context.getWmlObjectFactory().createU();
 			destination.setVal(apply(source.getVal(), destination.getVal()));
-			if (statesColour(source.getColor(), source.getThemeColor())) {
+			if (statesWordColour(source.getColor(), source.getThemeColor())) {
 				destination.setColor(source.getColor());
 				destination.setThemeColor(source.getThemeColor());
 				destination.setThemeTint(source.getThemeTint());
@@ -2859,7 +2862,7 @@ public class StyleUtil {
 			if (destination == null)
 				destination = Context.getWmlObjectFactory().createColor();
 
-			if (statesColour(source.getVal(), source.getThemeColor())) {
+			if (statesWordColour(source.getVal(), source.getThemeColor())) {
 				destination.setVal(source.getVal());
 				destination.setThemeColor(source.getThemeColor());
 				destination.setThemeTint(source.getThemeTint());
@@ -2872,9 +2875,16 @@ public class StyleUtil {
 		return destination;
 	}
 
-	/** Whether a colour's value or theme reference is stated: then the colour inherits as one */
+	/** Whether a colour's value or theme reference is stated: then the colour inherits as one.  A fill's or a
+	 *  border's: any value, since Word reads one it rejects as automatic (CR-060 section 13). */
 	private static boolean statesColour(String val, STThemeColor themeColor) {
 		return !isEmpty(val) || !isEmpty(themeColor);
+	}
+
+	/** As {@link #statesColour}, for a text or underline colour, whose value Word reads as absent where it
+	 *  rejects it ({@link WordColors#stated}; since 17.3.5, CR-060). */
+	private static boolean statesWordColour(String val, STThemeColor themeColor) {
+		return WordColors.stated(val) || !isEmpty(themeColor);
 	}
 
 	private static STThemeColor apply(STThemeColor source, STThemeColor destination) {

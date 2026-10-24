@@ -174,6 +174,8 @@ public class PropertyResolver {
 	 */
 	private final java.util.Map<String, PPr> chainPPr = new java.util.concurrent.ConcurrentHashMap<String, PPr>();
 	private final java.util.Map<String, RPr> chainRPr = new java.util.concurrent.ConcurrentHashMap<String, RPr>();
+	/** A character style's chain as it applies to a run, where it differs from chainRPr: see characterLevel. */
+	private final java.util.Map<String, RPr> characterLevelRPr = new java.util.concurrent.ConcurrentHashMap<String, RPr>();
 
 	/** Document defaults with the chain applied over them, keyed by styleId: what
 	 *  getEffectivePPr(String) and getEffectiveRPr(String) return. */
@@ -554,7 +556,7 @@ public class PropertyResolver {
 			if (getLiveStyle(runStyleId) == null) {
 				logMissing(runStyleId);
 			} else {
-				StyleUtil.applyStyleLevel(chainRPr(runStyleId), effectiveRPr, documentDefaultRPr);
+				StyleUtil.applyStyleLevel(characterLevel(runStyleId), effectiveRPr, documentDefaultRPr);
 			}
 		}
 		applyRPr(mark, effectiveRPr);
@@ -598,7 +600,7 @@ public class PropertyResolver {
 			if (getLiveStyle(runStyleId) == null) {
 				logMissing(runStyleId);
 			} else {
-				StyleUtil.applyStyleLevel(chainRPr(runStyleId), effectiveRPr, documentDefaultRPr);
+				StyleUtil.applyStyleLevel(characterLevel(runStyleId), effectiveRPr, documentDefaultRPr);
 			}
 		}
 		if (hasDirectRPrFormatting(expressRPr) ) {			
@@ -1256,6 +1258,23 @@ public class PropertyResolver {
 		return chain;
 	}
 
+	/**
+	 * A character style's chain as a level over a run or a paragraph mark: chainRPr without its highlight, since
+	 * Word draws no highlight from a character style (CR-060 section 13, round 6: alone, with bold, or through
+	 * w:basedOn; its save writes w:highlight="none" on such a run).  A paragraph style's highlight and a run's own
+	 * are drawn.  Cached; live: clone before changing.
+	 */
+	private RPr characterLevel(String styleId) throws CyclicStylesException {
+		RPr chain = chainRPr(styleId);
+		if (chain.getHighlight() == null) return chain;
+		RPr level = characterLevelRPr.get(styleId);
+		if (level != null) return level;
+		level = (RPr) XmlUtils.deepCopy(chain);
+		level.setHighlight(null);
+		characterLevelRPr.put(styleId, level);
+		return level;
+	}
+
 	/** A style's w:basedOn chain merged root-first, without the document defaults; cached.  An empty rPr for null or a missing style. */
 	private RPr chainRPr(String styleId) throws CyclicStylesException {
 		if (styleId == null) return factory.createRPr();
@@ -1450,6 +1469,7 @@ public class PropertyResolver {
 
     	chainPPr.clear();
     	chainRPr.clear();
+    	characterLevelRPr.clear();
     	effectivePPrByStyle.clear();
     	effectiveRPrByStyle.clear();
     	tableStyleChains.clear();

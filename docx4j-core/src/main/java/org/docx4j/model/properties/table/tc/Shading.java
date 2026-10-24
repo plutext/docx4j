@@ -77,9 +77,8 @@ public class Shading extends AbstractTcProperty {
 		String themed = themedFill(shd);
 		if (themed != null) {
 			return composeCss(CSS_NAME, themed);
-		} else if (shd.getFill()!=null &&
-				!shd.getFill().equals("auto")) {
-			return composeCss(CSS_NAME, hexColour(shd.getFill()) );
+		} else if (fillColour(shd.getFill()) != null) {
+			return composeCss(CSS_NAME, fillColour(shd.getFill()) );
 		} else {
 			return CSS_NULL;
 		}
@@ -104,9 +103,8 @@ public class Shading extends AbstractTcProperty {
 		String themed = themedFill(shd);
 		if (themed != null) {
 			foElement.setAttribute(FO_NAME, themed);
-		} else if (shd.getFill()!=null &&
-				!shd.getFill().equals("auto")) {
-			foElement.setAttribute(FO_NAME, hexColour(shd.getFill()) );
+		} else if (fillColour(shd.getFill()) != null) {
+			foElement.setAttribute(FO_NAME, fillColour(shd.getFill()) );
 		} 
 	}
 

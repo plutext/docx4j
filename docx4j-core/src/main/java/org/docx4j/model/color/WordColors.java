@@ -78,11 +78,13 @@ public final class WordColors {
 	}
 
 	/**
-	 * A run's or an underline's colour value ({@code w:color/@w:val}, {@code w:u/@w:color}) as Word 365 reads it
-	 * (CR-060 section 1, rule 3): surrounding whitespace trimmed, six hex digits in either case with an optional
-	 * leading '#'; else a classic HTML colour name, in any case. Anything else, {@code auto} included, is automatic.
+	 * A colour value ({@code w:color/@w:val}, {@code w:u/@w:color}, {@code w:shd/@w:fill}, a border's
+	 * {@code w:color}) as Word 365 reads it (CR-060 section 1, rule 3, and sections 12 and 13): surrounding
+	 * whitespace trimmed, six hex digits in either case with an optional leading '#'; else a classic HTML colour
+	 * name, in any case.
 	 *
-	 * @return six upper-case hex digits, or null for automatic
+	 * @return six upper-case hex digits; null for {@code auto} and for a value Word rejects, which Word reads as
+	 * automatic in a fill or a border colour, and as absent in a text or underline colour ({@link #stated})
 	 * @since 17.3.5
 	 */
 	public static String normalise(String val) {
@@ -93,6 +95,19 @@ public final class WordColors {
 			return hex.toUpperCase(Locale.ROOT);
 		}
 		return ColorTables.HTML.get(v.toLowerCase(Locale.ROOT));
+	}
+
+	/**
+	 * Whether a {@code w:color/@w:val} or {@code w:u/@w:color} value states a colour, as Word reads it (CR-060
+	 * sections 12 and 13): one {@link #normalise} accepts, or exactly {@code auto} (automatic, which overrides a
+	 * style's colour). Word reads any other value ({@code F00}, {@code bogus}, {@code ""}, {@code Auto},
+	 * {@code " auto"}) as absent: a style's colour beneath still shows. (In a fill or a border colour it reads such
+	 * a value as automatic instead.)
+	 *
+	 * @since 17.3.5
+	 */
+	public static boolean stated(String val) {
+		return "auto".equals(val) || normalise(val) != null;
 	}
 
 	/** A run's colour ({@code w:color}); null for automatic */

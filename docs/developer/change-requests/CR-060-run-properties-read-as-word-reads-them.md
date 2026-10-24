@@ -1,11 +1,11 @@
 # CR-060: run properties read as Word reads them (on/off values, values outside an enumeration, w:color)
 
-Status: COMPLETE 2026-10-24 (phases 0 to 3, §8 to §11). ACCEPTED 2026-10-24 (Jason: "recommendations accepted, please
-commit then implement"): D1 to D6 as recommended (§6), D1 after the preprocessor alternative was weighed (§3.1).
-PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at Jason's word through the portfolio session
-("yes please", to "Shall I ask docx4j-25, the TypeScript session and the Python session each to draft its CR now,
-giving them these rules and the probes?"). docx4j-core-ts and docx4j-python draft theirs in parallel against the same
-rules (§1). Phases in §5.
+Status: COMPLETE 2026-10-24 (phases 0 to 4, §8 to §11 and §14; phase 4 at Jason's "go ahead with phase 4", after
+rounds 5 and 6, §12 and §13). ACCEPTED 2026-10-24 (Jason: "recommendations accepted, please commit then implement"):
+D1 to D6 as recommended (§6), D1 after the preprocessor alternative was weighed (§3.1). PROPOSED 2026-10-24, drafted
+by Claude Opus 5.5 (session docx4j-25) at Jason's word through the portfolio session ("yes please", to "Shall I ask
+docx4j-25, the TypeScript session and the Python session each to draft its CR now, giving them these rules and the
+probes?"). docx4j-core-ts and docx4j-python draft theirs in parallel against the same rules (§1). Phases in §5.
 
 ## 0. Summary
 
@@ -43,7 +43,9 @@ Word 365, Jason's runs on 24 October 2026, four rounds. Probes, Word's PDFs and 
    or invalid value on `highlight`, `vertAlign` or `em` makes Word repair the file, dropping the element.
 3. **`w:color`**: six hex digits, any case, an optional leading `#`, surrounding whitespace trimmed; or a name from the
    classic HTML (Netscape) colour table, case-insensitive (§3.3); `auto` in any case is automatic. Anything else
-   (`F00`, `0xFF0000`, five or seven digits, `GG0000`, `""`, names outside the table) is automatic. Word saves names
+   (`F00`, `0xFF0000`, five or seven digits, `GG0000`, `""`, names outside the table) is automatic. [Corrected by
+   rounds 5 and 6 (§12, §13): only exactly `auto` is automatic; `Auto`, `AUTO` and the rest are invalid, and an invalid
+   value is absent, so over a style's colour the style's shows. Without a style the two look alike.] Word saves names
    and lower-case hex as upper-case hex, and drops what it rejects. Read from the saves here: `red`, `Red`, `RED` →
    `FF0000`; `darkred`, `DarkRed`, `DARKRED` → `8B0000`; `#FF0000`, `"FF0000 "`, `" FF0000"`, `ff0000` → `FF0000`;
    `darkGray` → `A9A9A9`, `lightgrey` → `D3D3D3`, `gray` → `808080`, `dimgray` → `696969`, `slategray` → `708090`,
@@ -191,6 +193,7 @@ remains is spelling (D2, D4) and the elements Word repairs away (D3):
 | 1 | §3.1: `OnOffAdapter`, its bindings in `wml.xsd`, a clean regeneration, every reader through it; tests green | ½ day |
 | 2 | §3.2 and §3.3: `Underline`, `HighlightColor`, `FontColor` and the colour normaliser; tests green | ½ day |
 | 3 | §3.4 per D2-D4: what a save writes; CHANGELOG; hand-offs (core-ts, python, objects-ts for the schema change, the portfolio) | 2 h |
+| 4 | Rounds 5 and 6 (§12, §13): `w:u`'s on/off words read as none; an invalid text or underline colour absent (only exactly `auto` automatic); no highlight from a character style; names in fills and border colours, an invalid one automatic; the rounds' probes as fixtures | ½ day |
 
 ## 6. Decisions (accepted as recommended, Jason, 2026-10-24)
 
@@ -408,3 +411,37 @@ docx4j against these (the rest agrees): it reads the six on/off words as absent 
 as automatic where Word reads them absent, so over a style it draws black (2); it draws a character style's highlight
 (3); it writes a named or invalid fill and border colour as is (`#Aqua`, `#F00`), and reads an invalid underline
 colour as overriding the style's (4). These are the fixes a phase 4 would take.
+
+## 14. Phase 4 record (2026-10-24, Claude Opus 5.5, session docx4j-25)
+
+At Jason's "go ahead with phase 4", the fixes §12 and §13 found:
+
+- `w:u/@w:val` reads through `org.docx4j.wml.UnderlineValueAdapter` (docx4j-generated-objects, bound in `wml.xsd` by
+  an annox field annotation, as phase 1's): an ST_Underline value case-exactly; exactly `true`, `false`, `on`, `off`,
+  `1`, `0` as `none`; anything else null (absent). A save writes `none` for them, as Word's does, so the case where a
+  docx4j save turned an underline on is gone.
+- A text or underline colour Word rejects is absent: `WordColors.stated(val)` (exactly `auto`, or a value `normalise`
+  accepts) decides `StyleUtil.isEmpty(Color)`, `isEmpty(U)` and whether `apply(Color)` and `apply(U)` take the
+  colour; so over a style's colour the style's shows, and `Auto` is no longer automatic. A fill's and a border's
+  colour keep "any value is stated", since Word reads an invalid one there as automatic.
+- A character style's highlight is left out: `PropertyResolver` applies a character style's chain without it
+  (`characterLevel`, cached beside `chainRPr` and cleared with it), for a run and for a paragraph mark's
+  `w:rStyle`; `HtmlCssHelper` leaves it out of a character style's class, for both HTML writers. A paragraph style's
+  highlight and a run's own are untouched.
+- Fills and border colours go through the normaliser: `Property.fillColour` (a name or hex spelling as `#RRGGBB`;
+  `auto` and an invalid value no shading) in `RShading`, `PShading` and the table `Shading`; `Property.borderColour`
+  (automatic, `auto` or invalid, as black, as `auto` was) in `RBorder`, `AbstractPBorder` and `AbstractBorder`;
+  `Property.themeColour` normalises the value written beside a theme reference. Measured on a run's shading and
+  border; the paragraph's and the table's take the same reading, the simple type being the same.
+- Fixtures: rounds 5 and 6's eight probes and saves join `runprops/word365/` (README updated).
+  `RunPropertiesWord365Test` reads a fill, a border colour and an underline colour as well, states the three
+  markers whose save changes what Word drew from its PDF (`WORD_DREW`, and `wordsOwnSaveChangesWhatItDrew`), and
+  compares HTML as a browser applies it: the paragraph style's classes, the character style's, then the run's own
+  CSS (comparing the run's own CSS alone took Word dropping a direct value that repeats a style's for a difference).
+  `anInvalidValueOverAStyleLeavesTheStyles` checks the highlight over a paragraph style now.
+- Still not done, noted: the HTML writers can't undo a style class's property from a run (`w:color w:val="auto"`,
+  `w:u w:val="none"`, `w:shd w:fill="auto"` or an invalid fill over a style that sets one write nothing, so the
+  class's value shows where Word draws automatic or none); PDF is right, from the effective properties.
+- Suites: core-tests 2065 run, 0 failures, 30 skipped; docx4j-export-fo-tests 858, 0, 9; docx4j-diffx-tests green.
+  MOXy (scratch probe): the six on/off words read `none` and save as `none`, other values absent; and MOXy no
+  longer throws on an invalid `w:u` value in a raw unmarshal, now that the adapter reads it.

@@ -116,11 +116,7 @@ public class RBorder extends AbstractRunProperty {
 		if (themed!=null) {
 			color = composeCss(CSS_NAME_COLOR, themed);
 		} else if (border.getColor()!=null) {
-			if (border.getColor().equals("auto")) {
-				color = "#000000";
-			} else {
-				color = hexColour(border.getColor());
-			}
+			color = borderColour(border.getColor());
 			color = composeCss(CSS_NAME_COLOR, color);
 		}
 		
@@ -178,11 +174,7 @@ public class RBorder extends AbstractRunProperty {
 		if (themed!=null) {
 			foElement.setAttribute(CSS_NAME_COLOR, themed);
 		} else if (border.getColor()!=null) {
-			if (border.getColor().equals("auto")) {
-				val = "#000000";
-			} else {
-				val = hexColour(border.getColor());
-			}
+			val = borderColour(border.getColor());
 			foElement.setAttribute(CSS_NAME_COLOR, val);
 		}
 		

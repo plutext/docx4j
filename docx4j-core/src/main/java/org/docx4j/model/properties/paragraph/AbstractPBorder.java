@@ -124,11 +124,7 @@ public abstract class AbstractPBorder extends AbstractParagraphProperty {
 		if (themed!=null) {
 			color = composeCss(CSS_NAME__COLOR, themed);
 		} else if (border.getColor()!=null) {
-			if (border.getColor().equals("auto")) {
-				color = composeCss(CSS_NAME__COLOR, "#000000"  );
-			} else {
-				color = composeCss(CSS_NAME__COLOR, hexColour(border.getColor()) );
-			}
+			color = composeCss(CSS_NAME__COLOR, borderColour(border.getColor()));
 		}
 		
 		String padding = paddingPt(border)==null ? "" : composeCss(PADDING_NAME, paddingPt(border));
@@ -184,11 +180,7 @@ public abstract class AbstractPBorder extends AbstractParagraphProperty {
 		if (themed!=null) {
 			foElement.setAttribute(CSS_NAME__COLOR, themed);
 		} else if (border.getColor()!=null) {
-			if (border.getColor().equals("auto")) {
-				foElement.setAttribute(CSS_NAME__COLOR, "#000000"  );
-			} else {
-				foElement.setAttribute(CSS_NAME__COLOR, hexColour(border.getColor()) );
-			}
+			foElement.setAttribute(CSS_NAME__COLOR, borderColour(border.getColor()));
 		}
 		
 		if (paddingPt(border)!=null) {

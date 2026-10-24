@@ -79,7 +79,21 @@ public class RunPropertiesWord365Test {
 		"props-b-case", "props-b-styles", "props-toggles-1", "props-toggles-2",
 		"props-u-valid", "props-u-case", "props-u-other", "props-enum-missing", "props-enum-other",
 		"colour-names-highlight", "colour-names-css", "colour-case", "colour-hex",
-		"colour-table-grey", "colour-table-other" };
+		"colour-table-grey", "colour-table-other",
+		"props-u-styles", "colour-styles", "props-enum-styles", "colour-elsewhere",
+		"props-u-onoff-styles", "colour-auto-styles", "highlight-char-styles", "colour-elsewhere-styles" };
+
+	/**
+	 * Where Word's own save changes what Word drew (CR-060 section 13, item 5), Word's reading from its PDF: a direct
+	 * highlight over a character style's, drawn but dropped by the save; an underline colour "auto" over a style's
+	 * red, drawn black but dropped.
+	 */
+	private static final Map<String, Map<String, String>> WORD_DREW = new LinkedHashMap<>();
+	static {
+		WORD_DREW.put("props-enum-styles M6_HIGHLIGHT_GREEN", java.util.Collections.singletonMap("highlight", "green"));
+		WORD_DREW.put("highlight-char-styles H7_CHAR_STYLE_DIRECT_GREEN", java.util.Collections.singletonMap("highlight", "green"));
+		WORD_DREW.put("colour-elsewhere-styles U4_UNDERLINE_AUTO", java.util.Collections.singletonMap("u-color", "auto"));
+	}
 
 	/** The on/off run properties the probes test (CR-060 section 1, rule 1) */
 	private static final Map<String, Function<RPr, BooleanDefaultTrue>> ON_OFF = new LinkedHashMap<>();
@@ -198,6 +212,22 @@ public class RunPropertiesWord365Test {
 		m.put("em", em == null || em.getVal() == null || em.getVal() == STEm.NONE ? "none" : em.getVal().value());
 		ResolvedColor c = eff == null ? null : resolver.resolveColor(eff.getColor());
 		m.put("color", c == null ? "auto" : c.toHex());
+		ResolvedColor uc = u == null ? null : resolver.resolveColor(u);
+		m.put("u-color", m.get("u").equals("none") ? "-" : uc == null ? "auto" : uc.toHex());
+		org.docx4j.wml.CTShd shd = eff == null ? null : eff.getShd();
+		String fill = shd == null ? null : Property.fillColour(shd.getFill());
+		m.put("fill", fill == null ? "none" : fill);
+		org.docx4j.wml.CTBorder bdr = eff == null ? null : eff.getBdr();
+		boolean bordered = bdr != null && bdr.getVal() != null && bdr.getVal() != org.docx4j.wml.STBorder.NONE
+				&& bdr.getVal() != org.docx4j.wml.STBorder.NIL;
+		m.put("border", bordered ? Property.borderColour(bdr.getColor()) : "none");
+		return m;
+	}
+
+	/** Word's reading of a marker: its save's, or its PDF's where the save changes what Word drew */
+	static Map<String, String> wordReading(Probe pr, Marker mk) throws Exception {
+		Map<String, String> m = reading(pr.saved, mk.savedP, mk.savedRun);
+		if (WORD_DREW.containsKey(mk.toString())) m.putAll(WORD_DREW.get(mk.toString()));
 		return m;
 	}
 
@@ -221,7 +251,7 @@ public class RunPropertiesWord365Test {
 		for (String f : FILES) {
 			Probe pr = probe(f);
 			for (Marker mk : pr.markers) {
-				compare("effective", mk, reading(pr.pkg, mk.p, mk.run), reading(pr.saved, mk.savedP, mk.savedRun), diffs);
+				compare("effective", mk, reading(pr.pkg, mk.p, mk.run), wordReading(pr, mk), diffs);
 			}
 		}
 		assertNone(diffs);
@@ -265,8 +295,8 @@ public class RunPropertiesWord365Test {
 	}
 
 	/**
-	 * The HTML styling of a run's direct properties (the HTML writers build a run's CSS from its w:rPr), for every
-	 * marker.
+	 * The HTML styling of every marker: its paragraph style's class, its character style's, then its own CSS, as the
+	 * HTML writers build them (a run's direct w:rPr goes in its style attribute).
 	 */
 	@Test
 	public void htmlStylingAsWordReadsIt() throws Exception {
@@ -274,7 +304,8 @@ public class RunPropertiesWord365Test {
 		for (String f : FILES) {
 			Probe pr = probe(f);
 			for (Marker mk : pr.markers) {
-				String probe = css(pr.pkg, mk.run.getRPr()), word = css(pr.saved, mk.savedRun.getRPr());
+				if (WORD_DREW.containsKey(mk.toString())) continue; // stated in wordsOwnSaveChangesWhatItDrew
+				String probe = htmlDrawn(pr.pkg, mk.p, mk.run), word = htmlDrawn(pr.saved, mk.savedP, mk.savedRun);
 				if (!probe.equals(word)) diffs.add(mk + " HTML: docx4j {" + probe + "}, Word {" + word + "}");
 			}
 		}
@@ -288,6 +319,7 @@ public class RunPropertiesWord365Test {
 		for (String f : FILES) {
 			Probe pr = probe(f);
 			for (Marker mk : pr.markers) {
+				if (WORD_DREW.containsKey(mk.toString())) continue; // stated in wordsOwnSaveChangesWhatItDrew
 				String probe = fo(pr.pkg, mk.p, mk.run), word = fo(pr.saved, mk.savedP, mk.savedRun);
 				if (!probe.equals(word)) diffs.add(mk + " PDF: docx4j {" + probe + "}, Word {" + word + "}");
 			}
@@ -311,25 +343,36 @@ public class RunPropertiesWord365Test {
 
 	/**
 	 * A highlight, vertAlign or em whose value is missing or invalid is one Word's repair drops (CR-060 section 1,
-	 * rule 2), so over a character style stating the property, the style's value is what Word shows.
+	 * rule 2), so over a style stating the property, the style's value is what Word shows (section 12): vertAlign
+	 * and em over a character style, highlight over a paragraph style. A character style's highlight Word never
+	 * draws (section 13).
 	 */
 	@Test
 	public void anInvalidValueOverAStyleLeavesTheStyles() throws Exception {
 		String w = "xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"";
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
-		pkg.getMainDocumentPart().getStyleDefinitionsPart().getJaxbElement().getStyle().add((org.docx4j.wml.Style) XmlUtils.unmarshalString(
+		List<org.docx4j.wml.Style> styles = pkg.getMainDocumentPart().getStyleDefinitionsPart().getJaxbElement().getStyle();
+		styles.add((org.docx4j.wml.Style) XmlUtils.unmarshalString(
 				"<w:style " + w + " w:type=\"character\" w:customStyle=\"1\" w:styleId=\"Marked\"><w:name w:val=\"Marked\"/>"
 				+ "<w:rPr><w:highlight w:val=\"yellow\"/><w:vertAlign w:val=\"superscript\"/><w:em w:val=\"dot\"/></w:rPr></w:style>"));
+		styles.add((org.docx4j.wml.Style) XmlUtils.unmarshalString(
+				"<w:style " + w + " w:type=\"paragraph\" w:customStyle=\"1\" w:styleId=\"ParaMarked\"><w:name w:val=\"ParaMarked\"/>"
+				+ "<w:rPr><w:highlight w:val=\"yellow\"/></w:rPr></w:style>"));
 		String[] direct = { "<w:highlight w:val=\"YELLOW\"/><w:vertAlign w:val=\"Superscript\"/><w:em w:val=\"DOT\"/>",
 				"<w:highlight w:val=\"bogus\"/><w:vertAlign w:val=\"bogus\"/><w:em w:val=\"bogus\"/>",
 				"<w:highlight/><w:vertAlign/><w:em/>" };
 		for (String d : direct) {
-			P p = (P) XmlUtils.unmarshalString("<w:p " + w + "><w:r><w:rPr><w:rStyle w:val=\"Marked\"/>" + d + "</w:rPr><w:t>x</w:t></w:r></w:p>");
+			P p = (P) XmlUtils.unmarshalString("<w:p " + w + "><w:pPr><w:pStyle w:val=\"ParaMarked\"/></w:pPr>"
+					+ "<w:r><w:rPr><w:rStyle w:val=\"Marked\"/>" + d + "</w:rPr><w:t>x</w:t></w:r></w:p>");
 			pkg.getMainDocumentPart().getContent().add(p);
 			Map<String, String> m = reading(pkg, p, runs(p).get(0));
-			assertEquals(d, "yellow", m.get("highlight"));
+			assertEquals(d, "yellow", m.get("highlight")); // the paragraph style's
 			assertEquals(d, "superscript", m.get("vertAlign"));
 			assertEquals(d, "dot", m.get("em"));
+			P alone = (P) XmlUtils.unmarshalString("<w:p " + w + "><w:r><w:rPr><w:rStyle w:val=\"Marked\"/>" + d
+					+ "</w:rPr><w:t>x</w:t></w:r></w:p>");
+			pkg.getMainDocumentPart().getContent().add(alone);
+			assertEquals(d, "none", reading(pkg, alone, runs(alone).get(0)).get("highlight")); // the character style's isn't drawn
 		}
 	}
 
@@ -368,6 +411,24 @@ public class RunPropertiesWord365Test {
 		return style.find() ? style.group(1) : "";
 	}
 
+	/**
+	 * The markers whose save changes what Word drew (WORD_DREW): a direct highlight over a character style's is
+	 * green in HTML and PDF, and an underline colour "auto" over a style's red underline is automatic.
+	 */
+	@Test
+	public void wordsOwnSaveChangesWhatItDrew() throws Exception {
+		for (String[] fm : new String[][] { { "props-enum-styles", "M6_HIGHLIGHT_GREEN" },
+				{ "highlight-char-styles", "H7_CHAR_STYLE_DIRECT_GREEN" } }) {
+			Probe pr = probe(fm[0]);
+			Marker mk = marker(pr, fm[1]);
+			assertTrue(mk + " HTML", css(pr.pkg, mk.run.getRPr()).contains("background-color:#008000"));
+			assertTrue(mk + " PDF", fo(pr.pkg, mk.p, mk.run).contains("background-color=#008000"));
+		}
+		Probe pr = probe("colour-elsewhere-styles");
+		Marker u4 = marker(pr, "U4_UNDERLINE_AUTO");
+		assertEquals("auto", reading(pr.pkg, u4.p, u4.run).get("u-color"));
+	}
+
 	static Marker marker(Probe pr, String text) {
 		for (Marker mk : pr.markers) {
 			if (mk.text.equals(text)) return mk;
@@ -384,6 +445,59 @@ public class RunPropertiesWord365Test {
 			}
 		}
 		return drawn(sb.toString(), ":", false);
+	}
+
+	/**
+	 * What a browser applies to a run in the HTML output: the classes of its paragraph style's chain (Normal where it
+	 * names none), then of its character style's chain (without a highlight, which HtmlCssHelper leaves out of a
+	 * character style's class), then its style attribute; a later value of a property wins.
+	 */
+	static String htmlDrawn(WordprocessingMLPackage pkg, P p, R r) {
+		Map<String, String> m = new LinkedHashMap<>();
+		String pStyle = p.getPPr() != null && p.getPPr().getPStyle() != null ? p.getPPr().getPStyle().getVal() : "Normal";
+		for (org.docx4j.wml.Style s : chain(pkg, pStyle)) cascade(m, cssOf(pkg, s.getRPr()));
+		String rStyle = r.getRPr() != null && r.getRPr().getRStyle() != null ? r.getRPr().getRStyle().getVal() : null;
+		for (org.docx4j.wml.Style s : chain(pkg, rStyle)) {
+			RPr rPr = s.getRPr() == null ? null : (RPr) XmlUtils.deepCopy(s.getRPr());
+			if (rPr != null) rPr.setHighlight(null);
+			cascade(m, cssOf(pkg, rPr));
+		}
+		cascade(m, cssOf(pkg, r.getRPr()));
+		StringBuilder sb = new StringBuilder();
+		for (Map.Entry<String, String> e : m.entrySet()) sb.append(e.getKey()).append(':').append(e.getValue()).append(';');
+		return drawn(sb.toString(), ":", false);
+	}
+
+	/** A style and its w:basedOn ancestors, root first */
+	private static List<org.docx4j.wml.Style> chain(WordprocessingMLPackage pkg, String styleId) {
+		List<org.docx4j.wml.Style> out = new ArrayList<>();
+		if (pkg.getMainDocumentPart().getStyleDefinitionsPart() == null) return out; // round 1's probes have none
+		java.util.Set<String> seen = new java.util.HashSet<>();
+		while (styleId != null && seen.add(styleId)) {
+			org.docx4j.wml.Style s = pkg.getMainDocumentPart().getStyleDefinitionsPart().getStyleById(styleId);
+			if (s == null) break;
+			out.add(0, s);
+			styleId = s.getBasedOn() == null ? null : s.getBasedOn().getVal();
+		}
+		return out;
+	}
+
+	private static String cssOf(WordprocessingMLPackage pkg, RPr rPr) {
+		StringBuilder sb = new StringBuilder();
+		if (rPr != null) {
+			for (Property prop : PropertyFactory.createProperties(pkg, rPr)) {
+				String c = prop.getCssProperty();
+				if (c != null) sb.append(c);
+			}
+		}
+		return sb.toString();
+	}
+
+	private static void cascade(Map<String, String> m, String css) {
+		for (String d : css.split(";")) {
+			int i = d.indexOf(':');
+			if (i > 0) m.put(d.substring(0, i).trim(), d.substring(i + 1).trim());
+		}
 	}
 
 	static String fo(WordprocessingMLPackage pkg, P p, R r) throws Exception {
@@ -466,7 +580,7 @@ public class RunPropertiesWord365Test {
 			pr.pkg.save(out);
 			Probe again = new Probe(f, WordprocessingMLPackage.load(new ByteArrayInputStream(out.toByteArray())), pr.saved);
 			for (Marker mk : again.markers) {
-				compare("after a round trip", mk, reading(again.pkg, mk.p, mk.run), reading(pr.saved, mk.savedP, mk.savedRun), diffs);
+				compare("after a round trip", mk, reading(again.pkg, mk.p, mk.run), wordReading(pr, mk), diffs);
 			}
 			String xml = documentXml(out.toByteArray());
 			Matcher m = Pattern.compile("<w:(" + String.join("|", ON_OFF.keySet()) + ")\\b[^>]*?w:val=\"([^\"]*)\"").matcher(xml);

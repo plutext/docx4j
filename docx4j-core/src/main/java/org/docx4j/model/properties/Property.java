@@ -98,6 +98,30 @@ public abstract class Property {
 		return "#" + v;
 	}
 
+	/**
+	 * A shading's w:fill as Word reads it (CR-060 section 13): a classic HTML colour name or any hex spelling Word
+	 * accepts, as "#RRGGBB"; null for automatic, which is "auto" and any value Word rejects ("F00", "bogus"): no
+	 * shading, and over a style's fill Word draws none (it saves w:fill="auto").
+	 *
+	 * @since 17.3.5
+	 */
+	public final static String fillColour(String value) {
+		String hex = WordColors.normalise(value);
+		return hex == null ? null : "#" + hex;
+	}
+
+	/**
+	 * A border's w:color as Word reads it (CR-060 section 13): a colour name or hex spelling Word accepts, as
+	 * "#RRGGBB"; automatic ("auto", and any value Word rejects, which over a style's colour Word draws as automatic
+	 * and saves as "auto") as black.
+	 *
+	 * @since 17.3.5
+	 */
+	public final static String borderColour(String value) {
+		String hex = WordColors.normalise(value);
+		return hex == null ? "#000000" : "#" + hex;
+	}
+
 	private ThemeColors themeColors;
 
 	/**
@@ -128,8 +152,9 @@ public abstract class Property {
 	 */
 	public String themeColour(String val, STThemeColor themeColor, String tint, String shade) {
 		if (themeColors == null || themeColor == null) return null;
-		ResolvedColor drawn = WordColors.resolve(val, themeColor, tint, shade, themeColors);
-		if (drawn == null || drawn.equals(ResolvedColor.ofHex(val == null ? null : val.trim()))) return null;
+		String written = WordColors.normalise(val); // a name or a hex spelling Word accepts (CR-060)
+		ResolvedColor drawn = WordColors.resolve(written, themeColor, tint, shade, themeColors);
+		if (drawn == null || drawn.equals(ResolvedColor.ofHex(written))) return null;
 		return hexColour(drawn.toHex());
 	}
 

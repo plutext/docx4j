@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.docx4j.XmlUtils;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.color.ThemeColors;
 import org.docx4j.model.properties.PropertyFactory;
@@ -217,6 +218,11 @@ public class HtmlCssHelper {
     		result.append( "span."+ CssIdentifiers.escape(s.getStyleId())  + " {display:inline;" );
         	if (s.getRPr()==null) {
         		log.warn("! null rPr for character style " + s.getStyleId());
+        	} else if (s.getRPr().getHighlight()!=null) {
+        		// Word draws no highlight from a character style (CR-060 section 13)
+        		RPr rPr = (RPr)XmlUtils.deepCopy(s.getRPr());
+        		rPr.setHighlight(null);
+            	HtmlCssHelper.createCss(opcPackage, rPr, result);
         	} else {
             	HtmlCssHelper.createCss(opcPackage, s.getRPr(), result);
         	}

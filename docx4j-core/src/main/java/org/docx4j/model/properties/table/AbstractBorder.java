@@ -113,11 +113,7 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 		if (themed!=null) {
 			color = composeCss(CSS_NAME__COLOR, themed);
 		} else if (border.getColor()!=null) {
-			if (border.getColor().equals("auto")) {
-				color = composeCss(CSS_NAME__COLOR, "#000000"  );
-			} else {
-				color = composeCss(CSS_NAME__COLOR, hexColour(border.getColor()) );
-			}
+			color = composeCss(CSS_NAME__COLOR, borderColour(border.getColor()));
 		}
 		
 		return val + sz + color; 
@@ -171,11 +167,7 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 		if (themed!=null) {
 			foElement.setAttribute(CSS_NAME__COLOR, themed);
 		} else if (border.getColor()!=null) {
-			if (border.getColor().equals("auto")) {
-				foElement.setAttribute(CSS_NAME__COLOR, "#000000"  );
-			} else {
-				foElement.setAttribute(CSS_NAME__COLOR, hexColour(border.getColor()) );
-			}
+			foElement.setAttribute(CSS_NAME__COLOR, borderColour(border.getColor()));
 		}
 		
 	}
