@@ -78,6 +78,7 @@ public class DecorationAndEmphasisTest {
 		for (String[] row : table) {
 			String c = css("<w:u w:val=\"" + row[0] + "\"/>");
 			assertTrue(row[0] + ": " + c, c.contains("text-decoration-line:underline;"));
+			assertTrue(row[0] + ": " + c, c.contains("text-decoration-skip-ink:none;")); // through descenders, as Word
 			if (row[1].equals("solid")) assertFalse(row[0] + ": " + c, c.contains("text-decoration-style"));
 			else assertTrue(row[0] + ": " + c, c.contains("text-decoration-style:" + row[1] + ";"));
 			if (row[2].equals("auto")) assertFalse(row[0] + ": " + c, c.contains("text-decoration-thickness"));

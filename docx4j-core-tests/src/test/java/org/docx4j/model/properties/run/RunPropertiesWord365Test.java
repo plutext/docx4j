@@ -81,7 +81,8 @@ public class RunPropertiesWord365Test {
 		"colour-names-highlight", "colour-names-css", "colour-case", "colour-hex",
 		"colour-table-grey", "colour-table-other",
 		"props-u-styles", "colour-styles", "props-enum-styles", "colour-elsewhere",
-		"props-u-onoff-styles", "colour-auto-styles", "highlight-char-styles", "colour-elsewhere-styles" };
+		"props-u-onoff-styles", "colour-auto-styles", "highlight-char-styles", "colour-elsewhere-styles",
+		"underline-styles", "strike-styles" }; // round 8's emphasis-marks too, but Word's save splits its Japanese markers' runs
 
 	/**
 	 * Where Word's own save changes what Word drew (CR-060 section 13, item 5), Word's reading from its PDF: a direct

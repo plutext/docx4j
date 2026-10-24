@@ -2,8 +2,8 @@
 
 Each `<name>.docx` is a probe; `<name>-word365.docx` is Word 365's save of it. Rounds 1 to 4 were built by the
 docx4j-portfolio session on 24 October 2026 (its scratch scripts `onoff/build.py`, `build2.py`, `build3.py`,
-`build4.py`), rounds 5 to 7 by docx4j-25 the same day (`build5.py`, `build6.py`, `build7.py`, kept on the share); all were opened
-and saved in Word 365 by Jason Harrop the same day (rounds 5 to 7 with the share's `PDFand` macro). Word's PDFs and screenshots, and the build notes, stay on the
+`build4.py`), rounds 5 to 8 by docx4j-25 the same day (`build5.py` to `build8.py`, kept on the share); all were opened
+and saved in Word 365 by Jason Harrop the same day (rounds 5 to 8 with the share's `PDFand` macro). Word's PDFs and screenshots, and the build notes, stay on the
 share (`Office 2016/onoff-fun/`, its `README.txt`); the rules they established are CR-060 section 1
 (`docs/developer/change-requests/CR-060-run-properties-read-as-word-reads-them.md`).
 
@@ -30,3 +30,4 @@ where Word's own save changes what Word drew (read from its PDF): `props-enum-st
 | 5 | `props-u-styles`, `colour-styles`, `props-enum-styles`, `colour-elsewhere` | invalid, bare and colour-only `w:u`, invalid `w:color`, invalid `highlight`/`vertAlign`/`em` over styles stating them (Word repairs `props-enum-styles`); colour names in an underline colour, a fill and a border |
 | 6 | `props-u-onoff-styles`, `colour-auto-styles`, `highlight-char-styles`, `colour-elsewhere-styles` | the on/off words as a `w:u` value over styles; `auto` in other spellings over a style's colour; a character style's highlight; invalid and named fill, border and underline colours over styles |
 | 7 | `colour-pattern`, `colour-background-red`, `-navy`, `-f00`, `-hex` | a shading pattern's colour, direct and over a style; the page colour (`w:background`), one per file (CR-061 phase 3) |
+| 8 | `underline-styles`, `strike-styles`, `emphasis-marks` | every underline style, black, red and theme-coloured; strike and double strike beside underlines; the emphasis marks on Latin and Japanese text (CR-062) |

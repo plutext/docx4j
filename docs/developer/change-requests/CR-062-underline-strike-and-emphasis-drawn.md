@@ -1,8 +1,8 @@
 # CR-062: underline styles and colours, strike with underline, double strike and emphasis marks drawn
 
-Status: ACCEPTED 2026-10-24 (Jason: "go ahead with the recommendations"): D1 to D5 as recommended (§6). Phases 1 and 2
-done 2026-10-24 (§8); phase 0's Word run (round 8) awaits Jason. PROPOSED 2026-10-24, drafted by Claude Opus 5.5
-(session docx4j-25) at Jason's word ("push then write the small CR"): the small CR CR-060's D6 named. Phases in §5.
+Status: COMPLETE 2026-10-24 (phases 0 to 2, §8 and §9). ACCEPTED 2026-10-24 (Jason: "go ahead with the
+recommendations"): D1 to D5 as recommended (§6). PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25)
+at Jason's word ("push then write the small CR"): the small CR CR-060's D6 named. Phases in §5.
 
 ## 0. Summary
 
@@ -135,3 +135,25 @@ lines. Nothing else; the ports don't render (core-ts's and python's HTML writers
 - Open for round 8: Chrome breaks an underline at descenders (`text-decoration-skip-ink`, on by default); if Word
   draws through them, `text-decoration-skip-ink: none` matches it.
 - Suites: core-tests 2080 run, 0 failures, 30 skipped; docx4j-export-fo-tests 858, 0, 9; docx4j-diffx-tests green.
+
+## 9. Round 8, Word's drawing (2026-10-24, Jason's run; read by Claude Opus 5.5, session docx4j-25)
+
+Word 365, no repair, PDFs and saves on the share; the probes and saves are fixtures since (`runprops/word365/`; the
+oracle test takes `underline-styles` and `strike-styles`; `emphasis-marks` isn't in it, since Word's save splits its
+Japanese markers into two runs).
+
+- Every underline style is drawn as §3.1 maps it: single, double, thick, dotted and dotted heavy, the dashes (long,
+  dot-dash and dot-dot-dash distinct in Word, dashed in CSS), wave, wavy heavy, wavy double; `words` under the
+  words only, not the spaces, which CSS can't (D1). Colours as stated: red, and the theme colour accent2.
+- **Word draws an underline through descenders** (the `g` of "single" crosses an unbroken line, black or red); CSS
+  breaks it there by default (`text-decoration-skip-ink: auto`), so `TextDecoration` writes
+  `text-decoration-skip-ink: none` with every underline. The one change round 8 made.
+- Strike and underline together: both lines (S3, S5, S7). A double strike is two lines (S2), beside a single or a
+  double underline too (S4, S6); CSS draws one line through beside an underline (D2). S7: Word draws the strike in
+  the text's colour and the underline red; CSS colours both red (D2).
+- Emphasis marks: `dot` a dot above each character (not the spaces), `comma` a small slanted mark above (CSS's
+  sesame is the nearest), `circle` an open circle above, `underDot` a dot below, under an underline too (W2); the same
+  on Japanese text. As §3.2 maps them.
+- docx4j's HTML of round 8, in headless Chrome, draws the same within those limits.
+- Suites after the skip-ink change: core-tests 2080 run, 0 failures, 30 skipped; docx4j-export-fo-tests 858, 0, 9;
+  docx4j-diffx-tests green.

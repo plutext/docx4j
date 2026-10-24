@@ -40,8 +40,9 @@ import org.w3c.dom.Element;
  * <p>CSS: {@code text-decoration-line} (underline, line-through, or none where a strike is stated off and nothing
  * is drawn); {@code -style} from the underline's style, the nearest CSS has (D1), or double for a double strike with
  * no underline; {@code -thickness} for the heavy styles; {@code -color} from the underline's colour, its theme
- * colour where it has one. CSS draws every line of an element in one style and colour, so with an underline and a
- * strike together, the underline's are used (D2). FO: {@code text-decoration} takes underline and line-through
+ * colour where it has one; {@code -skip-ink: none}, since Word draws an underline through descenders (round 8). CSS
+ * draws every line of an element in one style and colour, so with an underline and a strike together, the
+ * underline's are used (D2; Word draws the strike in the text's colour). FO: {@code text-decoration} takes underline and line-through
  * together; XSL-FO has no decoration style or colour, so PDF draws a single line in the text's colour (D3).</p>
  *
  * @since 17.3.5
@@ -139,6 +140,7 @@ public class TextDecoration extends AbstractRunProperty {
 			if (style != null) css.append(composeCss("text-decoration-style", style));
 			if (heavy(u.getVal())) css.append(composeCss("text-decoration-thickness", "0.15em"));
 			if (underlineColour() != null) css.append(composeCss("text-decoration-color", underlineColour()));
+			css.append(composeCss("text-decoration-skip-ink", "none")); // Word underlines through descenders (round 8)
 		} else if (doubleStruck()) {
 			css.append(composeCss("text-decoration-style", "double"));
 		}
