@@ -27,6 +27,9 @@ Changes in Version 17.3.5
   strike, and emphasis marks (w:em), through CSS text-decoration-* and text-emphasis (CR-062); a run
   both underlined and struck through keeps both lines, in HTML and PDF (it lost its strike). PDF
   still draws one underline style, in the text's colour, and no emphasis marks (XSL-FO has none).
+* A locked field (w:fldLock) is left as it is: FieldUpdater doesn't update a locked DOCPROPERTY or
+  DOCVARIABLE, and MailMerger doesn't merge a locked MERGEFIELD; a simple field keeps its lock and
+  dirty flag when the mergers make it complex. Follows #697, which made the lock readable.
 * HTML and PDF draw a highlight in Word's colours: darkYellow 808000 (it was gold), green 00FF00,
   lightGray C0C0C0 and the other dark ones as Word has them (Highlight.getHexVal() gave CSS's).
 * PropertyFactory (CSS to docx, as docx4j-ImportXHTML uses it): a background colour with an alpha

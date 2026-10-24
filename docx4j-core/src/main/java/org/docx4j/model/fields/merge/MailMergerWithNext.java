@@ -124,6 +124,12 @@ public class MailMergerWithNext extends MailMerger {
         // Populate
         for (FieldRef fr : fieldRefs) {
 
+            if (fr.isLock() && "MERGEFIELD".equals(fr.getFldName())) {
+                // a locked MERGEFIELD is not merged, as in MailMerger (w:fldLock; since 17.3.5)
+                log.info("Locked field not merged: MERGEFIELD");
+                continue;
+            }
+
             if ("MERGEFIELD".equals(fr.getFldName())) {
 
                 String instr = extractInstr(fr.getInstructions());

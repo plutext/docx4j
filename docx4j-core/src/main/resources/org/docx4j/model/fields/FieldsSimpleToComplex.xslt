@@ -58,7 +58,7 @@
   	  <!--  Keep any rPr, so we can preserve bold, italic, underline etc -->
   	  <xsl:copy-of select="w:r/w:rPr" />
       
-      <w:fldChar w:fldCharType="begin"/>
+      <w:fldChar w:fldCharType="begin"><xsl:copy-of select="@w:fldLock | @w:dirty"/></w:fldChar><!-- the lock and dirty flag kept, since 17.3.5 -->
         <w:instrText xml:space="preserve"><xsl:value-of select="@w:instr"></xsl:value-of> </w:instrText>
         <w:fldChar w:fldCharType="separate"/>
 

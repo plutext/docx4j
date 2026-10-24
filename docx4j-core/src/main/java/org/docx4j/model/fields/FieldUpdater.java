@@ -112,6 +112,12 @@ public class FieldUpdater {
 		
 		for( CTSimpleField simpleField : fl.simpleFields ) {
 			
+			if (simpleField.isFldLock()) {
+				// a locked field's result is not recalculated (w:fldLock; since 17.3.5)
+				report.append("Locked, not updated: " + simpleField.getInstr() + "\n");
+				continue;
+			}
+			
 			//System.out.println(XmlUtils.marshaltoString(simpleField, true, true));
 //			System.out.println(simpleField.getInstr());
 			String fldSimpleName = FormattingSwitchHelper.getFldSimpleName(simpleField.getInstr());
@@ -231,6 +237,11 @@ public class FieldUpdater {
 		for (FieldRef fr : fieldRefs) {
 			if (fr.getInstructions().isEmpty()) {				
 				// field w/o instructions (empty) - see https://github.com/plutext/docx4j/issues/643
+				continue;
+			}
+			if (fr.isLock()) {
+				// a locked field keeps its result, which FieldsPreprocessor kept too (w:fldLock; since 17.3.5)
+				report.append("Locked, not updated: " + fr.getFldName() + "\n");
 				continue;
 			}
 			

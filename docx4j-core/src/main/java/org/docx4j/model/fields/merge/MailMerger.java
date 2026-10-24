@@ -206,6 +206,13 @@ public class MailMerger extends AbstractMerger {
 		// Populate
 		for (FieldRef fr : fieldRefs) {
 			
+			if (fr.isLock()) {
+				// a locked field is not merged: it keeps its field code and its result, whatever
+				// setMERGEFIELDInOutput says (w:fldLock; since 17.3.5)
+				log.info("Locked field not merged: " + fr.getFldName());
+				continue;
+			}
+			
 			if ( "MERGEFIELD".equals(fr.getFldName()) ) {
 				
 				String instr = extractInstr(fr.getInstructions() );
