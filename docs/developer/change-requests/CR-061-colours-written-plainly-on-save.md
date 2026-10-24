@@ -140,8 +140,9 @@ part docx4j never unmarshals (it is copied as it came).
   `ParaRPr.color` (ModifyGeneratedSources). Each is a `Switched` adapter: on per its own setting, else the default,
   which `org.docx4j.jaxb.Context` sets to read `docx4j.save.normalise`; `NormaliseOnSave.configure` gives a
   marshaller fixed instances, which `JaxbXmlPart.marshal` does for a package's `setNormaliseOnSave(Boolean)`.
-  CR-060's `WordRepairs` adapters became `Switched` too (D2). Each rewrite is logged at DEBUG (D5). `CTColor`, a
-  generated class no element uses, is left alone.
+  CR-060's `WordRepairs` adapters became `Switched` too (D2). Each rewrite is logged at DEBUG (D5). `CTColor` is left alone:
+  it is `w15:color`, a content control's colour in Word's interface, not text, and not measured. (Corrected
+  2026-10-24: this record first called it a class no element uses; objects-ts found the w15 use.)
 - Phase 2: `CTRPrChange.RPr` and `CTParaRPrOriginal` gained (ModifyGeneratedSources) a `beforeMarshal` that swaps in
   `NormaliseOnSave.filterOnSave`'s copy of their list (no `w:color` Word reads as absent; no `highlight`, `vertAlign`
   or `em` Word repairs away; the list itself where there's nothing to leave out, or normalising is off) and an
