@@ -1,11 +1,12 @@
 # CR-063: content-control placeholders written in Word's form
 
 Status: PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at docx4j-core-ts's request, from Jason
-("Jason asks that docx4j consider writing Word's form; it's your decision"): its checks 63 and 64 found that Word
-loses Office JS's writes into a bound control showing a placeholder in the form docx4j's binding writes. Recommended:
-yes (§6). Phase 0 done 2026-10-25: core-ts's checks 65 and 66 (§9, §10). D7 decided (a), the same answer as core-ts's
-D9 (Jason, relayed by core-ts); D1 to D6 await Jason. The implementation is OpenDoPE binding, which CLAUDE.md gives to
-Fable.
+("Jason asks that docx4j consider writing Word's form; it's your decision"): its checks 63 and 64 compared the bare
+placeholder docx4j's binding writes with Word's form. (Check 63's lost writes turned out to be Word's Design Mode, so
+the case for the change is the template's placeholder text and Word's reading, not lost writes: §11.) Recommended: yes
+(§6), revised after core-ts's review (§11). Phase 0 done 2026-10-25: core-ts's checks 65 and 66 (§9, §10). D7 decided
+(a), the same answer as core-ts's D9 (Jason, relayed by core-ts); D1 to D6 await Jason. The implementation is OpenDoPE
+binding, which CLAUDE.md gives to Fable.
 
 ## 0. Summary
 
@@ -16,18 +17,24 @@ A content control showing its placeholder comes in two forms:
 - **The bare form:** `w:showingPlcHdr` and a Placeholder Text run, with no `w:placeholder`. docx4j's binding writes
   this for an empty value, and drops any `w:placeholder` a template had.
 
-In the bare form, Word treats the placeholder's runs as the control's content (core-ts check 63). An Office JS write
-into a bound control never reaches its custom XML node, so when Word reopens its own save, it refills the control from
-the empty node and the write is lost, tracked revisions included. Writes also keep the Placeholder Text style, and the
-control's `insertParagraph` leaves `w:showingPlcHdr` on. In Word's form every write takes the placeholder away, reaches
-the node and survives the reopen (check 64).
+**Corrected 2026-10-25 (§11).** This CR was written on core-ts's check 63, which found that in the bare form Office
+JS's writes into a bound control never reached its node and were lost on reopening. Check 63 ran in Word's Design Mode
+(its saves carry `<w:formsDesign/>`). Run again with Design Mode off (core-ts checks 67 and 58), the bare form behaves
+as Word's form: writes are plain, clear the flag, reach the node and survive the reopen. What still argues for Word's
+form:
+- the template's own placeholder text survives binding (today docx4j replaces it, and drops the reference);
+- Office JS's `placeholderText` reads the entry, where it reads null in the bare form;
+- a control emptied in Word shows its entry; in the bare form it shows Word's filler (five spaces, flag on), and
+  leaving Design Mode, Word refused over a bare-form run-level placeholder with an empty `w:sdtContent`.
 
 Proposed: docx4j's binders keep `w:placeholder`; an empty value shows the placeholder the control names, from its
 glossary entry, as Word does; a control that names none gets Word's default entry, with the glossary part added where
-missing. Check 65 found what Word needs of the glossary, and that typing by hand reaches the node, so the loss is
-Office JS's (§9).
+missing. Checks 65 and 66 found what Word needs of the glossary (§9, §10).
 
 ## 1. What Word does (core-ts CR-002 §63.2, §63.5; Word 365 16.0.20326.20232, Jason's runs, 2026-10-24)
+
+**Check 63 ran in Design Mode** (corrected 2026-10-25, §11): what follows under it is Word's Design Mode, not Word.
+With Design Mode off (checks 67, 58) the bare form behaves as Word's form does under check 64 below.
 
 **Check 63, the bare form** (52 Office JS writes, untracked and tracked; Word's saves in core-ts `test/check63/`):
 - A text write into the control replaces the placeholder and clears `w:showingPlcHdr`, but the control's own
@@ -94,21 +101,28 @@ The glossary there is a full set of parts: document, styles, settings, webSettin
 
 1. **Keep `w:placeholder`,** in every binder, on bound and unbound controls alike (D1). The template's reference
    survives binding, so a control later emptied in Word shows the template's placeholder.
-2. **An empty value shows the placeholder the control names** (D2): the content of the glossary entry its
-   `w:placeholder` names, with the control's run properties as today, and `w:showingPlcHdr`. The lookup belongs in
+2. **An empty value shows the placeholder the control names** (D2): a copy of the content of the glossary entry its
+   `w:placeholder` names (its `w:docPartBody`, paragraphs and all), with the control's run properties as today, and
+   `w:showingPlcHdr`. The lookup belongs in
    the step that adds `w:showingPlcHdr` (`bind.xslt`'s `w:sdtPr` template; `postBindSdtPrHygiene`), which sees the
    `w:sdtPr` and the content both. `createPlaceholder` keeps its signature, for the pluggable inserters.
-3. **A control that names no placeholder, or names a missing entry** (D3), gets Word's default:
-   - `w:placeholder` naming `DefaultPlaceholder_-1854013440`;
-   - the entry in the glossary;
+3. **A text control (untyped, rich text, plain text) that names no placeholder, or names a missing entry** (D3), gets
+   Word's default:
+   - `w:placeholder` naming `DefaultPlaceholder_-1854013440` (a missing entry's name is replaced, not given invented
+     text);
+   - the entry in the glossary, unless it is there already (binding may run more than once);
    - the glossary part itself, where there is none.
+
+   Other kinds naming no entry (date, drop-down list, combo box, picture) keep today's placeholder: Word gives them
+   other wording ("Click or tap to enter a date.", "Choose an item.") from entries whose names nobody has measured.
 
    The entry is needed: Word's save drops a reference without one (check 65, §9). The glossary is the document part
    and a styles part holding Placeholder Text (D7, decided; §10).
 4. **The default's wording becomes Word 365's,** "Click or tap here to enter text." (D5), so the content matches the
    entry it names.
 5. **A configured placeholder run** (`docx4j.model.datastorage.placeholder`) is still honoured for a control that names
-   none, written as an entry of its own, named and stored as check 65 finds Word does (D4).
+   none, written as an entry of its own, named and stored as check 65 finds Word does (D4): one entry per distinct
+   configured run per document, reused across controls and across binding runs.
 
 ## 4. What it affects
 
@@ -135,11 +149,11 @@ The glossary there is a full set of parts: document, styles, settings, webSettin
 | # | Question | Options | Recommended |
 |---|---|---|---|
 | D1 | `w:placeholder` through binding | (a) kept on every control; (b) kept on unbound controls only; (c) dropped, as today | (a): it's Word's form, and the reason for dropping it no longer holds (§2) |
-| D2 | What an empty value shows | (a) the entry the control names, as Word shows it; (b) `placeholder.xml`'s run always, with the reference kept | (a): (b) shows one text and names another, which Word would replace with the entry's when the control is emptied |
-| D3 | A control naming no placeholder, or a missing entry | (a) Word's default entry added, with the glossary part and entry where missing; (b) the reference alone | (a): check 65 rules (b) out, since Word's save drops a reference no glossary entry holds (§9) |
-| D4 | A configured `docx4j.model.datastorage.placeholder` | (a) honoured for a control naming none, as an entry of its own, as Word makes one (§9: 32 upper-case hex digits, its own `w:guid`, the default's `w:docPartPr`); (b) deprecated | (a): deployments set it to show their own wording |
+| D2 | What an empty value shows | (a) the entry the control names, its content copied, as Word shows it; (b) `placeholder.xml`'s run always, with the reference kept | (a): (b) shows one text and names another, which Word would replace with the entry's when the control is emptied. core-ts agrees, and proposes following docx4j in copying the entry's content (it writes the entry's text as one run) |
+| D3 | A text control naming no placeholder, or a missing entry | (a) Word's default entry added, with the glossary part and entry where missing; (b) the reference alone | (a): check 65 rules (b) out, since Word's save drops a reference no glossary entry holds (§9). Revised after core-ts's review (§11): text controls only, as core-ts does, until a Word check records the entries Word makes for dates and lists; and a missing entry's name replaced by the default's, which core-ts proposes to follow |
+| D4 | A configured `docx4j.model.datastorage.placeholder` | (a) honoured for a control naming none, as an entry of its own, as Word makes one (§9: 32 upper-case hex digits, its own `w:guid`, the default's `w:docPartPr`); (b) deprecated | (a): deployments set it to show their own wording. One entry per distinct run per document, reused (§11) |
 | D5 | The default wording | (a) Word 365's "Click or tap here to enter text."; (b) "Click here to enter text.", as today | (a): the shown text matches Word's default entry |
-| D6 | A switch back to the old behaviour | (a) none; (b) a property | (a): the old form is the one that loses writes, and its reason no longer holds. A deployment that wants no placeholder text can configure an empty run (D4) |
+| D6 | A switch back to the old behaviour | (a) none; (b) a property | (a): Word's form keeps the template's placeholder text, and is what Word reads and writes; a deployment that wants no placeholder text can configure an empty run (D4). (Revised §11: the bare form doesn't lose writes outside Design Mode) |
 | D7 | The glossary docx4j adds (added after check 65) | (a) the glossary document part, a styles part related from it holding Default Paragraph Font and Placeholder Text as Word defines them (§10), and the relationship; (b) the document part alone; (c) Word's six parts | **Decided (a), 2026-10-25**: Jason took core-ts's D9 (a) after check 66 and asked, through core-ts, that docx4j's D7 get the same answer. Word completes the rest on save (§10) |
 
 ## 7. Risks
@@ -151,8 +165,8 @@ The glossary there is a full set of parts: document, styles, settings, webSettin
   whether one will do.
 - **A pluggable inserter** that returns its own placeholder run keeps working: the entry lookup replaces the content
   only where it carries the Placeholder Text style, as `w:showingPlcHdr` is decided today.
-- **The ports:** core-ts's D8 and this CR must agree on the entry for other text (D4), so core-ts is consulted before
-  phase 2.
+- **Binding run more than once** must not add the default entry, or a configured run's, twice (§11).
+- **The ports:** core-ts's D8 and this CR must agree on the entry for other text (D4); core-ts reviewed D1 to D6 (§11).
 
 ## 8. Sources
 
@@ -195,6 +209,8 @@ lacks. Word's saves are in core-ts `test/check65/` with a SHA-1 manifest.
    65b save `TYPED14` reached the control and the node. So the loss is Office JS's (check 63's `insertText` and the
    rest), not a person typing. That makes CR-063 less urgent than §0 suggested: it affects add-ins and scripts writing
    into docx4j's output, and the bare form's other oddities (the style kept, the flag left on, the tracked deletion).
+   (Corrected 2026-10-25, §11: check 63's loss and oddities were Word's Design Mode; outside it the bare form loses
+   nothing.)
 6. **Not yet a rule** (one session): typing into the reopened 65b save also gave that control, and four others Word
    hadn't touched, new entries of their own, each holding the text it showed, with a paragraph style for each entry in
    the glossary's styles. Check 66 reopens, types and saves again, to see whether Word keeps controls on the default
@@ -236,3 +252,37 @@ OOXML is no evidence of a control's reference.
 - the relationship between the two.
 
 Word adds settings, webSettings, fontTable and the other styles on save. Phase 0 is complete; phase 1 waits on D1 to D6.
+
+## 11. core-ts's review of D1 to D6 (2026-10-25; its CR-002 §63.13 to §63.17, `d84f3da`)
+
+At Jason's request, docx4j-core-ts reviewed D1 to D6 against its section 63 decisions (D1 to D9, implemented in
+`020c039`). It agrees with each, with one correction to the evidence and three differences.
+
+**The evidence.** Check 63's first run was in Developer > Design Mode: both its saves carry `<w:formsDesign/>`, and
+Jason confirmed it. Run again with Design Mode off, the bare form behaves as Word's form: Office JS's writes are plain
+and clear the flag, and every bound node holds its write and shows it on reopening (check 67, 72 writes; check 58
+agrees). So this CR's first account (§0, §1, D6's reason: "the old form is the one that loses writes") described Design
+Mode. §0 and D6 are corrected above; §1 keeps check 63's findings, marked. The case for Word's form is now the
+template's placeholder text, Office JS's `placeholderText`, and what Word shows for a control emptied in it (§0).
+
+**Each decision.**
+- D1 (a): agree. core-ts never removes `w:placeholder`, bound or unbound.
+- D2 (a): agree. core-ts writes the entry's text as one run (an entry's paragraphs joined); copying the entry's
+  `w:docPartBody`, as here, is closer to Word, and core-ts proposes following docx4j.
+- D3 (a): agree, with two refinements adopted here. (1) Scope: core-ts names the default entry only for text controls
+  (untyped, rich text, plain text) and controls already naming an entry. The default is Word's text entry; Word's date
+  and list controls show other wording from entries of their own, unmeasured, so naming the text entry on them would
+  show the wrong prompt. (2) A control naming an entry the glossary lacks: core-ts writes an entry under that name with
+  the default text; CR-063 points the control at the default instead, so nothing invents text under someone else's
+  name. core-ts recommends docx4j's way and proposes following it.
+- D4 (a): no problem; it matches core-ts's `placeholderText` setter. Caution adopted: one entry per distinct configured
+  run per document, reused across controls and binding runs, or the glossary grows by an entry per control per run.
+- D5 (a): agree. If docx4j changes `placeholder.xml`'s wording, core-ts's non-text kinds follow.
+- D6 (a): agree there should be no switch back; the reason is replaced.
+- D7 (a): as core-ts's D9 (a), decided.
+
+**Timing.** docx4j writing the entries during binding, where core-ts writes them on save, gives the same output;
+binding run twice, or over a glossary already holding the default, must not add it again.
+
+**Still to measure** (a short Word check, before dates and lists get Word's form): the entries Word makes for a date
+picker, a drop-down list and a combo box, their names and text.
