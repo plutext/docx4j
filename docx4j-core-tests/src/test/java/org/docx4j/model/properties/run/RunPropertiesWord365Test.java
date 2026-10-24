@@ -414,7 +414,7 @@ public class RunPropertiesWord365Test {
 
 	/**
 	 * The markers whose save changes what Word drew (WORD_DREW): a direct highlight over a character style's is
-	 * green in HTML and PDF, and an underline colour "auto" over a style's red underline is automatic.
+	 * green (Word's, 00FF00) in HTML and PDF, and an underline colour "auto" over a style's red underline is automatic.
 	 */
 	@Test
 	public void wordsOwnSaveChangesWhatItDrew() throws Exception {
@@ -422,8 +422,8 @@ public class RunPropertiesWord365Test {
 				{ "highlight-char-styles", "H7_CHAR_STYLE_DIRECT_GREEN" } }) {
 			Probe pr = probe(fm[0]);
 			Marker mk = marker(pr, fm[1]);
-			assertTrue(mk + " HTML", css(pr.pkg, mk.run.getRPr()).contains("background-color:#008000"));
-			assertTrue(mk + " PDF", fo(pr.pkg, mk.p, mk.run).contains("background-color=#008000"));
+			assertTrue(mk + " HTML", css(pr.pkg, mk.run.getRPr()).contains("background-color:#00FF00"));
+			assertTrue(mk + " PDF", fo(pr.pkg, mk.p, mk.run).contains("background-color=#00FF00"));
 		}
 		Probe pr = probe("colour-elsewhere-styles");
 		Marker u4 = marker(pr, "U4_UNDERLINE_AUTO");

@@ -450,3 +450,11 @@ At Jason's "go ahead with phase 4", the fixes §12 and §13 found:
   draw aqua; they go through `normalise` now, as `of(Color)` and `of(U)` did (`WordColorsNamesTest`). And
   `roundTripKeepsWordsReading`'s last check (D4: `"red"` kept) passed only by matching the probe's label text, which
   holds the words `w:color w:val="red"`; since CR-061 the save writes `FF0000`, and the check looks at N6's run for it.
+- Follow-up, from docx4j-core-ts check 61 (Jason's Word 365 run, 2026-10-24): a highlight is drawn in Word's palette
+  (WdColorIndex, as Office JS reports it): green 00FF00, darkBlue 000080, darkCyan 008080, darkGreen 008000,
+  darkMagenta 800080, darkRed 800000, darkYellow 808000, darkGray 808080, lightGray C0C0C0. `Highlight.getHexVal()`
+  (patched in by `ModifyGeneratedSources`), which HTML and PDF draw from, gave CSS's colours of those names and gold
+  for darkYellow; `InspectWalk` already had Word's. `setVal("#RRGGBB")` takes Word's values and the former ones
+  (so `#D3D3D3` is still lightGray; `#008000` is darkGreen now, not green), and `setVal("none")` keeps none (it gave
+  null). Office JS maps any other written colour to the nearest highlight by a rule core-ts's ten points don't
+  settle; docx4j still takes exact values only. `HighlightPaletteTest`.

@@ -27,6 +27,8 @@ Changes in Version 17.3.5
   strike, and emphasis marks (w:em), through CSS text-decoration-* and text-emphasis (CR-062); a run
   both underlined and struck through keeps both lines, in HTML and PDF (it lost its strike). PDF
   still draws one underline style, in the text's colour, and no emphasis marks (XSL-FO has none).
+* HTML and PDF draw a highlight in Word's colours: darkYellow 808000 (it was gold), green 00FF00,
+  lightGray C0C0C0 and the other dark ones as Word has them (Highlight.getHexVal() gave CSS's).
 * PropertyFactory (CSS to docx, as docx4j-ImportXHTML uses it): a background colour with an alpha
   (rgba(), hsla(), "/ a", 8-digit hex) of 0 is no fill, as "transparent" is; rgba(0,0,0,0), which
   browsers write for transparent, gave a black fill once a CSS parser read rgba() (openhtmltopdf
