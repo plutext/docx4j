@@ -569,8 +569,8 @@ public class RunPropertiesWord365Test {
 
 	/**
 	 * A docx4j round trip keeps Word's reading of every marker (a save never changes meaning, CR-060 section 3.4), and
-	 * writes on/off as true or false (D2), keeps a colour's spelling (D4), and drops the highlight, vertAlign and em
-	 * elements whose value is missing or invalid, as Word's repair does (D3).
+	 * writes on/off as true or false (D2), a colour name as Word writes it (CR-061, which replaced D4's "as read"), and
+	 * drops the highlight, vertAlign and em elements whose value is missing or invalid, as Word's repair does (D3).
 	 */
 	@Test
 	public void roundTripKeepsWordsReading() throws Exception {
@@ -600,7 +600,10 @@ public class RunPropertiesWord365Test {
 		Probe other = probe("props-enum-other");
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		other.pkg.save(out);
-		if (!documentXml(out.toByteArray()).contains("w:color w:val=\"red\"")) diffs.add("props-enum-other: color \"red\" not kept (D4)");
+		// CR-061: the colour name is written as Word writes it (CR-060's D4 kept it as read; the probe's label text holds
+		// the words w:color w:val="red", so the run itself is looked at)
+		String n6 = ColourNormalFormTest.run(documentXml(out.toByteArray()), "N6_COLOR_NAME");
+		if (!n6.contains("w:color w:val=\"FF0000\"")) diffs.add("props-enum-other: N6's \"red\" not written FF0000 (CR-061): " + n6);
 		assertNone(diffs);
 	}
 

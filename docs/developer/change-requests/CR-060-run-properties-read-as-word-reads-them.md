@@ -445,3 +445,8 @@ At Jason's "go ahead with phase 4", the fixes §12 and §13 found:
 - Suites: core-tests 2065 run, 0 failures, 30 skipped; docx4j-export-fo-tests 858, 0, 9; docx4j-diffx-tests green.
   MOXy (scratch probe): the six on/off words read `none` and save as `none`, other values absent; and MOXy no
   longer throws on an invalid `w:u` value in a raw unmarshal, now that the adapter reads it.
+- Follow-up, found by docx4j-core-ts (2026-10-24): `WordColors.fill`, `pattern` and `of(CTBorder)` resolved six hex
+  digits only, so the resolver read `w:fill="aqua"` as automatic where the writers (`Property.fillColour`) and Word
+  draw aqua; they go through `normalise` now, as `of(Color)` and `of(U)` did (`WordColorsNamesTest`). And
+  `roundTripKeepsWordsReading`'s last check (D4: `"red"` kept) passed only by matching the probe's label text, which
+  holds the words `w:color w:val="red"`; since CR-061 the save writes `FF0000`, and the check looks at N6's run for it.

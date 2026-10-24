@@ -108,22 +108,24 @@ public final class WordColors {
 		return c == null ? null : resolve(normalise(c.getVal()), c.getThemeColor(), c.getThemeTint(), c.getThemeShade(), theme);
 	}
 
-	/** A shading's fill ({@code w:fill}, {@code w:themeFill}); null for automatic */
+	/** A shading's fill ({@code w:fill}, {@code w:themeFill}); null for automatic, which is also what Word draws for a
+	 *  value it rejects.  A name or any hex spelling Word accepts is read through {@link #normalise}, as for the run's
+	 *  and the underline's colour (since 17.3.5: CR-060 rounds 5 to 7; it read only six hex digits) */
 	public static ResolvedColor fill(CTShd shd, ThemeColors theme) {
 		return shd == null ? null
-				: resolve(shd.getFill(), shd.getThemeFill(), shd.getThemeFillTint(), shd.getThemeFillShade(), theme);
+				: resolve(normalise(shd.getFill()), shd.getThemeFill(), shd.getThemeFillTint(), shd.getThemeFillShade(), theme);
 	}
 
 	/** A shading's pattern colour ({@code w:color}, {@code w:themeColor}); null for automatic */
 	public static ResolvedColor pattern(CTShd shd, ThemeColors theme) {
 		return shd == null ? null
-				: resolve(shd.getColor(), shd.getThemeColor(), shd.getThemeTint(), shd.getThemeShade(), theme);
+				: resolve(normalise(shd.getColor()), shd.getThemeColor(), shd.getThemeTint(), shd.getThemeShade(), theme);
 	}
 
 	/** A border's colour; null for automatic */
 	public static ResolvedColor of(CTBorder border, ThemeColors theme) {
 		return border == null ? null
-				: resolve(border.getColor(), border.getThemeColor(), border.getThemeTint(), border.getThemeShade(), theme);
+				: resolve(normalise(border.getColor()), border.getThemeColor(), border.getThemeTint(), border.getThemeShade(), theme);
 	}
 
 	/** An underline's colour; null for automatic (the text's colour) */
