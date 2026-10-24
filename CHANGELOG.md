@@ -27,6 +27,9 @@ Changes in Version 17.3.5
   strike, and emphasis marks (w:em), through CSS text-decoration-* and text-emphasis (CR-062); a run
   both underlined and struck through keeps both lines, in HTML and PDF (it lost its strike). PDF
   still draws one underline style, in the text's colour, and no emphasis marks (XSL-FO has none).
+* FieldUpdater updates the document information fields AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY,
+  SUBJECT and TITLE, as it does DOCPROPERTY (#277); DOCPROPERTY Keywords is read; a simple
+  DOCPROPERTY's quoted property name is found.
 * A field's name is read from its whole instruction, which Word may split across runs: a MERGEFIELD
   written "MERGE", "FIELD name" wasn't merged. FieldRef.getInstr() gives the instruction (#634).
 * A simple field made complex (MailMerger and the migration helpers do this first) keeps its result

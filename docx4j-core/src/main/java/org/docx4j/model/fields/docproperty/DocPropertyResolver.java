@@ -49,7 +49,8 @@ public class DocPropertyResolver {
 	
 	// matched whole, so a custom property whose name is part of one of these (Page, Time) is still found
 	private final static Set<String> BUILT_IN_FIELDS_CORE = new HashSet<String>(Arrays.asList(
-			"Author", "Comments", "CreateTime", "LastPrinted", "LastSavedBy", "LastSavedTime", "RevisionNumber", "Subject", "Title"));
+			"Author", "Comments", "CreateTime", "Keywords", "LastPrinted", "LastSavedBy", "LastSavedTime", "RevisionNumber", "Subject",
+			"Title")); // Keywords since 17.3.5 (#277)
 
 	private final static Set<String> BUILT_IN_FIELDS_EXTENDED = new HashSet<String>(Arrays.asList(
 			"Characters", "CharactersWithSpaces", "Company", "HyperlinkBase", "Lines", "NameofApplication", "Pages", "Paragraphs",
@@ -127,6 +128,7 @@ public class DocPropertyResolver {
 		if ("Author".equals(key)) return getFirstValue(coreProperties.getCreator());
 		else if ("Comments".equals(key)) return getFirstValue(coreProperties.getDescription());
 		else if ("CreateTime".equals(key)) return getFirstValue(coreProperties.getCreated());
+		else if ("Keywords".equals(key)) return coreProperties.getKeywords();
 		else if ("LastPrinted".equals(key)) return coreProperties.getLastPrinted(); // XMLGregorianCalendar
 		else if ("LastSavedBy".equals(key)) return coreProperties.getLastModifiedBy();
 		else if ("LastSavedTime".equals(key)) return getFirstValue(coreProperties.getModified());

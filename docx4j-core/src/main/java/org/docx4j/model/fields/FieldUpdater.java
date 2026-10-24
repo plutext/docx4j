@@ -24,11 +24,14 @@ import org.slf4j.LoggerFactory;
 
 import javax.xml.transform.TransformerException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Refreshes the values of certain fields in the
- * docx (currently DOCPROPERTY and DOCVARIABLE only).
+ * docx (currently DOCPROPERTY and DOCVARIABLE, and since 17.3.5 the document information fields AUTHOR,
+ * COMMENTS, KEYWORDS, LASTSAVEDBY, SUBJECT and TITLE, #277).
  * (For MERGEFIELD, see FieldsMailMerge) 
  * 
  * Do this whether they are simple or complex.
@@ -51,6 +54,29 @@ public class FieldUpdater {
 	
 	private static final String DOCPROPERTY = "DOCPROPERTY";
 	private static final String DOCVARIABLE = "DOCVARIABLE";
+
+	/**
+	 * The document information fields Word inserts for a document property (Insert, Field, Document Information),
+	 * and the property each shows, as DOCPROPERTY names it (#277, since 17.3.5).
+	 */
+	private static final Map<String, String> DOC_INFO = new HashMap<String, String>();
+	static {
+		DOC_INFO.put("AUTHOR", "Author");
+		DOC_INFO.put("COMMENTS", "Comments");
+		DOC_INFO.put("KEYWORDS", "Keywords");
+		DOC_INFO.put("LASTSAVEDBY", "LastSavedBy");
+		DOC_INFO.put("SUBJECT", "Subject");
+		DOC_INFO.put("TITLE", "Title");
+	}
+
+	/**
+	 * Whether a document information field has an argument (AUTHOR "Jo"), with which Word sets the property; such a
+	 * field is left as it is.
+	 */
+	private static boolean hasArgument(FldSimpleModel fsm) {
+		List<String> parameters = fsm.getFldParameters();
+		return parameters != null && !parameters.isEmpty() && !parameters.get(0).startsWith("\\");
+	}
 	
 	public FieldUpdater(WordprocessingMLPackage wordMLPackage) {
 		this.wordMLPackage = wordMLPackage;
@@ -122,7 +148,8 @@ public class FieldUpdater {
 //			System.out.println(simpleField.getInstr());
 			String fldSimpleName = FormattingSwitchHelper.getFldSimpleName(simpleField.getInstr());
 			if (DOCPROPERTY.equals(fldSimpleName)
-					|| DOCVARIABLE.equals(fldSimpleName) ) {
+					|| DOCVARIABLE.equals(fldSimpleName)
+					|| DOC_INFO.containsKey(fldSimpleName) ) {
 				//only parse those fields that get processed
 				try {
 					fsm.build(simpleField.getInstr());
@@ -130,14 +157,26 @@ public class FieldUpdater {
 					e.printStackTrace();
 				}
 				
-				String key = fsm.getFldParameters().get(0);
+				String key;
+				if (DOC_INFO.containsKey(fldSimpleName)) {
+					if (hasArgument(fsm)) {
+						report.append("Not updated (Word sets the property from its argument): " + simpleField.getInstr() + "\n");
+						continue;
+					}
+					key = DOC_INFO.get(fldSimpleName);
+				} else if (fsm.getFldParameters().isEmpty()) {
+					report.append("No property named: " + simpleField.getInstr() + "\n");
+					continue;
+				} else {
+					key = fsm.getFldParameters().get(0).replaceAll("\"", ""); // as for a complex field (since 17.3.5)
+				}
 				
 				String val = null;
 				try {
-					if (DOCPROPERTY.equals(fldSimpleName) ) {
-						val = docPropertyResolver.getValue(key);
-					} else if (DOCVARIABLE.equals(fldSimpleName) ) {
+					if (DOCVARIABLE.equals(fldSimpleName) ) {
 						val = docVariableResolver.getValue(key);
+					} else {
+						val = docPropertyResolver.getValue(key);
 					}
 				} catch (FieldValueException e) {
 					report.append( simpleField.getInstr() + "\n");
@@ -248,7 +287,8 @@ public class FieldUpdater {
 //			if ("DOCPROPERTY".equals(fr.getFldName())) {
 			String fldName = fr.getFldName();
 			if (DOCPROPERTY.equals(fldName)
-					|| DOCVARIABLE.equals(fldName) ) {
+					|| DOCVARIABLE.equals(fldName)
+					|| DOC_INFO.containsKey(fldName) ) {
 				
 				String instr = fr.getInstr();
 				try {
@@ -260,8 +300,15 @@ public class FieldUpdater {
 				String val = null;
 				String key = null;
 				try {
+					if (DOC_INFO.containsKey(fldName)) {
+						if (hasArgument(fsm)) {
+							report.append("Not updated (Word sets the property from its argument): " + instr + "\n");
+							continue;
+						}
+						key = DOC_INFO.get(fldName);
+						val = docPropertyResolver.getValue(key);
 					// Safe checking when fldParameters is 0 (and null just for good measure)
-					if (fsm.getFldParameters() != null && fsm.getFldParameters().size() > 0) {
+					} else if (fsm.getFldParameters() != null && fsm.getFldParameters().size() > 0) {
 						key = fsm.getFldParameters().get(0);
 						
 						// Remove any " char that may appear in the key name
