@@ -1,7 +1,8 @@
 # CR-061: colours written plainly on save (Word's reading, in the schema's form)
 
-Status: PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at Jason's word ("write the new CR with
-the recommended scope. No need to switch on/off to bare or 0"). Decisions in §6 await Jason; phases in §5.
+Status: ACCEPTED 2026-10-24 (Jason: "CR-061 6 questions decided as recommended. Please start."): D1 to D6 as
+recommended (§6). PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at Jason's word ("write the new
+CR with the recommended scope. No need to switch on/off to bare or 0"). Phases in §5.
 
 ## 0. Summary
 
@@ -103,7 +104,7 @@ part docx4j never unmarshals (it is copied as it came).
 | 2 | §3.2's revision lists (D4) | 2 h |
 | 3 | The Word check (Jason): docx4j's saves of the probes open in Word 365 without a repair prompt and draw as Word's PDFs of the probes; `w:shd/@w:color` and `w:background/@w:color` checked by a small probe (D3). CHANGELOG; hand-offs (core-ts, python, objects-ts, the portfolio) | 2 h + Jason's run |
 
-## 6. Decisions (for Jason; each with a recommendation)
+## 6. Decisions (accepted as recommended, Jason, 2026-10-24)
 
 | # | Decision | Recommendation |
 |---|---|---|
