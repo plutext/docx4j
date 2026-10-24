@@ -1,8 +1,9 @@
 # CR-061: colours written plainly on save (Word's reading, in the schema's form)
 
 Status: ACCEPTED 2026-10-24 (Jason: "CR-061 6 questions decided as recommended. Please start."): D1 to D6 as
-recommended (§6). PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at Jason's word ("write the new
-CR with the recommended scope. No need to switch on/off to bare or 0"). Phases in §5.
+recommended (§6). Phases 0 to 2 done 2026-10-24 (§8); phase 3, the Word check, awaits Jason's run. PROPOSED
+2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at Jason's word ("write the new CR with the recommended
+scope. No need to switch on/off to bare or 0"). Phases in §5.
 
 ## 0. Summary
 
@@ -122,3 +123,31 @@ part docx4j never unmarshals (it is copied as it came).
 - docx4j-python `docs/change-requests/CR-018-run-properties-as-word-reads-them.md` §4.7 (its normal form and
   opt-out; Jason's direction, 2026-10-24); docx4j-core-ts CR-015 (its D2 waits on this).
 - ECMA-376 Part 1, `ST_HexColor`; Part 1 Strict, `ST_OnOff` (`xsd:boolean`).
+
+## 8. Phases 0 to 2 record (2026-10-24, Claude Opus 5.5, session docx4j-25)
+
+- Phase 0: `org.docx4j.model.properties.run.ColourNormalFormTest`, red against 1d1b824a9 (4 of 5: every colour a
+  save writes out of form over the thirteen colour probes, 122 values; each rule against Word's own saves; a rejected
+  value beside a theme colour; a revision's former properties); the fifth, the object in memory unchanged, holds
+  either way. `ColourNormalFormOptOutTest` (the opt-out) came with phase 1's API. Found while making them green: a
+  part docx4j never unmarshals is copied as it came, so a load-and-save that touches nothing writes the source's
+  spelling; the tests read every XML part first, as a caller who edited the file has (§3.4).
+- Phase 1: the colour rule moved beside the generated classes, `org.docx4j.wml.WordColorValues` (`normalise`,
+  `stated`, the 140 names), since their adapters can't reach docx4j-core; `WordColors.normalise` and `stated`
+  delegate, and `ColorTables` no longer holds the names. `org.docx4j.wml.NormaliseOnSave`: `ColourValue`
+  (`w:color/@w:val`), `UnderlineColour` (`w:u/@w:color`), `FillOrBorderColour` (`CT_Shd/@fill`, `CT_Shd/@color`,
+  `CT_Border/@color`, `CT_Background/@color`), bound in `wml.xsd` by annox; `ColourElement` on `RPr.color` and
+  `ParaRPr.color` (ModifyGeneratedSources). Each is a `Switched` adapter: on per its own setting, else the default,
+  which `org.docx4j.jaxb.Context` sets to read `docx4j.save.normalise`; `NormaliseOnSave.configure` gives a
+  marshaller fixed instances, which `JaxbXmlPart.marshal` does for a package's `setNormaliseOnSave(Boolean)`.
+  CR-060's `WordRepairs` adapters became `Switched` too (D2). Each rewrite is logged at DEBUG (D5). `CTColor`, a
+  generated class no element uses, is left alone.
+- Phase 2: `CTRPrChange.RPr` and `CTParaRPrOriginal` gained (ModifyGeneratedSources) a `beforeMarshal` that swaps in
+  `NormaliseOnSave.filterOnSave`'s copy of their list (no `w:color` Word reads as absent; no `highlight`, `vertAlign`
+  or `em` Word repairs away; the list itself where there's nothing to leave out, or normalising is off) and an
+  `afterMarshal` that puts the original back. JAXB RI finds a class's declared lifecycle methods and makes them
+  accessible; MOXy calls them too (probe).
+- A `w:color` whose value is rejected is left out only where no theme attribute is beside it; with a `w:themeTint`
+  or `w:themeShade` alone (no `w:themeColor`), the element is kept and its value written `auto`.
+- MOXy (docx4j-JAXB-MOXy, scratch probe): the same output, the revision list filtered, the opt-out honoured.
+- Suites: core-tests 2072 run, 0 failures, 30 skipped; docx4j-export-fo-tests 858, 0, 9; docx4j-diffx-tests green.

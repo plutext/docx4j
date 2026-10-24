@@ -23,8 +23,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import jakarta.xml.bind.annotation.adapters.XmlAdapter;
-
 /**
  * Run properties Word repairs away: a {@code w:highlight}, {@code w:vertAlign} or {@code w:em} whose {@code w:val} is
  * missing or outside its enumeration makes Word 365 offer to repair the file, and the repair drops the element
@@ -32,8 +30,9 @@ import jakarta.xml.bind.annotation.adapters.XmlAdapter;
  * run properties (CR-060 D3), so a docx4j save opens without the repair prompt; the object in memory keeps it.
  *
  * <p>The adapters are on those fields of {@link RPr} and {@link ParaRPr} ({@code ModifyGeneratedSources}); reading is
- * unchanged. A revision's former run properties ({@code w:rPrChange/w:rPr}) are a list, not fields, and are written as
- * they are.</p>
+ * unchanged. A revision's former run properties ({@code w:rPrChange/w:rPr}), a list, are filtered the same way as they
+ * are marshalled, since 17.3.5 (CR-061: {@link NormaliseOnSave#filterOnSave}). Part of what a save normalises, so
+ * {@code docx4j.save.normalise=false} or a package's {@code setNormaliseOnSave(false)} turns it off.</p>
  *
  * @since 17.3.5
  */
@@ -52,7 +51,19 @@ public final class WordRepairs {
 	}
 
 	/** A {@code w:highlight} whose value is missing or not an ST_HighlightColor is not written. */
-	public static class HighlightOnSave extends XmlAdapter<Highlight, Highlight> {
+	public static class HighlightOnSave extends NormaliseOnSave.Switched<Highlight, Highlight> {
+		public HighlightOnSave() {
+		}
+
+		public HighlightOnSave(boolean on) {
+			super(on);
+		}
+
+		@Override
+		protected HighlightOnSave fixed(boolean on) {
+			return new HighlightOnSave(on);
+		}
+
 		@Override
 		public Highlight unmarshal(Highlight v) {
 			return v;
@@ -60,12 +71,24 @@ public final class WordRepairs {
 
 		@Override
 		public Highlight marshal(Highlight v) {
-			return v == null || !isHighlightColor(v.getVal()) ? null : v;
+			return isOn() && (v != null && !isHighlightColor(v.getVal())) ? null : v;
 		}
 	}
 
 	/** A {@code w:vertAlign} whose value is missing (or was not an ST_VerticalAlignRun, so read as null) is not written. */
-	public static class VertAlignOnSave extends XmlAdapter<CTVerticalAlignRun, CTVerticalAlignRun> {
+	public static class VertAlignOnSave extends NormaliseOnSave.Switched<CTVerticalAlignRun, CTVerticalAlignRun> {
+		public VertAlignOnSave() {
+		}
+
+		public VertAlignOnSave(boolean on) {
+			super(on);
+		}
+
+		@Override
+		protected VertAlignOnSave fixed(boolean on) {
+			return new VertAlignOnSave(on);
+		}
+
 		@Override
 		public CTVerticalAlignRun unmarshal(CTVerticalAlignRun v) {
 			return v;
@@ -73,12 +96,24 @@ public final class WordRepairs {
 
 		@Override
 		public CTVerticalAlignRun marshal(CTVerticalAlignRun v) {
-			return v == null || v.getVal() == null ? null : v;
+			return isOn() && (v != null && v.getVal() == null) ? null : v;
 		}
 	}
 
 	/** A {@code w:em} whose value is missing (or was not an ST_Em, so read as null) is not written. */
-	public static class EmOnSave extends XmlAdapter<CTEm, CTEm> {
+	public static class EmOnSave extends NormaliseOnSave.Switched<CTEm, CTEm> {
+		public EmOnSave() {
+		}
+
+		public EmOnSave(boolean on) {
+			super(on);
+		}
+
+		@Override
+		protected EmOnSave fixed(boolean on) {
+			return new EmOnSave(on);
+		}
+
 		@Override
 		public CTEm unmarshal(CTEm v) {
 			return v;
@@ -86,7 +121,7 @@ public final class WordRepairs {
 
 		@Override
 		public CTEm marshal(CTEm v) {
-			return v == null || v.getVal() == null ? null : v;
+			return isOn() && (v != null && v.getVal() == null) ? null : v;
 		}
 	}
 }

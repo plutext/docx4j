@@ -17,13 +17,12 @@
  */
 package org.docx4j.model.color;
 
-import java.util.Locale;
-
 import org.docx4j.wml.CTBorder;
 import org.docx4j.wml.CTShd;
 import org.docx4j.wml.Color;
 import org.docx4j.wml.STThemeColor;
 import org.docx4j.wml.U;
+import org.docx4j.wml.WordColorValues;
 
 /**
  * WordprocessingML colours ({@code w:color}, {@code w:shd}, the borders, {@code w:u}) resolved as
@@ -88,13 +87,7 @@ public final class WordColors {
 	 * @since 17.3.5
 	 */
 	public static String normalise(String val) {
-		if (val == null) return null;
-		String v = val.trim();
-		String hex = v.startsWith("#") ? v.substring(1) : v;
-		if (hex.length() == 6 && hex.chars().allMatch(ch -> Character.digit(ch, 16) >= 0)) {
-			return hex.toUpperCase(Locale.ROOT);
-		}
-		return ColorTables.HTML.get(v.toLowerCase(Locale.ROOT));
+		return WordColorValues.normalise(val);
 	}
 
 	/**
@@ -107,7 +100,7 @@ public final class WordColors {
 	 * @since 17.3.5
 	 */
 	public static boolean stated(String val) {
-		return "auto".equals(val) || normalise(val) != null;
+		return WordColorValues.stated(val);
 	}
 
 	/** A run's colour ({@code w:color}); null for automatic */

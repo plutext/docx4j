@@ -101,6 +101,25 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		return strict;
 	}
 
+	private Boolean normaliseOnSave;
+
+	/**
+	 * Whether a save writes this package's colours plainly, in the schema's form holding Word's reading, and leaves
+	 * out the run properties Word repairs away (CR-061; org.docx4j.wml.NormaliseOnSave): true or false for this
+	 * package; null, the default, follows docx4j.properties' {@code docx4j.save.normalise}, which is true unless set
+	 * false. Off, colours are written as they were read.
+	 *
+	 * @since 17.3.5
+	 */
+	public void setNormaliseOnSave(Boolean normalise) {
+		this.normaliseOnSave = normalise;
+	}
+
+	/** This package's own setting; null where it follows docx4j.properties ({@link #setNormaliseOnSave}).  @since 17.3.5 */
+	public Boolean getNormaliseOnSave() {
+		return normaliseOnSave;
+	}
+
 	private McLoadMode mcLoadMode;
 
 	/**

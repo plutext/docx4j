@@ -117,6 +117,8 @@ public class Context {
 		JAXBContext tempContext = null;
 
 		McSourceBindings.install(); // the copy listener, before any record exists to carry (CR-052)
+		// what a save writes plainly, unless docx4j.properties says not (CR-061)
+		org.docx4j.wml.NormaliseOnSave.setDefault(() -> org.docx4j.Docx4jProperties.getProperty("docx4j.save.normalise", true));
 
 		// Display diagnostic info about version of JAXB being used.
 		log.info("java.vendor="+System.getProperty("java.vendor"));

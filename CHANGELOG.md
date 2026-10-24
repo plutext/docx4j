@@ -23,6 +23,12 @@ Claude Opus 5.5
 Changes in Version 17.3.5
 --------------------------
 
+* A save writes WordprocessingML colours plainly (CR-061): a value Word accepts ("red", "ff0000",
+  "#FF0000") as upper-case RRGGBB; one it rejects ("F00", "Auto") left out of a text or underline
+  colour, where Word reads it as absent, and written "auto" in a fill or a border colour, where
+  Word reads it as automatic; a revision's former run properties too, without the highlight,
+  vertAlign or em Word repairs away. Word's reading is unchanged. docx4j.save.normalise=false, or
+  OpcPackage.setNormaliseOnSave(false), writes them as read.
 * Run properties read as Word 365 reads them (CR-060). An on/off value (w:b, w:i and every other
   BooleanDefaultTrue element; 44 attributes such as w:fldChar's dirty and w:text's multiLine) is off
   for exactly false, off or 0 and on otherwise: w:val="off", which Apache POI writes (#585), read

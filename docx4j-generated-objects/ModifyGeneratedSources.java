@@ -99,16 +99,18 @@ public class ModifyGeneratedSources {
 		/////////////////////////////////////////////////////////
 
 		System.out.println("Updating RPr and ParaRPr: a highlight, vertAlign or em Word would repair is not written");
+		// and a w:color Word reads as absent (CR-061)
 		String[][] onSave = {
-			{ "Highlight highlight", "HighlightOnSave" },
-			{ "CTVerticalAlignRun vertAlign", "VertAlignOnSave" },
-			{ "CTEm em", "EmOnSave" } };
+			{ "Highlight highlight", "WordRepairs.HighlightOnSave" },
+			{ "CTVerticalAlignRun vertAlign", "WordRepairs.VertAlignOnSave" },
+			{ "CTEm em", "WordRepairs.EmOnSave" },
+			{ "Color color", "NormaliseOnSave.ColourElement" } };
 		for (String holder : new String[] { "RPr", "ParaRPr" }) {
 			for (String[] f : onSave) {
-				String id = holder + "-" + f[1];
+				String id = holder + "-" + f[1].substring(f[1].indexOf('.') + 1);
 				patchOnce(id,
 					"    protected " + f[0] + ";",
-					"    @XmlJavaTypeAdapter(WordRepairs." + f[1] + ".class) // docx4j:patched:" + id + "\n"
+					"    @XmlJavaTypeAdapter(" + f[1] + ".class) // docx4j:patched:" + id + "\n"
 					+ "    protected " + f[0] + ";",
 					"org/docx4j/wml/" + holder + ".java");
 			}
@@ -117,6 +119,33 @@ public class ModifyGeneratedSources {
 				"import jakarta.xml.bind.annotation.XmlType;\n"
 				+ "import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter; // docx4j:patched:" + holder + "-XmlJavaTypeAdapter-import\n",
 				"org/docx4j/wml/" + holder + ".java");
+		}
+
+		/////////////////////////////////////////////////////////
+		// A revision's former run properties, written plainly (CR-061)
+		/////////////////////////////////////////////////////////
+
+		System.out.println("Updating CTRPrChange.RPr and CTParaRPrOriginal: their list written as NormaliseOnSave filters it");
+		for (String[] holder : new String[][] { { "CTRPrChange", "        " }, { "CTParaRPrOriginal", "    " } }) {
+			String id = holder[0] + "-filterOnSave";
+			String in = holder[1];
+			patchOnce(id,
+				in + "protected List<Object> egrPrBase = new ArrayListDocx4j<>(this);",
+				in + "protected List<Object> egrPrBase = new ArrayListDocx4j<>(this);\n"
+				+ in + "@jakarta.xml.bind.annotation.XmlTransient\n"
+				+ in + "private List<Object> egrPrBaseAsRead; // docx4j:patched:" + id + "\n"
+				+ in + "/** The list as written: NormaliseOnSave.filterOnSave's, put back after the marshal (CR-061) */\n"
+				+ in + "void beforeMarshal(jakarta.xml.bind.Marshaller m) {\n"
+				+ in + "    egrPrBaseAsRead = egrPrBase;\n"
+				+ in + "    egrPrBase = NormaliseOnSave.filterOnSave(egrPrBase, m);\n"
+				+ in + "}\n"
+				+ in + "void afterMarshal(jakarta.xml.bind.Marshaller m) {\n"
+				+ in + "    if (egrPrBaseAsRead != null) {\n"
+				+ in + "        egrPrBase = egrPrBaseAsRead;\n"
+				+ in + "        egrPrBaseAsRead = null;\n"
+				+ in + "    }\n"
+				+ in + "}",
+				"org/docx4j/wml/" + holder[0] + ".java");
 		}
 
 		////////////

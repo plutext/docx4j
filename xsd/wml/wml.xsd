@@ -52,6 +52,8 @@ REVISION HISTORY
            ones (checkStyle, actualPg) are primitive booleans, which an adapter cannot bind
            w:u/@w:val reads through org.docx4j.wml.UnderlineValueAdapter: the six on/off spellings read as none
            (CR-060 phase 4)
+           The colour attributes (w:color/@w:val, w:u/@w:color, w:shd/@w:fill and @w:color, CT_Border/@w:color,
+           w:background/@w:color) are written plainly through org.docx4j.wml.NormaliseOnSave's adapters (CR-061)
 	
 USAGE INSTRUCTIONS
 	  
@@ -1760,6 +1762,9 @@ PRINCIPLES:
 		</xsd:attribute>
 		<xsd:attribute name="color" type="ST_HexColor" use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.NormaliseOnSave.FillOrBorderColour.class)</annox:annotate> <!-- CR-061 -->
+				</xsd:appinfo>
 				<xsd:documentation>Border Color</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -2021,6 +2026,9 @@ PRINCIPLES:
 		</xsd:attribute>
 		<xsd:attribute name="color" type="ST_HexColor" use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.NormaliseOnSave.FillOrBorderColour.class)</annox:annotate> <!-- CR-061 -->
+				</xsd:appinfo>
 				<xsd:documentation>Shading Pattern Color</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -2043,6 +2051,9 @@ PRINCIPLES:
 		</xsd:attribute>
 		<xsd:attribute name="fill" type="ST_HexColor" use="optional">
 			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.NormaliseOnSave.FillOrBorderColour.class)</annox:annotate> <!-- CR-061 -->
+				</xsd:appinfo>
 				<xsd:documentation>Shading Background Color</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -4570,6 +4581,9 @@ PRINCIPLES:
 			<xsd:extension base="CT_PictureBase">
 				<xsd:attribute name="color" type="ST_HexColor" use="optional">
 					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.NormaliseOnSave.FillOrBorderColour.class)</annox:annotate> <!-- CR-061 -->
+						</xsd:appinfo>
 						<xsd:documentation>Background Color</xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
@@ -7163,6 +7177,9 @@ PRINCIPLES:
 			</xsd:attribute>
 			<xsd:attribute name="color" type="ST_HexColor" use="optional">
 				<xsd:annotation>
+					<xsd:appinfo>
+						<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.NormaliseOnSave.UnderlineColour.class)</annox:annotate> <!-- CR-061 -->
+					</xsd:appinfo>
 					<xsd:documentation>Underline Color</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
@@ -7420,6 +7437,9 @@ PRINCIPLES:
 		<xsd:complexType>
 			<xsd:attribute name="val" type="ST_HexColor" use="required">
 				<xsd:annotation>
+					<xsd:appinfo>
+						<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.NormaliseOnSave.ColourValue.class)</annox:annotate> <!-- CR-061 -->
+					</xsd:appinfo>
 					<xsd:documentation>Run Content Color</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>

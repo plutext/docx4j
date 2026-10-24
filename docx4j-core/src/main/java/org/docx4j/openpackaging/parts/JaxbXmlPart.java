@@ -726,6 +726,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
     	boolean pairsInstalled = false;
 		try {
 			Marshaller marshaller = jc.createMarshaller();
+			normaliseOnSave(marshaller);
 //			marshaller.setProperty("com.sun.xml.internal.bind.c14n",true);
 			
 			NamespacePrefixMapperUtils.setProperty(marshaller, namespacePrefixMapper);
@@ -791,6 +792,14 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * @throws JAXBException
 	 *             If any unexpected problem occurs during the marshalling.
 	 */
+    /** The package's own setting of what a save writes plainly, given to the marshaller (CR-061) */
+    private void normaliseOnSave(Marshaller marshaller) {
+    	Boolean normalise = getPackage() == null ? null : getPackage().getNormaliseOnSave();
+    	if (normalise != null) {
+    		org.docx4j.wml.NormaliseOnSave.configure(marshaller, normalise);
+    	}
+    }
+
     public void marshal(java.io.OutputStream os, Object namespacePrefixMapper) throws JAXBException {
 
     	// what this marshal found on the mapper, put back when it is done (CR-049)
@@ -800,6 +809,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
     	boolean pairsInstalled = false;
 		try {
 			Marshaller marshaller = jc.createMarshaller();
+			normaliseOnSave(marshaller);
 			if (Docx4jProperties.getProperty("docx4j.jaxb.formatted.output", true)) {
 				marshaller.setProperty("jaxb.formatted.output", true);
 			}
