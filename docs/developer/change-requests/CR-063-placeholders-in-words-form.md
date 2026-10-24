@@ -1,7 +1,8 @@
 # CR-063: content-control placeholders written in Word's form
 
-Status: PHASES 1 AND 2 DONE 2026-10-25 (§12; Claude Fable 5.1, session docx4j-25); phase 3, Jason's Word check,
-next. ACCEPTED 2026-10-25 (Jason: "CR-063 D1 to D6 accepted as recommended, please implement"): D1 to D6 as
+Status: PHASES 1, 2 AND 4 DONE 2026-10-25 (§12, §13; Claude Fable 5.1, session docx4j-25); D8 (a) decided (Jason,
+2026-10-25: "D8 we go (a)"); phase 3's Office-open check passed (§14: the one repair was the fixture's own Flat OPC chunk, pre-CR-063, fixed in the
+fixture); check 65's writes on the new output and D9 (§15) remain with Jason. ACCEPTED 2026-10-25 (Jason: "CR-063 D1 to D6 accepted as recommended, please implement"): D1 to D6 as
 recommended in §6, D7 decided earlier. PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session
 docx4j-25) at docx4j-core-ts's request, from Jason ("Jason asks that docx4j consider writing Word's form; it's your
 decision"): its checks 63 and 64 compared the bare placeholder docx4j's binding writes with Word's form. (Check 63's
@@ -145,6 +146,7 @@ The glossary there is a full set of parts: document, styles, settings, webSettin
 | 1 | The binders keep `w:placeholder` (D1): `bind.xslt`'s template and `postBindSdtPrHygiene`'s removal go; a test that the three binders agree | 1 h |
 | 2 | An empty value in Word's form (D2 to D5): the entry the control names, or Word's default with the glossary part and entry added as check 65 requires; `placeholder.xml`'s wording; tests; the Office-open check (Word opens it without repair) | 3 h |
 | 3 | Jason's Word check: phase 0's writes on the new output reach the node and survive the reopen | 30 min with Jason |
+| 4 | D8 (a), decided 2026-10-25 (§13): a date, drop-down list, combo box, building block gallery or repeating section item naming no entry gets Word's default entry for its kind. Done 2026-10-25 | 1 h |
 
 ## 6. Decisions (accepted as recommended, Jason, 2026-10-25)
 
@@ -378,13 +380,63 @@ control names its entry, has `w:showingPlcHdr`, and its content is that run. Wor
 combo box a first `w:listItem` with `w:value="Choose an item."` and no `w:displayText`. `-1854013439` is absent
 (group, citation or equation, not made).
 
-**D8 (proposed): the other kinds get Word's entry for them.**
+**D8: the other kinds get Word's entry for them. Decided (a), Jason, 2026-10-25 ("D8 we go (a)").**
 
 | # | Question | Options | Recommended |
 |---|---|---|---|
 | D8 | A date, list, building-block or repeating-section-item control naming no entry (or a missing one), empty | (a) Word's entry for its kind, from the table, added to the glossary as D3 adds the text default; picture and check box as today (Word names none for them); group, citation, equation, bibliography (unmeasured) as today; (b) as now: today's run, no reference | (a): the same rule as D3, with Word's own wording; a date no longer says "enter text". The configured run (D4) stays the text kinds' default only, since its wording is written for text. The list controls' first `w:listItem` is Word's authoring, not emulated: the template's list is kept |
 
-Phase 4, if D8 (a): `PlaceholderEntries.referenceFor` maps the kind to its entry name and text (`isTextControl` becomes
-a kind lookup); the date path (`xpathDate` / `applyDateBinding`) already reaches the lookup; a fixture from
-`placeholders.docx`'s entries; the parity test's date control (`DATEOLD`) and `BoundDateFormatTest`'s DF10 move to the
-date wording. 1 h. core-ts would follow (its message of 2026-10-25).
+**Phase 4, done 2026-10-25:** `PlaceholderEntries.defaultEntryFor(sdtPr)` maps the kind to a `DefaultEntry` (name,
+text, Word's GUID from `placeholders.docx`): `TEXT`, `DATE`, `LIST`, `BUILDING_BLOCK`, `REPEATING_SECTION_ITEM`; null
+for picture, check box, the outer repeating section, and the unmeasured equation, citation, group, bibliography,
+`w:docPartObj` and entity picker, which keep today's run. `referenceFor` writes the kind's entry as D3 writes the text
+default; the configured run (D4) applies to `TEXT` only. The date path reaches it through the existing lookup, the
+lists through the text branch. The list controls' first `w:listItem` is not emulated. Tests: `PlaceholderEntriesTest`
+(date, drop-down and combo box get their entries with Word's GUIDs and the template's items kept; a picture keeps
+today's run; the binders agree). core-ts and python told.
+
+## 14. Phase 3: the Office-open check (Jason, 2026-10-25)
+
+Of the samples at the share's `__tmp/cr063/`, the code-built ones (1-, 2-) opened; the bound parity fixture
+(`3-text-bind-parity-bound-*.docx`, all three binders) needed repair. Word's repaired saves kept every control and
+reference, converted the two altChunks (as it does), and gave `XEmpty` a fresh 32-hex entry of its own (as check 65's
+65b did) beside the default it named. No structure the binders write there is one Word is known to repair (cell
+last-block rule, altChunk placement, nesting all checked). Bisect files for Jason in `__tmp/cr063/bisect/`: A = the
+output with every `w:placeholder` removed; B = the output with the altChunks removed; C = the same fixture bound by
+docx4j at ea5461ee9, before CR-063.
+
+**Round 1 (Jason, 2026-10-25): A and C needed repair, B opened clean.** So the repair is the fixture's altChunks and
+predates CR-063; the placeholders in Word's form are not it. Word's repaired saves of A and C converted the XHTML
+chunk (`XHTMLCONTENT` kept) and emptied the Flat OPC control (`FLATOPCTEXT` gone): the fixture's Flat OPC value is a
+`pkg:package` holding `/word/document.xml` alone, with no `/_rels/.rels` part, which Word's Flat OPC always carries.
+Round 2 files: B1 = the HTML chunk removed, the Flat OPC kept; B2 = the Flat OPC chunk removed, the HTML kept; D =
+both kept, the Flat OPC chunk given a `/_rels/.rels` part. Expected: B1 repairs, B2 and D open clean, D showing
+`FLATOPCTEXT`.
+
+**Round 2 (Jason, 2026-10-25): B1 needed repair; B2 and D opened clean.** So the repair was the fixture's Flat OPC
+altChunk, a `pkg:package` without its `/_rels/.rels` part, and it predates CR-063. Fixed in the fixture's data
+(`text-bind-parity.docx`, `customXml/item4.xml`'s `flatOpc` value gains the relationships part, as D had it); the parity
+test's assertions are unchanged. Whether `convertFlatOPC` should add the relationships part to a package that lacks one
+is left as a separate question (Word's own Flat OPC always carries it; without it Word repairs and drops the content).
+**Phase 3's Office-open check passes:** the code-built samples opened clean from the first; the bound fixture opens
+clean without the broken chunk (B2) and with it mended (D). Check 65's writes on the new output remain for Jason.
+
+## 15. Check 68: Word shows an entry as the glossary holds it (Word 365, Jason's run, 2026-10-25; D9 proposed)
+
+core-ts's check 68 (its CR-002 §63.20; Word 365 16.0.20326.20232, Design Mode off; saves in core-ts `test/check68/`,
+read by this session too): a control in Word's form with `w:sdtPr/w:rPr` bold, holding a bold value, has its content
+deleted. Word brings back the entry it names exactly as the glossary holds it: the default entry in Placeholder Text
+alone, a custom entry in Placeholder Text plus its own italic, and no bold (cases 21 to 24). The control's bold stays
+in its `w:sdtPr`. A write into a control showing its placeholder (Office JS `insertText`, Replace and End, both forms)
+takes the control's `w:rPr` and nothing of the placeholder run's (cases 1 to 20), which is what docx4j's inserters
+already do for a value.
+
+So D2's "with the control's run properties as today" (carried over from `createPlaceholder`, unmeasured) is not
+Word's rule for the shown entry; §12's implementation and core-ts's §63.18 both apply the control's `w:rPr` over the
+entry's runs.
+
+| # | Question | Options | Recommended |
+|---|---|---|---|
+| D9 | The run properties of a shown entry | (a) the entry's runs as the glossary holds them, the control's `w:sdtPr/w:rPr` not applied (Word, check 68); (b) the control's `w:rPr` applied over them, as §12 does | (a): the CR's aim is what Word shows; the control's `w:rPr` still governs a value written into it. One-line change in `PlaceholderEntries.contentOf` (drop the `StyleUtil.apply`), with `PlaceholderEntriesTest`'s colour and italic assertions inverted. The non-text kinds' own run (placeholder.xml's under the control's rPr) is unmeasured and would stay |
+
+core-ts proposes the same to Jason for its writer.

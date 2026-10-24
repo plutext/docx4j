@@ -78,10 +78,11 @@ import org.slf4j.LoggerFactory;
  * <ul>
  * <li>{@link #referenceFor} decides which entry the control shows (D2 to D4): the entry it names,
  * where the glossary holds it; otherwise, for a text control, the default entry (or the entry of a
- * configured placeholder run), named in the control and written into the glossary, which is made
- * where the document has none (D7: the glossary document part and a styles part holding Placeholder
- * Text). A control of another kind (date, list, picture ...) naming no entry is left alone, with
- * today's placeholder run: the entries Word gives those kinds are unmeasured (D3, revised).</li>
+ * configured placeholder run), or Word's entry for a date, list, building block gallery or repeating
+ * section item (D8, §13), named in the control and written into the glossary, which is made where
+ * the document has none (D7: the glossary document part and a styles part holding Placeholder
+ * Text). A picture or check box (Word names no entry for them), or a kind whose entry is unmeasured,
+ * naming no entry is left alone, with today's placeholder run.</li>
  * <li>{@link #contentOf} gives what the control shows of the entry: a copy of its paragraphs'
  * run-level content, under the control's own run properties.</li>
  * </ul>
@@ -107,20 +108,46 @@ public final class PlaceholderEntries {
 	/** The default entry's GUID, as Word's glossary holds it (core-ts check 64). */
 	private static final String DEFAULT_GUID = "{7D21F9BC-12A3-463E-B08F-7DD4FFC77A03}";
 
+	/**
+	 * Word's default entry for a kind of control (CR-063 §13, D8: Word 365's save of one control of each
+	 * kind, 2026-10-25): its name, its text and the GUID Word gave it there.
+	 * @since 17.3.5
+	 */
+	public static final class DefaultEntry {
+		public final String name, text, guid;
+		DefaultEntry(String name, String text, String guid) { this.name = name; this.text = text; this.guid = guid; }
+	}
+	/** Rich text and plain text controls. */
+	public static final DefaultEntry TEXT = new DefaultEntry(DEFAULT_ENTRY, DEFAULT_TEXT, DEFAULT_GUID);
+	/** Date pickers ({@code w:date}). */
+	public static final DefaultEntry DATE = new DefaultEntry("DefaultPlaceholder_-1854013437",
+			"Click or tap to enter a date.", "{5E623627-58B9-4A14-B44A-30E7C786817F}");
+	/** Drop-down lists and combo boxes. */
+	public static final DefaultEntry LIST = new DefaultEntry("DefaultPlaceholder_-1854013438",
+			"Choose an item.", "{EF5CC0C2-E1AC-410B-B8AC-F2061C06424E}");
+	/** Building block galleries ({@code w:docPartList}). */
+	public static final DefaultEntry BUILDING_BLOCK = new DefaultEntry("DefaultPlaceholder_-1854013436",
+			"Choose a building block.", "{C310B06F-B924-41CB-9CF5-125E2A699768}");
+	/** Repeating section items ({@code w15:repeatingSectionItem}). */
+	public static final DefaultEntry REPEATING_SECTION_ITEM = new DefaultEntry("DefaultPlaceholder_-1854013435",
+			"Enter any content that you want to repeat, including other content controls. You can also insert this control around table rows in order to repeat parts of a table.",
+			"{E84034C8-4148-41A4-83BB-C58D26D9E0AF}");
+
 	private PlaceholderEntries() {}
 
 	/**
 	 * The entry the control shows for an empty value, named in its {@code w:placeholder}:
 	 * <ul>
 	 * <li>the entry it names, where the glossary holds it (D2);</li>
-	 * <li>for a text control (untyped, rich text, plain text) naming none, or naming an entry the
-	 * glossary lacks: the default entry, {@link #DEFAULT_ENTRY}, or where a placeholder run is
-	 * configured ({@code docx4j.model.datastorage.placeholder}) an entry of that run's own, one per
-	 * distinct run per document (D3, D4). The entry is written into the glossary, which is made where
-	 * the document has none, and the control's reference is set to it (a missing entry's name is
-	 * replaced, not given invented text);</li>
-	 * <li>null for any other kind of control naming no entry the glossary holds: it keeps its reference
-	 * and today's placeholder run.</li>
+	 * <li>for a control naming none, or naming an entry the glossary lacks: Word's default entry for
+	 * its kind ({@link #defaultEntryFor}: text, date, list, building block gallery, repeating section
+	 * item; D3, D8), or, for a text control where a placeholder run is configured
+	 * ({@code docx4j.model.datastorage.placeholder}), an entry of that run's own, one per distinct run
+	 * per document (D4). The entry is written into the glossary, which is made where the document has
+	 * none, and the control's reference is set to it (a missing entry's name is replaced, not given
+	 * invented text);</li>
+	 * <li>null for a kind Word gives no entry (picture, check box, group, citation, equation ...) naming
+	 * no entry the glossary holds: it keeps its reference and today's placeholder run.</li>
 	 * </ul>
 	 * Idempotent: a second call, or a second binding run, changes nothing.
 	 *
@@ -136,11 +163,12 @@ public final class PlaceholderEntries {
 			if (named != null && !named.isEmpty() && entryOf(glossary, named) != null) {
 				return named;
 			}
-			if (!isTextControl(sdtPr)) {
+			DefaultEntry kind = defaultEntryFor(sdtPr);
+			if (kind == null) {
 				return null;
 			}
-			R configured = BindingTraverserXSLT.configuredPlaceholderRun();
-			String entry = configured == null ? ensureDefaultEntry(pkg) : ensureEntryFor(pkg, configured);
+			R configured = kind == TEXT ? BindingTraverserXSLT.configuredPlaceholderRun() : null;
+			String entry = configured == null ? ensureDefaultEntry(pkg, kind) : ensureEntryFor(pkg, configured);
 			if (entry == null) return null;
 			if (!entry.equals(named)) {
 				if (named != null && !named.isEmpty()) {
@@ -240,22 +268,29 @@ public final class PlaceholderEntries {
 	}
 
 	/**
-	 * A text control: untyped, rich text ({@code w:richText}) or plain text ({@code w:text}). Word's
-	 * default entry is its text entry; dates, lists, pictures and the rest show other wording.
+	 * Word's default entry for this control's kind (§13): {@link #TEXT} for an untyped, rich text
+	 * ({@code w:richText}) or plain text ({@code w:text}) control, {@link #DATE}, {@link #LIST} (drop-down
+	 * list, combo box), {@link #BUILDING_BLOCK} ({@code w:docPartList}), {@link #REPEATING_SECTION_ITEM};
+	 * null for the kinds Word names no entry for (picture, check box, the outer repeating section) or
+	 * whose entry is unmeasured (equation, citation, group, bibliography, {@code w:docPartObj}, entity
+	 * picker).
 	 */
-	static boolean isTextControl(SdtPr sdtPr) {
+	public static DefaultEntry defaultEntryFor(SdtPr sdtPr) {
 		for (Object o : sdtPr.getRPrOrAliasOrLock()) {
 			if (!(o instanceof JAXBElement)) continue;
 			String name = ((JAXBElement<?>) o).getName().getLocalPart();
 			switch (name) {
-				case "equation": case "comboBox": case "date": case "docPartObj": case "docPartList":
-				case "dropDownList": case "picture": case "citation": case "group": case "bibliography":
-				case "checkbox": case "entityPicker": case "repeatingSection": case "repeatingSectionItem":
-					return false;
+				case "date": return DATE;
+				case "comboBox": case "dropDownList": return LIST;
+				case "docPartList": return BUILDING_BLOCK;
+				case "repeatingSectionItem": return REPEATING_SECTION_ITEM;
+				case "equation": case "docPartObj": case "picture": case "citation": case "group": case "bibliography":
+				case "checkbox": case "entityPicker": case "repeatingSection":
+					return null;
 				default:
 			}
 		}
-		return true;
+		return TEXT;
 	}
 
 	/** The glossary's entry of this name, or null. */
@@ -285,10 +320,10 @@ public final class PlaceholderEntries {
 		return null;
 	}
 
-	/** Word's default entry, written where the glossary lacks it. */
-	private static String ensureDefaultEntry(WordprocessingMLPackage pkg) throws Exception {
+	/** Word's default entry for a kind, written where the glossary lacks it. */
+	private static String ensureDefaultEntry(WordprocessingMLPackage pkg, DefaultEntry kind) throws Exception {
 		GlossaryDocumentPart glossary = ensureGlossary(pkg);
-		if (entryOf(glossary, DEFAULT_ENTRY) == null) {
+		if (entryOf(glossary, kind.name) == null) {
 			R run = Context.getWmlObjectFactory().createR();
 			RPr rPr = Context.getWmlObjectFactory().createRPr();
 			org.docx4j.wml.RStyle rStyle = Context.getWmlObjectFactory().createRStyle();
@@ -296,12 +331,12 @@ public final class PlaceholderEntries {
 			rPr.setRStyle(rStyle);
 			run.setRPr(rPr);
 			org.docx4j.wml.Text t = Context.getWmlObjectFactory().createText();
-			t.setValue(DEFAULT_TEXT);
+			t.setValue(kind.text);
 			run.getContent().add(t);
-			addEntry(glossary, docPartOf(DEFAULT_ENTRY, DEFAULT_GUID, run));
-			log.info("Glossary entry " + DEFAULT_ENTRY + " added");
+			addEntry(glossary, docPartOf(kind.name, kind.guid, run));
+			log.info("Glossary entry " + kind.name + " added");
 		}
-		return DEFAULT_ENTRY;
+		return kind.name;
 	}
 
 	/**

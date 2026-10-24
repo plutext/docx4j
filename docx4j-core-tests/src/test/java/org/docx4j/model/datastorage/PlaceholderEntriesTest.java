@@ -57,8 +57,9 @@ import org.xml.sax.InputSource;
  * paragraphs under the control's run properties; a text control naming none, or a missing entry, is
  * given Word's default entry, {@code DefaultPlaceholder_-1854013440}, the glossary made where the
  * document has none (D3, D7: the glossary document part and a styles part holding Placeholder Text);
- * the reference survives binding, bound or not (D1); a date control naming none keeps today's run (D3,
- * revised); binding twice adds nothing. The default's wording is Word 365's (D5). Word's behaviour is
+ * the reference survives binding, bound or not (D1); a date, list, building-block or repeating-section-item
+ * control naming none gets Word's entry for its kind (D8, §13: Jason's placeholders.docx), a picture keeps
+ * today's run; binding twice adds nothing. The default's wording is Word 365's (D5). Word's behaviour is
  * core-ts's checks 64 to 66 (CR-063 §1, §9, §10); the content copy follows core-ts's section 63.18.
  */
 public class PlaceholderEntriesTest {
@@ -95,6 +96,19 @@ public class PlaceholderEntriesTest {
 		return "<w:p><w:sdt><w:sdtPr><w:alias w:val=\"" + alias + "\"/><w:tag w:val=\"" + alias + "\"/><w:id w:val=\"" + alias.hashCode() + "\"/>"
 				+ "<w:dataBinding w:xpath=\"" + xpath + "\" w:storeItemID=\"" + ITEM_ID + "\"/>"
 				+ "<w:date><w:dateFormat w:val=\"d MMMM yyyy\"/><w:lid w:val=\"en-AU\"/><w:storeMappedDataAs w:val=\"dateTime\"/></w:date></w:sdtPr>"
+				+ "<w:sdtContent><w:r><w:t>STALE</w:t></w:r></w:sdtContent></w:sdt></w:p>";
+	}
+
+	private static String listControl(String alias, String xpath, String kind) {
+		return "<w:p><w:sdt><w:sdtPr><w:alias w:val=\"" + alias + "\"/><w:tag w:val=\"" + alias + "\"/><w:id w:val=\"" + alias.hashCode() + "\"/>"
+				+ "<w:dataBinding w:xpath=\"" + xpath + "\" w:storeItemID=\"" + ITEM_ID + "\"/>"
+				+ "<w:" + kind + "><w:listItem w:displayText=\"One\" w:value=\"1\"/><w:listItem w:displayText=\"Two\" w:value=\"2\"/></w:" + kind + "></w:sdtPr>"
+				+ "<w:sdtContent><w:r><w:t>STALE</w:t></w:r></w:sdtContent></w:sdt></w:p>";
+	}
+
+	private static String pictureControl(String alias, String xpath) {
+		return "<w:p><w:sdt><w:sdtPr><w:alias w:val=\"" + alias + "\"/><w:tag w:val=\"" + alias + "\"/><w:id w:val=\"" + alias.hashCode() + "\"/>"
+				+ "<w:dataBinding w:xpath=\"" + xpath + "\" w:storeItemID=\"" + ITEM_ID + "\"/><w:picture/></w:sdtPr>"
 				+ "<w:sdtContent><w:r><w:t>STALE</w:t></w:r></w:sdtContent></w:sdt></w:p>";
 	}
 
@@ -348,17 +362,46 @@ public class PlaceholderEntriesTest {
 	}
 
 	/**
-	 * D3 (revised): a date control naming no entry keeps today's placeholder run for an empty value
-	 * (Word's date entry is unmeasured): no reference, no glossary. One naming an entry shows it.
+	 * D8 (§13): a date control naming no entry gets Word's date entry, DefaultPlaceholder_-1854013437 ("Click
+	 * or tap to enter a date."), a drop-down list and a combo box Word's list entry, -1854013438 ("Choose an
+	 * item."), each added to the glossary once, with Word's GUID for it; the list's own items are kept. The
+	 * configured run (D4) is the text kinds' only, so these show Word's wording whatever is configured.
 	 */
 	@Test
-	public void aDateControlNamingNoneKeepsTodaysRun() throws Exception {
+	public void aDateOrListControlNamingNoneGetsWordsEntryForItsKind() throws Exception {
 		for (String implementation : IMPLEMENTATIONS) {
-			WordprocessingMLPackage pkg = template(dateControl("Date", "/root/empty"), null);
-			String date = control(mainXml(bind(pkg, implementation)), "Date");
-			assertEquals(implementation + ": " + date, DEFAULT_TEXT, shown(date));
+			WordprocessingMLPackage pkg = template(dateControl("Date", "/root/empty")
+					+ listControl("Drop", "/root/empty", "dropDownList") + listControl("Combo", "/root/empty", "comboBox"), null);
+			String xml = mainXml(bind(pkg, implementation));
+			String date = control(xml, "Date");
+			assertEquals(implementation + ": " + date, "Click or tap to enter a date.", shown(date));
 			assertTrue(implementation + ": " + date, sdtPr(date).contains("<w:showingPlcHdr/>"));
-			assertNull(implementation + ": " + date, reference(date));
+			assertEquals(implementation + ": " + date, "DefaultPlaceholder_-1854013437", reference(date));
+			for (String alias : new String[] { "Drop", "Combo" }) {
+				String list = control(xml, alias);
+				assertEquals(implementation + ": " + list, "Choose an item.", shown(list));
+				assertEquals(implementation + ": " + list, "DefaultPlaceholder_-1854013438", reference(list));
+				assertTrue(implementation + ": the template's items kept: " + list, sdtPr(list).contains("w:displayText=\"Two\""));
+				assertFalse(implementation + ": Word's own first item not emulated: " + list, sdtPr(list).contains("Choose an item.\""));
+			}
+			assertEquals(implementation, java.util.Arrays.asList("DefaultPlaceholder_-1854013437", "DefaultPlaceholder_-1854013438"), entryNames(pkg));
+			String glossaryXml = XmlUtils.marshaltoString(pkg.getMainDocumentPart().getGlossaryDocumentPart().getJaxbElement(), true, false);
+			assertTrue(implementation, glossaryXml.contains("<w:guid w:val=\"{5E623627-58B9-4A14-B44A-30E7C786817F}\"/>"));
+			assertTrue(implementation, glossaryXml.contains("<w:guid w:val=\"{EF5CC0C2-E1AC-410B-B8AC-F2061C06424E}\"/>"));
+			assertGlossaryStyles(implementation, pkg);
+		}
+	}
+
+	/**
+	 * D8 (§13): Word names no entry for a picture control, so one naming none keeps today's placeholder run
+	 * for an empty value: no reference, no glossary.
+	 */
+	@Test
+	public void aPictureControlNamingNoneKeepsTodaysRun() throws Exception {
+		for (String implementation : IMPLEMENTATIONS) {
+			WordprocessingMLPackage pkg = template(pictureControl("Pic", "/root/empty"), null);
+			String pic = control(mainXml(bind(pkg, implementation)), "Pic");
+			assertNull(implementation + ": " + pic, reference(pic));
 			assertNull(implementation + ": no glossary", pkg.getMainDocumentPart().getGlossaryDocumentPart());
 		}
 	}
@@ -387,6 +430,6 @@ public class PlaceholderEntriesTest {
 				assertEquals(implementation, glossary, g);
 			}
 		}
-		assertEquals("[" + ENTRY + ", " + DEFAULT + "]", glossary);
+		assertEquals("[" + ENTRY + ", " + DEFAULT + ", DefaultPlaceholder_-1854013437]", glossary);
 	}
 }

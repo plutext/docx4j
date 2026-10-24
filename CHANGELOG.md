@@ -30,7 +30,9 @@ Changes in Version 17.3.5
   the glossary, which is made where the document has none (the glossary document part and a styles
   part holding Placeholder Text). The default's wording is Word 365's, "Click or tap here to enter
   text."; a configured placeholder run (docx4j.model.datastorage.placeholder) becomes an entry of
-  its own. Date, list and picture controls naming no entry keep today's placeholder run.
+  its own. A date, drop-down list, combo box, building block gallery or repeating section item
+  naming no entry gets Word's entry for its kind ("Click or tap to enter a date.", "Choose an
+  item." ...); picture and check box controls keep today's placeholder run.
 * HTML output draws an underline's style (double, dotted, dashed, wavy, thick ...) and colour, a double
   strike, and emphasis marks (w:em), through CSS text-decoration-* and text-emphasis (CR-062); a run
   both underlined and struck through keeps both lines, in HTML and PDF (it lost its strike). PDF
