@@ -245,10 +245,82 @@ public class VariablePrepare {
 		
 		}
 		
+		joinupPlaceholders(newContents);
+		
 		// Now replace w:p contents
 		p.getContent().clear();
 		p.getContent().addAll(newContents);
 		
+	}
+
+	/**
+	 * Joins the runs a ${key} placeholder is split across, whatever their formatting, so variableReplace finds the
+	 * key: the text through the closing } goes into the run where ${ begins, in its formatting (the value replaces
+	 * it anyway). Only runs holding nothing but text are joined, and only where the } is found; the text after the
+	 * }, in the run holding it, keeps its own run. Since 17.3.5 (#572): until then a placeholder whose runs were
+	 * formatted differently ("${first_" in 10pt, "name}" in the default size) stayed split, and wasn't replaced.
+	 */
+	private static void joinupPlaceholders(List<Object> contents) {
+		for (int i = 0; i < contents.size(); i++) {
+			Text open = lastText(contents.get(i));
+			if (open == null || !opensPlaceholder(open.getValue(), contents, i)) continue;
+			int close = -1;
+			for (int j = i + 1; j < contents.size(); j++) {
+				Text t = onlyText(contents.get(j));
+				if (t == null) break;
+				if (t.getValue().indexOf('}') >= 0) {
+					close = j;
+					break;
+				}
+			}
+			if (close < 0) continue;
+			StringBuilder joined = new StringBuilder(open.getValue());
+			for (int j = i + 1; j < close; j++) joined.append(onlyText(contents.get(j)).getValue());
+			Text last = onlyText(contents.get(close));
+			int brace = last.getValue().indexOf('}');
+			joined.append(last.getValue(), 0, brace + 1);
+			setText(open, joined.toString());
+			String rest = last.getValue().substring(brace + 1);
+			if (rest.isEmpty()) {
+				contents.remove(close);
+			} else {
+				setText(last, rest);
+			}
+			for (int j = close - 1; j > i; j--) contents.remove(j);
+		}
+	}
+
+	/** Whether the text opens a placeholder its run doesn't close: an unclosed ${, or a $ the next run's { follows */
+	private static boolean opensPlaceholder(String text, List<Object> contents, int i) {
+		int start = text.lastIndexOf("${");
+		if (start >= 0 && text.indexOf('}', start) < 0) return true;
+		if (text.endsWith("$") && i + 1 < contents.size()) {
+			Text next = onlyText(contents.get(i + 1));
+			return next != null && next.getValue().startsWith("{");
+		}
+		return false;
+	}
+
+	/** The run's w:t, where it holds nothing else; null otherwise */
+	private static Text onlyText(Object o) {
+		if (!(o instanceof R) || ((R)o).getContent().size() != 1) return null;
+		return lastText(o);
+	}
+
+	/** The run's last w:t, where its content ends with one; null otherwise */
+	private static Text lastText(Object o) {
+		if (!(o instanceof R) || ((R)o).getContent().isEmpty()) return null;
+		List<Object> content = ((R)o).getContent();
+		Object last = content.get(content.size() - 1);
+		if (last instanceof JAXBElement && ((JAXBElement)last).getName().equals(_RT_QNAME)) {
+			return (Text)XmlUtils.unwrap(last);
+		}
+		return null;
+	}
+
+	private static void setText(Text t, String value) {
+		t.setValue(value);
+		if (value.startsWith(" ") || value.endsWith(" ")) t.setSpace("preserve");
 	}
 
 	public static class TraversalUtilParagraphVisitor extends TraversalUtilVisitor<P> {

@@ -842,6 +842,10 @@ public class XmlUtils {
 			else {
 				strB.append(wmlTemplateString.substring(offset, startKey));
 				int keyEnd = wmlTemplateString.indexOf('}', startKey);
+				if (keyEnd == -1) {
+					// a ${ with no } after it is text, not a key (since 17.3.5; it threw StringIndexOutOfBoundsException)
+					return strB.append(wmlTemplateString.substring(startKey));
+				}
 				String key = wmlTemplateString.substring(startKey + 2, keyEnd);
 				Object val = mappings.get(key);
 				if (val == null) {
