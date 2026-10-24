@@ -22,7 +22,8 @@ import org.junit.Test;
  *
  * - the sdtPr's w:rPr is applied to the generated runs (previously lost under
  *   NonXSLT/StAX),
- * - an empty result restores the placeholder ("Click here to enter text."),
+ * - an empty result restores the placeholder ("Click or tap here to enter text.", Word 365's wording
+ *   since CR-063), in Word's form: the control names a glossary entry (D1 to D3),
  * - a bound sdt whose content is a w:tbl gets its value (previously silently
  *   left unbound under NonXSLT/StAX).
  *
@@ -185,9 +186,10 @@ public class TextBindParityTest {
 		// binding + RptPosCon sanity
 		assertTrue(implementation, allText.contains("First repeat 1, 2 et 3."));
 
-		// empty result restores the placeholder
+		// empty result restores the placeholder, Word's default entry's text (CR-063 D5)
 		assertTrue(implementation + ": placeholder not restored",
-				allText.contains("Click here to enter text."));
+				allText.contains("Click or tap here to enter text."));
+		assertFalse(implementation + ": Word 2010's wording", allText.contains("Click here to enter text."));
 		assertFalse(implementation, allText.contains("OLDVALUE"));
 
 		// tbl-shaped bind
@@ -268,19 +270,26 @@ public class TextBindParityTest {
 		assertFalse(implementation + ": w:text not stripped (Word 2007 fix)",
 				linkSdt.has(org.docx4j.wml.CTSdtText.class));
 
-		// restored placeholder: w:showingPlcHdr added
+		// restored placeholder: w:showingPlcHdr added, and (CR-063 D3) the control, a text control
+		// naming no entry, names Word's default entry, which the fixture's glossary holds already
 		SdtPrInspector emptySdt = new SdtPrInspector("XEmpty");
 		new TraversalUtil(pkg.getMainDocumentPart().getContent(), emptySdt);
 		assertTrue(implementation, emptySdt.found!=null);
 		assertTrue(implementation + ": w:showingPlcHdr not added",
 				emptySdt.hasElement("showingPlcHdr"));
+		assertEquals(implementation + ": Word's default entry not named",
+				PlaceholderEntries.DEFAULT_ENTRY, PlaceholderEntries.nameOf(emptySdt.found));
 
-		// w:placeholder stripped from bound sdts
+		// w:placeholder kept on bound sdts (CR-063 D1; until 17.3.5 it was stripped)
 		SdtPrInspector rankSdt = new SdtPrInspector("od:xpath=Ff9025b08");
 		new TraversalUtil(pkg.getMainDocumentPart().getContent(), rankSdt);
 		assertTrue(implementation, rankSdt.found!=null);
-		assertFalse(implementation + ": w:placeholder not stripped",
+		assertTrue(implementation + ": w:placeholder not kept",
 				rankSdt.has(org.docx4j.wml.CTPlaceholder.class));
+
+		// the glossary's two entries as they were: nothing added for a default it holds (CR-063 §11)
+		assertEquals(implementation + ": glossary entries", 2, pkg.getMainDocumentPart()
+				.getGlossaryDocumentPart().getContents().getDocParts().getDocPart().size());
 
 		// sdtPr rPr applied: rank instance 2's bound run is bold
 		BoldRunFinder finder = new BoldRunFinder("2");

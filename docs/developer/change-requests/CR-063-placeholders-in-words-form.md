@@ -1,7 +1,8 @@
 # CR-063: content-control placeholders written in Word's form
 
-Status: ACCEPTED 2026-10-25 (Jason: "CR-063 D1 to D6 accepted as recommended, please implement"): D1 to D6 as
-recommended in §6, D7 decided earlier; phases 1 to 3 next. PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session
+Status: PHASES 1 AND 2 DONE 2026-10-25 (§12; Claude Fable 5.1, session docx4j-25); phase 3, Jason's Word check,
+next. ACCEPTED 2026-10-25 (Jason: "CR-063 D1 to D6 accepted as recommended, please implement"): D1 to D6 as
+recommended in §6, D7 decided earlier. PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session
 docx4j-25) at docx4j-core-ts's request, from Jason ("Jason asks that docx4j consider writing Word's form; it's your
 decision"): its checks 63 and 64 compared the bare placeholder docx4j's binding writes with Word's form. (Check 63's
 lost writes turned out to be Word's Design Mode, so the case for the change is the template's placeholder text and
@@ -287,3 +288,68 @@ binding run twice, or over a glossary already holding the default, must not add 
 
 **Still to measure** (a short Word check, before dates and lists get Word's form): the entries Word makes for a date
 picker, a drop-down list and a combo box, their names and text.
+
+## 12. Phases 1 and 2: the implementation (2026-10-25, Claude Fable 5.1, session docx4j-25)
+
+Built together, since D2 and D3 share the step D1 clears. `PlaceholderEntries` (new,
+`org.docx4j.model.datastorage`) holds the rules for all three binders; bind.xslt and
+`BindingTraverserCommonImpl` call it where `w:showingPlcHdr` is decided, which sees the `w:sdtPr` and the content.
+
+**D1.** bind.xslt's `<xsl:template match="w:placeholder"/>` and `postBindSdtPrHygiene`'s
+`removeFromSdtPr(CTPlaceholder)` are gone; `w:placeholder` survives binding on every control, bound with a value,
+bound and empty, or unbound.
+
+**D2.** `PlaceholderEntries.referenceFor(pkg, sdtPr)` gives the entry the control shows; `contentOf(pkg, entry, rPr)`
+a copy of its `w:docPartBody` paragraphs. What a control shows follows core-ts's §63.18: a block-level control shows
+every paragraph, each run as the glossary holds it with the control's `w:rPr` applied over it (as `createPlaceholder`
+applies it today); the control's own paragraph keeps its `w:pPr`, and the entry's further paragraphs get a copy of
+it. The entry's `w:pPr` (naming the glossary's own styles), proofing marks and bookmarks stay in the glossary. A
+run-level control shows the first paragraph's runs. In bind.xslt the content goes through
+`BindingTraverserXSLT.placeholderContent`, which replaces the control's own placeholder run (Placeholder Text style,
+not inside a nested `w:sdt`); the `w:sdtPr` template gets an `ownContent` parameter, true at the bound text and
+date branches, so a condition's template content (whose placeholder runs belong to nested controls) is left alone, as
+before. In the other binders `postBindSdtPrHygiene` replaces the contents; `applyBoundContent` places the further
+paragraphs after the control's.
+
+**D3.** `referenceFor`: the entry the control names, where the glossary holds it; else, for a text control (no
+`w:date`, list, picture, docPart, equation, citation, group, bibliography, `w14:checkbox`, `w15:repeatingSection`),
+`DefaultPlaceholder_-1854013440`, written into the glossary where missing (the CR §1 entry, GUID
+`{7D21F9BC-12A3-463E-B08F-7DD4FFC77A03}`), and named in the control, replacing a missing entry's name; null for
+any other kind naming none, which keeps today's run and whatever reference it had. Idempotent: the entry is looked
+up by name before it is added.
+
+**D4.** `BindingTraverserXSLT.configuredPlaceholderRun()` is the configured run where it differs from
+`placeholder.xml`'s (compared marshalled), null otherwise. For it, `ensureEntryFor` reuses the glossary entry
+whose body is one paragraph holding that run, else adds one named with 32 upper-case hex digits (a new GUID's), its
+own `w:guid`, the default's `w:docPartPr`. One entry per distinct run per document, across controls and binding
+runs. Where a run is configured, it is the default for a missing entry too (a deployment that configures its own
+wording wants it everywhere; the CR said "replaced by the default").
+
+**D5.** `placeholder.xml` says "Click or tap here to enter text."; the parity fixture's assertions moved with it.
+
+**D7.** `ensureGlossary`: a `GlossaryDocumentPart` with an empty `w:docParts`, added to the main document part,
+where there is none; `/word/glossary/styles.xml` (a `StyleDefinitionsPart`) related from it, holding Default
+Paragraph Font and Placeholder Text as §10 gives them, added where the glossary has no styles part; the two styles
+added to a styles part that lacks them. A glossary whose entry the control names is not touched.
+
+**Also fixed on the way.** `createPlaceholder(rPr, sdtParent)` for a block-level parent replaced the run's
+`w:rPr` with the control's, losing the Placeholder Text style (so no `w:showingPlcHdr`, and now no entry); it
+applies the control's over the run's, as the run-level case does. The `w:sdtPr` template no longer copies a
+template's own `w:showingPlcHdr` beside the one it adds.
+
+**Tests** (`docx4j-core-tests`, all three binders): `PlaceholderEntriesTest` (code-built templates: the default
+entry and glossary made, round-trip and a second binding run adding nothing; a two-paragraph entry shown
+paragraphs and all, block and run-level, D1 on bound and unbound controls; a missing entry replaced; a date control
+left alone; the binders agree), `PlaceholderConfiguredRunTest` (D4; its own class, since the run is read once per
+JVM), and `TextBindParityTest` (the fixture's `XEmpty` names the default, the rank control keeps its reference, the
+glossary's two entries stay two). Full suites green: core-tests, export-fo-tests, diffx.
+
+**Not done here.**
+- Phase 3: Jason's Word check that Word opens the output without repair and that check 65's writes reach the node;
+  sample outputs are at `/home/jharrop/vbShares/Office 2016/__tmp/cr063/` (see the hand-off).
+- The OpenDoPE specification WD (`docs/OpenDoPE Specification v3 WD 2026 09 18.docx`) still says a processor MUST
+  remove `w:placeholder` (REQ-025) and insert placeholder text (REQ-024); the WD is Jason's to revise (the docx is
+  canonical; its md is derived). Getting Started's binding example quotes the old wording.
+- Dates, drop-down lists and combo boxes naming no entry: Word's entries for them unmeasured (§11).
+- Ports: core-ts follows docx4j on copying `w:docPartBody` and on replacing a missing entry's name (§11);
+  docx4j-python told.

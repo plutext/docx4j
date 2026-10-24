@@ -23,6 +23,14 @@ Claude Opus 5.5
 Changes in Version 17.3.5
 --------------------------
 
+* Binding writes a content control's placeholder in Word's form (CR-063): w:placeholder is kept on
+  every control (it was dropped); an empty value shows the glossary entry the control names, a copy
+  of its paragraphs, so a template's own placeholder text survives binding; a text control naming
+  none, or a missing entry, is given Word's default entry (DefaultPlaceholder_-1854013440), added to
+  the glossary, which is made where the document has none (the glossary document part and a styles
+  part holding Placeholder Text). The default's wording is Word 365's, "Click or tap here to enter
+  text."; a configured placeholder run (docx4j.model.datastorage.placeholder) becomes an entry of
+  its own. Date, list and picture controls naming no entry keep today's placeholder run.
 * HTML output draws an underline's style (double, dotted, dashed, wavy, thick ...) and colour, a double
   strike, and emphasis marks (w:em), through CSS text-decoration-* and text-emphasis (CR-062); a run
   both underlined and struck through keeps both lines, in HTML and PDF (it lost its strike). PDF

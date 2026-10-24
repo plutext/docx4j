@@ -441,7 +441,15 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		} else {
 						
 			R run = (R)XmlUtils.unmarshal(new ByteArrayInputStream(placeholderBytes));
-			run.setRPr(rPr);
+			// the control's rPr applied over the run's, which keeps the Placeholder Text style the
+			// w:showingPlcHdr decision (and CR-063's entry lookup) is made on; until 17.3.5 the run's
+			// rPr was replaced, so a block-level control with a w:rPr lost the style
+			if (rPr!=null) {
+				if (run.getRPr()==null) {
+					run.setRPr(new RPr());
+				}
+				StyleUtil.apply(rPr, run.getRPr());
+			}
 			Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(run);
 			
 			DocumentFragment docfrag = tmpDoc.createDocumentFragment();
@@ -517,6 +525,179 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			
 		}
 		placeholderBytes = IOUtils.toByteArray(is);		
+	}
+
+	private static R configuredPlaceholderRun = null;
+	private static boolean configuredPlaceholderRunResolved = false;
+
+	/**
+	 * CR-063 D4: the placeholder run a deployment configured (docx4j.model.datastorage.placeholder),
+	 * or null where the run in use is docx4j's own (placeholder.xml), whose glossary entry is Word's
+	 * default. Not to be modified by the caller.
+	 * @since 17.3.5
+	 */
+	static synchronized R configuredPlaceholderRun() {
+		if (!configuredPlaceholderRunResolved) {
+			configuredPlaceholderRunResolved = true;
+			try {
+				if (placeholderBytes==null) {
+					createPlaceholderBytes();
+				}
+				R run = (R)XmlUtils.unmarshal(new ByteArrayInputStream(placeholderBytes));
+				R fallback = (R)XmlUtils.unmarshal(ResourceUtils.getResource(placeholderResourceFallback));
+				if (!XmlUtils.marshaltoString(run, true, false).equals(XmlUtils.marshaltoString(fallback, true, false))) {
+					configuredPlaceholderRun = run;
+					log.info("A configured placeholder run is in use; its glossary entry will be its own (CR-063 D4)");
+				}
+			} catch (Exception e) {
+				log.error(e.getMessage(), e);
+			}
+		}
+		return configuredPlaceholderRun;
+	}
+
+	/**
+	 * CR-063: the w:placeholder of a control showing its placeholder, for bind.xslt's w:sdtPr template:
+	 * the entry the control shows ({@link PlaceholderEntries#referenceFor}), where the placeholder run
+	 * in the content is the control's own (not a nested control's); otherwise the reference the control
+	 * has, if any. The glossary gains the entry where it lacks it. Returns an empty fragment where the
+	 * control is to have no w:placeholder.
+	 * @since 17.3.5
+	 */
+	public static DocumentFragment placeholderReference(WordprocessingMLPackage pkg,
+			NodeIterator sdtPrNodeIt, NodeIterator contentNodeIt) {
+
+		Document doc = XmlUtils.neww3cDomDocument();
+		DocumentFragment frag = doc.createDocumentFragment();
+		try {
+			SdtPr sdtPr = (SdtPr)XmlUtils.unmarshal(sdtPrNodeIt.nextNode());
+			Node content = contentNodeIt==null ? null : contentNodeIt.nextNode();
+			String name = null;
+			if (content!=null && ownPlaceholderRun(content, false)!=null) {
+				name = PlaceholderEntries.referenceFor(pkg, sdtPr);
+			}
+			if (name==null) {
+				name = PlaceholderEntries.nameOf(sdtPr);
+			}
+			if (name==null) return frag;
+			org.docx4j.wml.CTPlaceholder ph = Context.getWmlObjectFactory().createCTPlaceholder();
+			if (!name.isEmpty()) {
+				org.docx4j.wml.CTPlaceholder.DocPart dp = Context.getWmlObjectFactory().createCTPlaceholderDocPart();
+				dp.setVal(name);
+				ph.setDocPart(dp);
+			}
+			Document marshalled = XmlUtils.marshaltoW3CDomDocument(
+					Context.getWmlObjectFactory().createSdtPrPlaceholder(ph));
+			frag.appendChild(doc.importNode(marshalled.getDocumentElement(), true));
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		return frag;
+	}
+
+	/**
+	 * CR-063 D2: the content a control shows, for bind.xslt: where the generated content is the control's
+	 * own placeholder run (Placeholder Text style, not inside a nested control) and the control shows a
+	 * glossary entry ({@link PlaceholderEntries#referenceFor}), the run is replaced by a copy of the
+	 * entry's content: its first paragraph's run-level content in the run's place and, where the run
+	 * is in a paragraph, the entry's further paragraphs after it (each under the paragraph's own
+	 * w:pPr). Otherwise a copy of the content as it came.
+	 * @since 17.3.5
+	 */
+	public static DocumentFragment placeholderContent(WordprocessingMLPackage pkg,
+			NodeIterator sdtPrNodeIt, NodeIterator contentNodeIt) {
+
+		Document doc = XmlUtils.neww3cDomDocument();
+		DocumentFragment frag = doc.createDocumentFragment();
+		Node content = contentNodeIt.nextNode();
+		if (content==null) return frag;
+		if (content.getNodeType()==Node.DOCUMENT_NODE || content.getNodeType()==Node.DOCUMENT_FRAGMENT_NODE) {
+			for (Node n = content.getFirstChild(); n!=null; n = n.getNextSibling()) {
+				frag.appendChild(doc.importNode(n, true));
+			}
+		} else {
+			frag.appendChild(doc.importNode(content, true));
+		}
+		try {
+			org.w3c.dom.Element run = ownPlaceholderRun(frag, false);
+			if (run==null) return frag;
+			SdtPr sdtPr = (SdtPr)XmlUtils.unmarshal(sdtPrNodeIt.nextNode());
+			String entry = PlaceholderEntries.referenceFor(pkg, sdtPr);
+			if (entry==null) return frag;
+			List<P> paragraphs = PlaceholderEntries.contentOf(pkg, entry, (RPr)sdtPr.getByClass(RPr.class));
+			if (paragraphs==null) return frag;
+
+			Node parent = run.getParentNode();
+			boolean inParagraph = parent instanceof org.w3c.dom.Element
+					&& Namespaces.NS_WORD12.equals(parent.getNamespaceURI()) && "p".equals(parent.getLocalName());
+
+			org.w3c.dom.Element first = (org.w3c.dom.Element)doc.importNode(
+					XmlUtils.marshaltoW3CDomDocument(paragraphs.get(0)).getDocumentElement(), true);
+			while (first.getFirstChild()!=null) {
+				parent.insertBefore(first.getFirstChild(), run);
+			}
+			parent.removeChild(run);
+
+			if (inParagraph && paragraphs.size()>1) {
+				Node container = parent.getParentNode();
+				Node after = parent.getNextSibling();
+				org.w3c.dom.Element pPr = null;
+				for (Node n = parent.getFirstChild(); n!=null; n = n.getNextSibling()) {
+					if (n.getNodeType()==Node.ELEMENT_NODE && "pPr".equals(n.getLocalName())
+							&& Namespaces.NS_WORD12.equals(n.getNamespaceURI())) {
+						pPr = (org.w3c.dom.Element)n;
+					}
+				}
+				for (int i=1; i<paragraphs.size(); i++) {
+					org.w3c.dom.Element p = (org.w3c.dom.Element)doc.importNode(
+							XmlUtils.marshaltoW3CDomDocument(paragraphs.get(i)).getDocumentElement(), true);
+					if (pPr!=null) {
+						p.insertBefore(pPr.cloneNode(true), p.getFirstChild());
+					}
+					container.insertBefore(p, after);
+				}
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		return frag;
+	}
+
+	/**
+	 * The first w:r in Placeholder Text style under this node that is not inside a w:sdt, or null.
+	 */
+	private static org.w3c.dom.Element ownPlaceholderRun(Node node, boolean insideSdt) {
+		for (Node n = node.getFirstChild(); n!=null; n = n.getNextSibling()) {
+			if (n.getNodeType()!=Node.ELEMENT_NODE) continue;
+			boolean w = Namespaces.NS_WORD12.equals(n.getNamespaceURI());
+			String local = n.getLocalName();
+			if (w && "sdt".equals(local)) {
+				org.w3c.dom.Element found = ownPlaceholderRun(n, true);
+				if (found!=null) return found;
+				continue;
+			}
+			if (w && "r".equals(local) && !insideSdt && isPlaceholderRun((org.w3c.dom.Element)n)) {
+				return (org.w3c.dom.Element)n;
+			}
+			org.w3c.dom.Element found = ownPlaceholderRun(n, insideSdt);
+			if (found!=null) return found;
+		}
+		return null;
+	}
+
+	private static boolean isPlaceholderRun(org.w3c.dom.Element r) {
+		for (Node n = r.getFirstChild(); n!=null; n = n.getNextSibling()) {
+			if (n.getNodeType()==Node.ELEMENT_NODE && "rPr".equals(n.getLocalName())) {
+				for (Node m = n.getFirstChild(); m!=null; m = m.getNextSibling()) {
+					if (m.getNodeType()==Node.ELEMENT_NODE && "rStyle".equals(m.getLocalName())
+							&& PlaceholderEntries.PLACEHOLDER_STYLE.equals(
+									((org.w3c.dom.Element)m).getAttributeNS(Namespaces.NS_WORD12, "val"))) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 	
 	private static Boolean importXHTMLMissing = null;

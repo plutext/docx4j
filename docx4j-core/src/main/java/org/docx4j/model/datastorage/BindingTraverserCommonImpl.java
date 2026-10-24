@@ -120,7 +120,7 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 
 		List<Object> contents = fragmentToJaxb(frag);
 		if (contents!=null) {
-			postBindSdtPrHygiene(sdtPr, contents);
+			postBindSdtPrHygiene(pkg, sdtPr, contents);
 			writeBackStoreItemId(pkg, sdtPr);
 		}
 		return contents;
@@ -148,10 +148,16 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 	 * - where the content contains a w:hyperlink, strip w:dataBinding and
 	 *   w:text (Word 2007 can't open the docx otherwise);
 	 * - where the content is the restored placeholder, add w:showingPlcHdr
-	 *   (so RemovalHandler does the right thing for ALL_BUT_PLACEHOLDERS);
-	 * - strip w:placeholder.
+	 *   (so RemovalHandler does the right thing for ALL_BUT_PLACEHOLDERS), and show
+	 *   the placeholder in Word's form (CR-063): the control names a glossary entry
+	 *   (the one it names, else Word's default, added to the glossary where missing),
+	 *   and the contents become a copy of the entry's: its first paragraph's run-level
+	 *   content, then its further paragraphs as w:p objects, which applyBoundContent
+	 *   places after the control's paragraph (a run-level control shows the first).
+	 * w:placeholder is kept (until 17.3.5 it was stripped here; CR-063 D1).
 	 */
-	private static void postBindSdtPrHygiene(SdtPr sdtPr, List<Object> contents) {
+	private static void postBindSdtPrHygiene(org.docx4j.openpackaging.packages.OpcPackage pkg,
+			SdtPr sdtPr, List<Object> contents) {
 
 		boolean hasHyperlink = false;
 		boolean isPlaceholderContent = false;
@@ -172,11 +178,20 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 		}
 		if (isPlaceholderContent) {
 			sdtPr.setShowingPlcHdr(true);
+			if (pkg instanceof WordprocessingMLPackage) {
+				String entry = PlaceholderEntries.referenceFor((WordprocessingMLPackage) pkg, sdtPr);
+				List<P> paragraphs = entry == null ? null : PlaceholderEntries.contentOf(
+						(WordprocessingMLPackage) pkg, entry, (org.docx4j.wml.RPr) sdtPr.getByClass(org.docx4j.wml.RPr.class));
+				if (paragraphs != null) {
+					contents.clear();
+					contents.addAll(new ArrayList<Object>(paragraphs.get(0).getContent()));
+					for (int i = 1; i < paragraphs.size(); i++) contents.add(paragraphs.get(i));
+				}
+			}
 		} else {
 			// a drop-down list or combo box: w:lastValue, as Word's save writes it (bind.xslt's w:dropDownList template)
 			ListControls.setLastValue(sdtPr, textOf(contents));
 		}
-		removeFromSdtPr(sdtPr, org.docx4j.wml.CTPlaceholder.class);
 	}
 
 	private static String textOf(List<Object> contents) {
@@ -555,10 +570,18 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 	 * Put the generated content into the sdt, rebuilding the existing content's
 	 * structure as bind.xslt does: the generated runs land in the (first) paragraph
 	 * of whatever p / tc / tr / tbl skeleton the template content had; other
-	 * template content is replaced outright.
+	 * template content is replaced outright. Any w:p objects in the contents are a
+	 * placeholder entry's further paragraphs (CR-063 D2), placed after that paragraph
+	 * (and dropped where the control is run-level, which shows the first paragraph).
 	 * @since 17.0.4
 	 */
 	protected void applyBoundContent(SdtElement sdt, List<Object> contents) {
+
+		List<Object> runs = new ArrayList<Object>(contents.size());
+		List<Object> paragraphs = new ArrayList<Object>();
+		for (Object o : contents) {
+			(XmlUtils.unwrap(o) instanceof P ? paragraphs : runs).add(o);
+		}
 
 		List<Object> sdtContent = sdt.getSdtContent().getContent();
 		Object first = firstOf(sdtContent);
@@ -566,17 +589,18 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 		if (first instanceof P) {
 			P p = (P)first;
 			p.getContent().clear();
-			p.getContent().addAll(contents);
+			p.getContent().addAll(runs);
+			sdtContent.addAll(sdtContent.indexOf(first) + 1, underPPrOf(p, paragraphs));
 
 		} else if (first instanceof Tc) {
-			fillTc((Tc)first, contents);
+			fillTc((Tc)first, runs, paragraphs);
 
 		} else if (first instanceof Tr) {
 			Tr tr = (Tr)first;
 			Tc tc = firstDescendant(tr.getContent(), Tc.class);
 			tr.getContent().clear();
 			if (tc==null) tc = Context.getWmlObjectFactory().createTc();
-			fillTc(tc, contents);
+			fillTc(tc, runs, paragraphs);
 			tr.getContent().add(tc);
 
 		} else if (first instanceof Tbl) {
@@ -587,24 +611,36 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 			if (tr==null) tr = Context.getWmlObjectFactory().createTr();
 			tr.getContent().clear();
 			if (tc==null) tc = Context.getWmlObjectFactory().createTc();
-			fillTc(tc, contents);
+			fillTc(tc, runs, paragraphs);
 			tr.getContent().add(tc);
 			tbl.getContent().add(tr);
 
 		} else {
 			// run-level sdt (content is run(s) directly), or empty
 			sdtContent.clear();
-			sdtContent.addAll(contents);
+			sdtContent.addAll(runs);
 		}
 	}
 
-	private void fillTc(Tc tc, List<Object> contents) {
+	private void fillTc(Tc tc, List<Object> contents, List<Object> paragraphs) {
 		P p = firstDescendant(tc.getContent(), P.class);
 		tc.getContent().clear();
 		if (p==null) p = Context.getWmlObjectFactory().createP();
 		p.getContent().clear();
 		p.getContent().addAll(contents);
 		tc.getContent().add(p);
+		tc.getContent().addAll(underPPrOf(p, paragraphs));
+	}
+
+	/** The further paragraphs, each given a copy of the control's paragraph's w:pPr (as bind.xslt gives them). */
+	private static List<Object> underPPrOf(P p, List<Object> paragraphs) {
+		for (Object o : paragraphs) {
+			P extra = (P)XmlUtils.unwrap(o);
+			if (extra.getPPr()==null && p.getPPr()!=null) {
+				extra.setPPr(XmlUtils.deepCopy(p.getPPr()));
+			}
+		}
+		return paragraphs;
 	}
 
 	private static <T> T firstDescendant(List<Object> list, Class<T> type) {
@@ -663,7 +699,7 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 			// an empty stored value: the placeholder, as for an empty text binding (Word 365, CR-058 D3)
 			try {
 				contents = fragmentToJaxb(BindingTraverserXSLT.createPlaceholder(run.getRPr(), "p"));
-				postBindSdtPrHygiene(sdt.getSdtPr(), contents);
+				postBindSdtPrHygiene(pkg, sdt.getSdtPr(), contents);
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
 				contents.add(run);

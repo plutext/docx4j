@@ -1,0 +1,392 @@
+/*
+ *  Copyright 2026, Plutext Pty Ltd.
+ *
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+ */
+package org.docx4j.model.datastorage;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.docx4j.Docx4J;
+import org.docx4j.Docx4jProperties;
+import org.docx4j.XmlUtils;
+import org.docx4j.customXmlProperties.DatastoreItem;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
+import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
+import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.CTDocPart;
+import org.docx4j.wml.GlossaryDocument;
+import org.docx4j.wml.Style;
+import org.junit.Test;
+import org.xml.sax.InputSource;
+
+/**
+ * CR-063: a content control's placeholder in Word's form, from the three binders alike. An empty bound
+ * value shows the glossary entry the control's {@code w:placeholder} names (D2), a copy of the entry's
+ * paragraphs under the control's run properties; a text control naming none, or a missing entry, is
+ * given Word's default entry, {@code DefaultPlaceholder_-1854013440}, the glossary made where the
+ * document has none (D3, D7: the glossary document part and a styles part holding Placeholder Text);
+ * the reference survives binding, bound or not (D1); a date control naming none keeps today's run (D3,
+ * revised); binding twice adds nothing. The default's wording is Word 365's (D5). Word's behaviour is
+ * core-ts's checks 64 to 66 (CR-063 §1, §9, §10); the content copy follows core-ts's section 63.18.
+ */
+public class PlaceholderEntriesTest {
+
+	private static final String IMPL_PROPERTY = "docx4j.model.datastorage.BindingHandler.Implementation";
+	private static final String[] IMPLEMENTATIONS = { "BindingTraverserXSLT", "BindingTraverserNonXSLT", "BindingTraverserStAX" };
+
+	private static final String ITEM_ID = "{A1B2C3D4-0000-4000-8000-000000000063}";
+	private static final String DEFAULT = PlaceholderEntries.DEFAULT_ENTRY;
+	private static final String DEFAULT_TEXT = PlaceholderEntries.DEFAULT_TEXT;
+	private static final String ENTRY = "6767ABCDEF0123456789ABCDEF012345";
+
+	private static final String W = "xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"";
+
+	/** A bound run-level text control, with this alias, over this XPath, naming this entry (or none). */
+	private static String runControl(String alias, String xpath, String entry, String rPr) {
+		return "<w:p><w:r><w:t xml:space=\"preserve\">Before </w:t></w:r><w:sdt><w:sdtPr>" + (rPr == null ? "" : rPr)
+				+ "<w:alias w:val=\"" + alias + "\"/><w:tag w:val=\"" + alias + "\"/><w:id w:val=\"" + alias.hashCode() + "\"/>"
+				+ (entry == null ? "" : "<w:placeholder><w:docPart w:val=\"" + entry + "\"/></w:placeholder>")
+				+ "<w:dataBinding w:xpath=\"" + xpath + "\" w:storeItemID=\"" + ITEM_ID + "\"/><w:text/></w:sdtPr>"
+				+ "<w:sdtContent><w:r><w:t>STALE</w:t></w:r></w:sdtContent></w:sdt><w:r><w:t xml:space=\"preserve\"> after.</w:t></w:r></w:p>";
+	}
+
+	/** A bound block-level text control whose paragraph has a w:pPr. */
+	private static String blockControl(String alias, String xpath, String entry, String rPr) {
+		return "<w:sdt><w:sdtPr>" + (rPr == null ? "" : rPr)
+				+ "<w:alias w:val=\"" + alias + "\"/><w:tag w:val=\"" + alias + "\"/><w:id w:val=\"" + alias.hashCode() + "\"/>"
+				+ (entry == null ? "" : "<w:placeholder><w:docPart w:val=\"" + entry + "\"/></w:placeholder>")
+				+ "<w:dataBinding w:xpath=\"" + xpath + "\" w:storeItemID=\"" + ITEM_ID + "\"/><w:text/></w:sdtPr>"
+				+ "<w:sdtContent><w:p><w:pPr><w:jc w:val=\"center\"/></w:pPr><w:r><w:t>STALE</w:t></w:r></w:p></w:sdtContent></w:sdt>";
+	}
+
+	private static String dateControl(String alias, String xpath) {
+		return "<w:p><w:sdt><w:sdtPr><w:alias w:val=\"" + alias + "\"/><w:tag w:val=\"" + alias + "\"/><w:id w:val=\"" + alias.hashCode() + "\"/>"
+				+ "<w:dataBinding w:xpath=\"" + xpath + "\" w:storeItemID=\"" + ITEM_ID + "\"/>"
+				+ "<w:date><w:dateFormat w:val=\"d MMMM yyyy\"/><w:lid w:val=\"en-AU\"/><w:storeMappedDataAs w:val=\"dateTime\"/></w:date></w:sdtPr>"
+				+ "<w:sdtContent><w:r><w:t>STALE</w:t></w:r></w:sdtContent></w:sdt></w:p>";
+	}
+
+	private static String docPart(String name, String body) {
+		return "<w:docPart><w:docPartPr><w:name w:val=\"" + name + "\"/><w:category><w:name w:val=\"General\"/>"
+				+ "<w:gallery w:val=\"placeholder\"/></w:category><w:types><w:type w:val=\"bbPlcHdr\"/></w:types>"
+				+ "<w:behaviors><w:behavior w:val=\"content\"/></w:behaviors><w:guid w:val=\"{11111111-2222-4333-8444-555555555555}\"/></w:docPartPr>"
+				+ "<w:docPartBody>" + body + "</w:docPartBody></w:docPart>";
+	}
+
+	/** An entry of two paragraphs (a bold run and a plain one; one more), each paragraph styled in the glossary. */
+	private static final String TWO_PARAGRAPH_ENTRY = docPart(ENTRY,
+			"<w:p><w:pPr><w:pStyle w:val=\"" + ENTRY + "\"/></w:pPr>"
+			+ "<w:r><w:rPr><w:rStyle w:val=\"PlaceholderText\"/><w:b/></w:rPr><w:t xml:space=\"preserve\">Enter </w:t></w:r>"
+			+ "<w:r><w:rPr><w:rStyle w:val=\"PlaceholderText\"/></w:rPr><w:t>the name,</w:t></w:r></w:p>"
+			+ "<w:p><w:pPr><w:pStyle w:val=\"" + ENTRY + "\"/></w:pPr>"
+			+ "<w:r><w:rPr><w:rStyle w:val=\"PlaceholderText\"/></w:rPr><w:t>then the date.</w:t></w:r></w:p>");
+
+	/**
+	 * A code-built template: the body's blocks, a custom XML part {@code <root><a>VALUE</a><empty/></root>},
+	 * and a glossary of these entries (none where null). Saved and reloaded, as a template is.
+	 */
+	private static WordprocessingMLPackage template(String blocks, String glossaryEntries) throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		MainDocumentPart main = pkg.getMainDocumentPart();
+		main.setJaxbElement((org.docx4j.wml.Document) XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>" + blocks + "</w:body></w:document>"));
+
+		CustomXmlDataStoragePart cx = new CustomXmlDataStoragePart();
+		CustomXmlDataStorage data = new CustomXmlDataStorageImpl();
+		data.setDocument(XmlUtils.getNewDocumentBuilder().parse(new InputSource(new StringReader(
+				"<root><a>VALUE</a><empty></empty></root>"))));
+		cx.setData(data);
+		main.addTargetPart(cx);
+		CustomXmlDataStoragePropertiesPart props = new CustomXmlDataStoragePropertiesPart();
+		DatastoreItem dsi = new org.docx4j.customXmlProperties.ObjectFactory().createDatastoreItem();
+		dsi.setItemID(ITEM_ID);
+		props.setJaxbElement(dsi);
+		cx.addTargetPart(props);
+
+		if (glossaryEntries != null) {
+			GlossaryDocumentPart glossary = new GlossaryDocumentPart();
+			glossary.setJaxbElement((GlossaryDocument) XmlUtils.unmarshalString(
+					"<w:glossaryDocument " + W + "><w:docParts>" + glossaryEntries + "</w:docParts></w:glossaryDocument>"));
+			main.addTargetPart(glossary);
+		}
+		return reload(pkg);
+	}
+
+	private static WordprocessingMLPackage reload(WordprocessingMLPackage pkg) throws Exception {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		pkg.save(bos);
+		return WordprocessingMLPackage.load(new ByteArrayInputStream(bos.toByteArray()));
+	}
+
+	private static WordprocessingMLPackage bind(WordprocessingMLPackage pkg, String implementation) throws Exception {
+		Docx4jProperties.setProperty(IMPL_PROPERTY, implementation);
+		try {
+			Docx4J.bind(pkg, (org.w3c.dom.Document) null, Docx4J.FLAG_BIND_BIND_XML);
+			return pkg;
+		} finally {
+			Docx4jProperties.setProperty(IMPL_PROPERTY, "BindingTraverserXSLT");
+		}
+	}
+
+	private static String mainXml(WordprocessingMLPackage pkg) throws Exception {
+		return XmlUtils.marshaltoString(pkg.getMainDocumentPart().getJaxbElement(), true, false);
+	}
+
+	/** The control with this alias, as marshalled. */
+	private static String control(String xml, String alias) {
+		Matcher m = Pattern.compile("<w:sdt>(?:(?!<w:sdt>).)*?<w:alias w:val=\"" + alias + "\"/>.*?</w:sdt>", Pattern.DOTALL).matcher(xml);
+		assertTrue("control " + alias + " in " + xml, m.find());
+		return m.group();
+	}
+
+	private static String sdtPr(String control) {
+		return control.substring(0, control.indexOf("</w:sdtPr>"));
+	}
+
+	private static String sdtContent(String control) {
+		return control.substring(control.indexOf("<w:sdtContent>"));
+	}
+
+	/** The control's text: its {@code w:t} contents joined. */
+	private static String shown(String control) {
+		Matcher m = Pattern.compile("<w:t(?: [^>]*)?>(.*?)</w:t>", Pattern.DOTALL).matcher(sdtContent(control));
+		StringBuilder sb = new StringBuilder();
+		while (m.find()) sb.append(m.group(1));
+		return sb.toString();
+	}
+
+	private static String reference(String control) {
+		Matcher m = Pattern.compile("<w:placeholder><w:docPart w:val=\"([^\"]*)\"/></w:placeholder>").matcher(sdtPr(control));
+		return m.find() ? m.group(1) : null;
+	}
+
+	private static List<String> entryNames(WordprocessingMLPackage pkg) throws Exception {
+		List<String> names = new ArrayList<String>();
+		GlossaryDocumentPart glossary = pkg.getMainDocumentPart().getGlossaryDocumentPart();
+		if (glossary == null) return names;
+		for (CTDocPart part : glossary.getContents().getDocParts().getDocPart()) {
+			names.add(PlaceholderEntries.nameOf(part));
+		}
+		return names;
+	}
+
+	private static void assertGlossaryStyles(String implementation, WordprocessingMLPackage pkg) throws Exception {
+		GlossaryDocumentPart glossary = pkg.getMainDocumentPart().getGlossaryDocumentPart();
+		assertNotNull(implementation + ": glossary part", glossary);
+		assertEquals(implementation, "/word/glossary/document.xml", glossary.getPartName().getName());
+		StyleDefinitionsPart styles = glossary.getStyleDefinitionsPart();
+		assertNotNull(implementation + ": the glossary's styles part", styles);
+		assertEquals(implementation, "/word/glossary/styles.xml", styles.getPartName().getName());
+		assertNotNull(implementation + ": related from the glossary", glossary.getRelationshipsPart().getRel(new PartName("/word/glossary/styles.xml")));
+		Style placeholder = null, defaultFont = null;
+		for (Style s : styles.getContents().getStyle()) {
+			if ("PlaceholderText".equals(s.getStyleId())) placeholder = s;
+			if ("DefaultParagraphFont".equals(s.getStyleId())) defaultFont = s;
+		}
+		assertNotNull(implementation + ": Default Paragraph Font", defaultFont);
+		assertTrue(implementation, Boolean.TRUE.equals(defaultFont.isDefault()) && "character".equals(defaultFont.getType()));
+		assertNotNull(implementation + ": Placeholder Text", placeholder);
+		assertEquals(implementation, "DefaultParagraphFont", placeholder.getBasedOn().getVal());
+		assertEquals(implementation, "666666", placeholder.getRPr().getColor().getVal());
+	}
+
+	/**
+	 * D3, D7: a text control naming no entry, empty, shows Word's default entry, which is added to a
+	 * glossary made for it (the document part and a styles part); a control with a value is bound as
+	 * before; binding again adds nothing.
+	 */
+	@Test
+	public void aTextControlNamingNoneGetsWordsDefaultEntryAndTheGlossary() throws Exception {
+		for (String implementation : IMPLEMENTATIONS) {
+			WordprocessingMLPackage pkg = template(
+					runControl("Empty", "/root/empty", null, null)
+					+ runControl("Value", "/root/a", null, null)
+					+ blockControl("EmptyBlock", "/root/empty", null, "<w:rPr><w:i/></w:rPr>"), null);
+			assertNull(implementation, pkg.getMainDocumentPart().getGlossaryDocumentPart());
+
+			String xml = mainXml(bind(pkg, implementation));
+			String empty = control(xml, "Empty");
+			assertEquals(implementation + ": " + empty, DEFAULT_TEXT, shown(empty));
+			assertTrue(implementation + ": " + empty, sdtPr(empty).contains("<w:showingPlcHdr/>"));
+			assertEquals(implementation + ": " + empty, DEFAULT, reference(empty));
+			assertTrue(implementation + ": the run in Placeholder Text: " + empty, sdtContent(empty).contains("<w:rStyle w:val=\"PlaceholderText\"/>"));
+			// the reference where Word writes it: before w:showingPlcHdr (the XSLT puts the flag first; either order is Word's)
+			assertEquals(implementation + ": one reference: " + empty, 1, sdtPr(empty).split("<w:placeholder>", -1).length - 1);
+
+			String block = control(xml, "EmptyBlock");
+			assertEquals(implementation + ": " + block, DEFAULT_TEXT, shown(block));
+			assertEquals(implementation + ": " + block, DEFAULT, reference(block));
+			assertTrue(implementation + ": the paragraph's pPr kept: " + block, sdtContent(block).contains("<w:jc w:val=\"center\"/>"));
+			assertTrue(implementation + ": the control's rPr applied: " + block, sdtContent(block).contains("<w:i/>"));
+			assertTrue(implementation + ": the style kept under the control's rPr: " + block, sdtContent(block).contains("<w:rStyle w:val=\"PlaceholderText\"/>"));
+
+			String value = control(xml, "Value");
+			assertEquals(implementation + ": " + value, "VALUE", shown(value));
+			assertFalse(implementation + ": " + value, sdtPr(value).contains("showingPlcHdr"));
+
+			assertEquals(implementation, java.util.Arrays.asList(DEFAULT), entryNames(pkg));
+			assertGlossaryStyles(implementation, pkg);
+			assertNotNull(PlaceholderEntries.entryOf(pkg.getMainDocumentPart().getGlossaryDocumentPart(), DEFAULT));
+			String entryXml = XmlUtils.marshaltoString(pkg.getMainDocumentPart().getGlossaryDocumentPart().getJaxbElement(), true, false);
+			for (String expected : new String[] { "<w:name w:val=\"General\"/>", "<w:gallery w:val=\"placeholder\"/>",
+					"<w:type w:val=\"bbPlcHdr\"/>", "<w:behavior w:val=\"content\"/>",
+					"<w:guid w:val=\"{7D21F9BC-12A3-463E-B08F-7DD4FFC77A03}\"/>",
+					"<w:rStyle w:val=\"PlaceholderText\"/>", "<w:t>" + DEFAULT_TEXT + "</w:t>" }) {
+				assertTrue(implementation + ": " + expected + " in " + entryXml, entryXml.contains(expected));
+			}
+
+			// the output round-trips, and a second binding run adds nothing
+			WordprocessingMLPackage again = bind(reload(pkg), implementation);
+			assertEquals(implementation + ": bound twice", java.util.Arrays.asList(DEFAULT), entryNames(again));
+			assertGlossaryStyles(implementation, again);
+			assertEquals(implementation + ": bound twice", 1, again.getMainDocumentPart().getGlossaryDocumentPart()
+					.getRelationshipsPart().getRelationshipsByType(Namespaces.STYLES).size());
+			String emptyAgain = control(mainXml(again), "Empty");
+			assertEquals(implementation, DEFAULT, reference(emptyAgain));
+			assertEquals(implementation, DEFAULT_TEXT, shown(emptyAgain));
+		}
+	}
+
+	/**
+	 * D2 (core-ts's 63.18): a control naming an entry shows a copy of the entry's content: a block
+	 * control both paragraphs, each run as the glossary holds it under the control's run properties,
+	 * the paragraph's own w:pPr kept (the entry's, naming the glossary's styles, left behind); a
+	 * run-level control the first paragraph's runs. D1: a bound control with a value keeps its
+	 * reference, and so does an unbound control. Nothing is added to the glossary.
+	 */
+	@Test
+	public void anEntryTheControlNamesIsShownParagraphsAndAll() throws Exception {
+		for (String implementation : IMPLEMENTATIONS) {
+			WordprocessingMLPackage pkg = template(
+					blockControl("Block", "/root/empty", ENTRY, "<w:rPr><w:color w:val=\"FF0000\"/></w:rPr>")
+					+ runControl("Run", "/root/empty", ENTRY, null)
+					+ runControl("Value", "/root/a", ENTRY, null)
+					+ "<w:p><w:sdt><w:sdtPr><w:alias w:val=\"Unbound\"/><w:tag w:val=\"Unbound\"/><w:id w:val=\"7\"/>"
+					+ "<w:placeholder><w:docPart w:val=\"" + ENTRY + "\"/></w:placeholder><w:text/></w:sdtPr>"
+					+ "<w:sdtContent><w:r><w:t>Typed</w:t></w:r></w:sdtContent></w:sdt></w:p>",
+					TWO_PARAGRAPH_ENTRY);
+
+			String xml = mainXml(bind(pkg, implementation));
+
+			String block = control(xml, "Block");
+			assertEquals(implementation + ": " + block, ENTRY, reference(block));
+			assertTrue(implementation + ": " + block, sdtPr(block).contains("<w:showingPlcHdr/>"));
+			assertEquals(implementation + ": " + block, "Enter the name,then the date.", shown(block));
+			String content = sdtContent(block);
+			assertEquals(implementation + ": two paragraphs: " + content, 2, content.split("<w:p>", -1).length - 1);
+			assertEquals(implementation + ": the control's pPr on each: " + content, 2, content.split("<w:jc w:val=\"center\"/>", -1).length - 1);
+			assertFalse(implementation + ": the entry's pStyle stays in the glossary: " + content, content.contains("<w:pStyle"));
+			assertEquals(implementation + ": the control's colour on every run: " + content, 3, content.split("<w:color w:val=\"FF0000\"/>", -1).length - 1);
+			assertEquals(implementation + ": each run's style: " + content, 3, content.split("<w:rStyle w:val=\"PlaceholderText\"/>", -1).length - 1);
+			assertTrue(implementation + ": the bold run's bold: " + content, content.contains("<w:b/>"));
+
+			String run = control(xml, "Run");
+			assertEquals(implementation + ": " + run, ENTRY, reference(run));
+			assertEquals(implementation + ": the first paragraph's runs: " + run, "Enter the name,", shown(run));
+			assertFalse(implementation + ": no paragraph in a run-level control: " + run, sdtContent(run).contains("<w:p>"));
+
+			String value = control(xml, "Value");
+			assertEquals(implementation + ": D1, bound with a value: " + value, ENTRY, reference(value));
+			assertEquals(implementation, "VALUE", shown(value));
+			String unbound = control(xml, "Unbound");
+			assertEquals(implementation + ": D1, unbound: " + unbound, ENTRY, reference(unbound));
+			assertEquals(implementation, "Typed", shown(unbound));
+
+			assertEquals(implementation + ": nothing added", java.util.Arrays.asList(ENTRY), entryNames(pkg));
+			assertNull(implementation + ": no styles part made where no entry was added",
+					pkg.getMainDocumentPart().getGlossaryDocumentPart().getStyleDefinitionsPart());
+		}
+	}
+
+	/**
+	 * D3 (revised): a text control naming an entry the glossary lacks is pointed at Word's default
+	 * entry, added beside the glossary's own; nothing is written under the missing name. The glossary,
+	 * which had no styles part, gets one holding Placeholder Text.
+	 */
+	@Test
+	public void aMissingEntryIsReplacedByTheDefault() throws Exception {
+		for (String implementation : IMPLEMENTATIONS) {
+			WordprocessingMLPackage pkg = template(runControl("Missing", "/root/empty", "NOTINGLOSSARY", null), TWO_PARAGRAPH_ENTRY);
+			String missing = control(mainXml(bind(pkg, implementation)), "Missing");
+			assertEquals(implementation + ": " + missing, DEFAULT, reference(missing));
+			assertEquals(implementation + ": " + missing, DEFAULT_TEXT, shown(missing));
+			assertEquals(implementation, java.util.Arrays.asList(ENTRY, DEFAULT), entryNames(pkg));
+			assertGlossaryStyles(implementation, pkg);
+		}
+	}
+
+	/**
+	 * D3 (revised): a date control naming no entry keeps today's placeholder run for an empty value
+	 * (Word's date entry is unmeasured): no reference, no glossary. One naming an entry shows it.
+	 */
+	@Test
+	public void aDateControlNamingNoneKeepsTodaysRun() throws Exception {
+		for (String implementation : IMPLEMENTATIONS) {
+			WordprocessingMLPackage pkg = template(dateControl("Date", "/root/empty"), null);
+			String date = control(mainXml(bind(pkg, implementation)), "Date");
+			assertEquals(implementation + ": " + date, DEFAULT_TEXT, shown(date));
+			assertTrue(implementation + ": " + date, sdtPr(date).contains("<w:showingPlcHdr/>"));
+			assertNull(implementation + ": " + date, reference(date));
+			assertNull(implementation + ": no glossary", pkg.getMainDocumentPart().getGlossaryDocumentPart());
+		}
+	}
+
+	/** The three binders give the same document text and the same glossary. */
+	@Test
+	public void theBindersAgree() throws Exception {
+		String blocks = runControl("Empty", "/root/empty", null, null)
+				+ blockControl("Block", "/root/empty", ENTRY, "<w:rPr><w:color w:val=\"FF0000\"/></w:rPr>")
+				+ runControl("Missing", "/root/empty", "NOTINGLOSSARY", null)
+				+ dateControl("Date", "/root/empty");
+		String text = null, glossary = null;
+		for (String implementation : IMPLEMENTATIONS) {
+			WordprocessingMLPackage pkg = bind(template(blocks, TWO_PARAGRAPH_ENTRY), implementation);
+			java.io.StringWriter sw = new java.io.StringWriter();
+			org.docx4j.TextUtils.extractText(pkg.getMainDocumentPart().getContents(), sw);
+			String xml = mainXml(pkg);
+			String refs = reference(control(xml, "Empty")) + " " + reference(control(xml, "Block")) + " "
+					+ reference(control(xml, "Missing")) + " " + reference(control(xml, "Date"));
+			String g = entryNames(pkg).toString();
+			if (text == null) {
+				text = sw.toString() + refs;
+				glossary = g;
+			} else {
+				assertEquals(implementation, text, sw.toString() + refs);
+				assertEquals(implementation, glossary, g);
+			}
+		}
+		assertEquals("[" + ENTRY + ", " + DEFAULT + "]", glossary);
+	}
+}

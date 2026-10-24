@@ -316,10 +316,14 @@
 							$parent,
 							$child,
 							w:sdtPr/w:date)" />
+			<xsl:variable name="shownDateContent"
+				select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.placeholderContent(
+							$wmlPackage, w:sdtPr, xalan:nodeset($dateContent))" />
 			<xsl:copy>
 				<w:sdtPr>
 					<xsl:apply-templates select="w:sdtPr">
 						<xsl:with-param name="content" select="xalan:nodeset($dateContent)"/>
+						<xsl:with-param name="ownContent" select="true()"/>
 					</xsl:apply-templates>
 				</w:sdtPr>
 
@@ -334,11 +338,11 @@
 								<xsl:if test="w:sdtContent/w:tc/w:tcPr">
 									<xsl:copy-of select="w:sdtContent/w:tc/w:tcPr"/>
 								</xsl:if>
-								<xsl:copy-of select="$dateContent" />
+								<xsl:copy-of select="$shownDateContent" />
 							</w:tc>
 						</xsl:when>
 						<xsl:otherwise>
-							<xsl:copy-of select="$dateContent" />
+							<xsl:copy-of select="$shownDateContent" />
 						</xsl:otherwise>
 					</xsl:choose>
 				</w:sdtContent>
@@ -792,6 +796,7 @@
 				<w:sdtPr>
 				     <xsl:apply-templates select="w:sdtPr">
 						<xsl:with-param name="content" select="xalan:nodeset($content)"/>
+						<xsl:with-param name="ownContent" select="true()"/>
 					</xsl:apply-templates>
 				</w:sdtPr>
 			     
@@ -799,7 +804,8 @@
 			     	<xsl:copy-of select="w:sdtEndPr"/>
 		     	</xsl:if>
 			
-				<xsl:copy-of select="$content"/>			     
+				<xsl:copy-of select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.placeholderContent(
+								$wmlPackage, w:sdtPr, xalan:nodeset($content))"/>			     
 			</xsl:copy>  		  	
 					  			
   		</xsl:when>
@@ -946,6 +952,7 @@
 				<w:sdtPr>
 				     <xsl:apply-templates select="w:sdtPr">
 						<xsl:with-param name="content" select="xalan:nodeset($content)"/>
+						<xsl:with-param name="ownContent" select="true()"/>
 					</xsl:apply-templates>
 				</w:sdtPr>
 			     
@@ -953,7 +960,8 @@
 			     	<xsl:copy-of select="w:sdtEndPr"/>
 		     	</xsl:if>
 			
-				<xsl:copy-of select="$content"/>			     
+				<xsl:copy-of select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.placeholderContent(
+								$wmlPackage, w:sdtPr, xalan:nodeset($content))"/>			     
 			</xsl:copy>  		  	
 			
 					
@@ -1098,6 +1106,7 @@
                 <w:sdtPr>
 	                 <xsl:apply-templates select="w:sdtPr">
 	                    <xsl:with-param name="content" select="xalan:nodeset($content)"/>
+						<xsl:with-param name="ownContent" select="true()"/>
 	                </xsl:apply-templates>
                 </w:sdtPr>
                  
@@ -1105,7 +1114,8 @@
                     <xsl:copy-of select="w:sdtEndPr"/>
                 </xsl:if>
             
-                <xsl:copy-of select="$content"/>                 
+                <xsl:copy-of select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.placeholderContent(
+								$wmlPackage, w:sdtPr, xalan:nodeset($content))"/>                 
             </xsl:copy>             
             
                     
@@ -1137,6 +1147,10 @@
 
   <xsl:template match="w:sdtPr">  
   	<xsl:param name="content"></xsl:param>
+  	<!-- true where $content is this control's generated content (a bound text or date control), so a
+  	     placeholder run in it is the control's own and gets CR-063's treatment; false where $content
+  	     is template content (a condition's) whose placeholder runs belong to nested controls -->
+  	<xsl:param name="ownContent" select="false()"/>
   	
 		<xsl:variable name="dummy"
 	select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log( string(w:tag/@w:val) )" />  	
@@ -1161,7 +1175,20 @@
   			
   			 -->
 	        <w:showingPlcHdr/>
-		    <xsl:apply-templates select="@*|node()"/>
+	        <xsl:choose>
+	        	<xsl:when test="$ownContent">
+	        		<!-- CR-063 D2 to D4: the entry the control shows, named in w:placeholder (the one it names
+	        		     where the glossary holds it; else, for a text control, Word's default entry, added to
+	        		     the glossary where missing); the content is replaced by the entry's where this sdt is
+	        		     written (placeholderContent) -->
+	        		<xsl:copy-of select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.placeholderReference(
+	        						$wmlPackage, ., $content)"/>
+	        		<xsl:apply-templates select="@*|node()[not(self::w:placeholder) and not(self::w:showingPlcHdr)]"/>
+	        	</xsl:when>
+	        	<xsl:otherwise>
+	        		<xsl:apply-templates select="@*|node()[not(self::w:showingPlcHdr)]"/>
+	        	</xsl:otherwise>
+	        </xsl:choose>
   		</xsl:when>
   		<xsl:otherwise>
 		    <xsl:apply-templates select="@*|node()">
@@ -1215,9 +1242,9 @@
   </xsl:template>
 
 
-  <!-- Remove these, so missing data does not result
-       in Click here to enter text in Word -->
-  <xsl:template match="w:placeholder"/>  
+  <!-- w:placeholder is kept (CR-063 D1): until 17.3.5 a template matched it here and dropped it,
+       "so missing data does not result in Click here to enter text in Word"; an empty value now shows
+       the placeholder the control names, from its glossary entry, as Word does. -->
 
   <!--  v3.3.0, allows us to keep track of cell width, 
         so imported bare XHTML images can be scaled if necessary  -->
