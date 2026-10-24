@@ -250,7 +250,7 @@ public class FieldUpdater {
 			if (DOCPROPERTY.equals(fldName)
 					|| DOCVARIABLE.equals(fldName) ) {
 				
-				String instr = FieldsPreprocessor.extractInstr(fr.getInstructions());
+				String instr = fr.getInstr();
 				try {
 					fsm.build(instr);
 				} catch (TransformerException e) {

@@ -301,33 +301,34 @@ public class FieldRef {
 			return null;
 		}
 
-		Object o;
-		if (instructions.get(0) instanceof FieldRef) {
-			log.info("FieldRef present..");
-			FieldRef nested = (FieldRef)instructions.get(0);
-			if (nested.instructions.isEmpty()) {
-				log.warn("Nested field has no instructions; can't determine field name");
-				return null;
-			}
-			o = nested.instructions.get(0);
-		} else {
-			o = instructions.get(0);
+		// The first word of the instruction's text before any nested field. Since 17.3.5 (#634) that text is read
+		// whole, as Word may split it across runs ("MERGE", "FIELD name"); until then only its first run was read,
+		// and where the instruction began with a nested field, that field's name was returned.
+		StringBuilder text = new StringBuilder();
+		for (Object o : instructions) {
+			if (o instanceof FieldRef) break;
+			o = XmlUtils.unwrap(o);
+			if (o instanceof Text) text.append(((Text)o).getValue());
 		}
-		o = XmlUtils.unwrap(o);
-		
-		if (o instanceof Text) {
-			return FormattingSwitchHelper.getFldSimpleName( ((Text)o).getValue() );
-		} else if (o instanceof FieldRef) {
-			log.error("Doubly nested FieldRef present! TODO");
-			return null;
-		} else {
-            if(log.isErrorEnabled()) {
-    			log.error("TODO: extract field name from " + o.getClass().getName() );
-                log.error(XmlUtils.marshaltoString(instructions.get(0), true, true));
-            }
-			return null;
+		String name = FormattingSwitchHelper.getFldSimpleName(text.toString());
+		if (name == null) {
+			// eg { { MERGEFIELD type } x }: Word names the field by the nested field's result, when it updates it
+			log.info("Field instruction begins with a nested field; no name until Word updates it");
 		}
+		return name;
 	}	
+	
+	/**
+	 * The field's instruction: its {@code w:instrText}, concatenated, since Word may split it across runs. Null
+	 * where the instruction is empty or holds a nested field (whose own FieldRef is among
+	 * {@link #getInstructions()}).
+	 *
+	 * @return the instruction
+	 * @since 17.3.5
+	 */
+	public String getInstr() {
+		return FieldsPreprocessor.extractInstr(instructions);
+	}
 	
 	private ContentAccessor parent;
 	public ContentAccessor getParent() {

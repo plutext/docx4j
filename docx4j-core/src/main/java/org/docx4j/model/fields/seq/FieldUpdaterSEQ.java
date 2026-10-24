@@ -292,7 +292,7 @@ public class FieldUpdaterSEQ {
 			String fldName = fr.getFldName();
 			if (SEQ.equals(fldName) ) {
 				
-				String instr = extractInstr(fr.getInstructions());
+				String instr = fr.getInstr();
 				try {
 					fsm.build(instr);
 				} catch (TransformerException e) {
@@ -344,9 +344,6 @@ public class FieldUpdaterSEQ {
 		leaveAll();
 	}
 	
-	private String extractInstr(List<Object> instructions) {
-		return FieldsPreprocessor.extractInstr(instructions);
-	}
 		
 	
 }

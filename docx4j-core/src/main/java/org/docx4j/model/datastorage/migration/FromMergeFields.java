@@ -129,7 +129,7 @@ public class FromMergeFields extends AbstractMigratorUsingAnswersFormat {
 		for (FieldRef fr : fieldRefs) {
 			
 			if ( "MERGEFIELD".equals(fr.getFldName()) ) {
-				String instr = extractInstr(fr.getInstructions() );
+				String instr = fr.getInstr();
 
 				// eg <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse \* MERGEFORMAT </w:instrText>
 				// or <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse</w:instrText>
@@ -161,9 +161,6 @@ public class FromMergeFields extends AbstractMigratorUsingAnswersFormat {
 		return pkgOut;
 	}
 	
-	private static String extractInstr(List<Object> instructions) {
-		return FieldsPreprocessor.extractInstr(instructions);
-	}
 	
 //	public static boolean isMergeField(String type) {
 //		

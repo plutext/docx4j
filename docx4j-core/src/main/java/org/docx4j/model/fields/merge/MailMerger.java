@@ -215,7 +215,7 @@ public class MailMerger extends AbstractMerger {
 			
 			if ( "MERGEFIELD".equals(fr.getFldName()) ) {
 				
-				String instr = extractInstr(fr.getInstructions() );
+				String instr = fr.getInstr();
 				if (instr==null) {
 					log.warn("No instructions found in this field");
 					// TODO for various cases
@@ -380,6 +380,8 @@ public class MailMerger extends AbstractMerger {
 		
 	}
 	
+	/** @deprecated since 17.3.5; use {@link FieldRef#getInstr()} */
+	@Deprecated
 	protected static String extractInstr(List<Object> instructions) {
 		return FieldsPreprocessor.extractInstr(instructions);
 	}
