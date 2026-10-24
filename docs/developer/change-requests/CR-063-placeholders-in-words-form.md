@@ -3,9 +3,9 @@
 Status: PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at docx4j-core-ts's request, from Jason
 ("Jason asks that docx4j consider writing Word's form; it's your decision"): its checks 63 and 64 found that Word
 loses Office JS's writes into a bound control showing a placeholder in the form docx4j's binding writes. Recommended:
-yes (§6). Phase 0: core-ts's check 65 run 2026-10-25 (§9: the glossary entry is needed, not the reference alone;
-typing by hand reaches the node), its check 66 to come (the glossary's styles). The implementation is OpenDoPE
-binding, which CLAUDE.md gives to Fable.
+yes (§6). Phase 0 done 2026-10-25: core-ts's checks 65 and 66 (§9, §10). D7 decided (a), the same answer as core-ts's
+D9 (Jason, relayed by core-ts); D1 to D6 await Jason. The implementation is OpenDoPE binding, which CLAUDE.md gives to
+Fable.
 
 ## 0. Summary
 
@@ -104,7 +104,7 @@ The glossary there is a full set of parts: document, styles, settings, webSettin
    - the glossary part itself, where there is none.
 
    The entry is needed: Word's save drops a reference without one (check 65, §9). The glossary is the document part
-   and a styles part holding Placeholder Text (D7, after check 66).
+   and a styles part holding Placeholder Text (D7, decided; §10).
 4. **The default's wording becomes Word 365's,** "Click or tap here to enter text." (D5), so the content matches the
    entry it names.
 5. **A configured placeholder run** (`docx4j.model.datastorage.placeholder`) is still honoured for a control that names
@@ -125,7 +125,7 @@ The glossary there is a full set of parts: document, styles, settings, webSettin
 
 | Phase | What | Size |
 |---|---|---|
-| 0 | Check 65's result from core-ts (Jason runs it; written 2026-10-24, core-ts `test/fixtures/check65/`, the share's `__tmp/65/`). 65a: controls naming `DefaultPlaceholder_-1854013440` with no glossary part. 65b: a glossary of `document.xml` alone, holding the default entry and one of its own text named with 32 hex digits, and a control naming an entry it lacks. Each repeats check 64's telling writes (the style, the flag, a tracked Replace, a bound node); case 6 sets `placeholderText` through Office JS, so Word's save shows how it names and stores an entry for other text; a control made by `insertContentControl` shows the glossary Word adds where there is none; the last case is a bare-form bound control Jason types into by hand, saves and reopens. No docx4j round of its own. Run 2026-10-25 (§9); check 66 (the glossary's styles part) to come | with core-ts |
+| 0 | Check 65's result from core-ts (Jason runs it; written 2026-10-24, core-ts `test/fixtures/check65/`, the share's `__tmp/65/`). 65a: controls naming `DefaultPlaceholder_-1854013440` with no glossary part. 65b: a glossary of `document.xml` alone, holding the default entry and one of its own text named with 32 hex digits, and a control naming an entry it lacks. Each repeats check 64's telling writes (the style, the flag, a tracked Replace, a bound node); case 6 sets `placeholderText` through Office JS, so Word's save shows how it names and stores an entry for other text; a control made by `insertContentControl` shows the glossary Word adds where there is none; the last case is a bare-form bound control Jason types into by hand, saves and reopens. No docx4j round of its own. Run 2026-10-25 (§9); check 66, the glossary's styles part, run the same day (§10). Done | with core-ts |
 | 1 | The binders keep `w:placeholder` (D1): `bind.xslt`'s template and `postBindSdtPrHygiene`'s removal go; a test that the three binders agree | 1 h |
 | 2 | An empty value in Word's form (D2 to D5): the entry the control names, or Word's default with the glossary part and entry added as check 65 requires; `placeholder.xml`'s wording; tests; the Office-open check (Word opens it without repair) | 3 h |
 | 3 | Jason's Word check: phase 0's writes on the new output reach the node and survive the reopen | 30 min with Jason |
@@ -140,7 +140,7 @@ The glossary there is a full set of parts: document, styles, settings, webSettin
 | D4 | A configured `docx4j.model.datastorage.placeholder` | (a) honoured for a control naming none, as an entry of its own, as Word makes one (§9: 32 upper-case hex digits, its own `w:guid`, the default's `w:docPartPr`); (b) deprecated | (a): deployments set it to show their own wording |
 | D5 | The default wording | (a) Word 365's "Click or tap here to enter text."; (b) "Click here to enter text.", as today | (a): the shown text matches Word's default entry |
 | D6 | A switch back to the old behaviour | (a) none; (b) a property | (a): the old form is the one that loses writes, and its reason no longer holds. A deployment that wants no placeholder text can configure an empty run (D4) |
-| D7 | The glossary docx4j adds (added after check 65) | (a) the document part and a styles part holding Placeholder Text; (b) the document part alone; (c) Word's six parts | (a), after check 66 (core-ts's D9 (a)): with the document part alone Word's save strips the entries' Placeholder Text style (§9) |
+| D7 | The glossary docx4j adds (added after check 65) | (a) the glossary document part, a styles part related from it holding Default Paragraph Font and Placeholder Text as Word defines them (§10), and the relationship; (b) the document part alone; (c) Word's six parts | **Decided (a), 2026-10-25**: Jason took core-ts's D9 (a) after check 66 and asked, through core-ts, that docx4j's D7 get the same answer. Word completes the rest on save (§10) |
 
 ## 7. Risks
 
@@ -196,3 +196,38 @@ lacks. Word's saves are in core-ts `test/check65/` with a SHA-1 manifest.
    entry when the glossary has its styles.
 
 Phase 0 is complete once check 66 is in: it settles D7, and whether item 6 is Word's rule.
+
+## 10. Phase 0: check 66 (Word 365, Jason's run, 2026-10-25; core-ts CR-002 §63.10, §63.11, `2d080d4`)
+
+66a had D7 (a)'s three parts: the glossary document part, a styles part related from it, and the relationship. 66b had
+check 34's glossary, Word's six parts. The two behaved the same at every step (Word's saves in core-ts
+`test/check66/`, with a SHA-1 manifest):
+- **On opening,** Word kept 66a's entry in Placeholder Text. Word's saved glossary document, styles, fontTable and
+  relationships parts are identical for the two files. Only settings and webSettings differ, and Word wrote 66a's in
+  compatibility mode 12.
+- **Office JS deleting a control's content** brought the entry back, grey, with the flag on. A control Word made named
+  the default entry and showed it grey.
+- **Every `w:placeholder` reference stayed the same** through the run, through a reopen and save with nothing typed,
+  and through typing.
+- **Typed by hand,** a bound control in Word's form kept its reference; a bare-form one got no entry; both nodes were
+  written.
+
+So check 65's 65b reshuffle (§9 item 6) came of its unstyled glossary, not of reopening or typing. Office JS's
+`getOoxml` names a fresh 32-hex entry for a control on every call, where Word's save keeps the default entry, so its
+OOXML is no evidence of a control's reference.
+
+**D7 (a), decided.** Where a document has no glossary, docx4j writes:
+- the glossary document part, holding the entries: `DefaultPlaceholder_-1854013440` (§1), and any of a control's own
+  (D4);
+- `word/glossary/styles.xml`, related from it, holding these two styles as Word defines them:
+
+  ```xml
+  <w:style w:type="character" w:default="1" w:styleId="DefaultParagraphFont"><w:name w:val="Default Paragraph Font"/>
+    <w:uiPriority w:val="1"/><w:semiHidden/><w:unhideWhenUsed/></w:style>
+  <w:style w:type="character" w:styleId="PlaceholderText"><w:name w:val="Placeholder Text"/>
+    <w:basedOn w:val="DefaultParagraphFont"/><w:uiPriority w:val="99"/><w:unhideWhenUsed/>
+    <w:rPr><w:color w:val="666666"/></w:rPr></w:style>
+  ```
+- the relationship between the two.
+
+Word adds settings, webSettings, fontTable and the other styles on save. Phase 0 is complete; phase 1 waits on D1 to D6.
