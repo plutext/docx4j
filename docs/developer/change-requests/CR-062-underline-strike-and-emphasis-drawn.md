@@ -1,7 +1,8 @@
 # CR-062: underline styles and colours, strike with underline, double strike and emphasis marks drawn
 
-Status: PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at Jason's word ("push then write the
-small CR"): the small CR CR-060's D6 named. Decisions in §6 await Jason; phases in §5.
+Status: ACCEPTED 2026-10-24 (Jason: "go ahead with the recommendations"): D1 to D5 as recommended (§6). PROPOSED
+2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at Jason's word ("push then write the small CR"): the small
+CR CR-060's D6 named. Phases in §5.
 
 ## 0. Summary
 
@@ -95,7 +96,7 @@ lines. Nothing else; the ports don't render (core-ts's and python's HTML writers
 | 1 | §3.1 and §3.2: the decoration and emphasis CSS (`Underline`, `Strike`, a `DoubleStrike` and an `Emphasis` property; the writers combine the decoration declarations); tests green | ½ day |
 | 2 | §3.3: the FO writer's combined `text-decoration`; CHANGELOG; hand-offs (the ports, the portfolio) | 1 h |
 
-## 6. Decisions (for Jason; each with a recommendation)
+## 6. Decisions (accepted as recommended, Jason, 2026-10-24)
 
 | # | Decision | Recommendation |
 |---|---|---|
