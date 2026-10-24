@@ -3,7 +3,7 @@
 Status: PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at docx4j-core-ts's request, from Jason
 ("Jason asks that docx4j consider writing Word's form; it's your decision"): its checks 63 and 64 found that Word loses
 Office JS's writes into a bound control showing a placeholder in the form docx4j's binding writes. Recommended: yes
-(§6). Phase 0 waits on core-ts's check 65. The implementation is OpenDoPE binding, which CLAUDE.md gives to Fable.
+(§6). Phase 0 is core-ts's check 65, which takes docx4j's question too (§5). The implementation is OpenDoPE binding, which CLAUDE.md gives to Fable.
 
 ## 0. Summary
 
@@ -60,7 +60,7 @@ The glossary there is a full set of parts: document, styles, settings, webSettin
 - whether a minimal glossary (the document part alone, one entry) is enough (check 65);
 - how Word names and stores an entry for placeholder text of its own (check 65);
 - whether typing by hand, rather than writing through Office JS, into a bare-form bound control reaches the node. That
-  is how most people meet a docx4j-bound document, so phase 0 asks it.
+  is how most people meet a docx4j-bound document; check 65 asks it too (§5, phase 0).
 
 ## 2. docx4j today (a3cfc9789)
 
@@ -121,7 +121,7 @@ The glossary there is a full set of parts: document, styles, settings, webSettin
 
 | Phase | What | Size |
 |---|---|---|
-| 0 | Check 65's result from core-ts. A docx4j round on the share: docx4j's binding output for empty and filled values, opened in Word, typed into by hand and written by Office JS, saved and reopened; the template's own placeholder text kept or lost. Jason runs it | 1 h with Jason |
+| 0 | Check 65's result from core-ts (Jason runs it; written 2026-10-24, core-ts `test/fixtures/check65/`, the share's `__tmp/65/`). 65a: controls naming `DefaultPlaceholder_-1854013440` with no glossary part. 65b: a glossary of `document.xml` alone, holding the default entry and one of its own text named with 32 hex digits, and a control naming an entry it lacks. Each repeats check 64's telling writes (the style, the flag, a tracked Replace, a bound node); case 6 sets `placeholderText` through Office JS, so Word's save shows how it names and stores an entry for other text; a control made by `insertContentControl` shows the glossary Word adds where there is none; the last case is a bare-form bound control Jason types into by hand, saves and reopens. No docx4j round of its own | with core-ts |
 | 1 | The binders keep `w:placeholder` (D1): `bind.xslt`'s template and `postBindSdtPrHygiene`'s removal go; a test that the three binders agree | 1 h |
 | 2 | An empty value in Word's form (D2 to D5): the entry the control names, or Word's default with the glossary part and entry added as check 65 requires; `placeholder.xml`'s wording; tests; the Office-open check (Word opens it without repair) | 3 h |
 | 3 | Jason's Word check: phase 0's writes on the new output reach the node and survive the reopen | 30 min with Jason |
