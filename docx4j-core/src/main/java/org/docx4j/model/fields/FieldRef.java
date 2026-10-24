@@ -542,6 +542,23 @@ public class FieldRef {
 	 */
 	public void clearResult() {
 		resultsSlot.getContent().clear();
+		removeRestOfResult();
+	}
+
+	/**
+	 * Removes the old result's runs after the results slot. FieldsPreprocessor puts a result's runs into the slot,
+	 * but a run after something else in the result (a bookmark, often Word's _GoBack) starts another; those runs
+	 * go, and the bookmarks stay where they are. Since 17.3.5, when FieldsPreprocessor began keeping every result.
+	 */
+	private void removeRestOfResult() {
+		if (parent == null || resultsSlot == null || endRun == null) return;
+		List<Object> content = parent.getContent();
+		int slot = content.indexOf(resultsSlot);
+		int end = content.indexOf(endRun);
+		if (slot < 0 || end < slot) return;
+		for (int i = end - 1; i > slot; i--) {
+			if (XmlUtils.unwrap(content.get(i)) instanceof R) content.remove(i);
+		}
 	}
 
 	/**
@@ -560,6 +577,7 @@ public class FieldRef {
 	public void setResult(String val) {
 		
 		resultsSlot.getContent().clear();
+		removeRestOfResult(); // the whole old result is replaced (since 17.3.5)
 		String[] splitted = val.split("\\R");
 		
 		// our docfrag may contain several runs

@@ -138,6 +138,30 @@ public class FieldResultKeptTest {
 		}
 	}
 
+	/**
+	 * A result holding a bookmark (Word's _GoBack, often) is replaced whole: the runs on both sides of it go, and the
+	 * bookmarks stay. Before FieldsPreprocessor kept results, a MERGEFIELD's and DOCPROPERTY's were dropped anyway.
+	 */
+	@Test
+	public void aResultHoldingABookmarkIsReplacedWhole() throws Exception {
+		String bookmarked = "<w:r><w:t>«</w:t></w:r><w:bookmarkStart w:name=\"_GoBack\" w:id=\"1\"/><w:r><w:t>name</w:t></w:r>"
+				+ "<w:bookmarkEnd w:id=\"1\"/><w:r><w:t>»</w:t></w:r>";
+		String merge = complex("MERGE", " MERGEFIELD name ").replace("<w:r><w:rPr><w:b/></w:rPr><w:t>OLD</w:t></w:r>", bookmarked);
+		String prop = complex("PROP", " DOCPROPERTY Client ").replace("<w:r><w:rPr><w:b/></w:rPr><w:t>OLD</w:t></w:r>", bookmarked);
+		String empty = complex("EMPTY", " MERGEFIELD nothing ").replace("<w:r><w:rPr><w:b/></w:rPr><w:t>OLD</w:t></w:r>", bookmarked);
+		MailMerger.setMERGEFIELDInOutput(OutputField.KEEP_MERGEFIELD);
+		WordprocessingMLPackage pkg = pkg(merge, empty);
+		new MailMerger(pkg).performMerge(name("Jo"), false);
+		WordprocessingMLPackage updated = pkg(prop);
+		new FieldUpdater(updated).update(false);
+		String[][] cases = { { paragraph(pkg, "MERGE"), "Jo" }, { paragraph(pkg, "EMPTY"), null }, { paragraph(updated, "PROP"), "Acme" } };
+		for (String[] c : cases) {
+			assertTrue(c[0], c[0].contains("_GoBack") && c[0].contains("<w:bookmarkEnd"));
+			assertFalse(c[0], c[0].contains(">«<") || c[0].contains(">name<") || c[0].contains(">»<"));
+			if (c[1] != null) assertTrue(c[0], c[0].contains(">" + c[1] + "<"));
+		}
+	}
+
 	/** No value merges as nothing, whatever the output option: the old result isn't left in the output */
 	@Test
 	public void noValueMergesAsNothing() throws Exception {
