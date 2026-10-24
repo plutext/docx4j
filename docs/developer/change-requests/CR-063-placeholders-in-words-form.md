@@ -162,6 +162,11 @@ The glossary there is a full set of parts: document, styles, settings, webSettin
   `BindingTraverserXSLT.createPlaceholder`; `placeholder.xml`; `docx4j.properties`
   (`docx4j.model.datastorage.placeholder`).
 - CR-058 D3 (an empty date value shows the placeholder).
+- docx4j-core-ts implemented its counterpart (its CR-002 §63.12, `020c039`, 2026-10-25, unpushed): an empty bound
+  value in Word's form for a text control or one naming an entry; entries read without touching the glossary and the
+  missing ones written on save, a referenced entry the glossary lacks included; D7's glossary where there is none,
+  and a glossary styles part lacking the two styles completed; new entries named with 32 upper-case hex digits. Its
+  tests are in `test/placeholders.test.mjs`. A reference for phases 1 and 2 here.
 - ECMA-376 Part 1, §17.5.2 (structured document tags: `placeholder`, `showingPlcHdr`) and §17.12 (the glossary document).
 
 ## 9. Phase 0: check 65 (Word 365, Jason's run, 2026-10-25; core-ts CR-002 §63.8, §63.9, `ae9215f`)
