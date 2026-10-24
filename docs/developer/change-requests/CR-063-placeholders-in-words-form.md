@@ -1,12 +1,13 @@
 # CR-063: content-control placeholders written in Word's form
 
-Status: PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at docx4j-core-ts's request, from Jason
-("Jason asks that docx4j consider writing Word's form; it's your decision"): its checks 63 and 64 compared the bare
-placeholder docx4j's binding writes with Word's form. (Check 63's lost writes turned out to be Word's Design Mode, so
-the case for the change is the template's placeholder text and Word's reading, not lost writes: §11.) Recommended: yes
-(§6), revised after core-ts's review (§11). Phase 0 done 2026-10-25: core-ts's checks 65 and 66 (§9, §10). D7 decided
-(a), the same answer as core-ts's D9 (Jason, relayed by core-ts); D1 to D6 await Jason. The implementation is OpenDoPE
-binding, which CLAUDE.md gives to Fable.
+Status: ACCEPTED 2026-10-25 (Jason: "CR-063 D1 to D6 accepted as recommended, please implement"): D1 to D6 as
+recommended in §6, D7 decided earlier; phases 1 to 3 next. PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session
+docx4j-25) at docx4j-core-ts's request, from Jason ("Jason asks that docx4j consider writing Word's form; it's your
+decision"): its checks 63 and 64 compared the bare placeholder docx4j's binding writes with Word's form. (Check 63's
+lost writes turned out to be Word's Design Mode, so the case for the change is the template's placeholder text and
+Word's reading, not lost writes: §11.) Recommended: yes (§6), revised after core-ts's review (§11). Phase 0 done
+2026-10-25: core-ts's checks 65 and 66 (§9, §10). D7 decided (a), the same answer as core-ts's D9 (Jason, relayed by
+core-ts). The implementation is OpenDoPE binding, which CLAUDE.md gives to Fable.
 
 ## 0. Summary
 
@@ -144,7 +145,7 @@ The glossary there is a full set of parts: document, styles, settings, webSettin
 | 2 | An empty value in Word's form (D2 to D5): the entry the control names, or Word's default with the glossary part and entry added as check 65 requires; `placeholder.xml`'s wording; tests; the Office-open check (Word opens it without repair) | 3 h |
 | 3 | Jason's Word check: phase 0's writes on the new output reach the node and survive the reopen | 30 min with Jason |
 
-## 6. Decisions (recommendations; Jason decides)
+## 6. Decisions (accepted as recommended, Jason, 2026-10-25)
 
 | # | Question | Options | Recommended |
 |---|---|---|---|
