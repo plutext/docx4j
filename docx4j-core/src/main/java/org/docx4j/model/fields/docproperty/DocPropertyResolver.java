@@ -73,14 +73,17 @@ public class DocPropertyResolver {
 		
 		// Most likely a custom value, so try this first
 		if (docPropsCustomPart!=null) {
-			value = docPropsCustomPart.getProperty(key);
+			value = customProperty(key);
 		}
 		
-		if (BUILT_IN_FIELDS_CORE.contains(key)) {
-			value = getCoreValue(key);
-		} else if (BUILT_IN_FIELDS_EXTENDED.contains(key)) {
-			value = getExtendedValue(key);
-		} else if (BUILT_IN_FIELDS_UNSUPPORTED.contains(key)) {
+		// a name in any case, as Word reads it (#244, measured in Word 365; since 17.3.5)
+		String core = builtIn(BUILT_IN_FIELDS_CORE, key);
+		String extended = builtIn(BUILT_IN_FIELDS_EXTENDED, key);
+		if (core != null) {
+			value = getCoreValue(core);
+		} else if (extended != null) {
+			value = getExtendedValue(extended);
+		} else if (builtIn(BUILT_IN_FIELDS_UNSUPPORTED, key) != null) {
 			log.warn("No support for DOCPROPERTY field " + key);
 			return null;
 		} 
@@ -119,6 +122,28 @@ public class DocPropertyResolver {
 			}
 		}
 
+	}
+
+	/**
+	 * The custom property: its name matched exactly, else in any case, as Word matches it. Word 365 finds a property
+	 * named Client for DOCPROPERTY client, CLIENT and "cLiEnT" (#244). Since 17.3.5; until then only an exact match.
+	 */
+	private Object customProperty(String key) {
+		Object value = docPropsCustomPart.getProperty(key);
+		if (value == null && docPropsCustomPart.getJaxbElement() != null) {
+			for (org.docx4j.docProps.custom.Properties.Property p : docPropsCustomPart.getJaxbElement().getProperty()) {
+				if (p.getName() != null && p.getName().equalsIgnoreCase(key)) return p;
+			}
+		}
+		return value;
+	}
+
+	/** The built-in property's name as the set spells it, the key matched in any case (#244); null if none */
+	private static String builtIn(Set<String> names, String key) {
+		for (String name : names) {
+			if (name.equalsIgnoreCase(key)) return name;
+		}
+		return null;
 	}
 
 	private Object getCoreValue(String key) {

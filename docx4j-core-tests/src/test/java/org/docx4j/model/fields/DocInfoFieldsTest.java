@@ -109,6 +109,52 @@ public class DocInfoFieldsTest {
 		assertTrue(paragraph(pkg, "S"), paragraph(pkg, "S").contains(">OLD<"));
 	}
 
+	/**
+	 * #244: a property's name in any case, as Word 365 reads it (the share's docprop-case probe, 2026-10-25): a custom
+	 * property named Client for client, CLIENT and "cLiEnT"; the title for title. Until 17.3.5 only an exact match.
+	 */
+	@Test
+	public void aPropertyNameInAnyCase() throws Exception {
+		String[][] cases = { { "DOCPROPERTY client", "Acme" }, { "DOCPROPERTY CLIENT", "Acme" }, { "DOCPROPERTY \"cLiEnT\"", "Acme" },
+				{ "DOCPROPERTY title", "The Title" }, { "DOCPROPERTY keywords", "alpha, beta" } };
+		String[] paragraphs = new String[cases.length];
+		for (int i = 0; i < cases.length; i++) paragraphs[i] = complex("C" + i, cases[i][0]);
+		WordprocessingMLPackage pkg = pkg(paragraphs);
+		new FieldUpdater(pkg).update(false);
+		for (int i = 0; i < cases.length; i++) {
+			String p = paragraph(pkg, "C" + i);
+			assertTrue(cases[i][0] + ": " + p, p.contains(">" + cases[i][1] + "<"));
+		}
+	}
+
+	/**
+	 * The probe itself: FieldUpdater gives each field the result Word 365's update gave it (fields/docprop-case, Word's
+	 * save beside it), but for a missing property, where Word writes its error text and docx4j keeps the old result.
+	 */
+	@Test
+	public void asWordUpdatedTheProbe() throws Exception {
+		WordprocessingMLPackage probe = WordprocessingMLPackage.load(
+				org.docx4j.utils.ResourceUtils.getResource("fields/docprop-case/docprop-case.docx"));
+		WordprocessingMLPackage word = WordprocessingMLPackage.load(
+				org.docx4j.utils.ResourceUtils.getResource("fields/docprop-case/docprop-case-word365.docx"));
+		new FieldUpdater(probe).update(false);
+		Pattern result = Pattern.compile("fldCharType=\"separate\".*?<w:t[^>]*>([^<]*)</w:t>.*?fldCharType=\"end\"", Pattern.DOTALL);
+		for (int k = 1; k <= 7; k++) {
+			Matcher ours = result.matcher(probeParagraph(probe, "K" + k));
+			Matcher words = result.matcher(probeParagraph(word, "K" + k));
+			assertTrue(ours.find() && words.find());
+			String expected = k == 7 ? "OLD" : words.group(1);
+			assertTrue("K" + k + ": docx4j " + ours.group(1) + ", Word " + words.group(1), expected.equals(ours.group(1)));
+		}
+	}
+
+	private static String probeParagraph(WordprocessingMLPackage pkg, String marker) {
+		String xml = XmlUtils.marshaltoString(pkg.getMainDocumentPart().getJaxbElement(), true, false);
+		Matcher m = Pattern.compile("<w:p[ >].*?</w:p>", Pattern.DOTALL).matcher(xml);
+		while (m.find()) if (m.group().contains(">" + marker + " DOCPROPERTY")) return m.group();
+		throw new AssertionError(marker);
+	}
+
 	/** A simple DOCPROPERTY's quoted name is read as a complex one's is */
 	@Test
 	public void aSimpleFieldsQuotedPropertyName() throws Exception {

@@ -27,6 +27,8 @@ Changes in Version 17.3.5
   strike, and emphasis marks (w:em), through CSS text-decoration-* and text-emphasis (CR-062); a run
   both underlined and struck through keeps both lines, in HTML and PDF (it lost its strike). PDF
   still draws one underline style, in the text's colour, and no emphasis marks (XSL-FO has none).
+* DOCPROPERTY finds a property named in any case, as Word does: client finds Client, title the
+  title (#244).
 * VariablePrepare joins the runs a ${key} is split across whatever their formatting, so
   variableReplace finds it (#572); variableReplace no longer throws on a ${ with no }.
 * FieldUpdater updates the document information fields AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY,
