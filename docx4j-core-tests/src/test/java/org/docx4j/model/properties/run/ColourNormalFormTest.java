@@ -50,7 +50,9 @@ public class ColourNormalFormTest {
 
 	private static final String[] COLOUR_PROBES = { "colour-case", "colour-hex", "colour-names-css",
 		"colour-names-highlight", "colour-table-grey", "colour-table-other", "props-enum-other", "props-enum-missing",
-		"props-u-valid", "colour-styles", "colour-elsewhere", "colour-auto-styles", "colour-elsewhere-styles" };
+		"props-u-valid", "colour-styles", "colour-elsewhere", "colour-auto-styles", "colour-elsewhere-styles",
+		"colour-pattern", "colour-background-red", "colour-background-navy", "colour-background-f00",
+		"colour-background-hex" };
 
 	private static final String W = "xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"";
 
@@ -139,6 +141,16 @@ public class ColourNormalFormTest {
 		assertTrue(run(elsewhere, "S3_SHADING_F00"), run(elsewhere, "S3_SHADING_F00").contains("w:fill=\"auto\""));
 		assertTrue(run(elsewhere, "B1_BORDER_RED"), run(elsewhere, "B1_BORDER_RED").contains("w:color=\"FF0000\""));
 		assertTrue(run(elsewhere, "B2_BORDER_F00"), run(elsewhere, "B2_BORDER_F00").contains("w:color=\"auto\""));
+		// round 7 (CR-061 phase 3): a pattern colour as a fill's, over a style too; a page colour named
+		String pattern = saved(RunPropertiesWord365Test.load("colour-pattern.docx"), "word/document.xml");
+		assertTrue(run(pattern, "P2_PATTERN_NAVY"), run(pattern, "P2_PATTERN_NAVY").contains("w:color=\"000080\""));
+		assertTrue(run(pattern, "P3_PATTERN_F00"), run(pattern, "P3_PATTERN_F00").contains("w:color=\"auto\""));
+		assertTrue(run(pattern, "P7_STYLE_F00"), run(pattern, "P7_STYLE_F00").contains("w:color=\"auto\""));
+		String page = saved(RunPropertiesWord365Test.load("colour-background-red.docx"), "word/document.xml");
+		assertTrue(page, page.contains("<w:background w:color=\"FF0000\"/>"));
+		// Word drops a w:background whose colour it rejects; docx4j writes "auto" (no page colour either way)
+		String rejected = saved(RunPropertiesWord365Test.load("colour-background-f00.docx"), "word/document.xml");
+		assertTrue(rejected, rejected.contains("<w:background w:color=\"auto\"/>"));
 	}
 
 	private static WordprocessingMLPackage synthetic() throws Exception {

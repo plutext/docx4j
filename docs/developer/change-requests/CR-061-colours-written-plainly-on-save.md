@@ -1,9 +1,9 @@
 # CR-061: colours written plainly on save (Word's reading, in the schema's form)
 
-Status: ACCEPTED 2026-10-24 (Jason: "CR-061 6 questions decided as recommended. Please start."): D1 to D6 as
-recommended (§6). Phases 0 to 2 done 2026-10-24 (§8); phase 3, the Word check, awaits Jason's run. PROPOSED
-2026-10-24, drafted by Claude Opus 5.5 (session docx4j-25) at Jason's word ("write the new CR with the recommended
-scope. No need to switch on/off to bare or 0"). Phases in §5.
+Status: COMPLETE 2026-10-24 (phases 0 to 3, §8 and §9). ACCEPTED 2026-10-24 (Jason: "CR-061 6 questions decided as
+recommended. Please start."): D1 to D6 as recommended (§6). PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session
+docx4j-25) at Jason's word ("write the new CR with the recommended scope. No need to switch on/off to bare or 0").
+Phases in §5.
 
 ## 0. Summary
 
@@ -151,3 +151,19 @@ part docx4j never unmarshals (it is copied as it came).
   or `w:themeShade` alone (no `w:themeColor`), the element is kept and its value written `auto`.
 - MOXy (docx4j-JAXB-MOXy, scratch probe): the same output, the revision list filtered, the opt-out honoured.
 - Suites: core-tests 2072 run, 0 failures, 30 skipped; docx4j-export-fo-tests 858, 0, 9; docx4j-diffx-tests green.
+
+## 9. Phase 3 record, the Word check (2026-10-24, Jason's run; read by Claude Opus 5.5, session docx4j-25)
+
+- docx4j's saves of fifteen probes (`<probe>-docx4j.docx`, made at aaadd93f9, every XML part read first): Word 365
+  offered no repair on any, `props-enum-*` included, which Word repaired as probes. Word's save of each docx4j save
+  equals Word's save of the probe at all 251 markers (run properties compared, fonts and language aside), and the PDFs
+  are pixel-identical at 100 dpi, all fifteen pairs. Word reads docx4j's normal form exactly as it read the source.
+- Round 7 (`build7.py`; fixtures since): a shading pattern's colour (`w:shd/@w:color`) follows the fill's rule, as
+  D3 assumed: a name is drawn and saved as hex (`red` `FF0000`, `Navy` `000080`); `F00` is automatic (a 50% black
+  pattern) and saved `auto`, over a character style's red pattern too. The page colour (`w:background/@w:color`)
+  reads names (`red` `FF0000`, `Navy` `000080`), but Word drops a `w:background` whose colour it rejects (`F00`),
+  where docx4j writes `w:color="auto"`: both valid and both no page colour (presumed; the PDF doesn't carry the page
+  colour), so kept. Leaving the element out would need an element adapter on the document's `background`.
+- docx4j doesn't draw a pattern colour (`RShading` fills only); unchanged here.
+- CHANGELOG (the entry names pattern and page colours now); hand-offs to core-ts, docx4j-python, objects-ts and jsonix
+  (the `wml.xsd` change is annotations only), and the portfolio.
