@@ -40,7 +40,10 @@ and its saves hold:
 So Word's twips are 16-bit internally, signed where the schema type is signed, and an out-of-range value wraps. Whether
 every integer type wraps the same way, whether Word's UI limits (22 inches for a page, 1638 pt for a font) also apply
 on read, what a negative does in an unsigned attribute, and how wide `w:pgNumType/@w:start` is, are phase 0's
-questions. The Office JS side (what the setters accept) is core-ts's own check 71.
+questions. The Office JS side (what Word's own setters accept) is not measured: core-ts's check 71 is a proposal, not
+written or run (core-ts, 2026-10-26). core-ts itself today writes pt × 20 for every measurement setter with no check,
+400,000 pt included, and reads the value back unchanged (measured at its 7f00fad); so none of the ports refuses, wraps
+or clamps.
 
 **docx4j today (measured 2026-10-26, 17.3.5-SNAPSHOT, scratchpad `probe66/Today66.java`), on the six round 5 group
 files (§3):** every file loads, every part; the main part holds each value as written (`BigInteger`, no wrap, no clamp,
