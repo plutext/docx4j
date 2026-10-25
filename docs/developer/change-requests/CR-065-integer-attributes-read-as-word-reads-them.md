@@ -128,6 +128,11 @@ were unaffected.
 " 240 "), A3 the comma decimal, A4 hex, A5 the exponents, A6 the empty string, A7 "abc" (`families/cr065-A1..A7-*.docx`).
 Expected from B to I: A1 opens (truncation); the rest is the question.
 
+**core-ts today on the probe files** (core-ts, 2026-10-26, 0.6.0): every decimal fails its part's unmarshal, with an
+error naming the part, attribute, value, line and column; `getBody()` throws; a part that failed is never marshalled,
+so a save copies its source bytes. No counterpart of docx4j's empty main part. core-ts parses no integer itself (jsonix
+does, through the objects facade), so Word's rule reaches it through a jsonix CR and an objects CR.
+
 **docx4j today on the probe files** (`probe65/Today.java`): the all-cases file and families A, B, D, E, F, G, H fail
 the main part; C and I load (C's listed values round half-even: 141.5 to 142, 120.5 to 120, 240.5 to 240, 241.5 to
 242, 141.99999999999994 to 142, 12.5 to 12); the all-cases file and I fail `styles.xml`, `settings.xml` and the header
