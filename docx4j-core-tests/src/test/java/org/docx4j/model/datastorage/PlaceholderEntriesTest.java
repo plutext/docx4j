@@ -133,15 +133,21 @@ public class PlaceholderEntriesTest {
 	 * and a glossary of these entries (none where null). Saved and reloaded, as a template is.
 	 */
 	private static WordprocessingMLPackage template(String blocks, String glossaryEntries) throws Exception {
+		return template(blocks, glossaryEntries, "<root><a>VALUE</a><empty></empty></root>");
+	}
+
+	private static WordprocessingMLPackage template(String blocks, String glossaryEntries, String dataXml) throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		MainDocumentPart main = pkg.getMainDocumentPart();
+		// a section: an image sized from its own dimensions needs the page's (createImageInline)
 		main.setJaxbElement((org.docx4j.wml.Document) XmlUtils.unmarshalString(
-				"<w:document " + W + "><w:body>" + blocks + "</w:body></w:document>"));
+				"<w:document " + W + "><w:body>" + blocks
+				+ "<w:sectPr><w:pgSz w:w=\"11906\" w:h=\"16838\"/><w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\" w:header=\"708\" w:footer=\"708\" w:gutter=\"0\"/></w:sectPr>"
+				+ "</w:body></w:document>"));
 
 		CustomXmlDataStoragePart cx = new CustomXmlDataStoragePart();
 		CustomXmlDataStorage data = new CustomXmlDataStorageImpl();
-		data.setDocument(XmlUtils.getNewDocumentBuilder().parse(new InputSource(new StringReader(
-				"<root><a>VALUE</a><empty></empty></root>"))));
+		data.setDocument(XmlUtils.getNewDocumentBuilder().parse(new InputSource(new StringReader(dataXml))));
 		cx.setData(data);
 		main.addTargetPart(cx);
 		CustomXmlDataStoragePropertiesPart props = new CustomXmlDataStoragePropertiesPart();
@@ -401,17 +407,89 @@ public class PlaceholderEntriesTest {
 		}
 	}
 
+	/** A block-level picture control (the sdt directly in the body), bound. */
+	private static String pictureControlBlock(String alias, String xpath) {
+		return "<w:sdt><w:sdtPr><w:alias w:val=\"" + alias + "\"/><w:tag w:val=\"" + alias + "\"/><w:id w:val=\"" + alias.hashCode() + "\"/>"
+				+ "<w:dataBinding w:xpath=\"" + xpath + "\" w:storeItemID=\"" + ITEM_ID + "\"/><w:picture/></w:sdtPr>"
+				+ "<w:sdtContent><w:p><w:r><w:t>STALE</w:t></w:r></w:p></w:sdtContent></w:sdt>";
+	}
+
+	/** A run-level picture control holding an authored drawing (its blip naming a relationship that isn't there), flagged or not. */
+	private static String pictureControlWithDrawing(String alias, String xpath, boolean flagged) {
+		return "<w:p><w:sdt><w:sdtPr><w:alias w:val=\"" + alias + "\"/><w:tag w:val=\"" + alias + "\"/><w:id w:val=\"" + alias.hashCode() + "\"/>"
+				+ (flagged ? "<w:showingPlcHdr/>" : "") + "<w:dataBinding w:xpath=\"" + xpath + "\" w:storeItemID=\"" + ITEM_ID + "\"/><w:picture/></w:sdtPr>"
+				+ "<w:sdtContent><w:r><w:drawing><wp:inline xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
+				+ "<wp:extent cx=\"609600\" cy=\"609600\"/><wp:docPr id=\"7\" name=\"authored\"/><a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\">"
+				+ "<pic:pic><pic:nvPicPr><pic:cNvPr id=\"7\" name=\"authored\"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed=\"rId999\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>"
+				+ "<pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"609600\" cy=\"609600\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>"
+				+ "</a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:sdtContent></w:sdt></w:p>";
+	}
+
+	/** A 64x64 blue PNG, a node's value. */
+	private static final String BLUE_PNG = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAT0lEQVR42u3PQQkAAAgEsItjHPtjGCP4FgYrsFTPaxEQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQuCz7JkE8tKGrEgAAAABJRU5ErkJggg==";
+
+	/** The bytes of the image part a control's first blip names. */
+	private static byte[] blipBytes(WordprocessingMLPackage pkg, String control) throws Exception {
+		Matcher m = Pattern.compile("<a:blip [^>]*r:embed=\"([^\"]+)\"").matcher(control);
+		assertTrue("a blip in " + control, m.find());
+		org.docx4j.relationships.Relationship rel = pkg.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(m.group(1));
+		assertNotNull("relationship " + m.group(1), rel);
+		return ((org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage) pkg.getMainDocumentPart().getRelationshipsPart().getPart(rel)).getBytes();
+	}
+
+	/** How many image parts related from the main document part hold the placeholder picture. */
+	private static int placeholderParts(WordprocessingMLPackage pkg) throws Exception {
+		int n = 0;
+		for (org.docx4j.relationships.Relationship rel : pkg.getMainDocumentPart().getRelationshipsPart().getRelationships().getRelationship()) {
+			org.docx4j.openpackaging.parts.Part part = pkg.getMainDocumentPart().getRelationshipsPart().getPart(rel);
+			if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage
+					&& java.util.Arrays.equals(((org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage) part).getBytes(), PicturePlaceholder.bytes())) n++;
+		}
+		return n;
+	}
+
+	private static void assertPlaceholderPicture(String implementation, WordprocessingMLPackage pkg, String control, boolean blockLevel) throws Exception {
+		assertTrue(implementation + ": the flag: " + control, sdtPr(control).contains("<w:showingPlcHdr/>"));
+		String content = sdtContent(control);
+		assertTrue(implementation + ": Word's extent: " + content, content.contains("<wp:extent cx=\"1270000\" cy=\"1270000\"/>"));
+		assertFalse(implementation + ": no text: " + content, content.contains("<w:t"));
+		assertEquals(implementation + ": in a paragraph where block-level: " + content, blockLevel,
+				content.replaceFirst("^\\s*<w:sdtContent>", "").trim().startsWith("<w:p"));
+		assertTrue(implementation + ": the placeholder picture", java.util.Arrays.equals(PicturePlaceholder.bytes(), blipBytes(pkg, control)));
+	}
+
 	/**
-	 * D8 (§13): Word names no entry for a picture control, so one naming none keeps today's placeholder run
-	 * for an empty value: no reference, no glossary.
+	 * D11 (§18, check 71): a picture control whose node is empty shows docx4j's placeholder picture in
+	 * Word's form, whatever it held (stale text, an unflagged authored drawing; run-level or block-level);
+	 * one already showing a placeholder drawing is left as it is; the image part is added once and
+	 * reused; a node holding a picture shows that picture, with no flag; bound again, the same.
 	 */
 	@Test
-	public void aPictureControlNamingNoneKeepsTodaysRun() throws Exception {
+	public void aPictureControlWithAnEmptyNodeShowsThePlaceholderPicture() throws Exception {
 		for (String implementation : IMPLEMENTATIONS) {
-			WordprocessingMLPackage pkg = template(pictureControl("Pic", "/root/empty"), null);
-			String pic = control(mainXml(bind(pkg, implementation)), "Pic");
-			assertNull(implementation + ": " + pic, reference(pic));
-			assertNull(implementation + ": no glossary", pkg.getMainDocumentPart().getGlossaryDocumentPart());
+			WordprocessingMLPackage pkg = template(pictureControl("Pic", "/root/empty") + pictureControlBlock("PicBlock", "/root/empty")
+					+ pictureControlWithDrawing("PicDrawing", "/root/empty", false) + pictureControlWithDrawing("PicShowing", "/root/empty", true)
+					+ pictureControl("PicValue", "/root/png"),
+					null, "<root><empty></empty><png>" + BLUE_PNG + "</png></root>");
+			bind(pkg, implementation);
+			String xml = mainXml(pkg);
+			assertPlaceholderPicture(implementation, pkg, control(xml, "Pic"), false);
+			assertPlaceholderPicture(implementation, pkg, control(xml, "PicBlock"), true);
+			assertPlaceholderPicture(implementation, pkg, control(xml, "PicDrawing"), false);
+			// already in Word's form (the flag, a drawing): left as it is, authored drawing and all
+			String showing = control(xml, "PicShowing");
+			assertTrue(implementation + ": left as it is: " + showing, sdtPr(showing).contains("<w:showingPlcHdr/>")
+					&& sdtContent(showing).contains("name=\"authored\"") && sdtContent(showing).contains("r:embed=\"rId999\""));
+			String value = control(xml, "PicValue");
+			assertFalse(implementation + ": a value, no flag: " + value, sdtPr(value).contains("<w:showingPlcHdr/>"));
+			assertTrue(implementation + ": the node's picture", java.util.Arrays.equals(java.util.Base64.getDecoder().decode(BLUE_PNG), blipBytes(pkg, value)));
+			assertEquals(implementation + ": one placeholder image part", 1, placeholderParts(pkg));
+			assertNull(implementation + ": no glossary, no text placeholder", pkg.getMainDocumentPart().getGlossaryDocumentPart());
+
+			WordprocessingMLPackage again = bind(reload(pkg), implementation);
+			String xml2 = mainXml(again);
+			assertPlaceholderPicture(implementation, again, control(xml2, "Pic"), false);
+			assertEquals(implementation + ": bound twice, still one part", 1, placeholderParts(again));
 		}
 	}
 

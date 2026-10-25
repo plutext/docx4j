@@ -284,6 +284,52 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 	}
 
 	/**
+	 * CR-063 D11 (check 71): a picture control whose bound node is empty shows docx4j's placeholder
+	 * picture in Word's form ({@link PicturePlaceholder}): the content replaced by the placeholder
+	 * drawing (in a paragraph where the control is block-level) and {@code w:showingPlcHdr} set; a
+	 * control already showing a placeholder drawing (the flag on, a blip in the content) is left as it
+	 * is. Where the node holds a value the flag is removed and nothing else is done here, so the
+	 * callers' blip and image paths run.
+	 *
+	 * @return true where the placeholder was applied
+	 * @since 17.3.5
+	 */
+	protected boolean applyPicturePlaceholderIfEmpty(SdtElement sdt,
+			org.docx4j.openpackaging.packages.OpcPackage pkg,
+			JaxbXmlPart sourcePart,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
+
+		if (!(pkg instanceof WordprocessingMLPackage)) return false;
+		org.opendope.xpaths.Xpaths.Xpath.DataBinding binding = resolveBinding(sdt.getSdtPr(), xpathsMap);
+		if (binding==null) return false;
+		org.docx4j.openpackaging.parts.CustomXmlPart part = StoreItemResolver.resolve(
+				pkg.getCustomXmlDataStorageParts(), binding.getStoreItemID(), binding.getXpath(), binding.getPrefixMappings());
+		if (part==null) return false;
+		try {
+			String value = part.xpathGetString(binding.getXpath(), binding.getPrefixMappings());
+			if (!PicturePlaceholder.isEmpty(value)) {
+				PicturePlaceholder.setShowingPlaceholder(sdt.getSdtPr(), false);
+				return false;
+			}
+			writeBackStoreItemId(pkg, sdt.getSdtPr());
+			if (PicturePlaceholder.isShowingPlaceholder(sdt.getSdtPr()) && findBlip(sdt.getSdtContent().getContent())!=null) {
+				// already in Word's form (docx4j's or Word's own placeholder drawing): left as it is, so a
+				// rebinding changes nothing and adds no part (core-ts's rule; parity)
+				return true;
+			}
+			Object content = PicturePlaceholder.placeholderContent((WordprocessingMLPackage)pkg, sourcePart,
+					!(sdt instanceof org.docx4j.wml.SdtRun));
+			sdt.getSdtContent().getContent().clear();
+			sdt.getSdtContent().getContent().add(content);
+			PicturePlaceholder.setShowingPlaceholder(sdt.getSdtPr(), true);
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		}
+	}
+
+	/**
 	 * Where the sdt content contains an authored drawing, replace just its
 	 * a:blip/@r:embed with a rel to a new image part created from the bound
 	 * base64 value, preserving everything else about the drawing - as

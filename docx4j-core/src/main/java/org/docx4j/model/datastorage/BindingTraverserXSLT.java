@@ -557,6 +557,40 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	}
 
 	/**
+	 * CR-063 D11 (check 71), for bind.xslt's picture branch: true where the picture control's bound node
+	 * is empty, so the control is to show docx4j's placeholder picture in Word's form. False where the
+	 * node holds a value, or no part can be resolved (the branch then does as before).
+	 * @since 17.3.5
+	 */
+	public static boolean pictureValueIsEmpty(WordprocessingMLPackage pkg,
+			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+			String storeItemId, String xpath, String prefixMappings) {
+		CustomXmlPart part = StoreItemResolver.resolve(customXmlDataStorageParts, storeItemId, xpath, prefixMappings);
+		if (part==null) return false;
+		try {
+			return PicturePlaceholder.isEmpty(part.xpathGetString(xpath, prefixMappings));
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		}
+	}
+
+	/**
+	 * CR-063 D11: the placeholder picture's drawing for a picture control whose node is empty, shaped
+	 * for the control's place as xpathInjectImage shapes an image ({@link PicturePlaceholder}).
+	 * @since 17.3.5
+	 */
+	public static DocumentFragment picturePlaceholder(WordprocessingMLPackage pkg, JaxbXmlPart sourcePart,
+			String sdtParent, String contentChild) {
+		try {
+			return PicturePlaceholder.placeholderFragment(pkg, sourcePart, sdtParent, contentChild);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return XmlUtils.neww3cDomDocument().createDocumentFragment();
+		}
+	}
+
+	/**
 	 * CR-063 D10: the main styles part given Placeholder Text where it lacks it, for bind.xslt's w:sdtPr
 	 * template, wherever a control's content carries a placeholder run ({@link
 	 * PlaceholderEntries#ensurePlaceholderStyle}). Returns an empty fragment.

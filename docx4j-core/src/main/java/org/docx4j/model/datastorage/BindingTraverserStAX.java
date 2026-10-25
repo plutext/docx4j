@@ -239,6 +239,10 @@ public class BindingTraverserStAX extends BindingTraverserCommonImpl {
 			
 			SdtPr.Picture pic = getPicture(sdtPr);
 			if (sdtPr.getDataBinding()!=null && pic!=null
+					&& applyPicturePlaceholderIfEmpty(sdt, pkg, part, xpathsMap)) {
+				// CR-063 D11: an empty node shows docx4j's placeholder picture in Word's form
+
+			} else if (sdtPr.getDataBinding()!=null && pic!=null
 					&& replaceBlipEmbed(sdt, pkg, part, xpathsMap)) {
 				// authored drawing preserved; just its image rel was replaced
 				// (as bind.xslt's picture3 mode does)

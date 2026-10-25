@@ -258,10 +258,47 @@
   			<!--  honour w:dataBinding -->
   			
   			<xsl:choose>
+  				<xsl:when test="java:org.docx4j.model.datastorage.BindingTraverserXSLT.pictureValueIsEmpty(
+								$wmlPackage,
+								$customXmlDataStorageParts,
+								string(w:sdtPr/w:dataBinding/@w:storeItemID),
+								string(w:sdtPr/w:dataBinding/@w:xpath),
+								string(w:sdtPr/w:dataBinding/@w:prefixMappings))">
+  					<!-- CR-063 D11 (check 71): an empty node shows docx4j's placeholder picture in Word's form:
+  					     w:showingPlcHdr, and the placeholder drawing as the content. A control already showing a
+  					     placeholder drawing (the flag on, a blip in the content) is copied as it is. -->
+					<xsl:choose>
+						<xsl:when test="w:sdtPr/w:showingPlcHdr[not(@w:val='0' or @w:val='false')] and w:sdtContent//a:blip">
+							<xsl:copy-of select="."/>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:copy>
+							     <w:sdtPr>
+							     	<xsl:copy-of select="w:sdtPr/@*|w:sdtPr/node()[not(self::w:showingPlcHdr)]"/>
+							     	<w:showingPlcHdr/>
+							     </w:sdtPr>
+							     <xsl:if test="w:stdEndPr">
+							     	<xsl:copy-of select="w:sdtEndPr"/>
+						     	</xsl:if>
+							     <w:sdtContent>
+										<xsl:copy-of
+										select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.picturePlaceholder(
+													$wmlPackage,
+													$sourcePart,
+													$parent,
+													$child)" />
+							     </w:sdtContent>
+							</xsl:copy>
+						</xsl:otherwise>
+					</xsl:choose>
+  				</xsl:when>
   				<xsl:when test="w:sdtContent//a:blip"><!-- docx4j 3.0 -->
   					
 					<xsl:copy>
-					     <xsl:copy-of select="w:sdtPr"/>
+					     <!-- a value: the flag, if the template had it, goes (CR-063 D11) -->
+					     <w:sdtPr>
+					     	<xsl:copy-of select="w:sdtPr/@*|w:sdtPr/node()[not(self::w:showingPlcHdr)]"/>
+					     </w:sdtPr>
 					     
 					     <xsl:if test="w:stdEndPr">
 					     	<xsl:copy-of select="w:sdtEndPr"/>
@@ -277,7 +314,9 @@
   				<xsl:otherwise>
   					<!--  fallback to pre v3 approach -->
 					<xsl:copy>
-					     <xsl:copy-of select="w:sdtPr"/>
+					     <w:sdtPr>
+					     	<xsl:copy-of select="w:sdtPr/@*|w:sdtPr/node()[not(self::w:showingPlcHdr)]"/>
+					     </w:sdtPr>
 					     
 					     <xsl:if test="w:stdEndPr">
 					     	<xsl:copy-of select="w:sdtEndPr"/>

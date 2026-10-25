@@ -35,6 +35,9 @@ Changes in Version 17.3.5
   item." ...); picture and check box controls keep today's placeholder run.
   Where the main styles part lacks Placeholder Text, it is added as Word defines it when a placeholder
   run is written (D10: without it Word drops the style on opening and shows the placeholder black).
+  A picture control whose bound node is empty shows docx4j's placeholder picture in Word's form (D11,
+  check 71): w:showingPlcHdr and a drawing of picture-placeholder.png, one image part per document; the
+  NonXSLT and StAX binders wrote a text run there, which Word repaired, and the XSLT binder nothing.
 * HTML output draws an underline's style (double, dotted, dashed, wavy, thick ...) and colour, a double
   strike, and emphasis marks (w:em), through CSS text-decoration-* and text-emphasis (CR-062); a run
   both underlined and struck through keeps both lines, in HTML and PDF (it lost its strike). PDF
