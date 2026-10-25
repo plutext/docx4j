@@ -1,7 +1,8 @@
 # CR-065: integer attributes read as Word reads them; a part that cannot be read is never replaced by an empty one
 
-Status: PROPOSED 2026-10-26, opened by Claude Fable 5.1 (session docx4j-25) at Jason's word ("CR-065: open it, build the
-probe, and put it on the share with its README"), after docx4j-python-cd found the defect through JPype and
+Status: ACCEPTED 2026-10-26 (Jason: "CR-065: D1 to D6 as recommended, do phase 1"): D1 to D6 as recommended in §4; phase 1
+DONE 2026-10-26 (9ea65238a, §7); phase 2 next. PROPOSED 2026-10-26, opened by Claude Fable 5.1 (session docx4j-25) at
+Jason's word ("CR-065: open it, build the probe, and put it on the share with its README"), after docx4j-python-cd found the defect through JPype and
 docx4j-generated-objects-ts-82 reproduced it (both 2026-10-26; portfolio relay). Reproduced here in Java (§1). Phase 0,
 the shared Word probe, DONE 2026-10-26 (§3, four rounds, Jason): Word truncates a decimal toward zero, reads the empty
 string as 0, and refuses the document for any other form (whitespace included). Recommendations in §4; phases in §5.
@@ -46,8 +47,10 @@ Fixtures: a docx4j-made document whose `document.xml` carries one attribute chan
    throws). Each later call runs the unmarshal again and fails again.
 4. `MainDocumentPart.getContent()` reads null as "no content yet" and creates a fresh `Document` and `Body`;
    `addParagraphOfText` lands there; save marshals it. The same create-when-null convenience is in
-   `HeaderPart.getContent`, `FooterPart.getContent`, `DocumentSettingsPart` (two sites), `StyleDefinitionsPart` and
-   `DocPropsExtendedPart`: each replaces a part whose unmarshal failed with an empty one on first access.
+   `HeaderPart.getContent`, `FooterPart.getContent`, `DocumentSettingsPart` (two sites) and
+   `DocPropsExtendedPart.setDocSecurity`: each replaces a part whose unmarshal failed with an empty one on first
+   access. (`StyleDefinitionsPart` was listed here at first; its null test throws rather than creating, so it is not a
+   site. Portfolio's reading, 2026-10-26.)
 
 The ports' reports agree: python-cd on 17.3.4 and a 17.3.5-SNAPSHOT bundle through JPype (its probe files in its
 scratchpad `decimals/`); objects-ts on `MainDocumentPart.unmarshal` at 2f27dca82, adding `w:pgMar/@w:top`, a
