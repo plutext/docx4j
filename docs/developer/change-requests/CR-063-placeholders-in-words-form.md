@@ -3,7 +3,8 @@
 Status: PHASES 1, 2 AND 4 DONE 2026-10-25 (§12, §13; Claude Fable 5.1, session docx4j-25); D8 (a) and D9 (a) decided (Jason,
 2026-10-25: "D8 we go (a)", "D9 choose (a)"), D9 done (§15); phase 3's Office-open check passed (§14: the one repair was the fixture's own Flat OPC chunk, pre-CR-063, fixed in the
 fixture); check 65's writes on the new output pass (§17, Jason's run 2026-10-25): phase 3 DONE. D10 (the Placeholder Text style in the main
-styles part) decided (a) and done 2026-10-25 (§17). ACCEPTED 2026-10-25 (Jason: "CR-063 D1 to D6 accepted as recommended, please implement"): D1 to D6 as
+styles part) decided (a) and done 2026-10-25 (§17). Check 71 (a bound picture control whose node is empty, §18, Jason's run 2026-10-25): the
+NonXSLT and StAX binders' text placeholder under a picture control is content Word repairs (a defect); D11 PROPOSED, recommended (b). ACCEPTED 2026-10-25 (Jason: "CR-063 D1 to D6 accepted as recommended, please implement"): D1 to D6 as
 recommended in §6, D7 decided earlier. PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session
 docx4j-25) at docx4j-core-ts's request, from Jason ("Jason asks that docx4j consider writing Word's form; it's your
 decision"): its checks 63 and 64 compared the bare placeholder docx4j's binding writes with Word's form. (Check 63's
@@ -523,3 +524,57 @@ document given no placeholder gains nothing. The XSLT binder writes no run at al
 (`placeholder.xml` under the control's rPr); core-ts keeps the control's existing picture and reports a note (its
 CR-005 §9). Unchanged by CR-063; a Word check would settle which Word shows for a bound picture whose node is empty
 (core-ts changes nothing unless Jason asks).
+
+## 18. Check 71: a bound picture control whose node is empty (Word 365 16.0.20326.20232, Jason's run, 2026-10-25)
+
+Jason asked for the check (§17's unmeasured item). The share's `__tmp/cr063/71/` holds the file docx4j built
+(`71-bound-picture-empty-node.docx`, `Cr063Check71.java` in the session's scratchpad; one red 64x64 PNG as the existing
+picture, a blue one for the node), the snippet in check 65's shape (`check71-script-lab.js`: regions, tags `c71-<n>`,
+node `pic<n>` in `urn:check71`; it identifies every image part and inline picture of a region as red, blue or other by
+its bytes, and writes a node through `CustomXmlPart.setXml`), the bisect files, and Word's saves. The cases, each a
+`w:picture` control with a `w:dataBinding`: 1 an existing picture over an empty node (core-ts's output); 2 empty
+content over an empty node (docx4j's XSLT binder); 3 docx4j's text placeholder run under the control over an empty
+node (the NonXSLT and StAX binders); 4 an existing picture over a node holding the blue PNG; 5 an empty paragraph where
+Jason binds a fresh picture control to the empty node through the XML Mapping Pane; 6 as 1, the snippet then writing
+the blue PNG into the node; 7 as 4, the snippet then emptying the node; 8 an empty paragraph where the snippet calls
+`insertContentControl('Picture')`. Design Mode off.
+
+**Round 1: the file needed repair; the cause is case 3.** Bisect: A (2 and 3 removed) and C (3 removed) opened clean;
+B (2 removed, 3 kept) and D (the four pictures removed, 2 and 3 kept) needed repair. So **a text run inside a
+`w:picture` control is content Word repairs**, and that is exactly what the NonXSLT and StAX binders write for a
+picture control whose node is empty (`placeholder.xml`'s run; §15's "stays" and §17's unmeasured item): a defect, not
+a rule to measure. Word's repaired save (`71-repaired-word365.docx`, 368149f1) kept case 3's text as a plain run,
+style and flag stripped. The XSLT binder's empty content (case 2) is accepted.
+
+**Round 2** (`71-v2-no-case-3.docx` 49b29f34; Word's saves `-opened-` 336c8389, `-run-` 33a724af, `-reopened-`
+195b1a96; the snippet's `result-71-report.txt` b7b2ab17, `result-71-run.txt` aeded601). No repair anywhere.
+- **Word's form for a bound picture control whose node is empty:** `w:showingPlcHdr` in the `w:sdtPr`, and the
+  content one run holding an inline drawing of Word's stock placeholder picture: `wp:extent` 1270000 x 1270000 EMU,
+  `wp:docPr` "Picture n", `pic:cNvPr` id 0, `a:blip` with `a14:useLocalDpi 0`, `a:srcRect`, `a:stretch/a:fillRect`,
+  `a:noFill`; the image part a 1010-byte PNG, sha1 77e89b28ce48..., byte-identical to the one in Jason's
+  `placeholders.docx` (whose picture control has the flag and extent 1273175). Word gave this form on opening to
+  every empty-node control whatever it held: case 1's **existing picture was replaced** by it, case 2's empty content
+  was filled with it, and case 5, bound by hand through the XML Mapping Pane, has it too (block-level, around the
+  paragraph; no alias or tag; `w:prefixMappings` with a trailing space). So **the node rules**: what the control holds
+  in the file does not matter to Word, and no binder's output is shown as it was written.
+- **A node holding a picture** (cases 4 and 7 on opening): Word shows the node's picture. It kept docx4j's drawing
+  (docPr "red", extent 609600) and replaced the image part's bytes with the node's (blue); docx4j's red part was
+  dropped from the save; no flag.
+- **Office JS reads** on every picture control, open or after the run: `type` Picture; `placeholderText` null, flag on
+  or off; `showingPlaceholderText` undefined in this build (as in check 65c; the property is not there).
+- **Office JS writes to the node** reach the control at once. Case 6, the node set to the blue PNG through `setXml`:
+  the control showed blue (Jason, screenshot), the flag cleared, the placeholder drawing kept its shape (extent
+  1270000, docPr "Picture 1") with its image part swapped to blue. Case 7, the node emptied: the placeholder came back,
+  flag on, a new drawing ("Picture 4"). The save holds both nodes as written (`pic6` blue, `pic7` an empty element).
+- **`insertContentControl('Picture')`** is accepted by this Word (first way tried): Word's form, block-level, flag on.
+- **Reopened:** every control as the run left it.
+
+**For docx4j.** (1) The NonXSLT and StAX binders' text placeholder under a `w:picture` control must go: Word repairs
+it. (2) Word fills an empty-node picture control with its own form on opening, whatever the file holds, so the
+binders' output for an empty picture node is seen by Word only until it opens the file; it is seen as written by
+other consumers (docx4j's PDF and HTML output, other editors). core-ts's "keep the existing picture" is replaced by
+Word on opening too (core-ts: it will propose its change after this check).
+
+| # | Question | Options | Recommended |
+|---|---|---|---|
+| D11 | What the binders write for a picture control whose node is empty | (a) Word's form: the flag and an inline drawing of a placeholder image: (a1) Word's stock 1010-byte PNG (Microsoft's artwork, shipped in every Word file with a picture control; whether docx4j may ship it is Jason's call), or (a2) an image of docx4j's own; (b) empty content, as the XSLT binder writes today, no flag (measured: Word accepts it and fills its form on opening); (c) the existing picture kept (core-ts today; Word replaces it on opening) | (b), for all three binders: measured clean, the same in Word as (a) once opened, no image to ship, nothing stale shown elsewhere; the control's picture is the node's or nothing. (a2) if a placeholder should show outside Word. The flag with empty content is unmeasured, so (b) writes none. Awaits Jason |
