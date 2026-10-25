@@ -3,7 +3,8 @@
 Status: PROPOSED 2026-10-26, opened by Claude Fable 5.1 (session docx4j-25) at Jason's word ("CR-065: open it, build the
 probe, and put it on the share with its README"), after docx4j-python-cd found the defect through JPype and
 docx4j-generated-objects-ts-82 reproduced it (both 2026-10-26; portfolio relay). Reproduced here in Java (§1). Phase 0,
-the shared Word probe, is BUILT and on the share (§3), awaiting Jason's run. Recommendations in §4; phases in §5.
+the shared Word probe, DONE 2026-10-26 (§3, four rounds, Jason): Word truncates a decimal toward zero, reads the empty
+string as 0, and refuses the document for any other form (whitespace included). Recommendations in §4; phases in §5.
 
 ## 0. Summary
 
@@ -138,6 +139,14 @@ document, not the attribute: a comma decimal ("240,5"), hex ("0x10"), the expone
 "1e3"), letters ("abc"), and at least one of A2's six forms ("240.", ".5", "+240", "+240.5", " 240.5 ",
 " 240 "), which were refused as a group; which of the six Word accepts, if any, is round 4 (singles, optional).
 
+**Round 4 (Jason, 2026-10-26): A2a "240.", A2b ".5", A2c "+240" and A2d "+240.5" open clean; A2e " 240.5 " and
+A2f " 240 " are refused.** The saves: "240." to 240, ".5" to 0 (the default; no `w:spacing` written), "+240" to 240,
+"+240.5" to 240. So **Word's lexical form is an optional sign (+ or -), digits, optionally a dot and digits, with
+either digit group allowed to be empty, or the empty string; no surrounding whitespace.** The fraction is dropped
+(truncation toward zero). Whitespace, a comma, hex, an exponent or letters refuse the whole document. XML schema's
+whitespace collapse does not apply in Word's reading of these attributes (unlike the on/off reading CR-018 found,
+where " false" was read). **Phase 0 is complete**: four rounds, 65 cases, every value's reading or refusal known.
+
 **core-ts today on the probe files** (core-ts, 2026-10-26, 0.6.0): every decimal fails its part's unmarshal, with an
 error naming the part, attribute, value, line and column; `getBody()` throws; a part that failed is never marshalled,
 so a save copies its source bytes. No counterpart of docx4j's empty main part. core-ts parses no integer itself (jsonix
@@ -154,7 +163,7 @@ too.
 |---|---|---|---|
 | D1 | A part whose unmarshal failed, on the create-when-null conveniences | (a) throw, with the cause ("the part's content could not be read; refusing to replace it"), distinguishing "never had content" (a created package: no source part store) from "content that could not be read" (the part records the failed unmarshal); (b) today | (a). `getJaxbElement()` keeps returning null for compatibility; the six sites call `getContents()` and let its exception out, or test the recorded failure. Unchecked (`Docx4JRuntimeException`), since the conveniences declare nothing. |
 | D2 | Where the lenient integer read lives | (a) an XJC `javaType` customisation in the xjb binding the integer simple types to `BigInteger` through a parse method (`org.docx4j.jaxb.LenientInteger.parse`), so the first unmarshal succeeds for every integer attribute in every part; (b) a general stylesheet template over the (element, attribute) pairs derived from `wml.xsd`, on the retry only; (c) the event handler | (a). (c) is impossible (§1 step 1). (b) needs the pair list because `w:val` is polymorphic (`w:tag w:val="1.5"` is a legal string) and runs only on the retry. (a) covers the universal measures too ("12pt", which the stylesheet converts for a few attributes only). The stylesheet's list stays and retires later. The regeneration follows `adding-a-schema.md`'s steps for an xjb change. |
-| D3 | The rounding rule and the odd forms ("", "abc", "1e3", "0x10", " 240.5 ", "240,5", a negative where unsigned) | Word's, from the probe | **Measured (rounds 2 and 3): a decimal is truncated toward zero (its integer part); the empty string reads as 0; every other form (comma, hex, exponent, letters, and at least some of sign, trailing dot, leading dot, surrounding spaces) makes Word refuse the whole document.** Recommended for phase 2: read what Word reads as Word reads it; for a form Word refuses, drop the attribute and log at WARN (the document still opens in docx4j, which is more than Word gives; a dropped attribute is a smaller loss than a failed part, and phase 1 makes a failed part loud). Surrounding whitespace trimmed, since XML schema's whitespace collapse already allows it and CR-018 found Word trimming " false"; round 4 may overrule. If Word repairs a form rather than reading it, docx4j drops that attribute and logs; if Word refuses the file, docx4j may still read it (more lenient than Word is a choice, recorded). |
+| D3 | The rounding rule and the odd forms ("", "abc", "1e3", "0x10", " 240.5 ", "240,5", a negative where unsigned) | Word's, from the probe | **Measured (rounds 2 and 3): a decimal is truncated toward zero (its integer part); the empty string reads as 0; every other form (comma, hex, exponent, letters, and at least some of sign, trailing dot, leading dot, surrounding spaces) makes Word refuse the whole document.** Recommended for phase 2: read what Word reads as Word reads it; for a form Word refuses, drop the attribute and log at WARN (the document still opens in docx4j, which is more than Word gives; a dropped attribute is a smaller loss than a failed part, and phase 1 makes a failed part loud). Round 4 overruled trimming: Word refuses surrounding whitespace, so a spaced value is a refused form (dropped, WARN), and the lexical test is Word's exactly: `[+-]?\d*(\.\d*)?` non-empty, or the empty string. Alternative (b): trim first, then read; more lenient than Word for a form whose intent is plain. Recommended (a), so the three ports read identically and the rule has one source. If Word repairs a form rather than reading it, docx4j drops that attribute and logs; if Word refuses the file, docx4j may still read it (more lenient than Word is a choice, recorded). |
 | D4 | Which simple types get the lenient parse | `ST_DecimalNumber`, `ST_UnsignedDecimalNumber`, `ST_TwipsMeasure`, `ST_SignedTwipsMeasure`, `ST_HpsMeasure`, `ST_SignedHpsMeasure`, `ST_EighthPointMeasure`, `ST_PointMeasure`, `ST_TextScale`, `ST_PixelsMeasure`; the full list from `wml.xsd` at phase 2 | all of them; one method. |
 | D5 | The empty string (`header=""`, `rsidR=""`) | (a) as Word reads it (probe); (b) today's stylesheet rule (0 for header/footer, dropped for gutter and rsids) | phase 0 decides; rsids are strings and are a separate question (kept as `""` today). |
 | D6 | Report the repairs | (a) each lenient read logs at INFO with the attribute, the text and the value taken, once per document; (b) silent | (a); the portfolio survey's skipped-content report (`broken_producer_repairs_across_ports.md` §4 item 4) would carry the same. |
@@ -163,7 +172,7 @@ too.
 
 | Phase | Work | Status |
 |---|---|---|
-| 0 | The shared Word probe (§3); the rule recorded in §3 and sent to python-cd, objects-ts and core-ts | BUILT 2026-10-26; Jason's run awaited |
+| 0 | The shared Word probe (§3); the rule recorded in §3 and sent to python-cd, objects-ts and core-ts | DONE 2026-10-26 (four rounds, Jason) |
 | 1 | D1: the data-loss fix in the six conveniences, with a test per part type (a decimal that fails today; the edit throws; the save keeps the bytes) | proposed; no Word dependency, first |
 | 2 | D2, D4, D6: `LenientInteger`, the xjb customisation, regeneration, the three JAXB contexts unchanged; tests for each value form with Word's rule; the stylesheet list left in place; CHANGELOG | proposed; after phase 0 |
 | 3 | Hand-offs: the measured rule to the three ports (objects CR-015, python's integer reader, core-ts) | after phase 0 |
