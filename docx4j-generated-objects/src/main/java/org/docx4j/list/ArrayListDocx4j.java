@@ -278,6 +278,17 @@ public class ArrayListDocx4j<E> extends ArrayList<E> {
 					throw new RuntimeException("You can't add Text directly to a paragraph; add it to a run (R) and add that.");
 				}
 			}
+
+			// A hyperlink holds runs, as its paragraph does (since 17.3.5)
+			if (parent instanceof P.Hyperlink) {
+				if (e instanceof Tbl) {
+					throw new RuntimeException("You can't add a table inside a hyperlink; it should be a sibling of the hyperlink's paragraph");
+				} else if (e instanceof P) {
+					throw new RuntimeException("You can't nest a paragraph inside a hyperlink; a hyperlink goes inside a paragraph.");
+				} else if (e instanceof Text) {
+					throw new RuntimeException("You can't add Text directly to a hyperlink; add it to a run (R) and add that.");
+				}
+			}
 			
 			if (parent instanceof R) {
 				if (e instanceof R) {
