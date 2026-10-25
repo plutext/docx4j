@@ -161,7 +161,7 @@ HTML, and a maths PDF — from maths-heavy Markdown.**
 
 ## See also
 
-- `docs/Docx4j_from_Python.md` — driving all of the above from Python via JPype.
+- `docs/docx4j-from-python.html` — driving all of the above from Python via JPype.
 - `docx4j-markdown` module README — Markdown import/export options.
 - `docs/developer/change-requests/CR-006-markdown-math.md`,
   `CR-007-math-omml-mathml.md`, `CR-008-math-pdf-fo.md` — the design records.

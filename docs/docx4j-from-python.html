@@ -1,0 +1,535 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>docx4j from Python</title>
+<meta name="description" content="Two ways to use docx4j from Python: docx4j for Python (pip install docx4j), a pure-Python port with no JVM, and Java docx4j over JPype or a service for PDF output, OpenDoPE, pptx and xlsx. When each beats python-docx or docxtpl, with tested examples.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;600;700&family=Source+Code+Pro:wght@400;600&display=swap">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "headline": "docx4j from Python",
+      "description": "Two ways to use docx4j from Python: docx4j for Python, a pure-Python port on PyPI, and Java docx4j called over JPype or a service; and when each beats python-docx or docxtpl.",
+      "about": ["docx4j", "docx4j for Python", "Python", "python-docx", "docxtpl", "JPype", "docx to PDF", "docx text extraction"],
+      "audience": {"@type": "Audience", "audienceType": "software developers"}
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is there a Python version of docx4j?",
+          "acceptedAnswer": {"@type": "Answer", "text": "Yes. docx4j for Python is on PyPI as docx4j (pip install docx4j; the import name is docx4j_py). It is a port, not a wrapper, so there is no JVM: docx4j's WordprocessingML object model, generated from docx4j's own schemas, and its Open Packaging engine, in pure Python. Version 0.2.0 handles .docx only, on Python 3.12 or later."}
+        },
+        {
+          "@type": "Question",
+          "name": "Can Python convert docx to PDF without Microsoft Word or LibreOffice?",
+          "acceptedAnswer": {"@type": "Answer", "text": "Not natively: docx2pdf requires Word, LibreOffice headless brings fidelity and operational issues, and docx4j for Python does not render PDF. Calling Java docx4j from Python, over JPype or a small service, gives headless docx-to-PDF via XSL-FO, including Tagged PDF, PDF/A and PDF/UA output."}
+        },
+        {
+          "@type": "Question",
+          "name": "Will my python-docx code run on docx4j for Python?",
+          "acceptedAnswer": {"@type": "Answer", "text": "Mostly, after changing the import. docx4j_py.docx is python-docx's API over docx4j for Python's engine: 305 of the 312 public members of python-docx 1.2.0, and each of the other seven refused with a reason. python-docx is not a dependency."}
+        },
+        {
+          "@type": "Question",
+          "name": "When should I stay with python-docx or docxtpl instead?",
+          "acceptedAnswer": {"@type": "Answer", "text": "When the job is generating a document from a simple template or setting some formatting: python-docx and docxtpl are small, quick to import and well known. Not for reading the text of documents you didn't write: python-docx's text loses tracked insertions and everything in content controls, and includes hidden text. Use docx4j for Python for that, and when a document has to come through an edit intact; and Java docx4j for PDF output, OpenDoPE repeats and conditions, and pptx or xlsx."}
+        },
+        {
+          "@type": "Question",
+          "name": "How do I extract the text of a .docx in Python?",
+          "acceptedAnswer": {"@type": "Answer", "text": "To get the text Word shows, use docx4j for Python's text model: plain_text(extract(load(path))). It reads tracked changes as Word's Accept All would leave them (or the original, or both marked), reads content controls, and a bound control's value as Word shows it, leaves hidden text out, and reads each text box once and the notes. python-docx's Paragraph.text loses tracked insertions and everything in content controls, includes hidden text, and doesn't reach text boxes or notes."}
+        },
+        {
+          "@type": "Question",
+          "name": "Is there a single jar for using docx4j via JPype?",
+          "acceptedAnswer": {"@type": "Answer", "text": "Yes: the docx4j-bundle jar on Maven Central is self-contained for loading, manipulating, binding and saving docx, pptx and xlsx, and from 17.3.4 it holds digital signatures and Markdown too. For PDF output, put docx4j-bundle-extras of the same version beside it."}
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+<link rel="stylesheet" href="/css/docx4j-site.css?v=2" type="text/css" />
+<style>
+:root {
+  --ground: #ffffff;
+  --surface: #f4f7fb;
+  --surface-2: #e8eef6;
+  --ink: #1d2733;
+  --ink-soft: #4a5768;
+  --ink-faint: #6b7787;
+  --accent: #1a5fb4;
+  --accent-ink: #134a8e;
+  --caution: #a06a1c;
+  --rule: #d8e0ea;
+  --code-bg: #f1f4f8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #11161d;
+    --surface: #18202a;
+    --surface-2: #212b37;
+    --ink: #e4e9f0;
+    --ink-soft: #adb8c6;
+    --ink-faint: #7d8a9a;
+    --accent: #6ea8f0;
+    --accent-ink: #8dbbf5;
+    --caution: #d9a44e;
+    --rule: #2b3644;
+    --code-bg: #1a222d;
+    --d4j-navy: #e4e9f0;
+    --d4j-blue: #8dbbf5;
+    --d4j-blue-dark: #a9cdf8;
+    --d4j-ink: #e4e9f0;
+    --d4j-ground: #11161d;
+    --d4j-surface: #18202a;
+    --d4j-rule: #2b3644;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #11161d;
+  --surface: #18202a;
+  --surface-2: #212b37;
+  --ink: #e4e9f0;
+  --ink-soft: #adb8c6;
+  --ink-faint: #7d8a9a;
+  --accent: #6ea8f0;
+  --accent-ink: #8dbbf5;
+  --caution: #d9a44e;
+  --rule: #2b3644;
+  --code-bg: #1a222d;
+  --d4j-navy: #e4e9f0;
+  --d4j-blue: #8dbbf5;
+  --d4j-blue-dark: #a9cdf8;
+  --d4j-ink: #e4e9f0;
+  --d4j-ground: #11161d;
+  --d4j-surface: #18202a;
+  --d4j-rule: #2b3644;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+.wrap { max-width: 46rem; margin: 0 auto; padding: 0 1.25rem; }
+
+header.masthead { padding: 3.5rem 0 2.25rem; border-bottom: 1px solid var(--rule); }
+.eyebrow {
+  font-family: "Source Code Pro", ui-monospace, monospace;
+  font-size: .78rem; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); font-weight: 600; margin: 0 0 1rem;
+}
+h1 {
+  font-family: "Source Serif 4", Georgia, serif;
+  font-weight: 700; font-size: clamp(2.1rem, 5.5vw, 3.1rem);
+  line-height: 1.12; margin: 0 0 .9rem; text-wrap: balance;
+}
+h1, h2, h3 { color: var(--d4j-navy); }
+.standfirst { font-size: 1.2rem; color: var(--ink-soft); margin: 0; max-width: 40rem; }
+
+h2 {
+  font-family: "Source Serif 4", Georgia, serif;
+  font-weight: 600; font-size: 1.65rem; line-height: 1.25;
+  margin: 2.75rem 0 .9rem; text-wrap: balance;
+}
+h3 {
+  font-family: "Source Serif 4", Georgia, serif;
+  font-weight: 600; font-size: 1.22rem; margin: 1.9rem 0 .5rem;
+}
+p, ul, ol, dl { margin: 0 0 1.05rem; }
+li { margin-bottom: .35rem; }
+a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code {
+  font-family: "Source Code Pro", ui-monospace, monospace;
+  font-size: .9em; background: var(--code-bg);
+  padding: .1em .35em; border-radius: 3px;
+}
+pre {
+  background: var(--code-bg); border: 1px solid var(--rule);
+  padding: 1rem 1.2rem; overflow-x: auto; margin: 0 0 1.05rem;
+  font-size: .88rem; line-height: 1.55;
+}
+pre code { background: none; padding: 0; font-size: 1em; }
+strong { font-weight: 700; }
+
+.verdict {
+  background: var(--surface); border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent);
+  padding: 1.25rem 1.4rem; margin: 2rem 0 0;
+}
+.verdict p:first-child { margin-top: 0; }
+.verdict p:last-child { margin-bottom: 0; }
+.verdict ul { padding-left: 1.2rem; margin-bottom: 0; }
+.verdict li:last-child { margin-bottom: 0; }
+.verdict .label {
+  font-family: "Source Code Pro", ui-monospace, monospace;
+  font-size: .75rem; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--accent); font-weight: 600; display: block; margin-bottom: .5rem;
+}
+
+.table-scroll { overflow-x: auto; margin: 0 0 1.05rem; }
+table.compare { border-collapse: collapse; width: 100%; font-size: .95rem; }
+table.compare th, table.compare td {
+  text-align: left; vertical-align: top;
+  padding: .45rem .6rem; border-bottom: 1px solid var(--rule);
+}
+table.compare th { font-weight: 700; background: var(--surface); }
+table.compare td:first-child { color: var(--ink-soft); }
+
+.routes dt { font-weight: 700; margin-top: 1.1rem; }
+.routes dd { margin: .25rem 0 0 0; color: var(--ink-soft); }
+
+.faq dt { font-weight: 700; margin-top: 1.4rem; }
+.faq dd { margin: .35rem 0 0 0; color: var(--ink-soft); }
+
+footer.colophon {
+  margin-top: 3.5rem; padding: 1.75rem 0 3rem; border-top: 1px solid var(--rule);
+  color: var(--ink-faint); font-size: .9rem;
+}
+footer.colophon p { margin: 0 0 .4rem; }
+</style>
+
+<header class="d4j-sitebar">
+  <div class="d4j-sitebar-inner">
+    <a class="d4j-brand" href="/trac/docx4j"><img src="/logo-75.png" alt="" width="30" height="40" />docx4j</a>
+    <nav aria-label="Site">
+    <ul class="d4j-nav">
+      <li><a href="/docx4j-vs-poi-vs-aspose.html" aria-current="page">Why docx4j? &#9662;</a>
+        <ul class="d4j-sub">
+          <li><a href="/docx4j-vs-poi-vs-aspose.html">docx4j vs POI vs Aspose.Words</a></li>
+          <li><a href="/source-access-llm-assisted-programming.html">Why source access matters</a></li>
+          <li><a href="/docx4j-from-python.html" aria-current="page">docx4j from Python</a></li>
+        </ul>
+      </li>
+      <li><a href="/forums/">Forums</a></li>
+      <li><a href="http://webapp.docx4java.org/">Webapp</a></li>
+      <li><a href="/blog/">Blog</a></li>
+      <li><a href="/downloads.html">Downloads</a></li>
+      <li><a href="/contact.html">Contact</a></li>
+    </ul>
+    </nav>
+  </div>
+</header>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Choosing a document library, from Python</p>
+    <h1>docx4j from Python</h1>
+    <p class="standfirst">There are now two ways to use docx4j from Python. <strong>docx4j for
+    Python</strong> (<code>pip install docx4j</code>) is a port: docx4j's object model and engine in
+    pure Python, with no JVM. For what the port doesn't do yet, PDF output above all, a Python
+    program can still call Java docx4j across the JVM boundary. And for generating simple
+    documents, python-docx and docxtpl remain a good answer.</p>
+    <div class="verdict">
+      <span class="label">The decision rule</span>
+      <ul>
+        <li><strong>Generate a document from a simple template, set some formatting:</strong>
+        python-docx or docxtpl. They're small and quick to import.</li>
+        <li><strong>Pull out the text:</strong> docx4j for Python. It reads the text Word shows;
+        python-docx loses tracked insertions and everything in content controls, and keeps hidden
+        text.</li>
+        <li><strong>Edit real documents and lose nothing on the way through:</strong> docx4j for
+        Python. That means tracked changes and comments, templates bound to XML, the whole format
+        typed, and an API an agent can drive. It also keeps python-docx code running.</li>
+        <li><strong>PDF without Office, OpenDoPE repeats and conditions, PowerPoint or Excel:</strong>
+        call Java docx4j, over JPype or as a small service. The two can share one process.</li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<main>
+  <article>
+    <div class="wrap">
+      <h2>docx4j for Python</h2>
+      <p><a href="https://pypi.org/project/docx4j/"><code>docx4j</code> on PyPI</a> is docx4j ported
+      to Python, not a wrapper around it. The import name is <code>docx4j_py</code>, as python-docx
+      imports as <code>docx</code>. Its WordprocessingML object model is generated from docx4j's own
+      schema tree and carries docx4j's class names (<code>P</code>, <code>R</code>,
+      <code>PPr</code>, <code>Tbl</code>), so docx4j's documentation and examples read across. Its
+      Open Packaging engine is written by hand over that model. Java docx4j is the behavioural
+      oracle, and where Word's behaviour matters, the tests hold the port to Word 365's own
+      answers.</p>
+      <p>Version 0.2.0 (October 2026) handles WordprocessingML (<code>.docx</code>) only, on
+      Python 3.12 or later. A <code>.pptx</code> or <code>.xlsx</code> loads and saves, every part
+      byte for byte, but nothing in it is typed yet. What it gives you:</p>
+      <ul>
+        <li><strong>Nothing lost on the way through.</strong> A part your code never reads is
+        copied back byte for byte (only the relationship lists are always rewritten), and one read
+        and saved unchanged is canonically identical to its source. Anything the parser can't place is reported, part by part, rather than silently
+        dropped; strict loading raises instead.</li>
+        <li><strong>The whole format, typed.</strong> All of ECMA-376 WordprocessingML, with the
+        DrawingML, VML and math it embeds and Word's <code>w14</code> to <code>w16</code>
+        extensions, as typed classes. docx4j's <code>PropertyResolver</code>, numbering emulator
+        and font selection are ported too.</li>
+        <li><strong>Tracked changes and comments, as Word does them.</strong> Edits can be tracked
+        under an author. Tracked changes are listed, accepted and rejected the way Word 365 resolves
+        them, in the body, headers, footers, notes and comments. Comments have replies and can be
+        resolved.</li>
+        <li><strong>Templates bound to XML.</strong> <code>describe()</code> lists what a
+        template's content controls are bound to, and <code>fill()</code> sets the custom XML and
+        refreshes the controls, as Word does when it opens the file. OpenDoPE's repeats and
+        conditions are still Java docx4j's (see below).</li>
+        <li><strong>An API in Office JS's vocabulary, built for agents.</strong>
+        <code>Body</code>, <code>Paragraph</code>, <code>Range</code>, <code>Table</code>, content
+        controls and lists, with Office JS's text and semantics. For agents: addresses that
+        survive edits, an outline of a 200-page document in under 64 KB, a report of what each edit
+        did, and errors that say what to do instead.</li>
+        <li><strong>The text Word shows.</strong> docx4j's text model gives a document's plain
+        text or Markdown in its accepted, original or markup view: tracked changes as Word's Accept
+        All or Reject All would leave them, or both marked; content controls read, and a bound
+        control's value as Word shows it; hidden text left out; each text box once, after its
+        anchor; the notes; charts as tables and equations as LaTeX. Markdown (CommonMark, with GFM
+        tables) can be written in too, through the document's own styles.</li>
+        <li><strong>python-docx code runs.</strong> <code>docx4j_py.docx</code> is python-docx's
+        API over this engine: 305 of the 312 public members of python-docx 1.2.0, and each of the
+        other seven refused with a reason.</li>
+      </ul>
+
+      <h3>Fill a template and make a tracked edit, no JVM</h3>
+      <pre><code>from docx4j_py import load
+from docx4j_py.model.content import Author
+
+pkg = load("invoice2013.docx")          # its controls are bound to custom XML
+pkg.custom_xml_parts.fill({             # set the data and refresh the controls
+    "/invoice[1]/customer[1]/company[1]": "Acme Manufacturing Ltd",
+    "/invoice[1]/customer[1]/contact[1]": "Ada Lovelace",
+})
+
+pkg.author = Author("Claude", initials="C")
+pkg.change_tracking_mode = "TrackAll"   # from here, every edit is tracked
+pkg.body.replace_text("Purchase Order No", "Order reference")
+print([(c.type, c.text) for c in pkg.get_tracked_changes()])
+# [('Added', 'Order reference'), ('Deleted', 'Purchase Order No')]
+
+pkg.save("invoice-edited.docx")         # styles and images copied byte for byte</code></pre>
+      <p>Code written for python-docx needs only its imports changed:</p>
+      <pre><code># was: from docx import Document; from docx.shared import Pt
+from docx4j_py.docx import Document, Pt
+
+doc = Document("invoice2013.docx")
+p = doc.add_paragraph("Paid with thanks, ")
+p.add_run("25 October 2026").bold = True
+p.runs[1].font.size = Pt(14)
+doc.save("invoice-paid.docx")</code></pre>
+      <p>What it costs: a 1.5 MB wheel, because the whole of WordprocessingML is in it as
+      classes, and about 0.7 s to import, once per process. A long-running process is the intended
+      host. The <a href="https://github.com/plutext/docx4j-python">repository</a> has the full
+      README, the <a href="https://github.com/plutext/docx4j-python/blob/main/CHANGELOG.md">changelog</a>
+      and the design, recorded as change requests.</p>
+
+      <h3>Text extraction: what python-docx misses</h3>
+      <p>Many Python pipelines read a .docx through python-docx's <code>Paragraph.text</code>,
+      Haystack, Dify, CrewAI and Unstructured among them. On one test document, python-docx 1.2.0
+      and docx4j for Python 0.2.0 read this:</p>
+      <div class="table-scroll">
+      <table class="compare">
+        <thead>
+          <tr><th>The document holds</th><th>python-docx</th><th>docx4j for Python</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>A tracked change: <code>100</code> inserted, <code>90</code> deleted</td>
+              <td>neither: <code>Price: </code></td><td><code>Price: 100</code></td></tr>
+          <tr><td>A value in a content control</td>
+              <td>missing: <code>Supplier: </code></td><td><code>Supplier: Acme Ltd</code></td></tr>
+          <tr><td>A clause in a block content control</td>
+              <td>missing</td><td>read</td></tr>
+          <tr><td>Hidden text, such as a prompt injection</td>
+              <td>read as if visible</td><td>left out, as Word shows it</td></tr>
+          <tr><td>A bound control whose stored text is stale</td>
+              <td>missing</td><td>the value Word shows, with a warning</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>python-docx doesn't reach text boxes or notes either. In docx4j for Python, reading
+      the text is one call, and the warnings say where what Word shows differs from what the file
+      stores:</p>
+      <pre><code>from docx4j_py import load
+from docx4j_py.model.text import extract, plain_text
+
+result = extract(load("in.docx"))   # as Word's Accept All leaves it
+print(plain_text(result))
+for warning in result.warnings:     # e.g. sdt.binding_differs at body/2/0/0/1
+    print(warning)</code></pre>
+      <p><code>extract(pkg, view="markup")</code> keeps both sides of each tracked change, marked
+      up as <code>{++inserted++}</code> and <code>{--deleted--}</code>, and
+      <code>include="headers, footers"</code> adds the headers and footers. The package is never
+      changed by reading it.</p>
+
+      <h2>What still needs Java docx4j</h2>
+      <p>None of these is in docx4j for Python yet, and the first two have no real equivalent in
+      any Python library. For them, bridging to Java docx4j is less total effort than fighting the
+      format in Python: you're buying twenty years of edge-case handling for the cost of a process
+      boundary.</p>
+      <ul>
+        <li><strong>Headless docx to PDF, no Word, no LibreOffice.</strong> docx4j converts via
+        XSL-FO and its own fork of Apache FOP, including Tagged PDF, PDF/A and PDF/UA output. The
+        Python options are docx2pdf (requires Word), LibreOffice headless (fidelity and operational
+        pain), or paid conversion APIs.</li>
+        <li><strong>OpenDoPE.</strong> Content-control binding with repeats, conditions, position
+        conditions and template composition, and a reverter for round-tripping edited documents.
+        docxtpl's Jinja-tags-in-runs approach is string templating inside a format that fights
+        it.</li>
+        <li><strong>PowerPoint and Excel, typed.</strong> pptx and xlsx in the same object model.
+        In docx4j for Python they're planned.</li>
+        <li><strong>The surrounding machinery.</strong> docx to HTML, XHTML import, digital
+        signatures, diffing, anonymization, TOC generation and field updating, and merging (with the
+        commercial MergeDocx).</li>
+      </ul>
+
+      <h2>The routes across the boundary</h2>
+      <dl class="routes">
+        <dt>JPype: an in-process JVM</dt>
+        <dd>A JVM inside the Python process; Java classes look like Python objects. The usual
+        choice for scripts, notebooks and batch jobs, and what the examples below use. One JVM per
+        process (it can't be restarted), and its memory sits alongside Python's. docx4j for Python
+        shares the process happily: hand the document across as bytes.</dd>
+        <dt>A small service or CLI wrapper</dt>
+        <dd>The production answer: wrap the docx4j operations you need behind a tiny HTTP service
+        or CLI and call it like any other service. You get a clean process boundary, a warm JVM and
+        independent scaling.</dd>
+        <dt>Py4J</dt>
+        <dd>A socket gateway to a separately running JVM (PySpark's mechanism): the JVM stays
+        long-lived but out of process, without designing a REST API.</dd>
+        <dt>GraalPy</dt>
+        <dd>Python on GraalVM with direct Java interop; check your C-extension needs before
+        committing. (Jython is Python 2 only, so avoid it.)</dd>
+      </dl>
+
+      <h3>Edit in Python, PDF from Java</h3>
+      <p>docx4j for Python fills the template and Java docx4j renders it, the document passing
+      between them as bytes:</p>
+      <pre><code>from docx4j_py import load
+
+pkg = load("invoice2013.docx")
+pkg.custom_xml_parts.fill({
+    "/invoice[1]/customer[1]/company[1]": "Acme Manufacturing Ltd",
+})
+data = pkg.save()                       # bytes, no file
+
+import jpype, jpype.imports
+jars = ["docx4j-bundle-17.3.4.jar", "docx4j-bundle-extras-17.3.4.jar"]
+jpype.startJVM(classpath=jars)
+
+from java.io import ByteArrayInputStream, FileOutputStream
+from org.docx4j import Docx4J
+from org.docx4j.openpackaging.packages import WordprocessingMLPackage
+
+wml = WordprocessingMLPackage.load(ByteArrayInputStream(data))
+out = FileOutputStream("invoice.pdf")
+Docx4J.toPDF(wml, out)
+out.close()</code></pre>
+
+      <h3>OpenDoPE data binding in eleven lines</h3>
+      <pre><code>import jpype, jpype.imports
+jpype.startJVM(classpath=["docx4j-bundle-17.3.4.jar"])
+
+from java.io import File
+from org.docx4j.openpackaging.packages import WordprocessingMLPackage
+from org.docx4j.model.datastorage import OpenDoPEHandler, BindingHandler
+
+pkg = WordprocessingMLPackage.load(File("invoice-template.docx"))
+odh = OpenDoPEHandler(pkg); pkg = odh.preprocess()   # repeats + conditions
+bh = BindingHandler(pkg)                             # data binding
+bh.setStartingIdForNewBookmarks(odh.getNextBookmarkId())
+bh.applyBindings(pkg.getMainDocumentPart())
+pkg.save(File("invoice-out.docx"))</code></pre>
+      <p>That's a repeating-row invoice template, expanded and populated from its XML data, the
+      kind of job that in docxtpl means hand-managing Jinja tags inside table rows.</p>
+      <p>Every example on this page was tested with Python 3.14, Java 21, docx4j for Python 0.2.0
+      and JPype 1.7.1 from PyPI, and docx4j 17.3.4's two bundle jars from Maven Central. The
+      templates are from docx4j's samples, <code>sample-docs/databinding/</code>:
+      <code>invoice2013.docx</code>, and <code>invoice.docx</code> as
+      <code>invoice-template.docx</code>.</p>
+      <p><strong>More setup</strong> for the JVM routes, covering the jars, logging, configuration,
+      exceptions and threading, is in docx4j 17.3.4's
+      <a href="https://github.com/plutext/docx4j/blob/docx4j-17.3.4/docs/Docx4j_from_Python.md">docs/Docx4j_from_Python.md</a>.</p>
+
+      <h2>Frequently asked questions</h2>
+      <dl class="faq">
+        <dt>Is there a Python version of docx4j?</dt>
+        <dd>Yes: docx4j for Python, <code>pip install docx4j</code>, imported as
+        <code>docx4j_py</code>. It's a port, not a wrapper, so no JVM is involved. The object model
+        is generated from docx4j's schemas by a fork of xsdata, the engine is written by hand in
+        Python, and the design follows <a href="https://github.com/plutext/docx4j-core-ts">docx4j-core-ts</a>,
+        docx4j's TypeScript engine. Names, defaults and quirks are docx4j's unless a recorded change
+        request says otherwise. Version 0.2.0 handles <code>.docx</code> only.</dd>
+
+        <dt>Will my python-docx code run on docx4j for Python?</dt>
+        <dd>Mostly, after changing the imports: 305 of python-docx 1.2.0's 312 public members are
+        there, with python-docx's names and semantics, and each of the other seven is refused with a
+        reason. python-docx is not a dependency.</dd>
+
+        <dt>Can Python convert docx to PDF without Microsoft Word or LibreOffice?</dt>
+        <dd>Not natively: docx2pdf requires Word, and docx4j for Python doesn't render PDF yet.
+        Call Java docx4j as shown above, with the bundle jar plus <code>docx4j-bundle-extras</code>,
+        then <code>Docx4J.toPDF</code>; it writes Tagged PDF, PDF/A and PDF/UA too.</dd>
+
+        <dt>When should I stay with python-docx or docxtpl instead?</dt>
+        <dd>When the job is generating a document from a simple template or setting some
+        formatting: python-docx and docxtpl are small, quick to import and well known. Not for
+        reading the text of documents you didn't write, though: see the next question.</dd>
+
+        <dt>How do I extract the text of a .docx in Python?</dt>
+        <dd>To get the text Word shows, use docx4j for Python's text model,
+        <code>plain_text(extract(load(path)))</code>, as above. python-docx's
+        <code>Paragraph.text</code> loses tracked insertions and everything in content controls,
+        includes hidden text, and doesn't reach text boxes or notes.</dd>
+
+        <dt>Is there a single jar I can point JPype at?</dt>
+        <dd>Yes. The <code>docx4j-bundle</code> jar on Maven Central is self-contained for loading,
+        manipulating, binding and saving docx, pptx and xlsx, and from 17.3.4 it holds digital
+        signatures and Markdown too. For PDF output, put <code>docx4j-bundle-extras</code> of the
+        same version beside it, and not Apache FOP's own jars.</dd>
+
+        <dt>What does the JVM cost me operationally?</dt>
+        <dd>A second runtime to start (start it once per process), its heap alongside Python's,
+        and Java exceptions to translate at the boundary. For production loads, the service-wrapper
+        route moves all of that out of your Python processes entirely.</dd>
+
+        <dt>Why not just run LibreOffice headless for PDF?</dt>
+        <dd>It works until it doesn't: conversion fidelity varies with the LibreOffice version,
+        and a crashed soffice process is a familiar operational headache. FOP-based conversion is
+        a library call: deterministic, headless, and configurable down to PDF/A and PDF/UA.</dd>
+
+        <dt>Where does the "twenty years of edge-case handling" claim come from?</dt>
+        <dd>docx4j has been developed continuously since 2007, in the open: the
+        <a href="https://github.com/plutext/docx4j">repository</a>, its history and its issue
+        record are all inspectable, and so are docx4j for Python's. See
+        <a href="source-access-llm-assisted-programming.html">why that openness matters more than
+        ever</a>.</dd>
+      </dl>
+
+      <h2>See also</h2>
+      <ul>
+        <li><a href="https://github.com/plutext/docx4j-python">docx4j for Python</a> on GitHub,
+        and <a href="https://pypi.org/project/docx4j/">on PyPI</a>.</li>
+        <li><a href="docx4j-vs-poi-vs-aspose.html">docx4j vs POI vs Aspose.Words</a>: the Java-side
+        comparison.</li>
+        <li><a href="source-access-llm-assisted-programming.html">Why Source Access Matters for
+        LLM-Assisted Programming</a>: the argument for open dependencies.</li>
+      </ul>
+    </div>
+
+    <footer class="colophon">
+      <div class="wrap">
+        <p>docx4j and docx4j for Python are developed by Plutext and contributors, and distributed
+        under the Apache License v2; docx4j for Python's generated model imports docx4j-xsdata, a
+        fork of xsdata (MIT). python-docx, docxtpl, JPype, Py4J and GraalPy are the work of their
+        respective communities, and this page recommends them where they fit.</p>
+        <p>Set in Source Serif, Source Sans and Source Code, open-source typefaces, for an
+        argument about open source.</p>
+      </div>
+    </footer>
+  </article>
+</main>
