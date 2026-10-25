@@ -517,3 +517,9 @@ content carries a Placeholder Text run (`BindingTraverserXSLT.placeholderStyle`)
 document given no placeholder gains nothing. The XSLT binder writes no run at all for an empty picture value
 (`xpathInjectImage` returns null), where the other two write today's run, so there the style follows the run;
 `PlaceholderEntriesTest.thePlaceholderStyleIsAddedToTheMainStylesPart` pins all of it for the three binders.
+
+**Unmeasured: an empty picture value.** Three behaviours, none measured in Word: docx4j's XSLT binder leaves the
+`w:sdtContent` empty (`xpathInjectImage` returns null); its NonXSLT and StAX binders write today's placeholder run
+(`placeholder.xml` under the control's rPr); core-ts keeps the control's existing picture and reports a note (its
+CR-005 §9). Unchanged by CR-063; a Word check would settle which Word shows for a bound picture whose node is empty
+(core-ts changes nothing unless Jason asks).
