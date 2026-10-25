@@ -180,3 +180,13 @@ CR-065 is the read side: Word's lexical form and truncation, the lenient parse b
 phase 2), and the data-loss fix (its phase 1, done). Its §3 round 2 aside is this CR's §1. Its phase 2 class carries this
 CR's report once phase 0 answers; until then it ships without a range check, and a value outside 16 bits is read and
 written as it is today.
+
+## 8. The ports
+
+docx4j-python's CR-022 (its write-side guard, 85be8ef, local) names this CR's phase 0 as its own phase 0 and builds its
+limits table from §3's result. One difference by design (python-cd, 2026-10-26): CR-022 raises at every setter of its
+content API, facade and builders, and reports values already in a tree through its CR-020 validator; docx4j's setters
+are generated with no hook (D1 option c), so the report here is at marshal and unmarshal and the guard only where docx4j
+computes a measure itself (D5). Both leave a file's value as it is. python-cd checked the round 5 files read-only before
+Jason's run: all 76 well-formed, each loaded with nothing kept and nothing skipped. objects-ts's CR-015 and core-ts
+take the measured range when it exists (phase 3).
