@@ -173,7 +173,7 @@ too.
 | Phase | Work | Status |
 |---|---|---|
 | 0 | The shared Word probe (§3); the rule recorded in §3 and sent to python-cd, objects-ts and core-ts | DONE 2026-10-26 (four rounds, Jason) |
-| 1 | D1: the data-loss fix in the six conveniences, with a test per part type (a decimal that fails today; the edit throws; the save keeps the bytes) | proposed; no Word dependency, first |
+| 1 | D1: the data-loss fix in the six conveniences, with a test per part type (a decimal that fails today; the edit throws; the save keeps the bytes) | DONE 2026-10-26 (§7) |
 | 2 | D2, D4, D6: `LenientInteger`, the xjb customisation, regeneration, the three JAXB contexts unchanged; tests for each value form with Word's rule; the stylesheet list left in place; CHANGELOG | proposed; after phase 0 |
 | 3 | Hand-offs: the measured rule to the three ports (objects CR-015, python's integer reader, core-ts) | after phase 0 |
 
@@ -185,3 +185,20 @@ too.
 - **MOXy.** The xjb customisation is XJC's and applies to the generated classes, so both runtimes see it; tested on
   both.
 - **Rounding differently from Word** is the risk phase 0 removes.
+
+## 7. Phase 1 done (2026-10-26)
+
+Jason, 2026-10-26: "CR-065: D1 to D6 as recommended, do phase 1". `JaxbXmlPart` records the failed lazy unmarshal
+(`unreadable`): `getContents()` throws it again on each later read without a second attempt, `getJaxbElement()` logs it
+once and returns null as before, `setJaxbElement` clears it (an explicit replacement is the caller's decision), and
+`isContentUnreadable()` tells "could not be read" from "no content yet". A protected `contentsOrNew(Supplier)` serves
+the conveniences: the content, or a new one for a part that never had any, or `Docx4JRuntimeException` carrying the
+read failure ("The content of /word/document.xml could not be read, so it is not replaced with an empty one; fix or
+replace the content first (setJaxbElement). Cause: ..."). The six sites use it: `MainDocumentPart.getContent` (so
+`addObject` and `addParagraphOfText` too), `HeaderPart.getContent`, `FooterPart.getContent`,
+`DocumentSettingsPart` (`safeGetDocumentProtection`, `attachTemplate`), `DocPropsExtendedPart.setDocSecurity`. An
+untouched save still writes the source bytes. `UnreadablePartTest` (core-tests, `org.docx4j.openpackaging.parts`):
+the main part, a header and settings each made unreadable with `"abc"` in an integer attribute (a value no rule reads,
+so the fixtures outlive phase 2): the read returns null once and again without a retry, each edit is refused with the
+cause, the save keeps the bytes; a replacement by `setJaxbElement` is accepted and saved; a created package's parts
+still get new content from the conveniences.

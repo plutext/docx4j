@@ -129,10 +129,8 @@ public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
 		// but not for the default values, so nothing is implemented in xlsx4j yet
 
 
-		if (this.getJaxbElement()==null) {
-			this.setJaxbElement(new Properties());
-		}
-		this.getJaxbElement().setDocSecurity(val);
+		// properties that could not be read are not replaced by empty ones (CR-065 D1)
+		contentsOrNew(Properties::new).setDocSecurity(val);
 		
 	}
 	

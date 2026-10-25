@@ -71,6 +71,7 @@ import org.docx4j.jaxb.McDeclarations;
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.Docx4JRuntimeException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.LocationAwareXMLStreamException;
 import org.docx4j.openpackaging.exceptions.PartTooLargeException;
@@ -160,6 +161,44 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	protected E jaxbElement = null;
 
 	/**
+	 * Why the lazy unmarshal of this part's source failed, where it did (CR-065 D1), so the
+	 * failure is reported once, each later read throws it again, and no convenience replaces
+	 * content it could not read with an empty tree. Cleared by {@link #setJaxbElement(Object)}.
+	 */
+	private Docx4JException unreadable = null;
+
+	/**
+	 * Whether this part has source content that could not be read (its unmarshal failed), as
+	 * opposed to no content yet (a created package). A part in this state still saves its
+	 * source bytes unchanged.
+	 * @since 17.3.5
+	 */
+	public boolean isContentUnreadable() {
+		return jaxbElement == null && unreadable != null;
+	}
+
+	/**
+	 * The part's content; or, where the part has none yet (a created package, or a part
+	 * added to one), a new one from the factory, set as the content. Where the part's source
+	 * could not be read, throws rather than replacing what it could not read (CR-065 D1): an
+	 * edit after a failed read was silently saving the new content alone.
+	 * @throws Docx4JRuntimeException with the read failure as its cause
+	 * @since 17.3.5
+	 */
+	protected E contentsOrNew(java.util.function.Supplier<E> factory) {
+		E e = getJaxbElement();
+		if (e != null) return e;
+		if (unreadable != null) {
+			throw new Docx4JRuntimeException("The content of " + getPartName()
+					+ " could not be read, so it is not replaced with an empty one; fix or replace the content first (setJaxbElement). Cause: "
+					+ unreadable.getMessage(), unreadable);
+		}
+		e = factory.get();
+		setJaxbElement(e);
+		return e;
+	}
+
+	/**
 	 * Get the live contents of this part (the JAXB object model).
 	 * (An alias/synonym for older getJaxbElement(), but now throws exception)
 	 * @throws Docx4JException
@@ -171,6 +210,9 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		// Lazy unmarshal
 		InputStream is = null;
 		if (jaxbElement==null) {
+			if (unreadable!=null) {
+				throw unreadable; // the source failed once; it is not read again (CR-065 D1)
+			}
 			if (this.getPackage()==null) {
 				log.warn("This part not added to a package, so its contents can't be retrieved. " );
 				return null;
@@ -210,7 +252,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 					unmarshal( is );
 				}
 			} catch (JAXBException e) {
-				throw new Docx4JException("Problem with part " + this.getPartName(), e);
+				unreadable = new Docx4JException("Problem with part " + this.getPartName(), e);
+				throw unreadable;
 //			} catch (Docx4JException e) {
 //				log.error(e.getMessage(), e);
 			} finally {
@@ -236,6 +279,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 
 	public void setJaxbElement(E jaxbElement) {
 		this.jaxbElement = jaxbElement;
+		this.unreadable = null; // an explicit replacement is the caller's decision
 	}
 	/**
 	 * Set the  contents of this part.
@@ -244,7 +288,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * @since 3.0
 	 */
 	public void setContents(E jaxbElement) {
-		this.jaxbElement = jaxbElement;
+		setJaxbElement(jaxbElement);
 	}
 	
 	public void setJaxbElement(JAXBResult result) throws JAXBException {

@@ -25,6 +25,12 @@ Changes in Version 17.3.5
 
 * A hyperlink's content list refuses a table, a paragraph or bare Text, as a paragraph's does
   (ArrayListDocx4j.checkParent; each is a mistake Word repairs). Jason, 2026-10-26.
+* A part whose content could not be read (its unmarshal failed, e.g. a decimal in an integer
+  attribute off the preprocessor's list) is no longer replaced by an empty one on the first edit:
+  MainDocumentPart.getContent, HeaderPart and FooterPart getContent, DocumentSettingsPart and
+  DocPropsExtendedPart throw Docx4JRuntimeException with the cause, and an untouched save keeps the
+  bytes (CR-065 phase 1; before, a save after an edit held the new content alone).
+  JaxbXmlPart.isContentUnreadable() tells the two kinds of null apart.
 * Binding writes a content control's placeholder in Word's form (CR-063): w:placeholder is kept on
   every control (it was dropped); an empty value shows the glossary entry the control names, a copy
   of its paragraphs as the glossary holds them, so a template's own placeholder text survives binding; a text control naming

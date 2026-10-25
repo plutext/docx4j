@@ -66,11 +66,8 @@ public final class FooterPart extends JaxbXmlPartAltChunkHost<Ftr> implements Co
      */
     public List<Object> getContent() {
     	
-    	if (this.getJaxbElement()==null) {    		
-    		this.setJaxbElement( Context.getWmlObjectFactory().createFtr() );
-    	}
-    	
-    	return this.getJaxbElement().getContent();
+    	// a footer that could not be read is not replaced by an empty one (CR-065 D1)
+    	return contentsOrNew(() -> Context.getWmlObjectFactory().createFtr()).getContent();
     }	
 		
 	@Override
