@@ -91,6 +91,7 @@ file", with no repair offered. So at least one of the 65 values is one Word will
 files are round 2 (which families open, repair, refuse; Word's save of each that opens; the Paragraph dialog on A and
 B). A structural control was added first, `cr065-structure-control.docx`: the same document with every tested value a
 plain integer (docx4j loads all four parts of it), to show the refusal was the values and not the file's shape.
+Jason, 2026-10-26: the control "opens fine". So the refusal was the values.
 
 **docx4j today on the probe files** (`probe65/Today.java`): the all-cases file and families A, B, D, E, F, G, H fail
 the main part; C and I load (C's listed values round half-even: 141.5 to 142, 120.5 to 120, 240.5 to 240, 241.5 to
