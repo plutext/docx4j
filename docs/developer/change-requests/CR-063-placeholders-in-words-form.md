@@ -3,7 +3,7 @@
 Status: PHASES 1, 2 AND 4 DONE 2026-10-25 (§12, §13; Claude Fable 5.1, session docx4j-25); D8 (a) and D9 (a) decided (Jason,
 2026-10-25: "D8 we go (a)", "D9 choose (a)"), D9 done (§15); phase 3's Office-open check passed (§14: the one repair was the fixture's own Flat OPC chunk, pre-CR-063, fixed in the
 fixture); check 65's writes on the new output pass (§17, Jason's run 2026-10-25): phase 3 DONE. D10 (the Placeholder Text style in the main
-styles part) PROPOSED in §17, recommended (a). ACCEPTED 2026-10-25 (Jason: "CR-063 D1 to D6 accepted as recommended, please implement"): D1 to D6 as
+styles part) decided (a) and done 2026-10-25 (§17). ACCEPTED 2026-10-25 (Jason: "CR-063 D1 to D6 accepted as recommended, please implement"): D1 to D6 as
 recommended in §6, D7 decided earlier. PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session
 docx4j-25) at docx4j-core-ts's request, from Jason ("Jason asks that docx4j consider writing Word's form; it's your
 decision"): its checks 63 and 64 compared the bare placeholder docx4j's binding writes with Word's form. (Check 63's
@@ -506,4 +506,14 @@ would have shown it black. docx4j already has the definition (`PlaceholderEntrie
 
 | # | Question | Options | Recommended |
 |---|---|---|---|
-| D10 | The main styles part when docx4j writes a placeholder run and it lacks `PlaceholderText` | (a) add Placeholder Text (and Default Paragraph Font, if that is missing too) to the main styles part, as Word does when it writes a placeholder, and as D7 does for the glossary's; (b) leave the main styles part alone | (a): without it Word drops the style from every run docx4j wrote and shows the placeholder black, which is not Word's form; one call in `PlaceholderEntries` shared by the three binders, applied for every kind (the non-text kinds' own run carries the same style); a style the part already holds is left as it is. core-ts has had this rule since its CR-002 §40 (2026-10-04, from check 35: Word 2010 dropped the style from placeholder runs the same way; 65c is the first Word 365 measurement of it): every placeholder run it writes adds Placeholder Text, and Default Paragraph Font where missing, to the main styles part, with the definition Word added to 65c's run save; a part that defines them keeps its bytes; a file it only opens and saves is left alone. Awaits Jason |
+| D10 | The main styles part when docx4j writes a placeholder run and it lacks `PlaceholderText` | (a) add Placeholder Text (and Default Paragraph Font, if that is missing too) to the main styles part, as Word does when it writes a placeholder, and as D7 does for the glossary's; (b) leave the main styles part alone | (a): without it Word drops the style from every run docx4j wrote and shows the placeholder black, which is not Word's form; one call in `PlaceholderEntries` shared by the three binders, applied for every kind (the non-text kinds' own run carries the same style); a style the part already holds is left as it is. core-ts has had this rule since its CR-002 §40 (2026-10-04, from check 35: Word 2010 dropped the style from placeholder runs the same way; 65c is the first Word 365 measurement of it): every placeholder run it writes adds Placeholder Text, and Default Paragraph Font where missing, to the main styles part, with the definition Word added to 65c's run save; a part that defines them keeps its bytes; a file it only opens and saves is left alone. **Decided (a), Jason, 2026-10-25** ("D10 ask core-ts what it thinks and if it agrees with (a), then my decision is (a)"; core-ts agrees); **done the same day** |
+
+**D10 done (2026-10-25).** `PlaceholderEntries.ensurePlaceholderStyle(pkg)`: the main styles part gains Default
+Paragraph Font where missing and Placeholder Text as Word defines it (the definition of §10 and of 65c's run save,
+colour 666666; not `KnownStyles.xml`'s older 808080), a style the part defines left as it is, a document with no
+styles part left alone. Called from `referenceFor` (every kind, both the entry and the own-run cases, so the NonXSLT
+and StAX binders through `postBindSdtPrHygiene`) and from `bind.xslt`'s `w:sdtPr` template wherever a control's
+content carries a Placeholder Text run (`BindingTraverserXSLT.placeholderStyle`), own content or a condition's. A
+document given no placeholder gains nothing. The XSLT binder writes no run at all for an empty picture value
+(`xpathInjectImage` returns null), where the other two write today's run, so there the style follows the run;
+`PlaceholderEntriesTest.thePlaceholderStyleIsAddedToTheMainStylesPart` pins all of it for the three binders.

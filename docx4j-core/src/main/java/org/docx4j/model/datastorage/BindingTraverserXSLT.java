@@ -557,6 +557,17 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	}
 
 	/**
+	 * CR-063 D10: the main styles part given Placeholder Text where it lacks it, for bind.xslt's w:sdtPr
+	 * template, wherever a control's content carries a placeholder run ({@link
+	 * PlaceholderEntries#ensurePlaceholderStyle}). Returns an empty fragment.
+	 * @since 17.3.5
+	 */
+	public static DocumentFragment placeholderStyle(WordprocessingMLPackage pkg) {
+		PlaceholderEntries.ensurePlaceholderStyle(pkg);
+		return XmlUtils.neww3cDomDocument().createDocumentFragment();
+	}
+
+	/**
 	 * CR-063: the w:placeholder of a control showing its placeholder, for bind.xslt's w:sdtPr template:
 	 * the entry the control shows ({@link PlaceholderEntries#referenceFor}), where the placeholder run
 	 * in the content is the control's own (not a nested control's); otherwise the reference the control

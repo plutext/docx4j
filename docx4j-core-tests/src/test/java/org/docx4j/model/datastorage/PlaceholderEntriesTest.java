@@ -415,6 +415,67 @@ public class PlaceholderEntriesTest {
 		}
 	}
 
+	/** The main styles part's style with this id, or null. */
+	private static Style mainStyle(WordprocessingMLPackage pkg, String styleId) throws Exception {
+		Style found = null;
+		for (Style s : pkg.getMainDocumentPart().getStyleDefinitionsPart().getContents().getStyle()) {
+			if (styleId.equals(s.getStyleId())) {
+				assertNull("one " + styleId, found);
+				found = s;
+			}
+		}
+		return found;
+	}
+
+	/**
+	 * D10 (§17, check 65c): where a placeholder run is written and the main styles part lacks Placeholder
+	 * Text, the style is added as Word defines it (else Word drops it from every placeholder run on
+	 * opening and shows the placeholder black). Every kind, whether the control shows an entry or its own
+	 * run; a style the part defines is kept as it is; a document given no placeholder gains nothing.
+	 */
+	@Test
+	public void thePlaceholderStyleIsAddedToTheMainStylesPart() throws Exception {
+		for (String implementation : IMPLEMENTATIONS) {
+			// a text, a date and a picture control, each with an empty value
+			WordprocessingMLPackage pkg = template(runControl("Empty", "/root/empty", null, null)
+					+ dateControl("Date", "/root/empty") + pictureControl("Pic", "/root/empty"), null);
+			assertNull(implementation + ": a code-built package's styles lack it", mainStyle(pkg, "PlaceholderText"));
+			assertNotNull(implementation, mainStyle(pkg, "DefaultParagraphFont"));
+			bind(pkg, implementation);
+			Style style = mainStyle(pkg, "PlaceholderText");
+			assertNotNull(implementation + ": Placeholder Text added to the main styles part", style);
+			String xml = XmlUtils.marshaltoString(style, true, false);
+			for (String expected : new String[] { "w:type=\"character\"", "<w:name w:val=\"Placeholder Text\"/>",
+					"<w:basedOn w:val=\"DefaultParagraphFont\"/>", "<w:uiPriority w:val=\"99\"/>", "<w:unhideWhenUsed/>",
+					"<w:color w:val=\"666666\"/>" }) {
+				assertTrue(implementation + ": " + expected + " in " + xml, xml.contains(expected));
+			}
+			assertNotNull(implementation, mainStyle(pkg, "DefaultParagraphFont"));
+			// bound again: still one of each
+			WordprocessingMLPackage again = bind(reload(pkg), implementation);
+			assertNotNull(implementation + ": bound twice", mainStyle(again, "PlaceholderText"));
+
+			// a picture control alone, a kind with no entry: the style follows the run (the NonXSLT and StAX
+			// binders write today's placeholder run; the XSLT binder writes nothing for an empty picture)
+			WordprocessingMLPackage pic = bind(template(pictureControl("Pic", "/root/empty"), null), implementation);
+			boolean run = control(mainXml(pic), "Pic").contains("<w:rStyle w:val=\"PlaceholderText\"/>");
+			assertEquals(implementation + ": a kind with no entry, the style where the run is", run, mainStyle(pic, "PlaceholderText") != null);
+
+			// a styles part defining the style keeps its definition
+			WordprocessingMLPackage own = template(runControl("Empty", "/root/empty", null, null), null);
+			own.getMainDocumentPart().getStyleDefinitionsPart().getContents().getStyle().add((Style) XmlUtils.unmarshalString(
+					"<w:style " + W + " w:type=\"character\" w:styleId=\"PlaceholderText\"><w:name w:val=\"Placeholder Text\"/>"
+					+ "<w:rPr><w:color w:val=\"999999\"/></w:rPr></w:style>"));
+			own = bind(reload(own), implementation);
+			String kept = XmlUtils.marshaltoString(mainStyle(own, "PlaceholderText"), true, false);
+			assertTrue(implementation + ": kept: " + kept, kept.contains("<w:color w:val=\"999999\"/>") && !kept.contains("basedOn"));
+
+			// a document whose controls all hold values gains nothing
+			WordprocessingMLPackage value = bind(template(runControl("Value", "/root/a", null, null), null), implementation);
+			assertNull(implementation + ": no placeholder, no style", mainStyle(value, "PlaceholderText"));
+		}
+	}
+
 	/** The three binders give the same document text and the same glossary. */
 	@Test
 	public void theBindersAgree() throws Exception {

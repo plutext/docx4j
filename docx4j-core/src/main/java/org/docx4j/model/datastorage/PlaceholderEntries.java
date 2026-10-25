@@ -151,6 +151,7 @@ public final class PlaceholderEntries {
 	public static String referenceFor(WordprocessingMLPackage pkg, SdtPr sdtPr) {
 		if (pkg == null || sdtPr == null || pkg.getMainDocumentPart() == null) return null;
 		try {
+			ensurePlaceholderStyle(pkg);
 			String named = nameOf(sdtPr);
 			GlossaryDocumentPart glossary = pkg.getMainDocumentPart().getGlossaryDocumentPart();
 			if (named != null && !named.isEmpty() && entryOf(glossary, named) != null) {
@@ -445,6 +446,30 @@ public final class PlaceholderEntries {
 		return glossary;
 	}
 
+	/**
+	 * D10 (check 65c): the main styles part holds Placeholder Text, and Default Paragraph Font which it
+	 * is based on, where a placeholder run is written. Word adds the style to a document's styles when it
+	 * writes a placeholder of its own; where the document's styles lack it, Word drops the style from
+	 * every placeholder run on opening and shows the placeholder black (Word 365, check 65c; Word 2010,
+	 * core-ts's check 35). A style the part already defines is left as it is; a document with no
+	 * styles part is left alone.
+	 *
+	 * @param pkg the document
+	 * @since 17.3.5
+	 */
+	public static void ensurePlaceholderStyle(WordprocessingMLPackage pkg) {
+		if (pkg == null || pkg.getMainDocumentPart() == null) return;
+		StyleDefinitionsPart stylesPart = pkg.getMainDocumentPart().getStyleDefinitionsPart();
+		if (stylesPart == null) return;
+		try {
+			Styles styles = stylesPart.getContents();
+			if (styles == null) return;
+			ensureStyles(styles);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+	}
+
 	private static void ensureGlossaryStyles(GlossaryDocumentPart glossary) throws Exception {
 		StyleDefinitionsPart stylesPart = glossary.getStyleDefinitionsPart();
 		if (stylesPart == null) {
@@ -457,6 +482,11 @@ public final class PlaceholderEntries {
 			styles = Context.getWmlObjectFactory().createStyles();
 			stylesPart.setJaxbElement(styles);
 		}
+		ensureStyles(styles);
+	}
+
+	/** Default Paragraph Font and Placeholder Text added where missing; a style the part defines is kept. */
+	private static void ensureStyles(Styles styles) {
 		boolean hasDefaultParagraphFont = false, hasPlaceholderText = false;
 		for (Style s : styles.getStyle()) {
 			if ("DefaultParagraphFont".equals(s.getStyleId())) hasDefaultParagraphFont = true;

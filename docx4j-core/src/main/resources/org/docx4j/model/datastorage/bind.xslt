@@ -1175,6 +1175,8 @@
   			
   			 -->
 	        <w:showingPlcHdr/>
+	        <!-- CR-063 D10: the main styles part holds Placeholder Text (else Word drops the style on opening) -->
+	        <xsl:copy-of select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.placeholderStyle($wmlPackage)"/>
 	        <xsl:choose>
 	        	<xsl:when test="$ownContent">
 	        		<!-- CR-063 D2 to D4: the entry the control shows, named in w:placeholder (the one it names
