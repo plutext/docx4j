@@ -104,9 +104,10 @@ to 1, 7.2 to 7, between 1.8 to 1 (D); tab 1440.5 to 1440, 720.5 to 720 (E); text
 10.5 to 10, trHeight 400.7 to 400, 300.4 to 300, tcW pct 50.5 to 50, tblW pct 50.5 to 50 (G); pgSz 11907.0 x 16839.0
 to 11907 x 16839, 11907.5 x 16838.5 to 11907 x 16838, pgMar top 1133.5 to 1133, 1440.5 to 1440 (H); the style's
 indent 720.5 to 720, `w:defaultTabStop` 720.5 to 720, the header's 120.5 to 120 (I). So docx4j's stylesheet, whose
-`format-number` is half-even, disagrees with Word on every half that rounds up (141.5, 241.5, 9001.5, 5705.5) and on
-141.99999999999994 (docx4j 142, Word 141): the repairs docx4j has made since 2014 give a different integer from Word's
-in those cases. Two values vanished for a reason other than parsing: `w:sz w:val="22.5"` (F41) became 22, the
+`format-number` is half-even, disagrees with Word on seven of the probe's values on its own list (objects-ts's count,
+verified): 141.5, 241.5, 9001.5 and 11907.5 (halves rounding up), 1.8, 400.7 (rounding up) and 141.99999999999994
+(docx4j 142, Word 141): the repairs docx4j has made since 2014 give a different integer from Word's in those cases.
+B27 (`w:ind/@w:left="10206.0"`) became 10206 (objects-ts's reading; Word split the label across runs). Two values vanished for a reason other than parsing: `w:sz w:val="22.5"` (F41) became 22, the
 document default, and `w:ind w:left="-0.5"` (B25) became 0, the default, and Word writes neither (it stores
 direct formatting as a difference from the style); the Paragraph dialog is not needed, the saves answer.
 
