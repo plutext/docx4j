@@ -93,6 +93,41 @@ B). A structural control was added first, `cr065-structure-control.docx`: the sa
 plain integer (docx4j loads all four parts of it), to show the refusal was the values and not the file's shape.
 Jason, 2026-10-26: the control "opens fine". So the refusal was the values.
 
+**Round 2 (Jason, 2026-10-26): families B to I open clean; A is refused.** Read from Word's saves
+(`families/cr065-{B..I}-word365.docx`, scratchpad `probe65/readsave.py`):
+
+*Word truncates a decimal toward zero; it does not round.* Every decimal in B to I became its integer part:
+720.5 and 720.4 to 720, 721.5 to 721, -120.5 to -120, -121.5 to -121, -1.5 to -1 (B); 141.5 to 141, 120.5 to 120,
+259.2 to 259, 240.5 to 240, 241.5 to 241, 141.99999999999994 to **141**, 12.5 to 12 (C); border 7.5 to 7, space 1.8
+to 1, 7.2 to 7, between 1.8 to 1 (D); tab 1440.5 to 1440, 720.5 to 720 (E); text scale 90.5 to 90, character spacing
+20.5 to 20, position 6.5 to 6 (F); tblW 9000.5 to 9000, 9001.5 to **9001**, 10206.0 to 10206, 100.5 to 100, tblInd
+10.5 to 10, trHeight 400.7 to 400, 300.4 to 300, tcW pct 50.5 to 50, tblW pct 50.5 to 50 (G); pgSz 11907.0 x 16839.0
+to 11907 x 16839, 11907.5 x 16838.5 to 11907 x 16838, pgMar top 1133.5 to 1133, 1440.5 to 1440 (H); the style's
+indent 720.5 to 720, `w:defaultTabStop` 720.5 to 720, the header's 120.5 to 120 (I). So docx4j's stylesheet, whose
+`format-number` is half-even, disagrees with Word on every half that rounds up (141.5, 241.5, 9001.5, 5705.5) and on
+141.99999999999994 (docx4j 142, Word 141): the repairs docx4j has made since 2014 give a different integer from Word's
+in those cases. Two values vanished for a reason other than parsing: `w:sz w:val="22.5"` (F41) became 22, the
+document default, and `w:ind w:left="-0.5"` (B25) became 0, the default, and Word writes neither (it stores
+direct formatting as a difference from the style); the Paragraph dialog is not needed, the saves answer.
+
+*The empty string reads as 0, and empty rsids are dropped:* SSRS's `header="" footer="" gutter=""` became `0 0 0`
+and the four `rsid*=""` were dropped (H60); a lone `pgMar/@w:top=""` became 0 (H61). *The grid is recomputed:*
+`gridCol` 4500.5 and 5705.5 became 4500 and 4500 under a `tblW` auto table of two 4500 cells (G50, G51), so a
+decimal there has no observable reading beyond "not refused".
+
+*An aside, from a generator slip:* families B to H carried, in `styles.xml`, `settings.xml` and the header, the
+generator's sentinel integers 7205001, 7205002 and 1205003 (meant to be replaced; family I and the all-cases file had
+the decimals). Word kept them modulo 2^16: the style's `w:ind/@w:left` became -3959 (signed), `w:defaultTabStop`
+61578 and the header's `w:spacing/@w:before` 25355 (unsigned); the header's 25355 twips of space before is what made
+those files "100's of pages" (Jason). So Word's twips measures are 16-bit internally, and an out-of-range value wraps
+rather than being refused or clamped. Fixed in the generator (plain integers where not under test); the body cases
+were unaffected.
+
+*Family A* (`w:spacing/@w:before` with the odd forms) was refused whole. Round 3 splits it: A1 the pure decimals
+(120.5, 120.4, 121.5, 122.5, 240.0, 141.99999999999994), A2 the forms ("240.", ".5", "+240", "+240.5", " 240.5 ",
+" 240 "), A3 the comma decimal, A4 hex, A5 the exponents, A6 the empty string, A7 "abc" (`families/cr065-A1..A7-*.docx`).
+Expected from B to I: A1 opens (truncation); the rest is the question.
+
 **docx4j today on the probe files** (`probe65/Today.java`): the all-cases file and families A, B, D, E, F, G, H fail
 the main part; C and I load (C's listed values round half-even: 141.5 to 142, 120.5 to 120, 240.5 to 240, 241.5 to
 242, 141.99999999999994 to 142, 12.5 to 12); the all-cases file and I fail `styles.xml`, `settings.xml` and the header
@@ -104,7 +139,7 @@ too.
 |---|---|---|---|
 | D1 | A part whose unmarshal failed, on the create-when-null conveniences | (a) throw, with the cause ("the part's content could not be read; refusing to replace it"), distinguishing "never had content" (a created package: no source part store) from "content that could not be read" (the part records the failed unmarshal); (b) today | (a). `getJaxbElement()` keeps returning null for compatibility; the six sites call `getContents()` and let its exception out, or test the recorded failure. Unchecked (`Docx4JRuntimeException`), since the conveniences declare nothing. |
 | D2 | Where the lenient integer read lives | (a) an XJC `javaType` customisation in the xjb binding the integer simple types to `BigInteger` through a parse method (`org.docx4j.jaxb.LenientInteger.parse`), so the first unmarshal succeeds for every integer attribute in every part; (b) a general stylesheet template over the (element, attribute) pairs derived from `wml.xsd`, on the retry only; (c) the event handler | (a). (c) is impossible (§1 step 1). (b) needs the pair list because `w:val` is polymorphic (`w:tag w:val="1.5"` is a legal string) and runs only on the retry. (a) covers the universal measures too ("12pt", which the stylesheet converts for a few attributes only). The stylesheet's list stays and retires later. The regeneration follows `adding-a-schema.md`'s steps for an xjb change. |
-| D3 | The rounding rule and the odd forms ("", "abc", "1e3", "0x10", " 240.5 ", "240,5", a negative where unsigned) | Word's, from the probe; until then half-even is a default to re-measure | decided by phase 0. If Word repairs a form rather than reading it, docx4j drops that attribute and logs; if Word refuses the file, docx4j may still read it (more lenient than Word is a choice, recorded). |
+| D3 | The rounding rule and the odd forms ("", "abc", "1e3", "0x10", " 240.5 ", "240,5", a negative where unsigned) | Word's, from the probe | **Measured (round 2): a decimal is truncated toward zero (its integer part); the empty string reads as 0.** The odd forms await round 3. Phase 2 reads as Word reads. If Word repairs a form rather than reading it, docx4j drops that attribute and logs; if Word refuses the file, docx4j may still read it (more lenient than Word is a choice, recorded). |
 | D4 | Which simple types get the lenient parse | `ST_DecimalNumber`, `ST_UnsignedDecimalNumber`, `ST_TwipsMeasure`, `ST_SignedTwipsMeasure`, `ST_HpsMeasure`, `ST_SignedHpsMeasure`, `ST_EighthPointMeasure`, `ST_PointMeasure`, `ST_TextScale`, `ST_PixelsMeasure`; the full list from `wml.xsd` at phase 2 | all of them; one method. |
 | D5 | The empty string (`header=""`, `rsidR=""`) | (a) as Word reads it (probe); (b) today's stylesheet rule (0 for header/footer, dropped for gutter and rsids) | phase 0 decides; rsids are strings and are a separate question (kept as `""` today). |
 | D6 | Report the repairs | (a) each lenient read logs at INFO with the attribute, the text and the value taken, once per document; (b) silent | (a); the portfolio survey's skipped-content report (`broken_producer_repairs_across_ports.md` §4 item 4) would carry the same. |
