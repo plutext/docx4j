@@ -3,8 +3,10 @@
 Status: PROPOSED 2026-10-26, opened by Claude Fable 5.1 (session docx4j-25) at Jason's word ("Do new write-side CR with
 round 5 as its shared phase 0, separate from CR-065, whose phase 2 ships first and gains the range report when round 5
 answers. open it and build the probe"), from CR-065 §3's round 2 aside: Word kept 7205001 twips as -3959. Phase 0, round
-5 of the CR-065 Word probe, BUILT 2026-10-26 (§3, on the share at `__tmp/cr066/`); Jason's run awaited. docx4j's write
-side measured (§1, §2). Recommendations in §4; phases in §5.
+5 of the CR-065 Word probe, DONE 2026-10-26 (§3: Jason's run, all six group files opened clean; the storage width is per
+attribute, not per type: 16 bits signed or unsigned, 8 and 5 bits for a border, 32 bits for a page number, with clamps on
+page width and tab stops and the rule carried in the sign for row height and exact line spacing). docx4j's write side
+measured (§1, §2). Recommendations in §4 (D1, D4 and D7 amended by the result); phases in §5.
 
 ## 0. Summary
 
@@ -92,7 +94,7 @@ The schema's count of the attributes concerned (`xsd/wml/wml.xsd`): 30 `ST_Twips
 and `w:pgNumType/@w:start`), one each of `ST_SignedHpsMeasure`, `ST_EighthPointMeasure`, `ST_PointMeasure` and
 `ST_TextScale`, and `CT_HpsMeasure/@w:val` (`w:sz`), bound as `xsd:unsignedLong` in docx4j's copy of the schema.
 
-## 3. Phase 0: round 5 of the Word probe (built 2026-10-26; Jason's run awaited)
+## 3. Phase 0: round 5 of the Word probe (built 2026-10-26; Jason's run 2026-10-26: DONE)
 
 On the share at `__tmp/cr066/`: `groups/cr066-{P,B,R,T,S,N}.docx` (open these first), `families/cr066-<F>.docx` (one
 attribute each, 22 files, for a refused group), `singles/cr066-<id>.docx` (one value each, 48 files, for a refused
@@ -139,27 +141,73 @@ storage limit or at the UI limit), keep, or refuse**, and for N whether a negati
 
 **docx4j today on the probe files:** everything loads and round-trips unchanged (§1).
 
+### 3.1 Result (Jason, 2026-10-26: "cr066 groups all opened without needing repair")
+
+All six group files opened clean, no repair; the family and single files were not needed. Read from Word's saves
+(`groups/cr066-{P,B,R,T,S,N}-word365.docx`, `probe66/read66.py`, then the raw XML of every case that was not a plain
+wrap). **No value was refused or repaired, and none was kept beyond its storage width; a negative in an attribute the
+schema calls unsigned is accepted everywhere.** The width and the sign are the attribute's, not the simple type's:
+
+| Attribute (schema type) | Word's storage, from the saves | Evidence (written -> saved) |
+|---|---|---|
+| `w:ind/@w:left`, `w:spacing/@w:line` auto, `w:rPr/w:spacing` (signed twips); `w:position` (signed half-points); `w:tblW`, `w:tcW`, `w:tblInd` `@w:w` under `dxa` and under `pct` (ST_DecimalNumber) | **int16, wraps**; no UI clamp | 32768 -> -32768; 65535 -> -1; 65536 -> 0; -32769 -> 32767; 7205001 -> -3959; 3169 (position), 31681 (run spacing), 5001 and 32767 (pct) kept; tblInd 0 not written |
+| `w:pgMar/@w:top` (ST_TwipsMeasure, "unsigned") | **int16, wraps** | 32768 -> -32768; 65535 -> -1; -1 kept; -32769 -> 32767; 1205003 -> 25355 |
+| `w:spacing/@w:before` (ST_TwipsMeasure) | **uint16, wraps**; 0xFFFF is written as -1 | 32768 kept; 65536 -> 0; 65537 -> 1; 1205003 -> 25355; 65535 -> **-1**; -1 -> -1; -32769 -> 32767 |
+| `w:sz/@w:val` (half-points) | **uint16, wraps**; no UI clamp | 3277, 32768, 65535 kept; 65536 -> 0; 65537 -> 1; -1 -> 65535; -32769 -> 32767 |
+| `w:w/@w:val` (ST_TextScale, schema 0..600) | **uint16, wraps**; no clamp at 600 | 601, 32767, 65535 kept; 65536 -> 0; -1 -> 65535; -32769 -> 32767 |
+| `w:tab/@w:pos` (signed twips) | **int16, wraps, then clamped to ±31680** (22 in, the UI limit) | 32767 -> 31680; 32768 -> -31680; 65535 -> -1; -32768 -> -31680; -32769 -> 31680; 7205001 -> -3959 |
+| `w:pgSz/@w:w` (ST_TwipsMeasure) | **uint16, wraps, then clamped to 144..31681** | 31681 kept; 32767, 32768, 65535, -1, -32769 -> 31681; 65536, 65537 -> 144; 1205003 -> 25355 |
+| `w:pgSz/@w:h` (ST_TwipsMeasure) | **uint16, wraps, then a minimum of 144**; no maximum | 31681, 32767, 32768, 65535 kept; 65536, 65537 -> 144; 1205003 -> 25355 |
+| `w:spacing/@w:line` exact (signed twips) | **int16 after negation**: exact is stored as the negative, so the wrapped value's sign re-derives the rule and its magnitude the line | exact 32768 -> exact 32768; exact 65535 -> **atLeast 1**; 65536 -> atLeast 0; 65537 -> exact 1; -1 -> atLeast 1; -32768 -> exact 32768; -32769 -> exact 32767; 7205001 -> atLeast 3959 |
+| `w:trHeight/@w:val` (ST_TwipsMeasure) | **int16, the sign is the rule** (negative = exact) | 32767 kept; 32768 -> **exact 32768**; 65535 -> exact 1; 65536 -> dropped; 65537 -> 1; -1 -> exact 1; -32769 -> 32767; 1205003 -> 25355 |
+| a border's `@w:sz` (ST_EighthPointMeasure) | **8 bits, wraps** (mod 256); no clamp at the UI's 48 | 49, 255 kept; 256 -> 0; 32767 -> 255; 32768 -> 0; 65537 -> 1; -1 -> 255; -32769 -> 255 |
+| a border's `@w:space` (ST_PointMeasure, schema max 31) | **5 bits, wraps** (mod 32) | 31 kept; 32 -> 0; 255 -> 31; 256 -> 0; 65537 -> 1; -1 -> 31; -32769 -> 31 |
+| `w:pgNumType/@w:start` (ST_DecimalNumber) | **int32, wraps** | 65536, 2147483647 kept; 2147483648 -> -2147483648; 4294967295 -> -1; 4294967296 -> 0; -1 kept |
+
+The widths are those of Word's binary format (the DOC `PAP`, `CHP`, `BRC` and `SEP` structures: `dyaBefore` unsigned,
+`dyaTop` signed, `dyaRowHeight` and `lspd.dyaLine` signed with the sign as the rule, `brc.dptLineWidth` 8 bits,
+`brc.dptSpace` 5 bits), so the table is unlikely to move between Word versions. The UI limits (1638 pt, 6 pt, 600 %,
+22 in) do not apply on read except where shown (tab stops, page width). Two side effects of the big values: Word
+splits a run whose font is 1638 pt or more into one run per character, each with `w:lastRenderedPageBreak` (R1), and a
+page at 22 in with 32767 twips of space before a paragraph is the "100's of pages" of CR-065 round 2. The footer's
+PAGE fields kept their cached "1" in every section (Jason saw pages 1 and 2 on screen, "of 3"), so the display did not
+measure `w:pgNumType/@w:start`; the saves did.
+
+**What this means for the design.** A `printMethod` or `parseMethod` bound to a simple type knows the type, not the
+attribute, and the width differs within `ST_TwipsMeasure` (before unsigned, pgMar top signed, trHeight signed with a
+rule) and within `ST_DecimalNumber` (TblWidth int16, pgNumType int32, ids and counts not measured and not 16-bit).
+So the type-level report can be exact for `ST_SignedTwipsMeasure` (int16 for every measured attribute),
+`ST_SignedHpsMeasure` (int16), `ST_TextScale` and `CT_HpsMeasure/@w:val` (uint16), `ST_EighthPointMeasure` (8 bits) and
+`ST_PointMeasure` (5 bits); for `ST_TwipsMeasure` it reports the certain range only, a value outside -32768..65535
+(changed for every measured attribute of the type), and names the attribute-level table for the rest; for
+`ST_DecimalNumber` it reports nothing (D7 amended). The exact per-attribute check (the twips attributes of
+`ST_TwipsMeasure`, `w:tblW`, `w:tcW`, `w:tblInd`, `w:pgNumType/@w:start`) is the whole-tree check's (D6), or a patch
+on the owning class's setter through `ModifyGeneratedSources` where one class owns the attribute (`TblWidth.setW`).
+Unmeasured and left to the certain range: the other 26 `ST_TwipsMeasure` attributes (`w:gridCol/@w:w`, the other
+margins, `w:ind/@w:hanging` and `@w:firstLine`, frame and drawing distances), `w:spacing/@w:after` (assumed as
+`before`), the other borders' attributes (assumed as `w:top`'s).
+
 ## 4. Decisions
 
 | # | Question | Options | Recommendation |
 |---|---|---|---|
-| D1 | Where the range report lives | (a) the `printMethod` and `parseMethod` CR-065 phase 2 binds to each integer simple type (the xjb `javaType` customisation gives both; the print method runs at marshal for every attribute of the type, in every part, under both JAXB runtimes); (b) a save-time tree walk; (c) the setters (generated; no hook) | (a). One class, one range table (type to signed or unsigned 16-bit, or wider, from phase 0). CR-065 phase 2 ships the class without the report and gains it here. (b) is the CR-064 validator's job (D6). |
+| D1 | Where the range report lives (amended by §3.1: the width is per attribute, so the type-level method reports the exact range for the uniform types and the certain range for `ST_TwipsMeasure`; the per-attribute table belongs to the whole-tree check, D6, or a `ModifyGeneratedSources` patch on `TblWidth.setW`) | (a) the `printMethod` and `parseMethod` CR-065 phase 2 binds to each integer simple type (the xjb `javaType` customisation gives both; the print method runs at marshal for every attribute of the type, in every part, under both JAXB runtimes); (b) a save-time tree walk; (c) the setters (generated; no hook) | (a). One class, one range table (type to signed or unsigned 16-bit, or wider, from phase 0). CR-065 phase 2 ships the class without the report and gains it here. (b) is the CR-064 validator's job (D6). |
 | D2 | Severity at marshal | (a) WARN, naming the part is not possible there, so the attribute's type, the value and what Word will read ("w:ind/@w:left 7205001 is outside Word's 16-bit range; Word reads it as -3959"), and write the value as held; (b) throw; (c) rewrite to the wrapped or clamped value | (a). A failed save loses more than a wrong size, and marshal is too late to name the caller; a silent rewrite hides the defect and writes a number nobody asked for. The caller's number is the one to fix, and the guard (D5) is where the caller is. |
 | D3 | On read | (a) WARN the same way and hold the value as written; (b) emulate Word's reading (wrap or clamp) | (a), agreeing with python-cd: emulating swaps one wrong number for another and destroys the evidence; the report says what Word shows. docx4j's HTML and PDF output of such a document therefore differ from Word's, knowingly. |
-| D4 | Which boundary | (a) the storage limit phase 0 shows (signed -32768..32767, unsigned 0..65535, if Word wraps); (b) Word's UI limit per attribute (pgSz 31680, `w:sz` 3276, position 3168, border sz 48, space 31, text scale 600, pct 5000) | Phase 0 decides per type: report at the boundary where Word changes the value. If Word keeps a value between the UI limit and the storage limit, that value is not reported (it is what Word holds, whatever the dialog allows). |
+| D4 | Which boundary | (a) the storage limit phase 0 shows (signed -32768..32767, unsigned 0..65535, if Word wraps); (b) Word's UI limit per attribute (pgSz 31680, `w:sz` 3276, position 3168, border sz 48, space 31, text scale 600, pct 5000) | **Answered by §3.1:** the storage limit, per attribute; the UI limits do not apply except tab stops (±31680 after the wrap) and page width (144..31681). A value between a UI limit and its storage limit is kept by Word and is not reported. |
 | D5 | Hard guards where a caller's units become twips | (a) `IllegalArgumentException` naming Word's range at `TblFactory.createTable` and the CSS converters' public constructors in `model/properties`; (b) WARN only; (c) nothing beyond D1 | (a) at `TblFactory` (a cell width beyond 16 bits is always a caller's mistake) and (b) at the CSS converters and `TocEntry`/`PageDimensions` for now (a CSS length that converts out of range, or margins wider than the page, come from a document, and ImportXHTML's users expect a document back; its own CR decides whether to throw). (a) for the converters when ImportXHTML's CR lands. |
 | D6 | A whole-tree check ("find every out-of-range value in this package") | (a) in the CR-064 D8(b) tree validator and the CR-050 inspector when they exist; (b) a new walker here | (a), later; D1's report is the floor every save gets. |
-| D7 | Types covered | the integer simple types of CR-065 D4 that phase 0 shows are 16-bit; `ST_DecimalNumber` attributes individually (`CT_TblWidth/@w:w` by its `w:type`; `w:pgNumType/@w:start` as phase 0 finds); EMUs and counts excluded | as stated; the range table is per type, with the two `ST_DecimalNumber` cases by attribute. |
+| D7 | Types covered | the integer simple types of CR-065 D4 that phase 0 shows are 16-bit; `ST_DecimalNumber` attributes individually (`CT_TblWidth/@w:w` by its `w:type`; `w:pgNumType/@w:start` as phase 0 finds); EMUs and counts excluded | **Amended by §3.1:** the range table is per attribute (§3.1's table); the type-level report carries the exact range for `ST_SignedTwipsMeasure`, `ST_SignedHpsMeasure`, `ST_TextScale`, `CT_HpsMeasure/@w:val`, `ST_EighthPointMeasure` and `ST_PointMeasure`, the certain range (outside -32768..65535) for `ST_TwipsMeasure`, nothing for `ST_DecimalNumber`; `w:tblW`, `w:tcW`, `w:tblInd` (int16) and `w:pgNumType/@w:start` (int32) by attribute (D6 or a setter patch). |
 | D8 | Report once per document | the same question as CR-065 D6: a static method has no document context | the same mechanism (a thread-local counter per load or save, or per value); decided in CR-065 phase 2 and reused. |
 
 ## 5. Phases
 
 | Phase | Work | Status |
 |---|---|---|
-| 0 | Round 5 of the Word probe (§3); the range per type recorded in §3 and sent to python-cd, objects-ts and core-ts | BUILT 2026-10-26; Jason's run awaited |
-| 1 | D1 to D4, D7, D8: the range table and the report in the print and parse methods of CR-065 phase 2's class; tests per type with the probe's values; CHANGELOG | after phase 0 and CR-065 phase 2 |
-| 2 | D5: the guard at `TblFactory`, the WARN at the CSS converters and `TocEntry`; tests; CHANGELOG | after phase 0 |
-| 3 | Hand-offs: the measured range to the three ports and to ImportXHTML (its CSS length conversion); D6 to the CR-064 validator and the inspector when they exist | after phase 0 |
+| 0 | Round 5 of the Word probe (§3); the range per attribute recorded in §3.1 and sent to python-cd, objects-ts and core-ts | DONE 2026-10-26 (Jason's run; §3.1) |
+| 1 | D1 to D4, D7, D8: the range table (§3.1) and the report in the print and parse methods of CR-065 phase 2's class, exact for the uniform types and the certain range for `ST_TwipsMeasure`; tests per type with the probe's values; CHANGELOG | after CR-065 phase 2 |
+| 2 | D5: the guard at `TblFactory` (int16 for `w:tcW`, `w:gridCol` assumed uint16), the WARN at the CSS converters and `TocEntry` (tab stops ±31680); tests; CHANGELOG | ready |
+| 3 | Hand-offs: §3.1's table to the three ports and to ImportXHTML (its CSS length conversion); D6, the per-attribute check, to the CR-064 validator and the inspector when they exist | ports told 2026-10-26; the rest ready |
 
 ## 6. Risks
 
@@ -168,8 +216,8 @@ storage limit or at the UI limit), keep, or refuse**, and for N whether a negati
 - **Behaviour change at a guard.** A caller that produced a (wrong) document from `TblFactory.createTable` gets an
   exception; that is the point, and the message names the range and the argument. The CSS converters keep producing a
   document (WARN) until ImportXHTML decides.
-- **UI limit against storage limit.** If phase 0 shows clamping at the UI limit for some types and wrapping for others,
-  the range table carries both kinds; a type is never guessed.
+- **UI limit against storage limit.** Resolved by §3.1: the table carries the two clamps (tab stops, page width) beside
+  the wraps; an attribute not measured gets the certain range only, never a guess.
 - **One Word.** Word 365 is the measurement; older Words may differ at the UI limits, not at 16 bits.
 - **Cost.** The print method runs for every integer attribute of every save; a range compare on a `BigInteger` is
   cheap, measured with phase 1 as CR-064 §3 and CR-065 phase 2 are.
