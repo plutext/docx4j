@@ -2,7 +2,8 @@
 
 Status: PHASES 1, 2 AND 4 DONE 2026-10-25 (§12, §13; Claude Fable 5.1, session docx4j-25); D8 (a) and D9 (a) decided (Jason,
 2026-10-25: "D8 we go (a)", "D9 choose (a)"), D9 done (§15); phase 3's Office-open check passed (§14: the one repair was the fixture's own Flat OPC chunk, pre-CR-063, fixed in the
-fixture); check 65's writes on the new output remain with Jason. ACCEPTED 2026-10-25 (Jason: "CR-063 D1 to D6 accepted as recommended, please implement"): D1 to D6 as
+fixture); check 65's writes on the new output pass (§17, Jason's run 2026-10-25): phase 3 DONE. D10 (the Placeholder Text style in the main
+styles part) PROPOSED in §17, recommended (a). ACCEPTED 2026-10-25 (Jason: "CR-063 D1 to D6 accepted as recommended, please implement"): D1 to D6 as
 recommended in §6, D7 decided earlier. PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session
 docx4j-25) at docx4j-core-ts's request, from Jason ("Jason asks that docx4j consider writing Word's form; it's your
 decision"): its checks 63 and 64 compared the bare placeholder docx4j's binding writes with Word's form. (Check 63's
@@ -145,7 +146,7 @@ The glossary there is a full set of parts: document, styles, settings, webSettin
 | 0 | Check 65's result from core-ts (Jason runs it; written 2026-10-24, core-ts `test/fixtures/check65/`, the share's `__tmp/65/`). 65a: controls naming `DefaultPlaceholder_-1854013440` with no glossary part. 65b: a glossary of `document.xml` alone, holding the default entry and one of its own text named with 32 hex digits, and a control naming an entry it lacks. Each repeats check 64's telling writes (the style, the flag, a tracked Replace, a bound node); case 6 sets `placeholderText` through Office JS, so Word's save shows how it names and stores an entry for other text; a control made by `insertContentControl` shows the glossary Word adds where there is none; the last case is a bare-form bound control Jason types into by hand, saves and reopens. No docx4j round of its own. Run 2026-10-25 (§9); check 66, the glossary's styles part, run the same day (§10). Done | with core-ts |
 | 1 | The binders keep `w:placeholder` (D1): `bind.xslt`'s template and `postBindSdtPrHygiene`'s removal go; a test that the three binders agree | 1 h |
 | 2 | An empty value in Word's form (D2 to D5): the entry the control names, or Word's default with the glossary part and entry added as check 65 requires; `placeholder.xml`'s wording; tests; the Office-open check (Word opens it without repair) | 3 h |
-| 3 | Jason's Word check: phase 0's writes on the new output reach the node and survive the reopen | 30 min with Jason |
+| 3 | Jason's Word check: phase 0's writes on the new output reach the node and survive the reopen. Office-open check §14, writes §17 (check 65c, 2026-10-25). Done | 30 min with Jason |
 | 4 | D8 (a), decided 2026-10-25 (§13): a date, drop-down list, combo box, building block gallery or repeating section item naming no entry gets Word's default entry for its kind. Done 2026-10-25 | 1 h |
 
 ## 6. Decisions (accepted as recommended, Jason, 2026-10-25)
@@ -453,3 +454,56 @@ doesn't do; nothing measured shows it matters (no check has copied content betwe
 GUID). Changed to follow Word: an entry docx4j adds gets a new GUID (`PlaceholderEntries.newGuid`), for the per-kind
 defaults as for a configured run's entry; an entry the glossary holds keeps its GUID, untouched. core-ts has had this
 rule from the start, so the ports now agree on the entries entirely.
+
+## 17. Phase 3, second half: check 65's writes on docx4j's output (check 65c; Word 365 16.0.20326.20232, Jason's run, 2026-10-25)
+
+The share's `__tmp/cr063/` samples are not in check 65's shape (its snippet reads regions `BEGIN<n> <op> <shape>
+<mode>` ... `END<n>`, controls tagged `c65-<n>`, bound nodes `value<n>` in `urn:check65`), so a file was built in that
+shape and bound by docx4j at adf0201e1: `__tmp/cr063/65c/` holds the template (bare-form bound text controls with no
+`w:placeholder` and stale content, a date control, and a glossary of one entry of its own, two paragraphs with a bold
+run, which cases 9 and 10 name), the three binders' outputs, check 65's snippet unchanged, and the README. The three
+outputs differ only in the order of `w:sdtPr`'s children, so the snippet ran on the XSLT output
+(`65c-docx4j-xslt.docx`, sha1 d7f847f3) and the other two were opened only. The fourteen cases: 1 `insertText` End,
+2 `insertParagraph` End, 3 tracked `insertText` Replace, 4 untracked Replace, 5 run-level Content-range Replace, 6
+`placeholderText` set, 7 and 8 left alone (block and run), 9 a write over the two-paragraph entry, 10 that entry left
+alone, 11 the date control left alone, 12 typed by hand, 13 a control holding a value, 14 a control Word makes with
+`insertContentControl`. Word's saves: `65c-xslt-opened-word365.docx` (300c4e69), `-run-` (4fdac201, after the run and
+the typing), `-reopened-` (511333e8); the snippet's JSONs `result-c-report.txt` (37876cd3), `result-c-run.txt`
+(78de6de9). Design Mode off.
+
+**Every write reached the node and survived the reopen.** No repair on any of the three outputs or on Word's saves.
+- Cases 1 to 5 and 9: the write is a plain run (no Placeholder Text style), the flag is cleared, the node holds the
+  text, in the run's report, in Word's save and after reopening. Case 3's tracked write is an insertion only; nothing
+  is marked deleted. Case 2 (`insertParagraph` End on a `w:text` control) shows one paragraph `NEW2`, but Word wrote
+  the node as `\r\nNEW2`, a line break before the text (Word's, not docx4j's; noted).
+- Case 12, typed by hand: `TYPED12` replaced the placeholder (Jason), the save holds it plain with the flag cleared, the
+  node holds `TYPED12`.
+- Case 13 kept `VALUE13`; cases 7, 8, 10 and 11, left alone, kept their references and placeholders.
+- **Every `w:placeholder` reference docx4j wrote was kept**, through the run, the save and the reopen, and **every
+  entry docx4j added kept its GUID** (the two defaults and the template's own). Word completed the glossary to its
+  parts (document, styles, settings, webSettings, fontTable).
+- Case 6: Word gave the control an entry of its own (`9700B94B...`, 32 hex, its own GUID, Placeholder Text run)
+  beside docx4j's default, and showed it grey. Case 14: the control Word made names `DefaultPlaceholder_-1854013440`,
+  docx4j's entry, reused; Word added no second default.
+- Office JS `getOoxml` named a fresh 32-hex entry for every control on every call, as §10 found; Word's saves show
+  the real references.
+
+So phase 3 is done: docx4j's output is Word's form to Word, for Office JS and for typing.
+
+**The finding: the Placeholder Text style in the main styles part.** The template was code-built
+(`WordprocessingMLPackage.createPackage()`), whose styles part has no `PlaceholderText` style. docx4j wrote the
+placeholder runs in that style (as `placeholder.xml` always has) and the glossary's styles part holding it (D7), but
+the main styles part was left as it was. Word's opened save shows the result: **every placeholder run docx4j wrote lost
+its `w:rStyle PlaceholderText`** on opening (the style wasn't defined in the document), and the placeholders showed
+**black** (Jason; the screenshots show cases 10 and 11 black). The glossary entries kept the style, since the
+glossary's styles define it. Word's own placeholders in the same file (cases 6 and 14) showed **grey**: when Word wrote
+them it added `PlaceholderText` to the main styles part (`basedOn DefaultParagraphFont`, `uiPriority 99`,
+`unhideWhenUsed`, colour `666666`, as in §10), and the run save holds it. Nothing of the writes depends on this; it is
+the look of an empty control, and only in a document whose styles lack the style (a Word-made template has it from
+the first control). It predates CR-063: the bare form's run had the same style reference, and the same template
+would have shown it black. docx4j already has the definition (`PlaceholderEntries.placeholderText()`, and
+`KnownStyles.xml`).
+
+| # | Question | Options | Recommended |
+|---|---|---|---|
+| D10 | The main styles part when docx4j writes a placeholder run and it lacks `PlaceholderText` | (a) add Placeholder Text (and Default Paragraph Font, if that is missing too) to the main styles part, as Word does when it writes a placeholder, and as D7 does for the glossary's; (b) leave the main styles part alone | (a): without it Word drops the style from every run docx4j wrote and shows the placeholder black, which is not Word's form; one call in `PlaceholderEntries` shared by the three binders, applied for every kind (the non-text kinds' own run carries the same style); a style the part already holds is left as it is. Awaits Jason |
