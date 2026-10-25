@@ -1,7 +1,8 @@
 # CR-065: integer attributes read as Word reads them; a part that cannot be read is never replaced by an empty one
 
 Status: ACCEPTED 2026-10-26 (Jason: "CR-065: D1 to D6 as recommended, do phase 1"): D1 to D6 as recommended in §4; phase 1
-DONE 2026-10-26 (9ea65238a, §7); phase 2 next. PROPOSED 2026-10-26, opened by Claude Fable 5.1 (session docx4j-25) at
+DONE 2026-10-26 (9ea65238a, §7); phase 2 next; the 16-bit range report (§3's aside) is CR-066's, whose phase 0 is round 5 of
+this probe: phase 2 ships first and gains the report when round 5 answers (Jason, 2026-10-26). PROPOSED 2026-10-26, opened by Claude Fable 5.1 (session docx4j-25) at
 Jason's word ("CR-065: open it, build the probe, and put it on the share with its README"), after docx4j-python-cd found the defect through JPype and
 docx4j-generated-objects-ts-82 reproduced it (both 2026-10-26; portfolio relay). Reproduced here in Java (§1). Phase 0,
 the shared Word probe, DONE 2026-10-26 (§3, four rounds, Jason): Word truncates a decimal toward zero, reads the empty
@@ -126,7 +127,7 @@ the decimals). Word kept them modulo 2^16: the style's `w:ind/@w:left` became -3
 61578 and the header's `w:spacing/@w:before` 25355 (unsigned); the header's 25355 twips of space before is what made
 those files "100's of pages" (Jason). So Word's twips measures are 16-bit internally, and an out-of-range value wraps
 rather than being refused or clamped. Fixed in the generator (plain integers where not under test); the body cases
-were unaffected.
+were unaffected. Taken up by CR-066 (the write side and the range per type; round 5 of this probe is its phase 0).
 
 *Family A* (`w:spacing/@w:before` with the odd forms) was refused whole. Round 3 splits it: A1 the pure decimals
 (120.5, 120.4, 121.5, 122.5, 240.0, 141.99999999999994), A2 the forms ("240.", ".5", "+240", "+240.5", " 240.5 ",
@@ -177,7 +178,7 @@ too.
 |---|---|---|
 | 0 | The shared Word probe (§3); the rule recorded in §3 and sent to python-cd, objects-ts and core-ts | DONE 2026-10-26 (four rounds, Jason) |
 | 1 | D1: the data-loss fix in the six conveniences, with a test per part type (a decimal that fails today; the edit throws; the save keeps the bytes) | DONE 2026-10-26 (§7) |
-| 2 | D2, D4, D6: `LenientInteger`, the xjb customisation, regeneration, the three JAXB contexts unchanged; tests for each value form with Word's rule; the stylesheet list left in place; CHANGELOG | proposed; after phase 0 |
+| 2 | D2, D4, D6: `LenientInteger`, the xjb customisation, regeneration, the three JAXB contexts unchanged; tests for each value form with Word's rule; the stylesheet list left in place; CHANGELOG. Ships without a range check; CR-066 phase 1 adds the 16-bit report to the same print and parse methods when its phase 0 answers | next |
 | 3 | Hand-offs: the measured rule to the three ports (objects CR-015, python's integer reader, core-ts) | after phase 0 |
 
 ## 6. Risks
