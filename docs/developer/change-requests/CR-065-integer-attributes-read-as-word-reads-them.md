@@ -86,6 +86,12 @@ Paragraph dialog on six halves (A01, A03, A04, B20, B23, B24), which tells half-
 zero from truncation and covers the case where Word keeps the text as written. If Word keeps decimals verbatim, the
 second oracle is core-ts reading `spaceBefore` and `leftIndent` through Office JS (objects-ts's suggestion).
 
+**Round 1 (Jason, 2026-10-26): Word refused the all-cases file outright**, "Word experienced an error trying to open the
+file", with no repair offered. So at least one of the 65 values is one Word will not even repair, and the per-family
+files are round 2 (which families open, repair, refuse; Word's save of each that opens; the Paragraph dialog on A and
+B). A structural control was added first, `cr065-structure-control.docx`: the same document with every tested value a
+plain integer (docx4j loads all four parts of it), to show the refusal was the values and not the file's shape.
+
 **docx4j today on the probe files** (`probe65/Today.java`): the all-cases file and families A, B, D, E, F, G, H fail
 the main part; C and I load (C's listed values round half-even: 141.5 to 142, 120.5 to 120, 240.5 to 240, 241.5 to
 242, 141.99999999999994 to 142, 12.5 to 12); the all-cases file and I fail `styles.xml`, `settings.xml` and the header
