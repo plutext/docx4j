@@ -420,6 +420,11 @@ altChunk, a `pkg:package` without its `/_rels/.rels` part, and it predates CR-06
 (`text-bind-parity.docx`, `customXml/item4.xml`'s `flatOpc` value gains the relationships part, as D had it); the parity
 test's assertions are unchanged. Whether `convertFlatOPC` should add the relationships part to a package that lacks one
 is left as a separate question (Word's own Flat OPC always carries it; without it Word repairs and drops the content).
+How the value came to lack it (Jason asked, 2026-10-25): it was written by hand, in the binding traverser parity
+work's phase 5 (da8452d75, 2026-08-22), as the smallest `pkg:package` that proves the three binders route a Flat OPC
+value to an altChunk; the parity test reads the chunk's part for `FLATOPCTEXT` and never opened the file in Word. No
+producer writes a package without the part (Word's Flat OPC save and docx4j's both carry it). Closed as a note; no
+change to `convertFlatOPC` (Jason, 2026-10-25).
 **Phase 3's Office-open check passes:** the code-built samples opened clean from the first; the bound fixture opens
 clean without the broken chunk (B2) and with it mended (D). Check 65's writes on the new output remain for Jason.
 
