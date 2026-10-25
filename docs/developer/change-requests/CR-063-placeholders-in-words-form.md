@@ -594,6 +594,10 @@ flag (one the template had is removed) and the picture paths run as before. The 
 on `pictureValueIsEmpty`, with `picturePlaceholder` shaping the content for the control's place as
 `xpathInjectImage` does. A tag-bound `od:Handler=picture` rich text control over an empty node is left as before
 (Word's form for a rich text control is the text placeholder; unmeasured). core-ts implemented the same with the same
-image (its CR-005 §10, §10.1, commit 68f2fb3). `PlaceholderEntriesTest.aPictureControlWithAnEmptyNodeShowsThePlaceholderPicture` pins
+image (its CR-005 §10, §10.1, commit 68f2fb3). One difference, core-ts's reading of this commit (CR-005 §10.1): docx4j
+finds the part again by its bytes, so a document saved and loaded again reuses it; core-ts remembers the part it added
+per source part in memory only (its image bytes load asynchronously, and its binding entry points cannot wait for
+them), so a control placeheld after a reload gets a second part with the same bytes. Nothing reads differently; left
+as it is unless the two ports' saves are to match part for part. `PlaceholderEntriesTest.aPictureControlWithAnEmptyNodeShowsThePlaceholderPicture` pins
 it for the three binders: stale text, a block-level control, an authored drawing, a node holding a picture, one
 part, bound twice. The Office-open check of the new form is Jason's (samples on the share, `__tmp/cr063/71/d11/`).
