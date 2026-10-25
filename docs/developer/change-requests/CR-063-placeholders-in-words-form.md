@@ -4,7 +4,7 @@ Status: PHASES 1, 2 AND 4 DONE 2026-10-25 (§12, §13; Claude Fable 5.1, session
 2026-10-25: "D8 we go (a)", "D9 choose (a)"), D9 done (§15); phase 3's Office-open check passed (§14: the one repair was the fixture's own Flat OPC chunk, pre-CR-063, fixed in the
 fixture); check 65's writes on the new output pass (§17, Jason's run 2026-10-25): phase 3 DONE. D10 (the Placeholder Text style in the main
 styles part) decided (a) and done 2026-10-25 (§17). Check 71 (a bound picture control whose node is empty, §18, Jason's run 2026-10-25): the
-NonXSLT and StAX binders' text placeholder under a picture control is content Word repairs (a defect); D11 decided (a2) and done 2026-10-25 (§18). ACCEPTED 2026-10-25 (Jason: "CR-063 D1 to D6 accepted as recommended, please implement"): D1 to D6 as
+NonXSLT and StAX binders' text placeholder under a picture control is content Word repairs (a defect); D11 decided (a2) and done 2026-10-25, its Office-open check passed (§18 round 3, Jason's run 2026-10-25). ACCEPTED 2026-10-25 (Jason: "CR-063 D1 to D6 accepted as recommended, please implement"): D1 to D6 as
 recommended in §6, D7 decided earlier. PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session
 docx4j-25) at docx4j-core-ts's request, from Jason ("Jason asks that docx4j consider writing Word's form; it's your
 decision"): its checks 63 and 64 compared the bare placeholder docx4j's binding writes with Word's form. (Check 63's
@@ -601,3 +601,15 @@ them), so a control placeheld after a reload gets a second part with the same by
 as it is unless the two ports' saves are to match part for part. `PlaceholderEntriesTest.aPictureControlWithAnEmptyNodeShowsThePlaceholderPicture` pins
 it for the three binders: stale text, a block-level control, an authored drawing, a node holding a picture, one
 part, bound twice. The Office-open check of the new form is Jason's (samples on the share, `__tmp/cr063/71/d11/`).
+
+**Round 3 (Jason, 2026-10-25, Word 365): the new form passes.** The round-2 fixture bound again by each binder
+(`71-d11-bound-{xslt,nonxslt,stax}.docx`; the three are identical in form: cases 1, 2 and 6 flagged with the placeholder
+drawing over one shared image part, cases 4 and 7 the blue picture without a flag). Jason: "the 3 docs look the same
+in word"; no repair. Cases 1, 2 and 6 show docx4j's picture (the pale-blue square with the grey dashed frame) with
+Word's own picture icon drawn in its middle, the picture-control chrome; a click on the icon opens Word's Insert
+Pictures dialog (From a File, Stock Images, Online Pictures, From Icons). Case 4 shows the blue picture. Word's saves
+(`*-word365.docx`): the flag, the 1270000 EMU extents and docx4j's image bytes kept on all three (sha1 e9e4ee21..., not
+replaced by Word's stock PNG, unlike round 1's unflagged red picture, which Word replaced: a flagged placeholder
+drawing is honoured as it stands); `wp:docPr` renamed "Picture n" in Word's own numbering; the two equal blue parts
+docx4j wrote for cases 4 and 7 merged into one, and the fixture's unused red part dropped. So Word keeps whatever
+picture a flagged control carries, and the rebind rule (a flagged drawing left as it is) agrees with Word.
