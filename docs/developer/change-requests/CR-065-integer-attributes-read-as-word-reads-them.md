@@ -62,7 +62,7 @@ user's failed load and added to the list; the list is where the next one is miss
 
 ## 3. Phase 0: the Word probe (built 2026-10-26; Jason's run awaited)
 
-One document, 64 labelled cases, assembled from the three sessions' lists (python-cd's families and value forms,
+One document, 65 labelled cases, assembled from the three sessions' lists (python-cd's families and value forms,
 objects-ts's 44 cases, the Java reproduction), on the share at `__tmp/cr065/`: `cr065-decimals-probe.docx`, `cases.txt`
 (id, attribute, value), `README.txt` (Jason's steps), and `families/cr065-A..I.docx` for the case where Word refuses the
 whole file. Generator: scratchpad `probe65/Probe65.java` (a docx4j-made template whose `document.xml`, `styles.xml`,
@@ -70,7 +70,7 @@ whole file. Generator: scratchpad `probe65/Probe65.java` (a docx4j-made template
 
 | Family | Attribute | Values |
 |---|---|---|
-| A | `w:spacing/@w:before` (twips; not on the list) | 120.5, 120.4, 121.5, 122.5, 240.0, 141.99999999999994, "240.", ".5", "+240", "+240.5", " 240.5 ", "240,5", "0x10", "1.5e2", "2.5e0", "1e3", "", "abc" |
+| A | `w:spacing/@w:before` (twips; not on the list) | 120.5, 120.4, 121.5, 122.5, 240.0, 141.99999999999994, "240.", ".5", "+240", "+240.5", " 240.5 ", "240,5", "0x10", "1.5e2", "2.5e0", "1e3", "", "abc", " 240 " (a spaced integer, to tell the spaces from the decimal in " 240.5 ") |
 | B | `w:ind/@w:left` (signed twips; not on the list) | 720.5, 720.4, 721.5, -120.5, -121.5, -0.5, -1.5, 10206.0 |
 | C | on the list: `@w:after`, `@w:line` (lineRule auto), `@w:hanging`, `@w:firstLine` | 141.5, 120.5; 259.2, 240.5, 241.5; 141.99999999999994; 12.5 |
 | D | borders: `w:top/@w:sz`; `@w:space` on top, bottom (listed) and between (not) | 7.5; 1.8, 7.2; 1.8 |
@@ -82,7 +82,7 @@ whole file. Generator: scratchpad `probe65/Probe65.java` (a docx4j-made template
 | Z | control | `w:spacing/@w:before="120"` |
 
 What Word answers: open or repair, per file; Word's save (its reading of every value at once, or the drop); the
-Paragraph dialog on six halves (A01, A03, A04, B19, B22, B23), which tells half-even from half-up from half-away-from-
+Paragraph dialog on six halves (A01, A03, A04, B20, B23, B24), which tells half-even from half-up from half-away-from-
 zero from truncation and covers the case where Word keeps the text as written. If Word keeps decimals verbatim, the
 second oracle is core-ts reading `spaceBefore` and `leftIndent` through Office JS (objects-ts's suggestion).
 
