@@ -440,3 +440,16 @@ entry's runs.
 | D9 | The run properties of a shown entry | (a) the entry's runs as the glossary holds them, the control's `w:sdtPr/w:rPr` not applied (Word, check 68); (b) the control's `w:rPr` applied over them, as §12 did | (a): the CR's aim is what Word shows; the control's `w:rPr` still governs a value written into it. **Decided (a), Jason, 2026-10-25 ("D9 choose (a)"); done the same day:** `PlaceholderEntries.contentOf(pkg, entry)` no longer takes or applies the rPr; `PlaceholderEntriesTest`'s colour and italic assertions inverted (the rPr stays in the `w:sdtPr`). The non-text kinds' own run (placeholder.xml's under the control's rPr) is unmeasured and stays |
 
 core-ts follows the same rule since its c275a2a.
+
+## 16. An added entry's `w:guid` is new to the document (core-ts, 2026-10-25)
+
+core-ts read every Word-made glossary under its `test/`: `DefaultPlaceholder_-1854013440` has seven different
+`w:guid`s across seven Word files that don't descend from one another (`placeholders.docx` `{F8BBB6E8-...}`, check 65a's
+run where Word added the entry `{343D98B3-...}`, check 54, cr043-tracked, check 34c, check 34a `{7D21F9BC-...}`, check
+35a). Where a file holds a GUID already, Word's runs and saves keep it; where Word adds the entry, the GUID is new to
+that file. So Word gives each document's default entry a GUID of its own. §12 and phase 4 had docx4j write fixed GUIDs
+(check 34a's for the text default, `placeholders.docx`'s for the other kinds), the same into every document, which Word
+doesn't do; nothing measured shows it matters (no check has copied content between two documents holding the same
+GUID). Changed to follow Word: an entry docx4j adds gets a new GUID (`PlaceholderEntries.newGuid`), for the per-kind
+defaults as for a configured run's entry; an entry the glossary holds keeps its GUID, untouched. core-ts has had this
+rule from the start, so the ports now agree on the entries entirely.

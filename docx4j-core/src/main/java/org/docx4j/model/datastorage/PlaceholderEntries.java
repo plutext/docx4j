@@ -104,33 +104,27 @@ public final class PlaceholderEntries {
 	/** The character style of a placeholder's runs; {@code w:showingPlcHdr} is decided on it. */
 	public static final String PLACEHOLDER_STYLE = "PlaceholderText";
 
-	/** The default entry's GUID, as Word's glossary holds it (core-ts check 64). */
-	private static final String DEFAULT_GUID = "{7D21F9BC-12A3-463E-B08F-7DD4FFC77A03}";
-
 	/**
 	 * Word's default entry for a kind of control (CR-063 §13, D8: Word 365's save of one control of each
-	 * kind, 2026-10-25): its name, its text and the GUID Word gave it there.
+	 * kind, 2026-10-25): its name and its text. Its {@code w:guid} is new to each document docx4j writes
+	 * it into, as Word's is (§16: seven Word files, seven GUIDs for the text default).
 	 * @since 17.3.5
 	 */
 	public static final class DefaultEntry {
-		public final String name, text, guid;
-		DefaultEntry(String name, String text, String guid) { this.name = name; this.text = text; this.guid = guid; }
+		public final String name, text;
+		DefaultEntry(String name, String text) { this.name = name; this.text = text; }
 	}
 	/** Rich text and plain text controls. */
-	public static final DefaultEntry TEXT = new DefaultEntry(DEFAULT_ENTRY, DEFAULT_TEXT, DEFAULT_GUID);
+	public static final DefaultEntry TEXT = new DefaultEntry(DEFAULT_ENTRY, DEFAULT_TEXT);
 	/** Date pickers ({@code w:date}). */
-	public static final DefaultEntry DATE = new DefaultEntry("DefaultPlaceholder_-1854013437",
-			"Click or tap to enter a date.", "{5E623627-58B9-4A14-B44A-30E7C786817F}");
+	public static final DefaultEntry DATE = new DefaultEntry("DefaultPlaceholder_-1854013437", "Click or tap to enter a date.");
 	/** Drop-down lists and combo boxes. */
-	public static final DefaultEntry LIST = new DefaultEntry("DefaultPlaceholder_-1854013438",
-			"Choose an item.", "{EF5CC0C2-E1AC-410B-B8AC-F2061C06424E}");
+	public static final DefaultEntry LIST = new DefaultEntry("DefaultPlaceholder_-1854013438", "Choose an item.");
 	/** Building block galleries ({@code w:docPartList}). */
-	public static final DefaultEntry BUILDING_BLOCK = new DefaultEntry("DefaultPlaceholder_-1854013436",
-			"Choose a building block.", "{C310B06F-B924-41CB-9CF5-125E2A699768}");
+	public static final DefaultEntry BUILDING_BLOCK = new DefaultEntry("DefaultPlaceholder_-1854013436", "Choose a building block.");
 	/** Repeating section items ({@code w15:repeatingSectionItem}). */
 	public static final DefaultEntry REPEATING_SECTION_ITEM = new DefaultEntry("DefaultPlaceholder_-1854013435",
-			"Enter any content that you want to repeat, including other content controls. You can also insert this control around table rows in order to repeat parts of a table.",
-			"{E84034C8-4148-41A4-83BB-C58D26D9E0AF}");
+			"Enter any content that you want to repeat, including other content controls. You can also insert this control around table rows in order to repeat parts of a table.");
 
 	private PlaceholderEntries() {}
 
@@ -329,7 +323,7 @@ public final class PlaceholderEntries {
 			org.docx4j.wml.Text t = Context.getWmlObjectFactory().createText();
 			t.setValue(kind.text);
 			run.getContent().add(t);
-			addEntry(glossary, docPartOf(kind.name, kind.guid, run));
+			addEntry(glossary, docPartOf(kind.name, newGuid(), run));
 			log.info("Glossary entry " + kind.name + " added");
 		}
 		return kind.name;
@@ -360,10 +354,14 @@ public final class PlaceholderEntries {
 			}
 		}
 		String name = UUID.randomUUID().toString().replace("-", "").toUpperCase();
-		addEntry(glossary, docPartOf(name, "{" + UUID.randomUUID().toString().toUpperCase() + "}",
-				XmlUtils.deepCopy(configured)));
+		addEntry(glossary, docPartOf(name, newGuid(), XmlUtils.deepCopy(configured)));
 		log.info("Glossary entry " + name + " added for the configured placeholder");
 		return name;
+	}
+
+	/** A {@code w:guid} for an entry, new to the document, as Word gives one it adds. */
+	private static String newGuid() {
+		return "{" + UUID.randomUUID().toString().toUpperCase() + "}";
 	}
 
 	private static void addEntry(GlossaryDocumentPart glossary, CTDocPart part) throws Exception {
@@ -379,7 +377,7 @@ public final class PlaceholderEntries {
 
 	/**
 	 * A placeholder entry as Word writes one: category General, gallery placeholder, type
-	 * {@code bbPlcHdr}, behavior content, a GUID, and a body of one paragraph holding the run.
+	 * {@code bbPlcHdr}, behavior content, a GUID of its own, and a body of one paragraph holding the run.
 	 */
 	private static CTDocPart docPartOf(String name, String guid, R run) {
 		ObjectFactory of = Context.getWmlObjectFactory();

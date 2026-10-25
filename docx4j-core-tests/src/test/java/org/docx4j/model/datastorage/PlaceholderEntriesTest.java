@@ -278,10 +278,13 @@ public class PlaceholderEntriesTest {
 			String entryXml = XmlUtils.marshaltoString(pkg.getMainDocumentPart().getGlossaryDocumentPart().getJaxbElement(), true, false);
 			for (String expected : new String[] { "<w:name w:val=\"General\"/>", "<w:gallery w:val=\"placeholder\"/>",
 					"<w:type w:val=\"bbPlcHdr\"/>", "<w:behavior w:val=\"content\"/>",
-					"<w:guid w:val=\"{7D21F9BC-12A3-463E-B08F-7DD4FFC77A03}\"/>",
 					"<w:rStyle w:val=\"PlaceholderText\"/>", "<w:t>" + DEFAULT_TEXT + "</w:t>" }) {
 				assertTrue(implementation + ": " + expected + " in " + entryXml, entryXml.contains(expected));
 			}
+			// a GUID of the document's own, as Word gives an entry it adds (§16)
+			assertTrue(implementation + ": a GUID in " + entryXml, Pattern.compile(
+					"<w:guid w:val=\"\\{[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\\}\"/>").matcher(entryXml).find());
+			assertFalse(implementation + ": not the GUID of any Word file: " + entryXml, entryXml.contains("{7D21F9BC-12A3-463E-B08F-7DD4FFC77A03}"));
 
 			// the output round-trips, and a second binding run adds nothing
 			WordprocessingMLPackage again = bind(reload(pkg), implementation);
@@ -368,7 +371,7 @@ public class PlaceholderEntriesTest {
 	/**
 	 * D8 (§13): a date control naming no entry gets Word's date entry, DefaultPlaceholder_-1854013437 ("Click
 	 * or tap to enter a date."), a drop-down list and a combo box Word's list entry, -1854013438 ("Choose an
-	 * item."), each added to the glossary once, with Word's GUID for it; the list's own items are kept. The
+	 * item."), each added to the glossary once, with a GUID of its own (§16); the list's own items are kept. The
 	 * configured run (D4) is the text kinds' only, so these show Word's wording whatever is configured.
 	 */
 	@Test
@@ -390,8 +393,10 @@ public class PlaceholderEntriesTest {
 			}
 			assertEquals(implementation, java.util.Arrays.asList("DefaultPlaceholder_-1854013437", "DefaultPlaceholder_-1854013438"), entryNames(pkg));
 			String glossaryXml = XmlUtils.marshaltoString(pkg.getMainDocumentPart().getGlossaryDocumentPart().getJaxbElement(), true, false);
-			assertTrue(implementation, glossaryXml.contains("<w:guid w:val=\"{5E623627-58B9-4A14-B44A-30E7C786817F}\"/>"));
-			assertTrue(implementation, glossaryXml.contains("<w:guid w:val=\"{EF5CC0C2-E1AC-410B-B8AC-F2061C06424E}\"/>"));
+			Matcher guids = Pattern.compile("<w:guid w:val=\"(\\{[0-9A-F-]{36}\\})\"/>").matcher(glossaryXml);
+			java.util.Set<String> seen = new java.util.HashSet<String>();
+			while (guids.find()) seen.add(guids.group(1));
+			assertEquals(implementation + ": two entries, two GUIDs of their own: " + glossaryXml, 2, seen.size());
 			assertGlossaryStyles(implementation, pkg);
 		}
 	}
