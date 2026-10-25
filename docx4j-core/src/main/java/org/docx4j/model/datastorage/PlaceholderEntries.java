@@ -29,7 +29,6 @@ import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
@@ -84,7 +83,7 @@ import org.slf4j.LoggerFactory;
  * Text). A picture or check box (Word names no entry for them), or a kind whose entry is unmeasured,
  * naming no entry is left alone, with today's placeholder run.</li>
  * <li>{@link #contentOf} gives what the control shows of the entry: a copy of its paragraphs'
- * run-level content, under the control's own run properties.</li>
+ * run-level content, as the glossary holds it (D9).</li>
  * </ul>
  *
  * <p>Word's save drops a {@code w:placeholder} whose entry no glossary holds (check 65), and an entry
@@ -185,17 +184,17 @@ public final class PlaceholderEntries {
 
 	/**
 	 * What a control shows of an entry: a copy of each paragraph of its {@code w:docPartBody}, its
-	 * run-level content under the control's run properties (applied over each run's own, as the
-	 * placeholder run has them applied today); paragraph properties, proofing marks and bookmarks are
-	 * left in the glossary, whose styles they name.
+	 * run-level content as the glossary holds it. The control's {@code w:sdtPr/w:rPr} is not applied
+	 * (D9, check 68: Word brings an entry back exactly as the glossary holds it, a bold control's
+	 * placeholder not bold; the control's rPr governs a value written into it). Paragraph properties,
+	 * proofing marks and bookmarks are left in the glossary, whose styles they name.
 	 *
 	 * @param pkg the document
 	 * @param entry the entry's name
-	 * @param rPr the control's {@code w:sdtPr/w:rPr}, or null
 	 * @return the paragraphs, each with its content; null where the glossary doesn't hold the entry or
 	 *         it has no paragraph
 	 */
-	public static List<P> contentOf(WordprocessingMLPackage pkg, String entry, RPr rPr) {
+	public static List<P> contentOf(WordprocessingMLPackage pkg, String entry) {
 		if (pkg == null || entry == null || pkg.getMainDocumentPart() == null) return null;
 		CTDocPart docPart = entryOf(pkg.getMainDocumentPart().getGlossaryDocumentPart(), entry);
 		if (docPart == null || docPart.getDocPartBody() == null) return null;
@@ -210,9 +209,6 @@ public final class PlaceholderEntries {
 				Object c = XmlUtils.unwrap(it.next());
 				if (c instanceof ProofErr || c instanceof CTBookmark || c instanceof CTMarkupRange) {
 					it.remove();
-				} else if (c instanceof R && rPr != null) {
-					R r = (R) c;
-					r.setRPr(StyleUtil.apply(rPr, r.getRPr()));
 				}
 			}
 			out.add(copy);

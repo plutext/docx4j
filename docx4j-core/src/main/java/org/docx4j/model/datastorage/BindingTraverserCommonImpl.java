@@ -180,8 +180,7 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 			sdtPr.setShowingPlcHdr(true);
 			if (pkg instanceof WordprocessingMLPackage) {
 				String entry = PlaceholderEntries.referenceFor((WordprocessingMLPackage) pkg, sdtPr);
-				List<P> paragraphs = entry == null ? null : PlaceholderEntries.contentOf(
-						(WordprocessingMLPackage) pkg, entry, (org.docx4j.wml.RPr) sdtPr.getByClass(org.docx4j.wml.RPr.class));
+				List<P> paragraphs = entry == null ? null : PlaceholderEntries.contentOf((WordprocessingMLPackage) pkg, entry);
 				if (paragraphs != null) {
 					contents.clear();
 					contents.addAll(new ArrayList<Object>(paragraphs.get(0).getContent()));

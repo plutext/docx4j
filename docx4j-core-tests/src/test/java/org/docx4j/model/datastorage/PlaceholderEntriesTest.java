@@ -54,7 +54,8 @@ import org.xml.sax.InputSource;
 /**
  * CR-063: a content control's placeholder in Word's form, from the three binders alike. An empty bound
  * value shows the glossary entry the control's {@code w:placeholder} names (D2), a copy of the entry's
- * paragraphs under the control's run properties; a text control naming none, or a missing entry, is
+ * paragraphs as the glossary holds them, the control's rPr not applied (D9, check 68); a text control
+ * naming none, or a missing entry, is
  * given Word's default entry, {@code DefaultPlaceholder_-1854013440}, the glossary made where the
  * document has none (D3, D7: the glossary document part and a styles part holding Placeholder Text);
  * the reference survives binding, bound or not (D1); a date, list, building-block or repeating-section-item
@@ -263,8 +264,9 @@ public class PlaceholderEntriesTest {
 			assertEquals(implementation + ": " + block, DEFAULT_TEXT, shown(block));
 			assertEquals(implementation + ": " + block, DEFAULT, reference(block));
 			assertTrue(implementation + ": the paragraph's pPr kept: " + block, sdtContent(block).contains("<w:jc w:val=\"center\"/>"));
-			assertTrue(implementation + ": the control's rPr applied: " + block, sdtContent(block).contains("<w:i/>"));
-			assertTrue(implementation + ": the style kept under the control's rPr: " + block, sdtContent(block).contains("<w:rStyle w:val=\"PlaceholderText\"/>"));
+			assertFalse(implementation + ": the control's rPr not applied to the entry (D9): " + block, sdtContent(block).contains("<w:i/>"));
+			assertTrue(implementation + ": the control's rPr stays in its sdtPr: " + block, sdtPr(block).contains("<w:i/>"));
+			assertTrue(implementation + ": the entry's style: " + block, sdtContent(block).contains("<w:rStyle w:val=\"PlaceholderText\"/>"));
 
 			String value = control(xml, "Value");
 			assertEquals(implementation + ": " + value, "VALUE", shown(value));
@@ -294,9 +296,10 @@ public class PlaceholderEntriesTest {
 	}
 
 	/**
-	 * D2 (core-ts's 63.18): a control naming an entry shows a copy of the entry's content: a block
-	 * control both paragraphs, each run as the glossary holds it under the control's run properties,
-	 * the paragraph's own w:pPr kept (the entry's, naming the glossary's styles, left behind); a
+	 * D2 (core-ts's 63.18) and D9 (check 68): a control naming an entry shows a copy of the entry's
+	 * content: a block control both paragraphs, each run as the glossary holds it, the control's run
+	 * properties not applied, the paragraph's own w:pPr kept (the entry's, naming the glossary's styles,
+	 * left behind); a
 	 * run-level control the first paragraph's runs. D1: a bound control with a value keeps its
 	 * reference, and so does an unbound control. Nothing is added to the glossary.
 	 */
@@ -322,7 +325,8 @@ public class PlaceholderEntriesTest {
 			assertEquals(implementation + ": two paragraphs: " + content, 2, content.split("<w:p>", -1).length - 1);
 			assertEquals(implementation + ": the control's pPr on each: " + content, 2, content.split("<w:jc w:val=\"center\"/>", -1).length - 1);
 			assertFalse(implementation + ": the entry's pStyle stays in the glossary: " + content, content.contains("<w:pStyle"));
-			assertEquals(implementation + ": the control's colour on every run: " + content, 3, content.split("<w:color w:val=\"FF0000\"/>", -1).length - 1);
+			assertFalse(implementation + ": the control's colour not on the entry's runs (D9, check 68): " + content, content.contains("<w:color w:val=\"FF0000\"/>"));
+			assertTrue(implementation + ": the control's rPr stays in its sdtPr: " + block, sdtPr(block).contains("<w:color w:val=\"FF0000\"/>"));
 			assertEquals(implementation + ": each run's style: " + content, 3, content.split("<w:rStyle w:val=\"PlaceholderText\"/>", -1).length - 1);
 			assertTrue(implementation + ": the bold run's bold: " + content, content.contains("<w:b/>"));
 

@@ -1,8 +1,8 @@
 # CR-063: content-control placeholders written in Word's form
 
-Status: PHASES 1, 2 AND 4 DONE 2026-10-25 (§12, §13; Claude Fable 5.1, session docx4j-25); D8 (a) decided (Jason,
-2026-10-25: "D8 we go (a)"); phase 3's Office-open check passed (§14: the one repair was the fixture's own Flat OPC chunk, pre-CR-063, fixed in the
-fixture); check 65's writes on the new output and D9 (§15) remain with Jason. ACCEPTED 2026-10-25 (Jason: "CR-063 D1 to D6 accepted as recommended, please implement"): D1 to D6 as
+Status: PHASES 1, 2 AND 4 DONE 2026-10-25 (§12, §13; Claude Fable 5.1, session docx4j-25); D8 (a) and D9 (a) decided (Jason,
+2026-10-25: "D8 we go (a)", "D9 choose (a)"), D9 done (§15); phase 3's Office-open check passed (§14: the one repair was the fixture's own Flat OPC chunk, pre-CR-063, fixed in the
+fixture); check 65's writes on the new output remain with Jason. ACCEPTED 2026-10-25 (Jason: "CR-063 D1 to D6 accepted as recommended, please implement"): D1 to D6 as
 recommended in §6, D7 decided earlier. PROPOSED 2026-10-24, drafted by Claude Opus 5.5 (session
 docx4j-25) at docx4j-core-ts's request, from Jason ("Jason asks that docx4j consider writing Word's form; it's your
 decision"): its checks 63 and 64 compared the bare placeholder docx4j's binding writes with Word's form. (Check 63's
@@ -301,11 +301,11 @@ Built together, since D2 and D3 share the step D1 clears. `PlaceholderEntries` (
 `removeFromSdtPr(CTPlaceholder)` are gone; `w:placeholder` survives binding on every control, bound with a value,
 bound and empty, or unbound.
 
-**D2.** `PlaceholderEntries.referenceFor(pkg, sdtPr)` gives the entry the control shows; `contentOf(pkg, entry, rPr)`
+**D2.** `PlaceholderEntries.referenceFor(pkg, sdtPr)` gives the entry the control shows; `contentOf(pkg, entry)`
 a copy of its `w:docPartBody` paragraphs. What a control shows follows core-ts's §63.18: a block-level control shows
-every paragraph, each run as the glossary holds it with the control's `w:rPr` applied over it (as `createPlaceholder`
-applies it today); the control's own paragraph keeps its `w:pPr`, and the entry's further paragraphs get a copy of
-it. The entry's `w:pPr` (naming the glossary's own styles), proofing marks and bookmarks stay in the glossary. A
+every paragraph, each run as the glossary holds it (at first with the control's `w:rPr` applied over it, as
+`createPlaceholder` applies it; D9, §15, took that out the same day: Word applies nothing); the control's own
+paragraph keeps its `w:pPr`, and the entry's further paragraphs get a copy of it. The entry's `w:pPr` (naming the glossary's own styles), proofing marks and bookmarks stay in the glossary. A
 run-level control shows the first paragraph's runs. In bind.xslt the content goes through
 `BindingTraverserXSLT.placeholderContent`, which replaces the control's own placeholder run (Placeholder Text style,
 not inside a nested `w:sdt`); the `w:sdtPr` template gets an `ownContent` parameter, true at the bound text and
@@ -437,6 +437,6 @@ entry's runs.
 
 | # | Question | Options | Recommended |
 |---|---|---|---|
-| D9 | The run properties of a shown entry | (a) the entry's runs as the glossary holds them, the control's `w:sdtPr/w:rPr` not applied (Word, check 68); (b) the control's `w:rPr` applied over them, as §12 does | (a): the CR's aim is what Word shows; the control's `w:rPr` still governs a value written into it. One-line change in `PlaceholderEntries.contentOf` (drop the `StyleUtil.apply`), with `PlaceholderEntriesTest`'s colour and italic assertions inverted. The non-text kinds' own run (placeholder.xml's under the control's rPr) is unmeasured and would stay |
+| D9 | The run properties of a shown entry | (a) the entry's runs as the glossary holds them, the control's `w:sdtPr/w:rPr` not applied (Word, check 68); (b) the control's `w:rPr` applied over them, as §12 did | (a): the CR's aim is what Word shows; the control's `w:rPr` still governs a value written into it. **Decided (a), Jason, 2026-10-25 ("D9 choose (a)"); done the same day:** `PlaceholderEntries.contentOf(pkg, entry)` no longer takes or applies the rPr; `PlaceholderEntriesTest`'s colour and italic assertions inverted (the rPr stays in the `w:sdtPr`). The non-text kinds' own run (placeholder.xml's under the control's rPr) is unmeasured and stays |
 
-core-ts proposes the same to Jason for its writer.
+core-ts follows the same rule since its c275a2a.

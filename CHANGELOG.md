@@ -25,7 +25,7 @@ Changes in Version 17.3.5
 
 * Binding writes a content control's placeholder in Word's form (CR-063): w:placeholder is kept on
   every control (it was dropped); an empty value shows the glossary entry the control names, a copy
-  of its paragraphs, so a template's own placeholder text survives binding; a text control naming
+  of its paragraphs as the glossary holds them, so a template's own placeholder text survives binding; a text control naming
   none, or a missing entry, is given Word's default entry (DefaultPlaceholder_-1854013440), added to
   the glossary, which is made where the document has none (the glossary document part and a styles
   part holding Placeholder Text). The default's wording is Word 365's, "Click or tap here to enter

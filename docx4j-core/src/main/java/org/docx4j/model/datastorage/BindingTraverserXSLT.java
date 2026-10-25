@@ -599,9 +599,9 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	 * CR-063 D2: the content a control shows, for bind.xslt: where the generated content is the control's
 	 * own placeholder run (Placeholder Text style, not inside a nested control) and the control shows a
 	 * glossary entry ({@link PlaceholderEntries#referenceFor}), the run is replaced by a copy of the
-	 * entry's content: its first paragraph's run-level content in the run's place and, where the run
-	 * is in a paragraph, the entry's further paragraphs after it (each under the paragraph's own
-	 * w:pPr). Otherwise a copy of the content as it came.
+	 * entry's content as the glossary holds it (D9): its first paragraph's run-level content in the
+	 * run's place and, where the run is in a paragraph, the entry's further paragraphs after it (each
+	 * under the paragraph's own w:pPr). Otherwise a copy of the content as it came.
 	 * @since 17.3.5
 	 */
 	public static DocumentFragment placeholderContent(WordprocessingMLPackage pkg,
@@ -624,7 +624,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			SdtPr sdtPr = (SdtPr)XmlUtils.unmarshal(sdtPrNodeIt.nextNode());
 			String entry = PlaceholderEntries.referenceFor(pkg, sdtPr);
 			if (entry==null) return frag;
-			List<P> paragraphs = PlaceholderEntries.contentOf(pkg, entry, (RPr)sdtPr.getByClass(RPr.class));
+			List<P> paragraphs = PlaceholderEntries.contentOf(pkg, entry);
 			if (paragraphs==null) return frag;
 
 			Node parent = run.getParentNode();
