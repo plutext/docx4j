@@ -212,7 +212,7 @@ core-ts's check 71 (96 cases, `__tmp/71/`; its CR-002 §65.5) sets values throug
 - Side finding (core-ts's): `setLevelIndents(0, -1, 0)` wrote `w:left="-20" w:firstLine="0"`, so
   `bulletNumberPictureIndent` is the level's first-line indent relative to the text, as documented.
 
-### 3.3 Round 6 (built 2026-10-26 at objects-ts's request, Jason's yes; Jason's run awaited)
+### 3.3 Round 6 (built 2026-10-26 at objects-ts's request, Jason's yes; run the same day, §3.4)
 
 The attributes round 5 left unmeasured or inferred, by the same method, on the share at `__tmp/cr066/round6/`
 (generator scratchpad `probe66/Probe66r6.java`; `cases.txt` with id, group, attribute, place, value and the two wrap
@@ -226,6 +226,48 @@ list level's `w:legacy` legacySpace and legacyIndent in numbering.xml (ten lists
 document-wide `w:defaultTabStop` and `w:hyphenationZone` as singles, one value per file. Not covered: `w:object`
 dxaOrig/dyaOrig (an embedded OLE object). Families (46) and singles (264, for F, P, S, N) are the fallback for a
 refused group, as in round 5.
+
+### 3.4 Round 6 result (Jason, 2026-10-26: "cr066/round6 all opened cleanly"; 28 saves, nothing refused or repaired)
+
+Read with `probe66/read66r6.py` and the raw XML of every row that was not a plain wrap. The storage per attribute:
+
+| Attribute (schema type) | Word's storage | Evidence |
+|---|---|---|
+| `w:ind/@w:firstLine` and `@w:hanging` (ST_TwipsMeasure) | **one int16 field** (DOC `dxaLeft1`): firstLine F is stored +F, hanging H is stored -H, each after a wrap to int16; written as `firstLine` when the stored value is >= 0 (0 included) and as `hanging` with the magnitude when < 0 | firstLine 32768 -> hanging 32768; 65535 -> hanging 1; 65536 -> firstLine 0; -1 -> hanging 1; -32768 -> hanging 32768; -32769 -> firstLine 32767; 7205001 -> hanging 3959; 1205003 -> firstLine 25355. hanging 32768 kept; 65535 -> firstLine 1; 65536 -> firstLine 0; -1 -> firstLine 1; -32768 -> hanging 32768; -32769 -> hanging 32767; 7205001 -> firstLine 3959 |
+| `w:spacing/@w:after` (ST_TwipsMeasure) | **uint16**, 0xFFFF written -1, as `before` | 32768 kept; 65535 -> -1; -1 kept; -32768 -> 32768; 7205001 -> 61577; 1205003 -> 25355 |
+| `w:spacing/@w:line` under `atLeast` | **int16, stored positive; a wrapped negative becomes exact** with its magnitude | 32768 -> exact 32768; 65535 -> exact 1; 65536 -> atLeast 0; -1 -> exact 1; -32768 -> exact 32768; -32769 -> atLeast 32767; 7205001 -> exact 3959 |
+| `w:ind/@w:right`; `w:ind/@w:start` and `@w:end` (read in a transitional document and **written as `left` and `right`**) | **int16** | right 32768 -> -32768, 7205001 -> -3959; start 32767 -> left 32767, 32768 -> left -32768; end 65536 -> right 0 |
+| `w:framePr/@w:w` (ST_TwipsMeasure), `@w:hSpace`, `@w:vSpace`, `@w:x`, `@w:y` | **int16**; 0 is not written (w: auto width) | w 32768 -> -32768, 65535 -> -1, 65536 -> absent, -1 kept, 7205001 -> -3959; hSpace, vSpace, x, y the same |
+| `w:framePr/@w:h` | **15 bits plus a flag** (DOC `dyaHeight`): the low 15 bits are the height and bit 15 turns `hRule="exact"` off | 32767 kept exact; 32768 -> h 0, no hRule; 65535 -> 32767, no hRule; -1 -> 32767, no hRule; 65537 -> 1 exact; -32769 -> 32767 exact; 7205001 -> 28809 (61577 and 0x7FFF), no hRule |
+| `w:rPr/w:fitText/@w:val` (ST_TwipsMeasure) | **kept as written, at least 32 bits** (Word fitted the text and split the run; the value is not 16-bit) | 32767, 32768, 65535, 65536, 65537, -1, -32768, -32769, 7205001, 1205003 all kept |
+| `w:szCs`, `w:kern` (half-points) | **uint16**, as `w:sz` | 65535 kept; 65536 -> 0; -1 -> 65535; -32768 -> 32768; 7205001 -> 61577 |
+| `w:rPr/w:bdr`, `w:tcBorders`, `w:tblBorders`, `w:pgBorders` `@w:sz` and `@w:space` | **8 bits and 5 bits**, as a paragraph border's | 256 -> 0; 32767 -> 255; -1 -> 255; space 32 -> 0, 255 -> 31, -1 -> 31 (all four families alike) |
+| `w:trHeight/@w:val` under `hRule="exact"` | **int16, the sign is the rule**, as round 5 | exact 32768 kept; 65535 -> atLeast 1; -1 -> atLeast 1; -32768 -> exact 32768; -32769 -> exact 32767; 7205001 -> atLeast 3959 |
+| `w:trHeight/@w:val` under `hRule="auto"` | **discarded** (no `w:trHeight` written at any value) | all eight absent |
+| `w:tblCellSpacing`, `w:tblCellMar/w:left`, `w:tcMar/w:top` `@w:w` under `dxa` (TblWidth) | **int16**, as `tblW` | 32768 -> -32768; 65535 -> -1; 65536 -> 0; -1 kept; 7205001 -> -3959 |
+| `w:tblpPr` `@w:leftFromText`, `@w:rightFromText`, `@w:topFromText`, `@w:bottomFromText` (ST_TwipsMeasure), `@w:tblpX`, `@w:tblpY` | **int16**, all six; 0 not written | 32768 -> -32768; 65535 -> -1; 65536 -> absent; -1 kept; -32768 kept; 7205001 -> -3959 |
+| `w:pgMar` `@w:left`, `@w:right`, `@w:header`, `@w:footer`, `@w:gutter` (ST_TwipsMeasure) | **uint16**, 0xFFFF written -1, as `before` | 32768 kept; 65535 -> -1; -1 kept; -32768 -> 32768; 7205001 -> 61577 |
+| `w:pgMar/@w:bottom` | **int16**, as `top` | 32768 -> -32768; -1 kept; -32768 kept; 7205001 -> -3959 |
+| `w:cols/@w:space` | **int16** | 32768 -> -32768; -1 kept; 7205001 -> -3959 |
+| `w:cols/w:col/@w:w` (equalWidth=0) | **int16, then a negative width is replaced by a computed one** (9360 here); a width wider than the page is kept | 31681, 32767 kept; 32768, 65535, -1, 7205001 -> 9360; 65536 -> 0; 65537 -> 1; -32769 -> 32767 |
+| `w:cols/w:col/@w:space` | **int16, then a negative space becomes -1** | 32768 -> -1; 65535 -> -1; -1 kept; -32768 -> -1; 7205001 -> -1; -32769 -> 32767; 1205003 -> 25355 |
+| `w:lnNumType/@w:distance` (ST_TwipsMeasure) | **int16**; 0 not written | 32768 -> -32768; 65535 -> -1; 65536 -> absent; -1 kept; 7205001 -> -3959 |
+| `w:settings/w:defaultTabStop`, `w:hyphenationZone` `@w:val` (CTTwipsMeasure) | **uint16** | 65535 kept; 65536 -> 0; -1 -> 65535; -32768 -> 32768; 7205001 -> 61577 (round 2's 7205002 -> 61578 agrees) |
+| `w:spacing/@w:before`, `w:ind/@w:left` with `.`, `+`, `-`, `+.` (group E) | **read as 0** (an explicit 0 written under a style value of 100, all eight cases) | CR-065 §8 takes it |
+
+Not measured by this round: `w:trPr/w:wBefore` and `@w:wAfter` (Word dropped them with the `gridBefore`/`gridAfter`
+that did not fit the two-cell row; a probe needs a consistent grid); `w:gridCol/@w:w` (recomputed from the cells even
+under `tblLayout fixed` without `tcW`: no file-side measurement exists for the grid); a list level's `w:legacy`
+(Word 365 dropped the element from numbering.xml and renumbered the lists; not round-tripped at all).
+
+**For the type-level report (D1, D7):** every measured `ST_SignedTwipsMeasure` attribute is int16 (right, start,
+end, framePr x and y, tblpX, tblpY, pgMar bottom, cols space). `ST_TwipsMeasure` now shows five behaviours (uint16
+with -1 written for 0xFFFF: before, after, the five unsigned margins, defaultTabStop, hyphenationZone; int16: frame w
+and spaces, tblpPr's four distances, lnNumType distance; one shared signed field: firstLine and hanging; 15 bits plus
+a flag: framePr h; the sign as the rule: trHeight; and fitText not 16-bit at all), so the certain range for that type
+stays "outside -32768..65535 is changed", with the per-attribute table for the exact report. The border types are
+uniform (8 and 5 bits) across paragraph, run, cell, table and page borders; `CT_HpsMeasure` (sz, szCs, kern) is
+uniform uint16.
 
 ## 4. Decisions
 
