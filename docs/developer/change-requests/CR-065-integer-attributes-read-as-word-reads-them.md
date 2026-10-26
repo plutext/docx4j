@@ -233,16 +233,19 @@ They are retyped to `ST_DecimalNumber`, the Java type unchanged (`BigInteger` ei
 
 **The rule as coded.** `parse`: a fast path for Word's integer form (`[+-]?\d+`, also BigInteger's); else the empty
 string is 0; else the lexical form `[+-]?\d*(\.\d*)?` with at least one digit gives its integer part (truncation
-toward zero; `-0.5` is 0); else null, the attribute dropped, one WARN per value naming the text. Unmeasured and
-treated as refused: a sign or a dot with no digit (`-`, `.`, `+`, `+.`), and digits outside ASCII `0`-`9` (BigInteger
-accepted Unicode digits; Word's measured form is ASCII). docx4j-python reads those four as 0 (its CR-021 D1 records
+toward zero; `-0.5` is 0; a bare sign or dot is 0, measured in CR-066 round 6 group E); else null, the attribute
+dropped, one WARN per value naming the text. Unmeasured and treated as refused: digits outside ASCII `0`-`9`
+(BigInteger accepted Unicode digits; Word's measured form is ASCII). docx4j-python reads those four as 0 (its CR-021 D1 records
 the difference); its phase C files on the share (`__tmp/python-cr021/cr021-edge-E2..E4-raw.docx`: `.`, `+`, `-`) will
 settle it in Word, and both ports then follow Word. `239.99999999999999` reads 239 here (the string is parsed, never a
 double). **Jason's run of those files (2026-10-26, python-cd):** `239.99999999999999` saved as 239 (the string truncated,
 as here); `.`, `+` and `-` were **not refused**: Word opened each file and its save holds no `w:spacing` and no `w:ind`
 for them, which, with a style value of 0 in those fixtures, cannot tell "read as 0" from "ignored". So the WARN's
-wording ("a form Word refuses") overstates these three; whether docx4j keeps the drop or reads 0 waits on a probe
-under a non-zero style value (round 6's group E, `__tmp/cr066/round6/`). python-cd also saw a `w:pgMar` dropped by a
+wording ("a form Word refuses") overstated these three. **Settled the same day by round 6's group E** (Jason's save
+`cr066-r6-E-word365.docx`): under a style whose before and left are 100, Word writes an explicit 0 for `.`, `+`, `-`
+and `+.` in both `w:spacing/@w:before` and `w:ind/@w:left`, all eight cases; so they are read as 0, and `LenientInteger`
+reads them as 0 (the lexical test is D3's exactly, `[+-]?\d*(\.\d*)?` non-empty, no digit required), as docx4j-python
+already did. The one unmeasured form left is a non-ASCII digit, dropped. python-cd also saw a `w:pgMar` dropped by a
 save open with Word's Normal margins (2.54 cm top). No trimming (D3 as accepted). `print` writes the value as
 held (CR-066 adds the range report there).
 

@@ -32,8 +32,9 @@ import org.slf4j.LoggerFactory;
  * (truncation toward zero: {@code 720.5} is 720, {@code -121.5} is -121, {@code 141.99999999999994} is 141,
  * {@code .5} is 0, {@code 240.} is 240); the empty string is 0. Any other form (whitespace, a comma, hex, an exponent,
  * letters) makes Word refuse the whole document; docx4j drops that attribute instead ({@link #parse} returns null)
- * and logs at WARN (D3). Unmeasured and treated as a refused form: a sign or dot with no digit at all ({@code -},
- * {@code .}, {@code +.}), and digits other than ASCII {@code 0}-{@code 9}.
+ * and logs at WARN (D3). A sign or a dot with no digit at all ({@code -}, {@code .}, {@code +}, {@code +.}) is 0, as
+ * Word reads it (measured 2026-10-26, CR-066 round 6 group E). Unmeasured and treated as a refused form: digits
+ * other than ASCII {@code 0}-{@code 9}.
  *
  * <p>Bound by {@code xsd/bindings.xjb} as the parse and print methods of the integer simple types of
  * {@code wml.xsd} ({@code ST_DecimalNumber}, {@code ST_TwipsMeasure}, {@code ST_SignedTwipsMeasure},
@@ -100,10 +101,11 @@ public final class LenientInteger {
 			i++;
 			while (i < len && v.charAt(i) >= '0' && v.charAt(i) <= '9') { i++; fractionDigits++; }
 		}
-		if (i != len || (intEnd == intStart && fractionDigits == 0)) {
+		if (i != len) {
 			report(Kind.DROPPED, v, null);
 			return null;
 		}
+		// a sign or a dot with no digit at all ("-", ".", "+", "+.") is 0: measured 2026-10-26 (CR-066 round 6, group E)
 		BigInteger n = intEnd == intStart ? BigInteger.ZERO : new BigInteger(v.substring(intStart, intEnd));
 		if (negative) n = n.negate();
 		report(Kind.TRUNCATED, v, n);

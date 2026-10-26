@@ -76,14 +76,16 @@ public class LenientIntegerTest {
 	}
 
 	@Test
-	public void eitherDigitGroupMayBeEmptyButNotBoth() {
+	public void eitherDigitGroupMayBeEmptyOrBoth() {
 		assertEquals(240, parse("240."));           // A2a
 		assertEquals(0, parse(".5"));               // A2b
 		assertEquals(240, parse("+240.5"));         // A2d
 		assertEquals(0, parse("-.5"));
-		assertNull("a sign or dot with no digit is unmeasured and treated as refused", LenientInteger.parse("-"));
-		assertNull(LenientInteger.parse("."));
-		assertNull(LenientInteger.parse("+."));
+		// a sign or dot with no digit at all reads 0 (CR-066 round 6 group E: Word writes an explicit 0 under a style value of 100)
+		assertEquals(0, parse("-"));
+		assertEquals(0, parse("."));
+		assertEquals(0, parse("+"));
+		assertEquals(0, parse("+."));
 	}
 
 	@Test
