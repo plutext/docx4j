@@ -234,8 +234,11 @@ They are retyped to `ST_DecimalNumber`, the Java type unchanged (`BigInteger` ei
 **The rule as coded.** `parse`: a fast path for Word's integer form (`[+-]?\d+`, also BigInteger's); else the empty
 string is 0; else the lexical form `[+-]?\d*(\.\d*)?` with at least one digit gives its integer part (truncation
 toward zero; `-0.5` is 0); else null, the attribute dropped, one WARN per value naming the text. Unmeasured and
-treated as refused: a sign or a dot with no digit (`-`, `.`, `+.`), and digits outside ASCII `0`-`9` (BigInteger
-accepted Unicode digits; Word's measured form is ASCII). No trimming (D3 as accepted). `print` writes the value as
+treated as refused: a sign or a dot with no digit (`-`, `.`, `+`, `+.`), and digits outside ASCII `0`-`9` (BigInteger
+accepted Unicode digits; Word's measured form is ASCII). docx4j-python reads those four as 0 (its CR-021 D1 records
+the difference); its phase C files on the share (`__tmp/python-cr021/cr021-edge-E2..E4-raw.docx`: `.`, `+`, `-`) will
+settle it in Word, and both ports then follow Word. `239.99999999999999` reads 239 here (the string is parsed, never a
+double). No trimming (D3 as accepted). `print` writes the value as
 held (CR-066 adds the range report there).
 
 **Reporting (D6).** The parse method knows the type, not the part, so the part logs for it:
