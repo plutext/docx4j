@@ -49,7 +49,7 @@ public class TblFactoryRangeTest {
 			TblFactory.createTable(1, 1, 70000);
 			fail("70000 twips (48.6 in) must be refused");
 		} catch (IllegalArgumentException e) {
-			assertTrue(e.getMessage(), e.getMessage().contains("cellWidthTwips 70000"));
+			assertTrue("the ports' shared code: " + e.getMessage(), e.getMessage().startsWith("value.out_of_range: cellWidthTwips 70000"));
 			assertTrue(e.getMessage(), e.getMessage().contains("0..32767"));
 			assertTrue(e.getMessage(), e.getMessage().contains("16-bit"));
 		}

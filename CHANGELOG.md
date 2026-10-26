@@ -51,7 +51,8 @@ Changes in Version 17.3.5
   4464). One WARN line per part with the count, the first few values and Word's reading; the value is
   written as held and read as written, never wrapped or clamped. Exact for the signed twips and
   half-point types, w:sz/szCs/kern, text scale and the border types; a value outside -32768..65535 for
-  ST_TwipsMeasure; ST_DecimalNumber not reported (LenientInteger, one parse/print pair per type).
+  ST_TwipsMeasure; ST_DecimalNumber not reported (LenientInteger, one parse/print pair per type). The
+  line carries the code the ports share for this finding, value.out_of_range, with the storage and range.
 * TblFactory.createTable throws IllegalArgumentException for a cell width outside 0..32767 twips
   (CR-066 D5; before, 70000 was written and Word read 4464). A CSS length converting outside its
   attribute's range (margin-left, margin-top/bottom, line-height, letter-spacing, cell margins,

@@ -112,7 +112,7 @@ public class CssLengthRangeWarnTest {
 		assertEquals("written as computed", 7200000, ((Ind) indent.getObject()).getLeft().intValue());
 		assertEquals(warnings().toString(), 1, warnings().size());
 		String line = warnings().get(0);
-		assertTrue(line, line.startsWith("margin-left: 5000in converts to 7200000 twips, outside Word's range -32768..32767 for w:ind/@w:left"));
+		assertTrue(line, line.startsWith("value.out_of_range: margin-left: 5000in converts to 7200000 twips, outside Word's range -32768..32767 for w:ind/@w:left"));
 	}
 
 	@Test

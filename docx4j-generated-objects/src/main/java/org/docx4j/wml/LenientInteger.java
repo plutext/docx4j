@@ -156,28 +156,31 @@ public final class LenientInteger {
 	/** The storage width Word gives every attribute of a type (CR-066 section 3.1 and 3.4). */
 	enum Range {
 		/** -32768..32767, read modulo 2^16 as signed: ST_SignedTwipsMeasure, ST_SignedHpsMeasure */
-		INT16("Word's signed 16-bit range -32768..32767", 16, true),
+		INT16("int16", "-32768..32767", 16, true),
 		/** 0..65535, read modulo 2^16: CT_HpsMeasure/@w:val (w:sz, w:szCs, w:kern), ST_TextScale */
-		UINT16("Word's unsigned 16-bit range 0..65535", 16, false),
+		UINT16("uint16", "0..65535", 16, false),
 		/** 0..255, read modulo 2^8: a border's w:sz (ST_EighthPointMeasure) */
-		UINT8("Word's 8-bit range 0..255 for a border's w:sz", 8, false),
+		UINT8("8 bits", "0..255", 8, false),
 		/** 0..31, read modulo 2^5: a border's w:space (ST_PointMeasure) */
-		UINT5("Word's 5-bit range 0..31 for a border's w:space", 5, false),
+		UINT5("5 bits", "0..31", 5, false),
 		/**
 		 * -32768..65535, the range outside which every measured ST_TwipsMeasure attribute is changed; how depends
 		 * on the attribute (w:before and the unsigned margins are unsigned 16-bit, a frame's or w:tblpPr's
 		 * distances signed, w:firstLine and w:hanging one signed field, w:trHeight's sign its rule), so no "reads
 		 * it as" is given
 		 */
-		TWIPS("Word's 16-bit range (-32768..32767 or 0..65535, by attribute; CR-066 section 3)", 16, false);
+		TWIPS("int16 or uint16 by attribute (ST_TwipsMeasure)", "-32768..65535", 16, false);
 
-		final String name;
+		/** The storage, in the ports' shared vocabulary: int16, uint16, 8 bits, 5 bits (docx4j-python CR-020 section 4.7) */
+		final String storage;
+		/** The faithful min..max */
+		final String range;
 		final int bits;
 		final boolean signed;
 		final BigInteger modulus;
 
-		Range(String name, int bits, boolean signed) {
-			this.name = name; this.bits = bits; this.signed = signed;
+		Range(String storage, String range, int bits, boolean signed) {
+			this.storage = storage; this.range = range; this.bits = bits; this.signed = signed;
 			this.modulus = BigInteger.ONE.shiftLeft(bits);
 		}
 
@@ -273,7 +276,7 @@ public final class LenientInteger {
 			if (dropped > 0) sb.append(sb.length() > 0 ? "; " : "").append(dropped).append(" of a form Word refuses dropped");
 			if (!samples.isEmpty()) sb.append(" (e.g. ").append(String.join(", ", samples)).append(")");
 			if (outOfRange > 0) {
-				sb.append(sb.length() > 0 ? "; " : "").append(outOfRange).append(" integer attribute value").append(outOfRange == 1 ? "" : "s")
+				sb.append(sb.length() > 0 ? "; " : "").append(CODE).append(": ").append(outOfRange).append(" integer attribute value").append(outOfRange == 1 ? "" : "s")
 					.append(" outside Word's 16-bit range, held as written (CR-066; e.g. ").append(String.join(", ", rangeSamples)).append(")");
 			}
 			return sb.toString();
@@ -318,20 +321,26 @@ public final class LenientInteger {
 		if (r.samples.size() < 4) r.samples.add(sample);
 	}
 
+	/**
+	 * The code the ports share for an integer attribute Word would misread (docx4j-python CR-020 section 4.7 and
+	 * CR-022, docx4j-core-ts CR-017): a search for it finds every port's report. The fields the type-level report
+	 * can give are the value, Word's reading (none for ST_TwipsMeasure), the storage and the range; the part is on
+	 * the part's own line; the element and attribute are the whole-tree check's (CR-066 D6).
+	 *
+	 * @since 17.3.5
+	 */
+	public static final String CODE = "value.out_of_range";
+
 	private static void reportOutOfRange(BigInteger v, Range range) {
 		BigInteger reading = range.wordsReading(v);
+		String sample = v + " (" + range.storage + " " + range.range
+				+ (reading == null ? "; Word changes it, how depends on the attribute)" : "; Word reads " + reading + ")");
 		Report r = REPORT.get();
 		if (r == null) {
-			if (reading == null) {
-				log.warn("integer attribute value {} is outside {}; Word changes any such value, how depends on the attribute; held as written (CR-066)", v, range.name);
-			} else {
-				log.warn("integer attribute value {} is outside {}; Word reads it as {}; held as written (CR-066)", v, range.name, reading);
-			}
+			log.warn("{}: integer attribute value {} is outside Word's range; held as written (CR-066)", CODE, sample);
 			return;
 		}
 		r.outOfRange++;
-		if (r.rangeSamples.size() < 4) {
-			r.rangeSamples.add(v + (reading == null ? " (ST_TwipsMeasure)" : " -> " + reading + " in Word"));
-		}
+		if (r.rangeSamples.size() < 4) r.rangeSamples.add(sample);
 	}
 }

@@ -347,9 +347,15 @@ The report reuses CR-065 D6's thread-local scope (D8): `Report` gains `getOutOfR
 unmarshal (`JaxbXmlPartXPathAware.unmarshal`, both entries, as before) logs at WARN instead of INFO when the count is
 above zero; a part's marshal (`JaxbXmlPart.marshal(OutputStream, mapper)` and `marshal(Node, mapper)`, which every
 save reaches through the part stores) now opens the same scope and logs one WARN with the part name when the count is
-above zero (`/word/document.xml: 3 integer attribute values outside Word's 16-bit range, held as written (CR-066; e.g.
-7205001 -> -3959 in Word, 70000 -> 4464 in Word, 1205003 (ST_TwipsMeasure))`). Outside a scope (a string marshal) each
-value logs its own WARN. The generated API is unchanged except for the additions (javap of `org.docx4j.wml`, `w14`,
+above zero (`/word/document.xml: value.out_of_range: 3 integer attribute values outside Word's 16-bit range, held as
+written (CR-066; e.g. 7205001 (int16 -32768..32767; Word reads -3959), 70000 (uint16 0..65535; Word reads 4464),
+1205003 (int16 or uint16 by attribute (ST_TwipsMeasure) -32768..65535; Word changes it, how depends on the attribute))`).
+Outside a scope (a string marshal) each value logs its own WARN. **The shared code** (python-cd's request, 2026-10-26,
+after the first commit): every line, the guards' included, carries `value.out_of_range` (`LenientInteger.CODE`), the
+code docx4j-python's CR-020 §4.7 and CR-022 and core-ts's CR-017 agreed for an integer attribute Word would misread, so
+one search finds every port's report. Of that finding's fields the type-level report gives the value, Word's reading
+(`word_reads`; none for `ST_TwipsMeasure`), the storage in the shared vocabulary (`int16`, `uint16`, `8 bits`, `5 bits`)
+and the range; the part is on the part's line; the element and attribute are the whole-tree check's (D6). The generated API is unchanged except for the additions (javap of `org.docx4j.wml`, `w14`,
 `w15` before and after: the new methods, the `Range` enum and the `Report` members; the ten `Adapter` classes keep their
 names and field types, their bodies call the per-type methods). Cost: none measurable (scratchpad `bench/LoadBench`,
 bench-30k.docx: best 370 ms before, 358 and 361 ms after).

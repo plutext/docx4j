@@ -61,8 +61,8 @@ public class TblFactory {
 	public static Tbl createTable(int rows, int cols, int cellWidthTwips) {
 		
 		if (cellWidthTwips < 0 || cellWidthTwips > MAX_CELL_WIDTH_TWIPS) {
-			throw new IllegalArgumentException("cellWidthTwips " + cellWidthTwips + " is outside Word's range 0.."
-					+ MAX_CELL_WIDTH_TWIPS + " twips (22.75 in); a cell width (w:tcW/@w:w) is a signed 16-bit twips value, which Word reads modulo 2^16 (CR-066)");
+			throw new IllegalArgumentException(org.docx4j.wml.LenientInteger.CODE + ": cellWidthTwips " + cellWidthTwips + " is outside Word's range 0.."
+					+ MAX_CELL_WIDTH_TWIPS + " twips (22.75 in); a cell width (w:tcW/@w:w) is a signed 16-bit (int16) twips value, which Word reads modulo 2^16 (CR-066)");
 		}
 		
 		Tbl tbl = Context.getWmlObjectFactory().createTbl();		

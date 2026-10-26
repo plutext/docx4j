@@ -87,7 +87,7 @@ public class TocEntry {
 	 */
 	private static BigInteger tabPos(int pos, String source) {
 		if (pos < -MAX_TAB_POS_TWIPS || pos > MAX_TAB_POS_TWIPS) {
-			log.warn("TOC tab stop at " + pos + " twips (" + source + ") is outside Word's range -" + MAX_TAB_POS_TWIPS + ".." + MAX_TAB_POS_TWIPS
+			log.warn(org.docx4j.wml.LenientInteger.CODE + ": TOC tab stop w:tab/@w:pos at " + pos + " twips (" + source + ") is outside Word's range -" + MAX_TAB_POS_TWIPS + ".." + MAX_TAB_POS_TWIPS
 					+ "; written as computed, Word wraps it to 16 bits then clamps (CR-066)");
 		}
 		return BigInteger.valueOf(pos);

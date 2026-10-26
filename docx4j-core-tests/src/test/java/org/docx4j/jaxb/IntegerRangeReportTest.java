@@ -115,10 +115,10 @@ public class IntegerRangeReportTest {
 		assertEquals("one line, for the main document part: " + warnings, 1, warnings.size());
 		String line = warnings.get(0);
 		assertTrue(line, line.startsWith("/word/document.xml: "));
-		assertTrue(line, line.contains("3 integer attribute values outside Word's 16-bit range"));
-		assertTrue(line, line.contains("7205001 -> -3959 in Word"));
-		assertTrue(line, line.contains("70000 -> 4464 in Word"));
-		assertTrue(line, line.contains("1205003 (ST_TwipsMeasure)"));
+		assertTrue("the ports' shared code, searchable: " + line, line.contains("value.out_of_range: 3 integer attribute values outside Word's 16-bit range"));
+		assertTrue(line, line.contains("7205001 (int16 -32768..32767; Word reads -3959)"));
+		assertTrue(line, line.contains("70000 (uint16 0..65535; Word reads 4464)"));
+		assertTrue(line, line.contains("1205003 (int16 or uint16 by attribute (ST_TwipsMeasure) -32768..65535; Word changes it"));
 
 		// the file holds the numbers as given (D2: never a rewrite at save)
 		WordprocessingMLPackage back = WordprocessingMLPackage.load(new ByteArrayInputStream(out.toByteArray()));
@@ -140,8 +140,8 @@ public class IntegerRangeReportTest {
 
 		List<String> warnings = warnings("outside Word's 16-bit range");
 		assertEquals("one line, for the main document part: " + warnings, 1, warnings.size());
-		assertTrue(warnings.get(0), warnings.get(0).startsWith("/word/document.xml: 2 integer attribute values outside"));
-		assertTrue(warnings.get(0), warnings.get(0).contains("-32769 -> 32767 in Word"));
+		assertTrue(warnings.get(0), warnings.get(0).startsWith("/word/document.xml: value.out_of_range: 2 integer attribute values outside"));
+		assertTrue(warnings.get(0), warnings.get(0).contains("-32769 (int16 -32768..32767; Word reads 32767)"));
 		String xml = XmlUtils.marshaltoString(back.getMainDocumentPart().getJaxbElement());
 		assertTrue("held as written, D3", xml.contains("w:left=\"7205001\"") && xml.contains("w:right=\"-32769\""));
 	}

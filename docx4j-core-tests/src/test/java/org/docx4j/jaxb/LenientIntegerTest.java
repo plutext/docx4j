@@ -225,10 +225,10 @@ public class LenientIntegerTest {
 		assertEquals("-3959", LenientInteger.printSignedTwips(BigInteger.valueOf(-3959)));
 		LenientInteger.Report r = LenientInteger.endReport();
 		assertEquals(4, r.getOutOfRange());
-		assertTrue(r.summary(), r.summary().contains("4 integer attribute values outside Word's 16-bit range"));
-		assertTrue("Word's reading is named: " + r.summary(), r.summary().contains("7205001 -> -3959 in Word"));
-		assertTrue(r.summary(), r.summary().contains("32768 -> -32768 in Word"));
-		assertTrue(r.summary(), r.summary().contains("-32769 -> 32767 in Word"));
+		assertTrue("the ports' shared code: " + r.summary(), r.summary().contains("value.out_of_range: 4 integer attribute values outside Word's 16-bit range"));
+		assertTrue("the value, the storage, the range and Word's reading: " + r.summary(), r.summary().contains("7205001 (int16 -32768..32767; Word reads -3959)"));
+		assertTrue(r.summary(), r.summary().contains("32768 (int16 -32768..32767; Word reads -32768)"));
+		assertTrue(r.summary(), r.summary().contains("-32769 (int16 -32768..32767; Word reads 32767)"));
 		assertTrue("the report is not a lenient read", r.getTruncated() == 0 && r.getEmpty() == 0 && r.getDropped() == 0);
 	}
 
@@ -244,7 +244,7 @@ public class LenientIntegerTest {
 		LenientInteger.printSignedHps(BigInteger.valueOf(65535));
 		LenientInteger.Report r = LenientInteger.endReport();
 		assertEquals(2, r.getOutOfRange());
-		assertTrue(r.summary(), r.summary().contains("65535 -> -1 in Word"));
+		assertTrue(r.summary(), r.summary().contains("65535 (int16 -32768..32767; Word reads -1)"));
 	}
 
 	@Test
@@ -264,9 +264,9 @@ public class LenientIntegerTest {
 		assertEquals("-1", LenientInteger.printTextScale(-1));
 		LenientInteger.Report r = LenientInteger.endReport();
 		assertEquals(5, r.getOutOfRange());
-		assertTrue(r.summary(), r.summary().contains("65536 -> 0 in Word"));
-		assertTrue(r.summary(), r.summary().contains("-1 -> 65535 in Word"));
-		assertTrue(r.summary(), r.summary().contains("70000 -> 4464 in Word"));
+		assertTrue(r.summary(), r.summary().contains("65536 (uint16 0..65535; Word reads 0)"));
+		assertTrue(r.summary(), r.summary().contains("-1 (uint16 0..65535; Word reads 65535)"));
+		assertTrue(r.summary(), r.summary().contains("70000 (uint16 0..65535; Word reads 4464)"));
 	}
 
 	@Test
@@ -283,10 +283,10 @@ public class LenientIntegerTest {
 		LenientInteger.printPoint(BigInteger.valueOf(255));
 		LenientInteger.Report r = LenientInteger.endReport();
 		assertEquals(4, r.getOutOfRange());
-		assertTrue(r.summary(), r.summary().contains("256 -> 0 in Word"));
-		assertTrue(r.summary(), r.summary().contains("-1 -> 255 in Word"));
-		assertTrue(r.summary(), r.summary().contains("32 -> 0 in Word"));
-		assertTrue(r.summary(), r.summary().contains("255 -> 31 in Word"));
+		assertTrue(r.summary(), r.summary().contains("256 (8 bits 0..255; Word reads 0)"));
+		assertTrue(r.summary(), r.summary().contains("-1 (8 bits 0..255; Word reads 255)"));
+		assertTrue(r.summary(), r.summary().contains("32 (5 bits 0..31; Word reads 0)"));
+		assertTrue(r.summary(), r.summary().contains("255 (5 bits 0..31; Word reads 31)"));
 	}
 
 	@Test
@@ -306,8 +306,8 @@ public class LenientIntegerTest {
 		assertEquals("1205003", LenientInteger.printTwips(BigInteger.valueOf(1205003)));
 		LenientInteger.Report r = LenientInteger.endReport();
 		assertEquals(3, r.getOutOfRange());
-		assertTrue("no reading is claimed: " + r.summary(), !r.summary().contains("in Word"));
-		assertTrue(r.summary(), r.summary().contains("1205003 (ST_TwipsMeasure)"));
+		assertTrue("no reading is claimed: " + r.summary(), !r.summary().contains("Word reads"));
+		assertTrue(r.summary(), r.summary().contains("1205003 (int16 or uint16 by attribute (ST_TwipsMeasure) -32768..65535; Word changes it"));
 	}
 
 	@Test
