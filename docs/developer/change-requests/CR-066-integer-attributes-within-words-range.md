@@ -42,8 +42,11 @@ and its saves hold:
 So Word's twips are 16-bit internally, signed where the schema type is signed, and an out-of-range value wraps. Whether
 every integer type wraps the same way, whether Word's UI limits (22 inches for a page, 1638 pt for a font) also apply
 on read, what a negative does in an unsigned attribute, and how wide `w:pgNumType/@w:start` is, are phase 0's
-questions. The Office JS side (what Word's own setters accept) is not measured: core-ts's check 71 is a proposal, not
-written or run (core-ts, 2026-10-26). core-ts itself today writes pt × 20 for every measurement setter with no check,
+questions. The Office JS side (what Word's own setters accept) is core-ts's check 71: written 2026-10-26 at Jason's
+word, on the share at `__tmp/71/` (96 cases: the paragraph indents and spacings, a cell's width and a list level's
+indent at 1638, 1638.4, 1639, 3276.7, 3276.8, 400000 pt and negatives; font size at 1638 to 400000 and -1), Jason's
+run awaited; its Word save also measures `w:firstLine`, `w:hanging` and `w:after`, unmeasured in §3.1. Results go
+beside §3.1 when they arrive. core-ts itself today writes pt × 20 for every measurement setter with no check,
 400,000 pt included, and reads the value back unchanged (measured at its 7f00fad); so none of the ports refuses, wraps
 or clamps.
 
@@ -120,7 +123,7 @@ back as kept); docx4j today: `probe66/Today66.java` (§1).
 | T | T4, T5 | `w:tcW`, `w:tblW` `@w:w` with `type=pct` (fiftieths of a percent) | 5000, 5001, 32767, 32768, 65535, 65536, 65537, -1 |
 | T | T6 | `w:trHeight/@w:val` (ST_TwipsMeasure) | as P1 |
 | S | S1, S2 | `w:pgSz/@w:w`, `@w:h` (ST_TwipsMeasure; the UI stops at 31680) | 31680, 31681, 32767, 32768, 65535, 65536, 65537, 1205003 |
-| S | S3 | `w:pgMar/@w:top` (ST_TwipsMeasure) | as P1 |
+| S | S3 | `w:pgMar/@w:top` (ST_SignedTwipsMeasure) | as P1 |
 | S | S4 | `w:pgNumType/@w:start` (ST_DecimalNumber; a PAGE field in the footer shows it) | 32767, 32768, 65535, 65536, 65537, 2147483647, 2147483648, 4294967295, 4294967296, -1 |
 | N | N1 | -1 and -32769 in unsigned attributes: before, border sz and space, `w:sz`, text scale, trHeight, pgMar top, pgSz w | 16 cases |
 | Z | | control: `w:spacing/@w:before="120"` | in every file |
