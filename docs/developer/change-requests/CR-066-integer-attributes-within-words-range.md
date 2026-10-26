@@ -151,7 +151,7 @@ schema calls unsigned is accepted everywhere.** The width and the sign are the a
 | Attribute (schema type) | Word's storage, from the saves | Evidence (written -> saved) |
 |---|---|---|
 | `w:ind/@w:left`, `w:spacing/@w:line` auto, `w:rPr/w:spacing` (signed twips); `w:position` (signed half-points); `w:tblW`, `w:tcW`, `w:tblInd` `@w:w` under `dxa` and under `pct` (ST_DecimalNumber) | **int16, wraps**; no UI clamp | 32768 -> -32768; 65535 -> -1; 65536 -> 0; -32769 -> 32767; 7205001 -> -3959; 3169 (position), 31681 (run spacing), 5001 and 32767 (pct) kept; tblInd 0 not written |
-| `w:pgMar/@w:top` (ST_TwipsMeasure, "unsigned") | **int16, wraps** | 32768 -> -32768; 65535 -> -1; -1 kept; -32769 -> 32767; 1205003 -> 25355 |
+| `w:pgMar/@w:top` (ST_SignedTwipsMeasure; `top` and `bottom` are signed in the schema, the other margins unsigned) | **int16, wraps** | 32768 -> -32768; 65535 -> -1; -1 kept; -32769 -> 32767; 1205003 -> 25355 |
 | `w:spacing/@w:before` (ST_TwipsMeasure) | **uint16, wraps**; 0xFFFF is written as -1 | 32768 kept; 65536 -> 0; 65537 -> 1; 1205003 -> 25355; 65535 -> **-1**; -1 -> -1; -32769 -> 32767 |
 | `w:sz/@w:val` (half-points) | **uint16, wraps**; no UI clamp | 3277, 32768, 65535 kept; 65536 -> 0; 65537 -> 1; -1 -> 65535; -32769 -> 32767 |
 | `w:w/@w:val` (ST_TextScale, schema 0..600) | **uint16, wraps**; no clamp at 600 | 601, 32767, 65535 kept; 65536 -> 0; -1 -> 65535; -32769 -> 32767 |
@@ -159,13 +159,13 @@ schema calls unsigned is accepted everywhere.** The width and the sign are the a
 | `w:pgSz/@w:w` (ST_TwipsMeasure) | **uint16, wraps, then clamped to 144..31681** | 31681 kept; 32767, 32768, 65535, -1, -32769 -> 31681; 65536, 65537 -> 144; 1205003 -> 25355 |
 | `w:pgSz/@w:h` (ST_TwipsMeasure) | **uint16, wraps, then a minimum of 144**; no maximum | 31681, 32767, 32768, 65535 kept; 65536, 65537 -> 144; 1205003 -> 25355 |
 | `w:spacing/@w:line` exact (signed twips) | **int16 after negation**: exact is stored as the negative, so the wrapped value's sign re-derives the rule and its magnitude the line | exact 32768 -> exact 32768; exact 65535 -> **atLeast 1**; 65536 -> atLeast 0; 65537 -> exact 1; -1 -> atLeast 1; -32768 -> exact 32768; -32769 -> exact 32767; 7205001 -> atLeast 3959 |
-| `w:trHeight/@w:val` (ST_TwipsMeasure) | **int16, the sign is the rule** (negative = exact) | 32767 kept; 32768 -> **exact 32768**; 65535 -> exact 1; 65536 -> dropped; 65537 -> 1; -1 -> exact 1; -32769 -> 32767; 1205003 -> 25355 |
+| `w:trHeight/@w:val` (ST_TwipsMeasure, unsigned in the schema) | **int16, the sign is the rule** (negative = exact); the one attribute whose storage sign differs from its schema type | 32767 kept; 32768 -> **exact 32768**; 65535 -> exact 1; 65536 -> dropped; 65537 -> 1; -1 -> exact 1; -32769 -> 32767; 1205003 -> 25355 |
 | a border's `@w:sz` (ST_EighthPointMeasure) | **8 bits, wraps** (mod 256); no clamp at the UI's 48 | 49, 255 kept; 256 -> 0; 32767 -> 255; 32768 -> 0; 65537 -> 1; -1 -> 255; -32769 -> 255 |
 | a border's `@w:space` (ST_PointMeasure, schema max 31) | **5 bits, wraps** (mod 32) | 31 kept; 32 -> 0; 255 -> 31; 256 -> 0; 65537 -> 1; -1 -> 31; -32769 -> 31 |
 | `w:pgNumType/@w:start` (ST_DecimalNumber) | **int32, wraps** | 65536, 2147483647 kept; 2147483648 -> -2147483648; 4294967295 -> -1; 4294967296 -> 0; -1 kept |
 
 The widths are those of Word's binary format (the DOC `PAP`, `CHP`, `BRC` and `SEP` structures: `dyaBefore` unsigned,
-`dyaTop` signed, `dyaRowHeight` and `lspd.dyaLine` signed with the sign as the rule, `brc.dptLineWidth` 8 bits,
+`dyaTop` signed as the schema's `ST_SignedTwipsMeasure` says, `dyaRowHeight` and `lspd.dyaLine` signed with the sign as the rule, `brc.dptLineWidth` 8 bits,
 `brc.dptSpace` 5 bits), so the table is unlikely to move between Word versions. The UI limits (1638 pt, 6 pt, 600 %,
 22 in) do not apply on read except where shown (tab stops, page width). Two side effects of the big values: Word
 splits a run whose font is 1638 pt or more into one run per character, each with `w:lastRenderedPageBreak` (R1), and a
@@ -174,8 +174,8 @@ PAGE fields kept their cached "1" in every section (Jason saw pages 1 and 2 on s
 measure `w:pgNumType/@w:start`; the saves did.
 
 **What this means for the design.** A `printMethod` or `parseMethod` bound to a simple type knows the type, not the
-attribute, and the width differs within `ST_TwipsMeasure` (before unsigned, pgMar top signed, trHeight signed with a
-rule) and within `ST_DecimalNumber` (TblWidth int16, pgNumType int32, ids and counts not measured and not 16-bit).
+attribute, and the width differs within `ST_TwipsMeasure` (before unsigned with 0xFFFF written as -1, trHeight signed
+with a rule, pgSz clamped) and within `ST_DecimalNumber` (TblWidth int16, pgNumType int32, ids and counts not measured and not 16-bit).
 So the type-level report can be exact for `ST_SignedTwipsMeasure` (int16 for every measured attribute),
 `ST_SignedHpsMeasure` (int16), `ST_TextScale` and `CT_HpsMeasure/@w:val` (uint16), `ST_EighthPointMeasure` (8 bits) and
 `ST_PointMeasure` (5 bits); for `ST_TwipsMeasure` it reports the certain range only, a value outside -32768..65535
@@ -183,7 +183,7 @@ So the type-level report can be exact for `ST_SignedTwipsMeasure` (int16 for eve
 `ST_DecimalNumber` it reports nothing (D7 amended). The exact per-attribute check (the twips attributes of
 `ST_TwipsMeasure`, `w:tblW`, `w:tcW`, `w:tblInd`, `w:pgNumType/@w:start`) is the whole-tree check's (D6), or a patch
 on the owning class's setter through `ModifyGeneratedSources` where one class owns the attribute (`TblWidth.setW`).
-Unmeasured and left to the certain range: the other 26 `ST_TwipsMeasure` attributes (`w:gridCol/@w:w`, the other
+Unmeasured and left to the certain range: the other 26 `ST_TwipsMeasure` attributes (`w:gridCol/@w:w`, the unsigned
 margins, `w:ind/@w:hanging` and `@w:firstLine`, frame and drawing distances), `w:spacing/@w:after` (assumed as
 `before`), the other borders' attributes (assumed as `w:top`'s).
 
@@ -238,6 +238,8 @@ are generated with no hook (D1 option c), so the report here is at marshal and u
 computes a measure itself (D5). Both leave a file's value as it is. python-cd checked the round 5 files read-only before
 Jason's run: all 76 well-formed, each loaded with nothing kept and nothing skipped; it re-read a sample of P, B and R in
 Word's saves and agrees with §3.1 (its CR-022 §3.1, 4db3814, keys its guard by attribute, the storage width narrowed
-where Word clamps; a negative in a schema-unsigned attribute is refused there, where this CR only reports, since Word
-accepts it and `w:pgMar/@w:top` is signed in Word's storage). objects-ts's CR-015 and core-ts
+where Word clamps; a negative in a Word-unsigned attribute is refused there, where this CR only reports, since Word
+accepts it: `w:trHeight/@w:val="-1"` is exact 1, `w:spacing/@w:before="-1"` is kept as -1). Corrected 2026-10-26
+(objects-ts, portfolio, python-cd): `w:pgMar/@w:top` is `ST_SignedTwipsMeasure` in the schema, so its int16 storage
+matches; `w:trHeight/@w:val` is the attribute whose storage sign differs from its schema type. objects-ts's CR-015 and core-ts
 take the measured range when it exists (phase 3).
