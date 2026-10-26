@@ -23,8 +23,19 @@ Claude Opus 5.5
 Changes in Version 17.3.5
 --------------------------
 
-* A hyperlink's content list refuses a table, a paragraph or bare Text, as a paragraph's does
-  (ArrayListDocx4j.checkParent; each is a mistake Word repairs). Jason, 2026-10-26.
+* Content lists refuse a misplaced child at the point of the mistake, with the fix in the message
+  (CR-064; ArrayListDocx4j.checkParent, IllegalArgumentException): a run, Text, Drawing, Br, cell or
+  row added to the body, a cell, a header, a footer, a footnote, a comment, a text box or block-level
+  sdt content; a table, paragraph, Text, Drawing or Br added to a paragraph, hyperlink, field,
+  insertion, deletion, smart tag or run-level sdt content; a cell, paragraph or run added to a table,
+  a paragraph or run to a row; a property object (PPr, RPr, SectPr, TblPr, TrPr, TcPr) added to
+  content instead of set; a String added to any of these. A JAXBElement is tested by its value, so
+  the wrapped forms are caught too. Each rule names a class the schema never allows there, so no
+  legal document is refused on load (gated on the test suite and a 454-document corpus). Before,
+  only a table, paragraph or Text in a paragraph or hyperlink, and a run, paragraph or table in a
+  run, were refused; the rest reached Word as "unreadable content".
+  The check caught one such mistake in docx4j itself: the export preprocessor's run-border container
+  (Containerization) was a block-level sdt holding runs; it is a run-level sdt now, same output.
 * Every integer attribute of WordprocessingML is read as Word reads it, in the JAXB binding
   (CR-065 phase 2; org.docx4j.wml.LenientInteger bound by xsd/bindings.xjb to ST_DecimalNumber,
   ST_TwipsMeasure, ST_SignedTwipsMeasure, the half-point, eighth-point, point, text-scale and pixel

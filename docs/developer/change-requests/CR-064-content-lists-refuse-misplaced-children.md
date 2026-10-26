@@ -1,6 +1,7 @@
 # CR-064: content lists refuse misplaced children at the point of the mistake
 
-Status: PROPOSED 2026-10-26, drafted by Claude Fable 5.1 (session docx4j-25) at Jason's word ("open the CR - are
+Status: ACCEPTED 2026-10-26 (Jason: "do CR-064"): D1 to D9 as recommended; phase 1 DONE 2026-10-26 (§8); phase 2 optional, open.
+PROPOSED 2026-10-26, drafted by Claude Fable 5.1 (session docx4j-25) at Jason's word ("open the CR - are
 these checks cheap?"), after the portfolio session's manifesto work (docx4j_manifesto.md §2, D7) asked which common
 mistakes `ArrayListDocx4j.checkParent` should refuse beyond today's three. The hyperlink case Jason asked for first is
 done already (49637c6e4, §1). The cost is measured (§3): cheap. Recommendations in §4; phases in §5.
@@ -95,7 +96,7 @@ for the reason that matters more, a wrong refusal.
 | Phase | Work | Status |
 |---|---|---|
 | 0 | This CR, with the cost measured (§3) | done 2026-10-26 |
-| 1 | D1 to D7 in `ArrayListDocx4j.checkParent`; `ArrayListDocx4jTest` covering each rule and each container set (accepted children too: an R in a hyperlink, a Tr in a Tbl, a `JAXBElement<Text>` in an R, mc:AlternateContent anywhere); CHANGELOG; the D9 gate run and its numbers recorded here | proposed |
+| 1 | D1 to D7 in `ArrayListDocx4j.checkParent`; `ArrayListDocx4jTest` covering each rule and each container set (accepted children too: an R in a hyperlink, a Tr in a Tbl, a `JAXBElement<Text>` in an R, mc:AlternateContent anywhere); CHANGELOG; the D9 gate run and its numbers recorded here | DONE 2026-10-26 (§8) |
 | 2 | D8 (b), the tree validator, if wanted after phase 1 | optional |
 
 Estimate for phase 1: a day, most of it the gate.
@@ -113,3 +114,48 @@ Estimate for phase 1: a day, most of it the gate.
 
 The TypeScript and Python ports have their own list types; whether they refuse misplaced children at add time is
 their question, sent with phase 1's hand-off, with this CR's table of mistakes as the list worth catching.
+
+## 8. Phase 1 done (2026-10-26)
+
+Jason, 2026-10-26: "do CR-064" (D1 to D9 as recommended). `ArrayListDocx4j.checkParent` (hand-written,
+docx4j-generated-objects) now unwraps a `JAXBElement` first (D1) and tests five parent sets, each refusing only
+classes the schema never allows there, with `IllegalArgumentException` (D7) and the fix in the message:
+
+- **run-level containers** (P, P.Hyperlink, CTSimpleField, RunIns, RunDel, CTSmartTagRun, CTCustomXmlRun,
+  CTSdtContentRun; D3): Tbl ("it should be a sibling of the paragraph"), P, Text, Drawing, Br ("add it to a run (R)
+  and add that"), PPr ("use setPPr"; D5), String ("put it in a Text, in a run (R)"; D6);
+- **R**: R, P, Tbl (as before), RPr ("use setRPr"), String ("a Text (wrapped by the ObjectFactory's createRT)");
+- **block-level containers** (Body, Tc, SdtContentBlock, CTTxbxContent, Hdr, Ftr, CTFtnEdn, Comments.Comment,
+  CTCustomXmlBlock; D2): R, Text, Drawing, Br ("add it to a paragraph (P) and add that"), Tc, Tr ("a cell goes in a
+  row (Tr), in a table (Tbl)"), SectPr ("use Body.setSectPr, or PPr.setSectPr on the paragraph that ends the
+  section"), TcPr in a Tc ("use setTcPr"), String;
+- **Tbl** (D4): Tc ("add it to a row (Tr)"), P, R ("a cell (Tc) in a row (Tr)"), Tbl ("a nested table goes in a cell"),
+  TblPr, String; **Tr**: P, R, Tbl, TrPr, String;
+- **SdtContent in SdtContent**, as before.
+
+The message names the container ("You can't add Text directly to a hyperlink; ...", "... to the body", "... to a
+table cell (Tc)", "... to a footnote or endnote"), so the reader knows which object was wrong. Nothing else is
+refused: mc:AlternateContent, range markup, altChunk, the block- and run-level sdt and customXml wrappers and the
+wrapped forms (a `JAXBElement<Tc>` in a Tr, a `JAXBElement<Text>` in an R) are accepted, and the tests say so.
+
+**The D9 gate.** A harness (scratchpad `loadall/LoadAll.java`) loads every docx under the fidelity corpus
+(`cloud-corpus/complex-Word-ND/worked-docx`, 454) and the repository (596: the test resources, samples and
+fidelity fixtures) and unmarshals every JAXB part, so every child the unmarshaller binds passes through
+`checkParent`. Before and after the change: 1050 files, 12575 parts read, 0 part failures, 0 refusals, and the
+same single pre-existing load failure (a corpus file over the zip-bomb limit). No rule was dropped or demoted. The full build then found the one trip, in docx4j's own code: the export
+preprocessor `Containerization.groupRuns` wrapped a paragraph's bordered runs in a block-level sdt (`SdtBlock` with
+`SdtContentBlock`) as a conversion-only holder, which the new block-container rule refuses ("You can't add a run (R)
+directly to block-level sdt content"; `VisitorParityTest.testPhase2Containers`). It now uses a run-level sdt
+(`SdtRun` with `CTSdtContentRun`), which marshals as the same `w:sdt` the stylesheets and the FO visitor match by tag
+(`SdtElement`), so the output is unchanged and the FO test module passes. That is the check doing its job on the
+library's own code, the kind of mistake §2 lists. The
+reason a legal document cannot trip one is structural as well as measured: none of the containers carries a lax
+`@XmlAnyElement`, so the unmarshaller adds to a content list only a child its content model binds there, and a
+misplaced element in another producer's file (a `w:r` in `w:body`) is an unexpected element the event handler
+skips, never an add. `ArrayListDocx4jTest` (9 tests): each set's refused and accepted children, the message naming
+the container, every add path (`add`, `add(int)`, `set`, both `addAll`s) refusing with the list unchanged.
+
+**Cost.** The 30,000-paragraph document of §3 loads in 365 ms best, 381 ms median (9 runs) with the final code,
+against 358 to 368 best and 364 to 393 median measured three times on the same file for CR-065 phase 2 the same
+morning: within the run-to-run noise, as §3's microbenchmark predicted (about 1 ms of the load).
+
