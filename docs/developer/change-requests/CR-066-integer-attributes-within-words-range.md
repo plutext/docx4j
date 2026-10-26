@@ -323,5 +323,7 @@ Word's saves and agrees with §3.1 (its CR-022 §3.1, 4db3814, keys its guard by
 where Word clamps; a negative in a Word-unsigned attribute is refused there, where this CR only reports, since Word
 accepts it: `w:trHeight/@w:val="-1"` is exact 1, `w:spacing/@w:before="-1"` is kept as -1). Corrected 2026-10-26
 (objects-ts, portfolio, python-cd): `w:pgMar/@w:top` is `ST_SignedTwipsMeasure` in the schema, so its int16 storage
-matches; `w:trHeight/@w:val` is the attribute whose storage sign differs from its schema type. objects-ts's CR-015 and core-ts
-take the measured range when it exists (phase 3).
+matches; `w:trHeight/@w:val` is the attribute whose storage sign differs from its schema type. objects-ts's CR-016 (objects 86ae5cb) encodes §3.1 and §3.4 row for row in its WORD_INTEGER_STORAGE, with three
+structures beyond a width (the firstLine/hanging pair, framePr h's height flag, the column negatives) and a test,
+test/word365-ranges.mjs, that reads both rounds' saves (652 cases, 614 compared) and fails when a rule is broken;
+core-ts takes the measured range when its setters are guarded (phase 3).
