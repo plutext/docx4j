@@ -61,8 +61,9 @@ import org.junit.Test;
  * replaced by an empty one. Before, MainDocumentPart.getContent() created a fresh Document when
  * getJaxbElement() returned null, so an edit after a failed read saved the new content alone.
  *
- * The fixtures carry a value no rule can read ("abc" in an integer attribute), so they stay
- * unreadable when phase 2 teaches docx4j Word's reading of decimals.
+ * The fixtures are not well-formed XML (a closing tag cut short, an element left open), the one
+ * failure no lenient reading mends: phase 1 used "abc" in an integer attribute, which phase 2
+ * (LenientInteger, D3) now reads by dropping the attribute, so the part reads.
  */
 public class UnreadablePartTest {
 
@@ -71,7 +72,7 @@ public class UnreadablePartTest {
 
 	@Test
 	public void aMainPartThatCannotBeReadIsNotReplacedByAnEditAndSavesItsBytes() throws Exception {
-		byte[] docx = fixture("word/document.xml", "w:before=\"120\"", "w:before=\"abc\"");
+		byte[] docx = fixture("word/document.xml", "</w:body>", "</w:body");
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(docx));
 		MainDocumentPart mdp = pkg.getMainDocumentPart();
 
@@ -85,13 +86,13 @@ public class UnreadablePartTest {
 
 		String saved = partAfterSave(pkg, "word/document.xml");
 		assertTrue("an untouched save keeps the source bytes", saved.contains(ORIGINAL));
-		assertTrue(saved.contains("w:before=\"abc\""));
+		assertTrue(saved, saved.contains("</w:body") && !saved.contains("</w:body>"));
 		assertFalse(saved.contains("NEW"));
 	}
 
 	@Test
 	public void aHeaderThatCannotBeReadIsNotReplaced() throws Exception {
-		byte[] docx = fixture("word/header.xml", "w:before=\"120\"", "w:before=\"abc\"");
+		byte[] docx = fixture("word/header.xml", "</w:hdr>", "</w:hdr");
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(docx));
 		HeaderPart hp = null;
 		for (Part p : pkg.getParts().getParts().values()) if (p instanceof HeaderPart) hp = (HeaderPart) p;
@@ -102,12 +103,13 @@ public class UnreadablePartTest {
 		assertTrue(header.isContentUnreadable());
 		assertRefused(() -> header.getContent());
 		assertTrue("the body still reads", pkg.getMainDocumentPart().getContent().size() > 0);
-		assertTrue(partAfterSave(pkg, "word/header.xml").contains("w:before=\"abc\""));
+		String savedHeader = partAfterSave(pkg, "word/header.xml");
+		assertTrue(savedHeader, savedHeader.contains("</w:hdr") && !savedHeader.contains("</w:hdr>"));
 	}
 
 	@Test
 	public void settingsThatCannotBeReadAreNotReplaced() throws Exception {
-		byte[] docx = fixture("word/settings.xml", "<w:defaultTabStop w:val=\"720\"/>", "<w:defaultTabStop w:val=\"abc\"/>");
+		byte[] docx = fixture("word/settings.xml", "<w:defaultTabStop w:val=\"720\"/>", "<w:defaultTabStop w:val=\"720\">");
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(docx));
 		DocumentSettingsPart settings = pkg.getMainDocumentPart().getDocumentSettingsPart();
 
@@ -115,12 +117,13 @@ public class UnreadablePartTest {
 		assertTrue(settings.isContentUnreadable());
 		assertRefused(() -> settings.removeEnforcement());
 		assertRefused(() -> settings.attachTemplate("template.dotx"));
-		assertTrue(partAfterSave(pkg, "word/settings.xml").contains("w:val=\"abc\""));
+		String savedSettings = partAfterSave(pkg, "word/settings.xml");
+		assertTrue(savedSettings, savedSettings.contains("<w:defaultTabStop w:val=\"720\">") && !savedSettings.contains("<w:defaultTabStop w:val=\"720\"/>"));
 	}
 
 	@Test
 	public void aReplacementIsTheCallersDecision() throws Exception {
-		byte[] docx = fixture("word/document.xml", "w:before=\"120\"", "w:before=\"abc\"");
+		byte[] docx = fixture("word/document.xml", "</w:body>", "</w:body");
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(docx));
 		MainDocumentPart mdp = pkg.getMainDocumentPart();
 		assertNull(mdp.getJaxbElement());

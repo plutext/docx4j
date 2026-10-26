@@ -1,6 +1,48 @@
 <jaxb:bindings xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
                jaxb:version="3.0">
 
     <jaxb:globalBindings collectionType="org.docx4j.list.ArrayListDocx4j" />
+
+    <!-- CR-065 phase 2 (D2, D4): the integer simple types of wml.xsd are read as Word reads them
+         (org.docx4j.wml.LenientInteger: a decimal truncated toward zero, the empty string 0, any other
+         form dropped with a WARN) and written as held. The Java type stays java.math.BigInteger. -->
+    <jaxb:bindings scd="~w:ST_DecimalNumber">
+        <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parse" printMethod="org.docx4j.wml.LenientInteger.print"/>
+    </jaxb:bindings>
+    <jaxb:bindings scd="~w:ST_UnsignedDecimalNumber">
+        <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parse" printMethod="org.docx4j.wml.LenientInteger.print"/>
+    </jaxb:bindings>
+    <jaxb:bindings scd="~w:ST_TwipsMeasure">
+        <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parse" printMethod="org.docx4j.wml.LenientInteger.print"/>
+    </jaxb:bindings>
+    <jaxb:bindings scd="~w:ST_SignedTwipsMeasure">
+        <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parse" printMethod="org.docx4j.wml.LenientInteger.print"/>
+    </jaxb:bindings>
+    <jaxb:bindings scd="~w:ST_SignedHpsMeasure">
+        <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parse" printMethod="org.docx4j.wml.LenientInteger.print"/>
+    </jaxb:bindings>
+    <jaxb:bindings scd="~w:ST_EighthPointMeasure">
+        <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parse" printMethod="org.docx4j.wml.LenientInteger.print"/>
+    </jaxb:bindings>
+    <jaxb:bindings scd="~w:ST_PointMeasure">
+        <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parse" printMethod="org.docx4j.wml.LenientInteger.print"/>
+    </jaxb:bindings>
+    <!-- ST_TextScale is bounded (0..600), which XJC binds to java.lang.Integer; the Java type is kept -->
+    <jaxb:bindings scd="~w:ST_TextScale">
+        <jaxb:javaType name="java.lang.Integer" parseMethod="org.docx4j.wml.LenientInteger.parseInteger" printMethod="org.docx4j.wml.LenientInteger.printInteger"/>
+    </jaxb:bindings>
+    <jaxb:bindings scd="~w:ST_PixelsMeasure">
+        <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parse" printMethod="org.docx4j.wml.LenientInteger.print"/>
+    </jaxb:bindings>
+    <!-- w:sz: CT_HpsMeasure/@w:val is typed xsd:unsignedLong directly in docx4j's wml.xsd -->
+    <jaxb:bindings scd="~w:CT_HpsMeasure/@w:val">
+        <jaxb:property>
+            <jaxb:baseType>
+                <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parse" printMethod="org.docx4j.wml.LenientInteger.print"/>
+            </jaxb:baseType>
+        </jaxb:property>
+    </jaxb:bindings>
 
 </jaxb:bindings>

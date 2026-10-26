@@ -60,6 +60,7 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartTooLargeException;
 import org.docx4j.openpackaging.io3.stores.PartStore;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.wml.LenientInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
@@ -370,7 +371,23 @@ implements XPathEnabled<E> {
 	@Override
     public E unmarshal( java.io.InputStream is ) throws JAXBException {
 
-		return unmarshal(is, false);
+		LenientInteger.beginReport(); // CR-065 D6: one line per part for the integer attributes read leniently
+		try {
+			return unmarshal(is, false);
+		} finally {
+			logLenientReads(LenientInteger.endReport());
+		}
+	}
+
+	/**
+	 * CR-065 D6: the integer attribute values this part's unmarshal read as Word reads them (a decimal truncated,
+	 * the empty string as 0) or dropped (a form Word refuses), one INFO line per part. The parse method is bound to
+	 * the simple types and knows no part, so the part logs for it.
+	 */
+	private void logLenientReads(LenientInteger.Report report) {
+		if (report != null && !report.isEmpty()) {
+			log.info(this.getPartName() + ": " + report.summary());
+		}
 	}
 	
 	protected boolean isWasStrict() {
@@ -724,6 +741,16 @@ implements XPathEnabled<E> {
      */		
 	@Override
     public E unmarshal(org.w3c.dom.Element el) throws JAXBException {
+
+		LenientInteger.beginReport(); // CR-065 D6
+		try {
+			return unmarshalDom(el);
+		} finally {
+			logLenientReads(LenientInteger.endReport());
+		}
+	}
+
+    private E unmarshalDom(org.w3c.dom.Element el) throws JAXBException {
 
 		try {
 			log.debug("For " + this.getClass().getName() + ", unmarshall via binder");				

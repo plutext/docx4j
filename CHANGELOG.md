@@ -25,6 +25,16 @@ Changes in Version 17.3.5
 
 * A hyperlink's content list refuses a table, a paragraph or bare Text, as a paragraph's does
   (ArrayListDocx4j.checkParent; each is a mistake Word repairs). Jason, 2026-10-26.
+* Every integer attribute of WordprocessingML is read as Word reads it, in the JAXB binding
+  (CR-065 phase 2; org.docx4j.wml.LenientInteger bound by xsd/bindings.xjb to ST_DecimalNumber,
+  ST_TwipsMeasure, ST_SignedTwipsMeasure, the half-point, eighth-point, point, text-scale and pixel
+  types and w:sz): a decimal is truncated toward zero (720.5 is 720, -121.5 is -121,
+  141.99999999999994 is 141; measured on Word 365), the empty string is 0, and a form Word refuses
+  (surrounding whitespace, a comma, hex, an exponent, letters) drops that attribute with a WARN
+  instead of failing the part. Before, a decimal in an attribute off mc-preprocessor.xslt's fixed
+  rounding list made the part unreadable, and the listed ones were rounded half-even (141.5 to
+  142, where Word reads 141). The stylesheet's list stays but no longer fires for a decimal. A part
+  logs one INFO line with what it read leniently. The Java type stays BigInteger.
 * A part whose content could not be read (its unmarshal failed, e.g. a decimal in an integer
   attribute off the preprocessor's list) is no longer replaced by an empty one on the first edit:
   MainDocumentPart.getContent, HeaderPart and FooterPart getContent, DocumentSettingsPart and

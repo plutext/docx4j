@@ -1,7 +1,7 @@
 # CR-065: integer attributes read as Word reads them; a part that cannot be read is never replaced by an empty one
 
 Status: ACCEPTED 2026-10-26 (Jason: "CR-065: D1 to D6 as recommended, do phase 1"): D1 to D6 as recommended in §4; phase 1
-DONE 2026-10-26 (9ea65238a, §7); phase 2 next; the 16-bit range report (§3's aside) is CR-066's, whose phase 0 is round 5 of
+DONE 2026-10-26 (9ea65238a, §7); phase 2 DONE 2026-10-26 (§8); phase 3 DONE; the 16-bit range report (§3's aside) is CR-066's, whose phase 0 is round 5 of
 this probe: phase 2 ships first and gains the report when round 5 answers (Jason, 2026-10-26). PROPOSED 2026-10-26, opened by Claude Fable 5.1 (session docx4j-25) at
 Jason's word ("CR-065: open it, build the probe, and put it on the share with its README"), after docx4j-python-cd found the defect through JPype and
 docx4j-generated-objects-ts-82 reproduced it (both 2026-10-26; portfolio relay). Reproduced here in Java (§1). Phase 0,
@@ -178,8 +178,8 @@ too.
 |---|---|---|
 | 0 | The shared Word probe (§3); the rule recorded in §3 and sent to python-cd, objects-ts and core-ts | DONE 2026-10-26 (four rounds, Jason) |
 | 1 | D1: the data-loss fix in the six conveniences, with a test per part type (a decimal that fails today; the edit throws; the save keeps the bytes) | DONE 2026-10-26 (§7) |
-| 2 | D2, D4, D6: `LenientInteger`, the xjb customisation, regeneration, the three JAXB contexts unchanged; tests for each value form with Word's rule; the stylesheet list left in place; CHANGELOG. Ships without a range check; CR-066 phase 1 adds the 16-bit report to the same print and parse methods when its phase 0 answers | next |
-| 3 | Hand-offs: the measured rule to the three ports (objects CR-015, python's integer reader, core-ts) | after phase 0 |
+| 2 | D2, D4, D6: `LenientInteger`, the xjb customisation, regeneration, the three JAXB contexts unchanged; tests for each value form with Word's rule; the stylesheet list left in place; CHANGELOG. Ships without a range check; CR-066 phase 1 adds the 16-bit report to the same print and parse methods | DONE 2026-10-26 (§8) |
+| 3 | Hand-offs: the measured rule to the three ports (objects CR-015, python's integer reader, core-ts) | DONE 2026-10-26 (sent round by round during phase 0; objects CR-015 and python took truncation the same day) |
 
 ## 6. Risks
 
@@ -206,3 +206,63 @@ the main part, a header and settings each made unreadable with `"abc"` in an int
 so the fixtures outlive phase 2): the read returns null once and again without a retry, each edit is refused with the
 cause, the save keeps the bytes; a replacement by `setJaxbElement` is accepted and saved; a created package's parts
 still get new content from the conveniences.
+
+## 8. Phase 2 done (2026-10-26)
+
+Jason, 2026-10-26: "do CR-065 phase 2". **The binding.** `org.docx4j.wml.LenientInteger` (hand-written, in
+docx4j-generated-objects beside `OnOffAdapter`) is the `parseMethod` and `printMethod` that `xsd/bindings.xjb` now
+binds, by schema component designator, to `ST_DecimalNumber`, `ST_UnsignedDecimalNumber`, `ST_TwipsMeasure`,
+`ST_SignedTwipsMeasure`, `ST_SignedHpsMeasure`, `ST_EighthPointMeasure`, `ST_PointMeasure`, `ST_PixelsMeasure`, to
+`CT_HpsMeasure/@w:val` (`w:sz`, typed `xsd:unsignedLong` directly in docx4j's schema), and, through `parseInteger`,
+to `ST_TextScale`, which XJC binds to `Integer` because the schema bounds it (0..600); every other field stays
+`BigInteger`. XJC generates one adapter per customisation (`org.docx4j.wml.Adapter1` to `Adapter10`), and 138
+attribute fields in the wml classes carry `@XmlJavaTypeAdapter` (every integer-typed attribute field, by a scan of
+the generated sources; 105 before the schema change below); MOXy honours the same annotation (checked: the
+lenient read and the probe file on the MOXy runtime). A `javap` diff of every `org.docx4j.wml`, `w14` and `w15`
+class against the jar built before the change shows no other difference than the adapters and the new class
+(`CTTextScale.val` was `Integer` and is again; a first regeneration had made it `BigInteger`, which
+`PropertyCatalogueTest` caught).
+
+**The schema.** 33 attributes of `wml.xsd` carried an anonymous inline `xsd:integer` type where ECMA-376 has
+`CT_DecimalNumber` (`w:gridSpan`, `w:gridBefore`, `w:gridAfter`, `w:numId`, `w:ilvl`, `w:outlineLvl`, `w:divId`,
+`w:id` of a comment or bookmark range, a list level's `w:start`, `w:lvlRestart` and `w:lvlPicBulletId`, a level override's `w:startOverride`, the table
+style band sizes, settings such as `w:consecutiveHyphenLimit`, `w:pixelsPerInch`, mail-merge and form-field
+values); a named-type customisation does not reach an anonymous type, and `w:gridSpan w:val="2.0"` still threw.
+They are retyped to `ST_DecimalNumber`, the Java type unchanged (`BigInteger` either way). Four
+`restriction base="xsd:integer"` remain, the named types.
+
+**The rule as coded.** `parse`: a fast path for Word's integer form (`[+-]?\d+`, also BigInteger's); else the empty
+string is 0; else the lexical form `[+-]?\d*(\.\d*)?` with at least one digit gives its integer part (truncation
+toward zero; `-0.5` is 0); else null, the attribute dropped, one WARN per value naming the text. Unmeasured and
+treated as refused: a sign or a dot with no digit (`-`, `.`, `+.`), and digits outside ASCII `0`-`9` (BigInteger
+accepted Unicode digits; Word's measured form is ASCII). No trimming (D3 as accepted). `print` writes the value as
+held (CR-066 adds the range report there).
+
+**Reporting (D6).** The parse method knows the type, not the part, so the part logs for it:
+`JaxbXmlPartXPathAware.unmarshal` (stream and DOM entries) brackets the read in a re-entrant thread-local scope
+(`LenientInteger.beginReport` / `endReport`; the preprocessor retry nests inside it) and logs one INFO line per part
+with the counts and up to four values (`/word/document.xml: 48 decimal integer attribute values truncated as Word
+reads them; 2 empty read as 0; 9 of a form Word refuses dropped (e.g. "120.5" -> 120, ...)`). Outside a scope
+(`XmlUtils.unmarshalString`) each lenient read logs at INFO on its own. A dropped value is always WARNed as met.
+
+**The stylesheet.** `mc-preprocessor.xslt`'s rounding list stays (D2) and no longer fires for a decimal: the first
+unmarshal succeeds, so the retry is never reached for one. Its half-even results are gone with it: 141.5 reads 141
+(was 142), 241.5 reads 241, 9001.5 reads 9001, 11907.5 reads 11907, 1.8 reads 1, 400.7 reads 400,
+141.99999999999994 reads 141 (`DecimalAttributesProbeTest`, families C, D, G, H).
+
+**Tests.** `LenientIntegerTest` (core-tests, `org.docx4j.jaxb`): every measured form of §3 through `parse`, the
+attribute types of D4 through the binding (`w:sz`, borders, `w:tcW` pct, `w:gridSpan`, `w:pgMar` empties,
+`w:pgNumType`), a marshal round trip, the report scope. `DecimalAttributesProbeTest`: phase 0's all-cases file
+(`cr065-decimals-probe.docx`, the bytes Word was given) loads all four parts, and each of its 65 cases reads what
+Word's saves hold (§3), the refused forms as null. `UnreadablePartTest` (phase 1) keeps its guarantee with fixtures
+that are not well-formed XML; its `"abc"` fixtures now read (the attribute dropped), which is the point of this
+phase.
+
+**Cost.** The 30,000-paragraph synthetic document of CR-064 §3: load best/median 358/379 ms before, 359-368/364-393
+ms after, three runs each; within the run-to-run noise. The adapter is one indirection and a character scan per
+integer attribute.
+
+**Not done here.** The out-of-range report (CR-066 phase 1, in `print` and `parse`); the retirement of the
+stylesheet's list (left in place, D2); other namespaces' integer attributes (`w14`, `w15`, drawing, PresentationML,
+SpreadsheetML) keep JAXB's strict parse: Word's rule was measured for WordprocessingML only.
+
