@@ -1,6 +1,9 @@
 # CR-066: integer attributes written within Word's range; an out-of-range value reported on write and on read
 
-Status: PROPOSED 2026-10-26, opened by Claude Fable 5.1 (session docx4j-25) at Jason's word ("Do new write-side CR with
+Status: ACCEPTED 2026-10-26 (Jason: "CR-066 decisions as recommended"): D1 to D8 as recommended in §4, D1, D4 and D7 as
+amended by §3.1 (the width is per attribute; the type-level report is exact for the uniform types and the certain range for
+`ST_TwipsMeasure`; `ST_DecimalNumber` by attribute through D6 or a setter patch). Phase 0 DONE; phases 1 and 2 ready (CR-065
+phase 2 is in, fe449c35c). PROPOSED 2026-10-26, opened by Claude Fable 5.1 (session docx4j-25) at Jason's word ("Do new write-side CR with
 round 5 as its shared phase 0, separate from CR-065, whose phase 2 ships first and gains the range report when round 5
 answers. open it and build the probe"), from CR-065 §3's round 2 aside: Word kept 7205001 twips as -3959. Phase 0, round
 5 of the CR-065 Word probe, DONE 2026-10-26 (§3: Jason's run, all six group files opened clean; the storage width is per
