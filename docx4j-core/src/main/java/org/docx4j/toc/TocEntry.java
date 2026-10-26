@@ -71,6 +71,26 @@ public class TocEntry {
 		this.propertyResolver = propertyResolver;
 		this.writableWidthTwips = pageDimensions.getWritableWidthTwips(); 
     	this.leader = leader;
+    	if (writableWidthTwips <= 0) { // CR-066 D5: the margins and gutter exceed the page width
+    		log.warn("PageDimensions gives a writable width of " + writableWidthTwips + " twips (page width " + pageDimensions.getPgSz().getW()
+    				+ " less margins " + pageDimensions.getPgMar().getLeft() + " + " + pageDimensions.getPgMar().getRight()
+    				+ " and gutter " + pageDimensions.getGutter() + "); the TOC's right tab stop will be outside Word's range (CR-066)");
+    	}
+	}
+	
+	/** Word keeps a tab stop within 22 inches either way (clamped after a 16-bit wrap; CR-066 section 3.1). @since 17.3.5 */
+	private static final int MAX_TAB_POS_TWIPS = 31680;
+	
+	/**
+	 * CR-066 D5: a tab stop position outside -31680..31680 twips is written as computed and reported at WARN;
+	 * Word wraps it to 16 bits and then clamps it to that range, so the TOC's dots or page numbers land elsewhere.
+	 */
+	private static BigInteger tabPos(int pos, String source) {
+		if (pos < -MAX_TAB_POS_TWIPS || pos > MAX_TAB_POS_TWIPS) {
+			log.warn("TOC tab stop at " + pos + " twips (" + source + ") is outside Word's range -" + MAX_TAB_POS_TWIPS + ".." + MAX_TAB_POS_TWIPS
+					+ "; written as computed, Word wraps it to 16 bits then clamps (CR-066)");
+		}
+		return BigInteger.valueOf(pos);
 	}
 	
 	
@@ -241,16 +261,16 @@ public class TocEntry {
             	
             	if (ind!=null
             			&& ind.getLeft()!=null) {
-                    tabstop.setPos( BigInteger.valueOf( ind.getLeft().intValue() + paddedWidth) );         	            		            		
+                    tabstop.setPos( tabPos( ind.getLeft().intValue() + paddedWidth, "the TOC style's left indent plus the number's width") );
             	} else {
-                    tabstop.setPos( BigInteger.valueOf( paddedWidth) );         	            		
+                    tabstop.setPos( tabPos( paddedWidth, "the number's width") );
             	}
         }
         // Create object for tab
         CTTabStop tabstop2 = wmlObjectFactory.createCTTabStop();
         tabs2.getTab().add(tabstop2); 
         tabstop2.setVal(STTabJc.RIGHT);
-        tabstop2.setPos(BigInteger.valueOf(writableWidthTwips) );  
+        tabstop2.setPos(tabPos(writableWidthTwips, "the page's writable width") );  
         
         tabstop2.setLeader(leader);
         

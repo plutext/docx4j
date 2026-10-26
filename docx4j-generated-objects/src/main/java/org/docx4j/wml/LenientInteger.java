@@ -37,22 +37,36 @@ import org.slf4j.LoggerFactory;
  * other than ASCII {@code 0}-{@code 9}.
  *
  * <p>Bound by {@code xsd/bindings.xjb} as the parse and print methods of the integer simple types of
- * {@code wml.xsd} ({@code ST_DecimalNumber}, {@code ST_TwipsMeasure}, {@code ST_SignedTwipsMeasure},
- * {@code ST_SignedHpsMeasure}, {@code ST_EighthPointMeasure}, {@code ST_PointMeasure}, {@code ST_TextScale},
- * {@code ST_PixelsMeasure}, {@code ST_UnsignedDecimalNumber}; {@code ST_TextScale} through {@link #parseInteger}) and of
- * {@code CT_HpsMeasure/@w:val}, so the first
+ * {@code wml.xsd}, one pair per type: {@link #parse} and {@link #print} for {@code ST_DecimalNumber},
+ * {@code ST_UnsignedDecimalNumber} and {@code ST_PixelsMeasure}; {@link #parseTwips} for {@code ST_TwipsMeasure};
+ * {@link #parseSignedTwips} for {@code ST_SignedTwipsMeasure}; {@link #parseSignedHps} for
+ * {@code ST_SignedHpsMeasure}; {@link #parseHps} for {@code CT_HpsMeasure/@w:val} ({@code w:sz}, {@code w:szCs},
+ * {@code w:kern}); {@link #parseEighthPoint} and {@link #parsePoint} for a border's {@code w:sz} and {@code w:space};
+ * {@link #parseTextScale} for {@code ST_TextScale} (an {@link Integer}); and their print methods. So the first
  * unmarshal of a part succeeds for every integer attribute and the retry through the preprocessor stylesheet is
  * never needed for a decimal. The Java type stays {@link BigInteger}. Before this, JAXB's own parse threw a raw
  * {@link NumberFormatException} out of the unmarshaller for any decimal, and a part whose attribute was not on the
  * stylesheet's rounding list could not be read at all.</p>
  *
- * <p>{@link #print} writes the value as held, as before; it is also the hook where an out-of-range value will be
- * reported at marshal (CR-066).</p>
+ * <p>Word's range (CR-066 D1 to D4, D7; measured in its section 3, rounds 5 and 6): Word stores these attributes in
+ * 16 bits or fewer and reads a value outside that width modulo the width, so {@code w:ind/@w:left="7205001"} is
+ * -3959 twips in Word. The width is the attribute's, not the type's, so each type's methods report what is certain
+ * for every attribute of the type: {@code ST_SignedTwipsMeasure} and {@code ST_SignedHpsMeasure} are signed 16-bit
+ * (-32768..32767); {@code CT_HpsMeasure/@w:val} and {@code ST_TextScale} unsigned 16-bit (0..65535); a border's
+ * {@code w:sz} 8 bits (0..255) and its {@code w:space} 5 bits (0..31), each reported with the value Word reads;
+ * {@code ST_TwipsMeasure} mixes signed and unsigned 16-bit attributes and a few other shapes, so a value outside
+ * -32768..65535 is reported as one Word changes, without saying how; {@code ST_DecimalNumber} is not reported (its
+ * attributes differ: {@code w:tblW/@w:w} is 16-bit, {@code w:pgNumType/@w:start} 32-bit, ids and counts unmeasured).
+ * The report is a WARN, at unmarshal and at marshal alike; the value is held as written and written as held, never
+ * wrapped, clamped or refused (D2, D3): the caller's number is the one to fix, and docx4j's own helpers are guarded
+ * where they compute one ({@code TblFactory}, the CSS converters).</p>
  *
- * <p>Reporting (D6): a part's unmarshal brackets its read with {@link #beginReport()} and {@link #endReport()},
- * and logs one INFO line per part with the counts and the first few values; outside such a scope (an unmarshal
- * of a string, say) each lenient read is logged at INFO on its own. A dropped value is logged at WARN as it is met,
- * in either case, since it is the one reading that loses information.</p>
+ * <p>Reporting (CR-065 D6, CR-066 D8): a part's unmarshal and its marshal bracket the work with
+ * {@link #beginReport()} and {@link #endReport()}, and log one line per part with the counts and the first few
+ * values (INFO for the lenient reads, WARN when a value is outside Word's range); outside such a scope (an
+ * unmarshal of a string, say) each lenient read is logged at INFO on its own and each out-of-range value at WARN.
+ * A dropped value is logged at WARN as it is met, in either case, since it is the one reading that loses
+ * information.</p>
  *
  * @since 17.3.5
  */
@@ -137,20 +151,119 @@ public final class LenientInteger {
 		return v == null ? null : v.toString();
 	}
 
+	// ---- the per-type methods (CR-066 D1, D7): parse and print, plus the range report for that type
+
+	/** The storage width Word gives every attribute of a type (CR-066 section 3.1 and 3.4). */
+	enum Range {
+		/** -32768..32767, read modulo 2^16 as signed: ST_SignedTwipsMeasure, ST_SignedHpsMeasure */
+		INT16("Word's signed 16-bit range -32768..32767", 16, true),
+		/** 0..65535, read modulo 2^16: CT_HpsMeasure/@w:val (w:sz, w:szCs, w:kern), ST_TextScale */
+		UINT16("Word's unsigned 16-bit range 0..65535", 16, false),
+		/** 0..255, read modulo 2^8: a border's w:sz (ST_EighthPointMeasure) */
+		UINT8("Word's 8-bit range 0..255 for a border's w:sz", 8, false),
+		/** 0..31, read modulo 2^5: a border's w:space (ST_PointMeasure) */
+		UINT5("Word's 5-bit range 0..31 for a border's w:space", 5, false),
+		/**
+		 * -32768..65535, the range outside which every measured ST_TwipsMeasure attribute is changed; how depends
+		 * on the attribute (w:before and the unsigned margins are unsigned 16-bit, a frame's or w:tblpPr's
+		 * distances signed, w:firstLine and w:hanging one signed field, w:trHeight's sign its rule), so no "reads
+		 * it as" is given
+		 */
+		TWIPS("Word's 16-bit range (-32768..32767 or 0..65535, by attribute; CR-066 section 3)", 16, false);
+
+		final String name;
+		final int bits;
+		final boolean signed;
+		final BigInteger modulus;
+
+		Range(String name, int bits, boolean signed) {
+			this.name = name; this.bits = bits; this.signed = signed;
+			this.modulus = BigInteger.ONE.shiftLeft(bits);
+		}
+
+		boolean holds(BigInteger v) {
+			if (this == TWIPS) return v.signum() < 0 ? v.bitLength() <= 15 : v.bitLength() <= 16;
+			if (signed) return v.bitLength() < bits;
+			return v.signum() >= 0 && v.bitLength() <= bits;
+		}
+
+		/** The value Word reads for one outside the range: modulo the width, as signed or unsigned; null for TWIPS. */
+		BigInteger wordsReading(BigInteger v) {
+			if (this == TWIPS) return null;
+			BigInteger r = v.mod(modulus);
+			if (signed && r.bitLength() >= bits) r = r.subtract(modulus);
+			return r;
+		}
+	}
+
+	private static BigInteger checked(BigInteger v, Range range) {
+		if (v != null && !range.holds(v)) reportOutOfRange(v, range);
+		return v;
+	}
+
+	/** {@code ST_SignedTwipsMeasure} (w:ind left and right, w:spacing line, a tab's pos, frame and floating-table positions, cols space...): signed 16-bit. */
+	public static BigInteger parseSignedTwips(String v) { return checked(parse(v), Range.INT16); }
+	/** The written form of an {@code ST_SignedTwipsMeasure}: as held, an out-of-range value reported. */
+	public static String printSignedTwips(BigInteger v) { return print(checked(v, Range.INT16)); }
+
+	/** {@code ST_SignedHpsMeasure} (w:position): signed 16-bit. */
+	public static BigInteger parseSignedHps(String v) { return checked(parse(v), Range.INT16); }
+	/** The written form of an {@code ST_SignedHpsMeasure}: as held, an out-of-range value reported. */
+	public static String printSignedHps(BigInteger v) { return print(checked(v, Range.INT16)); }
+
+	/** {@code CT_HpsMeasure/@w:val} (w:sz, w:szCs, w:kern; half-points): unsigned 16-bit. */
+	public static BigInteger parseHps(String v) { return checked(parse(v), Range.UINT16); }
+	/** The written form of a {@code CT_HpsMeasure/@w:val}: as held, an out-of-range value reported. */
+	public static String printHps(BigInteger v) { return print(checked(v, Range.UINT16)); }
+
+	/** {@code ST_EighthPointMeasure} (a border's w:sz): 8 bits. */
+	public static BigInteger parseEighthPoint(String v) { return checked(parse(v), Range.UINT8); }
+	/** The written form of an {@code ST_EighthPointMeasure}: as held, an out-of-range value reported. */
+	public static String printEighthPoint(BigInteger v) { return print(checked(v, Range.UINT8)); }
+
+	/** {@code ST_PointMeasure} (a border's w:space): 5 bits. */
+	public static BigInteger parsePoint(String v) { return checked(parse(v), Range.UINT5); }
+	/** The written form of an {@code ST_PointMeasure}: as held, an out-of-range value reported. */
+	public static String printPoint(BigInteger v) { return print(checked(v, Range.UINT5)); }
+
+	/**
+	 * {@code ST_TwipsMeasure} (w:spacing before and after, the margins, w:ind firstLine and hanging, w:trHeight,
+	 * frame and floating-table distances, w:defaultTabStop...): 16-bit, signed or unsigned by attribute, so only a
+	 * value outside -32768..65535 is reported, as one Word changes.
+	 */
+	public static BigInteger parseTwips(String v) { return checked(parse(v), Range.TWIPS); }
+	/** The written form of an {@code ST_TwipsMeasure}: as held, a value outside -32768..65535 reported. */
+	public static String printTwips(BigInteger v) { return print(checked(v, Range.TWIPS)); }
+
+	/** {@code ST_TextScale} (w:w; the schema's 0..600 is the UI's, Word keeps 601): unsigned 16-bit, an {@link Integer}. */
+	public static Integer parseTextScale(String v) {
+		Integer n = parseInteger(v);
+		if (n != null) checked(BigInteger.valueOf(n), Range.UINT16);
+		return n;
+	}
+	/** The written form of an {@code ST_TextScale}: as held, an out-of-range value reported. */
+	public static String printTextScale(Integer v) {
+		if (v != null) checked(BigInteger.valueOf(v), Range.UINT16);
+		return printInteger(v);
+	}
+
 	// ---- reporting (D6)
 
 	private enum Kind { TRUNCATED, EMPTY, DROPPED }
 
-	/** What one scope (one part's unmarshal) read leniently. */
+	/** What one scope (one part's unmarshal or marshal) read leniently (CR-065) or found outside Word's range (CR-066). */
 	public static final class Report {
-		private int truncated, empty, dropped;
+		private int truncated, empty, dropped, outOfRange;
 		private final List<String> samples = new ArrayList<>(4);
+		private final List<String> rangeSamples = new ArrayList<>(4);
 		int depth = 1;
 
 		public int getTruncated() { return truncated; }
 		public int getEmpty() { return empty; }
 		public int getDropped() { return dropped; }
-		public boolean isEmpty() { return truncated == 0 && empty == 0 && dropped == 0; }
+		/** Values outside Word's range for their type (CR-066): held as written, reported at WARN. @since 17.3.5 */
+		public int getOutOfRange() { return outOfRange; }
+		public boolean isEmpty() { return truncated == 0 && empty == 0 && dropped == 0 && outOfRange == 0; }
 
 		/** One line for a log: the counts and up to four of the values, text and reading. */
 		public String summary() {
@@ -159,6 +272,10 @@ public final class LenientInteger {
 			if (empty > 0) sb.append(sb.length() > 0 ? "; " : "").append(empty).append(" empty read as 0");
 			if (dropped > 0) sb.append(sb.length() > 0 ? "; " : "").append(dropped).append(" of a form Word refuses dropped");
 			if (!samples.isEmpty()) sb.append(" (e.g. ").append(String.join(", ", samples)).append(")");
+			if (outOfRange > 0) {
+				sb.append(sb.length() > 0 ? "; " : "").append(outOfRange).append(" integer attribute value").append(outOfRange == 1 ? "" : "s")
+					.append(" outside Word's 16-bit range, held as written (CR-066; e.g. ").append(String.join(", ", rangeSamples)).append(")");
+			}
 			return sb.toString();
 		}
 	}
@@ -199,5 +316,22 @@ public final class LenientInteger {
 			default: r.dropped++;
 		}
 		if (r.samples.size() < 4) r.samples.add(sample);
+	}
+
+	private static void reportOutOfRange(BigInteger v, Range range) {
+		BigInteger reading = range.wordsReading(v);
+		Report r = REPORT.get();
+		if (r == null) {
+			if (reading == null) {
+				log.warn("integer attribute value {} is outside {}; Word changes any such value, how depends on the attribute; held as written (CR-066)", v, range.name);
+			} else {
+				log.warn("integer attribute value {} is outside {}; Word reads it as {}; held as written (CR-066)", v, range.name, reading);
+			}
+			return;
+		}
+		r.outOfRange++;
+		if (r.rangeSamples.size() < 4) {
+			r.rangeSamples.add(v + (reading == null ? " (ST_TwipsMeasure)" : " -> " + reading + " in Word"));
+		}
 	}
 }

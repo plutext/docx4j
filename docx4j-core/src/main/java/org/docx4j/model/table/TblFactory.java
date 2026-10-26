@@ -47,8 +47,23 @@ import org.docx4j.wml.Tr;
  */
 public class TblFactory {
 	
+	/** The widest cell Word stores: w:tcW/@w:w is a signed 16-bit twips value (CR-066 section 3.1). @since 17.3.5 */
+	public static final int MAX_CELL_WIDTH_TWIPS = 32767;
 	
+	/**
+	 * @param cellWidthTwips the width of every cell (w:tcW) and grid column (w:gridCol), in twips, 0 to
+	 *        {@link #MAX_CELL_WIDTH_TWIPS}
+	 * @throws IllegalArgumentException for a width outside that range (CR-066 D5): Word stores a cell width in
+	 *         16 bits and reads a wider value modulo 2^16 (70000 is 4464 twips to Word), so the number is always
+	 *         the caller's mistake, usually points or EMUs passed where twips are wanted, or a page width whose
+	 *         margins are wrong
+	 */
 	public static Tbl createTable(int rows, int cols, int cellWidthTwips) {
+		
+		if (cellWidthTwips < 0 || cellWidthTwips > MAX_CELL_WIDTH_TWIPS) {
+			throw new IllegalArgumentException("cellWidthTwips " + cellWidthTwips + " is outside Word's range 0.."
+					+ MAX_CELL_WIDTH_TWIPS + " twips (22.75 in); a cell width (w:tcW/@w:w) is a signed 16-bit twips value, which Word reads modulo 2^16 (CR-066)");
+		}
 		
 		Tbl tbl = Context.getWmlObjectFactory().createTbl();		
 		

@@ -96,6 +96,7 @@ public class LineSpacing extends AbstractParagraphProperty {
 			// twip = 0;  // don't do that; its a very bad default!
 			return;
 		}
+		warnIfOutsideWordRange(CSS_NAME, value, twip, "twips", -32768, 32767, "w:spacing/@w:line"); // CR-066 D5: int16
 		this.setObject(BigInteger.valueOf(twip) );
 		
 	}

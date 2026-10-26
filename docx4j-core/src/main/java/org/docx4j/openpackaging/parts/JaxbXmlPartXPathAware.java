@@ -381,12 +381,17 @@ implements XPathEnabled<E> {
 
 	/**
 	 * CR-065 D6: the integer attribute values this part's unmarshal read as Word reads them (a decimal truncated,
-	 * the empty string as 0) or dropped (a form Word refuses), one INFO line per part. The parse method is bound to
-	 * the simple types and knows no part, so the part logs for it.
+	 * the empty string as 0) or dropped (a form Word refuses), one INFO line per part; WARN instead when any value
+	 * is outside Word's 16-bit range (CR-066 D3, D8: held as written, Word reads it modulo the width). The parse
+	 * method is bound to the simple types and knows no part, so the part logs for it.
 	 */
 	private void logLenientReads(LenientInteger.Report report) {
 		if (report != null && !report.isEmpty()) {
-			log.info(this.getPartName() + ": " + report.summary());
+			if (report.getOutOfRange() > 0) {
+				log.warn(this.getPartName() + ": " + report.summary());
+			} else {
+				log.info(this.getPartName() + ": " + report.summary());
+			}
 		}
 	}
 	

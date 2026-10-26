@@ -39,6 +39,10 @@ import org.junit.Test;
  * JAXB binding itself ({@link LenientInteger}, bound by xsd/bindings.xjb to the integer simple types): a decimal is
  * truncated toward zero, the empty string is 0, and a form Word refuses drops the attribute with a WARN rather
  * than failing the part. Word's rule is CR-065 section 3 (four rounds, 65 cases).
+ *
+ * <p>CR-066 phase 1 (D1 to D4, D7, D8): each integer type has its own parse and print pair, which reports (WARN;
+ * counted in the same scope) a value outside the width Word gives every attribute of that type, measured in
+ * CR-066 section 3 (rounds 5 and 6): the value is held as written and written as held, never wrapped.</p>
  */
 public class LenientIntegerTest {
 
@@ -202,6 +206,152 @@ public class LenientIntegerTest {
 		assertTrue(summary, summary.contains("\"120.5\" -> 120"));
 		assertTrue(summary, summary.contains("\"abc\" dropped"));
 		assertNull("no scope is open now", LenientInteger.endReport());
+	}
+
+	// ---- CR-066: Word's range per type, reported and never applied
+
+	@Test
+	public void signedTwipsAreInt16() {
+		LenientInteger.beginReport();
+		assertEquals(32767, LenientInteger.parseSignedTwips("32767").intValue());
+		assertEquals(-32768, LenientInteger.parseSignedTwips("-32768").intValue());
+		assertEquals("inside the range: nothing counted", 0, LenientInteger.endReport().getOutOfRange());
+
+		LenientInteger.beginReport();
+		assertEquals("held as written, not wrapped", 32768, LenientInteger.parseSignedTwips("32768").intValue());
+		assertEquals(-32769, LenientInteger.parseSignedTwips("-32769").intValue());
+		assertEquals(7205001, LenientInteger.parseSignedTwips("7205001").intValue());
+		assertEquals("7205001", LenientInteger.printSignedTwips(BigInteger.valueOf(7205001)));
+		assertEquals("-3959", LenientInteger.printSignedTwips(BigInteger.valueOf(-3959)));
+		LenientInteger.Report r = LenientInteger.endReport();
+		assertEquals(4, r.getOutOfRange());
+		assertTrue(r.summary(), r.summary().contains("4 integer attribute values outside Word's 16-bit range"));
+		assertTrue("Word's reading is named: " + r.summary(), r.summary().contains("7205001 -> -3959 in Word"));
+		assertTrue(r.summary(), r.summary().contains("32768 -> -32768 in Word"));
+		assertTrue(r.summary(), r.summary().contains("-32769 -> 32767 in Word"));
+		assertTrue("the report is not a lenient read", r.getTruncated() == 0 && r.getEmpty() == 0 && r.getDropped() == 0);
+	}
+
+	@Test
+	public void signedHalfPointsAreInt16() {
+		LenientInteger.beginReport();
+		LenientInteger.parseSignedHps("32767");
+		LenientInteger.parseSignedHps("-32768");
+		LenientInteger.parseSignedHps("3169");  // beyond the UI's 3168, kept by Word (R2)
+		assertEquals(0, LenientInteger.endReport().getOutOfRange());
+		LenientInteger.beginReport();
+		LenientInteger.parseSignedHps("32768");
+		LenientInteger.printSignedHps(BigInteger.valueOf(65535));
+		LenientInteger.Report r = LenientInteger.endReport();
+		assertEquals(2, r.getOutOfRange());
+		assertTrue(r.summary(), r.summary().contains("65535 -> -1 in Word"));
+	}
+
+	@Test
+	public void fontSizesAndTextScaleAreUint16() {
+		LenientInteger.beginReport();
+		LenientInteger.parseHps("0");
+		LenientInteger.parseHps("65535");
+		LenientInteger.parseHps("3277");   // beyond the UI's 1638 pt, kept by Word (R1)
+		assertEquals(Integer.valueOf(601), LenientInteger.parseTextScale("601")); // beyond the schema's 600, kept (R4)
+		assertEquals(Integer.valueOf(65535), LenientInteger.parseTextScale("65535"));
+		assertEquals(0, LenientInteger.endReport().getOutOfRange());
+		LenientInteger.beginReport();
+		LenientInteger.parseHps("65536");
+		LenientInteger.parseHps("-1");
+		LenientInteger.printHps(BigInteger.valueOf(70000));
+		assertEquals(Integer.valueOf(65536), LenientInteger.parseTextScale("65536"));
+		assertEquals("-1", LenientInteger.printTextScale(-1));
+		LenientInteger.Report r = LenientInteger.endReport();
+		assertEquals(5, r.getOutOfRange());
+		assertTrue(r.summary(), r.summary().contains("65536 -> 0 in Word"));
+		assertTrue(r.summary(), r.summary().contains("-1 -> 65535 in Word"));
+		assertTrue(r.summary(), r.summary().contains("70000 -> 4464 in Word"));
+	}
+
+	@Test
+	public void bordersAreEightAndFiveBits() {
+		LenientInteger.beginReport();
+		LenientInteger.parseEighthPoint("255");
+		LenientInteger.parseEighthPoint("49");  // beyond the UI's 48, kept (B1)
+		LenientInteger.parsePoint("31");
+		assertEquals(0, LenientInteger.endReport().getOutOfRange());
+		LenientInteger.beginReport();
+		LenientInteger.parseEighthPoint("256");
+		LenientInteger.printEighthPoint(BigInteger.valueOf(-1));
+		LenientInteger.parsePoint("32");
+		LenientInteger.printPoint(BigInteger.valueOf(255));
+		LenientInteger.Report r = LenientInteger.endReport();
+		assertEquals(4, r.getOutOfRange());
+		assertTrue(r.summary(), r.summary().contains("256 -> 0 in Word"));
+		assertTrue(r.summary(), r.summary().contains("-1 -> 255 in Word"));
+		assertTrue(r.summary(), r.summary().contains("32 -> 0 in Word"));
+		assertTrue(r.summary(), r.summary().contains("255 -> 31 in Word"));
+	}
+
+	@Test
+	public void unsignedTwipsReportTheCertainRangeOnly() {
+		// the type mixes uint16 (before, after, the unsigned margins), int16 (frame and floating-table distances),
+		// one shared signed field (firstLine and hanging) and a sign-as-rule (trHeight): only outside -32768..65535
+		// is every attribute changed, and how is not said (CR-066 section 3.4)
+		LenientInteger.beginReport();
+		LenientInteger.parseTwips("65535");
+		LenientInteger.parseTwips("-32768");
+		LenientInteger.parseTwips("-1");
+		LenientInteger.printTwips(BigInteger.valueOf(65535));
+		assertEquals(0, LenientInteger.endReport().getOutOfRange());
+		LenientInteger.beginReport();
+		assertEquals(65536, LenientInteger.parseTwips("65536").intValue());
+		LenientInteger.parseTwips("-32769");
+		assertEquals("1205003", LenientInteger.printTwips(BigInteger.valueOf(1205003)));
+		LenientInteger.Report r = LenientInteger.endReport();
+		assertEquals(3, r.getOutOfRange());
+		assertTrue("no reading is claimed: " + r.summary(), !r.summary().contains("in Word"));
+		assertTrue(r.summary(), r.summary().contains("1205003 (ST_TwipsMeasure)"));
+	}
+
+	@Test
+	public void decimalNumbersAreNotReported() {
+		// ST_DecimalNumber's attributes differ in width (tblW int16, pgNumType start int32, ids and counts unmeasured):
+		// the per-attribute check is the whole-tree check's (D7 amended, D6)
+		LenientInteger.beginReport();
+		assertEquals(new BigInteger("2147483648"), LenientInteger.parse("2147483648"));
+		assertEquals("2147483648", LenientInteger.print(new BigInteger("2147483648")));
+		LenientInteger.parse("-1");
+		assertTrue("nothing at all is reported", LenientInteger.endReport().isEmpty());
+	}
+
+	@Test
+	public void theBindingReportsThroughTheTypesAndWritesAsHeld() throws Exception {
+		LenientInteger.beginReport();
+		PPr pPr = (PPr) XmlUtils.unmarshalString("<w:pPr xmlns:w=\"" + W + "\">"
+				+ "<w:spacing w:before=\"65535\" w:after=\"65536\" w:line=\"32768\" w:lineRule=\"auto\"/>"
+				+ "<w:ind w:left=\"7205001\" w:hanging=\"32768\"/>"
+				+ "</w:pPr>", Context.jc, PPr.class);
+		LenientInteger.Report read = LenientInteger.endReport();
+		assertEquals("before 65535 is inside the certain range, hanging 32768 too; after 65536, line 32768 and left 7205001 are outside",
+				3, read.getOutOfRange());
+		assertEquals("held as written", 7205001, pPr.getInd().getLeft().intValue());
+		assertEquals(65536, pPr.getSpacing().getAfter().intValue());
+
+		LenientInteger.beginReport();
+		String xml = XmlUtils.marshaltoString(pPr, true, false, Context.jc, W, "pPr", PPr.class);
+		LenientInteger.Report written = LenientInteger.endReport();
+		assertEquals(3, written.getOutOfRange());
+		assertTrue("written as held, never wrapped: " + xml, xml.contains("w:left=\"7205001\""));
+		assertTrue(xml, xml.contains("w:after=\"65536\""));
+		assertTrue(xml, xml.contains("w:before=\"65535\""));
+
+		SectPr sectPr = (SectPr) XmlUtils.unmarshalString("<w:sectPr xmlns:w=\"" + W + "\"><w:pgNumType w:start=\"2147483648\"/></w:sectPr>", Context.jc, SectPr.class);
+		LenientInteger.beginReport();
+		XmlUtils.marshaltoString(sectPr, true, false, Context.jc, W, "sectPr", SectPr.class);
+		assertTrue("ST_DecimalNumber is not reported", LenientInteger.endReport().isEmpty());
+
+		RPr rPr = (RPr) XmlUtils.unmarshalString("<w:rPr xmlns:w=\"" + W + "\"><w:sz w:val=\"70000\"/><w:w w:val=\"65536\"/><w:position w:val=\"32768\"/>"
+				+ "<w:bdr w:val=\"single\" w:sz=\"256\" w:space=\"32\"/></w:rPr>", Context.jc, RPr.class);
+		LenientInteger.beginReport();
+		XmlUtils.marshaltoString(rPr, true, false, Context.jc, W, "rPr", RPr.class);
+		assertEquals("sz, w, position, bdr sz and space", 5, LenientInteger.endReport().getOutOfRange());
 	}
 
 	private static int parse(String s) {

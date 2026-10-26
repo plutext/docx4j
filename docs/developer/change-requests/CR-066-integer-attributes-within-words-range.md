@@ -1,8 +1,9 @@
 # CR-066: integer attributes written within Word's range; an out-of-range value reported on write and on read
 
-Status: ACCEPTED 2026-10-26 (Jason: "CR-066 decisions as recommended"): D1 to D8 as recommended in §4, D1, D4 and D7 as
+Status: PHASES 1 AND 2 DONE 2026-10-26 (§9; Jason: "do CR-066 phases 1 and 2"); phase 3's remaining hand-offs (ImportXHTML,
+D6 to the CR-064 validator and the inspector) open. ACCEPTED 2026-10-26 (Jason: "CR-066 decisions as recommended"): D1 to D8 as recommended in §4, D1, D4 and D7 as
 amended by §3.1 (the width is per attribute; the type-level report is exact for the uniform types and the certain range for
-`ST_TwipsMeasure`; `ST_DecimalNumber` by attribute through D6 or a setter patch). Phase 0 DONE; phases 1 and 2 ready (CR-065
+`ST_TwipsMeasure`; `ST_DecimalNumber` by attribute through D6 or a setter patch). Phase 0 DONE (CR-065
 phase 2 is in, fe449c35c). PROPOSED 2026-10-26, opened by Claude Fable 5.1 (session docx4j-25) at Jason's word ("Do new write-side CR with
 round 5 as its shared phase 0, separate from CR-065, whose phase 2 ships first and gains the range report when round 5
 answers. open it and build the probe"), from CR-065 §3's round 2 aside: Word kept 7205001 twips as -3959. Phase 0, round
@@ -287,9 +288,9 @@ uniform uint16.
 | Phase | Work | Status |
 |---|---|---|
 | 0 | Round 5 of the Word probe (§3); the range per attribute recorded in §3.1 and sent to python-cd, objects-ts and core-ts | DONE 2026-10-26 (Jason's run; §3.1) |
-| 1 | D1 to D4, D7, D8: the range table (§3.1) and the report in the print and parse methods of CR-065 phase 2's class, exact for the uniform types and the certain range for `ST_TwipsMeasure`; tests per type with the probe's values; CHANGELOG | after CR-065 phase 2 |
-| 2 | D5: the guard at `TblFactory` (int16 for `w:tcW`, `w:gridCol` assumed uint16), the WARN at the CSS converters and `TocEntry` (tab stops ±31680); tests; CHANGELOG | ready |
-| 3 | Hand-offs: §3.1's table to the three ports and to ImportXHTML (its CSS length conversion); D6, the per-attribute check, to the CR-064 validator and the inspector when they exist | ports told 2026-10-26; the rest ready |
+| 1 | D1 to D4, D7, D8: the range table (§3.1) and the report in the print and parse methods of CR-065 phase 2's class, exact for the uniform types and the certain range for `ST_TwipsMeasure`; tests per type with the probe's values; CHANGELOG | DONE 2026-10-26 (§9) |
+| 2 | D5: the guard at `TblFactory` (int16 for `w:tcW`, `w:gridCol` assumed uint16), the WARN at the CSS converters and `TocEntry` (tab stops ±31680); tests; CHANGELOG | DONE 2026-10-26 (§9) |
+| 3 | Hand-offs: §3.1's table to the three ports and to ImportXHTML (its CSS length conversion); D6, the per-attribute check, to the CR-064 validator and the inspector when they exist | ports told 2026-10-26; ImportXHTML told 2026-10-26 (§9); D6 waits on the validator and the inspector |
 
 ## 6. Risks
 
@@ -327,3 +328,53 @@ matches; `w:trHeight/@w:val` is the attribute whose storage sign differs from it
 structures beyond a width (the firstLine/hanging pair, framePr h's height flag, the column negatives) and a test,
 test/word365-ranges.mjs, that reads both rounds' saves (652 cases, 614 compared) and fails when a rule is broken;
 core-ts takes the measured range when its setters are guarded (phase 3).
+
+## 9. Phases 1 and 2 done (2026-10-26)
+
+**Phase 1, the report (D1 to D4, D7, D8).** `xsd/bindings.xjb` gives each integer simple type its own parse and print
+pair in `org.docx4j.wml.LenientInteger`, so the method knows the type: `parseSignedTwips`/`printSignedTwips`
+(`ST_SignedTwipsMeasure`, int16), `parseSignedHps`/`printSignedHps` (`ST_SignedHpsMeasure`, int16), `parseHps`/`printHps`
+(`CT_HpsMeasure/@w:val`: `w:sz`, `w:szCs`, `w:kern`; uint16), `parseTextScale`/`printTextScale` (`ST_TextScale`, uint16,
+Integer-typed), `parseEighthPoint`/`printEighthPoint` (a border's `w:sz`, 8 bits), `parsePoint`/`printPoint` (a border's
+`w:space`, 5 bits), `parseTwips`/`printTwips` (`ST_TwipsMeasure`, the certain range -32768..65535 only, no "reads it as"),
+and `parse`/`print` unchanged for `ST_DecimalNumber`, `ST_UnsignedDecimalNumber` and `ST_PixelsMeasure` (no report). A
+`Range` enum holds the width and the sign; the in-range test is a `bitLength` compare, and Word's reading is the value
+modulo the width (signed where the type is). The value is held as written and written as held (D2, D3): nothing is
+wrapped, clamped or refused.
+
+The report reuses CR-065 D6's thread-local scope (D8): `Report` gains `getOutOfRange()` and its own four samples
+(`7205001 -> -3959 in Word`; `1205003 (ST_TwipsMeasure)` for the certain range), and `summary()` a clause. A part's
+unmarshal (`JaxbXmlPartXPathAware.unmarshal`, both entries, as before) logs at WARN instead of INFO when the count is
+above zero; a part's marshal (`JaxbXmlPart.marshal(OutputStream, mapper)` and `marshal(Node, mapper)`, which every
+save reaches through the part stores) now opens the same scope and logs one WARN with the part name when the count is
+above zero (`/word/document.xml: 3 integer attribute values outside Word's 16-bit range, held as written (CR-066; e.g.
+7205001 -> -3959 in Word, 70000 -> 4464 in Word, 1205003 (ST_TwipsMeasure))`). Outside a scope (a string marshal) each
+value logs its own WARN. The generated API is unchanged except for the additions (javap of `org.docx4j.wml`, `w14`,
+`w15` before and after: the new methods, the `Range` enum and the `Report` members; the ten `Adapter` classes keep their
+names and field types, their bodies call the per-type methods). Cost: none measurable (scratchpad `bench/LoadBench`,
+bench-30k.docx: best 370 ms before, 358 and 361 ms after).
+
+**Phase 2, the guards (D5).** `TblFactory.createTable` throws `IllegalArgumentException` for `cellWidthTwips` outside
+0..`MAX_CELL_WIDTH_TWIPS` (32767), the message naming the argument, the range in twips and inches, and Word's modulo
+reading. The CSS converters WARN through a new `Property.warnIfOutsideWordRange` (the CSS name and text, the converted
+value and unit, the attribute's range from §3.1 and §3.4) and write the value as computed: paragraph `Indent`
+(`w:ind/@w:left`, int16), `SpaceBefore` and `SpaceAfter` (uint16), `LineSpacing` (int16), `AbstractCellMargin` (int16),
+table `Indent` (`w:tblInd`, int16), run `Spacing` (int16), `FontSize` (`w:sz`, uint16). `TrHeight`'s CSS constructor is
+commented out in the source ("Won't ever get a tr height property from CSS"), so nothing to guard there. `TocEntry`
+WARNs for a tab stop outside ±31680 (the TOC style's indent plus the number's width, or the page's writable width) and,
+once per TOC, for a `PageDimensions` writable width of zero or less, naming the page width, margins and gutter.
+
+**Tests** (`docx4j-core-tests`): `LenientIntegerTest` (+7: each type's boundaries with the probe's values, the certain
+range, `ST_DecimalNumber` silent, the binding reporting through the types and writing as held);
+`IntegerRangeReportTest` (a save logs one WARN for the main part and the file holds the numbers; a load logs one WARN
+and holds them; a document at the boundaries logs nothing); `TblFactoryRangeTest` (32767 and 0 accepted; 70000, 32768
+and -1 refused with the range in the message); `CssLengthRangeWarnTest` (each converter's WARN with the value and the
+attribute; 1638.5 pt, beyond the UI, inside the storage range, silent). Gate 2026-10-26: the full reactor build
+(`mvn clean install`) green; docx4j-core-tests 2168 tests (2153 before plus the 15 new), 0 failures, 30 skipped;
+docx4j-export-fo-tests 858, docx4j-diffx-tests 246.
+
+**Hand-offs (phase 3).** ImportXHTML (session docx4j-importxhtml-4f): the CSS converters it calls now WARN for an
+out-of-range length and still write it; §3.1 and §3.4 are the ranges if its own CR decides to throw or clamp. The ports
+had §3.1 and §3.4 on 2026-10-26 (§8); core-ts's setter guard takes the measured range. D6 (the per-attribute check:
+`w:tblW`, `w:tcW`, `w:tblInd` int16, `w:pgNumType/@w:start` int32, the `ST_TwipsMeasure` attributes by their own width)
+goes to the CR-064 tree validator and the CR-050 inspector when they exist.

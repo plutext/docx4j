@@ -46,6 +46,16 @@ Changes in Version 17.3.5
   rounding list made the part unreadable, and the listed ones were rounded half-even (141.5 to
   142, where Word reads 141). The stylesheet's list stays but no longer fires for a decimal. A part
   logs one INFO line with what it read leniently. The Java type stays BigInteger.
+* An integer attribute value outside Word's 16-bit range is reported, at save and at load (CR-066
+  phases 1 and 2; measured on Word 365: w:ind/@w:left="7205001" is -3959 twips to Word, w:sz 70000 is
+  4464). One WARN line per part with the count, the first few values and Word's reading; the value is
+  written as held and read as written, never wrapped or clamped. Exact for the signed twips and
+  half-point types, w:sz/szCs/kern, text scale and the border types; a value outside -32768..65535 for
+  ST_TwipsMeasure; ST_DecimalNumber not reported (LenientInteger, one parse/print pair per type).
+* TblFactory.createTable throws IllegalArgumentException for a cell width outside 0..32767 twips
+  (CR-066 D5; before, 70000 was written and Word read 4464). A CSS length converting outside its
+  attribute's range (margin-left, margin-top/bottom, line-height, letter-spacing, cell margins,
+  table indent, font-size) and a TOC tab stop beyond 22 in log a WARN and are written as computed.
 * A part whose content could not be read (its unmarshal failed, e.g. a decimal in an integer
   attribute off the preprocessor's list) is no longer replaced by an empty one on the first edit:
   MainDocumentPart.getContent, HeaderPart and FooterPart getContent, DocumentSettingsPart and

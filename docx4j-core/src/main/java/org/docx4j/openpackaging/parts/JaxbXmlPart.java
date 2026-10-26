@@ -79,6 +79,7 @@ import org.docx4j.openpackaging.io3.stores.PartStore;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore.ByteArray;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.wml.LenientInteger;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPartFilterOutputStream;
 import org.docx4j.org.apache.poi.util.XMLHelper;
 import org.docx4j.org.apache.xml.security.Init;
@@ -768,6 +769,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
     	String previous = declarator.getMcIgnorable();
     	Map<String, String> previousPairs = null;
     	boolean pairsInstalled = false;
+    	LenientInteger.beginReport(); // CR-066 D8: one WARN per part for the integer attributes outside Word's range
 		try {
 			Marshaller marshaller = jc.createMarshaller();
 			normaliseOnSave(marshaller);
@@ -806,6 +808,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			// to null after a successful marshal only)
 			declarator.setMcIgnorable(previous);
 			if (pairsInstalled) McDeclarations.restoreRootPairs(previousPairs);
+			logOutOfRange(LenientInteger.endReport());
 		}
 	}
     
@@ -836,6 +839,17 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * @throws JAXBException
 	 *             If any unexpected problem occurs during the marshalling.
 	 */
+	/**
+	 * CR-066 D2, D8: the integer attribute values this part's marshal wrote outside Word's 16-bit range (held and
+	 * written as given; Word reads each modulo its width), one WARN line per part. The print method is bound to the
+	 * simple types and knows no part, so the part logs for it. A lenient read inside a marshal is not expected.
+	 */
+	private void logOutOfRange(LenientInteger.Report report) {
+		if (report != null && report.getOutOfRange() > 0) {
+			log.warn(this.getPartName() + ": " + report.summary());
+		}
+	}
+
     /** The package's own setting of what a save writes plainly, given to the marshaller (CR-061) */
     private void normaliseOnSave(Marshaller marshaller) {
     	Boolean normalise = getPackage() == null ? null : getPackage().getNormaliseOnSave();
@@ -851,6 +865,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
     	String previous = declarator.getMcIgnorable();
     	Map<String, String> previousPairs = null;
     	boolean pairsInstalled = false;
+    	LenientInteger.beginReport(); // CR-066 D8: one WARN per part for the integer attributes outside Word's range
 		try {
 			Marshaller marshaller = jc.createMarshaller();
 			normaliseOnSave(marshaller);
@@ -1018,6 +1033,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			// to null after a successful marshal only)
 			declarator.setMcIgnorable(previous);
 			if (pairsInstalled) McDeclarations.restoreRootPairs(previousPairs);
+			logOutOfRange(LenientInteger.endReport());
 		}
 	}
     
