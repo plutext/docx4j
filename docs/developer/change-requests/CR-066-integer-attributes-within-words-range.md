@@ -193,6 +193,40 @@ Unmeasured and left to the certain range: the other 26 `ST_TwipsMeasure` attribu
 margins, `w:ind/@w:hanging` and `@w:firstLine`, frame and drawing distances), `w:spacing/@w:after` (assumed as
 `before`), the other borders' attributes (assumed as `w:top`'s).
 
+### 3.2 core-ts's check 71: the Office JS side (Jason, 2026-10-26; Word 365 16.0.20326, Design Mode off)
+
+core-ts's check 71 (96 cases, `__tmp/71/`; its CR-002 §65.5) sets values through Office JS and reads Word's save:
+
+- **The setters take any value and store it wrapped.** `leftIndent`, `rightIndent`, `firstLineIndent` and
+  `TableCell.columnWidth` raise no error: 1638.4 pt -> -32768 twips; 1639 -> -32756; 3276.7 -> -2; 3276.75 -> -1;
+  3276.8 -> 0 (for an indent, no element); 400,000 -> 4608; -1638.45 -> 32767; and they read back the wrapped value
+  (`leftIndent` 400,000 reads 230.4). A negative `columnWidth` is refused (InvalidArgument). So the API wraps exactly as
+  the file reader does; it is not a guard.
+- **`w:firstLine` and `w:hanging` are one signed field** (DOC's `dxaLeft1`): firstLine F is stored as F, hanging H as
+  -H, so firstLine is 0..32767 and hanging 0..32768, and a wrap crosses between them: `firstLineIndent` 1638.4 pt ->
+  `w:hanging="32768"`; 1639 -> hanging 32756; 3276.7 -> hanging 2; 400,000 -> firstLine 4608; -1 -> hanging 20;
+  -1638.4 -> hanging 32768; -1638.45 -> firstLine 32767. (Round 6, §3.3, measures the file side of the same pair.)
+- **Refused at the API's own limit, below storage:** `spaceBefore`, `spaceAfter` and `lineSpacing` at 1638 pt and up
+  and every negative (InvalidArgument; Word wrote nothing), so `w:after` stays unmeasured on this side;
+  `setLevelIndents` text indent at 1638 and up and at -1638.4; `font.size` above 1638 (1638.5 refused) and 0.
+- Side finding (core-ts's): `setLevelIndents(0, -1, 0)` wrote `w:left="-20" w:firstLine="0"`, so
+  `bulletNumberPictureIndent` is the level's first-line indent relative to the text, as documented.
+
+### 3.3 Round 6 (built 2026-10-26 at objects-ts's request, Jason's yes; Jason's run awaited)
+
+The attributes round 5 left unmeasured or inferred, by the same method, on the share at `__tmp/cr066/round6/`
+(generator scratchpad `probe66/Probe66r6.java`; `cases.txt` with id, group, attribute, place, value and the two wrap
+predictions): 481 cases in seven group files. A: `w:ind` firstLine, hanging, right, start, end; `w:spacing` after;
+`w:line` under atLeast. F: `w:framePr` w, h, hSpace, vSpace, x, y. R: `w:fitText`, `w:szCs`, `w:kern`, `w:bdr`
+sz and space. T: `w:trHeight` under exact and auto; `w:gridCol` under `tblLayout fixed` with no `tcW` and `tblW`
+auto; `w:tblCellSpacing`; `w:tblCellMar`; `w:tcMar`; `w:wBefore`, `w:wAfter`; `w:tcBorders` and `w:tblBorders` sz and
+space. P: `w:tblpPr` the four FromText, tblpX, tblpY. S: `w:pgMar` left, right, header, footer, gutter, bottom;
+`w:cols` space, `w:col` w and space (equalWidth=0); `w:lnNumType` distance; `w:pgBorders` sz and space. N: a
+list level's `w:legacy` legacySpace and legacyIndent in numbering.xml (ten lists, one value each). D: the
+document-wide `w:defaultTabStop` and `w:hyphenationZone` as singles, one value per file. Not covered: `w:object`
+dxaOrig/dyaOrig (an embedded OLE object). Families (46) and singles (264, for F, P, S, N) are the fallback for a
+refused group, as in round 5.
+
 ## 4. Decisions
 
 | # | Question | Options | Recommendation |
