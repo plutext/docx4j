@@ -238,7 +238,12 @@ treated as refused: a sign or a dot with no digit (`-`, `.`, `+`, `+.`), and dig
 accepted Unicode digits; Word's measured form is ASCII). docx4j-python reads those four as 0 (its CR-021 D1 records
 the difference); its phase C files on the share (`__tmp/python-cr021/cr021-edge-E2..E4-raw.docx`: `.`, `+`, `-`) will
 settle it in Word, and both ports then follow Word. `239.99999999999999` reads 239 here (the string is parsed, never a
-double). No trimming (D3 as accepted). `print` writes the value as
+double). **Jason's run of those files (2026-10-26, python-cd):** `239.99999999999999` saved as 239 (the string truncated,
+as here); `.`, `+` and `-` were **not refused**: Word opened each file and its save holds no `w:spacing` and no `w:ind`
+for them, which, with a style value of 0 in those fixtures, cannot tell "read as 0" from "ignored". So the WARN's
+wording ("a form Word refuses") overstates these three; whether docx4j keeps the drop or reads 0 waits on a probe
+under a non-zero style value (round 6's group E, `__tmp/cr066/round6/`). python-cd also saw a `w:pgMar` dropped by a
+save open with Word's Normal margins (2.54 cm top). No trimming (D3 as accepted). `print` writes the value as
 held (CR-066 adds the range report there).
 
 **Reporting (D6).** The parse method knows the type, not the part, so the part logs for it:
