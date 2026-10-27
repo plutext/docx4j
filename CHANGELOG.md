@@ -36,7 +36,11 @@ Changes in Version 17.3.5
   a paragraph or run to a row; a property object (PPr, RPr, SectPr, TblPr, TrPr, TcPr) added to
   content instead of set; a String added to any of these. A JAXBElement is tested by its value, so
   the wrapped forms are caught too. Each rule names a class the schema never allows there, so no
-  legal document is refused on load (gated on the test suite and a 454-document corpus). Before,
+  legal document is refused on load (gated on the test suite and a 454-document corpus). Also refused
+  (the addendum): DelText where Text is, a run-level Tab where Br is, and a content control at the
+  wrong level (SdtBlock, CTSdtRow or CTSdtCell in run content; SdtRun, CTSdtRow or CTSdtCell in block
+  content; any in a run; any but CTSdtRow in a table, any but CTSdtCell in a row); a TcPr refused
+  outside a cell names its container. Before,
   only a table, paragraph or Text in a paragraph or hyperlink, and a run, paragraph or table in a
   run, were refused; the rest reached Word as "unreadable content".
   The check caught one such mistake in docx4j itself: the export preprocessor's run-border container

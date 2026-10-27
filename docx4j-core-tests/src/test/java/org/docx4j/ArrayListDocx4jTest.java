@@ -18,6 +18,7 @@ import org.docx4j.wml.CTBookmark;
 import org.docx4j.wml.CTCustomXmlBlock;
 import org.docx4j.wml.CTCustomXmlRun;
 import org.docx4j.wml.CTFtnEdn;
+import org.docx4j.wml.CTSdtCell;
 import org.docx4j.wml.CTSdtContentRun;
 import org.docx4j.wml.CTSdtRow;
 import org.docx4j.wml.CTSimpleField;
@@ -25,6 +26,7 @@ import org.docx4j.wml.CTSmartTagRun;
 import org.docx4j.wml.CTTxbxContent;
 import org.docx4j.wml.Comments;
 import org.docx4j.wml.ContentAccessor;
+import org.docx4j.wml.DelText;
 import org.docx4j.wml.Drawing;
 import org.docx4j.wml.Ftr;
 import org.docx4j.wml.Hdr;
@@ -47,6 +49,8 @@ import org.docx4j.wml.Text;
 import org.docx4j.wml.Tr;
 import org.docx4j.wml.TrPr;
 import org.junit.Test;
+
+import javax.xml.namespace.QName;
 
 /**
  * ArrayListDocx4j: the content lists set the parent of what is added, find a child through its JAXBElement
@@ -85,6 +89,12 @@ public class ArrayListDocx4jTest {
 		assertRefused(p, F.createRT(new Text()), "wrapped Text (D1: the wrapper is unwrapped before the test)", "run (R)");
 		assertRefused(p, new Drawing(), "Drawing", "run (R)");
 		assertRefused(p, new Br(), "Br", "run (R)");
+		assertRefused(p, new DelText(), "DelText (not a Text subclass; §8.1)", "run (R)");
+		assertRefused(p, new JAXBElement<DelText>(new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "delText"), DelText.class, new DelText()), "wrapped DelText", "run (R)");
+		assertRefused(p, new R.Tab(), "a run-level Tab (§8.1)", "run (R)");
+		assertRefused(p, new SdtBlock(), "a block-level sdt in a paragraph (§8.1)", "SdtRun");
+		assertRefused(p, new CTSdtRow(), "a row-level sdt in a paragraph", "table (Tbl)");
+		assertRefused(p, new CTSdtCell(), "a cell-level sdt in a paragraph", "table row (Tr)");
 		assertRefused(p, new PPr(), "PPr", "setPPr");
 		assertRefused(p, "hello", "String", "Text");
 		// accepted: a run, a hyperlink, a wrapped hyperlink, a bookmark start, a run-level sdt, mc:AlternateContent
@@ -108,6 +118,9 @@ public class ArrayListDocx4jTest {
 			assertRefused(content, c, new Text(), "Text", "run (R)");
 			assertRefused(content, c, new Drawing(), "Drawing", "run (R)");
 			assertRefused(content, c, new Br(), "Br", "run (R)");
+			assertRefused(content, c, new DelText(), "DelText", "run (R)");
+			assertRefused(content, c, new R.Tab(), "Tab", "run (R)");
+			assertRefused(content, c, new SdtBlock(), "SdtBlock", "SdtRun");
 			assertRefused(content, c, "hello", "String", "Text");
 			R r = new R(); content.add(r); assertSame(c, r.getParent());
 			assertEquals(1, content.size());
@@ -141,6 +154,8 @@ public class ArrayListDocx4jTest {
 		assertRefused(r, new P(), "paragraph", "nest");
 		assertRefused(r, new Tbl(), "table", "table");
 		assertRefused(r, new RPr(), "RPr", "setRPr");
+		assertRefused(r, new SdtRun(), "an sdt in a run (§8.1)", "beside the run");
+		assertRefused(r, new SdtBlock(), "a block sdt in a run", "beside the run");
 		assertRefused(r, "hello", "String", "createRT");
 		// accepted: wrapped Text, a Drawing, a Br, a Tab
 		Text t = new Text(); r.getContent().add(F.createRT(t)); assertSame(r, t.getParent());
@@ -165,6 +180,11 @@ public class ArrayListDocx4jTest {
 			assertRefused(content, c, F.createRT(new Text()), "wrapped Text", "run (R)");
 			assertRefused(content, c, new Drawing(), "Drawing", "run (R)");
 			assertRefused(content, c, new Br(), "Br", "run (R)");
+			assertRefused(content, c, new DelText(), "DelText", "run (R)");
+			assertRefused(content, c, new R.Tab(), "Tab", "run (R)");
+			assertRefused(content, c, new SdtRun(), "a run-level sdt in block content (§8.1)", "paragraph (P)");
+			assertRefused(content, c, new CTSdtRow(), "a row-level sdt in block content", "table (Tbl)");
+			assertRefused(content, c, new CTSdtCell(), "a cell-level sdt in block content", "table row (Tr)");
 			assertRefused(content, c, new Tc(), "cell", "row (Tr)");
 			assertRefused(content, c, new Tr(), "row", "table (Tbl)");
 			assertRefused(content, c, new SectPr(), "SectPr", "setSectPr");
@@ -179,6 +199,9 @@ public class ArrayListDocx4jTest {
 			assertEquals(6, content.size());
 		}
 		assertRefused(new Tc(), new TcPr(), "TcPr", "setTcPr");
+		// the message names the container (§8.1): a TcPr in the body is not "a cell's content"
+		assertTrue(refusal(new Body().getContent(), new TcPr()).contains("the body"));
+		assertTrue(refusal(new Hdr().getContent(), new TcPr()).contains("a header"));
 	}
 
 	// ---- tables (D4, D5, D6)
@@ -192,6 +215,9 @@ public class ArrayListDocx4jTest {
 		assertRefused(tbl, new Tbl(), "table", "cell (Tc)");
 		assertRefused(tbl, new TblPr(), "TblPr", "setTblPr");
 		assertRefused(tbl, "hello", "String", "cell (Tc)");
+		assertRefused(tbl, new SdtBlock(), "a block-level sdt in a table (§8.1)", "CTSdtRow");
+		assertRefused(tbl, new SdtRun(), "a run-level sdt in a table", "CTSdtRow");
+		assertRefused(tbl, new CTSdtCell(), "a cell-level sdt in a table", "CTSdtRow");
 		Tr tr = new Tr(); tbl.getContent().add(tr); assertSame(tbl, tr.getParent());
 		tbl.getContent().add(new CTSdtRow());
 		tbl.getContent().add(F.createBodyBookmarkStart(new CTBookmark()));
@@ -203,9 +229,12 @@ public class ArrayListDocx4jTest {
 		assertRefused(tr, new Tbl(), "table", "cell (Tc)");
 		assertRefused(tr, new TrPr(), "TrPr", "setTrPr");
 		assertRefused(tr, "hello", "String", "cell (Tc)");
+		assertRefused(tr, new SdtBlock(), "a block-level sdt in a row (§8.1)", "CTSdtCell");
+		assertRefused(tr, new CTSdtRow(), "a row-level sdt in a row", "CTSdtCell");
+		tr.getContent().add(new CTSdtCell());
 		Tc tc = new Tc(); tr.getContent().add(F.createTrTc(tc)); assertSame(tr, tc.getParent());
 		tr.getContent().add(new AlternateContent());
-		assertEquals(2, tr.getContent().size());
+		assertEquals(3, tr.getContent().size());
 
 		// a nested table goes in a cell, which is a block-level container
 		Tbl nested = new Tbl(); tc.getContent().add(nested); assertSame(tc, nested.getParent());

@@ -6,11 +6,14 @@ import org.docx4j.wml.Br;
 import org.docx4j.wml.CTCustomXmlBlock;
 import org.docx4j.wml.CTCustomXmlRun;
 import org.docx4j.wml.CTFtnEdn;
+import org.docx4j.wml.CTSdtCell;
 import org.docx4j.wml.CTSdtContentRun;
+import org.docx4j.wml.CTSdtRow;
 import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.CTSmartTagRun;
 import org.docx4j.wml.CTTxbxContent;
 import org.docx4j.wml.Comments;
+import org.docx4j.wml.DelText;
 import org.docx4j.wml.Drawing;
 import org.docx4j.wml.Ftr;
 import org.docx4j.wml.Hdr;
@@ -20,8 +23,10 @@ import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.RunDel;
 import org.docx4j.wml.RunIns;
+import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtContent;
 import org.docx4j.wml.SdtContentBlock;
+import org.docx4j.wml.SdtRun;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TblPr;
@@ -291,6 +296,10 @@ public class ArrayListDocx4j<E> extends ArrayList<E> {
 	 * rest are not this method's business). The parent sets are: block-level containers (Body, Tc,
 	 * SdtContentBlock, CTTxbxContent, Hdr, Ftr, CTFtnEdn, Comments.Comment, CTCustomXmlBlock), run-level containers
 	 * (P, P.Hyperlink, CTSimpleField, RunIns, RunDel, CTSmartTagRun, CTCustomXmlRun, CTSdtContentRun), R, Tbl, Tr.
+	 * Since 17.3.5's addendum (CR-064 §8.1, objects-ts's notes): DelText where Text is refused, a run-level Tab
+	 * where Br is refused, and a content control at the wrong level (a block, row or cell control in run content;
+	 * a run, row or cell control in block content; any but a row control in a table; any but a cell control in a
+	 * row; any in a run).
 	 *
 	 * @throws IllegalArgumentException for a misplaced child; the message says what to do instead
 	 */
@@ -312,12 +321,14 @@ public class ArrayListDocx4j<E> extends ArrayList<E> {
 				throw new IllegalArgumentException("You can't add a table inside " + describe(parent) + "; it should be a sibling of the paragraph.");
 			} else if (e instanceof P) {
 				throw new IllegalArgumentException("You can't nest a paragraph inside " + describe(parent) + ".");
-			} else if (e instanceof Text) {
-				throw new IllegalArgumentException("You can't add Text directly to " + describe(parent) + "; add it to a run (R) and add that.");
+			} else if (e instanceof Text || e instanceof DelText) {
+				throw new IllegalArgumentException("You can't add " + (e instanceof DelText ? "DelText" : "Text") + " directly to " + describe(parent) + "; add it to a run (R) and add that.");
 			} else if (e instanceof Drawing) {
 				throw new IllegalArgumentException("You can't add a Drawing directly to " + describe(parent) + "; add it to a run (R) and add that.");
-			} else if (e instanceof Br) {
-				throw new IllegalArgumentException("You can't add a Br directly to " + describe(parent) + "; add it to a run (R) and add that.");
+			} else if (e instanceof Br || e instanceof R.Tab) {
+				throw new IllegalArgumentException("You can't add a " + (e instanceof Br ? "Br" : "Tab") + " directly to " + describe(parent) + "; add it to a run (R) and add that.");
+			} else if (e instanceof SdtBlock || e instanceof CTSdtRow || e instanceof CTSdtCell) {
+				throw new IllegalArgumentException("You can't add " + sdtLevel(e) + " to " + describe(parent) + "; it goes " + sdtGoes(e) + "; a run-level content control (SdtRun) goes here.");
 			} else if (e instanceof PPr) {
 				throw new IllegalArgumentException("You can't add PPr to a paragraph's content; use setPPr.");
 			} else if (e instanceof String) {
@@ -333,6 +344,8 @@ public class ArrayListDocx4j<E> extends ArrayList<E> {
 				throw new IllegalArgumentException("You can't add a table inside a run.");
 			} else if (e instanceof RPr) {
 				throw new IllegalArgumentException("You can't add RPr to a run's content; use setRPr.");
+			} else if (e instanceof SdtRun || e instanceof SdtBlock || e instanceof CTSdtRow || e instanceof CTSdtCell) {
+				throw new IllegalArgumentException("You can't add a content control (sdt) inside a run; a run-level content control (SdtRun) goes in the paragraph, beside the run.");
 			} else if (e instanceof String) {
 				throw new IllegalArgumentException("You can't add a String to a run; put it in a Text (wrapped by the ObjectFactory's createRT) and add that.");
 			}
@@ -340,12 +353,14 @@ public class ArrayListDocx4j<E> extends ArrayList<E> {
 		} else if (isBlockContainer(parent)) {
 			if (e instanceof R) {
 				throw new IllegalArgumentException("You can't add a run (R) directly to " + describe(parent) + "; add it to a paragraph (P) and add that.");
-			} else if (e instanceof Text) {
-				throw new IllegalArgumentException("You can't add Text directly to " + describe(parent) + "; add it to a run (R) in a paragraph (P) and add the paragraph.");
+			} else if (e instanceof Text || e instanceof DelText) {
+				throw new IllegalArgumentException("You can't add " + (e instanceof DelText ? "DelText" : "Text") + " directly to " + describe(parent) + "; add it to a run (R) in a paragraph (P) and add the paragraph.");
 			} else if (e instanceof Drawing) {
 				throw new IllegalArgumentException("You can't add a Drawing directly to " + describe(parent) + "; add it to a run (R) in a paragraph (P) and add the paragraph.");
-			} else if (e instanceof Br) {
-				throw new IllegalArgumentException("You can't add a Br directly to " + describe(parent) + "; add it to a run (R) in a paragraph (P) and add the paragraph.");
+			} else if (e instanceof Br || e instanceof R.Tab) {
+				throw new IllegalArgumentException("You can't add a " + (e instanceof Br ? "Br" : "Tab") + " directly to " + describe(parent) + "; add it to a run (R) in a paragraph (P) and add the paragraph.");
+			} else if (e instanceof SdtRun || e instanceof CTSdtRow || e instanceof CTSdtCell) {
+				throw new IllegalArgumentException("You can't add " + sdtLevel(e) + " to " + describe(parent) + "; it goes " + sdtGoes(e) + "; a block-level content control (SdtBlock) goes here.");
 			} else if (e instanceof Tc) {
 				throw new IllegalArgumentException("You can't add a table cell (Tc) to " + describe(parent) + "; a cell goes in a row (Tr), in a table (Tbl).");
 			} else if (e instanceof Tr) {
@@ -353,7 +368,9 @@ public class ArrayListDocx4j<E> extends ArrayList<E> {
 			} else if (e instanceof SectPr) {
 				throw new IllegalArgumentException("You can't add SectPr to " + describe(parent) + "'s content; use Body.setSectPr, or PPr.setSectPr on the paragraph that ends the section.");
 			} else if (e instanceof TcPr) {
-				throw new IllegalArgumentException("You can't add TcPr to a cell's content; use setTcPr.");
+				throw new IllegalArgumentException(parent instanceof Tc
+						? "You can't add TcPr to a table cell's content; use setTcPr."
+						: "You can't add TcPr to " + describe(parent) + "; cell properties belong to a table cell (Tc), through its setTcPr.");
 			} else if (e instanceof String) {
 				throw new IllegalArgumentException("You can't add a String to " + describe(parent) + "; put it in a Text, in a run (R), in a paragraph (P), and add the paragraph.");
 			}
@@ -367,6 +384,8 @@ public class ArrayListDocx4j<E> extends ArrayList<E> {
 				throw new IllegalArgumentException("You can't nest a table directly in a table; a nested table goes in a cell (Tc).");
 			} else if (e instanceof TblPr) {
 				throw new IllegalArgumentException("You can't add TblPr to a table's content; use setTblPr.");
+			} else if (e instanceof SdtBlock || e instanceof SdtRun || e instanceof CTSdtCell) {
+				throw new IllegalArgumentException("You can't add " + sdtLevel(e) + " to a table; it goes " + sdtGoes(e) + "; a row-level content control (CTSdtRow) goes here.");
 			} else if (e instanceof String) {
 				throw new IllegalArgumentException("You can't add a String to a table; text goes in a run (R) in a paragraph (P) in a cell (Tc).");
 			}
@@ -378,6 +397,8 @@ public class ArrayListDocx4j<E> extends ArrayList<E> {
 				throw new IllegalArgumentException("You can't nest a table in a table row; a nested table goes in a cell (Tc).");
 			} else if (e instanceof TrPr) {
 				throw new IllegalArgumentException("You can't add TrPr to a row's content; use setTrPr.");
+			} else if (e instanceof SdtBlock || e instanceof SdtRun || e instanceof CTSdtRow) {
+				throw new IllegalArgumentException("You can't add " + sdtLevel(e) + " to a table row; it goes " + sdtGoes(e) + "; a cell-level content control (CTSdtCell) goes here.");
 			} else if (e instanceof String) {
 				throw new IllegalArgumentException("You can't add a String to a table row; text goes in a run (R) in a paragraph (P) in a cell (Tc).");
 			}
@@ -397,6 +418,22 @@ public class ArrayListDocx4j<E> extends ArrayList<E> {
 	private static boolean isOtherRunContainer(Object p) {
 		return p instanceof P.Hyperlink || p instanceof CTSimpleField || p instanceof RunIns || p instanceof RunDel
 				|| p instanceof CTSmartTagRun || p instanceof CTCustomXmlRun || p instanceof CTSdtContentRun;
+	}
+
+	/** a content control's level, for a message */
+	private static String sdtLevel(Object e) {
+		if (e instanceof SdtBlock) return "a block-level content control (SdtBlock)";
+		if (e instanceof SdtRun) return "a run-level content control (SdtRun)";
+		if (e instanceof CTSdtRow) return "a row-level content control (CTSdtRow)";
+		return "a cell-level content control (CTSdtCell)";
+	}
+
+	/** where a content control of that level goes */
+	private static String sdtGoes(Object e) {
+		if (e instanceof SdtBlock) return "beside a paragraph (in the body, a cell, a header or the like)";
+		if (e instanceof SdtRun) return "in a paragraph (P)";
+		if (e instanceof CTSdtRow) return "in a table (Tbl)";
+		return "in a table row (Tr)";
 	}
 
 	/** the parent, for a message: what a reader of the code calls it */

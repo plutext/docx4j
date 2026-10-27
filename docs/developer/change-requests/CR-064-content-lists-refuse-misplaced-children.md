@@ -1,6 +1,6 @@
 # CR-064: content lists refuse misplaced children at the point of the mistake
 
-Status: ACCEPTED 2026-10-26 (Jason: "do CR-064"): D1 to D9 as recommended; phase 1 DONE 2026-10-26 (§8); phase 2 optional, open; objects-ts implemented its side 2026-10-28 (§7); three refuse-only additions and a message nit open for Jason (§7).
+Status: ACCEPTED 2026-10-26 (Jason: "do CR-064"): D1 to D9 as recommended; phase 1 DONE 2026-10-26 (§8); phase 2 optional, open; objects-ts implemented its side 2026-10-28 (§7); the addendum (three refuse-only additions and the TcPr message) accepted and built 2026-10-28 (§8.1).
 PROPOSED 2026-10-26, drafted by Claude Fable 5.1 (session docx4j-25) at Jason's word ("open the CR - are
 these checks cheap?"), after the portfolio session's manifesto work (docx4j_manifesto.md §2, D7) asked which common
 mistakes `ArrayListDocx4j.checkParent` should refuse beyond today's three. The hyperlink case Jason asked for first is
@@ -181,3 +181,24 @@ the container, every add path (`add`, `add(int)`, `set`, both `addAll`s) refusin
 against 358 to 368 best and 364 to 393 median measured three times on the same file for CR-065 phase 2 the same
 morning: within the run-to-run noise, as §3's microbenchmark predicted (about 1 ms of the load).
 
+### 8.1 Addendum (2026-10-28, Jason: "CR-064 addendum: yes")
+
+objects-ts's four notes (§7), verified against `checkParent` and taken as refuse-only additions, in both the run-level
+and the block-level sets where the existing rule is in both (as objects-ts asked, so a tab straight in the body is as
+wrong as a break there):
+
+- `DelText` is refused wherever `Text` is: `DelText` does not extend `Text` (`implements Copyable, Child`), so a
+  `w:delText`, wrapped or bare, in a paragraph, a hyperlink or the body passed. Same message, naming DelText.
+- `R.Tab` is refused wherever `Br` is (§2 row 7 named it; §8 implemented `Br` only). Same message, naming Tab.
+- A content control at the wrong level is refused by class: in run content `SdtBlock`, `CTSdtRow`, `CTSdtCell`
+  ("...; it goes beside a paragraph ...; a run-level content control (SdtRun) goes here"); in block content
+  `SdtRun`, `CTSdtRow`, `CTSdtCell` ("...; a block-level content control (SdtBlock) goes here"); in a run any of the
+  four ("a run-level content control (SdtRun) goes in the paragraph, beside the run"); in a table any but
+  `CTSdtRow`; in a row any but `CTSdtCell`. Every one is a class the schema never binds there (`w:sdt` is bound to
+  the class of its context), so no load can trip it.
+- The `TcPr` message names its container: "You can't add TcPr to the body; cell properties belong to a table cell
+  (Tc), through its setTcPr", and in a cell as before.
+
+`ArrayListDocx4jTest` extended in each set. Gate: the list test, then the full core-tests suite (every document the
+suite loads passes through `checkParent`). objects-ts mirrors the sets and strings (objects CR-017) once this lands;
+python follows through its own CR.
