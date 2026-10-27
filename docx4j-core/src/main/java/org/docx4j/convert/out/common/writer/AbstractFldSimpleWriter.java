@@ -33,6 +33,9 @@ import org.docx4j.convert.out.common.XsltCommonFunctions;
 import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.fields.FieldValueException;
+import org.docx4j.model.fields.FieldContext;
+import org.docx4j.model.fields.FieldEvaluators;
+import org.docx4j.model.fields.FieldInstruction;
 import org.docx4j.model.fields.FldSimpleModel;
 import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.fields.docproperty.DocPropertyResolver;
@@ -98,10 +101,39 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 	 *
 	 * @since 17.2.0
 	 */
-	protected static boolean paintStoredResult(FldSimpleModel model) {
-		if (model == null || !DATE_FIELDS.contains(model.getFldName())) return false;
+	protected static boolean paintStoredResult(FieldInstruction instruction, Node cachedResult) {
+		if (instruction == null || !DATE_FIELDS.contains(instruction.getName())) return false;
 		if (!org.docx4j.Docx4jProperties.getProperty(PROPERTY_DATE_CACHED_RESULT, false)) return false;
-		return cachedResultText(model).trim().length() > 0;
+		return cachedResultText(cachedResult).trim().length() > 0;
+	}
+
+	/** @deprecated since 17.3.5 (CR-067 D2), {@link #paintStoredResult(FieldInstruction, Node)} */
+	@Deprecated
+	protected static boolean paintStoredResult(FldSimpleModel model) {
+		return model != null && paintStoredResult(model.toInstruction(), model.getContent());
+	}
+
+	/**
+	 * The context an evaluated field reads: the package, the part being written, and the
+	 * document's language for the month and day names a date prints.
+	 *
+	 * @since 17.3.5 (CR-067)
+	 */
+	protected static FieldContext fieldContext(AbstractWmlConversionContext context) {
+		return FieldContext.of(context.getWmlPackage()).part(context.getCurrentPart()).language(documentLanguage(context));
+	}
+
+	/**
+	 * The field's result through {@link FieldEvaluators}, or null where it keeps its cached result.
+	 *
+	 * @since 17.3.5 (CR-067)
+	 */
+	protected static String evaluate(AbstractWmlConversionContext context, FieldInstruction instruction) throws TransformerException {
+		try {
+			return FieldEvaluators.evaluate(instruction, fieldContext(context));
+		} catch (Docx4JException e) {
+			throw new TransformerException(e);
+		}
 	}
 
 	public interface FldSimpleWriterHandler {
@@ -116,8 +148,28 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 
 		public int getProcessType();
 
-		public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc)
-				throws TransformerException;
+		/**
+		 * @deprecated since 17.3.5 (CR-067 D2): implement
+		 *             {@link #toNode(AbstractWmlConversionContext, FieldInstruction, Node, Document)}. One of the two
+		 *             must be overridden; each delegates to the other.
+		 */
+		@Deprecated
+		default Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc)
+				throws TransformerException {
+			return toNode(context, model.toInstruction(), model.getContent(), doc);
+		}
+
+		/**
+		 * The node for the field.
+		 *
+		 * @param instruction the field's instruction, parsed
+		 * @param cachedResult the result the document stores for the field (its content), or null
+		 * @since 17.3.5 (CR-067)
+		 */
+		default Node toNode(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult, Document doc)
+				throws TransformerException {
+			return toNode(context, FldSimpleModel.of(instruction, null, cachedResult), doc);
+		}
 
 		/**
 		 * Text representative of what the node will render as (eg "๑" for an
@@ -126,13 +178,38 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 		 *
 		 * @since 17.0.3
 		 */
+		default String getSampleText(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult) {
+			return getSampleText(context, FldSimpleModel.of(instruction, null, cachedResult));
+		}
+
+		/** @deprecated since 17.3.5 (CR-067 D2): override {@link #getSampleText(AbstractWmlConversionContext, FieldInstruction, Node)} */
+		@Deprecated
 		default String getSampleText(AbstractWmlConversionContext context, FldSimpleModel model) {
 			return null;
 		}
 	}
 	
 	public interface FldSimpleStringWriterHandler extends FldSimpleWriterHandler {
-		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException;
+		/**
+		 * @deprecated since 17.3.5 (CR-067 D2): implement
+		 *             {@link #toString(AbstractWmlConversionContext, FieldInstruction, Node)}. One of the two must be
+		 *             overridden; each delegates to the other.
+		 */
+		@Deprecated
+		default String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
+			return toString(context, model.toInstruction(), model.getContent());
+		}
+
+		/**
+		 * The field's text.
+		 *
+		 * @param instruction the field's instruction, parsed
+		 * @param cachedResult the result the document stores for the field (its content), or null
+		 * @since 17.3.5 (CR-067)
+		 */
+		default String toString(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult) throws TransformerException {
+			return toString(context, FldSimpleModel.of(instruction, null, cachedResult));
+		}
 	}
 
 	
@@ -141,8 +218,8 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 		public String getName() { return "DATE"; }
 
 		@Override
-		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-			return FormattingSwitchHelper.formatDate(model, new java.util.Date(), documentLanguage(context));
+		public String toString(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult) throws TransformerException {
+			return evaluate(context, instruction); // the context's clock, at the document's language
 		}
 	}
 	
@@ -151,8 +228,8 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 		public String getName() { return "TIME"; }
 
 		@Override
-		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-			return FormattingSwitchHelper.formatDate(model, new java.util.Date(), documentLanguage(context));
+		public String toString(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult) throws TransformerException {
+			return evaluate(context, instruction); // the context's clock, at the document's language
 		}
 	}
 	
@@ -162,8 +239,8 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 		public String getName() { return "PRINTDATE"; }
 
 		@Override
-		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-			return FormattingSwitchHelper.formatDate(model, new java.util.Date(), documentLanguage(context));
+		public String toString(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult) throws TransformerException {
+			return evaluate(context, instruction); // the context's clock, at the document's language
 		}
 	}
 
@@ -195,8 +272,7 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 		public String getName() { return "DOCPROPERTY"; }
 
 		@Override
-		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-
+		public String toString(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult) throws TransformerException {
 			/* Word does not re-evaluate a DOCPROPERTY when it opens or prints a document:
 			 * it paints the result the field cached, and only F9 (or an explicit update)
 			 * changes it.  Where the two have diverged, the cached result is therefore
@@ -209,34 +285,19 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 			 * the property instead.  @since 17.1.0 */
 			if (org.docx4j.Docx4jProperties.getProperty(
 					"docx4j.convert.out.fields.docPropertyCachedResult", true)) {
-				String cached = cachedResultText(model);
+				String cached = cachedResultText(cachedResult);
 				if (cached.trim().length() > 0) return cached;
 			}
-
-			// First, get the value
-			DocPropertyResolver dpr = new DocPropertyResolver(context.getWmlPackage());
-			String key = model.getFldArgument();
-			
-			try {
-				String value = dpr.getValue(key);
-				if (value == null) {
-					throw new FieldValueException("No value found for DOCPROPERTY " + key);
-				}
-				log.debug("= " + value);
-				return FormattingSwitchHelper.applyFormattingSwitch(context.getWmlPackage(), model, value);
-			} catch (FieldValueException e) {
-
+			String value = evaluate(context, instruction); // the property, with the field's switches (CR-067)
+			if (value == null) {
 				// The document property doesn't exist (or has no value).  Word displays
 				// the field's cached result in that case, so we do the same, rather than
 				// failing the export.  @since 17.0.5
-				String cached = cachedResultText(model);
-				log.warn(e.getMessage() + "; using the cached field result '" + cached + "'");
+				String cached = cachedResultText(cachedResult);
+				log.warn("No value found for DOCPROPERTY " + instruction.getArgument() + "; using the cached field result '" + cached + "'");
 				return cached;
-
-			} catch (Docx4JException e) {
-
-				throw new TransformerException(e);
 			}
+			return value;
 		}
 	}
 
@@ -247,10 +308,15 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 	 *
 	 * @since 17.0.5
 	 */
-	protected static String cachedResultText(FldSimpleModel model) {
-		Node content = (model == null ? null : model.getContent());
+	protected static String cachedResultText(Node content) {
 		String text = (content == null ? null : content.getTextContent());
 		return (text == null ? "" : text);
+	}
+
+	/** @deprecated since 17.3.5 (CR-067 D2), {@link #cachedResultText(Node)} */
+	@Deprecated
+	protected static String cachedResultText(FldSimpleModel model) {
+		return cachedResultText(model == null ? null : model.getContent());
 	}
 	
 	//NB, see also FldSimpleWriter, where PAGE handler is defined.
@@ -294,8 +360,8 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 			}
 			
 			@Override
-			public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException {
-				return model.getContent();
+			public Node toNode(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult, Document doc) throws TransformerException {
+				return cachedResult;
 			}
 
 			@Override
@@ -307,16 +373,16 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 
 	@Override
 	public Node toNode(AbstractWmlConversionContext context, Object unmarshalledNode, Node content, TransformState state, Document doc) throws TransformerException {
-	FldSimpleModel fldSimpleModel = new FldSimpleModel();
-		fldSimpleModel.build((CTSimpleField)unmarshalledNode, content);
+	CTSimpleField field = (CTSimpleField)unmarshalledNode;
+		FieldInstruction instruction = FieldInstruction.parse(field.getInstr());
 		
-		log.debug("looking for handler for " + fldSimpleModel.getFldName());
+		log.debug("looking for handler for " + instruction.getName());
 		
-		FldSimpleWriterHandler handler = handlers.get(fldSimpleModel.getFldName());
+		FldSimpleWriterHandler handler = handlers.get(instruction.getName());
 		FldSimpleNodeWriterHandler nodeHandler = null;
 		Node ret = null;
 		String value = null;
-		if (handler != null && paintStoredResult(fldSimpleModel)) {
+		if (handler != null && paintStoredResult(instruction, content)) {
 			// docx4j.convert.out.fields.dateCachedResult: the stored result, as the
 			// default handler paints it for a field type we have no handler for
 			log.debug(".. painting the stored result (" + PROPERTY_DATE_CACHED_RESULT + ")");
@@ -354,26 +420,26 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 		if (handler instanceof FldSimpleNodeWriterHandler) {
 			
 			nodeHandler = (FldSimpleNodeWriterHandler)handler;
-			ret = nodeHandler.toNode(context, fldSimpleModel, doc);
+			ret = nodeHandler.toNode(context, instruction, content, doc);
 			switch (nodeHandler.getProcessType()) {
 				case FldSimpleNodeWriterHandler.PROCESS_NONE:
 					break;
 				case FldSimpleNodeWriterHandler.PROCESS_APPLY_STYLE:
-					applyStyle(context, fldSimpleModel, ret, nodeHandler.getSampleText(context, fldSimpleModel));
+					applyStyle(context, field, ret, nodeHandler.getSampleText(context, instruction, content));
 					break;
 				case FldSimpleNodeWriterHandler.PROCESS_WRAP_APPLY_STYLE:
 					ret = wrap(context, ret, doc);
-					applyStyle(context, fldSimpleModel, ret, nodeHandler.getSampleText(context, fldSimpleModel));
+					applyStyle(context, field, ret, nodeHandler.getSampleText(context, instruction, content));
 					break;
 			}
 		}
 		else { // FldSimpleStringWriterHandler
 
-			value = ((FldSimpleStringWriterHandler)handler).toString(context, fldSimpleModel);
+			value = ((FldSimpleStringWriterHandler)handler).toString(context, instruction, content);
 			ret = wrap(context, value, doc);
 			// applyStyle treats all 3 cases like CHARFORMAT,
 			// so implementing MERGEFORMAT is a TODO
-			applyStyle(context, fldSimpleModel, ret, value);
+			applyStyle(context, field, ret, value);
 		}
 		return ret;
 	}
@@ -408,8 +474,20 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 	 * @param fldSimpleModel
 	 * @param node
 	 */
+	protected void applyStyle(AbstractWmlConversionContext context, CTSimpleField field, Node node) {
+		applyStyle(context, field, node, null);
+	}
+
+	/** @deprecated since 17.3.5 (CR-067 D2), {@link #applyStyle(AbstractWmlConversionContext, CTSimpleField, Node)} */
+	@Deprecated
 	protected void applyStyle(AbstractWmlConversionContext context, FldSimpleModel fldSimpleModel, Node node) {
-		applyStyle(context, fldSimpleModel, node, null);
+		applyStyle(context, fldSimpleModel.getFldSimple(), node, null);
+	}
+
+	/** @deprecated since 17.3.5 (CR-067 D2), {@link #applyStyle(AbstractWmlConversionContext, CTSimpleField, Node, String)} */
+	@Deprecated
+	protected void applyStyle(AbstractWmlConversionContext context, FldSimpleModel fldSimpleModel, Node node, String resultText) {
+		applyStyle(context, fldSimpleModel.getFldSimple(), node, resultText);
 	}
 
 	/**
@@ -423,12 +501,10 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 	 *        depends on the characters).  May be null.
 	 * @since 17.0.3
 	 */
-	protected void applyStyle(AbstractWmlConversionContext context, FldSimpleModel fldSimpleModel, Node node, String resultText) {
-
-		CTSimpleField ctSimpleField = fldSimpleModel.getFldSimple();
+	protected void applyStyle(AbstractWmlConversionContext context, CTSimpleField ctSimpleField, Node node, String resultText) {
 		RPr rPr = null;
 		if (node != null) {
-			R r = getR(ctSimpleField.getContent());
+			R r = ctSimpleField == null ? null : getR(ctSimpleField.getContent());
 			rPr = (r == null ? null : r.getRPr());
 			if (rPr != null) {
 				List<Property> properties = PropertyFactory.createProperties(context.getWmlPackage(), rPr);

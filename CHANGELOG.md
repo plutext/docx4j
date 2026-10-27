@@ -95,6 +95,16 @@ Changes in Version 17.3.5
   title (#244).
 * VariablePrepare joins the runs a ${key} is split across whatever their formatting, so
   variableReplace finds it (#572); variableReplace no longer throws on a ${ with no }.
+* Fields are evaluated in one place (CR-067 phase 0): org.docx4j.model.fields.FieldInstruction parses
+  an instruction once (name, argument, switches); FieldContext carries what an evaluator may read (the
+  package and part, a clock, the language, the user, a file name, an external resolver absent by
+  default); FieldEvaluators holds one evaluator per field name (DOCPROPERTY, DOCVARIABLE, the
+  document-information fields, SEQ, REF, QUOTE, DATE, TIME, PRINTDATE), and a caller may register its
+  own. FieldUpdater, the text extraction's `fields: update` and the PDF and HTML field writers all go
+  through it; what each evaluates is unchanged in this phase. FieldUpdater.only(names) narrows or
+  widens the set it updates. FldSimpleModel is deprecated, with the FormattingSwitchHelper and
+  writer-handler signatures that carried it (FieldInstruction overloads replace them; a handler on the
+  old interface still works). FieldsPreprocessor's result handling is one path (every result kept).
 * FieldUpdater updates the document information fields AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY,
   SUBJECT and TITLE, as it does DOCPROPERTY (#277); DOCPROPERTY Keywords is read; a simple
   DOCPROPERTY's quoted property name is found.

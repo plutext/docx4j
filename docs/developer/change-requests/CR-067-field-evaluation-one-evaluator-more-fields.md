@@ -1,6 +1,6 @@
 # CR-067: one field evaluator, and the fields worth adding
 
-Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 IN PROGRESS 2026-10-28.
+Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 DONE 2026-10-28 (§10); phase 1 next.
 PROPOSED 2026-10-28, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's word ("draft the CR,
 including your review as context"), from a review of `FieldsPreprocessor` and the field code around it (§1, §2) and
 of the ECMA-376 field set by category (§3). Recommendations in §5; phases in §6. D2 ruled 2026-10-28 (FldSimpleModel deprecated). Nothing built.
@@ -134,7 +134,7 @@ measurement behind it.
 
 | Phase | Work | Status |
 |---|---|---|
-| 0 | The enabler: `FieldInstruction`, `FieldContext`, `FieldEvaluator` (D1, D2, D10); `FieldUpdater`, `FieldValues` and the DATE, TIME, PRINTDATE and DOCPROPERTY writer handlers moved onto it with no behaviour change; `FldSimpleModel` and the signatures carrying it deprecated, every in-tree user moved (D2); the `preserveResult` fold (D9); parser tests from the corpus instructions; every existing field test green | in progress 2026-10-28 |
+| 0 | The enabler: `FieldInstruction`, `FieldContext`, `FieldEvaluator` (D1, D2, D10); `FieldUpdater`, `FieldValues` and the DATE, TIME, PRINTDATE and DOCPROPERTY writer handlers moved onto it with no behaviour change; `FldSimpleModel` and the signatures carrying it deprecated, every in-tree user moved (D2); the `preserveResult` fold (D9); parser tests from the corpus instructions; every existing field test green | DONE 2026-10-28 (§10) |
 | 1 | Tier 1: CREATEDATE, SAVEDATE, REVNUM, INFO, SECTION, NOTEREF, REF, QUOTE, USERNAME, USERINITIALS, USERADDRESS, each in all three consumers, each with a Word measurement (a probe docx saved by Word, its results the oracle); REF inside a hyperlink if the measurement needs it (D9) | proposed |
 | 2 | Tier 2: the expression evaluator (`=`, COMPARE, IF within a paragraph) after D6's measurement; then NEXTIF, SKIPIF, SET, ASK, FILLIN, MERGEREC, MERGESEQ in the mergers; the combiner evaluates a resultless IF whose operands it can (a PAGE operand still cannot be decided per page and keeps today's drop) | proposed |
 | 3 | Tier 3: INDEX generated from XE marks (as `TocGenerator` does for TOC); LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT from the CR-014 numbering model; NUMWORDS, NUMCHARS from the text model; FILENAME, TEMPLATE; SYMBOL; ADDRESSBLOCK, GREETINGLINE | proposed |
@@ -175,3 +175,39 @@ Rules Word has not been seen to apply, kept here until a probe round measures th
 - SEQ `\s` (reset at a heading level).
 - What Word shows for USERNAME and the other user-information fields when the user is unknown.
 - INFO with each of its argument names, against the document-information field of the same name.
+
+## 10. Phase 0 built (2026-10-28)
+
+- **`FieldInstruction`** (D2): `parse(String)` gives the name (upper case; `=` for a formula), the parameter text, the
+  parameters as Word tokenises them (a quoted one keeps its quotes), `getArgument()` (the first parameter where it is not
+  a switch, unquoted), `hasSwitch`, `getSwitchValue` (`\* MERGEFORMAT` skipped as the switch helper skips it),
+  `getSwitchValues`, `indexOfSwitch`, `valueAt`. The tokeniser is `FldSimpleModel`'s, moved; `FieldInstructionTest`
+  reads 31 shapes through both and compares every accessor, so nothing a consumer read has changed.
+- **`FieldContext`** (D10, D8): package, part, clock (now by default), language (null by default, as the updater
+  passed; `documentLanguage(pkg)` for the writers), user, file name, `External` resolver (null by default), lazy
+  `DocPropertyResolver` and `DocVariableResolver`, and the pass's SEQ counters and bookmark texts.
+- **`FieldEvaluator`** and **`FieldEvaluators`** (D1): the registry by name, `register`, `get`, `has`, `names`,
+  `evaluate(instruction, context)` applying `FormattingSwitchHelper` unless the evaluator `formatsItself()` (the date
+  fields read their own `\@`). Registered: DOCPROPERTY, DOCVARIABLE, AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY, SUBJECT,
+  TITLE, REVNUM, CREATEDATE, SAVEDATE, SEQ, REF, QUOTE, DATE, TIME, PRINTDATE: the union of what the three evaluators
+  computed, so the registry has the capability now and each consumer keeps its own set until phase 1.
+- **Consumers.** `FieldUpdater` evaluates through the registry with a name filter (`only(Set)`; the default is its
+  set before this CR: DOCPROPERTY, DOCVARIABLE and the six document-information fields), and keeps its policies (a
+  locked field, a document-information field with an argument, MERGEFORMAT's first-run formatting, `formatNewResult`
+  for DOCPROPERTY). The inspector's `FieldValues` is a thin consumer with the WD REQ-506 set (DATE, TIME and PRINTDATE
+  excluded there, as before). `AbstractFldSimpleWriter`'s DATE, TIME, PRINTDATE and DOCPROPERTY handlers evaluate
+  through the registry with the document's language; the cached-result preferences (`dateCachedResult`,
+  `docPropertyCachedResult`) stay the writer's.
+- **Deprecations** (D2): `FldSimpleModel` (delegating; `of(instruction, field, content)` for a handler on the old
+  interface), `FormattingSwitchHelper.applyFormattingSwitch` and the four `formatDate`s on it (`FieldInstruction`
+  overloads), the handler interfaces' `toNode`, `toString` and `getSampleText` on it (`FieldInstruction` + cached-result
+  `Node` forms, each pair of defaults delegating to the other so a third-party handler on either compiles),
+  `AbstractFldSimpleWriter.applyStyle`, `paintStoredResult` and `cachedResultText` on it (`CTSimpleField` and `Node`
+  forms), `AbstractHyperlinkWriterModel.build` on it. Every in-tree user moved: the HTML and FO `FldSimpleWriter`s,
+  `RefHandler`, `AbstractPagerefHandler`, `AbstractHyperlinkWriter`, `PageNumberInformationCollector`, the two mergers,
+  `FieldUpdaterSEQ`, `CSwitch`, `FieldUpdater`, `FieldValues`.
+- **`FieldsPreprocessor`** (D9): the `preserveResult` branches folded (the constant was already `true`); the two
+  methods gone; the class comment says what the result rule is.
+- Gate (2026-10-28): the sixteen field test classes (228 tests) unchanged and green; core-tests 2187/0/30 (the eleven new
+  tests included); export-fo-tests 858/0/9. The diffx suite does not touch fields and was not rerun.
+

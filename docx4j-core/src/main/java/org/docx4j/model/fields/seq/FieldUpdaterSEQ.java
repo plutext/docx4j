@@ -20,7 +20,7 @@ import org.docx4j.mce.AlternateContent;
 import org.docx4j.model.fields.ComplexFieldLocator;
 import org.docx4j.model.fields.FieldRef;
 import org.docx4j.model.fields.FieldsPreprocessor;
-import org.docx4j.model.fields.FldSimpleModel;
+import org.docx4j.model.fields.FieldInstruction;
 import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.fields.SimpleFieldLocator;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -175,7 +175,7 @@ public class FieldUpdaterSEQ {
 	
 	public void updateSimple(JaxbXmlPart part) throws Docx4JException {
 		
-		FldSimpleModel fsm = new FldSimpleModel(); //gets reused
+		FieldInstruction fsm = null;
 		List contentList = ((ContentAccessor)part).getContent();
 		WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)part.getPackage();
 		
@@ -194,13 +194,9 @@ public class FieldUpdaterSEQ {
 			String fldSimpleName = FormattingSwitchHelper.getFldSimpleName(simpleField.getInstr());
 			if (SEQ.equals(fldSimpleName)) {
 				//only parse those fields that get processed
-				try {
-					fsm.build(simpleField.getInstr());
-				} catch (TransformerException e) {
-					e.printStackTrace();
-				}
+				fsm = FieldInstruction.parse(simpleField.getInstr());
 				
-				String key = fsm.getFldParameters().get(0);
+				String key = fsm.getParameters().get(0);
 				enter(pathOf(paths, simpleField));
 				String val = getValue(key) +"";
 				
@@ -253,7 +249,7 @@ public class FieldUpdaterSEQ {
 
 	public void updateComplex(JaxbXmlPart part) throws Docx4JException {
 		
-		FldSimpleModel fsm = new FldSimpleModel(); //gets reused
+		FieldInstruction fsm = null;
 		List contentList = ((ContentAccessor)part).getContent();
 		WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)part.getPackage();
 		
@@ -293,18 +289,14 @@ public class FieldUpdaterSEQ {
 			if (SEQ.equals(fldName) ) {
 				
 				String instr = fr.getInstr();
-				try {
-					fsm.build(instr);
-				} catch (TransformerException e) {
-					e.printStackTrace();
-				}
+				fsm = FieldInstruction.parse(instr);
 
 				String val = null;
 				String key = null;
 				
 				// Safe checking when fldParameters is 0 (and null just for good measure)
-				if (fsm.getFldParameters() != null && fsm.getFldParameters().size() > 0) {
-					key = fsm.getFldParameters().get(0);
+				if (fsm.getParameters() != null && fsm.getParameters().size() > 0) {
+					key = fsm.getParameters().get(0);
 					
 					// Remove any " char that may appear in the key name
 					if (log.isDebugEnabled() ) {

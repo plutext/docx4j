@@ -22,7 +22,7 @@ package org.docx4j.convert.out.common.writer;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
-import org.docx4j.model.fields.FldSimpleModel;
+import org.docx4j.model.fields.FieldInstruction;
 import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -43,13 +43,13 @@ public class RefHandler implements AbstractFldSimpleWriter.FldSimpleNodeWriterHa
 	}
 
 	@Override
-	public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException {
-	Node ret = model.getContent();
+	public Node toNode(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult, Document doc) throws TransformerException {
+	Node ret = cachedResult;
 	AbstractHyperlinkWriterModel hyperlinkModel = null;
-		if (FormattingSwitchHelper.hasSwitch("\\h", model.getFldParameters())) {
+		if (instruction.hasSwitch("\\h")) {
 			hyperlinkModel = new AbstractHyperlinkWriterModel();
-			hyperlinkModel.build(context, model, model.getContent()); //the bookmark is the target, \h gets ignored
-			ret = HyperlinkUtil.toNode(outputType, context, hyperlinkModel, model.getContent(), doc);
+			hyperlinkModel.build(context, instruction, cachedResult); //the bookmark is the target, \h gets ignored
+			ret = HyperlinkUtil.toNode(outputType, context, hyperlinkModel, cachedResult, doc);
 		}
 		return ret;
 	}

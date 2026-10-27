@@ -29,7 +29,7 @@ import org.docx4j.convert.out.common.writer.AbstractFldSimpleWriter;
 import org.docx4j.convert.out.common.writer.AbstractPagerefHandler;
 import org.docx4j.convert.out.common.writer.HyperlinkUtil;
 import org.docx4j.convert.out.common.writer.RefHandler;
-import org.docx4j.model.fields.FldSimpleModel;
+import org.docx4j.model.fields.FieldInstruction;
 import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
@@ -50,7 +50,7 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 	 *  (NUMPAGES/SECTIONPAGES use the page number format too; see the comment in
 	 *  AbstractFOExporter.getSectionPageInformation.)
 	 *
-	 *  TODO: a \* format switch on the field itself (model.getFldParameters())
+	 *  TODO: a \* format switch on the field itself (instruction.getParameters())
 	 *  overrides the section format, and is ignored here.  Note that honouring it
 	 *  for PAGE would take more than a different sample: fo:page-number is
 	 *  formatted by FOP per the page-sequence's @format, which is per section.
@@ -83,23 +83,22 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		boolean inHeaderOrFooter = context.getCurrentPart() instanceof HeaderPart
 				|| context.getCurrentPart() instanceof FooterPart;
 		if (!inHeaderOrFooter) return null;
-		FldSimpleModel model = new FldSimpleModel();
-		model.build(field, content);
+		FieldInstruction instruction = FieldInstruction.parse(field.getInstr());
 		String styleId = StyleRefMarkers.retrievedStyleId(context.getWmlPackage(), true,
-				model.getFldName(), model.getFldParameters());
+				instruction.getName(), instruction.getParameters());
 		if (styleId == null) return null;
 		Element retrieve = doc.createElementNS(FO_NS, "fo:retrieve-marker");
 		retrieve.setAttribute("retrieve-class-name",
-				StyleRefMarkers.className(styleId, StyleRefMarkers.wantsNumber(model.getFldParameters())));
+				StyleRefMarkers.className(styleId, StyleRefMarkers.wantsNumber(instruction.getParameters())));
 		retrieve.setAttribute("retrieve-position",
-				StyleRefMarkers.wantsLast(model.getFldParameters()) ? "last-starting-within-page"
+				StyleRefMarkers.wantsLast(instruction.getParameters()) ? "last-starting-within-page"
 						: "first-starting-within-page");
 		retrieve.setAttribute("retrieve-boundary", "document");
 		Node ret = wrap(context, retrieve, doc);
 		// the field's run formatting (which \* MERGEFORMAT keeps), and a font chosen on
 		// the stored result, which is text of the same kind as what will be retrieved
 		String sample = (content == null ? null : content.getTextContent());
-		applyStyle(context, model, ret, (sample == null || sample.trim().isEmpty()) ? "A" : sample);
+		applyStyle(context, field, ret, (sample == null || sample.trim().isEmpty()) ? "A" : sample);
 		return ret;
 	}
 
@@ -110,12 +109,12 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		public int getProcessType() { return PROCESS_APPLY_STYLE; }
 
 		@Override
-		public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException {
+		public Node toNode(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult, Document doc) throws TransformerException {
 			return doc.createElementNS(FO_NS, "fo:page-number");
 		}
 
 		@Override
-		public String getSampleText(AbstractWmlConversionContext context, FldSimpleModel model) {
+		public String getSampleText(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult) {
 			return pageNumberSample(context);
 		}
 	}
@@ -132,7 +131,7 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		public int getProcessType() { return PROCESS_APPLY_STYLE; }
 		
 		@Override
-		public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException {
+		public Node toNode(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult, Document doc) throws TransformerException {
 		Element ret = null;
 			if (((FOConversionContext)context).isRequires2Pass()) {
 				ret = doc.createElementNS(FO_NS, "fo:inline");
@@ -165,7 +164,7 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		}
 
 		@Override
-		public String getSampleText(AbstractWmlConversionContext context, FldSimpleModel model) {
+		public String getSampleText(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult) {
 			return pageNumberSample(context);
 		}
 
@@ -221,12 +220,12 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		}
 
 		@Override
-		public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException {
-			Node error = fieldError(context, model, doc, ERROR_BOOKMARK_NOT_DEFINED);
+		public Node toNode(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult, Document doc) throws TransformerException {
+			Node error = fieldError(context, instruction, cachedResult, doc, ERROR_BOOKMARK_NOT_DEFINED);
 			if (error != null) return error;
-			Node node = super.toNode(context, model, doc);
-			String shape = XsltFOFunctions.realTabs() && model.getContent() != null
-					? placeholderShape(getTextcontent(model.getContent())) : null;
+			Node node = super.toNode(context, instruction, cachedResult, doc);
+			String shape = XsltFOFunctions.realTabs() && cachedResult != null
+					? placeholderShape(getTextcontent(cachedResult)) : null;
 			if (shape != null) markCitations(node, shape);
 			return node;
 		}
@@ -271,9 +270,9 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		}
 
 		@Override
-		public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException {
-			Node error = fieldError(context, model, doc, ERROR_REFERENCE_SOURCE_NOT_FOUND);
-			return error != null ? error : super.toNode(context, model, doc);
+		public Node toNode(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult, Document doc) throws TransformerException {
+			Node error = fieldError(context, instruction, cachedResult, doc, ERROR_REFERENCE_SOURCE_NOT_FOUND);
+			return error != null ? error : super.toNode(context, instruction, cachedResult, doc);
 		}
 	}
 
@@ -299,15 +298,15 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 	 *
 	 * @since 17.3.1
 	 */
-	static Node fieldError(AbstractWmlConversionContext context, FldSimpleModel model, Document doc, String text) {
+	static Node fieldError(AbstractWmlConversionContext context, FieldInstruction instruction, Node content, Document doc, String text) {
 		if ("cached".equalsIgnoreCase(org.docx4j.Docx4jProperties.getProperty(
 				"docx4j.convert.out.fo.fieldErrors", "en"))) return null;
-		List<String> params = model.getFldParameters();
+		List<String> params = instruction.getParameters();
 		if (params == null || params.isEmpty() || !context.isMissingBookmark(params.get(0))) return null;
 		Element wrapper = doc.createElementNS(FO_NS, "fo:inline");
 		wrapper.setAttribute(WordLayoutFixups.HINT_FIELD_ERROR, "1");
 		// (treeCopy, not importNode: on the XSLT pathway the content is Xalan's, which refuses it)
-		if (model.getContent() != null) org.docx4j.XmlUtils.treeCopy(model.getContent(), wrapper);
+		if (content != null) org.docx4j.XmlUtils.treeCopy(content, wrapper);
 		// the text goes where the result's first text was, in that text's formatting
 		List<org.w3c.dom.Text> texts = new java.util.ArrayList<org.w3c.dom.Text>();
 		collectTexts(wrapper, texts);

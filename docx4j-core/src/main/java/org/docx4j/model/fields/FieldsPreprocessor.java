@@ -39,6 +39,9 @@ import java.util.NoSuchElementException;
  * Note that step 1 is optional.  It is generally only performed
  * for MERGEFIELD.  
  * 
+ * A field's result is kept, whatever the field (since 17.3.5): a caller that doesn't write a result keeps the one
+ * the field was read with; one that writes replaces it (FieldRef.setResult) or empties it (clearResult).
+ *
  * Currently the canonicalisation is done at the paragraph level,
  * so it is not suitable for fields (such as TOC) which extend across paragraphs.
  * TOC will need to be regenerated if touched by canonicalisation.
@@ -293,27 +296,6 @@ public class FieldsPreprocessor {
 		
 	}
 	
-	/**
-	 * A field's result is kept, whatever the field: one its caller doesn't write keeps the result it was read with, and
-	 * a caller that writes one replaces it ({@link FieldRef#setResult(String)}) or empties it
-	 * ({@link FieldRef#clearResult()}). Until 17.3.5 an unlocked MERGEFIELD's or DOCPROPERTY's result was dropped
-	 * here, whoever the caller, so FieldUpdater emptied MERGEFIELDs, MailMerger emptied DOCPROPERTYs, and FieldUpdater
-	 * emptied a DOCPROPERTY whose property it couldn't find.
-	 */
-	private boolean preserveResult(FieldRef fieldRef) {
-		return true;
-	}
-
-	private boolean preserveParentResult() {
-		
-		FieldRef thisField = stack.pop();
-		FieldRef parentField = stack.pop();
-		boolean preserveParentResult = preserveResult(parentField);
-		// restore stack
-		stack.push(parentField);
-		stack.push(thisField);
-		return preserveParentResult;
-	}
 	
 	private void handleRun(R existingRun, ContentAccessor newAttachPoint) {
 		
@@ -350,10 +332,8 @@ public class FieldsPreprocessor {
 				
 				if (inParentResult()) {
 					
-					if (preserveParentResult()) {
+					{
 						newR.getContent().add(o2);
-					} else {
-						log.debug(".. but in result, so don't add to run");
 					}
 					
 				} else {
@@ -382,10 +362,8 @@ public class FieldsPreprocessor {
 				
 				if (inParentResult()) {
 
-					if (preserveParentResult()) {
+					{
 						newR.getContent().add(o2);
-					} else {
-						log.debug(".. but in result, so don't add to run");
 					}
 
 				} else {
@@ -413,7 +391,7 @@ public class FieldsPreprocessor {
 				
 				if (inParentResult()) {
 
-					if (preserveParentResult()) {
+					{
 						
 						newR.getContent().add(o2);
 
@@ -464,8 +442,6 @@ public class FieldsPreprocessor {
 							}
 							newR = Context.getWmlObjectFactory().createR();						
 						}						
-					} else {
-						log.debug(".. but in result, so don't add to run");
 					}
 
 				} else {  // still in END processing
@@ -561,10 +537,8 @@ public class FieldsPreprocessor {
 				currentField.getInstructions().add(o2);
 				if (inParentResult()) {
 
-					if (preserveParentResult()) {
+					{
 						newR.getContent().add(o2);
-					} else {
-						log.debug(".. but in result, so don't add to run");
 					}
 
 				} else {				

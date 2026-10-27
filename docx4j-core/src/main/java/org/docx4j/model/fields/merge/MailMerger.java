@@ -21,7 +21,7 @@ import org.docx4j.model.fields.AbstractMerger;
 import org.docx4j.model.fields.ComplexFieldLocator;
 import org.docx4j.model.fields.FieldRef;
 import org.docx4j.model.fields.FieldsPreprocessor;
-import org.docx4j.model.fields.FldSimpleModel;
+import org.docx4j.model.fields.FieldInstruction;
 import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.model.structure.PageSizePaper;
@@ -245,18 +245,11 @@ public class MailMerger extends AbstractMerger {
 				} else {
 					
 					// Now format the result
-					FldSimpleModel fsm = new FldSimpleModel();
-					try {
-						fsm.build(instr);
-						val = FormattingSwitchHelper.applyFormattingSwitch(input, fsm, val, lang);
-						
-						gFormat = FormattingSwitchHelper.findFirstSwitchValue("\\*", fsm.getFldParameters(), true);
-						// Solely for potential use in OutputField.AS_FORMTEXT_REGULAR
+					FieldInstruction fsm = FieldInstruction.parse(instr);
+					val = FormattingSwitchHelper.applyFormattingSwitch(input, fsm, val, lang);
+					gFormat = fsm.getSwitchValue("\\*");
+					// Solely for potential use in OutputField.AS_FORMTEXT_REGULAR
 						// We are in fact applying all formatting switches above.
-						
-					} catch (TransformerException e) {
-						log.warn("Can't format the field", e);
-					}
 					
 					fr.formatNewResult();
 					fr.setResult(val);
