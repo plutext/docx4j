@@ -186,8 +186,9 @@ builder (`InspectMetafiles.emf73`), fixed the same day; the inspector read its r
 `extraction-probe-inspect-r5.docx` (sha256 d5b6ee0c…), Word 365 version 2608 build 20326.20232 (the first
 check to record the full build), Print Layout; Jason's screenshot of the eight cases, no repair or
 prompt reported. The page break falls after case 77, so page 2's header (`HDR63_USED`, `SVG71_HEADER`,
-`RNG81_HEADER`) shows above case 78. Word's save of the file not yet returned; the probe rounds (CR-066
-§3.1, §3.4) already measured what Word writes back for every value used here.
+`RNG81_HEADER`) shows above case 78. Word's save, `extraction-probe-inspect-r5-word365.docx` (sha256 3a14d34c…,
+kept on the share with the probe rounds' saves, not here), read the same day: every value written back as the
+`value.out_of_range` summaries' `word_reads` say, a second measurement beside CR-066 §3.1 and §3.4.
 
 | Case | Looked for | Word 365 |
 |---|---|---|
@@ -200,5 +201,12 @@ prompt reported. The page break falls after case 77, so page 2's header (`HDR63_
 | 81 | the used header's `w:ind/@w:right="66976"` (1440); a run's `w:spacing/@w:val="65537"` in an unselected `mc:Fallback` | `RNG81_HERE RNG81_CHOICE` on the page, the Fallback's text not shown; `RNG81_HEADER` as the header's last line (a 1 in right indent is not measurable on a short line) |
 | 82 | `w:pgNumType/@w:start="4294967295"` on the body's section (int32: -1) | `RNG82_SECTION`; no PAGE field in the fixture shows the start |
 
-What the inspector took from this: nothing to change. The eight cases open clean on Word 365 and show the
-readings the `value.out_of_range` summaries give (`word_reads=`), as the probe rounds said they would.
+Written back by Word's save: 75 `w:before="1"`, `w:left="720"`; 76 `w:tblW w:w="0" w:type="pct"`, `w:gridCol w:w="4464"` (recomputed
+from the cell), `w:tcW w:w="4464"`; 77 `w:pos="-31680"`; 78 `w:line="1" w:lineRule="atLeast"`, `w:hanging="1"`; 79 `w:trHeight
+w:hRule="exact" w:val="1"`, `w:top w:sz="0" w:space="0"`, the run's `w:w` dropped (100 is Word's default); 80 the style's
+`w:left="720"`, `w:hyphenationZone w:val="1"`; 81 the header's `w:right="1440"`, the `mc:AlternateContent` resolved to its
+w14 Choice (`RNG81_HERE RNG81_CHOICE` one run, the Fallback and its `w:spacing` gone, as Word's saves of cases 63 to 67
+did); 82 `w:pgNumType w:start="-1"`.
+
+What the inspector took from this: nothing to change. The eight cases open clean on Word 365, show the
+readings the `value.out_of_range` summaries give (`word_reads=`), and Word writes those readings back.
