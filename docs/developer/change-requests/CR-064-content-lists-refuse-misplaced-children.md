@@ -1,6 +1,6 @@
 # CR-064: content lists refuse misplaced children at the point of the mistake
 
-Status: ACCEPTED 2026-10-26 (Jason: "do CR-064"): D1 to D9 as recommended; phase 1 DONE 2026-10-26 (§8); phase 2 optional, open.
+Status: ACCEPTED 2026-10-26 (Jason: "do CR-064"): D1 to D9 as recommended; phase 1 DONE 2026-10-26 (§8); phase 2 optional, open; objects-ts implemented its side 2026-10-28 (§7); three refuse-only additions and a message nit open for Jason (§7).
 PROPOSED 2026-10-26, drafted by Claude Fable 5.1 (session docx4j-25) at Jason's word ("open the CR - are
 these checks cheap?"), after the portfolio session's manifesto work (docx4j_manifesto.md §2, D7) asked which common
 mistakes `ArrayListDocx4j.checkParent` should refuse beyond today's three. The hyperlink case Jason asked for first is
@@ -114,6 +114,28 @@ Estimate for phase 1: a day, most of it the gate.
 
 The TypeScript and Python ports have their own list types; whether they refuse misplaced children at add time is
 their question, sent with phase 1's hand-off, with this CR's table of mistakes as the list worth catching.
+
+**objects-ts (2026-10-28, objects CR-017, commit bb18596 there, unpushed):** implemented, M1 to M7 as Jason decided. It
+takes `checkParent`'s five sets plus sdt content in sdt content as befc57371 has them, a child tested by its class
+(the value's TYPE_NAME, or the class its element name gives, as D1's unwrap does); Text covers w:t, w:instrText,
+w:delInstrText and w:fldData; TcPr is refused in every block container with a message naming the container. core-ts's
+name-and-value rule sits on top, the class rule first. Its builders throw a TypeError in this CR's wording; its facade
+reports (onMisplaced on read and on save) rather than refusing, and core-ts refuses at save from that report. Gate:
+nothing in objects' fidelity corpus reaches the report, 342 marshalled parts byte-identical. Divergence recorded in
+objects CR-009 §10: nine wml elements (w:instrText, w:delInstrText, w:object, w:ruby, w:footnoteReference,
+w:endnoteReference, w:dir, w:bdo, w:subDoc) declared as roots on objects' side only, so a misplaced one reads typed
+there; docx4j declines them (its lax wildcards sit where none of the nine legitimately occurs; the inspector, the MCP
+server and docx4j-python are unaffected). Word's behaviour for §2's "unreadable content, then a repair", measured by
+core-ts check 72 (Jason, Word 365 build 20326.20232, 2026-10-27; core-ts CR-016 §7.1): of 18 files with one
+misplaced child each, 11 do not open at all (a run, bare text, a cell or a row in the body; a run beside a cell's
+paragraph; a table, a paragraph or bare text in a paragraph; a run in a run; a cell beside a table's row; a run beside
+a row's cells), 7 open silently repaired to the nearest fit, and only a string in a run loses content.
+
+**Open, for Jason (objects-ts's notes, 2026-10-28, verified against `checkParent` at HEAD):** three misplaced children
+pass today, each refuse-only: a `DelText` (not a subclass of `Text`) where `Text` is refused; `R.Tab` straight in a
+paragraph (§2 row 7 names it, §8 implements `Br` only); an `SdtBlock` in a `P` or an `SdtRun` in a block container.
+And a message nit: the `TcPr` branch sits in the block-container branch and says "a cell's content" for every
+container; `describe(parent)` is the fix. objects follows when docx4j adds them.
 
 ## 8. Phase 1 done (2026-10-26)
 
