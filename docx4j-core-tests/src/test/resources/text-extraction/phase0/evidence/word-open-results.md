@@ -180,3 +180,25 @@ them is not the bytes); an SVG's `<textPath>` text is reported though Word 365 d
 viewer does), noted on the kind's row in `../INSPECTION.md`. Case 73's fixture was a defect of the
 builder (`InspectMetafiles.emf73`), fixed the same day; the inspector read its records either way.
 
+
+## extraction-probe-inspect.docx: cases 75–82 (CR-066 phase 4, 27 October 2026)
+
+`extraction-probe-inspect-r5.docx` (sha256 d5b6ee0c…), Word 365 version 2608 build 20326.20232 (the first
+check to record the full build), Print Layout; Jason's screenshot of the eight cases, no repair or
+prompt reported. The page break falls after case 77, so page 2's header (`HDR63_USED`, `SVG71_HEADER`,
+`RNG81_HEADER`) shows above case 78. Word's save of the file not yet returned; the probe rounds (CR-066
+§3.1, §3.4) already measured what Word writes back for every value used here.
+
+| Case | Looked for | Word 365 |
+|---|---|---|
+| 75 | `w:spacing/@w:before="65537"` (uint16: 1) and `w:ind/@w:left="66256"` (int16: 720) | `RNG75_LEFT_BEFORE` indented half an inch, no extra space before it |
+| 76 | a one-cell table: `tblW` 65536 pct (int16: 0, auto), `gridCol` 70000 (unmeasured), `tcW` 70000 dxa (4464) | a one-cell table about 3 in wide, `RNG76_CELL` |
+| 77 | a left tab stop at `w:pos="32768"` (int16: -32768, clamped to -31680) | `RNG77_TAB`, nothing visible on the line |
+| 78 | `w:firstLine="65535"` (hanging 1) and `w:line="65535"` under `exact` (atLeast 1) | `RNG78_FIRSTLINE_LINE` looks single-spaced with no visible indent |
+| 79 | a row `w:trHeight="65537"` under `exact` (exact 1 twip), a border `w:sz="256"` (0) and `w:space="32"` (0), `w:w="65636"` (100 %) | the row is a line under the heading (`RNG79_ROW` clipped away); `RNG79_BORDER` with no top border; `RNG79_SCALE` at normal width |
+| 80 | style `ProbeWide` with `w:ind/@w:left="66256"` (720) in styles.xml; `w:hyphenationZone="65537"` (1) in settings.xml | `RNG80_STYLE` indented half an inch |
+| 81 | the used header's `w:ind/@w:right="66976"` (1440); a run's `w:spacing/@w:val="65537"` in an unselected `mc:Fallback` | `RNG81_HERE RNG81_CHOICE` on the page, the Fallback's text not shown; `RNG81_HEADER` as the header's last line (a 1 in right indent is not measurable on a short line) |
+| 82 | `w:pgNumType/@w:start="4294967295"` on the body's section (int32: -1) | `RNG82_SECTION`; no PAGE field in the fixture shows the start |
+
+What the inspector took from this: nothing to change. The eight cases open clean on Word 365 and show the
+readings the `value.out_of_range` summaries give (`word_reads=`), as the probe rounds said they would.
