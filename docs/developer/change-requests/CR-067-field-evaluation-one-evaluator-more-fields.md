@@ -160,7 +160,10 @@ the measurement and the expression grammar; phase 3 per item, INDEX the largest.
 ## 8. Hand-offs
 
 The TypeScript and Python ports have their own field handling (python's mail merge and update; core-ts's CR-002
-treats a field as one unit and its CR-012 extraction takes `fields: update` from the WD). Each phase's field list and
+treats a field as one unit and its CR-012 extraction takes `fields: update` from the WD). Phase 0's hand-off (2026-10-28):
+python-64 has no evaluator and no FieldUpdater port (its field code is `docx4j_py/model/fields/formatting.py` and
+`resolvers.py`, and the text model's `field_values.py`), so FieldInstruction, FieldContext and FieldEvaluators arrive
+there as one new CR when phase 1's field list and Word measurements go over; no python entry depends on CR-067 yet. Each phase's field list and
 Word measurements go to them when the phase lands; objects-ts is unaffected (no schema change). The MCP server's
 `extract_text` takes the inspector's set through the WD (D11). The portfolio registers this CR as `docx4j/CR-067` with
 phases 0 to 4.
