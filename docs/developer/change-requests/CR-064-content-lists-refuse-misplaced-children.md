@@ -97,7 +97,7 @@ for the reason that matters more, a wrong refusal.
 |---|---|---|
 | 0 | This CR, with the cost measured (§3) | done 2026-10-26 |
 | 1 | D1 to D7 in `ArrayListDocx4j.checkParent`; `ArrayListDocx4jTest` covering each rule and each container set (accepted children too: an R in a hyperlink, a Tr in a Tbl, a `JAXBElement<Text>` in an R, mc:AlternateContent anywhere); CHANGELOG; the D9 gate run and its numbers recorded here | DONE 2026-10-26 (§8) |
-| 2 | D8 (b), the tree validator, if wanted after phase 1 | optional |
+| 2 | D8 (b), the tree validator, if wanted after phase 1 | optional; not waited for by CR-066 D6, which its §10 (2026-10-27) takes to the CR-050 inspector |
 
 Estimate for phase 1: a day, most of it the gate.
 

@@ -1,7 +1,10 @@
 # CR-066: integer attributes written within Word's range; an out-of-range value reported on write and on read
 
-Status: PHASES 1 AND 2 DONE 2026-10-26 (§9; Jason: "do CR-066 phases 1 and 2"); phase 3's remaining hand-offs (ImportXHTML,
-D6 to the CR-064 validator and the inspector) open. ACCEPTED 2026-10-26 (Jason: "CR-066 decisions as recommended"): D1 to D8 as recommended in §4, D1, D4 and D7 as
+Status: PHASE 4 ACCEPTED 2026-10-27 (Jason: "commit, Decisions D9 to D14 as recommended"), build in progress. Phase 4 PROPOSED 2026-10-27 (§10, D6 in
+the CR-050 inspector, at Jason's word: "a CR-066 phase 3 addendum please", after "should we do CR-064 tree validator or CR-050
+inspector first?"). PHASES 1 AND 2 DONE 2026-10-26 (§9; Jason: "do
+CR-066 phases 1 and 2"); phase 3's hand-offs sent (ImportXHTML and the ports, 2026-10-26); D6's receiver decided by §10: the inspector,
+which exists, not the CR-064 validator, which does not. ACCEPTED 2026-10-26 (Jason: "CR-066 decisions as recommended"): D1 to D8 as recommended in §4, D1, D4 and D7 as
 amended by §3.1 (the width is per attribute; the type-level report is exact for the uniform types and the certain range for
 `ST_TwipsMeasure`; `ST_DecimalNumber` by attribute through D6 or a setter patch). Phase 0 DONE (CR-065
 phase 2 is in, fe449c35c). PROPOSED 2026-10-26, opened by Claude Fable 5.1 (session docx4j-25) at Jason's word ("Do new write-side CR with
@@ -25,8 +28,9 @@ Three things, in order: **measure** the range per attribute type (phase 0: wrap,
 the UI limit, keep, or refuse; one Word probe shared with the three ports, as CR-065's was); **report** an out-of-range
 value at marshal and at unmarshal (phase 1, in the print and parse methods CR-065 phase 2 binds to the integer simple
 types: WARN with the value Word will read, never a throw at save, never a rewrite on read); **guard** the helpers where a
-caller's units become twips (phase 2). The whole-tree check belongs to the CR-064 tree validator and the inspector when
-they exist, not to a new walker.
+caller's units become twips (phase 2). The whole-tree check belongs to the CR-050 inspector (phase 4, §10: a `value.out_of_range`
+finding per attribute, with the element, the attribute and Word's reading), not to a new walker; the CR-064 validator,
+named with it in D6, does not exist and is not needed for it.
 
 CR-065 is the read side (a decimal, an odd form; the lenient parse). This CR is the write side and the range. CR-065
 phase 2 ships first, without the range report, and gains it when phase 0 here answers; the class is the same.
@@ -279,7 +283,7 @@ uniform uint16.
 | D3 | On read | (a) WARN the same way and hold the value as written; (b) emulate Word's reading (wrap or clamp) | (a), agreeing with python-cd: emulating swaps one wrong number for another and destroys the evidence; the report says what Word shows. docx4j's HTML and PDF output of such a document therefore differ from Word's, knowingly. |
 | D4 | Which boundary | (a) the storage limit phase 0 shows (signed -32768..32767, unsigned 0..65535, if Word wraps); (b) Word's UI limit per attribute (pgSz 31680, `w:sz` 3276, position 3168, border sz 48, space 31, text scale 600, pct 5000) | **Answered by §3.1:** the storage limit, per attribute; the UI limits do not apply except tab stops (±31680 after the wrap) and page width (144..31681). A value between a UI limit and its storage limit is kept by Word and is not reported. |
 | D5 | Hard guards where a caller's units become twips | (a) `IllegalArgumentException` naming Word's range at `TblFactory.createTable` and the CSS converters' public constructors in `model/properties`; (b) WARN only; (c) nothing beyond D1 | (a) at `TblFactory` (a cell width beyond 16 bits is always a caller's mistake) and (b) at the CSS converters and `TocEntry`/`PageDimensions` for now (a CSS length that converts out of range, or margins wider than the page, come from a document, and ImportXHTML's users expect a document back; its own CR decides whether to throw). (a) for the converters when ImportXHTML's CR lands. |
-| D6 | A whole-tree check ("find every out-of-range value in this package") | (a) in the CR-064 D8(b) tree validator and the CR-050 inspector when they exist; (b) a new walker here | (a), later; D1's report is the floor every save gets. |
+| D6 | A whole-tree check ("find every out-of-range value in this package") | (a) in the CR-064 D8(b) tree validator and the CR-050 inspector when they exist; (b) a new walker here | (a), later; D1's report is the floor every save gets. **Settled 2026-10-27 (§10, D9):** the CR-050 inspector, which exists; the CR-064 validator is not waited for. |
 | D7 | Types covered | the integer simple types of CR-065 D4 that phase 0 shows are 16-bit; `ST_DecimalNumber` attributes individually (`CT_TblWidth/@w:w` by its `w:type`; `w:pgNumType/@w:start` as phase 0 finds); EMUs and counts excluded | **Amended by §3.1:** the range table is per attribute (§3.1's table); the type-level report carries the exact range for `ST_SignedTwipsMeasure`, `ST_SignedHpsMeasure`, `ST_TextScale`, `CT_HpsMeasure/@w:val`, `ST_EighthPointMeasure` and `ST_PointMeasure`, the certain range (outside -32768..65535) for `ST_TwipsMeasure`, nothing for `ST_DecimalNumber`; `w:tblW`, `w:tcW`, `w:tblInd` (int16) and `w:pgNumType/@w:start` (int32) by attribute (D6 or a setter patch). |
 | D8 | Report once per document | the same question as CR-065 D6: a static method has no document context | the same mechanism (a thread-local counter per load or save, or per value); decided in CR-065 phase 2 and reused. |
 
@@ -290,7 +294,8 @@ uniform uint16.
 | 0 | Round 5 of the Word probe (§3); the range per attribute recorded in §3.1 and sent to python-cd, objects-ts and core-ts | DONE 2026-10-26 (Jason's run; §3.1) |
 | 1 | D1 to D4, D7, D8: the range table (§3.1) and the report in the print and parse methods of CR-065 phase 2's class, exact for the uniform types and the certain range for `ST_TwipsMeasure`; tests per type with the probe's values; CHANGELOG | DONE 2026-10-26 (§9) |
 | 2 | D5: the guard at `TblFactory` (int16 for `w:tcW`, `w:gridCol` assumed uint16), the WARN at the CSS converters and `TocEntry` (tab stops ±31680); tests; CHANGELOG | DONE 2026-10-26 (§9) |
-| 3 | Hand-offs: §3.1's table to the three ports and to ImportXHTML (its CSS length conversion); D6, the per-attribute check, to the CR-064 validator and the inspector when they exist | ports told 2026-10-26; ImportXHTML told 2026-10-26 (§9); D6 waits on the validator and the inspector |
+| 3 | Hand-offs: §3.1's table to the three ports and to ImportXHTML (its CSS length conversion); D6, the per-attribute check, to the inspector (§10) | ports told 2026-10-26; ImportXHTML told 2026-10-26 (§9); D6 is phase 4 (2026-10-27) |
+| 4 | D6 in the CR-050 inspector (§10): the per-attribute table as one resource, `value.out_of_range` findings with the element, attribute, value, storage, range and Word's reading; the oracle; fixture cases; the WD proposal; the inspector's marshal silenced | ACCEPTED 2026-10-27 (D9 to D14 as recommended); in progress |
 
 ## 6. Risks
 
@@ -383,4 +388,126 @@ docx4j-export-fo-tests 858, docx4j-diffx-tests 246.
 out-of-range length and still write it; §3.1 and §3.4 are the ranges if its own CR decides to throw or clamp. The ports
 had §3.1 and §3.4 on 2026-10-26 (§8); core-ts's setter guard takes the measured range. D6 (the per-attribute check:
 `w:tblW`, `w:tcW`, `w:tblInd` int16, `w:pgNumType/@w:start` int32, the `ST_TwipsMeasure` attributes by their own width)
-goes to the CR-064 tree validator and the CR-050 inspector when they exist.
+went to the CR-064 tree validator and the CR-050 inspector "when they exist"; §10 (2026-10-27) takes it to the inspector, which does.
+
+## 10. Phase 3 addendum (2026-10-27): D6 goes to the inspector, as phase 4
+
+Written at Jason's word ("a CR-066 phase 3 addendum please"), after the question of 2026-10-27, "should we do CR-064
+tree validator or CR-050 inspector first?". The answer is neither in the order asked: the CR-050 inspector exists
+(its phases 0 to 4 done and pushed by 2026-10-21, `org.docx4j.model.text.Inspect`), so D6 is a new kind in a walker that
+already visits every part, not a validator to build first. CR-064's phase 2, the D8(b) validator, is optional, has one
+table row of design, and its consumers (tests, the MCP server) would be served by the inspector's walk if it is ever
+wanted; it stays optional and is not waited for (D9). CR-064 §5's phase 2 row is annotated to say so.
+
+### 10.1 What the inspector has, read 2026-10-27 on VERSION_17_3_5 at 109a8d47b
+
+- **Every part is reachable as a DOM.** `InspectPackage` indexes every part of the package (`pkg.getParts()`), and
+  `dom(name)` marshals a JAXB part on demand (`InspectXml.marshal`: the part's own `JAXBContext`, so the document, the
+  styles, settings, numbering, headers, footers, notes, comments, the glossary and an embedded docx one level deep are
+  all one call away; a `word`-mode load's `mc:AlternateContent` records are put back, so unselected branches are
+  walked too, CR-051). The DOM holds each integer attribute as docx4j holds it, written as held (D2), so it shows the
+  value a save would write, which is what Word will misread.
+- **A finding has the fields the ports asked for.** `InspectFinding`'s location is the package chain, the part name
+  and an element path (§2.4 of CR-050), with an optional text range and extraction address; its `summary` is free
+  text. python-cd's CR-020 §4.7 vocabulary for `value.out_of_range` (element, attribute, value, word_reads, storage,
+  range, part, path) fits that shape: part and path are the location, the rest the summary.
+- **A defect, by reading:** `InspectXml.marshal` opens no `LenientInteger` report scope, so the print methods of §9
+  run outside one and log one WARN per out-of-range value for every part the inspector marshals (`reportOutOfRange`'s
+  no-scope branch). An inspection of a document with such values therefore logs what the inspection should report.
+  Fixed in phase 4 whatever else is decided (D14).
+- **The oracle.** `support/inspect_oracle.py` is a second reading of the contract (lxml) over the same fixtures; it
+  gets the same check from the same table (D11), so the exact-set comparison of `expected-inspection.tsv` covers the
+  new kind as it covers the others.
+
+### 10.2 The kind
+
+`value.out_of_range` (the shared code of §9, `LenientInteger.CODE`; it already has the inspector's `family.name`
+shape), proposed to the WD as a REQ-902 row:
+
+| Kind | One finding | Visible | Reveal | Group |
+|---|---|---|---|---|
+| `value.out_of_range` | an integer attribute whose value is outside the width Word stores it in (§3.1, §3.4), at the element that carries it; one per attribute occurrence, never merged; every attribute of the measured types in every WordprocessingML part, unselected branches and an embedded docx one level deep included | - (not content a person reads: Word shows the wrapped or clamped measure, the page shows its effect) | unextractable (the number is not text; the WARN of §9 and this finding are its only report) | info |
+
+The summary carries the shared vocabulary in the agreed order, one `key=value` per field:
+`attribute=w:ind/@w:left value=7205001 storage=int16 range=-32768..32767 word_reads=-3959`. `word_reads` is given in
+the attribute's own terms, a string, since §3.1 and §3.4 show that Word's reading is not always a number in the same
+attribute: `hanging 3959` for `w:ind/@w:firstLine="7205001"` (one int16 field shared by the pair), `atLeast 3959` for
+`w:spacing/@w:line="7205001"` under `exact`, `h=28809 hRule dropped` for `w:framePr/@w:h`, `exact 32768` for
+`w:trHeight/@w:val="32768"`, `-31680` for a tab stop (wrap then clamp), `31681` for `w:pgSz/@w:w="32767"`,
+`computed (9360 in the probe)` for a negative `w:col/@w:w`, `dropped` for `w:trHeight` under `auto` (D12). For an
+attribute of a measured type that no round measured (`w:gridCol/@w:w`, `w:object`'s `dxaOrig`, the frame distances
+round 6 did not reach), the finding gives the type's certain range (§3.1, "outside -32768..65535 is changed") and
+`word_reads=changed` (D13), so the inspector is never less than the log. `ST_DecimalNumber` ids and counts, EMUs,
+`w:fitText` (not 16-bit, §3.4) and `w:pgNumType/@w:start` within int32 are not findings. Where the element path
+alone would not identify the attribute's rule, the summary also carries the deciding sibling: `type=dxa` or `pct`
+for a `CT_TblWidth`, `lineRule=exact` for `w:spacing/@w:line`, `hRule=exact` for `w:trHeight` and `w:framePr`.
+
+Location: the element's path in the part, no text range; the extraction address of the enclosing block where the
+text model has one (a paragraph of the body), else none (a style, the settings, a section's `w:sectPr`). Order: with
+the part's other findings, in document order (CR-050 §2.4). Membership: in every output, since it is not content, so
+its group is `info` under every option and format and it moves REQ-903's `info` count only; `extract_text` over MCP
+therefore shows it to an agent without an `inspect` call. Bounds: the 10,000-findings limit and the element budget
+apply as to every kind; a document with more such values than that is `PARTIAL`, as any other is.
+
+### 10.3 The table (D11)
+
+One resource, `docx4j-core/src/main/resources/org/docx4j/model/text/word-integer-storage.tsv`, §3.1 and §3.4 row for
+row: element (local name, with its parent where the attribute's owner matters: `w:pBdr/w:top`, `w:tcBorders/*`,
+`w:cols/w:col`), attribute, the deciding sibling and its value where there is one (`w:type`, `w:lineRule`, `w:hRule`),
+the storage (`int16`, `uint16`, `int32`, `8 bits`, `5 bits`, `15 bits + flag`, `int16 pair`, `int16 sign-rule`, `int16
+clamp a..b`, `uint16 clamp a..b`, `uint16 min a`, `int16 computed-if-negative`, `int16 -1-if-negative`, `discarded`,
+`kept`), the range, and the evidence column's probe id. The inspector reads it at class load (`InspectRanges`,
+package-private beside `InspectWalk`); `inspect_oracle.py` reads the same file from the source tree, so the two
+implementations cannot drift from each other; objects-ts's `WORD_INTEGER_STORAGE` (its CR-016) is the third copy, and
+its `test/word365-ranges.mjs` is the test against Word's saves that this table inherits by construction (every row
+here is a row there). A unit test (`WordIntegerStorageTest`) reads the resource and checks it against the probe
+saves' expectations in `probe66/cases.txt` for the rows that have one, so the table is tied to Word's evidence, not to
+§3.1's prose. The type-level `Range` of `LenientInteger` stays as it is: the marshal-time floor, in the generated
+module, needs no table.
+
+### 10.4 Tests, fixture and the WD
+
+- **Fixture:** cases 75 on in `extraction-probe-inspect.docx` (`ExtractionInspectCases`, built by
+  `ExtractionProbeBuilder`), one or two attributes each, the probe's values so Word's reading is already measured:
+  75 `w:ind/@w:left="7205001"` on a body paragraph (int16, -3959) and `w:spacing/@w:before="1205003"` (uint16, 25355);
+  76 `w:tcW/@w:w="70000"` `type=dxa` (int16, 4464) and `w:tblW` under `pct` 65536 (0); 77 `w:tab/@w:pos="32768"`
+  (clamp, -31680); 78 `w:ind/@w:firstLine="7205001"` (hanging 3959) and `w:spacing/@w:line="7205001"` under `exact`
+  (atLeast 3959); 79 `w:trHeight/@w:val="32768"` under `exact` (exact 32768) and a border `w:sz="256"` (0); 80 a style
+  in `styles.xml` with `w:ind/@w:left="7205001"` and `w:settings/w:defaultTabStop="65536"` (uint16, 0); 81 the same
+  value in the header the section uses and in an unselected `mc:Fallback`; 82 `w:pgNumType/@w:start="4294967295"`
+  (int32, -1) on the final section and `w:gridCol/@w:w="70000"` (unmeasured: certain range, `changed`). No run is set
+  to a huge `w:sz` (Word splits such a run per character, §3.1, which would move the fixture's other rows). Every value
+  is one Word opened clean in rounds 5 and 6, so the fixture's Word-open check (Jason, `phase0/evidence/word-open-results.md`)
+  is a confirmation, not a measurement; what it adds is the fixture's own save, read for the cases above.
+- **Rows:** `expected-inspection.tsv` gains one row per attribute (about 14), `visible` `-`, `reveal` `unextractable`,
+  every group column `info`, the summary as §10.2, from the oracle; `expected-findings.tsv` follows; INSPECTION.md gains
+  the kind's identity bullet. The five existing fixtures are checked for values already outside a range (none expected;
+  a hit is a row, not a fixture change).
+- **Tests:** the exact-set comparison (`ExtractionConformanceTest`) over the fixture; `WordIntegerStorageTest`
+  (§10.3); a test that inspecting the fixture logs nothing from `LenientInteger` (D14; a logback `AppenderBase` as
+  `IntegerRangeReportTest` uses); a test that a document saved by docx4j from a `BigInteger` out of range is found by
+  `Inspect.of` before the save and the same after a reload (held as written both ways, D2 and D3). MOXy: the DOM
+  marshal runs the same adapters under MOXy, so `MoxyInspectTest` (or the existing MOXy inspection case) adds the
+  fixture.
+- **The WD** (the portfolio session owns it): REQ-902's row (§10.2); 9.4's identity sentence (one per attribute
+  occurrence, never merged); REQ-904 unchanged (what is not measured is reported at the certain range, not left out);
+  Appendix A.4's cases 75 to 82 and REQ-1201's rows; a NOTE pointing at §3.1 and §3.4 as the measurement and at the
+  ports' shared code.
+- **Cost:** one attribute scan per DOM the inspector already builds; the lookup is a map on the element's local name.
+  Measured on the fixture and on `bench-30k.docx` with the bench of §9, recorded here.
+
+### 10.5 Decisions
+
+| # | Question | Options | Recommendation |
+|---|---|---|---|
+| D9 | D6's receiver | (a) the CR-050 inspector now; CR-064.2 not waited for and not needed for this; (b) build the CR-064.2 validator first and put the check in both; (c) a walker of its own in `wml` | (a). The inspector exists, has the location and the vocabulary the ports asked for, the oracle and the fixture recipe, and reaches MCP's `extract_text` counts; CR-064.2 is optional and undesigned, and would gain nothing D6 needs. |
+| D10 | Identity and group | (a) one finding per attribute occurrence, group info, `visible` `-`, reveal unextractable; (b) one finding per part with a count, as the log line is; (c) group unseen (the page differs from the file) | (a). An agent that fixes the value needs the path; the limit of 10,000 findings bounds it. Not unseen: the kind is not text a person may miss, and REQ-903's unseen count is the one an agent acts on before reading. |
+| D11 | Where the per-attribute table lives | (a) one TSV resource in docx4j-core, read by the inspector and by the oracle; (b) code in each (`InspectRanges` in Java, a dict in the oracle); (c) the oracle imports objects-ts's table | (a). Two readers of one file cannot drift; (b) is how the four CR-050 kind tables drifted before INSPECTION.md was written; (c) crosses repositories for a test resource. |
+| D12 | `word_reads` for the structured attributes (the firstLine/hanging pair, exact and atLeast line, trHeight's sign, framePr h's flag, the clamps, a column's negatives) | (a) the exact reading in the attribute's terms, a string; (b) the modulo value and the storage word only, the rule left to §3.4 | (a). objects-ts encodes them already (CR-016's three structures); a reading an agent can act on is the point of the kind; the rules are measured, not inferred. |
+| D13 | Attributes of a measured type that no round measured | (a) report at the type's certain range with `word_reads=changed`, as the log does; (b) leave out; (c) report at the type's commonest width as a guess | (a). The log already says so for the same value, and the inspector must not say less; (c) is a guess, which the register's rule forbids (§3.1's last paragraph names them unmeasured). |
+| D14 | The inspector's marshal logs the WARNs of §9 | (a) `InspectXml.marshal` opens a report scope and discards the report (the finding is the report); (b) keep the log lines beside the findings | (a). One report per fact; a WARN from a read-only inspection reads as a defect in the document the user did not ask about. |
+
+Accepted 2026-10-27, D9 to D14 as recommended (Jason: "commit, Decisions D9 to D14 as recommended"). Estimate: a day (the table and its test half of it); the Word-open check and the WD proposal are Jason's and the
+portfolio's. Hand-offs after the build: docx4j-mcp (a new kind in `inspect` and in `extract_text`'s info count),
+core-ts (CR-012), python (CR-011; its CR-022 table is the same rows), objects-ts (the TSV against its
+`WORD_INTEGER_STORAGE`), the portfolio (the WD proposal; the registry: CR-066.3's D6 item closed, CR-066.4 added).
