@@ -202,3 +202,14 @@ wrong as a break there):
 `ArrayListDocx4jTest` extended in each set. Gate: the list test, then the full core-tests suite (every document the
 suite loads passes through `checkParent`). objects-ts mirrors the sets and strings (objects CR-017) once this lands;
 python follows through its own CR.
+
+**objects-ts mirrored it** the same day (objects 202b58d, unpushed): the sets one for one with this wording, element
+names standing in for the classes; its fidelity corpus reports none, 342 marshalled parts byte-identical. Its one
+finding, checked here: in objects a kept `mc:Choice` types its children by the global declaration, where `w:sdt` is
+the block control, so a legal run-level control in a paragraph's Choice was typed as a block control holding runs and
+reported (fixed there: a branch's children are tested leniently, by the host's own list). docx4j is not exposed:
+`McBranchSdt` (CR-051 §11.3, 17.3.4) takes a `w:sdt` directly in a branch out of the lax list as a DOM element and
+binds it by the kind its container asks for, `SdtRun` in a paragraph's, so no run ever reaches a `SdtContentBlock`
+list from a branch. Measured 2026-10-28 with objects' document (a paragraph whose Choice holds a run-level control,
+the Fallback a run) through `XmlUtils.unmarshalString` and through `WordprocessingMLPackage.load` in both
+`docx4j.jaxb.mc.onLoad` modes: the control binds as `SdtRun`, nothing is refused, the save is byte-identical. `McBranchSdtTest` covers the binding by container kind, the paragraph case included.
