@@ -23,6 +23,11 @@ Claude Opus 5.5
 Changes in Version 17.3.5
 --------------------------
 
+* The inspector (Inspect.of, CR-050) reports an integer attribute outside the width Word stores it in as
+  value.out_of_range, one finding per attribute with the element, the value, the storage, the range and what
+  Word reads (a hanging indent for a first-line one that wrapped, an atLeast line for an exact one, a clamped
+  tab stop); the per-attribute widths of CR-066 are the resource word-integer-storage.tsv (CR-066 phase 4).
+  An inspection no longer logs the marshal-time range WARNs for the parts it reads.
 * Content lists refuse a misplaced child at the point of the mistake, with the fix in the message
   (CR-064; ArrayListDocx4j.checkParent, IllegalArgumentException): a run, Text, Drawing, Br, cell or
   row added to the body, a cell, a header, a footer, a footnote, a comment, a text box or block-level

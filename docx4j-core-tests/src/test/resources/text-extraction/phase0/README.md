@@ -87,7 +87,7 @@ Three cases had no rule in the paper when the probe was built; it has since rule
 Cases 39–49 and 53–54 extend the main probe; cases 50–52 are in `extraction-probe-external.docm`;
 cases 55–57 (a table of contents, an interrupted list, an embedded workbook with hidden sheets) are in
 `extraction-probe-structure.docx`, a fixture of their own so that the main probe is not rebuilt (19 October 2026);
-cases 58–74, the inspector's boundary cases (CR-050 phase 0; 68–74 the text a picture draws, phase 3), are in `extraction-probe-inspect.docx`.
+cases 58–82, the inspector's boundary cases (CR-050 phase 0; 68–74 the text a picture draws, phase 3; 75–82 an integer attribute beyond Word's storage width, CR-066 phase 4), are in `extraction-probe-inspect.docx`.
 Jason checked the earlier 52-case r2 DOCX without repair, declining field updates (18 October 2026).
 The unchanged external DOCM also passed. Jason completed the r3 check for cases 53–54 (18 October 2026).
 The Word findings above describe the original 38-case
@@ -782,4 +782,57 @@ Golden conventions and baseline commands are in `../GOLDENS.md`.
 | Token | accepted | original | markup | option | with option | note | statements |
 |---|---|---|---|---|---|---|---|
 | `EMF74_DESCR` | – | – | – | `alt_text: true` | yes | the picture's descr | REQ-902, REQ-904, REQ-514 |
+
+### Case 75: a paragraph indent and a spacing beyond 16 bits: Word wraps them
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `RNG75_LEFT_BEFORE` | yes | yes | yes |  |  | w:spacing/@w:before 65537 (uint16: Word reads 1) and w:ind/@w:left 66256 (int16: 720); inspection: value.out_of_range, one finding per attribute | REQ-902, REQ-904 |
+
+### Case 76: table widths beyond 16 bits: a table width in fiftieths of a percent, a grid column, a cell width
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `RNG76_CELL` | yes | yes | yes |  |  | w:tblW 65536 pct (int16: Word reads 0), w:gridCol 70000 (unmeasured: changed), w:tcW 70000 dxa (4464); inspection: value.out_of_range, three findings | REQ-902, REQ-904 |
+
+### Case 77: a tab stop beyond 16 bits: wrapped, then clamped to 22 inches
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `RNG77_TAB` | yes | yes | yes |  |  | w:tab/@w:pos 32768 (Word reads -31680); inspection: value.out_of_range | REQ-902, REQ-904 |
+
+### Case 78: a first-line indent and an exact line spacing beyond 16 bits: the wrap crosses to hanging and to atLeast
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `RNG78_FIRSTLINE_LINE` | yes | yes | yes |  |  | w:spacing/@w:line 65535 exact (the sign is the rule: Word reads atLeast 1) and w:ind/@w:firstLine 65535 (one field with hanging: hanging 1); inspection: value.out_of_range, two findings | REQ-902, REQ-904 |
+
+### Case 79: a row height, a border and a text scale beyond their widths: the sign rule, 8 and 5 bits, 16 bits
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `RNG79_ROW` | yes | yes | yes |  |  | w:trHeight 65537 exact (Word reads exact 1); the table width under auto is not checked; inspection: value.out_of_range | REQ-902, REQ-904 |
+| `RNG79_BORDER` | yes | yes | yes |  |  | w:pBdr/w:top sz 256 (8 bits: Word reads 0) and space 32 (5 bits: 0); inspection: value.out_of_range, two findings | REQ-902, REQ-904 |
+| `RNG79_SCALE` | yes | yes | yes |  |  | w:w 65636 (uint16: Word reads 100); inspection: value.out_of_range | REQ-902, REQ-904 |
+
+### Case 80: the same wrap in a style and in a setting: styles.xml and settings.xml are checked
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `RNG80_STYLE` | yes | yes | yes |  |  | its style's w:ind/@w:left 66256 (Word reads 720) in styles.xml, and w:hyphenationZone 65537 (1) in settings.xml; inspection: value.out_of_range in each part | REQ-902, REQ-904 |
+
+### Case 81: the same wrap in the header the section uses and in an unselected Fallback
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `RNG81_HERE` | yes | yes | yes |  |  |  | REQ-902, REQ-904, REQ-302, REQ-502 |
+| `RNG81_CHOICE` | yes | yes | yes |  |  | the selected Choice (w14) | REQ-902, REQ-904, REQ-302, REQ-502 |
+| `RNG81_FALLBACK` | – | – | – |  |  | a run in the unselected Fallback whose w:spacing/@w:val is 65537 (Word reads 1); inspection: mce.branch, and value.out_of_range in it | REQ-902, REQ-904, REQ-302, REQ-502 |
+| `RNG81_HEADER` | – | – | – | `include: headers` | yes | w:ind/@w:right 66976 (Word reads 1440) in the header the section uses; inspection: value.out_of_range | REQ-902, REQ-904, REQ-302, REQ-502 |
+
+### Case 82: a page number start beyond 32 bits on the body's section
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `RNG82_SECTION` | yes | yes | yes |  |  | the body's w:sectPr carries w:pgNumType/@w:start 4294967295 (int32: Word reads -1); inspection: value.out_of_range | REQ-902, REQ-904 |
 

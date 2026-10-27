@@ -147,7 +147,7 @@ final class ExtractionInspectCases {
         }
 
         StringBuilder body = new StringBuilder();
-        body.append(p("<w:pPr><w:pStyle w:val='Title'/></w:pPr>" + r("Text extraction probe, inspection cases (58 to 74)")));
+        body.append(p("<w:pPr><w:pStyle w:val='Title'/></w:pPr>" + r("Text extraction probe, inspection cases (58 to 82)")));
         body.append(pt("Built by docx4j (ExtractionInspectCases, in docx4j-core-tests), beside extraction-probe.docx, for"
                 + " CR-050. Each case starts with a heading, Case and its number. The page colour is pale green."));
 
@@ -162,8 +162,11 @@ final class ExtractionInspectCases {
         pictures(b, h, pkg, mdp, body);
         stored(b, mdp, body);
         String headerPicture = images(b, h, mdp, used, body);
+        String rangesHeader = ranges(b, body);
 
-        body.append("<w:sectPr><w:headerReference w:type='default' r:id='" + usedId + "'/>" + PAGE + "</w:sectPr>");
+        // case 82: a page number start beyond 32 bits (Word reads -1) on the section the body ends with
+        body.append("<w:sectPr><w:headerReference w:type='default' r:id='" + usedId + "'/>"
+                + PAGE.replace("<w:cols", "<w:pgNumType w:start='4294967295'/><w:cols") + "</w:sectPr>");
         String root = NS.replace(" mc:Ignorable", " xmlns:wpi='" + WPI_URI + "' mc:Ignorable");
         h.raw.put(mdp.getPartName().getName(), "<w:document" + root + "><w:background w:color='" + PAGE_COLOUR + "'/><w:body>"
                 + body + "</w:body></w:document>");
@@ -171,7 +174,7 @@ final class ExtractionInspectCases {
                 + p("<w:r>" + ac("", choice("wps", anchorBox(h, "page", 8_000_000L, "page", 914_400L, 1_828_800L, 457_200L, "",
                         pt("HDR59_BOX")))) + "</w:r>") + "</w:hdr>");
         h.raw.put(used.getPartName().getName(), "<w:hdr" + NS + ">" + pt("HDR63_USED") + watermark(h, "WMK63_WATERMARK")
-                + p(r("Header picture: ") + headerPicture) + "</w:hdr>");
+                + p(r("Header picture: ") + headerPicture) + rangesHeader + "</w:hdr>");
         h.raw.put(footnotes.getPartName().getName(), "<w:footnotes" + NS + ">" + separators("footnote") + fns + "</w:footnotes>");
         h.raw.put(comments.getPartName().getName(), "<w:comments" + NS + ">" + comment(0, "10000063", "CMT63_ANCHORED")
                 + comment(1, "10000064", "CMT63_UNANCHORED") + "</w:comments>");
@@ -772,6 +775,74 @@ final class ExtractionInspectCases {
                 + "the bound value on open; inspection: sdt.stored_surface, and chars.tag in it");
     }
 
+    // ------------------------------------------------------------------ 75 to 82: integers beyond Word's storage width (CR-066 D6)
+
+    /**
+     * Cases 75 to 82: an integer attribute outside the width Word stores it in ({@code value.out_of_range}, CR-066
+     * section 10). Every value is one Word 365 opened clean in CR-066's rounds 5 and 6, chosen so that its reading
+     * is harmless on the page (a wrap to a small number), the big values having been measured there. Returns the
+     * paragraph of the used header (case 81); case 80's style and setting are in {@link #STYLES} and
+     * {@link #SETTINGS}, case 82's page number start on the body's {@code w:sectPr}.
+     */
+    static String ranges(ExtractionProbeBuilder b, StringBuilder body) {
+        b.begin(75, "a paragraph indent and a spacing beyond 16 bits: Word wraps them");
+        body.append(caseHeading(75, b.current.title));
+        body.append(p("<w:pPr><w:spacing w:before='65537'/><w:ind w:left='66256'/></w:pPr>" + r("RNG75_LEFT_BEFORE")));
+        b.always("RNG75_LEFT_BEFORE", "w:spacing/@w:before 65537 (uint16: Word reads 1) and w:ind/@w:left 66256 (int16: 720);"
+                + " inspection: value.out_of_range, one finding per attribute");
+
+        b.begin(76, "table widths beyond 16 bits: a table width in fiftieths of a percent, a grid column, a cell width");
+        body.append(caseHeading(76, b.current.title));
+        body.append("<w:tbl><w:tblPr><w:tblW w:w='65536' w:type='pct'/></w:tblPr><w:tblGrid><w:gridCol w:w='70000'/></w:tblGrid>"
+                + "<w:tr><w:tc><w:tcPr><w:tcW w:w='70000' w:type='dxa'/></w:tcPr>" + pt("RNG76_CELL") + "</w:tc></w:tr></w:tbl>");
+        b.always("RNG76_CELL", "w:tblW 65536 pct (int16: Word reads 0), w:gridCol 70000 (unmeasured: changed), w:tcW 70000 dxa (4464);"
+                + " inspection: value.out_of_range, three findings");
+
+        b.begin(77, "a tab stop beyond 16 bits: wrapped, then clamped to 22 inches");
+        body.append(caseHeading(77, b.current.title));
+        body.append(p("<w:pPr><w:tabs><w:tab w:val='left' w:pos='32768'/></w:tabs></w:pPr>" + r("RNG77_TAB")));
+        b.always("RNG77_TAB", "w:tab/@w:pos 32768 (Word reads -31680); inspection: value.out_of_range");
+
+        b.begin(78, "a first-line indent and an exact line spacing beyond 16 bits: the wrap crosses to hanging and to atLeast");
+        body.append(caseHeading(78, b.current.title));
+        body.append(p("<w:pPr><w:spacing w:line='65535' w:lineRule='exact'/><w:ind w:firstLine='65535'/></w:pPr>" + r("RNG78_FIRSTLINE_LINE")));
+        b.always("RNG78_FIRSTLINE_LINE", "w:spacing/@w:line 65535 exact (the sign is the rule: Word reads atLeast 1) and w:ind/@w:firstLine 65535"
+                + " (one field with hanging: hanging 1); inspection: value.out_of_range, two findings");
+
+        b.begin(79, "a row height, a border and a text scale beyond their widths: the sign rule, 8 and 5 bits, 16 bits");
+        body.append(caseHeading(79, b.current.title));
+        body.append("<w:tbl><w:tblPr><w:tblW w:w='0' w:type='auto'/></w:tblPr><w:tblGrid><w:gridCol w:w='4000'/></w:tblGrid>"
+                + "<w:tr><w:trPr><w:trHeight w:val='65537' w:hRule='exact'/></w:trPr><w:tc><w:tcPr><w:tcW w:w='4000' w:type='dxa'/></w:tcPr>"
+                + pt("RNG79_ROW") + "</w:tc></w:tr></w:tbl>");
+        body.append(p("<w:pPr><w:pBdr><w:top w:val='single' w:sz='256' w:space='32' w:color='auto'/></w:pBdr></w:pPr>" + r("RNG79_BORDER")));
+        body.append(p(r("<w:w w:val='65636'/>", "RNG79_SCALE")));
+        b.always("RNG79_ROW", "w:trHeight 65537 exact (Word reads exact 1); the table width under auto is not checked; inspection: value.out_of_range");
+        b.always("RNG79_BORDER", "w:pBdr/w:top sz 256 (8 bits: Word reads 0) and space 32 (5 bits: 0); inspection: value.out_of_range, two findings");
+        b.always("RNG79_SCALE", "w:w 65636 (uint16: Word reads 100); inspection: value.out_of_range");
+
+        b.begin(80, "the same wrap in a style and in a setting: styles.xml and settings.xml are checked");
+        body.append(caseHeading(80, b.current.title));
+        body.append(p("<w:pPr><w:pStyle w:val='ProbeWide'/></w:pPr>" + r("RNG80_STYLE")));
+        b.always("RNG80_STYLE", "its style's w:ind/@w:left 66256 (Word reads 720) in styles.xml, and w:hyphenationZone 65537 (1) in settings.xml;"
+                + " inspection: value.out_of_range in each part");
+
+        b.begin(81, "the same wrap in the header the section uses and in an unselected Fallback");
+        body.append(caseHeading(81, b.current.title));
+        body.append(p(r("RNG81_HERE ") + ac("", choice("w14", r("RNG81_CHOICE "))
+                + fallback(r("<w:spacing w:val='65537'/>", "RNG81_FALLBACK")))));
+        b.always("RNG81_HERE", "");
+        b.always("RNG81_CHOICE", "the selected Choice (w14)");
+        b.never("RNG81_FALLBACK", "a run in the unselected Fallback whose w:spacing/@w:val is 65537 (Word reads 1); inspection: mce.branch,"
+                + " and value.out_of_range in it");
+        b.gated("RNG81_HEADER", "include: headers", "w:ind/@w:right 66976 (Word reads 1440) in the header the section uses; inspection: value.out_of_range");
+
+        b.begin(82, "a page number start beyond 32 bits on the body's section");
+        body.append(caseHeading(82, b.current.title));
+        body.append(pt("RNG82_SECTION"));
+        b.always("RNG82_SECTION", "the body's w:sectPr carries w:pgNumType/@w:start 4294967295 (int32: Word reads -1); inspection: value.out_of_range");
+        return p("<w:pPr><w:ind w:right='66976'/></w:pPr>" + r("RNG81_HEADER"));
+    }
+
     // ------------------------------------------------------------------ the package
 
     static String caseHeading(int n, String title) {
@@ -779,7 +850,7 @@ final class ExtractionInspectCases {
     }
 
     static final String SETTINGS = "<w:settings" + NS + "><w:zoom w:percent='100'/><w:displayBackgroundShape/><w:embedTrueTypeFonts/>"
-            + "<w:defaultTabStop w:val='720'/><w:characterSpacingControl w:val='doNotCompress'/>"
+            + "<w:defaultTabStop w:val='720'/><w:hyphenationZone w:val='65537'/><w:characterSpacingControl w:val='doNotCompress'/>"
             + "<w:footnotePr><w:footnote w:id='-1'/><w:footnote w:id='0'/></w:footnotePr>"
             + "<w:compat><w:compatSetting w:name='compatibilityMode' w:uri='http://schemas.microsoft.com/office/word' w:val='15'/>"
             + "<w:compatSetting w:name='enableOpenTypeFeatures' w:uri='http://schemas.microsoft.com/office/word' w:val='1'/></w:compat>"
@@ -791,7 +862,10 @@ final class ExtractionInspectCases {
             + "<w:style w:type='table' w:styleId='ProbeShaded'><w:name w:val='Probe Shaded'/><w:basedOn w:val='TableNormal'/>"
             + "<w:tblPr><w:tblBorders><w:top w:val='single' w:sz='4' w:space='0' w:color='auto'/>"
             + "<w:bottom w:val='single' w:sz='4' w:space='0' w:color='auto'/></w:tblBorders></w:tblPr>"
-            + "<w:tcPr><w:shd w:val='clear' w:color='auto' w:fill='1F3864'/></w:tcPr></w:style></w:styles>");
+            + "<w:tcPr><w:shd w:val='clear' w:color='auto' w:fill='1F3864'/></w:tcPr></w:style>"
+            // case 80: an indent beyond 16 bits in a style (Word reads 720)
+            + "<w:style w:type='paragraph' w:styleId='ProbeWide'><w:name w:val='Probe Wide'/><w:basedOn w:val='Normal'/>"
+            + "<w:pPr><w:ind w:left='66256'/></w:pPr></w:style></w:styles>");
 
     static String heading(String id, String name, int level, int size) {
         return "<w:style w:type='paragraph' w:styleId='" + id + "'><w:name w:val='" + name + "'/><w:basedOn w:val='Normal'/>"

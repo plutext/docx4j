@@ -126,13 +126,20 @@ public final class InspectFinding {
 	public static final String REVISION_AUTHOR = "revision.author";
 	public static final String RSIDS = "rsids";
 	public static final String PART_UNKNOWN = "part.unknown";
+	/**
+	 * An integer attribute outside the width Word stores it in, with Word's reading (CR-066 section 10): the
+	 * summary's fields are {@code attribute}, the deciding sibling where there is one ({@code type},
+	 * {@code lineRule}, {@code hRule}), {@code value}, {@code storage}, {@code range} and {@code word_reads}.
+	 * @since 17.3.5
+	 */
+	public static final String VALUE_OUT_OF_RANGE = "value.out_of_range";
 
 	/** The kinds that are active whatever the output (REQ-905). */
 	static final Set<String> ACTIVE = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(FIELD_EXTERNAL,
 			SETTINGS_UPDATE_FIELDS, RELATIONSHIP_EXTERNAL, PART_MACRO, PART_ACTIVEX, ALTCHUNK_SCRIPT, ALTCHUNK_EXTERNAL_REF)));
 	/** The inventory kinds, info whatever the output (REQ-905). */
 	static final Set<String> INVENTORY = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(ALTCHUNK,
-			OBJECT_EMBEDDED, FONT_EMBEDDED, INK, REVISION_AUTHOR, RSIDS, PEOPLE, PART_UNKNOWN, HYPERLINK_WEB)));
+			OBJECT_EMBEDDED, FONT_EMBEDDED, INK, REVISION_AUTHOR, RSIDS, PEOPLE, PART_UNKNOWN, HYPERLINK_WEB, VALUE_OUT_OF_RANGE)));
 
 	// --- what a container needs (REQ-905) ---------------------------------------------------------------
 

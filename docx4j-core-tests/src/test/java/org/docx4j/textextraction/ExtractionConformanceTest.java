@@ -127,10 +127,11 @@ public class ExtractionConformanceTest {
         assertEquals(52, appendix.size());
         List<Map<String, String>> additions = ExtractionConformance.table(dir.getParent().resolve("support/additional-case-statements.tsv"));
         // 53-54 (WD 0.5), 55-57 (extraction-probe-structure.docx, 19 October 2026), 58-67 (extraction-probe-inspect.docx, CR-050),
-        // 68-74 (the same fixture, the text a picture draws, CR-050 phase 3)
-        assertEquals(22, additions.size());
+        // 68-74 (the same fixture, the text a picture draws, CR-050 phase 3), 75-82 (the same fixture, an integer attribute
+        // beyond Word's storage width, CR-066 phase 4)
+        assertEquals(30, additions.size());
         appendix.addAll(additions);
-        assertEquals(74, generated.size());
+        assertEquals(82, generated.size());
         String readme = Files.readString(dir.resolve("README.md"));
         for (int i = 0; i < appendix.size(); i++) {
             assertEquals(appendix.get(i).get("case"), generated.get(i).get("case"));

@@ -748,7 +748,7 @@ public class InspectTest {
 		List<String> ids = new ArrayList<String>();
 		for (String l : i.limitations()) ids.add(l.substring(0, l.indexOf(':')));
 		assertEquals(Arrays.asList("layout.covered", "layout.position", "layout.clipped", "background.image", "font.careful_swap",
-				"payload.opaque", "chart.workbook", "image.text", "intent"), ids);
+				"payload.opaque", "chart.workbook", "image.text", "value.unmeasured", "intent"), ids);
 	}
 
 	/** The tag scanner, for where jsoup is absent, finds what jsoup's parser does; neither reads a comment or a script's body as markup. */

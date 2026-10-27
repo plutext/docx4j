@@ -1,6 +1,7 @@
 # CR-066: integer attributes written within Word's range; an out-of-range value reported on write and on read
 
-Status: PHASE 4 ACCEPTED 2026-10-27 (Jason: "commit, Decisions D9 to D14 as recommended"), build in progress. Phase 4 PROPOSED 2026-10-27 (§10, D6 in
+Status: PHASE 4 DONE 2026-10-27 (§10.6; gate green; hand-offs to python, core-ts and the portfolio sent; objects-ts and docx4j-mcp pending a
+session; Word's check of fixture cases 75 to 82 pending, Jason). PHASE 4 ACCEPTED 2026-10-27 (Jason: "commit, Decisions D9 to D14 as recommended"). Phase 4 PROPOSED 2026-10-27 (§10, D6 in
 the CR-050 inspector, at Jason's word: "a CR-066 phase 3 addendum please", after "should we do CR-064 tree validator or CR-050
 inspector first?"). PHASES 1 AND 2 DONE 2026-10-26 (§9; Jason: "do
 CR-066 phases 1 and 2"); phase 3's hand-offs sent (ImportXHTML and the ports, 2026-10-26); D6's receiver decided by §10: the inspector,
@@ -295,7 +296,7 @@ uniform uint16.
 | 1 | D1 to D4, D7, D8: the range table (§3.1) and the report in the print and parse methods of CR-065 phase 2's class, exact for the uniform types and the certain range for `ST_TwipsMeasure`; tests per type with the probe's values; CHANGELOG | DONE 2026-10-26 (§9) |
 | 2 | D5: the guard at `TblFactory` (int16 for `w:tcW`, `w:gridCol` assumed uint16), the WARN at the CSS converters and `TocEntry` (tab stops ±31680); tests; CHANGELOG | DONE 2026-10-26 (§9) |
 | 3 | Hand-offs: §3.1's table to the three ports and to ImportXHTML (its CSS length conversion); D6, the per-attribute check, to the inspector (§10) | ports told 2026-10-26; ImportXHTML told 2026-10-26 (§9); D6 is phase 4 (2026-10-27) |
-| 4 | D6 in the CR-050 inspector (§10): the per-attribute table as one resource, `value.out_of_range` findings with the element, attribute, value, storage, range and Word's reading; the oracle; fixture cases; the WD proposal; the inspector's marshal silenced | ACCEPTED 2026-10-27 (D9 to D14 as recommended); in progress |
+| 4 | D6 in the CR-050 inspector (§10): the per-attribute table as one resource, `value.out_of_range` findings with the element, attribute, value, storage, range and Word's reading; the oracle; fixture cases; the WD proposal; the inspector's marshal silenced | DONE 2026-10-27 (§10.6); Word's check and the objects-ts and docx4j-mcp hand-offs pending |
 
 ## 6. Risks
 
@@ -511,3 +512,62 @@ Accepted 2026-10-27, D9 to D14 as recommended (Jason: "commit, Decisions D9 to D
 portfolio's. Hand-offs after the build: docx4j-mcp (a new kind in `inspect` and in `extract_text`'s info count),
 core-ts (CR-012), python (CR-011; its CR-022 table is the same rows), objects-ts (the TSV against its
 `WORD_INTEGER_STORAGE`), the portfolio (the WD proposal; the registry: CR-066.3's D6 item closed, CR-066.4 added).
+
+### 10.6 Phase 4 built (2026-10-27)
+
+Built the day it was accepted (Claude Fable 5.1, session docx4j-12), D9 to D14 as recommended.
+
+- **The table** (D11): `docx4j-core/src/main/resources/org/docx4j/model/text/word-integer-storage.tsv`, 101 rows,
+  §3.1 and §3.4 row for row with the type-level rows for the uniform types the probe did not reach by name (a ruby's
+  `hps*`, a `w:div`'s margins) and the `twips-unmeasured` rows (D13: `w:gridCol`, the drawing grid, `w:object`'s
+  extent, a frameset's splitbar). Columns: element, attribute, context (`type=auto|nil`, `lineRule=exact`,
+  `hRule=exact`; the first matching row wins; an empty context matches any), storage (seventeen words, documented
+  in the file's header: the five widths, the firstLine/hanging pair, the four sign-as-rule forms, the 15-bit height
+  with its flag, the three clamps, the two column negatives, unmeasured, ignored), range (what Word keeps as
+  written), evidence. `ignored` rows record what is not a finding (`w:fitText`, `w:trHeight` under `auto`, a
+  table width under `auto` or `nil`, `w:legacy`).
+- **docx4j** (`org.docx4j.model.text`): `InspectRanges` reads the table at class load and gives, per attribute of
+  an element, the finding's summary or null (`summary`, `reading`, `parse`: Word's lexical reading first, as
+  CR-065 has it); `InspectWalk.walkRanges` runs at the end of the Word walk over the main part and then every
+  other WordprocessingML XML part by name (a docx `altChunk` declares the main part's type and is a zip: its DOM is
+  null and it is skipped; the nested walk of an embedded docx finds its own), one `value.out_of_range` finding per
+  attribute occurrence, `needs` never, group info (`InspectFinding.INVENTORY`), `visible` `-`, the summary of §10.2
+  (`; ` between the fields: `attribute=w:tcW/@w:w; type=dxa; value=70000; storage=int16; range=-32768..32767;
+  word_reads=4464`; the deciding sibling is the key's, printed whenever the element has it, so a width under
+  `dxa` names its type though its row is the catch-all), the finding's subject the part, attribute and value
+  (the harness's selector, unique per case). **One rule §10.2 did not state:** a run's property in the run after
+  one with the same finding is the same finding, as CR-050 §2.4 has it for every run kind, since splitting a run
+  copies its `w:rPr`; `InspectTest.countsSurviveSplitRuns` caught it (info 37 against 38 after the split). A
+  paragraph's, a mark's or a style's never merges. `InspectPackage.dom` opens a `LenientInteger` report scope
+  around the inspector's marshal and discards it (D14). `Inspection.LIMITATIONS` gains `value.unmeasured`.
+- **The oracle**: `inspect_oracle.py` reads the same TSV (`STORAGE_TABLE`, six `..` from `support/`), `word_reads`
+  mirrors `InspectRanges.reading` form for form, `walk_ranges` the walk (the non-XML part guard, the run merge,
+  the selector), `RANGE_PART_CASES` attributes a finding in `styles.xml`, `settings.xml` or the used header to its
+  case. Fixture and docx4j agree on every fixture (`ExtractionConformanceTest`'s exact comparison).
+- **Fixture**: cases 75 to 82 in `extraction-probe-inspect.docx` (`ExtractionInspectCases.ranges`), 17 findings:
+  75 `before` 65537 and `left` 66256; 76 `tblW` 65536 pct, `gridCol` 70000 (unmeasured), `tcW` 70000 dxa; 77 a tab at
+  32768; 78 `line` 65535 exact and `firstLine` 65535; 79 `trHeight` 65537 exact (the table's `tblW` under `auto`
+  unchecked), a border `sz` 256 and `space` 32, `w:w` 65636; 80 a style's `left` 66256 and `hyphenationZone` 65537;
+  81 `right` 66976 in the used header and a run's `spacing` 65537 in an unselected Fallback; 82 `pgNumType/@start`
+  4294967295 on the body's section. Departures from §10.4: `w:gridCol` sits in case 76 with the table, not 82;
+  `hyphenationZone` stands in for `defaultTabStop` (a default tab stop of 0 would move the fixture's other
+  cases); every value wraps to a small number so the page stays readable (the big values were measured in rounds
+  5 and 6). `expected-inspection.tsv` 242 findings (225 before), `expected-findings.tsv` 17 inspect rows,
+  `case-statements.tsv` and `additional-case-statements.tsv` cases 75 to 82 (REQ-902, REQ-904; 81 also REQ-302,
+  REQ-502), the fixture's README regenerated. Side effects in the table: the used header's `header_footer` excerpt
+  is 41 code points (28), and the header picture's `alt_text.description` row is attributed to case 82 (74 before),
+  both coincidences of the sectPr's place; no other row moved.
+- **Word's check**: staged for Jason on the share at `__tmp/cr066/phase4/extraction-probe-inspect-r5.docx` (sha256
+  d5b6ee0c…) with `README.txt` (what each case should look like); recorded in
+  `phase0/evidence/word-open-results.md` when done.
+- **Tests**: `WordIntegerStorageTest` (177 written-to-saved pairs from §3.1 and §3.4, the summary's field order,
+  every row parses and every storage word reads); `InspectRangesTest` (eleven findings in one body with their
+  paths and readings, group info in plain text and the block model, status complete; the run merge; no line
+  logged by `LenientInteger` during an inspection, D14; held as written through a save and a reload; the styles
+  and settings parts after the main part); `InspectTest.limitationsAreStated` gains `value.unmeasured`;
+  `ExtractionConformanceTest` 82 cases. Targeted: textextraction, model.text, `IntegerRangeReportTest`,
+  `LenientIntegerTest`: 172 tests, 0 failures, 19 skipped (the HTML-reader rows). Full gate 2026-10-27 (`mvn clean install`): BUILD SUCCESS; docx4j-core-tests 2176 tests (2168 before plus the 8 new), 0 failures, 30 skipped; docx4j-diffx-tests 246; docx4j-export-fo-tests 858; docx4j-digsig 138.
+- **Cost**: the attribute scan of the main part is 0.03 ms on `extraction-probe-inspect.docx` and
+  `extraction-probe.docx` (best of 50; `Inspect.of` 50 and 71 ms best of 12) and 0.01 ms on the 1 MB
+  `jaxb-binder-issue.docx`: nothing measurable.
+- **Hand-offs** (2026-10-27, after the commit): python (session docx4j-python-64: the kind, the summary's fields, the TSV its CR-022 table can be checked against, the run-merge rule), core-ts (docx4j-core-ts-7b: the same for its CR-012), the portfolio (docx4j-portfolio-10: the WD proposal, REQ-902's row, 9.4's identity sentence, Appendix A.4's cases 75 to 82, REQ-1201's rows; the registry: CR-066.4 done). objects-ts (the TSV against `WORD_INTEGER_STORAGE`) and docx4j-mcp (the new kind in `inspect` and in `extract_text`'s info count) had no session running: pending, to send when one is. Word's check of the fixture: Jason's, pending (the share).

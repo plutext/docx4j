@@ -102,6 +102,7 @@ case	fixture	channel	kind	selector	scenario	expected	statements
 57	extraction-probe-structure.docx	inspect	embedded.sheet_very_hidden	SHT57_VERY_HIDDEN	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 63	extraction-probe-inspect.docx	inspect	mce.branch	/word/document.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 67	extraction-probe-inspect.docx	inspect	mce.branch	MCE67_FALLBACK_WHITE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+81	extraction-probe-inspect.docx	inspect	mce.branch	RNG81_FALLBACK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 58	extraction-probe-inspect.docx	inspect	text.hidden	VAN58_INHERITED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 58	extraction-probe-inspect.docx	inspect	text.hidden	PAR58_PART_HIDDEN	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 58	extraction-probe-inspect.docx	inspect	paragraph.hidden	PAR58_WHOLE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
@@ -165,7 +166,7 @@ case	fixture	channel	kind	selector	scenario	expected	statements
 58	extraction-probe-inspect.docx	inspect	paragraph.collapsed	BODY58_FIRST	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 59	extraction-probe-inspect.docx	inspect	story.unused	HDR59_UNUSED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 63	extraction-probe-inspect.docx	inspect	header_footer	HDR63_USED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
-74	extraction-probe-inspect.docx	inspect	alt_text.description	a header picture	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+82	extraction-probe-inspect.docx	inspect	alt_text.description	a header picture	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 71	extraction-probe-inspect.docx	inspect	image.svg_text	SVG71_HEADER	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 63	extraction-probe-inspect.docx	inspect	watermark	WMK63_WATERMARK	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 63	extraction-probe-inspect.docx	inspect	note	NOTE63_REFERENCED	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
@@ -183,6 +184,23 @@ case	fixture	channel	kind	selector	scenario	expected	statements
 65	extraction-probe-inspect.docx	inspect	font.embedded	Inspect Probe Plain	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 65	extraction-probe-inspect.docx	inspect	font.embedded	Inspect Probe Symbol	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 65	extraction-probe-inspect.docx	inspect	font.embedded	Inspect Probe Substitution	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+75	extraction-probe-inspect.docx	inspect	value.out_of_range	/word/document.xml w:spacing/@w:before=65537	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+75	extraction-probe-inspect.docx	inspect	value.out_of_range	/word/document.xml w:ind/@w:left=66256	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+76	extraction-probe-inspect.docx	inspect	value.out_of_range	/word/document.xml w:tblW/@w:w=65536	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+76	extraction-probe-inspect.docx	inspect	value.out_of_range	/word/document.xml w:gridCol/@w:w=70000	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+76	extraction-probe-inspect.docx	inspect	value.out_of_range	/word/document.xml w:tcW/@w:w=70000	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+77	extraction-probe-inspect.docx	inspect	value.out_of_range	/word/document.xml w:tab/@w:pos=32768	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+78	extraction-probe-inspect.docx	inspect	value.out_of_range	/word/document.xml w:spacing/@w:line=65535	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+78	extraction-probe-inspect.docx	inspect	value.out_of_range	/word/document.xml w:ind/@w:firstLine=65535	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+79	extraction-probe-inspect.docx	inspect	value.out_of_range	/word/document.xml w:trHeight/@w:val=65537	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+79	extraction-probe-inspect.docx	inspect	value.out_of_range	/word/document.xml w:top/@w:sz=256	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+79	extraction-probe-inspect.docx	inspect	value.out_of_range	/word/document.xml w:top/@w:space=32	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+79	extraction-probe-inspect.docx	inspect	value.out_of_range	/word/document.xml w:w/@w:val=65636	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+81	extraction-probe-inspect.docx	inspect	value.out_of_range	/word/document.xml w:spacing/@w:val=65537	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+82	extraction-probe-inspect.docx	inspect	value.out_of_range	/word/document.xml w:pgNumType/@w:start=4294967295	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+81	extraction-probe-inspect.docx	inspect	value.out_of_range	/word/header2.xml w:ind/@w:right=66976	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+80	extraction-probe-inspect.docx	inspect	value.out_of_range	/word/settings.xml w:hyphenationZone/@w:val=65537	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+80	extraction-probe-inspect.docx	inspect	value.out_of_range	/word/styles.xml w:ind/@w:left=66256	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 67	extraction-probe-inspect.docx	inspect	custom_xml	SDT67_VALUE	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 0	extraction-probe-inspect.docx	inspect	properties	/docProps/app.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 0	extraction-probe-inspect.docx	inspect	properties	/docProps/core.xml	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907

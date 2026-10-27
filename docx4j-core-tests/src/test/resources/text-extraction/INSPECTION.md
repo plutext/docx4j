@@ -132,6 +132,11 @@ points before the 200-code-point bound (D5), `excerpt_cut` whether that length e
   relationship element.
 - An image part is found once (`image.svg_text`, `image.metafile_text`) however many pictures show
   it, where the walk first meets one; the pictures are counted in the finding's summary.
+- An out-of-range integer attribute (`value.out_of_range`) is one finding per attribute occurrence: a
+  paragraph whose indent and spacing are both out of range is two findings at two elements; the same
+  value in a style and in a paragraph is two findings in two parts. A run property's finding merges with
+  the one before it when the two runs are adjacent among their parent's runs and the attribute and value
+  are the same (a split run copies its `w:rPr`).
 
 ## The branch read, and the outputs
 
@@ -232,6 +237,7 @@ Each row: what is one finding, its location, its excerpt (where it is not the el
 | `embedded.sheet_hidden`, `embedded.sheet_very_hidden` | a `x:sheet` of state `hidden`, `veryHidden` | the `x:sheet` in the workbook part | Excerpt: its cells, tab apart, rows LF apart. In the output under `embedded` and `hidden`. |
 | `embedded.row_hidden`, `embedded.column_hidden` | a `x:row` or `x:col` with `hidden` on | it, in the worksheet part | Under `embedded` (and `hidden` in a hidden sheet). |
 | `embedded.slide_hidden`, `embedded.notes` | a slide with `show="0"`; a notes slide with text (placeholders for the slide image, number, header, footer and date excepted) | the `p:sld`, the `p:notes` | Notes are never in an output (REQ-512). |
+| `value.out_of_range` | an integer attribute whose value is outside the width Word stores it in (CR-066 sections 3.1 and 3.4; `docx4j-core/src/main/resources/org/docx4j/model/text/word-integer-storage.tsv`, the one table the inspector and the oracle read), in any WordprocessingML XML part, an unselected branch included **(CR-066 phase 4)** | the element carrying the attribute | One finding per attribute occurrence; a run's property merges into the same finding in the run before it (adjacent runs of one parent, the same attribute and value), as Identity says of every run kind; a paragraph's, a mark's or a style's never merges; no excerpt. Summary, `; ` apart: `attribute=w:ind/@w:left`, the deciding sibling where the row has one (`type=dxa`, `lineRule=exact`, `hRule=exact`), `value=`, `storage=` (`int16`, `uint16`, `int32`, `8 bits`, `5 bits`, `15 bits`; `16 bits` for an `ST_TwipsMeasure` attribute no round measured), `range=` (what Word keeps as written: the storage range, or the clamp for a tab stop and the page size), `word_reads=` (what Word shows, in the attribute's terms: a number; `hanging 1` for a first-line indent; `atLeast 1` or `exact 1` where the sign is the rule; `h=28809 hRule dropped` for a frame height; `computed` for a negative column width; `changed` where unmeasured). `visible` `-`, reveal unextractable, group info in every output (not content). Not checked: ids, counts, EMUs, `w:fitText` (not 16-bit), a `w:trHeight` under `hRule="auto"` and a table width under `auto` or `nil` (Word discards the value), `w:legacy` (Word 365 drops it). |
 
 ## Status
 

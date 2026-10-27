@@ -123,10 +123,17 @@ final class InspectPackage {
 			if (p instanceof JaxbXmlPart) {
 				JaxbXmlPart<?> jp = (JaxbXmlPart<?>) p;
 				Object root = jp.getJaxbElement();
-				if (root != null) dom = InspectXml.marshal(root, jp.getJAXBContext(), run);
-				// word mode's record: the elements a load took out, put back where they stood (CR-051)
-				if (dom != null && !jp.getResolvedAlternateContent().isEmpty()) {
-					InspectXml.restore(dom, jp.getResolvedAlternateContent(), jp.getJAXBContext(), run);
+				// CR-066 D14: the print methods report an out-of-range value at WARN outside a scope; the
+				// inspection's report is its value.out_of_range findings, so the scope's report is discarded
+				org.docx4j.wml.LenientInteger.beginReport();
+				try {
+					if (root != null) dom = InspectXml.marshal(root, jp.getJAXBContext(), run);
+					// word mode's record: the elements a load took out, put back where they stood (CR-051)
+					if (dom != null && !jp.getResolvedAlternateContent().isEmpty()) {
+						InspectXml.restore(dom, jp.getResolvedAlternateContent(), jp.getJAXBContext(), run);
+					}
+				} finally {
+					org.docx4j.wml.LenientInteger.endReport();
 				}
 			} else if (p instanceof CustomXmlDataStoragePart) {
 				CustomXmlDataStoragePart cp = (CustomXmlDataStoragePart) p;
