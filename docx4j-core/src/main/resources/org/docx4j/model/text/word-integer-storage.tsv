@@ -8,7 +8,8 @@
 # storage: int16, uint16, int32, uint8, uint5 (modulo the width, signed where int); pair-firstLine and pair-hanging
 # (one int16 field, +firstLine or -hanging); rule-negated and rule-positive (the sign is the rule: exact stored as
 # the negative; at zero "atLeast 0"); rule-negated-drop and rule-positive-drop (the same, the element dropped at
-# zero); bits15-flag (the low 15 bits, bit 15 turns the exact rule off); int16-clamp, uint16-clamp, uint16-min
+# a stored zero: a value that wraps to 0; a literal 0 is within the range and never read, and whether Word also
+# drops it is unmeasured); bits15-flag (the low 15 bits, bit 15 turns the exact rule off); int16-clamp, uint16-clamp, uint16-min
 # (wrap, then the range column's clamp); column-w (a negative width is recomputed); column-space (a negative
 # becomes -1); twips-unmeasured (an ST_TwipsMeasure attribute no round measured: outside -32768..65535 is changed,
 # how is not known); ignored (the value is not 16-bit, or Word discards it: never a finding).
@@ -40,6 +41,7 @@ kern	val		uint16	0..65535	round 6 R
 hps	val		uint16	0..65535	type-level (CT_HpsMeasure, uniform uint16 where measured); not measured
 hpsBaseText	val		uint16	0..65535	type-level; not measured
 hpsRaise	val		uint16	0..65535	type-level; not measured
+size	val		uint16	0..65535	type-level (CT_HpsMeasure: a legacy form field's w:checkBox/w:size); not measured; the gap objects-ts found 2026-10-27
 fitText	val		ignored		round 6 R: kept as written, not 16-bit
 top	sz		uint8	0..255	round 5 B1; round 6 R, T, S: every border family alike
 top	space		uint5	0..31	round 5 B2
