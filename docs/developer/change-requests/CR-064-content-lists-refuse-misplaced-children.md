@@ -131,6 +131,20 @@ misplaced child each, 11 do not open at all (a run, bare text, a cell or a row i
 paragraph; a table, a paragraph or bare text in a paragraph; a run in a run; a cell beside a table's row; a run beside
 a row's cells), 7 open silently repaired to the nearest fit, and only a string in a run loses content.
 
+**Input for phase 2's tree validator (D8), from python-64 (its CR-020 Q9, decided 2026-10-26, complete 2026-10-28):**
+an allow table derived from the model, one entry per (class, list field): in python from its class metadata (1,969
+classes, 537 pairs, 509 checked: 151 compound fields and 358 lists of one element; 28 wildcard-only or without element
+choices), in Java the same table would come by reflection from each list field's `@XmlElementRefs`, `@XmlElementRef`,
+`@XmlElements` and `@XmlMixed` over docx4j-generated-objects. It belongs in a walk, not in `add()` (a JAXB load goes
+through `add()`, so `checkParent` stays a refuse list). Its finding: 71 element names have more than one class; 60 of
+them one shape (the same fields holding the same names, one level down), 11 differ (`sdt` and `customXml`, four each;
+`ins` and `del`, three; `name`; DrawingML `alphaMod`, `lum`, `tint`, `xfrm`, `effect`; chartex `lvl`). So a validator
+keyed on element name alone lets the four `sdt` and `customXml` forms and the three `ins` and `del` forms stand in each
+other's places: the check has to be by class or declared type. Reference material there: `tests/test_misplaced.py`
+(the forum mistakes and `checkParent`'s cases refused, core-ts check 72's 18 files refused at add time) and
+`tests/test_validator.py` (the codes `target.misplaced`, `cell.no_end_paragraph`, `value.out_of_range`, the path form
+`/w:document/w:body[1]/w:p[1]/w:r[1]/w:tbl[1]`, a 389-file corpus with no misplaced content).
+
 **Open, for Jason (objects-ts's notes, 2026-10-28, verified against `checkParent` at HEAD):** three misplaced children
 pass today, each refuse-only: a `DelText` (not a subclass of `Text`) where `Text` is refused; `R.Tab` straight in a
 paragraph (§2 row 7 names it, §8 implements `Br` only); an `SdtBlock` in a `P` or an `SdtRun` in a block container.
