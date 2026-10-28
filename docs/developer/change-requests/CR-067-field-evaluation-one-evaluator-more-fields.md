@@ -1,6 +1,6 @@
 # CR-067: one field evaluator, and the fields worth adding
 
-Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 DONE 2026-10-28 (§10); phase 1 DONE 2026-10-28 (§11; Word's measurement in §11.3, every case as predicted); the date-forms probe measured 2026-10-28 (§12.2: D13, D14, built); phase 2 STARTED 2026-10-28 (Jason: "start CR-067 phase 2"); the expression probe measured and the evaluator BUILT the same day (§13.2: `=`, COMPARE, IF, SET, nested fields; D15 to D18); the merge conditionals measured and built the same day (§13.4: NEXTIF, SKIPIF, MERGEREC, MERGESEQ, SET, ASK, FILLIN in the mergers; D19 to D21); phase 2 DONE 2026-10-28; phase 3 next.
+Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 DONE 2026-10-28 (§10); phase 1 DONE 2026-10-28 (§11; Word's measurement in §11.3, every case as predicted); the date-forms probe measured 2026-10-28 (§12.2: D13, D14, built); phase 2 STARTED 2026-10-28 (Jason: "start CR-067 phase 2"); the expression probe measured and the evaluator BUILT the same day (§13.2: `=`, COMPARE, IF, SET, nested fields; D15 to D18); the merge conditionals measured and built the same day (§13.4: NEXTIF, SKIPIF, MERGEREC, MERGESEQ, SET, ASK, FILLIN in the mergers; D19 to D21); phase 2 DONE 2026-10-28; phase 3 STARTED 2026-10-28 (Jason: "start phase 3"): the probes staged, predictions in §14.1.
 PROPOSED 2026-10-28, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's word ("draft the CR,
 including your review as context"), from a review of `FieldsPreprocessor` and the field code around it (§1, §2) and
 of the ECMA-376 field set by category (§3). Recommendations in §5; phases in §6. D2 ruled 2026-10-28 (FldSimpleModel deprecated). Nothing built.
@@ -138,7 +138,7 @@ measurement behind it.
 | 0 | The enabler: `FieldInstruction`, `FieldContext`, `FieldEvaluator` (D1, D2, D10); `FieldUpdater`, `FieldValues` and the DATE, TIME, PRINTDATE and DOCPROPERTY writer handlers moved onto it with no behaviour change; `FldSimpleModel` and the signatures carrying it deprecated, every in-tree user moved (D2); the `preserveResult` fold (D9); parser tests from the corpus instructions; every existing field test green | DONE 2026-10-28 (§10) |
 | 1 | Tier 1: CREATEDATE, SAVEDATE, REVNUM, INFO, SECTION, NOTEREF, REF, QUOTE, USERNAME, USERINITIALS, USERADDRESS, each in all three consumers, each with a Word measurement (a probe docx saved by Word, its results the oracle); REF inside a hyperlink if the measurement needs it (D9) | DONE 2026-10-28 (§11.2 built, §11.3 measured: 25 of 25 as predicted) |
 | 2 | Tier 2: the expression evaluator (`=`, COMPARE, IF within a paragraph) after D6's measurement; then NEXTIF, SKIPIF, SET, ASK, FILLIN, MERGEREC, MERGESEQ in the mergers; the combiner evaluates a resultless IF whose operands it can (a PAGE operand still cannot be decided per page and keeps today's drop) | DONE 2026-10-28: §13.2 (`=`, COMPARE, IF, SET and nested fields in all three consumers, measured 115 for 115) and §13.4 (NEXTIF, SKIPIF, MERGEREC, MERGESEQ, SET, ASK, FILLIN and the conditionals over merge data in the mergers, measured letter for letter) |
-| 3 | Tier 3: INDEX generated from XE marks (as `TocGenerator` does for TOC); LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT from the CR-014 numbering model; NUMWORDS, NUMCHARS from the text model; FILENAME, TEMPLATE; SYMBOL; ADDRESSBLOCK, GREETINGLINE | proposed |
+| 3 | Tier 3: INDEX generated from XE marks (as `TocGenerator` does for TOC); LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT from the CR-014 numbering model; NUMWORDS, NUMCHARS from the text model; FILENAME, TEMPLATE; SYMBOL; ADDRESSBLOCK, GREETINGLINE | STARTED 2026-10-28: the probes staged (§14.1), awaiting Jason's run |
 | 4 | Optional: block-level fields (an IF across paragraphs; INCLUDETEXT with a supplied resolver) by a body-level canonicaliser (D7) | not sized |
 
 Cost, rough: phase 0 two to three days (the refactor is of code with tests, and the gate is the existing field suites
@@ -579,3 +579,39 @@ Hand-offs: the WD's REQ-506 is not changed by this round (the merge fields are t
 ports' mergers (python's mail merge; core-ts has none) take D19 to D21 and the measured rules.
 
 Gate: core-tests 2231/0/30, export-fo-tests 858/0/9.
+
+## 14. Phase 3 (started 2026-10-28, Jason: "start phase 3")
+
+### 14.1 The probes, with the predictions before the run (D6)
+
+`Phase3ProbeBuilder` (core-tests, `org.docx4j.model.fields.probe`) wrote four files and one README to the share,
+`__tmp/cr067/phase3/`, for three Word sessions (about 20 minutes): `phase3-probe-r1.docx` (sha256 3aa9ca9a…; Ctrl+A,
+F9, save), `numwords-probe-r1.docx` (009e1b01…; F9, save) and `address-probe-r1.docx` (f5ad30d5…) merged over
+`address-data-r1.docx` (462e8a68…; four records). Every field carries the cached result `OLD`; Word's saved files are
+the oracle (a replay test per file, as `ExpressionProbeWordTest` and `MergeProbeWordTest`). The README carries every
+case's prediction; the groups and what each settles:
+
+| Group (tokens) | Cases | Predicted | Settles |
+|---|---|---|---|
+| XE marks (X01-X21), three pages each opened by a PAGE field | plain entries on one, two and three pages; a duplicate on one page; `Banana:Yellow`, `Banana:Green`, `Banana` and `Melon:Water:Honeydew` (sub-entries, a parent with its own page, three levels); `cherry` and `apple` in lower case; `10 items` against `2 items`; `éclair`; `\t "See Cat"` and `\t "See also Apple"`, and a cross-referenced entry with a page too; `\b`, `\i`, `\b \i`; `\r GrapeRange` (a bookmark from page 2 to 3); `\f "b"` | `Apple, 1, 2, 3`; `Banana, 2` then the sub-entries indented and sorted; `Dog. See Cat`; `Egg, 1` with the 1 bold; `Grape, 2–3`; `apple` a separate entry; `Kiwi` only under `INDEX \f "b"` | the sort (case, digits, accents), the separators (`, ` between entry and pages and between pages, `. ` before a cross-reference, an en dash for a range), the page-number formatting, a parent entry with its own page, a cross-reference beside pages, what a page list of consecutive pages looks like (listed, not ranged) |
+| INDEX (IDX01-IDX06) | plain; Word's own `\c "2" \z "1033"`; `\e ": " \h "A" \l "; " \g " to " \c "1"`; `\f "b"`; `\r`; `\p "a-c"` | one paragraph per entry in the Index 1/2/3 styles; two columns by continuous section breaks; letter headings in Index Heading; run-in sub-entries; the letter range | the generated shape (styles, the field's paragraphs, the section breaks), the default column count, the switch texts |
+| LISTNUM (L01-L19) | plain, `\l 2`, `\l 3`, back to `\l 1`, `\s 10`, two in one paragraph, `LegalDefault` and `OutlineDefault` with levels, `NumberDefault`, `\l 2 \s 5` | `1) 2) a) i) 3) 10) 11) 12) 13)`; `1. 1.1. 1.2. 2.`; `I. A. 1.`; `14) e) f) 15)` | the three built-in lists' formats, the level and start switches, whether `NumberDefault` is the plain list, and how Word saves the result (a run, a `w:numPr`, a simple field) |
+| AUTONUM, AUTONUMLGL, AUTONUMOUT (A01-A15) | four AUTONUM in Normal (one `\s :`); AUTONUMLGL on Heading 1/2/2/1/2 (`\e`) and a Normal paragraph; AUTONUMOUT on Heading 1/2/3/2; an AUTONUM after the headings | `1. 2. 3: 4.`; `1. 1.1. 1.2. 2. 2.1`; `I. A. 1. B.`; the Normal AUTONUMLGL and the trailing AUTONUM unmeasured | whether only paragraphs holding the field count, whether the two legal/outline kinds share a counter, what Word saves (these are layout-numbered in older formats) |
+| FILENAME, TEMPLATE, FILESIZE (N01-N10) | FILENAME, `\p`, `\* Upper`; TEMPLATE, `\p`; FILESIZE, `\k`, `\m`; DOCPROPERTY Template; NUMPAGES | `phase3-probe-r1.docx` (the name at F9, not the Save As name); the VM's path; `Normal.dotm` and its path; the byte size | the path form, whether the Save As name reaches the field, FILESIZE's moment |
+| SYMBOL (S01-S14) | decimal and `0x` hex, `\f "Symbol"`, `\f Wingdings`, `\u` (8364, 0x20AC), `\s 24`, `\f "Arial" \s 12 \h`, 300 without `\u`, 65, `\a`, `\u \f "Courier New"`, `abc`, no argument | ©, ♥ and the Wingdings hand as `w:sym` (unmeasured), €, the size on the result run | how Word stores the result (`w:t` or `w:sym`), the code above 255 without `\u`, the error texts |
+| NUMWORDS, NUMCHARS (W01-W07, a separate file) | a controlled body (two texts, seven case lines; a footnote of 2 words; a header of 3), NUMWORDS, NUMCHARS, DOCPROPERTY Words, Characters, CharactersWithSpaces, Paragraphs, Lines | 36 words (38 with the footnote, 41 with the header), 212 characters without spaces (239 with), 9 paragraphs | the word rule (`=`, `Well-known`, `e-mail`, `a@b.com`, `1,000`, `don't` one each), whether NUMCHARS counts spaces, whether the footnote or the header count, and the saved app.xml against the fields |
+| ADDRESSBLOCK, GREETINGLINE (A01-A05, G01-G04, a merge over four records with gaps: no suffix, company, second line, state, title or last name) | Word's en-US `\f` format with `\c 2 \e "Australia" \d`, `\c 1`, `\c 0`, a short format, no switches; GREETINGLINE with title + last name and `\e "Dear Sir or Madam,"`, first name, full name, no switches; MERGEFIELD "First Name" and MERGEREC as controls | the lines as the README lists them, empty parts and their separators dropped, the country only where it differs from `\e`; `Dear Mr Smith,`; the fallbacks for a missing title or last name unmeasured | the token grammar (`<<_FIRST0_>>`, literal text inside a token, `\n`), the empty-part rule, `\c`, `\d`, the greeting's fallback rule, the result's shape (line breaks in one paragraph or paragraphs), what Word's no-switch defaults are, and whether Word maps the columns by their standard names |
+
+Not in this round: `\y` (yomi), `\k` and `\d` on INDEX, `\s` (sequence) on INDEX and XE, LISTNUM naming a list style,
+`\j` and `\a` codes above 127 on SYMBOL, GREETINGLINE's `\c` (the comma language), and a text box in the word count
+(unmeasured, §9).
+
+The evaluator's shape, to be written against the results: INDEX generated from the XE marks as `TocGenerator`
+generates a TOC (the entries sorted and grouped by the measured rule, page numbers from the FO renderer where the
+caller has one, otherwise the field kept cached as a TOC without page numbers is); LISTNUM through the CR-014
+`NumberingState` per list name and level, AUTONUM* counting the paragraphs that hold them; NUMWORDS and NUMCHARS from
+the text model with the measured word rule; FILENAME and TEMPLATE from `FieldContext.fileName` (null keeps the cached
+result); SYMBOL producing a `w:sym` or a character by the measured rule; ADDRESSBLOCK and GREETINGLINE in the mergers,
+their `\f` tokens filled from the record by Word's standard field names (and `w:odso/w:fieldMapData` where the document
+carries a mapping).
+
