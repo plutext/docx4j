@@ -847,3 +847,18 @@ sharing of stored results (round 5). What round 1 alone contained is a DATE fiel
 when it opens a document. Round 6 (`IfFieldProbeRound6Builder`, `iffield-probe-r6.docx`, 18 cases, staged) puts a DATE
 beside the shapes of rounds 3 and 4: if Word's refresh of the DATE is a field-update pass that also fills the resultless
 fields and rewrites their twins, round 1 is explained, and the rule is about documents that hold an auto-updating field.
+
+**Round 6 (Jason, 2026-10-29 08:22; `scored-round6.tsv`): round 1 explained.** With a DATE in the document, Word's open rewrote
+the DATE (2026) and the IF over it (VALID), and updated every IF with literal operands but the last field of the document:
+the stored-wrong ones (A2, A1, A3, A10), the empty ones (A2, A8; the wildcard IF WILD_MATCH), the separate-less ones (A9, A3,
+each given a separate), and the hidden-branch one (its separate and result removed, as round 1's C12). It left the formula
+(7, and the empty twin), the DOCPROPERTY (Nope, and the empty twin) and the COMPARE (empty) as they were, and the document's
+last field (W18, a string IF with no result) empty; round 1's last field (C16, the wildcard IF) was likewise the one literal
+IF it left alone, and round 1's IFs over a DOCPROPERTY or a REF (C03, C10, C11) are the nested cases it leaves. So the rule:
+a document holding an auto-updating field (DATE; TIME presumably) is partly updated by Word's open, which refreshes that
+field and every IF whose operands are literals or auto-updating fields, writing the results into the file on save; a
+document without one is opened as stored (rounds 2 to 5). Round 7 (`IfFieldProbeRound7Builder`, two files, DATE and
+TIME, with two literal IFs after round 6's last case) tests the last-field exclusion and TIME. For the text models and
+the WD: the stored result stays the rule (what the file holds); a NOTE that Word's open recomputes the literal IFs of a
+document that holds a DATE or TIME, which the inspector could report as a finding beside `fields_update_on_open`
+(unmeasured: EDITTIME, PRINTDATE, SAVEDATE, FILENAME, NUMPAGES as triggers). docx4j's cached mode does not imitate it.

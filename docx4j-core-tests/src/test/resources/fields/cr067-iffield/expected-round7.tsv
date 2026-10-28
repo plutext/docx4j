@@ -1,0 +1,11 @@
+file	token	stored	note
+date	X01_TRIGGER	2030	the auto-updating field: DATE \@ "yyyy"
+date	X02_STORED	B2	stored wrong
+date	X03_STRING_EMPTY		round 6's W18, no longer last
+date	X04_STORED4	B4	stored wrong, second to last field
+date	X05_LAST	B7	stored wrong, the LAST field of the document
+time	X01_TRIGGER	2030	the auto-updating field: TIME \@ "yyyy"
+time	X02_STORED	B2	stored wrong
+time	X03_STRING_EMPTY		round 6's W18, no longer last
+time	X04_STORED4	B4	stored wrong, second to last field
+time	X05_LAST	B7	stored wrong, the LAST field of the document
