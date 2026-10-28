@@ -445,4 +445,18 @@ Enterprise. Agreed with the Enterprise session (plutext-enterprise-java-11-7c) a
   `ChartType`, `ChartExModel`, `ChartRef.isChartEx` and `readChartEx`.
 - `ChartExNoticeTest`: the WARN once and nothing read after it; the HTML output notices it; silent with a renderer that
   refuses or draws, and in `fallback` mode; the xlsx refusal's reason; the kind.
+- Gate (ac7b98ae4): core-tests 2197/0/30, export-fo-tests 858/0/9.
+
+## Follow-up (2026-10-28): two defects from the Enterprise ChartEx work
+
+1. **A chartex chart in an xlsx had no size.** `Charts.walkAnchors` built the reference from the frame inside the
+   `mc:Choice` (`ChartRef.of(drawing, f, true)`), so `getAnchor()` was the frame and `ChartAnchorSize.of` found no
+   two-cell anchor: `ChartImages.getSize`, `toSvg(chart)` and `toPng(chart, dpi)` threw "has no size in its anchor",
+   for Excel's own files too. Now the reference keeps the cell anchor round the Choice (`ChartRef.withAnchor`), and the
+   size reads as for a classic chart. `ChartExDefectsTest.anXlsxChartexChartHasItsCellAnchorsSize` on waterfall.xlsx.
+2. **A WARN per chartex chart on any walk.** `TraversalUtil.handleGraphicData` flattens `a:graphicData`'s content into the
+   anchor's children by design, so a chartex `cx:chart` element's own parent is its `GraphicData` while the walk's is the
+   anchor; the parent check warned "Parent of ...chartex.CTRelId is currently GraphicData" once per chart (a classic
+   `c:chart`'s element is not a `Child`, so it never did). That case is now known and DEBUG.
+   `ChartExDefectsTest.readingAChartexDocumentWarnsNothingAboutTheChartElementsParent` on the three waterfall fixtures.
 

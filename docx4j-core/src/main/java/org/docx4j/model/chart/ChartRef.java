@@ -73,6 +73,11 @@ public final class ChartRef {
 		this.inChoice = inChoice;
 	}
 
+	/** The same chart, placed by this anchor (an xlsx cell anchor round a Choice's frame). */
+	ChartRef withAnchor(Object anchor) {
+		return new ChartRef(host, anchor, chartPart, relationshipId, name, description, width, height, inChoice);
+	}
+
 	/**
 	 * The chart an anchor places: a {@code wp:inline} or {@code wp:anchor}, a pptx's
 	 * {@code p:graphicFrame}, an xlsx's {@code xdr:twoCellAnchor}, {@code oneCellAnchor},

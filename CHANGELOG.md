@@ -95,6 +95,11 @@ Changes in Version 17.3.5
   title (#244).
 * VariablePrepare joins the runs a ${key} is split across whatever their formatting, so
   variableReplace finds it (#572); variableReplace no longer throws on a ${ with no }.
+* A chartex chart in an xlsx has its size again: ChartImages.getSize, toSvg(chart) and toPng(chart, dpi)
+  threw "has no size in its anchor" for every such chart, Excel's own included, because the chart's
+  reference kept the mc:Choice's frame as its anchor rather than the cell anchor round it. Reading a
+  document with a chartex chart no longer warns, once per chart, that the chart element's parent is
+  its GraphicData: it is, by design of TraversalUtil's walk.
 * A chartex chart (a waterfall, histogram, Pareto, box and whisker, treemap, sunburst or funnel) met
   with no chartex renderer on the classpath is now said so once: the first such chart an output
   draws as the picture Office saved with it (its mc:Fallback, which won't show changes made to the

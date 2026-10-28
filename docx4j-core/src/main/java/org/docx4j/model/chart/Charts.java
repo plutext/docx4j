@@ -210,7 +210,9 @@ public final class Charts {
 			for (AlternateContent.Choice c : ac.getChoice()) {
 				for (Object f : c.getAny()) {
 					ChartRef cr = ChartRef.of(drawing, f, true);
-					if (cr != null) refs.add(cr);
+					// the frame is the Choice's; the chart's anchor is the cell anchor round it, which gives
+					// its size (ChartAnchorSize): a chartex chart in an xlsx had the frame and so no size
+					if (cr != null) refs.add(cr.withAnchor(a));
 				}
 			}
 		}
