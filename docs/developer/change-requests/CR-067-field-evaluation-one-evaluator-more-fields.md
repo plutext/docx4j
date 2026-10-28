@@ -819,3 +819,12 @@ followed its DATE, which Word updates on open; C12's stays unexplained (section 
 `iffield-probe-r3.docx`, 15 cases, staged) tests that reading: a stored-wrong field alone, stored-wrong fields with a
 resultless twin after, before, differing in whitespace, or with other branches, for an IF, a formula, a DOCPROPERTY and
 a string IF, and a resultless field of its own.
+
+**Round 3 (Jason, 2026-10-29 08:01; `scored-round3.tsv`).** No prompt; nothing recomputed; every stored result kept, every
+resultless field (a separate with nothing after it) shown as nothing and left so in the file; no XML changed. So a resultless
+field with a separate does not make Word compute it on open, and nothing is shared by instruction from one. The shape round
+3 lacked is round 1's C09, a field with no separate at all, whose instruction is exactly the one every field round 1's open
+rewrote (C01, C02, C08, C13, C15: `IF 1 = 1 "APPROVED" "REJECTED"`). Round 4 (`IfFieldProbeRound4Builder`,
+`iffield-probe-r4.docx`, 15 cases, staged) tests that: a no-separate field alone; stored-wrong twins of a no-separate field
+(after, before, with other branches), for an IF, a formula, a DOCPROPERTY and the wildcard IF; a separate-but-empty twin
+as the control; a stored-wrong IF with no twin.

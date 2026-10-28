@@ -18,3 +18,8 @@ T12_WHITESPACE_STORED: B4  -- stored wrong; its twin (T13) differs only in white
 T13_WHITESPACE_TWIN: (no result)  -- the resultless twin with two spaces
 T14_RESULTLESS_ALONE: (no result)  -- a resultless field with an instruction of its own: computed to show, and written into the file?
 T15_DIFFERENT_BRANCHES: OTHER_B  -- the condition of T02 and T03 with other branches: untouched if the key is the whole instruction
+
+Word's run (Jason, 2026-10-29 08:01; iffield-probe-r3-word-asis.txt/.docx, scored-round3.tsv): no prompt; nothing recomputed; every
+stored result kept, every resultless field shown as nothing and left without a result in the file; no XML changed at all. So a
+resultless field with a separate does not make Word compute it on open, and there is no sharing by instruction from one. The
+shape round 3 lacked is round 1's C09, a field with no separate; round 4 tests it.
