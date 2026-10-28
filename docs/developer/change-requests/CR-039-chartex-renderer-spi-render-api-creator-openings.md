@@ -460,3 +460,5 @@ Enterprise. Agreed with the Enterprise session (plutext-enterprise-java-11-7c) a
    `c:chart`'s element is not a `Child`, so it never did). That case is now known and DEBUG.
    `ChartExDefectsTest.readingAChartexDocumentWarnsNothingAboutTheChartElementsParent` on the three waterfall fixtures.
 
+Both in db3fcbe8b; gate: core-tests 2199/0/30, export-fo-tests 858/0/9.
+
