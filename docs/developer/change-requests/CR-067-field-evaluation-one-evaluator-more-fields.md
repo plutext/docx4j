@@ -765,3 +765,24 @@ Drafting its port, docx4j-python found that WD 0.38's REQ-506 says the text mode
 shown as nothing; a FILLIN its default, nothing without one; the text model supplies no answers, so the default is always
 what is used), `FieldValuesPromptsTest`. The cached mode is unchanged (an ASK's stored result is read; whether Word shows
 an ASK's stored result at all is unmeasured, section 9).
+
+### 14.7 The IF-field probe and the writers' nested and resultless fields (Jason, 2026-10-29, through the portfolio)
+
+Jason's question: can an IF field give different extracted text, updated or not? `IfFieldProbeBuilder` wrote
+`iffield-probe-r1.docx` (16 cases, each a field whose stored result is the losing branch: a literal IF, the same as a
+`w:fldSimple`, conditions on DOCPROPERTY, on a DATE storing 2030, on a REF whose bookmark was edited after the last update,
+a formula and a COMPARE stored wrong, a locked IF, an IF with no result, one with no separate, a nested DOCPROPERTY as the
+true branch, a hidden true branch, a hand-edited result, a control, an empty `w:fldSimple`, a wildcard) and a copy with
+`w:updateFields`; README with Word's steps (as-is, F9, updatefields yes and no, each as plain text and docx) and the expected
+text per mode; `expected.tsv`; fixtures `fields/cr067-iffield` (f45a50943), staged on the share `__tmp/cr067/iffield/`. Word's
+four texts await Jason's run; the portfolio runs the third-party extractors; `docx4j-extractors.tsv` has docx4j's.
+
+docx4j's own extractors answered as the WD says: the text model's cached mode gives the stored result in every case, its
+update mode the computed one (a locked field kept; DATE never computed, so the date condition reads the stored 2030 and
+says EXPIRED where Word, rewriting DATE on open, says VALID), the markup view the stored one. The writers showed two defects,
+fixed the same day (`FieldsCombiner`, `IfFieldProbeWritersTest`, `ResultlessIfFieldTest`):
+
+| # | Decision | Built |
+|---|---|---|
+| D31 | The output path's combiner folds a nested field into its outer field's instruction as one operand (its stored result, else its evaluated one, as the updater and the text model do, D4), and the outer becomes one `w:fldSimple` whose result the writer paints; before, the nested field was combined on its own and painted beside the outer's stored result (`ProbeTITLE_MISMATCH`, `2026STALE_OUTER` in HTML and PDF). A nested field after the outer's separate is part of its result, as before | yes |
+| D32 | A complex field with no stored result is combined into an empty `w:fldSimple` where the evaluator knows the field (as the layout fields were), so that the writer evaluates it (D3: a field with no stored result is evaluated); and a resultless IF is dropped before combining only where a nested field no evaluator knows (PAGE, NUMPAGES) makes it undecidable; before, every resultless IF was dropped and any other resultless field painted nothing | yes |

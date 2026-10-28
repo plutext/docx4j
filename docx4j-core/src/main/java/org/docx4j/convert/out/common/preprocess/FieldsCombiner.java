@@ -31,6 +31,9 @@ import org.docx4j.TraversalUtil;
 import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.fields.FieldContext;
+import org.docx4j.model.fields.FieldEvaluators;
+import org.docx4j.model.fields.FieldInstruction;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.utils.TraversalUtilVisitor;
@@ -68,7 +71,7 @@ public class FieldsCombiner {
 		// combining them first would turn them into live fldSimples we then paint
 		removeResultlessIfFields(wmlPackage);
 		// CR-021: ALL - rewrites the exporter's copy, so fields combine in every branch
-		TraversalUtil.visit(wmlPackage, false, COMBINE_VISITOR, McMode.ALL);
+		TraversalUtil.visit(wmlPackage, false, new CombineVisitor(wmlPackage), McMode.ALL);
 		
 		if (log.isDebugEnabled()) {
 			log.debug(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), 
@@ -325,6 +328,8 @@ public class FieldsCombiner {
 		int blockIdx, runIdx;
 		boolean hasSeparate;
 		boolean pureBeginRun;
+		/** A nested field no evaluator knows (PAGE, NUMPAGES): the outer IF cannot be decided before layout. */
+		boolean undecidable;
 		final StringBuilder instr = new StringBuilder(64);
 	}
 
@@ -366,8 +371,13 @@ public class FieldsCombiner {
 						} else if (STFldCharType.END.equals(type)) {
 							if (stack.isEmpty()) continue;
 							OpenField f = stack.pop();
+							if (!stack.isEmpty()) {
+								// a nested field: the outer can be decided only if every nested one can be evaluated (CR-067)
+								String name = FieldInstruction.parse(f.instr.toString()).getName();
+								if (f.undecidable || name == null || !FieldEvaluators.has(name)) stack.peek().undecidable = true;
+							}
 							if (stack.isEmpty() && !f.hasSeparate && f.pureBeginRun && pure
-									&& isIfField(f.instr)) {
+									&& isIfField(f.instr) && f.undecidable) {
 								spans.add(new int[] { f.blockIdx, f.runIdx, b, r });
 							}
 						}
@@ -443,14 +453,29 @@ public class FieldsCombiner {
 
 	protected static class CombineVisitor extends TraversalUtilVisitor<P> {
 
+		/** The context a nested field with no stored result is evaluated against (CR-067); null evaluates none. */
+		private final FieldContext context;
+
+		public CombineVisitor() {
+			this(null);
+		}
+
+		/** @since 17.3.5 (CR-067): nested fields fold into their outer field's instruction, evaluated against the package where they store no result */
+		public CombineVisitor(WordprocessingMLPackage pkg) {
+			this.context = pkg == null ? null : FieldContext.of(pkg).readBookmarks();
+		}
+
+		/** One open complex field: its instruction so far, its result runs, and whether its separate was seen. */
+		private static final class Frame {
+			final StringBuilder instr = new StringBuilder(128);
+			final List<Object> result = new ArrayList<Object>(2);
+			boolean separated;
+		}
+
 	    private final static QName _RInstrText_QNAME = 
 	    		new QName(Namespaces.NS_WORD12, "instrText");
 
 	    
-		private static final int STATE_NONE = 0;
-		private static final int STATE_EXPECT_BEGIN = 1;
-		private static final int STATE_EXPECT_INSTR = 2;
-		private static final int STATE_EXPECT_RESULT = 4;
 
 
 		@Override
@@ -540,97 +565,124 @@ public class FieldsCombiner {
 					instrText.subSequence(start, i).toString().toUpperCase(java.util.Locale.ROOT));
 		}
 
+		/**
+		 * Combines each outermost complex field of the paragraph into one {@code w:fldSimple}: its instruction, with a
+		 * nested field folded in as one operand (its stored result, else its evaluated one; CR-067 D4, the updater's
+		 * and the text model's rule), and its result runs. A field with no stored result is combined where the
+		 * renderer computes it ({@link #COMPUTED_WITHOUT_RESULT}) or the evaluator knows it, so that the writer
+		 * evaluates it (CR-067 D3); any other is left as it is. Before 17.3.5 a nested field was combined on its own
+		 * and painted beside the outer's result.
+		 */
 		protected void processContent(List<Object> pContent) {
-		List<Object> pResult = null;
-		boolean haveChanges = false;
-		boolean inField = false;
-		Object item = null;
-		STFldCharType fldCharType = null;
-		int level = 0;
-		int state = STATE_EXPECT_BEGIN;
-		int markIdx = 0;
-		List<Object> resultList = new ArrayList<Object>(2);
-		StringBuilder instrTextBuffer = new StringBuilder(128);
-		String tmpInstrText = null;
-		
-			if ((pContent != null) && (!pContent.isEmpty())) {
-				pResult = new ArrayList<Object>(pContent.size());
-				for (int i=0; i<pContent.size(); i++) {
-					item = pContent.get(i);
-					if (item instanceof R) {
-						fldCharType = getFldCharType((R)item);
-						if (fldCharType != null) {
-							if (STFldCharType.BEGIN.equals(fldCharType)) {
-								level++;
-								state = STATE_EXPECT_INSTR;
-								if (markIdx < i) {
-									copyItems(pContent, markIdx, i, pResult);
-									instrTextBuffer.setLength(0);
-									resultList.clear();
-								}
+			if (pContent == null || pContent.isEmpty()) return;
+			List<Object> pResult = new ArrayList<Object>(pContent.size());
+			boolean haveChanges = false;
+			int markIdx = 0;
+			java.util.Deque<Frame> outer = new java.util.ArrayDeque<Frame>();
+			Frame frame = null; // the innermost open field, null outside any
+			for (int i = 0; i < pContent.size(); i++) {
+				Object item = pContent.get(i);
+				if (item instanceof R) {
+					STFldCharType fldCharType = getFldCharType((R) item);
+					if (fldCharType != null) {
+						if (STFldCharType.BEGIN.equals(fldCharType)) {
+							if (frame == null) {
+								if (markIdx < i) copyItems(pContent, markIdx, i, pResult);
 								markIdx = i;
+							} else {
+								outer.push(frame);
 							}
-							else if (STFldCharType.SEPARATE.equals(fldCharType)) {
-								state = STATE_EXPECT_RESULT;
-							}
-							else if (STFldCharType.END.equals(fldCharType)) {
-								if (level > 0) {
-									state = STATE_EXPECT_BEGIN;
-									//Having empty (eg. XE) fldSimple causes interesting effects to the
-									//layout in word - for the conversion process it probably makes sense,
-									//but if you try to open the resulting document in word it's pure chaos.
-									if ((!resultList.isEmpty() || computedWithoutResult(instrTextBuffer)) &&
-										(instrTextBuffer.length() > 0)) {
-										pResult.add(createFldSimple(instrTextBuffer.toString(), resultList));
-										haveChanges = true;
-										markIdx = i + 1;
-									}
-									instrTextBuffer.setLength(0);
-									resultList.clear();
-									level--;
+							frame = new Frame();
+						} else if (STFldCharType.SEPARATE.equals(fldCharType)) {
+							if (frame != null) frame.separated = true;
+						} else if (STFldCharType.END.equals(fldCharType)) {
+							if (frame == null) continue; // an end with no begin: carried as it is
+							if (outer.isEmpty()) {
+								//Having empty (eg. XE) fldSimple causes interesting effects to the
+								//layout in word - for the conversion process it probably makes sense,
+								//but if you try to open the resulting document in word it's pure chaos.
+								if (frame.instr.length() > 0
+										&& (!frame.result.isEmpty() || computedWithoutResult(frame.instr) || evaluable(frame.instr))) {
+									pResult.add(createFldSimple(frame.instr.toString(), frame.result));
+									haveChanges = true;
+									markIdx = i + 1;
 								}
+								frame = null;
+							} else {
+								// a nested field: in the outer's instruction it is one operand; in its result, its runs
+								Frame inner = frame;
+								frame = outer.pop();
+								if (frame.separated) frame.result.addAll(inner.result);
+								else frame.instr.append(FieldContext.asOperand(operandOf(inner)));
 							}
 						}
-						else {
-							switch (state) {
-								case STATE_EXPECT_INSTR:
-									tmpInstrText = getInstrText((R)item);
-									if (tmpInstrText != null) {
-										instrTextBuffer.append(tmpInstrText);
-									}
-									break;
-								case STATE_EXPECT_RESULT:
-									resultList.add(item);
-							}
+					} else if (frame != null) {
+						if (frame.separated) {
+							frame.result.add(item);
+						} else {
+							String t = getInstrText((R) item);
+							if (t != null) frame.instr.append(t);
 						}
-						
 					}
-					else if ((item instanceof JAXBElement) &&
-							 (((JAXBElement)item).getValue() instanceof CTSimpleField)){
-						if (markIdx < i) {
-							copyItems(pContent, markIdx, i, pResult);
-						}
+				} else if (item instanceof JAXBElement && ((JAXBElement) item).getValue() instanceof CTSimpleField) {
+					if (frame == null) {
+						if (markIdx < i) copyItems(pContent, markIdx, i, pResult);
 						pResult.add(item);
-						instrTextBuffer.setLength(0);
-						resultList.clear();
 						markIdx = i + 1;
-						state = STATE_EXPECT_BEGIN;
+					} else if (frame.separated) {
+						frame.result.add(item);
+					} else {
+						CTSimpleField nested = (CTSimpleField) ((JAXBElement) item).getValue();
+						Frame inner = new Frame();
+						inner.instr.append(nested.getInstr() == null ? "" : nested.getInstr());
+						inner.result.addAll(nested.getContent());
+						frame.instr.append(FieldContext.asOperand(operandOf(inner)));
 					}
-					else if ((item instanceof JAXBElement) &&
-							 (((JAXBElement)item).getValue() instanceof P.Hyperlink)){
-						processContent(((P.Hyperlink)((JAXBElement)item).getValue()).getContent());
-					}
-				}
-				if (haveChanges) {
-					if (markIdx < pContent.size()) {
-						copyItems(pContent, markIdx, pContent.size(), pResult);
-					}
-					pContent.clear();
-					pContent.addAll(pResult);
+				} else if (item instanceof JAXBElement && ((JAXBElement) item).getValue() instanceof P.Hyperlink) {
+					processContent(((P.Hyperlink) ((JAXBElement) item).getValue()).getContent());
 				}
 			}
+			if (haveChanges) {
+				if (markIdx < pContent.size()) copyItems(pContent, markIdx, pContent.size(), pResult);
+				pContent.clear();
+				pContent.addAll(pResult);
+			}
 		}
-		
+
+		/** Whether the evaluator knows the field the instruction names (a resultless one is then combined for it). */
+		private static boolean evaluable(CharSequence instr) {
+			String name = FieldInstruction.parse(instr.toString()).getName();
+			return name != null && FieldEvaluators.has(name);
+		}
+
+		/** A nested field's value as an operand: its stored result's text, else its evaluated result, else nothing. */
+		private String operandOf(Frame inner) {
+			String text = textOf(inner.result);
+			if (!text.isEmpty() || context == null) return text;
+			try {
+				String value = FieldEvaluators.evaluate(inner.instr.toString(), context);
+				return value == null ? "" : value;
+			} catch (Exception e) {
+				log.debug("A nested field could not be evaluated: " + inner.instr + " (" + e.getMessage() + ")");
+				return "";
+			}
+		}
+
+		/** The w:t text of the runs, tabs and breaks as whitespace. */
+		private static String textOf(List<Object> runs) {
+			StringBuilder sb = new StringBuilder();
+			for (Object o : runs) {
+				Object u = XmlUtils.unwrap(o);
+				if (!(u instanceof R)) continue;
+				for (Object c : ((R) u).getContent()) {
+					Object v = XmlUtils.unwrap(c);
+					if (v instanceof Text && c instanceof JAXBElement && "t".equals(((JAXBElement) c).getName().getLocalPart())) sb.append(((Text) v).getValue());
+					else if (v instanceof R.Tab) sb.append('\t');
+					else if (v instanceof org.docx4j.wml.Br) sb.append('\n');
+				}
+			}
+			return sb.toString();
+		}
 
 		private String getInstrText(R run) {
 		List<Object> rContent = run.getContent();

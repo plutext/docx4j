@@ -193,6 +193,11 @@ Changes in Version 17.3.5
   mergers evaluate a merge field written as w:fldSimple, as Word writes its own GREETINGLINE (measured).
   The text extraction under fields: update computes ASK (its bookmark defined with the \d default, nothing
   shown) and FILLIN (its \d default), as the OpenDoPE WD says.
+* The PDF and HTML writers no longer paint a nested field's result beside its outer field's (an IF or
+  formula over a DOCPROPERTY printed both): the field combiner folds a nested field into the outer's
+  instruction as an operand (CR-067 D31). A complex field with no stored result is now evaluated where the
+  evaluator knows it, as a simple one was; a resultless IF is dropped only where a PAGE or NUMPAGES
+  operand leaves it undecidable before layout (D32).
 * FieldUpdater updates the document information fields AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY,
   SUBJECT and TITLE, as it does DOCPROPERTY (#277); DOCPROPERTY Keywords is read; a simple
   DOCPROPERTY's quoted property name is found.
