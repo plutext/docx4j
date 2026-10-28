@@ -64,7 +64,8 @@ public abstract class Property {
 	protected static void warnIfOutsideWordRange(String cssName, CSSValue value, long converted, String unit,
 			long min, long max, String attribute) {
 		if (converted < min || converted > max) {
-			log.warn("{}: {}: {} converts to {} {}, outside Word's range {}..{} for {}; written as computed, Word reads it modulo 16 bits (CR-066)",
+			// the message promises nothing about what the caller writes: ImportXHTML clamps it (its CR-007), docx4j writes it as computed
+			log.warn("{}: {}: {} converts to {} {}, outside Word's range {}..{} for {}; Word reads it modulo 16 bits if written as is (CR-066)",
 					org.docx4j.wml.LenientInteger.CODE, cssName, value == null ? null : value.getCssText(), converted, unit, min, max, attribute);
 		}
 	}
