@@ -140,7 +140,8 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 			new java.util.HashSet<String>(java.util.Arrays.asList("CREATEDATE", "SAVEDATE", "REVNUM", "INFO", "SECTION",
 					"QUOTE", "NOTEREF", "USERNAME", "USERINITIALS", "USERADDRESS", "AUTHOR", "COMMENTS", "KEYWORDS",
 					"LASTSAVEDBY", "SUBJECT", "TITLE",
-					"=", "COMPARE", "IF"))); // CR-067 phase 2
+					"=", "COMPARE", "IF", // CR-067 phase 2
+					"NUMWORDS", "NUMCHARS", "TEMPLATE", "FILENAME", "FILESIZE"))); // CR-067 phase 3
 
 	/** A handler for one of {@link #CACHED_ELSE_EVALUATED}. @since 17.3.5 (CR-067 phase 1) */
 	protected static class CachedElseEvaluatedHandler implements FldSimpleStringWriterHandler {

@@ -51,6 +51,36 @@ final class FieldSources {
 	private FieldSources() {
 	}
 
+	/**
+	 * NUMWORDS and NUMCHARS (CR-067 phase 3, measured 2026-10-28, section 14.2): the main story's words (runs of
+	 * non-whitespace) and characters without spaces, {@code w:t} only (an instruction's text is not shown), headers,
+	 * footers, footnotes and endnotes excluded, as Word's fields count.
+	 *
+	 * @return {words, characters}
+	 */
+	static int[] storyCounts(WordprocessingMLPackage pkg) {
+		final int[] counts = new int[2];
+		if (pkg == null || pkg.getMainDocumentPart() == null || pkg.getMainDocumentPart().getJaxbElement() == null) return counts;
+		final StringBuilder story = new StringBuilder();
+		walk(pkg.getMainDocumentPart().getJaxbElement().getBody(), new Visitor() {
+			@Override public void bookmarkStart(CTBookmark b) { }
+			@Override public void bookmarkEnd(CTMarkupRange e) { }
+			@Override public void noteReference(String kind, CTFtnEdnRef ref) { }
+			@Override public void text(String t) { if (t != null) story.append(t); }
+			@Override public void run(R r) {
+				// a break or a tab separates words as a space does
+				for (Object c : r.getContent()) {
+					Object u = c instanceof JAXBElement ? ((JAXBElement<?>) c).getValue() : c;
+					if (u instanceof org.docx4j.wml.Br || u instanceof org.docx4j.wml.R.Tab) story.append(' ');
+				}
+			}
+			@Override public void paragraphEnd() { story.append('\n'); }
+		});
+		for (int i = 0; i < story.length(); i++) if (!Character.isWhitespace(story.charAt(i))) counts[1]++;
+		for (String w : story.toString().trim().split("\\s+")) if (!w.isEmpty()) counts[0]++;
+		return counts;
+	}
+
 	/** A bookmark's text (its {@code w:t} in document order), by name in lower case, from the main part. */
 	static Map<String, String> bookmarkTexts(WordprocessingMLPackage pkg) {
 		final Map<String, String> out = new HashMap<String, String>();
@@ -305,6 +335,9 @@ final class FieldSources {
 		/** A run, before its content is walked. */
 		default void run(R r) {
 		}
+		/** A paragraph's end. */
+		default void paragraphEnd() {
+		}
 	}
 
 	/** Document order over the content lists, bookmarks and run content included. */
@@ -336,6 +369,7 @@ final class FieldSources {
 			if (u instanceof R) v.run((R) u);
 			List<Object> content = new ArrayList<Object>(((ContentAccessor) u).getContent());
 			for (Object c : content) walk(c, v);
+			if (u instanceof P) v.paragraphEnd();
 		} else if (u instanceof org.docx4j.wml.SdtElement) {
 			org.docx4j.wml.SdtContent sc = ((org.docx4j.wml.SdtElement) u).getSdtContent();
 			if (sc != null) for (Object c : new ArrayList<Object>(sc.getContent())) walk(c, v);

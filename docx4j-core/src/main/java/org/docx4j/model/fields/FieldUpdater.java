@@ -1,5 +1,7 @@
 package org.docx4j.model.fields;
 
+import org.docx4j.model.fields.index.IndexGenerator;
+
 import org.docx4j.TraversalUtil;
 import org.docx4j.jaxb.McMode;
 import org.docx4j.jaxb.Context;
@@ -90,6 +92,7 @@ public class FieldUpdater {
 
 		report = new StringBuilder();
 
+		updateIndexes();
 		updatePart(wordMLPackage.getMainDocumentPart());
 
 		if (processHeadersAndFooters) {
@@ -105,6 +108,38 @@ public class FieldUpdater {
 			}
 		}
 		log.info(report.toString());
+	}
+
+	/**
+	 * INDEX (CR-067 phase 3): a block-level field, regenerated from the XE marks by {@link IndexGenerator} with the
+	 * page numbers of docx4j-export-fo's layout, or of the pager set with {@link #indexPager(IndexGenerator.Pager)};
+	 * with neither, kept as it is (D5).
+	 */
+	void updateIndexes() throws Docx4JException {
+		if (!updates("INDEX")) return;
+		IndexGenerator.Pager pager = indexPager;
+		if (pager == null) {
+			try {
+				pager = IndexGenerator.paginating(wordMLPackage);
+			} catch (Docx4JException e) {
+				report.append("INDEX kept: page numbers could not be computed (" + e.getMessage() + ")\n");
+				return;
+			}
+		}
+		if (pager == null) {
+			report.append("INDEX kept: no page numbers (put docx4j-export-fo on the classpath, or supply a pager)\n");
+			return;
+		}
+		int n = new IndexGenerator(wordMLPackage, pager).update();
+		if (n > 0) report.append("INDEX regenerated: " + n + "\n");
+	}
+
+	private IndexGenerator.Pager indexPager;
+
+	/** The page numbers an INDEX is generated with (a caller's own layout); unset, docx4j-export-fo's. @since 17.3.5 */
+	public FieldUpdater indexPager(IndexGenerator.Pager pager) {
+		this.indexPager = pager;
+		return this;
 	}
 
 	public void updatePart(JaxbXmlPart part) throws Docx4JException {
@@ -251,6 +286,7 @@ public class FieldUpdater {
 				report.append("Ignoring " + fldName + "\n");
 				continue;
 			}
+			if ("INDEX".equals(fldName)) continue; // block-level: updateIndexes()
 			String instr = FieldEvaluators.instructionOf(fr, context, part); // nested fields evaluated inside-out (D4)
 			if (instr == null) {
 				report.append("Ignoring " + fldName + " (a nested field in its instruction has no result)\n");

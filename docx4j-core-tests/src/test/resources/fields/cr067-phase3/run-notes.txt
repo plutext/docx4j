@@ -1,0 +1,13 @@
+Jason's run, 2026-10-28 18:52 to 19:02, Word 365 version 2608 build 20326.20232 (the VM; regional format English (Australia)).
+No results.txt; the notes come from the portfolio session's relay of five screenshots (~/Pictures/Screenshots/Screenshot_20261028_18542[7-9]*.png
+and _19*.png) and Jason's "see other saves in the dir".
+
+phase3-probe-r1-word365.docx (18:52): Ctrl+A, F9, Save As. The file keeps OLD as the result of every LISTNUM, AUTONUM* and SYMBOL
+field (Word never writes their results); the screenshot shows the LISTNUM renders L01 i), L02 ii), L03 b), L04 i), L05 2), L06 x),
+L07 xi), L08 xii) and xiii), L09 2.1.14. (L10 to L19, the AUTONUM* and SYMBOL renders are not in any screenshot: a PDF of the file
+is asked for as round 2). The index, FILENAME/TEMPLATE/FILESIZE and NUMPAGES results are in the file.
+numwords-probe-r1-word365.docx + .pdf (18:56): the status bar says 38 words (the footnote's two counted; the fields say 36).
+address-probe-r1-merged.docx (19:02): Match Fields matched Courtesy Title=Title, First Name=First_Name, Last Name=Last_Name, Suffix,
+Company, Address 1=Address_1, Address 2=Address_2, City, State, Country or Region=Country; NOT matched: Postal Code (and Unique
+Identifier, Middle Name, Nickname, Job Title and every field on the dialog's second page). Word's "Invalid Merge Field" dialog on
+MERGEFIELD "First Name" (Word names the column First_Name): Jason replaced it with Title, so M01 shows the title.

@@ -136,6 +136,37 @@ public final class FieldEvaluators {
 		register("USERNAME", (instr, ctx) -> ctx.getUserName());
 		register("USERINITIALS", (instr, ctx) -> ctx.getUserName() == null ? null : (ctx.getUserInitials() == null ? "" : ctx.getUserInitials()));
 		register("USERADDRESS", (instr, ctx) -> ctx.getUserName() == null ? null : (ctx.getUserAddress() == null ? "" : ctx.getUserAddress()));
+		// tier 3 (CR-067 phase 3, measured 2026-10-28, section 14.2)
+		register("NUMWORDS", (instr, ctx) -> String.valueOf(FieldSources.storyCounts(ctx.getPackage())[0]));
+		register("NUMCHARS", (instr, ctx) -> String.valueOf(FieldSources.storyCounts(ctx.getPackage())[1]));
+		register("FILENAME", (instr, ctx) -> {
+			// the name as given (a path if the caller gave one): \p shows all of it, else the last segment
+			String name = ctx.getFileName();
+			if (name == null) return null;
+			if (instr.hasSwitch("\\p")) return name;
+			int cut = Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\'));
+			return cut < 0 ? name : name.substring(cut + 1);
+		});
+		register("TEMPLATE", (instr, ctx) -> {
+			// app.xml's Template (Normal.dotm, measured); \p (the template's path) is not known here: the cached result stays
+			if (instr.hasSwitch("\\p")) return null;
+			if (ctx.getPackage() == null || ctx.getPackage().getDocPropsExtendedPart() == null) return null;
+			org.docx4j.docProps.extended.Properties props = ctx.getPackage().getDocPropsExtendedPart().getJaxbElement();
+			return props == null || props.getTemplate() == null ? null : props.getTemplate();
+		});
+		register("FILESIZE", (instr, ctx) -> {
+			// bytes; \k kilobytes and \m megabytes rounded (16820 bytes showed 17 and 0, measured: a thousand, not 1024)
+			Long size = ctx.getFileSize();
+			if (size == null) return null;
+			if (instr.hasSwitch("\\k")) return String.valueOf(Math.round(size / 1000.0));
+			if (instr.hasSwitch("\\m")) return String.valueOf(Math.round(size / 1000000.0));
+			return String.valueOf(size);
+		});
+		// INDEX is block-level: FieldUpdater regenerates it through IndexGenerator; here it keeps its cached result
+		register("INDEX", (instr, ctx) -> null);
+		// the address fields of a merge (the mergers supply the record; outside a merge the cached result is kept)
+		register("ADDRESSBLOCK", (instr, ctx) -> org.docx4j.model.fields.merge.AddressFields.addressBlock(instr, ctx));
+		register("GREETINGLINE", (instr, ctx) -> org.docx4j.model.fields.merge.AddressFields.greetingLine(instr, ctx));
 		// tier 2 (CR-067 phase 2, measured 2026-10-28, section 13.2)
 		register("=", new FieldEvaluator() {
 			@Override

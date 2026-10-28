@@ -54,6 +54,7 @@ public final class FieldContext {
 	private String userInitials;
 	private String userAddress;
 	private String fileName;
+	private Long fileSize;
 	private External external;
 	private Integer section;
 	private java.time.ZoneId zone;
@@ -197,6 +198,16 @@ public final class FieldContext {
 
 	public FieldContext fileName(String fileName) {
 		this.fileName = fileName;
+		return this;
+	}
+
+	/** The size FILESIZE shows, in bytes; absent by default (a package has no file). @since 17.3.5 (CR-067 phase 3) */
+	public Long getFileSize() {
+		return fileSize;
+	}
+
+	public FieldContext fileSize(Long fileSize) {
+		this.fileSize = fileSize;
 		return this;
 	}
 

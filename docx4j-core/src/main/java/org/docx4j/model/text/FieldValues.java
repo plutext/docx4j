@@ -68,7 +68,9 @@ final class FieldValues {
 				// CR-067 phase 1
 				"INFO", "SECTION", "NOTEREF", "USERNAME", "USERINITIALS", "USERADDRESS",
 				// CR-067 phase 2 (a formula naming a table cell keeps its cached result: no cells here)
-				"=", "COMPARE", "IF", "SET"));
+				"=", "COMPARE", "IF", "SET",
+				// CR-067 phase 3 (FILENAME and FILESIZE keep the cached result: the walk has no file)
+				"NUMWORDS", "NUMCHARS", "TEMPLATE", "FILENAME", "FILESIZE"));
 		COMPUTED = Collections.unmodifiableSet(s);
 	}
 

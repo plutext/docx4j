@@ -384,7 +384,8 @@ public class MailMerger extends AbstractMerger {
 	 * @since 17.3.5
 	 */
 	static final java.util.Set<String> MERGE_EVALUATED = java.util.Collections.unmodifiableSet(new java.util.HashSet<String>(
-			java.util.Arrays.asList("NEXT", "NEXTIF", "SKIPIF", "MERGEREC", "MERGESEQ", "SET", "ASK", "FILLIN", "IF", "COMPARE", "REF", "=")));
+			java.util.Arrays.asList("NEXT", "NEXTIF", "SKIPIF", "MERGEREC", "MERGESEQ", "SET", "ASK", "FILLIN", "IF", "COMPARE", "REF", "=",
+					"ADDRESSBLOCK", "GREETINGLINE"))); // CR-067 phase 3
 
 	/**
 	 * Extract language information from run parameters to be able to 

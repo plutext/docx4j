@@ -165,6 +165,19 @@ Changes in Version 17.3.5
   results. A MERGEFIELD's \b and \f switches are honoured. Outside a merge, MERGEFIELD, MERGEREC and
   MERGESEQ keep their cached result; FieldUpdater gives an ASK its default (defining its bookmark) and a
   FILLIN its default.
+* An INDEX generated from the document's XE marks (CR-067 phase 3, measured against Word 365's update):
+  org.docx4j.model.fields.index.IndexGenerator sorts and groups the entries as Word does (sub-entries,
+  cross-references, page ranges, bold and italic page numbers, the \e \l \g \k \h \r \p \f and \c
+  switches, the Index 1 to 3 and Index Heading styles added where missing) and writes the field's result in
+  Word's shape; FieldUpdater regenerates every INDEX in the body with docx4j-export-fo's page numbers, or a
+  caller's pager (FieldUpdater.indexPager), and keeps the field as it is with neither.
+* More fields evaluated (CR-067 phase 3, measured against Word 365): NUMWORDS and NUMCHARS (the main story's
+  words and characters without spaces, headers and notes excluded, as Word counts them), FILENAME (with \p
+  the path) and FILESIZE (\k, \m) from FieldContext.fileName and fileSize, TEMPLATE from app.xml; in
+  FieldUpdater, the text extraction and the PDF and HTML writers. The mail mergers fill ADDRESSBLOCK and
+  GREETINGLINE from the record (Word's address-field names and their usual spellings, or the document's own
+  w:odso mapping), with Word's greeting fallbacks (first and last name, the first name, then \e); a block's
+  lines are line breaks in the one paragraph where Word writes paragraphs.
 * FieldUpdater updates the document information fields AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY,
   SUBJECT and TITLE, as it does DOCPROPERTY (#277); DOCPROPERTY Keywords is read; a simple
   DOCPROPERTY's quoted property name is found.
