@@ -330,6 +330,11 @@ option (a) as amended, §3.5, and the three sub-items. docx4j's part, built:
   revision's local clock in the package's zone and `dateUtc` unchanged; the opt-in's precedence);
   `BoundDateFormatTest` amended (the zone alone nominal, the flag converting).
 - Gate (c3e9920e5): core-tests 2203/0/30, export-fo-tests 858/0/9.
+- The ports (2026-10-28): python's CR-025 follows the shape (a zone per package for its fields, stamps and `w:date` readers;
+  the bound-date opt-in waiting on its CR-014; a dcterms opt-in); core-ts's CR-018 mirrors it (`pkg.dateTimeZone`,
+  `effectiveDateTimeZone()`, the zone reaching a revision's and a comment's `w:date` written and read, the opt-in off by
+  default, `writeTimesOnSave`, comments stamped to the minute; the runtime's zone the fallback, no JVM-wide property
+  there; `PackageDateTimeZoneTest`'s cases and the amended bound-date case ported); docx4j-mcp's §21.
 - The sub-items: no change to reading a date-only or offset-free value until a Word probe (one file: the three forms
   in a core property, a revision and a bound control; docx4j builds it when convenient, on the unmeasured list);
   stamps to the minute (docx4j stamps none); `docx4j.dcterms.write` is the shape the ports copy.
