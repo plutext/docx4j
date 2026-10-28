@@ -1,6 +1,6 @@
 # CR-067: one field evaluator, and the fields worth adding
 
-Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 DONE 2026-10-28 (§10); phase 1 DONE 2026-10-28 (§11; Word's measurement in §11.3, every case as predicted); the date-forms probe measured 2026-10-28 (§12.2: D13, D14, built); phase 2 STARTED 2026-10-28 (Jason: "start CR-067 phase 2"); the expression probe measured and the evaluator BUILT the same day (§13.2: `=`, COMPARE, IF, SET, nested fields; D15 to D18); the merge conditionals wait on a second probe.
+Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 DONE 2026-10-28 (§10); phase 1 DONE 2026-10-28 (§11; Word's measurement in §11.3, every case as predicted); the date-forms probe measured 2026-10-28 (§12.2: D13, D14, built); phase 2 STARTED 2026-10-28 (Jason: "start CR-067 phase 2"); the expression probe measured and the evaluator BUILT the same day (§13.2: `=`, COMPARE, IF, SET, nested fields; D15 to D18); the merge conditionals' probe staged 2026-10-28 (§13.3) for Jason's merge run.
 PROPOSED 2026-10-28, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's word ("draft the CR,
 including your review as context"), from a review of `FieldsPreprocessor` and the field code around it (§1, §2) and
 of the ECMA-376 field set by category (§3). Recommendations in §5; phases in §6. D2 ruled 2026-10-28 (FldSimpleModel deprecated). Nothing built.
@@ -493,3 +493,35 @@ is never shown (WD 0.37, the portfolio); python's `field_values.py` and core-ts'
 and rule, their FieldUpdater ports D15 and D17; the mcp server's `extract_text` through the WD.
 
 Gate: core-tests 2225/0/30 (the 17 new tests included), export-fo-tests 858/0/9.
+
+### 13.3 The merge probe, with the predictions before the run (staged 2026-10-28, Jason: "please build the phase 2 probe")
+
+`MergeProbeBuilder` (core-tests, `org.docx4j.model.fields.probe`) wrote to the share, `__tmp/cr067/merge/`:
+`merge-probe-r1.docx` (sha256 5506c18e…, the template: 27 cases, token then field, cached `OLD`), `merge-data-r1.docx`
+(sha256 9fe05cef…, the data source: one table, Name, Middle, Amount, City; records 1 Ann _ 150 Sydney, 2 Bob J 50
+Melbourne, 3 Cat _ 200 Perth, 4 Dan K 300 Hobart, 5 Eve _ 120 Darwin) and the README. Jason attaches the data source
+(Mailings, Use an Existing List), merges to a new document (Finish & Merge, Edit Individual Documents, All), accepts
+each ASK and FILLIN default, counts the prompts, and saves `merge-probe-r1-merged.docx`: **the merged document is the
+oracle** (`MergeProbeWordTest` will replay the mergers with the same records against it, letter by letter). Predicted
+three letters: record 1; record 3 whose second half pulls record 4 (NEXTIF on City = Perth); record 5; record 2 skipped
+(SKIPIF Amount < 100).
+
+| Cases | Field | Prediction | Measures |
+|---|---|---|---|
+| M01, M02 | MERGEREC, MERGESEQ | 1; 3; 5 and 1; 2; 3 | whether a skipped record counts in MERGESEQ (unmeasured) |
+| M03 to M05 | MERGEFIELD Name, `\* Upper`, `\b "Dear " \f ","` | Ann, ANN, Dear Ann, ... | the switches over merge data |
+| M06, M07 | MERGEFIELD Middle (blank for all three), with `\b ( \f )` | empty; empty | `\b`/`\f` only around a non-empty value; whether Word removes the blank line (suppress blank lines) |
+| M08, M09 | `\# "$#,##0.00"` on Amount; `={ MERGEFIELD Amount }*2` | $150.00, ...; 300, 400, 240 | a numeric switch and a formula over a merge field |
+| M10, M11 | IF Amount >= 100; COMPARE City = "S*" | big, big, big; 1, 0, 0 | the phase 2 conditionals over merge data |
+| M12 | SKIPIF Amount < 100 | empty; Bob's record produces no letter | SKIPIF |
+| M13, M14 | SET total `{ ={ MERGEFIELD Amount }+1 }`; REF total | empty; 151, 201, 121 | SET over a merge field, per letter |
+| M15 | MERGEFIELD Nope | Word's text for a missing column (unmeasured) | the error text |
+| M16 to M19 | ASK Greeting `\d Hello \o`; REF; ASK Prompt2 `\d Hi` (no `\o`); REF | empty, Hello, empty, Hi in every letter; asked once, and once per letter | how many prompts; whether the skipped record prompts |
+| M20, M21 | FILLIN `\d World \o`; FILLIN `\d Each` | World; Each, in every letter | the same for FILLIN (its result is the field's) |
+| M22 to M27 | Name, NEXTIF City = "Perth", Name, MERGEREC, MERGESEQ, City | Ann/Ann/1/1/Sydney; Cat/Dan/4/2 or 3/Hobart; Eve/Eve/5/3 or 4/Darwin | NEXTIF pulling the next record into the same letter; MERGEREC and MERGESEQ after it |
+
+For docx4j: the mergers (`MailMerger`, `MailMergerWithNext`) take the records as maps, so the replay feeds the same five;
+what lands after the run is SKIPIF and NEXTIF in the mergers' record loop, MERGEREC and MERGESEQ from the loop's
+counters, SET through the evaluator (D15), ASK and FILLIN from a caller-supplied answer (the defaults otherwise; no
+dialog on a server), and the switches and conditionals through `FieldEvaluators` with the record as the context's
+merge data.

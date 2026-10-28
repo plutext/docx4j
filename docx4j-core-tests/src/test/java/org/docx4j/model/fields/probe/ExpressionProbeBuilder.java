@@ -263,7 +263,7 @@ public class ExpressionProbeBuilder {
 				sb.append(instrText((i == 0 ? " " : "") + instr.substring(i) + " "));
 				break;
 			}
-			int close = instr.indexOf('»', open);
+			int close = matching(instr, open);
 			String before = instr.substring(i, open);
 			sb.append(instrText((i == 0 ? " " : "") + before));
 			sb.append(field(instr.substring(open + 1, close), cached));
@@ -274,6 +274,16 @@ public class ExpressionProbeBuilder {
 		sb.append("<w:r><w:t>" + cached + "</w:t></w:r>");
 		sb.append("<w:r><w:fldChar w:fldCharType=\"end\"/></w:r>");
 		return sb.toString();
+	}
+
+	/** The index of the » matching the « at open (nested pairs inside counted). */
+	static int matching(String instr, int open) {
+		int depth = 0;
+		for (int i = open; i < instr.length(); i++) {
+			if (instr.charAt(i) == '«') depth++;
+			else if (instr.charAt(i) == '»' && --depth == 0) return i;
+		}
+		throw new IllegalArgumentException("no » for « at " + open + " in " + instr);
 	}
 
 	static String instrText(String text) {
