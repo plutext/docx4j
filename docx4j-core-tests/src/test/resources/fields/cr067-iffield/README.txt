@@ -26,3 +26,11 @@ C13_HAND_EDITED: NEITHER_BRANCH_TEXT | APPROVED | APPROVED  -- a stored result t
 C14_CONTROL_TRUE: APPROVED | APPROVED | APPROVED  -- control: the stored result is the right one
 C15_SIMPLE_EMPTY: (nothing) | APPROVED | APPROVED  -- a w:fldSimple with no result
 C16_WILDCARD: WILD_MISS | WILD_MATCH | WILD_MATCH  -- a wildcard comparison (measured in phase 2)
+
+Word's run (Jason, 2026-10-29 07:34 to 07:37): the four texts and two docx are beside this file; scored.tsv has every column.
+Finding: Word's open itself rewrote some stored results before any update (the -asis docx holds them): the literal IFs
+(C01, C02, C08, C09, C13, C15, the w:fldSimple ones rewritten as complex fields), the IF over a DATE (its nested DATE 2030
+became 2026 and the outer VALID), and the hidden-branch IF (its separate and result removed). It kept the stored result of
+the IF over a DOCPROPERTY or a REF, of the nested-branch IF, of the formula, of the COMPARE and of the wildcard IF. So the
+as-is text equals the updatefields-no text and differs from the file as built; F9 and updatefields-yes computed everything
+but the locked field. Round 2 (iffield-probe-r2.docx) separates the hypotheses for the open-time recomputation.

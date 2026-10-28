@@ -786,3 +786,21 @@ fixed the same day (`FieldsCombiner`, `IfFieldProbeWritersTest`, `ResultlessIfFi
 |---|---|---|
 | D31 | The output path's combiner folds a nested field into its outer field's instruction as one operand (its stored result, else its evaluated one, as the updater and the text model do, D4), and the outer becomes one `w:fldSimple` whose result the writer paints; before, the nested field was combined on its own and painted beside the outer's stored result (`ProbeTITLE_MISMATCH`, `2026STALE_OUTER` in HTML and PDF). A nested field after the outer's separate is part of its result, as before | yes |
 | D32 | A complex field with no stored result is combined into an empty `w:fldSimple` where the evaluator knows the field (as the layout fields were), so that the writer evaluates it (D3: a field with no stored result is evaluated); and a resultless IF is dropped before combining only where a nested field no evaluator knows (PAGE, NUMPAGES) makes it undecidable; before, every resultless IF was dropped and any other resultless field painted nothing | yes |
+
+**Word's run (Jason, 2026-10-29 07:34 to 07:37; `scored.tsv`, the four texts and two docx in the fixtures).** Word's open
+itself recomputed some fields before any update, and its save wrote the new results into the file (`-asis.docx`): the
+literal IFs (C01, C02, C08, C09, C13, C15, the two `w:fldSimple` ones rewritten as complex fields, the resultless ones given
+a separate and a result), the IF over a DATE (its nested DATE 2030 rewritten 2026, the outer STALE_OUTER rewritten VALID),
+and the hidden-branch IF (its separate and result removed, so nothing shows). It kept the stored result of the IF over a
+DOCPROPERTY (C03) or a REF (C11), the nested-branch IF (C10), the formula (C05), the COMPARE (C06), the locked IF (C07)
+and the wildcard IF (C16). So Word's as-is text equals its updatefields-no text and is not the file as built; F9 and
+updatefields-yes computed every case but the locked one (C04 VALID, where docx4j's update says EXPIRED because the text
+model never computes DATE). Against this surface docx4j's cached mode (and the fixed writers) differ on C01, C02, C04, C08,
+C09, C12, C13 and C15: the cases Word recomputes on open. Round 2 (`IfFieldProbeRound2Builder`, `iffield-probe-r2.docx`,
+18 cases, staged with `README-round2.txt`) separates the hypotheses for that open-time recomputation: string equality
+without a wildcard, the wildcard IF with its true branch stored, other numeric operators, a false condition, inequality,
+case, an IF over a formula, over PAGE, over NUMPAGES, over a DOCPROPERTY whose stored result is already right, over a
+missing DOCVARIABLE, `w:dirty` on a wildcard IF, a formula, a DOCPROPERTY and a simple field, COMPARE with C01's operands,
+quoted numbers, the wildcard IF as a simple field. Not built until measured: whether docx4j's cached mode (and the
+writers) should recompute what Word recomputes on open is a WD question (D27's rule against DATE applies to the DATE case;
+the literal IFs are new).
