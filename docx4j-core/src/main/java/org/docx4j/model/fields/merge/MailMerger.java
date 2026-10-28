@@ -203,6 +203,11 @@ public class MailMerger extends AbstractMerger {
 		List<FieldRef> fieldRefs = new ArrayList<FieldRef>();
 		canonicaliseStarts(fl, fieldRefs);
 		
+		// the merge's position (CR-067 phase 2): a single instance merged on its own gets a state of its own
+		if (state == null) state = stateFor(datamap);
+		org.docx4j.model.fields.FieldContext ctx = state.context;
+		boolean keep = fieldFate.equals(OutputField.KEEP_MERGEFIELD);
+		
 		// Populate
 		for (FieldRef fr : fieldRefs) {
 			
@@ -213,7 +218,59 @@ public class MailMerger extends AbstractMerger {
 				continue;
 			}
 			
-			if ( "MERGEFIELD".equals(fr.getFldName()) ) {
+			String fldName = fr.getFldName();
+			if (fldName != null && MERGE_EVALUATED.contains(fldName)) {
+				// CR-067 phase 2 (measured 2026-10-28, section 13.4): the fields a merge evaluates, through the
+				// evaluators with the record in the context, and then unlinks as Word's merge to a new document does
+				switch (fldName) {
+				case "NEXT":
+					removeSimpleField(fr);
+					state.advance();
+					datamap = state.record();
+					continue;
+				case "NEXTIF": {
+					Boolean c = conditionOf(fr, ctx);
+					if (c == null) continue;
+					removeSimpleField(fr);
+					if (c) {
+						state.advance();
+						datamap = state.record();
+					}
+					continue;
+				}
+				case "SKIPIF": {
+					Boolean c = conditionOf(fr, ctx);
+					if (c == null) continue;
+					if (c) {
+						state.skipped = true; // the record produces no letter
+						return shellClone.getContent();
+					}
+					removeSimpleField(fr);
+					continue;
+				}
+				default: {
+					String instr = org.docx4j.model.fields.FieldEvaluators.instructionOf(fr, ctx, null);
+					if (instr == null) continue;
+					FieldInstruction instruction = FieldInstruction.parse(instr);
+					String val = org.docx4j.model.fields.FieldEvaluators.evaluate(instruction, ctx);
+					if (val == null) continue; // the cached result is kept
+					if (("SET".equals(fldName) || "ASK".equals(fldName)) && !keep) {
+						removeSimpleField(fr); // Word's merged document holds neither the field nor its value
+						continue;
+					}
+					fr.formatNewResult();
+					fr.setResult(val);
+					if (!keep) {
+						// unlinked: the result stays as text (Word keeps only a formula as a field; here all are unlinked)
+						fr.getParent().getContent().remove(fr.getBeginRun());
+						fr.getParent().getContent().remove(fr.getEndRun());
+					}
+					continue;
+				}
+				}
+			}
+			
+			if ( "MERGEFIELD".equals(fldName) ) {
 				
 				String instr = fr.getInstr();
 				if (instr==null) {
@@ -247,6 +304,7 @@ public class MailMerger extends AbstractMerger {
 					// Now format the result
 					FieldInstruction fsm = FieldInstruction.parse(instr);
 					val = FormattingSwitchHelper.applyFormattingSwitch(input, fsm, val, lang);
+					val = withBeforeAndAfter(fsm, val); // \b and \f (CR-067 phase 2)
 					gFormat = fsm.getSwitchValue("\\*");
 					// Solely for potential use in OutputField.AS_FORMTEXT_REGULAR
 						// We are in fact applying all formatting switches above.
@@ -318,6 +376,15 @@ public class MailMerger extends AbstractMerger {
 		return shellClone.getContent();
 
 	}
+
+	/**
+	 * The fields a merge evaluates besides MERGEFIELD (CR-067 phase 2): the record's position and conditionals, the
+	 * prompts, and the fields whose operands are merge fields (IF, COMPARE, the formula, SET and REF).
+	 *
+	 * @since 17.3.5
+	 */
+	static final java.util.Set<String> MERGE_EVALUATED = java.util.Collections.unmodifiableSet(new java.util.HashSet<String>(
+			java.util.Arrays.asList("NEXT", "NEXTIF", "SKIPIF", "MERGEREC", "MERGESEQ", "SET", "ASK", "FILLIN", "IF", "COMPARE", "REF", "=")));
 
 	/**
 	 * Extract language information from run parameters to be able to 

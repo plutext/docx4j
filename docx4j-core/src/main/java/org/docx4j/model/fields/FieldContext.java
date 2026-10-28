@@ -65,6 +65,10 @@ public final class FieldContext {
 	private final Map<String, String> bookmarks = new HashMap<String, String>();
 	private boolean bookmarksRead;
 	private Cells cells;
+	private Map<String, String> mergeRecord;
+	private Integer mergeRecordNumber;
+	private Integer mergeSequence;
+	private final Map<String, String> answers = new HashMap<String, String>();
 	private Formula.Symbols numberSymbols;
 
 	/**
@@ -245,6 +249,47 @@ public final class FieldContext {
 			for (Map.Entry<String, String> e : FieldSources.bookmarkTexts(pkg).entrySet()) bookmarks.putIfAbsent(e.getKey(), e.getValue());
 		}
 		return this;
+	}
+
+	/**
+	 * The merge record a MERGEFIELD reads (column name to value), or null outside a merge (a MERGEFIELD then keeps
+	 * its cached result). The mergers set it per record. @since 17.3.5 (CR-067 phase 2)
+	 */
+	public Map<String, String> getMergeRecord() {
+		return mergeRecord;
+	}
+
+	public FieldContext mergeRecord(Map<String, String> record) {
+		this.mergeRecord = record;
+		return this;
+	}
+
+	/** MERGEREC: the record's number in the data source (from 1), or null outside a merge. @since 17.3.5 */
+	public Integer getMergeRecordNumber() {
+		return mergeRecordNumber;
+	}
+
+	public FieldContext mergeRecordNumber(Integer number) {
+		this.mergeRecordNumber = number;
+		return this;
+	}
+
+	/** MERGESEQ: the letter's number among those merged (from 1; a skipped or a pulled-in record does not count), or null. @since 17.3.5 */
+	public Integer getMergeSequence() {
+		return mergeSequence;
+	}
+
+	public FieldContext mergeSequence(Integer sequence) {
+		this.mergeSequence = sequence;
+		return this;
+	}
+
+	/**
+	 * The answers an ASK (by its bookmark name) or a FILLIN (by its prompt) takes, a server having no dialog; a
+	 * field with no answer here takes its {@code \d} default, else empty. @since 17.3.5
+	 */
+	public Map<String, String> answers() {
+		return answers;
 	}
 
 	/** The cells a formula's references read, or null where the consumer supplied none. @since 17.3.5 */

@@ -251,7 +251,7 @@ public class FieldUpdater {
 				report.append("Ignoring " + fldName + "\n");
 				continue;
 			}
-			String instr = instructionOf(fr, part); // nested fields evaluated inside-out (D4)
+			String instr = FieldEvaluators.instructionOf(fr, context, part); // nested fields evaluated inside-out (D4)
 			if (instr == null) {
 				report.append("Ignoring " + fldName + " (a nested field in its instruction has no result)\n");
 				continue;
@@ -292,33 +292,4 @@ public class FieldUpdater {
 
 	private java.math.BigInteger nextBookmarkId;
 
-	/**
-	 * The field's instruction with each nested field replaced by its result (D4: inside-out), or null where a nested
-	 * field has no evaluator or no result (the outer keeps its cached result). A nested field's own stored result is
-	 * not rewritten (the canonical form gives it no result slot); Word rewrites it on its own update.
-	 */
-	String instructionOf(FieldRef fr, JaxbXmlPart part) throws Docx4JException {
-		if (fr.getInstructions().isEmpty()) return null;
-		StringBuilder sb = new StringBuilder();
-		for (Object o : fr.getInstructions()) {
-			Object u = org.docx4j.XmlUtils.unwrap(o);
-			if (u instanceof org.docx4j.wml.Text) {
-				sb.append(((org.docx4j.wml.Text) u).getValue());
-			} else if (u instanceof FieldRef) {
-				FieldRef nested = (FieldRef) u;
-				String instr = instructionOf(nested, part);
-				if (instr == null) return null;
-				FieldInstruction instruction = FieldInstruction.parse(instr);
-				if (instruction.getName() == null || !FieldEvaluators.has(instruction.getName())) return null;
-				context.section(FieldContext.sectionOf(part, fr.getParent()));
-				context.cells(FieldSources.cellsOf(fr.getParent()));
-				String value = FieldEvaluators.evaluate(instruction, context);
-				if (value == null) return null;
-				sb.append(FieldContext.asOperand(value));
-			} else {
-				return null;
-			}
-		}
-		return sb.toString();
-	}
 }

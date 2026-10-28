@@ -43,7 +43,9 @@ import org.slf4j.LoggerFactory;
  * the context's clock; CREATEDATE, SAVEDATE and PRINTDATE from the core properties; INFO as the field it
  * names; SECTION where the context says which; NOTEREF to a bookmark on a note reference; USERNAME,
  * USERINITIALS and USERADDRESS from the context (phase 1); {@code =} ({@link Formula}), COMPARE and IF
- * ({@link Conditional}) and SET (phase 2). Not here: MERGEFIELD (a merge supplies the data), FORMTEXT
+ * ({@link Conditional}) and SET (phase 2); MERGEFIELD, MERGEREC and MERGESEQ from the context's merge record and
+ * numbers (the mergers set them; outside a merge the cached result is kept), ASK and FILLIN from the context's
+ * answers, else their {@code \d} default (phase 2). Not here: FORMTEXT
  * (its result is in its form-field data), the layout fields (PAGE, NUMPAGES, SECTIONPAGES,
  * PAGEREF, STYLEREF, TOC: the renderer's), and the external fields (D8).</p>
  *
@@ -156,6 +158,72 @@ public final class FieldEvaluators {
 			ctx.bookmarks().put(FieldInstruction.unquote(p.get(0)).toLowerCase(Locale.ROOT), value);
 			return value;
 		});
+		// the merge fields (CR-067 phase 2, measured 2026-10-28, section 13.4): read from the context's merge record,
+		// which the mergers set per record; outside a merge they keep their cached result
+		register("MERGEFIELD", (instr, ctx) -> {
+			Map<String, String> record = ctx.getMergeRecord();
+			if (record == null || instr.getArgument() == null) return null;
+			String name = FieldInstruction.unquote(instr.getArgument());
+			String value = record.get(name);
+			if (value == null) {
+				for (Map.Entry<String, String> e : record.entrySet()) if (e.getKey().equalsIgnoreCase(name)) value = e.getValue();
+			}
+			if (value == null || value.trim().isEmpty()) return ""; // \b and \f print only around a value
+			String before = instr.getSwitchValue("\\b"), after = instr.getSwitchValue("\\f");
+			return (before == null ? "" : FieldInstruction.unquote(before)) + value + (after == null ? "" : FieldInstruction.unquote(after));
+		});
+		register("MERGEREC", (instr, ctx) -> ctx.getMergeRecordNumber() == null ? null : String.valueOf(ctx.getMergeRecordNumber()));
+		register("MERGESEQ", (instr, ctx) -> ctx.getMergeSequence() == null ? null : String.valueOf(ctx.getMergeSequence()));
+		// ASK bookmark "prompt" \d default: the answer (the context's, else the default) under the bookmark; shows nothing
+		register("ASK", (instr, ctx) -> {
+			if (instr.getArgument() == null) return null;
+			String bookmark = FieldInstruction.unquote(instr.getArgument());
+			String answer = ctx.answers().get(bookmark);
+			if (answer == null) answer = instr.getSwitchValue("\\d");
+			answer = answer == null ? "" : FieldInstruction.unquote(answer);
+			ctx.bookmarks().put(bookmark.toLowerCase(Locale.ROOT), answer);
+			return "";
+		});
+		// FILLIN "prompt" \d default: the answer (the context's by the prompt, else the default) is the result
+		register("FILLIN", (instr, ctx) -> {
+			String prompt = instr.getArgument() == null ? "" : FieldInstruction.unquote(instr.getArgument());
+			String answer = ctx.answers().get(prompt);
+			if (answer == null) answer = instr.getSwitchValue("\\d");
+			return answer == null ? "" : FieldInstruction.unquote(answer);
+		});
+	}
+
+	/**
+	 * A complex field's instruction with each nested field replaced by its result (D4: inside-out), or null where a
+	 * nested field has no evaluator or no result (the outer then keeps its cached result). A nested field's own
+	 * stored result is not rewritten (the canonical form gives it no result slot); Word rewrites it on its own update.
+	 * The context's section and cells are set from the field's position where a part is given.
+	 *
+	 * @since 17.3.5 (CR-067 phase 2)
+	 */
+	public static String instructionOf(FieldRef fr, FieldContext context, org.docx4j.openpackaging.parts.Part part) throws Docx4JException {
+		if (fr.getInstructions().isEmpty()) return null;
+		StringBuilder sb = new StringBuilder();
+		for (Object o : fr.getInstructions()) {
+			Object u = org.docx4j.XmlUtils.unwrap(o);
+			if (u instanceof org.docx4j.wml.Text) {
+				sb.append(((org.docx4j.wml.Text) u).getValue());
+			} else if (u instanceof FieldRef) {
+				FieldRef nested = (FieldRef) u;
+				String instr = instructionOf(nested, context, part);
+				if (instr == null) return null;
+				FieldInstruction instruction = FieldInstruction.parse(instr);
+				if (instruction.getName() == null || !has(instruction.getName())) return null;
+				if (part != null) context.section(FieldContext.sectionOf(part, fr.getParent()));
+				context.cells(FieldSources.cellsOf(fr.getParent()));
+				String value = evaluate(instruction, context);
+				if (value == null) return null;
+				sb.append(FieldContext.asOperand(value));
+			} else {
+				return null;
+			}
+		}
+		return sb.toString();
 	}
 
 	/**

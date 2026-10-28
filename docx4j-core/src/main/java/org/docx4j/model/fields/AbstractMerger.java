@@ -87,6 +87,85 @@ public abstract class AbstractMerger {
 	protected AbstractMerger(WordprocessingMLPackage input) {
 		this.input=input;
 	}
+
+	/**
+	 * The merge's position (CR-067 phase 2, measured 2026-10-28, section 13.4): the records, the current one (NEXT and
+	 * NEXTIF advance it within a letter), the letter's sequence number (a skipped or a pulled-in record does not
+	 * count), whether a SKIPIF skipped the current record, and the field context the evaluators read (the record,
+	 * the numbers, the bookmarks SET and ASK define, the caller's answers).
+	 *
+	 * @since 17.3.5
+	 */
+	protected static final class MergeState {
+		public final List<Map<DataFieldName, String>> data;
+		public int index;
+		public int sequence = 1;
+		public boolean skipped;
+		public final FieldContext context;
+		/** The record index of each letter produced, in order. */
+		public final List<Integer> letters = new ArrayList<Integer>();
+		public MergeState(List<Map<DataFieldName, String>> data, FieldContext context) {
+			this.data = data;
+			this.context = context;
+		}
+		/** The current record, or an empty one past the end (as a NEXT past the last record merges nothing). */
+		public Map<DataFieldName, String> record() {
+			return index < data.size() ? data.get(index) : java.util.Collections.<DataFieldName, String>emptyMap();
+		}
+		/** Moves to the next record within the letter (NEXT, NEXTIF). */
+		public void advance() {
+			index++;
+			record(context, record(), index + 1, sequence);
+		}
+		static void record(FieldContext context, Map<DataFieldName, String> record, int number, int sequence) {
+			Map<String, String> strings = new HashMap<String, String>();
+			for (Map.Entry<DataFieldName, String> e : record.entrySet()) {
+				if (e.getKey() != null) {
+					strings.put(e.getKey().getName(), e.getValue());
+					if (e.getKey().getNameAsProvided() != null) strings.put(e.getKey().getNameAsProvided(), e.getValue());
+				}
+			}
+			context.mergeRecord(strings).mergeRecordNumber(number).mergeSequence(sequence);
+		}
+	}
+
+	protected MergeState state;
+
+	/** The context the merge's field evaluators read: the caller's answers for ASK and FILLIN go here before the merge. @since 17.3.5 */
+	public FieldContext getFieldContext() {
+		if (fieldContext == null) fieldContext = FieldContext.of(input).readBookmarks();
+		return fieldContext;
+	}
+	private FieldContext fieldContext;
+
+	/** A state for one record, for a merge of a single instance. */
+	protected MergeState stateFor(Map<DataFieldName, String> data) {
+		MergeState s = new MergeState(java.util.Collections.singletonList(data), getFieldContext());
+		MergeState.record(s.context, data, 1, 1);
+		return s;
+	}
+
+	/**
+	 * A MERGEFIELD's {@code \b} and {@code \f} texts around a non-empty value (measured 2026-10-28, CR-067 section
+	 * 13.4: "Dear Ann," from {@code \b "Dear " \f ","}; nothing around an empty value), after its other switches.
+	 *
+	 * @since 17.3.5
+	 */
+	protected static String withBeforeAndAfter(FieldInstruction instruction, String value) {
+		if (value == null || value.isEmpty()) return value;
+		String before = instruction.getSwitchValue("\\b"), after = instruction.getSwitchValue("\\f");
+		return (before == null ? "" : FieldInstruction.unquote(before)) + value + (after == null ? "" : FieldInstruction.unquote(after));
+	}
+
+	/**
+	 * A SKIPIF's or NEXTIF's condition against the current record: true, false, or null where it cannot be read
+	 * (no operator, a nested field with no result): the field is then left as it is.
+	 */
+	protected static Boolean conditionOf(FieldRef fr, FieldContext context) throws Docx4JException {
+		String instr = FieldEvaluators.instructionOf(fr, context, null);
+		if (instr == null) return null;
+		return Conditional.test(FieldInstruction.parse(instr), context);
+	}
 	
 	
 	/**
@@ -221,10 +300,17 @@ public abstract class AbstractMerger {
 						clonedPart.setJaxbElement(Context.getWmlObjectFactory().createFtr());
 					}
 					
-					// Populate it
+					// Populate it (the letter's record; a skipped record has no letter)
+					int record = state != null && i < state.letters.size() ? state.letters.get(i) : i;
+					if (state != null) {
+						state.index = record;
+						state.sequence = i + 1;
+						state.skipped = false;
+						MergeState.record(state.context, state.record(), record + 1, i + 1);
+					}
 					List<Object> newContent = performOnInstance(
 							((ContentAccessor)part).getContent(), 
-							data.get(i), formTextFieldNames );	
+							data.get(record), formTextFieldNames );	
 					((ContentAccessor)clonedPart).getContent().addAll(newContent);
 					
 					// Add it
@@ -378,6 +464,7 @@ public abstract class AbstractMerger {
 		FieldsPreprocessor.complexifyFields(input.getMainDocumentPart() );
 //		log.debug("\n\n COMPLEXIFIED " + input.getMainDocumentPart().getPartName().getName() + "\n\n"
 //				+ input.getMainDocumentPart().getXML() + "\n");
+		state = stateFor(data);
 		List<Object> mdpResults = performOnInstance( input.getMainDocumentPart().getContent(), data, formTextFieldNames );
 		input.getMainDocumentPart().getContent().clear();
 		input.getMainDocumentPart().getContent().addAll(mdpResults);
@@ -442,10 +529,19 @@ public abstract class AbstractMerger {
 			FormTextFieldNames formTextFieldNames) throws Docx4JException {
 		
 		List<List<Object>> results = new ArrayList<List<Object>>();
-		for (Map<DataFieldName, String> datamap : data) {
-			
-			results.add(
-					performOnInstance(contentList, datamap, formTextFieldNames));
+		// one letter per record, unless a SKIPIF skips it; a NEXT or NEXTIF within a letter consumes the next record
+		state = new MergeState(data, getFieldContext());
+		while (state.index < data.size()) {
+			state.skipped = false;
+			int record = state.index;
+			MergeState.record(state.context, state.record(), state.index + 1, state.sequence);
+			List<Object> content = performOnInstance(contentList, data.get(state.index), formTextFieldNames);
+			if (!state.skipped) {
+				results.add(content);
+				state.letters.add(record);
+				state.sequence++;
+			}
+			state.index++;
 		}
 		
 		return results;

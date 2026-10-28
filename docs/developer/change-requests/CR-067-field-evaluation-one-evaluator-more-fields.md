@@ -1,6 +1,6 @@
 # CR-067: one field evaluator, and the fields worth adding
 
-Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 DONE 2026-10-28 (§10); phase 1 DONE 2026-10-28 (§11; Word's measurement in §11.3, every case as predicted); the date-forms probe measured 2026-10-28 (§12.2: D13, D14, built); phase 2 STARTED 2026-10-28 (Jason: "start CR-067 phase 2"); the expression probe measured and the evaluator BUILT the same day (§13.2: `=`, COMPARE, IF, SET, nested fields; D15 to D18); the merge conditionals' probe staged 2026-10-28 (§13.3) for Jason's merge run.
+Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 DONE 2026-10-28 (§10); phase 1 DONE 2026-10-28 (§11; Word's measurement in §11.3, every case as predicted); the date-forms probe measured 2026-10-28 (§12.2: D13, D14, built); phase 2 STARTED 2026-10-28 (Jason: "start CR-067 phase 2"); the expression probe measured and the evaluator BUILT the same day (§13.2: `=`, COMPARE, IF, SET, nested fields; D15 to D18); the merge conditionals measured and built the same day (§13.4: NEXTIF, SKIPIF, MERGEREC, MERGESEQ, SET, ASK, FILLIN in the mergers; D19 to D21); phase 2 DONE 2026-10-28; phase 3 next.
 PROPOSED 2026-10-28, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's word ("draft the CR,
 including your review as context"), from a review of `FieldsPreprocessor` and the field code around it (§1, §2) and
 of the ECMA-376 field set by category (§3). Recommendations in §5; phases in §6. D2 ruled 2026-10-28 (FldSimpleModel deprecated). Nothing built.
@@ -137,7 +137,7 @@ measurement behind it.
 |---|---|---|
 | 0 | The enabler: `FieldInstruction`, `FieldContext`, `FieldEvaluator` (D1, D2, D10); `FieldUpdater`, `FieldValues` and the DATE, TIME, PRINTDATE and DOCPROPERTY writer handlers moved onto it with no behaviour change; `FldSimpleModel` and the signatures carrying it deprecated, every in-tree user moved (D2); the `preserveResult` fold (D9); parser tests from the corpus instructions; every existing field test green | DONE 2026-10-28 (§10) |
 | 1 | Tier 1: CREATEDATE, SAVEDATE, REVNUM, INFO, SECTION, NOTEREF, REF, QUOTE, USERNAME, USERINITIALS, USERADDRESS, each in all three consumers, each with a Word measurement (a probe docx saved by Word, its results the oracle); REF inside a hyperlink if the measurement needs it (D9) | DONE 2026-10-28 (§11.2 built, §11.3 measured: 25 of 25 as predicted) |
-| 2 | Tier 2: the expression evaluator (`=`, COMPARE, IF within a paragraph) after D6's measurement; then NEXTIF, SKIPIF, SET, ASK, FILLIN, MERGEREC, MERGESEQ in the mergers; the combiner evaluates a resultless IF whose operands it can (a PAGE operand still cannot be decided per page and keeps today's drop) | BUILT 2026-10-28 (§13.2): `=`, COMPARE, IF, SET and nested fields in all three consumers, measured 115 for 115; the merge conditionals (NEXTIF, SKIPIF, MERGEREC, MERGESEQ, ASK, FILLIN) wait on a second probe with a data source |
+| 2 | Tier 2: the expression evaluator (`=`, COMPARE, IF within a paragraph) after D6's measurement; then NEXTIF, SKIPIF, SET, ASK, FILLIN, MERGEREC, MERGESEQ in the mergers; the combiner evaluates a resultless IF whose operands it can (a PAGE operand still cannot be decided per page and keeps today's drop) | DONE 2026-10-28: §13.2 (`=`, COMPARE, IF, SET and nested fields in all three consumers, measured 115 for 115) and §13.4 (NEXTIF, SKIPIF, MERGEREC, MERGESEQ, SET, ASK, FILLIN and the conditionals over merge data in the mergers, measured letter for letter) |
 | 3 | Tier 3: INDEX generated from XE marks (as `TocGenerator` does for TOC); LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT from the CR-014 numbering model; NUMWORDS, NUMCHARS from the text model; FILENAME, TEMPLATE; SYMBOL; ADDRESSBLOCK, GREETINGLINE | proposed |
 | 4 | Optional: block-level fields (an IF across paragraphs; INCLUDETEXT with a supplied resolver) by a body-level canonicaliser (D7) | not sized |
 
@@ -184,7 +184,14 @@ Rules Word has not been seen to apply, kept here until a probe round measures th
   a function given the wrong number of arguments; a bookmark whose text is not a number in a formula (0 here); whether
   an empty cell ends ABOVE or LEFT (skipped here) and `w:gridSpan` in cell addressing; a quoted bookmark name as an IF
   operand (the name here); COMPARE's text for a bad operator (IF's here); a non-integer in a cell with a currency
-  sign or spaces; the merge conditionals (the second probe).
+  sign or spaces.
+- From the merge round (§13.4): whether Word prompts an ASK or FILLIN for a record a SKIPIF then skips (Jason counted
+  "4 or 5" before Word's "field calculation error in record 2", then 4); what that error was; the space Word 365 (en-AU)
+  printed after the sign under `\# "$#,##0.00"` (`$ 150.00`; docx4j prints none); whether `\b`/`\f` go around the value
+  before or after `\* Upper`; whether Word removes a paragraph holding only an empty merge field (suppress blank lines:
+  the probe's M06 line kept its token text); which other fields Word unlinks in a merged document (DATE, DOCPROPERTY
+  unmeasured; `=` is kept as a field, with the nested MERGEFIELD flattened to its text); a REF before the SET that
+  defines it in a later record.
 - A REF with `\n`, `\r`, `\w`, `\p` or `\f` (the inspector keeps the cached result for these today).
 - SEQ `\s` (reset at a heading level).
 - CREATEDATE's and SAVEDATE's default format for a language other than en-US (en-US measured 2026-10-28, §11.3).
@@ -525,3 +532,50 @@ what lands after the run is SKIPIF and NEXTIF in the mergers' record loop, MERGE
 counters, SET through the evaluator (D15), ASK and FILLIN from a caller-supplied answer (the defaults otherwise; no
 dialog on a server), and the switches and conditionals through `FieldEvaluators` with the record as the context's
 merge data.
+
+### 13.4 The merge round, measured and built (Jason's run 2026-10-28, Word 365 version 2608 build 20326.20232)
+
+Fixtures `docx4j-core-tests/src/test/resources/fields/cr067-merge/` (the template, the data source, Word's merged
+document `merge-probe-r1-merged.docx`, the template as saved with the list attached, the README, Jason's notes);
+`MergeProbeWordTest` merges the template over the five records with `MailMerger` and compares the three letters case
+for case with Word's (81 of 81, two read with a tolerance, below); `MergeFieldEvaluatorsTest` covers the evaluators
+and NEXT.
+
+What Word did:
+
+| Case | Word's merged document | Taken as |
+|---|---|---|
+| the letters | three: record 1; record 3 with record 4 pulled in; record 5 | as predicted: SKIPIF (Amount < 100) skips record 2 entirely; NEXTIF (City = Perth) continues the letter with the next record |
+| M01, M02, M25, M26 | 1/1, 3/2, 5/3; after the NEXTIF 1/1, 4/2, 5/3 | MERGEREC is the record's number; MERGESEQ the letter's, counting neither the skipped nor the pulled-in record |
+| M03 to M05 | Ann, ANN, Dear Ann, | the switches; `\b` and `\f` print around the value |
+| M06, M07 | empty, empty (the lines kept, with their token text) | nothing around an empty value; the blank-line rule stays unmeasured (§9) |
+| M08 | `$ 150.00` | `\# "$#,##0.00"` with a space after the sign (en-AU; docx4j prints `$150.00`; §9) |
+| M09 | 300, **kept as a field** `{ =150*2 }`: the nested MERGEFIELD flattened to its text (`w:instrText 150`) | Word's merge unlinks every evaluated field but a formula |
+| M10, M11 | big; 1, 0, 0 (plain text) | IF and COMPARE over merge fields, unlinked |
+| M12, M23 | the field gone | SKIPIF and NEXTIF leave nothing |
+| M13, M14 | the SET gone (no result, no bookmark); REF 151, 201, 121 as text | SET evaluated per letter and removed; a REF to it unlinked to its text |
+| M15 | Word stopped with "Invalid Merge Field: this merge field is used in the main document, but it does not exist in the data source" (Remove Field, or replace it); Jason replaced it with Name, so the letters show Ann, Cat, Eve | Word does not merge a MERGEFIELD naming no column; a server cannot ask, so docx4j keeps today's fate (REMOVED drops the field, KEEP leaves it) |
+| M16 to M19 | ASK gone; REF Greeting Hello; ASK gone; REF Prompt2 Hi | ASK removed, its bookmark's value read by the REF; `\o` asked once, the other per letter |
+| M20, M21 | World; Each (plain text) | FILLIN unlinked to its answer |
+| the prompts | "4 or 5", then "A field calculation error occurred in record 2", then 4 more | record 1's four, records 3 and 5's two each; whether the skipped record prompted is not separated (§9) |
+| M22, M24, M27 | Ann/Ann/Sydney; Cat/Dan/Hobart; Eve/Eve/Darwin | NEXTIF |
+
+Word's save of the template with the list attached (`merge-probe-r1-use-list.docx`) shows the placeholders Word
+paints before a merge: «Name», «NAME» under `\* Upper`, «Amount» (the `\#` not applied), `Dear «Name»,` and `(«Middle»)`
+(the `\b`/`\f` texts around the placeholder), «Merge Record #», «Merge Sequence #», «Skip Record If...»,
+«Next Record If», «Nope»; the `=`, IF, COMPARE, SET and REF fields already evaluated on attaching (300, big, 1, 151
+with the bookmark, 151), the ASK bookmarks not yet defined (`Error! Reference source not found.`).
+
+Decisions, built the same day:
+
+| # | Decision | Built |
+|---|---|---|
+| D19 | The mergers' record loop (`AbstractMerger.MergeState`): one letter per record; SKIPIF true skips the record (no letter); NEXT and NEXTIF true advance to the next record within the letter (NEXT now in `MailMerger` too, as `MailMergerWithNext` had it); MERGEREC is the record's number, MERGESEQ the letter's (neither a skipped nor a pulled-in record counts); past the last record a NEXT merges nothing. Headers and footers follow the letter's record | yes |
+| D20 | What a merge evaluates and unlinks: besides MERGEFIELD, the fields in `MailMerger.MERGE_EVALUATED` (NEXT, NEXTIF, SKIPIF, MERGEREC, MERGESEQ, SET, ASK, FILLIN, IF, COMPARE, REF, `=`), through `FieldEvaluators` with the record in the context (`FieldContext.mergeRecord`, `mergeRecordNumber`, `mergeSequence`; the MERGEFIELD, MERGEREC and MERGESEQ evaluators read them and keep the cached result outside a merge), nested fields inside-out (`FieldEvaluators.instructionOf`, shared with `FieldUpdater`). Under the REMOVED fate the result stays as text and the field goes, SET and ASK go entirely (Word's shape); under KEEP_MERGEFIELD every field stays with its result. One deviation, recorded: Word keeps a `=` as a field with its nested merge field flattened to text; docx4j unlinks it with the rest (the flattening needs run surgery in the canonical form) | yes |
+| D21 | ASK and FILLIN on a server: the answer is the caller's (`FieldContext.answers()`, by the ASK's bookmark name or the FILLIN's prompt, through `AbstractMerger.getFieldContext()` before the merge), else the `\d` default, else empty; ASK defines its bookmark and shows nothing, FILLIN's answer is its result; `\o` has no effect (one answer serves every letter). In `FieldUpdater` the same (no dialog) | yes |
+
+Also: the mergers honour a MERGEFIELD's `\b` and `\f` (they did not); `FieldRef.getFldName` names a formula `=`.
+Hand-offs: the WD's REQ-506 is not changed by this round (the merge fields are the mergers', not the text model's); the
+ports' mergers (python's mail merge; core-ts has none) take D19 to D21 and the measured rules.
+
+Gate: core-tests 2231/0/30, export-fo-tests 858/0/9.

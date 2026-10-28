@@ -155,6 +155,16 @@ Changes in Version 17.3.5
   (which computes these four too; a formula naming a table cell keeps its cached result there). PDF and HTML
   output paints =, COMPARE and IF from their cached result and evaluates one that has none; a SET paints
   nothing, as Word shows nothing for it, and the text extraction never shows a SET's stored result.
+* The mail mergers evaluate the merge conditionals (CR-067 phase 2, measured against Word 365's merge):
+  SKIPIF skips the record, NEXT and NEXTIF continue the letter with the next record (NEXT in MailMerger
+  too, as MailMergerWithNext had it), MERGEREC and MERGESEQ number the record and the letter (a skipped
+  or a pulled-in record not counted), SET, IF, COMPARE, REF and = over merge fields are evaluated per
+  letter, ASK and FILLIN take the caller's answers (AbstractMerger.getFieldContext().answers(), by the
+  ASK's bookmark or the FILLIN's prompt) else their \d default. Evaluated fields are unlinked to their
+  text as Word's merge does (SET and ASK removed); under KEEP_MERGEFIELD they stay as fields with their
+  results. A MERGEFIELD's \b and \f switches are honoured. Outside a merge, MERGEFIELD, MERGEREC and
+  MERGESEQ keep their cached result; FieldUpdater gives an ASK its default (defining its bookmark) and a
+  FILLIN its default.
 * FieldUpdater updates the document information fields AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY,
   SUBJECT and TITLE, as it does DOCPROPERTY (#277); DOCPROPERTY Keywords is read; a simple
   DOCPROPERTY's quoted property name is found.

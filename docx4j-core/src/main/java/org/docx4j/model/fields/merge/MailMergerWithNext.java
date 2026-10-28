@@ -160,6 +160,7 @@ public class MailMergerWithNext extends MailMerger {
                     // Now format the result
                     FieldInstruction fsm = FieldInstruction.parse(instr);
                     val = FormattingSwitchHelper.applyFormattingSwitch(input, fsm, val);
+                    val = withBeforeAndAfter(fsm, val); // \b and \f (CR-067 phase 2)
                     gFormat = fsm.getSwitchValue("\\*");
                     // Solely for potential use in OutputField.AS_FORMTEXT_REGULAR
                         // We are in fact applying all formatting switches above.

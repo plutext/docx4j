@@ -1,0 +1,13 @@
+CR-067 phase 2: Word 365 mail merge of the merge conditionals (one merge, about 10 minutes)
+
+3. Mailings > Finish & Merge > Edit Individual Documents... > All > OK.
+
+See "Invalid Merge Field" alert
+
+ Word will prompt for the ASK and FILLIN fields:
+   press OK (Enter) to accept each default, and please COUNT the prompts (M16 and M20 should ask once, M18 and M21 once
+   per letter; whether the skipped record also prompts is one of the questions).
+
+I think there was 4 or 5.  Then "A field calculation error occurred in record 2." Then 4 more prompts
+
+
