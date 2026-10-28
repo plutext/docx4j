@@ -71,6 +71,9 @@ public final class FieldContext {
 	private Integer mergeSequence;
 	private final Map<String, String> answers = new HashMap<String, String>();
 	private Formula.Symbols numberSymbols;
+	private Object node;
+	private ListNumbers listNumbers;
+	private int listNumberOrdinal;
 
 	/**
 	 * The table a formula's cell references read (CR-067 phase 2): the numbers of the cells of the table the field is
@@ -312,6 +315,43 @@ public final class FieldContext {
 	public FieldContext cells(Cells cells) {
 		this.cells = cells;
 		return this;
+	}
+
+	/**
+	 * The node of the field about to be evaluated: its {@code w:fldSimple}, or the run or {@code w:fldChar} beginning a
+	 * complex field; null where the consumer supplies none. The list numbers (LISTNUM, AUTONUM*) are looked up by it.
+	 *
+	 * @since 17.3.5 (CR-067 phase 3)
+	 */
+	public Object getNode() {
+		return node;
+	}
+
+	/** Sets the node of the field about to be evaluated (see {@link #getNode()}). Returns this. @since 17.3.5 */
+	public FieldContext node(Object node) {
+		this.node = node;
+		return this;
+	}
+
+	/**
+	 * The document's list numbers (LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT in document order), computed once for this
+	 * context; {@code rescan} computes them again (the tree changed since).
+	 *
+	 * @since 17.3.5 (CR-067 phase 3)
+	 */
+	public ListNumbers listNumbers(boolean rescan) {
+		if (listNumbers == null || rescan) listNumbers = ListNumbers.of(pkg);
+		return listNumbers;
+	}
+
+	/** The document's list numbers, computed once for this context. @since 17.3.5 */
+	public ListNumbers listNumbers() {
+		return listNumbers(false);
+	}
+
+	/** The ordinal (from 0) of the next list-number field evaluated without a node: document order assumed. @since 17.3.5 */
+	public int nextListNumberOrdinal() {
+		return listNumberOrdinal++;
 	}
 
 	/**

@@ -70,7 +70,9 @@ final class FieldValues {
 				// CR-067 phase 2 (a formula naming a table cell keeps its cached result: no cells here)
 				"=", "COMPARE", "IF", "SET",
 				// CR-067 phase 3 (FILENAME and FILESIZE keep the cached result: the walk has no file)
-				"NUMWORDS", "NUMCHARS", "TEMPLATE", "FILENAME", "FILESIZE"));
+				"NUMWORDS", "NUMCHARS", "TEMPLATE", "FILENAME", "FILESIZE",
+				// CR-067 phase 3, round 2 (Word paints these live and stores no result)
+				"LISTNUM", "AUTONUM", "AUTONUMLGL", "AUTONUMOUT", "SYMBOL"));
 		COMPUTED = Collections.unmodifiableSet(s);
 	}
 
@@ -101,8 +103,14 @@ final class FieldValues {
 
 	/** The same, for a field in the given section of the main story (from 1), or null where unknown. */
 	String compute(String instr, Integer section) {
+		return compute(instr, section, null);
+	}
+
+	/** The same, for the field the node begins (its w:fldSimple or beginning fldChar): the list numbers are found by it. */
+	String compute(String instr, Integer section, Object node) {
 		if (context == null || instr == null) return null;
 		context.section(section);
+		context.node(node);
 		FieldInstruction instruction = FieldInstruction.parse(instr);
 		String name = instruction.getName();
 		if (name == null || !COMPUTED.contains(name)) return null;

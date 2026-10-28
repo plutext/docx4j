@@ -177,7 +177,15 @@ Changes in Version 17.3.5
   FieldUpdater, the text extraction and the PDF and HTML writers. The mail mergers fill ADDRESSBLOCK and
   GREETINGLINE from the record (Word's address-field names and their usual spellings, or the document's own
   w:odso mapping), with Word's greeting fallbacks (first and last name, the first name, then \e); a block's
-  lines are line breaks in the one paragraph where Word writes paragraphs.
+  lines are line breaks in the one paragraph where Word writes paragraphs; a format's line breaks are real
+  line breaks, as Word writes its own (w:cr in the instruction).
+* LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT and SYMBOL evaluated (CR-067 phase 3, measured against Word 365's
+  PDFs, since Word writes no result for them): the list numbers computed for the document in order
+  (org.docx4j.model.fields.ListNumbers: the three named lists' shared counters, implicit parents, the level
+  from the paragraph's heading or the heading before it; AUTONUM's counters per heading level), SYMBOL's
+  character with its \f font and \s size (w:sym for a symbol font, ### for a code Word cannot read); in
+  FieldUpdater, the text extraction under fields: update, and the PDF and HTML writers, which write them
+  into their working copy before painting, as Word paints them live.
 * FieldUpdater updates the document information fields AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY,
   SUBJECT and TITLE, as it does DOCPROPERTY (#277); DOCPROPERTY Keywords is read; a simple
   DOCPROPERTY's quoted property name is found.

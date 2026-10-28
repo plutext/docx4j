@@ -92,6 +92,19 @@ public final class FieldEvaluators {
 			});
 		}
 		register("SEQ", FieldEvaluators::sequence);
+		// CR-067 phase 3 (measured 2026-10-28, section 14.4): the list numbers, computed for the document in order (ListNumbers),
+		// and SYMBOL's character; Word paints both live and writes no result for them
+		for (String name : ListNumbers.NAMES) register(name, FieldEvaluators::listNumber);
+		register("SYMBOL", new FieldEvaluator() {
+			@Override
+			public String evaluate(FieldInstruction instruction, FieldContext context) {
+				return SymbolField.of(instruction).getText();
+			}
+			@Override
+			public boolean formatsItself() {
+				return true; // its switches are its own (f, s, u, a, h)
+			}
+		});
 		register("REF", (instr, ctx) -> {
 			String bookmark = instr.getArgument();
 			if (bookmark == null) return null;
@@ -250,6 +263,8 @@ public final class FieldEvaluators {
 				String value = evaluate(instruction, context);
 				if (value == null) return null;
 				sb.append(FieldContext.asOperand(value));
+			} else if (u instanceof org.docx4j.wml.R.Cr || u instanceof org.docx4j.wml.Br) {
+				sb.append('\n'); // a line break in the instruction (Word's own ADDRESSBLOCK format; CR-067 section 14.4)
 			} else {
 				return null;
 			}
@@ -346,6 +361,19 @@ public final class FieldEvaluators {
 	/** {@link #evaluate(FieldInstruction, FieldContext)} of the instruction text. */
 	public static String evaluate(String instruction, FieldContext context) throws Docx4JException {
 		return evaluate(FieldInstruction.parse(instruction), context);
+	}
+
+	/**
+	 * LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT: the field's number from the context's {@link ListNumbers}, by the field's
+	 * node, else the next in document order; null (the cached result kept) outside the main document part.
+	 */
+	private static String listNumber(FieldInstruction instr, FieldContext ctx) {
+		if (ctx.getPart() != null && ctx.getPackage() != null && ctx.getPart() != ctx.getPackage().getMainDocumentPart()) return null;
+		Object node = ctx.getNode();
+		String v = ctx.listNumbers().resultOf(node);
+		if (v == null && node != null) v = ctx.listNumbers(true).resultOf(node); // the tree changed since the scan (canonicalised)
+		if (v == null) v = ctx.listNumbers().resultAt(ctx.nextListNumberOrdinal());
+		return v;
 	}
 
 	private static String sequence(FieldInstruction instr, FieldContext ctx) {

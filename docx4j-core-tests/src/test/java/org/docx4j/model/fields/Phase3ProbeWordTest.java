@@ -17,15 +17,23 @@ package org.docx4j.model.fields;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.model.fields.index.IndexGenerator;
+import org.docx4j.model.text.PlainText;
+import org.docx4j.model.text.TextOptions;
+import org.docx4j.model.text.Texts;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.toc.TocHelper;
 import org.docx4j.utils.ResourceUtils;
@@ -42,7 +50,9 @@ import org.junit.Test;
  * CR-067 phase 3 (section 14.2): the six INDEX fields of the probe regenerated from its XE marks by
  * {@link IndexGenerator} give, paragraph for paragraph (style, text, bold and italic page numbers, the section
  * paragraphs of {@code \c}), what Word 365's update (Ctrl+A, F9) wrote in {@code phase3-probe-r1-word365.docx};
- * FILENAME, TEMPLATE and FILESIZE from the context; NUMWORDS and NUMCHARS over the word-count probe.
+ * FILENAME, TEMPLATE and FILESIZE from the context; NUMWORDS and NUMCHARS over the word-count probe. Round 2 (section 14.4):
+ * LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT and SYMBOL against Word's PDFs (Word writes no result for them: its saves keep
+ * OLD), in the updater, the text model and the HTML writer.
  */
 public class Phase3ProbeWordTest {
 
@@ -194,5 +204,109 @@ public class Phase3ProbeWordTest {
 		assertEquals("211", word.get("W04_PROP_CHARACTERS"));
 		// headers and footnotes are not counted: Word's status bar said 38 (the footnote's two)
 		assertTrue(true);
+	}
+
+	/** What Word's PDF of its round-1 save paints for the LISTNUM and AUTONUM cases (round 2, section 14.4): Word writes no result for them. */
+	static final String[][] LIST_NUMBERS = {
+			{ "L01_LISTNUM", "i)" }, { "L02_LISTNUM", "ii)" }, { "L03_LEVEL2", "b)" }, { "L04_LEVEL3", "i)" }, { "L05_LEVEL1", "2)" },
+			{ "L06_START", "x)" }, { "L07_AFTER_START", "xi)" }, { "L09_LEGAL", "2.1.14." }, { "L10_LEGAL_L2", "2.2." },
+			{ "L11_LEGAL_L2", "2.3." }, { "L12_LEGAL_L1", "2.3.1." }, { "L13_OUTLINE", "2." }, { "L14_OUTLINE_L2", "D." },
+			{ "L15_OUTLINE_L3", "1." }, { "L16_NUMBERDEFAULT", "ii)" }, { "L17_L2_START", "e)" }, { "L18_L2_NEXT", "f)" },
+			{ "L19_L1_AFTER", "i)" },
+			{ "A01_AUTONUM", "1." }, { "A02_AUTONUM", "2." }, { "A03_SEPARATOR", "3:" }, { "A04_AUTONUM", "4." },
+			{ "A05_LGL_H1", "1." }, { "A06_LGL_H2", "1.1." }, { "A07_LGL_H2", "1.2." }, { "A08_LGL_H1", "2." },
+			{ "A09_LGL_H2_NOPERIOD", "2.1" }, { "A10_LGL_NORMAL", "2.1.1." }, { "A11_OUT_H1", "III." }, { "A12_OUT_H2", "A." },
+			{ "A13_OUT_H3", "1." }, { "A14_OUT_H2", "B." }, { "A15_AUTONUM_AFTER", "1." } };
+
+	/** What Word's PDF of listnum-probe-r2-word365.docx paints (no heading before the first case). */
+	static final String[][] ROUND2 = {
+			{ "R01_LISTNUM", "1)" }, { "R02_LISTNUM", "2)" }, { "R03_LEVEL3", "i)" }, { "R04_LEVEL2", "b)" }, { "R05_LEGAL", "3." },
+			{ "R06_AFTER_H1", "a)" }, { "R07_AFTER_H2", "i)" }, { "R08_IN_H1", "4)" }, { "R09_LEVEL1", "5)" }, { "R10_AFTER_H3", "(1)" },
+			{ "R11_AUTONUM", "1." }, { "R12_AUTONUM", "2." }, { "R13_AUTONUM_AFTER_H1", "3." }, { "R14_AUTONUM_IN_H1", "1." },
+			{ "R15_AUTONUMLGL", "1.1." } };
+
+	/** The marshalled paragraph holding the case, or null. */
+	static String paragraphXml(WordprocessingMLPackage pkg, String token) {
+		String xml = XmlUtils.marshaltoString(pkg.getMainDocumentPart().getJaxbElement(), true, false);
+		Matcher m = Pattern.compile("<w:p[ >].*?</w:p>", Pattern.DOTALL).matcher(xml);
+		while (m.find()) if (m.group().contains(">" + token + " = <")) return m.group();
+		return null;
+	}
+
+	/** The w:t texts of the marshalled paragraph, joined. */
+	static String shown(String paragraphXml) {
+		StringBuilder sb = new StringBuilder();
+		Matcher m = Pattern.compile("<w:t(?: [^>]*)?>([^<]*)</w:t>").matcher(paragraphXml);
+		while (m.find()) sb.append(m.group(1));
+		return sb.toString();
+	}
+
+	@Test
+	public void listNumbersAsWord() throws Exception {
+		WordprocessingMLPackage pkg = load("phase3-probe-r1.docx");
+		new FieldUpdater(pkg).only(FieldUpdater.LIVE).update(false);
+		Map<String, String> ours = ExpressionProbeWordTest.results(pkg);
+		for (String[] c : LIST_NUMBERS) assertEquals(c[0], c[1], ours.get(c[0]));
+		assertTrue(shown(paragraphXml(pkg, "L08_TWO_IN_ONE")).contains("xii) and xiii)")); // two in one paragraph
+		// Word's save keeps OLD in every one of them: it paints them live
+		Map<String, String> word = ExpressionProbeWordTest.results(load("phase3-probe-r1-word365.docx"));
+		for (String[] c : LIST_NUMBERS) assertEquals(c[0], "OLD", word.get(c[0]));
+	}
+
+	@Test
+	public void listNumbersRound2AsWord() throws Exception {
+		WordprocessingMLPackage pkg = load("listnum-probe-r2.docx");
+		new FieldUpdater(pkg).only(FieldUpdater.LIVE).update(false);
+		Map<String, String> ours = ExpressionProbeWordTest.results(pkg);
+		for (String[] c : ROUND2) assertEquals(c[0], c[1], ours.get(c[0]));
+		Map<String, String> word = ExpressionProbeWordTest.results(load("listnum-probe-r2-word365.docx"));
+		for (String[] c : ROUND2) assertEquals(c[0], "OLD", word.get(c[0]));
+	}
+
+	/** The same numbers from the text model under fields: update and from the HTML writer (the PDF writer shares its preprocessing). */
+	@Test
+	public void listNumbersInTextAndHtml() throws Exception {
+		String text = PlainText.of(Texts.of(load("listnum-probe-r2.docx"), new TextOptions().fields(TextOptions.Fields.UPDATE)));
+		for (String[] c : ROUND2) assertTrue(c[0] + " in " + text, text.contains(c[0] + " = " + c[1]));
+		String html = html(load("listnum-probe-r2.docx"));
+		for (String[] c : ROUND2) assertTrue(c[0] + " in " + html, html.contains(c[0] + " = " + c[1]));
+		String symbols = html(load("phase3-probe-r1.docx"));
+		assertTrue(symbols, symbols.contains("S10_LETTER = A") && symbols.contains("S09_OVER_255 = ###") && symbols.contains("S01_DECIMAL = \u00a9"));
+		String words = PlainText.of(Texts.of(load("phase3-probe-r1.docx"), new TextOptions().fields(TextOptions.Fields.UPDATE)));
+		assertTrue(words, words.contains("S03_SYMBOL_FONT = \uF0A9") && words.contains("S14_NO_ARGUMENT = ###") && words.contains("L09_LEGAL = 2.1.14."));
+	}
+
+	static String html(WordprocessingMLPackage pkg) throws Exception {
+		HTMLSettings settings = Docx4J.createHTMLSettings();
+		settings.setOpcPackage(pkg);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		Docx4J.toHTML(settings, baos, Docx4J.FLAG_NONE);
+		return baos.toString("UTF-8").replaceAll("<[^>]+>", "").replaceAll("\\s+", " ");
+	}
+
+	/** SYMBOL as Word's PDF paints it (mutool: glyph, font and size per run): the character, w:sym for a symbol font, the font and size, ### in bold for a code Word cannot read. */
+	@Test
+	public void symbolsAsWord() throws Exception {
+		WordprocessingMLPackage pkg = load("phase3-probe-r1.docx");
+		new FieldUpdater(pkg).only(FieldUpdater.LIVE).update(false);
+		Map<String, String> ours = ExpressionProbeWordTest.results(pkg);
+		String[][] texts = { { "S01_DECIMAL", "\u00a9" }, { "S02_HEX", "\u00a9" }, { "S05_UNICODE", "\u20ac" }, { "S06_UNICODE_HEX", "\u20ac" },
+				{ "S07_SIZE", "\u00a9" }, { "S08_FONT_SIZE_H", "\u00a9" }, { "S09_OVER_255", "###" }, { "S10_LETTER", "A" }, { "S11_ANSI", "A" },
+				{ "S12_COURIER", "A" }, { "S13_NOT_A_NUMBER", "###" }, { "S14_NO_ARGUMENT", "###" } };
+		for (String[] c : texts) assertEquals(c[0], c[1], ours.get(c[0]));
+		String s3 = paragraphXml(pkg, "S03_SYMBOL_FONT");
+		assertTrue(s3, s3.contains("<w:sym ") && s3.contains("w:font=\"Symbol\"") && s3.contains("w:char=\"F0A9\""));
+		String s4 = paragraphXml(pkg, "S04_WINGDINGS");
+		assertTrue(s4, s4.contains("<w:sym ") && s4.contains("w:font=\"Wingdings\"") && s4.contains("w:char=\"F041\""));
+		String s7 = paragraphXml(pkg, "S07_SIZE");
+		assertTrue(s7, s7.contains("<w:sz w:val=\"48\"/>"));
+		String s8 = paragraphXml(pkg, "S08_FONT_SIZE_H");
+		assertTrue(s8, s8.contains("w:ascii=\"Arial\"") && s8.contains("<w:sz w:val=\"24\"/>"));
+		String s12 = paragraphXml(pkg, "S12_COURIER");
+		assertTrue(s12, s12.contains("w:ascii=\"Courier New\"") && !s12.contains("<w:sym "));
+		String s9 = paragraphXml(pkg, "S09_OVER_255");
+		assertTrue(s9, s9.contains("<w:b/>"));
+		Map<String, String> word = ExpressionProbeWordTest.results(load("phase3-probe-r1-word365.docx"));
+		for (String[] c : texts) assertEquals(c[0], "OLD", word.get(c[0]));
 	}
 }

@@ -132,6 +132,8 @@ public class FieldsPreprocessor {
 			o = XmlUtils.unwrap(o);
 			if (o instanceof Text) {
 				sb.append(((Text)o).getValue());
+			} else if (o instanceof org.docx4j.wml.R.Cr || o instanceof org.docx4j.wml.Br) {
+				sb.append('\n'); // a line break in the instruction (Word's own ADDRESSBLOCK format; CR-067 section 14.4)
 			} else {
 				// eg a nested field (FieldRef); can't resolve that by simple concatenation
 				log.warn("Can't extract instruction: encountered " + o.getClass().getName());

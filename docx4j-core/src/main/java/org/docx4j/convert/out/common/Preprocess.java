@@ -197,6 +197,15 @@ public class Preprocess extends ConversionFeatures {
 		}
 		if (features.contains(PP_COMMON_COMBINE_FIELDS)) {
 			log.debug("PP_COMMON_COMBINE_FIELDS");
+			// the fields Word paints live and never stores (LISTNUM, AUTONUM*, SYMBOL): their results written here, so the
+			// writers paint what Word paints (CR-067 phase 3, D27); nothing is touched where the document holds none
+			if (org.docx4j.model.fields.FieldUpdater.hasLiveFields(ret)) {
+				try {
+					new org.docx4j.model.fields.FieldUpdater(ret).only(org.docx4j.model.fields.FieldUpdater.LIVE).update(true);
+				} catch (Exception e) {
+					log.warn("Live fields (LISTNUM, AUTONUM, SYMBOL) not updated: " + e.getMessage(), e);
+				}
+			}
 			FieldsCombiner.process(ret);
 //			log.debug(ret.getMainDocumentPart().getXML());
 		}

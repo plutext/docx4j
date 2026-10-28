@@ -69,7 +69,7 @@ public final class AddressFields {
 	}
 
 	/** Word's default block (no {@code \f}; measured: the company first, no title, no suffix, the country always). */
-	static final String DEFAULT_ADDRESS_FORMAT = "<<_COMPANY_\\n>><<_FIRST0_>><< _LAST0_>>\\n<<_STREET1_\\n>><<_STREET2_\\n>><<_CITY_>><< _STATE_>><< _POSTAL_>>\\n<<_COUNTRY_>>";
+	static final String DEFAULT_ADDRESS_FORMAT = "<<_COMPANY_\n>><<_FIRST0_>><< _LAST0_>>\n<<_STREET1_\n>><<_STREET2_\n>><<_CITY_>><< _STATE_>><< _POSTAL_>>\n<<_COUNTRY_>>"; // real line breaks, as Word's own format
 
 	private static final Pattern TOKEN = Pattern.compile("<<(.*?)>>", Pattern.DOTALL);
 	private static final Pattern PLACEHOLDER = Pattern.compile("_[A-Z0-9]+_");
@@ -94,6 +94,7 @@ public final class AddressFields {
 		if (ctx.getMergeRecord() == null) return null;
 		String format = instr.getSwitchValue("\\f");
 		if (format == null) return ""; // measured: no switches, nothing
+		format = format.replace("\r", "").replace("\n", ""); // one line (Word's own format carries a break before <<_AFTER_>>; unmeasured, section 9)
 		Map<String, String> values = values(ctx);
 		String fallback = instr.getSwitchValue("\\e");
 		StringBuilder before = new StringBuilder(), after = new StringBuilder(), name = new StringBuilder();
@@ -132,15 +133,21 @@ public final class AddressFields {
 		return s != null && !s.trim().isEmpty();
 	}
 
-	/** The format with its tokens filled: a token prints only where its field has a value; {@code \n} is a line. */
+	/**
+	 * The format with its tokens filled: a token prints only where its field has a value. A line break in the format is a
+	 * line (Word's own format breaks its lines so, as {@code w:cr} in the instruction; measured 2026-10-28, CR-067 section
+	 * 14.4); a hand-written {@code \n} prints the letter n, inside a token and outside one (measured, section 14.2; Word also
+	 * broke the paragraph after the name line in the cases with {@code \c}, which is unexplained, section 9).
+	 */
 	static String fill(String format, Map<String, String> values) {
+		format = format.replace("\r\n", "\n").replace('\r', '\n');
 		StringBuilder out = new StringBuilder();
 		Matcher m = TOKEN.matcher(format);
 		int at = 0;
 		while (m.find()) {
 			out.append(format, at, m.start());
 			at = m.end();
-			String token = m.group(1);
+			String token = m.group(1).replace("\\n", "n");
 			Matcher ph = PLACEHOLDER.matcher(token);
 			if (!ph.find()) {
 				out.append(token);
@@ -151,7 +158,7 @@ public final class AddressFields {
 			out.append(token, 0, ph.start()).append(v.trim()).append(token.substring(ph.end()));
 		}
 		out.append(format.substring(at));
-		return out.toString().replace("\\n", "\n");
+		return out.toString().replace("\\n", "n");
 	}
 
 	/** The record's values by placeholder. */

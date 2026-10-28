@@ -15,6 +15,7 @@
 package org.docx4j.model.fields.merge;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -26,6 +27,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.model.fields.FieldContext;
+import org.docx4j.model.fields.FieldInstruction;
+import org.docx4j.model.fields.FieldRef;
+import org.docx4j.model.fields.FieldsPreprocessor;
+import org.docx4j.toc.TocHelper;
+import org.docx4j.wml.CTSimpleField;
+import org.docx4j.wml.P;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.utils.ResourceUtils;
 import org.junit.Test;
@@ -34,9 +42,10 @@ import org.junit.Test;
  * CR-067 phase 3 (section 14.2): ADDRESSBLOCK and GREETINGLINE merged by {@link MailMerger} over the four records of
  * {@code address-data-r1.docx} against Word 365's merge ({@code address-probe-r1-merged.docx}). Word's run had no
  * Postal Code column matched (its Match Fields dialog), and its MERGEFIELD "First Name" was replaced by Title (Word
- * names the column First_Name); the records here mirror that. Two measured deviations are asserted as docx4j's:
- * {@code \n} inside a token (Word printed the letter n; docx4j breaks the line, pending Word's own format string),
- * and G03 (Word fell back to {@code \e} for every record; docx4j fills the tokens).
+ * names the column First_Name); the records here mirror that. One measured deviation is asserted as docx4j's: G03 (Word
+ * fell back to {@code \e} for every record; docx4j fills the tokens). A hand-written {@code \n} inside a token prints the
+ * letter n, as Word printed it; Word's own format ({@code address-probe-r1-attached.docx}, round 2, section 14.4) breaks
+ * its lines with real line breaks, w:cr in the instruction.
  */
 public class AddressProbeWordTest {
 
@@ -115,6 +124,37 @@ public class AddressProbeWordTest {
 		assertEquals("", ours.get(0).get("G04_NO_SWITCHES"));
 	}
 
+	/**
+	 * Word's own Address Block and Greeting Line (inserted by Word 365 over the attached list, round 2): the block's format
+	 * breaks its lines with w:cr inside the instruction runs, read as line breaks; the greeting's (a w:fldSimple) carries a
+	 * line break before its {@code _AFTER_} token, which prints on one line.
+	 */
+	@Test
+	public void wordsOwnFormats() throws Exception {
+		WordprocessingMLPackage attached = load("address-probe-r1-attached.docx");
+		Map<String, String> record = new HashMap<String, String>();
+		for (int i = 0; i < COLUMNS.length; i++) record.put(COLUMNS[i], ROWS[0][i]);
+		FieldContext ctx = FieldContext.of(attached).mergeRecord(record);
+		String block = null, greeting = null;
+		for (Object o : attached.getMainDocumentPart().getContent()) {
+			if (!(o instanceof P)) continue;
+			List<FieldRef> refs = new ArrayList<FieldRef>();
+			P p = FieldsPreprocessor.canonicalise((P) o, refs);
+			for (FieldRef fr : refs) if (fr.getInstr() != null && fr.getInstr().contains("\\l 3081")) block = fr.getInstr();
+			for (Object f : TocHelper.getAllElementsFromObject(p, CTSimpleField.class)) {
+				String instr = ((CTSimpleField) f).getInstr();
+				if (instr != null && instr.contains("GREETINGLINE")) greeting = instr;
+			}
+		}
+		assertTrue(block, block.contains("<<_COMPANY_\n>>") && block.contains("<<\n_COUNTRY_>>") && !block.contains("\\n"));
+		assertEquals("Acme Pty Ltd\nMr John Smith Jr\n1 Main St\nSuite 2\nSydney NSW",
+				AddressFields.addressBlock(FieldInstruction.parse(block), ctx)); // \c 2 \e Australia: the country left off
+		assertTrue(greeting, greeting.contains("<< _LAST0_>>\n<<_AFTER_ ,>>"));
+		assertEquals("Dear Mr Smith,", AddressFields.greetingLine(FieldInstruction.parse(greeting), ctx));
+		// a hand-written \n: the letter n, inside a token and outside one (measured, section 14.2)
+		assertEquals("Acme Pty LtdnnJohn", AddressFields.fill("<<_COMPANY_\\n>>\\n<<_FIRST0_>>", AddressFields.valuesOf(record)));
+	}
+
 	/** Word's text, or docx4j's where the two differ by a recorded deviation. */
 	static String expectedOf(String token, int letter, String word) {
 		if (token.equals("G03_FULL")) {
@@ -122,10 +162,15 @@ public class AddressProbeWordTest {
 			String[] ours = { "To Mr John Smith:", "To Ms Jane Doe:", "To Pat Lee:", "To Sam:" };
 			return ours[letter];
 		}
-		if (word.contains("n") && (token.startsWith("A01") || token.startsWith("A02") || token.startsWith("A03") || token.startsWith("A04"))
-				&& !(token.startsWith("A01") && letter == 1)) {
-			// Word printed the letter n for each \n inside a token (and a paragraph for the one outside); docx4j breaks every line
-			return word.replace("\nn", "\n").replaceAll("n(?=[A-Z0-9])", "\n");
+		if (token.equals("A01_ADDRESSBLOCK") && letter == 1) {
+			// \d: Word re-laid the one foreign address (New Zealand, not the \e country) in that country's own format, name,
+			// street, city, country on four lines (section 14.4); docx4j ignores \d (the country formats are unmeasured)
+			return "Ms Jane Doen2 High StnAucklandnNew Zealand";
+		}
+		if (token.startsWith("A01") || token.startsWith("A02") || token.startsWith("A03")) {
+			// Word broke the paragraph after the name line, before the letter n of the first hand-written \n, in the cases with
+			// \c and \e and not in A04 (unexplained, section 9); docx4j prints the n alone
+			return word.replace("\nn", "n");
 		}
 		return word;
 	}

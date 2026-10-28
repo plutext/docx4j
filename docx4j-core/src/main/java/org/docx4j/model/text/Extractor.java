@@ -553,6 +553,8 @@ final class Extractor {
 		String computed;
 		/** A form field's data, on its beginning: a FORMTEXT's default text (REQ-506). */
 		CTFFData ffData;
+		/** The fldChar beginning it: the node a list number (LISTNUM, AUTONUM*) is looked up by (CR-067 phase 3). */
+		Object begin;
 		/** A HYPERLINK field's target, once its code is read: its result's text is in the link (REQ-703). */
 		String link;
 		/** A table of contents under {@code toc: false} (D12): nothing of it is read. */
@@ -1225,6 +1227,7 @@ final class Extractor {
 				FieldState f = new FieldState();
 				f.locked = written(fc, "fldLock");
 				f.ffData = fc.getFfData();
+				f.begin = fc;
 				f.codeBlock = para.block;
 				f.codeStart = para.block.runs.size();
 				if (!options.isToc() && options.isFieldCodes()) {
@@ -1311,9 +1314,13 @@ final class Extractor {
 			text(para, "\t", hidden, state);
 			return;
 		case "br":
-		case "cr":
+		case "cr": {
+			Deque<FieldState> fields = para.story.fields;
+			// a line break in a field's code (Word's own ADDRESSBLOCK format writes w:cr there; CR-067 section 14.4)
+			if (!fields.isEmpty() && !fields.peek().separated) fields.peek().instr.append('\n');
 			text(para, "\n", hidden, state);
 			return;
+		}
 		case "noBreakHyphen":
 			text(para, "‑", hidden, state);
 			return;
@@ -1476,7 +1483,7 @@ final class Extractor {
 		if (options.getFields() != TextOptions.Fields.UPDATE || f.locked || pkg == null) return null;
 		String instr = f.instr.toString().trim();
 		if (f.ffData != null && instr.regionMatches(true, 0, "FORMTEXT", 0, 8)) return formText(f.ffData);
-		return fieldValues().compute(instr, sectionOf(story));
+		return fieldValues().compute(instr, sectionOf(story), f.begin);
 	}
 
 	/** The section (from 1) the main story's walk is in, or null in another story (SECTION keeps its cached result). */
@@ -1636,7 +1643,7 @@ final class Extractor {
 		if (options.isFieldCodes() && !inCode(para.story)) addText(para, instr, TextRun.Kind.FIELD_CODE, false, state);
 		if (options.getFields() == TextOptions.Fields.UPDATE && !written(field, "fldLock") && pkg != null && !inCode(para.story)
 				&& !suppressed(para.story)) {
-			String value = fieldValues().compute(instr, sectionOf(para.story));
+			String value = fieldValues().compute(instr, sectionOf(para.story), field);
 			if (value != null) {
 				text(para, value, false, state);
 				para.block.fields.add(new TextField(instr, value, true));

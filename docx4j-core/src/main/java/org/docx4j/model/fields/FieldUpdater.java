@@ -57,8 +57,56 @@ public class FieldUpdater {
 	private static final String DOCPROPERTY = "DOCPROPERTY";
 	private static final String DOCVARIABLE = "DOCVARIABLE";
 
+	/**
+	 * The fields Word paints live and never writes a result for: LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT and SYMBOL
+	 * (measured 2026-10-28, CR-067 section 14.4). The output paths write them into their working copy before painting
+	 * ({@code Preprocess}), as the file's stored result is never what Word shows.
+	 *
+	 * @since 17.3.5 (CR-067 phase 3)
+	 */
+	public static final Set<String> LIVE = Collections.unmodifiableSet(new HashSet<String>(
+			java.util.Arrays.asList("LISTNUM", "AUTONUM", "AUTONUMLGL", "AUTONUMOUT", "SYMBOL")));
+
 	/** The names to update, or null for every field {@link FieldEvaluators} has an evaluator for (D10, since phase 1). */
 	private Set<String> fieldNames = null;
+
+	/**
+	 * Whether the main document part holds any of {@link #LIVE}: a scan of the field instructions, cheaper than an
+	 * update of a document that has none.
+	 *
+	 * @since 17.3.5 (CR-067 phase 3)
+	 */
+	public static boolean hasLiveFields(WordprocessingMLPackage pkg) {
+		if (pkg == null || pkg.getMainDocumentPart() == null) return false;
+		final boolean[] found = { false };
+		new TraversalUtil(pkg.getMainDocumentPart().getContent(), new TraversalUtil.CallbackImpl() {
+			@Override
+			public List<Object> apply(Object o) {
+				Object u = org.docx4j.XmlUtils.unwrap(o);
+				if (u instanceof CTSimpleField) {
+					check(((CTSimpleField) u).getInstr());
+				} else if (u instanceof R) {
+					for (Object c : ((R) u).getContent()) {
+						Object v = org.docx4j.XmlUtils.unwrap(c);
+						if (v instanceof Text && c instanceof jakarta.xml.bind.JAXBElement
+								&& "instrText".equals(((jakarta.xml.bind.JAXBElement<?>) c).getName().getLocalPart())) check(((Text) v).getValue());
+					}
+				}
+				return null;
+			}
+			private void check(String instr) {
+				if (instr == null || found[0]) return;
+				String upper = instr.toUpperCase(Locale.ROOT);
+				if (upper.contains("LISTNUM") || upper.contains("AUTONUM") || upper.contains("SYMBOL")) found[0] = true;
+			}
+			@Override
+			public boolean shouldTraverse(Object o) {
+				Object u = org.docx4j.XmlUtils.unwrap(o);
+				return !found[0] && !(u instanceof R) && !(u instanceof CTSimpleField);
+			}
+		});
+		return found[0];
+	}
 
 	public FieldUpdater(WordprocessingMLPackage wordMLPackage) {
 		this.wordMLPackage = wordMLPackage;
@@ -107,7 +155,8 @@ public class FieldUpdater {
 				}
 			}
 		}
-		log.info(report.toString());
+		if (fieldNames == null) log.info(report.toString());
+		else log.debug(report.toString());
 	}
 
 	/**
@@ -196,6 +245,7 @@ public class FieldUpdater {
 
 			context.section(FieldContext.sectionOf(part, simpleField));
 			context.cells(FieldSources.cellsOf(simpleField));
+			context.node(simpleField);
 			String val = FieldEvaluators.evaluate(instruction, context);
 			if (val == null) {
 				report.append(simpleField.getInstr() + "\n");
@@ -218,6 +268,7 @@ public class FieldUpdater {
 			simpleField.getContent().clear();
 			simpleField.getContent().add(r);
 			setSimpleFieldConent(r, val);
+			if ("SYMBOL".equals(instruction.getName())) SymbolField.of(instruction).apply(r); // its font, size, w:sym
 		}
 	}
 
@@ -300,6 +351,7 @@ public class FieldUpdater {
 
 			context.section(FieldContext.sectionOf(part, fr.getParent()));
 			context.cells(FieldSources.cellsOf(fr.getParent()));
+			context.node(fr.getBeginRun());
 			String val = FieldEvaluators.evaluate(instruction, context);
 			if (val == null) {
 				report.append(instr + "\n");
@@ -315,6 +367,7 @@ public class FieldUpdater {
 				fr.setResultRuns(runs); // the bookmark's formatting, as Word keeps it (measured 2026-10-28)
 			} else {
 				fr.setResult(val);
+				if ("SYMBOL".equals(fldName)) SymbolField.of(instruction).apply(fr.getResultsSlot()); // its font, size, w:sym
 				if ("NOTEREF".equals(fldName) && instruction.hasSwitch("\\f")) noteReferenceStyle(fr.getResultsSlot());
 				if ("SET".equals(fldName) && instruction.getArgument() != null) {
 					// Word stores a SET's value under a bookmark of its name (measured 2026-10-28, CR-067 section 13.2)

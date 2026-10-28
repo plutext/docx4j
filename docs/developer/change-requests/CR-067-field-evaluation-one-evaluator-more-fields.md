@@ -1,6 +1,6 @@
 # CR-067: one field evaluator, and the fields worth adding
 
-Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 DONE 2026-10-28 (§10); phase 1 DONE 2026-10-28 (§11; Word's measurement in §11.3, every case as predicted); the date-forms probe measured 2026-10-28 (§12.2: D13, D14, built); phase 2 STARTED 2026-10-28 (Jason: "start CR-067 phase 2"); the expression probe measured and the evaluator BUILT the same day (§13.2: `=`, COMPARE, IF, SET, nested fields; D15 to D18); the merge conditionals measured and built the same day (§13.4: NEXTIF, SKIPIF, MERGEREC, MERGESEQ, SET, ASK, FILLIN in the mergers; D19 to D21); phase 2 DONE 2026-10-28; phase 3 STARTED 2026-10-28 (Jason: "start phase 3"); the probes measured the same evening and INDEX, NUMWORDS, NUMCHARS, FILENAME, TEMPLATE, FILESIZE, ADDRESSBLOCK and GREETINGLINE BUILT (§14.2; D22 to D25); LISTNUM, AUTONUM* and SYMBOL await round 2 (Word writes no result for them; a PDF and a second LISTNUM probe staged).
+Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 DONE 2026-10-28 (§10); phase 1 DONE 2026-10-28 (§11; Word's measurement in §11.3, every case as predicted); the date-forms probe measured 2026-10-28 (§12.2: D13, D14, built); phase 2 STARTED 2026-10-28 (Jason: "start CR-067 phase 2"); the expression probe measured and the evaluator BUILT the same day (§13.2: `=`, COMPARE, IF, SET, nested fields; D15 to D18); the merge conditionals measured and built the same day (§13.4: NEXTIF, SKIPIF, MERGEREC, MERGESEQ, SET, ASK, FILLIN in the mergers; D19 to D21); phase 2 DONE 2026-10-28; phase 3 STARTED 2026-10-28 (Jason: "start phase 3"); the probes measured the same evening and INDEX, NUMWORDS, NUMCHARS, FILENAME, TEMPLATE, FILESIZE, ADDRESSBLOCK and GREETINGLINE BUILT (§14.2; D22 to D25); LISTNUM, AUTONUM* and SYMBOL measured in round 2 from Word's PDFs and BUILT the same evening (§14.4; D27 to D29); phase 3 DONE 2026-10-28.
 PROPOSED 2026-10-28, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's word ("draft the CR,
 including your review as context"), from a review of `FieldsPreprocessor` and the field code around it (§1, §2) and
 of the ECMA-376 field set by category (§3). Recommendations in §5; phases in §6. D2 ruled 2026-10-28 (FldSimpleModel deprecated). Nothing built.
@@ -139,7 +139,7 @@ measurement behind it.
 | 0 | The enabler: `FieldInstruction`, `FieldContext`, `FieldEvaluator` (D1, D2, D10); `FieldUpdater`, `FieldValues` and the DATE, TIME, PRINTDATE and DOCPROPERTY writer handlers moved onto it with no behaviour change; `FldSimpleModel` and the signatures carrying it deprecated, every in-tree user moved (D2); the `preserveResult` fold (D9); parser tests from the corpus instructions; every existing field test green | DONE 2026-10-28 (§10) |
 | 1 | Tier 1: CREATEDATE, SAVEDATE, REVNUM, INFO, SECTION, NOTEREF, REF, QUOTE, USERNAME, USERINITIALS, USERADDRESS, each in all three consumers, each with a Word measurement (a probe docx saved by Word, its results the oracle); REF inside a hyperlink if the measurement needs it (D9) | DONE 2026-10-28 (§11.2 built, §11.3 measured: 25 of 25 as predicted) |
 | 2 | Tier 2: the expression evaluator (`=`, COMPARE, IF within a paragraph) after D6's measurement; then NEXTIF, SKIPIF, SET, ASK, FILLIN, MERGEREC, MERGESEQ in the mergers; the combiner evaluates a resultless IF whose operands it can (a PAGE operand still cannot be decided per page and keeps today's drop) | DONE 2026-10-28: §13.2 (`=`, COMPARE, IF, SET and nested fields in all three consumers, measured 115 for 115) and §13.4 (NEXTIF, SKIPIF, MERGEREC, MERGESEQ, SET, ASK, FILLIN and the conditionals over merge data in the mergers, measured letter for letter) |
-| 3 | Tier 3: INDEX generated from XE marks (as `TocGenerator` does for TOC); LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT from the CR-014 numbering model; NUMWORDS, NUMCHARS from the text model; FILENAME, TEMPLATE; SYMBOL; ADDRESSBLOCK, GREETINGLINE | STARTED 2026-10-28: measured the same day (§14.2); INDEX, NUMWORDS, NUMCHARS, FILENAME, TEMPLATE, FILESIZE, ADDRESSBLOCK, GREETINGLINE built; LISTNUM, AUTONUM*, SYMBOL await round 2 (§14.3) |
+| 3 | Tier 3: INDEX generated from XE marks (as `TocGenerator` does for TOC); LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT from the CR-014 numbering model; NUMWORDS, NUMCHARS from the text model; FILENAME, TEMPLATE; SYMBOL; ADDRESSBLOCK, GREETINGLINE | DONE 2026-10-28: measured the same day (§14.2); INDEX, NUMWORDS, NUMCHARS, FILENAME, TEMPLATE, FILESIZE, ADDRESSBLOCK, GREETINGLINE built; LISTNUM, AUTONUM*, SYMBOL measured from Word's PDFs in round 2 and built (§14.4) |
 | 4 | Optional: block-level fields (an IF across paragraphs; INCLUDETEXT with a supplied resolver) by a body-level canonicaliser (D7) | not sized |
 
 Cost, rough: phase 0 two to three days (the refactor is of code with tests, and the gate is the existing field suites
@@ -193,13 +193,20 @@ Rules Word has not been seen to apply, kept here until a probe round measures th
   the probe's M06 line kept its token text); which other fields Word unlinks in a merged document (DATE, DOCPROPERTY
   unmeasured; `=` is kept as a field, with the nested MERGEFIELD flattened to its text); a REF before the SET that
   defines it in a later record.
-- From the phase 3 round (§14.2): LISTNUM's default level (the first LISTNUM after a Heading 2 was at level 3; a
-  heading-free document is round 2's), whether a Heading's own LISTNUM or AUTONUM takes the heading's level, and what
-  AUTONUMLGL shows in a Normal paragraph (round 2); L10 to L19, A01 to A15 and S01 to S14's renders (Word keeps OLD in
-  the file; the PDF is round 2's); how the `\n` inside an ADDRESSBLOCK token is written by Word itself (the probe's
-  hand-written `\n` printed the letter n inside a token and a paragraph break outside one; Word's own insertion is
-  round 2's); why `<<_TITLE0_ >><<_FIRST0_>><< _LAST0_>>` fell back to `\e` for every record (G03); `\c 0` (printed
-  the country, as `\c 1` did); `\d`; the `\p` position in Word's default block (no postal code was matched);
+- Measured in round 2 (§14.4), off this list: LISTNUM's default level, a heading's own LISTNUM or AUTONUM (the heading's
+  level), AUTONUMLGL in a Normal paragraph, L10 to L19, A01 to A15 and S01 to S14, Word's own ADDRESSBLOCK format (real
+  line breaks). Still open from phase 3: the paragraph break Word put after the name line in A01 to A03 (the cases with
+  `\c` and `\e`) and not in A04, before a hand-written `\n`'s letter n; `\d`'s country formats (it re-laid the New
+  Zealand address as name, street, city, country; docx4j ignores `\d`); whether the line break Word's own GREETINGLINE
+  carries before `_AFTER_` prints (docx4j prints one line; merging `address-probe-r1-attached.docx` would show it);
+  LISTNUM with a list name that is not one of the three (NumberDefault here), its levels 5 to 9 and OutlineDefault's
+  4 to 9 (Word's documented forms), a LISTNUM or AUTONUM in a header, footer, note or text box (the cached result kept),
+  a paragraph whose outline level comes from `w:outlineLvl` rather than a heading style (read as its level), AUTONUMOUT
+  in body text (the count and a period here), AUTONUM's `\s` with more than one character; SYMBOL codes 128 to 159
+  (Windows-1252 here), `\u` with a symbol font, `\f` naming a font the machine lacks, the PDF writer's rendering of a
+  SYMBOL in a symbol font (the HTML writer's measured through the written `w:sym`); why
+  `<<_TITLE0_ >><<_FIRST0_>><< _LAST0_>>` fell back to `\e` for every record (G03); `\c 0` (printed
+  the country, as `\c 1` did); the `\p` position in Word's default block (no postal code was matched);
   FILESIZE's moment (16820 bytes for a file saved at 19009; neither the opened size); FILESIZE `\k` by 1000 or 1024
   (one point: 16820 showed 17); INDEX `\h` with a text other than a letter, `\k` and `\d` given, `\s`, `\y`, two
   cross-references on one entry, an entry text beginning with punctuation; `\b` on a range; the `\e` default when
@@ -660,7 +667,7 @@ Decisions, built the same day:
 | # | Decision | Built |
 |---|---|---|
 | D22 | INDEX is block-level, generated by `org.docx4j.model.fields.index.IndexGenerator` from the XE marks with a `Pager` (the page a paragraph starts on): `IndexGenerator.paginating(pkg)` lays the document out through docx4j-export-fo (`Paginate`, as the TOC generator does), a caller may give its own; `FieldUpdater` regenerates every INDEX in the body before its paragraph pass (`indexPager(Pager)` to supply one), and with no pager keeps the field (D5, reported). The text model and the writers show the cached paragraphs, as for a TOC. An INDEX in a table or a content control is left as it is | yes |
-| D23 | ADDRESSBLOCK in the mergers: the `\f` tokens filled from the record, the columns found by Word's address-field names and their usual spellings (`AddressFields.PLACEHOLDERS`; `First_Name` and `First Name` alike), or by the document's `w:odso/w:fieldMapData`; a token prints only with a value; `\n` a line (inside a token too, Word's documented form, pending round 2); `\c 2` omits the country equal to `\e`, else the country prints; `\d` and `\l` ignored; no `\f`: Word's measured default. The lines are line breaks in the one paragraph (Word writes paragraphs: a recorded deviation, the paragraph split needs run surgery the canonical form does not give) | yes |
+| D23 | ADDRESSBLOCK in the mergers: the `\f` tokens filled from the record, the columns found by Word's address-field names and their usual spellings (`AddressFields.PLACEHOLDERS`; `First_Name` and `First Name` alike), or by the document's `w:odso/w:fieldMapData`; a token prints only with a value; a line break in the format a line (Word's own form, round 2, D29; a hand-written `\n` prints the letter n, as Word prints it); `\c 2` omits the country equal to `\e`, else the country prints; `\d` and `\l` ignored; no `\f`: Word's measured default. The lines are line breaks in the one paragraph (Word writes paragraphs: a recorded deviation, the paragraph split needs run surgery the canonical form does not give) | yes |
 | D24 | GREETINGLINE in the mergers: `_BEFORE_` and `_AFTER_` literal (the space after the placeholder dropped), the name tokens filled; where one is empty, first + last, then first, then `\e`; no `\f`: empty | yes |
 | D25 | NUMWORDS, NUMCHARS, FILENAME, TEMPLATE, FILESIZE in all three consumers (`FieldValues` computes NUMWORDS, NUMCHARS and TEMPLATE; FILENAME and FILESIZE need the context's `fileName`/`fileSize` and keep the cached result without them; the writers' CACHED_ELSE_EVALUATED set gains the five) | yes |
 
@@ -680,3 +687,49 @@ R01 `1)` if the default level in a heading-free document is 1 (else `i)`), R04 `
 a heading. Then LISTNUM and AUTONUM* through the CR-014 `NumberingState` (one counter set for the three named lists) and
 SYMBOL, in all three consumers.
 
+### 14.4 Round 2 measured and built (Jason's saves 2026-10-28 20:54 to 20:58, Word 365 version 2608 build 20326.20232)
+
+The three captures: (A) `phase3-probe-r1-word365.pdf`, the PDF of the round-1 save (L10 to L19, A01 to A15, S01 to S14; the
+SYMBOL runs read with mutool for their font and size); (B) `listnum-probe-r2-word365.docx` and `.pdf` (the docx keeps OLD in
+all fifteen cases; the PDF has the numbers); (C) `address-probe-r1-attached.docx` (Word's own Address Block and Greeting Line
+over the attached list; not merged). Fixtures beside round 1's in `docx4j-core-tests/src/test/resources/fields/cr067-phase3/`
+(`run-notes.txt` has the detail).
+
+| Case | Predicted | Word | Rule |
+|---|---|---|---|
+| L01 to L09 (after a Heading 2) | 1) 2) a) i) 3) 10) 11) 12) 13) 1. | i) ii) b) i) 2) x) xi) xii) xiii) 2.1.14. | the default level is the paragraph's heading level, else the level after the nearest heading before it (Heading 2: level 3), else 1; the three named lists share one counter set; a level started under a parent that has not counted gives the parent 1 (L01 made levels 1 and 2 "1", so L03 at level 2 is b) and L05 at level 1 is 2)); counting a level resets the deeper ones; `\s` sets the count |
+| L10 to L15 | 1.1. 1.2. 2. I. A. 1. | 2.2. 2.3. 2.3.1. 2. D. 1. | LegalDefault paints the counts from level 1 with periods; OutlineDefault I. A. 1.; the counters are the same ones (level 2 was at 1, so L10 is 2.2.; level 3 after L12's reset is 1, then L13 counts it to 2) |
+| L16 to L19 | 14) e) f) 15) | ii) e) f) i) | NumberDefault is the same list as a bare LISTNUM; `\l 2 \s 5` e), then f); the next bare LISTNUM is at level 3 again, reset by level 2 |
+| R01 to R05 (no heading before) | 1) 2) i) b) 3. | 1) 2) i) b) 3. | as predicted: level 1 with no heading; the implicit parent; LegalDefault continues the same counters |
+| R06, R07, R10 (after H1, H2, H3) | a) i) (1) | a) i) (1) | the level after the preceding heading's; NumberDefault level 4 is (1) |
+| R08, R09 (in a Heading 1; `\l 1`) | 1) or a); the level-1 count + 1 | 4) 5) | a field inside a heading paragraph is at the heading's level, and the counters are shared with the body's |
+| A01 to A04 | 1. 2. 3: 4. | 1. 2. 3: 4. | AUTONUM counts and paints a period, or `\s` |
+| A05 to A10 (AUTONUMLGL in Heading 1, 2, 2, 1, 2 `\e`, Normal) | 1. 1.1. 1.2. 2. 2.1 then 2.1.1. or 3. or 1. | 1. 1.1. 1.2. 2. 2.1 2.1.1. | one counter per heading level and one for body text; a field counts at its paragraph's level and resets the deeper levels; AUTONUMLGL paints the levels counted so far; `\e` drops the last period; body text after a numbered Heading 2 is a third level |
+| A11 to A15 (AUTONUMOUT in H1, H2, H3, H2; AUTONUM in Normal) | I. or III.; A. 1. B.; 5. or 1. | III. A. 1. B. 1. | the AUTONUM family shares its counters (III. follows the two AUTONUMLGL headings; the LISTNUM counters are separate, A05 being 1. where LISTNUM's level 1 stood at 2); A15 restarts because A14 at level 2 reset body text |
+| R11 to R15 | 1. 2. 3. or 1.; 1. or 4.; 1.1. or 1. | 1. 2. 3. 1. 1.1. | a heading with no field changes nothing (R13 counts on); AUTONUM in a Heading 1 is that level's first (R14); AUTONUMLGL in body text after it is 1.1. |
+| S01, S02, S10, S11 | © © A A | © © A A | the code (decimal or 0x) is a character code; `\a` the default |
+| S03, S04 | ♥ as w:sym; the Wingdings hand | the Symbol glyph at F0A9, the Wingdings glyph at F041 (mutool: SymbolMT, Wingdings-Regular, private-use characters) | a symbol-encoded font's code is a glyph, painted from the private-use range (U+F000 and the code), Word's w:sym |
+| S05, S06, S12 | € € A in Courier New | € € A (CourierNewPSMT) | `\u` a Unicode code point; `\f` the font |
+| S07, S08 | © at 24pt; © in Arial 12 | © Aptos 24; © ArialMT 12 | `\s` the size in points; `\h` nothing visible |
+| S09, S13, S14 | the low byte, Ĭ or an error; an error or nothing | ### ### ### (Aptos-Bold) | a code Word cannot read (none, not a number, over 255 without `\u`) paints ### in bold |
+| Word's own ADDRESSBLOCK | the documented `\n` form | `\f "<<_COMPANY_⏎>><<_TITLE0_ >><<_FIRST0_>><< _LAST0_>><< _SUFFIX0_>>⏎<<_STREET1_⏎>><<_STREET2_⏎>><<_CITY_>><< _STATE_>><< _POSTAL_>><<⏎_COUNTRY_>>" \l 3081 \c 2 \e "Australia" \d`, the line breaks real (`w:cr` inside the instruction runs), no `\n`; `w:odso` maps First_Name, Last_Name, Address_1, Address_2 and Country (Country or Region), Postal Code again unmapped | a line break in the format is a line; a hand-written `\n` prints the letter n (round 1), inside a token and outside one |
+| Word's own GREETINGLINE | one line | a `w:fldSimple`, `\f "<<_BEFORE_ Dear >><<_TITLE0_>><< _LAST0_>>&#xA;<<_AFTER_ ,>>" \l 3081 \e "Dear Sir or Madam,"`, a line break before `_AFTER_` | printed on one line (the break dropped; its rendering unmeasured, section 9) |
+
+Also read again from round 1's merge, against the rule above: Word broke the paragraph after the name line in A01 to A03 (the
+cases with `\c` and `\e`) and not in A04, before the letter n of the first hand-written `\n`; and `\d` re-laid the one foreign
+address (New Zealand, not the `\e` country) in that country's format, name, street, city and country on four lines. Both stay
+unexplained (section 9): docx4j prints the n alone and ignores `\d`; `AddressProbeWordTest` encodes the two as deviations.
+
+Decisions, built the same day:
+
+| # | Decision | Built |
+|---|---|---|
+| D27 | LISTNUM, AUTONUM, AUTONUMLGL and AUTONUMOUT are computed for a whole document at once, in document order over the main document part, both field shapes (`org.docx4j.model.fields.ListNumbers`, with the measured rules above: two counter sets, implicit parents, the heading level from the effective outline level else the style's name or id), and looked up by the field's node (`FieldContext.node`: its `w:fldSimple`, or the run or `w:fldChar` beginning a complex field; without a node, the next in document order). Word paints these and SYMBOL live and never writes a result for them, so the output path writes them into its working copy before the writers paint (`Preprocess`, `FieldUpdater.only(FieldUpdater.LIVE)`, only where the document holds one); the text model computes them under `fields: update` (FieldValues); `FieldUpdater` writes them. A field in a header or footer keeps its cached result | yes |
+| D28 | SYMBOL (`org.docx4j.model.fields.SymbolField`): the character of the code (Windows-1252 for a text font; a symbol-encoded font's glyph as the private-use character and, written, Word's `w:sym`; `\u` a code point), the `\f` font and `\s` size on the result run, `###` in bold for a code Word cannot read; the text model shows the private-use character, as it does a `w:sym` | yes |
+| D29 | An ADDRESSBLOCK or GREETINGLINE format's line breaks are real line breaks, as Word writes its own (`w:cr` in the instruction runs, or `&#xA;` in a `w:fldSimple`): `FieldsPreprocessor.extractInstr`, the evaluator's nested-field reader and the text model read a `w:cr` or `w:br` in an instruction as a line break; a hand-written `\n` prints the letter n, as Word prints it; a greeting prints on one line; docx4j's default block format carries real breaks | yes |
+
+Built: `ListNumbers`, `SymbolField`; `FieldContext.node/listNumbers`; `FieldEvaluators` registers the five; `FieldUpdater` (`LIVE`,
+`hasLiveFields`, the node per field, SYMBOL's run); `FieldValues` and `Extractor` (the node, `w:cr` in a code); `Preprocess`
+(the live fields written before `FieldsCombiner`); `AddressFields` (real breaks, `\n` as n). Tests: `Phase3ProbeWordTest`
+(L01 to L19, A01 to A15, S01 to S14 against the PDF; R01 to R15; the text model and the HTML writer), `AddressProbeWordTest`
+(Word's own formats; the two deviations). Unmeasured items added to section 9. Phase 3 DONE.
