@@ -1,10 +1,29 @@
-IF-field probe, round 8 (one Save As per file, about 10 minutes): for each iffield-probe-r8-<candidate>.docx: open it (answer No
-to any prompt), touch nothing, Save As iffield-probe-r8-<candidate>-word-asis.docx (the docx alone is enough: the results are in it;
-a plain-text save beside it is welcome but not needed). Each file holds the candidate field (stored stale), then Y02, Y03, Y04,
-three literal IFs stored wrong, then Y05, a literal IF stored wrong that is the last field. The candidate triggers Word's
-open-time pass if Y02 to Y04 come out as their true branches (A2, A3, A4); Y05 is expected as stored (B5) either way.
+IF-field probe, round 8: which fields trigger Word's open-time pass (rounds 6 and 7: DATE and TIME do). One file per
+candidate, each holding the candidate field stored stale (Y01), three literal IFs stored wrong (Y02 to Y04) and a literal IF
+stored wrong as the last field (Y05). The candidate triggers the pass if Y02 to Y04 come out A2, A3, A4; Y05 is expected B5
+either way (the last field is skipped, rounds 6 and 7).
 
-Files:
+WITH THE GOLDEN RUNNER (the 30 files in corpus\; one Word open and save each, the golden PDF as a bonus). On the VM:
+
+  java -Dfidelity.updateFields=false -Dfidelity.resaveOriginalBytes=true -Dfidelity.connectedExperiences=on -cp "X:\fidelity\harness\classes;X:\fidelity\harness\lib\*" org.docx4j.fidelity.golden.WordGoldenRunner X:\__tmp\cr067\iffield\round8\corpus X:\__tmp\cr067\iffield\round8\goldens X:\__tmp\cr067\iffield\round8\resaved
+
+  - updateFields=false: documents4j's plain open and save, no field update in the script, so Word's own open-time pass is what
+    the resaved docx records (the script opens with Documents.Open(file, False, True, False): read-only, no conversion prompt).
+  - resaveOriginalBytes=true: Word gets each probe's own bytes, not docx4j's re-save of it (the probes are docx4j-built and
+    small, so either would do; the bytes make the measurement about Word alone).
+  - The goldens\ PDFs are Word's painted text of each file as opened; the resaved\ docx are what Word wrote, the measurement.
+  - Controls: date (expected to trigger) and none (expected not). If the runner's COM open agrees with them, the COM open
+    equals the GUI open for this purpose and the other 28 answers stand; the scored table says which way it went.
+
+BY HAND (the one file in by-hand\): iffield-probe-r8-dirty-docproperty.docx carries w:dirty on its DOCPROPERTY, which makes
+Word ask "update fields?" on open. Under the runner that prompt would either take the default (Yes, updating everything) or
+hang the run, so it stays out of the batch: open it in Word, answer No, touch nothing, Save As
+by-hand\iffield-probe-r8-dirty-docproperty-word-asis.docx.
+
+If the runner is not to hand, the by-hand steps work for every file in corpus\ too (open, No to any prompt, Save As
+<name>-word-asis.docx into resaved\).
+
+Files (candidate -- note):
 iffield-probe-r8-date.docx: DATE \@ "yyyy"  -- positive control (round 6)
 iffield-probe-r8-none.docx: (no candidate)  -- negative control: no candidate, the three IFs and the last field only
 iffield-probe-r8-formula.docx: = 1 + 1  -- negative control: a formula
