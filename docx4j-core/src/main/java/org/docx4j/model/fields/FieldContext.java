@@ -95,6 +95,11 @@ public final class FieldContext {
 
 	private FieldContext(WordprocessingMLPackage pkg) {
 		this.pkg = pkg;
+		if (pkg != null) {
+			// the package's source name and size are the defaults (CR-067 D26); fileName/fileSize override
+			this.fileName = pkg.getSourceName();
+			this.fileSize = pkg.getSourceSize();
+		}
 	}
 
 	/** A context for the package, with the defaults. */

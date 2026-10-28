@@ -373,8 +373,64 @@ public class MailMerger extends AbstractMerger {
 			}
 		}
 		
+		mergeSimpleFields(shellClone, ctx, keep);
 		return shellClone.getContent();
 
+	}
+
+	/** The merge-evaluated fields a simple field cannot carry here: they move the record or prompt (complex in Word's files). */
+	private static final java.util.Set<String> COMPLEX_ONLY = new java.util.HashSet<String>(java.util.Arrays.asList("NEXT", "NEXTIF", "SKIPIF", "SET", "ASK", "FILLIN"));
+
+	/**
+	 * The {@link #MERGE_EVALUATED} fields written as {@code w:fldSimple} (Word writes its own GREETINGLINE so; measured
+	 * 2026-10-29, CR-067 section 14.5): evaluated with the record in the context and unlinked to their text, or, keeping
+	 * the fields, given the text as their result. A locked one, or one the evaluator has no value for, is left as it is.
+	 */
+	private static void mergeSimpleFields(ContentAccessor shellClone, org.docx4j.model.fields.FieldContext ctx, boolean keep) {
+		org.docx4j.model.fields.SimpleFieldLocator sfl = new org.docx4j.model.fields.SimpleFieldLocator();
+		new TraversalUtil(shellClone, sfl, McMode.ALL);
+		for (org.docx4j.wml.CTSimpleField sf : sfl.simpleFields) {
+			if (sf.isFldLock()) continue;
+			FieldInstruction instruction = FieldInstruction.parse(sf.getInstr());
+			String name = instruction.getName();
+			if (name == null || !MERGE_EVALUATED.contains(name) || COMPLEX_ONLY.contains(name)) continue;
+			String val;
+			try {
+				val = org.docx4j.model.fields.FieldEvaluators.evaluate(instruction, ctx);
+			} catch (Exception e) {
+				log.warn("Simple field not merged: " + sf.getInstr() + " (" + e.getMessage() + ")");
+				continue;
+			}
+			if (val == null) continue;
+			R r = Context.getWmlObjectFactory().createR();
+			for (Object o : sf.getContent()) {
+				if (o instanceof R && ((R) o).getRPr() != null) {
+					r.setRPr(XmlUtils.deepCopy(((R) o).getRPr()));
+					break;
+				}
+			}
+			String[] lines = val.split("\\R");
+			for (int i = 0; i < lines.length; i++) {
+				if (i > 0) r.getContent().add(Context.getWmlObjectFactory().createBr());
+				Text text = Context.getWmlObjectFactory().createText();
+				text.setValue(lines[i]);
+				if (lines[i].startsWith(" ") || lines[i].endsWith(" ")) text.setSpace("preserve");
+				r.getContent().add(text);
+			}
+			if (keep) {
+				sf.getContent().clear();
+				sf.getContent().add(r);
+				continue;
+			}
+			List<Object> siblings = org.docx4j.jaxb.McSplice.contentOf(sf.getParent());
+			if (siblings == null) continue;
+			for (int i = 0; i < siblings.size(); i++) {
+				if (XmlUtils.unwrap(siblings.get(i)) == sf) {
+					siblings.set(i, r); // unlinked to its text, as Word's merge to a new document
+					break;
+				}
+			}
+		}
 	}
 
 	/**

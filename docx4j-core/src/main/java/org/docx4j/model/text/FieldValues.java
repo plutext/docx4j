@@ -69,7 +69,7 @@ final class FieldValues {
 				"INFO", "SECTION", "NOTEREF", "USERNAME", "USERINITIALS", "USERADDRESS",
 				// CR-067 phase 2 (a formula naming a table cell keeps its cached result: no cells here)
 				"=", "COMPARE", "IF", "SET",
-				// CR-067 phase 3 (FILENAME and FILESIZE keep the cached result: the walk has no file)
+				// CR-067 phase 3 (FILENAME and FILESIZE from the package's source name and size, D26; cached without them)
 				"NUMWORDS", "NUMCHARS", "TEMPLATE", "FILENAME", "FILESIZE",
 				// CR-067 phase 3, round 2 (Word paints these live and stores no result)
 				"LISTNUM", "AUTONUM", "AUTONUMLGL", "AUTONUMOUT", "SYMBOL"));

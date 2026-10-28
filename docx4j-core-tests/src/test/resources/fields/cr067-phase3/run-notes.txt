@@ -21,3 +21,7 @@ address-probe-r1-attached.docx (20:58): the list attached, Word's own Address Bl
 letter." (not merged). Word's ADDRESSBLOCK \f breaks its lines with w:cr inside the instruction runs (no \n); \l 3081 (en-AU).
 Its GREETINGLINE is a w:fldSimple whose \f carries &#xA; between <<_LAST0_>> and <<_AFTER_ ,>>. Its w:odso maps First_Name,
 Last_Name, Address_1, Address_2 and Country (Country or Region) to the data columns; Postal Code is again unmapped.
+
+Round 3 (Jason, 2026-10-29 06:04): address-probe-r1-attached-merged.docx = Finish & Merge > Edit Individual Documents > All of the
+attached file. Word's own Address Block: one paragraph a line (company, name, street, street 2, city state; the country only off
+the \e one); its Greeting Line on one line (the &#xA; in its format does not print). \d made no visible difference with Word's own format.

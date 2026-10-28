@@ -186,6 +186,11 @@ Changes in Version 17.3.5
   character with its \f font and \s size (w:sym for a symbol font, ### for a code Word cannot read); in
   FieldUpdater, the text extraction under fields: update, and the PDF and HTML writers, which write them
   into their working copy before painting, as Word paints them live.
+* A source name and size per package (CR-067 D26): OpcPackage.setSourceName(String) and setSourceSize(Long)
+  name the file a package came from, as request attributes beside the zone (nothing is saved), and every
+  field context built from the package takes them as its FILENAME and FILESIZE defaults, so the text
+  extraction under fields: update and the PDF and HTML writers show what FieldUpdater writes. The mail
+  mergers evaluate a merge field written as w:fldSimple, as Word writes its own GREETINGLINE (measured).
 * FieldUpdater updates the document information fields AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY,
   SUBJECT and TITLE, as it does DOCPROPERTY (#277); DOCPROPERTY Keywords is read; a simple
   DOCPROPERTY's quoted property name is found.

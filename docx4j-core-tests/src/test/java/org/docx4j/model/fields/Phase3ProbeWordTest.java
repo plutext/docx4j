@@ -284,6 +284,33 @@ public class Phase3ProbeWordTest {
 		return baos.toString("UTF-8").replaceAll("<[^>]+>", "").replaceAll("\\s+", " ");
 	}
 
+	/** D26 (Jason, 2026-10-29): the package's source name and size are the defaults of every context built from it. */
+	@Test
+	public void sourceNameAndSizeOnThePackage() throws Exception {
+		Map<String, String> word = ExpressionProbeWordTest.results(load("phase3-probe-r1-word365.docx"));
+		WordprocessingMLPackage pkg = load("phase3-probe-r1.docx");
+		pkg.setSourceName("X:\\__tmp\\cr067\\phase3\\phase3-probe-r1-word365.docx");
+		pkg.setSourceSize(16820L);
+		// the text model under fields: update, from the package alone
+		String text = PlainText.of(Texts.of(pkg, new TextOptions().fields(TextOptions.Fields.UPDATE)));
+		assertTrue(text, text.contains("N01_FILENAME = phase3-probe-r1-word365.docx") && text.contains("N02_FILENAME_PATH = X:\\__tmp\\cr067\\phase3\\phase3-probe-r1-word365.docx")
+				&& text.contains("N06_FILESIZE = 16820") && text.contains("N07_FILESIZE_KB = 17"));
+		// the updater, from the package alone
+		new FieldUpdater(pkg).only(new java.util.HashSet<String>(java.util.Arrays.asList("FILENAME", "FILESIZE"))).update(false);
+		Map<String, String> ours = ExpressionProbeWordTest.results(pkg);
+		for (String token : new String[] { "N01_FILENAME", "N02_FILENAME_PATH", "N03_FILENAME_UPPER", "N06_FILESIZE", "N07_FILESIZE_KB", "N08_FILESIZE_MB" }) {
+			assertEquals(token, word.get(token), ours.get(token));
+		}
+		// the context's own value overrides the package's
+		WordprocessingMLPackage again = load("phase3-probe-r1.docx");
+		again.setSourceName("package.docx");
+		FieldUpdater fu = new FieldUpdater(again).only(new java.util.HashSet<String>(java.util.Arrays.asList("FILENAME")));
+		fu.getContext().fileName("call.docx");
+		fu.update(false);
+		assertEquals("call.docx", ExpressionProbeWordTest.results(again).get("N01_FILENAME"));
+		assertEquals("OLD", ExpressionProbeWordTest.results(load("phase3-probe-r1.docx")).get("N01_FILENAME")); // nothing set: cached
+	}
+
 	/** SYMBOL as Word's PDF paints it (mutool: glyph, font and size per run): the character, w:sym for a symbol font, the font and size, ### in bold for a code Word cannot read. */
 	@Test
 	public void symbolsAsWord() throws Exception {

@@ -129,6 +129,41 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	public static final String BOUND_DATES_CONVERTED_PROPERTY = "docx4j.model.datastorage.BindingHandler.boundDatesConvertedAsWord";
 	private java.time.ZoneId dateTimeZone;
 	private Boolean boundDatesConvertedAsWord;
+	private String sourceName;
+	private Long sourceSize;
+
+	/**
+	 * The name of the file this package came from, as a FILENAME field shows it (the whole path where the caller
+	 * gives one; {@code \p} shows it, else the last segment), or null where none is set. A request attribute like
+	 * the zone: nothing of it is saved, a server reusing a loaded package sets it per request, and a field context
+	 * built from the package takes it as its default (the text model under fields: update, the PDF and HTML
+	 * writers), the context's own {@code fileName} overriding. CR-067 D26 (Jason, 2026-10-29).
+	 *
+	 * @since 17.3.5
+	 */
+	public String getSourceName() {
+		return sourceName;
+	}
+
+	/** @see #getSourceName() */
+	public void setSourceName(String sourceName) {
+		this.sourceName = sourceName;
+	}
+
+	/**
+	 * The size in bytes of the file this package came from, as a FILESIZE field shows it, or null where none is
+	 * set. A request attribute, as {@link #getSourceName()}. CR-067 D26.
+	 *
+	 * @since 17.3.5
+	 */
+	public Long getSourceSize() {
+		return sourceSize;
+	}
+
+	/** @see #getSourceSize() */
+	public void setSourceSize(Long sourceSize) {
+		this.sourceSize = sourceSize;
+	}
 
 	/**
 	 * The client's time zone for this package, or null where none is set: the zone every instant this

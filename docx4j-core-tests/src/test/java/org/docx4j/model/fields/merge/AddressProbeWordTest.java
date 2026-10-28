@@ -124,6 +124,45 @@ public class AddressProbeWordTest {
 		assertEquals("", ours.get(0).get("G04_NO_SWITCHES"));
 	}
 
+	/** The lines after "End of the letter." in each letter: Word's own Address Block and Greeting Line as rendered. */
+	static List<List<String>> tails(WordprocessingMLPackage pkg) {
+		String xml = XmlUtils.marshaltoString(pkg.getMainDocumentPart().getJaxbElement(), true, false);
+		List<List<String>> out = new ArrayList<List<String>>();
+		List<String> tail = null;
+		Matcher m = Pattern.compile("<w:p[ >].*?</w:p>", Pattern.DOTALL).matcher(xml);
+		while (m.find()) {
+			String p = m.group();
+			String shown = MergeProbeWordTest.shownText(p.replace("<w:br/>", "<w:t>\n</w:t>"));
+			if (shown.startsWith("End of the letter")) {
+				tail = new ArrayList<String>();
+			} else if (tail != null && !shown.isEmpty()) {
+				for (String line : shown.split("\n")) if (!line.isEmpty()) tail.add(line);
+			}
+			if (p.contains("<w:sectPr") && tail != null) {
+				out.add(tail);
+				tail = null;
+			}
+		}
+		if (tail != null) out.add(tail);
+		return out;
+	}
+
+	/**
+	 * Round 3 (Jason's merge of the attached file, 2026-10-29): Word's own Address Block and Greeting Line merged by
+	 * docx4j over the four records give Word's lines (the block as line breaks in one paragraph where Word writes
+	 * paragraphs; the greeting, a w:fldSimple in Word's file, on one line).
+	 */
+	@Test
+	public void wordsOwnFieldsMergedAsWord() throws Exception {
+		List<List<String>> word = tails(load("address-probe-r1-attached-merged.docx"));
+		assertEquals(4, word.size());
+		assertEquals(java.util.Arrays.asList("Acme Pty Ltd", "Mr John Smith Jr", "1 Main St", "Suite 2", "Sydney NSW", "Dear Mr Smith,"), word.get(0));
+		assertEquals(java.util.Arrays.asList("Ms Jane Doe", "2 High St", "Auckland", "New Zealand", "Dear Ms Doe,"), word.get(1));
+		MailMerger.setMERGEFIELDInOutput(MailMerger.OutputField.REMOVED);
+		WordprocessingMLPackage merged = new MailMerger(load("address-probe-r1-attached.docx")).getConsolidatedResultCrude(records(), false);
+		assertEquals(word, tails(merged));
+	}
+
 	/**
 	 * Word's own Address Block and Greeting Line (inserted by Word 365 over the attached list, round 2): the block's format
 	 * breaks its lines with w:cr inside the instruction runs, read as line breaks; the greeting's (a w:fldSimple) carries a
