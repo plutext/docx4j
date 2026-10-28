@@ -352,6 +352,7 @@ public class FieldsPreprocessor {
 						log.debug(".. nested ");
 						newR.getContent().add(o2);
 						
+						currentField.setNested(true);
 						parent.getInstructions().add(currentField);
 					}
 				}

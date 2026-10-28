@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.docx4j.model.fields.FieldContext;
 import org.docx4j.model.fields.FieldEvaluator;
+import org.docx4j.model.fields.FieldContext;
 import org.docx4j.model.fields.FieldEvaluators;
 import org.docx4j.model.fields.FieldInstruction;
 import org.docx4j.model.fields.FormattingSwitchHelper;
@@ -45,7 +46,10 @@ import org.slf4j.LoggerFactory;
  * <li>QUOTE, its argument;</li>
  * <li>since CR-067 phase 1: INFO as the field it names, SECTION (the main story's, counted at the walk), NOTEREF
  * (the number of the note whose reference the bookmark holds), USERNAME, USERINITIALS and USERADDRESS where the
- * caller's context supplies the user (never by default).</li>
+ * caller's context supplies the user (never by default);</li>
+ * <li>since CR-067 phase 2: {@code =} (a formula; one naming a table cell keeps its cached result, the walk supplying
+ * no cells), COMPARE, IF, and SET (empty, as Word shows it; its value then reaches a REF, a formula or an IF after it).
+ * A nested field's result is an operand of the outer's instruction (D4).</li>
  * </ul>
  *
  * Nothing else (FORMTEXT is the walk's, from its form field data): not MERGEFIELD (no data is supplied), DATE,
@@ -62,7 +66,9 @@ final class FieldValues {
 		Set<String> s = new HashSet<String>(Arrays.asList("DOCPROPERTY", "DOCVARIABLE", "SEQ", "REF", "QUOTE",
 				"AUTHOR", "TITLE", "SUBJECT", "COMMENTS", "LASTSAVEDBY", "REVNUM", "CREATEDATE", "SAVEDATE", "KEYWORDS",
 				// CR-067 phase 1
-				"INFO", "SECTION", "NOTEREF", "USERNAME", "USERINITIALS", "USERADDRESS"));
+				"INFO", "SECTION", "NOTEREF", "USERNAME", "USERINITIALS", "USERADDRESS",
+				// CR-067 phase 2 (a formula naming a table cell keeps its cached result: no cells here)
+				"=", "COMPARE", "IF", "SET"));
 		COMPUTED = Collections.unmodifiableSet(s);
 	}
 
@@ -108,6 +114,7 @@ final class FieldValues {
 			log.debug("No value for the field " + instr.trim() + ": " + e.getMessage());
 			return null;
 		}
+		if ("SET".equals(name)) return value == null ? null : ""; // its value is in the context's bookmarks; Word shows nothing
 		if (value == null || evaluator.formatsItself()) return value;
 		try {
 			return FormattingSwitchHelper.applyFormattingSwitch(context.getPackage(), instruction, value, null);

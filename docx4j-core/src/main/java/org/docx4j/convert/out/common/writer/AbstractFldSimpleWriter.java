@@ -139,7 +139,8 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 	protected static final java.util.Set<String> CACHED_ELSE_EVALUATED = java.util.Collections.unmodifiableSet(
 			new java.util.HashSet<String>(java.util.Arrays.asList("CREATEDATE", "SAVEDATE", "REVNUM", "INFO", "SECTION",
 					"QUOTE", "NOTEREF", "USERNAME", "USERINITIALS", "USERADDRESS", "AUTHOR", "COMMENTS", "KEYWORDS",
-					"LASTSAVEDBY", "SUBJECT", "TITLE")));
+					"LASTSAVEDBY", "SUBJECT", "TITLE",
+					"=", "COMPARE", "IF"))); // CR-067 phase 2
 
 	/** A handler for one of {@link #CACHED_ELSE_EVALUATED}. @since 17.3.5 (CR-067 phase 1) */
 	protected static class CachedElseEvaluatedHandler implements FldSimpleStringWriterHandler {
@@ -268,6 +269,17 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 		}
 	}
 	
+	/** SET paints nothing: Word stores its value under a bookmark and shows no result (measured 2026-10-28, CR-067 section 13.2). @since 17.3.5 */
+	protected static class SetHandler implements FldSimpleStringWriterHandler {
+		@Override
+		public String getName() { return "SET"; }
+
+		@Override
+		public String toString(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult) throws TransformerException {
+			return "";
+		}
+	}
+
 	//PRINTDATE is treated as the current date, the conversion process is seen as 'printing'
 	protected static class PrintdateHandler implements FldSimpleStringWriterHandler {
 		@Override
@@ -382,6 +394,7 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 		registerHandler(new TimeHandler());
 		registerHandler(new PrintdateHandler());
 		registerHandler(new DocPropertyHandler());
+		registerHandler(new SetHandler());
 	}
 	
 	protected void registerHandler(FldSimpleWriterHandler handler) {

@@ -40,6 +40,7 @@ import javax.xml.namespace.QName;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+import org.docx4j.model.fields.FieldContext;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.CTOfficeArtExtension;
 import org.docx4j.dml.Graphic;
@@ -556,6 +557,8 @@ final class Extractor {
 		String link;
 		/** A table of contents under {@code toc: false} (D12): nothing of it is read. */
 		boolean toc;
+		/** A SET field: its stored result is never shown (Word hides it; CR-067 section 13.2). */
+		boolean hiddenResult;
 		/** Where its code's runs begin, for a table of contents' to be taken out again. */
 		TextBlock codeBlock;
 		int codeStart;
@@ -1234,6 +1237,7 @@ final class Extractor {
 				if (!fields.isEmpty()) {
 					FieldState f = fields.peek();
 					f.separated = true;
+					f.hiddenResult = f.instr.toString().trim().regionMatches(true, 0, "SET ", 0, 4) || f.instr.toString().trim().equalsIgnoreCase("SET");
 					f.link = fieldHyperlinkTarget(f.instr.toString());
 					if (!options.isToc() && !suppressed(para.story) && isTocField(f.instr.toString())) {
 						f.toc = true;
@@ -1266,6 +1270,10 @@ final class Extractor {
 					}
 					if (f.computed != null) para.block.fields.add(new TextField(f.instr.toString(), f.computed, true));
 					else endField(f.instr.toString(), f.separated ? f.result.toString() : null, para);
+					// a nested field: its result (computed, else stored) is an operand of the outer's instruction (CR-067 D4)
+					if (!fields.isEmpty() && !fields.peek().separated) {
+						fields.peek().instr.append(FieldContext.asOperand(f.computed != null ? f.computed : f.result.toString()));
+					}
 				}
 			}
 			return;
@@ -1276,7 +1284,8 @@ final class Extractor {
 			String s = v instanceof Text ? ((Text) v).getValue() : null;
 			if (s == null) return;
 			Deque<FieldState> fields = para.story.fields;
-			if (!fields.isEmpty()) fields.peek().instr.append(s);
+			// after the field's separate it is its stored result (Word writes a nested field's result as w:instrText)
+			if (!fields.isEmpty()) (fields.peek().separated ? fields.peek().result : fields.peek().instr).append(s);
 			if (options.isFieldCodes() && !suppressed(para.story)) addText(para, s, TextRun.Kind.FIELD_CODE, hidden, state);
 			return;
 		}
@@ -1405,10 +1414,14 @@ final class Extractor {
 	private void text(Paragraph para, String s, boolean hidden, RunState state) {
 		if (s == null || s.isEmpty()) return;
 		if (inCode(para.story)) {
+			// a nested field's stored result, inside the outer's code: the nested field's, for the outer's instruction
+			FieldState innermost = para.story.fields.peek();
+			if (innermost != null && innermost.separated && innermost.computed == null) innermost.result.append(s);
 			if (options.isFieldCodes()) addText(para, s, TextRun.Kind.FIELD_CODE, hidden, state);
 			return;
 		}
 		if (suppressed(para.story)) return;
+		for (FieldState f : para.story.fields) if (f.hiddenResult) return; // a SET's stored value: never shown
 		if (!(hidden && !options.isHidden())) {
 			for (FieldState f : para.story.fields) f.result.append(s);
 			for (Bookmark b : openBookmarks.values()) {

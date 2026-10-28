@@ -311,6 +311,7 @@ public class FieldRef {
 			if (o instanceof Text) text.append(((Text)o).getValue());
 		}
 		String name = FormattingSwitchHelper.getFldSimpleName(text.toString());
+		if (name != null && name.length() > 1 && name.charAt(0) == '=') name = "="; // a formula's name is "=", whatever follows it (FieldInstruction)
 		if (name == null) {
 			// eg { { MERGEFIELD type } x }: Word names the field by the nested field's result, when it updates it
 			log.info("Field instruction begins with a nested field; no name until Word updates it");
@@ -358,6 +359,39 @@ public class FieldRef {
 	}
 
 	private boolean seenSeparate=false; 
+
+	private boolean nested;
+	/** Whether this field is inside another's instruction (its own FieldRef among the outer's {@link #getInstructions()}). @since 17.3.5 */
+	public boolean isNested() {
+		return nested;
+	}
+	public void setNested(boolean nested) {
+		this.nested = nested;
+	}
+
+	/**
+	 * Puts the result under a bookmark of the name, as Word stores a SET's value ({@code w:bookmarkStart} before the
+	 * result slot, {@code w:bookmarkEnd} after it), replacing a bookmark of that name already there.
+	 *
+	 * @since 17.3.5
+	 */
+	public void bookmarkResult(String name, java.math.BigInteger id) {
+		if (parent == null || resultsSlot == null) return;
+		List<Object> content = parent.getContent();
+		int slot = content.indexOf(resultsSlot);
+		if (slot < 0) return;
+		if (slot > 0) {
+			Object before = XmlUtils.unwrap(content.get(slot - 1));
+			if (before instanceof org.docx4j.wml.CTBookmark && name.equalsIgnoreCase(((org.docx4j.wml.CTBookmark) before).getName())) return; // already so
+		}
+		org.docx4j.wml.CTBookmark start = Context.getWmlObjectFactory().createCTBookmark();
+		start.setId(id);
+		start.setName(name);
+		org.docx4j.wml.CTMarkupRange end = Context.getWmlObjectFactory().createCTMarkupRange();
+		end.setId(id);
+		content.add(slot + 1, Context.getWmlObjectFactory().createBodyBookmarkEnd(end));
+		content.add(slot, Context.getWmlObjectFactory().createBodyBookmarkStart(start));
+	}
 	public boolean haveSeenSeparate() {
 		return seenSeparate;
 	}

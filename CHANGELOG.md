@@ -144,6 +144,17 @@ Changes in Version 17.3.5
   Word's F9 shows it; a never-printed document keeps the field's cached result. PDF and HTML output paints
   PRINTDATE at the conversion's clock, as before. The text extraction's INFO computes only what the
   extraction computes itself (INFO Date keeps its cached result, as DATE does).
+* Formulas and conditions evaluated (CR-067 phase 2, measured against Word 365, 115 cases and a table): the
+  = field (the operators + - * / ^ %, comparisons, parentheses; ABS, AND, AVERAGE, COUNT, DEFINED, FALSE, IF,
+  INT, MAX, MIN, MOD, NOT, OR, PRODUCT, ROUND, SIGN, SUM, TRUE; a bookmark's text; in a table A1, A1:B2,
+  ABOVE, LEFT, BELOW, RIGHT; Word's default number format and error texts; the document's decimal symbol
+  and list separator), COMPARE and IF (numbers against strings, case-sensitive strings, * and ? wildcards,
+  a bare operand naming a bookmark is its text), and SET (its value stored under a bookmark of its name, as
+  Word stores it, and read by a REF, a formula or an IF after it). A nested field is evaluated first and its
+  result is an operand of the outer field, in FieldUpdater and in the text extraction's `fields: update`
+  (which computes these four too; a formula naming a table cell keeps its cached result there). PDF and HTML
+  output paints =, COMPARE and IF from their cached result and evaluates one that has none; a SET paints
+  nothing, as Word shows nothing for it, and the text extraction never shows a SET's stored result.
 * FieldUpdater updates the document information fields AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY,
   SUBJECT and TITLE, as it does DOCPROPERTY (#277); DOCPROPERTY Keywords is read; a simple
   DOCPROPERTY's quoted property name is found.

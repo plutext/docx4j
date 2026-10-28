@@ -1,6 +1,6 @@
 # CR-067: one field evaluator, and the fields worth adding
 
-Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 DONE 2026-10-28 (§10); phase 1 DONE 2026-10-28 (§11; Word's measurement in §11.3, every case as predicted); the date-forms probe measured 2026-10-28 (§12.2: D13, D14, built); phase 2 STARTED 2026-10-28 (Jason: "start CR-067 phase 2"; §13: the expression probe staged for Word, D6).
+Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 DONE 2026-10-28 (§10); phase 1 DONE 2026-10-28 (§11; Word's measurement in §11.3, every case as predicted); the date-forms probe measured 2026-10-28 (§12.2: D13, D14, built); phase 2 STARTED 2026-10-28 (Jason: "start CR-067 phase 2"); the expression probe measured and the evaluator BUILT the same day (§13.2: `=`, COMPARE, IF, SET, nested fields; D15 to D18); the merge conditionals wait on a second probe.
 PROPOSED 2026-10-28, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's word ("draft the CR,
 including your review as context"), from a review of `FieldsPreprocessor` and the field code around it (§1, §2) and
 of the ECMA-376 field set by category (§3). Recommendations in §5; phases in §6. D2 ruled 2026-10-28 (FldSimpleModel deprecated). Nothing built.
@@ -137,7 +137,7 @@ measurement behind it.
 |---|---|---|
 | 0 | The enabler: `FieldInstruction`, `FieldContext`, `FieldEvaluator` (D1, D2, D10); `FieldUpdater`, `FieldValues` and the DATE, TIME, PRINTDATE and DOCPROPERTY writer handlers moved onto it with no behaviour change; `FldSimpleModel` and the signatures carrying it deprecated, every in-tree user moved (D2); the `preserveResult` fold (D9); parser tests from the corpus instructions; every existing field test green | DONE 2026-10-28 (§10) |
 | 1 | Tier 1: CREATEDATE, SAVEDATE, REVNUM, INFO, SECTION, NOTEREF, REF, QUOTE, USERNAME, USERINITIALS, USERADDRESS, each in all three consumers, each with a Word measurement (a probe docx saved by Word, its results the oracle); REF inside a hyperlink if the measurement needs it (D9) | DONE 2026-10-28 (§11.2 built, §11.3 measured: 25 of 25 as predicted) |
-| 2 | Tier 2: the expression evaluator (`=`, COMPARE, IF within a paragraph) after D6's measurement; then NEXTIF, SKIPIF, SET, ASK, FILLIN, MERGEREC, MERGESEQ in the mergers; the combiner evaluates a resultless IF whose operands it can (a PAGE operand still cannot be decided per page and keeps today's drop) | STARTED 2026-10-28: the expression probe staged (§13); the evaluator follows its results |
+| 2 | Tier 2: the expression evaluator (`=`, COMPARE, IF within a paragraph) after D6's measurement; then NEXTIF, SKIPIF, SET, ASK, FILLIN, MERGEREC, MERGESEQ in the mergers; the combiner evaluates a resultless IF whose operands it can (a PAGE operand still cannot be decided per page and keeps today's drop) | BUILT 2026-10-28 (§13.2): `=`, COMPARE, IF, SET and nested fields in all three consumers, measured 115 for 115; the merge conditionals (NEXTIF, SKIPIF, MERGEREC, MERGESEQ, ASK, FILLIN) wait on a second probe with a data source |
 | 3 | Tier 3: INDEX generated from XE marks (as `TocGenerator` does for TOC); LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT from the CR-014 numbering model; NUMWORDS, NUMCHARS from the text model; FILENAME, TEMPLATE; SYMBOL; ADDRESSBLOCK, GREETINGLINE | proposed |
 | 4 | Optional: block-level fields (an IF across paragraphs; INCLUDETEXT with a supplied resolver) by a body-level canonicaliser (D7) | not sized |
 
@@ -178,8 +178,13 @@ phases 0 to 4.
 
 Rules Word has not been seen to apply, kept here until a probe round measures them (the CR-043 D5 convention):
 
-- IF and COMPARE: string against numeric comparison; wildcards; case; number parsing per language (D6).
-- `=`: the function set, cell and bookmark references, error text (D6).
+- Measured 2026-10-28 (§13.2), off this list: IF and COMPARE (numbers against strings, wildcards, case, the operators,
+  the error text) and `=` (the operators, the functions, bookmark and cell references, the error texts). Still open from
+  that round: `^` with a non-integer exponent (Word showed 1.4 for `=2^0.5`; docx4j gives 1.41); unary minus against `^`;
+  a function given the wrong number of arguments; a bookmark whose text is not a number in a formula (0 here); whether
+  an empty cell ends ABOVE or LEFT (skipped here) and `w:gridSpan` in cell addressing; a quoted bookmark name as an IF
+  operand (the name here); COMPARE's text for a bad operator (IF's here); a non-integer in a cell with a currency
+  sign or spaces; the merge conditionals (the second probe).
 - A REF with `\n`, `\r`, `\w`, `\p` or `\f` (the inspector keeps the cached result for these today).
 - SEQ `\s` (reset at a heading level).
 - CREATEDATE's and SAVEDATE's default format for a language other than en-US (en-US measured 2026-10-28, §11.3).
@@ -442,3 +447,49 @@ tokenised as `FieldInstruction.splitParameters` does, the comparison by the meas
 nested fields); nested fields evaluated inside-out (D4) by the consumers that hold the nesting (`FieldRef`'s
 instruction list for the updater; the text model's and the writer's walks); SET defines a bookmark the context
 reads. Then the mergers' NEXTIF, SKIPIF, SET, ASK, FILLIN, MERGEREC, MERGESEQ.
+
+### 13.2 Measured and built (Jason's run 2026-10-28, Word 365 version 2608 build 20326.20232, regional format English (Australia))
+
+Word's saved file is the fixture `docx4j-core-tests/src/test/resources/fields/cr067-phase2/expr-probe-r1-word365.docx`
+(with the probe, the README's predictions and `run-notes.txt`); `ExpressionProbeWordTest` replays `FieldUpdater` and the
+text model's `fields: update` against it, 115 cases and the table, and both match it case for case (F07 and F20 read
+with a tolerance, below). What the run settled, prediction by prediction:
+
+| Group | As predicted | Not as predicted |
+|---|---|---|
+| Formula operators | 14, 20, 2.5, 0.33, 0.67, 1024, -3, 0.5, -6, 6, 1000000000000, 10.00, 0.333, 1, 0: the **default format is two decimals, trailing zeros dropped**, a whole number plain, no overflow at 10^12 | `=2^0.5` shows **1.4** (unexplained; docx4j gives 1.41, section 9) |
+| Formula errors | `!Zero Divide`, `!Unexpected End of Formula`, `!Undefined Bookmark, NOPE` (the name **upper-cased**; Word's text then carries two stray characters U+9F6F U+00EE in runs of their own, a Word bug) | `=1 2` is `!Missing Operator`; `=NOPE(1)` is `!Syntax Error, 1` (the token after the parenthesis) |
+| Functions | ABS, ROUND (2.345 to 2 is 2.35; 2.5 is 3; -2.5 is **-3**, half away from zero; 1234.5 to -2 is 1200), MOD(7,3), SIGN, SUM, AVERAGE (2.33), MIN, MAX, COUNT, PRODUCT, AND, OR, NOT, TRUE, FALSE (no parentheses needed), IF(), nested functions | INT(-3.7) is **-3** (toward zero); MOD(-7,3) is **-1** (the dividend's sign) |
+| Number forms | `=1.5+1` 2.5; `=1,5+1` is `!Syntax Error, ,` (the comma is the list separator); `=007+1` 8 | `=1,000+1` is **1,001**: the thousands separator is read, and echoed in the result |
+| Bookmarks | `=x*2` 10, `=3 + x` 8, `=SUM(x,1)` 6, DEFINED 1 and 0, `={ REF x }+1` 6 | |
+| COMPARE | the numbers, `abc < abd`, the wildcards (`a*`, `a?c`; none on the left), `5 > "abc"` 0, `5 = 5.0`, `007 = 7`, `-1 < 0`, `"" = ""`, `<>`, `>=`, `<=` | `"10" > "9"` is **0**: a quoted number is a string; `"abc" = "ABC"` is **0**: **case-sensitive**; `COMPARE x = 5` is **1**: a bare operand naming a bookmark is the bookmark's text; `1,000 = 1000` is 1 |
+| IF forms | quoted and bare texts, no false text (empty), multi-word texts, every operator, extra text ignored (`a b c` gives a), `""` operands, a space inside a string, `5 = ""` no, `\* Upper` on the result | `IF 5=5 yes no` (no spaces) is `Error! Unknown op code for conditional.`, as `IF 5 ! 5` is |
+| IF numbers, case, wildcards, nesting | as COMPARE; the nested cases (a formula, a DATE, a REF, both operands, a nested true text) all as predicted | `"10" > "9"` no; `"abc" = "ABC"` no; `1,000 > 999` yes |
+| SET and REF | REF 42, `=total+1` 43, IF on `{ REF total }` yes, DEFINED 1; the string SET, its REF and its wildcard IF; the SET of a nested formula and its REF | a SET's field **stores its value as the result, under a bookmark of its name** (`w:bookmarkStart` and `End` around the result inside the field), and Word's PDF shows nothing for it: the display is empty, the file is not |
+| Table | SUM(LEFT) 11, 22, 38 (the text and the empty cell skipped); SUM(ABOVE) 6 and 5; AVERAGE(ABOVE) 20; SUM(A1:B2) 33; A1+B2 21; MAX(A1:A3) 3; COUNT(C1:C3) **1** (numbers only); SUM(ABOVE) over the four formula results 104 (document order on F9) | |
+
+Word's save also wrote each result with `w:noProof`, and a nested field's result as `w:instrText` (it lies inside the
+outer field's instruction).
+
+Decisions, built the same day:
+
+| # | Decision | Built |
+|---|---|---|
+| D15 | SET: the evaluator's result is the value; `FieldUpdater` writes it and puts a bookmark of the name around the result slot (`FieldRef.bookmarkResult`; a fresh `w:id` above the part's largest); the PDF and HTML writers paint nothing for a SET (`SetHandler`); the text model returns an empty result and, in every mode, never shows a SET's stored result (Word shows nothing; `FieldState.hiddenResult`): a text-model rule beyond `fields: update`, for the WD. The value reaches the context's bookmarks, so a REF, a formula or an IF after it reads it (document order) | yes |
+| D16 | A bare IF or COMPARE operand naming a bookmark is the bookmark's text (then a number if it is one); quoted, it is the string; a bare number is a number; quoted numbers are strings; strings compare case-sensitively, wildcards in the right operand for `=` and `<>` (`Conditional`) | yes |
+| D17 | Nested fields inside-out (D4): `FieldUpdater` evaluates a `FieldRef`'s nested instructions first and substitutes each result as one operand (`FieldContext.asOperand`: quoted where empty or holding a space or a quote); a nested field with no evaluator or no result leaves the outer's cached result; the nested field's own stored result is not rewritten (the canonical form gives it no result slot; Word rewrites it on its own update). The text model does the same in its walk (a nested result, computed else stored, is appended to the outer's instruction; `w:instrText` after a field's separate is its stored result, Word's form; a `w:t` result inside the outer's code is the nested field's). The output path's combiner is unchanged (it flattens nesting as before) | yes |
+| D18 | A formula's and a comparison's number symbols are the document's `w:decimalSymbol` and `w:listSeparator` (Word writes its regional settings there), else `.` and `,`; the grouping separator is whichever of the two the decimal symbol is not. The `\#` switch formats the unrounded value; `\*` applies after | yes |
+
+Also: `FieldRef.getFldName` returns `=` for a formula (it returned `=2+3`); `FieldContext.readBookmarks` reads the
+document once and keeps a SET's entries (it skipped the read when a SET had put one first); the writers' cached-else-
+evaluated set gains `=`, COMPARE and IF; `FieldContext.Cells` is the updater's view of the field's table
+(`FieldSources.cellsOf`, values read fresh at each lookup, `w:gridSpan` not applied), the text model supplies none (a
+formula naming a cell keeps its cached result there). Tests: `ExpressionProbeWordTest` (the replay, both consumers),
+`FormulaTest` (the operators, switches, error texts, functions, bookmarks, cells, a document with `,` and `;`),
+`ConditionalTest` (IF, COMPARE, bare bookmark names, SET, the operand quoting).
+
+Hand-offs: the WD's REQ-506 set gains `=`, COMPARE, IF and SET, and the text model's rule that a SET's stored result
+is never shown (WD 0.37, the portfolio); python's `field_values.py` and core-ts's CR-012 extraction take the same set
+and rule, their FieldUpdater ports D15 and D17; the mcp server's `extract_text` through the WD.
+
+Gate: core-tests 2225/0/30 (the 17 new tests included), export-fo-tests 858/0/9.

@@ -1,0 +1,7 @@
+CR-067 phase 2 expression probe: Jason's run, 2026-10-28, Word 365 version 2608 build 20326.20232 (the VM's usual build).
+The VM's Windows regional format: English (Australia) (screenshot: Country or region Australia; short date 28/10/2026;
+long time 3:55:02 PM), so the decimal symbol is "." and the list separator ",". Word's save expr-probe-r1-word365.docx
+is the oracle (no results.txt was transcribed); Word's PDF (on the share, not here) shows the SET cases S01, S06 and
+S09 blank: a SET's stored result is not displayed. Word's save wrote the undefined-bookmark text of F20 as
+"!Undefined Bookmark, NOPE" followed by two stray characters (U+9F6F, U+00EE) in runs of their own: Word's bug,
+compared on the prefix.

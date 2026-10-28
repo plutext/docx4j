@@ -180,6 +180,93 @@ final class FieldSources {
 	}
 
 	/**
+	 * The cells of the table the node is in (its first table up the parents), for a formula's cell references;
+	 * null where it is in none. Values are read at each lookup, so a cell updated earlier in the pass reads fresh.
+	 * Columns are the {@code w:tc} in each row ({@code w:gridSpan} not applied: unmeasured).
+	 */
+	static FieldContext.Cells cellsOf(Object node) {
+		Object tc = null, tr = null, tbl = null;
+		for (Object o = node; o != null; o = parentOf(o)) {
+			if (o instanceof org.docx4j.wml.Tc && tc == null) tc = o;
+			else if (o instanceof org.docx4j.wml.Tr && tc != null && tr == null) tr = o;
+			else if (o instanceof org.docx4j.wml.Tbl && tr != null) {
+				tbl = o;
+				break;
+			}
+		}
+		if (tbl == null) return null;
+		final List<List<org.docx4j.wml.Tc>> rows = new ArrayList<List<org.docx4j.wml.Tc>>();
+		int row = -1, col = -1;
+		for (Object r : ((org.docx4j.wml.Tbl) tbl).getContent()) {
+			Object ur = XmlUtils.unwrap(r);
+			if (!(ur instanceof org.docx4j.wml.Tr)) continue;
+			List<org.docx4j.wml.Tc> cells = new ArrayList<org.docx4j.wml.Tc>();
+			for (Object c : ((org.docx4j.wml.Tr) ur).getContent()) {
+				Object uc = XmlUtils.unwrap(c);
+				if (uc instanceof org.docx4j.wml.Tc) {
+					if (uc == tc) {
+						row = rows.size();
+						col = cells.size();
+					}
+					cells.add((org.docx4j.wml.Tc) uc);
+				}
+			}
+			rows.add(cells);
+		}
+		if (row < 0) return null;
+		final int ownRow = row, ownCol = col;
+		return new FieldContext.Cells() {
+			public Double value(int r, int c) {
+				if (r < 0 || r >= rows.size() || c < 0 || c >= rows.get(r).size()) return null;
+				final StringBuilder sb = new StringBuilder();
+				walk(rows.get(r).get(c), new Visitor() {
+					public void bookmarkStart(CTBookmark b) {
+					}
+					public void bookmarkEnd(CTMarkupRange e) {
+					}
+					public void text(String t) {
+						sb.append(t);
+					}
+					public void noteReference(String kind, CTFtnEdnRef ref) {
+					}
+				});
+				return Formula.number(sb.toString(), Formula.Symbols.DEFAULT);
+			}
+			public int rowCount() {
+				return rows.size();
+			}
+			public int colCount(int r) {
+				return r < 0 || r >= rows.size() ? 0 : rows.get(r).size();
+			}
+			public int row() {
+				return ownRow;
+			}
+			public int col() {
+				return ownCol;
+			}
+		};
+	}
+
+	/** One above the largest bookmark id in the main part (0 where there is none). */
+	static BigInteger nextBookmarkId(WordprocessingMLPackage pkg) {
+		final BigInteger[] max = { BigInteger.valueOf(-1) };
+		if (pkg != null && pkg.getMainDocumentPart() != null && pkg.getMainDocumentPart().getJaxbElement() != null) {
+			walk(pkg.getMainDocumentPart().getJaxbElement().getBody(), new Visitor() {
+				public void bookmarkStart(CTBookmark b) {
+					if (b.getId() != null && b.getId().compareTo(max[0]) > 0) max[0] = b.getId();
+				}
+				public void bookmarkEnd(CTMarkupRange e) {
+				}
+				public void text(String t) {
+				}
+				public void noteReference(String kind, CTFtnEdnRef ref) {
+				}
+			});
+		}
+		return max[0].add(BigInteger.ONE);
+	}
+
+	/**
 	 * A W3CDTF or ISO 8601 date-time ({@code 2024-02-03T04:05:06Z}, with an offset, with no offset, or a date alone), or
 	 * null. A value with no offset and a date alone are UTC, as Word reads a core property's (measured 2026-10-28, CR-067
 	 * section 12.2: created {@code 2024-02-03} showed 11:00 at UTC+11, modified {@code 2025-06-07T08:09:10} showed 18:09

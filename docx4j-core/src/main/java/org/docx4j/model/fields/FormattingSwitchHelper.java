@@ -442,7 +442,13 @@ public class FormattingSwitchHelper {
 		}
 	}
 	
-	private static String formatNumber( FieldInstruction model, String wordNumberPattern, double dub, String lang) 
+	/** The field's {@code \*} switch alone applied to a value (a formula's, already numerically formatted). @since 17.3.5 */
+	static String applyGeneralSwitch(FieldInstruction model, String value) {
+		String gFormat = findFirstSwitchValue("\\*", model.getParameters(), false);
+		return gFormat == null ? value : formatGeneral(model, gFormat, value);
+	}
+
+	static String formatNumber( FieldInstruction model, String wordNumberPattern, double dub, String lang) 
 		throws FieldFormattingException {
 
 

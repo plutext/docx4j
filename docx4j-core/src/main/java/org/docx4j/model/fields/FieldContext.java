@@ -63,6 +63,27 @@ public final class FieldContext {
 	private DocVariableResolver variables;
 	private final Map<String, Integer> sequences = new HashMap<String, Integer>();
 	private final Map<String, String> bookmarks = new HashMap<String, String>();
+	private boolean bookmarksRead;
+	private Cells cells;
+	private Formula.Symbols numberSymbols;
+
+	/**
+	 * The table a formula's cell references read (CR-067 phase 2): the numbers of the cells of the table the field is
+	 * in, and the field's own cell. A consumer that knows the field's position supplies one ({@code FieldUpdater}
+	 * does, from the field's paragraph); without one, a formula naming a cell keeps its cached result.
+	 *
+	 * @since 17.3.5
+	 */
+	public interface Cells {
+		/** The cell's text as a number, or null where it is empty, not a number, or outside the table. */
+		Double value(int row, int col);
+		int rowCount();
+		int colCount(int row);
+		/** The field's own row (from 0). */
+		int row();
+		/** The field's own column (from 0). */
+		int col();
+	}
 
 	private FieldContext(WordprocessingMLPackage pkg) {
 		this.pkg = pkg;
@@ -215,11 +236,64 @@ public final class FieldContext {
 
 	/**
 	 * Fills {@link #bookmarks()} from the main document part (each bookmark's {@code w:t} text in document order),
-	 * for a consumer with no reading of its own; a REF then resolves. Returns this.
+	 * for a consumer with no reading of its own; a REF then resolves. Once; a SET's bookmark put there before is kept.
+	 * Returns this.
 	 */
 	public FieldContext readBookmarks() {
-		if (bookmarks.isEmpty()) bookmarks.putAll(FieldSources.bookmarkTexts(pkg));
+		if (!bookmarksRead) {
+			bookmarksRead = true;
+			for (Map.Entry<String, String> e : FieldSources.bookmarkTexts(pkg).entrySet()) bookmarks.putIfAbsent(e.getKey(), e.getValue());
+		}
 		return this;
+	}
+
+	/** The cells a formula's references read, or null where the consumer supplied none. @since 17.3.5 */
+	public Cells getCells() {
+		return cells;
+	}
+
+	/** Sets the cells for the field about to be evaluated (null for a field outside a table). Returns this. @since 17.3.5 */
+	public FieldContext cells(Cells cells) {
+		this.cells = cells;
+		return this;
+	}
+
+	/**
+	 * The symbols a formula's and a comparison's numbers use: the document's {@code w:decimalSymbol} and
+	 * {@code w:listSeparator} (Word writes its regional settings there), else {@code .} and {@code ,}; the grouping
+	 * separator is the one of the two the decimal symbol is not. Read once.
+	 *
+	 * @since 17.3.5
+	 */
+	public Formula.Symbols numberSymbols() {
+		if (numberSymbols == null) {
+			char decimal = '.', list = ',';
+			try {
+				org.docx4j.wml.CTSettings settings = pkg.getMainDocumentPart().getDocumentSettingsPart().getJaxbElement();
+				if (settings.getDecimalSymbol() != null && settings.getDecimalSymbol().getVal() != null && settings.getDecimalSymbol().getVal().length() == 1) {
+					decimal = settings.getDecimalSymbol().getVal().charAt(0);
+				}
+				if (settings.getListSeparator() != null && settings.getListSeparator().getVal() != null && settings.getListSeparator().getVal().length() == 1) {
+					list = settings.getListSeparator().getVal().charAt(0);
+				}
+			} catch (Exception e) {
+				// no settings part: the defaults
+			}
+			numberSymbols = new Formula.Symbols(decimal, decimal == '.' ? ',' : '.', list);
+		}
+		return numberSymbols;
+	}
+
+	/**
+	 * A nested field's result as an operand of the outer instruction (D4): as it is, or in quotes where it is
+	 * empty or holds a space or a quote, so that {@code IF { REF greeting } = "Hello*"} compares the whole text.
+	 *
+	 * @since 17.3.5
+	 */
+	public static String asOperand(String result) {
+		if (result == null) result = "";
+		if (!result.isEmpty() && result.indexOf(' ') < 0 && result.indexOf('"') < 0 && result.indexOf('\t') < 0) return result;
+		return "\"" + result.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
 	}
 
 	/**

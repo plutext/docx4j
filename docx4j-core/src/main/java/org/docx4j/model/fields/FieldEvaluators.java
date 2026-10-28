@@ -42,7 +42,8 @@ import org.slf4j.LoggerFactory;
  * {@code \f}, which need numbering or layout, the cached result is kept); QUOTE; DATE and TIME at
  * the context's clock; CREATEDATE, SAVEDATE and PRINTDATE from the core properties; INFO as the field it
  * names; SECTION where the context says which; NOTEREF to a bookmark on a note reference; USERNAME,
- * USERINITIALS and USERADDRESS from the context (phase 1). Not here: MERGEFIELD (a merge supplies the data), FORMTEXT
+ * USERINITIALS and USERADDRESS from the context (phase 1); {@code =} ({@link Formula}), COMPARE and IF
+ * ({@link Conditional}) and SET (phase 2). Not here: MERGEFIELD (a merge supplies the data), FORMTEXT
  * (its result is in its form-field data), the layout fields (PAGE, NUMPAGES, SECTIONPAGES,
  * PAGEREF, STYLEREF, TOC: the renderer's), and the external fields (D8).</p>
  *
@@ -133,6 +134,28 @@ public final class FieldEvaluators {
 		register("USERNAME", (instr, ctx) -> ctx.getUserName());
 		register("USERINITIALS", (instr, ctx) -> ctx.getUserName() == null ? null : (ctx.getUserInitials() == null ? "" : ctx.getUserInitials()));
 		register("USERADDRESS", (instr, ctx) -> ctx.getUserName() == null ? null : (ctx.getUserAddress() == null ? "" : ctx.getUserAddress()));
+		// tier 2 (CR-067 phase 2, measured 2026-10-28, section 13.2)
+		register("=", new FieldEvaluator() {
+			@Override
+			public String evaluate(FieldInstruction instruction, FieldContext context) throws Exception {
+				return Formula.evaluate(instruction, context); // its \# from the unrounded value, then its \*
+			}
+			@Override
+			public boolean formatsItself() {
+				return true;
+			}
+		});
+		register("COMPARE", (instr, ctx) -> Conditional.compare(instr, ctx));
+		register("IF", (instr, ctx) -> Conditional.ifField(instr, ctx));
+		// SET name value: the value is the result (Word stores it under a bookmark of that name and shows nothing);
+		// the context's bookmarks learn it, so a REF, a formula or an IF after it reads it
+		register("SET", (instr, ctx) -> {
+			java.util.List<String> p = instr.getParameters();
+			if (p.isEmpty()) return null;
+			String value = p.size() > 1 && !p.get(1).startsWith("\\") ? FieldInstruction.unquote(p.get(1)) : "";
+			ctx.bookmarks().put(FieldInstruction.unquote(p.get(0)).toLowerCase(Locale.ROOT), value);
+			return value;
+		});
 	}
 
 	/**

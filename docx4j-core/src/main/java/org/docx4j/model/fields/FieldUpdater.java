@@ -160,6 +160,7 @@ public class FieldUpdater {
 			}
 
 			context.section(FieldContext.sectionOf(part, simpleField));
+			context.cells(FieldSources.cellsOf(simpleField));
 			String val = FieldEvaluators.evaluate(instruction, context);
 			if (val == null) {
 				report.append(simpleField.getInstr() + "\n");
@@ -250,9 +251,9 @@ public class FieldUpdater {
 				report.append("Ignoring " + fldName + "\n");
 				continue;
 			}
-			String instr = fr.getInstr();
-			if (instr == null) { // a nested field in the instruction: not evaluated here (CR-067 phase 2)
-				report.append("Ignoring " + fldName + " (nested instruction)\n");
+			String instr = instructionOf(fr, part); // nested fields evaluated inside-out (D4)
+			if (instr == null) {
+				report.append("Ignoring " + fldName + " (a nested field in its instruction has no result)\n");
 				continue;
 			}
 			FieldInstruction instruction = FieldInstruction.parse(instr);
@@ -262,6 +263,7 @@ public class FieldUpdater {
 			}
 
 			context.section(FieldContext.sectionOf(part, fr.getParent()));
+			context.cells(FieldSources.cellsOf(fr.getParent()));
 			String val = FieldEvaluators.evaluate(instruction, context);
 			if (val == null) {
 				report.append(instr + "\n");
@@ -278,7 +280,45 @@ public class FieldUpdater {
 			} else {
 				fr.setResult(val);
 				if ("NOTEREF".equals(fldName) && instruction.hasSwitch("\\f")) noteReferenceStyle(fr.getResultsSlot());
+				if ("SET".equals(fldName) && instruction.getArgument() != null) {
+					// Word stores a SET's value under a bookmark of its name (measured 2026-10-28, CR-067 section 13.2)
+					if (nextBookmarkId == null) nextBookmarkId = FieldSources.nextBookmarkId(wordMLPackage);
+					fr.bookmarkResult(instruction.getArgument(), nextBookmarkId);
+					nextBookmarkId = nextBookmarkId.add(java.math.BigInteger.ONE);
+				}
 			}
 		}
+	}
+
+	private java.math.BigInteger nextBookmarkId;
+
+	/**
+	 * The field's instruction with each nested field replaced by its result (D4: inside-out), or null where a nested
+	 * field has no evaluator or no result (the outer keeps its cached result). A nested field's own stored result is
+	 * not rewritten (the canonical form gives it no result slot); Word rewrites it on its own update.
+	 */
+	String instructionOf(FieldRef fr, JaxbXmlPart part) throws Docx4JException {
+		if (fr.getInstructions().isEmpty()) return null;
+		StringBuilder sb = new StringBuilder();
+		for (Object o : fr.getInstructions()) {
+			Object u = org.docx4j.XmlUtils.unwrap(o);
+			if (u instanceof org.docx4j.wml.Text) {
+				sb.append(((org.docx4j.wml.Text) u).getValue());
+			} else if (u instanceof FieldRef) {
+				FieldRef nested = (FieldRef) u;
+				String instr = instructionOf(nested, part);
+				if (instr == null) return null;
+				FieldInstruction instruction = FieldInstruction.parse(instr);
+				if (instruction.getName() == null || !FieldEvaluators.has(instruction.getName())) return null;
+				context.section(FieldContext.sectionOf(part, fr.getParent()));
+				context.cells(FieldSources.cellsOf(fr.getParent()));
+				String value = FieldEvaluators.evaluate(instruction, context);
+				if (value == null) return null;
+				sb.append(FieldContext.asOperand(value));
+			} else {
+				return null;
+			}
+		}
+		return sb.toString();
 	}
 }
