@@ -828,3 +828,12 @@ rewrote (C01, C02, C08, C13, C15: `IF 1 = 1 "APPROVED" "REJECTED"`). Round 4 (`I
 `iffield-probe-r4.docx`, 15 cases, staged) tests that: a no-separate field alone; stored-wrong twins of a no-separate field
 (after, before, with other branches), for an IF, a formula, a DOCPROPERTY and the wildcard IF; a separate-but-empty twin
 as the control; a stored-wrong IF with no twin.
+
+**Round 4 (Jason, 2026-10-29 08:11; `scored-round4.tsv`).** No prompt; nothing recomputed; a field with no separate shows
+nothing and is left as it is (no separate added); every stored result kept; no XML changed. So neither a resultless nor a
+separate-less field makes Word compute anything on open, and round 1's C08 and C09 came out APPROVED for another reason.
+What round 1 had that rounds 2 to 4 never did: a field holding the right result (C14, APPROVED) in the same instruction
+family as the rewritten ones. Round 5 (`IfFieldProbeRound5Builder`, `iffield-probe-r5.docx`, 22 cases, staged) tests
+whether Word shares a stored result across fields with the identical instruction, and which wins: the right result first
+or last, three twins with three non-branch results, a formula, a DOCPROPERTY, the wildcard IF, a locked twin, an empty twin
+last, a simple-field twin, extra whitespace, and round 1's hidden-branch field alone.
