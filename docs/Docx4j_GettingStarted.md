@@ -57,6 +57,7 @@ Specific to docx4j (as opposed to pptx4j, xlsx4j):
 - Export as (X)HTML or PDF, including charts
 - Template substitution; CustomXML binding (with support for pictures, rich text, checkboxes, and OpenDoPE extensions for repeats \& conditionals, and importing XHTML) 
 - Mail merge
+- Update fields as Word's F9 does: dates, document properties, REF and SEQ, formulas and IF, an INDEX from its XE marks
 - Apply transforms, including common filters
 - Diff/compare documents, paragraphs or sdt (content controls)
 - Font support (font substitution, and use of any fonts embedded in the document)
@@ -1689,6 +1690,61 @@ The relevant subclass is accessed via the package object:
 
 Note: support for digital signatures is in Plutext’s Enterprise edition.
 
+# Fields
+
+A Word field is an instruction and a cached result: ` DATE \@ "d MMMM yyyy" ` and the text Word last computed for it.  Word stores most fields in the complex form (a run holding a `w:fldChar` begin, the instruction in `w:instrText` runs, a separate, the result runs, and an end) and a few in the simple form (a `w:fldSimple` element holding the result).  Word shows the cached result until something updates the field: F9, printing, or, for a few fields such as PAGE and LISTNUM, every time it lays the document out.
+
+docx4j evaluates fields in one place, `org.docx4j.model.fields.FieldEvaluators`, a registry by field name over `FieldInstruction` (the parsed instruction) and `FieldContext` (what an evaluator may ask about).  Three consumers share it: `FieldUpdater`, which writes results into the document as Word's update does; the text extraction under `fields: update`; and the PDF and HTML writers.  Each field's behaviour was measured against Word 365 before it was built (CR-067 in docs/developer/change-requests), so a result matches what F9 writes, down to the default formats and the error texts.
+
+## Updating fields: FieldUpdater
+
+`	FieldUpdater updater = new FieldUpdater(wordMLPackage);`
+
+`	updater.update(true); // headers and footers too`
+
+updates every field the registry knows, in every part, as Word's update-all (Ctrl+A, F9) does.  A locked field (`w:fldLock`) is left alone, and a field whose input docx4j does not have (a FILENAME with no name supplied) keeps its cached result rather than being given a wrong one.  `updater.only(Set.of("DATE", "DOCPROPERTY"))` narrows the set.
+
+The fields updated:
+
+- Dates: DATE and TIME (the clock), CREATEDATE, SAVEDATE and PRINTDATE (the core properties), with Word's `\@` formats and its default format for the document's language.
+- Document information: DOCPROPERTY, DOCVARIABLE, AUTHOR, TITLE, SUBJECT, COMMENTS, KEYWORDS, LASTSAVEDBY, INFO, TEMPLATE, REVNUM, NUMWORDS, NUMCHARS, FILENAME and FILESIZE.
+- References: REF (a bookmark's text, with its formatting), NOTEREF, QUOTE, SEQ, SECTION, and SET (which defines its bookmark).
+- The user: USERNAME, USERINITIALS and USERADDRESS.
+- Expressions: `=` formulas (the operators; SUM, AVERAGE, MIN, MAX, COUNT, ABS, INT, MOD, ROUND, PRODUCT, AND, OR, NOT, DEFINED, TRUE and FALSE; table cell and bookmark references; `\#` formats; Word's error texts), IF and COMPARE (with wildcards), and fields nested in them, evaluated inside out.
+- Numbering and symbols: LISTNUM, AUTONUM, AUTONUMLGL and AUTONUMOUT (the numbers Word paints and never stores) and SYMBOL.
+- INDEX, regenerated from the document's XE marks (below).
+- The mail merge fields, in the mergers (the Mailmerge chapter).
+
+Not evaluated, so the cached result is kept: the layout fields PAGE, NUMPAGES, SECTIONPAGES, PAGEREF and STYLEREF (the PDF and HTML writers compute those as they lay the pages out, and TocGenerator updates a TOC's page numbers); the fields that fetch content, INCLUDETEXT, INCLUDEPICTURE, LINK and DATABASE, unless you supply a resolver (`FieldContext.external`); EDITTIME, AUTOTEXT, BIBLIOGRAPHY and CITATION; and a form field's value.
+
+## What the evaluator reads: FieldContext
+
+`updater.getContext()` is the context.  What the package itself gives (its properties, bookmarks, language, notes) is the default; the rest you supply:
+
+`	updater.getContext()`
+
+`		.clock(() -> new Date())                  // DATE, TIME`
+
+`		.zone(ZoneId.of("Australia/Sydney"))      // the zone dates are shown in`
+
+`		.user("Jane Citizen", "JC", "1 Main St")  // USERNAME, USERINITIALS, USERADDRESS`
+
+`		.fileName("C:\\docs\\report.docx")        // FILENAME (\p gives the path)`
+
+`		.fileSize(16820L);                        // FILESIZE`
+
+Two of these can be set once on the package, and are then seen by every consumer, the text extraction and the writers included: `wordMLPackage.setDateTimeZone(zone)`, the client's zone, in which every date the package holds is shown; and `setSourceName` and `setSourceSize`, the file the package came from.  They are request attributes: nothing of them is saved, and a server reusing a loaded package sets them per request.
+
+## Fields in text extraction and in PDF and HTML output
+
+The text extraction (the Text extraction and inspection chapter) reads a field's cached result by default; with `new TextOptions().fields(TextOptions.Fields.UPDATE)` it computes the same fields the updater does, without touching the package.
+
+The PDF and HTML writers paint what Word paints: the layout fields from the layout; DATE, TIME and PRINTDATE from the clock (`docx4j.convert.out.fields.dateCachedResult=true` paints the stored date instead, which makes a conversion reproducible); DOCPROPERTY as stored, since Word does not update it when it opens a document (`docx4j.convert.out.fields.docPropertyCachedResult=false` evaluates it); LISTNUM, AUTONUM and SYMBOL evaluated, since Word stores nothing for them; and every other field as stored where it has a result, evaluated where it has none.
+
+## Generating an index
+
+FieldUpdater regenerates each INDEX field in the body from the document's XE marks (`org.docx4j.model.fields.index.IndexGenerator`), as Word does: the entries collated in Word's order, sub-entries, cross-references, page ranges from bookmarks, bold and italic page numbers, the `\e`, `\l`, `\g`, `\k`, `\h`, `\r`, `\p`, `\f` and `\c` switches, in the Index 1 to Index 3 and Index Heading styles (added to the document where missing).  The page numbers come from docx4j-export-fo laying the document out, as a TOC's do; with no docx4j-export-fo on the classpath, give the updater a pager (`updater.indexPager(...)`), or the INDEX is left as it is.
+
 # docx Table of Contents
 
 Docx4j (from v3.3.0) can generate/update a ToC, including update its page numbers.  
@@ -1715,7 +1771,7 @@ In other scenarios, it is desirable to update the TOC programmatically.  For exa
 
 Historically, Word has used a *field code* to specify a table of contents.
 
-A table of contents field is just one type of field, amongst many:
+A table of contents field is just one type of field, amongst many (the Fields chapter above says what docx4j does with each):
 
 date-and-time:  
 CREATEDATE  \|  DATE  \|  EDITTIME  \|  PRINTDATE  \|  SAVEDATE  \|  TIME  
@@ -2086,7 +2142,21 @@ To set up the bindings, you can use one of the Word Add-In from [http://www.open
 
 # Mailmerge
 
-docx4j has quite good support for processing fields of type MERGEFIELD (ie the equivalent of doing a mailmerge operation from within Microsoft Word).
+docx4j merges a document over records as Word's mail merge does.  `org.docx4j.model.fields.merge.MailMerger` produces one copy of the document per record, as separate packages (`performMerge`) or concatenated into one (`getConsolidatedResultCrude`); `MailMergerWithNext` is for labels, where NEXT fields put several records on one page.  A record is a `Map<DataFieldName, String>`, column name to value.
+
+`	List<Map<DataFieldName, String>> data = ...;`
+
+`	WordprocessingMLPackage merged = new MailMerger(wordMLPackage).getConsolidatedResultCrude(data, false);`
+
+What a merge evaluates, measured against Word 365's own merge:
+
+- MERGEFIELD, with `\b` and `\f` (the text before and after a value) and the `\*` formats; a field naming no column merges as nothing.
+- NEXT and NEXTIF pull the next record into the same letter; SKIPIF skips a record; MERGEREC and MERGESEQ count as Word counts (a skipped or pulled record is not a letter).
+- SET, ASK and FILLIN: an ASK or FILLIN takes the answer you put in the context (`merger.getFieldContext().answers()`), else its `\d` default; SET and ASK define their bookmarks for the REF and IF fields that follow.
+- IF, COMPARE, REF and `=` over merge fields.
+- ADDRESSBLOCK and GREETINGLINE, composed from their `\f` formats as Word composes them (a token prints only where its field has a value; Word's greeting fallbacks), the columns found by Word's address-field names and their usual spellings (First Name, First_Name) or by the document's own `w:odso` mapping; `\c` and `\e` decide whether the country prints.
+
+Word's merge unlinks the fields to their text, and docx4j does the same by default.  `MailMerger.setMERGEFIELDInOutput(OutputField.KEEP_MERGEFIELD)` keeps the merge fields, so the output can be merged again; `AS_FORMTEXT_REGULAR` turns each MERGEFIELD into a FORMTEXT form field.
 
 # Charts
 
