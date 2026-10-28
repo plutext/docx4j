@@ -329,6 +329,7 @@ option (a) as amended, §3.5, and the three sub-items. docx4j's part, built:
 - Tests: `PackageDateTimeZoneTest` (the fallback chain and a bad property; the fields in Tokyo and the override; a
   revision's local clock in the package's zone and `dateUtc` unchanged; the opt-in's precedence);
   `BoundDateFormatTest` amended (the zone alone nominal, the flag converting).
+- Gate (c3e9920e5): core-tests 2203/0/30, export-fo-tests 858/0/9.
 - The sub-items: no change to reading a date-only or offset-free value until a Word probe (one file: the three forms
   in a core property, a revision and a bound control; docx4j builds it when convenient, on the unmeasured list);
   stamps to the minute (docx4j stamps none); `docx4j.dcterms.write` is the shape the ports copy.
