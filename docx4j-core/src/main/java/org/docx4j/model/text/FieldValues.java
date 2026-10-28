@@ -42,7 +42,10 @@ import org.slf4j.LoggerFactory;
  * <li>SEQ, counted in reading order ({@code \r}, {@code \c} and {@code \h} honoured; {@code \s} not);</li>
  * <li>REF to a bookmark, its text in the view (with {@code \n}, {@code \r}, {@code \w}, {@code \p}
  * or {@code \f}, which need numbering or layout, it keeps its cached result);</li>
- * <li>QUOTE, its argument.</li>
+ * <li>QUOTE, its argument;</li>
+ * <li>since CR-067 phase 1: INFO as the field it names, SECTION (the main story's, counted at the walk), NOTEREF
+ * (the number of the note whose reference the bookmark holds), USERNAME, USERINITIALS and USERADDRESS where the
+ * caller's context supplies the user (never by default).</li>
  * </ul>
  *
  * Nothing else (FORMTEXT is the walk's, from its form field data): not MERGEFIELD (no data is supplied), DATE,
@@ -56,7 +59,9 @@ final class FieldValues {
 	private static final Set<String> COMPUTED;
 	static {
 		Set<String> s = new HashSet<String>(Arrays.asList("DOCPROPERTY", "DOCVARIABLE", "SEQ", "REF", "QUOTE",
-				"AUTHOR", "TITLE", "SUBJECT", "COMMENTS", "LASTSAVEDBY", "REVNUM", "CREATEDATE", "SAVEDATE", "KEYWORDS"));
+				"AUTHOR", "TITLE", "SUBJECT", "COMMENTS", "LASTSAVEDBY", "REVNUM", "CREATEDATE", "SAVEDATE", "KEYWORDS",
+				// CR-067 phase 1
+				"INFO", "SECTION", "NOTEREF", "USERNAME", "USERINITIALS", "USERADDRESS"));
 		COMPUTED = Collections.unmodifiableSet(s);
 	}
 
@@ -71,7 +76,13 @@ final class FieldValues {
 
 	/** The field's computed result, or null to keep its cached one. */
 	String compute(String instr) {
+		return compute(instr, null);
+	}
+
+	/** The same, for a field in the given section of the main story (from 1), or null where unknown. */
+	String compute(String instr, Integer section) {
 		if (context == null || instr == null) return null;
+		context.section(section);
 		FieldInstruction instruction = FieldInstruction.parse(instr);
 		String name = instruction.getName();
 		if (name == null || !COMPUTED.contains(name)) return null;

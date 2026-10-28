@@ -1,6 +1,6 @@
 # CR-067: one field evaluator, and the fields worth adding
 
-Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 DONE 2026-10-28 (§10); phase 1 next.
+Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 DONE 2026-10-28 (§10); phase 1 BUILT 2026-10-28 (§11.2), its Word probe on the share awaiting Jason's run (§11.1).
 PROPOSED 2026-10-28, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's word ("draft the CR,
 including your review as context"), from a review of `FieldsPreprocessor` and the field code around it (§1, §2) and
 of the ECMA-376 field set by category (§3). Recommendations in §5; phases in §6. D2 ruled 2026-10-28 (FldSimpleModel deprecated). Nothing built.
@@ -135,7 +135,7 @@ measurement behind it.
 | Phase | Work | Status |
 |---|---|---|
 | 0 | The enabler: `FieldInstruction`, `FieldContext`, `FieldEvaluator` (D1, D2, D10); `FieldUpdater`, `FieldValues` and the DATE, TIME, PRINTDATE and DOCPROPERTY writer handlers moved onto it with no behaviour change; `FldSimpleModel` and the signatures carrying it deprecated, every in-tree user moved (D2); the `preserveResult` fold (D9); parser tests from the corpus instructions; every existing field test green | DONE 2026-10-28 (§10) |
-| 1 | Tier 1: CREATEDATE, SAVEDATE, REVNUM, INFO, SECTION, NOTEREF, REF, QUOTE, USERNAME, USERINITIALS, USERADDRESS, each in all three consumers, each with a Word measurement (a probe docx saved by Word, its results the oracle); REF inside a hyperlink if the measurement needs it (D9) | proposed |
+| 1 | Tier 1: CREATEDATE, SAVEDATE, REVNUM, INFO, SECTION, NOTEREF, REF, QUOTE, USERNAME, USERINITIALS, USERADDRESS, each in all three consumers, each with a Word measurement (a probe docx saved by Word, its results the oracle); REF inside a hyperlink if the measurement needs it (D9) | built 2026-10-28 (§11.2); the probe's results pending (§11.1) |
 | 2 | Tier 2: the expression evaluator (`=`, COMPARE, IF within a paragraph) after D6's measurement; then NEXTIF, SKIPIF, SET, ASK, FILLIN, MERGEREC, MERGESEQ in the mergers; the combiner evaluates a resultless IF whose operands it can (a PAGE operand still cannot be decided per page and keeps today's drop) | proposed |
 | 3 | Tier 3: INDEX generated from XE marks (as `TocGenerator` does for TOC); LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT from the CR-014 numbering model; NUMWORDS, NUMCHARS from the text model; FILENAME, TEMPLATE; SYMBOL; ADDRESSBLOCK, GREETINGLINE | proposed |
 | 4 | Optional: block-level fields (an IF across paragraphs; INCLUDETEXT with a supplied resolver) by a body-level canonicaliser (D7) | not sized |
@@ -213,4 +213,59 @@ Rules Word has not been seen to apply, kept here until a probe round measures th
   methods gone; the class comment says what the result rule is.
 - Gate (2026-10-28): the sixteen field test classes (228 tests) unchanged and green; core-tests 2187/0/30 (the eleven new
   tests included); export-fo-tests 858/0/9. The diffx suite does not touch fields and was not rerun.
+
+## 11. Phase 1 (started 2026-10-28, Jason: "start phase 1 please")
+
+### 11.1 The Word probe, with the predictions before the run
+
+`FieldProbeBuilder` (core-tests, `org.docx4j.model.fields.probe`) writes `field-probe-r1.docx` (sha256 d0f40b29…) and its
+README to the share, `__tmp/cr067/phase1/`: 25 cases, every tier-1 field in the complex form with the cached result
+`OLD`, core properties title Probe Title, author Probe Author, revision 7, created 2024-02-03T04:05:06Z, modified
+2025-06-07T08:09:10Z, a bold bookmark `bm1` ("Bookmarked text"), a bookmark `bmNote` on a footnote reference, a
+section break before the last two cases. Jason opens it, Ctrl+A, F9, saves `-word365.docx` and a PDF. Predicted:
+
+| Case | Field | Prediction | Measures |
+|---|---|---|---|
+| 1, 2 | CREATEDATE, with `\@ "yyyy-MM-dd HH:mm"` | the created time; the default format is Word's locale date-time | the default format; zone handling (the probe's times are UTC) |
+| 3, 4 | SAVEDATE, with `\@ "d MMMM yyyy"` | the modified time, or Word's save moment after its save | whether F9 reads the file's value or the session's |
+| 5 | REVNUM | 7, or 8 after Word's save | |
+| 6, 7 | INFO Title, INFO Author | Probe Title, Probe Author | INFO as the named field |
+| 8, 9 | INFO, INFO Nope | Word's error text (unmeasured, §9) | the error texts |
+| 10, 24 | SECTION in sections 1 and 2 | 1, 2 | |
+| 11, 12 | QUOTE "hello world", QUOTE | hello world; empty or an error (unmeasured) | |
+| 13 to 16 | REF bm1, `\* Upper`, REF nope, REF bm1 `\h` | Bookmarked text (bold kept); BOOKMARKED TEXT; Error! Reference source not found.; the text as a link | the formatting of a REF result |
+| 17 to 19 | NOTEREF bmNote, `\f`, NOTEREF nope | 1; 1 superscript; Error! Bookmark not defined. | |
+| 20 to 22 | USERNAME, USERINITIALS, USERADDRESS | the Word user; what a blank one shows is unmeasured (§9) | |
+| 23 | KEYWORDS | alpha, beta (a control, measured for #277) | |
+| 25 | CREATEDATE `\@ "yyyy-MM-dd"` as `w:fldSimple` | 2024-02-03 | the simple form updates like the complex |
+
+### 11.2 Built (2026-10-28, before the probe's results)
+
+- **Evaluators** (`FieldEvaluators`): CREATEDATE and SAVEDATE parse the core property's W3CDTF (`FieldSources.parseW3CDTF`:
+  offset, local, date-only, XML Schema forms) and format it with the field's `\@` switch, or without one as
+  `FormattingSwitchHelper.formatDate` formats a DATE (provisional: the probe measures Word's default, 11.1 cases 1 and 3);
+  REVNUM through the document-information map; INFO evaluates the field its argument names (`INFO Title \* Upper` is
+  `TITLE \* Upper`; no name, an unknown name or `INFO INFO` keeps the cached result); SECTION reads
+  `FieldContext.getSection()`, which the consumer sets; NOTEREF reads `FieldContext.noteNumbers()` (the main part walked
+  once: references counted per kind in document order, a custom mark not counted, the open bookmarks named); QUOTE and
+  REF as phase 0 had them; USERNAME, USERINITIALS, USERADDRESS from the context, absent by default.
+- **Sources** (`FieldSources`, package-private): the walk over the main part for bookmark texts (REF, `readBookmarks()`)
+  and note numbers, `sectionOf(part, node)` (the paragraphs with a `w:sectPr` before the node's top-level ancestor in the
+  body; null outside the main part), the date parser.
+- **Consumers.** `FieldUpdater` updates every registered field by default (D10; `only(Set)` narrows), reads the main part's
+  bookmarks once per part, and sets the section per field from its paragraph. The inspector's `FieldValues` adds INFO,
+  SECTION, NOTEREF and the user fields to REQ-506's set, and the walk passes the main story's section (its `sections`
+  list as it ends them); DATE, TIME and PRINTDATE stay out of the inspector's set, as the WD has it. The writers take
+  the renderer's current section into the context and paint sixteen names cached-else-evaluated
+  (`AbstractFldSimpleWriter.CACHED_ELSE_EVALUATED`): CREATEDATE, SAVEDATE, REVNUM, INFO, SECTION, QUOTE, NOTEREF, the
+  three user fields and the six document-information fields; REF keeps `RefHandler` (cached text, `\h` as a link).
+- **Tests.** `FieldEvaluatorsTest` gains the dates, REVNUM and INFO; SECTION, NOTEREF (footnotes and endnotes counted
+  apart, `\f` the same number) and the user; `FieldUpdater` on a document with all of them (the user field keeps OLD
+  until a user is supplied); the default set now including DATE. The extraction harness's `fields: update` cases pass
+  unchanged (no fixture holds a tier-1 field).
+- **Not in this phase:** a REF's result formatting (the updater writes plain text; Word keeps the bookmark's
+  formatting, 11.1 case 13), NOTEREF's `\f` superscript, `\h` on REF and NOTEREF in the updater (text only), a REF
+  inside a hyperlink in the updater (D9; measured by case 16 first), the user fields' Word defaults (§9).
+- Gate (2026-10-28): core-tests 2190/0/30 (the extraction harness included), export-fo-tests 858/0/9.
+- Open until the probe (11.3): CREATEDATE's and SAVEDATE's default format, INFO's and QUOTE's error texts, the user fields' defaults, a REF's formatting.
 

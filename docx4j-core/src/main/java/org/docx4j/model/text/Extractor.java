@@ -1241,7 +1241,7 @@ final class Extractor {
 						removeFieldCode(f, para);
 						return;
 					}
-					String value = suppressed(para.story) ? null : update(f);
+					String value = suppressed(para.story) ? null : update(f, para.story);
 					if (value != null) {
 						text(para, value, hidden, state);
 						f.computed = value; // the cached result that follows is not read
@@ -1258,7 +1258,7 @@ final class Extractor {
 						return;
 					}
 					if (!f.separated) {
-						String value = update(f);
+						String value = update(f, para.story);
 						if (value != null) {
 							text(para, value, hidden, state);
 							f.computed = value;
@@ -1459,11 +1459,16 @@ final class Extractor {
 	}
 
 	/** A field's result under {@code fields: update}, or null to keep its cached one (REQ-506). */
-	private String update(FieldState f) {
+	private String update(FieldState f, Story story) {
 		if (options.getFields() != TextOptions.Fields.UPDATE || f.locked || pkg == null) return null;
 		String instr = f.instr.toString().trim();
 		if (f.ffData != null && instr.regionMatches(true, 0, "FORMTEXT", 0, 8)) return formText(f.ffData);
-		return fieldValues().compute(instr);
+		return fieldValues().compute(instr, sectionOf(story));
+	}
+
+	/** The section (from 1) the main story's walk is in, or null in another story (SECTION keeps its cached result). */
+	private static Integer sectionOf(Story story) {
+		return story == null || story.sections == null ? null : Integer.valueOf(story.sections.size() + 1);
 	}
 
 	/** What Word's update writes in a FORMTEXT with no default text: five en spaces (measured). */
@@ -1618,7 +1623,7 @@ final class Extractor {
 		if (options.isFieldCodes() && !inCode(para.story)) addText(para, instr, TextRun.Kind.FIELD_CODE, false, state);
 		if (options.getFields() == TextOptions.Fields.UPDATE && !written(field, "fldLock") && pkg != null && !inCode(para.story)
 				&& !suppressed(para.story)) {
-			String value = fieldValues().compute(instr);
+			String value = fieldValues().compute(instr, sectionOf(para.story));
 			if (value != null) {
 				text(para, value, false, state);
 				para.block.fields.add(new TextField(instr, value, true));

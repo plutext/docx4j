@@ -120,7 +120,42 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 	 * @since 17.3.5 (CR-067)
 	 */
 	protected static FieldContext fieldContext(AbstractWmlConversionContext context) {
-		return FieldContext.of(context.getWmlPackage()).part(context.getCurrentPart()).language(documentLanguage(context));
+		FieldContext ctx = FieldContext.of(context.getWmlPackage()).part(context.getCurrentPart()).language(documentLanguage(context));
+		try {
+			if (context.getSections() != null && context.getSections().getCurrentSection() != null) {
+				int i = context.getSections().getList().indexOf(context.getSections().getCurrentSection());
+				if (i >= 0) ctx.section(i + 1);
+			}
+		} catch (Exception e) {
+			// no sections yet (a part written before the sections are set up): SECTION keeps its cached result
+		}
+		return ctx.readBookmarks();
+	}
+
+	/**
+	 * The fields Word paints from their cached result and updates only on F9: painted cached where the document
+	 * stores a result, evaluated where it stores none (D3). CR-067 phase 1.
+	 */
+	protected static final java.util.Set<String> CACHED_ELSE_EVALUATED = java.util.Collections.unmodifiableSet(
+			new java.util.HashSet<String>(java.util.Arrays.asList("CREATEDATE", "SAVEDATE", "REVNUM", "INFO", "SECTION",
+					"QUOTE", "NOTEREF", "USERNAME", "USERINITIALS", "USERADDRESS", "AUTHOR", "COMMENTS", "KEYWORDS",
+					"LASTSAVEDBY", "SUBJECT", "TITLE")));
+
+	/** A handler for one of {@link #CACHED_ELSE_EVALUATED}. @since 17.3.5 (CR-067 phase 1) */
+	protected static class CachedElseEvaluatedHandler implements FldSimpleStringWriterHandler {
+		private final String name;
+		protected CachedElseEvaluatedHandler(String name) {
+			this.name = name;
+		}
+		@Override
+		public String getName() { return name; }
+		@Override
+		public String toString(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult) throws TransformerException {
+			String cached = cachedResultText(cachedResult);
+			if (cached.trim().length() > 0) return cached;
+			String value = evaluate(context, instruction);
+			return value == null ? cached : value;
+		}
 	}
 
 	/**
@@ -342,6 +377,7 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 	}
 
 	protected void registerHandlers() {
+		for (String name : CACHED_ELSE_EVALUATED) registerHandler(new CachedElseEvaluatedHandler(name));
 		registerHandler(new DateHandler());
 		registerHandler(new TimeHandler());
 		registerHandler(new PrintdateHandler());

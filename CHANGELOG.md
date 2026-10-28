@@ -105,6 +105,15 @@ Changes in Version 17.3.5
   widens the set it updates. FldSimpleModel is deprecated, with the FormattingSwitchHelper and
   writer-handler signatures that carried it (FieldInstruction overloads replace them; a handler on the
   old interface still works). FieldsPreprocessor's result handling is one path (every result kept).
+* More fields evaluated (CR-067 phase 1): CREATEDATE and SAVEDATE (the core properties' dates, with the
+  field's \@ switch), REVNUM, INFO (as the field it names), SECTION, NOTEREF (the number of the note
+  whose reference the bookmark holds), QUOTE, REF (a bookmark's text), and USERNAME, USERINITIALS and
+  USERADDRESS where FieldContext.user() supplies them. FieldUpdater now updates every field it has an
+  evaluator for, as Word's update-all does (until now DOCPROPERTY, DOCVARIABLE and the document
+  information fields): the above, plus DATE, TIME, PRINTDATE and SEQ; FieldUpdater.only(names) narrows
+  it. The text extraction's `fields: update` computes INFO, SECTION, NOTEREF and the user fields too.
+  PDF and HTML output paints these fields from their cached result, as Word does, and evaluates one
+  that has none.
 * FieldUpdater updates the document information fields AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY,
   SUBJECT and TITLE, as it does DOCPROPERTY (#277); DOCPROPERTY Keywords is read; a simple
   DOCPROPERTY's quoted property name is found.

@@ -159,6 +159,95 @@ public class FieldEvaluatorsTest {
 		assertNull(ctx.getFileName());
 	}
 
+	// ---- tier 1 (CR-067 phase 1)
+
+	private static WordprocessingMLPackage datedPkg(String... paragraphs) throws Exception {
+		WordprocessingMLPackage pkg = pkg(paragraphs);
+		CoreProperties core = pkg.getDocPropsCorePart().getJaxbElement();
+		core.setRevision("7");
+		core.setCreated(w3cdtf("2024-02-03T04:05:06Z"));
+		core.setModified(w3cdtf("2025-06-07T08:09:10Z"));
+		return pkg;
+	}
+
+	private static SimpleLiteral w3cdtf(String value) {
+		org.docx4j.docProps.core.dc.terms.W3CDTF w = new org.docx4j.docProps.core.dc.terms.W3CDTF();
+		w.getContent().add(value);
+		return w;
+	}
+
+	@Test
+	public void theCorePropertyDatesRevisionAndInfo() throws Exception {
+		FieldContext ctx = FieldContext.of(datedPkg()).language("en-US");
+		// the probe's times are UTC; the field prints them in the machine's zone, so compare in UTC terms
+		java.util.Date created = FieldSources.parseW3CDTF("2024-02-03T04:05:06Z");
+		assertEquals(1706933106000L, created.getTime());
+		String ymd = new java.text.SimpleDateFormat("yyyy-MM-dd").format(created);
+		assertEquals(ymd, FieldEvaluators.evaluate(" CREATEDATE \\@ \"yyyy-MM-dd\" ", ctx));
+		assertEquals(new java.text.SimpleDateFormat("d MMMM yyyy", java.util.Locale.US).format(FieldSources.parseW3CDTF("2025-06-07T08:09:10Z")),
+				FieldEvaluators.evaluate(" SAVEDATE \\@ \"d MMMM yyyy\" ", ctx));
+		assertTrue("a default format, until the probe says which", FieldEvaluators.evaluate(" CREATEDATE ", ctx).length() > 0);
+		assertEquals("7", FieldEvaluators.evaluate(" REVNUM ", ctx));
+		assertEquals("Acme", FieldEvaluators.evaluate(" INFO DOCPROPERTY Client ", ctx));
+		assertEquals("The Title", FieldEvaluators.evaluate(" INFO Title ", ctx));
+		assertEquals("THE TITLE", FieldEvaluators.evaluate(" INFO Title \\* Upper ", ctx));
+		assertEquals("7", FieldEvaluators.evaluate(" INFO RevNum ", ctx));
+		assertNull("no name", FieldEvaluators.evaluate(" INFO ", ctx));
+		assertNull("not a field's name", FieldEvaluators.evaluate(" INFO Nope ", ctx));
+		assertNull("INFO INFO is not a loop", FieldEvaluators.evaluate(" INFO INFO Title ", ctx));
+		assertNull(FieldSources.parseW3CDTF("not a date"));
+		assertEquals(created, FieldSources.parseW3CDTF("2024-02-03T04:05:06+00:00"));
+	}
+
+	@Test
+	public void sectionNoteReferenceAndTheUser() throws Exception {
+		WordprocessingMLPackage pkg = pkg(
+				"<w:p " + W + "><w:r><w:t xml:space=\"preserve\">A </w:t></w:r><w:bookmarkStart w:id=\"1\" w:name=\"bm1\"/><w:r><w:t>Bookmarked</w:t></w:r><w:r><w:t xml:space=\"preserve\"> text</w:t></w:r><w:bookmarkEnd w:id=\"1\"/>"
+				+ "<w:bookmarkStart w:id=\"2\" w:name=\"bmNote\"/><w:r><w:footnoteReference w:id=\"1\"/></w:r><w:bookmarkEnd w:id=\"2\"/>"
+				+ "<w:bookmarkStart w:id=\"3\" w:name=\"bmNote2\"/><w:r><w:footnoteReference w:id=\"2\"/></w:r><w:bookmarkEnd w:id=\"3\"/>"
+				+ "<w:bookmarkStart w:id=\"4\" w:name=\"bmEnd\"/><w:r><w:endnoteReference w:id=\"1\"/></w:r><w:bookmarkEnd w:id=\"4\"/></w:p>",
+				"<w:p " + W + "><w:pPr><w:sectPr><w:pgSz w:w=\"11906\" w:h=\"16838\"/></w:sectPr></w:pPr></w:p>",
+				"<w:p " + W + "><w:r><w:t>in section 2</w:t></w:r></w:p>");
+		FieldContext ctx = FieldContext.of(pkg).readBookmarks();
+		assertEquals("Bookmarked text", FieldEvaluators.evaluate(" REF bm1 ", ctx));
+		assertEquals("1", FieldEvaluators.evaluate(" NOTEREF bmNote ", ctx));
+		assertEquals("2", FieldEvaluators.evaluate(" NOTEREF bmNote2 \\f ", ctx));
+		assertEquals("endnotes count on their own", "1", FieldEvaluators.evaluate(" NOTEREF bmEnd ", ctx));
+		assertNull(FieldEvaluators.evaluate(" NOTEREF nope ", ctx));
+		assertNull("the consumer has not said which section", FieldEvaluators.evaluate(" SECTION ", ctx));
+		assertEquals("2", FieldEvaluators.evaluate(" SECTION ", ctx.section(2)));
+		java.util.List<Object> body = pkg.getMainDocumentPart().getContent();
+		assertEquals(Integer.valueOf(1), FieldContext.sectionOf(pkg.getMainDocumentPart(), body.get(0)));
+		assertEquals(Integer.valueOf(2), FieldContext.sectionOf(pkg.getMainDocumentPart(), body.get(2)));
+		assertNull(FieldContext.sectionOf(null, body.get(0)));
+		assertNull(FieldEvaluators.evaluate(" USERNAME ", ctx));
+		assertEquals("Jo", FieldEvaluators.evaluate(" USERNAME ", ctx.user("Jo", "JB", "1 Street")));
+		assertEquals("JB", FieldEvaluators.evaluate(" USERINITIALS ", ctx));
+		assertEquals("1 Street", FieldEvaluators.evaluate(" USERADDRESS ", ctx));
+	}
+
+	@Test
+	public void fieldUpdaterUpdatesTheTierOneFieldsInPlace() throws Exception {
+		WordprocessingMLPackage pkg = datedPkg(
+				"<w:p " + W + "><w:bookmarkStart w:id=\"1\" w:name=\"bm1\"/><w:r><w:t>Bookmarked text</w:t></w:r><w:bookmarkEnd w:id=\"1\"/></w:p>",
+				simple("R", "REF bm1"), simple("S1", "SECTION"), simple("C", "CREATEDATE \\@ \"yyyy\""), simple("Q", "QUOTE \"hi\""),
+				simple("U", "USERNAME"), simple("I", "INFO Title"),
+				"<w:p " + W + "><w:pPr><w:sectPr><w:pgSz w:w=\"11906\" w:h=\"16838\"/></w:sectPr></w:pPr></w:p>",
+				simple("S2", "SECTION"));
+		new FieldUpdater(pkg).update(false);
+		assertTrue(paragraph(pkg, "R").contains("Bookmarked text"));
+		assertTrue(paragraph(pkg, "S1").contains(">1<"));
+		assertTrue(paragraph(pkg, "S2").contains(">2<"));
+		assertTrue(paragraph(pkg, "C").contains(new java.text.SimpleDateFormat("yyyy").format(FieldSources.parseW3CDTF("2024-02-03T04:05:06Z"))));
+		assertTrue(paragraph(pkg, "Q").contains(">hi<"));
+		assertTrue(paragraph(pkg, "I").contains("The Title"));
+		assertTrue("no user supplied: the cached result stays", paragraph(pkg, "U").contains("OLD"));
+		FieldUpdater withUser = new FieldUpdater(pkg);
+		withUser.getContext().user("Jo", null, null);
+		withUser.update(false);
+		assertTrue(paragraph(pkg, "U").contains(">Jo<"));
+	}
+
 	@Test
 	public void fieldUpdaterUpdatesItsNamesOnly() throws Exception {
 		WordprocessingMLPackage pkg = pkg(simple("T", "TITLE"), simple("P", "DOCPROPERTY Client"), simple("D", "DATE \\@ \"yyyy\""));
@@ -171,8 +260,8 @@ public class FieldEvaluatorsTest {
 
 		new FieldUpdater(pkg).update(false);
 		assertTrue(paragraph(pkg, "P").contains("Acme"));
-		assertTrue("DATE is not in the default set in this phase", paragraph(pkg, "D").contains("OLD"));
+		assertTrue("every evaluated field by default, DATE included (D10, phase 1)", paragraph(pkg, "D").contains(new java.text.SimpleDateFormat("yyyy").format(new Date())));
 		assertTrue(new FieldUpdater(pkg).getFieldNames().contains("DOCPROPERTY"));
-		assertFalse(new FieldUpdater(pkg).getFieldNames().contains("DATE"));
+		assertTrue(new FieldUpdater(pkg).getFieldNames().contains("DATE"));
 	}
 }

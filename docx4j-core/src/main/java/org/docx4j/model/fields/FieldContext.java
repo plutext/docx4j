@@ -55,6 +55,8 @@ public final class FieldContext {
 	private String userAddress;
 	private String fileName;
 	private External external;
+	private Integer section;
+	private Map<String, String> noteNumbers;
 	private DocPropertyResolver properties;
 	private DocVariableResolver variables;
 	private final Map<String, Integer> sequences = new HashMap<String, Integer>();
@@ -155,6 +157,43 @@ public final class FieldContext {
 
 	public FieldContext external(External external) {
 		this.external = external;
+		return this;
+	}
+
+	/** The section (from 1) the field being evaluated is in, or null where the consumer has not said (SECTION keeps its cached result). */
+	public Integer getSection() {
+		return section;
+	}
+
+	/** Sets the section the next fields are in; the consumer calls it as its walk passes section ends. @since 17.3.5 (phase 1) */
+	public FieldContext section(Integer section) {
+		this.section = section;
+		return this;
+	}
+
+	/**
+	 * The section the node is in, read off the main document part (the paragraphs with a {@code w:sectPr} before
+	 * its top-level ancestor), or null where the part is not the main one.
+	 */
+	public static Integer sectionOf(Part part, Object node) {
+		return FieldSources.sectionOf(part, node);
+	}
+
+	/**
+	 * The number of the footnote or endnote whose reference each bookmark holds, by name in lower case (NOTEREF):
+	 * read from the main document part on first use.
+	 */
+	public Map<String, String> noteNumbers() {
+		if (noteNumbers == null) noteNumbers = FieldSources.noteNumbers(pkg);
+		return noteNumbers;
+	}
+
+	/**
+	 * Fills {@link #bookmarks()} from the main document part (each bookmark's {@code w:t} text in document order),
+	 * for a consumer with no reading of its own; a REF then resolves. Returns this.
+	 */
+	public FieldContext readBookmarks() {
+		if (bookmarks.isEmpty()) bookmarks.putAll(FieldSources.bookmarkTexts(pkg));
 		return this;
 	}
 

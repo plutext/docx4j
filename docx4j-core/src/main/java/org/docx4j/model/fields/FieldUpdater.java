@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -28,9 +27,10 @@ import java.util.Set;
 
 /**
  * Refreshes the values of fields in the docx, simple or complex, through {@link FieldEvaluators}
- * (CR-067): by default DOCPROPERTY and DOCVARIABLE, and since 17.3.5 the document information fields
- * AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY, SUBJECT and TITLE (#277). {@link #only(Set)} narrows or
- * widens the set to any field names {@link FieldEvaluators} knows. (For MERGEFIELD, see the mergers;
+ * (CR-067): by default every field it has an evaluator for, as Word's update-all does (until 17.3.5
+ * DOCPROPERTY and DOCVARIABLE only; then the document information fields, #277; then, with CR-067
+ * phase 1, CREATEDATE, SAVEDATE, REVNUM, INFO, SECTION, NOTEREF, REF, QUOTE, SEQ, DATE, TIME, PRINTDATE and
+ * the user fields where the context supplies the user). {@link #only(Set)} narrows the set. (For MERGEFIELD, see the mergers;
  * for SEQ, {@link org.docx4j.model.fields.seq.FieldUpdaterSEQ}.)
  *
  * <p>A locked field ({@code w:fldLock}) is left as it is. A field whose value cannot be found keeps its
@@ -53,11 +53,8 @@ public class FieldUpdater {
 	private static final String DOCPROPERTY = "DOCPROPERTY";
 	private static final String DOCVARIABLE = "DOCVARIABLE";
 
-	/** The fields updated by default: the set before CR-067, until its phase 1 widens it. */
-	private static final Set<String> DEFAULT_FIELDS = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
-			DOCPROPERTY, DOCVARIABLE, "AUTHOR", "COMMENTS", "KEYWORDS", "LASTSAVEDBY", "SUBJECT", "TITLE")));
-
-	private Set<String> fieldNames = DEFAULT_FIELDS;
+	/** The names to update, or null for every field {@link FieldEvaluators} has an evaluator for (D10, since phase 1). */
+	private Set<String> fieldNames = null;
 
 	public FieldUpdater(WordprocessingMLPackage wordMLPackage) {
 		this.wordMLPackage = wordMLPackage;
@@ -77,9 +74,9 @@ public class FieldUpdater {
 		return this;
 	}
 
-	/** The field names this updater updates. @since 17.3.5 */
+	/** The field names this updater updates: the filter, or every name {@link FieldEvaluators} has. @since 17.3.5 */
 	public Set<String> getFieldNames() {
-		return fieldNames;
+		return fieldNames == null ? FieldEvaluators.names() : fieldNames;
 	}
 
 	/** The context the evaluators read (the clock, the language, the user ...). @since 17.3.5 */
@@ -110,12 +107,13 @@ public class FieldUpdater {
 
 	public void updatePart(JaxbXmlPart part) throws Docx4JException {
 		context.part(part);
+		context.readBookmarks(); // REF: the main part's bookmarks, whichever part the field is in
 		updateSimple(part);
 		updateComplex(part);
 	}
 
 	private boolean updates(String fieldName) {
-		return fieldName != null && fieldNames.contains(fieldName) && FieldEvaluators.has(fieldName);
+		return fieldName != null && (fieldNames == null || fieldNames.contains(fieldName)) && FieldEvaluators.has(fieldName);
 	}
 
 	/** A document information field given an argument is left as it is: Word sets the property from it. */
@@ -159,6 +157,7 @@ public class FieldUpdater {
 				continue;
 			}
 
+			context.section(FieldContext.sectionOf(part, simpleField));
 			String val = FieldEvaluators.evaluate(instruction, context);
 			if (val == null) {
 				report.append(simpleField.getInstr() + "\n");
@@ -250,6 +249,7 @@ public class FieldUpdater {
 				continue;
 			}
 
+			context.section(FieldContext.sectionOf(part, fr.getParent()));
 			String val = FieldEvaluators.evaluate(instruction, context);
 			if (val == null) {
 				report.append(instr + "\n");

@@ -40,7 +40,9 @@ import org.slf4j.LoggerFactory;
  * context's pass; {@code \r}, {@code \c}, {@code \h} honoured, {@code \s} not); REF to a bookmark
  * the context has read (its text; with {@code \n}, {@code \r}, {@code \w}, {@code \p} or
  * {@code \f}, which need numbering or layout, the cached result is kept); QUOTE; DATE, TIME and
- * PRINTDATE at the context's clock. Not here: MERGEFIELD (a merge supplies the data), FORMTEXT
+ * PRINTDATE at the context's clock; CREATEDATE and SAVEDATE from the core properties; INFO as the field it
+ * names; SECTION where the context says which; NOTEREF to a bookmark on a note reference; USERNAME,
+ * USERINITIALS and USERADDRESS from the context (phase 1). Not here: MERGEFIELD (a merge supplies the data), FORMTEXT
  * (its result is in its form-field data), the layout fields (PAGE, NUMPAGES, SECTIONPAGES,
  * PAGEREF, STYLEREF, TOC: the renderer's), and the external fields (D8).</p>
  *
@@ -109,6 +111,47 @@ public final class FieldEvaluators {
 		register("DATE", date);
 		register("TIME", date);
 		register("PRINTDATE", date); // the conversion is the printing
+		// tier 1 (CR-067 phase 1)
+		register("CREATEDATE", new CoreDate("CreateTime"));
+		register("SAVEDATE", new CoreDate("LastSavedTime"));
+		register("INFO", (instr, ctx) -> {
+			// INFO <name> [switches]: the named document-information field itself
+			String text = instr.getParameterText();
+			if (instr.getArgument() == null || text == null) return null;
+			FieldInstruction named = FieldInstruction.parse(text);
+			if (named.getName() == null || "INFO".equals(named.getName()) || !has(named.getName())) return null;
+			return evaluate(named, ctx);
+		});
+		register("SECTION", (instr, ctx) -> ctx.getSection() == null ? null : String.valueOf(ctx.getSection()));
+		register("NOTEREF", (instr, ctx) -> {
+			String bookmark = instr.getArgument();
+			return bookmark == null ? null : ctx.noteNumbers().get(bookmark.toLowerCase(Locale.ROOT));
+		});
+		register("USERNAME", (instr, ctx) -> ctx.getUserName());
+		register("USERINITIALS", (instr, ctx) -> ctx.getUserInitials());
+		register("USERADDRESS", (instr, ctx) -> ctx.getUserAddress());
+	}
+
+	/**
+	 * CREATEDATE and SAVEDATE: the core property's W3CDTF value as a date, formatted by the field's {@code \@}
+	 * switch, or without one as the date fields are (phase 1: the default Word shows is the probe's to measure).
+	 */
+	private static final class CoreDate implements FieldEvaluator {
+		private final String property;
+		CoreDate(String property) {
+			this.property = property;
+		}
+		@Override
+		public String evaluate(FieldInstruction instruction, FieldContext context) throws Exception {
+			String value = context.properties().getValue(property);
+			java.util.Date date = FieldSources.parseW3CDTF(value);
+			if (date == null) return null;
+			return FormattingSwitchHelper.formatDate(instruction, date, context.getLanguage());
+		}
+		@Override
+		public boolean formatsItself() {
+			return true;
+		}
 	}
 
 	private FieldEvaluators() {
