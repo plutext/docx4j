@@ -1,0 +1,32 @@
+file	candidate	stored	note
+date	DATE \@ "yyyy"	2030	positive control (round 6)
+none			negative control: no candidate, the three IFs and the last field only
+formula	= 1 + 1	3	negative control: a formula
+docproperty	DOCPROPERTY Title	Nope	a document property (Title is Probe)
+dirty-docproperty	DIRTY DOCPROPERTY Title	Nope	the same with w:dirty on its begin (Word asks; answer No)
+edittime	EDITTIME	999	
+printdate	PRINTDATE \@ "yyyy"	2030	
+savedate	SAVEDATE \@ "yyyy"	2030	
+createdate	CREATEDATE \@ "yyyy"	2030	
+filename	FILENAME	stale.docx	
+filesize	FILESIZE	1	
+numpages	NUMPAGES	9	
+page	PAGE	9	
+sectionpages	SECTIONPAGES	9	
+section	SECTION	9	
+numwords	NUMWORDS	9	
+numchars	NUMCHARS	9	
+username	USERNAME	Nobody	
+userinitials	USERINITIALS	ZZ	
+author	AUTHOR	Nobody	
+title	TITLE	Nope	
+info	INFO Title	Nope	
+revnum	REVNUM	99	
+template	TEMPLATE	stale.dotm	
+docvariable	DOCVARIABLE x	x	a variable that does not exist
+listnum	LISTNUM	OLD	
+autonum	AUTONUM	OLD	
+symbol	SYMBOL 169	OLD	
+seq	SEQ fig	9	
+ref	REF Edited	OLD	a REF to a bookmark holding NEW
+compare	COMPARE 1 = 1	0	
