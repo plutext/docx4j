@@ -191,6 +191,8 @@ Changes in Version 17.3.5
   field context built from the package takes them as its FILENAME and FILESIZE defaults, so the text
   extraction under fields: update and the PDF and HTML writers show what FieldUpdater writes. The mail
   mergers evaluate a merge field written as w:fldSimple, as Word writes its own GREETINGLINE (measured).
+  The text extraction under fields: update computes ASK (its bookmark defined with the \d default, nothing
+  shown) and FILLIN (its \d default), as the OpenDoPE WD says.
 * FieldUpdater updates the document information fields AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY,
   SUBJECT and TITLE, as it does DOCPROPERTY (#277); DOCPROPERTY Keywords is read; a simple
   DOCPROPERTY's quoted property name is found.

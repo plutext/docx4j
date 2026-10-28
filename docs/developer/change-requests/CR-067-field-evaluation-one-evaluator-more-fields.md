@@ -756,3 +756,12 @@ attributes beside the zone (nothing saved; a server sets them per request); `Fie
 defaults of `fileName` and `fileSize`, the per-call setters overriding; so the text model under `fields: update` and the PDF
 and HTML writers show the same FILENAME and FILESIZE as the updater (`Phase3ProbeWordTest.sourceNameAndSizeOnThePackage`).
 WD 0.39's "only where the caller supplies them" reads "the package's source name and size where set" (sent to the portfolio).
+
+### 14.6 ASK and FILLIN in the text model (python-64's finding, 2026-10-29)
+
+Drafting its port, docx4j-python found that WD 0.38's REQ-506 says the text model computes ASK and FILLIN under
+`fields: update` (an ASK defines its bookmark with its `\d` default and shows nothing; a FILLIN shows its default) while
+`FieldValues.COMPUTED` omitted both. The WD's reading is the intended one: `FieldValues` now computes them (an ASK as a SET,
+shown as nothing; a FILLIN its default, nothing without one; the text model supplies no answers, so the default is always
+what is used), `FieldValuesPromptsTest`. The cached mode is unchanged (an ASK's stored result is read; whether Word shows
+an ASK's stored result at all is unmeasured, section 9).

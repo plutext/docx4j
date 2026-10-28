@@ -69,6 +69,8 @@ final class FieldValues {
 				"INFO", "SECTION", "NOTEREF", "USERNAME", "USERINITIALS", "USERADDRESS",
 				// CR-067 phase 2 (a formula naming a table cell keeps its cached result: no cells here)
 				"=", "COMPARE", "IF", "SET",
+				// an ASK defines its bookmark with its \d default and shows nothing; a FILLIN shows its default (WD REQ-506; python-64, 2026-10-29)
+				"ASK", "FILLIN",
 				// CR-067 phase 3 (FILENAME and FILESIZE from the package's source name and size, D26; cached without them)
 				"NUMWORDS", "NUMCHARS", "TEMPLATE", "FILENAME", "FILESIZE",
 				// CR-067 phase 3, round 2 (Word paints these live and stores no result)
@@ -124,7 +126,7 @@ final class FieldValues {
 			log.debug("No value for the field " + instr.trim() + ": " + e.getMessage());
 			return null;
 		}
-		if ("SET".equals(name)) return value == null ? null : ""; // its value is in the context's bookmarks; Word shows nothing
+		if ("SET".equals(name) || "ASK".equals(name)) return value == null ? null : ""; // its value is in the context's bookmarks; Word shows nothing
 		if (value == null || evaluator.formatsItself()) return value;
 		try {
 			return FormattingSwitchHelper.applyFormattingSwitch(context.getPackage(), instruction, value, null);
