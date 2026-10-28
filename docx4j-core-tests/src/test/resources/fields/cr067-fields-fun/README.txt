@@ -17,3 +17,11 @@ sentence | stored (libraries; text models cached) | docx4j fields: update | Word
 Jason's Word steps: open one-file-many-readings.docx, answer No to any prompt, touch nothing; Save As Plain Text
 one-file-many-readings-word365-asis.txt, Save As one-file-many-readings-word365-asis.docx, Save As PDF one-file-many-readings-word365-asis.pdf;
 then Ctrl+A, F9, Save As Plain Text one-file-many-readings-word365-f9.txt and Save As PDF one-file-many-readings-word365-f9.pdf.
+
+Word's run (Jason, 2026-10-29 09:48 to 09:50; the five saves and scored.tsv beside this file): every sentence as expected, except
+sentence 9. Word's open stripped its separate and result (the as-is docx holds begin, the code with its hidden run, end), so the
+as-is text and PDF read "Reviewer note: ."; after F9 they still read "Reviewer note: .". Round 5 showed a hidden stored result run
+does appear in Word's plain text, so F9 did not write a hidden "confidential": it wrote nothing. The rule: Word ignores hidden
+text inside a field's code when it evaluates the field (the true branch is empty), which the earlier expectation and docx4j's
+update ("confidential", visible) both got wrong. Sentence 8 confirms the print-time pass: the as-is PDF says "one", the as-is
+text "two or later".
