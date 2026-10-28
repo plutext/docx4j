@@ -804,3 +804,18 @@ missing DOCVARIABLE, `w:dirty` on a wildcard IF, a formula, a DOCPROPERTY and a 
 quoted numbers, the wildcard IF as a simple field. Not built until measured: whether docx4j's cached mode (and the
 writers) should recompute what Word recomputes on open is a WD question (D27's rule against DATE applies to the DATE case;
 the literal IFs are new).
+
+**Round 2 (Jason, 2026-10-29 07:50 to 07:52; `scored-round2.tsv`).** Word asked whether to update fields on open (the
+`w:dirty` cases); answered No, it recomputed none of the 18: every as-is text is the stored result, the string equality,
+the other operators, the false condition, the quoted numbers, the wildcard with its true branch stored (kept), the IFs over
+a formula, PAGE, NUMPAGES, a right DOCPROPERTY and a missing DOCVARIABLE, COMPARE, the dirty fields (their flag cleared,
+their results kept) and the simple fields (rewritten as complex fields) alike; a nested field's stored result was rewritten
+as `w:instrText`, Word's own form, with the same text. Yes to the prompt updated every field in the document, not only the
+dirty ones (the IF over PAGE then said PAGE_OTHER, where F9 says PAGE_ONE: PAGE before layout). F9 computed every case
+(the string comparison case-sensitive, as phase 2 measured). So round 1's open-time rewrite is not a rule about literal
+IFs: round 1 held two fields with no result at all (C08, C09), which Word had to compute to show anything, and every
+field with the same instruction (C01, C02, C13, C15, `IF 1 = 1 "APPROVED" "REJECTED"`) came out with that result; C04
+followed its DATE, which Word updates on open; C12's stays unexplained (section 9). Round 3 (`IfFieldProbeRound3Builder`,
+`iffield-probe-r3.docx`, 15 cases, staged) tests that reading: a stored-wrong field alone, stored-wrong fields with a
+resultless twin after, before, differing in whitespace, or with other branches, for an IF, a formula, a DOCPROPERTY and
+a string IF, and a resultless field of its own.
