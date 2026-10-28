@@ -163,7 +163,12 @@ The TypeScript and Python ports have their own field handling (python's mail mer
 treats a field as one unit and its CR-012 extraction takes `fields: update` from the WD). Phase 0's hand-off (2026-10-28):
 python-64 has no evaluator and no FieldUpdater port (its field code is `docx4j_py/model/fields/formatting.py` and
 `resolvers.py`, and the text model's `field_values.py`), so FieldInstruction, FieldContext and FieldEvaluators arrive
-there as one new CR when phase 1's field list and Word measurements go over; no python entry depends on CR-067 yet. Each phase's field list and
+there as one new CR when phase 1's field list and Word measurements go over; no python entry depends on CR-067 yet.
+Corrected by python-64 after phase 1 (2026-10-28): its `docx4j_py/model/text/field_values.py` ports `FieldValues` at 198d015a3
+behind `fields: update` (the same set, locks and argument rule); what it lacks is the write-back half (no FieldUpdater, no
+writers). Phase 1 reaches it as INFO, SECTION, NOTEREF and the user fields (a caller-supplied user its FieldValues has no
+context for yet) added there, the CREATEDATE/SAVEDATE parsing and default once the probe settles it, DATE/TIME/PRINTDATE
+a question for its user, and a FieldUpdater port as a separate item. It waits for the probe's results before a CR. Each phase's field list and
 Word measurements go to them when the phase lands; objects-ts is unaffected (no schema change). The MCP server's
 `extract_text` takes the inspector's set through the WD (D11). The portfolio registers this CR as `docx4j/CR-067` with
 phases 0 to 4.
