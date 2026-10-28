@@ -120,6 +120,11 @@ public class FieldsPreprocessor {
 	 * contains something other than instruction text (eg a nested field)
 	 * @since 17.0.1
 	 */
+	/** Whether the run's own properties hide it ({@code w:vanish}). */
+	static boolean isHidden(R r) {
+		return r != null && r.getRPr() != null && r.getRPr().getVanish() != null && r.getRPr().getVanish().isVal();
+	}
+
 	public static String extractInstr(List<Object> instructions) {
 
 		if (instructions.isEmpty()) {
@@ -537,7 +542,9 @@ public class FieldsPreprocessor {
 				
 //				log.debug("Processing " +((JAXBElement<Text>)o2).getValue().getValue() );
 				
-				currentField.getInstructions().add(o2);
+				// a hidden run's instruction text is kept in the run but not in the instruction: Word evaluates a field's
+				// code without its hidden text (measured 2026-10-29, CR-067 section 14.7)
+				if (!isHidden(existingRun)) currentField.getInstructions().add(o2);
 				if (inParentResult()) {
 
 					{

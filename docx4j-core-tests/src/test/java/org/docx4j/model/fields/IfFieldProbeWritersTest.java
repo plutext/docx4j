@@ -70,7 +70,7 @@ public class IfFieldProbeWritersTest {
 			{ "C09_NO_SEPARATE", "", "APPROVED", "APPROVED" },
 			{ "C10_NESTED_BRANCH", "LIT", "Probe", "LIT" },
 			{ "C11_REF_EDITED", "REF_OLD", "REF_NEW", "REF_OLD" },
-			{ "C12_HIDDEN_TRUE", "VISIBLE_STALE", "HIDDEN_WHEN_UPDATED", "VISIBLE_STALE" },
+			{ "C12_HIDDEN_TRUE", "VISIBLE_STALE", "", "VISIBLE_STALE" }, // the hidden true branch: nothing, as Word (measured 2026-10-29)
 			{ "C13_HAND_EDITED", "NEITHER_BRANCH_TEXT", "APPROVED", "NEITHER_BRANCH_TEXT" },
 			{ "C14_CONTROL_TRUE", "APPROVED", "APPROVED", "APPROVED" },
 			{ "C15_SIMPLE_EMPTY", "", "APPROVED", "APPROVED" },

@@ -200,7 +200,9 @@ Rules Word has not been seen to apply, kept here until a probe round measures th
   Zealand address as name, street, city, country; docx4j ignores `\d`, which with Word's own format made no visible
   difference, round 3); measured in round 3, off this list: the line break Word's own GREETINGLINE carries before
   `_AFTER_` does not print;
-  LISTNUM with a list name that is not one of the three (NumberDefault here), its levels 5 to 9 and OutlineDefault's
+  a hidden run inside a field's code is measured now (Word evaluates the code without it: the one-file-many-readings
+  memo, §14.7; docx4j does the same since the same day), but a field whose whole code is hidden, and a hidden run
+  inside a nested field's code, are not; LISTNUM with a list name that is not one of the three (NumberDefault here), its levels 5 to 9 and OutlineDefault's
   4 to 9 (Word's documented forms), a LISTNUM or AUTONUM in a header, footer, note or text box (the cached result kept),
   a paragraph whose outline level comes from `w:outlineLvl` rather than a heading style (read as its level), AUTONUMOUT
   in body text (the count and a period here), AUTONUM's `\s` with more than one character; SYMBOL codes 128 to 159
@@ -908,3 +910,13 @@ DOCPROPERTY answered No. So the GUI open equals the automation resave, and the m
 For the WD: the inspector's finding names DATE, TIME and SAVEDATE for the open (what a Word user sees), and the PDF's
 further triggers for a reader comparing a text against Word's PDF; the text models keep the stored result; docx4j's PDF
 writer does not imitate the print-time pass (it paints the stored result where there is one, D3), a named departure.
+
+**The memo ("one file, many readings", Jason's five saves, 2026-10-29 09:48 to 09:50; `fields/cr067-fields-fun`, `scored.tsv`).**
+Every sentence as the README expected from the eight rounds, the PAGE sentence confirming the print-time pass (the as-is PDF
+"one", the as-is text "two or later"), but one: the hidden-branch IF. Word's open stripped its separate and result (as in
+rounds 1 and 6), so the as-is text and PDF read "Reviewer note: ."; and after F9 they still read "Reviewer note: ." Round 5
+showed a hidden stored result run does appear in Word's plain text, so F9 did not write a hidden "confidential": it wrote
+nothing. The rule, measured: **Word evaluates a field's code without its hidden text** (the true branch is empty). docx4j's
+update had printed "confidential" visibly; built the same day: `FieldsPreprocessor` leaves a hidden run's instruction text
+out of the instruction (the run itself is kept), and the text model's walk leaves it out of the code it evaluates, so the
+updater, the mergers, the writers and the text model give the empty result Word gives (`FieldsFunMemoTest`).

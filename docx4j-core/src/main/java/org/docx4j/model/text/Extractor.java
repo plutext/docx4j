@@ -1287,8 +1287,13 @@ final class Extractor {
 			String s = v instanceof Text ? ((Text) v).getValue() : null;
 			if (s == null) return;
 			Deque<FieldState> fields = para.story.fields;
-			// after the field's separate it is its stored result (Word writes a nested field's result as w:instrText)
-			if (!fields.isEmpty()) (fields.peek().separated ? fields.peek().result : fields.peek().instr).append(s);
+			// after the field's separate it is its stored result (Word writes a nested field's result as w:instrText);
+			// before it, the code, which Word evaluates without its hidden text (measured 2026-10-29, CR-067 section 14.7)
+			if (!fields.isEmpty()) {
+				FieldState f = fields.peek();
+				if (f.separated) f.result.append(s);
+				else if (!hidden) f.instr.append(s);
+			}
 			if (options.isFieldCodes() && !suppressed(para.story)) addText(para, s, TextRun.Kind.FIELD_CODE, hidden, state);
 			return;
 		}

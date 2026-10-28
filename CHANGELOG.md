@@ -197,7 +197,8 @@ Changes in Version 17.3.5
   formula over a DOCPROPERTY printed both): the field combiner folds a nested field into the outer's
   instruction as an operand (CR-067 D31). A complex field with no stored result is now evaluated where the
   evaluator knows it, as a simple one was; a resultless IF is dropped only where a PAGE or NUMPAGES
-  operand leaves it undecidable before layout (D32).
+  operand leaves it undecidable before layout (D32). A field's code is evaluated without its hidden text, as
+  Word evaluates it (measured): an IF whose true branch is hidden gives an empty result.
 * FieldUpdater updates the document information fields AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY,
   SUBJECT and TITLE, as it does DOCPROPERTY (#277); DOCPROPERTY Keywords is read; a simple
   DOCPROPERTY's quoted property name is found.
