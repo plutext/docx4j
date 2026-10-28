@@ -55,3 +55,10 @@ iffield-probe-r8-symbol.docx: SYMBOL 169
 iffield-probe-r8-seq.docx: SEQ fig
 iffield-probe-r8-ref.docx: REF Edited  -- a REF to a bookmark holding NEW
 iffield-probe-r8-compare.docx: COMPARE 1 = 1
+
+BY-HAND RESULT (Jason, 2026-10-29 09:04 to 09:10; by-hand\, scored-round8-by-hand.tsv): the GUI open triggered the pass for
+NONE of the seven (page, numpages, section, sectionpages, printdate, ref, seq: every Y as stored, the candidate's stored
+result kept, though Word displays PAGE and the others live), nor for the dirty-flag DOCPROPERTY (No to the prompt: nothing
+refreshed). So the GUI open equals the automation resave: the open-time triggers are DATE, TIME and SAVEDATE. The seven
+extra triggers of the golden PDFs belong to Word's PDF export (a print, which updates the layout fields, PRINTDATE, REF and
+SEQ, and then the literal IFs), not to the open.

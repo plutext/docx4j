@@ -1,0 +1,7 @@
+IF-field probe, round 8 (CR-067), candidate sectionpages. Title property: Probe. Bookmark Edited: NEW
+Y01_SECTIONPAGES = 9
+Y02_STORED = B2
+Y03_STORED = B3
+Y04_STORED = B4
+Y05_LAST = B5
+End of the probe (no field after this).

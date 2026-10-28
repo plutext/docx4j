@@ -888,3 +888,23 @@ fields trigger the pass where Word lays the document out, which the automation's
 does. So the trigger set depends on the surface: for a docx resave under automation, DATE, TIME and SAVEDATE; for a laid-out
 document (the PDF; the GUI open, pending the by-hand check of those seven), also the layout fields, PRINTDATE, REF and SEQ.
 Jason's by-hand saves of the seven (and the dirty-flag file) settle the GUI column.
+
+**Round 8 by hand (Jason, 2026-10-29 09:04 to 09:10; `round8/by-hand`, `scored-round8-by-hand.tsv`): the trigger sets, final.**
+The GUI open triggered the pass for none of the seven (PAGE, NUMPAGES, SECTION, SECTIONPAGES, PRINTDATE, REF, SEQ: every
+IF as stored, the candidate's stored result kept, though Word displays the layout fields live), nor for the dirty-flag
+DOCPROPERTY answered No. So the GUI open equals the automation resave, and the measured rule reads:
+
+- **Word's open** (the GUI; a docx resave under automation): a document holding a DATE, TIME or SAVEDATE field is partly
+  updated, that field refreshed and every IF with literal or auto-updating operands recomputed, the document's last field
+  excepted, the results written on save. CREATEDATE, PRINTDATE, EDITTIME, FILENAME, FILESIZE, the layout fields, the
+  counts, the user and document-information fields, INFO, REVNUM, TEMPLATE, DOCVARIABLE, DOCPROPERTY (dirty or not, with
+  No to the prompt), LISTNUM, AUTONUM, SYMBOL, SEQ, REF, COMPARE and a formula do not trigger it; a document without a
+  trigger is opened as stored.
+- **Word's PDF export** (a print): the same pass runs for the open-time triggers and also where the document holds a
+  PAGE, NUMPAGES, SECTION, SECTIONPAGES, PRINTDATE, REF or SEQ field, which the print updates first; so Word's own PDF of a
+  document with a page number in a footer paints the literal IFs recomputed, where its plain text and its docx keep them
+  stored. Eight rounds, 177 cases.
+
+For the WD: the inspector's finding names DATE, TIME and SAVEDATE for the open (what a Word user sees), and the PDF's
+further triggers for a reader comparing a text against Word's PDF; the text models keep the stored result; docx4j's PDF
+writer does not imitate the print-time pass (it paints the stored result where there is one, D3), a named departure.
