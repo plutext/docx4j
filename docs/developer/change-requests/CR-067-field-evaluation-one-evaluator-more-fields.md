@@ -1,6 +1,6 @@
 # CR-067: one field evaluator, and the fields worth adding
 
-Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 DONE 2026-10-28 (§10); phase 1 DONE 2026-10-28 (§11; Word's measurement in §11.3, every case as predicted); phase 2 next.
+Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 DONE 2026-10-28 (§10); phase 1 DONE 2026-10-28 (§11; Word's measurement in §11.3, every case as predicted); the date-forms probe measured 2026-10-28 (§12.2: D13, D14, built); phase 2 next.
 PROPOSED 2026-10-28, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's word ("draft the CR,
 including your review as context"), from a review of `FieldsPreprocessor` and the field code around it (§1, §2) and
 of the ECMA-376 field set by category (§3). Recommendations in §5; phases in §6. D2 ruled 2026-10-28 (FldSimpleModel deprecated). Nothing built.
@@ -183,10 +183,14 @@ Rules Word has not been seen to apply, kept here until a probe round measures th
 - A REF with `\n`, `\r`, `\w`, `\p` or `\f` (the inspector keeps the cached result for these today).
 - SEQ `\s` (reset at a heading level).
 - CREATEDATE's and SAVEDATE's default format for a language other than en-US (en-US measured 2026-10-28, §11.3).
-- The zone and the forms of a core-property date: Word reads its own W3CDTF (always UTC, `Z`) in the machine's zone (measured,
-  §11.3), and docx4j formats every date field in the JVM's default zone (`TimeZone.getDefault()`; no zone on
-  `FieldContext`). A date-only value (`2024-02-03`) or a local time with no offset, which another producer may write, docx4j
-  reads as local midnight or local time in that zone; what Word shows for those is unmeasured (python-64's question).
+- The forms of a core-property date: measured 2026-10-28 (§12.2), off this list: a date alone and a time with no
+  offset are UTC, as a `Z` value is, shown in the client's zone (D12) to the minute (D13). PRINTDATE on F9 is
+  `cp:lastPrinted` (D14).
+- PRINTDATE's text for a document never printed (no `cp:lastPrinted`); docx4j keeps the cached result (D14).
+- A date control's date-only or offset-free value's time under the conversion opt-in: the probe's B01 and B02 (and
+  B03, whose 03:04Z is 14:04 local the same day) fix the picker's date, not the time; D6's `Z` case is the measured one.
+- DOCPROPERTY CreateTime, LastSavedTime and LastPrinted with a date-only or offset-free value (a separate path: the
+  resolver's W3CDTF text through the switch formatter; the field evaluators read them per D13).
 - What Word shows for USERNAME when Word has no user name at all (a blank address measured: empty, §11.3).
 - Measured 2026-10-28 (§11.3), off this list: INFO against the field it names (the same, and `Error! Unknown info
   keyword.` for no name or an unknown one); QUOTE with no argument (empty); a REF's formatting (the bookmark's);
@@ -357,3 +361,47 @@ converted to the machine's zone for a core property and a bound date (D6) and re
 PRINTDATE shows `cp:lastPrinted` (docx4j's PRINTDATE evaluator is the clock, "the conversion is the printing", the
 output's convention since 17.1.0; if Word's F9 shows lastPrinted, `FieldUpdater`'s PRINTDATE should read it).
 
+### 12.2 Measured (Jason, 2026-10-28, Word 365 version 2608 build 20326.20232; `__tmp/cr067/dates/results.txt`)
+
+The probe, Word's save, the results and the README with the predictions are the fixtures
+`docx4j-core-tests/src/test/resources/fields/cr067-dates/`; `DateFormsProbeWordTest` replays Part 1 through `FieldUpdater`
+with the package's zone set to Sydney's (D12), reads Part 2 through `TrackedChanges`, and holds the forms Word's save wrote.
+
+| Case | Word 365 | Taken as |
+|---|---|---|
+| D01, D04: created `2024-02-03` | `2024-02-03 11:00:00`; `2/3/2024 11:00:00 AM` | a date alone is **UTC midnight** (11:00 at UTC+11), not the local midnight predicted |
+| D02, D05: modified `2025-06-07T08:09:10` | `2025-06-07 18:09:00`; `6/7/2025 6:09:00 PM` | a time with no offset is **UTC** (18:09 at UTC+10), not the local clock predicted; read to the minute (the :10 shows as :00, as §11.3) |
+| D03, D06: lastPrinted `2025-01-02T03:04:05Z` | `2025-01-02 14:04:00`; `1/2/2025 2:04:00 PM` | as predicted; **PRINTDATE on F9 is `cp:lastPrinted`**, not the clock (Word's Properties pane shows the same, "Last Printed 2/01/2025 2:04 PM") |
+| R01: `w:date="2024-02-03"` | `3/02/2024 12:00:00 AM` | a date alone is local midnight |
+| R02: `2025-06-07T08:09:10` | `7/06/2025 8:09 AM` | as written: the local clock |
+| R03: `2025-01-02T03:04:05Z` | `2/01/2025 3:04 AM` | the `Z` ignored: the local clock (CR-043's rule, seen again) |
+| B01 to B03: `w:fullDate` in the three forms | the stored text as it was; the picker on the nominal date (3 Feb 2024, 7 Jun 2025, 2 Jan 2025) | the nominal date for every form; the time is not separated (03:04Z and 14:04 local are the same day) |
+
+Word's save: `created` and `modified` are the save's moment (§11.3 case 5); `lastPrinted` kept to the minute
+(`2025-01-02T03:04:00Z`); every `w:date` and `w:fullDate` rewritten as its nominal clock to the minute labelled `Z`
+(`2024-02-03T00:00:00Z`, `2025-06-07T08:09:00Z`, `2025-01-02T03:04:00Z`): no zone conversion of a date-only or
+offset-free value in either place, consistent with the local-clock reading of a revision and with D6's "local time
+labelled `Z`" for a control.
+
+So the three places disagree on what a bare value means: a core property's is UTC; a revision's and a control's are the
+local clock. Two decisions, built the same day (the pre-stated consequence in §12.1 for PRINTDATE):
+
+| # | Decision | Built |
+|---|---|---|
+| D13 | A core property's date with no offset, or a date alone, is UTC: `FieldSources.parseW3CDTF` (the `XMLGregorianCalendar` fallback likewise). The revision reader (`TrackedChange.dateOf`: the local clock, midnight for a date alone) and the bound-date reader (`parseStoredDate`: nominal) were already as measured; unchanged | yes |
+| D14 | `FieldUpdater`'s PRINTDATE is `cp:lastPrinted`, to the minute, in the package's zone, with the `\@` switch or Word's default format as CREATEDATE (`CoreDate("LastPrinted")`); a document never printed (no `cp:lastPrinted`) keeps the field's cached result (Word's text there unmeasured, §9). The PDF and HTML writers' PRINTDATE stays the conversion's clock (the conversion is the printing, 17.1.0's convention; Word's own print sets the field to the print's moment), and the text model's `fields: update` does not compute it (its set unchanged) | yes |
+
+The ports (hand-off 2026-10-28): python's and core-ts's core-property readers take D13 (UTC for a bare value); their
+revision and control readers stay as they are; an updater's PRINTDATE, where one exists, reads `cp:lastPrinted`.
+
+### 12.3 INFO in the text model (python-64's Q9, 2026-10-28)
+
+python-64, porting phase 1 (its CR-025), read docx4j's `INFO <name>` as asking the whole registry, so the text
+extraction's `fields: update` computed `INFO Date`, `INFO Time` and `INFO PrintDate` at the clock while keeping DATE,
+TIME and PRINTDATE cached. Unintended: `INFO X` behaves as X does in the same consumer. Built the same day:
+`FieldValues` evaluates an INFO only where the field it names is in its own set (`INFO Date` keeps the cached result,
+as DATE does; `FieldValuesInfoTest`). `FieldUpdater` and the writers are unchanged (the updater evaluates the clock
+fields, so its `INFO Date` is the clock, as its DATE is; the writers' INFO is cached-else-evaluated like the rest of
+their set). The WD's REQ-506 set is unchanged (INFO was already "as the field it names").
+
+Gate for §12.2 and §12.3 together: core-tests 2208/0/30, export-fo-tests 858/0/9.

@@ -49,7 +49,8 @@ import org.slf4j.LoggerFactory;
  * </ul>
  *
  * Nothing else (FORMTEXT is the walk's, from its form field data): not MERGEFIELD (no data is supplied), DATE,
- * TIME, PRINTDATE, the layout fields or the external ones, and never a field with {@code w:fldLock}.
+ * TIME, PRINTDATE, the layout fields or the external ones (nor an INFO naming one of them: {@code INFO Date} keeps its
+ * cached result as DATE does), and never a field with {@code w:fldLock}.
  * A field whose value can't be found keeps its cached result.
  */
 final class FieldValues {
@@ -79,6 +80,17 @@ final class FieldValues {
 		return compute(instr, null);
 	}
 
+	/**
+	 * The field an INFO names, upper case, or "" where it names none: {@code INFO Date} keeps its cached result here as
+	 * DATE does, where the registry's INFO would evaluate it at the clock (python-64's reading, 2026-10-28, CR-067 §12.3).
+	 */
+	private static String infoName(FieldInstruction info) {
+		String text = info.getParameterText();
+		if (info.getArgument() == null || text == null) return "";
+		String named = FieldInstruction.parse(text).getName();
+		return named == null ? "" : named;
+	}
+
 	/** The same, for a field in the given section of the main story (from 1), or null where unknown. */
 	String compute(String instr, Integer section) {
 		if (context == null || instr == null) return null;
@@ -86,6 +98,7 @@ final class FieldValues {
 		FieldInstruction instruction = FieldInstruction.parse(instr);
 		String name = instruction.getName();
 		if (name == null || !COMPUTED.contains(name)) return null;
+		if ("INFO".equals(name) && !COMPUTED.contains(infoName(instruction))) return null; // INFO X as X is here, not the registry's X
 		FieldEvaluator evaluator = FieldEvaluators.get(name);
 		if (evaluator == null) return null;
 		String value;

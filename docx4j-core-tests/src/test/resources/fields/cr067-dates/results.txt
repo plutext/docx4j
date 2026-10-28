@@ -1,0 +1,33 @@
+CR-067 D12 date forms probe: how Word reads a date-only, an offset-free and a UTC date (one file, about 5 minutes)
+
+1. Open date-forms-r1.docx normally. Note the Word build.
+
+Same Word build as always
+
+2. Part 1: Ctrl+A, F9. For D01 to D06 write down the text each field shows.
+
+Discrepancies compared to your predictions:
+
+D01_CREATEDATE_DATEONLY = 2024-02-03 11:00:00
+D02_SAVEDATE_LOCAL = 2025-06-07 18:09:00
+D03_PRINTDATE_UTC = 2025-01-02 14:04:00
+D04_CREATEDATE_DEFAULT = 2/3/2024 11:00:00 AM
+D05_SAVEDATE_DEFAULT = 6/7/2025 6:09:00 PM
+D06_PRINTDATE_DEFAULT = 1/2/2025 2:04:00 PM
+
+
+3. Part 2: hover each inserted text (or Review > Reviewing Pane) and write down the date and time Word shows for R01, R02, R03.
+   Predicted vs actual: R01 2024-02-03 (midnight or no time): yes, actual: 3/02/2024 12:00:00 AM
+R02 2025-06-07 8:09 AM as written; yes 7/06/2025 8:09 AM 
+R03 the Z read as local clock, 2025-01-02 3:04 AM; 2/01/2025 3:04 AM
+
+4. Part 3: click each date control; write down the text shown and the date the picker highlights for B01, B02, B03.
+
+B01_DATEONLY = 2024-02-03
+B02_LOCAL = 2025-06-07T08:09:10
+B03_UTC = 2025-01-02T03:04:05Z
+
+in each case the picker highlighted the corresponding date
+
+5. Save As date-forms-r1-word365.docx beside this README; put your notes in results.txt here.
+Core properties: created 2024-02-03 (date only), modified 2025-06-07T08:09:10 (no offset), lastPrinted 2025-01-02T03:04:05Z.

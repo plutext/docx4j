@@ -39,8 +39,8 @@ import org.slf4j.LoggerFactory;
  * text argument shows that text, as Word sets the property from it); SEQ (counted in the
  * context's pass; {@code \r}, {@code \c}, {@code \h} honoured, {@code \s} not); REF to a bookmark
  * the context has read (its text; with {@code \n}, {@code \r}, {@code \w}, {@code \p} or
- * {@code \f}, which need numbering or layout, the cached result is kept); QUOTE; DATE, TIME and
- * PRINTDATE at the context's clock; CREATEDATE and SAVEDATE from the core properties; INFO as the field it
+ * {@code \f}, which need numbering or layout, the cached result is kept); QUOTE; DATE and TIME at
+ * the context's clock; CREATEDATE, SAVEDATE and PRINTDATE from the core properties; INFO as the field it
  * names; SECTION where the context says which; NOTEREF to a bookmark on a note reference; USERNAME,
  * USERINITIALS and USERADDRESS from the context (phase 1). Not here: MERGEFIELD (a merge supplies the data), FORMTEXT
  * (its result is in its form-field data), the layout fields (PAGE, NUMPAGES, SECTIONPAGES,
@@ -110,7 +110,9 @@ public final class FieldEvaluators {
 		};
 		register("DATE", date);
 		register("TIME", date);
-		register("PRINTDATE", date); // the conversion is the printing
+		// cp:lastPrinted, as Word's F9 shows it (measured 2026-10-28, CR-067 section 12.2, D14); the output path's own
+		// PRINTDATE handler is the clock, the conversion being the printing
+		register("PRINTDATE", new CoreDate("LastPrinted"));
 		// tier 1 (CR-067 phase 1)
 		register("CREATEDATE", new CoreDate("CreateTime"));
 		register("SAVEDATE", new CoreDate("LastSavedTime"));
@@ -134,8 +136,10 @@ public final class FieldEvaluators {
 	}
 
 	/**
-	 * CREATEDATE and SAVEDATE: the core property's W3CDTF value as a date, formatted by the field's {@code \@}
-	 * switch, or without one as the date fields are (phase 1: the default Word shows is the probe's to measure).
+	 * CREATEDATE, SAVEDATE and PRINTDATE: the core property's W3CDTF value as a date (a value with no offset or a date
+	 * alone is UTC, as Word reads it: CR-067 section 12.2), formatted by the field's {@code \@} switch, or without one
+	 * in Word's default format (section 11.3). Null, the cached result kept, where the property is absent (PRINTDATE
+	 * in a document never printed).
 	 */
 	private static final class CoreDate implements FieldEvaluator {
 		private final String property;

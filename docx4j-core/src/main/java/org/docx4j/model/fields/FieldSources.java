@@ -179,7 +179,12 @@ final class FieldSources {
 		return o instanceof Child ? ((Child) o).getParent() : null;
 	}
 
-	/** A W3CDTF or ISO 8601 date-time ({@code 2024-02-03T04:05:06Z}, with an offset, or a date alone), or null. */
+	/**
+	 * A W3CDTF or ISO 8601 date-time ({@code 2024-02-03T04:05:06Z}, with an offset, with no offset, or a date alone), or
+	 * null. A value with no offset and a date alone are UTC, as Word reads a core property's (measured 2026-10-28, CR-067
+	 * section 12.2: created {@code 2024-02-03} showed 11:00 at UTC+11, modified {@code 2025-06-07T08:09:10} showed 18:09
+	 * at UTC+10); not the machine's zone, which a revision's {@code w:date} and a date control's value mean instead.
+	 */
 	static Date parseW3CDTF(String s) {
 		if (s == null) return null;
 		String t = s.trim();
@@ -189,15 +194,17 @@ final class FieldSources {
 		} catch (Exception e) {
 		}
 		try {
-			return Date.from(java.time.LocalDateTime.parse(t).atZone(java.time.ZoneId.systemDefault()).toInstant());
+			return Date.from(java.time.LocalDateTime.parse(t).toInstant(java.time.ZoneOffset.UTC));
 		} catch (Exception e) {
 		}
 		try {
-			return Date.from(java.time.LocalDate.parse(t).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
+			return Date.from(java.time.LocalDate.parse(t).atStartOfDay(java.time.ZoneOffset.UTC).toInstant());
 		} catch (Exception e) {
 		}
 		try {
-			return javax.xml.datatype.DatatypeFactory.newInstance().newXMLGregorianCalendar(t).toGregorianCalendar().getTime();
+			javax.xml.datatype.XMLGregorianCalendar c = javax.xml.datatype.DatatypeFactory.newInstance().newXMLGregorianCalendar(t);
+			if (c.getTimezone() == javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED) c.setTimezone(0);
+			return c.toGregorianCalendar().getTime();
 		} catch (Exception e) {
 			return null;
 		}

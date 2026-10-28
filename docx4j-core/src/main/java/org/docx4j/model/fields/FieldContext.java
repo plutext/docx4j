@@ -87,7 +87,7 @@ public final class FieldContext {
 		return this;
 	}
 
-	/** The moment DATE, TIME and PRINTDATE show: the clock's, now by default. */
+	/** The moment DATE and TIME show (and the output path's PRINTDATE, the conversion being the printing): the clock's, now by default. */
 	public Date now() {
 		return clock.get();
 	}

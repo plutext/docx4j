@@ -139,7 +139,11 @@ Changes in Version 17.3.5
   PDF and HTML output paints these fields from their cached result, as Word does, and evaluates one
   that has none. FieldUpdater writes a REF's result in the bookmark's own formatting and a NOTEREF \f in
   the footnote reference style, as Word does; a QUOTE with no argument and a blank user address give an
-  empty result, as Word's do.
+  empty result, as Word's do. A core property's date with no offset, or a date alone, is read as UTC, as
+  Word reads it (measured). FieldUpdater's PRINTDATE is the document's cp:lastPrinted, to the minute, as
+  Word's F9 shows it; a never-printed document keeps the field's cached result. PDF and HTML output paints
+  PRINTDATE at the conversion's clock, as before. The text extraction's INFO computes only what the
+  extraction computes itself (INFO Date keeps its cached result, as DATE does).
 * FieldUpdater updates the document information fields AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY,
   SUBJECT and TITLE, as it does DOCPROPERTY (#277); DOCPROPERTY Keywords is read; a simple
   DOCPROPERTY's quoted property name is found.

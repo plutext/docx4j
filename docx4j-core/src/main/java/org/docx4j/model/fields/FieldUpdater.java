@@ -35,7 +35,9 @@ import java.util.Set;
  *
  * <p>A locked field ({@code w:fldLock}) is left as it is. A field whose value cannot be found keeps its
  * cached result. A document information field given an argument (AUTHOR "Jo"), with which Word sets
- * the property, is left as it is.</p>
+ * the property, is left as it is. PRINTDATE is {@code cp:lastPrinted}, as Word's F9 shows it (the PDF and HTML
+ * writers paint the conversion's clock, the conversion being the printing); a document never printed keeps the
+ * field's cached result.</p>
  *
  * <p>This updates the docx. If you don't want that, apply it to a clone instead.</p>
  *

@@ -138,7 +138,9 @@ public class FieldEvaluatorsTest {
 		FieldContext ctx = FieldContext.of(pkg()).clock(() -> fixed);
 		assertEquals("2026-03-04", FieldEvaluators.evaluate(" DATE \\@ \"yyyy-MM-dd\" ", ctx));
 		assertEquals("05:06", FieldEvaluators.evaluate(" TIME \\@ \"HH:mm\" ", ctx));
-		assertEquals("4 March 2026", FieldEvaluators.evaluate(" PRINTDATE \\@ \"d MMMM yyyy\" ", ctx.language("en-US")));
+		assertNull("PRINTDATE is cp:lastPrinted, not the clock (D14); none here keeps the cached result",
+				FieldEvaluators.evaluate(" PRINTDATE \\@ \"d MMMM yyyy\" ", ctx.language("en-US")));
+		assertEquals("4 March 2026", FieldEvaluators.evaluate(" DATE \\@ \"d MMMM yyyy\" ", ctx.language("en-US")));
 		assertEquals("4 mars 2026", FieldEvaluators.evaluate(" DATE \\@ \"d MMMM yyyy\" ", ctx.language("fr-FR")));
 		assertTrue(FieldEvaluators.get("DATE").formatsItself());
 		assertFalse(FieldEvaluators.get("DOCPROPERTY").formatsItself());
