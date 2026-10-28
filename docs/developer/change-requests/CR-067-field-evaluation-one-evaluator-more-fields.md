@@ -875,3 +875,16 @@ document's last field; a document without one is opened as stored.** Seven round
 The WD recommendation stands (the stored result is REQ-505's rule; the appendix's sentence; the inspector's finding for a
 document holding a DATE or TIME; cached mode does not imitate the pass); Jason rules. Side measurement from round 5: a
 result run with `w:vanish` appears in Word's plain text.
+
+**Round 8 (Jason, 2026-10-29 08:45, `WordGoldenRunner` on the VM, fields off, the probes' own bytes; `round8/scored-round8.tsv`,
+the resaved docx and the golden PDFs in the fixtures).** One file per candidate trigger, 30 through the runner. Word's docx
+resave (documents4j's open and save, no layout) says: DATE and SAVEDATE trigger the pass (Y02 to Y04 rewritten A2, A3, A4;
+SAVEDATE itself rewritten `0000`, a never-saved file) and nothing else does: not CREATEDATE, PRINTDATE, EDITTIME, FILENAME,
+FILESIZE, NUMPAGES, PAGE, SECTIONPAGES, SECTION, NUMWORDS, NUMCHARS, USERNAME, USERINITIALS, AUTHOR, TITLE, INFO, REVNUM,
+TEMPLATE, DOCVARIABLE, LISTNUM, AUTONUM, SYMBOL, SEQ, REF, COMPARE, a formula, nor a document with no candidate; the
+controls agree (date yes, none no). The golden PDFs, cut by a second open that lays the document out for printing, show A2
+as well for PAGE, NUMPAGES, SECTION, SECTIONPAGES, PRINTDATE, REF and SEQ (their resaved docx say B2): the layout-time
+fields trigger the pass where Word lays the document out, which the automation's docx resave does not do and the GUI open
+does. So the trigger set depends on the surface: for a docx resave under automation, DATE, TIME and SAVEDATE; for a laid-out
+document (the PDF; the GUI open, pending the by-hand check of those seven), also the layout fields, PRINTDATE, REF and SEQ.
+Jason's by-hand saves of the seven (and the dirty-flag file) settle the GUI column.
