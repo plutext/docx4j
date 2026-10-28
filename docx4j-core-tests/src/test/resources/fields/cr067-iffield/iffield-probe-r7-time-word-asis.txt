@@ -1,0 +1,7 @@
+IF-field probe, round 7 (CR-067), time: the last field of the document beside an auto-updating field.
+X01_TRIGGER = 2026
+X02_STORED = A2
+X03_STRING_EMPTY = A10
+X04_STORED4 = A4
+X05_LAST = B7
+End of the probe (no field after this).

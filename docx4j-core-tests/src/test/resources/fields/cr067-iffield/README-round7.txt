@@ -16,3 +16,8 @@ X03_STRING_EMPTY: (separate, no result)  -- round 6's W18, no longer last
 X04_STORED4: B4  -- stored wrong, second to last field
 X05_LAST: B7  -- stored wrong, the LAST field of the document
 
+
+Word's run (Jason, 2026-10-29 08:26 to 08:27; the two -word-asis.txt/.docx, scored-round7.tsv): TIME triggers the same pass as
+DATE; in both files X02, X03 and X04 were updated (round 6's last case, now third, among them) and X05, the last field of the
+document, was left as stored. The last-field skip is confirmed. Save order: in every round the plain text was saved before
+the docx (the share's timestamps), and the text already held the rewritten values, so the rewrite happened at open.

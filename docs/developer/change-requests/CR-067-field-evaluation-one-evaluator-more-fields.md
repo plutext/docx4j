@@ -862,3 +862,16 @@ TIME, with two literal IFs after round 6's last case) tests the last-field exclu
 the WD: the stored result stays the rule (what the file holds); a NOTE that Word's open recomputes the literal IFs of a
 document that holds a DATE or TIME, which the inspector could report as a finding beside `fields_update_on_open`
 (unmeasured: EDITTIME, PRINTDATE, SAVEDATE, FILENAME, NUMPAGES as triggers). docx4j's cached mode does not imitate it.
+
+**Round 7 (Jason, 2026-10-29 08:26 to 08:27; `scored-round7.tsv`): confirmed.** TIME triggers the same pass as DATE: in both
+files Word's open rewrote the trigger (2026) and updated the three literal IFs before the last field (round 6's last case
+among them, now third) and left the last field of the document as stored, in both. The save order (plain text first, docx
+second, in every round by the share's timestamps) is not a factor: the text saved first already held the rewritten values,
+so the rewrite happens at open. The measured rule, final: **a document holding an auto-updating field (DATE, TIME; the
+other date fields, FILENAME and NUMPAGES unmeasured as triggers) is partly updated by Word's open, which refreshes that
+field and every IF whose operands are literals or auto-updating fields, wildcards included, writes the results into the
+file on save, and skips formulas, COMPARE, DOCPROPERTY, IFs over fields it updates only on F9, locked fields and the
+document's last field; a document without one is opened as stored.** Seven rounds, 115 cases, fixtures `fields/cr067-iffield`.
+The WD recommendation stands (the stored result is REQ-505's rule; the appendix's sentence; the inspector's finding for a
+document holding a DATE or TIME; cached mode does not imitate the pass); Jason rules. Side measurement from round 5: a
+result run with `w:vanish` appears in Word's plain text.
