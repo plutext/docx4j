@@ -334,3 +334,16 @@ option (a) as amended, §3.5, and the three sub-items. docx4j's part, built:
   stamps to the minute (docx4j stamps none); `docx4j.dcterms.write` is the shape the ports copy.
 - docx4j-mcp sets the package's zone per request from the client (its hand-off).
 
+### 12.1 The date-forms probe (staged 2026-10-28, for Jason)
+
+`DateFormsProbeBuilder` (core-tests, `org.docx4j.model.fields.probe`) wrote `date-forms-r1.docx` (sha256 8a1dd45e…) and its
+README to the share, `__tmp/cr067/dates/`: the three forms, a date only (`2024-02-03`), a local time with no offset
+(`2025-06-07T08:09:10`) and a UTC time (`2025-01-02T03:04:05Z`), each in a core property (created, modified, lastPrinted,
+read by CREATEDATE, SAVEDATE and PRINTDATE with `\@ "yyyy-MM-dd HH:mm:ss"` and without a switch), a revision's `w:date`
+(three insertions, the date read off the balloon or the Reviewing Pane) and a bound date control (`w:fullDate`, format
+`yyyy-MM-dd HH:mm`). Predictions in the README: a date only is midnight; an offset-free time is as written; a `Z` is
+converted to the machine's zone for a core property and a bound date (D6) and read as the local clock for a revision
+(CR-043). Two things it also measures: whether Word drops the seconds on these as it did on created (§11.3), and whether
+PRINTDATE shows `cp:lastPrinted` (docx4j's PRINTDATE evaluator is the clock, "the conversion is the printing", the
+output's convention since 17.1.0; if Word's F9 shows lastPrinted, `FieldUpdater`'s PRINTDATE should read it).
+
