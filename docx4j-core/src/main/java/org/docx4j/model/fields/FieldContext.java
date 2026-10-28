@@ -57,6 +57,7 @@ public final class FieldContext {
 	private External external;
 	private Integer section;
 	private Map<String, String> noteNumbers;
+	private Map<String, java.util.List<org.docx4j.wml.R>> bookmarkRuns;
 	private DocPropertyResolver properties;
 	private DocVariableResolver variables;
 	private final Map<String, Integer> sequences = new HashMap<String, Integer>();
@@ -195,6 +196,15 @@ public final class FieldContext {
 	public FieldContext readBookmarks() {
 		if (bookmarks.isEmpty()) bookmarks.putAll(FieldSources.bookmarkTexts(pkg));
 		return this;
+	}
+
+	/**
+	 * A bookmark's runs (its {@code w:t} with their run properties), by name in lower case, read from the main
+	 * document part on first use: what a REF's result is written as, the bookmark's formatting kept.
+	 */
+	public Map<String, java.util.List<org.docx4j.wml.R>> bookmarkRuns() {
+		if (bookmarkRuns == null) bookmarkRuns = FieldSources.bookmarkRuns(pkg);
+		return bookmarkRuns;
 	}
 
 	/** The document's properties (core, application, custom), read once. */

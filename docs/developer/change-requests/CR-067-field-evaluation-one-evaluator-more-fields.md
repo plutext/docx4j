@@ -1,6 +1,6 @@
 # CR-067: one field evaluator, and the fields worth adding
 
-Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 DONE 2026-10-28 (§10); phase 1 BUILT 2026-10-28 (§11.2), its Word probe on the share awaiting Jason's run (§11.1).
+Status: ACCEPTED 2026-10-28 (Jason: "CR decisions as recommended; please commit then start implementation"): D1 to D11 as recommended, D2 (c); phase 0 DONE 2026-10-28 (§10); phase 1 DONE 2026-10-28 (§11; Word's measurement in §11.3, every case as predicted); phase 2 next.
 PROPOSED 2026-10-28, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's word ("draft the CR,
 including your review as context"), from a review of `FieldsPreprocessor` and the field code around it (§1, §2) and
 of the ECMA-376 field set by category (§3). Recommendations in §5; phases in §6. D2 ruled 2026-10-28 (FldSimpleModel deprecated). Nothing built.
@@ -135,7 +135,7 @@ measurement behind it.
 | Phase | Work | Status |
 |---|---|---|
 | 0 | The enabler: `FieldInstruction`, `FieldContext`, `FieldEvaluator` (D1, D2, D10); `FieldUpdater`, `FieldValues` and the DATE, TIME, PRINTDATE and DOCPROPERTY writer handlers moved onto it with no behaviour change; `FldSimpleModel` and the signatures carrying it deprecated, every in-tree user moved (D2); the `preserveResult` fold (D9); parser tests from the corpus instructions; every existing field test green | DONE 2026-10-28 (§10) |
-| 1 | Tier 1: CREATEDATE, SAVEDATE, REVNUM, INFO, SECTION, NOTEREF, REF, QUOTE, USERNAME, USERINITIALS, USERADDRESS, each in all three consumers, each with a Word measurement (a probe docx saved by Word, its results the oracle); REF inside a hyperlink if the measurement needs it (D9) | built 2026-10-28 (§11.2); the probe's results pending (§11.1) |
+| 1 | Tier 1: CREATEDATE, SAVEDATE, REVNUM, INFO, SECTION, NOTEREF, REF, QUOTE, USERNAME, USERINITIALS, USERADDRESS, each in all three consumers, each with a Word measurement (a probe docx saved by Word, its results the oracle); REF inside a hyperlink if the measurement needs it (D9) | DONE 2026-10-28 (§11.2 built, §11.3 measured: 25 of 25 as predicted) |
 | 2 | Tier 2: the expression evaluator (`=`, COMPARE, IF within a paragraph) after D6's measurement; then NEXTIF, SKIPIF, SET, ASK, FILLIN, MERGEREC, MERGESEQ in the mergers; the combiner evaluates a resultless IF whose operands it can (a PAGE operand still cannot be decided per page and keeps today's drop) | proposed |
 | 3 | Tier 3: INDEX generated from XE marks (as `TocGenerator` does for TOC); LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT from the CR-014 numbering model; NUMWORDS, NUMCHARS from the text model; FILENAME, TEMPLATE; SYMBOL; ADDRESSBLOCK, GREETINGLINE | proposed |
 | 4 | Optional: block-level fields (an IF across paragraphs; INCLUDETEXT with a supplied resolver) by a body-level canonicaliser (D7) | not sized |
@@ -181,8 +181,11 @@ Rules Word has not been seen to apply, kept here until a probe round measures th
 - `=`: the function set, cell and bookmark references, error text (D6).
 - A REF with `\n`, `\r`, `\w`, `\p` or `\f` (the inspector keeps the cached result for these today).
 - SEQ `\s` (reset at a heading level).
-- What Word shows for USERNAME and the other user-information fields when the user is unknown.
-- INFO with each of its argument names, against the document-information field of the same name.
+- CREATEDATE's and SAVEDATE's default format for a language other than en-US (en-US measured 2026-10-28, §11.3).
+- What Word shows for USERNAME when Word has no user name at all (a blank address measured: empty, §11.3).
+- Measured 2026-10-28 (§11.3), off this list: INFO against the field it names (the same, and `Error! Unknown info
+  keyword.` for no name or an unknown one); QUOTE with no argument (empty); a REF's formatting (the bookmark's);
+  NOTEREF `\f` (the reference style); the error texts for a missing bookmark.
 
 ## 10. Phase 0 built (2026-10-28)
 
@@ -273,4 +276,30 @@ section break before the last two cases. Jason opens it, Ctrl+A, F9, saves `-wor
   inside a hyperlink in the updater (D9; measured by case 16 first), the user fields' Word defaults (§9).
 - Gate (2026-10-28): core-tests 2190/0/30 (the extraction harness included), export-fo-tests 858/0/9.
 - Open until the probe (11.3): CREATEDATE's and SAVEDATE's default format, INFO's and QUOTE's error texts, the user fields' defaults, a REF's formatting.
+
+### 11.3 Measured (Jason, 2026-10-28, Word 365 version 2608 build 20326.20232; `__tmp/cr067/phase1/results.txt`)
+
+Every one of the 25 cases as predicted in 11.1. The probe, Word's save and the results are the fixtures
+`docx4j-core-tests/src/test/resources/fields/cr067-phase1/`, and `FieldProbeWordTest` replays the probe through
+`FieldUpdater` against Word's results, case for case (the VM's zone is Sydney's; the dates are compared there).
+
+| Case | Word 365 on F9 | Taken as |
+|---|---|---|
+| 1, 3 | `2/3/2024 3:05:00 PM`, `6/7/2025 6:09:00 PM` for created 04:05:06Z and modified 08:09:10Z | the default is the short date and the long time (en-US as the VM has it); the file's time is read **to the minute** (the seconds show as 00) in the machine's zone; SAVEDATE on F9 is the file's modified time, not the session's |
+| 2, 4, 25 | `2024-02-03 15:05`, `7 June 2025`, `2024-02-03` | the `\@` switch as expected; the simple field updates as the complex |
+| 5 | 7 | REVNUM is the file's revision; Word's Save As then wrote revision 2, created and modified both the save's moment (the saved file is a new document to Word) |
+| 6, 7 | Probe Title, Probe Author | INFO is the field it names, no difference in any case |
+| 8, 9 | `Error! Unknown info keyword.` | the error text for INFO with no name or an unknown one; docx4j keeps the cached result (D5) |
+| 10, 24 | 1, 2 | SECTION |
+| 11, 12 | hello world; **empty** | a QUOTE with no argument is empty, not an error: docx4j gives "" |
+| 13, 14, 16 | Bookmarked text **in the bookmark's bold**; BOOKMARKED TEXT; Bookmarked text (bold, no hyperlink in the result) | a REF's result carries the bookmark's run formatting: `FieldUpdater` writes the bookmark's runs (`FieldRef.setResultRuns`) where the field has no `\*` switch; `\h` changes nothing in the result's XML |
+| 15, 19 | `Error! Reference source not found.`, `Error! Bookmark not defined.` | the error texts, as the output path already paints them; the updater keeps the cached result (D5) |
+| 17, 18 | 1; 1 in the `FootnoteReference` character style | NOTEREF; with `\f` the result run carries `w:rStyle FootnoteReference`: `FieldUpdater` sets it |
+| 20 to 22 | before F9: OLDUSER in all three (Word does not evaluate the user fields on open); after: Author A, AA, **empty** | the cached result is what a reader sees until F9 (so the writers' cached-else-evaluated is right); a user whose address is blank shows an empty result: docx4j gives "" for initials or address where a user is supplied without them |
+| 23 | alpha, beta | the control |
+
+What changed on the measurement: `FieldEvaluators`' CoreDate (minute truncation, the default format), QUOTE's empty
+result, the user fields' empty results, `FieldSources.bookmarkRuns` and `FieldRef.setResultRuns` for a REF's
+formatting, the NOTEREF `\f` style. Gate after them: core-tests 2192/0/30, export-fo-tests 858/0/9. Unmeasured still (§9): the default date format for a language other than en-US
+(the locale's short date and medium time is a guess), SEQ `\s`, REF's `\n`, `\r`, `\w`, `\p`, `\f`.
 

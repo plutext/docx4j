@@ -183,6 +183,16 @@ public class FieldUpdater {
 		}
 	}
 
+	/** A NOTEREF with {@code \\f}: the result in the footnote reference style, as Word writes it (measured 2026-10-28). */
+	private static void noteReferenceStyle(R r) {
+		if (r == null) return;
+		org.docx4j.wml.RPr rPr = r.getRPr() == null ? Context.getWmlObjectFactory().createRPr() : r.getRPr();
+		org.docx4j.wml.RStyle style = Context.getWmlObjectFactory().createRStyle();
+		style.setVal("FootnoteReference");
+		rPr.setRStyle(style);
+		r.setRPr(rPr);
+	}
+
 	protected void setSimpleFieldConent(R r, String val) {
 		Text t = Context.getWmlObjectFactory().createText();
 		t.setValue(val);
@@ -259,7 +269,14 @@ public class FieldUpdater {
 			report.append(instr + "\n");
 			report.append("--> " + val + "\n");
 			if (DOCPROPERTY.equals(fldName)) fr.formatNewResult(); // its old result is kept now (FieldsPreprocessor)
-			fr.setResult(val);
+			List<R> runs = "REF".equals(fldName) && instruction.getArgument() != null
+					? context.bookmarkRuns().get(instruction.getArgument().toLowerCase(Locale.ROOT)) : null;
+			if (runs != null && !runs.isEmpty() && instruction.getSwitchValues("\\*").isEmpty()) {
+				fr.setResultRuns(runs); // the bookmark's formatting, as Word keeps it (measured 2026-10-28)
+			} else {
+				fr.setResult(val);
+				if ("NOTEREF".equals(fldName) && instruction.hasSwitch("\\f")) noteReferenceStyle(fr.getResultsSlot());
+			}
 		}
 	}
 }

@@ -97,7 +97,7 @@ public final class FieldEvaluators {
 			}
 			return ctx.bookmarks().get(bookmark.toLowerCase(Locale.ROOT));
 		});
-		register("QUOTE", (instr, ctx) -> instr.getArgument());
+		register("QUOTE", (instr, ctx) -> instr.getArgument() == null ? "" : instr.getArgument()); // no argument: empty (measured 2026-10-28)
 		FieldEvaluator date = new FieldEvaluator() {
 			@Override
 			public String evaluate(FieldInstruction instruction, FieldContext context) {
@@ -127,9 +127,10 @@ public final class FieldEvaluators {
 			String bookmark = instr.getArgument();
 			return bookmark == null ? null : ctx.noteNumbers().get(bookmark.toLowerCase(Locale.ROOT));
 		});
+		// a user supplied without initials or an address shows them empty, as Word shows a blank one (measured 2026-10-28)
 		register("USERNAME", (instr, ctx) -> ctx.getUserName());
-		register("USERINITIALS", (instr, ctx) -> ctx.getUserInitials());
-		register("USERADDRESS", (instr, ctx) -> ctx.getUserAddress());
+		register("USERINITIALS", (instr, ctx) -> ctx.getUserName() == null ? null : (ctx.getUserInitials() == null ? "" : ctx.getUserInitials()));
+		register("USERADDRESS", (instr, ctx) -> ctx.getUserName() == null ? null : (ctx.getUserAddress() == null ? "" : ctx.getUserAddress()));
 	}
 
 	/**
@@ -146,7 +147,17 @@ public final class FieldEvaluators {
 			String value = context.properties().getValue(property);
 			java.util.Date date = FieldSources.parseW3CDTF(value);
 			if (date == null) return null;
-			return FormattingSwitchHelper.formatDate(instruction, date, context.getLanguage());
+			// to the minute, as Word reads a file's time (04:05:06Z shows as :05:00; measured 2026-10-28, CR-067 section 11.3)
+			date = new java.util.Date(date.getTime() - Math.floorMod(date.getTime(), 60000L));
+			if (instruction.hasSwitch("\\@")) return FormattingSwitchHelper.formatDate(instruction, date, context.getLanguage());
+			// Word's default for the field: the short date and the long time, 2/3/2024 3:05:00 PM for en-US (measured, the
+			// same day, Word 365 build 20326.20232); another language gets the locale's short date and medium time, unmeasured
+			String lang = context.getLanguage();
+			java.util.Locale locale = lang == null ? java.util.Locale.US : java.util.Locale.forLanguageTag(lang);
+			java.text.DateFormat f = "en".equals(locale.getLanguage()) || locale.getLanguage().isEmpty()
+					? new java.text.SimpleDateFormat("M/d/yyyy h:mm:ss a", java.util.Locale.US)
+					: java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.SHORT, java.text.DateFormat.MEDIUM, locale);
+			return f.format(date);
 		}
 		@Override
 		public boolean formatsItself() {

@@ -78,6 +78,49 @@ final class FieldSources {
 	}
 
 	/**
+	 * A bookmark's runs (copies holding their {@code w:t} text and run properties, other run content dropped), by
+	 * name in lower case, from the main part: what a REF's result is made of, since Word keeps the bookmark's
+	 * formatting in it (measured 2026-10-28, CR-067 section 11.3).
+	 */
+	static Map<String, List<R>> bookmarkRuns(WordprocessingMLPackage pkg) {
+		final Map<String, List<R>> out = new HashMap<String, List<R>>();
+		if (pkg == null || pkg.getMainDocumentPart() == null || pkg.getMainDocumentPart().getJaxbElement() == null) return out;
+		final Map<BigInteger, String> open = new HashMap<BigInteger, String>();
+		walk(pkg.getMainDocumentPart().getJaxbElement().getBody(), new Visitor() {
+			public void bookmarkStart(CTBookmark b) {
+				String name = b.getName() == null ? null : b.getName().toLowerCase(Locale.ROOT);
+				if (name == null) return;
+				open.put(b.getId(), name);
+				if (!out.containsKey(name)) out.put(name, new ArrayList<R>());
+			}
+			public void bookmarkEnd(CTMarkupRange e) {
+				open.remove(e.getId());
+			}
+			public void text(String t) {
+			}
+			public void run(R r) {
+				if (open.isEmpty()) return;
+				R copy = null;
+				for (Object c : r.getContent()) {
+					Object u = c instanceof JAXBElement ? ((JAXBElement<?>) c).getValue() : c;
+					String n = c instanceof JAXBElement ? ((JAXBElement<?>) c).getName().getLocalPart() : null;
+					if (u instanceof Text && (n == null || "t".equals(n))) {
+						if (copy == null) {
+							copy = new R();
+							if (r.getRPr() != null) copy.setRPr(XmlUtils.deepCopy(r.getRPr()));
+						}
+						copy.getContent().add(XmlUtils.deepCopy(c));
+					}
+				}
+				if (copy != null) for (String name : open.values()) out.get(name).add(XmlUtils.deepCopy(copy));
+			}
+			public void noteReference(String kind, CTFtnEdnRef ref) {
+			}
+		});
+		return out;
+	}
+
+	/**
 	 * The number of the footnote or endnote whose reference a bookmark holds, by bookmark name in lower case:
 	 * references counted in document order per kind (Word's default numbering, from 1; a reference with a
 	 * custom mark is not counted).
@@ -165,6 +208,9 @@ final class FieldSources {
 		void bookmarkEnd(CTMarkupRange e);
 		void text(String t);
 		void noteReference(String kind, CTFtnEdnRef ref);
+		/** A run, before its content is walked. */
+		default void run(R r) {
+		}
 	}
 
 	/** Document order over the content lists, bookmarks and run content included. */
@@ -193,6 +239,7 @@ final class FieldSources {
 			return;
 		}
 		if (u instanceof ContentAccessor) {
+			if (u instanceof R) v.run((R) u);
 			List<Object> content = new ArrayList<Object>(((ContentAccessor) u).getContent());
 			for (Object c : content) walk(c, v);
 		} else if (u instanceof org.docx4j.wml.SdtElement) {

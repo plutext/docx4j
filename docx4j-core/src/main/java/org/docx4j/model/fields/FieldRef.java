@@ -575,6 +575,25 @@ public class FieldRef {
 		}
 	}
 
+	/**
+	 * Writes the result as these runs (copies), the first's text and properties in the results slot and the rest
+	 * after it: a REF's result in the bookmark's own formatting (CR-067 phase 1).
+	 *
+	 * @since 17.3.5
+	 */
+	public void setResultRuns(List<R> runs) {
+		resultsSlot.getContent().clear();
+		removeRestOfResult();
+		if (runs == null || runs.isEmpty()) return;
+		R first = runs.get(0);
+		resultsSlot.setRPr(first.getRPr() == null ? null : XmlUtils.deepCopy(first.getRPr()));
+		for (Object c : first.getContent()) resultsSlot.getContent().add(XmlUtils.deepCopy(c));
+		if (parent == null) return;
+		List<Object> content = parent.getContent();
+		int at = content.indexOf(resultsSlot) + 1;
+		for (int i = 1; i < runs.size(); i++) content.add(at++, XmlUtils.deepCopy(runs.get(i)));
+	}
+
 	public void setResult(String val) {
 		
 		resultsSlot.getContent().clear();
