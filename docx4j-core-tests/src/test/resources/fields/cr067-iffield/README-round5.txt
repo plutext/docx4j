@@ -25,3 +25,10 @@ V19_HIDDEN_RESULT: B3 (hidden)  -- the stored result run hidden, the code plain
 V20_WRONG_COMPLEX: B5  -- stored wrong; its twin V21 is a w:fldSimple holding the right result
 V21_RIGHT_SIMPLE: A5  -- the simple-field twin, right
 V22_SPACED_RIGHT: A6  -- V01's instruction with extra spaces, right: does whitespace separate families?
+
+Word's run (Jason, 2026-10-29 08:16; iffield-probe-r5-word-asis.txt/.docx, scored-round5.tsv): no sharing. Every field kept its
+own stored result (the right twin first or last, three different non-branch results, formula, DOCPROPERTY, wildcard, locked,
+empty last, simple-field twin, extra spaces); the hidden-branch replica alone kept its separate and result; the hidden result
+run stayed hidden (nothing in the text); the only XML change: the w:fldSimple rewritten as a complex field. So round 1's rewrite
+is neither a computation nor a sharing of stored results. What round 1 alone contained: a DATE field, which Word refreshes on
+open. Round 6 puts a DATE beside the shapes of rounds 3 and 4.

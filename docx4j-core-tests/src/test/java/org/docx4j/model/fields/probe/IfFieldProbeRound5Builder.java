@@ -49,7 +49,7 @@ public class IfFieldProbeRound5Builder {
 				+ "<w:r><w:fldChar w:fldCharType=\"end\"/></w:r>";
 	}
 
-	static String p(String token, String xml) {
+	public static String p(String token, String xml) {
 		return "<w:p " + W + "><w:r><w:t xml:space=\"preserve\">" + token + " = </w:t></w:r>" + xml + "</w:p>";
 	}
 

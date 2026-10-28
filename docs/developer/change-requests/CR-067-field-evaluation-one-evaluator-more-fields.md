@@ -837,3 +837,13 @@ family as the rewritten ones. Round 5 (`IfFieldProbeRound5Builder`, `iffield-pro
 whether Word shares a stored result across fields with the identical instruction, and which wins: the right result first
 or last, three twins with three non-branch results, a formula, a DOCPROPERTY, the wildcard IF, a locked twin, an empty twin
 last, a simple-field twin, extra whitespace, and round 1's hidden-branch field alone.
+
+**Round 5 (Jason, 2026-10-29 08:16; `scored-round5.tsv`).** No sharing: every field kept its own stored result, whether the
+right twin came first or last, among three twins with three non-branch results, for the formula, the DOCPROPERTY, the
+wildcard IF, a locked twin, an empty twin last, a simple-field twin and the same instruction with extra spaces; round 1's
+hidden-branch field alone kept its separate and result; a hidden result run stayed hidden; the one XML change was the
+`w:fldSimple` rewritten as a complex field. So round 1's open-time rewrite was neither a computation (rounds 2 to 4) nor a
+sharing of stored results (round 5). What round 1 alone contained is a DATE field (C04's nested one), which Word refreshes
+when it opens a document. Round 6 (`IfFieldProbeRound6Builder`, `iffield-probe-r6.docx`, 18 cases, staged) puts a DATE
+beside the shapes of rounds 3 and 4: if Word's refresh of the DATE is a field-update pass that also fills the resultless
+fields and rewrites their twins, round 1 is explained, and the rule is about documents that hold an auto-updating field.

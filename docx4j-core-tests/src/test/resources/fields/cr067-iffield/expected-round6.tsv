@@ -1,0 +1,19 @@
+token	stored	note
+W01_DATE	2030	the DATE: Word refreshes it on open (2026)
+W02_STORED	B2	stored wrong; an empty twin follows (W03)
+W03_TWIN_EMPTY	(separate, no result)	a separate with no result, W02's twin
+W04_ALONE	B1	stored wrong, no twin
+W05_NOSEP_ALONE	(no separate)	no separate, no twin
+W06_STORED3	B3	stored wrong; a separate-less twin follows (W07)
+W07_NOSEP_TWIN	(no separate)	W06's twin
+W08_FORMULA_STORED	7	a formula stored wrong; an empty twin follows
+W09_FORMULA_EMPTY	(separate, no result)	
+W10_DOCPROPERTY_STORED	Nope	a DOCPROPERTY stored wrong; an empty twin follows
+W11_DOCPROPERTY_EMPTY	(separate, no result)	
+W12_WILDCARD_EMPTY	(separate, no result)	the wildcard IF with no result, alone
+W13_HIDDEN_BRANCH	VISIBLE_STALE	round 1's C12 beside a DATE
+W14_COMPARE_EMPTY	(separate, no result)	a COMPARE with no result
+W15_IF_OVER_DATE	STALE_OUTER	round 1's C04
+W16_EMPTY_ALONE	(separate, no result)	a separate with no result, no twin
+W17_STRING_STORED	B10	a string IF stored wrong; an empty twin follows
+W18_STRING_EMPTY	(separate, no result)	
