@@ -25,3 +25,10 @@ Last_Name, Address_1, Address_2 and Country (Country or Region) to the data colu
 Round 3 (Jason, 2026-10-29 06:04): address-probe-r1-attached-merged.docx = Finish & Merge > Edit Individual Documents > All of the
 attached file. Word's own Address Block: one paragraph a line (company, name, street, street 2, city state; the country only off
 the \e one); its Greeting Line on one line (the &#xA; in its format does not print). \d made no visible difference with Word's own format.
+
+Plain-text saves (Jason, 2026-10-29 07:04 to 07:07): phase3-probe-r1.docx (never updated: every field's stored result is OLD)
+and address-probe-r1.docx (no data source attached) opened and saved as Plain Text (Windows encoding, CR/LF, updates
+declined). phase3-probe-r1-word365.txt: every field with a stored result reads OLD (PAGE_1 to PAGE_3, the N cases, NUMPAGES,
+the six INDEX fields included); LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT and SYMBOL (L01 to L19, A01 to A15, S01 to S14) read
+as nothing ("L01_LISTNUM = ", "L08_TWO_IN_ONE =  and ", "A05_LGL_H1 =  heading text"): Word's text converter writes neither
+their stored text nor the number it paints. address-probe-r1-word365.txt: every merge field reads OLD.

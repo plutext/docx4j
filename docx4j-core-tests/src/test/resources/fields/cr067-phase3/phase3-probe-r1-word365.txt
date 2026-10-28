@@ -1,0 +1,104 @@
+CR-067 phase 3 probe
+Select all, press F9, then save as described in README.txt. Pages 1 to 3 hold index entries (XE marks, hidden); the cases follow; the INDEX fields are at the end. Each case: its token, then the field. A field Word leaves alone still says OLD.
+Index entries on page 1
+PAGE_1 = OLD
+Apple is on page 1.
+A yellow banana.
+A cherry in lower case.
+A dog that points to the cat.
+An egg with a bold page number.
+A fig with an italic page number.
+Ten items.
+Two items.
+An eclair with an accent.
+Apple again on page 1.
+
+
+Index entries on page 2
+PAGE_2 = OLD
+Apple on page 2.
+A green banana.
+Grapes start here and run to page 3 (bookmark GrapeRange).
+apple in lower case.
+Banana itself.
+A kiwi of type b.
+A honeydew water melon (three levels).
+
+
+Index entries on page 3
+PAGE_3 = OLD
+Apple on page 3.
+A nut with a bold italic page number.
+An orange that points to the apple.
+A dog on page 3, with a page as well as the cross-reference.
+The grape range ends here.
+LISTNUM (the default list NumberDefault, then LegalDefault and OutlineDefault)
+L01_LISTNUM = 
+L02_LISTNUM = 
+L03_LEVEL2 = 
+L04_LEVEL3 = 
+L05_LEVEL1 = 
+L06_START = 
+L07_AFTER_START = 
+L08_TWO_IN_ONE =  and 
+L09_LEGAL = 
+L10_LEGAL_L2 = 
+L11_LEGAL_L2 = 
+L12_LEGAL_L1 = 
+L13_OUTLINE = 
+L14_OUTLINE_L2 = 
+L15_OUTLINE_L3 = 
+L16_NUMBERDEFAULT = 
+L17_L2_START = 
+L18_L2_NEXT = 
+L19_L1_AFTER = 
+AUTONUM, AUTONUMLGL, AUTONUMOUT (the paragraph style is named with each case)
+A01_AUTONUM = 
+A02_AUTONUM = 
+A03_SEPARATOR = 
+A04_AUTONUM = 
+A05_LGL_H1 =  heading text
+A06_LGL_H2 =  heading text
+A07_LGL_H2 =  heading text
+A08_LGL_H1 =  heading text
+A09_LGL_H2_NOPERIOD =  heading text
+A10_LGL_NORMAL = 
+A11_OUT_H1 =  heading text
+A12_OUT_H2 =  heading text
+A13_OUT_H3 =  heading text
+A14_OUT_H2 =  heading text
+A15_AUTONUM_AFTER = 
+FILENAME, TEMPLATE, FILESIZE
+N01_FILENAME = OLD
+N02_FILENAME_PATH = OLD
+N03_FILENAME_UPPER = OLD
+N04_TEMPLATE = OLD
+N05_TEMPLATE_PATH = OLD
+N06_FILESIZE = OLD
+N07_FILESIZE_KB = OLD
+N08_FILESIZE_MB = OLD
+N09_DOCPROPERTY_TEMPLATE = OLD
+N10_NUMPAGES = OLD
+SYMBOL
+S01_DECIMAL = 
+S02_HEX = 
+S03_SYMBOL_FONT = 
+S04_WINGDINGS = 
+S05_UNICODE = 
+S06_UNICODE_HEX = 
+S07_SIZE = 
+S08_FONT_SIZE_H = 
+S09_OVER_255 = 
+S10_LETTER = 
+S11_ANSI = 
+S12_COURIER = 
+S13_NOT_A_NUMBER = 
+S14_NO_ARGUMENT = 
+INDEX fields (each regenerates the whole index from the XE marks on pages 1 to 3)
+IDX01_PLAIN = OLD
+IDX02_WORD_DEFAULT = OLD
+IDX03_SWITCHES = OLD
+IDX04_TYPE_B = OLD
+IDX05_RUN_IN = OLD
+IDX06_LETTER_RANGE = OLD
+End of the probe.

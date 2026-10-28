@@ -1,0 +1,14 @@
+CR-067 phase 3 address probe
+One letter per record of address-data-r1.docx. Each case: its token, then the field.
+M01_FIRST_NAME = OLD
+M02_MERGEREC = OLD
+A01_ADDRESSBLOCK = OLD
+A02_COUNTRY_ALWAYS = OLD
+A03_COUNTRY_NEVER = OLD
+A04_SHORT_FORMAT = OLD
+A05_NO_SWITCHES = OLD
+G01_GREETING = OLD
+G02_FIRST_NAME = OLD
+G03_FULL = OLD
+G04_NO_SWITCHES = OLD
+End of the letter.
