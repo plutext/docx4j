@@ -332,7 +332,11 @@ option (a) as amended, §3.5, and the three sub-items. docx4j's part, built:
 - The sub-items: no change to reading a date-only or offset-free value until a Word probe (one file: the three forms
   in a core property, a revision and a bound control; docx4j builds it when convenient, on the unmeasured list);
   stamps to the minute (docx4j stamps none); `docx4j.dcterms.write` is the shape the ports copy.
-- docx4j-mcp sets the package's zone per request from the client (its hand-off).
+- docx4j-mcp sets the package's zone per request from the client (its hand-off; its CR-mcp-server §21, registry
+  `mcp/client-time-zone`, depends on CR-067, lands with its engine bump to 17.3.5): an optional `time_zone` argument on
+  every tool that shows an instant, an IANA id resolved with `ZoneId.of` and refused when unknown, set with
+  `OpcPackage.setDateTimeZone` in its load helper before any tool reads; unset is the JVM default; no server-wide flag;
+  `meta.time_zone` carries `effectiveDateTimeZone().getId()`; the bound-date opt-in not exposed.
 
 ### 12.1 The date-forms probe (staged 2026-10-28, for Jason)
 
