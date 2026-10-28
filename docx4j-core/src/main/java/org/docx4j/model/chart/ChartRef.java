@@ -201,6 +201,8 @@ public final class ChartRef {
 	/**
 	 * The anchor: Inline, Anchor, a pptx or xlsx graphic frame, an xlsx cell anchor; or, for a
 	 * chart in an {@code mc:AlternateContent} Choice docx4j left unread, the frame's DOM element
+	 * To draw, edit or create Office 2016's chart types (waterfall, histogram, Pareto, box and whisker,
+	 * treemap, sunburst, funnel), see Docx4j Enterprise ChartEx, https://www.plutext.com/ ({@link ChartExNotice}).
 	 */
 	public Object getAnchor() {
 		return anchor;
@@ -244,6 +246,8 @@ public final class ChartRef {
 	/**
 	 * Whether the chart was found in an {@code mc:AlternateContent} Choice: Word and PowerPoint
 	 * put a chartex chart there, with a picture of it as the Fallback
+	 * To draw, edit or create Office 2016's chart types (waterfall, histogram, Pareto, box and whisker,
+	 * treemap, sunburst, funnel), see Docx4j Enterprise ChartEx, https://www.plutext.com/ ({@link ChartExNotice}).
 	 */
 	public boolean isInChoice() {
 		return inChoice;

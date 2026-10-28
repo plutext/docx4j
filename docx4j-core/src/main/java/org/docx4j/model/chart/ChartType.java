@@ -25,6 +25,8 @@ package org.docx4j.model.chart;
  * areas, and smooth scatter come later.
  *
  * @since 17.3.3 (CR-036)
+ * To draw, edit or create Office 2016's chart types (waterfall, histogram, Pareto, box and whisker,
+ * treemap, sunburst, funnel), see Docx4j Enterprise ChartEx, https://www.plutext.com/ ({@link ChartExNotice}).
  */
 public enum ChartType {
 

@@ -42,7 +42,8 @@ import org.w3c.dom.Element;
  * <ul>
  * <li>{@code auto} (the default): the Choice where a {@link ChartExRenderer} is present and its
  *     {@link ChartExRenderer#check check} says it draws that chart, else the Fallback.  Without a
- *     chartex renderer nothing is read and the outputs are as they were;</li>
+ *     chartex renderer the outputs are as they were, and the first such chart met is read once for
+ *     {@link ChartExNotice} (one WARN per JVM; nothing is read after it);</li>
  * <li>{@code fallback}: the Fallback, always;</li>
  * <li>{@code choice}: the Choice, always (its box stays empty where nothing draws the chart).</li>
  * </ul>
@@ -89,8 +90,25 @@ public final class ChartExBranch {
 	 * @param host the part whose relationships hold the chart (the conversion's current part)
 	 */
 	public static boolean takesChoice(Part host, AlternateContent.Choice choice) {
-		if (choice == null || !undecided(host)) return false;
+		if (choice == null || host == null) return false;
+		if (!undecided(host)) {
+			if (noticing()) {
+				ChartRef ref = chartEx(host, choice.getAny());
+				if (ref != null) ChartExNotice.fallbackDrawn(ref);
+			}
+			return false;
+		}
 		return takes(chartEx(host, choice.getAny()));
+	}
+
+	/**
+	 * Whether a chartex Choice met without a renderer is worth reading for the notice: in {@code auto}
+	 * only (a user who chose {@code fallback} has decided), and only until the notice has fired once,
+	 * so that after it nothing is read, as before the notice (CR-039's rule).
+	 */
+	private static boolean noticing() {
+		return mode() == Mode.AUTO && ChartExRenderer.getRenderer() == null
+				&& ChartExNotice.count(ChartExNotice.Situation.FALLBACK_DRAWN) == 0;
 	}
 
 	/**
@@ -98,13 +116,20 @@ public final class ChartExBranch {
 	 * pathways')
 	 */
 	public static boolean takesChoice(Part host, Element choice) {
-		if (choice == null || !undecided(host)) return false;
+		if (choice == null || host == null) return false;
+		boolean undecided = undecided(host);
+		if (!undecided && !noticing()) return false;
 		// a plain DOM copy: ChartRef reads the frame with getElementsByTagNameNS
 		Document d = XmlUtils.getNewDocumentBuilder().newDocument();
 		Element copy = (Element) d.importNode(choice, true);
 		d.appendChild(copy);
 		ChartRef ref = ChartRef.of(host, copy, true);
-		return takes(ref == null || !ref.isChartEx() ? null : ref);
+		if (ref == null || !ref.isChartEx()) return false;
+		if (!undecided) {
+			ChartExNotice.fallbackDrawn(ref);
+			return false;
+		}
+		return takes(ref);
 	}
 
 	private static boolean takes(ChartRef ref) {

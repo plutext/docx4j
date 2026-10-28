@@ -95,6 +95,13 @@ Changes in Version 17.3.5
   title (#244).
 * VariablePrepare joins the runs a ${key} is split across whatever their formatting, so
   variableReplace finds it (#572); variableReplace no longer throws on a ${ with no }.
+* A chartex chart (a waterfall, histogram, Pareto, box and whisker, treemap, sunburst or funnel) met
+  with no chartex renderer on the classpath is now said so once: the first such chart an output
+  draws as the picture Office saved with it (its mc:Fallback, which won't show changes made to the
+  chart's data outside Office) is one WARN naming Docx4j Enterprise ChartEx, which draws, edits and
+  creates these charts; an image asked of such a chart (ChartImages) is refused with a reason that
+  names it. Nothing where a renderer is present, nothing for a region map. (ChartExNotice; the
+  edit and create classes' javadoc points the same way.)
 * Fields are evaluated in one place (CR-067 phase 0): org.docx4j.model.fields.FieldInstruction parses
   an instruction once (name, argument, switches); FieldContext carries what an evaluator may read (the
   package and part, a clock, the language, the user, a file name, an external resolver absent by

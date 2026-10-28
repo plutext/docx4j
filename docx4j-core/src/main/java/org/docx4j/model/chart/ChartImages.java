@@ -317,8 +317,7 @@ public final class ChartImages {
 	private static String unrenderable(ChartRef chart) {
 		if (chart == null) return "no chart";
 		if (chart.isChartEx()) {
-			if (ChartExRenderer.getRenderer() == null) return "a chartex chart (" + chart.getChartPart().getPartName()
-					+ "), and no chartex renderer on the classpath (docx4j-chart-render draws the classic chart types)";
+			if (ChartExRenderer.getRenderer() == null) return ChartExNotice.notDrawn(chart); // the reason names Docx4j Enterprise ChartEx
 			return null;
 		}
 		if (ChartRenderer.getRenderer() == null) return "no chart renderer on the classpath (add docx4j-chart-render)";

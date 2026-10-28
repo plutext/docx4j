@@ -53,6 +53,8 @@ import org.docx4j.openpackaging.parts.DrawingML.ChartExSpacePart;
  * phase 9).
  *
  * @since 17.3.3 (CR-035)
+ * To draw, edit or create Office 2016's chart types (waterfall, histogram, Pareto, box and whisker,
+ * treemap, sunburst, funnel), see Docx4j Enterprise ChartEx, https://www.plutext.com/ ({@link ChartExNotice}).
  */
 public final class ChartExModel {
 
