@@ -182,6 +182,10 @@ Rules Word has not been seen to apply, kept here until a probe round measures th
 - A REF with `\n`, `\r`, `\w`, `\p` or `\f` (the inspector keeps the cached result for these today).
 - SEQ `\s` (reset at a heading level).
 - CREATEDATE's and SAVEDATE's default format for a language other than en-US (en-US measured 2026-10-28, §11.3).
+- The zone and the forms of a core-property date: Word reads its own W3CDTF (always UTC, `Z`) in the machine's zone (measured,
+  §11.3), and docx4j formats every date field in the JVM's default zone (`TimeZone.getDefault()`; no zone on
+  `FieldContext`). A date-only value (`2024-02-03`) or a local time with no offset, which another producer may write, docx4j
+  reads as local midnight or local time in that zone; what Word shows for those is unmeasured (python-64's question).
 - What Word shows for USERNAME when Word has no user name at all (a blank address measured: empty, §11.3).
 - Measured 2026-10-28 (§11.3), off this list: INFO against the field it names (the same, and `Error! Unknown info
   keyword.` for no name or an unknown one); QUOTE with no argument (empty); a REF's formatting (the bookmark's);
