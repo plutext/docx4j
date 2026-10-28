@@ -140,7 +140,7 @@ final class InspectWalk {
 		String[] differently = { "text.near_background", "text.tiny", "font.glyph_mismatch", "paragraph.collapsed" };
 		String[] yes = { "hyperlink.web", "comment", "header_footer", "watermark", "note", "sdt.placeholder", "chart.cached",
 				"text.web_hidden", "altchunk", "object.embedded", "ink", "image.svg_text", "image.metafile_text" };
-		String[] none = { "field.external", "settings.update_fields", "relationship.external", "part.macro", "part.activex",
+		String[] none = { "field.external", "settings.update_fields", "fields.auto_update", "fields.print_update", "relationship.external", "part.macro", "part.activex",
 				"altchunk.script", "altchunk.external_ref", "font.embedded", "part.unknown", InspectRanges.KIND };
 		for (String k : no) VISIBLE.put(k, Visible.NO);
 		for (String k : differently) VISIBLE.put(k, Visible.DIFFERENTLY);
@@ -172,6 +172,14 @@ final class InspectWalk {
 			W, "sectPrChange", W, "tblPrChange", W, "trPrChange", W, "tcPrChange", W, "numberingChange", W, "cellIns", W, "cellDel",
 			W, "cellMerge" };
 	private static final List<String> EXTERNAL_FIELDS = Arrays.asList("INCLUDETEXT", "INCLUDEPICTURE", "LINK", "IMPORT", "DDE", "DDEAUTO");
+	/**
+	 * The fields whose presence makes Word's open update the document (CR-067 section 14.7, measured 2026-10-29): Word
+	 * refreshes them and recomputes every IF with literal or auto-updating operands, writing the results on save, so a
+	 * Word user sees text the stored results do not hold.
+	 */
+	private static final List<String> OPEN_TRIGGER_FIELDS = Arrays.asList("DATE", "TIME", "SAVEDATE");
+	/** The fields Word's PDF export (a print) updates before the same pass, so Word's PDF differs from the stored text. */
+	private static final List<String> PRINT_TRIGGER_FIELDS = Arrays.asList("PAGE", "NUMPAGES", "SECTION", "SECTIONPAGES", "PRINTDATE", "REF", "SEQ");
 
 	private final InspectPackage pkg;
 	private final InspectRun run;
@@ -1426,6 +1434,15 @@ final class InspectWalk {
 			f.endPath = endPath;
 			f.end = end;
 			add(f);
+		}
+		// a field whose presence makes Word recompute the document's literal IFs on open, or on its PDF export (WD 0.41)
+		Found trigger = OPEN_TRIGGER_FIELDS.contains(k) ? found(InspectFinding.FIELDS_AUTO_UPDATE, p, path, instr, needs, el)
+				: PRINT_TRIGGER_FIELDS.contains(k) ? found(InspectFinding.FIELDS_PRINT_UPDATE, p, path, instr, needs, el) : null;
+		if (trigger != null) {
+			trigger.start = start;
+			trigger.endPath = endPath;
+			trigger.end = end;
+			add(trigger);
 		}
 	}
 

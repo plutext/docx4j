@@ -78,6 +78,17 @@ public final class InspectFinding {
 	public static final String STORY_UNUSED = "story.unused";
 	public static final String SDT_STORED_SURFACE = "sdt.stored_surface";
 	public static final String FIELD_CODE = "field.code";
+	/**
+	 * A DATE, TIME or SAVEDATE field: Word's open refreshes it and recomputes the document's IF fields with literal or
+	 * auto-updating operands, writing the results on save, so a Word user sees text the stored results do not hold
+	 * (CR-067 section 14.7, measured 2026-10-29; WD 0.41).
+	 */
+	public static final String FIELDS_AUTO_UPDATE = "fields.auto_update";
+	/**
+	 * A PAGE, NUMPAGES, SECTION, SECTIONPAGES, PRINTDATE, REF or SEQ field: Word's PDF export updates it and then the
+	 * literal IFs, so Word's PDF of the document differs from its stored text (the same measurement).
+	 */
+	public static final String FIELDS_PRINT_UPDATE = "fields.print_update";
 	public static final String GLOSSARY = "glossary";
 	public static final String ALT_TEXT_DESCRIPTION = "alt_text.description";
 	public static final String ALT_TEXT_TITLE = "alt_text.title";

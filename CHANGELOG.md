@@ -199,6 +199,12 @@ Changes in Version 17.3.5
   evaluator knows it, as a simple one was; a resultless IF is dropped only where a PAGE or NUMPAGES
   operand leaves it undecidable before layout (D32). A field's code is evaluated without its hidden text, as
   Word evaluates it (measured): an IF whose true branch is hidden gives an empty result.
+* Text extraction under fields: cached (the default) gives nothing for a LISTNUM, AUTONUM, AUTONUMLGL or
+  AUTONUMOUT, as Word's own plain text does (Word never stores their results; the stale stored text was
+  read before), and a SYMBOL's character in every mode. The inspector reports fields.auto_update on a DATE,
+  TIME or SAVEDATE (Word's open recomputes the document's literal IF fields when one is present, measured)
+  and fields.print_update on the fields Word's PDF export updates first (PAGE, NUMPAGES, SECTION,
+  SECTIONPAGES, PRINTDATE, REF, SEQ).
 * FieldUpdater updates the document information fields AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY,
   SUBJECT and TITLE, as it does DOCPROPERTY (#277); DOCPROPERTY Keywords is read; a simple
   DOCPROPERTY's quoted property name is found.

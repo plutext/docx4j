@@ -920,3 +920,19 @@ nothing. The rule, measured: **Word evaluates a field's code without its hidden 
 update had printed "confidential" visibly; built the same day: `FieldsPreprocessor` leaves a hidden run's instruction text
 out of the instruction (the run itself is kept), and the text model's walk leaves it out of the code it evaluates, so the
 updater, the mergers, the writers and the text model give the empty result Word gives (`FieldsFunMemoTest`).
+
+### 14.8 Jason's rulings of 2026-10-29 on the text model, built
+
+Jason: "inspector finding for documents holding a DATE, TIME or SAVEDATE, let's go with option (a). The five never-stored
+fields under fields: cached option (a) here too please." (And "profile: word-text makes sense": WD 0.41's `profile`
+option, a preset applied before the caller's own; built when the WD is committed.)
+
+| # | Decision | Built |
+|---|---|---|
+| D33 | The inspector reports the fields whose presence changes what Word shows: `fields.auto_update` on a DATE, TIME or SAVEDATE field (Word's open refreshes it and recomputes the document's IF fields with literal or auto-updating operands, writing the results on save, so a Word user sees text the stored results do not hold), and `fields.print_update` on a PAGE, NUMPAGES, SECTION, SECTIONPAGES, PRINTDATE, REF or SEQ field (Word's PDF export updates it and then the literal IFs, so Word's PDF differs from the stored text). Both anchored at the field, both "not content" for visibility (`InspectWalk`, `InspectFinding`). The text models do not imitate either pass | yes |
+| D34 | Under `fields: cached` the fields Word never stores: a list number (LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT) gives nothing, as Word's own plain text does and as the WD treats list labels, the field carried in the block model with no result and no `field.no_result` warning; SYMBOL is computed in every mode (its character, as a `w:sym`'s is; `###` for a code Word cannot read), a named departure from Word's converter, which omits it. Under `fields: update` all five are computed as before (`Extractor`: `liveOmitted`, `cachedModeValue`) | yes |
+
+Measured against Word's plain-text save of the never-updated phase 3 probe (§14.4; `FieldsNeverStoredAndTriggersTest`): the
+list-number lines empty on both sides, the SYMBOL lines empty in Word's and the character in docx4j's. docx4j's PDF and HTML
+writers keep D3 (a stored result painted, a resultless field evaluated, the never-stored five written live by `Preprocess`):
+they do not imitate Word's print-time pass, a named departure for the WD's appendix.
