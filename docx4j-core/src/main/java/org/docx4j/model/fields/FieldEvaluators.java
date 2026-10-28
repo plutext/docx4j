@@ -101,7 +101,7 @@ public final class FieldEvaluators {
 		FieldEvaluator date = new FieldEvaluator() {
 			@Override
 			public String evaluate(FieldInstruction instruction, FieldContext context) {
-				return FormattingSwitchHelper.formatDate(instruction, context.now(), context.getLanguage());
+				return FormattingSwitchHelper.formatDate(instruction, context.now(), context.getLanguage(), context.getTimeZone());
 			}
 			@Override
 			public boolean formatsItself() {
@@ -149,7 +149,7 @@ public final class FieldEvaluators {
 			if (date == null) return null;
 			// to the minute, as Word reads a file's time (04:05:06Z shows as :05:00; measured 2026-10-28, CR-067 section 11.3)
 			date = new java.util.Date(date.getTime() - Math.floorMod(date.getTime(), 60000L));
-			if (instruction.hasSwitch("\\@")) return FormattingSwitchHelper.formatDate(instruction, date, context.getLanguage());
+			if (instruction.hasSwitch("\\@")) return FormattingSwitchHelper.formatDate(instruction, date, context.getLanguage(), context.getTimeZone());
 			// Word's default for the field: the short date and the long time, 2/3/2024 3:05:00 PM for en-US (measured, the
 			// same day, Word 365 build 20326.20232); another language gets the locale's short date and medium time, unmeasured
 			String lang = context.getLanguage();
@@ -157,6 +157,7 @@ public final class FieldEvaluators {
 			java.text.DateFormat f = "en".equals(locale.getLanguage()) || locale.getLanguage().isEmpty()
 					? new java.text.SimpleDateFormat("M/d/yyyy h:mm:ss a", java.util.Locale.US)
 					: java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.SHORT, java.text.DateFormat.MEDIUM, locale);
+			f.setTimeZone(context.getTimeZone()); // the package's client zone, else the machine's (D12)
 			return f.format(date);
 		}
 		@Override

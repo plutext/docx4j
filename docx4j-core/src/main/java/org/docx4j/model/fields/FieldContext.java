@@ -56,6 +56,7 @@ public final class FieldContext {
 	private String fileName;
 	private External external;
 	private Integer section;
+	private java.time.ZoneId zone;
 	private Map<String, String> noteNumbers;
 	private Map<String, java.util.List<org.docx4j.wml.R>> bookmarkRuns;
 	private DocPropertyResolver properties;
@@ -94,6 +95,29 @@ public final class FieldContext {
 	public FieldContext clock(Supplier<Date> clock) {
 		this.clock = clock == null ? Date::new : clock;
 		return this;
+	}
+
+	/**
+	 * The zone a date field's instant is shown in (CR-067 D12): this context's where set, else the package's
+	 * {@link WordprocessingMLPackage#effectiveDateTimeZone()} (the package's own, the JVM-wide property, the
+	 * JVM default), as Word shows an instant in the machine's zone.
+	 */
+	public java.time.ZoneId getZone() {
+		if (zone != null) return zone;
+		if (pkg != null) return pkg.effectiveDateTimeZone();
+		java.time.ZoneId property = org.docx4j.openpackaging.packages.OpcPackage.propertyDateTimeZone();
+		return property != null ? property : java.time.ZoneId.systemDefault();
+	}
+
+	/** The per-call override of {@link #getZone()}; null returns to the package's. */
+	public FieldContext zone(java.time.ZoneId zone) {
+		this.zone = zone;
+		return this;
+	}
+
+	/** {@link #getZone()} as a {@link java.util.TimeZone}, for the formatters. */
+	public java.util.TimeZone getTimeZone() {
+		return java.util.TimeZone.getTimeZone(getZone());
 	}
 
 	/** The language a result is formatted in ({@code fr-CA}), or null for the platform's default, as before. */

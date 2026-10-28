@@ -117,6 +117,17 @@ Changes in Version 17.3.5
   widens the set it updates. FldSimpleModel is deprecated, with the FormattingSwitchHelper and
   writer-handler signatures that carried it (FieldInstruction overloads replace them; a handler on the
   old interface still works). FieldsPreprocessor's result handling is one path (every result kept).
+* A time zone per package (CR-067 D12; the portfolio's date rule): OpcPackage.setDateTimeZone(ZoneId)
+  names the client's zone for a package, and every instant the package holds is shown in it, as Word
+  shows one in the machine's: a date field's (CREATEDATE, SAVEDATE, DATE, TIME, PRINTDATE), a
+  revision's w:date without w16du:dateUtc (Word's local clock), and a bound date where the package
+  opts into the conversion. Unset, the JVM-wide docx4j.model.datastorage.BindingHandler.dateTimeZone
+  property, else the JVM's default, as before. FieldContext.zone(ZoneId) overrides per call. Nothing
+  of it is saved: a server sets it per request. The bound-date conversion (CR-058 D6: Word reads the
+  picker's local-midnight Z as UTC and can show the previous day) is now its own opt-in,
+  OpcPackage.setBoundDatesConvertedAsWord(true) or the property
+  docx4j.model.datastorage.BindingHandler.boundDatesConvertedAsWord, off by default: setting the
+  zone property alone no longer converts a bound date (it did in 17.3.4).
 * More fields evaluated (CR-067 phase 1, measured against Word 365): CREATEDATE and SAVEDATE (the core
   properties' dates, read to the minute as Word reads them, with the field's \@ switch or Word's default
   short-date-and-time format), REVNUM, INFO (as the field it names), SECTION, NOTEREF (the number of the note

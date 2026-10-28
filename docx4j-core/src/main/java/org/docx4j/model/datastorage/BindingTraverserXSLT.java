@@ -2221,8 +2221,11 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	 * run's), else the platform's. A stored value that is not a date is shown as it is, in the control's
 	 * formatting (until 17.3.5 it became today's date in red). An empty value gives a run with no
 	 * content, which the callers show as the placeholder, as an empty text binding is. The time is
-	 * the stored value's nominal time; with {@link #DATE_TIME_ZONE_PROPERTY} set to a zone ID, a value
-	 * carrying an offset or {@code Z} is converted to that zone, as Word converts to the machine's.
+	 * the stored value's nominal time; where the package opts into the conversion
+	 * ({@code OpcPackage.setBoundDatesConvertedAsWord(true)}, or the property
+	 * {@code docx4j.model.datastorage.BindingHandler.boundDatesConvertedAsWord}), a value carrying an offset
+	 * or {@code Z} is converted to the package's zone ({@code OpcPackage.effectiveDateTimeZone()}: its own,
+	 * else {@link #DATE_TIME_ZONE_PROPERTY}, else the JVM's), as Word converts to the machine's.
 	 *
 	 * @param pkg the package, for the document default language; may be null
 	 * @return the run; null where the part, the value or usable {@code w:date} settings are missing
@@ -2267,7 +2270,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 
 			String result;
 			try {
-				Date date = parseStoredDate(r, dateTimeZone());
+				Date date = parseStoredDate(r, conversionZone(pkg));
 				result = FormattingSwitchHelper.formatDate(format, date, lang);
 			} catch (java.time.format.DateTimeParseException e) {
 				// Word 365 shows the stored text as it is (bind-typed-formats DF8, DF9)
@@ -2312,7 +2315,23 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		}
 	}
 
-	/** The zone {@link #DATE_TIME_ZONE_PROPERTY} names, or null (the nominal time, the default). */
+	/**
+	 * The zone a bound date is converted to, or null for the nominal reading: the package's
+	 * {@link org.docx4j.openpackaging.packages.OpcPackage#effectiveDateTimeZone()} where the package opts into the
+	 * conversion ({@link org.docx4j.openpackaging.packages.OpcPackage#isBoundDatesConvertedAsWord()}); a zone set
+	 * alone does not convert (the portfolio's date rule, 2026-10-28, amending CR-058 D6). Without a package, the
+	 * JVM-wide property pair.
+	 *
+	 * @since 17.3.5
+	 */
+	static java.time.ZoneId conversionZone(org.docx4j.openpackaging.packages.OpcPackage pkg) {
+		if (pkg != null) return pkg.isBoundDatesConvertedAsWord() ? pkg.effectiveDateTimeZone() : null;
+		if (!Docx4jProperties.getProperty(org.docx4j.openpackaging.packages.OpcPackage.BOUND_DATES_CONVERTED_PROPERTY, false)) return null;
+		java.time.ZoneId zone = dateTimeZone();
+		return zone != null ? zone : java.time.ZoneId.systemDefault();
+	}
+
+	/** The zone {@link #DATE_TIME_ZONE_PROPERTY} names, or null. Until 17.3.5 its being set turned the conversion on; see {@link #conversionZone}. */
 	static java.time.ZoneId dateTimeZone() {
 		String id = Docx4jProperties.getProperty(DATE_TIME_ZONE_PROPERTY);
 		if (id == null || id.trim().isEmpty()) return null;

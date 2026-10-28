@@ -988,6 +988,21 @@ public class FormattingSwitchHelper {
 	}
 	
 	private static String formatDate(FieldInstruction model, String format, Date date, String lang) {
+		return formatDate(model, format, date, lang, null);
+	}
+
+	/**
+	 * {@link #formatDate(FieldInstruction, Date, String)} in the given zone (the package's client zone, CR-067 D12);
+	 * null is the JVM's default, as before.
+	 *
+	 * @since 17.3.5
+	 */
+	public static String formatDate(FieldInstruction model, Date date, String lang, java.util.TimeZone zone) {
+		String format = findFirstSwitchValue("\\@", model.getParameters(), true);
+		return formatDate(model, format, date, lang, zone);
+	}
+
+	private static String formatDate(FieldInstruction model, String format, Date date, String lang, java.util.TimeZone zone) {
 		DateFormat dateFormat = null;
 		if ((format != null) && (format.length() > 0)) {
 			SimpleDateFormat simpleDateFormat = getSimpleDateFormat(lang);
@@ -999,6 +1014,8 @@ public class FormattingSwitchHelper {
 						  SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT) :
 					      SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT)); 
 		}
+		// the thread's cached format is shared by every caller on the thread: set the zone every time
+		dateFormat.setTimeZone(zone == null ? java.util.TimeZone.getDefault() : zone);
 		return dateFormat.format(date);
 	}
 	
