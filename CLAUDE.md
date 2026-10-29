@@ -43,6 +43,10 @@ Each release lives on its own `VERSION_x_y_z` branch (e.g. `VERSION_17_0_1` is c
   `Claude-Session` URL on the following line if known).
 - The `Co-Authored-By` model names feed the release's "Contributors" block
   in `CHANGELOG.md`, so accuracy here matters.
+- When you update `CHANGELOG.md` after merging a pull request, or after making a
+  fix suggested in a GitHub issue, add the PR's author or the issue's reporter to
+  the "Contributors to this release" block of the current release (their name as
+  they give it, or their GitHub login), if not already there (Jason, 2026-10-30).
 
 ## Module map
 
