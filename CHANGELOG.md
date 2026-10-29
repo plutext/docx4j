@@ -197,6 +197,13 @@ Changes in Version 17.3.5
   mergers evaluate a merge field written as w:fldSimple, as Word writes its own GREETINGLINE (measured).
   The text extraction under fields: update computes ASK (its bookmark defined with the \d default, nothing
   shown) and FILLIN (its \d default), as the OpenDoPE WD says.
+* PDF: a line break (w:br, w:cr) inside a footnote no longer makes FOP refuse the whole document (XSL-FO
+  forbids the block-in-inline idiom under fo:footnote; the break is a U+2028 line separator there), on
+  both pathways. Measured on the Enterprise manual, whose footnote holds two URLs on a break: the TOC
+  update and the PDF both failed before.
+* TOC update of a bare TOC field whose "TOC Heading" paragraph precedes it: the heading goes into the
+  content control with the field and is reused, instead of a second heading being generated (which also
+  carried the heading style's page break). TocIntoSdt, TocGenerator.updateToc.
 * The PDF and HTML writers no longer paint a nested field's result beside its outer field's (an IF or
   formula over a DOCPROPERTY printed both): the field combiner folds a nested field into the outer's
   instruction as an operand (CR-067 D31). A complex field with no separate (no stored result) is now evaluated

@@ -820,6 +820,14 @@
 		</xsl:if>
 
 		<xsl:choose>
+			<xsl:when test="ancestor::w:footnote and not(@w:type='page') and not(@w:type='column')">
+				<!-- in a footnote the block-in-inline idiom below is forbidden (XSL 1.1 6.6.7: an fo:inline
+				     descending from fo:footnote may not have block-level children; FOP throws a
+				     ValidationException and the whole export is lost, measured on a manual whose
+				     footnote held two URLs on a w:br); U+2028 LINE SEPARATOR is an explicit break
+				     for FOP's line breaker (CharUtilities.isExplicitBreak), no glyph drawn -->
+				<xsl:text>&#x2028;</xsl:text>
+			</xsl:when>
 			<xsl:when test="$predecessor='br' and not(@w:type='page') and not(@w:type='column')">
 				<!-- special case; see discussion in BrWriter -->
 				<fo:block white-space-treatment="preserve" linefeed-treatment="preserve"><xsl:text> <!-- one carriage return -->				
@@ -854,7 +862,15 @@
 	</xsl:template>
 
 <xsl:template match="w:cr">
-	<fo:block white-space-treatment="preserve"> </fo:block>
+	<xsl:choose>
+		<xsl:when test="ancestor::w:footnote">
+			<!-- as w:br above: no block inside a footnote's inline -->
+			<xsl:text>&#x2028;</xsl:text>
+		</xsl:when>
+		<xsl:otherwise>
+			<fo:block white-space-treatment="preserve"> </fo:block>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 <!--  <w:sym w:font="Wingdings" w:char="F04A"/> -->

@@ -28,6 +28,7 @@ import org.docx4j.jaxb.McMode;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.CTSdtDocPart;
 import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.FldChar;
@@ -102,6 +103,16 @@ public class TocIntoSdt  {
 		}
 		
 		this.tocInstruction = finder.tocInstruction;
+
+		/* A TOC written as a bare field (older documents, or one inserted from a field code rather than
+		 * Word's gallery) commonly has its heading in the paragraph before it, styled "TOC Heading".
+		 * Word's gallery puts that heading inside the content control, which is where TocFinder looks
+		 * for a heading to reuse; left outside it, updateToc generated a second one (measured 2026-10-29
+		 * on the Enterprise manual: "Contents" twice, and a page break between them from the heading
+		 * style's pageBreakBefore), so the heading goes into the control with the field.  @since 17.3.5 */
+		if (fromIndex > 0 && isTocHeading(wordMLPackage.getMainDocumentPart(), topLevelContent.get(fromIndex - 1))) {
+			fromIndex--;
+		}
 		
         // Create new list containing the range
         List<Object> rangeList = new ArrayList<Object>(topLevelContent.subList(fromIndex, toIndex+1));
@@ -123,6 +134,17 @@ public class TocIntoSdt  {
     }
 
 	private String tocInstruction = null;
+
+	/** Whether the block is a paragraph styled with the style named "TOC Heading" (TocStyles.TOC_HEADING). */
+	static boolean isTocHeading(MainDocumentPart documentPart, Object block) {
+		Object u = XmlUtils.unwrap(block);
+		if (!(u instanceof P) || ((P) u).getPPr() == null || ((P) u).getPPr().getPStyle() == null) return false;
+		String styleId = ((P) u).getPPr().getPStyle().getVal();
+		if (styleId == null || documentPart.getStyleDefinitionsPart() == null) return false;
+		org.docx4j.wml.Style style = documentPart.getStyleDefinitionsPart().getStyleById(styleId);
+		return style != null && style.getName() != null
+				&& TocStyles.TOC_HEADING.equalsIgnoreCase(style.getName().getVal());
+	}
 	
 	protected String getInstruction() {
 		return tocInstruction;

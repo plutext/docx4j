@@ -11,6 +11,12 @@ import org.docx4j.Docx4J;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import java.util.ArrayList;
+import java.util.List;
+import org.docx4j.XmlUtils;
+import org.docx4j.wml.P;
+import org.docx4j.wml.SdtBlock;
+import org.docx4j.toc.Toc;
 import org.junit.Test;
 
 /**
@@ -88,6 +94,41 @@ public class TocUpdateFacadeTest {
 
 		// and the package was updated in place
 		assertTrue(pkg.getMainDocumentPart().getXML().contains("Gamma Chapter"));
+	}
+
+	/**
+	 * A TOC written as a bare field whose "TOC Heading" paragraph sits before it (not inside a content
+	 * control, as Word's gallery writes it): the update takes that heading into the control and reuses it,
+	 * rather than generating a second one (measured 2026-10-29 on the Enterprise manual: "Contents" twice,
+	 * with a page break between them). @since 17.3.5
+	 */
+	@Test
+	public void bareFieldWithHeadingBefore() throws Exception {
+		WordprocessingMLPackage pkg = createPkg();
+		MainDocumentPart mdp = pkg.getMainDocumentPart();
+		// unwrap the generated control: its heading and field paragraphs become top-level blocks
+		List<Object> content = mdp.getContent();
+		int at = -1;
+		for (int i = 0; i < content.size(); i++) if (XmlUtils.unwrap(content.get(i)) instanceof SdtBlock) { at = i; break; }
+		assertTrue(at >= 0);
+		SdtBlock sdt = (SdtBlock) XmlUtils.unwrap(content.get(at));
+		List<Object> inner = new ArrayList<Object>(sdt.getSdtContent().getContent());
+		content.remove(at);
+		content.addAll(at, inner);
+		String before = mdp.getXML();
+		assertEquals("one heading before", 1, occurrences(before, Toc.DEFAULT_TOC_HEADING + "</w:t>")); // not the gallery name "Table of Contents"
+		assertFalse(before.contains("<w:sdt>"));
+
+		assertTrue(Docx4J.updateToc(pkg, true));
+		String after = mdp.getXML();
+		assertEquals("still one heading: the existing one, reused", 1, occurrences(after, Toc.DEFAULT_TOC_HEADING + "</w:t>"));
+		assertTrue("the new entry is there", after.contains("Gamma Chapter"));
+		SdtBlock updated = null;
+		for (Object o : content) if (XmlUtils.unwrap(o) instanceof SdtBlock) updated = (SdtBlock) XmlUtils.unwrap(o);
+		assertTrue("the TOC is in a control now", updated != null);
+		Object first = XmlUtils.unwrap(updated.getSdtContent().getContent().get(0));
+		assertTrue("the heading is the control's first paragraph", first instanceof P
+				&& mdp.getXML().indexOf(Toc.DEFAULT_TOC_HEADING) > mdp.getXML().indexOf("<w:sdt>"));
 	}
 
 	@Test

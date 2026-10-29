@@ -530,7 +530,11 @@ public class TocGenerator {
             sdt = tocIntoSdt.process(wordMLPackage);
             // throws TocException if not found
             instruction = tocIntoSdt.getInstruction();
-            
+            // the control now holds the field and any "TOC Heading" paragraph that preceded it
+            // (TocIntoSdt, 17.3.5): find that heading, so that it is reused below as one inside a
+            // Word-written control is, instead of being cleared and generated again
+            finder = new TocFinder();
+            new TraversalUtil(body.getContent(), finder, McMode.ALL);
         } else {
         	instruction = finder.tocInstruction;	
         }

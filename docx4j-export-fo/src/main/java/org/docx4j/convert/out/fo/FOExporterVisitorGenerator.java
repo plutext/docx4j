@@ -157,11 +157,16 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		} else if (o instanceof R.Cr) {
 
 			if (!conversionContext.isInComplexFieldDefinition()) {
-				// an empty block suffices for the line break (matching the XSLT,
-				// whose template's literal space is stripped as stylesheet whitespace)
-				Element block = createNode(document, NODE_BLOCK);
-				block.setAttribute("white-space-treatment", "preserve");
-				getCurrentParent().appendChild(block);
+				if (footnoteNumber >= 0) {
+					// no block inside a footnote's inline (see handleBr): an explicit break character
+					getCurrentParent().appendChild(document.createTextNode("\u2028"));
+				} else {
+					// an empty block suffices for the line break (matching the XSLT,
+					// whose template's literal space is stripped as stylesheet whitespace)
+					Element block = createNode(document, NODE_BLOCK);
+					block.setAttribute("white-space-treatment", "preserve");
+					getCurrentParent().appendChild(block);
+				}
 			}
 			return null;
 
@@ -744,7 +749,14 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			if (line != null) getCurrentParent().appendChild(document.importNode(line, true));
 		}
 
-		if ((!firstBr) &&
+		if (footnoteNumber >= 0
+				&& (br.getType()==null || br.getType().equals(STBrType.TEXT_WRAPPING))) {
+			// in a footnote the block-in-inline idiom BrWriter writes is forbidden (XSL 1.1 6.6.7: an fo:inline
+			// descending from fo:footnote may not have block-level children; FOP throws a ValidationException and
+			// the whole export is lost, measured on a manual whose footnote held two URLs on a w:br); U+2028 LINE
+			// SEPARATOR is an explicit break for FOP's line breaker (CharUtilities.isExplicitBreak), no glyph drawn
+			getCurrentParent().appendChild(document.createTextNode("\u2028"));
+		} else if ((!firstBr) &&
 				(br.getType()==null
 				  || br.getType().equals(STBrType.TEXT_WRAPPING))) {
 
