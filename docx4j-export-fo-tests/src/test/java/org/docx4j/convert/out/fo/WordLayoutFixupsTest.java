@@ -172,6 +172,18 @@ public class WordLayoutFixupsTest {
 				+ "<fo:block space-before=\"12pt\">In columns</fo:block>");
 		String out2 = WordLayoutFixups.apply(in2, 15);
 		assertTrue("the excess retained: " + out2, out2.contains("space-before=\"4pt\"") && out2.contains("space-before.conditionality=\"retain\""));
+		// an empty break paragraph Word does not draw still spaces the pair (the span-boundary probe, 2026-10-30):
+		// 12 after, the paragraph's 0/0, 12 before: 12 + 12 = 24, so 12 retained on the first block
+		String in3 = flow("<fo:block span=\"all\" docx4j-span-mark-before=\"0pt\" docx4j-span-mark-after=\"0pt\"><fo:block>Title</fo:block>"
+				+ "<fo:block space-after=\"12pt\">END</fo:block></fo:block>"
+				+ "<fo:block space-before=\"12pt\">In columns</fo:block>");
+		String out3 = WordLayoutFixups.apply(in3, 15);
+		assertTrue("0/0 mark: " + out3, out3.contains("space-before=\"12pt\" space-before.conditionality=\"retain\"") || out3.contains("space-before.conditionality=\"retain\" space-before=\"12pt\""));
+		assertFalse("the hints are consumed: " + out3, out3.contains("docx4j-span-mark"));
+		// the same with the paragraph's own 12/12: they overlap, 12 in all
+		String in4 = in3.replace("docx4j-span-mark-before=\"0pt\" docx4j-span-mark-after=\"0pt\"", "docx4j-span-mark-before=\"12pt\" docx4j-span-mark-after=\"12pt\"");
+		String out4 = WordLayoutFixups.apply(in4, 15);
+		assertTrue("12/12 mark: " + out4, out4.contains("space-before=\"0pt\""));
 	}
 
 	/** ...but not where the wrapper ends in a paragraph whose runs paint nothing - an INDEX

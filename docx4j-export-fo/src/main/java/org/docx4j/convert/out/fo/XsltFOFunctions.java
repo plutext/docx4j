@@ -567,6 +567,48 @@ public class XsltFOFunctions {
      *
      * @since 17.0.5
      */
+    /**
+     * The XSLT pathway's {@code fo:block span="all"} for a merged part with fewer columns than its
+     * page-sequence (tag XSLT_Cols), with the dropped break paragraph's spacing as hints
+     * ({@link #stampSpanMarks}).  @since 17.3.5
+     */
+    public static DocumentFragment spanAllBlock(String tagVal, NodeIterator childResultsIt) {
+		Node childResults = (childResultsIt==null) ? null : childResultsIt.nextNode();
+		Document document = XmlUtils.getNewDocumentBuilder().newDocument();
+		DocumentFragment docfrag = document.createDocumentFragment();
+		Element block = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block");
+		block.setAttribute("span", "all");
+		stampSpanMarks(block, tagVal);
+		docfrag.appendChild(block);
+		if (childResults!=null) {
+			XmlUtils.treeCopy(childResults, block);
+		}
+		return docfrag;
+    }
+
+    /**
+     * The spacing of the empty paragraph carrying a merged part's break, which is dropped, as hints on
+     * the part's {@code fo:block span="all"}: {@code docx4j-span-mark-before} and {@code -after}, in
+     * points, from the tag's {@code ;mark=before,after} (twips; ConversionSectionWrapperFactory).
+     * WordLayoutFixups.retainSpaceAtSpanBoundaries spaces the boundary by them and removes them.
+     * Measured on the span-boundary probe (Word 365, 2026-10-30): the paragraph is not drawn, but its
+     * before and after still space its neighbours, overlapping by the smaller of the two.
+     * @since 17.3.5
+     */
+    public static void stampSpanMarks(Element block, String tagVal) {
+		if (block==null || tagVal==null) return;
+		int i = tagVal.indexOf(";mark=");
+		if (i < 0) return;
+		String[] v = tagVal.substring(i + 6).split(",");
+		if (v.length != 2) return;
+		try {
+			block.setAttribute(WordLayoutFixups.HINT_SPAN_MARK_BEFORE, org.docx4j.fonts.WordLineMetrics.format(Integer.parseInt(v[0].trim()) / 20.0));
+			block.setAttribute(WordLayoutFixups.HINT_SPAN_MARK_AFTER, org.docx4j.fonts.WordLineMetrics.format(Integer.parseInt(v[1].trim()) / 20.0));
+		} catch (NumberFormatException e) {
+			log.warn("Span mark not read from tag " + tagVal);
+		}
+    }
+
     public static DocumentFragment shiftIndents(String tagVal, NodeIterator childResultsIt) {
 
 		Node childResults = (childResultsIt==null) ? null : childResultsIt.nextNode();

@@ -122,7 +122,8 @@ public class ContinuousSectionColumnsTest extends AbstractXSLFOTest {
 		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
 				"<w:document " + W + "><w:body>"
 				+ "<w:p><w:pPr><w:spacing w:before=\"0\" w:after=\"240\"/></w:pPr><w:r><w:t>TITLE</w:t></w:r></w:p>"
-				+ "<w:p><w:pPr><w:sectPr><w:type w:val=\"continuous\"/>" + PG_SZ
+				// the empty break paragraph with 12 before and after, the licence's shape: its own spacing overlaps, 12 in all
+				+ "<w:p><w:pPr><w:spacing w:before=\"240\" w:after=\"240\"/><w:sectPr><w:type w:val=\"continuous\"/>" + PG_SZ
 				+ "<w:pgMar w:top=\"720\" w:right=\"720\" w:bottom=\"720\" w:left=\"720\" w:header=\"708\" w:footer=\"708\"/>"
 				+ "</w:sectPr></w:pPr></w:p>"
 				+ "<w:p><w:pPr><w:spacing w:before=\"240\" w:after=\"0\"/></w:pPr><w:r><w:t>Body in two columns.</w:t></w:r></w:p>"
@@ -139,6 +140,42 @@ public class ContinuousSectionColumnsTest extends AbstractXSLFOTest {
 			assertTrue(body != null);
 			double extra = (Integer.parseInt(body.getAttribute("bpda")) - Integer.parseInt(body.getAttribute("bpd"))) / 1000.0;
 			assertTrue("flags " + flags + ": the columns' first paragraph still carries its 12pt before the boundary (" + extra + "pt)", extra < 0.5);
+		}
+	}
+
+	/**
+	 * Where the break rides an empty paragraph Word does not draw, that paragraph still spaces the boundary:
+	 * max(after, its before) + max(its after, before) - min(its before, its after). The span-boundary probe
+	 * (Word 365, 2026-10-30): the last text paragraph with 12pt after and the columns' first with 12pt before
+	 * give 12pt with an empty break paragraph of 12 before and after (its overlap), 24pt with one of 0 and 0.
+	 * @since 17.3.5
+	 */
+	@Test
+	public void anEmptyBreakParagraphStillSpacesTheBoundary() throws Exception {
+		for (int[] c : new int[][] { { 240, 0 }, { 0, 240 } }) { // the empty paragraph's before/after (twips), the expected excess retained on the columns' first block
+			WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+			pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
+					"<w:document " + W + "><w:body>"
+					+ "<w:p><w:pPr><w:spacing w:before=\"0\" w:after=\"240\"/></w:pPr><w:r><w:t>END of the one-column part</w:t></w:r></w:p>"
+					+ "<w:p><w:pPr><w:spacing w:before=\"" + c[0] + "\" w:after=\"" + c[0] + "\"/><w:sectPr><w:type w:val=\"continuous\"/>" + PG_SZ
+					+ "<w:pgMar w:top=\"720\" w:right=\"720\" w:bottom=\"720\" w:left=\"720\" w:header=\"708\" w:footer=\"708\"/>"
+					+ "</w:sectPr></w:pPr></w:p>"
+					+ "<w:p><w:pPr><w:spacing w:before=\"240\" w:after=\"0\"/></w:pPr><w:r><w:t>COLUMNS first line</w:t></w:r></w:p>"
+					+ "<w:sectPr><w:type w:val=\"continuous\"/><w:cols w:num=\"2\" w:space=\"425\"/>" + PG_SZ
+					+ "<w:pgMar w:top=\"720\" w:right=\"720\" w:bottom=\"720\" w:left=\"720\" w:header=\"708\" w:footer=\"708\"/>"
+					+ "</w:sectPr></w:body></w:document>"));
+			for (int flags : new int[] { Docx4J.FLAG_NONE, Docx4J.FLAG_EXPORT_PREFER_XSL }) {
+				org.w3c.dom.Document areaTree = areaTree(pkg, flags);
+				NodeList lines = areaTree.getElementsByTagName("lineArea");
+				Element body = null;
+				for (int i = 0; i < lines.getLength(); i++) {
+					if (lines.item(i).getTextContent().contains("COLUMNS first")) { body = (Element) lines.item(i).getParentNode(); break; }
+				}
+				assertTrue(body != null);
+				double extra = (Integer.parseInt(body.getAttribute("bpda")) - Integer.parseInt(body.getAttribute("bpd"))) / 1000.0;
+				assertEquals("empty break paragraph " + c[0] / 20 + "/" + c[0] / 20 + ", flags " + flags + ": the excess over the retained 12pt after",
+						c[1] / 20.0, extra, 0.5);
+			}
 		}
 	}
 

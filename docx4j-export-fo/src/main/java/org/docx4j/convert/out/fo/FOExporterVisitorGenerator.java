@@ -234,6 +234,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 				// sequence (ConversionSectionWrapperFactory): a block spanning them all
 				Element block = document.createElementNS(XSL_FO, "block");
 				block.setAttribute("span", "all");
+				XsltFOFunctions.stampSpanMarks(block, sdt.getSdtPr().getTag().getVal());
 				getCurrentParent().appendChild(block);
 				FOExporterVisitorGenerator generator = childGenerator(block);
 				if (sdt.getSdtContent()!=null) {

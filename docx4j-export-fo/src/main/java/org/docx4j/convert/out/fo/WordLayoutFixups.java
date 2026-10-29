@@ -4423,7 +4423,11 @@ public final class WordLayoutFixups {
 				"docx4j.convert.out.fo.wordLayout.retainSpanBoundarySpace", true)) return;
 		for (Element span : spanAllBlocks(doc)) {
 			Element next = nextElementSibling(span);
-			if (next == null || "all".equals(next.getAttribute("span"))) continue; // no columns follow
+			if (next == null || "all".equals(next.getAttribute("span"))) { // no columns follow
+				span.removeAttribute(HINT_SPAN_MARK_BEFORE);
+				span.removeAttribute(HINT_SPAN_MARK_AFTER);
+				continue;
+			}
 			/* Not where the wrapper ends in a paragraph whose runs paint nothing - the code of
 			 * a field whose result runs on into the columns: corpus documents 13459 and 8695
 			 * end the one-column part with the paragraph holding an INDEX field's code and
@@ -4438,15 +4442,37 @@ public final class WordLayoutFixups {
 				last.setAttribute("space-after.conditionality", "retain");
 				after = spacePt(last, "space-after");
 			}
+			/* The empty paragraph that carried the part's break is not drawn, but it still spaces the
+			 * boundary (its before and after as hints on the span block; XsltFOFunctions.stampSpanMarks). */
+			boolean dropped = span.hasAttribute(HINT_SPAN_MARK_BEFORE);
 			Element first = spacedEdge(next, "space-before", true);
+			if (first == null && dropped) { // its space comes from the dropped paragraph alone
+				first = listBodyBlock(firstListBlock(next)); // a list item's body, not its label (as at a flow start)
+				if (first == null) first = firstBlock(next);
+			}
+			double markB = dropped ? lengthPt(span.getAttribute(HINT_SPAN_MARK_BEFORE)) : 0;
+			double markA = dropped ? lengthPt(span.getAttribute(HINT_SPAN_MARK_AFTER)) : 0;
+			span.removeAttribute(HINT_SPAN_MARK_BEFORE);
+			span.removeAttribute(HINT_SPAN_MARK_AFTER);
 			if (first != null) {
 				/* Across the boundary Word spaces the two paragraphs as any two: the larger of the
 				 * space-after and the space-before, not their sum, which FOP cannot resolve across
 				 * the reference areas once both are retained. Measured 2026-10-29 on the Enterprise
 				 * licence: a one-column title part ending in an empty paragraph (after 12pt) before
 				 * a two-column body opening with a paragraph with 12pt before; Word's gap is 12pt,
-				 * ours was 24, and every line of the columns sat 12pt low. @since 17.3.5 */
-				double before = Math.max(0, spacePt(first, "space-before") - after);
+				 * ours was 24, and every line of the columns sat 12pt low. Where the break rides an
+				 * empty paragraph Word does not draw, that paragraph still spaces the pair, its own
+				 * before and after overlapping by the smaller: the gap is max(after, its before) +
+				 * max(its after, before) - min(its before, its after). Measured on the span-boundary
+				 * probe (Word 365, 2026-10-30, eight cases): 12 and 12 with the break in the text
+				 * paragraph give 12, as do 12/4, 4/12, 0/12 and 12/0; 12 and 12 with the break in an
+				 * empty paragraph with 12 before and after give 12, with 0 and 0 give 24; corpus 79's
+				 * shape (an empty paragraph with 8 after, the break in an empty Heading 2 with 2
+				 * before, a Heading 2 with 2 before) gives 10. @since 17.3.5 */
+				double theirs = spacePt(first, "space-before");
+				double total = dropped ? Math.max(after, markB) + Math.max(markA, theirs) - Math.min(markB, markA)
+						: Math.max(after, theirs);
+				double before = Math.max(0, total - after);
 				if (before > 0) {
 					first.setAttribute("space-before", org.docx4j.fonts.WordLineMetrics.format(before));
 					first.setAttribute("space-before.conditionality", "retain");
@@ -6298,6 +6324,11 @@ public final class WordLayoutFixups {
 	/** On an fo:flow: the space-after of its section's empty break paragraph, which is not
 	 *  rendered (XsltFOFunctions.sectionMarkSpaceAfter).  @since 17.3.1 */
 	public static final String HINT_MARK_AFTER = "docx4j-mark-after";
+	/** On a merged part's fo:block span="all": the space-before and space-after of the empty
+	 *  paragraph carrying the part's break, which is not rendered (XsltFOFunctions.stampSpanMarks).
+	 *  @since 17.3.5 */
+	public static final String HINT_SPAN_MARK_BEFORE = "docx4j-span-mark-before";
+	public static final String HINT_SPAN_MARK_AFTER = "docx4j-span-mark-after";
 
 	/**
 	 * A vertically aligned section counts its last paragraph's space-after as part of

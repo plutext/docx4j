@@ -48,7 +48,9 @@ public class ContinuousSectionColumnsTest {
 		Object first = XmlUtils.unwrap(merged.getContent().get(0));
 		assertTrue("one-column part not wrapped: " + first.getClass(), first instanceof SdtBlock);
 		SdtBlock sdt = (SdtBlock)first;
-		assertEquals(ConversionSectionWrapperFactory.TAG_SPAN_ALL + "=1", sdt.getSdtPr().getTag().getVal());
+		// the dropped break paragraph's spacing rides the tag (";mark=before,after" in twips): here the
+		// empty paragraph's docDefaults 10pt after, which still spaces the boundary in Word (17.3.5)
+		assertEquals(ConversionSectionWrapperFactory.TAG_SPAN_ALL + "=1;mark=0,200", sdt.getSdtPr().getTag().getVal());
 		assertEquals("its paragraphs; the empty sectPr paragraph gets no line in Word",
 				2, sdt.getSdtContent().getContent().size());
 		// the two-column part (its two paragraphs) follows unwrapped

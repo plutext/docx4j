@@ -504,9 +504,11 @@
   		<xsl:when test="starts-with(./w:sdtPr/w:tag/@w:val, 'XSLT_Cols')">
   			<!-- a part of a merged page-sequence with fewer columns than the sequence
   			     (ConversionSectionWrapperFactory): a block spanning them all -->
-  			<fo:block span="all">
-  				<xsl:apply-templates select="w:sdtContent/*"/>
-  			</fo:block>
+			<xsl:variable name="childResults">
+	  			<xsl:apply-templates select="w:sdtContent/*"/>
+			</xsl:variable>
+		  	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.spanAllBlock(
+		  		string(./w:sdtPr/w:tag/@w:val), $childResults)"/>
   		</xsl:when>
   		<xsl:when test="starts-with(./w:sdtPr/w:tag/@w:val, 'XSLT_Ind')">
   			<!-- a part of a merged page-sequence with other page margins

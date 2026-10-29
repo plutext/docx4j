@@ -15,6 +15,10 @@ Contributors to this release
 
 Jason Harrop
 
+Cristian Vat (#702)
+
+berse2212 (#701)
+
 Claude Fable 5.1
 
 Claude Opus 5.5
@@ -203,8 +207,9 @@ Changes in Version 17.3.5
 * PDF: the first paragraph of a one-column section merged ahead of a multi-column one keeps its
   space-before at the flow start (the span-all wrapper hid it from the retain rule), and where the
   one-column part's last space-after meets the columns' first space-before the larger of the two
-  applies, as between any two paragraphs, not their sum. Measured on the Enterprise licence: a
-  centred title with 12pt before, then two columns, sat 12pt above Word's; the columns 12pt below.
+  applies, as between any two paragraphs, not their sum; an empty paragraph carrying the break, which
+  Word does not draw, still spaces the pair by its own before and after, overlapping by the smaller.
+  Measured on the Enterprise licence and the span-boundary probe (Word 365, eight cases).
 * PDF: a bordered or shaded paragraph inside a block-level content control (Word's TOC gallery, a
   template's control) keeps its paragraph borders; the border grouping (Containerization) now descends
   into the control. Measured on the Enterprise manual: its TOC Heading, based on a Heading 1 with a

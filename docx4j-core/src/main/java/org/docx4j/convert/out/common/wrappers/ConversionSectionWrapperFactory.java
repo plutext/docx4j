@@ -318,7 +318,11 @@ public class ConversionSectionWrapperFactory {
 							// this section's content (up to and including this paragraph) is
 							// one part of the merged page-sequence, with its own column
 							// count and page margins
-							columnParts.add(new MergedPart(ppr.getSectPr(), sectionContent.size() + (drop ? 0 : 1), partHF));
+							java.math.BigInteger[] marks = drop
+									? droppedMarks((org.docx4j.wml.P)o, lastParagraph(sectionContent),
+											bodyIndex + 1 < bodyContent.size() ? XmlUtils.unwrap(bodyContent.get(bodyIndex + 1)) : null, propertyResolver)
+									: new java.math.BigInteger[] { null, null };
+							columnParts.add(new MergedPart(ppr.getSectPr(), sectionContent.size() + (drop ? 0 : 1), partHF, marks[0], marks[1]));
 							//ppr.setSectPr(null); // Don't do this, since we have to process the docx (inc sectPrs) multiple times for a single PDF output
 							if (drop) continue;
 
@@ -430,10 +434,24 @@ public class ConversionSectionWrapperFactory {
 		final int end;
 		/** the part's own headers and footers (CR-031 phase 3).  @since 17.3.1 */
 		final HeaderFooterPolicy hf;
+		/** The space-before and space-after, in twips, of the empty paragraph carrying this part's
+		 *  break, which is dropped (null where the paragraph is kept, or its spacing automatic): Word
+		 *  still spaces the part's last paragraph and the next part's first one by them (the
+		 *  span-boundary probe, 2026-10-30).  @since 17.3.5 */
+		final java.math.BigInteger markBefore, markAfter;
 		MergedPart(SectPr sectPr, int end, HeaderFooterPolicy hf) {
+			this(sectPr, end, hf, null, null);
+		}
+		MergedPart(SectPr sectPr, int end, HeaderFooterPolicy hf, java.math.BigInteger markBefore, java.math.BigInteger markAfter) {
 			this.sectPr = sectPr;
 			this.end = end;
 			this.hf = hf;
+			this.markBefore = markBefore;
+			this.markAfter = markAfter;
+		}
+		/** The tag suffix carrying the dropped paragraph's spacing, "" where there is none. */
+		String markTag() {
+			return markBefore == null && markAfter == null ? "" : ";mark=" + (markBefore == null ? 0 : markBefore) + "," + (markAfter == null ? 0 : markAfter);
 		}
 	}
 
@@ -490,6 +508,61 @@ public class ConversionSectionWrapperFactory {
 	 * next heading (before 12) at 12 in Word, where docx4j, reading the BodyText, gave 6; and
 	 * an empty BodyText one after a table, 6 in Word, 12 in docx4j).  @since 17.3.1
 	 */
+	/**
+	 * The space-before and space-after the dropped break paragraph still puts between its neighbours
+	 * (MergedPart.markBefore/After): its effective values, each 0 where Word's contextual spacing
+	 * suppresses it, that is where the paragraph and that neighbour share a style and either has
+	 * w:contextualSpacing. Measured on corpus document 10308 (an empty ListParagraph carrying the break
+	 * before a ListParagraph list): Word's gap there is the 8pt of the paragraph before, not 16.
+	 * @since 17.3.5
+	 */
+	private static java.math.BigInteger[] droppedMarks(org.docx4j.wml.P dropped, org.docx4j.wml.P previous, Object next,
+			org.docx4j.model.PropertyResolver resolver) {
+		java.math.BigInteger before = spaceBefore(dropped, resolver);
+		java.math.BigInteger after = spaceAfter(dropped, resolver);
+		if (previous != null && contextual(dropped, previous, resolver)) before = java.math.BigInteger.ZERO;
+		if (next instanceof org.docx4j.wml.P && contextual(dropped, (org.docx4j.wml.P) next, resolver)) after = java.math.BigInteger.ZERO;
+		return new java.math.BigInteger[] { before, after };
+	}
+	/** The last paragraph of the content, or null. */
+	private static org.docx4j.wml.P lastParagraph(List<Object> content) {
+		for (int i = content.size() - 1; i >= 0; i--) {
+			Object u = XmlUtils.unwrap(content.get(i));
+			if (u instanceof org.docx4j.wml.P) return (org.docx4j.wml.P) u;
+			if (!(u instanceof org.docx4j.wml.CTMarkupRange)) return null;
+		}
+		return null;
+	}
+	/** Whether Word's contextual spacing applies between the two: the same paragraph style, and
+	 *  w:contextualSpacing effective on either. */
+	private static boolean contextual(org.docx4j.wml.P a, org.docx4j.wml.P b, org.docx4j.model.PropertyResolver resolver) {
+		if (resolver == null) return false;
+		String sa = a.getPPr() == null || a.getPPr().getPStyle() == null ? null : a.getPPr().getPStyle().getVal();
+		String sb = b.getPPr() == null || b.getPPr().getPStyle() == null ? null : b.getPPr().getPStyle().getVal();
+		if (sa == null ? sb != null : !sa.equals(sb)) return false;
+		try {
+			for (org.docx4j.wml.P p : new org.docx4j.wml.P[] { a, b }) {
+				org.docx4j.wml.PPr e = resolver.getEffectivePPr(p.getPPr());
+				if (e != null && e.getContextualSpacing() != null && e.getContextualSpacing().isVal()) return true;
+			}
+		} catch (Exception ex) {
+			return false;
+		}
+		return false;
+	}
+	/** The effective space-before of the paragraph, as {@link #spaceAfter}.  @since 17.3.5 */
+	private static java.math.BigInteger spaceBefore(org.docx4j.wml.P p, org.docx4j.model.PropertyResolver resolver) {
+		if (resolver == null) return null;
+		try {
+			org.docx4j.wml.PPr effective = resolver.getEffectivePPr(p.getPPr());
+			if (effective == null || effective.getSpacing() == null) return java.math.BigInteger.ZERO;
+			if (Boolean.TRUE.equals(effective.getSpacing().isBeforeAutospacing())) return null;
+			java.math.BigInteger before = effective.getSpacing().getBefore();
+			return before == null ? java.math.BigInteger.ZERO : before;
+		} catch (Exception e) {
+			return null;
+		}
+	}
 	private static java.math.BigInteger spaceAfter(org.docx4j.wml.P p, org.docx4j.model.PropertyResolver resolver) {
 		if (resolver == null) return null;
 		try {
@@ -907,16 +980,19 @@ public class ConversionSectionWrapperFactory {
 		List<SectPr> sectPrs = new ArrayList<SectPr>();
 		List<HeaderFooterPolicy> hfs = new ArrayList<HeaderFooterPolicy>();
 		int start = 0;
+		List<String> markTags = new ArrayList<String>();
 		for (MergedPart part : columnParts) {
 			int end = Math.min(part.end, content.size());
 			parts.add(new ArrayList<Object>(content.subList(start, end)));
 			sectPrs.add(part.sectPr);
 			hfs.add(part.hf);
+			markTags.add(part.markTag());
 			start = end;
 		}
 		parts.add(new ArrayList<Object>(content.subList(start, content.size())));
 		sectPrs.add(lastSectPr);
 		hfs.add(lastHF);
+		markTags.add("");
 
 		// a stretch of unequal columns becomes a one-row table, and so one column
 		int[] cols = new int[parts.size()];
@@ -974,7 +1050,7 @@ public class ConversionSectionWrapperFactory {
 		List<Object> result = new ArrayList<Object>();
 		for (int i = 0; i < parts.size(); i++) {
 			addPart(result, parts.get(i), sectPrs.get(i), cols[i], max, sameMargins, refLeft, refRight,
-					partTags[i]);
+					partTags[i], markTags.get(i));
 		}
 		content.clear();
 		content.addAll(result);
@@ -1046,7 +1122,7 @@ public class ConversionSectionWrapperFactory {
 	}
 
 	private static void addPart(List<Object> result, List<Object> part, SectPr sectPr, int partCols,
-			int max, boolean sameMargins, int refLeft, int refRight, String partTag) {
+			int max, boolean sameMargins, int refLeft, int refRight, String partTag, String markTag) {
 		if (part.isEmpty()) return;
 		List<Object> content = new ArrayList<Object>(part);
 		if (!sameMargins
@@ -1056,7 +1132,10 @@ public class ConversionSectionWrapperFactory {
 					TAG_INDENT + "=" + (marginLeft(sectPr) - refLeft) + "," + (marginRight(sectPr) - refRight));
 		}
 		if (partCols < max) {
-			content = wrap(content, TAG_SPAN_ALL + "=" + partCols);
+			// the dropped break paragraph's spacing rides on the tag (";mark=before,after" in twips), for
+			// the FO's span="all" block (XsltFOFunctions.spanAllBlock, FOExporterVisitorGenerator) and
+			// WordLayoutFixups.retainSpaceAtSpanBoundaries
+			content = wrap(content, TAG_SPAN_ALL + "=" + partCols + markTag);
 		}
 		// outermost, so that the FO it marks is the span="all" block where there is one
 		if (partTag != null) {
