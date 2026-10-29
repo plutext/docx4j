@@ -23,6 +23,10 @@ Claude Opus 5.5
 Changes in Version 17.3.5
 --------------------------
 
+* A CSS font-weight of normal or lighter no longer costs a NumberFormatException: Bold tried
+  Integer.parseInt on every value other than bold and bolder. ImportXHTML reads font-weight for
+  every run and paragraph, so this was tens of thousands of exceptions for a large document. The
+  result (w:b) is unchanged.
 * The inspector (Inspect.of, CR-050) reports an integer attribute outside the width Word stores it in as
   value.out_of_range, one finding per attribute with the element, the value, the storage, the range and what
   Word reads (a hanging indent for a first-line one that wrapped, an atLeast line for an exact one, a clamped

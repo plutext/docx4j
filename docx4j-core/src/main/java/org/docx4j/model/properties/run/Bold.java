@@ -63,6 +63,11 @@ public class Bold extends AbstractRunProperty {
 			return true;
 		}
 
+		// normal is the usual value: checked here so that it doesn't cost a NumberFormatException each time
+		if (val.equals("normal") || val.equals("lighter")) {
+			return false;
+		}
+
 		try {
 			int weight = Integer.parseInt(val);
 			return (weight > 400);
