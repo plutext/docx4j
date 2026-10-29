@@ -78,6 +78,70 @@ public class ContinuousSectionColumnsTest extends AbstractXSLFOTest {
 	}
 
 	/** the margin-left of the first simple-page-master that carries a two-column region */
+	/**
+	 * The first paragraph of a one-column section merged ahead of a two-column one sits in a block spanning
+	 * all columns; its space-before must still be retained at the flow start, as Word keeps a document's
+	 * first space-before. Measured 2026-10-29 on the Enterprise licence (a centred title with 12pt before,
+	 * then two columns): page 1 sat 12pt above Word's. @since 17.3.5
+	 */
+	@Test
+	public void spaceBeforeRetainedInsideTheSpanningBlock() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ "<w:p><w:pPr><w:spacing w:before=\"240\" w:after=\"240\"/><w:jc w:val=\"center\"/></w:pPr><w:r><w:t>TITLE</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr><w:sectPr><w:type w:val=\"continuous\"/>" + PG_SZ
+				+ "<w:pgMar w:top=\"720\" w:right=\"720\" w:bottom=\"720\" w:left=\"720\" w:header=\"708\" w:footer=\"708\"/>"
+				+ "</w:sectPr></w:pPr></w:p>"
+				+ para("Body in two columns.")
+				+ "<w:sectPr><w:type w:val=\"continuous\"/><w:cols w:num=\"2\" w:space=\"425\"/>" + PG_SZ
+				+ "<w:pgMar w:top=\"720\" w:right=\"720\" w:bottom=\"720\" w:left=\"720\" w:header=\"708\" w:footer=\"708\"/>"
+				+ "</w:sectPr></w:body></w:document>"));
+		for (int flags : new int[] { Docx4J.FLAG_NONE, Docx4J.FLAG_EXPORT_PREFER_XSL }) {
+			org.w3c.dom.Document areaTree = areaTree(pkg, flags);
+			NodeList lines = areaTree.getElementsByTagName("lineArea");
+			assertTrue(lines.getLength() >= 2);
+			// the title's block: its area starts 12pt below the region top (space-before retained)
+			Element titleBlock = (Element) lines.item(0).getParentNode();
+			double bpda = Integer.parseInt(titleBlock.getAttribute("bpda")) / 1000.0;
+			double bpd = Integer.parseInt(titleBlock.getAttribute("bpd")) / 1000.0;
+			assertTrue("flags " + flags + ": the title's 12pt space-before is not in its area (bpda " + bpda + ", bpd " + bpd + ")",
+					bpda - bpd >= 12 + 12 - 0.5); // before and after both in the padded dimension
+		}
+	}
+
+	/**
+	 * At the boundary between the spanning part and the columns Word spaces the two paragraphs as any two:
+	 * the larger of the space-after and the space-before, not their sum. Measured 2026-10-29 on the
+	 * Enterprise licence (an empty paragraph with 12pt after closing the title part, a paragraph with 12pt
+	 * before opening the columns): Word's gap 12pt, ours 24. @since 17.3.5
+	 */
+	@Test
+	public void spanBoundaryTakesTheLargerSpace() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ "<w:p><w:pPr><w:spacing w:before=\"0\" w:after=\"240\"/></w:pPr><w:r><w:t>TITLE</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr><w:sectPr><w:type w:val=\"continuous\"/>" + PG_SZ
+				+ "<w:pgMar w:top=\"720\" w:right=\"720\" w:bottom=\"720\" w:left=\"720\" w:header=\"708\" w:footer=\"708\"/>"
+				+ "</w:sectPr></w:pPr></w:p>"
+				+ "<w:p><w:pPr><w:spacing w:before=\"240\" w:after=\"0\"/></w:pPr><w:r><w:t>Body in two columns.</w:t></w:r></w:p>"
+				+ "<w:sectPr><w:type w:val=\"continuous\"/><w:cols w:num=\"2\" w:space=\"425\"/>" + PG_SZ
+				+ "<w:pgMar w:top=\"720\" w:right=\"720\" w:bottom=\"720\" w:left=\"720\" w:header=\"708\" w:footer=\"708\"/>"
+				+ "</w:sectPr></w:body></w:document>"));
+		for (int flags : new int[] { Docx4J.FLAG_NONE, Docx4J.FLAG_EXPORT_PREFER_XSL }) {
+			org.w3c.dom.Document areaTree = areaTree(pkg, flags);
+			NodeList lines = areaTree.getElementsByTagName("lineArea");
+			Element body = null;
+			for (int i = 0; i < lines.getLength(); i++) {
+				if (lines.item(i).getTextContent().contains("Body in two")) { body = (Element) lines.item(i).getParentNode(); break; }
+			}
+			assertTrue(body != null);
+			double extra = (Integer.parseInt(body.getAttribute("bpda")) - Integer.parseInt(body.getAttribute("bpd"))) / 1000.0;
+			assertTrue("flags " + flags + ": the columns' first paragraph still carries its 12pt before the boundary (" + extra + "pt)", extra < 0.5);
+		}
+	}
+
 	private static double twoColumnMasterMarginPt(org.w3c.dom.Document doc) {
 		NodeList masters = doc.getElementsByTagNameNS(FO_NS, "simple-page-master");
 		for (int i = 0; i < masters.getLength(); i++) {

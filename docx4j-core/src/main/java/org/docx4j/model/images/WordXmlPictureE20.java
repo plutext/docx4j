@@ -378,6 +378,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     	
         Document d = converter.createXslFoImageElement();
         converter.stampAnchorHints(d, context);
+        converter.stampEffectExtent(d);
 
 		DocumentFragment docfrag = d.createDocumentFragment();
 		docfrag.appendChild(d.getDocumentElement());
@@ -400,6 +401,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     	
         Document d = converter.createXslFoImageElement();
         converter.stampAnchorHints(d, context);
+        converter.stampEffectExtent(d);
 
 		DocumentFragment docfrag = d.createDocumentFragment();
 		docfrag.appendChild(d.getDocumentElement());
@@ -407,6 +409,29 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 		return docfrag;
     }
     
+    /**
+     * Word lays an inline picture out at its extent plus its effect extent (wp:effectExtent: the margin
+     * its shadow, glow or soft edge needs on each side, ECMA-376 20.4.2.6), so the line holding it is
+     * taller by the top and bottom extents and the text after it starts further right by the left and
+     * right ones. Measured 2026-10-29 on the Enterprise manual: an 87.3pt screenshot with 4.5pt on every
+     * side sits in a 98.3pt line in Word's PDF (87.3 + 9 + the paragraph's 1.15 leading), ours was 88.4,
+     * and the page below it held two lines more than Word's. The extents go on the fo:external-graphic
+     * (or fo:instream-foreign-object) as padding, which FOP adds to the viewport; the picture line's box
+     * (WordLayoutFixups.pictureHeightPt) counts the padding. An anchored picture's effect extent is left
+     * to the anchor's own wrap geometry.
+     *
+     * @since 17.3.5
+     */
+    void stampEffectExtent(Document d) {
+    	if (d==null || d.getDocumentElement()==null || inline==null || inline.getEffectExtent()==null) return;
+    	org.docx4j.dml.wordprocessingDrawing.CTEffectExtent e = inline.getEffectExtent();
+    	org.w3c.dom.Element g = d.getDocumentElement();
+    	if (e.getT() > 0) g.setAttribute("padding-top", fmt(e.getT() / EMU_PER_PT) + "pt");
+    	if (e.getB() > 0) g.setAttribute("padding-bottom", fmt(e.getB() / EMU_PER_PT) + "pt");
+    	if (e.getL() > 0) g.setAttribute("padding-left", fmt(e.getL() / EMU_PER_PT) + "pt");
+    	if (e.getR() > 0) g.setAttribute("padding-right", fmt(e.getR() / EMU_PER_PT) + "pt");
+    }
+
     // ---------------------------------------------------------------- anchored pictures
 
     /** Hint attributes describing a wp:anchor, for export-fo's WordLayoutFixups

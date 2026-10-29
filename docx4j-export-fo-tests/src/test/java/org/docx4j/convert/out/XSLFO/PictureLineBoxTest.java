@@ -51,11 +51,17 @@ public class PictureLineBoxTest extends AbstractXSLFOTest {
 	private static final double HEIGHT_PT = 125.0;
 
 	private static String picture(String relId) {
+		return picture(relId, null);
+	}
+
+	/** The picture, with a wp:effectExtent (EMU on each side) where one is given. */
+	private static String picture(String relId, String effectExtent) {
 		return "<w:drawing xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
 				+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
 				+ " xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\""
 				+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
 				+ "<wp:inline><wp:extent cx=\"" + CX + "\" cy=\"" + CY + "\"/>"
+				+ (effectExtent == null ? "" : effectExtent)
 				+ "<wp:docPr id=\"1\" name=\"pic\"/>"
 				+ "<a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\">"
 				+ "<pic:pic><pic:nvPicPr><pic:cNvPr id=\"1\" name=\"pic\"/><pic:cNvPicPr/></pic:nvPicPr>"
@@ -82,6 +88,10 @@ public class PictureLineBoxTest extends AbstractXSLFOTest {
 	 *        (240 = single, 360 = a 1.5 multiple)
 	 */
 	private static WordprocessingMLPackage pkg(int lineTwips) throws Exception {
+		return pkg(lineTwips, null);
+	}
+
+	private static WordprocessingMLPackage pkg(int lineTwips, String effectExtent) throws Exception {
 
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage img =
@@ -97,7 +107,7 @@ public class PictureLineBoxTest extends AbstractXSLFOTest {
 				// the picture is in an italic run: that gives it an fo:inline of its own
 				// carrying a line-height, which is what made applyBlockLineHeight write a
 				// line box for the paragraph and so skip the rule
-				+ "<w:p>" + pPr + "<w:r><w:rPr><w:i/></w:rPr>" + picture(relId) + "</w:r></w:p>"
+				+ "<w:p>" + pPr + "<w:r><w:rPr><w:i/></w:rPr>" + picture(relId, effectExtent) + "</w:r></w:p>"
 				+ "<w:p><w:r><w:t>the caption below the picture</w:t></w:r></w:p>"
 				+ SECT_PR + "</w:body></w:document>"));
 		return pkg;
@@ -164,6 +174,32 @@ public class PictureLineBoxTest extends AbstractXSLFOTest {
 				pt(pictureBlock.getAttributeNS("http://docx4j.org/fop/word-layout", "line-box")), 0.5);
 		assertEquals("docx4j:baseline", HEIGHT_PT,
 				pt(pictureBlock.getAttributeNS("http://docx4j.org/fop/word-layout", "baseline")), 0.5);
+	}
+
+	/**
+	 * Word lays an inline picture out at its extent plus its wp:effectExtent (the margin its shadow or glow
+	 * needs), so the line is taller by the top and bottom extents. Measured 2026-10-29 on the Enterprise manual:
+	 * an 87.3pt screenshot with 4.5pt on every side sits in a 98.3pt line in Word's PDF (87.3 + 9 + the 1.15
+	 * leading); ours was 88.4. The extents travel as padding on the graphic, which the picture line's box counts.
+	 * @since 17.3.5
+	 */
+	@Test
+	public void effectExtentGrowsThePictureLine() throws Exception {
+		String extent = "<wp:effectExtent l=\"0\" t=\"57150\" r=\"0\" b=\"57150\"/>"; // 4.5pt top and bottom
+		org.w3c.dom.Document fo = fo(pkg(360, extent), Docx4J.FLAG_NONE);
+		Element g = (Element) fo.getElementsByTagNameNS(FO, "external-graphic").item(0);
+		assertEquals("4.5pt", g.getAttribute("padding-top"));
+		assertEquals("4.5pt", g.getAttribute("padding-bottom"));
+		assertEquals("", g.getAttribute("padding-left"));
+		org.w3c.dom.Document areaTree = areaTree(pkg(360, extent), Docx4J.FLAG_NONE);
+		NodeList lines = areaTree.getElementsByTagName("lineArea");
+		int picture = Integer.parseInt(((Element) lines.item(0)).getAttribute("bpd"));
+		assertTrue("the picture's line is " + picture / 1000.0 + "pt, not the picture plus its extents (134pt)",
+				Math.abs(picture - (int) ((HEIGHT_PT + 9) * 1000)) < 1200);
+		// and without an extent the line stays the picture
+		org.w3c.dom.Document plain = areaTree(pkg(360), Docx4J.FLAG_NONE);
+		int bare = Integer.parseInt(((Element) plain.getElementsByTagName("lineArea").item(0)).getAttribute("bpd"));
+		assertTrue(Math.abs(bare - (int) (HEIGHT_PT * 1000)) < 1200);
 	}
 
 	private static double pt(String v) {

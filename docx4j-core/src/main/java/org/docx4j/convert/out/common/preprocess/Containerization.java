@@ -293,6 +293,26 @@ public class Containerization {
 				currentBorders = null;
 				currentShading = null;
 			}
+			else if (unwrapped instanceof SdtBlock && !isContainer((SdtBlock) unwrapped)) {
+				/* A block-level content control the document holds (a TOC from Word's gallery, a
+				 * template's control): the paragraphs inside it were never grouped, so a bordered one
+				 * among them lost its top and bottom borders, which the writers apply only inside a
+				 * container. Measured 2026-10-29 on the Enterprise manual: its "Contents" heading,
+				 * TOC Heading based on a Heading 1 with a bottom border, drew the border as a top-level
+				 * paragraph and lost it (and the border's 4.96pt) once the TOC update put it in the
+				 * control. The control's content is grouped on its own; like a table, the control ends
+				 * the run of paragraphs around it. @since 17.3.5 */
+				SdtBlock sdt = (SdtBlock) unwrapped;
+				if (sdt.getSdtContent() != null && sdt.getSdtContent().getContent() != null) {
+					List<Object> inner = groupBodyContent(sdt.getSdtContent().getContent(), resolver);
+					sdt.getSdtContent().getContent().clear();
+					sdt.getSdtContent().getContent().addAll(inner);
+				}
+				sdtBorders = null;
+				sdtShading = null;
+				currentBorders = null;
+				currentShading = null;
+			}
 			if (sdtShading!=null) {
 				sdtShading.getSdtContent().getContent().add(o);
 			}
@@ -409,6 +429,12 @@ public class Containerization {
 			sdtPr.getRPrOrAliasOrLock().add((RPr)XmlUtils.deepCopy(rPr));
 		}
 		return sdtRun;
+	}
+
+	/** Whether the control is one this class made (its tag starts with XSLT_), which is not grouped again. */
+	private static boolean isContainer(SdtBlock sdt) {
+		return sdt.getSdtPr() != null && sdt.getSdtPr().getTag() != null && sdt.getSdtPr().getTag().getVal() != null
+				&& sdt.getSdtPr().getTag().getVal().startsWith("XSLT_");
 	}
 
 	private static SdtBlock createSdt(String tagVal) {

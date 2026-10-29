@@ -3639,6 +3639,15 @@ public final class WordLayoutFixups {
 		}
 	}
 
+	/** The block's own space (space-before or space-after) in points (its optimum where only that is
+	 *  given), 0 where it states none.  @since 17.3.5 */
+	private static double spacePt(Element block, String space) {
+		String v = block.getAttribute(space);
+		if (v.isEmpty()) v = block.getAttribute(space + ".optimum");
+		if (v.isEmpty() || !v.trim().matches("-?[0-9]*\\.?[0-9]+(pt|in|mm|cm|px)?")) return 0;
+		return lengthPt(v.trim());
+	}
+
 	/** The block's own space-before in points (its optimum where only that is given), 0 where
 	 *  it states none.  @since 17.3.1 */
 	private static double spaceBeforePt(Element block) {
@@ -4424,11 +4433,28 @@ public final class WordLayoutFixups {
 			 * paragraph there does keep its space (177, 79, 9454; gate b164 took it away from
 			 * every blank block and lost them). */
 			Element last = spacedEdge(span, "space-after", false);
+			double after = 0;
 			if (last != null && !(blankBlock(last) && last.getElementsByTagNameNS(FO_NS, "inline").getLength() > 0)) {
 				last.setAttribute("space-after.conditionality", "retain");
+				after = spacePt(last, "space-after");
 			}
 			Element first = spacedEdge(next, "space-before", true);
-			if (first != null) first.setAttribute("space-before.conditionality", "retain");
+			if (first != null) {
+				/* Across the boundary Word spaces the two paragraphs as any two: the larger of the
+				 * space-after and the space-before, not their sum, which FOP cannot resolve across
+				 * the reference areas once both are retained. Measured 2026-10-29 on the Enterprise
+				 * licence: a one-column title part ending in an empty paragraph (after 12pt) before
+				 * a two-column body opening with a paragraph with 12pt before; Word's gap is 12pt,
+				 * ours was 24, and every line of the columns sat 12pt low. @since 17.3.5 */
+				double before = Math.max(0, spacePt(first, "space-before") - after);
+				if (before > 0) {
+					first.setAttribute("space-before", org.docx4j.fonts.WordLineMetrics.format(before));
+					first.setAttribute("space-before.conditionality", "retain");
+				} else {
+					first.setAttribute("space-before", "0pt");
+					first.removeAttribute("space-before.conditionality");
+				}
+			}
 		}
 	}
 
@@ -6425,6 +6451,15 @@ public final class WordLayoutFixups {
 			if (!(n instanceof Element)) continue;
 			Element el = (Element) n;
 			if (isFo(el, "table")) return null;
+			if (isFo(el, "block") && "all".equals(el.getAttribute("span"))) {
+				/* A part of a merged page-sequence with fewer columns than the sequence is wrapped in
+				 * a block spanning them all (ConversionSectionWrapperFactory, the XSLT_Cols control):
+				 * the first paragraph is inside it. Measured 2026-10-29 on the Enterprise licence (a
+				 * one-column title section before a two-column body): the title's 12pt space-before
+				 * was discarded at the flow start, so page 1 sat 12pt above Word's. @since 17.3.5 */
+				Element spanned = firstBlock(el);
+				if (spanned != null) return spanned;
+			}
 			if (isFo(el, "block")) return el;
 			Element inner = firstBlock(el); // block-container (bidi), list-block, list-item, list-item-body
 			if (inner != null) return inner;

@@ -162,7 +162,16 @@ public class WordLayoutFixupsTest {
 		String out = WordLayoutFixups.apply(in, 15);
 		assertTrue("the wrapper's last space-after: " + out, out.contains("space-after=\"8pt\" space-after.conditionality=\"retain\"")
 				|| out.contains("space-after.conditionality=\"retain\" space-after=\"8pt\""));
-		assertTrue("the next block's space-before: " + out, out.contains("space-before.conditionality=\"retain\""));
+		// the before (4.3pt) is the smaller of the two: Word spaces the pair by the larger, so it goes
+		// (2026-10-29, the Enterprise licence: 12pt after and 12pt before gave Word 12, us 24)
+		assertTrue("the next block's space-before, the smaller, dropped: " + out, out.contains("space-before=\"0pt\""));
+		assertFalse(out, out.contains("space-before.conditionality=\"retain\""));
+		// the larger before keeps its excess over the after
+		String in2 = flow("<fo:block span=\"all\"><fo:block>Title</fo:block>"
+				+ "<fo:block space-after=\"8pt\" white-space-treatment=\"preserve\"> </fo:block></fo:block>"
+				+ "<fo:block space-before=\"12pt\">In columns</fo:block>");
+		String out2 = WordLayoutFixups.apply(in2, 15);
+		assertTrue("the excess retained: " + out2, out2.contains("space-before=\"4pt\"") && out2.contains("space-before.conditionality=\"retain\""));
 	}
 
 	/** ...but not where the wrapper ends in a paragraph whose runs paint nothing - an INDEX

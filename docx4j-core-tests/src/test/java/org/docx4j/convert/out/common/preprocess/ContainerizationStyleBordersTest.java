@@ -65,6 +65,46 @@ public class ContainerizationStyleBordersTest {
 		assertTrue("the second paragraph's own container", XmlUtils.unwrap(body.get(2)) instanceof SdtBlock);
 	}
 
+	/**
+	 * A bordered paragraph inside a block-level content control the document holds (Word's TOC gallery, a
+	 * template's control) is grouped inside the control, as it would be at body level; the writers apply a
+	 * paragraph's top and bottom borders only inside a container, so without this the border was lost
+	 * (measured 2026-10-29 on the Enterprise manual's "Contents" heading, 4.96pt of border and spacing).
+	 * The control ends the run of bordered paragraphs around it, as a table does. @since 17.3.5
+	 */
+	@Test
+	public void aBorderedParagraphInsideAContentControlIsContainerized() throws Exception {
+		String bordered = "<w:p><w:pPr><w:pBdr><w:bottom w:val=\"single\" w:sz=\"8\" w:space=\"4\" w:color=\"4F81BD\"/></w:pBdr></w:pPr><w:r><w:t>bordered</w:t></w:r></w:p>";
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ bordered
+				+ "<w:sdt><w:sdtPr><w:docPartObj><w:docPartGallery w:val=\"Table of Contents\"/><w:docPartUnique/></w:docPartObj><w:id w:val=\"1\"/></w:sdtPr><w:sdtContent>"
+				+   bordered
+				+   "<w:p><w:r><w:t>entry</w:t></w:r></w:p>"
+				+ "</w:sdtContent></w:sdt>"
+				+ bordered
+				+ "</w:body></w:document>"));
+		Containerization.process(pkg);
+		java.util.List<Object> body = pkg.getMainDocumentPart().getJaxbElement().getBody().getContent();
+		assertEquals("container, the control, container", 3, body.size());
+		assertTrue(XmlUtils.unwrap(body.get(0)) instanceof SdtBlock);
+		assertEquals(Containerization.TAG_BORDERS, ((SdtBlock)XmlUtils.unwrap(body.get(0))).getSdtPr().getTag().getVal());
+		SdtBlock control = (SdtBlock)XmlUtils.unwrap(body.get(1));
+		assertTrue("the document's control stays, at body level", control.getSdtPr().getTag() == null);
+		java.util.List<Object> inside = control.getSdtContent().getContent();
+		assertEquals("container, then the plain paragraph", 2, inside.size());
+		SdtBlock inner = (SdtBlock)XmlUtils.unwrap(inside.get(0));
+		assertEquals("the bordered paragraph inside the control gets its container", Containerization.TAG_BORDERS, inner.getSdtPr().getTag().getVal());
+		assertTrue(XmlUtils.unwrap(inner.getSdtContent().getContent().get(0)) instanceof org.docx4j.wml.P);
+		assertTrue(XmlUtils.unwrap(inside.get(1)) instanceof org.docx4j.wml.P);
+		assertTrue("the paragraph after the control opens a container of its own", XmlUtils.unwrap(body.get(2)) instanceof SdtBlock);
+		// a second pass does not group the containers again
+		Containerization.process(pkg);
+		assertEquals(3, pkg.getMainDocumentPart().getJaxbElement().getBody().getContent().size());
+		assertEquals(2, control.getSdtContent().getContent().size());
+	}
+
 	@Test
 	public void borderSpaceBecomesPadding() {
 		CTBorder b = new CTBorder();

@@ -197,6 +197,23 @@ Changes in Version 17.3.5
   mergers evaluate a merge field written as w:fldSimple, as Word writes its own GREETINGLINE (measured).
   The text extraction under fields: update computes ASK (its bookmark defined with the \d default, nothing
   shown) and FILLIN (its \d default), as the OpenDoPE WD says.
+* PDF: with docx4j.fonts.fop.util.FopConfigUtil.simulate-style=false, a family with no bold face of
+  its own (every symbol font among them) was not declared to FOP under the name the FO uses, its
+  +nobold alias, and was drawn in FOP's default font: Wingdings and Symbol bullets as "#" (#701).
+* PDF: the first paragraph of a one-column section merged ahead of a multi-column one keeps its
+  space-before at the flow start (the span-all wrapper hid it from the retain rule), and where the
+  one-column part's last space-after meets the columns' first space-before the larger of the two
+  applies, as between any two paragraphs, not their sum. Measured on the Enterprise licence: a
+  centred title with 12pt before, then two columns, sat 12pt above Word's; the columns 12pt below.
+* PDF: a bordered or shaded paragraph inside a block-level content control (Word's TOC gallery, a
+  template's control) keeps its paragraph borders; the border grouping (Containerization) now descends
+  into the control. Measured on the Enterprise manual: its TOC Heading, based on a Heading 1 with a
+  bottom border, lost the border and its 4.96pt once the TOC update put it in the control, which cost the
+  table of contents a line a page.
+* PDF: an inline picture is laid out at its extent plus its wp:effectExtent (the margin a shadow, glow or
+  soft edge needs), as Word lays it out: the line holding it is taller by the top and bottom extents, the
+  text after it starts further right by the left and right ones. Measured on the Enterprise manual: an
+  87pt screenshot with 4.5pt on every side sits in a 98pt line in Word's PDF; ours was 88pt.
 * PDF: a line break (w:br, w:cr) inside a footnote no longer makes FOP refuse the whole document (XSL-FO
   forbids the block-in-inline idiom under fo:footnote; the break is a U+2028 line separator there), on
   both pathways. Measured on the Enterprise manual, whose footnote holds two URLs on a break: the TOC
