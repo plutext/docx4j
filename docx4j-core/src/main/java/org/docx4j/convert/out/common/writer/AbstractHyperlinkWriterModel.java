@@ -6,6 +6,7 @@ import javax.xml.transform.TransformerException;
 
 import org.docx4j.convert.out.ConversionHyperlinkHandler;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
+import org.docx4j.model.fields.FieldInstruction;
 import org.docx4j.model.fields.FldSimpleModel;
 import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -123,10 +124,17 @@ public class AbstractHyperlinkWriterModel implements ConversionHyperlinkHandler.
 	/** Custom build method, get's used with a FldSimpleModel in those cases
 	 *  where the hyperlink is defined within a Field
 	 */
+	@Deprecated
 	public void build(AbstractWmlConversionContext conversionContext, FldSimpleModel fldSimpleModel, Node content) throws TransformerException {
+		build(conversionContext, fldSimpleModel.toInstruction(), content); // deprecated since 17.3.5 (CR-067 D2)
+	}
+
+	/** Custom build method, used where the hyperlink is defined within a field (HYPERLINK, or a REF or PAGEREF with \\h)
+	 *  @since 17.3.5 (CR-067) */
+	public void build(AbstractWmlConversionContext conversionContext, FieldInstruction instruction, Node content) throws TransformerException {
 		
 		int idx = 0;
-		List<String> parameters = fldSimpleModel.getFldParameters();
+		List<String> parameters = instruction.getParameters();
 		String parameter = null;
 		boolean isSwitch = false;
 		char switchChar = '\0';

@@ -1,0 +1,7 @@
+IF-field probe, round 8 (CR-067), candidate dirty-docproperty. Title property: Probe. Bookmark Edited: NEW
+Y01_DIRTY_DOCPROPERTY = Nope
+Y02_STORED = B2
+Y03_STORED = B3
+Y04_STORED = B4
+Y05_LAST = B5
+End of the probe (no field after this).

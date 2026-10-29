@@ -1,11 +1,40 @@
 package org.docx4j.list;
 
 import jakarta.xml.bind.JAXBElement;
+import org.docx4j.wml.Body;
+import org.docx4j.wml.Br;
+import org.docx4j.wml.CTCustomXmlBlock;
+import org.docx4j.wml.CTCustomXmlRun;
+import org.docx4j.wml.CTFtnEdn;
+import org.docx4j.wml.CTSdtCell;
+import org.docx4j.wml.CTSdtContentRun;
+import org.docx4j.wml.CTSdtRow;
+import org.docx4j.wml.CTSimpleField;
+import org.docx4j.wml.CTSmartTagRun;
+import org.docx4j.wml.CTTxbxContent;
+import org.docx4j.wml.Comments;
+import org.docx4j.wml.DelText;
+import org.docx4j.wml.Drawing;
+import org.docx4j.wml.Ftr;
+import org.docx4j.wml.Hdr;
 import org.docx4j.wml.P;
+import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
+import org.docx4j.wml.RPr;
+import org.docx4j.wml.RunDel;
+import org.docx4j.wml.RunIns;
+import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtContent;
+import org.docx4j.wml.SdtContentBlock;
+import org.docx4j.wml.SdtRun;
+import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tbl;
+import org.docx4j.wml.TblPr;
+import org.docx4j.wml.Tc;
+import org.docx4j.wml.TcPr;
 import org.docx4j.wml.Text;
+import org.docx4j.wml.Tr;
+import org.docx4j.wml.TrPr;
 import org.jvnet.jaxb.lang.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +49,8 @@ import java.util.Collection;
  * <ul>
  *     <li>Sets parent when possible. (I.e., ensures that the parent of any Child object added to the list is set to the
  *     object which has this list as a field.)</li>
- *     <li>Sanity checks some common user errors when adding the wrong type of object to the list.</li>
+ *     <li>Refuses a child that is never legal under the list's parent (a run in the body, Text in a paragraph, a
+ *     cell in a table; CR-064), with the fix in the message.</li>
  * </ul>
  *
  * <p>We tell XJC to use this collection type in the generated classes by setting the {@code collectionType} attribute
@@ -257,46 +287,177 @@ public class ArrayListDocx4j<E> extends ArrayList<E> {
     }
 	
 	
-	private void checkParent(E e) {
-		
+	/**
+	 * Refuses a child that is never legal under this list's parent (CR-064, D1 to D7), at the point of the mistake
+	 * and with the fix in the message, instead of leaving it to Word's "unreadable content" repair far from the
+	 * line that caused it. A wrapped child ({@code JAXBElement}) is tested by its value (D1). Each rule names a
+	 * class the schema never allows under that parent, so a legal document cannot trip one on load; the lists
+	 * stay otherwise open ("refuse the known-wrong, never allow-only": mc:AlternateContent, range markup and the
+	 * rest are not this method's business). The parent sets are: block-level containers (Body, Tc,
+	 * SdtContentBlock, CTTxbxContent, Hdr, Ftr, CTFtnEdn, Comments.Comment, CTCustomXmlBlock), run-level containers
+	 * (P, P.Hyperlink, CTSimpleField, RunIns, RunDel, CTSmartTagRun, CTCustomXmlRun, CTSdtContentRun), R, Tbl, Tr.
+	 * Since 17.3.5's addendum (CR-064 §8.1, objects-ts's notes): DelText where Text is refused, a run-level Tab
+	 * where Br is refused, and a content control at the wrong level (a block, row or cell control in run content;
+	 * a run, row or cell control in block content; any but a row control in a table; any but a cell control in a
+	 * row; any in a run).
+	 *
+	 * @throws IllegalArgumentException for a misplaced child; the message says what to do instead
+	 */
+	private void checkParent(E e0) {
+
 		if (parent==null) {
-			
+
 			log.warn("null parent. how?");
 			if (log.isDebugEnabled()) {
 				log.debug("Null parent", new Throwable());
 			}
-			
-		} else {
-			
-			// Sanity check common user error
-			if (parent instanceof P) {
-				if (e instanceof Tbl) {
-					throw new RuntimeException("You can't add a table inside a paragraph; it should be a sibling");
-				} else if (e instanceof P) {
-					throw new RuntimeException("You can't nest a paragraph inside a paragraph.");
-				} else if (e instanceof Text) {
-					throw new RuntimeException("You can't add Text directly to a paragraph; add it to a run (R) and add that.");
-				}
+			return;
+		}
+
+		Object e = e0 instanceof JAXBElement ? ((JAXBElement<?>) e0).getValue() : e0;
+
+		if (parent instanceof P || isOtherRunContainer(parent)) {
+			if (e instanceof Tbl) {
+				throw new IllegalArgumentException("You can't add a table inside " + describe(parent) + "; it should be a sibling of the paragraph.");
+			} else if (e instanceof P) {
+				throw new IllegalArgumentException("You can't nest a paragraph inside " + describe(parent) + ".");
+			} else if (e instanceof Text || e instanceof DelText) {
+				throw new IllegalArgumentException("You can't add " + (e instanceof DelText ? "DelText" : "Text") + " directly to " + describe(parent) + "; add it to a run (R) and add that.");
+			} else if (e instanceof Drawing) {
+				throw new IllegalArgumentException("You can't add a Drawing directly to " + describe(parent) + "; add it to a run (R) and add that.");
+			} else if (e instanceof Br || e instanceof R.Tab) {
+				throw new IllegalArgumentException("You can't add a " + (e instanceof Br ? "Br" : "Tab") + " directly to " + describe(parent) + "; add it to a run (R) and add that.");
+			} else if (e instanceof SdtBlock || e instanceof CTSdtRow || e instanceof CTSdtCell) {
+				throw new IllegalArgumentException("You can't add " + sdtLevel(e) + " to " + describe(parent) + "; it goes " + sdtGoes(e) + "; a run-level content control (SdtRun) goes here.");
+			} else if (e instanceof PPr) {
+				throw new IllegalArgumentException("You can't add PPr to a paragraph's content; use setPPr.");
+			} else if (e instanceof String) {
+				throw new IllegalArgumentException("You can't add a String to " + describe(parent) + "; put it in a Text, in a run (R), and add the run.");
 			}
-			
-			if (parent instanceof R) {
-				if (e instanceof R) {
-					throw new RuntimeException("You can't nest a run inside a run");
-				} else if (e instanceof P) {
-					throw new RuntimeException("You can't nest a paragraph inside a run.");
-				} else if (e instanceof Tbl) {
-					throw new RuntimeException("You can't add a table inside a run.");
-				}
+
+		} else if (parent instanceof R) {
+			if (e instanceof R) {
+				throw new IllegalArgumentException("You can't nest a run inside a run; add it to the paragraph.");
+			} else if (e instanceof P) {
+				throw new IllegalArgumentException("You can't nest a paragraph inside a run.");
+			} else if (e instanceof Tbl) {
+				throw new IllegalArgumentException("You can't add a table inside a run.");
+			} else if (e instanceof RPr) {
+				throw new IllegalArgumentException("You can't add RPr to a run's content; use setRPr.");
+			} else if (e instanceof SdtRun || e instanceof SdtBlock || e instanceof CTSdtRow || e instanceof CTSdtCell) {
+				throw new IllegalArgumentException("You can't add a content control (sdt) inside a run; a run-level content control (SdtRun) goes in the paragraph, beside the run.");
+			} else if (e instanceof String) {
+				throw new IllegalArgumentException("You can't add a String to a run; put it in a Text (wrapped by the ObjectFactory's createRT) and add that.");
 			}
-			
-			if (parent instanceof SdtContent) {
-				if (e instanceof SdtContent) {
-					throw new RuntimeException("You can't nest a bare SdtContent directly inside SdtContent");
-				}
+
+		} else if (isBlockContainer(parent)) {
+			if (e instanceof R) {
+				throw new IllegalArgumentException("You can't add a run (R) directly to " + describe(parent) + "; add it to a paragraph (P) and add that.");
+			} else if (e instanceof Text || e instanceof DelText) {
+				throw new IllegalArgumentException("You can't add " + (e instanceof DelText ? "DelText" : "Text") + " directly to " + describe(parent) + "; add it to a run (R) in a paragraph (P) and add the paragraph.");
+			} else if (e instanceof Drawing) {
+				throw new IllegalArgumentException("You can't add a Drawing directly to " + describe(parent) + "; add it to a run (R) in a paragraph (P) and add the paragraph.");
+			} else if (e instanceof Br || e instanceof R.Tab) {
+				throw new IllegalArgumentException("You can't add a " + (e instanceof Br ? "Br" : "Tab") + " directly to " + describe(parent) + "; add it to a run (R) in a paragraph (P) and add the paragraph.");
+			} else if (e instanceof SdtRun || e instanceof CTSdtRow || e instanceof CTSdtCell) {
+				throw new IllegalArgumentException("You can't add " + sdtLevel(e) + " to " + describe(parent) + "; it goes " + sdtGoes(e) + "; a block-level content control (SdtBlock) goes here.");
+			} else if (e instanceof Tc) {
+				throw new IllegalArgumentException("You can't add a table cell (Tc) to " + describe(parent) + "; a cell goes in a row (Tr), in a table (Tbl).");
+			} else if (e instanceof Tr) {
+				throw new IllegalArgumentException("You can't add a table row (Tr) to " + describe(parent) + "; a row goes in a table (Tbl).");
+			} else if (e instanceof SectPr) {
+				throw new IllegalArgumentException("You can't add SectPr to " + describe(parent) + "'s content; use Body.setSectPr, or PPr.setSectPr on the paragraph that ends the section.");
+			} else if (e instanceof TcPr) {
+				throw new IllegalArgumentException(parent instanceof Tc
+						? "You can't add TcPr to a table cell's content; use setTcPr."
+						: "You can't add TcPr to " + describe(parent) + "; cell properties belong to a table cell (Tc), through its setTcPr.");
+			} else if (e instanceof String) {
+				throw new IllegalArgumentException("You can't add a String to " + describe(parent) + "; put it in a Text, in a run (R), in a paragraph (P), and add the paragraph.");
+			}
+
+		} else if (parent instanceof Tbl) {
+			if (e instanceof Tc) {
+				throw new IllegalArgumentException("You can't add a table cell (Tc) directly to a table; add it to a row (Tr) and add that.");
+			} else if (e instanceof P || e instanceof R) {
+				throw new IllegalArgumentException("You can't add a " + (e instanceof P ? "paragraph" : "run") + " directly to a table; add it to a cell (Tc) in a row (Tr).");
+			} else if (e instanceof Tbl) {
+				throw new IllegalArgumentException("You can't nest a table directly in a table; a nested table goes in a cell (Tc).");
+			} else if (e instanceof TblPr) {
+				throw new IllegalArgumentException("You can't add TblPr to a table's content; use setTblPr.");
+			} else if (e instanceof SdtBlock || e instanceof SdtRun || e instanceof CTSdtCell) {
+				throw new IllegalArgumentException("You can't add " + sdtLevel(e) + " to a table; it goes " + sdtGoes(e) + "; a row-level content control (CTSdtRow) goes here.");
+			} else if (e instanceof String) {
+				throw new IllegalArgumentException("You can't add a String to a table; text goes in a run (R) in a paragraph (P) in a cell (Tc).");
+			}
+
+		} else if (parent instanceof Tr) {
+			if (e instanceof P || e instanceof R) {
+				throw new IllegalArgumentException("You can't add a " + (e instanceof P ? "paragraph" : "run") + " directly to a table row; add it to a cell (Tc) and add that.");
+			} else if (e instanceof Tbl) {
+				throw new IllegalArgumentException("You can't nest a table in a table row; a nested table goes in a cell (Tc).");
+			} else if (e instanceof TrPr) {
+				throw new IllegalArgumentException("You can't add TrPr to a row's content; use setTrPr.");
+			} else if (e instanceof SdtBlock || e instanceof SdtRun || e instanceof CTSdtRow) {
+				throw new IllegalArgumentException("You can't add " + sdtLevel(e) + " to a table row; it goes " + sdtGoes(e) + "; a cell-level content control (CTSdtCell) goes here.");
+			} else if (e instanceof String) {
+				throw new IllegalArgumentException("You can't add a String to a table row; text goes in a run (R) in a paragraph (P) in a cell (Tc).");
 			}
 		}
+
+		if (parent instanceof SdtContent && e instanceof SdtContent) {
+			throw new IllegalArgumentException("You can't nest a bare SdtContent directly inside SdtContent; nest an Sdt (SdtBlock or SdtRun) that holds it.");
+		}
 	}
-	
+
+	private static boolean isBlockContainer(Object p) {
+		return p instanceof Body || p instanceof Tc || p instanceof SdtContentBlock || p instanceof CTTxbxContent
+				|| p instanceof Hdr || p instanceof Ftr || p instanceof CTFtnEdn || p instanceof Comments.Comment
+				|| p instanceof CTCustomXmlBlock;
+	}
+
+	private static boolean isOtherRunContainer(Object p) {
+		return p instanceof P.Hyperlink || p instanceof CTSimpleField || p instanceof RunIns || p instanceof RunDel
+				|| p instanceof CTSmartTagRun || p instanceof CTCustomXmlRun || p instanceof CTSdtContentRun;
+	}
+
+	/** a content control's level, for a message */
+	private static String sdtLevel(Object e) {
+		if (e instanceof SdtBlock) return "a block-level content control (SdtBlock)";
+		if (e instanceof SdtRun) return "a run-level content control (SdtRun)";
+		if (e instanceof CTSdtRow) return "a row-level content control (CTSdtRow)";
+		return "a cell-level content control (CTSdtCell)";
+	}
+
+	/** where a content control of that level goes */
+	private static String sdtGoes(Object e) {
+		if (e instanceof SdtBlock) return "beside a paragraph (in the body, a cell, a header or the like)";
+		if (e instanceof SdtRun) return "in a paragraph (P)";
+		if (e instanceof CTSdtRow) return "in a table (Tbl)";
+		return "in a table row (Tr)";
+	}
+
+	/** the parent, for a message: what a reader of the code calls it */
+	private static String describe(Object p) {
+		if (p instanceof P) return "a paragraph";
+		if (p instanceof P.Hyperlink) return "a hyperlink";
+		if (p instanceof CTSimpleField) return "a field (fldSimple)";
+		if (p instanceof RunIns) return "an insertion (ins)";
+		if (p instanceof RunDel) return "a deletion (del)";
+		if (p instanceof CTSmartTagRun) return "a smart tag";
+		if (p instanceof CTCustomXmlRun) return "a run-level customXml";
+		if (p instanceof CTSdtContentRun) return "run-level sdt content";
+		if (p instanceof Body) return "the body";
+		if (p instanceof Tc) return "a table cell (Tc)";
+		if (p instanceof SdtContentBlock) return "block-level sdt content";
+		if (p instanceof CTTxbxContent) return "a text box (txbxContent)";
+		if (p instanceof Hdr) return "a header";
+		if (p instanceof Ftr) return "a footer";
+		if (p instanceof CTFtnEdn) return "a footnote or endnote";
+		if (p instanceof Comments.Comment) return "a comment";
+		if (p instanceof CTCustomXmlBlock) return "a block-level customXml";
+		return p.getClass().getSimpleName();
+	}
+
 	private void setParent(Object o) {
 
 		if (parent!=null

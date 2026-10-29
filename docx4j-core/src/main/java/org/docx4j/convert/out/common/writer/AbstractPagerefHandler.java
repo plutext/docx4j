@@ -26,8 +26,7 @@ import javax.xml.transform.TransformerException;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
-import org.docx4j.model.fields.FldSimpleModel;
-import org.docx4j.model.fields.FormattingSwitchHelper;
+import org.docx4j.model.fields.FieldInstruction;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
@@ -53,9 +52,9 @@ public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.
 	}
 
 	@Override
-	public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException {
-	String bookmarkId = model.getFldParameters().get(0);
-	Node content = model.getContent();
+	public Node toNode(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult, Document doc) throws TransformerException {
+	String bookmarkId = instruction.getParameters().get(0);
+	Node content = cachedResult;
 		// The bookmark this field points at is not in the document: no reference can be
 		// made.  A reference to an id that is never emitted resolves to nothing at all in
 		// FO (fo:page-number-citation) and to a dead link in HTML, which cost one corpus
@@ -74,7 +73,7 @@ public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.
 	String textcontent = null;
 	List<String> textcontentitems = null;
 	String textcontentitem = null;
-		if (FormattingSwitchHelper.hasSwitch("\\p", model.getFldParameters())) {
+		if (instruction.hasSwitch("\\p")) {
 			textcontent = getTextcontent(content);
 			textcontentitems = splitTextcontent(textcontent);
 			//textcontentitems == null -> no page number (above/below)
@@ -102,9 +101,9 @@ public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.
 			content = doc.createDocumentFragment();
 			content.appendChild(createPageref(context, doc, bookmarkId));
 		}
-		if (FormattingSwitchHelper.hasSwitch("\\h", model.getFldParameters())) {
+		if (instruction.hasSwitch("\\h")) {
 			hyperlinkModel = new AbstractHyperlinkWriterModel();
-			hyperlinkModel.build(context, model, content); //the bookmark is the target, \h gets ignored
+			hyperlinkModel.build(context, instruction, content); //the bookmark is the target, \h gets ignored
 			content = HyperlinkUtil.toNode(outputType, context, hyperlinkModel, content, doc);
 		}
 		return content;

@@ -305,3 +305,16 @@ case	token	accepted	original	markup	option	with_option	note	fixture	statements
 73	EMF73_GLYPH_INDEX	0	0	0			an EMR_EXTTEXTOUTW record of glyph indices: left out (image.text)	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
 73	EMF73_STOCK_FONT	0	0	0			an EMR_EXTTEXTOUTA record with the stock SYSTEM_FONT selected (ANSI); inspection: image.metafile_text	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
 74	EMF74_DESCR	0	0	0	alt_text: true	1	the picture's descr	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-514
+75	RNG75_LEFT_BEFORE	1	1	1			w:spacing/@w:before 65537 (uint16: Word reads 1) and w:ind/@w:left 66256 (int16: 720); inspection: value.out_of_range, one finding per attribute	extraction-probe-inspect.docx	REQ-902, REQ-904
+76	RNG76_CELL	1	1	1			w:tblW 65536 pct (int16: Word reads 0), w:gridCol 70000 (unmeasured: changed), w:tcW 70000 dxa (4464); inspection: value.out_of_range, three findings	extraction-probe-inspect.docx	REQ-902, REQ-904
+77	RNG77_TAB	1	1	1			w:tab/@w:pos 32768 (Word reads -31680); inspection: value.out_of_range	extraction-probe-inspect.docx	REQ-902, REQ-904
+78	RNG78_FIRSTLINE_LINE	1	1	1			w:spacing/@w:line 65535 exact (the sign is the rule: Word reads atLeast 1) and w:ind/@w:firstLine 65535 (one field with hanging: hanging 1); inspection: value.out_of_range, two findings	extraction-probe-inspect.docx	REQ-902, REQ-904
+79	RNG79_ROW	1	1	1			w:trHeight 65537 exact (Word reads exact 1); the table width under auto is not checked; inspection: value.out_of_range	extraction-probe-inspect.docx	REQ-902, REQ-904
+79	RNG79_BORDER	1	1	1			w:pBdr/w:top sz 256 (8 bits: Word reads 0) and space 32 (5 bits: 0); inspection: value.out_of_range, two findings	extraction-probe-inspect.docx	REQ-902, REQ-904
+79	RNG79_SCALE	1	1	1			w:w 65636 (uint16: Word reads 100); inspection: value.out_of_range	extraction-probe-inspect.docx	REQ-902, REQ-904
+80	RNG80_STYLE	1	1	1			its style's w:ind/@w:left 66256 (Word reads 720) in styles.xml, and w:hyphenationZone 65537 (1) in settings.xml; inspection: value.out_of_range in each part	extraction-probe-inspect.docx	REQ-902, REQ-904
+81	RNG81_HERE	1	1	1				extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-302, REQ-502
+81	RNG81_CHOICE	1	1	1			the selected Choice (w14)	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-302, REQ-502
+81	RNG81_FALLBACK	0	0	0			a run in the unselected Fallback whose w:spacing/@w:val is 65537 (Word reads 1); inspection: mce.branch, and value.out_of_range in it	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-302, REQ-502
+81	RNG81_HEADER	0	0	0	include: headers	1	w:ind/@w:right 66976 (Word reads 1440) in the header the section uses; inspection: value.out_of_range	extraction-probe-inspect.docx	REQ-902, REQ-904, REQ-302, REQ-502
+82	RNG82_SECTION	1	1	1			the body's w:sectPr carries w:pgNumType/@w:start 4294967295 (int32: Word reads -1); inspection: value.out_of_range	extraction-probe-inspect.docx	REQ-902, REQ-904

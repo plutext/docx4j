@@ -93,6 +93,7 @@ public class Spacing extends AbstractRunProperty {
 			this.setObject(null);
 			return;
 		}
+		warnIfOutsideWordRange(CSS_NAME, value, twip, "twips", -32768, 32767, "w:rPr/w:spacing/@w:val"); // CR-066 D5: int16
 		CTSignedTwipsMeasure spacing = Context.getWmlObjectFactory().createCTSignedTwipsMeasure();
 		spacing.setVal(BigInteger.valueOf(twip));
 		this.setObject( spacing);

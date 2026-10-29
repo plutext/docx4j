@@ -136,6 +136,9 @@ public class FontSize extends AbstractRunProperty {
 			log.error("TODO FontSize Handle units: " + cssPrimitiveValue.getPrimitiveType() );
 			debug(CSS_NAME, value);
 		}
+		if (hpsMeasure.getVal() != null) { // CR-066 D5: w:sz is uint16 (Word keeps 3277 and up; the UI's 1638 pt is not a limit on read)
+			warnIfOutsideWordRange(CSS_NAME, value, hpsMeasure.getVal().longValue(), "half-points", 0, 65535, "w:sz/@w:val");
+		}
 	}
 	
 	

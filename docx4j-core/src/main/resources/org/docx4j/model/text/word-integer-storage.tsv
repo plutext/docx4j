@@ -1,0 +1,134 @@
+# Word's storage width per integer attribute (CR-066 sections 3.1 and 3.4, measured on Word 365, 2026-10-26).
+# Read by the inspector (InspectRanges, value.out_of_range) and by the oracle (text-extraction/support/inspect_oracle.py).
+# element: the WordprocessingML element's local name; attribute: its attribute's local name; context: a sibling
+# attribute's values that select the row (name=v1|v2; an empty alternative means absent; empty context: any),
+# the first matching row in file order wins; storage: how Word stores the value, which gives its reading;
+# range: the values Word keeps as written (lo..hi); evidence: the probe round and family.
+#
+# storage: int16, uint16, int32, uint8, uint5 (modulo the width, signed where int); pair-firstLine and pair-hanging
+# (one int16 field, +firstLine or -hanging); rule-negated and rule-positive (the sign is the rule: exact stored as
+# the negative; at zero "atLeast 0"); rule-negated-drop and rule-positive-drop (the same, the element dropped at
+# a stored zero: a value that wraps to 0; a literal 0 is within the range and never read, and whether Word also
+# drops it is unmeasured); bits15-flag (the low 15 bits, bit 15 turns the exact rule off); int16-clamp, uint16-clamp, uint16-min
+# (wrap, then the range column's clamp); column-w (a negative width is recomputed); column-space (a negative
+# becomes -1); twips-unmeasured (an ST_TwipsMeasure attribute no round measured: outside -32768..65535 is changed,
+# how is not known); ignored (the value is not 16-bit, or Word discards it: never a finding).
+element	attribute	context	storage	range	evidence
+spacing	before		uint16	0..65535	round 5 P1; 0xFFFF written as -1
+spacing	after		uint16	0..65535	round 6 A, as before
+spacing	line	lineRule=exact	rule-negated	1..32768	round 5 P4: exact 65535 -> atLeast 1; 7205001 -> atLeast 3959
+spacing	line	lineRule=atLeast	rule-positive	0..32767	round 6 A: atLeast 32768 -> exact 32768; 65536 -> atLeast 0
+spacing	line		int16	-32768..32767	round 5 P3 (auto)
+spacing	val		int16	-32768..32767	round 5 R3 (a run's spacing; the UI's 31680 is not applied)
+ind	left		int16	-32768..32767	round 5 P2: 7205001 -> -3959
+ind	right		int16	-32768..32767	round 6 A
+ind	start		int16	-32768..32767	round 6 A (written back as left)
+ind	end		int16	-32768..32767	round 6 A (written back as right)
+ind	firstLine		pair-firstLine	0..32767	round 6 A: 32768 -> hanging 32768; 65535 -> hanging 1; 7205001 -> hanging 3959
+ind	hanging		pair-hanging	0..32768	round 6 A: 65535 -> firstLine 1; -32769 -> hanging 32767; 7205001 -> firstLine 3959
+tab	pos		int16-clamp	-31680..31680	round 5 P5: 32767 -> 31680; 32768 -> -31680; 7205001 -> -3959
+framePr	w		int16	-32768..32767	round 6 F; 0 is not written (auto)
+framePr	h		bits15-flag	0..32767	round 6 F: 32768 -> h 0 no hRule; 65535 -> 32767 no hRule; 7205001 -> 28809 no hRule
+framePr	hSpace		int16	-32768..32767	round 6 F
+framePr	vSpace		int16	-32768..32767	round 6 F
+framePr	x		int16	-32768..32767	round 6 F
+framePr	y		int16	-32768..32767	round 6 F
+position	val		int16	-32768..32767	round 5 R2 (the UI's 3168 is not applied)
+w	val		uint16	0..65535	round 5 R4 (text scale; the schema's 600 is not applied)
+sz	val		uint16	0..65535	round 5 R1 (the UI's 3276 is not applied; a run of 1638 pt or more is split per character)
+szCs	val		uint16	0..65535	round 6 R
+kern	val		uint16	0..65535	round 6 R
+hps	val		uint16	0..65535	type-level (CT_HpsMeasure, uniform uint16 where measured); not measured
+hpsBaseText	val		uint16	0..65535	type-level; not measured
+hpsRaise	val		uint16	0..65535	type-level; not measured
+size	val		uint16	0..65535	type-level (CT_HpsMeasure: a legacy form field's w:checkBox/w:size); not measured; the gap objects-ts found 2026-10-27
+fitText	val		ignored		round 6 R: kept as written, not 16-bit
+top	sz		uint8	0..255	round 5 B1; round 6 R, T, S: every border family alike
+top	space		uint5	0..31	round 5 B2
+left	sz		uint8	0..255	as top
+left	space		uint5	0..31	as top
+bottom	sz		uint8	0..255	as top
+bottom	space		uint5	0..31	as top
+right	sz		uint8	0..255	as top
+right	space		uint5	0..31	as top
+start	sz		uint8	0..255	as top
+start	space		uint5	0..31	as top
+end	sz		uint8	0..255	as top
+end	space		uint5	0..31	as top
+insideH	sz		uint8	0..255	as top
+insideH	space		uint5	0..31	as top
+insideV	sz		uint8	0..255	as top
+insideV	space		uint5	0..31	as top
+tl2br	sz		uint8	0..255	as top
+tl2br	space		uint5	0..31	as top
+tr2bl	sz		uint8	0..255	as top
+tr2bl	space		uint5	0..31	as top
+bar	sz		uint8	0..255	as top
+bar	space		uint5	0..31	as top
+between	sz		uint8	0..255	as top
+between	space		uint5	0..31	as top
+bdr	sz		uint8	0..255	round 6 R
+bdr	space		uint5	0..31	round 6 R
+tblW	w	type=auto|nil	ignored		the value is unused under auto and nil
+tblW	w		int16	-32768..32767	round 5 T1 (dxa), T5 (pct: 5001 and 32767 kept, no clamp at 5000)
+tcW	w	type=auto|nil	ignored		as tblW
+tcW	w		int16	-32768..32767	round 5 T2 (dxa), T4 (pct)
+tblInd	w	type=auto|nil	ignored		as tblW
+tblInd	w		int16	-32768..32767	round 5 T3
+tblCellSpacing	w	type=auto|nil	ignored		as tblW
+tblCellSpacing	w		int16	-32768..32767	round 6 T
+wBefore	w	type=auto|nil	ignored		as tblW
+wBefore	w		int16	-32768..32767	as tblW; not measured (round 6 lost the family to the grid)
+wAfter	w	type=auto|nil	ignored		as tblW
+wAfter	w		int16	-32768..32767	as wBefore
+top	w	type=auto|nil	ignored		a cell margin (tcMar, tblCellMar) under auto or nil
+top	w		int16	-32768..32767	round 6 T (tcMar, tblCellMar)
+left	w	type=auto|nil	ignored		as top
+left	w		int16	-32768..32767	round 6 T
+bottom	w	type=auto|nil	ignored		as top
+bottom	w		int16	-32768..32767	as left
+right	w	type=auto|nil	ignored		as top
+right	w		int16	-32768..32767	as left
+start	w	type=auto|nil	ignored		as top
+start	w		int16	-32768..32767	as left
+end	w	type=auto|nil	ignored		as top
+end	w		int16	-32768..32767	as left
+trHeight	val	hRule=exact	rule-negated-drop	1..32768	round 5 T6, round 6 T: exact 65535 -> atLeast 1; 7205001 -> atLeast 3959
+trHeight	val	hRule=auto	ignored		round 6 T: discarded at every value
+trHeight	val		rule-positive-drop	0..32767	round 5 T6: 32768 -> exact 32768; 65536 -> dropped; -1 -> exact 1
+gridCol	w		twips-unmeasured	-32768..65535	Word recomputes the grid from the cells: no file-side measurement
+tblpPr	leftFromText		int16	-32768..32767	round 6 P
+tblpPr	rightFromText		int16	-32768..32767	round 6 P
+tblpPr	topFromText		int16	-32768..32767	round 6 P
+tblpPr	bottomFromText		int16	-32768..32767	round 6 P
+tblpPr	tblpX		int16	-32768..32767	round 6 P
+tblpPr	tblpY		int16	-32768..32767	round 6 P
+pgSz	w		uint16-clamp	144..31681	round 5 S1: 32767 -> 31681; 65536 -> 144; 1205003 -> 25355
+pgSz	h		uint16-min	144..65535	round 5 S2: 65536 -> 144; no maximum
+pgMar	top		int16	-32768..32767	round 5 S3
+pgMar	bottom		int16	-32768..32767	round 6 S
+pgMar	left		uint16	0..65535	round 6 S; 0xFFFF written as -1
+pgMar	right		uint16	0..65535	round 6 S
+pgMar	header		uint16	0..65535	round 6 S
+pgMar	footer		uint16	0..65535	round 6 S
+pgMar	gutter		uint16	0..65535	round 6 S
+cols	space		int16	-32768..32767	round 6 S
+col	w		column-w	0..32767	round 6 S: a negative width is replaced by a computed one (9360 in the probe)
+col	space		column-space	-1..32767	round 6 S: a negative space becomes -1
+lnNumType	distance		int16	-32768..32767	round 6 S; 0 is not written
+pgNumType	start		int32	-2147483648..2147483647	round 5 S4: 4294967295 -> -1
+defaultTabStop	val		uint16	0..65535	round 6 D; round 2: 7205002 -> 61578
+hyphenationZone	val		uint16	0..65535	round 6 D
+drawingGridHorizontalSpacing	val		twips-unmeasured	-32768..65535	not measured
+drawingGridVerticalSpacing	val		twips-unmeasured	-32768..65535	not measured
+drawingGridHorizontalOrigin	val		twips-unmeasured	-32768..65535	not measured
+drawingGridVerticalOrigin	val		twips-unmeasured	-32768..65535	not measured
+object	dxaOrig		twips-unmeasured	-32768..65535	not measured (an embedded OLE object's extent)
+object	dyaOrig		twips-unmeasured	-32768..65535	not measured
+splitbar	w		twips-unmeasured	-32768..65535	not measured (a frameset)
+legacy	legacySpace		ignored		round 6 N: Word 365 drops w:legacy from numbering.xml
+legacy	legacyIndent		ignored		as legacySpace
+marTop	val		int16	-32768..32767	type-level (ST_SignedTwipsMeasure, int16 at every measured attribute); a w:div's margin, not measured
+marBottom	val		int16	-32768..32767	as marTop
+marLeft	val		int16	-32768..32767	as marTop
+marRight	val		int16	-32768..32767	as marTop

@@ -1,0 +1,19 @@
+IF-field probe (CR-067): each case is its token, then a field whose stored result is the losing branch. Title property: Probe.
+Bookmark Edited: NEW (its text was OLD when the fields were last updated).
+C01_LITERAL_IF = APPROVED
+C02_SIMPLE_FIELD = APPROVED
+C03_DOCPROPERTY_COND = TITLE_MATCH
+C04_DATE_COND = VALID
+C05_FORMULA = 2
+C06_COMPARE = 1
+C07_LOCKED = REJECTED
+C08_NO_RESULT = APPROVED
+C09_NO_SEPARATE = APPROVED
+C10_NESTED_BRANCH = Probe
+C11_REF_EDITED = REF_NEW
+C12_HIDDEN_TRUE = 
+C13_HAND_EDITED = APPROVED
+C14_CONTROL_TRUE = APPROVED
+C15_SIMPLE_EMPTY = APPROVED
+C16_WILDCARD = WILD_MATCH
+End of the probe.

@@ -76,6 +76,7 @@ public class Indent extends AbstractTableProperty {
 			log.error("No support for unit " + type);
 			twip = 0;
 		}
+		warnIfOutsideWordRange(CSS_NAME, value, twip, "twips", -32768, 32767, "w:tblInd/@w:w"); // CR-066 D5: int16
 		tblWidth.setW(BigInteger.valueOf(twip) );		
 		tblWidth.setType("dxa");		
 		this.setObject(tblWidth);

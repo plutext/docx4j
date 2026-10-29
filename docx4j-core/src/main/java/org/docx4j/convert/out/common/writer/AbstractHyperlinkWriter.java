@@ -22,7 +22,7 @@ package org.docx4j.convert.out.common.writer;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
-import org.docx4j.model.fields.FldSimpleModel;
+import org.docx4j.model.fields.FieldInstruction;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -60,9 +60,9 @@ public abstract class AbstractHyperlinkWriter extends AbstractSimpleWriter imple
 	}
 
 	@Override
-	public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException {
+	public Node toNode(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult, Document doc) throws TransformerException {
 	AbstractHyperlinkWriterModel hyperlinkModel = new AbstractHyperlinkWriterModel();
-		hyperlinkModel.build(context, model, model.getContent());
+		hyperlinkModel.build(context, instruction, cachedResult);
 		return toNode(context, hyperlinkModel, doc);
 	}
 

@@ -40,6 +40,10 @@ import javax.xml.namespace.QName;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+import org.docx4j.model.fields.FieldContext;
+import org.docx4j.model.fields.FieldInstruction;
+import org.docx4j.model.fields.ListNumbers;
+import org.docx4j.model.fields.SymbolField;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.CTOfficeArtExtension;
 import org.docx4j.dml.Graphic;
@@ -552,10 +556,16 @@ final class Extractor {
 		String computed;
 		/** A form field's data, on its beginning: a FORMTEXT's default text (REQ-506). */
 		CTFFData ffData;
+		/** The fldChar beginning it: the node a list number (LISTNUM, AUTONUM*) is looked up by (CR-067 phase 3). */
+		Object begin;
+		/** A list number under fields: cached: Word never stores one, so its stale text is not read and no result is reported (WD 0.41). */
+		boolean liveOmitted;
 		/** A HYPERLINK field's target, once its code is read: its result's text is in the link (REQ-703). */
 		String link;
 		/** A table of contents under {@code toc: false} (D12): nothing of it is read. */
 		boolean toc;
+		/** A SET field: its stored result is never shown (Word hides it; CR-067 section 13.2). */
+		boolean hiddenResult;
 		/** Where its code's runs begin, for a table of contents' to be taken out again. */
 		TextBlock codeBlock;
 		int codeStart;
@@ -1222,6 +1232,7 @@ final class Extractor {
 				FieldState f = new FieldState();
 				f.locked = written(fc, "fldLock");
 				f.ffData = fc.getFfData();
+				f.begin = fc;
 				f.codeBlock = para.block;
 				f.codeStart = para.block.runs.size();
 				if (!options.isToc() && options.isFieldCodes()) {
@@ -1234,6 +1245,8 @@ final class Extractor {
 				if (!fields.isEmpty()) {
 					FieldState f = fields.peek();
 					f.separated = true;
+					f.hiddenResult = f.instr.toString().trim().regionMatches(true, 0, "SET ", 0, 4) || f.instr.toString().trim().equalsIgnoreCase("SET");
+					if (liveOmitted(f)) f.hiddenResult = true; // a list number's stale stored text (CR-067 section 14.4; WD 0.41)
 					f.link = fieldHyperlinkTarget(f.instr.toString());
 					if (!options.isToc() && !suppressed(para.story) && isTocField(f.instr.toString())) {
 						f.toc = true;
@@ -1241,7 +1254,7 @@ final class Extractor {
 						removeFieldCode(f, para);
 						return;
 					}
-					String value = suppressed(para.story) ? null : update(f);
+					String value = suppressed(para.story) ? null : update(f, para.story);
 					if (value != null) {
 						text(para, value, hidden, state);
 						f.computed = value; // the cached result that follows is not read
@@ -1258,14 +1271,19 @@ final class Extractor {
 						return;
 					}
 					if (!f.separated) {
-						String value = update(f);
+						String value = update(f, para.story);
 						if (value != null) {
 							text(para, value, hidden, state);
 							f.computed = value;
 						}
 					}
 					if (f.computed != null) para.block.fields.add(new TextField(f.instr.toString(), f.computed, true));
+					else if (liveOmitted(f)) para.block.fields.add(new TextField(f.instr.toString(), null)); // no result, and no warning: the omission is the rule
 					else endField(f.instr.toString(), f.separated ? f.result.toString() : null, para);
+					// a nested field: its result (computed, else stored) is an operand of the outer's instruction (CR-067 D4)
+					if (!fields.isEmpty() && !fields.peek().separated) {
+						fields.peek().instr.append(FieldContext.asOperand(f.computed != null ? f.computed : f.result.toString()));
+					}
 				}
 			}
 			return;
@@ -1276,7 +1294,13 @@ final class Extractor {
 			String s = v instanceof Text ? ((Text) v).getValue() : null;
 			if (s == null) return;
 			Deque<FieldState> fields = para.story.fields;
-			if (!fields.isEmpty()) fields.peek().instr.append(s);
+			// after the field's separate it is its stored result (Word writes a nested field's result as w:instrText);
+			// before it, the code, which Word evaluates without its hidden text (measured 2026-10-29, CR-067 section 14.7)
+			if (!fields.isEmpty()) {
+				FieldState f = fields.peek();
+				if (f.separated) f.result.append(s);
+				else if (!hidden) f.instr.append(s);
+			}
 			if (options.isFieldCodes() && !suppressed(para.story)) addText(para, s, TextRun.Kind.FIELD_CODE, hidden, state);
 			return;
 		}
@@ -1302,9 +1326,13 @@ final class Extractor {
 			text(para, "\t", hidden, state);
 			return;
 		case "br":
-		case "cr":
+		case "cr": {
+			Deque<FieldState> fields = para.story.fields;
+			// a line break in a field's code (Word's own ADDRESSBLOCK format writes w:cr there; CR-067 section 14.4)
+			if (!fields.isEmpty() && !fields.peek().separated) fields.peek().instr.append('\n');
 			text(para, "\n", hidden, state);
 			return;
+		}
 		case "noBreakHyphen":
 			text(para, "‑", hidden, state);
 			return;
@@ -1405,10 +1433,14 @@ final class Extractor {
 	private void text(Paragraph para, String s, boolean hidden, RunState state) {
 		if (s == null || s.isEmpty()) return;
 		if (inCode(para.story)) {
+			// a nested field's stored result, inside the outer's code: the nested field's, for the outer's instruction
+			FieldState innermost = para.story.fields.peek();
+			if (innermost != null && innermost.separated && innermost.computed == null) innermost.result.append(s);
 			if (options.isFieldCodes()) addText(para, s, TextRun.Kind.FIELD_CODE, hidden, state);
 			return;
 		}
 		if (suppressed(para.story)) return;
+		for (FieldState f : para.story.fields) if (f.hiddenResult) return; // a SET's stored value: never shown
 		if (!(hidden && !options.isHidden())) {
 			for (FieldState f : para.story.fields) f.result.append(s);
 			for (Bookmark b : openBookmarks.values()) {
@@ -1459,11 +1491,33 @@ final class Extractor {
 	}
 
 	/** A field's result under {@code fields: update}, or null to keep its cached one (REQ-506). */
-	private String update(FieldState f) {
-		if (options.getFields() != TextOptions.Fields.UPDATE || f.locked || pkg == null) return null;
+	private String update(FieldState f, Story story) {
 		String instr = f.instr.toString().trim();
+		if (options.getFields() != TextOptions.Fields.UPDATE) return cachedModeValue(instr);
+		if (f.locked || pkg == null) return null;
 		if (f.ffData != null && instr.regionMatches(true, 0, "FORMTEXT", 0, 8)) return formText(f.ffData);
-		return fieldValues().compute(instr);
+		return fieldValues().compute(instr, sectionOf(story), f.begin);
+	}
+
+	/**
+	 * Under fields: cached, the one field computed in every mode: SYMBOL, whose character is content (as a w:sym's is) and
+	 * which Word never stores (CR-067 section 14.4; WD 0.41, Jason's ruling 2026-10-29). Null for every other field.
+	 */
+	private static String cachedModeValue(String instr) {
+		FieldInstruction instruction = FieldInstruction.parse(instr);
+		return "SYMBOL".equals(instruction.getName()) ? SymbolField.of(instruction).getText() : null;
+	}
+
+	/** Under fields: cached, a list number (LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT): Word never stores one, so nothing is read. */
+	private boolean liveOmitted(FieldState f) {
+		if (options.getFields() == TextOptions.Fields.UPDATE) return false;
+		if (!f.liveOmitted) f.liveOmitted = ListNumbers.isListNumber(FieldInstruction.parse(f.instr.toString()).getName());
+		return f.liveOmitted;
+	}
+
+	/** The section (from 1) the main story's walk is in, or null in another story (SECTION keeps its cached result). */
+	private static Integer sectionOf(Story story) {
+		return story == null || story.sections == null ? null : Integer.valueOf(story.sections.size() + 1);
 	}
 
 	/** What Word's update writes in a FORMTEXT with no default text: five en spaces (measured). */
@@ -1618,7 +1672,21 @@ final class Extractor {
 		if (options.isFieldCodes() && !inCode(para.story)) addText(para, instr, TextRun.Kind.FIELD_CODE, false, state);
 		if (options.getFields() == TextOptions.Fields.UPDATE && !written(field, "fldLock") && pkg != null && !inCode(para.story)
 				&& !suppressed(para.story)) {
-			String value = fieldValues().compute(instr);
+			String value = fieldValues().compute(instr, sectionOf(para.story), field);
+			if (value != null) {
+				text(para, value, false, state);
+				para.block.fields.add(new TextField(instr, value, true));
+				return;
+			}
+		}
+		if (options.getFields() != TextOptions.Fields.UPDATE && !inCode(para.story) && !suppressed(para.story)) {
+			// the fields Word never stores (CR-067 section 14.4; WD 0.41): a list number gives nothing, a SYMBOL its character
+			String name = FieldInstruction.parse(instr).getName();
+			if (ListNumbers.isListNumber(name)) {
+				para.block.fields.add(new TextField(instr, null));
+				return;
+			}
+			String value = cachedModeValue(instr);
 			if (value != null) {
 				text(para, value, false, state);
 				para.block.fields.add(new TextField(instr, value, true));

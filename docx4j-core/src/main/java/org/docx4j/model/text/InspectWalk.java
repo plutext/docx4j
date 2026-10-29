@@ -140,8 +140,8 @@ final class InspectWalk {
 		String[] differently = { "text.near_background", "text.tiny", "font.glyph_mismatch", "paragraph.collapsed" };
 		String[] yes = { "hyperlink.web", "comment", "header_footer", "watermark", "note", "sdt.placeholder", "chart.cached",
 				"text.web_hidden", "altchunk", "object.embedded", "ink", "image.svg_text", "image.metafile_text" };
-		String[] none = { "field.external", "settings.update_fields", "relationship.external", "part.macro", "part.activex",
-				"altchunk.script", "altchunk.external_ref", "font.embedded", "part.unknown" };
+		String[] none = { "field.external", "settings.update_fields", "fields.auto_update", "fields.print_update", "relationship.external", "part.macro", "part.activex",
+				"altchunk.script", "altchunk.external_ref", "font.embedded", "part.unknown", InspectRanges.KIND };
 		for (String k : no) VISIBLE.put(k, Visible.NO);
 		for (String k : differently) VISIBLE.put(k, Visible.DIFFERENTLY);
 		for (String k : yes) VISIBLE.put(k, Visible.YES);
@@ -172,6 +172,14 @@ final class InspectWalk {
 			W, "sectPrChange", W, "tblPrChange", W, "trPrChange", W, "tcPrChange", W, "numberingChange", W, "cellIns", W, "cellDel",
 			W, "cellMerge" };
 	private static final List<String> EXTERNAL_FIELDS = Arrays.asList("INCLUDETEXT", "INCLUDEPICTURE", "LINK", "IMPORT", "DDE", "DDEAUTO");
+	/**
+	 * The fields whose presence makes Word's open update the document (CR-067 section 14.7, measured 2026-10-29): Word
+	 * refreshes them and recomputes every IF with literal or auto-updating operands, writing the results on save, so a
+	 * Word user sees text the stored results do not hold.
+	 */
+	private static final List<String> OPEN_TRIGGER_FIELDS = Arrays.asList("DATE", "TIME", "SAVEDATE");
+	/** The fields Word's PDF export (a print) updates before the same pass, so Word's PDF differs from the stored text. */
+	private static final List<String> PRINT_TRIGGER_FIELDS = Arrays.asList("PAGE", "NUMPAGES", "SECTION", "SECTIONPAGES", "PRINTDATE", "REF", "SEQ");
 
 	private final InspectPackage pkg;
 	private final InspectRun run;
@@ -393,6 +401,66 @@ final class InspectWalk {
 			int n = (Integer) e.getValue()[1];
 			f.summary = f.subject + ": " + n + (n == 1 ? " character" : " characters");
 		}
+		walkRanges();
+	}
+
+	/**
+	 * CR-066 D6 (its section 10): every integer attribute outside the width Word stores it in, in every
+	 * WordprocessingML XML part of the package (the main document first, then the rest by part name: the
+	 * styles, settings, numbering, headers, footers, notes, comments, the glossary), every branch of an
+	 * {@code mc:AlternateContent} included; one {@code value.out_of_range} finding per attribute occurrence (a
+	 * run's property merging into the same finding in the run before it, as every run kind does, so that run
+	 * splitting does not count), its summary the ports' shared fields, its group info in every output (it is not
+	 * content).
+	 */
+	private void walkRanges() {
+		List<String> parts = new ArrayList<String>();
+		parts.add(main);
+		for (String p : pkg.partNames()) {
+			if (p.equals(main)) continue;
+			String ctype = pkg.contentType(p);
+			if (ctype == null || !ctype.endsWith("+xml")) continue;
+			if (!ctype.contains("wordprocessingml") && !ctype.contains("ms-word")) continue;
+			parts.add(p);
+		}
+		for (String p : parts) {
+			Element root = pkg.xml(p);
+			if (root == null) continue;
+			Element lastRun = null;
+			String lastSummary = null;
+			for (Object[] f : InspectRanges.findings(root)) {
+				Element e = (Element) f[0];
+				String summary = (String) f[1];
+				// a run's property in the run after one with the same finding is the same finding (CR-050 section 2.4:
+				// run splitting does not count), as for every run kind; a paragraph's or a style's never merges
+				Element run = ancestor(e, W, "r");
+				if (run != null && lastRun != null && summary.equals(lastSummary) && adjacentRuns(lastRun, run)) continue;
+				lastRun = run;
+				lastSummary = run == null ? null : summary;
+				Found found = add(found(InspectRanges.KIND, p, path(p, e), "", needs(InspectFinding.NEVER), e));
+				found.summary = summary;
+				// its subject, the harness's selector: the part, the attribute and the value (unique per fixture case)
+				String attribute = summary.substring("attribute=".length(), summary.indexOf(';'));
+				int v = summary.indexOf("; value=") + "; value=".length();
+				found.subject = (chain.isEmpty() ? "" : String.join(">", chain) + ">") + p + " " + attribute + "=" + summary.substring(v, summary.indexOf(';', v));
+			}
+		}
+	}
+
+	/** The nearest ancestor-or-self of the name, or null. */
+	private static Element ancestor(Element e, String ns, String local) {
+		for (Element a = e; a != null; a = parent(a)) if (is(a, ns, local)) return a;
+		return null;
+	}
+
+	/** Two runs of one parent with no run between them. */
+	private static boolean adjacentRuns(Element a, Element b) {
+		if (a == b || parent(a) == null || parent(a) != parent(b)) return false;
+		for (Node n = a.getNextSibling(); n != null; n = n.getNextSibling()) {
+			if (n == b) return true;
+			if (n.getNodeType() == Node.ELEMENT_NODE && is(n, W, "r")) return false;
+		}
+		return false;
 	}
 
 	private static List<Element> refs(Element sectPr) {
@@ -1366,6 +1434,15 @@ final class InspectWalk {
 			f.endPath = endPath;
 			f.end = end;
 			add(f);
+		}
+		// a field whose presence makes Word recompute the document's literal IFs on open, or on its PDF export (WD 0.41)
+		Found trigger = OPEN_TRIGGER_FIELDS.contains(k) ? found(InspectFinding.FIELDS_AUTO_UPDATE, p, path, instr, needs, el)
+				: PRINT_TRIGGER_FIELDS.contains(k) ? found(InspectFinding.FIELDS_PRINT_UPDATE, p, path, instr, needs, el) : null;
+		if (trigger != null) {
+			trigger.start = start;
+			trigger.endPath = endPath;
+			trigger.end = end;
+			add(trigger);
 		}
 	}
 

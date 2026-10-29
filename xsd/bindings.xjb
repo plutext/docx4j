@@ -1,6 +1,54 @@
 <jaxb:bindings xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
                jaxb:version="3.0">
 
     <jaxb:globalBindings collectionType="org.docx4j.list.ArrayListDocx4j" />
+
+    <!-- CR-065 phase 2 (D2, D4): the integer simple types of wml.xsd are read as Word reads them
+         (org.docx4j.wml.LenientInteger: a decimal truncated toward zero, the empty string 0, any other
+         form dropped with a WARN) and written as held. The Java type stays java.math.BigInteger.
+         CR-066 phase 1 (D1, D7): one parse/print pair per type, so the method knows the type and reports
+         (WARN, at read and at write; never a wrap, clamp or refusal) a value outside the width Word gives
+         every attribute of that type: signed 16-bit for ST_SignedTwipsMeasure and ST_SignedHpsMeasure,
+         unsigned 16-bit for CT_HpsMeasure/@w:val and ST_TextScale, 8 and 5 bits for the border types,
+         the certain range -32768..65535 for ST_TwipsMeasure; nothing for ST_DecimalNumber, whose
+         attributes differ in width. -->
+    <jaxb:bindings scd="~w:ST_DecimalNumber">
+        <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parse" printMethod="org.docx4j.wml.LenientInteger.print"/>
+    </jaxb:bindings>
+    <jaxb:bindings scd="~w:ST_UnsignedDecimalNumber">
+        <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parse" printMethod="org.docx4j.wml.LenientInteger.print"/>
+    </jaxb:bindings>
+    <jaxb:bindings scd="~w:ST_TwipsMeasure">
+        <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parseTwips" printMethod="org.docx4j.wml.LenientInteger.printTwips"/>
+    </jaxb:bindings>
+    <jaxb:bindings scd="~w:ST_SignedTwipsMeasure">
+        <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parseSignedTwips" printMethod="org.docx4j.wml.LenientInteger.printSignedTwips"/>
+    </jaxb:bindings>
+    <jaxb:bindings scd="~w:ST_SignedHpsMeasure">
+        <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parseSignedHps" printMethod="org.docx4j.wml.LenientInteger.printSignedHps"/>
+    </jaxb:bindings>
+    <jaxb:bindings scd="~w:ST_EighthPointMeasure">
+        <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parseEighthPoint" printMethod="org.docx4j.wml.LenientInteger.printEighthPoint"/>
+    </jaxb:bindings>
+    <jaxb:bindings scd="~w:ST_PointMeasure">
+        <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parsePoint" printMethod="org.docx4j.wml.LenientInteger.printPoint"/>
+    </jaxb:bindings>
+    <!-- ST_TextScale is bounded (0..600), which XJC binds to java.lang.Integer; the Java type is kept -->
+    <jaxb:bindings scd="~w:ST_TextScale">
+        <jaxb:javaType name="java.lang.Integer" parseMethod="org.docx4j.wml.LenientInteger.parseTextScale" printMethod="org.docx4j.wml.LenientInteger.printTextScale"/>
+    </jaxb:bindings>
+    <jaxb:bindings scd="~w:ST_PixelsMeasure">
+        <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parse" printMethod="org.docx4j.wml.LenientInteger.print"/>
+    </jaxb:bindings>
+    <!-- w:sz: CT_HpsMeasure/@w:val is typed xsd:unsignedLong directly in docx4j's wml.xsd -->
+    <jaxb:bindings scd="~w:CT_HpsMeasure/@w:val">
+        <jaxb:property>
+            <jaxb:baseType>
+                <jaxb:javaType name="java.math.BigInteger" parseMethod="org.docx4j.wml.LenientInteger.parseHps" printMethod="org.docx4j.wml.LenientInteger.printHps"/>
+            </jaxb:baseType>
+        </jaxb:property>
+    </jaxb:bindings>
 
 </jaxb:bindings>

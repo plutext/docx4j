@@ -1,0 +1,12 @@
+Purchase approval
+To: Finance. From: Procurement. Prepared in 2026.
+This memo seeks approval of the attached purchase order from ACME Supplies.
+Payment terms: Net 30 days.
+Amount due: $500.
+Discount: 10%.
+Supplier code matches our approved list: yes.
+Subtotal check: 2 + 2 = 5.
+Approval status: rejected.
+Printed on page two or later.
+Reviewer note: .
+Reference: Purchase approval.

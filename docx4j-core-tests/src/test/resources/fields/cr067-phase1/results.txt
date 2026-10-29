@@ -1,0 +1,76 @@
+CR-067 phase 1: Word 365 update of the tier-1 fields (one file, about 5 minutes)
+
+1. Open field-probe-r1.docx normally (not Open and Repair). Note the Word build (File > Account > About Word).
+
+Version 2608 (Build 20326.20232)  -- please remember this, just ask me occassionally to check it hasn't changed.
+
+2. Before updating, note what cases P20 to P22 show (they may already show the user, since Word evaluates them on open).
+
+Case 20: P20_USERNAME { USERNAME }
+P20_USERNAME = OLDUSER
+Case 21: P21_USERINITIALS { USERINITIALS }
+P21_USERINITIALS = OLDUSER
+Case 22: P22_USERADDRESS { USERADDRESS }
+P22_USERADDRESS = OLDUSER
+
+3. Ctrl+A, then F9 to update every field. If Word asks about updating, say yes.
+4. For each case below, compare what the field shows with the expectation; note any difference (a word is enough).
+5. Save As field-probe-r1-word365.docx (keep the .docx format) beside this README, then also Save As PDF field-probe-r1-word365.pdf.
+6. Also useful: File > Options > General, the user name and initials Word has, so the USER* cases can be read.
+
+user name: Author A
+initials: AA
+
+Results:
+
+Case 1: P01_CREATEDATE { CREATEDATE }
+P01_CREATEDATE = 2/3/2024 3:05:00 PM
+Case 2: P02_CREATEDATE_SW { CREATEDATE \@ "yyyy-MM-dd HH:mm" }
+P02_CREATEDATE_SW = 2024-02-03 15:05
+Case 3: P03_SAVEDATE { SAVEDATE }
+P03_SAVEDATE = 6/7/2025 6:09:00 PM
+Case 4: P04_SAVEDATE_SW { SAVEDATE \@ "d MMMM yyyy" }
+P04_SAVEDATE_SW = 7 June 2025
+Case 5: P05_REVNUM { REVNUM }
+P05_REVNUM = 7
+Case 6: P06_INFO_TITLE { INFO Title }
+P06_INFO_TITLE = Probe Title
+Case 7: P07_INFO_AUTHOR { INFO Author }
+P07_INFO_AUTHOR = Probe Author
+Case 8: P08_INFO_NOARG { INFO }
+P08_INFO_NOARG = Error! Unknown info keyword.
+Case 9: P09_INFO_NOPE { INFO Nope }
+P09_INFO_NOPE = Error! Unknown info keyword.
+Case 10: P10_SECTION { SECTION }
+P10_SECTION = 1
+Case 11: P11_QUOTE { QUOTE "hello world" }
+P11_QUOTE = hello world
+Case 12: P12_QUOTE_NOARG { QUOTE }
+P12_QUOTE_NOARG = 
+Case 13: P13_REF { REF bm1 }
+P13_REF = Bookmarked text
+Case 14: P14_REF_UPPER { REF bm1 \* Upper }
+P14_REF_UPPER = BOOKMARKED TEXT
+Case 15: P15_REF_NOPE { REF nope }
+P15_REF_NOPE = Error! Reference source not found.
+Case 16: P16_REF_H { REF bm1 \h }
+P16_REF_H = Bookmarked text
+Case 17: P17_NOTEREF { NOTEREF bmNote }
+P17_NOTEREF = 1
+Case 18: P18_NOTEREF_F { NOTEREF bmNote \f }
+P18_NOTEREF_F = 1
+Case 19: P19_NOTEREF_NOPE { NOTEREF nope }
+P19_NOTEREF_NOPE = Error! Bookmark not defined.
+Case 20: P20_USERNAME { USERNAME }
+P20_USERNAME = Author A
+Case 21: P21_USERINITIALS { USERINITIALS }
+P21_USERINITIALS = AA
+Case 22: P22_USERADDRESS { USERADDRESS }
+P22_USERADDRESS = 
+Case 23: P23_KEYWORDS { KEYWORDS }
+P23_KEYWORDS = alpha, beta
+ 
+Case 24: P24_SECTION2 { SECTION }
+P24_SECTION2 = 2
+Case 25: P25_CREATEDATE_SIMPLE { CREATEDATE \@ "yyyy-MM-dd" }
+P25_CREATEDATE_SIMPLE = 2024-02-03

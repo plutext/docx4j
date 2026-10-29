@@ -311,6 +311,7 @@ public class FieldRef {
 			if (o instanceof Text) text.append(((Text)o).getValue());
 		}
 		String name = FormattingSwitchHelper.getFldSimpleName(text.toString());
+		if (name != null && name.length() > 1 && name.charAt(0) == '=') name = "="; // a formula's name is "=", whatever follows it (FieldInstruction)
 		if (name == null) {
 			// eg { { MERGEFIELD type } x }: Word names the field by the nested field's result, when it updates it
 			log.info("Field instruction begins with a nested field; no name until Word updates it");
@@ -358,6 +359,39 @@ public class FieldRef {
 	}
 
 	private boolean seenSeparate=false; 
+
+	private boolean nested;
+	/** Whether this field is inside another's instruction (its own FieldRef among the outer's {@link #getInstructions()}). @since 17.3.5 */
+	public boolean isNested() {
+		return nested;
+	}
+	public void setNested(boolean nested) {
+		this.nested = nested;
+	}
+
+	/**
+	 * Puts the result under a bookmark of the name, as Word stores a SET's value ({@code w:bookmarkStart} before the
+	 * result slot, {@code w:bookmarkEnd} after it), replacing a bookmark of that name already there.
+	 *
+	 * @since 17.3.5
+	 */
+	public void bookmarkResult(String name, java.math.BigInteger id) {
+		if (parent == null || resultsSlot == null) return;
+		List<Object> content = parent.getContent();
+		int slot = content.indexOf(resultsSlot);
+		if (slot < 0) return;
+		if (slot > 0) {
+			Object before = XmlUtils.unwrap(content.get(slot - 1));
+			if (before instanceof org.docx4j.wml.CTBookmark && name.equalsIgnoreCase(((org.docx4j.wml.CTBookmark) before).getName())) return; // already so
+		}
+		org.docx4j.wml.CTBookmark start = Context.getWmlObjectFactory().createCTBookmark();
+		start.setId(id);
+		start.setName(name);
+		org.docx4j.wml.CTMarkupRange end = Context.getWmlObjectFactory().createCTMarkupRange();
+		end.setId(id);
+		content.add(slot + 1, Context.getWmlObjectFactory().createBodyBookmarkEnd(end));
+		content.add(slot, Context.getWmlObjectFactory().createBodyBookmarkStart(start));
+	}
 	public boolean haveSeenSeparate() {
 		return seenSeparate;
 	}
@@ -573,6 +607,25 @@ public class FieldRef {
 		if (!isMergeFormat()) {
 			resultsSlot.setRPr(endRun == null || endRun.getRPr() == null ? null : XmlUtils.deepCopy(endRun.getRPr()));
 		}
+	}
+
+	/**
+	 * Writes the result as these runs (copies), the first's text and properties in the results slot and the rest
+	 * after it: a REF's result in the bookmark's own formatting (CR-067 phase 1).
+	 *
+	 * @since 17.3.5
+	 */
+	public void setResultRuns(List<R> runs) {
+		resultsSlot.getContent().clear();
+		removeRestOfResult();
+		if (runs == null || runs.isEmpty()) return;
+		R first = runs.get(0);
+		resultsSlot.setRPr(first.getRPr() == null ? null : XmlUtils.deepCopy(first.getRPr()));
+		for (Object c : first.getContent()) resultsSlot.getContent().add(XmlUtils.deepCopy(c));
+		if (parent == null) return;
+		List<Object> content = parent.getContent();
+		int at = content.indexOf(resultsSlot) + 1;
+		for (int i = 1; i < runs.size(); i++) content.add(at++, XmlUtils.deepCopy(runs.get(i)));
 	}
 
 	public void setResult(String val) {

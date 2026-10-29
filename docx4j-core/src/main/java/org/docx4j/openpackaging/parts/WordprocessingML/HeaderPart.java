@@ -66,11 +66,8 @@ public final class HeaderPart extends JaxbXmlPartAltChunkHost<Hdr> implements Co
      */
     public List<Object> getContent() {
     	
-    	if (this.getJaxbElement()==null) {    		
-    		this.setJaxbElement( Context.getWmlObjectFactory().createHdr() );
-    	}
-    	
-    	return this.getJaxbElement().getContent();
+    	// a header that could not be read is not replaced by an empty one (CR-065 D1)
+    	return contentsOrNew(() -> Context.getWmlObjectFactory().createHdr()).getContent();
     }	
 	
 	

@@ -4039,13 +4039,7 @@ PRINCIPLES:
 									Reference</xsd:documentation>
 							</xsd:annotation>
 							<xsd:complexType>
-								<xsd:attribute name="val" use="required">
-									<xsd:simpleType>
-										
-										<xsd:restriction base="xsd:integer"/>
-										
-									</xsd:simpleType>
-								</xsd:attribute>
+								<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 							</xsd:complexType>
 							
 						</xsd:element>
@@ -4055,11 +4049,7 @@ PRINCIPLES:
 									Reference</xsd:documentation>
 							</xsd:annotation>
 							<xsd:complexType>
-								<xsd:attribute name="val" use="required">
-									<xsd:simpleType>
-										<xsd:restriction base="xsd:integer"/>
-									</xsd:simpleType>
-								</xsd:attribute>
+								<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 							</xsd:complexType>
 							
 						</xsd:element>
@@ -4491,11 +4481,7 @@ PRINCIPLES:
 							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="outlineLvl")</annox:annotate>
 						</xsd:appinfo>
 					</xsd:annotation>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -4504,11 +4490,7 @@ PRINCIPLES:
 					<xsd:documentation>Associated HTML div ID</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -5038,11 +5020,7 @@ PRINCIPLES:
 						Selection</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -5052,11 +5030,7 @@ PRINCIPLES:
 						Index</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -5092,11 +5066,7 @@ PRINCIPLES:
 						Length</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -8288,11 +8258,7 @@ PRINCIPLES:
 			<xsd:documentation>Unique ID</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
-			<xsd:attribute name="val" use="required">
-				<xsd:simpleType>
-					<xsd:restriction base="xsd:integer"/>
-				</xsd:simpleType>
-			</xsd:attribute>
+			<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 		</xsd:complexType>
 		
 	</xsd:element>
@@ -9791,11 +9757,7 @@ PRINCIPLES:
 						Cell</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -10031,11 +9993,7 @@ PRINCIPLES:
 					<xsd:documentation>Associated HTML div ID</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -10045,11 +10003,7 @@ PRINCIPLES:
 						Cell</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -10059,11 +10013,7 @@ PRINCIPLES:
 						Cell</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -10379,11 +10329,7 @@ PRINCIPLES:
 					<xsd:documentation>Number of Rows in Row Band</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -10393,11 +10339,7 @@ PRINCIPLES:
 						Band</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -10761,11 +10703,7 @@ PRINCIPLES:
 						Value</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -10855,11 +10793,7 @@ PRINCIPLES:
 						Record</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -10920,11 +10854,7 @@ PRINCIPLES:
 						Mapped</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -11038,11 +10968,7 @@ PRINCIPLES:
 						Source</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -11177,11 +11103,7 @@ PRINCIPLES:
 						Document</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -11191,11 +11113,7 @@ PRINCIPLES:
 						Setting</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -12350,11 +12268,7 @@ PRINCIPLES:
 						Lines</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -12384,11 +12298,7 @@ PRINCIPLES:
 						Summary</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -12438,11 +12348,7 @@ PRINCIPLES:
 						Booklet</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -12466,11 +12372,7 @@ PRINCIPLES:
 						Gridlines</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -12480,11 +12382,7 @@ PRINCIPLES:
 						Gridlines</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -12896,11 +12794,7 @@ PRINCIPLES:
 						Graphics/Images</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -13154,11 +13048,7 @@ PRINCIPLES:
 					<xsd:documentation>Starting Value</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -13173,11 +13063,7 @@ PRINCIPLES:
 						Symbol</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -13268,11 +13154,7 @@ PRINCIPLES:
 						Reference</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
-					<xsd:attribute name="val" use="required">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:integer"/>
-						</xsd:simpleType>
-					</xsd:attribute>
+					<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 				</xsd:complexType>
 				
 			</xsd:element>
@@ -14881,11 +14763,7 @@ PRINCIPLES:
 										Definition Reference</xsd:documentation>
 								</xsd:annotation>
 								<xsd:complexType>
-									<xsd:attribute name="val" use="required">
-										<xsd:simpleType>
-											<xsd:restriction base="xsd:integer"/>
-										</xsd:simpleType>
-									</xsd:attribute>
+									<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 								</xsd:complexType>
 								
 							</xsd:element>
@@ -14910,15 +14788,7 @@ PRINCIPLES:
 													Override</xsd:documentation>
 											</xsd:annotation>
 											<xsd:complexType>
-												<xsd:attribute name="val"
-													use="required">
-													<xsd:simpleType>
-														
-														<xsd:restriction
-															base="xsd:integer"/>
-														
-													</xsd:simpleType>
-												</xsd:attribute>
+												<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 											</xsd:complexType>
 											
 										</xsd:element>
@@ -14960,11 +14830,7 @@ PRINCIPLES:
 							Definition</xsd:documentation>
 					</xsd:annotation>
 					<xsd:complexType>
-						<xsd:attribute name="val" use="required">
-							<xsd:simpleType>
-								<xsd:restriction base="xsd:integer"/>
-							</xsd:simpleType>
-						</xsd:attribute>
+						<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 					</xsd:complexType>
 					
 				</xsd:element>
@@ -15100,11 +14966,7 @@ PRINCIPLES:
 						</xsd:documentation>
 					</xsd:annotation>
 					<xsd:complexType>
-						<xsd:attribute name="val" use="required">
-							<xsd:simpleType>
-								<xsd:restriction base="xsd:integer" />
-							</xsd:simpleType>
-						</xsd:attribute>
+						<xsd:attribute name="val" use="required" type="ST_DecimalNumber"/>
 					</xsd:complexType>
 
 				</xsd:element>

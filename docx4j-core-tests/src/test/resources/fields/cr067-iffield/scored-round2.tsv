@@ -1,0 +1,19 @@
+token	stored	word_asis	word_f9	word_dirty_prompt_yes	asis_xml_touched
+R01_STRING_EQ	STR_MISS	STR_MISS	STR_MATCH	STR_MATCH	no (result and shape as built)
+R02_WILDCARD_TRUE_STORED	WILD_MATCH	WILD_MATCH	WILD_MATCH	WILD_MATCH	no (result and shape as built)
+R03_NUMERIC_GT	NUM_LE	NUM_LE	NUM_GT	NUM_GT	no (result and shape as built)
+R04_FALSE_COND	WRONG	WRONG	RIGHT	RIGHT	no (result and shape as built)
+R05_STRING_NE	NE_FALSE	NE_FALSE	NE_TRUE	NE_TRUE	no (result and shape as built)
+R06_CASE	CASE_MATCH	CASE_MATCH	CASE_MISS	CASE_MISS	no (result and shape as built)
+R07_OVER_FORMULA	FORMULA_FALSE	FORMULA_FALSE	FORMULA_TRUE	FORMULA_TRUE	nested result rewritten as w:instrText
+R08_OVER_PAGE	PAGE_OTHER	PAGE_OTHER	PAGE_ONE	PAGE_OTHER	nested result rewritten as w:instrText
+R09_OVER_RIGHT_DOCPROPERTY	TITLE_MISMATCH	TITLE_MISMATCH	TITLE_MATCH	TITLE_MATCH	nested result rewritten as w:instrText
+R10_OVER_NUMPAGES	MORE_PAGES	MORE_PAGES	ONE_PAGE	ONE_PAGE	nested result rewritten as w:instrText
+R11_DIRTY_WILDCARD	WILD_MISS	WILD_MISS	WILD_MATCH	WILD_MATCH	w:dirty cleared
+R12_DIRTY_FORMULA	3	3	2	2	w:dirty cleared
+R13_DIRTY_DOCPROPERTY	Nope	Nope	Probe	Probe	w:dirty cleared
+R14_SIMPLE_DIRTY	3	3	2	2	w:dirty cleared; w:fldSimple rewritten as a complex field
+R15_COMPARE_EQ	0	0	1	1	no (result and shape as built)
+R16_IF_NUMBERS_STRINGS	QUOTED_MISS	QUOTED_MISS	QUOTED_MATCH	QUOTED_MATCH	no (result and shape as built)
+R17_SIMPLE_WILDCARD	WILD_MISS	WILD_MISS	WILD_MATCH	WILD_MATCH	w:fldSimple rewritten as a complex field
+R18_DOCVARIABLE	VAR_X	VAR_X	VAR_OTHER	VAR_OTHER	nested result rewritten as w:instrText

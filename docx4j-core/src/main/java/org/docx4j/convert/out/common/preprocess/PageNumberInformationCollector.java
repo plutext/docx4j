@@ -23,7 +23,7 @@ import javax.xml.transform.TransformerException;
 
 import org.docx4j.TraversalUtil;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
-import org.docx4j.model.fields.FldSimpleModel;
+import org.docx4j.model.fields.FieldInstruction;
 import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
@@ -77,7 +77,6 @@ public class PageNumberInformationCollector {
 		private static final Object SECTIONPAGES_FIELD_TYPE = "SECTIONPAGES";
 		
 		protected PageNumberInformation results = null;
-		protected FldSimpleModel fldSimpleModel = new FldSimpleModel();
 		
 		public FieldVisitor(PageNumberInformation results) {
 			this.results = results;
@@ -102,14 +101,7 @@ public class PageNumberInformationCollector {
 		}
 
 		protected String extractFormat(String instr) {
-		String ret = null;
-			try {
-				fldSimpleModel.build(instr);
-				return FormattingSwitchHelper.findFirstSwitchValue("\\*", fldSimpleModel.getFldParameters(), true);
-			} catch (TransformerException e) {
-				ret = null;
-			}
-			return ret;
+			return FieldInstruction.parse(instr).getSwitchValue("\\*");
 		}
 		
 	}

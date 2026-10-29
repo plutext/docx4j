@@ -621,9 +621,7 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
     
     private CTDocProtect safeGetDocumentProtection() {
     	
-    	if (this.getJaxbElement()==null) {
-    		this.jaxbElement=new CTSettings();
-    	}
+    	contentsOrNew(CTSettings::new); // settings that could not be read are not replaced (CR-065 D1)
     	
         CTDocProtect documentProtection = this.jaxbElement.getDocumentProtection();
         if (documentProtection == null) {
@@ -639,9 +637,7 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 	 */
 	public void attachTemplate(String templatePath) {
 
-    	if (this.getJaxbElement()==null) {
-    		this.jaxbElement=new CTSettings();
-    	}
+    	contentsOrNew(CTSettings::new); // settings that could not be read are not replaced (CR-065 D1)
     	
     	RelationshipsPart rp = this.getRelationshipsPart(true);
 

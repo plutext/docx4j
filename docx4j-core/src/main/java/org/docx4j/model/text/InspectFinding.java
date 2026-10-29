@@ -78,6 +78,17 @@ public final class InspectFinding {
 	public static final String STORY_UNUSED = "story.unused";
 	public static final String SDT_STORED_SURFACE = "sdt.stored_surface";
 	public static final String FIELD_CODE = "field.code";
+	/**
+	 * A DATE, TIME or SAVEDATE field: Word's open refreshes it and recomputes the document's IF fields with literal or
+	 * auto-updating operands, writing the results on save, so a Word user sees text the stored results do not hold
+	 * (CR-067 section 14.7, measured 2026-10-29; WD 0.41).
+	 */
+	public static final String FIELDS_AUTO_UPDATE = "fields.auto_update";
+	/**
+	 * A PAGE, NUMPAGES, SECTION, SECTIONPAGES, PRINTDATE, REF or SEQ field: Word's PDF export updates it and then the
+	 * literal IFs, so Word's PDF of the document differs from its stored text (the same measurement).
+	 */
+	public static final String FIELDS_PRINT_UPDATE = "fields.print_update";
 	public static final String GLOSSARY = "glossary";
 	public static final String ALT_TEXT_DESCRIPTION = "alt_text.description";
 	public static final String ALT_TEXT_TITLE = "alt_text.title";
@@ -126,13 +137,20 @@ public final class InspectFinding {
 	public static final String REVISION_AUTHOR = "revision.author";
 	public static final String RSIDS = "rsids";
 	public static final String PART_UNKNOWN = "part.unknown";
+	/**
+	 * An integer attribute outside the width Word stores it in, with Word's reading (CR-066 section 10): the
+	 * summary's fields are {@code attribute}, the deciding sibling where there is one ({@code type},
+	 * {@code lineRule}, {@code hRule}), {@code value}, {@code storage}, {@code range} and {@code word_reads}.
+	 * @since 17.3.5
+	 */
+	public static final String VALUE_OUT_OF_RANGE = "value.out_of_range";
 
 	/** The kinds that are active whatever the output (REQ-905). */
 	static final Set<String> ACTIVE = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(FIELD_EXTERNAL,
 			SETTINGS_UPDATE_FIELDS, RELATIONSHIP_EXTERNAL, PART_MACRO, PART_ACTIVEX, ALTCHUNK_SCRIPT, ALTCHUNK_EXTERNAL_REF)));
 	/** The inventory kinds, info whatever the output (REQ-905). */
 	static final Set<String> INVENTORY = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(ALTCHUNK,
-			OBJECT_EMBEDDED, FONT_EMBEDDED, INK, REVISION_AUTHOR, RSIDS, PEOPLE, PART_UNKNOWN, HYPERLINK_WEB)));
+			OBJECT_EMBEDDED, FONT_EMBEDDED, INK, REVISION_AUTHOR, RSIDS, PEOPLE, PART_UNKNOWN, HYPERLINK_WEB, VALUE_OUT_OF_RANGE)));
 
 	// --- what a container needs (REQ-905) ---------------------------------------------------------------
 

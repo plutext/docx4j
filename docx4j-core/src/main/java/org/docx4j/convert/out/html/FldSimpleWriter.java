@@ -28,7 +28,7 @@ import org.docx4j.convert.out.common.writer.AbstractFldSimpleWriter;
 import org.docx4j.convert.out.common.writer.AbstractPagerefHandler;
 import org.docx4j.convert.out.common.writer.HyperlinkUtil;
 import org.docx4j.convert.out.common.writer.RefHandler;
-import org.docx4j.model.fields.FldSimpleModel;
+import org.docx4j.model.fields.FieldInstruction;
 import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.properties.Property;
 import org.docx4j.utils.FoNumberFormatUtil;
@@ -40,14 +40,14 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 	
 	//In HTML there is only one page - therefore the result is always a (more or less formatted) "1"
 	//to keep it consistent with what fo does, it uses the formatting of the page numbers
-	//TODO: a \* format switch on the field itself (model.getFldParameters()) overrides
+	//TODO: a \* format switch on the field itself (instruction.getParameters()) overrides
 	//the section format, and is ignored here (as in the fo equivalents; see
 	//pageNumberSample in the fo FldSimpleWriter).  The section format is the
 	//overwhelmingly common case.
 	protected abstract static class AbstractPageHandler implements FldSimpleStringWriterHandler {
 
 		@Override
-		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
+		public String toString(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult) throws TransformerException {
 		String pageFormat = context.getSections().getCurrentSection().getPageNumberInformation().getPageFormat();
 			pageFormat = FormattingSwitchHelper.getFoPageNumberFormat(pageFormat);
 			return FoNumberFormatUtil.format(1, pageFormat);

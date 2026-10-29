@@ -1,0 +1,19 @@
+token	stored	word_asis	asis_xml_touched
+W01_DATE	2030	2026	result rewritten 2026
+W02_STORED	B2	A2	result rewritten A2
+W03_TWIN_EMPTY	(separate, no result)	A2	result A2 written
+W04_ALONE	B1	A1	result rewritten A1
+W05_NOSEP_ALONE	(no separate)	A9	separate and result A9 written
+W06_STORED3	B3	A3	result rewritten A3
+W07_NOSEP_TWIN	(no separate)	A3	separate and result A3 written
+W08_FORMULA_STORED	7	7	no (result and shape as built)
+W09_FORMULA_EMPTY	(separate, no result)	(nothing)	no (result and shape as built)
+W10_DOCPROPERTY_STORED	Nope	Nope	no (result and shape as built)
+W11_DOCPROPERTY_EMPTY	(separate, no result)	(nothing)	no (result and shape as built)
+W12_WILDCARD_EMPTY	(separate, no result)	WILD_MATCH	result WILD_MATCH written
+W13_HIDDEN_BRANCH	VISIBLE_STALE	(nothing)	separate and result removed
+W14_COMPARE_EMPTY	(separate, no result)	(nothing)	no (result and shape as built)
+W15_IF_OVER_DATE	STALE_OUTER	VALID	nested DATE rewritten 2026 as w:instrText, result rewritten VALID
+W16_EMPTY_ALONE	(separate, no result)	A8	result A8 written
+W17_STRING_STORED	B10	A10	result rewritten A10
+W18_STRING_EMPTY	(separate, no result)	(nothing)	no (result and shape as built)

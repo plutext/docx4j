@@ -436,15 +436,30 @@ public final class TrackedChange {
 	/**
 	 * When the change was made: {@code w16du:dateUtc} where present (Word 365 writes both); else
 	 * {@code w:date}, which Word means as local wall-clock time whatever its {@code Z} says, read in
-	 * this JVM's time zone (as Office JS reads it in the add-in's); an explicit non-zero offset is
+	 * the package's client zone (OpcPackage.effectiveDateTimeZone(): its own, else the JVM-wide property, else this
+	 * JVM's, as Office JS reads it in the add-in's; CR-067 D12); an explicit non-zero offset is
 	 * read as it says. A group's is its first piece's. Null when there is none (docx4j-diffx writes
 	 * {@code w:date=""}).
 	 */
 	public Instant getDate() {
-		return dateOf(target.value());
+		return dateOf(target.value(), zone());
+	}
+
+	/** The package's client zone where this change has a part, else the JVM-wide property, else the JVM default (CR-067 D12). */
+	private ZoneId zone() {
+		JaxbXmlPart<?> part = getPart();
+		if (part != null && part.getPackage() != null) return part.getPackage().effectiveDateTimeZone();
+		ZoneId property = org.docx4j.openpackaging.packages.OpcPackage.propertyDateTimeZone();
+		return property != null ? property : ZoneId.systemDefault();
 	}
 
 	static Instant dateOf(CTTrackChange value) {
+		ZoneId property = org.docx4j.openpackaging.packages.OpcPackage.propertyDateTimeZone();
+		return dateOf(value, property != null ? property : ZoneId.systemDefault());
+	}
+
+	/** {@link #getDate()} with the zone a {@code w:date} without {@code dateUtc} is read in (Word's local clock). */
+	static Instant dateOf(CTTrackChange value, ZoneId zone) {
 		if (value == null) return null;
 		XMLGregorianCalendar utc = value.getDateUtc();
 		if (utc != null && utc.getYear() != DatatypeConstants.FIELD_UNDEFINED) {
@@ -459,7 +474,7 @@ public final class TrackedChange {
 		}
 		LocalDateTime local = LocalDateTime.of(d.getYear(), field(d.getMonth(), 1), field(d.getDay(), 1),
 				field(d.getHour(), 0), field(d.getMinute(), 0), field(d.getSecond(), 0));
-		return local.atZone(ZoneId.systemDefault()).toInstant();
+		return local.atZone(zone == null ? ZoneId.systemDefault() : zone).toInstant();
 	}
 
 	private static int field(int value, int fallback) {

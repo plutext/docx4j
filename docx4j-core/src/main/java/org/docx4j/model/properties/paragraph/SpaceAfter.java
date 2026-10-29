@@ -90,6 +90,7 @@ public class SpaceAfter extends AbstractParagraphProperty {
 			log.error("No support for unit " + type);
 			twip = 0;
 		}
+		warnIfOutsideWordRange(CSS_NAME, value, twip, "twips", 0, 65535, "w:spacing/@w:after"); // CR-066 D5: uint16
 		this.setObject(BigInteger.valueOf(twip) );
 		
 	}

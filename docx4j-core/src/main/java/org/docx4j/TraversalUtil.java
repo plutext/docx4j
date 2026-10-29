@@ -177,6 +177,15 @@ public class TraversalUtil {
 										}
 										((Child)o2).setParent(parent);
 										
+									} else if (((Child)o2).getParent() instanceof org.docx4j.dml.GraphicData) {
+										// by design: handleGraphicData flattens a:graphicData's content (a chart's
+										// c:chart or cx:chart) into the anchor's children, so the child's own parent
+										// is the GraphicData while the walk's is the anchor; not a defect (a chartex
+										// chart's CTRelId warned here once per chart, Enterprise's finding 2026-10-28)
+										if (log.isDebugEnabled()) {
+											log.debug("Parent of " + o2.getClass().getName() + " is its GraphicData; the walk's is "
+													+ parent.getClass().getName());
+										}
 									} else  {
 										// If this happens, we need to understand why
 										// eg Parent of org.docx4j.wml.Tc is currently org.docx4j.wml.CTSdtContentCell

@@ -118,4 +118,26 @@ public class ResultlessIfFieldTest {
 		List<Object> content = p.getMainDocumentPart().getJaxbElement().getBody().getContent();
 		assertEquals("both paragraph marks stay", 2, content.size());
 	}
+
+	/** A resultless IF the evaluator can decide is combined (an empty w:fldSimple the writer evaluates), not dropped (CR-067). */
+	@Test
+	public void aDecidableResultlessIfIsCombined() throws Exception {
+		String body = "<w:p>" + begin() + instr(" IF 1 = 1 \"yes\" \"no\" ") + end() + "</w:p>";
+		String out = process(body);
+		assertTrue(out, out.contains("<w:fldSimple w:instr=\" IF 1 = 1 &quot;yes&quot; &quot;no&quot; \"/>"));
+		String withSeparate = process("<w:p>" + begin() + instr(" IF 1 = 1 \"yes\" \"no\" ") + sep() + end() + "</w:p>");
+		assertTrue(withSeparate, withSeparate.contains("<w:fldSimple w:instr=\" IF 1 = 1 &quot;yes&quot; &quot;no&quot; \"/>"));
+	}
+
+	/** A nested field folds into the outer's instruction as one operand (its stored result), and is not painted on its own. */
+	@Test
+	public void aNestedFieldIsAnOperandOfTheOuter() throws Exception {
+		String body = "<w:p>" + begin() + instr(" IF ")
+				+ begin() + instr(" DOCPROPERTY Title ") + sep() + "<w:r><w:t>Nope</w:t></w:r>" + end()
+				+ instr(" = \"Probe\" \"MATCH\" \"MISMATCH\" ") + sep() + "<w:r><w:t>MISMATCH</w:t></w:r>" + end() + "</w:p>";
+		String out = process(body);
+		assertEquals(out, 1, out.split("<w:fldSimple").length - 1);
+		assertTrue(out, out.contains("w:instr=\" IF Nope = &quot;Probe&quot; &quot;MATCH&quot; &quot;MISMATCH&quot; \""));
+		assertTrue(out, out.contains("<w:t>MISMATCH</w:t>") && !out.contains("<w:t>Nope</w:t>"));
+	}
 }

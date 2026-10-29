@@ -245,16 +245,16 @@ public class FormattingSwitchHelper {
 		}
 	}
 	
-	public static String applyFormattingSwitch(WordprocessingMLPackage wmlPackage, FldSimpleModel model, String value) throws Docx4JException {
+	public static String applyFormattingSwitch(WordprocessingMLPackage wmlPackage, FieldInstruction model, String value) throws Docx4JException {
 		return applyFormattingSwitch(wmlPackage, model, value, null);
 	}
 
 
-	public static String applyFormattingSwitch(WordprocessingMLPackage wmlPackage, FldSimpleModel model, String value, String lang) throws Docx4JException {
+	public static String applyFormattingSwitch(WordprocessingMLPackage wmlPackage, FieldInstruction model, String value, String lang) throws Docx4JException {
 		// date-and-time-formatting-switch: \@ 
 		Date date = null;
 		try {
-			String dtFormat = findFirstSwitchValue("\\@", model.getFldParameters(), true);
+			String dtFormat = findFirstSwitchValue("\\@", model.getParameters(), true);
 			if (dtFormat==null) {
 				// SPECIFICATION: If no date-and-time-formatting-switch is present, 
 				// a date or time result is formatted in an implementation-defined manner.
@@ -273,7 +273,7 @@ public class FormattingSwitchHelper {
 				// but to have a different code path for =
 				
 				// OK, its a date
-				if ( model.fldName.equals("=")) {
+				if ( "=".equals(model.getName())) {
 					// For =, today's date is used!
 					date = new Date();
 				}
@@ -299,7 +299,7 @@ public class FormattingSwitchHelper {
 		if (date==null) {
 			// It is not a date, so see whether it is a number
 			
-			String nFormat = findFirstSwitchValue("\\#", model.getFldParameters(), true);
+			String nFormat = findFirstSwitchValue("\\#", model.getParameters(), true);
 			if (nFormat!=null) {
 				
 				if (nFormat.equals("") ) {
@@ -354,7 +354,7 @@ public class FormattingSwitchHelper {
 		//     \@ &quot;d 'de' MMMM 'de' yyyy  &quot; \* Upper"
 		// (ie \@ and \* at same time)
 		// but \@ must be before \*
-		String gFormat = findFirstSwitchValue("\\*", model.getFldParameters(), false);		
+		String gFormat = findFirstSwitchValue("\\*", model.getParameters(), false);		
 		value = gFormat==null ? value : formatGeneral(model, gFormat, value );
 		
 		
@@ -363,7 +363,7 @@ public class FormattingSwitchHelper {
 		return value;
 	}
 	
-	private static Date getDate(FldSimpleModel model, String dateStr) throws FieldResultIsNotADateOrTimeException {
+	private static Date getDate(FieldInstruction model, String dateStr) throws FieldResultIsNotADateOrTimeException {
 		
 		// eg 31/3/2013
 		// Word's default format for date: 7/04/2013
@@ -403,7 +403,7 @@ public class FormattingSwitchHelper {
 		}
 	}
 
-	private static double getNumber(WordprocessingMLPackage wmlPackage, FldSimpleModel model, String value) throws FieldResultIsNotANumberException {
+	private static double getNumber(WordprocessingMLPackage wmlPackage, FieldInstruction model, String value) throws FieldResultIsNotANumberException {
 		
 		WordprocessingMLPackage pkg = wmlPackage;
 		String decimalSymbol=null;
@@ -418,8 +418,8 @@ public class FormattingSwitchHelper {
 
 		// For DOCPROPERTY field, and possibly some others, but not "=",
 		// Word will parse "€180,000.00 EUR" as a number
-		if (model.fldName.equals("DOCPROPERTY")
-				|| model.fldName.equals("MERGEFIELD")) {
+		if ("DOCPROPERTY".equals(model.getName())
+				|| "MERGEFIELD".equals(model.getName())) {
 		
 			// First, parse the value
 			NumberExtractor nex = new NumberExtractor(decimalSymbol);
@@ -442,7 +442,13 @@ public class FormattingSwitchHelper {
 		}
 	}
 	
-	private static String formatNumber( FldSimpleModel model, String wordNumberPattern, double dub, String lang) 
+	/** The field's {@code \*} switch alone applied to a value (a formula's, already numerically formatted). @since 17.3.5 */
+	static String applyGeneralSwitch(FieldInstruction model, String value) {
+		String gFormat = findFirstSwitchValue("\\*", model.getParameters(), false);
+		return gFormat == null ? value : formatGeneral(model, gFormat, value);
+	}
+
+	static String formatNumber( FieldInstruction model, String wordNumberPattern, double dub, String lang) 
 		throws FieldFormattingException {
 
 
@@ -727,7 +733,7 @@ public class FormattingSwitchHelper {
 	}
 	
 
-	private static String formatGeneral( FldSimpleModel model, String format, String value) {
+	private static String formatGeneral( FieldInstruction model, String format, String value) {
 		// Note that the general-formatting-switch arguments CHARFORMAT and MERGEFORMAT
 		// are not handled here. It is the responsibility of the calling code
 		// to handle these.
@@ -935,11 +941,11 @@ public class FormattingSwitchHelper {
 		buffer.append(javaVal != null ? javaVal : dateItem);
 	}
 	
-	public static String formatDate(FldSimpleModel model) {
+	public static String formatDate(FieldInstruction model) {
 		return formatDate(model, new Date());
 	}
 	
-	public static String formatDate(FldSimpleModel model, Date date) {
+	public static String formatDate(FieldInstruction model, Date date) {
 		return formatDate(model, date, null);
 	}
 
@@ -958,13 +964,13 @@ public class FormattingSwitchHelper {
 	 * @param lang a BCP&nbsp;47 / {@code w:lang} tag, or null for the platform default
 	 * @since 17.1.0
 	 */
-	public static String formatDate(FldSimpleModel model, Date date, String lang) {
+	public static String formatDate(FieldInstruction model, Date date, String lang) {
 
-		String format = findFirstSwitchValue("\\@", model.getFldParameters(), true);
+		String format = findFirstSwitchValue("\\@", model.getParameters(), true);
 		return formatDate(model, format, date, lang);
 	}
 
-	public static String formatDate(FldSimpleModel model, String format, Date date) {
+	public static String formatDate(FieldInstruction model, String format, Date date) {
 		return formatDate(model, format, date, null);
 	}
 
@@ -987,7 +993,22 @@ public class FormattingSwitchHelper {
 		return simpleDateFormat.format(date);
 	}
 	
-	private static String formatDate(FldSimpleModel model, String format, Date date, String lang) {
+	private static String formatDate(FieldInstruction model, String format, Date date, String lang) {
+		return formatDate(model, format, date, lang, null);
+	}
+
+	/**
+	 * {@link #formatDate(FieldInstruction, Date, String)} in the given zone (the package's client zone, CR-067 D12);
+	 * null is the JVM's default, as before.
+	 *
+	 * @since 17.3.5
+	 */
+	public static String formatDate(FieldInstruction model, Date date, String lang, java.util.TimeZone zone) {
+		String format = findFirstSwitchValue("\\@", model.getParameters(), true);
+		return formatDate(model, format, date, lang, zone);
+	}
+
+	private static String formatDate(FieldInstruction model, String format, Date date, String lang, java.util.TimeZone zone) {
 		DateFormat dateFormat = null;
 		if ((format != null) && (format.length() > 0)) {
 			SimpleDateFormat simpleDateFormat = getSimpleDateFormat(lang);
@@ -995,10 +1016,12 @@ public class FormattingSwitchHelper {
 			dateFormat = simpleDateFormat;
 		}
 		else {
-			dateFormat = (model.getFldName().indexOf("DATE") > -1 ? 
+			dateFormat = ((model.getName() != null && model.getName().indexOf("DATE") > -1) ? 
 						  SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT) :
 					      SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT)); 
 		}
+		// the thread's cached format is shared by every caller on the thread: set the zone every time
+		dateFormat.setTimeZone(zone == null ? java.util.TimeZone.getDefault() : zone);
 		return dateFormat.format(date);
 	}
 	
@@ -1124,4 +1147,41 @@ public class FormattingSwitchHelper {
 		return symbols;
 	}
 	
+	// ---- the FldSimpleModel forms, deprecated since 17.3.5 (CR-067 D2): FieldInstruction replaces FldSimpleModel
+
+	/** @deprecated since 17.3.5, {@link #applyFormattingSwitch(WordprocessingMLPackage, FieldInstruction, String)} */
+	@Deprecated
+	public static String applyFormattingSwitch(WordprocessingMLPackage wmlPackage, FldSimpleModel model, String value) throws Docx4JException {
+		return applyFormattingSwitch(wmlPackage, model.toInstruction(), value, null);
+	}
+
+	/** @deprecated since 17.3.5, {@link #applyFormattingSwitch(WordprocessingMLPackage, FieldInstruction, String, String)} */
+	@Deprecated
+	public static String applyFormattingSwitch(WordprocessingMLPackage wmlPackage, FldSimpleModel model, String value, String lang) throws Docx4JException {
+		return applyFormattingSwitch(wmlPackage, model.toInstruction(), value, lang);
+	}
+
+	/** @deprecated since 17.3.5, {@link #formatDate(FieldInstruction)} */
+	@Deprecated
+	public static String formatDate(FldSimpleModel model) {
+		return formatDate(model.toInstruction());
+	}
+
+	/** @deprecated since 17.3.5, {@link #formatDate(FieldInstruction, Date)} */
+	@Deprecated
+	public static String formatDate(FldSimpleModel model, Date date) {
+		return formatDate(model.toInstruction(), date);
+	}
+
+	/** @deprecated since 17.3.5, {@link #formatDate(FieldInstruction, Date, String)} */
+	@Deprecated
+	public static String formatDate(FldSimpleModel model, Date date, String lang) {
+		return formatDate(model.toInstruction(), date, lang);
+	}
+
+	/** @deprecated since 17.3.5, {@link #formatDate(FieldInstruction, String, Date)} */
+	@Deprecated
+	public static String formatDate(FldSimpleModel model, String format, Date date) {
+		return formatDate(model.toInstruction(), format, date);
+	}
 }

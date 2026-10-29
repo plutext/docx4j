@@ -32,7 +32,7 @@ import org.docx4j.org.apache.poi.poifs.filesystem.*;
 /** Structural checks independent of the extraction engine and Word's open/repair check. */
 final class ExtractionFixtureChecks {
     static void check(byte[] main, byte[] external, byte[] structure, byte[] inspect, List<ExtractionProbeBuilder.Case> cases) throws Exception {
-        if (cases.size() != 74) throw new IllegalStateException("Expected 74 cases");
+        if (cases.size() != 82) throw new IllegalStateException("Expected 82 cases");
         Map<String, byte[]> a = entries(main), b = entries(external), s = entries(structure), n = entries(inspect);
         validatePackage(a); validatePackage(b); validatePackage(s); validatePackage(n);
         String mainText = payloadText(a), externalText = payloadText(b), structureText = payloadText(s), inspectText = payloadText(n);

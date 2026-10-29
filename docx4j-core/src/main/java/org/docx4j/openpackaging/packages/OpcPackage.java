@@ -34,6 +34,7 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.jaxb.McLoadMode;
 import org.docx4j.Docx4J;
 import org.docx4j.TextUtils;
@@ -121,6 +122,110 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	}
 
 	private McLoadMode mcLoadMode;
+
+	/** The property naming a JVM-wide zone, the fallback where a package names none (CR-058 D6; CR-067 D12). */
+	public static final String DATE_TIME_ZONE_PROPERTY = "docx4j.model.datastorage.BindingHandler.dateTimeZone";
+	/** The property turning on the bound-date conversion JVM-wide, the fallback where a package says nothing (default false). */
+	public static final String BOUND_DATES_CONVERTED_PROPERTY = "docx4j.model.datastorage.BindingHandler.boundDatesConvertedAsWord";
+	private java.time.ZoneId dateTimeZone;
+	private Boolean boundDatesConvertedAsWord;
+	private String sourceName;
+	private Long sourceSize;
+
+	/**
+	 * The name of the file this package came from, as a FILENAME field shows it (the whole path where the caller
+	 * gives one; {@code \p} shows it, else the last segment), or null where none is set. A request attribute like
+	 * the zone: nothing of it is saved, a server reusing a loaded package sets it per request, and a field context
+	 * built from the package takes it as its default (the text model under fields: update, the PDF and HTML
+	 * writers), the context's own {@code fileName} overriding. CR-067 D26 (Jason, 2026-10-29).
+	 *
+	 * @since 17.3.5
+	 */
+	public String getSourceName() {
+		return sourceName;
+	}
+
+	/** @see #getSourceName() */
+	public void setSourceName(String sourceName) {
+		this.sourceName = sourceName;
+	}
+
+	/**
+	 * The size in bytes of the file this package came from, as a FILESIZE field shows it, or null where none is
+	 * set. A request attribute, as {@link #getSourceName()}. CR-067 D26.
+	 *
+	 * @since 17.3.5
+	 */
+	public Long getSourceSize() {
+		return sourceSize;
+	}
+
+	/** @see #getSourceSize() */
+	public void setSourceSize(Long sourceSize) {
+		this.sourceSize = sourceSize;
+	}
+
+	/**
+	 * The client's time zone for this package, or null where none is set: the zone every instant this
+	 * package holds is shown in (a date field's, a revision's {@code w:date} without {@code dateUtc}, a
+	 * bound date where {@link #isBoundDatesConvertedAsWord()}), as Word shows them in the machine's. A
+	 * request attribute, not a document one: nothing of it is saved, and a server reusing a loaded
+	 * package across clients sets it per request. The portfolio's date rule (2026-10-28), CR-067 D12.
+	 *
+	 * @since 17.3.5
+	 */
+	public java.time.ZoneId getDateTimeZone() {
+		return dateTimeZone;
+	}
+
+	/** @see #getDateTimeZone() */
+	public void setDateTimeZone(java.time.ZoneId zone) {
+		this.dateTimeZone = zone;
+	}
+
+	/**
+	 * The zone an instant in this package is shown in: the package's ({@link #getDateTimeZone()}), else
+	 * the JVM-wide {@value #DATE_TIME_ZONE_PROPERTY}, else the JVM's default (the machine's, as Word).
+	 *
+	 * @since 17.3.5
+	 */
+	public java.time.ZoneId effectiveDateTimeZone() {
+		if (dateTimeZone != null) return dateTimeZone;
+		java.time.ZoneId property = propertyDateTimeZone();
+		return property != null ? property : java.time.ZoneId.systemDefault();
+	}
+
+	/** The zone {@value #DATE_TIME_ZONE_PROPERTY} names, or null. */
+	public static java.time.ZoneId propertyDateTimeZone() {
+		String id = Docx4jProperties.getProperty(DATE_TIME_ZONE_PROPERTY);
+		if (id == null || id.trim().isEmpty()) return null;
+		try {
+			return java.time.ZoneId.of(id.trim());
+		} catch (java.time.DateTimeException e) {
+			log.warn(DATE_TIME_ZONE_PROPERTY + "=" + id + " is not a zone ID; ignored");
+			return null;
+		}
+	}
+
+	/**
+	 * Whether a bound date control's stored value with an offset or {@code Z} is converted to
+	 * {@link #effectiveDateTimeZone()} as Word converts it to the machine's (Word's date picker writes
+	 * local midnight labelled {@code Z}, so west of UTC Word then shows the previous day: a Word wart,
+	 * opted into by name): the package's setting, else {@value #BOUND_DATES_CONVERTED_PROPERTY}, else
+	 * false, the nominal reading (CR-058 D6 as the portfolio's date rule amends it, 2026-10-28:
+	 * setting a zone alone does not turn this on).
+	 *
+	 * @since 17.3.5
+	 */
+	public boolean isBoundDatesConvertedAsWord() {
+		if (boundDatesConvertedAsWord != null) return boundDatesConvertedAsWord.booleanValue();
+		return Docx4jProperties.getProperty(BOUND_DATES_CONVERTED_PROPERTY, false);
+	}
+
+	/** @see #isBoundDatesConvertedAsWord(); null falls back to the property */
+	public void setBoundDatesConvertedAsWord(Boolean converted) {
+		this.boundDatesConvertedAsWord = converted;
+	}
 
 	/**
 	 * This package's own setting for what an unmarshal does with an mc:AlternateContent at

@@ -69,6 +69,7 @@ public abstract class AbstractCellMargin extends AbstractTableProperty {
 			twip = 0;
 		}
 		init(suffix);
+		warnIfOutsideWordRange(cssAttributeName, value, twip, "twips", -32768, 32767, "a cell margin's w:w (dxa)"); // CR-066 D5: int16
 		tblWidth.setW(BigInteger.valueOf(twip));
 		tblWidth.setType(TblWidth.TYPE_DXA);
 		this.setObject(tblWidth);

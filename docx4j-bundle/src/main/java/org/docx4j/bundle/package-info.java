@@ -5,7 +5,7 @@
  *
  * <p>It exists as a convenience for environments where assembling a classpath is
  * awkward &mdash; notably calling docx4j from Python via JPype (see
- * {@code docs/Docx4j_from_Python.md}) &mdash; where a single downloadable jar is
+ * <a href="https://www.docx4java.org/docx4j-from-python.html">docx4j from Python</a>) &mdash; where a single downloadable jar is
  * simpler than a directory of dependencies. For ordinary Maven/Gradle projects,
  * depend on {@code org.docx4j:docx4j-core} plus a JAXB runtime selector instead;
  * do not add this bundle as a normal dependency.</p>

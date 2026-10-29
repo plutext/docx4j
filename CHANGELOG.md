@@ -27,7 +27,55 @@ Changes in Version 17.3.5
   Integer.parseInt on every value other than bold and bolder. ImportXHTML reads font-weight for
   every run and paragraph, so this was tens of thousands of exceptions for a large document. The
   result (w:b) is unchanged.
-
+* The inspector (Inspect.of, CR-050) reports an integer attribute outside the width Word stores it in as
+  value.out_of_range, one finding per attribute with the element, the value, the storage, the range and what
+  Word reads (a hanging indent for a first-line one that wrapped, an atLeast line for an exact one, a clamped
+  tab stop); the per-attribute widths of CR-066 are the resource word-integer-storage.tsv (CR-066 phase 4).
+  An inspection no longer logs the marshal-time range WARNs for the parts it reads.
+* Content lists refuse a misplaced child at the point of the mistake, with the fix in the message
+  (CR-064; ArrayListDocx4j.checkParent, IllegalArgumentException): a run, Text, Drawing, Br, cell or
+  row added to the body, a cell, a header, a footer, a footnote, a comment, a text box or block-level
+  sdt content; a table, paragraph, Text, Drawing or Br added to a paragraph, hyperlink, field,
+  insertion, deletion, smart tag or run-level sdt content; a cell, paragraph or run added to a table,
+  a paragraph or run to a row; a property object (PPr, RPr, SectPr, TblPr, TrPr, TcPr) added to
+  content instead of set; a String added to any of these. A JAXBElement is tested by its value, so
+  the wrapped forms are caught too. Each rule names a class the schema never allows there, so no
+  legal document is refused on load (gated on the test suite and a 454-document corpus). Also refused
+  (the addendum): DelText where Text is, a run-level Tab where Br is, and a content control at the
+  wrong level (SdtBlock, CTSdtRow or CTSdtCell in run content; SdtRun, CTSdtRow or CTSdtCell in block
+  content; any in a run; any but CTSdtRow in a table, any but CTSdtCell in a row); a TcPr refused
+  outside a cell names its container. Before,
+  only a table, paragraph or Text in a paragraph or hyperlink, and a run, paragraph or table in a
+  run, were refused; the rest reached Word as "unreadable content".
+  The check caught one such mistake in docx4j itself: the export preprocessor's run-border container
+  (Containerization) was a block-level sdt holding runs; it is a run-level sdt now, same output.
+* Every integer attribute of WordprocessingML is read as Word reads it, in the JAXB binding
+  (CR-065 phase 2; org.docx4j.wml.LenientInteger bound by xsd/bindings.xjb to ST_DecimalNumber,
+  ST_TwipsMeasure, ST_SignedTwipsMeasure, the half-point, eighth-point, point, text-scale and pixel
+  types and w:sz): a decimal is truncated toward zero (720.5 is 720, -121.5 is -121,
+  141.99999999999994 is 141; measured on Word 365), the empty string and a bare sign or dot are 0, and a form Word refuses
+  (surrounding whitespace, a comma, hex, an exponent, letters) drops that attribute with a WARN
+  instead of failing the part. Before, a decimal in an attribute off mc-preprocessor.xslt's fixed
+  rounding list made the part unreadable, and the listed ones were rounded half-even (141.5 to
+  142, where Word reads 141). The stylesheet's list stays but no longer fires for a decimal. A part
+  logs one INFO line with what it read leniently. The Java type stays BigInteger.
+* An integer attribute value outside Word's 16-bit range is reported, at save and at load (CR-066
+  phases 1 and 2; measured on Word 365: w:ind/@w:left="7205001" is -3959 twips to Word, w:sz 70000 is
+  4464). One WARN line per part with the count, the first few values and Word's reading; the value is
+  written as held and read as written, never wrapped or clamped. Exact for the signed twips and
+  half-point types, w:sz/szCs/kern, text scale and the border types; a value outside -32768..65535 for
+  ST_TwipsMeasure; ST_DecimalNumber not reported (LenientInteger, one parse/print pair per type). The
+  line carries the code the ports share for this finding, value.out_of_range, with the storage and range.
+* TblFactory.createTable throws IllegalArgumentException for a cell width outside 0..32767 twips
+  (CR-066 D5; before, 70000 was written and Word read 4464). A CSS length converting outside its
+  attribute's range (margin-left, margin-top/bottom, line-height, letter-spacing, cell margins,
+  table indent, font-size) and a TOC tab stop beyond 22 in log a WARN and are written as computed.
+* A part whose content could not be read (its unmarshal failed, e.g. a decimal in an integer
+  attribute off the preprocessor's list) is no longer replaced by an empty one on the first edit:
+  MainDocumentPart.getContent, HeaderPart and FooterPart getContent, DocumentSettingsPart and
+  DocPropsExtendedPart throw Docx4JRuntimeException with the cause, and an untouched save keeps the
+  bytes (CR-065 phase 1; before, a save after an edit held the new content alone).
+  JaxbXmlPart.isContentUnreadable() tells the two kinds of null apart.
 * Binding writes a content control's placeholder in Word's form (CR-063): w:placeholder is kept on
   every control (it was dropped); an empty value shows the glossary entry the control names, a copy
   of its paragraphs as the glossary holds them, so a template's own placeholder text survives binding; a text control naming
@@ -51,6 +99,116 @@ Changes in Version 17.3.5
   title (#244).
 * VariablePrepare joins the runs a ${key} is split across whatever their formatting, so
   variableReplace finds it (#572); variableReplace no longer throws on a ${ with no }.
+* A chartex chart in an xlsx has its size again: ChartImages.getSize, toSvg(chart) and toPng(chart, dpi)
+  threw "has no size in its anchor" for every such chart, Excel's own included, because the chart's
+  reference kept the mc:Choice's frame as its anchor rather than the cell anchor round it. Reading a
+  document with a chartex chart no longer warns, once per chart, that the chart element's parent is
+  its GraphicData: it is, by design of TraversalUtil's walk.
+* A chartex chart (a waterfall, histogram, Pareto, box and whisker, treemap, sunburst or funnel) met
+  with no chartex renderer on the classpath is now said so once: the first such chart an output
+  draws as the picture Office saved with it (its mc:Fallback, which won't show changes made to the
+  chart's data outside Office) is one WARN naming Docx4j Enterprise ChartEx, which draws, edits and
+  creates these charts; an image asked of such a chart (ChartImages) is refused with a reason that
+  names it. Nothing where a renderer is present, nothing for a region map. (ChartExNotice; the
+  edit and create classes' javadoc points the same way.)
+* Fields are evaluated in one place (CR-067 phase 0): org.docx4j.model.fields.FieldInstruction parses
+  an instruction once (name, argument, switches); FieldContext carries what an evaluator may read (the
+  package and part, a clock, the language, the user, a file name, an external resolver absent by
+  default); FieldEvaluators holds one evaluator per field name (DOCPROPERTY, DOCVARIABLE, the
+  document-information fields, SEQ, REF, QUOTE, DATE, TIME, PRINTDATE), and a caller may register its
+  own. FieldUpdater, the text extraction's `fields: update` and the PDF and HTML field writers all go
+  through it; what each evaluates is unchanged in this phase. FieldUpdater.only(names) narrows or
+  widens the set it updates. FldSimpleModel is deprecated, with the FormattingSwitchHelper and
+  writer-handler signatures that carried it (FieldInstruction overloads replace them; a handler on the
+  old interface still works). FieldsPreprocessor's result handling is one path (every result kept).
+* A time zone per package (CR-067 D12; the portfolio's date rule): OpcPackage.setDateTimeZone(ZoneId)
+  names the client's zone for a package, and every instant the package holds is shown in it, as Word
+  shows one in the machine's: a date field's (CREATEDATE, SAVEDATE, DATE, TIME, PRINTDATE), a
+  revision's w:date without w16du:dateUtc (Word's local clock), and a bound date where the package
+  opts into the conversion. Unset, the JVM-wide docx4j.model.datastorage.BindingHandler.dateTimeZone
+  property, else the JVM's default, as before. FieldContext.zone(ZoneId) overrides per call. Nothing
+  of it is saved: a server sets it per request. The bound-date conversion (CR-058 D6: Word reads the
+  picker's local-midnight Z as UTC and can show the previous day) is now its own opt-in,
+  OpcPackage.setBoundDatesConvertedAsWord(true) or the property
+  docx4j.model.datastorage.BindingHandler.boundDatesConvertedAsWord, off by default: setting the
+  zone property alone no longer converts a bound date (it did in 17.3.4).
+* More fields evaluated (CR-067 phase 1, measured against Word 365): CREATEDATE and SAVEDATE (the core
+  properties' dates, read to the minute as Word reads them, with the field's \@ switch or Word's default
+  short-date-and-time format), REVNUM, INFO (as the field it names), SECTION, NOTEREF (the number of the note
+  whose reference the bookmark holds), QUOTE, REF (a bookmark's text), and USERNAME, USERINITIALS and
+  USERADDRESS where FieldContext.user() supplies them. FieldUpdater now updates every field it has an
+  evaluator for, as Word's update-all does (until now DOCPROPERTY, DOCVARIABLE and the document
+  information fields): the above, plus DATE, TIME, PRINTDATE and SEQ; FieldUpdater.only(names) narrows
+  it. The text extraction's `fields: update` computes INFO, SECTION, NOTEREF and the user fields too.
+  PDF and HTML output paints these fields from their cached result, as Word does, and evaluates one
+  that has none. FieldUpdater writes a REF's result in the bookmark's own formatting and a NOTEREF \f in
+  the footnote reference style, as Word does; a QUOTE with no argument and a blank user address give an
+  empty result, as Word's do. A core property's date with no offset, or a date alone, is read as UTC, as
+  Word reads it (measured). FieldUpdater's PRINTDATE is the document's cp:lastPrinted, to the minute, as
+  Word's F9 shows it; a never-printed document keeps the field's cached result. PDF and HTML output paints
+  PRINTDATE at the conversion's clock, as before. The text extraction's INFO computes only what the
+  extraction computes itself (INFO Date keeps its cached result, as DATE does).
+* Formulas and conditions evaluated (CR-067 phase 2, measured against Word 365, 115 cases and a table): the
+  = field (the operators + - * / ^ %, comparisons, parentheses; ABS, AND, AVERAGE, COUNT, DEFINED, FALSE, IF,
+  INT, MAX, MIN, MOD, NOT, OR, PRODUCT, ROUND, SIGN, SUM, TRUE; a bookmark's text; in a table A1, A1:B2,
+  ABOVE, LEFT, BELOW, RIGHT; Word's default number format and error texts; the document's decimal symbol
+  and list separator), COMPARE and IF (numbers against strings, case-sensitive strings, * and ? wildcards,
+  a bare operand naming a bookmark is its text), and SET (its value stored under a bookmark of its name, as
+  Word stores it, and read by a REF, a formula or an IF after it). A nested field is evaluated first and its
+  result is an operand of the outer field, in FieldUpdater and in the text extraction's `fields: update`
+  (which computes these four too; a formula naming a table cell keeps its cached result there). PDF and HTML
+  output paints =, COMPARE and IF from their cached result and evaluates one that has none; a SET paints
+  nothing, as Word shows nothing for it, and the text extraction never shows a SET's stored result.
+* The mail mergers evaluate the merge conditionals (CR-067 phase 2, measured against Word 365's merge):
+  SKIPIF skips the record, NEXT and NEXTIF continue the letter with the next record (NEXT in MailMerger
+  too, as MailMergerWithNext had it), MERGEREC and MERGESEQ number the record and the letter (a skipped
+  or a pulled-in record not counted), SET, IF, COMPARE, REF and = over merge fields are evaluated per
+  letter, ASK and FILLIN take the caller's answers (AbstractMerger.getFieldContext().answers(), by the
+  ASK's bookmark or the FILLIN's prompt) else their \d default. Evaluated fields are unlinked to their
+  text as Word's merge does (SET and ASK removed); under KEEP_MERGEFIELD they stay as fields with their
+  results. A MERGEFIELD's \b and \f switches are honoured. Outside a merge, MERGEFIELD, MERGEREC and
+  MERGESEQ keep their cached result; FieldUpdater gives an ASK its default (defining its bookmark) and a
+  FILLIN its default.
+* An INDEX generated from the document's XE marks (CR-067 phase 3, measured against Word 365's update):
+  org.docx4j.model.fields.index.IndexGenerator sorts and groups the entries as Word does (sub-entries,
+  cross-references, page ranges, bold and italic page numbers, the \e \l \g \k \h \r \p \f and \c
+  switches, the Index 1 to 3 and Index Heading styles added where missing) and writes the field's result in
+  Word's shape; FieldUpdater regenerates every INDEX in the body with docx4j-export-fo's page numbers, or a
+  caller's pager (FieldUpdater.indexPager), and keeps the field as it is with neither.
+* More fields evaluated (CR-067 phase 3, measured against Word 365): NUMWORDS and NUMCHARS (the main story's
+  words and characters without spaces, headers and notes excluded, as Word counts them), FILENAME (with \p
+  the path) and FILESIZE (\k, \m) from FieldContext.fileName and fileSize, TEMPLATE from app.xml; in
+  FieldUpdater, the text extraction and the PDF and HTML writers. The mail mergers fill ADDRESSBLOCK and
+  GREETINGLINE from the record (Word's address-field names and their usual spellings, or the document's own
+  w:odso mapping), with Word's greeting fallbacks (first and last name, the first name, then \e); a block's
+  lines are line breaks in the one paragraph where Word writes paragraphs; a format's line breaks are real
+  line breaks, as Word writes its own (w:cr in the instruction).
+* LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT and SYMBOL evaluated (CR-067 phase 3, measured against Word 365's
+  PDFs, since Word writes no result for them): the list numbers computed for the document in order
+  (org.docx4j.model.fields.ListNumbers: the three named lists' shared counters, implicit parents, the level
+  from the paragraph's heading or the heading before it; AUTONUM's counters per heading level), SYMBOL's
+  character with its \f font and \s size (w:sym for a symbol font, ### for a code Word cannot read); in
+  FieldUpdater, the text extraction under fields: update, and the PDF and HTML writers, which write them
+  into their working copy before painting, as Word paints them live.
+* A source name and size per package (CR-067 D26): OpcPackage.setSourceName(String) and setSourceSize(Long)
+  name the file a package came from, as request attributes beside the zone (nothing is saved), and every
+  field context built from the package takes them as its FILENAME and FILESIZE defaults, so the text
+  extraction under fields: update and the PDF and HTML writers show what FieldUpdater writes. The mail
+  mergers evaluate a merge field written as w:fldSimple, as Word writes its own GREETINGLINE (measured).
+  The text extraction under fields: update computes ASK (its bookmark defined with the \d default, nothing
+  shown) and FILLIN (its \d default), as the OpenDoPE WD says.
+* The PDF and HTML writers no longer paint a nested field's result beside its outer field's (an IF or
+  formula over a DOCPROPERTY printed both): the field combiner folds a nested field into the outer's
+  instruction as an operand (CR-067 D31). A complex field with no stored result is now evaluated where the
+  evaluator knows it, as a simple one was; a resultless IF is dropped only where a PAGE or NUMPAGES
+  operand leaves it undecidable before layout (D32). A field's code is evaluated without its hidden text, as
+  Word evaluates it (measured): an IF whose true branch is hidden gives an empty result.
+* Text extraction under fields: cached (the default) gives nothing for a LISTNUM, AUTONUM, AUTONUMLGL or
+  AUTONUMOUT, as Word's own plain text does (Word never stores their results; the stale stored text was
+  read before), and a SYMBOL's character in every mode. The inspector reports fields.auto_update on a DATE,
+  TIME or SAVEDATE (Word's open recomputes the document's literal IF fields when one is present, measured)
+  and fields.print_update on the fields Word's PDF export updates first (PAGE, NUMPAGES, SECTION,
+  SECTIONPAGES, PRINTDATE, REF, SEQ).
 * FieldUpdater updates the document information fields AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY,
   SUBJECT and TITLE, as it does DOCPROPERTY (#277); DOCPROPERTY Keywords is read; a simple
   DOCPROPERTY's quoted property name is found.

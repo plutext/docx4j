@@ -98,7 +98,7 @@ UNDERSTOOD = set()
 ACTIVE = {'field.external', 'settings.update_fields', 'relationship.external', 'part.macro', 'part.activex',
           'altchunk.script', 'altchunk.external_ref'}
 INVENTORY = {'altchunk', 'object.embedded', 'font.embedded', 'ink', 'revision.author', 'rsids', 'people',
-             'part.unknown', 'hyperlink.web'}
+             'part.unknown', 'hyperlink.web', 'value.out_of_range'}
 VISIBLE = {
     'text.near_background': 'differently', 'text.tiny': 'differently', 'chars.zero_width': 'no', 'chars.tag': 'no',
     'chars.bidi': 'no', 'chars.private_use': 'no', 'font.glyph_blank': 'no', 'font.glyph_mismatch': 'differently',
@@ -113,7 +113,7 @@ VISIBLE = {
     'header_footer': 'yes', 'watermark': 'yes', 'note': 'yes', 'sdt.placeholder': 'yes', 'chart.cached': 'yes',
     'text.web_hidden': 'yes', 'altchunk': 'yes', 'object.embedded': 'yes', 'properties': 'no', 'font.embedded': '-',
     'ink': 'yes', 'doc_vars': 'no', 'custom_xml': 'no', 'people': 'no', 'revision.author': 'no', 'rsids': 'no',
-    'part.unknown': '-', 'image.svg_text': 'yes', 'image.metafile_text': 'yes',
+    'part.unknown': '-', 'image.svg_text': 'yes', 'image.metafile_text': 'yes', 'value.out_of_range': '-',
 }
 
 # the named outputs of expected-inspection.tsv: the options each sets beyond the defaults, and its format
@@ -145,6 +145,151 @@ EMU_PER_PT = 12700
 # D19 (b): a name of this form ("Text Box 3", "Picture 7") is no finding unless extraction carries it
 DEFAULT_NAME = re.compile(r'[^0-9]+ [0-9]+')
 WHITE = 'FFFFFF'
+
+
+# ---------------------------------------------------------------- Word's storage width per attribute (CR-066 D6)
+
+# the one table docx4j's inspector reads (InspectRanges): CR-066 sections 3.1 and 3.4 row for row
+STORAGE_TABLE = posixpath.join(posixpath.dirname(posixpath.abspath(__file__)), '..', '..', '..', '..', '..', '..',
+                               'docx4j-core/src/main/resources/org/docx4j/model/text/word-integer-storage.tsv')
+STORAGE_WORD = {'int16': 'int16', 'int16-clamp': 'int16', 'column-w': 'int16', 'column-space': 'int16',
+                'pair-firstLine': 'int16', 'pair-hanging': 'int16', 'rule-negated': 'int16', 'rule-positive': 'int16',
+                'rule-negated-drop': 'int16', 'rule-positive-drop': 'int16', 'uint16': 'uint16',
+                'uint16-clamp': 'uint16', 'uint16-min': 'uint16', 'int32': 'int32', 'uint8': '8 bits',
+                'uint5': '5 bits', 'bits15-flag': '15 bits', 'twips-unmeasured': '16 bits'}
+LEXICAL = re.compile(r'\s*([+-]?)(\d*)(?:\.\d*)?\s*$')
+
+
+def load_storage_rules():
+    """element/attribute -> [(context name or None, context values or None, storage, range text, lo, hi)]"""
+    rules = {}
+    header = True
+    for line in open(STORAGE_TABLE, encoding='utf-8').read().splitlines():
+        if not line or line.startswith('#'):
+            continue
+        if header:
+            header = False
+            continue
+        element, attribute, context, storage, rng = line.split('\t')[:5]
+        name, values = (None, None) if not context else (context.split('=', 1)[0], set(context.split('=', 1)[1].split('|')))
+        lo, hi = (int(x) for x in rng.split('..')) if rng else (None, None)
+        rules.setdefault(element + '/' + attribute, []).append((name, values, storage, rng, lo, hi))
+    return rules
+
+
+STORAGE_RULES = load_storage_rules()
+
+
+def wrap16(v):
+    m = v % 65536
+    return m - 65536 if m >= 32768 else m
+
+
+def wrap32(v):
+    m = v % (1 << 32)
+    return m - (1 << 32) if m >= (1 << 31) else m
+
+
+def sign_rule(stored, drop_at_zero):
+    if stored < 0:
+        return 'exact %d' % -stored
+    if stored > 0:
+        return 'atLeast %d' % stored
+    return 'dropped' if drop_at_zero else 'atLeast 0'
+
+
+def word_reads(storage, v, lo, hi):
+    """what Word reads for a value outside the row's range, in the attribute's own terms (InspectRanges.reading)"""
+    if storage == 'int16':
+        return str(wrap16(v))
+    if storage == 'uint16':
+        return str(v % 65536)
+    if storage == 'int32':
+        return str(wrap32(v))
+    if storage == 'uint8':
+        return str(v % 256)
+    if storage == 'uint5':
+        return str(v % 32)
+    if storage in ('pair-firstLine', 'pair-hanging'):
+        s = wrap16(v if storage == 'pair-firstLine' else -v)
+        return 'firstLine %d' % s if s >= 0 else 'hanging %d' % -s
+    if storage.startswith('rule-'):
+        return sign_rule(wrap16(-v if 'negated' in storage else v), storage.endswith('-drop'))
+    if storage == 'bits15-flag':
+        u = v % 65536
+        return 'h=%d%s' % (u - 32768 if u >= 32768 else u, ' hRule dropped' if u >= 32768 else '')
+    if storage == 'int16-clamp':
+        return str(min(max(wrap16(v), lo), hi))
+    if storage == 'uint16-clamp':
+        return str(min(max(v % 65536, lo), hi))
+    if storage == 'uint16-min':
+        return str(max(v % 65536, lo))
+    if storage == 'column-w':
+        s = wrap16(v)
+        return 'computed' if s < 0 else str(s)
+    if storage == 'column-space':
+        s = wrap16(v)
+        return '-1' if s < 0 else str(s)
+    if storage == 'twips-unmeasured':
+        return 'changed'
+    raise ValueError('unknown storage ' + storage)
+
+
+def lexical(text):
+    """Word's reading of an integer attribute's text (CR-065); None for a form Word refuses"""
+    m = LEXICAL.match(text or '')
+    if not m:
+        return None
+    v = int(m.group(2)) if m.group(2) else 0
+    return -v if m.group(1) == '-' else v
+
+
+def range_summary(el, attribute, text):
+    rules = STORAGE_RULES.get(el.tag.split('}')[1] + '/' + attribute)
+    if not rules:
+        return None
+    rule = None
+    for name, values, storage, rng, lo, hi in rules:
+        if name is None or (el.get(wq(name)) or '') in values:
+            rule = (name, values, storage, rng, lo, hi)
+            break
+    if rule is None or rule[2] == 'ignored':
+        return None
+    name, values, storage, rng, lo, hi = rule
+    v = lexical(text)
+    if v is None or lo <= v <= hi:
+        return None
+    # the key's deciding sibling (type, lineRule, hRule), named by any of its rows, where the element has it
+    deciding = next((r[0] for r in rules if r[0]), None)
+    context = '; %s=%s' % (deciding, el.get(wq(deciding))) if deciding and el.get(wq(deciding)) is not None else ''
+    return 'attribute=w:%s/@w:%s%s; value=%s; storage=%s; range=%s; word_reads=%s' % (
+        el.tag.split('}')[1], attribute, context, text.strip(), STORAGE_WORD[storage], rng, word_reads(storage, v, lo, hi))
+
+
+def adjacent_runs(a, b):
+    """two runs of one parent with no run between them"""
+    if a is b or a.getparent() is None or a.getparent() is not b.getparent():
+        return False
+    for sib in a.itersiblings():
+        if sib is b:
+            return True
+        if sib.tag == wq('r'):
+            return False
+    return False
+
+
+def range_findings(root):
+    """[(element, summary)] for every attribute outside Word's storage width under root, in document order"""
+    out = []
+    for el in root.iter():
+        if not isinstance(el.tag, str) or not el.tag.startswith('{%s}' % W):
+            continue
+        for k, text in el.attrib.items():
+            if k.startswith('{%s}' % W):
+                summary = range_summary(el, k.split('}')[1], text)
+                if summary:
+                    out.append((el, summary))
+    return out
 
 
 # ---------------------------------------------------------------- small helpers
@@ -654,6 +799,40 @@ class Inspector:
         for face, (part, first) in self.used_faces.items():
             f = self.add(Finding('font.embedded', self.chain, part, excerpt='', needs={'never'}, selector=face))
             f.anchor = first
+        self.walk_ranges()
+
+    def walk_ranges(self):
+        """CR-066 D6: every integer attribute outside Word's storage width, in every WordprocessingML XML part (the
+        main document first, then by part name), every mc branch included; one finding per attribute occurrence"""
+        main = self.main
+        parts = [main]
+        for n in sorted(self.pkg.names):
+            part = '/' + n
+            ct = self.pkg.content_type(part) or ''
+            if part != main and ct.endswith('+xml') and ('wordprocessingml' in ct or 'ms-word' in ct):
+                parts.append(part)
+        for part in parts:
+            # a part of a WordprocessingML type that is not XML (a docx altChunk declares the main part's type and
+            # holds a zip) is skipped, as docx4j's InspectPackage.dom skips a binary part that does not look like XML
+            if not self.pkg.has(part) or not self.pkg.read(part).lstrip(b'\xef\xbb\xbf \t\r\n').startswith(b'<'):
+                continue
+            root = self.pkg.xml(part)
+            if root is None:
+                continue
+            last_run, last_summary = None, None
+            for el, summary in range_findings(root):
+                # a run's property in the run after one with the same finding is the same finding (run splitting does
+                # not count, INSPECTION.md Identity); a paragraph's or a style's never merges
+                run = next((a for a in [el] + list(el.iterancestors()) if a.tag == wq('r')), None)
+                if run is not None and last_run is not None and summary == last_summary and adjacent_runs(last_run, run):
+                    continue
+                last_run, last_summary = run, (summary if run is not None else None)
+                # its selector in expected-findings.tsv: the part, the attribute and the value (unique per case)
+                attribute = summary[len('attribute='):summary.index(';')]
+                value = summary.split('; value=', 1)[1].split(';', 1)[0]
+                self.add(Finding('value.out_of_range', self.chain, part, path_of(el), excerpt='', needs={'never'},
+                                 summary=summary, selector=('>'.join(self.chain) + '>' if self.chain else '') + part
+                                 + ' ' + attribute + '=' + value))
 
     def collect_references(self, part, root, refs, story):
         """A story's note and comment references (phase 2). The text model reads a note through a reference it
@@ -2174,6 +2353,12 @@ def resolve(root, path):
 CASE = re.compile(r'Case (\d+):')
 
 # the case of an inventory finding no element of the document refers to, from the builder's source
+# a value.out_of_range finding in a part that is not a story: the case that wrote it (CR-066 D6)
+RANGE_PART_CASES = {
+    ('extraction-probe-inspect.docx', '/word/styles.xml'): '80',
+    ('extraction-probe-inspect.docx', '/word/settings.xml'): '80',
+    ('extraction-probe-inspect.docx', '/word/header2.xml'): '81',
+}
 PART_CASES = {
     ('extraction-probe-external.docm', '/word/settings.xml'): '50',
     ('extraction-probe-external.docm', '/word/vbaProject.bin'): '51',
@@ -2212,6 +2397,8 @@ def case_of(pkg, f, cases):
         el = resolve(root, f.anchor)
         if el is not None:
             return case_before(root, el)
+    if f.kind == 'value.out_of_range' and (pkg.fixture, f.part) in RANGE_PART_CASES:
+        return RANGE_PART_CASES[(pkg.fixture, f.part)]
     if (pkg.fixture, f.part) in PART_CASES:
         return PART_CASES[(pkg.fixture, f.part)]
     if f.part == main and f.path:

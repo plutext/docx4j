@@ -1,0 +1,11 @@
+file	token	stored	word_asis	asis_xml_touched
+date	X01_TRIGGER	2030	2026	result rewritten 2026
+date	X02_STORED	B2	A2	result written/rewritten to the computed branch
+date	X03_STRING_EMPTY	(separate, no result)	A10	result written/rewritten to the computed branch
+date	X04_STORED4	B4	A4	result written/rewritten to the computed branch
+date	X05_LAST	B7	B7	no (the last field: result and shape as built)
+time	X01_TRIGGER	2030	2026	result rewritten 2026
+time	X02_STORED	B2	A2	result written/rewritten to the computed branch
+time	X03_STRING_EMPTY	(separate, no result)	A10	result written/rewritten to the computed branch
+time	X04_STORED4	B4	A4	result written/rewritten to the computed branch
+time	X05_LAST	B7	B7	no (the last field: result and shape as built)

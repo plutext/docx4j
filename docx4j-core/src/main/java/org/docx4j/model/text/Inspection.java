@@ -93,6 +93,10 @@ public final class Inspection {
 					+ " (viewBox, paint, opacity, display, a <text> in <defs> no <use> draws); a metafile's EMR_POLYTEXTOUT,"
 					+ " EMR_SMALLTEXTOUT and EMF+ DrawString records, an ExtTextOut record of glyph indices (ETO_GLYPH_INDEX) or drawn with"
 					+ " a SYMBOL-charset font, and a metafile inside an OLE object's binary (payload.opaque).",
+			"value.unmeasured: an integer attribute is checked against Word's storage width only where CR-066's probe"
+					+ " measured the attribute (word-integer-storage.tsv); an ST_TwipsMeasure attribute no round measured"
+					+ " (w:gridCol/@w:w, the drawing grid, w:object's extent, a frameset's splitbar) is reported outside"
+					+ " -32768..65535 only, with word_reads=changed; ids, counts, EMUs and w:fitText are not checked.",
 			"intent: no finding says whether its text is, or is not, an attack."));
 
 	/** A skipped or undecided entry (REQ-907): a reason at a location, {@code reason@chain|part|path}. */

@@ -52,6 +52,24 @@ public abstract class Property {
 	
 	protected static Logger log = LoggerFactory.getLogger(Property.class);	
 	
+	/**
+	 * CR-066 D5: a CSS length that converts to a value outside Word's range for the attribute it is written to is
+	 * reported at WARN; the value is still written as computed (the caller gets a document back, as ImportXHTML's
+	 * users expect), and Word reads it modulo the attribute's width (16 bits for a twips measure; CR-066 section 3).
+	 * The range is the attribute's, not the type's. The line carries the ports' shared code
+	 * {@link org.docx4j.wml.LenientInteger#CODE}.
+	 *
+	 * @since 17.3.5
+	 */
+	protected static void warnIfOutsideWordRange(String cssName, CSSValue value, long converted, String unit,
+			long min, long max, String attribute) {
+		if (converted < min || converted > max) {
+			// the message promises nothing about what the caller writes: ImportXHTML clamps it (its CR-007), docx4j writes it as computed
+			log.warn("{}: {}: {} converts to {} {}, outside Word's range {}..{} for {}; Word reads it modulo 16 bits if written as is (CR-066)",
+					org.docx4j.wml.LenientInteger.CODE, cssName, value == null ? null : value.getCssText(), converted, unit, min, max, attribute);
+		}
+	}
+	
 	protected Object object;
 	/**
 	 * @return the object

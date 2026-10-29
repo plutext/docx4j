@@ -109,6 +109,7 @@ public class Indent extends AbstractParagraphProperty {
 		CSSPrimitiveValue cssPrimitiveValue = (CSSPrimitiveValue)value;	
 		
 		int twip = getTwip(cssPrimitiveValue);
+		warnIfOutsideWordRange(CSS_NAME, value, twip, "twips", -32768, 32767, "w:ind/@w:left"); // CR-066 D5: int16
 		ind.setLeft(BigInteger.valueOf(twip) );		
 		this.setObject(ind);
 	}

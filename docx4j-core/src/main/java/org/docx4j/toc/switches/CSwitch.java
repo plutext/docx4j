@@ -31,7 +31,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.finders.InstrTextFinder;
 import org.docx4j.model.fields.FieldRef;
 import org.docx4j.model.fields.FieldsPreprocessor;
-import org.docx4j.model.fields.FldSimpleModel;
+import org.docx4j.model.fields.FieldInstruction;
 import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.fields.SimpleFieldLocator;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -128,14 +128,9 @@ public class CSwitch extends SelectorSwitch {
 //			System.out.println(simpleField.getInstr());
 			String fldSimpleName = FormattingSwitchHelper.getFldSimpleName(simpleField.getInstr());
 			if ("SEQ".equals(fldSimpleName)) {
-				FldSimpleModel fsm = new FldSimpleModel(); //gets reused
-				try {
-					fsm.build(simpleField.getInstr());
-				} catch (TransformerException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				String key = fsm.getFldParameters().get(0);  
+				FieldInstruction fsm = null;
+				fsm = FieldInstruction.parse(simpleField.getInstr());
+				String key = fsm.getParameters().get(0);  
 				if (log.isDebugEnabled()) {
 					log.debug(simpleField.getInstr() + " ----> " + key);
 				}
@@ -251,11 +246,10 @@ public class CSwitch extends SelectorSwitch {
 				} else {
 					
 					// Now format the result
-					FldSimpleModel fsm = new FldSimpleModel();
+					FieldInstruction fsm = FieldInstruction.parse(instr);
 					String result = counter + "";
 					
-					try {
-						fsm.build(instr);
+					{
 						/*
 							Per http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/SEQ.html
 							Switches: Zero or one of the numeric-formatting-switches, or zero or more of the following field-specific-switches. If no numeric-formatting-switch is present, \* Arabic is used.
@@ -283,8 +277,6 @@ public class CSwitch extends SelectorSwitch {
 						}
 
 						
-					} catch (TransformerException e) {
-						log.warn("Can't format the field", e);
 					}
 					
 					fr.setResult(result);

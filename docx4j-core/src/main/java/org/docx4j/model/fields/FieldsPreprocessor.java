@@ -39,6 +39,9 @@ import java.util.NoSuchElementException;
  * Note that step 1 is optional.  It is generally only performed
  * for MERGEFIELD.  
  * 
+ * A field's result is kept, whatever the field (since 17.3.5): a caller that doesn't write a result keeps the one
+ * the field was read with; one that writes replaces it (FieldRef.setResult) or empties it (clearResult).
+ *
  * Currently the canonicalisation is done at the paragraph level,
  * so it is not suitable for fields (such as TOC) which extend across paragraphs.
  * TOC will need to be regenerated if touched by canonicalisation.
@@ -117,6 +120,11 @@ public class FieldsPreprocessor {
 	 * contains something other than instruction text (eg a nested field)
 	 * @since 17.0.1
 	 */
+	/** Whether the run's own properties hide it ({@code w:vanish}). */
+	static boolean isHidden(R r) {
+		return r != null && r.getRPr() != null && r.getRPr().getVanish() != null && r.getRPr().getVanish().isVal();
+	}
+
 	public static String extractInstr(List<Object> instructions) {
 
 		if (instructions.isEmpty()) {
@@ -129,6 +137,8 @@ public class FieldsPreprocessor {
 			o = XmlUtils.unwrap(o);
 			if (o instanceof Text) {
 				sb.append(((Text)o).getValue());
+			} else if (o instanceof org.docx4j.wml.R.Cr || o instanceof org.docx4j.wml.Br) {
+				sb.append('\n'); // a line break in the instruction (Word's own ADDRESSBLOCK format; CR-067 section 14.4)
 			} else {
 				// eg a nested field (FieldRef); can't resolve that by simple concatenation
 				log.warn("Can't extract instruction: encountered " + o.getClass().getName());
@@ -293,27 +303,6 @@ public class FieldsPreprocessor {
 		
 	}
 	
-	/**
-	 * A field's result is kept, whatever the field: one its caller doesn't write keeps the result it was read with, and
-	 * a caller that writes one replaces it ({@link FieldRef#setResult(String)}) or empties it
-	 * ({@link FieldRef#clearResult()}). Until 17.3.5 an unlocked MERGEFIELD's or DOCPROPERTY's result was dropped
-	 * here, whoever the caller, so FieldUpdater emptied MERGEFIELDs, MailMerger emptied DOCPROPERTYs, and FieldUpdater
-	 * emptied a DOCPROPERTY whose property it couldn't find.
-	 */
-	private boolean preserveResult(FieldRef fieldRef) {
-		return true;
-	}
-
-	private boolean preserveParentResult() {
-		
-		FieldRef thisField = stack.pop();
-		FieldRef parentField = stack.pop();
-		boolean preserveParentResult = preserveResult(parentField);
-		// restore stack
-		stack.push(parentField);
-		stack.push(thisField);
-		return preserveParentResult;
-	}
 	
 	private void handleRun(R existingRun, ContentAccessor newAttachPoint) {
 		
@@ -350,10 +339,8 @@ public class FieldsPreprocessor {
 				
 				if (inParentResult()) {
 					
-					if (preserveParentResult()) {
+					{
 						newR.getContent().add(o2);
-					} else {
-						log.debug(".. but in result, so don't add to run");
 					}
 					
 				} else {
@@ -372,6 +359,7 @@ public class FieldsPreprocessor {
 						log.debug(".. nested ");
 						newR.getContent().add(o2);
 						
+						currentField.setNested(true);
 						parent.getInstructions().add(currentField);
 					}
 				}
@@ -382,10 +370,8 @@ public class FieldsPreprocessor {
 				
 				if (inParentResult()) {
 
-					if (preserveParentResult()) {
+					{
 						newR.getContent().add(o2);
-					} else {
-						log.debug(".. but in result, so don't add to run");
 					}
 
 				} else {
@@ -413,7 +399,7 @@ public class FieldsPreprocessor {
 				
 				if (inParentResult()) {
 
-					if (preserveParentResult()) {
+					{
 						
 						newR.getContent().add(o2);
 
@@ -464,8 +450,6 @@ public class FieldsPreprocessor {
 							}
 							newR = Context.getWmlObjectFactory().createR();						
 						}						
-					} else {
-						log.debug(".. but in result, so don't add to run");
 					}
 
 				} else {  // still in END processing
@@ -558,13 +542,13 @@ public class FieldsPreprocessor {
 				
 //				log.debug("Processing " +((JAXBElement<Text>)o2).getValue().getValue() );
 				
-				currentField.getInstructions().add(o2);
+				// a hidden run's instruction text is kept in the run but not in the instruction: Word evaluates a field's
+				// code without its hidden text (measured 2026-10-29, CR-067 section 14.7)
+				if (!isHidden(existingRun)) currentField.getInstructions().add(o2);
 				if (inParentResult()) {
 
-					if (preserveParentResult()) {
+					{
 						newR.getContent().add(o2);
-					} else {
-						log.debug(".. but in result, so don't add to run");
 					}
 
 				} else {				

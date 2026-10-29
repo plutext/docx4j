@@ -175,7 +175,15 @@ public class BoundDateFormatTest {
 	 */
 	@Test
 	public void theDateTimeZonePropertyConvertsAsWordDoes() throws Exception {
+		// since 17.3.5 the conversion is its own opt-in (the portfolio's date rule, 2026-10-28): the zone alone is nominal
 		Docx4jProperties.setProperty(BindingTraverserXSLT.DATE_TIME_ZONE_PROPERTY, "Australia/Sydney");
+		try {
+			shows("zone alone, no conversion", bind("BindingTraverserXSLT"), "DF2", "3:05 PM");
+		} finally {
+			Docx4jProperties.setProperty(BindingTraverserXSLT.DATE_TIME_ZONE_PROPERTY, "");
+		}
+		Docx4jProperties.setProperty(BindingTraverserXSLT.DATE_TIME_ZONE_PROPERTY, "Australia/Sydney");
+		Docx4jProperties.setProperty(org.docx4j.openpackaging.packages.OpcPackage.BOUND_DATES_CONVERTED_PROPERTY, "true");
 		try {
 			for (String implementation : new String[] { "BindingTraverserXSLT", "BindingTraverserNonXSLT" }) {
 				String xml = bind(implementation);
@@ -187,6 +195,7 @@ public class BoundDateFormatTest {
 			}
 		} finally {
 			Docx4jProperties.setProperty(BindingTraverserXSLT.DATE_TIME_ZONE_PROPERTY, "");
+			Docx4jProperties.setProperty(org.docx4j.openpackaging.packages.OpcPackage.BOUND_DATES_CONVERTED_PROPERTY, "false");
 		}
 	}
 
@@ -209,6 +218,7 @@ public class BoundDateFormatTest {
 			shows(implementation, xml, "TW6", "01:05");
 		}
 		Docx4jProperties.setProperty(BindingTraverserXSLT.DATE_TIME_ZONE_PROPERTY, "Australia/Sydney");
+		Docx4jProperties.setProperty(org.docx4j.openpackaging.packages.OpcPackage.BOUND_DATES_CONVERTED_PROPERTY, "true");
 		try {
 			for (String implementation : new String[] { "BindingTraverserXSLT", "BindingTraverserNonXSLT" }) {
 				String xml = bind(implementation, "typed-controls-twelve.docx", null);
@@ -221,6 +231,7 @@ public class BoundDateFormatTest {
 			}
 		} finally {
 			Docx4jProperties.setProperty(BindingTraverserXSLT.DATE_TIME_ZONE_PROPERTY, "");
+			Docx4jProperties.setProperty(org.docx4j.openpackaging.packages.OpcPackage.BOUND_DATES_CONVERTED_PROPERTY, "false");
 		}
 	}
 }

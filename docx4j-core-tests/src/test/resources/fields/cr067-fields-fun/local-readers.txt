@@ -1,0 +1,154 @@
+=== one-file-many-readings.docx2python.txt
+To: Finance. From: Procurement. Prepared in 2020.
+Payment terms: Net 90 days.
+Amount due: $1500.
+Discount: 10%.
+Supplier code matches our approved list: no.
+Subtotal check: 2 + 2 = 5.
+Approval status: rejected.
+Printed on page 9two or later.
+Reviewer note: none.
+Reference: Purchase approval.
+=== one-file-many-readings.docx2txt.txt
+To: Finance. From: Procurement. Prepared in 2020.
+Payment terms: Net 90 days.
+Amount due: $1500.
+Discount: 10%.
+Supplier code matches our approved list: no.
+Subtotal check: 2 + 2 = 5.
+Approval status: rejected.
+Printed on page 9two or later.
+Reviewer note: none.
+Reference: Purchase approval.
+=== one-file-many-readings.libreoffice-pdf.txt
+To: Finance. From: Procurement. Prepared in 2026.
+Payment terms: Net 30 days.
+Amount due: $.
+Discount: 10%.
+Supplier code matches our approved list: no.
+Subtotal check: 2 + 2 = 5.
+Approval status: approved.
+Printed on page two or later.
+Reviewer note: confidential.
+Reference: Purchase approval.
+=== one-file-many-readings.libreoffice.txt
+To: Finance. From: Procurement. Prepared in 2026.
+Payment terms: Net 90 days.
+Amount due: $500.
+Discount: 10%.
+Supplier code matches our approved list: no.
+Subtotal check: 2 + 2 = 5.
+Approval status: rejected.
+Printed on page two or later.
+Reviewer note: none.
+Reference: Purchase approval.
+=== one-file-many-readings.mammoth-md.txt
+To: Finance\. From: Procurement\. Prepared in 2020\.
+Payment terms: Net 90 days\.
+Amount due: $1500\.
+Discount: %\.
+Supplier code matches our approved list: no\.
+Subtotal check: 2 \+ 2 = 5\.
+Approval status: rejected\.
+Printed on page 9two or later\.
+Reviewer note: none\.
+Reference: Purchase approval\.
+=== one-file-many-readings.mammoth-text.txt
+To: Finance. From: Procurement. Prepared in 2020.
+Payment terms: Net 90 days.
+Amount due: $1500.
+Discount: %.
+Supplier code matches our approved list: no.
+Subtotal check: 2 + 2 = 5.
+Approval status: rejected.
+Printed on page 9two or later.
+Reviewer note: none.
+Reference: Purchase approval.
+=== one-file-many-readings.markitdown.txt
+To: Finance. From: Procurement. Prepared in 2020.
+Payment terms: Net 90 days.
+Amount due: $1500.
+Discount: %.
+Supplier code matches our approved list: no.
+Subtotal check: 2 + 2 = 5.
+Approval status: rejected.
+Printed on page 9two or later.
+Reviewer note: none.
+Reference: Purchase approval.
+=== one-file-many-readings.onlyoffice.txt
+To: Finance. From: Procurement. Prepared in 2020. 
+Payment terms: Net 90 days. 
+Amount due: $1500. 
+Discount: %. 
+Supplier code matches our approved list: no. 
+Subtotal check: 2 + 2 = 5. 
+Approval status: rejected. 
+Printed on page 9two or later. 
+Reviewer note: none. 
+Reference: Purchase approval.
+=== one-file-many-readings.pandoc-gfm.txt
+To: Finance. From: Procurement. Prepared in 2020.
+Payment terms: Net 90 days.
+Amount due: \$1500.
+Discount: %.
+Supplier code matches our approved list: no.
+Subtotal check: 2 + 2 = 5.
+Approval status: rejected.
+9Printed on page two or later.
+Reviewer note: none.
+Reference: Purchase approval.
+=== one-file-many-readings.pandoc-plain.txt
+To: Finance. From: Procurement. Prepared in 2020.
+Payment terms: Net 90 days.
+Amount due: $1500.
+Discount: %.
+Supplier code matches our approved list: no.
+Subtotal check: 2 + 2 = 5.
+Approval status: rejected.
+9Printed on page two or later.
+Reviewer note: none.
+Reference: Purchase approval.
+=== one-file-many-readings.poi.txt
+To: Finance. From: Procurement. Prepared in 2020.
+Payment terms: Net 90 days.
+Amount due: $1500.
+Discount: 10%.
+Supplier code matches our approved list: no.
+Subtotal check: 2 + 2 = 5.
+Approval status: rejected.
+Printed on page 9two or later.
+Reviewer note: none.
+Reference: Purchase approval.
+=== one-file-many-readings.python-docx.txt
+To: Finance. From: Procurement. Prepared in 2020.
+Payment terms: Net 90 days.
+Amount due: $1500.
+Discount: %.
+Supplier code matches our approved list: no.
+Subtotal check: 2 + 2 = 5.
+Approval status: rejected.
+Printed on page 9two or later.
+Reviewer note: none.
+Reference: Purchase approval.
+=== one-file-many-readings.tika-html.txt
+To: Finance. From: Procurement. Prepared in 2020.
+Payment terms: Net 90 days.
+Amount due: $1500.
+Discount: 10%.
+Supplier code matches our approved list: no.
+Subtotal check: 2 + 2 = 5.
+Approval status: rejected.
+Printed on page 9two or later.
+Reviewer note: none.
+Reference: Purchase approval.
+=== one-file-many-readings.tika-text.txt
+To: Finance. From: Procurement. Prepared in 2020.
+Payment terms: Net 90 days.
+Amount due: $1500.
+Discount: 10%.
+Supplier code matches our approved list: no.
+Subtotal check: 2 + 2 = 5.
+Approval status: rejected.
+Printed on page 9two or later.
+Reviewer note: none.
+Reference: Purchase approval.

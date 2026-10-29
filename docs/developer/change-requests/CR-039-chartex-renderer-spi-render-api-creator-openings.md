@@ -421,3 +421,44 @@ document, slide, drawing, relationship and content-type parts are byte-identical
 - The Enterprise session's skeleton provides a `ChartExRenderer` against these jars: it is found
   with docx4j-chart-render beside it, and `selectedBranch` gives the Fallback, the Choice and the
   Fallback in `auto` (its renderer refuses for now), `choice` and `fallback`.
+
+## Follow-up (2026-10-28): the notice where no renderer is present
+
+Jason: open-source docx4j reads and saves chartex charts but cannot draw, edit or create them; its PDF and HTML show
+Office's Fallback picture, and a chart in an xlsx has none; docx4j should log something that suggests purchasing
+Enterprise. Agreed with the Enterprise session (plutext-enterprise-java-11-7c) and built as `ChartExNotice`:
+
+- Two situations, one WARN per JVM each, naming the first chart met, DEBUG after: (a) an output draws the Fallback
+  (`ChartExBranch.takesChoice`, in `auto` only; the first chartex Choice met without a renderer is read once for the
+  notice, nothing after it, so the "nothing is read" rule of §3 holds from the second chart on); (b) an image is asked
+  and refused (`ChartImages.unrenderable` returns `ChartExNotice.notDrawn`'s reason, which carries the pointer, so a
+  caller sees it directly). Never with a renderer present, whatever its check says (Enterprise's own licence WARN speaks
+  then); never for a region map (no renderer draws one); not in `fallback` mode (the user decided).
+- Wording (the Enterprise session's corrections taken): "The waterfall chart /word/charts/chartEx1.xml is output as the
+  picture Office saved with it (its mc:Fallback), which won't show changes made to its data outside Office. Docx4j
+  Enterprise ChartEx draws these charts from their data: https://www.plutext.com/". The chart's own kind is named from its
+  series layouts (histogram; Pareto where a paretoLine series is present; box and whisker; treemap; sunburst; funnel;
+  waterfall; "chartex chart" where unreadable). The URL is the homepage until Jason gives a product page; the artifact
+  (com.plutext:docx4j-Enterprise-ChartEx) is not on Maven Central, so the message points to where to get it, not "add".
+- No runtime notice for edit or create: no open-source entry point reaches a chartex chart (`ChartDataEditor.of` takes a
+  classic `Chart`, `ChartType` has the classic types), so the pointer is javadoc on `ChartDataEditor`, `ChartCreator`,
+  `ChartType`, `ChartExModel`, `ChartRef.isChartEx` and `readChartEx`.
+- `ChartExNoticeTest`: the WARN once and nothing read after it; the HTML output notices it; silent with a renderer that
+  refuses or draws, and in `fallback` mode; the xlsx refusal's reason; the kind.
+- Gate (ac7b98ae4): core-tests 2197/0/30, export-fo-tests 858/0/9.
+
+## Follow-up (2026-10-28): two defects from the Enterprise ChartEx work
+
+1. **A chartex chart in an xlsx had no size.** `Charts.walkAnchors` built the reference from the frame inside the
+   `mc:Choice` (`ChartRef.of(drawing, f, true)`), so `getAnchor()` was the frame and `ChartAnchorSize.of` found no
+   two-cell anchor: `ChartImages.getSize`, `toSvg(chart)` and `toPng(chart, dpi)` threw "has no size in its anchor",
+   for Excel's own files too. Now the reference keeps the cell anchor round the Choice (`ChartRef.withAnchor`), and the
+   size reads as for a classic chart. `ChartExDefectsTest.anXlsxChartexChartHasItsCellAnchorsSize` on waterfall.xlsx.
+2. **A WARN per chartex chart on any walk.** `TraversalUtil.handleGraphicData` flattens `a:graphicData`'s content into the
+   anchor's children by design, so a chartex `cx:chart` element's own parent is its `GraphicData` while the walk's is the
+   anchor; the parent check warned "Parent of ...chartex.CTRelId is currently GraphicData" once per chart (a classic
+   `c:chart`'s element is not a `Child`, so it never did). That case is now known and DEBUG.
+   `ChartExDefectsTest.readingAChartexDocumentWarnsNothingAboutTheChartElementsParent` on the three waterfall fixtures.
+
+Both in db3fcbe8b; gate: core-tests 2199/0/30, export-fo-tests 858/0/9.
+

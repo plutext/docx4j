@@ -47,9 +47,11 @@ import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.PBdr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.CTSdtContentRun;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtContentBlock;
 import org.docx4j.wml.SdtPr;
+import org.docx4j.wml.SdtRun;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
@@ -311,7 +313,10 @@ public class Containerization {
 	private static List<Object> groupRuns(List<Object> paragraphElts) {
 		
 		List<Object> resultElts = new ArrayList<Object>();
-		SdtBlock currentBlock = null;
+		// a run-level sdt: block-level sdt content refuses a run (ArrayListDocx4j, CR-064), and this
+		// container lives inside a paragraph; it marshals as the same w:sdt the stylesheets and the
+		// FO visitor match by tag (SdtElement)
+		SdtRun currentBlock = null;
 		CTBorder lastBorder = null;
 		CTBorder currentBorder = null;
 		R run = null;
@@ -332,7 +337,7 @@ public class Containerization {
 					currentBlock = null;
 					// could mean null to borders; borders to null; or bordersA to bordersB
 					if (currentBorder != null) {
-						currentBlock = createSdt(TAG_RPR, run.getRPr());
+						currentBlock = createRunSdt(TAG_RPR, run.getRPr());
 					}
 				}
 			}
@@ -350,7 +355,7 @@ public class Containerization {
 		return resultElts;
 	}
 
-	private static void appendRun(SdtBlock currentBlock, List<Object> resultElts) {
+	private static void appendRun(SdtRun currentBlock, List<Object> resultElts) {
 		
 		List<Object> blkElements = null;
 		R run = null;
@@ -381,13 +386,29 @@ public class Containerization {
 		}
 	}
 
-	private static RPr findBlockRPr(SdtBlock currentBlock) {
+	private static RPr findBlockRPr(SdtRun currentBlock) {
 		for (Object obj:currentBlock.getSdtPr().getRPrOrAliasOrLock()) {
 			if (obj instanceof RPr) {
 				return (RPr)obj;
 			}
 		}
 		return null;
+	}
+
+	/** the run-level counterpart of createSdt, for a container of runs inside a paragraph (CR-064) */
+	private static SdtRun createRunSdt(String tagVal, RPr rPr) {
+		SdtRun sdtRun = Context.getWmlObjectFactory().createSdtRun();
+		SdtPr sdtPr = Context.getWmlObjectFactory().createSdtPr();
+		sdtRun.setSdtPr(sdtPr);
+		CTSdtContentRun sdtContent = Context.getWmlObjectFactory().createCTSdtContentRun();
+		sdtRun.setSdtContent(sdtContent);
+		Tag tag = Context.getWmlObjectFactory().createTag();
+		tag.setVal(tagVal);
+		sdtPr.setTag(tag);
+		if (rPr != null) {
+			sdtPr.getRPrOrAliasOrLock().add((RPr)XmlUtils.deepCopy(rPr));
+		}
+		return sdtRun;
 	}
 
 	private static SdtBlock createSdt(String tagVal) {

@@ -343,3 +343,14 @@ Jason: "start CR-058 phase 2". Built and tested; commit on Jason's word.
   `od:xpath` branch of `bind.xslt` has no "left as it is" guard (its bindings come from the xpaths part, which the
   generator itself wrote; a stale ID there resolves through `xpathGetString` the same way, and none fitting
   empties the control as before). The paper's D34 (the text model showing a formatted date) is its own item.
+
+## Amendment (2026-10-28): D6's conversion is its own opt-in, in the package's zone
+
+The portfolio's date review (Jason's ruling 2026-10-28; docx4j CR-067 D12 and §12): the conversion D6 tied to
+`docx4j.model.datastorage.BindingHandler.dateTimeZone` being set is now a separate opt-in named for what it does,
+`OpcPackage.setBoundDatesConvertedAsWord(true)` or the property
+`docx4j.model.datastorage.BindingHandler.boundDatesConvertedAsWord` (default false), and it converts in the package's
+zone (`OpcPackage.effectiveDateTimeZone()`: the package's own, else the zone property, else the JVM default). Setting
+a zone alone, which now also governs date fields and revision dates, does not turn Word's day-early reading on. The
+nominal default is unchanged. `BoundDateFormatTest` amended.
+

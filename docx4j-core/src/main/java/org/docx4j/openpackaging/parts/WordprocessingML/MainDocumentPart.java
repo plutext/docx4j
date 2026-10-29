@@ -148,9 +148,8 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
      */
     public List<Object> getContent() {
     	
-    	if (this.getJaxbElement()==null) {    		
-    		this.setJaxbElement( Context.getWmlObjectFactory().createDocument() );
-    	}
+    	// a document that could not be read is not replaced by an empty one (CR-065 D1)
+    	contentsOrNew(() -> Context.getWmlObjectFactory().createDocument());
     	if (this.getJaxbElement().getBody()==null) {
     		this.getJaxbElement().setBody(
     				Context.getWmlObjectFactory().createBody() );

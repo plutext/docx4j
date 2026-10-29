@@ -1,0 +1,34 @@
+Jason's run, 2026-10-28 18:52 to 19:02, Word 365 version 2608 build 20326.20232 (the VM; regional format English (Australia)).
+No results.txt; the notes come from the portfolio session's relay of five screenshots (~/Pictures/Screenshots/Screenshot_20261028_18542[7-9]*.png
+and _19*.png) and Jason's "see other saves in the dir".
+
+phase3-probe-r1-word365.docx (18:52): Ctrl+A, F9, Save As. The file keeps OLD as the result of every LISTNUM, AUTONUM* and SYMBOL
+field (Word never writes their results); the screenshot shows the LISTNUM renders L01 i), L02 ii), L03 b), L04 i), L05 2), L06 x),
+L07 xi), L08 xii) and xiii), L09 2.1.14. (L10 to L19, the AUTONUM* and SYMBOL renders are not in any screenshot: a PDF of the file
+is asked for as round 2). The index, FILENAME/TEMPLATE/FILESIZE and NUMPAGES results are in the file.
+numwords-probe-r1-word365.docx + .pdf (18:56): the status bar says 38 words (the footnote's two counted; the fields say 36).
+address-probe-r1-merged.docx (19:02): Match Fields matched Courtesy Title=Title, First Name=First_Name, Last Name=Last_Name, Suffix,
+Company, Address 1=Address_1, Address 2=Address_2, City, State, Country or Region=Country; NOT matched: Postal Code (and Unique
+Identifier, Middle Name, Nickname, Job Title and every field on the dialog's second page). Word's "Invalid Merge Field" dialog on
+MERGEFIELD "First Name" (Word names the column First_Name): Jason replaced it with Title, so M01 shows the title.
+
+Round 2 (Jason, 2026-10-28 20:54 to 20:58, Word 365 version 2608 build 20326.20232):
+phase3-probe-r1-word365.pdf (20:54): Save As PDF of the round-1 save; the only record of L10 to L19, A01 to A15 and S01 to S14
+(Word writes no result for LISTNUM, AUTONUM*, SYMBOL: the file keeps OLD). mutool stext gave the SYMBOL runs' font and size:
+S03 SymbolMT U+F0A9, S04 Wingdings-Regular U+F041, S07 Aptos 24pt, S08 ArialMT 12pt, S12 CourierNewPSMT, S09/S13/S14 "###" in Aptos-Bold.
+listnum-probe-r2-word365.docx + .pdf (20:56): select all, F9, saved as both; the docx keeps OLD in all 15 cases; the PDF has the numbers.
+address-probe-r1-attached.docx (20:58): the list attached, Word's own Address Block and Greeting Line inserted after "End of the
+letter." (not merged). Word's ADDRESSBLOCK \f breaks its lines with w:cr inside the instruction runs (no \n); \l 3081 (en-AU).
+Its GREETINGLINE is a w:fldSimple whose \f carries &#xA; between <<_LAST0_>> and <<_AFTER_ ,>>. Its w:odso maps First_Name,
+Last_Name, Address_1, Address_2 and Country (Country or Region) to the data columns; Postal Code is again unmapped.
+
+Round 3 (Jason, 2026-10-29 06:04): address-probe-r1-attached-merged.docx = Finish & Merge > Edit Individual Documents > All of the
+attached file. Word's own Address Block: one paragraph a line (company, name, street, street 2, city state; the country only off
+the \e one); its Greeting Line on one line (the &#xA; in its format does not print). \d made no visible difference with Word's own format.
+
+Plain-text saves (Jason, 2026-10-29 07:04 to 07:07): phase3-probe-r1.docx (never updated: every field's stored result is OLD)
+and address-probe-r1.docx (no data source attached) opened and saved as Plain Text (Windows encoding, CR/LF, updates
+declined). phase3-probe-r1-word365.txt: every field with a stored result reads OLD (PAGE_1 to PAGE_3, the N cases, NUMPAGES,
+the six INDEX fields included); LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT and SYMBOL (L01 to L19, A01 to A15, S01 to S14) read
+as nothing ("L01_LISTNUM = ", "L08_TWO_IN_ONE =  and ", "A05_LGL_H1 =  heading text"): Word's text converter writes neither
+their stored text nor the number it paints. address-probe-r1-word365.txt: every merge field reads OLD.
