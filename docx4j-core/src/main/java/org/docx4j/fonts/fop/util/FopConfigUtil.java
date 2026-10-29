@@ -697,6 +697,18 @@ public class FopConfigUtil {
 		rendererFont.getFontTriplet().add(
 				createFontTriplet(fontTriplet.getName(), fontTriplet.getStyle(), 
 						weightToCSS2FontWeight(fontTriplet.getWeight())));
+		/* The name the FO uses is the mapped one, which for a family without a bold face is the
+		 * mapper's +nobold alias of this same file (Mapper.addNoBoldFaceAliases; the simulate-style
+		 * branch declares that name). This branch declared only the file's own name, so with
+		 * docx4j.fonts.fop.util.FopConfigUtil.simulate-style=false every aliased family went
+		 * undeclared and FOP drew it in its default font: issue #701, a document's Wingdings and
+		 * Symbol bullets as "#" in Times-Roman ("Font Wingdings+nobold,normal,400 not found").
+		 * @since 17.3.5 */
+		if (fontName!=null && !fontName.equals(fontTriplet.getName())) {
+			rendererFont.getFontTriplet().add(
+					createFontTriplet(fontName, fontTriplet.getStyle(),
+							weightToCSS2FontWeight(fontTriplet.getWeight())));
+		}
 		addFamilyTriplet(rendererFont, pf, fontTriplet.getStyle(),
 				weightToCSS2FontWeight(fontTriplet.getWeight()));
 
