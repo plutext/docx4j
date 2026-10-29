@@ -787,7 +787,7 @@ fixed the same day (`FieldsCombiner`, `IfFieldProbeWritersTest`, `ResultlessIfFi
 | # | Decision | Built |
 |---|---|---|
 | D31 | The output path's combiner folds a nested field into its outer field's instruction as one operand (its stored result, else its evaluated one, as the updater and the text model do, D4), and the outer becomes one `w:fldSimple` whose result the writer paints; before, the nested field was combined on its own and painted beside the outer's stored result (`ProbeTITLE_MISMATCH`, `2026STALE_OUTER` in HTML and PDF). A nested field after the outer's separate is part of its result, as before | yes |
-| D32 | A complex field with no stored result is combined into an empty `w:fldSimple` where the evaluator knows the field (as the layout fields were), so that the writer evaluates it (D3: a field with no stored result is evaluated); and a resultless IF is dropped before combining only where a nested field no evaluator knows (PAGE, NUMPAGES) makes it undecidable; before, every resultless IF was dropped and any other resultless field painted nothing | yes |
+| D32 | A complex field with no stored result is combined into an empty `w:fldSimple` where the evaluator knows the field (as the layout fields were), so that the writer evaluates it (D3: a field with no stored result is evaluated); and a resultless IF is dropped before combining only where a nested field no evaluator knows (PAGE, NUMPAGES) makes it undecidable; before, every resultless IF was dropped and any other resultless field painted nothing | yes; narrowed by D35 (§14.9) to a field with no separate: one with a separate and an empty result stores that result |
 
 **Word's run (Jason, 2026-10-29 07:34 to 07:37; `scored.tsv`, the four texts and two docx in the fixtures).** Word's open
 itself recomputed some fields before any update, and its save wrote the new results into the file (`-asis.docx`): the
@@ -936,3 +936,29 @@ Measured against Word's plain-text save of the never-updated phase 3 probe (§14
 list-number lines empty on both sides, the SYMBOL lines empty in Word's and the character in docx4j's. docx4j's PDF and HTML
 writers keep D3 (a stored result painted, a resultless field evaluated, the never-stored five written live by `Preprocess`):
 they do not imitate Word's print-time pass, a named departure for the WD's appendix.
+
+### 14.9 A separate with nothing after it is a stored result (Jason, 2026-10-29: "yes to (a)")
+
+The fidelity gates run for the FOP fork's drops on 2026-10-29 (b285 against b284, the same renderer, docx4j 187e5a367 to
+bc842ac66) showed `15_hu-HU_tbl_1679` (real2 and real-c2) losing 37 and 29 lines of parity with Word's PDF (0.955 to 0.772, a
+page added). A `git bisect` on that document alone names 9bf17e7e0 (D31, D32). The document is a Hungarian insurance template
+whose 155 fields are all `KEYWORDS` markers, `{ KEYWORDS KONS_X X \* MERGEFORMAT }`, each written begin, instruction, separate,
+end, with nothing between separate and end. Word's PDF paints nothing for them. Under D32 the combiner made each an empty
+`w:fldSimple` and the writer's cached-else-evaluated handler, reading blank cached text as no result, evaluated it: KEYWORDS
+with an argument gives the argument, so every marker painted its identifier (219 lines became 276; the FO before and after
+differs in nothing else). The same drift holds a no-separate DOCPROPERTY now evaluated (16_de-CH_tbl_10293, -1 line: D3's named
+departure, measured) and three no-separate IFs (16_fr-FR_tbl_11659, -1); its other movers hold no field the evaluator touches.
+
+Word's reading, from the IF probe (§14.7: a field with a separate does not make Word compute anything on open; its plain text
+gives "" for such a field) and from this document, is that a separate with nothing after it **is** a stored result, an empty
+one. Jason chose (a) of the three options put to him ((b) keep D32 and accept the loss; (c) imitate Word's open and print pass
+for IF, `=` and COMPARE where the document holds a trigger, reversing the named departure of §14.7).
+
+| # | Decision | Built |
+|---|---|---|
+| D35 | "Stores a result" means "has a separate", even when nothing follows it: `FieldsCombiner` combines a field with a separate and an empty result only where the renderer computes it (PAGEREF, PAGE, NUMPAGES, SECTIONPAGES, as before D32), so nothing is painted, as in Word's PDF; a field with no separate at all keeps D32 and D3 (combined where the evaluator knows it, evaluated by the writer). The writers probe's C08 (separate, empty, IF) paints nothing, as the text model's cached reading gives; C09 (no separate) still APPROVED | yes |
+
+Checked by `ResultlessIfFieldTest` and `IfFieldProbeWritersTest` (gates: core-tests 2256/0/32, export-fo-tests 858/0/9) and by
+rescoring real-c2 on the fix (b289 against b285, the same .7 renderer): `15_hu-HU_tbl_1679` +29 lines, 0.7808 back to 0.9132
+(b284's value); `14_de-DE_tbl_3996` -1 (0.9636 to 0.9455, back to b284's value: its one MERGEFIELD with a separate and an empty
+result was evaluated under D32 and happened to align a line Word does not paint); nothing else moved, every event count equal.

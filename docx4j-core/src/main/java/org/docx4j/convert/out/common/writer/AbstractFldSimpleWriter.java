@@ -134,7 +134,9 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 
 	/**
 	 * The fields Word paints from their cached result and updates only on F9: painted cached where the document
-	 * stores a result, evaluated where it stores none (D3). CR-067 phase 1.
+	 * stores a result, evaluated where it stores none (D3). CR-067 phase 1. A complex field with a separate and nothing
+	 * after it stores an empty result and never reaches this writer ({@code FieldsCombiner} leaves it as it is, D35); an
+	 * empty {@code w:fldSimple} is one the file wrote so, or a complex field with no separate at all (D32).
 	 */
 	protected static final java.util.Set<String> CACHED_ELSE_EVALUATED = java.util.Collections.unmodifiableSet(
 			new java.util.HashSet<String>(java.util.Arrays.asList("CREATEDATE", "SAVEDATE", "REVNUM", "INFO", "SECTION",

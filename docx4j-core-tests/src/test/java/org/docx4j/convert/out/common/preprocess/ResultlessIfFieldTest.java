@@ -119,14 +119,19 @@ public class ResultlessIfFieldTest {
 		assertEquals("both paragraph marks stay", 2, content.size());
 	}
 
-	/** A resultless IF the evaluator can decide is combined (an empty w:fldSimple the writer evaluates), not dropped (CR-067). */
+	/**
+	 * An IF with no separate the evaluator can decide is combined (an empty w:fldSimple the writer evaluates), not dropped
+	 * (CR-067 D32); one with a separate and nothing after it stores an empty result and is left as it is, so nothing is
+	 * painted, as in Word's PDF (D35).
+	 */
 	@Test
 	public void aDecidableResultlessIfIsCombined() throws Exception {
 		String body = "<w:p>" + begin() + instr(" IF 1 = 1 \"yes\" \"no\" ") + end() + "</w:p>";
 		String out = process(body);
 		assertTrue(out, out.contains("<w:fldSimple w:instr=\" IF 1 = 1 &quot;yes&quot; &quot;no&quot; \"/>"));
 		String withSeparate = process("<w:p>" + begin() + instr(" IF 1 = 1 \"yes\" \"no\" ") + sep() + end() + "</w:p>");
-		assertTrue(withSeparate, withSeparate.contains("<w:fldSimple w:instr=\" IF 1 = 1 &quot;yes&quot; &quot;no&quot; \"/>"));
+		assertTrue(withSeparate, !withSeparate.contains("<w:fldSimple"));
+		assertTrue(withSeparate, withSeparate.contains("w:fldCharType=\"separate\""));
 	}
 
 	/** A nested field folds into the outer's instruction as one operand (its stored result), and is not painted on its own. */

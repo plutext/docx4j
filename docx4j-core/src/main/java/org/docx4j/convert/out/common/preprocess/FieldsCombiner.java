@@ -568,10 +568,11 @@ public class FieldsCombiner {
 		/**
 		 * Combines each outermost complex field of the paragraph into one {@code w:fldSimple}: its instruction, with a
 		 * nested field folded in as one operand (its stored result, else its evaluated one; CR-067 D4, the updater's
-		 * and the text model's rule), and its result runs. A field with no stored result is combined where the
-		 * renderer computes it ({@link #COMPUTED_WITHOUT_RESULT}) or the evaluator knows it, so that the writer
-		 * evaluates it (CR-067 D3); any other is left as it is. Before 17.3.5 a nested field was combined on its own
-		 * and painted beside the outer's result.
+		 * and the text model's rule), and its result runs. A field with a separate and an empty result stores that
+		 * empty result, and is combined only where the renderer computes it ({@link #COMPUTED_WITHOUT_RESULT}); a field
+		 * with no separate at all stores no result, and is combined where the evaluator knows it, so that the writer
+		 * evaluates it (CR-067 D3, D32, D35); any other is left as it is. Before 17.3.5 a nested field was combined on
+		 * its own and painted beside the outer's result.
 		 */
 		protected void processContent(List<Object> pContent) {
 			if (pContent == null || pContent.isEmpty()) return;
@@ -601,8 +602,12 @@ public class FieldsCombiner {
 								//Having empty (eg. XE) fldSimple causes interesting effects to the
 								//layout in word - for the conversion process it probably makes sense,
 								//but if you try to open the resulting document in word it's pure chaos.
+								// a field with a separate and nothing after it stores an empty result, which is what Word
+								// paints (CR-067 D35, measured: Word's PDF of a template whose 155 KEYWORDS markers are such
+								// fields paints none of them); only a field with no separate at all stores no result (D3, D32)
 								if (frame.instr.length() > 0
-										&& (!frame.result.isEmpty() || computedWithoutResult(frame.instr) || evaluable(frame.instr))) {
+										&& (!frame.result.isEmpty() || computedWithoutResult(frame.instr)
+												|| (!frame.separated && evaluable(frame.instr)))) {
 									pResult.add(createFldSimple(frame.instr.toString(), frame.result));
 									haveChanges = true;
 									markIdx = i + 1;
@@ -649,7 +654,7 @@ public class FieldsCombiner {
 			}
 		}
 
-		/** Whether the evaluator knows the field the instruction names (a resultless one is then combined for it). */
+		/** Whether the evaluator knows the field the instruction names (one with no separate is then combined for it). */
 		private static boolean evaluable(CharSequence instr) {
 			String name = FieldInstruction.parse(instr.toString()).getName();
 			return name != null && FieldEvaluators.has(name);

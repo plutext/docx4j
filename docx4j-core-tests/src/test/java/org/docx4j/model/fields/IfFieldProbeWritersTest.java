@@ -66,7 +66,7 @@ public class IfFieldProbeWritersTest {
 			{ "C05_FORMULA", "3", "2", "3" },
 			{ "C06_COMPARE", "0", "1", "0" },
 			{ "C07_LOCKED", "REJECTED", "REJECTED", "REJECTED" },
-			{ "C08_NO_RESULT", "", "APPROVED", "APPROVED" },
+			{ "C08_NO_RESULT", "", "APPROVED", "" }, // a separate with nothing after it is a stored (empty) result (D35)
 			{ "C09_NO_SEPARATE", "", "APPROVED", "APPROVED" },
 			{ "C10_NESTED_BRANCH", "LIT", "Probe", "LIT" },
 			{ "C11_REF_EDITED", "REF_OLD", "REF_NEW", "REF_OLD" },
