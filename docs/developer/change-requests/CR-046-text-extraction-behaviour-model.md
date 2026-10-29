@@ -1099,3 +1099,18 @@ Phase 0 left four points open in WD 0.4. The portfolio session put them in WD 0.
 - The probe: `docx4j-core-tests/src/test/resources/text-extraction/`, 4a89a5967, and its
   README's Word section; the phase 0 suite in its `phase0/` directory, c0c72ecef.
 - docx4j-core-ts CR-002 §3.3 (addresses) and its `UNDERSTOOD_NAMESPACES`.
+
+## 9. Addendum: `profile` (WD 0.41 REQ-1002; built 2026-10-29)
+
+Jason, on the IF-field measurement of CR-067 §14.7: "profile: word-text makes sense". WD 0.41 (portfolio e49964f) adds
+`profile`, a preset of option values applied before the caller's own, so that an option the caller sets, before or after
+the profile, overrides it; `word-text` is Word's Save As plain text as the options reach it. Built: `TextOptions.Profile`
+(`WORD_TEXT`), `profile(Profile)` and the WD name `profile` in `set`/`of(Map)`; the options the caller sets by name are
+recorded, and a profile fills only the others, whichever came first (`TextOptionsProfileTest`). The preset: view accepted,
+hidden true, include headers, footers and comments, comments true, text_boxes false, notes and note_references true,
+list_labels false, fields cached, field_codes false, toc true, placeholders true, bindings bound, altchunks true, symbols
+asis, tables tsv, page_markers false, layout none, alt_text, metadata, charts, smartart and embedded false, and math
+latex, since `math: unicodemath` is not implemented (§2.6). What it does not reproduce, per the WD's NOTE: the notes' and
+comments' forms, CRLF and CR cells, folded hyphens, Word's linear math, and the three accidents of Word's own (the partial
+update a DATE, TIME or SAVEDATE triggers on open, the SYMBOL omission, the stale PAGE number). `toMap` carries `profile`
+last (null where none), so the options round-trip by name.

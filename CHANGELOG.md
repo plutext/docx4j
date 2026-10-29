@@ -209,6 +209,11 @@ Changes in Version 17.3.5
   TIME or SAVEDATE (Word's open recomputes the document's literal IF fields when one is present, measured)
   and fields.print_update on the fields Word's PDF export updates first (PAGE, NUMPAGES, SECTION,
   SECTIONPAGES, PRINTDATE, REF, SEQ).
+* TextOptions.profile (OpenDoPE WD 0.41, REQ-1002): a preset of option values applied before the caller's
+  own, whichever came first; word-text is Word's Save As plain text as the options reach it (hidden text
+  in, headers, footers and comments in, text boxes out, no list labels, fields cached, tables as
+  tab-separated rows, charts, SmartArt and embedded packages off, and so on); by name too (profile:
+  word-text), as docx4j-mcp passes options.
 * FieldUpdater updates the document information fields AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY,
   SUBJECT and TITLE, as it does DOCPROPERTY (#277); DOCPROPERTY Keywords is read; a simple
   DOCPROPERTY's quoted property name is found.

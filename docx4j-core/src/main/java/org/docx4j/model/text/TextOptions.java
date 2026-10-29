@@ -76,12 +76,25 @@ public final class TextOptions {
 	/** {@code layout} (REQ-709). */
 	public enum Layout { NONE, INDENT }
 
+	/**
+	 * {@code profile} (REQ-1002, WD 0.41): a preset of option values applied before the caller's own, so that an option
+	 * the caller sets, before or after the profile, overrides it. {@link #WORD_TEXT} is Word's Save As plain text as the
+	 * options reach it: the accepted view, hidden text in, headers, footers and comments in, text boxes out, notes and
+	 * their references in, no list labels, fields cached, no field codes, the table of contents in, placeholders in, bound
+	 * values, chunks expanded, symbols as they are, tables as tab-separated rows, no page markers, no indentation, no alt
+	 * text, no metadata, no charts, SmartArt or embedded packages. What it does not reproduce: the notes' and comments'
+	 * forms, CRLF and CR cells, folded hyphens, Word's linear math ({@code math: unicodemath} is not implemented, so the
+	 * preset leaves math as LaTeX), and three accidents of Word's own: the partial update a DATE, TIME or SAVEDATE
+	 * field triggers on open, the SYMBOL omission, and the stale PAGE number.
+	 */
+	public enum Profile { WORD_TEXT }
+
 	/** The option names of WD section 10, in its order. */
 	public static final List<String> NAMES = Collections.unmodifiableList(java.util.Arrays.asList(
 			"view", "include", "text_boxes", "notes", "note_references", "comments", "hidden", "field_codes",
 			"fields", "toc", "placeholders", "bindings", "list_labels", "charts", "smartart", "embedded", "altchunks",
 			"alt_text", "metadata", "symbols", "math", "tables", "markup_detail", "page_markers", "layout",
-			"warnings"));
+			"warnings", "profile"));
 
 	private TextView view = TextView.ACCEPTED;
 	private final EnumSet<Include> include = EnumSet.noneOf(Include.class);
@@ -110,6 +123,9 @@ public final class TextOptions {
 	private Layout layout = Layout.NONE;
 	private boolean warnings = true;
 	private boolean inspect = INSPECT_DEFAULT;
+	private Profile profile;
+	/** The options the caller set by name: a profile does not override them, whichever came first. */
+	private final Set<String> explicit = new java.util.HashSet<String>();
 	private ImageDescriber imageDescriber = AltTextDescriber.INSTANCE;
 
 	/**
@@ -148,6 +164,21 @@ public final class TextOptions {
 	 */
 	public TextOptions set(String name, Object value) {
 		String n = name == null ? "" : name.trim();
+		if (n.equals("profile")) return profile(value == null ? null : value instanceof Profile ? (Profile) value : profileOf(string(n, value)));
+		apply(n, value);
+		explicit.add(n);
+		return this;
+	}
+
+	/** A profile's name as the WD writes it ({@code word-text}), case-insensitively. */
+	private static Profile profileOf(String s) {
+		String k = s.trim().toUpperCase(Locale.ROOT).replace('-', '_');
+		for (Profile p : Profile.values()) if (p.name().equals(k)) return p;
+		throw new IllegalArgumentException("profile: '" + s + "' is not one of [word-text] (WD REQ-1002)");
+	}
+
+	/** Sets one option without recording it as the caller's (a profile's value). */
+	private void apply(String n, Object value) {
 		switch (n) {
 		case "view": view = value instanceof TextView ? (TextView) value : TextView.of(string(n, value)); break;
 		case "include": include(n, value); break;
@@ -177,11 +208,32 @@ public final class TextOptions {
 		case "warnings": warnings = bool(n, value); break;
 		case "inspect": inspect = bool(n, value); break;
 		default:
-			throw new IllegalArgumentException("Unknown text option '" + name + "'; the options are " + NAMES
+			throw new IllegalArgumentException("Unknown text option '" + n + "'; the options are " + NAMES
 					+ " (WD REQ-1001), and docx4j's inspect");
 		}
+	}
+
+	/** The preset's values by WD name, in WD order. */
+	private static final Object[][] WORD_TEXT_VALUES = {
+			{ "view", "accepted" }, { "include", "headers,footers,comments" }, { "text_boxes", false }, { "notes", true },
+			{ "note_references", true }, { "comments", true }, { "hidden", true }, { "field_codes", false }, { "fields", "cached" },
+			{ "toc", true }, { "placeholders", true }, { "bindings", "bound" }, { "list_labels", false }, { "charts", false },
+			{ "smartart", false }, { "embedded", false }, { "altchunks", true }, { "alt_text", false }, { "metadata", false },
+			{ "symbols", "asis" }, { "math", "latex" }, { "tables", "tsv" }, { "page_markers", false }, { "layout", "none" } };
+
+	/**
+	 * Applies a profile (REQ-1002): its values for every option the caller has not set by name; an option the caller
+	 * sets afterwards overrides it too. See {@link Profile}.
+	 */
+	public TextOptions profile(Profile p) {
+		this.profile = p;
+		if (p == null) return this;
+		for (Object[] nv : WORD_TEXT_VALUES) if (!explicit.contains((String) nv[0])) apply((String) nv[0], nv[1]);
 		return this;
 	}
+
+	/** The profile applied, or null. */
+	public Profile getProfile() { return profile; }
 
 	private static String string(String name, Object value) {
 		if (value == null) throw new IllegalArgumentException(name + ": no value (WD REQ-1001)");
@@ -215,39 +267,39 @@ public final class TextOptions {
 
 	// --- the builder -------------------------------------------------------------------------------
 
-	public TextOptions view(TextView v) { this.view = v == null ? TextView.ACCEPTED : v; return this; }
-	public TextOptions include(Include... stories) { for (Include s : stories) include.add(s); return this; }
-	public TextOptions textBoxes(boolean b) { this.textBoxes = b; return this; }
-	public TextOptions notes(boolean b) { this.notes = b; return this; }
-	public TextOptions noteReferences(boolean b) { this.noteReferences = b; return this; }
-	public TextOptions comments(boolean b) { this.comments = b; return this; }
-	public TextOptions hidden(boolean b) { this.hidden = b; return this; }
-	public TextOptions fieldCodes(boolean b) { this.fieldCodes = b; return this; }
-	public TextOptions fields(Fields f) { this.fields = f; return this; }
+	public TextOptions view(TextView v) { this.view = v == null ? TextView.ACCEPTED : v; explicit.add("view"); return this; }
+	public TextOptions include(Include... stories) { for (Include s : stories) include.add(s); explicit.add("include"); return this; }
+	public TextOptions textBoxes(boolean b) { this.textBoxes = b; explicit.add("text_boxes"); return this; }
+	public TextOptions notes(boolean b) { this.notes = b; explicit.add("notes"); return this; }
+	public TextOptions noteReferences(boolean b) { this.noteReferences = b; explicit.add("note_references"); return this; }
+	public TextOptions comments(boolean b) { this.comments = b; explicit.add("comments"); return this; }
+	public TextOptions hidden(boolean b) { this.hidden = b; explicit.add("hidden"); return this; }
+	public TextOptions fieldCodes(boolean b) { this.fieldCodes = b; explicit.add("field_codes"); return this; }
+	public TextOptions fields(Fields f) { this.fields = f; explicit.add("fields"); return this; }
 	/** Whether a table of contents is read (CR-046 D12): see {@link #isToc()}. */
-	public TextOptions toc(boolean b) { this.toc = b; return this; }
-	public TextOptions placeholders(boolean b) { this.placeholders = b; return this; }
-	public TextOptions bindings(Bindings b) { this.bindings = b; return this; }
-	public TextOptions listLabels(boolean b) { this.listLabels = b; return this; }
-	public TextOptions charts(boolean b) { this.charts = b; return this; }
-	public TextOptions smartart(boolean b) { this.smartart = b; return this; }
-	public TextOptions embedded(boolean b) { this.embedded = b; return this; }
-	public TextOptions altchunks(boolean b) { this.altchunks = b; return this; }
-	public TextOptions altText(boolean b) { this.altText = b; return this; }
-	public TextOptions metadata(boolean b) { this.metadata = b; return this; }
-	public TextOptions symbols(Symbols s) { this.symbols = s; return this; }
-	public TextOptions math(MathFormat m) { this.math = m; return this; }
-	public TextOptions tables(Tables t) { this.tables = t; return this; }
-	public TextOptions markupDetail(MarkupDetail d) { this.markupDetail = d; return this; }
+	public TextOptions toc(boolean b) { this.toc = b; explicit.add("toc"); return this; }
+	public TextOptions placeholders(boolean b) { this.placeholders = b; explicit.add("placeholders"); return this; }
+	public TextOptions bindings(Bindings b) { this.bindings = b; explicit.add("bindings"); return this; }
+	public TextOptions listLabels(boolean b) { this.listLabels = b; explicit.add("list_labels"); return this; }
+	public TextOptions charts(boolean b) { this.charts = b; explicit.add("charts"); return this; }
+	public TextOptions smartart(boolean b) { this.smartart = b; explicit.add("smartart"); return this; }
+	public TextOptions embedded(boolean b) { this.embedded = b; explicit.add("embedded"); return this; }
+	public TextOptions altchunks(boolean b) { this.altchunks = b; explicit.add("altchunks"); return this; }
+	public TextOptions altText(boolean b) { this.altText = b; explicit.add("alt_text"); return this; }
+	public TextOptions metadata(boolean b) { this.metadata = b; explicit.add("metadata"); return this; }
+	public TextOptions symbols(Symbols s) { this.symbols = s; explicit.add("symbols"); return this; }
+	public TextOptions math(MathFormat m) { this.math = m; explicit.add("math"); return this; }
+	public TextOptions tables(Tables t) { this.tables = t; explicit.add("tables"); return this; }
+	public TextOptions markupDetail(MarkupDetail d) { this.markupDetail = d; explicit.add("markup_detail"); return this; }
 	/**
 	 * {@code page_markers} (REQ-708): {@code [page n]} at each {@code w:lastRenderedPageBreak}. The
 	 * markers are where Word's pages began when it last laid the document out: they are current only
 	 * when the package was last paginated (saved by Word) after its last edit, and an extractor
 	 * cannot tell whether it was.
 	 */
-	public TextOptions pageMarkers(boolean b) { this.pageMarkers = b; return this; }
-	public TextOptions layout(Layout l) { this.layout = l; return this; }
-	public TextOptions warnings(boolean b) { this.warnings = b; return this; }
+	public TextOptions pageMarkers(boolean b) { this.pageMarkers = b; explicit.add("page_markers"); return this; }
+	public TextOptions layout(Layout l) { this.layout = l; explicit.add("layout"); return this; }
+	public TextOptions warnings(boolean b) { this.warnings = b; explicit.add("warnings"); return this; }
 	/**
 	 * {@code inspect}, docx4j's own option (CR-050 D9; outside WD section 10, as REQ-1001 allows): whether
 	 * {@link Texts#of(org.docx4j.openpackaging.packages.WordprocessingMLPackage, TextOptions)} inspects the
@@ -368,6 +420,7 @@ public final class TextOptions {
 		m.put("page_markers", pageMarkers);
 		m.put("layout", lower(layout));
 		m.put("warnings", warnings);
+		m.put("profile", profile == null ? null : profile.name().toLowerCase(Locale.ROOT).replace('_', '-'));
 		return m;
 	}
 
