@@ -1038,7 +1038,10 @@ section, the four headings' counts equal to `Inspection.counts`, every skipped e
 limitation present; hidden text omitted under the defaults with `hidden: true` as its reveal and unseen
 under `hidden: true`; an excerpt of backticks, asterisks and a newline one code span; a report a limit
 stopped partial with lower bounds and the limit's skipped entry. The two fixtures' reports were read
-through (`extraction-probe-inspect.docx`: 119 findings, 156 lines).
+through (`extraction-probe-inspect.docx`: 119 findings, 156 lines). Samples (Jason, 30 October 2026): `InspectDocument`
+(counts, findings as objects, the report written beside the input) and `TextExtraction` (plain text under the defaults
+with the counts and warnings, the markup view with headers, footers, comments and hidden text, the block model) in
+`docx4j-samples-docx4j`.
 
 **Not done, by design:** no HTML writer (a Markdown converter's job); no per-kind advice (the report
 does not judge intent, §2.6); Getting Started's Text extraction chapter gets its sentence once Jason's
