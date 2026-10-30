@@ -1045,8 +1045,10 @@ with the counts and warnings, the markup view with headers, footers, comments an
 
 **Not done, by design:** no HTML writer (a Markdown converter's job); no per-kind advice (the report
 does not judge intent, §2.6); Getting Started's Text extraction chapter gets its sentence once Jason's
-review of the document is in. **Hand-offs:** the portfolio (registry entry `docx4j/CR-050.5`; a
-non-normative note in the WD that an implementation may write a report, its wording its own);
+review of the document is in. **Hand-offs:** the portfolio (registry entry `docx4j/CR-050.5`, 2c9cd8c; the
+non-normative note that an implementation may write a report for a person, its wording its own and the
+identifiers, groups, reveals and counts §9's, the report no serialisation under §8 and no conformance surface,
+quoted document text never forming the report's markup, is WD 0.43 §9.4 NOTE, drafted 31 October 2026);
 docx4j-mcp (an `inspect` call can return the report); the Python and TypeScript ports (a port of the
 report is optional: the model is the contract, the report is presentation).
 

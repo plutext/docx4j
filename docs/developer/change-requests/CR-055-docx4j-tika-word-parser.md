@@ -2,7 +2,9 @@
 
 Status: ACCEPTED 2026-10-22 (Jason: "CR-055: recommendations accepted for D1, D2, D3, D4, D5, D6, D7, D8. Commit it,
 then do phase 0"); phase 0 DONE 2026-10-22 on branch `docx4j-tika` off `VERSION_17_3_4` (the docx4j-25 session, Claude
-Fable 5.1; record in §8); phases 1 to 3 open. PROPOSED 2026-10-22, drafted by Claude Opus 5.5 (session docx4j-portfolio-9d) at Jason's request
+Fable 5.1; record in §8); phases 1 to 3 open. D1 REVISED 2026-10-31 (Jason: "let's revise D1, folding these
+considerations into the CR"): `docx4j-tika` is its own repository on GitHub, not a module in this reactor; the
+arguments and the consequences in §5a, the move is phase 0b. PROPOSED 2026-10-22, drafted by Claude Opus 5.5 (session docx4j-portfolio-9d) at Jason's request
 ("write the docx4j CR"), after a prototype built and measured the same day ("build a prototype against
 17.3.4-SNAPSHOT and compare it with Tika on the probes"). Reviewed by docx4j-25 the same day: the number
 confirmed, and four notes taken (§3.1, §3.7, §4 phase 0, §6). Its commit is the docx4j session's. Phases in §4,
@@ -22,7 +24,8 @@ docx4j-portfolio's text extraction paper measured and departed from:
 The JVM frameworks inherit Tika's defaults without an option (paper §7.4): Spring AI, LangChain4j's Tika
 parser, txtai, Open WebUI's Tika engine, Extractous, and Elasticsearch's and OpenSearch's ingest-attachment.
 
-This CR proposes a module, `docx4j-tika` (name D1), holding one Tika `Parser` for the four Word OOXML types.
+This CR proposes `docx4j-tika` (D1; accepted as a module in this reactor, its own repository since D1 was
+revised on 2026-10-31, §5a), holding one Tika `Parser` for the four Word OOXML types.
 It loads the package with docx4j, reads it with `Texts.of` (CR-046, the specification's behaviour, WD 0.31)
 and writes Tika's XHTML and metadata.
 - **Registration:** Tika sorts its own `org.apache.tika.*` parsers first and lets a later parser for the same
@@ -96,11 +99,13 @@ which the prototype does not hand back (§3.4).
 
 ### 3.1 The module
 
-`docx4j-tika` (D1) in this reactor, beside `docx4j-markdown`:
+`docx4j-tika` (D1 as revised 2026-10-31, §5a: its own repository, `plutext/docx4j-tika` on GitHub, with docx4j a
+released dependency; until then the module on branch `docx4j-tika` of this reactor, beside `docx4j-markdown`):
 - one public class, `org.docx4j.tika.Docx4jWordParser implements org.apache.tika.parser.Parser`, and its
   service file;
 - a small `Docx4jTikaConfig` that a caller may put in the `ParseContext` (§3.3);
-- dependencies: docx4j-core, and docx4j-JAXB-ReferenceImpl at runtime, with the README saying how to swap it
+- dependencies: docx4j-core, and docx4j-JAXB-ReferenceImpl at runtime (both at a released docx4j version, named
+  once in the pom and in the README, since the revised D1), with the README saying how to swap it
   for docx4j-JAXB-MOXy, so a host does not pick up whatever JAXB runtime it happens to carry; Tika as
   `provided`, so the host's Tika is the one that runs (D2).
 
@@ -178,18 +183,19 @@ The text model expands an HTML, XHTML or MHT `altChunk` only with both jsoup (MI
 | Phase | What | Size |
 |---|---|---|
 | 0 | The prototype captured on a branch (D8): the module skeleton, the parser as it stands, the service file, and the comparison harness as an integration test (`TikaParityIT`) over the phase 0 fixtures and docx4j-portfolio's `mc-fun`, `bind-fun`, `altchunk-fun` and `svg-fun` probes, with §2's numbers as its baseline. The test runs against tika-core (`provided`) and tika-parsers-standard-package in test scope, the class path a Maven host has, not tika-app's fat jar, and asserts `X-TIKA:Parsed-By` for every Word file (§6). **DONE 2026-10-22** on branch `docx4j-tika` (§8) | ½ day |
+| 0b | The move (D1 revised, §5a): the `docx4j-tika` directory from branch `docx4j-tika` into its own repository with its history (`git subtree split`, two commits); a parent-less pom (groupId `org.docx4j`, docx4j-core and docx4j-JAXB-ReferenceImpl at a released version in one property, Tika `provided`, failsafe as now); LICENSE, NOTICE and the README; a GitHub Actions build running `TikaParityIT`, its drift check against docx4j-core-tests' fixtures changed to compare with a docx4j checkout beside the repository when there is one; the module line and the branch removed from this reactor once the repository builds | ½ day |
 | 1 | The production parser: §3.2's full mapping, §3.3's options, §3.4's embedded hand-off, §3.5's metadata, errors as `TikaException`. Tests: the phase 0 conformance suite through `AutoDetectParser` (every claimed row), and Tika's own Word test documents for crashes and metadata parity | 3 to 4 days |
-| 2 | Packaging and documentation: Maven Central with docx4j's release; tika-app and tika-server usage; a `tika-config.xml` example; notes for Spring AI and LangChain4j; what ImportXHTML adds (§3.6) | 1 day |
+| 2 | Packaging and documentation: Maven Central on its own release line (D9; was: with docx4j's release); tika-app and tika-server usage; a `tika-config.xml` example; notes for Spring AI and LangChain4j; what ImportXHTML adds (§3.6) | 1 day |
 | 3 | Tika 4.x: its JSON configuration (parsers named by key; how a third-party parser registers its name is unchecked), the API changes since 3.x | 1 to 2 days, after phase 1 |
 
 Not in scope: Elasticsearch's and OpenSearch's ingest-attachment plugins. They ship their own Tika inside the
 plugin, so reaching them means a modified plugin, not a class-path drop (unverified in their source).
 
-## 5. Decisions (D1 to D8 accepted as recommended, 2026-10-22)
+## 5. Decisions (D1 to D8 accepted as recommended, 2026-10-22; D1 revised 2026-10-31, §5a; D9 proposed 2026-10-31)
 
 | # | Decision | Recommendation |
 |---|---|---|
-| D1 | Name and place | `docx4j-tika`, a module in this reactor, Apache-2.0 |
+| D1 | Name and place | `docx4j-tika`, a module in this reactor, Apache-2.0. **Revised 2026-10-31** (Jason): `docx4j-tika`, its own repository on GitHub (`plutext/docx4j-tika`), Apache-2.0, groupId `org.docx4j`, depending on released docx4j; §5a |
 | D2 | Tika versions | Compile against Tika 3.3.x, `provided`; Tika 4.x in phase 3 |
 | D3 | Defaults | The specification's (Word's view), not Tika's, with `OfficeParserConfig` mapped where it is given; the point of the module is Word's text |
 | D4 | Embedded content | Hand embedded resources to Tika's `EmbeddedDocumentExtractor`, as Tika's parsers do; the text itself keeps `embedded: false` |
@@ -197,6 +203,60 @@ plugin, so reaching them means a modified plugin, not a class-path drop (unverif
 | D6 | Metadata | Tika's OOXML keys, plus `docx4j:warning` and `docx4j:inspect:*` |
 | D7 | HTML chunks | No LGPL dependency; ImportXHTML documented as an optional addition |
 | D8 | Phase 0 | Capture the prototype on a new branch off `VERSION_17_3_4`, its tests marked integration, before phase 1 changes it |
+| D9 | Versioning (proposed 2026-10-31, awaiting Jason) | Its own version line from 1.0.0, not docx4j's; the docx4j version it builds against in one pom property and named in the README; a Tika change ships as a docx4j-tika release, a docx4j release as a bump of that property once the parity tests pass on it |
+
+### 5a. D1 revised (31 October 2026): a standalone repository
+
+Jason asked what the arguments for a standalone GitHub repository were (2026-10-31), and on reading them said
+to revise D1. The arguments, as put, for the record:
+
+- **Release cadence.** Tika moves on its own clock (3.3.x now, 4.x in phase 3, and hosts pin their own). As a
+  module, a fix for a Tika change waits for the next docx4j release and carries docx4j's version number. On its
+  own, docx4j-tika releases against a released docx4j whenever Tika needs it.
+- **Dependency footprint.** Phase 0 pulls `tika-parsers-standard-package` in test scope, and phase 1 adds
+  tika-app and tika-server as shipped: a very large transitive tree (POI, PDFBox, Tesseract bindings) with the
+  version clashes §6 names on commons-io, commons-compress and slf4j. In the reactor that slows every
+  `mvn install`, widens the dependency-check surface, and risks the version convergence of modules that have
+  nothing to do with Tika.
+- **Testing shape.** The parity tests are integration tests by nature, a matrix over Tika versions and host
+  frameworks. That matrix belongs in a repository's own CI, not in the failsafe run that gates each docx4j
+  release.
+- **Audience and tracker.** Tika users look for a Tika parser and find a repository with its own README,
+  releases and issues, and file Tika integration questions there. Inside docx4j it is one of twenty modules
+  and its issues land among docx4j's.
+- **Licence boundaries.** D7 keeps LGPL out. A separate repository can offer an optional ImportXHTML flavour as
+  its own artifact or profile without touching docx4j's dependency policy, and Tika's NOTICE obligations stay
+  out of docx4j's.
+- **Precedent.** docx4j-mcp (its CR-004, placement decided 2026-09-17) and docx4j-ImportXHTML are separate
+  repositories, and the portfolio registry already tracks dependencies across them. docx4j-tika is a consumer
+  of the text model like the MCP server, not part of the oracle the ports mirror.
+- **Contributors.** Tika-community contributors can be given rights on docx4j-tika without rights on docx4j.
+- **Nothing is gained from the reactor.** docx4j-bundle excludes it, and its published pom depends on
+  docx4j-core either way.
+
+Against, weighed and accepted:
+
+- **The text model API is still moving.** CR-046, CR-050 and CR-067 all changed `org.docx4j.model.text` since
+  this CR was accepted. A reactor module fails at compile time in the session that changes the API; a separate
+  repository finds out at its next build. Mitigation in §6 (API drift).
+- **One more release to run**, with its own version line (D9), tag, signing and deployment.
+- **Fixtures.** The branch already copies the phase 0 fixtures and the portfolio's probes, with a drift test
+  against docx4j-core-tests' copies, so it is nearly self-contained now; phase 0b keeps the drift test and
+  makes it conditional on a docx4j checkout beside the repository.
+
+Consequences:
+
+- Phase 0b (§4) moves the directory with its history: branch `docx4j-tika` holds f1cfe21f8 (phase 0) and
+  40f0632b0 (CR-056 phase 3's `HostileLinksTest`), and outside the directory only the reactor pom's module
+  line. The branch is deleted after the move, not merged; nothing of docx4j-tika ships in a docx4j release.
+- Phase 2's "Maven Central with docx4j's release" becomes its own release line (D9).
+- The first release builds against docx4j 17.3.5 (the text model with CR-067's fields and CR-050's
+  inspection), so phase 1 waits for it, or builds against the SNAPSHOT and releases after it.
+- This CR stays here as the record of the decision and of phase 0. The repository carries its own
+  `docs/developer/change-requests/`, its first CR citing this one and taking phases 1 to 3; the registry
+  (`docx4j-portfolio/tasks.yaml`) gets a repository key for it and the phase entries move under that key,
+  with `docx4j/CR-055` closing on phase 0b. How the registry records this is the portfolio session's call.
+- docx4j's hand-off list for a change to `org.docx4j.model.text` (the ports, docx4j-mcp) gains docx4j-tika.
 
 ## 6. Risks
 
@@ -215,6 +275,11 @@ plugin, so reaching them means a modified plugin, not a class-path drop (unverif
 - **Behaviour change for an index.** Text that Tika used to extract and the specification excludes (hidden
   text, headers, unselected branches) disappears from an existing index on re-indexing. That is the intent,
   and it needs saying in the README.
+- **API drift** (since D1 was revised). Out of the reactor, a change to the text model is found at
+  docx4j-tika's next build, not in the session that makes it. The repository's CI builds against docx4j's
+  latest SNAPSHOT as well as the released version it names, so a break shows within a day; the docx4j session
+  hands a text-model change off to docx4j-tika as it does to the ports; and a docx4j release is taken up only
+  after `TikaParityIT` passes on it.
 - **Tika's evolution.** Tika 4 removed the DOM parsers and moved to JSON configuration. The parser's
   contract (`Parser`, `XHTMLContentHandler`, `ParseContext`) is stable, but its registration may not be.
 
@@ -281,4 +346,7 @@ from the branch head; the integration test green, 11 of 11.
   `Docx4jTikaConfig`, errors beyond the two `TikaException` wraps, tika-app and tika-server as shipped.
 - **Elsewhere:** CHANGELOG line under 17.3.4 on the branch; whether docx4j-tika ships with 17.3.4 or after is
   Jason's call. Release verification (`release-verification-docx4j.md`) gains a module to cover once it ships.
+  **Overtaken 2026-10-31** by the revised D1 (§5a): docx4j-tika ships from its own repository on its own
+  release line, never in a docx4j release; the branch (rebased onto `VERSION_17_3_5` at 67c44d66a on
+  2026-10-23; phase 0 is f1cfe21f8, plus 40f0632b0) is the source of the move in phase 0b.
 
