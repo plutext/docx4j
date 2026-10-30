@@ -36,6 +36,10 @@ Changes in Version 17.3.5
   Word reads (a hanging indent for a first-line one that wrapped, an atLeast line for an exact one, a clamped
   tab stop); the per-attribute widths of CR-066 are the resource word-integer-storage.tsv (CR-066 phase 4).
   An inspection no longer logs the marshal-time range WARNs for the parts it reads.
+* InspectionReport.markdown(Inspect.of(pkg), "file.docx") writes an inspection for a person, as Markdown:
+  the findings under their groups (active, unseen, omitted, info) for an output, each with what its kind
+  is, where it is, its text, whether a person sees it and how to extract it; then what was skipped and
+  what no static inspection detects (CR-050 phase 5).
 * Content lists refuse a misplaced child at the point of the mistake, with the fix in the message
   (CR-064; ArrayListDocx4j.checkParent, IllegalArgumentException): a run, Text, Drawing, Br, cell or
   row added to the body, a cell, a header, a footer, a footnote, a comment, a text box or block-level

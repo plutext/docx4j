@@ -1,6 +1,8 @@
 # CR-050: Inspect - hidden and near-hidden content as a first-class report
 
-Status: DONE 2026-10-21 (Jason: "commit both phases"); the items then open for Jason decided the same
+Status: DONE 2026-10-21 (Jason: "commit both phases"); phase 5 (the Markdown report for a person,
+`InspectionReport`) added and done 2026-10-30 (§5, "Phase 5", Jason: "In the package, and as
+Markdown"; "do it please"). The items then open for Jason decided the same
 day: the two departures of phase 3 confirmed (the SYMBOL-charset limitation, measured, and
 `EMR_SMALLTEXTOUT` with it; the image part as the location), docx4j-mcp's T9 accepted (excerpts off by
 default over MCP), and its per-row capability column taken as phase 4, option (a), done 2026-10-21 (§5,
@@ -1001,6 +1003,49 @@ reader. Options put to Jason: (a) a per-row `capability` column, one table for b
 
 **Acceptance:** both environments as above; the suite green; the WD's REQ-1201 and REQ-1204 take the
 column (the portfolio, WD 0.31); docx4j-mcp told.
+
+### Phase 5: the report for a person (30 October 2026)
+
+**The problem.** `Inspect.of` gives a model (findings, counts, status, skipped entries, limitations)
+for an agent or a program; nothing wrote it for a person. Jason's question (30 October 2026): sample code
+or the package, and plain text, Markdown or HTML? **Decided** (Jason, "In the package, and as
+Markdown", then "do it please"): in the package, so that every consumer (the MCP server, the samples,
+a build) has the one report rather than each its own; Markdown as the single source (plain text is
+readable Markdown; an HTML page is a conversion of it); the wording docx4j's and not normative, the
+identifiers, groups and reveals the WD's.
+
+**What was built** (Claude Fable 5.1): `org.docx4j.model.text.InspectionReport`, `markdown(Inspection)`
+(the plain-text extraction under the default options, with the class path's capabilities),
+`markdown(Inspection, String title)`, and `markdown(Inspection, TextOptions, Format, Set<Capability>,
+String title)` for another output. The report: a title; the status (complete, or partial with the
+counts as lower bounds) and the number of findings; the output and the options the groups are for (the
+default options, or the default options with the ones that differ); one section per group in the order
+active, unseen, omitted, info, each headed with its count and what the group means, each finding one
+line in the inspection's order: its kind in a code span with a phrase saying what the kind is
+(`InspectionReport.PHRASES`, condensed from §2.3's "What" column; the kind alone where none), where it
+is (the package chain, the part, the element path, the code-point range, the block of the output that
+holds it where one does), its excerpt (cut marked with its length; the code points listed where it
+holds a format, control, private-use, unassigned or separator character, so that an invisible finding
+is readable), what it names, how it was parsed, whether a person sees it, and its reveal in words (in
+the default extraction; no extraction shows it; extract with the options); then the skipped and
+undecided entries (with the count beyond the listed) and the limitations. Everything taken from the
+document or the model goes in a code span (a backtick run one longer than any inside, padded where the
+text starts or ends with a backtick, controls made spaces), so that nothing in a document can form
+Markdown of its own; prose from the model is escaped.
+
+**Tests** (`InspectionReportTest`, core-tests): on the four fixtures, every finding under its group's
+section, the four headings' counts equal to `Inspection.counts`, every skipped entry and every
+limitation present; hidden text omitted under the defaults with `hidden: true` as its reveal and unseen
+under `hidden: true`; an excerpt of backticks, asterisks and a newline one code span; a report a limit
+stopped partial with lower bounds and the limit's skipped entry. The two fixtures' reports were read
+through (`extraction-probe-inspect.docx`: 119 findings, 156 lines).
+
+**Not done, by design:** no HTML writer (a Markdown converter's job); no per-kind advice (the report
+does not judge intent, §2.6); Getting Started's Text extraction chapter gets its sentence once Jason's
+review of the document is in. **Hand-offs:** the portfolio (registry entry `docx4j/CR-050.5`; a
+non-normative note in the WD that an implementation may write a report, its wording its own);
+docx4j-mcp (an `inspect` call can return the report); the Python and TypeScript ports (a port of the
+report is optional: the model is the contract, the report is presentation).
 
 ## 6. Decisions
 

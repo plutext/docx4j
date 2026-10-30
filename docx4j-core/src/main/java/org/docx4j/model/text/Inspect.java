@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
  * Inspection i = Inspect.of(pkg);
  * for (InspectFinding f : i.findings()) ...
  * Inspection.Counts c = i.counts(options, Inspection.Format.PLAIN);   // unseen, omitted, active, info
+ * String report = InspectionReport.markdown(i, "contract.docx");      // for a person, as Markdown
  * </pre>
  *
  * <p>Three passes make one inspection. <b>The stored stories, before any selection</b>: the main
