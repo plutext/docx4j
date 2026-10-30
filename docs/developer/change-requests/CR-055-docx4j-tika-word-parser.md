@@ -5,7 +5,7 @@ then do phase 0"); phase 0 DONE 2026-10-22 on branch `docx4j-tika` off `VERSION_
 Fable 5.1; record in §8); phases 1 to 3 open. D1 REVISED 2026-10-31 (Jason: "let's revise D1, folding these
 considerations into the CR"): `docx4j-tika` is its own repository on GitHub, not a module in this reactor; the
 arguments and the consequences in §5a, the move is phase 0b: DONE 2026-10-31 (§8b; the repository is
-`plutext/docx4j-tika`, its CR-001 carries phases 1 to 3). PROPOSED 2026-10-22, drafted by Claude Opus 5.5 (session docx4j-portfolio-9d) at Jason's request
+`plutext/docx4j-tika`, its CR-001 carries phases 1 to 3; D9 accepted 2026-10-31, phase 1 under way there). PROPOSED 2026-10-22, drafted by Claude Opus 5.5 (session docx4j-portfolio-9d) at Jason's request
 ("write the docx4j CR"), after a prototype built and measured the same day ("build a prototype against
 17.3.4-SNAPSHOT and compare it with Tika on the probes"). Reviewed by docx4j-25 the same day: the number
 confirmed, and four notes taken (§3.1, §3.7, §4 phase 0, §6). Its commit is the docx4j session's. Phases in §4,
@@ -192,7 +192,7 @@ The text model expands an HTML, XHTML or MHT `altChunk` only with both jsoup (MI
 Not in scope: Elasticsearch's and OpenSearch's ingest-attachment plugins. They ship their own Tika inside the
 plugin, so reaching them means a modified plugin, not a class-path drop (unverified in their source).
 
-## 5. Decisions (D1 to D8 accepted as recommended, 2026-10-22; D1 revised 2026-10-31, §5a; D9 proposed 2026-10-31)
+## 5. Decisions (D1 to D8 accepted as recommended, 2026-10-22; D1 revised 2026-10-31, §5a; D9 proposed and accepted 2026-10-31)
 
 | # | Decision | Recommendation |
 |---|---|---|
@@ -204,7 +204,7 @@ plugin, so reaching them means a modified plugin, not a class-path drop (unverif
 | D6 | Metadata | Tika's OOXML keys, plus `docx4j:warning` and `docx4j:inspect:*` |
 | D7 | HTML chunks | No LGPL dependency; ImportXHTML documented as an optional addition |
 | D8 | Phase 0 | Capture the prototype on a new branch off `VERSION_17_3_4`, its tests marked integration, before phase 1 changes it |
-| D9 | Versioning (proposed 2026-10-31, awaiting Jason) | Its own version line from 1.0.0, not docx4j's; the docx4j version it builds against in one pom property and named in the README; a Tika change ships as a docx4j-tika release, a docx4j release as a bump of that property once the parity tests pass on it |
+| D9 | Versioning (proposed 2026-10-31; **accepted** 2026-10-31, Jason: "D9 yes", to the docx4j-tika session) | Its own version line from 1.0.0, not docx4j's; the docx4j version it builds against in one pom property and named in the README; a Tika change ships as a docx4j-tika release, a docx4j release as a bump of that property once the parity tests pass on it |
 
 ### 5a. D1 revised (31 October 2026): a standalone repository
 
@@ -362,7 +362,7 @@ repository as `../docx4j-tika`; then: "please do CR-055 phase 0b with it as the 
   split branch) deleted here, as §5a says: not merged, nothing of it in any docx4j release, the reactor
   pom's module line gone with it. The originals stay in this clone's reflog for a while.
 - **The repository** (its commit 4e65fd3, unpushed; Jason pushes): parent-less pom `org.docx4j:docx4j-tika`
-  1.0.0-SNAPSHOT (D9 as proposed, still awaiting Jason), release 11, docx4j-core and docx4j-JAXB-ReferenceImpl
+  1.0.0-SNAPSHOT (D9, accepted later the same day; recorded in its CR-001 and pom, 01e8b7b there), release 11, docx4j-core and docx4j-JAXB-ReferenceImpl
   at one property `version.docx4j` = 17.3.5-SNAPSHOT until 17.3.5 is on Central, Tika 3.3.3 `provided`,
   surefire and failsafe 3.5.4 on the class path, JUnit and logback declared (they came from this parent), a
   `release` profile (sources, javadoc, gpg). NOTICE, `.gitignore`, CLAUDE.md, CHANGELOG, a README with its
