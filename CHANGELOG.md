@@ -201,6 +201,10 @@ Changes in Version 17.3.5
   mergers evaluate a merge field written as w:fldSimple, as Word writes its own GREETINGLINE (measured).
   The text extraction under fields: update computes ASK (its bookmark defined with the \d default, nothing
   shown) and FILLIN (its \d default), as the OpenDoPE WD says.
+* The docx4j FO renderer (the FOP fork) is 2.11-docx4j.8: fop/CR-029, a solid cell or paragraph border
+  side is drawn without the clip that made thin rules vanish in poppler viewers (Okular, Evince) until
+  zoomed in; fop/CR-028, an SVG's references to external resources (file:, http:) are refused unless
+  the option svg-embedded-resources-only is turned off (capability 27). Gate b294 against b288: 0 movers.
 * PDF: with docx4j.fonts.fop.util.FopConfigUtil.simulate-style=false, a family with no bold face of
   its own (every symbol font among them) was not declared to FOP under the name the FO uses, its
   +nobold alias, and was drawn in FOP's default font: Wingdings and Symbol bullets as "#" (#701).
