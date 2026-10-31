@@ -280,7 +280,8 @@ public class TextUtils {
 		
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
 		
-		Writer out = new OutputStreamWriter(System.out);
+		// UTF-8 whatever the platform's default, so that no character is lost to a code page (WD REQ-711)
+		Writer out = new OutputStreamWriter(System.out, java.nio.charset.StandardCharsets.UTF_8);
 		
 		extractText(wmlDocumentEl, out);
 		
