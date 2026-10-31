@@ -1,11 +1,12 @@
 # CR-068: manual redline to tracked changes, an explicit, opt-in conversion
 
-Status: PROPOSED 2026-10-31, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's direction, relayed by the
-portfolio session the same day from its review of LlamaIndex's Document Parsing Protocol (the paper's §7.13; the
-`dpp-forks` probe): "strikethrough handling is NOT view-sensitive (Accept All and Reject All leave struck text; the
-file does not say it is a deletion), but I suspect we do need an explicit, opt-in conversion that turns manual redline
-(strikethrough only by default) into tracked changes with an author such as 'manual redline'". Decisions D1 to D12
-await Jason (§6); nothing is built. Phases in §5.
+Status: ACCEPTED 2026-10-31 (Jason: "CR-068 decisions as recommended; commence phase 0"): D1 to D12 as recommended
+(§6); phase 0 STARTED 2026-10-31 (§8). Proposed the same day, drafted by Claude Fable 5.1 (session docx4j-12) at
+Jason's direction, relayed by the portfolio session from its review of LlamaIndex's Document Parsing Protocol (the
+paper's §7.13; the `dpp-forks` probe): "strikethrough handling is NOT view-sensitive (Accept All and Reject All leave
+struck text; the file does not say it is a deletion), but I suspect we do need an explicit, opt-in conversion that
+turns manual redline (strikethrough only by default) into tracked changes with an author such as 'manual redline'".
+Phases in §5.
 
 ## 0. Summary
 
@@ -178,9 +179,11 @@ option and never a default (Jason).
 | 2 | The opt-ins: style strike, underline and colour as insertions, comments, the range, the audit property; tests | 1 day |
 | 3 | Hand-offs: the ports (core-ts, python; as CR-043 was ported, the probe is their oracle), docx4j-mcp (a tool; the portfolio adds the verb to `mcp_tool_vocabulary`), the paper's §7.13 pointer; the WD takes no requirement (the conversion is not extraction) | ½ day |
 
-## 6. Decisions for Jason
+## 6. Decisions
 
-| # | Decision | Recommendation |
+All twelve accepted as recommended, 2026-10-31 (Jason).
+
+| # | Decision | Recommendation (accepted) |
 |---|---|---|
 | D1 | Name and place | `ManualRedline.toTrackedChanges(pkg[, options])` and `preview`, in `org.docx4j.model.revisions`, beside `TrackedChanges`; `ManualRedlineOptions`, `ManualRedlineReport` |
 | D2 | Scope by default | The whole document: body, tables, headers and footers, footnotes and endnotes, text boxes (both `mc` branches), content controls; not comments (opt-in) |
