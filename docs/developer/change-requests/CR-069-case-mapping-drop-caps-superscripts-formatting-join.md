@@ -351,6 +351,12 @@ row: "[PROBE] gains no fixture yet (the `dpp-forks` Word re-save is the candidat
    and a code paragraph get the capitals too: §3.2 keeps tags out of code; the capitals are the text.
 6. **REQ-710's note reference** (§10.4) holds by construction: the formatting is set on text runs only, so a note
    reference is baseline whatever its style raises. The test pins it on phase 0's probe.
+7. **The Unicode version is the running JDK's**, unpinned: Unicode 10.0 on Java 11 (docx4j's floor), 15.0 on the
+   OpenJDK 21.0.12 the tests ran on (measured: U+1E030 defined, U+2FFC not). A character whose case pair is newer
+   maps differently by runtime (U+1C8A to U+1C89 is Unicode 16.0's, so Python 3.14 maps it and JDK 21 does not;
+   python-64 asked, 2026-10-31). The tests and the dpp rows map only characters whose simple uppercase has been stable
+   since before Unicode 10.0, and the whole-range test asserts only that the length is kept. Word's own table is
+   Windows', its version unmeasured.
 
 ### 11.3 Results
 
