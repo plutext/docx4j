@@ -62,10 +62,12 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 			"REQ-601", "REQ-602", "REQ-603", "REQ-604", "REQ-605", "REQ-606",
 			"REQ-701", "REQ-702", "REQ-703", "REQ-704", "REQ-705", "REQ-706", "REQ-707", "REQ-708", "REQ-709",
 			"REQ-801", "REQ-802", "REQ-1001", "REQ-1202", "REQ-1203",
-			// profile: word-text (WD 0.41); its drop_caps (WD 0.44) is CR-069 phase 2's, whose rows cite REQ-521 too
+			// profile: word-text (WD 0.41)
 			"REQ-1002",
 			// w:caps in capitals by the run's language, w:smallCaps as stored, small_caps (CR-069 phase 1)
 			"REQ-607",
+			// a drop cap joined to its word, paragraph.drop_cap_joined, drop_caps (CR-069 phase 2)
+			"REQ-521",
 			// the chart's description, which case 34's axis title needs
 			"CR-047",
 			// the inspector (CR-050 phase 1; REQ-903's counts in every result, phase 2), and the suite's check of it

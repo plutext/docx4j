@@ -25,7 +25,8 @@ import java.util.Objects;
  * where there is one, and its selector: for {@code mce.branches_differ} the name of the branch
  * selected, for {@code altchunk.not_expanded}, {@code content.not_read} and {@code image.not_described}
  * the part's name (the chunk's, since 17.3.5, WD 0.47; it was the chunk's content type, which the
- * warning still carries). Never the document's text (REQ-802).
+ * warning still carries), for {@code paragraph.drop_cap_joined} the name of the part the paragraphs are in.
+ * Never the document's text (REQ-802).
  *
  * @since 17.3.4 (CR-046 phase 1)
  */
@@ -46,6 +47,13 @@ public final class TextWarning {
 	public static final String CONTENT_NOT_READ = "content.not_read";
 	/** An image the {@link ImageDescriber} failed to describe: it has no description (REQ-514, REQ-801). */
 	public static final String IMAGE_NOT_DESCRIBED = "image.not_described";
+	/**
+	 * A drop cap's frame paragraph joined to the paragraph after it, two {@code w:p} read as one (REQ-521): at the
+	 * frame paragraph's address.
+	 *
+	 * @since 17.3.5 (CR-069)
+	 */
+	public static final String DROP_CAP_JOINED = "paragraph.drop_cap_joined";
 
 	private final String kind;
 	private final String address;
@@ -80,7 +88,9 @@ public final class TextWarning {
 	 * For {@code content.not_read}, the name of the part that can't be read (for a part inside an
 	 * embedded package, the embedded package part's); for {@code image.not_described}, the image
 	 * part's ({@code /word/media/image1.png}); for {@code altchunk.not_expanded}, the chunk's
-	 * ({@code /word/afchunk.rtf}), so that a host can read it itself (since 17.3.5, CR-070); else null.
+	 * ({@code /word/afchunk.rtf}), so that a host can read it itself (since 17.3.5, CR-070); for
+	 * {@code paragraph.drop_cap_joined}, the part the paragraphs are in ({@code /word/document.xml}; since
+	 * 17.3.5, CR-069); else null.
 	 */
 	public String getPartName() { return partName; }
 	/**

@@ -59,6 +59,15 @@ public final class TextOptions {
 	/** {@code fields} (REQ-506). */
 	public enum Fields { CACHED, UPDATE }
 
+	/**
+	 * {@code drop_caps} (REQ-521): a drop cap's frame paragraph ({@code w:framePr/@w:dropCap}) joined to the paragraph
+	 * after it, as the page reads ({@code JOIN}), or the two paragraphs as the package holds them ({@code ASIS}, Word's
+	 * text).
+	 *
+	 * @since 17.3.5 (CR-069)
+	 */
+	public enum DropCaps { JOIN, ASIS }
+
 	/** {@code bindings} (REQ-509). */
 	public enum Bindings { BOUND, SURFACE }
 
@@ -89,9 +98,10 @@ public final class TextOptions {
 	 * {@code profile} (REQ-1002, WD 0.41): a preset of option values applied before the caller's own, so that an option
 	 * the caller sets, before or after the profile, overrides it. {@link #WORD_TEXT} is Word's Save As plain text as the
 	 * options reach it: the accepted view, hidden text in, headers, footers and comments in, text boxes out, notes and
-	 * their references in, no list labels, fields cached, no field codes, the table of contents in, placeholders in, bound
-	 * values, chunks expanded, symbols as they are, small caps in capitals, tables as tab-separated rows, no page markers, no indentation, no alt
-	 * text, no metadata, no charts, SmartArt or embedded packages. What it does not reproduce: the notes' and comments'
+	 * their references in, no list labels, fields cached, no field codes, the table of contents in, a drop cap apart from
+	 * its word, placeholders in, bound values, chunks expanded, symbols as they are, small caps in capitals, tables as
+	 * tab-separated rows, no page markers, no indentation, no alt text, no metadata, no charts, SmartArt or embedded
+	 * packages. What it does not reproduce: the notes' and comments'
 	 * forms, CRLF and CR cells, folded hyphens, Word's linear math ({@code math: unicodemath} is not implemented, so the
 	 * preset leaves math as LaTeX), and three accidents of Word's own: the partial update a DATE, TIME or SAVEDATE
 	 * field triggers on open, the SYMBOL omission, and the stale PAGE number.
@@ -101,7 +111,7 @@ public final class TextOptions {
 	/** The option names of WD section 10, in its order. */
 	public static final List<String> NAMES = Collections.unmodifiableList(java.util.Arrays.asList(
 			"view", "include", "text_boxes", "notes", "note_references", "comments", "hidden", "field_codes",
-			"fields", "toc", "placeholders", "bindings", "list_labels", "charts", "smartart", "embedded", "altchunks",
+			"fields", "toc", "drop_caps", "placeholders", "bindings", "list_labels", "charts", "smartart", "embedded", "altchunks",
 			"alt_text", "metadata", "symbols", "small_caps", "math", "tables", "markup_detail", "page_markers", "layout",
 			"warnings", "profile"));
 
@@ -115,6 +125,7 @@ public final class TextOptions {
 	private boolean fieldCodes = false;
 	private Fields fields = Fields.CACHED;
 	private boolean toc = false;
+	private DropCaps dropCaps = DropCaps.JOIN;
 	private boolean placeholders = true;
 	private Bindings bindings = Bindings.BOUND;
 	private boolean listLabels = false;
@@ -201,6 +212,7 @@ public final class TextOptions {
 		case "field_codes": fieldCodes = bool(n, value); break;
 		case "fields": fields = choice(n, value, Fields.class); break;
 		case "toc": toc = bool(n, value); break;
+		case "drop_caps": dropCaps = choice(n, value, DropCaps.class); break;
 		case "placeholders": placeholders = bool(n, value); break;
 		case "bindings": bindings = choice(n, value, Bindings.class); break;
 		case "list_labels": listLabels = bool(n, value); break;
@@ -229,7 +241,7 @@ public final class TextOptions {
 	private static final Object[][] WORD_TEXT_VALUES = {
 			{ "view", "accepted" }, { "include", "headers,footers,comments" }, { "text_boxes", false }, { "notes", true },
 			{ "note_references", true }, { "comments", true }, { "hidden", true }, { "field_codes", false }, { "fields", "cached" },
-			{ "toc", true }, { "placeholders", true }, { "bindings", "bound" }, { "list_labels", false }, { "charts", false },
+			{ "toc", true }, { "drop_caps", "asis" }, { "placeholders", true }, { "bindings", "bound" }, { "list_labels", false }, { "charts", false },
 			{ "smartart", false }, { "embedded", false }, { "altchunks", true }, { "alt_text", false }, { "metadata", false },
 			{ "symbols", "asis" }, { "small_caps", "upper" }, { "math", "latex" }, { "tables", "tsv" }, { "page_markers", false }, { "layout", "none" } };
 
@@ -290,6 +302,8 @@ public final class TextOptions {
 	public TextOptions fields(Fields f) { this.fields = f; explicit.add("fields"); return this; }
 	/** Whether a table of contents is read (CR-046 D12): see {@link #isToc()}. */
 	public TextOptions toc(boolean b) { this.toc = b; explicit.add("toc"); return this; }
+	/** {@code drop_caps} (REQ-521): see {@link DropCaps}. @since 17.3.5 */
+	public TextOptions dropCaps(DropCaps d) { this.dropCaps = d; explicit.add("drop_caps"); return this; }
 	public TextOptions placeholders(boolean b) { this.placeholders = b; explicit.add("placeholders"); return this; }
 	public TextOptions bindings(Bindings b) { this.bindings = b; explicit.add("bindings"); return this; }
 	public TextOptions listLabels(boolean b) { this.listLabels = b; explicit.add("list_labels"); return this; }
@@ -359,6 +373,8 @@ public final class TextOptions {
 	 * a table of contents whose field was unlinked is the document's text.
 	 */
 	public boolean isToc() { return toc; }
+	/** @since 17.3.5 */
+	public DropCaps getDropCaps() { return dropCaps; }
 	public boolean isPlaceholders() { return placeholders; }
 	public Bindings getBindings() { return bindings; }
 	public boolean isListLabels() { return listLabels; }
@@ -395,6 +411,7 @@ public final class TextOptions {
 		o.fieldCodes = fieldCodes;
 		o.fields = fields;
 		o.toc = toc;
+		o.dropCaps = dropCaps;
 		o.placeholders = placeholders;
 		o.bindings = bindings;
 		o.listLabels = listLabels;
@@ -433,6 +450,7 @@ public final class TextOptions {
 		m.put("field_codes", fieldCodes);
 		m.put("fields", lower(fields));
 		m.put("toc", toc);
+		m.put("drop_caps", lower(dropCaps));
 		m.put("placeholders", placeholders);
 		m.put("bindings", lower(bindings));
 		m.put("list_labels", listLabels);

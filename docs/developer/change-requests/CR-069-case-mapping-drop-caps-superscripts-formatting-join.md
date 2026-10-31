@@ -1,7 +1,7 @@
 # CR-069: what the page shows, in the text: case mapping, drop caps, superscripts, and the formatting-join finding
 
 Status: ACCEPTED 2026-10-31 (Jason: "CR-069 decisions as presented"): D1 to D9 as recommended (§5); D9's condition
-ruled the same day (Jason: "17.3.5 will wait for CR-069"): 17.3.5 ships with CR-069, not only phases 0 to 2. Phase 0 DONE 2026-10-31 (§10; Jason: "start CR-069"); phase 1 DONE 2026-10-31 (§11; Jason: "go ahead with phase 1"). Proposed
+ruled the same day (Jason: "17.3.5 will wait for CR-069"): 17.3.5 ships with CR-069, not only phases 0 to 2. Phase 0 DONE 2026-10-31 (§10; Jason: "start CR-069"); phase 1 DONE 2026-10-31 (§11; Jason: "go ahead with phase 1"); phase 2 DONE 2026-10-31 (§12; Jason: "do phase 2"). Proposed
 2026-10-31, drafted by Claude Fable 5.1 (session docx4j-12) from Jason's rulings of the same day on the
 four questions the portfolio's review of LlamaIndex's Document Parsing Protocol put to him (paper §7.13; WD 0.44, drafted
 and uncommitted: REQ-521, REQ-607, REQ-710, §9.2 `text.formatting_join`, §4 NOTE, Appendix B). Jason's rulings: (a) the
@@ -186,6 +186,8 @@ accepted as presented, 2026-10-31 (Jason).
 - Small caps under the `word-text` preset against Word's save: measured (capitals); the default's stored case is a
   deliberate departure, not an unmeasured one.
 - A drop cap whose frame holds two words; a drop cap followed by a table.
+- A drop cap's frame that ends a section, a frame from a paragraph style, and a frame in a table cell (phase 2 leaves
+  the first as it is and joins the other two, §12.2 items 3, 4 and 6).
 - A paragraph style's `w:caps` in Word's text save (phase 1 applies it, §11.2 item 2; the probes measured direct
   formatting only).
 - A caps run's field code under `field_codes: true`, and a list label whose level's run properties have `w:caps`
@@ -380,3 +382,71 @@ row: "[PROBE] gains no fixture yet (the `dpp-forks` Word re-save is the candidat
 - **docx4j-mcp**: FYI. It does not read the text model yet (its `text-model` entries are proposed); when it does,
   `small_caps` is one more option by name.
 - **The portfolio**: the registry note (phase 1 done).
+
+## 12. Phase 2 (2026-10-31; Jason: "do phase 2")
+
+### 12.1 What was built
+
+- **The join** (`Extractor`): `blocks()` remembers a drop cap's frame paragraph just read, and the paragraph next takes
+  it (`joinDropCap`): the frame's runs and fields at the block's start with no separator, the block (the second
+  paragraph's address, style, alignment, numbering) in the frame's place in the sink, the frame's `w:p` recorded for
+  the inspector at the joined block's address, and the warning. A frame is (`dropCapFrame`) one `w:p`, not joined
+  already by a deleted mark, under `drop_caps: join`, whose effective `w:framePr/@w:dropCap` is `drop` or `margin`,
+  whose text as read holds no whitespace, and which ends no section. Anything but a paragraph or a marker next (a
+  table, a control, an `altChunk`, the end of the container) leaves it as it is. `paragraph()` now returns its block.
+- **The warning**: `TextWarning.DROP_CAP_JOINED` (`paragraph.drop_cap_joined`) at the frame's address, its selector
+  the part the paragraphs are in (`/word/document.xml`), the phase 0 rows' selector.
+- **`TextOptions.drop_caps`** (`DropCaps.JOIN`, `ASIS`; default `JOIN`), after `toc` in WD §10's order, in `toMap()`,
+  `copy()` and by name; the `word-text` preset sets `asis`; `InspectionReport` names it when it is not the default.
+- **Harness**: `TextsAdapter` advertises REQ-521.
+- **Tests**: `DropCapJoinTest` (8): Word's C02 joined in every view (`The C02_ modern ...` one run, the addresses
+  `body/0, body/2, body/3`, the warning at `body/1`); `asis` by setter, by name and by the preset, and a caller's
+  `join` over the preset; the shapes left (two words, a table next, the story's end, `dropCap` none or absent, the
+  frame ending a section, a control next, the cell's end); the shapes joined (`margin`, a style's frame, a bookmark
+  between or inside, a cell's next paragraph, an empty frame); a frame whose mark the view deletes (CR-043's join, no
+  warning; the original view joins it as a drop cap); the letter merged into its word's run, or a run of its
+  own when bold or cased; the inspector's address; the option. `ExtractionConformanceTest`'s dpp test asserts the
+  phase 2 rows pass and that none pends on REQ-521.
+
+### 12.2 Decisions taken in the phase (docx4j's)
+
+1. **Read, then joined.** The frame is read as a paragraph of its own (its fields, bookmarks and notes in reading
+   order, as before), and the block after it takes its runs; "at most one word" is the frame's text as read in the
+   view, no whitespace and no space character (U+00A0 among them). A frame with no text (a picture's drop cap) is at
+   most one word, so joined: its runs go to the start of the word's paragraph.
+2. **The letter merges into its word's run** where the block model's formatting agrees, as runs merge throughout:
+   the block model has no size, so §3.3's "the `T` at 40pt as a run" holds only where a flag differs (a bold or a
+   cased letter stays its own run). Word's C02 gives one run, `The C02_ modern ...`.
+3. **A frame that ends a section is left as it is.** Its `w:sectPr` puts the paragraph next in another section, and the
+   joined block would lose the section's end. The WD's "immediately followed" is read as within the section; put to
+   the portfolio as a clarification.
+4. **The frame may be a style's**: the paragraph's effective `w:framePr` (ECMA-376 §17.3.1.11 lets a style carry it),
+   in the view's paragraph properties; Word's feature writes it directly. Resolved only for a one-word paragraph.
+5. **What the frame anchored still follows it**: the joined block takes the frame's place in the sink, so a text box
+   the frame anchored comes after the joined paragraph (REQ-518), and the second paragraph's after that.
+6. **Every story and every cell**: the WD's "the end of a cell" puts a cell's paragraphs in scope, so a frame in a cell
+   is joined to the cell's next paragraph; headers, notes, text boxes and comments the same.
+7. **The inspector's record** maps the frame's `w:p` to the joined block's address, so a finding in the drop cap is
+   at the block whose text holds it; the warning keeps the frame's address, as REQ-521 says.
+8. **No block, no join.** Where the paragraph next makes no block (wholly hidden under `hidden: false`, a table of
+   contents' under `toc: false`), the frame stays a paragraph. A frame whose mark a view deletes is already one
+   paragraph with the next (CR-043's join): no drop-cap join and no warning.
+
+### 12.3 Results
+
+- The dpp suite: 136 assertions passed and 56 pending (phase 3: 52, phase 4: 4); none pends on REQ-521. Of Word's 22
+  saves, 20 agree (C02 under `drop_caps: asis`); C06 and C07 wait on phase 3.
+- The probe's plain-text golden (`dpp-forks-word365.accepted.txt`, cut by hand at phase 0) now equals docx4j's output
+  exactly; its row cites REQ-710 (the baseline digits), so it pends on phase 3 with the Markdown golden.
+- Phase 0's suite unchanged at 1736 passed, 36 pending: no fixture there has a drop cap (nor has any other test
+  fixture in docx4j-core-tests or docx4j-markdown but the dpp ones).
+- Gate: docx4j-core-tests 2327/0/30 in the full run (was 2320/0/30), and `DropCapJoinTest`'s eighth case, added after
+  it, 8/8 on its own (2328 in all); docx4j-markdown 172/0/0, unchanged (it reads the joined blocks).
+
+### 12.4 Hand-offs
+
+- **The portfolio**: the registry note (phase 2 done); two WD points: a frame that ends a section is left as it is
+  (item 3), and `paragraph.drop_cap_joined`'s selector is the part's name, as the `dpp/` rows already have it (REQ-801
+  names none for the kind).
+- **docx4j-core-ts, docx4j-python**: the join (the frame read, then taken by the next paragraph's block; the run
+  merge; the shapes left), the warning and its selector, `drop_caps`, and the dpp rows that now pass.

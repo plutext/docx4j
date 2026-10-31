@@ -609,11 +609,15 @@ final class Extractor {
 	private void blocks(List<Object> items, String prefix, Story story, List<TextBlock> sink, RunState state) {
 		if (items == null) return;
 		resolvedAlternateContent(items, prefix, story);
+		// a drop cap's frame paragraph just read, and its w:p: the paragraph next takes it (REQ-521)
+		TextBlock dropCap = null;
+		P dropCapP = null;
 		for (int i = 0; i < items.size(); i++) {
 			Object item = items.get(i);
 			if (removes(item)) continue;
 			Object v = unwrap(item);
 			String address = prefix + "/" + i;
+			if (!(v instanceof P) && !isMarker(item)) dropCap = null; // a table, a control, the end: left as it is
 			if (v instanceof P) {
 				List<P> chain = new ArrayList<P>();
 				List<String> addresses = new ArrayList<String>();
@@ -638,16 +642,23 @@ final class Extractor {
 					// a deleted mark with a table next and text left: into the table's first cell (CR-043 section 17)
 					pendingTableJoin = chain;
 					pendingTableJoinAddresses = addresses;
+					dropCap = null;
 					i = j;
 					continue;
 				}
-				paragraph(chain, addresses, story, sink, state);
+				TextBlock taking = dropCap;
+				dropCap = null;
+				TextBlock block = paragraph(chain, addresses, story, sink, state, taking, dropCapP);
+				if (taking == null && block != null && dropCapFrame(chain, block)) {
+					dropCap = block;
+					dropCapP = chain.get(0);
+				}
 				i = j;
 			} else if (v instanceof Tbl) {
 				table((Tbl) v, address, story, sink, state);
 				if (pendingTableJoin != null) {
 					// the table had no paragraph to take it after all: on its own
-					paragraph(pendingTableJoin, pendingTableJoinAddresses, story, sink, state);
+					paragraph(pendingTableJoin, pendingTableJoinAddresses, story, sink, state, null, null);
 					pendingTableJoin = null;
 					pendingTableJoinAddresses = null;
 				}
@@ -702,7 +713,12 @@ final class Extractor {
 		return -1;
 	}
 
-	private void paragraph(List<P> chain, List<String> addresses, Story story, List<TextBlock> sink, RunState state) {
+	/**
+	 * A paragraph chain's block into the sink, returned; null where it makes none. A drop cap's frame paragraph read
+	 * just before ({@code dropCap}, from {@code dropCapP}; REQ-521) is taken in at its start.
+	 */
+	private TextBlock paragraph(List<P> chain, List<String> addresses, Story story, List<TextBlock> sink, RunState state,
+			TextBlock dropCap, P dropCapP) {
 		P first = chain.get(0);
 		P last = chain.get(chain.size() - 1);
 		TextBlock block = new TextBlock(TextBlock.Kind.PARAGRAPH, story.kind, addresses.get(0));
@@ -737,7 +753,7 @@ final class Extractor {
 			block.runs.clear();
 			flushIfOutsideTable(story, sink);
 			endSection(last, story);
-			return;
+			return null;
 		}
 		block.hidden = hiddenParagraph;
 		if (!options.isHidden()) {
@@ -747,7 +763,7 @@ final class Extractor {
 			// a table of contents' paragraph, under toc: false (D12): no line at all
 			flushIfOutsideTable(story, sink);
 			endSection(last, story);
-			return;
+			return null;
 		}
 		// one count per paragraph: the label (list_labels) and the numbering's value come from it
 		if (pkg != null && (options.isListLabels() || block.numbering != null)) {
@@ -757,9 +773,75 @@ final class Extractor {
 		}
 		block.section = story.sections == null ? 0 : story.sections.size();
 		for (P p : chain) record(p, block.address);
-		sink.add(block);
+		if (dropCap == null || !joinDropCap(dropCap, dropCapP, block, story, sink)) sink.add(block);
 		flushIfOutsideTable(story, sink);
 		endSection(last, story);
+		return block;
+	}
+
+	/**
+	 * Whether a paragraph just read is a drop cap's frame, for the paragraph next to take (REQ-521): under
+	 * {@code drop_caps: join}, one {@code w:p} whose {@code w:framePr/@w:dropCap} (its own, or its style's) is
+	 * {@code drop} or {@code margin}, whose text is at most one word, and which ends no section.
+	 */
+	private boolean dropCapFrame(List<P> chain, TextBlock block) {
+		if (options.getDropCaps() != TextOptions.DropCaps.JOIN || chain.size() != 1) return false;
+		P p = chain.get(0);
+		if (p.getPPr() != null && p.getPPr().getSectPr() != null) return false;
+		String text = block.getText();
+		for (int k = 0; k < text.length(); k++) {
+			char c = text.charAt(k);
+			if (Character.isWhitespace(c) || Character.isSpaceChar(c)) return false;
+		}
+		PPr pPr = viewPPr(p);
+		if (propertyResolver != null) {
+			try {
+				pPr = propertyResolver.getEffectivePPr(pPr);
+			} catch (Exception e) {
+				log.debug("Couldn't resolve paragraph properties of " + block.address + ": " + e.getMessage());
+			}
+		}
+		org.docx4j.wml.CTFramePr frame = pPr == null ? null : pPr.getFramePr();
+		return frame != null && (frame.getDropCap() == org.docx4j.wml.STDropCap.DROP
+				|| frame.getDropCap() == org.docx4j.wml.STDropCap.MARGIN);
+	}
+
+	/**
+	 * A drop cap's frame paragraph joined to the block after it (REQ-521): its runs and fields put at the block's start
+	 * with no separator, its letter merged into the word's run where their formatting agrees, the block (its address,
+	 * its properties) in the frame's place in the sink, so that what the frame anchored still follows it; the warning
+	 * {@code paragraph.drop_cap_joined} at the frame's address. False, and nothing done, where the frame is not in the sink.
+	 */
+	private boolean joinDropCap(TextBlock frame, P frameP, TextBlock block, Story story, List<TextBlock> sink) {
+		int at = -1;
+		for (int k = sink.size() - 1; k >= 0 && at < 0; k--) if (sink.get(k) == frame) at = k;
+		if (at < 0) return false;
+		List<TextRun> runs = new ArrayList<TextRun>(frame.runs);
+		int first = 0;
+		if (!runs.isEmpty() && !block.runs.isEmpty()) {
+			TextRun left = runs.get(runs.size() - 1);
+			TextRun right = block.runs.get(0);
+			if (left.kind == TextRun.Kind.TEXT && right.kind == TextRun.Kind.TEXT && !left.math && !right.math
+					&& left.hidden == right.hidden && left.placeholder == right.placeholder
+					&& java.util.Objects.equals(left.revision, right.revision) && left.sameFormat(right)) {
+				TextRun merged = new TextRun(TextRun.Kind.TEXT, left.text + right.text, left.revision);
+				merged.hidden = left.hidden;
+				merged.placeholder = left.placeholder;
+				merged.copyFormat(left);
+				runs.set(runs.size() - 1, merged);
+				first = 1;
+			}
+		}
+		runs.addAll(block.runs.subList(first, block.runs.size()));
+		block.runs.clear();
+		block.runs.addAll(runs);
+		block.fields.addAll(0, frame.fields);
+		block.revisions += frame.revisions;
+		block.hidden = block.hidden && frame.hidden;
+		sink.set(at, block);
+		if (sources != null && frameP != null) sources.put(frameP, block.address);
+		warn(new TextWarning(TextWarning.DROP_CAP_JOINED, frame.address, null, null, partName(story.part)));
+		return true;
 	}
 
 	/** The inspector's record: the first block made from a source object (CR-050). */

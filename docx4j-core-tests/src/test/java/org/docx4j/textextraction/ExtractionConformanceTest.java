@@ -290,7 +290,13 @@ public class ExtractionConformanceTest {
         assertTrue(results.contains("dpp-forks-word365.docx\t5\tROBERTS\taccepted\tmarkdown\tPASS"));
         assertTrue(results.contains("dpp-forks-word365.docx\t5\tJackson\tmarkup\tdefault\tPASS"));
         assertFalse(results.contains("REQ-607"));
-        assertTrue(results.contains("\tword save:bisect/C02.txt" + word + "PENDING\tCR-069 phase 2; REQ-521"));
+        // phase 2: the drop-cap join, its warning, and drop_caps: asis against Word's save
+        assertTrue(results.contains("bisect/C02.docx\t2\tword save:bisect/C02.txt" + word + "PASS"));
+        for (String view : List.of("accepted", "original", "markup")) {
+            assertTrue(results.contains("dpp-forks-word365.docx\t2\twarning:paragraph.drop_cap_joined:/word/document.xml\t" + view + "\tdefault\tPASS"));
+            assertTrue(results.contains("bisect/C02.docx\t2\twarning:paragraph.drop_cap_joined:/word/document.xml\t" + view + "\tdefault\tPASS"));
+        }
+        assertFalse(results.contains("REQ-521"));
         assertTrue(results.contains("\tH<sub>2</sub>O\taccepted\tmarkdown\tPENDING\tCR-069 phase 3; REQ-710"));
         assertTrue(results.contains("\tinspect:text.formatting_join:48,2103\taccepted\tdefault\tPENDING\tCR-069 phase 4; text.formatting_join"));
         for (String line : results.split("\n"))
