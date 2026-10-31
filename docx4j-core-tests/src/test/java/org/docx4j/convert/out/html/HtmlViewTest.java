@@ -75,7 +75,8 @@ public class HtmlViewTest {
 		for (int flag : FLAGS) {
 			String html = html(tracked(), null, flag);
 			assertTrue(html, html.matches("(?s).*<ins [^>]*data-author=\"Ann\"[^>]*>(<span[^>]*>)*added.*"));
-			assertTrue(html, html.matches("(?s).*<ins [^>]*datetime=\"2026-01-02T03:04:05Z\".*"));
+			// the date in the text model's form (WD 0.57 REQ-705): w:date's Z, Word's on the author's clock, not written
+			assertTrue(html, html.matches("(?s).*<ins [^>]*datetime=\"2026-01-02T03:04:05\".*"));
 			assertTrue(html, html.matches("(?s).*<del [^>]*data-author=\"Bob\"[^>]*>(<span[^>]*>)* removed.*"));
 			assertTrue(html, html.matches("(?s).*<del [^>]*class=\"del\".*"));
 			assertFalse(html, html.contains("<span class=\"del\">"));
@@ -113,5 +114,32 @@ public class HtmlViewTest {
 		assertEquals(TextView.ACCEPTED, settings.getView());
 		settings.setView(TextView.MARKUP);
 		assertEquals(TextView.MARKUP, settings.getView());
+	}
+
+	/**
+	 * A change's datetime is its date in the text model's form (WD 0.57 REQ-705, REQ-702), in both writers: the
+	 * author's clock from w:date, with the offset w16du:dateUtc gives (Word 365 writes both), dateUtc alone with its Z,
+	 * none for neither; the same text as the text model's markup view. Before 17.3.5, w:date as stored, its Z claiming UTC.
+	 */
+	@Test
+	public void theDateInTheTextModelsForm() throws Exception {
+		String w16du = " xmlns:w16du=\"http://schemas.microsoft.com/office/word/2023/wordml/word16du\"";
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().getContent().add((P) XmlUtils.unmarshalString("<w:p " + W + w16du + ">"
+				+ "<w:ins w:id=\"1\" w:author=\"Ann\" w:date=\"2026-10-31T11:00:00Z\" w16du:dateUtc=\"2026-10-31T00:00:00Z\"><w:r><w:t>both</w:t></w:r></w:ins>"
+				+ "<w:del w:id=\"2\" w:author=\"Bob\" w16du:dateUtc=\"2026-10-31T00:00:00Z\"><w:r><w:delText xml:space=\"preserve\"> utc</w:delText></w:r></w:del>"
+				+ "<w:ins w:id=\"3\" w:author=\"Cy\"><w:r><w:t xml:space=\"preserve\"> undated</w:t></w:r></w:ins>"
+				+ "</w:p>", Context.jc, P.class));
+		for (int flag : FLAGS) {
+			String html = html(pkg, null, flag);
+			assertTrue(html, html.matches("(?s).*<ins [^>]*datetime=\"2026-10-31T11:00:00\\+11:00\"[^>]*>(<span[^>]*>)*both.*"));
+			assertTrue(html, html.matches("(?s).*<del [^>]*datetime=\"2026-10-31T00:00:00Z\"[^>]*>(<span[^>]*>)* utc.*"));
+			assertTrue(html, html.matches("(?s).*<ins (?![^>]*datetime)[^>]*data-author=\"Cy\"[^>]*>.*"));
+			assertFalse(html, html.contains("datetime=\"2026-10-31T11:00:00Z\""));
+		}
+		String markup = org.docx4j.model.text.Texts.plainText(pkg, org.docx4j.model.text.TextOptions.of(TextView.MARKUP)
+				.markupDetail(org.docx4j.model.text.TextOptions.MarkupDetail.AUTHOR_DATE));
+		assertTrue(markup, markup.contains("{++Ann, 2026-10-31T11:00:00+11:00: both++}"));
+		assertTrue(markup, markup.contains("{--Bob, 2026-10-31T00:00:00Z:  utc--}"));
 	}
 }

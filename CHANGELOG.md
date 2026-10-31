@@ -50,6 +50,8 @@ Changes in Version 17.3.5
   with no date writes its author alone. TextRevision.getDate() and TextComment.getDate() return that form
   (they returned w:date as stored). TrackedChange.getAuthorLocalTime() and getAuthorOffset() give the
   author's clock beside getDate()'s instant; RevisionDates has the rule.
+* HTML output (both writers): an <ins> or <del> datetime is the change's date in that same form (WD 0.57
+  REQ-705); it was w:date as stored, whose Z Word writes on the author's clock.
 * Text model, for a host that reads embedded objects itself (CR-070, WD 0.47): an object run carries a
   TextObject (TextRun.getObject(): kind EMBED/LINK/CONTROL, relationship id, part, content type, ProgID,
   and an OLE 1.0 package's label, file name and command); TextOptions.embeddedFilter decides, object by

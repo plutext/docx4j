@@ -53,7 +53,7 @@ public class HtmlVisitorParityTest {
 		if (!m.find()) return false;
 		String attributes = m.group(1);
 		return attributes.contains("class=\"" + element + "\"") && attributes.contains("data-author=\"a\"")
-				&& attributes.contains("datetime=\"2026-09-01T00:00:00Z\"");
+				&& attributes.contains("datetime=\"2026-09-01T00:00:00\"");
 	}
 
 	/** is text somewhere inside a span whose start tag contains cssFragment?

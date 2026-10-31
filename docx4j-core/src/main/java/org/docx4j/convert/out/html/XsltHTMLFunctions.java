@@ -1221,6 +1221,29 @@ public class XsltHTMLFunctions {
     	return "span";
     }
 
+	/**
+	 * A tracked change's {@code datetime} in the HTML markup view: its date in the text model's form
+	 * ({@link org.docx4j.model.revisions.RevisionDates#text}, WD REQ-702), as WD 0.57's REQ-705 asks: the author's
+	 * clock from {@code w:date}, with the author's offset where {@code w16du:dateUtc} gives it, never the {@code Z}
+	 * Word writes on {@code w:date}. Given the two attributes' values (empty where absent); empty where there is
+	 * neither, or a value is no date. For the XSLT pathway; the visitor pathway calls RevisionDates itself.
+	 *
+	 * @since 17.3.5
+	 */
+	public static String revisionDate(String date, String dateUtc) {
+		String text = org.docx4j.model.revisions.RevisionDates.text(calendar(date), calendar(dateUtc));
+		return text == null ? "" : text;
+	}
+
+	private static javax.xml.datatype.XMLGregorianCalendar calendar(String value) {
+		if (value == null || value.trim().isEmpty()) return null;
+		try {
+			return javax.xml.datatype.DatatypeFactory.newInstance().newXMLGregorianCalendar(value.trim());
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 	/** A pPr carrying just this paragraph style, so that a run's effective properties
 	 *  can be resolved the way the visitor pathway resolves them.  @since 17.0.5 */
 	/**

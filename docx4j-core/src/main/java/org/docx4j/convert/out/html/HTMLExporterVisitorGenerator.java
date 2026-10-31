@@ -516,7 +516,9 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			wrapper.setAttribute("class", trackElement);
 			org.docx4j.wml.CTTrackChange change = (org.docx4j.wml.CTTrackChange)o;
 			if (change.getAuthor() != null) wrapper.setAttribute("data-author", change.getAuthor());
-			if (change.getDate() != null) wrapper.setAttribute("datetime", change.getDate().toXMLFormat());
+			// the date in the text model's form (WD 0.57 REQ-705, REQ-702): never the Z Word writes on w:date
+			String datetime = org.docx4j.model.revisions.RevisionDates.text(change.getDate(), change.getDateUtc());
+			if (datetime != null) wrapper.setAttribute("datetime", datetime);
 			(currentP != null ? currentP : parentNode).appendChild(wrapper);
 
 			// the w:ins/w:del/w:moveTo/w:moveFrom contains runs; have them append their

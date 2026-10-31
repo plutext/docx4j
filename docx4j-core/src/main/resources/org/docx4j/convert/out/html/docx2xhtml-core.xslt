@@ -15,8 +15,9 @@
     xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du"
     version="1.0"
-        exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic">	
+        exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic w16du">	
 
         <!-- xmlns:xlink is deliberate, and must not be added to
              exclude-result-prefixes: it puts the declaration on the <html> element,
@@ -661,7 +662,10 @@
 
   <xsl:template name="revision-attributes">
   	<xsl:if test="@w:author"><xsl:attribute name="data-author"><xsl:value-of select="@w:author"/></xsl:attribute></xsl:if>
-  	<xsl:if test="@w:date"><xsl:attribute name="datetime"><xsl:value-of select="@w:date"/></xsl:attribute></xsl:if>
+  	<!-- the change's date in the text model's form (WD 0.57 REQ-705, REQ-702): the author's clock, with its offset
+  	     where w16du:dateUtc gives it, never the Z Word writes on w:date (17.3.5; before, w:date as stored) -->
+  	<xsl:variable name="datetime" select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.revisionDate(string(@w:date), string(@w16du:dateUtc))"/>
+  	<xsl:if test="string-length($datetime) &gt; 0"><xsl:attribute name="datetime"><xsl:value-of select="$datetime"/></xsl:attribute></xsl:if>
   </xsl:template>
 
   <xsl:template match="w:delText">
