@@ -113,6 +113,19 @@ public class TextsPhase2Test {
 				between(text(probe, new TextOptions().tables(TextOptions.Tables.GRID)), "Case 31: a table", "After the table.\nCase 32"));
 	}
 
+	/** WD 0.48 REQ-605, REQ-205: a grid column's width is its widest line's code points, so an emoji pads as one. */
+	@Test
+	public void gridWidthsCountCodePoints() throws Exception {
+		String emoji = "x\ud83d\ude00\ud83d\ude00"; // three code points, five UTF-16 units
+		WordprocessingMLPackage pkg = MiniDocx.body("<w:tbl><w:tblGrid><w:gridCol w:w=\"2000\"/><w:gridCol w:w=\"2000\"/></w:tblGrid>"
+				+ "<w:tr>" + tc("", "abcd") + tc("", "one") + "</w:tr><w:tr>" + tc("", emoji) + tc("", "two") + "</w:tr></w:tbl>" + p("After.")).load();
+		assertEquals("+------+-----+\n"
+				+ "| abcd | one |\n"
+				+ "+======+=====+\n"
+				+ "| " + emoji + "  | two |\n"
+				+ "+------+-----+\n", between(text(pkg, new TextOptions().tables(TextOptions.Tables.GRID)), "+", "After."));
+	}
+
 	private static final String MERGED_TABLE = "<w:tbl><w:tblGrid><w:gridCol w:w=\"2000\"/><w:gridCol w:w=\"2000\"/></w:tblGrid>"
 			+ "<w:tr>" + tc("", "Name") + tc("", "Value") + "</w:tr>"
 			+ "<w:tr>" + tc("<w:vMerge w:val=\"restart\"/>", "a") + tc("", "1") + "</w:tr>"

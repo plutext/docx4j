@@ -27,6 +27,8 @@ Claude Opus 5.5
 Changes in Version 17.3.5
 --------------------------
 
+* PlainText's grid tables (tables: grid) size their columns in code points, not UTF-16 units, so a cell
+  holding an emoji or another character beyond the BMP no longer pads one short (WD 0.48 REQ-605, REQ-205).
 * Text model under markup_detail: author_date (WD 0.46 REQ-702): a revision's or comment's date is the
   author's local time from w:date, without the Z Word stores there (2026-10-31T11:00:00), with the UTC
   offset where dateUtc gives it (2026-10-31T11:00:00+11:00); dateUtc alone is written with Z, and a mark

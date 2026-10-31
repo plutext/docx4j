@@ -474,6 +474,11 @@ public final class PlainText {
 			}
 		}
 
+		/** A cell line's width in the grid: its code points, not its UTF-16 units (an emoji is one; REQ-205). */
+		private int width(String line) {
+			return line.codePointCount(0, line.length());
+		}
+
 		private List<String> gridLines(TextBlock table) {
 			List<TextRow> rows = table.getRows();
 			List<Placed> placed = new ArrayList<Placed>();
@@ -506,17 +511,17 @@ public final class PlainText {
 					for (int g = first; g < first + span && g < columns; g++) at[r][g] = p;
 				}
 			}
-			// column widths: single-column cells first, then spans widen their last column
+			// column widths, in code points (WD 0.48 REQ-605, REQ-205): single-column cells first, then spans widen their last column
 			int[] widths = new int[columns];
 			java.util.Arrays.fill(widths, 3);
-			for (Placed p : placed) if (p.span == 1) for (String l : p.lines) widths[p.col] = Math.max(widths[p.col], l.length());
+			for (Placed p : placed) if (p.span == 1) for (String l : p.lines) widths[p.col] = Math.max(widths[p.col], width(l));
 			for (Placed p : placed) {
 				if (p.span == 1) continue;
 				int last = Math.min(columns, p.col + p.span) - 1;
 				int have = 0;
 				for (int g = p.col; g <= last; g++) have += widths[g];
 				have += 3 * (last - p.col);
-				for (String l : p.lines) if (l.length() > have) { widths[last] += l.length() - have; have = l.length(); }
+				for (String l : p.lines) if (width(l) > have) { widths[last] += width(l) - have; have = width(l); }
 			}
 			// row heights: a cell's lines over the rows it spans (the borders it crosses hold none)
 			int[] heights = new int[rows.size()];
@@ -549,7 +554,7 @@ public final class PlainText {
 							written.put(p, n + 1);
 						}
 						l.append(' ').append(text);
-						for (int k = text.length(); k < width; k++) l.append(' ');
+						for (int k = width(text); k < width; k++) l.append(' ');
 						l.append(" |");
 						g += span;
 					}
