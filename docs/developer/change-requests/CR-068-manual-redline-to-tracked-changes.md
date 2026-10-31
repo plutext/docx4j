@@ -8,7 +8,9 @@ ACCEPTED 2026-10-31 (Jason: "D13 and D9 as recommended", §8.5); D14 (the commen
 proposed for phase 2; phase 1 DONE 2026-10-31 (§11: `ManualRedline`, its options and report,
 `Texts.addresses`; held to Word 365's Accept All and Reject All of the phase 0 prediction and, §11.6, of docx4j's own
 conversion), but for the Getting Started sentence (§11.5); phase 2 DONE 2026-10-31 (Jason: "do phase 2"; §12:
-the opt-ins; D14 to D16 accepted, "D14–D16 are good"; held to Word's third run, §12.6); phase 3 (the hand-offs) next.
+the opt-ins; D14 to D16 accepted, "D14–D16 are good"; held to Word's third run, §12.6; the comment card, §12.7);
+phase 3 DONE 2026-10-31 (Jason: "do CR-068 phase 3"; §13: the hand-offs sent). Open: the Getting Started sentence
+(§11.5).
 Proposed the same day, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's direction, relayed by the
 portfolio session from its review of LlamaIndex's Document Parsing Protocol (the
 paper's §7.13; the `dpp-forks` probe): "strikethrough handling is NOT view-sensitive (Accept All and Reject All leave
@@ -655,3 +657,20 @@ that something is there and sees it struck (or underlined) in the pane, where D6
 remark as kept, silently. Accept All and Reject All resolve both forms (§12.6). The javadoc of
 `ManualRedlineOptions.comments` says this. Unmeasured: Word's classic comments (where they can still be turned on),
 and Word on the web and on the Mac.
+
+## 13. Phase 3 (2026-10-31; Jason: "do CR-068 phase 3")
+
+The hand-offs, sent the same day:
+
+- **docx4j-core-ts** (docx4j-core-ts-7b) and **docx4j-python** (docx4j-python-64): port `ManualRedline`, its options
+  and its report, as CR-043 was ported; the oracle is `revisions/cr068` (the probes, Word 365's Accept All and Reject
+  All of the default, the D9 form and both opt-in conversions, `cr068-log.txt`), compared as `DocumentDescription`
+  compares (with the three normalisations of Word's save of the second base); each registers its own entry with the
+  portfolio, depending on `docx4j/CR-068`.
+- **docx4j-mcp** (docx4j-mcp-63): a tool on the vocabulary verb `manual_redline_to_tracked_changes` (the portfolio's
+  `docs/mcp_tool_vocabulary.md` §5: 3e58a4e, 154114c, c0fa8d0), `dry_run` as `preview`, the result the report's JSON.
+- **The portfolio** (docx4j-portfolio-10): the paper's §7.13 pointer to this CR (its own); the registry.
+- **The WD**: no requirement; the conversion is not extraction (§5).
+
+**Phase 3: DONE.** CR-068 is complete but for the Getting Started sentence, which waits for Jason's review of the
+Getting Started docx (§11.5).
