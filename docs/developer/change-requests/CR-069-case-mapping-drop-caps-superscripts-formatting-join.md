@@ -418,8 +418,8 @@ row: "[PROBE] gains no fixture yet (the `dpp-forks` Word re-save is the candidat
    the block model has no size, so §3.3's "the `T` at 40pt as a run" holds only where a flag differs (a bold or a
    cased letter stays its own run). Word's C02 gives one run, `The C02_ modern ...`.
 3. **A frame that ends a section is left as it is.** Its `w:sectPr` puts the paragraph next in another section, and the
-   joined block would lose the section's end. The WD's "immediately followed" is read as within the section; put to
-   the portfolio as a clarification.
+   joined block would lose the section's end. WD 0.54 (docx4j-portfolio e1332e6) adopts it: REQ-521's frame "ends no
+   section", and folds in items 1, 2, 4, 6 and 8 with the three unmeasured shapes (§7) in its NOTE.
 4. **The frame may be a style's**: the paragraph's effective `w:framePr` (ECMA-376 §17.3.1.11 lets a style carry it),
    in the view's paragraph properties; Word's feature writes it directly. Resolved only for a one-word paragraph.
 5. **What the frame anchored still follows it**: the joined block takes the frame's place in the sink, so a text box
@@ -445,8 +445,8 @@ row: "[PROBE] gains no fixture yet (the `dpp-forks` Word re-save is the candidat
 
 ### 12.4 Hand-offs
 
-- **The portfolio**: the registry note (phase 2 done); two WD points: a frame that ends a section is left as it is
-  (item 3), and `paragraph.drop_cap_joined`'s selector is the part's name, as the `dpp/` rows already have it (REQ-801
-  names none for the kind).
+- **The portfolio**: the registry note (phase 2 done; registered b0d02e8); two WD points, both taken in WD 0.54
+  (e1332e6): a frame that ends a section is left as it is (item 3), and `paragraph.drop_cap_joined`'s selector is the
+  name of the part that holds the two paragraphs, as the `dpp/` rows already have it (REQ-801 and REQ-521 now say so).
 - **docx4j-core-ts, docx4j-python**: the join (the frame read, then taken by the next paragraph's block; the run
   merge; the shapes left), the warning and its selector, `drop_caps`, and the dpp rows that now pass.
