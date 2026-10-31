@@ -113,9 +113,15 @@
 	<inceptionYear>2007</inceptionYear>
 
 	<distributionManagement>
+		<!-- A -SNAPSHOT version: the Central Portal's snapshot repository (since 17.3.5; oss.sonatype.org is
+		     retired, and a snapshot deploy there failed with 405). nexus-staging-maven-plugin deploys a SNAPSHOT
+		     here with the ossrh server's Portal user token, a release through the staging API (below). The
+		     org.docx4j namespace needs "Enable SNAPSHOTs" in the Portal; snapshots are kept 90 days.
+		     https://central.sonatype.org/publish/publish-portal-snapshots/ -->
 		<snapshotRepository>
 			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>  <!-- obsolete? -->
+			<name>Central Portal Snapshots</name>
+			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
 		</snapshotRepository>
 	</distributionManagement>
 
