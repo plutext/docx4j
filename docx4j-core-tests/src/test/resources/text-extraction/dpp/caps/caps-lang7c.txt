@@ -1,0 +1,3 @@
+L01_ caps-lang7c: w:caps with w:lang tr-TR on istanbul film, nothing else. Tests whether the dotted capital I stops the save, and answers the language question.
+L02_ ?STANBUL F?LM is the phrase.
+L03_ end.

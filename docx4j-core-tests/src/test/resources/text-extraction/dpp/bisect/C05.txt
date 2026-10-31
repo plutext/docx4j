@@ -1,0 +1,3 @@
+C01_ bisect C05: this file holds only case C05.
+C05_ JACKSON, J., dissenting; ROBERTS, C.J.
+C11_ end.

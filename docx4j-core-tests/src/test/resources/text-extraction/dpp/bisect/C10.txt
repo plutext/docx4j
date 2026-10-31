@@ -1,0 +1,3 @@
+C01_ bisect C10: this file holds only case C10.
+C10_ The party shall promptly notify the other.
+C11_ end.

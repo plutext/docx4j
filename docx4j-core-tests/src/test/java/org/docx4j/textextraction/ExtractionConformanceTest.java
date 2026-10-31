@@ -262,4 +262,55 @@ public class ExtractionConformanceTest {
             assertTrue(results.contains("the inspector (CR-050)"));
         }
     }
+    /** CR-069's suite (text-extraction/dpp/README.md), beside phase0. */
+    static Path dpp() {
+        return fixtures().resolveSibling("dpp");
+    }
+    /**
+     * CR-069 phase 0: the dpp suite's rows are checked where their statements are implemented, and pend on the
+     * CR-069 phase that builds the rest; what holds before it (Word's saves of the cases it does not touch, the
+     * inspector's background rule, the stored characters) passes now.
+     */
+    @Test public void dppSuiteIsCheckedOrPendingOnItsPhase() throws Exception {
+        Path report = Path.of("target/text-extraction/dpp.tsv");
+        ExtractionConformance.run(dpp(), report, ExtractionConformance.engine());
+        String results = Files.readString(report);
+        if (ExtractionConformance.engine() == null) return;
+        String word = "\taccepted\tprofile: word-text\t";
+        assertTrue(results.contains("bisect/control.docx\t0\tword save:bisect/control.txt" + word + "PASS"));
+        assertTrue(results.contains("bisect/C03.docx\t3\tword save:bisect/C03.txt" + word + "PASS"));
+        assertTrue(results.contains("bisect/C08.docx\t8\tword save:bisect/C08.txt" + word + "PASS"));
+        assertTrue(results.contains("\tinspect:text.near_background:Marta Okonkwo\taccepted\tdefault\tPASS"));
+        assertTrue(results.contains("caps/caps-lang5.docx\t5\tH\u2082O\toriginal\tdefault\tPASS"));
+        assertTrue(results.contains("\tword save:bisect/C05.txt" + word + "PENDING\tCR-069 phase 1; REQ-607"));
+        assertTrue(results.contains("\tword save:bisect/C02.txt" + word + "PENDING\tCR-069 phase 2; REQ-521"));
+        assertTrue(results.contains("\tH<sub>2</sub>O\taccepted\tmarkdown\tPENDING\tCR-069 phase 3; REQ-710"));
+        assertTrue(results.contains("\tinspect:text.formatting_join:48,2103\taccepted\tdefault\tPENDING\tCR-069 phase 4; text.formatting_join"));
+        for (String line : results.split("\n"))
+            if (line.contains("\tPENDING\t")) assertTrue(line, line.contains("\tPENDING\tCR-069 phase ") || line.contains("html reader"));
+    }
+    /**
+     * Word's text save is read as WD REQ-1002's NOTE says (by its byte order mark, else the saving system's code page,
+     * whose {@code ?} the extraction is given too) and compared line by line, the separators being the NOTE's residue.
+     */
+    @Test public void wordSaveIsReadByItsEncodingAndComparedByLine() throws Exception {
+        Path cp1252 = temporary.newFile("cp1252.txt").toPath();
+        Files.write(cp1252, "L1_ H?O caf\u00e9\r\nC04_\r1.3161.335\rL3_ end.\r\n".getBytes("windows-1252"));
+        String text = "L1_ H\u2082O caf\u00e9\nC04_\t1.3161.335\nL3_ end.\n";
+        ExtractionConformance.verifyWordSave(cp1252, "windows-1252", text);
+        // a character Word did not write; a break between cells lost
+        for (String wrong : List.of(text.replace("H\u2082O", "H2O"), text.replace("C04_\t", "C04_ "))) {
+            try { ExtractionConformance.verifyWordSave(cp1252, "windows-1252", wrong); fail("A wrong text passed: " + wrong); }
+            catch (AssertionError expected) { assertTrue(expected.getMessage(), expected.getMessage().contains(": line ")); }
+        }
+        try { ExtractionConformance.verifyWordSave(cp1252, "UTF-8", text); fail("A code-page save read as UTF-8"); }
+        catch (AssertionError expected) { assertTrue(expected.getMessage().contains("no byte order mark")); }
+        Path utf8 = temporary.newFile("utf8.txt").toPath();
+        Files.write(utf8, "\ufeff\u0130STANBUL F\u0130LM\r\n".getBytes(StandardCharsets.UTF_8));
+        ExtractionConformance.verifyWordSave(utf8, "UTF-8", "\u0130STANBUL F\u0130LM\n");
+        try { ExtractionConformance.verifyWordSave(utf8, "UTF-8", "ISTANBUL FILM\n"); fail("The invariant mapping passed"); }
+        catch (AssertionError expected) { assertTrue(expected.getMessage().contains(": line 1")); }
+        try { ExtractionConformance.verifyWordSave(utf8, "windows-1252", "\u0130STANBUL F\u0130LM\n"); fail("A UTF-8 save read as cp1252"); }
+        catch (AssertionError expected) { assertTrue(expected.getMessage().contains("a byte order mark")); }
+    }
 }

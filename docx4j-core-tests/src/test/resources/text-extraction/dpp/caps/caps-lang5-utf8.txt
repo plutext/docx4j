@@ -1,0 +1,4 @@
+﻿L01_ caps-lang5: C05 (caps and smallCaps, ASCII) plus one plain paragraph with a character outside Windows-1252. Prediction: no dialog, no file.
+L02_ JACKSON, J., dissenting; ROBERTS, C.J.
+L03_ subscript two in plain text: H₂O.
+L04_ end.

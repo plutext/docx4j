@@ -1,0 +1,9 @@
+case	fixture	channel	kind	selector	scenario	expected	statements
+2	dpp-forks-word365.docx	warning	paragraph.drop_cap_joined	/word/document.xml	default	1	REQ-521, REQ-801
+2	bisect/C02.docx	warning	paragraph.drop_cap_joined	/word/document.xml	default	1	REQ-521, REQ-801
+4	dpp-forks-word365.docx	inspect	text.formatting_join	1.3161.335	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, text.formatting_join
+7	dpp-forks-word365.docx	inspect	text.formatting_join	48,2103	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, text.formatting_join
+4	bisect/C04.docx	inspect	text.formatting_join	1.3161.335	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, text.formatting_join
+7	bisect/C07.docx	inspect	text.formatting_join	48,2103	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, text.formatting_join
+8	dpp-forks-word365.docx	inspect	text.near_background	Marta Okonkwo	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+9	dpp-forks-word365.docx	inspect	text.near_background	4471-9920	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907

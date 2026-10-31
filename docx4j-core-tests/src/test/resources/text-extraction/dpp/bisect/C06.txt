@@ -1,0 +1,3 @@
+C01_ bisect C06: this file holds only case C06.
+C06_ H2O and x2 on the 1st of May; literal x² and H?O.
+C11_ end.

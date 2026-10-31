@@ -1,0 +1,4 @@
+﻿L01_ caps-lang4b: C03's shape plus one w:lang tr-TR on a plain run. Does Word prompt the File Conversion dialog?
+L02_ Rate: 1.316 1.335 per cent.
+L03_ this run is marked tr-TR but is plain ASCII: istanbul film
+L04_ end.

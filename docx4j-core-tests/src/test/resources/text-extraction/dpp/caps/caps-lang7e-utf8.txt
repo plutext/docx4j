@@ -1,0 +1,3 @@
+﻿L01_ caps-lang7e: w:smallCaps with w:lang tr-TR on istanbul film, nothing else; does small caps follow the language as caps did?
+L02_ İSTANBUL FİLM is the phrase.
+L03_ end.

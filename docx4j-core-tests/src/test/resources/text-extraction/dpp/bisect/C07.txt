@@ -1,0 +1,3 @@
+C01_ bisect C07: this file holds only case C07.
+C07_ Revenue 48,2103 in the period.
+C11_ end.

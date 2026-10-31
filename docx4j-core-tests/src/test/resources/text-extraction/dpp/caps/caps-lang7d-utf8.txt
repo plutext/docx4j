@@ -1,0 +1,3 @@
+﻿L01_ caps-lang7d: w:caps on a ligature, an accent and a digraph (en-US), nothing else; save as UTF-8 to see the mapping.
+L02_ ﬁNE CAFÉ Ǆ is the phrase.
+L03_ end.

@@ -1,0 +1,35 @@
+case	token	accepted	original	markup	option	with_option	note	fixture	statements
+5	ROBERTS	1	1	1	markdown	1	w:caps: capitals in plain text and Markdown	dpp-forks-word365.docx	REQ-607
+5	Roberts	0	0	0	markdown	0	the stored case is the block model's, not the text's	dpp-forks-word365.docx	REQ-607
+5	Jackson	1	1	1	small_caps: upper	0	w:smallCaps: the stored characters (Jason's ruling (d))	dpp-forks-word365.docx	REQ-607
+5	JACKSON	0	0	0	small_caps: upper	1	Word's text under small_caps: upper	dpp-forks-word365.docx	REQ-607
+6	H2O	1	1	1	markdown	0	subscript 2: the baseline character in plain text	dpp-forks-word365.docx	REQ-710
+6	H<sub>2</sub>O	0	0	0	markdown	1		dpp-forks-word365.docx	REQ-710
+6	x<sup>2</sup>	0	0	0	markdown	1		dpp-forks-word365.docx	REQ-710
+6	1<sup>st</sup>	0	0	0	markdown	1	a letter|digit boundary: no text.formatting_join	dpp-forks-word365.docx	REQ-710
+6	H₂O	1	1	1	markdown	1	the literal U+2082 is stored text, kept (REQ-602); never a substitute for a w:vertAlign run	dpp-forks-word365.docx	REQ-602, REQ-710
+6	x²	1	1	1	markdown	1	the literal U+00B2, likewise	dpp-forks-word365.docx	REQ-602, REQ-710
+7	48,2103	1	1	1	markdown	0	the superscript marker fused to the number in plain text (text.formatting_join names it)	dpp-forks-word365.docx	REQ-710
+7	48,210<sup>3</sup>	0	0	0	markdown	1		dpp-forks-word365.docx	REQ-710
+5	ROBERTS	1	1	1				caps/caps-lang5.docx	REQ-607
+5	JACKSON	0	0	0	small_caps: upper	1	Word's save: JACKSON	caps/caps-lang5.docx	REQ-607
+5	H₂O	1	1	1			stored U+2082; Word's cp1252 save writes H?O, its UTF-8 save H₂O	caps/caps-lang5.docx	REQ-602
+5	İSTANBUL FİLM	1	1	1	small_caps: upper	2	tr-TR caps; the tr-TR small caps run under upper	caps/caps-lang6a.docx	REQ-607
+5	ISTANBUL FILM	1	1	1			en-US caps	caps/caps-lang6a.docx	REQ-607
+5	istanbul film	1	1	1	small_caps: upper	0	tr-TR small caps, stored	caps/caps-lang6a.docx	REQ-607
+5	STRAßE	2	2	2			de-DE caps: ß stays, no SS, no U+1E9E; and the label's literal	caps/caps-lang6b.docx	REQ-607
+5	STRASSE	1	1	1			the label's literal only	caps/caps-lang6b.docx	REQ-607
+5	CAFÉ	1	1	1			en-US caps on an accented letter	caps/caps-lang6b.docx	REQ-607
+5	ISTANBUL FILM	1	1	1			caps with no w:lang: the document default (docDefaults en-US)	caps/caps-lang6b.docx	REQ-607
+5	STRAßE	1	1	1			caps, no w:lang	caps/caps-lang7b.docx	REQ-607
+5	STRASSE	0	0	0			never String.toUpperCase's expansion	caps/caps-lang7b.docx	REQ-607
+5	İSTANBUL FİLM	1	1	1			tr-TR caps: dotted capital I	caps/caps-lang7c.docx	REQ-607
+5	ISTANBUL FILM	0	0	0				caps/caps-lang7c.docx	REQ-607
+5	ﬁNE CAFÉ Ǆ	1	1	1			en-US caps: the ligature kept, the digraph to its uppercase U+01C4	caps/caps-lang7d.docx	REQ-607
+5	FINE	0	0	0			never the ligature's expansion	caps/caps-lang7d.docx	REQ-607
+5	ǅ	0	0	0			never the digraph's titlecase	caps/caps-lang7d.docx	REQ-607
+5	istanbul film	2	2	2	small_caps: upper	1	tr-TR small caps, stored; and the label's literal	caps/caps-lang7e.docx	REQ-607
+5	İSTANBUL FİLM	0	0	0	small_caps: upper	1	Word's save: small caps follows the language as caps does	caps/caps-lang7e.docx	REQ-607
+5	JACKSON	1	1	1			caps in the tenth paragraph	caps/caps-lang7f.docx	REQ-607
+5	jackson	1	1	1	small_caps: upper	0	small caps in the tenth paragraph, stored	caps/caps-lang7g.docx	REQ-607
+5	istanbul film	1	1	1			w:lang tr-TR alone changes nothing	caps/caps-lang4b.docx	REQ-607

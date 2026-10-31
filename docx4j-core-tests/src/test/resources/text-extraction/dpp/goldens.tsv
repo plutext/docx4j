@@ -1,0 +1,3 @@
+fixture	case	view	scenario	format	golden	statements
+dpp-forks-word365.docx	0	accepted	default	txt	dpp-forks-word365.accepted.txt	REQ-1203, REQ-521, REQ-607, REQ-710
+dpp-forks-word365.docx	0	accepted	default	md	dpp-forks-word365.md	REQ-1203, REQ-521, REQ-607, REQ-710, REQ-703

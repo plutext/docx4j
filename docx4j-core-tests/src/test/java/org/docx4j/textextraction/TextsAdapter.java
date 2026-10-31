@@ -62,6 +62,8 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 			"REQ-601", "REQ-602", "REQ-603", "REQ-604", "REQ-605", "REQ-606",
 			"REQ-701", "REQ-702", "REQ-703", "REQ-704", "REQ-705", "REQ-706", "REQ-707", "REQ-708", "REQ-709",
 			"REQ-801", "REQ-802", "REQ-1001", "REQ-1202", "REQ-1203",
+			// profile: word-text (WD 0.41); its drop_caps and small_caps (WD 0.44) are CR-069's, whose rows cite REQ-521 and REQ-607 too
+			"REQ-1002",
 			// the chart's description, which case 34's axis title needs
 			"CR-047",
 			// the inspector (CR-050 phase 1; REQ-903's counts in every result, phase 2), and the suite's check of it
@@ -92,7 +94,8 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 			findings.merge(key, "1", (a, b) -> String.valueOf(Integer.parseInt(a) + 1));
 		}
 		// the inspection's findings by kind and selector, for the inspect rows (an inspection is the package's, whatever the view)
-		Map<String, byte[]> entries = ExtractionFixtureChecks.entries(Files.readAllBytes(fixture));
+		// the parts as they are, for the selectors; whether the builder wrote the package is the fixture checks' question
+		Map<String, byte[]> entries = ExtractionFixtureChecks.entries(Files.readAllBytes(fixture), false);
 		for (InspectFinding f : inspection(fixture).findings()) {
 			findings.merge("inspect\t" + f.getKind() + "\t" + selector(entries, f), "1", (a, b) -> String.valueOf(Integer.parseInt(a) + 1));
 		}

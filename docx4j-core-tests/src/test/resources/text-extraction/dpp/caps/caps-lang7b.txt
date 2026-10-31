@@ -1,0 +1,3 @@
+L01_ caps-lang7b: w:caps on a word with sharp s, no w:lang. Tests whether an uppercase with no single Windows-1252 character stops the save.
+L02_ STRAßE is the word.
+L03_ end.

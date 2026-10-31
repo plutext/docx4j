@@ -1,7 +1,7 @@
 # CR-069: what the page shows, in the text: case mapping, drop caps, superscripts, and the formatting-join finding
 
 Status: ACCEPTED 2026-10-31 (Jason: "CR-069 decisions as presented"): D1 to D9 as recommended (§5); D9's condition
-ruled the same day (Jason: "17.3.5 will wait for CR-069"): 17.3.5 ships with CR-069, not only phases 0 to 2; not started. Proposed
+ruled the same day (Jason: "17.3.5 will wait for CR-069"): 17.3.5 ships with CR-069, not only phases 0 to 2. Phase 0 DONE 2026-10-31 (§10; Jason: "start CR-069"). Proposed
 2026-10-31, drafted by Claude Fable 5.1 (session docx4j-12) from Jason's rulings of the same day on the
 four questions the portfolio's review of LlamaIndex's Document Parsing Protocol put to him (paper §7.13; WD 0.44, drafted
 and uncommitted: REQ-521, REQ-607, REQ-710, §9.2 `text.formatting_join`, §4 NOTE, Appendix B). Jason's rulings: (a) the
@@ -127,7 +127,7 @@ follow; `InspectionReport.optionsPhrase` shows them when non-default.
 - **Fixtures** (phase 0): `dpp-forks.docx` and Word's re-save `dpp-forks-word365.docx`, the caps probes and their
   Word text saves (default encoding and UTF-8 where made), the bisect `C0n.txt` saves, copied from the share into
   `docx4j-core-tests/src/test/resources/text-extraction/dpp/`; `expected-tokens.tsv` rows for the new tokens
-  (`JACKSON`, `ROBERTS` accepted under plain text; `İSTANBUL FİLM` for the tr-TR case; `Jackson` stored under
+  (`ROBERTS` under plain text, §10.3 item 4; `İSTANBUL FİLM` for the tr-TR case; `Jackson` stored under
   `small_caps: asis` and `JACKSON` under `upper`; the drop-cap `The` and `C02_`; `48,210` and `3` as the block
   model's two runs); the `word-text` profile's expected text equal to Word's saves byte for byte where WD-001 let
   Word write one.
@@ -210,5 +210,94 @@ accepted as presented, 2026-10-31 (Jason).
 - The probes and Word's saves: `~/vbShares/Office 2016/dpp-forks/` (`dpp-forks.docx`, `dpp-forks-word365.docx`,
   `dpp-forks.pdf`, `bisect/`, `caps-lang*.docx` and `.txt`).
 - CR-046 (the text model), CR-050 (the inspector; §2.3 the kinds table), CR-068 (manual redline).
-- ECMA-376 Part 1 §17.3.2.5 `caps`, §17.3.2.33 `smallCaps`, §17.3.2.42 `vertAlign`, §17.3.1.11 `framePr`
-  (`dropCap`, `lines`); clause numbers to be checked at phase 0.
+- ECMA-376 Part 1 (5th edition, 2016) §17.3.2.5 `caps`, §17.3.2.33 `smallCaps`, §17.3.2.42 `vertAlign`,
+  §17.3.1.11 `framePr` (`dropCap`, `lines`), and §17.3.2.20 `lang`, §17.3.2.37 `strike`, §17.3.2.9 `dstrike`;
+  checked against the PDF at phase 0.
+
+## 10. Phase 0 (2026-10-31; Jason: "start CR-069")
+
+### 10.1 What was built
+
+The suite is `docx4j-core-tests/src/test/resources/text-extraction/dpp/`; its `README.md` is the record of the files
+and of how they are read.
+
+- **Fixtures**, from the share as Word left them: `dpp-forks.docx` and Word's re-save `dpp-forks-word365.docx` (every
+  row is on the re-save); `bisect/`, the ten single-case files with Word's text save of each and the request Jason ran;
+  `caps/`, the ten caps probes Word saved (`4b`, `5`, `6a`, `6b`, `7b` to `7g`) with their twelve saves, windows-1252
+  and, where made, UTF-8 with a byte order mark. The probes WD-001 kept from saving are not there; nor is Word's PDF,
+  read only for the paper. `.gitattributes` marks the saves `-text`, so they stay Word's bytes.
+- **Tables** in phase 0's protocol (`GOLDENS.md`, the same columns, fixtures named relative to the folder): 34 token
+  rows (12 on the probe, 22 on the caps probes, case 5 for each), 8 findings rows (`paragraph.drop_cap_joined` on the
+  probe and on `bisect/C02`, `text.formatting_join` on C04 and C07 of the probe and of the bisect files,
+  `text.near_background` on C08 and C09), 2 goldens (the probe's plain text and Markdown in the default options, cut by
+  hand from today's output with this CR's changes made), and a new table, `word-saves.tsv`, 22 of Word's saves against
+  the text under `profile: word-text`.
+- **Harness** (`ExtractionConformance`): the optional `word-saves.tsv` and `verifyWordSave`, WD REQ-1002's NOTE made
+  exact (the save decoded by its byte order mark, else the code page the row names; the extraction passed through that
+  encoding, so that a character the code page lacks is `?` on both sides; lines compared, a line ending at CR LF, CR,
+  LF or tab, which is Word's CR LF paragraphs and CR cells against the specification's LF and tabs; every character
+  and every break must agree); the scenarios `small_caps`, `drop_caps` and `profile` (REQ-607, REQ-521, REQ-1002); a
+  pending row names the CR-069 phase that builds it (REQ-607 1, REQ-521 2, REQ-710 3, the capability
+  `text.formatting_join` 4). `TextsAdapter` advertises REQ-1002 (the preset since WD 0.41; its `drop_caps` and
+  `small_caps` rows also cite REQ-521 and REQ-607) and reads a Word-saved package without the builder's fixed ZIP
+  timestamp, which only `ExtractionFixtureChecks` asks of the built probes.
+- **Tests** (`ExtractionConformanceTest`): `dppSuiteIsCheckedOrPendingOnItsPhase` (the suite run; what holds now
+  passes, every pending row names a CR-069 phase) and `wordSaveIsReadByItsEncodingAndComparedByLine` (the decoding, the
+  code page's `?`, a lost cell break, the invariant mapping and a mislabelled encoding each fail). 14/14 in the class;
+  phase 0's own suite unchanged at 1736 passed, 36 pending.
+
+### 10.2 Today's docx4j against the oracle
+
+docx4j 17.3.5-SNAPSHOT (1a0b5315c) under `profile: word-text`: nine of the ten single-case saves agree with Word's
+(control, C02 to C04, C06 to C10; C02 only because nothing joins yet); C05 differs by the case mapping alone
+(`Jackson`, `Roberts` against Word's `JACKSON`, `ROBERTS`). Of the caps probes, `4b` (a `w:lang` with no case
+property) agrees in both encodings, and every other differs on exactly its caps and small-caps runs. On these files
+the comparison has nothing to absorb beyond the residue REQ-1002's NOTE names, and nothing differs that this CR does
+not change. The suite reports 11 assertions passed (control, C03, C04, C08, C09 and C10's saves; the two
+`text.near_background` rows; the literal `H₂O` of `caps-lang5` in three views) and 181 pending: 118 on phase 1, 7 on
+phase 2, 52 on phase 3 (the two goldens among them), 4 on phase 4.
+
+### 10.3 Departures from §3.6 as written
+
+1. **"Byte for byte" (D7)** is read as REQ-1002's NOTE reads a Word save (WD 0.45 onward): decoded, then compared
+   with the residue made exact (§10.1). Nothing the page or Word's text shows is excused: every character, Word's `?`
+   included, and every break between paragraphs and cells.
+2. **Their own tables, not `phase0/expected-tokens.tsv`.** Phase 0's tables are the builder's
+   (`ExtractionProbeBuilder` writes them, a test compares them with its output) and keyed by the built probe's cases;
+   these fixtures are Word's files. The protocol and columns are the same, so a port's harness runs the folder as it
+   is, and `word-saves.tsv` is optional to it as `expected-order.tsv` is.
+3. **No token rows for the drop cap** (`The`, `C02_`): REQ-1201 removes whitespace, so no token or golden can tell a
+   joined drop cap from two paragraphs. The join is checked by the warning row, by Word's C02 save under `word-text`
+   (`drop_caps: asis`: `T`, then `he C02_ ...`) and by `DropCapJoinTest` (phase 2), which reads the blocks.
+4. **`JACKSON` is not "accepted under plain text"**, as §3.6 said: it is the small-caps run, so by ruling (d) the
+   default writes `Jackson` and `small_caps: upper` writes `JACKSON` (the rows; §3.6 corrected).
+5. **A `text.formatting_join` row's selector is its excerpt**, the joined token (`1.3161.335`, `48,2103`), since the
+   adapter names a finding by its subject first and §3.4's subject ("the two parts") has no form yet. Phase 4 settles
+   it; if the finding gets a subject, the four rows' selector becomes it.
+6. **A caps probe's label can hold its token** (`caps-lang6b`'s `(STRASSE or STRAßE)`, `caps-lang7e`'s `on istanbul
+   film`): the counts are of the whole file, labels included. Every caps row was checked against Word's own save before
+   it was written (the ones whose token the code page cannot hold, against the UTF-8 reading of the `?`).
+
+### 10.4 The WD cross-checked (the CR cites 0.44; the WD is 0.49, docx4j-portfolio a993e46)
+
+REQ-521, REQ-607, REQ-710, §9.2's `text.formatting_join` row and the `drop_caps` and `small_caps` option rows are
+unchanged from 0.44 to 0.49; REQ-801's list gained `text.unencodable` (0.45) beside `paragraph.drop_cap_joined`. Four
+points for the phases:
+
+- **REQ-710's last sentence**: "A `w:footnoteReference` or `w:endnoteReference` is a reference (REQ-503), not a
+  superscript." §3 did not say so. Phases 1 and 3 build to it: a note reference's run is read as a reference whatever
+  its style's `w:vertAlign` (the `FootnoteReference` style raises it), so no `<sup>` around `[n]` in Markdown and no
+  `text.formatting_join` at it; the phase 0 probe's note cases are where phase 3 tests it.
+- **REQ-607's language chain** is the run's `w:lang`, else its styles', else the document defaults', else
+  `w:themeFontLang`, else the implementation's default, as D3 has it. §3.2's "the paragraph's" means the paragraph
+  style's run properties: the paragraph mark's own `w:rPr` applies to the mark, not to the runs.
+- **REQ-1002's preset** names `math: unicodemath` (since 0.41), which docx4j does not implement and documents
+  (`TextOptions.Profile`); not this CR's.
+- **REQ-711** (0.45) governs only bytes docx4j writes; Word's saves here are read under its NOTE, as §10.3 says.
+
+### 10.5 Hand-offs
+
+The registry (`docx4j/CR-069` in progress, phase 0 done) to the portfolio session. The ports hear at phase 1, as §8
+says, now with the folder to copy: the four tables, the fixtures and Word's saves, and the comparison rule
+(`dpp/README.md`); the portfolio may want the folder as the WD suite's fixture for these statements (WD 0.44's history
+row: "[PROBE] gains no fixture yet (the `dpp-forks` Word re-save is the candidate)").

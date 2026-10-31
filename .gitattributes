@@ -40,3 +40,7 @@ docx4j-docx-anon/src/main/java/org/docx4j/anon/ScrambleText.java text eol=lf
 # CR-036's chart templates are Office's parts byte for byte (a CRLF after the declaration, as
 # Excel writes it): never converted.
 docx4j-core/src/main/resources/org/docx4j/model/chart/templates/** -text
+
+# CR-069's oracle: Word's own Save As text, compared as Word wrote it (windows-1252 or UTF-8 with a byte order mark,
+# CRLF lines, CR cells): never converted.
+docx4j-core-tests/src/test/resources/text-extraction/dpp/**/*.txt -text

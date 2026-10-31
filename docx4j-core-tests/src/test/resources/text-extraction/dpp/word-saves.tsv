@@ -1,0 +1,23 @@
+fixture	case	save	encoding	scenario	statements	note
+bisect/control.docx	0	bisect/control.txt	windows-1252	profile: word-text	REQ-1002	no case: the control
+bisect/C02.docx	2	bisect/C02.txt	windows-1252	profile: word-text	REQ-1002, REQ-521	drop_caps: asis: T, then he C02_ ...
+bisect/C03.docx	3	bisect/C03.txt	windows-1252	profile: word-text	REQ-1002	the strike and the underline lost; the space kept
+bisect/C04.docx	4	bisect/C04.txt	windows-1252	profile: word-text	REQ-1002, REQ-605	each cell ended by a lone CR: 1.3161.335
+bisect/C05.docx	5	bisect/C05.txt	windows-1252	profile: word-text	REQ-1002, REQ-607	small_caps: upper: JACKSON ... ROBERTS
+bisect/C06.docx	6	bisect/C06.txt	windows-1252	profile: word-text	REQ-1002, REQ-602, REQ-710	baseline H2O x2 1st; the literal U+2082 written ? (the code page lacks it), U+00B2 kept
+bisect/C07.docx	7	bisect/C07.txt	windows-1252	profile: word-text	REQ-1002, REQ-710	48,2103
+bisect/C08.docx	8	bisect/C08.txt	windows-1252	profile: word-text	REQ-1002	the black-highlighted name printed
+bisect/C09.docx	9	bisect/C09.txt	windows-1252	profile: word-text	REQ-1002	the black-shaded number printed
+bisect/C10.docx	10	bisect/C10.txt	windows-1252	profile: word-text	REQ-1002	the red run plain
+caps/caps-lang4b.docx	5	caps/caps-lang4b.txt	windows-1252	profile: word-text	REQ-1002, REQ-607	w:lang tr-TR without caps: stored
+caps/caps-lang4b.docx	5	caps/caps-lang4b-utf8.txt	UTF-8	profile: word-text	REQ-1002, REQ-607	
+caps/caps-lang5.docx	5	caps/caps-lang5.txt	windows-1252	profile: word-text	REQ-1002, REQ-607, REQ-602	H?O: the code page lacks U+2082
+caps/caps-lang5.docx	5	caps/caps-lang5-utf8.txt	UTF-8	profile: word-text	REQ-1002, REQ-607, REQ-602	H₂O
+caps/caps-lang6a.docx	5	caps/caps-lang6a.txt	windows-1252	profile: word-text	REQ-1002, REQ-607	?STANBUL F?LM: U+0130 outside the code page
+caps/caps-lang6b.docx	5	caps/caps-lang6b.txt	windows-1252	profile: word-text	REQ-1002, REQ-607	STRAßE, CAFÉ, ISTANBUL FILM with no w:lang
+caps/caps-lang7b.docx	5	caps/caps-lang7b.txt	windows-1252	profile: word-text	REQ-1002, REQ-607	STRAßE
+caps/caps-lang7c.docx	5	caps/caps-lang7c.txt	windows-1252	profile: word-text	REQ-1002, REQ-607	?STANBUL F?LM
+caps/caps-lang7d.docx	5	caps/caps-lang7d-utf8.txt	UTF-8	profile: word-text	REQ-1002, REQ-607	ﬁNE CAFÉ Ǆ
+caps/caps-lang7e.docx	5	caps/caps-lang7e-utf8.txt	UTF-8	profile: word-text	REQ-1002, REQ-607	İSTANBUL FİLM from small caps
+caps/caps-lang7f.docx	5	caps/caps-lang7f-utf8.txt	UTF-8	profile: word-text	REQ-1002, REQ-607	JACKSON from caps
+caps/caps-lang7g.docx	5	caps/caps-lang7g-utf8.txt	UTF-8	profile: word-text	REQ-1002, REQ-607	JACKSON from small caps

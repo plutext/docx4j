@@ -1,0 +1,11 @@
+﻿M01_ caps-lang7f: ten plain ASCII paragraphs as in caps-lang7a, plus one word with w:caps in M10. Prediction (hypothesis 4: a case property plus about 390 characters or eight paragraphs): refused.
+M02_ The quick brown fox jumps over the lazy dog; pack my box with five dozen liquor jugs. Paragraph 2 of ten, plain text with no formatting at all.
+M03_ The quick brown fox jumps over the lazy dog; pack my box with five dozen liquor jugs. Paragraph 3 of ten, plain text with no formatting at all.
+M04_ The quick brown fox jumps over the lazy dog; pack my box with five dozen liquor jugs. Paragraph 4 of ten, plain text with no formatting at all.
+M05_ The quick brown fox jumps over the lazy dog; pack my box with five dozen liquor jugs. Paragraph 5 of ten, plain text with no formatting at all.
+M06_ The quick brown fox jumps over the lazy dog; pack my box with five dozen liquor jugs. Paragraph 6 of ten, plain text with no formatting at all.
+M07_ The quick brown fox jumps over the lazy dog; pack my box with five dozen liquor jugs. Paragraph 7 of ten, plain text with no formatting at all.
+M08_ The quick brown fox jumps over the lazy dog; pack my box with five dozen liquor jugs. Paragraph 8 of ten, plain text with no formatting at all.
+M09_ The quick brown fox jumps over the lazy dog; pack my box with five dozen liquor jugs. Paragraph 9 of ten, plain text with no formatting at all.
+M10_ The last paragraph holds one formatted word: JACKSON and nothing else.
+M11_ end.

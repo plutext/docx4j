@@ -198,8 +198,24 @@ public final class ExtractionConformance {
             case "markup_detail": return Set.of("REQ-702");
             case "page_markers": return Set.of("REQ-708");
             case "layout": return Set.of("REQ-709");
+            case "drop_caps": return Set.of("REQ-521");
+            case "small_caps": return Set.of("REQ-607");
+            case "profile": return Set.of("REQ-1002");
             default: throw new IllegalArgumentException("Unknown scenario: " + scenario);
         }
+    }
+    /**
+     * CR-069's statements (WD 0.44) and the phase of that CR each lands in: REQ-607 the case mapping (1), REQ-521 the
+     * drop-cap join (2), REQ-710 the superscript tags (3), the inspector kind text.formatting_join (4), a capability
+     * as CR-047 is.
+     */
+    static final Map<String, Integer> CR069 = Map.of("REQ-607", 1, "REQ-521", 2, "REQ-710", 3, "text.formatting_join", 4);
+    /** Why a check pends: CR-069's latest phase among the missing statements, else CR-046's phase or the inspector. */
+    static String pendingReason(Set<String> requirements, Set<String> missing) {
+        int cr069 = 0;
+        for (String req : missing) cr069 = Math.max(cr069, CR069.getOrDefault(req, 0));
+        if (cr069 > 0) return "CR-069 phase " + cr069;
+        return phase(requirements) == 9 ? "the inspector (CR-050)" : "phase " + phase(requirements);
     }
     static int phase(Set<String> requirements) {
         int result = 1;
@@ -228,7 +244,7 @@ public final class ExtractionConformance {
             if (!ready) {
                 pending++;
                 report.add(row.get("fixture") + "\t" + row.get("case") + "\t" + item + "\t" + view + "\t" + scenario
-                        + "\tPENDING\t" + (phase(requirements) == 9 ? "the inspector (CR-050)" : "phase " + phase(requirements))
+                        + "\tPENDING\t" + pendingReason(requirements, missing)
                         + "; " + String.join(", ", missing) + (engine == null ? "; Texts adapter not installed" : ""));
             }
             return ready;
@@ -310,6 +326,15 @@ public final class ExtractionConformance {
             Output output = run.output(dir, row, row.get("view"), row.get("scenario"), row.get("format"));
             verifyGolden(dir.resolve(row.get("golden")), output.text);
             run.pass(row, item, row.get("view"), row.get("scenario"));
+        }
+        // CR-069 phase 0: Word's own Save As text of a fixture against the text under its scenario (profile: word-text)
+        Path saves = dir.resolve(WORD_SAVES);
+        if (Files.exists(saves)) for (Map<String, String> row : table(saves)) {
+            String item = "word save:" + row.get("save");
+            if (!run.ready(row, item, "accepted", row.get("scenario"), rowRequirements(row))) continue;
+            Output output = run.output(dir, row, "accepted", row.get("scenario"), "txt");
+            verifyWordSave(dir.resolve(row.get("save")), row.get("encoding"), output.text);
+            run.pass(row, item, "accepted", row.get("scenario"));
         }
         Files.createDirectories(report.toAbsolutePath().getParent());
         Files.write(report, run.report, StandardCharsets.UTF_8);
@@ -461,6 +486,35 @@ public final class ExtractionConformance {
             actual = imageDestinations(actual);
         }
         equal(normalize(golden), normalize(actual), file.toString());
+    }
+    /** The table of Word's own text saves (dpp/README.md): fixture, case, save, encoding, scenario, statements, note. */
+    static final String WORD_SAVES = "word-saves.tsv";
+    /**
+     * Word's Save As text of a fixture against an extraction, as WD REQ-1002's NOTE reads one: decoded by its byte
+     * order mark (the table's encoding {@code UTF-8}, which must have one), else in the saving system's ANSI code page
+     * (the table names it, {@code windows-1252} on the VM, and the file must have no mark); the extraction passed through
+     * that encoding, so that a character the code page lacks is Word's {@code ?} on both sides; then compared line by
+     * line, where a line ends at CR LF, CR, LF or a tab, since Word ends a paragraph CR LF and a cell CR where the
+     * specification writes LF and a tab (the residue the NOTE names), and trailing empty lines are dropped. Everything
+     * else, every character and every break between paragraphs or cells, must agree.
+     */
+    public static void verifyWordSave(Path save, String encoding, String actual) throws Exception {
+        byte[] bytes = Files.readAllBytes(save);
+        boolean bom = bytes.length >= 3 && (bytes[0] & 0xff) == 0xEF && (bytes[1] & 0xff) == 0xBB && (bytes[2] & 0xff) == 0xBF;
+        java.nio.charset.Charset charset = java.nio.charset.Charset.forName(encoding);
+        if (bom != charset.equals(StandardCharsets.UTF_8))
+            throw new AssertionError(save + ": " + (bom ? "a byte order mark, but the table says " + encoding : "no byte order mark, but the table says UTF-8"));
+        String word = bom ? new String(bytes, 3, bytes.length - 3, StandardCharsets.UTF_8) : new String(bytes, charset);
+        List<String> expected = wordSaveLines(word), got = wordSaveLines(new String(actual.getBytes(charset), charset));
+        for (int i = 0; i < Math.max(expected.size(), got.size()); i++) {
+            String e = i < expected.size() ? expected.get(i) : "<end>", g = i < got.size() ? got.get(i) : "<end>";
+            if (!e.equals(g)) throw new AssertionError(save + ": line " + (i + 1) + ": Word wrote [" + e + "], the extraction [" + g + "]");
+        }
+    }
+    static List<String> wordSaveLines(String text) {
+        List<String> lines = new ArrayList<>(Arrays.asList(text.split("\r\n|\r|\n|\t", -1)));
+        while (!lines.isEmpty() && lines.get(lines.size() - 1).isEmpty()) lines.remove(lines.size() - 1);
+        return lines;
     }
     private static final Pattern IMAGE = Pattern.compile("!\\[((?:\\\\.|[^\\]\\\\])*)\\]\\([^)]*\\)");
     /**

@@ -1,0 +1,5 @@
+L01_ caps-lang6 bisect, half B (L05 to L07). Does Word's text save uppercase with the run's language?
+L05_ de-DE caps sharp s: STRAßE (STRASSE or STRAßE)
+L06_ en-US caps accent: CAFÉ (the ligature and digraph case is left out: outside Windows-1252)
+L07_ no w:lang, caps: ISTANBUL FILM
+L08_ end.

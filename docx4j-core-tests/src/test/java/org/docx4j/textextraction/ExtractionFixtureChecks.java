@@ -157,14 +157,22 @@ final class ExtractionFixtureChecks {
     }
 
     static Map<String, byte[]> entries(byte[] zipBytes) throws Exception {
+        return entries(zipBytes, true);
+    }
+
+    /**
+     * A package's members; {@code built}, a package the builder wrote, also with its fixed timestamp
+     * (ExtractionProbeBuilder.put), which a package Word saved does not have (CR-069's dpp suite).
+     */
+    static Map<String, byte[]> entries(byte[] zipBytes, boolean built) throws Exception {
         require(zipBytes != null, "Missing package");
         Map<String, byte[]> out = new LinkedHashMap<>();
-        Map<String, Integer> dosTimes = dosTimes(zipBytes);
+        Map<String, Integer> dosTimes = built ? dosTimes(zipBytes) : Map.of();
         try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
             ZipEntry e;
             while ((e = zip.getNextEntry()) != null) {
                 require(!out.containsKey(e.getName()), "Duplicate ZIP member");
-                require(Integer.valueOf(DOS_1980).equals(dosTimes.get(e.getName())), "ZIP timestamp " + e.getName());
+                if (built) require(Integer.valueOf(DOS_1980).equals(dosTimes.get(e.getName())), "ZIP timestamp " + e.getName());
                 out.put(e.getName(), zip.readAllBytes());
             }
         }
