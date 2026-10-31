@@ -680,7 +680,7 @@ The answers, the same day:
   (core-ts CR-018), where docx4j's is to the second. Implementation waits for Jason's go. It asks that
   `DocumentDescription` stay stable through the port (it ports the version at 8a98c78e7) and that the `cr068/`
   fixtures stay byte-stable (the builder dates every entry 1980).
-- **docx4j-mcp**: `manual_redline_to_tracked_changes` built (branch `cr068-manual-redline`, 19689d6, its
+- **docx4j-mcp**: `manual_redline_to_tracked_changes` built (branch `cr068-manual-redline`, c04d3e8 (first reported as 19689d6, before a rebase), its
   CR-mcp-server.md section 22; registry `mcp/manual-redline-tool`): the vocabulary's parameters mapped to
   `ManualRedlineOptions` by name, `dry_run` as `preview`, a JSON null date writing no date, the result
   `ManualRedlineReport.toJson()`. `ManualRedlineToolTest` (7) pins this CR's numbers (18 deletions, 17 runs, byKind
