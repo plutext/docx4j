@@ -42,7 +42,7 @@ reopened.
 - The caps probes (`caps-lang6a`, `6b`, `7b`, `7c`, `7d`, `7e`; `Office 2016/dpp-forks/` on the share, texts beside
   them): capitals for `w:caps` and `w:smallCaps`; `İSTANBUL FİLM` under tr-TR for both; `ISTANBUL FILM` under en-US and
   with no `w:lang`; `STRAßE`; `CAFÉ`; `ﬁNE CAFÉ Ǆ`. Every one is a golden for phase 0.
-- WD-001 (`docx4j-portfolio/docs/word_defects.md`): Word's text save fails silently when a run holding or producing a
+- WD-001 (`docx4j-portfolio/docs/word_defects.md`, commit 2e1ad98): Word's text save fails silently when a run holding or producing a
   character outside the default code page starts at character 246 or later (CR LF units). It bounds how the oracle's
   text saves can be made, not what this CR builds.
 
@@ -195,8 +195,11 @@ Jason has ruled (a) to (d) as the Status line says; these are the docx4j-side de
 ## 9. Sources
 
 - The paper, `../docx4j-portfolio/docs/text_extraction_behaviour_model.md` §7.13 (the DPP review, the rows, the
-  measurements, the seventy caps-lang probes); `docs/word_defects.md` WD-001.
-- WD 0.44 (uncommitted at drafting): REQ-521, REQ-607, REQ-710, §9.2 `text.formatting_join`, §4 NOTE, Appendix B.
+  measurements, the seventy caps-lang probes), docx4j-portfolio commit 09502ce.
+- WD 0.44 (`docs/text_extraction_specification_wd.md`, the same commit 09502ce): REQ-521, REQ-607, REQ-710,
+  §9.2 `text.formatting_join`, §4 NOTE, Appendix B.
+- WD-001, `docs/word_defects.md` with the three reproducers in `docs/word_defects/` (caps-lang17-R246a refused,
+  caps-lang17-R245b saved, caps-lang18-P2 refused), docx4j-portfolio commit 2e1ad98.
 - The probes and Word's saves: `~/vbShares/Office 2016/dpp-forks/` (`dpp-forks.docx`, `dpp-forks-word365.docx`,
   `dpp-forks.pdf`, `bisect/`, `caps-lang*.docx` and `.txt`).
 - CR-046 (the text model), CR-050 (the inspector; §2.3 the kinds table), CR-068 (manual redline).

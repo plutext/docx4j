@@ -214,8 +214,9 @@ views (Jason: not view-sensitive).
 
 ## 10. Sources
 
-- The paper, `../docx4j-portfolio/docs/text_extraction_behaviour_model.md` §7.13 (31 October 2026), and the
-  `dpp-forks.docx` probe (Office 2016/dpp-forks/ on the share); docx4j's rows and views in that section.
+- The paper, `../docx4j-portfolio/docs/text_extraction_behaviour_model.md` §7.13 (31 October 2026; docx4j-portfolio
+  commit 09502ce, with WD 0.43 and 0.44), and the `dpp-forks.docx` probe (Office 2016/dpp-forks/ on the share);
+  docx4j's rows and views in that section.
 - CR-043 (`CR-043-tracked-changes-accept-reject-api.md`) §3.1 (the API), §3.2 (what accept and reject do), §3.5
   (tests and the oracle), §4 (the fixtures and the probe).
 - CR-046 (the text model's three views), CR-050 (the inspection; the proposed `text.formatting_join` kind).
