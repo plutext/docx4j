@@ -1,0 +1,32 @@
+CR-068 phase 0 probe: the base: a manual redline, nothing tracked. Built by docx4j (ManualRedlineProbeBuilder); the text of each case starts with its tag, M01 to M17.
+M01 Rate: 1.316 1.335 per cent.
+M02 cell:1.3161.335M03 The Supplier shall deliver the Goods within 30 days of the Order Date. Late delivery incurs no penalty. Late delivery incurs a penalty of 2 per cent a week.
+M04 ItemPriceWidget$40.00 $35.00Gadget$12.00Gizmo$99.00M05 style-struck words then plain words.
+M06 style strike turned off by the run then plain.
+M07 struck inserted words after the insertion.
+M08 Quoted: Version 2 (every run of the field struck).
+M08b Quoted: simple field (a struck run in a fldSimple).
+M09 See example.com/old-terms example.com/new-terms for the terms.
+M10 A text box follows, and a footnote1: 
+M11 This whole paragraph is struck through, its mark too.
+M11 after: the paragraph after the struck one.
+M12 The party shall promptly notify the other.
+M13 Fee: EUR 500 EUR 450 a month.
+M14 first struck run, second struck run, kept words, third struck run end.
+M15 Before old A	old B
+old C after.
+M16 A comment is anchored on these words.[CB1]
+M17 Party: Acme Pty Ltd Acme Holdings Pty Ltd.
+End of the probe.
+1 M10 footnote: the rate is 1.316 1.335.
+[CB1]M16 comment: withdrawn remark, kept remark.
+---------------
+
+------------------------------------------------------------
+
+---------------
+
+------------------------------------------------------------
+
+M10 header: Draft Final version
+
