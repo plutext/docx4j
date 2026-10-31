@@ -1,8 +1,10 @@
 # CR-045: `w:val="on"` and `"off"` read as their booleans (ST_OnOff)
 
-Status: PROPOSED 2026-10-16 (Jason's request, relayed by the docx4j-core-ts session: "write a change
-request for the ST_OnOff on/off bug ... implementing it waits for his decision").  One phase (§4);
-decisions in §6.
+Status: SUPERSEDED 2026-11-01 by CR-060 (COMPLETE 2026-10-24, shipping in 17.3.5), which fixed this defect on Word's
+measured reading; checked item by item in §8 (Jason: "if you are satisfied that CR-045 is entirely superseded by
+CR-060, then please mark it so"). Nothing of this CR is to be built. PROPOSED 2026-10-16 (Jason's request, relayed by
+the docx4j-core-ts session: "write a change request for the ST_OnOff on/off bug ... implementing it waits for his
+decision").  One phase (§4); decisions in §6.
 
 ## 1. The defect
 
@@ -101,3 +103,27 @@ Not affected: math's on/off (`org.docx4j.math.CTOnOff`, bound to the `STOnOff` e
 - docx4j-core-ts: this CR's number (it asked); once it lands, a parity fixture with `on`/`off` can be
   added on both sides.
 - docx4j-python, docx4j-generated-objects-ts: the same spellings, if their parsers differ.
+
+## 8. Superseded by CR-060 (2026-11-01)
+
+CR-060 (run properties read as Word reads them; COMPLETE 2026-10-24, in 17.3.5) took this defect up from Word 365's
+measured reading and built it. Each item of this CR against it:
+
+- **§3, `BooleanDefaultTrue.val` and `BooleanDefaultFalse.val`**: bound to `OnOffAdapter` (docx4j-generated-objects,
+  annox on the field, the field types and getters unchanged). Checked 2026-11-01 on VERSION_17_3_5:
+  `<w:b w:val="off"/>` and `<w:wordWrap w:val="off"/>` read `isVal()` false and re-marshal as `w:val="false"`.
+- **§3, the other `ST_OnOff` attributes (D1, "all")**: 46 of the 48 `xsd:boolean` attributes, CR-060 §8. Its recorded
+  departure: `w:activeWritingStyle/@w:checkStyle` and `w:readModeInkLockDown/@w:actualPg`, required attributes XJC
+  makes primitive `boolean`, which an adapter cannot bind without changing two public signatures; settings Word keeps
+  for itself, which docx4j never reads.
+- **§4 and D2, the spellings**: this CR proposed jsonix-CR-007's set (`true`, `false`, `1`, `0`, `on`, `off`; anything
+  else null with a warning). CR-060 measured Word instead (§1, rule 1): off for exactly `false`, `off` or `0`,
+  case-sensitive and untrimmed; anything else on (`" false"`, `OFF`, `no` among it). Word's reading is the one to
+  follow, and CR-060 handed it to core-ts, docx4j-python, objects-ts and jsonix the same day.
+- **§4, the tests**: CR-060's `OnOffAttributesTest` (every attribute, fifteen spellings), `InspectOnOffTest` and
+  `RunPropertiesWord365Test` (the resolver, the text model, HTML and PDF following); `WmlBooleanDefaultsTest` (CR-059)
+  unchanged. MOXy: CR-060 ran a scratch probe; checked again 2026-11-01 under docx4j-JAXB-MOXy (EclipseLink 4.0.9):
+  `off` reads false and saves `false`, with no `ConversionException` and no validation event, where §1 measured both.
+- **§5, the risks**: the adapter replaces the runtime's own boolean parse (CR-060 §8: no cost of note); MOXy checked.
+- **D3, when**: 17.3.5, by CR-060.
+- **§7, the hand-offs**: CR-060's, the same day; this CR's number, which core-ts asked for, now points here.
