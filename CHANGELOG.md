@@ -27,6 +27,12 @@ Claude Opus 5.5
 Changes in Version 17.3.5
 --------------------------
 
+* Text model under markup_detail: author_date (WD 0.46 REQ-702): a revision's or comment's date is the
+  author's local time from w:date, without the Z Word stores there (2026-10-31T11:00:00), with the UTC
+  offset where dateUtc gives it (2026-10-31T11:00:00+11:00); dateUtc alone is written with Z, and a mark
+  with no date writes its author alone. TextRevision.getDate() and TextComment.getDate() return that form
+  (they returned w:date as stored). TrackedChange.getAuthorLocalTime() and getAuthorOffset() give the
+  author's clock beside getDate()'s instant; RevisionDates has the rule.
 * Text model, for a host that reads embedded objects itself (CR-070, WD 0.47): an object run carries a
   TextObject (TextRun.getObject(): kind EMBED/LINK/CONTROL, relationship id, part, content type, ProgID,
   and an OLE 1.0 package's label, file name and command); TextOptions.embeddedFilter decides, object by

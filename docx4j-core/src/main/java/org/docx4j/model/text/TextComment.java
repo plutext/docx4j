@@ -47,7 +47,11 @@ public final class TextComment {
 	public String getId() { return id; }
 	public String getAuthor() { return author; }
 	public String getInitials() { return initials; }
-	/** The date as the package wrote it, or null. */
+	/**
+	 * The date as WD REQ-702 writes it ({@link TextRevision#getDate()}): {@code w:date} as the author's
+	 * local time, with the offset where the comments extensible part's {@code w16cex:dateUtc} gives it;
+	 * null for none. Until 17.3.5, {@code w:date} as stored.
+	 */
 	public String getDate() { return date; }
 	/** The {@code w:id} of the comment this one replies to ({@code w15:paraIdParent}), or null. */
 	public String getParentId() { return parentId; }

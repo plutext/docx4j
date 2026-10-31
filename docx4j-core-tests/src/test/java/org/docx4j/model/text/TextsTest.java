@@ -297,13 +297,13 @@ public class TextsTest {
 		String author = text(probe, TextOptions.of(TextView.MARKUP).markupDetail(TextOptions.MarkupDetail.AUTHOR));
 		assertTrue(author.contains("{++Probe: TC9_INSERTED ++}{--Probe: TC9_DELETED--}"));
 		String date = text(probe, TextOptions.of(TextView.MARKUP).markupDetail(TextOptions.MarkupDetail.AUTHOR_DATE));
-		assertTrue(date.contains("{++Probe, 2026-10-17T00:00:00Z: TC9_INSERTED ++}"));
+		assertTrue(date.contains("{++Probe, 2026-10-17T00:00:00: TC9_INSERTED ++}")); // w:date's Z not written (WD 0.46 REQ-702)
 		TextBlock block = blockWith(Texts.of(probe, TextOptions.of(TextView.MARKUP)), "TC9_INSERTED");
 		TextRevision inserted = null;
 		for (TextRun r : block.getRuns()) if (r.getText().contains("TC9_INSERTED")) inserted = r.getRevision();
 		assertEquals(TextRevision.Type.INSERTION, inserted.getType());
 		assertEquals("Probe", inserted.getAuthor());
-		assertEquals("2026-10-17T00:00:00Z", inserted.getDate());
+		assertEquals("2026-10-17T00:00:00", inserted.getDate());
 		assertEquals(2, block.getRevisions());
 		for (TextRun r : blockWith(Texts.of(probe, new TextOptions()), "TC9_INSERTED").getRuns()) assertNull(r.getRevision());
 	}

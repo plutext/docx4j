@@ -22,7 +22,7 @@ import java.util.Objects;
 
 /**
  * A run's revision in the {@code markup} view (WD REQ-706): {@code w:ins} and {@code w:moveTo} are
- * insertions, {@code w:del} and {@code w:moveFrom} deletions, with their author and date as written.
+ * insertions, {@code w:del} and {@code w:moveFrom} deletions, with their author and date.
  *
  * @since 17.3.4 (CR-046 phase 1)
  */
@@ -42,7 +42,13 @@ public final class TextRevision {
 
 	public Type getType() { return type; }
 	public String getAuthor() { return author; }
-	/** The date as the package wrote it ({@code w:date}), or null. */
+	/**
+	 * The date as WD REQ-702 writes it: the author's local time from {@code w:date}, its {@code Z} not
+	 * written ({@code 2026-10-31T11:00:00}), with the author's UTC offset where {@code w16du:dateUtc} gives
+	 * it ({@code 2026-10-31T11:00:00+11:00}); {@code dateUtc} with {@code Z} where there is no
+	 * {@code w:date}; null for neither. Until 17.3.5, {@code w:date} as stored, its {@code Z} included.
+	 * {@link org.docx4j.model.revisions.RevisionDates} has the rule.
+	 */
 	public String getDate() { return date; }
 
 	@Override

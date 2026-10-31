@@ -1053,8 +1053,8 @@ class WmlToMarkdown {
 		switch (textOptions.getMarkupDetail()) {
 		case AUTHOR:
 			return (author == null ? "" : author) + ": ";
-		case AUTHOR_DATE:
-			return (author == null ? "" : author) + ", " + (date == null ? "" : date) + ": ";
+		case AUTHOR_DATE: // REQ-702: a mark with no date writes its author alone
+			return (author == null ? "" : author) + (date == null ? "" : ", " + date) + ": ";
 		default:
 			return "";
 		}

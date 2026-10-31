@@ -47,7 +47,9 @@ import java.util.Objects;
  * {@code [custom properties: name: value]} (REQ-515). In the {@code markup} view, insertions are
  * {@code {++text++}}, deletions {@code {--text--}} and comments {@code {>>text<<}}, at their
  * references with their replies after them (REQ-702, REQ-504); under {@code markup_detail} the
- * marker's opening is followed by {@code author:} or {@code author, date:}.</p>
+ * marker's opening is followed by {@code author:} or {@code author, date:}, the date the author's
+ * local time with the UTC offset where the mark lets it be known ({@code 2026-10-31T11:00:00+11:00},
+ * {@link TextRevision#getDate()}), and {@code author:} alone where the mark has no date.</p>
  *
  * <p>Under {@code layout: indent} (REQ-709) a paragraph outside a table begins with four spaces for
  * each tab stop (720 twips) of its first line's indent, its left indent plus its first-line indent
@@ -195,8 +197,8 @@ public final class PlainText {
 			case AUTHOR:
 				sb.append(author == null ? "" : author).append(": ");
 				break;
-			case AUTHOR_DATE:
-				sb.append(author == null ? "" : author).append(", ").append(date == null ? "" : date).append(": ");
+			case AUTHOR_DATE: // REQ-702: a mark with no date writes its author alone
+				sb.append(author == null ? "" : author).append(date == null ? "" : ", " + date).append(": ");
 				break;
 			default:
 			}

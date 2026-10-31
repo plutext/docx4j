@@ -22,6 +22,7 @@ import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -439,10 +440,34 @@ public final class TrackedChange {
 	 * the package's client zone (OpcPackage.effectiveDateTimeZone(): its own, else the JVM-wide property, else this
 	 * JVM's, as Office JS reads it in the add-in's; CR-067 D12); an explicit non-zero offset is
 	 * read as it says. A group's is its first piece's. Null when there is none (docx4j-diffx writes
-	 * {@code w:date=""}).
+	 * {@code w:date=""}). The author's own clock, as Word shows it: {@link #getAuthorLocalTime()} and
+	 * {@link #getAuthorOffset()}.
 	 */
 	public Instant getDate() {
 		return dateOf(target.value(), zone());
+	}
+
+	/**
+	 * The author's local time when the change was made: {@code w:date} as stored, its {@code Z} not read,
+	 * since Word writes the author's wall clock there and its Reviewing Pane shows it so (WD 0.46 REQ-702;
+	 * {@link RevisionDates}). Null where there is no {@code w:date} (a mark with {@code dateUtc} alone,
+	 * which Word shows with no date). A group's is its first piece's.
+	 *
+	 * @since 17.3.5
+	 */
+	public LocalDateTime getAuthorLocalTime() {
+		return target.value() == null ? null : RevisionDates.localTime(target.value().getDate());
+	}
+
+	/**
+	 * The author's UTC offset when the change was made: {@code w:date} less {@code w16du:dateUtc}, where
+	 * the change carries both and they differ as a clock's offset can; else null ({@link RevisionDates#offset}).
+	 * With {@link #getAuthorLocalTime()} it gives the instant too, with no zone assumed.
+	 *
+	 * @since 17.3.5
+	 */
+	public ZoneOffset getAuthorOffset() {
+		return target.value() == null ? null : RevisionDates.offset(target.value().getDate(), target.value().getDateUtc());
 	}
 
 	/** The package's client zone where this change has a part, else the JVM-wide property, else the JVM default (CR-067 D12). */

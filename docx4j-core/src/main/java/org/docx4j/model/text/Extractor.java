@@ -65,6 +65,7 @@ import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.NumberingState;
 import org.docx4j.model.listnumbering.NumberingStates;
 import org.docx4j.model.revisions.ResolvedView;
+import org.docx4j.model.revisions.RevisionDates;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
@@ -1198,10 +1199,9 @@ final class Extractor {
 		return "ins".equals(name) || "moveTo".equals(name);
 	}
 
+	/** A revision with its author and its stamp as REQ-702 writes it: the author's local time, the offset where known. */
 	private static TextRevision revision(CTTrackChange tc, TextRevision.Type type) {
-		String date = null;
-		if (tc.getDate() != null) date = tc.getDate().toXMLFormat();
-		return new TextRevision(type, tc.getAuthor(), date);
+		return new TextRevision(type, tc.getAuthor(), RevisionDates.text(tc.getDate(), tc.getDateUtc()));
 	}
 
 	private void run(R r, Paragraph para, RunState state) {
@@ -1822,8 +1822,7 @@ final class Extractor {
 				if (ins != null) {
 					org.docx4j.wml.CTMathRunTrackChange tc = (org.docx4j.wml.CTMathRunTrackChange) ((JAXBElement<?>) item).getValue();
 					int i = ins ? 1 : 0;
-					if (out[i] == null) out[i] = new TextRevision(ins ? TextRevision.Type.INSERTION : TextRevision.Type.DELETION,
-							tc.getAuthor(), tc.getDate() == null ? null : tc.getDate().toXMLFormat());
+					if (out[i] == null) out[i] = revision(tc, ins ? TextRevision.Type.INSERTION : TextRevision.Type.DELETION);
 				}
 				return true;
 			}
@@ -2292,6 +2291,7 @@ final class Extractor {
 		if (ext != null && ext.getJaxbElement() != null) {
 			for (CTCommentEx ex : ext.getJaxbElement().getCommentEx()) if (ex.getParaId() != null) extended.put(ex.getParaId().toUpperCase(Locale.ROOT), ex);
 		}
+		Map<String, XMLGregorianCalendar> dateUtcByParaId = commentDatesUtc(main);
 		Map<String, String> idByParaId = new HashMap<String, String>();
 		Set<String> anchored = anchoredComments(main);
 		for (Comments.Comment c : part.getJaxbElement().getComment()) {
@@ -2303,10 +2303,10 @@ final class Extractor {
 			TextComment comment = new TextComment(id);
 			comment.author = c.getAuthor();
 			comment.initials = c.getInitials();
-			comment.date = c.getDate() == null ? null : c.getDate().toXMLFormat();
 			String prefix = root + "comment:" + id;
 			blocks(c.getContent(), prefix, new Story(TextBlock.Story.COMMENT, prefix, part), comment.blocks);
 			String paraId = lastParaId(c.getContent());
+			comment.date = RevisionDates.text(c.getDate(), paraId == null ? null : dateUtcByParaId.get(paraId.toUpperCase(Locale.ROOT)));
 			if (paraId != null) {
 				idByParaId.put(paraId.toUpperCase(Locale.ROOT), id);
 				CTCommentEx ex = extended.get(paraId.toUpperCase(Locale.ROOT));
@@ -2356,6 +2356,26 @@ final class Extractor {
 		anchors.setMcMode(org.docx4j.jaxb.McMode.ALL);
 		for (Object root : roots) if (root != null) new org.docx4j.TraversalUtil(root, anchors);
 		return ids;
+	}
+
+	/**
+	 * Each comment's {@code w16cex:dateUtc}, by its last paragraph's {@code w14:paraId}: the comments
+	 * ids part gives the paragraph's durable id, the comments extensible part the durable id's date.
+	 */
+	private static Map<String, XMLGregorianCalendar> commentDatesUtc(MainDocumentPart main) {
+		Map<String, XMLGregorianCalendar> out = new HashMap<String, XMLGregorianCalendar>();
+		if (main.getCommentsIdsPart() == null || main.getCommentsIdsPart().getJaxbElement() == null
+				|| main.getCommentsExtensiblePart() == null || main.getCommentsExtensiblePart().getJaxbElement() == null) return out;
+		Map<String, XMLGregorianCalendar> byDurableId = new HashMap<String, XMLGregorianCalendar>();
+		for (org.docx4j.w16cex.CTCommentExtensible ce : main.getCommentsExtensiblePart().getJaxbElement().getCommentExtensible()) {
+			if (ce.getDurableId() != null && ce.getDateUtc() != null) byDurableId.put(ce.getDurableId().toUpperCase(Locale.ROOT), ce.getDateUtc());
+		}
+		for (org.docx4j.w16cid.CTCommentId ci : main.getCommentsIdsPart().getJaxbElement().getCommentId()) {
+			if (ci.getParaId() == null || ci.getDurableId() == null) continue;
+			XMLGregorianCalendar utc = byDurableId.get(ci.getDurableId().toUpperCase(Locale.ROOT));
+			if (utc != null) out.put(ci.getParaId().toUpperCase(Locale.ROOT), utc);
+		}
+		return out;
 	}
 
 	private static String lastParaId(List<Object> content) {
