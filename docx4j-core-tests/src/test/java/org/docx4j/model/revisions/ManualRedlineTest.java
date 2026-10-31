@@ -154,7 +154,7 @@ public class ManualRedlineTest {
 		}
 	}
 
-	private static String partXml(WordprocessingMLPackage pkg, String name) throws Exception {
+	static String partXml(WordprocessingMLPackage pkg, String name) throws Exception {
 		Object part = pkg.getParts().get(new org.docx4j.openpackaging.parts.PartName(name));
 		return XmlUtils.marshaltoString(((org.docx4j.openpackaging.parts.JaxbXmlPart<?>) part).getJaxbElement(), true, false);
 	}

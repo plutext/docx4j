@@ -1,0 +1,13 @@
+CR-068 phase 2 probe: the second base, nothing tracked. Built by docx4j (ManualRedlineProbeBuilder); the text of each case starts with its tag, N01 to N10.
+N01 The party shall promptly notify the other.
+N02 Fee: EUR 450 a month.
+N03 Term: two years.
+N04 Note: urgent item.
+N05 Colour: blue words stay.
+N06 Underline: no underline stays.
+N07 Style: then plain.
+N08 Remove the last word
+N09 Replace the old.
+N10 A comment is anchored on these words.[CB1]
+End of the second probe.
+[CB1]N10 comment: added kept.

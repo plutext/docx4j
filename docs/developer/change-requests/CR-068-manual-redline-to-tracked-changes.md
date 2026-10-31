@@ -7,8 +7,8 @@ separating space) and D9 revisited (delete a struck mark whose paragraph convert
 ACCEPTED 2026-10-31 (Jason: "D13 and D9 as recommended", §8.5); D14 (the comments opt-in keeps its strike, §8.6)
 proposed for phase 2; phase 1 DONE 2026-10-31 (§11: `ManualRedline`, its options and report,
 `Texts.addresses`; held to Word 365's Accept All and Reject All of the phase 0 prediction and, §11.6, of docx4j's own
-conversion), but for the Getting Started sentence (§11.5); phase 2 BUILT 2026-10-31 (Jason: "do phase 2"; §12:
-the opt-ins, D14 to D16 taken as recommended), Word's third run pending.
+conversion), but for the Getting Started sentence (§11.5); phase 2 DONE 2026-10-31 (Jason: "do phase 2"; §12:
+the opt-ins; D14 to D16 accepted, "D14–D16 are good"; held to Word's third run, §12.6); phase 3 (the hand-offs) next.
 Proposed the same day, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's direction, relayed by the
 portfolio session from its review of LlamaIndex's Document Parsing Protocol (the
 paper's §7.13; the `dpp-forks` probe): "strikethrough handling is NOT view-sensitive (Accept All and Reject All leave
@@ -416,7 +416,7 @@ the strike away (Word's text saves still resolve it: Accept All `M16 comment: ke
 
 | # | Decision | Recommendation |
 |---|---|---|
-| D14 | The comments story under `comments(true)` (phase 2) | Keep the strike on a converted run in a comment (D6 not applied there), so that Word's comment card, which shows no tracked-change marks, still shows the text struck; Reject All then gives the base back as it was; to be confirmed by Word in phase 2 |
+| D14 | The comments story under `comments(true)` (phase 2) | Keep the strike on a converted run in a comment (D6 not applied there), so that Word's comment card, which shows no tracked-change marks, still shows the text struck; Reject All then gives the base back as it was (built §12, accepted) |
 
 **Phase 0: DONE 2026-10-31.** Phase 1 waits on D13 and D9 (revisited); its goldens are Word's saves here, read by
 the text model, and Word's reject-all docx for D6.
@@ -600,7 +600,7 @@ holding `w:del`; D14 in the comment (strike and underline kept) against the main
 and the preview; colours (two named, `auto` refused, any case); a bookmark's range; a control's range (M17); parts;
 the audit property, and none from a preview. With `ManualRedlineTest`'s 15, 25.
 
-### 12.5 Decisions from phase 2 (taken as recommended with "do phase 2"; Jason may overrule)
+### 12.5 Decisions from phase 2 (taken as recommended with "do phase 2"; accepted by Jason: "D14–D16 are good")
 
 | # | Decision | As built |
 |---|---|---|
@@ -610,6 +610,24 @@ the audit property, and none from a preview. With `ManualRedlineTest`'s 15, 25.
 
 The gate: docx4j-core-tests 2290 run, 0 failures, 30 skipped.
 
-### 12.6 Word's third run
+### 12.6 Word's third run (2026-10-31, Word 365 16.0.20326 on the VM)
 
-(Pending: Jason runs `cr068-probe.ps1` again (`RUN.txt`, third part) and looks at the comment cards.)
+Jason ran `cr068-probe.ps1` a third time at 15:54 ("third word run done; D14–D16 are good"). Word opened both
+conversions and listed 29 revisions in the first (23 in the main story, 2 in the footnote, 1 in the comment, 2 in
+the text box, 1 in the header) and 10 in the second, all `manual redline` at 11:00 but M07's; it lists the space
+between a deletion and its insertion with both (`1.316 ` deleted, ` 1.335` inserted), as text inserted and deleted
+is. Accept All and Reject All left none. Word's text saves: Accept All `M01 Rate: 1.335 per cent.`, `M05 then plain
+words.`, `M12 The party shall promptly notify the other.`, `N01 The party shall promptly notify the other.`, `N03
+Term: two years.`, `N08 Remove the last word`, the comments `kept remark.` and `added kept.`; Reject All `M01 Rate:
+1.316 per cent.`, `M12 The party shall notify the other.`, `N01 The party shall notify the other.`, `N03 Term: one
+year.`, `N07 Style: double struck by its style then plain.`, the comments as they were; no two spaces in either
+outcome but the base's own M07. D15's space is gone in both, as predicted.
+
+The goldens (`word-phase2-*`, `word-phase2b-*`) are in `revisions/cr068/`; `ManualRedlineOptInsTest.asWordResolvedTheOptIns`
+holds docx4j's conversion of each base, accepted and rejected by docx4j, to Word's (`DocumentDescription`), and
+`thePhase2FilesAreTheConversion` the files Word was given to what the conversion writes. Word's save normalises three
+things in the second base as built, none of them the conversion's, which the comparison takes as Word saves them:
+N06's `w:u w:val="none"` dropped, the unreferenced footnote removed, the empty header removed. 27 tests, green in
+Maven. The comment cards were not looked at by hand; Jason accepted D14 to D16.
+
+**Phase 2: DONE.** Next, phase 3 (the hand-offs).

@@ -181,3 +181,76 @@
 15:23:00   dates story 1 #4: type 2 author 'manual redline' date 2026-10-31 11:00:00 text 'deleted D4'
 15:23:00 dates: 4 revisions in all
 15:23:00 done
+15:54:07 Word 16.0 build 16.0.20326, user 'Author A'
+15:54:07 manual-redline-word.docx there already: skipped
+15:54:07 word-base-asis.txt there already: skipped
+15:54:07 word-base-accept-all.docx there already: skipped
+15:54:07 word-base-reject-all.docx there already: skipped
+15:54:07 word-default-asis.txt there already: skipped
+15:54:07 word-default-accept-all.docx there already: skipped
+15:54:07 word-default-reject-all.docx there already: skipped
+15:54:07 word-optins-asis.txt there already: skipped
+15:54:07 word-optins-accept-all.docx there already: skipped
+15:54:07 word-optins-reject-all.docx there already: skipped
+15:54:07 word-d9-asis.txt there already: skipped
+15:54:07 word-d9-accept-all.docx there already: skipped
+15:54:07 word-d9-reject-all.docx there already: skipped
+15:54:07 word-own-asis.txt there already: skipped
+15:54:07 word-own-accept-all.docx there already: skipped
+15:54:07 word-own-reject-all.docx there already: skipped
+15:54:07 word-phase1-asis.txt there already: skipped
+15:54:07 word-phase1-accept-all.docx there already: skipped
+15:54:07 word-phase1-reject-all.docx there already: skipped
+15:54:07 manual-redline-phase2.docx opened
+15:54:08   phase2 story 1 #1: type 2 author 'manual redline' date 2026-10-31 11:00:00 text '1.316 '
+15:54:08   phase2 story 1 #2: type 1 author 'manual redline' date 2026-10-31 11:00:00 text ' 1.335'
+15:54:08   phase2 story 1 #3: type 2 author 'manual redline' date 2026-10-31 11:00:00 text '1.316'
+15:54:08   phase2 story 1 #4: type 1 author 'manual redline' date 2026-10-31 11:00:00 text '1.335'
+15:54:08   phase2 story 1 #5: type 2 author 'manual redline' date 2026-10-31 11:00:00 text 'Late delivery incurs no penalty. '
+15:54:08   phase2 story 1 #6: type 1 author 'manual redline' date 2026-10-31 11:00:00 text 'Late delivery incurs a penalty of 2 per cent a week.'
+15:54:08   phase2 story 1 #7: type 2 author 'manual redline' date 2026-10-31 11:00:00 text '$40.00 '
+15:54:08   phase2 story 1 #8: type 1 author 'manual redline' date 2026-10-31 11:00:00 text ' $35.00'
+15:54:08   phase2 story 1 #9: type 2 author 'manual redline' date 2026-10-31 11:00:00 text 'Gizmo'
+15:54:08   phase2 story 1 #10: type 2 author 'manual redline' date 2026-10-31 11:00:00 text '$99.00'
+15:54:08   phase2 story 1 #11: type 2 author 'manual redline' date 2026-10-31 11:00:00 text 'style-struck words '
+15:54:08   phase2 story 1 #12: type 1 author 'CR-068 base' date 2026-10-30 09:00:00 text 'struck inserted words'
+15:54:08   phase2 story 1 #13: type 2 author 'manual redline' date 2026-10-31 11:00:00 text 'example.com/old-terms'
+15:54:08   phase2 story 1 #14: type 2 author 'manual redline' date 2026-10-31 11:00:00 text ' '
+15:54:08   phase2 story 1 #15: type 2 author 'manual redline' date 2026-10-31 11:00:00 text 'M11 This whole paragraph is struck through, its mark too.\r'
+15:54:08   phase2 story 1 #16: type 1 author 'manual redline' date 2026-10-31 11:00:00 text 'promptly '
+15:54:08   phase2 story 1 #17: type 2 author 'manual redline' date 2026-10-31 11:00:00 text 'EUR 500 '
+15:54:08   phase2 story 1 #18: type 1 author 'manual redline' date 2026-10-31 11:00:00 text ' EUR 450'
+15:54:08   phase2 story 1 #19: type 2 author 'manual redline' date 2026-10-31 11:00:00 text 'first struck run, second struck run, '
+15:54:08   phase2 story 1 #20: type 2 author 'manual redline' date 2026-10-31 11:00:00 text 'third struck run '
+15:54:08   phase2 story 1 #21: type 2 author 'manual redline' date 2026-10-31 11:00:00 text 'old A\told B\vold C '
+15:54:08   phase2 story 1 #22: type 2 author 'manual redline' date 2026-10-31 11:00:00 text 'Acme Pty Ltd '
+15:54:08   phase2 story 1 #23: type 1 author 'manual redline' date 2026-10-31 11:00:00 text ' Acme Holdings Pty Ltd'
+15:54:08   phase2 story 2 #1: type 2 author 'manual redline' date 2026-10-31 11:00:00 text '1.316 '
+15:54:08   phase2 story 2 #2: type 1 author 'manual redline' date 2026-10-31 11:00:00 text ' 1.335'
+15:54:08   phase2 story 4 #1: type 2 author 'manual redline' date 2026-10-31 11:00:00 text 'withdrawn remark, '
+15:54:08   phase2 story 5 #1: type 2 author 'manual redline' date 2026-10-31 11:00:00 text '$40.00 '
+15:54:08   phase2 story 5 #2: type 1 author 'manual redline' date 2026-10-31 11:00:00 text ' $35.00'
+15:54:08   phase2 story 7 #1: type 2 author 'manual redline' date 2026-10-31 11:00:00 text 'Draft '
+15:54:09 phase2: 29 revisions in all
+15:54:09 phase2 accept all: 0 revisions left
+15:54:10 phase2 reject all: 0 revisions left
+15:54:10 manual-redline-2-phase2.docx opened
+15:54:10   phase2b story 1 #1: type 1 author 'manual redline' date 2026-10-31 11:00:00 text 'promptly '
+15:54:10   phase2b story 1 #2: type 2 author 'manual redline' date 2026-10-31 11:00:00 text 'EUR 500 '
+15:54:10   phase2b story 1 #3: type 1 author 'manual redline' date 2026-10-31 11:00:00 text ' EUR 450'
+15:54:10   phase2b story 1 #4: type 1 author 'manual redline' date 2026-10-31 11:00:00 text 'two years '
+15:54:10   phase2b story 1 #5: type 2 author 'manual redline' date 2026-10-31 11:00:00 text ' one year'
+15:54:10   phase2b story 1 #6: type 2 author 'manual redline' date 2026-10-31 11:00:00 text 'double struck by its style '
+15:54:10   phase2b story 1 #7: type 2 author 'manual redline' date 2026-10-31 11:00:00 text ' here'
+15:54:10   phase2b story 1 #8: type 2 author 'manual redline' date 2026-10-31 11:00:00 text ' term'
+15:54:10   phase2b story 4 #1: type 2 author 'manual redline' date 2026-10-31 11:00:00 text 'withdrawn '
+15:54:10   phase2b story 4 #2: type 1 author 'manual redline' date 2026-10-31 11:00:00 text ' added'
+15:54:10 phase2b: 10 revisions in all
+15:54:11 phase2b accept all: 0 revisions left
+15:54:11 phase2b reject all: 0 revisions left
+15:54:11   dates story 1 #1: type 2 author 'manual redline' date 2026-10-31 00:00:00 text 'deleted D1'
+15:54:11   dates story 1 #2: type 2 author 'manual redline' date 1899-11-30 00:00:00 text 'deleted D2'
+15:54:11   dates story 1 #3: type 2 author 'manual redline' date 2026-10-31 00:00:00 text 'deleted D3'
+15:54:11   dates story 1 #4: type 2 author 'manual redline' date 2026-10-31 11:00:00 text 'deleted D4'
+15:54:11 dates: 4 revisions in all
+15:54:11 done

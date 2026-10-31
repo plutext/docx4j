@@ -110,6 +110,57 @@ public class ManualRedlineOptInsTest {
 		assertEquals(null, n02.getRPr().getStrike());
 	}
 
+	/**
+	 * Both bases converted with the opt-ins, as Word resolved them (CR-068 section 12.6): docx4j's
+	 * conversion, accepted and rejected by docx4j, describes as Word 365's Accept All and Reject All of
+	 * the same conversion saved ({@code manual-redline-phase2.docx}, {@code manual-redline-2-phase2.docx}).
+	 */
+	@Test
+	public void asWordResolvedTheOptIns() throws Exception {
+		assertAsWord(ManualRedlineTest.base(), "phase2");
+		assertAsWord(second(), "phase2b");
+	}
+
+	private static void assertAsWord(WordprocessingMLPackage pkg, String key) throws Exception {
+		ManualRedline.toTrackedChanges(pkg, all());
+		pkg = ManualRedlineTest.copy(pkg);
+		for (boolean accept : new boolean[] { true, false }) {
+			WordprocessingMLPackage c = ManualRedlineTest.copy(pkg);
+			if (accept) TrackedChanges.acceptAll(c);
+			else TrackedChanges.rejectAll(c);
+			String ours = DocumentDescription.of(ManualRedlineTest.copy(c));
+			if (key.equals("phase2b")) ours = asWordSavesTheSecondBase(ours);
+			String word = DocumentDescription.of(TrackedChangesWordTest.load(ManualRedlineTest.DIR + "word-" + key + (accept ? "-accept-all.docx" : "-reject-all.docx")));
+			assertEquals(key + (accept ? " accept all" : " reject all"), word, ours);
+		}
+	}
+
+	/**
+	 * What Word's save normalises in the second base as built, none of it the conversion's: N06's
+	 * {@code w:u w:val="none"} (a run the conversion leaves alone) dropped, the footnote no reference
+	 * points to removed, and the empty default header removed with its reference.
+	 */
+	private static String asWordSavesTheSecondBase(String description) {
+		return description.replace("«N06 Underline: »«no underline»{u=none}« stays.»", "«N06 Underline: no underline stays.»")
+				.replace("== footnotes\n  -- note\n  P style=FootnoteText | « »\n", "")
+				.replace("== section 1 header default\n  P | «»\n", "")
+				.replace("== header parts: 1, footer parts: 0", "== header parts: 0, footer parts: 0");
+	}
+
+	/** The files Word was given are what the conversion writes (their story parts as docx4j reads them). */
+	@Test
+	public void thePhase2FilesAreTheConversion() throws Exception {
+		for (String[] f : new String[][] { { "manual-redline.docx", "manual-redline-phase2.docx" }, { "manual-redline-2.docx", "manual-redline-2-phase2.docx" } }) {
+			byte[] base = java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(
+					ManualRedlineOptInsTest.class.getClassLoader().getResource(ManualRedlineTest.DIR + f[0]).toURI()));
+			WordprocessingMLPackage built = WordprocessingMLPackage.load(new java.io.ByteArrayInputStream(ManualRedlineProbeBuilder.convert(base, all())));
+			WordprocessingMLPackage committed = TrackedChangesWordTest.load(ManualRedlineTest.DIR + f[1]);
+			for (String name : new String[] { "/word/document.xml", "/word/footnotes.xml", "/word/header1.xml", "/word/comments.xml" }) {
+				assertEquals(f[1] + name, ManualRedlineTest.partXml(committed, name), ManualRedlineTest.partXml(built, name));
+			}
+		}
+	}
+
 	/** The space between a deletion and the insertion replacing it is inserted and deleted: in neither outcome. */
 	@Test
 	public void theSpaceBetweenADeletionAndItsInsertion() throws Exception {
