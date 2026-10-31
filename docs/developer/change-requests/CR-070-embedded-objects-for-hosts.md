@@ -153,7 +153,7 @@ Where the WD is silent, decided in building (each for the WD, sent to the portfo
 
 The portfolio folded points 1 to 7 and 9 into the WD 0.47 draft the same day (REQ-512, REQ-522, REQ-801,
 REQ-905; the history row corrected, [PROBE] citing 1560ab379 for the table; registry fff933d); point 8 stays
-docx4j's. The WD awaits Jason's commit.
+docx4j's. WD 0.46 and 0.47 committed, docx4j-portfolio fb26239 (registry 9b13698): the text CR-070 is built to.
 
 Tests: `EmbeddedObjectsTest` (9: the probe's five objects described; an OLE 1.0 package's names, and none
 for a binary that is not one; a linked object; a `w:control` in `w:pict` and an ActiveX `o:OLEObject`; no
