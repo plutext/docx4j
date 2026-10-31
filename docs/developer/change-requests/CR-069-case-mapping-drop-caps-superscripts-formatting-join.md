@@ -201,6 +201,10 @@ accepted as presented, 2026-10-31 (Jason).
   measurements, the seventy caps-lang probes), docx4j-portfolio commit 09502ce.
 - WD 0.44 (`docs/text_extraction_specification_wd.md`, the same commit 09502ce): REQ-521, REQ-607, REQ-710,
   §9.2 `text.formatting_join`, §4 NOTE, Appendix B.
+- WD 0.45 (docx4j-portfolio commit 3693c44): REQ-711, a serialization's encoding (UTF-8 without a byte order mark
+  unless the caller names one; a character the encoding lacks replaced and reported as `text.unencodable`, never
+  lost silently), and Appendix B's Encoding row with the caps-lang measurement (Word's default cp1252, `?` for what
+  it lacks, a UTF-8 save with a byte order mark): how Word's text saves, this CR's goldens, are to be read.
 - WD-001, `docs/word_defects.md` with the three reproducers in `docs/word_defects/` (caps-lang17-R246a refused,
   caps-lang17-R245b saved, caps-lang18-P2 refused), docx4j-portfolio commit 2e1ad98.
 - The probes and Word's saves: `~/vbShares/Office 2016/dpp-forks/` (`dpp-forks.docx`, `dpp-forks-word365.docx`,
