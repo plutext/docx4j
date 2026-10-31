@@ -487,8 +487,8 @@ row: "[PROBE] gains no fixture yet (the `dpp-forks` Word re-save is the candidat
    (`<sub>~~*x*~~</sub>`).
 2. **A code span inside the tags** (`` <sup>`f()`</sup> ``): tags inside it would be its text, which is what §3.2's
    "no tags inside a code span" guards. A code block (REQ-703's fence) has no tags: its text is literal, so a raised
-   run there is its baseline characters, as in plain text. REQ-710's "MUST be written … as `<sup>`" cannot hold
-   inside a fence; a WD point (§13.4).
+   run there is its baseline characters, as in plain text. REQ-710's "MUST be written … as `<sup>`" could not hold
+   inside a fence; WD 0.55 (docx4j-portfolio 2adc557) now says so in the statement, with item 1 (§13.4).
 3. **A note's reference is never wrapped.** In the text model it is a reference run, not a text run, and has no
    alignment (§11.2 item 6). In HTML a run holding `w:footnoteReference`, `w:endnoteReference`, `w:footnoteRef` or
    `w:endnoteRef` stays a span whatever raises it; its number is the raised link both writers already wrote.
@@ -513,9 +513,10 @@ row: "[PROBE] gains no fixture yet (the `dpp-forks` Word re-save is the candidat
 
 ### 13.4 Hand-offs
 
-- **The portfolio**: the registry note (phase 3 done); two WD points for REQ-710: a raised run in a code block,
-  where the MUST cannot hold (item 2), and the tags outside the emphasis (item 1), for a NOTE if Markdown
-  implementations are to agree byte for byte.
+- **The portfolio**: the registry note (phase 3 done; registered 899ff72); two WD points for REQ-710, both taken in
+  WD 0.55 (2adc557), in the statement: the tags enclose the run's emphasis and a code span, and in a fenced code
+  block the run is its stored characters on the baseline (items 1 and 2); a note reference "is never wrapped". Its
+  NOTE gives the flanking reason and records items 4 and 5; no conformance row moves.
 - **docx4j-core-ts, docx4j-python**: the tags and their nesting, the code span and the code block, the note
   reference, and the dpp rows that now pass.
 - **docx4j-tika**: its own phase 3 (`<sup>`/`<sub>` in its XHTML) reads `TextRun.getVerticalAlignment()`;
