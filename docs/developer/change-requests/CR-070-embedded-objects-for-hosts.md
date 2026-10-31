@@ -151,6 +151,10 @@ Where the WD is silent, decided in building (each for the WD, sent to the portfo
    packages REQ-512 reads and REQ-522's filter admits"; an inspection is the package's, not the host's,
    so this is left for the WD.
 
+The portfolio folded points 1 to 7 and 9 into the WD 0.47 draft the same day (REQ-512, REQ-522, REQ-801,
+REQ-905; the history row corrected, [PROBE] citing 1560ab379 for the table; registry fff933d); point 8 stays
+docx4j's. The WD awaits Jason's commit.
+
 Tests: `EmbeddedObjectsTest` (9: the probe's five objects described; an OLE 1.0 package's names, and none
 for a binary that is not one; a linked object; a `w:control` in `w:pict` and an ActiveX `o:OLEObject`; no
 filter and a null one read every object; a filter declining one of two in a paragraph, the runs and
