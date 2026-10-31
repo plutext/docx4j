@@ -8,7 +8,7 @@ Version 17.3.5
 Release date
 ------------
 
-[]
+1 November 2026
 
 Contributors to this release
 ----------------------------
@@ -27,398 +27,79 @@ Claude Opus 5.5
 Changes in Version 17.3.5
 --------------------------
 
-* Text model (CR-069): w:caps text is written in capitals in plain text and Markdown, by the run's language
-  (a Turkish i as İ) and one character to one as Word does (ß stays ß); small caps stays as stored unless
-  small_caps: upper. The plain text of a document with All Caps runs changes. TextRun gains isCaps(),
-  isSmallCaps(), getVerticalAlignment() and getLanguage(); CaseMapping has the mapping.
-* Text model (CR-069): a drop cap is joined to the word it begins ("The", not "T" and "he" as two
-  paragraphs), with the warning paragraph.drop_cap_joined; drop_caps: asis keeps the two. The word-text
-  profile sets drop_caps: asis and small_caps: upper.
-* Markdown export writes superscript and subscript runs in <sup> and <sub> (outside the emphasis, never around
-  a note reference); plain text keeps them on the baseline. A double-struck run (w:dstrike) is struck through
-  in the text model, ~~ in Markdown (CR-069).
-* HTML output (both writers): a superscript or subscript run is a sup or sub element, where it was a span,
-  with its class and CSS kept, so it is drawn as before; a run holding a note reference stays a span (CR-069).
-* The inspector reports text.formatting_join where struck, superscript or subscript digits meet a
-  neighbouring digit with nothing between, so the plain text forms a number the page does not show
-  (1.3161.335): unseen in plain text, info in Markdown and the block model (CR-069).
-* PlainText's grid tables (tables: grid) size their columns in code points, not UTF-16 units, so a cell
-  holding an emoji or another character beyond the BMP no longer pads one short (WD 0.48 REQ-605, REQ-205).
-* Text model under markup_detail: author_date (WD 0.46 REQ-702): a revision's or comment's date is the
-  author's local time from w:date, without the Z Word stores there (2026-10-31T11:00:00), with the UTC
-  offset where dateUtc gives it (2026-10-31T11:00:00+11:00); dateUtc alone is written with Z, and a mark
-  with no date writes its author alone. TextRevision.getDate() and TextComment.getDate() return that form
-  (they returned w:date as stored). TrackedChange.getAuthorLocalTime() and getAuthorOffset() give the
-  author's clock beside getDate()'s instant; RevisionDates has the rule.
-* HTML output (both writers): an <ins> or <del> datetime is the change's date in that same form (WD 0.57
-  REQ-705); it was w:date as stored, whose Z Word writes on the author's clock.
-* Text model, for a host that reads embedded objects itself (CR-070, WD 0.47): an object run carries a
-  TextObject (TextRun.getObject(): kind EMBED/LINK/CONTROL, relationship id, part, content type, ProgID,
-  and an OLE 1.0 package's label, file name and command); TextOptions.embeddedFilter decides, object by
-  object, which embedded objects embedded: true reads; altchunk.not_expanded carries the chunk's part
-  name, now its selector (it was the content type), and a warning raised inside an embedded package or
-  chunk names that package's or chunk's part.
-* ManualRedline.toTrackedChanges(pkg[, options]) turns a manual redline (old text struck through by
-  hand) into tracked deletions by the author "manual redline", so that Accept All drops the struck text
-  and Reject All gives it back plain; ManualRedline.preview reports what it would do. Explicit and
-  opt-in, never a text view (CR-068 phase 1). ManualRedlineOptions adds underline and named colours as
-  tracked insertions, strike from a style, the comments, a range (a content control, a bookmark, parts)
-  and an audit property (phase 2). Texts.addresses(pkg, options) maps what the text model reads to its
-  block addresses.
-* A CSS font-weight of normal or lighter no longer costs a NumberFormatException: Bold tried
-  Integer.parseInt on every value other than bold and bolder. ImportXHTML reads font-weight for
-  every run and paragraph, so this was tens of thousands of exceptions for a large document. The
-  result (w:b) is unchanged.
-* The inspector (Inspect.of, CR-050) reports an integer attribute outside the width Word stores it in as
-  value.out_of_range, one finding per attribute with the element, the value, the storage, the range and what
-  Word reads (a hanging indent for a first-line one that wrapped, an atLeast line for an exact one, a clamped
-  tab stop); the per-attribute widths of CR-066 are the resource word-integer-storage.tsv (CR-066 phase 4).
-  An inspection no longer logs the marshal-time range WARNs for the parts it reads.
-* InspectionReport.markdown(Inspect.of(pkg), "file.docx") writes an inspection for a person, as Markdown:
-  the findings under their groups (active, unseen, omitted, info) for an output, each with what its kind
-  is, where it is, its text, whether a person sees it and how to extract it; then what was skipped and
-  what no static inspection detects (CR-050 phase 5).
-* Content lists refuse a misplaced child at the point of the mistake, with the fix in the message
-  (CR-064; ArrayListDocx4j.checkParent, IllegalArgumentException): a run, Text, Drawing, Br, cell or
-  row added to the body, a cell, a header, a footer, a footnote, a comment, a text box or block-level
-  sdt content; a table, paragraph, Text, Drawing or Br added to a paragraph, hyperlink, field,
-  insertion, deletion, smart tag or run-level sdt content; a cell, paragraph or run added to a table,
-  a paragraph or run to a row; a property object (PPr, RPr, SectPr, TblPr, TrPr, TcPr) added to
-  content instead of set; a String added to any of these. A JAXBElement is tested by its value, so
-  the wrapped forms are caught too. Each rule names a class the schema never allows there, so no
-  legal document is refused on load (gated on the test suite and a 454-document corpus). Also refused
-  (the addendum): DelText where Text is, a run-level Tab where Br is, and a content control at the
-  wrong level (SdtBlock, CTSdtRow or CTSdtCell in run content; SdtRun, CTSdtRow or CTSdtCell in block
-  content; any in a run; any but CTSdtRow in a table, any but CTSdtCell in a row); a TcPr refused
-  outside a cell names its container. Before,
-  only a table, paragraph or Text in a paragraph or hyperlink, and a run, paragraph or table in a
-  run, were refused; the rest reached Word as "unreadable content".
-  The check caught one such mistake in docx4j itself: the export preprocessor's run-border container
-  (Containerization) was a block-level sdt holding runs; it is a run-level sdt now, same output.
-* Every integer attribute of WordprocessingML is read as Word reads it, in the JAXB binding
-  (CR-065 phase 2; org.docx4j.wml.LenientInteger bound by xsd/bindings.xjb to ST_DecimalNumber,
-  ST_TwipsMeasure, ST_SignedTwipsMeasure, the half-point, eighth-point, point, text-scale and pixel
-  types and w:sz): a decimal is truncated toward zero (720.5 is 720, -121.5 is -121,
-  141.99999999999994 is 141; measured on Word 365), the empty string and a bare sign or dot are 0, and a form Word refuses
-  (surrounding whitespace, a comma, hex, an exponent, letters) drops that attribute with a WARN
-  instead of failing the part. Before, a decimal in an attribute off mc-preprocessor.xslt's fixed
-  rounding list made the part unreadable, and the listed ones were rounded half-even (141.5 to
-  142, where Word reads 141). The stylesheet's list stays but no longer fires for a decimal. A part
-  logs one INFO line with what it read leniently. The Java type stays BigInteger.
-* An integer attribute value outside Word's 16-bit range is reported, at save and at load (CR-066
-  phases 1 and 2; measured on Word 365: w:ind/@w:left="7205001" is -3959 twips to Word, w:sz 70000 is
-  4464). One WARN line per part with the count, the first few values and Word's reading; the value is
-  written as held and read as written, never wrapped or clamped. Exact for the signed twips and
-  half-point types, w:sz/szCs/kern, text scale and the border types; a value outside -32768..65535 for
-  ST_TwipsMeasure; ST_DecimalNumber not reported (LenientInteger, one parse/print pair per type). The
-  line carries the code the ports share for this finding, value.out_of_range, with the storage and range.
-* TblFactory.createTable throws IllegalArgumentException for a cell width outside 0..32767 twips
-  (CR-066 D5; before, 70000 was written and Word read 4464). A CSS length converting outside its
-  attribute's range (margin-left, margin-top/bottom, line-height, letter-spacing, cell margins,
-  table indent, font-size) and a TOC tab stop beyond 22 in log a WARN and are written as computed.
-* A part whose content could not be read (its unmarshal failed, e.g. a decimal in an integer
-  attribute off the preprocessor's list) is no longer replaced by an empty one on the first edit:
-  MainDocumentPart.getContent, HeaderPart and FooterPart getContent, DocumentSettingsPart and
-  DocPropsExtendedPart throw Docx4JRuntimeException with the cause, and an untouched save keeps the
-  bytes (CR-065 phase 1; before, a save after an edit held the new content alone).
-  JaxbXmlPart.isContentUnreadable() tells the two kinds of null apart.
-* Binding writes a content control's placeholder in Word's form (CR-063): w:placeholder is kept on
-  every control (it was dropped); an empty value shows the glossary entry the control names, a copy
-  of its paragraphs as the glossary holds them, so a template's own placeholder text survives binding; a text control naming
-  none, or a missing entry, is given Word's default entry (DefaultPlaceholder_-1854013440), added to
-  the glossary, which is made where the document has none (the glossary document part and a styles
-  part holding Placeholder Text). The default's wording is Word 365's, "Click or tap here to enter
-  text."; a configured placeholder run (docx4j.model.datastorage.placeholder) becomes an entry of
-  its own. A date, drop-down list, combo box, building block gallery or repeating section item
-  naming no entry gets Word's entry for its kind ("Click or tap to enter a date.", "Choose an
-  item." ...); picture and check box controls keep today's placeholder run.
-  Where the main styles part lacks Placeholder Text, it is added as Word defines it when a placeholder
-  run is written (D10: without it Word drops the style on opening and shows the placeholder black).
-  A picture control whose bound node is empty shows docx4j's placeholder picture in Word's form (D11,
-  check 71): w:showingPlcHdr and a drawing of picture-placeholder.png, one image part per document; the
-  NonXSLT and StAX binders wrote a text run there, which Word repaired, and the XSLT binder nothing.
-* HTML output draws an underline's style (double, dotted, dashed, wavy, thick ...) and colour, a double
-  strike, and emphasis marks (w:em), through CSS text-decoration-* and text-emphasis (CR-062); a run
-  both underlined and struck through keeps both lines, in HTML and PDF (it lost its strike). PDF
-  still draws one underline style, in the text's colour, and no emphasis marks (XSL-FO has none).
-* DOCPROPERTY finds a property named in any case, as Word does: client finds Client, title the
-  title (#244).
-* VariablePrepare joins the runs a ${key} is split across whatever their formatting, so
-  variableReplace finds it (#572); variableReplace no longer throws on a ${ with no }.
-* A chartex chart in an xlsx has its size again: ChartImages.getSize, toSvg(chart) and toPng(chart, dpi)
-  threw "has no size in its anchor" for every such chart, Excel's own included, because the chart's
-  reference kept the mc:Choice's frame as its anchor rather than the cell anchor round it. Reading a
-  document with a chartex chart no longer warns, once per chart, that the chart element's parent is
-  its GraphicData: it is, by design of TraversalUtil's walk.
-* A chartex chart (a waterfall, histogram, Pareto, box and whisker, treemap, sunburst or funnel) met
-  with no chartex renderer on the classpath is now said so once: the first such chart an output
-  draws as the picture Office saved with it (its mc:Fallback, which won't show changes made to the
-  chart's data outside Office) is one WARN naming Docx4j Enterprise ChartEx, which draws, edits and
-  creates these charts; an image asked of such a chart (ChartImages) is refused with a reason that
-  names it. Nothing where a renderer is present, nothing for a region map. (ChartExNotice; the
-  edit and create classes' javadoc points the same way.)
-* Fields are evaluated in one place (CR-067 phase 0): org.docx4j.model.fields.FieldInstruction parses
-  an instruction once (name, argument, switches); FieldContext carries what an evaluator may read (the
-  package and part, a clock, the language, the user, a file name, an external resolver absent by
-  default); FieldEvaluators holds one evaluator per field name (DOCPROPERTY, DOCVARIABLE, the
-  document-information fields, SEQ, REF, QUOTE, DATE, TIME, PRINTDATE), and a caller may register its
-  own. FieldUpdater, the text extraction's `fields: update` and the PDF and HTML field writers all go
-  through it; what each evaluates is unchanged in this phase. FieldUpdater.only(names) narrows or
-  widens the set it updates. FldSimpleModel is deprecated, with the FormattingSwitchHelper and
-  writer-handler signatures that carried it (FieldInstruction overloads replace them; a handler on the
-  old interface still works). FieldsPreprocessor's result handling is one path (every result kept).
-* A time zone per package (CR-067 D12; the portfolio's date rule): OpcPackage.setDateTimeZone(ZoneId)
-  names the client's zone for a package, and every instant the package holds is shown in it, as Word
-  shows one in the machine's: a date field's (CREATEDATE, SAVEDATE, DATE, TIME, PRINTDATE), a
-  revision's w:date without w16du:dateUtc (Word's local clock), and a bound date where the package
-  opts into the conversion. Unset, the JVM-wide docx4j.model.datastorage.BindingHandler.dateTimeZone
-  property, else the JVM's default, as before. FieldContext.zone(ZoneId) overrides per call. Nothing
-  of it is saved: a server sets it per request. The bound-date conversion (CR-058 D6: Word reads the
-  picker's local-midnight Z as UTC and can show the previous day) is now its own opt-in,
-  OpcPackage.setBoundDatesConvertedAsWord(true) or the property
-  docx4j.model.datastorage.BindingHandler.boundDatesConvertedAsWord, off by default: setting the
-  zone property alone no longer converts a bound date (it did in 17.3.4).
-* More fields evaluated (CR-067 phase 1, measured against Word 365): CREATEDATE and SAVEDATE (the core
-  properties' dates, read to the minute as Word reads them, with the field's \@ switch or Word's default
-  short-date-and-time format), REVNUM, INFO (as the field it names), SECTION, NOTEREF (the number of the note
-  whose reference the bookmark holds), QUOTE, REF (a bookmark's text), and USERNAME, USERINITIALS and
-  USERADDRESS where FieldContext.user() supplies them. FieldUpdater now updates every field it has an
-  evaluator for, as Word's update-all does (until now DOCPROPERTY, DOCVARIABLE and the document
-  information fields): the above, plus DATE, TIME, PRINTDATE and SEQ; FieldUpdater.only(names) narrows
-  it. The text extraction's `fields: update` computes INFO, SECTION, NOTEREF and the user fields too.
-  PDF and HTML output paints these fields from their cached result, as Word does, and evaluates one
-  that has none. FieldUpdater writes a REF's result in the bookmark's own formatting and a NOTEREF \f in
-  the footnote reference style, as Word does; a QUOTE with no argument and a blank user address give an
-  empty result, as Word's do. A core property's date with no offset, or a date alone, is read as UTC, as
-  Word reads it (measured). FieldUpdater's PRINTDATE is the document's cp:lastPrinted, to the minute, as
-  Word's F9 shows it; a never-printed document keeps the field's cached result. PDF and HTML output paints
-  PRINTDATE at the conversion's clock, as before. The text extraction's INFO computes only what the
-  extraction computes itself (INFO Date keeps its cached result, as DATE does).
-* Formulas and conditions evaluated (CR-067 phase 2, measured against Word 365, 115 cases and a table): the
-  = field (the operators + - * / ^ %, comparisons, parentheses; ABS, AND, AVERAGE, COUNT, DEFINED, FALSE, IF,
-  INT, MAX, MIN, MOD, NOT, OR, PRODUCT, ROUND, SIGN, SUM, TRUE; a bookmark's text; in a table A1, A1:B2,
-  ABOVE, LEFT, BELOW, RIGHT; Word's default number format and error texts; the document's decimal symbol
-  and list separator), COMPARE and IF (numbers against strings, case-sensitive strings, * and ? wildcards,
-  a bare operand naming a bookmark is its text), and SET (its value stored under a bookmark of its name, as
-  Word stores it, and read by a REF, a formula or an IF after it). A nested field is evaluated first and its
-  result is an operand of the outer field, in FieldUpdater and in the text extraction's `fields: update`
-  (which computes these four too; a formula naming a table cell keeps its cached result there). PDF and HTML
-  output paints =, COMPARE and IF from their cached result and evaluates one that has none; a SET paints
-  nothing, as Word shows nothing for it, and the text extraction never shows a SET's stored result.
-* The mail mergers evaluate the merge conditionals (CR-067 phase 2, measured against Word 365's merge):
-  SKIPIF skips the record, NEXT and NEXTIF continue the letter with the next record (NEXT in MailMerger
-  too, as MailMergerWithNext had it), MERGEREC and MERGESEQ number the record and the letter (a skipped
-  or a pulled-in record not counted), SET, IF, COMPARE, REF and = over merge fields are evaluated per
-  letter, ASK and FILLIN take the caller's answers (AbstractMerger.getFieldContext().answers(), by the
-  ASK's bookmark or the FILLIN's prompt) else their \d default. Evaluated fields are unlinked to their
-  text as Word's merge does (SET and ASK removed); under KEEP_MERGEFIELD they stay as fields with their
-  results. A MERGEFIELD's \b and \f switches are honoured. Outside a merge, MERGEFIELD, MERGEREC and
-  MERGESEQ keep their cached result; FieldUpdater gives an ASK its default (defining its bookmark) and a
-  FILLIN its default.
-* An INDEX generated from the document's XE marks (CR-067 phase 3, measured against Word 365's update):
-  org.docx4j.model.fields.index.IndexGenerator sorts and groups the entries as Word does (sub-entries,
-  cross-references, page ranges, bold and italic page numbers, the \e \l \g \k \h \r \p \f and \c
-  switches, the Index 1 to 3 and Index Heading styles added where missing) and writes the field's result in
-  Word's shape; FieldUpdater regenerates every INDEX in the body with docx4j-export-fo's page numbers, or a
-  caller's pager (FieldUpdater.indexPager), and keeps the field as it is with neither.
-* More fields evaluated (CR-067 phase 3, measured against Word 365): NUMWORDS and NUMCHARS (the main story's
-  words and characters without spaces, headers and notes excluded, as Word counts them), FILENAME (with \p
-  the path) and FILESIZE (\k, \m) from FieldContext.fileName and fileSize, TEMPLATE from app.xml; in
-  FieldUpdater, the text extraction and the PDF and HTML writers. The mail mergers fill ADDRESSBLOCK and
-  GREETINGLINE from the record (Word's address-field names and their usual spellings, or the document's own
-  w:odso mapping), with Word's greeting fallbacks (first and last name, the first name, then \e); a block's
-  lines are line breaks in the one paragraph where Word writes paragraphs; a format's line breaks are real
-  line breaks, as Word writes its own (w:cr in the instruction).
-* LISTNUM, AUTONUM, AUTONUMLGL, AUTONUMOUT and SYMBOL evaluated (CR-067 phase 3, measured against Word 365's
-  PDFs, since Word writes no result for them): the list numbers computed for the document in order
-  (org.docx4j.model.fields.ListNumbers: the three named lists' shared counters, implicit parents, the level
-  from the paragraph's heading or the heading before it; AUTONUM's counters per heading level), SYMBOL's
-  character with its \f font and \s size (w:sym for a symbol font, ### for a code Word cannot read); in
-  FieldUpdater, the text extraction under fields: update, and the PDF and HTML writers, which write them
-  into their working copy before painting, as Word paints them live.
-* A source name and size per package (CR-067 D26): OpcPackage.setSourceName(String) and setSourceSize(Long)
-  name the file a package came from, as request attributes beside the zone (nothing is saved), and every
-  field context built from the package takes them as its FILENAME and FILESIZE defaults, so the text
-  extraction under fields: update and the PDF and HTML writers show what FieldUpdater writes. The mail
-  mergers evaluate a merge field written as w:fldSimple, as Word writes its own GREETINGLINE (measured).
-  The text extraction under fields: update computes ASK (its bookmark defined with the \d default, nothing
-  shown) and FILLIN (its \d default), as the OpenDoPE WD says.
-* The docx4j FO renderer (the FOP fork) is 2.11-docx4j.8: fop/CR-029, a solid cell or paragraph border
-  side is drawn without the clip that made thin rules vanish in poppler viewers (Okular, Evince) until
-  zoomed in; fop/CR-028, an SVG's references to external resources (file:, http:) are refused unless
-  the option svg-embedded-resources-only is turned off (capability 27). Gate b294 against b288: 0 movers.
-* PDF: with docx4j.fonts.fop.util.FopConfigUtil.simulate-style=false, a family with no bold face of
-  its own (every symbol font among them) was not declared to FOP under the name the FO uses, its
-  +nobold alias, and was drawn in FOP's default font: Wingdings and Symbol bullets as "#" (#701).
-* PDF: the first paragraph of a one-column section merged ahead of a multi-column one keeps its
-  space-before at the flow start (the span-all wrapper hid it from the retain rule), and where the
-  one-column part's last space-after meets the columns' first space-before the larger of the two
-  applies, as between any two paragraphs, not their sum; an empty paragraph carrying the break, which
-  Word does not draw, still spaces the pair by its own before and after, overlapping by the smaller.
-  Measured on the Enterprise licence and the span-boundary probe (Word 365, eight cases).
-* PDF: a bordered or shaded paragraph inside a block-level content control (Word's TOC gallery, a
-  template's control) keeps its paragraph borders; the border grouping (Containerization) now descends
-  into the control. Measured on the Enterprise manual: its TOC Heading, based on a Heading 1 with a
-  bottom border, lost the border and its 4.96pt once the TOC update put it in the control, which cost the
-  table of contents a line a page.
-* PDF: an inline picture is laid out at its extent plus its wp:effectExtent (the margin a shadow, glow or
-  soft edge needs), as Word lays it out: the line holding it is taller by the top and bottom extents, the
-  text after it starts further right by the left and right ones. Measured on the Enterprise manual: an
-  87pt screenshot with 4.5pt on every side sits in a 98pt line in Word's PDF; ours was 88pt.
-* PDF: a line break (w:br, w:cr) inside a footnote no longer makes FOP refuse the whole document (XSL-FO
-  forbids the block-in-inline idiom under fo:footnote; the break is a U+2028 line separator there), on
-  both pathways. Measured on the Enterprise manual, whose footnote holds two URLs on a break: the TOC
-  update and the PDF both failed before.
-* TOC update of a bare TOC field whose "TOC Heading" paragraph precedes it: the heading goes into the
-  content control with the field and is reused, instead of a second heading being generated (which also
-  carried the heading style's page break). TocIntoSdt, TocGenerator.updateToc.
-* The PDF and HTML writers no longer paint a nested field's result beside its outer field's (an IF or
-  formula over a DOCPROPERTY printed both): the field combiner folds a nested field into the outer's
-  instruction as an operand (CR-067 D31). A complex field with no separate (no stored result) is now evaluated
-  where the evaluator knows it, as a simple one was; one with a separate and nothing after it stores an empty
-  result and paints nothing, as Word's PDF does (D35, measured on a corpus template); a resultless IF is
-  dropped only where a PAGE or NUMPAGES operand leaves it undecidable before layout (D32). A field's code is evaluated without its hidden text, as
-  Word evaluates it (measured): an IF whose true branch is hidden gives an empty result.
-* Text extraction under fields: cached (the default) gives nothing for a LISTNUM, AUTONUM, AUTONUMLGL or
-  AUTONUMOUT, as Word's own plain text does (Word never stores their results; the stale stored text was
-  read before), and a SYMBOL's character in every mode. The inspector reports fields.auto_update on a DATE,
-  TIME or SAVEDATE (Word's open recomputes the document's literal IF fields when one is present, measured)
-  and fields.print_update on the fields Word's PDF export updates first (PAGE, NUMPAGES, SECTION,
-  SECTIONPAGES, PRINTDATE, REF, SEQ).
-* TextOptions.profile (OpenDoPE WD 0.41, REQ-1002): a preset of option values applied before the caller's
-  own, whichever came first; word-text is Word's Save As plain text as the options reach it (hidden text
-  in, headers, footers and comments in, text boxes out, no list labels, fields cached, tables as
-  tab-separated rows, charts, SmartArt and embedded packages off, and so on); by name too (profile:
-  word-text), as docx4j-mcp passes options.
-* FieldUpdater updates the document information fields AUTHOR, COMMENTS, KEYWORDS, LASTSAVEDBY,
-  SUBJECT and TITLE, as it does DOCPROPERTY (#277); DOCPROPERTY Keywords is read; a simple
-  DOCPROPERTY's quoted property name is found.
-* A field's name is read from its whole instruction, which Word may split across runs: a MERGEFIELD
-  written "MERGE", "FIELD name" wasn't merged. FieldRef.getInstr() gives the instruction (#634).
-* A simple field made complex (MailMerger and the migration helpers do this first) keeps its result
-  as it was: each run with its formatting, and bookmarks inside it (#78).
-* FieldUpdater and MailMerger leave the fields they don't write as they were: FieldUpdater emptied
-  a MERGEFIELD's result («name») and a DOCPROPERTY's whose property it couldn't find, and MailMerger
-  emptied every DOCPROPERTY's. A merged value with \* MERGEFORMAT takes the old result's formatting.
-* A locked field (w:fldLock) is left as it is: FieldUpdater doesn't update a locked DOCPROPERTY or
-  DOCVARIABLE, and MailMerger doesn't merge a locked MERGEFIELD; a simple field keeps its lock and
-  dirty flag when the mergers make it complex. Follows #697, which made the lock readable.
-* HTML and PDF draw a highlight in Word's colours: darkYellow 808000 (it was gold), green 00FF00,
-  lightGray C0C0C0 and the other dark ones as Word has them (Highlight.getHexVal() gave CSS's).
-* PropertyFactory (CSS to docx, as docx4j-ImportXHTML uses it): a background colour with an alpha
-  (rgba(), hsla(), "/ a", 8-digit hex) of 0 is no fill, as "transparent" is; rgba(0,0,0,0), which
-  browsers write for transparent, gave a black fill once a CSS parser read rgba() (openhtmltopdf
-  1.1.100). A partial alpha is blended over white.
-* A save writes WordprocessingML colours plainly (CR-061): a value Word accepts ("red", "ff0000",
-  "#FF0000") as upper-case RRGGBB; one it rejects ("F00", "Auto") left out of a text or underline
-  colour, where Word reads it as absent, and written "auto" in a fill, pattern, border or page
-  colour, where Word reads it as automatic; a revision's former run properties too, without the highlight,
-  vertAlign or em Word repairs away. Word's reading is unchanged. docx4j.save.normalise=false, or
-  OpcPackage.setNormaliseOnSave(false), writes them as read.
-* Run properties read as Word 365 reads them (CR-060). An on/off value (w:b, w:i and every other
-  BooleanDefaultTrue element; 44 attributes such as w:fldChar's dirty and w:text's multiLine) is off
-  for exactly false, off or 0 and on otherwise: w:val="off", which Apache POI writes (#585), read
-  and saved as on, and " false" read off. Saved as true or false. HTML and PDF: a w:u without a valid w:val, or with only a colour,
-  draws no underline; a w:color may be a classic HTML colour name ("red" is FF0000), and a value
-  Word rejects is automatic; a w:highlight outside ST_HighlightColor is none (it wrote
-  background-color:null), and doesn't override a style's. A highlight, vertAlign or em whose value
-  is missing or invalid, which Word repairs away, is left out on save. Over styles (Word 365, two
-  more rounds): w:u w:val="true" (and false, on, off, 1, 0) is no underline, and saved as none; a
-  w:color Word rejects, Auto included, leaves a style's colour (only exactly auto is automatic); a
-  character style's highlight isn't drawn; a fill or border colour may be a colour name, and one
-  Word rejects is automatic (no shading, a black border).
-* HTML output (both writers): a toggle property both a run's character style and its paragraph style
-  set, which ECMA-376 turns off, is written off on the run (bold, italic, caps, small caps, strike); a
-  browser showed it on, where Word and the PDF output have it off. Strike set by the paragraph style is
-  still drawn by the paragraph element, which the run can't undo.
-* jsoup 1.22.1 to 1.23.2 (optional; the altChunk HTML reading), with docx4j-ImportXHTML's. Its W3C DOM
-  now gives a prefixed attribute in Word's HTML (o:spid) once and in its namespace, and a mixed-case
-  RCDATA end tag keeps its content as text, as the HTML standard says.
-* Generated getters for 35 more WordprocessingML boolean attributes answer as ECMA-376 reads their
-  absence (CR-059; docx4j's schema had given them default="true" since 2008). False when absent:
-  CTBorder shadow/frame, CTEastAsianLayout combine/vert/vertCompress, CTFramePr anchorLock,
-  CTWritingStyle nlCheck, CTDocProtect formatting, Hyperlink history, CTFtnEdnRef
-  customMarkFollows, CTWriteProtection recommended, Lvl tentative, Lvl.LvlText null, Lvl.Legacy
-  legacy, FontRel subsetted, CTDocPartTypes all, CTDocPartName decorated, Style customStyle,
-  LatentStyles defLockedState/defSemiHidden/defUnhideWhenUsed, CTCaption chapNum/noLabel,
-  CTColumns sep, CTSdtText multiLine. No default, so the getter returns a Boolean, null when
-  absent: LsdException locked/semiHidden/unhideWhenUsed (they inherit from w:latentStyles),
-  CTTrackChangesView markup/comments/insDel/formatting/inkAnnotations (left to the application),
-  PPrBase.Spacing beforeAutospacing/afterAutospacing (inherited from the style, as Word reads
-  them). CTColumns equalWidth stays true when absent, as Word lays it out. StyleUtil reads
-  w:framePr's anchorLock as stated (FramePrAccess): a w:framePr with nothing set is empty, and one
-  that omits anchorLock keeps the style's. One output change: the
-  NonXSLT binder no longer turns a bound value's newline into a line break in a plain-text control
-  without w:multiLine; Word and the XSLT binder don't.
-* Fields: isFldLock() and isDirty() (w:fldChar, w:fldSimple) and CTDocProtect.isEnforcement() return
-  false when the attribute is absent; they returned true (#697). FieldRef.isLock() and isDirty() read
-  the field's begin w:fldChar; they were false unless getFormFieldProperties() had been called, so a
-  locked MERGEFIELD or DOCPROPERTY lost its result to FieldUpdater and MailMerger. A
-  documentProtection without w:enforcement is no longer reported as restricting editing.
-* MailMerger: a MERGEFIELD merged empty in a table cell no longer takes the cell's last paragraph
-  with it where a nested table or bookmark markers stand beside it, which Word reported as a
-  corrupt document (#236, #256).
-* A w:dataBinding whose w:storeItemID names no custom XML part is resolved to the part its XPath
-  fits, as Word repairs it, and the ID is written into the control as Word's save does; where no
-  part fits the control is left as it is (CR-058). One stale ID used to fail the whole bind on the
-  NonXSLT traverser and silently empty the control on the XSLT one;
-  docx4j.model.datastorage.BindingHandler.strictStoreItemIds=true restores the failure. The text
-  model reads the same part.
-* A bound date content control is formatted as Word formats it (CR-058): w:dateFormat is read as
-  Word's date picture (ddd is the weekday, am/pm gives AM/PM, h runs 1 to 12) in the language of
-  w:lid (else the document's default language), a value that is not a date is shown as stored
-  (it was today's date in red), an empty value shows the placeholder. The time is the stored
-  value's nominal time; docx4j.model.datastorage.BindingHandler.dateTimeZone converts as Word does.
-  A DATE field's h and hh now run 1 to 12 too (they printed 0 at noon), and am/pm is upper case.
-* Text model: an equation's script base deleted or inserted under tracking is read through the
-  change, so the original view and a resolved copy give the same LaTeX (mc^{2}).
-* Tracked changes, four Accept All rules measured in Word 365 (CR-043 section 17, docx4j-core-ts's
-  check 54): an emptied paragraph before a table goes; a control's last paragraph deleted whole keeps
-  a bare mark; a deleted mark before a block control takes the control's first paragraph's
-  properties; a control deleted whole (w:customXmlDelRangeStart around it, a new change kind
-  CONTENT_CONTROL_DELETION) goes with its markers. And from a second probe: a deleted mark with
-  text left and a table next joins the text into the table's first cell; a control's last
-  paragraph with its mark deleted keeps a bare mark whether or not text is left; an emptied
-  paragraph before a control goes. The text model's accepted and original views follow the same
-  rules. Word's Reject All of both probes agrees with docx4j's.
-* Tracked changes: accepting the deletion of a whole equation (or rejecting its insertion) removes
-  the emptied m:oMath and m:oMathPara, as Word does; they were left empty (found by docx4j-core-ts
-  against Word 365, check 57).
-* HTML, PDF and Markdown output: a link whose target is a script scheme (`javascript:` etc) is
-  written as its text, with no link (CR-056; cf apache/poi#1455); the schemes written are http,
-  https, ftp, mailto, file, news, tel and none, plus `docx4j.convert.out.linkSchemes`. The target
-  is read as written and with its character references decoded as a CommonMark renderer decodes a
-  link destination, so `javascript&#58;alert(1)` is refused too (found by docx4j-python and
-  docx4j-core-ts against the Markdown output).
-* HTML output: a style ID is CSS-escaped in the stylesheet's selectors (`class` attributes
-  unchanged), and no `<` is written into the stylesheet docx4j composes, so a crafted style ID
-  cannot end the `<style>` element and run script (CR-056); a style ID beginning with a digit
-  now gets a valid selector.
-* Markdown output: a tracked change's or comment's author and date in a CriticMarkup marker are
-  written as text, escaped as the renderer escapes any text (before, raw with the braces; CR-056).
-* altChunk HTML import asks docx4j-ImportXHTML (from its CR-005) to keep a chunk's links as written,
-  as Word does; the outputs refuse a `javascript:` target where it would run, and the inspector's
-  chunk scan reports it as `altchunk.script` as before.
-* `BinaryPartAbstractImage.createImageInline` escapes its alt text and filename hint: `Profit & Loss`
-  no longer fails with an UnmarshalException, and a quote in the alt text no longer adds an attribute
-  to `wp:docPr` (CR-057). A caller that escaped its alt text to survive this now sees `&amp;` in Word;
-  pass the text as is. `XmlUtils.escapeForTemplate` is the helper.
-* `convertAltChunks` no longer fetches what an HTML, XHTML or MHT chunk refers to (a stylesheet, an
-  image by URL or by local file): a docx is untrusted input wherever a server converts it (CR-057;
-  SSRF and local file read). An image not fetched is its alt text, or nothing. Behaviour change:
-  `docx4j.altchunk.html.fetch=true` restores the fetching of 17.3.4 and before, and
-  `convertAltChunks(boolean)` decides it for one call.
-* Fonts: a font cache that cannot be written (a read-only file system, a full disk,
-  `docx4j.fonts.fontcache` pointing somewhere unwritable) is logged once at WARN and the
-  conversion goes on; before, the font mapper's class failed to initialise and every PDF
-  conversion in the JVM then failed with `NoClassDefFoundError`. `docx4j.fonts.fontcache` is
-  now also read from docx4j.properties, where the reference file has listed it since 17.0.0
-  (the JVM system property wins).
-* Binding: a `w:dataBinding`'s (or OpenDoPE xpath's) own `w:prefixMappings` now win over docx4j's
-  built-in prefix table when its XPath is evaluated, so a template that binds with `p`, `a`, `x`,
-  `w` or any other prefix the table holds gets its value, not its placeholder (CR-054). The context
-  is built per evaluation (either quote, any whitespace); `NamespacePrefixMappings.registerPrefixMappings`
-  is deprecated, its JVM-wide map consulted last.
+**Bump deps**
+
+   commons-codec:commons-codec ......................... 1.19.0 -> 1.23.0
+   org.apache.commons:commons-collections4 .............   4.5.0 -> 4.6.0
+   org.apache.commons:commons-lang3 .................... 3.20.0 -> 3.21.0
+   org.slf4j:slf4j-api ................................. 2.0.18 -> 2.0.20
+   org.slf4j:jcl-over-slf4j ............................ 2.0.18 -> 2.0.20
+
+**Fields as Word computes them** (CR-067). One field evaluator now sits behind FieldUpdater, mail merge, text
+extraction and PDF/HTML output, and covers most of Word's fields, each checked against Word 365:
+- dates and document information, REF and NOTEREF, formulas (`=`), IF, COMPARE and SET;
+- LISTNUM, AUTONUM and SYMBOL, NUMWORDS, FILENAME and more.
+
+FieldUpdater updates every field it can, as Word's Update All does, and leaves locked fields alone. Mail merge
+handles SKIPIF, NEXT/NEXTIF, MERGEREC/MERGESEQ, ASK and FILLIN, and fills ADDRESSBLOCK and GREETINGLINE. An
+INDEX can be generated from the document's XE entries. A package can carry its own time zone for the dates
+it shows.
+
+**Text extraction closer to what the page shows** (CR-069, CR-070).
+- All Caps text comes out in capitals, as Word displays it.
+- A drop cap is joined to its word.
+- Markdown writes superscripts and subscripts as `<sup>`/`<sub>`.
+- The `word-text` profile reproduces Word's own Save As plain text.
+- Tracked-change and comment dates are the author's local time, as Word shows them.
+- A host reading embedded objects itself can choose which ones the text includes.
+- The inspector writes a readable Markdown report (`InspectionReport`). It also flags numbers the plain text
+  fuses together (`1.3161.335`), and attribute values Word would read differently from how they're stored.
+
+**Content control data binding** (CR-054, CR-058, CR-063).
+- Placeholders follow Word: they are kept, and taken from the glossary.
+- Dates are formatted as Word formats them.
+- A stale `storeItemID` is repaired as Word repairs it.
+- A binding's own prefix mappings are respected.
+
+**Safer with untrusted documents** (CR-056, CR-057).
+- Script links (`javascript:`) are no longer written as links in HTML, PDF or Markdown.
+- Style IDs are escaped in HTML's CSS.
+- An altChunk's HTML no longer fetches remote or local resources.
+
+**PDF and HTML output.**
+- The FO renderer is 2.11-docx4j.8: thin borders show in Okular and Evince, and SVG external references are
+  refused.
+- Fixes for symbol-font bullets drawn as `#` (#701), line breaks in footnotes, borders inside content
+  controls, pictures with shadows, and spacing where a section changes its number of columns.
+- A font cache that can't be written no longer breaks every PDF conversion.
+- HTML draws underline styles, Word's highlight colours and `<sup>`/`<sub>` elements, and gives
+  tracked-change dates in the author's local time.
+- Chartex charts in xlsx files have their size again.
+
+**Manual redline to tracked changes** (CR-068). `ManualRedline.toTrackedChanges` turns text struck through by
+hand into real tracked deletions, so Accept All and Reject All work on it. Optionally, underlined or coloured
+text becomes tracked insertions. It is opt-in, and `preview` shows what it would do first.
+
+**Read and written as Word does** (CR-059 to CR-066).
+- On/off values such as `w:val="off"` (which Apache POI writes) were read as on; they are now read as Word
+  reads them. Colour names, and decimal or out-of-range numbers, are handled likewise; out-of-range values
+  are reported with a warning.
+- A part that couldn't be read is no longer silently replaced by an empty one when you edit it.
+- Adding a run, table or property object in the wrong place now fails at once, with a message saying where
+  it belongs, instead of producing a file Word calls unreadable.
+
+**Upgrade notes.**
+- An altChunk's HTML no longer fetches what it refers to; `docx4j.altchunk.html.fetch=true` restores that.
+- Setting `docx4j.model.datastorage.BindingHandler.dateTimeZone` alone no longer converts a bound date; use
+  `setBoundDatesConvertedAsWord(true)`.
+- `createImageInline` now escapes its alt text itself: pass the text as is.
+- `FieldUpdater` updates more field types than before; `FieldUpdater.only(names)` narrows it.
+- `TblFactory.createTable` rejects a cell width over 32767 twips.
+
+Plus many smaller fixes (#78, #236, #244, #256, #277, #572, #585, #634, #697).
+
+See https://github.com/plutext/docx4j/blob/4a10eed5b40b0bc5c56382738d7e4d672b537ada/CHANGELOG.md for details
+
 
 
 Version 17.3.4
