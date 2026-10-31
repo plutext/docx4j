@@ -76,15 +76,18 @@ per-code-point mapping preserves length, so a writer's uppercase never moves an 
   point to one, `Character.toUpperCase(int)` with the tr/az rule (`i` U+0069 to `İ` U+0130; `ı` is already
   lowercase-only), never `String.toUpperCase(Locale)` (which expands `ß` to `SS` and `ﬁ` to `FI`, which Word does
   not). Language: the run's `w:lang/@w:val`, else the paragraph's and styles' through the usual fold, else the
-  document default (`docDefaults` `w:lang`, else `w:themeFontLang`, else `en-US`), D3. A small-caps run is written
+  document default (`docDefaults` `w:lang`, else `w:themeFontLang`, else `en-US`, docx4j's documented default where the
+  WD leaves it to the implementation), D3. WD 0.44 REQ-607 and REQ-521 were aligned to §3.2 and §3.3 on 2026-10-31. A small-caps run is written
   as stored under the default and uppercased under `small_caps: upper` (D5).
 - **Markdown** (docx4j-markdown): the same mapping for caps; `<sup>…</sup>` and `<sub>…</sub>` around a
   super/subscripted run's text (CommonMark inline HTML, what the DPP and GitHub render; pandoc's `^x^` is not
   CommonMark). Inside a code span no tags (code is literal). The tags are the writer's own markup: document text
   cannot form them (the writer escapes `<`).
-- **HTML** (`Docx4J.toHTML`): `<sup>`/`<sub>` elements for `w:vertAlign` in place of the CSS `vertical-align`
-  span, so text-scraping consumers see the mark; the CSS for caps and small caps stays (it is the correct rendering,
-  and the HTML's text is the stored text), D4.
+- **HTML.** REQ-710's HTML is the WD's own HTML serialisation of the text model (its §7.3), which docx4j does not
+  implement; Markdown is docx4j's surface. Whether `Docx4J.toHTML` (the general converter) adopts `<sup>`/`<sub>`
+  elements for `w:vertAlign` in place of its CSS `vertical-align` span is docx4j's own choice, not a WD requirement
+  (the portfolio, 2026-10-31): recommended yes, so that text-scraping consumers of the HTML see the mark and the two
+  surfaces agree; the CSS for caps and small caps stays (the HTML's text is the stored text), D4.
 - **The block model** itself changes only by the flags; the goldens the ports mirror gain three fields.
 
 ### 3.3 The drop-cap join (REQ-521)
@@ -138,7 +141,7 @@ follow; `InspectionReport.optionsPhrase` shows them when non-default.
 | 0 | Fixtures and goldens from the share into core-tests; the tsv rows; WD 0.44 cross-checked against the CR | ½ day |
 | 1 | `TextRun` flags, `CaseMapping`, plain-text caps mapping, `small_caps` option and preset; `CaseMappingTest`; block goldens regenerated; hand-off to the ports (the python note: `str.upper()` expands `ß` and ignores tr; the per-code-point mapping is needed) | 1 day |
 | 2 | The drop-cap join, its warning, `drop_caps` option and preset; `DropCapJoinTest` | ½ day |
-| 3 | docx4j-markdown: caps mapping and `<sup>`/`<sub>`; HTML output `<sup>`/`<sub>` (D4) | ½ day |
+| 3 | docx4j-markdown: caps mapping and `<sup>`/`<sub>`; `Docx4J.toHTML` `<sup>`/`<sub>` if D4 is taken | ½ day |
 | 4 | `text.formatting_join` in `InspectWalk`, the phrase, `FormattingJoinTest`; CR-050 §2.3 row by reference | ½ day |
 | 5 | CHANGELOG; Getting Started's Text extraction chapter (a sentence each on caps, drop caps, `<sup>`); hand-offs: the ports (CR-046-style), docx4j-mcp (nothing new in the contract beyond the flags and the kind), docx4j-tika (the XHTML gains `<sup>`/`<sub>` and the capitals; its parity baseline moves) | ½ day |
 
@@ -151,7 +154,7 @@ Jason has ruled (a) to (d) as the Status line says; these are the docx4j-side de
 | D1 | Shape | One new CR (this), not addenda to CR-046 and CR-050; both are done and are cited |
 | D2 | Flags | `TextRun.isCaps()`, `isSmallCaps()`, `getVerticalAlignment()` (`BASELINE`, `SUPERSCRIPT`, `SUBSCRIPT`); own-else-styles fold as for bold; a run under caps and small caps is caps |
 | D3 | Mapping | Per code point, `Character.toUpperCase(int)` plus the tr/az `i` to `İ` rule; language from the run's `w:lang/@w:val`, else the styles', else the document default (`docDefaults`, `w:themeFontLang`, `en-US`); never `String.toUpperCase(Locale)` |
-| D4 | HTML | `<sup>`/`<sub>` elements for `w:vertAlign` in `Docx4J.toHTML` (the `font-size: smaller` kept on them); caps and small caps stay CSS |
+| D4 | HTML | docx4j's choice, not a WD requirement (REQ-710's HTML is the WD's own serialisation): `<sup>`/`<sub>` elements for `w:vertAlign` in `Docx4J.toHTML` (the `font-size: smaller` kept on them), so the surfaces agree; caps and small caps stay CSS |
 | D5 | Options | `small_caps` `asis|upper` (default `asis`), `drop_caps` `join|asis` (default `join`); `word-text` preset `upper` and `asis` |
 | D6 | The finding's boundary | Digit-to-digit only, strike or vertical alignment differing, no whitespace or punctuation between; letters never |
 | D7 | Oracle | Word's text saves from the share (the files WD-001 let Word write) are the goldens, byte for byte under `word-text` |
