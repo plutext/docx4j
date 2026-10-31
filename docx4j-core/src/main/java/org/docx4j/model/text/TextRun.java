@@ -140,7 +140,10 @@ public final class TextRun {
 	/** True for text that is italic where its paragraph's style is not ({@code w:i}; see {@link #isBold()}). */
 	public boolean isItalic() { return italic; }
 
-	/** True for text struck through where its paragraph's style is not ({@code w:strike}; see {@link #isBold()}). */
+	/**
+	 * True for text struck through where its paragraph's style is not ({@code w:strike}, and since 17.3.5 (CR-069)
+	 * {@code w:dstrike}, struck twice; see {@link #isBold()}).
+	 */
 	public boolean isStrike() { return strike; }
 
 	/**

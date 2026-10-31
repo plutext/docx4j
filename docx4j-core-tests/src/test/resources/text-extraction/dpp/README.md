@@ -44,8 +44,8 @@ the inspector's `text.near_background`, the stored characters) is checked now.
 REQ-1201's comparison removes whitespace, so no token or golden can tell a joined drop cap from two paragraphs. The
 join is checked by the warning `paragraph.drop_cap_joined` (`expected-findings.tsv`), by Word's C02 save under
 `word-text` (which sets `drop_caps: asis`: `T`, then `he C02_ ...`), and by CR-069's own tests. A
-`text.formatting_join` row's selector is its excerpt, the joined token (`1.3161.335`, `48,2103`); if phase 4 gives
-the finding a subject, the selector is that and the four rows move.
+`text.formatting_join` row's selector is its excerpt, the joined token (`1.3161.335`, `48,2103`): phase 4 gave the
+finding no subject (CR-069 section 14), so the four rows stand as phase 0 wrote them.
 
 ## Word's saves (`word-saves.tsv`)
 

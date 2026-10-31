@@ -306,9 +306,12 @@ public class ExtractionConformanceTest {
         assertTrue(results.contains("dpp-forks-word365.docx\t0\tgolden:dpp-forks-word365.accepted.txt\taccepted\tdefault\tPASS"));
         assertTrue(results.contains("dpp-forks-word365.docx\t0\tgolden:dpp-forks-word365.md\taccepted\tdefault\tPASS"));
         assertFalse(results.contains("REQ-710"));
-        assertTrue(results.contains("\tinspect:text.formatting_join:48,2103\taccepted\tdefault\tPENDING\tCR-069 phase 4; text.formatting_join"));
-        for (String line : results.split("\n"))
-            if (line.contains("\tPENDING\t")) assertTrue(line, line.contains("\tPENDING\tCR-069 phase ") || line.contains("html reader"));
+        // phase 4: the inspector's text.formatting_join, its selector the joined token (the finding names no subject)
+        for (String fixture : List.of("dpp-forks-word365.docx\t4", "bisect/C04.docx\t4"))
+            assertTrue(results.contains(fixture + "\tinspect:text.formatting_join:1.3161.335\taccepted\tdefault\tPASS"));
+        for (String fixture : List.of("dpp-forks-word365.docx\t7", "bisect/C07.docx\t7"))
+            assertTrue(results.contains(fixture + "\tinspect:text.formatting_join:48,2103\taccepted\tdefault\tPASS"));
+        assertFalse(results.contains("\tPENDING\t"));
     }
     /**
      * Word's text save is read as WD REQ-1002's NOTE says (by its byte order mark, else the saving system's code page,

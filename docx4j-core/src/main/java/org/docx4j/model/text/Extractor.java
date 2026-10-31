@@ -2603,8 +2603,10 @@ final class Extractor {
 				&& !on(null, paragraph == null ? null : paragraph.getB());
 		f.italic = on(own == null ? null : own.getI(), styles == null ? null : styles.getI())
 				&& !on(null, paragraph == null ? null : paragraph.getI());
-		f.strike = on(own == null ? null : own.getStrike(), styles == null ? null : styles.getStrike())
-				&& !on(null, paragraph == null ? null : paragraph.getStrike());
+		// struck once or twice (w:dstrike: CR-069, so that Markdown's ~~ shows a text.formatting_join's parts)
+		f.strike = (on(own == null ? null : own.getStrike(), styles == null ? null : styles.getStrike())
+				|| on(own == null ? null : own.getDstrike(), styles == null ? null : styles.getDstrike()))
+				&& !(on(null, paragraph == null ? null : paragraph.getStrike()) || on(null, paragraph == null ? null : paragraph.getDstrike()));
 		f.monospace = isMonospace(runFont(r, p)) && !isMonospace(asciiFont(paragraph));
 		f.caps = on(own == null ? null : own.getCaps(), styles == null ? null : styles.getCaps());
 		f.smallCaps = !f.caps && on(own == null ? null : own.getSmallCaps(), styles == null ? null : styles.getSmallCaps());

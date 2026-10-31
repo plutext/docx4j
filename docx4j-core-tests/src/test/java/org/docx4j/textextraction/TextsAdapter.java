@@ -70,6 +70,8 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 			"REQ-521",
 			// <sup> and <sub> in Markdown, the baseline in plain text, the block model's flag (CR-069 phase 3)
 			"REQ-710",
+			// the inspector kind for a number the plain text fuses (CR-069 phase 4)
+			"text.formatting_join",
 			// the chart's description, which case 34's axis title needs
 			"CR-047",
 			// the inspector (CR-050 phase 1; REQ-903's counts in every result, phase 2), and the suite's check of it

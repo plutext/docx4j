@@ -278,6 +278,7 @@ public final class InspectionReport {
 		Map<String, String> m = new HashMap<String, String>();
 		m.put(InspectFinding.TEXT_NEAR_BACKGROUND, "text in a colour within the threshold of its background");
 		m.put(InspectFinding.TEXT_TINY, "text drawn under 2pt");
+		m.put(InspectFinding.TEXT_FORMATTING_JOIN, "a number the plain text fuses from struck, raised or lowered digits and their neighbour");
 		m.put(InspectFinding.CHARS_ZERO_WIDTH, "zero-width characters");
 		m.put(InspectFinding.CHARS_TAG, "tag characters, U+E0000 to U+E007F");
 		m.put(InspectFinding.CHARS_BIDI, "bidirectional control characters");

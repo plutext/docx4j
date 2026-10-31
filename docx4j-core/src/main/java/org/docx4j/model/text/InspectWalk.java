@@ -137,7 +137,8 @@ final class InspectWalk {
 				"alt_text.description", "alt_text.title", "alt_text.name", "embedded.sheet_hidden", "embedded.sheet_very_hidden",
 				"embedded.slide_hidden", "embedded.row_hidden", "embedded.column_hidden", "embedded.notes", "properties",
 				"doc_vars", "custom_xml", "people", "revision.author", "rsids" };
-		String[] differently = { "text.near_background", "text.tiny", "font.glyph_mismatch", "paragraph.collapsed" };
+		String[] differently = { "text.near_background", "text.tiny", "font.glyph_mismatch", "paragraph.collapsed",
+				InspectFinding.TEXT_FORMATTING_JOIN };
 		String[] yes = { "hyperlink.web", "comment", "header_footer", "watermark", "note", "sdt.placeholder", "chart.cached",
 				"text.web_hidden", "altchunk", "object.embedded", "ink", "image.svg_text", "image.metafile_text" };
 		String[] none = { "field.external", "settings.update_fields", "fields.auto_update", "fields.print_update", "relationship.external", "part.macro", "part.activex",
@@ -781,11 +782,133 @@ final class InspectWalk {
 				charKind(groups, "chars.private_use", r, t, inner, CharTest.PRIVATE_USE, layers);
 				fontTests(groups, para, r, t, layers, inner);
 			}
+			if (!whole) formattingJoins(groups, p, para, root, needs);
 			for (List<Found> g : groups.values()) for (Found f : g) add(f);
 		}
 	}
 
 	private enum CharTest { ZERO_WIDTH, TAG, BIDI, PRIVATE_USE }
+
+	// --- text.formatting_join (CR-069 phase 4) -----------------------------------------------------------
+
+	/** In a run's plain sequence: what the plain text writes between text, a tab, a break, a note's reference, a picture. */
+	private static final int SEPARATOR = -1;
+	/** A run's children that write nothing in the default plain text and separate nothing. */
+	private static final Set<String> TRANSPARENT = new HashSet<String>(Arrays.asList("rPr", "fldChar", "instrText",
+			"delInstrText", "lastRenderedPageBreak", "commentReference", "annotationRef"));
+
+	/**
+	 * {@code text.formatting_join} (WD 9.2; CR-069 phase 4): a struck ({@code w:strike}, {@code w:dstrike}) or raised or
+	 * lowered ({@code w:vertAlign}) run meeting its neighbour at a digit|digit boundary with nothing between, the two
+	 * differing in that formatting, so that the plain text forms a number the page does not show ({@code 1.3161.335},
+	 * {@code 48,2103}). The paragraph's runs are taken as the default plain text joins them: a hidden run, a deleted one
+	 * and one in an unselected branch leave no text; a tab, a break, a hyphen Word draws, a note's reference, a picture
+	 * or an equation is a separator; a field's characters and instruction are neither. A letter's boundary
+	 * ({@code H2O}, {@code x2}, {@code 1st}) never fires (CR-069 D6). The excerpt and the range are the joined token,
+	 * from the boundary to a space or a separator either side, one finding a token; the requirements are both runs'.
+	 */
+	private void formattingJoins(Map<String, List<Found>> groups, String p, Element para, Element root, Set<String> needs) {
+		List<Element> runs = new ArrayList<Element>();
+		List<int[]> seqs = new ArrayList<int[]>();
+		for (Element r : ownRuns(para)) {
+			if (is(r, M, "r")) {
+				runs.add(r);
+				seqs.add(new int[] { SEPARATOR });
+				continue;
+			}
+			if (Boolean.TRUE.equals(on(prop(layers(para, r), "vanish")))) continue;
+			Set<String> rn = contextNeeds(r, root, needs);
+			if (rn.contains(InspectFinding.VIEW_ORIGINAL) || rn.contains(InspectFinding.VIEW_MARKUP)) continue; // deleted
+			int[] seq = plainSequence(r);
+			if (seq.length == 0) continue;
+			runs.add(r);
+			seqs.add(seq);
+		}
+		int lastFrom = -1, lastStart = -1;
+		for (int k = 1; k < runs.size(); k++) {
+			int[] a = seqs.get(k - 1), b = seqs.get(k);
+			if (!digit(a[a.length - 1]) || !digit(b[0])) continue;
+			Element left = runs.get(k - 1), right = runs.get(k);
+			if (setApart(para, left).equals(setApart(para, right))) continue;
+			// the token: from the boundary back, and on, to a space or a separator
+			int fromRun = k - 1, from = a.length - 1;
+			while (true) {
+				int r = from > 0 ? fromRun : fromRun - 1;
+				int i = from > 0 ? from - 1 : r < 0 ? -1 : seqs.get(r).length - 1;
+				if (r < 0 || seqs.get(r)[i] == SEPARATOR || isSpace(seqs.get(r)[i])) break;
+				fromRun = r;
+				from = i;
+			}
+			int toRun = k, to = 0;
+			while (true) {
+				int r = to < seqs.get(toRun).length - 1 ? toRun : toRun + 1;
+				int i = r == toRun ? to + 1 : 0;
+				if (r >= seqs.size() || seqs.get(r)[i] == SEPARATOR || isSpace(seqs.get(r)[i])) break;
+				toRun = r;
+				to = i;
+			}
+			int start = displayIndex(seqs.get(fromRun), from);
+			if (fromRun == lastFrom && start == lastStart) continue; // the token's finding is made
+			lastFrom = fromRun;
+			lastStart = start;
+			StringBuilder token = new StringBuilder();
+			for (int r = fromRun; r <= toRun; r++) {
+				int[] s = seqs.get(r);
+				for (int i = r == fromRun ? from : 0; i <= (r == toRun ? to : s.length - 1); i++) token.appendCodePoint(s[i]);
+			}
+			Set<String> n = contextNeeds(left, root, needs);
+			n.addAll(contextNeeds(right, root, needs));
+			Found f = found(InspectFinding.TEXT_FORMATTING_JOIN, p, path(runs.get(fromRun)), token.toString(), n, right);
+			f.start = start;
+			if (toRun != fromRun) f.endPath = path(runs.get(toRun));
+			f.end = displayIndex(seqs.get(toRun), to) + 1;
+			groups.computeIfAbsent(InspectFinding.TEXT_FORMATTING_JOIN, x -> new ArrayList<Found>()).add(f);
+		}
+	}
+
+	private static boolean digit(int c) {
+		return c != SEPARATOR && Character.isDigit(c);
+	}
+
+	/** What sets a run apart for {@code text.formatting_join}: struck, once or twice, and its vertical alignment. */
+	private String setApart(Element para, Element r) {
+		List<Element> layers = layers(para, r);
+		boolean struck = isOn(prop(layers, "strike")) || isOn(prop(layers, "dstrike"));
+		Element v = prop(layers, "vertAlign");
+		String vertAlign = v == null || w(v, "val") == null ? "baseline" : w(v, "val");
+		return struck + "|" + vertAlign;
+	}
+
+	/**
+	 * A run's characters as the default plain text writes them: its display text ({@link #displayText}), a
+	 * {@link #SEPARATOR} for each child that writes something else (a tab, a break, a hyphen, a reference, a picture),
+	 * nothing for a field's characters and instruction.
+	 */
+	private static int[] plainSequence(Element r) {
+		List<Integer> out = new ArrayList<Integer>();
+		for (Node c = r.getFirstChild(); c != null; c = c.getNextSibling()) {
+			if (!(c instanceof Element)) continue;
+			Element e = (Element) c;
+			if (is(e, W, "t") || is(e, W, "delText") || is(e, M, "t")) {
+				e.getTextContent().codePoints().forEach(out::add);
+			} else if (is(e, W, "sym")) {
+				int cp = symbol(e);
+				if (cp >= 0) out.add(cp);
+			} else if (!W.equals(e.getNamespaceURI()) || !TRANSPARENT.contains(e.getLocalName())) {
+				out.add(SEPARATOR);
+			}
+		}
+		int[] seq = new int[out.size()];
+		for (int i = 0; i < seq.length; i++) seq[i] = out.get(i);
+		return seq;
+	}
+
+	/** A position in a run's plain sequence as an offset in its display text: the characters before it, separators not. */
+	private static int displayIndex(int[] seq, int i) {
+		int n = 0;
+		for (int j = 0; j < i; j++) if (seq[j] != SEPARATOR) n++;
+		return n;
+	}
 
 	private void charKind(Map<String, List<Found>> groups, String kind, Element r, int[] t, Set<String> needs, CharTest test, List<Element> layers) {
 		int first = -1, last = -1;

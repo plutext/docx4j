@@ -100,7 +100,8 @@ ACTIVE = {'field.external', 'settings.update_fields', 'relationship.external', '
 INVENTORY = {'altchunk', 'object.embedded', 'font.embedded', 'ink', 'revision.author', 'rsids', 'people',
              'part.unknown', 'hyperlink.web', 'value.out_of_range'}
 VISIBLE = {
-    'text.near_background': 'differently', 'text.tiny': 'differently', 'chars.zero_width': 'no', 'chars.tag': 'no',
+    'text.near_background': 'differently', 'text.tiny': 'differently', 'text.formatting_join': 'differently',
+    'chars.zero_width': 'no', 'chars.tag': 'no',
     'chars.bidi': 'no', 'chars.private_use': 'no', 'font.glyph_blank': 'no', 'font.glyph_mismatch': 'differently',
     'paragraph.collapsed': 'differently', 'shape.zero_size': 'no', 'shape.off_page': 'no', 'shape.hidden': 'no',
     'smartart.data': 'no', 'text.hidden': 'no', 'paragraph.hidden': 'no', 'revision.deleted': 'no',
@@ -340,6 +341,36 @@ def cps(s):
     return len(s)  # Python strings are code points
 
 
+# a run's children that write nothing in the default plain text and separate nothing (text.formatting_join)
+TRANSPARENT = {'rPr', 'fldChar', 'instrText', 'delInstrText', 'lastRenderedPageBreak', 'commentReference', 'annotationRef'}
+
+
+def plain_sequence(r):
+    """A run's characters as the default plain text writes them: its display text, None for each child that writes
+    something else (a tab, a break, a hyphen, a reference, a picture), nothing for a field's characters and instruction"""
+    out = []
+    for c in r:
+        if not isinstance(c.tag, str):
+            continue
+        if c.tag in ('{%s}t' % W, '{%s}delText' % W, '{%s}t' % M):
+            out.extend(c.text or '')
+        elif c.tag == '{%s}sym' % W:
+            out.append(chr(int(c.get('{%s}char' % W), 16)))
+        elif not (c.tag.startswith('{%s}' % W) and c.tag.split('}')[1] in TRANSPARENT):
+            out.append(None)
+    return out
+
+
+def display_index(seq, i):
+    """A position in a plain sequence as an offset in the run's display text"""
+    return sum(1 for c in seq[:i] if c is not None)
+
+
+def nd(c):
+    """A decimal digit, Java's Character.isDigit (str.isdigit also takes the superscript digits)"""
+    return c is not None and unicodedata.category(c) == 'Nd'
+
+
 def wq(local):
     return '{%s}%s' % (W, local)
 
@@ -523,6 +554,8 @@ class Finding:
         text = len(self.excerpt or '') > 0
         if self.kind == 'properties':
             return 'info' if inside else 'omitted'
+        if self.kind == 'text.formatting_join' and inside and fmt != 'plain':
+            return 'info'   # Markdown's ~~ and <sup>, the block model's flags, show the parts apart (CR-069 phase 4)
         if inside and self.visible in ('no', 'differently', 'indeterminate'):
             return 'unseen'
         if not inside and text:
@@ -1079,9 +1112,70 @@ class Inspector:
                 if pua:
                     self.emit_run(groups, 'chars.private_use', r, t, pua[0], pua[-1] + 1, inner, ())
                 self.font_tests(groups, p, r, t, layers, inner)
+            if not whole:
+                self.formatting_joins(groups, part, p, root, needs)
             for g in groups.values():
                 for f in g:
                     self.add(f)
+
+    def formatting_joins(self, groups, part, p, root, needs):
+        """text.formatting_join (WD 9.2; CR-069 phase 4): a struck (w:strike, w:dstrike) or raised or lowered (w:vertAlign)
+        run meeting its neighbour at a digit|digit boundary with nothing between, the two differing in that formatting.
+        The runs as the default plain text joins them: a hidden, deleted or unselected run leaves no text; a tab, break,
+        hyphen, reference, picture or equation separates; a field's characters and instruction do neither. The excerpt
+        and range are the joined token, to a space or a separator either side, one finding a token."""
+        runs, seqs = [], []
+        for r in self.own_runs(p):
+            if r.tag == '{%s}r' % M:
+                runs.append(r)
+                seqs.append([None])
+                continue
+            if on(prop(self.layers(p, r), 'vanish')):
+                continue
+            rn = self.context_needs(r, root, needs)
+            if 'view:original' in rn or 'view:markup' in rn:
+                continue
+            seq = plain_sequence(r)
+            if seq:
+                runs.append(r)
+                seqs.append(seq)
+        last = None
+        for k in range(1, len(runs)):
+            a, b = seqs[k - 1], seqs[k]
+            if not (nd(a[-1]) and nd(b[0])):
+                continue
+            left, right = runs[k - 1], runs[k]
+            if self.set_apart(p, left) == self.set_apart(p, right):
+                continue
+            fr, fi = k - 1, len(a) - 1
+            while True:
+                r, i = (fr, fi - 1) if fi > 0 else (fr - 1, len(seqs[fr - 1]) - 1 if fr > 0 else -1)
+                if r < 0 or seqs[r][i] is None or seqs[r][i].isspace():
+                    break
+                fr, fi = r, i
+            tr, ti = k, 0
+            while True:
+                r, i = (tr, ti + 1) if ti < len(seqs[tr]) - 1 else (tr + 1, 0)
+                if r >= len(seqs) or seqs[r][i] is None or seqs[r][i].isspace():
+                    break
+                tr, ti = r, i
+            start = display_index(seqs[fr], fi)
+            if last == (fr, start):
+                continue   # the token's finding is made
+            last = (fr, start)
+            token = ''.join(c for x in range(fr, tr + 1)
+                            for c in seqs[x][(fi if x == fr else 0):(ti + 1 if x == tr else len(seqs[x]))])
+            n = self.context_needs(left, root, needs) | self.context_needs(right, root, needs)
+            f = Finding('text.formatting_join', self.chain, part, path_of(runs[fr]), start,
+                        path_of(runs[tr]) if tr != fr else '', display_index(seqs[tr], ti) + 1, excerpt=token, needs=n)
+            groups.setdefault('text.formatting_join', []).append(f)
+
+    def set_apart(self, p, r):
+        """What sets a run apart for text.formatting_join: struck, once or twice, and its vertical alignment"""
+        layers = self.layers(p, r)
+        v = prop(layers, 'vertAlign')
+        return (bool(on(prop(layers, 'strike'))) or bool(on(prop(layers, 'dstrike'))),
+                v.get(wq('val')) if v is not None and v.get(wq('val')) is not None else 'baseline')
 
     def own_runs_all(self, p):
         out = []

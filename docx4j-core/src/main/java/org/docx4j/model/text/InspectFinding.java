@@ -46,6 +46,15 @@ public final class InspectFinding {
 	public static final String TEXT_NEAR_BACKGROUND = "text.near_background";
 	/** A run every non-space character of which is drawn under 2pt. */
 	public static final String TEXT_TINY = "text.tiny";
+	/**
+	 * A struck ({@code w:strike}, {@code w:dstrike}) or raised or lowered ({@code w:vertAlign}) run meeting its
+	 * neighbour at a digit|digit boundary with no separator, the two differing in that formatting, so that the plain
+	 * text forms a number the page does not show ({@code 1.3161.335}, {@code 48,2103}): its excerpt and range the
+	 * joined token. Unseen in plain text; info in Markdown, whose {@code ~~} and {@code <sup>} show the parts apart,
+	 * and in the block model, whose flags do (WD 9.2; CR-069 phase 4).
+	 * @since 17.3.5
+	 */
+	public static final String TEXT_FORMATTING_JOIN = "text.formatting_join";
 	/** U+200B to U+200F, U+2060, U+FEFF. */
 	public static final String CHARS_ZERO_WIDTH = "chars.zero_width";
 	/** U+E0000 to U+E007F. */
@@ -376,14 +385,16 @@ public final class InspectFinding {
 	/**
 	 * Its group for an output (REQ-905), in this order of precedence: active for the active kinds;
 	 * info for the inventory kinds; for the properties, info while in the output (labelled metadata)
-	 * and omitted otherwise; unseen when in the output and not plainly seen; omitted when not in the
-	 * output and it has text; else info.
+	 * and omitted otherwise; for {@link #TEXT_FORMATTING_JOIN}, info in the output in Markdown and the
+	 * block model, which show the parts apart (WD 9.2); unseen when in the output and not plainly seen;
+	 * omitted when not in the output and it has text; else info.
 	 */
 	public Group group(TextOptions options, Inspection.Format format, Set<Inspection.Capability> capabilities) {
 		if (ACTIVE.contains(kind)) return Group.ACTIVE;
 		if (INVENTORY.contains(kind)) return Group.INFO;
 		boolean in = isIn(options, format, capabilities);
 		if (PROPERTIES.equals(kind)) return in ? Group.INFO : Group.OMITTED;
+		if (TEXT_FORMATTING_JOIN.equals(kind) && in && format != Inspection.Format.PLAIN) return Group.INFO;
 		if (in && (visible == Visible.NO || visible == Visible.DIFFERENTLY || visible == Visible.INDETERMINATE)) return Group.UNSEEN;
 		if (!in && excerptLength > 0) return Group.OMITTED;
 		return Group.INFO;

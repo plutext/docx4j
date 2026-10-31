@@ -1,7 +1,7 @@
 # CR-069: what the page shows, in the text: case mapping, drop caps, superscripts, and the formatting-join finding
 
 Status: ACCEPTED 2026-10-31 (Jason: "CR-069 decisions as presented"): D1 to D9 as recommended (§5); D9's condition
-ruled the same day (Jason: "17.3.5 will wait for CR-069"): 17.3.5 ships with CR-069, not only phases 0 to 2. Phase 0 DONE 2026-10-31 (§10; Jason: "start CR-069"); phase 1 DONE 2026-10-31 (§11; Jason: "go ahead with phase 1"); phase 2 DONE 2026-10-31 (§12; Jason: "do phase 2"); phase 3 DONE 2026-11-01 (§13; Jason: "do phase 3"). Proposed
+ruled the same day (Jason: "17.3.5 will wait for CR-069"): 17.3.5 ships with CR-069, not only phases 0 to 2. Phase 0 DONE 2026-10-31 (§10; Jason: "start CR-069"); phase 1 DONE 2026-10-31 (§11; Jason: "go ahead with phase 1"); phase 2 DONE 2026-10-31 (§12; Jason: "do phase 2"); phase 3 DONE 2026-11-01 (§13; Jason: "do phase 3"); phase 4 DONE 2026-11-01 (§14; Jason: "do phase 4 please"). Proposed
 2026-10-31, drafted by Claude Fable 5.1 (session docx4j-12) from Jason's rulings of the same day on the
 four questions the portfolio's review of LlamaIndex's Document Parsing Protocol put to him (paper §7.13; WD 0.44, drafted
 and uncommitted: REQ-521, REQ-607, REQ-710, §9.2 `text.formatting_join`, §4 NOTE, Appendix B). Jason's rulings: (a) the
@@ -279,7 +279,8 @@ phase 2, 52 on phase 3 (the two goldens among them), 4 on phase 4.
    default writes `Jackson` and `small_caps: upper` writes `JACKSON` (the rows; §3.6 corrected).
 5. **A `text.formatting_join` row's selector is its excerpt**, the joined token (`1.3161.335`, `48,2103`), since the
    adapter names a finding by its subject first and §3.4's subject ("the two parts") has no form yet. Phase 4 settles
-   it; if the finding gets a subject, the four rows' selector becomes it.
+   it; if the finding gets a subject, the four rows' selector becomes it. Settled: no subject (§14.2 item 5), so the
+   rows stand.
 6. **A caps probe's label can hold its token** (`caps-lang6b`'s `(STRASSE or STRAßE)`, `caps-lang7e`'s `on istanbul
    film`): the counts are of the whole file, labels included. Every caps row was checked against Word's own save before
    it was written (the ones whose token the code page cannot hold, against the UTF-8 reading of the `?`).
@@ -521,3 +522,71 @@ row: "[PROBE] gains no fixture yet (the `dpp-forks` Word re-save is the candidat
   reference, and the dpp rows that now pass.
 - **docx4j-tika**: its own phase 3 (`<sup>`/`<sub>` in its XHTML) reads `TextRun.getVerticalAlignment()`;
   `Docx4J.toHTML`'s change does not reach its `XhtmlWriter`, which writes the text model.
+
+## 14. Phase 4 (2026-11-01; Jason: "do phase 4 please")
+
+### 14.1 What was built
+
+- **The kind** (`InspectFinding.TEXT_FORMATTING_JOIN`, `text.formatting_join`; `visible` `differently`):
+  `InspectWalk.formattingJoins`, for each paragraph not wholly hidden, takes its runs as the default plain text joins
+  them and, where two adjacent runs meet at a digit|digit boundary and differ in being struck (`w:strike` or
+  `w:dstrike`) or in `w:vertAlign`, makes one finding for the token they form: its excerpt and range the token, from
+  the boundary to a whitespace character or a separator either side (`1.3161.335` from the first run's start to the
+  second's end; `48,2103` from offset 13 of `C07_ Revenue 48,210` to the end of the `3`), its requirements both runs'.
+- **The group by format** (`InspectFinding.group`): unseen in plain text; info in Markdown and the block model, where
+  the finding is in the output, since `~~`, the tags (REQ-710) and the flags show the parts apart. WD 9.2's row says
+  so; REQ-905's list of precedence does not yet name the kind (§14.4).
+- **The phrase** (`InspectionReport.PHRASES`): "a number the plain text fuses from struck, raised or lowered digits
+  and their neighbour".
+- **The text model**: `TextRun.isStrike()` takes `w:dstrike` as well as `w:strike` (item 2).
+- **The contract and its oracle**: `INSPECTION.md` gains the kind's row; `inspect_oracle.py` gains the same rule
+  (written by this session after the Java: a second implementation, not an independent reading of the contract, as
+  CR-050 phase 0's oracle was), which agrees with docx4j's findings on the dpp probe and on C03, C04, C06 and C07
+  (location, range, excerpt, groups, selector) and leaves phase 0's tables as they were (no fixture there has such a
+  boundary). CR-050 §2.3's table gains the row by reference to this CR; the dpp README says the rows stand.
+- **Harness**: `TextsAdapter` advertises the capability `text.formatting_join`.
+- **Tests**: `FormattingJoinTest` (8): Word's probe (C04 and C07, their locations and addresses, C03 and C06 none,
+  the groups, the report's phrase); strike once and twice, superscript, subscript, the two against each other, a
+  character style's strike, none where both sides agree or the strike is off; a letter's boundary none, an Arabic-Indic
+  digit's one; a space, a tab (its own run or the left run's last child), a break, a note reference and an equation
+  separating, a field's characters and a bookmark not; a hidden run and a deleted one between (a join) and as a side
+  (none), an inserted side (unseen, omitted in the original view); one finding for a token of two boundaries, two for
+  two tokens; the counts by format; a double-struck run struck in the block model. `ExtractionConformanceTest`'s dpp
+  test asserts the four rows pass and that nothing in the suite pends.
+
+### 14.2 Decisions taken in the phase (docx4j's)
+
+1. **The location is the token**, not the right-hand run (§3.4): the range from the token's first character to its
+   last, across the runs it spans, as every run finding's range is its excerpt. The address is the same block either
+   way.
+2. **`w:dstrike` is struck in the text model.** §3.4 counts `w:dstrike` as setting a run apart and says Markdown shows
+   the parts; `TextRun.isStrike()` was `w:strike` alone, so a double-struck part had no `~~`. It now is either (the
+   paragraph style's either cancelling it, as before), and Markdown writes `~~` for a double-struck run. An output
+   change for documents with `w:dstrike`, for the CHANGELOG (phase 5).
+3. **The plain text's joining, made exact for the stored runs**: a hidden run, a deleted one (`w:del`, `w:moveFrom`, a
+   deleted row) and a run in an unselected branch write nothing, so their neighbours meet (§3.4's "not boundaries");
+   a run's tab, break, hyphen, note reference, picture or any child not text, and an equation's run, separate; a
+   field's characters and instruction, a rendered page break, and a comment's reference and mark do neither, so a
+   field's result joins the text before it. An inserted run is a side; its finding is omitted in the original view,
+   whose text does not hold it.
+4. **A digit is Unicode's decimal digit** (`Character.isDigit`, category Nd): an Arabic-Indic `١٢` fuses as `12` does;
+   a superscript digit `²` is not one (it is no digit to `isDigit`, and Python's `str.isdigit`, which takes it, is not
+   the oracle's test).
+5. **No subject.** The WD's finding has none, and "the two parts" are the excerpt's; the four rows' selector is the
+   joined token, as phase 0 wrote them (§10.3 item 5).
+6. **One finding a token**: `48,21` `0` `3`^ `5` has two boundaries and one finding, `48,21035`; a token's identity is
+   its range (REQ-906), which both boundaries share.
+
+### 14.3 Results
+
+- The dpp suite: 192 assertions passed, none pending: every row of CR-069's suite is checked. Phase 0's suite
+  unchanged at 1736 passed, 36 pending.
+- Gate: docx4j-core-tests 2339/0/30 (was 2331), docx4j-markdown 178/0/0.
+
+### 14.4 Hand-offs
+
+- **The portfolio**: the registry note (phase 4 done); WD points: REQ-905's list of precedence to name
+  `text.formatting_join`'s group by format (9.2's row has it); items 3, 4 and 6 for 9.2's row or a NOTE; the selector
+  settled as the excerpt (Appendix A's suite note).
+- **docx4j-core-ts, docx4j-python**: the kind, its rule as `INSPECTION.md` and `inspect_oracle.py` now state it, the
+  group by format, `w:dstrike` struck in the block model, and the four rows that now pass.
