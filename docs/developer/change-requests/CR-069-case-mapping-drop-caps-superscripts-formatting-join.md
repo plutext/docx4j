@@ -338,7 +338,9 @@ row: "[PROBE] gains no fixture yet (the `dpp-forks` Word re-save is the candidat
 ### 11.2 Decisions taken in the phase (docx4j's; none changes the WD)
 
 1. **`getLanguage()` is docx4j's addition to the block model.** The WD's run carries the two flags; the writer needs
-   the language. It is null on an uncased run, so a `w:lang` alone never splits a run.
+   the language. It is null on an uncased run, so a `w:lang` alone never splits a run. WD 0.51 (docx4j-portfolio
+   12f9bda) adopts it as the run's `lang`, and makes REQ-607 say that a style's `w:caps` applies with no cancelling
+   rule (item 2), its NOTE recording that Word's saves have not measured a style's caps.
 2. **The paragraph style does not cancel the case**, as it cancels bold, italic and strike: those flags are Markdown
    emphasis, a heading style's bold being the heading's, while a style's caps is the text the page shows. On the
    unmeasured list (§7).
@@ -363,6 +365,8 @@ row: "[PROBE] gains no fixture yet (the `dpp-forks` Word re-save is the candidat
 - The dpp suite: 129 assertions passed and 63 pending (phase 2: 7, phase 3: 52, phase 4: 4); none pends on REQ-607.
   Of Word's 22 saves, 19 now agree, every caps probe and C05 among them; C02 waits on phase 2, C06 and C07 on phase 3.
 - Phase 0's suite unchanged at 1736 passed, 36 pending: its fixtures have no cased run.
+- "Block goldens regenerated" (§4) had nothing to do here: docx4j has no block-model goldens (no serialised block
+  model in its tests or fixtures; docx4j-mcp does not return one yet). The flags are tested in `CaseMappingTest`.
 - Gate: docx4j-core-tests 2320/0/30 (was 2307/0/30 before this CR), docx4j-markdown 172/0/0.
 
 ### 11.4 Hand-offs
