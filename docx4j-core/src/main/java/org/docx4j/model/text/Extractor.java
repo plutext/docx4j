@@ -1550,6 +1550,8 @@ final class Extractor {
 	}
 
 	private Boolean formsProtected;
+	/** The settings' {@code w:themeFontLang}, else docx4j's default: a cased run's language of last resort; null until asked. */
+	private String themeFontLang;
 
 	/** {@code w:documentProtection w:edit="forms"}, enforced (the attribute as written: its getter answers true when it's absent). */
 	private boolean formsProtected() {
@@ -2506,7 +2508,9 @@ final class Extractor {
 	/**
 	 * A run's formatting beyond its paragraph style's (CR-046 phase 3): bold, italic, struck through,
 	 * monospaced, each as the run's own property gives it, else its styles', where the paragraph style
-	 * alone doesn't give it. A run carrying only that.
+	 * alone doesn't give it. And, whatever the paragraph style says, what the text shows (CR-069): its
+	 * case, folded the same way, a run under both caps and small caps being caps (WD REQ-607); its
+	 * vertical alignment (REQ-710); and a cased run's language. A run carrying only that.
 	 */
 	private TextRun formatOf(R r, P p) {
 		RPr own = r.getRPr();
@@ -2520,7 +2524,34 @@ final class Extractor {
 		f.strike = on(own == null ? null : own.getStrike(), styles == null ? null : styles.getStrike())
 				&& !on(null, paragraph == null ? null : paragraph.getStrike());
 		f.monospace = isMonospace(runFont(r, p)) && !isMonospace(asciiFont(paragraph));
+		f.caps = on(own == null ? null : own.getCaps(), styles == null ? null : styles.getCaps());
+		f.smallCaps = !f.caps && on(own == null ? null : own.getSmallCaps(), styles == null ? null : styles.getSmallCaps());
+		org.docx4j.wml.CTVerticalAlignRun vertAlign = own != null && own.getVertAlign() != null ? own.getVertAlign()
+				: styles == null ? null : styles.getVertAlign();
+		if (vertAlign != null && vertAlign.getVal() == org.docx4j.wml.STVerticalAlignRun.SUPERSCRIPT) f.verticalAlignment = TextRun.VerticalAlignment.SUPERSCRIPT;
+		if (vertAlign != null && vertAlign.getVal() == org.docx4j.wml.STVerticalAlignRun.SUBSCRIPT) f.verticalAlignment = TextRun.VerticalAlignment.SUBSCRIPT;
+		if (f.caps || f.smallCaps) f.language = language(own, styles);
 		return f;
+	}
+
+	/**
+	 * The language a cased run's capitals are mapped by (WD REQ-607): its own {@code w:lang/@w:val}, else its
+	 * styles' (with the document defaults'), else {@code w:themeFontLang}'s, else {@link CaseMapping#DEFAULT_LANGUAGE}.
+	 */
+	private String language(RPr own, RPr styles) {
+		String lang = lang(own == null ? null : own.getLang());
+		if (lang == null) lang = lang(styles == null ? null : styles.getLang());
+		if (lang != null) return lang;
+		if (themeFontLang == null) {
+			DocumentSettingsPart settings = pkg.getMainDocumentPart() == null ? null : pkg.getMainDocumentPart().getDocumentSettingsPart();
+			String theme = settings == null || settings.getJaxbElement() == null ? null : lang(settings.getJaxbElement().getThemeFontLang());
+			themeFontLang = theme == null ? CaseMapping.DEFAULT_LANGUAGE : theme;
+		}
+		return themeFontLang;
+	}
+
+	private static String lang(org.docx4j.wml.CTLanguage l) {
+		return l == null || l.getVal() == null || l.getVal().trim().isEmpty() ? null : l.getVal().trim();
 	}
 
 	/** An on/off property: the run's own where it has one, else its styles'. */

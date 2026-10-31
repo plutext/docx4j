@@ -282,7 +282,14 @@ public class ExtractionConformanceTest {
         assertTrue(results.contains("bisect/C08.docx\t8\tword save:bisect/C08.txt" + word + "PASS"));
         assertTrue(results.contains("\tinspect:text.near_background:Marta Okonkwo\taccepted\tdefault\tPASS"));
         assertTrue(results.contains("caps/caps-lang5.docx\t5\tH\u2082O\toriginal\tdefault\tPASS"));
-        assertTrue(results.contains("\tword save:bisect/C05.txt" + word + "PENDING\tCR-069 phase 1; REQ-607"));
+        // phase 1: the case mapping, against Word's saves and the tables
+        assertTrue(results.contains("bisect/C05.docx\t5\tword save:bisect/C05.txt" + word + "PASS"));
+        assertTrue(results.contains("caps/caps-lang7d.docx\t5\tword save:caps/caps-lang7d-utf8.txt" + word + "PASS"));
+        assertTrue(results.contains("caps/caps-lang6a.docx\t5\tword save:caps/caps-lang6a.txt" + word + "PASS"));
+        assertTrue(results.contains("caps/caps-lang6a.docx\t5\t\u0130STANBUL F\u0130LM\taccepted\tsmall_caps: upper\tPASS"));
+        assertTrue(results.contains("dpp-forks-word365.docx\t5\tROBERTS\taccepted\tmarkdown\tPASS"));
+        assertTrue(results.contains("dpp-forks-word365.docx\t5\tJackson\tmarkup\tdefault\tPASS"));
+        assertFalse(results.contains("REQ-607"));
         assertTrue(results.contains("\tword save:bisect/C02.txt" + word + "PENDING\tCR-069 phase 2; REQ-521"));
         assertTrue(results.contains("\tH<sub>2</sub>O\taccepted\tmarkdown\tPENDING\tCR-069 phase 3; REQ-710"));
         assertTrue(results.contains("\tinspect:text.formatting_join:48,2103\taccepted\tdefault\tPENDING\tCR-069 phase 4; text.formatting_join"));

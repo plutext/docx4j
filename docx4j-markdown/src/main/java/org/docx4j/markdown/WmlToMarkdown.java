@@ -37,6 +37,7 @@ import org.commonmark.node.StrongEmphasis;
 import org.commonmark.node.Text;
 import org.commonmark.node.ThematicBreak;
 import org.docx4j.convert.out.common.writer.LinkTargets;
+import org.docx4j.model.text.CaseMapping;
 import org.docx4j.model.text.ImageDescription;
 import org.docx4j.model.text.TextBlock;
 import org.docx4j.model.text.TextCell;
@@ -370,7 +371,8 @@ class WmlToMarkdown {
 			if (revision != null) sb.append(open(revision));
 			for (int k = i; k < j; k++) {
 				TextRun r = runs.get(k);
-				if (r.getKind() == TextRun.Kind.TEXT || r.getKind() == TextRun.Kind.FIELD_CODE) sb.append(r.getText());
+				if (r.getKind() == TextRun.Kind.TEXT) sb.append(CaseMapping.written(r, textOptions));
+				else if (r.getKind() == TextRun.Kind.FIELD_CODE) sb.append(r.getText());
 			}
 			if (revision != null) sb.append(close(revision));
 			i = j;
@@ -987,7 +989,7 @@ class WmlToMarkdown {
 	}
 
 	private void text(TextRun run, InlineSink sink) {
-		String value = run.getText();
+		String value = CaseMapping.written(run, textOptions); // w:caps in capitals, by the run's language (REQ-607)
 		if (value.isEmpty()) return;
 		if (run.isMath()) {
 			String latex = latex(run);
@@ -1010,7 +1012,7 @@ class WmlToMarkdown {
 	private void comment(TextComment comment, InlineSink sink) {
 		sink.node(raw("{>>"));
 		detail(comment.getAuthor(), comment.getDate(), sink);
-		sink.text(comment.getText(), false, false, false);
+		sink.text(CaseMapping.written(comment, textOptions), false, false, false);
 		sink.node(raw("<<}"));
 	}
 

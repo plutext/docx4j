@@ -206,7 +206,9 @@ public final class PlainText {
 
 		void run(TextRun run) {
 			switch (run.getKind()) {
-			case TEXT:
+			case TEXT: // w:caps in capitals, by the run's language (REQ-607)
+				sb.append(CaseMapping.written(run, options));
+				break;
 			case FIELD_CODE:
 			case LIST_LABEL:
 				sb.append(run.getText());
@@ -241,7 +243,7 @@ public final class PlainText {
 		private void comment(TextComment comment) {
 			sb.append("{>>");
 			detail(comment.getAuthor(), comment.getDate());
-			sb.append(comment.getText()).append("<<}");
+			sb.append(CaseMapping.written(comment, options)).append("<<}");
 		}
 
 		/** A block written on its own, for a table cell's value. */

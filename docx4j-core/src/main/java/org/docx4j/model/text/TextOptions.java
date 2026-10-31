@@ -65,6 +65,14 @@ public final class TextOptions {
 	/** {@code symbols} (REQ-601). */
 	public enum Symbols { ASIS, UNICODE }
 
+	/**
+	 * {@code small_caps} (REQ-607): a small-caps run written as its stored characters ({@code ASIS}), or in capitals
+	 * as a caps run is ({@code UPPER}, Word's text).
+	 *
+	 * @since 17.3.5 (CR-069)
+	 */
+	public enum SmallCaps { ASIS, UPPER }
+
 	/** {@code math} (REQ-604). */
 	public enum MathFormat { LATEX, UNICODEMATH }
 
@@ -82,7 +90,7 @@ public final class TextOptions {
 	 * the caller sets, before or after the profile, overrides it. {@link #WORD_TEXT} is Word's Save As plain text as the
 	 * options reach it: the accepted view, hidden text in, headers, footers and comments in, text boxes out, notes and
 	 * their references in, no list labels, fields cached, no field codes, the table of contents in, placeholders in, bound
-	 * values, chunks expanded, symbols as they are, tables as tab-separated rows, no page markers, no indentation, no alt
+	 * values, chunks expanded, symbols as they are, small caps in capitals, tables as tab-separated rows, no page markers, no indentation, no alt
 	 * text, no metadata, no charts, SmartArt or embedded packages. What it does not reproduce: the notes' and comments'
 	 * forms, CRLF and CR cells, folded hyphens, Word's linear math ({@code math: unicodemath} is not implemented, so the
 	 * preset leaves math as LaTeX), and three accidents of Word's own: the partial update a DATE, TIME or SAVEDATE
@@ -94,7 +102,7 @@ public final class TextOptions {
 	public static final List<String> NAMES = Collections.unmodifiableList(java.util.Arrays.asList(
 			"view", "include", "text_boxes", "notes", "note_references", "comments", "hidden", "field_codes",
 			"fields", "toc", "placeholders", "bindings", "list_labels", "charts", "smartart", "embedded", "altchunks",
-			"alt_text", "metadata", "symbols", "math", "tables", "markup_detail", "page_markers", "layout",
+			"alt_text", "metadata", "symbols", "small_caps", "math", "tables", "markup_detail", "page_markers", "layout",
 			"warnings", "profile"));
 
 	private TextView view = TextView.ACCEPTED;
@@ -117,6 +125,7 @@ public final class TextOptions {
 	private boolean altText = false;
 	private boolean metadata = false;
 	private Symbols symbols = Symbols.ASIS;
+	private SmallCaps smallCaps = SmallCaps.ASIS;
 	private MathFormat math = MathFormat.LATEX;
 	private Tables tables = Tables.AUTO;
 	private MarkupDetail markupDetail = MarkupDetail.TYPE;
@@ -202,6 +211,7 @@ public final class TextOptions {
 		case "alt_text": altText = bool(n, value); break;
 		case "metadata": metadata = bool(n, value); break;
 		case "symbols": symbols = choice(n, value, Symbols.class); break;
+		case "small_caps": smallCaps = choice(n, value, SmallCaps.class); break;
 		case "math": math = choice(n, value, MathFormat.class); break;
 		case "tables": tables = choice(n, value, Tables.class); break;
 		case "markup_detail": markupDetail = choice(n, value, MarkupDetail.class); break;
@@ -221,7 +231,7 @@ public final class TextOptions {
 			{ "note_references", true }, { "comments", true }, { "hidden", true }, { "field_codes", false }, { "fields", "cached" },
 			{ "toc", true }, { "placeholders", true }, { "bindings", "bound" }, { "list_labels", false }, { "charts", false },
 			{ "smartart", false }, { "embedded", false }, { "altchunks", true }, { "alt_text", false }, { "metadata", false },
-			{ "symbols", "asis" }, { "math", "latex" }, { "tables", "tsv" }, { "page_markers", false }, { "layout", "none" } };
+			{ "symbols", "asis" }, { "small_caps", "upper" }, { "math", "latex" }, { "tables", "tsv" }, { "page_markers", false }, { "layout", "none" } };
 
 	/**
 	 * Applies a profile (REQ-1002): its values for every option the caller has not set by name; an option the caller
@@ -290,6 +300,8 @@ public final class TextOptions {
 	public TextOptions altText(boolean b) { this.altText = b; explicit.add("alt_text"); return this; }
 	public TextOptions metadata(boolean b) { this.metadata = b; explicit.add("metadata"); return this; }
 	public TextOptions symbols(Symbols s) { this.symbols = s; explicit.add("symbols"); return this; }
+	/** {@code small_caps} (REQ-607): see {@link SmallCaps}. @since 17.3.5 */
+	public TextOptions smallCaps(SmallCaps s) { this.smallCaps = s; explicit.add("small_caps"); return this; }
 	public TextOptions math(MathFormat m) { this.math = m; explicit.add("math"); return this; }
 	public TextOptions tables(Tables t) { this.tables = t; explicit.add("tables"); return this; }
 	public TextOptions markupDetail(MarkupDetail d) { this.markupDetail = d; explicit.add("markup_detail"); return this; }
@@ -357,6 +369,8 @@ public final class TextOptions {
 	public boolean isAltText() { return altText; }
 	public boolean isMetadata() { return metadata; }
 	public Symbols getSymbols() { return symbols; }
+	/** @since 17.3.5 */
+	public SmallCaps getSmallCaps() { return smallCaps; }
 	public MathFormat getMath() { return math; }
 	public Tables getTables() { return tables; }
 	public MarkupDetail getMarkupDetail() { return markupDetail; }
@@ -391,6 +405,7 @@ public final class TextOptions {
 		o.altText = altText;
 		o.metadata = metadata;
 		o.symbols = symbols;
+		o.smallCaps = smallCaps;
 		o.math = math;
 		o.tables = tables;
 		o.markupDetail = markupDetail;
@@ -428,6 +443,7 @@ public final class TextOptions {
 		m.put("alt_text", altText);
 		m.put("metadata", metadata);
 		m.put("symbols", lower(symbols));
+		m.put("small_caps", lower(smallCaps));
 		m.put("math", lower(math));
 		m.put("tables", lower(tables));
 		m.put("markup_detail", lower(markupDetail));

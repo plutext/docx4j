@@ -187,6 +187,11 @@ public final class TextBlock {
 	 * rows a line apart, their cells a tab apart. No list label, note number or comment.
 	 */
 	public String getText() {
+		return text(r -> r.text);
+	}
+
+	/** {@link #getText()} with each text run's text as the function gives it ({@link CaseMapping#written(TextBlock, TextOptions)}). */
+	String text(java.util.function.Function<TextRun, String> runText) {
 		StringBuilder sb = new StringBuilder();
 		if (kind == Kind.CHART) {
 			if (chartTitle != null && !chartTitle.isEmpty()) sb.append(chartTitle);
@@ -206,13 +211,13 @@ public final class TextBlock {
 					List<TextBlock> blocks = cells.get(c).blocks;
 					for (int b = 0; b < blocks.size(); b++) {
 						if (b > 0) sb.append(' ');
-						sb.append(blocks.get(b).getText());
+						sb.append(blocks.get(b).text(runText));
 					}
 				}
 			}
 			return sb.toString();
 		}
-		for (TextRun r : runs) if (r.kind == TextRun.Kind.TEXT || r.kind == TextRun.Kind.FIELD_CODE) sb.append(r.text);
+		for (TextRun r : runs) if (r.kind == TextRun.Kind.TEXT || r.kind == TextRun.Kind.FIELD_CODE) sb.append(runText.apply(r));
 		return sb.toString();
 	}
 

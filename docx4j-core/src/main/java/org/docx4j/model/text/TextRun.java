@@ -48,6 +48,13 @@ public final class TextRun {
 		PAGE_MARKER
 	}
 
+	/**
+	 * A run's {@code w:vertAlign} (WD REQ-710): {@code superscript}, {@code subscript}, or {@code baseline} for neither.
+	 *
+	 * @since 17.3.5 (CR-069)
+	 */
+	public enum VerticalAlignment { BASELINE, SUPERSCRIPT, SUBSCRIPT }
+
 	/** {@code footnote} or {@code endnote}. */
 	public static final String FOOTNOTE = "footnote", ENDNOTE = "endnote";
 
@@ -66,6 +73,9 @@ public final class TextRun {
 	TextObject object;
 	int pageNumber;
 	boolean bold, italic, strike, monospace;
+	boolean caps, smallCaps;
+	VerticalAlignment verticalAlignment = VerticalAlignment.BASELINE;
+	String language;
 	String link;
 	boolean math, displayMath;
 
@@ -140,6 +150,42 @@ public final class TextRun {
 	public boolean isMonospace() { return monospace; }
 
 	/**
+	 * True for text Word shows in capitals ({@code w:caps}): the run's own property, else its styles', the
+	 * paragraph style's among them (the case is the text's, not emphasis). {@link #getText()} stays the stored
+	 * characters; the plain-text and Markdown writers write them in capitals by {@link #getLanguage()}
+	 * ({@link CaseMapping}; WD REQ-607, CR-069).
+	 *
+	 * @since 17.3.5
+	 */
+	public boolean isCaps() { return caps; }
+
+	/**
+	 * True for text in small capitals ({@code w:smallCaps}), folded as {@link #isCaps()} is, and not caps: a run
+	 * under both is a caps run. The writers write its stored characters, unless {@code small_caps: upper} is set
+	 * (WD REQ-607).
+	 *
+	 * @since 17.3.5
+	 */
+	public boolean isSmallCaps() { return smallCaps; }
+
+	/**
+	 * The text's {@code w:vertAlign}, the run's own, else its styles' (WD REQ-710); {@code BASELINE} for a note
+	 * reference, which is a reference (REQ-503), not a superscript.
+	 *
+	 * @since 17.3.5
+	 */
+	public VerticalAlignment getVerticalAlignment() { return verticalAlignment; }
+
+	/**
+	 * For a caps or small-caps run, the language its capitals are mapped by (WD REQ-607): its {@code w:lang/@w:val},
+	 * else its styles' or the document defaults', else the settings' {@code w:themeFontLang}, else
+	 * {@link CaseMapping#DEFAULT_LANGUAGE}; null for any other run.
+	 *
+	 * @since 17.3.5
+	 */
+	public String getLanguage() { return language; }
+
+	/**
 	 * For text in a link: its target, whether the link is a {@code w:hyperlink} (its relationship's
 	 * target, else {@code #} and its {@code w:anchor}) or a HYPERLINK field's result (its instruction's
 	 * address, and {@code #} and its {@code \l} bookmark), whatever {@code field_codes} says (WD REQ-703);
@@ -156,6 +202,8 @@ public final class TextRun {
 	/** Whether two runs' text can be one run: the same formatting, link and equation. */
 	boolean sameFormat(TextRun o) {
 		return bold == o.bold && italic == o.italic && strike == o.strike && monospace == o.monospace
+				&& caps == o.caps && smallCaps == o.smallCaps && verticalAlignment == o.verticalAlignment
+				&& java.util.Objects.equals(language, o.language)
 				&& java.util.Objects.equals(link, o.link) && math == o.math && displayMath == o.displayMath;
 	}
 
@@ -164,6 +212,10 @@ public final class TextRun {
 		italic = from.italic;
 		strike = from.strike;
 		monospace = from.monospace;
+		caps = from.caps;
+		smallCaps = from.smallCaps;
+		verticalAlignment = from.verticalAlignment;
+		language = from.language;
 		link = from.link;
 		math = from.math;
 		displayMath = from.displayMath;

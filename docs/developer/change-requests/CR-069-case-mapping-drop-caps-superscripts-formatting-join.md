@@ -1,7 +1,7 @@
 # CR-069: what the page shows, in the text: case mapping, drop caps, superscripts, and the formatting-join finding
 
 Status: ACCEPTED 2026-10-31 (Jason: "CR-069 decisions as presented"): D1 to D9 as recommended (§5); D9's condition
-ruled the same day (Jason: "17.3.5 will wait for CR-069"): 17.3.5 ships with CR-069, not only phases 0 to 2. Phase 0 DONE 2026-10-31 (§10; Jason: "start CR-069"). Proposed
+ruled the same day (Jason: "17.3.5 will wait for CR-069"): 17.3.5 ships with CR-069, not only phases 0 to 2. Phase 0 DONE 2026-10-31 (§10; Jason: "start CR-069"); phase 1 DONE 2026-10-31 (§11; Jason: "go ahead with phase 1"). Proposed
 2026-10-31, drafted by Claude Fable 5.1 (session docx4j-12) from Jason's rulings of the same day on the
 four questions the portfolio's review of LlamaIndex's Document Parsing Protocol put to him (paper §7.13; WD 0.44, drafted
 and uncommitted: REQ-521, REQ-607, REQ-710, §9.2 `text.formatting_join`, §4 NOTE, Appendix B). Jason's rulings: (a) the
@@ -141,9 +141,9 @@ follow; `InspectionReport.optionsPhrase` shows them when non-default.
 | Phase | What | Size |
 |---|---|---|
 | 0 | Fixtures and goldens from the share into core-tests; the tsv rows; WD 0.44 cross-checked against the CR | ½ day |
-| 1 | `TextRun` flags, `CaseMapping`, plain-text caps mapping, `small_caps` option and preset; `CaseMappingTest`; block goldens regenerated; hand-off to the ports (the python note: `str.upper()` expands `ß` and ignores tr; the per-code-point mapping is needed) | 1 day |
+| 1 | `TextRun` flags, `CaseMapping`, plain-text and (as built, §11) Markdown caps mapping, `small_caps` option and preset; `CaseMappingTest`; block goldens regenerated; hand-off to the ports (the python note: `str.upper()` expands `ß` and ignores tr; the per-code-point mapping is needed) | 1 day |
 | 2 | The drop-cap join, its warning, `drop_caps` option and preset; `DropCapJoinTest` | ½ day |
-| 3 | docx4j-markdown: caps mapping and `<sup>`/`<sub>`; `Docx4J.toHTML` `<sup>`/`<sub>` if D4 is taken | ½ day |
+| 3 | docx4j-markdown: `<sup>`/`<sub>` (its caps mapping built in phase 1, §11); `Docx4J.toHTML` `<sup>`/`<sub>` if D4 is taken | ½ day |
 | 4 | `text.formatting_join` in `InspectWalk`, the phrase, `FormattingJoinTest`; CR-050 §2.3 row by reference | ½ day |
 | 5 | CHANGELOG; Getting Started's Text extraction chapter (a sentence each on caps, drop caps, `<sup>`); hand-offs: the ports (CR-046-style), docx4j-mcp (nothing new in the contract beyond the flags and the kind), docx4j-tika (the XHTML gains `<sup>`/`<sub>` and the capitals; its parity baseline moves) | ½ day |
 
@@ -186,6 +186,10 @@ accepted as presented, 2026-10-31 (Jason).
 - Small caps under the `word-text` preset against Word's save: measured (capitals); the default's stored case is a
   deliberate departure, not an unmeasured one.
 - A drop cap whose frame holds two words; a drop cap followed by a table.
+- A paragraph style's `w:caps` in Word's text save (phase 1 applies it, §11.2 item 2; the probes measured direct
+  formatting only).
+- A caps run's field code under `field_codes: true`, and a list label whose level's run properties have `w:caps`
+  (phase 1 writes both as stored, §11.2 item 4).
 
 ## 8. Hand-offs
 
@@ -301,3 +305,68 @@ The registry (`docx4j/CR-069` in progress, phase 0 done) to the portfolio sessio
 says, now with the folder to copy: the four tables, the fixtures and Word's saves, and the comparison rule
 (`dpp/README.md`); the portfolio may want the folder as the WD suite's fixture for these statements (WD 0.44's history
 row: "[PROBE] gains no fixture yet (the `dpp-forks` Word re-save is the candidate)").
+
+## 11. Phase 1 (2026-10-31; Jason: "go ahead with phase 1")
+
+### 11.1 What was built
+
+- **`TextRun`**: `isCaps()`, `isSmallCaps()`, `getVerticalAlignment()` (the enum `VerticalAlignment`: `BASELINE`,
+  `SUPERSCRIPT`, `SUBSCRIPT`) and `getLanguage()`, set in `Extractor.formatOf` for text runs. Each takes the run's own
+  property, else its styles' (the resolver's effective run properties, which XOR the toggles `w:caps` and
+  `w:smallCaps` through the style chain, ECMA-376 §17.7.3). A run under both is caps and not small caps. Runs merge
+  only when the four agree.
+- **`CaseMapping`** (public, `org.docx4j.model.text`): `upper(text, language)`, each code point to
+  `Character.toUpperCase(int)` (Unicode's simple mapping) and `i` to `İ` where the language's primary subtag is `tr` or
+  `az`; `isUpper` and `written` for a run, a block and a comment under the options; `DEFAULT_LANGUAGE` `en-US`.
+- **Language**: the run's `w:lang/@w:val`, else its styles' together with the document defaults' (one effective
+  `w:rPr`), else the settings' `w:themeFontLang`, else `en-US`. Set on cased runs only.
+- **`TextOptions.small_caps`** (`SmallCaps.ASIS`, `UPPER`; default `ASIS`), after `symbols` in WD §10's order, in
+  `toMap()`, `copy()` and by name; the `word-text` preset sets `upper`. `InspectionReport` names it when it is not the
+  default, as it does any option.
+- **Writers**: `PlainText` (a text run; a comment's text through `CaseMapping.written(TextComment, ...)`, since
+  `TextComment.getText()` is the stored text) and docx4j-markdown's `WmlToMarkdown` (a text run, a code paragraph, a
+  comment's text). `TextBlock.getText()` now runs through a package-private `text(Function)`, which the block and
+  comment forms use.
+- **Harness**: `TextsAdapter` advertises REQ-607.
+- **Tests**: `CaseMappingTest` (10): Word's table; the dotted-i rule; the differences from `String.toUpperCase`
+  pinned (`ß`, `ﬁ`, U+1FB3, the titlecase digraph, a supplementary letter); the length kept for every code point in
+  both encodings; the flags and the language on Word's probe; the paragraph style's caps; a run under both; runs
+  merged by language; the language of last resort (no defaults' `w:lang`: `w:themeFontLang`, else `en-US`; a `tr-TR`
+  theme language gives `İ`, the unmeasured prediction of §7); a note reference is baseline; the option.
+  `ExtractionConformanceTest`'s dpp test now asserts the phase 1 rows pass and that none pends on REQ-607.
+
+### 11.2 Decisions taken in the phase (docx4j's; none changes the WD)
+
+1. **`getLanguage()` is docx4j's addition to the block model.** The WD's run carries the two flags; the writer needs
+   the language. It is null on an uncased run, so a `w:lang` alone never splits a run.
+2. **The paragraph style does not cancel the case**, as it cancels bold, italic and strike: those flags are Markdown
+   emphasis, a heading style's bold being the heading's, while a style's caps is the text the page shows. On the
+   unmeasured list (§7).
+3. **A code point whose uppercase would change its UTF-16 length is kept.** None does in Java 21's tables (checked
+   over every code point); the guard keeps D8's offsets on any JDK.
+4. **Text runs only**: a field code (under `field_codes: true`) and a list label are written as stored, as before
+   (the extractor sets formatting on text runs alone). On the unmeasured list.
+5. **The Markdown half of REQ-607 is built here, not in phase 3.** The statement covers plain text and Markdown, and
+   the suite's Markdown rows cite it, so advertising it needed both. Phase 3 keeps the tags. In Markdown a code span
+   and a code paragraph get the capitals too: §3.2 keeps tags out of code; the capitals are the text.
+6. **REQ-710's note reference** (§10.4) holds by construction: the formatting is set on text runs only, so a note
+   reference is baseline whatever its style raises. The test pins it on phase 0's probe.
+
+### 11.3 Results
+
+- The dpp suite: 129 assertions passed and 63 pending (phase 2: 7, phase 3: 52, phase 4: 4); none pends on REQ-607.
+  Of Word's 22 saves, 19 now agree, every caps probe and C05 among them; C02 waits on phase 2, C06 and C07 on phase 3.
+- Phase 0's suite unchanged at 1736 passed, 36 pending: its fixtures have no cased run.
+- Gate: docx4j-core-tests 2320/0/30 (was 2307/0/30 before this CR), docx4j-markdown 172/0/0.
+
+### 11.4 Hand-offs
+
+- **docx4j-core-ts, docx4j-python**: the flags, the language, the mapping (Unicode's simple uppercase plus the tr/az
+  rule, with the reason neither language's own upper will do), `small_caps`, and the `dpp/` folder to copy (WD 0.50,
+  docx4j-portfolio 4b1590d, made it [PROBE]'s sixth fixture).
+- **docx4j-tika**: `XhtmlWriter` writes `TextRun.getText()`, so its text keeps the stored case. REQ-607 says HTML
+  carries CSS and the stored characters, while Tika's consumers mostly read the text without the CSS: whether its
+  XHTML uses `CaseMapping.written` is that project's choice.
+- **docx4j-mcp**: FYI. It does not read the text model yet (its `text-model` entries are proposed); when it does,
+  `small_caps` is one more option by name.
+- **The portfolio**: the registry note (phase 1 done).
