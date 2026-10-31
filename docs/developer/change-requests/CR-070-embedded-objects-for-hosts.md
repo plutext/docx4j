@@ -1,15 +1,18 @@
 # CR-070: embedded objects in the text model, for a host that reads them itself
 
-Status: PROPOSED 2026-10-31, drafted by Claude Opus 5.5 (session docx4j-12) at the docx4j-tika session's request
-(docx4j-tika-45, the same day), which follows from Jason's decision on embedding in docx4j-tika (CR-055 D3 and D4
+Status: ACCEPTED 2026-10-31 (Jason: "yes, revise D2 and send it to the portfolio, then CR-070 decisions as
+recommended"): D1 to D5 as recommended, D2 revised first (Jason: "why not keep the spec consistent with what we are
+adding to the API?"): the additions go into the WD (WD 0.46, the portfolio's), and docx4j builds to it; not built.
+Target 17.3.5 (D5). Proposed the same day, drafted by Claude Opus 5.5 (session docx4j-12) at the docx4j-tika
+session's request (docx4j-tika-45), which follows from Jason's decision on embedding in docx4j-tika (CR-055 D3 and D4
 revised, CR-055 §5b): whether embedded content is in the text or handed to the host follows the host's settings,
-and by default the host's own Tika parsers read embedded xlsx, pptx and OLE-package text. Decisions D1 to D5 await
-Jason (§5); nothing is built. Target: 17.3.5, if Jason wants it there (D5).
+and by default the host's own Tika parsers read embedded xlsx, pptx and OLE-package text.
 
 ## 0. Summary
 
-Three small additions to the text model (CR-046), docx4j API only, so that a host such as docx4j-tika can put an
-embedded object's text where the object stands, read it with its own parsers, or hand it on, object by object:
+Three small additions to the text model (CR-046) and to the WD with it (D2), so that a host such as docx4j-tika
+can put an embedded object's text where the object stands, read it with its own parsers, or hand it on, object by
+object:
 
 - **(a)** an object run (`TextRun.Kind.OBJECT`) carries a `TextObject`: the object's part (null for a linked
   object), its relationship id, its ProgID and what it is (`EMBED`, `LINK`, `CONTROL`), as an image run carries a
@@ -57,8 +60,7 @@ ProgID, and `embedded: true` reads every embedded package it can.
   object. Those are the names Tika's own parser gives such a package when it hands it on (Tika 3.3.3
   `AbstractOOXMLExtractor` unwraps the `Ole10Native`: `resourceName` the label, `originalResourceName` the command
   and the file name), so that a host's `FilenameFilter` on `*.txt` meets `notes.txt`, not `oleObject1.bin`
-  (docx4j-tika-45, 31 October 2026). Not part of the WD's block model, so not in its JSON and nothing for the ports
-  (D2).
+  (docx4j-tika-45, 31 October 2026). In the WD's block model too (D2): REQ-512's object gains the same members.
 - **(b) `EmbeddedFilter`** (`org.docx4j.model.text`, a functional interface): `boolean read(TextObject object, String
   address)`, called once per object the text model would read under `embedded: true`, before it is queued; `false`
   and the object is not read, its run kept. Default: none (read every one, as now). A filter that throws is a
@@ -69,19 +71,25 @@ ProgID, and `embedded: true` reads every embedded package it can.
 
 | Phase | What | Size |
 |---|---|---|
-| 1 | (a), (b), (c); tests in docx4j-core-tests (the extraction probe's object cases, a filter refusing one of two objects, a linked object, a control, the warning's part name); CHANGELOG; the hand-off to docx4j-tika | ½ day |
+| 0 | The WD (the portfolio's, WD 0.46; D2): REQ-512's object in the block model gains `kind`, `relationshipId`, `part`, `contentType` and an OLE 1.0 package's `label`, `fileName`, `command`; a new requirement beside REQ-514, the host's per-object filter under `embedded: true` (a MAY; an object not read contributes nothing and keeps its object run; no filter reads every one); `altchunk.not_expanded`'s selector the chunk's part name | the portfolio's |
+| 1 | (a), (b), (c) built to the WD text; tests in docx4j-core-tests (the extraction probe's object cases, a filter refusing one of two objects, a linked object, a control, the warning's part name; the block model's JSON); CHANGELOG; the hand-offs: docx4j-tika, and the ports (core-ts, python) for the block model's members and the filter, as their own entries | ½ day |
 
-## 5. Decisions for Jason
+## 5. Decisions
 
-| # | Decision | Recommendation |
+D1 to D5 accepted as recommended, 2026-10-31 (Jason), D2 as revised the same day.
+
+| # | Decision | Recommendation (accepted) |
 |---|---|---|
 | D1 | The object's description | A `TextObject` on the run (part, relationship id, ProgID, kind, content type; an OLE 1.0 package's label, file name and command), parallel to `TextImage`, rather than `getPart()` on `TextRun` alone: a linked object has no part, the kind and the id are what a host writes, and a package's names are what a host's filter matches |
-| D2 | Specification | docx4j API only: not in the WD's block model or its JSON, nothing for the ports; the portfolio told, so that the WD can take it later if another host asks |
+| D2 | Specification | ~~docx4j API only: not in the WD's block model or its JSON, nothing for the ports~~. **Revised 2026-10-31** (Jason: "why not keep the spec consistent with what we are adding to the API?"): the WD takes all three, as it already specifies the object run in the block model (REQ-512) and a host's callback (REQ-514's `ImageDescriber`): REQ-512's object gains the `TextObject` members; a requirement beside REQ-514 for the per-object filter; `altchunk.not_expanded`'s selector the chunk's part name. docx4j builds to the WD text (phase 0, WD 0.46, the portfolio's); the ports follow as their own entries, docx4j their oracle |
 | D3 | The filter | `TextOptions.embeddedFilter(EmbeddedFilter)`, asked per object under `embedded: true`; an object not read keeps its run and `TextObject`; no filter reads every one (today's behaviour) |
 | D4 | The warning | `altchunk.not_expanded` carries the chunk's part name (`TextWarning.getPartName()`) |
 | D5 | Release | Into 17.3.5 (additive; docx4j-tika builds against 17.3.5) |
 
 ## 6. Sources
+
+- WD 0.44 REQ-512 (embedded objects: the block model's `{type: "object", progId, address}`), REQ-514 (the
+  `ImageDescriber`, a host's callback), REQ-801 (warnings and their selectors).
 
 - docx4j-tika-45's request (31 October 2026) and docx4j-tika `docs/embedding-behaviour.md` (commit 3716f15).
 - CR-055 §5b (D3 and D4 revised); CR-046 (the text model), REQ-512 (embedded), REQ-513 (altChunk), REQ-514 (the
