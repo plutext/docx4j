@@ -36,6 +36,16 @@ emptied last paragraph, text left before a control whose first paragraph is numb
 Reject All of it (Jason, 23 October 2026). Word's save adds `w:tblInd` and `w:tblCellMar` to a table that lacks
 them, so the tests compare these with table properties aside.
 
+## `cr068/` - manual redline to tracked changes (CR-068 phase 0)
+
+Built by `org.docx4j.model.revisions.ManualRedlineProbeBuilder` (2026-10-31): `manual-redline.docx`, a manual redline
+in seventeen cases (M01 to M17: struck old text, underlined or red new text, in prose, cells, a text box, a header, a
+footnote, a comment, a hyperlink, a content control, beside fields, styles and tracked content); the conversions
+CR-068 predicts, written by hand (`-default`, `-optins`, `-d9`); `manual-redline-dates.docx` (which of `w:date` and
+`w16du:dateUtc` Word shows). `cr068-probe.ps1` and `RUN.txt` drive Word 365 over them: Word's own tracked deletion of
+the struck text, the revisions each file shows, and Word's Accept All and Reject All of each, as docx and plain text
+(`word-*`, with `cr068-log.txt`), the goldens for CR-068 section 8.
+
 ## `editor/` - docx4j-ts-editor's fixtures
 
 Copied 2026-10-16 from docx4j-ts-editor `packages/editor-model/test/fixtures/` at 3a515ef.

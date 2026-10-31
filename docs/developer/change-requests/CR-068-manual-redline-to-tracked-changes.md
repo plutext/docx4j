@@ -1,8 +1,9 @@
 # CR-068: manual redline to tracked changes, an explicit, opt-in conversion
 
 Status: ACCEPTED 2026-10-31 (Jason: "CR-068 decisions as recommended; commence phase 0"): D1 to D12 as recommended
-(§6); phase 0 STARTED 2026-10-31 (§8). Proposed the same day, drafted by Claude Fable 5.1 (session docx4j-12) at
-Jason's direction, relayed by the portfolio session from its review of LlamaIndex's Document Parsing Protocol (the
+(§6); phase 0 STARTED 2026-10-31: the probe BUILT and on the share the same day, the predictions written
+(§8.1 to §8.3), Word's run pending; D13 (the separating space, §8.3) proposed at phase 0, awaiting Jason.
+Proposed the same day, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's direction, relayed by the portfolio session from its review of LlamaIndex's Document Parsing Protocol (the
 paper's §7.13; the `dpp-forks` probe): "strikethrough handling is NOT view-sensitive (Accept All and Reject All leave
 struck text; the file does not say it is a deletion), but I suspect we do need an explicit, opt-in conversion that
 turns manual redline (strikethrough only by default) into tracked changes with an author such as 'manual redline'".
@@ -181,7 +182,7 @@ option and never a default (Jason).
 
 ## 6. Decisions
 
-All twelve accepted as recommended, 2026-10-31 (Jason).
+D1 to D12 accepted as recommended, 2026-10-31 (Jason); D13 proposed at phase 0.
 
 | # | Decision | Recommendation (accepted) |
 |---|---|---|
@@ -197,6 +198,7 @@ All twelve accepted as recommended, 2026-10-31 (Jason).
 | D10 | Fields, math, tracked content | Left alone and reported (`field`, `math`, `in_tracked_change`); a struck hyperlink converts inside the hyperlink |
 | D11 | Audit | The author name is the record; a custom property `docx4j:manualRedline` only under `auditProperty(true)` |
 | D12 | Settings | `w:trackRevisions` untouched; converting is not turning tracking on |
+| D13 | The separating space (proposed at phase 0, §8.3; awaiting Jason) | One space taken into the deletion where the converted text has whitespace on both sides (else the preceding space before punctuation or the paragraph end), reported `separator_space`; `separatorSpace(false)` turns it off |
 
 ## 7. Out of scope
 
@@ -207,12 +209,130 @@ views (Jason: not view-sensitive).
 
 ## 8. Phase 0 record
 
-(Not started.)
+### 8.1 The probe (built 2026-10-31)
+
+In `docx4j-core-tests/src/test/resources/revisions/cr068/` and on the share at `X:\revisions\cr068\` with its
+`RUN.txt`; built by `org.docx4j.model.revisions.ManualRedlineProbeBuilder` (test sources), byte for byte the same
+on a rebuild (every entry dated 1980). Every text is ASCII, so Word's Save As Plain Text cannot meet its code-page
+defect (the portfolio's `docs/word_defects.md`, WD-001).
+
+- **`manual-redline.docx`**, the base: M01 to M16 as §3.5 lists them, with three departures. M04's table also has a
+  row struck whole (`Gizmo`, `$99.00`), the §4 risk. M08 is a QUOTE field (`Version 2`), every run of it struck,
+  not a DATE: a DATE result changes when Word updates it, and the case is the struck field, not the date; M08b
+  adds a struck run inside a `w:fldSimple`. **M17** is new: an inline content control holding a struck run and its
+  underlined replacement (D2 names content controls; §3.5 had no case for them). The base's own annotations: the
+  comment (id 0) and M07's insertion (id 100, author `CR-068 base`).
+- **The conversions, as predicted**, written by hand by the same builder (phase 1 does not exist yet), each
+  deletion and insertion by `manual redline`, ids from 101 in document order, each text box branch with its own
+  ids (as Word's own: `cr043-tracked.docx` C22 has 50 and 51 in the Choice, 52 and 53 in the Fallback), the date
+  as §8.3 F1 says: `manual-redline-default.docx` (D2, D5, D6, D8, D9, D10), `manual-redline-optins.docx` (every
+  opt-in of §3.3 at once: style strike, underline and `FF0000` as insertions, the comments story) and
+  `manual-redline-d9.docx` (the default with M11's struck mark deleted too: `w:pPr/w:rPr/w:del`, its strike
+  removed; D9's alternative).
+- **`manual-redline-dates.docx`**: four deletions differing only in their date attributes (§8.3 F1).
+- **`cr068-probe.ps1`** (method 2 of the portfolio's `docs/office_output_methods.md`, as CR-043's): first Word
+  makes its own tracked deletion of the texts the default conversion deletes, in the base (M11's paragraph whole,
+  its mark with it), saved as `manual-redline-word.docx`, for the shape Word gives a deletion; then for the base,
+  the three conversions and Word's own, it lists every revision story by story (type, author, date, text: the
+  Review pane's content), saves the file as plain text as it is, and saves Word's Accept All and Reject All of it
+  as docx and as plain text (`word-<key>-asis.txt`, `word-<key>-accept-all.docx/.txt`,
+  `word-<key>-reject-all.docx/.txt`); last it lists the dates probe's revisions. Jason then opens the default and
+  opt-ins files by hand for the repair prompt and the Review pane.
+
+### 8.2 Predictions (written before Word's run)
+
+From docx4j's own reading of the predicted files (CR-043's `TrackedChanges.acceptAll` and `rejectAll`, then the
+text model's accepted view; the three views before), which is what Word is held against:
+
+1. **Opening.** Word opens the default, opt-ins and D9 files without a repair prompt. Its Review pane lists the
+   changes under `manual redline` (and M07's insertion under `CR-068 base`): default 13 deletions in the main
+   story, 1 in the text box, 1 in the footnote, 1 in the header; opt-ins those plus M05's deletion and 7
+   insertions in the main story (M01, M02, M03, M04, M12, M13, M17), 1 insertion each in the text box and the
+   footnote, 1 deletion in the comment; D9 the default's plus M11's mark (or one fewer if Word reports M11's text
+   and mark as one revision). The dates are 31 October 2026 11:00 on the VM (Sydney, +11:00).
+2. **Accept All, default** (docx4j's text):
+
+   | Case | Text after Accept All |
+   |---|---|
+   | M01 | `M01 Rate:  1.335 per cent.` (two spaces: §8.3 F2) |
+   | M02 | `1.335` |
+   | M03 | `... of the Order Date. Late delivery incurs a penalty of 2 per cent a week.` |
+   | M04 | ` $35.00` (a leading space); the Gizmo row survives, its two cells empty (§4) |
+   | M05 to M08b | unchanged (style strike, strike off, tracked content, fields: left alone); M07's insertion accepted |
+   | M09 | `M09 See  example.com/new-terms for the terms.` (the first hyperlink emptied; two spaces) |
+   | M10 | text box `the price is  $35.00.`, footnote `the rate is  1.335.`, header `M10 header: Final version` |
+   | M11 | an empty paragraph where the struck one was (its mark not deleted, D9) |
+   | M12 | unchanged (red text) |
+   | M13 | `M13 Fee:  EUR 450 a month.` |
+   | M14 | `M14 kept words, end.` (the spaces were inside the struck runs) |
+   | M15 | `M15 Before after.` (the tab and the break deleted with their run) |
+   | M16 | unchanged (the comment is not converted by default) |
+   | M17 | `M17 Party:  Acme Holdings Pty Ltd.` (inside the content control) |
+
+3. **Reject All, default**: the base's text, M07's insertion rejected (`M07  after the insertion.`), every
+   converted run plain, not struck (D6): Word's reject-all docx has no `w:strike` or `w:dstrike` on M01, M02,
+   M03, M04, M09, M10, M13, M14, M15 and M17's old text; M11's mark keeps its strike (only the runs converted).
+4. **Opt-ins**: Accept All as the default but M05's style-struck words gone (`M05  then plain words.`), the
+   underlined and red insertions kept and no longer underlined or red, the comment `M16 comment: kept remark.`;
+   Reject All as the default's but the insertions gone (`M01 Rate: 1.316  per cent.`, `M12 The party shall notify
+   the other.`) and M05 plain (its `w:strike w:val="0"` over the style).
+5. **D9**: Accept All joins M11's emptied paragraph to the next (`M11 after: ...`, no empty paragraph); Reject All
+   as the default's.
+6. **Word's own deletions** (`manual-redline-word.docx`): the deleted runs keep their `w:strike` (Word tracks the
+   deletion and leaves the formatting), so Word's Reject All gives the struck text back, where the conversion's
+   gives plain text (D6 is a choice, not Word's own behaviour); M14's two adjacent struck runs in one `w:del` (D8;
+   Word-made fixtures in `revisions/core-ts/` hold multi-run deletions); M15's tab and break inside the deleted
+   run; M11's mark deleted with its text (`w:pPr/w:rPr/w:del`), so that Word's own Accept All joins it as the D9
+   variant does.
+7. **Dates**: Word shows D1 (w:date `00:00Z` alone) as 31 October 00:00, D2 (dateUtc alone) as 11:00, D3 (both,
+   disagreeing) as 11:00 (dateUtc wins), D4 (as the conversions write them) as 11:00. That is docx4j's reading
+   (`TrackedChange.getDate`, CR-067 D12) of the same file.
+8. **Plain text as it is** (a file with tracked changes, unresolved): not predicted; recorded.
+
+### 8.3 Findings before the run
+
+- **F1, D4's date as written.** Word 365 writes `w:date` as its machine's wall clock with a `Z`, and the instant
+  in `w16du:dateUtc` (`cr043-tracked.docx`: `w:date="2026-10-16T10:17:00Z"`, `dateUtc="2026-10-15T23:17:00Z"`);
+  docx4j reads them the same way (`TrackedChange.getDate`: dateUtc where present, else `w:date` as local time in
+  the package's zone). A UTC instant written into `w:date` alone would show 11 hours early on the VM. So D4's
+  "the operation's time (UTC, to the second)" is written as Word writes it: `w16du:dateUtc` the instant,
+  `w:date` its wall clock in `OpcPackage.effectiveDateTimeZone()`, `w16du` declared and ignorable. The dates probe
+  (§8.2 item 7) checks that Word prefers dateUtc.
+- **F2, the separating space (D13 below).** A struck value between spaces, as manual redlines are typed
+  (`Rate: ~~1.316~~ 1.335`), leaves two spaces after Accept All (M01, M04, M09, M10, M13, M17): the space the
+  author typed to separate the old value from the new separates nothing once the old one is gone, and it shows
+  on the page. §3.5 predicted `Rate: 1.335 per cent.` without noticing. Word's own editing does not leave it
+  (selecting a word selects its trailing space; smart cut and paste adjusts the spacing).
+- **F3, a text-model aside, not this CR's.** docx4j's markup view does not mark a deletion inside a comment
+  (opt-ins M16: `{>>M16 comment: withdrawn remark, kept remark.<<}`), where the accepted and original views
+  resolve it. Noted for CR-046.
+- **F4, the clause numbers**, checked against ECMA-376 Part 1, 5th edition (December 2016): `del` (deleted run
+  content) §17.13.5.14, `ins` (inserted run content) §17.13.5.18, `delText` §17.3.3.7, `strike` §17.3.2.37,
+  `dstrike` §17.3.2.9; a paragraph mark's `del` is §17.13.5.15 (deleted paragraph).
+
+**D13 (for Jason): the separating space.** (a) Leave it: the conversion converts the strike and nothing else,
+and Accept All leaves two spaces. (b) Take one space into the deletion where the converted text has whitespace on
+both sides (the following space; where the deletion ends the paragraph or meets punctuation, the preceding one),
+splitting the run that holds it, reported as `separator_space`; Accept All then gives `Rate: 1.335 per cent.` and
+Reject All still gives `1.316 1.335`. (c) (b) behind an option. Recommendation: (b) by default, with
+`separatorSpace(false)` to turn it off: the conversion's point is the text the author meant, and the double space
+is an artefact of redlining by hand, not something the author wrote; Word's own deletion of a word takes its space.
+No Word measurement is needed (a deleted space accepted is gone); phase 1's goldens follow the ruling. The
+opt-ins (phase 2) meet the same space from the other side: between a deletion and the insertion that replaces it,
+the separator belongs to neither outcome (opt-ins Reject All today: `Rate: 1.316  per cent.`), and only a space
+both inserted and deleted (`w:ins` holding a `w:del`, as Word writes another author's deletion of an insertion)
+drops out of both; phase 2 measures that before writing it.
+
+### 8.4 Word's run
+
+(Pending: Jason runs `cr068-probe.ps1` and opens two files by hand, `RUN.txt`.)
 
 ## 9. Hand-offs
 
-- **The portfolio**: the registry entry (`docx4j/CR-068`, proposed); the paper's §7.13 may cite this CR; the
-  `mcp_tool_vocabulary` verb when the CR is accepted.
+- **The portfolio**: the registry entry (`docx4j/CR-068`, in progress since acceptance, portfolio 07ed846); the
+  paper's §7.13 may cite this CR; the `mcp_tool_vocabulary` verb `manual_redline_to_tracked_changes` (portfolio
+  3e58a4e, §5 there: parameters after the Java options, `dry_run: true` = `preview`, the report as the change
+  report, no `view` parameter).
 - **docx4j-mcp, core-ts, python**: at phase 3; nothing until then.
 
 ## 10. Sources
@@ -223,5 +343,5 @@ views (Jason: not view-sensitive).
 - CR-043 (`CR-043-tracked-changes-accept-reject-api.md`) §3.1 (the API), §3.2 (what accept and reject do), §3.5
   (tests and the oracle), §4 (the fixtures and the probe).
 - CR-046 (the text model's three views), CR-050 (the inspection; the proposed `text.formatting_join` kind).
-- ECMA-376 Part 1 §17.13.5.14 (`del`), §17.13.5.18 (`ins`), §17.3.3.7 (`delText`), §17.3.2.37 (`strike`),
-  §17.3.2.9 (`dstrike`); clause numbers to be checked at phase 0.
+- ECMA-376 Part 1, 5th edition (December 2016), §17.13.5.14 (`del`), §17.13.5.15 (a paragraph's `del`),
+  §17.13.5.18 (`ins`), §17.3.3.7 (`delText`), §17.3.2.37 (`strike`), §17.3.2.9 (`dstrike`); checked at phase 0.

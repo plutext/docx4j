@@ -1,0 +1,27 @@
+CR-068 phase 0 (docx4j): Word on a manual redline converted to tracked changes.
+
+On the VM, in Windows PowerShell (Word closed):
+
+  powershell -ExecutionPolicy Bypass -File X:\revisions\cr068\cr068-probe.ps1
+
+Add -Visible to watch Word (a dialog then shows). Expected time: about a minute.
+
+What it does: opens copies (in %TEMP%\cr068-probe) of the docx4j-built inputs here. First, in the base,
+manual-redline.docx, Word makes its own tracked deletion of the struck text (the same texts the default
+conversion deletes, and M11's paragraph whole) and saves manual-redline-word.docx. Then for each of the
+base, the three predicted conversions (manual-redline-default.docx, -optins.docx, -d9.docx) and Word's own:
+lists every revision story by story (type, author, date, text: what the Review pane shows), saves it as
+plain text as it is (word-<key>-asis.txt), and saves Word's Accept All and Reject All of it as docx and as
+plain text (word-<key>-accept-all.docx/.txt, word-<key>-reject-all.docx/.txt). Last it lists the revisions
+of manual-redline-dates.docx (which date Word shows). Everything goes to cr068-log.txt here, Word's version
+and build first. Word's user name is not changed.
+
+If it hangs: end WINWORD.EXE in Task Manager and run it again. Outputs already here are skipped, so it
+resumes; to redo everything, delete manual-redline-word.docx, the word-* files and cr068-log.txt.
+
+Then, by hand (a minute): open manual-redline-default.docx and manual-redline-optins.docx in Word. Does
+either ask to repair? Does the Review pane (Review > Reviewing Pane) list the changes under "manual redline"?
+A screenshot of each with the pane open is welcome (save as cr068-default.png, cr068-optins.png here).
+Close without saving.
+
+Then tell the docx4j session "cr068 done".
