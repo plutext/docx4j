@@ -2,7 +2,8 @@
 
 Status: ACCEPTED 2026-10-31 (Jason: "yes, revise D2 and send it to the portfolio, then CR-070 decisions as
 recommended"): D1 to D5 as recommended, D2 revised first (Jason: "why not keep the spec consistent with what we are
-adding to the API?"): the additions go into the WD (WD 0.46, the portfolio's), and docx4j builds to it; not built.
+adding to the API?"): the additions go into the WD (WD 0.47 REQ-512, REQ-522, REQ-513 and REQ-801, the portfolio's), and docx4j builds to it;
+not built.
 Target 17.3.5 (D5). Proposed the same day, drafted by Claude Opus 5.5 (session docx4j-12) at the docx4j-tika
 session's request (docx4j-tika-45), which follows from Jason's decision on embedding in docx4j-tika (CR-055 D3 and D4
 revised, CR-055 §5b): whether embedded content is in the text or handed to the host follows the host's settings,
@@ -63,15 +64,16 @@ ProgID, and `embedded: true` reads every embedded package it can.
   (docx4j-tika-45, 31 October 2026). In the WD's block model too (D2): REQ-512's object gains the same members.
 - **(b) `EmbeddedFilter`** (`org.docx4j.model.text`, a functional interface): `boolean read(TextObject object, String
   address)`, called once per object the text model would read under `embedded: true`, before it is queued; `false`
-  and the object is not read, its run kept. Default: none (read every one, as now). A filter that throws is a
-  failure of the reading, as the image describer's is.
+  and the object is not read, its run kept. Default: none (read every one, as now). A filter that fails is taken as
+  declining: the object is not read, and `content.not_read` is raised with the object's part name (WD 0.47 REQ-522,
+  as REQ-514 treats a failing describer: the reading goes on).
 - **(c)** `altchunk.not_expanded` with the chunk's part name; the message and the other fields unchanged.
 
 ## 4. Phases
 
 | Phase | What | Size |
 |---|---|---|
-| 0 | The WD (the portfolio's, WD 0.46; D2): REQ-512's object in the block model gains `kind`, `relationshipId`, `part`, `contentType` and an OLE 1.0 package's `label`, `fileName`, `command`; a new requirement beside REQ-514, the host's per-object filter under `embedded: true` (a MAY; an object not read contributes nothing and keeps its object run; no filter reads every one); `altchunk.not_expanded`'s selector the chunk's part name | the portfolio's |
+| 0 | The WD (the portfolio's; drafted as WD 0.47, registry `portfolio/wd-embedded-objects`, ee8b2d5; D2): REQ-512's object in the block model gains `kind`, `relationshipId`, `part`, `contentType` and an OLE 1.0 package's `label`, `fileName`, `command`; REQ-522 (§5, after REQ-514), the host's per-object filter under `embedded: true` (asked once per object before the reading with its description and address; a decline keeps the block; a failing filter declines and raises `content.not_read` with the part name; no filter reads every one); REQ-513 and REQ-801: `altchunk.not_expanded`'s selector the chunk's part name | the portfolio's |
 | 1 | (a), (b), (c) built to the WD text; tests in docx4j-core-tests (the extraction probe's object cases, a filter refusing one of two objects, a linked object, a control, the warning's part name; the block model's JSON); CHANGELOG; the hand-offs: docx4j-tika, and the ports (core-ts, python) for the block model's members and the filter, as their own entries | ½ day |
 
 ## 5. Decisions
