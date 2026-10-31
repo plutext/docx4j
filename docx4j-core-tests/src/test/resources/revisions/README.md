@@ -45,7 +45,8 @@ CR-068 predicts, written by hand (`-default`, `-optins`, `-d9`); `manual-redline
 `w16du:dateUtc` Word shows). `cr068-probe.ps1` and `RUN.txt` drive Word 365 over them: Word's own tracked deletion of
 the struck text, the revisions each file shows, and Word's Accept All and Reject All of each, as docx and plain text
 (`word-*`, with `cr068-log.txt`), the goldens for CR-068 section 8. `manual-redline-phase1.docx` is docx4j's own
-conversion of the base (`ManualRedline`, CR-068 phase 1), for the script's second run (CR-068 section 11).
+conversion of the base (`ManualRedline`, CR-068 phase 1); the script's second run (Jason, 31 October 2026)
+saved Word's Accept All and Reject All of it as `word-phase1-*` (CR-068 section 11.6).
 
 ## `editor/` - docx4j-ts-editor's fixtures
 

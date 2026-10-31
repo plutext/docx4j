@@ -118,6 +118,47 @@ public class ManualRedlineTest {
 		}
 	}
 
+	/**
+	 * The default conversion, as Word resolved it (CR-068 section 11.6): docx4j's conversion of the
+	 * base, accepted and rejected by docx4j, describes as Word 365's Accept All and Reject All of
+	 * {@code manual-redline-phase1.docx}, the same conversion saved.
+	 */
+	@Test
+	public void asWordResolvedTheConversion() throws Exception {
+		WordprocessingMLPackage pkg = base();
+		ManualRedline.toTrackedChanges(pkg, options());
+		pkg = copy(pkg);
+		for (boolean accept : new boolean[] { true, false }) {
+			WordprocessingMLPackage c = copy(pkg);
+			if (accept) TrackedChanges.acceptAll(c);
+			else TrackedChanges.rejectAll(c);
+			String ours = DocumentDescription.of(copy(c));
+			String word = DocumentDescription.of(TrackedChangesWordTest.load(DIR + (accept ? "word-phase1-accept-all.docx" : "word-phase1-reject-all.docx")));
+			assertEquals(accept ? "accept all" : "reject all", word, ours);
+		}
+	}
+
+	/**
+	 * The probe's {@code manual-redline-phase1.docx}, which Word was given, is what the conversion
+	 * writes: its story parts as docx4j reads them (the bytes depend on the marshal's formatting
+	 * properties, which differ between the builder's classpath and the tests').
+	 */
+	@Test
+	public void thePhase1FileIsTheConversion() throws Exception {
+		byte[] base = java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(
+				ManualRedlineTest.class.getClassLoader().getResource(DIR + "manual-redline.docx").toURI()));
+		WordprocessingMLPackage built = WordprocessingMLPackage.load(new ByteArrayInputStream(ManualRedlineProbeBuilder.phase1(base)));
+		WordprocessingMLPackage committed = TrackedChangesWordTest.load(DIR + "manual-redline-phase1.docx");
+		for (String name : new String[] { "/word/document.xml", "/word/footnotes.xml", "/word/header1.xml", "/word/comments.xml" }) {
+			assertEquals(name, partXml(committed, name), partXml(built, name));
+		}
+	}
+
+	private static String partXml(WordprocessingMLPackage pkg, String name) throws Exception {
+		Object part = pkg.getParts().get(new org.docx4j.openpackaging.parts.PartName(name));
+		return XmlUtils.marshaltoString(((org.docx4j.openpackaging.parts.JaxbXmlPart<?>) part).getJaxbElement(), true, false);
+	}
+
 	/** The default: as above, but each struck value takes the space that separated it (D13). */
 	@Test
 	public void theSeparatingSpace() throws Exception {

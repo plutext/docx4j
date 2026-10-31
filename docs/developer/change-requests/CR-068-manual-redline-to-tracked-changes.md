@@ -6,8 +6,8 @@ but the dates, where Word shows `w:date` and ignores `w16du:dateUtc`; Jason's lo
 separating space) and D9 revisited (delete a struck mark whose paragraph converts whole), proposed from phase 0,
 ACCEPTED 2026-10-31 (Jason: "D13 and D9 as recommended", §8.5); D14 (the comments opt-in keeps its strike, §8.6)
 proposed for phase 2; phase 1 DONE 2026-10-31 (§11: `ManualRedline`, its options and report,
-`Texts.addresses`; held to Word's resolution of the phase 0 prediction), but for Word's second run on docx4j's own
-conversion and the Getting Started sentence (§11.5).
+`Texts.addresses`; held to Word 365's Accept All and Reject All of the phase 0 prediction and, §11.6, of docx4j's own
+conversion), but for the Getting Started sentence (§11.5).
 Proposed the same day, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's direction, relayed by the
 portfolio session from its review of LlamaIndex's Document Parsing Protocol (the
 paper's §7.13; the `dpp-forks` probe): "strikethrough handling is NOT view-sensitive (Accept All and Reject All leave
@@ -515,8 +515,27 @@ cell's last, left and reported; not whole, kept unreported).
 
 ### 11.5 Open
 
-- **Word's second run** on `manual-redline-phase1.docx` (the same script, `RUN.txt`'s second part): Word's Accept All
-  and Reject All of docx4j's own conversion, the phase 1 goldens for the default; pending Jason.
 - **The gate**: docx4j-core-tests 2278 run, 0 failures, 30 skipped (clean install of docx4j-core and core-tests).
 - **The Getting Started sentence** (§5's phase 1 row): the docx is under Jason's review (uncommitted in the tree;
   it is canonical, the md and html derived), so the sentence waits for his review to land.
+
+### 11.6 Word's second run (2026-10-31, Word 365 16.0.20326 on the VM)
+
+Jason ran `cr068-probe.ps1` again at 15:22 ("cr068 phase1 done"); it took `manual-redline-phase1.docx`, docx4j's own
+conversion, and skipped what the first run had made. Word opened it and listed 18 revisions, all `manual redline`
+at 11:00 but M07's: the main story's 15 (the separating spaces inside their struck text's revisions, `1.316 `,
+`$40.00 `, `EUR 500 `, `Acme Pty Ltd `, as Word's own deletion holds them; M09's space a revision of its own; M11's
+text and mark one), the footnote's (`1.316 `), the text box's (`$40.00 `), the header's. Accept All and Reject All
+left none. Word's Accept All text has no two spaces anywhere (`M01 Rate: 1.335 per cent.`, `M09 See
+example.com/new-terms for the terms.`, `M13 Fee: EUR 450 a month.`, `M17 Party: Acme Holdings Pty Ltd.`, the footnote
+and text box alike), M11 joined to the next paragraph; its Reject All is the base's text. The dates probe, read
+again, gave the same four dates as the first run.
+
+The goldens `word-phase1-accept-all.docx` and `word-phase1-reject-all.docx` (with their text saves) are in
+`revisions/cr068/`, and `ManualRedlineTest.asWordResolvedTheConversion` holds docx4j to them: its conversion of the
+base, accepted and rejected by docx4j, describes as Word's (`DocumentDescription`); `thePhase1FileIsTheConversion`
+holds the file Word was given to what the conversion writes (its story parts as docx4j reads them; the bytes depend
+on the marshal's formatting properties, which the builder's classpath and the tests' set differently). 15 tests,
+green in Maven too.
+
+**Phase 1: DONE**, but for the Getting Started sentence (§11.5).
