@@ -131,8 +131,11 @@ public final class ManualRedlineOptions {
 
 	/**
 	 * The comments story converts too (D2's opt-in). In a comment the converted run keeps its
-	 * strike, underline or colour (D14): Word's comment card shows no tracked-change marks, so without
-	 * them a withdrawn remark would look kept until Accept All (CR-068 section 8.6).
+	 * strike, underline or colour (D14). Word 365's comment card shows no tracked change (CR-068
+	 * section 12.7): a deleted or inserted run without formatting it shows as plain text, so that a
+	 * withdrawn remark would look kept; one that keeps its strike or underline it does not draw, but
+	 * shows a "Missing content" notice pointing to the Revisions pane, which shows the run struck or
+	 * underlined. Accept All and Reject All resolve either form as Word does.
 	 */
 	public ManualRedlineOptions comments(boolean comments) {
 		this.comments = comments;

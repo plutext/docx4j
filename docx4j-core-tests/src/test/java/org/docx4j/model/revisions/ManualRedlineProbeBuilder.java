@@ -152,6 +152,36 @@ public class ManualRedlineProbeBuilder {
 		Files.write(new File(out, "manual-redline-phase2.docx").toPath(), convert(new ManualRedlineProbeBuilder(Variant.BASE).build(), phase2()));
 		Files.write(new File(out, "manual-redline-2-phase2.docx").toPath(), convert(second, phase2()));
 		System.out.println("wrote " + new File(out, "manual-redline-2.docx") + ", manual-redline-phase2.docx, manual-redline-2-phase2.docx");
+		Files.write(new File(out, "comment-cards.docx").toPath(), new ManualRedlineProbeBuilder(Variant.BASE).commentCards());
+		System.out.println("wrote " + new File(out, "comment-cards.docx"));
+	}
+
+	/**
+	 * What Word's comment card shows of tracked changes in a comment (D14, CR-068 section 12.7): five
+	 * comments, each on its own paragraph, holding C1 struck text untracked (the manual redline), C2 a
+	 * tracked deletion keeping its strike (D14, as built), C3 a tracked deletion without it (D6), C4 a
+	 * tracked insertion keeping its underline (D14), C5 one without it (D7).
+	 */
+	byte[] commentCards() throws Exception {
+		Package pkg = new Package();
+		String[][] cases = {
+				{ "C1", "struck text, untracked (the manual redline)", r(STRIKE, "withdrawn") },
+				{ "C2", "a tracked deletion keeping its strike (D14)", del(dr(STRIKE, "withdrawn")) },
+				{ "C3", "a tracked deletion, its strike removed (D6)", del(dr("", "withdrawn")) },
+				{ "C4", "a tracked insertion keeping its underline (D14)", ins(r(U, "added")) },
+				{ "C5", "a tracked insertion, its underline removed (D7)", ins(r("", "added")) } };
+		StringBuilder b = new StringBuilder();
+		b.append(p(r("CR-068 comment cards probe: what the comment card shows of a tracked change in a comment. "
+				+ "Built by docx4j (ManualRedlineProbeBuilder).")));
+		StringBuilder comments = new StringBuilder();
+		for (int i = 0; i < cases.length; i++) {
+			b.append(p("<w:commentRangeStart w:id='" + i + "'/>" + r(cases[i][0] + " " + cases[i][1] + ".") + "<w:commentRangeEnd w:id='" + i
+					+ "'/>" + commentRef(i)));
+			comments.append(comment(i, r(cases[i][0] + " the remark ") + cases[i][2] + r(" is the word before this one.")));
+		}
+		b.append(p(r("End of the comment cards probe.")));
+		b.append("<w:sectPr><w:headerReference w:type='default' r:id='" + pkg.headerId + "'/>" + PAGE + "</w:sectPr>");
+		return pkg.write(b.toString(), p(r("")), note(1, r("")), comments.toString());
 	}
 
 	/** Phase 2's options: every opt-in but the range and the audit property (CR-068 section 12). */

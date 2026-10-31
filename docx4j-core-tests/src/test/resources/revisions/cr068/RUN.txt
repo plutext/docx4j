@@ -41,3 +41,14 @@ cards (M16, N10): is the deleted text shown struck and the inserted text underli
 each card is welcome (cr068-phase2-comment.png, cr068-phase2b-comment.png here). Close without saving.
 
 Then tell the docx4j session "cr068 phase2 done".
+
+Comment cards (CR-068 section 12.7, 2026-10-31): by hand, no script. Open comment-cards.docx in Word (Review >
+All Markup). Each of its five comments, C1 to C5, holds one form of the same change, the word "withdrawn" or "added":
+  C1 struck text, untracked (the manual redline)
+  C2 a tracked deletion keeping its strike (D14, as built)
+  C3 a tracked deletion, its strike removed (D6)
+  C4 a tracked insertion keeping its underline (D14)
+  C5 a tracked insertion, its underline removed (D7)
+For each card: how does "withdrawn" / "added" show (struck, underlined, coloured, plain, missing)? A screenshot of
+the five cards (cr068-comment-cards.png here), and one with Review > Reviewing Pane open
+(cr068-comment-cards-pane.png), are what is needed. Close without saving.

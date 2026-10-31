@@ -50,7 +50,8 @@ saved Word's Accept All and Reject All of it as `word-phase1-*` (CR-068 section 
 Phase 2: `manual-redline-2.docx`, a second base (N01 to N10: what the opt-ins meet that the first does not have),
 and both bases converted with the opt-ins, `manual-redline-phase2.docx` and `manual-redline-2-phase2.docx`, for the
 script's third run (Jason, 31 October 2026), which saved Word's Accept All and Reject All of each as `word-phase2-*`
-and `word-phase2b-*` (CR-068 section 12.6).
+and `word-phase2b-*` (CR-068 section 12.6). `comment-cards.docx` (C1 to C5, one form of a change in a comment
+each) and Jason's two screenshots of it (`cr068-comment-cards*.PNG`) are what Word's comment card shows (section 12.7).
 
 ## `editor/` - docx4j-ts-editor's fixtures
 

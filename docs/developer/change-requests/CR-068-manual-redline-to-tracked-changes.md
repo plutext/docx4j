@@ -631,3 +631,27 @@ N06's `w:u w:val="none"` dropped, the unreferenced footnote removed, the empty h
 Maven. The comment cards were not looked at by hand; Jason accepted D14 to D16.
 
 **Phase 2: DONE.** Next, phase 3 (the hand-offs).
+
+### 12.7 What Word's comment card shows (2026-10-31, Word 365 16.0.20326 on the VM)
+
+Jason asked to establish it ("whether the comment cards show the deleted text struck - let's establish this now").
+`comment-cards.docx` (the builder's `commentCards()`) holds five comments, each the same change in one form, and
+Jason's screenshots (`cr068-comment-cards.PNG`, the cards under All Markup; `cr068-comment-cards-pane.PNG`, with the
+Revisions pane) are in `revisions/cr068/`:
+
+| Comment | Its form | The card | The Revisions pane |
+|---|---|---|---|
+| C1 | struck text, untracked (a manual redline) | `withdrawn` struck | struck |
+| C2 | a tracked deletion keeping its strike (D14, as built) | the word missing, and a notice: "Missing content. This comment thread contains content that's not yet supported. Select it to view it in the Revisions pane." | struck |
+| C3 | a tracked deletion, its strike removed (D6) | `withdrawn` plain, no notice | plain |
+| C4 | a tracked insertion keeping its underline (D14) | the word missing, and the same notice | underlined |
+| C5 | a tracked insertion, its underline removed (D7) | `added` plain, no notice | plain |
+
+Word 365's comment card shows no tracked change in a comment: a deleted or inserted run without formatting it
+draws as plain text, as if kept (C3, C5; phase 0's `cr068-optins.png` showed M16 so); one that carries formatting
+it does not draw at all, and says so (C2, C4). The Revisions pane shows the comments' text with its formatting and
+without tracked-change marks. So D14 stands, as the better of the two: under `comments(true)` the reviewer is told
+that something is there and sees it struck (or underlined) in the pane, where D6's form would show a withdrawn
+remark as kept, silently. Accept All and Reject All resolve both forms (§12.6). The javadoc of
+`ManualRedlineOptions.comments` says this. Unmeasured: Word's classic comments (where they can still be turned on),
+and Word on the web and on the Mac.
