@@ -106,7 +106,7 @@ final class AltChunks {
 			return null;
 		}
 		if (!(opc instanceof WordprocessingMLPackage)) return null;
-		return x.nested((WordprocessingMLPackage) opc, prefix, story);
+		return x.nested((WordprocessingMLPackage) opc, prefix, story, part);
 	}
 
 	/**
@@ -118,7 +118,7 @@ final class AltChunks {
 		// an inspection's reading calls no importer of its own (CR-053 phase 3)
 		if (x.chunks != null) {
 			WordprocessingMLPackage read = x.chunks.get(part);
-			return read == null ? null : x.nested(read, prefix, story);
+			return read == null ? null : x.nested(read, prefix, story, part);
 		}
 		if (!HtmlChunkImport.readerPresent()) return null;
 		WordprocessingMLPackage scratch;
@@ -131,6 +131,6 @@ final class AltChunks {
 		List<Object> content = HtmlChunkImport.read(scratch, part, "the altChunk at " + prefix);
 		if (content == null) return null;
 		scratch.getMainDocumentPart().getContent().addAll(content);
-		return x.nested(scratch, prefix, story);
+		return x.nested(scratch, prefix, story, part);
 	}
 }

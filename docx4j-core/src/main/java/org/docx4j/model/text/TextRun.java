@@ -42,7 +42,7 @@ public final class TextRun {
 		LIST_LABEL,
 		/** A picture ({@link #getImage()}), with its description where the describer gives one ({@link #getDescription()}; REQ-514). */
 		IMAGE,
-		/** An embedded object, OLE link or ActiveX control ({@code w:object}; {@link #getProgId()}; REQ-512): no text. */
+		/** An embedded object, OLE link or ActiveX control ({@code w:object}, {@code w:control}; {@link #getObject()}; REQ-512): no text. */
 		OBJECT,
 		/** A {@code w:lastRenderedPageBreak}: where the page {@link #getPageNumber()} began when Word last laid the document out (REQ-708). */
 		PAGE_MARKER
@@ -63,6 +63,7 @@ public final class TextRun {
 	TextImage image;
 	ImageDescription description;
 	String progId;
+	TextObject object;
 	int pageNumber;
 	boolean bold, italic, strike, monospace;
 	String link;
@@ -108,6 +109,14 @@ public final class TextRun {
 
 	/** For an object: its ProgID ({@code o:OLEObject/@ProgID}), or null (an ActiveX control's is in its part). */
 	public String getProgId() { return progId; }
+
+	/**
+	 * For an object: what it is, its relationship, its part and, for an OLE 1.0 package, the names in
+	 * its native data (WD REQ-512; CR-070); null for any other run.
+	 *
+	 * @since 17.3.5
+	 */
+	public TextObject getObject() { return object; }
 
 	/** For a page marker: the number of the page that begins there, from 2 (the first marker starts the second page). */
 	public int getPageNumber() { return pageNumber; }

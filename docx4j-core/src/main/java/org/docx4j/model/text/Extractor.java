@@ -65,6 +65,7 @@ import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.NumberingState;
 import org.docx4j.model.listnumbering.NumberingStates;
 import org.docx4j.model.revisions.ResolvedView;
+import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
@@ -328,9 +329,11 @@ final class Extractor {
 	 * A package read one level down, an embedded document's or a chunk's: the same options, but none
 	 * of its own embedded packages or chunks expanded (its chunks raising {@code altchunk.not_expanded}),
 	 * and no metadata. Its addresses start {@code prefix/}, its warnings join this result's, and its
-	 * main story's blocks take {@code story}.
+	 * main story's blocks take {@code story}. A warning naming a part names {@code from}, the embedded
+	 * package's or the chunk's part, since that is the part a host can find (REQ-801's rule for
+	 * {@code content.not_read}; a nested chunk's {@code altchunk.not_expanded} too, CR-070).
 	 */
-	List<TextBlock> nested(WordprocessingMLPackage nestedPkg, String prefix, TextBlock.Story story) {
+	List<TextBlock> nested(WordprocessingMLPackage nestedPkg, String prefix, TextBlock.Story story, Part from) {
 		TextOptions o = options.copy();
 		o.embedded(false);
 		o.altchunks(false);
@@ -342,7 +345,10 @@ final class Extractor {
 		x.packages = packages;
 		x.chunks = chunks;
 		TextResult r = x.extract();
-		for (TextWarning w : r.warnings()) warn(w);
+		for (TextWarning w : r.warnings()) {
+			warn(w.getPartName() == null || from == null ? w
+					: new TextWarning(w.getKind(), w.getAddress(), w.getBranch(), w.getContentType(), partName(from)));
+		}
 		List<TextBlock> blocks = new ArrayList<TextBlock>(r.blocks());
 		if (story != null) restory(blocks, story);
 		return blocks;
@@ -789,7 +795,7 @@ final class Extractor {
 		String contentType = AltChunks.contentType(afip);
 		List<TextBlock> blocks = options.isAltchunks() ? AltChunks.expand(this, afip, story.kind, address + "/altchunk:0") : null;
 		if (blocks == null) {
-			warn(TextWarning.ALTCHUNK_NOT_EXPANDED, address, null, contentType);
+			warn(new TextWarning(TextWarning.ALTCHUNK_NOT_EXPANDED, address, null, contentType, partName(afip)));
 			return;
 		}
 		int section = story.sections == null ? 0 : story.sections.size();
@@ -1886,7 +1892,7 @@ final class Extractor {
 					return false;
 				}
 				if (value instanceof CTControl) {
-					objectRun(para, null, state);
+					control((CTControl) value, value, para, state);
 					return false;
 				}
 				if (value instanceof Inline || value instanceof Anchor) return graphic(value, para, state);
@@ -1949,35 +1955,71 @@ final class Extractor {
 		return true;
 	}
 
-	/** A {@code w:object}: an object run with its ProgID, and under {@code embedded: true} its package to follow (REQ-512). */
+	/**
+	 * A {@code w:object}: an object run with its {@link TextObject}, and under {@code embedded: true} its
+	 * package to follow, where the host's filter lets it (REQ-512, REQ-522).
+	 */
 	private void object(CTObject object, Paragraph para, RunState state) {
 		if (object.getControl() != null) {
-			objectRun(para, null, state);
+			control(object.getControl(), object, para, state);
 			return;
 		}
 		for (Object o : object.getAnyAndAny()) {
 			Object v = unwrap(o);
 			if (v instanceof org.docx4j.vml.officedrawing.CTOLEObject) {
 				org.docx4j.vml.officedrawing.CTOLEObject ole = (org.docx4j.vml.officedrawing.CTOLEObject) v;
-				objectRun(para, ole.getProgID(), state);
-				if (!options.isEmbedded() || nested) return;
-				Part part = related(para.story.part, ole.getId());
+				boolean link = ole.getType() == org.docx4j.vml.officedrawing.STOLEType.LINK;
+				Part part = link ? null : related(para.story.part, ole.getId());
+				TextObject.Kind kind = activeX(part) ? TextObject.Kind.CONTROL : link ? TextObject.Kind.LINK : TextObject.Kind.EMBED;
 				boolean ole1 = ole.getProgID() != null && ole.getProgID().toLowerCase(Locale.ROOT).startsWith("package");
-				if (part instanceof EmbeddedPackagePart || ole1 && part instanceof BinaryPart) {
-					para.story.pending.add(new EmbeddedObject((BinaryPart) part, para.address + "/object:" + para.objects++));
+				boolean ole1Part = ole1 && part instanceof BinaryPart && !(part instanceof EmbeddedPackagePart);
+				TextObject described = new TextObject(kind, ole.getId(), ole.getProgID(), part,
+						ole1Part ? Embedded.ole10Names((BinaryPart) part) : null, object);
+				objectRun(para, described, state);
+				if (!options.isEmbedded() || nested) return;
+				if (part instanceof EmbeddedPackagePart || ole1Part) {
+					String prefix = para.address + "/object:" + para.objects++;
+					if (admitted(described, prefix)) para.story.pending.add(new EmbeddedObject((BinaryPart) part, prefix));
 				}
 				return;
 			}
 			if (v instanceof CTControl) {
-				objectRun(para, null, state);
+				control((CTControl) v, object, para, state);
 				return;
 			}
 		}
 	}
 
-	private void objectRun(Paragraph para, String progId, RunState state) {
+	/** An ActiveX control: an object run with the control's part, which is never read (REQ-512). */
+	private void control(CTControl control, Object source, Paragraph para, RunState state) {
+		objectRun(para, new TextObject(TextObject.Kind.CONTROL, control.getId(), null, related(para.story.part, control.getId()), null, source), state);
+	}
+
+	/** An ActiveX control's part ({@code activeX1.xml}, or its binary). */
+	private static boolean activeX(Part part) {
+		String type = part == null ? null : part.getContentType();
+		return ContentTypes.OFFICEDOCUMENT_ACTIVEX_XML_OBJECT.equals(type) || ContentTypes.OFFICEDOCUMENT_ACTIVEX_OBJECT.equals(type);
+	}
+
+	/**
+	 * Whether the host's filter lets an object be read (REQ-522): every one where there is none; a filter
+	 * that fails declines, and the object's part is {@code content.not_read}.
+	 */
+	private boolean admitted(TextObject object, String prefix) {
+		EmbeddedFilter filter = options.getEmbeddedFilter();
+		if (filter == null) return true;
+		try {
+			return filter.read(object, prefix);
+		} catch (RuntimeException e) {
+			notRead(prefix.substring(0, prefix.lastIndexOf('/')), object.getPart(), "the embedded object (the embedded filter failed)", e);
+			return false;
+		}
+	}
+
+	private void objectRun(Paragraph para, TextObject object, RunState state) {
 		TextRun run = new TextRun(TextRun.Kind.OBJECT, "", state.revision);
-		run.progId = progId;
+		run.progId = object.getProgId();
+		run.object = object;
 		para.block.runs.add(run);
 	}
 
@@ -2129,10 +2171,6 @@ final class Extractor {
 
 	private void warn(String kind, String address, String branch) {
 		warn(new TextWarning(kind, address, branch));
-	}
-
-	private void warn(String kind, String address, String branch, String contentType) {
-		warn(new TextWarning(kind, address, branch, contentType));
 	}
 
 	private void warn(TextWarning w) {

@@ -99,6 +99,12 @@ final class MiniDocx {
 		return this;
 	}
 
+	/** Adds an external relationship from the main document part (a linked object's, a link's). */
+	MiniDocx external(String rId, String relType, String target) {
+		rels.append("<Relationship Id=\"").append(rId).append("\" Type=\"").append(relType).append("\" Target=\"").append(target).append("\" TargetMode=\"External\"/>");
+		return this;
+	}
+
 	/** Adds a footnotes part holding these notes (the prefixes of {@link #NS} are declared). */
 	MiniDocx footnotes(String notes) {
 		return part("footnotes.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml",

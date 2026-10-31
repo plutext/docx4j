@@ -27,6 +27,12 @@ Claude Opus 5.5
 Changes in Version 17.3.5
 --------------------------
 
+* Text model, for a host that reads embedded objects itself (CR-070, WD 0.47): an object run carries a
+  TextObject (TextRun.getObject(): kind EMBED/LINK/CONTROL, relationship id, part, content type, ProgID,
+  and an OLE 1.0 package's label, file name and command); TextOptions.embeddedFilter decides, object by
+  object, which embedded objects embedded: true reads; altchunk.not_expanded carries the chunk's part
+  name, now its selector (it was the content type), and a warning raised inside an embedded package or
+  chunk names that package's or chunk's part.
 * ManualRedline.toTrackedChanges(pkg[, options]) turns a manual redline (old text struck through by
   hand) into tracked deletions by the author "manual redline", so that Accept All drops the struck text
   and Reject All gives it back plain; ManualRedline.preview reports what it would do. Explicit and

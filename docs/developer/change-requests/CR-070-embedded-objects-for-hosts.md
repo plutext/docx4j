@@ -2,8 +2,8 @@
 
 Status: ACCEPTED 2026-10-31 (Jason: "yes, revise D2 and send it to the portfolio, then CR-070 decisions as
 recommended"): D1 to D5 as recommended, D2 revised first (Jason: "why not keep the spec consistent with what we are
-adding to the API?"): the additions go into the WD (WD 0.47 REQ-512, REQ-522, REQ-513 and REQ-801, the portfolio's), and docx4j builds to it;
-not built.
+adding to the API?"): the additions go into the WD (WD 0.47 REQ-512, REQ-522, REQ-513 and REQ-801, the portfolio's), and docx4j builds to it.
+Phase 1 BUILT 2026-10-31 (section 7), to the WD 0.47 draft; complete but for the hand-offs' answers.
 Target 17.3.5 (D5). Proposed the same day, drafted by Claude Opus 5.5 (session docx4j-12) at the docx4j-tika
 session's request (docx4j-tika-45), which follows from Jason's decision on embedding in docx4j-tika (CR-055 D3 and D4
 revised, CR-055 §5b): whether embedded content is in the text or handed to the host follows the host's settings,
@@ -96,3 +96,65 @@ D1 to D5 accepted as recommended, 2026-10-31 (Jason), D2 as revised the same day
 - docx4j-tika-45's request (31 October 2026) and docx4j-tika `docs/embedding-behaviour.md` (commit 3716f15).
 - CR-055 §5b (D3 and D4 revised); CR-046 (the text model), REQ-512 (embedded), REQ-513 (altChunk), REQ-514 (the
   image describer).
+
+## 7. Phase 1, as built (31 October 2026)
+
+Built to WD 0.47's text (the portfolio's draft of REQ-512, REQ-522, REQ-513 and REQ-801), Jason's word "do
+CR-068 phase 3, then CR-070".
+
+- **(a)** `TextObject` (new) on `TextRun.getObject()` for every object run, whatever `embedded` says:
+  `getKind()` (`EMBED`, `LINK`, `CONTROL`), `getRelationshipId()`, `getProgId()`, `getPart()`,
+  `getPartName()` (the WD's `part`), `getContentType()`, `getPackageLabel()`, `getPackageFileName()`,
+  `getPackageCommand()`, and `getSource()` (the `w:object`, or a `w:control` standing alone), as
+  `TextImage` has. Made in `Extractor.object` and `Extractor.control`; the package's names by
+  `Embedded.ole10Names`, POI's `Ole10Native` as `Embedded.ole10Native` reads it.
+- **(b)** `EmbeddedFilter` (new, functional: `boolean read(TextObject, String address)`) and
+  `TextOptions.embeddedFilter(EmbeddedFilter)` / `getEmbeddedFilter()`, null by default; asked in
+  `Extractor.admitted` before an `EmbeddedObject` is queued.
+- **(c)** `Extractor.altChunk` warns with the chunk's part name; `TextWarning.getSelector()` is the
+  branch, else the part name, else the content type.
+
+Where the WD is silent, decided in building (each for the WD, sent to the portfolio):
+
+1. **docx4j's block model is its object API.** docx4j writes no JSON of the block model; phase 1's
+   "block model's JSON" test is the `TextObject` getters, whose names map to the WD's members (`kind`
+   lower-cased, `part` = `getPartName()`, `label`/`fileName`/`command` = `getPackage*()`).
+2. **An ActiveX `o:OLEObject`** (REQ-512's `control`) is one whose part is an ActiveX control's
+   (`application/vnd.ms-office.activeX+xml`, or the binary `application/vnd.ms-office.activeX`). A
+   `w:control` is always one. A control's ProgID is null for a `w:control` (its class is in its part), as
+   `TextRun.getProgId()` already was.
+3. **A linked object has no part** even where its relationship is internal, and is never read nor asked
+   about.
+4. **The filter's address** is REQ-519's object segment, `body/3/object:0`, the prefix of the blocks its
+   content is read as. The index counts every object the extractor would read, declined or not, so a
+   filter moves no other object's address (`EmbeddedObjectsTest.filterDeclinesOneOfTwo`).
+5. **A failing filter** (a `RuntimeException`) raises `content.not_read` at the anchoring paragraph's
+   address, as a package that cannot be read does, with the object's part name.
+6. **The package's names** are Ole10Native's `label`, `fileName` and `command` (what Tika 3.3.3 reads),
+   not POI's UTF-16 `label2`/`fileName2`/`command2`; empty is null; read when the run is made, so that
+   the filter has them.
+7. **A warning raised one level down** (inside an embedded package or a chunk) that names a part names
+   the embedded package's or chunk's part, the one the host package has (`Extractor.nested`, which now
+   takes it): REQ-801's rule for `content.not_read`, extended to a nested chunk's
+   `altchunk.not_expanded` and a nested `image.not_described`. Until now a chart inside an embedded
+   document that could not be read named the inner package's part, against REQ-801. A host given the
+   inner name could not find it, or could find another part of the same name (Word names every HTML
+   chunk `afchunk.htm`).
+8. **The conformance rows move.** WD 0.47's history says no row moves, but `expected-findings.tsv`'s
+   twelve `altchunk.not_expanded` rows were keyed by content type; they are now keyed by part name
+   (`ExtractionFixtureChecks.findings`, GOLDENS.md). Case 36's row of count 2 under `html reader absent`
+   held case 36's chunk and case 47's nested one, both `text/html`; they are now `/word/afchunk.htm` (1)
+   and `/word/chunk47.docx` (1, scenario `default`, since the nested chunk is never expanded with a reader
+   or without). Every row checks (`conformance.tsv`: all PASS). The ports' harnesses read the same table.
+9. **The inspection counts** (`inspect: true`, REQ-903) take every package as read under `embedded: true`,
+   whatever the filter says; documented on `embeddedFilter`. Section 9.3's membership could say "the
+   packages REQ-512 reads and REQ-522's filter admits"; an inspection is the package's, not the host's,
+   so this is left for the WD.
+
+Tests: `EmbeddedObjectsTest` (9: the probe's five objects described; an OLE 1.0 package's names, and none
+for a binary that is not one; a linked object; a `w:control` in `w:pict` and an ActiveX `o:OLEObject`; no
+filter and a null one read every object; a filter declining one of two in a paragraph, the runs and
+addresses kept; a filter over the probe, one level; a failing filter; the chunk warning's part name, a
+nested chunk's included). `TextsPhase2Test.altChunks` asserts the part names in the warnings.
+`ExtractionConformanceTest` checks the moved rows.
+

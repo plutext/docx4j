@@ -44,7 +44,8 @@ import java.util.Set;
  * was typed in a document protected for forms. It computes no MERGEFIELD (no data is supplied), and
  * never a field with {@code w:fldLock}; every other field keeps its cached result.</p>
  *
- * <p>Beyond WD section 10, a host may give the {@link ImageDescriber} (REQ-514), and docx4j accepts
+ * <p>Beyond WD section 10, a host may give the {@link ImageDescriber} (REQ-514) and an
+ * {@link EmbeddedFilter} (REQ-522), and docx4j accepts
  * one option of its own, as REQ-1001 allows: {@code inspect} ({@link #inspect(boolean)}), whether the
  * result carries the inspection counts of REQ-903.</p>
  *
@@ -127,6 +128,7 @@ public final class TextOptions {
 	/** The options the caller set by name: a profile does not override them, whichever came first. */
 	private final Set<String> explicit = new java.util.HashSet<String>();
 	private ImageDescriber imageDescriber = AltTextDescriber.INSTANCE;
+	private EmbeddedFilter embeddedFilter;
 
 	/**
 	 * {@code inspect}'s default: off (CR-050 D9, by its rule: off where the inspection costs more than a
@@ -312,6 +314,15 @@ public final class TextOptions {
 	public TextOptions inspect(boolean b) { this.inspect = b; return this; }
 	/** The describer images take their text from (REQ-514); {@link AltTextDescriber} by default, and for null. */
 	public TextOptions imageDescriber(ImageDescriber d) { this.imageDescriber = d == null ? AltTextDescriber.INSTANCE : d; return this; }
+	/**
+	 * The filter asked, under {@code embedded: true}, whether each embedded object is read (WD REQ-522);
+	 * null, the default, reads every one. An object it declines keeps its object run and
+	 * {@link TextObject}, for the host to read or hand on. The inspection counts ({@code inspect: true},
+	 * REQ-903) take every package as read under {@code embedded: true}, whatever the filter says.
+	 *
+	 * @since 17.3.5 (CR-070)
+	 */
+	public TextOptions embeddedFilter(EmbeddedFilter f) { this.embeddedFilter = f; return this; }
 
 	public TextView getView() { return view; }
 	/** The stories {@code include} names; {@code comments: true} adds {@link Include#COMMENTS}. */
@@ -354,6 +365,8 @@ public final class TextOptions {
 	public boolean isWarnings() { return warnings; }
 	public boolean isInspect() { return inspect; }
 	public ImageDescriber getImageDescriber() { return imageDescriber; }
+	/** The embedded-object filter (REQ-522), or null for none. */
+	public EmbeddedFilter getEmbeddedFilter() { return embeddedFilter; }
 
 	/** A copy, for a reading one level down (an embedded package's, an {@code altChunk}'s; REQ-512, REQ-513). */
 	TextOptions copy() {
@@ -386,6 +399,7 @@ public final class TextOptions {
 		o.warnings = warnings;
 		o.inspect = inspect;
 		o.imageDescriber = imageDescriber;
+		o.embeddedFilter = embeddedFilter;
 		return o;
 	}
 

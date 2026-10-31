@@ -23,8 +23,9 @@ import java.util.Objects;
 /**
  * Where a result is not the whole document (WD section 8, REQ-801): a kind, the address it is at
  * where there is one, and its selector: for {@code mce.branches_differ} the name of the branch
- * selected, for {@code altchunk.not_expanded} the chunk's content type, for {@code content.not_read}
- * and {@code image.not_described} the part's name. Never the document's text (REQ-802).
+ * selected, for {@code altchunk.not_expanded}, {@code content.not_read} and {@code image.not_described}
+ * the part's name (the chunk's, since 17.3.5, WD 0.47; it was the chunk's content type, which the
+ * warning still carries). Never the document's text (REQ-802).
  *
  * @since 17.3.4 (CR-046 phase 1)
  */
@@ -78,12 +79,17 @@ public final class TextWarning {
 	/**
 	 * For {@code content.not_read}, the name of the part that can't be read (for a part inside an
 	 * embedded package, the embedded package part's); for {@code image.not_described}, the image
-	 * part's ({@code /word/media/image1.png}); else null.
+	 * part's ({@code /word/media/image1.png}); for {@code altchunk.not_expanded}, the chunk's
+	 * ({@code /word/afchunk.rtf}), so that a host can read it itself (since 17.3.5, CR-070); else null.
 	 */
 	public String getPartName() { return partName; }
-	/** The selector of REQ-801: the branch, the content type or the part's name, whichever the kind has; else null. */
+	/**
+	 * The selector of REQ-801: the branch, else the part's name, else the content type (a warning made
+	 * without a part name); null for none. {@code altchunk.not_expanded}'s is its part name since
+	 * 17.3.5 (WD 0.47), its content type before.
+	 */
 	public String getSelector() {
-		return branch != null ? branch : contentType != null ? contentType : partName;
+		return branch != null ? branch : partName != null ? partName : contentType;
 	}
 
 	@Override

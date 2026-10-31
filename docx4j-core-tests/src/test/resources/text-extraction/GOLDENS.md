@@ -78,7 +78,9 @@ expectations are exact occurrence counts. `ins`, `del`, `cmt`, and `del+ins` req
 CriticMarkup of that kind before normalization, as well as the correct total count.
 Default MHT counts refer to importer absent; the gating scenario refers to importer present.
 Warnings, inspection findings and metadata live separately in `expected-findings.tsv`.
-A warning selector is its chunk content type; an inspector's external selector is its target.
+A warning's selector is its part name (WD REQ-801): an `altchunk.not_expanded` row's is the chunk's
+(its content type until WD 0.47, docx4j CR-070), and a chunk nested in another's names the chunk holding
+it, the part the fixture has. An inspector's external selector is its target.
 
 Comparison follows REQ-1201: strip whitespace, CriticMarkup delimiters, Markdown emphasis
 characters, backslash, braces and dollar sign from both text and marker. An occurrence inside a

@@ -44,6 +44,7 @@ import org.docx4j.openpackaging.parts.PresentationML.MainPresentationPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorkbookPart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.org.apache.poi.poifs.filesystem.Ole10Native;
 import org.docx4j.org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.pptx4j.pml.CTGraphicalObjectFrame;
@@ -92,7 +93,7 @@ final class Embedded {
 	static List<TextBlock> pkg(Extractor x, Part part, byte[] bytes, String prefix) throws Exception {
 		// an inspection's own reading of the package, where it made one (CR-050)
 		OpcPackage opc = x.packages != null && x.packages.containsKey(part) ? x.packages.get(part) : OpcPackage.load(new ByteArrayInputStream(bytes));
-		if (opc instanceof WordprocessingMLPackage) return x.nested((WordprocessingMLPackage) opc, prefix, TextBlock.Story.EMBEDDED);
+		if (opc instanceof WordprocessingMLPackage) return x.nested((WordprocessingMLPackage) opc, prefix, TextBlock.Story.EMBEDDED, part);
 		if (opc instanceof SpreadsheetMLPackage) return workbook(x, (SpreadsheetMLPackage) opc, prefix);
 		if (opc instanceof PresentationMLPackage) return presentation(x, (PresentationMLPackage) opc, prefix);
 		return new ArrayList<TextBlock>();
@@ -319,6 +320,24 @@ final class Embedded {
 			log.debug("No plain-text OLE 1.0 package at " + prefix + ": " + e.getMessage());
 		}
 		return out;
+	}
+
+	/**
+	 * An OLE 1.0 package's label, file name and command as its native data gives them, each null where
+	 * empty (CR-070, WD REQ-512); null where the part holds no {@code Ole10Native} stream.
+	 */
+	static String[] ole10Names(BinaryPart part) {
+		try (POIFSFileSystem fs = new POIFSFileSystem(new ByteArrayInputStream(part.getBytes()))) {
+			Ole10Native n = Ole10Native.createFromEmbeddedOleObject(fs);
+			return new String[] { emptyToNull(n.getLabel()), emptyToNull(n.getFileName()), emptyToNull(n.getCommand()) };
+		} catch (Exception e) {
+			log.debug("No OLE 1.0 package's native data: " + e.getMessage());
+			return null;
+		}
+	}
+
+	private static String emptyToNull(String s) {
+		return s == null || s.isEmpty() ? null : s;
 	}
 
 	/** A text file's bytes: by its byte-order mark, else UTF-8 if they are, else windows-1252. */

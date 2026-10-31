@@ -568,10 +568,10 @@ public class TextsPhase2Test {
 		TextResult r = Texts.of(pkg, new TextOptions());
 		if (HtmlChunkImport.readerPresent()) {
 			assertEquals("Before.\nline one\nline two\nOne & two\nThree\nFour\na\tb\nAfter.\n", PlainText.of(r));
-			assertEquals("[altchunk.not_expanded at body/2 (application/rtf)]", r.warnings().toString());
+			assertEquals("[altchunk.not_expanded at body/2 (application/rtf) (/word/r.rtf)]", r.warnings().toString());
 		} else {
 			assertEquals("Before.\nline one\nline two\nAfter.\n", PlainText.of(r));
-			assertEquals("[altchunk.not_expanded at body/2 (application/rtf), altchunk.not_expanded at body/3 (text/html)]",
+			assertEquals("[altchunk.not_expanded at body/2 (application/rtf) (/word/r.rtf), altchunk.not_expanded at body/3 (text/html) (/word/h.htm)]",
 					r.warnings().toString());
 		}
 		assertEquals("body/1/altchunk:0/1", r.blocks().get(2).getAddress());

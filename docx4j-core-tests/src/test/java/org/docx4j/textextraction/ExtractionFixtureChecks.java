@@ -296,15 +296,15 @@ final class ExtractionFixtureChecks {
         finding(out, 52, "metadata", "ProbeCustom", "", "default", "CPR52_CUSTOM", "REQ-515");
         finding(out, 52, "metadata", "Company", "", "default", "APP52_COMPANY", "REQ-515");
         for (int n : new int[] {36, 43, 44, 45, 46, 47, 63}) {
-            String type = n == 36 || n == 47 || n == 63 ? "text/html" : n == 43 ? "text/plain" : n == 44 ? "message/rfc822" : n == 45 ? "application/rtf" : "application/xml";
-            String absent = ExtractionConformance.HTML_READER_ABSENT, present = ExtractionConformance.HTML_READER_PRESENT;
-            // without an HTML reader, case 36's chunk and case 47's nested one, in the same fixture, are not
-            // expanded (CR-053 D7, WD 0.27); with one, only case 47's, one level down
-            if (n == 36) finding(out, n, "warning", "altchunk.not_expanded", type, absent, "2", "REQ-513");
-            if (n == 44 || n == 63) finding(out, n, "warning", "altchunk.not_expanded", type, absent, "1", "REQ-513");
-            if (n == 45) finding(out, n, "warning", "altchunk.not_expanded", type, "default", "1", "REQ-513");
-            if (n == 47) finding(out, n, "warning", "altchunk.not_expanded", type, present, "1", "REQ-513");
-            finding(out, n, "warning", "altchunk.not_expanded", n == 47 ? ExtractionPhase0Cases.DOCX_CHUNK : type, "altchunks: false", "1", "REQ-513");
+            // the selector is the chunk's part name (WD 0.47, REQ-513 and REQ-801; docx4j CR-070); until then its content type
+            String chunk = n == 36 ? "/word/afchunk.htm" : n == 63 ? "/word/chunk63.htm"
+                    : "/word/chunk" + n + (n == 43 ? ".txt" : n == 44 ? ".mht" : n == 45 ? ".rtf" : n == 46 ? ".xml" : ".docx");
+            String absent = ExtractionConformance.HTML_READER_ABSENT;
+            // without an HTML reader, the HTML and MHT chunks are not expanded (CR-053 D7, WD 0.27); case 47's nested
+            // chunk, one level down, never is, and its warning names the chunk holding it, the part the package has (REQ-801)
+            if (n == 36 || n == 44 || n == 63) finding(out, n, "warning", "altchunk.not_expanded", chunk, absent, "1", "REQ-513");
+            if (n == 45 || n == 47) finding(out, n, "warning", "altchunk.not_expanded", chunk, "default", "1", "REQ-513");
+            finding(out, n, "warning", "altchunk.not_expanded", chunk, "altchunks: false", "1", "REQ-513");
         }
         return out.toString();
     }
