@@ -51,7 +51,13 @@ ProgID, and `embedded: true` reads every embedded package it can.
   `getPart()` (the embedded part; the control's part for an ActiveX control; null for a linked object or where the
   relationship does not resolve), `getRelationshipId()`, `getProgId()` (as `TextRun.getProgId()`), `getKind()`
   (`EMBED`, `LINK` from `o:OLEObject/@Type`, `CONTROL` for `w:control` or an `o:OLEObject` standing for one),
-  `getContentType()` (the part's). Not part of the WD's block model, so not in its JSON and nothing for the ports
+  `getContentType()` (the part's); and for an OLE 1.0 package (ProgID `Package`, a `BinaryPart` holding an
+  `Ole10Native` stream) `getPackageLabel()`, `getPackageFileName()` and `getPackageCommand()`, read from its native
+  data as `Embedded.ole10Native` reads it (POI's `Ole10Native`), each null where absent and null for any other
+  object. Those are the names Tika's own parser gives such a package when it hands it on (Tika 3.3.3
+  `AbstractOOXMLExtractor` unwraps the `Ole10Native`: `resourceName` the label, `originalResourceName` the command
+  and the file name), so that a host's `FilenameFilter` on `*.txt` meets `notes.txt`, not `oleObject1.bin`
+  (docx4j-tika-45, 31 October 2026). Not part of the WD's block model, so not in its JSON and nothing for the ports
   (D2).
 - **(b) `EmbeddedFilter`** (`org.docx4j.model.text`, a functional interface): `boolean read(TextObject object, String
   address)`, called once per object the text model would read under `embedded: true`, before it is queued; `false`
@@ -69,7 +75,7 @@ ProgID, and `embedded: true` reads every embedded package it can.
 
 | # | Decision | Recommendation |
 |---|---|---|
-| D1 | The object's description | A `TextObject` on the run (part, relationship id, ProgID, kind, content type), parallel to `TextImage`, rather than `getPart()` on `TextRun` alone: a linked object has no part, and the kind and the id are what a host writes |
+| D1 | The object's description | A `TextObject` on the run (part, relationship id, ProgID, kind, content type; an OLE 1.0 package's label, file name and command), parallel to `TextImage`, rather than `getPart()` on `TextRun` alone: a linked object has no part, the kind and the id are what a host writes, and a package's names are what a host's filter matches |
 | D2 | Specification | docx4j API only: not in the WD's block model or its JSON, nothing for the ports; the portfolio told, so that the WD can take it later if another host asks |
 | D3 | The filter | `TextOptions.embeddedFilter(EmbeddedFilter)`, asked per object under `embedded: true`; an object not read keeps its run and `TextObject`; no filter reads every one (today's behaviour) |
 | D4 | The warning | `altchunk.not_expanded` carries the chunk's part name (`TextWarning.getPartName()`) |
