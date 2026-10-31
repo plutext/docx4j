@@ -1,7 +1,7 @@
 # CR-069: what the page shows, in the text: case mapping, drop caps, superscripts, and the formatting-join finding
 
-Status: ACCEPTED 2026-10-31 (Jason: "CR-069 decisions as presented"): D1 to D9 as recommended (§5); D9's condition,
-whether 17.3.5 waits for phases 0 to 2 (the caps change), stays Jason's call at the release; not started. Proposed
+Status: ACCEPTED 2026-10-31 (Jason: "CR-069 decisions as presented"): D1 to D9 as recommended (§5); D9's condition
+ruled the same day (Jason: "17.3.5 will wait for CR-069"): 17.3.5 ships with CR-069, not only phases 0 to 2; not started. Proposed
 2026-10-31, drafted by Claude Fable 5.1 (session docx4j-12) from Jason's rulings of the same day on the
 four questions the portfolio's review of LlamaIndex's Document Parsing Protocol put to him (paper §7.13; WD 0.44, drafted
 and uncommitted: REQ-521, REQ-607, REQ-710, §9.2 `text.formatting_join`, §4 NOTE, Appendix B). Jason's rulings: (a) the
@@ -162,7 +162,7 @@ accepted as presented, 2026-10-31 (Jason).
 | D6 | The finding's boundary | Digit-to-digit only, strike or vertical alignment differing, no whitespace or punctuation between; letters never |
 | D7 | Oracle | Word's text saves from the share (the files WD-001 let Word write) are the goldens, byte for byte under `word-text` |
 | D8 | Offsets | The block model and every address keep the stored text; uppercase is the writers' (REQ-607), and the mapping preserves length |
-| D9 | Order | Phases 0 to 2 before 17.3.5 ships if Jason wants the caps change in it (it changes plain-text output for every document with `w:caps`); phases 3 and 4 may follow in 17.3.6 |
+| D9 | Order | Phases 0 to 2 before 17.3.5 ships if Jason wants the caps change in it (it changes plain-text output for every document with `w:caps`); phases 3 and 4 may follow in 17.3.6 . **Ruled 2026-10-31** (Jason: "17.3.5 will wait for CR-069"): the whole CR goes into 17.3.5 |
 
 ## 6. Risks
 
