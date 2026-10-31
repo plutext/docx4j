@@ -9,8 +9,9 @@ proposed for phase 2; phase 1 DONE 2026-10-31 (§11: `ManualRedline`, its option
 `Texts.addresses`; held to Word 365's Accept All and Reject All of the phase 0 prediction and, §11.6, of docx4j's own
 conversion), but for the Getting Started sentence (§11.5); phase 2 DONE 2026-10-31 (Jason: "do phase 2"; §12:
 the opt-ins; D14 to D16 accepted, "D14–D16 are good"; held to Word's third run, §12.6; the comment card, §12.7);
-phase 3 DONE 2026-10-31 (Jason: "do CR-068 phase 3"; §13: the hand-offs sent). Open: the Getting Started sentence
-(§11.5).
+phase 3 DONE 2026-10-31 (Jason: "do CR-068 phase 3"; §13: the hand-offs sent). The Getting Started sentence
+(§11.5) written 2026-11-01 as tracked changes in the docx, awaiting Jason's review (Jason: "Write the sentences for
+CR-068 ... with track changes on please").
 Proposed the same day, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's direction, relayed by the
 portfolio session from its review of LlamaIndex's Document Parsing Protocol (the
 paper's §7.13; the `dpp-forks` probe): "strikethrough handling is NOT view-sensitive (Accept All and Reject All leave
@@ -520,7 +521,12 @@ cell's last, left and reported; not whole, kept unreported).
 
 - **The gate**: docx4j-core-tests 2278 run, 0 failures, 30 skipped (clean install of docx4j-core and core-tests).
 - **The Getting Started sentence** (§5's phase 1 row): the docx is under Jason's review (uncommitted in the tree;
-  it is canonical, the md and html derived), so the sentence waits for his review to land.
+  it is canonical, the md and html derived), so the sentence waits for his review to land. Written 2026-11-01 at his
+  request as tracked insertions (author "Claude Opus 5.5") at the end of the "Tracked changes: accept and reject"
+  chapter: a paragraph on what a manual redline is and that `ManualRedline` converts one when asked, never as a view;
+  the code line `ManualRedlineReport report = ManualRedline.toTrackedChanges(wordMLPackage);`; a paragraph on the
+  author "manual redline", Accept All and Reject All, `preview` and `ManualRedlineOptions`. The docx stays
+  uncommitted for his review; the md follows it.
 
 ### 11.6 Word's second run (2026-10-31, Word 365 16.0.20326 on the VM)
 

@@ -1045,7 +1045,9 @@ with the counts and warnings, the markup view with headers, footers, comments an
 `docx4j-samples-docx4j`.
 
 **Not done, by design:** no HTML writer (a Markdown converter's job); no per-kind advice (the report
-does not judge intent, §2.6); Getting Started's Text extraction chapter gets its sentence once Jason's
+does not judge intent, §2.6); Getting Started's Text extraction chapter gets its sentence (written 2026-11-01 as a
+tracked insertion after the counts paragraph, at Jason's request, for his review: `InspectionReport.markdown`, what the
+report holds, and the `InspectDocument` sample) once Jason's
 review of the document is in. **Hand-offs:** the portfolio (registry entry `docx4j/CR-050.5`, 2c9cd8c; the
 non-normative note that an implementation may write a report for a person, its wording its own and the
 identifiers, groups, reveals and counts §9's, the report no serialisation under §8 and no conformance surface,
