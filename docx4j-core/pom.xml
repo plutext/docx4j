@@ -250,13 +250,13 @@
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>jcl-over-slf4j</artifactId>
-		    <version>2.0.18</version>
+		    <version>2.0.20</version>
 		</dependency>		
  		 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.20.0</version>  <!-- ns prefix mapper uses org.apache.commons.lang3.text.StrTokenizer -->
+			<version>3.21.0</version>  <!-- ns prefix mapper uses org.apache.commons.lang3.text.StrTokenizer -->
 		</dependency>
 
 		<!--  3.4.0: used for zip/unzip -->
@@ -294,7 +294,7 @@
 			<!--  since 11.5.11; for org.docx4j.org.apache.poi.hpsf -->
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-collections4</artifactId>
-			<version>4.5.0</version>
+			<version>4.6.0</version>
 		</dependency>
 		<dependency>
 			<!--  since 11.5.11; for org.docx4j.org.apache.poi.poifs.crypt.xor -->
