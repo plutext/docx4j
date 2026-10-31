@@ -217,7 +217,9 @@ public class AnonymizeXlsxProbesTest {
 
 		List<Row> rows = s1.getContents().getSheetData().getRow();
 		rows.add(row(1, "A1|s|0", "B1|s|1", "C1|s|2"));
-		rows.add(row(2, "A2|s|3", "B2||1234.5", "C2|s|4", "D2|str|Yes|IF(A2=\"Zorbling Corp\",\"Yes\",\"No\")"));
+		// a literal scrambles to the first letters of lorem words, so "No" came back as itself one run in
+		// forty (nostrud, non, ...); no lorem word starts with "yes" or "never"
+		rows.add(row(2, "A2|s|3", "B2||1234.5", "C2|s|4", "D2|str|Yes|IF(A2=\"Zorbling Corp\",\"Yes\",\"Never\")"));
 		rows.add(row(3, "A3|s|5", "B3||42", "C3|s|6", "D3||1357.95|SUM(Sales[Amount])"));
 		rows.add(row(4, "A4|b|1", "B4|e|#N/A", "C4||0", "D4||2.5|'Summary 2024'!B2*1.1+VLOOKUP(A2,Rates,2,FALSE)"));
 		rows.add(row(5, "A5||1E+20", "B5||-0.75"));
@@ -272,7 +274,7 @@ public class AnonymizeXlsxProbesTest {
 		String all = allXml(pkg);
 		assertGone(all, "Zorbling", "Quibblex", "Grendlewick", "Customer", "Amount", "Region", "Sales Data", "Summary 2024",
 				"Rates", "Visit", "zorbling.example.com", "Jane", "Reviewer", "Confidential", "c2VjcmV0aGFzaA", "d29ya2Jvb2toYXNo",
-				"1234.5", "1357.95", "\"big\"", "\"small\"", "\"Yes\"", "\"No\"");
+				"1234.5", "1357.95", "\"big\"", "\"small\"", "\"Yes\"", "\"Never\"");
 
 		// sheets are Sheet1 and Sheet2, and every formula agrees
 		Workbook w = pkg.getWorkbookPart().getContents();
