@@ -35,6 +35,9 @@ import java.util.Locale;
  * model keeps the stored characters ({@link TextRun#getText()}), so that addresses and excerpts refer to them; the
  * mapping is the writers', and it keeps the length, in code points and in UTF-16 units.</p>
  *
+ * <p>The Unicode version is the running JDK's (WD 0.52's REQ-607 asks for it documented): Unicode 10.0 on Java 11, 15.0
+ * on Java 21. A case pair added after it is left unmapped there, U+1C8A (Unicode 16.0) for one.</p>
+ *
  * @since 17.3.5
  */
 public final class CaseMapping {
