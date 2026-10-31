@@ -25,3 +25,8 @@ A screenshot of each with the pane open is welcome (save as cr068-default.png, c
 Close without saving.
 
 Then tell the docx4j session "cr068 done".
+
+Second run (CR-068 phase 1, 2026-10-31): the same command. It adds manual-redline-phase1.docx, docx4j's own
+conversion of the base (the separating space taken, the struck mark of M11 deleted), and saves Word's Accept
+All and Reject All of it (word-phase1-*); everything the first run made is skipped. About half a minute. Then
+tell the docx4j session "cr068 phase1 done".

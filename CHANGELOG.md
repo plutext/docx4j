@@ -27,6 +27,11 @@ Claude Opus 5.5
 Changes in Version 17.3.5
 --------------------------
 
+* ManualRedline.toTrackedChanges(pkg[, options]) turns a manual redline (old text struck through by
+  hand) into tracked deletions by the author "manual redline", so that Accept All drops the struck text
+  and Reject All gives it back plain; ManualRedline.preview reports what it would do. Explicit and
+  opt-in, never a text view (CR-068 phase 1). Texts.addresses(pkg, options) maps what the text model
+  reads to its block addresses.
 * A CSS font-weight of normal or lighter no longer costs a NumberFormatException: Bold tried
   Integer.parseInt on every value other than bold and bolder. ImportXHTML reads font-weight for
   every run and paragraph, so this was tens of thousands of exceptions for a large document. The

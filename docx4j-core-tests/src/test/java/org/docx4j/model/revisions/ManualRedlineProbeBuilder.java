@@ -68,7 +68,9 @@ import org.docx4j.wml.Hdr;
  * <li>{@code manual-redline-d9.docx}: the default with M11's struck paragraph mark deleted too, the
  * alternative D9 leaves to the measurement;</li>
  * <li>{@code manual-redline-dates.docx}: four deletions differing only in {@code w:date} and
- * {@code w16du:dateUtc}, for which of the two Word shows (D4).</li>
+ * {@code w16du:dateUtc}, for which of the two Word shows (D4);</li>
+ * <li>{@code manual-redline-phase1.docx}: {@link ManualRedline}'s own conversion of the base (phase 1),
+ * for Word's second run.</li>
  * </ul>
  *
  * <p>The conversions write the date as Word 365 writes its own: {@code w16du:dateUtc} the instant
@@ -140,6 +142,22 @@ public class ManualRedlineProbeBuilder {
 		}
 		Files.write(new File(out, "manual-redline-dates.docx").toPath(), new ManualRedlineProbeBuilder(Variant.BASE).dates());
 		System.out.println("wrote " + new File(out, "manual-redline-dates.docx"));
+		Files.write(new File(out, "manual-redline-phase1.docx").toPath(), phase1(new ManualRedlineProbeBuilder(Variant.BASE).build()));
+		System.out.println("wrote " + new File(out, "manual-redline-phase1.docx"));
+	}
+
+	/**
+	 * CR-068 phase 1's own conversion of the base, the default options (the separating space taken,
+	 * D13; the struck mark deleted, D9 as revisited) at the probe's instant in Word's zone: what Word is
+	 * asked about the second time (CR-068 section 11).
+	 */
+	static byte[] phase1(byte[] base) throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(base));
+		pkg.setDateTimeZone(java.time.ZoneId.of("Australia/Sydney"));
+		ManualRedline.toTrackedChanges(pkg, new ManualRedlineOptions().date(java.time.Instant.parse(DATE_UTC)));
+		ByteArrayOutputStream saved = new ByteArrayOutputStream();
+		Docx4J.save(pkg, saved, Docx4J.FLAG_NONE);
+		return rewrite(saved.toByteArray(), new LinkedHashMap<String, String>());
 	}
 
 	/** Converted by the default rules (direct strike and double strike to w:del) */

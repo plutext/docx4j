@@ -5,7 +5,9 @@ Status: ACCEPTED 2026-10-31 (Jason: "CR-068 decisions as recommended; commence p
 but the dates, where Word shows `w:date` and ignores `w16du:dateUtc`; Jason's look by hand the same day, §8.6); D13 (the
 separating space) and D9 revisited (delete a struck mark whose paragraph converts whole), proposed from phase 0,
 ACCEPTED 2026-10-31 (Jason: "D13 and D9 as recommended", §8.5); D14 (the comments opt-in keeps its strike, §8.6)
-proposed for phase 2; phase 1 STARTED 2026-10-31.
+proposed for phase 2; phase 1 DONE 2026-10-31 (§11: `ManualRedline`, its options and report,
+`Texts.addresses`; held to Word's resolution of the phase 0 prediction), but for Word's second run on docx4j's own
+conversion and the Getting Started sentence (§11.5).
 Proposed the same day, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's direction, relayed by the
 portfolio session from its review of LlamaIndex's Document Parsing Protocol (the
 paper's §7.13; the `dpp-forks` probe): "strikethrough handling is NOT view-sensitive (Accept All and Reject All leave
@@ -436,3 +438,85 @@ the text model, and Word's reject-all docx for D6.
 - CR-046 (the text model's three views), CR-050 (the inspection; the proposed `text.formatting_join` kind).
 - ECMA-376 Part 1, 5th edition (December 2016), §17.13.5.14 (`del`), §17.13.5.15 (a paragraph's `del`),
   §17.13.5.18 (`ins`), §17.3.3.7 (`delText`), §17.3.2.37 (`strike`), §17.3.2.9 (`dstrike`); checked at phase 0.
+
+## 11. Phase 1 (2026-10-31)
+
+### 11.1 What was built
+
+- **`ManualRedline`** (`org.docx4j.model.revisions`): `toTrackedChanges(pkg[, options])` and `preview(pkg[, options])`
+  (D1); `preview` converts a clone of the package (`OpcPackage.clone()`, its zone carried) and returns that report.
+- **`ManualRedlineOptions`**: `author` (D3), `date` (D4; `date(null)` writes none), `separatorSpace` (D13, on). The
+  opt-ins of §3.3 come with phase 2.
+- **`ManualRedlineReport`**: one `Change` per thing deleted (kind `strike`, `double_strike`, `separator_space`,
+  `paragraph_mark`; part, address, text, runs, whether it is a deletion of its own), one `Left` per struck run or
+  mark left (reason `in_tracked_change`, `field`, `math`, `style_strike`, `paragraph_mark`, `comment`; consecutive
+  runs of one paragraph and reason one entry, so that a field is one), counts by kind, part and reason,
+  `getDeletions()` (each `w:del` and each mark; a separating space that went into its struck text's `w:del` is not
+  another), `toJson()`.
+- **`Texts.addresses(pkg, options)`** (`org.docx4j.model.text`, public): what the text model reads, mapped by
+  identity to its block's address; the report's addresses, read before the conversion. A text box's paragraph has
+  its own (`body/11/textbox:0/0`); a twin branch's, which the text model does not read, takes its outer paragraph's.
+
+### 11.2 The rules as built
+
+- **Stories** (D2): Lister's (CR-043): the main document, footnotes, endnotes, headers and footers, each text box
+  in every `mc:AlternateContent` branch (the first branch holding boxes reported, the others converted as twins,
+  with their own ids, as Word's are), block- and paragraph-level `mc:AlternateContent` likewise (the branch the text
+  model reads reported); the comments walked and their struck runs reported (`comment`).
+- **Left** (D10): a run in `w:ins`, `w:del`, `w:moveFrom`, `w:moveTo`, or whose strike is itself a tracked
+  formatting change (`w:rPrChange`), `in_tracked_change`; a complex field's runs, `begin` to `end`, the depth
+  carried across the story's paragraphs, and a `w:fldSimple`'s, `field`; math, `math`; a run with no strike of its
+  own that its paragraph and character styles strike (resolved by `PropertyResolver`: the defaults, the paragraph
+  style, the run style; a table style is not consulted), `style_strike`. A struck run holding nothing to delete
+  (only a comment reference, a note's own mark, a separator, a rendering hint) is not converted and not reported.
+- **Grouping** (D8): adjacent converted runs of one content list in one `w:del`; a `w:proofErr` between them does not
+  part them; anything else does, a bookmark or a comment range among them, so that no bookmark is pulled into a
+  deletion (CR-043 §4.4: one with an end in removed content goes whole on accept).
+- **The separating space** (D13): where the struck text neither starts nor ends with whitespace, (a) with
+  whitespace or the paragraph's start before it and a space after it, that space; (b) otherwise, where it ends the
+  paragraph or meets punctuation (`.,;:!?)]}` and closing quotes) with a space before it, that space; taken only
+  from a plain run (not tracked, not a field's), split off with the run's formatting, into the struck text's `w:del`
+  where the run is beside it (as Word's own: §8.4), else a `w:del` of its own (M09: the space after the hyperlink).
+- **The paragraph mark** (D9 as revisited): a struck mark (its own `w:pPr/w:rPr`), no text left shown in the
+  paragraph after the conversion, the next item of its container a `w:p`, no `w:sectPr` in the paragraph: the mark
+  takes `w:del` and loses its strike; otherwise, where the text converted whole, it is left and reported
+  (`paragraph_mark`): a cell's last paragraph, one before a table or a control, the last of its story, a section's.
+- **Dates and ids** (D4 as clarified, §8.5): `w:date` the instant's wall clock in
+  `OpcPackage.effectiveDateTimeZone()` with a `Z`, `w16du:dateUtc` the instant, both to the second, and `w16du`
+  added to each changed part's `mc:Ignorable` (`McSplice.addIgnorable`; the marshal declares it); ids from one
+  above the largest annotation id in the story parts (every `CTMarkup`: tracked changes, comments, bookmarks and
+  ranges; the comment ranges and references).
+- **Idempotent**: a converted run has no strike, a deleted mark no strike, so a second conversion finds nothing.
+
+### 11.3 On the probe
+
+`toTrackedChanges` of `manual-redline.docx` (date 2026-10-31T00:00:00Z, Sydney): 18 deletions (16 `w:del` of struck
+runs, M09's separating space, M11's mark), 17 runs, 7 separating spaces (6 into their struck text's `w:del`); left:
+M05 `style_strike`, M07 `in_tracked_change`, M08 and M08b `field`, M16 `comment`. Accept All: `M01 Rate: 1.335 per
+cent.`, `Widget	$35.00`, `M09 See example.com/new-terms for the terms.`, `M13 Fee: EUR 450 a month.`, `M17 Party:
+Acme Holdings Pty Ltd.`, the footnote and text box alike, M11 joined to the next paragraph; no two spaces anywhere.
+Reject All: the base's text, every converted run plain. The XML holds a deletion as Word's own does (M01: the struck
+run and the space in one `w:del`). Saved as `manual-redline-phase1.docx` (the builder writes it, byte for byte the
+same on a rebuild) for Word's second run (§11.5).
+
+### 11.4 Tests
+
+`ManualRedlineTest` (docx4j-core-tests, 13 tests). The measured one: with `separatorSpace(false)` the conversion of
+the base is the D9 prediction Word resolved in phase 0, and docx4j's Accept All and Reject All of it describe
+(`DocumentDescription`, CR-043's structural comparison: text, formatting, marks, tables, notes, text boxes) exactly
+as Word's `word-d9-accept-all.docx` and `word-d9-reject-all.docx` do. With the default, D13's texts on the probe,
+Reject All as Word's; the three views equal Accept All and Reject All; the report; idempotence; `preview` changes
+nothing and reports what the conversion does; ids unique and above the base's; every `w:del` in a paragraph,
+hyperlink or inline control's content; the dates in Sydney, in UTC and none, the author; `w16du` made ignorable and
+declared on a document that had no `mc:Ignorable`; the separating space's cases (punctuation, the paragraph's
+start and end, two struck words apart, digits meeting, a space inside the strike, off, a space in an insertion not
+taken); left alone (a tracked strike, a struck comment reference); the paragraph marks (joined; before a table, a
+cell's last, left and reported; not whole, kept unreported).
+
+### 11.5 Open
+
+- **Word's second run** on `manual-redline-phase1.docx` (the same script, `RUN.txt`'s second part): Word's Accept All
+  and Reject All of docx4j's own conversion, the phase 1 goldens for the default; pending Jason.
+- **The gate**: docx4j-core-tests 2278 run, 0 failures, 30 skipped (clean install of docx4j-core and core-tests).
+- **The Getting Started sentence** (§5's phase 1 row): the docx is under Jason's review (uncommitted in the tree;
+  it is canonical, the md and html derived), so the sentence waits for his review to land.

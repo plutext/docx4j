@@ -18,6 +18,9 @@
  */
 package org.docx4j.model.text;
 
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
@@ -146,6 +149,27 @@ public final class Texts {
 		TextOptions o = options == null ? new TextOptions() : options;
 		o.checkImplemented();
 		return new Extractor(null, o, Extractor.Mode.PLANLESS).extract(content, TextBlock.Story.MAIN, "content", null);
+	}
+
+	/**
+	 * Where the text model puts what it reads of a package: each paragraph (and what else it makes a
+	 * block of) mapped, by identity, to the address of the first block made from it ({@code body/12},
+	 * {@code header:rId8/2}, ...), as {@link #of(WordprocessingMLPackage, TextOptions)} would give it
+	 * under the same options. For an operation that changes the package and reports what it changed in
+	 * the text model's terms (CR-068's {@code ManualRedline}): read it before the change. What the text
+	 * model does not read (an {@code mc:Fallback} it does not take, a hidden story) has no entry. The
+	 * package is not changed.
+	 *
+	 * @since 17.3.5 (CR-068)
+	 */
+	public static Map<Object, String> addresses(WordprocessingMLPackage pkg, TextOptions options) {
+		if (pkg == null) throw new IllegalArgumentException("No package");
+		TextOptions o = options == null ? new TextOptions() : options;
+		o.checkImplemented();
+		Extractor x = new Extractor(pkg, o, Extractor.Mode.VIEW);
+		x.sources = new IdentityHashMap<Object, String>();
+		x.extract();
+		return x.sources;
 	}
 
 	/**
