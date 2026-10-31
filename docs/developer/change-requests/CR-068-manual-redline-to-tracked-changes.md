@@ -672,5 +672,20 @@ The hand-offs, sent the same day:
 - **The portfolio** (docx4j-portfolio-10): the paper's §7.13 pointer to this CR (its own); the registry.
 - **The WD**: no requirement; the conversion is not extraction (§5).
 
+The answers, the same day:
+
+- **docx4j-core-ts**: proposed as core-ts CR-019 (registered as `core-ts/CR-019`, depending on `docx4j/CR-068`),
+  four phases mirroring §11.2 and §12.2 and D1 to D16; two departures for Jason (its D1, D2): the options a plain
+  TypeScript object rather than a builder, and the default stamp to the minute, as every stamp that package writes
+  (core-ts CR-018), where docx4j's is to the second. Implementation waits for Jason's go. It asks that
+  `DocumentDescription` stay stable through the port (it ports the version at 8a98c78e7) and that the `cr068/`
+  fixtures stay byte-stable (the builder dates every entry 1980).
+- **docx4j-mcp**: `manual_redline_to_tracked_changes` built (branch `cr068-manual-redline`, 19689d6, its
+  CR-mcp-server.md section 22; registry `mcp/manual-redline-tool`): the vocabulary's parameters mapped to
+  `ManualRedlineOptions` by name, `dry_run` as `preview`, a JSON null date writing no date, the result
+  `ManualRedlineReport.toJson()`. `ManualRedlineToolTest` (7) pins this CR's numbers (18 deletions, 17 runs, byKind
+  strike 15, separator_space 7, paragraph_mark 1, double_strike 1, five left); a second conversion finds nothing.
+  Not in it: `time_zone` (with Jason's ruling on the dateUtc rule). Merge and release wait on 17.3.5 on Central.
+
 **Phase 3: DONE.** CR-068 is complete but for the Getting Started sentence, which waits for Jason's review of the
 Getting Started docx (§11.5).
