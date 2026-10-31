@@ -1,11 +1,13 @@
 # CR-069: what the page shows, in the text: case mapping, drop caps, superscripts, and the formatting-join finding
 
-Status: PROPOSED 2026-10-31, drafted by Claude Fable 5.1 (session docx4j-12) from Jason's rulings of the same day on the
+Status: ACCEPTED 2026-10-31 (Jason: "CR-069 decisions as presented"): D1 to D9 as recommended (§5); D9's condition,
+whether 17.3.5 waits for phases 0 to 2 (the caps change), stays Jason's call at the release; not started. Proposed
+2026-10-31, drafted by Claude Fable 5.1 (session docx4j-12) from Jason's rulings of the same day on the
 four questions the portfolio's review of LlamaIndex's Document Parsing Protocol put to him (paper §7.13; WD 0.44, drafted
 and uncommitted: REQ-521, REQ-607, REQ-710, §9.2 `text.formatting_join`, §4 NOTE, Appendix B). Jason's rulings: (a) the
 drop-cap join, (b) the formatting-join inspection kind and (c) `<sup>`/`<sub>` with a vertAlign flag, as recommended;
 (d) differently: `w:caps` written in capitals by the run's language, per code point, as measured; `w:smallCaps` written
-as its STORED characters. Nothing is built; Jason has not said to start. Docx4j-side decisions D1 to D9 in §5; phases in §4.
+as its STORED characters. Docx4j-side decisions D1 to D9 in §5; phases in §4.
 
 ## 0. Summary
 
@@ -147,9 +149,10 @@ follow; `InspectionReport.optionsPhrase` shows them when non-default.
 
 ## 5. Decisions
 
-Jason has ruled (a) to (d) as the Status line says; these are the docx4j-side decisions under them.
+Jason has ruled (a) to (d) as the Status line says; these are the docx4j-side decisions under them, all nine
+accepted as presented, 2026-10-31 (Jason).
 
-| # | Decision | Recommendation |
+| # | Decision | Recommendation (accepted) |
 |---|---|---|
 | D1 | Shape | One new CR (this), not addenda to CR-046 and CR-050; both are done and are cited |
 | D2 | Flags | `TextRun.isCaps()`, `isSmallCaps()`, `getVerticalAlignment()` (`BASELINE`, `SUPERSCRIPT`, `SUBSCRIPT`); own-else-styles fold as for bold; a run under caps and small caps is caps |
