@@ -27,6 +27,21 @@ Claude Opus 5.5
 Changes in Version 17.3.5
 --------------------------
 
+* Text model (CR-069): w:caps text is written in capitals in plain text and Markdown, by the run's language
+  (a Turkish i as İ) and one character to one as Word does (ß stays ß); small caps stays as stored unless
+  small_caps: upper. The plain text of a document with All Caps runs changes. TextRun gains isCaps(),
+  isSmallCaps(), getVerticalAlignment() and getLanguage(); CaseMapping has the mapping.
+* Text model (CR-069): a drop cap is joined to the word it begins ("The", not "T" and "he" as two
+  paragraphs), with the warning paragraph.drop_cap_joined; drop_caps: asis keeps the two. The word-text
+  profile sets drop_caps: asis and small_caps: upper.
+* Markdown export writes superscript and subscript runs in <sup> and <sub> (outside the emphasis, never around
+  a note reference); plain text keeps them on the baseline. A double-struck run (w:dstrike) is struck through
+  in the text model, ~~ in Markdown (CR-069).
+* HTML output (both writers): a superscript or subscript run is a sup or sub element, where it was a span,
+  with its class and CSS kept, so it is drawn as before; a run holding a note reference stays a span (CR-069).
+* The inspector reports text.formatting_join where struck, superscript or subscript digits meet a
+  neighbouring digit with nothing between, so the plain text forms a number the page does not show
+  (1.3161.335): unseen in plain text, info in Markdown and the block model (CR-069).
 * PlainText's grid tables (tables: grid) size their columns in code points, not UTF-16 units, so a cell
   holding an emoji or another character beyond the BMP no longer pads one short (WD 0.48 REQ-605, REQ-205).
 * Text model under markup_detail: author_date (WD 0.46 REQ-702): a revision's or comment's date is the

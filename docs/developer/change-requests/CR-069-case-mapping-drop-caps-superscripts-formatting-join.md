@@ -1,7 +1,8 @@
 # CR-069: what the page shows, in the text: case mapping, drop caps, superscripts, and the formatting-join finding
 
-Status: ACCEPTED 2026-10-31 (Jason: "CR-069 decisions as presented"): D1 to D9 as recommended (§5); D9's condition
-ruled the same day (Jason: "17.3.5 will wait for CR-069"): 17.3.5 ships with CR-069, not only phases 0 to 2. Phase 0 DONE 2026-10-31 (§10; Jason: "start CR-069"); phase 1 DONE 2026-10-31 (§11; Jason: "go ahead with phase 1"); phase 2 DONE 2026-10-31 (§12; Jason: "do phase 2"); phase 3 DONE 2026-11-01 (§13; Jason: "do phase 3"); phase 4 DONE 2026-11-01 (§14; Jason: "do phase 4 please"). Proposed
+Status: COMPLETE 2026-11-01 (phases 0 to 5; Getting Started's sentences are tracked changes awaiting Jason's review,
+§15). ACCEPTED 2026-10-31 (Jason: "CR-069 decisions as presented"): D1 to D9 as recommended (§5); D9's condition
+ruled the same day (Jason: "17.3.5 will wait for CR-069"): 17.3.5 ships with CR-069, not only phases 0 to 2. Phase 0 DONE 2026-10-31 (§10; Jason: "start CR-069"); phase 1 DONE 2026-10-31 (§11; Jason: "go ahead with phase 1"); phase 2 DONE 2026-10-31 (§12; Jason: "do phase 2"); phase 3 DONE 2026-11-01 (§13; Jason: "do phase 3"); phase 4 DONE 2026-11-01 (§14; Jason: "do phase 4 please"); phase 5 DONE 2026-11-01 (§15; Jason: "do phase 5"). Proposed
 2026-10-31, drafted by Claude Fable 5.1 (session docx4j-12) from Jason's rulings of the same day on the
 four questions the portfolio's review of LlamaIndex's Document Parsing Protocol put to him (paper §7.13; WD 0.44, drafted
 and uncommitted: REQ-521, REQ-607, REQ-710, §9.2 `text.formatting_join`, §4 NOTE, Appendix B). Jason's rulings: (a) the
@@ -585,8 +586,48 @@ row: "[PROBE] gains no fixture yet (the `dpp-forks` Word re-save is the candidat
 
 ### 14.4 Hand-offs
 
-- **The portfolio**: the registry note (phase 4 done); WD points: REQ-905's list of precedence to name
-  `text.formatting_join`'s group by format (9.2's row has it); items 3, 4 and 6 for 9.2's row or a NOTE; the selector
-  settled as the excerpt (Appendix A's suite note).
+- **The portfolio**: the registry note (phase 4 done; registered 4b7975e); WD points, all taken in WD 0.56
+  (docx4j-portfolio 1eb5791): REQ-905's precedence gains the kind's group by format before the unseen rule; a
+  "Formatting join" rule under 9.2 states item 3's joining, item 4's digit and item 6's one finding a token; the row
+  and rule name the token as the selector (item 5); REQ-703's strikethrough is `w:strike` or `w:dstrike` (item 2).
+  Appendix A.6 records the oracle as written after the Java. No row moves.
 - **docx4j-core-ts, docx4j-python**: the kind, its rule as `INSPECTION.md` and `inspect_oracle.py` now state it, the
   group by format, `w:dstrike` struck in the block model, and the four rows that now pass.
+
+## 15. Phase 5 (2026-11-01; Jason: "do phase 5"; Getting Started "with track changes in the docx")
+
+### 15.1 What was done
+
+- **CHANGELOG** (17.3.5): five entries, one each for the capitals and small caps, the drop-cap join, Markdown's
+  `<sup>`/`<sub>` with `w:dstrike`, `Docx4J.toHTML`'s `sup`/`sub` elements, and `text.formatting_join`.
+- **Getting Started** (`docs/Docx4j_GettingStarted.docx`, the canonical source, Jason's working copy, left
+  uncommitted): five tracked insertions (author "Claude Opus 5.5", as Word writes them: runs in `w:ins`, a new
+  paragraph's mark in its `w:rPr`) in "Text extraction and inspection":
+  - "Reading the text": Markdown's superscripts and subscripts in `<sup>` and `<sub>`;
+  - "Where it differs from Word's own text, on purpose": two bullets, the drop cap joined (its warning and
+    `drop_caps: asis`) and small caps as stored (`small_caps: upper`);
+  - "What it keeps from Word": All Caps in capitals by the run's language and superscripts on the baseline, and a
+    sentence on `profile: word-text`, which sets both options;
+  - the inspector's kinds: `text.formatting_join`.
+  Only `word/document.xml` changed; every other part is byte for byte as Jason left it. The file opens in docx4j
+  (the markup view shows the five insertions and nothing else new) and in LibreOffice. The derived `.md`, `.html` and
+  `.pdf` are not touched: they follow the docx once Jason has accepted or changed the insertions. The pre-edit copy
+  and the script are in `~/claude-scratch-archive/docx4j/getting-started-cr069-phase5/`.
+- **Hand-offs** (§15.3).
+
+### 15.2 The CR in sum
+
+What 17.3.5's text extraction does that 17.3.4's did not: All Caps in capitals by language (REQ-607, phase 1); a drop
+cap joined to its word (REQ-521, phase 2); `<sup>` and `<sub>` in Markdown, and `sup`/`sub` elements in
+`Docx4J.toHTML` (REQ-710, phase 3); the inspector's `text.formatting_join`, and `w:dstrike` struck (phase 4). The
+`dpp/` suite (Word's re-save of the probe, the bisect files, the caps probes, 22 of Word's text saves) is 192 passed,
+none pending; WD 0.44's four rulings stand in WD 0.56 with docx4j's choices folded in (0.50 to 0.56).
+
+### 15.3 Hand-offs
+
+- **The portfolio**: the registry (docx4j/CR-069 done; Status re-baselined).
+- **docx4j-core-ts, docx4j-python**: the CR complete; nothing new to port beyond phases 1 to 4.
+- **docx4j-mcp**: the flags on the block model's runs, the options `small_caps` and `drop_caps`, the warning
+  `paragraph.drop_cap_joined`, the kind `text.formatting_join` and its group by format; no contract change.
+- **docx4j-tika**: `w:dstrike` struck in the text model (phase 4) and `text.formatting_join`; its own phase 3 reads
+  the alignment flag (§13.4).
