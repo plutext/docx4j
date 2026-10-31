@@ -5,7 +5,7 @@ Contents
   
 
 
-**This guide is for docx4j 17.3.4 (Java 11 and later); most of it applies to 11.5.x as well.   **
+**This guide is for docx4j 17.3.5 (Java 11 and later); most of it applies to 11.5.x as well.   **
 
 Version numbering jumped from 11.5.14 to 17.0.0 in part because of the following API changes:
 
@@ -152,7 +152,7 @@ To use docx4j 11.4 or later, ensure any code references **jakarta.xml.bind** (no
 
 `			<artifactId>``docx4j-JAXB-ReferenceImpl``</artifactId>`
 
-`			<version>17.3.4</version>`
+`			<version>17.3.5</version>`
 
 `		</dependency>`
 
@@ -166,7 +166,7 @@ To use docx4j 11.4 or later, ensure any code references **jakarta.xml.bind** (no
 
 `			<artifactId>``docx4j-JAXB-MOXy``</artifactId>`
 
-`			<version>17.3.4</version>`
+`			<version>17.3.5</version>`
 
 `		</dependency>`
 
@@ -188,7 +188,7 @@ With Maven, depend on the extras and the base jar comes with it (its pom names d
 
 `		<artifactId>docx4j-bundle-extras</artifactId>`
 
-`		<version>17.3.4</version>`
+`		<version>17.3.5</version>`
 
 `	</dependency>`
 
@@ -363,7 +363,7 @@ If the document has a header, then the main document part woud have a header chi
 
 Similarly for any images.  To see the structure of any given document, [upload it to the PartsList webapp](http://webapp.docx4java.org/OnlineDemo/PartsList.html), or run the "Parts List" sample (see further below).
 
-An introduction to WordML is beyond the scope of this document.  You can find a very readable introduction in 1st edition Part 3 (Primer) at [http://www.ecma-international.org/publications/standards/Ecma-376.htm](http://www.ecma-international.org/publications/standards/Ecma-376.htm) or [http://www.ecma-international.org/news/TC45\_current\_work/TC45\_available\_docs.htm](http://www.ecma-international.org/news/TC45_current_work/TC45_available_docs.htm) (a better link for the 1st edition (Dec 2006), since its not zipped up). 
+An introduction to WordML is beyond the scope of this document.  You can find a very readable introduction in 1<sup>st</sup> edition Part 3 (Primer) at [http://www.ecma-international.org/publications/standards/Ecma-376.htm](http://www.ecma-international.org/publications/standards/Ecma-376.htm) or [http://www.ecma-international.org/news/TC45\_current\_work/TC45\_available\_docs.htm](http://www.ecma-international.org/news/TC45_current_work/TC45_available_docs.htm) (a better link for the 1st edition (Dec 2006), since its not zipped up). 
 
 See also the free ["Open XML Explained" ebook](http://openxmldeveloper.org/cfs-file.ashx/__key/communityserver-components-postattachments/00-00-00-19-70/Open-XML-Explained.pdf) by Wouter Van Vugt.  
 
@@ -1690,209 +1690,6 @@ The relevant subclass is accessed via the package object:
 
 Note: support for digital signatures is in Plutext’s Enterprise edition.
 
-# Fields
-
-A Word field is an instruction and a cached result: ` DATE \@ "d MMMM yyyy" ` and the text Word last computed for it.  Word stores most fields in the complex form (a run holding a `w:fldChar` begin, the instruction in `w:instrText` runs, a separate, the result runs, and an end) and a few in the simple form (a `w:fldSimple` element holding the result).  Word shows the cached result until something updates the field: F9, printing, or, for a few fields such as PAGE and LISTNUM, every time it lays the document out.
-
-docx4j evaluates fields in one place, `org.docx4j.model.fields.FieldEvaluators`, a registry by field name over `FieldInstruction` (the parsed instruction) and `FieldContext` (what an evaluator may ask about).  Three consumers share it: `FieldUpdater`, which writes results into the document as Word's update does; the text extraction under `fields: update`; and the PDF and HTML writers.  Each field's behaviour was measured against Word 365 before it was built (CR-067 in docs/developer/change-requests), so a result matches what F9 writes, down to the default formats and the error texts.
-
-## Updating fields: FieldUpdater
-
-`	FieldUpdater updater = new FieldUpdater(wordMLPackage);`
-
-`	updater.update(true); // headers and footers too`
-
-updates every field the registry knows, in every part, as Word's update-all (Ctrl+A, F9) does.  A locked field (`w:fldLock`) is left alone, and a field whose input docx4j does not have (a FILENAME with no name supplied) keeps its cached result rather than being given a wrong one.  `updater.only(Set.of("DATE", "DOCPROPERTY"))` narrows the set.
-
-The fields updated:
-
-- Dates: DATE and TIME (the clock), CREATEDATE, SAVEDATE and PRINTDATE (the core properties), with Word's `\@` formats and its default format for the document's language.
-- Document information: DOCPROPERTY, DOCVARIABLE, AUTHOR, TITLE, SUBJECT, COMMENTS, KEYWORDS, LASTSAVEDBY, INFO, TEMPLATE, REVNUM, NUMWORDS, NUMCHARS, FILENAME and FILESIZE.
-- References: REF (a bookmark's text, with its formatting), NOTEREF, QUOTE, SEQ, SECTION, and SET (which defines its bookmark).
-- The user: USERNAME, USERINITIALS and USERADDRESS.
-- Expressions: `=` formulas (the operators; SUM, AVERAGE, MIN, MAX, COUNT, ABS, INT, MOD, ROUND, PRODUCT, AND, OR, NOT, DEFINED, TRUE and FALSE; table cell and bookmark references; `\#` formats; Word's error texts), IF and COMPARE (with wildcards), and fields nested in them, evaluated inside out.
-- Numbering and symbols: LISTNUM, AUTONUM, AUTONUMLGL and AUTONUMOUT (the numbers Word paints and never stores) and SYMBOL.
-- INDEX, regenerated from the document's XE marks (below).
-- The mail merge fields, in the mergers (the Mailmerge chapter).
-
-Not evaluated, so the cached result is kept: the layout fields PAGE, NUMPAGES, SECTIONPAGES, PAGEREF and STYLEREF (the PDF and HTML writers compute those as they lay the pages out, and TocGenerator updates a TOC's page numbers); the fields that fetch content, INCLUDETEXT, INCLUDEPICTURE, LINK and DATABASE, unless you supply a resolver (`FieldContext.external`); EDITTIME, AUTOTEXT, BIBLIOGRAPHY and CITATION; and a form field's value.
-
-## What the evaluator reads: FieldContext
-
-`updater.getContext()` is the context.  What the package itself gives (its properties, bookmarks, language, notes) is the default; the rest you supply:
-
-`	updater.getContext()`
-
-`		.clock(() -> new Date())                  // DATE, TIME`
-
-`		.zone(ZoneId.of("Australia/Sydney"))      // the zone dates are shown in`
-
-`		.user("Jane Citizen", "JC", "1 Main St")  // USERNAME, USERINITIALS, USERADDRESS`
-
-`		.fileName("C:\\docs\\report.docx")        // FILENAME (\p gives the path)`
-
-`		.fileSize(16820L);                        // FILESIZE`
-
-Two of these can be set once on the package, and are then seen by every consumer, the text extraction and the writers included: `wordMLPackage.setDateTimeZone(zone)`, the client's zone, in which every date the package holds is shown; and `setSourceName` and `setSourceSize`, the file the package came from.  They are request attributes: nothing of them is saved, and a server reusing a loaded package sets them per request.
-
-## Fields in text extraction and in PDF and HTML output
-
-The text extraction (the Text extraction and inspection chapter) reads a field's cached result by default; with `new TextOptions().fields(TextOptions.Fields.UPDATE)` it computes the same fields the updater does, without touching the package.
-
-The PDF and HTML writers paint what Word paints: the layout fields from the layout; DATE, TIME and PRINTDATE from the clock (`docx4j.convert.out.fields.dateCachedResult=true` paints the stored date instead, which makes a conversion reproducible); DOCPROPERTY as stored, since Word does not update it when it opens a document (`docx4j.convert.out.fields.docPropertyCachedResult=false` evaluates it); LISTNUM, AUTONUM and SYMBOL evaluated, since Word stores nothing for them; and every other field as stored where it has a result, evaluated where it has none.
-
-## Generating an index
-
-FieldUpdater regenerates each INDEX field in the body from the document's XE marks (`org.docx4j.model.fields.index.IndexGenerator`), as Word does: the entries collated in Word's order, sub-entries, cross-references, page ranges from bookmarks, bold and italic page numbers, the `\e`, `\l`, `\g`, `\k`, `\h`, `\r`, `\p`, `\f` and `\c` switches, in the Index 1 to Index 3 and Index Heading styles (added to the document where missing).  The page numbers come from docx4j-export-fo laying the document out, as a TOC's do; with no docx4j-export-fo on the classpath, give the updater a pager (`updater.indexPager(...)`), or the INDEX is left as it is.
-
-# docx Table of Contents
-
-Docx4j (from v3.3.0) can generate/update a ToC, including update its page numbers.  
-
-In docx4j v8.2.0, this can be done in 2 distinct ways: (1) by automating Microsoft Word using documents4j (new in v8.2.0) or, (2) in pure Java (albeit with possible inaccuracy in the page numbers).
-
-For the documents4j approach, please see [https://github.com/plutext/docx4j/blob/VERSION\_8\_2\_0/docx4j-samples-documents4j-local/src/main/java/org/docx4j/samples/documents4j/local/TocOperations.java](https://github.com/plutext/docx4j/blob/VERSION_8_2_0/docx4j-samples-documents4j-local/src/main/java/org/docx4j/samples/documents4j/local/TocOperations.java)
-
-That example is for Word running locally.  If you run Word remotely, please see the comments at [https://github.com/plutext/docx4j/blob/VERSION\_8\_2\_0/docx4j-documents4j-remote/src/main/java/org/docx4j/documents4j/remote/Documents4jRemoteServices.java#L61](https://github.com/plutext/docx4j/blob/VERSION_8_2_0/docx4j-documents4j-remote/src/main/java/org/docx4j/documents4j/remote/Documents4jRemoteServices.java#L61)
-
-The "pure Java" approach uses export-fo.  For an example using this approach, please see [https://github.com/plutext/docx4j/blob/VERSION\_8\_2\_0/docx4j-samples-docx4j/src/main/java/org/docx4j/samples/TocSample.java](https://github.com/plutext/docx4j/blob/VERSION_8_2_0/docx4j-samples-docx4j/src/main/java/org/docx4j/samples/TocSample.java)
-
-## Introduction
-
-A table of contents is often included in a docx file.
-
-Where docx4j or other code is used to modify the document, the TOC may need updating since page numbers may be wrong, or entries added, deleted or modified.
-
-In some cases, it is sufficient to leave the TOC updating until the docx is opened in Microsoft Word.  In Word, the user can manually issue the command to update the table.  
-
-In other scenarios, it is desirable to update the TOC programmatically.  For example, prior to PDF output.  The samples above show the 2 approaches docx4j offers for doing this.
-
-## Field background
-
-Historically, Word has used a *field code* to specify a table of contents.
-
-A table of contents field is just one type of field, amongst many (the Fields chapter above says what docx4j does with each):
-
-date-and-time:  
-CREATEDATE  \|  DATE  \|  EDITTIME  \|  PRINTDATE  \|  SAVEDATE  \|  TIME  
-
-document-automation:  
-COMPARE  \|  DOCVARIABLE  \|  GOTOBUTTON  \|  IF  \|  MACROBUTTON  \|  PRINT  
-
-document-information:  
-AUTHOR  \|  COMMENTS  \|  DOCPROPERTY  \|  FILENAME  \|  FILESIZE  \|  INFO    
-\|  KEYWORDS  \|  LASTSAVEDBY  \|  NUMCHARS  \|  NUMPAGES  \|  NUMWORDS  \|  SUBJECT    
-\|  TEMPLATE  \|  TITLE
-
-equations-and-formulas:  
-\= formula  \|  ADVANCE  \|  EQ  \|  SYMBOL
-
-**index-and-tables:**  
-INDEX  \|  RD  \|  TA  \|  TC  \|  TOA  \|  **TOC**  \|  XE
-
-links-and-references:  
-AUTOTEXT  \|  AUTOTEXTLIST  \|  BIBLIOGRAPHY  \|  CITATION  \|  HYPERLINK  \|  INCLUDEPICTURE  \|  INCLUDETEXT    
-\|  LINK  \|  NOTEREF  \|  PAGEREF  \|  QUOTE  \|  REF  \|  STYLEREF
-
-mail-merge:  
-ADDRESSBLOCK  \|  ASK  \|  COMPARE  \|  DATABASE  \|  FILLIN  \|  GREETINGLINE  \|  IF    
-\|  MERGEFIELD  \|  MERGEREC  \|  MERGESEQ  \|  NEXT  \|  NEXTIF  \|  SET  \|  SKIPIF
-
-numbering:  
-AUTONUM  \|  AUTONUMLGL  \|  AUTONUMOUT  \|  BARCODE  \|  LISTNUM  \|  PAGE  \|  REVNUM    
-\|  SECTION  \|  SECTIONPAGES  \|  SEQ
-
-user-information:  
-USERADDRESS  \|  USERINITIALS  \|  USERNAME
-
-form-field:  
-FORMCHECKBOX \| FORMDROPDOWN \| FORMTEXT
-
-## TOC Content Control
-
-Since the introduction of content controls in Word 2007, Word (References \> Table of Contents) inserts the TOC field in a content control:
-
-![Picture 6](Docx4j_GettingStarted_files/image1.png)
-
-When inserting a TOC, both approaches documented here insert it in a content control.
-
-When updating a TOC, the pure Java approach assumes the TOC is located in such a content control.   It won’t find the TOC field unless it is.
-
-## TOC Field Syntax
-
-The TOC field instruction has the following components:
-
-TOC   
-field-argument  
-switches  
-field-argument   switches  
-switches   field-argument
-
-The TOC field supports a variety of field-specific-switches.
-
-For example:
-
-TOC \\o "3-3" \\h \\z \\t  "Heading 1,1,Heading 2,2,Appendix 1,1,Appendix 2,2" 
-
-Of the switches in the Open XML specification, this TOC helper recognises:
-
-|\\h|Makes the table of contents entries hyperlinks.|
-|---|---|
-|**\\n** field-argument|Without field-argument, omits page numbers from the table of contents. Page numbers are omitted from all levels unless a range of entry levels is specified by text in this switch's field-argument. A range is specified as for \\l.|
-|**\\o** field-argument|Uses paragraphs formatted with all or the specified range of built-in heading styles. Headings in a style range are specified by text in this switch's field-argument using the notation specified as for \\l, where each integer corresponds to the style with a style ID of HeadingX (e.g. 1 corresponds to Heading1). If no heading range is specified, all heading levels used in the document are listed.|
-|**\\t** field-argument|Uses paragraphs formatted with styles other than the built-in heading styles. text in this switch's field-argument specifies those styles as a set of comma-separated doublets, with each doublet being a comma-separated set of style name and table of content level. \\t can be combined with \\o.|
-|**\\u**|Uses the applied paragraph outline level.|
-
-The following switches may also be supported in a future version:
-
-|\\b field-argument|Includes entries only from the portion of the document marked by the bookmark named by text in this switch's field-argument.|
-|---|---|
-|\\p field-argument|text in this switch's field-argument specifies a sequence of characters that separate an entry and its page number. The default is a tab with leader dots.|
-|\\w|Preserves tab entries within table entries.|
-|\\x|Preserves newline characters within table entries.|
-
-There are no plans to support the remaining switches:
-
-|\\a field-argument|Includes captioned items, but omits caption labels and numbers. The identifier designated by text in this switch's field-argument corresponds to the caption label.<br>Use \\c to build a table of captions with labels and numbers.|
-|---|---|
-|\\c field-argument|Includes figures, tables, charts, and other items that are numbered by a SEQ field. The sequence identifier designated by text in this switch's field-argument, which corresponds to the caption label, shall match the identifier in the corresponding SEQ field.|
-|\\d field-argument|When used with \\s, the text in this switch's field-argument defines the separator between sequence and page numbers. The default separator is a hyphen (-).|
-|\\f field-argument|Includes only those TC fields whose identifier exactly matches the text in this switch's field-argument (which is typically a letter).|
-|\\l field-argument|Includes TC fields that assign entries to one of the levels specified by text in this switch's field-argument as a range having the form startLevel-endLevel, where startLevel and endLevel are integers, and startLevel has a value equal-to or less-than endLevel. TC fields that assign entries to lower levels are skipped.|
-|\\s field-argument|For entries numbered with a SEQ field, adds a prefix to the page number. The prefix depends on the type of entry. text in this switch's field-argument shall match the identifier in the SEQ field.|
-|\\z|Hides tab leader and page numbers in Web layout view.|
-
-## Inserting/generating a TOC – "pure Java" considerations
-
-You should ensure styles TOC1, TOC2, TOC3 etc are defined in your styles definition part, since these are used to style TOC entries.  ToC Helper will fallback to hard coded defaults for these styles, if they are not defined.  The hard coded defaults come from:
-
-`	InputStream is = ResourceUtils.``getResourceViaProperty``( `  
-`				"org.docx4j.toc.TocStyles.xml",`
-
-`				"org/docx4j/toc/TocStyles.xml");`
-
-You can specify a different resource of your own in docx4j.properties:
-
-`# Defaults to com/plutext/docx/toc/TocStyles.xml`
-
-`# It provides default toc style definitions,`
-
-`# for use if none are defined in the docx itself.`
-
-`org.docx4j.toc.TocStyles.xml=org/docx4j/toc/TocStyles.xml`
-
-# Pagination: which page is a paragraph on?
-
-From 17.2.0, org.docx4j.model.pagination.Paginate lays the document out with FOP and reports which page each paragraph of the main document part starts on, keyed by its w14:paraId.  It needs docx4j-export-fo on the classpath (found reflectively, as the TOC generator finds it); the XSL FO comes from the same exporter as PDF output, so the pages are the pages that PDF would have.
-
-`	PaginationMap map = Paginate.compute(wordMLPackage, null);`
-
-`	Integer page = map.getPageIndex(paraId);   // 1-based, in rendering order; getPage() gives the number the page displays`
-
-Paginate.paginate(wordMLPackage, settings) does that and also rewrites the document's w:lastRenderedPageBreak markers, as Word records the pagination of its last rendering: every existing marker is removed, one is written at the start of each paragraph that begins a new page, and, inside a paragraph that spans pages, one at the character where the new page begins (the run is split there, as Word does).  A paragraph without a w14:paraId is given one, so a document paginated once keys stably from then on.  PaginateSettings.setLineBreaks(false) turns the mid-paragraph markers off; setWriteParaIds(false) leaves the ids alone.
-
-The layout is of the document as if its tracked changes were accepted, and the pages are FOP's, with the fonts the package's font mapper resolves (Appendix 1): where those metrics differ from Word's, the page a paragraph lands on can differ too, so the markers are advisory, as Word's own are.  Docx4J.updateToc uses the same layout for the page numbers of a table of contents.
-
 # Tracked changes: accept and reject
 
 From 17.3.3, org.docx4j.model.revisions lists, accepts and rejects a document's tracked changes, in every story - the main document, headers, footers, footnotes, endnotes and comments, and inside content controls, text boxes and equations - as Word's Review tab does: Word 365's own Accept All and Reject All are what its tests compare with.
@@ -1906,6 +1703,12 @@ TrackedChanges.in lists the changes as Word's Reviewing Pane and Office JS group
 `	TrackedChanges.rejectAll(wordMLPackage, new TrackedChangeFilter().authors("Author B"));`
 
 TrackedChanges.report gives the counts by kind, author and part, with a JSON form.  The samples TrackChangesAccept and TrackChangesReject show the API (AcceptChanges.xslt, which earlier samples used, is deprecated).  For PDF and HTML output, ConversionFeatures.PP\_COMMON\_ACCEPT\_TRACKED\_CHANGES lays out the accepted view, in every story since 17.3.3.  From 17.3.4 the conversion settings' setView(TextView) chooses the view: markup, the default, as before (the HTML marks insertions \<ins\> and deletions \<del\>, with data-author and datetime); accepted; or original, as Reject All leaves the document.
+
+A document whose author struck the old words through by hand, rather than tracking the change, holds formatting, not revisions: Accept All and Reject All leave the struck text where it is.  From 17.3.5, ManualRedline turns such a manual redline into tracked changes:
+
+`	ManualRedlineReport report = ManualRedline.toTrackedChanges(wordMLPackage);`
+
+ManualRedline.preview reports what a conversion would do without making it; ManualRedlineOptions adds underlined or coloured text as tracked insertions, strike from a style, the comments, and a range (a content control, a bookmark, some parts).
 
 # Text extraction and inspection
 
@@ -1947,7 +1750,13 @@ By default the text is the main story in reading order; each text box's paragrap
 
 `	TextResult result = Texts.of(wordMLPackage, options);`
 
-gives the block model behind the text: `result.blocks()`, the paragraphs, tables, charts and images, each with its address in the document, its style, its runs and its flags (a placeholder, a list item, a heading level); `result.comments()`; `result.warnings()`, where the text may not be what it seems (an `mc:AlternateContent` whose branches differ, a field with no result, a chunk that could not be read); and `result.metadata()`.  `PlainText.of(result)` writes it as plain text, `Docx4J.toMarkdown(wordMLPackage)` as Markdown from the same model (headings, lists with Word's numbering, GFM tables, footnotes, images with their alt text, YAML front matter), with `MarkdownExportOptions.setView` choosing the view there too.  The HTML and PDF exporters take the same view setting, and the `extract_text` tool of docx4j's MCP server returns the same text, so an agent, a converter and a test read one document the same way.
+gives the block model behind the text: 
+
+- `result.blocks()`, the paragraphs, tables, charts and images, each with its address in the document, its style, its runs and its flags (a placeholder, a list item, a heading level); `result.comments()`; 
+- `result.warnings()`, where the text may not be what it seems (an `mc:AlternateContent` whose branches differ, a field with no result, a chunk that could not be read); and 
+- `result.metadata()`.  `PlainText.of(result)` writes it as plain text, `Docx4J.toMarkdown(wordMLPackage)` as Markdown from the same model (headings, lists with Word's numbering, GFM tables, footnotes, images with their alt text, YAML front matter, superscripts and subscripts in `<sup>` and `<sub>`), with `MarkdownExportOptions.setView` choosing the view there too.   
+    
+  The HTML and PDF exporters take the same view setting, and the `extract_text` tool of docx4j's MCP server returns the same text, so an agent, a converter and a test read one document the same way.
 
 ## Where it differs from Word's own text, on purpose
 
@@ -1960,8 +1769,10 @@ Word offers two texts of a document: `Range.Text` in its object model, and Save 
 - Chart text, SmartArt text, WordArt, image alt text (`alt_text: true`) and document properties (`metadata: true`) are available.  `Range.Text` has none of them.
 - Fields give their result, never both result and code; a `w:sym` gives its character, where `Range.Text` gives "("; ruby gives its base text, where Word's text gives a stray field mark.
 - The view is yours.  Save As always writes the accepted text; `Range.Text` follows whatever the Review pane shows, and marks nothing.
+- A drop cap is joined to the word it begins: the page shows "The", where Save As writes "T" and "he" as two paragraphs.  The result's warnings name each join (`paragraph.drop_cap_joined`), and `drop_caps: asis` keeps the two paragraphs.
+- Small caps is written as its stored letters, since their heights still tell a capital from a small letter; Save As writes capitals, as `small_caps: upper` does.
 
-What it keeps from Word: the accepted view as the default, placeholder text included, a bound control's refreshed value, the `altChunk` expanded in place, list labels out unless asked, and `mc:AlternateContent` read by the branch Word reads.
+What it keeps from Word: the accepted view as the default, placeholder text included, a bound control's refreshed value, the `altChunk` expanded in place, list labels out unless asked, All Caps text in capitals by the run's language (a Turkish i as İ), superscripts and subscripts on the baseline in plain text, and `mc:AlternateContent` read by the branch Word reads.  For Word's Save As text itself, `TextOptions.profile(Profile.WORD_TEXT)` (`profile: word-text`) sets the options that give it, `drop_caps: asis` and `small_caps: upper` among them.
 
 ## Inspecting what the text does not show
 
@@ -1969,12 +1780,14 @@ What it keeps from Word: the accepted view as the default, placeholder text incl
 
 is Word's own Document Inspector as an API, extended for an agent's needs: read-only, fetching nothing, bounded.  Each `InspectFinding` names a kind, its address in the document, whether a person would see it, an excerpt or summary, and the extraction option that would reveal it.  The kinds fall into four groups:
 
-- text present but not displayed: `text.hidden`, `text.near_background` (white on white), `text.tiny`, `text.web_hidden`, `paragraph.hidden`, `paragraph.collapsed`, `mce.branch` (an unselected branch whose text differs), `revision.deleted` and `revision.moved_from`, `shape.hidden`, `shape.off_page`, `shape.zero_size`, `chars.zero_width`, `chars.tag`, `chars.bidi`, `chars.private_use`, `font.glyph_mismatch` (an embedded font that draws one character as another), `image.svg_text` and `image.metafile_text`;
+- text present but not displayed: `text.hidden`, `text.near_background` (white on white), `text.tiny`, `text.web_hidden`, `paragraph.hidden`, `paragraph.collapsed`, `mce.branch` (an unselected branch whose text differs), `revision.deleted` and `revision.moved_from`, `shape.hidden`, `shape.off_page`, `shape.zero_size`, `chars.zero_width`, `chars.tag`, `chars.bidi`, `chars.private_use`, `font.glyph_mismatch` (an embedded font that draws one character as another), `text.formatting_join` (struck through or raised digits that the plain text fuses with their neighbour into a number the page does not show, as `1.3161.335`), `image.svg_text` and `image.metafile_text`;
 - content that fetches or runs: `field.external` (INCLUDETEXT, DDE, a non-http HYPERLINK), `settings.update_fields`, `relationship.external`, `hyperlink.web`, `part.macro`, `part.activex`, `object.embedded`, `altchunk.external_ref`, `altchunk.script`;
 - content the text leaves out by default: `story.unused` (a header no section uses), `sdt.placeholder`, `sdt.stored_surface` (what a bound control stored, against the value it shows), `chart.cached`, `smartart.data`, `revision.author`, `field.code`;
 - in an embedded workbook or presentation: hidden sheets, rows, columns and slides, and slide notes.
 
 `inspection.counts(options, Inspection.Format.PLAIN)` groups the findings for an extraction with those options: `unseen` (in the text a reader gets but not on the page, or the other way about), `omitted` (on the page, left out by the options), `active` (would fetch or run) and `info`.  `TextOptions.inspect(true)` puts those four counts into `Texts.of`'s result metadata, so an agent learns in one line that the text it holds is not the whole file, without the findings reaching the text it is reading.  `inspection.status()` is `PARTIAL` when anything was skipped (a payload over the size limits, a chunk type it does not decode), with `skipped()` saying what, and `limitations()` lists what no static inspection can see: an object covered by another, text the layout would place off the page.
+
+From 17.3.5, `InspectionReport.markdown(inspection, "file.docx")` writes an inspection for a person: the findings under their groups for an output, each with what its kind is, where it is, its text, whether a person sees it and how to extract it; then what was skipped and what no static inspection detects.  The sample `InspectDocument` writes one beside the document it inspects.
 
 Inspection is advisory.  It judges no intent and changes no default; it tells you what is there.  The suite that checks it, `docx4j-core-tests/src/test/resources/text-extraction/`, is shared with the ports and carries the goldens for every case above, so a reader in Java, TypeScript or Python gives the same text and the same findings.
 
@@ -2140,13 +1953,107 @@ docx4j can take docx content (stored in an XML element as escaped Flat OPC XML) 
 
 To set up the bindings, you can use one of the Word Add-In from [http://www.opendope.org/implementations.html](http://www.opendope.org/implementations.html)  Please note that you will need to install .NET Framework 4.0 ("full" - the "client profile" is not enough).
 
+# Fields
+
+## Field background
+
+The docx file format supports various categories of field codes:
+
+date-and-time:  
+CREATEDATE  \|  DATE  \|  EDITTIME  \|  PRINTDATE  \|  SAVEDATE  \|  TIME  
+
+document-automation:  
+COMPARE  \|  DOCVARIABLE  \|  GOTOBUTTON  \|  IF  \|  MACROBUTTON  \|  PRINT  
+
+document-information:  
+AUTHOR  \|  COMMENTS  \|  DOCPROPERTY  \|  FILENAME  \|  FILESIZE  \|  INFO    
+\|  KEYWORDS  \|  LASTSAVEDBY  \|  NUMCHARS  \|  NUMPAGES  \|  NUMWORDS  \|  SUBJECT    
+\|  TEMPLATE  \|  TITLE
+
+equations-and-formulas:  
+\= formula  \|  ADVANCE  \|  EQ  \|  SYMBOL
+
+**index-and-tables:**  
+INDEX  \|  RD  \|  TA  \|  TC  \|  TOA  \|  **TOC**  \|  XE
+
+links-and-references:  
+AUTOTEXT  \|  AUTOTEXTLIST  \|  BIBLIOGRAPHY  \|  CITATION  \|  HYPERLINK  \|  INCLUDEPICTURE  \|  INCLUDETEXT    
+\|  LINK  \|  NOTEREF  \|  PAGEREF  \|  QUOTE  \|  REF  \|  STYLEREF
+
+mail-merge:  
+ADDRESSBLOCK  \|  ASK  \|  COMPARE  \|  DATABASE  \|  FILLIN  \|  GREETINGLINE  \|  IF    
+\|  MERGEFIELD  \|  MERGEREC  \|  MERGESEQ  \|  NEXT  \|  NEXTIF  \|  SET  \|  SKIPIF
+
+numbering:  
+AUTONUM  \|  AUTONUMLGL  \|  AUTONUMOUT  \|  BARCODE  \|  LISTNUM  \|  PAGE  \|  REVNUM    
+\|  SECTION  \|  SECTIONPAGES  \|  SEQ
+
+user-information:  
+USERADDRESS  \|  USERINITIALS  \|  USERNAME
+
+form-field:  
+FORMCHECKBOX \| FORMDROPDOWN \| FORMTEXT
+
+A Word field is an instruction and a cached result: `DATE \@ "d MMMM yyyy"` and the text Word last computed for it.  Word stores most fields in the complex form (a run holding a `w:fldChar` begin, the instruction in `w:instrText` runs, a separate, the result runs, and an end) and a few in the simple form (a `w:fldSimple` element holding the result).  Word shows the cached result until something updates the field: F9, printing, or, for a few fields such as PAGE and LISTNUM, every time it lays the document out.
+
+docx4j evaluates fields in one place, `org.docx4j.model.fields.FieldEvaluators`, a registry by field name over `FieldInstruction` (the parsed instruction) and `FieldContext` (what an evaluator may ask about).  Three consumers share it: `FieldUpdater`, which writes results into the document as Word's update does; the text extraction under `fields: update`; and the PDF and HTML writers.  
+
+## Updating fields: FieldUpdater
+
+`		FieldUpdater updater = new FieldUpdater(wordMLPackage);`
+
+`		updater.update(true); // headers and footers too`
+
+updates every field the registry knows, in every part, as Word's update-all (Ctrl+A, F9) does.  A locked field (`w:fldLock`) is left alone, and a field whose input docx4j does not have (a FILENAME with no name supplied) keeps its cached result rather than being given a wrong one.  `updater.only(Set.of("DATE", "DOCPROPERTY"))` narrows the set.
+
+The fields updated:
+
+- Dates: DATE and TIME (the clock), CREATEDATE, SAVEDATE and PRINTDATE (the core properties), with Word's `\@` formats and its default format for the document's language.
+- Document information: DOCPROPERTY, DOCVARIABLE, AUTHOR, TITLE, SUBJECT, COMMENTS, KEYWORDS, LASTSAVEDBY, INFO, TEMPLATE, REVNUM, NUMWORDS, NUMCHARS, FILENAME and FILESIZE.
+- References: REF (a bookmark's text, with its formatting), NOTEREF, QUOTE, SEQ, SECTION, and SET (which defines its bookmark).
+- The user: USERNAME, USERINITIALS and USERADDRESS.
+- Expressions: `=` formulas (the operators; SUM, AVERAGE, MIN, MAX, COUNT, ABS, INT, MOD, ROUND, PRODUCT, AND, OR, NOT, DEFINED, TRUE and FALSE; table cell and bookmark references; `\#` formats; Word's error texts), IF and COMPARE (with wildcards), and fields nested in them, evaluated inside out.
+- Numbering and symbols: LISTNUM, AUTONUM, AUTONUMLGL and AUTONUMOUT (the numbers Word paints and never stores) and SYMBOL.
+- INDEX, regenerated from the document's XE marks (below).
+- The mail merge fields, in the mergers (the Mailmerge chapter).
+
+Not evaluated, so the cached result is kept: the layout fields PAGE, NUMPAGES, SECTIONPAGES, PAGEREF and STYLEREF (the PDF and HTML writers compute those as they lay the pages out, and TocGenerator updates a TOC's page numbers); the fields that fetch content, INCLUDETEXT, INCLUDEPICTURE, LINK and DATABASE, unless you supply a resolver (`FieldContext.external`); EDITTIME, AUTOTEXT, BIBLIOGRAPHY and CITATION; and a form field's value.
+
+## What the evaluator reads: FieldContext
+
+`updater.getContext()` is the context.  What the package itself gives (its properties, bookmarks, language, notes) is the default; the rest you supply:
+
+`		updater.getContext()`
+
+`			.clock(() -> new Date())                  // DATE, TIME`
+
+`			.zone(ZoneId.of("Australia/Sydney"))      // the zone dates are shown in`
+
+`			.user("Jane Citizen", "JC", "1 Main St")  // USERNAME, USERINITIALS, USERADDRESS`
+
+`			.fileName("C:\\docs\\report.docx")        // FILENAME (\p gives the path)`
+
+`			.fileSize(16820L);                        // FILESIZE`
+
+Two of these can be set once on the package, and are then seen by every consumer, the text extraction and the writers included: `wordMLPackage.setDateTimeZone(zone)`, the client's zone, in which every date the package holds is shown; and `setSourceName` and `setSourceSize`, the file the package came from.  They are request attributes: nothing of them is saved, and a server reusing a loaded package sets them per request.
+
+## Fields in text extraction and in PDF and HTML output
+
+The text extraction (the Text extraction and inspection chapter) reads a field's cached result by default; with `new TextOptions().fields(TextOptions.Fields.UPDATE)` it computes the same fields the updater does, without touching the package.
+
+The PDF and HTML writers paint what Word paints: the layout fields from the layout; DATE, TIME and PRINTDATE from the clock (`docx4j.convert.out.fields.dateCachedResult=true` paints the stored date instead, which makes a conversion reproducible); DOCPROPERTY as stored, since Word does not update it when it opens a document (`docx4j.convert.out.fields.docPropertyCachedResult=false` evaluates it); LISTNUM, AUTONUM and SYMBOL evaluated, since Word stores nothing for them; and every other field as stored where it has a result, evaluated where it has none.
+
+## Generating an index
+
+FieldUpdater regenerates each INDEX field in the body from the document's XE marks (`org.docx4j.model.fields.index.IndexGenerator`), as Word does: the entries collated in Word's order, sub-entries, cross-references, page ranges from bookmarks, bold and italic page numbers, the `\e`, `\l`, `\g`, `\k`, `\h`, `\r`, `\p`, `\f` and `\c` switches, in the Index 1 to Index 3 and Index Heading styles (added to the document where missing).  The page numbers come from docx4j-export-fo laying the document out, as a TOC's do; with no docx4j-export-fo on the classpath, give the updater a pager (`updater.indexPager(...)`), or the INDEX is left as it is.
+
 # Mailmerge
 
 docx4j merges a document over records as Word's mail merge does.  `org.docx4j.model.fields.merge.MailMerger` produces one copy of the document per record, as separate packages (`performMerge`) or concatenated into one (`getConsolidatedResultCrude`); `MailMergerWithNext` is for labels, where NEXT fields put several records on one page.  A record is a `Map<DataFieldName, String>`, column name to value.
 
-`	List<Map<DataFieldName, String>> data = ...;`
+`		List<Map<DataFieldName, String>> data = ...;`
 
-`	WordprocessingMLPackage merged = new MailMerger(wordMLPackage).getConsolidatedResultCrude(data, false);`
+`		WordprocessingMLPackage merged = new MailMerger(wordMLPackage).getConsolidatedResultCrude(data, false);`
 
 What a merge evaluates, measured against Word 365's own merge:
 
@@ -2154,9 +2061,118 @@ What a merge evaluates, measured against Word 365's own merge:
 - NEXT and NEXTIF pull the next record into the same letter; SKIPIF skips a record; MERGEREC and MERGESEQ count as Word counts (a skipped or pulled record is not a letter).
 - SET, ASK and FILLIN: an ASK or FILLIN takes the answer you put in the context (`merger.getFieldContext().answers()`), else its `\d` default; SET and ASK define their bookmarks for the REF and IF fields that follow.
 - IF, COMPARE, REF and `=` over merge fields.
-- ADDRESSBLOCK and GREETINGLINE, composed from their `\f` formats as Word composes them (a token prints only where its field has a value; Word's greeting fallbacks), the columns found by Word's address-field names and their usual spellings (First Name, First_Name) or by the document's own `w:odso` mapping; `\c` and `\e` decide whether the country prints.
+- ADDRESSBLOCK and GREETINGLINE, composed from their `\f` formats as Word composes them (a token prints only where its field has a value; Word's greeting fallbacks), the columns found by Word's address-field names and their usual spellings (First Name, First\_Name) or by the document's own `w:odso` mapping; `\c` and `\e` decide whether the country prints.
 
 Word's merge unlinks the fields to their text, and docx4j does the same by default.  `MailMerger.setMERGEFIELDInOutput(OutputField.KEEP_MERGEFIELD)` keeps the merge fields, so the output can be merged again; `AS_FORMTEXT_REGULAR` turns each MERGEFIELD into a FORMTEXT form field.
+
+# docx Table of Contents
+
+Docx4j (from v3.3.0) can generate/update a ToC, including update its page numbers.  
+
+In docx4j v8.2.0, this can be done in 2 distinct ways: (1) by automating Microsoft Word using documents4j (new in v8.2.0) or, (2) in pure Java (albeit with possible inaccuracy in the page numbers).
+
+For the documents4j approach, please see [https://github.com/plutext/docx4j/blob/VERSION\_8\_2\_0/docx4j-samples-documents4j-local/src/main/java/org/docx4j/samples/documents4j/local/TocOperations.java](https://github.com/plutext/docx4j/blob/VERSION_8_2_0/docx4j-samples-documents4j-local/src/main/java/org/docx4j/samples/documents4j/local/TocOperations.java)
+
+That example is for Word running locally.  If you run Word remotely, please see the comments at [https://github.com/plutext/docx4j/blob/VERSION\_8\_2\_0/docx4j-documents4j-remote/src/main/java/org/docx4j/documents4j/remote/Documents4jRemoteServices.java#L61](https://github.com/plutext/docx4j/blob/VERSION_8_2_0/docx4j-documents4j-remote/src/main/java/org/docx4j/documents4j/remote/Documents4jRemoteServices.java#L61)
+
+The "pure Java" approach uses export-fo.  For an example using this approach, please see [https://github.com/plutext/docx4j/blob/VERSION\_8\_2\_0/docx4j-samples-docx4j/src/main/java/org/docx4j/samples/TocSample.java](https://github.com/plutext/docx4j/blob/VERSION_8_2_0/docx4j-samples-docx4j/src/main/java/org/docx4j/samples/TocSample.java)
+
+## Introduction
+
+A table of contents is often included in a docx file.
+
+Where docx4j or other code is used to modify the document, the TOC may need updating since page numbers may be wrong, or entries added, deleted or modified.
+
+In some cases, it is sufficient to leave the TOC updating until the docx is opened in Microsoft Word.  In Word, the user can manually issue the command to update the table.  
+
+In other scenarios, it is desirable to update the TOC programmatically.  For example, prior to PDF output.  The samples above show the 2 approaches docx4j offers for doing this.
+
+## TOC Content Control
+
+Historically, Word has used a *field code* to specify a table of contents.
+
+Since the introduction of content controls in Word 2007, Word (References \> Table of Contents) inserts the TOC field in a content control:
+
+![Picture 1601488101](Docx4j_GettingStarted_files/image1.png)
+
+When inserting a TOC, both approaches documented here insert it in a content control.
+
+When updating a TOC, the pure Java approach assumes the TOC is located in such a content control.   It won’t find the TOC field unless it is.
+
+## TOC Field Syntax
+
+The TOC field instruction has the following components:
+
+TOC   
+field-argument  
+switches  
+field-argument   switches  
+switches   field-argument
+
+The TOC field supports a variety of field-specific-switches.
+
+For example:
+
+TOC \\o "3-3" \\h \\z \\t  "Heading 1,1,Heading 2,2,Appendix 1,1,Appendix 2,2" 
+
+Of the switches in the Open XML specification, this TOC helper recognises:
+
+|\\h|Makes the table of contents entries hyperlinks.|
+|---|---|
+|**\\n** field-argument|Without field-argument, omits page numbers from the table of contents. Page numbers are omitted from all levels unless a range of entry levels is specified by text in this switch's field-argument. A range is specified as for \\l.|
+|**\\o** field-argument|Uses paragraphs formatted with all or the specified range of built-in heading styles. Headings in a style range are specified by text in this switch's field-argument using the notation specified as for \\l, where each integer corresponds to the style with a style ID of HeadingX (e.g. 1 corresponds to Heading1). If no heading range is specified, all heading levels used in the document are listed.|
+|**\\t** field-argument|Uses paragraphs formatted with styles other than the built-in heading styles. text in this switch's field-argument specifies those styles as a set of comma-separated doublets, with each doublet being a comma-separated set of style name and table of content level. \\t can be combined with \\o.|
+|**\\u**|Uses the applied paragraph outline level.|
+
+The following switches may also be supported in a future version:
+
+|\\b field-argument|Includes entries only from the portion of the document marked by the bookmark named by text in this switch's field-argument.|
+|---|---|
+|\\p field-argument|text in this switch's field-argument specifies a sequence of characters that separate an entry and its page number. The default is a tab with leader dots.|
+|\\w|Preserves tab entries within table entries.|
+|\\x|Preserves newline characters within table entries.|
+
+There are no plans to support the remaining switches:
+
+|\\a field-argument|Includes captioned items, but omits caption labels and numbers. The identifier designated by text in this switch's field-argument corresponds to the caption label.<br>Use \\c to build a table of captions with labels and numbers.|
+|---|---|
+|\\c field-argument|Includes figures, tables, charts, and other items that are numbered by a SEQ field. The sequence identifier designated by text in this switch's field-argument, which corresponds to the caption label, shall match the identifier in the corresponding SEQ field.|
+|\\d field-argument|When used with \\s, the text in this switch's field-argument defines the separator between sequence and page numbers. The default separator is a hyphen (-).|
+|\\f field-argument|Includes only those TC fields whose identifier exactly matches the text in this switch's field-argument (which is typically a letter).|
+|\\l field-argument|Includes TC fields that assign entries to one of the levels specified by text in this switch's field-argument as a range having the form startLevel-endLevel, where startLevel and endLevel are integers, and startLevel has a value equal-to or less-than endLevel. TC fields that assign entries to lower levels are skipped.|
+|\\s field-argument|For entries numbered with a SEQ field, adds a prefix to the page number. The prefix depends on the type of entry. text in this switch's field-argument shall match the identifier in the SEQ field.|
+|\\z|Hides tab leader and page numbers in Web layout view.|
+
+## Inserting/generating a TOC – "pure Java" considerations
+
+You should ensure styles TOC1, TOC2, TOC3 etc are defined in your styles definition part, since these are used to style TOC entries.  ToC Helper will fallback to hard coded defaults for these styles, if they are not defined.  The hard coded defaults come from:
+
+`	InputStream is = ResourceUtils.``getResourceViaProperty``( `  
+`				"org.docx4j.toc.TocStyles.xml",`
+
+`				"org/docx4j/toc/TocStyles.xml");`
+
+You can specify a different resource of your own in docx4j.properties:
+
+`# Defaults to com/plutext/docx/toc/TocStyles.xml`
+
+`# It provides default toc style definitions,`
+
+`# for use if none are defined in the docx itself.`
+
+`org.docx4j.toc.TocStyles.xml=org/docx4j/toc/TocStyles.xml`
+
+# Pagination: which page is a paragraph on?
+
+From 17.2.0, org.docx4j.model.pagination.Paginate lays the document out with FOP and reports which page each paragraph of the main document part starts on, keyed by its w14:paraId.  It needs docx4j-export-fo on the classpath (found reflectively, as the TOC generator finds it); the XSL FO comes from the same exporter as PDF output, so the pages are the pages that PDF would have.
+
+`	PaginationMap map = Paginate.compute(wordMLPackage, null);`
+
+`	Integer page = map.getPageIndex(paraId);   // 1-based, in rendering order; getPage() gives the number the page displays`
+
+Paginate.paginate(wordMLPackage, settings) does that and also rewrites the document's w:lastRenderedPageBreak markers, as Word records the pagination of its last rendering: every existing marker is removed, one is written at the start of each paragraph that begins a new page, and, inside a paragraph that spans pages, one at the character where the new page begins (the run is split there, as Word does).  A paragraph without a w14:paraId is given one, so a document paginated once keys stably from then on.  PaginateSettings.setLineBreaks(false) turns the mid-paragraph markers off; setWriteParaIds(false) leaves the ids alone.
+
+The layout is of the document as if its tracked changes were accepted, and the pages are FOP's, with the fonts the package's font mapper resolves (Appendix 1): where those metrics differ from Word's, the page a paragraph lands on can differ too, so the markers are advisory, as Word's own are.  Docx4J.updateToc uses the same layout for the page numbers of a table of contents.
 
 # Charts
 
