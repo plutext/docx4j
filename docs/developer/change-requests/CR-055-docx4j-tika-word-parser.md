@@ -5,7 +5,10 @@ then do phase 0"); phase 0 DONE 2026-10-22 on branch `docx4j-tika` off `VERSION_
 Fable 5.1; record in §8); phases 1 to 3 open. D1 REVISED 2026-10-31 (Jason: "let's revise D1, folding these
 considerations into the CR"): `docx4j-tika` is its own repository on GitHub, not a module in this reactor; the
 arguments and the consequences in §5a, the move is phase 0b: DONE 2026-10-31 (§8b; the repository is
-`plutext/docx4j-tika`, its CR-001 carries phases 1 to 3; D9 accepted 2026-10-31, phase 1 under way there). PROPOSED 2026-10-22, drafted by Claude Opus 5.5 (session docx4j-portfolio-9d) at Jason's request
+`plutext/docx4j-tika`, its CR-001 carries phases 1 to 3; D9 accepted 2026-10-31, phase 1 under way there). D3 and
+D4 REVISED 2026-10-31 (Jason, relayed by the docx4j-tika session: "D3 needs to be read down regarding embedded
+content. D4 covers that. And we should respect a user's settings where possible."; §5b); the text model's part of
+it is CR-070. PROPOSED 2026-10-22, drafted by Claude Opus 5.5 (session docx4j-portfolio-9d) at Jason's request
 ("write the docx4j CR"), after a prototype built and measured the same day ("build a prototype against
 17.3.4-SNAPSHOT and compare it with Tika on the probes"). Reviewed by docx4j-25 the same day: the number
 confirmed, and four notes taken (§3.1, §3.7, §4 phase 0, §6). Its commit is the docx4j session's. Phases in §4,
@@ -198,8 +201,8 @@ plugin, so reaching them means a modified plugin, not a class-path drop (unverif
 |---|---|---|
 | D1 | Name and place | `docx4j-tika`, a module in this reactor, Apache-2.0. **Revised 2026-10-31** (Jason): `docx4j-tika`, its own repository on GitHub (`plutext/docx4j-tika`), Apache-2.0, groupId `org.docx4j`, depending on released docx4j; §5a |
 | D2 | Tika versions | Compile against Tika 3.3.x, `provided`; Tika 4.x in phase 3 |
-| D3 | Defaults | The specification's (Word's view), not Tika's, with `OfficeParserConfig` mapped where it is given; the point of the module is Word's text |
-| D4 | Embedded content | Hand embedded resources to Tika's `EmbeddedDocumentExtractor`, as Tika's parsers do; the text itself keeps `embedded: false` |
+| D3 | Defaults | The specification's (Word's view), not Tika's, with `OfficeParserConfig` mapped where it is given; the point of the module is Word's text. **Read down 2026-10-31** (Jason, §5b): D3 governs how content is read, not whether embedded content is in the text |
+| D4 | Embedded content | Hand embedded resources to Tika's `EmbeddedDocumentExtractor`, as Tika's parsers do; the text itself keeps `embedded: false`. **Revised 2026-10-31** (Jason, §5b): whether embedded content is in the text or handed on follows the host's settings, as Tika's own parsers do, an explicit setting of the parser's winning |
 | D5 | Pictures with an SVG | Hand on only the image Word draws, never to a text parser (REQ-514) |
 | D6 | Metadata | Tika's OOXML keys, plus `docx4j:warning` and `docx4j:inspect:*` |
 | D7 | HTML chunks | No LGPL dependency; ImportXHTML documented as an optional addition |
@@ -258,6 +261,23 @@ Consequences:
   (`docx4j-portfolio/tasks.yaml`) gets a repository key for it and the phase entries move under that key,
   with `docx4j/CR-055` closing on phase 0b. How the registry records this is the portfolio session's call.
 - docx4j's hand-off list for a change to `org.docx4j.model.text` (the ports, docx4j-mcp) gains docx4j-tika.
+
+### 5b. D3 and D4 revised (31 October 2026)
+
+Jason, relayed by the docx4j-tika session (docx4j-tika-45) the same day: "D3 needs to be read down regarding
+embedded content. D4 covers that. And we should respect a user's settings where possible." So D3 governs how
+content is read (the specification's rules, Word's view) and D4 whether embedded content is in the text or handed
+to Tika's `EmbeddedDocumentExtractor`, which follows the host's settings as Tika's own parsers do, an explicit
+setting of the parser's (the specification's `embedded` option) winning. Tika's default for a plain parse inlines
+embedded text, so a plain host (AutoDetectParser with BodyContentHandler: Spring AI, LangChain4j, `tika --text`)
+now gets embedded content in its text, in place, read by the specification's rules; a recursive host (`/rmeta`,
+`-J`) gets records, and an unpacker (`-z`, `/unpack`) files, the text keeping `embedded: false`. Two further
+decisions the same day: "Default: tika reads all three" (by default embedded xlsx, pptx and OLE-package `.txt`
+objects go to the host's Tika parsers; a docx4j-tika setting, working name `docx4jReads`, opts docx4j's reading in
+per type; an embedded docx stays docx4j's) and "OCR text in a plain host's default text, at the picture". The
+table, with how the host's mode is inferred and the host's `DocumentSelector`/`FilenameFilter` veto, is docx4j-tika's
+`docs/embedding-behaviour.md` (commit 3716f15). What the text model needs for it (the object's part on an object
+run, a per-object filter, the part name on `altchunk.not_expanded`) is CR-070.
 
 ## 6. Risks
 
