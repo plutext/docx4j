@@ -30,3 +30,14 @@ Second run (CR-068 phase 1, 2026-10-31): the same command. It adds manual-redlin
 conversion of the base (the separating space taken, the struck mark of M11 deleted), and saves Word's Accept
 All and Reject All of it (word-phase1-*); everything the first run made is skipped. About half a minute. Then
 tell the docx4j session "cr068 phase1 done".
+
+Third run (CR-068 phase 2, 2026-10-31): the same command. It adds the opt-ins: manual-redline-phase2.docx (the
+base converted with style strike, underline and red as insertions, and the comments) and manual-redline-2-phase2.docx
+(the second base, manual-redline-2.docx, cases N01 to N10, converted the same way), saving Word's Accept All and
+Reject All of each (word-phase2-*, word-phase2b-*); everything earlier is skipped. About a minute.
+
+Then, by hand (a minute): open manual-redline-phase2.docx and manual-redline-2-phase2.docx, and look at the comment
+cards (M16, N10): is the deleted text shown struck and the inserted text underlined in the card? A screenshot of
+each card is welcome (cr068-phase2-comment.png, cr068-phase2b-comment.png here). Close without saving.
+
+Then tell the docx4j session "cr068 phase2 done".

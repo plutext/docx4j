@@ -70,7 +70,10 @@ import org.docx4j.wml.Hdr;
  * <li>{@code manual-redline-dates.docx}: four deletions differing only in {@code w:date} and
  * {@code w16du:dateUtc}, for which of the two Word shows (D4);</li>
  * <li>{@code manual-redline-phase1.docx}: {@link ManualRedline}'s own conversion of the base (phase 1),
- * for Word's second run.</li>
+ * for Word's second run;</li>
+ * <li>{@code manual-redline-2.docx}, the second base (phase 2, N01 to N10), and
+ * {@code manual-redline-phase2.docx} and {@code manual-redline-2-phase2.docx}, the two bases converted
+ * with the opt-ins, for Word's third run.</li>
  * </ul>
  *
  * <p>The conversions write the date as Word 365 writes its own: {@code w16du:dateUtc} the instant
@@ -144,6 +147,56 @@ public class ManualRedlineProbeBuilder {
 		System.out.println("wrote " + new File(out, "manual-redline-dates.docx"));
 		Files.write(new File(out, "manual-redline-phase1.docx").toPath(), phase1(new ManualRedlineProbeBuilder(Variant.BASE).build()));
 		System.out.println("wrote " + new File(out, "manual-redline-phase1.docx"));
+		byte[] second = new ManualRedlineProbeBuilder(Variant.BASE).second();
+		Files.write(new File(out, "manual-redline-2.docx").toPath(), second);
+		Files.write(new File(out, "manual-redline-phase2.docx").toPath(), convert(new ManualRedlineProbeBuilder(Variant.BASE).build(), phase2()));
+		Files.write(new File(out, "manual-redline-2-phase2.docx").toPath(), convert(second, phase2()));
+		System.out.println("wrote " + new File(out, "manual-redline-2.docx") + ", manual-redline-phase2.docx, manual-redline-2-phase2.docx");
+	}
+
+	/** Phase 2's options: every opt-in but the range and the audit property (CR-068 section 12). */
+	static ManualRedlineOptions phase2() {
+		return new ManualRedlineOptions().date(java.time.Instant.parse(DATE_UTC)).styleStrike(true).underlineAsInsertion(true)
+				.colourAsInsertion("FF0000").comments(true);
+	}
+
+	/** {@link ManualRedline}'s conversion of a probe with these options, at the probe's instant in Word's zone. */
+	static byte[] convert(byte[] base, ManualRedlineOptions options) throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(base));
+		pkg.setDateTimeZone(java.time.ZoneId.of("Australia/Sydney"));
+		ManualRedline.toTrackedChanges(pkg, options);
+		ByteArrayOutputStream saved = new ByteArrayOutputStream();
+		Docx4J.save(pkg, saved, Docx4J.FLAG_NONE);
+		return rewrite(saved.toByteArray(), new LinkedHashMap<String, String>());
+	}
+
+	/**
+	 * Phase 2's second base: what the opt-ins meet that the first does not have (N01 to N10): an
+	 * underlined insertion with spaces around it, a run both struck and underlined, an insertion before
+	 * the deletion it replaces, red text that is highlighted, a colour not named, an underline of
+	 * {@code none}, double strike from a style, a struck word ending its paragraph, one before a full
+	 * stop, and a comment holding a deletion and its insertion.
+	 */
+	byte[] second() throws Exception {
+		Package pkg = new Package();
+		StringBuilder b = new StringBuilder();
+		b.append(p(r("CR-068 phase 2 probe: the second base, nothing tracked. Built by docx4j (ManualRedlineProbeBuilder); "
+				+ "the text of each case starts with its tag, N01 to N10.")));
+		b.append(p(r("N01 The party shall ") + r(U, "promptly") + r(" notify the other.")));
+		b.append(p(r("N02 Fee: ") + r(STRIKE + U, "EUR 500") + r(" ") + r(U, "EUR 450") + r(" a month.")));
+		b.append(p(r("N03 Term: ") + r(U, "two years") + r(" ") + r(STRIKE, "one year") + r(".")));
+		b.append(p(r("N04 Note: ") + r("<w:color w:val='FF0000'/><w:highlight w:val='yellow'/>", "urgent") + r(" item.")));
+		b.append(p(r("N05 Colour: ") + r("<w:color w:val='0000FF'/>", "blue words") + r(" stay.")));
+		b.append(p(r("N06 Underline: ") + r("<w:u w:val='none'/>", "no underline") + r(" stays.")));
+		b.append(p(r("N07 Style: ") + r("<w:rStyle w:val='DoubleStruck'/>", "double struck by its style") + r(" then plain.")));
+		b.append(p(r("N08 Remove the last word ") + r(STRIKE, "here")));
+		b.append(p(r("N09 Replace the old ") + r(STRIKE, "term") + r(".")));
+		b.append(p("<w:commentRangeStart w:id='0'/>" + r("N10 A comment is anchored on these words.") + "<w:commentRangeEnd w:id='0'/>"
+				+ commentRef(0)));
+		b.append(p(r("End of the second probe.")));
+		b.append("<w:sectPr><w:headerReference w:type='default' r:id='" + pkg.headerId + "'/>" + PAGE + "</w:sectPr>");
+		String comment = comment(0, r("N10 comment: ") + r(STRIKE, "withdrawn") + r(" ") + r(U, "added") + r(" kept."));
+		return pkg.write(b.toString(), p(r("")), note(1, r("")), comment, DOUBLE_STRUCK);
 	}
 
 	/**
@@ -425,7 +478,11 @@ public class ManualRedlineProbeBuilder {
 				+ "</w:compat><w:themeFontLang w:val='en-US'/><w:decimalSymbol w:val='.'/><w:listSeparator w:val=','/></w:settings>";
 	}
 
-	static String stylesXml() {
+	/** The second base's style beside the first's: double strike, N07's. */
+	static final String DOUBLE_STRUCK = "<w:style w:type='character' w:styleId='DoubleStruck'><w:name w:val='Double Struck'/>"
+			+ "<w:basedOn w:val='DefaultParagraphFont'/><w:rPr><w:dstrike/></w:rPr></w:style>";
+
+	static String stylesXml(String extra) {
 		String small = "<w:pPr><w:spacing w:after='0' w:line='240' w:lineRule='auto'/></w:pPr><w:rPr><w:sz w:val='20'/>"
 				+ "<w:szCs w:val='20'/></w:rPr>";
 		return "<w:styles" + NS + "><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii='Calibri' w:eastAsia='Calibri' "
@@ -441,6 +498,7 @@ public class ManualRedlineProbeBuilder {
 				+ "<w:uiPriority w:val='1'/><w:semiHidden/><w:unhideWhenUsed/></w:style>"
 				+ "<w:style w:type='character' w:styleId='StruckText'><w:name w:val='Struck Text'/>"
 				+ "<w:basedOn w:val='DefaultParagraphFont'/><w:rPr><w:strike/></w:rPr></w:style>"
+				+ extra
 				+ "<w:style w:type='character' w:styleId='Hyperlink'><w:name w:val='Hyperlink'/><w:basedOn w:val='DefaultParagraphFont'/>"
 				+ "<w:unhideWhenUsed/><w:rPr><w:color w:val='0563C1'/><w:u w:val='single'/></w:rPr></w:style>"
 				+ "<w:style w:type='character' w:styleId='FootnoteReference'><w:name w:val='footnote reference'/>"
@@ -498,12 +556,16 @@ public class ManualRedlineProbeBuilder {
 		}
 
 		byte[] write(String body, String headerContent, String footnote, String comment) throws Exception {
+			return write(body, headerContent, footnote, comment, "");
+		}
+
+		byte[] write(String body, String headerContent, String footnote, String comment, String extraStyles) throws Exception {
 			Map<String, String> raw = new LinkedHashMap<String, String>();
 			raw.put(mdp.getPartName().getName(), "<w:document" + NS + "><w:body>" + body + "</w:body></w:document>");
 			raw.put(header.getPartName().getName(), "<w:hdr" + NS + ">" + headerContent + "</w:hdr>");
 			raw.put(footnotes.getPartName().getName(), "<w:footnotes" + NS + ">" + separators() + footnote + "</w:footnotes>");
 			raw.put(comments.getPartName().getName(), "<w:comments" + NS + ">" + comment + "</w:comments>");
-			raw.put(mdp.getStyleDefinitionsPart().getPartName().getName(), stylesXml());
+			raw.put(mdp.getStyleDefinitionsPart().getPartName().getName(), stylesXml(extraStyles));
 			raw.put(settings.getPartName().getName(), settingsXml());
 			ByteArrayOutputStream saved = new ByteArrayOutputStream();
 			Docx4J.save(pkg, saved, Docx4J.FLAG_NONE);

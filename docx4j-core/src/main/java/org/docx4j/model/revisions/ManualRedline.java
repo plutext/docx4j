@@ -46,6 +46,7 @@ import org.docx4j.mce.AlternateContent;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.revisions.ManualRedlineReport.Kind;
 import org.docx4j.model.revisions.ManualRedlineReport.Reason;
+import org.docx4j.model.revisions.ManualRedlineReport.Type;
 import org.docx4j.model.text.TextOptions;
 import org.docx4j.model.text.TextView;
 import org.docx4j.model.text.Texts;
@@ -70,8 +71,10 @@ import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.RStyle;
 import org.docx4j.wml.RunDel;
+import org.docx4j.wml.RunIns;
 import org.docx4j.wml.STFldCharType;
 import org.docx4j.wml.Text;
+import org.docx4j.wml.UnderlineEnumeration;
 
 /**
  * Manual redline to tracked changes (CR-068): an explicit, opt-in conversion, never a view. A manual
@@ -85,17 +88,25 @@ import org.docx4j.wml.Text;
  * <ul>
  * <li><b>Where</b> (D2): the main document, headers and footers, footnotes and endnotes, and in each
  * the tables, content controls, hyperlinks and text boxes (every {@code mc:AlternateContent} branch,
- * converted alike); not the comments, whose struck runs are reported.</li>
+ * converted alike); the comments only under {@link ManualRedlineOptions#comments} (their struck runs
+ * reported otherwise); a range or parts where the options name them.</li>
+ * <li><b>The opt-ins</b> ({@link ManualRedlineOptions}, CR-068 section 3.3): strike from a style; a
+ * run's own underline, or a colour the caller names, as a tracked insertion, the mark removed (D7);
+ * a run both struck and underlined is a deletion. In a comment every converted run keeps its mark
+ * (D14).</li>
  * <li><b>Left alone and reported</b> (D10): a run inside {@code w:ins}, {@code w:del},
  * {@code w:moveFrom} or {@code w:moveTo}, or whose strike is itself a tracked formatting change; a
  * field's runs, {@code begin} to {@code end}, and a {@code w:fldSimple}'s; math; a run struck only
- * by a style (D5).</li>
- * <li><b>Grouped</b> (D8): adjacent converted runs of one paragraph go in one {@code w:del}, as Word
- * groups its own deletion; a spelling marker between them does not part them.</li>
+ * by a style, without the opt-in (D5).</li>
+ * <li><b>Grouped</b> (D8): adjacent converted runs of one paragraph go in one {@code w:del} (or
+ * {@code w:ins}), as Word groups its own; a spelling marker between them does not part them.</li>
  * <li><b>The separating space</b> (D13; {@link ManualRedlineOptions#separatorSpace}): a struck word
  * with whitespace (or the paragraph's start) before it and a space after takes that space with it;
  * one that ends the paragraph or meets punctuation takes the space before it, so that Accept All
- * leaves one space, as Word's own deletion of a word does in the main story (CR-068 section 8.4).</li>
+ * leaves one space, as Word's own deletion of a word does in the main story (CR-068 section 8.4). An
+ * insertion takes its space alike, so that Reject All leaves one; the one space between a deletion
+ * and the insertion replacing it is written inserted and deleted ({@code w:ins} holding
+ * {@code w:del}), so that neither outcome keeps it.</li>
  * <li><b>The paragraph mark</b> (D9 as revisited): a paragraph whose mark is struck and whose every
  * run converts has its mark deleted too, so that Accept All joins it to the next paragraph, as Word's
  * own deletion of the paragraph does; not a cell's last paragraph, one before a table or anything
@@ -111,8 +122,8 @@ import org.docx4j.wml.Text;
  * ManualRedlineReport r = ManualRedline.toTrackedChanges(pkg); // then TrackedChanges.acceptAll(pkg), or save
  * </pre>
  *
- * Word 365's Accept All and Reject All of the converted file are the oracle (CR-068 section 8, the
- * probe in docx4j-core-tests' {@code revisions/cr068}).
+ * Word 365's Accept All and Reject All of the converted file are the oracle (CR-068 sections 8, 11
+ * and 12, the probe in docx4j-core-tests' {@code revisions/cr068}).
  *
  * @since 17.3.5
  */
@@ -136,12 +147,13 @@ public final class ManualRedline {
 		return preview(pkg, null);
 	}
 
-	/** The report a conversion would give, from a copy of the package; the package is not changed. */
+	/**
+	 * The report a conversion would give: the same walk, every decision made, nothing written. The
+	 * package is not changed.
+	 */
 	public static ManualRedlineReport preview(WordprocessingMLPackage pkg, ManualRedlineOptions options) {
 		if (pkg == null) throw new IllegalArgumentException("No package");
-		WordprocessingMLPackage copy = (WordprocessingMLPackage) pkg.clone();
-		copy.setDateTimeZone(pkg.getDateTimeZone());
-		return new Conversion(copy, options == null ? new ManualRedlineOptions() : options, true).run();
+		return new Conversion(pkg, options == null ? new ManualRedlineOptions() : options, true).run();
 	}
 
 	/** Where a run stands with respect to the tracked changes and fields around it. */
@@ -155,6 +167,9 @@ public final class ManualRedline {
 		SIMPLE_FIELD
 	}
 
+	/** What the conversion makes of a run. */
+	private enum Role { NONE, DELETE, INSERT }
+
 	/** A run, a marker or an equation of a paragraph's run-level content, in document order. */
 	private static final class Seg {
 		R run;
@@ -163,26 +178,39 @@ public final class ManualRedline {
 		String text = "";
 		Ctx ctx = Ctx.PLAIN;
 		boolean inField;
-		boolean convertible;
+		Role role = Role.NONE;
 		Kind kind;
-		boolean converted;
+		/** For a style strike: which of strike (1) and double strike (2) the styles set. */
+		int styleStrike;
+		/** Converted: its text is deleted, or inserted (a space between a deletion and its insertion is both). */
+		boolean deleted;
+		boolean inserted;
 		boolean marker;
 		boolean proofErr;
 		boolean opaque;
 
-		boolean shown() {
-			return ctx != Ctx.DELETED && !converted && !marker && !text.isEmpty();
+		/** Shown once every change is accepted. */
+		boolean shownAccepted() {
+			return !marker && !text.isEmpty() && ctx != Ctx.DELETED && !deleted;
+		}
+
+		/** Shown once every change is rejected. */
+		boolean shownOriginal() {
+			return !marker && !text.isEmpty() && ctx != Ctx.INSERTED && !inserted;
 		}
 	}
 
-	/** Adjacent converted runs of one content list, one {@code w:del}. */
+	/** Adjacent runs of one content list that one {@code w:del} (or {@code w:ins}) holds. */
 	private static final class Group {
 		final List<Seg> segs = new ArrayList<Seg>();
 		final List<Object> owner;
-		RunDel del;
-		Group(Seg first) {
+		final boolean insertion;
+		CTTrackChange wrapper;
+		boolean paired;
+		Group(Seg first, boolean insertion) {
 			segs.add(first);
 			owner = first.owner;
+			this.insertion = insertion;
 		}
 		Seg first() {
 			return segs.get(0);
@@ -194,6 +222,12 @@ public final class ManualRedline {
 			StringBuilder sb = new StringBuilder();
 			for (Seg s : segs) sb.append(s.text);
 			return sb.toString();
+		}
+		/** The report's kind: the runs' own where they agree. */
+		Kind kind() {
+			Kind k = first().kind;
+			for (Seg s : segs) if (s.kind != k) return insertion ? Kind.UNDERLINE : Kind.STRIKE;
+			return k;
 		}
 	}
 
@@ -218,23 +252,34 @@ public final class ManualRedline {
 		return b != null && b.isVal();
 	}
 
+	/** A run's own underline: a {@code w:u} naming a pattern other than {@code none} ({@code w:u} with none inherits). */
+	private static boolean underlined(RPr rPr) {
+		return rPr != null && rPr.getU() != null && rPr.getU().getVal() != null && rPr.getU().getVal() != UnderlineEnumeration.NONE;
+	}
+
 	private static final class Conversion {
 		final WordprocessingMLPackage pkg;
 		final ManualRedlineOptions options;
 		final ManualRedlineReport report;
+		/** {@link ManualRedline#preview}: every decision made, nothing written. */
+		final boolean dry;
 		Map<Object, String> addresses = Collections.emptyMap();
+		/** What the options' range holds (a control's content, a bookmark's extent); null for no range. */
+		Set<Object> range;
 		BigInteger nextId;
+		Instant at;
 		XMLGregorianCalendar date;
 		XMLGregorianCalendar dateUtc;
 		/** The part roots a dated change was written in, to be given {@code w16du} in {@code mc:Ignorable}. */
 		final Map<Object, Boolean> dated = new IdentityHashMap<Object, Boolean>();
-		/** Whether a run style and paragraph style strike, by "rStyle|pStyle". */
-		final Map<String, Boolean> styleStrike = new HashMap<String, Boolean>();
+		/** Which strikes a run style and paragraph style set (1 strike, 2 double strike), by "rStyle|pStyle". */
+		final Map<String, Integer> styleStrikes = new HashMap<String, Integer>();
 
-		Conversion(WordprocessingMLPackage pkg, ManualRedlineOptions options, boolean preview) {
+		Conversion(WordprocessingMLPackage pkg, ManualRedlineOptions options, boolean dry) {
 			this.pkg = pkg;
 			this.options = options;
-			this.report = new ManualRedlineReport(preview);
+			this.dry = dry;
+			this.report = new ManualRedlineReport(dry);
 		}
 
 		ManualRedlineReport run() {
@@ -244,14 +289,36 @@ public final class ManualRedline {
 			} catch (RuntimeException e) {
 				// the addresses are the report's; the conversion goes on without them
 			}
+			range = range();
 			List<Story> stories = new Lister(pkg, false).stories();
 			nextId = maxId(stories).add(BigInteger.ONE);
 			dates();
 			for (Story story : stories) {
-				new Walk(story.part, story.rootOwner instanceof Comments.Comment, false, null).blocks(story.root);
+				if (options.getParts() != null && !options.getParts().contains(story.part)) continue;
+				boolean comment = story.rootOwner instanceof Comments.Comment;
+				new Walk(story.part, comment, comment && !options.isComments(), false, null).blocks(story.root);
 			}
-			for (Object root : dated.keySet()) McSplice.addIgnorable(root, Collections.singleton("w16du"));
+			if (!dry) {
+				for (Object root : dated.keySet()) McSplice.addIgnorable(root, Collections.singleton("w16du"));
+				if (options.isAuditProperty()) {
+					pkg.addDocPropsCustomPart();
+					pkg.getDocPropsCustomPart().setProperty("docx4j:manualRedline", (at == null ? "no date" : at.toString()) + "; " + options);
+				}
+			}
 			return report;
+		}
+
+		/** The options' range, read before anything is converted, with {@link TrackedChangeFilter}'s semantics. */
+		private Set<Object> range() {
+			if (options.getWithin() == null && options.getWithinBookmark() == null) return null;
+			TrackedChangeFilter filter = new TrackedChangeFilter();
+			if (options.getWithin() != null) filter.within(options.getWithin());
+			else filter.withinBookmark(options.getWithinBookmark());
+			return filter.range(pkg);
+		}
+
+		private boolean inRange(Object v) {
+			return range == null || range.contains(v);
 		}
 
 		/** The largest annotation id in the story parts: tracked changes, comments, bookmarks and the other ranges. */
@@ -277,7 +344,7 @@ public final class ManualRedline {
 
 		/** The date written (D4): the wall clock of the package's zone in {@code w:date}, which Word shows, and the instant in {@code w16du:dateUtc}. */
 		private void dates() {
-			Instant at = options.isDateSet() ? options.getDate() : Instant.now();
+			at = options.isDateSet() ? options.getDate() : Instant.now();
 			if (at == null) return;
 			at = at.truncatedTo(ChronoUnit.SECONDS);
 			DatatypeFactory factory;
@@ -308,14 +375,14 @@ public final class ManualRedline {
 			return change;
 		}
 
-		/** Whether a run style and a paragraph style, with the document defaults, strike (D5's style strike). */
-		private boolean styleStruck(RPr own, P p) {
+		/** Which strikes a run's character style and its paragraph's style set, with the document defaults (1 strike, 2 double strike). */
+		private int styleStrike(RPr own, P p) {
 			String rStyle = own != null && own.getRStyle() != null ? own.getRStyle().getVal() : null;
-			String pStyle = p.getPPr() != null && p.getPPr().getPStyle() != null ? p.getPPr().getPStyle().getVal() : null;
+			String pStyle = p != null && p.getPPr() != null && p.getPPr().getPStyle() != null ? p.getPPr().getPStyle().getVal() : null;
 			String key = rStyle + "|" + pStyle;
-			Boolean known = styleStrike.get(key);
+			Integer known = styleStrikes.get(key);
 			if (known != null) return known;
-			boolean struck = false;
+			int struck = 0;
 			try {
 				PropertyResolver resolver = pkg.getMainDocumentPart().getPropertyResolver();
 				RPr express = null;
@@ -333,19 +400,22 @@ public final class ManualRedline {
 					pPr.setPStyle(ps);
 				}
 				RPr effective = resolver.getEffectiveRPr(express, pPr);
-				struck = effective != null && (on(effective.getStrike()) || on(effective.getDstrike()));
+				if (effective != null && on(effective.getStrike())) struck |= 1;
+				if (effective != null && on(effective.getDstrike())) struck |= 2;
 			} catch (Exception e) {
-				struck = false;
+				struck = 0;
 			}
-			styleStrike.put(key, struck);
+			styleStrikes.put(key, struck);
 			return struck;
 		}
 
 		/** One story, or one text box in it: its paragraphs in document order, a field's depth carried from one to the next. */
 		private final class Walk {
 			final JaxbXmlPart<?> part;
-			/** The comments story: struck runs reported, nothing converted (D2). */
+			/** The comments story: converted runs keep their marks (D14). */
 			final boolean comments;
+			/** Struck runs reported, nothing converted: the comments story without the opt-in (D2). */
+			final boolean reportOnly;
 			/** A text box's second branch: converted as the first, not reported again. */
 			final boolean twin;
 			/** The address of the paragraph a text box is in, for a box paragraph the text model gives none. */
@@ -353,9 +423,10 @@ public final class ManualRedline {
 			int fieldDepth;
 			P paragraph;
 
-			Walk(JaxbXmlPart<?> part, boolean comments, boolean twin, String outer) {
+			Walk(JaxbXmlPart<?> part, boolean comments, boolean reportOnly, boolean twin, String outer) {
 				this.part = part;
 				this.comments = comments;
+				this.reportOnly = reportOnly;
 				this.twin = twin;
 				this.outer = outer;
 			}
@@ -371,6 +442,10 @@ public final class ManualRedline {
 
 			private void left(Reason reason, String address, String text) {
 				if (!twin) report.add(new ManualRedlineReport.Left(reason, partName(), address, text));
+			}
+
+			private void changed(Kind kind, Type type, boolean own, String address, String text, int runs) {
+				if (!twin) report.add(new ManualRedlineReport.Change(kind, type, own, partName(), address, text, runs));
 			}
 
 			void blocks(List<Object> items) {
@@ -401,7 +476,7 @@ public final class ManualRedline {
 					List<Object> items = McSplice.contentOf(branch);
 					if (items == null) continue;
 					if (branch == selected) blocks(items);
-					else new Walk(part, comments, true, outer).blocks(items);
+					else new Walk(part, comments, reportOnly, true, outer).blocks(items);
 				}
 			}
 
@@ -412,14 +487,14 @@ public final class ManualRedline {
 				List<Seg> segs = new ArrayList<Seg>();
 				List<Box> boxes = new ArrayList<Box>();
 				collect(p.getContent(), Ctx.PLAIN, segs, boxes, address);
-				if (!comments) {
+				if (!reportOnly) {
 					List<Group> groups = groups(segs);
 					for (Group g : groups) convert(g, address);
-					if (options.isSeparatorSpace()) for (Group g : groups) separator(g, segs, address);
+					if (options.isSeparatorSpace()) separators(groups, segs, address);
 					mark(p, container, segs, groups, address);
 				}
 				paragraph = outerParagraph;
-				for (Box box : boxes) new Walk(part, comments, twin || box.twin, address).blocks(box.content.getContent());
+				for (Box box : boxes) new Walk(part, comments, reportOnly, twin || box.twin, address).blocks(box.content.getContent());
 			}
 
 			private void collect(List<Object> items, Ctx ctx, List<Seg> segs, List<Box> boxes, String address) {
@@ -448,7 +523,7 @@ public final class ManualRedline {
 						s.opaque = true;
 						s.text = Trees.text(item, Trees.View.ACCEPTED);
 						segs.add(s);
-						reportStruck(v, Reason.MATH, address);
+						if (!reportOnly) reportStruck(v, Reason.MATH, address);
 						continue;
 					}
 					if (v instanceof AlternateContent) {
@@ -480,13 +555,13 @@ public final class ManualRedline {
 					if (branch == selected) {
 						collect(items, ctx, segs, boxes, address);
 					} else {
-						Walk twinWalk = new Walk(part, comments, true, address);
+						Walk twinWalk = new Walk(part, comments, reportOnly, true, address);
 						twinWalk.paragraph = paragraph;
 						List<Seg> twinSegs = new ArrayList<Seg>();
 						List<Box> twinBoxes = new ArrayList<Box>();
 						twinWalk.collect(items, ctx, twinSegs, twinBoxes, address);
-						if (!comments) for (Group g : twinWalk.groups(twinSegs)) twinWalk.convert(g, address);
-						for (Box box : twinBoxes) new Walk(part, comments, true, address).blocks(box.content.getContent());
+						if (!reportOnly) for (Group g : twinWalk.groups(twinSegs)) twinWalk.convert(g, address);
+						for (Box box : twinBoxes) new Walk(part, comments, reportOnly, true, address).blocks(box.content.getContent());
 					}
 				}
 			}
@@ -512,35 +587,65 @@ public final class ManualRedline {
 				s.text = runText(r);
 				segs.add(s);
 				findBoxes(r, boxes);
+				if (!inRange(r)) return;
 
 				RPr rPr = r.getRPr();
 				BooleanDefaultTrue strike = rPr == null ? null : rPr.getStrike();
 				BooleanDefaultTrue dstrike = rPr == null ? null : rPr.getDstrike();
+				Reason blocked = ctx == Ctx.INSERTED || ctx == Ctx.DELETED ? Reason.IN_TRACKED_CHANGE
+						: ctx == Ctx.SIMPLE_FIELD || s.inField ? Reason.FIELD
+						: rPr != null && rPr.getRPrChange() != null ? Reason.IN_TRACKED_CHANGE : null;
 				if (on(strike) || on(dstrike)) {
-					Reason why = comments ? Reason.COMMENT
-							: ctx == Ctx.INSERTED || ctx == Ctx.DELETED ? Reason.IN_TRACKED_CHANGE
-							: ctx == Ctx.SIMPLE_FIELD || s.inField ? Reason.FIELD
-							: rPr.getRPrChange() != null ? Reason.IN_TRACKED_CHANGE : null;
-					if (why != null) {
-						left(why, address, s.text);
-					} else if (hasContent(r)) {
-						s.convertible = true;
+					if (reportOnly) left(Reason.COMMENT, address, s.text);
+					else if (blocked != null) left(blocked, address, s.text);
+					else if (hasContent(r)) {
+						s.role = Role.DELETE;
 						s.kind = on(strike) ? Kind.STRIKE : Kind.DOUBLE_STRIKE;
+						if (options.isUnderlineAsInsertion() && underlined(rPr) && !twin) report.strikeAndUnderline();
 					}
-				} else if (!comments && strike == null && dstrike == null && ctx != Ctx.DELETED && !s.text.isEmpty()
-						&& styleStruck(rPr, paragraph)) {
-					left(Reason.STYLE_STRIKE, address, s.text);
+					return;
+				}
+				if (reportOnly) return;
+				if (strike == null && dstrike == null && ctx != Ctx.DELETED && !s.text.isEmpty()) {
+					int styles = styleStrike(rPr, paragraph);
+					if (styles != 0) {
+						if (!options.isStyleStrike()) left(Reason.STYLE_STRIKE, address, s.text);
+						else if (blocked != null) left(blocked, address, s.text);
+						else if (hasContent(r)) {
+							s.role = Role.DELETE;
+							s.kind = Kind.STYLE_STRIKE;
+							s.styleStrike = styles;
+						}
+						return;
+					}
+				}
+				if (blocked != null || !hasContent(r)) return;
+				if (options.isUnderlineAsInsertion() && underlined(rPr)) {
+					s.role = Role.INSERT;
+					s.kind = Kind.UNDERLINE;
+				} else if (!options.getColours().isEmpty() && rPr != null && rPr.getColor() != null && rPr.getColor().getVal() != null
+						&& rPr.getColor().getThemeColor() == null && options.getColours().contains(rPr.getColor().getVal().toUpperCase(java.util.Locale.ROOT))
+						&& !underlined(rPr) && rPr.getHighlight() == null && rPr.getShd() == null) {
+					s.role = Role.INSERT;
+					s.kind = Kind.COLOUR;
 				}
 			}
 
-			/** Adjacent convertible runs of one content list, a spelling marker between them no matter (D8). */
+			/**
+			 * Adjacent runs of one role in one content list, in document order, a spelling marker between
+			 * them no matter (D8); a deletion and an insertion side by side are two.
+			 */
 			private List<Group> groups(List<Seg> segs) {
 				List<Group> out = new ArrayList<Group>();
 				Group current = null;
 				for (Seg s : segs) {
-					if (s.convertible) {
-						if (current != null && current.owner == s.owner && adjacent(current.last(), s)) current.segs.add(s);
-						else out.add(current = new Group(s));
+					if (s.role != Role.NONE) {
+						boolean insertion = s.role == Role.INSERT;
+						if (current != null && current.insertion == insertion && current.owner == s.owner && adjacent(current.last(), s)) {
+							current.segs.add(s);
+						} else {
+							out.add(current = new Group(s, insertion));
+						}
 					} else if (!s.proofErr) {
 						current = null;
 					}
@@ -556,8 +661,17 @@ public final class ManualRedline {
 				return true;
 			}
 
-			/** A group's runs into one {@code w:del}: their strike removed (D6), their text become deleted text. */
+			/**
+			 * A group's runs into one {@code w:del} (their text become deleted text) or {@code w:ins}, the
+			 * mark that made them removed (D6, D7), except in a comment (D14).
+			 */
 			private void convert(Group g, String address) {
+				for (Seg s : g.segs) {
+					if (g.insertion) s.inserted = true;
+					else s.deleted = true;
+				}
+				changed(g.kind(), g.insertion ? Type.INSERTION : Type.DELETION, true, address, g.text(), g.segs.size());
+				if (dry) return;
 				List<Object> owner = g.owner;
 				int from = Trees.indexOf(owner, g.first().item);
 				int to = Trees.indexOf(owner, g.last().item);
@@ -565,102 +679,147 @@ public final class ManualRedline {
 				Object parent = Trees.parentOf(g.first().item);
 				List<Object> moved = new ArrayList<Object>(owner.subList(from, to + 1));
 				owner.subList(from, to + 1).clear();
-				RunDel del = stamp(new RunDel(), part);
-				del.getCustomXmlOrSmartTagOrSdt().addAll(moved);
-				Trees.setParents(moved, del);
-				del.setParent(parent);
-				owner.add(from, del);
-				g.del = del;
-				boolean dstrikeOnly = true;
-				for (Seg s : g.segs) {
-					unstrike(s.run);
-					s.converted = true;
-					if (s.kind != Kind.DOUBLE_STRIKE) dstrikeOnly = false;
+				CTTrackChange wrapper;
+				List<Object> content;
+				if (g.insertion) {
+					RunIns ins = stamp(new RunIns(), part);
+					content = ins.getCustomXmlOrSmartTagOrSdt();
+					wrapper = ins;
+				} else {
+					RunDel del = stamp(new RunDel(), part);
+					content = del.getCustomXmlOrSmartTagOrSdt();
+					wrapper = del;
 				}
-				Resolver.deleteText(moved);
-				if (!twin) report.add(new ManualRedlineReport.Change(dstrikeOnly ? Kind.DOUBLE_STRIKE : Kind.STRIKE, partName(),
-						address, g.text(), g.segs.size(), true));
+				content.addAll(moved);
+				Trees.setParents(moved, wrapper);
+				wrapper.setParent(parent);
+				owner.add(from, wrapper);
+				g.wrapper = wrapper;
+				if (!comments) for (Seg s : g.segs) unmark(s);
+				if (!g.insertion) Resolver.deleteText(moved);
 			}
 
-			/** D13: the space that separated a struck word from its neighbours, into the deletion. */
+			/** D13 for every group: first the one space between a deletion and its insertion, then each group's own. */
+			private void separators(List<Group> groups, List<Seg> segs, String address) {
+				for (int k = 0; k + 1 < groups.size(); k++) {
+					Group a = groups.get(k);
+					Group b = groups.get(k + 1);
+					if (a.insertion == b.insertion || a.paired || b.paired) continue;
+					Seg between = onlyBetween(segs, a, b);
+					if (between != null && plain(between) && " ".equals(between.text) && onlyText(between.run)) {
+						pairSpace(between, address);
+						a.paired = true;
+						b.paired = true;
+					}
+				}
+				for (Group g : groups) if (!g.paired) separator(g, segs, address);
+			}
+
+			/** The one segment with text between two groups, markers and empty runs aside; null where there is none or more. */
+			private Seg onlyBetween(List<Seg> segs, Group a, Group b) {
+				Seg found = null;
+				for (int i = segs.indexOf(a.last()) + 1; i < segs.indexOf(b.first()); i++) {
+					Seg s = segs.get(i);
+					if (s.marker || (s.text.isEmpty() && !s.opaque)) continue;
+					if (found != null) return null;
+					found = s;
+				}
+				return found;
+			}
+
+			/** The space between a deletion and the insertion replacing it, written inserted and deleted: gone in either outcome. */
+			private void pairSpace(Seg s, String address) {
+				s.deleted = true;
+				s.inserted = true;
+				changed(Kind.SEPARATOR_SPACE, Type.BOTH, true, address, " ", 1);
+				if (dry) return;
+				int at = Trees.indexOf(s.owner, s.item);
+				Object parent = Trees.parentOf(s.item);
+				s.owner.remove(at);
+				RunIns ins = stamp(new RunIns(), part);
+				RunDel del = stamp(new RunDel(), part);
+				del.getCustomXmlOrSmartTagOrSdt().add(s.item);
+				Trees.setParent(s.item, del);
+				Resolver.deleteText(Collections.singletonList(s.item));
+				ins.getCustomXmlOrSmartTagOrSdt().add(del);
+				del.setParent(ins);
+				ins.setParent(parent);
+				s.owner.add(at, ins);
+			}
+
+			/**
+			 * D13: a deletion takes the space that separated it, by the text once everything is accepted;
+			 * an insertion by the text once everything is rejected, so that each outcome keeps one space.
+			 */
 			private void separator(Group g, List<Seg> segs, String address) {
 				String text = g.text();
 				if (text.isEmpty() || Character.isWhitespace(text.charAt(0)) || Character.isWhitespace(text.charAt(text.length() - 1))) return;
-				Seg prev = neighbour(segs, segs.indexOf(g.first()) - 1, -1);
-				Seg next = neighbour(segs, segs.indexOf(g.last()) + 1, 1);
+				boolean accepted = !g.insertion;
+				Seg prev = neighbour(segs, segs.indexOf(g.first()) - 1, -1, accepted);
+				Seg next = neighbour(segs, segs.indexOf(g.last()) + 1, 1, accepted);
 				char before = prev == null ? 0 : prev.text.charAt(prev.text.length() - 1);
 				char after = next == null ? 0 : next.text.charAt(0);
 				if ((prev == null || Character.isWhitespace(before)) && next != null && after == ' ' && plain(next)) {
-					takeFirst(g, next, address);
+					take(g, next, true, address);
 				} else if ((next == null || PUNCTUATION.indexOf(after) >= 0) && prev != null && before == ' ' && plain(prev)) {
-					takeLast(g, prev, address);
+					take(g, prev, false, address);
 				}
 			}
 
-			/** The nearest segment shown with text, from {@code i} in direction {@code step}; null at the paragraph's edge. */
-			private Seg neighbour(List<Seg> segs, int i, int step) {
-				for (; i >= 0 && i < segs.size(); i += step) if (segs.get(i).shown()) return segs.get(i);
+			/** The nearest segment with text shown in the outcome, from {@code i} in direction {@code step}; null at the paragraph's edge. */
+			private Seg neighbour(List<Seg> segs, int i, int step, boolean accepted) {
+				for (; i >= 0 && i < segs.size(); i += step) {
+					Seg s = segs.get(i);
+					if (accepted ? s.shownAccepted() : s.shownOriginal()) return s;
+				}
 				return null;
 			}
 
-			/** A run a space can be taken from: plain text, not tracked, not a field's. */
+			/** A run a space can be taken from: plain text, not tracked, not converted, not a field's. */
 			private boolean plain(Seg s) {
-				return s.run != null && s.ctx == Ctx.PLAIN && !s.inField && !s.opaque;
+				return s.run != null && s.ctx == Ctx.PLAIN && !s.inField && !s.opaque && !s.deleted && !s.inserted;
 			}
 
-			/** The leading space of the run after a deletion, into it (or a deletion of its own where the run is not beside it). */
-			private void takeFirst(Group g, Seg next, String address) {
-				List<Object> content = next.run.getContent();
+			/**
+			 * The space at the start of the run after a group ({@code first}) or the end of the run before
+			 * it, into the group's change where the run is beside it, else a change of its own there.
+			 */
+			private void take(Group g, Seg from, boolean first, String address) {
+				List<Object> content = from.run.getContent();
 				int at = -1;
-				for (int i = 0; i < content.size() && at < 0; i++) if (Trees.itemText(content.get(i)) != null) at = i;
-				if (at < 0 || !isT(content.get(at))) return;
-				Text t = (Text) Trees.unwrap(content.get(at));
-				if (t.getValue() == null || !t.getValue().startsWith(" ")) return;
-				trim(content, at, t, t.getValue().substring(1));
-				next.text = next.text.substring(1);
-				R space = spaceRun(next.run);
-				int runAt = Trees.indexOf(next.owner, next.item);
-				boolean beside = next.owner == g.owner && runAt == Trees.indexOf(g.owner, g.del) + 1;
-				if (beside) {
-					g.del.getCustomXmlOrSmartTagOrSdt().add(space);
-					space.setParent(g.del);
+				if (first) {
+					for (int i = 0; i < content.size() && at < 0; i++) if (Trees.itemText(content.get(i)) != null) at = i;
 				} else {
-					next.owner.add(runAt, ownDeletion(space, Trees.parentOf(next.item)));
+					for (int i = content.size() - 1; i >= 0 && at < 0; i--) if (Trees.itemText(content.get(i)) != null) at = i;
 				}
-				if (isEmptyRun(next.run)) removeItem(next);
-				if (!twin) report.add(new ManualRedlineReport.Change(Kind.SEPARATOR_SPACE, partName(), address, " ", 1, !beside));
-			}
-
-			/** The trailing space of the run before a deletion, into it (or a deletion of its own where the run is not beside it). */
-			private void takeLast(Group g, Seg prev, String address) {
-				List<Object> content = prev.run.getContent();
-				int at = -1;
-				for (int i = content.size() - 1; i >= 0 && at < 0; i--) if (Trees.itemText(content.get(i)) != null) at = i;
 				if (at < 0 || !isT(content.get(at))) return;
 				Text t = (Text) Trees.unwrap(content.get(at));
 				String v = t.getValue();
-				if (v == null || !v.endsWith(" ")) return;
-				trim(content, at, t, v.substring(0, v.length() - 1));
-				prev.text = prev.text.substring(0, prev.text.length() - 1);
-				R space = spaceRun(prev.run);
-				int runAt = Trees.indexOf(prev.owner, prev.item);
-				boolean beside = prev.owner == g.owner && runAt == Trees.indexOf(g.owner, g.del) - 1;
+				if (v == null || !(first ? v.startsWith(" ") : v.endsWith(" "))) return;
+				int runAt = Trees.indexOf(from.owner, from.item);
+				int edge = dry ? Trees.indexOf(g.owner, first ? g.last().item : g.first().item) : Trees.indexOf(g.owner, g.wrapper);
+				boolean beside = from.owner == g.owner && runAt == edge + (first ? 1 : -1);
+				from.text = first ? from.text.substring(1) : from.text.substring(0, from.text.length() - 1);
+				changed(Kind.SEPARATOR_SPACE, g.insertion ? Type.INSERTION : Type.DELETION, !beside, address, " ", 1);
+				if (dry) return;
+				trim(content, at, t, first ? v.substring(1) : v.substring(0, v.length() - 1));
+				R space = spaceRun(from.run, !g.insertion);
 				if (beside) {
-					g.del.getCustomXmlOrSmartTagOrSdt().add(0, space);
-					space.setParent(g.del);
+					List<Object> into = wrapperContent(g.wrapper);
+					if (first) into.add(space);
+					else into.add(0, space);
+					space.setParent(g.wrapper);
 				} else {
-					prev.owner.add(runAt + 1, ownDeletion(space, Trees.parentOf(prev.item)));
+					CTTrackChange own = g.insertion ? stamp(new RunIns(), part) : stamp(new RunDel(), part);
+					wrapperContent(own).add(space);
+					space.setParent(own);
+					own.setParent(Trees.parentOf(from.item));
+					from.owner.add(first ? runAt : runAt + 1, own);
 				}
-				if (isEmptyRun(prev.run)) removeItem(prev);
-				if (!twin) report.add(new ManualRedlineReport.Change(Kind.SEPARATOR_SPACE, partName(), address, " ", 1, !beside));
-			}
-
-			private RunDel ownDeletion(R space, Object parent) {
-				RunDel del = stamp(new RunDel(), part);
-				del.getCustomXmlOrSmartTagOrSdt().add(space);
-				space.setParent(del);
-				del.setParent(parent);
-				return del;
+				if (from.run.getContent().isEmpty()) {
+					int i = Trees.indexOf(from.owner, from.item);
+					if (i >= 0) from.owner.remove(i);
+				}
 			}
 
 			/** D9 as revisited: a struck mark whose paragraph converted whole, deleted too where Word would join the paragraph to the next. */
@@ -668,8 +827,8 @@ public final class ManualRedline {
 				PPr pPr = p.getPPr();
 				ParaRPr mark = pPr == null ? null : pPr.getRPr();
 				if (mark == null || !(on(mark.getStrike()) || on(mark.getDstrike())) || mark.getIns() != null || mark.getDel() != null) return;
-				if (groups.isEmpty()) return;
-				for (Seg s : segs) if (s.shown()) return;
+				if (groups.isEmpty() || !inRange(p)) return;
+				for (Seg s : segs) if (s.shownAccepted()) return;
 				int at = Trees.indexOf(container, p);
 				boolean joinable = pPr.getSectPr() == null && at >= 0 && at + 1 < container.size()
 						&& Trees.unwrap(container.get(at + 1)) instanceof P;
@@ -677,12 +836,15 @@ public final class ManualRedline {
 					left(Reason.PARAGRAPH_MARK, address, "");
 					return;
 				}
+				changed(Kind.PARAGRAPH_MARK, Type.DELETION, true, address, "", 0);
+				if (dry) return;
 				CTTrackChange del = stamp(new CTTrackChange(), part);
 				del.setParent(mark);
 				mark.setDel(del);
-				mark.setStrike(null);
-				mark.setDstrike(null);
-				if (!twin) report.add(new ManualRedlineReport.Change(Kind.PARAGRAPH_MARK, partName(), address, "", 0, true));
+				if (!comments) {
+					mark.setStrike(null);
+					mark.setDstrike(null);
+				}
 			}
 
 			/** Every struck run under a node, reported once with the node's text. */
@@ -740,6 +902,10 @@ public final class ManualRedline {
 		return out;
 	}
 
+	private static List<Object> wrapperContent(CTTrackChange wrapper) {
+		return wrapper instanceof RunIns ? ((RunIns) wrapper).getCustomXmlOrSmartTagOrSdt() : ((RunDel) wrapper).getCustomXmlOrSmartTagOrSdt();
+	}
+
 	/** A run's text, Office JS's way: its text, deleted text, tabs and breaks. */
 	private static String runText(R r) {
 		StringBuilder sb = new StringBuilder();
@@ -750,22 +916,60 @@ public final class ManualRedline {
 		return sb.toString();
 	}
 
-	/** Whether a run holds anything a deletion is about: not only a comment reference, a note's own mark or a rendering hint. */
+	/** Whether a run holds anything a change is about: not only a comment reference, a note's own mark or a rendering hint. */
 	private static boolean hasContent(R r) {
 		for (Object o : r.getContent()) if (!NOT_CONTENT.contains(Trees.name(o))) return true;
 		return false;
+	}
+
+	/** Whether a run's text is held by one {@code w:t} alone. */
+	private static boolean onlyText(R r) {
+		int texts = 0;
+		for (Object o : r.getContent()) {
+			if (Trees.itemText(o) == null) continue;
+			if (!isT(o)) return false;
+			texts++;
+		}
+		return texts == 1;
 	}
 
 	private static boolean isT(Object item) {
 		return Trees.unwrap(item) instanceof Text && "t".equals(Trees.name(item));
 	}
 
-	private static void unstrike(R r) {
+	/**
+	 * The mark that made a run a change, removed (D6, D7): the strike of a deletion, or the style's
+	 * strike turned off by the run's own property; the underline or colour of an insertion.
+	 */
+	private static void unmark(Seg s) {
+		R r = s.run;
 		RPr rPr = r.getRPr();
+		if (s.kind == Kind.STYLE_STRIKE) {
+			if (rPr == null) {
+				rPr = new RPr();
+				r.setRPr(rPr);
+				rPr.setParent(r);
+			}
+			if ((s.styleStrike & 1) != 0) rPr.setStrike(off());
+			if ((s.styleStrike & 2) != 0) rPr.setDstrike(off());
+			return;
+		}
 		if (rPr == null) return;
-		rPr.setStrike(null);
-		rPr.setDstrike(null);
+		if (s.kind == Kind.UNDERLINE) {
+			rPr.setU(null);
+		} else if (s.kind == Kind.COLOUR) {
+			rPr.setColor(null);
+		} else {
+			rPr.setStrike(null);
+			rPr.setDstrike(null);
+		}
 		if (Trees.isEmpty(rPr)) r.setRPr(null);
+	}
+
+	private static BooleanDefaultTrue off() {
+		BooleanDefaultTrue b = new BooleanDefaultTrue();
+		b.setVal(false);
+		return b;
 	}
 
 	/** A {@code w:t}'s text shortened, or the {@code w:t} removed where nothing is left. */
@@ -778,8 +982,8 @@ public final class ManualRedline {
 		}
 	}
 
-	/** A run holding one deleted space, formatted as the run it came from. */
-	private static R spaceRun(R from) {
+	/** A run holding one space, deleted text or text, formatted as the run it came from. */
+	private static R spaceRun(R from, boolean deleted) {
 		R space = new R();
 		if (from.getRPr() != null) {
 			RPr rPr = XmlUtils.deepCopy(from.getRPr());
@@ -787,20 +991,19 @@ public final class ManualRedline {
 			space.setRPr(rPr);
 			rPr.setParent(space);
 		}
-		DelText d = new DelText();
-		d.setValue(" ");
-		d.setSpace("preserve");
-		d.setParent(space);
-		space.getContent().add(d);
+		if (deleted) {
+			DelText d = new DelText();
+			d.setValue(" ");
+			d.setSpace("preserve");
+			d.setParent(space);
+			space.getContent().add(d);
+		} else {
+			Text t = new Text();
+			t.setValue(" ");
+			t.setSpace("preserve");
+			t.setParent(space);
+			space.getContent().add(new org.docx4j.wml.ObjectFactory().createRT(t));
+		}
 		return space;
-	}
-
-	private static boolean isEmptyRun(R r) {
-		return r.getContent().isEmpty();
-	}
-
-	private static void removeItem(Seg s) {
-		int i = Trees.indexOf(s.owner, s.item);
-		if (i >= 0) s.owner.remove(i);
 	}
 }

@@ -7,7 +7,8 @@ separating space) and D9 revisited (delete a struck mark whose paragraph convert
 ACCEPTED 2026-10-31 (Jason: "D13 and D9 as recommended", §8.5); D14 (the comments opt-in keeps its strike, §8.6)
 proposed for phase 2; phase 1 DONE 2026-10-31 (§11: `ManualRedline`, its options and report,
 `Texts.addresses`; held to Word 365's Accept All and Reject All of the phase 0 prediction and, §11.6, of docx4j's own
-conversion), but for the Getting Started sentence (§11.5).
+conversion), but for the Getting Started sentence (§11.5); phase 2 BUILT 2026-10-31 (Jason: "do phase 2"; §12:
+the opt-ins, D14 to D16 taken as recommended), Word's third run pending.
 Proposed the same day, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's direction, relayed by the
 portfolio session from its review of LlamaIndex's Document Parsing Protocol (the
 paper's §7.13; the `dpp-forks` probe): "strikethrough handling is NOT view-sensitive (Accept All and Reject All leave
@@ -539,3 +540,76 @@ on the marshal's formatting properties, which the builder's classpath and the te
 green in Maven too.
 
 **Phase 1: DONE**, but for the Getting Started sentence (§11.5).
+
+## 12. Phase 2 (2026-10-31; Jason: "do phase 2")
+
+### 12.1 What was built
+
+- **`ManualRedlineOptions`**: `styleStrike`, `underlineAsInsertion`, `colourAsInsertion(hex...)`, `comments`,
+  `within(control)`, `withinBookmark(name)`, `parts(part...)`, `auditProperty` (§3.3), each off by default.
+- **`ManualRedlineReport`**: the kinds `style_strike`, `underline`, `colour`; each change's `type` (`deletion`,
+  `insertion`, or `both`, the space between a deletion and its insertion) and whether it is a change of its own;
+  `getInsertions()`; `getStrikeAndUnderline()`; in `toJson()`, `strikeAndUnderline` and each change's `type` and
+  `own`.
+- **`preview`** is now a dry run of the same walk, every decision made and nothing written, instead of phase 1's
+  conversion of a clone (`OpcPackage.clone()` saves and reloads, so a range given as a content control of the
+  package would not be found in the clone). The tests hold the preview's report to the conversion's.
+
+### 12.2 The rules as built
+
+- **Style strike**: a run with no strike of its own whose styles strike it (§11.2's resolution) converts, kind
+  `style_strike`, and is given its own `w:strike w:val="0"` (or `w:dstrike`, as the style set), so that Reject All
+  shows it plain (D6 carried through, §3.3).
+- **Underline**: a run whose own `w:u` names a pattern other than `none` becomes a `w:ins`, the `w:u` removed (D7).
+  A `w:u` with no pattern inherits (ECMA-376 §17.3.2.40: "determined by the setting previously set at any level of
+  the style hierarchy") and is not taken. A run both struck and underlined is a deletion: the strike wins, the
+  underline stays on the deleted run (so Reject All gives it back as it was), and the report counts it.
+- **Colour**: a run whose own `w:color` is one of the named colours (RRGGBB, any case; `auto` refused, a theme
+  colour not taken), with no strike, underline, highlight or shading of its own, becomes a `w:ins`, the colour
+  removed (D7).
+- **Grouping**: insertions as deletions (D8); a deletion and an insertion side by side are two changes.
+- **Comments** (D14, taken as recommended with "do phase 2"): the comments story converts; a converted run in a
+  comment keeps its strike, underline or colour, and a deleted mark there its strike.
+- **The separating space with insertions**: an insertion takes its separating space by the rejected text, as a
+  deletion does by the accepted (D16 below: N01 `shall <u>promptly</u> notify` becomes `shall {++promptly ++}notify`,
+  Reject All `shall notify`); the one space between a deletion and the insertion replacing it (a run holding that
+  space alone, nothing else shown between them) is written `w:ins` holding `w:del`, both by the author, so that
+  neither outcome keeps it (D15 below: M01 `Rate: 1.316 per cent.` rejected, `Rate: 1.335 per cent.` accepted; M04,
+  M13, M17, N02, N03 in reverse, the footnote, the text box, N10's comment).
+- **Range and parts**: `TrackedChangeFilter`'s range, read before anything is converted; a run converts only inside
+  it, a mark only if its paragraph is; `parts` limits the story parts.
+- **Audit**: `docProps/custom.xml` gains `docx4j:manualRedline`, its value the instant and the options
+  (`2026-10-31T00:00:00Z; author=manual redline, date=..., separatorSpace=true, auditProperty=true`); a preview
+  writes none.
+
+### 12.3 On the probe
+
+The first base with every opt-in but the range and the audit property (`ManualRedlineProbeBuilder.phase2()`):
+26 deletions, 15 insertions, 28 runs; left M07 (`in_tracked_change`), M08 and M08b (`field`). Accept All
+`M01 Rate: 1.335 per cent.`, `M05 then plain words.`, `M12 The party shall promptly notify the other.`; Reject All
+`M01 Rate: 1.316 per cent.`, `Widget	$40.00`, `M12 The party shall notify the other.`; no two spaces in either but the
+base's own M07. The second base, `manual-redline-2.docx` (N01 to N10, §12.5), the same way: N01 to N03, N07 to N10
+converted, N04 (red but highlighted), N05 (a colour not named), N06 (`w:u none`) left; one run struck and underlined.
+Both conversions saved for Word's third run: `manual-redline-phase2.docx`, `manual-redline-2-phase2.docx`.
+
+### 12.4 Tests
+
+`ManualRedlineOptInsTest` (10): both bases' texts after Accept All and Reject All; N07's own `w:dstrike w:val="0"`
+over its style; N02's deletion keeping its underline; the space between a deletion and its insertion as `w:ins`
+holding `w:del`; D14 in the comment (strike and underline kept) against the main story (marks removed); idempotence
+and the preview; colours (two named, `auto` refused, any case); a bookmark's range; a control's range (M17); parts;
+the audit property, and none from a preview. With `ManualRedlineTest`'s 15, 25.
+
+### 12.5 Decisions from phase 2 (taken as recommended with "do phase 2"; Jason may overrule)
+
+| # | Decision | As built |
+|---|---|---|
+| D14 | The comments story under `comments(true)` | Converted runs keep their marks (§8.6) |
+| D15 | The space between a deletion and the insertion replacing it (§8.3 left it to phase 2) | `w:ins` holding `w:del`: gone in either outcome; measured in Word's third run |
+| D16 | An insertion's separating space | Taken into the insertion as D13 takes a deletion's, by the rejected text, so that Reject All leaves one space |
+
+The gate: docx4j-core-tests 2290 run, 0 failures, 30 skipped.
+
+### 12.6 Word's third run
+
+(Pending: Jason runs `cr068-probe.ps1` again (`RUN.txt`, third part) and looks at the comment cards.)

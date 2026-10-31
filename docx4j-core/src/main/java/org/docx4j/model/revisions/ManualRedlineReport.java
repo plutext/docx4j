@@ -26,8 +26,10 @@ import java.util.Map;
 
 /**
  * What {@link ManualRedline} converted, and what it left with its reason (CR-068 section 3.1).
- * Each {@link Change} is one thing deleted: struck runs (a {@code w:del}), a separating space (in the
- * struck text's {@code w:del}, or one of its own), a paragraph mark. Addresses are the text model's ({@code body/12},
+ * Each {@link Change} is one thing deleted or inserted: struck runs (a {@code w:del}), underlined or
+ * coloured runs under the opt-ins (a {@code w:ins}), a separating space (in the {@code w:del} or
+ * {@code w:ins} beside it, one of its own, or both inserted and deleted between a deletion and the
+ * insertion replacing it), a paragraph mark. Addresses are the text model's ({@code body/12},
  * {@code header:rId8/2}; {@code org.docx4j.model.text.Texts#addresses}) of the paragraph, read
  * before the conversion; a text box's paragraph that the text model gives none takes the address of
  * the paragraph the box is in. A text box's other {@code mc:AlternateContent} branch is converted
@@ -37,13 +39,33 @@ import java.util.Map;
  */
 public final class ManualRedlineReport {
 
-	/** What a change converted: struck runs, double-struck runs, a separating space (D13), a paragraph mark (D9). */
+	/**
+	 * What a change converted: struck, double-struck or style-struck runs (deletions), underlined or
+	 * coloured runs (insertions, the opt-ins), a separating space (D13), a paragraph mark (D9).
+	 */
 	public enum Kind {
-		STRIKE("strike"), DOUBLE_STRIKE("double_strike"), SEPARATOR_SPACE("separator_space"), PARAGRAPH_MARK("paragraph_mark");
+		STRIKE("strike"), DOUBLE_STRIKE("double_strike"), STYLE_STRIKE("style_strike"), UNDERLINE("underline"),
+		COLOUR("colour"), SEPARATOR_SPACE("separator_space"), PARAGRAPH_MARK("paragraph_mark");
 
 		private final String label;
 
 		Kind(String label) {
+			this.label = label;
+		}
+
+		/** The name in {@link #toJson()}. */
+		public String label() {
+			return label;
+		}
+	}
+
+	/** Whether a change's text is deleted, inserted, or both (the space between a deletion and the insertion replacing it). */
+	public enum Type {
+		DELETION("deletion"), INSERTION("insertion"), BOTH("both");
+
+		private final String label;
+
+		Type(String label) {
 			this.label = label;
 		}
 
@@ -61,11 +83,11 @@ public final class ManualRedlineReport {
 		FIELD("field"),
 		/** A math run. */
 		MATH("math"),
-		/** Struck by a style only, not by its own properties (D5). */
+		/** Struck by a style only, not by its own properties (D5), without {@link ManualRedlineOptions#styleStrike}. */
 		STYLE_STRIKE("style_strike"),
 		/** A wholly converted paragraph's struck mark that Word cannot delete: a cell's last, one before a table or ending a section or its story. */
 		PARAGRAPH_MARK("paragraph_mark"),
-		/** In a comment: the comments story is not converted by default (D2). */
+		/** In a comment: the comments story is not converted without {@link ManualRedlineOptions#comments} (D2). */
 		COMMENT("comment");
 
 		private final String label;
@@ -80,22 +102,24 @@ public final class ManualRedlineReport {
 		}
 	}
 
-	/** One tracked deletion written. */
+	/** One tracked deletion or insertion written. */
 	public static final class Change {
 		private final Kind kind;
 		private final String part;
 		private final String address;
 		private final String text;
 		private final int runs;
-		private final boolean ownDeletion;
+		private final Type type;
+		private final boolean own;
 
-		Change(Kind kind, String part, String address, String text, int runs, boolean ownDeletion) {
+		Change(Kind kind, Type type, boolean own, String part, String address, String text, int runs) {
 			this.kind = kind;
+			this.type = type;
+			this.own = own;
 			this.part = part;
 			this.address = address;
 			this.text = text;
 			this.runs = runs;
-			this.ownDeletion = ownDeletion;
 		}
 
 		public Kind getKind() {
@@ -112,7 +136,7 @@ public final class ManualRedlineReport {
 			return address;
 		}
 
-		/** The text deleted ({@code \t} for a tab, {@code \n} for a break; empty for a paragraph mark). */
+		/** The text deleted or inserted ({@code \t} for a tab, {@code \n} for a break; empty for a paragraph mark). */
 		public String getText() {
 			return text;
 		}
@@ -122,12 +146,17 @@ public final class ManualRedlineReport {
 			return runs;
 		}
 
+		/** Whether its text is deleted, inserted or both. */
+		public Type getType() {
+			return type;
+		}
+
 		/**
-		 * Whether it is a tracked deletion of its own: false for a separating space that went into the
-		 * {@code w:del} of the struck text beside it, as Word's own deletion holds it (one revision).
+		 * Whether it is a tracked change of its own: false for a separating space that went into the
+		 * {@code w:del} or {@code w:ins} beside it, as Word's own deletion holds it (one revision).
 		 */
-		public boolean isOwnDeletion() {
-			return ownDeletion;
+		public boolean isOwn() {
+			return own;
 		}
 
 		@Override
@@ -176,6 +205,7 @@ public final class ManualRedlineReport {
 	private final boolean preview;
 	private final List<Change> changes = new ArrayList<Change>();
 	private final List<Left> left = new ArrayList<Left>();
+	private int strikeAndUnderline;
 
 	ManualRedlineReport(boolean preview) {
 		this.preview = preview;
@@ -196,6 +226,10 @@ public final class ManualRedlineReport {
 		}
 	}
 
+	void strikeAndUnderline() {
+		strikeAndUnderline++;
+	}
+
 	/** True for {@link ManualRedline#preview}: what a conversion would do; the package was not changed. */
 	public boolean isPreview() {
 		return preview;
@@ -214,20 +248,27 @@ public final class ManualRedlineReport {
 	/** How many tracked deletions were written: each {@code w:del}, each paragraph mark (Word may list a paragraph's text and mark as one). */
 	public int getDeletions() {
 		int n = 0;
-		for (Change c : changes) if (c.ownDeletion) n++;
+		for (Change c : changes) if (c.own && c.type != Type.INSERTION) n++;
 		return n;
 	}
 
-	/** How many tracked insertions were written: none until the opt-ins (CR-068 phase 2). */
+	/** How many tracked insertions were written: each {@code w:ins} (the opt-ins; a space between a deletion and its insertion is one of each). */
 	public int getInsertions() {
-		return 0;
+		int n = 0;
+		for (Change c : changes) if (c.own && c.type != Type.DELETION) n++;
+		return n;
 	}
 
-	/** How many runs were converted. */
+	/** How many runs were converted (struck, underlined, coloured; not the separating spaces). */
 	public int getRuns() {
 		int n = 0;
-		for (Change c : changes) if (c.kind == Kind.STRIKE || c.kind == Kind.DOUBLE_STRIKE) n += c.runs;
+		for (Change c : changes) if (c.kind != Kind.SEPARATOR_SPACE && c.kind != Kind.PARAGRAPH_MARK) n += c.runs;
 		return n;
+	}
+
+	/** How many runs both struck and underlined were deleted under {@link ManualRedlineOptions#underlineAsInsertion} (the strike wins, D7). */
+	public int getStrikeAndUnderline() {
+		return strikeAndUnderline;
 	}
 
 	/** Changes by kind, by their {@link Kind#label()}. */
@@ -253,9 +294,9 @@ public final class ManualRedlineReport {
 
 	/**
 	 * <pre>
-	 * {"preview":false,"deletions":2,"insertions":0,"runs":1,"byKind":{"strike":1,"separator_space":1},
+	 * {"preview":false,"deletions":2,"insertions":0,"runs":1,"strikeAndUnderline":0,"byKind":{"strike":1,"separator_space":1},
 	 *  "byPart":{"/word/document.xml":2},
-	 *  "changes":[{"kind":"strike","part":"/word/document.xml","address":"body/1","text":"1.316"}, ...],
+	 *  "changes":[{"kind":"strike","type":"deletion","own":true,"part":"/word/document.xml","address":"body/1","text":"1.316"}, ...],
 	 *  "left":[{"reason":"field","part":"/word/document.xml","address":"body/7","text":"Version 2"}]}
 	 * </pre>
 	 */
@@ -263,7 +304,7 @@ public final class ManualRedlineReport {
 		StringBuilder out = new StringBuilder();
 		out.append("{\"preview\":").append(preview).append(",\"deletions\":").append(getDeletions())
 				.append(",\"insertions\":").append(getInsertions()).append(",\"runs\":").append(getRuns())
-				.append(",\"byKind\":");
+				.append(",\"strikeAndUnderline\":").append(strikeAndUnderline).append(",\"byKind\":");
 		object(getByKind(), out);
 		out.append(",\"byPart\":");
 		object(getByPart(), out);
@@ -271,7 +312,8 @@ public final class ManualRedlineReport {
 		for (int i = 0; i < changes.size(); i++) {
 			Change c = changes.get(i);
 			if (i > 0) out.append(',');
-			out.append("{\"kind\":").append(quote(c.kind.label())).append(",\"part\":").append(quote(c.part))
+			out.append("{\"kind\":").append(quote(c.kind.label())).append(",\"type\":").append(quote(c.type.label()))
+					.append(",\"own\":").append(c.own).append(",\"part\":").append(quote(c.part))
 					.append(",\"address\":").append(c.address == null ? "null" : quote(c.address))
 					.append(",\"text\":").append(quote(c.text)).append('}');
 		}

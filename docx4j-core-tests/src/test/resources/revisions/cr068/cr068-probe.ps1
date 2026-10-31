@@ -5,7 +5,8 @@
 # All and Reject All of it are each saved as docx and as plain text. First Word makes its own tracked deletion of the
 # struck text in the base (the same texts the default conversion deletes, and M11's paragraph whole), for the shape
 # Word gives a deletion. Last, the dates probe's revisions are listed, for which date Word shows. The second run
-# (CR-068 phase 1) adds manual-redline-phase1.docx, docx4j's own conversion; what the first run made is skipped.
+# (CR-068 phase 1) adds manual-redline-phase1.docx, docx4j's own conversion; the third (phase 2) the two bases converted
+# with the opt-ins, manual-redline-phase2.docx and manual-redline-2-phase2.docx. What an earlier run made is skipped.
 # Driving Word as cr043-probe.ps1 does (portfolio docs/office_output_methods.md 3.2): inputs copied to a local folder
 # first, SaveAs with [ref] arguments, each COM step shown before it is made, an output already there skipped, so a
 # rerun after a hang resumes. Copyright 2026, Plutext Pty Ltd; Apache-2.0.
@@ -128,7 +129,8 @@ try {
   # 2. each input: its revisions and plain text as it is, then Word's Accept All and Reject All, each as docx and text
   foreach ($job in @(@("manual-redline.docx", "base"), @("manual-redline-default.docx", "default"),
       @("manual-redline-optins.docx", "optins"), @("manual-redline-d9.docx", "d9"), @("manual-redline-word.docx", "own"),
-      @("manual-redline-phase1.docx", "phase1"))) {
+      @("manual-redline-phase1.docx", "phase1"), @("manual-redline-phase2.docx", "phase2"),
+      @("manual-redline-2-phase2.docx", "phase2b"))) {
     $in = $job[0]; $key = $job[1]
     if (-not (Test-Path (Join-Path $Dir $in))) { Say "$in missing: skipped"; continue }
     if (Test-Path (Join-Path $Dir "word-$key-asis.txt")) { Say "word-$key-asis.txt there already: skipped" } else {

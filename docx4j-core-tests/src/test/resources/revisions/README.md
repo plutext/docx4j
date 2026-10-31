@@ -47,6 +47,9 @@ the struck text, the revisions each file shows, and Word's Accept All and Reject
 (`word-*`, with `cr068-log.txt`), the goldens for CR-068 section 8. `manual-redline-phase1.docx` is docx4j's own
 conversion of the base (`ManualRedline`, CR-068 phase 1); the script's second run (Jason, 31 October 2026)
 saved Word's Accept All and Reject All of it as `word-phase1-*` (CR-068 section 11.6).
+Phase 2: `manual-redline-2.docx`, a second base (N01 to N10: what the opt-ins meet that the first does not have),
+and both bases converted with the opt-ins, `manual-redline-phase2.docx` and `manual-redline-2-phase2.docx`, for the
+script's third run (CR-068 section 12).
 
 ## `editor/` - docx4j-ts-editor's fixtures
 
