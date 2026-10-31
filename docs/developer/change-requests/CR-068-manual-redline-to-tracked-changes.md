@@ -2,10 +2,11 @@
 
 Status: ACCEPTED 2026-10-31 (Jason: "CR-068 decisions as recommended; commence phase 0"): D1 to D12 as recommended
 (§6); phase 0 DONE 2026-10-31 (§8: the probe, the predictions, Word's run the same day, every prediction held
-but the dates, where Word shows `w:date` and ignores `w16du:dateUtc`; the by-hand look optional); D13 (the
+but the dates, where Word shows `w:date` and ignores `w16du:dateUtc`; Jason's look by hand the same day, §8.6); D13 (the
 separating space) and D9 revisited (delete a struck mark whose paragraph converts whole) proposed from phase 0,
-awaiting Jason (§8.5); phase 1 waits on them.
-Proposed the same day, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's direction, relayed by the portfolio session from its review of LlamaIndex's Document Parsing Protocol (the
+awaiting Jason (§8.5), and D14 (the comments opt-in keeps its strike, §8.6) for phase 2; phase 1 waits on D13 and D9.
+Proposed the same day, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's direction, relayed by the
+portfolio session from its review of LlamaIndex's Document Parsing Protocol (the
 paper's §7.13; the `dpp-forks` probe): "strikethrough handling is NOT view-sensitive (Accept All and Reject All leave
 struck text; the file does not say it is a deletion), but I suspect we do need an explicit, opt-in conversion that
 turns manual redline (strikethrough only by default) into tracked changes with an author such as 'manual redline'".
@@ -184,7 +185,7 @@ option and never a default (Jason).
 
 ## 6. Decisions
 
-D1 to D12 accepted as recommended, 2026-10-31 (Jason); D13 proposed, D9 to be revisited and D4 clarified at phase 0 (§8.5).
+D1 to D12 accepted as recommended, 2026-10-31 (Jason); D13 and D14 proposed, D9 to be revisited and D4 clarified at phase 0 (§8.5, §8.6).
 
 | # | Decision | Recommendation (accepted) |
 |---|---|---|
@@ -330,8 +331,8 @@ drops out of both; phase 2 measures that before writing it.
 Jason ran `cr068-probe.ps1` at 13:37 (the portfolio session relayed "cr068 done"): the thirteen tracked deletions of
 Word's own pass made, every input opened, every Accept All and Reject All leaving 0 revisions, every save written.
 The outputs and `cr068-log.txt` are in `docx4j-core-tests/src/test/resources/revisions/cr068/` beside the inputs.
-The by-hand step (the repair prompt, the Review pane, by eye) was not done; the object model's open and revision
-lists stand for it (§8.6).
+Jason opened the default and opt-ins files by hand afterwards (14:33; his screenshots `cr068-default.PNG` and
+`cr068-optins.png` beside the outputs, All Markup): §8.6.
 
 **As predicted (§8.2 items 1 to 6):**
 
@@ -392,11 +393,26 @@ lists stand for it (§8.6).
 | D9 (revisited) | A struck paragraph mark | Delete the mark too (`w:pPr/w:rPr/w:del`, its strike removed) when the paragraph's own mark is struck and every run of the paragraph converts, as Word's own deletion of the paragraph does and as the D9 variant measured; otherwise leave it (a struck mark under unconverted text, a mark Word will not delete: a cell's last paragraph, one before a table, CR-043 §4.4), reported `paragraph_mark` |
 | D4 (clarified) | The date as written | `w:date` the operation's instant as wall-clock time in `OpcPackage.effectiveDateTimeZone()` with a `Z` (the one Word shows), and `w16du:dateUtc` the instant (as Word writes it), `w16du` made ignorable on the part's root; `date(null)` writes neither |
 
-### 8.6 Phase 0 status
+### 8.6 By hand, and phase 0's status
 
-DONE 2026-10-31 but for the optional by-hand look (Jason: open `manual-redline-default.docx` and
-`manual-redline-optins.docx` for a repair prompt and the Review pane; the object model opened every file and listed
-every revision as predicted). Phase 1 waits on D13 and D9 (revisited); its goldens are Word's saves here, read by
+Both files open in Word without a repair prompt (none reported). Under All Markup every conversion is drawn as
+Word draws a tracked change by one author: deletions in red strikethrough, the opt-ins' insertions in red underline
+(M12's `promptly`, its own red removed, now red as an insertion), change bars beside each; the cases the
+conversion leaves alone show as formatting (the default's M05 and M16, M08 and M08b in black strikethrough, M12 in
+its own red); M07's insertion by `CR-068 base` in a second author's colour; the header's deletion dimmed with the
+header; M14's larger second run, M15's tab and break inside the deletion. As predicted.
+
+One thing the object model could not show: **the comment card.** Word 365's comment card shows the comment's text
+without tracked-change marks. In the default it shows `withdrawn remark,` struck (the run's own strike, not
+converted); in the opt-ins it shows `withdrawn remark, kept remark.` plain, the deletion invisible, because D6 took
+the strike away (Word's text saves still resolve it: Accept All `M16 comment: kept remark.`). So under
+`comments(true)` a reviewer looking at the card sees the withdrawn remark as kept until Accept All. D14 below.
+
+| # | Decision | Recommendation |
+|---|---|---|
+| D14 | The comments story under `comments(true)` (phase 2) | Keep the strike on a converted run in a comment (D6 not applied there), so that Word's comment card, which shows no tracked-change marks, still shows the text struck; Reject All then gives the base back as it was; to be confirmed by Word in phase 2 |
+
+**Phase 0: DONE 2026-10-31.** Phase 1 waits on D13 and D9 (revisited); its goldens are Word's saves here, read by
 the text model, and Word's reject-all docx for D6.
 
 ## 9. Hand-offs
