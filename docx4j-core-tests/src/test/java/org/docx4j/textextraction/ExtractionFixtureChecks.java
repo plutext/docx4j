@@ -159,13 +159,40 @@ final class ExtractionFixtureChecks {
     static Map<String, byte[]> entries(byte[] zipBytes) throws Exception {
         require(zipBytes != null, "Missing package");
         Map<String, byte[]> out = new LinkedHashMap<>();
+        Map<String, Integer> dosTimes = dosTimes(zipBytes);
         try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
             ZipEntry e;
             while ((e = zip.getNextEntry()) != null) {
                 require(!out.containsKey(e.getName()), "Duplicate ZIP member");
-                require(e.getTimeLocal().equals(java.time.LocalDateTime.of(1980, 1, 1, 0, 0)), "ZIP timestamp " + e.getName());
+                require(Integer.valueOf(DOS_1980).equals(dosTimes.get(e.getName())), "ZIP timestamp " + e.getName());
                 out.put(e.getName(), zip.readAllBytes());
             }
+        }
+        return out;
+    }
+
+    /** 1980-01-01 00:00 as a ZIP DOS date (high 16 bits) and time (low 16 bits) */
+    static final int DOS_1980 = ((1 << 5) | 1) << 16;
+
+    /**
+     * Each entry's DOS date and time, read from the central directory. Not ZipEntry.getTimeLocal(): the JDK
+     * takes 1980-01-01 00:00 for its before-1980 sentinel, so ExtractionProbeBuilder.put also writes an
+     * extended timestamp, an instant in the writer's time zone, which getTimeLocal prefers and converts
+     * to the reader's; the DOS fields are the same in every zone.
+     */
+    static Map<String, Integer> dosTimes(byte[] zip) {
+        java.nio.ByteBuffer b = java.nio.ByteBuffer.wrap(zip).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        int end = zip.length - 22;
+        while (end >= 0 && b.getInt(end) != 0x06054b50) end--;
+        require(end >= 0, "No ZIP end of central directory");
+        Map<String, Integer> out = new HashMap<>();
+        int p = b.getInt(end + 16);
+        for (int i = 0, n = b.getShort(end + 10) & 0xffff; i < n; i++) {
+            require(b.getInt(p) == 0x02014b50, "Bad ZIP central directory");
+            int nameLength = b.getShort(p + 28) & 0xffff;
+            String name = new String(zip, p + 46, nameLength, StandardCharsets.UTF_8);
+            out.put(name, (b.getShort(p + 14) & 0xffff) << 16 | (b.getShort(p + 12) & 0xffff));
+            p += 46 + nameLength + (b.getShort(p + 30) & 0xffff) + (b.getShort(p + 32) & 0xffff);
         }
         return out;
     }
