@@ -3,8 +3,9 @@
 Status: ACCEPTED 2026-10-31 (Jason: "CR-068 decisions as recommended; commence phase 0"): D1 to D12 as recommended
 (§6); phase 0 DONE 2026-10-31 (§8: the probe, the predictions, Word's run the same day, every prediction held
 but the dates, where Word shows `w:date` and ignores `w16du:dateUtc`; Jason's look by hand the same day, §8.6); D13 (the
-separating space) and D9 revisited (delete a struck mark whose paragraph converts whole) proposed from phase 0,
-awaiting Jason (§8.5), and D14 (the comments opt-in keeps its strike, §8.6) for phase 2; phase 1 waits on D13 and D9.
+separating space) and D9 revisited (delete a struck mark whose paragraph converts whole), proposed from phase 0,
+ACCEPTED 2026-10-31 (Jason: "D13 and D9 as recommended", §8.5); D14 (the comments opt-in keeps its strike, §8.6)
+proposed for phase 2; phase 1 STARTED 2026-10-31.
 Proposed the same day, drafted by Claude Fable 5.1 (session docx4j-12) at Jason's direction, relayed by the
 portfolio session from its review of LlamaIndex's Document Parsing Protocol (the
 paper's §7.13; the `dpp-forks` probe): "strikethrough handling is NOT view-sensitive (Accept All and Reject All leave
@@ -185,7 +186,7 @@ option and never a default (Jason).
 
 ## 6. Decisions
 
-D1 to D12 accepted as recommended, 2026-10-31 (Jason); D13 and D14 proposed, D9 to be revisited and D4 clarified at phase 0 (§8.5, §8.6).
+D1 to D12 accepted as recommended, 2026-10-31 (Jason); from phase 0, D13 and D9 revisited accepted as recommended the same day (Jason), D4 clarified, D14 proposed (§8.5, §8.6).
 
 | # | Decision | Recommendation (accepted) |
 |---|---|---|
@@ -197,11 +198,11 @@ D1 to D12 accepted as recommended, 2026-10-31 (Jason); D13 and D14 proposed, D9 
 | D6 | The mark after conversion | Removed from the converted run (strike, and for the opt-ins the underline or colour), so the tracked change alone carries the meaning and Reject All gives plain text; under `styleStrike`, `w:strike w:val="0"` written |
 | D7 | Underline and colour as insertions | Opt-ins, off by default; the colour named by the caller, never guessed; strike wins over underline on one run |
 | D8 | Grouping | Adjacent converted runs in a paragraph under one `w:del` (one `w:ins`), as Word groups |
-| D9 | A struck paragraph mark | Left alone in phase 1 and measured in the probe (M11); a rule only if Word's behaviour on the converted file asks for one |
+| D9 | A struck paragraph mark | Left alone in phase 1 and measured in the probe (M11); a rule only if Word's behaviour on the converted file asks for one. **Revisited at phase 0 and accepted (§8.5)**: the mark is deleted too when it is struck and the paragraph converts whole |
 | D10 | Fields, math, tracked content | Left alone and reported (`field`, `math`, `in_tracked_change`); a struck hyperlink converts inside the hyperlink |
 | D11 | Audit | The author name is the record; a custom property `docx4j:manualRedline` only under `auditProperty(true)` |
 | D12 | Settings | `w:trackRevisions` untouched; converting is not turning tracking on |
-| D13 | The separating space (proposed at phase 0, §8.3, §8.5; awaiting Jason) | One space taken into the deletion where the converted text has whitespace on both sides (else the preceding space before punctuation or the paragraph end), reported `separator_space`; `separatorSpace(false)` turns it off |
+| D13 | The separating space (proposed at phase 0, §8.3, §8.5; accepted 2026-10-31) | One space taken into the deletion where the converted text has whitespace on both sides (else the preceding space before punctuation or the paragraph end), reported `separator_space`; `separatorSpace(false)` turns it off |
 
 ## 7. Out of scope
 
@@ -385,7 +386,9 @@ Jason opened the default and opt-ins files by hand afterwards (14:33; his screen
   both Word's Accept All of that and of the D9 variant join the emptied paragraph cleanly to the next, which keeps
   its own text and properties; the default's Accept All leaves an empty paragraph behind. §8.5 asks to revisit D9.
 
-### 8.5 Decisions from phase 0 (for Jason)
+### 8.5 Decisions from phase 0
+
+D13 and D9 (revisited) accepted as recommended, 2026-10-31 (Jason: "D13 and D9 as recommended"); D4 as clarified.
 
 | # | Decision | Recommendation |
 |---|---|---|
