@@ -630,4 +630,7 @@ none pending; WD 0.44's four rulings stand in WD 0.56 with docx4j's choices fold
 - **docx4j-mcp**: the flags on the block model's runs, the options `small_caps` and `drop_caps`, the warning
   `paragraph.drop_cap_joined`, the kind `text.formatting_join` and its group by format; no contract change.
 - **docx4j-tika**: `w:dstrike` struck in the text model (phase 4) and `text.formatting_join`; its own phase 3 reads
-  the alignment flag (§13.4).
+  the alignment flag (§13.4). Done in its 1.0 (Jason's word), docx4j-tika f124282: `XhtmlWriter` wraps a text run in
+  `sup` or `sub` by `getVerticalAlignment()`, innermost inside its `b`, `i` and `s` as Tika writes them (HTML, where
+  the nesting does not change what is drawn), never a note reference; phase 4 needed nothing there (a double-struck
+  run is in its `s`; the kind reaches its inspection metadata). Green against docx4j at this CR's end.
