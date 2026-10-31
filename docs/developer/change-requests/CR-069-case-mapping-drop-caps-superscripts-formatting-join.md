@@ -1,7 +1,7 @@
 # CR-069: what the page shows, in the text: case mapping, drop caps, superscripts, and the formatting-join finding
 
 Status: ACCEPTED 2026-10-31 (Jason: "CR-069 decisions as presented"): D1 to D9 as recommended (§5); D9's condition
-ruled the same day (Jason: "17.3.5 will wait for CR-069"): 17.3.5 ships with CR-069, not only phases 0 to 2. Phase 0 DONE 2026-10-31 (§10; Jason: "start CR-069"); phase 1 DONE 2026-10-31 (§11; Jason: "go ahead with phase 1"); phase 2 DONE 2026-10-31 (§12; Jason: "do phase 2"). Proposed
+ruled the same day (Jason: "17.3.5 will wait for CR-069"): 17.3.5 ships with CR-069, not only phases 0 to 2. Phase 0 DONE 2026-10-31 (§10; Jason: "start CR-069"); phase 1 DONE 2026-10-31 (§11; Jason: "go ahead with phase 1"); phase 2 DONE 2026-10-31 (§12; Jason: "do phase 2"); phase 3 DONE 2026-11-01 (§13; Jason: "do phase 3"). Proposed
 2026-10-31, drafted by Claude Fable 5.1 (session docx4j-12) from Jason's rulings of the same day on the
 four questions the portfolio's review of LlamaIndex's Document Parsing Protocol put to him (paper §7.13; WD 0.44, drafted
 and uncommitted: REQ-521, REQ-607, REQ-710, §9.2 `text.formatting_join`, §4 NOTE, Appendix B). Jason's rulings: (a) the
@@ -378,7 +378,9 @@ row: "[PROBE] gains no fixture yet (the `dpp-forks` Word re-save is the candidat
   docx4j-portfolio 4b1590d, made it [PROBE]'s sixth fixture).
 - **docx4j-tika**: `XhtmlWriter` writes `TextRun.getText()`, so its text keeps the stored case. REQ-607 says HTML
   carries CSS and the stored characters, while Tika's consumers mostly read the text without the CSS: whether its
-  XHTML uses `CaseMapping.written` is that project's choice.
+  XHTML uses `CaseMapping.written` is that project's choice. Adopted (Jason: "adopt the capitals decision"),
+  docx4j-tika 2d8c0b5: text runs and a comment's text through `CaseMapping.written`, field codes and list labels as
+  stored, `small_caps` as the options say, no CSS; no baseline of its moved (no fixture of its has a cased run).
 - **docx4j-mcp**: FYI. It does not read the text model yet (its `text-model` entries are proposed); when it does,
   `small_caps` is one more option by name.
 - **The portfolio**: the registry note (phase 1 done).
@@ -450,3 +452,71 @@ row: "[PROBE] gains no fixture yet (the `dpp-forks` Word re-save is the candidat
   name of the part that holds the two paragraphs, as the `dpp/` rows already have it (REQ-801 and REQ-521 now say so).
 - **docx4j-core-ts, docx4j-python**: the join (the frame read, then taken by the next paragraph's block; the run
   merge; the shapes left), the warning and its selector, `drop_caps`, and the dpp rows that now pass.
+
+## 13. Phase 3 (2026-11-01; Jason: "do phase 3")
+
+### 13.1 What was built
+
+- **Markdown** (docx4j-markdown `WmlToMarkdown`): a text run whose `getVerticalAlignment()` is `SUPERSCRIPT` or
+  `SUBSCRIPT` is written between `<sup>` and `</sup>`, or `<sub>` and `</sub>` (CommonMark inline HTML). The inline
+  sink keeps the alignment with the emphasis flags, so adjacent runs formatted alike share one pair of tags. Plain
+  text is unchanged: the baseline characters (REQ-710).
+- **HTML** (`Docx4J.toHTML`, both writers; D4): a run raised or lowered by its `w:vertAlign` is a `sup` or `sub`
+  element where it was a `span`. The alignment is the run's own, else its styles' (the resolver's effective run
+  properties, as the text model has it). The element keeps the span's class and CSS (`vertical-align`, `font-size:
+  smaller`), so a browser draws it as before. `XsltHTMLFunctions.runElementName` decides; `createBlockForRPr` (a new
+  overload taking whether the run holds a note's reference, which `docx2xhtml-core.xslt` passes) and `composeRunSpan`
+  (its 17.3.5 overload now takes the same flag, which `HTMLExporterVisitorGenerator` computes) write it. `mergeSpans`
+  merges a `sup` with an adjacent `sup` of the same class and CSS, as it merges spans, and a `sub` likewise.
+- **Harness**: `TextsAdapter` advertises REQ-710.
+- **Tests**: `MarkdownVerticalAlignTest` (6, docx4j-markdown), each Markdown also rendered by commonmark: the probe's
+  C06 and C07; bold, italic and struck text inside the tags (`48,210<sup>**3**</sup>`, rendered
+  `<sup><strong>3</strong></sup>`); runs sharing their tags; a code span inside the tags and a code block without; a
+  document's own `<sup>` escaped; a note's reference raised by its own `w:vertAlign` written `[^1]`.
+  `HtmlVerticalAlignTest` (3, docx4j-core-tests), both writers: a run's own and a character style's alignment as
+  elements with their CSS and class; a run's own baseline over its style's superscript a span; two raised runs alike
+  one element, at the start of a paragraph; a note's reference and its mark spans; the two writers' elements the same.
+  `ExtractionConformanceTest`'s dpp test asserts the phase 3 rows pass (Word's C06 and C07 saves, the four tagged
+  tokens, `48,2103` in plain text, both goldens) and that none pends on REQ-710.
+
+### 13.2 Decisions taken in the phase (docx4j's)
+
+1. **The tags outside the emphasis**: `<sup>**3**</sup>`, not `**<sup>3</sup>**`. CommonMark opens `**` only where it
+   is left-flanking, which after a digit and before `<` (punctuation) it is not, so `48,210**<sup>3</sup>**` would
+   show its asterisks; inside the tags the `**` follows `>` and opens. Strike and italic likewise
+   (`<sub>~~*x*~~</sub>`).
+2. **A code span inside the tags** (`` <sup>`f()`</sup> ``): tags inside it would be its text, which is what §3.2's
+   "no tags inside a code span" guards. A code block (REQ-703's fence) has no tags: its text is literal, so a raised
+   run there is its baseline characters, as in plain text. REQ-710's "MUST be written … as `<sup>`" cannot hold
+   inside a fence; a WD point (§13.4).
+3. **A note's reference is never wrapped.** In the text model it is a reference run, not a text run, and has no
+   alignment (§11.2 item 6). In HTML a run holding `w:footnoteReference`, `w:endnoteReference`, `w:footnoteRef` or
+   `w:endnoteRef` stays a span whatever raises it; its number is the raised link both writers already wrote.
+4. **HTML takes the run's effective alignment**: its own `w:vertAlign`, else, where the run has a character style
+   or its paragraph a style, the resolver's effective run properties, as 17.3.5's toggle fix resolves them. A run
+   with no `w:rPr` (written without a span by both writers) and a run under neither style take only their own. A
+   paragraph style's `w:vertAlign` now raises its runs in the browser, which the paragraph's class did not
+   (`vertical-align` neither applies to a block nor inherits).
+5. **One element for runs alike**: two raised runs whose class and CSS agree are one `sup`, as two such spans are one
+   span. The two writers agree; `HtmlVisitorParityTest` is unchanged.
+6. **Markdown import is unchanged.** It drops inline HTML by default (`HtmlPolicy.DROP`), so a Markdown round trip
+   gives `48,2103` on the baseline, as it did when the export wrote the baseline; under `LITERAL` the tags are text.
+   Reading `<sup>` back as `w:vertAlign` would be a change of its own.
+
+### 13.3 Results
+
+- The dpp suite: 188 assertions passed and 4 pending (phase 4); none pends on REQ-710. All 22 of Word's saves agree
+  (C06 and C07 checked now), and both goldens, cut by hand at phase 0, equal docx4j's output exactly.
+- Phase 0's suite unchanged at 1736 passed, 36 pending.
+- Gate: docx4j-core-tests 2331/0/30 (was 2328), docx4j-markdown 178/0/0 (was 172); `HtmlVisitorParityTest` 7/7, its
+  logged traces the same as phase 2's run.
+
+### 13.4 Hand-offs
+
+- **The portfolio**: the registry note (phase 3 done); two WD points for REQ-710: a raised run in a code block,
+  where the MUST cannot hold (item 2), and the tags outside the emphasis (item 1), for a NOTE if Markdown
+  implementations are to agree byte for byte.
+- **docx4j-core-ts, docx4j-python**: the tags and their nesting, the code span and the code block, the note
+  reference, and the dpp rows that now pass.
+- **docx4j-tika**: its own phase 3 (`<sup>`/`<sub>` in its XHTML) reads `TextRun.getVerticalAlignment()`;
+  `Docx4J.toHTML`'s change does not reach its `XhtmlWriter`, which writes the text model.

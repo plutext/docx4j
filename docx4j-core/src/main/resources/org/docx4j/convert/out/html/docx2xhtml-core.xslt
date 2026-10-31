@@ -310,9 +310,13 @@
 					<xsl:variable name="pStyleVal" select="string( ancestor::w:p[1]/w:pPr/w:pStyle/@w:val )" />  			
 					
 					<xsl:variable name="rPrNode" select="w:rPr" />  	
+					
+					<!-- a note's reference or mark is a reference, not a superscript (WD REQ-710):
+					     it stays a span where a raised run is a sup (17.3.5, CR-069) -->
+					<xsl:variable name="noteReference" select="boolean(w:footnoteReference | w:endnoteReference | w:footnoteRef | w:endnoteRef)" />
 			
 				  	<xsl:copy-of select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.createBlockForRPr( 
-				  		$conversionContext, $pStyleVal, $rPrNode, $childResults)" />
+				  		$conversionContext, $pStyleVal, $rPrNode, $childResults, $noteReference)" />
 				  		
 			  	</xsl:when>
 	  			<xsl:otherwise>

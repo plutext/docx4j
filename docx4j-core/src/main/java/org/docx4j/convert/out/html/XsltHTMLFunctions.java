@@ -51,8 +51,10 @@ import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase;
 import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.BooleanDefaultTrue;
+import org.docx4j.wml.CTVerticalAlignRun;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBorder;
+import org.docx4j.wml.STVerticalAlignRun;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TblBorders;
@@ -905,7 +907,7 @@ public class XsltHTMLFunctions {
 			if (xhtmlBlock.getNodeName().equals("p")
 					&& n!=null
 					&& n.hasChildNodes()
-					&& isSpan(n.getChildNodes().item(0))) {
+					&& isRunElement(n.getChildNodes().item(0))) {
 					// old XSLT won't produce a span for w:r unless there is w:rPr
 				
 				mergeSpans(n.getChildNodes(), document, xhtmlBlock);
@@ -923,7 +925,7 @@ public class XsltHTMLFunctions {
                 if (nodes != null) {
                     for (int i=0; i<nodes.getLength(); i++) {
                     	
-        				if (isSpan(nodes.item(i))
+        				if (isRunElement(nodes.item(i))
         						&& ! ((Node)nodes.item(i)).hasChildNodes() ) {
         					// ignore
         					context.getLog().debug(".. ignoring <span/> ");
@@ -986,9 +988,23 @@ public class XsltHTMLFunctions {
     	return "span".equals(name);
     }
 
+    /** A run's element: a span, or a sup or sub (since 17.3.5, CR-069), each merged with its like. */
+    private static boolean isRunElement(Node n) {
+    	return runElementName(n)!=null;
+    }
+
+    private static String runElementName(Node n) {
+
+    	if (!(n instanceof Element)) return null;
+    	if (n.getNodeType()!=Node.ELEMENT_NODE) return null;
+    	String name = (n.getLocalName()!=null ? n.getLocalName() : n.getNodeName());
+    	return ("span".equals(name) || "sup".equals(name) || "sub".equals(name)) ? name : null;
+    }
+
     
     /**
-     * Merge adjacent spans if @class and @style are the same
+     * Merge adjacent spans if @class and @style are the same; a sup or a sub likewise with its like
+     * (since 17.3.5)
      * @param nodes
      * @param result
      */
@@ -1004,7 +1020,7 @@ public class XsltHTMLFunctions {
     	while (true) {
     		Node item = nodes.item(startIndex);
 
-        	if (isSpan(item)) {
+        	if (isRunElement(item)) {
         		currentEl = (Element)item;
             	break;        		
         	} else {
@@ -1016,12 +1032,13 @@ public class XsltHTMLFunctions {
     	}
     	
     	Element currentSpan = currentEl;
+    	String currentName = runElementName(currentSpan);
     	String currentClass = currentSpan.getAttribute("class");
     	String currentStyle = currentSpan.getAttribute("style");
     		// should work for anything with @class, @style
     	
     	// Can't reuse existing span, since we'll get org.apache.xml.dtm.DTMDOMException
-		Element newSpan = document.createElement("span");	
+		Element newSpan = document.createElement(currentName);	
 		if (currentClass!=null) {
 			newSpan.setAttribute("class", currentClass);
 		}
@@ -1041,11 +1058,11 @@ public class XsltHTMLFunctions {
         	Node item = nodes.item(i);
         	
         	// Handle nodes other than span, eg an img, or a text node
-        	if (!isSpan(item)) {
+        	if (!isRunElement(item)) {
             	XmlUtils.treeCopy( item,  xhtmlBlock );
         		
             	// Get read for next span
-        		newSpan = document.createElement("span");	
+        		newSpan = document.createElement(currentName);	
             	xhtmlBlock.appendChild(newSpan); // might end up with an empty span
         		if (currentClass!=null) {
         			newSpan.setAttribute("class", currentClass);
@@ -1060,21 +1077,23 @@ public class XsltHTMLFunctions {
         	// Handle span
         	if (!thisSpan.hasChildNodes()) continue;
         	
+        	String thisName = runElementName(thisSpan);
         	String thisClass = thisSpan.getAttribute("class");
         	String thisStyle = thisSpan.getAttribute("style");
     		
+        	boolean nameSame = currentName.equals(thisName);
         	boolean classSame = (currentClass==null && thisClass==null)
         			|| (currentClass!=null && currentClass.equals(thisClass));
         	boolean styleSame = (currentStyle==null && thisStyle==null)
         			|| (currentStyle!=null && currentStyle.equals(thisStyle));
         		// TODO handle case where only difference is "white-space:pre-wrap;"
         	
-        	if (classSame && styleSame) {
+        	if (nameSame && classSame && styleSame) {
         		// add to existing
 				XmlUtils.treeCopy( thisSpan.getChildNodes(),  newSpan );
         		
         	} else {
-        		newSpan = document.createElement("span");	
+        		newSpan = document.createElement(thisName);	
         		if (thisClass!=null) {
         			newSpan.setAttribute("class", thisClass);
         		}
@@ -1084,6 +1103,7 @@ public class XsltHTMLFunctions {
             	
             	XmlUtils.treeCopy( thisSpan.getChildNodes(),  newSpan );
             	xhtmlBlock.appendChild(newSpan);
+            	currentName = thisName;
             	currentClass = thisClass;
             	currentStyle = thisStyle;
         	}
@@ -1101,16 +1121,20 @@ public class XsltHTMLFunctions {
      * @since 17.0.4
      */
     public static void composeRunSpan(HTMLConversionContext context, RPr rPr, Element span) {
-    	composeRunSpan(context, null, rPr, span);
+    	composeRunSpan(context, null, rPr, span, false);
     }
 
     /**
      * As {@link #composeRunSpan(HTMLConversionContext, RPr, Element)}, given the run's paragraph style, so that a
-     * toggle property its styles turn off is written off (ECMA-376-1 17.7.3).
+     * toggle property its styles turn off is written off (ECMA-376-1 17.7.3), and whether the run holds a note's
+     * reference or its mark. A run its {@code w:vertAlign} (its own, else its styles') raises or lowers, holding
+     * neither, then has its span replaced in its parent by a {@code sup} or {@code sub} with the same attributes and
+     * children (CR-069).
      *
      * @since 17.3.5
      */
-    public static void composeRunSpan(HTMLConversionContext context, String pStyleVal, RPr rPr, Element span) {
+    public static void composeRunSpan(HTMLConversionContext context, String pStyleVal, RPr rPr, Element span,
+    		boolean noteReference) {
 
 		Style defaultRunStyle = 
 				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false) != null ?
@@ -1150,9 +1174,51 @@ public class XsltHTMLFunctions {
 				mergeSpans(tmp.getChildNodes(), span.getOwnerDocument(), span);
 	    	}
 
+	    	String name = runElementName(context, pStyleVal, rPr, noteReference);
+	    	if (!"span".equals(name) && span.getParentNode()!=null) {
+	    		Element element = span.getOwnerDocument().createElement(name);
+	    		for (int i=0; i<span.getAttributes().getLength(); i++) {
+	    			Node a = span.getAttributes().item(i);
+	    			element.setAttribute(a.getNodeName(), a.getNodeValue());
+	    		}
+	    		while (span.getFirstChild()!=null) {
+	    			element.appendChild(span.getFirstChild());
+	    		}
+	    		span.getParentNode().replaceChild(element, span);
+	    	}
+
 		} catch (Exception e) {
 			context.getLog().error(e.getMessage(), e);
 		}
+    }
+
+    /**
+     * The element a run is written in: {@code sup} or {@code sub} where its {@code w:vertAlign}, its own else its
+     * styles', raises or lowers it, as the text model's flag and Markdown's tags have it (WD REQ-710); {@code span}
+     * otherwise (CR-069 D4). A run holding a note's reference or its mark stays a span: it is a reference, not a
+     * superscript (REQ-710). The element keeps the run's class and CSS, {@code vertical-align} and
+     * {@code font-size: smaller} among it, which are the browser's own for the two elements, so the page is drawn
+     * as before; a text-scraping reader of the HTML sees the mark, as a Markdown one does. Before 17.3.5 a span.
+     *
+     * @since 17.3.5
+     */
+    static String runElementName(HTMLConversionContext context, String pStyleVal, RPr rPr, boolean noteReference) {
+
+    	if (rPr==null || noteReference) return "span";
+    	CTVerticalAlignRun vertAlign = rPr.getVertAlign();
+    	boolean styled = (rPr.getRStyle() != null && rPr.getRStyle().getVal() != null) || (pStyleVal != null && pStyleVal.length() > 0);
+    	if (vertAlign==null && styled) {
+    		try {
+    			RPr effective = context.getPropertyResolver().getEffectiveRPr(rPr, pPrForStyle(pStyleVal));
+    			if (effective != null) vertAlign = effective.getVertAlign();
+    		} catch (Exception e) {
+    			context.getLog().debug("No effective run properties for the vertical alignment: " + e.getMessage());
+    		}
+    	}
+    	if (vertAlign==null) return "span";
+    	if (vertAlign.getVal()==STVerticalAlignRun.SUPERSCRIPT) return "sup";
+    	if (vertAlign.getVal()==STVerticalAlignRun.SUBSCRIPT) return "sub";
+    	return "span";
     }
 
 	/** A pPr carrying just this paragraph style, so that a run's effective properties
@@ -1220,6 +1286,22 @@ public class XsltHTMLFunctions {
     		String pStyleVal,
     		NodeIterator rPrNodeIt,
     		NodeIterator childResults ) {
+    	return createBlockForRPr(context, pStyleVal, rPrNodeIt, childResults, false);
+    }
+
+    /**
+     * As {@link #createBlockForRPr(HTMLConversionContext, String, NodeIterator, NodeIterator)}, given whether the
+     * run holds a note's reference or its mark: a run its {@code w:vertAlign} (its own, else its styles') raises or
+     * lowers is a {@code sup} or {@code sub} where it holds neither (CR-069).
+     *
+     * @since 17.3.5
+     */
+    public static DocumentFragment createBlockForRPr(
+    		HTMLConversionContext context,
+    		String pStyleVal,
+    		NodeIterator rPrNodeIt,
+    		NodeIterator childResults,
+    		boolean noteReference ) {
 
 		Style defaultRunStyle = 
 				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false) != null ?
@@ -1283,7 +1365,7 @@ public class XsltHTMLFunctions {
             // Create a DOM builder and parse the fragment
 			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 				
-			Element span = document.createElement("span");			
+			Element span = document.createElement(runElementName(context, pStyleVal, rPr, noteReference));
 			document.appendChild(span);
 			
     		// Avoid unnecessary nested span for common case of single child

@@ -297,7 +297,15 @@ public class ExtractionConformanceTest {
             assertTrue(results.contains("bisect/C02.docx\t2\twarning:paragraph.drop_cap_joined:/word/document.xml\t" + view + "\tdefault\tPASS"));
         }
         assertFalse(results.contains("REQ-521"));
-        assertTrue(results.contains("\tH<sub>2</sub>O\taccepted\tmarkdown\tPENDING\tCR-069 phase 3; REQ-710"));
+        // phase 3: the tags in Markdown, the baseline in plain text, against Word's saves and both goldens
+        assertTrue(results.contains("bisect/C06.docx\t6\tword save:bisect/C06.txt" + word + "PASS"));
+        assertTrue(results.contains("bisect/C07.docx\t7\tword save:bisect/C07.txt" + word + "PASS"));
+        for (String token : List.of("H<sub>2</sub>O", "x<sup>2</sup>", "1<sup>st</sup>", "48,210<sup>3</sup>"))
+            assertTrue(token, results.contains("dpp-forks-word365.docx\t" + (token.startsWith("48") ? 7 : 6) + "\t" + token + "\taccepted\tmarkdown\tPASS"));
+        assertTrue(results.contains("dpp-forks-word365.docx\t7\t48,2103\taccepted\tdefault\tPASS"));
+        assertTrue(results.contains("dpp-forks-word365.docx\t0\tgolden:dpp-forks-word365.accepted.txt\taccepted\tdefault\tPASS"));
+        assertTrue(results.contains("dpp-forks-word365.docx\t0\tgolden:dpp-forks-word365.md\taccepted\tdefault\tPASS"));
+        assertFalse(results.contains("REQ-710"));
         assertTrue(results.contains("\tinspect:text.formatting_join:48,2103\taccepted\tdefault\tPENDING\tCR-069 phase 4; text.formatting_join"));
         for (String line : results.split("\n"))
             if (line.contains("\tPENDING\t")) assertTrue(line, line.contains("\tPENDING\tCR-069 phase ") || line.contains("html reader"));

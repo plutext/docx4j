@@ -68,6 +68,8 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 			"REQ-607",
 			// a drop cap joined to its word, paragraph.drop_cap_joined, drop_caps (CR-069 phase 2)
 			"REQ-521",
+			// <sup> and <sub> in Markdown, the baseline in plain text, the block model's flag (CR-069 phase 3)
+			"REQ-710",
 			// the chart's description, which case 34's axis title needs
 			"CR-047",
 			// the inspector (CR-050 phase 1; REQ-903's counts in every result, phase 2), and the suite's check of it

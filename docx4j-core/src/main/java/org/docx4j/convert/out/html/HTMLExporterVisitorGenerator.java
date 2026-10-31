@@ -437,9 +437,18 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 					&& ((org.docx4j.wml.P) parent).getPPr().getPStyle() != null) {
 				pStyleVal = ((org.docx4j.wml.P) parent).getPPr().getPStyle().getVal();
 			}
-			XsltHTMLFunctions.composeRunSpan(conversionContext, pStyleVal, r.getRPr(), span);
+			XsltHTMLFunctions.composeRunSpan(conversionContext, pStyleVal, r.getRPr(), span, holdsNoteReference(r));
 		}
 		currentSpan = null;
+	}
+
+	/** Whether a run holds a note's reference or its mark, which stays a span whatever raises it (WD REQ-710). */
+	private static boolean holdsNoteReference(R r) {
+		for (Object o : r.getContent()) {
+			Object u = XmlUtils.unwrap(o);
+			if (u instanceof org.docx4j.wml.CTFtnEdnRef || u instanceof R.FootnoteRef || u instanceof R.EndnoteRef) return true;
+		}
+		return false;
 	}
 
 	/** the number of the note whose content is being rendered (for w:footnoteRef /

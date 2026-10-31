@@ -65,7 +65,8 @@ import org.slf4j.LoggerFactory;
  * its fields' results, its bound values, charts and equations. This class decides only how a block
  * is written (WD REQ-703): a heading from its outline level, not its style's name; a list from its
  * numbering; bold, italic, struck-through and code text from what a run adds to its paragraph's
- * style (so a Heading's inherent bold doesn't become **markers**); links from a {@code w:hyperlink}
+ * style (so a Heading's inherent bold doesn't become **markers**); since 17.3.5 (CR-069) raised and
+ * lowered text in {@code <sup>} and {@code <sub>}; links from a {@code w:hyperlink}
  * or a HYPERLINK field; images with the describer's text; notes as {@code [^n]}; in the
  * {@code markup} view, CriticMarkup ({@code {++ ++}}, {@code {-- --}}, {@code {>> <<}}).  A table of
  * contents is the text model's to leave out ({@code toc: false}, the default), as it has been
@@ -859,16 +860,21 @@ class WmlToMarkdown {
 		boolean bold;
 		boolean italic;
 		boolean strike;
+		TextRun.VerticalAlignment vertical = TextRun.VerticalAlignment.BASELINE;
 		InlineSink(Node parent) {
 			this.parent = parent;
 		}
 		void text(String s, boolean b, boolean i, boolean st) {
-			if ((b != bold || i != italic || st != strike) && buf.length() > 0) {
+			text(s, b, i, st, TextRun.VerticalAlignment.BASELINE);
+		}
+		void text(String s, boolean b, boolean i, boolean st, TextRun.VerticalAlignment v) {
+			if ((b != bold || i != italic || st != strike || v != vertical) && buf.length() > 0) {
 				flush();
 			}
 			bold = b;
 			italic = i;
 			strike = st;
+			vertical = v;
 			buf.append(s);
 		}
 		void node(Node n) {
@@ -897,8 +903,26 @@ class WmlToMarkdown {
 				st.appendChild(n);
 				n = st;
 			}
+			// the tags outside the emphasis: 48,210<sup>**3**</sup>, where a ** after the
+			// digit, before the tag, would not open
+			String tag = tag(vertical);
+			if (tag != null) parent.appendChild(raw("<" + tag + ">"));
 			parent.appendChild(n);
+			if (tag != null) parent.appendChild(raw("</" + tag + ">"));
 			buf.setLength(0);
+		}
+	}
+
+	/**
+	 * The inline HTML a raised or lowered run is written in, {@code sup} or {@code sub}, never a Unicode
+	 * superscript or subscript character (WD REQ-710; CR-069); null on the baseline. The tags are the
+	 * writer's: document text can't form them, the renderer escaping its {@code <}.
+	 */
+	private static String tag(TextRun.VerticalAlignment vertical) {
+		switch (vertical == null ? TextRun.VerticalAlignment.BASELINE : vertical) {
+		case SUPERSCRIPT: return "sup";
+		case SUBSCRIPT: return "sub";
+		default: return null;
 		}
 	}
 
@@ -1002,9 +1026,13 @@ class WmlToMarkdown {
 			if (l > 0) sink.node(new HardLineBreak());
 			if (lines[l].isEmpty()) continue;
 			if (run.isMonospace()) {
+				// the tags around the code span, not in it, where they would be its text
+				String tag = tag(run.getVerticalAlignment());
+				if (tag != null) sink.node(raw("<" + tag + ">"));
 				sink.node(new Code(lines[l]));
+				if (tag != null) sink.node(raw("</" + tag + ">"));
 			} else {
-				sink.text(lines[l], bold, run.isItalic(), run.isStrike());
+				sink.text(lines[l], bold, run.isItalic(), run.isStrike(), run.getVerticalAlignment());
 			}
 		}
 	}
