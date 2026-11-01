@@ -72,7 +72,8 @@ form); case 84 in an OLE2 storage as Acrobat embeds one: class `{B801CA65-A1FC-1
 as `CONTENTS`, with ProgID `AcroExch.Document.DC`. Case 85's PNG is its token drawn by Java2D black
 on white, 64 px, anti-aliasing off, in Java's logical SansSerif (Noto Sans on the build machine,
 so a rebuild elsewhere draws another face); Tesseract 5.5.3 reads it exactly. The picture has no
-`descr` or `title`, and the token is in no part, attribute or property. Word check: pending.
+`descr` or `title`, and the token is in no part, attribute or property. Word 365 opens it without repair
+(Jason's check, 2 November 2026; `../phase0/evidence/word-open-results.md`).
 
 `inspect_oracle.py` is the reference generator of `../phase0/expected-inspection.tsv` and
 `expected-inspection-status.tsv`; `../INSPECTION.md` is the contract it follows and says how the

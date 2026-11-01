@@ -210,3 +210,21 @@ did); 82 `w:pgNumType w:start="-1"`.
 
 What the inspector took from this: nothing to change. The eight cases open clean on Word 365, show the
 readings the `value.out_of_range` summaries give (`word_reads=`), and Word writes those readings back.
+
+## extraction-probe-opaque.docx: cases 83–85 (2 November 2026)
+
+`extraction-probe-opaque.docx` (sha256 8f29178c…, the committed fixture), Jason's check in Word 365 on the VM, no
+repair or prompt reported. Word's save, PDF and plain-text save are on the share, not here
+(`__tmp/xprobe/extraction-probe-opaque-word365.docx` sha256 9e6ff07e…, `.pdf` 9523b365…, `.txt` 7b86e4e8…), read
+the same day:
+
+- Word shows case 83's and case 84's previews (64 x 32 pt) and case 85's picture, `PIX85_DRAWN_TEXT` in its pixels.
+- None of the three tokens is in Word's text save or in its PDF's text: case 85's text is drawn as an image, and
+  the two objects show only their previews. That is the fixture's expected "–" in every view.
+- Word's save keeps both PNGs byte for byte and the picture's `wp:docPr` as it was (`name="Picture 1"`, no `descr`:
+  no generated alt text). It renames the parts (`oleObject1.bin`, `oleObject2.bin`, `image1.png`, `image2.png`) and
+  rewrites both OLE storages with the same streams, sizes, class and `CompObj` content (case 83's `\1Ole10Native`
+  holding probe.pdf; case 84's `\1CompObj` and `CONTENTS`), so both PDFs' page text is still in the package.
+- Word writes case 84's ProgID as `Acrobat.Document.DC` in place of the fixture's `AcroExch.Document.DC`: the ProgID
+  the VM registers for the storage's class `{B801CA65-A1FC-11D0-85AD-444553540000}`, presumably, since the storage's
+  own `CompObj` still names `AcroExch.Document.DC`.
