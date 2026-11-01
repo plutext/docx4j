@@ -1297,7 +1297,9 @@ change to the release before docx4j is pushed, as .5 to .8 did. 2.11-docx4j.9 ne
 batik jar at 1.20 and xmlgraphics-commons 2.12, against b297 (the same on .8, rendered the same day): 0 movers on real,
 real2, real3, real-c2 and the probes; scoreboards and classes.txt identical; events equal per document. The renderer
 line reads 2.12-docx4j.1-SNAPSHOT with 27 hooks, the same list as .8's (`~/fidelity-cr030/gate-b297-b298.sh`;
-Enterprise register 3c6dc9b).
+Enterprise register 3c6dc9b). Then b299 = this commit's docx4j (27bf221d4) on r50, against b293 (the same docx4j
+layout code on .7): one mover, 5361 +4, the day of the month it was rendered on; events equal per document.
+Baseline on the 2.12 line: b299 (`~/fidelity-cr030/cp-b299-head-r50.txt`; register 7684ccb).
 
 **Reactor on the 2.12 line:** the fork built from bb92342d3 into a scratch local repository (~/.m2 as its read-only
 tail), with classes identical to r50's. core-tests 2340/0 (30 skipped), export-fo 247/0, export-fo-tests 865/0
