@@ -47,6 +47,17 @@ public class DateNormaliseTest {
 		assertEquals(D + ".", PdfLayout.Line.normaliseDates("09.09.26."));
 	}
 
+	/** en-US DATE "MM/dd/yy": the day may be over 12 - the footer read differently on the 13th
+	 *  of a month from the 12th until it could (real 5361). */
+	@Test
+	public void monthFirstShortYearDates() {
+		assertEquals("Printed " + D + " " + T, PdfLayout.Line.normaliseDates("Printed 10/30/26 05:21 PM"));
+		assertEquals("Printed " + D + " " + T, PdfLayout.Line.normaliseDates("Printed 09/09/26 10:31 PM"));
+		assertEquals(D, PdfLayout.Line.normaliseDates("12/31/26"));
+		assertEquals(D, PdfLayout.Line.normaliseDates("12-31-26"));
+		assertEquals(D, PdfLayout.Line.normaliseDates("31/12/26"));
+	}
+
 	@Test
 	public void times() {
 		assertEquals(T, PdfLayout.Line.normaliseDates("14:05"));
@@ -69,7 +80,10 @@ public class DateNormaliseTest {
 		assertEquals("1.10.11.12", PdfLayout.Line.normaliseDates("1.10.11.12"));
 		assertEquals("10.11.12.3", PdfLayout.Line.normaliseDates("10.11.12.3"));
 		assertEquals("32.01.26", PdfLayout.Line.normaliseDates("32.01.26"));
-		assertEquals("05.13.26", PdfLayout.Line.normaliseDates("05.13.26"));
+		assertEquals("05.13.26", PdfLayout.Line.normaliseDates("05.13.26")); // month first is / or - only
+		assertEquals("13/13/26", PdfLayout.Line.normaliseDates("13/13/26"));
+		assertEquals("10/32/26", PdfLayout.Line.normaliseDates("10/32/26"));
+		assertEquals("10/30-26", PdfLayout.Line.normaliseDates("10/30-26"));
 		assertEquals("05.10-26", PdfLayout.Line.normaliseDates("05.10-26"));
 	}
 

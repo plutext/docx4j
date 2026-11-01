@@ -245,12 +245,16 @@ public final class PdfLayout implements java.io.Serializable {
 		private static final java.util.regex.Pattern NUMERIC_DATE = java.util.regex.Pattern
 				.compile("\\b(?:\\d{4}[./-]\\d{1,2}[./-]\\d{1,2}|\\d{1,2}[./-]\\d{1,2}[./-]\\d{4})\\b");
 
-		/** {@code 05.10.26}: a two-digit year, so two-digit day and month, both in range, with one
-		 *  separator, and not inside a longer number ({@code 1.10.11.12}).  A section number
-		 *  {@code 10.11.12} reads as a date too, on both sides alike.  Word's footer DATE
-		 *  {@code \@ "dd.MM.yy"} refreshed at export (ledger8). */
+		/** {@code 05.10.26}, {@code 10/30/26}: a two-digit year, so two-digit day and month, both in
+		 *  range, with one separator, and not inside a longer number ({@code 1.10.11.12}).  Day
+		 *  first, as Word's footer DATE {@code \@ "dd.MM.yy"} refreshed at export (ledger8), or month
+		 *  first with a slash or a hyphen, as en-US {@code \@ "MM/dd/yy"}: without that, a run made
+		 *  after the 12th of a month kept such a date as text and the line paired with Word's only
+		 *  on the 1st to the 12th (real 5361, 2026-11-01).  A section number {@code 10.11.12} reads
+		 *  as a date too, on both sides alike. */
 		private static final java.util.regex.Pattern SHORT_YEAR_DATE = java.util.regex.Pattern
-				.compile("(?<![\\d./-])(?:0[1-9]|[12]\\d|3[01])([./-])(?:0[1-9]|1[0-2])\\1\\d{2}(?!\\d|[./-]\\d)");
+				.compile("(?<![\\d./-])(?:(?:0[1-9]|[12]\\d|3[01])([./-])(?:0[1-9]|1[0-2])\\1"
+						+ "|(?:0[1-9]|1[0-2])([/-])(?:0[1-9]|[12]\\d|3[01])\\2)\\d{2}(?!\\d|[./-]\\d)");
 
 		/** {@code 09-September-2026}, {@code 20-Mar-2017}: Word's SAVEDATE {@code d-MMMM-yyyy}
 		 *  refreshed at export (ledger8). */

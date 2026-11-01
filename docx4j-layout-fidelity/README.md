@@ -1091,8 +1091,12 @@ well as to docx4j's; four knobs are worth knowing about.
   `5 de septiembre de 2026`, `5 сентября 2026`, `September 5, 2026` - therefore
   collapses to one placeholder token, and a clock time (`14:05`, `14:05:32`,
   `2:05 PM`) to another. Month names cover the locales the corpora are written
-  in; a four-digit year is required, so a section number (`1.2.34`) or a money
-  amount is not a date. Both sides go through it, so nothing is hidden that is
+  in; a year is four digits, or two where day and month are two digits each and
+  in range - day first (`05.10.26`, Word's `dd.MM.yy`) or, with `/` or `-`, month
+  first (`10/30/26`, en-US `MM/dd/yy`) - so a section number (`1.2.34`) or a money
+  amount is not a date. (Until 2026-11-01 the two-digit year was day first only,
+  and a document with an en-US `MM/dd/yy` footer scored 4 lines lower on a run
+  made after the 12th of a month.) Both sides go through it, so nothing is hidden that is
   not equally hidden on Word's side, and the geometry of a paired line is still
   compared in full — a date we lay out in the wrong place is still counted
   against us.
