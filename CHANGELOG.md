@@ -34,6 +34,10 @@ Changes in Version 17.3.6
   padding came through as a NUL, which made the FO unreadable. That text now decodes with Windows' code pages
   (① was U+FFFD). An FO that is not well-formed XML now fails with its parse error.
 
+**Java 25.**
+- docx4j sets its own XML element-depth limit, 256 (`docx4j.xml.maxElementDepth`, 0 for none), on the parsers it
+  creates: Java 25's default of 100 left a document 32 tables deep unreadable, and failed PDF output at 25.
+
 **Metafiles.**
 - The WMF/EMF code (repackaged Apache POI 5.5.1) takes POI's fixes since June: bounds and header checks, a
   zero-size bitmap draws nothing, 15 bare asserts now warnings or errors (the hwmf package README, item 7).

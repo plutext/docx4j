@@ -751,7 +751,7 @@ public class TocGenerator {
             
             InputStream is = new ByteArrayInputStream(os.toByteArray());
             SAXParserFactory factory = SAXParserFactory.newInstance();
-            SAXParser saxParser = factory.newSAXParser();
+            SAXParser saxParser = org.docx4j.utils.XmlParserLimits.apply(factory.newSAXParser());
             TocPageNumbersHandler tpnh = new TocPageNumbersHandler();
 			saxParser.parse(is, tpnh);
 	        return tpnh.getPageNumbers();

@@ -112,7 +112,7 @@ public class DocPropsCorePart extends JaxbXmlPart<CoreProperties> {
 		// TODO: delete this method?
     	
 		try {
-	        XMLInputFactory xif = XMLInputFactory.newInstance();
+	        XMLInputFactory xif = org.docx4j.utils.XmlParserLimits.apply(XMLInputFactory.newInstance());
 	        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
 	        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
 	        XMLStreamReader xsr = xif.createXMLStreamReader(is);												

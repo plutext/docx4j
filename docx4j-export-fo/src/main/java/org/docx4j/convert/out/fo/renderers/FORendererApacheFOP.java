@@ -29,7 +29,6 @@ import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
@@ -60,6 +59,7 @@ import org.docx4j.fop.fonts.FontPaddingResourceResolver;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.images.XmlGraphicsImageStreams;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.utils.XmlParserLimits;
 import org.docx4j.utils.XmlSerializerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,7 +123,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		
 		
 		String apacheFopMime = setupApacheFopMime(settings);
-		StreamSource foDocumentSrc = new StreamSource(new StringReader(foDocument));
+		Source foDocumentSrc = foSource(foDocument);
 		FopPlaceholderLookup placeholderLookup = null;
 		FormattingResults formattingResults = null;
 		FopFactory fopFactory = null;
@@ -152,7 +152,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			placeholderLookup = new FopPlaceholderLookup(pageNumberInformation);
 			formattingResults = calcResults(fopFactory, apacheFopMime, foDocumentSrc, placeholderLookup);
 			placeholderLookup.setResults(formattingResults);
-			foDocumentSrc = new StreamSource(new StringReader(foDocument));
+			foDocumentSrc = foSource(foDocument);
 			
 			new EventFinished(startEvent).publish();
 			
@@ -171,7 +171,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			String modifiedFO = XmlUtils.w3CDomNodeToString(docResult); 
 			log.debug("After moving! \n" + modifiedFO);	
 			
-			foDocumentSrc = new StreamSource(new StringReader(modifiedFO));
+			foDocumentSrc = foSource(modifiedFO);
 			
 		}
 
@@ -187,6 +187,19 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		new EventFinished(startEvent).publish();
 	}
 
+
+	/**
+	 * The FO as a Source parsed with docx4j's element-depth limit: as a StreamSource it was parsed
+	 * with the JDK's, which on Java 25 (100) an FO 25 tables deep exceeds.
+	 * @since 17.3.6
+	 */
+	private static Source foSource(String fo) throws Docx4JException {
+		try {
+			return XmlParserLimits.source(new StringReader(fo));
+		} catch (javax.xml.parsers.ParserConfigurationException | org.xml.sax.SAXException e) {
+			throw new Docx4JException("No SAX parser for the FO: " + e.getMessage(), e);
+		}
+	}
 
 	private String setupApacheFopMime(FOSettings settings) {
 	String ret = settings.getApacheFopMime();

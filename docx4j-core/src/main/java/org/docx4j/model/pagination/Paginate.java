@@ -520,7 +520,7 @@ public final class Paginate {
 
 		try {
 			SAXParserFactory spf = SAXParserFactory.newInstance();
-			SAXParser saxParser = spf.newSAXParser();
+			SAXParser saxParser = org.docx4j.utils.XmlParserLimits.apply(spf.newSAXParser());
 			PaginationAreaTreeHandler handler = new PaginationAreaTreeHandler();
 			saxParser.parse(new ByteArrayInputStream(areaTree), handler);
 			return handler.getMap();

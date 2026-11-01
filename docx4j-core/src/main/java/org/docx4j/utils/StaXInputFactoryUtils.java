@@ -83,6 +83,7 @@ public class StaXInputFactoryUtils {
         //defense in depth
         factory.setXMLResolver(IGNORING_STAX_ENTITY_RESOLVER); // @since 11.5.6
         trySetStaxSecurityManager(factory);  // @since 11.5.6
+        XmlParserLimits.apply(factory);  // docx4j's element-depth limit, not Java 25's 100 @since 17.3.6
         return factory;
     }
     

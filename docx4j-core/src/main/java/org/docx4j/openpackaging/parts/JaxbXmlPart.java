@@ -395,7 +395,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 				} 
 				
 				// Guard against XXE
-		        XMLInputFactory xif = XMLInputFactory.newInstance();
+		        XMLInputFactory xif = org.docx4j.utils.XmlParserLimits.apply(XMLInputFactory.newInstance());
 		        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
 		        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
 	        	XMLStreamReader xsr = xif.createXMLStreamReader(is);
@@ -630,7 +630,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			throws FactoryConfigurationError, Docx4JException, XMLStreamException {
 		
 		XMLInputFactory xmlif = null;
-        xmlif = XMLInputFactory.newInstance();
+        xmlif = org.docx4j.utils.XmlParserLimits.apply(XMLInputFactory.newInstance());
         xmlif.setProperty(XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
         xmlif.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
         xmlif.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.TRUE);

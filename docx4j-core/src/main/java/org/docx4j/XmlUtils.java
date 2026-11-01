@@ -136,7 +136,25 @@ public class XmlUtils {
 	 */
 	@Deprecated
 	public static DocumentBuilderFactory getDocumentBuilderFactory() {
+		synchronized (documentBuilderFactory) {
+			applyMaxElementDepth();
+		}
 		return documentBuilderFactory;
+	}
+
+	/** The element-depth limit documentBuilderFactory was last given (guarded by it) @since 17.3.6 */
+	private static Integer documentBuilderDepth;
+
+	/**
+	 * docx4j's element-depth limit on documentBuilderFactory as docx4j.properties has it now, which a
+	 * caller may change at run time (the StAX factories read it each time); call holding the factory's lock.
+	 */
+	private static void applyMaxElementDepth() {
+		Integer depth = org.docx4j.utils.XmlParserLimits.maxElementDepth();
+		if (depth != null && !depth.equals(documentBuilderDepth)) {
+			org.docx4j.utils.XmlParserLimits.apply(documentBuilderFactory);
+			documentBuilderDepth = depth;
+		}
 	}
 
 	/**
@@ -147,6 +165,7 @@ public class XmlUtils {
 	 */
 	public static DocumentBuilder getNewDocumentBuilder() {
 		synchronized (documentBuilderFactory) {
+			applyMaxElementDepth(); // @since 17.3.6
 			// see https://community.oracle.com/thread/1626108 for inconclusive discussion about whether a pool would be worthwhile 
 			try {
 				return documentBuilderFactory.newDocumentBuilder();
@@ -328,6 +347,9 @@ public class XmlUtils {
 //			//  maxOccurLimit = 5000		  - wouldn't be a problem, since doesn't apply where maxOccurs=unbounded
 		
 		} catch (ParserConfigurationException e) { log.error(e.getMessage(), e); }
+
+		// docx4j's element-depth limit, not Java 25's 100; after secure processing, which resets the limits @since 17.3.6
+		applyMaxElementDepth();
 		
 		// see also https://svn.apache.org/repos/asf/shindig/trunk/java/common/src/main/java/org/apache/shindig/common/xml/XmlUtil.java
 		// for how Shindig does it
@@ -476,7 +498,7 @@ public class XmlUtils {
 	public static Object unmarshal(InputStream is, JAXBContext jc) throws JAXBException {
 		
 		// Guard against XXE
-        XMLInputFactory xif = XMLInputFactory.newInstance();
+        XMLInputFactory xif = org.docx4j.utils.XmlParserLimits.apply(XMLInputFactory.newInstance());
         xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
         xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
         XMLStreamReader xsr = null;

@@ -163,6 +163,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 	    dbFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);	
 	    dbFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 	    dbFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+	    org.docx4j.utils.XmlParserLimits.apply(dbFactory); // @since 17.3.6
 	    
 	    DocumentBuilder db = dbFactory.newDocumentBuilder();
 	    // that feature is enough; alternatively, the below also works.  Use both for good measure.
