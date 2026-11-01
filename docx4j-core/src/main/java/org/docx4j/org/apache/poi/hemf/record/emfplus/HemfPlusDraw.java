@@ -714,7 +714,7 @@ public final class HemfPlusDraw {
             // If the CMAP_LOOKUP flag in the optionsFlags field is set, each value in this array specifies a
             // Unicode character. Otherwise, each value specifies an index to a character glyph in the EmfPlusFont
             // object specified by the ObjectId value in Flags field.
-            byte[] glyphBuf = IOUtils.toByteArray(leis, glyphCount*2, MAX_OBJECT_SIZE);
+            byte[] glyphBuf = IOUtils.toByteArray(leis, glyphCount*2L, MAX_OBJECT_SIZE);
             glyphs = StringUtil.getFromUnicodeLE(glyphBuf);
 
             size += glyphBuf.length;

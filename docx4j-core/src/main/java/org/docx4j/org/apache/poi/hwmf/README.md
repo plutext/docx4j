@@ -121,12 +121,59 @@ The remaining differences are cosmetic (brace style, `@author` tags) plus:
 
    These become no-ops on the next sync, once the baseline is a POI release that contains them.
 
+7. **Second round of back-ports (November 2026).** Against POI trunk `521b26fad9`
+   (2026-11-01), after POI 6.0.0 (2026-10-19), which needs Java 17 and so cannot be the
+   baseline. Taken: every upstream change since June to these packages that fixes a named
+   defect, with its test (docx4j-core-tests `org.docx4j.metafiles`, and
+   `org.docx4j.org.apache.poi.hemf.record.emf.HemfRecordBoundsTest` for the package-private
+   ones):
+
+   | POI commit | date | what |
+   |---|---|---|
+   | `e54ba888e2`, `ab196a7441`, `23369586da`, `1d9425abb3`, `03d1ec1670`, `f6f957bb5d` | 2026-01-18 .. 11-01 | a bare `assert` becomes a logged warning (`HwmfEscape`, `HemfPlusHeader`, `HemfFill`, `HwmfHeader`, `HemfPlusMisc`); `23369586da` also drops two overrides identical to their parents' |
+   | `d4178c1d5c`, `5fb3244453` | 2026-09-12, 10-22 | a bare `assert` becomes an exception (`HemfFill.readBitmap`, `HemfMisc.EmfEof`) |
+   | `bc02ef0703`, `3ebc5e5d97` | 2026-02-14, 10-11 | `HwmfMisc`: an unknown brush style or colour usage is an `IllegalArgumentException`, not an NPE later |
+   | `1a91f5cdfc` | 2026-04-20 | `HwmfPlaceableHeader`: `unitsPerInch` read unsigned, and 0 rejected (it scaled without bound) |
+   | `e5d0cad1d5`, `69f8eb6fb8` | 2026-06-01, 06-04 | `EmfPlusDrawDriverString`'s glyph byte length as a long; `EmfExtCreatePen`'s style entries bounded |
+   | `ab28e7eaec`, `45baf19dcc` | 2026-06-03, 09-22 | `HwmfBitmapDib`: the image size bounded before it is narrowed to an int |
+   | `dfa53082b3` | 2026-07-09 | `BitmapImageRenderer`: an image, crop or anchor of size 0 draws nothing (a crop to 0 put an infinite scale into the transform, which Batik writes as invalid SVG) |
+   | `373fd4a486` | 2026-09-20 | `HwmfHeader`: an invalid metafile type is an `IOException`, not an AIOOBE (POI bug 69924) |
+   | `941f09ecce` | 2026-09-22 | unsigned 32-bit counts checked while still longs (`HemfComment`, `HemfDraw`) |
+   | `e9e9612a1f` | 2026-02-21 | `HemfPicture.getHeader()`: a first record that is not the header is a `RecordFormatException`, not a `ClassCastException` |
+   | `640ae9d3ac`, `440834229f`, `aa7dc402b2` | 2026-10-16 | `HemfFill.readBitmap`: the bitmap must end within its record, its size must fit an int, the buffer presize is capped; `HemfEmbeddedIterator` presizes at most 4 MiB |
+
+   Departures from upstream, each marked `docx4j:` in the code:
+   - `5fb3244453`'s third check, an EOF record whose size disagrees with its fields, **logs**
+     rather than throws: the record's remaining bytes are skipped either way, and since
+     `PoiMetafileRenderer` parses every record before drawing, an exception in the last record
+     would lose a picture that otherwise draws whole.
+   - Where upstream calls `HemfPicture.getMaxRecordLength()` or `HemfPicture.safelyAllocateCheck`
+     (both from `b7f1f55a47`, not taken), this copy uses `HwmfPicture.getMaxRecordLength()` and
+     `IOUtils.safelyAllocateCheck(n, HwmfPicture.getMaxRecordLength())`, as in round one.
+
+   Not taken:
+   - `140db93794` (`HemfComment`'s limit from 1 MB to 100 MB): the 1 MB limit came with
+     `b7f1f55a47`, so this copy never had it; `HemfRecordBoundsTest.embeddedWmfOverOneMegabyte`
+     pins the 100 MB.
+   - `372388b7ed` (`BitmapImageRenderer.setAlpha` treating 0 as transparent): no docx4j path
+     calls `setAlpha`. Taken as it stands it also makes `HwmfImageRenderer.getImage()` and
+     `HemfImageRenderer.getImage()` return a transparent image, since their `alpha` defaults to 0.
+   - The integer-hardening series (`b7f72c8f32` `MathUtil`, `cca6d74ba0`, `702aca1a9f`,
+     `9727f3eade`, `720b6321d3`, `2344a81268`, `d0eb055f99`): silent narrowing becomes an
+     exception with no named defect, and one exception aborts a WMF (below), so it could blank
+     pictures that draw today.
+   - The Java 17 refactors (`337256b155`, `2ed376731f`, `7d818ee3f9`, `1539088d51`,
+     `7bff84157f`, `46b25f6063`, `789cc69ec6`, `c192e8c54d`, `413719df29`): no behaviour change,
+     and switch expressions do not compile at release 11.
+   - `24fa97f624` (public mutable statics made private): API tidying only.
+
 No other functional changes were made: no records were implemented.
 
-**How much this copy differs from upstream:** 12 of the 68 hwmf/hemf files differ from
-5.5.1 beyond the package rename, and every difference is one of the six categories above.
-Of the copied support classes, only `common/usermodel/fonts/FontCharset` and
-`sl/draw/BitmapImageRenderer` differ (the logging swap). To check this yourself:
+**How much this copy differs from upstream:** 12 of the 68 hwmf/hemf files differed from
+5.5.1 beyond the package rename after round one; round two (item 7) touched 14 more, and every
+difference is one of the seven categories above. Of the copied support classes, only
+`common/usermodel/fonts/FontCharset` and `sl/draw/BitmapImageRenderer` differ (the logging swap,
+and in `BitmapImageRenderer` `dfa53082b3`). To check this yourself:
 
 ```bash
 # un-rename a copied file and strip the 6-line Plutext notice, then diff
@@ -140,15 +187,15 @@ sed 's/org\.docx4j\.org\.apache\.poi/org.apache.poi/g' <file> | tail -n +7 \
   throwing, but nothing reaches the canvas. An upstream rendering gap; pinned in
   `MetafileTestFiles.RENDERS_BLANK`.
 - `VHZ2NYFUYUUJNGLABL26ORTQZA76FJEW.emf`: its first parsed record is an `EmfPolyline`, so
-  `HemfPicture.getHeader()` — which casts `records.get(0)` to `HemfHeader` — throws, and with
-  it `getBounds()`/`getSize()`. Upstream has the same behaviour (POI's tests never call
-  `getHeader()` on that file).
+  `HemfPicture.getHeader()` throws, and with it `getBounds()`/`getSize()`: a
+  `RecordFormatException` since `e9e9612a1f` (round two), a `ClassCastException` before.
 - `HwmfPicture.draw` does **not** swallow per-record exceptions, whereas `HemfPicture.draw`
   does. So one bad record aborts a whole WMF (`file-45.wmf` demonstrates this once the
   `MAX_HEIGHT_WIDTH` guard fires). CR-011 phase 2 must catch this at the docx4j boundary
   rather than let a picture take down a conversion.
-- The parsers use a bare **`assert`** for about 20 "this cannot be right" checks
-  (`HwmfHeader`, `HemfFill.EmfAlphaBlend`, `HemfPlusHeader`, `HwmfRegionMode`, ...). With
+- The parsers use a bare **`assert`** for "this cannot be right" checks: 48 after round two,
+  which took upstream's replacement of 15 of them (`HwmfRegionMode`, `HemfComment`,
+  `HemfEmbeddedIterator`, `HemfPlusDraw`, ... keep theirs, as upstream does). With
   `-ea` — which Surefire enables — a malformed file raises `AssertionError` well before the
   bounds check that would otherwise have caught it; in production, assertions are off and
   those checks do nothing. So the class of failure a bad metafile produces differs between

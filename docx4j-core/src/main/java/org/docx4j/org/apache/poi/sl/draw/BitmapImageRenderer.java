@@ -329,9 +329,16 @@ public class BitmapImageRenderer implements ImageRenderer {
         int iw = img.getWidth();
         int ih = img.getHeight();
 
-
         double cw = (100000-clip.left-clip.right) / 100000.0;
         double ch = (100000-clip.top-clip.bottom) / 100000.0;
+
+        if (anchor.getWidth() == 0 || anchor.getHeight() == 0 ||
+                iw == 0 || ih == 0 || cw == 0 || ch == 0) {
+            // If the size of the image, the source rectangle or the anchor is 0,
+            // we don't need to render anything.
+            return true;
+        }
+
         double sx = anchor.getWidth()/(iw*cw);
         double sy = anchor.getHeight()/(ih*ch);
         double tx = anchor.getX()-(iw*sx*clip.left/100000.0);

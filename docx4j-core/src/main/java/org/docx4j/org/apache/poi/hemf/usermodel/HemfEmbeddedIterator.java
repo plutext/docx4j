@@ -58,6 +58,12 @@ public class HemfEmbeddedIterator implements Iterator<HwmfEmbedded> {
     private static final int DEFAULT_MAX_RECORD_LENGTH = 100_000_000;
     private static int MAX_RECORD_LENGTH = DEFAULT_MAX_RECORD_LENGTH;
 
+    /**
+     * Upper bound for presizing the buffer from the untrusted totalObjectSize field.
+     * Larger images are still supported, the buffer just grows as the chunks are read.
+     */
+    private static final int MAX_BUFFER_PRESIZE = 4 * 1024 * 1024;
+
     private final Deque<Iterator<?>> iterStack = new ArrayDeque<>();
     private Object current;
 
@@ -324,7 +330,7 @@ public class HemfEmbeddedIterator implements Iterator<HwmfEmbedded> {
             : epo.getTotalObjectSize();
         IOUtils.safelyAllocateCheck(totalSize, MAX_RECORD_LENGTH);
 
-        try (UnsynchronizedByteArrayOutputStream bos = UnsynchronizedByteArrayOutputStream.builder().setBufferSize(totalSize).get()) {
+        try (UnsynchronizedByteArrayOutputStream bos = UnsynchronizedByteArrayOutputStream.builder().setBufferSize(Math.min(totalSize, MAX_BUFFER_PRESIZE)).get()) {
             boolean hasNext = false;
             do {
                 EmfPlusImage img = epo.getObjectData();

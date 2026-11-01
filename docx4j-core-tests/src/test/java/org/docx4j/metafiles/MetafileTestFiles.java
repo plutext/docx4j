@@ -49,9 +49,9 @@ public class MetafileTestFiles {
 	 *       window records.</li>
 	 *   <li>{@code VHZ2...emf} is not malformed as such, but its first parsed record is an
 	 *       {@code EmfPolyline} rather than the EMF header, so {@code HemfPicture.getHeader()}
-	 *       - which casts {@code records.get(0)} - throws, and with it getBounds()/getSize().
-	 *       An upstream POI quirk carried over by the repackaging; POI's own tests never
-	 *       call getHeader() on this file.</li>
+	 *       throws, and with it getBounds()/getSize(): a {@code RecordFormatException} since
+	 *       POI e9e9612a1f (back-ported November 2026), a ClassCastException before.</li>
+	 *   <li>{@code bug69924.wmf} (POI bug 69924): an invalid metafile type, an IOException.</li>
 	 * </ul>
 	 */
 	private static final List<String> UNUSABLE = Collections.unmodifiableList(Arrays.asList(
@@ -61,7 +61,10 @@ public class MetafileTestFiles {
 		"clusterfuzz-testcase-minimized-POIFileHandlerFuzzer-6060921738035200.wmf",
 		"clusterfuzz-testcase-minimized-POIFileHandlerFuzzer-6466833057382400.emf",
 		"crash-7b60e9fe792eaaf1bba8be90c2b62f057cfff142.emf",
-		"VHZ2NYFUYUUJNGLABL26ORTQZA76FJEW.emf"
+		"VHZ2NYFUYUUJNGLABL26ORTQZA76FJEW.emf",
+		// November 2026, with the back-ports they test
+		"bug69924.wmf",
+		"clusterfuzz-testcase-minimized-POIFileHandlerFuzzer-5318384433823744.emf"
 	));
 
 	public static boolean isUnusable(String name) {

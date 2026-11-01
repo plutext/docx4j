@@ -29,11 +29,15 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.org.apache.poi.common.usermodel.GenericRecord;
 import org.docx4j.org.apache.poi.util.LittleEndianConsts;
 import org.docx4j.org.apache.poi.util.LittleEndianInputStream;
 
 public class HwmfHeader implements GenericRecord {
+    private static final Logger log = LoggerFactory.getLogger(HwmfHeader.class);
+
     public enum HwmfHeaderMetaType {
         MEMORY_METAFILE, DISK_METAFILE
     }
@@ -49,7 +53,12 @@ public class HwmfHeader implements GenericRecord {
     public HwmfHeader(LittleEndianInputStream leis) throws IOException {
         // Type (2 bytes):  A 16-bit unsigned integer that defines the type of metafile
         // MEMORYMETAFILE = 0x0001, DISKMETAFILE = 0x0002 
-        type = HwmfHeaderMetaType.values()[leis.readUShort()-1];
+        int typeId = leis.readUShort();
+        HwmfHeaderMetaType[] types = HwmfHeaderMetaType.values();
+        if (typeId < 1 || typeId > types.length) {
+            throw new IOException("Not a valid WMF header. Type: 0x" + Integer.toHexString(typeId));
+        }
+        type = types[typeId-1];
 
         // HeaderSize (2 bytes):  A 16-bit unsigned integer that defines the number
         // of 16-bit words in the header.
@@ -86,7 +95,10 @@ public class HwmfHeader implements GenericRecord {
         
         if (bytesLeft > 0) {
             long len = leis.skip(bytesLeft);
-            assert(len == bytesLeft);
+            if (len != bytesLeft) {
+                log.atWarn().log("Had unexpected number of bytes left for the wmf-header, expected {}, but had {}",
+                        bytesLeft, len);
+            }
         }
     }
 

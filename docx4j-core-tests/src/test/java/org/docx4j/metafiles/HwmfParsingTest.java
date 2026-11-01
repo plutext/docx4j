@@ -20,9 +20,12 @@ import org.docx4j.org.apache.poi.hwmf.record.HwmfPlaceableHeader;
 import org.docx4j.org.apache.poi.hwmf.record.HwmfRecord;
 import org.docx4j.org.apache.poi.hwmf.record.HwmfRecordType;
 import org.docx4j.org.apache.poi.hwmf.record.HwmfText;
+import org.docx4j.org.apache.poi.hwmf.record.HwmfWindowing;
 import org.docx4j.org.apache.poi.hwmf.usermodel.HwmfPicture;
 import org.docx4j.org.apache.poi.sl.usermodel.PictureData;
 import org.docx4j.org.apache.poi.util.IOUtils;
+import org.docx4j.org.apache.poi.util.LittleEndian;
+import org.docx4j.org.apache.poi.util.LittleEndianInputStream;
 import org.docx4j.org.apache.poi.util.LocaleUtil;
 import org.docx4j.org.apache.poi.util.RecordFormatException;
 import org.junit.Test;
@@ -32,13 +35,10 @@ import org.junit.Test;
  * (poi-scratchpad, trunk), adapted to JUnit 4 and to the repackaged
  * {@code org.docx4j.org.apache.poi.hwmf}.
  *
- * <p>Four of POI's tests are <b>not</b> ported, because they assert bounds checks which
- * upstream added <em>after</em> the 5.5.1 release this copy is based on (POI commits
- * c60d26562d, d80ff2dbfb and friends, May-June 2026):
- * {@code testRejectsZeroUnitsPerInchAtParserBoundary} and
- * {@code testWmfCreateRegionInvalidScanCount} here, and
- * {@code testHeaderDescriptionBoundsAreValidated} / {@code testEmfPolyDrawInvalidCount}
- * in {@link HemfPictureTest}. See the package README for the back-port list.
+ * <p>The tests of the bounds checks upstream added after the 5.5.1 release this copy is
+ * based on came with their back-ports (the package README lists them): those of September
+ * 2026 ({@code testWmfCreateRegionInvalidScanCount}) and November 2026
+ * ({@code testRejectsZeroUnitsPerInchAtParserBoundary}, {@code testInvalidHeaderTypeBug69924}).
  * {@code testCyrillic} is {@code @Disabled} upstream (it needs a file POI does not ship).
  *
  * CR-011 phase 1.
@@ -151,6 +151,43 @@ public class HwmfParsingTest {
 		assertTrue(Double.isFinite(renderer.getDimension().getHeight()));
 		assertTrue(renderer.getDimension().getWidth() > 0);
 		assertTrue(renderer.getDimension().getHeight() > 0);
+	}
+
+	/** POI 1a91f5cdfc (back-ported November 2026): a unitsPerInch of 0 would scale without bound. */
+	@Test
+	public void zeroUnitsPerInchIsRejected() throws Exception {
+		byte[] malicious = createMinimalPlaceableWmf(0, 0, 0, 32767, 32767);
+		try {
+			new HwmfPicture(new ByteArrayInputStream(malicious));
+			fail("expected RecordFormatException");
+		} catch (RecordFormatException expected) {
+			assertContains(expected.getMessage(), "unitsPerInch");
+		}
+	}
+
+	/** POI bug 69924 (373fd4a486, back-ported November 2026): an invalid metafile type, not an AIOOBE. */
+	@Test
+	public void invalidHeaderTypeBug69924() throws Exception {
+		try (InputStream is = MetafileTestFiles.open("bug69924.wmf")) {
+			new HwmfPicture(is);
+			fail("expected IOException");
+		} catch (IOException expected) {
+			assertEquals("Not a valid WMF header. Type: 0xf600", expected.getMessage());
+		}
+	}
+
+	/** POI c60d26562d (back-ported September 2026): a negative scan count is rejected before allocation. */
+	@Test
+	public void wmfCreateRegionInvalidScanCount() throws Exception {
+		HwmfWindowing.WmfCreateRegion record = new HwmfWindowing.WmfCreateRegion();
+		byte[] data = new byte[34];
+		LittleEndian.putShort(data, 10, (short) -1);
+		try (LittleEndianInputStream leis = new LittleEndianInputStream(new ByteArrayInputStream(data))) {
+			record.init(leis, data.length, 0);
+			fail("expected RecordFormatException");
+		} catch (RecordFormatException expected) {
+			// as upstream
+		}
 	}
 
 	/**

@@ -5,19 +5,21 @@ and `.hemf` (CR-011 phase 1).
 
 ## Provenance
 
-**22 files from Apache POI's `test-data/`** (Apache License 2.0, the same licence as
+**24 files from Apache POI's `test-data/`** (Apache License 2.0, the same licence as
 docx4j; see `legals/NOTICE`). Taken from POI trunk's test-data at the time the HWMF/HEMF
-code was repackaged from the POI 5.5.1 release. Original locations:
+code was repackaged from the POI 5.5.1 release, and two (`bug69924.wmf`,
+`clusterfuzz-testcase-minimized-POIFileHandlerFuzzer-5318384433823744.emf`) with the
+November 2026 back-ports they test, from trunk `521b26fad9`. Original locations:
 
 | POI path | files |
 |---|---|
-| `test-data/slideshow/` | `60677.wmf`, `61338.wmf`, `64716_image1.wmf`, `64716_image2.wmf`, `64716_image3.wmf`, `clusterfuzz-testcase-minimized-6701721724125184.wmf`, `clusterfuzz-testcase-minimized-POIFileHandlerFuzzer-6060921738035200.wmf`, `clusterfuzz-testcase-minimized-POIFileHandlerFuzzer-6466833057382400.emf`, `crash-7b60e9fe792eaaf1bba8be90c2b62f057cfff142.emf`, `empty-polygon-close.wmf`, `file-45.wmf`, `nested_wmf.emf`, `santa.wmf`, `VHZ2NYFUYUUJNGLABL26ORTQZA76FJEW.emf`, `wrench.emf` |
-| `test-data/spreadsheet/` | `61294.emf`, `63327.emf`, `SimpleEMF_mac.emf`, `SimpleEMF_windows.emf` |
+| `test-data/slideshow/` | `60677.wmf`, `61338.wmf`, `bug69924.wmf`, `64716_image1.wmf`, `64716_image2.wmf`, `64716_image3.wmf`, `clusterfuzz-testcase-minimized-6701721724125184.wmf`, `clusterfuzz-testcase-minimized-POIFileHandlerFuzzer-6060921738035200.wmf`, `clusterfuzz-testcase-minimized-POIFileHandlerFuzzer-6466833057382400.emf`, `crash-7b60e9fe792eaaf1bba8be90c2b62f057cfff142.emf`, `empty-polygon-close.wmf`, `file-45.wmf`, `nested_wmf.emf`, `santa.wmf`, `VHZ2NYFUYUUJNGLABL26ORTQZA76FJEW.emf`, `wrench.emf` |
+| `test-data/spreadsheet/` | `61294.emf`, `63327.emf`, `clusterfuzz-testcase-minimized-POIFileHandlerFuzzer-5318384433823744.emf`, `SimpleEMF_mac.emf`, `SimpleEMF_windows.emf` |
 | `test-data/document/` | `testException2.doc-2.wmf`, `vector_image.emf` |
 | `test-data/xmldsign/` | `jack-sign.emf` |
 
 Several are deliberately malformed (the `clusterfuzz-*` and `crash-*` files, `61294.emf`,
-`61338.wmf`): they are fuzzer findings kept as regression inputs, and the parse test
+`61338.wmf`, `bug69924.wmf`): they are fuzzer findings kept as regression inputs, and the parse test
 expects them to fail cleanly rather than hang or blow up.
 
 **9 files from this repository**, copied from `docx4j-samples-docx4j/sample-docs/metafile-samples/`:

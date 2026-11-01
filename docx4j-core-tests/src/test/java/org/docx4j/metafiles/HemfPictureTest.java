@@ -9,6 +9,8 @@ import static org.junit.Assert.fail;
 import java.awt.geom.Point2D;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,6 +21,7 @@ import org.docx4j.org.apache.poi.hemf.record.emf.HemfComment;
 import org.docx4j.org.apache.poi.hemf.record.emf.HemfComment.EmfComment;
 import org.docx4j.org.apache.poi.hemf.record.emf.HemfComment.EmfCommentDataFormat;
 import org.docx4j.org.apache.poi.hemf.record.emf.HemfComment.EmfCommentDataMultiformats;
+import org.docx4j.org.apache.poi.hemf.record.emf.HemfDraw;
 import org.docx4j.org.apache.poi.hemf.record.emf.HemfHeader;
 import org.docx4j.org.apache.poi.hemf.record.emf.HemfRecord;
 import org.docx4j.org.apache.poi.hemf.record.emf.HemfRecordType;
@@ -29,6 +32,8 @@ import org.docx4j.org.apache.poi.hwmf.record.HwmfText;
 import org.docx4j.org.apache.poi.hwmf.usermodel.HwmfEmbedded;
 import org.docx4j.org.apache.poi.hwmf.usermodel.HwmfEmbeddedType;
 import org.docx4j.org.apache.poi.hwmf.usermodel.HwmfPicture;
+import org.docx4j.org.apache.poi.util.LittleEndian;
+import org.docx4j.org.apache.poi.util.LittleEndianInputStream;
 import org.docx4j.org.apache.poi.util.RecordFormatException;
 import org.junit.Test;
 
@@ -37,9 +42,11 @@ import org.junit.Test;
  * (poi-scratchpad, trunk), adapted to JUnit 4 and to the repackaged
  * {@code org.docx4j.org.apache.poi.hemf}.
  *
- * <p>{@code testHeaderDescriptionBoundsAreValidated} and {@code testEmfPolyDrawInvalidCount}
- * are not ported: they assert bounds checks upstream added after the 5.5.1 release this
- * copy is based on. See {@link HwmfParsingTest} and the package README.
+ * <p>The tests of the bounds checks upstream added after the 5.5.1 release this copy is
+ * based on came with their back-ports (the package README lists them):
+ * {@code testHeaderDescriptionBoundsAreValidated} and {@code testEmfPolyDrawInvalidCount}
+ * (September 2026), and the November 2026 ones at the end of this class. The record-level
+ * ones that need package access are in {@code org.docx4j.org.apache.poi.hemf.record.emf.HemfRecordBoundsTest}.
  *
  * CR-011 phase 1.
  */
@@ -232,5 +239,124 @@ public class HemfPictureTest {
 			}
 		}
 		return sb.toString();
+	}
+
+	// ---------------------------------------------------------------- bounds checks back-ported from POI
+
+	/** POI d80ff2dbfb (September 2026): the description's bounds are checked before allocation. */
+	@Test
+	public void headerDescriptionBoundsAreValidated() throws Exception {
+		HemfHeader header = new HemfHeader();
+		byte[] data = headerRecordData(0x40000001L, 88);
+		try (LittleEndianInputStream leis = new LittleEndianInputStream(new ByteArrayInputStream(data))) {
+			header.init(leis, data.length, HemfRecordType.header.id);
+			fail("expected RecordFormatException");
+		} catch (RecordFormatException expected) {
+			// as upstream
+		}
+	}
+
+	/** POI c60d26562d (September 2026) */
+	@Test
+	public void emfPolyDrawInvalidCount() throws Exception {
+		assertPolyDrawRejects(Integer.MAX_VALUE);
+	}
+
+	/** POI 941f09ecce (November 2026): an unsigned count is checked while it is still a long. */
+	@Test
+	public void emfPolyDrawCountAboveIntMax() throws Exception {
+		assertPolyDrawRejects(0xFFFFFFFFL);
+	}
+
+	private static void assertPolyDrawRejects(long count) throws Exception {
+		HemfDraw.EmfPolyDraw record = new HemfDraw.EmfPolyDraw();
+		byte[] data = new byte[20];
+		LittleEndian.putUInt(data, 16, count);
+		try (LittleEndianInputStream leis = new LittleEndianInputStream(new ByteArrayInputStream(data))) {
+			record.init(leis, data.length, HemfRecordType.polyDraw.id);
+			fail("expected RecordFormatException");
+		} catch (RecordFormatException expected) {
+			// as upstream
+		}
+	}
+
+	/**
+	 * POI 941f09ecce (November 2026): EMR_POLYGON and EMR_POLYBEZIER cap the point count at 16K
+	 * and ignore the rest, so a count above Integer.MAX_VALUE is clamped, not rejected.
+	 */
+	@Test
+	public void emfPolygonCountAboveIntMaxIsClamped() throws Exception {
+		assertPointCountClamped(new HemfDraw.EmfPolygon(), HemfRecordType.polygon.id);
+		assertPointCountClamped(new HemfDraw.EmfPolyBezier(), HemfRecordType.polyBezier.id);
+	}
+
+	private static void assertPointCountClamped(HemfRecord record, long recordId) throws Exception {
+		// 16 bytes of bounds, a 4 byte count, then room for the 16K points the cap allows
+		byte[] data = new byte[16 + 4 + 16384 * 8];
+		LittleEndian.putUInt(data, 16, 0xFFFFFFFFL);
+		try (LittleEndianInputStream leis = new LittleEndianInputStream(new ByteArrayInputStream(data))) {
+			long size = record.init(leis, data.length, recordId);
+			assertTrue("read " + size + " bytes of a " + data.length + " byte record", size <= data.length);
+		}
+	}
+
+	/** POI 941f09ecce (November 2026) */
+	@Test
+	public void emfCommentWmfSizeAboveIntMax() throws Exception {
+		HemfComment.EmfCommentDataWMF record = new HemfComment.EmfCommentDataWMF();
+		byte[] data = new byte[20];
+		LittleEndian.putUInt(data, 0, HemfComment.HemfCommentRecordType.emfWMF.id & 0xFFFFFFFFL);
+		LittleEndian.putUInt(data, 16, 0xFFFFFFFFL);
+		try (LittleEndianInputStream leis = new LittleEndianInputStream(new ByteArrayInputStream(data))) {
+			record.init(leis, data.length);
+			fail("expected RecordFormatException");
+		} catch (RecordFormatException expected) {
+			// as upstream
+		}
+	}
+
+	/** POI 941f09ecce (November 2026) */
+	@Test
+	public void emfCommentBeginGroupDescriptionAboveIntMax() throws Exception {
+		HemfComment.EmfCommentDataBeginGroup record = new HemfComment.EmfCommentDataBeginGroup();
+		byte[] data = new byte[24];
+		LittleEndian.putUInt(data, 0, HemfComment.HemfCommentRecordType.emfBeginGroup.id & 0xFFFFFFFFL);
+		LittleEndian.putUInt(data, 20, 0xFFFFFFFFL);
+		try (LittleEndianInputStream leis = new LittleEndianInputStream(new ByteArrayInputStream(data))) {
+			record.init(leis, data.length);
+			fail("expected RecordFormatException");
+		} catch (RecordFormatException expected) {
+			// as upstream
+		}
+	}
+
+	/** POI d4178c1d5c (November 2026): a fuzzed EMF's bitmap offsets raise, not an assertion. */
+	@Test
+	public void fuzzedBitmapOffsetsRaise() throws Exception {
+		HemfPicture pic = new HemfPicture(new ByteArrayInputStream(
+				MetafileTestFiles.bytes("clusterfuzz-testcase-minimized-POIFileHandlerFuzzer-5318384433823744.emf")));
+		try {
+			pic.forEach(r -> {});
+			fail("expected RecordFormatException");
+		} catch (RecordFormatException expected) {
+			// as upstream
+		}
+	}
+
+	/** An EMR_HEADER record's data (after type and size) with the given description count and offset. */
+	private static byte[] headerRecordData(long nDescription, long offDescription) {
+		ByteBuffer bb = ByteBuffer.allocate(8 * 4 + 4 + 4 + 4 + 4 + 2 + 2 + 4 + 4 + 4 + 4 * 4).order(ByteOrder.LITTLE_ENDIAN);
+		for (int i = 0; i < 8; i++) bb.putInt(0);
+		bb.putInt(0x464D4520);
+		bb.putInt(0x00010000);
+		bb.putInt(0);
+		bb.putInt(1);
+		bb.putShort((short) 1);
+		bb.putShort((short) 0);
+		bb.putInt((int) nDescription);
+		bb.putInt((int) offDescription);
+		bb.putInt(0);
+		for (int i = 0; i < 4; i++) bb.putInt(0);
+		return bb.array();
 	}
 }

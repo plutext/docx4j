@@ -390,7 +390,7 @@ public class HemfComment {
             HemfDraw.readRectL(leis, bounds);
 
             // The number of Unicode characters in the optional description string that follows.
-            int nDescription = (int)leis.readUInt();
+            long nDescription = leis.readUInt();
 
             byte[] buf = IOUtils.safelyAllocate(nDescription * 2L, HwmfPicture.getMaxRecordLength());
             leis.readFully(buf);
@@ -607,7 +607,7 @@ public class HemfComment {
 
             // A 32-bit unsigned integer that specifies the size, in bytes, of the
             // WMF metafile in the WinMetafile field.
-            int winMetafileSize = (int)leis.readUInt();
+            long winMetafileSize = leis.readUInt();
 
             wmfData = IOUtils.safelyAllocate(winMetafileSize, HwmfPicture.getMaxRecordLength());
             // some emf comments are truncated, so we don't use readFully here

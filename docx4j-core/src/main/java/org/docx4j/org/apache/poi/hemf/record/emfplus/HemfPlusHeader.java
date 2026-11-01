@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.org.apache.poi.common.usermodel.GenericRecord;
 import org.docx4j.org.apache.poi.hemf.draw.HemfGraphics;
 import org.docx4j.org.apache.poi.hemf.draw.HemfGraphics.EmfRenderState;
@@ -44,6 +46,8 @@ import org.docx4j.org.apache.poi.util.LittleEndianInputStream;
 
 @Internal
 public class HemfPlusHeader implements HemfPlusRecord {
+    private static final Logger log = LoggerFactory.getLogger(HemfPlusHeader.class);
+
     /**
      * The GraphicsVersion enumeration defines versions of operating system graphics that are used to
      * create EMF+ metafiles.
@@ -95,7 +99,12 @@ public class HemfPlusHeader implements HemfPlusRecord {
         this.flags = flags;
         version.init(leis);
 
-        assert(version.getMetafileSignature() == 0xDBC01 && version.getGraphicsVersion() != null);
+        if (version.getMetafileSignature() != 0xDBC01) {
+            log.atWarn().log("Had invalid meta-file signature, expected " + 0xDBC01 + ", had: " + version.getMetafileSignature());
+        }
+        if (version.getGraphicsVersion() == null) {
+            log.atWarn().log("Encountered empty graphics version in emf file");
+        }
 
         emfPlusFlags = leis.readUInt();
 

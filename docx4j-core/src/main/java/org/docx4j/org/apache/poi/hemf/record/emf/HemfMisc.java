@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.org.apache.poi.hemf.draw.HemfDrawProperties;
 import org.docx4j.org.apache.poi.hemf.draw.HemfGraphics;
 import org.docx4j.org.apache.poi.hwmf.draw.HwmfDrawProperties;
@@ -53,13 +55,16 @@ import org.docx4j.org.apache.poi.hwmf.record.HwmfObjectTableEntry;
 import org.docx4j.org.apache.poi.hwmf.record.HwmfPalette.PaletteEntry;
 import org.docx4j.org.apache.poi.hwmf.record.HwmfPenStyle;
 import org.docx4j.org.apache.poi.hwmf.record.HwmfPenStyle.HwmfLineDash;
+import org.docx4j.org.apache.poi.hwmf.usermodel.HwmfPicture;
 import org.docx4j.org.apache.poi.util.GenericRecordJsonWriter;
 import org.docx4j.org.apache.poi.util.GenericRecordUtil;
+import org.docx4j.org.apache.poi.util.IOUtils;
 import org.docx4j.org.apache.poi.util.LittleEndianConsts;
 import org.docx4j.org.apache.poi.util.LittleEndianInputStream;
 
 @SuppressWarnings("WeakerAccess")
 public class HemfMisc {
+    private static final Logger LOG = LoggerFactory.getLogger(HemfMisc.class);
 
     public enum HemfModifyWorldTransformMode {
         /**
@@ -120,7 +125,11 @@ public class HemfMisc {
 
             if (nPalEntries > 0 && offPalEntries > 0) {
                 int undefinedSpace1 = offPalEntries - (size + HEADER_SIZE);
-                assert (undefinedSpace1 >= 0);
+                if (undefinedSpace1 < 0) {
+                    throw new IllegalArgumentException("Provided record is invalid, offPalEntries: " +
+                            offPalEntries + ", size: " + size + ", HEADER_SIZE: " + HEADER_SIZE +
+                            ", undefinedSpace: " + undefinedSpace1);
+                }
                 leis.skipFully(undefinedSpace1);
                 size += undefinedSpace1;
 
@@ -130,7 +139,11 @@ public class HemfMisc {
                 }
 
                 int undefinedSpace2 = (int) (recordSize - size - LittleEndianConsts.INT_SIZE);
-                assert (undefinedSpace2 >= 0);
+                if (undefinedSpace2 < 0) {
+                    throw new IllegalArgumentException("Provided record is invalid, recordSize: " +
+                            recordSize + ", size: " + size + ", INT_SIZE: " + LittleEndianConsts.INT_SIZE +
+                            ", undefinedSpace: " + undefinedSpace2);
+                }
                 leis.skipFully(undefinedSpace2);
                 size += undefinedSpace2;
             }
@@ -142,7 +155,11 @@ public class HemfMisc {
             size += LittleEndianConsts.INT_SIZE;
             // some files store the whole file size in sizeLast, other just the last record size
             // assert (sizeLast == size+HEADER_SIZE);
-            assert (recordSize == size);
+            if (recordSize != size) {
+                // docx4j: upstream (5fb3244453) throws here; the record's remaining bytes are skipped either way,
+                // and an exception in the last record would lose a picture that otherwise draws whole
+                LOG.atWarn().log("Provided record size and actual size do not match: {} and {}", recordSize, size);
+            }
 
             return size;
         }
@@ -439,7 +456,7 @@ public class HemfMisc {
             int size = 6*LittleEndianConsts.INT_SIZE;
 
             patternDib = new HwmfBitmapDib();
-            size = Math.toIntExact(size + readBitmap(leis, patternDib, startIdx, offBmi, cbBmi, offBits, cbBits));
+            size = Math.toIntExact(size + readBitmap(leis, patternDib, startIdx, recordSize, offBmi, cbBmi, offBits, cbBits));
             return size;
         }
 
@@ -630,6 +647,8 @@ public class HemfMisc {
             // If the pen type in the PenStyle field is PS_GEOMETRIC, the lengths are specified in logical
             // units; otherwise, the lengths are specified in device units.
 
+            // docx4j: upstream (69f8eb6fb8) calls HemfPicture.safelyAllocateCheck, from b7f1f55a47, not taken here
+            IOUtils.safelyAllocateCheck(numStyleEntries, HwmfPicture.getMaxRecordLength());
             float[] dashPattern = new float[numStyleEntries];
 
             for (int i = 0; i < numStyleEntries; i++) {
@@ -642,7 +661,7 @@ public class HemfMisc {
 
             size = Math.addExact(size, numStyleEntries * LittleEndianConsts.INT_SIZE);
 
-            size = Math.toIntExact(size + readBitmap(leis, bitmap, startIdx, offBmi, cbBmi, offBits, cbBits));
+            size = Math.toIntExact(size + readBitmap(leis, bitmap, startIdx, recordSize, offBmi, cbBmi, offBits, cbBits));
 
             return size;
         }
@@ -906,7 +925,7 @@ public class HemfMisc {
 
             int size = 6 * LittleEndianConsts.INT_SIZE;
 
-            size = Math.toIntExact(size + readBitmap(leis, bitmap, startIdx, offBmi, cbBmi, offBits, cbBits));
+            size = Math.toIntExact(size + readBitmap(leis, bitmap, startIdx, recordSize, offBmi, cbBmi, offBits, cbBits));
 
             return size;
         }

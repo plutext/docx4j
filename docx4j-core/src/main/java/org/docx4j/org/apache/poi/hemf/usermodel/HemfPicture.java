@@ -87,6 +87,8 @@ public class HemfPicture implements Iterable<HemfRecord>, GenericRecord {
         List<HemfRecord> r = getRecords();
         if (r.isEmpty()) {
             throw new RecordFormatException("No records could be parsed - your .emf file is invalid");
+        } else if (!(r.get(0) instanceof HemfHeader)) {
+            throw new RecordFormatException("Could not convert object of type " + r.get(0).getClass() + " + - your .emf file is invalid");
         } else {
             return (HemfHeader)r.get(0);
         }

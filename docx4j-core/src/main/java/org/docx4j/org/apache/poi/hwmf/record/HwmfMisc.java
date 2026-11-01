@@ -517,8 +517,18 @@ public class HwmfMisc {
 
         @Override
         public int init(LittleEndianInputStream leis, long recordSize, int recordFunction) throws IOException {
-            style = HwmfBrushStyle.valueOf(leis.readUShort());
-            colorUsage = ColorUsage.valueOf(leis.readUShort());
+            int brushStyle = leis.readUShort();
+            style = HwmfBrushStyle.valueOf(brushStyle);
+            if (style == null) {
+                throw new IllegalArgumentException("Could not read brush-style " + brushStyle);
+            }
+
+            int colorUsageEnum = leis.readUShort();
+            colorUsage = ColorUsage.valueOf(colorUsageEnum);
+            if (colorUsage == null) {
+                throw new IllegalArgumentException("Could not read color-usage " + colorUsageEnum);
+            }
+
             int size = 2*LittleEndianConsts.SHORT_SIZE;
             switch (style) {
             case BS_SOLID:

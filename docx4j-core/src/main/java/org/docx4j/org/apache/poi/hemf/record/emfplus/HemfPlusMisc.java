@@ -34,6 +34,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.org.apache.poi.hemf.draw.HemfDrawProperties;
 import org.docx4j.org.apache.poi.hemf.draw.HemfGraphics;
 import org.docx4j.org.apache.poi.hemf.record.emf.HemfFill;
@@ -47,6 +49,8 @@ import org.docx4j.org.apache.poi.util.LittleEndianInputStream;
 
 @SuppressWarnings("WeakerAccess")
 public class HemfPlusMisc {
+    private static final Logger LOG = LoggerFactory.getLogger(HemfPlusMisc.class);
+
     public interface EmfPlusObjectId {
         BitField OBJECT_ID = BitFieldFactory.getInstance(0x00FF);
 
@@ -107,7 +111,9 @@ public class HemfPlusMisc {
         @Override
         public long init(LittleEndianInputStream leis, long dataSize, long recordId, int flags) throws IOException {
             this.flags = flags;
-            assert(dataSize == 0);
+            if (dataSize != 0) {
+                LOG.atWarn().log("Invalid dataSize, should be 0: {}", dataSize);
+            }
             recordType = HemfPlusRecordType.getById(recordId);
             return 0;
         }

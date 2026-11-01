@@ -28,6 +28,7 @@ import java.io.IOException;
 
 import org.docx4j.org.apache.poi.util.LittleEndianConsts;
 import org.docx4j.org.apache.poi.util.LittleEndianInputStream;
+import org.docx4j.org.apache.poi.util.RecordFormatException;
 
 public class HwmfPlaceableHeader {
     public static final int WMF_HEADER_MAGIC = 0x9AC6CDD7;
@@ -35,7 +36,7 @@ public class HwmfPlaceableHeader {
     final Rectangle2D bounds;
     final int unitsPerInch;
     
-    protected HwmfPlaceableHeader(LittleEndianInputStream leis) throws IOException {
+    protected HwmfPlaceableHeader(LittleEndianInputStream leis) throws IOException, RecordFormatException {
         /*
          * HWmf (2 bytes):  The resource handle to the metafile, when the metafile is in memory. When
          * the metafile is on disk, this field MUST contain 0x0000. This attribute of the metafile is
@@ -60,7 +61,10 @@ public class HwmfPlaceableHeader {
          * Thus, a value of 720 specifies that the image SHOULD be rendered at twice its normal size,
          * and a value of 2880 specifies that the image SHOULD be rendered at half its normal size.
          */
-        unitsPerInch = leis.readShort();
+        unitsPerInch = leis.readUShort();
+        if (unitsPerInch == 0) {
+            throw new RecordFormatException("Invalid WMF placeable header unitsPerInch: " + unitsPerInch);
+        }
         
         /*
          * Reserved (4 bytes):  A field that is not used and MUST be set to 0x00000000.
