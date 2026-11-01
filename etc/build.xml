@@ -182,6 +182,8 @@
         <pathelement location="${m2Repository}/org/apache/pdfbox/pdfbox/3.0.8/pdfbox-3.0.8.jar"/>
         <pathelement location="${m2Repository}/org/apache/pdfbox/pdfbox-io/3.0.8/pdfbox-io-3.0.8.jar"/>
         <pathelement location="${m2Repository}/org/apache/pdfbox/xmpbox/3.0.8/xmpbox-3.0.8.jar"/>
+
+        <pathelement location="${m2Repository}/org/apache/james/apache-mime4j-core/0.8.15/apache-mime4j-core-0.8.15.jar"/> <!-- MHT input; its commons-io is in MavenDeps -->
 	</path>
 	
 
