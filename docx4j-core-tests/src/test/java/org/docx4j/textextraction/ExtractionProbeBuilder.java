@@ -184,18 +184,21 @@ public class ExtractionProbeBuilder {
         byte[] external = ExtractionPhase0Cases.external(b);
         byte[] structure = ExtractionStructureCases.build(b);
         byte[] inspect = ExtractionInspectCases.build(b);
+        byte[] opaque = ExtractionOpaqueCases.build(b);
         b.cases.sort(java.util.Comparator.comparingInt(c -> c.n));
-        ExtractionFixtureChecks.check(docx, external, structure, inspect, b.cases);
+        ExtractionFixtureChecks.check(docx, external, structure, inspect, opaque, b.cases);
         WordprocessingMLPackage.load(new ByteArrayInputStream(docx));
         WordprocessingMLPackage.load(new ByteArrayInputStream(external));
         WordprocessingMLPackage.load(new ByteArrayInputStream(structure));
         WordprocessingMLPackage.load(new ByteArrayInputStream(inspect));
+        WordprocessingMLPackage.load(new ByteArrayInputStream(opaque));
         // Each fixture is written here, but the committed extraction-probe.docx and .docm are the files Word
         // checked: never copy a rebuild of them over the committed ones (rebuilds are not byte-identical).
         Files.write(new File(out, "extraction-probe.docx").toPath(), docx);
         Files.write(new File(out, "extraction-probe-external.docm").toPath(), external);
         Files.write(new File(out, ExtractionStructureCases.FIXTURE).toPath(), structure);
         Files.write(new File(out, ExtractionInspectCases.FIXTURE).toPath(), inspect);
+        Files.write(new File(out, ExtractionOpaqueCases.FIXTURE).toPath(), opaque);
         // the HTML reader's inspection fixture (CR-053 phase 3): no tokens rows, its inspection tables by hand
         byte[] html = ExtractionHtmlCases.build();
         WordprocessingMLPackage.load(new ByteArrayInputStream(html));
@@ -1307,12 +1310,14 @@ public class ExtractionProbeBuilder {
                 + "Cases 39–49 and 53–54 extend the main probe; cases 50–52 are in `extraction-probe-external.docm`;\n"
                 + "cases 55–57 (a table of contents, an interrupted list, an embedded workbook with hidden sheets) are in\n"
                 + "`extraction-probe-structure.docx`, a fixture of their own so that the main probe is not rebuilt (19 October 2026);\n"
-                + "cases 58–82, the inspector's boundary cases (CR-050 phase 0; 68–74 the text a picture draws, phase 3; 75–82 an integer attribute beyond Word's storage width, CR-066 phase 4), are in `extraction-probe-inspect.docx`.\n"
+                + "cases 58–82, the inspector's boundary cases (CR-050 phase 0; 68–74 the text a picture draws, phase 3; 75–82 an integer attribute beyond Word's storage width, CR-066 phase 4), are in `extraction-probe-inspect.docx`;\n"
+                + "cases 83–85 (a PDF in an OLE package, a PDF as Acrobat embeds it, a picture whose only text is drawn), content the text\n"
+                + "model never reads and some readers do, are in `extraction-probe-opaque.docx` (2 November 2026, for the docx-tool-identifier).\n"
                 + "Jason checked the earlier 52-case r2 DOCX without repair, declining field updates (18 October 2026).\n"
                 + "The unchanged external DOCM also passed. Jason completed the r3 check for cases 53–54 (18 October 2026).\n"
                 + "The Word findings above describe the original 38-case\n"
                 + "fixture, retained in the parent directory with its re-save.\n"
-                + "`case-statements.tsv` maps the original WD Appendix A plus the approved cases 53–54 (WD 0.5) and 55–57.\n"
+                + "`case-statements.tsv` maps the original WD Appendix A plus the approved cases 53–54 (WD 0.5), 55–82 (WD A.3, A.4) and 83–85.\n"
                 + "`expected-order.tsv` pins presentation and glossary order. `expected-findings.tsv` separates warnings,\n"
                 + "metadata and inspector findings from text counts. `expected-inspection.tsv` lists every finding an inspector\n"
                 + "makes, by location, with the capability it depends on (`any`, or an HTML reader present or absent), and\n"

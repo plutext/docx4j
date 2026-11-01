@@ -31,11 +31,12 @@ import org.docx4j.org.apache.poi.poifs.filesystem.*;
 
 /** Structural checks independent of the extraction engine and Word's open/repair check. */
 final class ExtractionFixtureChecks {
-    static void check(byte[] main, byte[] external, byte[] structure, byte[] inspect, List<ExtractionProbeBuilder.Case> cases) throws Exception {
-        if (cases.size() != 82) throw new IllegalStateException("Expected 82 cases");
-        Map<String, byte[]> a = entries(main), b = entries(external), s = entries(structure), n = entries(inspect);
-        validatePackage(a); validatePackage(b); validatePackage(s); validatePackage(n);
-        String mainText = payloadText(a), externalText = payloadText(b), structureText = payloadText(s), inspectText = payloadText(n);
+    static void check(byte[] main, byte[] external, byte[] structure, byte[] inspect, byte[] opaque, List<ExtractionProbeBuilder.Case> cases) throws Exception {
+        if (cases.size() != 85) throw new IllegalStateException("Expected 85 cases");
+        Map<String, byte[]> a = entries(main), b = entries(external), s = entries(structure), n = entries(inspect), o = entries(opaque);
+        validatePackage(a); validatePackage(b); validatePackage(s); validatePackage(n); validatePackage(o);
+        String mainText = payloadText(a), externalText = payloadText(b), structureText = payloadText(s), inspectText = payloadText(n),
+                opaqueText = payloadText(o);
         Set<String> tokens = new HashSet<>();
         for (int i = 0; i < cases.size(); i++) {
             ExtractionProbeBuilder.Case c = cases.get(i);
@@ -43,16 +44,17 @@ final class ExtractionFixtureChecks {
             require(!ExtractionPhase0Cases.statements(c.n).isEmpty(), "Missing requirements");
             String fixture = ExtractionPhase0Cases.fixture(c.n);
             String payload = fixture.endsWith(".docm") ? externalText : fixture.equals(ExtractionStructureCases.FIXTURE) ? structureText
-                    : fixture.equals(ExtractionInspectCases.FIXTURE) ? inspectText : mainText;
+                    : fixture.equals(ExtractionInspectCases.FIXTURE) ? inspectText : fixture.equals(ExtractionOpaqueCases.FIXTURE) ? opaqueText : mainText;
             for (ExtractionProbeBuilder.Token t : c.tokens) {
                 require(tokens.add(c.n + ":" + t.name), "Duplicate expectation " + t.name);
+                if (t.name.equals(ExtractionOpaqueCases.DRAWN)) continue;   // drawn in pixels: checkOpaqueCases
                 // Case 30's hyphens are elements separating the two token fragments.
                 String marker = t.name.replace("\u2011", "").replace("\u00ad", "");
                 String text = payload.replaceAll("<[^>]*>", "");
                 require(payload.contains(marker) || text.contains(marker), "Marker missing from intended fixture: " + t.name);
             }
         }
-        for (Map<String, byte[]> pkg : List.of(a, b, s, n)) {
+        for (Map<String, byte[]> pkg : List.of(a, b, s, n, o)) {
             NodeList children = xml(pkg.get("word/document.xml")).getElementsByTagNameNS(
                     "http://schemas.openxmlformats.org/wordprocessingml/2006/main", "body").item(0).getChildNodes();
             for (int i = 0; i < children.getLength(); i++) if (children.item(i) instanceof Element)
@@ -69,6 +71,7 @@ final class ExtractionFixtureChecks {
         checkAdditionalCases(a);
         checkStructureCases(s);
         checkInspectCases(n);
+        checkOpaqueCases(o, opaqueText);
         require(text(a, "word/activeX/activeX42.xml").contains("persistStorage"), "ActiveX persistence");
         ProbeActiveXControl.check(a.get("word/activeX/activeX42.bin"));
         require(text(a, "word/chunk46.xml").startsWith("<?xml version=\"1.0\""), "Flat OPC declaration");
@@ -93,6 +96,24 @@ final class ExtractionFixtureChecks {
         require(!story.contains("SHT57_"), "Workbook token leaked to body");
         String workbook = text(entries(structure.get("word/embeddings/structure57.xlsx")), "xl/workbook.xml");
         require(workbook.contains("state=\"hidden\"") && workbook.contains("state=\"veryHidden\""), "Hidden sheet states");
+    }
+
+    /** Cases 83-85: each PDF's page text in its object, Acrobat's storage, and the drawn token written nowhere */
+    static void checkOpaqueCases(Map<String, byte[]> opaque, String payload) throws Exception {
+        String story = text(opaque, "word/document.xml");
+        require(!story.contains("PDF83_") && !story.contains("PDF84_"), "PDF token leaked to body");
+        require(story.contains("ProgID=\"Package\"") && story.contains("ProgID=\"" + ExtractionOpaqueCases.ACROBAT_PROGID + "\""), "ProgIDs");
+        require(payload.contains("(PDF83_PACKAGE_TEXT) Tj") && payload.contains("(PDF84_ACROBAT_TEXT) Tj"), "PDF page text");
+        try (POIFSFileSystem fs = new POIFSFileSystem(new ByteArrayInputStream(opaque.get("word/embeddings/opaque84.bin")))) {
+            require(fs.getRoot().getStorageClsid().toString().equalsIgnoreCase(ExtractionOpaqueCases.ACROBAT_CLSID), "Acrobat's class");
+            require(fs.getRoot().hasEntry("\u0001CompObj") && fs.getRoot().hasEntry("\u0001Ole") && !fs.getRoot().hasEntry(Ole10Native.OLE10_NATIVE),
+                    "Acrobat's streams");
+        }
+        // case 85: the token is the picture's pixels alone, in no part, attribute or property
+        String drawn = ExtractionOpaqueCases.DRAWN;
+        require(!payload.contains(drawn) && !payload.contains(drawn.replace('_', ' ')), "Drawn token written in the package");
+        require(!story.contains("descr=") && !story.matches("(?s).*<wp:docPr[^>]*title=.*") && !story.contains("svgBlip"), "Drawn picture described");
+        javax.imageio.ImageIO.read(new ByteArrayInputStream(opaque.get("word/media/drawn85.png")));
     }
 
     /** Cases 58-67: what the inspector's boundary cases rest on, which a rebuild could lose silently */
@@ -272,9 +293,14 @@ final class ExtractionFixtureChecks {
             else if (name.endsWith(".wmf") || name.endsWith(".emf")) {
                 // a metafile's text records, single-byte and UTF-16 (cases 72 and 73)
                 out.append(new String(bytes, StandardCharsets.ISO_8859_1)).append('\n').append(new String(bytes, StandardCharsets.UTF_16LE)).append('\n');
-            } else if (name.equals("word/embeddings/probe41.bin")) {
+            } else if (name.equals("word/embeddings/probe41.bin") || name.equals("word/embeddings/opaque83.bin")) {
                 try (POIFSFileSystem fs = new POIFSFileSystem(new ByteArrayInputStream(bytes))) {
                     out.append(new String(Ole10Native.createFromEmbeddedOleObject(fs).getDataBuffer(), StandardCharsets.UTF_8));
+                }
+            } else if (name.equals("word/embeddings/opaque84.bin")) {
+                try (POIFSFileSystem fs = new POIFSFileSystem(new ByteArrayInputStream(bytes));
+                     InputStream in = fs.getRoot().createDocumentInputStream("CONTENTS")) {
+                    out.append(new String(in.readAllBytes(), StandardCharsets.ISO_8859_1));
                 }
             } else if (name.equals("word/activeX/activeX42.bin")) {
                 try (POIFSFileSystem fs = new POIFSFileSystem(new ByteArrayInputStream(bytes));

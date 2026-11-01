@@ -62,6 +62,18 @@ so the committed one is the file Word checked (`../phase0/evidence/word-open-res
 Docx4j's loader refuses a package whose relationship names a missing part, so the broken
 relationship of CR-050's section 3 is not in it.
 
+`additional-case-statements.tsv` also records cases 83 to 85 (2 November 2026, asked for by the
+docx-tool-identifier's CR-001 phase 0), in `extraction-probe-opaque.docx`, built by
+`ExtractionOpaqueCases`: content the text model never reads and some readers do. Each PDF is a
+one-page PDF 1.4 the builder writes by hand, its token in Helvetica in an uncompressed content
+stream (pdftotext 26.07 reads it). Case 83 wraps it in an OLE 1.0 package (`probe.pdf`, case 41's
+form); case 84 in an OLE2 storage as Acrobat embeds one: class `{B801CA65-A1FC-11D0-85AD-444553540000}`,
+`\u0001Ole`, a `\u0001CompObj` naming `Acrobat Document` and `AcroExch.Document.DC`, and the PDF
+as `CONTENTS`, with ProgID `AcroExch.Document.DC`. Case 85's PNG is its token drawn by Java2D black
+on white, 64 px, anti-aliasing off, in Java's logical SansSerif (Noto Sans on the build machine,
+so a rebuild elsewhere draws another face); Tesseract 5.5.3 reads it exactly. The picture has no
+`descr` or `title`, and the token is in no part, attribute or property. Word check: pending.
+
 `inspect_oracle.py` is the reference generator of `../phase0/expected-inspection.tsv` and
 `expected-inspection-status.tsv`; `../INSPECTION.md` is the contract it follows and says how the
 tables are regenerated (the builder, then this script, then `ExtractionInspection`).

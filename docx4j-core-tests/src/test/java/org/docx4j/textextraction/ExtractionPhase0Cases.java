@@ -54,7 +54,9 @@ final class ExtractionPhase0Cases {
         // 68-74, the text a picture draws (CR-050 phase 3, D21)
         "902,904,514", "902,904,514", "902,904,514", "902,904,514,502", "902,904,514", "902,904,514", "902,904,514",
         // 75-82, an integer attribute beyond Word's storage width (CR-066 phase 4, D6)
-        "902,904", "902,904", "902,904", "902,904", "902,904", "902,904", "902,904,302,502", "902,904"
+        "902,904", "902,904", "902,904", "902,904", "902,904", "902,904", "902,904,302,502", "902,904",
+        // 83-85, extraction-probe-opaque.docx: two embedded PDFs and a picture whose text is drawn (2 November 2026)
+        "512", "512", "514"
     };
 
     static String statements(int n) {
@@ -64,6 +66,7 @@ final class ExtractionPhase0Cases {
     }
 
     static String fixture(int n) {
+        if (n >= 83) return ExtractionOpaqueCases.FIXTURE; // 2 November 2026, for the docx-tool-identifier
         if (n >= 58) return ExtractionInspectCases.FIXTURE; // CR-050 phase 0, 19 October 2026
         if (n >= 55) return ExtractionStructureCases.FIXTURE; // 19 October 2026, a fixture of their own
         return n >= 50 && n <= 52 ? "extraction-probe-external.docm" : "extraction-probe.docx";

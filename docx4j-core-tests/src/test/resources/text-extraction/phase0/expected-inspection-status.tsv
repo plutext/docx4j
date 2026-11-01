@@ -7,3 +7,4 @@ extraction-probe-inspect.docx	html reader absent	PARTIAL	not_decoded@|/word/chun
 extraction-probe-inspect.docx	html reader present	COMPLETE		background.indeterminate@|/word/document.xml|/w:document[1]/w:body[1]/w:p[37]/w:r[1]; position.indeterminate@|/word/document.xml|/w:document[1]/w:body[1]/w:p[20]/w:r[2]/mc:AlternateContent[1]/mc:Choice[1]/w:drawing[1]/wp:anchor[1]; position.no_section@|/word/header1.xml|/w:hdr[1]/w:p[2]/w:r[1]/mc:AlternateContent[1]/mc:Choice[1]/w:drawing[1]/wp:anchor[1]
 extraction-probe-html.docx	html reader absent	PARTIAL	not_decoded@|/word/chunk-a.htm|; not_decoded@|/word/chunk-b.htm|; not_decoded@|/word/chunk-c.xhtml|; not_decoded@|/word/chunk-d.mht|	
 extraction-probe-html.docx	html reader present	COMPLETE		
+extraction-probe-opaque.docx	any	COMPLETE		

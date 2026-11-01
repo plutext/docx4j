@@ -87,12 +87,14 @@ Three cases had no rule in the paper when the probe was built; it has since rule
 Cases 39–49 and 53–54 extend the main probe; cases 50–52 are in `extraction-probe-external.docm`;
 cases 55–57 (a table of contents, an interrupted list, an embedded workbook with hidden sheets) are in
 `extraction-probe-structure.docx`, a fixture of their own so that the main probe is not rebuilt (19 October 2026);
-cases 58–82, the inspector's boundary cases (CR-050 phase 0; 68–74 the text a picture draws, phase 3; 75–82 an integer attribute beyond Word's storage width, CR-066 phase 4), are in `extraction-probe-inspect.docx`.
+cases 58–82, the inspector's boundary cases (CR-050 phase 0; 68–74 the text a picture draws, phase 3; 75–82 an integer attribute beyond Word's storage width, CR-066 phase 4), are in `extraction-probe-inspect.docx`;
+cases 83–85 (a PDF in an OLE package, a PDF as Acrobat embeds it, a picture whose only text is drawn), content the text
+model never reads and some readers do, are in `extraction-probe-opaque.docx` (2 November 2026, for the docx-tool-identifier).
 Jason checked the earlier 52-case r2 DOCX without repair, declining field updates (18 October 2026).
 The unchanged external DOCM also passed. Jason completed the r3 check for cases 53–54 (18 October 2026).
 The Word findings above describe the original 38-case
 fixture, retained in the parent directory with its re-save.
-`case-statements.tsv` maps the original WD Appendix A plus the approved cases 53–54 (WD 0.5) and 55–57.
+`case-statements.tsv` maps the original WD Appendix A plus the approved cases 53–54 (WD 0.5), 55–82 (WD A.3, A.4) and 83–85.
 `expected-order.tsv` pins presentation and glossary order. `expected-findings.tsv` separates warnings,
 metadata and inspector findings from text counts. `expected-inspection.tsv` lists every finding an inspector
 makes, by location, with the capability it depends on (`any`, or an HTML reader present or absent), and
@@ -835,4 +837,22 @@ Golden conventions and baseline commands are in `../GOLDENS.md`.
 | Token | accepted | original | markup | option | with option | note | statements |
 |---|---|---|---|---|---|---|---|
 | `RNG82_SECTION` | yes | yes | yes |  |  | the body's w:sectPr carries w:pgNumType/@w:start 4294967295 (int32: Word reads -1); inspection: value.out_of_range | REQ-902, REQ-904 |
+
+### Case 83: an OLE package containing a PDF
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `PDF83_PACKAGE_TEXT` | – | – | – | `embedded: true` | – | the page text of probe.pdf in an Ole10Native stream: REQ-512 opens a package's file only when its name ends .txt | REQ-512 |
+
+### Case 84: a PDF embedded as Acrobat embeds it
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `PDF84_ACROBAT_TEXT` | – | – | – | `embedded: true` | – | the page text of the PDF in the storage's CONTENTS stream (ProgID AcroExch.Document.DC): REQ-512 opens no OLE binary but a .txt package | REQ-512 |
+
+### Case 85: a raster picture whose only text is drawn
+
+| Token | accepted | original | markup | option | with option | note | statements |
+|---|---|---|---|---|---|---|---|
+| `PIX85_DRAWN_TEXT` | – | – | – | `alt_text: true` | – | drawn in the PNG's pixels (black on white, 64 px, no anti-aliasing), in no text, attribute or property: REQ-514's description is the picture's descr, else its name (Picture 1, under alt_text: true); only OCR reads it | REQ-514 |
 

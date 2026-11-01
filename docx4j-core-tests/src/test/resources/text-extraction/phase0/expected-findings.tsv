@@ -241,6 +241,9 @@ case	fixture	channel	kind	selector	scenario	expected	statements
 0	extraction-probe-html.docx	inspect	text.hidden	HTM_C_INLINE	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
 0	extraction-probe-html.docx	inspect	text.hidden	HTM_C_AFTER	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
 0	extraction-probe-html.docx	inspect	text.hidden	HTM_D_FIRST_PART	html reader present	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907, REQ-513
+85	extraction-probe-opaque.docx	inspect	alt_text.name	Picture 1	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+83	extraction-probe-opaque.docx	inspect	object.embedded	/word/embeddings/opaque83.bin	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
+84	extraction-probe-opaque.docx	inspect	object.embedded	/word/embeddings/opaque84.bin	default	1	REQ-901, REQ-902, REQ-904, REQ-905, REQ-906, REQ-907
 50	extraction-probe-external.docm	metadata	fields_update_on_open		default	true	REQ-506
 52	extraction-probe-external.docm	metadata	ProbeCustom		default	CPR52_CUSTOM	REQ-515
 52	extraction-probe-external.docm	metadata	Company		default	APP52_COMPANY	REQ-515

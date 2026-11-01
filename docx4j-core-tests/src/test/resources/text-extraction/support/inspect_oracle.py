@@ -34,7 +34,7 @@ from lxml import etree
 
 FIXTURES = [
     'extraction-probe.docx', 'extraction-probe-external.docm', 'extraction-probe-structure.docx',
-    'extraction-probe-inspect.docx', 'extraction-probe-html.docx']
+    'extraction-probe-inspect.docx', 'extraction-probe-html.docx', 'extraction-probe-opaque.docx']
 
 # The capability column (CR-050 phase 4): a row an inspector makes in every environment, or only without an
 # HTML reader (an HTML, XHTML or MHT chunk it cannot decode), or only with one (the hand-written rows of

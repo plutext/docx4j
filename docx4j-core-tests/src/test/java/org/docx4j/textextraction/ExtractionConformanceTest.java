@@ -50,7 +50,8 @@ public class ExtractionConformanceTest {
         ExtractionFixtureChecks.check(Files.readAllBytes(dir.resolve("extraction-probe.docx")),
                 Files.readAllBytes(dir.resolve("extraction-probe-external.docm")),
                 Files.readAllBytes(dir.resolve(ExtractionStructureCases.FIXTURE)),
-                Files.readAllBytes(dir.resolve(ExtractionInspectCases.FIXTURE)), catalogue);
+                Files.readAllBytes(dir.resolve(ExtractionInspectCases.FIXTURE)),
+                Files.readAllBytes(dir.resolve(ExtractionOpaqueCases.FIXTURE)), catalogue);
         assertEquals(ExtractionInspection.findingsTable(dir), Files.readString(dir.resolve("expected-findings.tsv")));
         assertEquals(ExtractionAdditionalCases.orders(), Files.readString(dir.resolve("expected-order.tsv")));
     }
@@ -128,10 +129,10 @@ public class ExtractionConformanceTest {
         List<Map<String, String>> additions = ExtractionConformance.table(dir.getParent().resolve("support/additional-case-statements.tsv"));
         // 53-54 (WD 0.5), 55-57 (extraction-probe-structure.docx, 19 October 2026), 58-67 (extraction-probe-inspect.docx, CR-050),
         // 68-74 (the same fixture, the text a picture draws, CR-050 phase 3), 75-82 (the same fixture, an integer attribute
-        // beyond Word's storage width, CR-066 phase 4)
-        assertEquals(30, additions.size());
+        // beyond Word's storage width, CR-066 phase 4), 83-85 (extraction-probe-opaque.docx, 2 November 2026)
+        assertEquals(33, additions.size());
         appendix.addAll(additions);
-        assertEquals(82, generated.size());
+        assertEquals(85, generated.size());
         String readme = Files.readString(dir.resolve("README.md"));
         for (int i = 0; i < appendix.size(); i++) {
             assertEquals(appendix.get(i).get("case"), generated.get(i).get("case"));
