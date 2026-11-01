@@ -2,6 +2,37 @@ CHANGELOG
 =========
 
 
+Version 17.3.6
+===============
+
+Release date
+------------
+
+[]
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Claude Opus 5.5
+
+
+Changes in Version 17.3.6
+--------------------------
+
+**Bump deps**
+
+   org.apache.xmlgraphics:batik-* ......................   1.19 -> 1.20
+   org.apache.xmlgraphics:xmlgraphics-commons ..........   2.11 -> 2.12
+   org.docx4j:docx4j-fo-renderer ....................... 2.11-docx4j.8 -> 2.12-docx4j.1
+
+**PDF output.**
+- The FO renderer is on the Apache FOP 2.12 line (docx4j-fo-renderer 2.12-docx4j.1), and `-Papache-fop` builds
+  against Apache FOP 2.12. A 2.11 renderer still loads, with FopCapabilities' line warning.
+
+
+
 Version 17.3.5
 ===============
 

@@ -27,7 +27,7 @@ import org.junit.Test;
 
 /**
  * The FO renderer probe (CR-020 phase 0), on whichever renderer the build put on the
- * classpath: the docx4j FO renderer by default (from 17.3.0), Apache FOP 2.11 under -Papache-fop.
+ * classpath: the docx4j FO renderer by default (from 17.3.0), Apache FOP 2.12 under -Papache-fop.
  * The assertions hold on both; the ones that depend on which it is check that the probe
  * agrees with the classpath.
  */
@@ -56,7 +56,7 @@ public class FopCapabilitiesTest {
 		assertTrue(c.describe(), c.describe().startsWith("FO renderer: "));
 		if (c.isDocx4jRenderer()) {
 			assertTrue(c.describe(), c.describe().contains("docx4j-fo-renderer "));
-			assertTrue(c.getVersion(), c.getVersion().startsWith("2.11-docx4j."));
+			assertTrue(c.getVersion(), c.getVersion().startsWith(FopCapabilities.BUILT_FOR_LINE + "-docx4j."));
 		} else {
 			assertTrue(c.describe(), c.describe().contains("Apache FOP "));
 		}
@@ -82,11 +82,12 @@ public class FopCapabilitiesTest {
 	public void apacheClassesAheadOfTheRendererDisableItsHooks() {
 		FopCapabilities honest = FopCapabilities.probe(FopCapabilities.class.getClassLoader());
 		if (!honest.isDocx4jRenderer()) return;   // Apache FOP alone: nothing to shadow
-		FopCapabilities mixed = FopCapabilities.probe(FopCapabilities.class.getClassLoader(), "2.11");
+		String apache = FopCapabilities.BUILT_FOR_LINE;   // Apache's own release of the renderer's line
+		FopCapabilities mixed = FopCapabilities.probe(FopCapabilities.class.getClassLoader(), apache);
 		assertFalse(mixed.describe(), mixed.isDocx4jRenderer());
 		assertTrue(mixed.describe(), mixed.getCapabilities().isEmpty());
-		assertEquals("2.11", mixed.getVersion());
-		assertTrue(mixed.getWarnings().toString(), mixed.getWarnings().toString().contains("Apache FOP 2.11")
+		assertEquals(apache, mixed.getVersion());
+		assertTrue(mixed.getWarnings().toString(), mixed.getWarnings().toString().contains("Apache FOP " + apache)
 				&& mixed.getWarnings().toString().contains(honest.getVersion()));
 		// the same version as the marker's is the renderer, hooks and all
 		FopCapabilities same = FopCapabilities.probe(FopCapabilities.class.getClassLoader(), honest.getVersion());
@@ -94,6 +95,14 @@ public class FopCapabilitiesTest {
 		assertEquals(honest.getCapabilities(), same.getCapabilities());
 		// a version FOP cannot report (no jar manifest) is no evidence either way
 		assertTrue(FopCapabilities.probe(FopCapabilities.class.getClassLoader(), "unknown").isDocx4jRenderer());
+	}
+
+	/** A FOP of the line before (Apache FOP 2.11, or ahead of the renderer): warned about, not refused. */
+	@Test
+	public void aFopOfAnotherLineIsWarnedAbout() {
+		FopCapabilities old = FopCapabilities.probe(FopCapabilities.class.getClassLoader(), "2.11");
+		assertTrue(old.getWarnings().toString(), old.getWarnings().toString().contains("built for the Apache FOP "
+				+ FopCapabilities.BUILT_FOR_LINE + " line, but the renderer found is 2.11 (line 2.11)"));
 	}
 
 	@Test
@@ -127,6 +136,7 @@ public class FopCapabilitiesTest {
 		assertEquals("2.11", FopCapabilities.lineOf("2.11-docx4j.1"));
 		assertEquals("2.11", FopCapabilities.lineOf("2.11-docx4j.1-SNAPSHOT"));
 		assertEquals("2.12", FopCapabilities.lineOf("2.12.0-SNAPSHOT"));
+		assertEquals("2.12", FopCapabilities.lineOf("2.12-docx4j.1-SNAPSHOT"));
 		assertEquals("unknown", FopCapabilities.lineOf("SVN"));
 		assertEquals("unknown", FopCapabilities.lineOf(null));
 	}

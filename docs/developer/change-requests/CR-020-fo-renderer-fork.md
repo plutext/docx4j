@@ -1273,6 +1273,44 @@ and nothing copied. Each now asserts the shape for the capability the renderer o
 .6 and .7 alike, checked on both); `reserveBandCanBeTurnedOff` also turns `wrapPageAnchored` off, so it still
 tests its property on either renderer.
 
+### docx4j moves to the 2.12 line, 2.12-docx4j.1, for 17.3.6 (2026-11-01)
+
+Jason, 2026-11-01: "move to the 2.12 line". The fork's 2.12-docx4j.1 (fop/CR-030: Apache FOP 2.12 as the base, Apache's
+fop-2_12 merged at 263be37e7, line commit bb92342d3; Batik 1.20, xmlgraphics-commons 2.12, CR-009's three commons
+workarounds undone) is not on Maven Central yet, so docx4j-export-fo declares 2.12-docx4j.1-SNAPSHOT. That has to
+change to the release before docx4j is pushed, as .5 to .8 did. 2.11-docx4j.9 never ships. What changed here:
+
+- `fo.renderer.version` 2.12-docx4j.1-SNAPSHOT, and `-Papache-fop` on Apache FOP 2.12 (on Central). Batik 1.19 -> 1.20
+  (docx4j-export-fo, docx4j-chart-render), xmlgraphics-commons 2.11 -> 2.12 (docx4j-core), and the harness pom
+  likewise.
+- `FopCapabilities.BUILT_FOR_LINE` "2.12". `FopCapabilitiesTest` takes the line from the constant and gains
+  `aFopOfAnotherLineIsWarnedAbout` (a 2.11 FOP is warned about, not refused).
+- `xml-apis:xml-apis-ext` 1.3.04 declared in docx4j-export-fo. Batik 1.20 reaches it only through batik-css and
+  batik-parser, and docx4j's exclusions cut both paths, so every SVG failed: 13 export-fo-tests errors,
+  `NoClassDefFoundError: org/w3c/dom/svg/SVGDocument`. 17.3.5's published pom had it transitively; apart from the
+  versions, it was the only dependency that changed.
+- `LBP.setRuleStyle` finds the int setter by reflection on the fork too. The direct call to the fork's
+  `Leader.setRuleStyle(int)` does not compile against Apache FOP 2.12, which released FOP-3325
+  (`setRuleStyle(BorderStyle)`); `FopHooks.RULE_STYLE_INT` is gone with it.
+
+**Gate on the drop:** b298 = the fork's r50 (2.12-docx4j.1-SNAPSHOT at bb92342d3) on b297's classpath, with every
+batik jar at 1.20 and xmlgraphics-commons 2.12, against b297 (the same on .8, rendered the same day): 0 movers on real,
+real2, real3, real-c2 and the probes; scoreboards and classes.txt identical; events equal per document. The renderer
+line reads 2.12-docx4j.1-SNAPSHOT with 27 hooks, the same list as .8's (`~/fidelity-cr030/gate-b297-b298.sh`;
+Enterprise register 3c6dc9b).
+
+**Reactor on the 2.12 line:** the fork built from bb92342d3 into a scratch local repository (~/.m2 as its read-only
+tail), with classes identical to r50's. core-tests 2340/0 (30 skipped), export-fo 247/0, export-fo-tests 865/0
+(9 skipped), digsig 138/0, both bundles built. Under `-Papache-fop` on Apache FOP 2.12: export-fo 247/0, export-fo-tests
+865/0 (9 skipped).
+
+**Not done:** `WordLineLayoutManager` is still a copy of FOP 2.11's `LineLayoutManager`. Of the six hunks 2.12
+changed there, it carries the curChildLM null check and `unwrapEarlierPass`. It lacks db3602d17's FOP-3331 restart fix
+(a left float could drop a paragraph's first word) and f84f61fe5's FOP-3333 `lineArea.completeTraits` in
+`addBlockArea` (memory only, and absent from Apache FOP 2.11). The fork's own `LineLayoutManager` has had both since
+2.11-docx4j.7, so the copy has lacked them on .7 and .8 too. Re-deriving it (README-word-layout.md) is a layout
+change and wants its own gate.
+
 ## 9. Phase 2 classification (2026-09-19)
 
 ### 9.1 Method and numbers

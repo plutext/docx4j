@@ -541,14 +541,13 @@ final class LBP {
 	}
 
 	// ---- area.inline.Leader's rule style.  Apache FOP 2.11 has setRuleStyle(int); Apache's
-	// FOP-3325 (on main, not yet released) replaced it with setRuleStyle(BorderStyle).  The docx4j
-	// FO renderer keeps the int form (capability rule-style-int), so the call is direct there;
-	// on any other FOP the setter it has is found once by reflection, the int form first.
-	private static final java.lang.reflect.Method RULE_STYLE_BY_INT
-			= FopHooks.RULE_STYLE_INT ? null : leaderSetter(int.class);
+	// FOP-3325 (released in 2.12) replaced it with setRuleStyle(BorderStyle).  The docx4j FO
+	// renderer keeps the int form (capability rule-style-int).  The setter the FOP on the classpath
+	// has is found once by reflection, the int form first: a direct call to the int form (the fork's
+	// path until 17.3.5) does not compile against Apache FOP 2.12, which -Papache-fop builds on.
+	private static final java.lang.reflect.Method RULE_STYLE_BY_INT = leaderSetter(int.class);
 	private static final java.lang.reflect.Method RULE_STYLE_BY_BORDER_STYLE
-			= FopHooks.RULE_STYLE_INT || RULE_STYLE_BY_INT != null ? null
-					: leaderSetter(org.apache.fop.traits.BorderStyle.class);
+			= RULE_STYLE_BY_INT != null ? null : leaderSetter(org.apache.fop.traits.BorderStyle.class);
 
 	private static java.lang.reflect.Method leaderSetter(Class<?> param) {
 		try {
@@ -561,10 +560,6 @@ final class LBP {
 	/** Sets a rule leader's style (an {@code EN_} constant, as {@code fo.flow.Leader.getRuleStyle()}
 	 *  returns it) on whichever FOP is on the classpath.  @since 17.3.1 */
 	static void setRuleStyle(org.apache.fop.area.inline.Leader rule, int ruleStyle) {
-		if (FopHooks.RULE_STYLE_INT) {
-			rule.setRuleStyle(ruleStyle);
-			return;
-		}
 		try {
 			if (RULE_STYLE_BY_INT != null) {
 				RULE_STYLE_BY_INT.invoke(rule, ruleStyle);

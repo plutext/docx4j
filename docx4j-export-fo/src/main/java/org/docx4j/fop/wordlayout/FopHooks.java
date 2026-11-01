@@ -48,8 +48,6 @@ final class FopHooks {
 	static final boolean LEADER_PLACEMENT = FopCapabilities.has(Capability.LEADER_PLACEMENT);
 	static final boolean INLINE_ACCESS = FopCapabilities.has(Capability.INLINE_ACCESS);
 	/** @since 17.3.1 */
-	static final boolean RULE_STYLE_INT = FopCapabilities.has(Capability.RULE_STYLE_INT);
-	/** @since 17.3.1 */
 	static final boolean LETTER_SPACE_WIDTH = FopCapabilities.has(Capability.LETTER_SPACE_WIDTH);
 
 	private FopHooks() {}

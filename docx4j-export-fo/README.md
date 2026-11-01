@@ -6,12 +6,12 @@ With docx4j 8, this maven module builds as an optional jar. (From 3.3.0 to 6.1.x
 
 docx4j will use export-FO automatically if it finds it in your classpath.
 
-## The FO renderer: the docx4j FO renderer, or Apache FOP 2.11
+## The FO renderer: the docx4j FO renderer, or Apache FOP 2.12
 
 Two renderers are supported (docx4j CR-020):
 
 * **The docx4j FO renderer** (`org.docx4j:docx4j-fo-renderer`), the default dependency
-  of this module from 17.3.0: an upstream-tracking fork of Apache FOP 2.11 maintained at
+  of this module from 17.3.0: an upstream-tracking fork of Apache FOP 2.12 maintained at
   https://github.com/plutext/xmlgraphics-fop, carrying the fixes docx4j found in FOP
   ahead of their upstream release and hooks for the Word layout rules that reflection
   cannot reach. The layout is the same as on Apache FOP (the batch 49 baselines on the
@@ -24,21 +24,21 @@ Two renderers are supported (docx4j CR-020):
   `fox:gsub-features`, so the single-byte `+noliga` font copies (which FOP embeds whole)
   are not used, and a corpus that rendered to 590 MB renders to 106 MB (Word: 190 MB).
 
-  > This is a modified distribution derived from Apache FOP 2.11. It is maintained by
+  > This is a modified distribution derived from Apache FOP 2.12. It is maintained by
   > Plutext/docx4j and is not an Apache Software Foundation release. Apache FOP is a
   > trademark of the Apache Software Foundation.
 
-* **Apache FOP 2.11** (`org.apache.xmlgraphics:fop`), the default until 17.2.1, and still
+* **Apache FOP 2.12** (`org.apache.xmlgraphics:fop`), the default (as 2.11) until 17.2.1, and still
   supported. **To use it**, exclude `org.docx4j:docx4j-fo-renderer`,
   `docx4j-fo-renderer-core`, `docx4j-fo-renderer-events` and `docx4j-fo-renderer-util`
   from `docx4j-export-fo` (its published pom lists all four) and depend on
-  `org.apache.xmlgraphics:fop:2.11` yourself; `-Papache-fop` builds this module that way.
+  `org.apache.xmlgraphics:fop:2.12` yourself; `-Papache-fop` builds this module that way.
   The rules that need a fork hook are then off (the start-up line below names them), and
   the rest renders as before.
 
 At start-up `org.docx4j.convert.out.fo.FopCapabilities` probes which one is present and
-logs one line at INFO, e.g. `FO renderer: Apache FOP 2.11, hooks: none (...)` or
-`FO renderer: docx4j-fo-renderer 2.11-docx4j.5, hooks: ...`. Every rule that needs a hook
+logs one line at INFO, e.g. `FO renderer: Apache FOP 2.12, hooks: none (...)` or
+`FO renderer: docx4j-fo-renderer 2.12-docx4j.1, hooks: ...`. Every rule that needs a hook
 of the fork asks `FopCapabilities.has(...)` and falls back on Apache FOP, so the rendering
 on Apache FOP is what it was before the fork, and the line says which rules are off.
 
@@ -48,7 +48,7 @@ classpath**. The probe counts the copies of FOP it can see and warns naming each
 (classpath order decides which wins, silently); the fix is to exclude
 `org.apache.xmlgraphics:fop`, `fop-core`, `fop-events` and `fop-util` wherever another
 dependency drags them in. It also warns when the FOP found is of another line than the
-2.11 this module's layout managers subclass.
+2.12 this module's layout managers subclass (2.11 until 17.3.5).
 
 ## Font jars
 

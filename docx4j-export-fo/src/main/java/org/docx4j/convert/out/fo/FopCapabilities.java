@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Which FO renderer is on the classpath, probed once per JVM: Apache FOP 2.11, or the
+ * Which FO renderer is on the classpath, probed once per JVM: Apache FOP 2.12, or the
  * docx4j FO renderer ({@code org.docx4j:docx4j-fo-renderer}, an upstream-tracking fork of
  * it with hooks docx4j's Word-layout rules can use), and which of those hooks it carries.
  *
@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
  * two copies of FOP on the classpath (the fork keeps Apache's packages, so the copies
  * shadow each other and classpath order decides which wins - a warning names both), and
  * a FOP of another line than the one docx4j-export-fo was built for (its layout managers
- * subclass 2.11 internals - a warning gives both versions).</p>
+ * subclass 2.12 internals - a warning gives both versions).</p>
  *
  * <p>Design: docx4j CR-020. The fork's marker is {@code org.apache.fop.docx4j.Docx4jFop},
  * read reflectively so that this module compiles against Apache FOP.</p>
@@ -58,8 +58,8 @@ public final class FopCapabilities {
 
 	private static final Logger log = LoggerFactory.getLogger(FopCapabilities.class);
 
-	/** The Apache FOP line this module's layout managers were written against. */
-	public static final String BUILT_FOR_LINE = "2.11";
+	/** The Apache FOP line this module is built and tested against: 2.12 from 17.3.6, 2.11 before. */
+	public static final String BUILT_FOR_LINE = "2.12";
 
 	/** The fork's marker class; its {@code version()} and {@code capabilities()} statics are the contract. */
 	static final String MARKER_CLASS = "org.apache.fop.docx4j.Docx4jFop";
@@ -253,7 +253,7 @@ public final class FopCapabilities {
 		return docx4jRenderer;
 	}
 
-	/** The renderer's version as it reports it: {@code 2.11}, {@code 2.11-docx4j.1}, or {@code unknown}. */
+	/** The renderer's version as it reports it: {@code 2.12}, {@code 2.12-docx4j.1}, or {@code unknown}. */
 	public String getVersion() {
 		return version;
 	}

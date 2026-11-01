@@ -17,7 +17,7 @@
 	</description>
 	<properties>
 		<maven.deploy.skip>true</maven.deploy.skip>
-		<!-- The FO renderer the harness scores with (CR-020 §3.3): Apache FOP 2.11 by default,
+		<!-- The FO renderer the harness scores with (CR-020 §3.3): Apache FOP 2.12 by default,
 		     the docx4j FO renderer under -Pfo-renderer-fork.  The harness declares the renderer
 		     itself (docx4j-export-fo's installed pom names one of them, the docx4j FO renderer
 		     from 17.3.0, and a profile is not transitive; both are excluded from it below), and the profile copies the runtime jars to target/lib-fork instead of
@@ -27,7 +27,7 @@
 		<fo.renderer.groupId>org.apache.xmlgraphics</fo.renderer.groupId>
 		<fo.renderer.artifactId>fop</fo.renderer.artifactId>
 		<fo.renderer.events.artifactId>fop-events</fo.renderer.events.artifactId>
-		<fo.renderer.version>2.11</fo.renderer.version>
+		<fo.renderer.version>2.12</fo.renderer.version>
 		<fidelity.libDir>${project.build.directory}/lib</fidelity.libDir>
 	</properties>
 	<build>
@@ -198,9 +198,9 @@
 				<fo.renderer.events.artifactId>docx4j-fo-renderer-events</fo.renderer.events.artifactId>
 				<!-- the fork's DEVELOPMENT snapshot, which is what a gate measures; the released
 				     version is what docx4j-export-fo depends on.  Bump this with the fork's
-				     branch (2.11-docx4j.6-SNAPSHOT since 2026-10-07, 2.11-docx4j.5 being released), or a gate scores the previous jars
+				     branch (2.12-docx4j.1-SNAPSHOT since 2026-11-01, the 2.12 line), or a gate scores the previous jars
 				     under ~/.m2 and passes without measuring anything. -->
-				<fo.renderer.version>2.11-docx4j.6-SNAPSHOT</fo.renderer.version>
+				<fo.renderer.version>2.12-docx4j.1-SNAPSHOT</fo.renderer.version>
 				<fidelity.libDir>${project.build.directory}/lib-fork</fidelity.libDir>
 			</properties>
 		</profile>
