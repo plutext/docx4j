@@ -49,19 +49,22 @@ public enum FontCharset {
     SYMBOL(0x00000002, ""),
     /** Specifies the Apple Macintosh character set. */
     MAC(0x0000004D, "MacRoman"),
+    // docx4j: the four CJK sets below are Windows' code pages (932, 949, 936, 950), which GDI decodes a
+    // record with, in place of POI's Shift_JIS, cp949 (Java's IBM-949), GB2312 and Big5: cp932 has NEC
+    // row 13's circled digits, which Shift_JIS lacks. The same table as InspectImages' (CR-050 D21).
     /** Specifies the Japanese character set. */
-    SHIFTJIS(0x00000080, "Shift_JIS"),
+    SHIFTJIS(0x00000080, "windows-31j"),
     /** Also spelled "Hangeul". Specifies the Hangul Korean character set. */
-    HANGUL(0x00000081, "cp949"),
+    HANGUL(0x00000081, "x-windows-949"),
     /** Also spelled "Johap". Specifies the Johab Korean character set. */
     JOHAB(0x00000082, "x-Johab"),
     /** Specifies the "simplified" Chinese character set for People's Republic of China. */
-    GB2312(0x00000086, "GB2312"),
+    GB2312(0x00000086, "GBK"),
     /**
      * Specifies the "traditional" Chinese character set, used mostly in
      * Taiwan and in the Hong Kong and Macao Special Administrative Regions.
      */
-    CHINESEBIG5(0x00000088, "Big5"),
+    CHINESEBIG5(0x00000088, "x-windows-950"),
     /** Specifies the Greek character set. */
     GREEK(0x000000A1, "Cp1253"),
     /** Specifies the Turkish character set. */

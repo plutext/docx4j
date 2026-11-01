@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 /**
  * Renders a Windows metafile to SVG with Batik's {@code SVGGraphics2D}, for
@@ -113,6 +115,7 @@ public class BatikMetafileSvgProvider implements MetafileSvgProvider {
 
 			Element root = doc.getDocumentElement();
 			g.getRoot(root);
+			dropNonXmlCharacters(root);
 
 			/* The picture fills the frame the document gives it, exactly: the width and
 			 * height are in points and the viewBox maps one user unit to one point, so
@@ -132,6 +135,50 @@ public class BatikMetafileSvgProvider implements MetafileSvgProvider {
 			log.warn("Could not render the metafile as SVG: " + t, t);
 			return null;
 		}
+	}
+
+	/**
+	 * Drops from the SVG's text and attribute values each character XML 1.0 cannot carry (a C0
+	 * control other than tab, line feed and carriage return; an unpaired surrogate; U+FFFE and
+	 * U+FFFF). A metafile's text records can hold one, and the SVG goes into the FO, or the HTML,
+	 * as XML: serialised as {@code &#0;} it made the whole FO unreadable.
+	 * @since 17.3.6
+	 */
+	static void dropNonXmlCharacters(Node node) {
+		if (node.getNodeType() == Node.TEXT_NODE || node.getNodeType() == Node.CDATA_SECTION_NODE) {
+			String clean = xmlCharacters(node.getNodeValue());
+			if (clean != null) node.setNodeValue(clean);
+			return;
+		}
+		NamedNodeMap attributes = node.getAttributes();
+		if (attributes != null) {
+			for (int i = 0; i < attributes.getLength(); i++) {
+				Node a = attributes.item(i);
+				String clean = xmlCharacters(a.getNodeValue());
+				if (clean != null) a.setNodeValue(clean);
+			}
+		}
+		for (Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
+			dropNonXmlCharacters(child);
+		}
+	}
+
+	/** The text without the characters XML 1.0 cannot carry, or null where it has none. */
+	private static String xmlCharacters(String s) {
+		if (s == null) return null;
+		StringBuilder sb = null;
+		for (int i = 0; i < s.length(); ) {
+			int cp = s.codePointAt(i);
+			int n = Character.charCount(cp);
+			boolean legal = cp == 0x9 || cp == 0xA || cp == 0xD
+					|| (cp >= 0x20 && cp <= 0xD7FF)
+					|| (cp >= 0xE000 && cp <= 0xFFFD)
+					|| (cp >= 0x10000 && cp <= 0x10FFFF);
+			if (!legal && sb == null) sb = new StringBuilder(s.length()).append(s, 0, i);
+			if (legal && sb != null) sb.appendCodePoint(cp);
+			i += n;
+		}
+		return sb == null ? null : sb.toString();
 	}
 
 	private static final String XMLNS_NS = "http://www.w3.org/2000/xmlns/";

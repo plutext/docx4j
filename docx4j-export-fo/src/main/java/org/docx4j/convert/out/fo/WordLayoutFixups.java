@@ -123,12 +123,21 @@ public final class WordLayoutFixups {
 	 * @param compat the document's w:compat switches, each resolved to the value the
 	 *        document states or, where it states none, to its compatibility mode's
 	 *        default (see {@link org.docx4j.model.CompatibilityOptions}).
+	 * @throws IllegalArgumentException where foDocument is not well-formed XML (since 17.3.6;
+	 *         before, it was returned unchanged, and FOP failed on its hint attributes)
 	 * @since 17.1.0
 	 */
 	public static String apply(String foDocument, org.docx4j.model.CompatibilityOptions compat,
 			org.docx4j.model.HyphenationSettings hyphenation) {
+		Document doc;
 		try {
-			Document doc = XmlUtils.getNewDocumentBuilder().parse(new InputSource(new StringReader(foDocument)));
+			doc = XmlUtils.getNewDocumentBuilder().parse(new InputSource(new StringReader(foDocument)));
+		} catch (Exception e) {
+			// FOP cannot read it either; passed on, it failed on the first hint attribute it met
+			// ("Invalid property encountered on "fo:block": docx4j-baseline"), which hid this.  @since 17.3.6
+			throw new IllegalArgumentException("The FO document is not well-formed XML: " + e.getMessage(), e);
+		}
+		try {
 			apply(doc, compat, hyphenation);
 			Transformer t = XmlUtils.getTransformerFactory().newTransformer();
 			t.setOutputProperty(OutputKeys.INDENT, "no");

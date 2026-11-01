@@ -167,13 +167,25 @@ The remaining differences are cosmetic (brace style, `@author` tags) plus:
      and switch expressions do not compile at release 11.
    - `24fa97f624` (public mutable statics made private): API tidying only.
 
+8. **docx4j's own fixes to metafile text (November 2026)**, found when `Docx4J.toPDF` failed on
+   the text extraction probe's case 72 (a Shift-JIS `META_EXTTEXTOUT` ending in ①, odd in length);
+   upstream has neither, and both are candidates to offer it:
+   - `FontCharset`: SHIFTJIS, HANGUL, GB2312 and CHINESEBIG5 decode with Windows' code pages
+     (`windows-31j`, `x-windows-949`, `GBK`, `x-windows-950`), as GDI does, where POI names
+     `Shift_JIS`, `cp949` (which Java resolves to IBM's 949), `GB2312` and `Big5`. cp932 has NEC
+     row 13's circled digits, which Shift_JIS lacks: ① decoded as U+FFFD and "@". The same table as
+     the inspector's (`org.docx4j.model.text.InspectImages`).
+   - `HwmfGraphics.trimText` drops trailing NULs: it cuts the decoded string at the record's count,
+     which for a double-byte string counts bytes, not chars, so the record's padding came through
+     as a NUL, which the SVG then carried into the FO as `&#0;` (the inspector's rule too).
+
 No other functional changes were made: no records were implemented.
 
 **How much this copy differs from upstream:** 12 of the 68 hwmf/hemf files differed from
 5.5.1 beyond the package rename after round one; round two (item 7) touched 14 more, and every
-difference is one of the seven categories above. Of the copied support classes, only
-`common/usermodel/fonts/FontCharset` and `sl/draw/BitmapImageRenderer` differ (the logging swap,
-and in `BitmapImageRenderer` `dfa53082b3`). To check this yourself:
+difference is one of the eight categories above. Of the copied support classes, only
+`common/usermodel/fonts/FontCharset` and `sl/draw/BitmapImageRenderer` differ (the logging swap;
+in `FontCharset` the code pages, item 8; in `BitmapImageRenderer` `dfa53082b3`). To check this yourself:
 
 ```bash
 # un-rename a copied file and strip the 6-line Plutext notice, then diff

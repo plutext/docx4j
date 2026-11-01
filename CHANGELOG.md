@@ -30,6 +30,13 @@ Changes in Version 17.3.6
 **PDF output.**
 - The FO renderer is on the Apache FOP 2.12 line (docx4j-fo-renderer 2.12-docx4j.1), and `-Papache-fop` builds
   against Apache FOP 2.12. A 2.11 renderer still loads, with FopCapabilities' line warning.
+- A WMF or EMF picture's Chinese, Japanese or Korean text no longer breaks PDF output: an odd-length record's
+  padding came through as a NUL, which made the FO unreadable. That text now decodes with Windows' code pages
+  (① was U+FFFD). An FO that is not well-formed XML now fails with its parse error.
+
+**Metafiles.**
+- The WMF/EMF code (repackaged Apache POI 5.5.1) takes POI's fixes since June: bounds and header checks, a
+  zero-size bitmap draws nothing, 15 bare asserts now warnings or errors (the hwmf package README, item 7).
 
 
 

@@ -16,6 +16,20 @@ public class WordLayoutFixupsTest {
 				+ "</fo:flow></fo:page-sequence></fo:root>";
 	}
 
+	/**
+	 * An FO that is not well-formed fails with its own error (17.3.6): it was returned unchanged,
+	 * and FOP then failed on its first hint attribute ("docx4j-baseline"), which hid the cause.
+	 */
+	@Test
+	public void foThatIsNotXmlFailsWithTheParseError() {
+		try {
+			WordLayoutFixups.apply(flow("<fo:block docx4j-baseline=\"10pt\">a&#0;b</fo:block>"), 15);
+			org.junit.Assert.fail("expected IllegalArgumentException");
+		} catch (IllegalArgumentException expected) {
+			assertTrue(expected.getMessage(), expected.getMessage().startsWith("The FO document is not well-formed XML"));
+		}
+	}
+
 	@Test
 	public void pageBreakParagraphMergedIntoNextBlock_mode15() {
 		String in = flow("<fo:block space-before=\"0pt\">one</fo:block>"

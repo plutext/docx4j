@@ -700,7 +700,15 @@ public class HwmfGraphics implements HwmfCharsetAware {
         }
 
         String textString = new String(text, 0, trimLen, charset);
-        return textString.substring(0, Math.min(textString.length(), length));
+        textString = textString.substring(0, Math.min(textString.length(), length));
+        // docx4j: a string counted in bytes in a double-byte code page decodes to fewer chars than its
+        // bytes, so the cut above, at the count, kept the record's padding: a NUL, which SVG cannot carry
+        // (the inspector's rule too: InspectImages.line drops trailing NULs, a record's padding, decoded)
+        int end = textString.length();
+        while (end > 0 && textString.charAt(end - 1) == 0) {
+            end--;
+        }
+        return textString.substring(0, end);
     }
 
     private void updateHorizontalAlign(AffineTransform tx, TextLayout layout, boolean useAsianAlign) {
