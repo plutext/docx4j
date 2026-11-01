@@ -750,12 +750,13 @@ CP="target/classes:target/lib/*"
 java -cp "$CP" org.docx4j.fidelity.Fidelity score <corpusDir> <refPdfDir> <outDir> [baseline.csv]
 # -Dfidelity.timeoutSeconds=120  per-document conversion timeout (default 120)
 # -Dfidelity.only=id,id          restricts the run to those documents
+# -Dfidelity.threads=N           documents at once (default 12; 1 = sequential); see "Scoring in parallel" below
 ```
 
 Every `<id>.docx` in `corpusDir` that has an `<id>.pdf` in `refPdfDir` (the Word
 PDF of the same basename) is rendered to `<outDir>/fop/<id>.pdf` (and `.fo`) and
-compared against it. Documents are done smallest first, so a run that is cut
-short has still covered the most documents. A document that throws is one `error`
+compared against it. On one thread documents are done smallest first, so a run that is
+cut short has still covered the most documents. A document that throws is one `error`
 row and a document that hangs past the timeout is one `timeout` row; neither stops
 the run. No page images and no per-document HTML report are produced — at this
 scale the CSV is the report.
@@ -790,6 +791,69 @@ Columns:
 | `class` | which class of layout rule this document can be evidence for — `2`, `2n`, `3a` or `3b`, empty on an unscored row. See "The class and the substituted share" below and `RULE-CLASSES.md` |
 | `substShare` | the fraction of the document's text runs set in a substituted family, on whichever side is worse |
 | `basis` | which docx was scored: `corpus` (the third-party file) or `resaved` (Word's own save of it). The two are not comparable |
+
+### Scoring in parallel, and several corpora in one JVM
+
+`-Dfidelity.threads=N` scores N documents at once: by default 12, where a gate stops getting
+shorter on this 24-thread machine (see the measurements below); 1 is the sequential run, which
+every scoreboard before 2026-11-01 came from.
+Each document is still converted in its own thread named `fidelity-score-<id>`, under its
+own timeout, and its row, its `classes.txt` line and its `timings.csv` line take the place
+the sequential run gives them, so those files and `scoreboard.csv`/`.txt` do not depend on
+the thread count; only the order of the log does. With more than one thread the process's
+standard output and standard error are one stream, so that a progress line cannot cut an
+event line in a log that takes both (events.py reads an event at the start of a line).
+
+```bash
+# the four corpora in one JVM, a log each, then the probes in their own (they are scored
+# without -Dfidelity.hyphenate, and the docx4j properties are the JVM's)
+java -Xmx14g -Dfidelity.threads=12 -Dfidelity.fonts=... -Dfidelity.hyphenate=false -cp "$CP" \
+    org.docx4j.fidelity.Fidelity scoremany \
+    ~/fidelity-real/score/bNEW.log ~/fidelity-real/resaved-nofields ~/fidelity-real/goldens-nofields \
+        ~/fidelity-real/score/bNEW ~/fidelity-real/score/bOLD/scoreboard.csv \
+    ~/fidelity-real2/score/bNEW.log ...   # five arguments per corpus; '-' for no baseline
+```
+
+`scoremany` puts every corpus's documents in one pool, so one corpus's long document runs
+beside the others' documents rather than after them, and the JIT warms up once rather than
+per corpus (it is most of the CPU of a corpus-sized run: a 75 s sequential run of real-c2
+used 202 s of CPU, and through a 17 s run of it on 12 threads eight C2 compiler threads were
+busy). Each corpus gets the files its own `score`
+would write, its log included: what a document's conversion logs goes to the log of the
+corpus it belongs to; the start-up lines (the font set's walk) are the JVM's own output.
+
+- **`timings.csv`** (written by `score` and `scoremany`): per document, in the scoreboard's
+  order, `ms` (the timed work, or the timeout) and its parts `renderMs`, `refExtractMs`,
+  `candExtractMs`, `compareMs`, then `classMs` (the class reading, not timed). With more
+  than one thread, documents are started longest first by the *baseline* run's
+  `timings.csv` (documents it does not know first, largest first), else by size.
+- **The layout cache.** Word's PDFs do not change between runs, so their extracted layouts
+  are kept in `~/.cache/docx4j-fidelity/layouts` (`-Dfidelity.layoutCache=<dir>`, or `off`).
+  An entry is found by the SHA-256 of the PDF's bytes, under a directory named for a
+  fingerprint of the extractor's class files, PDFBox's version and every `fidelity.*`
+  property except those that only steer a run, so a change to any of them misses the cache
+  instead of reading a stale layout (and leaves the old directory, about 90 MB for the four
+  corpora and the probes, to be deleted freely). It holds the goldens' text: like the corpus,
+  it stays on this machine.
+- **The timeout is wall time**, and a document under contention takes longer: 2.4 times
+  as long at 12 threads, 3.1 at 16 (real-c2, 2026-11-01). A document near the timeout
+  sequentially can time out in parallel, and shows as a status change in movers.py.
+
+Measured 2026-11-01 on the i9-12900K (24 threads), b294's jars, all four corpora and the
+probes; every run gave b294's scoreboards, `classes.txt` and per-document event counts:
+
+| layout | wall |
+| --- | --- |
+| sequential, a JVM per corpus (b294) | 9.7 min |
+| a JVM per corpus, 12 threads, cache cold / warm | 166 s / 135 s |
+| `scoremany` + probes, 12 threads, baseline without / with `timings.csv` | 117 s / 90 s |
+
+Past 12 threads the run does not get shorter (8: 76 s, 12: 69 s, 16: 70 s for the four
+corpora): it is as long as real3's longest document, 47 s alone and about 69 s beside
+the others, started first. Memory is set by that one document, not by the thread count:
+12 GB live after a collection at 8 threads and at 16, so it needs `-Xmx14g` as it did
+sequentially (in `-Xmx8g` it is an `OutOfMemoryError` row); the JVM's peak RSS was 11 to
+15 GB.
 
 ### The class and the substituted share
 

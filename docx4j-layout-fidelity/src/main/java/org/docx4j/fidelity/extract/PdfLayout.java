@@ -8,9 +8,12 @@ import java.util.List;
  * (baseline, start/end x, text, font, size) and the line-art / image boxes.
  * All coordinates are in points with the origin at the top-left of the page.
  */
-public final class PdfLayout {
+public final class PdfLayout implements java.io.Serializable {
 
-	public static final class Line {
+	private static final long serialVersionUID = 1L; // a cached layout is keyed by these class files (LayoutCache)
+
+	public static final class Line implements java.io.Serializable {
+		private static final long serialVersionUID = 1L;
 		public int page;          // 0-based
 		public double y;          // baseline
 		public double x0, x1;
@@ -86,7 +89,7 @@ public final class PdfLayout {
 			return k;
 		}
 
-		private String key;
+		private transient String key; // derived: not kept in a cached layout (LayoutCache)
 
 		/** What a symbol bullet is collapsed to: U+2043 HYPHEN BULLET, which no corpus
 		 *  document uses as text of its own. */
@@ -295,7 +298,8 @@ public final class PdfLayout {
 		}
 	}
 
-	public static final class Box {
+	public static final class Box implements java.io.Serializable {
+		private static final long serialVersionUID = 1L;
 		public int page;
 		public double x, y, w, h;
 		public String kind;       // stroke | fill | image
