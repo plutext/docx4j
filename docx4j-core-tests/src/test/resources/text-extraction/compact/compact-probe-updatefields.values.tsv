@@ -1,0 +1,3 @@
+token	cached	update	word_f9	note
+C04_DATE_COND	STALE_OUTER	EXPIRED	VALID	the condition on a DATE whose stored result is 2030: docx4j's text model never computes DATE (WD), so it reads 2030 and says EXPIRED; Word rewrites DATE on open (2026) and says VALID
+C16_WILDCARD	WILD_MISS	WILD_MATCH	WILD_MATCH	a wildcard comparison (measured in phase 2)

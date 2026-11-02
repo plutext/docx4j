@@ -1,0 +1,4 @@
+token	stored	note
+R08_OVER_PAGE	PAGE_OTHER	an IF over PAGE (a layout field)
+R18_DOCVARIABLE	VAR_X	an IF over a DOCVARIABLE that does not exist (stored x)
+R14_SIMPLE_DIRTY	3	a w:fldSimple formula with w:dirty

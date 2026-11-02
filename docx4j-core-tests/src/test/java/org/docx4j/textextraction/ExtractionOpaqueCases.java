@@ -128,9 +128,13 @@ final class ExtractionOpaqueCases {
 
     /** An inline picture of the PNG at 96 dpi, named as Word names the first (Picture 1), with no descr or title. */
     static String picture(String image, byte[] png) throws IOException {
+        return picture(image, png, 1);                      // the fixture's only drawing
+    }
+
+    /** As {@link #picture(String, byte[])}, its drawing id (and name) given: the compact probe holds other drawings. */
+    static String picture(String image, byte[] png, int id) throws IOException {
         BufferedImage img = javax.imageio.ImageIO.read(new ByteArrayInputStream(png));
         long cx = img.getWidth() * 9525L, cy = img.getHeight() * 9525L;
-        int id = 1;                                         // the fixture's only drawing
         return "<w:r><w:drawing><wp:inline distT='0' distB='0' distL='0' distR='0'><wp:extent cx='" + cx + "' cy='" + cy + "'/>"
                 + "<wp:effectExtent l='0' t='0' r='0' b='0'/><wp:docPr id='" + id + "' name='Picture " + id + "'/>"
                 + "<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect='1'/></wp:cNvGraphicFramePr>"
