@@ -111,6 +111,16 @@ Both are in WD 0.62's NOTE to REQ-509. Exception 1 is this CR's one unmeasured r
   CB5 the converse, bound to an item's display text. Each surface is stale. docx4j's generator (`Docx4J.bind`, bind
   only) leaves RX1 and RX2 as they are, writes RX3's value, and shows CB4 and CB5 as `CB4_SECOND_ITEM` and
   `CB5_SECOND_ITEM`; the text model reads every surface. Waiting for Jason's Word open and save.
+  **Prior evidence** (core-ts check 56, 2026-10-23, Word 365 16.0.20326.20232; core-ts CR-002 §61.3; its
+  `test/fixtures/check56/56-writes.docx` and Word's save `test/check56/56-writes-word365.docx`, read here): sixteen
+  bound block controls, four untyped, eight `w:text`, four explicit `w:richText`; in Word's save all sixteen carry
+  `w:text`, the explicit `w:richText` ones included, and Office JS reports each as PlainText. An explicit `w:richText`
+  block holding two paragraphs (56c) would not open; Word's repair gave it `w:text` and one paragraph refilled from its
+  node. So Word binds an explicit `w:richText` control as plain text, and exception 1 is likely to become the value.
+  What check 56 does not show, and the probe adds: whether an ordinary open refreshes a stale surface (56-writes'
+  surfaces equalled their nodes), and a control at run level (RX1). If Word binds them, docx4j's generator, which
+  leaves an explicit `w:richText` unbound (`bind.xslt`), differs from Word there; core-ts's `applyBindings` already
+  binds RX2 as plain text (its CR-012 §27.3). That is a generator question for a CR of its own, not this one's.
 - **Phase 1: plain-text and typed controls.** `Extractor.bound()` by type (§3), the date and drop-down text from
   the generator's code, the check box's glyph, the inspector's comparison. Tests: the bind-plain B8 and the
   bind-rich-flatopc RT1 shapes; `typed-controls.docx` (the bind-typed probe, already a fixture) through `Texts.of`,
