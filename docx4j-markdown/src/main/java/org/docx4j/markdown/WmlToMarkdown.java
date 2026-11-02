@@ -27,6 +27,7 @@ import org.commonmark.node.Emphasis;
 import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.node.HardLineBreak;
 import org.commonmark.node.Heading;
+import org.commonmark.node.HtmlBlock;
 import org.commonmark.node.HtmlInline;
 import org.commonmark.node.Link;
 import org.commonmark.node.ListBlock;
@@ -126,6 +127,7 @@ class WmlToMarkdown {
 		List<TextBlock> blocks = result.blocks();
 		for (int i = 0; i < blocks.size(); i++) {
 			TextBlock block = blocks.get(i);
+			Node before = document.getLastChild();
 			if (isNote(block)) {
 				// a note's blocks are its definition, at the place the text model reads it (after the main story)
 				closeLists();
@@ -143,10 +145,25 @@ class WmlToMarkdown {
 			} else {
 				i = block(blocks, i, document);
 			}
+			if (options.isAddressComments()) addressComment(document, before, block);
 		}
 		closeLists();
 		closeQuote();
 		return document;
+	}
+
+	/**
+	 * The block's address before the first top-level node it wrote ({@link MarkdownExportOptions#setAddressComments});
+	 * none where it wrote no node of its own: an item or paragraph joining a list or quote already open, an empty
+	 * paragraph in a list.
+	 */
+	private static void addressComment(Document document, Node before, TextBlock block) {
+		Node first = before == null ? document.getFirstChild() : before.getNext();
+		if (first == null || block.getAddress() == null) return;
+		HtmlBlock comment = new HtmlBlock();
+		comment.setLiteral("<!-- " + block.getAddress()
+				+ (block.getParaId() == null ? "" : " paraId=" + block.getParaId()) + " -->");
+		first.insertBefore(comment);
 	}
 
 	// ---------------------------------------------------------------- blocks

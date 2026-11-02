@@ -32,6 +32,7 @@ public class MarkdownExportOptions {
 	private TextOptions textOptions = new TextOptions();
 	private String imageDirPath;
 	private String imageTargetUri;
+	private boolean addressComments;
 
 	/**
 	 * The text model's options the export reads with (CR-046): the view, the stories and content
@@ -102,6 +103,26 @@ public class MarkdownExportOptions {
 	 */
 	public MarkdownExportOptions setImageTargetUri(String imageTargetUri) {
 		this.imageTargetUri = imageTargetUri;
+		return this;
+	}
+
+	public boolean isAddressComments() {
+		return addressComments;
+	}
+
+	/**
+	 * Write each block's address before it, as an HTML comment: {@code <!-- body/3 paraId=5A2B1C3D -->}
+	 * (the text model's {@link org.docx4j.model.text.TextBlock#getAddress()}, then its {@code w14:paraId}
+	 * where the paragraph has one), so that a reader of the Markdown can name the block it means.  A
+	 * comment goes before each top-level node the export writes: a block whose paragraphs join a list
+	 * or a quote already open has its comment before that list or quote alone (a comment between two
+	 * items would end the list), a code block made of several paragraphs has the first's, and a note's
+	 * definition its first block's.  Default false, and without it the export is as before.
+	 *
+	 * @since 17.3.6
+	 */
+	public MarkdownExportOptions setAddressComments(boolean addressComments) {
+		this.addressComments = addressComments;
 		return this;
 	}
 

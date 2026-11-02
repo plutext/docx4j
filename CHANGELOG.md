@@ -58,6 +58,10 @@ Changes in Version 17.3.6
   where it showed the body's next number; a SET written as `w:fldSimple` shows nothing, as the complex form already
   did (CR-067 §15).
 
+**Markdown.**
+- `MarkdownExportOptions.setAddressComments(true)` writes each block's address before it as an HTML comment
+  (`<!-- body/3 paraId=5A2B1C3D -->`), so a reader of the Markdown can name the block it means; off by default.
+
 **Metafiles.**
 - The WMF/EMF code (repackaged Apache POI 5.5.1) takes POI's fixes since June: bounds and header checks, a
   zero-size bitmap draws nothing, 15 bare asserts now warnings or errors (the hwmf package README, item 7).
