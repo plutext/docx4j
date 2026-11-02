@@ -148,6 +148,117 @@ public class UnreadablePartTest {
 		pkg.getMainDocumentPart().getDocumentSettingsPart().removeEnforcement();
 	}
 
+	/**
+	 * 17.3.6: what needs a main part's whole content says which part could not be read and why, where
+	 * the text model returned no text and no warning, toPDF a NullPointerException and toHTML "Exception
+	 * exporting package". The text model's is unchecked (it declares nothing); the export's a Docx4JException.
+	 */
+	@Test
+	public void theTextModelSaysWhichPartCouldNotBeReadAndWhy() throws Exception {
+		byte[] docx = fixture("word/document.xml", "</w:body>", "</w:body");
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(docx));
+		assertNamesThePart(() -> org.docx4j.model.text.Texts.of(pkg), "/word/document.xml", "read as text");
+		assertNamesThePart(() -> org.docx4j.model.text.Texts.of(pkg.getMainDocumentPart(), null), "/word/document.xml", "read as text");
+	}
+
+	@Test
+	public void theTextModelOfAHeaderSaysWhichPartCouldNotBeRead() throws Exception {
+		byte[] docx = fixture("word/header.xml", "</w:hdr>", "</w:hdr");
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(docx));
+		HeaderPart header = null;
+		for (Part p : pkg.getParts().getParts().values()) if (p instanceof HeaderPart) header = (HeaderPart) p;
+		final HeaderPart hp = header;
+		assertNamesThePart(() -> org.docx4j.model.text.Texts.of(hp, null), "/word/header.xml", "read as text");
+	}
+
+	@Test
+	public void anHtmlExportSaysWhichPartCouldNotBeReadAndWhy() throws Exception {
+		byte[] docx = fixture("word/document.xml", "</w:body>", "</w:body");
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(docx));
+		try {
+			org.docx4j.Docx4J.toHTML(pkg, null, null, new ByteArrayOutputStream());
+			fail("expected a Docx4JException");
+		} catch (org.docx4j.openpackaging.exceptions.Docx4JException expected) {
+			assertTrue(expected.getMessage(), expected.getMessage().startsWith(
+					"The content of /word/document.xml could not be read, so it cannot be exported: "));
+			assertNotNull("the read failure is the cause", expected.getCause());
+		}
+	}
+
+	/** An embedded document whose main part cannot be read contributes nothing and raises content.not_read (REQ-512). */
+	@Test
+	public void anEmbeddedDocumentThatCannotBeReadIsContentNotRead() throws Exception {
+		WordprocessingMLPackage outer = WordprocessingMLPackage.createPackage();
+		MainDocumentPart mdp = outer.getMainDocumentPart();
+		org.docx4j.openpackaging.parts.WordprocessingML.EmbeddedPackagePart embedded =
+				new org.docx4j.openpackaging.parts.WordprocessingML.EmbeddedPackagePart(new PartName("/word/embeddings/unreadable.docx"));
+		embedded.setContentType(new org.docx4j.openpackaging.contenttype.ContentType(
+				"application/vnd.openxmlformats-officedocument.wordprocessingml.document"));
+		embedded.setBinaryData(fixture("word/document.xml", "</w:body>", "</w:body"));
+		String rId = mdp.addTargetPart(embedded).getId();
+		mdp.getContent().add(org.docx4j.XmlUtils.unmarshalString("<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
+				+ " xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
+				+ "<w:r><w:object><o:OLEObject Type=\"Embed\" ProgID=\"Word.Document.12\" r:id=\"" + rId + "\"/></w:object></w:r></w:p>"));
+		org.docx4j.model.text.TextResult result = org.docx4j.model.text.Texts.of(outer, new org.docx4j.model.text.TextOptions().embedded(true));
+		boolean notRead = false;
+		for (org.docx4j.model.text.TextWarning w : result.warnings()) {
+			if (org.docx4j.model.text.TextWarning.CONTENT_NOT_READ.equals(w.getKind())
+					&& "/word/embeddings/unreadable.docx".equals(w.getPartName())) notRead = true;
+		}
+		assertTrue(result.warnings().toString(), notRead);
+	}
+
+	/**
+	 * A header or the notes that cannot be read contribute nothing and raise content.not_read (REQ-801); the body is
+	 * still read. Before 17.3.6 the notes threw a NullPointerException and a header was passed over silently.
+	 */
+	@Test
+	public void unreadableHeadersAndNotesAreContentNotRead() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(fixture("word/header.xml", "</w:hdr>", "</w:hdr")));
+		assertNotRead(org.docx4j.model.text.Texts.of(pkg, new org.docx4j.model.text.TextOptions().include(
+				org.docx4j.model.text.TextOptions.Include.HEADERS)), "/word/header.xml");   // headers are read on request
+
+		WordprocessingMLPackage withNote = WordprocessingMLPackage.createPackage();
+		MainDocumentPart mdp = withNote.getMainDocumentPart();
+		org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart fp = new org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart();
+		mdp.addTargetPart(fp);
+		String w = " xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"";
+		fp.setJaxbElement((org.docx4j.wml.CTFootnotes) org.docx4j.XmlUtils.unwrap(org.docx4j.XmlUtils.unmarshalString(
+				"<w:footnotes" + w + "><w:footnote w:id=\"1\"><w:p><w:r><w:t>NOTE</w:t></w:r></w:p></w:footnote></w:footnotes>")));
+		mdp.getContent().add(org.docx4j.XmlUtils.unmarshalString(
+				"<w:p" + w + "><w:r><w:t>" + ORIGINAL + "</w:t></w:r><w:r><w:footnoteReference w:id=\"1\"/></w:r></w:p>"));
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(); withNote.save(bos);
+		Map<String, byte[]> entries = unzip(bos.toByteArray());
+		String notes = new String(entries.get("word/footnotes.xml"), StandardCharsets.UTF_8);
+		assertTrue(notes.contains("</w:footnotes>"));
+		entries.put("word/footnotes.xml", notes.replace("</w:footnotes>", "</w:footnotes").getBytes(StandardCharsets.UTF_8));
+		assertNotRead(org.docx4j.model.text.Texts.of(WordprocessingMLPackage.load(new ByteArrayInputStream(zip(entries)))),
+				"/word/footnotes.xml");
+	}
+
+	private static void assertNotRead(org.docx4j.model.text.TextResult result, String partName) {
+		boolean body = false;
+		for (org.docx4j.model.text.TextBlock b : result.blocks()) if (b.getText().contains(ORIGINAL)) body = true;
+		assertTrue("the body is still read", body);
+		boolean notRead = false;
+		for (org.docx4j.model.text.TextWarning w : result.warnings()) {
+			if (org.docx4j.model.text.TextWarning.CONTENT_NOT_READ.equals(w.getKind()) && partName.equals(w.getPartName())) notRead = true;
+		}
+		assertTrue(result.warnings().toString(), notRead);
+	}
+
+	private static void assertNamesThePart(Runnable read, String partName, String purpose) {
+		try {
+			read.run();
+			fail("expected the read to be refused");
+		} catch (Docx4JRuntimeException expected) {
+			assertTrue(expected.getMessage(), expected.getMessage().startsWith(
+					"The content of " + partName + " could not be read, so it cannot be " + purpose + ": "));
+			assertTrue("the Docx4JException naming the part is the cause",
+					expected.getCause() instanceof org.docx4j.openpackaging.exceptions.Docx4JException);
+		}
+	}
+
 	private static void assertRefused(Runnable edit) {
 		try {
 			edit.run();

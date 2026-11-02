@@ -59,6 +59,12 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 		//context has been created. When the log gets passed via the setting
 		//use that one instead.
 		Logger log = LocalLog;
+
+		// a main document part that could not be read (CR-065 D1): say which and why, where the export
+		// failed somewhere inside it (a NullPointerException, or "Exception exporting package") @since 17.3.6
+		if (conversionSettings.getOpcPackage() instanceof WordprocessingMLPackage) {
+			((WordprocessingMLPackage) conversionSettings.getOpcPackage()).getMainDocumentPart().getReadableContents("exported");
+		}
 	
 		try {
 			log.debug("Start conversion");

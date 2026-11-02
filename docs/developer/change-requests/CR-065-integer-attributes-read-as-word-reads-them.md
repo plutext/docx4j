@@ -277,3 +277,21 @@ integer attribute.
 stylesheet's list (left in place, D2); other namespaces' integer attributes (`w14`, `w15`, drawing, PresentationML,
 SpreadsheetML) keep JAXB's strict parse: Word's rule was measured for WordprocessingML only.
 
+## 9. D1 carried to the outputs (17.3.6, 2026-11-02)
+
+Jason, 2026-11-02, asked whether `load()` should throw for a main part that could not be read: D1 stands
+(`load()` returns, `getJaxbElement()` null, the conveniences refuse, an untouched save keeps the bytes), and the
+outputs that need the whole content were made to say so ("make those three throw a Docx4JException naming the part
+and its cause"). Before, `Docx4J.toPDF` threw a NullPointerException (`FOSettings.setOpcPackage` walked the fonts of a
+null body), `Docx4J.toHTML` "Exception exporting package", and the text model returned no blocks and no warning.
+`JaxbXmlPart.getReadableContents(purpose)`: the content, or a `Docx4JException` "The content of /word/document.xml
+could not be read, so it cannot be <purpose>: <the deepest cause's message>", the read's exception as its cause.
+`AbstractExporter.export` asks it ("exported") before its catch-all, so the message reaches the caller as it is;
+`MainDocumentPart.walkStories` skips a body it could not read. The text model (`Extractor.extract`, and
+`Texts.of(Part, ...)` for a main part, header or footer) throws it as a `Docx4JRuntimeException` ("read as text"),
+as the text model declares nothing; nested (an embedded or chunked document) it raises `content.not_read` instead
+(REQ-512). The text model's other story parts too: footnotes or endnotes that could not be read threw a
+NullPointerException, and an unreadable header, footer, comments or glossary part was passed over silently; each now
+contributes nothing and raises `content.not_read` (REQ-801), the body still read. Tests in `UnreadablePartTest` and
+export-fo-tests' `UnreadableMainPartPdfTest`. Not checked: what PDF and HTML output do with an unreadable header,
+footer or notes part.

@@ -269,6 +269,31 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * (getContents() is preferred, this is the older/less friendly method name)
 	 * @return
 	 */
+	/**
+	 * The content, for something that needs all of it (an export, the text model). Where it could
+	 * not be read (CR-065 D1), a Docx4JException whose message names the part, what cannot be done and
+	 * the reason, with the read's own exception as its cause.
+	 *
+	 * @param purpose what cannot be done, completing "so it cannot be ...": "exported", "read as text"
+	 * @since 17.3.6
+	 */
+	public E getReadableContents(String purpose) throws Docx4JException {
+		try {
+			return getContents();
+		} catch (Docx4JException e) {
+			throw new Docx4JException("The content of " + this.getPartName().getName() + " could not be read, so it cannot be "
+					+ purpose + ": " + rootReason(e), e);
+		}
+	}
+
+	/** The deepest cause's message, on one line (a parser's "ParseError at [row,col] ... Message: ..."). */
+	private static String rootReason(Throwable t) {
+		Throwable root = t;
+		while (root.getCause() != null && root.getCause() != root) root = root.getCause();
+		String m = root.getMessage();
+		return m == null || m.trim().isEmpty() ? root.getClass().getName() : m.replaceAll("\\s+", " ").trim();
+	}
+
 	public E getJaxbElement() {
 		try {
 			return getContents();

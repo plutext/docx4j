@@ -343,8 +343,10 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
     private void walkStories(FontAndStyleFinder finder) {
 
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
-		Body body =  wmlDocumentEl.getBody();
-		new TraversalUtil(body.getContent(), finder, McMode.ALL);
+		// a body that could not be read (CR-065 D1) gives no fonts; an export of it says why (getReadableContents) @since 17.3.6
+		if (wmlDocumentEl != null && wmlDocumentEl.getBody() != null) {
+			new TraversalUtil(wmlDocumentEl.getBody().getContent(), finder, McMode.ALL);
+		}
 		
 		RelationshipsPart rp = this.getRelationshipsPart();
 		if (rp!=null) {

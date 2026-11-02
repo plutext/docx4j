@@ -115,13 +115,13 @@ public final class Texts {
 		WordprocessingMLPackage pkg = part.getPackage() instanceof WordprocessingMLPackage ? (WordprocessingMLPackage) part.getPackage() : null;
 		Extractor.Mode mode = pkg == null ? Extractor.Mode.PLANLESS : Extractor.Mode.VIEW;
 		if (part instanceof MainDocumentPart) {
-			return new Extractor(pkg, o, mode).extract(((MainDocumentPart) part).getJaxbElement(), TextBlock.Story.MAIN, "body", part);
+			return new Extractor(pkg, o, mode).extract(readable((MainDocumentPart) part), TextBlock.Story.MAIN, "body", part);
 		}
 		if (part instanceof HeaderPart) {
-			return new Extractor(pkg, o, mode).extract(((HeaderPart) part).getJaxbElement(), TextBlock.Story.HEADER, "header:" + rId(pkg, part), part);
+			return new Extractor(pkg, o, mode).extract(readable((HeaderPart) part), TextBlock.Story.HEADER, "header:" + rId(pkg, part), part);
 		}
 		if (part instanceof FooterPart) {
-			return new Extractor(pkg, o, mode).extract(((FooterPart) part).getJaxbElement(), TextBlock.Story.FOOTER, "footer:" + rId(pkg, part), part);
+			return new Extractor(pkg, o, mode).extract(readable((FooterPart) part), TextBlock.Story.FOOTER, "footer:" + rId(pkg, part), part);
 		}
 		throw new IllegalArgumentException("Not a story part: " + part.getPartName() + "; use Texts.of(package)");
 	}
@@ -133,6 +133,18 @@ public final class Texts {
 	 * changes (the class description's "Cost"). Under {@code fields: update}, a REF is computed only
 	 * when its bookmark comes before it in the content. No inspection counts: they are the package's.
 	 */
+	/**
+	 * A story part's content, or, where it could not be read (CR-065 D1), an exception naming the part
+	 * and why: unchecked, as the text model declares nothing. @since 17.3.6
+	 */
+	private static <E> E readable(org.docx4j.openpackaging.parts.JaxbXmlPart<E> part) {
+		try {
+			return part.getReadableContents("read as text");
+		} catch (org.docx4j.openpackaging.exceptions.Docx4JException e) {
+			throw new org.docx4j.openpackaging.exceptions.Docx4JRuntimeException(e.getMessage(), e);
+		}
+	}
+
 	public static TextResult of(WordprocessingMLPackage pkg, Object content, TextOptions options) {
 		TextOptions o = options == null ? new TextOptions() : options;
 		o.checkImplemented();

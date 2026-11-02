@@ -67,6 +67,8 @@ import org.docx4j.model.listnumbering.NumberingStates;
 import org.docx4j.model.revisions.ResolvedView;
 import org.docx4j.model.revisions.RevisionDates;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.Docx4JRuntimeException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
@@ -243,6 +245,18 @@ final class Extractor {
 		Map<String, Object> metadata = new LinkedHashMap<String, Object>();
 		metadata.put(TextResult.FIELDS_UPDATE_ON_OPEN, fieldsUpdateOnOpen());
 		if (!nested) Metadata.read(pkg, metadata);
+		if (main != null) {
+			// a main part that could not be read (CR-065 D1): no text at all, so the caller is told which part and
+			// why (unchecked, as the text model declares nothing); an embedded or chunked package's contributes
+			// nothing and raises content.not_read (REQ-512) @since 17.3.6
+			try {
+				main.getReadableContents("read as text");
+			} catch (Docx4JException e) {
+				if (!nested) throw new Docx4JRuntimeException(e.getMessage(), e);
+				notRead(root.endsWith("/") ? root.substring(0, root.length() - 1) : root, main, "the main document part", e);
+				return new TextResult(out, comments, warnings, metadata, options);
+			}
+		}
 		if (main == null || main.getJaxbElement() == null || main.getJaxbElement().getBody() == null) {
 			return new TextResult(out, comments, warnings, metadata, options);
 		}
@@ -266,10 +280,10 @@ final class Extractor {
 
 		// the notes, in reference order (REQ-501, REQ-503)
 		if (options.isNotes()) {
-			notes(main.getFootnotesPart() == null ? null : main.getFootnotesPart().getJaxbElement().getFootnote(),
-					footnotes, TextRun.FOOTNOTE, main.getFootnotesPart(), out);
-			notes(main.getEndNotesPart() == null ? null : main.getEndNotesPart().getJaxbElement().getEndnote(),
-					endnotes, TextRun.ENDNOTE, main.getEndNotesPart(), out);
+			org.docx4j.wml.CTFootnotes fn = storyContent(main.getFootnotesPart(), null, "the footnotes");
+			notes(fn == null ? null : fn.getFootnote(), footnotes, TextRun.FOOTNOTE, main.getFootnotesPart(), out);
+			org.docx4j.wml.CTEndnotes en = storyContent(main.getEndNotesPart(), null, "the endnotes");
+			notes(en == null ? null : en.getEndnote(), endnotes, TextRun.ENDNOTE, main.getEndNotesPart(), out);
 		}
 
 		// the glossary, last (REQ-501, REQ-516)
@@ -314,7 +328,7 @@ final class Extractor {
 	// --- the glossary (REQ-516) ---------------------------------------------------------------------
 
 	private void glossary(GlossaryDocumentPart part, List<TextBlock> out) {
-		if (part == null || part.getJaxbElement() == null || part.getJaxbElement().getDocParts() == null) return;
+		if (storyContent(part, null, "the glossary") == null || part.getJaxbElement().getDocParts() == null) return;
 		List<CTDocPart> parts = part.getJaxbElement().getDocParts().getDocPart();
 		for (int i = 0; i < parts.size(); i++) {
 			Body body = parts.get(i).getDocPartBody();
@@ -2260,6 +2274,18 @@ final class Extractor {
 		if (warned.add(w)) warnings.add(w);
 	}
 
+	/**
+	 * A story part's content; null where it has none, and where it could not be read (CR-065 D1) also
+	 * content.not_read (REQ-801), which before 17.3.6 the notes threw as a NullPointerException and the
+	 * headers, footers, comments and glossary passed over silently.
+	 */
+	private <E> E storyContent(JaxbXmlPart<E> part, String address, String what) {
+		if (part == null) return null;
+		E content = part.getJaxbElement();
+		if (content == null && part.isContentUnreadable()) notRead(address, part, what, null);
+		return content;
+	}
+
 	/** Content that can't be read contributes nothing and raises {@code content.not_read} (REQ-801). */
 	private void notRead(String anchor, Part part, String what, Exception e) {
 		log.warn("Couldn't read " + what + " at " + anchor + (e == null ? "" : ": " + e.getMessage()));
@@ -2312,12 +2338,12 @@ final class Extractor {
 	private void headerOrFooter(RelationshipsPart rels, String rId, TextBlock.Story kind, Set<String> emitted, List<TextBlock> out) {
 		if (rId == null || rels == null || !emitted.add(rId)) return;
 		Part part = rels.getPart(rId);
-		Object content = null;
-		if (part instanceof HeaderPart) content = ((HeaderPart) part).getJaxbElement();
-		else if (part instanceof FooterPart) content = ((FooterPart) part).getJaxbElement();
-		if (content == null) return;
 		// the address prefix is the field root (an embedded package's), not the part's content (CR-050 phase 0 found it here)
 		String prefix = root + (kind == TextBlock.Story.HEADER ? "header:" : "footer:") + rId;
+		Object content = null;
+		if (part instanceof HeaderPart) content = storyContent((HeaderPart) part, prefix, "the header");
+		else if (part instanceof FooterPart) content = storyContent((FooterPart) part, prefix, "the footer");
+		if (content == null) return;
 		Story story = new Story(kind, prefix, part);
 		blocks(blockItems(content), prefix, story, out);
 	}
@@ -2369,7 +2395,7 @@ final class Extractor {
 
 	private void comments(MainDocumentPart main, Map<String, TextComment> out) {
 		CommentsPart part = main.getCommentsPart();
-		if (part == null || part.getJaxbElement() == null) return;
+		if (storyContent(part, null, "the comments") == null) return;
 		Map<String, CTCommentEx> extended = new HashMap<String, CTCommentEx>();
 		CommentsExtendedPart ext = main.getCommentsExtendedPart();
 		if (ext != null && ext.getJaxbElement() != null) {

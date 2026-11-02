@@ -38,6 +38,13 @@ Changes in Version 17.3.6
 - docx4j sets its own XML element-depth limit, 256 (`docx4j.xml.maxElementDepth`, 0 for none), on the parsers it
   creates: Java 25's default of 100 left a document 32 tables deep unreadable, and failed PDF output at 25.
 
+**A main document part that could not be read.**
+- PDF and HTML output and the text model now say which part could not be read and why (a Docx4JException; from
+  the text model, a Docx4JRuntimeException), where they failed with a NullPointerException, "Exception exporting
+  package" or empty text. In the text model, an embedded document whose main part cannot be read, and an
+  unreadable header, footer, notes, comments or glossary part, is `content.not_read` (the notes threw a
+  NullPointerException).
+
 **Metafiles.**
 - The WMF/EMF code (repackaged Apache POI 5.5.1) takes POI's fixes since June: bounds and header checks, a
   zero-size bitmap draws nothing, 15 bare asserts now warnings or errors (the hwmf package README, item 7).
