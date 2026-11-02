@@ -104,6 +104,13 @@ Both are in WD 0.62's NOTE to REQ-509. Exception 1 is this CR's one unmeasured r
   block and inline, beside a control with no type element for comparison; Jason opens and saves it in Word. The
   result settles whether exception 1 becomes the value (then the generator's `not(w:richText)` is a question for
   OpenDoPE) or stays.
+  **Built 2026-11-02**: `~/vbShares/Office 2016/bind-fun/bind-rich-explicit.docx`, with its builder
+  `build_bind_rich_explicit.py` beside it (bind-plain's package: its store item and item properties, no header). RX1
+  inline and RX2 block-level carry an explicit `<w:richText/>`; RX3 is B8's shape (no type element) for comparison; and,
+  at core-ts's request (CR-020), CB4 is a combo box bound to `c2`, the value of the item shown as `CB4_SECOND_ITEM`, and
+  CB5 the converse, bound to an item's display text. Each surface is stale. docx4j's generator (`Docx4J.bind`, bind
+  only) leaves RX1 and RX2 as they are, writes RX3's value, and shows CB4 and CB5 as `CB4_SECOND_ITEM` and
+  `CB5_SECOND_ITEM`; the text model reads every surface. Waiting for Jason's Word open and save.
 - **Phase 1: plain-text and typed controls.** `Extractor.bound()` by type (§3), the date and drop-down text from
   the generator's code, the check box's glyph, the inspector's comparison. Tests: the bind-plain B8 and the
   bind-rich-flatopc RT1 shapes; `typed-controls.docx` (the bind-typed probe, already a fixture) through `Texts.of`,
