@@ -197,44 +197,9 @@ public class JaxbValidationEventHandler implements ValidationEventHandler {
 	    	 
 	    	   log.warn(printSeverity(ve) + "Message is " + ve.getMessage());  
 	    	   
-	    	   // Workaround for issue with recent non-MOXy JAXB (eg RI 2.2.11)
+	    	   // JAXB RI stops reporting errors after ten (issue 164)
 	    	   if (ve.getMessage().startsWith("Errors limit exceeded")) {
-	
-	    		   try {
-		     		    log.warn("Resetting error counter to work around https://github.com/gf-metro/jaxb/issues/22");
-		     		    	// As at 2017 06 29 that repo has disappeared!
-		     		    	// See instead https://github.com/javaee/jaxb-v2/
-		     		    
-		   				Field field = null;
-		   				if (Context.getJaxbImplementation() == JAXBImplementation.ORACLE_JRE) {
-							field = Class.forName("com.sun.xml.internal.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
-		   				} else if (Context.getJaxbImplementation() == JAXBImplementation.IBM_WEBSPHERE_XLXP) {
-		   					// Its IBM's implementation eg Websphere 7+ where an IBM Unmarshaller is being used
-		   					// (controlled by com.ibm.xml.xlxp.jaxb.opti.level)
-			     		    log.warn("with IBM unmarshaller");
-		   					field = Class.forName("com.ibm.jtc.jax.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
-
-		   				} else {
-							try {
-								field = Class.forName("com.sun.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
-							} catch (Exception e) {
-				   				log.error("Trying to reset error counter, but not using JAXB RI:- ");		   					
-				   				log.error(e.getMessage());
-				   			}
-						}
-		   				
-		   				if (field==null) {
-			   				log.error("Unable to reset error counter. See https://github.com/plutext/docx4j/issues/164");		   					
-		   				} else {
-			   		        field.setAccessible(true);
-			   		        field.set(null, 10);
-			   		        log.warn(".. reset successful");		   					
-		   				}
-		   			} catch (Exception e) {
-		   				log.error(e.getMessage());
-		   				log.error("Unable to reset error counter. See https://github.com/plutext/docx4j/issues/164");
-		   			} 
-	    		   
+	    		   resetErrorsCounter();
 	    	   }
 	    	   
 	     }
@@ -253,6 +218,72 @@ public class JaxbValidationEventHandler implements ValidationEventHandler {
              
      }
     
+	/**
+	 * JAXB RI counts the errors it reports in a static field, UnmarshallingContext.errorsCounter,
+	 * and after ten it reports no more: an element it could skip is then skipped unreported.  RI 2
+	 * never reset the count, so a JVM's eleventh error went unreported for good (issue 164); RI 3
+	 * and 4 reset it as each unmarshaller is made, so the limit is one part's now, and the count is
+	 * shared by every thread unmarshalling at the time.  So when JAXB says the limit is reached,
+	 * the count goes back to ten.  Until 17.3.6 this looked for RI 2's class only, so with
+	 * docx4j-JAXB-ReferenceImpl (RI 4) the reset failed, logging three ERRORs.
+	 */
+	private static void resetErrorsCounter() {
+		Field field = errorsCounterField();
+		try {
+			if (field != null) {
+				field.setInt(null, 10);
+				log.warn("JAXB's error count reset, so that it reports further errors (https://github.com/plutext/docx4j/issues/164)");
+				return;
+			}
+		} catch (IllegalAccessException | RuntimeException e) {
+			log.warn(e.getMessage());
+		}
+		log.warn("JAXB's error count can't be reset, so further errors in this part may go unreported (https://github.com/plutext/docx4j/issues/164)");
+	}
+
+	private static volatile Field errorsCounter;
+	private static volatile boolean errorsCounterSought;
+
+	/**
+	 * The JAXB runtime's error count, made accessible; null where the runtime has none, or where
+	 * docx4j may not reach it (on the module path, jaxb-runtime does not open the package to
+	 * docx4j).
+	 *
+	 * @since 17.3.6
+	 */
+	static Field errorsCounterField() {
+		if (!errorsCounterSought) {
+			errorsCounter = findErrorsCounterField();
+			errorsCounterSought = true;
+		}
+		return errorsCounter;
+	}
+
+	private static Field findErrorsCounterField() {
+		String[] classes = Context.getJaxbImplementation() == JAXBImplementation.IBM_WEBSPHERE_XLXP
+				// an IBM unmarshaller, eg WebSphere 7+ (com.ibm.xml.xlxp.jaxb.opti.level)
+				? new String[] { "com.ibm.jtc.jax.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext" }
+				: new String[] {
+						"org.glassfish.jaxb.runtime.v2.runtime.unmarshaller.UnmarshallingContext", // RI 3 and 4
+						"com.sun.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext", // RI 2
+						"com.sun.xml.internal.bind.v2.runtime.unmarshaller.UnmarshallingContext" }; // the JDK's, before Java 11
+		for (String c : classes) {
+			try {
+				Field f = Class.forName(c).getDeclaredField("errorsCounter");
+				f.setAccessible(true);
+				return f;
+			} catch (ClassNotFoundException | NoSuchFieldException e) {
+				// not this runtime
+			} catch (RuntimeException e) {
+				// InaccessibleObjectException: the package is not opened to docx4j
+				log.warn(c + ".errorsCounter can't be reached (" + e.getMessage() + "); on the module path, "
+						+ "--add-opens org.glassfish.jaxb.runtime/org.glassfish.jaxb.runtime.v2.runtime.unmarshaller=org.docx4j.core");
+				return null;
+			}
+		}
+		return null;
+	}
+
     private String getLocalName(Node sourceNode) {
     	
     	if (sourceNode.getLocalName()==null) {

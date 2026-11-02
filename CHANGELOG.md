@@ -56,6 +56,10 @@ Changes in Version 17.3.6
 - The WMF/EMF code (repackaged Apache POI 5.5.1) takes POI's fixes since June: bounds and header checks, a
   zero-size bitmap draws nothing, 15 bare asserts now warnings or errors (the hwmf package README, item 7).
 
+**Loading.**
+- With JAXB 4 (docx4j-JAXB-ReferenceImpl), the reset of JAXB's error count after ten errors in a part works again
+  (#164): it looked for JAXB 2's class only, logged three ERRORs, and left the part's later errors unreported.
+
 
 
 Version 17.3.5
