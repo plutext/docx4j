@@ -4,6 +4,8 @@ Status: PROPOSED 2026-11-02. Drafted by Claude Opus 5.5 (session docx4j-12) on J
 portfolio paper's D34 ("i'd rule D34 for Word, unless it has any impact on our opendope processing???"; checked:
 none, §2; then "yes" to the ruling with the two exceptions of §4 and to this CR). WD 0.62 (docx4j-portfolio
 59a3ae0) rewrites REQ-509 to the ruling. Target 17.3.6.
+Phase 0 DONE 2026-11-02 (Jason's Word run of bind-rich-explicit, §6): Word binds an explicit `w:richText`, so
+exception 1 goes (§4); a combo box shows the display text of the item its value matches (§3).
 
 ## 0. Summary
 
@@ -51,7 +53,8 @@ the text model's default view is Word's (the paper's D19).
 In `Extractor.bound()` (now: `isPlainText(pr)` or nothing), a control with a `w:dataBinding` that resolves is read
 as Word shows it, by its type:
 
-- **`w:text`, or no type element**: the value, as today for `w:text` (B8, RT1). Word's save gives such a control a
+- **`w:text`, no type element, or `w:richText`**: the value, as today for `w:text` (B8, RT1; an explicit `w:richText`
+  since phase 0, RX1 and RX2). Word's save gives such a control a
   `w:text`; the text model writes nothing.
 - **`w:date`**: the value formatted as the generator formats it, by the same code: `w:dateFormat` in the DATE
   field's picture language (`FormattingSwitchHelper.formatDate`), the language `w:lid` else the document's default
@@ -61,7 +64,9 @@ as Word shows it, by its type:
   phase 1 exposes the string they produce, once, for both.
 - **`w:dropDownList`**: the item's display text (`ListControls.displayTextFor`, the generator's); a value no item
   has, as stored.
-- **`w:comboBox`**: the value.
+- **`w:comboBox`**: as a drop-down: the display text of the item whose value is the bound value, else the value
+  itself (phase 0: CB4 bound to `c2` shows `CB4_SECOND_ITEM`, Word saving `w:lastValue="c2"`; CB5 and bind-typed's
+  CB3 match no item's value and show the value). `ListControls.displayTextFor` already reads it so.
 - **`w14:checkbox`**: the checked or unchecked glyph (D3).
 - **`w15:repeatingSection`** with a `w15:dataBinding` (or `w:dataBinding`) selecting N nodes: its first item read N
   times, each item's inner bindings evaluated against the i-th node, as the generator's `processRepeat` rewrites
@@ -78,9 +83,11 @@ text model shows instead, so the two agree.
 
 ## 4. The two exceptions (surface, until measured)
 
-1. **An explicit `<w:richText/>` with a `w:dataBinding`.** The generator leaves it unbound by design
-   (`bind.xslt`: `w:dataBinding and not(w:sdtPr/w:richText)`); what Word does is unmeasured (no probe has an
-   explicit `w:richText`; B8 and RT1 have no type element). Phase 0 builds the one-case probe.
+1. ~~**An explicit `<w:richText/>` with a `w:dataBinding`.**~~ Resolved by phase 0: Word binds it, inline (RX1) and
+   at block level (RX2), shows the value and saves the control with `w:text` in place of `w:richText`, as core-ts's
+   check 56 found for block controls. So the text model reads the value (§3). docx4j's generator still leaves such a
+   control unbound (`bind.xslt`: `w:dataBinding and not(w:sdtPr/w:richText)`), so there the generator differs from
+   Word: D6.
 2. **OpenDoPE's own rich-content controls**: a `w:tag` holding `od:ContentType=application/xhtml+xml` or
    `od:progid=Word.Document`. They carry no `w:dataBinding` by design (the XPath is in the tag, `bind.xslt`'s
    comments), so the change does not reach them; where one does carry a binding, the generator lets the tag decide,
@@ -96,6 +103,7 @@ Both are in WD 0.62's NOTE to REQ-509. Exception 1 is this CR's one unmeasured r
 | D2 | The repeating section whose bindings use a prefix Word rewrites without its mapping (bind-repeating, prefix `p`) | Fill the items, as the generator does; Word's empty items are a defect of Word's (the paper's §12a.3: "it looks like a Word defect"), not a rule. |
 | D3 | The check box's glyph | The `w14:checkedState` / `w14:uncheckedState` character where the control declares one (Word draws that one), else ☒ / ☐. The generator writes ☒ / ☐ always (its TODO, `checkboxRun`); the two agree on every control that declares the defaults, as Word writes them. Making the generator use the declared glyph is a follow-up, not this CR. |
 | D4 | How the text model expands a repeating section without changing the package | Read-only, in the text model: the item read once per node, with a binding context that rewrites the inner XPaths as `processRepeat` does, the rewrite rule shared with the generator (phase 2 factors it out). Not a deep copy run through the generator: its steps mutate, and need the integrity step around them. |
+| D6 | The generator and an explicit `w:richText` with a `w:dataBinding` (phase 0: Word binds it as plain text) | Out of this CR: a change to OpenDoPE processing, which Jason's ruling kept this CR from making. A small CR of its own if Jason wants the generator to follow Word there (`bind.xslt` line 1009 and the non-XSLT traverser), with the question why the exclusion was made. Until then the text model shows the value and the generator keeps the surface for such a control. |
 | D5 | Scope of the inspector change | The main document part, as `loadBindings` today; headers stay unflagged (a separate, older gap). |
 
 ## 6. Phases
@@ -110,7 +118,11 @@ Both are in WD 0.62's NOTE to REQ-509. Exception 1 is this CR's one unmeasured r
   at core-ts's request (CR-020), CB4 is a combo box bound to `c2`, the value of the item shown as `CB4_SECOND_ITEM`, and
   CB5 the converse, bound to an item's display text. Each surface is stale. docx4j's generator (`Docx4J.bind`, bind
   only) leaves RX1 and RX2 as they are, writes RX3's value, and shows CB4 and CB5 as `CB4_SECOND_ITEM` and
-  `CB5_SECOND_ITEM`; the text model reads every surface. Waiting for Jason's Word open and save.
+  `CB5_SECOND_ITEM`; the text model reads every surface. **Word's run (2 November, Jason; screenshot and
+  `bind-rich-explicit-word365.docx` beside the probe)**: RX1 `RX1_XML_VALUE`, RX2 `RX2_XML_VALUE`, RX3 `RX3_XML_VALUE`,
+  each saved with `w:text` (RX1 and RX2's `w:richText` replaced); CB4 `CB4_SECOND_ITEM` with `w:lastValue="c2"`; CB5
+  `CB5_SECOND_ITEM` with `w:lastValue="CB5_SECOND_ITEM"`. An ordinary open refreshes a stale surface, at run level
+  too.
   **Prior evidence** (core-ts check 56, 2026-10-23, Word 365 16.0.20326.20232; core-ts CR-002 §61.3; its
   `test/fixtures/check56/56-writes.docx` and Word's save `test/check56/56-writes-word365.docx`, read here): sixteen
   bound block controls, four untyped, eight `w:text`, four explicit `w:richText`; in Word's save all sixteen carry
