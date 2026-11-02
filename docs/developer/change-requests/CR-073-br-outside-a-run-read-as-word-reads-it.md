@@ -1,6 +1,8 @@
 # CR-073: a w:br outside a w:r read as Word reads it
 
-Status: ACCEPTED 2026-11-03 (Jason: "CR-073: D1 to D6 as recommended, do phase 1"); phase 1 DONE 2026-11-03 (§8).
+Status: COMPLETE 2026-11-03. ACCEPTED 2026-11-03 (Jason: "CR-073: D1 to D6 as recommended, do phase 1"); phase 1
+DONE 2026-11-03 (95c6b42d3, §8); phase 2 DONE 2026-11-03: the hand-offs (Word's rules, the thirteen-pair oracle) relayed
+by the portfolio session (74da802) to docx4j-python, core-ts and ts-editor, whose checks are their own entries.
 PROPOSED 2026-11-03 (Jason: "yes, draft CR-073; we need a new probe to answer decisions 1 and 2"). Found by
 docx4j's load survey of the Common Crawl corpus (docx4j-load-survey, 2 November 2026; portfolio
 `docs/docx_corpus_use.md` §8.14). Phase 0 round 1 DONE 2026-11-03 (a2a971416, Jason's Word run): Word reads a `w:br`
@@ -159,7 +161,7 @@ place would say whether any of it needs a rule like this one.
   with Word's save (text, breaks and their types in order, and run properties per D1). Plus the twenty survey
   samples read locally (not committed), and a CHANGELOG entry. The change is to the shared load path, and CLAUDE.md
   suggests Fable for that.
-- **Phase 2, the hand-offs** (D5) through the portfolio session.
+- **Phase 2, the hand-offs** (D5) through the portfolio session. DONE 2026-11-03 (portfolio 74da802).
 
 ## 7. Risks
 
