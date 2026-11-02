@@ -44,3 +44,9 @@ nested in `w:t`. In its save the break is in a run of its own (case 1) or opens 
 
 Not measured: which run properties the break takes where the runs either side differ (the probes' runs have none);
 a `w:br` in `w:instrText` and directly in `w:body`.
+
+## Round 2 (CR-073 phase 0, built 2026-11-03; Word's run awaited)
+
+`build_br_placement_2.py` builds `br2-1` to `br2-5`: the run properties Word gives the break (D1: runs of 20pt
+bold before and 8pt italic after, a 14pt mark), and a `w:br` in a field code, in a bare `w:instrText` in a header,
+and directly in `w:body` (D2). CR-073 §3.2 has the cases.
