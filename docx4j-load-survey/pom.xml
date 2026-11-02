@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.docx4j</groupId>
+	<artifactId>docx4j-load-survey</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<name>docx4j-load-survey</name>
+	<description>
+		Loads every docx of a corpus with a released docx4j and writes one row per document
+		(the docx4j_load table of the corpus catalogue, docx4j-portfolio scripts/corpus) plus the
+		log messages each load raised. Not in the reactor; not deployed. It builds against
+		docx4j ${docx4j.version} from Maven Central, not the reactor's snapshot, so that the
+		survey measures what users have: -Ddocx4j.version=... resurveys with another release.
+	</description>
+	<properties>
+		<docx4j.version>17.3.5</docx4j.version>
+		<maven.compiler.release>11</maven.compiler.release>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.deploy.skip>true</maven.deploy.skip>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-core</artifactId>
+			<version>${docx4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+			<version>${docx4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13.2</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<finalName>docx4j-load-survey</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.13.0</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.5.2</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.4.2</version>
+			</plugin>
+			<!-- one runnable jar: java -jar target/docx4j-load-survey.jar -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.6.0</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<createDependencyReducedPom>false</createDependencyReducedPom>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>module-info.class</exclude>
+										<exclude>META-INF/versions/*/module-info.class</exclude>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+										<exclude>META-INF/*.EC</exclude>
+										<exclude>META-INF/MANIFEST.MF</exclude>
+									</excludes>
+								</filter>
+							</filters>
+							<transformers>
+								<!-- the JAXB runtime and the SLF4J provider are found through META-INF/services -->
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>org.docx4j.survey.LoadSurvey</mainClass>
+									<manifestEntries>
+										<Multi-Release>true</Multi-Release>
+										<Implementation-Title>docx4j-load-survey</Implementation-Title>
+										<Implementation-Version>${project.version}</Implementation-Version>
+									</manifestEntries>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer"/>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
