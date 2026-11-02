@@ -981,6 +981,61 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		// The room beside a float (2 November 2026; docx4j CR-071 phase 3 and the fork's r52): what Word does with a
+		// word too wide for the room beside a float - sets it below the float (CR-023's assumption, read from tables)
+		// or breaks it beside the float (docx4j's emergency break) - and whether it puts any text in a 24pt gap
+		// (real3 14_es-DO_tbl_4253: a page-anchored table leaving 23.75pt, where docx4j set a paragraph's fragments).
+		PROBES.add(new Probe("float-gap-words",
+				"the room beside a float, one case a page, mode 15: (1) a text-anchored floating table at the left margin "
+				+ "leaving a 60pt gap, its anchor paragraph holding a word too wide for the gap; (2) a 24pt gap beside a "
+				+ "text-anchored table, short words only; (3) the same gap beside a page-anchored table at page y 3in with "
+				+ "text running down from above it; (4) case 1 with a word wider than the column; (5) a square-wrapped "
+				+ "picture leaving 60pt, with case 1's word.  Read whether Word sets the long word in the gap (broken, or "
+				+ "overflowing it) or below the float, and whether any text goes in a 24pt gap", () -> {
+			Doc d = Doc.create(15);
+			final String LONG = "INTERNATIONALISATIONS";                                  // ~150pt: > 60pt, < the column
+			final String WIDER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".repeat(3) + "ABCDEFGHIJ";  // 88 capitals: > the column
+			final String SHORT = "a an as at be by do go he if in is it me my no of on or so to up us we ";
+			// the A4 column at 72pt margins is 9026 twips; a table's gap is the column less its width and rightFromText (180)
+			int[][] gaps = { { 1, 1200 }, { 2, 480 } };
+			for (int[] g : gaps) {
+				int c = g[0], gap = g[1], half = (9026 - 180 - gap) / 2;
+				d.para("case " + c + ": a " + gap / 20 + "pt gap beside a text-anchored table at the left margin. "
+						+ prose(1, c)).after(160).add();
+				Doc.Table t = new Doc.Table(half, half).fixedLayout().floating("text", "margin", 0, null, 0, null);
+				for (int r = 0; r < 5; r++) t.row(SERIF, 24, false, "row " + (r + 1), prose(1, r + c));
+				d.add(t.build());
+				d.para("anchor " + (c == 1 ? SHORT + LONG + " " + SHORT : SHORT + SHORT + SHORT) + prose(2, c + 2))
+						.after(160).add();
+				d.para(prose(3, c + 3)).after(160).add();
+				d.pageBreak();
+			}
+			// 3. 14_es-DO_tbl_4253's shape: page-anchored at the margin, page y 3in, leaving 24pt; text from the top
+			d.para("case 3: a 24pt gap beside a page-anchored table at page y 3in. " + prose(2, 3)).after(160).add();
+			Doc.Table t3 = new Doc.Table((9026 - 180 - 480) / 2, (9026 - 180 - 480) / 2).fixedLayout()
+					.floating("page", "margin", 0, null, 4320, null);
+			for (int r = 0; r < 5; r++) t3.row(SERIF, 24, false, "row " + (r + 1), prose(1, r + 3));
+			d.add(t3.build());
+			for (int i = 0; i < 6; i++) d.para((i == 0 ? "after the table in the flow. " : "") + SHORT + prose(2, i + 4)).after(160).add();
+			d.pageBreak();
+			// 4. case 1 with a word wider than the column
+			d.para("case 4: a 60pt gap and a word wider than the column. " + prose(1, 4)).after(160).add();
+			Doc.Table t4 = new Doc.Table((9026 - 180 - 1200) / 2, (9026 - 180 - 1200) / 2).fixedLayout()
+					.floating("text", "margin", 0, null, 0, null);
+			for (int r = 0; r < 5; r++) t4.row(SERIF, 24, false, "row " + (r + 1), prose(1, r + 4));
+			d.add(t4.build());
+			d.para("anchor " + SHORT + WIDER + " " + SHORT + prose(2, 6)).after(160).add();
+			d.para(prose(3, 7)).after(160).add();
+			d.pageBreak();
+			// 5. a square-wrapped picture at the left margin leaving 60pt: 451.3 - 9 (distR) - 60 = 382.3pt
+			d.para("case 5: a 60pt gap beside a square-wrapped picture; case 1's word. " + prose(1, 5)).after(160).add();
+			R pic = d.positionedImage(300, 120, 4855210L, 1905000L, "square", "bothSides", 0L, 0L, 0L, 114300L,
+					"margin", "left", 0L, "paragraph", null, 0L, 5);
+			d.para().run(pic).text("anchor " + SHORT + LONG + " " + SHORT + prose(2, 8)).after(160).add();
+			d.para(prose(3, 9)).after(160).add();
+			return d.pkg();
+		}));
+
 		// A 40% table with an offset of 1in: centred (room both sides), at the left edge, and
 		// at tblpX 1000 (unequal room).  Which side(s) Word uses, and the lines above the
 		// offset full width.
