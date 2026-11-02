@@ -18,6 +18,13 @@
 
 	<properties>
 		<maven.deploy.skip>true</maven.deploy.skip>		
+		<!-- How many test classes run at once, each still in a JVM of its own (reuseForks false): half the
+		     machine's cores; -Dcoretests.forkCount=1 runs them one after another, as before 17.3.6 -->
+		<coretests.forkCount>0.5C</coretests.forkCount>
+		<!-- Each test JVM is short-lived, so C1 only and the serial collector: JIT compilation threads were most of
+		     its CPU. With forkCount 0.5C, core-tests takes about 70 s on 24 cores, where it took about 8 minutes
+		     (2 November 2026). -Dcoretests.argLine= (empty) restores the JVM's defaults. -->
+		<coretests.argLine>-XX:TieredStopAtLevel=1 -XX:+UseSerialGC</coretests.argLine>
 	</properties>
 
 	<build>
@@ -34,9 +41,11 @@
 						<exclude>**/samples/*.java</exclude>
 						<exclude>**/AbstractNumberingTest.java</exclude>
 					</excludes>
-					<!-- One JVM per test class; necessary to use configured XPath implementation -->
-					<forkCount>1</forkCount>
+					<!-- One JVM per test class; necessary to use configured XPath implementation.
+					     Several at once (coretests.forkCount, above): each class is still alone in its JVM -->
+					<forkCount>${coretests.forkCount}</forkCount>
 					<reuseForks>false</reuseForks>
+					<argLine>${coretests.argLine}</argLine>
 				</configuration>
 			</plugin>
 
