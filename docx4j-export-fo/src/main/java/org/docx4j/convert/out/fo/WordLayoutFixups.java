@@ -2528,6 +2528,13 @@ public final class WordLayoutFixups {
 					continue;
 				}
 				if (!isFo(b, "block")) break;
+				/* A page break after the anchor's first block - the rest of the anchor after its
+				 * w:br w:type="page", or a paragraph that starts a page - ends the gap: Word sets the
+				 * table on the anchor's page, the break after it.  Moved above the table with the
+				 * empties, the break took the table to the next page (937: a 500.4pt table at tblpY
+				 * 39.3pt whose anchor holds a picture and a page break, a page more than Word's once
+				 * the renderer honoured the break, gate b312).  @since 17.3.6 */
+				if (anchor != null && "page".equals(b.getAttribute("break-before"))) break;
 				if (anchor == null) anchor = b;
 				if (!blankButFloats(b) || takesNoSpace(b)) break;
 				double h = blockHeightPt(b);

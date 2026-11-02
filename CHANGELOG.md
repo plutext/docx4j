@@ -41,6 +41,8 @@ Changes in Version 17.3.6
   as plain FOP does, and says so once (CR-071).
 - A paragraph beside a page-anchored floating table, or at a change of column width, is no longer drawn twice (a
   defect of the Word layout, fixed in the renderer; 2.12-docx4j.1).
+- A page break in the paragraph a full-width floating table is anchored to no longer takes the table to the next
+  page: Word sets the table on the anchor's page and the break after it.
 
 **Java 25.**
 - docx4j sets its own XML element-depth limit, 256 (`docx4j.xml.maxElementDepth`, 0 for none), on the parsers it

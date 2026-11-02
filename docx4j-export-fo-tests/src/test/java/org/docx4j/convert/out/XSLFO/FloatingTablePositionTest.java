@@ -1,6 +1,7 @@
 package org.docx4j.convert.out.XSLFO;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -396,6 +397,29 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 
 	@Test public void textAnchorOffsetVisitor() throws Exception { textAnchorKeepsTheGapsRemainder(Docx4J.FLAG_NONE); }
 	@Test public void textAnchorOffsetXslt() throws Exception { textAnchorKeepsTheGapsRemainder(Docx4J.FLAG_EXPORT_PREFER_XSL); }
+
+	/** A page break in the anchor stays after the table: Word sets the table on the anchor's
+	 *  page, the break after it.  Moved above the table with the empties, the break took the
+	 *  table to the next page (937: a page more than Word's once the renderer honoured the
+	 *  break, gate b312).  The gap, 72pt, holds the anchor and its break's own block. */
+	private void anchorsPageBreakStaysAfterTheTable(int flags) throws Exception {
+		org.w3c.dom.Document doc = fo("<w:p><w:r><w:t>before</w:t></w:r></w:p>"
+				+ fullWidthTable("<w:tblpPr w:vertAnchor=\"text\" w:horzAnchor=\"margin\" w:tblpX=\"0\" w:tblpY=\"1440\"/>", "wide")
+				+ "<w:p><w:r><w:br w:type=\"page\"/></w:r></w:p><w:p/><w:p><w:r><w:t>page two</w:t></w:r></w:p>", flags);
+		Element table = foTable(doc);
+		assertNull(floatContainer(doc));
+		for (Element b : siblingsBefore(table)) {
+			assertFalse("no page break before the table", "page".equals(b.getAttribute("break-before")));
+		}
+		boolean after = false;
+		for (Node n = table.getNextSibling(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element && "page".equals(((Element) n).getAttribute("break-before"))) after = true;
+		}
+		assertTrue("the page break after the table", after);
+	}
+
+	@Test public void anchorsPageBreakVisitor() throws Exception { anchorsPageBreakStaysAfterTheTable(Docx4J.FLAG_NONE); }
+	@Test public void anchorsPageBreakXslt() throws Exception { anchorsPageBreakStaysAfterTheTable(Docx4J.FLAG_EXPORT_PREFER_XSL); }
 
 	/** Two floating tables on one anchor paragraph go into it side by side (Word: probe
 	 *  table-floating-pair case 1, the text between them); the first used to be left in the
