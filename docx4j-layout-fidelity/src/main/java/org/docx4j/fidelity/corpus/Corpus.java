@@ -1036,6 +1036,49 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		// A table beside a float (2 November 2026; docx4j's step 2 after the fork's r55, register 0e8f94f): floating every wide
+		// text-anchored table lost lines in the documents whose next block is a table (9832, 1616, 6705, 4083), which the
+		// renderer narrows into the room beside the float. Does Word set a table that fits the room beside the float, and one
+		// that does not below it? The fork's rule (CR-024 section 11.20, obstacles only) reads the table's FO width, so a
+		// fixed width with percentage columns, and a percentage width, are cases of their own.
+		PROBES.add(new Probe("float-gap-tables",
+				"a table after a text-anchored floating table at the left margin leaving 144pt, one case a page, mode 15: "
+				+ "(1) a 100pt table (fits the room); (2) a 200pt table (does not); (3) w:tblW 200pt fixed with percentage "
+				+ "cells; (4) w:tblW 44% with percentage cells; (5) a 200pt text-anchored floating table (real2 9832's "
+				+ "shape); (6) a 200pt table beside a page-anchored table at the top margin leaving 144pt (an obstacle).  "
+				+ "Read where Word puts each table: beside the float (x at the float's right plus 9pt) or below it, and "
+				+ "where the paragraph after it goes", () -> {
+			Doc d = Doc.create(15);
+			final int ROOM = 2880, HALF = (9026 - 180 - ROOM) / 2;  // the float is 5966 twips; 144pt left beside it
+			for (int c = 1; c <= 6; c++) {
+				boolean page = c == 6;
+				d.para("case " + c + ": a table after a " + (page ? "page" : "text") + "-anchored floating table leaving 144pt. "
+						+ prose(1, c)).after(160).add();
+				Doc.Table f = new Doc.Table(HALF, HALF).fixedLayout();
+				f = page ? f.floating("margin", "margin", 0, null, 0, null) : f.floating("text", "margin", 0, null, 0, null);
+				for (int r = 0; r < 5; r++) f.row(SERIF, 24, false, "float " + c + " row " + (r + 1), prose(1, r + c));
+				d.add(f.build());
+				d.para("anchor " + c + ".").after(160).add();
+				Doc.Table t;
+				switch (c) {
+				case 1:  t = new Doc.Table(1000, 1000).fixedLayout().row(SERIF, 24, false, "T1 fits", "100pt"); break;
+				case 3:  t = new Doc.Table(2000, 2000).tableWidth(4000, "dxa")
+							.rowPct(SERIF, 24, new int[] { 2500, 2500 }, "T3 fixed 200pt", "pct cells"); break;
+				case 4:  t = new Doc.Table(1986, 1985).tableWidth(2200, "pct")
+							.rowPct(SERIF, 24, new int[] { 2500, 2500 }, "T4 table 44%", "pct cells"); break;
+				case 5:  t = new Doc.Table(2000, 2000).fixedLayout().floating("text", "margin", 0, null, 0, null)
+							.row(SERIF, 24, false, "T5 floating", "200pt"); break;
+				default: t = new Doc.Table(2000, 2000).fixedLayout().row(SERIF, 24, false, "T" + c + " 200pt", "too wide"); break;
+				}
+				t.row(SERIF, 24, false, "T" + c + " row 2", "x");
+				d.add(t.build());
+				d.para("after the table " + c + ". " + prose(2, c + 3)).after(160).add();
+				d.para(prose(3, c + 5)).after(160).add();
+				if (c < 6) d.pageBreak();
+			}
+			return d.pkg();
+		}));
+
 		// A 40% table with an offset of 1in: centred (room both sides), at the left edge, and
 		// at tblpX 1000 (unequal room).  Which side(s) Word uses, and the lines above the
 		// offset full width.
