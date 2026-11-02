@@ -33,6 +33,8 @@ Changes in Version 17.3.6
 - A WMF or EMF picture's Chinese, Japanese or Korean text no longer breaks PDF output: an odd-length record's
   padding came through as a NUL, which made the FO unreadable. That text now decodes with Windows' code pages
   (① was U+FFFD). An FO that is not well-formed XML now fails with its parse error.
+- A paragraph whose line breaking restarts beside a left float keeps its first word (FOP-3331, which docx4j's own
+  line layout manager lacked; CR-071 phase 0).
 
 **Java 25.**
 - docx4j sets its own XML element-depth limit, 256 (`docx4j.xml.maxElementDepth`, 0 for none), on the parsers it

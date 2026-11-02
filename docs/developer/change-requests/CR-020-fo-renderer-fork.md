@@ -1311,7 +1311,8 @@ changed there, it carries the curChildLM null check and `unwrapEarlierPass`. It 
 (a left float could drop a paragraph's first word) and f84f61fe5's FOP-3333 `lineArea.completeTraits` in
 `addBlockArea` (memory only, and absent from Apache FOP 2.11). The fork's own `LineLayoutManager` has had both since
 2.11-docx4j.7, so the copy has lacked them on .7 and .8 too. Re-deriving it (README-word-layout.md) is a layout
-change and wants its own gate.
+change and wants its own gate. **Done 2026-11-02** as CR-071 phase 0 (both hunks; gate b302 against b301, one mover,
+4083 +1); CR-071 then moves the Word layout into the fork's own managers, so the copy is not re-derived again.
 
 ## 9. Phase 2 classification (2026-09-19)
 

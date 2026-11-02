@@ -2452,6 +2452,12 @@ public class WordLineLayoutManager extends LineLayoutManager {
             ((Paragraph) paragraph).ignoreAtStart = 0;
             isFirstInBlock = false;
         }
+        // FOP-3331 (FOP 2.12, db3602d17): a restart at the paragraph's first element keeps that element where it is
+        // a box, the paragraph's first word, which the trim below dropped (beside a left float) @since 17.3.6
+        if (restartPositionIdx == 0 && !paragraph.isEmpty()
+                && !((KnuthElement) paragraph.get(0)).isAuxiliary()) {
+            restartPositionIdx = -1;
+        }
         paragraph.subList(0, restartPositionIdx + 1).clear();
         Iterator<KnuthElement> iter = paragraph.iterator();
         while (iter.hasNext() && !iter.next().isBox()) {
@@ -4650,7 +4656,26 @@ public class WordLineLayoutManager extends LineLayoutManager {
         if (lineArea.getBidiLevel() >= 0) {
             BidiResolver.reorder(lineArea);
         }
+        if (COMPLETE_TRAITS) {
+            lineArea.completeTraits(fobj.getUserAgent()); // FOP-3333 (FOP 2.12, f84f61fe5) @since 17.3.6
+        }
         parentLayoutManager.addChildArea(lineArea);
+    }
+
+    /**
+     * {@code Area.completeTraits(FOUserAgent)}, FOP 2.12's (FOP-3333): a line's trait map shared through the user
+     * agent's cache, for memory. Absent from a 2.11 renderer, which docx4j still loads (FopCapabilities' line
+     * warning); the call is linked only when it runs, so the check keeps it from running there.
+     */
+    private static final boolean COMPLETE_TRAITS = hasCompleteTraits();
+
+    private static boolean hasCompleteTraits() {
+        try {
+            Area.class.getMethod("completeTraits", org.apache.fop.apps.FOUserAgent.class);
+            return true;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
     }
 
     /** {@inheritDoc} */

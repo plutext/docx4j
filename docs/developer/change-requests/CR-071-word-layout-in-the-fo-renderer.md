@@ -1,7 +1,8 @@
 # CR-071: Word layout in the docx4j FO renderer; docx4j drops its copy of FOP's layout managers
 
 Status: ACCEPTED 2026-11-02 (Jason: "CR-071 D1 to D11 as recommended, except for D9 where we decide on (a)"): the move
-lands in 2.12-docx4j.1 and docx4j 17.3.6, whose releases wait for it. Proposed the same day (Jason: "what if we just had the single copy in the fork, and accepting that
+lands in 2.12-docx4j.1 and docx4j 17.3.6, whose releases wait for it. Phase 0 DONE 2026-11-02 (gate b302); phase 1 is
+the fork session's. Proposed the same day (Jason: "what if we just had the single copy in the fork, and accepting that
 -Papache-fop, docx4j on stock Apache FOP, would not have Word's line breaking?", then "write the CR please").
 Drafted by Claude Opus 5.5 (session docx4j-12). Decisions D1 to D11 (section 6): as recommended, D9 (a). In CR-020's family
 (the fork, `../xmlgraphics-fop-plutext`); the fork's side is the fork session's, under a fork CR of its own.
@@ -116,6 +117,11 @@ Tests: 19 in docx4j-export-fo (`org.docx4j.fop.wordlayout`: `GreedyLineBreakingT
   2.12 line's baseline. Its purpose under any D9: phase 2's 0-mover criterion is only attributable if the copy
   already has what the fork's managers have, so that the move changes nothing but where the code is. Under D9(b) it
   also gives 17.3.6 the fix; under (a) the copy it fixes is never released.
+  **DONE 2026-11-02:** both hunks in `WordLineLayoutManager` (`completeTraits` behind a check made once), with
+  `FirstWordBesideFloatTest` (FOP's float_12.xml through the Word layout: without the fix the paragraph reads "float
+  left ipsum dolor ...", its first word gone). Gate b302 against b301 (b301's jars, phase 0's export-fo): 1 mover,
+  `14_en-GB_num_tbl_4083` +1 in real2 and real-c2, its FO identical, a heading beside its side float no longer drawn
+  twice; events equal (Enterprise register cc68079). b302 is phase 2's baseline.
 - **Phase 1 (the fork, its own CR).** Word mode in the fork's managers from docx4j's copy at phase 0, behind the
   switch; the settings API; the `word-layout` hook; the element mapping; the unit tests that test the managers
   (D7). A drop in `~/fop-renderers`.
