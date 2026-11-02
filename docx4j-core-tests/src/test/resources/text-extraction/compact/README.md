@@ -16,6 +16,7 @@ configurations, 85 probes, 5,174 pairs. Built by `CompactProbeBuilder` (docx4j-c
 | `expected-tokens.tsv` | The token cases' rows, copied from their source tables (phase 0's columns). Only `fixture` changes. |
 | `compact-probe.values.tsv`, `compact-probe-updatefields.values.tsv` | The field cases' rows, copied from round 2's and round 1's tables. Each token is an anchor, and the value follows it. |
 | `expected-findings.tsv`, `goldens.tsv` | Empty. `ExtractionConformance` reads them. |
+| `*-word365-*.txt` | Word's saves from the open check (below). |
 
 Case numbers are the sources'. Two cases are 5 (caps-lang5 and caps-lang7d), so each sits in a different file.
 
@@ -61,6 +62,28 @@ compact file as it does in its source.
 
 ## Word
 
-Jason's check of the two new files is pending: no repair prompt on open, and Save As Plain Text writes a
-file. If the content file writes none, the first suspect is case 30's `w:noBreakHyphen`, past 246, if Word
-counts it as U+2011.
+Jason ran the check on both files on 2 November 2026, in Word for Microsoft 365 on the VM (build 20326.20232 when
+last recorded, 28 October). He reported no repair message. Each file saved as Plain Text (windows-1252, CR LF), so
+WD-001 did not trip. Case 30's `w:noBreakHyphen`
+came out as Word's 0x1E, not as a character outside the code page.
+
+| Save | File | What it shows |
+|---|---|---|
+| `compact-probe-word365-asis.txt` | the content file; "update fields?" answered No | Nothing recomputed: R08 `PAGE_OTHER`, R18 `VAR_X`, R14 `3`, as in round 2's as-is save. Caps-lang5's lines are the same as its own save (`JACKSON`, `ROBERTS`, `H?O`). |
+| `compact-probe-updatefields-word365-yes.txt` | the updateFields file; answered Yes | C04 `VALID` and C16 `WILD_MATCH`, as in round 1's updatefields-yes save. C06's line is the same as its bisect save. Caps-lang7d is `?NE CAFÉ ?` in the code page (its source was saved as UTF-8). |
+
+Every case line in these saves is the same as the line in Word's save of the source file.
+
+## Known differences from the sources
+
+docx-tool-identifier's local check (2 November 2026; 80 configurations over the two files and the rewired
+packages) separates every pair of locally run readers the library separates. 25 of 2,636 readings differ from
+their source case, and none of them costs a pair:
+
+- **Case 25's header box** is counted 3+ by LibreOffice's PDF and liteparse (1 in the source), and 1 in docx4j's
+  HTML (0 in the source). Here the header is the only section's default. In the 38-case probe it is section 1's,
+  of two, beside a first-page header.
+- **`H₂O` (caps-lang5 and C06), C06's `H2O`, and caps-lang7d's ligature line** go from 0 to 1 in docx4j's PDF and in
+  liteparse. These files default to Calibri; the dpp files use Word 365's theme fonts.
+- **Pandoc 3.6.1 and 3.12.1** put R08's nested `PAGE` result (`7`) in place here, but at the start of the paragraph
+  in round 2's file. The XML is the same apart from round 2's indentation.
