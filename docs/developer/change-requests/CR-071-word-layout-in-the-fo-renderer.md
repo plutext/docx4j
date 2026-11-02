@@ -217,4 +217,17 @@ The fork's phase 1 is fop/CR-031 (`docs/developer/change-requests/CR-031-word-la
   docx4j's (`breakBefore`, ...); exact signatures when built.
 - **The pair table:** the flip (`LineBreakUtils.setLineBreakPairProperty`) moves to the fork, applied when a Word-mode
   factory is built and breakOpportunities is true; docx4j stops applying it on the fork.
+- **Font metrics (added by the fork session, 2026-11-02; this CR had not foreseen it):** the copy's `wordLine` reads a
+  run's ascent share from docx4j-core (`PhysicalFonts.get`, `WordLineMetrics.get`, WordLineLayoutManager l.1309-1330),
+  which the fork cannot depend on. It becomes a callback docx4j passes:
+  `FopFactoryBuilder.setWordLayoutFontMetrics(java.util.function.BiFunction<String,String,Double> ascentShare)`, its
+  arguments the run's document font (`docx4j:font`, may be null) and the physical font's full name
+  (`getFontMetrics().getFullName()`, never null), returning `(winAscent + externalLeading) / lineHeightFactor()` or null
+  where unknown: the copy's logic less the block-text check, which stays in the fork (`pf = PhysicalFonts.get(fullName)`;
+  null when `pf` and the document font are both null; `m = WordLineMetrics.get(docFont, pf)`; null unless `m` is not
+  null, not `fallback`, and `lineHeightFactor() > 0`). JDK types only, set by reflection beside `setWordLayout`, in
+  either order, inert while Word mode is off. Without it the fork takes the block font's ratio, as the copy does when
+  `m` is null, so phase 2's 0-mover gate needs it passed. The package's other docx4j references are constants
+  (`XsltFOFunctions.TAB_PTAB_RIGHT` and `_CENTER`, `HyphenationSettings.DEFAULT_ZONE_TWIPS` = 360, the namespace),
+  whose values the fork carries itself.
 
