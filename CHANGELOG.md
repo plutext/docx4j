@@ -44,6 +44,11 @@ Changes in Version 17.3.6
 - A page break in the paragraph a full-width floating table is anchored to no longer takes the table to the next
   page: Word sets the table on the anchor's page and the break after it.
 
+**Reading documents.**
+- A `w:br` outside a run (directly in a paragraph, hyperlink or the body, or inside a `w:t` or `w:instrText`) is
+  read as Word reads it: a break at that point, all the text kept. docx4j dropped the break, and inside a `w:t`
+  the text before it; 206,351 of 3.7 million Common Crawl documents have one (CR-073).
+
 **Java 25.**
 - docx4j sets its own XML element-depth limit, 256 (`docx4j.xml.maxElementDepth`, 0 for none), on the parsers it
   creates: Java 25's default of 100 left a document 32 tables deep unreadable, and failed PDF output at 25.

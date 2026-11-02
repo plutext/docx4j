@@ -816,4 +816,138 @@
 		<xsl:apply-templates select="." />
 	</xsl:template>
 
+	<!-- A w:br outside a w:r (CR-073).  Word 365 reads one directly in a w:p, a w:hyperlink or
+	     another element that holds runs, one inside a w:t or a w:instrText, and one directly in
+	     w:body, as a break at that point in the text, of its own type, and keeps all the text
+	     (the br-placement probe, docx4j-core-tests/src/test/resources/br-placement).  JAXB has no
+	     place for it there, so the second unmarshal dropped it, and inside a w:t the text before
+	     it too.  docx4j's load survey found one in 206,351 of 3.7 million Common Crawl documents,
+	     89% of them a web-to-docx generator's blank line, <w:p><w:br/></w:p>.
+
+	     The break goes in a run of its own, with the run properties Word gives it: the paragraph
+	     mark's while no run precedes it in its paragraph, none after one (round 2: never the
+	     next run's or the previous run's).  A text element holding elements becomes its stretches
+	     of text and its breaks, in order, in the same run; a w:t nested in a w:t gives its text.
+	     A w:br directly in w:body starts the next paragraph.  One WARN a part.  @since 17.3.6 -->
+
+	<xsl:template match="/" priority="1">
+		<xsl:variable name="breaks" select="count(//w:br[parent::w:p or parent::w:hyperlink or parent::w:smartTag
+				or parent::w:customXml or parent::w:fldSimple or parent::w:ins or parent::w:del or parent::w:moveFrom
+				or parent::w:moveTo or parent::w:sdtContent or parent::w:dir or parent::w:bdo or parent::w:body])" />
+		<xsl:variable name="texts" select="count(//w:t[*] | //w:instrText[*] | //w:delText[*] | //w:delInstrText[*])" />
+		<xsl:if test="$breaks + $texts > 0">
+			<xsl:variable name="logging"
+				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('w:br outside a w:r: ', $breaks,
+					' outside a run, ', $texts, ' text elements holding elements; read as Word reads them (CR-073)'))" />
+		</xsl:if>
+		<xsl:apply-templates select="node()" />
+	</xsl:template>
+
+	<!-- (1) directly in an element that holds runs, in a paragraph: a math run (m:r) holds a
+	     w:br legally, so the parents are named; the nearest paragraph-or-block ancestor must be
+	     a w:p, so a block-level w:sdtContent or w:customXml is not taken for an inline one -->
+	<xsl:template match="w:br[parent::w:p or parent::w:hyperlink or parent::w:smartTag or parent::w:customXml
+			or parent::w:fldSimple or parent::w:ins or parent::w:del or parent::w:moveFrom or parent::w:moveTo
+			or parent::w:sdtContent or parent::w:dir or parent::w:bdo]
+			[ancestor::*[self::w:p or self::w:body or self::w:tc or self::w:txbxContent or self::w:hdr or self::w:ftr
+				or self::w:footnote or self::w:endnote or self::w:comment or self::w:docPartBody][1][self::w:p]]">
+		<xsl:variable name="pid" select="generate-id(ancestor::w:p[1])" />
+		<w:r>
+			<!-- no run before it in its paragraph: on its path from the paragraph, no earlier
+			     sibling holds one -->
+			<xsl:if test="not(ancestor-or-self::*[generate-id(ancestor::w:p[1]) = $pid]/preceding-sibling::*[descendant-or-self::w:r])">
+				<xsl:call-template name="mark-run-properties">
+					<xsl:with-param name="p" select="ancestor::w:p[1]" />
+				</xsl:call-template>
+			</xsl:if>
+			<w:br><xsl:apply-templates select="@*" /></w:br>
+		</w:r>
+	</xsl:template>
+
+	<!-- the paragraph mark's run properties, as a run's: without what only a mark has -->
+	<xsl:template name="mark-run-properties">
+		<xsl:param name="p" />
+		<xsl:variable name="props" select="$p/w:pPr/w:rPr/*[not(self::w:ins or self::w:del or self::w:moveFrom
+				or self::w:moveTo or self::w:rPrChange)]" />
+		<xsl:if test="$props">
+			<w:rPr><xsl:apply-templates select="$props" /></w:rPr>
+		</xsl:if>
+	</xsl:template>
+
+	<!-- (2) a text element holding elements: its text, its breaks, and the text of a text
+	     element nested in it, in order; whitespace between them kept only where xml:space
+	     preserves it -->
+	<xsl:template match="w:t[*] | w:instrText[*] | w:delText[*] | w:delInstrText[*]">
+		<xsl:apply-templates select="node()" mode="split-text">
+			<xsl:with-param name="name" select="local-name()" />
+		</xsl:apply-templates>
+	</xsl:template>
+
+	<xsl:template match="text()" mode="split-text">
+		<xsl:param name="name" />
+		<xsl:variable name="space" select="string(../ancestor-or-self::*[@xml:space][1]/@xml:space)" />
+		<xsl:if test="$space = 'preserve' or normalize-space(.) != ''">
+			<xsl:element name="w:{$name}" namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+				<xsl:if test="$space != ''">
+					<xsl:attribute name="xml:space"><xsl:value-of select="$space" /></xsl:attribute>
+				</xsl:if>
+				<xsl:value-of select="." />
+			</xsl:element>
+		</xsl:if>
+	</xsl:template>
+
+	<xsl:template match="w:br" mode="split-text">
+		<w:br><xsl:apply-templates select="@*" /></w:br>
+	</xsl:template>
+
+	<xsl:template match="*" mode="split-text">
+		<xsl:param name="name" />
+		<xsl:apply-templates select="node()" mode="split-text">
+			<xsl:with-param name="name" select="$name" />
+		</xsl:apply-templates>
+	</xsl:template>
+
+	<!-- (3) directly in w:body: Word moves it to the start of the next paragraph, after its
+	     w:pPr, with that mark's run properties.  Where no paragraph follows (unmeasured), or
+	     the next one is split by the nested-paragraph template above, it is a paragraph of
+	     its own -->
+	<xsl:template match="w:body/w:br">
+		<xsl:variable name="next" select="following-sibling::*[not(self::w:br)][1]" />
+		<xsl:if test="not($next[self::w:p][not(w:hyperlink/w:p or w:r/w:p or w:hyperlink/w:r/w:p or w:r/w:r/w:p)])">
+			<w:p><w:r><w:br><xsl:apply-templates select="@*" /></w:br></w:r></w:p>
+		</xsl:if>
+	</xsl:template>
+
+	<xsl:template match="w:body/w:p[preceding-sibling::*[1][self::w:br]]
+			[not(w:hyperlink/w:p or w:r/w:p or w:hyperlink/w:r/w:p or w:r/w:r/w:p)]/w:pPr">
+		<w:pPr><xsl:apply-templates select="@*|node()" /></w:pPr>
+		<xsl:call-template name="body-breaks">
+			<xsl:with-param name="p" select=".." />
+		</xsl:call-template>
+	</xsl:template>
+
+	<xsl:template match="w:body/w:p[not(w:pPr)][preceding-sibling::*[1][self::w:br]]
+			[not(w:hyperlink/w:p or w:r/w:p or w:hyperlink/w:r/w:p or w:r/w:r/w:p)]">
+		<w:p>
+			<xsl:apply-templates select="@*" />
+			<xsl:call-template name="body-breaks">
+				<xsl:with-param name="p" select="." />
+			</xsl:call-template>
+			<xsl:apply-templates select="node()" />
+		</w:p>
+	</xsl:template>
+
+	<!-- the breaks directly before the paragraph, each in a run of its own -->
+	<xsl:template name="body-breaks">
+		<xsl:param name="p" />
+		<xsl:for-each select="$p/preceding-sibling::w:br[generate-id(following-sibling::*[not(self::w:br)][1]) = generate-id($p)]">
+			<w:r>
+				<xsl:call-template name="mark-run-properties">
+					<xsl:with-param name="p" select="$p" />
+				</xsl:call-template>
+				<w:br><xsl:apply-templates select="@*" /></w:br>
+			</w:r>
+		</xsl:for-each>
+	</xsl:template>
+
 </xsl:stylesheet>

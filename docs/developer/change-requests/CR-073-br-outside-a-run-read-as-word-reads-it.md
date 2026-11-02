@@ -1,6 +1,7 @@
 # CR-073: a w:br outside a w:r read as Word reads it
 
-Status: PROPOSED 2026-11-03 (Jason: "yes, draft CR-073; we need a new probe to answer decisions 1 and 2"). Found by
+Status: ACCEPTED 2026-11-03 (Jason: "CR-073: D1 to D6 as recommended, do phase 1"); phase 1 DONE 2026-11-03 (§8).
+PROPOSED 2026-11-03 (Jason: "yes, draft CR-073; we need a new probe to answer decisions 1 and 2"). Found by
 docx4j's load survey of the Common Crawl corpus (docx4j-load-survey, 2 November 2026; portfolio
 `docs/docx_corpus_use.md` §8.14). Phase 0 round 1 DONE 2026-11-03 (a2a971416, Jason's Word run): Word reads a `w:br`
 outside a run as a break at that point, all the text kept. Round 2 DONE 2026-11-03 (Jason's Word run): the break
@@ -112,7 +113,7 @@ a `w:hyperlink` with no run before it in the paragraph.
 ## 4. Approach
 
 New templates in `mc-preprocessor.xslt`, beside the ones that already repair a `w:r` or `w:p` nested where it
-cannot be (`w:r[w:r or w:p]`, `w:p[w:hyperlink/w:p ...]`, 17.1.0 and 17.2.0), each logging once as those do:
+cannot be (`w:r[w:r or w:p]`, `w:p[w:hyperlink/w:p ...]`, 17.1.0 and 17.2.0):
 
 1. **A `w:br` that is a child of a run container** (`w:p`, `w:hyperlink`, and the other elements that hold runs
    directly: `w:smartTag`, an inline `w:customXml`, `w:fldSimple`, `w:ins`, `w:del`, `w:moveFrom`, `w:moveTo`, a
@@ -169,3 +170,44 @@ place would say whether any of it needs a rule like this one.
   its text, and logs it.
 - Text-model goldens: a document with such a `w:br` would gain line breaks. The core-tests text fixtures have none
   (to check in phase 1).
+
+## 8. Phase 1 done (2026-11-03)
+
+D1 to D6 as recommended (Jason, 2026-11-03). In `mc-preprocessor.xslt` (§4's three rules):
+
+- **(1)** a `w:br` whose parent is a `w:p`, `w:hyperlink`, `w:smartTag`, `w:customXml`, `w:fldSimple`, `w:ins`,
+  `w:del`, `w:moveFrom`, `w:moveTo`, `w:sdtContent`, `w:dir` or `w:bdo`, and whose nearest paragraph-or-block
+  ancestor is a `w:p`, goes in a run of its own. The parents are named because a math run (`m:r`) holds a `w:br`
+  legally. The run gets the mark's properties (its `w:pPr/w:rPr`, without `w:ins`, `w:del`, `w:moveFrom`,
+  `w:moveTo`, `w:rPrChange`) where no earlier sibling on the break's path from its paragraph holds a `w:r`, and none
+  otherwise (D1).
+- **(2)** a `w:t`, `w:instrText`, `w:delText` or `w:delInstrText` holding elements becomes its stretches of text,
+  same name, and its `w:br`, in order, in the same run (D2). Text in other child elements is kept. Whitespace
+  between them is kept only where `xml:space` preserves it.
+- **(3)** a `w:br` directly in `w:body` goes into the next `w:p`, after its `w:pPr` (or first, where it has none),
+  with that mark's properties. Where no paragraph follows, or the next is one the nested-paragraph template splits,
+  it is a paragraph of its own (not measured).
+- One WARN a part (D3), from a template on the document root that counts the misplaced breaks and text elements:
+  "w:br outside a w:r: n outside a run, m text elements holding elements; read as Word reads them (CR-073)".
+
+Tests: `BrOutsideARunTest` (docx4j-core-tests, 18). Twelve of the probe files are compared with Word's saves: text,
+breaks and their types, field characters and paragraph ends in order, with each one's run properties (bold, italic,
+size). `br2-3` is compared the same way, but D6 keeps its `w:instrText` a field code. Six more test the edges: a
+math run's `w:br` and a legal `w:r/w:br` left alone, whitespace without `xml:space`, the mark's own elements
+dropped, deleted text, and a body `w:br` before a paragraph with no `w:pPr` and before a table. docx4j-core-tests
+2,402 run, none failing (30 skipped); docx4j-export-fo 110 and docx4j-export-fo-tests 874 (9 skipped), none failing.
+
+The twenty survey samples, read locally (not committed), the old core against the new, counting breaks and text
+characters in the main part, headers and footers:
+
+- every sample gains its breaks (1 to 38 each);
+- the PHPWord and template-filler samples get their text back: 617 to 5,280 characters, 271 to 758, 2,124 to 2,426,
+  3,615 to 3,861;
+- the letterhead samples' header field codes get their text back: 225 to 735, 237 to 747.
+
+One sample (01af91808eac) has a `<br/>` in no namespace inside a `w:t`, after an escaped `&lt;br /&gt;`, from a web
+page's markup. It is not a WordprocessingML break and stays none; its text is now kept whole, where docx4j kept only
+what followed it (§7).
+
+Not done here: a Strict document's misplaced `w:br`. The rules match the transitional namespace, and the Strict
+conversion happens in the same pass. None has been seen.
