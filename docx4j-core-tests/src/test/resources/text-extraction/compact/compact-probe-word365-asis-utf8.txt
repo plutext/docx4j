@@ -1,0 +1,47 @@
+﻿Compact identification probe
+Case 5: case mapping (caps-lang5)
+L02_ JACKSON, J., dissenting; ROBERTS, C.J.
+L03_ subscript two in plain text: H₂O.
+IF fields, their stored results (IF-field round 2)
+R08_OVER_PAGE = PAGE_OTHER
+R18_DOCVARIABLE = VAR_X
+R14_SIMPLE_DIRTY = 3
+Case 4: two Choices, the first requiring an unknown namespace, the second wps; a Fallback
+The box: 
+Case 15: an inserted field and a deleted field
+Inserted: TC15_INSERTED_FIELD Deleted: 
+Case 21: hyperlinks: a w:hyperlink with r:id, and a HYPERLINK field
+w:hyperlink: FLD21_LINK_TEXT
+HYPERLINK field: FLD21_FIELD_LINK_TEXT
+Case 25: text boxes and legacy WordArt
+A floating DrawingML box: 
+An inline DrawingML box: 
+A VML box, no mc: 
+In a cell: Legacy WordArt (v:textpath): 
+Case 30: breaks, a tab and hyphens
+BRK30_BEFORE
+BRK30_AFTER
+
+BRK30_PAGE
+
+BRK30_COLUMN
+TAB30_LEFT	TAB30_RIGHT
+HY30_NONBREAK HY30_SOFT
+Case 32: an equation with a fraction
+MTH32_A+(MTH32_B)/2
+Case 33: pictures: alt text and a title, decorative, and an SVG with text in it
+Alt text and title: 
+Decorative: 
+SVG, its PNG fallback in a:blip: 
+Case 36: an altChunk holding HTML
+ALT36_CHUNK_TEXT
+After the altChunk.
+Case 38: document properties and a custom XML part
+The core properties hold a title and a subject; the custom XML part case 23 binds to holds one more value.
+Case 84: a PDF embedded as Acrobat embeds it
+
+Case 85: a raster picture whose only text is drawn
+
+Built by docx4j (CompactProbeBuilder, in docx4j-core-tests) for CR-001 phase 2 of the docx-tool-identifier. The README beside this file gives the source of each case.
+
+

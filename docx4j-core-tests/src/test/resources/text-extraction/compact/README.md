@@ -74,6 +74,20 @@ came out as Word's 0x1E, not as a character outside the code page.
 
 Every case line in these saves is the same as the line in Word's save of the source file.
 
+Jason's further readings the same day, for docx-tool-identifier (each taken as for its source):
+
+| Save | File | How |
+|---|---|---|
+| `compact-probe-word365-asis-utf8.txt` | content | No to the prompt; Save As Plain Text, UTF-8 with BOM |
+| `compact-probe-word365-f9.txt` | content | No; Ctrl+A, F9; Save As Plain Text |
+| `compact-probe-word365-dirty-yes.txt` | content | Yes to the prompt (the w:dirty field); Save As Plain Text |
+| `compact-probe-word365.pdf` | content | No; Save As PDF |
+| `compact-probe-updatefields-word365-asis-utf8.txt` | updateFields | No; Save As Plain Text, UTF-8 with BOM |
+| `compact-probe-updatefields-word365-f9.txt` | updateFields | No; Ctrl+A, F9; Save As Plain Text |
+| `compact-probe-updatefields-word365-no.txt` | updateFields | No; Save As Plain Text |
+
+The identifier found every one equal to Word's reading of the source on every case both measured.
+
 ## Known differences from the sources
 
 docx-tool-identifier's local check (2 November 2026; 80 configurations over the two files and the rewired

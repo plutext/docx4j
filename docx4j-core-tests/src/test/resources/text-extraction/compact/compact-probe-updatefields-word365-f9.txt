@@ -1,0 +1,9 @@
+Compact identification probe, w:updateFields
+Case 6: dpp bisect C06
+C06_ H2O and x2 on the 1st of May; literal x² and H?O.
+Case 5: caps-lang7d
+L02_ ?NE CAFÉ ? is the phrase.
+IF fields under w:updateFields (IF-field round 1)
+C04_DATE_COND = VALID
+C16_WILDCARD = WILD_MATCH
+Built by docx4j (CompactProbeBuilder, in docx4j-core-tests) for CR-001 phase 2 of the docx-tool-identifier. The README beside this file gives the source of each case.
