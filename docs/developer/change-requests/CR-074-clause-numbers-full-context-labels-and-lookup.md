@@ -4,8 +4,9 @@ Status: PROPOSED 2026-11-03. Asked for by the portfolio session, relaying Jason'
 (portfolio 8e6a8fc; `mcp_strategy.md` §12.3 S1 to S6 "as recommended", `mcp_tool_vocabulary.md` §3, the clause
 address form): S2 is docx4j's first, and the oracle for S5's cross-references. The portfolio offered a small CR or a
 phase of CR-046's model. It is a CR of its own because it reaches past the text model into the numbering model
-(CR-014's package) and the field evaluator (CR-067). Phase 0, the Word probe, is BUILT and staged for Jason's run (§3).
-Decisions in §5, for Jason; phases in §6.
+(CR-014's package) and the field evaluator (CR-067). Phase 0 DONE 2026-11-03 (Jason's Word run): Word's rules for
+the full, no and relative context, `\t`, `\p`, `\d`, the tracked-change view and its own insertion are measured
+(§3.1). Decisions in §5, for Jason, updated for the results; phases in §6.
 
 ## 0. Summary
 
@@ -89,6 +90,34 @@ level"; `\t` makes `\n`, `\r` and `\w` "suppress non-delimiter and non-numerical
 The Word saves become the goldens: every REF result in `cn-1-labels-word365.docx` is one assertion for phases 1 and
 2, and `cn-2-insert-word365.docx` is the shape phase 3 writes. The ports take both, as they took CR-073's pairs.
 
+### 3.1 Results (DONE 2026-11-03, Jason's run; the probe's README has the table)
+
+All 655 fields were updated, with no step failing. Word's drawn labels equal docx4j's for all 79 paragraphs. The
+rules §2 asked for:
+
+- **Full context**: the paragraph's own label after its parent's full context. The parent is the nearest earlier
+  paragraph of the same list at a shallower level, and a skipped level contributes nothing (`1(a)`, `1.02(i)`,
+  `II(a)`). A level whose text shows the levels above (`%1.%2`, `%1.%2.%3.`) has no parent part. The parts are
+  joined with nothing between them (`Article I1`, `Step 1:a`, `1-1A`, `1)a)i)`). A period ending a part is dropped
+  before a part starting with `(` (`1(a)`) and kept before a letter (`1.a.i`); one trailing period at the end is
+  dropped. A bullet gives its character, `NOTE` gives `NOTE`, and an empty level, or a bookmark on a paragraph that
+  is not numbered, gives `0`.
+- **No context**: the own part, its trailing period dropped.
+- **Relative context**: drops the leading parts whose paragraphs are ancestors of the reference's position, matched
+  by paragraph, not value (a restarted list's `1.` is not R1's). The position is the field's paragraph if it is in
+  the target's list, else the last paragraph of that list before the field.
+- **`\t`** drops the level texts' words and their spaces, keeping numbers and punctuation (`I`, `1.01(a)`, `1:`);
+  empty is `0`. **`\p`** appends ` above` or ` below`. **`\d "-"`** separates the parts (`2.01-(a)`).
+- **View**: the accepted view's numbers whatever the window shows. A bookmark in a paragraph whose mark is deleted
+  resolves to the paragraph it merges into.
+- **Word's insertion**: a hidden `_Ref` followed by nine digits, over the paragraph's text without the label or the
+  mark. It is reused while it still spans the whole text. The code is ` REF _Ref… \w \h ` (`\n`, `\r`; `\p`
+  and `\d` before or after `\h` as the dialog orders them), with no MERGEFORMAT: a complex field as a hyperlink,
+  a `w:fldSimple` otherwise. The result is computed at the insertion point.
+
+Unmeasured, and left so unless a document needs them: a period before a digit or punctuation other than `(`; a level
+text that shows some levels above but not all (`%2.%3` at level 2); RTL lists.
+
 ## 4. Approach (proposed; the rules come from phase 0)
 
 **4.1 `ParagraphNumber`, in `org.docx4j.model.listnumbering`.** This is an immutable snapshot taken when the numbering
@@ -129,17 +158,17 @@ S5's engine half, ts-editor's manual-to-real cross-reference.
 | D2 | Where the API lives (docx4j-mcp's question 1) | **`ParagraphNumber` in the numbering model; `TextNumbering.getClause()`; a `Clauses` class over a `TextResult` for the lookup and the scope** (§4.1 to §4.3). The ports mirror the same three |
 | D3 | How a label matches | **Exact match on the clause; failing that, on the `\t` form (`3.01` for `Section 3.01`) where exactly one paragraph's matches. The query is trimmed and one trailing period dropped (an agent reading REQ-510's `1.` may cite it). No case folding.** None or several matches is an error naming the candidates; near misses (other case, other form) are listed as suggestions and never resolved |
 | D4 | What a scope holds, and where it ends (docx4j-mcp's question 2) | **Every block, tables included, from the clause's paragraph to the next paragraph of the same list (`w:abstractNum`) at its level or above, or the end of the story.** Alternatives: (b) a numbered paragraph of any list ends it (a bullet list inside clause 3 would then cut clause 3); (c) a paragraph of a higher outline level ends it (an unnumbered "Background" heading would). With (a), the last clause's scope runs to the end, over schedules in a list of their own |
-| D5 | Which paragraphs carry a clause | **Those for which Word's `\w` gives a non-empty result** (phase 0's case N says whether a bullet, `NOTE` or an empty level does) |
-| D6 | Stories and views | **The main document's blocks as the text model walks them** (body, tables, content controls; not text boxes, headers or notes, which Word's numbered-items list is checked against in phase 0), **in the text model's view**. Case T says which view each Word result belongs to |
-| D7 | REF's switches | **`\n`, `\r`, `\w`, `\t` evaluated** from the same model, plus `\p` and `\d` if phase 0 measures them. One oracle for the label and the field, as python asked |
+| D5 | Which paragraphs carry a clause | **Those whose level shows a number**: a `%n` in the level text and a format other than `bullet` or `none`. Word's `\w` gives a bullet its character, `NOTE` its word and an empty level `0` (§3.1); none of these is an address an agent would cite, and `0` or `NOTE` would be ambiguous at once. REF evaluation (D7) still gives Word's result for them |
+| D6 | Stories and views | **The main document's blocks as the text model walks them** (body, tables, content controls; not text boxes, headers or notes), **in the text model's view**. Word's REF results are the accepted view's in every display (§3.1), which is the text model's default, so the default clauses are Word's |
+| D7 | REF's switches | **`\n`, `\r`, `\w`, `\t`, `\p` and `\d` evaluated** from the same model, as §3.1 measures them; `\h` changes nothing in the result; `\f` stays unsupported. One oracle for the label and the field, as python asked |
 | D8 | A cross-reference writer | **Yes, small (§4.5)**, so that S5's engine half ports a tested writer, not a description. Alternative: goldens only |
 | D9 | The WD | **Ask the portfolio for a `clause` member in the JSON `numbering` object and a REQ for its rule** (the full-context form is not in REQ-510) |
 | D10 | The suffix (docx4j-mcp's question 3) | **The clause holds no suffix**, nor does `ParagraphNumber.label()`. `TextBlock.getListLabel()` keeps the tab it carries today, which is what plain text emits under `list_labels` |
 
 ## 6. Phases
 
-0. **The Word probe.** BUILT 2026-11-03 (§3), staged for Jason's run. When the saves come back: the table of Word's
-   readings in the probe's README, §2's rules written here, and D3 to D7 checked against them.
+0. **The Word probe.** DONE 2026-11-03 (§3, §3.1): Jason's run, Word's saves and log committed beside the probe,
+   the readings in its README, D5 to D7 updated for them.
 1. **`ParagraphNumber`** and REF `\n`, `\r`, `\w` and `\t` (§4.1, §4.4). Every REF result in
    `cn-1-labels-word365.docx` is asserted, docx4j re-evaluating Word's saved fields. Its labels equal Word's
    `ListString`.

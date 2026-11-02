@@ -1,0 +1,1448 @@
+10:41:05 Word 16.0 build 16.0.20326, user 'Author A'
+10:41:06 cn-1 : 79 list paragraphs
+10:41:06   label L1 '1.' level 1 type 4
+10:41:06   label L2 '1.01' level 2 type 4
+10:41:06   label L3 '1.02' level 2 type 4
+10:41:06   label L4 '2.' level 1 type 4
+10:41:06   label L5 '2.01' level 2 type 4
+10:41:06   label L6 '(a)' level 3 type 4
+10:41:06   label L7 '(i)' level 4 type 4
+10:41:06   label L8 '(ii)' level 4 type 4
+10:41:06   label L9 '(b)' level 3 type 4
+10:41:06   label L10 '2.02' level 2 type 4
+10:41:06   label L11 '(a)' level 3 type 4
+10:41:06   label L12 '3.' level 1 type 4
+10:41:06   label L13 '3.01' level 2 type 4
+10:41:07   label O1 '1.' level 1 type 4
+10:41:07   label O2 'a.' level 2 type 4
+10:41:07   label O3 'i.' level 3 type 4
+10:41:07   label O4 'ii.' level 3 type 4
+10:41:07   label O5 'b.' level 2 type 4
+10:41:07   label O6 '2.' level 1 type 4
+10:41:07   label O7 'a.' level 2 type 4
+10:41:07   label P1 '1)' level 1 type 4
+10:41:07   label P2 'a)' level 2 type 4
+10:41:07   label P3 'i)' level 3 type 4
+10:41:07   label P4 'ii)' level 3 type 4
+10:41:07   label P5 'b)' level 2 type 4
+10:41:07   label P6 '2)' level 1 type 4
+10:41:07   label P7 'a)' level 2 type 4
+10:41:07   label H1 '1.' level 1 type 4
+10:41:07   label H2 '1.1.' level 2 type 4
+10:41:07   label H3 '1.1.1.' level 3 type 4
+10:41:07   label H4 '1.1.2.' level 3 type 4
+10:41:07   label H5 '1.2.' level 2 type 4
+10:41:07   label H6 '2.' level 1 type 4
+10:41:07   label H7 '2.1.' level 2 type 4
+10:41:07   label A1 'Article I' level 1 type 4
+10:41:07   label A2 'Section 1.01' level 2 type 4
+10:41:07   label A3 '(a)' level 3 type 4
+10:41:07   label A4 '(b)' level 3 type 4
+10:41:07   label A5 'Article II' level 1 type 4
+10:41:07   label A6 'Section 2.01' level 2 type 4
+10:41:07   label A7 '(a)' level 3 type 4
+10:41:07   label A8 'Section 2.02' level 2 type 4
+10:41:07   label Y1 '1.' level 1 type 4
+10:41:07   label Y2 '1.1' level 2 type 4
+10:41:07   label Y3 '2.' level 1 type 4
+10:41:07   label Y4 '2.1' level 2 type 4
+10:41:07   label G1 'I.' level 1 type 4
+10:41:07   label G2 '1.1' level 2 type 4
+10:41:07   label G3 '(a)' level 3 type 4
+10:41:07   label G4 'II.' level 1 type 4
+10:41:07   label G5 '(a)' level 3 type 4
+10:41:07   label S1 '1.' level 1 type 4
+10:41:07   label S2 '(a)' level 3 type 4
+10:41:07   label S3 '(i)' level 4 type 4
+10:41:07   label S4 '1.02' level 2 type 4
+10:41:07   label S5 '(i)' level 4 type 4
+10:41:07   label R1 '1.' level 1 type 4
+10:41:07   label R2 '(a)' level 2 type 4
+10:41:07   label R3 '2.' level 1 type 4
+10:41:07   label R4 '1.' level 1 type 4
+10:41:07   label R5 '(a)' level 2 type 4
+10:41:07   label M1 'Article I' level 1 type 4
+10:41:07   label M2 '1.' level 2 type 4
+10:41:07   label M3 '(a)' level 3 type 4
+10:41:07   label M4 '2.' level 2 type 4
+10:41:07   label M5 'Article II' level 1 type 4
+10:41:07   label N1 '' level 1 type 4
+10:41:07   label N2 'Step 1:' level 1 type 4
+10:41:07   label N3 'a.' level 2 type 4
+10:41:07   label N4 'NOTE' level 1 type 4
+10:41:07   label N5 '' level 1 type 4
+10:41:07   label N6 '1' level 1 type 4
+10:41:07   label N7 '1-1' level 2 type 4
+10:41:07   label N8 'A' level 3 type 4
+10:41:07   label T1 '1.' level 1 type 4
+10:41:07   label T2 '1.' level 1 type 4
+10:41:07   label T3 '(a)' level 2 type 4
+10:41:07   label T4 '2.' level 1 type 4
+10:41:07   label T5 '(a)' level 2 type 4
+10:41:08   item 1 '1. L1 level 0'
+10:41:08   item 2 '  1.01 L2 level 1'
+10:41:08   item 3 '  1.02 L3 level 1'
+10:41:08   item 4 '2. L4 level 0'
+10:41:08   item 5 '  2.01 L5 level 1'
+10:41:08   item 6 '    (a) L6 level 2 r: L3=? L5=? L7=? L9=? L11=?'
+10:41:08   item 7 '      (i) L7 level 3 r: L6=? L8=? L9=? L11=? L4=?'
+10:41:08   item 8 '      (ii) L8 level 3 r: L1=? L2=? L3=? L4=? L5=? L6=? L7=? L8=? L9=? L10=? L11=? L12=?'
+10:41:08   item 9 '    (b) L9 level 2 r: L1=? L2=? L3=? L4=? L5=? L6=? L7=? L8=? L9=? L10=? L11=? L12=?'
+10:41:08   item 10 '  2.02 L10 level 1'
+10:41:08   item 11 '    (a) L11 level 2 r: L1=? L2=? L3=? L4=? L5=? L6=? L7=? L8=? L9=? L10=? L11=? L12=?'
+10:41:08   item 12 '3. L12 level 0 r: L1=? L2=? L3=? L4=? L5=? L6=? L7=? L8=? L9=? L10=? L11=? L12=?'
+10:41:08   item 13 '  3.01 L13 level 1, in a table cell r: L12=? L6=?'
+10:41:08   item 14 '1. O1 level 0'
+10:41:08   item 15 '  a. O2 level 1 r: L6=? L5=? L4=?'
+10:41:08   item 16 '    i. O3 level 2'
+10:41:08   item 17 '    ii. O4 level 2 r: O1=? O2=? O3=? O5=? O6=? O7=?'
+10:41:08   item 18 '  b. O5 level 1'
+10:41:08   item 19 '2. O6 level 0'
+10:41:08   item 20 '  a. O7 level 1 r: O1=? O2=? O3=? O4=? O5=? O6=?'
+10:41:08   item 21 '1) P1 level 0'
+10:41:08   item 22 '  a) P2 level 1'
+10:41:08   item 23 '    i) P3 level 2'
+10:41:08   item 24 '    ii) P4 level 2 r: P1=? P2=? P3=? P5=? P6=? P7=?'
+10:41:08   item 25 '  b) P5 level 1'
+10:41:08   item 26 '2) P6 level 0'
+10:41:08   item 27 '  a) P7 level 1 r: P1=? P2=? P3=? P4=? P5=? P6=?'
+10:41:08   item 28 '1. H1 level 0'
+10:41:08   item 29 '  1.1. H2 level 1'
+10:41:08   item 30 '    1.1.1. H3 level 2'
+10:41:08   item 31 '    1.1.2. H4 level 2 r: H1=? H2=? H3=? H5=? H6=? H7=?'
+10:41:08   item 32 '  1.2. H5 level 1'
+10:41:08   item 33 '2. H6 level 0'
+10:41:08   item 34 '  2.1. H7 level 1 r: H1=? H2=? H3=? H4=? H5=? H6=?'
+10:41:08   item 35 'Article I A1 Article heading'
+10:41:08   item 36 '  Section 1.01 A2 Section heading'
+10:41:08   item 37 '    (a) A3 clause'
+10:41:08   item 38 '    (b) A4 clause'
+10:41:08   item 39 'Article II A5 Article heading'
+10:41:08   item 40 '  Section 2.01 A6 Section heading'
+10:41:08   item 41 '    (a) A7 clause r: A1=? A2=? A3=? A4=? A5=? A6=? A8=?'
+10:41:08   item 42 '  Section 2.02 A8 Section heading r: A1=? A2=? A3=? A5=? A6=? A7=?'
+10:41:08   item 43 '1. Y1 level 0'
+10:41:08   item 44 '  1.1 Y2 level 1'
+10:41:08   item 45 '2. Y3 level 0'
+10:41:08   item 46 '  2.1 Y4 level 1 r: Y1=? Y2=? Y3=?'
+10:41:08   item 47 'I. G1 level 0'
+10:41:08   item 48 '  1.1 G2 level 1'
+10:41:08   item 49 '    (a) G3 level 2'
+10:41:08   item 50 'II. G4 level 0'
+10:41:08   item 51 '    (a) G5 level 2, level 1 skipped r: G1=? G2=? G3=? G4=?'
+10:41:08   item 52 '1. S1 level 0'
+10:41:08   item 53 '    (a) S2 level 2, level 1 skipped'
+10:41:08   item 54 '      (i) S3 level 3'
+10:41:08   item 55 '  1.02 S4 level 1'
+10:41:08   item 56 '      (i) S5 level 3, level 2 skipped r: S1=? S2=? S3=? S4=?'
+10:41:08   item 57 '1. R1 level 0'
+10:41:08   item 58 '  (a) R2 level 1'
+10:41:08   item 59 '2. R3 level 0'
+10:41:08   item 60 '1. R4 level 0, restarted'
+10:41:08   item 61 '  (a) R5 level 1 r: R1=? R2=? R3=? R4=?'
+10:41:08   item 62 'Article I M1 level 0'
+10:41:08   item 63 '  1. M2 level 1'
+10:41:08   item 64 '    (a) M3 level 2'
+10:41:08   item 65 '  2. M4 level 1'
+10:41:08   item 66 'Article II M5 level 0 r: M1=? M2=? M3=? M4=?'
+10:41:08   item 67 'Step 1: N2 level 0'
+10:41:08   item 68 '  a. N3 level 1'
+10:41:08   item 69 'NOTE N4 format none, text NOTE'
+10:41:08   item 70 ' N5 format none, empty text'
+10:41:08   item 71 '1 N6 level 0'
+10:41:08   item 72 '  1-1 N7 level 1'
+10:41:08   item 73 '    A N8 level 2 r: N6=? N7=? N2=? N3=?'
+10:41:08   item 74 '1. T1 level 0'
+10:41:08   item 75 '  (a) T3 level 1, inserted'
+10:41:08   item 76 '2. T4 level 0'
+10:41:08   item 77 '  (a) T5 level 1 r: T1=? T2=? T3=? T4=?'
+10:41:08 cn-1 : 77 numbered items
+10:41:08 Fields.Update: 0 (0 = no field in error)
+10:41:09   field 1 in F0: type 3 code 'REF cn_L1 \r' result '1'
+10:41:09   field 2 in F0: type 3 code 'REF cn_L4 \r' result '2'
+10:41:09   field 3 in F0: type 3 code 'REF cn_L5 \r' result '2.01'
+10:41:09   field 4 in F0: type 3 code 'REF cn_L6 \r' result '2.01(a)'
+10:41:09   field 5 in F0: type 3 code 'REF cn_L7 \r' result '2.01(a)(i)'
+10:41:09   field 6 in L6: type 3 code 'REF cn_L3 \r' result '1.02'
+10:41:09   field 7 in L6: type 3 code 'REF cn_L5 \r' result '2.01'
+10:41:09   field 8 in L6: type 3 code 'REF cn_L7 \r' result '(i)'
+10:41:09   field 9 in L6: type 3 code 'REF cn_L9 \r' result '(b)'
+10:41:09   field 10 in L6: type 3 code 'REF cn_L11 \r' result '2.02(a)'
+10:41:09   field 11 in L7: type 3 code 'REF cn_L6 \r' result '(a)'
+10:41:09   field 12 in L7: type 3 code 'REF cn_L8 \r' result '(ii)'
+10:41:09   field 13 in L7: type 3 code 'REF cn_L9 \r' result '(b)'
+10:41:09   field 14 in L7: type 3 code 'REF cn_L11 \r' result '2.02(a)'
+10:41:09   field 15 in L7: type 3 code 'REF cn_L4 \r' result '2'
+10:41:09   field 16 in L8: type 3 code 'REF cn_L1 \r' result '1'
+10:41:09   field 17 in L8: type 3 code 'REF cn_L2 \r' result '1.01'
+10:41:09   field 18 in L8: type 3 code 'REF cn_L3 \r' result '1.02'
+10:41:09   field 19 in L8: type 3 code 'REF cn_L4 \r' result '2'
+10:41:09   field 20 in L8: type 3 code 'REF cn_L5 \r' result '2.01'
+10:41:09   field 21 in L8: type 3 code 'REF cn_L6 \r' result '(a)'
+10:41:09   field 22 in L8: type 3 code 'REF cn_L7 \r' result '(i)'
+10:41:09   field 23 in L8: type 3 code 'REF cn_L8 \r' result '(ii)'
+10:41:09   field 24 in L8: type 3 code 'REF cn_L9 \r' result '(b)'
+10:41:09   field 25 in L8: type 3 code 'REF cn_L10 \r' result '2.02'
+10:41:09   field 26 in L8: type 3 code 'REF cn_L11 \r' result '2.02(a)'
+10:41:09   field 27 in L8: type 3 code 'REF cn_L12 \r' result '3'
+10:41:09   field 28 in L9: type 3 code 'REF cn_L1 \r' result '1'
+10:41:09   field 29 in L9: type 3 code 'REF cn_L2 \r' result '1.01'
+10:41:09   field 30 in L9: type 3 code 'REF cn_L3 \r' result '1.02'
+10:41:09   field 31 in L9: type 3 code 'REF cn_L4 \r' result '2'
+10:41:09   field 32 in L9: type 3 code 'REF cn_L5 \r' result '2.01'
+10:41:09   field 33 in L9: type 3 code 'REF cn_L6 \r' result '(a)'
+10:41:09   field 34 in L9: type 3 code 'REF cn_L7 \r' result '(a)(i)'
+10:41:09   field 35 in L9: type 3 code 'REF cn_L8 \r' result '(a)(ii)'
+10:41:09   field 36 in L9: type 3 code 'REF cn_L9 \r' result '(b)'
+10:41:09   field 37 in L9: type 3 code 'REF cn_L10 \r' result '2.02'
+10:41:09   field 38 in L9: type 3 code 'REF cn_L11 \r' result '2.02(a)'
+10:41:09   field 39 in L9: type 3 code 'REF cn_L12 \r' result '3'
+10:41:09   field 40 in L9: type 3 code 'REF cn_L6 \w' result '2.01(a)'
+10:41:09   field 41 in L9: type 3 code 'REF cn_L7 \w' result '2.01(a)(i)'
+10:41:09   field 42 in L9: type 3 code 'REF cn_L11 \w' result '2.02(a)'
+10:41:09   field 43 in L11: type 3 code 'REF cn_L1 \r' result '1'
+10:41:09   field 44 in L11: type 3 code 'REF cn_L2 \r' result '1.01'
+10:41:09   field 45 in L11: type 3 code 'REF cn_L3 \r' result '1.02'
+10:41:09   field 46 in L11: type 3 code 'REF cn_L4 \r' result '2'
+10:41:09   field 47 in L11: type 3 code 'REF cn_L5 \r' result '2.01'
+10:41:09   field 48 in L11: type 3 code 'REF cn_L6 \r' result '2.01(a)'
+10:41:09   field 49 in L11: type 3 code 'REF cn_L7 \r' result '2.01(a)(i)'
+10:41:09   field 50 in L11: type 3 code 'REF cn_L8 \r' result '2.01(a)(ii)'
+10:41:09   field 51 in L11: type 3 code 'REF cn_L9 \r' result '2.01(b)'
+10:41:09   field 52 in L11: type 3 code 'REF cn_L10 \r' result '2.02'
+10:41:09   field 53 in L11: type 3 code 'REF cn_L11 \r' result '(a)'
+10:41:09   field 54 in L11: type 3 code 'REF cn_L12 \r' result '3'
+10:41:09   field 55 in L12: type 3 code 'REF cn_L1 \r' result '1'
+10:41:09   field 56 in L12: type 3 code 'REF cn_L2 \r' result '1.01'
+10:41:09   field 57 in L12: type 3 code 'REF cn_L3 \r' result '1.02'
+10:41:09   field 58 in L12: type 3 code 'REF cn_L4 \r' result '2'
+10:41:09   field 59 in L12: type 3 code 'REF cn_L5 \r' result '2.01'
+10:41:09   field 60 in L12: type 3 code 'REF cn_L6 \r' result '2.01(a)'
+10:41:09   field 61 in L12: type 3 code 'REF cn_L7 \r' result '2.01(a)(i)'
+10:41:09   field 62 in L12: type 3 code 'REF cn_L8 \r' result '2.01(a)(ii)'
+10:41:09   field 63 in L12: type 3 code 'REF cn_L9 \r' result '2.01(b)'
+10:41:09   field 64 in L12: type 3 code 'REF cn_L10 \r' result '2.02'
+10:41:09   field 65 in L12: type 3 code 'REF cn_L11 \r' result '2.02(a)'
+10:41:09   field 66 in L12: type 3 code 'REF cn_L12 \r' result '3'
+10:41:10   field 67 in L13: type 3 code 'REF cn_L12 \r' result '3'
+10:41:10   field 68 in L13: type 3 code 'REF cn_L6 \r' result '2.01(a)'
+10:41:10   field 69 in O2: type 3 code 'REF cn_L6 \r' result '2.01(a)'
+10:41:10   field 70 in O2: type 3 code 'REF cn_L5 \r' result '2.01'
+10:41:10   field 71 in O2: type 3 code 'REF cn_L4 \r' result '2'
+10:41:10   field 72 in O4: type 3 code 'REF cn_O1 \r' result '1'
+10:41:10   field 73 in O4: type 3 code 'REF cn_O2 \r' result 'a'
+10:41:10   field 74 in O4: type 3 code 'REF cn_O3 \r' result 'i'
+10:41:10   field 75 in O4: type 3 code 'REF cn_O5 \r' result 'b'
+10:41:10   field 76 in O4: type 3 code 'REF cn_O6 \r' result '2'
+10:41:10   field 77 in O4: type 3 code 'REF cn_O7 \r' result '2.a'
+10:41:10   field 78 in O7: type 3 code 'REF cn_O1 \r' result '1'
+10:41:10   field 79 in O7: type 3 code 'REF cn_O2 \r' result '1.a'
+10:41:10   field 80 in O7: type 3 code 'REF cn_O3 \r' result '1.a.i'
+10:41:10   field 81 in O7: type 3 code 'REF cn_O4 \r' result '1.a.ii'
+10:41:10   field 82 in O7: type 3 code 'REF cn_O5 \r' result '1.b'
+10:41:10   field 83 in O7: type 3 code 'REF cn_O6 \r' result '2'
+10:41:10   field 84 in P4: type 3 code 'REF cn_P1 \r' result '1)'
+10:41:10   field 85 in P4: type 3 code 'REF cn_P2 \r' result 'a)'
+10:41:10   field 86 in P4: type 3 code 'REF cn_P3 \r' result 'i)'
+10:41:10   field 87 in P4: type 3 code 'REF cn_P5 \r' result 'b)'
+10:41:10   field 88 in P4: type 3 code 'REF cn_P6 \r' result '2)'
+10:41:10   field 89 in P4: type 3 code 'REF cn_P7 \r' result '2)a)'
+10:41:10   field 90 in P7: type 3 code 'REF cn_P1 \r' result '1)'
+10:41:10   field 91 in P7: type 3 code 'REF cn_P2 \r' result '1)a)'
+10:41:10   field 92 in P7: type 3 code 'REF cn_P3 \r' result '1)a)i)'
+10:41:10   field 93 in P7: type 3 code 'REF cn_P4 \r' result '1)a)ii)'
+10:41:10   field 94 in P7: type 3 code 'REF cn_P5 \r' result '1)b)'
+10:41:10   field 95 in P7: type 3 code 'REF cn_P6 \r' result '2)'
+10:41:10   field 96 in H4: type 3 code 'REF cn_H1 \r' result '1'
+10:41:10   field 97 in H4: type 3 code 'REF cn_H2 \r' result '1.1'
+10:41:10   field 98 in H4: type 3 code 'REF cn_H3 \r' result '1.1.1'
+10:41:10   field 99 in H4: type 3 code 'REF cn_H5 \r' result '1.2'
+10:41:10   field 100 in H4: type 3 code 'REF cn_H6 \r' result '2'
+10:41:10   field 101 in H4: type 3 code 'REF cn_H7 \r' result '2.1'
+10:41:10   field 102 in H7: type 3 code 'REF cn_H1 \r' result '1'
+10:41:10   field 103 in H7: type 3 code 'REF cn_H2 \r' result '1.1'
+10:41:10   field 104 in H7: type 3 code 'REF cn_H3 \r' result '1.1.1'
+10:41:10   field 105 in H7: type 3 code 'REF cn_H4 \r' result '1.1.2'
+10:41:10   field 106 in H7: type 3 code 'REF cn_H5 \r' result '1.2'
+10:41:10   field 107 in H7: type 3 code 'REF cn_H6 \r' result '2'
+10:41:10   field 108 in A7: type 3 code 'REF cn_A1 \r' result 'Article I'
+10:41:10   field 109 in A7: type 3 code 'REF cn_A2 \r' result 'Section 1.01'
+10:41:10   field 110 in A7: type 3 code 'REF cn_A3 \r' result 'Section 1.01(a)'
+10:41:10   field 111 in A7: type 3 code 'REF cn_A4 \r' result 'Section 1.01(b)'
+10:41:10   field 112 in A7: type 3 code 'REF cn_A5 \r' result 'Article II'
+10:41:10   field 113 in A7: type 3 code 'REF cn_A6 \r' result 'Section 2.01'
+10:41:10   field 114 in A7: type 3 code 'REF cn_A8 \r' result 'Section 2.02'
+10:41:10   field 115 in A8: type 3 code 'REF cn_A1 \r' result 'Article I'
+10:41:10   field 116 in A8: type 3 code 'REF cn_A2 \r' result 'Section 1.01'
+10:41:10   field 117 in A8: type 3 code 'REF cn_A3 \r' result 'Section 1.01(a)'
+10:41:10   field 118 in A8: type 3 code 'REF cn_A5 \r' result 'Article II'
+10:41:10   field 119 in A8: type 3 code 'REF cn_A6 \r' result 'Section 2.01'
+10:41:10   field 120 in A8: type 3 code 'REF cn_A7 \r' result 'Section 2.01(a)'
+10:41:10   field 121 in Y4: type 3 code 'REF cn_Y1 \r' result '1'
+10:41:10   field 122 in Y4: type 3 code 'REF cn_Y2 \r' result '1.1'
+10:41:10   field 123 in Y4: type 3 code 'REF cn_Y3 \r' result '2'
+10:41:10   field 124 in G5: type 3 code 'REF cn_G1 \r' result 'I'
+10:41:10   field 125 in G5: type 3 code 'REF cn_G2 \r' result '1.1'
+10:41:10   field 126 in G5: type 3 code 'REF cn_G3 \r' result '1.1(a)'
+10:41:10   field 127 in G5: type 3 code 'REF cn_G4 \r' result 'II'
+10:41:10   field 128 in S5: type 3 code 'REF cn_S1 \r' result '1'
+10:41:10   field 129 in S5: type 3 code 'REF cn_S2 \r' result '(a)'
+10:41:10   field 130 in S5: type 3 code 'REF cn_S3 \r' result '(a)(i)'
+10:41:10   field 131 in S5: type 3 code 'REF cn_S4 \r' result '1.02'
+10:41:10   field 132 in R5: type 3 code 'REF cn_R1 \r' result '1'
+10:41:10   field 133 in R5: type 3 code 'REF cn_R2 \r' result '1(a)'
+10:41:10   field 134 in R5: type 3 code 'REF cn_R3 \r' result '2'
+10:41:10   field 135 in R5: type 3 code 'REF cn_R4 \r' result '1'
+10:41:10   field 136 in M5: type 3 code 'REF cn_M1 \r' result 'Article I'
+10:41:10   field 137 in M5: type 3 code 'REF cn_M2 \r' result 'Article I1'
+10:41:10   field 138 in M5: type 3 code 'REF cn_M3 \r' result 'Article I1(a)'
+10:41:10   field 139 in M5: type 3 code 'REF cn_M4 \r' result 'Article I2'
+10:41:10   field 140 in N8: type 3 code 'REF cn_N6 \r' result '1'
+10:41:10   field 141 in N8: type 3 code 'REF cn_N7 \r' result '1-1'
+10:41:10   field 142 in N8: type 3 code 'REF cn_N2 \r' result 'Step 1:'
+10:41:11   field 143 in N8: type 3 code 'REF cn_N3 \r' result 'a'
+10:41:11   field 144 in T5: type 3 code 'REF cn_T1 \r' result '1'
+10:41:11   field 145 in T5: type 3 code 'REF cn_T2 \r' result '1(a)'
+10:41:11   field 146 in T5: type 3 code 'REF cn_T3 \r' result '1(a)'
+10:41:11   field 147 in T5: type 3 code 'REF cn_T4 \r' result '2'
+10:41:11   field 148 in F-L1: type 3 code 'REF cn_L1 \w' result '1'
+10:41:11   field 149 in F-L1: type 3 code 'REF cn_L1 \n' result '1'
+10:41:11   field 150 in F-L1: type 3 code 'REF cn_L1 \r' result '1'
+10:41:11   field 151 in F-L1: type 3 code 'REF cn_L1 \w \t' result '1'
+10:41:11   field 152 in F-L1: type 3 code 'REF cn_L1 \n \t' result '1'
+10:41:11   field 153 in F-L1: type 3 code 'REF cn_L1 \r \t' result '1'
+10:41:11   field 154 in F-L2: type 3 code 'REF cn_L2 \w' result '1.01'
+10:41:11   field 155 in F-L2: type 3 code 'REF cn_L2 \n' result '1.01'
+10:41:11   field 156 in F-L2: type 3 code 'REF cn_L2 \r' result '1.01'
+10:41:11   field 157 in F-L2: type 3 code 'REF cn_L2 \w \t' result '1.01'
+10:41:11   field 158 in F-L2: type 3 code 'REF cn_L2 \n \t' result '1.01'
+10:41:11   field 159 in F-L2: type 3 code 'REF cn_L2 \r \t' result '1.01'
+10:41:11   field 160 in F-L3: type 3 code 'REF cn_L3 \w' result '1.02'
+10:41:11   field 161 in F-L3: type 3 code 'REF cn_L3 \n' result '1.02'
+10:41:11   field 162 in F-L3: type 3 code 'REF cn_L3 \r' result '1.02'
+10:41:11   field 163 in F-L3: type 3 code 'REF cn_L3 \w \t' result '1.02'
+10:41:11   field 164 in F-L3: type 3 code 'REF cn_L3 \n \t' result '1.02'
+10:41:11   field 165 in F-L3: type 3 code 'REF cn_L3 \r \t' result '1.02'
+10:41:11   field 166 in F-L4: type 3 code 'REF cn_L4 \w' result '2'
+10:41:11   field 167 in F-L4: type 3 code 'REF cn_L4 \n' result '2'
+10:41:11   field 168 in F-L4: type 3 code 'REF cn_L4 \r' result '2'
+10:41:11   field 169 in F-L4: type 3 code 'REF cn_L4 \w \t' result '2'
+10:41:11   field 170 in F-L4: type 3 code 'REF cn_L4 \n \t' result '2'
+10:41:11   field 171 in F-L4: type 3 code 'REF cn_L4 \r \t' result '2'
+10:41:11   field 172 in F-L5: type 3 code 'REF cn_L5 \w' result '2.01'
+10:41:11   field 173 in F-L5: type 3 code 'REF cn_L5 \n' result '2.01'
+10:41:11   field 174 in F-L5: type 3 code 'REF cn_L5 \r' result '2.01'
+10:41:11   field 175 in F-L5: type 3 code 'REF cn_L5 \w \t' result '2.01'
+10:41:11   field 176 in F-L5: type 3 code 'REF cn_L5 \n \t' result '2.01'
+10:41:11   field 177 in F-L5: type 3 code 'REF cn_L5 \r \t' result '2.01'
+10:41:11   field 178 in F-L6: type 3 code 'REF cn_L6 \w' result '2.01(a)'
+10:41:11   field 179 in F-L6: type 3 code 'REF cn_L6 \n' result '(a)'
+10:41:11   field 180 in F-L6: type 3 code 'REF cn_L6 \r' result '2.01(a)'
+10:41:11   field 181 in F-L6: type 3 code 'REF cn_L6 \w \t' result '2.01(a)'
+10:41:11   field 182 in F-L6: type 3 code 'REF cn_L6 \n \t' result '(a)'
+10:41:11   field 183 in F-L6: type 3 code 'REF cn_L6 \r \t' result '2.01(a)'
+10:41:11   field 184 in F-L6: type 3 code 'REF cn_L6 \p' result 'above'
+10:41:11   field 185 in F-L6: type 3 code 'REF cn_L6 \r \p' result '2.01(a) above'
+10:41:11   field 186 in F-L6: type 3 code 'REF cn_L6 \w \d "-"' result '2.01-(a)'
+10:41:11   field 187 in F-L6: type 3 code 'REF cn_L6 \w \h' result '2.01(a)'
+10:41:11   field 188 in F-L7: type 3 code 'REF cn_L7 \w' result '2.01(a)(i)'
+10:41:11   field 189 in F-L7: type 3 code 'REF cn_L7 \n' result '(i)'
+10:41:11   field 190 in F-L7: type 3 code 'REF cn_L7 \r' result '2.01(a)(i)'
+10:41:11   field 191 in F-L7: type 3 code 'REF cn_L7 \w \t' result '2.01(a)(i)'
+10:41:11   field 192 in F-L7: type 3 code 'REF cn_L7 \n \t' result '(i)'
+10:41:11   field 193 in F-L7: type 3 code 'REF cn_L7 \r \t' result '2.01(a)(i)'
+10:41:11   field 194 in F-L8: type 3 code 'REF cn_L8 \w' result '2.01(a)(ii)'
+10:41:11   field 195 in F-L8: type 3 code 'REF cn_L8 \n' result '(ii)'
+10:41:11   field 196 in F-L8: type 3 code 'REF cn_L8 \r' result '2.01(a)(ii)'
+10:41:11   field 197 in F-L8: type 3 code 'REF cn_L8 \w \t' result '2.01(a)(ii)'
+10:41:11   field 198 in F-L8: type 3 code 'REF cn_L8 \n \t' result '(ii)'
+10:41:11   field 199 in F-L8: type 3 code 'REF cn_L8 \r \t' result '2.01(a)(ii)'
+10:41:11   field 200 in F-L9: type 3 code 'REF cn_L9 \w' result '2.01(b)'
+10:41:11   field 201 in F-L9: type 3 code 'REF cn_L9 \n' result '(b)'
+10:41:11   field 202 in F-L9: type 3 code 'REF cn_L9 \r' result '2.01(b)'
+10:41:11   field 203 in F-L9: type 3 code 'REF cn_L9 \w \t' result '2.01(b)'
+10:41:11   field 204 in F-L9: type 3 code 'REF cn_L9 \n \t' result '(b)'
+10:41:11   field 205 in F-L9: type 3 code 'REF cn_L9 \r \t' result '2.01(b)'
+10:41:11   field 206 in F-L9: type 3 code 'REF cn_L9 \p' result 'above'
+10:41:11   field 207 in F-L9: type 3 code 'REF cn_L9 \r \p' result '2.01(b) above'
+10:41:11   field 208 in F-L9: type 3 code 'REF cn_L9 \w \d "-"' result '2.01-(b)'
+10:41:11   field 209 in F-L9: type 3 code 'REF cn_L9 \w \h' result '2.01(b)'
+10:41:11   field 210 in F-L10: type 3 code 'REF cn_L10 \w' result '2.02'
+10:41:11   field 211 in F-L10: type 3 code 'REF cn_L10 \n' result '2.02'
+10:41:11   field 212 in F-L10: type 3 code 'REF cn_L10 \r' result '2.02'
+10:41:11   field 213 in F-L10: type 3 code 'REF cn_L10 \w \t' result '2.02'
+10:41:11   field 214 in F-L10: type 3 code 'REF cn_L10 \n \t' result '2.02'
+10:41:12   field 215 in F-L10: type 3 code 'REF cn_L10 \r \t' result '2.02'
+10:41:12   field 216 in F-L11: type 3 code 'REF cn_L11 \w' result '2.02(a)'
+10:41:12   field 217 in F-L11: type 3 code 'REF cn_L11 \n' result '(a)'
+10:41:12   field 218 in F-L11: type 3 code 'REF cn_L11 \r' result '2.02(a)'
+10:41:12   field 219 in F-L11: type 3 code 'REF cn_L11 \w \t' result '2.02(a)'
+10:41:12   field 220 in F-L11: type 3 code 'REF cn_L11 \n \t' result '(a)'
+10:41:12   field 221 in F-L11: type 3 code 'REF cn_L11 \r \t' result '2.02(a)'
+10:41:12   field 222 in F-L12: type 3 code 'REF cn_L12 \w' result '3'
+10:41:12   field 223 in F-L12: type 3 code 'REF cn_L12 \n' result '3'
+10:41:12   field 224 in F-L12: type 3 code 'REF cn_L12 \r' result '3'
+10:41:12   field 225 in F-L12: type 3 code 'REF cn_L12 \w \t' result '3'
+10:41:12   field 226 in F-L12: type 3 code 'REF cn_L12 \n \t' result '3'
+10:41:12   field 227 in F-L12: type 3 code 'REF cn_L12 \r \t' result '3'
+10:41:12   field 228 in F-L13: type 3 code 'REF cn_L13 \w' result '3.01'
+10:41:12   field 229 in F-L13: type 3 code 'REF cn_L13 \n' result '3.01'
+10:41:12   field 230 in F-L13: type 3 code 'REF cn_L13 \r' result '3.01'
+10:41:12   field 231 in F-L13: type 3 code 'REF cn_L13 \w \t' result '3.01'
+10:41:12   field 232 in F-L13: type 3 code 'REF cn_L13 \n \t' result '3.01'
+10:41:12   field 233 in F-L13: type 3 code 'REF cn_L13 \r \t' result '3.01'
+10:41:12   field 234 in F-O1: type 3 code 'REF cn_O1 \w' result '1'
+10:41:12   field 235 in F-O1: type 3 code 'REF cn_O1 \n' result '1'
+10:41:12   field 236 in F-O1: type 3 code 'REF cn_O1 \r' result '1'
+10:41:12   field 237 in F-O1: type 3 code 'REF cn_O1 \w \t' result '1'
+10:41:12   field 238 in F-O1: type 3 code 'REF cn_O1 \n \t' result '1'
+10:41:12   field 239 in F-O1: type 3 code 'REF cn_O1 \r \t' result '1'
+10:41:12   field 240 in F-O2: type 3 code 'REF cn_O2 \w' result '1.a'
+10:41:12   field 241 in F-O2: type 3 code 'REF cn_O2 \n' result 'a'
+10:41:12   field 242 in F-O2: type 3 code 'REF cn_O2 \r' result '1.a'
+10:41:12   field 243 in F-O2: type 3 code 'REF cn_O2 \w \t' result '1.a'
+10:41:12   field 244 in F-O2: type 3 code 'REF cn_O2 \n \t' result 'a'
+10:41:12   field 245 in F-O2: type 3 code 'REF cn_O2 \r \t' result '1.a'
+10:41:12   field 246 in F-O3: type 3 code 'REF cn_O3 \w' result '1.a.i'
+10:41:12   field 247 in F-O3: type 3 code 'REF cn_O3 \n' result 'i'
+10:41:12   field 248 in F-O3: type 3 code 'REF cn_O3 \r' result '1.a.i'
+10:41:12   field 249 in F-O3: type 3 code 'REF cn_O3 \w \t' result '1.a.i'
+10:41:12   field 250 in F-O3: type 3 code 'REF cn_O3 \n \t' result 'i'
+10:41:12   field 251 in F-O3: type 3 code 'REF cn_O3 \r \t' result '1.a.i'
+10:41:12   field 252 in F-O4: type 3 code 'REF cn_O4 \w' result '1.a.ii'
+10:41:12   field 253 in F-O4: type 3 code 'REF cn_O4 \n' result 'ii'
+10:41:12   field 254 in F-O4: type 3 code 'REF cn_O4 \r' result '1.a.ii'
+10:41:12   field 255 in F-O4: type 3 code 'REF cn_O4 \w \t' result '1.a.ii'
+10:41:12   field 256 in F-O4: type 3 code 'REF cn_O4 \n \t' result 'ii'
+10:41:12   field 257 in F-O4: type 3 code 'REF cn_O4 \r \t' result '1.a.ii'
+10:41:12   field 258 in F-O5: type 3 code 'REF cn_O5 \w' result '1.b'
+10:41:12   field 259 in F-O5: type 3 code 'REF cn_O5 \n' result 'b'
+10:41:12   field 260 in F-O5: type 3 code 'REF cn_O5 \r' result '1.b'
+10:41:12   field 261 in F-O5: type 3 code 'REF cn_O5 \w \t' result '1.b'
+10:41:12   field 262 in F-O5: type 3 code 'REF cn_O5 \n \t' result 'b'
+10:41:12   field 263 in F-O5: type 3 code 'REF cn_O5 \r \t' result '1.b'
+10:41:12   field 264 in F-O6: type 3 code 'REF cn_O6 \w' result '2'
+10:41:12   field 265 in F-O6: type 3 code 'REF cn_O6 \n' result '2'
+10:41:12   field 266 in F-O6: type 3 code 'REF cn_O6 \r' result '2'
+10:41:12   field 267 in F-O6: type 3 code 'REF cn_O6 \w \t' result '2'
+10:41:12   field 268 in F-O6: type 3 code 'REF cn_O6 \n \t' result '2'
+10:41:12   field 269 in F-O6: type 3 code 'REF cn_O6 \r \t' result '2'
+10:41:12   field 270 in F-O7: type 3 code 'REF cn_O7 \w' result '2.a'
+10:41:12   field 271 in F-O7: type 3 code 'REF cn_O7 \n' result 'a'
+10:41:12   field 272 in F-O7: type 3 code 'REF cn_O7 \r' result 'a'
+10:41:12   field 273 in F-O7: type 3 code 'REF cn_O7 \w \t' result '2.a'
+10:41:12   field 274 in F-O7: type 3 code 'REF cn_O7 \n \t' result 'a'
+10:41:12   field 275 in F-O7: type 3 code 'REF cn_O7 \r \t' result 'a'
+10:41:12   field 276 in F-P1: type 3 code 'REF cn_P1 \w' result '1)'
+10:41:12   field 277 in F-P1: type 3 code 'REF cn_P1 \n' result '1)'
+10:41:12   field 278 in F-P1: type 3 code 'REF cn_P1 \r' result '1)'
+10:41:12   field 279 in F-P1: type 3 code 'REF cn_P1 \w \t' result '1)'
+10:41:12   field 280 in F-P1: type 3 code 'REF cn_P1 \n \t' result '1)'
+10:41:12   field 281 in F-P1: type 3 code 'REF cn_P1 \r \t' result '1)'
+10:41:12   field 282 in F-P2: type 3 code 'REF cn_P2 \w' result '1)a)'
+10:41:12   field 283 in F-P2: type 3 code 'REF cn_P2 \n' result 'a)'
+10:41:12   field 284 in F-P2: type 3 code 'REF cn_P2 \r' result '1)a)'
+10:41:12   field 285 in F-P2: type 3 code 'REF cn_P2 \w \t' result '1)a)'
+10:41:12   field 286 in F-P2: type 3 code 'REF cn_P2 \n \t' result 'a)'
+10:41:12   field 287 in F-P2: type 3 code 'REF cn_P2 \r \t' result '1)a)'
+10:41:12   field 288 in F-P3: type 3 code 'REF cn_P3 \w' result '1)a)i)'
+10:41:12   field 289 in F-P3: type 3 code 'REF cn_P3 \n' result 'i)'
+10:41:12   field 290 in F-P3: type 3 code 'REF cn_P3 \r' result '1)a)i)'
+10:41:12   field 291 in F-P3: type 3 code 'REF cn_P3 \w \t' result '1)a)i)'
+10:41:12   field 292 in F-P3: type 3 code 'REF cn_P3 \n \t' result 'i)'
+10:41:12   field 293 in F-P3: type 3 code 'REF cn_P3 \r \t' result '1)a)i)'
+10:41:12   field 294 in F-P4: type 3 code 'REF cn_P4 \w' result '1)a)ii)'
+10:41:13   field 295 in F-P4: type 3 code 'REF cn_P4 \n' result 'ii)'
+10:41:13   field 296 in F-P4: type 3 code 'REF cn_P4 \r' result '1)a)ii)'
+10:41:13   field 297 in F-P4: type 3 code 'REF cn_P4 \w \t' result '1)a)ii)'
+10:41:13   field 298 in F-P4: type 3 code 'REF cn_P4 \n \t' result 'ii)'
+10:41:13   field 299 in F-P4: type 3 code 'REF cn_P4 \r \t' result '1)a)ii)'
+10:41:13   field 300 in F-P5: type 3 code 'REF cn_P5 \w' result '1)b)'
+10:41:13   field 301 in F-P5: type 3 code 'REF cn_P5 \n' result 'b)'
+10:41:13   field 302 in F-P5: type 3 code 'REF cn_P5 \r' result '1)b)'
+10:41:13   field 303 in F-P5: type 3 code 'REF cn_P5 \w \t' result '1)b)'
+10:41:13   field 304 in F-P5: type 3 code 'REF cn_P5 \n \t' result 'b)'
+10:41:13   field 305 in F-P5: type 3 code 'REF cn_P5 \r \t' result '1)b)'
+10:41:13   field 306 in F-P6: type 3 code 'REF cn_P6 \w' result '2)'
+10:41:13   field 307 in F-P6: type 3 code 'REF cn_P6 \n' result '2)'
+10:41:13   field 308 in F-P6: type 3 code 'REF cn_P6 \r' result '2)'
+10:41:13   field 309 in F-P6: type 3 code 'REF cn_P6 \w \t' result '2)'
+10:41:13   field 310 in F-P6: type 3 code 'REF cn_P6 \n \t' result '2)'
+10:41:13   field 311 in F-P6: type 3 code 'REF cn_P6 \r \t' result '2)'
+10:41:13   field 312 in F-P7: type 3 code 'REF cn_P7 \w' result '2)a)'
+10:41:13   field 313 in F-P7: type 3 code 'REF cn_P7 \n' result 'a)'
+10:41:13   field 314 in F-P7: type 3 code 'REF cn_P7 \r' result 'a)'
+10:41:13   field 315 in F-P7: type 3 code 'REF cn_P7 \w \t' result '2)a)'
+10:41:13   field 316 in F-P7: type 3 code 'REF cn_P7 \n \t' result 'a)'
+10:41:13   field 317 in F-P7: type 3 code 'REF cn_P7 \r \t' result 'a)'
+10:41:13   field 318 in F-H1: type 3 code 'REF cn_H1 \w' result '1'
+10:41:13   field 319 in F-H1: type 3 code 'REF cn_H1 \n' result '1'
+10:41:13   field 320 in F-H1: type 3 code 'REF cn_H1 \r' result '1'
+10:41:13   field 321 in F-H1: type 3 code 'REF cn_H1 \w \t' result '1'
+10:41:13   field 322 in F-H1: type 3 code 'REF cn_H1 \n \t' result '1'
+10:41:13   field 323 in F-H1: type 3 code 'REF cn_H1 \r \t' result '1'
+10:41:13   field 324 in F-H2: type 3 code 'REF cn_H2 \w' result '1.1'
+10:41:13   field 325 in F-H2: type 3 code 'REF cn_H2 \n' result '1.1'
+10:41:13   field 326 in F-H2: type 3 code 'REF cn_H2 \r' result '1.1'
+10:41:13   field 327 in F-H2: type 3 code 'REF cn_H2 \w \t' result '1.1'
+10:41:13   field 328 in F-H2: type 3 code 'REF cn_H2 \n \t' result '1.1'
+10:41:13   field 329 in F-H2: type 3 code 'REF cn_H2 \r \t' result '1.1'
+10:41:13   field 330 in F-H3: type 3 code 'REF cn_H3 \w' result '1.1.1'
+10:41:13   field 331 in F-H3: type 3 code 'REF cn_H3 \n' result '1.1.1'
+10:41:13   field 332 in F-H3: type 3 code 'REF cn_H3 \r' result '1.1.1'
+10:41:13   field 333 in F-H3: type 3 code 'REF cn_H3 \w \t' result '1.1.1'
+10:41:13   field 334 in F-H3: type 3 code 'REF cn_H3 \n \t' result '1.1.1'
+10:41:13   field 335 in F-H3: type 3 code 'REF cn_H3 \r \t' result '1.1.1'
+10:41:13   field 336 in F-H4: type 3 code 'REF cn_H4 \w' result '1.1.2'
+10:41:13   field 337 in F-H4: type 3 code 'REF cn_H4 \n' result '1.1.2'
+10:41:13   field 338 in F-H4: type 3 code 'REF cn_H4 \r' result '1.1.2'
+10:41:13   field 339 in F-H4: type 3 code 'REF cn_H4 \w \t' result '1.1.2'
+10:41:13   field 340 in F-H4: type 3 code 'REF cn_H4 \n \t' result '1.1.2'
+10:41:13   field 341 in F-H4: type 3 code 'REF cn_H4 \r \t' result '1.1.2'
+10:41:13   field 342 in F-H5: type 3 code 'REF cn_H5 \w' result '1.2'
+10:41:13   field 343 in F-H5: type 3 code 'REF cn_H5 \n' result '1.2'
+10:41:13   field 344 in F-H5: type 3 code 'REF cn_H5 \r' result '1.2'
+10:41:13   field 345 in F-H5: type 3 code 'REF cn_H5 \w \t' result '1.2'
+10:41:13   field 346 in F-H5: type 3 code 'REF cn_H5 \n \t' result '1.2'
+10:41:13   field 347 in F-H5: type 3 code 'REF cn_H5 \r \t' result '1.2'
+10:41:13   field 348 in F-H6: type 3 code 'REF cn_H6 \w' result '2'
+10:41:13   field 349 in F-H6: type 3 code 'REF cn_H6 \n' result '2'
+10:41:13   field 350 in F-H6: type 3 code 'REF cn_H6 \r' result '2'
+10:41:13   field 351 in F-H6: type 3 code 'REF cn_H6 \w \t' result '2'
+10:41:13   field 352 in F-H6: type 3 code 'REF cn_H6 \n \t' result '2'
+10:41:13   field 353 in F-H6: type 3 code 'REF cn_H6 \r \t' result '2'
+10:41:13   field 354 in F-H7: type 3 code 'REF cn_H7 \w' result '2.1'
+10:41:13   field 355 in F-H7: type 3 code 'REF cn_H7 \n' result '2.1'
+10:41:13   field 356 in F-H7: type 3 code 'REF cn_H7 \r' result '2.1'
+10:41:13   field 357 in F-H7: type 3 code 'REF cn_H7 \w \t' result '2.1'
+10:41:13   field 358 in F-H7: type 3 code 'REF cn_H7 \n \t' result '2.1'
+10:41:13   field 359 in F-H7: type 3 code 'REF cn_H7 \r \t' result '2.1'
+10:41:13   field 360 in F-A1: type 3 code 'REF cn_A1 \w' result 'Article I'
+10:41:13   field 361 in F-A1: type 3 code 'REF cn_A1 \n' result 'Article I'
+10:41:13   field 362 in F-A1: type 3 code 'REF cn_A1 \r' result 'Article I'
+10:41:13   field 363 in F-A1: type 3 code 'REF cn_A1 \w \t' result 'I'
+10:41:13   field 364 in F-A1: type 3 code 'REF cn_A1 \n \t' result 'I'
+10:41:13   field 365 in F-A1: type 3 code 'REF cn_A1 \r \t' result 'I'
+10:41:13   field 366 in F-A2: type 3 code 'REF cn_A2 \w' result 'Section 1.01'
+10:41:13   field 367 in F-A2: type 3 code 'REF cn_A2 \n' result 'Section 1.01'
+10:41:13   field 368 in F-A2: type 3 code 'REF cn_A2 \r' result 'Section 1.01'
+10:41:13   field 369 in F-A2: type 3 code 'REF cn_A2 \w \t' result '1.01'
+10:41:14   field 370 in F-A2: type 3 code 'REF cn_A2 \n \t' result '1.01'
+10:41:14   field 371 in F-A2: type 3 code 'REF cn_A2 \r \t' result '1.01'
+10:41:14   field 372 in F-A3: type 3 code 'REF cn_A3 \w' result 'Section 1.01(a)'
+10:41:14   field 373 in F-A3: type 3 code 'REF cn_A3 \n' result '(a)'
+10:41:14   field 374 in F-A3: type 3 code 'REF cn_A3 \r' result 'Section 1.01(a)'
+10:41:14   field 375 in F-A3: type 3 code 'REF cn_A3 \w \t' result '1.01(a)'
+10:41:14   field 376 in F-A3: type 3 code 'REF cn_A3 \n \t' result '(a)'
+10:41:14   field 377 in F-A3: type 3 code 'REF cn_A3 \r \t' result '1.01(a)'
+10:41:14   field 378 in F-A3: type 3 code 'REF cn_A3 \p' result 'above'
+10:41:14   field 379 in F-A3: type 3 code 'REF cn_A3 \r \p' result 'Section 1.01(a) above'
+10:41:14   field 380 in F-A3: type 3 code 'REF cn_A3 \w \d "-"' result 'Section 1.01-(a)'
+10:41:14   field 381 in F-A3: type 3 code 'REF cn_A3 \w \h' result 'Section 1.01(a)'
+10:41:14   field 382 in F-A4: type 3 code 'REF cn_A4 \w' result 'Section 1.01(b)'
+10:41:14   field 383 in F-A4: type 3 code 'REF cn_A4 \n' result '(b)'
+10:41:14   field 384 in F-A4: type 3 code 'REF cn_A4 \r' result 'Section 1.01(b)'
+10:41:14   field 385 in F-A4: type 3 code 'REF cn_A4 \w \t' result '1.01(b)'
+10:41:14   field 386 in F-A4: type 3 code 'REF cn_A4 \n \t' result '(b)'
+10:41:14   field 387 in F-A4: type 3 code 'REF cn_A4 \r \t' result '1.01(b)'
+10:41:14   field 388 in F-A5: type 3 code 'REF cn_A5 \w' result 'Article II'
+10:41:14   field 389 in F-A5: type 3 code 'REF cn_A5 \n' result 'Article II'
+10:41:14   field 390 in F-A5: type 3 code 'REF cn_A5 \r' result 'Article II'
+10:41:14   field 391 in F-A5: type 3 code 'REF cn_A5 \w \t' result 'II'
+10:41:14   field 392 in F-A5: type 3 code 'REF cn_A5 \n \t' result 'II'
+10:41:14   field 393 in F-A5: type 3 code 'REF cn_A5 \r \t' result 'II'
+10:41:14   field 394 in F-A6: type 3 code 'REF cn_A6 \w' result 'Section 2.01'
+10:41:14   field 395 in F-A6: type 3 code 'REF cn_A6 \n' result 'Section 2.01'
+10:41:14   field 396 in F-A6: type 3 code 'REF cn_A6 \r' result 'Section 2.01'
+10:41:14   field 397 in F-A6: type 3 code 'REF cn_A6 \w \t' result '2.01'
+10:41:14   field 398 in F-A6: type 3 code 'REF cn_A6 \n \t' result '2.01'
+10:41:14   field 399 in F-A6: type 3 code 'REF cn_A6 \r \t' result '2.01'
+10:41:14   field 400 in F-A7: type 3 code 'REF cn_A7 \w' result 'Section 2.01(a)'
+10:41:14   field 401 in F-A7: type 3 code 'REF cn_A7 \n' result '(a)'
+10:41:14   field 402 in F-A7: type 3 code 'REF cn_A7 \r' result 'Section 2.01(a)'
+10:41:14   field 403 in F-A7: type 3 code 'REF cn_A7 \w \t' result '2.01(a)'
+10:41:14   field 404 in F-A7: type 3 code 'REF cn_A7 \n \t' result '(a)'
+10:41:14   field 405 in F-A7: type 3 code 'REF cn_A7 \r \t' result '2.01(a)'
+10:41:14   field 406 in F-A7: type 3 code 'REF cn_A7 \p' result 'above'
+10:41:14   field 407 in F-A7: type 3 code 'REF cn_A7 \r \p' result 'Section 2.01(a) above'
+10:41:14   field 408 in F-A7: type 3 code 'REF cn_A7 \w \d "-"' result 'Section 2.01-(a)'
+10:41:14   field 409 in F-A7: type 3 code 'REF cn_A7 \w \h' result 'Section 2.01(a)'
+10:41:14   field 410 in F-A8: type 3 code 'REF cn_A8 \w' result 'Section 2.02'
+10:41:14   field 411 in F-A8: type 3 code 'REF cn_A8 \n' result 'Section 2.02'
+10:41:14   field 412 in F-A8: type 3 code 'REF cn_A8 \r' result 'Section 2.02'
+10:41:14   field 413 in F-A8: type 3 code 'REF cn_A8 \w \t' result '2.02'
+10:41:14   field 414 in F-A8: type 3 code 'REF cn_A8 \n \t' result '2.02'
+10:41:14   field 415 in F-A8: type 3 code 'REF cn_A8 \r \t' result '2.02'
+10:41:14   field 416 in F-Y1: type 3 code 'REF cn_Y1 \w' result '1'
+10:41:14   field 417 in F-Y1: type 3 code 'REF cn_Y1 \n' result '1'
+10:41:14   field 418 in F-Y1: type 3 code 'REF cn_Y1 \r' result '1'
+10:41:14   field 419 in F-Y1: type 3 code 'REF cn_Y1 \w \t' result '1'
+10:41:14   field 420 in F-Y1: type 3 code 'REF cn_Y1 \n \t' result '1'
+10:41:14   field 421 in F-Y1: type 3 code 'REF cn_Y1 \r \t' result '1'
+10:41:14   field 422 in F-Y2: type 3 code 'REF cn_Y2 \w' result '1.1'
+10:41:14   field 423 in F-Y2: type 3 code 'REF cn_Y2 \n' result '1.1'
+10:41:14   field 424 in F-Y2: type 3 code 'REF cn_Y2 \r' result '1.1'
+10:41:14   field 425 in F-Y2: type 3 code 'REF cn_Y2 \w \t' result '1.1'
+10:41:14   field 426 in F-Y2: type 3 code 'REF cn_Y2 \n \t' result '1.1'
+10:41:14   field 427 in F-Y2: type 3 code 'REF cn_Y2 \r \t' result '1.1'
+10:41:14   field 428 in F-Y3: type 3 code 'REF cn_Y3 \w' result '2'
+10:41:14   field 429 in F-Y3: type 3 code 'REF cn_Y3 \n' result '2'
+10:41:14   field 430 in F-Y3: type 3 code 'REF cn_Y3 \r' result '2'
+10:41:14   field 431 in F-Y3: type 3 code 'REF cn_Y3 \w \t' result '2'
+10:41:14   field 432 in F-Y3: type 3 code 'REF cn_Y3 \n \t' result '2'
+10:41:14   field 433 in F-Y3: type 3 code 'REF cn_Y3 \r \t' result '2'
+10:41:14   field 434 in F-Y4: type 3 code 'REF cn_Y4 \w' result '2.1'
+10:41:14   field 435 in F-Y4: type 3 code 'REF cn_Y4 \n' result '2.1'
+10:41:14   field 436 in F-Y4: type 3 code 'REF cn_Y4 \r' result '2.1'
+10:41:14   field 437 in F-Y4: type 3 code 'REF cn_Y4 \w \t' result '2.1'
+10:41:14   field 438 in F-Y4: type 3 code 'REF cn_Y4 \n \t' result '2.1'
+10:41:14   field 439 in F-Y4: type 3 code 'REF cn_Y4 \r \t' result '2.1'
+10:41:14   field 440 in F-G1: type 3 code 'REF cn_G1 \w' result 'I'
+10:41:14   field 441 in F-G1: type 3 code 'REF cn_G1 \n' result 'I'
+10:41:14   field 442 in F-G1: type 3 code 'REF cn_G1 \r' result 'I'
+10:41:14   field 443 in F-G1: type 3 code 'REF cn_G1 \w \t' result 'I'
+10:41:14   field 444 in F-G1: type 3 code 'REF cn_G1 \n \t' result 'I'
+10:41:15   field 445 in F-G1: type 3 code 'REF cn_G1 \r \t' result 'I'
+10:41:15   field 446 in F-G2: type 3 code 'REF cn_G2 \w' result '1.1'
+10:41:15   field 447 in F-G2: type 3 code 'REF cn_G2 \n' result '1.1'
+10:41:15   field 448 in F-G2: type 3 code 'REF cn_G2 \r' result '1.1'
+10:41:15   field 449 in F-G2: type 3 code 'REF cn_G2 \w \t' result '1.1'
+10:41:15   field 450 in F-G2: type 3 code 'REF cn_G2 \n \t' result '1.1'
+10:41:15   field 451 in F-G2: type 3 code 'REF cn_G2 \r \t' result '1.1'
+10:41:15   field 452 in F-G3: type 3 code 'REF cn_G3 \w' result '1.1(a)'
+10:41:15   field 453 in F-G3: type 3 code 'REF cn_G3 \n' result '(a)'
+10:41:15   field 454 in F-G3: type 3 code 'REF cn_G3 \r' result '1.1(a)'
+10:41:15   field 455 in F-G3: type 3 code 'REF cn_G3 \w \t' result '1.1(a)'
+10:41:15   field 456 in F-G3: type 3 code 'REF cn_G3 \n \t' result '(a)'
+10:41:15   field 457 in F-G3: type 3 code 'REF cn_G3 \r \t' result '1.1(a)'
+10:41:15   field 458 in F-G4: type 3 code 'REF cn_G4 \w' result 'II'
+10:41:15   field 459 in F-G4: type 3 code 'REF cn_G4 \n' result 'II'
+10:41:15   field 460 in F-G4: type 3 code 'REF cn_G4 \r' result 'II'
+10:41:15   field 461 in F-G4: type 3 code 'REF cn_G4 \w \t' result 'II'
+10:41:15   field 462 in F-G4: type 3 code 'REF cn_G4 \n \t' result 'II'
+10:41:15   field 463 in F-G4: type 3 code 'REF cn_G4 \r \t' result 'II'
+10:41:15   field 464 in F-G5: type 3 code 'REF cn_G5 \w' result 'II(a)'
+10:41:15   field 465 in F-G5: type 3 code 'REF cn_G5 \n' result '(a)'
+10:41:15   field 466 in F-G5: type 3 code 'REF cn_G5 \r' result '(a)'
+10:41:15   field 467 in F-G5: type 3 code 'REF cn_G5 \w \t' result 'II(a)'
+10:41:15   field 468 in F-G5: type 3 code 'REF cn_G5 \n \t' result '(a)'
+10:41:15   field 469 in F-G5: type 3 code 'REF cn_G5 \r \t' result '(a)'
+10:41:15   field 470 in F-S1: type 3 code 'REF cn_S1 \w' result '1'
+10:41:15   field 471 in F-S1: type 3 code 'REF cn_S1 \n' result '1'
+10:41:15   field 472 in F-S1: type 3 code 'REF cn_S1 \r' result '1'
+10:41:15   field 473 in F-S1: type 3 code 'REF cn_S1 \w \t' result '1'
+10:41:15   field 474 in F-S1: type 3 code 'REF cn_S1 \n \t' result '1'
+10:41:15   field 475 in F-S1: type 3 code 'REF cn_S1 \r \t' result '1'
+10:41:15   field 476 in F-S2: type 3 code 'REF cn_S2 \w' result '1(a)'
+10:41:15   field 477 in F-S2: type 3 code 'REF cn_S2 \n' result '(a)'
+10:41:15   field 478 in F-S2: type 3 code 'REF cn_S2 \r' result '(a)'
+10:41:15   field 479 in F-S2: type 3 code 'REF cn_S2 \w \t' result '1(a)'
+10:41:15   field 480 in F-S2: type 3 code 'REF cn_S2 \n \t' result '(a)'
+10:41:15   field 481 in F-S2: type 3 code 'REF cn_S2 \r \t' result '(a)'
+10:41:15   field 482 in F-S3: type 3 code 'REF cn_S3 \w' result '1(a)(i)'
+10:41:15   field 483 in F-S3: type 3 code 'REF cn_S3 \n' result '(i)'
+10:41:15   field 484 in F-S3: type 3 code 'REF cn_S3 \r' result '(a)(i)'
+10:41:15   field 485 in F-S3: type 3 code 'REF cn_S3 \w \t' result '1(a)(i)'
+10:41:15   field 486 in F-S3: type 3 code 'REF cn_S3 \n \t' result '(i)'
+10:41:15   field 487 in F-S3: type 3 code 'REF cn_S3 \r \t' result '(a)(i)'
+10:41:15   field 488 in F-S4: type 3 code 'REF cn_S4 \w' result '1.02'
+10:41:15   field 489 in F-S4: type 3 code 'REF cn_S4 \n' result '1.02'
+10:41:15   field 490 in F-S4: type 3 code 'REF cn_S4 \r' result '1.02'
+10:41:15   field 491 in F-S4: type 3 code 'REF cn_S4 \w \t' result '1.02'
+10:41:15   field 492 in F-S4: type 3 code 'REF cn_S4 \n \t' result '1.02'
+10:41:15   field 493 in F-S4: type 3 code 'REF cn_S4 \r \t' result '1.02'
+10:41:15   field 494 in F-S5: type 3 code 'REF cn_S5 \w' result '1.02(i)'
+10:41:15   field 495 in F-S5: type 3 code 'REF cn_S5 \n' result '(i)'
+10:41:15   field 496 in F-S5: type 3 code 'REF cn_S5 \r' result '(i)'
+10:41:15   field 497 in F-S5: type 3 code 'REF cn_S5 \w \t' result '1.02(i)'
+10:41:15   field 498 in F-S5: type 3 code 'REF cn_S5 \n \t' result '(i)'
+10:41:15   field 499 in F-S5: type 3 code 'REF cn_S5 \r \t' result '(i)'
+10:41:15   field 500 in F-R1: type 3 code 'REF cn_R1 \w' result '1'
+10:41:15   field 501 in F-R1: type 3 code 'REF cn_R1 \n' result '1'
+10:41:15   field 502 in F-R1: type 3 code 'REF cn_R1 \r' result '1'
+10:41:15   field 503 in F-R1: type 3 code 'REF cn_R1 \w \t' result '1'
+10:41:15   field 504 in F-R1: type 3 code 'REF cn_R1 \n \t' result '1'
+10:41:15   field 505 in F-R1: type 3 code 'REF cn_R1 \r \t' result '1'
+10:41:15   field 506 in F-R2: type 3 code 'REF cn_R2 \w' result '1(a)'
+10:41:16   field 507 in F-R2: type 3 code 'REF cn_R2 \n' result '(a)'
+10:41:16   field 508 in F-R2: type 3 code 'REF cn_R2 \r' result '1(a)'
+10:41:16   field 509 in F-R2: type 3 code 'REF cn_R2 \w \t' result '1(a)'
+10:41:16   field 510 in F-R2: type 3 code 'REF cn_R2 \n \t' result '(a)'
+10:41:16   field 511 in F-R2: type 3 code 'REF cn_R2 \r \t' result '1(a)'
+10:41:16   field 512 in F-R3: type 3 code 'REF cn_R3 \w' result '2'
+10:41:16   field 513 in F-R3: type 3 code 'REF cn_R3 \n' result '2'
+10:41:16   field 514 in F-R3: type 3 code 'REF cn_R3 \r' result '2'
+10:41:16   field 515 in F-R3: type 3 code 'REF cn_R3 \w \t' result '2'
+10:41:16   field 516 in F-R3: type 3 code 'REF cn_R3 \n \t' result '2'
+10:41:16   field 517 in F-R3: type 3 code 'REF cn_R3 \r \t' result '2'
+10:41:16   field 518 in F-R4: type 3 code 'REF cn_R4 \w' result '1'
+10:41:16   field 519 in F-R4: type 3 code 'REF cn_R4 \n' result '1'
+10:41:16   field 520 in F-R4: type 3 code 'REF cn_R4 \r' result '1'
+10:41:16   field 521 in F-R4: type 3 code 'REF cn_R4 \w \t' result '1'
+10:41:16   field 522 in F-R4: type 3 code 'REF cn_R4 \n \t' result '1'
+10:41:16   field 523 in F-R4: type 3 code 'REF cn_R4 \r \t' result '1'
+10:41:16   field 524 in F-R5: type 3 code 'REF cn_R5 \w' result '1(a)'
+10:41:16   field 525 in F-R5: type 3 code 'REF cn_R5 \n' result '(a)'
+10:41:16   field 526 in F-R5: type 3 code 'REF cn_R5 \r' result '(a)'
+10:41:16   field 527 in F-R5: type 3 code 'REF cn_R5 \w \t' result '1(a)'
+10:41:16   field 528 in F-R5: type 3 code 'REF cn_R5 \n \t' result '(a)'
+10:41:16   field 529 in F-R5: type 3 code 'REF cn_R5 \r \t' result '(a)'
+10:41:16   field 530 in F-M1: type 3 code 'REF cn_M1 \w' result 'Article I'
+10:41:16   field 531 in F-M1: type 3 code 'REF cn_M1 \n' result 'Article I'
+10:41:16   field 532 in F-M1: type 3 code 'REF cn_M1 \r' result 'Article I'
+10:41:16   field 533 in F-M1: type 3 code 'REF cn_M1 \w \t' result 'I'
+10:41:16   field 534 in F-M1: type 3 code 'REF cn_M1 \n \t' result 'I'
+10:41:16   field 535 in F-M1: type 3 code 'REF cn_M1 \r \t' result 'I'
+10:41:16   field 536 in F-M2: type 3 code 'REF cn_M2 \w' result 'Article I1'
+10:41:16   field 537 in F-M2: type 3 code 'REF cn_M2 \n' result '1'
+10:41:16   field 538 in F-M2: type 3 code 'REF cn_M2 \r' result 'Article I1'
+10:41:16   field 539 in F-M2: type 3 code 'REF cn_M2 \w \t' result 'I1'
+10:41:16   field 540 in F-M2: type 3 code 'REF cn_M2 \n \t' result '1'
+10:41:16   field 541 in F-M2: type 3 code 'REF cn_M2 \r \t' result 'I1'
+10:41:16   field 542 in F-M3: type 3 code 'REF cn_M3 \w' result 'Article I1(a)'
+10:41:16   field 543 in F-M3: type 3 code 'REF cn_M3 \n' result '(a)'
+10:41:16   field 544 in F-M3: type 3 code 'REF cn_M3 \r' result 'Article I1(a)'
+10:41:16   field 545 in F-M3: type 3 code 'REF cn_M3 \w \t' result 'I1(a)'
+10:41:16   field 546 in F-M3: type 3 code 'REF cn_M3 \n \t' result '(a)'
+10:41:16   field 547 in F-M3: type 3 code 'REF cn_M3 \r \t' result 'I1(a)'
+10:41:16   field 548 in F-M4: type 3 code 'REF cn_M4 \w' result 'Article I2'
+10:41:16   field 549 in F-M4: type 3 code 'REF cn_M4 \n' result '2'
+10:41:16   field 550 in F-M4: type 3 code 'REF cn_M4 \r' result 'Article I2'
+10:41:16   field 551 in F-M4: type 3 code 'REF cn_M4 \w \t' result 'I2'
+10:41:16   field 552 in F-M4: type 3 code 'REF cn_M4 \n \t' result '2'
+10:41:16   field 553 in F-M4: type 3 code 'REF cn_M4 \r \t' result 'I2'
+10:41:16   field 554 in F-M5: type 3 code 'REF cn_M5 \w' result 'Article II'
+10:41:16   field 555 in F-M5: type 3 code 'REF cn_M5 \n' result 'Article II'
+10:41:16   field 556 in F-M5: type 3 code 'REF cn_M5 \r' result 'Article II'
+10:41:16   field 557 in F-M5: type 3 code 'REF cn_M5 \w \t' result 'II'
+10:41:17   field 558 in F-M5: type 3 code 'REF cn_M5 \n \t' result 'II'
+10:41:17   field 559 in F-M5: type 3 code 'REF cn_M5 \r \t' result 'II'
+10:41:17   field 560 in F-N1: type 3 code 'REF cn_N1 \w' result ''
+10:41:17   field 561 in F-N1: type 3 code 'REF cn_N1 \n' result ''
+10:41:17   field 562 in F-N1: type 3 code 'REF cn_N1 \r' result ''
+10:41:17   field 563 in F-N1: type 3 code 'REF cn_N1 \w \t' result '0'
+10:41:17   field 564 in F-N1: type 3 code 'REF cn_N1 \n \t' result '0'
+10:41:17   field 565 in F-N1: type 3 code 'REF cn_N1 \r \t' result '0'
+10:41:17   field 566 in F-N2: type 3 code 'REF cn_N2 \w' result 'Step 1:'
+10:41:17   field 567 in F-N2: type 3 code 'REF cn_N2 \n' result 'Step 1:'
+10:41:17   field 568 in F-N2: type 3 code 'REF cn_N2 \r' result 'Step 1:'
+10:41:17   field 569 in F-N2: type 3 code 'REF cn_N2 \w \t' result '1:'
+10:41:17   field 570 in F-N2: type 3 code 'REF cn_N2 \n \t' result '1:'
+10:41:17   field 571 in F-N2: type 3 code 'REF cn_N2 \r \t' result '1:'
+10:41:17   field 572 in F-N3: type 3 code 'REF cn_N3 \w' result 'Step 1:a'
+10:41:17   field 573 in F-N3: type 3 code 'REF cn_N3 \n' result 'a'
+10:41:17   field 574 in F-N3: type 3 code 'REF cn_N3 \r' result 'a'
+10:41:17   field 575 in F-N3: type 3 code 'REF cn_N3 \w \t' result '1:a'
+10:41:17   field 576 in F-N3: type 3 code 'REF cn_N3 \n \t' result 'a'
+10:41:17   field 577 in F-N3: type 3 code 'REF cn_N3 \r \t' result 'a'
+10:41:17   field 578 in F-N4: type 3 code 'REF cn_N4 \w' result 'NOTE'
+10:41:17   field 579 in F-N4: type 3 code 'REF cn_N4 \n' result 'NOTE'
+10:41:17   field 580 in F-N4: type 3 code 'REF cn_N4 \r' result 'NOTE'
+10:41:17   field 581 in F-N4: type 3 code 'REF cn_N4 \w \t' result '0'
+10:41:17   field 582 in F-N4: type 3 code 'REF cn_N4 \n \t' result '0'
+10:41:17   field 583 in F-N4: type 3 code 'REF cn_N4 \r \t' result '0'
+10:41:17   field 584 in F-N5: type 3 code 'REF cn_N5 \w' result '0'
+10:41:17   field 585 in F-N5: type 3 code 'REF cn_N5 \n' result '0'
+10:41:17   field 586 in F-N5: type 3 code 'REF cn_N5 \r' result '0'
+10:41:17   field 587 in F-N5: type 3 code 'REF cn_N5 \w \t' result '0'
+10:41:17   field 588 in F-N5: type 3 code 'REF cn_N5 \n \t' result '0'
+10:41:17   field 589 in F-N5: type 3 code 'REF cn_N5 \r \t' result '0'
+10:41:17   field 590 in F-N6: type 3 code 'REF cn_N6 \w' result '1'
+10:41:17   field 591 in F-N6: type 3 code 'REF cn_N6 \n' result '1'
+10:41:17   field 592 in F-N6: type 3 code 'REF cn_N6 \r' result '1'
+10:41:17   field 593 in F-N6: type 3 code 'REF cn_N6 \w \t' result '1'
+10:41:17   field 594 in F-N6: type 3 code 'REF cn_N6 \n \t' result '1'
+10:41:17   field 595 in F-N6: type 3 code 'REF cn_N6 \r \t' result '1'
+10:41:17   field 596 in F-N7: type 3 code 'REF cn_N7 \w' result '1-1'
+10:41:17   field 597 in F-N7: type 3 code 'REF cn_N7 \n' result '1-1'
+10:41:17   field 598 in F-N7: type 3 code 'REF cn_N7 \r' result '1-1'
+10:41:17   field 599 in F-N7: type 3 code 'REF cn_N7 \w \t' result '1-1'
+10:41:17   field 600 in F-N7: type 3 code 'REF cn_N7 \n \t' result '1-1'
+10:41:17   field 601 in F-N7: type 3 code 'REF cn_N7 \r \t' result '1-1'
+10:41:17   field 602 in F-N8: type 3 code 'REF cn_N8 \w' result '1-1A'
+10:41:17   field 603 in F-N8: type 3 code 'REF cn_N8 \n' result 'A'
+10:41:17   field 604 in F-N8: type 3 code 'REF cn_N8 \r' result 'A'
+10:41:17   field 605 in F-N8: type 3 code 'REF cn_N8 \w \t' result '1-1A'
+10:41:17   field 606 in F-N8: type 3 code 'REF cn_N8 \n \t' result 'A'
+10:41:17   field 607 in F-N8: type 3 code 'REF cn_N8 \r \t' result 'A'
+10:41:17   field 608 in F-T1: type 3 code 'REF cn_T1 \w' result '1'
+10:41:17   field 609 in F-T1: type 3 code 'REF cn_T1 \n' result '1'
+10:41:17   field 610 in F-T1: type 3 code 'REF cn_T1 \r' result '1'
+10:41:17   field 611 in F-T1: type 3 code 'REF cn_T1 \w \t' result '1'
+10:41:17   field 612 in F-T1: type 3 code 'REF cn_T1 \n \t' result '1'
+10:41:17   field 613 in F-T1: type 3 code 'REF cn_T1 \r \t' result '1'
+10:41:17   field 614 in F-T2: type 3 code 'REF cn_T2 \w' result '1(a)'
+10:41:17   field 615 in F-T2: type 3 code 'REF cn_T2 \n' result '(a)'
+10:41:17   field 616 in F-T2: type 3 code 'REF cn_T2 \r' result '1(a)'
+10:41:17   field 617 in F-T2: type 3 code 'REF cn_T2 \w \t' result '1(a)'
+10:41:17   field 618 in F-T2: type 3 code 'REF cn_T2 \n \t' result '(a)'
+10:41:17   field 619 in F-T2: type 3 code 'REF cn_T2 \r \t' result '1(a)'
+10:41:17   field 620 in F-T3: type 3 code 'REF cn_T3 \w' result '1(a)'
+10:41:17   field 621 in F-T3: type 3 code 'REF cn_T3 \n' result '(a)'
+10:41:17   field 622 in F-T3: type 3 code 'REF cn_T3 \r' result '1(a)'
+10:41:17   field 623 in F-T3: type 3 code 'REF cn_T3 \w \t' result '1(a)'
+10:41:17   field 624 in F-T3: type 3 code 'REF cn_T3 \n \t' result '(a)'
+10:41:17   field 625 in F-T3: type 3 code 'REF cn_T3 \r \t' result '1(a)'
+10:41:17   field 626 in F-T4: type 3 code 'REF cn_T4 \w' result '2'
+10:41:17   field 627 in F-T4: type 3 code 'REF cn_T4 \n' result '2'
+10:41:18   field 628 in F-T4: type 3 code 'REF cn_T4 \r' result '2'
+10:41:18   field 629 in F-T4: type 3 code 'REF cn_T4 \w \t' result '2'
+10:41:18   field 630 in F-T4: type 3 code 'REF cn_T4 \n \t' result '2'
+10:41:18   field 631 in F-T4: type 3 code 'REF cn_T4 \r \t' result '2'
+10:41:18   field 632 in F-T5: type 3 code 'REF cn_T5 \w' result '2(a)'
+10:41:18   field 633 in F-T5: type 3 code 'REF cn_T5 \n' result '(a)'
+10:41:18   field 634 in F-T5: type 3 code 'REF cn_T5 \r' result '(a)'
+10:41:18   field 635 in F-T5: type 3 code 'REF cn_T5 \w \t' result '2(a)'
+10:41:18   field 636 in F-T5: type 3 code 'REF cn_T5 \n \t' result '(a)'
+10:41:18   field 637 in F-T5: type 3 code 'REF cn_T5 \r \t' result '(a)'
+10:41:18   field 638 in F-E1: type 3 code 'REF cn_E1 \w' result '0'
+10:41:18   field 639 in F-E1: type 3 code 'REF cn_E1 \n' result '0'
+10:41:18   field 640 in F-E1: type 3 code 'REF cn_E1 \r' result '0'
+10:41:18   field 641 in F-E1: type 3 code 'REF cn_E1 \w \t' result '0'
+10:41:18   field 642 in F-E1: type 3 code 'REF cn_E1 \n \t' result '0'
+10:41:18   field 643 in F-E1: type 3 code 'REF cn_E1 \r \t' result '0'
+10:41:18   field 644 in F-E2: type 3 code 'REF cn_E2 \w' result '2.02'
+10:41:18   field 645 in F-E2: type 3 code 'REF cn_E2 \n' result '2.02'
+10:41:18   field 646 in F-E2: type 3 code 'REF cn_E2 \r' result '2.02'
+10:41:18   field 647 in F-E2: type 3 code 'REF cn_E2 \w \t' result '2.02'
+10:41:18   field 648 in F-E2: type 3 code 'REF cn_E2 \n \t' result '2.02'
+10:41:18   field 649 in F-E2: type 3 code 'REF cn_E2 \r \t' result '2.02'
+10:41:18   field 650 in F-E3: type 3 code 'REF cn_E3 \w' result '2.01(a)'
+10:41:18   field 651 in F-E3: type 3 code 'REF cn_E3 \n' result '(a)'
+10:41:18   field 652 in F-E3: type 3 code 'REF cn_E3 \r' result '2.01(a)'
+10:41:18   field 653 in F-E3: type 3 code 'REF cn_E3 \w \t' result '2.01(a)'
+10:41:18   field 654 in F-E3: type 3 code 'REF cn_E3 \n \t' result '(a)'
+10:41:18   field 655 in F-E3: type 3 code 'REF cn_E3 \r \t' result '2.01(a)'
+10:41:18 cn-1 updated : 655 fields
+10:41:18   line F0 before the lists: r: L1=1 L4=2 L5=2.01 L6=2.01(a) L7=2.01(a)(i)\r
+10:41:18   line L6 level 2 r: L3=1.02 L5=2.01 L7=(i) L9=(b) L11=2.02(a)\r
+10:41:18   line L7 level 3 r: L6=(a) L8=(ii) L9=(b) L11=2.02(a) L4=2\r
+10:41:18   line L8 level 3 r: L1=1 L2=1.01 L3=1.02 L4=2 L5=2.01 L6=(a) L7=(i) L8=(ii) L9=(b) L10=2.02 L11=2.02(a) L12=3\r
+10:41:18   line L9 level 2 r: L1=1 L2=1.01 L3=1.02 L4=2 L5=2.01 L6=(a) L7=(a)(i) L8=(a)(ii) L9=(b) L10=2.02 L11=2.02(a) L12=3 w: L6=2.01(a) L7=2.01(a)(i) L11=2.02(a)\r
+10:41:18   line L11 level 2 r: L1=1 L2=1.01 L3=1.02 L4=2 L5=2.01 L6=2.01(a) L7=2.01(a)(i) L8=2.01(a)(ii) L9=2.01(b) L10=2.02 L11=(a) L12=3\r
+10:41:18   line L12 level 0 r: L1=1 L2=1.01 L3=1.02 L4=2 L5=2.01 L6=2.01(a) L7=2.01(a)(i) L8=2.01(a)(ii) L9=2.01(b) L10=2.02 L11=2.02(a) L12=3\r
+10:41:18   line L13 level 1, in a table cell r: L12=3 L6=2.01(a)\r\a
+10:41:18   line O2 level 1 r: L6=2.01(a) L5=2.01 L4=2\r
+10:41:18   line O4 level 2 r: O1=1 O2=a O3=i O5=b O6=2 O7=2.a\r
+10:41:18   line O7 level 1 r: O1=1 O2=1.a O3=1.a.i O4=1.a.ii O5=1.b O6=2\r
+10:41:18   line P4 level 2 r: P1=1) P2=a) P3=i) P5=b) P6=2) P7=2)a)\r
+10:41:18   line P7 level 1 r: P1=1) P2=1)a) P3=1)a)i) P4=1)a)ii) P5=1)b) P6=2)\r
+10:41:18   line H4 level 2 r: H1=1 H2=1.1 H3=1.1.1 H5=1.2 H6=2 H7=2.1\r
+10:41:18   line H7 level 1 r: H1=1 H2=1.1 H3=1.1.1 H4=1.1.2 H5=1.2 H6=2\r
+10:41:18   line A7 clause r: A1=Article I A2=Section 1.01 A3=Section 1.01(a) A4=Section 1.01(b) A5=Article II A6=Section 2.01 A8=Section 2.02\r
+10:41:18   line A8 Section heading r: A1=Article I A2=Section 1.01 A3=Section 1.01(a) A5=Article II A6=Section 2.01 A7=Section 2.01(a)\r
+10:41:18   line Y4 level 1 r: Y1=1 Y2=1.1 Y3=2\r
+10:41:18   line G5 level 2, level 1 skipped r: G1=I G2=1.1 G3=1.1(a) G4=II\r
+10:41:18   line S5 level 3, level 2 skipped r: S1=1 S2=(a) S3=(a)(i) S4=1.02\r
+10:41:18   line R5 level 1 r: R1=1 R2=1(a) R3=2 R4=1\r
+10:41:18   line M5 level 0 r: M1=Article I M2=Article I1 M3=Article I1(a) M4=Article I2\r
+10:41:18   line N8 level 2 r: N6=1 N7=1-1 N2=Step 1: N3=a\r
+10:41:18   line T5 level 1 r: T1=1 T2=1(a) T3=1(a) T4=2\r
+10:41:18   line F-L1 w=1 n=1 r=1 wt=1 nt=1 rt=1\r
+10:41:18   line F-L2 w=1.01 n=1.01 r=1.01 wt=1.01 nt=1.01 rt=1.01\r
+10:41:18   line F-L3 w=1.02 n=1.02 r=1.02 wt=1.02 nt=1.02 rt=1.02\r
+10:41:19   line F-L4 w=2 n=2 r=2 wt=2 nt=2 rt=2\r
+10:41:19   line F-L5 w=2.01 n=2.01 r=2.01 wt=2.01 nt=2.01 rt=2.01\r
+10:41:19   line F-L6 w=2.01(a) n=(a) r=2.01(a) wt=2.01(a) nt=(a) rt=2.01(a) p=above rp=2.01(a) above wd=2.01-(a) h=2.01(a)\r
+10:41:19   line F-L7 w=2.01(a)(i) n=(i) r=2.01(a)(i) wt=2.01(a)(i) nt=(i) rt=2.01(a)(i)\r
+10:41:19   line F-L8 w=2.01(a)(ii) n=(ii) r=2.01(a)(ii) wt=2.01(a)(ii) nt=(ii) rt=2.01(a)(ii)\r
+10:41:19   line F-L9 w=2.01(b) n=(b) r=2.01(b) wt=2.01(b) nt=(b) rt=2.01(b) p=above rp=2.01(b) above wd=2.01-(b) h=2.01(b)\r
+10:41:19   line F-L10 w=2.02 n=2.02 r=2.02 wt=2.02 nt=2.02 rt=2.02\r
+10:41:19   line F-L11 w=2.02(a) n=(a) r=2.02(a) wt=2.02(a) nt=(a) rt=2.02(a)\r
+10:41:19   line F-L12 w=3 n=3 r=3 wt=3 nt=3 rt=3\r
+10:41:19   line F-L13 w=3.01 n=3.01 r=3.01 wt=3.01 nt=3.01 rt=3.01\r
+10:41:19   line F-O1 w=1 n=1 r=1 wt=1 nt=1 rt=1\r
+10:41:19   line F-O2 w=1.a n=a r=1.a wt=1.a nt=a rt=1.a\r
+10:41:19   line F-O3 w=1.a.i n=i r=1.a.i wt=1.a.i nt=i rt=1.a.i\r
+10:41:19   line F-O4 w=1.a.ii n=ii r=1.a.ii wt=1.a.ii nt=ii rt=1.a.ii\r
+10:41:19   line F-O5 w=1.b n=b r=1.b wt=1.b nt=b rt=1.b\r
+10:41:19   line F-O6 w=2 n=2 r=2 wt=2 nt=2 rt=2\r
+10:41:19   line F-O7 w=2.a n=a r=a wt=2.a nt=a rt=a\r
+10:41:19   line F-P1 w=1) n=1) r=1) wt=1) nt=1) rt=1)\r
+10:41:19   line F-P2 w=1)a) n=a) r=1)a) wt=1)a) nt=a) rt=1)a)\r
+10:41:19   line F-P3 w=1)a)i) n=i) r=1)a)i) wt=1)a)i) nt=i) rt=1)a)i)\r
+10:41:19   line F-P4 w=1)a)ii) n=ii) r=1)a)ii) wt=1)a)ii) nt=ii) rt=1)a)ii)\r
+10:41:19   line F-P5 w=1)b) n=b) r=1)b) wt=1)b) nt=b) rt=1)b)\r
+10:41:19   line F-P6 w=2) n=2) r=2) wt=2) nt=2) rt=2)\r
+10:41:19   line F-P7 w=2)a) n=a) r=a) wt=2)a) nt=a) rt=a)\r
+10:41:19   line F-H1 w=1 n=1 r=1 wt=1 nt=1 rt=1\r
+10:41:19   line F-H2 w=1.1 n=1.1 r=1.1 wt=1.1 nt=1.1 rt=1.1\r
+10:41:19   line F-H3 w=1.1.1 n=1.1.1 r=1.1.1 wt=1.1.1 nt=1.1.1 rt=1.1.1\r
+10:41:19   line F-H4 w=1.1.2 n=1.1.2 r=1.1.2 wt=1.1.2 nt=1.1.2 rt=1.1.2\r
+10:41:19   line F-H5 w=1.2 n=1.2 r=1.2 wt=1.2 nt=1.2 rt=1.2\r
+10:41:19   line F-H6 w=2 n=2 r=2 wt=2 nt=2 rt=2\r
+10:41:19   line F-H7 w=2.1 n=2.1 r=2.1 wt=2.1 nt=2.1 rt=2.1\r
+10:41:19   line F-A1 w=Article I n=Article I r=Article I wt=I nt=I rt=I\r
+10:41:19   line F-A2 w=Section 1.01 n=Section 1.01 r=Section 1.01 wt=1.01 nt=1.01 rt=1.01\r
+10:41:19   line F-A3 w=Section 1.01(a) n=(a) r=Section 1.01(a) wt=1.01(a) nt=(a) rt=1.01(a) p=above rp=Section 1.01(a) above wd=Section 1.01-(a) h=Section 1.01(a)\r
+10:41:19   line F-A4 w=Section 1.01(b) n=(b) r=Section 1.01(b) wt=1.01(b) nt=(b) rt=1.01(b)\r
+10:41:19   line F-A5 w=Article II n=Article II r=Article II wt=II nt=II rt=II\r
+10:41:19   line F-A6 w=Section 2.01 n=Section 2.01 r=Section 2.01 wt=2.01 nt=2.01 rt=2.01\r
+10:41:19   line F-A7 w=Section 2.01(a) n=(a) r=Section 2.01(a) wt=2.01(a) nt=(a) rt=2.01(a) p=above rp=Section 2.01(a) above wd=Section 2.01-(a) h=Section 2.01(a)\r
+10:41:19   line F-A8 w=Section 2.02 n=Section 2.02 r=Section 2.02 wt=2.02 nt=2.02 rt=2.02\r
+10:41:19   line F-Y1 w=1 n=1 r=1 wt=1 nt=1 rt=1\r
+10:41:19   line F-Y2 w=1.1 n=1.1 r=1.1 wt=1.1 nt=1.1 rt=1.1\r
+10:41:19   line F-Y3 w=2 n=2 r=2 wt=2 nt=2 rt=2\r
+10:41:19   line F-Y4 w=2.1 n=2.1 r=2.1 wt=2.1 nt=2.1 rt=2.1\r
+10:41:19   line F-G1 w=I n=I r=I wt=I nt=I rt=I\r
+10:41:19   line F-G2 w=1.1 n=1.1 r=1.1 wt=1.1 nt=1.1 rt=1.1\r
+10:41:19   line F-G3 w=1.1(a) n=(a) r=1.1(a) wt=1.1(a) nt=(a) rt=1.1(a)\r
+10:41:19   line F-G4 w=II n=II r=II wt=II nt=II rt=II\r
+10:41:19   line F-G5 w=II(a) n=(a) r=(a) wt=II(a) nt=(a) rt=(a)\r
+10:41:19   line F-S1 w=1 n=1 r=1 wt=1 nt=1 rt=1\r
+10:41:19   line F-S2 w=1(a) n=(a) r=(a) wt=1(a) nt=(a) rt=(a)\r
+10:41:19   line F-S3 w=1(a)(i) n=(i) r=(a)(i) wt=1(a)(i) nt=(i) rt=(a)(i)\r
+10:41:19   line F-S4 w=1.02 n=1.02 r=1.02 wt=1.02 nt=1.02 rt=1.02\r
+10:41:19   line F-S5 w=1.02(i) n=(i) r=(i) wt=1.02(i) nt=(i) rt=(i)\r
+10:41:19   line F-R1 w=1 n=1 r=1 wt=1 nt=1 rt=1\r
+10:41:19   line F-R2 w=1(a) n=(a) r=1(a) wt=1(a) nt=(a) rt=1(a)\r
+10:41:19   line F-R3 w=2 n=2 r=2 wt=2 nt=2 rt=2\r
+10:41:19   line F-R4 w=1 n=1 r=1 wt=1 nt=1 rt=1\r
+10:41:19   line F-R5 w=1(a) n=(a) r=(a) wt=1(a) nt=(a) rt=(a)\r
+10:41:19   line F-M1 w=Article I n=Article I r=Article I wt=I nt=I rt=I\r
+10:41:19   line F-M2 w=Article I1 n=1 r=Article I1 wt=I1 nt=1 rt=I1\r
+10:41:19   line F-M3 w=Article I1(a) n=(a) r=Article I1(a) wt=I1(a) nt=(a) rt=I1(a)\r
+10:41:19   line F-M4 w=Article I2 n=2 r=Article I2 wt=I2 nt=2 rt=I2\r
+10:41:19   line F-M5 w=Article II n=Article II r=Article II wt=II nt=II rt=II\r
+10:41:19   line F-N1 w= n= r= wt=0 nt=0 rt=0\r
+10:41:19   line F-N2 w=Step 1: n=Step 1: r=Step 1: wt=1: nt=1: rt=1:\r
+10:41:19   line F-N3 w=Step 1:a n=a r=a wt=1:a nt=a rt=a\r
+10:41:19   line F-N4 w=NOTE n=NOTE r=NOTE wt=0 nt=0 rt=0\r
+10:41:19   line F-N5 w=0 n=0 r=0 wt=0 nt=0 rt=0\r
+10:41:19   line F-N6 w=1 n=1 r=1 wt=1 nt=1 rt=1\r
+10:41:20   line F-N7 w=1-1 n=1-1 r=1-1 wt=1-1 nt=1-1 rt=1-1\r
+10:41:20   line F-N8 w=1-1A n=A r=A wt=1-1A nt=A rt=A\r
+10:41:20   line F-T1 w=1 n=1 r=1 wt=1 nt=1 rt=1\r
+10:41:20   line F-T2 w=1(a) n=(a) r=1(a) wt=1(a) nt=(a) rt=1(a)\r
+10:41:20   line F-T3 w=1(a) n=(a) r=1(a) wt=1(a) nt=(a) rt=1(a)\r
+10:41:20   line F-T4 w=2 n=2 r=2 wt=2 nt=2 rt=2\r
+10:41:20   line F-T5 w=2(a) n=(a) r=(a) wt=2(a) nt=(a) rt=(a)\r
+10:41:20   line F-E1 w=0 n=0 r=0 wt=0 nt=0 rt=0\r
+10:41:20   line F-E2 w=2.02 n=2.02 r=2.02 wt=2.02 nt=2.02 rt=2.02\r
+10:41:20   line F-E3 w=2.01(a) n=(a) r=2.01(a) wt=2.01(a) nt=(a) rt=2.01(a)\r
+10:41:20 cn-1 updated : lines done
+10:41:20 view: markup 0 view 0
+10:41:20 cn-1 no markup : 79 list paragraphs
+10:41:20   label L1 '1.' level 1 type 4
+10:41:20   label L2 '1.01' level 2 type 4
+10:41:20   label L3 '1.02' level 2 type 4
+10:41:21   label L4 '2.' level 1 type 4
+10:41:21   label L5 '2.01' level 2 type 4
+10:41:21   label L6 '(a)' level 3 type 4
+10:41:21   label L7 '(i)' level 4 type 4
+10:41:21   label L8 '(ii)' level 4 type 4
+10:41:21   label L9 '(b)' level 3 type 4
+10:41:21   label L10 '2.02' level 2 type 4
+10:41:21   label L11 '(a)' level 3 type 4
+10:41:21   label L12 '3.' level 1 type 4
+10:41:21   label L13 '3.01' level 2 type 4
+10:41:21   label O1 '1.' level 1 type 4
+10:41:21   label O2 'a.' level 2 type 4
+10:41:21   label O3 'i.' level 3 type 4
+10:41:21   label O4 'ii.' level 3 type 4
+10:41:21   label O5 'b.' level 2 type 4
+10:41:21   label O6 '2.' level 1 type 4
+10:41:21   label O7 'a.' level 2 type 4
+10:41:21   label P1 '1)' level 1 type 4
+10:41:21   label P2 'a)' level 2 type 4
+10:41:21   label P3 'i)' level 3 type 4
+10:41:21   label P4 'ii)' level 3 type 4
+10:41:21   label P5 'b)' level 2 type 4
+10:41:21   label P6 '2)' level 1 type 4
+10:41:21   label P7 'a)' level 2 type 4
+10:41:21   label H1 '1.' level 1 type 4
+10:41:21   label H2 '1.1.' level 2 type 4
+10:41:21   label H3 '1.1.1.' level 3 type 4
+10:41:21   label H4 '1.1.2.' level 3 type 4
+10:41:21   label H5 '1.2.' level 2 type 4
+10:41:21   label H6 '2.' level 1 type 4
+10:41:21   label H7 '2.1.' level 2 type 4
+10:41:21   label A1 'Article I' level 1 type 4
+10:41:21   label A2 'Section 1.01' level 2 type 4
+10:41:21   label A3 '(a)' level 3 type 4
+10:41:21   label A4 '(b)' level 3 type 4
+10:41:21   label A5 'Article II' level 1 type 4
+10:41:21   label A6 'Section 2.01' level 2 type 4
+10:41:21   label A7 '(a)' level 3 type 4
+10:41:21   label A8 'Section 2.02' level 2 type 4
+10:41:21   label Y1 '1.' level 1 type 4
+10:41:21   label Y2 '1.1' level 2 type 4
+10:41:21   label Y3 '2.' level 1 type 4
+10:41:21   label Y4 '2.1' level 2 type 4
+10:41:21   label G1 'I.' level 1 type 4
+10:41:21   label G2 '1.1' level 2 type 4
+10:41:21   label G3 '(a)' level 3 type 4
+10:41:21   label G4 'II.' level 1 type 4
+10:41:21   label G5 '(a)' level 3 type 4
+10:41:21   label S1 '1.' level 1 type 4
+10:41:21   label S2 '(a)' level 3 type 4
+10:41:21   label S3 '(i)' level 4 type 4
+10:41:21   label S4 '1.02' level 2 type 4
+10:41:21   label S5 '(i)' level 4 type 4
+10:41:21   label R1 '1.' level 1 type 4
+10:41:21   label R2 '(a)' level 2 type 4
+10:41:21   label R3 '2.' level 1 type 4
+10:41:21   label R4 '1.' level 1 type 4
+10:41:21   label R5 '(a)' level 2 type 4
+10:41:21   label M1 'Article I' level 1 type 4
+10:41:21   label M2 '1.' level 2 type 4
+10:41:21   label M3 '(a)' level 3 type 4
+10:41:21   label M4 '2.' level 2 type 4
+10:41:21   label M5 'Article II' level 1 type 4
+10:41:21   label N1 '' level 1 type 4
+10:41:21   label N2 'Step 1:' level 1 type 4
+10:41:21   label N3 'a.' level 2 type 4
+10:41:21   label N4 'NOTE' level 1 type 4
+10:41:21   label N5 '' level 1 type 4
+10:41:21   label N6 '1' level 1 type 4
+10:41:21   label N7 '1-1' level 2 type 4
+10:41:21   label N8 'A' level 3 type 4
+10:41:21   label T1 '1.' level 1 type 4
+10:41:22   label T3 '(a)' level 2 type 4
+10:41:22   label T4 '2.' level 1 type 4
+10:41:22   label T5 '(a)' level 2 type 4
+10:41:23   field 144 in T5: type 3 code 'REF cn_T1 \r' result '1'
+10:41:23   field 145 in T5: type 3 code 'REF cn_T2 \r' result '1(a)'
+10:41:23   field 146 in T5: type 3 code 'REF cn_T3 \r' result '1(a)'
+10:41:23   field 147 in T5: type 3 code 'REF cn_T4 \r' result '2'
+10:41:25   field 608 in F-T1: type 3 code 'REF cn_T1 \w' result '1'
+10:41:25   field 609 in F-T1: type 3 code 'REF cn_T1 \n' result '1'
+10:41:25   field 610 in F-T1: type 3 code 'REF cn_T1 \r' result '1'
+10:41:25   field 611 in F-T1: type 3 code 'REF cn_T1 \w \t' result '1'
+10:41:25   field 612 in F-T1: type 3 code 'REF cn_T1 \n \t' result '1'
+10:41:25   field 613 in F-T1: type 3 code 'REF cn_T1 \r \t' result '1'
+10:41:25   field 614 in F-T2: type 3 code 'REF cn_T2 \w' result '1(a)'
+10:41:25   field 615 in F-T2: type 3 code 'REF cn_T2 \n' result '(a)'
+10:41:25   field 616 in F-T2: type 3 code 'REF cn_T2 \r' result '1(a)'
+10:41:25   field 617 in F-T2: type 3 code 'REF cn_T2 \w \t' result '1(a)'
+10:41:25   field 618 in F-T2: type 3 code 'REF cn_T2 \n \t' result '(a)'
+10:41:25   field 619 in F-T2: type 3 code 'REF cn_T2 \r \t' result '1(a)'
+10:41:25   field 620 in F-T3: type 3 code 'REF cn_T3 \w' result '1(a)'
+10:41:25   field 621 in F-T3: type 3 code 'REF cn_T3 \n' result '(a)'
+10:41:25   field 622 in F-T3: type 3 code 'REF cn_T3 \r' result '1(a)'
+10:41:25   field 623 in F-T3: type 3 code 'REF cn_T3 \w \t' result '1(a)'
+10:41:25   field 624 in F-T3: type 3 code 'REF cn_T3 \n \t' result '(a)'
+10:41:25   field 625 in F-T3: type 3 code 'REF cn_T3 \r \t' result '1(a)'
+10:41:25   field 626 in F-T4: type 3 code 'REF cn_T4 \w' result '2'
+10:41:25   field 627 in F-T4: type 3 code 'REF cn_T4 \n' result '2'
+10:41:25   field 628 in F-T4: type 3 code 'REF cn_T4 \r' result '2'
+10:41:25   field 629 in F-T4: type 3 code 'REF cn_T4 \w \t' result '2'
+10:41:25   field 630 in F-T4: type 3 code 'REF cn_T4 \n \t' result '2'
+10:41:25   field 631 in F-T4: type 3 code 'REF cn_T4 \r \t' result '2'
+10:41:25   field 632 in F-T5: type 3 code 'REF cn_T5 \w' result '2(a)'
+10:41:25   field 633 in F-T5: type 3 code 'REF cn_T5 \n' result '(a)'
+10:41:25   field 634 in F-T5: type 3 code 'REF cn_T5 \r' result '(a)'
+10:41:25   field 635 in F-T5: type 3 code 'REF cn_T5 \w \t' result '2(a)'
+10:41:25   field 636 in F-T5: type 3 code 'REF cn_T5 \n \t' result '(a)'
+10:41:25   field 637 in F-T5: type 3 code 'REF cn_T5 \r \t' result '(a)'
+10:41:25 cn-1 no markup : 655 fields
+10:41:26   line T5 level 1 r: T1=1 T2=1(a) T3=1(a) T4=2\r
+10:41:26   line F-T1 w=1 n=1 r=1 wt=1 nt=1 rt=1\r
+10:41:26   line F-T2 w=1(a) n=(a) r=1(a) wt=1(a) nt=(a) rt=1(a)\r
+10:41:26   line F-T3 w=1(a) n=(a) r=1(a) wt=1(a) nt=(a) rt=1(a)\r
+10:41:26   line F-T4 w=2 n=2 r=2 wt=2 nt=2 rt=2\r
+10:41:26   line F-T5 w=2(a) n=(a) r=(a) wt=2(a) nt=(a) rt=(a)\r
+10:41:26 cn-1 no markup : lines done
+10:41:26 view: markup 0 view 1
+10:41:27 cn-1 original : 79 list paragraphs
+10:41:27   label L1 '1.' level 1 type 4
+10:41:27   label L2 '1.01' level 2 type 4
+10:41:27   label L3 '1.02' level 2 type 4
+10:41:27   label L4 '2.' level 1 type 4
+10:41:27   label L5 '2.01' level 2 type 4
+10:41:27   label L6 '(a)' level 3 type 4
+10:41:27   label L7 '(i)' level 4 type 4
+10:41:27   label L8 '(ii)' level 4 type 4
+10:41:27   label L9 '(b)' level 3 type 4
+10:41:27   label L10 '2.02' level 2 type 4
+10:41:27   label L11 '(a)' level 3 type 4
+10:41:27   label L12 '3.' level 1 type 4
+10:41:27   label L13 '3.01' level 2 type 4
+10:41:27   label O1 '1.' level 1 type 4
+10:41:27   label O2 'a.' level 2 type 4
+10:41:27   label O3 'i.' level 3 type 4
+10:41:28   label O4 'ii.' level 3 type 4
+10:41:28   label O5 'b.' level 2 type 4
+10:41:28   label O6 '2.' level 1 type 4
+10:41:28   label O7 'a.' level 2 type 4
+10:41:28   label P1 '1)' level 1 type 4
+10:41:28   label P2 'a)' level 2 type 4
+10:41:28   label P3 'i)' level 3 type 4
+10:41:28   label P4 'ii)' level 3 type 4
+10:41:28   label P5 'b)' level 2 type 4
+10:41:28   label P6 '2)' level 1 type 4
+10:41:28   label P7 'a)' level 2 type 4
+10:41:28   label H1 '1.' level 1 type 4
+10:41:28   label H2 '1.1.' level 2 type 4
+10:41:28   label H3 '1.1.1.' level 3 type 4
+10:41:28   label H4 '1.1.2.' level 3 type 4
+10:41:28   label H5 '1.2.' level 2 type 4
+10:41:28   label H6 '2.' level 1 type 4
+10:41:28   label H7 '2.1.' level 2 type 4
+10:41:28   label A1 'Article I' level 1 type 4
+10:41:28   label A2 'Section 1.01' level 2 type 4
+10:41:28   label A3 '(a)' level 3 type 4
+10:41:28   label A4 '(b)' level 3 type 4
+10:41:28   label A5 'Article II' level 1 type 4
+10:41:28   label A6 'Section 2.01' level 2 type 4
+10:41:28   label A7 '(a)' level 3 type 4
+10:41:28   label A8 'Section 2.02' level 2 type 4
+10:41:28   label Y1 '1.' level 1 type 4
+10:41:28   label Y2 '1.1' level 2 type 4
+10:41:28   label Y3 '2.' level 1 type 4
+10:41:28   label Y4 '2.1' level 2 type 4
+10:41:28   label G1 'I.' level 1 type 4
+10:41:28   label G2 '1.1' level 2 type 4
+10:41:28   label G3 '(a)' level 3 type 4
+10:41:28   label G4 'II.' level 1 type 4
+10:41:28   label G5 '(a)' level 3 type 4
+10:41:28   label S1 '1.' level 1 type 4
+10:41:28   label S2 '(a)' level 3 type 4
+10:41:28   label S3 '(i)' level 4 type 4
+10:41:28   label S4 '1.02' level 2 type 4
+10:41:28   label S5 '(i)' level 4 type 4
+10:41:28   label R1 '1.' level 1 type 4
+10:41:28   label R2 '(a)' level 2 type 4
+10:41:28   label R3 '2.' level 1 type 4
+10:41:28   label R4 '1.' level 1 type 4
+10:41:28   label R5 '(a)' level 2 type 4
+10:41:28   label M1 'Article I' level 1 type 4
+10:41:28   label M2 '1.' level 2 type 4
+10:41:28   label M3 '(a)' level 3 type 4
+10:41:28   label M4 '2.' level 2 type 4
+10:41:28   label M5 'Article II' level 1 type 4
+10:41:28   label N1 '' level 1 type 4
+10:41:28   label N2 'Step 1:' level 1 type 4
+10:41:28   label N3 'a.' level 2 type 4
+10:41:28   label N4 'NOTE' level 1 type 4
+10:41:28   label N5 '' level 1 type 4
+10:41:28   label N6 '1' level 1 type 4
+10:41:28   label N7 '1-1' level 2 type 4
+10:41:28   label N8 'A' level 3 type 4
+10:41:28   label T1 '1.' level 1 type 4
+10:41:28   label T2 '2.' level 1 type 4
+10:41:28   label T4 '1.' level 1 type 4
+10:41:28   label T5 '(a)' level 2 type 4
+10:41:29   field 144 in T5: type 3 code 'REF cn_T1 \r' result '1'
+10:41:29   field 145 in T5: type 3 code 'REF cn_T2 \r' result '1(a)'
+10:41:29   field 146 in T5: type 3 code 'REF cn_T3 \r' result '1(a)'
+10:41:29   field 147 in T5: type 3 code 'REF cn_T4 \r' result '2'
+10:41:32   field 608 in F-T1: type 3 code 'REF cn_T1 \w' result '1'
+10:41:32   field 609 in F-T1: type 3 code 'REF cn_T1 \n' result '1'
+10:41:32   field 610 in F-T1: type 3 code 'REF cn_T1 \r' result '1'
+10:41:32   field 611 in F-T1: type 3 code 'REF cn_T1 \w \t' result '1'
+10:41:32   field 612 in F-T1: type 3 code 'REF cn_T1 \n \t' result '1'
+10:41:32   field 613 in F-T1: type 3 code 'REF cn_T1 \r \t' result '1'
+10:41:32   field 614 in F-T2: type 3 code 'REF cn_T2 \w' result '1(a)'
+10:41:32   field 615 in F-T2: type 3 code 'REF cn_T2 \n' result '(a)'
+10:41:32   field 616 in F-T2: type 3 code 'REF cn_T2 \r' result '1(a)'
+10:41:32   field 617 in F-T2: type 3 code 'REF cn_T2 \w \t' result '1(a)'
+10:41:32   field 618 in F-T2: type 3 code 'REF cn_T2 \n \t' result '(a)'
+10:41:32   field 619 in F-T2: type 3 code 'REF cn_T2 \r \t' result '1(a)'
+10:41:32   field 620 in F-T3: type 3 code 'REF cn_T3 \w' result '1(a)'
+10:41:32   field 621 in F-T3: type 3 code 'REF cn_T3 \n' result '(a)'
+10:41:32   field 622 in F-T3: type 3 code 'REF cn_T3 \r' result '1(a)'
+10:41:32   field 623 in F-T3: type 3 code 'REF cn_T3 \w \t' result '1(a)'
+10:41:32   field 624 in F-T3: type 3 code 'REF cn_T3 \n \t' result '(a)'
+10:41:32   field 625 in F-T3: type 3 code 'REF cn_T3 \r \t' result '1(a)'
+10:41:32   field 626 in F-T4: type 3 code 'REF cn_T4 \w' result '2'
+10:41:32   field 627 in F-T4: type 3 code 'REF cn_T4 \n' result '2'
+10:41:32   field 628 in F-T4: type 3 code 'REF cn_T4 \r' result '2'
+10:41:32   field 629 in F-T4: type 3 code 'REF cn_T4 \w \t' result '2'
+10:41:32   field 630 in F-T4: type 3 code 'REF cn_T4 \n \t' result '2'
+10:41:32   field 631 in F-T4: type 3 code 'REF cn_T4 \r \t' result '2'
+10:41:32   field 632 in F-T5: type 3 code 'REF cn_T5 \w' result '2(a)'
+10:41:32   field 633 in F-T5: type 3 code 'REF cn_T5 \n' result '(a)'
+10:41:32   field 634 in F-T5: type 3 code 'REF cn_T5 \r' result '(a)'
+10:41:32   field 635 in F-T5: type 3 code 'REF cn_T5 \w \t' result '2(a)'
+10:41:32   field 636 in F-T5: type 3 code 'REF cn_T5 \n \t' result '(a)'
+10:41:32   field 637 in F-T5: type 3 code 'REF cn_T5 \r \t' result '(a)'
+10:41:32 cn-1 original : 655 fields
+10:41:33   line T5 level 1 r: T1=1 T2=1(a) T3=1(a) T4=2\r
+10:41:33   line F-T1 w=1 n=1 r=1 wt=1 nt=1 rt=1\r
+10:41:33   line F-T2 w=1(a) n=(a) r=1(a) wt=1(a) nt=(a) rt=1(a)\r
+10:41:33   line F-T3 w=1(a) n=(a) r=1(a) wt=1(a) nt=(a) rt=1(a)\r
+10:41:33   line F-T4 w=2 n=2 r=2 wt=2 nt=2 rt=2\r
+10:41:33   line F-T5 w=2(a) n=(a) r=(a) wt=2(a) nt=(a) rt=(a)\r
+10:41:33 cn-1 original : lines done
+10:41:34 cn-2 : 79 list paragraphs
+10:41:34   label L1 '1.' level 1 type 4
+10:41:34   label L2 '1.01' level 2 type 4
+10:41:34   label L3 '1.02' level 2 type 4
+10:41:34   label L4 '2.' level 1 type 4
+10:41:34   label L5 '2.01' level 2 type 4
+10:41:34   label L6 '(a)' level 3 type 4
+10:41:34   label L7 '(i)' level 4 type 4
+10:41:34   label L8 '(ii)' level 4 type 4
+10:41:34   label L9 '(b)' level 3 type 4
+10:41:34   label L10 '2.02' level 2 type 4
+10:41:34   label L11 '(a)' level 3 type 4
+10:41:34   label L12 '3.' level 1 type 4
+10:41:34   label L13 '3.01' level 2 type 4
+10:41:34   label O1 '1.' level 1 type 4
+10:41:34   label O2 'a.' level 2 type 4
+10:41:34   label O3 'i.' level 3 type 4
+10:41:34   label O4 'ii.' level 3 type 4
+10:41:34   label O5 'b.' level 2 type 4
+10:41:34   label O6 '2.' level 1 type 4
+10:41:34   label O7 'a.' level 2 type 4
+10:41:34   label P1 '1)' level 1 type 4
+10:41:34   label P2 'a)' level 2 type 4
+10:41:34   label P3 'i)' level 3 type 4
+10:41:34   label P4 'ii)' level 3 type 4
+10:41:34   label P5 'b)' level 2 type 4
+10:41:34   label P6 '2)' level 1 type 4
+10:41:34   label P7 'a)' level 2 type 4
+10:41:34   label H1 '1.' level 1 type 4
+10:41:34   label H2 '1.1.' level 2 type 4
+10:41:34   label H3 '1.1.1.' level 3 type 4
+10:41:34   label H4 '1.1.2.' level 3 type 4
+10:41:34   label H5 '1.2.' level 2 type 4
+10:41:34   label H6 '2.' level 1 type 4
+10:41:34   label H7 '2.1.' level 2 type 4
+10:41:34   label A1 'Article I' level 1 type 4
+10:41:34   label A2 'Section 1.01' level 2 type 4
+10:41:34   label A3 '(a)' level 3 type 4
+10:41:34   label A4 '(b)' level 3 type 4
+10:41:34   label A5 'Article II' level 1 type 4
+10:41:34   label A6 'Section 2.01' level 2 type 4
+10:41:34   label A7 '(a)' level 3 type 4
+10:41:34   label A8 'Section 2.02' level 2 type 4
+10:41:34   label Y1 '1.' level 1 type 4
+10:41:34   label Y2 '1.1' level 2 type 4
+10:41:34   label Y3 '2.' level 1 type 4
+10:41:34   label Y4 '2.1' level 2 type 4
+10:41:34   label G1 'I.' level 1 type 4
+10:41:35   label G2 '1.1' level 2 type 4
+10:41:35   label G3 '(a)' level 3 type 4
+10:41:35   label G4 'II.' level 1 type 4
+10:41:35   label G5 '(a)' level 3 type 4
+10:41:35   label S1 '1.' level 1 type 4
+10:41:35   label S2 '(a)' level 3 type 4
+10:41:35   label S3 '(i)' level 4 type 4
+10:41:35   label S4 '1.02' level 2 type 4
+10:41:35   label S5 '(i)' level 4 type 4
+10:41:35   label R1 '1.' level 1 type 4
+10:41:35   label R2 '(a)' level 2 type 4
+10:41:35   label R3 '2.' level 1 type 4
+10:41:35   label R4 '1.' level 1 type 4
+10:41:35   label R5 '(a)' level 2 type 4
+10:41:35   label M1 'Article I' level 1 type 4
+10:41:35   label M2 '1.' level 2 type 4
+10:41:35   label M3 '(a)' level 3 type 4
+10:41:35   label M4 '2.' level 2 type 4
+10:41:35   label M5 'Article II' level 1 type 4
+10:41:35   label N1 '' level 1 type 4
+10:41:35   label N2 'Step 1:' level 1 type 4
+10:41:35   label N3 'a.' level 2 type 4
+10:41:35   label N4 'NOTE' level 1 type 4
+10:41:35   label N5 '' level 1 type 4
+10:41:35   label N6 '1' level 1 type 4
+10:41:35   label N7 '1-1' level 2 type 4
+10:41:35   label N8 'A' level 3 type 4
+10:41:35   label T1 '1.' level 1 type 4
+10:41:35   label T2 '1.' level 1 type 4
+10:41:35   label T3 '(a)' level 2 type 4
+10:41:35   label T4 '2.' level 1 type 4
+10:41:35   label T5 '(a)' level 2 type 4
+10:41:35   item 1 '1. L1 level 0'
+10:41:35   item 2 '  1.01 L2 level 1'
+10:41:35   item 3 '  1.02 L3 level 1'
+10:41:35   item 4 '2. L4 level 0'
+10:41:35   item 5 '  2.01 L5 level 1'
+10:41:35   item 6 '    (a) L6 level 2'
+10:41:35   item 7 '      (i) L7 level 3'
+10:41:35   item 8 '      (ii) L8 level 3'
+10:41:35   item 9 '    (b) L9 level 2'
+10:41:35   item 10 '  2.02 L10 level 1'
+10:41:35   item 11 '    (a) L11 level 2'
+10:41:35   item 12 '3. L12 level 0'
+10:41:35   item 13 '  3.01 L13 level 1, in a table cell'
+10:41:35   item 14 '1. O1 level 0'
+10:41:35   item 15 '  a. O2 level 1'
+10:41:35   item 16 '    i. O3 level 2'
+10:41:35   item 17 '    ii. O4 level 2'
+10:41:35   item 18 '  b. O5 level 1'
+10:41:35   item 19 '2. O6 level 0'
+10:41:35   item 20 '  a. O7 level 1'
+10:41:35   item 21 '1) P1 level 0'
+10:41:35   item 22 '  a) P2 level 1'
+10:41:35   item 23 '    i) P3 level 2'
+10:41:35   item 24 '    ii) P4 level 2'
+10:41:35   item 25 '  b) P5 level 1'
+10:41:35   item 26 '2) P6 level 0'
+10:41:35   item 27 '  a) P7 level 1'
+10:41:35   item 28 '1. H1 level 0'
+10:41:35   item 29 '  1.1. H2 level 1'
+10:41:35   item 30 '    1.1.1. H3 level 2'
+10:41:35   item 31 '    1.1.2. H4 level 2'
+10:41:35   item 32 '  1.2. H5 level 1'
+10:41:35   item 33 '2. H6 level 0'
+10:41:35   item 34 '  2.1. H7 level 1'
+10:41:35   item 35 'Article I A1 Article heading'
+10:41:35   item 36 '  Section 1.01 A2 Section heading'
+10:41:35   item 37 '    (a) A3 clause'
+10:41:35   item 38 '    (b) A4 clause'
+10:41:35   item 39 'Article II A5 Article heading'
+10:41:35   item 40 '  Section 2.01 A6 Section heading'
+10:41:35   item 41 '    (a) A7 clause'
+10:41:35   item 42 '  Section 2.02 A8 Section heading'
+10:41:35   item 43 '1. Y1 level 0'
+10:41:35   item 44 '  1.1 Y2 level 1'
+10:41:35   item 45 '2. Y3 level 0'
+10:41:35   item 46 '  2.1 Y4 level 1'
+10:41:35   item 47 'I. G1 level 0'
+10:41:35   item 48 '  1.1 G2 level 1'
+10:41:35   item 49 '    (a) G3 level 2'
+10:41:35   item 50 'II. G4 level 0'
+10:41:35   item 51 '    (a) G5 level 2, level 1 skipped'
+10:41:35   item 52 '1. S1 level 0'
+10:41:35   item 53 '    (a) S2 level 2, level 1 skipped'
+10:41:35   item 54 '      (i) S3 level 3'
+10:41:35   item 55 '  1.02 S4 level 1'
+10:41:35   item 56 '      (i) S5 level 3, level 2 skipped'
+10:41:35   item 57 '1. R1 level 0'
+10:41:35   item 58 '  (a) R2 level 1'
+10:41:35   item 59 '2. R3 level 0'
+10:41:35   item 60 '1. R4 level 0, restarted'
+10:41:35   item 61 '  (a) R5 level 1'
+10:41:35   item 62 'Article I M1 level 0'
+10:41:35   item 63 '  1. M2 level 1'
+10:41:35   item 64 '    (a) M3 level 2'
+10:41:35   item 65 '  2. M4 level 1'
+10:41:35   item 66 'Article II M5 level 0'
+10:41:35   item 67 'Step 1: N2 level 0'
+10:41:35   item 68 '  a. N3 level 1'
+10:41:35   item 69 'NOTE N4 format none, text NOTE'
+10:41:35   item 70 ' N5 format none, empty text'
+10:41:35   item 71 '1 N6 level 0'
+10:41:35   item 72 '  1-1 N7 level 1'
+10:41:35   item 73 '    A N8 level 2'
+10:41:35   item 74 '1. T1 level 0'
+10:41:35   item 75 '  (a) T3 level 1, inserted'
+10:41:35   item 76 '2. T4 level 0'
+10:41:35   item 77 '  (a) T5 level 1'
+10:41:35 cn-2 : 77 numbered items
+10:41:36   inserted at X1: L6 kind -4 (item 6 '    (a) L6 level 2') hyperlink True position False separate False ' '
+10:41:36   inserted at X1: L6 kind -3 (item 6 '    (a) L6 level 2') hyperlink True position False separate False ' '
+10:41:37   inserted at X1: L6 kind -2 (item 6 '    (a) L6 level 2') hyperlink True position False separate False ' '
+10:41:37   inserted at X1: L9 kind -4 (item 9 '    (b) L9 level 2') hyperlink True position False separate False ' '
+10:41:37   inserted at X1: L9 kind -3 (item 9 '    (b) L9 level 2') hyperlink True position False separate False ' '
+10:41:38   inserted at X1: L9 kind -2 (item 9 '    (b) L9 level 2') hyperlink True position False separate False ' '
+10:41:38   inserted at X1: L11 kind -4 (item 11 '    (a) L11 level 2') hyperlink True position False separate False ' '
+10:41:38   inserted at X1: L11 kind -3 (item 11 '    (a) L11 level 2') hyperlink True position False separate False ' '
+10:41:39   inserted at X1: L11 kind -2 (item 11 '    (a) L11 level 2') hyperlink True position False separate False ' '
+10:41:39   inserted at X1: A3 kind -4 (item 37 '    (a) A3 clause') hyperlink True position False separate False ' '
+10:41:40   inserted at X1: A3 kind -3 (item 37 '    (a) A3 clause') hyperlink True position False separate False ' '
+10:41:40   inserted at X1: A3 kind -2 (item 37 '    (a) A3 clause') hyperlink True position False separate False ' '
+10:41:41   inserted at X1: A6 kind -4 (item 40 '  Section 2.01 A6 Section heading') hyperlink True position False separate False ' '
+10:41:41   inserted at X1: A6 kind -3 (item 40 '  Section 2.01 A6 Section heading') hyperlink True position False separate False ' '
+10:41:42   inserted at X1: A6 kind -2 (item 40 '  Section 2.01 A6 Section heading') hyperlink True position False separate False ' '
+10:41:42   inserted at X1: A7 kind -4 (item 41 '    (a) A7 clause') hyperlink True position False separate False ' '
+10:41:42   inserted at X1: A7 kind -3 (item 41 '    (a) A7 clause') hyperlink True position False separate False ' '
+10:41:43   inserted at X1: A7 kind -2 (item 41 '    (a) A7 clause') hyperlink True position False separate False ' '
+10:41:43   inserted at X1: R4 kind -4 (item 60 '1. R4 level 0, restarted') hyperlink True position False separate False ' '
+10:41:44   inserted at X1: R4 kind -3 (item 60 '1. R4 level 0, restarted') hyperlink True position False separate False ' '
+10:41:44   inserted at X1: R4 kind -2 (item 60 '1. R4 level 0, restarted') hyperlink True position False separate False ' '
+10:41:44   inserted at X1: M3 kind -4 (item 64 '    (a) M3 level 2') hyperlink True position False separate False ' '
+10:41:45   inserted at X1: M3 kind -3 (item 64 '    (a) M3 level 2') hyperlink True position False separate False ' '
+10:41:46   inserted at X1: M3 kind -2 (item 64 '    (a) M3 level 2') hyperlink True position False separate False ' '
+10:41:46   inserted at X1: N2 kind -4 (item 67 'Step 1: N2 level 0') hyperlink True position False separate False ' '
+10:41:46   inserted at X1: N2 kind -3 (item 67 'Step 1: N2 level 0') hyperlink True position False separate False ' '
+10:41:47   inserted at X1: N2 kind -2 (item 67 'Step 1: N2 level 0') hyperlink True position False separate False ' '
+10:41:47   inserted at X1: G3 kind -4 (item 49 '    (a) G3 level 2') hyperlink True position False separate False ' '
+10:41:47   inserted at X1: G3 kind -3 (item 49 '    (a) G3 level 2') hyperlink True position False separate False ' '
+10:41:48   inserted at X1: G3 kind -2 (item 49 '    (a) G3 level 2') hyperlink True position False separate False ' '
+10:41:48   inserted at X1: S2 kind -4 (item 53 '    (a) S2 level 2, level 1 skipped') hyperlink True position False separate False ' '
+10:41:49   inserted at X1: S2 kind -3 (item 53 '    (a) S2 level 2, level 1 skipped') hyperlink True position False separate False ' '
+10:41:49   inserted at X1: S2 kind -2 (item 53 '    (a) S2 level 2, level 1 skipped') hyperlink True position False separate False ' '
+10:41:50   inserted at X1: Y2 kind -4 (item 44 '  1.1 Y2 level 1') hyperlink True position False separate False ' '
+10:41:50   inserted at X1: Y2 kind -3 (item 44 '  1.1 Y2 level 1') hyperlink True position False separate False ' '
+10:41:50   inserted at X1: Y2 kind -2 (item 44 '  1.1 Y2 level 1') hyperlink True position False separate False ' '
+10:41:51   inserted at X2: L6 kind -4 (item 6 '    (a) L6 level 2') hyperlink False position False separate False ' '
+10:41:51   inserted at X3: L6 kind -2 (item 6 '    (a) L6 level 2') hyperlink True position True separate False ' '
+10:41:52   inserted at X4: L6 kind -4 (item 6 '    (a) L6 level 2') hyperlink True position False separate True '-'
+10:41:52   inserted at X5: L6 kind -1 (item 6 '    (a) L6 level 2') hyperlink True position False separate False ' '
+10:41:53   inserted at X6: L6 kind -4 (item 6 '    (a) L6 level 2') hyperlink True position False separate False ' '
+10:41:53   inserted at L9: L6 kind -2 (item 6 '    (a) L6 level 2') hyperlink True position False separate False ' '
+10:41:53   inserted at L9: L7 kind -2 (item 7 '      (i) L7 level 3') hyperlink True position False separate False ' '
+10:41:53   inserted at L9: L11 kind -2 (item 11 '    (a) L11 level 2') hyperlink True position False separate False ' '
+10:41:53   inserted at L9: L5 kind -2 (item 5 '  2.01 L5 level 1') hyperlink True position False separate False ' '
+10:41:53   inserted at L11: L6 kind -2 (item 6 '    (a) L6 level 2') hyperlink True position False separate False ' '
+10:41:53   inserted at L11: L9 kind -2 (item 9 '    (b) L9 level 2') hyperlink True position False separate False ' '
+10:41:53   inserted at L11: L12 kind -2 (item 12 '3. L12 level 0') hyperlink True position False separate False ' '
+10:41:54   field 1 in L9: type 3 code 'REF _Ref244594912 \r \h' result '(a)'
+10:41:54   field 2 in L9: type 3 code 'REF _Ref244594929 \r \h' result '(a)(i)'
+10:41:54   field 3 in L9: type 3 code 'REF _Ref244594914 \r \h' result '2.02(a)'
+10:41:54   field 4 in L9: type 3 code 'REF _Ref244594930 \r \h' result '2.01'
+10:41:54   field 5 in L11: type 3 code 'REF _Ref244594912 \r \h' result '2.01(a)'
+10:41:54   field 6 in L11: type 3 code 'REF _Ref244594931 \r \h' result '2.01(b)'
+10:41:54   field 7 in L11: type 3 code 'REF _Ref244594932 \r \h' result '3'
+10:41:54   field 8 in X1: type 3 code 'REF _Ref244594912 \w \h' result '2.01(a)'
+10:41:54   field 9 in X1: type 3 code 'REF _Ref244594912 \n \h' result '(a)'
+10:41:54   field 10 in X1: type 3 code 'REF _Ref244594912 \r \h' result '2.01(a)'
+10:41:54   field 11 in X1: type 3 code 'REF _Ref244594913 \w \h' result '2.01(b)'
+10:41:54   field 12 in X1: type 3 code 'REF _Ref244594913 \n \h' result '(b)'
+10:41:54   field 13 in X1: type 3 code 'REF _Ref244594913 \r \h' result '2.01(b)'
+10:41:54   field 14 in X1: type 3 code 'REF _Ref244594914 \w \h' result '2.02(a)'
+10:41:54   field 15 in X1: type 3 code 'REF _Ref244594914 \n \h' result '(a)'
+10:41:54   field 16 in X1: type 3 code 'REF _Ref244594914 \r \h' result '2.02(a)'
+10:41:54   field 17 in X1: type 3 code 'REF _Ref244594915 \w \h' result 'Section 1.01(a)'
+10:41:54   field 18 in X1: type 3 code 'REF _Ref244594915 \n \h' result '(a)'
+10:41:54   field 19 in X1: type 3 code 'REF _Ref244594915 \r \h' result 'Section 1.01(a)'
+10:41:54   field 20 in X1: type 3 code 'REF _Ref244594917 \w \h' result 'Section 2.01'
+10:41:54   field 21 in X1: type 3 code 'REF _Ref244594917 \n \h' result 'Section 2.01'
+10:41:54   field 22 in X1: type 3 code 'REF _Ref244594917 \r \h' result 'Section 2.01'
+10:41:54   field 23 in X1: type 3 code 'REF _Ref244594918 \w \h' result 'Section 2.01(a)'
+10:41:54   field 24 in X1: type 3 code 'REF _Ref244594918 \n \h' result '(a)'
+10:41:54   field 25 in X1: type 3 code 'REF _Ref244594918 \r \h' result 'Section 2.01(a)'
+10:41:54   field 26 in X1: type 3 code 'REF _Ref244594919 \w \h' result '1'
+10:41:54   field 27 in X1: type 3 code 'REF _Ref244594919 \n \h' result '1'
+10:41:54   field 28 in X1: type 3 code 'REF _Ref244594919 \r \h' result '1'
+10:41:54   field 29 in X1: type 3 code 'REF _Ref244594920 \w \h' result 'Article I1(a)'
+10:41:54   field 30 in X1: type 3 code 'REF _Ref244594920 \n \h' result '(a)'
+10:41:54   field 31 in X1: type 3 code 'REF _Ref244594920 \r \h' result 'Article I1(a)'
+10:41:54   field 32 in X1: type 3 code 'REF _Ref244594922 \w \h' result 'Step 1:'
+10:41:54   field 33 in X1: type 3 code 'REF _Ref244594922 \n \h' result 'Step 1:'
+10:41:54   field 34 in X1: type 3 code 'REF _Ref244594922 \r \h' result 'Step 1:'
+10:41:54   field 35 in X1: type 3 code 'REF _Ref244594923 \w \h' result '1.1(a)'
+10:41:54   field 36 in X1: type 3 code 'REF _Ref244594923 \n \h' result '(a)'
+10:41:54   field 37 in X1: type 3 code 'REF _Ref244594923 \r \h' result '1.1(a)'
+10:41:54   field 38 in X1: type 3 code 'REF _Ref244594924 \w \h' result '1(a)'
+10:41:54   field 39 in X1: type 3 code 'REF _Ref244594924 \n \h' result '(a)'
+10:41:54   field 40 in X1: type 3 code 'REF _Ref244594924 \r \h' result '(a)'
+10:41:54   field 41 in X1: type 3 code 'REF _Ref244594926 \w \h' result '1.1'
+10:41:54   field 42 in X1: type 3 code 'REF _Ref244594926 \n \h' result '1.1'
+10:41:54   field 43 in X1: type 3 code 'REF _Ref244594926 \r \h' result '1.1'
+10:41:54   field 44 in X2: type 3 code 'REF _Ref244594912 \w' result '2.01(a)'
+10:41:54   field 45 in X3: type 3 code 'REF _Ref244594912 \r \p \h' result '2.01(a) above'
+10:41:54   field 46 in X4: type 3 code 'REF _Ref244594912 \w \h \d "-"' result '2.01-(a)'
+10:41:54   field 47 in X5: type 3 code 'REF _Ref244594912 \h' result 'L6 level 2'
+10:41:54   field 48 in X6: type 3 code 'REF _Ref244594912 \w \h' result '2.01(a)'
+10:41:54 cn-2 inserted : 48 fields
+10:41:54   line L9 level 2 L6r=(a) L7r=(a)(i) L11r=2.02(a) L5r=2.01\r
+10:41:54   line L11 level 2 L6r=2.01(a) L9r=2.01(b) L12r=3\r
+10:41:55   line X1 full, no and relative context, as hyperlinks, to L6, L9, L11, A3, A6, A7, R4, M3, N2, G3, S2, Y2: L6w=2.01(a) L6n=(a) L6r=2.01(a) L9w=2.01(b) L9n=(b) L9r=2.01(b) L11w=2.02(a) L11n=(a) L11r=2.02(a) A3w=Section 1.01(a) A3n=(a) A3r=Section 1.01(a) A6w=Section 2.01 A6n=Section 2.01 A6r=Section 2.01 A7w=Section 2.01(a) A7n=(a) A7r=Section 2.01(a) R4w=1 R4n=1 R4r=1 M3w=Article I1(a) M3n=(a) M3r=Article I1(a) N2w=Step 1: N2n=Step 1: N2r=Step 1: G3w=1.1(a) G3n=(a) G3r=1.1(a) S2w=1(a) S2n=(a) S2r=(a) Y2w=1.1 Y2n=1.1 Y2r=1.1\r
+10:41:55   line X2 L6 in full context, not a hyperlink: L6w=2.01(a)\r
+10:41:55   line X3 L6 relative, with above/below: L6r=2.01(a) above\r
+10:41:55   line X4 L6 in full context, numbers separated by -: L6w=2.01-(a)\r
+10:41:55   line X5 L6 as paragraph text: L6text=L6 level 2\r
+10:41:55   line X6 L6 again in full context (a second reference to one paragraph): L6w=2.01(a)\r
+10:41:55 cn-2 inserted : lines done
+10:41:55   bookmark _Ref244594912 317-327 in L6: 'L6 level 2'
+10:41:55   bookmark _Ref244594913 350-360 in L9: 'L9 level 2'
+10:41:55   bookmark _Ref244594914 530-541 in L11: 'L11 level 2'
+10:41:55   bookmark _Ref244594915 1286-1295 in A3: 'A3 clause'
+10:41:55   bookmark _Ref244594917 1325-1343 in A6: 'A6 Section heading'
+10:41:55   bookmark _Ref244594918 1344-1353 in A7: 'A7 clause'
+10:41:55   bookmark _Ref244594919 1926-1947 in R4: 'R4 level 0, restarted'
+10:41:55   bookmark _Ref244594920 2043-2053 in M3: 'M3 level 2'
+10:41:55   bookmark _Ref244594922 2186-2196 in N2: 'N2 level 0'
+10:41:55   bookmark _Ref244594923 1566-1576 in G3: 'G3 level 2'
+10:41:55   bookmark _Ref244594924 1695-1722 in S2: 'S2 level 2, level 1 skipped'
+10:41:55   bookmark _Ref244594926 1432-1442 in Y2: 'Y2 level 1'
+10:41:55   bookmark _Ref244594929 328-338 in L7: 'L7 level 3'
+10:41:55   bookmark _Ref244594930 306-316 in L5: 'L5 level 1'
+10:41:55   bookmark _Ref244594931 350-517 in L9: 'L9 level 2 L6r=(a) L7r=(a)(i) L11r=2.02(a) L5r=2.01'
+10:41:55   bookmark _Ref244594932 660-671 in L12: 'L12 level 0'
+10:41:55 done

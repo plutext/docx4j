@@ -43,13 +43,75 @@ What it answers: the field code Word writes for each choice (the switches, their
 the hidden `_Ref` bookmark (its name, where it starts and ends, whether a second reference reuses it), and the result
 Word stores.
 
-## Results
+## Results (Jason's run, 3 November 2026, Word 365 build 16.0.20326)
 
-Not yet run (staged on the share 3 November 2026 for Jason's run). Word's saves, `cn-1-labels-word365.docx` and
-`cn-2-insert-word365.docx`, and `clause-numbers-log.txt` come back here; the table of Word's readings goes here.
+All steps ran; `Fields.Update` returned 0, every one of the 655 fields has a result, and the run is in
+`clause-numbers-log.txt` (each paragraph's drawn label, the dialog's numbered items, every field's code and result,
+the T views, Word's insertions and bookmarks). Word's saves: `cn-1-labels-word365.docx`, `cn-2-insert-word365.docx`.
 
-docx4j 17.3.6-SNAPSHOT's list labels for cn-1 (the text model, `list_labels: true`), read before the run: L 1. /
-1.01 / 1.02 / 2. / 2.01 / (a) / (i) / (ii) / (b) / 2.02 / (a) / 3.; A Article I / Section 1.01 / (a) / (b) / Article
-II / Section 2.01 / (a) / Section 2.02; S 1. / (a) / (i) / 1.02 / (i); R 1. / (a) / 2. then 1. / (a); N4 NOTE, N5 none;
-T counted in the accepted view (T2 not counted: T1 1., T3 (a), T4 2.). Each label is followed by the level's suffix
-(a tab).
+**Labels.** Word draws the same label as docx4j for all 79 paragraphs (`ListFormat.ListString`), S4's `1.02` included.
+
+**Full context (`\w`).** A paragraph's full context is its own label (the level text, counters filled in) after
+its parent's full context. The parent is the nearest earlier paragraph of the same list (`w:abstractNum`) at a
+shallower level. A level whose text already shows a level above (`%1.%2`) has no parent part. A level skipped in the
+document contributes nothing. Then:
+
+- a period ending a part is dropped when the next part starts with `(`, and kept before a letter (`1.a`); before a
+  digit or other punctuation it is unmeasured;
+- one trailing period at the end is dropped;
+- other characters (`)`, `:`, `-`) are kept.
+
+| Shape | Word's `\w` |
+|---|---|
+| 1. / 1.01 / (a) / (i) | `2.01(a)`, `2.01(a)(i)`; `2.02`; `3` |
+| 1. / a. / i. | `1.a`, `1.a.i`, `2.a` |
+| 1) / a) / i) | `1)a)`, `1)a)i)`, `2)a)` |
+| 1. / 1.1. / 1.1.1. | `1.1`, `1.1.1` (no repetition) |
+| Article I / Section 1.01 (isLgl, style-linked) / (a) | `Article I`, `Section 1.01`, `Section 1.01(a)` |
+| list style 1. / 1.1 | `1`, `1.1` |
+| I. / 1.1 (isLgl) / (a) | `I`, `1.1`, `1.1(a)`; G5 (level 1 skipped under II.) `II(a)` |
+| skipped levels | S2 `1(a)`, S3 `1(a)(i)`, S5 (level 2 skipped under 1.02) `1.02(i)` |
+| restarted | R1 and R4 both `1`, R2 and R5 both `1(a)` |
+| Article I / 1. (`%2.`) / (a) | `Article I1`, `Article I1(a)`: joined with nothing between |
+| Step 1: / a. | `Step 1:`, `Step 1:a` |
+| 1 / 1-1 / A | `1-1`, `1-1A` |
+| a bullet | the bullet character (U+F0B7) |
+| NOTE (format none) | `NOTE` |
+| empty level text (format none) | `0` |
+| a bookmark on a paragraph not numbered (E1) | `0` |
+| an empty bookmark (E2); one from L6 into L7 (E3) | the paragraph the bookmark starts in: `2.02`; `2.01(a)` |
+
+**No context (`\n`)**: the paragraph's own part, with the trailing period dropped (`(a)`, `2.01`, `Section 1.01`,
+`a`, `1.1.1`, `Step 1:`); a bullet gives its character, an empty level `0`.
+
+**Relative context (`\r`)**: the full context's parts, without the leading parts that belong to paragraphs which
+are ancestors of the reference's position (the paragraph itself is always shown). The position is the field's
+own paragraph when that paragraph is in the target's list; otherwise it is the last paragraph of the target's list
+before the field. With no such paragraph, nothing is dropped. The parts are matched by paragraph, not by value: R2
+cited after R5 is `1(a)`, though R4 shows `1.` too. Examples: in L9 (2.01(b)), L6 is `(a)`, L7 `(a)(i)`, L11
+`2.02(a)` and L5 `2.01`. After all the lists, O7 is `a`, S5 `(i)` and S2 `(a)`, while L6 is still `2.01(a)` (L's last
+paragraphs are under 3.). Before any list, every reference is full.
+
+**`\t`**: the level texts' words go, with their spaces; the numbers and the punctuation stay. `Article I` gives `I`,
+`Section 1.01(a)` gives `1.01(a)`, `Article I1(a)` gives `I1(a)` and `Step 1:` gives `1:`. An empty result is `0`
+(a bullet, `NOTE`).
+
+**`\p`** appends ` above` or ` below`: `2.01(a) above`. **`\d "-"`** puts the separator between the parts:
+`2.01-(a)`, `Section 1.01-(a)`. **`\h`** changes nothing in the result.
+
+**Tracked changes (case T).** The results are the accepted view's in all three views (all markup, no markup,
+original): T4 is `2`, so the deleted paragraph T2 is not counted. T2's bookmark resolves to the paragraph its
+deleted mark merges into, T3: `1(a)`.
+
+**Word's Insert Cross-reference (cn-2)**:
+
+- *Bookmark.* A hidden `_Ref` followed by nine digits (`_Ref244594912`, numbered in sequence). It runs from the
+  start of the paragraph's text to its end, without the label or the mark.
+- *Reuse.* A later reference to the same paragraph reuses that bookmark while it still spans the whole text. L9's
+  did not after text was inserted into L9, so Word made a second one.
+- *Field code.* ` REF _Ref244594912 \w \h ` (likewise `\n \h`, `\r \h`, `\r \p \h`, `\w \h \d "-"`), with
+  no `\* MERGEFORMAT`. As a hyperlink it is a complex field (`w:fldChar`); without `\h` it is a
+  `w:fldSimple`.
+- *Result.* Word stores the result, computed at the insertion point (relative context included).
+- *Dialog list.* `GetCrossReferenceItems` lists each paragraph by its own label, indented by level (`    (a) L6
+  level 2`).
