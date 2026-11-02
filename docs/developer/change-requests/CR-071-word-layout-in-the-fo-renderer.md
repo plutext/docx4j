@@ -192,3 +192,29 @@ Tests: 19 in docx4j-export-fo (`org.docx4j.fop.wordlayout`: `GreedyLineBreakingT
 - The fork session: phase 1 under a fork CR, from this one; the hook and API names are its to choose, with D3's
   shape.
 - Enterprise CR-001 §6.6: the entries whose workaround is "by reflection" are re-homed to the fork at phase 2.
+
+## 9. The contract with fop/CR-031 (the fork session, 2026-11-02)
+
+The fork's phase 1 is fop/CR-031 (`docs/developer/change-requests/CR-031-word-layout.md` in the fork, a5e22789f, branch
+`CR-031-word-layout` from 9ec0e1045's copy). Its names, fixed so that phase 2 can be written in parallel:
+
+- **Switch and settings:** `org.apache.fop.apps.FopFactoryBuilder.setWordLayout(java.util.Map<String,String>)`; a map
+  turns Word mode on, null (the default) leaves it off. Keys are docx4j's full property names
+  (`docx4j.convert.out.fo.wordLayout.*`), values the strings docx4j resolves as the copy does (system property first,
+  then docx4j.properties). The fork reads 23 of them (boundKeepChains, breakOpportunities, cellEmergencyBreakTolerance,
+  cellEmergencyBreakToleranceRatio, compressionToStretch, emergencyBreak, emergencyBreakTolerance, hyphenationZone,
+  keepChainPenalty, keepChainRowTolerance, keepChainTolerance, labelAscentAgainstBaseline, labelSuffixSpace,
+  leaderCharacters, leaderGrid, lineBaselineFromBlock, maxHyphenSpaceShrink, maxSpaceShrink, minStretchToCompress,
+  pageNumberPlaceholder, seamBreak, tabSpaces, widowsAcrossSoftReturns) and ignores the rest; an absent key takes the
+  copy's default; values parse as the copy's (Boolean.parseBoolean, Double.valueOf on the trimmed value, an unparseable
+  number as absent). `docx4j.convert.out.fo.wordLayout` itself stays docx4j's: the map is passed only when it is true.
+- **Capability:** `word-layout` (`Docx4jFop.WORD_LAYOUT`), the fork's 28th.
+- **No maker override:** the fork's own `LayoutManagerMapping` makes the Word managers when the user agent has Word
+  mode; docx4j stops calling `setLayoutManagerMakerOverride` on the fork.
+- **Namespace:** the fork registers `http://docx4j.org/fop/word-layout` with docx4j's attribute names. Both mappings
+  register during the transition; both are attributes-only, so whichever wins is harmless.
+- **Break opportunities (D6):** `org.apache.fop.layoutmgr.word.WordBreakOpportunities`, static and public, mirroring
+  docx4j's (`breakBefore`, ...); exact signatures when built.
+- **The pair table:** the flip (`LineBreakUtils.setLineBreakPairProperty`) moves to the fork, applied when a Word-mode
+  factory is built and breakOpportunities is true; docx4j stops applying it on the fork.
+
