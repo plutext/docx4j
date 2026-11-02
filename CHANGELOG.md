@@ -39,6 +39,8 @@ Changes in Version 17.3.6
   layout managers in `org.docx4j.fop.wordlayout` is gone, its output unchanged on the renderer (gated). The
   `docx4j.convert.out.fo.wordLayout.*` settings keep their names. On Apache FOP (`-Papache-fop`) docx4j now lays out
   as plain FOP does, and says so once (CR-071).
+- A paragraph beside a page-anchored floating table, or at a change of column width, is no longer drawn twice (a
+  defect of the Word layout, fixed in the renderer; 2.12-docx4j.1).
 
 **Java 25.**
 - docx4j sets its own XML element-depth limit, 256 (`docx4j.xml.maxElementDepth`, 0 for none), on the parsers it
