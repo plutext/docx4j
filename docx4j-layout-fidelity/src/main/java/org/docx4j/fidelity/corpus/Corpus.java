@@ -1109,6 +1109,80 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		// The fork's two probes for b317's renderer defects (Enterprise CR-001 section 6.6 item 8, 47f2aff; Jason, 3 November
+		// 2026: "please make the probes"). A(b): an fo:float is one area and never splits, so a float taller than the page
+		// loses the rows past the foot (6705). Does Word break a floating table taller than the page across pages, and does
+		// the text after its anchor run beside it on the first page, on the second, or only below it? 6705's golden has 45pt
+		// beside and nothing set there; cases 1, 2 and 4 leave 200pt, case 3 6705's 45pt with its 12.45pt offset.
+		PROBES.add(new Probe("float-tall-beside",
+				"text-anchored floating tables taller than the page (60 rows of exactly 16pt, 960pt), each case from a new "
+				+ "page, mode 15: (1) at the left margin, tblpY 0, leaving 200pt beside; (2) tblpY 12.45pt (6705's offset), "
+				+ "200pt; (3) tblpY 12.45pt leaving 45pt (6705's room); (4) case 1 at the right margin.  Read on which pages "
+				+ "the rows fall (row labels), whether the table breaks across pages and where its rows resume, and whether "
+				+ "the paragraphs after the anchor run beside the table on the first page, on the second, or only below it", () -> {
+			Doc d = Doc.create(15);
+			int[][] cases = { { 1, 4000, 0 }, { 2, 4000, 249 }, { 3, 900, 249 }, { 4, 4000, 0 } };
+			for (int[] k : cases) {
+				int c = k[0], room = k[1], y = k[2], half = (9026 - 180 - room) / 2;
+				d.para("case " + c + ": a floating table taller than the page leaving " + room / 20 + "pt beside, tblpY "
+						+ y + " twips. " + prose(1, c)).after(160).add();
+				Doc.Table t = new Doc.Table(half, half).fixedLayout()
+						.floating("text", "margin", c == 4 ? null : 0, c == 4 ? "right" : null, y, null);
+				for (int r = 1; r <= 60; r++) {
+					t.rowOf(320, org.docx4j.wml.STHeightRule.EXACT, t.cell("case " + c + " row " + r, SERIF, 20, 1, half),
+							t.cell("r" + r, SERIF, 20, 1, half));
+				}
+				d.add(t.build());
+				d.para("anchor " + c + ". " + prose(2, c)).after(160).add();
+				for (int i = 1; i <= 24; i++) d.para("beside " + c + "." + i + " " + prose(2, c + i)).after(160).add();
+				if (c < 4) d.pageBreak();
+			}
+			return d.pkg();
+		}));
+
+		// B: a table whose first row lies wholly above an offset float's top and whose second row crosses it (4083 page 2:
+		// the date table after B.6's anchor; Word sets it below the options float, offset 47pt, and the fork sets it beside
+		// the float or over it). Exact heights, so that the rows' places are known: the anchor paragraph (and case 2's
+		// heading) one 14pt line with nothing before or after, the table's rows exactly 20pt. Case 4 is the control, its
+		// first row crossing the float's top.
+		PROBES.add(new Probe("float-top-crossing-table",
+				"a table straight after the anchor of a text-anchored floating table at the right margin (150pt wide), its "
+				+ "first row wholly above the float's top and its second crossing it, one case a page, mode 15: (1) a "
+				+ "full-width table, tblpY 40pt (rows at 14-34pt and 34-54pt below the anchor's top); (2) a keep-with-next "
+				+ "heading between the anchor and the table, tblpY 54pt (rows at 28-48pt and 48-68pt; 4083's shape); (3) "
+				+ "case 1 with a 358.5pt table, as 4083's; (4) the control, tblpY 24pt, the first row crossing the top.  "
+				+ "Read where Word sets each table (its first row above the float and the rest below, wholly below the "
+				+ "float, or beside it) and where the paragraphs after it go", () -> {
+			Doc d = Doc.create(15);
+			int[][] cases = { { 1, 800, 0, 3008 }, { 2, 1080, 1, 3008 }, { 3, 800, 0, 2390 }, { 4, 480, 0, 3008 } };
+			for (int[] k : cases) {
+				int c = k[0], y = k[1], col = k[3];
+				boolean heading = k[2] == 1;
+				d.para("case " + c + ": a table whose " + (c == 4 ? "first" : "second") + " row crosses the top of a "
+						+ "floating table, tblpY " + y / 20 + "pt" + (heading ? ", a keep-with-next heading before it" : "")
+						+ ". " + prose(1, c)).after(160).add();
+				Doc.Table f = new Doc.Table(1500, 1500).fixedLayout().floating("text", "margin", null, "right", y, null);
+				for (int r = 1; r <= 4; r++) {
+					f.rowOf(320, org.docx4j.wml.STHeightRule.EXACT, f.cell("float " + c + "." + r, SERIF, 20, 1, 1500),
+							f.cell("f" + r, SERIF, 20, 1, 1500));
+				}
+				d.add(f.build());
+				d.para("anchor " + c + ".").line(280, STLineSpacingRule.EXACT).before(0).after(0).add();
+				if (heading) d.para("heading " + c + ", kept with the table").keepNext().line(280, STLineSpacingRule.EXACT)
+						.before(0).after(0).add();
+				Doc.Table t = new Doc.Table(col, col, col).fixedLayout();
+				for (int r = 1; r <= 6; r++) {
+					t.rowOf(400, org.docx4j.wml.STHeightRule.EXACT, t.cell("T" + c + " row " + r, SERIF, 20, 1, col),
+							t.cell("b" + r, SERIF, 20, 1, col), t.cell("c" + r, SERIF, 20, 1, col));
+				}
+				d.add(t.build());
+				d.para("after the table " + c + ". " + prose(2, c + 3)).after(160).add();
+				for (int i = 1; i <= 3; i++) d.para(prose(3, c + 5 + i)).after(160).add();
+				if (c < 4) d.pageBreak();
+			}
+			return d.pkg();
+		}));
+
 		// 13419's gap (CR-032 §4.3): a full-width table in the flow with a 120pt offset, its
 		// anchor an empty paragraph, and text after the empties that does not fit the rest
 		// of the gap whole.  Does Word fill the gap with that paragraph's lines (the rule
