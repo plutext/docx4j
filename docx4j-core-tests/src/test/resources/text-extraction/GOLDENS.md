@@ -53,8 +53,9 @@ each one's statement. Scenario `default` has no HTML reader. `html reader presen
 requires the corresponding classpath; it is not a TextOptions key. Each is a capability the adapter
 advertises when an HTML reader is (or is not) on the class path, for docx4j jsoup and docx4j-ImportXHTML
 both (CR-053, WD 0.27, which folds the earlier `xhtml importer present/absent` into it), so a run
-checks one of the two. The goldens are cut without a reader, so a golden is checked only by an engine
-advertising `html reader absent`, and a findings, order or golden row needs its scenario's
+checks one of the two. The first set of goldens is cut without a reader, so a `default` golden is checked only by
+an engine advertising `html reader absent`, and the second set's (`html reader present`, below) only by one
+advertising `html reader present`; a findings, order or golden row needs its scenario's
 capability as a token row does (19 October 2026: a run with the importer present had checked the
 importer-absent rows, and compared case 44's expanded MHT chunk with goldens that hold none). Missing advertised capabilities remain pending. Exceptions from enabled assertions
 fail the test. The axis-title row additionally requires capability `CR-047`. Output finding keys are
@@ -134,6 +135,20 @@ the same way, the other eight cutting byte-identical beside them, and reviewed a
 fixture is its own file so that the main probe is never rebuilt: the builder writes all three
 fixtures, but only the new one was copied in (the committed `extraction-probe.docx` and `.docm` are
 the files Word checked).
+
+**The second set: an HTML reader present (cut 2 November 2026, Jason's ruling on the question open since
+19 October).** The twelve goldens again under scenario `html reader present`, an extractor of WD section 12.1's
+second class: jsoup 1.23.2 and docx4j-ImportXHTML-core 17.3.5 (from Maven Central, with its own dependencies:
+openhtmltopdf and pdfbox, without which the importer does not load and expands nothing) on the class path beside
+docx4j-core-tests'. Cut by `ExtractionGoldens <fixture-directory> html-reader-present`, which names the
+first set's file where the text is the same and writes `<stem>.html-reader.*` where it is not, and keeps the
+manifest's other rows (as the first set's cut keeps this set's). Eight of the twelve are the first set's files
+(`extraction-probe-external` and `extraction-probe-structure` have no HTML chunk). The main probe's four
+are `extraction-probe.html-reader.accepted.txt`, `.original.txt`, `.markup.txt` and `.md`, each the first
+set's with two lines more: `ALT36_CHUNK_TEXT` under case 36's heading (the HTML chunk) and `ALT44_MHT_CHUNK`
+under case 44's (the MHT chunk), the chunks the reader expands; nothing else differs. docx4j-mcp's server
+(text-model phase 2, its 7935cd7) produced the same two lines independently. A run of core-tests has no reader,
+so these rows are pending there; with the reader on the class path they pass, and the first set's are pending.
 
 ## Legacy baseline
 

@@ -1491,3 +1491,14 @@ Acceptance: each acknowledged. So far:
   and it sets `timeoutMillis` (its T7).
 
 All acknowledged: phase 4 done.
+
+## 15. The goldens with a reader (2 November 2026)
+
+Open since 19 October, ruled by Jason on 2 November: the published goldens get a second set, scenario `html reader
+present`, cut with jsoup 1.23.2 and docx4j-ImportXHTML-core 17.3.5 (Maven Central) on the class path
+(`ExtractionGoldens <dir> html-reader-present`; GOLDENS.md, "The second set"). Eight of the twelve are the first
+set's files. The main probe's four are its own (`extraction-probe.html-reader.*`), each the first set's with
+case 36's `ALT36_CHUNK_TEXT` and case 44's `ALT44_MHT_CHUNK` added, the HTML and MHT chunks the reader expands;
+docx4j-mcp's server (text-model phase 2, its 7935cd7) gave the same two lines. In core-tests (no reader) the 12
+rows are pending (1,764 passed, 48 pending); with the reader they pass and the first set's are pending (1,772
+passed, 40 pending). A port with a reader can now claim WD section 12.1's second extractor class against them.

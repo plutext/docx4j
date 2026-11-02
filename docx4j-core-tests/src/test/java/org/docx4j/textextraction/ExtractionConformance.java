@@ -318,8 +318,9 @@ public final class ExtractionConformance {
         // Empty manifest is an explicit phase 0 state. Every published entry must be checked.
         for (Map<String, String> row : table(dir.resolve("goldens.tsv"))) {
             String item = "golden:" + row.get("golden");
-            // a golden is cut without an HTML reader (GOLDENS.md: scenario default has none), so with one on
-            // the class path, which expands cases 36's and 44's chunks, it is pending, as their default rows are
+            // scenario default has no HTML reader (GOLDENS.md), so with one on the class path, which expands
+            // cases 36's and 44's chunks, a default golden is pending, as their default rows are; the second
+            // set's rows (scenario html reader present) are checked instead
             Set<String> required = rowRequirements(row);
             if ("default".equals(row.get("scenario"))) required.add(HTML_READER_ABSENT);
             if (!run.ready(row, item, row.get("view"), row.get("scenario"), required)) continue;

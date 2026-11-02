@@ -11,3 +11,15 @@ extraction-probe-structure.docx	0	accepted	default	txt	extraction-probe-structur
 extraction-probe-structure.docx	0	original	default	txt	extraction-probe-structure.original.txt	REQ-1203
 extraction-probe-structure.docx	0	markup	default	txt	extraction-probe-structure.markup.txt	REQ-1203
 extraction-probe-structure.docx	0	accepted	default	md	extraction-probe-structure.md	REQ-703, REQ-1203
+extraction-probe.docx	0	accepted	html reader present	txt	extraction-probe.html-reader.accepted.txt	REQ-1203
+extraction-probe.docx	0	original	html reader present	txt	extraction-probe.html-reader.original.txt	REQ-1203
+extraction-probe.docx	0	markup	html reader present	txt	extraction-probe.html-reader.markup.txt	REQ-1203
+extraction-probe.docx	0	accepted	html reader present	md	extraction-probe.html-reader.md	REQ-703, REQ-1203
+extraction-probe-external.docm	0	accepted	html reader present	txt	extraction-probe-external.accepted.txt	REQ-1203
+extraction-probe-external.docm	0	original	html reader present	txt	extraction-probe-external.original.txt	REQ-1203
+extraction-probe-external.docm	0	markup	html reader present	txt	extraction-probe-external.markup.txt	REQ-1203
+extraction-probe-external.docm	0	accepted	html reader present	md	extraction-probe-external.md	REQ-703, REQ-1203
+extraction-probe-structure.docx	0	accepted	html reader present	txt	extraction-probe-structure.accepted.txt	REQ-1203
+extraction-probe-structure.docx	0	original	html reader present	txt	extraction-probe-structure.original.txt	REQ-1203
+extraction-probe-structure.docx	0	markup	html reader present	txt	extraction-probe-structure.markup.txt	REQ-1203
+extraction-probe-structure.docx	0	accepted	html reader present	md	extraction-probe-structure.md	REQ-703, REQ-1203
