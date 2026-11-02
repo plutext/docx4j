@@ -3,8 +3,10 @@
 Status: PROPOSED 2026-11-03 (Jason: "yes, draft CR-073; we need a new probe to answer decisions 1 and 2"). Found by
 docx4j's load survey of the Common Crawl corpus (docx4j-load-survey, 2 November 2026; portfolio
 `docs/docx_corpus_use.md` §8.14). Phase 0 round 1 DONE 2026-11-03 (a2a971416, Jason's Word run): Word reads a `w:br`
-outside a run as a break at that point, all the text kept. Round 2, for D1 and D2, built and on the share; Jason's
-run awaited (§3.2). Decisions in §5, phases in §6.
+outside a run as a break at that point, all the text kept. Round 2 DONE 2026-11-03 (Jason's Word run): the break
+takes the paragraph mark's run properties while no run precedes it in the paragraph, none after one (D1); a field code
+keeps its break, and a `w:br` directly in `w:body` opens the next paragraph (D2) (§3.2). Phase 0 DONE. Decisions in
+§5, for Jason; phases in §6.
 
 ## 0. Summary
 
@@ -75,18 +77,37 @@ no repair reported:
   `<w:r><w:t>a</w:t></w:r><w:r><w:br/><w:t>b</w:t></w:r>`: all the text kept, the nesting flattened;
 - a `w:br w:type="page"` in a `w:p` is saved in a run of its own and starts a page.
 
-### 3.2 Round 2 (built 2026-11-03; Jason's run awaited)
+### 3.2 Round 2 (DONE 2026-11-03)
 
-`build_br_placement_2.py`, staged in the share's `br-placement-2/`. Round 1's runs had no properties, so they could
-not show which run Word gives the break (D1), and round 1 did not try the two places with few documents (D2).
+`build_br_placement_2.py`, `br2-1` to `br2-5` and Word's saves, beside round 1's (`br-placement/README.md` has the
+table). Round 1's runs had no properties, so they could not show which run Word gives the break (D1), and round 1
+did not try the two places with few documents (D2). Word 365 opened and saved each with no repair reported.
 
-| File | Decision | Asks |
-|---|---|---|
-| `br2-1-run-properties` | D1 | A 20pt bold run, then the `w:br`, then an 8pt italic run, with a 14pt paragraph mark where stated. Cases: R1 between the runs; R2 two breaks between them, so that the second's line holds only a break and its height shows the break's size; R3 first in the paragraph; R4 last in it; R5 the whole of a paragraph; R6 inside the bold run's `w:t`; R7 between a run and a `w:hyperlink` (PHPWord's shape); R8 between the runs inside a `w:hyperlink`. Word's save shows each break's run properties, and the PDF's line heights show its size. |
-| `br2-2-instrtext-field` | D2 | `QUOTE "a<w:br/>b"`: a `w:br` in a field code, the stored result not updated. |
-| `br2-3-instrtext-bare-header` | D2 | The letterhead's shape: a `w:instrText` with `w:br` in it and no field, in a header. |
-| `br2-4-body-br` | D2 | A `w:br` directly in `w:body`, between two paragraphs. |
-| `br2-5-body-br-page` | D2 | The same with `w:type="page"`. |
+**D1.** A 20pt bold run, then the `w:br`, then an 8pt italic run, the paragraph mark 14pt where stated:
+
+- between the runs (R1), two breaks there (R2), last after the bold run with a 14pt mark (R4), between a run and a
+  `w:hyperlink` (R7), between runs inside a `w:hyperlink` (R8): `<w:r><w:br/></w:r>`, no run properties;
+- first in the paragraph (R3) and the whole of a paragraph (R5), the mark 14pt: `<w:r><w:rPr><w:sz w:val="28"/></w:rPr><w:br/></w:r>`,
+  the mark's properties; R5's paragraph is two 14pt lines;
+- inside the bold run's `w:t` (R6): the run split round it, the break in a bold run.
+
+So the break takes the run properties Word's reader holds at that point: the paragraph mark's until a run has been
+read in the paragraph, none after one. It never takes the next run's or the previous run's. Round 1's saves put the
+break at the start of the next run only because that run had no properties either.
+
+**D2.**
+
+- In a field code (`br2-2`, `QUOTE "a<w:br/>b"`), Word splits the `w:instrText` round the break and keeps all of it:
+  `<w:instrText> QUOTE "I1 code before</w:instrText>`, then `<w:r><w:br/><w:instrText>I1 code after" </w:instrText></w:r>`.
+  The stored result is shown.
+- Directly in `w:body` (`br2-4`, `br2-5`), Word moves the break to the start of the next paragraph, in a run of its
+  own: an empty first line there, or a page break before it.
+- **A finding of its own:** a `w:instrText` with no field round it (`br2-3`, the letterhead's shape) is text to Word.
+  It is saved as `w:t` and drawn ("I2 line one", "I2 line two" in the header), its breaks kept. docx4j keeps it as a
+  field code. Whether docx4j's outputs show it is not checked. D6.
+
+Not measured: a `w:br` in `w:body` with no paragraph after it (a table follows, or the body ends); a `w:br` first in
+a `w:hyperlink` with no run before it in the paragraph.
 
 ## 4. Approach
 
@@ -96,12 +117,16 @@ cannot be (`w:r[w:r or w:p]`, `w:p[w:hyperlink/w:p ...]`, 17.1.0 and 17.2.0), ea
 1. **A `w:br` that is a child of a run container** (`w:p`, `w:hyperlink`, and the other elements that hold runs
    directly: `w:smartTag`, an inline `w:customXml`, `w:fldSimple`, `w:ins`, `w:del`, `w:moveFrom`, `w:moveTo`, a
    run-level `w:sdtContent`, `w:dir`, `w:bdo`) is wrapped in a `w:r` of its own, its attributes kept (`w:type`,
-   `w:clear`). Its run properties are D1's.
+   `w:clear`). Its run properties are D1's: the paragraph mark's (its `w:pPr/w:rPr`, without the elements only a
+   mark has: `w:ins`, `w:del`, `w:moveFrom`, `w:moveTo`, `w:rPrChange`) where no `w:r` precedes it in the
+   paragraph, else none.
 2. **A `w:t` with element children** becomes a sequence in its run: each stretch of text a `w:t` with
    `xml:space="preserve"`, each `w:br` a `w:br`, a nested `w:t` flattened to its text. A run may hold several `w:t`
-   and `w:br` in order, so the run itself is not split. Which other text elements get the same rule (`w:instrText`,
-   `w:delText`, `w:delInstrText`) is D2's.
-3. **A `w:br` directly in `w:body`**: D2, by round 2's answer.
+   and `w:br` in order, so the run itself is not split. `w:instrText` gets the same rule (round 2), and so do
+   `w:delText` and `w:delInstrText` (D2).
+3. **A `w:br` directly in `w:body`** goes into the next `w:p` as its first run, after its `w:pPr`, with that
+   paragraph mark's run properties (D1; no run precedes it there). Where no `w:p` follows it directly (unmeasured),
+   it becomes a paragraph of its own.
 
 The rules cost nothing for a part without such a `w:br`: the preprocessor runs only when the first unmarshal fails,
 and a misplaced `w:br` always makes it fail. Every reader downstream of the JAXB tree benefits without a change of
@@ -114,11 +139,12 @@ probe and the rule (D5).
 
 | # | Question | Options | Recommendation |
 |---|---|---|---|
-| D1 | The run properties of the `w:r` that holds a `w:br` from a `w:p` or `w:hyperlink`. | (a) none; (b) the next run's (where Word's save puts the break); (c) the previous run's; (d) the paragraph mark's. | Word's answer from round 2. If Word gives it the next run's, (b), with (d) where no run follows. |
-| D2 | Which other places get the rules. | `w:instrText` (29 documents), `w:delText` and `w:delInstrText` (no documents seen), a `w:br` directly in `w:body` (10). | Word's reading from round 2 for the first and last. Give `w:delText` and `w:delInstrText` the `w:t` rule, by analogy, so that a deleted line break is not lost. |
+| D1 | The run properties of the `w:r` that holds a `w:br` from a `w:p` or `w:hyperlink`. | (a) none; (b) the next run's; (c) the previous run's; (d) the paragraph mark's; (e) Word's: the mark's while no run precedes it in the paragraph, none after one (round 2). | (e). It costs one test in the template. For the generator's `<w:p><w:br/></w:p>`, 89% of the documents, all the options are the same: those paragraphs have no mark properties. |
+| D2 | Which other places get the rules. | `w:instrText` (29 documents), `w:delText` and `w:delInstrText` (none seen), a `w:br` directly in `w:body` (10). | All of them. `w:instrText` as Word does (round 2); `w:delText` and `w:delInstrText` by analogy, so that a deleted line break is not lost; a `w:br` in `w:body` into the next paragraph, as Word does, else a paragraph of its own. |
 | D3 | Logging. | (a) a WARN once per part, as the existing templates; (b) INFO; (c) silent. | (a): the repair changes the tree, and the survey counts them. |
 | D4 | What the save writes. | (a) the repaired shape, as Word's save does; (b) an option to keep the original. | (a). |
 | D5 | Hand-offs. | The python, core-ts and ts-editor ports, through the portfolio: round 1 and 2's files and Word's saves are the shared probe. | After phase 1. |
+| D6 | A `w:instrText` with no field round it, which Word shows as text (round 2, `br2-3`). | (a) out of this CR: a finding for the field model (CR-067's), with a catalogue query of how many documents have one; (b) in this CR: a run's `w:instrText` outside any field read as `w:t`. | (a). It is not about `w:br`, and its reach is unknown. |
 
 Out of scope: other run content misplaced the same way (`w:tab`, `w:cr`, `w:noBreakHyphen` directly in `w:p`). The
 survey's summary lists only its commonest messages. The other unexpected content is in the catalogue's
@@ -127,7 +153,7 @@ place would say whether any of it needs a rule like this one.
 
 ## 6. Phases
 
-- **Phase 0, the probe.** Round 1 done (a2a971416). Round 2 waits for Jason's run.
+- **Phase 0, the probe.** DONE 2026-11-03: round 1 (a2a971416), round 2 (Word's saves committed with this update).
 - **Phase 1, the rules** (§4, by D1 to D4) and tests. A test loads each probe file and compares docx4j's reading
   with Word's save (text, breaks and their types in order, and run properties per D1). Plus the twenty survey
   samples read locally (not committed), and a CHANGELOG entry. The change is to the shared load path, and CLAUDE.md

@@ -45,8 +45,32 @@ nested in `w:t`. In its save the break is in a run of its own (case 1) or opens 
 Not measured: which run properties the break takes where the runs either side differ (the probes' runs have none);
 a `w:br` in `w:instrText` and directly in `w:body`.
 
-## Round 2 (CR-073 phase 0, built 2026-11-03; Word's run awaited)
+## Round 2 (CR-073 phase 0, 3 November 2026)
 
 `build_br_placement_2.py` builds `br2-1` to `br2-5`: the run properties Word gives the break (D1: runs of 20pt
 bold before and 8pt italic after, a 14pt mark), and a `w:br` in a field code, in a bare `w:instrText` in a header,
-and directly in `w:body` (D2). CR-073 §3.2 has the cases.
+and directly in `w:body` (D2). Word 365 (Jason's run) opened and saved each with no repair reported; `br2-*-word365.docx`
+are its saves.
+
+| File, case | The `w:br` | Word's save | Word's PDF |
+|---|---|---|---|
+| `br2-1` R1 | between a 20pt bold run and an 8pt italic run | `<w:r><w:br/></w:r>` between them: no run properties | two lines |
+| R2 | two, between the same runs | two runs `<w:r><w:br/></w:r>` | three lines, the middle one only a break |
+| R3 | first in the paragraph, the mark 14pt | `<w:r><w:rPr><w:sz w:val="28"/></w:rPr><w:br/></w:r>`: the mark's run properties | two lines |
+| R4 | last, after the bold run, the mark 14pt | `<w:r><w:br/></w:r>`: none | two lines |
+| R5 | the whole of a paragraph, the mark 14pt | `<w:r><w:rPr><w:sz w:val="28"/></w:rPr><w:br/></w:r>`: the mark's | two 14pt lines |
+| R6 | in the bold run's `w:t` | split: `<w:r>bold<w:t>R6 before</w:t></w:r><w:r>bold<w:br/><w:t>R6 after</w:t></w:r>` | two lines |
+| R7 | between a run and a `w:hyperlink` | `<w:r><w:br/></w:r>` outside the hyperlink: none | two lines |
+| R8 | between the runs inside a `w:hyperlink` | `<w:r><w:br/></w:r>` inside it: none | two lines |
+| `br2-2` | in the `w:instrText` of a QUOTE field | the code split round it: `<w:instrText> QUOTE "I1 code before</w:instrText>`, then `<w:r><w:br/><w:instrText>I1 code after" </w:instrText></w:r>`; the stored result kept | the stored result |
+| `br2-3` | in a `w:instrText` with no field round it, in a header | the `w:instrText` saved as `w:t`: `<w:t> </w:t>`, then `<w:br/><w:t> I2 line one </w:t>`, then `<w:br/><w:t> I2 line two </w:t>` | "I2 line one", "I2 line two" in the header |
+| `br2-4` | directly in `w:body`, between two paragraphs | moved to the start of the next paragraph, in a run of its own | "B1 after" a line lower (29.3pt below "B1 before") |
+| `br2-5` | the same, `w:type="page"` | the same, the page break kept | "B2 after" on page 2 |
+
+So the break takes the paragraph mark's run properties while no run precedes it in the paragraph, and none after
+one: the properties Word's reader holds at that point, not the next run's or the previous run's. Round 1's saves
+put the break at the start of the next run only because that run had no properties either. A `w:instrText` with no
+field round it is text to Word (`br2-3`), a finding of its own (CR-073 §3.2).
+
+Not measured: a `w:br` in `w:body` with no paragraph after it (a table, or the end of the body); one first in a
+`w:hyperlink` with no run before it in the paragraph.
