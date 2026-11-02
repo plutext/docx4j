@@ -2,8 +2,12 @@
 
 Status: PROPOSED 2026-11-02 (Jason: "what if we just had the single copy in the fork, and accepting that
 -Papache-fop, docx4j on stock Apache FOP, would not have Word's line breaking?", then "write the CR please").
-Drafted by Claude Opus 5.5 (session docx4j-12). Decisions D1 to D10 (section 6) await Jason. In CR-020's family
+Drafted by Claude Opus 5.5 (session docx4j-12). Decisions D1 to D11 (section 6) await Jason. In CR-020's family
 (the fork, `../xmlgraphics-fop-plutext`); the fork's side is the fork session's, under a fork CR of its own.
+Reviewed the same day by the fork session (xmlgraphics-fop-plutext-d1, reading docx4j's copy against fop-2_11, fop-2_12
+and the fork's 2.12-docx4j.1 at 36ee05557): the shape works and the merge cost is low; its four points are folded in
+(section 5's phase 2 criterion and new phase 3, D2's placement, D3's form, D7's porting, D11), and it agrees with D9(b)
+and D10(a). Its size for phase 1, the shipped copy to a gated drop: 1.5 to 2 weeks.
 
 ## 0. Summary
 
@@ -110,23 +114,34 @@ Tests: 19 in docx4j-export-fo (`org.docx4j.fop.wordlayout`: `GreedyLineBreakingT
   (D7). A drop in `~/fop-renderers`.
 - **Phase 2 (docx4j).** `WordLayoutCustomizer` uses the fork's Word mode when advertised. Gate: the drop with
   docx4j's copy switched off and the fork's Word mode on, against phase 0's baseline: 0 movers and equal events
-  expected, since the code is the same. Then delete the copy, move or skip the tests (D7), README-word-layout.md,
+  expected, which holds only with D11(a). After phase 0 the copy and the fork's line manager differ in three places
+  (the fork session's reading): the inline-access accessors `LBP` stands in for (no behaviour); fop/CR-024's
+  `handlingObstacle` and edge-only break (equivalent by reading); and fop/CR-023 §4.2's mark (63fdc0aee): the fork's
+  `LineBreakingAlgorithm.updateData2` marks a line that overflows by no more than a side float's intrusion
+  (`LineBreakPosition.setOverflowsBesideFloat`), and `PageBreakingAlgorithm.overflowsBesideFloatAtNextBox` sets it at
+  the float's foot. It has no switch in the fork, and the copy never sets it, though its greedy path goes through its
+  own `updateData2`; Word mode built on the fork's would start moving such lines. Then delete the copy, move or skip the tests (D7), README-word-layout.md,
   CHANGELOG, CR-001 §6.6's workaround entries (they become fork code). Released with the fork release.
+- **Phase 3 (the fork, then a docx4j gate).** CR-023's overflow-beside-float mark turned on under Word mode (D11), as a
+  step of its own with its own gate. Re-measure there what CR-001 §6.6 item 8 calls "float-overflow-below measured
+  inert on docx4j's tables": that reading went through docx4j's managers, which never set the mark, so it may not say
+  what the rule does under Word layout.
 
 ## 6. Decisions
 
 | # | Question | Options | Recommendation |
 |---|---|---|---|
 | D1 | What docx4j on stock Apache FOP gets | (a) plain FOP layout, all of the package's rules gone, a `FopCapabilities` warning; (b) keep docx4j's copy for stock FOP only (two copies) | (a), as Jason's question has it; note it is the whole package, not only line breaking |
-| D2 | The form of Word mode in the fork | (a) inside the fork's own managers, one class each, behind a switch; (b) docx4j's classes moved as they are into the fork | (a): (b) is still a copy beside FOP's `LineLayoutManager`, and Apache's changes would not reach it |
-| D3 | How docx4j turns it on | (a) a fork API on `FopFactoryBuilder` (or the user agent), found as a `FopCapabilities` hook; (b) attributes on `fo:root` | (a); the per-document values already on `fo:root` (hyphenation zone, tab hang) stay there |
+| D2 | The form of Word mode in the fork | (a) inside the fork's own managers, one class each, behind a switch; (b) docx4j's classes moved as they are into the fork | (a): (b) is still a copy beside FOP's `LineLayoutManager`, and Apache's changes would not reach it. Placement, from the fork session's count: of 2.11's 55 members of the class, 38 are unchanged in the copy and 14 modified (+272/−120: the constructor, `Paragraph`, `filterActiveNodes`, `makeLineBreakPosition`, `updateData1`, `updateData2`, `collectInlineKnuthElements`, `findOptimalBreakingPoints`, both `getNextKnuthElements`, `postProcessLineBreaks`, `getChangedKnuthElements`, `getHyphenContext`, `addInlineArea`); the other ~2,900 lines are ~70 new, self-contained members. The branches go into the 14 members of the fork's `LineLayoutManager.java` (1,906 lines to about 2,100, still reviewable against Apache's) and the new members into a fork class beside it. Merge cost: Apache has 13 commits to the class since 2020 (two the fork's own, FOP-3348 and FOP-3349), none since 2.12; of the 6 members 2.11 to 2.12 changed, 3 are among the 14. The other managers are subclasses with 1 to 3 overrides each (commits since 2020: BlockLM 2, ListItemLM 10, FlowLM 3, PageNumberCitationLM 0) |
+| D3 | How docx4j turns it on | (a) a fork API on `FopFactoryBuilder` (or the user agent), found as a `FopCapabilities` hook; (b) attributes on `fo:root` | (a), as one setter taking JDK types only (say a `Map<String,String>` on `FopFactoryBuilder`, read in the managers through the `FOUserAgent`), since docx4j compiles against stock FOP and calls it by reflection, as it does `setRuleStyle` since the 2.12 move; Apache's FOP-2860 simple line breaking (`fobj.getUserAgent().isSimpleLineBreaking()` in `LineLayoutManager`) is the precedent for the plumbing. A typed settings class would mean a reflective call per setter. The per-document values already on `fo:root` (hyphenation zone, tab hang) stay there. Names are the fork session's |
 | D4 | The 35 tuning properties | (a) passed through D3's API by their existing names, read where docx4j reads them today; (b) renamed as FOP configuration entries | (a): users' settings keep working |
 | D5 | The fork's default | (a) Word mode off; (b) on | (a): the fork's own tests are FOP's, and a user of the renderer without docx4j gets FOP |
 | D6 | Break opportunities for `TableWriter` | (a) docx4j keeps its own copy (383 lines); (b) the fork's when advertised, FOP's plain UAX #14 on stock FOP | (b): one copy, and on stock FOP it matches plain FOP's breaking |
-| D7 | The tests | (a) the manager-level tests (19) move to the fork, docx4j's FO-path tests (7, export-fo-tests) stay with an assumption on `word-layout`; (b) all stay in docx4j | (a) |
+| D7 | The tests | (a) the manager-level tests (19) move to the fork, docx4j's FO-path tests (7, export-fo-tests) stay with an assumption on `word-layout`; (b) all stay in docx4j | (a). They port: all 19 are JUnit 4 and FO-based through `FopFactoryBuilder`, as fop-core's are, and only one imports a docx4j class (`FopCapabilities`). The work is mechanical, about a day: fop-core's checkstyle covers tests (tabs on 2,892 test lines, 19 long lines and a star import in the line manager), slf4j to commons-logging (D8), and the 7 tests that set system properties set D3's API instead |
 | D8 | Logging in the moved code | (a) the fork's (commons-logging, as FOP's); (b) slf4j | (a) |
 | D9 | Timing | (a) in 2.12-docx4j.1, delaying its Central release and docx4j 17.3.6's push; (b) after: 17.3.6 ships with the copy (and phase 0), the move in 2.12-docx4j.2 and docx4j 17.3.7 | (b) |
 | D10 | Phase 0 first | (a) yes; (b) no, the move brings the two hunks | (a) |
+| D11 | fop/CR-023 §4.2's overflow-beside-float mark under Word mode | (a) left out in phase 1, so phase 2 is a pure move; turned on in phase 3, gated on its own; (b) on from phase 1 | (a), the fork session's recommendation: (b) would move lines beside side floats in phase 2's gate, where they could not be told from a move error |
 
 ## 7. Risks
 
@@ -135,6 +150,11 @@ Tests: 19 in docx4j-export-fo (`org.docx4j.fop.wordlayout`: `GreedyLineBreakingT
   merges itself.
 - **Behaviour drift during the move.** Guarded by phase 2's gate against phase 0 (0 movers expected) and by the moved
   unit tests.
+- **Size.** Phase 1, by the fork session's estimate, 1.5 to 2 weeks; most of it unwinding `LBP`'s reflection and
+  re-applying the 14 members onto the 2.12 base. The fork side confirms the cost argument: fop/CR-024 §10.2 put the
+  width provider below the line manager because anything built in it reaches the gate only once docx4j copies it;
+  CR-001 §6.6 items 36 and 37 were each fixed twice (FOP-3348/3349 in the fork, 2ba434600 and 53b2b5921 in docx4j);
+  §6.6 item 10's phase B would be built once.
 - **Release coupling.** A Word-layout change becomes a fork commit, a gate, a fork release and a docx4j bump, where
   it is a docx4j commit today; already so for the fork's side. The package changed in 46 commits, 13 in October,
   none since 19 October.
