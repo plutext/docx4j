@@ -1598,7 +1598,7 @@ final class Extractor {
 		if (options.getFields() != TextOptions.Fields.UPDATE) return cachedModeValue(instr);
 		if (f.locked || pkg == null) return null;
 		if (f.ffData != null && instr.regionMatches(true, 0, "FORMTEXT", 0, 8)) return formText(f.ffData);
-		return fieldValues().compute(instr, sectionOf(story), f.begin);
+		return fieldValues().compute(instr, sectionOf(story), f.begin, story.part);
 	}
 
 	/**
@@ -1776,7 +1776,7 @@ final class Extractor {
 		if (options.isFieldCodes() && !inCode(para.story)) addText(para, instr, TextRun.Kind.FIELD_CODE, false, state);
 		if (options.getFields() == TextOptions.Fields.UPDATE && !written(field, "fldLock") && pkg != null && !inCode(para.story)
 				&& !suppressed(para.story)) {
-			String value = fieldValues().compute(instr, sectionOf(para.story), field);
+			String value = fieldValues().compute(instr, sectionOf(para.story), field, para.story.part);
 			if (value != null) {
 				text(para, value, false, state);
 				para.block.fields.add(new TextField(instr, value, true));
@@ -1797,6 +1797,15 @@ final class Extractor {
 				return;
 			}
 		}
+		if ("SET".equalsIgnoreCase(FieldInstruction.parse(instr).getName())) {
+			// a SET's stored value is never shown (CR-067 section 13.2), in this form as in the complex one
+			// (FieldState.hiddenResult): its content is read for its bookmarks, its text is not @since 17.3.6
+			resultOf(field.getContent(), para, state, null, true);
+			boolean stored = !field.getContent().isEmpty();
+			para.block.fields.add(new TextField(instr, stored ? "" : null));
+			if (!stored) warn(TextWarning.FIELD_NO_RESULT, para.block.address, null);
+			return;
+		}
 		int before = para.block.runs.size();
 		String text = resultOf(field.getContent(), para, state, fieldHyperlinkTarget(instr));
 		boolean hasResult = text != null && !text.isEmpty() || para.block.runs.size() > before;
@@ -1806,9 +1815,15 @@ final class Extractor {
 
 	/** The runs of a simple field's result, added to the paragraph; their text. */
 	private String resultOf(List<Object> content, Paragraph para, RunState state, String link) {
+		return resultOf(content, para, state, link, false);
+	}
+
+	/** As above; {@code hidden}: a result never shown (a SET's), its text not read. */
+	private String resultOf(List<Object> content, Paragraph para, RunState state, String link, boolean hidden) {
 		FieldState capture = new FieldState();
 		capture.separated = true;
 		capture.link = link;
+		capture.hiddenResult = hidden;
 		para.story.fields.addLast(capture);
 		try {
 			runs(content, para, state);

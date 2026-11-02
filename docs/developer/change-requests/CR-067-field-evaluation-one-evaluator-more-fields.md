@@ -962,3 +962,22 @@ Checked by `ResultlessIfFieldTest` and `IfFieldProbeWritersTest` (gates: core-te
 rescoring real-c2 on the fix (b289 against b285, the same .7 renderer): `15_hu-HU_tbl_1679` +29 lines, 0.7808 back to 0.9132
 (b284's value); `14_de-DE_tbl_3996` -1 (0.9636 to 0.9455, back to b284's value: its one MERGEFIELD with a separate and an empty
 result was evaluated under D32 and happened to align a line Word does not paint); nothing else moved, every event count equal.
+
+## 15. Two text-model defects fixed (17.3.6, 2026-11-02)
+
+Found reviewing docx4j-python's CR-026 and CR-027 (2026-11-01), fixed on Jason's word ("The two field defects in text
+extraction: fix these please"):
+
+- **A list number in a header, footer or note, under `fields: update`.** §14.4's rule (WD REQ-506): computed for the
+  main story only; elsewhere the field keeps its cached result. `FieldEvaluators.listNumber` had the guard, comparing
+  the context's part with the main document part, but `FieldValues` set the context's section and node and never its
+  part, so the guard never fired and a header's LISTNUM showed the body's next number ("1)"). `FieldValues.compute`
+  now takes the story's part (`Extractor.Story.part`), for both field forms.
+- **A SET in the `w:fldSimple` form.** §13.2's rule: a SET's stored value is never shown. The complex form hid it
+  (`FieldState.hiddenResult`, set at the separator); the simple form showed it under `fields: cached` (and under
+  `fields: update` where the field is locked). The simple form's content is now read with a hidden capture (its
+  bookmarks still counted, its text not), and its `TextField` result is "" as the complex form's is.
+- **Not changed:** an ASK's stored result under `fields: cached`, which §14.6 leaves unmeasured.
+
+`FieldPartAndSimpleSetTest` (each case fails without the fix). CHANGELOG.
+

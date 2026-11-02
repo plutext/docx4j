@@ -105,14 +105,20 @@ final class FieldValues {
 
 	/** The same, for a field in the given section of the main story (from 1), or null where unknown. */
 	String compute(String instr, Integer section) {
-		return compute(instr, section, null);
+		return compute(instr, section, null, null);
 	}
 
-	/** The same, for the field the node begins (its w:fldSimple or beginning fldChar): the list numbers are found by it. */
-	String compute(String instr, Integer section, Object node) {
+	/**
+	 * The same, for the field the node begins (its w:fldSimple or beginning fldChar), in the part its story is in (the
+	 * main document part, a header's, a note part's), or null where unknown: the list numbers are found by them.
+	 */
+	String compute(String instr, Integer section, Object node, org.docx4j.openpackaging.parts.Part part) {
 		if (context == null || instr == null) return null;
 		context.section(section);
 		context.node(node);
+		// the story's part, for what depends on it: a list number in a header, footer or note keeps its stored result
+		// (CR-067 section 14.4; WD REQ-506), FieldEvaluators.listNumber's guard, which never fired without it @since 17.3.6
+		context.part(part);
 		FieldInstruction instruction = FieldInstruction.parse(instr);
 		String name = instruction.getName();
 		if (name == null || !COMPUTED.contains(name)) return null;
