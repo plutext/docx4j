@@ -4004,6 +4004,31 @@ floats), and the 2in rule stays: the renderer's `float-overflow-below` was measu
 documents. Left to the fork: the pair, an offset float near a page's foot (carried past the page's end,
 split from its anchor: 4083, 3640), and text on both sides of a float (§6.6 item 10).
 
+<a id="s68gapwords"></a>**What fits in the room beside a float, measured 2026-11-02** (probe `float-gap-words`, Word 365,
+mode 15, A4; five cases, one a page). Word fills the room beside a float **word by word, whatever its width**,
+and **never breaks a word there**: the first word that does not fit takes the rest of its paragraph **below
+the float**, full width, and the room under the last word that fitted stays empty.
+
+- Beside a text-anchored table leaving 60pt, `P02 anchor / a an as at be / by do go he / ... / us we` go in
+  the room (x 464.1, seven lines), and `INTERNATIONALISATIONS` (about 150pt) starts the first line below the
+  table (y 389.4, x 72), the paragraph continuing full width from there.
+- Leaving 24pt: the paragraph's label `P05` (about 21pt) goes in the room, and the next word, `anchor`, goes
+  below the table with the rest. So "any room at all" holds down to a word's width.
+- Beside a page-anchored table at page y 3in leaving 24pt (real3 14_es-DO_tbl_4253's shape): after a
+  full-width line, `in` goes in the room and `reprehenderit` below the table with the rest.
+- A word wider than the column goes below the float too, and is broken there at the column's width
+  (`ABCD...ABCD` 448.9pt, then `EFGH...J a an ...`).
+- Beside a square-wrapped picture leaving 60pt: as beside the table, the long word below the picture
+  (y 260.2, the picture's foot).
+
+docx4j today (renderer r54, b307): beside a page-anchored table and beside a picture, Word mode breaks the
+word in the room (`repr / ehen / derit / ...` down case 3's 24pt; `INTERNAT / IONALISA / TIONS` beside the
+picture), where Word moves it below; and a text-anchored table wider than 60% of the column
+(`TableWriter.FLOAT_MAX_SHARE`) is left in the flow, so nothing goes beside it (cases 1, 2, 4), where Word
+sets what fits. The first is the renderer's emergency break measured against the room beside the float
+(fop/CR-031 r52 measured it against the column, which with CR-023's mark is Word's rule; reverted in r53
+for want of this evidence); the second is docx4j's.
+
 ### 6.9 `w:textDirection`: cells whose text Word turns on its side
 
 `w:tcPr/w:textDirection` `btLr` turns the cell's text 90° anticlockwise
