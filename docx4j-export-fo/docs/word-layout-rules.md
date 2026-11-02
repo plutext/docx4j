@@ -4029,6 +4029,23 @@ sets what fits. The first is the renderer's emergency break measured against the
 (fop/CR-031 r52 measured it against the column, which with CR-023's mark is Word's rule; reverted in r53
 for want of this evidence); the second is docx4j's.
 
+<a id="s68gaptables"></a>**A table beside a float, measured 2026-11-02** (probe `float-gap-tables`, Word 365, mode 15, A4; a
+text-anchored floating table at the left margin leaving 144pt, a one-line anchor paragraph, then the table). Word
+treats a table as it treats a word: **one that fits the room goes beside the float, one that does not goes below it**.
+- A 100pt table goes beside (x 385.6, the float's right edge plus its 9pt `rightFromText` and the cell margin), the
+  anchor and the paragraph after it beside too.
+- A 200pt table goes below the float (y 431.6, x 77.8), whether its width is a fixed `w:tblW` with fixed columns, a
+  fixed `w:tblW` with percentage cells, or a percentage `w:tblW` (44%); the paragraph after it follows it, full width.
+- Beside a page-anchored table at the top margin, the same: a 200pt table below it.
+- A second text-anchored floating table is positioned at its own anchor whatever is there: Word drew it over the first
+  (y 132.5, x 77.8, inside the first float's rows), no `w:tblOverlap` being given, and set the paragraph after it beside
+  both.
+
+docx4j today keeps a float of 66% of the column with 135pt beside it in the flow (TableWriter's 2in bound), so the
+anchor and the 100pt table go below it, where Word sets them beside. Floating it (step 2, b310) put the next 200pt
+table into the room, narrowed, where Word puts it below (9832, 1616, 6705, 4083: register 0e8f94f). The fork's
+`blockWiderThanRoomBesideFloat` (fop/CR-024 §11.20) is this rule for obstacles only.
+
 ### 6.9 `w:textDirection`: cells whose text Word turns on its side
 
 `w:tcPr/w:textDirection` `btLr` turns the cell's text 90° anticlockwise
