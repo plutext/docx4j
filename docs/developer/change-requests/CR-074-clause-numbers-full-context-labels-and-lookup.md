@@ -106,7 +106,10 @@ portfolio to write (D9). Plain text and Markdown do not change: `list_labels` ke
 level and list. `find(String)` returns one clause, or throws `ClauseLookupException` naming the candidates: every
 paragraph that carries the label when several do, with their addresses; the near misses when none does (D3).
 `Clause.scope()` returns the blocks from the clause's paragraph up to the next paragraph of its list at its level or
-above (D4).
+above (D4). `Clauses.of` counts in the result's view, so in `accepted` a deleted numbered paragraph carries no clause
+and those after it renumber (D6). docx4j-mcp passes the exception's message through as its tool's refusal (its CR §23.7,
+c5ece24), so the message is written for an agent to read: the query, the candidates with their addresses, the near
+misses.
 
 **4.4 REF in CR-067's evaluator.** `\n`, `\r`, `\w` and `\t` are evaluated from one walk of the main document in
 order, as `ListNumbers` walks it for LISTNUM. The walk maps each bookmark to the paragraph it starts in, and each
