@@ -3,8 +3,9 @@
 Status: ACCEPTED 2026-11-02 (Jason: "CR-071 D1 to D11 as recommended, except for D9 where we decide on (a)"): the move
 lands in 2.12-docx4j.1 and docx4j 17.3.6, whose releases wait for it. Phase 0 DONE 2026-11-02 (gate b302); phase 1 DONE
 by the fork session (fop/CR-031, drop r51, 27ed437d3); phase 2 DONE 2026-11-02 (gates b303 and b304 on r51: 0 movers,
-events equal; the copy deleted). What remains of phase 2 is its release step: the pom to 2.12-docx4j.1 once the fork
-releases it to Central. Proposed the same day (Jason: "what if we just had the single copy in the fork, and accepting that
+events equal; the copy deleted); phase 3 DONE 2026-11-02 (gate b306 on the fork's r53: 0 movers; ships in 2.12-docx4j.1,
+Jason in the fork session: "it is enough to make a git tag for move alone with no change in output"). What remains is
+the release step: the pom to 2.12-docx4j.1 once the fork releases it to Central, its jars gated against b306. Proposed the same day (Jason: "what if we just had the single copy in the fork, and accepting that
 -Papache-fop, docx4j on stock Apache FOP, would not have Word's line breaking?", then "write the CR please").
 Drafted by Claude Opus 5.5 (session docx4j-12). Decisions D1 to D11 (section 6): as recommended, D9 (a). In CR-020's family
 (the fork, `../xmlgraphics-fop-plutext`); the fork's side is the fork session's, under a fork CR of its own.
@@ -181,6 +182,10 @@ Tests: 19 in docx4j-export-fo (`org.docx4j.fop.wordlayout`: `GreedyLineBreakingT
   every scoreboard identical, events equal, 28 hooks. So under Word layout the mark is inert on the corpora too, as
   item 8 says. Open, unmeasured: whether Word sets a word too wide for the room beside a float below it (CR-023's
   assumption) or breaks it beside the float. Enterprise register 129fa78, bc2da5b; fop/CR-031 sections 6.1, 6.2.
+  **Decided 2026-11-02 (Jason, in the fork session):** phase 3 ships in 2.12-docx4j.1 ("it is enough to make a git tag
+  for move alone with no change in output"): the fork tagged the move alone CR-031-phase1 (3d9a41143, r51's code) and
+  fast-forwarded phase 3 into 2.12-docx4j.1 (c4ba99965, r53's code). b306 (= b304 exactly) is the baseline from here,
+  and the Central jars are to be gated against it.
 
 ## 6. Decisions
 
