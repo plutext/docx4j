@@ -172,6 +172,15 @@ Tests: 19 in docx4j-export-fo (`org.docx4j.fop.wordlayout`: `GreedyLineBreakingT
   step of its own with its own gate. Re-measure there what CR-001 §6.6 item 8 calls "float-overflow-below measured
   inert on docx4j's tables": that reading went through docx4j's managers, which never set the mark, so it may not say
   what the rule does under Word layout.
+  **Gated 2026-11-02 (docx4j side), shipping Jason's call:** the fork's r52 (fop/CR-031 phase 3: the mark under Word
+  mode, and an emergency break measured against the column beside a float) gated as b305 against b304: not a pass,
+  12_es-ES_tradnl_sdt_fields1_num_tbl_8985 -7 lines (an empty paragraph of one preserved space overflowed the 0pt beside
+  two column-wide floating tables and was marked, which broke page 13 early) and 1,107 more line-overflow events from
+  the float layout's discarded pass (the emergency change). The fork session traced both on docx4j's classpath; r53
+  exempts a line of spaces only and reverts the emergency change, and gated as b306 against b304 it passes: 0 movers,
+  every scoreboard identical, events equal, 28 hooks. So under Word layout the mark is inert on the corpora too, as
+  item 8 says. Open, unmeasured: whether Word sets a word too wide for the room beside a float below it (CR-023's
+  assumption) or breaks it beside the float. Enterprise register 129fa78, bc2da5b; fop/CR-031 sections 6.1, 6.2.
 
 ## 6. Decisions
 
