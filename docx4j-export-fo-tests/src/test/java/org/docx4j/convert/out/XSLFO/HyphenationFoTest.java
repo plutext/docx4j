@@ -131,6 +131,7 @@ public class HyphenationFoTest {
 
 	@Test
 	public void theDocumentSettingsGoOnFoRoot() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		for (int flags : FLAGS) {
 			org.w3c.dom.Document doc = fo(PARA,
 					"<w:autoHyphenation/><w:hyphenationZone w:val=\"720\"/>"
@@ -146,6 +147,7 @@ public class HyphenationFoTest {
 	 *  written where the document sets neither. */
 	@Test
 	public void theZoneDefaultsTo360AndTheOptionalSettingsAreOmitted() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		for (int flags : FLAGS) {
 			Element root = fo(PARA, "<w:autoHyphenation/>", flags).getDocumentElement();
 			assertEquals(flagName(flags), "360", root.getAttributeNS(NS, "hyphenation-zone"));
@@ -158,6 +160,7 @@ public class HyphenationFoTest {
 	 *  for it - except a paragraph which suppresses hyphenation. */
 	@Test
 	public void thePropertyForcesHyphenationOn() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		Docx4jProperties.setProperty("docx4j.convert.out.fo.hyphenate", "true");
 		for (int flags : FLAGS) {
 			org.w3c.dom.Document doc = fo(PARA + SUPPRESSED, null, flags);

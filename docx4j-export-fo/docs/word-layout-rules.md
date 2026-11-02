@@ -5,8 +5,10 @@ converting a docx to PDF via XSL-FO and Apache FOP. A reference, organised by to
 rule is stated once, with the measurement that established it and the property that turns
 it off where there is one. Describes docx4j 17.1.0 with FOP 2.11.
 
-For what to do when FOP is upgraded, see [README-word-layout.md](../README-word-layout.md),
-which documents the copied `LineLayoutManager` and how to re-derive it.
+Since docx4j 17.3.6 the layout managers these rules describe are the docx4j FO renderer's,
+not a copy in docx4j (CR-071; [README-word-layout.md](../README-word-layout.md)): where a rule
+names `WordLineLayoutManager`, `WordListItemLayoutManager` or `LBP`, read the renderer's
+Word-mode managers.
 
 ---
 

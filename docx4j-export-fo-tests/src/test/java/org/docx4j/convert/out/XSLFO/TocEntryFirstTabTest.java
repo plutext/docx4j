@@ -195,11 +195,13 @@ public class TocEntryFirstTabTest extends AbstractXSLFOTest {
 
 	@Test
 	public void leadingTabAfterFieldVisitorPathway() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		checkLeadingTabAfterField(Docx4J.FLAG_NONE);
 	}
 
 	@Test
 	public void leadingTabAfterFieldXsltPathway() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		checkLeadingTabAfterField(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
@@ -225,11 +227,13 @@ public class TocEntryFirstTabTest extends AbstractXSLFOTest {
 
 	@Test
 	public void twoTabEntryVisitorPathway() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		checkTwoTabEntry(Docx4J.FLAG_NONE);
 	}
 
 	@Test
 	public void twoTabEntryXsltPathway() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		checkTwoTabEntry(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 

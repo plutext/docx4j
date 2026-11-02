@@ -137,6 +137,7 @@ public class ListLabelSuffixSpaceTest {
 
 	@Test
 	public void tabSeparatorIsASpaceInTheTextLayer() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 
 		Docx4jProperties.setProperty(WordLayoutCustomizer.LABEL_SUFFIX_SPACE, false);
 		List<TextPosition> without = glyphs(pdf("tab"));

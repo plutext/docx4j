@@ -72,6 +72,7 @@ public class TabStopHintsTest {
 
 	@Test
 	public void aTabAfterTextIsALeaderAndItsBlockCarriesTheStops() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		String body = "<w:p><w:pPr><w:tabs>"
 				+ "<w:tab w:val=\"left\" w:pos=\"1000\"/>"
 				+ "<w:tab w:val=\"right\" w:leader=\"dot\" w:pos=\"4000\"/>"
@@ -117,6 +118,7 @@ public class TabStopHintsTest {
 
 	@Test
 	public void theDefaultTabStopIs720TwipsWhenTheDocumentDoesNotSayOtherwise() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		for (int flag : FLAGS) {
 			org.w3c.dom.Document doc = fo(
 					"<w:p><w:r><w:t>a</w:t><w:tab/><w:t>b</w:t></w:r></w:p>", null, flag);
@@ -183,6 +185,7 @@ public class TabStopHintsTest {
 	 */
 	@Test
 	public void aLeadingTabToARightOrCentreStopIsLaidOut() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		for (String val : new String[] { "right", "center", "decimal" }) {
 			String body = "<w:p><w:pPr><w:tabs><w:tab w:val=\"" + val + "\" w:pos=\"9356\"/></w:tabs></w:pPr>"
 					+ "<w:r><w:tab/><w:t>Page 1 von 2</w:t></w:r></w:p>";
@@ -202,6 +205,7 @@ public class TabStopHintsTest {
 	 *  is a left stop again, so it keeps its fixed leader. */
 	@Test
 	public void aLeadingTabPastTheLastCustomStopIsAFixedLeaderAgain() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		String body = "<w:p><w:pPr><w:tabs><w:tab w:val=\"right\" w:pos=\"1000\"/></w:tabs></w:pPr>"
 				+ "<w:r><w:tab/><w:tab/><w:t>x</w:t></w:r></w:p>";
 		for (int flag : FLAGS) {

@@ -155,6 +155,7 @@ public class TabLeaderTextLayerTest {
 
 	@Test
 	public void anUnderscoreLeaderIsWrittenAsItsCharacters() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 
 		Docx4jProperties.setProperty(WordLayoutCustomizer.LEADER_CHARACTERS, false);
 		Docx4jProperties.setProperty(WordLayoutCustomizer.TAB_SPACES, false);
@@ -177,6 +178,7 @@ public class TabLeaderTextLayerTest {
 	 */
 	@Test
 	public void everyOtherKindIsItsOwnCharacter() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		Docx4jProperties.setProperty(WordLayoutCustomizer.TAB_SPACES, false);
 		Docx4jProperties.setProperty(WordLayoutCustomizer.LEADER_CHARACTERS, true);
 		assertTrue(text(glyphs(pdf("hyphen"))).startsWith(BEFORE + "-"));
@@ -189,6 +191,7 @@ public class TabLeaderTextLayerTest {
 	 *  text layer; that is the path {@code LBP.ruleArea} still serves. */
 	@Test
 	public void withTheRuleOffALeaderIsADrawnRule() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		Docx4jProperties.setProperty(WordLayoutCustomizer.TAB_SPACES, false);
 		Docx4jProperties.setProperty(WordLayoutCustomizer.LEADER_CHARACTERS, false);
 		assertEquals(BEFORE + AFTER, text(glyphs(pdf("heavy"))));
@@ -198,6 +201,7 @@ public class TabLeaderTextLayerTest {
 	/** a tab which reaches a stop with no leader carries a space of its whole advance */
 	@Test
 	public void aTabWithNoLeaderIsASpace() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 
 		Docx4jProperties.setProperty(WordLayoutCustomizer.TAB_SPACES, false);
 		List<TextPosition> jump = glyphs(pdf(null));
@@ -213,6 +217,7 @@ public class TabLeaderTextLayerTest {
 	/** and a leader run has one at each end, as Word's has */
 	@Test
 	public void aLeaderRunHasASpaceAtEachEnd() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 
 		Docx4jProperties.setProperty(WordLayoutCustomizer.LEADER_CHARACTERS, true);
 		Docx4jProperties.setProperty(WordLayoutCustomizer.TAB_SPACES, false);

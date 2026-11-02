@@ -126,6 +126,7 @@ public class InlinePictureLineTest extends AbstractXSLFOTest {
 	 */
 	@Test
 	public void thePictureLineHasNoDescent() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		org.w3c.dom.Document areaTree = areaTree(pkg(), Docx4J.FLAG_NONE);
 		NodeList lines = areaTree.getElementsByTagName("lineArea");
 		assertTrue("expected the picture line and the text line, got " + lines.getLength(),

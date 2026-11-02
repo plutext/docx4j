@@ -127,11 +127,13 @@ public class WidowsAcrossSoftReturnsTest extends AbstractXSLFOTest {
 
 	@Test
 	public void visitorPathway() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		check(Docx4J.FLAG_NONE);
 	}
 
 	@Test
 	public void xsltPathway() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		check(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 }

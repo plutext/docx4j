@@ -319,6 +319,7 @@ public class WordLayoutFixupsTest {
 	 */
 	@Test
 	public void pictureLineTakesTheMultiplesOwnLeading() {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		String in = flow("<fo:block docx4j-pstyle=\"\" docx4j-linebox=\"13.428pt\""
 				+ " docx4j-baseline=\"10.474pt\" docx4j-linerule=\"auto\" line-height=\"15.442pt\">"
 				+ "<fo:external-graphic content-height=\"24pt\" content-width=\"60pt\" src=\"x.png\"/>"
@@ -334,6 +335,7 @@ public class WordLayoutFixupsTest {
 	/** A single-spaced picture-only paragraph gets no leading at all. */
 	@Test
 	public void singleSpacedPictureLineTakesNoLeading() {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		String in = flow("<fo:block docx4j-pstyle=\"\" docx4j-linebox=\"13.428pt\""
 				+ " docx4j-baseline=\"10.474pt\" docx4j-linerule=\"auto\" line-height=\"13.428pt\">"
 				+ "<fo:external-graphic content-height=\"24pt\" content-width=\"60pt\" src=\"x.png\"/>"
@@ -837,6 +839,7 @@ public class WordLayoutFixupsTest {
 
 	@Test
 	public void lineBoxHintsBecomeNamespacedAttributes() {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		String in = flow("<fo:block docx4j-pstyle=\"\" line-height=\"27.6pt\" docx4j-linebox=\"13.8pt\" docx4j-baseline=\"11.2pt\" docx4j-linerule=\"auto\">x</fo:block>");
 		String out = WordLayoutFixups.apply(in, 15);
 		assertTrue(out.contains("xmlns:docx4j=\"http://docx4j.org/fop/word-layout\""));
@@ -1376,6 +1379,7 @@ public class WordLayoutFixupsTest {
 	 */
 	@Test
 	public void aTabAndAnAnchoredPictureDoNotSpoilAPictureOnlyLine() {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		String in = flow("<fo:block docx4j-pstyle=\"\" line-height=\"10.349pt\">"
 				+ "<fo:external-graphic docx4j-anchor=\"none\" content-height=\"62.25pt\" content-width=\"40pt\" src=\"a.png\"/>"
 				+ "<fo:leader leader-pattern=\"space\" leader-length=\"1.7pt\"/>"

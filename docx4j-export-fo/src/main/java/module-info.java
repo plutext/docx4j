@@ -47,10 +47,8 @@ module org.docx4j.export_fo {
 	provides org.docx4j.model.images.MetafileSvgProvider
 		with org.docx4j.convert.out.fo.BatikMetafileSvgProvider;
 
-	// Word-style line breaking and line placement (see README-word-layout.md)
+	// Word-style layout, the docx4j FO renderer's (see README-word-layout.md)
 	provides org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer
 		with org.docx4j.fop.wordlayout.WordLayoutCustomizer;
-	provides org.apache.fop.fo.ElementMapping
-		with org.docx4j.fop.wordlayout.WordLayoutElementMapping;
 
 }

@@ -189,7 +189,13 @@ public final class FopCapabilities {
 		 *  the side is "both", or set below it - including lines laid before its anchor on that page,
 		 *  as Word wraps text round a page-anchored picture, text box, frame or table.  docx4j writes
 		 *  them on the containers it positions against the page (CR-032 phase 5).  @since 17.3.3 */
-		OBSTACLES_IN_THE_LINE("obstacles-in-the-line");
+		OBSTACLES_IN_THE_LINE("obstacles-in-the-line"),
+		/** Word layout in the renderer's own layout managers (fork CR-031; docx4j CR-071): Word's greedy line
+		 *  breaking, line placement, list items, citations, tabs and leaders, hyphenation zone and GDI
+		 *  rounding, turned on by {@code FopFactoryBuilder.setWordLayout} with docx4j's settings
+		 *  ({@link org.docx4j.fop.wordlayout.WordLayoutCustomizer}).  Without it (Apache FOP) docx4j lays out
+		 *  as plain FOP does: docx4j's own copy of those managers is gone.  @since 17.3.6 */
+		WORD_LAYOUT("word-layout");
 
 		private final String key;
 

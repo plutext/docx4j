@@ -18,15 +18,9 @@
  */
 package org.docx4j.fop.wordlayout;
 
-import java.util.HashMap;
-
-import org.apache.fop.fo.ElementMapping;
-
 /**
- * Registers the docx4j layout namespace with FOP so that its attributes on
- * fo:block are accepted (FOP rejects attributes in unknown namespaces as
- * invalid properties) and kept as the block's foreign attributes, where
- * {@link WordLineLayoutManager} reads them:
+ * The attributes of docx4j's layout namespace, {@link #URI}, that docx4j-export-fo writes into the FO for the
+ * renderer's Word layout to read: on fo:block,
  * <ul>
  * <li>{@code docx4j:line-box}: the height of the text box of each line (Word's
  * single-spacing pitch for the paragraph's font: ascent, descent and external
@@ -39,7 +33,7 @@ import org.apache.fop.fo.ElementMapping;
  * decides where any difference between the block's line-height and the box
  * goes: below as droppable leading, above, or nowhere (clipped).</li>
  * </ul>
- * and one on {@code fo:root}:
+ * and on {@code fo:root}:
  * <ul>
  * <li>{@code docx4j:space-shrink}: how far the spaces of a justified line may be
  * compressed to pull a word in (see {@link #SPACE_SHRINK});</li>
@@ -47,13 +41,20 @@ import org.apache.fop.fo.ElementMapping;
  * {@code docx4j:hyphenate-caps}: the document's hyphenation settings (see
  * {@link #HYPHENATION_ZONE}).</li>
  * </ul>
- * No elements are defined.  Found by FOP through META-INF/services
- * (org.apache.fop.fo.ElementMapping); docx4j-export-fo learns the namespace
- * from {@link WordLayoutCustomizer#extensionNamespace()}.
+ *
+ * <p>Until 17.3.6 this class was the FOP ElementMapping that registered the namespace, for docx4j's own copy of
+ * FOP's layout managers.  Since then the docx4j FO renderer registers it, in its own
+ * {@code org.apache.fop.layoutmgr.word.WordLayoutElementMapping} with these names (CR-071; a docx4j-export-fo-tests
+ * test checks that the two lists agree), and docx4j writes the attributes only when the renderer carries Word
+ * layout ({@link WordLayoutCustomizer#extensionNamespace()}).</p>
  *
  * @since 17.0.5
  */
-public class WordLayoutElementMapping extends ElementMapping {
+public final class WordLayoutElementMapping {
+
+	private WordLayoutElementMapping() {
+	}
+
 
 	public static final String URI = org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer.WORD_LAYOUT_NAMESPACE;
 
@@ -67,7 +68,7 @@ public class WordLayoutElementMapping extends ElementMapping {
 	 *  between the number and the text - "tab" or "space".  Absent for "nothing", and
 	 *  absent from a list block docx4j did not write for a numbered paragraph.  Word
 	 *  writes that separator as one space glyph in the PDF's text layer;
-	 *  {@link WordListItemLayoutManager} puts it in ours.  @since 17.2.0 */
+	 *  the renderer's list item manager puts it in ours.  @since 17.2.0 */
 	public static final String LABEL_SUFFIX = "label-suffix";
 	/** on a small-caps span: the fraction of the run's size its glyphs are drawn at.
 	 *  Word scales a small-caps run's glyphs, not its line, so the line is sized from the
@@ -100,17 +101,17 @@ public class WordLayoutElementMapping extends ElementMapping {
 	 *  @since 17.1.0 */
 	public static final String JUSTIFY_SOFT_RETURN = "justify-soft-return";
 
-	/** on an fo:leader: it stands in for a w:tab, and {@link WordLineLayoutManager}
+	/** on an fo:leader: it stands in for a w:tab, and the renderer's line manager
 	 *  gives it the width from the x it starts at to the tab stop it reaches. */
 	public static final String TAB = "tab";
 	/** on the <b>stretching</b> fo:leader of a table-of-contents entry: it came from a
-	 *  {@code w:tab} with a {@code w:leader}, so {@link WordLineLayoutManager} puts its
+	 *  {@code w:tab} with a {@code w:leader}, so the renderer's line manager puts its
 	 *  characters on Word's grid - but it is not laid out against the stops and gets no
 	 *  width from the line manager, which is why it is not {@link #TAB}.  The value is
 	 *  the {@code w:leader} kind.  @since 17.2.0 */
 	public static final String TOC_LEADER = "toc-leader";
 	/** on an fo:page-number-citation: the shape of the number Word last wrote there,
-	 *  which {@link WordPageNumberCitationLayoutManager} measures the citation by while its
+	 *  which the renderer's page-number-citation manager measures the citation by while its
 	 *  page is unknown.  @since 17.3.1 */
 	public static final String PLACEHOLDER = "placeholder";
 	/** on a paragraph's fo:block: its custom tab stops, "pos:align:leader;..." in
@@ -122,20 +123,4 @@ public class WordLayoutElementMapping extends ElementMapping {
 	/** with {@link #TABS}: "left:firstLineOffset" in twips, the paragraph's indents,
 	 *  which put the stops and the running x in one frame. */
 	public static final String TAB_IND = "tab-ind";
-
-	public WordLayoutElementMapping() {
-		namespaceURI = URI;
-	}
-
-	@Override
-	protected void initialize() {
-		if (foObjs == null) {
-			foObjs = new HashMap<String, Maker>(); // attributes only
-		}
-	}
-
-	@Override
-	public String getStandardPrefix() {
-		return "docx4j";
-	}
 }

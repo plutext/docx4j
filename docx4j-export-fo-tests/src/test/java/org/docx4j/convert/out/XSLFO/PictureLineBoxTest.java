@@ -137,28 +137,33 @@ public class PictureLineBoxTest extends AbstractXSLFOTest {
 
 	@Test
 	public void singleSpacedVisitor() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		theLineIsThePicture(0, Docx4J.FLAG_NONE);
 	}
 
 	@Test
 	public void singleSpacedXslt() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		theLineIsThePicture(0, Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
 	/** A 1.5 line multiple does not make the picture's line 1.5 x the picture. */
 	@Test
 	public void lineMultipleVisitor() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		theLineIsThePicture(360, Docx4J.FLAG_NONE);
 	}
 
 	@Test
 	public void lineMultipleXslt() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		theLineIsThePicture(360, Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
 	/** And the FO says so: the hint is the picture's height, not the run's line box. */
 	@Test
 	public void theHintIsThePictureHeight() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 
 		NodeList blocks = fo(pkg(360), Docx4J.FLAG_NONE).getElementsByTagNameNS(FO, "block");
 		Element pictureBlock = null;
@@ -185,6 +190,7 @@ public class PictureLineBoxTest extends AbstractXSLFOTest {
 	 */
 	@Test
 	public void effectExtentGrowsThePictureLine() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		String extent = "<wp:effectExtent l=\"0\" t=\"57150\" r=\"0\" b=\"57150\"/>"; // 4.5pt top and bottom
 		org.w3c.dom.Document fo = fo(pkg(360, extent), Docx4J.FLAG_NONE);
 		Element g = (Element) fo.getElementsByTagNameNS(FO, "external-graphic").item(0);

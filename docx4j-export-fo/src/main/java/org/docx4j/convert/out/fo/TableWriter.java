@@ -776,7 +776,7 @@ public class TableWriter extends AbstractTableWriter {
 
 	/** docx4j.convert.out.fo.tables.minimumAtBreakOpportunities: whether the autofit
 	 *  sizer takes a cell's minimum width to be its widest run between the line
-	 *  manager's break opportunities ({@link org.docx4j.fop.wordlayout.WordBreakOpportunities})
+	 *  manager's break opportunities ({@link BreakOpportunities})
 	 *  - a URL measured to its {@code ?} and its hyphens, where it will be broken - or,
 	 *  {@code false}, its widest white-space-delimited token, as 17.1.0 measured.
 	 *  @since 17.2.0 */
@@ -791,7 +791,7 @@ public class TableWriter extends AbstractTableWriter {
 	 * font-family and (via its ancestors) the font-size that FOP will use, so the
 	 * widths are FOP's own.  The minimum is the widest run between the line manager's
 	 * break opportunities - UAX #14 as FOP applies it, with Word's solidus rules
-	 * ({@link org.docx4j.fop.wordlayout.WordBreakOpportunities}), so that the
+	 * ({@link BreakOpportunities}), so that the
 	 * measurement agrees with the engine that lays the text out.  Until 17.2.0 it was
 	 * the widest white-space-delimited token: a 117-character URL which Word and the
 	 * line manager both break after its {@code ?} and its hyphens was measured whole,
@@ -939,7 +939,7 @@ public class TableWriter extends AbstractTableWriter {
 
 	/**
 	 * Measure one text node's characters into the line.  With {@code atBreaks} the
-	 * unit ends wherever {@link org.docx4j.fop.wordlayout.WordBreakOpportunities#breakBefore}
+	 * unit ends wherever {@link BreakOpportunities#breakBefore}
 	 * says a line may break; a run of ordinary spaces is held back and dropped when a
 	 * break follows it (FOP drops that glue at the line end, and with the default
 	 * white-space-treatment the next line starts flush), or counted into the unit when
@@ -953,7 +953,7 @@ public class TableWriter extends AbstractTableWriter {
 	private static void measureText(CharSequence text, org.docx4j.fonts.PhysicalFont pf, double sizePt,
 			LineMeasure line, boolean atBreaks) {
 		org.docx4j.fonts.fop.fonts.Typeface tf = org.docx4j.fonts.TextMeasurer.typeface(pf);
-		boolean[] brk = atBreaks ? org.docx4j.fop.wordlayout.WordBreakOpportunities.breakBefore(text) : null;
+		boolean[] brk = atBreaks ? BreakOpportunities.breakBefore(text) : null;
 		int n = text.length();
 		for (int i = 0; i < n; ) {
 			int cp = Character.codePointAt(text, i);

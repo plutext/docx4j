@@ -14,12 +14,12 @@ Two renderers are supported (docx4j CR-020):
   of this module from 17.3.0: an upstream-tracking fork of Apache FOP 2.12 maintained at
   https://github.com/plutext/xmlgraphics-fop, carrying the fixes docx4j found in FOP
   ahead of their upstream release and hooks for the Word layout rules that reflection
-  cannot reach. The layout is the same as on Apache FOP (the batch 49 baselines on the
-  two renderers agree on every document of a 449-document corpus and 146 probes, because
-  every hook-dependent rule has a reflective fallback); what the fork adds is a correct
-  text layer for CJK ideographs that share a glyph with a Kangxi radical (no workaround
-  exists for that on Apache FOP), a renderer whose internals the Word layout managers
-  are built against, so an Apache point release cannot break them, and, from 2.11-docx4j.2,
+  cannot reach. Since 17.3.6 it is also where **Word-style layout** lives: Word's line
+  breaking, line placement, list items, tabs and leaders are its own layout managers'
+  (`README-word-layout.md`), which docx4j turns on and configures; docx4j no longer
+  carries a copy of FOP's managers. The fork also gives a correct text layer for CJK
+  ideographs that share a glyph with a Kangxi radical (no workaround exists for that on
+  Apache FOP), and, from 2.11-docx4j.2,
   PDFs with every font subset: Word's ligature setting reaches the renderer as
   `fox:gsub-features`, so the single-byte `+noliga` font copies (which FOP embeds whole)
   are not used, and a corpus that rendered to 590 MB renders to 106 MB (Word: 190 MB).
@@ -33,14 +33,16 @@ Two renderers are supported (docx4j CR-020):
   `docx4j-fo-renderer-core`, `docx4j-fo-renderer-events` and `docx4j-fo-renderer-util`
   from `docx4j-export-fo` (its published pom lists all four) and depend on
   `org.apache.xmlgraphics:fop:2.12` yourself; `-Papache-fop` builds this module that way.
-  The rules that need a fork hook are then off (the start-up line below names them), and
-  the rest renders as before.
+  Since 17.3.6 docx4j then lays out **as plain FOP does**: Word-style layout is the docx4j
+  FO renderer's, so Knuth-Plass line breaking and FOP's own line placement, list items and
+  tabs apply, and docx4j says so once at start-up. The other rules that need a fork hook
+  are off too (the start-up line below names them).
 
 At start-up `org.docx4j.convert.out.fo.FopCapabilities` probes which one is present and
 logs one line at INFO, e.g. `FO renderer: Apache FOP 2.12, hooks: none (...)` or
 `FO renderer: docx4j-fo-renderer 2.12-docx4j.1, hooks: ...`. Every rule that needs a hook
-of the fork asks `FopCapabilities.has(...)` and falls back on Apache FOP, so the rendering
-on Apache FOP is what it was before the fork, and the line says which rules are off.
+of the fork asks `FopCapabilities.has(...)` and falls back on Apache FOP, and the line says
+which rules are off; Word layout (`word-layout`) is the largest of them.
 
 The fork keeps Apache's Java packages (`org.apache.fop`) and automatic module names, so a
 consumer's own FOP extensions work on either. The corollary: **never put both on one

@@ -18,19 +18,29 @@
  */
 package org.docx4j.fop.wordlayout;
 
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiFunction;
+
 import org.apache.fop.apps.FopFactoryBuilder;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.convert.out.FOSettings;
+import org.docx4j.convert.out.fo.FopCapabilities;
 import org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Registers Word-style layout (line breaking and line placement) with every
- * FopFactory docx4j builds.  Part of docx4j-export-fo, found through
- * ServiceLoader (META-INF/services), and on by default; nothing has to be
- * added to the classpath.  Turn it off with the docx4j property
+ * Turns on Word-style layout (line breaking and line placement, list items, citations, tabs and leaders) in every
+ * FopFactory docx4j builds, and hands it docx4j's settings.  Part of docx4j-export-fo, found through ServiceLoader
+ * (META-INF/services), and on by default.  Turn it off with the docx4j property
  * docx4j.convert.out.fo.wordLayout=false, which restores plain FOP layout.
+ *
+ * <p>Since 17.3.6 the layout is the docx4j FO renderer's own (CR-071; the renderer's hook {@code word-layout}):
+ * docx4j's copy of FOP's layout managers is gone.  On Apache FOP docx4j lays out as plain FOP does, and says so
+ * once.  The tuning properties keep their names and are read as before, a system property first, then
+ * docx4j.properties.</p>
  */
 public class WordLayoutCustomizer implements FopFactoryCustomizer {
 
@@ -596,12 +606,15 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 		return doubleProperty(MAX_SPACE_SHRINK);
 	}
 
-	/** The namespace of the line-box attributes WordLineLayoutManager reads, when
-	 *  Word layout is on (otherwise docx4j leaves them out). */
+	/** The namespace of the attributes the renderer's Word layout reads, when Word layout is on and the renderer
+	 *  carries it (otherwise docx4j leaves them out: FOP rejects a namespace no ElementMapping registers). */
 	@Override
 	public String extensionNamespace() {
-		return Docx4jProperties.getProperty(PROPERTY, true) ? WordLayoutElementMapping.URI : null;
+		return Docx4jProperties.getProperty(PROPERTY, true) && FopCapabilities.has(FopCapabilities.Capability.WORD_LAYOUT)
+				? WordLayoutElementMapping.URI : null;
 	}
+
+	private static final AtomicBoolean WARNED = new AtomicBoolean();
 
 	@Override
 	public void customize(FopFactoryBuilder builder, FOSettings settings) {
@@ -609,7 +622,55 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 			log.debug("Word layout disabled by " + PROPERTY);
 			return;
 		}
-		builder.setLayoutManagerMakerOverride(new WordLayoutManagerMaker());
-		log.debug("Word layout enabled");
+		if (!FopCapabilities.has(FopCapabilities.Capability.WORD_LAYOUT)) {
+			if (WARNED.compareAndSet(false, true)) {
+				log.warn("Word layout (" + PROPERTY + ") needs the docx4j FO renderer (org.docx4j:docx4j-fo-renderer),"
+						+ " which carries it; " + FopCapabilities.get().getVersion() + " lays the PDF out as plain FOP"
+						+ " does: its own line breaking, line placement, list items, tabs and leaders");
+			}
+			return;
+		}
+		try {
+			// by reflection: docx4j-export-fo also compiles against Apache FOP (CR-071 D3)
+			builder.getClass().getMethod("setWordLayout", Map.class).invoke(builder, settings());
+			builder.getClass().getMethod("setWordLayoutFontMetrics", BiFunction.class).invoke(builder, ASCENT_SHARE);
+			log.debug("Word layout enabled");
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			log.warn("The FO renderer advertises word-layout but its settings could not be passed (" + e
+					+ "); the PDF is laid out as plain FOP lays it out");
+		}
 	}
+
+	/**
+	 * Every docx4j.convert.out.fo.wordLayout.* setting, by its full name, with the value docx4j resolves for it: the
+	 * system property where one is set, else docx4j.properties'.  The renderer reads the ones its layout uses (23,
+	 * fork CR-031), each absent one taking its default, and ignores the rest (those docx4j's FO writer reads).
+	 */
+	static Map<String, String> settings() {
+		String prefix = PROPERTY + ".";
+		Map<String, String> m = new TreeMap<>();
+		java.util.Properties docx4j = Docx4jProperties.getProperties();
+		for (String k : docx4j.stringPropertyNames()) {
+			if (k.startsWith(prefix)) m.put(k, docx4j.getProperty(k));
+		}
+		for (String k : System.getProperties().stringPropertyNames()) {
+			if (k.startsWith(prefix)) m.put(k, System.getProperty(k));
+		}
+		return m;
+	}
+
+	/**
+	 * For the renderer's Word line ({@code setWordLayoutFontMetrics}): a run's share of its line's pitch above the
+	 * baseline, {@code (winAscent + externalLeading) / lineHeightFactor()} of the document font's Word metrics
+	 * (WordLineMetrics), given the run's document font ({@code docx4j:font}, may be null) and the full name of the
+	 * physical font that renders it; null where those metrics are unknown or a fallback, and the renderer takes the
+	 * block font's ratio.  The renderer keeps the rule for the block's own text.
+	 */
+	static final BiFunction<String, String, Double> ASCENT_SHARE = (documentFont, physicalFullName) -> {
+		org.docx4j.fonts.PhysicalFont pf = org.docx4j.fonts.PhysicalFonts.get(physicalFullName);
+		if (pf == null && documentFont == null) return null;
+		org.docx4j.fonts.WordLineMetrics.Metrics m = org.docx4j.fonts.WordLineMetrics.get(documentFont, pf);
+		return m != null && !m.fallback && m.lineHeightFactor() > 0
+				? (m.winAscent + m.externalLeading) / m.lineHeightFactor() : null;
+	};
 }

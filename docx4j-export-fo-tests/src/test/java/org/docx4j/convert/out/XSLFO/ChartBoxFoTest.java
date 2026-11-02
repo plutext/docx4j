@@ -256,6 +256,7 @@ public class ChartBoxFoTest extends AbstractXSLFOTest {
 
 	@Test
 	public void textAfterAnInlineChartIsBelowIt() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 
 		for (int flags : PATHWAYS) {
 			Map<String, Float> y = lineTops(doc(false), flags);

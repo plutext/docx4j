@@ -71,6 +71,7 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 
 	@Test
 	public void testPhase1DroppedContent() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 
 		for (int flag : FLAGS) {
 			org.w3c.dom.Document doc = w3cDomDocumentFromByteArray(toFO(phase1Pkg(), flag));
@@ -354,6 +355,7 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 
 	@Test
 	public void testPhase4ParagraphFidelity() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 
 		for (int flag : FLAGS) {
 			org.w3c.dom.Document doc = w3cDomDocumentFromByteArray(toFO(phase4Pkg(), flag));

@@ -128,6 +128,7 @@ public class CompatFlagsTest extends AbstractXSLFOTest {
 	 */
 	@Test
 	public void aLineEndingInASoftReturnIsJustified() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		for (int flag : FLAGS) {
 			List<Double> free = lineEnds(areaTree(pkg(JUSTIFIED_WITH_BREAK), flag));
 			List<Double> set = lineEnds(areaTree(
@@ -284,6 +285,7 @@ public class CompatFlagsTest extends AbstractXSLFOTest {
 	 */
 	@Test
 	public void noTabHangIndDropsTheImplicitStop() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		for (int flag : FLAGS) {
 			double implicit = lineEnds(areaTree(pkg(HANGING_TAB), flag)).get(0).doubleValue();
 			double grid = lineEnds(areaTree(

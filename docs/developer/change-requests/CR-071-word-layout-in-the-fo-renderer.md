@@ -1,8 +1,10 @@
 # CR-071: Word layout in the docx4j FO renderer; docx4j drops its copy of FOP's layout managers
 
 Status: ACCEPTED 2026-11-02 (Jason: "CR-071 D1 to D11 as recommended, except for D9 where we decide on (a)"): the move
-lands in 2.12-docx4j.1 and docx4j 17.3.6, whose releases wait for it. Phase 0 DONE 2026-11-02 (gate b302); phase 1 is
-the fork session's. Proposed the same day (Jason: "what if we just had the single copy in the fork, and accepting that
+lands in 2.12-docx4j.1 and docx4j 17.3.6, whose releases wait for it. Phase 0 DONE 2026-11-02 (gate b302); phase 1 DONE
+by the fork session (fop/CR-031, drop r51, 27ed437d3); phase 2 DONE 2026-11-02 (gates b303 and b304 on r51: 0 movers,
+events equal; the copy deleted). What remains of phase 2 is its release step: the pom to 2.12-docx4j.1 once the fork
+releases it to Central. Proposed the same day (Jason: "what if we just had the single copy in the fork, and accepting that
 -Papache-fop, docx4j on stock Apache FOP, would not have Word's line breaking?", then "write the CR please").
 Drafted by Claude Opus 5.5 (session docx4j-12). Decisions D1 to D11 (section 6): as recommended, D9 (a). In CR-020's family
 (the fork, `../xmlgraphics-fop-plutext`); the fork's side is the fork session's, under a fork CR of its own.
@@ -135,6 +137,37 @@ Tests: 19 in docx4j-export-fo (`org.docx4j.fop.wordlayout`: `GreedyLineBreakingT
   the float's foot. It has no switch in the fork, and the copy never sets it, though its greedy path goes through its
   own `updateData2`; Word mode built on the fork's would start moving such lines. Then delete the copy, move or skip the tests (D7), README-word-layout.md,
   CHANGELOG, CR-001 §6.6's workaround entries (they become fork code). Released with the fork release.
+  **DONE 2026-11-02** (Jason: "do CR-071 phase 2"), on the fork session's drop r51 (fork 27ed437d3, core sha256
+  98eb2a20...; the API final as §9 has it):
+  - `WordLayoutCustomizer` hands the renderer its settings when it advertises `word-layout`
+    (`FopCapabilities.Capability.WORD_LAYOUT`, the 28th hook): `setWordLayout` with every
+    `docx4j.convert.out.fo.wordLayout.*` setting, a system property over docx4j.properties (the keep-chain keys,
+    which the copy read from docx4j.properties only, now also take a system property), and `setWordLayoutFontMetrics`
+    with `ASCENT_SHARE` (§9's callback), both by reflection. No maker override, no pair-table flip from docx4j.
+    `extensionNamespace()` names the namespace only when the renderer carries Word layout, so on Apache FOP no
+    `docx4j:` attribute is written and a tab after text keeps its stand-in; `customize` says once that Word layout
+    needs the docx4j FO renderer (D1).
+  - D6: `org.docx4j.convert.out.fo.BreakOpportunities` gives `TableWriter` the fork's
+    `WordBreakOpportunities.breakBefore` (a method handle, found once) or UAX #14 as FOP applies it.
+  - The copy deleted: the eight managers and helpers, `LBP`, `FopHooks`, `LeadingGlue` (7,449 lines with the two
+    stale `META-INF/services` and `module-info` entries), and docx4j's ElementMapping registration;
+    `WordLayoutElementMapping` stays as docx4j's list of the attribute names, a constants class, which
+    `WordLayoutAttributesTest` (export-fo-tests, on the fork) checks against the renderer's.
+  - D7: the 20 test classes of the copy deleted (11,532 lines in all with the main code): every test method of the 19
+    is among the fork's ported test cases (by name, 13 classes plus its settings test), and `FopHooksTest`'s six test
+    the deleted class. D7 named 7 FO-path test classes from reading; measured on Apache FOP 2.12 (`-Papache-fop`), 51
+    methods in 21 classes of export-fo-tests fail without the renderer's Word layout (the attributes, real tabs and
+    leaders, picture line boxes, the list suffix space, widows across soft returns, the compat flags), and those 51
+    carry `WordLayoutOn.assume()`; 4 of `WordLayoutFixupsTest`'s 96, none of `TabAlignmentTest`'s. export-fo 110 and
+    export-fo-tests 872 pass on r51 and on Apache FOP 2.12.
+  - Gate: b303 (this phase's export-fo with the copy still in the jar, unused) and b304 (the copy deleted), each with
+    b302's other jars and r51's core, events and util, against b302; scoremany + probes on 12 threads, 93 s and 92 s:
+    0 movers; every scoreboard and classes.txt identical in real, real2, real3, real-c2 and the probes; events equal
+    (linebig 3243, line 17776, clip 1552, bcov 1276, bcovi 516, region 73, body 18, glyph 63, font 8, other 87);
+    28 hooks, `word-layout` among them. Enterprise register attempts.md; CR-001 §6.6 items 16, 22, 27, 28, 29, 36,
+    37, 38, 40 and 50 carry a dated note that their docx4j-side code is now the renderer's.
+  - README-word-layout.md rewritten (what docx4j does, what the renderer does, Apache FOP), the module README's
+    renderer section, word-layout-rules.md's preface, docx4j-fo.properties' comment, CHANGELOG.
 - **Phase 3 (the fork, then a docx4j gate).** CR-023's overflow-beside-float mark turned on under Word mode (D11), as a
   step of its own with its own gate. Re-measure there what CR-001 §6.6 item 8 calls "float-overflow-below measured
   inert on docx4j's tables": that reading went through docx4j's managers, which never set the mark, so it may not say

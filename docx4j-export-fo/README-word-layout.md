@@ -1,13 +1,15 @@
-# Word-style layout (org.docx4j.fop.wordlayout)
+# Word-style layout
 
-Word-style line breaking and line placement for docx4j's PDF output via Apache
-FOP (Enterprise CR-001, Phase 5). The code is part of docx4j-export-fo, in the
-package `org.docx4j.fop.wordlayout` — there is no separate jar to add. It is on
-by default: docx4j-export-fo finds `WordLayoutCustomizer` through
-`ServiceLoader` (`META-INF/services`) and installs it on every FopFactory it
-builds. Turn it off with the docx4j property
-`docx4j.convert.out.fo.wordLayout=false`, which restores plain FOP layout (the
-`docx4j:` attributes below are then not written either).
+Word-style layout for docx4j's PDF output: line breaking, line placement, list items,
+page-number citations, tabs and leaders, Word's hyphenation zone and GDI rounding
+(Enterprise CR-001, phase 5 and later). Since 17.3.6 the layout is the **docx4j FO
+renderer's** own, in its layout managers (`org.docx4j:docx4j-fo-renderer`, its hook
+`word-layout`; fork CR-031, docx4j CR-071). docx4j's copy of FOP's layout managers,
+which until 17.3.5 lived in `org.docx4j.fop.wordlayout`, is gone.
+
+It is on by default. Turn it off with the docx4j property
+`docx4j.convert.out.fo.wordLayout=false`, which restores plain FOP layout (and the
+`docx4j:` attributes below are then not written).
 
 ## What it changes
 
@@ -20,88 +22,59 @@ differently, and every later line and page moves.
 For justified text Word also compresses the spaces of a line to pull one more
 word in, down to about three quarters of their natural width (measured from
 Word 365 output; glyphs keep their width). The limit is
-`docx4j.convert.out.fo.wordLayout.maxSpaceShrink`, default 0.24, which is
-the value at which the harness's justified probe breaks 98% of its lines as
-Word does.
+`docx4j.convert.out.fo.wordLayout.maxSpaceShrink`, default 0.245.
 
 Measured with the harness in `docx4j-layout-fidelity` against Word 365 goldens:
-line-break parity on ragged prose 72% -> 100%, justified prose 63% -> 98%; 14 of
-22 probes at 100%.
+line-break parity on ragged prose 72% -> 100%, justified prose 63% -> 98%. The
+rules and their measurements are in `docs/word-layout-rules.md`; the settings in
+`docs/word-layout-settings.md`.
 
-## How
+## What docx4j does, and what the renderer does
 
-FOP exposes no first-fit option and its line manager's breaking algorithm is a
-private inner class, so this package carries a copy of FOP 2.11's
-`LineLayoutManager` (`WordLineLayoutManager`, Apache License 2.0) whose
-breaking loop is greedy, a `WordBlockLayoutManager` that creates it, and a
-`WordLayoutManagerMaker` that FOP is given through
-`FopFactoryBuilder.setLayoutManagerMakerOverride`. A few package-private or
-private FOP members are reached by reflection (`LBP`: `LineBreakPosition`,
-`AlignmentContext`'s constructor and line-height, `InlineLayoutManager.font`,
-`TextLayoutManager`'s mappings/letterSpaceIPD/foText, and
-`LeafNodeLayoutManager`'s `areaInfo`/`curArea` with `AreaInfo.ipdArea`);
-fop-core is an automatic module, so that needs no `--add-opens`.
+docx4j writes the FO and hands the renderer its settings; the renderer lays it out.
 
-Since CR-001 §6.9 these managers also place lines as Word does. docx4j writes three
-attributes on each paragraph's `fo:block` in the namespace
-`http://docx4j.org/fop/word-layout`, which `WordLayoutElementMapping` registers
-with FOP (through `META-INF/services/org.apache.fop.fo.ElementMapping`) so FOP
-keeps them as the block's foreign attributes instead of rejecting them:
+- **`WordLayoutCustomizer`** (found through `ServiceLoader`) turns the renderer's Word
+  layout on for every FopFactory docx4j builds, by
+  `FopFactoryBuilder.setWordLayout(Map<String,String>)`: every
+  `docx4j.convert.out.fo.wordLayout.*` setting by its full name, a system property
+  over `docx4j.properties`. The renderer reads the ones its layout uses and takes the
+  default for any not set; the names users set did not change. It also passes,
+  through `setWordLayoutFontMetrics`, the run fonts' Word metrics
+  (`WordLineMetrics`), which the renderer cannot read for itself. Both calls are made
+  by reflection, since this module also compiles against Apache FOP.
+- **The `docx4j:` attributes** (namespace `http://docx4j.org/fop/word-layout`; their
+  names are `WordLayoutElementMapping`'s constants, and the renderer registers the
+  namespace) carry what the layout needs from the document: on each paragraph's
+  `fo:block` the line box, baseline and line rule (`docx4j:line-box`,
+  `docx4j:baseline`, `docx4j:line-rule`), the tab stops (`docx4j:tabs`,
+  `docx4j:tab-default`, `docx4j:tab-ind`), a list label's ascent and separator; on
+  `fo:root` the document's hyphenation settings (`docx4j:hyphenation-zone`,
+  `docx4j:hyphen-limit`, `docx4j:hyphenate-caps`), the justification limit
+  (`docx4j:space-shrink`) and `w:noTabHangInd`; on spans and leaders the small-caps
+  scale, a tab, a TOC leader, a page-number placeholder. docx4j writes them only when
+  the renderer carries Word layout (`WordLayoutCustomizer.extensionNamespace()`).
+- **A table's column widths** are measured by where a line may break
+  (`TableWriter`): the renderer's own break opportunities
+  (`org.apache.fop.layoutmgr.word.WordBreakOpportunities`), else UAX #14 as FOP
+  applies it.
 
-- `docx4j:line-box`: the text box of a line (the paragraph font's
-  single-spacing pitch: usWinAscent + usWinDescent + external leading);
-- `docx4j:baseline`: the baseline within it (ascent + external leading);
-- `docx4j:line-rule`: `auto`, `exact` or `atLeast` (`w:lineRule`).
+Comments in docx4j that name `WordLineLayoutManager`, `WordListItemLayoutManager`,
+`WordPageNumberCitationLayoutManager` or `LBP` refer to what those classes did here
+until 17.3.5; the behaviour is now the renderer's (its `LineLayoutManager` in Word
+mode and the Word managers beside it), and its tests are the renderer's too.
 
-`WordLineLayoutManager` sizes each line from the runs on it (each run's span
-carries Word's pitch as its `line-height`, read from the alignment context by
-reflection, and its font's ascent share from `WordLineMetrics`), then applies
-the rule: for `auto` the block's `line-height` / box is the multiple and the
-extra goes *below* the text as a `LeadingGlue` emitted after the break
-possibility that follows the line, so FOP's page breaker drops it when it takes
-the break (the last line of a page keeps only its text box, as in Word).
-`WordFlowLayoutManager` moves a paragraph's last leading behind the break the
-flow adds after the block. `exact` clips the line to the box; `atLeast` puts a
-shortfall above the text.
+## On Apache FOP
 
-A tab in the middle of a line is placed here too (its stops measured against
-Word): docx4j emits it
-as an `fo:leader` of no length marked `docx4j:tab`, and the paragraph's block
-carries `docx4j:tabs` (its `w:tabs`, `pos:align:leader` in twips from the left
-margin), `docx4j:tab-default` (`w:defaultTabStop`) and `docx4j:tab-ind`
-(`left:firstLineOffset:decimalSymbol`). The line manager gives the leader's Knuth
-glue - and, through `LBP.setLeafIPD`, the leader layout manager's own record of
-its width - the distance from the x it starts at to the stop it reaches;
-`TabStopTest` checks the positions on a monospace font. docx4j writes the
-attributes only when
-`WordLayoutCustomizer.extensionNamespace()` reports the namespace (Word layout
-on), because FOP rejects them without the mapping. `WordLeadingTest`
-checks the page fit on a monospace font.
-
-Automatic hyphenation is decided here too, by Word's rules (`w:hyphenationZone`,
-`w:consecutiveHyphenLimit`, `w:doNotHyphenateCaps`, carried on `fo:root` as
-`docx4j:hyphenation-zone`, `docx4j:hyphen-limit` and `docx4j:hyphenate-caps`).
-FOP's own `findHyphenationPoints` puts a flagged penalty at every point the
-patterns allow; the greedy loop keeps the last one that fits alongside the last
-whole-word break, and prefers it only where the gap the whole word would leave
-is greater than the zone and the consecutive limit is not reached.
-`getHyphenContext` returns null for a word in capitals when the caps rule is on,
-so no point is inserted in it at all. `HyphenationTest` checks all of that on a
-monospace font; it needs hyphenation patterns, which FOP does not ship, so
-`net.sf.offo:fop-hyph` is a **test-scope** dependency of this module (it is not
-under the Apache licence and is a dependency of nothing docx4j publishes).
-
-The copy carries one fix to FOP's own code as well: `updateData2` reads
-`curChildLM.getFObj()` without checking `curChildLM`, which is null on the float
-re-layout pass, so a line that has to be broken in what is left beside a wide
-`fo:float` threw `NullPointerException` and failed the whole export. Plain FOP
-2.11 throws the same on the same FO; the block it guards only reports the
-overflow. Keep the null check when re-deriving, and drop it if FOP fixes it.
+On Apache FOP (`-Papache-fop`, or a consumer who excludes the docx4j FO renderer)
+docx4j lays out as plain FOP does: Knuth-Plass breaking, FOP's line placement, and a
+tab after text keeps its stand-in of three no-break spaces. It logs once that Word
+layout needs the docx4j FO renderer. The tests of Word layout in docx4j-export-fo-tests
+are skipped there (`WordLayoutOn.assume()`).
 
 ## Glyph advances (org.docx4j.fop.fonts)
 
-The other copy this module carries is a small one, and it is worth one line
-upstream. FOP's `OpenFont.convertTTFUnit2PDFUnit` converts a font's advance
+The one copy of FOP code this module still carries is a small one, and it is
+worth one line upstream. FOP's `OpenFont.convertTTFUnit2PDFUnit` converts a font's advance
 widths to 1/1000 em by integer division —
 
 ```java
@@ -133,14 +106,3 @@ correction goes into the array both FOP's line measure and the PDF renderer's
 is first loaded, so a font the document never uses is never read.
 `docx4j.convert.out.fo.glyphWidths.round=false` turns it off. Drop the whole package if
 FOP fixes the conversion.
-
-The copy is tied to FOP 2.11 internals. When FOP is upgraded, re-derive it:
-copy the new `LineLayoutManager.java`, rename, extend `LineLayoutManager`,
-route `LineBreakPosition` and `AlignmentContext` construction through `LBP`,
-and re-apply the greedy members of the inner `LineBreakingAlgorithm`
-(`findBreakingPoints`, `considerLegalBreak`, `fitsByShrinkingSpaces`,
-`commit`, `greedyBreakPoints`, `handleGlueAt`/`computeDifference` for tabs,
-`commitLastFitting`/`hyphenationAllowed` for hyphenation), the caps check in
-`getHyphenContext`, the null check in `updateData2`, and the single-pass
-`findOptimalBreakingPoints`. `GreedyLineBreakingTest` checks the result on a
-monospace font where every expected break can be counted.

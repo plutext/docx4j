@@ -104,6 +104,7 @@ public class PagerefMissingBookmarkTest {
 	 */
 	@Test
 	public void aPagerefCarriesTheShapeOfItsCachedNumber() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume(); // CR-071 D7: Word layout is the renderer's
 		for (int flag : FLAGS) {
 			String fo = fo(ENTRY.replace(">7<", ">60<") + HEADING, flag);
 			assertTrue("the two-digit shape: " + fo, fo.contains("docx4j:placeholder=\"00\""));

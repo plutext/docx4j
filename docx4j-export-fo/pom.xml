@@ -121,7 +121,7 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- the org.docx4j.fop.wordlayout tests lay text out in a known font -->
+		<!-- tests that lay text out in a known font -->
 		<dependency>
             <groupId>org.docx4j</groupId>
 			<artifactId>docx4j-export-fo-fonts-liberation</artifactId>

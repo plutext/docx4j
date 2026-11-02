@@ -35,6 +35,10 @@ Changes in Version 17.3.6
   (① was U+FFFD). An FO that is not well-formed XML now fails with its parse error.
 - A paragraph whose line breaking restarts beside a left float keeps its first word (FOP-3331, which docx4j's own
   line layout manager lacked; CR-071 phase 0).
+- Word-style layout is the docx4j FO renderer's own (2.12-docx4j.1, hook `word-layout`): docx4j's copy of FOP's
+  layout managers in `org.docx4j.fop.wordlayout` is gone, its output unchanged on the renderer (gated). The
+  `docx4j.convert.out.fo.wordLayout.*` settings keep their names. On Apache FOP (`-Papache-fop`) docx4j now lays out
+  as plain FOP does, and says so once (CR-071).
 
 **Java 25.**
 - docx4j sets its own XML element-depth limit, 256 (`docx4j.xml.maxElementDepth`, 0 for none), on the parsers it

@@ -24,17 +24,18 @@ import org.docx4j.convert.out.FOSettings;
 /**
  * A hook into the FopFactoryBuilder docx4j prepares for each PDF export,
  * discovered through {@link java.util.ServiceLoader}.  docx4j's own
- * org.docx4j.fop.wordlayout (in this jar) uses it to install Word-style
- * layout; an application can register its own to set FOP options docx4j
- * does not expose.
+ * org.docx4j.fop.wordlayout.WordLayoutCustomizer (in this jar) uses it to turn
+ * on the docx4j FO renderer's Word-style layout; an application can register
+ * its own to set FOP options docx4j does not expose.
  *
  * @since 17.0.5
  */
 public interface FopFactoryCustomizer {
 
-	/** The namespace of the layout attributes org.docx4j.fop.wordlayout's line manager
-	 *  reads from fo:block (docx4j:line-box, docx4j:baseline); its ElementMapping
-	 *  registers it with FOP.  @since 17.0.5 */
+	/** The namespace of the layout attributes the docx4j FO renderer's Word layout
+	 *  reads from the FO (docx4j:line-box, docx4j:baseline, ...); the renderer
+	 *  registers it with FOP (until 17.3.6, docx4j's own ElementMapping did).
+	 *  @since 17.0.5 */
 	String WORD_LAYOUT_NAMESPACE = "http://docx4j.org/fop/word-layout";
 
 	void customize(FopFactoryBuilder builder, FOSettings settings);
