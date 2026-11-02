@@ -6,7 +6,7 @@ address form): S2 is docx4j's first, and the oracle for S5's cross-references. T
 phase of CR-046's model. It is a CR of its own because it reaches past the text model into the numbering model
 (CR-014's package) and the field evaluator (CR-067). Phase 0 DONE 2026-11-03 (Jason's Word run): Word's rules for
 the full, no and relative context, `\t`, `\p`, `\d`, the tracked-change view and its own insertion are measured
-(§3.1). Decisions in §5, for Jason, updated for the results; phases in §6.
+(§3.1). Decisions in §5, for Jason, updated for the results, with D11 (the revision view) from Jason's rule of 3 November; phases in §6.
 
 ## 0. Summary
 
@@ -136,7 +136,8 @@ level and list. `find(String)` returns one clause, or throws `ClauseLookupExcept
 paragraph that carries the label when several do, with their addresses; the near misses when none does (D3).
 `Clause.scope()` returns the blocks from the clause's paragraph up to the next paragraph of its list at its level or
 above (D4). `Clauses.of` counts in the result's view, so in `accepted` a deleted numbered paragraph carries no clause
-and those after it renumber (D6). docx4j-mcp passes the exception's message through as its tool's refusal (its CR §23.7,
+and those after it renumber (D6). The same label can name different paragraphs in different views, so every clause and
+every lookup error names its view (D11). docx4j-mcp passes the exception's message through as its tool's refusal (its CR §23.7,
 c5ece24), so the message is written for an agent to read: the query, the candidates with their addresses, the near
 misses.
 
@@ -163,6 +164,7 @@ S5's engine half, ts-editor's manual-to-real cross-reference.
 | D7 | REF's switches | **`\n`, `\r`, `\w`, `\t`, `\p` and `\d` evaluated** from the same model, as §3.1 measures them; `\h` changes nothing in the result; `\f` stays unsupported. One oracle for the label and the field, as python asked |
 | D8 | A cross-reference writer | **Yes, small (§4.5)**, so that S5's engine half ports a tested writer, not a description. Alternative: goldens only |
 | D9 | The WD | **Ask the portfolio for a `clause` member in the JSON `numbering` object and a REQ for its rule** (the full-context form is not in REQ-510) |
+| D11 | The revision view (Jason, 3 November 2026, portfolio e314871, `docs/clause_numbers.md` §2 V1: "semantics of 'find clause 10.3' when there are tracked changes must depend on the specified view (as if accepted, rejected etc)") | **A clause belongs to a paragraph under a view, and the view is the `TextResult`'s.** `Clauses.of(TextResult)` counts in the view the result was extracted under (`TextOptions.view`, `accepted` by default), and `Clauses.of(pkg, TextView)` is the shorthand. Every `Clause` and every `ClauseLookupException` names its view (`getView()`; the message says "under the accepted view"), so a hit says how it was resolved. `TextNumbering.getClause()` is the block's clause in its result's view. The markup view counts as accepted (WD 0.64, REQ-510); docx4j's markup view counts a paragraph whose mark is deleted today (case T: T2 `2.`, T4 `3.`), and that fix is its own item, waiting on Jason. The original view counts the document as if every change were rejected; Word's drawn count there is unmeasured (the hand look under Review > Original is open with Jason) |
 | D10 | The suffix (docx4j-mcp's question 3) | **The clause holds no suffix**, nor does `ParagraphNumber.label()`. `TextBlock.getListLabel()` keeps the tab it carries today, which is what plain text emits under `list_labels` |
 
 ## 6. Phases
