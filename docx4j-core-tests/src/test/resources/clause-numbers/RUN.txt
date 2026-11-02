@@ -1,0 +1,33 @@
+CR-074 phase 0 (docx4j): what Word shows for a numbered paragraph as a cross-reference, and what its own Insert
+Cross-reference writes.
+
+On the VM, in Windows PowerShell (Word closed):
+
+  powershell -ExecutionPolicy Bypass -File X:\clause-numbers\clause-numbers-probe.ps1
+
+Add -Visible to watch Word. Expected time: a minute or two.
+
+What it does: opens copies (in %TEMP%\clause-numbers-probe) of the two docx4j-built files here.
+
+1. cn-1-labels.docx: lists every numbered paragraph with the label Word draws and the numbered items the Insert
+   Cross-reference dialog offers; has Word update its 655 REF fields (each over a bookmark on a numbered paragraph,
+   in full, no and relative context, with and without \t, a few with \p, \d and \h); lists every field's code and
+   result; saves cn-1-labels-word365.docx. Then updates case T's fields again with no markup shown and with the
+   original shown, and lists them (not saved).
+2. cn-2-insert.docx (the same lists, no bookmarks or fields): has Word insert its own cross-references to numbered
+   items (full, no and relative context, as hyperlinks or not, with above/below, with a separator, the paragraph
+   text) at X1 to X6 and in L9 and L11; lists every field and every bookmark, hidden ones included; saves
+   cn-2-insert-word365.docx.
+
+Everything goes to clause-numbers-log.txt here, Word's version and build first. A step that fails is logged as FAILED
+and the script goes on.
+
+If it hangs: end WINWORD.EXE in Task Manager and run it again. Outputs already here are skipped, so it resumes; to
+redo everything, delete the two -word365.docx files and clause-numbers-log.txt.
+
+If a step FAILED on InsertCrossReference (part 2), one manual check is enough instead: open cn-2-insert.docx, put the
+cursor at the end of X1, References > Cross-reference, Reference type "Numbered item", Insert reference to
+"Paragraph number (full context)", Insert as hyperlink ticked, pick "L6 level 2", Insert; then the same with
+"Paragraph number" and "Paragraph number (no context)"; save as cn-2-insert-word365.docx here.
+
+Then tell the docx4j session "clause-numbers done".
