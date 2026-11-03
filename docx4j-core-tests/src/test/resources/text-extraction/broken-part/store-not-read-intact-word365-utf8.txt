@@ -1,0 +1,5 @@
+﻿SNR_BEGIN
+A (names store 1): STORE1_VALUE
+B (names store 2): STORE2_VALUE
+C (names no store): STORE1_VALUE
+SNR_END

@@ -1,0 +1,20 @@
+﻿BP_BEGIN
+theme language caps: ISTANBUL_THEME
+direct language caps: İSTANBUL_LANG
+1. heading one
+1. item one
+2. item two
+3. heading two
+4. item three
+visible HIDDEN_BY_STYLE shown
+CAPS_BY_STYLE
+SMALL_CAPS_BY_STYLE
+direct HIDDEN_DIRECT shown
+kept INSERTED_RUN end
+title: META_CORE_TITLE
+company: META_APP_COMPANY
+custom: META_CUSTOM_VALUE
+commented text[AA1][AB2]
+BP_END
+[AA1]COMMENT_TEXT_A
+[AB2R1]COMMENT_REPLY_B

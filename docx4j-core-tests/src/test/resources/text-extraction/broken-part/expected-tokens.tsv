@@ -1,0 +1,216 @@
+case	token	accepted	original	markup	option	with_option	note	fixture	statements
+100	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: no repair	broken-part-intact.docx	REQ-501
+100	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-501
+100	İSTANBUL_THEME	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-intact.docx	REQ-607, WD 0.72 (1)
+100	ISTANBUL_THEME	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-607, WD 0.72 (1)
+100	İSTANBUL_LANG	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-607
+100	STYLE_LIST_1	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-510
+100	STYLE_LIST_2	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-510
+100	DIRECT_LIST_1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-510
+100	DIRECT_LIST_2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-510
+100	1. first heading	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-intact.docx	REQ-510
+100	2. second heading	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-intact.docx	REQ-510
+100	1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-intact.docx	REQ-510
+100	2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-intact.docx	REQ-510
+100	HIDDEN_BY_STYLE	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-507
+100	CAPS_BY_STYLE	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-607
+100	caps_by_style	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-intact.docx	REQ-607
+100	SMALL_CAPS_BY_STYLE	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-607
+100	small_caps_by_style	1	1	1	profile: word-text; list_labels: true; fields: update	0		broken-part-intact.docx	REQ-607
+100	HIDDEN_DIRECT	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-507
+100	INSERTED_RUN	1	0	ins				broken-part-intact.docx	REQ-401
+100	DELETED_RUN	0	1	del				broken-part-intact.docx	REQ-401
+100	TITLE_FIELD_STALE	1	1	1	profile: word-text; list_labels: true; fields: update	0		broken-part-intact.docx	REQ-506
+100	META_CORE_TITLE	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-506
+100	COMPANY_FIELD_STALE	1	1	1	profile: word-text; list_labels: true; fields: update	0		broken-part-intact.docx	REQ-506
+100	META_APP_COMPANY	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-506
+100	CUSTOM_FIELD_STALE	1	1	1	profile: word-text; list_labels: true; fields: update	0		broken-part-intact.docx	REQ-506
+100	META_CUSTOM_VALUE	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-506
+100	Error! Unknown document property name.	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-intact.docx	REQ-506
+100	COMMENT_TEXT_A	0	0	cmt	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-504
+100	COMMENT_REPLY_B	0	0	cmt	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-504
+101	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: repaired (Styles): no styles, as absent	broken-part-styles.docx	REQ-501, REQ-801
+101	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-styles.docx	REQ-501, REQ-801
+101	STYLE_LIST_1	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles.docx	REQ-510, REQ-801
+101	STYLE_LIST_2	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles.docx	REQ-510, REQ-801
+101	DIRECT_LIST_1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-styles.docx	REQ-510, REQ-801
+101	DIRECT_LIST_2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-styles.docx	REQ-510, REQ-801
+101	1. first heading	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles.docx	REQ-510, REQ-801
+101	2. second heading	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles.docx	REQ-510, REQ-801
+101	1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles.docx	REQ-510, REQ-801
+101	2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles.docx	REQ-510, REQ-801
+101	HIDDEN_BY_STYLE	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-styles.docx	REQ-507, REQ-801
+101	CAPS_BY_STYLE	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles.docx	REQ-607, REQ-801
+101	caps_by_style	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-styles.docx	REQ-607, REQ-801
+101	SMALL_CAPS_BY_STYLE	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles.docx	REQ-607, REQ-801
+101	small_caps_by_style	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-styles.docx	REQ-607, REQ-801
+102	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: no repair	broken-part-styles-absent.docx	REQ-501, REQ-801
+102	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-absent.docx	REQ-501, REQ-801
+102	STYLE_LIST_1	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-absent.docx	REQ-510, REQ-801
+102	STYLE_LIST_2	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-absent.docx	REQ-510, REQ-801
+102	DIRECT_LIST_1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-absent.docx	REQ-510, REQ-801
+102	DIRECT_LIST_2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-absent.docx	REQ-510, REQ-801
+102	1. first heading	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-absent.docx	REQ-510, REQ-801
+102	2. second heading	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-absent.docx	REQ-510, REQ-801
+102	1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-absent.docx	REQ-510, REQ-801
+102	2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-absent.docx	REQ-510, REQ-801
+102	HIDDEN_BY_STYLE	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-absent.docx	REQ-507, REQ-801
+102	CAPS_BY_STYLE	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-absent.docx	REQ-607, REQ-801
+102	caps_by_style	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-absent.docx	REQ-607, REQ-801
+102	SMALL_CAPS_BY_STYLE	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-absent.docx	REQ-607, REQ-801
+102	small_caps_by_style	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-absent.docx	REQ-607, REQ-801
+103	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: repaired (Lists): its default decimal list in place of the numbering	broken-part-numbering.docx	REQ-501, REQ-801
+103	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering.docx	REQ-501, REQ-801
+103	STYLE_LIST_1	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-numbering.docx	REQ-510, REQ-801
+103	STYLE_LIST_2	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-numbering.docx	REQ-510, REQ-801
+103	DIRECT_LIST_1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-numbering.docx	REQ-510, REQ-801
+103	DIRECT_LIST_2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-numbering.docx	REQ-510, REQ-801
+103	1. first heading	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering.docx	REQ-510, REQ-801, WD 0.72 (2)
+103	2. second heading	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering.docx	REQ-510, REQ-801, WD 0.72 (2)
+103	1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering.docx	REQ-510, REQ-801, WD 0.72 (2)
+103	2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering.docx	REQ-510, REQ-801, WD 0.72 (2)
+104	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: no repair; its default decimal list	broken-part-numbering-absent.docx	REQ-501, REQ-801
+104	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-absent.docx	REQ-501, REQ-801
+104	STYLE_LIST_1	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-numbering-absent.docx	REQ-510, REQ-801
+104	STYLE_LIST_2	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-numbering-absent.docx	REQ-510, REQ-801
+104	DIRECT_LIST_1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-numbering-absent.docx	REQ-510, REQ-801
+104	DIRECT_LIST_2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-numbering-absent.docx	REQ-510, REQ-801
+104	1. first heading	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-absent.docx	REQ-510, REQ-801, WD 0.72 (2)
+104	2. second heading	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-absent.docx	REQ-510, REQ-801, WD 0.72 (2)
+104	1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-absent.docx	REQ-510, REQ-801, WD 0.72 (2)
+104	2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-absent.docx	REQ-510, REQ-801, WD 0.72 (2)
+105	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: repaired (Summary Info): no settings, as absent	broken-part-settings.docx	REQ-501, REQ-801
+105	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-settings.docx	REQ-501, REQ-801
+105	İSTANBUL_THEME	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-settings.docx	REQ-607, REQ-801
+105	ISTANBUL_THEME	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-settings.docx	REQ-607, REQ-801
+106	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: no repair	broken-part-settings-absent.docx	REQ-501, REQ-801
+106	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-settings-absent.docx	REQ-501, REQ-801
+106	İSTANBUL_THEME	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-settings-absent.docx	REQ-607, REQ-801
+106	ISTANBUL_THEME	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-settings-absent.docx	REQ-607, REQ-801
+107	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: repaired (Lists); no paragraph is numbered	broken-part-numbering-unneeded.docx	REQ-501, REQ-801
+107	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-unneeded.docx	REQ-501, REQ-801
+107	STYLE_LIST_1	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-numbering-unneeded.docx	REQ-510, REQ-801
+107	STYLE_LIST_2	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-numbering-unneeded.docx	REQ-510, REQ-801
+107	DIRECT_LIST_1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-numbering-unneeded.docx	REQ-510, REQ-801
+107	DIRECT_LIST_2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-numbering-unneeded.docx	REQ-510, REQ-801
+107	1. first heading	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-numbering-unneeded.docx	REQ-510, REQ-801
+107	2. second heading	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-numbering-unneeded.docx	REQ-510, REQ-801
+107	1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-numbering-unneeded.docx	REQ-510, REQ-801
+107	2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-numbering-unneeded.docx	REQ-510, REQ-801
+108	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: repaired (Lists): its default list, one counter that the items restart	broken-part-numbering-order.docx	REQ-501, REQ-801
+108	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-order.docx	REQ-501, REQ-801
+108	1. heading one	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-order.docx	REQ-510, REQ-801, WD 0.72 (2)
+108	1. item one	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-order.docx	REQ-510, REQ-801, WD 0.72 (2)
+108	2. item two	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-order.docx	REQ-510, REQ-801, WD 0.72 (2)
+108	3. heading two	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-order.docx	REQ-510, REQ-801, WD 0.72 (2)
+108	4. item three	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-order.docx	REQ-510, REQ-801, WD 0.72 (2)
+109	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: no repair; its default list, one counter that the items restart	broken-part-numbering-order-absent.docx	REQ-501, REQ-801
+109	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-order-absent.docx	REQ-501, REQ-801
+109	1. heading one	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-order-absent.docx	REQ-510, REQ-801, WD 0.72 (2)
+109	1. item one	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-order-absent.docx	REQ-510, REQ-801, WD 0.72 (2)
+109	2. item two	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-order-absent.docx	REQ-510, REQ-801, WD 0.72 (2)
+109	3. heading two	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-order-absent.docx	REQ-510, REQ-801, WD 0.72 (2)
+109	4. item three	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-numbering-order-absent.docx	REQ-510, REQ-801, WD 0.72 (2)
+110	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: repaired (Styles): the Hid and Caps styles before the break kept	broken-part-styles-late.docx	REQ-501, REQ-801
+110	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-late.docx	REQ-501, REQ-801
+110	STYLE_LIST_1	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-late.docx	REQ-510, REQ-801
+110	STYLE_LIST_2	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-late.docx	REQ-510, REQ-801
+110	DIRECT_LIST_1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-late.docx	REQ-510, REQ-801
+110	DIRECT_LIST_2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-late.docx	REQ-510, REQ-801
+110	1. first heading	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-late.docx	REQ-510, REQ-801
+110	2. second heading	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-late.docx	REQ-510, REQ-801
+110	1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-late.docx	REQ-510, REQ-801
+110	2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-late.docx	REQ-510, REQ-801
+110	HIDDEN_BY_STYLE	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-late.docx	REQ-507, REQ-801, WD 0.72 (3)
+110	CAPS_BY_STYLE	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-late.docx	REQ-607, REQ-801, WD 0.72 (3)
+110	caps_by_style	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-late.docx	REQ-607, REQ-801, WD 0.72 (3)
+110	SMALL_CAPS_BY_STYLE	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-late.docx	REQ-607, REQ-801
+110	small_caps_by_style	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-late.docx	REQ-607, REQ-801
+111	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: repaired (Styles): no styles, as absent	broken-part-styles-invalid.docx	REQ-501, REQ-801
+111	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-invalid.docx	REQ-501, REQ-801
+111	STYLE_LIST_1	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-invalid.docx	REQ-510, REQ-801
+111	STYLE_LIST_2	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-invalid.docx	REQ-510, REQ-801
+111	DIRECT_LIST_1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-invalid.docx	REQ-510, REQ-801
+111	DIRECT_LIST_2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-invalid.docx	REQ-510, REQ-801
+111	1. first heading	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-invalid.docx	REQ-510, REQ-801
+111	2. second heading	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-invalid.docx	REQ-510, REQ-801
+111	1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-invalid.docx	REQ-510, REQ-801
+111	2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-invalid.docx	REQ-510, REQ-801
+111	HIDDEN_BY_STYLE	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-invalid.docx	REQ-507, REQ-801
+111	CAPS_BY_STYLE	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-invalid.docx	REQ-607, REQ-801
+111	caps_by_style	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-invalid.docx	REQ-607, REQ-801
+111	SMALL_CAPS_BY_STYLE	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-styles-invalid.docx	REQ-607, REQ-801
+111	small_caps_by_style	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-styles-invalid.docx	REQ-607, REQ-801
+115	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: repaired: TITLE empty	broken-part-core.docx	REQ-501, REQ-801
+115	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-core.docx	REQ-501, REQ-801
+115	TITLE_FIELD_STALE	1	1	1	profile: word-text; list_labels: true; fields: update	0		broken-part-core.docx	REQ-506, REQ-801, WD 0.72 (4)
+115	META_CORE_TITLE	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-core.docx	REQ-506, REQ-801
+115	COMPANY_FIELD_STALE	1	1	1	profile: word-text; list_labels: true; fields: update	0		broken-part-core.docx	REQ-506, REQ-801
+115	META_APP_COMPANY	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-core.docx	REQ-506, REQ-801
+115	CUSTOM_FIELD_STALE	1	1	1	profile: word-text; list_labels: true; fields: update	0		broken-part-core.docx	REQ-506, REQ-801
+115	META_CUSTOM_VALUE	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-core.docx	REQ-506, REQ-801
+115	Error! Unknown document property name.	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-core.docx	REQ-506, REQ-801
+116	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: repaired: DOCPROPERTY Company empty	broken-part-app.docx	REQ-501, REQ-801
+116	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-app.docx	REQ-501, REQ-801
+116	TITLE_FIELD_STALE	1	1	1	profile: word-text; list_labels: true; fields: update	0		broken-part-app.docx	REQ-506, REQ-801
+116	META_CORE_TITLE	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-app.docx	REQ-506, REQ-801
+116	COMPANY_FIELD_STALE	1	1	1	profile: word-text; list_labels: true; fields: update	0		broken-part-app.docx	REQ-506, REQ-801, WD 0.72 (4)
+116	META_APP_COMPANY	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-app.docx	REQ-506, REQ-801
+116	CUSTOM_FIELD_STALE	1	1	1	profile: word-text; list_labels: true; fields: update	0		broken-part-app.docx	REQ-506, REQ-801
+116	META_CUSTOM_VALUE	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-app.docx	REQ-506, REQ-801
+116	Error! Unknown document property name.	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-app.docx	REQ-506, REQ-801
+117	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: repaired: DOCPROPERTY Custom1 an error	broken-part-custom.docx	REQ-501, REQ-801
+117	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-custom.docx	REQ-501, REQ-801
+117	TITLE_FIELD_STALE	1	1	1	profile: word-text; list_labels: true; fields: update	0		broken-part-custom.docx	REQ-506, REQ-801, defect (d)
+117	META_CORE_TITLE	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-custom.docx	REQ-506, REQ-801, defect (d)
+117	COMPANY_FIELD_STALE	1	1	1	profile: word-text; list_labels: true; fields: update	0		broken-part-custom.docx	REQ-506, REQ-801, defect (d)
+117	META_APP_COMPANY	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-custom.docx	REQ-506, REQ-801, defect (d)
+117	CUSTOM_FIELD_STALE	1	1	1	profile: word-text; list_labels: true; fields: update	0		broken-part-custom.docx	REQ-506, REQ-801, WD 0.72 (4), defect (d)
+117	META_CUSTOM_VALUE	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-custom.docx	REQ-506, REQ-801
+117	Error! Unknown document property name.	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-custom.docx	REQ-506, REQ-801, WD 0.72 (4), defect (d)
+118	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: repaired: the reply link lost ([AB2R1] becomes [AB2]), no token changes	broken-part-commentsExtended.docx	REQ-501, REQ-801
+118	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-commentsExtended.docx	REQ-501, REQ-801
+118	COMMENT_TEXT_A	0	0	cmt	profile: word-text; list_labels: true; fields: update	1		broken-part-commentsExtended.docx	REQ-504, REQ-801
+118	COMMENT_REPLY_B	0	0	cmt	profile: word-text; list_labels: true; fields: update	1		broken-part-commentsExtended.docx	REQ-504, REQ-801
+119	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: repaired (Comments): the three relationships before the break kept, the comments' lost, their references left as empty comments	broken-part-document-rels.docx	REQ-501, REQ-801
+119	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-document-rels.docx	REQ-501, REQ-801
+119	İSTANBUL_THEME	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-document-rels.docx	REQ-607, REQ-801
+119	ISTANBUL_THEME	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-document-rels.docx	REQ-607, REQ-801
+119	STYLE_LIST_1	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-document-rels.docx	REQ-510, REQ-801, WD 0.73 (rels)
+119	STYLE_LIST_2	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-document-rels.docx	REQ-510, REQ-801, WD 0.73 (rels)
+119	DIRECT_LIST_1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-document-rels.docx	REQ-510, REQ-801, WD 0.73 (rels)
+119	DIRECT_LIST_2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-document-rels.docx	REQ-510, REQ-801, WD 0.73 (rels)
+119	1. first heading	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-document-rels.docx	REQ-510, REQ-801
+119	2. second heading	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-document-rels.docx	REQ-510, REQ-801
+119	1. first item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-document-rels.docx	REQ-510, REQ-801
+119	2. second item	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-document-rels.docx	REQ-510, REQ-801
+119	HIDDEN_BY_STYLE	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-document-rels.docx	REQ-507, REQ-801, WD 0.73 (rels)
+119	CAPS_BY_STYLE	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-document-rels.docx	REQ-607, REQ-801, WD 0.73 (rels)
+119	caps_by_style	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-document-rels.docx	REQ-607, REQ-801, WD 0.73 (rels)
+119	SMALL_CAPS_BY_STYLE	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-document-rels.docx	REQ-607, REQ-801, WD 0.73 (rels)
+119	small_caps_by_style	1	1	1	profile: word-text; list_labels: true; fields: update	0		broken-part-document-rels.docx	REQ-607, REQ-801, WD 0.73 (rels)
+119	COMMENT_TEXT_A	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-document-rels.docx	REQ-504, REQ-801
+119	COMMENT_REPLY_B	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-document-rels.docx	REQ-504, REQ-801
+120	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: repaired: the main part's relationship before the break kept, the three properties parts' lost	broken-part-package-rels.docx	REQ-501, REQ-801, WD 0.73 (rels)
+120	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-package-rels.docx	REQ-501, REQ-801, WD 0.73 (rels)
+120	TITLE_FIELD_STALE	1	1	1	profile: word-text; list_labels: true; fields: update	0		broken-part-package-rels.docx	REQ-506, REQ-801, WD 0.73 (rels)
+120	META_CORE_TITLE	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-package-rels.docx	REQ-506, REQ-801, WD 0.73 (rels)
+120	COMPANY_FIELD_STALE	1	1	1	profile: word-text; list_labels: true; fields: update	0		broken-part-package-rels.docx	REQ-506, REQ-801, WD 0.73 (rels)
+120	META_APP_COMPANY	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-package-rels.docx	REQ-506, REQ-801, WD 0.73 (rels)
+120	CUSTOM_FIELD_STALE	1	1	1	profile: word-text; list_labels: true; fields: update	0		broken-part-package-rels.docx	REQ-506, REQ-801, WD 0.73 (rels)
+120	META_CUSTOM_VALUE	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-package-rels.docx	REQ-506, REQ-801, WD 0.73 (rels)
+120	Error! Unknown document property name.	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-package-rels.docx	REQ-506, REQ-801, WD 0.73 (rels)
+121	SNR_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: repaired: store 1 dropped, every control bound to store 2, whose root fits	store-not-read.docx	REQ-509, REQ-801, WD 0.69 (c)
+121	SNR_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		store-not-read.docx	REQ-509, REQ-801, WD 0.69 (c)
+121	STORE1_VALUE	0	0	0	profile: word-text; list_labels: true; fields: update	0		store-not-read.docx	REQ-509, REQ-801, WD 0.69 (c)
+121	STORE2_VALUE	3	3	3	profile: word-text; list_labels: true; fields: update	3		store-not-read.docx	REQ-509, REQ-801, WD 0.69 (c)
+121	A_STALE_SURFACE	0	0	0	profile: word-text; list_labels: true; fields: update	0		store-not-read.docx	REQ-509, REQ-801, WD 0.69 (c)
+121	B_STALE_SURFACE	0	0	0	profile: word-text; list_labels: true; fields: update	0		store-not-read.docx	REQ-509, REQ-801, WD 0.69 (c)
+121	C_STALE_SURFACE	0	0	0	profile: word-text; list_labels: true; fields: update	0		store-not-read.docx	REQ-509, REQ-801, WD 0.69 (c)
+122	SNR_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: no repair; C, naming no store, bound to store 1, the first whose root fits	store-not-read-intact.docx	REQ-509
+122	SNR_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		store-not-read-intact.docx	REQ-509
+122	STORE1_VALUE	2	2	2	profile: word-text; list_labels: true; fields: update	2		store-not-read-intact.docx	REQ-509
+122	STORE2_VALUE	1	1	1	profile: word-text; list_labels: true; fields: update	1		store-not-read-intact.docx	REQ-509
+122	A_STALE_SURFACE	0	0	0	profile: word-text; list_labels: true; fields: update	0		store-not-read-intact.docx	REQ-509
+122	B_STALE_SURFACE	0	0	0	profile: word-text; list_labels: true; fields: update	0		store-not-read-intact.docx	REQ-509
+122	C_STALE_SURFACE	0	0	0	profile: word-text; list_labels: true; fields: update	0		store-not-read-intact.docx	REQ-509
