@@ -1183,6 +1183,54 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		// A1's probe (the fork's question of 3 November 2026; Jason: "build that foot-crossing probe"): a float with no
+		// offset that would fit an empty page but crosses the page's foot below its anchor. CR-023 moves an offset float
+		// and its anchor to the next page (13419); a float taller than the page is split (table-floating-tall,
+		// float-tall-beside); a picture with an offset is pulled up to end at the paper's edge (10747, register
+		// anchor-at-page-foot). Does Word split a no-offset table here, move it with its anchor, or pull it up? A picture
+		// cannot split. Each case fills its page with 36 exact 14pt lines, so the anchor's top is 504pt down the body
+		// (y 576 on the page) and a 240pt float would end 46pt past the body's foot (y 770).
+		PROBES.add(new Probe("float-foot-crossing",
+				"floats with no offset that fit an empty page but cross the page's foot below their anchor (504pt down "
+				+ "the body; each float 240pt, ending 46pt past the foot), one case a page, mode 15: (1) a text-anchored "
+				+ "floating table at the left margin, tblpY 0, 15 rows of exactly 16pt, leaving 200pt beside; (2) case 1 "
+				+ "at tblpY 1pt (CR-023's offset control); (3) case 1 full width; (4) a square-wrapped picture at the left "
+				+ "margin, positionV paragraph offset 0, 242 x 240pt; (5) the same top and bottom; (6) case 4 at offset "
+				+ "1pt.  Read where each float goes (split across the foot, moved to the next page with its anchor, or "
+				+ "pulled up to end at the body's foot or the paper's edge), where its anchor's line and the text after "
+				+ "it go, and for the table which rows fall on which page", () -> {
+			Doc d = Doc.create(15);
+			final int ROOM = 4000, HALF = (9026 - 180 - ROOM) / 2;
+			String[] what = { null, "a no-offset floating table leaving 200pt beside", "the same at tblpY 1pt",
+					"a no-offset full-width floating table", "a no-offset square-wrapped picture",
+					"a no-offset top-and-bottom picture", "the square picture at offset 1pt" };
+			for (int c = 1; c <= 6; c++) {
+				d.para("case " + c + ": " + what[c] + " crossing the page's foot").line(280, STLineSpacingRule.EXACT)
+						.before(0).after(0).add();
+				for (int i = 1; i <= 35; i++) {
+					d.para("filler " + c + "." + i).line(280, STLineSpacingRule.EXACT).before(0).after(0).add();
+				}
+				if (c <= 3) {
+					int col = c == 3 ? 4513 : HALF;
+					Doc.Table t = new Doc.Table(col, col).fixedLayout()
+							.floating("text", "margin", 0, null, c == 2 ? 20 : 0, null);
+					for (int r = 1; r <= 15; r++) {
+						t.rowOf(320, org.docx4j.wml.STHeightRule.EXACT, t.cell("case " + c + " row " + r, SERIF, 20, 1, col),
+								t.cell("r" + r, SERIF, 20, 1, col));
+					}
+					d.add(t.build());
+					d.para("anchor " + c + ". " + prose(2, c)).after(160).add();
+				} else {
+					R pic = d.positionedImage(242, 240, 3073400L, 3048000L, c == 5 ? "topAndBottom" : "square", "bothSides",
+							0L, 0L, 0L, 114300L, "margin", "left", 0L, "paragraph", null, c == 6 ? 12700L : 0L, 20 + c);
+					d.para().run(pic).text("anchor " + c + ". " + prose(2, c)).after(160).add();
+				}
+				for (int i = 1; i <= 10; i++) d.para("after " + c + "." + i + " " + prose(2, c + i)).after(160).add();
+				if (c < 6) d.pageBreak();
+			}
+			return d.pkg();
+		}));
+
 		// 13419's gap (CR-032 §4.3): a full-width table in the flow with a 120pt offset, its
 		// anchor an empty paragraph, and text after the empties that does not fit the rest
 		// of the gap whole.  Does Word fill the gap with that paragraph's lines (the rule
