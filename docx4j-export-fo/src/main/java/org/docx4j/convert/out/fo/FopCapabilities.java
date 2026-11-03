@@ -195,7 +195,18 @@ public final class FopCapabilities {
 		 *  rounding, turned on by {@code FopFactoryBuilder.setWordLayout} with docx4j's settings
 		 *  ({@link org.docx4j.fop.wordlayout.WordLayoutCustomizer}).  Without it (Apache FOP) docx4j lays out
 		 *  as plain FOP does: docx4j's own copy of those managers is gone.  @since 17.3.6 */
-		WORD_LAYOUT("word-layout");
+		WORD_LAYOUT("word-layout"),
+		/** A block-level FO whose width is fixed and wider than the room beside a side float starts at
+		 *  the float's foot, full width (fork CR-031 §11, r56/r57; CR-024 §11.20's rule for obstacles
+		 *  extended to floats), as Word sets a table that does not fit beside a floating table below it
+		 *  (probe float-gap-tables).  With it docx4j floats a text-anchored table on any room beside it
+		 *  ({@link TableWriter}, {@link WordLayoutFixups}).  @since 17.3.6 */
+		WIDE_BLOCK_BELOW_FLOAT("wide-block-below-float"),
+		/** A side float whose table crosses the page's foot splits as Word splits it: the rows that fit on
+		 *  the anchor's page, whole parts after, the anchor beside the last part, a header row repeated
+		 *  (fork CR-034, r60).  With it docx4j floats a table taller than a page under the wide-block rule
+		 *  ({@link WordLayoutFixups}).  @since 17.3.6 */
+		FLOAT_TABLE_SPLIT("float-table-split");
 
 		private final String key;
 

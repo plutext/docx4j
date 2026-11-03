@@ -8,6 +8,8 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
@@ -281,11 +283,17 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 				+ "<w:p><w:r><w:t>one</w:t></w:r></w:p></w:tc></w:tr></w:tbl>"
 				+ "<w:p><w:r><w:t>after</w:t></w:r></w:p>";
 		org.w3c.dom.Document doc = fo(wide, flags);
-		// 9026 - 8000 - 180 - 180 twips of room is less than the 2in a float needs on either
-		// renderer (Word puts words in a sliver that narrow, probe -offset-sides case 3, but
-		// FOP overflows what does not fit, gate b182)
-		assertNull("nothing fits beside it", floatContainer(doc));
-		assertEquals(5.0, pt(foTable(doc).getAttribute("start-indent")), 0.01);
+		// 9026 - 8000 - 180 - 180 twips of room (33pt): Word puts words in a sliver that narrow
+		// (probe -offset-sides case 3), and so does the docx4j renderer's Word layout with its
+		// wide-block rule, which sets there only the words that fit and below the float a table
+		// that does not (step 2, gate b325); elsewhere a float needs 2in, since FOP overflows what
+		// does not fit (gate b182)
+		if (sideFloatEdges() && floatsOnAnyRoom()) {
+			assertNotNull("33pt of room on the Word layout: floats", floatContainer(doc));
+		} else {
+			assertNull("nothing fits beside it", floatContainer(doc));
+			assertEquals(5.0, pt(foTable(doc).getAttribute("start-indent")), 0.01);
+		}
 		// a 5500 twip table leaves 3166 twips (2.2in): it floats on a renderer with sound
 		// float edges, and stays in the flow on Apache FOP (over 60%)
 		doc = fo(wide.replace("8000", "5500"), flags);
@@ -295,6 +303,76 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 		// layout is the in-flow one (probe table-floating-wide-empties case 1)
 		doc = fo(wide.replace("8000", "9026").replace("w:tblpX=\"100\"", "w:tblpX=\"0\""), flags);
 		assertNull("no room beside a full-width table", floatContainer(doc));
+	}
+
+	/** Whether a text-anchored table floats on any room beside it (TableWriter.floatsOnAnyRoom,
+	 *  step 2): the docx4j renderer's Word layout with its rule for a block wider than the room
+	 *  beside a float. */
+	private static boolean floatsOnAnyRoom() {
+		return org.docx4j.convert.out.fo.WordLayoutFixups.extensionNamespace() != null
+				&& org.docx4j.convert.out.fo.FopCapabilities.has(org.docx4j.convert.out.fo.FopCapabilities.Capability.WORD_LAYOUT)
+				&& org.docx4j.convert.out.fo.FopCapabilities.has(org.docx4j.convert.out.fo.FopCapabilities.Capability.WIDE_BLOCK_BELOW_FLOAT);
+	}
+
+	/** A floating table 8000 twips wide (33pt of room beside it) whose rows are exactly 20pt. */
+	private static String wideFloatingTable(int rows, String text) {
+		StringBuilder sb = new StringBuilder("<w:tbl><w:tblPr>"
+				+ "<w:tblpPr w:vertAnchor=\"text\" w:horzAnchor=\"margin\" w:tblpX=\"100\"/>"
+				+ "<w:tblLayout w:type=\"fixed\"/><w:tblW w:type=\"dxa\" w:w=\"8000\"/></w:tblPr>"
+				+ "<w:tblGrid><w:gridCol w:w=\"8000\"/></w:tblGrid>");
+		for (int i = 0; i < rows; i++) {
+			sb.append("<w:tr><w:trPr><w:trHeight w:val=\"400\" w:hRule=\"exact\"/></w:trPr>"
+					+ "<w:tc><w:tcPr><w:tcW w:type=\"dxa\" w:w=\"8000\"/></w:tcPr>"
+					+ "<w:p><w:r><w:t>" + text + " " + i + "</w:t></w:r></w:p></w:tc></w:tr>");
+		}
+		return sb.append("</w:tbl>").toString();
+	}
+
+	/** The fo:float of each table holding the text, or null where it is in the flow, in document
+	 *  order; a floated table's wrapper (the one-row table holding it) is not counted. */
+	private static List<Element> floatsOf(org.w3c.dom.Document doc, String text) {
+		List<Element> out = new ArrayList<>();
+		NodeList tables = doc.getElementsByTagNameNS(FO_NS, "table");
+		for (int i = 0; i < tables.getLength(); i++) {
+			Element t = (Element) tables.item(i);
+			if (!t.getTextContent().contains(text + " 0")) continue;
+			if (t.getElementsByTagNameNS(FO_NS, "table").getLength() > 0) continue;   // a wrapper
+			Element fl = null;
+			for (Node n = t.getParentNode(); n instanceof Element; n = n.getParentNode()) {
+				if (FO_NS.equals(n.getNamespaceURI()) && "float".equals(n.getLocalName())) { fl = (Element) n; break; }
+			}
+			out.add(fl);
+		}
+		return out;
+	}
+
+	/** Step 2's page limit: on the Word layout's wide-block rule a table taller than the page
+	 *  body floats where the renderer splits a floating table at the page's foot, as Word does
+	 *  (float-table-split, the renderer's CR-034); without that the rows past the foot are lost,
+	 *  so it stays in the flow (6705, gate b313). */
+	private void aTallTableFloatsWhereItSplits(int flags) throws Exception {
+		// 50 rows of exactly 20pt: 1000pt, taller than the 697.9pt page body
+		org.w3c.dom.Document doc = fo(wideFloatingTable(50, "TALL") + "<w:p><w:r><w:t>after</w:t></w:r></w:p>", flags);
+		boolean floats = sideFloatEdges() && floatsOnAnyRoom()
+				&& org.docx4j.convert.out.fo.FopCapabilities.has(org.docx4j.convert.out.fo.FopCapabilities.Capability.FLOAT_TABLE_SPLIT);
+		Element fl = floatContainer(doc);
+		if (floats) assertNotNull("taller than the page, on a renderer that splits it: floats", fl);
+		else assertNull("taller than the page: in the flow", fl);
+		// three rows (60pt) float wherever 33pt of room will do
+		doc = fo(wideFloatingTable(3, "SHORT") + "<w:p><w:r><w:t>after</w:t></w:r></w:p>", flags);
+		if (sideFloatEdges() && floatsOnAnyRoom()) assertNotNull("a short wide table floats", floatContainer(doc));
+	}
+
+	/** Step 2's other limit: a table whose anchor falls beside an earlier float with less room
+	 *  than the table's width stays in the flow, where the renderer sets it below the float
+	 *  (Word draws it at its anchor, over the earlier one, probe float-gap-tables case 5; the
+	 *  renderer had squeezed it into the room beside, 6705's second table, gate b313). */
+	private void aTableBesideAnEarlierFloatStaysInFlow(int flags) throws Exception {
+		org.w3c.dom.Document doc = fo(wideFloatingTable(3, "FIRST") + "<w:p/>"
+				+ wideFloatingTable(3, "SECOND") + "<w:p><w:r><w:t>after</w:t></w:r></w:p>", flags);
+		if (!(sideFloatEdges() && floatsOnAnyRoom())) return;
+		assertNotNull("the first floats", floatsOf(doc, "FIRST").get(0));
+		assertNull("the second, beside the first in 33pt, stays in the flow", floatsOf(doc, "SECOND").get(0));
 	}
 
 	private static boolean sideFloatEdges() {
@@ -459,6 +537,10 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 	@Test public void noVertAnchorXslt() throws Exception { noVertAnchorIsTheMargin(Docx4J.FLAG_EXPORT_PREFER_XSL); }
 
 	@Test public void wideTableVisitor() throws Exception { aWideTableStaysInFlow(Docx4J.FLAG_NONE); }
+	@Test public void tallTableVisitor() throws Exception { aTallTableFloatsWhereItSplits(Docx4J.FLAG_NONE); }
+	@Test public void tallTableXslt() throws Exception { aTallTableFloatsWhereItSplits(Docx4J.FLAG_EXPORT_PREFER_XSL); }
+	@Test public void besideAnEarlierFloatVisitor() throws Exception { aTableBesideAnEarlierFloatStaysInFlow(Docx4J.FLAG_NONE); }
+	@Test public void besideAnEarlierFloatXslt() throws Exception { aTableBesideAnEarlierFloatStaysInFlow(Docx4J.FLAG_EXPORT_PREFER_XSL); }
 	@Test public void wideTableXslt() throws Exception {
 		aWideTableStaysInFlow(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}

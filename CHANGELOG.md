@@ -43,6 +43,11 @@ Changes in Version 17.3.6
   defect of the Word layout, fixed in the renderer; 2.12-docx4j.1).
 - A page break in the paragraph a full-width floating table is anchored to no longer takes the table to the next
   page: Word sets the table on the anchor's page and the break after it.
+- A floating table that runs past the page's foot is split across pages as Word splits it; its rows past the foot
+  were lost (fixed in the renderer, hook `float-table-split`; 2.12-docx4j.1).
+- A text-anchored floating table wider than 60% of the column has text beside it in whatever room Word leaves
+  (1pt or more, where docx4j asked for 2in) on the renderer's Word layout (hooks `word-layout`,
+  `wide-block-below-float`), and one taller than the page floats where the renderer splits it.
 
 **Reading documents.**
 - A `w:br` outside a run (directly in a paragraph, hyperlink or the body, or inside a `w:t` or `w:instrText`) is

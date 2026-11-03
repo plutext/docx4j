@@ -372,6 +372,28 @@ public class TableWriter extends AbstractTableWriter {
 	 *  (CR-032 phase 2).  @since 17.3.2 */
 	private static final int FLOAT_MIN_ROOM = 2880;
 
+	/** On the docx4j renderer's Word layout with its rule for a wide block after a float
+	 *  ({@link #floatsOnAnyRoom}) a wider table floats on this much (twips: 1pt) beside it.
+	 *  Word sets nothing in less, and the renderer would set the anchor's first line there
+	 *  (9832: two 518.75pt tables in a 518.8pt column, "August" in the 0.05pt beside them,
+	 *  gate b313).  @since 17.3.6 */
+	private static final int WORD_MIN_ROOM = 20;
+
+	/** Whether a text-anchored table floats on any room beside it: the docx4j renderer's Word
+	 *  layout (fork CR-031) sets in the room beside a float every word that fits, however
+	 *  narrow the room, and takes the first that does not, with the rest of its paragraph,
+	 *  below the float (probe float-gap-words, word-layout-rules &#xa7;6.8; the fork's r55), and
+	 *  a block whose fixed width does not fit the room below it too (probe float-gap-tables:
+	 *  Word's rule for a table, however its width is given; the fork's r57,
+	 *  {@link FopCapabilities.Capability#WIDE_BLOCK_BELOW_FLOAT}).  The 2in bound
+	 *  ({@link #FLOAT_MIN_ROOM}) is for a renderer that broke the word in the room instead, or
+	 *  squeezed the table there.  @since 17.3.6 */
+	static boolean floatsOnAnyRoom() {
+		return WordLayoutFixups.extensionNamespace() != null
+				&& FopCapabilities.has(FopCapabilities.Capability.WORD_LAYOUT)
+				&& FopCapabilities.has(FopCapabilities.Capability.WIDE_BLOCK_BELOW_FLOAT);
+	}
+
 	/**
 	 * A floating table (w:tblPr/w:tblpPr), as Word places it.
 	 *
@@ -587,9 +609,13 @@ public class TableWriter extends AbstractTableWriter {
 		 * sliver documents where the float left them (6705 240 lines against 249 in the flow,
 		 * 1616 747 against 758, 9832 47 against 58, 8236 54 against 56), since the lines set at
 		 * the float's foot re-flow with their paragraphs where Word's in-flow table simply
-		 * precedes them; so the 2in bound stays, and the capability is not used here. */
+		 * precedes them; so the 2in bound stays, and the capability is not used here.  With
+		 * the renderer's Word layout and its wide-block rule any room of 1pt will do
+		 * (floatsOnAnyRoom; WordLayoutFixups still keeps in the flow a table that may cross a
+		 * page break, or whose anchor falls beside an earlier float with no room for it). */
 		int room = column - width - leftFromText - rightFromText;
-		if (width > FLOAT_MAX_SHARE * column && !(edges && room >= FLOAT_MIN_ROOM)) {
+		int minRoom = floatsOnAnyRoom() ? WORD_MIN_ROOM : FLOAT_MIN_ROOM;
+		if (width > FLOAT_MAX_SHARE * column && !(edges && room >= minRoom)) {
 			return indent;
 		}
 		/* Below mode 15 applyStartIndent has already moved the grid edge back by one cell

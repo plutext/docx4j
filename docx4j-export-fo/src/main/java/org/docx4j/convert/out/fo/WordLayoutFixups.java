@@ -2367,6 +2367,38 @@ public final class WordLayoutFixups {
 		}
 		if (anchor == null) return false;
 
+		if (TableWriter.floatsOnAnyRoom()) {
+			/* On the renderer's wide-block rule a table floats on any room beside it
+			 * (TableWriter.floatsOnAnyRoom), but two kinds may still go in the flow, where the
+			 * renderer sets a table too wide for the room beside a float below it.
+			 * A renderer without float-table-split does not break a float across pages, where Word
+			 * breaks a floating table that runs off its page: 6705's 33-row table, anchored at y 306
+			 * on its first page, runs on to the next in Word, and floated, its rows past the page's
+			 * foot were lost (gate b313).  Where the anchor falls is not known before layout, so on
+			 * such a renderer a table that may cross a page break - one taller, at the least, than
+			 * FLOAT_MAX_PAGE_SHARE of the page body - stays in the flow.  The docx4j renderer from
+			 * 2.12-docx4j.1 (fork CR-034) splits it as Word does, and it floats (gate b325: 6705 at
+			 * Word's 8 pages).  @since 17.3.6 */
+			double body = bodyHeightPt(tbl);
+			double tall = padTop + tableHeightAtLeastPt(tbl);
+			if (body > 0 && tall > FLOAT_MAX_PAGE_SHARE * body
+					&& !FopCapabilities.has(FopCapabilities.Capability.FLOAT_TABLE_SPLIT)) {
+				log.debug("Floating table left in the flow: at least " + tall + "pt tall on a " + body + "pt page body");
+				return false;
+			}
+			/* And a table whose anchor falls beside an earlier float with no room for it: Word
+			 * draws it at its anchor, over the earlier one (probe float-gap-tables case 5), and the
+			 * renderer squeezed it into the room beside (6705's second table in the 36pt beside the
+			 * first, set a word to a line, gate b313).  @since 17.3.6 */
+			Element earlier = earlierFloatBeside(tbl);
+			double column = bodyWidthPt(tbl);
+			if (earlier != null && column > 0 && padLeft + width + padRight > column - tableWidthPt(earlier) + 0.05) {
+				log.debug("Floating table left in the flow: its anchor is beside an earlier float, "
+						+ (column - tableWidthPt(earlier)) + "pt beside it");
+				return false;
+			}
+		}
+
 		if (blockInsideInlineAfter(doc, tbl)) {
 			if (!FopCapabilities.has(FopCapabilities.Capability.SIDE_FLOAT_EDGES)) {
 				log.debug("Floating table left in the flow: a line break inside a run follows it");
@@ -2766,6 +2798,41 @@ public final class WordLayoutFixups {
 			h += rowH;
 		}
 		return h;
+	}
+
+	/** The share of the page body a floating table may take, at the least, and still float on
+	 *  the renderer's wide-block rule ({@link #floatFloatingTable}).  @since 17.3.6 */
+	private static final double FLOAT_MAX_PAGE_SHARE = 1.0;
+
+	/** The one-row table of an earlier floating table whose band this table's anchor surely
+	 *  falls in, or null: walking back from the table over blank paragraphs to the blank
+	 *  paragraph that anchors a floated table, the anchor is beside that float where those
+	 *  paragraphs, its own anchor included, take less than the float's offset and the least
+	 *  its table can take.  Text on the way, or a float of another kind, ends the search.
+	 *  @since 17.3.6 */
+	private static Element earlierFloatBeside(Element tbl) {
+		double distance = 0;
+		for (Node n = tbl.getPreviousSibling(); n != null; n = n.getPreviousSibling()) {
+			if (!(n instanceof Element)) continue;
+			Element el = (Element) n;
+			if (takesNoSpace(el)) continue;
+			if (!isFo(el, "block") || !blankButFloats(el)) return null;
+			distance += blockHeightPt(el);
+			if (blankBlock(el)) continue;
+			for (Node c = el.getFirstChild(); c != null; c = c.getNextSibling()) {
+				if (!(c instanceof Element) || !isFo((Element) c, "float")) continue;
+				Element holder = firstChildElement((Element) c, "block");
+				Element outer = holder == null ? null : firstChildElement(holder, "table");
+				if (outer == null) continue;
+				List<Element> inner = descendants(outer, "table");
+				if (inner.isEmpty()) continue;
+				double offset = lengthPt(((Element) c).getAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS, "float-offset"))
+						+ lengthPt(holder.getAttribute("padding-top"));
+				if (distance < offset + tableHeightAtLeastPt(inner.get(0))) return outer;
+			}
+			return null;
+		}
+		return null;
 	}
 
 	private static void anchorFloatingTable(Document doc, Element tbl) {
@@ -4007,6 +4074,19 @@ public final class WordLayoutFixups {
 				- lengthPt(spm.getAttribute("margin-top")) - lengthPt(spm.getAttribute("margin-bottom"))
 				- lengthPt(rb.getAttribute("margin-top")) - lengthPt(rb.getAttribute("margin-bottom"));
 		return h > 0 ? h : -1;
+	}
+
+	/** The page body's width in points, as {@link #bodyHeightPt} works out its height: the
+	 *  section's text column where it has one column.  -1 where it cannot be worked out.
+	 *  @since 17.3.6 */
+	static double bodyWidthPt(Element el) {
+		Element rb = regionBody(el);
+		if (rb == null || !(rb.getParentNode() instanceof Element)) return -1;
+		Element spm = (Element) rb.getParentNode();
+		double w = lengthPt(spm.getAttribute("page-width"))
+				- lengthPt(spm.getAttribute("margin-left")) - lengthPt(spm.getAttribute("margin-right"))
+				- lengthPt(rb.getAttribute("margin-left")) - lengthPt(rb.getAttribute("margin-right"));
+		return w > 0 ? w : -1;
 	}
 
 	/** A child of fo:layout-master-set of this kind, with this master-name. */
