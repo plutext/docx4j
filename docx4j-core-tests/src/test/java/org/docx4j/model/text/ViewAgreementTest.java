@@ -51,11 +51,20 @@ public class ViewAgreementTest {
 		throw new IllegalStateException("Run from the repository root or docx4j-core-tests");
 	}
 
+	/**
+	 * The broken-part family's files that docx4j refuses by design, to read as text (a main part not well formed) or
+	 * to load (the package's relationships part and a store not well formed, until CR-075); BrokenPartTest checks them.
+	 */
+	static final java.util.Set<String> REFUSED = java.util.Set.of("broken-part-document-entity.docx",
+			"broken-part-document-encoding.docx", "broken-part-document-truncated.docx", "broken-part-package-rels.docx",
+			"store-not-read.docx");
+
 	static List<Path> fixtures() throws Exception {
 		List<Path> files = new ArrayList<Path>();
 		for (String root : List.of("revisions", "text-extraction")) {
 			try (Stream<Path> s = Files.walk(resources().resolve(root))) {
-				files.addAll(s.filter(p -> p.toString().endsWith(".docx")).sorted().collect(Collectors.toList()));
+				files.addAll(s.filter(p -> p.toString().endsWith(".docx") && !REFUSED.contains(p.getFileName().toString()))
+						.sorted().collect(Collectors.toList()));
 			}
 		}
 		return files;
