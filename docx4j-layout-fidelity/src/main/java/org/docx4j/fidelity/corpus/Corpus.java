@@ -1231,6 +1231,55 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		// fop/CR-034's unmeasured case (the fork's request of 3 November 2026, from Jason): a floating table that splits
+		// twice. float-foot-crossing and float-tall-beside split once, the anchor and what follows starting on the next
+		// page beside the continuation; with a third page, does the anchor go to the second page or the last, is text set
+		// beside the middle page, is the offset kept on page 1 only, and is a w:tblHeader row repeated at each split (CR-034
+		// section 2 assumes the in-flow mechanism)? Each case puts the table's top 168pt down the body (12 exact 14pt lines);
+		// on A4's 697.9pt body, 100 rows of exactly 16pt fall 33 on page 1, 43 on page 2 and 24 on page 3. The anchor's
+		// words are numbered, so that each of its lines can be read wherever it lands, and enough text follows to run past
+		// the table's end before the case's page break.
+		PROBES.add(new Probe("float-three-pages",
+				"text-anchored floating tables at the left margin that split twice (rows of exactly 16pt, leaving 200pt "
+				+ "beside, the table's top 168pt down the body), each case from a new page, mode 15: (1) 100 rows (1600pt), "
+				+ "tblpY 0; (2) tblpY 12pt; (3) row 1 a repeating header row (w:tblHeader); (4) 150 rows (2400pt), to a "
+				+ "fourth page.  Read the first and last row on each page, whether the header row repeats, whether anything "
+				+ "is set beside the table on page 1 and on the middle pages, on which page and at what x and y the anchor "
+				+ "(words numbered) begins, and where the text after it goes full width", () -> {
+			Doc d = Doc.create(15);
+			final int ROOM = 4000, HALF = (9026 - 180 - ROOM) / 2;
+			String[] what = { null, "100 rows, tblpY 0", "100 rows, tblpY 12pt", "100 rows, row 1 a repeating header row",
+					"150 rows, tblpY 0" };
+			for (int c = 1; c <= 4; c++) {
+				d.para("case " + c + ": a floating table that splits twice, " + what[c]).line(280, STLineSpacingRule.EXACT)
+						.before(0).after(0).add();
+				for (int i = 1; i <= 11; i++) {
+					d.para("filler " + c + "." + i).line(280, STLineSpacingRule.EXACT).before(0).after(0).add();
+				}
+				Doc.Table t = new Doc.Table(HALF, HALF).fixedLayout().floating("text", "margin", 0, null, c == 2 ? 240 : 0, null);
+				for (int r = 1, rows = c == 4 ? 150 : 100; r <= rows; r++) {
+					String label = c == 3 && r == 1 ? "case 3 header" : "case " + c + " row " + r;
+					t.rowOf(320, org.docx4j.wml.STHeightRule.EXACT, t.cell(label, SERIF, 20, 1, HALF),
+							t.cell(c == 3 && r == 1 ? "head" : "r" + r, SERIF, 20, 1, HALF));
+				}
+				Tbl tbl = t.build();
+				if (c == 3) {
+					org.docx4j.wml.Tr head = (org.docx4j.wml.Tr) tbl.getContent().get(0);
+					head.getTrPr().getCnfStyleOrDivIdOrGridBefore().add(Doc.F.createCTTrPrBaseTblHeader(new BooleanDefaultTrue()));
+				}
+				d.add(tbl);
+				StringBuilder words = new StringBuilder("anchor " + c + ":");
+				for (int w = 1; w <= 40; w++) words.append(String.format(" %d.%02d", c, w));
+				d.para(words.toString()).line(280, STLineSpacingRule.EXACT).before(0).after(0).add();
+				for (int i = 1; i <= 30; i++) {
+					d.para("after " + c + "." + i + " " + prose(2, c + i)).line(280, STLineSpacingRule.EXACT).before(0).after(0)
+							.add();
+				}
+				if (c < 4) d.pageBreak();
+			}
+			return d.pkg();
+		}));
+
 		// 13419's gap (CR-032 §4.3): a full-width table in the flow with a 120pt offset, its
 		// anchor an empty paragraph, and text after the empties that does not fit the rest
 		// of the gap whole.  Does Word fill the gap with that paragraph's lines (the rule
