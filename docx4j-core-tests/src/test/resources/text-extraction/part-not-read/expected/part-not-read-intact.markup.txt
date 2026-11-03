@@ -3,8 +3,8 @@ Article II	Interpretation
 1.	first item
 2.	second item
 visible end
-İSTANBUL CAPS-BY-STYLE
+ISTANBUL CAPS-BY-STYLE
 SMALL CAPS BY STYLE
-İSTANBUL DİRECT CAPS
+ISTANBUL DIRECT CAPS
 direct shown
 kept {++inserted ++}{--deleted --}end

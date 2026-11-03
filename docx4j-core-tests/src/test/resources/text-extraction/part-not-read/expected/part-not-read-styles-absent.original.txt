@@ -5,6 +5,6 @@ Interpretation
 visible hidden-by-style end
 istanbul caps-by-style
 small caps by style
-İSTANBUL DİRECT CAPS
+ISTANBUL DIRECT CAPS
 direct shown
 kept deleted end

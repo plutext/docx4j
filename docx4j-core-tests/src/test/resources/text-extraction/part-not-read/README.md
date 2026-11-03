@@ -9,7 +9,7 @@ part, and the result carries one `part.not_read` naming it. Built by `build_part
 
 | File | Holds |
 |---|---|
-| `part-not-read-intact.docx` | Ten paragraphs. Two `Heading1` paragraphs, numbered by their style ("Article I", upper Roman). Two numbered directly ("1."). A run hidden by a character style. A run in capitals by a character style and one by direct `w:caps`, neither with a `w:lang`, so the settings' `themeFontLang` tr-TR maps "istanbul" to "İSTANBUL". A paragraph in small capitals by its style. A run hidden directly. An insertion and a deletion. |
+| `part-not-read-intact.docx` | Ten paragraphs. Two `Heading1` paragraphs, numbered by their style ("Article I", upper Roman). Two numbered directly ("1."). A run hidden by a character style. A run in capitals by a character style and one by direct `w:caps`, neither with a `w:lang`, under the settings' `themeFontLang` tr-TR, which plays no part in their capitals (WD 0.80 REQ-607): "ISTANBUL", cased by `default_language`'s en-US. Before 17.3.6 docx4j took tr-TR from `themeFontLang` ("İSTANBUL"), which Word does not. A paragraph in small capitals by its style. A run hidden directly. An insertion and a deletion. |
 | `part-not-read-styles.docx`, `-numbering`, `-settings` | The same, with that part not well formed: cut to two thirds of its characters. |
 | `part-not-read-styles-absent.docx`, `-numbering-absent`, `-settings-absent` | The same, with that part absent (part, relationship and override removed). |
 | `part-not-read-numbering-unneeded.docx` | Two plain paragraphs, the numbering part not well formed: no paragraph needs it, so nothing is lost and nothing is raised. |
@@ -27,8 +27,8 @@ where a reading consults it.
 - **The styles:** the labels of paragraphs numbered by their style are lost, and so are hidden text, capitals
   and small capitals given by a style. The direct labels are kept, as with no styles part. Before 17.3.6
   docx4j lost those too.
-- **The settings:** `themeFontLang` is lost, so the capitals fall to the default language ("ISTANBUL"). The
-  settings are always needed, since the result carries `fields_update_on_open`.
+- **The settings:** losing them changes no text, since the capitals no longer take `themeFontLang` (WD 0.80). The
+  settings are always needed, since the result carries `fields_update_on_open`, so `part.not_read` is raised.
 - **A part the document does not need raises nothing** (`numbering-unneeded`).
 
 Word was not asked: it repairs or refuses a part not well formed, and the rule is about the reading, not

@@ -1662,8 +1662,6 @@ final class Extractor {
 	}
 
 	private Boolean formsProtected;
-	/** The settings' {@code w:themeFontLang}, else docx4j's default: a cased run's language of last resort; null until asked. */
-	private String themeFontLang;
 
 	/** {@code w:documentProtection w:edit="forms"}, enforced (the attribute as written: its getter answers true when it's absent). */
 	private boolean formsProtected() {
@@ -2740,19 +2738,15 @@ final class Extractor {
 	}
 
 	/**
-	 * The language a cased run's capitals are mapped by (WD REQ-607): its own {@code w:lang/@w:val}, else its
-	 * styles' (with the document defaults'), else {@code w:themeFontLang}'s, else {@link CaseMapping#DEFAULT_LANGUAGE}.
+	 * The language a cased run's capitals are mapped by (WD REQ-607, 0.80): its own {@code w:lang/@w:val}, else its
+	 * styles' (with the document defaults'), else the {@code default_language} option ({@code en-US} by default).
+	 * {@code w:themeFontLang} is not a link: it chooses theme fonts by script, and Word, which cases such a run by its
+	 * editing language, ignores it there (screen-caps probe, 4 November 2026), so the settings part is not consulted.
 	 */
 	private String language(RPr own, RPr styles) {
 		String lang = lang(own == null ? null : own.getLang());
 		if (lang == null) lang = lang(styles == null ? null : styles.getLang());
-		if (lang != null) return lang;
-		if (themeFontLang == null) {
-			CTSettings settings = settings();
-			String theme = settings == null ? null : lang(settings.getThemeFontLang());
-			themeFontLang = theme == null ? CaseMapping.DEFAULT_LANGUAGE : theme;
-		}
-		return themeFontLang;
+		return lang != null ? lang : options.getDefaultLanguage();
 	}
 
 	private static String lang(org.docx4j.wml.CTLanguage l) {

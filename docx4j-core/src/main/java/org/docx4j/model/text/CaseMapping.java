@@ -43,8 +43,9 @@ import java.util.Locale;
 public final class CaseMapping {
 
 	/**
-	 * The language where a run, its styles, the document defaults and {@code w:themeFontLang} name none: docx4j's
-	 * documented default (REQ-607 leaves it to the implementation).
+	 * The language where a run, its styles and the document defaults name none, unless the {@code default_language}
+	 * option names another ({@link TextOptions#defaultLanguage(String)}): the locale-independent mapping, as WD REQ-607
+	 * recommends.  Before 17.3.6 the settings' {@code w:themeFontLang} came first, which Word ignores here.
 	 */
 	public static final String DEFAULT_LANGUAGE = "en-US";
 

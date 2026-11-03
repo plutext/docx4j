@@ -42,7 +42,7 @@ def dirty(instr, cached):
 REV = 'w:author="Author A" w:date="2026-11-03T00:00:00Z"'
 NUMBERED = '<w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr>'
 BEGIN = [p(r('BP_BEGIN'))]
-CAPS_LANG = [p(r('theme language caps: ') + r('istanbul_theme', '<w:caps/>')),            # no w:lang: the settings' tr-TR
+CAPS_LANG = [p(r('theme language caps: ') + r('istanbul_theme', '<w:caps/>')),            # no w:lang; themeFontLang tr-TR no link
              p(r('direct language caps: ') + r('istanbul_lang', '<w:caps/><w:lang w:val="tr-TR"/>'))]
 LISTS = [p(r('first heading'), '<w:pStyle w:val="Heading1"/>'),                          # numbered by its style
          p(r('second heading'), '<w:pStyle w:val="Heading1"/>'),
@@ -306,7 +306,6 @@ FIRST_CASE = 100          # ExtractionConformance's supplemental scenarios key o
 
 # The open items and the defect a row waits on where docx4j reads otherwise today (README.md): a label that is not a
 # REQ id leaves the row pending.
-THEME_LANG = 'WD 0.72 (1)'        # REQ-607's chain ends in the editing language: Word ignores w:themeFontLang
 DEFAULT_LIST = 'WD 0.72 (2)'      # no numbering part: Word's default decimal list, one shared counter (0.73)
 STYLES_PREFIX = 'WD 0.72 (3)'     # a styles part cut late: Word keeps the styles before the break
 PROPERTIES = 'WD 0.72 (4)'        # a properties part not well formed, under fields: update: read as absent
@@ -379,7 +378,8 @@ STYLED_DIFFERENCE = ['HIDDEN_BY_STYLE', 'CAPS_BY_STYLE', 'caps_by_style']
 # file: (what Word did on opening it, what it read, the token groups its rows hold, {token: label} where docx4j reads
 # otherwise today).  The three main-part files have no rows: Word would not open them and docx4j refuses to read them.
 WORD_READINGS = {
-    'broken-part-intact.docx': ('no repair', Reading(), EVERYTHING, dict.fromkeys(GROUPS['theme'], THEME_LANG)),
+    # (WD 0.72 (1), ruled 4 November 2026 as WD 0.80: w:themeFontLang is no link in REQ-607's chain; docx4j follows)
+    'broken-part-intact.docx': ('no repair', Reading(), EVERYTHING, {}),
     'broken-part-styles.docx': ('repaired (Styles): no styles, as absent', Reading(styles='none'), ['main', 'lists', 'styled'], {}),
     'broken-part-styles-absent.docx': ('no repair', Reading(styles='none'), ['main', 'lists', 'styled'], {}),
     'broken-part-numbering.docx': ('repaired (Lists): its default decimal list in place of the numbering',

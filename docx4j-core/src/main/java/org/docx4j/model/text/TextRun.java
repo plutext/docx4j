@@ -181,8 +181,9 @@ public final class TextRun {
 
 	/**
 	 * For a caps or small-caps run, the language its capitals are mapped by (WD REQ-607): its {@code w:lang/@w:val},
-	 * else its styles' or the document defaults', else the settings' {@code w:themeFontLang}, else
-	 * {@link CaseMapping#DEFAULT_LANGUAGE}; null for any other run.
+	 * else its styles' or the document defaults', else the {@code default_language} option
+	 * ({@link CaseMapping#DEFAULT_LANGUAGE} by default; {@link TextOptions#defaultLanguage(String)}); null for any
+	 * other run.
 	 *
 	 * @since 17.3.5
 	 */

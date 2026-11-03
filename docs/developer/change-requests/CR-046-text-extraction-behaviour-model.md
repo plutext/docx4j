@@ -1141,8 +1141,8 @@ property resolver, `PropertyResolver.init` failed with a NullPointerException on
   - **the numbering:** for a paragraph with a `w:numId` (its own or its style's). `count` passes over an
     unreadable part silently, so that a document numbering no paragraph raises nothing.
   - **the settings:** for `fields_update_on_open` (every top-level reading; a reading one level down puts false,
-    as it is not the result's), forms protection, the caps language, and `w:evenAndOddHeaders` (asked only where
-    a section has an even header or footer).
+    as it is not the result's), forms protection, and `w:evenAndOddHeaders` (asked only where a section has an even
+    header or footer). Also the caps language, until §10.1.
   - The font table is never read by the text model, so it never raises.
 - One level down, `nested` renames the selector to the embedded package's or chunk's part, as for
   `content.not_read`.
@@ -1171,3 +1171,23 @@ WD proposed. It is built by `build_part_not_read.py` and holds:
 - the emulator outside the text model;
 - that an untouched save keeps the unreadable part's bytes;
 - that an embedded document's warning names its part.
+
+### 10.1 The caps language (WD 0.80 REQ-607; Jason, 4 November 2026)
+
+Jason, on WD 0.72's item (1): "Strike w:themeFontLang from REQ-607's chain; add a documented default-language
+option." Measured first in Word: the broken-part family's 14 text saves (3 November) and the screen-caps probe (the
+screen, the PDF and the text save under two editing languages, 4 November). A `w:caps` run with no language on the
+run, its styles or `w:docDefaults` is cased by Word's editing language; `w:themeFontLang` chooses theme fonts by
+script and plays no part, the same file with and without it reading alike under English and Turkish.
+
+Built:
+- `Extractor.language` ends the chain at the new option `default_language` (`TextOptions.defaultLanguage(String)`,
+  `getDefaultLanguage()`; by name too; a BCP 47 tag, checked as one; `en-US`, `CaseMapping.DEFAULT_LANGUAGE`, by
+  default; after `small_caps` in WD section 10's order and in `toMap()`; copied one level down). The `word-text`
+  preset leaves it at its default. The settings part is no longer consulted for it, so its `part.not_read` rests on
+  `fields_update_on_open`, forms protection and the even header.
+- `part-not-read`: the expected texts' two cased runs read ISTANBUL (their İ came from `themeFontLang` tr-TR); the
+  settings file's reading now differs from the intact one only by its warning. `broken-part`: the intact file's
+  ISTANBUL_THEME rows lose their `WD 0.72 (1)` label and are checked.
+- `CaseMappingTest`: `themeFontLang` tr-TR leaves ISTANBUL; `default_language: tr-TR` gives İSTANBUL; the option's
+  default, order, preset, copy and a refused tag. `ExtractionConformance` maps the option to REQ-607.

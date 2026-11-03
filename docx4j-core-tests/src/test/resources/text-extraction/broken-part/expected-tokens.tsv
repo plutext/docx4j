@@ -1,8 +1,8 @@
 case	token	accepted	original	markup	option	with_option	note	fixture	statements
 100	BP_BEGIN	1	1	1	profile: word-text; list_labels: true; fields: update	1	Word: no repair	broken-part-intact.docx	REQ-501
 100	BP_END	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-501
-100	İSTANBUL_THEME	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-intact.docx	REQ-607, WD 0.72 (1)
-100	ISTANBUL_THEME	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-607, WD 0.72 (1)
+100	İSTANBUL_THEME	0	0	0	profile: word-text; list_labels: true; fields: update	0		broken-part-intact.docx	REQ-607
+100	ISTANBUL_THEME	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-607
 100	İSTANBUL_LANG	1	1	1	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-607
 100	STYLE_LIST_1	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-510
 100	STYLE_LIST_2	0	0	0	profile: word-text; list_labels: true; fields: update	1		broken-part-intact.docx	REQ-510

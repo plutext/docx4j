@@ -47,7 +47,7 @@ PARAS = [
     p(r('first item'), NUMBERED),                                      # numbered directly: "1."
     p(r('second item'), NUMBERED),
     p(r('visible ') + r('hidden-by-style ', '<w:rStyle w:val="Hid"/>') + r('end')),
-    p(r('istanbul caps-by-style', '<w:rStyle w:val="Caps"/>')),       # no w:lang: the settings' themeFontLang tr-TR
+    p(r('istanbul caps-by-style', '<w:rStyle w:val="Caps"/>')),       # no w:lang; themeFontLang tr-TR is no link (WD 0.80)
     p(r('small caps by style'), '<w:pStyle w:val="SmallCapsPara"/>'),
     p(r('istanbul direct caps', '<w:caps/>')),
     p(r('direct ') + r('hidden-direct ', '<w:vanish/>') + r('shown')),

@@ -112,7 +112,7 @@ public final class TextOptions {
 	public static final List<String> NAMES = Collections.unmodifiableList(java.util.Arrays.asList(
 			"view", "include", "text_boxes", "notes", "note_references", "comments", "hidden", "field_codes",
 			"fields", "toc", "drop_caps", "placeholders", "bindings", "list_labels", "charts", "smartart", "embedded", "altchunks",
-			"alt_text", "metadata", "symbols", "small_caps", "math", "tables", "markup_detail", "page_markers", "layout",
+			"alt_text", "metadata", "symbols", "small_caps", "default_language", "math", "tables", "markup_detail", "page_markers", "layout",
 			"warnings", "profile"));
 
 	private TextView view = TextView.ACCEPTED;
@@ -137,6 +137,7 @@ public final class TextOptions {
 	private boolean metadata = false;
 	private Symbols symbols = Symbols.ASIS;
 	private SmallCaps smallCaps = SmallCaps.ASIS;
+	private String defaultLanguage = CaseMapping.DEFAULT_LANGUAGE;
 	private MathFormat math = MathFormat.LATEX;
 	private Tables tables = Tables.AUTO;
 	private MarkupDetail markupDetail = MarkupDetail.TYPE;
@@ -224,6 +225,7 @@ public final class TextOptions {
 		case "metadata": metadata = bool(n, value); break;
 		case "symbols": symbols = choice(n, value, Symbols.class); break;
 		case "small_caps": smallCaps = choice(n, value, SmallCaps.class); break;
+		case "default_language": defaultLanguage = languageTag(n, value); break;
 		case "math": math = choice(n, value, MathFormat.class); break;
 		case "tables": tables = choice(n, value, Tables.class); break;
 		case "markup_detail": markupDetail = choice(n, value, MarkupDetail.class); break;
@@ -262,6 +264,18 @@ public final class TextOptions {
 	private static String string(String name, Object value) {
 		if (value == null) throw new IllegalArgumentException(name + ": no value (WD REQ-1001)");
 		return value.toString().trim();
+	}
+
+	/** A BCP 47 language tag, as written (WD REQ-607's {@code default_language}). */
+	private static String languageTag(String name, Object value) {
+		String s = string(name, value);
+		try {
+			new Locale.Builder().setLanguageTag(s);
+		} catch (java.util.IllformedLocaleException e) {
+			throw new IllegalArgumentException(name + ": '" + value + "' is not a BCP 47 language tag (WD REQ-1001)");
+		}
+		if (s.isEmpty()) throw new IllegalArgumentException(name + ": an empty language tag (WD REQ-1001)");
+		return s;
 	}
 
 	private static boolean bool(String name, Object value) {
@@ -316,6 +330,14 @@ public final class TextOptions {
 	public TextOptions symbols(Symbols s) { this.symbols = s; explicit.add("symbols"); return this; }
 	/** {@code small_caps} (REQ-607): see {@link SmallCaps}. @since 17.3.5 */
 	public TextOptions smallCaps(SmallCaps s) { this.smallCaps = s; explicit.add("small_caps"); return this; }
+	/**
+	 * {@code default_language} (REQ-607, WD 0.80): the language a {@code w:caps} or {@code w:smallCaps} run is
+	 * cased by where neither the run, its styles nor the document defaults name one, a BCP 47 tag; {@code en-US}
+	 * ({@link CaseMapping#DEFAULT_LANGUAGE}) by default. It stands in for Word's editing language, which decides
+	 * there in Word and is not in the file: {@code tr-TR} reads a document as a Turkish installation shows it, every
+	 * capital i that no language claims dotted. It reaches only this mapping. @since 17.3.6
+	 */
+	public TextOptions defaultLanguage(String tag) { this.defaultLanguage = languageTag("default_language", tag); explicit.add("default_language"); return this; }
 	public TextOptions math(MathFormat m) { this.math = m; explicit.add("math"); return this; }
 	public TextOptions tables(Tables t) { this.tables = t; explicit.add("tables"); return this; }
 	public TextOptions markupDetail(MarkupDetail d) { this.markupDetail = d; explicit.add("markup_detail"); return this; }
@@ -387,6 +409,8 @@ public final class TextOptions {
 	public Symbols getSymbols() { return symbols; }
 	/** @since 17.3.5 */
 	public SmallCaps getSmallCaps() { return smallCaps; }
+	/** {@code default_language}: see {@link #defaultLanguage(String)}. @since 17.3.6 */
+	public String getDefaultLanguage() { return defaultLanguage; }
 	public MathFormat getMath() { return math; }
 	public Tables getTables() { return tables; }
 	public MarkupDetail getMarkupDetail() { return markupDetail; }
@@ -423,6 +447,7 @@ public final class TextOptions {
 		o.metadata = metadata;
 		o.symbols = symbols;
 		o.smallCaps = smallCaps;
+		o.defaultLanguage = defaultLanguage;
 		o.math = math;
 		o.tables = tables;
 		o.markupDetail = markupDetail;
@@ -462,6 +487,7 @@ public final class TextOptions {
 		m.put("metadata", metadata);
 		m.put("symbols", lower(symbols));
 		m.put("small_caps", lower(smallCaps));
+		m.put("default_language", defaultLanguage);
 		m.put("math", lower(math));
 		m.put("tables", lower(tables));
 		m.put("markup_detail", lower(markupDetail));

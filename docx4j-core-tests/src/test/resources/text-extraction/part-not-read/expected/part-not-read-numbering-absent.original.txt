@@ -3,8 +3,8 @@ Interpretation
 first item
 second item
 visible end
-İSTANBUL CAPS-BY-STYLE
+ISTANBUL CAPS-BY-STYLE
 SMALL CAPS BY STYLE
-İSTANBUL DİRECT CAPS
+ISTANBUL DIRECT CAPS
 direct shown
 kept deleted end

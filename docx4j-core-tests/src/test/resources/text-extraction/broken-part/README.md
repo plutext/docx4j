@@ -58,11 +58,12 @@ A file's rows hold the tokens its broken part can change, beside BP_BEGIN and BP
 all of them. The note on a file's first row says what Word did on opening it.
 
 `statements` names the token's statement, REQ-801 for a broken file, and, where docx4j reads otherwise today, the
-open item or defect the row waits on. A label that is not a REQ id leaves the row pending:
+open item or defect the row waits on. A label that is not a REQ id leaves the row pending. (WD 0.72 (1), Word casing a
+run with no `w:lang` by its editing language and never by `w:themeFontLang`, was ruled on 4 November 2026 as WD
+0.80's `default_language`, and docx4j follows it, so the intact file's ISTANBUL_THEME rows are checked.)
 
 | Label | What it waits on | docx4j today |
 |---|---|---|
-| `WD 0.72 (1)` | REQ-607's language chain. Word maps a run with no `w:lang` by its editing language (en-AU on the VM), never by `w:themeFontLang`. | İSTANBUL_THEME, by the settings' tr-TR |
 | `WD 0.72 (2)` | A numbering part absent or not well formed. Word's default decimal list: one nine-level definition, the style's instance plain, the direct paragraphs' instance restarting, so one shared counter after the restart (WD 0.73). | no labels |
 | `WD 0.72 (3)` | A styles part cut late. Word keeps the styles before the break (Hid, Caps). | reads the part as absent |
 | `WD 0.72 (4)` | A properties part not well formed, under `fields: update`, reads as absent. TITLE and DOCPROPERTY Company come out empty; DOCPROPERTY Custom1 is Word's "Error! Unknown document property name." | keeps the cached results |
@@ -75,8 +76,8 @@ The three main-part files have no rows. Word will not open them, and docx4j refu
 
 ## docx4j's check
 
-`ExtractionConformance` over this folder (`BrokenPartTest`), with docx4j 17.3.6-SNAPSHOT on 4 November 2026: 966
-checks pass and 336 pend, each pending row on one of the labels above. Each labelled row was also checked as if
+`ExtractionConformance` over this folder (`BrokenPartTest`), with docx4j 17.3.6-SNAPSHOT on 4 November 2026: 978
+checks pass and 324 pend, each pending row on one of the labels above. Each labelled row was also checked as if
 unlabelled, and every one fails today, so no label hides a row docx4j reads as Word does.
 
 ## Word

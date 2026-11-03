@@ -49,7 +49,7 @@ public class BrokenPartTest {
 	}
 
 	/** build_broken_part.py's labels, the rows docx4j reads otherwise today (README.md) */
-	static final List<String> LABELS = List.of("WD 0.72 (1)", "WD 0.72 (2)", "WD 0.72 (3)", "WD 0.72 (4)", "defect (d)",
+	static final List<String> LABELS = List.of("WD 0.72 (2)", "WD 0.72 (3)", "WD 0.72 (4)", "defect (d)",
 			"WD 0.73 (rels)", "WD 0.69 (c)");
 
 	/** Every with_option is the token's count in Word's own save of the file, as ExtractionConformance counts it. */
@@ -83,8 +83,8 @@ public class BrokenPartTest {
 			assertTrue(r, r.contains("\tPENDING\tphase 2; ") && LABELS.stream().anyMatch(r::contains));
 			pending++;
 		}
-		assertEquals(966, pass);
-		assertEquals(336, pending);
+		assertEquals(978, pass);
+		assertEquals(324, pending);
 		String word = "\tprofile: word-text; list_labels: true; fields: update\t";
 		assertTrue(rows.contains("broken-part-styles-late.docx\t110\twarning:part.not_read:/word/styles.xml\tmarkup\tdefault\tPASS\t"));
 		assertTrue(rows.contains("broken-part-numbering-order.docx\t108\twarning:part.not_read:/word/numbering.xml\taccepted\tdefault\tPASS\t"));

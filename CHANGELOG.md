@@ -75,6 +75,9 @@ Changes in Version 17.3.6
 - A styles, numbering or settings part that cannot be read is read as if absent, and the result carries
   `part.not_read` naming it (WD 0.66 REQ-801, CR-046 §10); an unreadable styles part no longer loses the labels
   of directly numbered paragraphs, in the text model or `Emulator`.
+- All Caps text with no language on the run, its styles or the document defaults is cased by the new option
+  `default_language` (`TextOptions.defaultLanguage`, a BCP 47 tag, `en-US` by default), not the settings'
+  `w:themeFontLang`, which Word ignores there (it uses its editing language; WD 0.80 REQ-607).
 
 **Markdown.**
 - `MarkdownExportOptions.setAddressComments(true)` writes each block's address before it as an HTML comment

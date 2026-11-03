@@ -199,7 +199,7 @@ public final class ExtractionConformance {
             case "page_markers": return Set.of("REQ-708");
             case "layout": return Set.of("REQ-709");
             case "drop_caps": return Set.of("REQ-521");
-            case "small_caps": return Set.of("REQ-607");
+            case "small_caps": case "default_language": return Set.of("REQ-607");
             case "profile": return Set.of("REQ-1002");
             default: throw new IllegalArgumentException("Unknown scenario: " + scenario);
         }

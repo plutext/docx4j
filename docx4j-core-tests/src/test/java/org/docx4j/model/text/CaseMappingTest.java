@@ -176,7 +176,11 @@ public class CaseMappingTest {
 		assertEquals("LOUD\nBOTH I İ off\n", PlainText.of(r));
 	}
 
-	/** Where neither the run, its styles nor the document defaults name a language: w:themeFontLang, else en-US. */
+	/**
+	 * Where neither the run, its styles nor the document defaults name a language: the default_language option,
+	 * en-US by default. w:themeFontLang is not a link (WD 0.80): Word cases such a run by its editing language
+	 * whether the settings name tr-TR there or not (the screen-caps probe, 4 November 2026).
+	 */
 	@Test
 	public void theLanguageOfLastResort() throws Exception {
 		String body = "<w:p><w:r><w:rPr><w:caps/></w:rPr><w:t>istanbul</w:t></w:r></w:p>";
@@ -197,8 +201,31 @@ public class CaseMappingTest {
 		CTLanguage tr = new CTLanguage();
 		tr.setVal("tr-TR");
 		settings.getJaxbElement().setThemeFontLang(tr);
-		// a tr-TR default, unmeasured in Word (CR-069 section 7): predicted as the run-level case
-		assertEquals("İSTANBUL\n", PlainText.of(Texts.of(pkg, new TextOptions())));
+		assertEquals("ISTANBUL\n", PlainText.of(Texts.of(pkg, new TextOptions())));
+		// default_language stands in for the editing language: a Turkish installation dots the i
+		TextResult turkish = Texts.of(pkg, new TextOptions().defaultLanguage("tr-TR"));
+		assertEquals("İSTANBUL\n", PlainText.of(turkish));
+		assertEquals("tr-TR", turkish.blocks().get(0).getRuns().get(0).getLanguage());
+		assertEquals("İSTANBUL\n", PlainText.of(Texts.of(pkg,
+				TextOptions.of(java.util.Collections.singletonMap("default_language", "tr-TR")))));
+	}
+
+	/** default_language by name, its default, its place in WD section 10's order, the preset leaving it, a bad tag refused. */
+	@Test
+	public void theDefaultLanguageOption() {
+		assertEquals(CaseMapping.DEFAULT_LANGUAGE, new TextOptions().getDefaultLanguage());
+		assertEquals("en-US", new TextOptions().toMap().get("default_language"));
+		assertEquals(TextOptions.NAMES.indexOf("small_caps") + 1, TextOptions.NAMES.indexOf("default_language"));
+		assertEquals("en-US", new TextOptions().profile(TextOptions.Profile.WORD_TEXT).getDefaultLanguage());
+		assertEquals("az-Latn-AZ", new TextOptions().defaultLanguage("az-Latn-AZ").profile(TextOptions.Profile.WORD_TEXT).copy().getDefaultLanguage());
+		for (String bad : new String[] { "not a tag", "" }) {
+			try {
+				new TextOptions().defaultLanguage(bad);
+				throw new AssertionError("accepted '" + bad + "'");
+			} catch (IllegalArgumentException expected) {
+				assertTrue(expected.getMessage(), expected.getMessage().startsWith("default_language: "));
+			}
+		}
 	}
 
 	/** A note reference is a reference, not a superscript (REQ-710), whatever its style raises; the probe's note case. */
