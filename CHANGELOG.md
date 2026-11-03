@@ -48,6 +48,9 @@ Changes in Version 17.3.6
 - A `w:br` outside a run (directly in a paragraph, hyperlink or the body, or inside a `w:t` or `w:instrText`) is
   read as Word reads it: a break at that point, all the text kept. docx4j dropped the break, and inside a `w:t`
   the text before it; 206,351 of 3.7 million Common Crawl documents have one (CR-073).
+- An element docx4j has no model for inside a content control's `w:sdtPr` (an `mc:Ignorable` extension, say) no
+  longer leaves the main document unread: the load took JAXB's message, which lists `w14:entityPicker`, for an XXE
+  entity error and gave up instead of preprocessing (`XmlUtils.isEntityError`). Found by docx-platform-tests.
 
 **Java 25.**
 - docx4j sets its own XML element-depth limit, 256 (`docx4j.xml.maxElementDepth`, 0 for none), on the parsers it

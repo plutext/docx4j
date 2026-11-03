@@ -566,7 +566,7 @@ implements XPathEnabled<E> {
 
 						if (((UnmarshalException)ue).getLinkedException().getMessage().contains("http://purl.oclc.org/")) {
 							log.debug("http://purl.oclc.org/ namespace, which will need to be transformed.");
-						} else if (((UnmarshalException)ue).getLinkedException().getMessage().contains("entity")) {
+						} else if (XmlUtils.isEntityError((UnmarshalException)ue)) {
 						
 							/*
 								Caused by: javax.xml.stream.XMLStreamException: ParseError at [row,col]:[10,19]

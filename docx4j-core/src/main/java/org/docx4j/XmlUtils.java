@@ -526,8 +526,7 @@ public class XmlUtils {
 			return o;
 		} catch (UnmarshalException ue) {
 			
-			if (ue.getLinkedException()!=null 
-					&& ue.getLinkedException().getMessage().contains("entity")) {
+			if (isEntityError(ue)) {
 				
 				/*
 					Caused by: javax.xml.stream.XMLStreamException: ParseError at [row,col]:[10,19]
@@ -674,12 +673,29 @@ public class XmlUtils {
 		}		
 	}
 
+	/**
+	 * True where an unmarshal failed because the parser refused an entity (one undeclared or external: the XXE case),
+	 * which reading the part again through the preprocessor cannot mend. JAXB's own report of content it has no model
+	 * for is not one, though its message can name an entity: an element it does not expect inside {@code w:sdtPr}
+	 * lists {@code w14:entityPicker} among the expected ones, and taking that for an entity error left the part
+	 * unread instead of preprocessed (an {@code mc:Ignorable} extension element in a content control's properties,
+	 * open-agreements/docx-platform-tests 2026-11-03). The parser's errors come linked as an
+	 * {@link XMLStreamException} (StAX) or a {@link org.xml.sax.SAXParseException}; JAXB's reports as its
+	 * {@code com.sun.istack.SAXParseException2}.
+	 *
+	 * @since 17.3.6
+	 */
+	public static boolean isEntityError(UnmarshalException ue) {
+		Throwable linked = ue.getLinkedException();
+		if (linked == null || linked.getMessage() == null || !linked.getMessage().contains("entity")) return false;
+		if (linked.getClass().getName().equals("com.sun.istack.SAXParseException2")) return false; // JAXB's report
+		return linked instanceof XMLStreamException || linked instanceof org.xml.sax.SAXParseException;
+	}
+
 	public static Object handleUnmarshalException(JAXBContext jc, JaxbValidationEventHandler eventHandler,
 			Document document, Exception ue) throws UnmarshalException, JAXBException {
 		// Old code
-		if (ue instanceof UnmarshalException
-				&& ((UnmarshalException)ue).getLinkedException()!=null 
-				&& ((UnmarshalException)ue).getLinkedException().getMessage().contains("entity")) {
+		if (ue instanceof UnmarshalException && isEntityError((UnmarshalException)ue)) {
 			
 			/*
 				Caused by: javax.xml.stream.XMLStreamException: ParseError at [row,col]:[10,19]

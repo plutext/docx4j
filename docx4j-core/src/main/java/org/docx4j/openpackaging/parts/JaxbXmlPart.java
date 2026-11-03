@@ -1363,8 +1363,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			} catch (UnmarshalException ue) {
 				log.error(ue.getMessage(), ue);
 				
-				if (ue.getLinkedException()!=null 
-						&& ue.getLinkedException().getMessage().contains("entity")) {
+				if (XmlUtils.isEntityError(ue)) {
 					
 					/*
 						Caused by: javax.xml.stream.XMLStreamException: ParseError at [row,col]:[10,19]
