@@ -48,9 +48,11 @@ Case numbers are the sources'. Two cases are 5 (caps-lang5 and caps-lang7d), so 
   SVG, case 36's altChunk, case 38's core properties and custom XML part, case 84's storage and preview,
   and case 85's PNG.
 - **WD-001 (docx4j-portfolio `docs/word_defects.md`).** Word's Save As Plain Text writes nothing, and says
-  nothing, when a run holding a character outside Windows-1252 starts at character 246 or later. So caps-lang5
-  comes first in the content file (its `₂` run starts at 145). In the updateFields file C06 comes first (96),
-  then caps-lang7d (152). The builder fails if any such run is placed later.
+  nothing, when a character outside Windows-1252 lies at character 256 or later, counting from 0 with a paragraph
+  mark as two: a stored character, a case-mapped one or a `w:sym`'s, wherever its run starts. (The rule as first
+  written, a run starting at 246, was revised on 4 November 2026.) So caps-lang5 comes first in the content file
+  (its `₂` run starts at 145). In the updateFields file C06 comes first (96), then caps-lang7d (152). The builder
+  fails if any such character is placed later.
 - **The literal `H₂O` of caps-lang5 and of C06** are in different files, so each file's count is its source's.
 - **R08** is on page 1, before case 30's page break.
 

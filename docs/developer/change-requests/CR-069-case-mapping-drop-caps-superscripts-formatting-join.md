@@ -47,7 +47,9 @@ reopened.
   with no `w:lang`; `STRAßE`; `CAFÉ`; `ﬁNE CAFÉ Ǆ`. Every one is a golden for phase 0.
 - WD-001 (`docx4j-portfolio/docs/word_defects.md`, commit 2e1ad98): Word's text save fails silently when a run holding or producing a
   character outside the default code page starts at character 246 or later (CR LF units). It bounds how the oracle's
-  text saves can be made, not what this CR builds.
+  text saves can be made, not what this CR builds. (Revised 4 November 2026, docx4j's wd001-sym rounds 1 to 5: the
+  save fails when a character outside the code page, stored, case-mapped or a `w:sym`'s, lies at 0-based character
+  256 or later, wherever its run starts; the first reading came from probes holding a second such character ten on.)
 
 ## 2. What exists
 

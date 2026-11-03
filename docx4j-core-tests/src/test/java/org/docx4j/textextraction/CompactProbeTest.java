@@ -67,7 +67,7 @@ public class CompactProbeTest {
 		assertTrue(rows.stream().anyMatch(r -> r.startsWith(CompactProbeBuilder.CONTENT + "\t5\tROBERTS\t")));
 	}
 
-	/** WD-001: a run holding a character outside Windows-1252 starts before 246; R08, an IF over PAGE, on page 1. */
+	/** WD-001: every character outside Windows-1252 lies before character 256; R08, an IF over PAGE, on page 1. */
 	@Test public void wordsPlacementsHold() throws Exception {
 		byte[] content = Files.readAllBytes(compact().resolve(CompactProbeBuilder.CONTENT));
 		CompactProbeBuilder.check(content);

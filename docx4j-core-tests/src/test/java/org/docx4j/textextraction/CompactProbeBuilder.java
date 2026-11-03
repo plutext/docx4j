@@ -74,9 +74,9 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * byte from the committed source files. The expected rows are the source tables' rows, the fixture column
  * changed; case numbers are the sources' (unique within each file).</p>
  *
- * <p>Two placements are Word's: a run holding a character outside Windows-1252 starts before character
- * {@value #WD001} of its file, or Word's Save As Plain Text writes nothing (WD-001, docx4j-portfolio
- * docs/word_defects.md); and R08, an IF over PAGE, stays on page 1, as in round 2. caps-lang5's and C06's
+ * <p>Two placements are Word's: every character outside Windows-1252 lies before character {@value #WD001} of
+ * its file (counting from 0), or Word's Save As Plain Text writes nothing (WD-001, docx4j-portfolio
+ * docs/word_defects.md, as revised 4 November 2026); and R08, an IF over PAGE, stays on page 1, as in round 2. caps-lang5's and C06's
  * literal H&#x2082;O are in different files, so that each file's count is its source's.</p>
  *
  * <p>Usage, from the repository root, with docx4j-core-tests' test classes on the class path:
@@ -92,8 +92,12 @@ public final class CompactProbeBuilder {
 	/** Reused unchanged, relative to {@link #DIR} */
 	static final String PRINTDATE = "../../fields/cr067-iffield/round8/corpus/iffield-probe-r8-printdate.docx";
 
-	/** Word's Save As Plain Text writes nothing when a run holding a character outside the code page starts here or later (WD-001) */
-	static final int WD001 = 246;
+	/**
+	 * Word's Save As Plain Text writes nothing when a character outside the code page, stored, case-mapped or a
+	 * w:sym's, lies at this 0-based offset or later, wherever its run starts (WD-001 as revised 4 November 2026; the
+	 * first reading, a run starting at 246, came from probes holding a second such character ten on)
+	 */
+	static final int WD001 = 256;
 
 	static final String HEADER = "case\ttoken\taccepted\toriginal\tmarkup\toption\twith_option\tnote\tfixture\tstatements";
 
@@ -136,7 +140,7 @@ public final class CompactProbeBuilder {
 		StringBuilder body = new StringBuilder();
 
 		body.append(p("<w:pPr><w:pStyle w:val='Title'/></w:pPr>" + r("Compact identification probe")));
-		// first, so that its run holding U+2082 starts before character 246 (WD-001)
+		// first, so that its U+2082 lies before character 256 (WD-001)
 		body.append(heading(5, "case mapping (caps-lang5)"));
 		body.append(paragraph("text-extraction/dpp/caps/caps-lang5.docx", "L02_ "));
 		body.append(paragraph("text-extraction/dpp/caps/caps-lang5.docx", "L03_ "));
@@ -259,7 +263,7 @@ public final class CompactProbeBuilder {
 	byte[] update() throws Exception {
 		StringBuilder body = new StringBuilder();
 		body.append(p("<w:pPr><w:pStyle w:val='Title'/></w:pPr>" + r("Compact identification probe, w:updateFields")));
-		// first, so that their runs holding U+2082, U+FB01 and U+01C6 start before character 246 (WD-001)
+		// first, so that their U+2082, U+FB01 and U+01C6 lie before character 256 (WD-001)
 		body.append(heading(6, "dpp bisect C06"));
 		body.append(paragraph("text-extraction/dpp/bisect/C06.docx", "C06_ "));
 		body.append(heading(5, "caps-lang7d"));
@@ -396,12 +400,13 @@ public final class CompactProbeBuilder {
 
 	private static final Charset CP1252 = Charset.forName("windows-1252");
 	private static final Pattern MAIN_STORY = Pattern.compile(
-			"<w:txbxContent>.*?</w:txbxContent>|<w:p[ >/]|</w:p>|<w:r>|<w:r |<w:t(?: [^>]*)?>([^<]*)</w:t>|<w:instrText(?: [^>]*)?>([^<]*)</w:instrText>|<w:tab/>|<w:br(?: [^>]*)?/>|<w:noBreakHyphen/>|<w:softHyphen/>",
+			"<w:txbxContent>.*?</w:txbxContent>|<w:p[ >/]|</w:p>|<w:r>|<w:r |<w:t(?: [^>]*)?>([^<]*)</w:t>|<w:instrText(?: [^>]*)?>([^<]*)</w:instrText>|<w:sym [^>]*w:char=\"([0-9A-Fa-f]+)\"[^>]*/>|<w:tab/>|<w:br(?: [^>]*)?/>|<w:noBreakHyphen/>|<w:softHyphen/>",
 			Pattern.DOTALL);
 
 	/**
 	 * Where each run of the main story starts, in Word's units (a paragraph mark counts two, CR LF; a field's code
-	 * is counted, which can only move a run later), with the run's text: for WD-001's rule.
+	 * is counted, which can only move a run later), with the run's text, a w:sym as its private-use character: for
+	 * WD-001's rule.
 	 */
 	static List<Object[]> runStarts(byte[] docx) throws Exception {
 		String xml = new String(entry(docx, "word/document.xml"), StandardCharsets.UTF_8);
@@ -418,6 +423,9 @@ public final class CompactProbeBuilder {
 				String text = m.group(1) != null ? m.group(1) : m.group(2);
 				if (run != null) run[1] = run[1] + text;
 				offset += text.length();
+			} else if (m.group(3) != null) {                             // a w:sym: one character, outside the code page
+				if (run != null) run[1] = run[1] + new String(Character.toChars(Integer.parseInt(m.group(3), 16)));
+				offset += 1;
 			} else if (!t.startsWith("<w:p")) offset += 1;              // a tab, a break, a hyphen
 		}
 		return runs;
@@ -435,12 +443,15 @@ public final class CompactProbeBuilder {
 		return m.appendTail(out).toString();
 	}
 
-	/** WD-001: every run holding a character outside Windows-1252 starts before character {@value #WD001}. */
+	/** WD-001: every character outside Windows-1252 lies before character {@value #WD001}, counting from 0. */
 	static void check(byte[] docx) throws Exception {
 		for (Object[] run : runStarts(docx)) {
 			String text = unescape((String) run[1]);
-			if (!CP1252.newEncoder().canEncode(text) && (Integer) run[0] >= WD001)
-				throw new IllegalStateException("WD-001: a run holding " + text + " starts at " + run[0]);
+			for (int i = 0; i < text.length(); i += Character.charCount(text.codePointAt(i))) {
+				String c = new String(Character.toChars(text.codePointAt(i)));
+				if (!CP1252.newEncoder().canEncode(c) && (Integer) run[0] + i >= WD001)
+					throw new IllegalStateException("WD-001: " + c + " at character " + ((Integer) run[0] + i) + ", in a run from " + run[0]);
+			}
 		}
 	}
 }
