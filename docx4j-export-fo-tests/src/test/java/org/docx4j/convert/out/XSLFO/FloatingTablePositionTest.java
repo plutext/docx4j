@@ -375,6 +375,17 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 		assertNull("the second, beside the first in 33pt, stays in the flow", floatsOf(doc, "SECOND").get(0));
 	}
 
+	/** A floating table whose anchor opens a page (w:pageBreakBefore) stays in the flow, before the break, where Word
+	 *  sets it (4083's B.7 table under its heading, the anchor "section C" on the next page; gate b327). */
+	private void anAnchorThatOpensAPageKeepsTheTableBefore(int flags) throws Exception {
+		org.w3c.dom.Document doc = fo(table("<w:tblpPr w:vertAnchor=\"text\" w:horzAnchor=\"margin\" w:tblpY=\"20\"/>")
+				+ "<w:p><w:pPr><w:pageBreakBefore/></w:pPr><w:r><w:t>the anchor, on the next page</w:t></w:r></w:p>", flags);
+		assertNull("the table stays before the break", floatContainer(doc));
+		// the same table before an anchor that does not break floats, as before
+		doc = fo(body("<w:tblpPr w:vertAnchor=\"text\" w:horzAnchor=\"margin\" w:tblpY=\"20\"/>"), flags);
+		if (sideFloatEdges()) assertNotNull("an anchor in the page: floats", floatContainer(doc));
+	}
+
 	private static boolean sideFloatEdges() {
 		return org.docx4j.convert.out.fo.FopCapabilities.has(
 				org.docx4j.convert.out.fo.FopCapabilities.Capability.SIDE_FLOAT_EDGES);
@@ -537,6 +548,8 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 	@Test public void noVertAnchorXslt() throws Exception { noVertAnchorIsTheMargin(Docx4J.FLAG_EXPORT_PREFER_XSL); }
 
 	@Test public void wideTableVisitor() throws Exception { aWideTableStaysInFlow(Docx4J.FLAG_NONE); }
+	@Test public void anchorOpensAPageVisitor() throws Exception { anAnchorThatOpensAPageKeepsTheTableBefore(Docx4J.FLAG_NONE); }
+	@Test public void anchorOpensAPageXslt() throws Exception { anAnchorThatOpensAPageKeepsTheTableBefore(Docx4J.FLAG_EXPORT_PREFER_XSL); }
 	@Test public void tallTableVisitor() throws Exception { aTallTableFloatsWhereItSplits(Docx4J.FLAG_NONE); }
 	@Test public void tallTableXslt() throws Exception { aTallTableFloatsWhereItSplits(Docx4J.FLAG_EXPORT_PREFER_XSL); }
 	@Test public void besideAnEarlierFloatVisitor() throws Exception { aTableBesideAnEarlierFloatStaysInFlow(Docx4J.FLAG_NONE); }

@@ -2367,6 +2367,17 @@ public final class WordLayoutFixups {
 		}
 		if (anchor == null) return false;
 
+		/* An anchor that opens a page or a column (break-before, from w:pageBreakBefore or its style's): Word sets the
+		 * table where it stands, before the break, and the anchor after it on the next page.  4083's B.7 yes/no table
+		 * is anchored to the "section C" heading, whose style breaks the page: Word draws it under B.7 on page 3, and
+		 * floated into that anchor it opened page 4 with it (gate b327).  In the flow it is set where Word sets it.
+		 * @since 17.3.6 */
+		String breakBefore = anchor.getAttribute("break-before");
+		if (!breakBefore.isEmpty() && !"auto".equals(breakBefore)) {
+			log.debug("Floating table left in the flow: its anchor opens a " + breakBefore);
+			return false;
+		}
+
 		if (TableWriter.floatsOnAnyRoom()) {
 			/* On the renderer's wide-block rule a table floats on any room beside it
 			 * (TableWriter.floatsOnAnyRoom), but two kinds may still go in the flow, where the

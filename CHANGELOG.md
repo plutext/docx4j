@@ -48,6 +48,8 @@ Changes in Version 17.3.6
 - A text-anchored floating table wider than 60% of the column has text beside it in whatever room Word leaves
   (1pt or more, where docx4j asked for 2in) on the renderer's Word layout (hooks `word-layout`,
   `wide-block-below-float`), and one taller than the page floats where the renderer splits it.
+- A floating table whose anchor paragraph starts a new page stays on the page before the break, where Word sets it;
+  it went to the next page with its anchor.
 
 **Reading documents.**
 - A `w:br` outside a run (directly in a paragraph, hyperlink or the body, or inside a `w:t` or `w:instrText`) is
