@@ -85,6 +85,8 @@ import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.w15.CTCommentEx;
 import org.docx4j.wml.Body;
@@ -101,6 +103,7 @@ import org.docx4j.wml.CTObject;
 import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.CTFtnEdnRef;
 import org.docx4j.wml.CTRel;
+import org.docx4j.wml.CTSettings;
 import org.docx4j.wml.CTRuby;
 import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.CTTrackChange;
@@ -166,6 +169,8 @@ final class Extractor {
 	final ResolvedView plan;
 	final Mode mode;
 	final PropertyResolver propertyResolver;
+	/** The styles part, where it could not be read (CR-065 D1): no resolver, the reading as for a package without styles. */
+	private final StyleDefinitionsPart unreadableStyles;
 
 	final List<TextWarning> warnings = new ArrayList<TextWarning>();
 	private final Set<TextWarning> warned = new LinkedHashSet<TextWarning>();
@@ -224,9 +229,15 @@ final class Extractor {
 			plan = null;
 		}
 		PropertyResolver pr = null;
+		StyleDefinitionsPart unreadable = null;
 		// a package with no styles part has nothing to resolve, and asking for a resolver would
 		// add a default styles part to it (REQ-204)
-		if (pkg != null && pkg.getMainDocumentPart() != null && pkg.getMainDocumentPart().getStyleDefinitionsPart(false) != null) {
+		StyleDefinitionsPart styles = pkg == null || pkg.getMainDocumentPart() == null ? null
+				: pkg.getMainDocumentPart().getStyleDefinitionsPart(false);
+		if (styles != null && !readable(styles)) {
+			// read as for a package without styles (REQ-801), where a resolver would fail on the part
+			unreadable = styles;
+		} else if (styles != null) {
 			try {
 				pr = pkg.getMainDocumentPart().getPropertyResolver();
 			} catch (Exception e) {
@@ -234,6 +245,7 @@ final class Extractor {
 			}
 		}
 		this.propertyResolver = pr;
+		this.unreadableStyles = unreadable;
 	}
 
 	// --- the package ---------------------------------------------------------------------------------
@@ -243,7 +255,8 @@ final class Extractor {
 		List<TextBlock> out = new ArrayList<TextBlock>();
 		Map<String, TextComment> comments = new LinkedHashMap<String, TextComment>();
 		Map<String, Object> metadata = new LinkedHashMap<String, Object>();
-		metadata.put(TextResult.FIELDS_UPDATE_ON_OPEN, fieldsUpdateOnOpen());
+		// a reading one level down: its updateFields is not the result's, nor its settings needed for it
+		metadata.put(TextResult.FIELDS_UPDATE_ON_OPEN, !nested && fieldsUpdateOnOpen());
 		if (!nested) Metadata.read(pkg, metadata);
 		if (main != null) {
 			// a main part that could not be read (CR-065 D1): no text at all, so the caller is told which part and
@@ -395,10 +408,8 @@ final class Extractor {
 	}
 
 	private boolean fieldsUpdateOnOpen() {
-		if (pkg == null || pkg.getMainDocumentPart() == null) return false;
-		DocumentSettingsPart settings = pkg.getMainDocumentPart().getDocumentSettingsPart();
-		if (settings == null || settings.getJaxbElement() == null) return false;
-		org.docx4j.wml.BooleanDefaultTrue update = settings.getJaxbElement().getUpdateFields();
+		CTSettings settings = settings();
+		org.docx4j.wml.BooleanDefaultTrue update = settings == null ? null : settings.getUpdateFields();
 		return update != null && update.isVal();
 	}
 
@@ -808,9 +819,10 @@ final class Extractor {
 			if (Character.isWhitespace(c) || Character.isSpaceChar(c)) return false;
 		}
 		PPr pPr = viewPPr(p);
-		if (propertyResolver != null) {
+		PropertyResolver resolver = resolver();
+		if (resolver != null) {
 			try {
-				pPr = propertyResolver.getEffectivePPr(pPr);
+				pPr = resolver.getEffectivePPr(pPr);
 			} catch (Exception e) {
 				log.debug("Couldn't resolve paragraph properties of " + block.address + ": " + e.getMessage());
 			}
@@ -988,9 +1000,10 @@ final class Extractor {
 		PPr own = viewPPr(p);
 		block.bottomBorder = own != null && own.getPBdr() != null && own.getPBdr().getBottom() != null;
 		PPr effective = own;
-		if (propertyResolver != null) {
+		PropertyResolver resolver = resolver();
+		if (resolver != null) {
 			try {
-				effective = propertyResolver.getEffectivePPr(own);
+				effective = resolver.getEffectivePPr(own);
 			} catch (Exception e) {
 				log.debug("Couldn't resolve paragraph properties of " + block.address + ": " + e.getMessage());
 			}
@@ -1028,8 +1041,7 @@ final class Extractor {
 		String format = null, text = null, abstractNumId = null;
 		int start = 1;
 		try {
-			org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart ndp = pkg == null || pkg.getMainDocumentPart() == null
-					? null : pkg.getMainDocumentPart().getNumberingDefinitionsPart();
+			NumberingDefinitionsPart ndp = numberingPart();
 			if (ndp != null && !directNumId && linkedElsewhere(ndp, numId.toString(), Integer.toString(ilvl), pStyle)) return null;
 			org.docx4j.model.listnumbering.ListNumberingDefinition lnd = ndp == null ? null : ndp.getInstanceListDefinitions().get(numId.toString());
 			if (lnd != null && lnd.getAbstractListDefinition() != null) abstractNumId = lnd.getAbstractListDefinition().getID();
@@ -1076,6 +1088,10 @@ final class Extractor {
 
 	/** The paragraph counted in its story's numbering state; null where it is not numbered. */
 	private Emulator.NumberingResult count(P p, Story story) {
+		// a numbering part that could not be read counts nothing, as none does (numbering() raises part.not_read
+		// where a paragraph needs the part)
+		NumberingDefinitionsPart numbering = pkg.getMainDocumentPart() == null ? null : pkg.getMainDocumentPart().getNumberingDefinitionsPart();
+		if (numbering != null && !readable(numbering)) return null;
 		try {
 			return Emulator.getNumber(pkg, p.getPPr(), story.numbering());
 		} catch (RuntimeException e) {
@@ -1652,8 +1668,8 @@ final class Extractor {
 	/** {@code w:documentProtection w:edit="forms"}, enforced (the attribute as written: its getter answers true when it's absent). */
 	private boolean formsProtected() {
 		if (formsProtected == null) {
-			DocumentSettingsPart settings = pkg.getMainDocumentPart() == null ? null : pkg.getMainDocumentPart().getDocumentSettingsPart();
-			CTDocProtect protect = settings == null || settings.getJaxbElement() == null ? null : settings.getJaxbElement().getDocumentProtection();
+			CTSettings settings = settings();
+			CTDocProtect protect = settings == null ? null : settings.getDocumentProtection();
 			formsProtected = protect != null && protect.getEdit() == STDocProtect.FORMS && written(protect, "enforcement");
 		}
 		return formsProtected;
@@ -2311,15 +2327,79 @@ final class Extractor {
 		return part == null || part.getPartName() == null ? null : part.getPartName().getName();
 	}
 
+	// --- parts consulted, not emitted (REQ-801's part.not_read, WD 0.66) -----------------------------
+
+	/**
+	 * The property resolver, null without styles; where the styles part could not be read, null, and
+	 * {@code part.not_read} the first time a paragraph or run asks.
+	 */
+	private PropertyResolver resolver() {
+		if (unreadableStyles != null) consult(unreadableStyles);
+		return propertyResolver;
+	}
+
+	/**
+	 * The numbering part, asked for a paragraph with a {@code w:numId}, the one that needs it; null where there is
+	 * none, and where it could not be read, as for a package that lacks it, with {@code part.not_read}.
+	 */
+	private NumberingDefinitionsPart numberingPart() {
+		NumberingDefinitionsPart part = pkg == null || pkg.getMainDocumentPart() == null ? null
+				: pkg.getMainDocumentPart().getNumberingDefinitionsPart();
+		return part == null || consult(part) ? part : null;
+	}
+
+	/** The settings; null where there are none, and where they could not be read, with {@code part.not_read}. */
+	private CTSettings settings() {
+		DocumentSettingsPart part = pkg == null || pkg.getMainDocumentPart() == null ? null
+				: pkg.getMainDocumentPart().getDocumentSettingsPart();
+		return part == null || !consult(part) ? null : part.getJaxbElement();
+	}
+
+	/**
+	 * Whether a part the reading consults but does not emit (the styles, the numbering, the settings; not the
+	 * font table, which the text model does not read) can be read. Where it can't (CR-065 D1), the reading goes
+	 * on as for a package that lacks it, and the result is marked with {@code part.not_read}, its selector the
+	 * part's name, once a part. Asked only where this document needs the part, so that a part it does not need
+	 * raises nothing (REQ-801).
+	 */
+	private boolean consult(JaxbXmlPart<?> part) {
+		if (readable(part)) return true;
+		TextWarning w = new TextWarning(TextWarning.PART_NOT_READ, null, null, null, partName(part));
+		if (!warned.contains(w)) log.warn("Read as text without " + partName(part) + ", which could not be read");
+		warn(w);
+		return false;
+	}
+
+	private static boolean readable(JaxbXmlPart<?> part) {
+		try {
+			part.getContents();
+			return true;
+		} catch (Docx4JException e) {
+			return false;
+		}
+	}
+
+	/** Whether a section has an even header or footer, so that the settings' {@code w:evenAndOddHeaders} matters. */
+	private static boolean evenReference(List<SectPr> sections) {
+		for (SectPr sectPr : sections) {
+			if (sectPr == null) continue;
+			for (CTRel ref : sectPr.getEGHdrFtrReferences()) {
+				HdrFtrRef type = ref instanceof org.docx4j.wml.HeaderReference ? ((org.docx4j.wml.HeaderReference) ref).getType()
+						: ref instanceof org.docx4j.wml.FooterReference ? ((org.docx4j.wml.FooterReference) ref).getType() : null;
+				if (type == HdrFtrRef.EVEN) return true;
+			}
+		}
+		return false;
+	}
+
 	// --- headers and footers by section (REQ-502) ---------------------------------------------------------
 
 	private void sectionsWithHeaders(MainDocumentPart main, List<SectPr> sections, List<TextBlock> mainBlocks,
 			boolean headers, boolean footers, List<TextBlock> out) {
 		boolean evenAndOdd = false;
-		DocumentSettingsPart settings = main.getDocumentSettingsPart();
-		if (settings != null && settings.getJaxbElement() != null && settings.getJaxbElement().getEvenAndOddHeaders() != null) {
-			evenAndOdd = settings.getJaxbElement().getEvenAndOddHeaders().isVal();
-		}
+		// the settings' w:evenAndOddHeaders, asked where a section has an even header or footer, which needs it
+		CTSettings settings = evenReference(sections) ? settings() : null;
+		if (settings != null && settings.getEvenAndOddHeaders() != null) evenAndOdd = settings.getEvenAndOddHeaders().isVal();
 		RelationshipsPart rels = main.getRelationshipsPart(false);
 		Set<String> emitted = new LinkedHashSet<String>();
 		Map<HdrFtrRef, String> lastHeader = new HashMap<HdrFtrRef, String>();
@@ -2668,8 +2748,8 @@ final class Extractor {
 		if (lang == null) lang = lang(styles == null ? null : styles.getLang());
 		if (lang != null) return lang;
 		if (themeFontLang == null) {
-			DocumentSettingsPart settings = pkg.getMainDocumentPart() == null ? null : pkg.getMainDocumentPart().getDocumentSettingsPart();
-			String theme = settings == null || settings.getJaxbElement() == null ? null : lang(settings.getJaxbElement().getThemeFontLang());
+			CTSettings settings = settings();
+			String theme = settings == null ? null : lang(settings.getThemeFontLang());
 			themeFontLang = theme == null ? CaseMapping.DEFAULT_LANGUAGE : theme;
 		}
 		return themeFontLang;
@@ -2703,7 +2783,8 @@ final class Extractor {
 	}
 
 	private RPr styleRPr(org.docx4j.wml.RStyle rStyleElement, P p) {
-		if (propertyResolver == null) return null;
+		PropertyResolver resolver = resolver();
+		if (resolver == null) return null;
 		String pStyle = p.getPPr() != null && p.getPPr().getPStyle() != null ? p.getPPr().getPStyle().getVal() : null;
 		String rStyle = rStyleElement == null ? null : rStyleElement.getVal();
 		String key = pStyle + "|" + rStyle;
@@ -2720,7 +2801,7 @@ final class Extractor {
 				pPrStyle = new PPr();
 				pPrStyle.setPStyle(p.getPPr().getPStyle());
 			}
-			effective = propertyResolver.getEffectiveRPr(styleOnly, pPrStyle);
+			effective = resolver.getEffectiveRPr(styleOnly, pPrStyle);
 		} catch (Exception e) {
 			log.debug("Couldn't resolve a run's style properties: " + e.getMessage());
 		}
@@ -2730,9 +2811,10 @@ final class Extractor {
 
 	private boolean isHiddenMark(PPr pPr) {
 		if (pPr != null && pPr.getRPr() != null && pPr.getRPr().getVanish() != null) return pPr.getRPr().getVanish().isVal();
-		if (propertyResolver == null) return false;
+		PropertyResolver resolver = resolver();
+		if (resolver == null) return false;
 		try {
-			RPr effective = propertyResolver.getEffectiveParagraphMarkRPr(pPr);
+			RPr effective = resolver.getEffectiveParagraphMarkRPr(pPr);
 			return effective != null && effective.getVanish() != null && effective.getVanish().isVal();
 		} catch (Exception e) {
 			return false;

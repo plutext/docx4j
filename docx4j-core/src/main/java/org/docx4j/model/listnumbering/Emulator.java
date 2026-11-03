@@ -182,7 +182,7 @@ public class Emulator {
     	numberingPart.getEmulator(); // ensures the definitions are read
     	PropertyResolver propertyResolver;
     	try {
-    		propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
+    		propertyResolver = resolverOf(wmlPackage);
     	} catch (Docx4JException e) {
     		return new NumRef("no property resolver: " + e.getMessage());
     	}
@@ -264,7 +264,7 @@ public class Emulator {
     	    	
     	PropertyResolver propertyResolver;
 		try {
-			propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
+			propertyResolver = resolverOf(wmlPackage);
 		} catch (Docx4JException e) {
 			log.error(e.getMessage(),e);
 			return null;
@@ -535,6 +535,25 @@ public class Emulator {
     }
 
     /**
+     * The package's property resolver; null where its styles part could not be read (CR-065 D1), so that the
+     * numbering is resolved with no styles, as for a package that lacks them (WD 0.66 REQ-801). Until 17.3.6
+     * the resolver failed on the unreadable part, and no paragraph had a number, a directly numbered one included.
+     */
+    private static PropertyResolver resolverOf(WordprocessingMLPackage wmlPackage) throws Docx4JException {
+    	org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart styles =
+    		wmlPackage.getMainDocumentPart().getStyleDefinitionsPart(false);
+    	if (styles != null) {
+    		try {
+    			styles.getContents();
+    		} catch (Docx4JException e) {
+    			log.debug("No styles to resolve the numbering with: " + e.getMessage());
+    			return null;
+    		}
+    	}
+    	return wmlPackage.getMainDocumentPart().getPropertyResolver();
+    }
+
+    /**
      * The one resolution of numId and ilvl for a paragraph, from its own
      * {@code w:numPr} where it has one and from the effective properties of its
      * paragraph style otherwise - the default paragraph style when it names none,
@@ -570,6 +589,9 @@ public class Emulator {
     			if (styleId == null) {
     				return new NumRef("no numId, no paragraph style and no default paragraph style");
     			}
+    		}
+    		if (propertyResolver == null) {
+    			return new NumRef("no numId, and style '" + styleId + "' cannot be resolved: the styles part could not be read");
     		}
     		PPr ppr;
     		try {

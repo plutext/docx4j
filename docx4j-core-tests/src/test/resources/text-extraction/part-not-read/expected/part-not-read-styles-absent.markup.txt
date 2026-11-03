@@ -1,0 +1,10 @@
+Definitions
+Interpretation
+1.	first item
+2.	second item
+visible hidden-by-style end
+istanbul caps-by-style
+small caps by style
+İSTANBUL DİRECT CAPS
+direct shown
+kept {++inserted ++}{--deleted --}end

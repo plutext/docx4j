@@ -67,6 +67,9 @@ Changes in Version 17.3.6
 - Under `fields: update`, a LISTNUM (or AUTONUM*) in a header, footer or note keeps its stored result, as Word's does,
   where it showed the body's next number; a SET written as `w:fldSimple` shows nothing, as the complex form already
   did (CR-067 §15).
+- A styles, numbering or settings part that cannot be read is read as if absent, and the result carries
+  `part.not_read` naming it (WD 0.66 REQ-801, CR-046 §10); an unreadable styles part no longer loses the labels
+  of directly numbered paragraphs, in the text model or `Emulator`.
 
 **Markdown.**
 - `MarkdownExportOptions.setAddressComments(true)` writes each block's address before it as an HTML comment

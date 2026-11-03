@@ -8,7 +8,8 @@ Cases 53–54 are now added; Jason completed the extended main DOCX r3 open/save
 Phase 1 implemented 18 October 2026 (§4). Phase 2 implemented 18 October 2026 (§4), with CR-047; its listed-format rules for
 spanning headers ruled the same day (§4), and proposed to the WD. Phase 3 implemented 18 October 2026 (§4);
 D12 decided the same day (§6). Phase 4 done 18 October 2026: the hand-offs sent and all five acknowledged (§4).
-Five phases (§4); decisions in §6.
+Five phases (§4); decisions in §6. Addenda: §9 `profile` (WD 0.41, built 2026-10-29); §10 `part.not_read` (WD 0.66
+REQ-801, built 2026-11-03).
 
 The specification is the portfolio's *WordprocessingML Text Extraction*, working draft 0.8
 (`docx4j-portfolio/docs/text_extraction_specification_wd.md`, commit 2c00660), cited here as
@@ -1114,3 +1115,59 @@ latex, since `math: unicodemath` is not implemented (§2.6). What it does not re
 comments' forms, CRLF and CR cells, folded hyphens, Word's linear math, and the three accidents of Word's own (the partial
 update a DATE, TIME or SAVEDATE triggers on open, the SYMBOL omission, the stale PAGE number). `toMap` carries `profile`
 last (null where none), so the options round-trip by name.
+
+## 10. Addendum: `part.not_read` (WD 0.66 REQ-801; built 2026-11-03)
+
+Jason, 3 November 2026, on WD 0.65's open item: "part.not_read as recommended" (portfolio 665ca7e; WD 0.66, bfcd03a).
+A part that the reading consulted and needed for this document, but does not emit, cannot be read. The text is
+read as for a package that lacks the part, and the result carries `part.not_read`, once a part, its selector the
+part's name; the result is not refused. A part the document does not need raises nothing.
+
+**Measured first (17.3.6-SNAPSHOT before this change).** Nothing was refused and no warning was raised, in any
+view. CR-065 D1's refusal never fired, since the text model uses none of the create-when-null conveniences. Each
+part not well formed read as the part absent, except the styles part: an unreadable one also lost the labels of
+directly numbered paragraphs, which an absent one keeps. `Emulator.getNumber` asked the main part for its
+property resolver, `PropertyResolver.init` failed with a NullPointerException on the unreadable part, and
+`Extractor.count` caught it at DEBUG. The log carried an ERROR with a stack trace on every
+`getJaxbElement()` call (33 for the styles part in one reading), not once as CR-065 §7 says.
+
+**Built.**
+- `TextWarning.PART_NOT_READ`.
+- In `Extractor`, the parts it consults and does not emit are asked through `consult(part)`: the content if it can
+  be read, else `part.not_read` and the reading goes on without the part. Each part is asked only where this
+  document needs it:
+  - **the styles:** when a paragraph or run first asks for the resolver. The constructor builds no resolver over an
+    unreadable styles part.
+  - **the numbering:** for a paragraph with a `w:numId` (its own or its style's). `count` passes over an
+    unreadable part silently, so that a document numbering no paragraph raises nothing.
+  - **the settings:** for `fields_update_on_open` (every top-level reading; a reading one level down puts false,
+    as it is not the result's), forms protection, the caps language, and `w:evenAndOddHeaders` (asked only where
+    a section has an even header or footer).
+  - The font table is never read by the text model, so it never raises.
+- One level down, `nested` renames the selector to the embedded package's or chunk's part, as for
+  `content.not_read`.
+- Fix (a), in `Emulator` (`resolverOf`, used by `getNumber` and `numRefFor`): where the styles part cannot be read,
+  the numbering is resolved with no property resolver. A direct `w:numId` is counted; a numbering that a style
+  would give is not (`resolve` says so, where it dereferenced the null resolver). This holds for every caller,
+  not only the text model.
+
+**Not built, awaiting Jason (the portfolio put them to him separately):**
+- (b) reading a package that has no styles part adds a default one to it, through the emulator's
+  `getPropertyResolver()`, past REQ-204's guard (list labels off too);
+- (c) `JaxbXmlPart.getJaxbElement()` logs the read error with a stack trace on every call. Some remain in a
+  reading: `PropertyResolver`'s `StyleUtil.apply` asks an unreadable numbering part for a level's indent, gets
+  none and logs it, and the text reads as for an absent part.
+
+**Fixture.** `docx4j-core-tests/src/test/resources/text-extraction/part-not-read/`, beside the compact probe, as the
+WD proposed. It is built by `build_part_not_read.py` and holds:
+- an intact document;
+- its styles, numbering and settings parts each not well formed, and each absent;
+- a numbering part not well formed that no paragraph needs;
+- the expected plain text in the three views (`list_labels: true`, `small_caps: upper`);
+- `expected-warnings.tsv`.
+
+`PartNotReadTest` reads them. It also checks:
+- that each part not well formed reads as the same part absent;
+- the emulator outside the text model;
+- that an untouched save keeps the unreadable part's bytes;
+- that an embedded document's warning names its part.

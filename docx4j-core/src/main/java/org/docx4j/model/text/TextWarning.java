@@ -25,7 +25,8 @@ import java.util.Objects;
  * where there is one, and its selector: for {@code mce.branches_differ} the name of the branch
  * selected, for {@code altchunk.not_expanded}, {@code content.not_read} and {@code image.not_described}
  * the part's name (the chunk's, since 17.3.5, WD 0.47; it was the chunk's content type, which the
- * warning still carries), for {@code paragraph.drop_cap_joined} the name of the part the paragraphs are in.
+ * warning still carries), for {@code part.not_read} the part's name, for {@code paragraph.drop_cap_joined}
+ * the name of the part the paragraphs are in.
  * Never the document's text (REQ-802).
  *
  * @since 17.3.4 (CR-046 phase 1)
@@ -45,6 +46,14 @@ public final class TextWarning {
 	 * contributes nothing (REQ-511, REQ-512, REQ-801).
 	 */
 	public static final String CONTENT_NOT_READ = "content.not_read";
+	/**
+	 * A part the reading consulted and needed for this document but does not emit (the styles, the numbering, the
+	 * settings) that can't be read: the text is read as for a package that lacks it (REQ-801, WD 0.66). Once a part;
+	 * its selector is the part's name.
+	 *
+	 * @since 17.3.6
+	 */
+	public static final String PART_NOT_READ = "part.not_read";
 	/** An image the {@link ImageDescriber} failed to describe: it has no description (REQ-514, REQ-801). */
 	public static final String IMAGE_NOT_DESCRIBED = "image.not_described";
 	/**
@@ -85,8 +94,8 @@ public final class TextWarning {
 	/** For {@code altchunk.not_expanded}, the chunk's content type as the package declares it ({@code application/rtf}); else null. */
 	public String getContentType() { return contentType; }
 	/**
-	 * For {@code content.not_read}, the name of the part that can't be read (for a part inside an
-	 * embedded package, the embedded package part's); for {@code image.not_described}, the image
+	 * For {@code content.not_read} and {@code part.not_read}, the name of the part that can't be read (for a
+	 * part inside an embedded package, the embedded package part's); for {@code image.not_described}, the image
 	 * part's ({@code /word/media/image1.png}); for {@code altchunk.not_expanded}, the chunk's
 	 * ({@code /word/afchunk.rtf}), so that a host can read it itself (since 17.3.5, CR-070); for
 	 * {@code paragraph.drop_cap_joined}, the part the paragraphs are in ({@code /word/document.xml}; since
