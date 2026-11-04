@@ -3846,6 +3846,30 @@ public final class Corpus {
 		PROBES.add(rowSplit3Probe(15, false));
 
 		/*
+		 * keeplines-first-row (4083's C.3, 4 November 2026).  Word moves C.3, a keepNext question heading, and the whole
+		 * first row of the table after it to the next page, where docx4j sets the heading and the row's first line at the
+		 * page's foot.  keepnext-table-first-row (mode 15) showed that the heading's keepNext alone does not do it: Word
+		 * divides a splittable first row there as docx4j does.  4083 is mode 12; every one of its paragraphs is w:keepLines
+		 * (its Normal style), and the row's cells are keepNext question paragraphs of two lines made by w:br.  Below mode
+		 * 15 docx4j takes a cell paragraph's keep-together off (splitCellParagraphsBelowMode15), because table-rowsplit-3
+		 * saw Word divide rows whose cell paragraphs were w:keepLines at modes 11, 12 and 14: a table's third row, its
+		 * lines wrapped, no keepNext anywhere.  Which of 4083's differences keeps its row whole?  Each case from a new page,
+		 * every line an exact 14pt, a row of a one-line tag cell and a two-line cell (its properties on both cells'
+		 * paragraphs), then a one-line row; the page's foot leaves room for one line of the straddling row:
+		 *   C1  4083's shape: heading keepNext; the cells keepNext and keepLines; the two lines by w:br
+		 *   C2  C1, the cells keepLines only          C3  C1, the cells keepNext only
+		 *   C4  C1, the cells neither                  C5  C1 without the heading's keepNext
+		 *   C6  C1 with the two lines wrapped
+		 *   C7  no heading: the table's first row straddles, its cells keepLines, the lines wrapped (table-rowsplit-3's
+		 *       E, but the first row)
+		 *   C8  C7 with the lines by w:br
+		 *   C9  C2 with a one-line first row: the straddling row is the second
+		 * At mode 12 (4083's) and mode 15.  Read off: which page each case's heading and each line of its rows land on.
+		 */
+		PROBES.add(keepLinesFirstRowProbe(12));
+		PROBES.add(keepLinesFirstRowProbe(15));
+
+		/*
 		 * textbox-inset-stroke-list (ledger7 section 3 item 2).  Two readings, from four
 		 * corpus documents, both about where a text box's text area starts:
 		 *   - Word insets a VML box's text by half its stroke: text origins Word minus
@@ -9223,6 +9247,66 @@ public final class Corpus {
 			}
 			return d.pkg();
 		});
+	}
+
+	private static Probe keepLinesFirstRowProbe(int mode) {
+		return new Probe("keeplines-first-row-compat" + mode,
+				"at mode " + mode + ", a table row of a one-line tag cell and a two-line cell straddling the page's foot "
+				+ "(room for one of its lines), every line an exact 14pt, a case a page: C1 4083's C.3 (a keepNext heading; "
+				+ "the cells keepNext and keepLines; the lines by w:br); C2 the cells keepLines only; C3 keepNext only; "
+				+ "C4 neither; C5 no keepNext on the heading; C6 the lines wrapped; C7 no heading, the first row keepLines, "
+				+ "wrapped; C8 C7 by w:br; C9 C2 with a one-line first row before it.  Read the page of each heading and of "
+				+ "each line of the rows", () -> {
+			Doc d = Doc.create(mode);
+			d.para("keeplines-first-row at mode " + mode + ". Nine cases follow, a page each.").add();
+			// tag, heading, heading keepNext, cells keepNext, cells keepLines, lines by w:br, a one-line row first
+			Object[][] cases = {
+					{ "C1", true, true, true, true, true, false }, { "C2", true, true, false, true, true, false },
+					{ "C3", true, true, true, false, true, false }, { "C4", true, true, false, false, true, false },
+					{ "C5", true, false, true, true, true, false }, { "C6", true, true, true, true, false, false },
+					{ "C7", false, false, false, true, false, false }, { "C8", false, false, false, true, true, false },
+					{ "C9", true, true, false, true, true, true } };
+			final int TAG = 1800, TEXT = 7200;
+			for (Object[] c : cases) {
+				String tag = (String) c[0];
+				boolean heading = (Boolean) c[1], headingKeep = (Boolean) c[2], cellKeep = (Boolean) c[3],
+						cellLines = (Boolean) c[4], br = (Boolean) c[5], rowFirst = (Boolean) c[6];
+				// the straddling row's first line ends 686pt down the 697.9pt body: one 14pt line fits, two do not
+				int above = (heading ? SPLIT_LINE_TW : 0) + (rowFirst ? SPLIT_LINE_TW : 0);
+				fillTo(d, tag, 48 * SPLIT_LINE_TW - above);
+				if (heading) {
+					Doc.Para h = d.para(tag + " heading").noLabel().line(SPLIT_LINE_TW, STLineSpacingRule.EXACT).before(0).after(0);
+					if (headingKeep) h.keepNext();
+					h.add();
+				}
+				Doc.Table t = new Doc.Table(TAG, TEXT).fixedLayout();
+				if (rowFirst) {
+					t.rowOf(null, null, t.cellOf(TAG, null, cellPara(d, tag + " r1", cellKeep, cellLines, false, null)),
+							t.cellOf(TEXT, null, cellPara(d, tag + " r1 one line", cellKeep, cellLines, false, null)));
+				}
+				String r = tag + (rowFirst ? " r2" : " r1");
+				String two = br ? null : linesOf(r + " wrapped:", 2, tag.charAt(1) - '0', SERIF, 24, (TEXT - 216) / 20.0);
+				t.rowOf(null, null, t.cellOf(TAG, null, cellPara(d, r, cellKeep, cellLines, false, null)),
+						t.cellOf(TEXT, null, cellPara(d, r, cellKeep, cellLines, br, two)));
+				String last = tag + (rowFirst ? " r3" : " r2");
+				t.rowOf(null, null, t.cellOf(TAG, null, cellPara(d, last, false, false, false, null)),
+						t.cellOf(TEXT, null, cellPara(d, last + " one line", false, false, false, null)));
+				d.add(t.build());
+				d.para(tag + " after the table").noLabel().line(SPLIT_LINE_TW, STLineSpacingRule.EXACT).before(0).after(0).add();
+			}
+			return d.pkg();
+		});
+	}
+
+	/** keeplines-first-row's cell paragraph: one line of text, or two (by w:br, line a and line b; or wrapped, the given
+	 *  text), exact 14pt, keepNext and keepLines as asked.  @since 17.3.6 */
+	private static P cellPara(Doc d, String text, boolean keepNext, boolean keepLines, boolean br, String wrapped) {
+		Doc.Para p = d.para(br ? text + " line a" : wrapped != null ? wrapped : text).noLabel()
+				.line(SPLIT_LINE_TW, STLineSpacingRule.EXACT).before(0).after(0);
+		if (br) p.softReturn().run(text + " line b", SERIF, 24, null);
+		if (keepNext) p.keepNext();
+		if (keepLines) p.keepLines();
+		return p.build();
 	}
 
 	/** Exact 14pt filler lines from the top of a new page, then one spacer line of

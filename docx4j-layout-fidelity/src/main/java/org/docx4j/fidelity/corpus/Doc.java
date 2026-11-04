@@ -2175,6 +2175,12 @@ public final class Doc {
 			return this;
 		}
 
+		/** {@code w:keepLines}: the paragraph's lines on one page.  @since 17.3.6 */
+		public Para keepLines() {
+			ppr.setKeepLines(new BooleanDefaultTrue());
+			return this;
+		}
+
 		public Para widowControl(boolean on) {
 			BooleanDefaultTrue b = new BooleanDefaultTrue();
 			b.setVal(on);
