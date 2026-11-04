@@ -3870,6 +3870,9 @@ public final class Corpus {
 		 */
 		PROBES.add(keepLinesFirstRowProbe(12));
 		PROBES.add(keepLinesFirstRowProbe(15));
+		PROBES.add(autospacingAfterTableProbe(12));
+		PROBES.add(autospacingAfterTableProbe(15));
+		PROBES.add(floatFootEmptiesProbe());
 
 		/*
 		 * pbdr-group (4083, 4 November 2026): which adjacent bordered paragraphs Word draws in one box.  docx4j's
@@ -9298,6 +9301,132 @@ public final class Corpus {
 			}
 			return d.pkg();
 		});
+	}
+
+	/*
+	 * spacing-autospacing-after-table (corpus document 6293, 5 November 2026): Word applies none of the 14pt
+	 * w:beforeAutospacing of the paragraph after a floating table where docx4j does, so 6293's page 1 runs 13.9pt low
+	 * from there on (its first line after the table 169.7, Word's 155.8), and its flow past the body's foot.  With the
+	 * 14pt taken out of the FO the page fits on r62, r64 and r65 alike.  What drops the space is the question: the table
+	 * or only a floating one, the auto spacing or any space, the w:br that paragraph opens with, or the paragraph above
+	 * it.  Each case a page: a label, the line above (A), what lies between, the paragraph under test (P), a plain line
+	 * (Q).  A floating table lies 300pt below its anchor, clear of the lines read.  Read the gap from A to P against
+	 * case 1's.
+	 */
+	private static Probe autospacingAfterTableProbe(int mode) {
+		return new Probe("spacing-autospacing-after-table-compat" + mode,
+				"at mode " + mode + ", does the paragraph after a table keep its HTML auto spacing, a case a page, A the line "
+				+ "above, P the paragraph under test: (1) control, no table; (2) a floating table between, P auto before and "
+				+ "after; (3) 2 with P opening with a w:br; (4) 6293's shape: A auto before, P w:before and w:after 100 beside "
+				+ "the auto flags, opening with a w:br; (5) 2 with P auto before only; (6) 2 with P an explicit 14pt; (7) 2 "
+				+ "with A auto after; (8) 7 with P plain; (9) an inline table between, P auto; (10) 9 with P an explicit 14pt; "
+				+ "(11) 9 with A auto after, P plain; (12) 9 with A auto after, P auto; (13) no table, P anchoring a square "
+				+ "picture; (14) a framed paragraph between; (15) 2 with the float at tblpY 0; (16) two floating tables between; "
+				+ "(17) 2 with a plain paragraph between the table and P.  Read the gap from A to P", () -> {
+			Doc d = Doc.create(mode);
+			String[] what = { null, "control, no table", "a floating table, P auto", "as 2, P opens with a break",
+					"6293's shape", "as 2, P auto before only", "as 2, P an explicit 14pt", "as 2, A auto after",
+					"as 7, P plain", "an inline table, P auto", "as 9, P an explicit 14pt", "as 9, A auto after, P plain",
+					"as 9, A auto after, P auto", "P anchors a square picture", "a framed paragraph, P auto",
+					"as 2, the table at tblpY 0", "two floating tables", "as 2, a plain paragraph after the table" };
+			for (int c = 1; c < what.length; c++) {
+				d.para("case " + c + ": " + what[c]).noLabel().font(SERIF, 20).after(240).add();
+				Doc.Para a = d.para("A line above, case " + c).noLabel().font(SERIF, 20);
+				if (c == 4) a.before(100).autospacing(true, false);
+				if (c == 7 || c == 8 || c == 11 || c == 12) a.autospacing(false, true);
+				a.add();
+				if (c == 2 || c == 3 || c == 4 || (c >= 5 && c <= 8) || c == 16 || c == 17) autospacingTable(d, c, 6000);
+				if (c == 15) autospacingTable(d, c, 0);
+				if (c == 16) autospacingTable(d, c, 8000);
+				if (c >= 9 && c <= 12) autospacingTable(d, c, null);
+				if (c == 14) d.para("framed " + c).noLabel().font(SERIF, 20).frame("around", "margin", "text", 6000, 0, 2000, null, null).add();
+				if (c == 17) d.para("Z plain line, case " + c).noLabel().font(SERIF, 20).add();
+				Doc.Para q = d.para().noLabel().font(SERIF, 20);
+				if (c == 3 || c == 4) q.softReturn();
+				if (c == 13) {
+					q.run(d.positionedImage(40, 40, 508000L, 508000L, "square", "bothSides", 0L, 0L, 0L, 114300L, "margin", "left",
+							0L, "paragraph", null, 3810000L, 40 + c));
+				}
+				q.text("P under test, case " + c);
+				if (c == 4) q.before(100).after(100);
+				if (c == 5) q.autospacing(true, false);
+				else if (c == 6 || c == 10) q.before(280);
+				else if (c == 8 || c == 11) { /* plain */ }
+				else q.autospacing(true, true);
+				q.add();
+				d.para("Q plain line, case " + c).noLabel().font(SERIF, 20).add();
+				if (c < what.length - 1) d.pageBreak();
+			}
+			return d.pkg();
+		});
+	}
+
+	/** A two-column table for autospacingAfterTableProbe: floating at this tblpY, or inline where it is null. */
+	private static void autospacingTable(Doc d, int c, Integer tblpY) {
+		Doc.Table t = new Doc.Table(2000, 2000).fixedLayout();
+		if (tblpY != null) t.floating("text", "margin", 0, null, tblpY, null);
+		t.rowOf(320, org.docx4j.wml.STHeightRule.EXACT, t.cell("table " + c, SERIF, 20, 1, 2000), t.cell("cell", SERIF, 20, 1, 2000));
+		d.add(t.build());
+	}
+
+	/*
+	 * float-foot-empties (fop/CR-023 section 11's open item): do empty paragraphs beside a float fit a page's foot by the
+	 * ordinary rule?  6293 keeps twelve there, in the strip beside a 56% wide floating table, and its fit looked like a
+	 * rule of Word's own until its 13.9pt was found (spacing-autospacing-after-table); this checks that nothing else is
+	 * left.  An empty paragraph draws no glyph, so each case ends with a visible line (AFTER): on the next page it opens
+	 * the page if every empty fitted and stands 15.2pt lower for each that did not.  6293's page: A4 landscape, margins
+	 * 56.7pt, a body of 481.9pt.  Ten paragraphs of Arial 8pt (a 9.2pt line, 6pt after), so the last line's foot is
+	 * d points from the body's foot, d from -4 to +10.  Series: S empties beside the float, whose top is the first
+	 * paragraph's and whose foot is 2pt above the body's, as 6293's table's is; N the same with no float, the control; V
+	 * S with each paragraph holding a tag, which shows every y and whether an empty differs from a line of text; K S
+	 * with 14pt of space before the first, the space a block keeps at a float's start edge, which r62 leaves out of the
+	 * list beside the float and r64 counts: the case that decides between them.
+	 */
+	private static Probe floatFootEmptiesProbe() {
+		return new Probe("float-foot-empties",
+				"ten paragraphs of Arial 8pt, 6pt after, ending d points past the body's foot, d -4, -1, 1, 4, 10, a case a "
+				+ "page, A4 landscape, mode 15: S empty, beside a floating table 56% wide; N empty, no table; V tagged E1 to "
+				+ "E10, beside the table; K as S with 14pt before the first (d -4 to 4).  Read AFTER's page and y in each case",
+				() -> {
+			Doc d = Doc.create(15);
+			d.pageGeometry(16838, 11906, true, 1134, 1134, 1134, 1134);
+			int[] all = { -80, -20, 20, 80, 200 }, near = { -80, -20, 20, 80 };
+			Object[][] series = { { "S", true, false, false, all }, { "N", false, false, false, all },
+					{ "V", true, true, false, all }, { "K", true, false, true, near } };
+			for (int s = 0; s < series.length; s++) {
+				int[] ds = (int[]) series[s][4];
+				for (int i = 0; i < ds.length; i++) {
+					boolean last = s == series.length - 1 && i == ds.length - 1;
+					footEmptiesCase(d, series[s][0] + (ds[i] < 0 ? "" : "+") + ds[i] / 20, (Boolean) series[s][1],
+							(Boolean) series[s][2], (Boolean) series[s][3], ds[i], last);
+				}
+			}
+			return d.pkg();
+		});
+	}
+
+	/** One case of floatFootEmptiesProbe: dTwips the last paragraph's line past the body's foot (body 9638, its ten
+	 *  paragraphs 2920 to that line's foot, the anchor's line 280). */
+	private static void footEmptiesCase(Doc d, String tag, boolean beside, boolean visible, boolean keptSpace, int dTwips,
+			boolean last) throws Exception {
+		int spacer = 6438 + dTwips - (keptSpace ? 280 : 0);
+		int top = 280 + spacer;
+		if (beside) {
+			Doc.Table t = new Doc.Table(7197, 986).fixedLayout().floating("text", "margin", 0, null, top, null);
+			t.rowOf(9638 - 40 - top, org.docx4j.wml.STHeightRule.EXACT, t.cell("table " + tag, SERIF, 20, 1, 7197),
+					t.cell("cell", SERIF, 20, 1, 986));
+			d.add(t.build());
+		}
+		d.para("case " + tag).noLabel().font(SERIF, 20).line(280, STLineSpacingRule.EXACT).add();
+		d.para("spacer " + tag).noLabel().font(SERIF, 20).line(spacer, STLineSpacingRule.EXACT).add();
+		for (int i = 1; i <= 10; i++) {
+			Doc.Para p = d.para().noLabel().font("Arial", 16).after(120).markRPr(markFont("Arial", 16, null));
+			if (i == 1 && keptSpace) p.before(280);
+			if (visible) p.text("E" + i);
+			p.add();
+		}
+		d.para("AFTER " + tag).noLabel().font("Arial", 16).after(120).markRPr(markFont("Arial", 16, null)).add();
+		if (!last) d.pageBreak();
 	}
 
 	private static Probe keepLinesFirstRowProbe(int mode) {
