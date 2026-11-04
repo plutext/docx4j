@@ -129,6 +129,25 @@ public class TableRowKeepWithNextTest {
 		assertTrue(rows.get(3), kept(rows.get(3)));
 	}
 
+	/** A first paragraph inside a borders container keeps its row: 4083's question rows, whose
+	 *  w:pBdr states only a top of none (still a container), and a real top border.  @since 17.3.6 */
+	@Test
+	public void aParagraphInABordersContainerCounts() throws Exception {
+		String none = "<w:pBdr><w:top w:val=\"none\" w:sz=\"0\" w:space=\"0\" w:color=\"auto\"/></w:pBdr>";
+		String single = "<w:pBdr><w:top w:val=\"single\" w:sz=\"4\" w:space=\"1\" w:color=\"000000\"/></w:pBdr>";
+		String keepNone = "<w:p><w:pPr><w:keepNext/>" + none + "</w:pPr><w:r><w:t>kept, top none</w:t></w:r></w:p>";
+		String keepSingle = "<w:p><w:pPr><w:keepNext/>" + single + "</w:pPr><w:r><w:t>kept, bordered</w:t></w:r></w:p>";
+		String plain = "<w:p><w:pPr>" + single + "</w:pPr><w:r><w:t>bordered, no keep</w:t></w:r></w:p>";
+		String fo = convert(tbl(tr(null, tc(keepNone), tc(p("x", false))), tr(null, tc(keepSingle), tc(p("y", false))),
+				tr(null, tc(plain), tc(p("z", true)))));
+		assertTrue("the test needs the container", fo.contains("border-top-style=\"none\""));
+		List<String> rows = rows(fo);
+		assertEquals(3, rows.size());
+		assertTrue(rows.get(0), kept(rows.get(0)));
+		assertTrue(rows.get(1), kept(rows.get(1)));
+		assertFalse(rows.get(2), kept(rows.get(2)));
+	}
+
 	/** An empty paragraph with w:keepNext is a paragraph like any other. */
 	@Test
 	public void anEmptyKeepingParagraphCounts() throws Exception {

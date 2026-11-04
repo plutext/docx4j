@@ -1385,7 +1385,14 @@ public class TableWriter extends AbstractTableWriter {
   			Element e = (Element) n;
   			String name = localName(e);
   			if ("block".equals(name)) {
-  				return "always".equals(e.getAttribute("keep-with-next"));
+  				if ("always".equals(e.getAttribute("keep-with-next"))) return true;
+  				/* A borders/shading container (Containerization) or a content control's block holds the
+  				 * cell's first paragraph: a block whose first element is block-level, where a paragraph's
+  				 * first is inline.  Corpus document 4083's question rows (w:pBdr with only a top of none,
+  				 * which still makes a container) were not kept, and FOP divided its C.3 row's two lines
+  				 * across the page under a keepNext heading, where Word moved both.  @since 17.3.6 */
+  				Element first = firstElementChild(e);
+  				return first != null && isBlockLevel(first) && firstBlockKeepsWithNext(e.getChildNodes());
   			} else if ("list-block".equals(name)) {
   				// the paragraph's keep is on the list-item-body's block
   				Element body = firstDescendant(e, "list-item-body");
@@ -1400,6 +1407,20 @@ public class TableWriter extends AbstractTableWriter {
   			// not block-level content (a marker, a float): look on
   		}
   		return false;
+  	}
+
+  	private static Element firstElementChild(Element e) {
+  		for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling()) {
+  			if (n.getNodeType() == Node.ELEMENT_NODE) return (Element) n;
+  		}
+  		return null;
+  	}
+
+  	/** A block-level FO, which a paragraph's own block does not begin with.  @since 17.3.6 */
+  	private static boolean isBlockLevel(Element e) {
+  		String name = localName(e);
+  		return "block".equals(name) || "list-block".equals(name) || "table".equals(name)
+  				|| "block-container".equals(name) || "wrapper".equals(name);
   	}
 
   	private static Element firstDescendant(Element e, String localName) {
