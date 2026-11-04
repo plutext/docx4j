@@ -63,6 +63,13 @@ public class FirstLineIndentAfterPictureTest extends AbstractXSLFOTest {
 		throw new AssertionError("no paragraph block");
 	}
 
+	/** Whether the renderer indents a first line after a leading block itself (fork CR-035), so
+	 *  that docx4j leaves the paragraph's text-indent as it is.  @since 17.3.6 */
+	private static boolean rendererIndents() {
+		return org.docx4j.convert.out.fo.FopCapabilities.has(
+				org.docx4j.convert.out.fo.FopCapabilities.Capability.FIRST_LINE_INDENT_AFTER_BLOCK);
+	}
+
 	@Test
 	public void indentReservedByALeader() throws Exception {
 		String body = "<w:p><w:pPr><w:ind w:left=\"60\" w:firstLine=\"360\"/></w:pPr>"
@@ -70,6 +77,11 @@ public class FirstLineIndentAfterPictureTest extends AbstractXSLFOTest {
 		for (int flags : new int[] { Docx4J.FLAG_NONE, Docx4J.FLAG_EXPORT_PREFER_XSL }) {
 			Element block = paragraph(fo(body, flags));
 			assertEquals("3pt", block.getAttribute("start-indent"));
+			if (rendererIndents()) {
+				assertEquals("the renderer indents it", "18pt", block.getAttribute("text-indent"));
+				assertEquals(0, block.getElementsByTagNameNS(FO, "leader").getLength());
+				continue;
+			}
 			// the property is taken off, so the following lines are not indented too
 			assertEquals("", block.getAttribute("text-indent"));
 			// a leader of its width stands at the head of the inline content, after the
@@ -103,6 +115,19 @@ public class FirstLineIndentAfterPictureTest extends AbstractXSLFOTest {
 			Element block = paragraph(fo(body, flags));
 			String indent = block.getAttribute("text-indent");
 			assertTrue(indent, indent.startsWith("-21.3"));
+			// the box's wrapper does not pass the paragraph's indent on to what it holds
+			Element wrapper = null;
+			for (Node n = block.getFirstChild(); n != null && wrapper == null; n = n.getNextSibling()) {
+				if (n instanceof Element && "block-container".equals(((Element)n).getLocalName())) wrapper = (Element)n;
+			}
+			assertEquals("0pt", wrapper.getAttribute("text-indent"));
+			if (rendererIndents()) {
+				for (Node n = block.getFirstChild(); n != null; n = n.getNextSibling()) {
+					assertTrue("the renderer indents it: no nested block",
+							!(n instanceof Element) || !"block".equals(((Element)n).getLocalName()));
+				}
+				continue;
+			}
 			Element first = null, last = null;
 			for (Node n = block.getFirstChild(); n != null; n = n.getNextSibling()) {
 				if (!(n instanceof Element)) continue;

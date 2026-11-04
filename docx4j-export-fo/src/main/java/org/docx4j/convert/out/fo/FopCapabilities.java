@@ -206,7 +206,13 @@ public final class FopCapabilities {
 		 *  the anchor's page, whole parts after, the anchor beside the last part, a header row repeated
 		 *  (fork CR-034, r60).  With it docx4j floats a table taller than a page under the wide-block rule
 		 *  ({@link WordLayoutFixups}).  @since 17.3.6 */
-		FLOAT_TABLE_SPLIT("float-table-split");
+		FLOAT_TABLE_SPLIT("float-table-split"),
+		/** A block's first line takes its text-indent whatever block-containers, float wrappers or empty
+		 *  blocks precede it in the block (fork CR-035, r62; Enterprise CR-001 &#xa7;6.6 item 53), as Word
+		 *  draws a paragraph's first line after an anchored object.  With it docx4j leaves the indent on the
+		 *  block ({@link WordLayoutFixups}: no leader for a first-line indent, no nested block for a hanging
+		 *  one).  @since 17.3.6 */
+		FIRST_LINE_INDENT_AFTER_BLOCK("first-line-indent-after-block");
 
 		private final String key;
 

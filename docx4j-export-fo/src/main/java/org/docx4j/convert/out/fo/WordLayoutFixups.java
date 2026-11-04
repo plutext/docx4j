@@ -221,6 +221,7 @@ public final class WordLayoutFixups {
 		cellPaddingAtRowBreaks(doc); // after every pass that reads or writes a cell's padding-top
 		fieldErrorWeights(doc);
 		hangingIndentAfterLeadingBlock(doc); // after every pass that reads a paragraph's own inline children; before StyleRefMarkers, whose markers lead the block
+		anchoredContentTakesNoTextIndent(doc); // after the two first-line passes, which take a positive indent off the block
 		StyleRefMarkers.apply(doc); // before stripHints: it reads the paragraph-style hint
 		pageMastersByContent(doc); // after every fixup which moves or drops blocks
 		stripHints(doc);
@@ -3237,6 +3238,7 @@ public final class WordLayoutFixups {
 	 * @since 17.1.0
 	 */
 	static void firstLineIndentAfterLeadingBlock(Document doc) {
+		if (FopCapabilities.has(FopCapabilities.Capability.FIRST_LINE_INDENT_AFTER_BLOCK)) return; // the renderer indents it
 		for (Element block : elements(doc, "block")) {
 			if (!block.hasAttribute(HINT_PSTYLE)) continue;
 			double indent = lengthPt(block.getAttribute("text-indent"));
@@ -3272,11 +3274,14 @@ public final class WordLayoutFixups {
 	 *
 	 * <p>Only the wrappers the anchoring passes put at a paragraph's start count: a
 	 * block-container or a float.  Late among the passes: those before it read a
-	 * paragraph's inline content as its block's own children.</p>
+	 * paragraph's inline content as its block's own children.  Not done on a renderer
+	 * with first-line-indent-after-block (fork CR-035), which indents the first line
+	 * itself, nor is {@link #firstLineIndentAfterLeadingBlock}'s leader.</p>
 	 *
 	 * @since 17.3.6
 	 */
 	static void hangingIndentAfterLeadingBlock(Document doc) {
+		if (FopCapabilities.has(FopCapabilities.Capability.FIRST_LINE_INDENT_AFTER_BLOCK)) return; // the renderer indents it
 		String ns = extensionNamespace();
 		for (Element block : elements(doc, "block")) {
 			if (!block.hasAttribute(HINT_PSTYLE)) continue;
@@ -3305,6 +3310,35 @@ public final class WordLayoutFixups {
 				at = next;
 			}
 			block.appendChild(inner);
+		}
+	}
+
+	/**
+	 * An anchored object's content does not take its anchor paragraph's first-line indent:
+	 * text-indent is an inherited property, so the blocks inside a paragraph's
+	 * block-container or float child (an anchored picture's, a text box's, a floating
+	 * table's) would indent their own first lines by it.  Seen on gate b331 (the fork's
+	 * first-line-indent-after-block, with which the paragraph keeps a first-line indent
+	 * that {@link #firstLineIndentAfterLeadingBlock} used to take off): corpus document
+	 * 4083's floating table, anchored in a paragraph indented 36pt, overflowed a blank
+	 * cell's line by 25.2pt, and 6625's zero-width picture container its line by 1.7pt.
+	 * A hanging indent (kept on the block by {@link #hangingIndentAfterLeadingBlock}) was
+	 * inherited the same way, as a negative indent.  A text box resets its own
+	 * ({@code resetTextBox}).  Each such child states text-indent 0pt.
+	 *
+	 * @since 17.3.6
+	 */
+	static void anchoredContentTakesNoTextIndent(Document doc) {
+		for (Element block : elements(doc, "block")) {
+			if (!block.hasAttribute(HINT_PSTYLE)) continue;
+			if (lengthPt(block.getAttribute("text-indent")) == 0) continue;
+			for (Node n = block.getFirstChild(); n != null; n = n.getNextSibling()) {
+				if (!(n instanceof Element)) continue;
+				Element child = (Element) n;
+				if ((isFo(child, "block-container") || isFo(child, "float")) && !child.hasAttribute("text-indent")) {
+					child.setAttribute("text-indent", "0pt");
+				}
+			}
 		}
 	}
 

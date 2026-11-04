@@ -54,6 +54,9 @@ Changes in Version 17.3.6
   hang, as Word does; it started at the left indent.
 - A VML text box positioned relative to the text is measured from where Word puts its paragraph's top: below the
   previous paragraph's space-after and above the paragraph's top border.
+- On the docx4j FO renderer's hook `first-line-indent-after-block` the renderer indents a paragraph's first line after an
+  anchored object itself, and docx4j leaves the paragraph as it is; an anchored object's content no longer takes its
+  paragraph's first-line indent.
 
 **Reading documents.**
 - A `w:br` outside a run (directly in a paragraph, hyperlink or the body, or inside a `w:t` or `w:instrText`) is
