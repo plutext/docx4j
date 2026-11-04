@@ -2334,6 +2334,15 @@ public final class Doc {
 			return this;
 		}
 
+		/** {@code w:pBdr/w:top} alone: sz in eighths of a point, {@code w:space} in points (a rule
+		 *  over a question heading, as corpus document 4083 draws one).  @since 17.3.6 */
+		public Para topBorder(int eighthsOfPoint, int spacePt) {
+			PPrBase.PBdr bdr = ppr.getPBdr()==null ? F.createPPrBasePBdr() : ppr.getPBdr();
+			bdr.setTop(paraBorder(eighthsOfPoint, spacePt));
+			ppr.setPBdr(bdr);
+			return this;
+		}
+
 		/** {@code w:pBdr/w:bottom} alone: sz in eighths of a point, {@code w:space} in points
 		 *  (a rule under the paragraph, as a letterhead draws one).  @since 17.3.3 */
 		public Para bottomBorder(int eighthsOfPoint, int spacePt) {

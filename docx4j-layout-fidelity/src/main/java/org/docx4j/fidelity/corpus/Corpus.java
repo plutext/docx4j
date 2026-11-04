@@ -1280,6 +1280,58 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		/*
+		 * keepnext-table-first-row (4083 at b328, 4 November 2026: Word moved its keepNext question heading "C.3" and
+		 * the whole first row of the table after it, three lines with no w:cantSplit and no w:tblHeader, to the next
+		 * page; docx4j kept the heading with the row's first line and split the row at the page's foot).  Each case
+		 * starts a page with 47 exact 14pt lines (658pt), so that the heading's line (14pt) ends at 672pt of A4's 697.9pt
+		 * body: one more 14pt line fits under it, two do not.  K1: the heading keepNext, the first row three exact 14pt
+		 * lines; K2: the same without keepNext; K3: K1 with the first row w:cantSplit; K4: K1 with a one-line first row
+		 * and the three lines in the second; K5: the heading keepNext before a three-line paragraph (no table).
+		 * Read off: on which page the heading is and where the first row (or the paragraph) starts and breaks.
+		 */
+		PROBES.add(new Probe("keepnext-table-first-row",
+				"a heading at a page's foot with room for one line under it, before a table or a paragraph, each case "
+				+ "from a new page, mode 15: (1) keepNext, a three-line first row; (2) no keepNext; (3) keepNext, the row "
+				+ "w:cantSplit; (4) keepNext, a one-line first row and a three-line second; (5) keepNext before a three-line "
+				+ "paragraph.  Read the heading's page and where the first row's lines (or the paragraph's) fall", () -> {
+			Doc d = Doc.create(15);
+			for (int c = 1; c <= 5; c++) {
+				for (int i = 1; i <= 47; i++) {
+					d.para("K" + c + " filler " + i).line(280, STLineSpacingRule.EXACT).before(0).after(0).add();
+				}
+				Doc.Para heading = d.para("K" + c + " heading").line(280, STLineSpacingRule.EXACT).before(0).after(0);
+				if (c != 2) heading.keepNext();
+				heading.add();
+				if (c == 5) {
+					d.para("K5 paragraph line a, set long enough that it runs over three lines of the column at this size "
+							+ "line b, and on into a third line so that the paragraph is three lines tall in all, line c")
+							.line(280, STLineSpacingRule.EXACT).before(0).after(0).add();
+				} else {
+					Doc.Table t = new Doc.Table(4500, 4500).fixedLayout();
+					String[][] rows = c == 4 ? new String[][] { { "K4 row 1 line a" }, { "K4 row 2 line a", "K4 row 2 line b", "K4 row 2 line c" } }
+							: new String[][] { { "K" + c + " row 1 line a", "K" + c + " row 1 line b", "K" + c + " row 1 line c" }, { "K" + c + " row 2 line a" } };
+					for (String[] lines : rows) {
+						P[] ps = new P[lines.length];
+						for (int k = 0; k < lines.length; k++) {
+							ps[k] = d.para(lines[k]).noLabel().line(280, STLineSpacingRule.EXACT).before(0).after(0).build();
+						}
+						t.rowOf(null, null, t.cellOf(4500, null, ps), t.cell(lines[0].replace("line a", "beside"), SERIF, 24, 1, 4500));
+					}
+					Tbl tbl = t.build();
+					if (c == 3) {
+						org.docx4j.wml.Tr first = (org.docx4j.wml.Tr) tbl.getContent().get(0);
+						if (first.getTrPr() == null) first.setTrPr(Doc.F.createTrPr());
+						first.getTrPr().getCnfStyleOrDivIdOrGridBefore().add(Doc.F.createCTTrPrBaseCantSplit(new BooleanDefaultTrue()));
+					}
+					d.add(tbl);
+				}
+				d.para("K" + c + " after").line(280, STLineSpacingRule.EXACT).before(0).after(0).add();
+				if (c < 5) d.pageBreak();
+			}
+			return d.pkg();
+		}));
+
 		// 13419's gap (CR-032 §4.3): a full-width table in the flow with a 120pt offset, its
 		// anchor an empty paragraph, and text after the empties that does not fit the rest
 		// of the gap whole.  Does Word fill the gap with that paragraph's lines (the rule
@@ -4159,6 +4211,83 @@ public final class Corpus {
 			}
 			d.add(t.build());
 			d.para("after the table").before(240).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * vml-box-anchor-reference (4083 at b328, 4 November 2026: its check marks, VML text boxes anchored in the
+		 * question headings, sit 5 to 12pt off their labels).  docx4j places a text-relative box margin-top below its
+		 * anchor paragraph's top before the paragraph's space-before (vml-box-anchor-space-before, above).  What that
+		 * probe did not vary, and 4083's boxes differ in: the vertical-relative left out (B.3's box) or stated as text
+		 * (B.6's); a top border on the anchor (B.6's heading; docx4j wraps a bordered paragraph in a box that takes its
+		 * space-before); the previous paragraph's space-after (6pt before 4083's headings), which Word may add to the
+		 * anchor's 18pt space-before where FOP keeps the larger.  Body cases R{t,n}B{0,1}A{0,6}: relative text or none,
+		 * no border or a 1pt top border 1pt off the text, the previous paragraph's space-after 0 or 6pt; the anchor's
+		 * space-before 18pt, the box at margin-top 10pt.  Cell cases (the anchor a table cell's only paragraph) C{t,n}S{0,6}:
+		 * relative text or none, space-before 0 or 6pt.  And 4083's own shape twice (E): a bold heading (18pt before, 6pt
+		 * after, keepNext), its box at margin-top 43.75pt over the first cell of the table that follows (that cell's
+		 * paragraph 6pt before), relative none (B.3's) and relative text with a top border (B.6's).
+		 * Read off: the box text's baseline minus its anchor paragraph's text baseline; for E, minus the label's.
+		 */
+		PROBES.add(new Probe("vml-box-anchor-reference",
+				"text-relative VML text boxes (margin-top 10pt) in paragraphs with 18pt of space-before: the "
+				+ "vertical-relative stated (text) or left out, a 1pt top border or none, the previous paragraph's "
+				+ "space-after 0 or 6pt (R...); as a table cell's only paragraph, space-before 0 or 6pt (C...); and 4083's "
+				+ "check-mark shape (E: a heading's box at 43.75pt over the next table's first cell, relative none, then "
+				+ "text with a top border); mode 15.  Read the box text's baseline minus its anchor's text baseline (E: "
+				+ "minus the label's)", () -> {
+			Doc d = Doc.create(15);
+			int n = 0;
+			for (String rel : new String[] { "t", "n" }) {
+				for (int border = 0; border <= 1; border++) {
+					for (int after : new int[] { 0, 120 }) {
+						String tag = "R" + rel + "B" + border + "A" + (after / 20);
+						n++;
+						d.para(tag + " filler, the line before the anchor").before(0).after(after).add();
+						String style = "position:absolute;margin-left:250pt;margin-top:10pt;width:150pt;height:20pt;z-index:" + n
+								+ ";mso-position-horizontal-relative:text"
+								+ ("t".equals(rel) ? ";mso-position-vertical-relative:text" : "");
+						Doc.Para anchor = d.para(tag + " anchor").before(360).after(720).run(d.vmlRect(style, tag + " box text"));
+						if (border == 1) anchor.topBorder(8, 1);
+						anchor.add();
+					}
+				}
+			}
+			d.para("after the body cases").before(240).add();
+			Doc.Table t = new Doc.Table(4500, 4500).fixedLayout();
+			for (String rel : new String[] { "t", "n" }) {
+				for (int before : new int[] { 0, 120 }) {
+					String tag = "C" + rel + "S" + (before / 20);
+					n++;
+					String style = "position:absolute;margin-left:95pt;margin-top:10pt;width:120pt;height:20pt;z-index:" + n
+							+ ";mso-position-horizontal-relative:text"
+							+ ("t".equals(rel) ? ";mso-position-vertical-relative:text" : "");
+					P anchor = d.para(tag + " anchor").noLabel().before(before).after(0)
+							.run(d.vmlRect(style, tag + " box text")).build();
+					t.rowOf(800, org.docx4j.wml.STHeightRule.AT_LEAST, t.cellOf(4500, null, anchor),
+							t.cell(tag + " beside", SERIF, 24, 1, 4500));
+				}
+			}
+			d.add(t.build());
+			d.para("after the cell cases").before(240).add();
+			for (String rel : new String[] { "n", "t" }) {
+				String tag = "E" + rel;
+				n++;
+				d.para(tag + " filler, the paragraph before the heading").before(0).after(120).add();
+				String style = "position:absolute;left:0;text-align:left;margin-left:23.4pt;margin-top:43.75pt;width:13.8pt;"
+						+ "height:26.3pt;z-index:" + n + ";mso-position-horizontal-relative:text"
+						+ ("t".equals(rel) ? ";mso-position-vertical-relative:text" : "");
+				Doc.Para heading = d.para(tag + " heading, how was this sold to you?").before(360).after(120).keepNext()
+						.run(d.vmlRect(style, "X"));
+				if ("t".equals(rel)) heading.topBorder(8, 1);
+				heading.add();
+				Doc.Table options = new Doc.Table(600, 8400).fixedLayout();
+				P box = d.para("").noLabel().before(120).after(0).build();
+				P label = d.para(tag + " label, during a meeting").noLabel().before(120).after(0).build();
+				options.rowOf(null, null, options.cellOf(600, null, box), options.cellOf(8400, null, label));
+				d.add(options.build());
+				d.para(tag + " after the options").before(240).add();
+			}
 			return d.pkg();
 		}));
 
