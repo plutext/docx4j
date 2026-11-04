@@ -3510,7 +3510,7 @@ public final class WordLayoutFixups {
 		Element band = null;
 		Element cleared = null;
 		if ("square".equals(kind) && !pageY) {
-			double above = y.startsWith("t:") ? spaceBeforePt(para) : 0;
+			double above = y.startsWith("t:") ? textRelativeTop(para) : 0;
 			band = textBesideBand(doc, box, para, x, w, h, col, off - above);
 			if (band != null) {
 				/* Word puts a table whose anchor paragraph follows the box's below the box, not
@@ -3550,8 +3550,10 @@ public final class WordLayoutFixups {
 			 * paragraph): Word's box-to-anchor baseline offset falls by the space-before in
 			 * all eighteen cases, where ours stayed put, 6 and 18pt low.  DrawingML anchors,
 			 * relativeFrom paragraph, are not measured yet and keep the old reading ("p:").
-			 * @since 17.3.1 */
-			double above = y.startsWith("t:") ? spaceBeforePt(para) : 0;
+			 * @since 17.3.1
+			 * Above its top border too, and only the space-before the previous paragraph's
+			 * space-after does not cover (textRelativeTop).  @since 17.3.6 */
+			double above = y.startsWith("t:") ? textRelativeTop(para) : 0;
 			box.setAttribute("top", pt(off - above + lengthPt(box.getAttribute("padding-top"))));
 			box.setAttribute("left", pt(pageY ? x + ml : x));
 			// a box Word wraps square, tight or through: on the fork's obstacles the page's lines
@@ -3801,6 +3803,69 @@ public final class WordLayoutFixups {
 		if (v.isEmpty()) v = block.getAttribute("space-before.optimum");
 		if (v.isEmpty() || !v.trim().matches("-?[0-9]*\\.?[0-9]+(pt|in|mm|cm|px)?")) return 0;
 		return lengthPt(v.trim());
+	}
+
+	/**
+	 * How far above its paragraph's content top Word places the top a text-relative VML
+	 * box (mso-position-vertical-relative text, or nothing stated) is measured from: the
+	 * paragraph's space-before less what the previous paragraph's space-after covers of it,
+	 * and the paragraph's top border with the padding inside it.  Word counts a
+	 * paragraph's space-after as that paragraph's, the next one's space-before only where
+	 * it is the larger, so the next paragraph's top lies below the previous one's
+	 * space-after; and the border lies inside the paragraph, the text below it.
+	 *
+	 * <p>Measured on vml-box-anchor-reference (boxes at margin-top 10pt in paragraphs with
+	 * 18pt of space-before): Word's box-to-anchor baseline offset -9.60 with no border and
+	 * a previous space-after of 0; 6.00pt lower where the previous paragraph has 6pt
+	 * after; 1.95pt higher with a 1pt top border 1pt off the text (the line moving down by
+	 * the same); the two together add.  docx4j's was -9.62 in all eight.  Corpus document
+	 * 4083's check marks, a question heading's box over the next table's first cell,
+	 * after a paragraph with 6pt after: Word's X 6.0pt lower than docx4j's with no border,
+	 * 4.2 with one.  Where the previous space-after is the larger, none of the
+	 * space-before is counted (not measured).</p>
+	 *
+	 * @since 17.3.6
+	 */
+	private static double textRelativeTop(Element para) {
+		Element outer = para;
+		double border = topBorderAndPadding(para);
+		Node parent = para.getParentNode();
+		if (border == 0 && parent instanceof Element && isFo((Element) parent, "block")
+				&& !((Element) parent).hasAttribute(HINT_PSTYLE) && firstElementChild((Element) parent) == para) {
+			// the borders/shading container holding this paragraph first (syncContainerSpacing)
+			outer = (Element) parent;
+			border = topBorderAndPadding(outer);
+		}
+		double before = Math.max(spaceBeforePt(para), outer == para ? 0 : spaceBeforePt(outer));
+		return Math.max(0, before - previousSpaceAfter(outer)) + border;
+	}
+
+	/** A block's top border width and the padding inside it, in points; 0 where it has no
+	 *  top border (a shading container's padding is not a border's).  @since 17.3.6 */
+	private static double topBorderAndPadding(Element block) {
+		String style = block.getAttribute("border-top-style").trim();
+		if (style.isEmpty() || "none".equals(style) || "hidden".equals(style)) return 0;
+		double width = lengthPt(block.getAttribute("border-top-width"));
+		if (width <= 0) return 0;
+		return width + lengthPt(block.getAttribute("padding-top"));
+	}
+
+	/** The space-after of the paragraph before this block in its flow: the previous
+	 *  sibling's own, or, for a container or list-block that states none, its last
+	 *  paragraph's; 0 for a table or where nothing precedes.  @since 17.3.6 */
+	private static double previousSpaceAfter(Element block) {
+		Node n = block.getPreviousSibling();
+		while (n != null && !(n instanceof Element)) n = n.getPreviousSibling();
+		if (n == null) return 0;
+		Element prev = (Element) n;
+		if (!isFo(prev, "block") && !isFo(prev, "list-block")) return 0;
+		double after = spacePt(prev, "space-after");
+		if (after > 0 || prev.hasAttribute(HINT_PSTYLE)) return after;
+		Element last = null;
+		for (Element b : descendants(prev, "block")) {
+			if (b.hasAttribute(HINT_PSTYLE)) last = b;
+		}
+		return last == null ? 0 : spacePt(last, "space-after");
 	}
 
 	/** The block the text box belongs to: the nearest ancestor fo:block. */

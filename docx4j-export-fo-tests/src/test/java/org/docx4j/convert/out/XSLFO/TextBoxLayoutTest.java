@@ -283,6 +283,36 @@ public class TextBoxLayoutTest extends AbstractXSLFOTest {
 				positionedBox(fo(dml, Docx4J.FLAG_NONE)).getAttribute("top"));
 	}
 
+	/** The paragraph's top a text-relative VML box is measured from lies below the previous
+	 *  paragraph's space-after, which covers that much of this one's space-before, and above
+	 *  the paragraph's top border and its padding (vml-box-anchor-reference: Word's box 6.00pt
+	 *  lower after a paragraph with 6pt after, 1.95pt higher under a 1pt border 1pt off the
+	 *  text).  @since 17.3.6 */
+	@Test
+	public void aTextRelativeBoxIsMeasuredFromWordsParagraphTop() throws Exception {
+		String spaced = VML_TEXT_BOX.replaceFirst("<w:p>", "<w:p><w:pPr><w:spacing w:before=\"360\"/></w:pPr>");
+		String afterSix = "<w:p><w:pPr><w:spacing w:after=\"120\"/></w:pPr><w:r><w:t>before</w:t></w:r></w:p>" + spaced;
+		assertEquals("the box's 90pt less the 12pt of space-before the 6pt after leaves", "78pt",
+				positionedBox(fo(afterSix, Docx4J.FLAG_NONE)).getAttribute("top"));
+		String afterMore = afterSix.replace("w:after=\"120\"", "w:after=\"480\"");
+		assertEquals("none of it where the space-after is the larger", "90pt",
+				positionedBox(fo(afterMore, Docx4J.FLAG_NONE)).getAttribute("top"));
+		String bordered = VML_TEXT_BOX.replaceFirst("<w:p>", "<w:p><w:pPr><w:pBdr><w:top w:val=\"single\" w:sz=\"8\""
+				+ " w:space=\"1\" w:color=\"000000\"/></w:pBdr><w:spacing w:before=\"360\"/></w:pPr>");
+		org.w3c.dom.Document doc = fo(bordered, Docx4J.FLAG_NONE);
+		Element border = null;
+		NodeList blocks = doc.getElementsByTagNameNS(FO_NS, "block");
+		for (int i = 0; i < blocks.getLength() && border == null; i++) {
+			if (((Element)blocks.item(i)).hasAttribute("border-top-width")) border = (Element)blocks.item(i);
+		}
+		assertNotNull("no bordered block", border);
+		double width = Double.parseDouble(border.getAttribute("border-top-width").replace("pt", ""));
+		double padding = Double.parseDouble(border.getAttribute("padding-top").replace("pt", ""));
+		assertEquals(1.0, padding, 0.001);
+		double top = Double.parseDouble(positionedBox(doc).getAttribute("top").replace("pt", ""));
+		assertEquals("the box's 90pt less the 18pt before, the border and its padding", 90 - 18 - width - padding, top, 0.001);
+	}
+
 	/** A narrower one is placed where Word puts it and takes no space: Word flows the
 	 *  text beside it, and several such boxes side by side (a planner built from text
 	 *  boxes) would otherwise cost a page each. */
