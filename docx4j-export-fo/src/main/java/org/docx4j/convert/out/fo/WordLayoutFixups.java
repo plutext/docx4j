@@ -220,6 +220,7 @@ public final class WordLayoutFixups {
 		continuationFromTop(doc);
 		cellPaddingAtRowBreaks(doc); // after every pass that reads or writes a cell's padding-top
 		fieldErrorWeights(doc);
+		hangingIndentAfterLeadingBlock(doc); // after every pass that reads a paragraph's own inline children; before StyleRefMarkers, whose markers lead the block
 		StyleRefMarkers.apply(doc); // before stripHints: it reads the paragraph-style hint
 		pageMastersByContent(doc); // after every fixup which moves or drops blocks
 		stripHints(doc);
@@ -3230,9 +3231,8 @@ public final class WordLayoutFixups {
 	 * (&#xa7;4.4, &#xa7;4.5) - put at the head of the inline content, and the property is
 	 * taken off the block so the following lines are not indented too.</p>
 	 *
-	 * <p>A hanging indent (a negative text-indent) is left alone: there is nothing to
-	 * reserve, and FOP places the first line at the start-indent, which is where Word
-	 * puts it.</p>
+	 * <p>A hanging indent (a negative text-indent) has nothing to reserve; it is
+	 * {@link #hangingIndentAfterLeadingBlock}'s.</p>
 	 *
 	 * @since 17.1.0
 	 */
@@ -3253,6 +3253,58 @@ public final class WordLayoutFixups {
 			leader.setAttribute("leader-pattern", "space");
 			leader.setAttribute("leader-length", pt(indent));
 			block.insertBefore(leader, at);
+		}
+	}
+
+	/**
+	 * A paragraph with a hanging indent which begins with an anchored object's wrapper
+	 * loses the hang as {@link #firstLineIndentAfterLeadingBlock} describes: FOP applies
+	 * {@code text-indent} to the block's first line only where the inline content is the
+	 * block's first child, so the first line starts at the start-indent, where Word starts
+	 * it at the start-indent plus the (negative) indent.  Measured on corpus document 4083
+	 * (Enterprise CR-001 &#xa7;6.6 item 53): its question headings, {@code w:ind} left 426
+	 * hanging 426, each anchor a VML text box (a check mark), and Word draws "B.6" and "B.7"
+	 * at x 42.5 where docx4j drew them at 63.8, B.7's question wrapping a line.  A leader
+	 * cannot be negative, so the content after the wrappers goes into a nested block which
+	 * states the indent (its first line is then a block's first line again) and carries the
+	 * Word layout extension's line attributes, which are not inherited: without the tab
+	 * stops the heading's tabs closed up.  On 4083's FO, all 48 such headings at Word's x.
+	 *
+	 * <p>Only the wrappers the anchoring passes put at a paragraph's start count: a
+	 * block-container or a float.  Late among the passes: those before it read a
+	 * paragraph's inline content as its block's own children.</p>
+	 *
+	 * @since 17.3.6
+	 */
+	static void hangingIndentAfterLeadingBlock(Document doc) {
+		String ns = extensionNamespace();
+		for (Element block : elements(doc, "block")) {
+			if (!block.hasAttribute(HINT_PSTYLE)) continue;
+			String indent = block.getAttribute("text-indent");
+			if (lengthPt(indent) >= 0) continue;
+			Node at = block.getFirstChild();
+			boolean leading = false;
+			while (at != null && (!(at instanceof Element) ? at.getTextContent().trim().isEmpty()
+					: isFo((Element) at, "block-container") || isFo((Element) at, "float"))) {
+				if (at instanceof Element) leading = true;
+				at = at.getNextSibling();
+			}
+			if (!leading || at == null) continue;
+			Element inner = doc.createElementNS(FO_NS, "fo:block");
+			inner.setAttribute("text-indent", indent);
+			org.w3c.dom.NamedNodeMap attrs = block.getAttributes();
+			for (int i = 0; i < attrs.getLength(); i++) {
+				org.w3c.dom.Attr a = (org.w3c.dom.Attr) attrs.item(i);
+				if (ns != null && ns.equals(a.getNamespaceURI())) {
+					inner.setAttributeNS(ns, a.getName(), a.getValue());
+				}
+			}
+			while (at != null) {
+				Node next = at.getNextSibling();
+				inner.appendChild(at); // moves it
+				at = next;
+			}
+			block.appendChild(inner);
 		}
 	}
 

@@ -86,6 +86,60 @@ public class FirstLineIndentAfterPictureTest extends AbstractXSLFOTest {
 		}
 	}
 
+	/**
+	 * A hanging indent after a leading text box: the content after the box's wrapper goes into a
+	 * nested block which states the (negative) indent and carries the paragraph's Word layout
+	 * attributes (its tab stops among them).  Measured on corpus document 4083, whose question
+	 * headings are {@code w:ind} left 426 hanging 426 with a check-mark box at their start: Word
+	 * draws "B.7" at the margin, docx4j drew it 21.3pt in (Enterprise CR-001 &#xa7;6.6 item 53).
+	 * @since 17.3.6
+	 */
+	@Test
+	public void hangingIndentNestedAfterABox() throws Exception {
+		String body = "<w:p><w:pPr><w:tabs><w:tab w:val=\"left\" w:pos=\"720\"/></w:tabs>"
+				+ "<w:ind w:left=\"426\" w:hanging=\"426\"/></w:pPr>"
+				+ PICT + "<w:r><w:t>B.7</w:t></w:r><w:r><w:tab/><w:t>How was it sold to you?</w:t></w:r></w:p>";
+		for (int flags : new int[] { Docx4J.FLAG_NONE, Docx4J.FLAG_EXPORT_PREFER_XSL }) {
+			Element block = paragraph(fo(body, flags));
+			String indent = block.getAttribute("text-indent");
+			assertTrue(indent, indent.startsWith("-21.3"));
+			Element first = null, last = null;
+			for (Node n = block.getFirstChild(); n != null; n = n.getNextSibling()) {
+				if (!(n instanceof Element)) continue;
+				if (first == null) first = (Element)n;
+				last = (Element)n;
+			}
+			assertEquals("block-container", first.getLocalName());
+			assertEquals("block", last.getLocalName());
+			assertEquals(indent, last.getAttribute("text-indent"));
+			assertTrue(last.getTextContent(), last.getTextContent().contains("B.7"));
+			assertTrue(last.getTextContent(), last.getTextContent().contains("sold to you?"));
+			// the box stays where it was, out of the nested block
+			assertEquals(0, last.getElementsByTagNameNS(FO, "block-container").getLength());
+			// the Word layout attributes (none where the extension is not loaded) are the paragraph's
+			org.w3c.dom.NamedNodeMap attrs = block.getAttributes();
+			for (int i = 0; i < attrs.getLength(); i++) {
+				org.w3c.dom.Attr a = (org.w3c.dom.Attr)attrs.item(i);
+				String ns = a.getNamespaceURI();
+				if (ns == null || FO.equals(ns) || "http://www.w3.org/2000/xmlns/".equals(ns)
+						|| "http://xmlgraphics.apache.org/fop/extensions".equals(ns)) continue;
+				assertEquals(a.getName(), a.getValue(), last.getAttributeNS(ns, a.getLocalName()));
+			}
+		}
+	}
+
+	/** A hanging indent with no leading block-level child is untouched.  @since 17.3.6 */
+	@Test
+	public void plainHangingIndentNotNested() throws Exception {
+		String body = "<w:p><w:pPr><w:ind w:left=\"426\" w:hanging=\"426\"/></w:pPr>"
+				+ "<w:r><w:t>B.7</w:t></w:r></w:p>";
+		for (int flags : new int[] { Docx4J.FLAG_NONE, Docx4J.FLAG_EXPORT_PREFER_XSL }) {
+			Element block = paragraph(fo(body, flags));
+			assertTrue(block.getAttribute("text-indent").startsWith("-21.3"));
+			assertEquals(0, block.getElementsByTagNameNS(FO, "block").getLength());
+		}
+	}
+
 	/** A paragraph with no leading block-level child is untouched. */
 	@Test
 	public void plainParagraphKeepsItsTextIndent() throws Exception {

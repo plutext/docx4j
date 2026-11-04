@@ -50,6 +50,8 @@ Changes in Version 17.3.6
   `wide-block-below-float`), and one taller than the page floats where the renderer splits it.
 - A floating table whose anchor paragraph starts a new page stays on the page before the break, where Word sets it;
   it went to the next page with its anchor.
+- A paragraph with a hanging indent that begins with an anchored text box or picture draws its first line at the
+  hang, as Word does; it started at the left indent.
 
 **Reading documents.**
 - A `w:br` outside a run (directly in a paragraph, hyperlink or the body, or inside a `w:t` or `w:instrText`) is
