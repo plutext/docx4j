@@ -1297,8 +1297,19 @@ public class TableWriter extends AbstractTableWriter {
 	 * opens with the nested table, and keeps by that table's first row, is left alone.  Word
 	 * moves such rows whole too (corpus document 12301's layout table, one section per row),
 	 * but where a run of them cannot fit a page it breaks a keep between rows, while FOP,
-	 * given each row kept whole, ran page 146 72pt past the body.  Rows without a nested
-	 * table are not changed: the probes measured none.</p>
+	 * given each row kept whole, ran page 146 72pt past the body.</p>
+	 *
+	 * <p><b>And so is one without a nested table</b> (17.3.6).  Measured on keeplines-first-row
+	 * (mode 12; corpus document 4083's C.3): rows of two cells, each a two-line paragraph,
+	 * with room for one line at the page's foot.  Word divides them 1+1 where the cells'
+	 * paragraphs do not keep with the next, w:keepLines or not (below mode 15 neither widow
+	 * control nor w:keepLines holds a cell paragraph together, see
+	 * WordLayoutFixups.splitCellParagraphsBelowMode15), and moves them whole where they do,
+	 * with the heading before them where it keeps too, without it where it does not; their
+	 * lines made by w:br or wrapped alike.  docx4j divided them all.  At mode 15 Word moved
+	 * every such row, widow control holding the two-line paragraphs, as docx4j does.  The
+	 * probe kept both cells' paragraphs; that the first cell's first paragraph decides, as it
+	 * does the keep with the next row, is not measured.</p>
 	 *
 	 * @since 17.2.0
 	 */
@@ -1312,7 +1323,6 @@ public class TableWriter extends AbstractTableWriter {
   		if (rowKeepsWithNext(table.getRows().get(rowIndex))) {
   			row.setAttribute("keep-with-next", "always");
   			if (rowKeepIsAParagraphs(table.getRows().get(rowIndex))
-  					&& rowHoldsNestedTable(table.getRows().get(rowIndex))
   					&& !row.hasAttribute("keep-together.within-page")) {
   				row.setAttribute("keep-together.within-page", "always");
   			}
@@ -1344,25 +1354,6 @@ public class TableWriter extends AbstractTableWriter {
   				}
   			}
   			return false;
-  		}
-  		return false;
-  	}
-
-  	/** Whether any cell of the row holds a table of its own.  @since 17.3.1 */
-  	static boolean rowHoldsNestedTable(org.docx4j.model.table.TableModelRow rowModel) {
-  		for (TableModelCell cell : rowModel.getRowContents()) {
-  			if (cell.isDummy()) continue;
-  			Node content = ((AbstractTableWriterModelCell) cell).getContent();
-  			if (content != null && holdsTable(content.getChildNodes())) return true;
-  		}
-  		return false;
-  	}
-
-  	private static boolean holdsTable(NodeList children) {
-  		for (int i = 0; i < children.getLength(); i++) {
-  			Node n = children.item(i);
-  			if (n.getNodeType() != Node.ELEMENT_NODE) continue;
-  			if ("table".equals(localName((Element) n)) || holdsTable(n.getChildNodes())) return true;
   		}
   		return false;
   	}

@@ -36,10 +36,11 @@ import org.w3c.dom.NodeList;
 
 /**
  * A row whose first paragraph keeps with the next keeps with the next row (TableWriter, since
- * 17.2.0), and where it holds a nested table it is kept whole as well, as {@code w:cantSplit}
- * keeps a row: Word moved such a row to the next page on the table-nested-rowsplit-d probe
- * (CR-001 batch 53, corpus document 12301) where docx4j split it.  Only where the keep is the
- * row's first paragraph's: a cell opening with a nested table is left alone.
+ * 17.2.0), and is kept whole as well, as {@code w:cantSplit} keeps a row: Word moved such a row
+ * to the next page on the table-nested-rowsplit-d probe (CR-001 batch 53, corpus document 12301;
+ * a nested table in the row) and on keeplines-first-row (mode 12, corpus document 4083's C.3;
+ * none; since 17.3.6) where docx4j split it.  Only where the keep is the row's first paragraph's:
+ * a cell opening with a nested table is left alone.
  *
  * @since 17.3.1
  */
@@ -104,7 +105,7 @@ public class TableRowKeepTest extends AbstractXSLFOTest {
 		assertEquals("plain", "", rows.get(0).getAttribute("keep-with-next"));
 		assertEquals("plain", "", rows.get(0).getAttribute("keep-together.within-page"));
 		assertEquals("keeps", "always", rows.get(1).getAttribute("keep-with-next"));
-		assertEquals("keeps, no nested table: not kept whole", "", rows.get(1).getAttribute("keep-together.within-page"));
+		assertEquals("keeps, no nested table: kept whole too", "always", rows.get(1).getAttribute("keep-together.within-page"));
 		assertEquals("keeps, nested table", "always", rows.get(2).getAttribute("keep-with-next"));
 		assertEquals("keeps, nested table: kept whole", "always", rows.get(2).getAttribute("keep-together.within-page"));
 		assertEquals("a nested table, no keep", "", rows.get(3).getAttribute("keep-with-next"));
