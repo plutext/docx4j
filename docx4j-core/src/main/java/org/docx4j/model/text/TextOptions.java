@@ -98,11 +98,13 @@ public final class TextOptions {
 	 * {@code profile} (REQ-1002, WD 0.41): a preset of option values applied before the caller's own, so that an option
 	 * the caller sets, before or after the profile, overrides it. {@link #WORD_TEXT} is Word's Save As plain text as the
 	 * options reach it: the accepted view, hidden text in, headers, footers and comments in, text boxes out, notes and
-	 * their references in, no list labels, fields cached, no field codes, the table of contents in, a drop cap apart from
+	 * their references in, list labels in (Word's text save writes them; WD 0.75), fields cached, no field codes, the
+	 * table of contents in, a drop cap apart from
 	 * its word, placeholders in, bound values, chunks expanded, symbols as they are, small caps in capitals, tables as
 	 * tab-separated rows, no page markers, no indentation, no alt text, no metadata, no charts, SmartArt or embedded
 	 * packages. What it does not reproduce: the notes' and comments'
-	 * forms, CRLF and CR cells, folded hyphens, Word's linear math ({@code math: unicodemath} is not implemented, so the
+	 * forms, CRLF and CR cells, the one space Word writes after every list label (the level's {@code w:suff} here, as
+	 * Word draws it), folded hyphens, Word's linear math ({@code math: unicodemath} is not implemented, so the
 	 * preset leaves math as LaTeX), and three accidents of Word's own: the partial update a DATE, TIME or SAVEDATE
 	 * field triggers on open, the SYMBOL omission, and the stale PAGE number.
 	 */
@@ -243,7 +245,7 @@ public final class TextOptions {
 	private static final Object[][] WORD_TEXT_VALUES = {
 			{ "view", "accepted" }, { "include", "headers,footers,comments" }, { "text_boxes", false }, { "notes", true },
 			{ "note_references", true }, { "comments", true }, { "hidden", true }, { "field_codes", false }, { "fields", "cached" },
-			{ "toc", true }, { "drop_caps", "asis" }, { "placeholders", true }, { "bindings", "bound" }, { "list_labels", false }, { "charts", false },
+			{ "toc", true }, { "drop_caps", "asis" }, { "placeholders", true }, { "bindings", "bound" }, { "list_labels", true }, { "charts", false },
 			{ "smartart", false }, { "embedded", false }, { "altchunks", true }, { "alt_text", false }, { "metadata", false },
 			{ "symbols", "asis" }, { "small_caps", "upper" }, { "math", "latex" }, { "tables", "tsv" }, { "page_markers", false }, { "layout", "none" } };
 

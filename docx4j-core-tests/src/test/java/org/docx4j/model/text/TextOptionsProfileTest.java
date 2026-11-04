@@ -45,7 +45,7 @@ public class TextOptionsProfileTest {
 		assertTrue(o.isComments());
 		assertFalse(o.isTextBoxes());
 		assertTrue(o.isNotes() && o.isNoteReferences());
-		assertFalse(o.isListLabels());
+		assertTrue("Word's Save As Plain Text writes list labels (WD 0.75; label-separator probe)", o.isListLabels());
 		assertEquals(TextOptions.Fields.CACHED, o.getFields());
 		assertFalse(o.isFieldCodes());
 		assertTrue(o.isToc());

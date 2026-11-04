@@ -80,6 +80,7 @@ Changes in Version 17.3.6
 - All Caps text with no language on the run, its styles or the document defaults is cased by the new option
   `default_language` (`TextOptions.defaultLanguage`, a BCP 47 tag, `en-US` by default), not the settings'
   `w:themeFontLang`, which Word ignores there (it uses its editing language; WD 0.80 REQ-607).
+- `profile: word-text` writes list labels (`list_labels: true`), as Word's Save As Plain Text does (WD 0.75).
 
 **Markdown.**
 - `MarkdownExportOptions.setAddressComments(true)` writes each block's address before it as an HTML comment
