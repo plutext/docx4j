@@ -67,8 +67,6 @@ public final class AltChunkHtml {
 
 	private static final Pattern ENCODING = Pattern.compile("\\bencoding\\s*=\\s*([\"'])([^\"']*)\\1");
 
-	private static final Pattern META = Pattern.compile("<meta\\b[^>]*>", Pattern.CASE_INSENSITIVE);
-
 	private static final Pattern ATTRIBUTE = Pattern.compile(
 			"([^\\s\"'>/=]+)(?:\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)'|([^\\s\"'>]+)))?");
 
@@ -166,20 +164,42 @@ public final class AltChunkHtml {
 		return concat(UTF8_BOM, metaUtf8(s).getBytes(UTF_8));
 	}
 
-	/** The markup with each {@code meta} charset, and {@code http-equiv} content type's charset, naming UTF-8. */
+	/**
+	 * The markup with each {@code meta} charset, and {@code http-equiv} content type's charset, naming UTF-8.  Each
+	 * tag is what {@code <meta\\b[^>]*>} (case-insensitive) would match, found by a scan in linear time: that
+	 * expression, searched from every offset of a text holding many {@code <meta} and no {@code >}, rescans to the end
+	 * each time, quadratically (GHSA-g8x8-9hfx-fjjv: 160 KB took seconds).  Where no {@code >} follows a
+	 * {@code <meta}, none follows a later one either, so the scan ends there.
+	 */
 	static String metaUtf8(String text) {
-		Matcher meta = META.matcher(text);
 		StringBuilder out = null;
 		int copied = 0;
-		while (meta.find()) {
-			String tag = meta.group();
+		for (int from = 0, start; (start = metaStart(text, from)) >= 0; ) {
+			int close = text.indexOf('>', start + "<meta".length());
+			if (close < 0) break;
+			String tag = text.substring(start, close + 1);
 			String fixed = metaTagUtf8(tag);
-			if (fixed.equals(tag)) continue;
-			if (out == null) out = new StringBuilder(text.length());
-			out.append(text, copied, meta.start()).append(fixed);
-			copied = meta.end();
+			if (!fixed.equals(tag)) {
+				if (out == null) out = new StringBuilder(text.length());
+				out.append(text, copied, start).append(fixed);
+				copied = close + 1;
+			}
+			from = close + 1;
 		}
 		return out == null ? text : out.append(text, copied, text.length()).toString();
+	}
+
+	/** Where {@code <meta} starts, in any case and at a word's end (the expression's {@code \\b}), at or after from; -1 where none does. */
+	private static int metaStart(String text, int from) {
+		for (int i = text.indexOf('<', from); i >= 0; i = text.indexOf('<', i + 1)) {
+			int end = i + "<meta".length();
+			if (end > text.length()) return -1;
+			if (text.regionMatches(true, i + 1, "meta", 0, 4)
+					&& (end == text.length() || !(Character.isLetterOrDigit(text.charAt(end)) || text.charAt(end) == '_'))) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	private static String metaTagUtf8(String tag) {

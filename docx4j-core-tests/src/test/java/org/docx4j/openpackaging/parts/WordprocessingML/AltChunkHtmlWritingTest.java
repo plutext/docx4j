@@ -203,6 +203,32 @@ public class AltChunkHtmlWritingTest {
 		assertEquals(text, HtmlChunkImport.readerPresent(), text.contains("café “quoted”"));
 	}
 
+	/**
+	 * GHSA-g8x8-9hfx-fjjv: markup of many {@code <meta} with no {@code >} is scanned in linear time (the expression
+	 * {@code <meta\\b[^>]*>} searched from every offset took minutes on a megabyte), and comes back as it went in.
+	 */
+	@Test(timeout = 10000)
+	public void manyMetaWithNoCloseIsLinear() throws Exception {
+		String markup = "<meta".repeat(200000);
+		assertArrayEquals(concat(UTF8_BOM, utf8(markup)), AltChunkHtml.utf8WithoutXmlDeclaration(markup));
+		String declared = "<?xml version='1.0' encoding='ISO-8859-1'?>" + markup;
+		assertArrayEquals(concat(UTF8_BOM, utf8(markup)), AltChunkHtml.withoutXmlDeclaration(declared.getBytes(StandardCharsets.ISO_8859_1)));
+	}
+
+	/** The tags the scan finds are the expression's: the word's end after "meta", any case, a tag running to the first '>'. */
+	@Test
+	public void metaTagsAreTheExpressions() throws Exception {
+		assertEquals("<metadata charset=latin1>", AltChunkHtml.metaUtf8("<metadata charset=latin1>"));
+		assertEquals("<META CHARSET=UTF-8>", AltChunkHtml.metaUtf8("<META CHARSET=latin1>"));
+		assertEquals("<meta charset=latin1", AltChunkHtml.metaUtf8("<meta charset=latin1"));
+		// a dangling "<meta" before a meta: one tag to the first '>', as the expression read it
+		assertEquals("<meta x <meta charset='UTF-8'>", AltChunkHtml.metaUtf8("<meta x <meta charset='latin1'>"));
+		// and one after it: the meta rewritten, the rest kept
+		assertEquals("<meta charset=UTF-8><p><meta", AltChunkHtml.metaUtf8("<meta charset=latin1><p><meta"));
+		assertEquals("<p>a < b</p><meta/charset=UTF-8>", AltChunkHtml.metaUtf8("<p>a < b</p><meta/charset=windows-1252>"));
+		assertEquals("<meta", AltChunkHtml.metaUtf8("<meta"));
+	}
+
 	/** The binding's markup: a BOM character, white space and the declaration cut, metas UTF-8, UTF-8 with a BOM. */
 	@Test
 	public void markupDocx4jEncodes() {
