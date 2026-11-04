@@ -106,8 +106,8 @@ public class BorderAgainstHangingIndentTest extends AbstractXSLFOTest {
 		Element hanging = bordered(fo(BORDER + "<w:ind w:left=\"1134\" w:hanging=\"1134\"/>", flags));
 		assertNotNull("the bordered paragraph", hanging);
 		assertEquals("the content edge is still w:ind left", "56.7pt", hanging.getAttribute("start-indent"));
-		// the container has no text of its own: its paragraph carries the indent (containersTakeNoTextIndent, 17.3.6)
-		assertEquals("the container hands the indent on", "", hanging.getAttribute("text-indent"));
+		// the container has no text of its own: the paragraph states the indent (containersTakeNoTextIndent, 17.3.6)
+		assertEquals("the container has none", "", hanging.getAttribute("text-indent"));
 		Element paragraph = (Element) hanging.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "block").item(0);
 		assertNotNull("the paragraph in the container", paragraph);
 		assertEquals("and the first line still runs back over it", "-56.7pt",

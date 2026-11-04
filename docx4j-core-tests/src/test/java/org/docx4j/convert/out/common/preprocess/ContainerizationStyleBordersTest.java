@@ -70,6 +70,32 @@ public class ContainerizationStyleBordersTest {
 		assertEquals(1, sizes[2]);
 	}
 
+	/** Of the indents, the left, right and hanging divide a box and a first-line indent does not;
+	 *  nor do space before or the paragraph style (probe pbdr-group, Word's golden).  @since 17.3.6 */
+	@Test
+	public void whatDividesABox() throws Exception {
+		String box = "<w:pBdr><w:top w:val=\"single\" w:sz=\"4\" w:space=\"1\" w:color=\"auto\"/>"
+				+ "<w:left w:val=\"single\" w:sz=\"4\" w:space=\"1\" w:color=\"auto\"/>"
+				+ "<w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"1\" w:color=\"auto\"/>"
+				+ "<w:right w:val=\"single\" w:sz=\"4\" w:space=\"1\" w:color=\"auto\"/></w:pBdr>";
+		assertEquals("right", 2, boxes(box, box + "<w:ind w:right=\"360\"/>"));
+		assertEquals("left", 2, boxes(box, box + "<w:ind w:left=\"360\"/>"));
+		assertEquals("hanging", 2, boxes(box + "<w:ind w:left=\"360\"/>", box + "<w:ind w:left=\"360\" w:hanging=\"360\"/>"));
+		assertEquals("first line", 1, boxes(box, box + "<w:ind w:firstLine=\"360\"/>"));
+		assertEquals("space before", 1, boxes(box, box + "<w:spacing w:before=\"240\"/>"));
+	}
+
+	private static int boxes(String firstPPr, String secondPPr) throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ "<w:p><w:pPr>" + firstPPr + "</w:pPr><w:r><w:t>first</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr>" + secondPPr + "</w:pPr><w:r><w:t>second</w:t></w:r></w:p>"
+				+ "</w:body></w:document>"));
+		Containerization.process(pkg);
+		return pkg.getMainDocumentPart().getJaxbElement().getBody().getContent().size();
+	}
+
 	/** A table ends the group: a bordered paragraph, a table and a bordered paragraph are
 	 *  two borders containers with the table between them, not one around all three.
 	 *  @since 17.3.1 */

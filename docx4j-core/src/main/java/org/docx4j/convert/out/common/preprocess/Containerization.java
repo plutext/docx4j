@@ -252,10 +252,12 @@ public class Containerization {
 				}
 
 				/* Word boxes adjacent paragraphs together only where their borders are the same in every
-				 * setting and their indents are the same: corpus document 4083's question headings, one
-				 * style's top border, draw three boxes where the right indent (114 against the style's 57)
-				 * or the border's w:space (3 against 1) differs, each with its own spacing, where docx4j
-				 * made one container of all three and lost the spacing between them.  @since 17.3.6 */
+				 * setting and their left, right and hanging indents are the same; a first-line indent,
+				 * space before and the paragraph style do not divide them (probe pbdr-group, Word's
+				 * golden of 5 November 2026).  Corpus document 4083's question headings, one style's top
+				 * border, draw three boxes where the right indent (114 against the style's 57) or the
+				 * border's w:space (3 against 1) differs, each with its own spacing, where docx4j made one
+				 * container of all three and lost the spacing between them.  @since 17.3.6 */
 				Ind currentInd = currentBorders == null ? null : effectiveInd(paragraph, pPr, resolver);
 				boolean indentChanged = currentBorders != null && lastBorders != null && !sameInd(currentInd, lastInd);
 				lastInd = currentInd;
@@ -498,13 +500,12 @@ public class Containerization {
 		return pPr == null ? null : pPr.getInd();
 	}
 
-	/** Whether two indents place a paragraph's box alike: left, right, hanging and first line
-	 *  (an absent value is 0).  @since 17.3.6 */
+	/** Whether two indents place a paragraph's box alike: left, right and hanging (an absent
+	 *  value is 0).  A first-line indent moves a line, not the box.  @since 17.3.6 */
 	private static boolean sameInd(Ind a, Ind b) {
 		return twips(a == null ? null : a.getLeft()).equals(twips(b == null ? null : b.getLeft()))
 				&& twips(a == null ? null : a.getRight()).equals(twips(b == null ? null : b.getRight()))
-				&& twips(a == null ? null : a.getHanging()).equals(twips(b == null ? null : b.getHanging()))
-				&& twips(a == null ? null : a.getFirstLine()).equals(twips(b == null ? null : b.getFirstLine()));
+				&& twips(a == null ? null : a.getHanging()).equals(twips(b == null ? null : b.getHanging()));
 	}
 
 	private static java.math.BigInteger twips(java.math.BigInteger v) {

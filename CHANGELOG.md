@@ -33,9 +33,9 @@ Changes in Version 17.3.6
 - A WMF or EMF picture's Chinese, Japanese or Korean text no longer breaks PDF output: an odd-length record's
   padding came through as a NUL, which made the FO unreadable. That text now decodes with Windows' code pages
   (① was U+FFFD). An FO that is not well-formed XML now fails with its parse error.
-- Adjacent bordered paragraphs share a box only where their borders match in every setting and their indents match,
-  as in Word (only the top's and bottom's w:val were compared). A borders container's text-indent now goes to its
-  paragraphs, so a floating table beside them no longer inherits a hanging indent.
+- Adjacent bordered paragraphs share a box only where their borders match in every setting and their left, right and
+  hanging indents match, as in Word (only the top's and bottom's w:val were compared). A borders container no longer
+  carries its first paragraph's text-indent, so neither the paragraphs after it nor a floating table beside them take it.
 - A paragraph whose line breaking restarts beside a left float keeps its first word (FOP-3331, which docx4j's own
   line layout manager lacked; CR-071 phase 0).
 - Word-style layout is the docx4j FO renderer's own (2.12-docx4j.1, hook `word-layout`): docx4j's copy of FOP's
