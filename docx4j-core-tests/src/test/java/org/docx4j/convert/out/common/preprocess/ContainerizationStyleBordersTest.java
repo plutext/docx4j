@@ -42,6 +42,34 @@ public class ContainerizationStyleBordersTest {
 		assertTrue(XmlUtils.unwrap(body.get(2)) instanceof org.docx4j.wml.P);
 	}
 
+	/** Adjacent paragraphs share a box only where their borders are the same in every setting and
+	 *  their indents are the same (corpus document 4083: one style's top border, three boxes where
+	 *  the right indent or the border's w:space differs).  @since 17.3.6 */
+	@Test
+	public void aBoxHoldsOnlyParagraphsAlikeInBorderAndIndent() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		String top = "<w:pBdr><w:top w:val=\"single\" w:sz=\"4\" w:space=\"1\" w:color=\"C50059\"/></w:pBdr>";
+		String topSpace3 = top.replace("w:space=\"1\"", "w:space=\"3\"");
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ "<w:p><w:pPr>" + top + "<w:ind w:left=\"454\" w:right=\"57\" w:hanging=\"454\"/></w:pPr><w:r><w:t>one</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr>" + top + "<w:ind w:left=\"454\" w:right=\"57\" w:hanging=\"454\"/></w:pPr><w:r><w:t>two, alike</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr>" + top + "<w:ind w:left=\"454\" w:right=\"114\" w:hanging=\"454\"/></w:pPr><w:r><w:t>three, right indent</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr>" + topSpace3 + "<w:ind w:left=\"454\" w:right=\"114\" w:hanging=\"454\"/></w:pPr><w:r><w:t>four, border space</w:t></w:r></w:p>"
+				+ "</w:body></w:document>"));
+		Containerization.process(pkg);
+		java.util.List<Object> body = pkg.getMainDocumentPart().getJaxbElement().getBody().getContent();
+		assertEquals("three boxes", 3, body.size());
+		int[] sizes = new int[3];
+		for (int i = 0; i < 3; i++) {
+			Object o = XmlUtils.unwrap(body.get(i));
+			sizes[i] = o instanceof SdtBlock ? ((SdtBlock)o).getSdtContent().getContent().size() : 1;
+		}
+		assertEquals(2, sizes[0]);
+		assertEquals(1, sizes[1]);
+		assertEquals(1, sizes[2]);
+	}
+
 	/** A table ends the group: a bordered paragraph, a table and a bordered paragraph are
 	 *  two borders containers with the table between them, not one around all three.
 	 *  @since 17.3.1 */

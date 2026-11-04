@@ -45,6 +45,7 @@ import org.docx4j.wml.Comments.Comment;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.PBdr;
+import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.CTSdtContentRun;
@@ -221,6 +222,7 @@ public class Containerization {
 		SdtBlock sdtShading = null;
 		PBdr lastBorders = null;
 		PBdr currentBorders = null;
+		Ind lastInd = null;
 		CTShd lastShading = null;
 		CTShd currentShading = null;
 		P paragraph = null;
@@ -249,7 +251,15 @@ public class Containerization {
 					currentShading = pPr.getShd();
 				}
 
-				if ( bordersChanged(currentBorders, lastBorders )) {
+				/* Word boxes adjacent paragraphs together only where their borders are the same in every
+				 * setting and their indents are the same: corpus document 4083's question headings, one
+				 * style's top border, draw three boxes where the right indent (114 against the style's 57)
+				 * or the border's w:space (3 against 1) differs, each with its own spacing, where docx4j
+				 * made one container of all three and lost the spacing between them.  @since 17.3.6 */
+				Ind currentInd = currentBorders == null ? null : effectiveInd(paragraph, pPr, resolver);
+				boolean indentChanged = currentBorders != null && lastBorders != null && !sameInd(currentInd, lastInd);
+				lastInd = currentInd;
+				if ( bordersChanged(currentBorders, lastBorders ) || indentChanged) {
 					// could mean null to borders; borders to null; or bordersA to bordersB
 					if (currentBorders == null) {
 						sdtBorders = null;
@@ -475,12 +485,41 @@ public class Containerization {
 		
 	}
 
+	/** A paragraph's effective w:ind (its style's under its own), for the border-group test. */
+	private static Ind effectiveInd(P paragraph, PPr pPr, PropertyResolver resolver) {
+		if (resolver != null) {
+			try {
+				PPr effective = resolver.getEffectivePPr(paragraph.getPPr());
+				if (effective != null) return effective.getInd();
+			} catch (Exception e) {
+				log.warn("Effective indent: " + e.getMessage());
+			}
+		}
+		return pPr == null ? null : pPr.getInd();
+	}
+
+	/** Whether two indents place a paragraph's box alike: left, right, hanging and first line
+	 *  (an absent value is 0).  @since 17.3.6 */
+	private static boolean sameInd(Ind a, Ind b) {
+		return twips(a == null ? null : a.getLeft()).equals(twips(b == null ? null : b.getLeft()))
+				&& twips(a == null ? null : a.getRight()).equals(twips(b == null ? null : b.getRight()))
+				&& twips(a == null ? null : a.getHanging()).equals(twips(b == null ? null : b.getHanging()))
+				&& twips(a == null ? null : a.getFirstLine()).equals(twips(b == null ? null : b.getFirstLine()));
+	}
+
+	private static java.math.BigInteger twips(java.math.BigInteger v) {
+		return v == null ? java.math.BigInteger.ZERO : v;
+	}
+
 	private static boolean bordersChanged(PBdr currentBorders, PBdr lastBorders ) {
 		if (currentBorders != lastBorders) { 
 			if ((currentBorders != null) && (lastBorders != null)) {
-				// Only test top and bottom for now ..
+				// every side, every setting (17.3.6; until then only the top's and bottom's w:val)
 				return borderChanged(currentBorders.getTop(), lastBorders.getTop()) ||
-					   borderChanged(currentBorders.getBottom(), lastBorders.getBottom()); 
+					   borderChanged(currentBorders.getBottom(), lastBorders.getBottom()) ||
+					   borderChanged(currentBorders.getLeft(), lastBorders.getLeft()) ||
+					   borderChanged(currentBorders.getRight(), lastBorders.getRight()) ||
+					   borderChanged(currentBorders.getBetween(), lastBorders.getBetween());
 			}
 			//one was null
 			return true;
@@ -495,7 +534,11 @@ public class Containerization {
 				
 				if (currentBorder.getVal()!=null && lastBorder.getVal()!=null) {
 					// neither null, so safe to test
-					return !currentBorder.getVal().equals(lastBorder.getVal());					
+					return !currentBorder.getVal().equals(lastBorder.getVal())
+							|| !java.util.Objects.equals(currentBorder.getSz(), lastBorder.getSz())
+							|| !java.util.Objects.equals(currentBorder.getSpace(), lastBorder.getSpace())
+							|| !java.util.Objects.equals(currentBorder.getColor(), lastBorder.getColor())
+							|| !java.util.Objects.equals(currentBorder.getThemeColor(), lastBorder.getThemeColor());
 				} else if (currentBorder.getVal()==null && lastBorder.getVal()==null) {
 					// both null
 					return false;

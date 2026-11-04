@@ -222,6 +222,7 @@ public final class WordLayoutFixups {
 		fieldErrorWeights(doc);
 		hangingIndentAfterLeadingBlock(doc); // after every pass that reads a paragraph's own inline children; before StyleRefMarkers, whose markers lead the block
 		anchoredContentTakesNoTextIndent(doc); // after the two first-line passes, which take a positive indent off the block
+		containersTakeNoTextIndent(doc);
 		StyleRefMarkers.apply(doc); // before stripHints: it reads the paragraph-style hint
 		pageMastersByContent(doc); // after every fixup which moves or drops blocks
 		stripHints(doc);
@@ -3339,6 +3340,50 @@ public final class WordLayoutFixups {
 					child.setAttribute("text-indent", "0pt");
 				}
 			}
+		}
+	}
+
+	/**
+	 * A borders/shading container (or a content control's block) has no text of its own,
+	 * but is built from its first paragraph's properties, text-indent among them, which its
+	 * paragraphs inherit where they state none, and so does whatever else it holds.  Two
+	 * things went wrong with that, both on corpus document 4083, whose question headings
+	 * (w:ind left 454 hanging 454) each sit in a container with a text-anchored floating
+	 * table there before them:
+	 * <ul>
+	 * <li>FOP lays a line holding only an fo:float out as a line where its block has a
+	 * text-indent (as none where it has none), so the container gained a 13pt line above
+	 * its first paragraph: B.2 and B.6 13pt below Word's;</li>
+	 * <li>the float's table inherited the hang, so each of its cells' first lines started
+	 * 22.7pt left of Word's ("single" at x 65.1, Word's 88.6).</li>
+	 * </ul>
+	 * So the container's text-indent goes to each of its block and list children that
+	 * states none (what they inherited, unchanged), and off the container.  Measured on
+	 * b335's FO through RenderFo: B.2 at Word's 169.7, B.6 at its place after B.5.
+	 *
+	 * @since 17.3.6
+	 */
+	static void containersTakeNoTextIndent(Document doc) {
+		for (Element block : elements(doc, "block")) {
+			if (block.hasAttribute(HINT_PSTYLE) || !block.hasAttribute("text-indent")) continue;
+			String indent = block.getAttribute("text-indent");
+			if (lengthPt(indent) == 0) continue;
+			boolean paragraphs = false;
+			for (Node n = block.getFirstChild(); n != null; n = n.getNextSibling()) {
+				if (n instanceof Element && (((Element) n).hasAttribute(HINT_PSTYLE) || isFo((Element) n, "list-block"))) {
+					paragraphs = true;
+					break;
+				}
+			}
+			if (!paragraphs) continue; // not a container of paragraphs
+			for (Node n = block.getFirstChild(); n != null; n = n.getNextSibling()) {
+				if (!(n instanceof Element)) continue;
+				Element child = (Element) n;
+				if ((isFo(child, "block") || isFo(child, "list-block")) && !child.hasAttribute("text-indent")) {
+					child.setAttribute("text-indent", indent);
+				}
+			}
+			block.removeAttribute("text-indent");
 		}
 	}
 

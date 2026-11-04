@@ -1748,4 +1748,40 @@ public class WordLayoutFixupsTest {
 		// 751.35 + 108 = 859.35: off the page
 		assertFalse(outs[1], outs[1].contains("fox:wrap"));
 	}
+
+	/** A borders container is built from its first paragraph's properties, text-indent among
+	 *  them, and has no text of its own: its paragraphs and lists take the indent they
+	 *  inherited, one that states its own keeps it, and the container and so the float beside
+	 *  them have none (4083's question headings: a 13pt line above B.2, and the float's table
+	 *  22.7pt left of Word's).  @since 17.3.6 */
+	@Test
+	public void aContainerHandsItsTextIndentToItsParagraphs() throws Exception {
+		org.w3c.dom.Document doc = parse(flow("<fo:block text-indent=\"-22.7pt\" border-top-style=\"solid\">"
+				+ "<fo:float><fo:block>in the float</fo:block></fo:float>"
+				+ "<fo:block docx4j-pstyle=\"Q\">inherits</fo:block>"
+				+ "<fo:block docx4j-pstyle=\"Q\" text-indent=\"0pt\">states its own</fo:block>"
+				+ "<fo:list-block/>"
+				+ "</fo:block>"));
+		WordLayoutFixups.containersTakeNoTextIndent(doc);
+		org.w3c.dom.NodeList blocks = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "block");
+		assertFalse("the container", ((org.w3c.dom.Element)blocks.item(0)).hasAttribute("text-indent"));
+		assertFalse("the float's block", ((org.w3c.dom.Element)blocks.item(1)).hasAttribute("text-indent"));
+		assertEquals("-22.7pt", ((org.w3c.dom.Element)blocks.item(2)).getAttribute("text-indent"));
+		assertEquals("0pt", ((org.w3c.dom.Element)blocks.item(3)).getAttribute("text-indent"));
+		assertEquals("-22.7pt", ((org.w3c.dom.Element)doc.getElementsByTagNameNS(
+				"http://www.w3.org/1999/XSL/Format", "list-block").item(0)).getAttribute("text-indent"));
+	}
+
+	/** What is not a container of paragraphs keeps its indent: a paragraph (even one holding a
+	 *  block), and a block of blocks that are not paragraphs.  @since 17.3.6 */
+	@Test
+	public void onlyAContainerOfParagraphsGivesUpItsTextIndent() throws Exception {
+		org.w3c.dom.Document doc = parse(flow("<fo:block docx4j-pstyle=\"Q\" text-indent=\"36pt\"><fo:block docx4j-pstyle=\"Q\">x</fo:block></fo:block>"
+				+ "<fo:block text-indent=\"18pt\"><fo:block>no paragraph</fo:block></fo:block>"));
+		WordLayoutFixups.containersTakeNoTextIndent(doc);
+		org.w3c.dom.NodeList blocks = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "block");
+		assertEquals("36pt", ((org.w3c.dom.Element)blocks.item(0)).getAttribute("text-indent"));
+		assertEquals("18pt", ((org.w3c.dom.Element)blocks.item(2)).getAttribute("text-indent"));
+		assertFalse(((org.w3c.dom.Element)blocks.item(3)).hasAttribute("text-indent"));
+	}
 }
