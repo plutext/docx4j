@@ -3872,6 +3872,55 @@ public final class Corpus {
 		PROBES.add(keepLinesFirstRowProbe(15));
 
 		/*
+		 * pbdr-group (4083, 4 November 2026): which adjacent bordered paragraphs Word draws in one box.  docx4j's
+		 * Containerization grouped them by the top and bottom borders' w:val alone until 17.3.6, which groups them by every
+		 * border setting and by the indents: 4083's three question paragraphs, one style's top border, are three boxes in
+		 * Word where the right indent (114 against 57) or the border's w:space (3 against 1) differs.  The right indent and
+		 * w:space are seen there; the rest of the rule is not.  Ten pairs, each two paragraphs with a 0.5pt box on all four
+		 * sides, 1pt off the text, the second differing from the first in one property: G1 nothing; G2 the right indent
+		 * (18pt); G3 the left indent (18pt); G4 a hanging indent (both left 18pt); G5 a first-line indent; G6 the border's
+		 * width (1.5pt); G7 its w:space (4pt); G8 its colour; G9 the second's space-before (12pt); G10 another paragraph
+		 * style (BoxA, BoxB: both Normal's, nothing set).  Read off: one box round the pair, or two.
+		 */
+		PROBES.add(new Probe("pbdr-group",
+				"pairs of adjacent paragraphs with a 0.5pt box on all four sides, the second differing in one property: G1 "
+				+ "none; G2 right indent; G3 left indent; G4 hanging indent; G5 first-line indent; G6 border width; G7 "
+				+ "border w:space; G8 border colour; G9 space-before; G10 paragraph style; mode 15.  Read whether Word draws "
+				+ "one box round each pair or two", () -> {
+			Doc d = Doc.create(15);
+			d.addParagraphStyle("BoxA", "Normal", ppr -> { });
+			d.addParagraphStyle("BoxB", "Normal", ppr -> { });
+			String[] what = { null, "nothing differs", "the right indent", "the left indent", "a hanging indent",
+					"a first-line indent", "the border's width", "the border's space", "the border's colour",
+					"the space before", "the paragraph style" };
+			for (int g = 1; g <= 10; g++) {
+				d.para("G" + g + ": the second paragraph differs in " + what[g]).before(240).after(120).add();
+				for (int k = 0; k < 2; k++) {
+					boolean second = k == 1;
+					Doc.Para p = d.para("G" + g + (second ? " second" : " first") + " paragraph, " + prose(1, g + k))
+							.before(g == 9 && second ? 240 : 0).after(0).borders(4, 1);
+					if (g == 2) p.indent(0, 0, 0);
+					if (g == 3) p.indent(second ? 360 : 0, 0, 0);
+					if (g == 4) p.indent(360, 0, second ? 360 : 0);
+					if (g == 5) p.indent(0, second ? 360 : 0, 0);
+					if (g == 10) p.style(second ? "BoxB" : "BoxA");
+					P built = p.build();
+					PPrBase.PBdr bdr = built.getPPr().getPBdr();
+					if (g == 2 && second) built.getPPr().getInd().setRight(BigInteger.valueOf(360));
+					if (second && (g == 6 || g == 7 || g == 8)) {
+						for (org.docx4j.wml.CTBorder b : new org.docx4j.wml.CTBorder[] { bdr.getTop(), bdr.getLeft(), bdr.getBottom(), bdr.getRight() }) {
+							if (g == 6) b.setSz(BigInteger.valueOf(12));
+							if (g == 7) b.setSpace(BigInteger.valueOf(4));
+							if (g == 8) b.setColor("C50059");
+						}
+					}
+					d.add(built);
+				}
+			}
+			return d.pkg();
+		}));
+
+		/*
 		 * textbox-inset-stroke-list (ledger7 section 3 item 2).  Two readings, from four
 		 * corpus documents, both about where a text box's text area starts:
 		 *   - Word insets a VML box's text by half its stroke: text origins Word minus
