@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.docx4j.convert.out.ConversionFeatures;
+import org.docx4j.convert.out.common.preprocess.AutoSpacingAfterFloatingTable;
 import org.docx4j.convert.out.common.preprocess.BookmarkMover;
 import org.docx4j.convert.out.common.preprocess.Containerization;
 import org.docx4j.convert.out.common.preprocess.CoverPageSectPrMover;
@@ -226,6 +227,7 @@ public class Preprocess extends ConversionFeatures {
 		}
 		if (features.contains(PP_COMMON_CONTAINERIZATION)) {
 			log.debug("PP_COMMON_CONTAINERIZATION");
+			AutoSpacingAfterFloatingTable.process(ret); // first: a container would hide the paragraph after the table
 			Containerization.process(ret);
 //			log.debug(ret.getMainDocumentPart().getXML());
 		}

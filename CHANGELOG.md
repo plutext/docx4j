@@ -36,6 +36,8 @@ Changes in Version 17.3.6
 - Adjacent bordered paragraphs share a box only where their borders match in every setting and their left, right and
   hanging indents match, as in Word (only the top's and bottom's w:val were compared). A borders container no longer
   carries its first paragraph's text-indent, so neither the paragraphs after it nor a floating table beside them take it.
+- The paragraph straight after a floating table takes no HTML auto space before, as in Word (`w:beforeAutospacing`; 14pt
+  too low before, and that much more of the page taken).
 - A paragraph whose line breaking restarts beside a left float keeps its first word (FOP-3331, which docx4j's own
   line layout manager lacked; CR-071 phase 0).
 - Word-style layout is the docx4j FO renderer's own (2.12-docx4j.1, hook `word-layout`): docx4j's copy of FOP's
