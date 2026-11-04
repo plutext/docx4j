@@ -3854,8 +3854,10 @@ public final class Corpus {
 		 * 15 docx4j takes a cell paragraph's keep-together off (splitCellParagraphsBelowMode15), because table-rowsplit-3
 		 * saw Word divide rows whose cell paragraphs were w:keepLines at modes 11, 12 and 14: a table's third row, its
 		 * lines wrapped, no keepNext anywhere.  Which of 4083's differences keeps its row whole?  Each case from a new page,
-		 * every line an exact 14pt, a row of a one-line tag cell and a two-line cell (its properties on both cells'
-		 * paragraphs), then a one-line row; the page's foot leaves room for one line of the straddling row:
+		 * every line an exact 14pt, a row of two cells each a two-line paragraph (both made the same way, its properties
+		 * on both; as in 4083, where all five cells run to a second line: docx4j's renderer will not break a row after a
+		 * step at which a keepNext cell ends), then a one-line row; the page's foot leaves room for one line of the
+		 * straddling row:
 		 *   C1  4083's shape: heading keepNext; the cells keepNext and keepLines; the two lines by w:br
 		 *   C2  C1, the cells keepLines only          C3  C1, the cells keepNext only
 		 *   C4  C1, the cells neither                  C5  C1 without the heading's keepNext
@@ -9251,7 +9253,7 @@ public final class Corpus {
 
 	private static Probe keepLinesFirstRowProbe(int mode) {
 		return new Probe("keeplines-first-row-compat" + mode,
-				"at mode " + mode + ", a table row of a one-line tag cell and a two-line cell straddling the page's foot "
+				"at mode " + mode + ", a table row of two cells, each a two-line paragraph, straddling the page's foot "
 				+ "(room for one of its lines), every line an exact 14pt, a case a page: C1 4083's C.3 (a keepNext heading; "
 				+ "the cells keepNext and keepLines; the lines by w:br); C2 the cells keepLines only; C3 keepNext only; "
 				+ "C4 neither; C5 no keepNext on the heading; C6 the lines wrapped; C7 no heading, the first row keepLines, "
@@ -9266,7 +9268,7 @@ public final class Corpus {
 					{ "C5", true, false, true, true, true, false }, { "C6", true, true, true, true, false, false },
 					{ "C7", false, false, false, true, false, false }, { "C8", false, false, false, true, true, false },
 					{ "C9", true, true, false, true, true, true } };
-			final int TAG = 1800, TEXT = 7200;
+			final int TAG = 4500, TEXT = 4500;
 			for (Object[] c : cases) {
 				String tag = (String) c[0];
 				boolean heading = (Boolean) c[1], headingKeep = (Boolean) c[2], cellKeep = (Boolean) c[3],
@@ -9285,8 +9287,9 @@ public final class Corpus {
 							t.cellOf(TEXT, null, cellPara(d, tag + " r1 one line", cellKeep, cellLines, false, null)));
 				}
 				String r = tag + (rowFirst ? " r2" : " r1");
-				String two = br ? null : linesOf(r + " wrapped:", 2, tag.charAt(1) - '0', SERIF, 24, (TEXT - 216) / 20.0);
-				t.rowOf(null, null, t.cellOf(TAG, null, cellPara(d, r, cellKeep, cellLines, false, null)),
+				String narrow = br ? null : linesOf(r + " w", 2, tag.charAt(1) - '0', SERIF, 24, (TAG - 216) / 20.0);
+				String two = br ? null : linesOf(r + " wrapped:", 2, tag.charAt(1) - '0' + 3, SERIF, 24, (TEXT - 216) / 20.0);
+				t.rowOf(null, null, t.cellOf(TAG, null, cellPara(d, r + " tag", cellKeep, cellLines, br, narrow)),
 						t.cellOf(TEXT, null, cellPara(d, r, cellKeep, cellLines, br, two)));
 				String last = tag + (rowFirst ? " r3" : " r2");
 				t.rowOf(null, null, t.cellOf(TAG, null, cellPara(d, last, false, false, false, null)),
