@@ -3873,6 +3873,11 @@ public final class Corpus {
 		PROBES.add(autospacingAfterTableProbe(12));
 		PROBES.add(autospacingAfterTableProbe(15));
 		PROBES.add(floatFootEmptiesProbe());
+		PROBES.add(formCheckBoxProbe(12));
+		PROBES.add(formCheckBoxProbe(15));
+		PROBES.add(floatingTableXProbe(12));
+		PROBES.add(floatingTableXProbe(14));
+		PROBES.add(floatingTableXProbe(15));
 
 		/*
 		 * pbdr-group (4083, 4 November 2026): which adjacent bordered paragraphs Word draws in one box.  docx4j's
@@ -9427,6 +9432,124 @@ public final class Corpus {
 		}
 		d.para("AFTER " + tag).noLabel().font("Arial", 16).after(120).markRPr(markFont("Arial", 16, null)).add();
 		if (!last) d.pageBreak();
+	}
+
+	/*
+	 * formcheckbox-metrics (corpus document 4083, 5 November 2026): Word draws a legacy FORMCHECKBOX as a stroked square
+	 * with nothing in the text layer, and sets the text after it past the box; docx4j draws nothing and gives it no
+	 * advance (FieldsCombiner: "deliberately left alone", since "its advance needs an inline box FOP lacks", which
+	 * fo:leader now gives).  4083's labels sit 11pt left of Word's, under the X marks drawn over the boxes.  863 fields in
+	 * 16 corpus documents.  What is known is a range, side 7.44 to 11.28pt with the field's font size; the rule is the
+	 * question, and it has to give the side, the advance, where the box sits on the line, what a checked box paints, and
+	 * whether the box lifts the line.  Each line opens with the box, then its tag, so the tag's x less the margin is the
+	 * advance; ab..cd lines have text on both sides.  A: w:sizeAuto, Arial at 7 to 36pt; B: the same in Times New Roman at
+	 * four sizes; C: w:size exact, the run 10pt; D: checked (w:checked, w:default) at 10 and 18pt; E: text either side;
+	 * F: rows of a table, 8.5pt, at least 15pt high (8785's rows are taller in Word): no box, a box, an exact box, a box
+	 * with an 11pt paragraph mark.  Read the stroked squares' side and place, the tags' x, the line pitch, the rows' pitch.
+	 */
+	private static Probe formCheckBoxProbe(int mode) {
+		return new Probe("formcheckbox-metrics-compat" + mode,
+				"at mode " + mode + ", legacy FORMCHECKBOX fields, each line opening with the box then a tag: A w:sizeAuto, "
+				+ "Arial 7 to 36pt; B the same, Times New Roman; C w:size exact in a 10pt run; D checked, by w:checked and "
+				+ "by w:default; E text either side; F table rows of 8.5pt at least 15pt high: none, a box, an exact box, a "
+				+ "box with an 11pt mark.  Read each square's side and place, the tag's x, the line pitch, the rows' pitch",
+				() -> {
+			Doc d = Doc.create(mode);
+			final String AUTO = "<w:sizeAuto/><w:default w:val=\"0\"/>";
+			double[] sizes = { 7, 8, 9, 9.5, 10, 10.5, 11, 12, 14, 16, 18, 20, 24, 36 };
+			d.para("A: w:sizeAuto, Arial").noLabel().font(SERIF, 20).after(120).add();
+			for (double pt : sizes) checkBoxLine(d, "Arial", (int) (pt * 2), AUTO, "A" + pt, null);
+			d.pageBreak();
+			d.para("B: w:sizeAuto, Times New Roman").noLabel().font(SERIF, 20).after(120).add();
+			for (double pt : new double[] { 8, 10, 12, 18 }) checkBoxLine(d, "Times New Roman", (int) (pt * 2), AUTO, "B" + pt, null);
+			d.para("C: w:size exact, the run 10pt").noLabel().font(SERIF, 20).before(240).after(120).add();
+			for (int half : new int[] { 16, 20, 24, 40, 60 }) {
+				checkBoxLine(d, "Arial", 20, "<w:size w:val=\"" + half + "\"/><w:default w:val=\"0\"/>", "C" + half, null);
+			}
+			d.para("D: checked").noLabel().font(SERIF, 20).before(240).after(120).add();
+			for (int half : new int[] { 20, 36 }) {
+				checkBoxLine(d, "Arial", half, "<w:sizeAuto/><w:default w:val=\"0\"/><w:checked/>", "Dchecked" + half, null);
+				checkBoxLine(d, "Arial", half, "<w:sizeAuto/><w:default w:val=\"1\"/>", "Ddefault" + half, null);
+			}
+			d.para("E: text either side").noLabel().font(SERIF, 20).before(240).after(120).add();
+			checkBoxLine(d, "Arial", 20, AUTO, "cd after the box", "ab");
+			checkBoxLine(d, "Arial", 36, AUTO, "cd after the box", "ab");
+			d.para("F: rows").noLabel().font(SERIF, 20).before(240).after(120).add();
+			Doc.Table t = new Doc.Table(6000).fixedLayout();
+			String[] rows = { "no box", "box", "exact box", "box and 11pt mark", "no box again" };
+			for (int r = 0; r < rows.length; r++) {
+				org.docx4j.wml.Tc tc = Doc.F.createTc();
+				Doc.Para c = d.para().noLabel().font("Arial", 17);
+				if (r == 1 || r == 3) checkBoxRuns(c, "Arial", 17, AUTO);
+				if (r == 2) checkBoxRuns(c, "Arial", 17, "<w:size w:val=\"17\"/><w:default w:val=\"0\"/>");
+				if (r == 3) c.markRPr(markFont("Arial", 22, null));
+				tc.getContent().add(c.text("F" + r + " " + rows[r]).build());
+				t.rowOf(300, org.docx4j.wml.STHeightRule.AT_LEAST, tc);
+			}
+			d.add(t.build());
+			d.para("after the table").noLabel().font(SERIF, 20).add();
+			return d.pkg();
+		});
+	}
+
+	/** A line of formCheckBoxProbe: lead (if any), the box, the text; a 6pt space after. */
+	private static void checkBoxLine(Doc d, String font, int halfPts, String checkBox, String text, String lead) throws Exception {
+		Doc.Para p = d.para().noLabel().font(font, halfPts).after(120);
+		if (lead != null) p.text(lead);
+		checkBoxRuns(p, font, halfPts, checkBox);
+		p.text(text).add();
+	}
+
+	/** A FORMCHECKBOX as Word writes it: begin with its w:ffData, the instruction, separate, end. */
+	private static void checkBoxRuns(Doc.Para p, String font, int halfPts, String checkBox) throws Exception {
+		String rPr = "<w:rPr><w:rFonts w:ascii=\"" + font + "\" w:hAnsi=\"" + font + "\" w:cs=\"" + font + "\"/><w:sz w:val=\"" + halfPts
+				+ "\"/><w:szCs w:val=\"" + halfPts + "\"/></w:rPr>";
+		p.content(wmlRun(rPr + "<w:fldChar w:fldCharType=\"begin\"><w:ffData><w:name w:val=\"Check\"/><w:enabled/>"
+				+ "<w:calcOnExit w:val=\"0\"/><w:checkBox>" + checkBox + "</w:checkBox></w:ffData></w:fldChar>"));
+		p.content(wmlRun(rPr + "<w:instrText xml:space=\"preserve\"> FORMCHECKBOX </w:instrText>"));
+		p.content(wmlRun(rPr + "<w:fldChar w:fldCharType=\"separate\"/>"));
+		p.content(wmlRun(rPr + "<w:fldChar w:fldCharType=\"end\"/>"));
+	}
+
+	private static R wmlRun(String inner) throws Exception {
+		return (R) org.docx4j.XmlUtils.unmarshalString("<w:r xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
+				+ inner + "</w:r>");
+	}
+
+	/*
+	 * table-floating-x (corpus document 4083, 5 November 2026): where a floating table's left edge stands below mode 15.
+	 * TableWriter: "in mode 15 the left border starts at w:tblpX ... Below 15 the grid stays on the position (not
+	 * measured)".  4083 is mode 12, and its two option tables stand about 10pt right of Word's, whose left border is near
+	 * tblpX less the cell margin.  A case a page, the table one cell wide with its text T and the case's number, 15pt
+	 * below its anchor: C1 horzAnchor page, tblpX 1484; C2 margin, 500; C3 text, 500; C4 as C1 with 10.8pt cell margins;
+	 * C5 as C1 with no borders; C6 as C1 with a w:tblInd of 566; C7 as C1 anchored in a paragraph indented left 454
+	 * hanging 454, 4083's shape.  Read the table's left rule and its text's x.
+	 */
+	private static Probe floatingTableXProbe(int mode) {
+		return new Probe("table-floating-x-compat" + mode,
+				"at mode " + mode + ", floating tables one cell wide, a case a page: C1 horzAnchor page, tblpX 1484; C2 margin "
+				+ "500; C3 text 500; C4 C1 with 10.8pt cell margins; C5 C1 without borders; C6 C1 with a w:tblInd of 566; C7 C1 "
+				+ "anchored in a paragraph with a hanging indent.  Read each table's left rule and its text's x", () -> {
+			Doc d = Doc.create(mode);
+			String[][] cases = { { "page", "1484" }, { "margin", "500" }, { "text", "500" }, { "page", "1484" },
+					{ "page", "1484" }, { "page", "1484" }, { "page", "1484" } };
+			for (int c = 1; c <= cases.length; c++) {
+				d.para("case " + c + " " + cases[c - 1][0] + " " + cases[c - 1][1]).noLabel().font(SERIF, 20).after(240).add();
+				Doc.Table t = new Doc.Table(3000).fixedLayout()
+						.floating("text", cases[c - 1][0], Integer.parseInt(cases[c - 1][1]), null, 300, null);
+				if (c == 4) t.cellMargins(216, 0);
+				if (c == 5) t.noBorders(); else t.borders(4);
+				if (c == 6) t.indent(566);
+				t.row(SERIF, 20, false, "T" + c);
+				d.add(t.build());
+				Doc.Para anchorPara = d.para("anchor " + c).noLabel().font(SERIF, 20).after(240);
+				if (c == 7) anchorPara.indent(454, 0, 454);
+				anchorPara.add();
+				for (int i = 1; i <= 4; i++) d.para("line " + c + "." + i).noLabel().font(SERIF, 20).add();
+				if (c < cases.length) d.pageBreak();
+			}
+			return d.pkg();
+		});
 	}
 
 	private static Probe keepLinesFirstRowProbe(int mode) {
