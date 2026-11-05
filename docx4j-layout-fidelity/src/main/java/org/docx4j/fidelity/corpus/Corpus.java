@@ -3880,6 +3880,16 @@ public final class Corpus {
 		PROBES.add(floatingTableXProbe(12));
 		PROBES.add(floatingTableXProbe(14));
 		PROBES.add(floatingTableXProbe(15));
+		PROBES.add(numberingOffStyleIndProbe(12));
+		PROBES.add(numberingOffStyleIndProbe(15));
+		PROBES.add(tabTrailingNarrowCellProbe(12));
+		PROBES.add(tabTrailingNarrowCellProbe(15));
+		PROBES.add(floatingTableXSpecProbe(12));
+		PROBES.add(floatingTableXSpecProbe(15));
+		PROBES.add(boxPageTopProbe(12));
+		PROBES.add(boxPageTopProbe(15));
+		PROBES.add(boxFloatEdgeProbe(12));
+		PROBES.add(boxFloatEdgeProbe(15));
 
 		/*
 		 * pbdr-group (4083, 4 November 2026): which adjacent bordered paragraphs Word draws in one box.  docx4j's
@@ -9549,6 +9559,317 @@ public final class Corpus {
 				anchorPara.add();
 				for (int i = 1; i <= 4; i++) d.para("line " + c + "." + i).noLabel().font(SERIF, 20).add();
 				if (c < cases.length) d.pageBreak();
+			}
+			return d.pkg();
+		});
+	}
+
+	/*
+	 * numbering-off-style-ind (4083's page 5 header row, its C.4 and its "you" and "your partner" heads, 5 November 2026).
+	 * Those paragraphs are style 2_Question, whose w:numPr comes with its own w:ind left 454 hanging 454 right 57 (the level
+	 * says 340/340), switched off by w:numId 0 on the paragraph or, for 3_tableHead, on the style.  Word draws no left indent
+	 * and no hanging there, and keeps the right 57; docx4j keeps all three, taking off only what equals the level's, on a
+	 * rule that says "a w:ind the style states itself survives", which no probe has tried.  N1 that style and w:numId 0; N2 a
+	 * firstLine in place of the hanging; N3 no w:ind in the style; N4 the w:ind on the style it is based on; N5 on both; N6 a
+	 * style with its own w:ind based on the numbered one; N7 w:numId 0 in a style based on the numbered one; N8 the same with
+	 * its own w:ind; N9 to N13 N1 with a direct w:ind, of left and right, left, hanging, firstLine, right; N14 N7 with a direct
+	 * left (4083's "your partner"); N15 N1 numbered, the control; N16 4083's C.4, a w:br then a tab, a left stop at 426; N17
+	 * centred in table cells, 4083's header row; N18 a centred and a right aligned line ending in a space before a w:br,
+	 * whose "how much " Word centres without the space, against the same with none.  Every paragraph but N16 to N18 twice,
+	 * left and right aligned.  Read each line's x, and the right aligned copy's right end.
+	 */
+	private static Probe numberingOffStyleIndProbe(int mode) {
+		return new Probe("numbering-off-style-ind-compat" + mode,
+				"at mode " + mode + ", w:numId 0 over a numbered style which states its own w:ind (left 454 hanging 454 right "
+				+ "57; the level 340/340): where that w:ind comes from, w:numId 0 on the paragraph or in a style, a direct "
+				+ "w:ind of each kind, the shapes of corpus document 4083.  Read each line's x and, on the R copies, the right "
+				+ "end", () -> {
+			Doc d = Doc.create(mode);
+			String[] linked = { "OffOwn", "OffFirst", "OffLevel", "OffOnBase", "OffOnBaseOwn", "OffNumBase" };
+			StringBuilder num = new StringBuilder();
+			for (int i = 0; i < linked.length; i++) {
+				num.append("<w:abstractNum w:abstractNumId=\"").append(30 + i)
+						.append("\"><w:multiLevelType w:val=\"hybridMultilevel\"/>")
+						.append(Doc.decimalLevel(0, linked[i], 340, 340)).append("</w:abstractNum>");
+			}
+			for (int i = 0; i < linked.length; i++) {
+				num.append("<w:num w:numId=\"").append(30 + i).append("\"><w:abstractNumId w:val=\"").append(30 + i)
+						.append("\"/></w:num>");
+			}
+			d.numberingXml(num.toString());
+			d.addParagraphStyle("OffOwn", "Normal", ppr -> { ppr.setNumPr(numPr(30)); ppr.setInd(styleInd(454, 57, null, 454)); });
+			d.addParagraphStyle("OffFirst", "Normal", ppr -> { ppr.setNumPr(numPr(31)); ppr.setInd(styleInd(454, 57, 227, null)); });
+			d.addParagraphStyle("OffLevel", "Normal", ppr -> ppr.setNumPr(numPr(32)));
+			d.addParagraphStyle("OffBase", "Normal", ppr -> ppr.setInd(styleInd(720, null, null, 360)));
+			d.addParagraphStyle("OffOnBase", "OffBase", ppr -> ppr.setNumPr(numPr(33)));
+			d.addParagraphStyle("OffOnBaseOwn", "OffBase", ppr -> { ppr.setNumPr(numPr(34)); ppr.setInd(styleInd(454, 57, null, 454)); });
+			d.addParagraphStyle("OffNumBase", "Normal", ppr -> { ppr.setNumPr(numPr(35)); ppr.setInd(styleInd(454, 57, null, 454)); });
+			d.addParagraphStyle("OffDerivedInd", "OffNumBase", ppr -> ppr.setInd(styleInd(900, null, null, 200)));
+			d.addParagraphStyle("OffSwitch", "OffOwn", ppr -> ppr.setNumPr(numPr(0)));
+			d.addParagraphStyle("OffSwitchInd", "OffOwn", ppr -> { ppr.setNumPr(numPr(0)); ppr.setInd(styleInd(300, null, null, 100)); });
+			// tag, style, w:numId 0 on the paragraph, direct left, right, firstLine, hanging
+			Object[][] cases = {
+				{ "N1", "OffOwn", true, null, null, null, null },
+				{ "N2", "OffFirst", true, null, null, null, null },
+				{ "N3", "OffLevel", true, null, null, null, null },
+				{ "N4", "OffOnBase", true, null, null, null, null },
+				{ "N5", "OffOnBaseOwn", true, null, null, null, null },
+				{ "N6", "OffDerivedInd", true, null, null, null, null },
+				{ "N7", "OffSwitch", false, null, null, null, null },
+				{ "N8", "OffSwitchInd", false, null, null, null, null },
+				{ "N9", "OffOwn", true, 300, 300, null, null },
+				{ "N10", "OffOwn", true, 300, null, null, null },
+				{ "N11", "OffOwn", true, null, null, null, 200 },
+				{ "N12", "OffOwn", true, null, null, 200, null },
+				{ "N13", "OffOwn", true, null, 300, null, null },
+				{ "N14", "OffSwitch", false, 142, null, null, null },
+				{ "N15", "OffOwn", false, null, null, null, null },
+			};
+			String tail = " wraps, so the golden shows where its second line starts as well as where its first one does. "
+					+ prose(1);
+			for (Object[] c : cases) {
+				for (JcEnumeration jc : new JcEnumeration[] { JcEnumeration.LEFT, JcEnumeration.RIGHT }) {
+					Doc.Para p = d.para(c[0] + (jc == JcEnumeration.LEFT ? "L" : "R") + tail).noLabel().font(SERIF, 20)
+							.after(120).style((String) c[1]).jc(jc);
+					if ((Boolean) c[2]) p.numPr(0, 0);
+					if (c[3] != null || c[4] != null || c[5] != null || c[6] != null) {
+						p.ind((Integer) c[3], (Integer) c[4], (Integer) c[5], (Integer) c[6]);
+					}
+					p.add();
+				}
+			}
+			d.para("N16 first line, its break then a tab").noLabel().font(SERIF, 20).style("OffOwn").numPr(0, 0)
+					.tabStop(426, org.docx4j.wml.STTabJc.LEFT).softReturn().tab().text("N16 after the tab").after(120).add();
+			Doc.Table t = new Doc.Table(1701, 1417, 1418, 1417).fixedLayout();
+			t.borders(4);
+			t.rowOf(null, null,
+					t.cellOf(1701, null, offCell(d, "N17a were they credit cards or loans?", null, null)),
+					t.cellOf(1417, null, offCell(d, "N17b how much did you owe?", null, null)),
+					t.cellOf(1418, null, offCell(d, "N17c when did you take them out?", -108, -108)),
+					t.cellOf(1417, null, offCell(d, "N17d when did you pay them off?", -108, -2)));
+			d.add(t.build());
+			d.para("after the table").noLabel().font(SERIF, 20).before(240).add();
+			for (JcEnumeration jc : new JcEnumeration[] { JcEnumeration.CENTER, JcEnumeration.RIGHT }) {
+				d.para("N18 a space before the break ").noLabel().font(SERIF, 20).jc(jc).softReturn().text("N18 and before the mark ")
+						.after(120).add();
+				d.para("N18 no space before the break").noLabel().font(SERIF, 20).jc(jc).softReturn().text("N18 nor before the mark")
+						.after(120).add();
+			}
+			return d.pkg();
+		});
+	}
+
+	/** A w:ind of the values given, null leaving an attribute out. */
+	private static PPrBase.Ind styleInd(Integer left, Integer right, Integer firstLine, Integer hanging) {
+		PPrBase.Ind ind = Doc.F.createPPrBaseInd();
+		if (left != null) ind.setLeft(BigInteger.valueOf(left));
+		if (right != null) ind.setRight(BigInteger.valueOf(right));
+		if (firstLine != null) ind.setFirstLine(BigInteger.valueOf(firstLine));
+		if (hanging != null) ind.setHanging(BigInteger.valueOf(hanging));
+		return ind;
+	}
+
+	/** N17's cell: OffOwn, centred, w:numId 0, 9.5pt, 6pt before. */
+	private static P offCell(Doc d, String text, Integer left, Integer right) throws Exception {
+		Doc.Para p = d.para(text).noLabel().font(SANS, 19).before(120).style("OffOwn").numPr(0, 0).jc(JcEnumeration.CENTER);
+		if (left != null || right != null) p.ind(left, right, null, null);
+		return p.build();
+	}
+
+	/*
+	 * tab-trailing-narrow-cell (4083's page 1, 5 November 2026: its date of birth row stands 11pt taller than Word's, one
+	 * cell's "0<tab>" taking a second line).  tab-trailing-cell measured, at mode 15, that a tab with nothing after it whose
+	 * stop is past the cell takes a line of its own; 4083, mode 12, has a stop of 720 in a cell 13pt wide inside, and Word
+	 * gives it one line.  Mode or shape: one table a case, its first column of the width stated, its first row the case and
+	 * its second a marker.  T1 4083's cell, width 477, a left stop at 720, "0" and the tab at 9.5pt; T2 no stop, the default
+	 * grid; T3 something after the tab; T4 no tab; T5 to T7 tab-trailing-cell's text in its three widths; T8 width 1000, the
+	 * stop reachable; T9 width 700, 12pt short of it.  B1 the body, a line ending past the last stop inside the column, then
+	 * a tab.  Read the pitch from each case's row to its marker's, and from B1 to the line after it.
+	 */
+	private static Probe tabTrailingNarrowCellProbe(int mode) {
+		return new Probe("tab-trailing-narrow-cell-compat" + mode,
+				"at mode " + mode + ", a paragraph ending in a tab that can reach no stop: in cells narrower than the stop (4083's "
+				+ "date row), tab-trailing-cell's text, and in the body.  Read the pitch from each case's row to its marker's",
+				() -> {
+			Doc d = Doc.create(mode);
+			final String LONG = "Avance esperado del proyecto";
+			// tag, column, text, the stop, a tab, text after it
+			Object[][] cases = {
+				{ "T1", 477, "0", true, true, null },
+				{ "T2", 477, "0", false, true, null },
+				{ "T3", 477, "0", true, true, "1" },
+				{ "T4", 477, "0", true, false, null },
+				{ "T5", 3200, LONG, false, true, null },
+				{ "T6", 3600, LONG, false, true, null },
+				{ "T7", 4000, LONG, false, true, null },
+				{ "T8", 1000, "0", true, true, null },
+				{ "T9", 700, "0", true, true, null },
+			};
+			for (Object[] c : cases) {
+				int w = (Integer) c[1];
+				Doc.Para p = d.para().noLabel().font("Arial", 20).before(60).after(60).text((String) c[2]);
+				if ((Boolean) c[3]) p.tabStop(720, org.docx4j.wml.STTabJc.LEFT);
+				if ((Boolean) c[4]) p.tab("Arial", 19);
+				if (c[5] != null) p.text((String) c[5]);
+				Doc.Table t = new Doc.Table(w, 9000 - w).fixedLayout();
+				t.borders(4);
+				t.rowOf(null, null, t.cellOf(w, null, p.build()),
+						t.cellOf(9000 - w, null, d.para(c[0] + " row").noLabel().font("Arial", 20).before(60).after(60).build()));
+				t.rowOf(null, null, t.cellOf(w, null, d.para("x").noLabel().font("Arial", 20).before(60).after(60).build()),
+						t.cellOf(9000 - w, null, d.para(c[0] + " marker").noLabel().font("Arial", 20).before(60).after(60).build()));
+				d.add(t.build());
+				d.para().noLabel().font("Arial", 12).add();
+			}
+			StringBuilder ns = new StringBuilder("B1 ");
+			for (int i = 0; i < 77; i++) ns.append('n');
+			d.para(ns.toString()).noLabel().font("Arial", 20).tab("Arial", 20).add();
+			d.para("B1 next").noLabel().font("Arial", 20).add();
+			return d.pkg();
+		});
+	}
+
+	/*
+	 * table-floating-xspec (4083's page 4, 5 November 2026: its C.2 options, a float at w:tblpXSpec center, horzAnchor margin,
+	 * at mode 12, stand 6.1pt right of Word's).  table-floating-x measured a numeric w:tblpX; TableWriter keeps the mode 15
+	 * reading for w:tblpXSpec, "not measured".  A case a page, one cell wide but X11: X1 to X3 center, left, right of the
+	 * margin; X4 to X6 of the page; X7 center, text; X8 X1 with 10.8pt cell margins; X9 X1 with a w:tblCellSpacing of 11; X10
+	 * X1 with a w:tblInd of 566; X11 4083's, two columns of 9079 and 521, cell spacing 11, no borders.  Read each table's left
+	 * rule, right rule and text x.
+	 */
+	private static Probe floatingTableXSpecProbe(int mode) {
+		return new Probe("table-floating-xspec-compat" + mode,
+				"at mode " + mode + ", floating tables placed by w:tblpXSpec, a case a page: center, left and right of the margin "
+				+ "and of the page, center of the text, cell margins, cell spacing, a w:tblInd, and 4083's shape.  Read each "
+				+ "table's left and right rules and its text's x", () -> {
+			Doc d = Doc.create(mode);
+			String[][] cases = { { "center", "margin" }, { "left", "margin" }, { "right", "margin" }, { "center", "page" },
+					{ "left", "page" }, { "right", "page" }, { "center", "text" }, { "center", "margin" },
+					{ "center", "margin" }, { "center", "margin" }, { "center", "margin" } };
+			for (int c = 1; c <= cases.length; c++) {
+				d.para("case " + c + " " + cases[c - 1][0] + " " + cases[c - 1][1]).noLabel().font(SERIF, 20).after(240).add();
+				Doc.Table t = (c == 11 ? new Doc.Table(9079, 521) : new Doc.Table(3000)).fixedLayout()
+						.floating("text", cases[c - 1][1], null, cases[c - 1][0], 300, null);
+				if (c == 8) t.cellMargins(216, 0);
+				if (c == 9 || c == 11) t.cellSpacing(11);
+				if (c == 10) t.indent(566);
+				if (c == 11) t.noBorders(); else t.borders(4);
+				if (c == 11) t.row(SERIF, 20, false, "X" + c, "r"); else t.row(SERIF, 20, false, "X" + c);
+				d.add(t.build());
+				d.para("anchor " + c).noLabel().font(SERIF, 20).after(240).add();
+				for (int i = 1; i <= 4; i++) d.para("line " + c + "." + i).noLabel().font(SERIF, 20).add();
+				if (c < cases.length) d.pageBreak();
+			}
+			return d.pkg();
+		});
+	}
+
+	/*
+	 * vml-box-page-top (4083's page 3, 5 November 2026: B.7's mark, a text-relative VML box at margin-top 13.1pt in the first
+	 * paragraph of the page, stands 18pt lower in Word than vml-box-anchor-reference's rule puts it, 18pt being the
+	 * paragraph's space-before, which Word keeps above the line).  A case a page, the box at margin-top 10pt, the anchor 18pt
+	 * before.  K0 the document's first paragraph; K1 to K4 pushed over by the page's foot, from lines of 20pt exactly: K1
+	 * relative text, K2 relative none, K3 after a 6pt space-after, K4 a 1pt top border; K5 4083's, exact lines of 13pt, keepNext,
+	 * 6pt after, a top border, the line before it 6pt after, margin-top 13.1pt; K6 w:pageBreakBefore; K7 a w:br page in the
+	 * paragraph before; K8 a next-page section; K9 as K1 with no space-before, an exact line of 20pt so that it still goes over; K10 as K1, the anchor second on its page.
+	 * Read the box text's baseline less its anchor's.
+	 */
+	private static Probe boxPageTopProbe(int mode) {
+		return new Probe("vml-box-page-top-compat" + mode,
+				"at mode " + mode + ", text-relative VML boxes in a paragraph that opens a page, 18pt of space-before: the "
+				+ "document's first, pushed over by the foot (relative text, none, after a space-after, under a top border, "
+				+ "4083's shape), w:pageBreakBefore, a page break, a section, no space-before, second on the page.  Read the box "
+				+ "text's baseline less its anchor's", () -> {
+			Doc d = Doc.create(mode);
+			boxAnchor(d, "K0", "t", 360, false, 10).add();
+			d.para("K0 after").noLabel().font(SERIF, 20).add();
+			String[] natural = { "K1", "K2", "K3", "K4", "K5", "K9", "K10" };
+			for (String tag : natural) {
+				pageOfLines(d, tag, "K3".equals(tag) || "K5".equals(tag) ? 120 : 0);
+				if ("K10".equals(tag)) d.para("K10 opens the page").noLabel().font(SERIF, 20).line(400, STLineSpacingRule.EXACT).add();
+				Doc.Para a;
+				switch (tag) {
+					case "K2": a = boxAnchor(d, tag, "n", 360, false, 10); break;
+					case "K4": a = boxAnchor(d, tag, "t", 360, true, 10); break;
+					case "K5": a = boxAnchor(d, tag, "t", 360, true, 13.1).after(120).keepNext()
+							.line(260, STLineSpacingRule.EXACT); break;
+					case "K9": a = boxAnchor(d, tag, "t", 0, false, 10).line(400, STLineSpacingRule.EXACT); break;
+					default: a = boxAnchor(d, tag, "t", 360, false, 10);
+				}
+				a.add();
+				d.para(tag + " after").noLabel().font(SERIF, 20).add();
+			}
+			d.pageBreak();
+			boxAnchor(d, "K6", "t", 360, false, 10).pageBreakBefore().add();
+			d.para("K6 after").noLabel().font(SERIF, 20).add();
+			d.para("K7 the paragraph with the break").noLabel().font(SERIF, 20).pageBreakRun().add();
+			boxAnchor(d, "K7", "t", 360, false, 10).add();
+			d.para("K7 after").noLabel().font(SERIF, 20).add();
+			d.endSection("nextPage");
+			boxAnchor(d, "K8", "t", 360, false, 10).add();
+			d.para("K8 after").noLabel().font(SERIF, 20).add();
+			return d.pkg();
+		});
+	}
+
+	/** A page's worth of 20pt lines from a new page, leaving less room than an anchor needs. */
+	private static void pageOfLines(Doc d, String tag, int lastAfter) throws Exception {
+		for (int i = 1; i <= 34; i++) {
+			Doc.Para p = d.para(tag + " line " + i).noLabel().font(SERIF, 20).line(400, STLineSpacingRule.EXACT);
+			if (i == 1) p.pageBreakBefore();
+			if (i == 34) p.after(lastAfter);
+			p.add();
+		}
+	}
+
+	/** An anchor paragraph with its VML box, margin-left 250pt. */
+	private static Doc.Para boxAnchor(Doc d, String tag, String rel, int before, boolean border, double marginTop)
+			throws Exception {
+		String style = "position:absolute;margin-left:250pt;margin-top:" + marginTop + "pt;width:150pt;height:30pt;z-index:1"
+				+ ";mso-position-horizontal-relative:text" + ("t".equals(rel) ? ";mso-position-vertical-relative:text" : "");
+		Doc.Para a = d.para(tag + " anchor").noLabel().font(SANS, 20).before(before).run(d.vmlRect(style, tag + " box"));
+		if (border) a.topBorder(4, 1);
+		return a;
+	}
+
+	/*
+	 * vml-box-float-edge (4083's page 2, 5 November 2026: B.3's mark stands 232pt right of Word's, the width of B.2's floating
+	 * table, whose foot lies in B.3's space-before; B.3's text stands at the margin, in Word and in docx4j).  How far a float
+	 * moves a box anchored in a paragraph beside it or just past it is not measured.  A case a page: a table at the
+	 * margin 200pt wide and 30pt high, its anchor one exact line of 20pt, then the paragraph holding the box, 18pt before, its
+	 * box at margin-left 29.4pt, margin-top 30pt.  E1 the float's foot 10pt below the anchor line, 8pt above the text, 4083's;
+	 * E2 taller, its foot 10pt below the text, so the paragraph stands beside it; E3 as E2 with the box horizontally relative
+	 * to the margin; E4 to the page; E5 as E2 with the table on the right; E6 as E1 with no space-before, the float's foot
+	 * in the line.  Read the box text's x, and the x of the paragraph holding it.
+	 */
+	private static Probe boxFloatEdgeProbe(int mode) {
+		return new Probe("vml-box-float-edge-compat" + mode,
+				"at mode " + mode + ", a VML box in a paragraph just past a floating table's foot, in its space-before, 4083's "
+				+ "shape, and in a paragraph beside the table, by the box's horizontal reference and the table's side.  Read the "
+				+ "box text's x and its paragraph's", () -> {
+			Doc d = Doc.create(mode);
+			// tag, table height in twips, horzAnchor margin tblpX, the box's reference, the paragraph's space-before
+			Object[][] cases = {
+				{ "E1", 600, 0, "text", 360 },
+				{ "E2", 1200, 0, "text", 360 },
+				{ "E3", 1200, 0, "margin", 360 },
+				{ "E4", 1200, 0, "page", 360 },
+				{ "E5", 1200, 5026, "text", 360 },
+				{ "E6", 600, 0, "text", 0 },
+			};
+			for (int c = 0; c < cases.length; c++) {
+				String tag = (String) cases[c][0];
+				if (c > 0) d.pageBreak();
+				d.para(tag + " first line").noLabel().font(SERIF, 20).after(240).add();
+				Doc.Table t = new Doc.Table(4000).fixedLayout().floating((Integer) cases[c][2], 1);
+				t.borders(4);
+				t.rowOf((Integer) cases[c][1], org.docx4j.wml.STHeightRule.EXACT,
+						t.cellOf(4000, null, d.para(tag + " float").noLabel().font(SERIF, 20).build()));
+				d.add(t.build());
+				d.para(tag + " anchor").noLabel().font(SERIF, 20).line(400, STLineSpacingRule.EXACT).add();
+				String style = "position:absolute;margin-left:29.4pt;margin-top:30pt;width:60pt;height:30pt;z-index:1"
+						+ ";mso-position-horizontal-relative:" + cases[c][3] + ";mso-position-vertical-relative:text";
+				d.para(tag + " text").noLabel().font(SANS, 20).before((Integer) cases[c][4]).run(d.vmlRect(style, tag + " box")).add();
+				for (int i = 1; i <= 4; i++) d.para(tag + " line " + i).noLabel().font(SERIF, 20).add();
 			}
 			return d.pkg();
 		});

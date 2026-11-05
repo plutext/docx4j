@@ -2161,6 +2161,17 @@ public final class Doc {
 			return this;
 		}
 
+		/** A direct w:ind of the values given, null leaving an attribute out, negative ones too.  @since 17.3.6 */
+		public Para ind(Integer left, Integer right, Integer firstLine, Integer hanging) {
+			PPrBase.Ind ind = F.createPPrBaseInd();
+			if (left != null) ind.setLeft(BigInteger.valueOf(left));
+			if (right != null) ind.setRight(BigInteger.valueOf(right));
+			if (firstLine != null) ind.setFirstLine(BigInteger.valueOf(firstLine));
+			if (hanging != null) ind.setHanging(BigInteger.valueOf(hanging));
+			ppr.setInd(ind);
+			return this;
+		}
+
 		public Para indent(int leftTwips, int firstLineTwips, int hangingTwips) {
 			PPrBase.Ind ind = F.createPPrBaseInd();
 			ind.setLeft(BigInteger.valueOf(leftTwips));
