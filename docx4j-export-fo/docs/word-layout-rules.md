@@ -3824,12 +3824,18 @@ the surrounding text around it.
 otherwise, and the table's **grid edge** goes at `tblpX` within it, or where `tblpXSpec`
 says (`left`/`inside`, `center`, `right`/`outside`). Measured on `table-floating` (mode 15,
 72pt margins, `horzAnchor="margin" tblpX=4500`): Word's first cell text is at 302.7pt =
-72 + 225 + one 5.4pt cell margin, so the grid edge is at margin + `tblpX` with no
-compatibility-mode adjustment - unlike `w:tblInd` (§6.1). Measured on a real cover page
+72 + 225 + one 5.4pt cell margin, so in mode 15 the grid edge is at margin + `tblpX`; below
+mode 15 it is one cell margin left of that (see below). Measured on a real cover page
 (`horzAnchor="margin" tblpXSpec="center"`, a 450.05pt table on a 594pt page with no
 margins): Word's first cell text is at 77.8 = (594 - 450.05)/2 + 5.4. This applies to every
 floating table, whether or not it is taken out of the flow; before 17.1.0 the probe's table
 sat at the margin, 225pt left of Word's.
+
+**Below mode 15 `w:tblpX` places the cell text, not the grid.** Measured on probe `table-floating-x` (modes 12 and 14 alike):
+at `tblpX` 74.2pt the text stands at 74.2 and the left rule at 68.4, one cell margin to the left; with 10.8pt cell margins 74.2
+and 63.1; a `w:tblInd` is added (566 twips: 102.5 and 96.8), where mode 15 ignores it; the anchor's own indent changes nothing.
+Word's re-save drops that `w:tblInd`, so only the original file shows it. A grid that would stand left of the column is clamped
+to it (`padLeft`), about one document in the corpora; `tblpXSpec`, `w:jc` and bidi tables below mode 15 are not measured.
 
 **Vertically** Word measures the position from the page (`vertAnchor="page"`), from the
 margin box (`vertAnchor="margin"`, or any `tblpYSpec`) or - the default, and 136 of the 152

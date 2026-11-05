@@ -70,8 +70,12 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 	}
 
 	private static org.w3c.dom.Document fo(String body, int flags) throws Exception {
+		return fo(body, flags, "15");
+	}
+
+	private static org.w3c.dom.Document fo(String body, int flags, String mode) throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
-		pkg.getMainDocumentPart().getDocumentSettingsPart().setWordCompatSetting("compatibilityMode", "15");
+		pkg.getMainDocumentPart().getDocumentSettingsPart().setWordCompatSetting("compatibilityMode", mode);
 		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
 				"<w:document " + W + "><w:body>" + body + SECT_PR + "</w:body></w:document>"));
 		FOSettings foSettings = Docx4J.createFOSettings();
@@ -260,6 +264,30 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 
 	/** horzAnchor="page": tblpX is measured from the paper's edge, so the table sits 1in
 	 *  less than that into the text column. */
+	/** Below mode 15 w:tblpX places the cell text: the grid stands one cell margin left of it and
+	 *  w:tblInd is added; in mode 15 the grid stands on it and w:tblInd is ignored (probe
+	 *  table-floating-x).  The default cell margin is 5.4pt.  @since 17.3.6 */
+	private void checkFloatPositionByMode(int flags) throws Exception {
+		String anchored = "<w:tblpPr w:vertAnchor=\"text\" w:horzAnchor=\"margin\" w:tblpX=\"1000\" w:tblpY=\"300\"/>";
+		String body = body(anchored);
+		assertEquals("mode 15: the grid on tblpX", 50, floatColumns(fo(body, flags, "15"))[0], 0.01);
+		assertEquals("mode 12: a cell margin left of it", 44.6, floatColumns(fo(body, flags, "12"))[0], 0.01);
+		assertEquals("mode 14 likewise", 44.6, floatColumns(fo(body, flags, "14"))[0], 0.01);
+		String indented = body(anchored + "<w:tblInd w:w=\"200\" w:type=\"dxa\"/>");
+		assertEquals("mode 12: w:tblInd added", 54.6, floatColumns(fo(indented, flags, "12"))[0], 0.01);
+		assertEquals("mode 15: w:tblInd ignored", 50, floatColumns(fo(indented, flags, "15"))[0], 0.01);
+		assertEquals("no cell margin given back: the wrapper is no cell", 0,
+				pt(foTable(fo(body, flags, "12")).getAttribute("start-indent")), 0.01);
+	}
+
+	@Test public void floatPositionByModeVisitor() throws Exception {
+		checkFloatPositionByMode(Docx4J.FLAG_NONE);
+	}
+
+	@Test public void floatPositionByModeXslt() throws Exception {
+		checkFloatPositionByMode(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
 	private void checkPageHorizontalAnchor(int flags) throws Exception {
 		org.w3c.dom.Document doc = fo(body("<w:tblpPr w:vertAnchor=\"text\" w:horzAnchor=\"page\""
 				+ " w:tblpX=\"2880\" w:tblpY=\"20\"/>"), flags);

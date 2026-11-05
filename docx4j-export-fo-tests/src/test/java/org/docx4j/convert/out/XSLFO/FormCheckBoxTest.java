@@ -45,6 +45,7 @@ public class FormCheckBoxTest extends AbstractXSLFOTest {
 	private static final String W = "xmlns:w=\"" + Namespaces.NS_WORD12 + "\"";
 	private static final String FO = "http://www.w3.org/1999/XSL/Format";
 	private static final String SVG = "http://www.w3.org/2000/svg";
+	private static final String WORD_LAYOUT_NS = "http://docx4j.org/fop/word-layout";
 
 	private static String field(String rPr, String checkBox) {
 		String r = "<w:r>" + rPr;
@@ -89,6 +90,56 @@ public class FormCheckBoxTest extends AbstractXSLFOTest {
 				"<w:sizeAuto/><w:default w:val=\"0\"/><w:checked/>"), flags);
 		assertEquals("both diagonals", 1, checked.getElementsByTagNameNS(SVG, "path").getLength());
 		assertEquals("the run's colour", "#000080", ((Element) checked.getElementsByTagNameNS(SVG, "rect").item(0)).getAttribute("stroke"));
+	}
+
+	/** FOP would delete a space after a graphic that opens a block: it is kept as a leader of its
+	 *  width, and that leader is no tab (4083's labels: 2.2pt left; then a stop right).  */
+	private void checkSpaceAfterTheBox(int flags) throws Exception {
+		org.w3c.dom.Document doc = fo(field(TEN_POINT, AUTO) + "<w:r><w:t xml:space=\"preserve\"> label</w:t></w:r>", flags);
+		NodeList leaders = doc.getElementsByTagNameNS(FO, "leader");
+		assertEquals(1, leaders.getLength());
+		Element leader = (Element) leaders.item(0);
+		assertTrue(leader.getAttribute("leader-length"), Double.parseDouble(leader.getAttribute("leader-length").replace("pt", "")) > 0);
+		assertEquals("no tab", "", leader.getAttributeNS(WORD_LAYOUT_NS, "tab"));
+	}
+
+	/** A tab after the box is laid out from where the box ends, not given the length from the
+	 *  line's start, and its block has the stops to do it by (9838's rows).  */
+	private void checkTabAfterTheBox(int flags) throws Exception {
+		org.w3c.dom.Document doc = fo("<w:pPr><w:ind w:left=\"820\" w:hanging=\"820\"/></w:pPr>" + field(TEN_POINT, AUTO)
+				+ "<w:r><w:tab/><w:t>label</w:t></w:r>", flags);
+		NodeList leaders = doc.getElementsByTagNameNS(FO, "leader");
+		assertEquals(1, leaders.getLength());
+		Element leader = (Element) leaders.item(0);
+		assertEquals("0pt", leader.getAttribute("leader-length"));
+		assertEquals("a tab", "1", leader.getAttributeNS(WORD_LAYOUT_NS, "tab"));
+		org.w3c.dom.Node block = leader;
+		while (!"block".equals(block.getLocalName())) block = block.getParentNode();
+		assertEquals("the stops", "820:-820:.", ((Element) block).getAttributeNS(WORD_LAYOUT_NS, "tab-ind"));
+	}
+
+	@Test
+	public void spaceAfterTheBoxVisitor() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume();
+		checkSpaceAfterTheBox(Docx4J.FLAG_NONE);
+	}
+
+	@Test
+	public void spaceAfterTheBoxXslt() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume();
+		checkSpaceAfterTheBox(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
+	@Test
+	public void tabAfterTheBoxVisitor() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume();
+		checkTabAfterTheBox(Docx4J.FLAG_NONE);
+	}
+
+	@Test
+	public void tabAfterTheBoxXslt() throws Exception {
+		org.docx4j.convert.out.fo.WordLayoutOn.assume();
+		checkTabAfterTheBox(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
 	@Test

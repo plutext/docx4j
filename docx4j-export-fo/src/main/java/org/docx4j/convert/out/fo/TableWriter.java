@@ -451,19 +451,34 @@ public class TableWriter extends AbstractTableWriter {
 		} else if (tblpPr.getTblpX() != null) {
 			xInFrame = tblpPr.getTblpX().intValue();
 		}
+		boolean textEdge = false;
 		if (xInFrame != null) {
+			org.docx4j.wml.CTTblPrBase tblPr = table.getEffectiveTableStyle().getTblPr();
+			boolean bidiVisual = tblPr != null && tblPr.getBidiVisual() != null && tblPr.getBidiVisual().isVal();
+			org.docx4j.wml.STXAlign xSpec = tblpPr.getTblpXSpec();
+			org.docx4j.wml.JcEnumeration jc = tblPr == null || tblPr.getJc() == null ? null : tblPr.getJc().getVal();
+			/* Below mode 15 w:tblpX places the cell text, as the margin does in the flow: the
+			 * grid edge is one cell margin left of it, and w:tblInd is added, where in mode 15
+			 * the left border starts at w:tblpX and w:tblInd is ignored.  Measured on probe
+			 * table-floating-x (Word's goldens of 5 November 2026, modes 12 and 14 alike): at
+			 * tblpX 74.2 the text at 74.2 and the left rule at 68.4; with 10.8pt cell margins
+			 * 74.2 and 63.1; with w:tblInd 566 102.5 and 96.8; the anchor's own indent changes
+			 * nothing.  So what applyStartIndent worked out (w:tblInd less the shift) stands on
+			 * the position; and the wrapper a float sits in is no cell, so the shift is not
+			 * given back as a nested table's is (WordLayoutFixups.nestedTableGridEdge).  A
+			 * w:tblpXSpec, w:jc or bidi table below mode 15 is not measured.  @since 17.3.6 */
+			textEdge = compatibilityMode(context) < 15 && xSpec == null && !bidiVisual
+					&& !org.docx4j.wml.JcEnumeration.CENTER.equals(jc) && !org.docx4j.wml.JcEnumeration.RIGHT.equals(jc)
+					&& !org.docx4j.wml.JcEnumeration.END.equals(jc);
 			// the frame's own position, with no grid-edge shift in it
-			indent = frameLeft - marginLeft + xInFrame;
-			gridShift = 0;
+			indent = frameLeft - marginLeft + xInFrame + (textEdge ? indent : 0);
+			if (textEdge) tableRoot.removeAttribute(WordLayoutFixups.HINT_GRID_SHIFT);
+			else gridShift = 0;
 			/* and the edge of the table Word puts there (WordLayoutFixups.tableBorderEdges):
 			 * in mode 15 the left border starts at w:tblpX (Word's goldens of probes
 			 * table-floating and -negative: the left border from 297.0 and 72.0, FOP's half
 			 * of it further left) and a centred table's grid is centred (-offset-sides, within
-			 * 0.1pt); right is mirrored from the flow's rule.  Below 15 the grid stays on the
-			 * position (not measured).  @since 17.3.3 */
-			org.docx4j.wml.CTTblPrBase tblPr = table.getEffectiveTableStyle().getTblPr();
-			boolean bidiVisual = tblPr != null && tblPr.getBidiVisual() != null && tblPr.getBidiVisual().isVal();
-			org.docx4j.wml.STXAlign xSpec = tblpPr.getTblpXSpec();
+			 * 0.1pt); right is mirrored from the flow's rule.  @since 17.3.3 */
 			if (compatibilityMode(context) < 15 || bidiVisual || org.docx4j.wml.STXAlign.CENTER.equals(xSpec)
 					|| !WordLayoutFixups.isEnabled()) {
 				tableRoot.removeAttribute(WordLayoutFixups.HINT_BORDER_EDGE);
@@ -513,7 +528,7 @@ public class TableWriter extends AbstractTableWriter {
 		}
 		if (topTwips == null && frame == null) {
 			// text-anchored: an fo:float at the anchor paragraph, text beside it
-			return floatBesideText(dims, tblpPr, tableRoot, indent, width, gridShift);
+			return floatBesideText(dims, tblpPr, tableRoot, indent, width, gridShift, textEdge);
 		}
 		if (width > 0 && dims.getWritableWidthTwips() > 0
 				&& width <= FLOAT_MAX_SHARE * dims.getWritableWidthTwips()) {
@@ -581,7 +596,7 @@ public class TableWriter extends AbstractTableWriter {
 	 * @since 17.1.0
 	 */
 	private int floatBesideText(org.docx4j.model.structure.PageDimensions dims,
-			org.docx4j.wml.CTTblPPr tblpPr, Element tableRoot, int indent, int width, int gridShift) {
+			org.docx4j.wml.CTTblPPr tblpPr, Element tableRoot, int indent, int width, int gridShift, boolean textEdge) {
 
 		int leftFromText = intValue(tblpPr.getLeftFromText(), 0);
 		int rightFromText = intValue(tblpPr.getRightFromText(), 0);
@@ -626,8 +641,9 @@ public class TableWriter extends AbstractTableWriter {
 		if (bandStart < 0 || bandStart + width > column) return indent;
 
 		boolean right = bandStart + width / 2.0 > column / 2.0;
-		int padLeft = right ? leftFromText : bandStart;
-		int padRight = right ? column - bandStart - width : rightFromText;
+		int gridEdge = textEdge ? indent : bandStart; // where the grid stands; see applyFloatingPosition
+		int padLeft = right ? leftFromText : gridEdge;
+		int padRight = right ? column - gridEdge - width : rightFromText;
 		int padTop = 0;
 		if (tblpPr.getTblpY() != null && !org.docx4j.wml.STVAnchor.PAGE.equals(tblpPr.getVertAnchor())
 				&& !org.docx4j.wml.STVAnchor.MARGIN.equals(tblpPr.getVertAnchor())) {

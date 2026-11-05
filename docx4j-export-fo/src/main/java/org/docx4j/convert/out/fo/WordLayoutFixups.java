@@ -3853,17 +3853,51 @@ public final class WordLayoutFixups {
 	 * the stop by the box's width, and a box wider than the first stop passes it.  So the
 	 * tab is laid out instead, from where the box ends.
 	 *
+	 * <p>And FOP takes whitespace after a graphic that opens a block for leading whitespace
+	 * and deletes it: corpus document 4083's labels, each a space after its box, stood 2.2pt
+	 * left of Word's.  So that space becomes a leader of its width, as
+	 * {@link #leadingWhitespaceLeader} makes of whitespace FOP would otherwise delete.</p>
+	 *
 	 * @since 17.3.6
 	 */
 	static void tabsAfterCheckBoxes(Document doc) {
 		for (Element object : elements(doc, "instream-foreign-object")) {
 			if (!isCheckBox(object)) continue;
 			Element leader = leaderAfter(object);
-			if (leader == null || leader.hasAttribute(HINT_TAB) || !leader.hasAttribute("leader-length")) continue;
-			leader.setAttribute("leader-length", "0pt");
-			leader.setAttribute("leader-alignment", "reference-area");
-			leader.setAttribute(HINT_TAB, "1");
+			if (leader != null && !leader.hasAttribute(HINT_TAB) && leader.hasAttribute("leader-length")) {
+				leader.setAttribute("leader-length", "0pt");
+				leader.setAttribute("leader-alignment", "reference-area");
+				leader.setAttribute(HINT_TAB, "1");
+			}
+			keepSpaceAfter(doc, object); // after: its own leader is no tab
 		}
+	}
+
+	/** The spaces opening the text after a check box, as a leader of their width.  Left as
+	 *  they were where the width cannot be worked out. */
+	private static void keepSpaceAfter(Document doc, Element object) {
+		Element block = object;
+		while (block != null && !isFo(block, "block")) {
+			block = block.getParentNode() instanceof Element ? (Element) block.getParentNode() : null;
+		}
+		if (block == null) return;
+		Node n = following(object);
+		while (n != null && !(n instanceof org.w3c.dom.Text)) {
+			if (n instanceof Element && !isFo((Element) n, "inline")) return;
+			n = n.getFirstChild() != null ? n.getFirstChild() : following(n);
+		}
+		if (n == null) return;
+		String text = n.getNodeValue();
+		int count = 0;
+		while (count < text.length() && text.charAt(count) == ' ') count++;
+		if (count == 0) return;
+		double width = spacesWidthPt(block, n, count);
+		if (width < 0) return;
+		Element leader = doc.createElementNS(FO_NS, "fo:leader");
+		leader.setAttribute("leader-pattern", "space");
+		leader.setAttribute("leader-length", org.docx4j.fonts.WordLineMetrics.format(width));
+		n.getParentNode().insertBefore(leader, n);
+		n.setNodeValue(text.substring(count));
 	}
 
 	private static boolean isCheckBox(Element el) {

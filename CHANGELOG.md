@@ -40,6 +40,8 @@ Changes in Version 17.3.6
   set past them (it was 10 to 13pt left of Word's). New feature `PP_PDF_FORM_CHECKBOXES`, on by default.
 - A text box's first paragraph keeps its space before, as in Word (the box's text sat that much too high). Its text,
   and a floating table's, no longer takes the colour, weight and slant of the paragraph it is anchored in.
+- A floating table below compatibility mode 15 stands where Word's does: `w:tblpX` places the cell text, not the left
+  border, and `w:tblInd` is added (the table was about 11pt right of Word's).
 - The paragraph straight after a floating table takes no HTML auto space before, as in Word (`w:beforeAutospacing`; 14pt
   too low before, and that much more of the page taken).
 - A paragraph whose line breaking restarts beside a left float keeps its first word (FOP-3331, which docx4j's own
