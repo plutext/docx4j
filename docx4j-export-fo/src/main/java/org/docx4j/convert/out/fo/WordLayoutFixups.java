@@ -178,7 +178,7 @@ public final class WordLayoutFixups {
 		wrapLineBreakBlocks(doc); // before any float is made: the floats' FOP-crash checks look for this shape
 		positionFrames(doc);
 		anchorImages(doc);
-		anchorTextBoxes(doc);
+		anchorTextBoxes(doc, compatibilityMode);
 		textBoxStartIndents(doc);
 		anchorFloatingTables(doc);
 		hoistFloats(doc);
@@ -772,6 +772,19 @@ public final class WordLayoutFixups {
 			/* w:compat/w:noTabHangInd, which the line manager reads: off in every
 			 * compatibility mode, so it is written only for a document which states it.
 			 * @since 17.1.0 */
+			/* Below mode 15 a tab reaching a custom left stop past its cell's edge stays on its
+			 * line.  Probe tab-trailing-narrow-cell (Word's goldens of 5 November 2026): "0<tab>", a
+			 * stop at 720 in a cell 13pt wide inside, one line at mode 12, two at mode 15; a stop of
+			 * the default grid breaks at both.  Corpus document 4083's date row, 11pt too tall.
+			 * Mode 14 is not measured, nor the body.  @since 17.3.6 */
+			if (compat.mode() < 15 && hook(FopCapabilities.Capability.TAB_PAST_CELL)) {
+				if (!declared) {
+					root.setAttributeNS(XMLNS, "xmlns:docx4j", ns);
+					declared = true;
+				}
+				root.setAttributeNS(ns, "docx4j:"
+						+ org.docx4j.fop.wordlayout.WordLayoutElementMapping.TAB_PAST_CELL, "true");
+			}
 			if (compat.is(org.docx4j.model.CompatibilityOptions.Flag.NO_TAB_HANG_IND)) {
 				if (!declared) {
 					root.setAttributeNS(XMLNS, "xmlns:docx4j", ns);
@@ -937,6 +950,8 @@ public final class WordLayoutFixups {
 	public static final String HINT_ANCHOR_Y = "docx4j-anchor-y";
 	/** @since 17.0.5 */
 	public static final String HINT_ANCHOR_COL = "docx4j-anchor-col";
+	/** A VML box's mso-position-horizontal-relative, "text" where it states none.  @since 17.3.6 */
+	public static final String HINT_ANCHOR_HREF = "docx4j-anchor-href";
 	/** @since 17.0.5 */
 	public static final String HINT_ANCHOR_ML = "docx4j-anchor-ml";
 
@@ -960,10 +975,16 @@ public final class WordLayoutFixups {
 	private static final String[] ANCHOR_HINTS = { HINT_ANCHOR, HINT_ANCHOR_W, HINT_ANCHOR_H,
 			HINT_ANCHOR_X, HINT_ANCHOR_Y, "docx4j-anchor-dist", "docx4j-anchor-behind",
 			HINT_ANCHOR_COL, HINT_ANCHOR_ML, HINT_TEXTBOX_BESIDE, HINT_ANCHOR_CELL, HINT_ANCHOR_SIDES,
-			HINT_ANCHOR_CELL_FOOT };
+			HINT_ANCHOR_CELL_FOOT, HINT_ANCHOR_HREF };
 
 	/** Tests only: what {@link #obstaclesInTheLine} answers, null to ask the renderer.  @since 17.3.3 */
 	static Boolean obstaclesForTest;
+	/** Tests only: whether the renderer has fork CR-038's hooks, null to ask it.  @since 17.3.6 */
+	static Boolean boxAndTabHooksForTest;
+
+	private static boolean hook(FopCapabilities.Capability capability) {
+		return boxAndTabHooksForTest != null ? boxAndTabHooksForTest : FopCapabilities.has(capability);
+	}
 
 	/**
 	 * Whether a positioned container may carry {@code fox:wrap} (CR-032 phase 5): on fop/CR-024's
@@ -3357,7 +3378,16 @@ public final class WordLayoutFixups {
 	static void anchoredContentTakesNoRunFormatting(Document doc) {
 		for (Element el : elements(doc, "float")) takesNoRunFormatting(el);
 		for (Element el : elements(doc, "block-container")) {
-			if (el.hasAttribute("absolute-position")) takesNoRunFormatting(el);
+			if (!el.hasAttribute("absolute-position")) continue;
+			takesNoRunFormatting(el);
+			/* A box's text starts at the box's top, but display-align is inherited, and a
+			 * box in a cell of w:vAlign bottom took the cell's "after": its text sat at the
+			 * box's foot, so the taller the box the lower.  Corpus document 4083's marks in
+			 * its "you" and "your partner" heads, cells of w:vAlign bottom: Word's X stands
+			 * 5.1pt below the head's baseline plus margin-top whatever the box's height,
+			 * docx4j's 5.9, 6.35 and 8.2 in boxes 25.7, 26.15 and 28.05pt high.
+			 * A floating table's container gets its own from HINT_TBLP_ALIGN. */
+			if (!el.hasAttribute("display-align")) el.setAttribute("display-align", "before");
 		}
 	}
 
@@ -3548,12 +3578,12 @@ public final class WordLayoutFixups {
 	 *
 	 * @since 17.0.5
 	 */
-	static void anchorTextBoxes(Document doc) {
+	static void anchorTextBoxes(Document doc, int compatibilityMode) {
 		for (Element box : elements(doc, "block-container")) {
 			String kind = box.getAttribute(HINT_ANCHOR);
 			if (kind == null || kind.length() == 0) continue;
 			try {
-				anchorTextBox(doc, box, kind);
+				anchorTextBox(doc, box, kind, compatibilityMode);
 			} catch (RuntimeException e) {
 				log.warn("Text box left in the flow: " + e.getMessage(), e);
 			}
@@ -3561,7 +3591,7 @@ public final class WordLayoutFixups {
 		}
 	}
 
-	private static void anchorTextBox(Document doc, Element box, String kind) {
+	private static void anchorTextBox(Document doc, Element box, String kind, int compatibilityMode) {
 		double w = lengthPt(box.getAttribute(HINT_ANCHOR_W));
 		double h = lengthPt(box.getAttribute(HINT_ANCHOR_H));
 		double x = lengthPt(box.getAttribute(HINT_ANCHOR_X));
@@ -3661,6 +3691,29 @@ public final class WordLayoutFixups {
 			double above = y.startsWith("t:") ? textRelativeTop(para) : 0;
 			box.setAttribute("top", pt(off - above + lengthPt(box.getAttribute("padding-top"))));
 			box.setAttribute("left", pt(pageY ? x + ml : x));
+			if (!pageY && inCell == null) {
+				/* A float beside the paragraph moves a box relative to the text with its line
+				 * below mode 15, and leaves it on the column from mode 15; relative to the margin
+				 * or the page it stays at both.  Probe vml-box-float-edge (Word's goldens of 5
+				 * November 2026), margin-left 29.4pt beside a float 204pt wide: text 305.6 at mode
+				 * 12, 101.8 at mode 15; margin 101.8; page 29.8.  Mode 14 is not measured.  */
+				String href = box.getAttribute(HINT_ANCHOR_HREF);
+				boolean text = "text".equals(href) || "column".equals(href);
+				if (("margin".equals(href) || "page".equals(href) || (text && compatibilityMode >= 15))
+						&& hook(FopCapabilities.Capability.BOX_X_FROM_COLUMN)) {
+					box.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS, "fox:x-reference", "column");
+				}
+				/* A box hangs from its paragraph's top.  What FO discards of the space-before where
+				 * the paragraph opens a page cannot be known here, so the renderer gives it back.
+				 * Probe vml-box-page-top: Word's box at 91.7 in every case, the body's top plus
+				 * margin-top 10 and its text's 9.7, whether the line stands at 99.4 (the
+				 * document's first paragraph) or 81.4 (a natural break, the 18pt gone); 4083's
+				 * B.7, 17.9pt high.  Not the border's part, which stays.  @since 17.3.6 */
+				double space = y.startsWith("t:") ? textRelativeSpace(para) : 0;
+				if (space > 0 && hook(FopCapabilities.Capability.BOX_TOP_SPACE)) {
+					box.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS, "fox:top-space", pt(space));
+				}
+			}
 			// a box Word wraps square, tight or through: on the fork's obstacles the page's lines
 			// wrap round it (CR-032 phase 5)
 			String beside = box.getAttribute(HINT_TEXTBOX_BESIDE).trim();
@@ -3691,6 +3744,19 @@ public final class WordLayoutFixups {
 		wrapper.appendChild(box);
 		if (inCell != null) insertAtCellTop(cell, wrapper);
 		else insertAnchorWrapper(para, wrapper);
+		/* A box goes with its paragraph's first line; FOP may break between two block-level
+		 * children.  Probe vml-box-page-top's K9 (Word's goldens of 5 November 2026): the
+		 * paragraph over the page's foot, Word's box beside it on the next page, docx4j's
+		 * left behind at the foot of the last.  A taller box left behind ran off the page: 1616's
+		 * caption stood at y 728.7 on a page 612 high, and 561's at 981.8 on one of 842, drawn
+		 * past the edge.  With no text in the paragraph the keep becomes the paragraph's and the
+		 * paragraph goes over: 1616's is then 101.0pt below the paragraph before, Word's 101.1,
+		 * and 561's within 0.2pt of Word's.  What Word does with a box whose anchor really is
+		 * too low for it is not measured.  @since 17.3.6 */
+		if (inCell == null && ("none".equals(kind) || pageY)) {
+			wrapper.setAttribute("keep-with-next.within-page", "always");
+			wrapper.setAttribute("keep-with-next.within-column", "always");
+		}
 		if (band != null) para.insertBefore(band, wrapper.getNextSibling());
 		if (cleared != null) cleared.setAttribute("clear", band.getAttribute("float"));
 	}
@@ -4038,17 +4104,25 @@ public final class WordLayoutFixups {
 	 * @since 17.3.6
 	 */
 	private static double textRelativeTop(Element para) {
-		Element outer = para;
-		double border = topBorderAndPadding(para);
+		return textRelativeSpace(para) + topBorderAndPadding(borderOwner(para));
+	}
+
+	/** The block holding the paragraph's top border: itself, or the borders/shading container
+	 *  holding it first (syncContainerSpacing).  @since 17.3.6 */
+	private static Element borderOwner(Element para) {
 		Node parent = para.getParentNode();
-		if (border == 0 && parent instanceof Element && isFo((Element) parent, "block")
+		if (topBorderAndPadding(para) == 0 && parent instanceof Element && isFo((Element) parent, "block")
 				&& !((Element) parent).hasAttribute(HINT_PSTYLE) && firstElementChild((Element) parent) == para) {
-			// the borders/shading container holding this paragraph first (syncContainerSpacing)
-			outer = (Element) parent;
-			border = topBorderAndPadding(outer);
+			return (Element) parent;
 		}
+		return para;
+	}
+
+	/** The space-before part of {@link #textRelativeTop}.  @since 17.3.6 */
+	private static double textRelativeSpace(Element para) {
+		Element outer = borderOwner(para);
 		double before = Math.max(spaceBeforePt(para), outer == para ? 0 : spaceBeforePt(outer));
-		return Math.max(0, before - previousSpaceAfter(outer)) + border;
+		return Math.max(0, before - previousSpaceAfter(outer));
 	}
 
 	/** A block's top border width and the padding inside it, in points; 0 where it has no

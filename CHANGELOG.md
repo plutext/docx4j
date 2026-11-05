@@ -40,6 +40,12 @@ Changes in Version 17.3.6
   set past them (it was 10 to 13pt left of Word's). New feature `PP_PDF_FORM_CHECKBOXES`, on by default.
 - A text box's first paragraph keeps its space before, as in Word (the box's text sat that much too high). Its text,
   and a floating table's, no longer takes the colour, weight and slant of the paragraph it is anchored in.
+- `w:numId 0` clears every inherited left, hanging and first-line indent, the style's own too, and keeps the right one, as Word does.
+- A floating table placed by `w:tblpXSpec` below compatibility mode 15 stands where Word's does.
+- PDF: a text box's text starts at the box's top in a table cell of any `w:vAlign`, and a box stays on its paragraph's page.
+- PDF: a text box beside a floating table, or in the paragraph opening a page, stands where Word's does (renderer 2.12-docx4j.1).
+- PDF: below compatibility mode 15 a tab reaching a custom stop past its cell's edge stays on its line, as in Word (renderer
+  2.12-docx4j.1). Known limit: text after such a tab is drawn over the next cell, where Word draws none.
 - A floating table below compatibility mode 15 stands where Word's does: `w:tblpX` places the cell text, not the left
   border, and `w:tblInd` is added (the table was about 11pt right of Word's).
 - The paragraph straight after a floating table takes no HTML auto space before, as in Word (`w:beforeAutospacing`; 14pt

@@ -778,13 +778,26 @@ better** - 0.922 to 0.778 of Word's lines, 0.855 to 0.702, and six more losing 0
 word-layout-settings.md §4(d).
 
 <a id="s28numid0"></a>**`w:numId w:val="0"` takes the paragraph out of the list** (ECMA-376
-17.9.18), so neither the label nor the level's `w:ind` applies - only the paragraph's own.
+17.9.18), so neither the label nor any inherited left, hanging or first-line indent applies:
+only a `w:ind` stated with the `w:numId 0`, or below it. The right indent stays.
 docx4j suppressed the label but kept the level's indent: measured on a heading styled with
 a style whose numbering (numId 2, ilvl 5) carries a 57.6pt hanging indent and which is
 overridden with `<w:numPr><w:ilvl w:val="0"/><w:numId w:val="0"/></w:numPr>` and
 `<w:ind w:left="720"/>`, Word draws it at x=78.5..541.2 and docx4j drew the same 462pt of
-text at 20.9..483.1 - exactly 57.6pt left, on ten paragraphs. Only the components the
-inherited level contributed are dropped, so a `w:ind` the style states itself survives.
+text at 20.9..483.1 - exactly 57.6pt left, on ten paragraphs.
+
+It is not only the level's. Measured on probe `numbering-off-style-ind` (modes 12 and 15
+alike, 72pt margin, 523.3pt column end): a numbered style stating left 454 hanging 454 right
+57, the level 340/340, is drawn at 72.0 on both lines and ends at 520.5; the same with
+firstLine 227; with the `w:ind` on the style it is based on, left 720 hanging 360, at 72.0
+and 523.4; with a `w:ind` of 900/200 on a style based on the numbered one, at 72.0. `w:numId 0`
+in a style does the same (a style based on the numbered one, 72.0), and a `w:ind` in that same
+style stands (left 300 hanging 100: 82.1 and 87.2). A direct left alone drops the hanging (87.2
+on both lines), a direct hanging alone the left (61.9, 72.0), a direct firstLine likewise (82.1,
+72.0). Until 17.3.6 only what equalled the level's went, so 2_Question's own 454/454 stayed in
+corpus document 4083: its header row wrapped short and stood 10pt taller, and its "you" and
+"your partner" heads stood 22.9pt left of Word's. Where the style's `w:numPr` names no list the
+rule does not apply; a level with no `w:ind` of its own is not measured.
 
 <a id="s28font"></a>**A level `w:rPr` which names no font** - Word writes
 `<w:rFonts w:hint="default"/>`, which says only how to choose between fonts it does not
@@ -1849,7 +1862,7 @@ and so breaks the line, and the "12" after it is drawn at **x=90.0** - not at th
 indent, but on the 360-twip stop (72 + 18) which the re-measured tab reaches from the start
 of the new line. docx4j had broken a word earlier, before "number".
 
-Three kinds of tab do **not** break the line, each measured on a corpus document the rule
+Four kinds of tab do **not** break the line, each measured on a corpus document the rule
 first cost a page:
 
 - a tab whose stop draws a **leader** fills to the end of the line instead. A prospectus
@@ -1876,6 +1889,16 @@ first cost a page:
   `tab-leader-trailing`, whose second trailing tab starts 1.35pt short of the line's end
   rather than on it - not enough of a difference to rest a rule on, so the probe keeps a
   13.2pt gap there.
+- below compatibility mode 15, a tab reaching a **custom** left stop past its **cell's** edge
+  (`docx4j:tab-past-cell`, on the renderer's hook `tab-past-cell`). Measured on
+  `tab-trailing-narrow-cell`: `0<tab>` with a stop at 720 in a cell 13pt wide inside is one line
+  at mode 12 and two at mode 15; in a cell 24pt wide inside the same; a stop of the default grid
+  past the edge breaks at both modes. Corpus document 4083's date row was 11pt too tall for it.
+  Mode 14 is not measured, nor the body (`tab-clamp-right` is mode 15).
+  **Known limit, accepted (Jason, 5 November 2026):** text after such a tab is past the cell's
+  edge. Word does not draw it, `0<tab>1`'s "1" being absent from its text layer; docx4j draws it,
+  over the next cell (x 108 over a cell starting at 95.8). No corpus document has a custom stop
+  past a cell with text after the tab, so the hiding is not built.
 - where what precedes the tab **does not itself fit**, the ordinary break wins: the line
   breaks at the last opportunity that did and the tab is measured again on the line it lands
   on. Measured on a form whose cell holds `1.1<tab>Technische Freigabe erteilt<tab>o`, which
@@ -3837,7 +3860,16 @@ and 63.1; a `w:tblInd` is added (566 twips: 102.5 and 96.8), where mode 15 ignor
 Word's re-save drops that `w:tblInd`, so only the original file shows it, and drops a `tblpX` of 0: no `w:tblpX` is 0 (probe
 `float-foot-edges` at mode 12: the text on the margin). A grid that stands left of the column stands out of the float's wrapper by that
 much, which keeps the band Word keeps clear (the strip beside it at 469.8, where it was 5.1pt right). `tblpXSpec`, `w:jc` and bidi
-tables below mode 15 are not measured, nor one with no `w:tblpX` on the page.
+tables below mode 15 are not measured, nor one with no `w:tblpX` on the page; `tblpXSpec` now is, below.
+
+**`tblpXSpec` below mode 15.** Probe `table-floating-xspec`, a 150pt table in a 451.3pt column, text x at mode 12 against 15:
+`left` is a `tblpX` of 0, the text on the frame's edge (72.0, 77.8; of the page 0.0, 5.8). `center` is the grid centred at both
+(228.1, the frame the column, the page or the text; 233.6 with 10.8pt cell margins), half a `w:tblInd` added below mode 15 (242.3
+with 566, 228.1 at mode 15). `right` stands one cell margin further out (384.4, 378.6). `inside` and `outside` are not measured.
+A float of `center` used to get the cell margin back as a nested table does, so 4083's C.2 options stood 6.1pt right of Word's.
+A table placed by `right` of the page, too wide for the band, stays in the flow without that margin: 450.8, Word's 456.4.
+Word's re-save drops `tblpXSpec="left"`, so the same probe measures no `tblpX` on the page: the frame's edge, 0.0 and 5.8, where
+docx4j keeps the edge `applyStartIndent` gave it (82.8, 77.6). No corpus document has that shape, so nothing is built for it.
 
 **Vertically** Word measures the position from the page (`vertAnchor="page"`), from the
 margin box (`vertAnchor="margin"`, or any `tblpYSpec`) or - the default, and 136 of the 152
@@ -5576,6 +5608,39 @@ table-cell paragraphs, anchored relative to the paragraph, and our vertical orig
 was already about 10pt below Word's, so the correct inset takes them further off. That is
 the vertical origin of text-relative boxes in cells (ledger4's M22), still open.
 
+<a id="s92boxfollows"></a>**A box goes with its paragraph, and its text starts at its top
+(17.3.6).** FOP may break between two block-level children, so a box's zero-height wrapper could
+stay at a page's foot while its paragraph's first line went over: `vml-box-page-top`'s K9, Word's
+box beside its line on the next page. The wrapper now keeps with what follows it in the block; in
+a paragraph with no text the keep becomes the paragraph's, and the paragraph goes over. A tall box
+left at the foot ran off the page, drawn past its edge where a text extraction does not see it:
+561's three captions at y 981.8 on a page 842 high, 1616's seven lines at 728.7 on one of 612. They
+now stand within 0.2pt of Word's, and 101.0pt below the paragraph before, Word's 101.1. 3229's
+"Spider" pair is on Word's page. What Word does with a box whose anchor really is too low for it
+is not measured. And `display-align` is inherited, so a box in a
+cell of `w:vAlign` bottom or center set its text at the box's foot or middle: Word's X in 4083's
+"you" heads stands the same distance from the anchor whatever the box's height, docx4j's 5.9 to
+8.2pt, and in one row of 3229 two boxes 5.05pt apart by `margin-top` stood 10.1pt apart. A box
+states `display-align` before. Its own `v-text-anchor` is not read.
+
+<a id="s92besidefloat"></a>**A box beside a floating table (17.3.6).** Where the box's paragraph
+stands beside a float on the start side, the box's horizontal reference decides. Measured on
+`vml-box-float-edge`, margin-left 29.4pt, a float 204pt wide: relative to the text the box moves
+with its line at mode 12 (305.6) and stays on the column at mode 15 (101.8); relative to the margin
+it stands at 101.8 and to the page at 29.8 at both; beside a float on the right nothing moves.
+`fox:x-reference="column"` says which (hook `box-x-from-column`); mode 14 is not measured, nor a
+DrawingML box. And a paragraph kept with the one above, wholly past a float's foot, is no longer
+set beside it: the float's end edge may fall at that keep (the renderer's CR-038; 4083's B.3).
+
+<a id="s92pagetop"></a>**A box in the paragraph opening a page hangs from the page's top (17.3.6).**
+It is the same rule as below: the box hangs from its paragraph's top. What FO discards of the
+space-before at a page's top cannot be known when the FO is written, so `fox:top-space` states what
+`top` stepped back over and the renderer gives back what the block did not keep, only where it
+opens the column (hook `box-top-space`). Measured on `vml-box-page-top`, margin-top 10pt, 18pt
+before: Word's box text at 91.7 in every case, with its line at 99.4 (the document's first
+paragraph), 81.4 (a natural break, a w:br page), 82.8 under a top border, 89.3 (a section).
+4083's B.7, 17.9pt high before.
+
 <a id="s92spacebefore"></a>**A VML box relative to the text is measured from above its
 paragraph's space-before (17.3.1).** Measured on `vml-box-anchor-space-before`: boxes at
 `margin-top` 0, -1.2 and 10pt in paragraphs with space-before 0, 6 and 18pt, in the body and
@@ -6135,6 +6200,9 @@ Word layout is on, and read by the layout managers:
 | `docx4j:tabs`, `docx4j:tab-default`, `docx4j:tab-ind` | paragraph block | the resolved tab stops (§4.4) |
 | `docx4j:tab` | `fo:leader` | this leader is a tab, to be sized during layout |
 | `docx4j:space-shrink` | `fo:root` | `0` below compatibility mode 15 (§4.2) |
+| `docx4j:tab-past-cell` | `fo:root` | `true` below compatibility mode 15: a tab may reach a custom left stop past its cell's edge (§4.4) |
+| `fox:x-reference` | absolute `fo:block-container` | `column`: its x takes no float's intrusion (§9.2) |
+| `fox:top-space` | absolute `fo:block-container` | the space-before its `top` stepped back over (§9.2) |
 | `docx4j:hyphenation-zone` | `fo:root` | `w:hyphenationZone` in twips (§4.7) |
 | `docx4j:hyphen-limit` | `fo:root` | `w:consecutiveHyphenLimit`, where it is not 0 |
 | `docx4j:hyphenate-caps` | `fo:root` | `false` for `w:doNotHyphenateCaps` |

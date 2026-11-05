@@ -1894,15 +1894,16 @@ public class StyleUtil {
 				&& numPr.getNumId().getVal().signum() == 0;
 	}
 
-	/** Take out of an indent the components a numbering level contributed. @since 17.1.0 */
-	private static void dropNumberingInd(Ind ind, Ind fromLevel) {
-		if (ind == null || fromLevel == null) return;
-		if (fromLevel.getLeft() != null && fromLevel.getLeft().equals(ind.getLeft())) ind.setLeft(null);
-		if (fromLevel.getRight() != null && fromLevel.getRight().equals(ind.getRight())) ind.setRight(null);
-		if (fromLevel.getHanging() != null && fromLevel.getHanging().equals(ind.getHanging())) ind.setHanging(null);
-		if (fromLevel.getFirstLine() != null && fromLevel.getFirstLine().equals(ind.getFirstLine())) ind.setFirstLine(null);
-		if (fromLevel.getStart() != null && fromLevel.getStart().equals(ind.getStart())) ind.setStart(null);
-		if (fromLevel.getEnd() != null && fromLevel.getEnd().equals(ind.getEnd())) ind.setEnd(null);
+	/** What w:numId 0 leaves of the indent it inherits: the right one. @since 17.3.6 */
+	private static void dropLeftAndFirstLine(Ind ind) {
+		ind.setLeft(null);
+		ind.setLeftChars(null);
+		ind.setStart(null);
+		ind.setStartChars(null);
+		ind.setHanging(null);
+		ind.setHangingChars(null);
+		ind.setFirstLine(null);
+		ind.setFirstLineChars(null);
 	}
 	
 	/**
@@ -1937,17 +1938,25 @@ public class StyleUtil {
 			 * <w:numPr><w:ilvl w:val="0"/><w:numId w:val="0"/></w:numPr> and
 			 * <w:ind w:left="720"/>: Word draws it at x=78.5..541.2 and we drew the same
 			 * 462pt of text at 20.9..483.1, exactly 57.6pt left, on ten paragraphs.
-			 * Only the components the inherited level contributed are dropped, so a
-			 * w:ind the style states itself survives.  @since 17.1.0 */
+			 * @since 17.1.0
+			 * And it clears every left, hanging and first-line indent inherited so far,
+			 * wherever stated, the right indent staying; only a w:ind stated with the
+			 * w:numId 0, or below it, counts.  Measured on probe numbering-off-style-ind
+			 * (Word's goldens of 5 November 2026, modes 12 and 15 alike): a numbered style's
+			 * own w:ind, left 454 hanging 454 right 57, drawn at the margin and 2.85pt
+			 * short of the right one; the same for a w:ind on the style it is based on, and
+			 * on a style based on the numbered one; a direct left alone drops the hanging, a
+			 * direct hanging alone the left.  Until 17.3.6 only what equalled the level's
+			 * went, on a reading no probe had tried: corpus document 4083's header row
+			 * wrapped short and stood 10pt taller.  @since 17.3.6 */
 			if (numberingDefinitionsPart != null && numberingOff(source.getNumPr())
 					&& inheritedNumPr != null && inheritedNumPr.getNumId() != null
-					&& !numberingOff(inheritedNumPr) && destination.getInd() != null) {
-				Ind fromLevel = numberingDefinitionsPart.getInd(inheritedNumPr);
-				if (fromLevel != null) {
-					Ind own = XmlUtils.deepCopy(destination.getInd());
-					dropNumberingInd(own, fromLevel);
-					destination.setInd(own);
-				}
+					&& !numberingOff(inheritedNumPr) && destination.getInd() != null
+					&& numberingDefinitionsPart.getInstanceListDefinitions().get(
+							inheritedNumPr.getNumId().getVal().toString()) != null) {
+				Ind own = XmlUtils.deepCopy(destination.getInd());
+				dropLeftAndFirstLine(own);
+				destination.setInd(own);
 			}
 
 			/* comment copied from org.docx4j.convert.out.fo.XsltFOFunctions

@@ -52,9 +52,29 @@ public class NumIdZeroIndentTest extends AbstractXSLFOTest {
 			"<w:styles " + W + ">"
 			+ "<w:style w:type=\"paragraph\" w:styleId=\"Numbered\"><w:name w:val=\"Numbered\"/>"
 			+ "<w:pPr><w:numPr><w:ilvl w:val=\"0\"/><w:numId w:val=\"1\"/></w:numPr></w:pPr>"
-			+ "</w:style></w:styles>";
+			+ "</w:style>"
+			// a numbered style stating its own w:ind, as corpus document 4083's 2_Question
+			+ "<w:style w:type=\"paragraph\" w:styleId=\"OwnInd\"><w:name w:val=\"OwnInd\"/>"
+			+ "<w:pPr><w:numPr><w:numId w:val=\"1\"/></w:numPr>"
+			+ "<w:ind w:left=\"454\" w:right=\"57\" w:hanging=\"454\"/></w:pPr></w:style>"
+			// a w:ind on the style a numbered one is based on
+			+ "<w:style w:type=\"paragraph\" w:styleId=\"IndBase\"><w:name w:val=\"IndBase\"/>"
+			+ "<w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr></w:style>"
+			+ "<w:style w:type=\"paragraph\" w:styleId=\"OnBase\"><w:name w:val=\"OnBase\"/>"
+			+ "<w:basedOn w:val=\"IndBase\"/><w:pPr><w:numPr><w:numId w:val=\"1\"/></w:numPr></w:pPr></w:style>"
+			// w:numId 0 in a style, as 3_tableHead; and with a w:ind of its own
+			+ "<w:style w:type=\"paragraph\" w:styleId=\"Switch\"><w:name w:val=\"Switch\"/>"
+			+ "<w:basedOn w:val=\"OwnInd\"/><w:pPr><w:numPr><w:numId w:val=\"0\"/></w:numPr></w:pPr></w:style>"
+			+ "<w:style w:type=\"paragraph\" w:styleId=\"SwitchInd\"><w:name w:val=\"SwitchInd\"/>"
+			+ "<w:basedOn w:val=\"OwnInd\"/><w:pPr><w:numPr><w:numId w:val=\"0\"/></w:numPr>"
+			+ "<w:ind w:left=\"300\" w:hanging=\"100\"/></w:pPr></w:style>"
+			+ "</w:styles>";
 
 	private static org.w3c.dom.Document fo(String pPr, int flags) throws Exception {
+		return fo("Numbered", pPr, flags);
+	}
+
+	private static org.w3c.dom.Document fo(String style, String pPr, int flags) throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		pkg.getMainDocumentPart().getStyleDefinitionsPart().setJaxbElement(
 				(Styles) XmlUtils.unmarshalString(STYLES));
@@ -63,7 +83,7 @@ public class NumIdZeroIndentTest extends AbstractXSLFOTest {
 		pkg.getMainDocumentPart().addTargetPart(ndp);
 		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
 				"<w:document " + W + "><w:body>"
-				+ "<w:p><w:pPr><w:pStyle w:val=\"Numbered\"/>" + pPr + "</w:pPr>"
+				+ "<w:p><w:pPr><w:pStyle w:val=\"" + style + "\"/>" + pPr + "</w:pPr>"
 				+ "<w:r><w:t>heading</w:t></w:r></w:p>"
 				+ "</w:body></w:document>"));
 		FOSettings foSettings = Docx4J.createFOSettings();
@@ -98,6 +118,41 @@ public class NumIdZeroIndentTest extends AbstractXSLFOTest {
 		assertNotNull("un-numbered paragraph", notNumbered);
 		assertEquals("numId 0 leaves only the paragraph's own w:ind left=720",
 				"36pt", notNumbered.getAttribute("start-indent"));
+
+		// probe numbering-off-style-ind, Word's goldens of 5 November 2026
+		final String OFF = "<w:numPr><w:ilvl w:val=\"0\"/><w:numId w:val=\"0\"/></w:numPr>";
+		assertIndents("N1, the style's own left and hanging go, its right stays",
+				"", "", "2.85pt", fo("OwnInd", OFF, flags));
+		assertIndents("N4, and the w:ind of the style it is based on",
+				"", "", "", fo("OnBase", OFF, flags));
+		assertIndents("N7, w:numId 0 in a style", "", "", "2.85pt", fo("Switch", "", flags));
+		assertIndents("N8, a w:ind in the style that switches off stands",
+				"15pt", "-5pt", "2.85pt", fo("SwitchInd", "", flags));
+		assertIndents("N10, a direct left, no hanging", "15pt", "", "2.85pt",
+				fo("OwnInd", OFF + "<w:ind w:left=\"300\"/>", flags));
+		assertIndents("N11, a direct hanging, no left", "", "-10pt", "2.85pt",
+				fo("OwnInd", OFF + "<w:ind w:hanging=\"200\"/>", flags));
+		assertIndents("N14, w:numId 0 in a style, a direct left", "7.1pt", "", "2.85pt",
+				fo("Switch", "<w:ind w:left=\"142\"/>", flags));
+	}
+
+	/** Each indent as the paragraph's block states it, "" for none. */
+	private static void assertIndents(String message, String start, String text, String end,
+			org.w3c.dom.Document doc) {
+		Element block = null;
+		NodeList nl = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "block");
+		for (int i = 0; i < nl.getLength(); i++) {
+			Element el = (Element) nl.item(i);
+			if (el.getTextContent().contains("heading")) block = el; // the innermost, last in document order
+		}
+		assertNotNull(message, block);
+		assertEquals(message + ": start-indent", start, none(block.getAttribute("start-indent")));
+		assertEquals(message + ": text-indent", text, none(block.getAttribute("text-indent")));
+		assertEquals(message + ": end-indent", end, none(block.getAttribute("end-indent")));
+	}
+
+	private static String none(String length) {
+		return "0pt".equals(length) || "0mm".equals(length) ? "" : length;
 	}
 
 	@Test

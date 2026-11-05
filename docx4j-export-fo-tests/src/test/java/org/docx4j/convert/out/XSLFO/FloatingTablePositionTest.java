@@ -285,6 +285,33 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 		assertEquals("the table's column", TABLE_PT - 5.4, floatColumns(margin)[0], 0.01);
 	}
 
+	/** w:tblpXSpec below mode 15 (probe table-floating-xspec): centre is the grid centred, with
+	 *  no shift given back, half a w:tblInd added, which mode 15 ignores; left is no w:tblpX.
+	 *  @since 17.3.6 */
+	private void checkXSpecByMode(int flags) throws Exception {
+		String centre = "<w:tblpPr w:vertAnchor=\"text\" w:horzAnchor=\"margin\" w:tblpXSpec=\"center\" w:tblpY=\"300\"/>";
+		double centred = (COLUMN_PT - TABLE_PT) / 2;
+		org.w3c.dom.Document doc = fo(body(centre), flags, "12");
+		assertEquals("mode 12: the grid centred", centred, floatColumns(doc)[0], 0.06);
+		assertEquals("and no cell margin given back", 0, pt(innerTable(doc).getAttribute("start-indent")), 0.01);
+		assertEquals("mode 15 likewise", centred, floatColumns(fo(body(centre), flags, "15"))[0], 0.06);
+		String indented = body(centre + "<w:tblInd w:w=\"200\" w:type=\"dxa\"/>");
+		// past the column's middle now, so a float on the right: the pad is on that side
+		assertEquals("mode 12: half a w:tblInd added", COLUMN_PT - (centred + 5) - TABLE_PT,
+				floatColumns(fo(indented, flags, "12"))[1], 0.06);
+		assertEquals("mode 15: w:tblInd ignored", centred, floatColumns(fo(indented, flags, "15"))[0], 0.06);
+		doc = fo(body("<w:tblpPr w:vertAnchor=\"text\" w:horzAnchor=\"margin\" w:tblpXSpec=\"left\" w:tblpY=\"300\"/>"), flags, "12");
+		assertEquals("mode 12: left is the text on the column", -5.4, pt(innerTable(doc).getAttribute("start-indent")), 0.01);
+	}
+
+	@Test public void xSpecByModeVisitor() throws Exception {
+		checkXSpecByMode(Docx4J.FLAG_NONE);
+	}
+
+	@Test public void xSpecByModeXslt() throws Exception {
+		checkXSpecByMode(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
 	/** The table a float's one-row wrapper holds. */
 	private static Element innerTable(org.w3c.dom.Document doc) {
 		return (Element) doc.getElementsByTagNameNS(FO_NS, "table").item(1);

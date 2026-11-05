@@ -80,6 +80,9 @@ public final class WordLayoutElementMapping {
 	 *  only does that from compatibility mode 15 (the Word 2013 layout engine); for
 	 *  an older document docx4j writes 0.  @since 17.0.5 */
 	public static final String SPACE_SHRINK = "space-shrink";
+	/** on fo:root: "true" below compatibility mode 15, where Word honours a custom left tab stop past a
+	 *  cell's edge and does not break the line there.  @since 17.3.6 */
+	public static final String TAB_PAST_CELL = "tab-past-cell";
 
 	/** on fo:root: w:hyphenationZone in twips - the largest gap this document's Word
 	 *  engine tolerates at the end of a line before it hyphenates the next word.

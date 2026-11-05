@@ -274,6 +274,8 @@ public class FOTextBoxes {
 		}
 
 		Element container = createContainer(doc, kind(wrapType), w, h, x, y, colW, mL, inset);
+		// what x is relative to, for a float beside it (WordLayoutFixups.anchorTextBox)
+		if (ownVml) container.setAttribute(WordLayoutFixups.HINT_ANCHOR_HREF, relH == null ? "text" : relH);
 		/* Square, tight and through let text run beside the box; the fixups keep its band
 		 * clear when it is too wide to be positioned alone (WordLayoutFixups.textBesideBand).
 		 * Word's VML defaults are 9pt left and right.  @since 17.3.1 */

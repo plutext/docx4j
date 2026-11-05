@@ -212,7 +212,20 @@ public final class FopCapabilities {
 		 *  draws a paragraph's first line after an anchored object.  With it docx4j leaves the indent on the
 		 *  block ({@link WordLayoutFixups}: no leader for a first-line indent, no nested block for a hanging
 		 *  one).  @since 17.3.6 */
-		FIRST_LINE_INDENT_AFTER_BLOCK("first-line-indent-after-block");
+		FIRST_LINE_INDENT_AFTER_BLOCK("first-line-indent-after-block"),
+		/** {@code fox:x-reference="column"} on a positioned box: its x takes no float's intrusion (fork
+		 *  CR-038).  Word keeps a box relative to the margin or the page where it is, and one relative to
+		 *  the text from mode 15; below mode 15 that one moves with its line (probe vml-box-float-edge).
+		 *  {@link WordLayoutFixups}.  @since 17.3.6 */
+		BOX_X_FROM_COLUMN("box-x-from-column"),
+		/** {@code fox:top-space} on a positioned box: the space-before its {@code top} steps back over,
+		 *  given back where the block opens the column and FO kept less of it (fork CR-038; probe
+		 *  vml-box-page-top).  {@link WordLayoutFixups}.  @since 17.3.6 */
+		BOX_TOP_SPACE("box-top-space"),
+		/** {@code docx4j:tab-past-cell} on fo:root: a tab reaching a custom left stop past its cell's edge
+		 *  is honoured, as Word does below mode 15 (fork CR-038; probe tab-trailing-narrow-cell).
+		 *  {@link WordLayoutFixups}.  @since 17.3.6 */
+		TAB_PAST_CELL("tab-past-cell");
 
 		private final String key;
 

@@ -1291,7 +1291,49 @@ public class WordLayoutFixupsTest {
 		String out = WordLayoutFixups.apply(flow(
 				textBox("<fo:block break-before=\"page\" keep-with-next.within-page=\"always\">x</fo:block>")), 15);
 		assertFalse("a page break inside a text box loses the box: " + out, out.contains("break-before"));
-		assertFalse(out.contains("keep-with-next"));
+		// the wrapper outside the box keeps with its line (probe vml-box-page-top's K9); nothing inside does
+		String inside = out.substring(out.indexOf("absolute-position"));
+		assertFalse(out, inside.contains("keep-with-next"));
+	}
+
+	/** What fork CR-038's hooks are told, by the box's reference and the mode.  @since 17.3.6 */
+	private static String withBoxHooks(boolean on, String href, String y, int mode) {
+		String box = "<fo:block " + NS + " docx4j-pstyle=\"A\" space-before=\"18pt\">"
+				+ "<fo:block-container docx4j-anchor=\"none\" docx4j-anchor-w=\"60pt\""
+				+ " docx4j-anchor-h=\"30pt\" docx4j-anchor-x=\"29.4pt\" docx4j-anchor-col=\"451pt\""
+				+ " docx4j-anchor-ml=\"72pt\" docx4j-anchor-y=\"" + y + "\" docx4j-anchor-href=\"" + href + "\">"
+				+ "<fo:block>x</fo:block></fo:block-container>the line</fo:block>";
+		WordLayoutFixups.boxAndTabHooksForTest = on;
+		try {
+			return WordLayoutFixups.apply(flow(box), mode);
+		} finally {
+			WordLayoutFixups.boxAndTabHooksForTest = null;
+		}
+	}
+
+	@Test
+	public void aBoxSaysWhatItsXIsRelativeTo() {
+		final String COLUMN = "x-reference=\"column\"";
+		assertTrue("margin, at any mode", withBoxHooks(true, "margin", "t:10pt", 12).contains(COLUMN));
+		assertTrue("page, at any mode", withBoxHooks(true, "page", "t:10pt", 12).contains(COLUMN));
+		assertTrue("text from mode 15", withBoxHooks(true, "text", "t:10pt", 15).contains(COLUMN));
+		assertFalse("text below it moves with its line", withBoxHooks(true, "text", "t:10pt", 12).contains(COLUMN));
+		assertFalse("not without the hook", withBoxHooks(false, "margin", "t:10pt", 15).contains(COLUMN));
+	}
+
+	@Test
+	public void aBoxSaysTheSpaceItsTopStepsBackOver() {
+		assertTrue(withBoxHooks(true, "text", "t:10pt", 15).contains("top-space=\"18pt\""));
+		assertFalse("measured from after the space", withBoxHooks(true, "text", "p:10pt", 15).contains("top-space"));
+		assertFalse("not without the hook", withBoxHooks(false, "text", "t:10pt", 15).contains("top-space"));
+	}
+
+	@Test
+	public void aTabMayPassACellBelowMode15() {
+		final String ROOT = "tab-past-cell=\"true\"";
+		assertTrue(withBoxHooks(true, "text", "t:10pt", 12).contains(ROOT));
+		assertFalse(withBoxHooks(true, "text", "t:10pt", 15).contains(ROOT));
+		assertFalse("not without the hook", withBoxHooks(false, "text", "t:10pt", 12).contains(ROOT));
 	}
 
 	// ------------------------------------------------------------------- flow start

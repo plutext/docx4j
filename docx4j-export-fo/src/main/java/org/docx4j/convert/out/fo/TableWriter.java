@@ -467,16 +467,37 @@ public class TableWriter extends AbstractTableWriter {
 			 * the position; and the wrapper a float sits in is no cell, so the shift is not
 			 * given back as a nested table's is (WordLayoutFixups.nestedTableGridEdge).  No
 			 * w:tblpX is 0: Word's re-save drops a 0, and probe float-foot-edges' tables at the
-			 * margin have their text on it at mode 12.  A w:tblpXSpec, w:jc or bidi table below
-			 * mode 15 is not measured, nor one with no w:tblpX on the page.  @since 17.3.6 */
-			textEdge = compatibilityMode(context) < 15 && xSpec == null && !bidiVisual
+			 * margin have their text on it at mode 12.  A w:jc or bidi table below mode 15 is
+			 * not measured, nor one with no w:tblpX on the page.  @since 17.3.6
+			 * w:tblpXSpec below mode 15, probe table-floating-xspec (Word's goldens of 5
+			 * November 2026, mode 12 against 15): left is a w:tblpX of 0, the text on the frame's
+			 * edge (72.0, the page's 0.0; 77.8 and 5.8 at mode 15).  Centre is the grid centred,
+			 * as in mode 15 (text 228.1 at both, the frame the column or the page; 233.6 with
+			 * 10.8pt cell margins), the shift not given back, and half a w:tblInd added, which
+			 * mode 15 ignores (242.3 with 566, 228.1).  Right stands one cell margin further out
+			 * than in mode 15 (384.4 against 378.6), which the give-back of the shift does.
+			 * Inside and outside are not measured. */
+			boolean below15 = compatibilityMode(context) < 15;
+			textEdge = below15 && (xSpec == null || org.docx4j.wml.STXAlign.LEFT.equals(xSpec)) && !bidiVisual
 					&& !org.docx4j.wml.JcEnumeration.CENTER.equals(jc) && !org.docx4j.wml.JcEnumeration.RIGHT.equals(jc)
 					&& !org.docx4j.wml.JcEnumeration.END.equals(jc);
 			// the frame's own position, with no grid-edge shift in it
 			if (textEdge) {
 				if (xInFrame != null) indent += frameLeft - marginLeft + xInFrame;
 			} else if (xInFrame != null) {
-				indent = frameLeft - marginLeft + xInFrame;
+				int halfTblInd = 0;
+				if (below15 && org.docx4j.wml.STXAlign.CENTER.equals(xSpec) && !bidiVisual) {
+					// the w:tblInd itself: a table of w:jc center has come here with its centring
+					if (tblPr != null && tblPr.getTblInd() != null && tblPr.getTblInd().getW() != null
+							&& (tblPr.getTblInd().getType() == null || "dxa".equals(tblPr.getTblInd().getType()))
+							&& !org.docx4j.wml.JcEnumeration.CENTER.equals(jc)
+							&& !org.docx4j.wml.JcEnumeration.RIGHT.equals(jc)
+							&& !org.docx4j.wml.JcEnumeration.END.equals(jc)) {
+						halfTblInd = tblPr.getTblInd().getW().intValue() / 2;
+					}
+					tableRoot.removeAttribute(WordLayoutFixups.HINT_GRID_SHIFT);
+				}
+				indent = frameLeft - marginLeft + xInFrame + halfTblInd;
 				gridShift = 0;
 			}
 			/* and the edge of the table Word puts there (WordLayoutFixups.tableBorderEdges):
