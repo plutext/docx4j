@@ -73,6 +73,9 @@ import org.xml.sax.InputSource;
  *   at the cell edges.  The first block of a cell gets
  *   space-before.conditionality="retain", the last space-after.conditionality
  *   ="retain" (mode 15 and later).</li>
+ * <li><b>Text boxes.</b> Word applies the first paragraph's space-before at the
+ *   top of a text box too; FO discards it at the container's edge
+ *   (resetTextBox).</li>
  * </ol>
  *
  * Disable with docx4j property docx4j.convert.out.fo.wordLayoutFixups=false.
@@ -165,6 +168,7 @@ public final class WordLayoutFixups {
 	public static void apply(Document doc, org.docx4j.model.CompatibilityOptions compat,
 			org.docx4j.model.HyphenationSettings hyphenation) {
 		int compatibilityMode = compat.mode();
+		tabsAfterCheckBoxes(doc); // before lineBoxAttributes, which turns the tab hint into the line manager's
 		disregardBaselineShifts(doc);
 		combineLetterSpacing(doc);
 		imageOnlyLineBox(doc);
@@ -222,6 +226,7 @@ public final class WordLayoutFixups {
 		fieldErrorWeights(doc);
 		hangingIndentAfterLeadingBlock(doc); // after every pass that reads a paragraph's own inline children; before StyleRefMarkers, whose markers lead the block
 		anchoredContentTakesNoTextIndent(doc); // after the two first-line passes, which take a positive indent off the block
+		anchoredContentTakesNoRunFormatting(doc);
 		containersTakeNoTextIndent(doc);
 		StyleRefMarkers.apply(doc); // before stripHints: it reads the paragraph-style hint
 		pageMastersByContent(doc); // after every fixup which moves or drops blocks
@@ -437,6 +442,7 @@ public final class WordLayoutFixups {
 			if (!(n instanceof Element)) continue;
 			Element child = (Element) n;
 			if (isFo(child, "block-container") || isFo(child, "float")) continue; // out of the flow
+			if (isCheckBox(child)) continue; // no picture: the line is its run's, the box lifts nothing
 			if (isFo(child, "external-graphic") || isFo(child, "instream-foreign-object")) {
 				/* An anchored picture is about to be lifted into a positioned container
 				 * (anchorImages), so it is not on this line at all - Word floats it.  It
@@ -3329,6 +3335,24 @@ public final class WordLayoutFixups {
 	 *
 	 * @since 17.3.6
 	 */
+	/** A box's or a floating table's text is its own, in black and upright where it says
+	 *  nothing, but FO inherits the colour, weight and slant of the paragraph it is anchored in.
+	 *  Corpus document 4083: the check marks in its question headings' boxes, and the option
+	 *  tables floated there, came out in the heading's bold crimson.  @since 17.3.6 */
+	private static void takesNoRunFormatting(Element anchored) {
+		if (!anchored.hasAttribute("color")) anchored.setAttribute("color", "#000000");
+		if (!anchored.hasAttribute("font-weight")) anchored.setAttribute("font-weight", "normal");
+		if (!anchored.hasAttribute("font-style")) anchored.setAttribute("font-style", "normal");
+	}
+
+	/** {@link #takesNoRunFormatting} for floats and positioned containers.  @since 17.3.6 */
+	static void anchoredContentTakesNoRunFormatting(Document doc) {
+		for (Element el : elements(doc, "float")) takesNoRunFormatting(el);
+		for (Element el : elements(doc, "block-container")) {
+			if (el.hasAttribute("absolute-position")) takesNoRunFormatting(el);
+		}
+	}
+
 	static void anchoredContentTakesNoTextIndent(Document doc) {
 		for (Element block : elements(doc, "block")) {
 			if (!block.hasAttribute(HINT_PSTYLE)) continue;
@@ -3795,15 +3819,87 @@ public final class WordLayoutFixups {
 	 * w:pageBreakBefore, came out with one line a page against Word's nine (3167
 	 * reference lines against our 335).</p>
 	 *
+	 * <p><b>Space before.</b> Word keeps the first paragraph's space-before at the top of
+	 * the box, where FO discards it at the container's edge.  Measured on corpus document
+	 * 4083, whose check marks are VML boxes holding a Normal paragraph (6pt before): 14 of
+	 * its 18 drew 5.3 to 6.8pt high, and with the space kept all but one lie within 0.3pt
+	 * of the text round them.  (Its eight pound signs and three address lines then read 9
+	 * to 10pt low: so do their table rows, whose heights are another defect.)
+	 * @since 17.3.6</p>
+	 *
 	 * @since 17.1.0
 	 */
 	private static void resetTextBox(Element box) {
 		box.setAttribute("text-align", "start");
 		box.setAttribute("text-align-last", "relative");
 		box.setAttribute("text-indent", "0pt");
+		takesNoRunFormatting(box);
 		// start-indent and end-indent are the box's own inset (FOTextBoxes.createContainer)
 		// and must not be reset here: they are what puts the text inside the shape.
 		dropPagination(box);
+		Element first = firstElementChild(box);
+		Element spaced = first == null ? null : spacedEdge(first, "space-before", true);
+		if (spaced != null) spaced.setAttribute("space-before.conditionality", "retain");
+	}
+
+	/** The class of the svg:svg a legacy check box is drawn in (FldSimpleWriter).  @since 17.3.6 */
+	static final String CHECK_BOX_CLASS = "docx4j-form-checkbox";
+
+	/**
+	 * A tab that opens a paragraph is written as a leader of a fixed length, from the line's
+	 * start to the stop it reaches, and a check box before it counts for nothing there (it is
+	 * no text: corpus document 7235's {@code FORMCHECKBOX<tab>text} must not become a table of
+	 * contents entry).  But the box has an advance, so that length would set the text past
+	 * the stop by the box's width, and a box wider than the first stop passes it.  So the
+	 * tab is laid out instead, from where the box ends.
+	 *
+	 * @since 17.3.6
+	 */
+	static void tabsAfterCheckBoxes(Document doc) {
+		for (Element object : elements(doc, "instream-foreign-object")) {
+			if (!isCheckBox(object)) continue;
+			Element leader = leaderAfter(object);
+			if (leader == null || leader.hasAttribute(HINT_TAB) || !leader.hasAttribute("leader-length")) continue;
+			leader.setAttribute("leader-length", "0pt");
+			leader.setAttribute("leader-alignment", "reference-area");
+			leader.setAttribute(HINT_TAB, "1");
+		}
+	}
+
+	private static boolean isCheckBox(Element el) {
+		if (!isFo(el, "instream-foreign-object")) return false;
+		Element svg = firstElementChild(el);
+		return svg != null && CHECK_BOX_CLASS.equals(svg.getAttribute("class"));
+	}
+
+	/** The fo:leader next after this element in its block, if nothing but empty inlines comes between. */
+	private static Element leaderAfter(Element from) {
+		Node n = following(from);
+		while (n != null) {
+			if (n instanceof org.w3c.dom.Text) {
+				if (!n.getNodeValue().trim().isEmpty()) return null;
+				n = following(n);
+			} else if (!(n instanceof Element)) {
+				n = following(n);
+			} else if (isFo((Element) n, "leader")) {
+				return (Element) n;
+			} else if (isFo((Element) n, "inline")) {
+				n = n.getFirstChild() != null ? n.getFirstChild() : following(n);
+			} else {
+				return null;
+			}
+		}
+		return null;
+	}
+
+	/** The node after this one and its descendants, no further than the end of its block. */
+	private static Node following(Node n) {
+		while (n != null) {
+			if (n.getNextSibling() != null) return n.getNextSibling();
+			n = n.getParentNode();
+			if (n instanceof Element && isFo((Element) n, "block")) return null;
+		}
+		return null;
 	}
 
 	/**

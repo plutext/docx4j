@@ -342,6 +342,95 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		registerHandler(new PagerefHandler());
 		registerHandler(new NumpagesHandler());
 		registerHandler(new SectionpagesHandler());
+		registerHandler(new FormCheckBoxHandler());
+	}
+
+	/**
+	 * A legacy check box, drawn as Word draws it: a stroked square with nothing in the text
+	 * layer, what follows set past it.  The instruction is {@code FormCheckBoxes}'; one
+	 * that is not (a document's own fldSimple) keeps its stored result.
+	 *
+	 * <p>Measured on probe formcheckbox-metrics (Word's goldens, 5 November 2026; Arial and
+	 * Times New Roman alike, modes 12 and 15 alike, 7 to 36pt): at a size s the square's side
+	 * is 1.15s - 2.45 and it stands 0.98 from the line's position, a 0.72pt line drawn on
+	 * those edges; the text after it starts 2.4 past the side; its foot is 0.219s - 1.42
+	 * below the baseline.  Each within 0.25pt: Word's own values fall on a grid of 0.24pt.  A
+	 * checked box adds both diagonals, a 0.48pt line, running 0.24 past the far corner.  A
+	 * box the size of its run lifts neither the line nor a table row.</p>
+	 *
+	 * @since 17.3.6
+	 */
+	protected static class FormCheckBoxHandler implements FldSimpleNodeWriterHandler {
+
+		private static final String SVG_NS = "http://www.w3.org/2000/svg";
+		private static final double INSET = 0.98, GAP = 2.4, LINE = 0.72, CROSS = 0.48, CROSS_RUN = 0.24;
+
+		@Override
+		public String getName() {
+			return "FORMCHECKBOX";
+		}
+
+		@Override
+		public int getProcessType() {
+			return PROCESS_WRAP_APPLY_STYLE; // the field's run, which the line's height counts
+		}
+
+		@Override
+		public Node toNode(AbstractWmlConversionContext context, FieldInstruction instruction, Node cachedResult,
+				Document doc) throws TransformerException {
+			List<String> parameters = instruction.getParameters();
+			if (parameters == null || parameters.size() < 3 || !parameters.get(0).matches("[0-9]+")) return cachedResult;
+			double size = Integer.parseInt(parameters.get(0)) / 2d;
+			boolean checked = "1".equals(parameters.get(1));
+			String colour = parameters.get(2).matches("[0-9A-Fa-f]{6}") ? "#" + parameters.get(2) : "#000000";
+
+			double side = Math.max(1, 1.15 * size - 2.45);
+			double foot = 0.219 * size - 1.42;
+			double below = LINE / 2 + CROSS_RUN; // the viewport's room under the square
+			double width = side + GAP; // the advance: the side and 2.4, the square 0.98 in
+			double height = LINE / 2 + side + below;
+			double top = LINE / 2;
+
+			Element object = doc.createElementNS(FO_NS, "fo:instream-foreign-object");
+			object.setAttribute("content-width", pt(width));
+			object.setAttribute("content-height", pt(height));
+			object.setAttribute("alignment-adjust", pt(-(foot + below)));
+
+			Element svg = doc.createElementNS(SVG_NS, "svg:svg");
+			svg.setAttribute("class", WordLayoutFixups.CHECK_BOX_CLASS);
+			svg.setAttribute("width", pt(width));
+			svg.setAttribute("height", pt(height));
+			svg.setAttribute("viewBox", "0 0 " + number(width) + " " + number(height));
+			Element square = doc.createElementNS(SVG_NS, "svg:rect");
+			square.setAttribute("x", number(INSET));
+			square.setAttribute("y", number(top));
+			square.setAttribute("width", number(side));
+			square.setAttribute("height", number(side));
+			square.setAttribute("fill", "none");
+			square.setAttribute("stroke", colour);
+			square.setAttribute("stroke-width", number(LINE));
+			svg.appendChild(square);
+			if (checked) {
+				double far = side + CROSS_RUN;
+				Element cross = doc.createElementNS(SVG_NS, "svg:path");
+				cross.setAttribute("d", "M" + number(INSET) + " " + number(top) + "L" + number(INSET + far) + " " + number(top + far)
+						+ "M" + number(INSET + far) + " " + number(top) + "L" + number(INSET) + " " + number(top + far));
+				cross.setAttribute("fill", "none");
+				cross.setAttribute("stroke", colour);
+				cross.setAttribute("stroke-width", number(CROSS));
+				svg.appendChild(cross);
+			}
+			object.appendChild(svg);
+			return object;
+		}
+
+		private static String pt(double v) {
+			return number(v) + "pt";
+		}
+
+		private static String number(double v) {
+			return String.format(java.util.Locale.ROOT, "%.3f", v);
+		}
 	}
 
 	@Override

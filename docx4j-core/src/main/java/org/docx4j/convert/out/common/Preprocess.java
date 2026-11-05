@@ -31,6 +31,7 @@ import org.docx4j.convert.out.common.preprocess.AcceptTrackedChanges;
 import org.docx4j.convert.out.common.preprocess.FieldsCombiner;
 import org.docx4j.convert.out.common.preprocess.FopWorkaroundDisablePageBreakOnFirstParagraph;
 import org.docx4j.convert.out.common.preprocess.FopWorkaroundReplacePageBreakInEachList;
+import org.docx4j.convert.out.common.preprocess.FormCheckBoxes;
 import org.docx4j.convert.out.common.preprocess.PageBreak;
 import org.docx4j.convert.out.common.preprocess.ParagraphStylesInTableFix;
 import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
@@ -113,6 +114,7 @@ public class Preprocess extends ConversionFeatures {
 			features.contains(PP_COMMON_RESOLVE_ALTERNATE_CONTENT) || // CR-051 D6: it visits these parts
 			features.contains(PP_COMMON_CONTAINERIZATION) ||
 			features.contains(PP_COMMON_COMBINE_FIELDS) ||
+			features.contains(PP_PDF_FORM_CHECKBOXES) ||
 			features.contains(PP_COMMON_ACCEPT_TRACKED_CHANGES) ||
 			features.contains(PP_COMMON_REJECT_TRACKED_CHANGES)) {
 			
@@ -195,6 +197,11 @@ public class Preprocess extends ConversionFeatures {
 			// before the fields are combined: it reads the fields' instructions
 			log.debug("PP_COMMON_FIELD_HYPERLINK_STYLE");
 			FieldHyperlinkStyle.process(ret);
+		}
+		if (features.contains(PP_PDF_FORM_CHECKBOXES)) {
+			// before the fields are combined: it reads the field's w:ffData
+			log.debug("PP_PDF_FORM_CHECKBOXES");
+			FormCheckBoxes.process(ret);
 		}
 		if (features.contains(PP_COMMON_COMBINE_FIELDS)) {
 			log.debug("PP_COMMON_COMBINE_FIELDS");

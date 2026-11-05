@@ -4112,6 +4112,8 @@ public class XsltFOFunctions {
 	private static boolean containsTabLeader(Node n) {
 		if (n==null) return false;
 		if (n instanceof Element && ((Element)n).hasAttribute(WordLayoutFixups.HINT_TAB)) return true;
+		// a tab after a check box is laid out from where the box ends (WordLayoutFixups.tabsAfterCheckBoxes)
+		if (n instanceof Element && WordLayoutFixups.CHECK_BOX_CLASS.equals(((Element)n).getAttribute("class"))) return true;
 		for (Node c = n.getFirstChild(); c!=null; c = c.getNextSibling()) {
 			if (containsTabLeader(c)) return true;
 		}

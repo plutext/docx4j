@@ -1749,6 +1749,65 @@ public class WordLayoutFixupsTest {
 		assertFalse(outs[1], outs[1].contains("fox:wrap"));
 	}
 
+	/** A text box's text is its own: neither the anchor paragraph's colour nor its weight nor
+	 *  its slant, unless the box says so (corpus document 4083's check marks).  @since 17.3.6 */
+	@Test
+	public void aTextBoxTakesNoRunFormattingFromItsAnchor() throws Exception {
+		String box = textBox("<fo:block docx4j-pstyle=\"\">X</fo:block>")
+				.replace("docx4j-pstyle=\"A\">", "docx4j-pstyle=\"A\" color=\"#B60050\" font-weight=\"bold\" font-style=\"italic\">");
+		org.w3c.dom.Document doc = parse(WordLayoutFixups.apply(flow(box), 12));
+		org.w3c.dom.Element container = null;
+		org.w3c.dom.NodeList all = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "block-container");
+		for (int i = 0; i < all.getLength(); i++) {
+			org.w3c.dom.Element c = (org.w3c.dom.Element) all.item(i);
+			if (c.getTextContent().trim().equals("X") && c.hasAttribute("color")) container = c;
+		}
+		assertEquals("#000000", container.getAttribute("color"));
+		assertEquals("normal", container.getAttribute("font-weight"));
+		assertEquals("normal", container.getAttribute("font-style"));
+	}
+
+	/** A floating table's text likewise.  @since 17.3.6 */
+	@Test
+	public void aFloatTakesNoRunFormattingFromItsAnchor() throws Exception {
+		org.w3c.dom.Document doc = parse(flow("<fo:block color=\"#B60050\" font-weight=\"bold\"><fo:float float=\"left\">"
+				+ "<fo:block>cell</fo:block></fo:float>text</fo:block>"));
+		WordLayoutFixups.anchoredContentTakesNoRunFormatting(doc);
+		org.w3c.dom.Element fl = (org.w3c.dom.Element) doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "float").item(0);
+		assertEquals("#000000", fl.getAttribute("color"));
+		assertEquals("normal", fl.getAttribute("font-weight"));
+	}
+
+	/** A box narrower than its insets: the text area is where the scaled insets meet, and the
+	 *  container has a width, without which it took the column's (4083's B.3 mark).  @since 17.3.6 */
+	@Test
+	public void aBoxNarrowerThanItsInsets() throws Exception {
+		org.w3c.dom.Document doc = parse(flow(""));
+		org.w3c.dom.Element c = FOTextBoxes.createContainer(doc, "none", 3.55, 29.6, 29.4, "t:43.75pt", 451, 72, null);
+		assertEquals("1.78pt", c.getAttribute("start-indent"));
+		assertEquals("1.78pt", c.getAttribute("width"));
+		assertEquals("1.78pt", c.getAttribute("padding-right"));
+	}
+
+	/** The first paragraph of a text box keeps its space-before, as in Word, where FO discards it
+	 *  at the container's edge (corpus document 4083's check marks: 6pt high); the paragraphs after
+	 *  it need nothing.  @since 17.3.6 */
+	@Test
+	public void aTextBoxKeepsItsFirstParagraphsSpaceBefore() throws Exception {
+		org.w3c.dom.Document doc = parse(WordLayoutFixups.apply(flow(textBox(
+				"<fo:block docx4j-pstyle=\"\" space-before=\"6pt\">first</fo:block>"
+				+ "<fo:block docx4j-pstyle=\"\" space-before=\"6pt\">second</fo:block>")), 12));
+		org.w3c.dom.NodeList blocks = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "block");
+		org.w3c.dom.Element first = null, second = null;
+		for (int i = 0; i < blocks.getLength(); i++) {
+			org.w3c.dom.Element b = (org.w3c.dom.Element) blocks.item(i);
+			if ("first".equals(b.getTextContent())) first = b;
+			if ("second".equals(b.getTextContent())) second = b;
+		}
+		assertEquals("retain", first.getAttribute("space-before.conditionality"));
+		assertEquals("", second.getAttribute("space-before.conditionality"));
+	}
+
 	/** A borders container is built from its first paragraph's properties, text-indent among
 	 *  them, and has no text of its own.  Its paragraphs state their own, so it drops its copy,
 	 *  and neither a paragraph that states none nor the float beside them takes it (4083's

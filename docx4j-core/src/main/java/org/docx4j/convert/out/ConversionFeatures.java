@@ -161,6 +161,11 @@ public abstract class ConversionFeatures {
 	 *  @since 17.2.0 */
 	public static final String PP_FO_PARAGRAPH_IDS = "pp.fo.paragraphids";
 
+	/** Draw legacy check boxes (FORMCHECKBOX fields) in PDF output, as Word does: a stroked
+	 *  square, and what follows set past it.  HTML output has no such step.
+	 *  @since 17.3.6 */
+	public static final String PP_PDF_FORM_CHECKBOXES = "pp.pdf.formcheckboxes";
+
 	/** Lay out the accepted view of the document's tracked changes, as Word's Accept All
 	 *  leaves it (AcceptTrackedChanges, which since 17.3.3 is
 	 *  {@code org.docx4j.model.revisions.TrackedChanges}: every story - headers, footers,
@@ -203,6 +208,7 @@ public abstract class ConversionFeatures {
 		PP_PDF_PAGEBREAK_PARAGRAPH_LINE,
 		PP_PDF_COVERPAGE_MOVE_SECTPR, 
 		PP_COMMON_CONTAINERIZATION,
+		PP_PDF_FORM_CHECKBOXES,
 		PP_COMMON_COMBINE_FIELDS,
 		PP_COMMON_FIELD_HYPERLINK_STYLE,
 		PP_COMMON_PAGE_NUMBERING,

@@ -5043,18 +5043,18 @@ Property `docx4j.convert.out.fields.formFieldResults`; HTML gains it too. Over t
 corpora there are 4 such drop-downs in 2 documents, and no `FORMTEXT` whose default is
 unused - 61 of the 288 carry one and every one of those already has a result.
 
-<a id="s7formcheckbox"></a>*A checkbox is deliberately left alone, and this is why.* Word
-does not draw one with a glyph. Measured with `mutool draw -F trace` over the goldens of
-the 15 documents of the three corpora which hold a `FORMCHECKBOX`, every checkbox in
-Word's own PDF is a **stroked square path** - a 0.72pt line, side 7.44 / 7.92 / 8.64 /
-9.84 / 10.32 / 11.04 / 11.28pt with the field's font size - and the PDF's text layer has
-nothing at all where it sits. Writing a `☐` or `☒` for it, which is what one would
-expect from the way Word's own UI draws it, would put a character on the line that Word's
-line does not have. What docx4j does lose is the box's **advance**: measured on three
-documents by the shift of the text after the box, Word's line continues 9.68, 12.4 and
-12.76pt further right than ours (the box side plus about 2.4pt), on 772 fields in 15
-documents. Reserving that width without painting anything is what would close it; FO has
-no inline box (`fo:inline-container` is not implemented in FOP, §10), so it is not shipped.
+<a id="s7formcheckbox"></a>*A checkbox is drawn, not written.* Word does not draw one with a glyph: every
+`FORMCHECKBOX` in its PDF is a **stroked square path** and the text layer has nothing where it sits, so writing a
+`☐` or `☒` would put a character on the line that Word's line does not have. Measured on probe
+`formcheckbox-metrics` (Arial and Times New Roman alike, modes 12 and 15 alike, 7 to 36pt), at a size *s*, the field's
+first run's or its `w:size`: the side is 1.15*s* - 2.45, the 0.72pt line drawn on those edges, 0.98 from the line's
+position; what follows starts 2.4 past the side; the foot is 0.219*s* - 1.42 below the baseline. Each is within 0.25pt,
+Word's values falling on a grid of 0.24pt. `w:checked`, else `w:default`, adds both diagonals, a 0.48pt line running
+0.24 past the far corner. The stroke takes the run's colour. A box the size of its run lifts neither its line nor a
+table row, and the field's runs do not count towards the line. `FormCheckBoxes` turns the field into a `w:fldSimple`
+carrying those values and `FldSimpleWriter` draws it as an inline SVG; a tab after it is laid out from where it ends
+(`WordLayoutFixups.tabsAfterCheckBoxes`) but it is no text, so a tab after it is still a leading tab. An exact size above
+the run lifts Word's line as a glyph of that size would; docx4j's rises less. HTML output draws nothing.
 
 *The condition is not evaluated, and does not need to be.* The branch Word chooses on all
 but the last page of these documents is the empty one, and neither branch could be

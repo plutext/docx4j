@@ -79,6 +79,15 @@ public class FOTextBoxes {
 
 		Element container = doc.createElementNS(XSL_FO, "fo:block-container");
 		double[] in = (inset==null) ? DEFAULT_INSET : inset;
+		/* A box narrower than its insets has no text area: Word sets the text from where the
+		 * insets, scaled to fit, meet, the box's middle where they are equal.  Without a width
+		 * the container took the column's.  Measured on one box, corpus document 4083's
+		 * B.3 check mark, 3.55pt wide at x 71.9: Word's X starts at 73.7, ours was at 316.3.
+		 * @since 17.3.6 */
+		if (w > 0 && w <= in[0] + in[2]) {
+			double scale = w / (in[0] + in[2]);
+			in = new double[] { in[0] * scale, in[1], in[2] * scale, in[3] };
+		}
 		/* Word's width and height are the box and the text inside is inset from them.
 		 * Down the block-progression direction the container's content box is that much
 		 * smaller and the inset is padding, so its border box is Word's.  Across the

@@ -106,15 +106,13 @@ public class FieldsCombiner {
 	 * already paints something between its separate and its end keeps what it has: that
 	 * is the value the user typed, and Word paints it over the default.</p>
 	 *
-	 * <p><strong>A checkbox is deliberately left alone.</strong>  Word does not draw it
-	 * with a glyph: measured over the goldens of the 15 documents of three corpora which
-	 * hold one, every <code>FORMCHECKBOX</code> in Word's own PDF is a <em>stroked
-	 * square path</em> - 0.72pt line, side 7.44 to 11.28pt with the field's font size -
-	 * and the PDF's text layer has nothing at all where it sits.  Writing a
+	 * <p><strong>A checkbox is left alone here.</strong>  Word does not draw it with a
+	 * glyph: measured over the goldens of the 15 documents of three corpora which hold
+	 * one, every <code>FORMCHECKBOX</code> in Word's own PDF is a <em>stroked square
+	 * path</em>, and the PDF's text layer has nothing at all where it sits.  Writing a
 	 * <code>&#x2610;</code> would put a character on the line that Word's line does not
-	 * have.  What is lost is only the advance: measured on three documents, the text
-	 * after the box starts 9.68, 12.4 and 12.76pt left of Word's, on 772 fields.
-	 * Recorded in word-layout-rules.md &#xa7;5.7.</p>
+	 * have.  In PDF output {@link FormCheckBoxes} draws it instead (since 17.3.6); in HTML
+	 * it stays as it was.</p>
 	 *
 	 * <p>Set <code>docx4j.convert.out.fields.formFieldResults</code> to false to keep
 	 * the old behaviour.</p>
