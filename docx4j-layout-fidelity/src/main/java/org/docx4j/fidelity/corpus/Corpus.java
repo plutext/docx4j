@@ -3873,6 +3873,8 @@ public final class Corpus {
 		PROBES.add(autospacingAfterTableProbe(12));
 		PROBES.add(autospacingAfterTableProbe(15));
 		PROBES.add(floatFootEmptiesProbe());
+		PROBES.add(floatFootEdgesProbe(12));
+		PROBES.add(floatFootEdgesProbe(15));
 		PROBES.add(formCheckBoxProbe(12));
 		PROBES.add(formCheckBoxProbe(15));
 		PROBES.add(floatingTableXProbe(12));
@@ -9550,6 +9552,124 @@ public final class Corpus {
 			}
 			return d.pkg();
 		});
+	}
+
+	/*
+	 * float-foot-edges (fop/CR-036's two unmeasured shapes, Jason's order of 5 November 2026): float-foot-empties measures an
+	 * end edge taken before a box that would cross the page's foot; the fork also moves a line crossing the foot straight
+	 * after a float's start edge, and keeps no space-before at such an edge.  Those are FOP's readings, no Word's.  Geometry
+	 * as float-foot-empties: A4 landscape, margins 56.7pt, a body of 481.9pt, Arial 8pt lines of 9.2pt, the anchor's line 14pt,
+	 * a spacer, a table 7197 + 986 wide, AFTER closing each case, a case from a new page.  d is the crossing line's foot past
+	 * the body's foot.  Shape 1: F, G, H one line L, the float's top 3pt above (a 4pt gap above L, so that it falls in no line),
+	 * level with and 2pt below L's top, its foot 6pt below L's top; W a paragraph wrapping to four lines, the third crossing,
+	 * the float's top 1pt below that line's top, 5pt high (above it would be in the second line, where nothing can break);
+	 * B the same with the lines made by w:br.  WN and BN have no float.  Shape 2: P as float-foot-empties' V with 6pt before
+	 * in place of 6pt after, Q with no float; R as F with 6pt before on L and AFTER, RN with no float; X as P with the float's
+	 * foot 2pt above E10's text top, so the end edge falls before E10, XN with no float.  Read each line's page, x and y.
+	 */
+	private static Probe floatFootEdgesProbe(int mode) {
+		return new Probe("float-foot-edges-compat" + mode,
+				"at mode " + mode + ", lines crossing a page's foot beside a float, d points past it, a case from a new page, A4 "
+				+ "landscape: F, G, H one line, the float's top 3pt above, level with and 2pt below it; W a wrapped paragraph, "
+				+ "its third line crossing; B the same by w:br; WN, BN no float; P ten lines with 6pt before; Q no float; R F "
+				+ "with 6pt before; RN no float; X P with the float's foot above the last line; XN no float.  Read each line's "
+				+ "page, x and y", () -> {
+			Doc d = Doc.create(mode);
+			d.pageGeometry(16838, 11906, true, 1134, 1134, 1134, 1134);
+			int[] near = { -1, 1, 3 };
+			java.util.List<Runnable> cases = new java.util.ArrayList<>();
+			final int BODY = 9638, LINE = 184, ANCHOR = 280;
+			String words = java.util.stream.IntStream.rangeClosed(1, 112).mapToObj(i -> String.format("W%03d", i))
+					.collect(java.util.stream.Collectors.joining(" "));
+			for (Object[] series : new Object[][] { { "F", -3 }, { "G", 0 }, { "H", 2 } }) {
+				for (int p : near) {
+					String tag = series[0] + (p < 0 ? "" : "+") + p;
+					// F: a 4pt gap above L, so the float's top falls in no line
+					int offset = (Integer) series[1], gap = offset < 0 ? 80 : 0;
+					int spacer = BODY + p * 20 - LINE - ANCHOR - gap, top = ANCHOR + spacer + gap;
+					cases.add(() -> {
+						footEdgeHead(d, tag, spacer, gap, top + offset * 20, (6 - offset) * 20);
+						footEdgeLine(d, "L " + tag, 0);
+						footEdgeLine(d, "AFTER " + tag, 0);
+					});
+				}
+			}
+			for (String series : new String[] { "W", "WN", "B", "BN" }) {
+				for (int p : near) {
+					String tag = series + (p < 0 ? "" : "+") + p;
+					boolean beside = !series.endsWith("N"), breaks = series.startsWith("B");
+					int spacer = BODY + p * 20 - ANCHOR - 3 * LINE, third = ANCHOR + spacer + 2 * LINE;
+					cases.add(() -> {
+						// the float's top 1pt into the third line: in the second, nothing could break there
+						footEdgeHead(d, tag, spacer, 0, beside ? third + 20 : -1, 100);
+						Doc.Para para = d.para().noLabel().font("Arial", 16).markRPr(markFont("Arial", 16, null)).widowControl(true);
+						if (breaks) {
+							for (int i = 1; i <= 4; i++) {
+								para.text("M" + i + " " + tag);
+								if (i < 4) para.softReturn();
+							}
+						} else {
+							para.text(tag + " " + words);
+						}
+						para.add();
+						footEdgeLine(d, "AFTER " + tag, 0);
+					});
+				}
+			}
+			for (String series : new String[] { "P", "Q" }) {
+				for (int p : new int[] { -4, -1, 1, 4, 10 }) {
+					String tag = series + (p < 0 ? "" : "+") + p;
+					int spacer = BODY + p * 20 - ANCHOR - 3040, top = ANCHOR + spacer;
+					cases.add(() -> {
+						footEdgeHead(d, tag, spacer, 0, "P".equals(series) ? top : -1, BODY - 40 - top);
+						for (int i = 1; i <= 10; i++) footEdgeLine(d, "E" + i + " " + tag, 120);
+						footEdgeLine(d, "AFTER " + tag, 120);
+					});
+				}
+			}
+			for (String series : new String[] { "R", "RN" }) {
+				for (int p : near) {
+					String tag = series + (p < 0 ? "" : "+") + p;
+					int spacer = BODY + p * 20 - LINE - ANCHOR - 120, lineTop = ANCHOR + spacer + 120;
+					cases.add(() -> {
+						footEdgeHead(d, tag, spacer, 0, "R".equals(series) ? lineTop - 80 : -1, 200);
+						footEdgeLine(d, "L " + tag, 120);
+						footEdgeLine(d, "AFTER " + tag, 120);
+					});
+				}
+			}
+			for (String series : new String[] { "X", "XN" }) {
+				for (int p : new int[] { -5, -3, -1, 1, 3 }) {
+					String tag = series + (p < 0 ? "" : "+") + p;
+					int spacer = BODY + p * 20 - ANCHOR - 3040, top = ANCHOR + spacer, lastTop = BODY + p * 20 - LINE;
+					cases.add(() -> {
+						footEdgeHead(d, tag, spacer, 0, "X".equals(series) ? top : -1, lastTop - 40 - top);
+						for (int i = 1; i <= 10; i++) footEdgeLine(d, "E" + i + " " + tag, 120);
+						footEdgeLine(d, "AFTER " + tag, 120);
+					});
+				}
+			}
+			for (int i = 0; i < cases.size(); i++) {
+				cases.get(i).run();
+				if (i < cases.size() - 1) d.pageBreak();
+			}
+			return d.pkg();
+		});
+	}
+
+	/** The head of a float-foot-edges case: the float (where tblpY is not negative), the anchor's line and the spacer. */
+	private static void footEdgeHead(Doc d, String tag, int spacer, int spacerAfter, int tblpY, int heightTwips) {
+		if (tblpY >= 0) {
+			Doc.Table t = new Doc.Table(7197, 986).fixedLayout().floating("text", "margin", 0, null, tblpY, null);
+			t.rowOf(heightTwips, org.docx4j.wml.STHeightRule.EXACT, t.cell("table " + tag, SERIF, 6, 1, 7197), t.cell("c", SERIF, 6, 1, 986));
+			d.add(t.build());
+		}
+		d.para("case " + tag).noLabel().font(SERIF, 20).line(280, STLineSpacingRule.EXACT).add();
+		d.para("spacer " + tag).noLabel().font(SERIF, 20).line(spacer, STLineSpacingRule.EXACT).after(spacerAfter).add();
+	}
+
+	private static void footEdgeLine(Doc d, String text, int before) {
+		d.para(text).noLabel().font("Arial", 16).before(before).markRPr(markFont("Arial", 16, null)).add();
 	}
 
 	private static Probe keepLinesFirstRowProbe(int mode) {
