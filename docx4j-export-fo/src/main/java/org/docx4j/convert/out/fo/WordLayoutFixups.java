@@ -1666,6 +1666,10 @@ public final class WordLayoutFixups {
 	/** With {@link #HINT_TBLP_FLOAT}: the float holder's padding, left right top, which
 	 *  is what puts the table where Word puts it.  @since 17.1.0 */
 	public static final String HINT_TBLP_PAD = "docx4j-tblp-pad";
+	/** The last word of {@link #HINT_TBLP_PAD} below mode 15 where w:tblpX places the cell text
+	 *  (TableWriter.applyFloatingPosition): the left pad may then be negative, a grid left of
+	 *  the column, and the table takes no give-back of its shift.  @since 17.3.6 */
+	static final String TBLP_TEXT_EDGE = "text";
 
 	/** On an fo:table: "true" where text could fit beside the table in its column, which
 	 *  is the case in which Word's wrapping is worth reproducing.  @since 17.1.0 */
@@ -2357,6 +2361,9 @@ public final class WordLayoutFixups {
 		String[] pad = tbl.getAttribute(HINT_TBLP_PAD).trim().split("\\s+");
 		if (pad.length < 3) return false;
 		double padLeft = lengthPt(pad[0]), padRight = lengthPt(pad[1]), padTop = lengthPt(pad[2]);
+		boolean textEdge = pad.length > 3 && TBLP_TEXT_EDGE.equals(pad[3]);
+		double intoMargin = Math.min(0, padLeft); // a grid left of the column: the table stands out of its cell by this
+		padLeft = Math.max(0, padLeft);
 		double width = tableWidthPt(tbl);
 		if (width <= 0) return false;
 
@@ -2475,13 +2482,13 @@ public final class WordLayoutFixups {
 		// keeps clear, and puts the table at w:tblpX within it.
 		Element outer = doc.createElementNS(FO_NS, "fo:table");
 		outer.setAttribute("table-layout", "fixed");
-		outer.setAttribute("width", pt(padLeft + width + padRight));
+		outer.setAttribute("width", pt(padLeft + width + intoMargin + padRight));
 		outer.setAttribute("start-indent", "0pt");
 		outer.setAttribute("end-indent", "0pt");
 		Element body = doc.createElementNS(FO_NS, "fo:table-body");
 		Element row = doc.createElementNS(FO_NS, "fo:table-row");
 		holder.appendChild(outer);
-		double[] widths = { padLeft, width, padRight };
+		double[] widths = { padLeft, width + intoMargin, padRight };
 		for (int i = 0; i < widths.length; i++) {
 			if (widths[i] <= 0) continue;
 			Element col = doc.createElementNS(FO_NS, "fo:table-column");
@@ -2526,8 +2533,9 @@ public final class WordLayoutFixups {
 			}
 		}
 		parent.removeChild(tbl);
-		tbl.setAttribute("start-indent", "0pt");
+		tbl.setAttribute("start-indent", pt(intoMargin));
 		tbl.setAttribute("end-indent", "0pt");
+		if (textEdge) tbl.removeAttribute(HINT_GRID_SHIFT); // the wrapper is no cell (nestedTableGridEdge)
 		cellFor(row, padLeft > 0 ? 1 : 0).appendChild(tbl);
 		// after any float already in the anchor, so a pair keeps its document order
 		Node at = anchor.getFirstChild();

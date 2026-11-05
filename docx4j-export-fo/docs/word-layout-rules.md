@@ -3834,8 +3834,10 @@ sat at the margin, 225pt left of Word's.
 **Below mode 15 `w:tblpX` places the cell text, not the grid.** Measured on probe `table-floating-x` (modes 12 and 14 alike):
 at `tblpX` 74.2pt the text stands at 74.2 and the left rule at 68.4, one cell margin to the left; with 10.8pt cell margins 74.2
 and 63.1; a `w:tblInd` is added (566 twips: 102.5 and 96.8), where mode 15 ignores it; the anchor's own indent changes nothing.
-Word's re-save drops that `w:tblInd`, so only the original file shows it. A grid that would stand left of the column is clamped
-to it (`padLeft`), about one document in the corpora; `tblpXSpec`, `w:jc` and bidi tables below mode 15 are not measured.
+Word's re-save drops that `w:tblInd`, so only the original file shows it, and drops a `tblpX` of 0: no `w:tblpX` is 0 (probe
+`float-foot-edges` at mode 12: the text on the margin). A grid that stands left of the column stands out of the float's wrapper by that
+much, which keeps the band Word keeps clear (the strip beside it at 469.8, where it was 5.1pt right). `tblpXSpec`, `w:jc` and bidi
+tables below mode 15 are not measured, nor one with no `w:tblpX` on the page.
 
 **Vertically** Word measures the position from the page (`vertAnchor="page"`), from the
 margin box (`vertAnchor="margin"`, or any `tblpYSpec`) or - the default, and 136 of the 152

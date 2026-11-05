@@ -277,7 +277,17 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 		assertEquals("mode 12: w:tblInd added", 54.6, floatColumns(fo(indented, flags, "12"))[0], 0.01);
 		assertEquals("mode 15: w:tblInd ignored", 50, floatColumns(fo(indented, flags, "15"))[0], 0.01);
 		assertEquals("no cell margin given back: the wrapper is no cell", 0,
-				pt(foTable(fo(body, flags, "12")).getAttribute("start-indent")), 0.01);
+				pt(innerTable(fo(body, flags, "12")).getAttribute("start-indent")), 0.01);
+		/* no w:tblpX is 0, so the grid stands a cell margin left of the column: the band keeps the
+		 * table's width less that, and the table stands out of its cell (float-foot-edges). */
+		org.w3c.dom.Document margin = fo(body("<w:tblpPr w:vertAnchor=\"text\" w:horzAnchor=\"margin\" w:tblpY=\"300\"/>"), flags, "12");
+		assertEquals(-5.4, pt(innerTable(margin).getAttribute("start-indent")), 0.01);
+		assertEquals("the table's column", TABLE_PT - 5.4, floatColumns(margin)[0], 0.01);
+	}
+
+	/** The table a float's one-row wrapper holds. */
+	private static Element innerTable(org.w3c.dom.Document doc) {
+		return (Element) doc.getElementsByTagNameNS(FO_NS, "table").item(1);
 	}
 
 	@Test public void floatPositionByModeVisitor() throws Exception {

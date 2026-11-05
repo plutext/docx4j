@@ -451,12 +451,12 @@ public class TableWriter extends AbstractTableWriter {
 		} else if (tblpPr.getTblpX() != null) {
 			xInFrame = tblpPr.getTblpX().intValue();
 		}
+		org.docx4j.wml.CTTblPrBase tblPr = table.getEffectiveTableStyle().getTblPr();
+		boolean bidiVisual = tblPr != null && tblPr.getBidiVisual() != null && tblPr.getBidiVisual().isVal();
+		org.docx4j.wml.STXAlign xSpec = tblpPr.getTblpXSpec();
+		org.docx4j.wml.JcEnumeration jc = tblPr == null || tblPr.getJc() == null ? null : tblPr.getJc().getVal();
 		boolean textEdge = false;
-		if (xInFrame != null) {
-			org.docx4j.wml.CTTblPrBase tblPr = table.getEffectiveTableStyle().getTblPr();
-			boolean bidiVisual = tblPr != null && tblPr.getBidiVisual() != null && tblPr.getBidiVisual().isVal();
-			org.docx4j.wml.STXAlign xSpec = tblpPr.getTblpXSpec();
-			org.docx4j.wml.JcEnumeration jc = tblPr == null || tblPr.getJc() == null ? null : tblPr.getJc().getVal();
+		if (xInFrame != null || !horzPage) {
 			/* Below mode 15 w:tblpX places the cell text, as the margin does in the flow: the
 			 * grid edge is one cell margin left of it, and w:tblInd is added, where in mode 15
 			 * the left border starts at w:tblpX and w:tblInd is ignored.  Measured on probe
@@ -465,21 +465,28 @@ public class TableWriter extends AbstractTableWriter {
 			 * 74.2 and 63.1; with w:tblInd 566 102.5 and 96.8; the anchor's own indent changes
 			 * nothing.  So what applyStartIndent worked out (w:tblInd less the shift) stands on
 			 * the position; and the wrapper a float sits in is no cell, so the shift is not
-			 * given back as a nested table's is (WordLayoutFixups.nestedTableGridEdge).  A
-			 * w:tblpXSpec, w:jc or bidi table below mode 15 is not measured.  @since 17.3.6 */
+			 * given back as a nested table's is (WordLayoutFixups.nestedTableGridEdge).  No
+			 * w:tblpX is 0: Word's re-save drops a 0, and probe float-foot-edges' tables at the
+			 * margin have their text on it at mode 12.  A w:tblpXSpec, w:jc or bidi table below
+			 * mode 15 is not measured, nor one with no w:tblpX on the page.  @since 17.3.6 */
 			textEdge = compatibilityMode(context) < 15 && xSpec == null && !bidiVisual
 					&& !org.docx4j.wml.JcEnumeration.CENTER.equals(jc) && !org.docx4j.wml.JcEnumeration.RIGHT.equals(jc)
 					&& !org.docx4j.wml.JcEnumeration.END.equals(jc);
 			// the frame's own position, with no grid-edge shift in it
-			indent = frameLeft - marginLeft + xInFrame + (textEdge ? indent : 0);
-			if (textEdge) tableRoot.removeAttribute(WordLayoutFixups.HINT_GRID_SHIFT);
-			else gridShift = 0;
+			if (textEdge) {
+				if (xInFrame != null) indent += frameLeft - marginLeft + xInFrame;
+			} else if (xInFrame != null) {
+				indent = frameLeft - marginLeft + xInFrame;
+				gridShift = 0;
+			}
 			/* and the edge of the table Word puts there (WordLayoutFixups.tableBorderEdges):
 			 * in mode 15 the left border starts at w:tblpX (Word's goldens of probes
 			 * table-floating and -negative: the left border from 297.0 and 72.0, FOP's half
 			 * of it further left) and a centred table's grid is centred (-offset-sides, within
 			 * 0.1pt); right is mirrored from the flow's rule.  @since 17.3.3 */
-			if (compatibilityMode(context) < 15 || bidiVisual || org.docx4j.wml.STXAlign.CENTER.equals(xSpec)
+			if (xInFrame == null) {
+				// no position stated: the table keeps the edge applyStartIndent gave it
+			} else if (compatibilityMode(context) < 15 || bidiVisual || org.docx4j.wml.STXAlign.CENTER.equals(xSpec)
 					|| !WordLayoutFixups.isEnabled()) {
 				tableRoot.removeAttribute(WordLayoutFixups.HINT_BORDER_EDGE);
 			} else {
@@ -651,9 +658,9 @@ public class TableWriter extends AbstractTableWriter {
 		}
 		tableRoot.setAttribute(WordLayoutFixups.HINT_TBLP_FLOAT, right ? "right" : "left");
 		tableRoot.setAttribute(WordLayoutFixups.HINT_TBLP_PAD,
-				UnitsOfMeasurement.twipToBest(Math.max(0, padLeft)) + " "
+				UnitsOfMeasurement.twipToBest(textEdge ? padLeft : Math.max(0, padLeft)) + " "
 				+ UnitsOfMeasurement.twipToBest(Math.max(0, padRight)) + " "
-				+ UnitsOfMeasurement.twipToBest(padTop));
+				+ UnitsOfMeasurement.twipToBest(padTop) + (textEdge ? " " + WordLayoutFixups.TBLP_TEXT_EDGE : ""));
 		// the start-indent stands: the fixups zero it only where they do build the float
 		return indent;
 	}
