@@ -158,7 +158,8 @@ A later run set both forms side by side: stock 655, 2509, 1101 and 1310 ms, the 
 734, 2679, 1148 and 1380. The revised test costs nothing, as it is asked only of an unknown name. That run puts the whole at
 +4.3% to +6.8% on the last three and +12.1% on the first, whose stock time was low again.
 The form §4 now gives, side by side with stock in a third run: 656, 2486, 1106 and 1322 ms against 722, 2559, 1121 and 1338, so
-+1.2% to +3.0% on the last three and +10.0% on the first, low again.
++1.2% to +3.0% on the last three and +10.0% on the first, low again. As built, in a fourth run: 657, 2478, 1096 and 1312 ms against
+713, 2548, 1113 and 1338, so +1.5% to +2.8%, and +8.6%.
 
 The form matters. Rule 1 alone is -0.9% to +8.9%, nearly all of it under 4%. The same rule 2 written as two new match patterns
 in mode `split-text` took the whole to +14% to +24%, in every run, though that mode is rarely entered. Why wasn't traced. Moved
@@ -265,6 +266,12 @@ D1 as its row says. D2 to D11 as recommended (Jason, 2026-11-06).
   - If the catalogue's home copy is there by then (§2.3), a query by local name, for the reach and for any name Word writes
     that the schema lacks. Phase 1 doesn't wait for it.
   - The change is to the shared load path, and CLAUDE.md suggests Fable for that.
+  - DONE 2026-11-06. `mc-preprocessor.xslt`, `XSLTUtils` (the count for D4's WARN, and the understood set
+    for rule 2), `UnknownElementsTest`, and `unknown-elements/`: 79 sources and Word's 65 saves. The test compares 63 files with Word's
+    saves, leaving out `76t44` and `76t45` (D11), and 11 of its 19 tests fail on the stylesheet before this. 49 mutants, each
+    of the twenty hosts, each guard by parent and each rule's parts, are all caught. core-tests 2459 (30 skipped), export-fo 111,
+    export-fo-tests 908 (9 skipped). Gate b370 against b369: 0 movers, events equal. The catalogue's home copy isn't here yet, so its
+    query is still to do.
 - **Phase 2, the hand-offs** (D6) through the portfolio session.
 
 ## 7. Risks

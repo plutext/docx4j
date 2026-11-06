@@ -13,6 +13,41 @@ public class XSLTUtils {
 	public static void logInfo(String message) {
 		log.info(message);
 	}
+	/** The unknown elements read through in the part being transformed (CR-076). */
+	private static final ThreadLocal<int[]> READ_THROUGH = ThreadLocal.withInitial(() -> new int[1]);
+
+	/**
+	 * mc-preprocessor.xslt reads an unknown {@code w:} element through, as Word does.
+	 *
+	 * @since 17.3.6 (CR-076)
+	 */
+	public static void noteReadThrough() {
+		READ_THROUGH.get()[0]++;
+	}
+
+	/**
+	 * One WARN a part, with the count of {@link #noteReadThrough()}, which it resets.
+	 *
+	 * @since 17.3.6 (CR-076 D4)
+	 */
+	public static void warnReadThrough() {
+		int[] count = READ_THROUGH.get();
+		if (count[0] > 0) {
+			log.warn("Read " + count[0] + " element(s) Word doesn't know as Word reads them, what they hold kept (CR-076)");
+			count[0] = 0;
+		}
+	}
+
+	/**
+	 * Whether a namespace is in docx4j's understood set: mc-preprocessor.xslt drops an element
+	 * of any other from a text element, as Word drops it.
+	 *
+	 * @since 17.3.6 (CR-076)
+	 */
+	public static boolean isUnderstoodNamespace(String uri) {
+		return org.docx4j.jaxb.McSelection.understoodNamespaces().contains(uri);
+	}
+
 	public static void logWarn(String message) {
 		log.warn(message);
 	}

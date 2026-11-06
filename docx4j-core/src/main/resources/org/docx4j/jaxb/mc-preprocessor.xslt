@@ -5,6 +5,7 @@
 	xmlns:xalan="http://xml.apache.org/xalan"
 	
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
 	
 	xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 	xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
@@ -25,7 +26,7 @@
 	xmlns:purlcp="http://purl.oclc.org/ooxml/officeDocument/customProperties"
 	xmlns:purlep="http://purl.oclc.org/ooxml/officeDocument/extendedProperties"
 		
-	version="1.0" exclude-result-prefixes="java purlw purlep purla purlcp purlwp xalan">	
+	version="1.0" exclude-result-prefixes="m java purlw purlep purla purlcp purlwp xalan">	
         
 <!--  This preprocessor does 3 things:
 
@@ -698,7 +699,9 @@
 			<xsl:if test="string($tailHasContent)">
 				<w:p>
 					<xsl:apply-templates select="$outer/@*" />
-					<xsl:apply-templates select="$outer/w:pPr" />
+					<xsl:apply-templates select="$outer/w:pPr">
+						<xsl:with-param name="head" select="false()" />
+					</xsl:apply-templates>
 					<xsl:copy-of select="xalan:nodeset($tail)/node()" />
 				</w:p>
 			</xsl:if>
@@ -841,6 +844,7 @@
 					' outside a run, ', $texts, ' text elements holding elements; read as Word reads them (CR-073)'))" />
 		</xsl:if>
 		<xsl:apply-templates select="node()" />
+		<xsl:variable name="readThrough" select="java:org.docx4j.utils.XSLTUtils.warnReadThrough()" />
 	</xsl:template>
 
 	<!-- (1) directly in an element that holds runs, in a paragraph: a math run (m:r) holds a
@@ -900,11 +904,22 @@
 		<w:br><xsl:apply-templates select="@*" /></w:br>
 	</xsl:template>
 
+	<!-- A nested text element gives its text.  Any other w: element goes with all it holds,
+	     a w:br included, as does one in a namespace outside docx4j's understood set: Word's
+	     check 76 (76n, 76u, 76w, 76z), CR-076's rule 2.  One in no namespace, or in a known
+	     namespace other than w:, gives its text: Word refuses the first and is not measured on
+	     the second.  The test is here, not in match patterns: as two patterns it took the
+	     stylesheet's time up by 14% to 24% on the largest documents, though this mode is
+	     rarely entered. -->
 	<xsl:template match="*" mode="split-text">
 		<xsl:param name="name" />
-		<xsl:apply-templates select="node()" mode="split-text">
-			<xsl:with-param name="name" select="$name" />
-		</xsl:apply-templates>
+		<xsl:if test="self::w:t or self::w:instrText or self::w:delText or self::w:delInstrText
+				or (not(self::w:*) and (namespace-uri() = ''
+					or java:org.docx4j.utils.XSLTUtils.isUnderstoodNamespace(string(namespace-uri()))))">
+			<xsl:apply-templates select="node()" mode="split-text">
+				<xsl:with-param name="name" select="$name" />
+			</xsl:apply-templates>
+		</xsl:if>
 	</xsl:template>
 
 	<!-- (3) directly in w:body: Word moves it to the start of the next paragraph, after its
@@ -924,6 +939,7 @@
 		<xsl:call-template name="body-breaks">
 			<xsl:with-param name="p" select=".." />
 		</xsl:call-template>
+		<xsl:call-template name="runs-in-pPr" />
 	</xsl:template>
 
 	<xsl:template match="w:body/w:p[not(w:pPr)][preceding-sibling::*[1][self::w:br]]
@@ -948,6 +964,110 @@
 				<w:br><xsl:apply-templates select="@*" /></w:br>
 			</w:r>
 		</xsl:for-each>
+	</xsl:template>
+
+	<!-- An element Word doesn't know, read as Word reads it (CR-076, from core-ts's Word check
+	     76, rounds 1 to 8).  An element in the w: namespace whose name the schema doesn't have,
+	     standing in a content host, gives way to its element children; its attributes and any
+	     text directly in it go (76t41).  Elsewhere it stays, and the second unmarshal drops it
+	     with all it holds, as Word drops it from a w:pPr or a w:rPr.
+
+	     The host is the nearest ancestor that isn't such an element, so depth doesn't matter
+	     (76t7, 76t35, 76t36).  mc: elements don't count (76t44, 76t45), and any other namespace
+	     stops the walk (76k; a w:madeUp in an m:r isn't read through to the w:p beyond).  The
+	     twenty hosts are those measured, by declaration and not by tag: w:ins, w:del, w:moveFrom,
+	     w:moveTo, w:footnote and w:endnote are also declared for things no file measures, told
+	     apart here by parent.
+
+	     XSLT 1.0 allows no variable in a match pattern, so this matches every w: element no named
+	     template takes.  Its other branch does what the identity template's usual-prefix branch
+	     does.  The tests for w:pPr, w:p and w:sectPr are in templates of their own with plain
+	     patterns below: in this one, which every w: element reaches, they took the stylesheet's
+	     time up by 10% to 15% on the largest documents.  @since 17.3.6 -->
+
+	<!-- xsd/wml/wml.xsd's element names; UnknownElementsTest holds this equal to the schema -->
+	<xsl:variable name="wml-names" select="' abstractNum abstractNumId active activeRecord activeWritingStyle addressFieldName adjustLineHeightInTable adjustRightInd alias aliases alignBordersAndEdges alignTablesRowByRow allowPNG allowSpaceOfSameStyleInTable altChunk altChunkPr altName alwaysMergeEmptyNamespace alwaysShowPlaceholderText annotationRef applyBreakingRules attachedSchema attachedTemplate attr autoCaption autoCaptions autoFormatOverride autoHyphenation autoRedefine autoSpaceDE autoSpaceDN autoSpaceLikeWord95 autofitToFirstFixedWidthCell b bCs background balanceSingleByteDoubleByteWidth bar basedOn bdo bdr behavior behaviors between bibliography bidi bidiVisual blockQuote body bodyDiv bookFoldPrinting bookFoldPrintingSheets bookFoldRevPrinting bookmarkEnd bookmarkStart bordersDoNotSurroundFooter bordersDoNotSurroundHeader bottom br cachedColBalance calcOnExit calendar cantSplit caps caption captions category cellDel cellIns cellMerge characterSpacingControl charset checkBox checkErrors checked citation clickAndTypeStyle clrSchemeMapping cnfStyle col colDelim color cols column comboBox comment commentRangeEnd commentRangeStart commentReference comments compat compatSetting connectString consecutiveHyphenLimit contextualSpacing continuationSeparator control convMailMergeEsc cr cs customXml customXmlDelRangeEnd customXmlDelRangeStart customXmlInsRangeEnd customXmlInsRangeStart customXmlMoveFromRangeEnd customXmlMoveFromRangeStart customXmlMoveToRangeEnd customXmlMoveToRangeStart customXmlPr dataBinding dataSource dataType date dateFormat dayLong dayShort ddList decimalSymbol default defaultTabStop defaultTableStyle del delInstrText delText description destination dir dirty displayBackgroundShape displayHangulFixedWidth displayHorizontalDrawingGridEvery displayVerticalDrawingGridEvery div divBdr divId divs divsChild doNotAutoCompressPictures doNotAutofitConstrainedTables doNotBreakConstrainedForcedTable doNotBreakWrappedTables doNotDemarcateInvalidXml doNotDisplayPageBoundaries doNotEmbedSmartTags doNotExpandShiftReturn doNotHyphenateCaps doNotIncludeSubdocsInStats doNotLeaveBackslashAlone doNotOrganizeInFolder doNotRelyOnCSS doNotSaveAsSingleFile doNotShadeFormData doNotSnapToGridInCell doNotSuppressBlankLines doNotSuppressIndentation doNotSuppressParagraphBorders doNotTrackFormatting doNotTrackMoves doNotUseEastAsianBreakRules doNotUseHTMLParagraphAutoSpacing doNotUseIndentAsNumberingTabStop doNotUseLongFileNames doNotUseMarginsForDrawingGridOrigin doNotValidateAgainstSchema doNotVertAlignCellWithSp doNotVertAlignInTxbx doNotWrapTextWithPunct docDefaults docGrid docPart docPartBody docPartCategory docPartGallery docPartList docPartObj docPartPr docPartUnique docParts docVar docVars document documentProtection documentType drawing drawingGridHorizontalOrigin drawingGridHorizontalSpacing drawingGridVerticalOrigin drawingGridVerticalSpacing dropDownList dstrike dynamicAddress eastAsianLayout effect em embedBold embedBoldItalic embedItalic embedRegular embedSystemFonts embedTrueTypeFonts emboss enabled encoding end endnote endnotePr endnoteRef endnoteReference endnotes entryMacro equation evenAndOddHeaders exitMacro fHdr family ffData fieldMapData fitText flatBorders fldChar fldData fldSimple font fonts footerReference footnote footnoteLayoutLikeWW8 footnotePr footnoteRef footnoteReference footnotes forceUpgrade forgetLastTabAlignment formProt format formsDesign frame frameLayout framePr frameset framesetSplitbar ftr gallery glossaryDocument gridAfter gridBefore gridCol gridSpan group growAutofit guid gutterAtTop hMerge hdr hdrShapeDefaults headerReference headerSource helpText hidden hideGrammaticalErrors hideMark hideSpellingErrors highlight hps hpsBaseText hpsRaise hyperlink hyphenationZone i iCs id ignoreMixedContent ilvl imprint ind ins insideH insideV instrText isLgl jc keepLines keepNext kern kinsoku lang lastRenderedPageBreak latentStyles layoutRawTableWidth layoutTableRowsApart left legacy lid lineWrapLikeWord6 link linkStyles linkToQuery linkedToFile listEntry listItem listSeparator lnNumType lock locked lsdException lvl lvlJc lvlOverride lvlPicBulletId lvlRestart lvlText mailAsAttachment mailMerge mailSubject mainDocumentType mappedName marBottom marH marLeft marRight marTop marW matchSrc maxLength mirrorIndents mirrorMargins monthLong monthShort moveFrom moveFromRangeEnd moveFromRangeStart moveTo moveToRangeEnd moveToRangeStart movie multiLevelType mwSmallCaps name next noBorder noBreakHyphen noColumnBalance noEndnote noExtraLineSpacing noLeading noLineBreaksAfter noLineBreaksBefore noProof noPunctuationKerning noResizeAllowed noSpaceRaiseLower noTabHangInd noWrap notTrueType nsid num numFmt numId numIdMacAtCleanup numPicBullet numPr numRestart numStart numStyleLink numbering numberingChange oMath object odso optimizeForBrowser outline outlineLvl overflowPunct p pBdr pPr pPrChange pPrDefault pStyle pageBreakBefore panose1 paperSrc permEnd permStart personal personalCompose personalReply pgBorders pgMar pgNum pgNumType pgSz pict picture pitch pixelsPerInch placeholder pos position printBodyTextBeforeHeader printColBlack printFormsData printFractionalCharacterWidth printPostScriptOverText printTwoOnOne printerSettings proofErr proofState ptab qFormat query r rFonts rPr rPrChange rPrDefault rStyle readModeInkLockDown recipientData recipients relyOnVML removeDateAndTime removePersonalInformation result revisionView richText right rsid rsidRoot rsids rt rtl rtlGutter ruby rubyAlign rubyBase rubyPr saveFormsData saveInvalidXml savePreviewPicture saveSmartTagsAsXml saveSubsetFonts saveThroughXslt saveXmlDataOnly scrollbar sdt sdtContent sdtEndPr sdtPr sectPr sectPrChange selectFldWithFirstOrLastChar semiHidden separator settings shadow shapeDefaults shapeLayoutLikeWW8 shd showBreaksInFrames showEnvelope showXMLTags showingPlcHdr sig size sizeAuto smallCaps smartTag smartTagPr smartTagType snapToGrid softHyphen sourceFileName spaceForUL spacing spacingInWholePoints specVanish splitPgBreakAndParaMark src start startOverride statusText storeMappedDataAs strictFirstAndLastChars strike style styleLink styleLockQFSet styleLockTheme stylePaneFormatFilter stylePaneSortMethod styles subDoc subFontBySize suff summaryLength suppressAutoHyphens suppressBottomSpacing suppressLineNumbers suppressOverlap suppressSpBfAfterPgBrk suppressSpacingAtTopOfPage suppressTopSpacing suppressTopSpacingWP swapBordersFacingPages sym sz szCs t tab table tabs tag targetScreenSz tbl tblBorders tblCaption tblCellMar tblCellSpacing tblDescription tblGrid tblGridChange tblHeader tblInd tblLayout tblLook tblOverlap tblPr tblPrChange tblPrEx tblPrExChange tblStyle tblStyleColBandSize tblStylePr tblStyleRowBandSize tblW tblpPr tc tcBorders tcFitText tcMar tcPr tcPrChange tcW temporary text textAlignment textDirection textInput textboxTightWrap themeFontLang titlePg tl2br tmpl top topLinePunct tr tr2bl trHeight trPr trPrChange trackRevisions truncateFontHeightsLikeWP6 txbxContent type types u udl uiCompat97To2003 uiPriority ulTrailSpace underlineTabInNumList unhideWhenUsed uniqueTag updateFields useAltKinsokuLineBreakRules useAnsiKerningPairs useFELayout useNormalStyleForList usePrinterMetrics useSingleBorderforContiguousCells useWord2002TableStyleRules useWord97LineBreakRules useXSLTWhenSaving vAlign vMerge vanish vertAlign view viewMergedData w wAfter wBefore webHidden webSettings widowControl wordWrap wpJustification wpSpaceWidth wrapTrailSpaces writeProtection yearLong yearShort zoom '" />
+
+	<xsl:template match="w:*">
+		<xsl:choose>
+			<xsl:when test="not(contains($wml-names, concat(' ', local-name(), ' ')))
+				and ancestor::*[not(self::w:* or self::mc:*) or contains($wml-names, concat(' ', local-name(), ' '))][1]
+					[self::w:p or self::w:body or self::w:tc or self::w:r or self::w:tbl or self::w:tr or self::w:sdtContent
+					or self::w:hyperlink or self::w:hdr or self::w:ftr or self::w:comment or self::w:fldSimple
+					or self::w:smartTag or self::w:customXml
+					or self::w:ins[not(parent::w:numPr or parent::w:rPr or parent::w:trPr or parent::m:r or parent::m:ctrlPr)]
+					or self::w:del[not(parent::w:rPr or parent::w:trPr or parent::m:r or parent::m:ctrlPr)]
+					or self::w:moveFrom[not(parent::w:rPr)] or self::w:moveTo[not(parent::w:rPr)]
+					or self::w:footnote[not(parent::w:footnotePr)] or self::w:endnote[not(parent::w:endnotePr)]]">
+				<xsl:variable name="logging" select="java:org.docx4j.utils.XSLTUtils.noteReadThrough()" />
+				<xsl:variable name="host"
+					select="ancestor::*[not(self::w:* or self::mc:*) or contains($wml-names, concat(' ', local-name(), ' '))][1]" />
+				<xsl:for-each select="*">
+					<xsl:choose>
+						<!-- 76t42: a break.  CR-073's rule 1 names its parents, so it wouldn't take this -->
+						<xsl:when test="self::w:br and $host[self::w:p or self::w:hyperlink]">
+							<w:r><w:br><xsl:apply-templates select="@*" /></w:br></w:r>
+						</xsl:when>
+						<!-- 76t43: its runs join the host, and the w:p template adds the empty paragraph -->
+						<xsl:when test="self::w:p and ../parent::w:p">
+							<xsl:apply-templates select="*[not(self::w:pPr)]" />
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:apply-templates select="." />
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:for-each>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:element namespace="{namespace-uri()}" name="{local-name(.)}">
+					<xsl:apply-templates select="@*|node()" />
+				</xsl:element>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+	<!-- A w:r directly in an unknown element directly in a paragraph's w:pPr, in the w:pPr under
+	     its w:pPrChange or in its w:sectPr, goes to the head of the paragraph, in order (76t27,
+	     76t37, 76t39, 76t40, 76t50).  Anything else in the element stays with it and goes
+	     (76t5, 76t38): CR-076's rule 1b.  A segment after the first of a split paragraph doesn't
+	     repeat them. -->
+	<xsl:template match="w:pPr">
+		<xsl:param name="head" select="true()" />
+		<xsl:element namespace="{namespace-uri()}" name="{local-name(.)}">
+			<xsl:apply-templates select="@*|node()" />
+		</xsl:element>
+		<xsl:if test="$head">
+			<xsl:call-template name="runs-in-pPr" />
+		</xsl:if>
+	</xsl:template>
+
+	<xsl:template name="runs-in-pPr">
+		<xsl:if test="parent::w:p and (*/w:r or w:pPrChange/w:pPr/*/w:r or w:sectPr/*/w:r)">
+			<xsl:for-each select="(* | w:pPrChange/w:pPr/* | w:sectPr/*)[w:r][not(contains($wml-names, concat(' ', local-name(), ' ')))]">
+				<xsl:variable name="logging" select="java:org.docx4j.utils.XSLTUtils.noteReadThrough()" />
+				<xsl:apply-templates select="w:r" />
+			</xsl:for-each>
+		</xsl:if>
+	</xsl:template>
+
+	<!-- 76t43: a w:p directly in an unknown element directly in a w:p: an empty paragraph follows -->
+	<xsl:template match="w:p">
+		<xsl:element namespace="{namespace-uri()}" name="{local-name(.)}">
+			<xsl:apply-templates select="@*|node()" />
+		</xsl:element>
+		<xsl:if test="*/w:p and *[w:p][not(contains($wml-names, concat(' ', local-name(), ' ')))]">
+			<w:p />
+		</xsl:if>
+	</xsl:template>
+
+	<!-- 76t50: the w:sectPr of a paragraph goes, with its section break, where it holds a run in
+	     an unknown element.  The body's own is not measured. -->
+	<xsl:template match="w:sectPr">
+		<xsl:if test="not(parent::w:pPr and */w:r and *[w:r][not(contains($wml-names, concat(' ', local-name(), ' ')))])">
+			<xsl:element namespace="{namespace-uri()}" name="{local-name(.)}">
+				<xsl:apply-templates select="@*|node()" />
+			</xsl:element>
+		</xsl:if>
 	</xsl:template>
 
 </xsl:stylesheet>

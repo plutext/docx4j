@@ -81,6 +81,9 @@ Changes in Version 17.3.6
 - A `w:br` outside a run (directly in a paragraph, hyperlink or the body, or inside a `w:t` or `w:instrText`) is
   read as Word reads it: a break at that point, all the text kept. docx4j dropped the break, and inside a `w:t`
   the text before it; 206,351 of 3.7 million Common Crawl documents have one (CR-073).
+- An element Word doesn't know no longer loses what it holds. In a content host its tags go and its content is read, at any
+  depth; a run in such an element in a `w:pPr` goes to the head of the paragraph; in a `w:t` it goes with all it holds. As Word 365
+  reads them, by core-ts's check 76 (CR-076).
 - An element docx4j has no model for inside a content control's `w:sdtPr` (an `mc:Ignorable` extension, say) no
   longer leaves the main document unread: the load took JAXB's message, which lists `w14:entityPicker`, for an XXE
   entity error and gave up instead of preprocessing (`XmlUtils.isEntityError`). Found by docx-platform-tests.
