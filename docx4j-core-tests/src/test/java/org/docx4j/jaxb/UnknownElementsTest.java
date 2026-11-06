@@ -83,7 +83,8 @@ public class UnknownElementsTest {
 		List<String> different = new ArrayList<String>();
 		int compared = 0;
 		for (String name : sources()) {
-			if (name.equals("76t44-madeup-in-choice") || name.equals("76t45-madeup-in-fallback")) continue;
+			if (name.equals("76t44-madeup-in-choice") || name.equals("76t45-madeup-in-fallback")
+					|| name.equals("76t71-held-paragraph-in-hyperlink")) continue;
 			if (!exists(name + "-word365.docx")) continue;
 			compared++;
 			Map<String, List<String>> ours = tokens(load(name + ".docx"));
@@ -95,7 +96,7 @@ public class UnknownElementsTest {
 				}
 			}
 		}
-		assertEquals("files with a save", 63, compared);
+		assertEquals("files with a save", 76, compared);
 		assertTrue(String.join("\n", different), different.isEmpty());
 	}
 
@@ -117,9 +118,52 @@ public class UnknownElementsTest {
 		assertEquals("[t:HIDDEN WORDSTARGET TEXT, ¶]", target("76t50-run-in-sectPr"));
 	}
 
-	/** D10: the runs join the host, and an empty paragraph follows. */
+	/** D10: a held paragraph's mark ends a paragraph, and its properties are that paragraph's.  The
+	 *  host's own mark is the empty paragraph after. */
 	@Test public void aParagraphInAParagraph() throws Exception {
 		assertEquals("[t:TARGET TEXTHIDDEN WORDS, ¶, ¶]", target("76t43-paragraph-in-madeup-in-p"));
+		assertEquals("[t:TARGET TEXTHIDDEN WORDS, ¶, t:SECOND WORDS, ¶, ¶]", target("76t56-two-held-paragraphs"));
+		assertEquals("[jc=center, t:TARGET TEXTHIDDEN WORDS, ¶, ¶]", target("76t58-held-paragraph-centred"));
+		assertEquals("[jc=center, t:TARGET TEXTHIDDEN WORDS, ¶, jc=right, ¶]", target("76t68-host-right-held-centred"));
+		assertEquals("[jc=right, t:TARGET TEXTHIDDEN WORDS, ¶, jc=right, ¶]", target("76t69-host-right-held-plain"));
+		assertEquals("[t:TARGET TEXTHIDDEN WORDS, ¶, ¶]", target("76t70-held-paragraph-two-deep"));
+	}
+
+	/** Word's save has a complex field for the link, its end in the next paragraph; the words and
+	 *  paragraphs are the same, and here they stay in the w:hyperlink. */
+	@Test public void aParagraphHeldInAHyperlink() throws Exception {
+		assertEquals("[hyperlink|t:TARGET TEXTHIDDEN WORDS, ¶, ¶]", target("76t71-held-paragraph-in-hyperlink"));
+		List<String> word = tokens(load("76t71-held-paragraph-in-hyperlink-word365.docx")).get("/word/document.xml");
+		assertEquals("[t:TARGET TEXTHIDDEN WORDS, ¶, ¶]", word.subList(word.indexOf("¶") + 1, word.lastIndexOf("t:LAST LINE.")).toString());
+	}
+
+	/** The host's mark takes its w:pPr, and a run rule 1b took from it comes once. */
+	@Test public void aRunInThePPrOfAHostThatIsSplit() throws Exception {
+		String read = bodyTokens("<w:p><w:pPr><w:madeUp><w:r><w:t>x</w:t></w:r></w:madeUp></w:pPr><w:r><w:t>a</w:t></w:r>"
+				+ "<w:madeUp><w:p><w:r><w:t>b</w:t></w:r></w:p></w:madeUp></w:p>");
+		assertEquals(read, 1, count(read, "x"));
+	}
+
+	/** Beside something else in the element nothing is measured, and no word is lost. */
+	@Test public void aHeldParagraphBesideARun() throws Exception {
+		String read = bodyTokens("<w:p><w:r><w:t>a</w:t></w:r><w:madeUp><w:r><w:t>b</w:t></w:r><w:p><w:r><w:t>c</w:t></w:r></w:p></w:madeUp></w:p>");
+		assertEquals("[t:abc, ¶]", read);
+	}
+
+	/** A known element holding a w:p isn't this rule's. */
+	@Test public void aKnownElementHoldingAParagraph() throws Exception {
+		String out = preprocess("<w:document " + NS + "><w:body><w:p><w:r><w:t>a</w:t></w:r><w:smartTag><w:p>" + HIDDEN
+				+ "</w:p></w:smartTag></w:p></w:body></w:document>");
+		assertTrue(out, out.contains("smartTag"));
+	}
+
+	/** Word refuses these.  docx4j reads what it can: every run where it stands. */
+	@Test public void aParagraphInAParagraphWordRefuses() throws Exception {
+		for (String name : new String[] { "76t53-held-paragraph-then-a-run", "76t54-held-paragraph-first", "76t55-held-paragraph-alone",
+				"76t57-two-held-paragraphs-then-a-run", "76t59-both-aligned-then-a-run" }) {
+			String read = tokens(load(name + ".docx")).get("/word/document.xml").toString();
+			assertTrue(read, read.substring(read.indexOf("¶")).contains("HIDDEN WORDS"));
+		}
 	}
 
 	@Test public void aBreakHeldIsABreak() throws Exception {

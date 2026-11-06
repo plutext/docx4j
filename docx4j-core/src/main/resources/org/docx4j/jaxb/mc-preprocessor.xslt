@@ -1008,8 +1008,8 @@
 						<xsl:when test="self::w:br and $host[self::w:p or self::w:hyperlink]">
 							<w:r><w:br><xsl:apply-templates select="@*" /></w:br></w:r>
 						</xsl:when>
-						<!-- 76t43: its runs join the host, and the w:p template adds the empty paragraph -->
-						<xsl:when test="self::w:p and ../parent::w:p">
+						<!-- a shape Word refuses: the w:p template takes those it opens -->
+						<xsl:when test="self::w:p and $host[self::w:p or self::w:hyperlink]">
 							<xsl:apply-templates select="*[not(self::w:pPr)]" />
 						</xsl:when>
 						<xsl:otherwise>
@@ -1050,14 +1050,65 @@
 		</xsl:if>
 	</xsl:template>
 
-	<!-- 76t43: a w:p directly in an unknown element directly in a w:p: an empty paragraph follows -->
+	<!-- A w:p held by an unknown element in a w:p: a held w:p's mark ends a paragraph.  Where the
+	     element is the host's last and holds nothing else at any depth (76t43, 76t56, 76t58, 76t68,
+	     76t69, 76t70), the first held w:p's runs join the host, with its w:pPr if it has one and the
+	     host's if not; a further one is a paragraph of its own; and a paragraph follows with the
+	     host's w:pPr and nothing else, the host's own mark.  Word refuses the other shapes measured,
+	     a run after the element or none before it (76t53, 76t54, 76t55, 76t57, 76t59), so for those
+	     docx4j reads what it can: the catch-all's runs where they stand. -->
 	<xsl:template match="w:p">
+		<xsl:choose>
+			<xsl:when test="*[last()][not(contains($wml-names, concat(' ', local-name(), ' ')))]/descendant::w:p">
+				<xsl:variable name="holder" select="*[last()]" />
+				<xsl:variable name="me" select="generate-id()" />
+				<xsl:variable name="level" select="$holder/descendant::*[contains($wml-names, concat(' ', local-name(), ' '))]
+						[generate-id(ancestor::*[contains($wml-names, concat(' ', local-name(), ' '))][1]) = $me]" />
+				<xsl:choose>
+					<xsl:when test="$level[self::w:p] and not($level[not(self::w:p)])">
+						<xsl:variable name="logging" select="java:org.docx4j.utils.XSLTUtils.noteReadThrough()" />
+						<xsl:variable name="first" select="$level[1]" />
+						<xsl:element namespace="{namespace-uri()}" name="{local-name(.)}">
+							<xsl:apply-templates select="@*" />
+							<xsl:choose>
+								<xsl:when test="$first/w:pPr"><xsl:apply-templates select="$first/w:pPr" /></xsl:when>
+								<xsl:otherwise><xsl:apply-templates select="w:pPr" /></xsl:otherwise>
+							</xsl:choose>
+							<xsl:apply-templates select="node()[not(self::w:pPr)][count(. | $holder) != 1]" />
+							<xsl:apply-templates select="$first/node()[not(self::w:pPr)]" />
+						</xsl:element>
+						<xsl:apply-templates select="$level[position() > 1]" />
+						<xsl:call-template name="the-hosts-mark" />
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:call-template name="paragraph" />
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:call-template name="paragraph" />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+	<!-- 76t71: in a w:hyperlink last in the w:p, the held w:p's runs stay in the link, read by the
+	     catch-all, and the host's mark follows.  Word's save has a complex field there, its end in
+	     that next paragraph. -->
+	<xsl:template name="paragraph">
 		<xsl:element namespace="{namespace-uri()}" name="{local-name(.)}">
 			<xsl:apply-templates select="@*|node()" />
 		</xsl:element>
-		<xsl:if test="*/w:p and *[w:p][not(contains($wml-names, concat(' ', local-name(), ' ')))]">
-			<w:p />
+		<xsl:if test="*[last()][self::w:hyperlink]/*[last()][w:p][not(contains($wml-names, concat(' ', local-name(), ' ')))]">
+			<xsl:call-template name="the-hosts-mark" />
 		</xsl:if>
+	</xsl:template>
+
+	<xsl:template name="the-hosts-mark">
+		<w:p>
+			<xsl:apply-templates select="w:pPr">
+				<xsl:with-param name="head" select="false()" />
+			</xsl:apply-templates>
+		</w:p>
 	</xsl:template>
 
 	<!-- 76t50: the w:sectPr of a paragraph goes, with its section break, where it holds a run in

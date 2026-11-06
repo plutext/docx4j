@@ -18,7 +18,7 @@ In a `w:t` it is the other way round. Word drops the element with all it holds, 
 CR-073 added and no release has shipped. 17.3.5 loses the text before the element instead (§2.2).
 
 These are small changes to `mc-preprocessor.xslt`. A scratch trial matches Word's saves on check 76's files, but for a field's `w:instrText` and a kept branch's own text (§3, D11),
-at a cost of about 1 to 3% of the preprocessor's time on the largest documents. No corpus document here has the shape, so this
+at a cost of about 3 to 5% of the preprocessor's time on the largest documents. No corpus document here has the shape, so this
 is about one reading across the ports and about not losing text, not about a measured population (§2.3).
 
 ## 1. What Word does (core-ts's check 76)
@@ -33,7 +33,8 @@ saves and PDFs are in its `test/check76/`, with a SHA-1 manifest, round 6's sinc
 | Directly in the `mc:Choice` or `mc:Fallback` Word takes, in a `w:p` | Read through: the words in the paragraph, the other branch's gone (`76t44`, `76t45`) |
 | Holding text directly, in a `w:p` | The text goes (`76t41`) |
 | Holding a `w:br`, in a `w:p` | A break, at the start of the next run (`76t42`) |
-| Holding a `w:p`, in a `w:p` | Its runs join the host paragraph, and an empty paragraph follows (`76t43`) |
+| Holding a `w:p`, last in a `w:p`, with a run before it | A held `w:p`'s mark ends a paragraph: the first's runs join the host, with its properties if it has any and the host's if not, a further one stands alone, and a paragraph with the host's properties follows (`76t43`, `76t56`, `76t58`, `76t68`, `76t69`), at any depth (`76t70`). In a `w:hyperlink` too, whose words stay linked (`76t71`) |
+| Holding a `w:p`, with a run after it or none before it | Word refuses the file, in both runs (`76t53` to `76t55`, `76t57`, `76t59`) |
 | `w:pPr` | A property in it goes and has no effect (`76t5`). A run in it is read, at the head of the paragraph: `HIDDEN WORDSTARGET TEXT`, one run in Word's save, opened with no message (`76t27`). Several runs, in order (`76t37`). A run and a property together: the run read, the property gone (`76t38`). With no other run, a paragraph of those (`76t39`) |
 | A `w:pPr` under a `w:pPrChange` | A run is read at the head of the paragraph, the `w:jc` stands, and the change comes out with `w:author="Unknown"` and no date (`76t40`) |
 | A `w:sectPr` in a `w:pPr` | A run is read at the head of the paragraph, and the `w:sectPr` goes, with its section break (`76t50`) |
@@ -128,6 +129,7 @@ compared with the same part of Word's save, by its paragraphs, rows, cells and w
 |---|---|
 | The 23 read-through files | 22 match. `76t19` differs only in the `w:instrText` of the complex field Word writes for a `w:fldSimple`; its words match |
 | `76t29` to `76t33`, `76t34` (round 7, the twenty hosts) | All six match, the words in their `w:del`, `w:moveFrom` and `w:moveTo` and the range markers kept |
+| `76t53` to `76t71` (rounds 9 to 11) | The fourteen Word saved match, `76t71` with its link kept where Word writes a field. Those it refused are read for what they hold |
 | `76t35` to `76t43`, `76t50`, `76t51` (round 8) | All eleven match. `76t42` read separately: a run with the break where Word has it at the head of the next run, so the same reading. `76t40`'s change keeps its author and date (D8) |
 | `76t44`, `76t45`, `76t52` | `76t52` reads as Word. The other two hold their words in the kept branch, unread (D11). With a second unknown element in the part, so that the stylesheet runs, `76t45` reads as Word and `76t44` doesn't (§7) |
 | `76t18`, `76t26` (controls) | `76t18` matches. `76t26` differs as `76t19` does, with nothing unknown in it, so the difference is the field's and not this rule's |
@@ -158,8 +160,8 @@ A later run set both forms side by side: stock 655, 2509, 1101 and 1310 ms, the 
 734, 2679, 1148 and 1380. The revised test costs nothing, as it is asked only of an unknown name. That run puts the whole at
 +4.3% to +6.8% on the last three and +12.1% on the first, whose stock time was low again.
 The form §4 now gives, side by side with stock in a third run: 656, 2486, 1106 and 1322 ms against 722, 2559, 1121 and 1338, so
-+1.2% to +3.0% on the last three and +10.0% on the first, low again. As built, in a fourth run: 657, 2478, 1096 and 1312 ms against
-713, 2548, 1113 and 1338, so +1.5% to +2.8%, and +8.6%.
++1.2% to +3.0% on the last three and +10.0% on the first, low again. As built, with the `w:p` template of rounds 9 to 11, in a fifth run: 656, 2465, 1097 and 1312 ms
+against 727, 2584, 1130 and 1358, so +3.0% to +4.8%, and +10.8%.
 
 The form matters. Rule 1 alone is -0.9% to +8.9%, nearly all of it under 4%. The same rule 2 written as two new match patterns
 in mode `split-text` took the whole to +14% to +24%, in every run, though that mode is rarely entered. Why wasn't traced. Moved
@@ -189,7 +191,11 @@ attributes and any text directly in it go, and the second unmarshal goes on drop
   (§3). `mc:` elements don't stop it: `76t44` and `76t45` read through directly in the branch Word takes.
 - A `w:br` it gives way to, in a `w:p` or a `w:hyperlink`, goes in a run of its own (`76t42`), since CR-073's rule 1 names its parents
   and wouldn't take it. Word's save has it at the head of the next run, which reads the same.
-- A `w:p` it gives way to, in a `w:p`, gives its children but for a `w:pPr`, and an empty `w:p` follows the host (`76t43`, D10).
+- A `w:p` held in a `w:p` (D10): a held `w:p`'s mark ends a paragraph. Where the element is the host's last and holds only `w:p`, at any
+  depth, the first's runs join the host and its `w:pPr`, if it has one, replaces the host's, a further one stands as its own paragraph,
+  and a paragraph with the host's `w:pPr` and nothing else follows, the host's own mark (`76t43`, `76t56`, `76t58`, `76t68` to `76t70`).
+  In a `w:hyperlink` last in the `w:p`, the runs stay in the link and the host's mark follows (`76t71`): Word's save has a complex field
+  there, whose end stands in that next paragraph, and docx4j keeps the `w:hyperlink`. In the shapes Word refuses, the runs stay where they stand.
 - A host is a declaration, not a tag (python's CR-037 §8.2). `wml.xsd` also declares `w:ins` as `CT_TrackChange` in a `w:numPr`,
   `w:rPr` and `w:trPr`, as `CT_RPrChange` in an `m:ctrlPr`, and as `CT_MathRunTrackChange` in an `m:r`, which does hold math
   content. `w:del` has the same but for the `w:numPr`, `w:moveFrom` and `w:moveTo` are `CT_TrackChange` in a `w:rPr`, and
@@ -245,7 +251,7 @@ D1 as its row says. D2 to D11 as recommended (Jason, 2026-11-06).
 | D7 | A run in a `w:pPr`'s unknown element (`76t27`). | (a) Rule 1b here, direct runs alone, as measured; (b) leave it dropped. | (a). It is the same loss of words Word shows, and a few lines. core-ts's oracle rows agree (2026-11-06), and its CR-026 D8, decided at this width (Jason there: "CR-026 D8: yes", 1ffb120), is the same rule, so (a) keeps the two in step. |
 | D8 | `76t40`: Word reads a run under a `w:pPrChange`, and the change loses its author and date. | (a) Read the words and keep the author and date; (b) read them, and write `Unknown` as Word does; (c) leave it dropped. | (a), as core-ts's CR-026 D9 recommends. The words are the reading. `Unknown` would destroy what the file says. python keeps this dropped today, so it needs the change too. |
 | D9 | `76t50`: Word reads a run in a paragraph's `w:sectPr`, and the section break goes. | (a) Read the words and drop the `w:sectPr`, as Word; (b) read the words and keep the section; (c) leave it dropped. | (a), as core-ts's D10: it is Word's reading, and pagination follows it. It is one file, with the element first in the `w:sectPr`. |
-| D10 | `76t43`: a `w:p` in an unknown element in a `w:p`. | (a) As Word: its runs join the host, an empty paragraph follows; (b) leave it dropped. | (a), as core-ts's D11. A few lines. With content after the `w:p` nothing is measured, and this does the same. |
+| D10 | `76t43`: a `w:p` in an unknown element in a `w:p`. | (a) As Word: its runs join the host, an empty paragraph follows; (b) leave it dropped. | (a), as core-ts's D11. Rounds 9 and 11 widened it (Jason: "CR-076 D10 fix to match word as far as possible"): §4. |
 | D11 | `76t44`, `76t45`: the element directly in a kept branch, when nothing else sends the part through the stylesheet. | (a) A pass after unmarshal, reading such a DOM element through; (b) leave it: the branch stays whole, a save keeps it and Word reads it, and docx4j's own text misses those words. | (b) for now. A branch's `any` takes the unknown element with no event, so the stylesheet never hears of it, and (a) is new code on the load path for a shape no corpus document holds (§2.3). Rule 1 still reads it through when the stylesheet runs for another reason. |
 
 ## 6. Phases
@@ -267,11 +273,11 @@ D1 as its row says. D2 to D11 as recommended (Jason, 2026-11-06).
     that the schema lacks. Phase 1 doesn't wait for it.
   - The change is to the shared load path, and CLAUDE.md suggests Fable for that.
   - DONE 2026-11-06. `mc-preprocessor.xslt`, `XSLTUtils` (the count for D4's WARN, and the understood set
-    for rule 2), `UnknownElementsTest`, and `unknown-elements/`: 79 sources and Word's 65 saves. The test compares 63 files with Word's
-    saves, leaving out `76t44` and `76t45` (D11), and 11 of its 19 tests fail on the stylesheet before this. 49 mutants, each
-    of the twenty hosts, each guard by parent and each rule's parts, are all caught. core-tests 2459 (30 skipped), export-fo 111,
-    export-fo-tests 908 (9 skipped). Gate b370 against b369: 0 movers, events equal. The catalogue's home copy isn't here yet, so its
-    query is still to do.
+    for rule 2), `UnknownElementsTest`, and `unknown-elements/`: 98 sources and Word's 79 saves, rounds 1 to 11. The test compares 76 files with
+    Word's saves, leaving out `76t44` and `76t45` (D11) and `76t71`, which has a test of its own. 62 mutants, each of the twenty hosts,
+    each guard by parent and each rule's parts, are caught, but for one that changes only how soon the `w:p` template looks further.
+    core-tests 2480 (30 skipped), export-fo 111, export-fo-tests 908 (9 skipped). Gates b370 against b369, and b372 against b371 for the
+    `w:p` template: 0 movers, events equal. The catalogue's home copy isn't here yet, so its query is still to do.
 - **Phase 2, the hand-offs** (D6) through the portfolio session.
 
 ## 7. Risks
