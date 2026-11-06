@@ -1,6 +1,6 @@
 # CR-077: a `w14:paraId` on every paragraph and row saved
 
-Status: ACCEPTED 2026-11-06 (Jason: "CR-077 D1–D7 as recommended, then commit and implement"; proposed the same day, "write the CR for the w14:paraId gap"). Raised by core-ts's Word checks 79 and 80 and the
+Status: DONE 2026-11-06, 57ff8b2dc (Jason: "CR-077 D1–D7 as recommended, then commit and implement"; proposed the same day, "write the CR for the w14:paraId gap"). Raised by core-ts's Word checks 79 and 80 and the
 portfolio's DI-026, which records all three implementations. core-ts has fixed its side (CR-002 section 66, `1e02687`), and
 python has proposed its own (CR-038). Decisions in §6, all decided; phases in §7.
 
