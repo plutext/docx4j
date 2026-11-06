@@ -1,0 +1,65 @@
+probe	mode	given	word_val
+k-none	15	none	none
+k-agree-3F01	15	val="3F01" allStyles="1" customStyles="0" latentStyles="0" stylesInUse="0" headingStyles="0" numberingStyles="0" tableStyles="0" directFormattingOnRuns="1" directFormattingOnParagraphs="1" directFormattingOnNumbering="1" directFormattingOnTables="1" clearFormatting="1" top3HeadingStyles="1" visibleStyles="0" alternateStyleNames="0"	3F01
+k-agree-A5C2	15	val="A5C2" allStyles="0" customStyles="1" latentStyles="0" stylesInUse="0" headingStyles="0" numberingStyles="1" tableStyles="1" directFormattingOnRuns="1" directFormattingOnParagraphs="0" directFormattingOnNumbering="1" directFormattingOnTables="0" clearFormatting="0" top3HeadingStyles="1" visibleStyles="0" alternateStyleNames="1"	A5C2
+v-0000	15	val="0000"	0000
+v-0001	15	val="0001"	0001
+v-0002	15	val="0002"	0002
+v-0004	15	val="0004"	0004
+v-0008	15	val="0008"	0008
+v-0010	15	val="0010"	0000
+v-0020	15	val="0020"	0020
+v-0040	15	val="0040"	0040
+v-0080	15	val="0080"	0080
+v-0100	15	val="0100"	0100
+v-0200	15	val="0200"	0200
+v-0400	15	val="0400"	0400
+v-0800	15	val="0800"	0800
+v-1000	15	val="1000"	1000
+v-2000	15	val="2000"	2000
+v-4000	15	val="4000"	4000
+v-8000	15	val="8000"	8000
+v-FFFF	15	val="FFFF"	FFEF
+v-3F01	15	val="3F01"	3F01
+v-A5C2	15	val="A5C2"	A5C2
+a-empty	15	empty	FFEF
+a-allStyles	15	allStyles="1"	FFEF
+a-customStyles	15	customStyles="1"	FFEF
+a-latentStyles	15	latentStyles="1"	FFEF
+a-stylesInUse	15	stylesInUse="1"	FFEF
+a-headingStyles	15	headingStyles="1"	FFEF
+a-numberingStyles	15	numberingStyles="1"	FFEF
+a-tableStyles	15	tableStyles="1"	FFEF
+a-directFormattingOnRuns	15	directFormattingOnRuns="1"	FFEF
+a-directFormattingOnParagraphs	15	directFormattingOnParagraphs="1"	FFEF
+a-directFormattingOnNumbering	15	directFormattingOnNumbering="1"	FFEF
+a-directFormattingOnTables	15	directFormattingOnTables="1"	FFEF
+a-clearFormatting	15	clearFormatting="1"	FFEF
+a-top3HeadingStyles	15	top3HeadingStyles="1"	FFEF
+a-visibleStyles	15	visibleStyles="1"	FFEF
+a-alternateStyleNames	15	alternateStyleNames="1"	FFEF
+a-allStyles-0	15	allStyles="0"	FFEE
+a-all1	15	allStyles="1" customStyles="1" latentStyles="1" stylesInUse="1" headingStyles="1" numberingStyles="1" tableStyles="1" directFormattingOnRuns="1" directFormattingOnParagraphs="1" directFormattingOnNumbering="1" directFormattingOnTables="1" clearFormatting="1" top3HeadingStyles="1" visibleStyles="1" alternateStyleNames="1"	FFEF
+a-all0	15	allStyles="0" customStyles="0" latentStyles="0" stylesInUse="0" headingStyles="0" numberingStyles="0" tableStyles="0" directFormattingOnRuns="0" directFormattingOnParagraphs="0" directFormattingOnNumbering="0" directFormattingOnTables="0" clearFormatting="0" top3HeadingStyles="0" visibleStyles="0" alternateStyleNames="0"	0000
+a-as3F01	15	allStyles="1" customStyles="0" latentStyles="0" stylesInUse="0" headingStyles="0" numberingStyles="0" tableStyles="0" directFormattingOnRuns="1" directFormattingOnParagraphs="1" directFormattingOnNumbering="1" directFormattingOnTables="1" clearFormatting="1" top3HeadingStyles="1" visibleStyles="0" alternateStyleNames="0"	3F01
+a-asA5C2	15	allStyles="0" customStyles="1" latentStyles="0" stylesInUse="0" headingStyles="0" numberingStyles="1" tableStyles="1" directFormattingOnRuns="1" directFormattingOnParagraphs="0" directFormattingOnNumbering="1" directFormattingOnTables="0" clearFormatting="0" top3HeadingStyles="1" visibleStyles="0" alternateStyleNames="1"	A5C2
+d-0000-all1	15	val="0000" allStyles="1" customStyles="1" latentStyles="1" stylesInUse="1" headingStyles="1" numberingStyles="1" tableStyles="1" directFormattingOnRuns="1" directFormattingOnParagraphs="1" directFormattingOnNumbering="1" directFormattingOnTables="1" clearFormatting="1" top3HeadingStyles="1" visibleStyles="1" alternateStyleNames="1"	FFEF
+d-FFFF-all0	15	val="FFFF" allStyles="0" customStyles="0" latentStyles="0" stylesInUse="0" headingStyles="0" numberingStyles="0" tableStyles="0" directFormattingOnRuns="0" directFormattingOnParagraphs="0" directFormattingOnNumbering="0" directFormattingOnTables="0" clearFormatting="0" top3HeadingStyles="0" visibleStyles="0" alternateStyleNames="0"	0000
+d-3F01-asA5C2	15	val="3F01" allStyles="0" customStyles="1" latentStyles="0" stylesInUse="0" headingStyles="0" numberingStyles="1" tableStyles="1" directFormattingOnRuns="1" directFormattingOnParagraphs="0" directFormattingOnNumbering="1" directFormattingOnTables="0" clearFormatting="0" top3HeadingStyles="1" visibleStyles="0" alternateStyleNames="1"	A5C2
+d-A5C2-as3F01	15	val="A5C2" allStyles="1" customStyles="0" latentStyles="0" stylesInUse="0" headingStyles="0" numberingStyles="0" tableStyles="0" directFormattingOnRuns="1" directFormattingOnParagraphs="1" directFormattingOnNumbering="1" directFormattingOnTables="1" clearFormatting="1" top3HeadingStyles="1" visibleStyles="0" alternateStyleNames="0"	3F01
+d-3F01-as3F00	15	val="3F01" allStyles="0" customStyles="0" latentStyles="0" stylesInUse="0" headingStyles="0" numberingStyles="0" tableStyles="0" directFormattingOnRuns="1" directFormattingOnParagraphs="1" directFormattingOnNumbering="1" directFormattingOnTables="1" clearFormatting="1" top3HeadingStyles="1" visibleStyles="0" alternateStyleNames="0"	3F00
+d-3F01-as3F03	15	val="3F01" allStyles="1" customStyles="1" latentStyles="0" stylesInUse="0" headingStyles="0" numberingStyles="0" tableStyles="0" directFormattingOnRuns="1" directFormattingOnParagraphs="1" directFormattingOnNumbering="1" directFormattingOnTables="1" clearFormatting="1" top3HeadingStyles="1" visibleStyles="0" alternateStyleNames="0"	3F03
+p-3F01-allStyles0	15	val="3F01" allStyles="0"	FFEE
+p-3F01-customStyles1	15	val="3F01" customStyles="1"	FFEF
+p-0000-allStyles1	15	val="0000" allStyles="1"	FFEF
+p-FFFF-allStyles0	15	val="FFFF" allStyles="0"	FFEE
+p-A5C2-low3F01	15	val="A5C2" allStyles="1" customStyles="0" latentStyles="0" stylesInUse="0" headingStyles="0" numberingStyles="0" tableStyles="0"	FF01
+o-all1-0000	15	allStyles="1" customStyles="1" latentStyles="1" stylesInUse="1" headingStyles="1" numberingStyles="1" tableStyles="1" directFormattingOnRuns="1" directFormattingOnParagraphs="1" directFormattingOnNumbering="1" directFormattingOnTables="1" clearFormatting="1" top3HeadingStyles="1" visibleStyles="1" alternateStyleNames="1" val="0000"	FFEF
+o-all0-FFFF	15	allStyles="0" customStyles="0" latentStyles="0" stylesInUse="0" headingStyles="0" numberingStyles="0" tableStyles="0" directFormattingOnRuns="0" directFormattingOnParagraphs="0" directFormattingOnNumbering="0" directFormattingOnTables="0" clearFormatting="0" top3HeadingStyles="0" visibleStyles="0" alternateStyleNames="0" val="FFFF"	0000
+o-asA5C2-3F01	15	allStyles="0" customStyles="1" latentStyles="0" stylesInUse="0" headingStyles="0" numberingStyles="1" tableStyles="1" directFormattingOnRuns="1" directFormattingOnParagraphs="0" directFormattingOnNumbering="1" directFormattingOnTables="0" clearFormatting="0" top3HeadingStyles="1" visibleStyles="0" alternateStyleNames="1" val="3F01"	A5C2
+o-allStyles0-3F01	15	allStyles="0" val="3F01"	FFEE
+o-mid-0000	15	allStyles="1" customStyles="1" latentStyles="1" stylesInUse="1" headingStyles="1" numberingStyles="1" tableStyles="1" val="0000" directFormattingOnRuns="1" directFormattingOnParagraphs="1" directFormattingOnNumbering="1" directFormattingOnTables="1" clearFormatting="1" top3HeadingStyles="1" visibleStyles="1" alternateStyleNames="1"	FFEF
+m12-v-A5C2	12	val="A5C2"	A5C2
+m12-d-3F01-asA5C2	12	val="3F01" allStyles="0" customStyles="1" latentStyles="0" stylesInUse="0" headingStyles="0" numberingStyles="1" tableStyles="1" directFormattingOnRuns="1" directFormattingOnParagraphs="0" directFormattingOnNumbering="1" directFormattingOnTables="0" clearFormatting="0" top3HeadingStyles="1" visibleStyles="0" alternateStyleNames="1"	A5C2
+m14-v-A5C2	14	val="A5C2"	A5C2
+m14-d-3F01-asA5C2	14	val="3F01" allStyles="0" customStyles="1" latentStyles="0" stylesInUse="0" headingStyles="0" numberingStyles="1" tableStyles="1" directFormattingOnRuns="1" directFormattingOnParagraphs="0" directFormattingOnNumbering="1" directFormattingOnTables="0" clearFormatting="0" top3HeadingStyles="1" visibleStyles="0" alternateStyleNames="1"	A5C2

@@ -477,6 +477,27 @@ PRINCIPLES:
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
+	<!-- docx4j 17.3.6 (CR-078): Word writes the fifteen beside w:val, repeating its bits.  w:val
+	     is optional, and nothing keeps the two in step.  Word reads w:val only with no attribute
+	     beside it, and an attribute left out as on (CR-078 section 1). -->
+	<xsd:complexType name="CT_StylePaneFilter">
+		<xsd:attribute name="allStyles" type="s:ST_OnOff"/>
+		<xsd:attribute name="customStyles" type="s:ST_OnOff"/>
+		<xsd:attribute name="latentStyles" type="s:ST_OnOff"/>
+		<xsd:attribute name="stylesInUse" type="s:ST_OnOff"/>
+		<xsd:attribute name="headingStyles" type="s:ST_OnOff"/>
+		<xsd:attribute name="numberingStyles" type="s:ST_OnOff"/>
+		<xsd:attribute name="tableStyles" type="s:ST_OnOff"/>
+		<xsd:attribute name="directFormattingOnRuns" type="s:ST_OnOff"/>
+		<xsd:attribute name="directFormattingOnParagraphs" type="s:ST_OnOff"/>
+		<xsd:attribute name="directFormattingOnNumbering" type="s:ST_OnOff"/>
+		<xsd:attribute name="directFormattingOnTables" type="s:ST_OnOff"/>
+		<xsd:attribute name="clearFormatting" type="s:ST_OnOff"/>
+		<xsd:attribute name="top3HeadingStyles" type="s:ST_OnOff"/>
+		<xsd:attribute name="visibleStyles" type="s:ST_OnOff"/>
+		<xsd:attribute name="alternateStyleNames" type="s:ST_OnOff"/>
+		<xsd:attribute name="val" type="ST_ShortHexNumber"/>
+	</xsd:complexType>
 	<xsd:simpleType name="ST_UcharHexNumber">
 		<xsd:annotation>
 			<xsd:documentation>Two Digit Hexadecimal Number
@@ -12167,7 +12188,7 @@ PRINCIPLES:
 						Template</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="stylePaneFormatFilter" type="CT_ShortHexNumber"
+			<xsd:element name="stylePaneFormatFilter" type="CT_StylePaneFilter"
 				minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Suggested Filtering for List of Document
