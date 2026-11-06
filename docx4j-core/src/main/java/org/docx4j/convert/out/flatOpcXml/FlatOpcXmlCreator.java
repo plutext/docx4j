@@ -478,6 +478,8 @@ public class FlatOpcXmlCreator implements Output {
 	
 	public  org.docx4j.xmlPackage.Part createRawXmlPart(Part part) throws Docx4JException {
 		
+		org.docx4j.model.structure.ParaIds.beforeSave(part); // CR-077
+		
 		String partName = part.getPartName().getName();
         org.docx4j.xmlPackage.Part partResult = factory.createPart();
         

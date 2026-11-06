@@ -88,6 +88,11 @@ Changes in Version 17.3.6
   longer leaves the main document unread: the load took JAXB's message, which lists `w14:entityPicker`, for an XXE
   entity error and gave up instead of preprocessing (`XmlUtils.isEntityError`). Found by docx-platform-tests.
 
+**Saving.**
+- A save gives a `w14:paraId` to each paragraph and table row that has none, or repeats an earlier one, in a document that
+  uses them, in any part that has been read: with one missing, Word renumbers every id in some files. `docx4j.save.paraIds=false` turns
+  it off, and `ParaIds.assign` does it on request (CR-077).
+
 **Java 25.**
 - docx4j sets its own XML element-depth limit, 256 (`docx4j.xml.maxElementDepth`, 0 for none), on the parsers it
   creates: Java 25's default of 100 left a document 32 tables deep unreadable, and failed PDF output at 25.

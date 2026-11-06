@@ -228,6 +228,8 @@ public class Save {
 						
 			if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 				
+				org.docx4j.model.structure.ParaIds.beforeSave(part); // CR-077
+				
 				// From docx4j 2.7.1, support setting some basic metadata
 				// from docx4j.properties
 				if (part instanceof DocPropsCorePart) {
