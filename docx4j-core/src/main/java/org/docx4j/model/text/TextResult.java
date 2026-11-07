@@ -37,6 +37,12 @@ public final class TextResult {
 
 	/** {@link #metadata()}'s key for the settings' {@code w:updateFields} (REQ-506, REQ-801): a {@link Boolean}. */
 	public static final String FIELDS_UPDATE_ON_OPEN = "fields_update_on_open";
+	/**
+	 * {@link #metadata()}'s key for what the load repaired (WD REQ-207, REQ-801): {@code none}, {@code word} where only Word's
+	 * repairs were followed, {@code own} where docx4j made one of its own ({@link org.docx4j.openpackaging.io3.RepairMode}).
+	 * @since 17.3.6
+	 */
+	public static final String REPAIRED = "repaired";
 	/** {@link #metadata()}'s key for the core properties (REQ-515): a map from each property's element name ({@code title}, {@code creator}, ...) to its value. */
 	public static final String CORE = "core";
 	/** {@link #metadata()}'s key for the application properties (REQ-515): a map from element name ({@code Company}, {@code Template}, ...) to value; the statistics left out. */

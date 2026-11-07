@@ -151,6 +151,10 @@ Changes in Version 17.3.6
   shows nothing of gives no text and `part.unexpected_root`; a save of either keeps its bytes, and an inspection of a main part that can't be read is `PARTIAL` (CR-079).
 - The text model refuses a package with no main document part, where it gave no text.
 - A package with an `External` `officeDocument` relationship beside an internal one is refused, naming it, under `RepairMode.WORD` too, as Word refuses it even through a repair.
+  One with no internal one is refused as having no main part, where the URL was taken for a part name.
+- `RepairMode.ALL` (`docx4j.openpackaging.load.repair=all`) follows Word's repairs and makes docx4j's own of shapes Word won't open, listed in its javadoc. The first: an
+  `External` `officeDocument` relationship beside an internal one is dropped, its URL never fetched, and `package.external_main_part` raised. The text model's result
+  says what a load repaired, `repaired`: `none`, `word` or `own` (WD REQ-207).
 - A relationships part in another namespace is refused, naming it, or under `RepairMode.WORD` read as Word's repair reads it, every relationship by its local name, recorded as
   `package.relationships_namespace`.
 - A custom XML store that isn't well formed no longer refuses the load: it reads as absent, a binding naming it resolves to the store that fits, as Word's repair does, and raises

@@ -30,29 +30,53 @@ import org.slf4j.LoggerFactory;
  * <li>{@link #NONE} (the default): such a package is refused, naming what is wrong.</li>
  * <li>{@link #WORD}: Word's prompt answered in advance. The package reads as Word's repair gives it, and
  * what was repaired is recorded ({@link org.docx4j.openpackaging.packages.OpcPackage#getLoadFindings()}).</li>
+ * <li>{@link #ALL}: as {@link #WORD}, and docx4j's own repairs too, of shapes Word won't open (the WD's
+ * {@code repair: all}, REQ-207). A file docx4j has no repair for is still refused.</li>
  * </ul>
  *
- * @since 17.3.6 (CR-075 phase 1)
+ * <p>docx4j's own repairs, each recorded as its load finding, which the text model raises as a warning:
+ * <ul>
+ * <li>An {@code External} {@code officeDocument} relationship beside an internal one, which Word refuses even
+ * through its repair: the internal target is read, the {@code External} relationship dropped, so a save writes
+ * none, and its URL never fetched; {@code package.external_main_part}, selector the part read, detail the URL
+ * as written.</li>
+ * </ul>
+ *
+ * @since 17.3.6 (CR-075 phase 1; {@link #ALL} CR-075 phase 5)
  */
 public enum RepairMode {
 
 	NONE,
 
-	WORD;
+	WORD,
+
+	/** @since 17.3.6 (CR-075 phase 5) */
+	ALL;
+
+	/** Whether a load follows Word's repairs: {@link #WORD}, and {@link #ALL}, which includes them. */
+	public boolean followsWord() {
+		return this != NONE;
+	}
+
+	/** Whether a load makes docx4j's own repairs too: {@link #ALL}. */
+	public boolean makesOwnRepairs() {
+		return this == ALL;
+	}
 
 	private static final Logger log = LoggerFactory.getLogger(RepairMode.class);
 
-	/** The property: {@code none} (the default) or {@code word}. */
+	/** The property: {@code none} (the default), {@code word} or {@code all}. */
 	public static final String PROPERTY = "docx4j.openpackaging.load.repair";
 
 	private static volatile String warnedAbout;
 
-	/** The mode a value names ({@code none}, {@code word}; case-insensitive, trimmed), or null for any other value. */
+	/** The mode a value names ({@code none}, {@code word}, {@code all}; case-insensitive, trimmed), or null for any other value. */
 	public static RepairMode parse(String value) {
 		if (value == null) return null;
 		String v = value.trim();
 		if (v.equalsIgnoreCase("none")) return NONE;
 		if (v.equalsIgnoreCase("word")) return WORD;
+		if (v.equalsIgnoreCase("all")) return ALL;
 		return null;
 	}
 
@@ -64,7 +88,7 @@ public enum RepairMode {
 		if (mode == null) {
 			if (!value.equals(warnedAbout)) {
 				warnedAbout = value;
-				log.warn(PROPERTY + "=" + value + " names neither 'none' nor 'word'; using none");
+				log.warn(PROPERTY + "=" + value + " names none of 'none', 'word' and 'all'; using none");
 			}
 			return NONE;
 		}

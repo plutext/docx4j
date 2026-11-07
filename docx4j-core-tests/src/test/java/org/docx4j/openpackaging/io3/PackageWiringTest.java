@@ -45,6 +45,7 @@ import org.docx4j.model.fields.merge.MailMerger;
 import org.docx4j.model.text.Inspect;
 import org.docx4j.model.text.Inspection;
 import org.docx4j.model.text.TextOptions;
+import org.docx4j.model.text.TextResult;
 import org.docx4j.model.text.TextWarning;
 import org.docx4j.model.text.Texts;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -77,6 +78,10 @@ public class PackageWiringTest {
 
 	private static LoadOptions repair() {
 		return new LoadOptions().repairMode(RepairMode.WORD);
+	}
+
+	private static LoadOptions all() {
+		return new LoadOptions().repairMode(RepairMode.ALL);
 	}
 
 	/** The same load from a file and from a stream. */
@@ -652,9 +657,123 @@ public class PackageWiringTest {
 					fail("loaded");
 				} catch (Docx4JException refused) {
 					assertTrue(refused.getMessage(), refused.getMessage().contains("External main part relationship, to http://example.com/x.docx"));
+					assertTrue(refused.getMessage(), refused.getMessage().contains("RepairMode.ALL"));
 				}
 			}
 		}
+	}
+
+	private static final String OD = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument";
+	private static final String RELS_OPEN = "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">";
+	private static final String URL = "http://example.invalid/x.docx";
+
+	private static String internal(String id, String target) {
+		return "<Relationship Id=\"" + id + "\" Type=\"" + OD + "\" Target=\"" + target + "\"/>";
+	}
+
+	private static String external(String id, String url) {
+		return "<Relationship Id=\"" + id + "\" Type=\"" + OD + "\" Target=\"" + url + "\" TargetMode=\"External\"/>";
+	}
+
+	private static byte[] withPackageRels(String relationships) throws Exception {
+		return rewritten(wiring("control-one-main"), "_rels/.rels", RELS_OPEN + relationships + "</Relationships>");
+	}
+
+	private static String entryText(byte[] zip, String name) throws Exception {
+		try (ZipInputStream in = new ZipInputStream(new ByteArrayInputStream(zip))) {
+			for (ZipEntry e; (e = in.getNextEntry()) != null; ) if (e.getName().equals(name)) return new String(in.readAllBytes(), "UTF-8");
+		}
+		throw new AssertionError(name);
+	}
+
+	/**
+	 * REQ-207 and the External statement: under RepairMode.ALL docx4j's own repair reads the internal target and drops the External
+	 * relationship, told once, so a save writes none. The URL is never fetched: example.invalid can't be resolved, and nothing tries.
+	 */
+	@Test
+	public void underAllTheExternalRelationshipIsDropped() throws Exception {
+		for (String rels : new String[] { internal("rId1", "word/document.xml") + external("rId2", URL), external("rId2", URL) + internal("rId1", "word/document.xml") }) {
+			WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(withPackageRels(rels)), all());
+			assertEquals("CONTROL_WORDS", text(pkg));
+			assertEquals(pkg.getLoadFindings().toString(), 1, pkg.getLoadFindings().size());
+			LoadFinding f = pkg.getLoadFindings().get(0);
+			assertEquals(LoadFinding.EXTERNAL_MAIN_PART, f.getKind());
+			assertEquals("/word/document.xml", f.getSelector());
+			assertEquals(URL, f.getDetail());
+			TextResult r = Texts.of(pkg, new TextOptions());
+			boolean warned = false;
+			for (TextWarning w : r.warnings()) warned |= TextWarning.PACKAGE_EXTERNAL_MAIN_PART.equals(w.getKind()) && URL.equals(w.getDetail());
+			assertTrue(r.warnings().toString(), warned);
+			assertEquals(LoadFinding.REPAIRED_OWN, r.metadata().get(TextResult.REPAIRED));
+			boolean inspected = false;
+			for (Inspection.Entry e : Inspect.of(pkg).skipped()) inspected |= LoadFinding.EXTERNAL_MAIN_PART.equals(e.getReason());
+			assertTrue(inspected);
+			byte[] zip = saved(pkg);
+			assertFalse(entryText(zip, "_rels/.rels"), entryText(zip, "_rels/.rels").contains("External"));
+			WordprocessingMLPackage again = WordprocessingMLPackage.load(new ByteArrayInputStream(zip));
+			assertEquals("CONTROL_WORDS", text(again));
+			assertTrue(again.getLoadFindings().isEmpty());
+		}
+	}
+
+	/** Every External one goes, told once by the first; and Word's own repair still applies beside it, the last internal one read. */
+	@Test
+	public void underAllEveryExternalGoesAndWordsRepairStillApplies() throws Exception {
+		WordprocessingMLPackage two = WordprocessingMLPackage.load(new ByteArrayInputStream(withPackageRels(
+				external("rId2", URL) + internal("rId1", "word/document.xml") + external("rId3", "http://example.invalid/y.docx"))), all());
+		assertEquals(1, two.getLoadFindings().size());
+		assertEquals(URL, two.getLoadFindings().get(0).getDetail());
+		assertFalse(entryText(saved(two), "_rels/.rels").contains("External"));
+
+		byte[] parts = rewritten(wiring("two-main-rels-document-first"), "_rels/.rels", RELS_OPEN
+				+ internal("rId1", "word/document.xml") + external("rId3", URL) + internal("rId2", "word/other.xml") + "</Relationships>");
+		WordprocessingMLPackage both = WordprocessingMLPackage.load(new ByteArrayInputStream(parts), all());
+		assertEquals("MAIN_OTHER_XML", text(both));
+		List<String> kinds = new ArrayList<String>();
+		for (LoadFinding f : both.getLoadFindings()) kinds.add(f.getKind() + " " + f.getSelector());
+		assertEquals(Arrays.asList(LoadFinding.MULTIPLE_MAIN_PARTS + " /word/other.xml", LoadFinding.EXTERNAL_MAIN_PART + " /word/other.xml"), kinds);
+		assertEquals(LoadFinding.REPAIRED_OWN, LoadFinding.repaired(both.getLoadFindings()));
+	}
+
+	/** An External one alone leaves no main document part (REQ-321), in every mode, where the URL was taken for a part name. */
+	@Test
+	public void anExternalRelationshipAloneIsNoMainPart() throws Exception {
+		byte[] zip = withPackageRels(external("rId2", URL));
+		for (LoadOptions options : new LoadOptions[] { new LoadOptions(), repair(), all() }) {
+			try {
+				WordprocessingMLPackage.load(new ByteArrayInputStream(zip), options);
+				fail("loaded");
+			} catch (Docx4JException refused) {
+				assertTrue(refused.getMessage(), refused.getMessage().contains("only main part relationship is External, to " + URL));
+			}
+		}
+	}
+
+	/** ALL follows each of Word's repairs as WORD does, and repaired says whose; the save gate gives way as it does under WORD. */
+	@Test
+	public void allFollowsWordsRepairsToo() throws Exception {
+		assertEquals("FIRST_ENTRY", text(WordprocessingMLPackage.load(wiring("dup-entry-document"), all())));
+		assertEquals("MAIN_OTHER_XML", text(WordprocessingMLPackage.load(wiring("two-main-rels-document-first"), all())));
+		WordprocessingMLPackage namespace = WordprocessingMLPackage.load(wiring(ANOTHER_NAMESPACE[0]), all());
+		assertEquals(LoadFinding.RELATIONSHIPS_NAMESPACE, namespace.getLoadFindings().get(0).getKind());
+		for (String name : new String[] { "dup-entry-document", "two-main-rels-document-first", ANOTHER_NAMESPACE[0] }) {
+			for (LoadOptions options : new LoadOptions[] { repair(), all() }) {
+				TextResult r = Texts.of(WordprocessingMLPackage.load(wiring(name), options), new TextOptions());
+				assertEquals(name, LoadFinding.REPAIRED_WORD, r.metadata().get(TextResult.REPAIRED));
+			}
+		}
+		assertEquals(LoadFinding.REPAIRED_NONE, Texts.of(WordprocessingMLPackage.load(wiring("control-one-main"), all()), new TextOptions()).metadata().get(TextResult.REPAIRED));
+		File broken = file("text-extraction/broken-part/broken-part-document-rels.docx");
+		assertTrue(WordprocessingMLPackage.load(new ByteArrayInputStream(saved(WordprocessingMLPackage.load(broken, all())))).getLoadFindings().isEmpty());
+		assertFalse(entries(saved(WordprocessingMLPackage.load(file("text-extraction/broken-part/store-not-read.docx"), all()))).contains("customXml/item1.xml"));
+		Docx4jProperties.setProperty(RepairMode.PROPERTY, "all");
+		try {
+			assertEquals(RepairMode.ALL, RepairMode.fromProperty());
+			assertEquals("CONTROL_WORDS", text(WordprocessingMLPackage.load(new ByteArrayInputStream(withPackageRels(internal("rId1", "word/document.xml") + external("rId2", URL))))));
+		} finally {
+			Docx4jProperties.setProperty(RepairMode.PROPERTY, "none");
+		}
+		assertEquals(RepairMode.ALL, RepairMode.parse(" All "));
 	}
 
 	/** A merge clones through a save and its result is a new package with no findings, so it is refused on purpose (Jason, CR-075 section 6). */

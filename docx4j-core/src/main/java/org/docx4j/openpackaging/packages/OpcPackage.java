@@ -184,7 +184,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	 */
 	public void refuseSaveThatLoses() throws Docx4JException {
 		RepairMode mode = repairMode != null ? repairMode : RepairMode.fromProperty();
-		if (mode == RepairMode.WORD) return;
+		if (mode.followsWord()) return;
 		for (LoadFinding f : loadFindings) {
 			if (LoadFinding.PART_NOT_READ.equals(f.getKind()) && f.getSelector() != null && f.getSelector().endsWith(".rels")) {
 				throw new Docx4JException("Refused: " + f.getSelector() + " could not be read, " + f.getDetail()

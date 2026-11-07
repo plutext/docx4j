@@ -196,7 +196,7 @@ public class ZipPartStore implements PartStore {
 	/** REQ-206: refuses a package with entries of one name, naming them; under {@link RepairMode#WORD} records each name once. */
 	private void refuseOrRecord(Map<String, List<String>> duplicated, RepairMode repair) throws Docx4JException {
 		if (duplicated.isEmpty()) return;
-		if (repair != RepairMode.WORD) {
+		if (repair == null || !repair.followsWord()) {
 			StringBuilder named = new StringBuilder();
 			for (List<String> spellings : duplicated.values()) {
 				if (named.length() > 0) named.append(", ");

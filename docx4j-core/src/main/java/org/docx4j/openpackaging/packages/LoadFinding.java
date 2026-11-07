@@ -37,6 +37,25 @@ public final class LoadFinding {
 	public static final String RELATIONSHIPS_NAMESPACE = "package.relationships_namespace";
 	/** A relationships part that could not be read: selector its name, detail the number of relationships kept (WD REQ-801). */
 	public static final String PART_NOT_READ = "part.not_read";
+	/**
+	 * An External officeDocument relationship beside an internal one, dropped by docx4j's own repair under
+	 * {@link org.docx4j.openpackaging.io3.RepairMode#ALL}, the URL never fetched: selector the part read, detail the URL as written.
+	 * @since 17.3.6 (CR-075 phase 5)
+	 */
+	public static final String EXTERNAL_MAIN_PART = "package.external_main_part";
+
+	/** WD REQ-207's {@code repaired}: none, or a repair of Word's followed, or one of docx4j's own. */
+	public static final String REPAIRED_NONE = "none", REPAIRED_WORD = "word", REPAIRED_OWN = "own";
+
+	/** What these findings say was repaired at the load, as REQ-207's {@code repaired} has it: {@code own} over {@code word} over {@code none}. @since 17.3.6 */
+	public static String repaired(java.util.List<LoadFinding> findings) {
+		String repaired = REPAIRED_NONE;
+		for (LoadFinding f : findings) {
+			if (EXTERNAL_MAIN_PART.equals(f.kind)) return REPAIRED_OWN;
+			if (DUPLICATE_ENTRY.equals(f.kind) || MULTIPLE_MAIN_PARTS.equals(f.kind) || RELATIONSHIPS_NAMESPACE.equals(f.kind)) repaired = REPAIRED_WORD;
+		}
+		return repaired;
+	}
 
 	private final String kind;
 	private final String selector;

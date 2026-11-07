@@ -85,6 +85,8 @@ public final class TextWarning {
 	 */
 	public static final String PACKAGE_MULTIPLE_MAIN_PARTS = org.docx4j.openpackaging.packages.LoadFinding.MULTIPLE_MAIN_PARTS;
 	public static final String PACKAGE_RELATIONSHIPS_NAMESPACE = org.docx4j.openpackaging.packages.LoadFinding.RELATIONSHIPS_NAMESPACE;
+	/** docx4j's own repair of an External main part relationship (RepairMode.ALL): selector the part read, {@link #getDetail()} the URL as written. @since 17.3.6 */
+	public static final String PACKAGE_EXTERNAL_MAIN_PART = org.docx4j.openpackaging.packages.LoadFinding.EXTERNAL_MAIN_PART;
 	/**
 	 * A main document part whose root is one Word opens and shows nothing of, so no text (REQ-320). Its selector is the part's
 	 * name; {@link #getDetail()} the root's qualified name.

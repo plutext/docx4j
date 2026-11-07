@@ -26,6 +26,7 @@ import org.docx4j.jaxb.McLoadMode;
  *
  * <pre>
  * WordprocessingMLPackage pkg = WordprocessingMLPackage.load(file, new LoadOptions().repairMode(RepairMode.WORD));
+ * WordprocessingMLPackage any = WordprocessingMLPackage.load(file, new LoadOptions().repairMode(RepairMode.ALL)); // docx4j's own repairs too
  * </pre>
  *
  * @since 17.3.6 (CR-075 phase 1)

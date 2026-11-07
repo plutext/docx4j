@@ -266,6 +266,7 @@ final class Extractor {
 		Map<String, Object> metadata = new LinkedHashMap<String, Object>();
 		// a reading one level down: its updateFields is not the result's, nor its settings needed for it
 		metadata.put(TextResult.FIELDS_UPDATE_ON_OPEN, !nested && fieldsUpdateOnOpen());
+		metadata.put(TextResult.REPAIRED, org.docx4j.openpackaging.packages.LoadFinding.repaired(pkg.getLoadFindings()));
 		if (!nested) Metadata.read(pkg, metadata);
 		if (main != null) {
 			// a main part that could not be read (CR-065 D1): no text at all, so the caller is told which part and

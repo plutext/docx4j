@@ -187,7 +187,7 @@ public class Load3 extends Load {
 		// .. now find the name of the main part
 		RelationshipsPart rp = RelationshipsPart.createPackageRels();
 		LoadFinding packageRelsNotRead = populatePackageRels(rp);
-		LoadFinding multipleMainParts = oneMainPart(rp);
+		List<LoadFinding> mainPartFindings = oneMainPart(rp);
 		
 		String mainPartName = PackageRelsUtil.getNameOfMainPart(rp);
 		PartName mainPartNameObj;
@@ -220,7 +220,7 @@ public class Load3 extends Load {
 		this.loading = p;
 		p.setLoadFindings(partStore instanceof ZipPartStore ? ((ZipPartStore) partStore).getLoadFindings() : null);
 		if (packageRelsNotRead != null) p.addLoadFinding(packageRelsNotRead);
-		if (multipleMainParts != null) p.addLoadFinding(multipleMainParts);
+		for (LoadFinding f : mainPartFindings) p.addLoadFinding(f);
 		p.setRepairMode(effectiveRepairMode());
 		if (mcLoadMode != null) {
 			// before any part is unmarshalled (CR-051 section 3.2), as setWasStrict below
@@ -282,21 +282,44 @@ public class Load3 extends Load {
 	 *
 	 * @return the finding, or null for a package with one main part
 	 */
-	private LoadFinding oneMainPart(RelationshipsPart rp) throws Docx4JException {
+	private List<LoadFinding> oneMainPart(RelationshipsPart rp) throws Docx4JException {
 		List<Relationship> mains = new ArrayList<Relationship>();
-		Relationship external = null;
+		List<Relationship> externals = new ArrayList<Relationship>();
 		for (Relationship r : rp.getRelationships().getRelationship()) {
 			if (!PackageRelsUtil.isMainPart(r)) continue;
 			if (!"External".equals(r.getTargetMode())) mains.add(r);
-			else if (external == null) external = r;
+			else externals.add(r);
 		}
-		if (external != null && !mains.isEmpty()) {
-			// Word refuses this even through its repair (x-ext-*), so RepairMode.WORD has no reading to give
-			throw new Docx4JException("Refused: the package has an External main part relationship, to " + external.getTarget()
-					+ ", beside one to " + mains.get(0).getTarget() + ". Word refuses such a package, even through a repair.");
+		List<LoadFinding> findings = new ArrayList<LoadFinding>();
+		if (!externals.isEmpty()) {
+			if (mains.isEmpty()) {
+				// no main document part (WD REQ-321), where the URL was taken for a part name
+				throw new Docx4JException("Refused: the package's only main part relationship is External, to " + externals.get(0).getTarget()
+						+ ", so it has no main document part.");
+			}
+			if (!effectiveRepairMode().makesOwnRepairs()) {
+				// Word refuses this even through its repair (x-ext-*), so RepairMode.WORD has no reading to give
+				throw new Docx4JException("Refused: the package has an External main part relationship, to " + externals.get(0).getTarget()
+						+ ", beside one to " + mains.get(0).getTarget() + ". Word refuses such a package, even through a repair; load with RepairMode.ALL "
+						+ "to read the internal part with docx4j's own repair (" + RepairMode.PROPERTY + "=all).");
+			}
+			// docx4j's own repair (WD REQ-207, the External statement): the URL is never fetched, and a save writes no such relationship
+			for (Relationship r : externals) rp.removeRelationship(r);
 		}
-		if (mains.size() < 2) return null;
-		if (effectiveRepairMode() != RepairMode.WORD) {
+		LoadFinding multiple = mains.size() < 2 ? null : lastMainPart(rp, mains);
+		if (multiple != null) findings.add(multiple);
+		if (!externals.isEmpty()) {
+			String read = mains.get(mains.size() - 1).getTarget();
+			LoadFinding finding = new LoadFinding(LoadFinding.EXTERNAL_MAIN_PART, read.startsWith("/") ? read : "/" + read, externals.get(0).getTarget());
+			log.warn(finding.toString());
+			findings.add(finding);
+		}
+		return findings;
+	}
+
+	/** Two or more internal main part relationships: refused, or under Word's repair the last one's target read (phase 3). */
+	private LoadFinding lastMainPart(RelationshipsPart rp, List<Relationship> mains) throws Docx4JException {
+		if (!effectiveRepairMode().followsWord()) {
 			// counted by relationship: Word repairs two to one target too (round one-target)
 			StringBuilder targets = new StringBuilder();
 			for (Relationship r : mains) targets.append(targets.length() == 0 ? "" : ", ").append(r.getTarget());
@@ -316,7 +339,7 @@ public class Load3 extends Load {
 
 	/** A relationships part in another namespace: Word reads it only through a repair, so refused unless that was asked for (the round rels-namespace). */
 	private void refuseAnotherNamespace(RelationshipsPart rp, String name) throws Docx4JException {
-		if (rp.isInAnotherNamespace() && effectiveRepairMode() != RepairMode.WORD) {
+		if (rp.isInAnotherNamespace() && !effectiveRepairMode().followsWord()) {
 			throw new Docx4JException("Refused: " + name + " isn't in the relationships namespace. Word reads such a package only through a repair; "
 					+ "load with RepairMode.WORD to read every relationship in it (" + RepairMode.PROPERTY + "=word).");
 		}
@@ -376,7 +399,7 @@ public class Load3 extends Load {
 			Part target = props == null ? null : own.getPart(props);
 			if (target instanceof CustomXmlDataStoragePropertiesPart) itemId = ((CustomXmlDataStoragePropertiesPart) target).getItemId();
 			if (itemId != null) p.addUnreadableStore(itemId, s.part.getPartName().getName());
-			if (effectiveRepairMode() == RepairMode.WORD) {
+			if (effectiveRepairMode().followsWord()) {
 				for (Relationship r : new ArrayList<Relationship>(s.part.getSourceRelationships())) {
 					Object owner = r.getParent() instanceof org.docx4j.relationships.Relationships
 							? ((org.docx4j.relationships.Relationships) r.getParent()).getParent() : null;
