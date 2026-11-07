@@ -59,6 +59,7 @@ import org.apache.commons.io.IOUtils;
 import org.docx4j.jaxb.McLoadMode;
 import org.docx4j.jaxb.McBranchSdt;
 import org.docx4j.jaxb.McSplice;
+import org.docx4j.jaxb.UnexpectedRootException;
 import org.docx4j.jaxb.ResolvedAlternateContent;
 import org.docx4j.mce.AlternateContent;
 import org.docx4j.Docx4jProperties;
@@ -178,6 +179,29 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		return jaxbElement == null && unreadable != null;
 	}
 
+	private String unexpectedRoot = null;
+
+	/**
+	 * The qualified name of a root Word opens and shows nothing of, so that a reader gives no text and says so (WD REQ-320)
+	 * where a read that failed otherwise refuses; null where the part has no such root. The part is
+	 * {@link #isContentUnreadable()} either way.
+	 *
+	 * @since 17.3.6 (CR-079)
+	 */
+	public String getUnexpectedRoot() {
+		return unexpectedRoot;
+	}
+
+	/** The root's name where this failed read is {@link #getUnexpectedRoot()}'s case; none here, as no other part is measured. */
+	protected String unexpectedRootOf(JAXBException e) {
+		return null;
+	}
+
+	/** The parameters of the preprocessing stylesheet for this part; none here. @since 17.3.6 */
+	protected Map<String, Object> preprocessorParameters() {
+		return null;
+	}
+
 	/**
 	 * The part's content; or, where the part has none yet (a created package, or a part
 	 * added to one), a new one from the factory, set as the content. Where the part's source
@@ -192,7 +216,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		if (unreadable != null) {
 			throw new Docx4JRuntimeException("The content of " + getPartName()
 					+ " could not be read, so it is not replaced with an empty one; fix or replace the content first (setJaxbElement). Cause: "
-					+ unreadable.getMessage(), unreadable);
+					+ rootReason(unreadable), unreadable);
 		}
 		e = factory.get();
 		setJaxbElement(e);
@@ -254,6 +278,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 				}
 			} catch (JAXBException e) {
 				unreadable = new Docx4JException("Problem with part " + this.getPartName(), e);
+				unexpectedRoot = unexpectedRootOf(e);
 				throw unreadable;
 //			} catch (Docx4JException e) {
 //				log.error(e.getMessage(), e);
@@ -306,6 +331,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	public void setJaxbElement(E jaxbElement) {
 		this.jaxbElement = jaxbElement;
 		this.unreadable = null; // an explicit replacement is the caller's decision
+		this.unexpectedRoot = null;
 	}
 	/**
 	 * Set the  contents of this part.
@@ -1211,11 +1237,88 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * @return the records of this unmarshal's splice; empty where nothing changed
 	 * @since 17.3.4 (CR-051 phase 1)
 	 */
-	protected List<ResolvedAlternateContent> resolveAlternateContent(Unmarshaller.Listener listener) {
+	protected List<ResolvedAlternateContent> resolveAlternateContent(Unmarshaller.Listener listener) throws JAXBException {
+		AlternateContent root = resolveRootElement();
 		if (!(listener instanceof Docx4jUnmarshallerListener)) return Collections.emptyList();
 		List<AlternateContent> found = ((Docx4jUnmarshallerListener) listener).takeBlockLevelElements();
 		found.addAll(bindBranchSdts(listener));
+		if (root != null) found.removeIf(ac -> McSplice.under(ac, root));
 		return resolveAlternateContent(found);
+	}
+
+	/**
+	 * An mc:AlternateContent standing as this part's root (WD REQ-317; CR-079): the branch Word reads gives the part its root,
+	 * in both {@link McLoadMode} modes, as the part has to hold one (D3), and the element is recorded whole
+	 * ({@link #getResolvedAlternateContent}), so that what wasn't read stays open to inspection (D2). A branch that gives no
+	 * root fails the read, naming it, and no other branch stands in, as none does in Word.
+	 *
+	 * @return the element that stood, or null where the root was the part's own
+	 * @throws UnexpectedRootException where the branch gives no root
+	 * @since 17.3.6
+	 */
+	protected AlternateContent resolveRootElement() throws JAXBException {
+		Object stood = jaxbElement;
+		if (!(stood instanceof AlternateContent)) {
+			resolveOtherRoot();
+			return null;
+		}
+		AlternateContent element = (AlternateContent) stood;
+		Object branch = McSplice.WORD_READS.select(element);
+		List<Object> stored = McSplice.branchContent(branch);
+		List<Object> held = new ArrayList<Object>();
+		for (Object o : stored) held.add(XmlUtils.unwrap(o));
+		Object root = rootFrom(held);
+		if (root == null) {
+			jaxbElement = null;
+			throw new UnexpectedRootException(getPartName() + ": the mc:AlternateContent at its root gives no root it can hold, of "
+					+ held.size() + " elements in the branch read", stored.isEmpty() ? null : stored.get(0));
+		}
+		if (root instanceof org.jvnet.jaxb.lang.Child) ((org.jvnet.jaxb.lang.Child) root).setParent(null);
+		jaxbElement = (E) root;
+		ResolvedAlternateContent record = McSplice.rootRecord(element, branch);
+		resolvedAlternateContent.add(record);
+		McSplice.addIgnorable(jaxbElement, McSplice.ignorablePrefixes(Collections.singletonList(record)));
+		log.warn(getPartName() + ": mc:AlternateContent at the root, read as Word reads it; a save writes the part without it");
+		return element;
+	}
+
+	/**
+	 * A root that is neither the part's own nor an mc:AlternateContent: nothing here, as Word hasn't been asked about one
+	 * outside the main document part.
+	 *
+	 * @since 17.3.6
+	 */
+	protected void resolveOtherRoot() throws JAXBException {
+	}
+
+	/**
+	 * The root a branch at the part's root gives it: the one object of the part's own class, else null. A part with more to say
+	 * says it here.
+	 *
+	 * @since 17.3.6
+	 */
+	protected Object rootFrom(List<Object> held) {
+		Class<?> own = rootClass();
+		Object root = null;
+		for (Object o : held) {
+			if (own != null && own.isInstance(o)) {
+				if (root != null) return null; // two, unmeasured outside the main part
+				root = o;
+			}
+		}
+		return root;
+	}
+
+	/** The class this part holds, from the type its class declares; null where it doesn't name one. */
+	private Class<?> rootClass() {
+		for (Class<?> c = getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+			java.lang.reflect.Type t = c.getGenericSuperclass();
+			if (t instanceof java.lang.reflect.ParameterizedType) {
+				java.lang.reflect.Type a = ((java.lang.reflect.ParameterizedType) t).getActualTypeArguments()[0];
+				if (a instanceof Class) return (Class<?>) a;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -1443,7 +1546,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			DOMResult result = new DOMResult();
 			
 			XmlUtils.transform(new StAXSource(xsr), 
-					preprocessorXslt, null, result);
+					preprocessorXslt, preprocessorParameters(), result);
 			doc = (org.w3c.dom.Document) result.getNode();
 			McBranchSdt.rename(doc); // CR-051 section 11.3
 			if (log.isDebugEnabled()) {

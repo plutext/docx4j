@@ -160,6 +160,28 @@ public final class McSplice {
 		return p;
 	}
 
+	/** Whether the object lies inside this {@code mc:AlternateContent}, going up its parents. */
+	public static boolean under(Object o, AlternateContent element) {
+		Object p = o instanceof Child ? ((Child) o).getParent() : null;
+		for (int i = 0; i < 256 && p != null; i++) {
+			if (p == element) return true;
+			p = p instanceof Child ? ((Child) p).getParent() : null;
+		}
+		return false;
+	}
+
+	/** What a branch holds, as a {@link Rule} answers it; nothing for {@link #NOTHING}. */
+	public static List<Object> branchContent(Object branch) {
+		if (branch instanceof AlternateContent.Choice) return ((AlternateContent.Choice) branch).getAny();
+		if (branch instanceof AlternateContent.Fallback) return ((AlternateContent.Fallback) branch).getAny();
+		return java.util.Collections.emptyList();
+	}
+
+	/** The record of an element that stood as a part's root, which has no parent and so no address (CR-079). */
+	public static ResolvedAlternateContent rootRecord(AlternateContent element, Object branch) {
+		return new ResolvedAlternateContent(element, branch == NOTHING ? null : branch, "root", null, 0, branchContent(branch).size());
+	}
+
 	/** Whether the object lies inside any {@code mc:AlternateContent}, going up its parents. */
 	public static boolean insideAlternateContent(Object o) {
 		Object p = o instanceof Child ? ((Child) o).getParent() : null;

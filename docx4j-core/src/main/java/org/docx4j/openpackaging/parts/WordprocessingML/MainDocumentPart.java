@@ -83,6 +83,195 @@ import org.w3c.dom.Document;
  *
  */
 public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> implements ContentAccessor  {
+
+	private static final String MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+	private static final String WORD_2003 = "http://schemas.microsoft.com/office/word/2003/wordml";
+	private static final String XML_PACKAGE = "http://schemas.microsoft.com/office/2006/xmlPackage";
+
+	/**
+	 * What a branch at this part's root gives (WD REQ-317, CR-079): nothing an empty document, as Word reads it; one
+	 * {@code w:document} that one; several joined, each body's content before the next's, as Word joins them (WD REQ-322),
+	 * a property a later one doesn't state standing from an earlier. A {@code w:body} or a {@code w:p} goes in a document of
+	 * its own, as Word reads it (WD REQ-319). Anything else gives no root.
+	 *
+	 * @since 17.3.6
+	 */
+	@Override
+	protected Object rootFrom(List<Object> held) {
+		if (held.isEmpty()) {
+			org.docx4j.wml.Document empty = Context.getWmlObjectFactory().createDocument();
+			org.docx4j.wml.Body body = Context.getWmlObjectFactory().createBody();
+			body.setParent(empty);
+			empty.setBody(body);
+			return empty;
+		}
+		org.docx4j.wml.Document joined = null;
+		for (Object o : held) {
+			org.docx4j.wml.Document next = o instanceof org.w3c.dom.Element ? documentOf((org.w3c.dom.Element) o) : documentOf(o);
+			if (next == null) continue;
+			if (joined != null) join(joined, next);
+			joined = next;
+		}
+		return joined;
+	}
+
+	/** The object as a document, or null where it can't stand as one. */
+	private static org.docx4j.wml.Document documentOf(Object o) {
+		if (o instanceof org.docx4j.wml.Document) return (org.docx4j.wml.Document) o;
+		org.docx4j.wml.Body body;
+		if (o instanceof org.docx4j.wml.Body) {
+			body = (org.docx4j.wml.Body) o;
+		} else if (o instanceof org.docx4j.wml.P) {
+			body = Context.getWmlObjectFactory().createBody();
+			((org.docx4j.wml.P) o).setParent(body);
+			body.getContent().add(o);
+		} else {
+			return null;
+		}
+		org.docx4j.wml.Document document = Context.getWmlObjectFactory().createDocument();
+		body.setParent(document);
+		document.setBody(body);
+		return document;
+	}
+
+	/** An element nothing binds, in a branch at the root, reads as it does standing as the root (WD REQ-317, mr-40); null where it doesn't. */
+	private org.docx4j.wml.Document documentOf(org.w3c.dom.Element element) {
+		org.w3c.dom.Document source = XmlUtils.neww3cDomDocument();
+		source.appendChild(source.importNode(element, true));
+		javax.xml.transform.dom.DOMResult result = new javax.xml.transform.dom.DOMResult();
+		try {
+			XmlUtils.transform(source, org.docx4j.jaxb.JaxbValidationEventHandler.getMcPreprocessor(), preprocessorParameters(), result);
+			Object read = XmlUtils.unwrap(XmlUtils.unmarshal(result.getNode()));
+			return read instanceof org.docx4j.wml.Document ? (org.docx4j.wml.Document) read : null;
+		} catch (Docx4JException | JAXBException | java.io.IOException | javax.xml.transform.TransformerConfigurationException e) {
+			log.debug(getPartName() + ": " + element.getNodeName() + " in the branch at the root doesn't read as a document", e);
+			return null;
+		}
+	}
+
+	/** Tells {@code mc-preprocessor.xslt} this is the part its rule for a root applies to (CR-079 D9). */
+	@Override
+	protected java.util.Map<String, Object> preprocessorParameters() {
+		return java.util.Collections.<String, Object>singletonMap("mainDocumentPart", Boolean.TRUE);
+	}
+
+	/**
+	 * A failed read's root, where it is one Word opens and shows nothing of (WD REQ-320), and null where Word refuses it
+	 * (WD REQ-318) or the failure isn't the root's. Asked once, after a read has failed, so a document that reads pays nothing.
+	 */
+	@Override
+	protected String unexpectedRootOf(JAXBException e) {
+		org.docx4j.jaxb.UnexpectedRootException unexpected = null;
+		for (Throwable t = e; t != null && unexpected == null; t = t.getCause() == t ? null : t.getCause()) {
+			if (t instanceof org.docx4j.jaxb.UnexpectedRootException) unexpected = (org.docx4j.jaxb.UnexpectedRootException) t;
+		}
+		Object held = unexpected == null ? null : unexpected.getHeld();
+		if (held != null && !(held instanceof org.w3c.dom.Element)) return boundRoot(held);
+		// JAXB knowing the name is what parts a known root from an unknown: their rules differ
+		boolean known = unexpected != null && held == null;
+		org.w3c.dom.Element root = held != null ? org.docx4j.jaxb.McBranchSdt.restore((org.w3c.dom.Element) held) : sourceRoot();
+		if (root == null || isReadRoot(root) || refusedRoot(root, known)) return null;
+		return root.getNodeName();
+	}
+
+	/** What JAXB bound in a branch at the root, by its element name: not every global element can be marshalled on its own. */
+	private static String boundRoot(Object held) {
+		javax.xml.namespace.QName name = Context.jc.createJAXBIntrospector().getElementName(held);
+		if (name == null || refusedByName(name.getNamespaceURI(), name.getLocalPart())) return null;
+		String prefix = org.docx4j.jaxb.NamespacePrefixMappings.getPreferredPrefixStatic(name.getNamespaceURI(), null, false);
+		return prefix == null || prefix.isEmpty() ? name.getLocalPart() : prefix + ":" + name.getLocalPart();
+	}
+
+	/** The part's root as the file has it; null where it isn't well formed. */
+	private org.w3c.dom.Element sourceRoot() {
+		if (getPackage() == null || getPackage().getSourcePartStore() == null) return null; // read from a caller's stream
+		try (java.io.InputStream is = getPackage().getSourcePartStore().loadPart(getPartName().getName().substring(1))) {
+			return XmlUtils.getNewDocumentBuilder().parse(is).getDocumentElement();
+		} catch (Docx4JException | java.io.IOException | org.xml.sax.SAXException ex) {
+			return null;
+		}
+	}
+
+	/** A root whose read failed for some other reason than being the root. */
+	private static boolean isReadRoot(org.w3c.dom.Element root) {
+		return Namespaces.NS_WORD12.equals(root.getNamespaceURI()) && "document".equals(root.getLocalName())
+				|| MC.equals(root.getNamespaceURI()) && "AlternateContent".equals(root.getLocalName());
+	}
+
+	/** WD REQ-318: a root Word refuses, by its name or by what it holds. */
+	private static boolean refusedRoot(org.w3c.dom.Element root, boolean known) {
+		String ns = root.getNamespaceURI();
+		if (refusedByName(ns, root.getLocalName())) return true;
+		if (Namespaces.NS_WORD12.equals(ns)) return !known && (holds(root, "document") || holds(root, "r"));
+		if (ns != null && org.docx4j.jaxb.McSelection.understoodNamespaces().contains(ns)) return false;
+		return !ignorable(root) && (holds(root, "document") || holds(root, "p"));
+	}
+
+	private static boolean refusedByName(String ns, String local) {
+		return Namespaces.NS_WORD12.equals(ns) && ("footnotes".equals(local) || "endnotes".equals(local) || "tc".equals(local))
+				|| WORD_2003.equals(ns) && "wordDocument".equals(local) || XML_PACKAGE.equals(ns) && "package".equals(local);
+	}
+
+	private static boolean holds(org.w3c.dom.Element root, String local) {
+		for (org.w3c.dom.Node n = root.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE && Namespaces.NS_WORD12.equals(n.getNamespaceURI()) && local.equals(n.getLocalName())) return true;
+		}
+		return false;
+	}
+
+	/** Whether the root's own namespace is one its mc:Ignorable names. */
+	private static boolean ignorable(org.w3c.dom.Element root) {
+		String ns = root.getNamespaceURI();
+		if (ns == null) return false;
+		for (String prefix : root.getAttributeNS(MC, "Ignorable").trim().split("\\s+")) {
+			if (!prefix.isEmpty() && ns.equals(root.lookupNamespaceURI(prefix))) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * A root that isn't a {@code w:document} (WD REQ-319; CR-079 D9): one Word reads as a document stands as one, and any other
+	 * fails the read, naming it, in place of a ClassCastException at the first use.
+	 *
+	 * @since 17.3.6
+	 */
+	@Override
+	protected void resolveOtherRoot() throws JAXBException {
+		Object root = jaxbElement;
+		if (root == null || root instanceof org.docx4j.wml.Document) return;
+		org.docx4j.wml.Document document = documentOf(root);
+		if (document == null) {
+			jaxbElement = null;
+			org.w3c.dom.Element source = sourceRoot();
+			throw new org.docx4j.jaxb.UnexpectedRootException(getPartName() + " has a root it can't hold, "
+					+ (source == null ? root.getClass().getName() : source.getNodeName()));
+		}
+		log.warn(getPartName() + ": a " + root.getClass().getSimpleName() + " at the root, read as Word reads it; a save writes a w:document");
+		jaxbElement = document;
+	}
+
+	private static void join(org.docx4j.wml.Document earlier, org.docx4j.wml.Document later) {
+		if (later.getBackground() == null && earlier.getBackground() != null) {
+			earlier.getBackground().setParent(later);
+			later.setBackground(earlier.getBackground());
+		}
+		org.docx4j.wml.Body from = earlier.getBody();
+		if (from == null) return;
+		org.docx4j.wml.Body to = later.getBody();
+		if (to == null) {
+			from.setParent(later);
+			later.setBody(from);
+			return;
+		}
+		for (Object o : from.getContent()) {
+			if (org.docx4j.XmlUtils.unwrap(o) instanceof org.jvnet.jaxb.lang.Child) ((org.jvnet.jaxb.lang.Child) org.docx4j.XmlUtils.unwrap(o)).setParent(to);
+		}
+		to.getContent().addAll(0, from.getContent());
+		if (to.getSectPr() == null && from.getSectPr() != null) {
+			from.getSectPr().setParent(to);
+			to.setSectPr(from.getSectPr());
+		}
+	}
 	
 	private static Logger log = LoggerFactory.getLogger(MainDocumentPart.class);
 		

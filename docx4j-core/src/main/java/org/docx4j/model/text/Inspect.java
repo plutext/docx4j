@@ -125,7 +125,21 @@ public final class Inspect {
 		// a report a global limit stopped carries no addresses: reading the package through the text model
 		// is the cost the limit refused
 		boolean stopped = walk(pkg, run);
+		if (!stopped) mainPartRead(pkg, run);
 		return new Inspection(InspectAddresses.findings(pkg, run, !stopped), run.skipped, run.skippedBeyond, run.undecided);
+	}
+
+	/**
+	 * The walk reads a main part as XML, whatever its root, so a part that can't be read as a document is told here, or the
+	 * report would read as a clean one (CR-079 D9). After the walk, as a global limit refuses the cost of reading it.
+	 */
+	private static void mainPartRead(WordprocessingMLPackage pkg, InspectRun run) {
+		org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart main = pkg.getMainDocumentPart();
+		if (main == null) return;
+		main.getJaxbElement();
+		String location = "|" + main.getPartName().getName() + "|";
+		if (main.getUnexpectedRoot() != null) run.skip(Inspection.UNEXPECTED_ROOT, location);
+		else if (main.isContentUnreadable()) run.skip(Inspection.UNREADABLE, location);
 	}
 
 	/** The three passes; true when a global limit stopped them. */
@@ -155,7 +169,7 @@ public final class Inspect {
 	static Map<Inspection.Format, Inspection.Counts> counts(WordprocessingMLPackage pkg, TextOptions options) {
 		InspectRun run = run();
 		try {
-			walk(pkg, run);
+			if (!walk(pkg, run)) mainPartRead(pkg, run);
 		} catch (RuntimeException e) {
 			log.warn("The inspection for the counts failed; its counts are lower bounds: " + e, e);
 			run.walking.clear(); // the packages it was walking when it failed; only a global stop reads them

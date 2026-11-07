@@ -545,6 +545,8 @@ implements XPathEnabled<E> {
 				log.error(e.getMessage(), e);
 				throw e;
 					
+			} catch (org.docx4j.jaxb.UnexpectedRootException ue) {
+				throw ue; // nothing to mend: the preprocessor keeps the root as it stands
 			} catch (Exception ue) {
 
 				if (transformFirst) {
@@ -645,7 +647,7 @@ implements XPathEnabled<E> {
 					DOMResult result = new DOMResult();
 					
 					Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
-					XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
+					XmlUtils.transform(doc, mcPreprocessorXslt, preprocessorParameters(), result);
 					
 					doc = (org.w3c.dom.Document)result.getNode();
 					
@@ -768,7 +770,7 @@ implements XPathEnabled<E> {
 					Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
 					DOMResult result = new DOMResult();
 					XmlUtils.transform(new DOMSource(el), 
-							mcPreprocessorXslt, null, result);
+							mcPreprocessorXslt, preprocessorParameters(), result);
 					org.w3c.dom.Document doc = (org.w3c.dom.Document) result.getNode();
 					el = doc.getDocumentElement();
 				} catch (Exception e) {
@@ -821,7 +823,7 @@ implements XPathEnabled<E> {
 					DOMResult result = new DOMResult();
 					Templates mcPreprocessorXslt = JaxbValidationEventHandler
 							.getMcPreprocessor();
-					XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
+					XmlUtils.transform(doc, mcPreprocessorXslt, preprocessorParameters(), result);
 					doc = (org.w3c.dom.Document) result.getNode();
 					// a fresh listener: the failed attempt's holds records from a tree now discarded (CR-051 section 3.2)
 					Docx4jUnmarshallerListener retryListener = new Docx4jUnmarshallerListener(this);
@@ -858,8 +860,14 @@ implements XPathEnabled<E> {
 	 * and where it changed the tree the binder is re-created over it, so that the DOM an XPath
 	 * query reads matches the tree ({@link #refreshBinder}).
 	 */
-	private void afterBinderUnmarshal(Unmarshaller.Listener listener) {
-		if (!(listener instanceof Docx4jUnmarshallerListener)) return;
+	private void afterBinderUnmarshal(Unmarshaller.Listener listener) throws JAXBException {
+		Object stood = jaxbElement;
+		org.docx4j.mce.AlternateContent root = resolveRootElement();
+		boolean replaced = jaxbElement != stood; // a w:body or a w:p at the root too: the binder's DOM still has it (CR-079)
+		if (!(listener instanceof Docx4jUnmarshallerListener)) {
+			if (replaced && binder != null) refreshBinder();
+			return;
+		}
 		Docx4jUnmarshallerListener l = (Docx4jUnmarshallerListener) listener;
 		// what the DOM declares for the root's and every Choice's mc prefixes (CR-052; before it,
 		// the block-level Choices' Requires only, for the splice below)
@@ -888,10 +896,10 @@ implements XPathEnabled<E> {
 		// w:sdt skips them rather than meeting a node with no object association (the javadoc of
 		// getJAXBNodesViaXPath says so)
 		if (!nested.isEmpty() && binder != null) refreshBinder(); // the typed controls are not the binder's DOM's
-		if (found.isEmpty()) return;
-		if (!resolveAlternateContent(found).isEmpty() && binder != null) {
-			refreshBinder();
-		}
+		if (root != null) found.removeIf(ac -> org.docx4j.jaxb.McSplice.under(ac, root)); // a branch not read has no splice
+		boolean changed = replaced; // the binder's DOM still has the element at its root (CR-051 section 11.1)
+		if (!found.isEmpty() && !resolveAlternateContent(found).isEmpty()) changed = true;
+		if (changed && binder != null) refreshBinder();
 	}
 
 	/**

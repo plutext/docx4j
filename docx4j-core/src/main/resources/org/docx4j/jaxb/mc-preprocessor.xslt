@@ -373,7 +373,7 @@
 		
   	<xsl:choose>
   	
-	    <xsl:when test="parent::w:r or parent::w:p or parent::w:hyperlink or parent::w:fldSimple or parent::w:smartTag or parent::w:dir or parent::w:bdo
+	    <xsl:when test="not(parent::*) or parent::w:r or parent::w:p or parent::w:hyperlink or parent::w:fldSimple or parent::w:smartTag or parent::w:dir or parent::w:bdo
 	    		or parent::w:numPicBullet
 	    		or parent::w:body or parent::w:hdr or parent::w:ftr or parent::w:tc or parent::w:footnote or parent::w:endnote or parent::w:comment
 	    		or parent::w:txbxContent or parent::w:docPartBody or parent::w:tbl or parent::w:tr
@@ -837,6 +837,8 @@
 	     of text and its breaks, in order, in the same run; a w:t nested in a w:t gives its text.
 	     A w:br directly in w:body starts the next paragraph.  One WARN a part.  @since 17.3.6 -->
 
+	<xsl:param name="mainDocumentPart" select="false()" />
+
 	<xsl:template match="/" priority="1">
 		<xsl:variable name="breaks" select="count(//w:br[parent::w:p or parent::w:hyperlink or parent::w:smartTag
 				or parent::w:customXml or parent::w:fldSimple or parent::w:ins or parent::w:del or parent::w:moveFrom
@@ -847,7 +849,29 @@
 				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('w:br outside a w:r: ', $breaks,
 					' outside a run, ', $texts, ' text elements holding elements; read as Word reads them (CR-073)'))" />
 		</xsl:if>
-		<xsl:apply-templates select="node()" />
+		<xsl:choose>
+			<!-- A main document part's root (CR-079 D9; WD REQ-319): a w: root Word doesn't know reads as if
+			     its tags were absent, what it holds standing where a body's content stands, and w:sdtContent
+			     as a body holding what it holds.  What it may hold is REQ-319's list; anything else stays as
+			     it is, and the read fails, naming it.  Only MainDocumentPart sets the parameter, as no other
+			     part is measured.  @since 17.3.6 -->
+			<xsl:when test="$mainDocumentPart and *[self::w:sdtContent
+					or (self::w:* and not(contains($wml-names, concat(' ', local-name(), ' ')))
+						and not(*[not(self::w:p or self::w:tbl or self::w:sdt[not(w:sdtContent/w:r)] or self::w:body or self::w:sectPr
+							or (self::w:* and not(self::w:sdt) and not(contains($wml-names, concat(' ', local-name(), ' ')))))]))]">
+				<w:document>
+					<xsl:copy-of select="*/@mc:Ignorable" />
+					<w:body>
+						<xsl:for-each select="*">
+							<xsl:call-template name="root-content" />
+						</xsl:for-each>
+					</w:body>
+				</w:document>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates select="node()" />
+			</xsl:otherwise>
+		</xsl:choose>
 		<xsl:variable name="readThrough" select="java:org.docx4j.utils.XSLTUtils.warnReadThrough()" />
 	</xsl:template>
 
@@ -991,6 +1015,24 @@
 
 	<!-- xsd/wml/wml.xsd's element names; UnknownElementsTest holds this equal to the schema -->
 	<xsl:variable name="wml-names" select="' abstractNum abstractNumId active activeRecord activeWritingStyle addressFieldName adjustLineHeightInTable adjustRightInd alias aliases alignBordersAndEdges alignTablesRowByRow allowPNG allowSpaceOfSameStyleInTable altChunk altChunkPr altName alwaysMergeEmptyNamespace alwaysShowPlaceholderText annotationRef applyBreakingRules attachedSchema attachedTemplate attr autoCaption autoCaptions autoFormatOverride autoHyphenation autoRedefine autoSpaceDE autoSpaceDN autoSpaceLikeWord95 autofitToFirstFixedWidthCell b bCs background balanceSingleByteDoubleByteWidth bar basedOn bdo bdr behavior behaviors between bibliography bidi bidiVisual blockQuote body bodyDiv bookFoldPrinting bookFoldPrintingSheets bookFoldRevPrinting bookmarkEnd bookmarkStart bordersDoNotSurroundFooter bordersDoNotSurroundHeader bottom br cachedColBalance calcOnExit calendar cantSplit caps caption captions category cellDel cellIns cellMerge characterSpacingControl charset checkBox checkErrors checked citation clickAndTypeStyle clrSchemeMapping cnfStyle col colDelim color cols column comboBox comment commentRangeEnd commentRangeStart commentReference comments compat compatSetting connectString consecutiveHyphenLimit contextualSpacing continuationSeparator control convMailMergeEsc cr cs customXml customXmlDelRangeEnd customXmlDelRangeStart customXmlInsRangeEnd customXmlInsRangeStart customXmlMoveFromRangeEnd customXmlMoveFromRangeStart customXmlMoveToRangeEnd customXmlMoveToRangeStart customXmlPr dataBinding dataSource dataType date dateFormat dayLong dayShort ddList decimalSymbol default defaultTabStop defaultTableStyle del delInstrText delText description destination dir dirty displayBackgroundShape displayHangulFixedWidth displayHorizontalDrawingGridEvery displayVerticalDrawingGridEvery div divBdr divId divs divsChild doNotAutoCompressPictures doNotAutofitConstrainedTables doNotBreakConstrainedForcedTable doNotBreakWrappedTables doNotDemarcateInvalidXml doNotDisplayPageBoundaries doNotEmbedSmartTags doNotExpandShiftReturn doNotHyphenateCaps doNotIncludeSubdocsInStats doNotLeaveBackslashAlone doNotOrganizeInFolder doNotRelyOnCSS doNotSaveAsSingleFile doNotShadeFormData doNotSnapToGridInCell doNotSuppressBlankLines doNotSuppressIndentation doNotSuppressParagraphBorders doNotTrackFormatting doNotTrackMoves doNotUseEastAsianBreakRules doNotUseHTMLParagraphAutoSpacing doNotUseIndentAsNumberingTabStop doNotUseLongFileNames doNotUseMarginsForDrawingGridOrigin doNotValidateAgainstSchema doNotVertAlignCellWithSp doNotVertAlignInTxbx doNotWrapTextWithPunct docDefaults docGrid docPart docPartBody docPartCategory docPartGallery docPartList docPartObj docPartPr docPartUnique docParts docVar docVars document documentProtection documentType drawing drawingGridHorizontalOrigin drawingGridHorizontalSpacing drawingGridVerticalOrigin drawingGridVerticalSpacing dropDownList dstrike dynamicAddress eastAsianLayout effect em embedBold embedBoldItalic embedItalic embedRegular embedSystemFonts embedTrueTypeFonts emboss enabled encoding end endnote endnotePr endnoteRef endnoteReference endnotes entryMacro equation evenAndOddHeaders exitMacro fHdr family ffData fieldMapData fitText flatBorders fldChar fldData fldSimple font fonts footerReference footnote footnoteLayoutLikeWW8 footnotePr footnoteRef footnoteReference footnotes forceUpgrade forgetLastTabAlignment formProt format formsDesign frame frameLayout framePr frameset framesetSplitbar ftr gallery glossaryDocument gridAfter gridBefore gridCol gridSpan group growAutofit guid gutterAtTop hMerge hdr hdrShapeDefaults headerReference headerSource helpText hidden hideGrammaticalErrors hideMark hideSpellingErrors highlight hps hpsBaseText hpsRaise hyperlink hyphenationZone i iCs id ignoreMixedContent ilvl imprint ind ins insideH insideV instrText isLgl jc keepLines keepNext kern kinsoku lang lastRenderedPageBreak latentStyles layoutRawTableWidth layoutTableRowsApart left legacy lid lineWrapLikeWord6 link linkStyles linkToQuery linkedToFile listEntry listItem listSeparator lnNumType lock locked lsdException lvl lvlJc lvlOverride lvlPicBulletId lvlRestart lvlText mailAsAttachment mailMerge mailSubject mainDocumentType mappedName marBottom marH marLeft marRight marTop marW matchSrc maxLength mirrorIndents mirrorMargins monthLong monthShort moveFrom moveFromRangeEnd moveFromRangeStart moveTo moveToRangeEnd moveToRangeStart movie multiLevelType mwSmallCaps name next noBorder noBreakHyphen noColumnBalance noEndnote noExtraLineSpacing noLeading noLineBreaksAfter noLineBreaksBefore noProof noPunctuationKerning noResizeAllowed noSpaceRaiseLower noTabHangInd noWrap notTrueType nsid num numFmt numId numIdMacAtCleanup numPicBullet numPr numRestart numStart numStyleLink numbering numberingChange oMath object odso optimizeForBrowser outline outlineLvl overflowPunct p pBdr pPr pPrChange pPrDefault pStyle pageBreakBefore panose1 paperSrc permEnd permStart personal personalCompose personalReply pgBorders pgMar pgNum pgNumType pgSz pict picture pitch pixelsPerInch placeholder pos position printBodyTextBeforeHeader printColBlack printFormsData printFractionalCharacterWidth printPostScriptOverText printTwoOnOne printerSettings proofErr proofState ptab qFormat query r rFonts rPr rPrChange rPrDefault rStyle readModeInkLockDown recipientData recipients relyOnVML removeDateAndTime removePersonalInformation result revisionView richText right rsid rsidRoot rsids rt rtl rtlGutter ruby rubyAlign rubyBase rubyPr saveFormsData saveInvalidXml savePreviewPicture saveSmartTagsAsXml saveSubsetFonts saveThroughXslt saveXmlDataOnly scrollbar sdt sdtContent sdtEndPr sdtPr sectPr sectPrChange selectFldWithFirstOrLastChar semiHidden separator settings shadow shapeDefaults shapeLayoutLikeWW8 shd showBreaksInFrames showEnvelope showXMLTags showingPlcHdr sig size sizeAuto smallCaps smartTag smartTagPr smartTagType snapToGrid softHyphen sourceFileName spaceForUL spacing spacingInWholePoints specVanish splitPgBreakAndParaMark src start startOverride statusText storeMappedDataAs strictFirstAndLastChars strike style styleLink styleLockQFSet styleLockTheme stylePaneFormatFilter stylePaneSortMethod styles subDoc subFontBySize suff summaryLength suppressAutoHyphens suppressBottomSpacing suppressLineNumbers suppressOverlap suppressSpBfAfterPgBrk suppressSpacingAtTopOfPage suppressTopSpacing suppressTopSpacingWP swapBordersFacingPages sym sz szCs t tab table tabs tag targetScreenSz tbl tblBorders tblCaption tblCellMar tblCellSpacing tblDescription tblGrid tblGridChange tblHeader tblInd tblLayout tblLook tblOverlap tblPr tblPrChange tblPrEx tblPrExChange tblStyle tblStyleColBandSize tblStylePr tblStyleRowBandSize tblW tblpPr tc tcBorders tcFitText tcMar tcPr tcPrChange tcW temporary text textAlignment textDirection textInput textboxTightWrap themeFontLang titlePg tl2br tmpl top topLinePunct tr tr2bl trHeight trPr trPrChange trackRevisions truncateFontHeightsLikeWP6 txbxContent type types u udl uiCompat97To2003 uiPriority ulTrailSpace underlineTabInNumList unhideWhenUsed uniqueTag updateFields useAltKinsokuLineBreakRules useAnsiKerningPairs useFELayout useNormalStyleForList usePrinterMetrics useSingleBorderforContiguousCells useWord2002TableStyleRules useWord97LineBreakRules useXSLTWhenSaving vAlign vMerge vanish vertAlign view viewMergedData w wAfter wBefore webHidden webSettings widowControl wordWrap wpJustification wpSpaceWidth wrapTrailSpaces writeProtection yearLong yearShort zoom '" />
+
+	<!-- What such a root holds: a w:sectPr directly in it goes, a w:body's own content stands, and a further
+	     unknown element is read through here, as w:* needs a known ancestor to read through one. -->
+	<xsl:template name="root-content">
+		<xsl:for-each select="*[not(self::w:sectPr)]">
+			<xsl:choose>
+				<xsl:when test="self::w:body">
+					<xsl:apply-templates select="node()" />
+				</xsl:when>
+				<xsl:when test="self::w:* and not(contains($wml-names, concat(' ', local-name(), ' ')))">
+					<xsl:call-template name="root-content" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:apply-templates select="." />
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:for-each>
+	</xsl:template>
 
 	<xsl:template match="w:*">
 		<xsl:choose>

@@ -85,6 +85,13 @@ public final class TextWarning {
 	 */
 	public static final String PACKAGE_MULTIPLE_MAIN_PARTS = org.docx4j.openpackaging.packages.LoadFinding.MULTIPLE_MAIN_PARTS;
 	public static final String PACKAGE_RELATIONSHIPS_NAMESPACE = org.docx4j.openpackaging.packages.LoadFinding.RELATIONSHIPS_NAMESPACE;
+	/**
+	 * A main document part whose root is one Word opens and shows nothing of, so no text (REQ-320). Its selector is the part's
+	 * name; {@link #getDetail()} the root's qualified name.
+	 *
+	 * @since 17.3.6 (CR-079)
+	 */
+	public static final String PART_UNEXPECTED_ROOT = "part.unexpected_root";
 
 	private final String kind;
 	private final String address;

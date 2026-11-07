@@ -145,6 +145,11 @@ Changes in Version 17.3.6
 - A relationships part that isn't well formed now keeps the relationships before the break, as Word's repair does, in place of a stack trace and none at all; what a
   lost one named reads as absent, and a save is refused rather than drop it, unless the package was loaded under `RepairMode.WORD`. `_rels/.rels` the same, where a main part's relationship is
   among those kept, and otherwise a refusal naming the part and the parse error.
+- `mc:AlternateContent` as a part's root reads as Word's does, in the main document part and in a header, footer, notes, comments, styles, numbering or settings part, where a first use
+  failed with a `ClassCastException` and a save failed. A save of a part that was read writes an ordinary part. Two `w:document` in the branch read are joined; nothing selected is an empty document.
+  A root `w:body`, `w:p` or `w:sdtContent`, or an unknown `w:` root holding block content, reads as a document, as Word's does. A root Word refuses is refused, naming it; one it opens and
+  shows nothing of gives no text and `part.unexpected_root`; a save of either keeps its bytes, and an inspection of a main part that can't be read is `PARTIAL` (CR-079).
+- The text model refuses a package with no main document part, where it gave no text.
 - A package with an `External` `officeDocument` relationship beside an internal one is refused, naming it, under `RepairMode.WORD` too, as Word refuses it even through a repair.
 - A relationships part in another namespace is refused, naming it, or under `RepairMode.WORD` read as Word's repair reads it, every relationship by its local name, recorded as
   `package.relationships_namespace`.

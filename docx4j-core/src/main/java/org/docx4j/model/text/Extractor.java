@@ -274,10 +274,18 @@ final class Extractor {
 			try {
 				main.getReadableContents("read as text");
 			} catch (Docx4JException e) {
+				if (main.getUnexpectedRoot() != null) {
+					// a root Word opens and shows nothing of (REQ-320), so nothing to refuse
+					warn(new TextWarning(TextWarning.PART_UNEXPECTED_ROOT, null, null, null, partName(main), main.getUnexpectedRoot()));
+					return new TextResult(out, comments, warnings, metadata, options);
+				}
 				if (!nested) throw new Docx4JRuntimeException(e.getMessage(), e);
 				notRead(root.endsWith("/") ? root.substring(0, root.length() - 1) : root, main, "the main document part", e);
 				return new TextResult(out, comments, warnings, metadata, options);
 			}
+		} else if (!nested) {
+			// REQ-321. A nested package can't get here: its load refuses, which raises content.not_read
+			throw new Docx4JRuntimeException("The package has no main document part, so it cannot be read as text");
 		}
 		if (main == null || main.getJaxbElement() == null || main.getJaxbElement().getBody() == null) {
 			return new TextResult(out, comments, warnings, metadata, options);
@@ -2280,7 +2288,8 @@ final class Extractor {
 		if (!options.isWarnings()) return;
 		for (JaxbXmlPart<?> part : recordedParts) {
 			for (ResolvedAlternateContent r : part.getResolvedAlternateContent()) {
-				if (r.getBranch() == null && !recordsMet.contains(r)) compareBranches(r.getElement(), null, part);
+				// one that stood as the part's root has no address, so the walk can't meet it either
+				if ((r.getBranch() == null || r.getAddress() == null) && !recordsMet.contains(r)) compareBranches(r.getElement(), null, part);
 			}
 		}
 	}
@@ -2309,7 +2318,8 @@ final class Extractor {
 			if (!theirs.isEmpty() && !theirs.equals(mine)) {
 				String branch = selected instanceof AlternateContent.Choice
 						? "mc:Choice Requires=\"" + ((AlternateContent.Choice) selected).getRequires() + "\"" : "mc:Fallback";
-				warn(TextWarning.MCE_BRANCHES_DIFFER, address, branch);
+				if (address == null) warn(new TextWarning(TextWarning.MCE_BRANCHES_DIFFER, null, branch, null, partName(part)));
+				else warn(TextWarning.MCE_BRANCHES_DIFFER, address, branch);
 				return;
 			}
 		}

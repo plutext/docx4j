@@ -306,11 +306,13 @@ final class InspectXml {
 		for (int k = records.size() - 1; k >= 0; k--) {
 			ResolvedAlternateContent r = records.get(k);
 			if (r.getBranch() == null || r.getPromotedCount() <= 0) continue; // nothing promoted: no branch to inspect
-			Element container = locate(dom.root(), r.getAddress());
+			// one that stood as the part's root has no address: it goes in the root, which stays what the walk expects (CR-079)
+			boolean atRoot = r.getAddress() == null;
+			Element container = atRoot ? dom.root() : locate(dom.root(), r.getAddress());
 			if (container == null) continue;
 			List<Element> content = contentChildren(container);
 			int from = r.getIndex(), n = r.getPromotedCount();
-			if (from < 0 || from + n > content.size()) continue;
+			if (!atRoot && (from < 0 || from + n > content.size())) continue;
 			Builder b = new Builder(run, dom.document);
 			Marshaller m = jc.createMarshaller();
 			try {
@@ -336,10 +338,10 @@ final class InspectXml {
 			dom.elements += b.count;
 			Element branch = null;
 			for (Element c : children(ac)) if (b.jaxb.get(c) == r.getBranch()) { branch = c; break; }
-			Node after = content.get(from + n - 1).getNextSibling();
+			Node after = atRoot ? container.getFirstChild() : content.get(from + n - 1).getNextSibling();
 			if (branch != null) {
 				while (branch.getFirstChild() != null) branch.removeChild(branch.getFirstChild());
-				for (int i = from; i < from + n; i++) branch.appendChild(content.get(i));
+				if (!atRoot) for (int i = from; i < from + n; i++) branch.appendChild(content.get(i));
 			}
 			container.insertBefore(ac, after);
 		}

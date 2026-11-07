@@ -59,6 +59,8 @@ public final class Inspection {
 	public static final String NOT_DECODED = "not_decoded";
 	/** A payload that cannot be read (a package docx4j cannot load, a font that is not TrueType). */
 	public static final String UNREADABLE = "unreadable";
+	/** A main document part whose root Word opens and shows nothing of (WD REQ-320). @since 17.3.6 */
+	public static final String UNEXPECTED_ROOT = TextWarning.PART_UNEXPECTED_ROOT;
 	public static final String LIMIT_PAYLOAD_BYTES = "limit.payload_bytes";
 	public static final String LIMIT_TOTAL_BYTES = "limit.total_bytes";
 	public static final String LIMIT_ELEMENTS = "limit.elements";
