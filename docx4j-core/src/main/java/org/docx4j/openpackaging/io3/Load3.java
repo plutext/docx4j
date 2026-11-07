@@ -284,8 +284,16 @@ public class Load3 extends Load {
 	 */
 	private LoadFinding oneMainPart(RelationshipsPart rp) throws Docx4JException {
 		List<Relationship> mains = new ArrayList<Relationship>();
+		Relationship external = null;
 		for (Relationship r : rp.getRelationships().getRelationship()) {
-			if (PackageRelsUtil.isMainPart(r) && !"External".equals(r.getTargetMode())) mains.add(r); // an external target is no part
+			if (!PackageRelsUtil.isMainPart(r)) continue;
+			if (!"External".equals(r.getTargetMode())) mains.add(r);
+			else if (external == null) external = r;
+		}
+		if (external != null && !mains.isEmpty()) {
+			// Word refuses this even through its repair (x-ext-*), so RepairMode.WORD has no reading to give
+			throw new Docx4JException("Refused: the package has an External main part relationship, to " + external.getTarget()
+					+ ", beside one to " + mains.get(0).getTarget() + ". Word refuses such a package, even through a repair.");
 		}
 		if (mains.size() < 2) return null;
 		if (effectiveRepairMode() != RepairMode.WORD) {

@@ -40,6 +40,8 @@ import java.util.zip.ZipInputStream;
 import org.docx4j.Docx4J;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.jaxb.McLoadMode;
+import org.docx4j.model.fields.merge.DataFieldName;
+import org.docx4j.model.fields.merge.MailMerger;
 import org.docx4j.model.text.Inspect;
 import org.docx4j.model.text.Inspection;
 import org.docx4j.model.text.TextOptions;
@@ -606,7 +608,7 @@ public class PackageWiringTest {
 
 	/**
 	 * Word repairs two relationships to one target as it repairs two to two (round one-target, ot-01 to ot-03), so the count
-	 * is of relationships, however the target is spelled; and an external target is no part.
+	 * is of relationships, however the target is spelled.
 	 */
 	@Test
 	public void relationshipsAreCountedNotTargets() throws Exception {
@@ -630,11 +632,44 @@ public class PackageWiringTest {
 				}
 			}
 		}
-		byte[] zip = rewritten(wiring("control-one-main"), "_rels/.rels", head
-				+ "<Relationship Id=\"rId2\" Type=\"" + od + "\" Target=\"http://example.com/x.docx\" TargetMode=\"External\"/></Relationships>");
-		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(zip));
-		assertEquals("CONTROL_WORDS", text(pkg));
-		assertTrue(pkg.getLoadFindings().isEmpty());
+	}
+
+	/**
+	 * Word refuses a package with an External main part relationship beside an internal one, first or last, even through its
+	 * repair (docx4j-python's x-ext-*, 8 jobs, each opened: refused), so the switch has no reading to give.
+	 */
+	@Test
+	public void anExternalMainPartRelationshipBesideAnInternalOneIsRefusedInBothModes() throws Exception {
+		String od = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument";
+		String open = "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">";
+		String internal = "<Relationship Id=\"rId1\" Type=\"" + od + "\" Target=\"word/document.xml\"/>";
+		String external = "<Relationship Id=\"rId2\" Type=\"" + od + "\" Target=\"http://example.com/x.docx\" TargetMode=\"External\"/>";
+		for (String rels : new String[] { internal + external, external + internal }) {
+			byte[] zip = rewritten(wiring("control-one-main"), "_rels/.rels", open + rels + "</Relationships>");
+			for (LoadOptions options : new LoadOptions[] { new LoadOptions(), repair() }) {
+				try {
+					WordprocessingMLPackage.load(new ByteArrayInputStream(zip), options);
+					fail("loaded");
+				} catch (Docx4JException refused) {
+					assertTrue(refused.getMessage(), refused.getMessage().contains("External main part relationship, to http://example.com/x.docx"));
+				}
+			}
+		}
+	}
+
+	/** A merge clones through a save and its result is a new package with no findings, so it is refused on purpose (Jason, CR-075 section 6). */
+	@Test
+	public void aMailMergeOfAPackageReadShortIsRefused() throws Exception {
+		File broken = file("text-extraction/broken-part/broken-part-document-rels.docx");
+		List<Map<DataFieldName, String>> data = new ArrayList<Map<DataFieldName, String>>();
+		data.add(new LinkedHashMap<DataFieldName, String>());
+		try {
+			MailMerger.getConsolidatedResultCrude(WordprocessingMLPackage.load(broken), data);
+			fail("merged");
+		} catch (Docx4JException refused) {
+			assertTrue(refused.getMessage(), refused.getMessage().contains("/word/_rels/document.xml.rels could not be read"));
+		}
+		assertNotNull(MailMerger.getConsolidatedResultCrude(WordprocessingMLPackage.load(broken, repair()), data));
 	}
 
 	private static byte[] rewritten(File source, String name, String xml) throws Exception {

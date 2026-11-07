@@ -223,7 +223,9 @@ public abstract class AbstractMerger {
 			}
 		}
 		
-		// Create WordprocessingMLPackage target, by cloning
+		// Create WordprocessingMLPackage target, by cloning.
+		// This save is refused where the input was read short, on purpose (CR-075): the result is
+		// a new package with no findings, so this is the one place the loss can be told.
 		OpcPackage result = null;
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		SaveToZipFile saver = new SaveToZipFile(input);
