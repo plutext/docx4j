@@ -209,6 +209,26 @@ public class WordprocessingMLPackage extends OpcPackage {
 		
 		return (WordprocessingMLPackage)OpcPackage.load(is, mode);
 	}
+
+	/**
+	 * As {@link #load(java.io.File)}, under these options (CR-075 D1).
+	 *
+	 * @since 17.3.6 (CR-075 phase 1)
+	 */
+	public static WordprocessingMLPackage load(java.io.File docxFile, org.docx4j.openpackaging.io3.LoadOptions options) throws Docx4JException {
+		
+		return (WordprocessingMLPackage)OpcPackage.load(docxFile, options);
+	}
+
+	/**
+	 * As {@link #load(InputStream)}, under these options (CR-075 D1).
+	 *
+	 * @since 17.3.6 (CR-075 phase 1)
+	 */
+	public static WordprocessingMLPackage load(InputStream is, org.docx4j.openpackaging.io3.LoadOptions options) throws Docx4JException {
+		
+		return (WordprocessingMLPackage)OpcPackage.load(is, options);
+	}
 	
 	
 	public boolean setPartShortcut(Part part, String relationshipType) {

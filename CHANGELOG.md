@@ -132,6 +132,12 @@ Changes in Version 17.3.6
   zero-size bitmap draws nothing, 15 bare asserts now warnings or errors (the hwmf package README, item 7).
 
 **Loading.**
+- A package whose zip holds two entries of one name, compared as OPC part names so that case doesn't count, is now refused, naming the
+  entry, where docx4j read the last silently: Word reads such a package only through a repair (WD REQ-206; CR-075). `new LoadOptions().repairMode(RepairMode.WORD)`,
+  or `docx4j.openpackaging.load.repair=word`, reads the first in the central directory, as Word's repair does, and records it. With the new
+  `load(File, LoadOptions)` overloads, a literal `null` as `Docx4J.load`'s second argument needs a cast.
+- `OpcPackage.getLoadFindings()` says what a load read around, and the text model and the inspector report it. A part's relationships part that isn't well
+  formed is now among them, in place of a stack trace on stderr. A refusal over `_rels/.rels` names the part and the parse error, not a `NullPointerException`.
 - With JAXB 4 (docx4j-JAXB-ReferenceImpl), the reset of JAXB's error count after ten errors in a part works again
   (#164): it looked for JAXB 2's class only, logged three ERRORs, and left the part's later errors unreported.
 

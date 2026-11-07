@@ -70,6 +70,13 @@ public final class TextWarning {
 	 * @since 17.3.6
 	 */
 	public static final String MCE_NOTHING_SELECTED = "mce.nothing_selected";
+	/**
+	 * Two zip entries of one name, read under the repair switch: the first of each (REQ-206). Its selector is the name as the
+	 * first entry spells it; {@link #getDetail()} the number of entries.
+	 *
+	 * @since 17.3.6 (CR-075)
+	 */
+	public static final String PACKAGE_DUPLICATE_ENTRY = org.docx4j.openpackaging.packages.LoadFinding.DUPLICATE_ENTRY;
 
 	private final String kind;
 	private final String address;
@@ -118,7 +125,9 @@ public final class TextWarning {
 	public String getPartName() { return partName; }
 	/**
 	 * What the kind says beyond its selector (REQ-801): for {@code mce.nothing_selected}, the namespaces the Choices
-	 * require, as one string of URIs separated by spaces, empty if every prefix binds to nothing; else null.
+	 * require, as one string of URIs separated by spaces, empty if every prefix binds to nothing; for
+	 * {@code package.duplicate_entry} the number of entries; for {@code part.not_read} on a relationships part, the number
+	 * of relationships kept; else null.
 	 *
 	 * @since 17.3.6
 	 */

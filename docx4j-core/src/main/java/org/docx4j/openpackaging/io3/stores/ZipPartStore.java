@@ -23,8 +23,16 @@ import static java.lang.Math.toIntExact;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.zip.CRC32;
 
 import javax.xml.transform.dom.DOMSource;
@@ -35,6 +43,7 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
@@ -43,6 +52,8 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.Docx4JRuntimeException;
 import org.docx4j.openpackaging.exceptions.FileTooLargeException;
 import org.docx4j.openpackaging.exceptions.PartTooLargeException;
+import org.docx4j.openpackaging.io3.RepairMode;
+import org.docx4j.openpackaging.packages.LoadFinding;
 import org.docx4j.openpackaging.parts.*;
 import org.docx4j.openpackaging.parts.WordprocessingML.*;
 import org.slf4j.Logger;
@@ -96,7 +107,26 @@ public class ZipPartStore implements PartStore {
 	
 	public ZipPartStore() {}    
 
+	/** What this store's load read around (CR-075 D2); {@link org.docx4j.openpackaging.io3.Load3} hands it to the package. */
+	private final List<LoadFinding> loadFindings = new ArrayList<LoadFinding>();
+
+	/** What this store's load read around, in the order found: empty for a package with no duplicated entry. @since 17.3.6 */
+	public List<LoadFinding> getLoadFindings() {
+		return Collections.unmodifiableList(loadFindings);
+	}
+
 	public ZipPartStore(File f) throws Docx4JException {
+		this(f, RepairMode.fromProperty());
+	}
+
+	/**
+	 * As {@link #ZipPartStore(File)}, with what to do with entries of one name (WD REQ-206; CR-075 D3):
+	 * {@link RepairMode#NONE} refuses them, naming the entry; {@link RepairMode#WORD} reads the first of
+	 * each name in the central directory and records {@link LoadFinding#DUPLICATE_ENTRY}.
+	 *
+	 * @since 17.3.6 (CR-075 phase 1)
+	 */
+	public ZipPartStore(File f, RepairMode repair) throws Docx4JException {
 				
 		log.info("Filepath = " + f.getPath() );
 
@@ -113,10 +143,92 @@ public class ZipPartStore implements PartStore {
 		warnIfBytesAfterCentralDirectory(f);
 
 		partByteArrays = new HashMap<String, ByteArray>();
+		try {
+			Map<String, List<String>> duplicated = duplicated(entryNames(zf));
+			refuseOrRecord(duplicated, repair);
+			readEntries(zf, f);
+			alias(duplicated);
+		} finally {
+			// At this point, we've finished with the zip file
+			try {
+				zf.close();
+			} catch (IOException exc) {
+				log.warn("Couldn't close " + f.getName() + ": " + exc.getMessage());
+			}
+		}
+	}
+
+	/** Each entry's name, in the central directory's order. */
+	private static List<String> entryNames(ZipFile zf) {
+		List<String> names = new ArrayList<String>();
+		Enumeration<ZipArchiveEntry> entries = zf.getEntries();
+		while (entries.hasMoreElements()) names.add(entries.nextElement().getName());
+		return names;
+	}
+
+	/** A name as OPC compares part names, case-insensitively (WD REQ-206). */
+	private static String folded(String name) {
+		return name.toLowerCase(Locale.ROOT);
+	}
+
+	/**
+	 * The names given more than once under OPC equivalence, each with its spellings in the order given,
+	 * one for each entry: keyed by the folded name, in the order first met. Empty for an ordinary package.
+	 * A directory entry is no part, so it doesn't count: archivers write them, and Word hasn't been asked.
+	 */
+	private static Map<String, List<String>> duplicated(List<String> names) {
+		Set<String> seen = new HashSet<String>(names.size() * 2);
+		Set<String> repeated = null;
+		for (String name : names) {
+			if (!name.endsWith("/") && !seen.add(folded(name))) {
+				if (repeated == null) repeated = new HashSet<String>();
+				repeated.add(folded(name));
+			}
+		}
+		if (repeated == null) return Collections.emptyMap();
+		Map<String, List<String>> out = new LinkedHashMap<String, List<String>>();
+		for (String name : names) {
+			if (repeated.contains(folded(name))) out.computeIfAbsent(folded(name), k -> new ArrayList<String>()).add(name);
+		}
+		return out;
+	}
+
+	/** REQ-206: refuses a package with entries of one name, naming them; under {@link RepairMode#WORD} records each name once. */
+	private void refuseOrRecord(Map<String, List<String>> duplicated, RepairMode repair) throws Docx4JException {
+		if (duplicated.isEmpty()) return;
+		if (repair != RepairMode.WORD) {
+			StringBuilder named = new StringBuilder();
+			for (List<String> spellings : duplicated.values()) {
+				if (named.length() > 0) named.append(", ");
+				named.append(spellings.get(0)).append(" (").append(spellings.size()).append(" entries)");
+			}
+			throw new Docx4JException("Refused: the zip holds more than one entry of a name, compared as OPC part names: " + named
+					+ ". Word reads such a package only through a repair; load with RepairMode.WORD to read the first of each ("
+					+ RepairMode.PROPERTY + "=word).");
+		}
+		for (List<String> spellings : duplicated.values()) {
+			LoadFinding finding = new LoadFinding(LoadFinding.DUPLICATE_ENTRY, spellings.get(0), String.valueOf(spellings.size()));
+			log.warn(finding.toString());
+			loadFindings.add(finding);
+		}
+	}
+
+	/** Under {@link RepairMode#WORD}: each other spelling of a duplicated name finds the entry kept, as the names are one to Word. */
+	private void alias(Map<String, List<String>> duplicated) {
+		for (List<String> spellings : duplicated.values()) {
+			ByteArray kept = partByteArrays.get(spellings.get(0));
+			for (String spelling : spellings) partByteArrays.put(spelling, kept);
+		}
+	}
+
+	/** Reads each entry in the central directory's order, keeping the first of a name; a null file for a buffered stream. */
+	private void readEntries(ZipFile zf, File f) throws Docx4JException {
 		long totalUncompressedSize = 0;
+		Set<String> read = new HashSet<String>();
 		Enumeration entries = zf.getEntries();
 		while (entries.hasMoreElements()) {
 			ZipArchiveEntry entry = (ZipArchiveEntry) entries.nextElement();
+			if (!read.add(folded(entry.getName()))) continue; // REQ-206's first, under RepairMode.WORD
 			policePartSize(f, entry.getSize(), entry.getName());
 			
             // Get uncompressed and compressed sizes from the entry metadata
@@ -161,12 +273,6 @@ public class ZipPartStore implements PartStore {
 	            throw new Docx4JException("Error processing zip file (is it a zip file?)", e);
 			}
 		}
-		 // At this point, we've finished with the zip file
-		 try {
-			 zf.close();
-		 } catch (IOException exc) {
-			 exc.printStackTrace();
-		 }
 	}
 	
 	/**
@@ -262,14 +368,39 @@ public class ZipPartStore implements PartStore {
 	 * @throws Docx4JException
 	 */
 	public ZipPartStore(InputStream is) throws Docx4JException {
+		this(is, RepairMode.fromProperty());
+	}
+
+	/**
+	 * As {@link #ZipPartStore(InputStream)}, with what to do with entries of one name, as
+	 * {@link #ZipPartStore(File, RepairMode)}.  So that a stream chooses as a file does, the stream is
+	 * buffered and its central directory read first.  A package with no duplicated entry is then read
+	 * through its local headers, as ever, so a zip with no usable central directory still loads.
+	 *
+	 * @since 17.3.6 (CR-075 phase 1)
+	 */
+	public ZipPartStore(InputStream is, RepairMode repair) throws Docx4JException {
 
 		partByteArrays = new HashMap<String, ByteArray>();
+		byte[] zip = buffered(is);
+		List<String> central = centralDirectoryNames(zip);
+		Map<String, List<String>> duplicated = central == null ? Collections.<String, List<String>>emptyMap() : duplicated(central);
+		refuseOrRecord(duplicated, repair);
+		if (!duplicated.isEmpty()) {
+			readThroughCentralDirectory(zip);
+			alias(duplicated);
+			return;
+		}
+
 		long totalUncompressedSize = 0;
-		
+		List<String> names = new ArrayList<String>();
+		Set<String> read = new HashSet<String>();
        try {
-            ZipArchiveInputStream zis = new ZipArchiveInputStream(is);
+            ZipArchiveInputStream zis = new ZipArchiveInputStream(new ByteArrayInputStream(zip));
             ArchiveEntry entry = null;
             while ((entry = zis.getNextEntry()) != null) {
+            	names.add(entry.getName());
+            	if (!read.add(folded(entry.getName()))) continue; // a local header the central directory doesn't list: checked below
             	// How to read the data descriptor for length? ie before reading?
             	// https://bugs.java.com/bugdatabase/view_bug.do?bug_id=4079029
     			policePartSize(null, entry.getSize(), entry.getName());
@@ -295,6 +426,51 @@ public class ZipPartStore implements PartStore {
         } catch (Exception e) {
             throw new Docx4JException("Error processing zip file (is it a zip file?)", e);
         }
+       duplicated = duplicated(names);
+       if (duplicated.isEmpty()) return;
+       if (central != null) {
+    	   // local headers the central directory doesn't list: it is the authority, as for a file
+    	   partByteArrays.clear();
+    	   readThroughCentralDirectory(zip);
+       } else {
+    	   refuseOrRecord(duplicated, repair);
+    	   alias(duplicated);
+       }
+	}
+
+	/**
+	 * The stream's bytes, within the package limit: a zip's compressed size doesn't pass its uncompressed size by
+	 * much, so a stream twice over the limit is refused before it is held in memory.
+	 */
+	private static byte[] buffered(InputStream is) throws Docx4JException {
+		long limit = MAX_UNCOMPRESSED_SIZE > -1 ? Math.min(MAX_UNCOMPRESSED_SIZE * 2 + (1 << 20), Integer.MAX_VALUE - 8) : Integer.MAX_VALUE - 8;
+		try {
+			byte[] zip = is.readNBytes((int) limit);
+			if (zip.length == limit && is.read() != -1) {
+				throw new FileTooLargeException("Zip bomb detected: the stream is over " + limit + " bytes");
+			}
+			return zip;
+		} catch (IOException e) {
+			throw new Docx4JException("Error processing zip file (is it a zip file?)", e);
+		}
+	}
+
+	private void readThroughCentralDirectory(byte[] zip) throws Docx4JException {
+		try (ZipFile zf = ZipFile.builder().setSeekableByteChannel(new SeekableInMemoryByteChannel(zip)).get()) {
+			readEntries(zf, null);
+		} catch (IOException e) {
+			throw new Docx4JException("Error processing zip file (is it a zip file?)", e);
+		}
+	}
+
+	/** The names in a zip's central directory, in its order; null where it has none to read, as the local headers are then all there is. */
+	private static List<String> centralDirectoryNames(byte[] zip) {
+		try (ZipFile zf = ZipFile.builder().setSeekableByteChannel(new SeekableInMemoryByteChannel(zip)).setIgnoreLocalFileHeader(true).get()) {
+			return entryNames(zf);
+		} catch (IOException e) {
+			log.debug("No central directory to read: " + e.getMessage());
+			return null;
+		}
 	}
 
 	private PartStore sourcePartStore;

@@ -254,6 +254,12 @@ final class Extractor {
 	// --- the package ---------------------------------------------------------------------------------
 
 	TextResult extract() {
+		if (options.isWarnings()) {
+			// what the load read around (CR-075 D2)
+			for (org.docx4j.openpackaging.packages.LoadFinding f : pkg.getLoadFindings()) {
+				warn(new TextWarning(f.getKind(), null, null, null, f.getSelector(), f.getDetail()));
+			}
+		}
 		MainDocumentPart main = pkg.getMainDocumentPart();
 		List<TextBlock> out = new ArrayList<TextBlock>();
 		Map<String, TextComment> comments = new LinkedHashMap<String, TextComment>();

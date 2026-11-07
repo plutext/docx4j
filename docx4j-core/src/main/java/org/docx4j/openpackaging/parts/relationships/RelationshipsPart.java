@@ -418,6 +418,19 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		return occupiedRelIds().contains(relId);
 	}
 	
+	/** Why the last {@link #unmarshal(java.io.InputStream)} failed, or null where it read the part (CR-075). */
+	private Exception readFailure;
+
+	/**
+	 * Why this part's source could not be read, or null where it was: the relationships it holds are then
+	 * none of the source's.
+	 *
+	 * @since 17.3.6 (CR-075 phase 1)
+	 */
+	public Exception getReadFailure() {
+		return readFailure;
+	}
+
 	/**
 	 * Assumes relationship ids are all of the form
 	 * 'rIdn' where n is a positive integer.
@@ -994,6 +1007,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	@Override
     public Relationships unmarshal( java.io.InputStream is ) throws JAXBException {
     	
+		readFailure = null;
 		try {
 			
 	        XMLInputFactory xif = org.docx4j.utils.XmlParserLimits.apply(XMLInputFactory.newInstance());
@@ -1008,7 +1022,10 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			jaxbElement = (Relationships) u.unmarshal( xsr );
 
 		} catch (Exception e ) {
-			e.printStackTrace();
+			// recorded for the load to report (CR-075); a part with a list keeps it, and what it held stands
+			readFailure = e;
+			log.warn((getPartName() == null ? "A relationships part" : getPartName().getName()) + " could not be read: " + e);
+			if (jaxbElement == null) throw new JAXBException("Relationships not read: " + e, e);
 		}
 		
 		resetIdAllocator();
@@ -1025,6 +1042,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	@Override // need this so that resetIdAllocator() is called 
     public Relationships unmarshal(org.w3c.dom.Element el) throws JAXBException {
 
+		readFailure = null;
 		try {
 
 			Unmarshaller u = jc.createUnmarshaller();

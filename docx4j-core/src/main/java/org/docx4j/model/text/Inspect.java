@@ -130,6 +130,8 @@ public final class Inspect {
 
 	/** The three passes; true when a global limit stopped them. */
 	private static boolean walk(WordprocessingMLPackage pkg, InspectRun run) {
+		// what the load read around (CR-075 D2): reported, so the inspection reads as partial
+		for (org.docx4j.openpackaging.packages.LoadFinding f : pkg.getLoadFindings()) run.skip(f.getKind(), "|" + f.getSelector() + "|");
 		InspectPackage store = new InspectPackage(pkg, new ArrayList<String>(), run);
 		try {
 			new InspectWalk(store, run, 0, new java.util.HashSet<String>()).run();

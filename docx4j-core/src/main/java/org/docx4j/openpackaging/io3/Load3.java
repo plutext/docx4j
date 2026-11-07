@@ -33,6 +33,8 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.io.IOUtils;
 import org.docx4j.jaxb.McLoadMode;
+import org.docx4j.openpackaging.io3.stores.ZipPartStore;
+import org.docx4j.openpackaging.packages.LoadFinding;
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
@@ -198,6 +200,8 @@ public class Load3 extends Load {
 		}
 		log.info("Instantiated package of type " + p.getClass().getName() );
 		p.setSourcePartStore(partStore);
+		this.loading = p;
+		p.setLoadFindings(partStore instanceof ZipPartStore ? ((ZipPartStore) partStore).getLoadFindings() : null);
 		if (mcLoadMode != null) {
 			// before any part is unmarshalled (CR-051 section 3.2), as setWasStrict below
 			p.setMcLoadMode(mcLoadMode);
@@ -233,6 +237,22 @@ public class Load3 extends Load {
 		 return p;
 	}
 
+	/** The package this load is filling, for what it finds. */
+	private OpcPackage loading;
+
+	/** The deepest message of an exception, which is the parser's, not a wrapper's. */
+	private static String deepestMessage(Throwable t) {
+		String message = null;
+		for (Throwable c = t; c != null; c = c.getCause() == c ? null : c.getCause()) {
+			if (c instanceof jakarta.xml.bind.JAXBException && ((jakarta.xml.bind.JAXBException) c).getLinkedException() != null
+					&& c.getCause() == null) {
+				c = ((jakarta.xml.bind.JAXBException) c).getLinkedException();
+			}
+			if (c.getMessage() != null) message = c.getMessage();
+		}
+		return message == null ? t.toString() : message;
+	}
+
 	private void populatePackageRels(RelationshipsPart rp) 
 			throws Docx4JException {
 		
@@ -243,9 +263,13 @@ public class Load3 extends Load {
 				throw new Docx4JException("_rels/.rels appears to be missing from this package!");
 			}
 			rp.unmarshal(is);
+			if (rp.getReadFailure() != null) throw rp.getReadFailure();
 			
+		} catch (Docx4JException e) {
+			throw e;
 		} catch (Exception e) {
-			throw new Docx4JException("Error getting document from Zipped Part: _rels/.rels " , e);
+			// the part and the parse error, not what the missing relationships then broke (CR-075 D6)
+			throw new Docx4JException("The package's relationships part, _rels/.rels, could not be read: " + deepestMessage(e), e);
 			
 		} finally {
 			IOUtils.closeQuietly(is);
@@ -266,9 +290,15 @@ public class Load3 extends Load {
 			}
 			rp = p.getRelationshipsPart(true);
 			rp.unmarshal(is);
+			if (rp.getReadFailure() != null && loading != null) {
+				// read as it always was, with none of its relationships, until CR-075 phase 4; said now
+				LoadFinding finding = new LoadFinding(LoadFinding.PART_NOT_READ, rp.getPartName().getName(),
+						String.valueOf(rp.getRelationships().getRelationship().size()));
+				log.warn(finding + ": " + deepestMessage(rp.getReadFailure()));
+				loading.addLoadFinding(finding);
+			}
 			
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new Docx4JException("Error getting document from Zipped Part:" + partName, e);
 			
 		} finally {

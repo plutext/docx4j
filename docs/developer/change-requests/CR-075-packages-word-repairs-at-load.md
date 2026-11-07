@@ -1,9 +1,10 @@
 # CR-075: packages Word repairs on opening: duplicate entries, two main parts, an unreadable relationships part or store
 
-Status: PROPOSED 2026-11-04 (Jason: "Draft the CR for docx4j's load-side items"). The work Jason's repair policy
+Status: ACCEPTED 2026-11-07 (Jason: "start CR-075 decisions as recommended"): D1 to D10 as recommended in §5. Phases 0
+and 1 committed, D10's count to come. Proposed 2026-11-04 (Jason: "Draft the CR for docx4j's load-side items"). The work Jason's repair policy
 decisions of the same day leave to docx4j (the portfolio's `docs/repair_policy_across_ports.md`, "decisions as
-recommended", P1 to P6, 6085a74). Decisions in §5, for Jason; phases in §6. Phase 3 waits on Jason's ruling of the
-two-main-parts statement recommended in the WD's REQ-206 NOTE. WD 0.73's item (i) ruled 2026-11-04 (WD 0.76, 7c5ee35):
+recommended", P1 to P6, 6085a74). Phases in §6. Jason ruled the two-main-parts
+statement on 2026-11-07 ("yes"), as §3 has it, so phase 3 waits on nothing. WD 0.73's item (i) ruled 2026-11-04 (WD 0.76, 7c5ee35):
 a relationships part that cannot be read MAY refuse the load, and one that does not refuse reads the relationships
 parsed before the error (§3), so phase 4 waits on nothing but D5.
 
@@ -17,7 +18,7 @@ own, are read by docx4j in a way that differs from Word, silently, or refused wi
 | 1 | two zip entries named `word/document.xml` | repairs; reads the **first** | reads the **last**, no warning; the save writes the last |
 | 2 | two zip entries named `_rels/.rels`, each naming a different main part | repairs; reads the **first** | reads the **last**, no warning; the save drops the other main part |
 | 3 | a second entry whose name is OPC-equivalent (`Word/Document.xml` after `word/document.xml`) | repairs: the names are one to Word; reads the probe (the first entry, which is also the exact name); keeps one main part | reads the exact name, no warning; the save drops the other entry |
-| 4 | one `_rels/.rels` with two `officeDocument` relationships | repairs; reads the target whose main-document Override is **last** in `[Content_Types].xml`, whatever the relationships', zip entries' or names' order; keeps one | reads the **last relationship's** target, no warning; the save keeps both |
+| 4 | one `_rels/.rels` with two `officeDocument` relationships | repairs; a fresh Word reads the **last relationship's** target, whatever the Overrides', zip entries' or names' order, and a second repaired open in the session the first's (§2); keeps one | reads the **last relationship's** target, no warning; the save keeps both |
 | 5 | a part's relationships part not well formed (`word/_rels/document.xml.rels` cut after its third relationship) | repairs ("Comments"); keeps the relationships before the break; the comments' references left as empty comments | reads **no** relationships, no warning (a stack trace on stderr); the save drops styles, numbering, settings, comments and commentsExtended |
 | 6 | the package's `_rels/.rels` not well formed (cut after the main part's relationship) | repairs; keeps the main part; the three properties parts lost | refuses the load, the cause a `NullPointerException`, not the part |
 | 7 | a custom XML store not well formed | repairs; reads the store as absent and binds its control to the store whose root fits (REQ-509's repair); drops it on save | refuses the whole load ("Failed to getPart") |
@@ -86,6 +87,16 @@ All Jason's runs on the VM (Word for Microsoft 365, build 20326.20232 when last 
   family (e2af12b74).
 - **7:** `store-not-read/` and the broken-part run (3 November): WD 0.69.
 
+**Through the bridge, 7 November (the set `package-wiring`, 17 files, each twice, the two runs agreeing, Word 16.0.20326.20232).**
+Shapes 1 to 3 stand, and every output agrees. `dup-central-reversed` reads the central directory's first, not the local headers', which
+settles §7's "two orders of first". Identical copies are repaired too (`dup-entry-same-bytes`), and a part's relationships and
+`[Content_Types].xml` read their first copy. **Shape 4 was misread on 4 November.** A bridge job opens the file once per output, in one Word process, repairing each time. The set
+`open-order` (Jason: "the do small round") ran each format alone and all six orderings on the two files where the last relationship and the last Override differ, each job
+twice: 84 outputs. A fresh Word's first open reads the last relationship's target, 36 of 36; the second open in the session the first's, 24 of 24; the third the last's,
+24 of 24, whichever format each is, the two runs equal. So the choice alternates with each repaired open in a session, and the Override plays no part. The hand runs of
+4 November fit that alternation, in `RUN.txt`'s order, and "the Override last" was a coincidence of the order the files were opened in. A session's
+count may run over other repaired files, or only these: the hand runs can't tell, and the bridge's jobs are one file each. A cell left with no block is repaired, and a bare `w:tr` refused, in a source and in a save alike (python's round, `te-*`).
+
 ## 3. What has been ruled, and what is still open
 
 - **REQ-206 (WD 0.74; Jason, 4 November, in the core-ts session: "refuse the package, with an optional config option
@@ -104,9 +115,10 @@ All Jason's runs on the VM (Word for Microsoft 365, build 20326.20232 when last 
 - **WD 0.69 (c), a store not well formed:** read as absent, its binding resolved under REQ-509's repair (else the
   surface), `part.not_read` once naming the store where a binding in scope names it; docx4j's load-side items named
   there: keep the store's bytes, pass over it, raise the warning, fix the `/null` part name.
-- **Open, Jason's:** the two-main-parts statement recommended in REQ-206's NOTE (refuse more than one
-  `officeDocument` relationship naming the targets; under the switch read the target whose main-document Override is
-  last and raise `package.multiple_main_parts` once).
+- **Ruled 2026-11-07 (Jason: "yes"; WD 0.100, portfolio 9034ad0), the two-main-parts statement:** a package with more than one `officeDocument`
+  relationship is refused, naming the targets. Under the switch, the last relationship's target is read, as a fresh Word reads
+  it (§2), and `package.multiple_main_parts` is raised once (selector that part's name, `detail` the number of relationships). This
+  replaces the Override-last reading REQ-206's NOTE recommended.
 - **Ruled 2026-11-04 (WD 0.76, 7c5ee35), WD 0.73's item (i) for a relationships part:** a relationships part that
   cannot be read MAY refuse the load; an implementation that does not refuse reads the relationships parsed before the
   error, raises `part.not_read` naming the relationships part with the count kept, and reads the parts only a lost
@@ -124,7 +136,7 @@ All Jason's runs on the VM (Word for Microsoft 365, build 20326.20232 when last 
    - 1 to 3 (REQ-206): the part store detects a duplicate under OPC equivalence while it reads the zip and refuses,
      naming the entry and the count; under the switch it keeps the first and records `package.duplicate_entry` (D3).
    - 4: after the package's relationships are read, more than one `officeDocument` relationship refuses, naming the
-     targets; under the switch the target whose main-document Override is last is the main part and
+     targets; under the switch the last relationship's target is the main part and
      `package.multiple_main_parts` is recorded (D4).
    - 5 and 6: `RelationshipsPart` records a failed parse instead of printing it, as `JaxbXmlPart` does since CR-065 D1.
      Then the reading D5 and D6 choose: the relationships before the break (a StAX pass that keeps each complete
@@ -145,7 +157,7 @@ All Jason's runs on the VM (Word for Microsoft 365, build 20326.20232 when last 
 | D1 | The switch's form. | (a) a `RepairMode` (`NONE`, `WORD`) as `McLoadMode`: a property (`docx4j.openpackaging.load.repair`, `none` or `word`) and load overloads; (b) a `LoadOptions` carrying the `McLoadMode` and the `RepairMode`, one overload per source (`File`, `InputStream`), the `McLoadMode` overloads kept and delegating; (c) the property only. | (b): `OpcPackage.load` already has fourteen overloads, and a second mode would double CR-051's; the property gives the default, as `McLoadMode`'s does. The WD's option name follows P4. |
 | D2 | Where a load's findings live. | (a) WARN logs only; (b) a list on `OpcPackage` (kind, selector, detail; `getLoadFindings()`), each logged once, read by the text model (its warnings), the inspector and the save gate; (c) exceptions only. | (b). The text model and the save both need them after the load returns. |
 | D3 | REQ-206's duplicate entries (its details ruled 2026-11-04, WD 0.77 b0d333d: OPC part-name equivalence, case-insensitive; "first" in the zip's central directory, Word's own rule (Word check 75a, WD 0.88); every entry covered, `[Content_Types].xml` and the relationships parts included; the save under the option writing only the copy read; `package.duplicate_entry`). | (a) as ruled: refuse naming the entry and the count; under the switch keep the central directory's first and record `package.duplicate_entry` per name. A stream is read for its central directory before choosing (`ZipPartStore`'s stream path reads local headers in order today: buffered, then read as a zip file), so a file and a stream choose alike; (b) refuse only duplicates of names a relationship reaches. | (a), settled by the ruling. Whether `duplicate_entries: first` stays an option of its own is P4's naming question; docx4j's switch covers it, with an alias if the WD keeps the name. |
-| D4 | Two `officeDocument` relationships (the REQ-206 NOTE statement, open). | (a) as recommended there: refuse naming the targets; under the switch the target whose main-document Override is last, `package.multiple_main_parts` once; (b) today's last relationship's target, with the finding. | (a), once Jason rules the statement (phase 3). |
+| D4 | Two `officeDocument` relationships (ruled 2026-11-07, §3). | (a) refuse naming the targets; under the switch the last relationship's target, `package.multiple_main_parts` once; (b) today's last relationship's target with a finding, and no refusal. | (a), as Jason ruled. It first said the target whose main-document Override is last, which §2's bridge rounds disproved. |
 | D5 | A part's relationships part not well formed (WD 0.76: either (a) or (b) conforms). | (a) refuse the load naming the part (python CR-031 and core-ts); (b) keep the relationships before the break, record `part.not_read` naming the relationships part with the count kept, the parts only the lost relationships named read as absent with their own warnings where consulted, the save refused unless the switch (D8); (c) today's: none, silently, which does not conform. | (b), Word's reading: a read-only operation gets nearly all of the document, as P2 has it, and the save gate keeps the loss from being written silently. |
 | D6 | The package's `_rels/.rels` not well formed. | the same choice as D5 for the package (Word kept the main part's relationship); in either case, from phase 1, the refusal or the finding names `_rels/.rels` and the parse error, not the `NullPointerException`. | As D5; the named cause in phase 1, whatever D5 becomes. |
 | D7 | A custom XML store not well formed (WD 0.69 (c), P2, P3). | (a) an unreadable part under CR-065 D1: bytes kept, passed over, read as absent with REQ-509's repair, `part.not_read` where a binding in scope names it, the load error's name fixed; an untouched save writes the bytes; under the switch the save drops it, as Word's does; (b) refuse the load, as today. | (a). |
@@ -157,10 +169,10 @@ All Jason's runs on the VM (Word for Microsoft 365, build 20326.20232 when last 
 
 | # | Content | Status |
 |---|---|---|
-| 0 | D9's fixtures (the builder; the two-rels files with Word's saves; docx4j's own duplicate and case-variant files, staged for a Word check recording the prompt); D10's survey count. | proposed |
-| 1 | D1 and D2 (the switch, the load findings); D3 (REQ-206 in both `ZipPartStore` paths, OPC equivalence); D6's named cause; the part-level relationships failure WARNed and recorded instead of printed (its reading unchanged until phase 4); tests; CHANGELOG. | proposed |
+| 0 | D9's fixtures (the builder; the two-rels files with Word's saves; docx4j's own duplicate and case-variant files, staged for a Word check recording the prompt); D10's survey count. | Fixtures done: `package-wiring/build_package_wiring.py` rebuilds the nine files of rounds 1 to 3 byte for byte and adds ten (a control; two entries of one name, as different bytes and as the same; `[Content_Types].xml` and a part's relationships twice; a case variant both ways; a central directory the other way from the local headers; a duplicate only the local headers show; a directory entry twice). Word's saves of the first 17 are beside them (§2). D10's count is in the catalogue queries owed once the home copy is in. |
+| 1 | D1 and D2 (the switch, the load findings); D3 (REQ-206 in both `ZipPartStore` paths, OPC equivalence); D6's named cause; the part-level relationships failure WARNed and recorded instead of printed (its reading unchanged until phase 4); tests; CHANGELOG. | done, reviewed by Fable (Jason: "you may implement phase 1; we will have fable review it", then "commit phases 0 and 1"). D10's count isn't in: release waits on it, as REQ-206 refuses packages that load today |
 | 2 | D7, the store. | proposed |
-| 3 | D4, two main parts. | proposed; waits on Jason's ruling of the REQ-206 NOTE statement |
+| 3 | D4, two main parts. | proposed; ruled 2026-11-07, waits on nothing |
 | 4 | D5, D6's reading and D8's save gate. | proposed (WD 0.73 (i) ruled 2026-11-04, WD 0.76) |
 
 Each phase's hand-off (the rule, the fixtures, Word's readings) goes to docx4j-python (its planned CR-032 for REQ-206)
@@ -169,14 +181,22 @@ and core-ts through the portfolio.
 ## 7. Risks
 
 - **The shared load path.** Every load passes through the part store and `Load3`; CLAUDE.md's model guidance gives
-  changes to the io3 load path to Fable. The duplicate check costs a case-folded set of the entry names per load.
+  changes to the io3 load path to Fable. The duplicate check costs a case-folded set of the entry names per load:
+  measured 2026-11-07, warm, on five corpus files of 16 to 201 entries, 0.3 to 3.6 µs, at most 0.14% of a load of 1 to 25 ms.
+  D3's stream route, buffered and then read through the central directory, took -9% to +7% of today's store time, under
+  0.1 ms, and holds a copy of the zip's compressed bytes while it reads.
 - **Documents refused that load today.** REQ-206 refuses packages docx4j has read (with the last entry) since its
-  first release; D10's count says how many, before phase 1 lands. The switch is the caller's way back.
+  first release; D10's count says how many, before phase 1 lands. The switch is the caller's way back. The local
+  corpora, 561 files, hold none: no duplicate or case-variant name, and no second `officeDocument` relationship.
 - **Two orders of "first".** A zip's central directory and its local headers can list entries in different orders;
   Word was measured only where they agree. REQ-206 as ruled takes the central directory's, which the stream path must
-  then read before it chooses (D3).
+  then read before it chooses (D3). Phase 1 buffers the stream, within the package limit, and reads its central directory;
+  a package with no duplicate is then read through its local headers, as before, so a zip with no usable central
+  directory still loads, and the ratio check stays the file route's. A duplicate the central directory doesn't list is
+  passed over, as a file passes over it. A directory entry doesn't count. `pw-dup-central-reversed` asks Word.
 - **The relationships prefix (phase 4)** changes `RelationshipsPart`'s unmarshal, which every part with relationships
-  uses; a StAX pass per relationships part, measured against today's load times before it lands.
+  uses. The StAX pass runs only after a parse has failed, from the bytes the part store still holds, so a part that
+  parses pays nothing.
 
 ## 8. Out of scope
 

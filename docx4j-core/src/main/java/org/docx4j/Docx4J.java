@@ -314,6 +314,25 @@ public class Docx4J {
 	public static WordprocessingMLPackage load(InputStream inStream, McLoadMode mode) throws Docx4JException {
 		return WordprocessingMLPackage.load(inStream, mode);
 	}
+
+	/**
+	 *  Load a Docx Document from a File, under these options (CR-075 D1): the mc:AlternateContent
+	 *  mode, and what to do with a package Word repairs.
+	 *  
+	 *  @since 17.3.6 (CR-075 phase 1)
+	 */	
+	public static WordprocessingMLPackage load(File inFile, org.docx4j.openpackaging.io3.LoadOptions options) throws Docx4JException {
+		return WordprocessingMLPackage.load(inFile, options);
+	}
+
+	/**
+	 *  Load a Docx Document from an InputStream, under these options; see {@link #load(File, org.docx4j.openpackaging.io3.LoadOptions)}.
+	 *  
+	 *  @since 17.3.6 (CR-075 phase 1)
+	 */	
+	public static WordprocessingMLPackage load(InputStream inStream, org.docx4j.openpackaging.io3.LoadOptions options) throws Docx4JException {
+		return WordprocessingMLPackage.load(inStream, options);
+	}
 	
 	/**
 	 *  Save a Ddocx/pptx/xlsx to a File. 
@@ -554,7 +573,9 @@ public class Docx4J {
 				final ZipPartStore partLoader = new ZipPartStore( new ByteArrayInputStream(outStream.toByteArray() ));
 				final Load3 loader = new Load3(partLoader);
 				loader.reuseExistingOpcPackage(wmlPackage); // reuse existing object
+				java.util.List<org.docx4j.openpackaging.packages.LoadFinding> findings = new java.util.ArrayList<>(wmlPackage.getLoadFindings());
 				/* wmlPackage = (WordprocessingMLPackage) */ loader.get();
+				wmlPackage.setLoadFindings(findings); // what the package's own load found still stands
 				
 			new EventFinished(startEvent).publish();
 			
