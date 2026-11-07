@@ -975,9 +975,7 @@ class Inspector:
                 if all(c.nsmap.get(p) in UNDERSTOOD for p in req):
                     chosen = c
         if chosen is None:
-            chosen = ac.find('{%s}Fallback' % MC)
-        if chosen is None:
-            chosen = ac.find('{%s}Choice' % MC)
+            chosen = ac.find('{%s}Fallback' % MC)  # and else nothing (REQ-305)
         return chosen is branch
 
     # ------------------------------------------------------------ a story

@@ -426,9 +426,9 @@
 		     above).  The element is resolved to the one
 		     branch docx4j draws (org.docx4j.jaxb.McSelection's rule, through
 		     XSLTUtils.mcPrefersChoice: the first Choice whose Requires prefixes are all in
-		     docx4j.jaxb.mc.preferChoice, else the Fallback, else - since 17.3.4, CR-051 D4 -
-		     the first Choice, as WD REQ-305's reading rule takes it; until then the element
-		     was dropped, every Choice with it), with a warning
+		     docx4j.jaxb.mc.preferChoice, else the Fallback, else - since 17.3.6, WD REQ-305 -
+		     the first Choice Word understands, else nothing: the element goes, as it did until
+		     17.3.4, every Choice with it, since a schema that doesn't admit it can't keep it), with a warning
 		     naming the parent.  A VML-first branch that lived here from 2012 never ran
 		     and is gone. -->
 		<xsl:when test="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))]">
@@ -454,12 +454,16 @@
   			<xsl:copy-of select="mc:Fallback/*"/>
   			
   		</xsl:when>
-  		<xsl:when test="mc:Choice">
-  			<!-- No Fallback, and no Choice preferred (CR-051 D4): the first Choice, as a
-  			     reader applies WD REQ-305, rather than dropping the content. -->
+  		<xsl:when test="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcUnderstandsRequires(string(@Requires), namespace::*)]">
+  			<!-- No Fallback, and no Choice preferred: the first Choice Word understands (WD REQ-305). -->
 			<xsl:variable name="logging" 
-				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor and has no mc:Fallback; selecting its first mc:Choice (Requires=', mc:Choice[1]/@Requires, ')'))" />
-  			<xsl:apply-templates select="mc:Choice[1]/*"/>
+				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor and has no mc:Fallback; selecting its first understood mc:Choice'))" />
+  			<xsl:apply-templates select="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcUnderstandsRequires(string(@Requires), namespace::*)][1]/*"/>
+  		</xsl:when>
+  		<xsl:when test="mc:Choice">
+  			<!-- No Fallback, and no Choice Word understands: nothing is selected (WD REQ-305). -->
+			<xsl:variable name="logging" 
+				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor, has no mc:Fallback and no mc:Choice Word understands; nothing selected (Requires=', mc:Choice[1]/@Requires, ')'))" />
   		</xsl:when>
   		<xsl:otherwise> 
 			<xsl:variable name="logging" 

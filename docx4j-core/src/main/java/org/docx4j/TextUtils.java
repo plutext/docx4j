@@ -185,8 +185,16 @@ public class TextUtils {
 		private int skipping = 0;
 		private int depth = 0;
 
+		/** The prefixes declared so far, for a Choice's {@code Requires}. */
+		private final java.util.Map<String, String> prefixes = new java.util.HashMap<String, String>();
+
 		public TextExtractor(Writer out) {
 			this.out = out;
+		}
+
+		@Override
+		public void startPrefixMapping(String prefix, String uri) {
+			prefixes.put(prefix, uri);
 		}
 
 		private void emit(CharSequence text) throws SAXException {
@@ -220,8 +228,9 @@ public class TextUtils {
 				if (!alt.taken && org.docx4j.jaxb.McSelection.prefersChoice(requires)) {
 					alt.taken = true;
 					alt.firstChoice = null;
-				} else if (!alt.taken && alt.firstChoice == null) {
-					// the last resort, held back until the element ends
+				} else if (!alt.taken && alt.firstChoice == null
+						&& org.docx4j.jaxb.McSelection.understands(requires, prefixes::get)) {
+					// the last resort, a Choice Word understands (WD REQ-305), held back until the element ends
 					alt.firstChoice = new StringBuilder();
 					alt.firstChoiceDepth = depth;
 					captures.push(alt.firstChoice);

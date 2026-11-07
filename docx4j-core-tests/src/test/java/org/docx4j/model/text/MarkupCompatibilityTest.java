@@ -20,14 +20,18 @@ package org.docx4j.model.text;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.io.StringWriter;
 import java.util.List;
 
 import jakarta.xml.bind.JAXBElement;
 
+import org.docx4j.TextUtils;
+import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.McPurpose;
 import org.docx4j.jaxb.McSelection;
 import org.docx4j.mce.AlternateContent;
@@ -111,6 +115,33 @@ public class MarkupCompatibilityTest {
 		assertFalse(McSelection.understands(built));
 	}
 
+	/** REQ-305 at block level: the element stays in the tree and reads as absent, so a save writes what the file gave. */
+	@Test
+	public void nothingSelectedStaysForASave() throws Exception {
+		String hidden = "<mc:AlternateContent xmlns:zz=\"urn:zz\"><mc:Choice Requires=\"zz\"><w:p><w:r><w:t>HIDDEN</w:t></w:r></w:p></mc:Choice></mc:AlternateContent>";
+		WordprocessingMLPackage pkg = MiniDocx.body("<w:p><w:r><w:t>Before</w:t></w:r></w:p>" + hidden + "<w:p><w:r><w:t>After</w:t></w:r></w:p>").load();
+		assertEquals("Before\nAfter\n", text(pkg));
+		assertEquals(3, pkg.getMainDocumentPart().getContent().size());
+		assertTrue(XmlUtils.unwrap(pkg.getMainDocumentPart().getContent().get(1)) instanceof AlternateContent);
+		assertTrue(XmlUtils.marshaltoString(pkg.getMainDocumentPart().getJaxbElement(), true, false).contains("HIDDEN"));
+		assertEquals(TextWarning.MCE_NOTHING_SELECTED, Texts.of(pkg, new TextOptions()).warnings().get(0).getKind());
+	}
+
+	/** Where the schema doesn't admit the element, the stylesheet resolves it: a Choice Word understands, else nothing. */
+	@Test
+	public void notAdmittedTakesAChoiceWordUnderstandsElseNothing() throws Exception {
+		String run = "<w:p><w:r><w:rPr><mc:AlternateContent%s><mc:Choice Requires=\"%s\"><w:b/></mc:Choice></mc:AlternateContent></w:rPr><w:t>X</w:t></w:r></w:p>";
+		WordprocessingMLPackage pkg = MiniDocx.body(String.format(run, "", "w14")).load();
+		assertNotNull(firstRun(pkg).getRPr().getB());
+		pkg = MiniDocx.body(String.format(run, " xmlns:zz=\"urn:zz\"", "zz")).load();
+		assertTrue(firstRun(pkg).getRPr() == null || firstRun(pkg).getRPr().getB() == null);
+	}
+
+	private static org.docx4j.wml.R firstRun(WordprocessingMLPackage pkg) {
+		P p = (P) pkg.getMainDocumentPart().getContent().get(0);
+		return (org.docx4j.wml.R) XmlUtils.unwrap(p.getContent().get(0));
+	}
+
 	/** REQ-306: a namespace Word was measured to understand, in the published set, takes its Choice over the Fallback, by URI. */
 	@Test
 	public void namespacesWordUnderstandsTakeTheChoice() throws Exception {
@@ -146,15 +177,41 @@ public class MarkupCompatibilityTest {
 		assertEquals("Before FALLBACK\n", text(pkg));
 	}
 
-	/** REQ-305: Choices only, none understood: the element is kept whole at load, and its first Choice read. */
+	/** REQ-305: Choices only, none understood: nothing is selected, for text or drawing, and the element is kept whole at load. */
 	@Test
-	public void choicesOnlyReadFromTheFirst() throws Exception {
+	public void choicesOnlyNoneUnderstoodSelectNothing() throws Exception {
 		WordprocessingMLPackage pkg = MiniDocx.body(ac(" xmlns:zz=\"urn:zz\" xmlns:yy=\"urn:yy\"", choice("zz", "FIRST") + choice("yy", "SECOND"))).load();
-		assertEquals("Before FIRST\n", text(pkg));
+		assertEquals("Before \n", text(pkg));
 		AlternateContent kept = firstAc(pkg);
 		assertEquals(2, kept.getChoice().size());
 		assertNull(kept.getFallback());
-		assertTrue(McSelection.selectedBranch(McPurpose.TEXT, kept) == kept.getChoice().get(0));
+		assertNull(McSelection.selectedBranch(McPurpose.TEXT, kept));
+		assertNull(McSelection.selectedBranch(McPurpose.DRAW, kept));
+		assertTrue(McSelection.select(McPurpose.TEXT, kept).isEmpty());
+		StringWriter legacy = new StringWriter();
+		TextUtils.extractText(pkg.getMainDocumentPart().getJaxbElement(), legacy);
+		assertFalse(legacy.toString(), legacy.toString().contains("FIRST") || legacy.toString().contains("SECOND"));
+		// mce.nothing_selected: the part's name, and what was required
+		List<TextWarning> warnings = Texts.of(pkg, new TextOptions()).warnings();
+		assertEquals(warnings.toString(), 1, warnings.size());
+		TextWarning w = warnings.get(0);
+		assertEquals(TextWarning.MCE_NOTHING_SELECTED, w.getKind());
+		assertEquals("body/0", w.getAddress());
+		assertEquals("/word/document.xml", w.getSelector());
+		assertEquals("urn:zz urn:yy", w.getDetail());
+		assertTrue(Texts.of(pkg, new TextOptions().warnings(false)).warnings().isEmpty());
+		// an element named twice over asks once, and a prefix that binds to nothing leaves the detail empty
+		pkg = MiniDocx.body(ac(" xmlns:zz=\"urn:zz\"", choice("zz", "FIRST") + choice("zz", "SECOND"))).load();
+		assertEquals("urn:zz", Texts.of(pkg, new TextOptions()).warnings().get(0).getDetail());
+		// a Choice Word understands, after one it doesn't, is read and drawn: Word's own boxes come this way
+		pkg = MiniDocx.body(ac(" xmlns:zz=\"urn:zz\"", choice("zz", "UNKNOWN") + choice("w14", "KNOWN"))).load();
+		assertEquals("Before KNOWN\n", text(pkg));
+		kept = firstAc(pkg);
+		assertTrue(McSelection.selectedBranch(McPurpose.DRAW, kept) == kept.getChoice().get(1));
+		for (TextWarning other : Texts.of(pkg, new TextOptions()).warnings()) assertFalse(TextWarning.MCE_NOTHING_SELECTED.equals(other.getKind()));
+		legacy = new StringWriter();
+		TextUtils.extractText(pkg.getMainDocumentPart().getJaxbElement(), legacy);
+		assertTrue(legacy.toString(), legacy.toString().contains("KNOWN") && !legacy.toString().contains("UNKNOWN"));
 	}
 
 	/** REQ-307: both branches hold text and differ: a warning at the address, naming the branch, and no text (REQ-802). */

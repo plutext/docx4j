@@ -26,7 +26,7 @@ import java.util.Objects;
  * selected, for {@code altchunk.not_expanded}, {@code content.not_read} and {@code image.not_described}
  * the part's name (the chunk's, since 17.3.5, WD 0.47; it was the chunk's content type, which the
  * warning still carries), for {@code part.not_read} the part's name, for {@code paragraph.drop_cap_joined}
- * the name of the part the paragraphs are in.
+ * the name of the part the paragraphs are in, for {@code mce.nothing_selected} the part's name.
  * Never the document's text (REQ-802).
  *
  * @since 17.3.4 (CR-046 phase 1)
@@ -63,12 +63,20 @@ public final class TextWarning {
 	 * @since 17.3.5 (CR-069)
 	 */
 	public static final String DROP_CAP_JOINED = "paragraph.drop_cap_joined";
+	/**
+	 * An {@code mc:AlternateContent} with Choices, none understood, and no Fallback: nothing is selected, and the element
+	 * and all it holds are absent (REQ-305). Its selector is the part's name; {@link #getDetail()} the namespaces required.
+	 *
+	 * @since 17.3.6
+	 */
+	public static final String MCE_NOTHING_SELECTED = "mce.nothing_selected";
 
 	private final String kind;
 	private final String address;
 	private final String branch;
 	private final String contentType;
 	private final String partName;
+	private final String detail;
 
 	public TextWarning(String kind, String address, String branch) {
 		this(kind, address, branch, null);
@@ -79,11 +87,17 @@ public final class TextWarning {
 	}
 
 	public TextWarning(String kind, String address, String branch, String contentType, String partName) {
+		this(kind, address, branch, contentType, partName, null);
+	}
+
+	/** @since 17.3.6 */
+	public TextWarning(String kind, String address, String branch, String contentType, String partName, String detail) {
 		this.kind = Objects.requireNonNull(kind);
 		this.address = address;
 		this.branch = branch;
 		this.contentType = contentType;
 		this.partName = partName;
+		this.detail = detail;
 	}
 
 	public String getKind() { return kind; }
@@ -103,6 +117,13 @@ public final class TextWarning {
 	 */
 	public String getPartName() { return partName; }
 	/**
+	 * What the kind says beyond its selector (REQ-801): for {@code mce.nothing_selected}, the namespaces the Choices
+	 * require, as one string of URIs separated by spaces, empty if every prefix binds to nothing; else null.
+	 *
+	 * @since 17.3.6
+	 */
+	public String getDetail() { return detail; }
+	/**
 	 * The selector of REQ-801: the branch, else the part's name, else the content type (a warning made
 	 * without a part name); null for none. {@code altchunk.not_expanded}'s is its part name since
 	 * 17.3.5 (WD 0.47), its content type before.
@@ -116,17 +137,19 @@ public final class TextWarning {
 		if (!(o instanceof TextWarning)) return false;
 		TextWarning w = (TextWarning) o;
 		return kind.equals(w.kind) && Objects.equals(address, w.address) && Objects.equals(branch, w.branch)
-				&& Objects.equals(contentType, w.contentType) && Objects.equals(partName, w.partName);
+				&& Objects.equals(contentType, w.contentType) && Objects.equals(partName, w.partName)
+				&& Objects.equals(detail, w.detail);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(kind, address, branch, contentType, partName);
+		return Objects.hash(kind, address, branch, contentType, partName, detail);
 	}
 
 	@Override
 	public String toString() {
 		return kind + (address == null ? "" : " at " + address) + (branch == null ? "" : " (" + branch + ")")
-				+ (contentType == null ? "" : " (" + contentType + ")") + (partName == null ? "" : " (" + partName + ")");
+				+ (contentType == null ? "" : " (" + contentType + ")") + (partName == null ? "" : " (" + partName + ")")
+				+ (detail == null ? "" : " [" + detail + "]");
 	}
 }

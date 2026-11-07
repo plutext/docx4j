@@ -101,19 +101,12 @@ public final class McSplice {
 	 * The load-time rule (CR-051 section 3.2): the branch Word reads, which is
 	 * {@link McSelection#selectedBranch(McPurpose, AlternateContent) McPurpose.TEXT}'s (the first
 	 * Choice docx4j understands, else the Fallback); an element with no understood Choice and no
-	 * Fallback is kept whole (WD REQ-305), since the selection would promote its first Choice.
+	 * Fallback selects nothing (WD REQ-305) and is kept whole, so a reader finds it absent and a save
+	 * writes it.
 	 */
 	public static final Rule WORD_READS = new Rule() {
 		@Override
 		public Object select(AlternateContent ac) {
-			boolean understood = false;
-			for (AlternateContent.Choice choice : ac.getChoice()) {
-				if (McSelection.understands(choice)) {
-					understood = true;
-					break;
-				}
-			}
-			if (!understood && ac.getFallback() == null) return null;
 			return McSelection.selectedBranch(McPurpose.TEXT, ac);
 		}
 	};

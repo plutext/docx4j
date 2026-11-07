@@ -45,7 +45,8 @@ import org.slf4j.LoggerFactory;
  * understands none of them (Part 3, 10.2.1).  docx4j applies the same rule with
  * the namespaces named in {@code docx4j.jaxb.mc.preferChoice}: the first Choice
  * whose {@code Requires} prefixes are all listed there, else the Fallback, else -
- * an element with Choices and no Fallback - the first Choice, with a warning.</p>
+ * an element with Choices and no Fallback - the first Choice Word understands, else
+ * nothing (WD REQ-305; ISO/IEC 29500-3 section 9.4): the element is absent.</p>
  *
  * <p><b>The property's default is empty</b>, so the Fallback is drawn.  Measured
  * over the real-document corpora for 17.1.0 (every element there is a {@code wps}
@@ -132,7 +133,8 @@ public final class McSelection {
 
 	/**
 	 * The branch docx4j draws: an {@link AlternateContent.Choice} or the
-	 * {@link AlternateContent.Fallback}, or null for an element with no branch at all.
+	 * {@link AlternateContent.Fallback}, or null where nothing is selected (WD REQ-305) or the
+	 * element has no branch at all.
 	 */
 	public static Object selectedBranch(AlternateContent ac) {
 		return selectedBranch(ac, null);
@@ -157,10 +159,15 @@ public final class McSelection {
 			}
 		}
 		if (ac.getFallback() != null) return ac.getFallback();
+		// no Fallback: as Word, a Choice it understands (Word's own text boxes come this way), else nothing (WD REQ-305)
+		for (AlternateContent.Choice choice : ac.getChoice()) {
+			if (understands(choice)) {
+				if (log.isDebugEnabled()) log.debug("mc:AlternateContent with no mc:Fallback: taking mc:Choice Requires=" + choice.getRequires());
+				return choice;
+			}
+		}
 		if (!ac.getChoice().isEmpty()) {
-			log.warn("mc:AlternateContent with no mc:Fallback: taking its first mc:Choice (Requires="
-					+ ac.getChoice().get(0).getRequires() + ")");
-			return ac.getChoice().get(0);
+			log.warn("mc:AlternateContent with no mc:Fallback and no mc:Choice Word understands: nothing drawn (required: " + requiredNamespaces(ac) + ")");
 		}
 		return null;
 	}
@@ -316,11 +323,48 @@ public final class McSelection {
 	}
 
 	/**
+	 * Whether a {@code Requires} value names only namespaces in the understood set, for a caller with
+	 * no {@link AlternateContent.Choice} to ask: a stylesheet's, a SAX handler's. Its prefixes
+	 * resolve through {@code declared}, else docx4j's conventional table, as a Choice's do.
+	 *
+	 * @param declared a prefix's namespace, null for one it doesn't know; may be null
+	 * @since 17.3.6
+	 */
+	public static boolean understands(String requires, java.util.function.Function<String, String> declared) {
+		List<String> prefixes = requiresPrefixes(requires);
+		if (prefixes.isEmpty()) return false; // REQ-304
+		Set<String> set = understoodNamespaces();
+		NamespacePrefixMappings table = new NamespacePrefixMappings();
+		for (String prefix : prefixes) {
+			String uri = declared == null ? null : declared.apply(prefix);
+			if (uri == null || uri.isEmpty()) uri = table.getNamespaceURI(prefix);
+			if (uri == null || !set.contains(uri)) return false;
+		}
+		return true;
+	}
+
+	/**
+	 * What an element's Choices require, as {@code mce.nothing_selected}'s detail has it (WD REQ-801):
+	 * the namespaces, each once, in order, separated by spaces; empty if every prefix binds to nothing.
+	 *
+	 * @since 17.3.6
+	 */
+	public static String requiredNamespaces(AlternateContent ac) {
+		Set<String> uris = new LinkedHashSet<String>();
+		if (ac != null) {
+			for (AlternateContent.Choice choice : ac.getChoice()) {
+				for (String uri : requiresNamespaces(choice)) if (uri != null) uris.add(uri);
+			}
+		}
+		return String.join(" ", uris);
+	}
+
+	/**
 	 * The branch selected for a purpose: for {@link McPurpose#TEXT}, the first Choice
-	 * {@link #understands understood}, else the Fallback, else the first Choice of an element with
-	 * Choices only (WD REQ-305: a reading rule; CR-021 keeps such an element whole at load); for
-	 * {@link McPurpose#DRAW}, {@link #selectedBranch(AlternateContent)}. Null for an element with no
-	 * branch at all. {@link McPurpose#ALL} selects every branch: use {@link #branches(McPurpose, AlternateContent)}.
+	 * {@link #understands understood}, else the Fallback, else nothing, so an element with Choices
+	 * only, none understood, is absent (WD REQ-305; a load keeps it whole, so a save writes it); for
+	 * {@link McPurpose#DRAW}, {@link #selectedBranch(AlternateContent)}. Null where nothing is
+	 * selected. {@link McPurpose#ALL} selects every branch: use {@link #branches(McPurpose, AlternateContent)}.
 	 *
 	 * @since 17.3.4 (CR-046 phase 1)
 	 */
@@ -331,13 +375,7 @@ public final class McSelection {
 		for (AlternateContent.Choice choice : ac.getChoice()) {
 			if (understands(choice)) return choice;
 		}
-		if (ac.getFallback() != null) return ac.getFallback();
-		if (!ac.getChoice().isEmpty()) {
-			if (log.isDebugEnabled()) log.debug("mc:AlternateContent with no understood mc:Choice and no mc:Fallback: reading its first mc:Choice (Requires="
-					+ ac.getChoice().get(0).getRequires() + ")");
-			return ac.getChoice().get(0);
-		}
-		return null;
+		return ac.getFallback();
 	}
 
 	/** The content of {@link #selectedBranch(McPurpose, AlternateContent)}; empty (never null) when there is none. @since 17.3.4 */

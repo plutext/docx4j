@@ -30,7 +30,7 @@ public enum McPurpose {
 	 * Text: the ISO rule (ISO/IEC 29500-3 section 9.3; WD REQ-302). The first {@code mc:Choice}
 	 * each of whose {@code Requires} prefixes resolves, by namespace URI, to a namespace in the
 	 * published understood set ({@link McSelection#understoodNamespaces()}), else the
-	 * {@code mc:Fallback}, else, for an element with Choices only, the first Choice (WD REQ-305).
+	 * {@code mc:Fallback}, else nothing: an element with Choices only, none understood, is absent (WD REQ-305).
 	 */
 	TEXT,
 

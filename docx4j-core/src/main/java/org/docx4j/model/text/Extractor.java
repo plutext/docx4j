@@ -375,7 +375,7 @@ final class Extractor {
 		TextResult r = x.extract();
 		for (TextWarning w : r.warnings()) {
 			warn(w.getPartName() == null || from == null ? w
-					: new TextWarning(w.getKind(), w.getAddress(), w.getBranch(), w.getContentType(), partName(from)));
+					: new TextWarning(w.getKind(), w.getAddress(), w.getBranch(), w.getContentType(), partName(from), w.getDetail()));
 		}
 		List<TextBlock> blocks = new ArrayList<TextBlock>(r.blocks());
 		if (story != null) restory(blocks, story);
@@ -713,7 +713,7 @@ final class Extractor {
 				bookmark(item);
 			} else if (v instanceof AlternateContent) {
 				AlternateContent ac = (AlternateContent) v;
-				compareBranches(ac, address);
+				compareBranches(ac, address, story.part);
 				blocks(McSelection.select(McPurpose.TEXT, ac), address, story, sink, state);
 			} else if (revisionHolder(item) != null) {
 				blocks(runItemsOf(v), address, story, sink, holderState(item, state));
@@ -1147,7 +1147,7 @@ final class Extractor {
 			if (v instanceof AlternateContent) {
 				// a row-level element kept whole (CR-051 phase 2): the branch Word reads, compared with the others
 				AlternateContent ac = (AlternateContent) v;
-				compareBranches(ac, address);
+				compareBranches(ac, address, story.part);
 				rows(McSelection.select(McPurpose.TEXT, ac), address, story, table, state);
 			} else if (v instanceof Tr) {
 				Tr tr = (Tr) v;
@@ -1188,7 +1188,7 @@ final class Extractor {
 			if (v instanceof AlternateContent) {
 				// a cell-level element kept whole (CR-051 phase 2): the branch Word reads, compared with the others
 				AlternateContent ac = (AlternateContent) v;
-				compareBranches(ac, address);
+				compareBranches(ac, address, story.part);
 				cells(McSelection.select(McPurpose.TEXT, ac), address, story, row, state);
 			} else if (v instanceof Tc) {
 				Tc tc = (Tc) v;
@@ -1260,7 +1260,7 @@ final class Extractor {
 				run((R) v, para, state);
 			} else if (v instanceof AlternateContent) {
 				AlternateContent ac = (AlternateContent) v;
-				compareBranches(ac, para.block.address);
+				compareBranches(ac, para.block.address, para.story.part);
 				runs(McSelection.select(McPurpose.TEXT, ac), para, state);
 			} else if (v instanceof SdtElement && unwraps(item)) {
 				SdtElement sdt = (SdtElement) v;
@@ -1526,7 +1526,7 @@ final class Extractor {
 		}
 		case "AlternateContent": {
 			AlternateContent ac = (AlternateContent) v;
-			compareBranches(ac, para.block.address);
+			compareBranches(ac, para.block.address, para.story.part);
 			for (Object o : McSelection.select(McPurpose.TEXT, ac)) runItem(o, r, hidden, para, state);
 			return;
 		}
@@ -2009,7 +2009,7 @@ final class Extractor {
 				}
 				if (value instanceof AlternateContent) {
 					AlternateContent ac = (AlternateContent) value;
-					compareBranches(ac, para.block.address);
+					compareBranches(ac, para.block.address, para.story.part);
 					for (Object o : McSelection.select(McPurpose.TEXT, ac)) walk(unwrap(o), 1, this);
 					return false;
 				}
@@ -2252,18 +2252,24 @@ final class Extractor {
 		String here = McSplice.address(owner);
 		for (ResolvedAlternateContent r : records) {
 			if (r.getBranch() == null || !here.equals(r.getAddress())) continue;
-			compareBranches(r.getElement(), prefix + "/" + r.getIndex());
+			compareBranches(r.getElement(), prefix + "/" + r.getIndex(), story.part);
 		}
 	}
 
 	/**
 	 * {@code mce.branches_differ}: where the selected branch and another both hold text, and the texts
-	 * differ after REQ-1201's normalisation.
+	 * differ after REQ-1201's normalisation. {@code mce.nothing_selected}: where the element has Choices
+	 * and nothing is selected (REQ-305).
 	 */
-	private void compareBranches(AlternateContent ac, String address) {
+	private void compareBranches(AlternateContent ac, String address, Part part) {
 		if (!options.isWarnings()) return;
 		Object selected = McSelection.selectedBranch(McPurpose.TEXT, ac);
-		if (selected == null) return;
+		if (selected == null) {
+			if (!ac.getChoice().isEmpty()) {
+				warn(new TextWarning(TextWarning.MCE_NOTHING_SELECTED, address, null, null, partName(part), McSelection.requiredNamespaces(ac)));
+			}
+			return;
+		}
 		String mine = normalized(selected);
 		if (mine.isEmpty()) return;
 		List<Object> branches = new ArrayList<Object>(ac.getChoice());

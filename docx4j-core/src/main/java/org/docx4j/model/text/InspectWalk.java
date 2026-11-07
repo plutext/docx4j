@@ -641,8 +641,7 @@ final class InspectWalk {
 					break;
 				}
 			}
-			if (chosen == null) chosen = child(ac, MC, "Fallback");
-			if (chosen == null) chosen = child(ac, MC, "Choice");
+			if (chosen == null) chosen = child(ac, MC, "Fallback"); // and else nothing (REQ-305)
 			s = chosen == branch;
 		}
 		selected.put(branch, s);

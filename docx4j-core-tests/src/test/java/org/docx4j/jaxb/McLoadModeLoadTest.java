@@ -387,7 +387,7 @@ public class McLoadModeLoadTest {
 		assertEquals(1, pkg.getMainDocumentPart().getResolvedAlternateContent().size());
 	}
 
-	/** With no understood Choice and no Fallback (WD REQ-305), the element stays whole, in both modes, and a save writes it as it came. */
+	/** With no understood Choice and no Fallback (WD REQ-305), nothing is selected: the element stays whole, in both modes, a reader finds it absent, and a save writes it as it came. */
 	@Test
 	public void req305ElementStaysWhole() throws Exception {
 		String body = p("before") + "<mc:AlternateContent>"
@@ -402,8 +402,9 @@ public class McLoadModeLoadTest {
 			assertEquals(mode + ": nothing recorded", 0, pkg.getMainDocumentPart().getResolvedAlternateContent().size());
 			String saved = McProbeDocx.entry(McProbeDocx.save(pkg), "word/document.xml");
 			assertTrue(mode + ": both Choices written", saved.contains("Requires=\"w99\"") && saved.contains("Requires=\"w98\""));
-			// and a reader applies REQ-305's first-Choice rule at use
-			assertTrue(Texts.plainText(pkg, new TextOptions()).contains("W99"));
+			// and a reader finds it absent (REQ-305)
+			String text = Texts.plainText(pkg, new TextOptions());
+			assertTrue(text, text.contains("before") && text.contains("after") && !text.contains("W99") && !text.contains("W98"));
 		}
 	}
 

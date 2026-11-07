@@ -142,8 +142,8 @@ points before the 200-code-point bound (D5), `excerpt_cut` whether that length e
 
 **Selection** (REQ-302): the first `mc:Choice` all of whose `Requires` prefixes name namespaces docx4j
 understands (`docx4j-core/src/main/resources/org/docx4j/jaxb/understood-namespaces.txt`), else the
-`mc:Fallback`, else the first `mc:Choice`. `wpi` (ink) is not understood, so an ink `mc:Choice`'s
-Fallback is read.
+`mc:Fallback`, else nothing (REQ-305). `wpi` (ink) is understood, so an ink `mc:Choice` is read, not its
+Fallback.
 
 **Membership** (CR-050 section 2.3): a finding's containers give its requirements, and it is in an
 output when the output meets them all:

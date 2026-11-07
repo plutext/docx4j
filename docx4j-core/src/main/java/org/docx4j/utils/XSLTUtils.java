@@ -101,6 +101,22 @@ public class XSLTUtils {
 	}
 
 	/**
+	 * Whether a {@code Requires} names only namespaces in the understood set, its prefixes read
+	 * from the namespace nodes given ({@code namespace::*} of the element).
+	 *
+	 * @since 17.3.6 (WD REQ-305)
+	 */
+	public static boolean mcUnderstandsRequires(String requires, org.w3c.dom.traversal.NodeIterator namespaces) {
+		java.util.Map<String, String> declared = new java.util.HashMap<String, String>();
+		if (namespaces != null) {
+			for (org.w3c.dom.Node n = namespaces.nextNode(); n != null; n = namespaces.nextNode()) {
+				declared.put(n.getLocalName(), n.getNodeValue());
+			}
+		}
+		return org.docx4j.jaxb.McSelection.understands(requires, declared::get);
+	}
+
+	/**
 	 * Whether an output draws this {@code mc:Choice} for a chartex chart's
 	 * ({@link org.docx4j.model.chart.ChartExBranch}): by default, where a chartex renderer draws
 	 * the chart.  The XSLT pathways' {@code mc:AlternateContent} templates ask it of each Choice

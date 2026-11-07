@@ -336,7 +336,8 @@ that stay whole.
   elements whole, so the branch is chosen in one place on every path.
 - **Not admitted, and no Fallback (D4):** an element whose parent the schema does not admit (in
   properties, which no survey has seen) is resolved to its first Choice, with the warning, instead of
-  being dropped.
+  being dropped. **Reversed 2026-11-07 (WD 0.97's REQ-305; Jason: "go ahead"):** it now resolves to the first Choice
+  Word understands, and else is dropped, as nothing is selected. A schema that doesn't admit the element can't keep it.
 - **Its other jobs** (validity fixes, Strict import) are unchanged.
 
 ### 3.4 The consumers
