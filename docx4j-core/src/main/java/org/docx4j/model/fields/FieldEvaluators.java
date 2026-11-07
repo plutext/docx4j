@@ -88,7 +88,13 @@ public final class FieldEvaluators {
 			register(name, (instr, ctx) -> {
 				String argument = instr.getArgument();
 				if (argument != null) return argument; // AUTHOR "Jo": Word sets the property from it, and shows it
-				return ctx.properties().getValue(DOC_INFO.get(name));
+				try {
+					return ctx.properties().getValue(DOC_INFO.get(name));
+				} catch (PropertyAbsentException absent) {
+					if ("AUTHOR".equals(name)) throw new FieldValueException(absent.getMessage()); // Word's user: the cached result, as USERNAME's
+					if ("REVNUM".equals(name)) throw absent;
+					throw new PropertyAbsentException(absent.getMessage(), ""); // empty, where DOCPROPERTY of the same property is Word's error
+				}
 			});
 		}
 		register("SEQ", FieldEvaluators::sequence);
@@ -138,7 +144,7 @@ public final class FieldEvaluators {
 			if (instr.getArgument() == null || text == null) return null;
 			FieldInstruction named = FieldInstruction.parse(text);
 			if (named.getName() == null || "INFO".equals(named.getName()) || !has(named.getName())) return null;
-			return evaluate(named, ctx);
+			return evaluateOrAbsent(named, ctx); // an absent property as the field it names, for the text model
 		});
 		register("SECTION", (instr, ctx) -> ctx.getSection() == null ? null : String.valueOf(ctx.getSection()));
 		register("NOTEREF", (instr, ctx) -> {
@@ -285,7 +291,12 @@ public final class FieldEvaluators {
 		}
 		@Override
 		public String evaluate(FieldInstruction instruction, FieldContext context) throws Exception {
-			String value = context.properties().getValue(property);
+			String value;
+			try {
+				value = context.properties().getValue(property);
+			} catch (PropertyAbsentException absent) {
+				return null; // Word's zero date in its locale, or the clock: the cached result
+			}
 			java.util.Date date = FieldSources.parseW3CDTF(value);
 			if (date == null) return null;
 			// to the minute, as Word reads a file's time (04:05:06Z shows as :05:00; measured 2026-10-28, CR-067 section 11.3)
@@ -339,12 +350,24 @@ public final class FieldEvaluators {
 	 *         {@link FormattingSwitchHelper} throws it
 	 */
 	public static String evaluate(FieldInstruction instruction, FieldContext context) throws Docx4JException {
+		try {
+			return evaluateOrAbsent(instruction, context);
+		} catch (PropertyAbsentException e) {
+			log.debug("No value for the field " + instruction.getText() + ": " + e.getMessage());
+			return null; // D5
+		}
+	}
+
+	/** {@link #evaluate(FieldInstruction, FieldContext)}, with a property part that's absent left for the caller. */
+	private static String evaluateOrAbsent(FieldInstruction instruction, FieldContext context) throws Docx4JException {
 		if (instruction == null || context == null) return null;
 		FieldEvaluator evaluator = get(instruction.getName());
 		if (evaluator == null) return null;
 		String value;
 		try {
 			value = evaluator.evaluate(instruction, context);
+		} catch (PropertyAbsentException e) {
+			throw e;
 		} catch (FieldValueException e) {
 			log.debug("No value for the field " + instruction.getText() + ": " + e.getMessage());
 			return null;

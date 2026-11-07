@@ -69,9 +69,8 @@ run with no `w:lang` by its editing language and never by `w:themeFontLang`, was
 | `WD 0.72 (4)` | A properties part not well formed, under `fields: update`, reads as absent. TITLE and DOCPROPERTY Company come out empty; DOCPROPERTY Custom1 is Word's "Error! Unknown document property name." | keeps the cached results |
 | `defect (d)` | docx4j's own: a custom properties part it cannot read leaves every property field on its cached result. | all three fields stale |
 
-`WD 0.73 (rels)` and `WD 0.69 (c)` stand in the table as statements docx4j now meets (CR-075 phases 2 and 4), and a port without them pends on them. On
-`broken-part-package-rels.docx` the property fields pend on `defect (e)`: with a property part absent, under `fields: update` Word empties the field and
-docx4j leaves it on its cached result, on an intact package too.
+`WD 0.73 (rels)` and `WD 0.69 (c)` stand in the table as statements docx4j now meets (CR-075 phases 2 and 4), and a port without them pends on them. So do `WD 0.72 (4)`, `defect (d)` and `defect (e)` (CR-067 §16): `defect (e)` is a property part absent, on an intact package too, where under `fields: update` Word empties the field and gives its error text for a custom property. On
+`broken-part-package-rels.docx` those are the property fields.
 
 The three main-part files have no rows. Word will not open them, and docx4j refuses to read them (REQ-801), which
 `BrokenPartTest` checks.

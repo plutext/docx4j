@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,6 +18,7 @@ import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.fields.FieldFormattingException;
 import org.docx4j.model.fields.FieldValueException;
+import org.docx4j.model.fields.PropertyAbsentException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 
@@ -52,8 +55,27 @@ public class DocPropertyResolver {
 			"Author", "Comments", "CreateTime", "Keywords", "LastPrinted", "LastSavedBy", "LastSavedTime", "RevisionNumber", "Subject",
 			"Title")); // Keywords since 17.3.5 (#277)
 
+	/** Word's result for a name it doesn't find, with a custom properties part or without one. */
+	private final static String UNKNOWN_PROPERTY = "Error! Unknown document property name.";
+
+	/**
+	 * What Word gives DOCPROPERTY for a built-in property with no value, its part gone or holding nothing alike (the round
+	 * absent-properties, CR-067 section 16). The rest are Word's own, whatever the file says: the clock (CreateTime), the
+	 * document's counts, Template, NameofApplication, Security. They keep the cached result.
+	 */
+	private final static Map<String, String> WITHOUT_A_VALUE = new HashMap<String, String>();
+	static {
+		for (String name : Arrays.asList("Title", "Subject", "Author", "Keywords", "Comments", "LastSavedBy")) WITHOUT_A_VALUE.put(name, UNKNOWN_PROPERTY);
+		for (String name : Arrays.asList("Company", "Manager", "HyperlinkBase", "LastSavedTime", "LastPrinted")) WITHOUT_A_VALUE.put(name, "");
+		WITHOUT_A_VALUE.put("RevisionNumber", "1");
+		WITHOUT_A_VALUE.put("TotalEditingTime", "0");
+	}
+
+	/** Word's built-in names docx4j reads no value for and hasn't measured: not an unknown name, so they keep the cached result. */
+	private final static Set<String> BUILT_IN_NOT_MEASURED = new HashSet<String>(Arrays.asList("Category", "Format", "HiddenSlides", "MMClips", "Notes", "Slides"));
+
 	private final static Set<String> BUILT_IN_FIELDS_EXTENDED = new HashSet<String>(Arrays.asList(
-			"Characters", "CharactersWithSpaces", "Company", "HyperlinkBase", "Lines", "NameofApplication", "Pages", "Paragraphs",
+			"Characters", "CharactersWithSpaces", "Company", "HyperlinkBase", "Lines", "Manager", "NameofApplication", "Pages", "Paragraphs",
 			"Security", "Template", "TotalEditingTime", "Words"));
 
 	private final static Set<String> BUILT_IN_FIELDS_UNSUPPORTED = new HashSet<String>(Arrays.asList("Bytes"));
@@ -64,6 +86,7 @@ public class DocPropertyResolver {
 		extendedProperties = wordMLPackage.getDocPropsExtendedPart() == null ? null : wordMLPackage.getDocPropsExtendedPart().getJaxbElement();
 
 		docPropsCustomPart = wordMLPackage.getDocPropsCustomPart();
+		if (docPropsCustomPart != null && docPropsCustomPart.getJaxbElement() == null) docPropsCustomPart = null; // one that can't be read reads as absent
 		
 	}
 	
@@ -89,6 +112,10 @@ public class DocPropertyResolver {
 		} 
 		
 		if (value==null) {
+			String builtIn = core != null ? core : extended;
+			String word = builtIn != null ? WITHOUT_A_VALUE.get(builtIn)
+					: builtIn(BUILT_IN_NOT_MEASURED, key) != null ? null : UNKNOWN_PROPERTY;
+			if (word != null) throw new PropertyAbsentException("No value found for DOCPROPERTY " + key, word);
 			throw new FieldValueException("No value found for DOCPROPERTY " + key);			
 		} else {
 			
@@ -176,6 +203,7 @@ public class DocPropertyResolver {
 		else if ("Company".equals(key)) return extendedProperties.getCompany();
 		else if ("HyperlinkBase".equals(key)) return extendedProperties.getHyperlinkBase();
 		else if ("Lines".equals(key)) return extendedProperties.getLines();
+		else if ("Manager".equals(key)) return extendedProperties.getManager();
 		else if ("NameofApplication".equals(key)) return extendedProperties.getApplication();
 		else if ("Pages".equals(key)) return extendedProperties.getPages();
 		else if ("Paragraphs".equals(key)) return extendedProperties.getParagraphs();

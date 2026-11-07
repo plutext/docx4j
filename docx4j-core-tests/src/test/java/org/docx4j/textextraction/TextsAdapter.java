@@ -55,6 +55,7 @@ public class TextsAdapter implements ExtractionConformance.Engine {
 	/** The statements CR-046 has implemented, phases 1 to 3 (its section 4), and capability CR-047. */
 	static final Set<String> IMPLEMENTED = Collections.unmodifiableSet(new LinkedHashSet<String>(java.util.Arrays.asList(
 			"WD 0.73 (rels)", "WD 0.69 (c)", // CR-075 phases 2 and 4
+			"defect (e)", "WD 0.72 (4)", "defect (d)", // a property field over an absent part (CR-067 §16)
 			"REQ-201", "REQ-202", "REQ-203", "REQ-204",
 			"REQ-301", "REQ-302", "REQ-303", "REQ-304", "REQ-305", "REQ-306", "REQ-307",
 			"REQ-401", "REQ-402", "REQ-403", "REQ-404", "REQ-405", "REQ-406",

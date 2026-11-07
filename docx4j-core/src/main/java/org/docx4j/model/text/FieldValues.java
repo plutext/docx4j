@@ -128,6 +128,8 @@ final class FieldValues {
 		String value;
 		try {
 			value = evaluator.evaluate(instruction, context);
+		} catch (org.docx4j.model.fields.PropertyAbsentException absent) {
+			return absent.getResult(); // as Word reads it, no switches on it (CR-067 section 16)
 		} catch (Exception e) {
 			log.debug("No value for the field " + instr.trim() + ": " + e.getMessage());
 			return null;

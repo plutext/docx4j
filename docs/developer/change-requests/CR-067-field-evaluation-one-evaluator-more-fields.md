@@ -981,3 +981,51 @@ extraction: fix these please"):
 
 `FieldPartAndSimpleSetTest` (each case fails without the fix). CHANGELOG.
 
+
+## 16. A property field with no value (17.3.6, 2026-11-07)
+
+Found by Fable's review of CR-075 phases 2 to 4, and fixed on Jason's word ("also fix defect (e) as an addition to the CR-067 field evaluator").
+
+**The defect.** With a properties part absent, on an intact package too, docx4j left every property field on its cached result under `fields: update`, as D5 has it for
+a field it can't evaluate, where Word gives something else. With the custom part unreadable it left all of them, as `DocPropsCustomPart.getProperty` failed on every key,
+which was `defect (d)`.
+
+**What Word does** (the round `absent-properties`, Word 16.0.20326.20232, each file twice, 36 `w:dirty` fields, the update prompt answered Yes; `fields/cr067-absent-properties/`, with
+`read_absent_properties.py`). It goes by the property, not the part: a part present with nothing in it (`fp-05`) reads in every field as the part gone (`fp-04`). And a field and
+DOCPROPERTY of one property differ.
+
+| With no value | Word |
+|---|---|
+| TITLE, SUBJECT, KEYWORDS, COMMENTS, LASTSAVEDBY; INFO as the field it names | Empty |
+| DOCPROPERTY Title, Subject, Author, Keywords, Comments, LastSavedBy | "Error! Unknown document property name." |
+| DOCPROPERTY Company, Manager, HyperlinkBase, LastSavedTime, LastPrinted | Empty |
+| REVNUM, DOCPROPERTY RevisionNumber | 1 |
+| DOCPROPERTY TotalEditingTime | 0 |
+| DOCPROPERTY of any other name, a custom part there or not | "Error! Unknown document property name." |
+| AUTHOR | Word's user |
+| CREATEDATE, DOCPROPERTY CreateTime | The time of opening, which differs between runs |
+| SAVEDATE, PRINTDATE | `0/00/0000 0:00:00 AM` |
+| DOCPROPERTY Template, NameofApplication, Pages, Words, Characters, CharactersWithSpaces, Lines, Paragraphs, Security | Word's own, the same with a value in the file or none |
+
+So the WD's "TITLE and the application properties evaluate empty" holds for three application properties, and the first design here, keyed on the part with DOCPROPERTY Title empty,
+was wrong in both respects.
+
+**D36. Word's reading is the text model's alone.** D5 stands for the rest.
+
+| Consumer | A property field with no value |
+|---|---|
+| The text model under `fields: update` (`FieldValues`) | As the table, no switches applied, for all but the last four rows, which keep the cached result: an extractor has no Word user, clock or counts (REQ-506) |
+| `FieldUpdater`, mail merge, the output path, `FieldsCombiner` | The cached result, as before: no error text reaches a caller's document or a rendering |
+
+`DocPropertyResolver` throws `PropertyAbsentException`, a `FieldValueException` carrying DOCPROPERTY's result. `FieldEvaluators.evaluate` turns it into null like any other, so those four
+are unchanged, and `FieldValues` reads the result. A document-information field gives empty in its place, and INFO passes that on. An unreadable custom part now reads as absent, which
+does reach all the consumers, as it should. So `defect (e)`, `WD 0.72 (4)` and `defect (d)` close together: 90 more broken-part rows pass, 1185, with 126 pending. `AbsentPropertyFieldsTest`
+reads Word's own text saves as its oracle, and holds the split.
+
+`DOCPROPERTY Manager` wasn't a built-in here at all, so it read as a custom name. It is now, which every consumer sees: Word gives the file's value. Word's other built-in names
+docx4j reads nothing for (Category, Format, Slides, Notes, HiddenSlides, MMClips) keep the cached result, unmeasured, and aren't taken for unknown names.
+
+**Differences this round showed and left.**
+- With a value in the file, DOCPROPERTY Template, NameofApplication, Pages, Words, Characters, CharactersWithSpaces, Lines, Paragraphs and Security give Word's own and docx4j the file's.
+- DOCPROPERTY CreateTime, LastSavedTime and LastPrinted with a value are in Word's locale, to the minute, and ISO in docx4j.
+- `part.not_read` for a properties part that can't be read (REQ-801), which the WD gives to a CR-046 §11 addendum. docx4j reads the part as absent and raises nothing.

@@ -112,6 +112,9 @@ Changes in Version 17.3.6
   NullPointerException).
 
 **Text extraction.**
+- Under `fields: update`, a property field with no value, the part gone, unreadable or holding nothing for it, reads as Word's does in the text model: TITLE and Company
+  empty, REVNUM 1, DOCPROPERTY of a core text property or an unknown name Word's error text (CR-067 §16). `FieldUpdater` and the outputs still keep the cached result.
+- DOCPROPERTY Manager reads the extended properties, as Word's does; it was taken for a custom property.
 - Under `fields: update`, a LISTNUM (or AUTONUM*) in a header, footer or note keeps its stored result, as Word's does,
   where it showed the body's next number; a SET written as `w:fldSimple` shows nothing, as the complex form already
   did (CR-067 §15).
