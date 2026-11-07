@@ -548,13 +548,56 @@ public class PackageWiringTest {
 		assertFalse(entries(saved(pkg)).contains("customXml/item1.xml"));
 	}
 
-	/** A relationships part that parses to its end has no break: its namespace wrong, nothing of it is kept, and the package is refused. */
+	private static final String[] ANOTHER_NAMESPACE = { "rn-02-plain-wrong", "rn-03-rich-wrong", "rn-04-plain-no-namespace",
+			"rn-05-plain-root-wrong", "rn-06-plain-children-wrong", "rn-07-plain-one-wrong" };
+
+	/** Word reads a relationships part in another namespace only through a repair (round rels-namespace), so it is refused, named. */
 	@Test
-	public void noBreakNoPrefix() throws Exception {
-		byte[] zip = rewritten(wiring("control-one-main"), "_rels/.rels",
-				"<Relationships xmlns=\"urn:wrong\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"word/document.xml\"/></Relationships>");
+	public void aRelationshipsPartInAnotherNamespaceIsRefused() throws Exception {
+		for (String name : ANOTHER_NAMESPACE) {
+			try {
+				WordprocessingMLPackage.load(wiring(name));
+				fail(name + " loaded");
+			} catch (Docx4JException refused) {
+				assertTrue(refused.getMessage(), refused.getMessage().contains("Refused: /word/_rels/document.xml.rels isn't in the relationships namespace"));
+			}
+		}
 		try {
-			WordprocessingMLPackage.load(new ByteArrayInputStream(zip));
+			WordprocessingMLPackage.load(wiring("rn-09-package-rels-wrong"));
+			fail("loaded");
+		} catch (Docx4JException refused) {
+			assertTrue(refused.getMessage(), refused.getMessage().contains("Refused: /_rels/.rels isn't in the relationships namespace"));
+		}
+	}
+
+	/** Under the switch every relationship is read by its local name, as Word's saves of these files show, and nothing is lost. */
+	@Test
+	public void underTheSwitchEveryRelationshipInAnotherNamespaceIsRead() throws Exception {
+		for (String name : ANOTHER_NAMESPACE) {
+			WordprocessingMLPackage pkg = WordprocessingMLPackage.load(wiring(name), repair());
+			boolean rich = name.contains("rich");
+			assertEquals(name, Arrays.asList(new LoadFinding(LoadFinding.RELATIONSHIPS_NAMESPACE, "/word/_rels/document.xml.rels", rich ? "4" : "2")), pkg.getLoadFindings());
+			assertTrue(name, pkg.getMainDocumentPart().getStyleDefinitionsPart() != null
+					&& pkg.getMainDocumentPart().getStyleDefinitionsPart().getStyleById("Probe") != null);
+			assertEquals(name, java.math.BigInteger.valueOf(1000), pkg.getMainDocumentPart().getDocumentSettingsPart().getContents().getDefaultTabStop().getVal());
+			List<String> entries = entries(saved(pkg)); // no loss, so the gate has nothing to refuse
+			assertTrue(name, entries.contains("word/styles.xml") && entries.contains("word/settings.xml"));
+			assertEquals(name, rich, entries.contains("word/header1.xml"));
+			assertEquals(name, rich, text(pkg).contains("NOTE_WORDS"));
+			assertTrue(WordprocessingMLPackage.load(new ByteArrayInputStream(saved(pkg))).getLoadFindings().isEmpty()); // written in the right namespace
+		}
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(wiring("rn-09-package-rels-wrong"), repair());
+		assertEquals(Arrays.asList(new LoadFinding(LoadFinding.RELATIONSHIPS_NAMESPACE, "/_rels/.rels", "1")), pkg.getLoadFindings());
+		assertEquals("STYLED_WORDS", text(pkg));
+		assertTrue(WordprocessingMLPackage.load(new ByteArrayInputStream(saved(pkg))).getLoadFindings().isEmpty());
+	}
+
+	/** Something else wrong in a well-formed part isn't a namespace: there's no prefix of it to trust, and the package with no main part is refused as before. */
+	@Test
+	public void noBreakAndTheRightNamespaceKeepsNothing() throws Exception {
+		byte[] zip = rewritten(wiring("control-one-main"), "_rels/.rels", "<Foo xmlns=\"urn:wrong\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"word/document.xml\"/></Foo>");
+		try {
+			WordprocessingMLPackage.load(new ByteArrayInputStream(zip), repair());
 			fail("loaded");
 		} catch (Docx4JException refused) {
 			assertTrue(refused.getMessage(), refused.getMessage().contains("_rels/.rels"));

@@ -421,8 +421,9 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	/**
 	 * Reads each whole {@code Relationship} before the point where this source stops being well formed, as
 	 * Word's repair keeps them (WD 0.76; CR-075 D5).  For a part whose {@link #unmarshal(java.io.InputStream)}
-	 * failed, from the same bytes.  A source that parses to its end has no break, so it failed for another reason, its
-	 * root's namespace say, and keeps nothing: there is no prefix of it to trust.
+	 * failed, from the same bytes.  A {@code Relationship} is found by its local name.  A source that parses to its end has
+	 * no break: in another namespace, on its root or any relationship, it holds all it names, as Word's repair reads it
+	 * ({@link #isInAnotherNamespace()}, the round rels-namespace); otherwise it failed for some other reason and keeps nothing.
 	 *
 	 * @return how many it holds now
 	 * @since 17.3.6 (CR-075 phase 4)
@@ -430,6 +431,8 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	public int readRelationshipsBeforeTheBreak(java.io.InputStream is) {
 		List<Relationship> kept = new java.util.ArrayList<Relationship>();
 		boolean broke = false;
+		boolean foreign = false;
+		String root = null;
 		try {
 			XMLInputFactory xif = org.docx4j.utils.XmlParserLimits.apply(XMLInputFactory.newInstance());
 			xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
@@ -438,8 +441,12 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			Relationship open = null;
 			while (xsr.hasNext()) {
 				int event = xsr.next();
-				if (event == XMLStreamReader.START_ELEMENT && "Relationship".equals(xsr.getLocalName())
-						&& "http://schemas.openxmlformats.org/package/2006/relationships".equals(xsr.getNamespaceURI())) {
+				if (event == XMLStreamReader.START_ELEMENT && root == null) {
+					root = xsr.getLocalName();
+					foreign |= !RELATIONSHIPS_NAMESPACE.equals(xsr.getNamespaceURI());
+				}
+				if (event == XMLStreamReader.START_ELEMENT && "Relationship".equals(xsr.getLocalName())) {
+					foreign |= !RELATIONSHIPS_NAMESPACE.equals(xsr.getNamespaceURI());
 					open = new Relationship();
 					open.setId(xsr.getAttributeValue(null, "Id"));
 					open.setType(xsr.getAttributeValue(null, "Type"));
@@ -454,14 +461,29 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			broke = true;
 			log.debug("Relationships end at: " + e.getMessage());
 		}
+		inAnotherNamespace = !broke && foreign && "Relationships".equals(root);
 		jaxbElement.getRelationship().clear();
-		for (Relationship r : broke ? kept : java.util.Collections.<Relationship>emptyList()) {
+		for (Relationship r : broke || inAnotherNamespace ? kept : java.util.Collections.<Relationship>emptyList()) {
 			if (r.getId() == null || r.getType() == null || r.getTarget() == null) continue; // one Word's reader couldn't use either
 			r.setParent(jaxbElement);
 			jaxbElement.getRelationship().add(r);
 		}
 		resetIdAllocator();
 		return jaxbElement.getRelationship().size();
+	}
+
+	private static final String RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/relationships";
+
+	private boolean inAnotherNamespace;
+
+	/**
+	 * Whether {@link #readRelationshipsBeforeTheBreak} found a well-formed part in another namespace, which Word reads only
+	 * through a repair, every relationship by its local name (CR-075, the round rels-namespace).
+	 *
+	 * @since 17.3.6
+	 */
+	public boolean isInAnotherNamespace() {
+		return inAnotherNamespace;
 	}
 
 	/** Why the last {@link #unmarshal(java.io.InputStream)} failed, or null where it read the part (CR-075). */

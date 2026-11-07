@@ -84,6 +84,7 @@ public final class TextWarning {
 	 * @since 17.3.6 (CR-075)
 	 */
 	public static final String PACKAGE_MULTIPLE_MAIN_PARTS = org.docx4j.openpackaging.packages.LoadFinding.MULTIPLE_MAIN_PARTS;
+	public static final String PACKAGE_RELATIONSHIPS_NAMESPACE = org.docx4j.openpackaging.packages.LoadFinding.RELATIONSHIPS_NAMESPACE;
 
 	private final String kind;
 	private final String address;

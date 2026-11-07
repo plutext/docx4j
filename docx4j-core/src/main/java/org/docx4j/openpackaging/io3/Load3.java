@@ -306,6 +306,14 @@ public class Load3 extends Load {
 		return finding;
 	}
 
+	/** A relationships part in another namespace: Word reads it only through a repair, so refused unless that was asked for (the round rels-namespace). */
+	private void refuseAnotherNamespace(RelationshipsPart rp, String name) throws Docx4JException {
+		if (rp.isInAnotherNamespace() && effectiveRepairMode() != RepairMode.WORD) {
+			throw new Docx4JException("Refused: " + name + " isn't in the relationships namespace. Word reads such a package only through a repair; "
+					+ "load with RepairMode.WORD to read every relationship in it (" + RepairMode.PROPERTY + "=word).");
+		}
+	}
+
 	private RepairMode effectiveRepairMode() {
 		return repairMode != null ? repairMode : RepairMode.fromProperty();
 	}
@@ -389,10 +397,12 @@ public class Load3 extends Load {
 			try (InputStream again = partStore.loadPart("_rels/.rels")) {
 				kept = rp.readRelationshipsBeforeTheBreak(again);
 			}
+			refuseAnotherNamespace(rp, "/_rels/.rels");
 			boolean main = false;
 			for (Relationship r : rp.getRelationships().getRelationship()) main |= PackageRelsUtil.isMainPart(r);
 			if (!main) throw rp.getReadFailure();
-			LoadFinding finding = new LoadFinding(LoadFinding.PART_NOT_READ, "/_rels/.rels", String.valueOf(kept));
+			LoadFinding finding = new LoadFinding(rp.isInAnotherNamespace() ? LoadFinding.RELATIONSHIPS_NAMESPACE : LoadFinding.PART_NOT_READ,
+					"/_rels/.rels", String.valueOf(kept));
 			log.warn(finding + ": " + deepestMessage(rp.getReadFailure()));
 			return finding;
 			
@@ -427,11 +437,15 @@ public class Load3 extends Load {
 				try (InputStream again = partStore.loadPart(partName)) {
 					kept = rp.readRelationshipsBeforeTheBreak(again);
 				}
-				LoadFinding finding = new LoadFinding(LoadFinding.PART_NOT_READ, rp.getPartName().getName(), String.valueOf(kept));
+				refuseAnotherNamespace(rp, rp.getPartName().getName());
+				LoadFinding finding = new LoadFinding(rp.isInAnotherNamespace() ? LoadFinding.RELATIONSHIPS_NAMESPACE : LoadFinding.PART_NOT_READ,
+						rp.getPartName().getName(), String.valueOf(kept));
 				log.warn(finding + ": " + deepestMessage(rp.getReadFailure()));
 				loading.addLoadFinding(finding);
 			}
 			
+		} catch (Docx4JException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new Docx4JException("Error getting document from Zipped Part:" + partName, e);
 			

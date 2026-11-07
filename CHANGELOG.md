@@ -142,6 +142,8 @@ Changes in Version 17.3.6
 - A relationships part that isn't well formed now keeps the relationships before the break, as Word's repair does, in place of a stack trace and none at all; what a
   lost one named reads as absent, and a save is refused rather than drop it, unless the package was loaded under `RepairMode.WORD`. `_rels/.rels` the same, where a main part's relationship is
   among those kept, and otherwise a refusal naming the part and the parse error.
+- A relationships part in another namespace is refused, naming it, or under `RepairMode.WORD` read as Word's repair reads it, every relationship by its local name, recorded as
+  `package.relationships_namespace`.
 - A custom XML store that isn't well formed no longer refuses the load: it reads as absent, a binding naming it resolves to the store that fits, as Word's repair does, and raises
   `part.not_read`. A save writes its bytes, or under `RepairMode.WORD` drops it.
 - With JAXB 4 (docx4j-JAXB-ReferenceImpl), the reset of JAXB's error count after ten errors in a part works again

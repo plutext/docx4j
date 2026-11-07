@@ -32,6 +32,9 @@ public final class LoadFinding {
 	public static final String DUPLICATE_ENTRY = "package.duplicate_entry";
 	/** Two officeDocument relationships, read under {@link org.docx4j.openpackaging.io3.RepairMode#WORD}: selector the part read, the last relationship's target; detail the number of relationships (WD REQ-206's NOTE). */
 	public static final String MULTIPLE_MAIN_PARTS = "package.multiple_main_parts";
+
+	/** A relationships part in another namespace, read as Word's repair reads it, every relationship by its local name; selector the part, detail how many. Nothing is lost. */
+	public static final String RELATIONSHIPS_NAMESPACE = "package.relationships_namespace";
 	/** A relationships part that could not be read: selector its name, detail the number of relationships kept (WD REQ-801). */
 	public static final String PART_NOT_READ = "part.not_read";
 

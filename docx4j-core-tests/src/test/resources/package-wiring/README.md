@@ -34,3 +34,18 @@ Word 16.0.20326.20232, 7 November 2026, through the bridge, each file twice, the
   the format and whatever the Overrides say: the `open-order` round (`oo-*`), 84 outputs, every one fitting, and `pw-*`'s five files. The hand runs
   of 4 November fit the same alternation; "the Override last" was a coincidence of the order the files were opened in. The `-word365.docx`
   saves of `two-main-rels-*` are each a first open.
+
+## A relationships part in another namespace
+
+Built by `build_rels_namespace.py`, read by `read_rels_namespace.py`, the round `rels-namespace` (Word 16.0.20326.20232, each file twice, the runs equal), with Word's saves as
+`rn-*-word365.docx`. No relationship in them is External.
+
+| File | Holds | Word |
+|---|---|---|
+| `rn-00-control-plain.docx`, `rn-01-control-rich.docx` | The controls. A plain body names no relationship; a rich one a header, with a note | Silent |
+| `rn-02-plain-wrong.docx`, `rn-03-rich-wrong.docx` | `word/_rels/document.xml.rels` wholly in another namespace | Repaired, every relationship read |
+| `rn-04-plain-no-namespace.docx` | In no namespace | The same |
+| `rn-05-plain-root-wrong.docx` | Its root alone in another | The same |
+| `rn-06-plain-children-wrong.docx`, `rn-07-plain-one-wrong.docx` | All its children in another, or the second alone | The same |
+| `rn-08-rich-no-part.docx` | No relationships part, a body naming a header | Repaired, two dialogs an open: header reference, style, settings and note lost, the note's mark kept. This is the comparison, and no case of the rule |
+| `rn-09-package-rels-wrong.docx` | `_rels/.rels` in another namespace | Repaired, the main part read |
