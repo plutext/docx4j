@@ -353,7 +353,7 @@ entity table; other named references and a bare `&` left as written, since they 
 Decoded once, as a renderer decodes once (`&amp;#58;` stays `&#58;`). The rule is in `isSafe` itself rather than a
 separate `isSafeDestination` (core-ts's uncommitted shape) so that every output and docx4j-tika refuse the same
 targets, and the ports have one oracle; `isSafe`'s existing cases are unchanged. Still safe: `R&D/report.html`,
-`page.html?a=1&amp;b=2`, `https&#58;//example.org`, `&unknown;avascript:x`.
+`page.html?a=1&amp;b=2`, `https&#58;//example.org`. `&unknown;avascript:x` and `a&b:c/d` are refused as written, up to the first `:` being the scheme, as `LinkTargetsTest` has it (this line called the first safe until 2026-11-07).
 
 Tests: `LinkTargetsTest.characterReferencesDecodedAsACommonMarkRendererDecodesThem` (ten refused, seven kept, the
 decoder's cases); `HostileDocx` gains `ENTITY_LINK` and `ENTITY_LINK_2`, asserted in `HtmlOutputHostileTest`;

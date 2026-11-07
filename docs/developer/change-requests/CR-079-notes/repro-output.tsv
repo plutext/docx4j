@@ -1,0 +1,276 @@
+rc-00-control	type	org.docx4j.wml.Document resolved=0
+rc-00-control	texts	Case control TARGET TEXT LAST LINE
+rc-00-control	textutils	Case controlTARGET TEXTLAST LINE
+rc-00-control	getContent	3 items
+rc-00-control	html	Case control TARGET TEXT LAST LINE
+rc-00-control	save	root=w:document documents=1 bodies=1 text=Case control | TARGET TEXT | LAST LINE |
+rc-01-control-sdt	type	org.docx4j.wml.Document resolved=0
+rc-01-control-sdt	texts	Case control-sdt FIRST CONTROL WORDS LAST LINE
+rc-01-control-sdt	textutils	Case control-sdtFIRST CONTROL WORDSLAST LINE
+rc-01-control-sdt	getContent	3 items
+rc-01-control-sdt	html	Case control-sdt FIRST CONTROL WORDS LAST LINE
+rc-01-control-sdt	save	root=w:document documents=1 bodies=1 text=Case control-sdt | FIRST CONTROL WORDS | LAST LINE |
+rc-02-control-txbx	type	org.docx4j.wml.Document resolved=0
+rc-02-control-txbx	texts	Case control-txbx FIRST BOX WORDS LAST LINE
+rc-02-control-txbx	textutils	Case control-txbxFIRST BOX WORDSLAST LINE
+rc-02-control-txbx	getContent	3 items
+rc-02-control-txbx	html	Case control-txbx [null img] LAST LINE
+rc-02-control-txbx	save	root=w:document documents=1 bodies=1 text=Case control-txbx | FIRST BOX WORDS | LAST LINE |
+rc-10-body	type	org.docx4j.wml.Document resolved=0
+rc-10-body	texts	SECOND BODY WORDS
+rc-10-body	textutils	SECOND BODY WORDS
+rc-10-body	getContent	1 items
+rc-10-body	html	SECOND BODY WORDS
+rc-10-body	save	root=w:document documents=1 bodies=1 text=SECOND BODY WORDS |
+rc-11-sdtContent	type	org.docx4j.wml.Document resolved=0
+rc-11-sdtContent	texts	Case sdtContent SECOND CONTROL WORDS LAST LINE
+rc-11-sdtContent	textutils	Case sdtContentSECOND CONTROL WORDSLAST LINE
+rc-11-sdtContent	getContent	3 items
+rc-11-sdtContent	html	Case sdtContent SECOND CONTROL WORDS LAST LINE
+rc-11-sdtContent	save	root=w:document documents=1 bodies=1 text=Case sdtContent | SECOND CONTROL WORDS | LAST LINE |
+rc-12-txbxContent	type	org.docx4j.wml.Document resolved=0
+rc-12-txbxContent	texts	Case txbxContent SECOND BOX WORDS LAST LINE
+rc-12-txbxContent	textutils	Case txbxContentSECOND BOX WORDSLAST LINE
+rc-12-txbxContent	getContent	3 items
+rc-12-txbxContent	html	Case txbxContent [null img] LAST LINE
+rc-12-txbxContent	save	root=w:document documents=1 bodies=1 text=Case txbxContent | SECOND BOX WORDS | LAST LINE |
+rc-20-pPr-values	type	org.docx4j.wml.Document resolved=0
+rc-20-pPr-values	texts	Case pPr-values TARGET TEXT LAST LINE
+rc-20-pPr-values	textutils	Case pPr-valuesTARGET TEXTLAST LINE
+rc-20-pPr-values	getContent	3 items
+rc-20-pPr-values	html	Case pPr-values TARGET TEXT LAST LINE
+rc-20-pPr-values	save	root=w:document documents=1 bodies=1 text=Case pPr-values | TARGET TEXT | LAST LINE |
+rc-21-pPr-merge	type	org.docx4j.wml.Document resolved=0
+rc-21-pPr-merge	texts	Case pPr-merge TARGET TEXT LAST LINE
+rc-21-pPr-merge	textutils	Case pPr-mergeTARGET TEXTLAST LINE
+rc-21-pPr-merge	getContent	3 items
+rc-21-pPr-merge	html	Case pPr-merge TARGET TEXT LAST LINE
+rc-21-pPr-merge	save	root=w:document documents=1 bodies=1 text=Case pPr-merge | TARGET TEXT | LAST LINE |
+rc-22-rPr-values	type	org.docx4j.wml.Document resolved=0
+rc-22-rPr-values	texts	Case rPr-values TARGET TEXT LAST LINE
+rc-22-rPr-values	textutils	Case rPr-valuesTARGET TEXTLAST LINE
+rc-22-rPr-values	getContent	3 items
+rc-22-rPr-values	html	Case rPr-values TARGET TEXT LAST LINE
+rc-22-rPr-values	save	root=w:document documents=1 bodies=1 text=Case rPr-values | TARGET TEXT | LAST LINE |
+rc-23-rPr-merge	type	org.docx4j.wml.Document resolved=0
+rc-23-rPr-merge	texts	Case rPr-merge TARGET TEXT LAST LINE
+rc-23-rPr-merge	textutils	Case rPr-mergeTARGET TEXTLAST LINE
+rc-23-rPr-merge	getContent	3 items
+rc-23-rPr-merge	html	Case rPr-merge TARGET TEXT LAST LINE
+rc-23-rPr-merge	save	root=w:document documents=1 bodies=1 text=Case rPr-merge | TARGET TEXT | LAST LINE |
+rc-30-jc	type	org.docx4j.wml.Document resolved=0
+rc-30-jc	texts	Case jc TARGET TEXT LAST LINE
+rc-30-jc	textutils	Case jcTARGET TEXTLAST LINE
+rc-30-jc	getContent	3 items
+rc-30-jc	html	Case jc TARGET TEXT LAST LINE
+rc-30-jc	save	root=w:document documents=1 bodies=1 text=Case jc | TARGET TEXT | LAST LINE |
+rc-31-b-on-off	type	org.docx4j.wml.Document resolved=0
+rc-31-b-on-off	texts	Case b-on-off TARGET TEXT LAST LINE
+rc-31-b-on-off	textutils	Case b-on-offTARGET TEXTLAST LINE
+rc-31-b-on-off	getContent	3 items
+rc-31-b-on-off	html	Case b-on-off TARGET TEXT LAST LINE
+rc-31-b-on-off	save	root=w:document documents=1 bodies=1 text=Case b-on-off | TARGET TEXT | LAST LINE |
+rc-32-b-off-on	type	org.docx4j.wml.Document resolved=0
+rc-32-b-off-on	texts	Case b-off-on TARGET TEXT LAST LINE
+rc-32-b-off-on	textutils	Case b-off-onTARGET TEXTLAST LINE
+rc-32-b-off-on	getContent	3 items
+rc-32-b-off-on	html	Case b-off-on TARGET TEXT LAST LINE
+rc-32-b-off-on	save	root=w:document documents=1 bodies=1 text=Case b-off-on | TARGET TEXT | LAST LINE |
+rc-33-sz	type	org.docx4j.wml.Document resolved=0
+rc-33-sz	texts	Case sz TARGET TEXT LAST LINE
+rc-33-sz	textutils	Case szTARGET TEXTLAST LINE
+rc-33-sz	getContent	3 items
+rc-33-sz	html	Case sz TARGET TEXT LAST LINE
+rc-33-sz	save	root=w:document documents=1 bodies=1 text=Case sz | TARGET TEXT | LAST LINE |
+rc-40-sectPr	type	org.docx4j.wml.Document resolved=0
+rc-40-sectPr	texts	Case sectPr LAST LINE
+rc-40-sectPr	textutils	Case sectPrLAST LINE
+rc-40-sectPr	getContent	2 items
+rc-40-sectPr	html	Case sectPr LAST LINE
+rc-40-sectPr	save	root=w:document documents=1 bodies=1 text=Case sectPr | LAST LINE |
+rc-41-tblPr	type	org.docx4j.wml.Document resolved=0
+rc-41-tblPr	texts	Case tblPr TARGET TEXT LAST LINE
+rc-41-tblPr	textutils	Case tblPrTARGET TEXTLAST LINE
+rc-41-tblPr	getContent	3 items
+rc-41-tblPr	html	Case tblPr TARGET TEXT LAST LINE
+rc-41-tblPr	save	root=w:document documents=1 bodies=1 text=Case tblPr | TARGET TEXT | LAST LINE |
+rw-00-control	type	org.docx4j.wml.Document resolved=0
+rw-00-control	texts	Case control TARGET TEXT LAST LINE
+rw-00-control	textutils	Case controlTARGET TEXTLAST LINE
+rw-00-control	getContent	3 items
+rw-00-control	html	Case control TARGET TEXT LAST LINE
+rw-00-control	save	root=w:document documents=1 bodies=1 text=Case control | TARGET TEXT | LAST LINE |
+rw-01-control-mc-choice	type	org.docx4j.wml.Document resolved=1
+rw-01-control-mc-choice	texts	Case in body CHOICE WORDS LAST LINE
+rw-01-control-mc-choice	textutils	Case in bodyCHOICE WORDSLAST LINE
+rw-01-control-mc-choice	getContent	3 items
+rw-01-control-mc-choice	html	Case in body CHOICE WORDS LAST LINE
+rw-01-control-mc-choice	save	root=w:document documents=1 bodies=1 text=Case in body | CHOICE WORDS | LAST LINE |
+rw-02-control-mc-fallback	type	org.docx4j.wml.Document resolved=1
+rw-02-control-mc-fallback	texts	Case in body FALLBACK WORDS LAST LINE
+rw-02-control-mc-fallback	textutils	Case in bodyFALLBACK WORDSLAST LINE
+rw-02-control-mc-fallback	getContent	3 items
+rw-02-control-mc-fallback	html	Case in body FALLBACK WORDS LAST LINE
+rw-02-control-mc-fallback	save	root=w:document documents=1 bodies=1 text=Case in body | FALLBACK WORDS | LAST LINE |
+rw-03-control-word2003	type	FAILED UnmarshalException at convert.in.FlatOpcXmlImporter:133 unexpected element (uri:"http://schemas.microsoft.com/office/word/2003/wordml", local:"wor
+rw-03-control-word2003	texts	FAILED UnmarshalException at convert.in.FlatOpcXmlImporter:133 unexpected element (uri:"http://schemas.microsoft.com/office/word/2003/wordml", local:"wor
+rw-03-control-word2003	textutils	FAILED UnmarshalException at convert.in.FlatOpcXmlImporter:133 unexpected element (uri:"http://schemas.microsoft.com/office/word/2003/wordml", local:"wor
+rw-03-control-word2003	getContent	FAILED UnmarshalException at convert.in.FlatOpcXmlImporter:133 unexpected element (uri:"http://schemas.microsoft.com/office/word/2003/wordml", local:"wor
+rw-03-control-word2003	html	FAILED UnmarshalException at convert.in.FlatOpcXmlImporter:133 unexpected element (uri:"http://schemas.microsoft.com/office/word/2003/wordml", local:"wor
+rw-03-control-word2003	save	FAILED UnmarshalException at convert.in.FlatOpcXmlImporter:133 unexpected element (uri:"http://schemas.microsoft.com/office/word/2003/wordml", local:"wor
+rw-04-control-flat-opc	type	org.docx4j.wml.Document resolved=0
+rw-04-control-flat-opc	texts	FLAT OPC WORDS
+rw-04-control-flat-opc	textutils	FLAT OPC WORDS
+rw-04-control-flat-opc	getContent	1 items
+rw-04-control-flat-opc	html	FLAT OPC WORDS
+rw-04-control-flat-opc	save	root=w:document documents=1 bodies=1 text=FLAT OPC WORDS |
+rw-10-foo-two-documents	type	null resolved=0
+rw-10-foo-two-documents	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"", local:"foo"). Expected elements are <{http://schemas.openxmlfo
+rw-10-foo-two-documents	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+rw-10-foo-two-documents	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"", local:"foo"). Expected elements are <{http://schemas.openxmlfo
+rw-10-foo-two-documents	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"", local:"foo"). Expected elements are <{http://schemas.openxmlfo
+rw-10-foo-two-documents	save	root=foo documents=2 bodies=2 text=FIRST DOCUMENT WORDS | SECOND DOCUMENT WORDS |
+rw-11-zfoo-two-documents	type	null resolved=0
+rw-11-zfoo-two-documents	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"urn:docx4j:root", local:"foo"). Expected elements are <{http://sc
+rw-11-zfoo-two-documents	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+rw-11-zfoo-two-documents	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"urn:docx4j:root", local:"foo"). Expected elements are <{http://sc
+rw-11-zfoo-two-documents	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"urn:docx4j:root", local:"foo"). Expected elements are <{http://sc
+rw-11-zfoo-two-documents	save	root=z:foo documents=2 bodies=2 text=FIRST DOCUMENT WORDS | SECOND DOCUMENT WORDS |
+rw-12-wfoo-two-documents	type	null resolved=0
+rw-12-wfoo-two-documents	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+rw-12-wfoo-two-documents	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+rw-12-wfoo-two-documents	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+rw-12-wfoo-two-documents	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+rw-12-wfoo-two-documents	save	root=w:foo documents=2 bodies=2 text=FIRST DOCUMENT WORDS | SECOND DOCUMENT WORDS |
+rw-13-foo-one-document	type	null resolved=0
+rw-13-foo-one-document	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"", local:"foo"). Expected elements are <{http://schemas.openxmlfo
+rw-13-foo-one-document	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+rw-13-foo-one-document	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"", local:"foo"). Expected elements are <{http://schemas.openxmlfo
+rw-13-foo-one-document	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"", local:"foo"). Expected elements are <{http://schemas.openxmlfo
+rw-13-foo-one-document	save	root=foo documents=1 bodies=1 text=FIRST DOCUMENT WORDS |
+rw-20-mc-root-choice	type	org.docx4j.mce.AlternateContent resolved=0
+rw-20-mc-root-choice	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-20-mc-root-choice	textutils	FALLBACK WORDS
+rw-20-mc-root-choice	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-20-mc-root-choice	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-20-mc-root-choice	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-21-mc-root-fallback	type	org.docx4j.mce.AlternateContent resolved=0
+rw-21-mc-root-fallback	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-21-mc-root-fallback	textutils	FALLBACK WORDS
+rw-21-mc-root-fallback	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-21-mc-root-fallback	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-21-mc-root-fallback	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-22-mc-root-fallback-only	type	org.docx4j.mce.AlternateContent resolved=0
+rw-22-mc-root-fallback-only	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-22-mc-root-fallback-only	textutils	FALLBACK WORDS
+rw-22-mc-root-fallback-only	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-22-mc-root-fallback-only	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-22-mc-root-fallback-only	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-23-mc-root-two-documents	type	org.docx4j.mce.AlternateContent resolved=0
+rw-23-mc-root-two-documents	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-23-mc-root-two-documents	textutils	FALLBACK WORDS
+rw-23-mc-root-two-documents	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-23-mc-root-two-documents	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-23-mc-root-two-documents	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-24-mc-root-nothing-selected	type	org.docx4j.mce.AlternateContent resolved=0
+rw-24-mc-root-nothing-selected	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-24-mc-root-nothing-selected	textutils	CHOICE WORDS
+rw-24-mc-root-nothing-selected	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-24-mc-root-nothing-selected	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-24-mc-root-nothing-selected	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-25-body-choice-no-fallback	type	org.docx4j.wml.Document resolved=0
+rw-25-body-choice-no-fallback	texts	Case in body CHOICE WORDS LAST LINE
+rw-25-body-choice-no-fallback	textutils	Case in bodyCHOICE WORDSLAST LINE
+rw-25-body-choice-no-fallback	getContent	3 items
+rw-25-body-choice-no-fallback	html	Case in body CHOICE WORDS LAST LINE
+rw-25-body-choice-no-fallback	save	root=w:document documents=1 bodies=1 text=Case in body | CHOICE WORDS | LAST LINE |
+rw-26-mc-root-two-in-fallback	type	org.docx4j.mce.AlternateContent resolved=0
+rw-26-mc-root-two-in-fallback	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-26-mc-root-two-in-fallback	textutils	FIRST DOCUMENT WORDSSECOND DOCUMENT WORDS
+rw-26-mc-root-two-in-fallback	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-26-mc-root-two-in-fallback	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-26-mc-root-two-in-fallback	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-27-mc-root-two-in-choice-sizes	type	org.docx4j.mce.AlternateContent resolved=0
+rw-27-mc-root-two-in-choice-sizes	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-27-mc-root-two-in-choice-sizes	textutils	FALLBACK WORDS
+rw-27-mc-root-two-in-choice-sizes	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-27-mc-root-two-in-choice-sizes	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-27-mc-root-two-in-choice-sizes	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-30-word2003-root	type	null resolved=0
+rw-30-word2003-root	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.microsoft.com/office/word/2003/wordml", local:"wor
+rw-30-word2003-root	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+rw-30-word2003-root	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.microsoft.com/office/word/2003/wordml", local:"wor
+rw-30-word2003-root	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.microsoft.com/office/word/2003/wordml", local:"wor
+rw-30-word2003-root	save	root=w:wordDocument documents=0 bodies=1 text=WORD 2003 WORDS |
+rw-31-flat-opc-root	type	null resolved=0
+rw-31-flat-opc-root	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.microsoft.com/office/2006/xmlPackage", local:"pack
+rw-31-flat-opc-root	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+rw-31-flat-opc-root	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.microsoft.com/office/2006/xmlPackage", local:"pack
+rw-31-flat-opc-root	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.microsoft.com/office/2006/xmlPackage", local:"pack
+rw-31-flat-opc-root	save	root=pkg:package documents=1 bodies=1 text=FLAT OPC WORDS |
+rw3-00-control	type	org.docx4j.wml.Document resolved=0
+rw3-00-control	texts	Case control TARGET TEXT LAST LINE
+rw3-00-control	textutils	Case controlTARGET TEXTLAST LINE
+rw3-00-control	getContent	3 items
+rw3-00-control	html	Case control TARGET TEXT LAST LINE
+rw3-00-control	save	root=w:document documents=1 bodies=1 text=Case control | TARGET TEXT | LAST LINE |
+wf-00-control	type	org.docx4j.wml.Document resolved=0
+wf-00-control	texts	Case control TARGET TEXT LAST LINE
+wf-00-control	textutils	Case controlTARGET TEXTLAST LINE
+wf-00-control	getContent	3 items
+wf-00-control	html	Case control TARGET TEXT LAST LINE
+wf-00-control	save	root=w:document documents=1 bodies=1 text=Case control | TARGET TEXT | LAST LINE |
+wf-01-trailing-comment	type	org.docx4j.wml.Document resolved=0
+wf-01-trailing-comment	texts	Case trailing-comment TARGET TEXT LAST LINE
+wf-01-trailing-comment	textutils	Case trailing-commentTARGET TEXTLAST LINE
+wf-01-trailing-comment	getContent	3 items
+wf-01-trailing-comment	html	Case trailing-comment TARGET TEXT LAST LINE
+wf-01-trailing-comment	save	root=w:document documents=1 bodies=1 text=Case trailing-comment | TARGET TEXT | LAST LINE |
+wf-10-two-roots	type	null resolved=0
+wf-10-two-roots	texts	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 The markup in the document following the root element must be well-formed.
+wf-10-two-roots	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+wf-10-two-roots	getContent	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 The markup in the document following the root element must be well-formed.
+wf-10-two-roots	html	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 The markup in the document following the root element must be well-formed.
+wf-10-two-roots	save	root=w:document documents=2 bodies=2 text=Case two-roots FIRST | FIRST ROOT WORDS | LAST LINE | Case two-roots SECOND | SECOND ROOT WORDS | LAST LINE |
+wf-11-trailing-text	type	null resolved=0
+wf-11-trailing-text	texts	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 Content is not allowed in trailing section.
+wf-11-trailing-text	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+wf-11-trailing-text	getContent	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 Content is not allowed in trailing section.
+wf-11-trailing-text	html	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 Content is not allowed in trailing section.
+wf-11-trailing-text	save	root=w:document documents=1 bodies=1 text=Case trailing-text | TARGET TEXT | LAST LINE |
+wf-12-unclosed-run	type	null resolved=0
+wf-12-unclosed-run	texts	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 The element type "w:r" must be terminated by the matching end-tag "</w:r>".
+wf-12-unclosed-run	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+wf-12-unclosed-run	getContent	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 The element type "w:r" must be terminated by the matching end-tag "</w:r>".
+wf-12-unclosed-run	html	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 The element type "w:r" must be terminated by the matching end-tag "</w:r>".
+wf-12-unclosed-run	save	root=w:document documents=1 bodies=1 text=Case unclosed-run | TARGET TEXT | LAST LINE |
+wf-13-truncated	type	null resolved=0
+wf-13-truncated	texts	FAILED XMLStreamException at jaxb.McBranchSdt$Delegate:124 ParseError at [row,col]:[1,343] Message: XML document structures must start and end within
+wf-13-truncated	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+wf-13-truncated	getContent	FAILED XMLStreamException at jaxb.McBranchSdt$Delegate:124 ParseError at [row,col]:[1,343] Message: XML document structures must start and end within
+wf-13-truncated	html	FAILED XMLStreamException at jaxb.McBranchSdt$Delegate:124 ParseError at [row,col]:[1,343] Message: XML document structures must start and end within
+wf-13-truncated	save	root=w:document documents=1 bodies=1 text=Case truncated | TARGET TEXT | LAST LINE |
+wf-14-bare-ampersand	type	null resolved=0
+wf-14-bare-ampersand	texts	FAILED XMLStreamException at jaxb.McBranchSdt$Delegate:124 ParseError at [row,col]:[1,264] Message: The entity name must immediately follow the '&' i
+wf-14-bare-ampersand	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+wf-14-bare-ampersand	getContent	FAILED XMLStreamException at jaxb.McBranchSdt$Delegate:124 ParseError at [row,col]:[1,264] Message: The entity name must immediately follow the '&' i
+wf-14-bare-ampersand	html	FAILED XMLStreamException at jaxb.McBranchSdt$Delegate:124 ParseError at [row,col]:[1,264] Message: The entity name must immediately follow the '&' i
+wf-14-bare-ampersand	save	root=w:document documents=1 bodies=1 text=Case bare-ampersand | TARGET & TEXT | LAST LINE |
+wf-15-duplicate-attribute	type	null resolved=0
+wf-15-duplicate-attribute	texts	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 Attribute "val" bound to namespace "http://schemas.openxmlformats.org/wordprocessingml/200
+wf-15-duplicate-attribute	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+wf-15-duplicate-attribute	getContent	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 Attribute "val" bound to namespace "http://schemas.openxmlformats.org/wordprocessingml/200
+wf-15-duplicate-attribute	html	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 Attribute "val" bound to namespace "http://schemas.openxmlformats.org/wordprocessingml/200
+wf-15-duplicate-attribute	save	root=w:document documents=1 bodies=1 text=Case duplicate-attribute | TARGET TEXT | LAST LINE |
+wf-16-illegal-character	type	null resolved=0
+wf-16-illegal-character	texts	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 An invalid XML character (Unicode: 0xb) was found in the element content of the document.
+wf-16-illegal-character	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+wf-16-illegal-character	getContent	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 An invalid XML character (Unicode: 0xb) was found in the element content of the document.
+wf-16-illegal-character	html	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 An invalid XML character (Unicode: 0xb) was found in the element content of the document.
+wf-16-illegal-character	save	root=w:document documents=1 bodies=1 text=Case illegal-character | TARGET TEXT | LAST LINE |
+wf-17-unbound-prefix	type	null resolved=0
+wf-17-unbound-prefix	texts	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 The prefix "z" for element "z:u" is not bound.
+wf-17-unbound-prefix	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+wf-17-unbound-prefix	getContent	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 The prefix "z" for element "z:u" is not bound.
+wf-17-unbound-prefix	html	FAILED SAXParseException at openpackaging.parts.JaxbXmlPartXPathAware:641 The prefix "z" for element "z:u" is not bound.
+wf-17-unbound-prefix	save	root=w:document documents=1 bodies=1 text=Case unbound-prefix | TARGET TEXT | LAST LINE |

@@ -1,0 +1,14 @@
+file	opened	choice_shown_in_save	choice_in_pdf_text	runs
+uc-00-control-w14	silent	True	True	equal
+uc-01-unknown-ms	silent	False	False	equal
+uc-10-cx4	silent	True	True	equal
+uc-11-cx5	silent	False	False	equal
+uc-12-cx6	silent	True	True	equal
+uc-13-cx7	silent	True	True	equal
+uc-14-cx8	silent	False	False	equal
+uc-20-c16r2	silent	True	True	equal
+uc-21-mo	silent	False	False	equal
+uc-22-ax	silent	True	True	equal
+uc-23-arto	silent	False	False	equal
+uc-24-xsi	silent	True	True	equal
+uc-25-dcmitype	silent	False	False	equal

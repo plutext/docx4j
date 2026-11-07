@@ -1,0 +1,90 @@
+or-00-control	type	org.docx4j.wml.Document resolved=0
+or-00-control	texts	DOCUMENT WORDS
+or-00-control	textutils	DOCUMENT WORDS
+or-00-control	getContent	1 items
+or-00-control	html	DOCUMENT WORDS
+or-00-control	save	root=w:document documents=1 bodies=1 text=DOCUMENT WORDS |
+or-10-hdr	type	org.docx4j.wml.Hdr resolved=0
+or-10-hdr	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.wml.Hdr cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.H
+or-10-hdr	textutils	HEADER WORDS
+or-10-hdr	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.Hdr cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.H
+or-10-hdr	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.wml.Hdr cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.H
+or-10-hdr	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.Hdr cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.H
+or-11-ftr	type	org.docx4j.wml.Ftr resolved=0
+or-11-ftr	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.wml.Ftr cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.F
+or-11-ftr	textutils	FOOTER WORDS
+or-11-ftr	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.Ftr cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.F
+or-11-ftr	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.wml.Ftr cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.F
+or-11-ftr	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.Ftr cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.F
+or-12-footnotes	type	org.docx4j.wml.CTFootnotes resolved=0
+or-12-footnotes	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.wml.CTFootnotes cannot be cast to class org.docx4j.wml.Document (org.docx
+or-12-footnotes	textutils	FOOTNOTE WORDS
+or-12-footnotes	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.CTFootnotes cannot be cast to class org.docx4j.wml.Document (org.docx
+or-12-footnotes	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.wml.CTFootnotes cannot be cast to class org.docx4j.wml.Document (org.docx
+or-12-footnotes	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.CTFootnotes cannot be cast to class org.docx4j.wml.Document (org.docx
+or-13-endnotes	type	org.docx4j.wml.CTEndnotes resolved=0
+or-13-endnotes	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.wml.CTEndnotes cannot be cast to class org.docx4j.wml.Document (org.docx4
+or-13-endnotes	textutils	ENDNOTE WORDS
+or-13-endnotes	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.CTEndnotes cannot be cast to class org.docx4j.wml.Document (org.docx4
+or-13-endnotes	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.wml.CTEndnotes cannot be cast to class org.docx4j.wml.Document (org.docx4
+or-13-endnotes	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.CTEndnotes cannot be cast to class org.docx4j.wml.Document (org.docx4
+or-14-comments	type	org.docx4j.wml.Comments resolved=0
+or-14-comments	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.wml.Comments cannot be cast to class org.docx4j.wml.Document (org.docx4j.
+or-14-comments	textutils	COMMENT WORDS
+or-14-comments	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.Comments cannot be cast to class org.docx4j.wml.Document (org.docx4j.
+or-14-comments	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.wml.Comments cannot be cast to class org.docx4j.wml.Document (org.docx4j.
+or-14-comments	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.Comments cannot be cast to class org.docx4j.wml.Document (org.docx4j.
+or-15-footnotes-bare	type	org.docx4j.wml.CTFootnotes resolved=0
+or-15-footnotes-bare	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.wml.CTFootnotes cannot be cast to class org.docx4j.wml.Document (org.docx
+or-15-footnotes-bare	textutils	FOOTNOTE WORDS
+or-15-footnotes-bare	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.CTFootnotes cannot be cast to class org.docx4j.wml.Document (org.docx
+or-15-footnotes-bare	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.wml.CTFootnotes cannot be cast to class org.docx4j.wml.Document (org.docx
+or-15-footnotes-bare	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.CTFootnotes cannot be cast to class org.docx4j.wml.Document (org.docx
+or-30-styles	type	org.docx4j.wml.Styles resolved=0
+or-30-styles	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.wml.Styles cannot be cast to class org.docx4j.wml.Document (org.docx4j.wm
+or-30-styles	textutils	
+or-30-styles	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.Styles cannot be cast to class org.docx4j.wml.Document (org.docx4j.wm
+or-30-styles	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.wml.Styles cannot be cast to class org.docx4j.wml.Document (org.docx4j.wm
+or-30-styles	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.Styles cannot be cast to class org.docx4j.wml.Document (org.docx4j.wm
+or-31-madeup	type	null resolved=0
+or-31-madeup	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+or-31-madeup	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+or-31-madeup	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+or-31-madeup	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+or-31-madeup	save	root=w:madeUp documents=0 bodies=0 text=MADEUP WORDS |
+or-32-body	type	org.docx4j.wml.Body resolved=0
+or-32-body	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.wml.Body cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.
+or-32-body	textutils	BODY WORDS
+or-32-body	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.Body cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.
+or-32-body	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.wml.Body cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.
+or-32-body	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.Body cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.
+or-40-hdr-type-header	type	FAILED ClassCastException at openpackaging.packages.WordprocessingMLPackage:174 class org.docx4j.openpackaging.packages.DefaultPackage cannot be cast to class org.docx4j.
+or-40-hdr-type-header	texts	FAILED ClassCastException at openpackaging.packages.WordprocessingMLPackage:174 class org.docx4j.openpackaging.packages.DefaultPackage cannot be cast to class org.docx4j.
+or-40-hdr-type-header	textutils	FAILED ClassCastException at openpackaging.packages.WordprocessingMLPackage:174 class org.docx4j.openpackaging.packages.DefaultPackage cannot be cast to class org.docx4j.
+or-40-hdr-type-header	getContent	FAILED ClassCastException at openpackaging.packages.WordprocessingMLPackage:174 class org.docx4j.openpackaging.packages.DefaultPackage cannot be cast to class org.docx4j.
+or-40-hdr-type-header	html	FAILED ClassCastException at openpackaging.packages.WordprocessingMLPackage:174 class org.docx4j.openpackaging.packages.DefaultPackage cannot be cast to class org.docx4j.
+or-40-hdr-type-header	save	FAILED ClassCastException at openpackaging.packages.WordprocessingMLPackage:174 class org.docx4j.openpackaging.packages.DefaultPackage cannot be cast to class org.docx4j.
+or-41-document-type-header	type	FAILED ClassCastException at openpackaging.packages.WordprocessingMLPackage:174 class org.docx4j.openpackaging.packages.DefaultPackage cannot be cast to class org.docx4j.
+or-41-document-type-header	texts	FAILED ClassCastException at openpackaging.packages.WordprocessingMLPackage:174 class org.docx4j.openpackaging.packages.DefaultPackage cannot be cast to class org.docx4j.
+or-41-document-type-header	textutils	FAILED ClassCastException at openpackaging.packages.WordprocessingMLPackage:174 class org.docx4j.openpackaging.packages.DefaultPackage cannot be cast to class org.docx4j.
+or-41-document-type-header	getContent	FAILED ClassCastException at openpackaging.packages.WordprocessingMLPackage:174 class org.docx4j.openpackaging.packages.DefaultPackage cannot be cast to class org.docx4j.
+or-41-document-type-header	html	FAILED ClassCastException at openpackaging.packages.WordprocessingMLPackage:174 class org.docx4j.openpackaging.packages.DefaultPackage cannot be cast to class org.docx4j.
+or-41-document-type-header	save	FAILED ClassCastException at openpackaging.packages.WordprocessingMLPackage:174 class org.docx4j.openpackaging.packages.DefaultPackage cannot be cast to class org.docx4j.
+or-50-mc-hdr-choice	type	org.docx4j.mce.AlternateContent resolved=0
+or-50-mc-hdr-choice	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+or-50-mc-hdr-choice	textutils	FALLBACK WORDS
+or-50-mc-hdr-choice	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+or-50-mc-hdr-choice	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+or-50-mc-hdr-choice	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+rw-12-wfoo-two-documents	type	null resolved=0
+rw-12-wfoo-two-documents	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+rw-12-wfoo-two-documents	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+rw-12-wfoo-two-documents	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+rw-12-wfoo-two-documents	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+rw-12-wfoo-two-documents	save	root=w:foo documents=2 bodies=2 text=FIRST DOCUMENT WORDS | SECOND DOCUMENT WORDS |
+rw-13-foo-one-document	type	null resolved=0
+rw-13-foo-one-document	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"", local:"foo"). Expected elements are <{http://schemas.openxmlfo
+rw-13-foo-one-document	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+rw-13-foo-one-document	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"", local:"foo"). Expected elements are <{http://schemas.openxmlfo
+rw-13-foo-one-document	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"", local:"foo"). Expected elements are <{http://schemas.openxmlfo
+rw-13-foo-one-document	save	root=foo documents=1 bodies=1 text=FIRST DOCUMENT WORDS |

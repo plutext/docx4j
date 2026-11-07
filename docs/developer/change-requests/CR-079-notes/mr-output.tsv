@@ -1,0 +1,120 @@
+mr-00-control	type	org.docx4j.wml.Document resolved=0
+mr-00-control	texts	CONTROL WORDS
+mr-00-control	textutils	CONTROL WORDS
+mr-00-control	getContent	1 items
+mr-00-control	html	CONTROL WORDS
+mr-00-control	save	root=w:document documents=1 bodies=1 text=CONTROL WORDS |
+mr-01-madeup-p	type	null resolved=0
+mr-01-madeup-p	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-01-madeup-p	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+mr-01-madeup-p	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-01-madeup-p	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-01-madeup-p	save	root=w:madeUp documents=0 bodies=0 text=MADEUP WORDS |
+mr-03-foo-document	type	null resolved=0
+mr-03-foo-document	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-03-foo-document	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+mr-03-foo-document	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-03-foo-document	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-03-foo-document	save	root=w:foo documents=1 bodies=1 text=DOCUMENT WORDS |
+mr-10-two-p	type	null resolved=0
+mr-10-two-p	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-10-two-p	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+mr-10-two-p	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-10-two-p	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-10-two-p	save	root=w:madeUp documents=0 bodies=0 text=FIRST WORDS | SECOND WORDS |
+mr-11-p-sectpr	type	null resolved=0
+mr-11-p-sectpr	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-11-p-sectpr	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+mr-11-p-sectpr	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-11-p-sectpr	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-11-p-sectpr	save	root=w:madeUp documents=0 bodies=0 text=SECTION WORDS |
+mr-12-tbl	type	null resolved=0
+mr-12-tbl	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-12-tbl	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+mr-12-tbl	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-12-tbl	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-12-tbl	save	root=w:madeUp documents=0 bodies=0 text=CELL WORDS | AFTER TABLE WORDS |
+mr-13-sdt	type	null resolved=0
+mr-13-sdt	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-13-sdt	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+mr-13-sdt	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-13-sdt	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-13-sdt	save	root=w:madeUp documents=0 bodies=0 text=CONTROL WORDS |
+mr-14-run	type	null resolved=0
+mr-14-run	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-14-run	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+mr-14-run	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-14-run	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-14-run	save	root=w:madeUp documents=0 bodies=0 text=RUN WORDS |
+mr-15-body	type	null resolved=0
+mr-15-body	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-15-body	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+mr-15-body	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-15-body	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-15-body	save	root=w:madeUp documents=0 bodies=1 text=BODY WORDS |
+mr-16-empty	type	null resolved=0
+mr-16-empty	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-16-empty	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+mr-16-empty	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-16-empty	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-16-empty	save	root=w:madeUp documents=0 bodies=0 text=
+mr-17-nested	type	null resolved=0
+mr-17-nested	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-17-nested	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+mr-17-nested	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-17-nested	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-17-nested	save	root=w:madeUp documents=0 bodies=0 text=NESTED WORDS |
+mr-18-p-properties	type	null resolved=0
+mr-18-p-properties	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-18-p-properties	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+mr-18-p-properties	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-18-p-properties	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-18-p-properties	save	root=w:madeUp documents=0 bodies=0 text=PROPERTY WORDS |
+mr-20-other-namespace-p	type	null resolved=0
+mr-20-other-namespace-p	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"urn:docx4j:check79", local:"madeUp"). Expected elements are <{htt
+mr-20-other-namespace-p	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+mr-20-other-namespace-p	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"urn:docx4j:check79", local:"madeUp"). Expected elements are <{htt
+mr-20-other-namespace-p	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"urn:docx4j:check79", local:"madeUp"). Expected elements are <{htt
+mr-20-other-namespace-p	save	root=z:madeUp documents=0 bodies=0 text=OTHER NAMESPACE WORDS |
+mr-21-no-namespace-p	type	null resolved=0
+mr-21-no-namespace-p	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"", local:"madeUp"). Expected elements are <{http://schemas.openxm
+mr-21-no-namespace-p	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+mr-21-no-namespace-p	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"", local:"madeUp"). Expected elements are <{http://schemas.openxm
+mr-21-no-namespace-p	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"", local:"madeUp"). Expected elements are <{http://schemas.openxm
+mr-21-no-namespace-p	save	root=madeUp documents=0 bodies=0 text=NO NAMESPACE WORDS |
+mr-22-ignorable-p	type	null resolved=0
+mr-22-ignorable-p	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"urn:docx4j:check79", local:"madeUp"). Expected elements are <{htt
+mr-22-ignorable-p	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+mr-22-ignorable-p	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"urn:docx4j:check79", local:"madeUp"). Expected elements are <{htt
+mr-22-ignorable-p	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"urn:docx4j:check79", local:"madeUp"). Expected elements are <{htt
+mr-22-ignorable-p	save	root=z:madeUp documents=0 bodies=0 text=IGNORABLE WORDS |
+mr-30-sdtcontent-p	type	org.docx4j.wml.CTSdtContentRow resolved=0
+mr-30-sdtcontent-p	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.wml.CTSdtContentRow cannot be cast to class org.docx4j.wml.Document (org.
+mr-30-sdtcontent-p	textutils	
+mr-30-sdtcontent-p	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.CTSdtContentRow cannot be cast to class org.docx4j.wml.Document (org.
+mr-30-sdtcontent-p	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.wml.CTSdtContentRow cannot be cast to class org.docx4j.wml.Document (org.
+mr-30-sdtcontent-p	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.CTSdtContentRow cannot be cast to class org.docx4j.wml.Document (org.
+mr-31-tc-p	type	org.docx4j.wml.Tc resolved=0
+mr-31-tc-p	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.wml.Tc cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.Tc
+mr-31-tc-p	textutils	CELL WORDS
+mr-31-tc-p	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.Tc cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.Tc
+mr-31-tc-p	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.wml.Tc cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.Tc
+mr-31-tc-p	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.Tc cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.Tc
+mr-32-p-root	type	org.docx4j.wml.P resolved=0
+mr-32-p-root	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.wml.P cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.P a
+mr-32-p-root	textutils	PARAGRAPH WORDS
+mr-32-p-root	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.P cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.P a
+mr-32-p-root	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.wml.P cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.P a
+mr-32-p-root	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.wml.P cannot be cast to class org.docx4j.wml.Document (org.docx4j.wml.P a
+mr-40-branch-madeup-p	type	org.docx4j.mce.AlternateContent resolved=0
+mr-40-branch-madeup-p	texts	FAILED ClassCastException at model.revisions.Lister:127 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+mr-40-branch-madeup-p	textutils	FALLBACK WORDS
+mr-40-branch-madeup-p	getContent	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+mr-40-branch-madeup-p	html	FAILED ClassCastException at convert.out.common.AbstractWmlExporter:55 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+mr-40-branch-madeup-p	save	FAILED ClassCastException at openpackaging.parts.WordprocessingML.MainDocumentPart:153 class org.docx4j.mce.AlternateContent cannot be cast to class org.docx4j.wml.Document (org
+mr-50-madeup-p-styles	type	null resolved=0
+mr-50-madeup-p-styles	texts	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-50-madeup-p-styles	textutils	FAILED Docx4JException at TextUtils:108 Can't extractText from null object
+mr-50-madeup-p-styles	getContent	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-50-madeup-p-styles	html	FAILED UnmarshalException at openpackaging.parts.JaxbXmlPartXPathAware:676 unexpected element (uri:"http://schemas.openxmlformats.org/wordprocessingml/2006/main", lo
+mr-50-madeup-p-styles	save	root=w:madeUp documents=0 bodies=0 text=STYLED WORDS |
