@@ -140,6 +140,75 @@ public class PackageWiringTest {
 		}
 	}
 
+	/** REQ-206's NOTE: more than one officeDocument relationship is refused, from a file and a stream, naming the targets. */
+	@Test
+	public void twoMainPartsAreRefusedNamingTheTargets() throws Exception {
+		String[][] cases = {
+				{ "two-main-rels-document-first", "word/document.xml, word/other.xml" },
+				{ "two-main-rels-other-first", "word/other.xml, word/document.xml" },
+				{ "two-main-rels-zip-other-first", "word/document.xml, word/other.xml" },
+				{ "two-main-rels-types-other-first", "word/document.xml, word/other.xml" },
+				{ "two-main-rels-names-swapped", "word/zeta.xml, word/alpha.xml" } };
+		for (String[] c : cases) {
+			for (int route = 0; route < 2; route++) {
+				try {
+					if (route == 0) WordprocessingMLPackage.load(wiring(c[0]));
+					else WordprocessingMLPackage.load(new ByteArrayInputStream(bytes(c[0])));
+					fail(c[0] + " loaded");
+				} catch (Docx4JException refused) {
+					assertTrue(refused.getMessage(), refused.getMessage().contains("2 main parts: " + c[1]));
+				}
+			}
+		}
+	}
+
+	/** Under the switch, the last relationship's target, as a fresh Word reads it, whatever the Overrides, entries or names; a save holds one. */
+	@Test
+	public void theSwitchReadsTheLastRelationship() throws Exception {
+		String[][] cases = {
+				{ "two-main-rels-document-first", "MAIN_OTHER_XML", "/word/other.xml" },
+				{ "two-main-rels-other-first", "MAIN_DOCUMENT_XML", "/word/document.xml" },
+				{ "two-main-rels-zip-other-first", "MAIN_OTHER_XML", "/word/other.xml" },
+				{ "two-main-rels-types-other-first", "MAIN_OTHER_XML", "/word/other.xml" },
+				{ "two-main-rels-names-swapped", "MAIN_ALPHA_XML", "/word/alpha.xml" } };
+		for (String[] c : cases) {
+			String word = text(WordprocessingMLPackage.load(wiring(c[0] + "-word365"))); // Word's save, a first open
+			for (WordprocessingMLPackage pkg : both(c[0], repair())) {
+				assertEquals(c[0], c[1], text(pkg));
+				assertEquals(c[0], word, text(pkg));
+				assertEquals(c[0], Arrays.asList(new LoadFinding(LoadFinding.MULTIPLE_MAIN_PARTS, c[2], "2")), pkg.getLoadFindings());
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				Docx4J.save(pkg, out);
+				int mains = 0;
+				try (ZipInputStream z = new ZipInputStream(new ByteArrayInputStream(out.toByteArray()))) {
+					for (ZipEntry e; (e = z.getNextEntry()) != null; ) if (e.getName().startsWith("word/") && e.getName().endsWith(".xml")) mains++;
+				}
+				assertEquals(c[0], 1, mains);
+				assertTrue(WordprocessingMLPackage.load(new ByteArrayInputStream(out.toByteArray())).getLoadFindings().isEmpty());
+			}
+		}
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(wiring("two-main-rels-document-first"), repair());
+		TextWarning w = Texts.of(pkg, new TextOptions()).warnings().get(0);
+		assertEquals(TextWarning.PACKAGE_MULTIPLE_MAIN_PARTS, w.getKind());
+		assertEquals("/word/other.xml", w.getSelector());
+		assertEquals("2", w.getDetail());
+	}
+
+	/** A part no relationship names is no case: read the related part, with nothing found or refused, the override last or not. */
+	@Test
+	public void anOrphanMainPartIsNoCase() throws Exception {
+		for (LoadOptions options : new LoadOptions[] { null, repair() }) {
+			for (WordprocessingMLPackage pkg : both("one-main-rel-other-override-last", options)) {
+				assertEquals("MAIN_DOCUMENT_XML", text(pkg));
+				assertTrue(pkg.getLoadFindings().isEmpty());
+			}
+			for (WordprocessingMLPackage pkg : both("one-main-rel-document-override-last", options)) {
+				assertEquals("MAIN_OTHER_XML", text(pkg));
+				assertTrue(pkg.getLoadFindings().isEmpty());
+			}
+		}
+	}
+
 	/** The oracle: under the switch each reads as Word's own repaired save does (the round package-wiring, Word 16.0.20326.20232). */
 	@Test
 	public void theSwitchReadsAsWordsSaveDoes() throws Exception {

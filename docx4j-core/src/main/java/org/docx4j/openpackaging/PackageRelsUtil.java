@@ -1,6 +1,7 @@
 package org.docx4j.openpackaging;
 
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.slf4j.Logger;
@@ -39,6 +40,16 @@ public class PackageRelsUtil {
 		}
 		log.error(packageRels.getXML());
 		throw new Docx4JException("No relationship of type officeDocument");
+	}
+
+	/**
+	 * Whether a package relationship names a main part: an officeDocument relationship, Transitional or Strict.
+	 *
+	 * @since 17.3.6 (CR-075 phase 3)
+	 */
+	public static boolean isMainPart(Relationship rel) {
+		return Namespaces.DOCUMENT.equals(rel.getType())
+				|| "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument".equals(rel.getType());
 	}
 
 	public static boolean isStrict(RelationshipsPart packageRels) throws Docx4JException  {

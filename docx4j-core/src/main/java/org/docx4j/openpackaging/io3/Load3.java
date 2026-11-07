@@ -109,6 +109,18 @@ public class Load3 extends Load {
 		this.mcLoadMode = mode;
 	}
 
+	private RepairMode repairMode;
+
+	/**
+	 * What this load does with a package Word repairs (CR-075 D1); null (the default) follows
+	 * {@value RepairMode#PROPERTY}.
+	 *
+	 * @since 17.3.6 (CR-075 phase 3)
+	 */
+	public void setRepairMode(RepairMode mode) {
+		this.repairMode = mode;
+	}
+
 	public Load3() {
 		throw new RuntimeException();
 	}
@@ -171,6 +183,7 @@ public class Load3 extends Load {
 		// .. now find the name of the main part
 		RelationshipsPart rp = RelationshipsPart.createPackageRels();
 		populatePackageRels(rp);
+		LoadFinding multipleMainParts = oneMainPart(rp);
 		
 		String mainPartName = PackageRelsUtil.getNameOfMainPart(rp);
 		PartName mainPartNameObj;
@@ -202,6 +215,7 @@ public class Load3 extends Load {
 		p.setSourcePartStore(partStore);
 		this.loading = p;
 		p.setLoadFindings(partStore instanceof ZipPartStore ? ((ZipPartStore) partStore).getLoadFindings() : null);
+		if (multipleMainParts != null) p.addLoadFinding(multipleMainParts);
 		if (mcLoadMode != null) {
 			// before any part is unmarshalled (CR-051 section 3.2), as setWasStrict below
 			p.setMcLoadMode(mcLoadMode);
@@ -251,6 +265,38 @@ public class Load3 extends Load {
 			if (c.getMessage() != null) message = c.getMessage();
 		}
 		return message == null ? t.toString() : message;
+	}
+
+	/**
+	 * More than one officeDocument relationship (WD REQ-206's NOTE; CR-075 D4): refused, naming the targets, since Word reads
+	 * such a package only through a repair, and which part it reads changes with each repaired open in a session. Under
+	 * {@link RepairMode#WORD} the last relationship stands, as a fresh Word reads it, and the others go, so a save writes one
+	 * main part as Word's does.
+	 *
+	 * @return the finding, or null for a package with one main part
+	 */
+	private LoadFinding oneMainPart(RelationshipsPart rp) throws Docx4JException {
+		java.util.List<Relationship> mains = new java.util.ArrayList<Relationship>();
+		for (Relationship r : rp.getRelationships().getRelationship()) {
+			if (PackageRelsUtil.isMainPart(r)) mains.add(r);
+		}
+		if (mains.size() < 2) return null;
+		RepairMode repair = repairMode != null ? repairMode : RepairMode.fromProperty();
+		if (repair != RepairMode.WORD) {
+			StringBuilder targets = new StringBuilder();
+			for (Relationship r : mains) targets.append(targets.length() == 0 ? "" : ", ").append(r.getTarget());
+			throw new Docx4JException("Refused: the package's relationships name " + mains.size() + " main parts: " + targets
+					+ ". Word reads such a package only through a repair; load with RepairMode.WORD to read the last relationship's target ("
+					+ RepairMode.PROPERTY + "=word).");
+		}
+		Relationship kept = mains.get(mains.size() - 1);
+		for (Relationship r : mains) {
+			if (r != kept) rp.removeRelationship(r);
+		}
+		String target = kept.getTarget();
+		LoadFinding finding = new LoadFinding(LoadFinding.MULTIPLE_MAIN_PARTS, target.startsWith("/") ? target : "/" + target, String.valueOf(mains.size()));
+		log.warn(finding.toString());
+		return finding;
 	}
 
 	private void populatePackageRels(RelationshipsPart rp) 

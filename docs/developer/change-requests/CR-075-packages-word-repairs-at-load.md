@@ -1,7 +1,7 @@
 # CR-075: packages Word repairs on opening: duplicate entries, two main parts, an unreadable relationships part or store
 
-Status: ACCEPTED 2026-11-07 (Jason: "start CR-075 decisions as recommended"): D1 to D10 as recommended in §5. Phases 0
-and 1 committed, D10's count to come. Proposed 2026-11-04 (Jason: "Draft the CR for docx4j's load-side items"). The work Jason's repair policy
+Status: ACCEPTED 2026-11-07 (Jason: "start CR-075 decisions as recommended"): D1 to D10 as recommended in §5. Phases 0,
+1 and 3 committed, D10's count to come. Proposed 2026-11-04 (Jason: "Draft the CR for docx4j's load-side items"). The work Jason's repair policy
 decisions of the same day leave to docx4j (the portfolio's `docs/repair_policy_across_ports.md`, "decisions as
 recommended", P1 to P6, 6085a74). Phases in §6. Jason ruled the two-main-parts
 statement on 2026-11-07 ("yes"), as §3 has it, so phase 3 waits on nothing. WD 0.73's item (i) ruled 2026-11-04 (WD 0.76, 7c5ee35):
@@ -172,7 +172,7 @@ count may run over other repaired files, or only these: the hand runs can't tell
 | 0 | D9's fixtures (the builder; the two-rels files with Word's saves; docx4j's own duplicate and case-variant files, staged for a Word check recording the prompt); D10's survey count. | Fixtures done: `package-wiring/build_package_wiring.py` rebuilds the nine files of rounds 1 to 3 byte for byte and adds ten (a control; two entries of one name, as different bytes and as the same; `[Content_Types].xml` and a part's relationships twice; a case variant both ways; a central directory the other way from the local headers; a duplicate only the local headers show; a directory entry twice). Word's saves of the first 17 are beside them (§2). D10's count is in the catalogue queries owed once the home copy is in. |
 | 1 | D1 and D2 (the switch, the load findings); D3 (REQ-206 in both `ZipPartStore` paths, OPC equivalence); D6's named cause; the part-level relationships failure WARNed and recorded instead of printed (its reading unchanged until phase 4); tests; CHANGELOG. | done, reviewed by Fable (Jason: "you may implement phase 1; we will have fable review it", then "commit phases 0 and 1"). D10's count isn't in: release waits on it, as REQ-206 refuses packages that load today |
 | 2 | D7, the store. | proposed |
-| 3 | D4, two main parts. | proposed; ruled 2026-11-07, waits on nothing |
+| 3 | D4, two main parts. | done (Jason: "then start phase 3", "Phase 3: commit it"). `PackageRelsUtil.isMainPart`, `Load3.oneMainPart`; the rule runs on every package type, and was measured on Word alone |
 | 4 | D5, D6's reading and D8's save gate. | proposed (WD 0.73 (i) ruled 2026-11-04, WD 0.76) |
 
 Each phase's hand-off (the rule, the fixtures, Word's readings) goes to docx4j-python (its planned CR-032 for REQ-206)

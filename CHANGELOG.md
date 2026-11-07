@@ -136,6 +136,8 @@ Changes in Version 17.3.6
   entry, where docx4j read the last silently: Word reads such a package only through a repair (WD REQ-206; CR-075). `new LoadOptions().repairMode(RepairMode.WORD)`,
   or `docx4j.openpackaging.load.repair=word`, reads the first in the central directory, as Word's repair does, and records it. With the new
   `load(File, LoadOptions)` overloads, a literal `null` as `Docx4J.load`'s second argument needs a cast.
+- A package with more than one `officeDocument` relationship is refused too, naming the targets, where docx4j read the last silently and kept both on a save. Under
+  `RepairMode.WORD` it reads the last relationship's target, as a fresh Word does, and a save keeps that part alone.
 - `OpcPackage.getLoadFindings()` says what a load read around, and the text model and the inspector report it. A part's relationships part that isn't well
   formed is now among them, in place of a stack trace on stderr. A refusal over `_rels/.rels` names the part and the parse error, not a `NullPointerException`.
 - With JAXB 4 (docx4j-JAXB-ReferenceImpl), the reset of JAXB's error count after ten errors in a part works again

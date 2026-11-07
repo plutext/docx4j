@@ -30,6 +30,8 @@ public final class LoadFinding {
 
 	/** Two zip entries of one name, read under {@link org.docx4j.openpackaging.io3.RepairMode#WORD}: selector the name as the first spells it, detail the number of entries (WD REQ-206). */
 	public static final String DUPLICATE_ENTRY = "package.duplicate_entry";
+	/** Two officeDocument relationships, read under {@link org.docx4j.openpackaging.io3.RepairMode#WORD}: selector the part read, the last relationship's target; detail the number of relationships (WD REQ-206's NOTE). */
+	public static final String MULTIPLE_MAIN_PARTS = "package.multiple_main_parts";
 	/** A relationships part that could not be read: selector its name, detail the number of relationships kept (WD REQ-801). */
 	public static final String PART_NOT_READ = "part.not_read";
 

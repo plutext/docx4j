@@ -77,6 +77,13 @@ public final class TextWarning {
 	 * @since 17.3.6 (CR-075)
 	 */
 	public static final String PACKAGE_DUPLICATE_ENTRY = org.docx4j.openpackaging.packages.LoadFinding.DUPLICATE_ENTRY;
+	/**
+	 * More than one {@code officeDocument} relationship, read under the repair switch: the last's target. Its selector is
+	 * that part's name; {@link #getDetail()} the number of relationships.
+	 *
+	 * @since 17.3.6 (CR-075)
+	 */
+	public static final String PACKAGE_MULTIPLE_MAIN_PARTS = org.docx4j.openpackaging.packages.LoadFinding.MULTIPLE_MAIN_PARTS;
 
 	private final String kind;
 	private final String address;
@@ -126,7 +133,8 @@ public final class TextWarning {
 	/**
 	 * What the kind says beyond its selector (REQ-801): for {@code mce.nothing_selected}, the namespaces the Choices
 	 * require, as one string of URIs separated by spaces, empty if every prefix binds to nothing; for
-	 * {@code package.duplicate_entry} the number of entries; for {@code part.not_read} on a relationships part, the number
+	 * {@code package.duplicate_entry} the number of entries; for {@code package.multiple_main_parts} the number of
+	 * relationships; for {@code part.not_read} on a relationships part, the number
 	 * of relationships kept; else null.
 	 *
 	 * @since 17.3.6

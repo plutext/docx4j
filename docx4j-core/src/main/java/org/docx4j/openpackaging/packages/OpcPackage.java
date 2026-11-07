@@ -807,6 +807,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		final ZipPartStore partLoader = new ZipPartStore(file, repairMode(options));
 		final Load3 loader = new Load3(partLoader);
 		loader.setMcLoadMode(mcLoadMode(options));
+		loader.setRepairMode(repairMode(options));
 		OpcPackage opcPackage = loader.get();
 		
 		opcPackage.setNew(false);
@@ -848,6 +849,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 			final ZipPartStore partLoader = new ZipPartStore(is, repairMode(options));
 			final Load3 loader = new Load3(partLoader);
 			loader.setMcLoadMode(mcLoadMode(options));
+			loader.setRepairMode(repairMode(options));
 			OpcPackage opcPackage = loader.get();
 
 			opcPackage.setNew(false);
@@ -905,6 +907,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 				final ZipPartStore partLoader = new ZipPartStore(is2, repairMode(options));
 				final Load3 loader = new Load3(partLoader);
 				loader.setMcLoadMode(mcLoadMode(options));
+				loader.setRepairMode(repairMode(options));
 				OpcPackage opcPackage = loader.get();
 
 				opcPackage.setNew(false);
