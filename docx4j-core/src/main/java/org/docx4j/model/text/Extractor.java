@@ -174,6 +174,9 @@ final class Extractor {
 
 	final List<TextWarning> warnings = new ArrayList<TextWarning>();
 	private final Set<TextWarning> warned = new LinkedHashSet<TextWarning>();
+	/** The parts read that may hold a record of an element taken out, and the records met, for {@link #nothingSelectedUnreached}. */
+	private final Set<JaxbXmlPart<?>> recordedParts = new LinkedHashSet<JaxbXmlPart<?>>();
+	private final Set<ResolvedAlternateContent> recordsMet = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<ResolvedAlternateContent, Boolean>());
 
 	/** Notes referenced in the view, in reference order: id to number, 0 for a note with a custom mark. */
 	final Map<String, Integer> footnotes = new LinkedHashMap<String, Integer>();
@@ -305,6 +308,7 @@ final class Extractor {
 		// comments, rendered at their references (REQ-504)
 		if (commentsIncluded()) comments(main, comments);
 
+		nothingSelectedUnreached();
 		return new TextResult(out, comments, warnings, metadata, options);
 	}
 
@@ -404,6 +408,7 @@ final class Extractor {
 		}
 		Map<String, Object> metadata = new LinkedHashMap<String, Object>();
 		if (pkg != null) metadata.put("fields_update_on_open", fieldsUpdateOnOpen());
+		nothingSelectedUnreached();
 		return new TextResult(out, new LinkedHashMap<String, TextComment>(), warnings, metadata, options);
 	}
 
@@ -2243,7 +2248,9 @@ final class Extractor {
 	 * here; a part with no record costs nothing.
 	 */
 	private void resolvedAlternateContent(List<Object> items, String prefix, Story story) {
-		if (items.isEmpty() || !(story.part instanceof JaxbXmlPart)) return;
+		if (!(story.part instanceof JaxbXmlPart)) return;
+		recordedParts.add((JaxbXmlPart<?>) story.part);
+		if (items.isEmpty()) return;
 		List<ResolvedAlternateContent> records = ((JaxbXmlPart<?>) story.part).getResolvedAlternateContent();
 		if (records.isEmpty()) return;
 		Object first = unwrap(items.get(0));
@@ -2251,8 +2258,22 @@ final class Extractor {
 		if (owner == null) return;
 		String here = McSplice.address(owner);
 		for (ResolvedAlternateContent r : records) {
-			if (r.getBranch() == null || !here.equals(r.getAddress())) continue;
+			if (!here.equals(r.getAddress())) continue;
+			recordsMet.add(r);
 			compareBranches(r.getElement(), prefix + "/" + r.getIndex(), story.part);
+		}
+	}
+
+	/**
+	 * {@code mce.nothing_selected} for an element taken out of a container it left empty: with nothing
+	 * in the container to find it by, it was not met on the walk, and it has no address (REQ-801).
+	 */
+	private void nothingSelectedUnreached() {
+		if (!options.isWarnings()) return;
+		for (JaxbXmlPart<?> part : recordedParts) {
+			for (ResolvedAlternateContent r : part.getResolvedAlternateContent()) {
+				if (r.getBranch() == null && !recordsMet.contains(r)) compareBranches(r.getElement(), null, part);
+			}
 		}
 	}
 

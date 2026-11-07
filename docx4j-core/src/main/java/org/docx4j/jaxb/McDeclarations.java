@@ -288,14 +288,41 @@ public final class McDeclarations {
 	private static List<AlternateContent.Choice> choices(Object root) {
 		final List<AlternateContent.Choice> out = new ArrayList<AlternateContent.Choice>();
 		if (root instanceof AlternateContent.Choice) out.add((AlternateContent.Choice) root);
-		new TraversalUtil(root, new TraversalUtil.CallbackImpl() {
-			@Override
-			public List<Object> apply(Object o) {
-				if (o instanceof AlternateContent.Choice) out.add((AlternateContent.Choice) o);
-				return null;
-			}
-		}, McMode.ALL);
+		for (Object start : walkFrom(root)) {
+			new TraversalUtil(start, new TraversalUtil.CallbackImpl() {
+				@Override
+				public List<Object> apply(Object o) {
+					if (o instanceof AlternateContent.Choice) out.add((AlternateContent.Choice) o);
+					return null;
+				}
+			}, McMode.ALL);
+		}
 		return out;
+	}
+
+	/**
+	 * Where the walk for Choices starts: the root, but where {@link TraversalUtil} doesn't go down
+	 * to them, each {@code w:docPartBody} of a part of document building blocks, and each element
+	 * in a numbering part's {@code w:numPicBullet}.
+	 */
+	private static List<Object> walkFrom(Object root) {
+		Object o = XmlUtils.unwrap(root);
+		List<Object> starts = new ArrayList<Object>();
+		if (o instanceof org.docx4j.wml.GlossaryDocument) {
+			org.docx4j.wml.CTDocParts parts = ((org.docx4j.wml.GlossaryDocument) o).getDocParts();
+			if (parts != null) {
+				for (org.docx4j.wml.CTDocPart part : parts.getDocPart()) {
+					if (part.getDocPartBody() != null) starts.add(part.getDocPartBody());
+				}
+			}
+		} else if (o instanceof org.docx4j.wml.Numbering) {
+			for (org.docx4j.wml.Numbering.NumPicBullet bullet : ((org.docx4j.wml.Numbering) o).getNumPicBullet()) {
+				if (bullet.getAlternateContent() != null) starts.add(bullet.getAlternateContent());
+			}
+		} else {
+			starts.add(root);
+		}
+		return starts;
 	}
 
 	// ---- the clash check (D3) ------------------------------------------------------------------

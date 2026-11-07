@@ -46,6 +46,7 @@ Changes in Version 17.3.6
 - PDF: a text box beside a floating table, or in the paragraph opening a page, stands where Word's does (renderer 2.12-docx4j.1).
 - PDF: below compatibility mode 15 a tab reaching a custom stop past its cell's edge stays on its line, as in Word (renderer
   2.12-docx4j.1). Known limit: text after such a tab is drawn over the next cell, where Word draws none.
+- PDF: a paragraph with line breaks beside a floating table is no longer drawn twice (renderer 2.12-docx4j.1).
 - A floating table below compatibility mode 15 stands where Word's does: `w:tblpX` places the cell text, not the left
   border, and `w:tblInd` is added (the table was about 11pt right of Word's).
 - The paragraph straight after a floating table takes no HTML auto space before, as in Word (`w:beforeAutospacing`; 14pt
@@ -92,11 +93,12 @@ Changes in Version 17.3.6
 - A save gives a `w14:paraId` to each paragraph and table row that has none, or repeats an earlier one, in a document that
   uses them, in any part that has been read: with one missing, Word renumbers every id in some files. `docx4j.save.paraIds=false` turns
   it off, and `ParaIds.assign` does it on request (CR-077).
+- A `Requires` prefix only the source declared stays declared on a save for a `mc:Choice` in a `w:docPartBody` or `w:numPicBullet`, as it already was elsewhere.
 - `w:stylePaneFormatFilter` keeps its fifteen attributes on a save, where only `w:val` survived.
   `CTSettings.getStylePaneFormatFilter()` now returns a `CTStylePaneFilter`, not a `CTShortHexNumber`.
   Word reads `w:val` only with no attribute beside it, so on a file that has them `setVal` alone no longer changes what Word reads (CR-078).
 - `understood-namespaces.txt` is now what Word was measured to understand, 114 URIs: text takes a Choice requiring `wpi`, `oel`, `cx3`, `cx4`, `cx6`, `cx7`, `c16r2`, `ax` or `xsi`, where it took the Fallback, and the Fallback where a Choice requires one of 13 Word doesn't understand. What a reader can reach is in `traversal-namespaces.txt`.
-- An `mc:AlternateContent` with no `mc:Fallback` and no `mc:Choice` Word understands is now absent, as in Word (WD REQ-305), where its first Choice was taken: in text, which raises `mce.nothing_selected`, and in PDF and HTML. A save still writes it, where the schema admits it.
+- An `mc:AlternateContent` with no `mc:Fallback` and no `mc:Choice` Word understands is now absent, as in Word (WD REQ-305), where its first Choice was taken: in text, which raises `mce.nothing_selected`, and in PDF and HTML. The `word` load mode, the default, takes it out at block, row and cell level, as Word's save does; `preserve` keeps it.
 
 **Java 25.**
 - docx4j sets its own XML element-depth limit, 256 (`docx4j.xml.maxElementDepth`, 0 for none), on the parsers it

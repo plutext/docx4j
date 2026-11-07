@@ -338,6 +338,8 @@ that stay whole.
   properties, which no survey has seen) is resolved to its first Choice, with the warning, instead of
   being dropped. **Reversed 2026-11-07 (WD 0.97's REQ-305; Jason: "go ahead"):** it now resolves to the first Choice
   Word understands, and else is dropped, as nothing is selected. A schema that doesn't admit the element can't keep it.
+  Where it is admitted, at block, row and cell level, `word` mode takes it out too, as Word's save does, and records it with no
+  branch; `preserve` keeps it (Jason: "implement python's suggestion"; python's CR-040).
 - **Its other jobs** (validity fixes, Strict import) are unchanged.
 
 ### 3.4 The consumers

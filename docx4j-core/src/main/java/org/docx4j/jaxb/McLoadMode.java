@@ -35,8 +35,7 @@ import org.slf4j.LoggerFactory;
  * replaced by the content of the branch Word reads ({@link McSelection#selectedBranch(McPurpose,
  * AlternateContent) McPurpose.TEXT}: the first Choice docx4j understands, else the Fallback), so
  * the tree holds what Word's holds and a save writes what Word's save writes.  An element with no
- * understood Choice and no Fallback stays whole (WD REQ-305); one with no branch at all is
- * removed.  Each element taken out is kept on the part, with where it stood
+ * understood Choice and no Fallback (WD REQ-305), or no branch at all, is removed.  Each element taken out is kept on the part, with where it stood
  * ({@link org.docx4j.openpackaging.parts.JaxbXmlPart#getResolvedAlternateContent}).</li>
  * <li>{@link #PRESERVE}: the element stays whole in the tree, consumers choose a branch at use
  * (CR-021's rule) and a save writes every branch, at block, row and cell level alike (row and

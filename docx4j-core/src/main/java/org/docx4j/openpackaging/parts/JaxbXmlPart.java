@@ -1277,7 +1277,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		}
 		List<ResolvedAlternateContent> records = McSplice.apply(found, McSplice.WORD_READS);
 		if (records.isEmpty()) {
-			log.info(name + ": " + found.size() + " mc:AlternateContent at block, row or cell level kept whole (no understood Choice and no Fallback, WD REQ-305)");
+			log.info(name + ": " + found.size() + " mc:AlternateContent at block, row or cell level not resolved");
 			return records;
 		}
 		resolvedAlternateContent.addAll(records);

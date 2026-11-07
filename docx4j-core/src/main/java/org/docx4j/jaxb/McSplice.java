@@ -62,13 +62,13 @@ import org.slf4j.LoggerFactory;
  * The splice of CR-051 section 3.2: each {@code mc:AlternateContent} given is replaced, at its
  * index in its live parent's content list, by the content of the branch a rule selects, and a
  * record of it is returned ({@link ResolvedAlternateContent}).  One implementation, two callers:
- * the parts at load, with {@link #WORD_READS} (the branch Word reads, REQ-305's element kept
- * whole); and the exporters' preprocessing step on their copy, with the drawing rule (CR-051 D6).
+ * the parts at load, with {@link #WORD_READS} (the branch Word reads, REQ-305's element taken
+ * out); and the exporters' preprocessing step on their copy, with the drawing rule (CR-051 D6).
  *
  * <p>The elements are applied outermost first, through the live parent.  An element inside a
  * branch this splice discarded, or inside an element it kept whole, is skipped: it stays whole in
  * there, so the record still holds its branches.  An element with no branch at all is removed
- * and recorded.  Content moved out of a branch is re-parented by its new list
+ * and recorded, as is one a rule answers with {@link #NOTHING}.  Content moved out of a branch is re-parented by its new list
  * ({@code ArrayListDocx4j}), so a nested element already answers with its new parent when its
  * turn comes.</p>
  *
@@ -91,23 +91,26 @@ public final class McSplice {
 	public interface Rule {
 		/**
 		 * The {@link AlternateContent.Choice} or {@link AlternateContent.Fallback} whose content
-		 * replaces the element, or null to keep the element whole.  Not asked for an element with
-		 * no branch at all, which the splice removes.
+		 * replaces the element, {@link #NOTHING} to take it out, or null to keep it whole.  Not asked
+		 * for an element with no branch at all, which the splice removes.
 		 */
 		Object select(AlternateContent ac);
 	}
+
+	/** A {@link Rule}'s answer where nothing replaces the element: it is taken out, and recorded with no branch. */
+	public static final Object NOTHING = new Object();
 
 	/**
 	 * The load-time rule (CR-051 section 3.2): the branch Word reads, which is
 	 * {@link McSelection#selectedBranch(McPurpose, AlternateContent) McPurpose.TEXT}'s (the first
 	 * Choice docx4j understands, else the Fallback); an element with no understood Choice and no
-	 * Fallback selects nothing (WD REQ-305) and is kept whole, so a reader finds it absent and a save
-	 * writes it.
+	 * Fallback selects nothing (WD REQ-305) and is taken out, as Word's save leaves it out.
 	 */
 	public static final Rule WORD_READS = new Rule() {
 		@Override
 		public Object select(AlternateContent ac) {
-			return McSelection.selectedBranch(McPurpose.TEXT, ac);
+			Object branch = McSelection.selectedBranch(McPurpose.TEXT, ac);
+			return branch == null ? NOTHING : branch;
 		}
 	};
 
@@ -210,17 +213,16 @@ public final class McSplice {
 			String containerName = elementName(parent, parent instanceof Child ? ((Child) parent).getParent() : null);
 			String address = address(parent);
 
-			if (ac.getChoice().isEmpty() && ac.getFallback() == null) {
-				// no branch at all: nothing shows in any reader; Word's save leaves it out
+			Object branch = ac.getChoice().isEmpty() && ac.getFallback() == null ? NOTHING : rule.select(ac);
+			if (branch == NOTHING) {
+				// no branch at all, or none selected (REQ-305): nothing shows in any reader; Word's save leaves it out
 				list.remove(index);
 				records.add(new ResolvedAlternateContent(ac, null, containerName, address, index, 0));
 				decided.put(ac, Boolean.TRUE);
 				continue;
 			}
-
-			Object branch = rule.select(ac);
 			if (branch == null) {
-				decided.put(ac, Boolean.TRUE); // kept whole (REQ-305 at load)
+				decided.put(ac, Boolean.TRUE); // kept whole
 				continue;
 			}
 			List<Object> content = branch instanceof AlternateContent.Choice

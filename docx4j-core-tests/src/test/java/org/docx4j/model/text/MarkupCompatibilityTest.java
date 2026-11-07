@@ -115,16 +115,29 @@ public class MarkupCompatibilityTest {
 		assertFalse(McSelection.understands(built));
 	}
 
-	/** REQ-305 at block level: the element stays in the tree and reads as absent, so a save writes what the file gave. */
+	/** REQ-305 at block level in word mode: the element is taken out, as Word's save leaves it out, recorded, and still warned of. */
 	@Test
-	public void nothingSelectedStaysForASave() throws Exception {
+	public void nothingSelectedIsTakenOutAtBlockLevel() throws Exception {
 		String hidden = "<mc:AlternateContent xmlns:zz=\"urn:zz\"><mc:Choice Requires=\"zz\"><w:p><w:r><w:t>HIDDEN</w:t></w:r></w:p></mc:Choice></mc:AlternateContent>";
 		WordprocessingMLPackage pkg = MiniDocx.body("<w:p><w:r><w:t>Before</w:t></w:r></w:p>" + hidden + "<w:p><w:r><w:t>After</w:t></w:r></w:p>").load();
 		assertEquals("Before\nAfter\n", text(pkg));
-		assertEquals(3, pkg.getMainDocumentPart().getContent().size());
-		assertTrue(XmlUtils.unwrap(pkg.getMainDocumentPart().getContent().get(1)) instanceof AlternateContent);
-		assertTrue(XmlUtils.marshaltoString(pkg.getMainDocumentPart().getJaxbElement(), true, false).contains("HIDDEN"));
-		assertEquals(TextWarning.MCE_NOTHING_SELECTED, Texts.of(pkg, new TextOptions()).warnings().get(0).getKind());
+		assertEquals(2, pkg.getMainDocumentPart().getContent().size());
+		assertFalse(XmlUtils.marshaltoString(pkg.getMainDocumentPart().getJaxbElement(), true, false).contains("HIDDEN"));
+		assertEquals(1, pkg.getMainDocumentPart().getResolvedAlternateContent().size());
+		assertNull(pkg.getMainDocumentPart().getResolvedAlternateContent().get(0).getBranch());
+		List<TextWarning> warnings = Texts.of(pkg, new TextOptions()).warnings();
+		assertEquals(warnings.toString(), 1, warnings.size());
+		assertEquals(TextWarning.MCE_NOTHING_SELECTED, warnings.get(0).getKind());
+		assertEquals("body/1", warnings.get(0).getAddress());
+		assertEquals("urn:zz", warnings.get(0).getDetail());
+		// a body it left empty: nothing there to find it by, so no address, and the warning stands
+		pkg = MiniDocx.body(hidden).load();
+		warnings = Texts.of(pkg, new TextOptions()).warnings();
+		assertEquals(warnings.toString(), 1, warnings.size());
+		assertEquals(TextWarning.MCE_NOTHING_SELECTED, warnings.get(0).getKind());
+		assertNull(warnings.get(0).getAddress());
+		assertEquals("/word/document.xml", warnings.get(0).getSelector());
+		assertTrue(Texts.of(pkg, new TextOptions().warnings(false)).warnings().isEmpty());
 	}
 
 	/** Where the schema doesn't admit the element, the stylesheet resolves it: a Choice Word understands, else nothing. */

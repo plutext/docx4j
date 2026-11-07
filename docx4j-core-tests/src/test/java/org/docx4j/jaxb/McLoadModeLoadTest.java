@@ -387,9 +387,13 @@ public class McLoadModeLoadTest {
 		assertEquals(1, pkg.getMainDocumentPart().getResolvedAlternateContent().size());
 	}
 
-	/** With no understood Choice and no Fallback (WD REQ-305), nothing is selected: the element stays whole, in both modes, a reader finds it absent, and a save writes it as it came. */
+	/**
+	 * With no understood Choice and no Fallback (WD REQ-305), nothing is selected, and a reader finds the
+	 * element absent in both modes: word mode takes it out and records it, as Word's save leaves it out; preserve
+	 * keeps it whole, and a save writes it as it came.
+	 */
 	@Test
-	public void req305ElementStaysWhole() throws Exception {
+	public void req305ElementByMode() throws Exception {
 		String body = p("before") + "<mc:AlternateContent>"
 				+ "<mc:Choice Requires=\"w99\">" + p("W99") + "</mc:Choice>"
 				+ "<mc:Choice Requires=\"w98\">" + p("W98") + "</mc:Choice>"
@@ -397,15 +401,38 @@ public class McLoadModeLoadTest {
 		for (McLoadMode mode : McLoadMode.values()) {
 			WordprocessingMLPackage pkg = McProbeDocx.body(body).load(mode);
 			List<Object> content = pkg.getMainDocumentPart().getContent();
-			assertEquals(mode + ": the element is still there", 3, content.size());
-			assertTrue(mode.toString(), XmlUtils.unwrap(content.get(1)) instanceof AlternateContent);
-			assertEquals(mode + ": nothing recorded", 0, pkg.getMainDocumentPart().getResolvedAlternateContent().size());
 			String saved = McProbeDocx.entry(McProbeDocx.save(pkg), "word/document.xml");
-			assertTrue(mode + ": both Choices written", saved.contains("Requires=\"w99\"") && saved.contains("Requires=\"w98\""));
-			// and a reader finds it absent (REQ-305)
+			if (mode == McLoadMode.WORD) {
+				assertEquals("the element is gone", 2, content.size());
+				assertEquals("and recorded", 1, pkg.getMainDocumentPart().getResolvedAlternateContent().size());
+				assertNull(pkg.getMainDocumentPart().getResolvedAlternateContent().get(0).getBranch());
+				assertTrue("no Choice written", !saved.contains("Requires="));
+			} else {
+				assertEquals("the element is still there", 3, content.size());
+				assertTrue(XmlUtils.unwrap(content.get(1)) instanceof AlternateContent);
+				assertEquals("nothing recorded", 0, pkg.getMainDocumentPart().getResolvedAlternateContent().size());
+				assertTrue("both Choices written", saved.contains("Requires=\"w99\"") && saved.contains("Requires=\"w98\""));
+			}
 			String text = Texts.plainText(pkg, new TextOptions());
 			assertTrue(text, text.contains("before") && text.contains("after") && !text.contains("W99") && !text.contains("W98"));
+			org.docx4j.model.text.TextWarning w = org.docx4j.model.text.Texts.of(pkg, new TextOptions()).warnings().get(0);
+			assertEquals(mode.toString(), org.docx4j.model.text.TextWarning.MCE_NOTHING_SELECTED, w.getKind());
+			assertEquals(mode.toString(), "urn:example:not-understood urn:example:also-not-understood", w.getDetail());
 		}
+	}
+
+	/** A prefix only the source knows stays declared for a Choice in w:numPicBullet, which no story's walk reaches (CR-052). */
+	@Test
+	public void numPicBulletKeepsAPrefixOnlyTheSourceKnows() throws Exception {
+		String xml = "<w:numbering" + McProbeDocx.NS + "><w:numPicBullet w:numPicBulletId=\"0\"><mc:AlternateContent>"
+				+ "<mc:Choice Requires=\"w99\"><w:pict/></mc:Choice></mc:AlternateContent></w:numPicBullet></w:numbering>";
+		org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart part = new org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart();
+		part.setPackage(WordprocessingMLPackage.createPackage());
+		part.unmarshal(new java.io.ByteArrayInputStream(xml.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+		java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+		part.marshal(out);
+		String saved = out.toString("UTF-8");
+		assertTrue(saved, saved.contains("Requires=\"w99\"") && saved.contains("xmlns:w99="));
 	}
 
 	/** Nested elements resolve outermost first: one in the kept branch is resolved in its new parent, one in a discarded branch stays whole in the record. */
@@ -558,8 +585,7 @@ public class McLoadModeLoadTest {
 			assertTrue(c + ": the content of each", partXml.contains(c.tag + "_W99") && partXml.contains(c.tag + "_W14") && partXml.contains(c.tag + "_FB"));
 			String root = McProbeDocx.rootTag(partXml);
 			assertTrue(c + ": w14 declared on the root: " + root, root.contains("xmlns:w14="));
-			// not for w:docPartBody: McDeclarations' walk doesn't reach a Choice there, so a prefix only the source knows isn't declared on a save
-			if (!c.name.equals("w:docPartBody")) assertTrue(c + ": a prefix only the source knows is declared (CR-052)", partXml.contains("xmlns:w99="));
+			assertTrue(c + ": a prefix only the source knows is declared (CR-052)", partXml.contains("xmlns:w99="));
 
 			WordprocessingMLPackage again = McProbeDocx.roundTrip(pkg, McLoadMode.PRESERVE);
 			assertTrue(c + ": still whole after the round trip", XmlUtils.unwrap(c.locator.content(again).get(1)) instanceof AlternateContent);

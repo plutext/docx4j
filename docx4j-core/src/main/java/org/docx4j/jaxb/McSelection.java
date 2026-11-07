@@ -362,7 +362,7 @@ public final class McSelection {
 	/**
 	 * The branch selected for a purpose: for {@link McPurpose#TEXT}, the first Choice
 	 * {@link #understands understood}, else the Fallback, else nothing, so an element with Choices
-	 * only, none understood, is absent (WD REQ-305; a load keeps it whole, so a save writes it); for
+	 * only, none understood, is absent (WD REQ-305; word mode takes it out at load, as Word's save does); for
 	 * {@link McPurpose#DRAW}, {@link #selectedBranch(AlternateContent)}. Null where nothing is
 	 * selected. {@link McPurpose#ALL} selects every branch: use {@link #branches(McPurpose, AlternateContent)}.
 	 *
