@@ -324,6 +324,7 @@ final class Extractor {
 		if (commentsIncluded()) comments(main, comments);
 
 		nothingSelectedUnreached();
+		undeclaredPrefixes();
 		return new TextResult(out, comments, warnings, metadata, options);
 	}
 
@@ -2278,6 +2279,16 @@ final class Extractor {
 			if (!here.equals(r.getAddress())) continue;
 			recordsMet.add(r);
 			compareBranches(r.getElement(), prefix + "/" + r.getIndex(), story.part);
+		}
+	}
+
+	/** {@code mce.undeclared_prefix}, once for each part the reading read whose mc:Ignorable named an undeclared prefix (REQ-323). */
+	private void undeclaredPrefixes() {
+		if (!options.isWarnings()) return;
+		for (Part part : pkg.getParts().getParts().values()) {
+			if (!(part instanceof JaxbXmlPart)) continue;
+			List<String> undeclared = ((JaxbXmlPart<?>) part).getUndeclaredIgnorable();
+			if (!undeclared.isEmpty()) warn(new TextWarning(TextWarning.MCE_UNDECLARED_PREFIX, null, null, null, partName(part), String.join(" ", undeclared)));
 		}
 	}
 

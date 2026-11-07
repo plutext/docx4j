@@ -134,10 +134,14 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		return document;
 	}
 
-	/** An element nothing binds, in a branch at the root, reads as it does standing as the root (WD REQ-317, mr-40); null where it doesn't. */
+	/**
+	 * An element nothing binds, in a branch at the root, reads as it does standing as the root (WD REQ-317): an unknown one (mr-40),
+	 * and a w:sdt, which arrives under its private name and is given its own back, so that a block one stands as the body (rq-30).
+	 * Null where it reads as no document.
+	 */
 	private org.docx4j.wml.Document documentOf(org.w3c.dom.Element element) {
 		org.w3c.dom.Document source = XmlUtils.neww3cDomDocument();
-		source.appendChild(source.importNode(element, true));
+		source.appendChild(org.docx4j.jaxb.McBranchSdt.restore((org.w3c.dom.Element) source.importNode(element, true)));
 		javax.xml.transform.dom.DOMResult result = new javax.xml.transform.dom.DOMResult();
 		try {
 			XmlUtils.transform(source, org.docx4j.jaxb.JaxbValidationEventHandler.getMcPreprocessor(), preprocessorParameters(), result);
@@ -169,7 +173,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		if (held != null && !(held instanceof org.w3c.dom.Element)) return boundRoot(held);
 		// JAXB knowing the name is what parts a known root from an unknown: their rules differ
 		boolean known = unexpected != null && held == null;
-		org.w3c.dom.Element root = held != null ? org.docx4j.jaxb.McBranchSdt.restore((org.w3c.dom.Element) held) : sourceRoot();
+		org.w3c.dom.Element root = held != null
+				? org.docx4j.jaxb.McBranchSdt.restore((org.w3c.dom.Element) XmlUtils.neww3cDomDocument().importNode((org.w3c.dom.Element) held, true))
+				: sourceRoot();
 		if (root == null || isReadRoot(root) || refusedRoot(root, known)) return null;
 		return root.getNodeName();
 	}
@@ -202,14 +208,31 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 	private static boolean refusedRoot(org.w3c.dom.Element root, boolean known) {
 		String ns = root.getNamespaceURI();
 		if (refusedByName(ns, root.getLocalName())) return true;
-		if (Namespaces.NS_WORD12.equals(ns)) return !known && (holds(root, "document") || holds(root, "r"));
+		if (Namespaces.NS_WORD12.equals(ns)) {
+			// a w:sdtContent JAXB took as a row control's holds rows, which Word refuses (rq-21, rq-22); an empty one was read already
+			if (known) return "sdtContent".equals(root.getLocalName());
+			// a run, or a control of runs, where a body's content stands (rq-11)
+			return holds(root, "document") || holds(root, "r") || holdsRunControl(root);
+		}
 		if (ns != null && org.docx4j.jaxb.McSelection.understoodNamespaces().contains(ns)) return false;
 		return !ignorable(root) && (holds(root, "document") || holds(root, "p"));
 	}
 
 	private static boolean refusedByName(String ns, String local) {
-		return Namespaces.NS_WORD12.equals(ns) && ("footnotes".equals(local) || "endnotes".equals(local) || "tc".equals(local))
+		// w:txbxContent, a text box's content where a body's content stands, as Word refuses it in a branch (rq-31; WD 0.103)
+		return Namespaces.NS_WORD12.equals(ns) && ("footnotes".equals(local) || "endnotes".equals(local) || "tc".equals(local) || "txbxContent".equals(local))
 				|| WORD_2003.equals(ns) && "wordDocument".equals(local) || XML_PACKAGE.equals(ns) && "package".equals(local);
+	}
+
+	/** A w:sdt directly in the element whose w:sdtContent holds a w:r. */
+	private static boolean holdsRunControl(org.w3c.dom.Element root) {
+		for (org.w3c.dom.Node n = root.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n.getNodeType() != org.w3c.dom.Node.ELEMENT_NODE || !Namespaces.NS_WORD12.equals(n.getNamespaceURI()) || !"sdt".equals(n.getLocalName())) continue;
+			for (org.w3c.dom.Node c = n.getFirstChild(); c != null; c = c.getNextSibling()) {
+				if (c.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE && "sdtContent".equals(c.getLocalName()) && holds((org.w3c.dom.Element) c, "r")) return true;
+			}
+		}
+		return false;
 	}
 
 	private static boolean holds(org.w3c.dom.Element root, String local) {
@@ -240,6 +263,10 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		Object root = jaxbElement;
 		if (root == null || root instanceof org.docx4j.wml.Document) return;
 		org.docx4j.wml.Document document = documentOf(root);
+		// an empty w:sdtContent, which JAXB takes as a row control's, is an empty document, as Word reads it (rq-20)
+		if (document == null && root instanceof org.docx4j.wml.CTSdtContentRow && ((org.docx4j.wml.CTSdtContentRow) root).getContent().isEmpty()) {
+			document = (org.docx4j.wml.Document) rootFrom(java.util.Collections.emptyList());
+		}
 		if (document == null) {
 			jaxbElement = null;
 			org.w3c.dom.Element source = sourceRoot();

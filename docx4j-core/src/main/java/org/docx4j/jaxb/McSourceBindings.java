@@ -241,6 +241,25 @@ public final class McSourceBindings {
 		return element == null ? null : RECORDS.get(element);
 	}
 
+	/**
+	 * The prefixes a root's {@code mc:Ignorable} names that the source left undeclared, in attribute order (WD REQ-323); empty
+	 * where nothing was recorded. A declaration on a descendant doesn't count, as the record is of the root's own scope.
+	 *
+	 * @since 17.3.6
+	 */
+	public static List<String> undeclaredIgnorable(Object root) {
+		Map<String, String> record = of(org.docx4j.XmlUtils.unwrap(root));
+		if (record == null) return Collections.emptyList();
+		List<String> out = new ArrayList<String>();
+		for (Map.Entry<String, String> e : record.entrySet()) if (e.getValue() == null) out.add(e.getKey());
+		return out;
+	}
+
+	/** Whether docx4j's prefix table knows the prefix, so a save can declare it with no record of the source's. @since 17.3.6 */
+	public static boolean isKnownPrefix(String prefix) {
+		return McDeclarations.table(prefix) != null;
+	}
+
 	/** The prefixes a Choice's {@code Requires}, {@code mc:Ignorable} and {@code mc:MustUnderstand} name, in that order, each once. */
 	public static List<String> prefixesNamedBy(AlternateContent.Choice choice) {
 		LinkedHashSet<String> all = new LinkedHashSet<String>();

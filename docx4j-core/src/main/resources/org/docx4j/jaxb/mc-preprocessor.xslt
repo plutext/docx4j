@@ -857,7 +857,7 @@
 			     part is measured.  @since 17.3.6 -->
 			<xsl:when test="$mainDocumentPart and *[self::w:sdtContent
 					or (self::w:* and not(contains($wml-names, concat(' ', local-name(), ' ')))
-						and not(*[not(self::w:p or self::w:tbl or self::w:sdt[not(w:sdtContent/w:r)] or self::w:body or self::w:sectPr
+						and not(*[not(self::w:p or self::w:tbl or self::w:sdt[not(w:sdtContent/w:r)] or self::w:body or self::w:sectPr or self::mc:AlternateContent
 							or (self::w:* and not(self::w:sdt) and not(contains($wml-names, concat(' ', local-name(), ' ')))))]))]">
 				<w:document>
 					<xsl:copy-of select="*/@mc:Ignorable" />
@@ -865,6 +865,15 @@
 						<xsl:for-each select="*">
 							<xsl:call-template name="root-content" />
 						</xsl:for-each>
+					</w:body>
+				</w:document>
+			</xsl:when>
+			<!-- a block w:sdt, a body holding it (WD 0.103 REQ-319; rq-30 in a branch): JAXB takes a root w:sdt as a row
+			     control's, which loses its paragraphs -->
+			<xsl:when test="$mainDocumentPart and w:sdt[not(w:sdtContent/w:r)]">
+				<w:document>
+					<w:body>
+						<xsl:apply-templates select="w:sdt" />
 					</w:body>
 				</w:document>
 			</xsl:when>
@@ -1023,6 +1032,13 @@
 			<xsl:choose>
 				<xsl:when test="self::w:body">
 					<xsl:apply-templates select="node()" />
+				</xsl:when>
+				<!-- kept, as under a w:body, so the splice selects the branch Word reads (rq-10); xsl:copy keeps the
+				     namespaces in scope, which a Choice's Requires names -->
+				<xsl:when test="self::mc:AlternateContent">
+					<xsl:copy>
+						<xsl:apply-templates select="@*|node()" />
+					</xsl:copy>
 				</xsl:when>
 				<xsl:when test="self::w:* and not(contains($wml-names, concat(' ', local-name(), ' ')))">
 					<xsl:call-template name="root-content" />

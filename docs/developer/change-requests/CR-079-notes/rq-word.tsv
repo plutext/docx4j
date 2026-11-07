@@ -1,0 +1,11 @@
+file	word	docx4j_text	docx4j_warning
+rq-00-control	silent/0	me=CONTROL WORDS	
+rq-10-madeup-ac	silent/0	me=	part.unexpected_root=/word/document.xml=w:madeUp 
+rq-11-madeup-sdt-runs	refused/1	me=	part.unexpected_root=/word/document.xml=w:madeUp 
+rq-20-sdtcontent-empty	silent/0	me=	part.unexpected_root=/word/document.xml=w:sdtContent 
+rq-21-sdtcontent-rows	refused/1	me=	part.unexpected_root=/word/document.xml=w:sdtContent 
+rq-22-sdtcontent-row-sdt	refused/1	me=	part.unexpected_root=/word/document.xml=w:sdtContent 
+rq-30-branch-sdt	silent/0	me=	part.unexpected_root=/word/document.xml=w:sdt 
+rq-31-branch-txbxcontent	refused/1	me=	part.unexpected_root=/word/document.xml=w:txbxContent 
+rq-32-branch-document-then-hdr	silent/0	me=DOCUMENT WORDS	mce.branches_differ=/word/document.xml=null 
+rq-33-branch-hdr-then-document	silent/0	me=DOCUMENT WORDS	mce.branches_differ=/word/document.xml=null 

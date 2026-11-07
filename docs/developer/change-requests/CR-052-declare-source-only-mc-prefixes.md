@@ -514,3 +514,22 @@ design points the phase 1 brief left open, as decided and measured:
   `Docx4jMarshallerListener` and `XMLStreamWriterWrapper` write a Choice's declarations;
   `CopyUtils` (docx4j-copy) gains the listener. Tests: `McSourcePrefixesTest` (24).
 
+## 10. Addendum, 8 November 2026: a prefix the source left undeclared (WD REQ-323)
+
+Jason: "REQ-318 to REQ-320 and REQ-323 as recommended" (WD 0.103, portfolio eceabd6; the repair policy's section 5). REQ-323: a prefix in
+`mc:Ignorable` with no declaration in scope on the element carrying it names no namespace, is read as though the list didn't hold it,
+and raises `mce.undeclared_prefix` once a part; a part written anew holds none, dropped or declared, and one written from its source
+bytes keeps them. Word repairs such a file and loses nothing (the portfolio's round `undeclared-ignorable`, 13 files twice).
+
+What docx4j did, measured on the `ui-*` files: its reading already matched Word's text on the twelve Word saves. A save of a part read
+declared a prefix the table knows (`w14`), as section 4 has it, and left one it doesn't (`zz9`) undeclared, which Word must repair. And
+`ui-06`, which declares `zz9` on the root, saved with the declaration gone and the token kept: the preprocessor's `xsl:element` carries
+only the namespaces its own names use, so a part sent through it lost the root's other declarations, and this CR's record of them.
+
+Built, uncommitted. `McSourceBindings.undeclaredIgnorable` reads the root's record, a null URI being a prefix the source left
+undeclared. `JaxbXmlPart` keeps them after the read (`getUndeclaredIgnorable()`) and drops from the root's attribute the ones the table
+doesn't know, so a save of the part holds none and declares the rest, at every repair value. `Extractor` warns of them once a part, the
+selector the part, the detail the prefixes. `JaxbXmlPart.keepRootDeclarations` puts the source root's prefixed declarations back on the
+root the preprocessor gives, on the binder path and a caller's DOM, so `ui-06` keeps `zz9` declared and isn't warned of. The StAX path
+for a Strict part, which preprocesses first, isn't covered. `UndeclaredIgnorableTest`, on the 13 files and Word's saves. Word's check on docx4j's saves (Jason: "run docx4j's rq-ui-saves"; the round `rq-ui-saves`, 18 files twice, Word 16.0.20326.20232, bridge 4dcb436, 8 November): all silent, the runs equal; Word's text and PDF of each save the same as its reading of the source, to the pixel, in all 17 with a source, the files Word opened only through a repair now silent; and `ui-05`, whose source Word refuses, opens from docx4j's save with the text docx4j reads.
+

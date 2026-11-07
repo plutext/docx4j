@@ -648,6 +648,7 @@ implements XPathEnabled<E> {
 					
 					Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
 					XmlUtils.transform(doc, mcPreprocessorXslt, preprocessorParameters(), result);
+					keepRootDeclarations(doc, result.getNode()); // WD REQ-323
 					
 					doc = (org.w3c.dom.Document)result.getNode();
 					
@@ -824,6 +825,7 @@ implements XPathEnabled<E> {
 					Templates mcPreprocessorXslt = JaxbValidationEventHandler
 							.getMcPreprocessor();
 					XmlUtils.transform(doc, mcPreprocessorXslt, preprocessorParameters(), result);
+					keepRootDeclarations(doc, result.getNode()); // WD REQ-323
 					doc = (org.w3c.dom.Document) result.getNode();
 					// a fresh listener: the failed attempt's holds records from a tree now discarded (CR-051 section 3.2)
 					Docx4jUnmarshallerListener retryListener = new Docx4jUnmarshallerListener(this);

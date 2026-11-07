@@ -94,6 +94,13 @@ public final class TextWarning {
 	 * @since 17.3.6 (CR-079)
 	 */
 	public static final String PART_UNEXPECTED_ROOT = "part.unexpected_root";
+	/**
+	 * A part's {@code mc:Ignorable} names a prefix with no declaration in scope, read as though it didn't (REQ-323). Its selector is the
+	 * part's name; {@link #getDetail()} the prefixes, separated by spaces. Once a part.
+	 *
+	 * @since 17.3.6
+	 */
+	public static final String MCE_UNDECLARED_PREFIX = "mce.undeclared_prefix";
 
 	private final String kind;
 	private final String address;

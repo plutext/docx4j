@@ -197,6 +197,57 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		return null;
 	}
 
+	private List<String> undeclaredIgnorable = Collections.emptyList();
+
+	/**
+	 * The prefixes the root's {@code mc:Ignorable} named with no declaration in scope, as the source had them (WD REQ-323): they name
+	 * no namespace, so the read treats the list as not holding them, and the text model warns of them, {@code mce.undeclared_prefix}.
+	 * One docx4j doesn't know is dropped from the attribute at the read, so a save of the part holds none; one it knows, {@code w14}
+	 * say, a save declares. A part never read is saved from its source bytes, which keep them. Empty until the part is read.
+	 *
+	 * @since 17.3.6
+	 */
+	public List<String> getUndeclaredIgnorable() {
+		return undeclaredIgnorable;
+	}
+
+	/** After a read: what {@link #getUndeclaredIgnorable()} reports, and the unknown ones out of the root's attribute. */
+	private void readUndeclaredIgnorable() {
+		List<String> undeclared = org.docx4j.jaxb.McSourceBindings.undeclaredIgnorable(jaxbElement);
+		if (undeclared.isEmpty()) return;
+		undeclaredIgnorable = Collections.unmodifiableList(undeclared);
+		Object root = XmlUtils.unwrap(jaxbElement);
+		String ignorable = org.docx4j.jaxb.NamespacePrefixMapperUtils.ignorableOf(root);
+		StringBuilder kept = new StringBuilder();
+		for (String p : org.docx4j.jaxb.McSourceBindings.prefixes(ignorable)) {
+			if (undeclared.contains(p) && !org.docx4j.jaxb.McSourceBindings.isKnownPrefix(p)) continue;
+			kept.append(kept.length() == 0 ? "" : " ").append(p);
+		}
+		try {
+			root.getClass().getMethod("setIgnorable", String.class).invoke(root, kept.length() == 0 ? null : kept.toString());
+		} catch (ReflectiveOperationException e) {
+			log.warn(getPartName() + ": couldn't set mc:Ignorable: " + e);
+		}
+		log.warn(getPartName() + ": mc:Ignorable names " + undeclared + " with no declaration in scope, read as though it didn't (WD REQ-323)");
+	}
+
+	/**
+	 * The source root's prefixed namespace declarations, put back on the root the preprocessor gave, which carries only those its
+	 * own names use: so a prefix mc:Ignorable names stays declared (WD REQ-323, ui-06). @since 17.3.6
+	 */
+	protected static void keepRootDeclarations(org.w3c.dom.Document source, org.w3c.dom.Node result) {
+		org.w3c.dom.Element from = source == null ? null : source.getDocumentElement();
+		org.w3c.dom.Element to = result instanceof org.w3c.dom.Document ? ((org.w3c.dom.Document) result).getDocumentElement() : null;
+		if (from == null || to == null) return;
+		org.w3c.dom.NamedNodeMap attributes = from.getAttributes();
+		for (int i = 0; i < attributes.getLength(); i++) {
+			org.w3c.dom.Node a = attributes.item(i);
+			if (!javax.xml.XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(a.getNamespaceURI()) || "xmlns".equals(a.getNodeName())) continue;
+			String prefix = a.getLocalName();
+			if (to.lookupNamespaceURI(prefix) == null) to.setAttributeNS(javax.xml.XMLConstants.XMLNS_ATTRIBUTE_NS_URI, "xmlns:" + prefix, a.getNodeValue());
+		}
+	}
+
 	/** The parameters of the preprocessing stylesheet for this part; none here. @since 17.3.6 */
 	protected Map<String, Object> preprocessorParameters() {
 		return null;
@@ -275,6 +326,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 						log.debug("Lazily unmarshalling " + name);
 					}
 					unmarshal( is );
+					readUndeclaredIgnorable();
 				}
 			} catch (JAXBException e) {
 				unreadable = new Docx4JException("Problem with part " + this.getPartName(), e);
@@ -332,6 +384,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		this.jaxbElement = jaxbElement;
 		this.unreadable = null; // an explicit replacement is the caller's decision
 		this.unexpectedRoot = null;
+		this.undeclaredIgnorable = Collections.emptyList();
 	}
 	/**
 	 * Set the  contents of this part.

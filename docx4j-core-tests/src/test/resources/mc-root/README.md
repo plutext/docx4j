@@ -12,3 +12,4 @@ opened through a repair, in a job that left no save. Each was run twice, and CR-
 | `mu-` | `madeup` | docx4j-core-ts |
 | `mr-` | `madeup-root`, `w:madeUp` holding each kind of content | docx4j, `../../../../../docs/developer/change-requests/CR-079-notes/build_mr.py` |
 | `c79-` | `cr079-phase0` | docx4j, `CR-079-notes/build_phase0.py` |
+| `rq-` | `cr079-root-questions`, the questions Fable's review left | docx4j, `CR-079-notes/build_rq.py` |

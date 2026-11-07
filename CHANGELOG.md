@@ -150,6 +150,11 @@ Changes in Version 17.3.6
   A root `w:body`, `w:p` or `w:sdtContent`, or an unknown `w:` root holding block content, reads as a document, as Word's does. A root Word refuses is refused, naming it; one it opens and
   shows nothing of gives no text and `part.unexpected_root`; a save of either keeps its bytes, and an inspection of a main part that can't be read is `PARTIAL` (CR-079).
 - The text model refuses a package with no main document part, where it gave no text.
+- A main part's root reads as Word's round `rq-*` has it (WD 0.103): an unknown root holding `mc:AlternateContent` reads the branch Word reads, and a block `w:sdt`,
+  as the root or in a branch at it, reads as the body; an empty `w:sdtContent` root is an empty document; a run or a row where a body's content stands, and
+  `w:txbxContent`, are refused.
+- A prefix in `mc:Ignorable` with no declaration in scope is warned of, `mce.undeclared_prefix`, and a part written anew drops it where docx4j doesn't know its
+  namespace, as Word's repair does, and declares it where it does (WD REQ-323). A part the preprocessor rewrites keeps its root's other namespace declarations.
 - A package with an `External` `officeDocument` relationship beside an internal one is refused, naming it, under `RepairMode.WORD` too, as Word refuses it even through a repair.
   One with no internal one is refused as having no main part, where the URL was taken for a part name.
 - `RepairMode.ALL` (`docx4j.openpackaging.load.repair=all`) follows Word's repairs and makes docx4j's own of shapes Word won't open, listed in its javadoc. The first: an

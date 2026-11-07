@@ -71,12 +71,14 @@ public class MainPartRootTest {
 
 	/** Word reads each as a document (REQ-319, and REQ-317 for mr-40). */
 	private static final String[] READ = { "mr-01-madeup-p", "mr-10-two-p", "mr-11-p-sectpr", "mr-12-tbl", "mr-13-sdt", "mr-15-body", "mr-16-empty", "mr-17-nested",
-			"mr-18-p-properties", "mr-30-sdtcontent-p", "mr-32-p-root", "mr-40-branch-madeup-p", "mr-50-madeup-p-styles", "mu-12-foo-holding-p", "or-31-madeup", "or-32-body" };
+			"mr-18-p-properties", "mr-30-sdtcontent-p", "mr-32-p-root", "mr-40-branch-madeup-p", "mr-50-madeup-p-styles", "mu-12-foo-holding-p", "or-31-madeup", "or-32-body",
+			"rq-10-madeup-ac", "rq-20-sdtcontent-empty", "rq-30-branch-sdt", "rq-32-branch-document-then-hdr", "rq-33-branch-hdr-then-document" };
 
 	/** Word refuses each (REQ-318). */
 	private static final String[] REFUSED = { "mr-03-foo-document", "mr-14-run", "mr-20-other-namespace-p", "mr-21-no-namespace-p", "mr-31-tc-p",
 			"mu-10-madeup-one-document", "mu-11-madeup-two-documents", "or-12-footnotes", "or-13-endnotes", "or-15-footnotes-bare",
-			"rw-10-foo-two-documents", "rw-11-zfoo-two-documents", "rw-12-wfoo-two-documents", "rw-13-foo-one-document" };
+			"rw-10-foo-two-documents", "rw-11-zfoo-two-documents", "rw-12-wfoo-two-documents", "rw-13-foo-one-document",
+			"rq-11-madeup-sdt-runs", "rq-21-sdtcontent-rows", "rq-22-sdtcontent-row-sdt", "rq-31-branch-txbxcontent" };
 
 	/** Word opens each and shows nothing of it (REQ-320), and the root each names. or-14 is through Word's repair. */
 	private static final String[][] BLANK = { { "or-10-hdr", "w:hdr" }, { "or-11-ftr", "w:ftr" }, { "or-14-comments", "w:comments" }, { "or-30-styles", "w:styles" },
@@ -170,6 +172,9 @@ public class MainPartRootTest {
 		assertEquals("NESTED WORDS", text(load("mr-17-nested")));
 		assertEquals("SDTCONTENT WORDS", text(load("mr-30-sdtcontent-p")));
 		assertEquals("CHOICE WORDS", text(load("mr-40-branch-madeup-p")));
+		assertEquals("CHOICE WORDS", text(load("rq-10-madeup-ac")));
+		assertEquals("BRANCH CONTROL WORDS", text(load("rq-30-branch-sdt")));
+		assertTrue(load("rq-20-sdtcontent-empty").getMainDocumentPart().getContent().isEmpty());
 	}
 
 	/** A part that was read saves as a document, which reads the same. */
@@ -306,22 +311,31 @@ public class MainPartRootTest {
 	/** A bound element that can't be marshalled on its own is named all the same, where the read threw, and only the second call refused. */
 	@Test
 	public void aBranchHoldingWhatCantBeMarshalledIsBlank() throws Exception {
-		assertBlank("w:txbxContent", inAChoice("<w:txbxContent>" + ONE_P + "</w:txbxContent>"));
+		assertBlank("w:recipients", inAChoice("<w:recipients/>"));
 	}
 
-	/** REQ-801: the root's name, not the private one a w:sdt directly in a branch has while it's read. */
+	/** REQ-801: the root's name, not the private one a w:sdt directly in a branch has while it's read. A control of runs there is REQ-320's, unmeasured. */
 	@Test
 	public void aBranchSdtKeepsItsName() throws Exception {
-		assertBlank("w:sdt", inAChoice("<w:sdt><w:sdtContent>" + ONE_P + "</w:sdtContent></w:sdt>"));
+		assertBlank("w:sdt", inAChoice("<w:sdt><w:sdtContent><w:r><w:t>WORDS</w:t></w:r></w:sdtContent></w:sdt>"));
 	}
 
-	/** REQ-319's list as written: mc:AlternateContent isn't on it, and a w:sdt holding runs isn't a block one. Neither reads, and neither loses words on a save. */
+	/** A Choice's Requires resolves through what the element declares for itself, as it is kept whole (rq-10's reading). */
 	@Test
-	public void theListIsREQ319s() throws Exception {
-		assertBlank("w:madeUp", withRoot("<w:madeUp " + MC + " " + W + "><mc:AlternateContent><mc:Choice Requires=\"w14\">" + ONE_P
-				+ "</mc:Choice><mc:Fallback>" + ONE_P + "</mc:Fallback></mc:AlternateContent></w:madeUp>"));
-		WordprocessingMLPackage runs = withRoot("<w:madeUp " + W + "><w:sdt><w:sdtContent><w:r><w:t>WORDS</w:t></w:r></w:sdtContent></w:sdt></w:madeUp>");
-		assertBlank("w:madeUp", runs);
+	public void anElementKeptInAnUnknownRootKeepsItsNamespaces() throws Exception {
+		String xx14 = "xmlns:xx14=\"http://schemas.microsoft.com/office/word/2010/wordml\"";
+		assertRead("CHOICE", withRoot("<w:madeUp xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" " + W
+				+ "><mc:AlternateContent " + xx14 + "><mc:Choice Requires=\"xx14\"><w:p><w:r><w:t>CHOICE</w:t></w:r></w:p></mc:Choice>"
+				+ "<mc:Fallback><w:p><w:r><w:t>FALLBACK</w:t></w:r></w:p></mc:Fallback></mc:AlternateContent></w:madeUp>"));
+	}
+
+	/** WD 0.103's roots, which REQ-317 makes a branch's too: w:txbxContent refused, a block w:sdt a body holding it, and one of runs REQ-320's. */
+	@Test
+	public void theRootsWD0103Adds() throws Exception {
+		assertRefused(withRoot("<w:txbxContent " + W + ">" + ONE_P + "</w:txbxContent>"));
+		assertRead("WORDS", withRoot("<w:sdt " + W + "><w:sdtContent>" + ONE_P + "</w:sdtContent></w:sdt>"));
+		WordprocessingMLPackage runs = withRoot("<w:sdt " + W + "><w:sdtContent><w:r><w:t>WORDS</w:t></w:r></w:sdtContent></w:sdt>");
+		assertBlank("w:sdt", runs);
 		assertTrue(new String(entry(saved(runs), "word/document.xml"), "UTF-8").contains("WORDS"));
 	}
 
@@ -347,6 +361,23 @@ public class MainPartRootTest {
 		for (org.docx4j.model.text.InspectFinding f : i.findings()) found |= "mce.branch".equals(f.getKind()) && f.getExcerpt().contains("FALLBACK WORDS");
 		assertTrue(i.findings().toString(), found);
 		assertEquals(Inspection.Status.COMPLETE, i.status());
+	}
+
+	/** REQ-317 takes REQ-318 into a branch: a root refused by its name is refused there too. */
+	@Test
+	public void aRootRefusedByNameInABranchIsRefused() throws Exception {
+		assertRefused(inAChoice("<w:tc>" + ONE_P + "</w:tc>"));
+	}
+
+	/** The inspector counts what the branch read holds once: it stands in the body, and the restored element's copy of it is emptied. */
+	@Test
+	public void anInspectionCountsTheBranchReadOnce() throws Exception {
+		Inspection i = Inspect.of(withRoot("<mc:AlternateContent " + MC + " " + W + "><mc:Choice Requires=\"w14\"><w:document><w:body><w:p><w:r><w:rPr><w:vanish/></w:rPr>"
+				+ "<w:t>HIDDEN</w:t></w:r></w:p></w:body></w:document></mc:Choice><mc:Fallback><w:document><w:body>" + ONE_P
+				+ "</w:body></w:document></mc:Fallback></mc:AlternateContent>"));
+		int hidden = 0;
+		for (org.docx4j.model.text.InspectFinding f : i.findings()) if ("text.hidden".equals(f.getKind())) hidden++;
+		assertEquals(i.findings().toString(), 1, hidden);
 	}
 
 	/** What a join moves has the document it moved to as its parent. */
