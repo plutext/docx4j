@@ -5,12 +5,6 @@ http://schemas.openxmlformats.org/officeDocument/2006/math
 http://schemas.openxmlformats.org/officeDocument/2006/bibliography
 http://schemas.openxmlformats.org/officeDocument/2006/customXml
 http://schemas.openxmlformats.org/schemaLibrary/2006/main
-http://schemas.openxmlformats.org/officeDocument/2006/extended-properties
-http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes
-http://schemas.openxmlformats.org/package/2006/metadata/core-properties
-http://purl.org/dc/elements/1.1/
-http://purl.org/dc/terms/
-http://schemas.microsoft.com/office/2006/coverPageProps
 http://schemas.microsoft.com/office/2006/xmlPackage
 http://schemas.openxmlformats.org/drawingml/2006/main
 http://schemas.openxmlformats.org/drawingml/2006/picture
@@ -47,8 +41,6 @@ http://schemas.microsoft.com/office/thememl/2012/main
 urn:schemas-microsoft-com:vml
 urn:schemas-microsoft-com:office:office
 urn:schemas-microsoft-com:office:word
-urn:schemas-microsoft-com:office:excel
-urn:schemas-microsoft-com:office:powerpoint
 http://schemas.microsoft.com/office/word/2006/wordml
 http://schemas.microsoft.com/office/word/2010/wordml
 http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas
@@ -81,7 +73,6 @@ http://schemas.microsoft.com/office/powerpoint/2018/4/main
 http://schemas.openxmlformats.org/presentationml/2006/main
 http://schemas.openxmlformats.org/spreadsheetml/2006/main
 http://schemas.microsoft.com/office/excel/2006/main
-http://schemas.microsoft.com/office/excel/2008/2/main
 http://schemas.microsoft.com/office/excel/2010/spreadsheetDrawing
 http://schemas.microsoft.com/office/spreadsheetml/2009/9/main
 http://schemas.microsoft.com/office/spreadsheetml/2010/11/main
@@ -93,11 +84,7 @@ http://schemas.microsoft.com/office/spreadsheetml/2018/calcfeatures
 http://schemas.microsoft.com/ink/2010/main
 http://www.w3.org/1998/Math/MathML
 http://www.w3.org/2003/InkML
-http://schemas.microsoft.com/office/2006/encryption
-http://schemas.microsoft.com/office/2006/keyEncryptor/certificate
-http://schemas.microsoft.com/office/2006/keyEncryptor/password
 http://schemas.openxmlformats.org/officeDocument/2006/relationships
-http://schemas.openxmlformats.org/officeDocument/2006/custom-properties
 http://schemas.microsoft.com/office/drawing/2012/chartStyle
 http://schemas.microsoft.com/office/drawing/2016/ink
 http://schemas.microsoft.com/office/drawing/2010/slicer
@@ -116,3 +103,12 @@ http://schemas.microsoft.com/office/spreadsheetml/2016/revision6
 http://schemas.microsoft.com/office/spreadsheetml/2016/revision9
 http://schemas.microsoft.com/office/spreadsheetml/2016/revision10
 http://schemas.microsoft.com/office/spreadsheetml/2017/revision16
+http://schemas.microsoft.com/office/word/2010/wordprocessingInk
+http://schemas.microsoft.com/office/2019/extlst
+http://schemas.microsoft.com/office/drawing/2016/5/9/chartex
+http://schemas.microsoft.com/office/drawing/2016/5/10/chartex
+http://schemas.microsoft.com/office/drawing/2016/5/12/chartex
+http://schemas.microsoft.com/office/drawing/2016/5/13/chartex
+http://schemas.microsoft.com/office/drawing/2015/06/chart
+http://schemas.microsoft.com/office/2006/activeX
+http://www.w3.org/2001/XMLSchema-instance

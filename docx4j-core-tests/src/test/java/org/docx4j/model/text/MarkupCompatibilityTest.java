@@ -111,6 +111,41 @@ public class MarkupCompatibilityTest {
 		assertFalse(McSelection.understands(built));
 	}
 
+	/** REQ-306: a namespace Word was measured to understand, in the published set, takes its Choice over the Fallback, by URI. */
+	@Test
+	public void namespacesWordUnderstandsTakeTheChoice() throws Exception {
+		String[][] measured = {
+				{ "wpi", "http://schemas.microsoft.com/office/word/2010/wordprocessingInk" },
+				{ "oel", "http://schemas.microsoft.com/office/2019/extlst" },
+				{ "cx3", "http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" },
+				{ "cx4", "http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" },
+				{ "cx6", "http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" },
+				{ "cx7", "http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" },
+				{ "c16r2", "http://schemas.microsoft.com/office/drawing/2015/06/chart" },
+				{ "ax", "http://schemas.microsoft.com/office/2006/activeX" },
+				{ "xsi", "http://www.w3.org/2001/XMLSchema-instance" } };
+		for (String[] ns : measured) {
+			assertTrue(ns[0], McSelection.understoodNamespaces().contains(ns[1]));
+			WordprocessingMLPackage pkg = MiniDocx.body(ac(" xmlns:" + ns[0] + "=\"" + ns[1] + "\"", choice(ns[0], "CHOICE") + fallback("FALLBACK"))).load();
+			assertEquals(ns[0], "Before CHOICE\n", text(pkg));
+			AlternateContent ac = firstAc(pkg);
+			assertTrue(ns[0], McSelection.selectedBranch(McPurpose.DRAW, ac) == ac.getFallback()); // drawing keeps its own rule
+		}
+		// measured as ones Word doesn't understand, cx5 and cx8 though it declares them on its roots: the Fallback
+		for (String uri : new String[] { "http://schemas.microsoft.com/office/drawing/2016/5/11/chartex", "http://schemas.microsoft.com/office/drawing/2016/5/14/chartex",
+				"http://schemas.microsoft.com/office/mac/office/2008/main", "http://schemas.microsoft.com/office/word/2006/arto", "http://purl.org/dc/dcmitype/",
+				// and three of the 13 a reader can traverse in their own parts
+				"http://purl.org/dc/elements/1.1/", "urn:schemas-microsoft-com:office:excel", "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" }) {
+			assertFalse(uri, McSelection.understoodNamespaces().contains(uri));
+			assertEquals(uri, "Before FALLBACK\n", text(MiniDocx.body(ac(" xmlns:qq=\"" + uri + "\"", choice("qq", "CHOICE") + fallback("FALLBACK"))).load()));
+		}
+		// a different prefix for the same namespace is the same namespace, and the same prefix for another isn't (REQ-303)
+		WordprocessingMLPackage pkg = MiniDocx.body(ac(" xmlns:qq=\"" + measured[0][1] + "\"", choice("qq", "CHOICE") + fallback("FALLBACK"))).load();
+		assertEquals("Before CHOICE\n", text(pkg));
+		pkg = MiniDocx.body(ac(" xmlns:wpi=\"urn:zz\"", choice("wpi", "CHOICE") + fallback("FALLBACK"))).load();
+		assertEquals("Before FALLBACK\n", text(pkg));
+	}
+
 	/** REQ-305: Choices only, none understood: the element is kept whole at load, and its first Choice read. */
 	@Test
 	public void choicesOnlyReadFromTheFirst() throws Exception {

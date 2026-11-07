@@ -51,7 +51,8 @@ public final class McProbeDocx {
 			+ " xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
 			+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
 			+ " xmlns:v=\"urn:schemas-microsoft-com:vml\""
-			+ " xmlns:w99=\"urn:example:not-understood\"";
+			+ " xmlns:w99=\"urn:example:not-understood\""
+			+ " xmlns:w98=\"urn:example:also-not-understood\"";
 
 	private final Map<String, String> parts = new LinkedHashMap<String, String>();
 	private final StringBuilder types = new StringBuilder();

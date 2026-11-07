@@ -95,6 +95,7 @@ Changes in Version 17.3.6
 - `w:stylePaneFormatFilter` keeps its fifteen attributes on a save, where only `w:val` survived.
   `CTSettings.getStylePaneFormatFilter()` now returns a `CTStylePaneFilter`, not a `CTShortHexNumber`.
   Word reads `w:val` only with no attribute beside it, so on a file that has them `setVal` alone no longer changes what Word reads (CR-078).
+- `understood-namespaces.txt` is now what Word was measured to understand, 114 URIs: text takes a Choice requiring `wpi`, `oel`, `cx3`, `cx4`, `cx6`, `cx7`, `c16r2`, `ax` or `xsi`, where it took the Fallback, and the Fallback where a Choice requires one of 13 Word doesn't understand. What a reader can reach is in `traversal-namespaces.txt`.
 
 **Java 25.**
 - docx4j sets its own XML element-depth limit, 256 (`docx4j.xml.maxElementDepth`, 0 for none), on the parsers it

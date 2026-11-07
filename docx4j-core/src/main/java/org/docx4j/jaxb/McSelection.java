@@ -225,9 +225,10 @@ public final class McSelection {
 	private static volatile Set<String> understood;
 
 	/**
-	 * The understood set a reader of text selects with (WD REQ-306): the namespaces whose content
-	 * docx4j's reader can reach, as published in {@value #UNDERSTOOD_NAMESPACES_RESOURCE}, which the
-	 * docx4j family's ports copy. Unmodifiable, in the file's order.
+	 * The understood set a reader of text selects with (WD REQ-306): the namespaces Word was
+	 * measured to understand, as published in {@value #UNDERSTOOD_NAMESPACES_RESOURCE}, which the
+	 * docx4j family's ports copy. What a reader can reach is the traversal set beside it, which no
+	 * selection reads. Unmodifiable, in the file's order.
 	 *
 	 * @since 17.3.4 (CR-046 phase 1)
 	 */

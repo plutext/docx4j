@@ -39,8 +39,8 @@ import jakarta.xml.bind.JAXBContext;
 import org.junit.Test;
 
 /**
- * The published understood set (WD REQ-306; CR-046 section 2.2): its format, docx4j's set equal to
- * it, and every namespace docx4j's reader can reach in it.
+ * The published sets (WD REQ-306; CR-046 section 2.2): their format, docx4j's understood set equal to
+ * its file, every namespace docx4j's reader can reach in the traversal set, and what separates the two.
  */
 public class UnderstoodNamespacesTest {
 
@@ -51,8 +51,10 @@ public class UnderstoodNamespacesTest {
 			"http://opendope.org/answers", "http://opendope.org/components", "http://opendope.org/conditions",
 			"http://opendope.org/questions", "http://opendope.org/xpaths", "http://opendope.org/SmartArt/DataHierarchy"));
 
-	private static List<String> lines() throws Exception {
-		try (InputStream is = McSelection.class.getClassLoader().getResourceAsStream(McSelection.UNDERSTOOD_NAMESPACES_RESOURCE)) {
+	private static final String TRAVERSAL_NAMESPACES_RESOURCE = "org/docx4j/jaxb/traversal-namespaces.txt";
+
+	private static List<String> lines(String resource) throws Exception {
+		try (InputStream is = McSelection.class.getClassLoader().getResourceAsStream(resource)) {
 			String text = new String(is.readAllBytes(), StandardCharsets.UTF_8);
 			assertTrue("ends with LF", text.endsWith("\n"));
 			assertTrue("LF only", !text.contains("\r"));
@@ -63,25 +65,49 @@ public class UnderstoodNamespacesTest {
 	/** One absolute URI per line, no blank lines, no duplicates; the set docx4j selects with is exactly the file's. */
 	@Test
 	public void publishedListIsTheSet() throws Exception {
-		List<String> lines = lines();
-		Set<String> seen = new LinkedHashSet<String>();
-		for (String line : lines) {
-			assertTrue("blank or padded line: '" + line + "'", !line.isEmpty() && line.equals(line.trim()));
-			assertTrue("not absolute: " + line, new URI(line).isAbsolute());
-			assertTrue("duplicate: " + line, seen.add(line));
-		}
+		Set<String> seen = wellFormed(McSelection.UNDERSTOOD_NAMESPACES_RESOURCE);
+		wellFormed(TRAVERSAL_NAMESPACES_RESOURCE);
 		assertEquals(new ArrayList<String>(seen), new ArrayList<String>(McSelection.understoodNamespaces()));
 		assertTrue(McSelection.understoodNamespaces().contains("http://schemas.microsoft.com/office/word/2010/wordprocessingShape"));
 		assertTrue(McSelection.understoodNamespaces().contains("urn:schemas-microsoft-com:vml"));
 	}
 
+	private static Set<String> wellFormed(String resource) throws Exception {
+		Set<String> seen = new LinkedHashSet<String>();
+		for (String line : lines(resource)) {
+			assertTrue("blank or padded line: '" + line + "'", !line.isEmpty() && line.equals(line.trim()));
+			assertTrue("not absolute: " + line, new URI(line).isAbsolute());
+			assertTrue("duplicate: " + line, seen.add(line));
+		}
+		return seen;
+	}
+
+	/** REQ-306: the sets differ by what was measured: 13 a reader reaches that Word doesn't understand, 9 the other way about. */
+	@Test
+	public void theSetsDifferByWhatWordUnderstands() throws Exception {
+		Set<String> traversal = new LinkedHashSet<String>(lines(TRAVERSAL_NAMESPACES_RESOURCE));
+		Set<String> understood = McSelection.understoodNamespaces();
+		assertEquals(114, understood.size());
+		assertEquals(118, traversal.size());
+		Set<String> readerOnly = new TreeSet<String>(traversal);
+		readerOnly.removeAll(understood);
+		assertEquals(13, readerOnly.size());
+		assertTrue(readerOnly.contains("http://purl.org/dc/elements/1.1/"));
+		assertTrue(readerOnly.contains("http://schemas.microsoft.com/office/2006/encryption"));
+		Set<String> wordOnly = new TreeSet<String>(understood);
+		wordOnly.removeAll(traversal);
+		assertEquals(9, wordOnly.size());
+		assertTrue(wordOnly.contains("http://schemas.microsoft.com/office/word/2010/wordprocessingInk"));
+		assertTrue(wordOnly.contains("http://www.w3.org/2001/XMLSchema-instance"));
+	}
+
 	/**
-	 * REQ-306: the set includes every namespace docx4j's reader can traverse, which is every namespace
+	 * REQ-306: the traversal set includes every namespace docx4j's reader can traverse, which is every namespace
 	 * its JAXB contexts bind but those that never hold document content. Measured through the
 	 * reference implementation's known namespaces.
 	 */
 	@Test
-	public void everyBoundNamespaceIsUnderstood() throws Exception {
+	public void everyBoundNamespaceIsInTheTraversalSet() throws Exception {
 		Set<String> bound = new TreeSet<String>();
 		for (Class<?> c : new Class<?>[] { Context.class, org.pptx4j.jaxb.Context.class, org.xlsx4j.jaxb.Context.class }) {
 			for (java.lang.reflect.Field f : c.getFields()) {
@@ -100,8 +126,8 @@ public class UnderstoodNamespacesTest {
 			}
 		}
 		Set<String> missing = new TreeSet<String>(bound);
-		missing.removeAll(McSelection.understoodNamespaces());
+		missing.removeAll(lines(TRAVERSAL_NAMESPACES_RESOURCE));
 		missing.removeAll(NOT_DOCUMENT_CONTENT);
-		assertTrue("bound but not in the published understood set (add them there first): " + missing, missing.isEmpty());
+		assertTrue("bound but not in the published traversal set (add them there first): " + missing, missing.isEmpty());
 	}
 }

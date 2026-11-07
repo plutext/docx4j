@@ -66,7 +66,7 @@ import org.junit.Test;
  * ("preserve mode"); the load option and the package-level override win over the property
  * ("both modes").
  *
- * <p>Each probe's element has three branches: a Choice requiring {@code wpi}, which docx4j does
+ * <p>Each probe's element has three branches: a Choice requiring {@code w99}, which docx4j does
  * not understand, a Choice requiring {@code w14}, which it does, and a Fallback; each branch
  * holds one block (or row, or cell) with a marker text, so the content at the element's index
  * says which branch was promoted.</p>
@@ -95,10 +95,10 @@ public class McLoadModeLoadTest {
 		}
 	}
 
-	/** The three-branch element: a wpi Choice (not understood), a w14 Choice (understood) and a Fallback. */
+	/** The three-branch element: a w99 Choice (not understood), a w14 Choice (understood) and a Fallback. */
 	private static String ac(Kind kind, String tag) {
 		return "<mc:AlternateContent>"
-				+ "<mc:Choice Requires=\"wpi\">" + block(kind, tag + "_WPI") + "</mc:Choice>"
+				+ "<mc:Choice Requires=\"w99\">" + block(kind, tag + "_W99") + "</mc:Choice>"
 				+ "<mc:Choice Requires=\"w14\">" + block(kind, tag + "_W14") + "</mc:Choice>"
 				+ "<mc:Fallback>" + block(kind, tag + "_FB") + "</mc:Fallback>"
 				+ "</mc:AlternateContent>";
@@ -370,7 +370,7 @@ public class McLoadModeLoadTest {
 			String text = Texts.plainText(pkg, options);
 			assertTrue(c + ": " + text, text.contains(c.tag + "_W14"));
 			assertFalse(c + ": " + text, text.contains(c.tag + "_FB"));
-			assertFalse(c + ": " + text, text.contains(c.tag + "_WPI"));
+			assertFalse(c + ": " + text, text.contains(c.tag + "_W99"));
 		}
 	}
 
@@ -378,7 +378,7 @@ public class McLoadModeLoadTest {
 	@Test
 	public void noFallbackTakesTheUnderstoodChoice() throws Exception {
 		WordprocessingMLPackage pkg = McProbeDocx.body(p("before") + "<mc:AlternateContent>"
-				+ "<mc:Choice Requires=\"wpi\">" + p("WPI") + "</mc:Choice>"
+				+ "<mc:Choice Requires=\"w99\">" + p("W99") + "</mc:Choice>"
 				+ "<mc:Choice Requires=\"w14\">" + p("W14") + "</mc:Choice>"
 				+ "</mc:AlternateContent>" + p("after")).load(McLoadMode.WORD);
 		List<Object> content = pkg.getMainDocumentPart().getContent();
@@ -392,7 +392,7 @@ public class McLoadModeLoadTest {
 	public void req305ElementStaysWhole() throws Exception {
 		String body = p("before") + "<mc:AlternateContent>"
 				+ "<mc:Choice Requires=\"w99\">" + p("W99") + "</mc:Choice>"
-				+ "<mc:Choice Requires=\"wpi\">" + p("WPI") + "</mc:Choice>"
+				+ "<mc:Choice Requires=\"w98\">" + p("W98") + "</mc:Choice>"
 				+ "</mc:AlternateContent>" + p("after");
 		for (McLoadMode mode : McLoadMode.values()) {
 			WordprocessingMLPackage pkg = McProbeDocx.body(body).load(mode);
@@ -401,7 +401,7 @@ public class McLoadModeLoadTest {
 			assertTrue(mode.toString(), XmlUtils.unwrap(content.get(1)) instanceof AlternateContent);
 			assertEquals(mode + ": nothing recorded", 0, pkg.getMainDocumentPart().getResolvedAlternateContent().size());
 			String saved = McProbeDocx.entry(McProbeDocx.save(pkg), "word/document.xml");
-			assertTrue(mode + ": both Choices written", saved.contains("Requires=\"w99\"") && saved.contains("Requires=\"wpi\""));
+			assertTrue(mode + ": both Choices written", saved.contains("Requires=\"w99\"") && saved.contains("Requires=\"w98\""));
 			// and a reader applies REQ-305's first-Choice rule at use
 			assertTrue(Texts.plainText(pkg, new TextOptions()).contains("W99"));
 		}
@@ -516,7 +516,7 @@ public class McLoadModeLoadTest {
 	public void rejectedPartIsSplicedToo() throws Exception {
 		String drawingParagraph = "<w:p><w:r><w:t>BODY_W14</w:t></w:r><w:r><w:drawing><wp:inline><wp:extent cx=\"10\" cy=\"10\"/><wp:docPr id=\"2\" name=\"Picture 2\"/>"
 				+ "<a:graphic><a:graphicData uri=\"http://schemas.microsoft.com/office/word/2010/wordprocessingShape\"><wps:wsp><wps:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"10\" cy=\"10\"/></a:xfrm></wps:spPr><wps:bodyPr/></wps:wsp></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>";
-		String element = "<mc:AlternateContent><mc:Choice Requires=\"wpi\">" + p("BODY_WPI") + "</mc:Choice>"
+		String element = "<mc:AlternateContent><mc:Choice Requires=\"w99\">" + p("BODY_W99") + "</mc:Choice>"
 				+ "<mc:Choice Requires=\"w14\">" + drawingParagraph + "</mc:Choice><mc:Fallback>" + p("BODY_FB") + "</mc:Fallback></mc:AlternateContent>";
 		String rejected = "<w:p><w:pPr><w14:nonsense/></w:pPr><w:r><w:t>before</w:t></w:r></w:p>";
 		WordprocessingMLPackage pkg = McProbeDocx.body(rejected + element + p("after")).load(McLoadMode.WORD);
@@ -553,10 +553,12 @@ public class McLoadModeLoadTest {
 
 			byte[] saved = McProbeDocx.save(pkg);
 			String partXml = McProbeDocx.entry(saved, part.getPartName().getName().substring(1));
-			assertTrue(c + ": every branch written", partXml.contains("Requires=\"wpi\"") && partXml.contains("Requires=\"w14\"") && partXml.contains("<mc:Fallback>"));
-			assertTrue(c + ": the content of each", partXml.contains(c.tag + "_WPI") && partXml.contains(c.tag + "_W14") && partXml.contains(c.tag + "_FB"));
+			assertTrue(c + ": every branch written", partXml.contains("Requires=\"w99\"") && partXml.contains("Requires=\"w14\"") && partXml.contains("<mc:Fallback>"));
+			assertTrue(c + ": the content of each", partXml.contains(c.tag + "_W99") && partXml.contains(c.tag + "_W14") && partXml.contains(c.tag + "_FB"));
 			String root = McProbeDocx.rootTag(partXml);
-			assertTrue(c + ": the Choices' prefixes declared on the root: " + root, root.contains("xmlns:wpi=") && root.contains("xmlns:w14="));
+			assertTrue(c + ": w14 declared on the root: " + root, root.contains("xmlns:w14="));
+			// not for w:docPartBody: McDeclarations' walk doesn't reach a Choice there, so a prefix only the source knows isn't declared on a save
+			if (!c.name.equals("w:docPartBody")) assertTrue(c + ": a prefix only the source knows is declared (CR-052)", partXml.contains("xmlns:w99="));
 
 			WordprocessingMLPackage again = McProbeDocx.roundTrip(pkg, McLoadMode.PRESERVE);
 			assertTrue(c + ": still whole after the round trip", XmlUtils.unwrap(c.locator.content(again).get(1)) instanceof AlternateContent);
@@ -565,7 +567,7 @@ public class McLoadModeLoadTest {
 			String preserveText = text(pkg);
 			assertEquals(c + ": the text", text(c.docx.load(McLoadMode.WORD)), preserveText);
 			assertTrue(c + ": " + preserveText, preserveText.contains(c.tag + "_W14") || c.name.startsWith("w:docPartBody"));
-			assertFalse(c + ": " + preserveText, preserveText.contains(c.tag + "_FB") || preserveText.contains(c.tag + "_WPI"));
+			assertFalse(c + ": " + preserveText, preserveText.contains(c.tag + "_FB") || preserveText.contains(c.tag + "_W99"));
 		}
 	}
 
