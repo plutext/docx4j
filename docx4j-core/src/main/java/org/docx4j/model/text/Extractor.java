@@ -935,6 +935,8 @@ final class Extractor {
 		if (pkg == null || pr == null || !isPlainText(pr)) return null;
 		CTDataBinding binding = pr.getDataBinding();
 		if (binding == null) return null;
+		String unreadable = pkg.getUnreadableStore(binding.getStoreItemID());
+		if (unreadable != null && options.isWarnings()) warn(new TextWarning(TextWarning.PART_NOT_READ, null, null, null, unreadable)); // WD 0.69 (c)
 		String value = boundValues().value(binding);
 		if (value == null) return null;
 		boolean placeholder = showingPlaceholder(pr);

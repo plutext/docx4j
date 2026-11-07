@@ -142,6 +142,58 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		return Collections.unmodifiableList(loadFindings);
 	}
 
+	/** The repair mode this package was loaded in, or null for one created rather than loaded. */
+	private RepairMode repairMode;
+
+	/** The stores that couldn't be read, their part names by upper-case item id (CR-075 D7). */
+	private final java.util.Map<String, String> unreadableStores = new HashMap<String, String>();
+
+	/** The repair mode this package was loaded in, which a save reads; null follows {@value RepairMode#PROPERTY}. @since 17.3.6 */
+	public RepairMode getRepairMode() {
+		return repairMode;
+	}
+
+	/** See {@link #getRepairMode()}. @since 17.3.6 */
+	public void setRepairMode(RepairMode mode) {
+		this.repairMode = mode;
+	}
+
+	/** For the load: a custom XML store that couldn't be read, and is read as absent. @since 17.3.6 */
+	public void addUnreadableStore(String itemId, String partName) {
+		unreadableStores.put(itemId.toUpperCase(java.util.Locale.ROOT), partName);
+	}
+
+	/** The part names of the stores that couldn't be read, read as absent (CR-075 D7). @since 17.3.6 */
+	public java.util.Collection<String> getUnreadableStores() {
+		return Collections.unmodifiableCollection(unreadableStores.values());
+	}
+
+	/** The part name of the store with this item id, where it couldn't be read; else null (CR-075 D7). @since 17.3.6 */
+	public String getUnreadableStore(String itemId) {
+		return itemId == null ? null : unreadableStores.get(itemId.toUpperCase(java.util.Locale.ROOT));
+	}
+
+	/**
+	 * The save gate (CR-075 D8, the repair policy's P2): refuses a save that would make a repair permanent with loss. A
+	 * relationships part read only up to its break leaves the parts its lost relationships named out of this package, so a
+	 * save would drop them. Under {@link RepairMode#WORD} the save writes the repaired form, as Word's does. Nothing says how
+	 * many relationships followed the break, so this holds even where all those read were all there were. A caller who has
+	 * put back what was lost says so with {@link #setRepairMode}.
+	 *
+	 * @since 17.3.6 (CR-075 phase 4)
+	 */
+	public void refuseSaveThatLoses() throws Docx4JException {
+		RepairMode mode = repairMode != null ? repairMode : RepairMode.fromProperty();
+		if (mode == RepairMode.WORD) return;
+		for (LoadFinding f : loadFindings) {
+			if (LoadFinding.PART_NOT_READ.equals(f.getKind()) && f.getSelector() != null && f.getSelector().endsWith(".rels")) {
+				throw new Docx4JException("Refused: " + f.getSelector() + " could not be read, " + f.getDetail()
+						+ " of its relationships were kept, and a save would drop what any others named. Load with RepairMode.WORD to write the repaired form ("
+						+ RepairMode.PROPERTY + "=word).");
+			}
+		}
+	}
+
 	/** Adds to {@link #getLoadFindings()}, for the load. @since 17.3.6 */
 	public void addLoadFinding(LoadFinding finding) {
 		loadFindings.add(finding);
@@ -1029,6 +1081,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		
 		if (flags == Docx4J.FLAG_SAVE_FLAT_XML) {
 			
+			refuseSaveThatLoses();
 			FlatOpcXmlCreator opcXmlCreator = new FlatOpcXmlCreator(this);
 			opcXmlCreator.populate();
 			opcXmlCreator.marshal(outStream);
@@ -1234,6 +1287,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		// Zip it up
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		Save saver = new Save(this);
+		saver.setCopy(true); // a copy for an output loses nothing the source keeps
 		
 		try {
 			saver.save(baos);
@@ -1245,6 +1299,10 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 			// on one, and its table sizer's dump names the package)
 			if (result != null && name != null) result.setName(name);
 			if (result != null) result.setLoadFindings(loadFindings); // what this package's load found stands on its copy
+			if (result != null) {
+				result.setRepairMode(repairMode);
+				result.unreadableStores.putAll(unreadableStores);
+			}
 		} catch (Docx4JException e) {
 			// Shouldn't happen
 			log.error(e.getMessage(), e);

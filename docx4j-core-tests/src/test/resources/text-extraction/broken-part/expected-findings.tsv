@@ -5,3 +5,6 @@ case	fixture	channel	kind	selector	scenario	expected	statements
 108	broken-part-numbering-order.docx	warning	part.not_read	/word/numbering.xml	default	1	REQ-801
 110	broken-part-styles-late.docx	warning	part.not_read	/word/styles.xml	default	1	REQ-801
 111	broken-part-styles-invalid.docx	warning	part.not_read	/word/styles.xml	default	1	REQ-801
+119	broken-part-document-rels.docx	warning	part.not_read	/word/_rels/document.xml.rels	default	1	REQ-801
+120	broken-part-package-rels.docx	warning	part.not_read	/_rels/.rels	default	1	REQ-801
+121	store-not-read.docx	warning	part.not_read	/customXml/item1.xml	default	1	REQ-801

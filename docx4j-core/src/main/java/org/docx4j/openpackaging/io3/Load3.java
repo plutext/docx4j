@@ -32,6 +32,9 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.io.IOUtils;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.docx4j.jaxb.McLoadMode;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.packages.LoadFinding;
@@ -65,6 +68,7 @@ import org.docx4j.openpackaging.parts.opendope.StandardisedAnswersPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
 import org.docx4j.relationships.Relationship;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,7 +186,7 @@ public class Load3 extends Load {
 		
 		// .. now find the name of the main part
 		RelationshipsPart rp = RelationshipsPart.createPackageRels();
-		populatePackageRels(rp);
+		LoadFinding packageRelsNotRead = populatePackageRels(rp);
 		LoadFinding multipleMainParts = oneMainPart(rp);
 		
 		String mainPartName = PackageRelsUtil.getNameOfMainPart(rp);
@@ -215,7 +219,9 @@ public class Load3 extends Load {
 		p.setSourcePartStore(partStore);
 		this.loading = p;
 		p.setLoadFindings(partStore instanceof ZipPartStore ? ((ZipPartStore) partStore).getLoadFindings() : null);
+		if (packageRelsNotRead != null) p.addLoadFinding(packageRelsNotRead);
 		if (multipleMainParts != null) p.addLoadFinding(multipleMainParts);
+		p.setRepairMode(effectiveRepairMode());
 		if (mcLoadMode != null) {
 			// before any part is unmarshalled (CR-051 section 3.2), as setWasStrict below
 			p.setMcLoadMode(mcLoadMode);
@@ -240,6 +246,7 @@ public class Load3 extends Load {
 
 		// 6.
 		registerCustomXmlDataStorageParts(p);
+		passOverUnreadableStores(p);
 		
 //		partStore.finishLoad();
 		
@@ -276,16 +283,16 @@ public class Load3 extends Load {
 	 * @return the finding, or null for a package with one main part
 	 */
 	private LoadFinding oneMainPart(RelationshipsPart rp) throws Docx4JException {
-		java.util.List<Relationship> mains = new java.util.ArrayList<Relationship>();
+		List<Relationship> mains = new ArrayList<Relationship>();
 		for (Relationship r : rp.getRelationships().getRelationship()) {
-			if (PackageRelsUtil.isMainPart(r)) mains.add(r);
+			if (PackageRelsUtil.isMainPart(r) && !"External".equals(r.getTargetMode())) mains.add(r); // an external target is no part
 		}
 		if (mains.size() < 2) return null;
-		RepairMode repair = repairMode != null ? repairMode : RepairMode.fromProperty();
-		if (repair != RepairMode.WORD) {
+		if (effectiveRepairMode() != RepairMode.WORD) {
+			// counted by relationship: Word repairs two to one target too (round one-target)
 			StringBuilder targets = new StringBuilder();
 			for (Relationship r : mains) targets.append(targets.length() == 0 ? "" : ", ").append(r.getTarget());
-			throw new Docx4JException("Refused: the package's relationships name " + mains.size() + " main parts: " + targets
+			throw new Docx4JException("Refused: the package has " + mains.size() + " main part relationships, to " + targets
 					+ ". Word reads such a package only through a repair; load with RepairMode.WORD to read the last relationship's target ("
 					+ RepairMode.PROPERTY + "=word).");
 		}
@@ -299,7 +306,75 @@ public class Load3 extends Load {
 		return finding;
 	}
 
-	private void populatePackageRels(RelationshipsPart rp) 
+	private RepairMode effectiveRepairMode() {
+		return repairMode != null ? repairMode : RepairMode.fromProperty();
+	}
+
+	/** A custom XML store that isn't well formed, kept as bytes (CR-075 D7). */
+	private static final class UnreadableStore {
+		final Part part;
+		final Relationship rel;
+		final RelationshipsPart rp;
+		UnreadableStore(Part part, Relationship rel, RelationshipsPart rp) {
+			this.part = part;
+			this.rel = rel;
+			this.rp = rp;
+		}
+	}
+
+	private final List<UnreadableStore> unreadableStores = new ArrayList<UnreadableStore>();
+
+	/**
+	 * A store with no JAXB model: as a DOM, or where it isn't well formed, read as absent, its bytes kept, which is no
+	 * reason to refuse the package (CR-075 D7). The parse reports to no one: the failure is told once, here.
+	 */
+	private Part storeOrUnreadable(Part part, InputStream is, ContentTypeManager ctm, String resolvedPartUri, Relationship rel, RelationshipsPart rp)
+			throws Exception {
+		org.w3c.dom.Document document;
+		try {
+			javax.xml.parsers.DocumentBuilder builder = XmlUtils.getNewDocumentBuilder(); // this also guards against XXE
+			builder.setErrorHandler(new org.xml.sax.helpers.DefaultHandler());
+			document = builder.parse(is);
+		} catch (org.xml.sax.SAXException | java.io.IOException notWellFormed) {
+			log.warn("/" + resolvedPartUri + " could not be read, so it is read as absent: " + deepestMessage(notWellFormed));
+			Part kept = getBinaryPart(ctm, resolvedPartUri);
+			unreadableStores.add(new UnreadableStore(kept, rel, rp));
+			return kept;
+		}
+		CustomXmlDataStorage data = getCustomXmlDataStorageClass().factory();
+		data.setDocument(document); // Not necessarily JAXB, that's just our method name
+		((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) part).setData(data);
+		return part;
+	}
+
+	/**
+	 * D7: each store that isn't well formed, read as absent. It is a {@link BinaryPart}, so no store lookup finds it and
+	 * an untouched save writes its bytes; its item id is noted, so a binding naming it can say so (WD 0.69 (c)). Under
+	 * {@link RepairMode#WORD} it goes, as Word's save drops it.
+	 */
+	private void passOverUnreadableStores(OpcPackage p) {
+		for (UnreadableStore s : unreadableStores) {
+			String itemId = null;
+			RelationshipsPart own = s.part.getRelationshipsPart();
+			Relationship props = own == null ? null : own.getRelationshipByType(Namespaces.CUSTOM_XML_DATA_STORAGE_PROPERTIES);
+			Part target = props == null ? null : own.getPart(props);
+			if (target instanceof CustomXmlDataStoragePropertiesPart) itemId = ((CustomXmlDataStoragePropertiesPart) target).getItemId();
+			if (itemId != null) p.addUnreadableStore(itemId, s.part.getPartName().getName());
+			if (effectiveRepairMode() == RepairMode.WORD) {
+				for (Relationship r : new ArrayList<Relationship>(s.part.getSourceRelationships())) {
+					Object owner = r.getParent() instanceof org.docx4j.relationships.Relationships
+							? ((org.docx4j.relationships.Relationships) r.getParent()).getParent() : null;
+					(owner instanceof RelationshipsPart ? (RelationshipsPart) owner : s.rp).removeRelationship(r);
+				}
+				p.getParts().remove(s.part.getPartName());
+				if (target != null) p.getParts().remove(target.getPartName());
+			}
+		}
+		unreadableStores.clear();
+	}
+
+	/** The package's relationships: on a part that isn't well formed, those before the break, where a main part is among them (CR-075 D6). */
+	private LoadFinding populatePackageRels(RelationshipsPart rp) 
 			throws Docx4JException {
 		
 		InputStream is = null;
@@ -309,7 +384,17 @@ public class Load3 extends Load {
 				throw new Docx4JException("_rels/.rels appears to be missing from this package!");
 			}
 			rp.unmarshal(is);
-			if (rp.getReadFailure() != null) throw rp.getReadFailure();
+			if (rp.getReadFailure() == null) return null;
+			int kept;
+			try (InputStream again = partStore.loadPart("_rels/.rels")) {
+				kept = rp.readRelationshipsBeforeTheBreak(again);
+			}
+			boolean main = false;
+			for (Relationship r : rp.getRelationships().getRelationship()) main |= PackageRelsUtil.isMainPart(r);
+			if (!main) throw rp.getReadFailure();
+			LoadFinding finding = new LoadFinding(LoadFinding.PART_NOT_READ, "/_rels/.rels", String.valueOf(kept));
+			log.warn(finding + ": " + deepestMessage(rp.getReadFailure()));
+			return finding;
 			
 		} catch (Docx4JException e) {
 			throw e;
@@ -337,9 +422,12 @@ public class Load3 extends Load {
 			rp = p.getRelationshipsPart(true);
 			rp.unmarshal(is);
 			if (rp.getReadFailure() != null && loading != null) {
-				// read as it always was, with none of its relationships, until CR-075 phase 4; said now
-				LoadFinding finding = new LoadFinding(LoadFinding.PART_NOT_READ, rp.getPartName().getName(),
-						String.valueOf(rp.getRelationships().getRelationship().size()));
+				// the relationships before the break, as Word's repair keeps them (CR-075 D5); what only a lost one named reads as absent
+				int kept;
+				try (InputStream again = partStore.loadPart(partName)) {
+					kept = rp.readRelationshipsBeforeTheBreak(again);
+				}
+				LoadFinding finding = new LoadFinding(LoadFinding.PART_NOT_READ, rp.getPartName().getName(), String.valueOf(kept));
 				log.warn(finding + ": " + deepestMessage(rp.getReadFailure()));
 				loading.addLoadFinding(finding);
 			}
@@ -679,11 +767,13 @@ public class Load3 extends Load {
 					} catch (jakarta.xml.bind.UnmarshalException ue) {
 
 						log.info("No JAXB model for this CustomXmlDataStorage part; " + ue.getMessage()  );
-						
-						CustomXmlDataStorage data = getCustomXmlDataStorageClass().factory();	
 						is.reset();
-						data.setDocument(is); // Not necessarily JAXB, that's just our method name
-						((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).setData(data);						
+						part = storeOrUnreadable(part, is, ctm, resolvedPartUri, rel, rp);
+					} catch (javax.xml.stream.XMLStreamException notEvenStarted) {
+						// a declaration the reader refuses, an encoding it doesn't know: the parse below says
+						log.info("Couldn't read this CustomXmlDataStorage part as a stream; " + notEvenStarted.getMessage());
+						is.reset();
+						part = storeOrUnreadable(part, is, ctm, resolvedPartUri, rel, rp);
 					}					
 
 				} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart ) {

@@ -115,6 +115,7 @@ public class SaveToZipFile {
 	
 	public boolean saveFlatOPC(OutputStream realOS) throws Docx4JException {
 		
+		p.refuseSaveThatLoses(); // CR-075 D8
 		try {
 			FlatOpcXmlCreator worker = new FlatOpcXmlCreator(p);
 			org.docx4j.xmlPackage.Package pkg = worker.get();
@@ -137,6 +138,7 @@ public class SaveToZipFile {
 	
 	/* Save a Package as a Zip file in the outputstream provided */
 	public boolean save(OutputStream realOS) throws Docx4JException  {		
+		p.refuseSaveThatLoses(); // CR-075 D8
 		handled = new HashMap<String, String>();
 		 try {
 

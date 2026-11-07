@@ -34,7 +34,7 @@ tables included; a rebuild is byte-identical (stored zips, fixed dates).
 | 121 | `store-not-read.docx` | Two custom XML stores whose roots fit the controls' XPath (`/ns0:root[1]/ns0:name[1]`). Control A names store 1, B names store 2, C names no store. Store 1 is not well formed (cut after `</name>`). |
 | 122 | `store-not-read-intact.docx` | The same, with store 1 intact. |
 | | `expected-tokens.tsv` | The tokens as Word read each file (below). |
-| | `expected-findings.tsv` | docx4j's `part.not_read` (REQ-801), in every view, for the six files whose reading needs a part it cannot read. |
+| | `expected-findings.tsv` | docx4j's `part.not_read` (REQ-801), in every view, for the nine files whose reading needs a part it cannot read. |
 | | `goldens.tsv` | Empty. `ExtractionConformance` reads it. |
 | | `*-word365-utf8.txt`, `*-word365.docx` | Word's saves (below). |
 
@@ -68,8 +68,10 @@ run with no `w:lang` by its editing language and never by `w:themeFontLang`, was
 | `WD 0.72 (3)` | A styles part cut late. Word keeps the styles before the break (Hid, Caps). | reads the part as absent |
 | `WD 0.72 (4)` | A properties part not well formed, under `fields: update`, reads as absent. TITLE and DOCPROPERTY Company come out empty; DOCPROPERTY Custom1 is Word's "Error! Unknown document property name." | keeps the cached results |
 | `defect (d)` | docx4j's own: a custom properties part it cannot read leaves every property field on its cached result. | all three fields stale |
-| `WD 0.73 (rels)` | A relationships part not well formed. Word keeps the relationships before the break. | a part's relationships read as none, with no warning (no styles, numbering, settings or comments); the package's refuse the load |
-| `WD 0.69 (c)` | A custom XML store not well formed reads as absent, and every control is bound under REQ-509's repair. | refuses the load ("Failed to getPart") |
+
+`WD 0.73 (rels)` and `WD 0.69 (c)` stand in the table as statements docx4j now meets (CR-075 phases 2 and 4), and a port without them pends on them. On
+`broken-part-package-rels.docx` the property fields pend on `defect (e)`: with a property part absent, under `fields: update` Word empties the field and
+docx4j leaves it on its cached result, on an intact package too.
 
 The three main-part files have no rows. Word will not open them, and docx4j refuses to read them (REQ-801), which
 `BrokenPartTest` checks.

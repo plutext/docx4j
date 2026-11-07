@@ -313,6 +313,7 @@ public class UpdateXmlFromDocumentSurface {
 								//debugListParts(blockPkg);
 								
 								if (blockPkg!=null) {
+									blockPkg.setLoadFindings(null); // a package made for this control's content: the source's loss isn't its own (CR-075 D8)
 									// FlatOPC
 									ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
 									blockPkg.save(baos, Docx4J.FLAG_SAVE_FLAT_XML);

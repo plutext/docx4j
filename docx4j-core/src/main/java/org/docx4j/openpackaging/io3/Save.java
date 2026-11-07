@@ -97,6 +97,14 @@ public class Save {
 	
 	// The package to save
 	public OpcPackage p;
+
+	/** A copy of the package for this process's own use, not a save of the document: the save gate doesn't apply. */
+	private boolean copy;
+
+	/** See {@link OpcPackage#refuseSaveThatLoses()}. @since 17.3.6 (CR-075 phase 4) */
+	public void setCopy(boolean copy) {
+		this.copy = copy;
+	}
 	
 //	private PartStore sourcePartStore;	
 //	private PartStore targetPartStore;	
@@ -167,6 +175,7 @@ public class Save {
 	 * @throws Docx4JException
 	 */
 	public boolean save(OutputStream realOS) throws Docx4JException  {		
+		if (!copy) p.refuseSaveThatLoses();
 		handled = new HashMap<String, String>();
 		 try {
 			 

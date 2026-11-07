@@ -568,14 +568,18 @@ public class Docx4J {
 				// as opposed to returning a new one,
 				// we must copy tmpMergeResult contents into the original one.
 				ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-				Docx4J.save(tmpMergeResult, outStream);
+				org.docx4j.openpackaging.io3.Save copier = new org.docx4j.openpackaging.io3.Save(tmpMergeResult);
+				copier.setCopy(true); // a copy back into the package, not a save of the document (CR-075 D8)
+				copier.save(outStream);
 
 				final ZipPartStore partLoader = new ZipPartStore( new ByteArrayInputStream(outStream.toByteArray() ));
 				final Load3 loader = new Load3(partLoader);
 				loader.reuseExistingOpcPackage(wmlPackage); // reuse existing object
 				java.util.List<org.docx4j.openpackaging.packages.LoadFinding> findings = new java.util.ArrayList<>(wmlPackage.getLoadFindings());
+				org.docx4j.openpackaging.io3.RepairMode repairMode = wmlPackage.getRepairMode();
 				/* wmlPackage = (WordprocessingMLPackage) */ loader.get();
-				wmlPackage.setLoadFindings(findings); // what the package's own load found still stands
+				wmlPackage.setLoadFindings(findings); // what the package's own load found still stands, and how it was loaded
+				wmlPackage.setRepairMode(repairMode);
 				
 			new EventFinished(startEvent).publish();
 			

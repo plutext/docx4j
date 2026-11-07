@@ -418,6 +418,52 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		return occupiedRelIds().contains(relId);
 	}
 	
+	/**
+	 * Reads each whole {@code Relationship} before the point where this source stops being well formed, as
+	 * Word's repair keeps them (WD 0.76; CR-075 D5).  For a part whose {@link #unmarshal(java.io.InputStream)}
+	 * failed, from the same bytes.  A source that parses to its end has no break, so it failed for another reason, its
+	 * root's namespace say, and keeps nothing: there is no prefix of it to trust.
+	 *
+	 * @return how many it holds now
+	 * @since 17.3.6 (CR-075 phase 4)
+	 */
+	public int readRelationshipsBeforeTheBreak(java.io.InputStream is) {
+		List<Relationship> kept = new java.util.ArrayList<Relationship>();
+		boolean broke = false;
+		try {
+			XMLInputFactory xif = org.docx4j.utils.XmlParserLimits.apply(XMLInputFactory.newInstance());
+			xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+			xif.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+			XMLStreamReader xsr = xif.createXMLStreamReader(is);
+			Relationship open = null;
+			while (xsr.hasNext()) {
+				int event = xsr.next();
+				if (event == XMLStreamReader.START_ELEMENT && "Relationship".equals(xsr.getLocalName())
+						&& "http://schemas.openxmlformats.org/package/2006/relationships".equals(xsr.getNamespaceURI())) {
+					open = new Relationship();
+					open.setId(xsr.getAttributeValue(null, "Id"));
+					open.setType(xsr.getAttributeValue(null, "Type"));
+					open.setTarget(xsr.getAttributeValue(null, "Target"));
+					if (xsr.getAttributeValue(null, "TargetMode") != null) open.setTargetMode(xsr.getAttributeValue(null, "TargetMode"));
+				} else if (event == XMLStreamReader.END_ELEMENT && open != null) {
+					kept.add(open);
+					open = null;
+				}
+			}
+		} catch (javax.xml.stream.XMLStreamException e) {
+			broke = true;
+			log.debug("Relationships end at: " + e.getMessage());
+		}
+		jaxbElement.getRelationship().clear();
+		for (Relationship r : broke ? kept : java.util.Collections.<Relationship>emptyList()) {
+			if (r.getId() == null || r.getType() == null || r.getTarget() == null) continue; // one Word's reader couldn't use either
+			r.setParent(jaxbElement);
+			jaxbElement.getRelationship().add(r);
+		}
+		resetIdAllocator();
+		return jaxbElement.getRelationship().size();
+	}
+
 	/** Why the last {@link #unmarshal(java.io.InputStream)} failed, or null where it read the part (CR-075). */
 	private Exception readFailure;
 
@@ -1025,7 +1071,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			// recorded for the load to report (CR-075); a part with a list keeps it, and what it held stands
 			readFailure = e;
 			log.warn((getPartName() == null ? "A relationships part" : getPartName().getName()) + " could not be read: " + e);
-			if (jaxbElement == null) throw new JAXBException("Relationships not read: " + e, e);
+			if (jaxbElement == null) jaxbElement = new Relationships();
 		}
 		
 		resetIdAllocator();
@@ -1042,7 +1088,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	@Override // need this so that resetIdAllocator() is called 
     public Relationships unmarshal(org.w3c.dom.Element el) throws JAXBException {
 
-		readFailure = null;
+		readFailure = null; // a failure here is thrown, as ever, so there is none to record
 		try {
 
 			Unmarshaller u = jc.createUnmarshaller();

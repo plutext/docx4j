@@ -156,7 +156,7 @@ public class PackageWiringTest {
 					else WordprocessingMLPackage.load(new ByteArrayInputStream(bytes(c[0])));
 					fail(c[0] + " loaded");
 				} catch (Docx4JException refused) {
-					assertTrue(refused.getMessage(), refused.getMessage().contains("2 main parts: " + c[1]));
+					assertTrue(refused.getMessage(), refused.getMessage().contains("2 main part relationships, to " + c[1]));
 				}
 			}
 		}
@@ -353,11 +353,50 @@ public class PackageWiringTest {
 		assertNull(rels.getReadFailure());
 	}
 
-	/** D6: the package's relationships not well formed: the refusal names the part and the parse error, not what it then broke. */
+	private static List<String> entries(byte[] zip) throws Exception {
+		List<String> names = new ArrayList<String>();
+		try (ZipInputStream z = new ZipInputStream(new ByteArrayInputStream(zip))) {
+			for (ZipEntry e; (e = z.getNextEntry()) != null; ) names.add(e.getName());
+		}
+		return names;
+	}
+
+	private static byte[] saved(WordprocessingMLPackage pkg) throws Exception {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		Docx4J.save(pkg, out);
+		return out.toByteArray();
+	}
+
+	/** D6: the package's relationships not well formed: those before the break stand, the main part's among them, as Word's repair keeps them. */
+	@Test
+	public void thePackagesRelationshipsAreReadUpToTheBreak() throws Exception {
+		File broken = file("text-extraction/broken-part/broken-part-package-rels.docx");
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(broken);
+		assertEquals(Arrays.asList(new LoadFinding(LoadFinding.PART_NOT_READ, "/_rels/.rels", "1")), pkg.getLoadFindings());
+		assertNotNull(pkg.getMainDocumentPart());
+		assertNull(pkg.getParts().get(new PartName("/docProps/core.xml")));
+		boolean warned = false;
+		for (TextWarning w : Texts.of(pkg, new TextOptions()).warnings()) {
+			warned |= TextWarning.PART_NOT_READ.equals(w.getKind()) && "/_rels/.rels".equals(w.getSelector()) && "1".equals(w.getDetail());
+		}
+		assertTrue(warned);
+	}
+
+	/** D6: where the break comes before the main part's relationship there is nothing to read: refused, naming the part and the parse error. */
 	@Test
 	public void aRefusalNamesThePackageRelationships() throws Exception {
+		ByteArrayOutputStream cut = new ByteArrayOutputStream();
+		try (java.util.zip.ZipOutputStream z = new java.util.zip.ZipOutputStream(cut);
+				ZipInputStream in = new ZipInputStream(new ByteArrayInputStream(bytes("control-one-main")))) {
+			for (ZipEntry e; (e = in.getNextEntry()) != null; ) {
+				z.putNextEntry(new ZipEntry(e.getName()));
+				z.write(e.getName().equals("_rels/.rels")
+						? "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relat".getBytes("UTF-8") : in.readAllBytes());
+				z.closeEntry();
+			}
+		}
 		try {
-			WordprocessingMLPackage.load(file("text-extraction/broken-part/broken-part-package-rels.docx"));
+			WordprocessingMLPackage.load(new ByteArrayInputStream(cut.toByteArray()));
 			fail("loaded");
 		} catch (Docx4JException refused) {
 			assertTrue(refused.getMessage(), refused.getMessage().contains("_rels/.rels"));
@@ -366,16 +405,206 @@ public class PackageWiringTest {
 		}
 	}
 
-	/** A part's relationships not well formed: read as it was, and said (its reading is phase 4's). */
+	/** D5: a part's relationships not well formed: those before the break stand, and what only a lost one named reads as absent. */
 	@Test
-	public void aPartsRelationshipsFailureIsRecorded() throws Exception {
+	public void aPartsRelationshipsAreReadUpToTheBreak() throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(file("text-extraction/broken-part/broken-part-document-rels.docx"));
-		assertEquals(Arrays.asList(new LoadFinding(LoadFinding.PART_NOT_READ, "/word/_rels/document.xml.rels", "0")), pkg.getLoadFindings());
+		assertEquals(Arrays.asList(new LoadFinding(LoadFinding.PART_NOT_READ, "/word/_rels/document.xml.rels", "3")), pkg.getLoadFindings());
+		assertEquals(3, pkg.getMainDocumentPart().getRelationshipsPart().getRelationships().getRelationship().size());
 		boolean warned = false;
 		for (TextWarning w : Texts.of(pkg, new TextOptions()).warnings()) {
-			warned |= TextWarning.PART_NOT_READ.equals(w.getKind()) && "/word/_rels/document.xml.rels".equals(w.getSelector()) && "0".equals(w.getDetail());
+			warned |= TextWarning.PART_NOT_READ.equals(w.getKind()) && "/word/_rels/document.xml.rels".equals(w.getSelector()) && "3".equals(w.getDetail());
 		}
 		assertTrue(warned);
+	}
+
+	/** D8: a save that would make the repair permanent with loss is refused, naming the part; under the switch it writes the repaired form. */
+	@Test
+	public void theSaveGateRefusesALossySave() throws Exception {
+		for (String name : new String[] { "broken-part-document-rels", "broken-part-package-rels" }) {
+			File broken = file("text-extraction/broken-part/" + name + ".docx");
+			WordprocessingMLPackage pkg = WordprocessingMLPackage.load(broken);
+			try {
+				saved(pkg);
+				fail(name + " saved");
+			} catch (Docx4JException refused) {
+				assertTrue(refused.getMessage(), refused.getMessage().contains(".rels") && refused.getMessage().contains("relationships were kept"));
+			}
+			try {
+				pkg.save(new ByteArrayOutputStream(), Docx4J.FLAG_SAVE_FLAT_XML);
+				fail(name + " saved as Flat OPC");
+			} catch (Docx4JException refused) {
+				assertTrue(refused.getMessage(), refused.getMessage().contains("relationships were kept"));
+			}
+			// a read-only output's copy isn't a save
+			WordprocessingMLPackage copy = (WordprocessingMLPackage) pkg.clone();
+			assertEquals(pkg.getLoadFindings(), copy.getLoadFindings());
+			assertEquals(text(pkg), text(copy));
+			byte[] repaired = saved(WordprocessingMLPackage.load(broken, repair()));
+			assertTrue(WordprocessingMLPackage.load(new ByteArrayInputStream(repaired)).getLoadFindings().isEmpty());
+		}
+	}
+
+	/** D7: a store that isn't well formed reads as absent: a binding naming it resolves to the store whose root fits, as Word's repair does, and says so. */
+	@Test
+	public void anUnreadableStoreReadsAsAbsent() throws Exception {
+		File broken = file("text-extraction/broken-part/store-not-read.docx");
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(broken);
+		String text = text(pkg);
+		assertEquals(text, 3, text.split("STORE2_VALUE", -1).length - 1);
+		assertFalse(text, text.contains("STORE1_VALUE"));
+		int warned = 0;
+		for (TextWarning w : Texts.of(pkg, new TextOptions()).warnings()) {
+			if (TextWarning.PART_NOT_READ.equals(w.getKind()) && "/customXml/item1.xml".equals(w.getSelector())) warned++;
+		}
+		assertEquals(1, warned);
+		assertTrue(pkg.getLoadFindings().isEmpty());
+		boolean inspected = false;
+		for (Inspection.Entry e : Inspect.of(pkg).skipped()) inspected |= Inspection.UNREADABLE.equals(e.getReason()) && e.getLocation().contains("/customXml/item1.xml");
+		assertTrue(inspected);
+	}
+
+	/** D7: an untouched save writes the store's bytes; under the switch it goes, as Word's save drops it. */
+	@Test
+	public void anUnreadableStoreSavesAsBytesOrGoes() throws Exception {
+		File broken = file("text-extraction/broken-part/store-not-read.docx");
+		byte[] source = null;
+		try (java.util.zip.ZipFile z = new java.util.zip.ZipFile(broken)) {
+			source = z.getInputStream(z.getEntry("customXml/item1.xml")).readAllBytes();
+		}
+		byte[] untouched = saved(WordprocessingMLPackage.load(broken));
+		assertTrue(entries(untouched).contains("customXml/item1.xml"));
+		try (ZipInputStream z = new ZipInputStream(new ByteArrayInputStream(untouched))) {
+			for (ZipEntry e; (e = z.getNextEntry()) != null; ) if (e.getName().equals("customXml/item1.xml")) assertTrue(Arrays.equals(source, z.readAllBytes()));
+		}
+		WordprocessingMLPackage repaired = WordprocessingMLPackage.load(broken, repair());
+		assertFalse(entries(saved(repaired)).contains("customXml/item1.xml"));
+		assertTrue(entries(saved(repaired)).contains("customXml/item2.xml"));
+		assertTrue(text(repaired).contains("STORE2_VALUE"));
+	}
+
+	/** The document's relationships with their end cut off: all of them read, and a finding, a store to bind to among them. */
+	private static byte[] storeWithAFinding() throws Exception {
+		File intact = file("text-extraction/broken-part/store-not-read-intact.docx");
+		String rels;
+		try (java.util.zip.ZipFile z = new java.util.zip.ZipFile(intact)) {
+			rels = new String(z.getInputStream(z.getEntry("word/_rels/document.xml.rels")).readAllBytes(), "UTF-8");
+		}
+		return rewritten(intact, "word/_rels/document.xml.rels", rels.replace("</Relationships>", ""));
+	}
+
+	/** Bind copies the package back into itself: not a save, so the gate doesn't apply, and the findings and mode stand. */
+	@Test
+	public void bindIsNoSave() throws Exception {
+		WordprocessingMLPackage word = WordprocessingMLPackage.load(new ByteArrayInputStream(storeWithAFinding()), repair());
+		assertEquals(1, word.getLoadFindings().size());
+		Docx4J.bind(word, "<root xmlns=\"urn:probe\"/>", Docx4J.FLAG_BIND_BIND_XML);
+		assertEquals(RepairMode.WORD, word.getRepairMode());
+		assertEquals(1, word.getLoadFindings().size());
+		saved(word);
+		WordprocessingMLPackage plain = WordprocessingMLPackage.load(new ByteArrayInputStream(storeWithAFinding()));
+		Docx4J.bind(plain, "<root xmlns=\"urn:probe\"/>", Docx4J.FLAG_BIND_BIND_XML);
+		assertEquals(1, plain.getLoadFindings().size());
+		try {
+			saved(plain);
+			fail("saved");
+		} catch (Docx4JException refused) {
+			assertTrue(refused.getMessage(), refused.getMessage().contains("relationships were kept"));
+		}
+	}
+
+	/** The older class's Flat OPC route is gated as the package's own is. */
+	@Test
+	public void flatOpcThroughTheOlderClassIsGated() throws Exception {
+		WordprocessingMLPackage plain = WordprocessingMLPackage.load(new ByteArrayInputStream(storeWithAFinding()));
+		try {
+			new org.docx4j.openpackaging.io.SaveToZipFile(plain).saveFlatOPC(new ByteArrayOutputStream());
+			fail("saved");
+		} catch (Docx4JException refused) {
+			assertTrue(refused.getMessage(), refused.getMessage().contains("relationships were kept"));
+		}
+	}
+
+	/** A store that can't even start, its declared encoding unknown, is read as absent like one cut short. */
+	@Test
+	public void aStoreWithABadEncodingReadsAsAbsent() throws Exception {
+		byte[] zip = rewritten(file("text-extraction/broken-part/store-not-read.docx"), "customXml/item1.xml",
+				"<?xml version=\"1.0\" encoding=\"bogus-enc\"?><root/>");
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(zip));
+		assertEquals("/customXml/item1.xml", pkg.getUnreadableStores().iterator().next());
+	}
+
+	/** Under the switch a store goes with every relationship to it, or a save can't find the part. */
+	@Test
+	public void aStoreReachedTwiceGoesWhole() throws Exception {
+		String second = "<Relationship Id=\"rId77\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml\" Target=\"../customXml/item1.xml\"/>";
+		File broken = file("text-extraction/broken-part/store-not-read.docx");
+		String rels;
+		try (java.util.zip.ZipFile z = new java.util.zip.ZipFile(broken)) {
+			rels = new String(z.getInputStream(z.getEntry("word/_rels/document.xml.rels")).readAllBytes(), "UTF-8");
+		}
+		byte[] zip = rewritten(broken, "word/_rels/document.xml.rels", rels.replace("</Relationships>", second + "</Relationships>"));
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(zip), repair());
+		assertFalse(entries(saved(pkg)).contains("customXml/item1.xml"));
+	}
+
+	/** A relationships part that parses to its end has no break: its namespace wrong, nothing of it is kept, and the package is refused. */
+	@Test
+	public void noBreakNoPrefix() throws Exception {
+		byte[] zip = rewritten(wiring("control-one-main"), "_rels/.rels",
+				"<Relationships xmlns=\"urn:wrong\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"word/document.xml\"/></Relationships>");
+		try {
+			WordprocessingMLPackage.load(new ByteArrayInputStream(zip));
+			fail("loaded");
+		} catch (Docx4JException refused) {
+			assertTrue(refused.getMessage(), refused.getMessage().contains("_rels/.rels"));
+		}
+	}
+
+	/**
+	 * Word repairs two relationships to one target as it repairs two to two (round one-target, ot-01 to ot-03), so the count
+	 * is of relationships, however the target is spelled; and an external target is no part.
+	 */
+	@Test
+	public void relationshipsAreCountedNotTargets() throws Exception {
+		String od = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument";
+		String head = "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"" + od + "\" Target=\"word/document.xml\"/>";
+		for (String spelling : new String[] { "word/document.xml", "/word/document.xml" }) {
+			byte[] zip = rewritten(wiring("control-one-main"), "_rels/.rels", head + "<Relationship Id=\"rId2\" Type=\"" + od + "\" Target=\"" + spelling + "\"/></Relationships>");
+			try {
+				WordprocessingMLPackage.load(new ByteArrayInputStream(zip));
+				fail("loaded");
+			} catch (Docx4JException refused) {
+				assertTrue(refused.getMessage(), refused.getMessage().contains("2 main part relationships"));
+			}
+			WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(zip), repair());
+			assertEquals("CONTROL_WORDS", text(pkg));
+			assertEquals(LoadFinding.MULTIPLE_MAIN_PARTS, pkg.getLoadFindings().get(0).getKind());
+			assertEquals("2", pkg.getLoadFindings().get(0).getDetail());
+			try (java.util.zip.ZipInputStream in = new java.util.zip.ZipInputStream(new ByteArrayInputStream(saved(pkg)))) {
+				for (ZipEntry e; (e = in.getNextEntry()) != null; ) {
+					if (e.getName().equals("_rels/.rels")) assertEquals(2, new String(in.readAllBytes(), "UTF-8").split("officeDocument\"", -1).length);
+				}
+			}
+		}
+		byte[] zip = rewritten(wiring("control-one-main"), "_rels/.rels", head
+				+ "<Relationship Id=\"rId2\" Type=\"" + od + "\" Target=\"http://example.com/x.docx\" TargetMode=\"External\"/></Relationships>");
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new ByteArrayInputStream(zip));
+		assertEquals("CONTROL_WORDS", text(pkg));
+		assertTrue(pkg.getLoadFindings().isEmpty());
+	}
+
+	private static byte[] rewritten(File source, String name, String xml) throws Exception {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		try (java.util.zip.ZipOutputStream z = new java.util.zip.ZipOutputStream(out);
+				ZipInputStream in = new ZipInputStream(new java.io.FileInputStream(source))) {
+			for (ZipEntry e; (e = in.getNextEntry()) != null; ) {
+				z.putNextEntry(new ZipEntry(e.getName()));
+				z.write(e.getName().equals(name) ? xml.getBytes("UTF-8") : in.readAllBytes());
+				z.closeEntry();
+			}
+		}
+		return out.toByteArray();
 	}
 
 	/** A load into an existing package starts its findings afresh. */

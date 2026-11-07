@@ -310,6 +310,7 @@ DEFAULT_LIST = 'WD 0.72 (2)'      # no numbering part: Word's default decimal li
 STYLES_PREFIX = 'WD 0.72 (3)'     # a styles part cut late: Word keeps the styles before the break
 PROPERTIES = 'WD 0.72 (4)'        # a properties part not well formed, under fields: update: read as absent
 DEFECT_D = 'defect (d)'           # docx4j: an unreadable custom part leaves every property field on its cached result
+DEFECT_E = 'defect (e)'           # docx4j: a property part absent leaves its property fields on their cached results
 RELATIONSHIPS = 'WD 0.73 (rels)'  # a relationships part not well formed: Word keeps the relationships before the break
 STORE = 'WD 0.69 (c)'             # a custom XML store not well formed: read as absent, the binding repaired
 
@@ -417,7 +418,7 @@ WORD_READINGS = {
                                        dict.fromkeys(GROUPS['lists'][:4] + GROUPS['styled'], RELATIONSHIPS)),
     'broken-part-package-rels.docx': ("repaired: the main part's relationship before the break kept, the three "
                                       "properties parts' lost", Reading(lost=['core', 'app', 'custom']),
-                                      ['main', 'fields'], dict.fromkeys(GROUPS['main'] + GROUPS['fields'], RELATIONSHIPS)),
+                                      ['main', 'fields'], {**dict.fromkeys(GROUPS['main'], RELATIONSHIPS), **dict.fromkeys(GROUPS['fields'], DEFECT_E)}),
 }
 # the store files: (token, count in every view and under WORD); bindings: bound is both the default and word-text's
 STORE_READINGS = {
@@ -431,7 +432,9 @@ STORE_READINGS = {
 # docx4j's part.not_read where the reading needs the part (REQ-801), in every view: the file's case, the part
 NOT_READ = [('broken-part-styles.docx', '/word/styles.xml'), ('broken-part-numbering.docx', '/word/numbering.xml'),
             ('broken-part-settings.docx', '/word/settings.xml'), ('broken-part-numbering-order.docx', '/word/numbering.xml'),
-            ('broken-part-styles-late.docx', '/word/styles.xml'), ('broken-part-styles-invalid.docx', '/word/styles.xml')]
+            ('broken-part-styles-late.docx', '/word/styles.xml'), ('broken-part-styles-invalid.docx', '/word/styles.xml'),
+            ('broken-part-document-rels.docx', '/word/_rels/document.xml.rels'), ('broken-part-package-rels.docx', '/_rels/.rels'),
+            ('store-not-read.docx', '/customXml/item1.xml')]
 
 
 def cases():

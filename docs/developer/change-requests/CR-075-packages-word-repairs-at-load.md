@@ -1,7 +1,7 @@
 # CR-075: packages Word repairs on opening: duplicate entries, two main parts, an unreadable relationships part or store
 
-Status: ACCEPTED 2026-11-07 (Jason: "start CR-075 decisions as recommended"): D1 to D10 as recommended in §5. Phases 0,
-1 and 3 committed, D10's count to come. Proposed 2026-11-04 (Jason: "Draft the CR for docx4j's load-side items"). The work Jason's repair policy
+Status: ACCEPTED 2026-11-07 (Jason: "start CR-075 decisions as recommended"): D1 to D10 as recommended in §5. Phases 0
+to 4 committed, D10's count to come. Proposed 2026-11-04 (Jason: "Draft the CR for docx4j's load-side items"). The work Jason's repair policy
 decisions of the same day leave to docx4j (the portfolio's `docs/repair_policy_across_ports.md`, "decisions as
 recommended", P1 to P6, 6085a74). Phases in §6. Jason ruled the two-main-parts
 statement on 2026-11-07 ("yes"), as §3 has it, so phase 3 waits on nothing. WD 0.73's item (i) ruled 2026-11-04 (WD 0.76, 7c5ee35):
@@ -171,12 +171,33 @@ count may run over other repaired files, or only these: the hand runs can't tell
 |---|---|---|
 | 0 | D9's fixtures (the builder; the two-rels files with Word's saves; docx4j's own duplicate and case-variant files, staged for a Word check recording the prompt); D10's survey count. | Fixtures done: `package-wiring/build_package_wiring.py` rebuilds the nine files of rounds 1 to 3 byte for byte and adds ten (a control; two entries of one name, as different bytes and as the same; `[Content_Types].xml` and a part's relationships twice; a case variant both ways; a central directory the other way from the local headers; a duplicate only the local headers show; a directory entry twice). Word's saves of the first 17 are beside them (§2). D10's count is in the catalogue queries owed once the home copy is in. |
 | 1 | D1 and D2 (the switch, the load findings); D3 (REQ-206 in both `ZipPartStore` paths, OPC equivalence); D6's named cause; the part-level relationships failure WARNed and recorded instead of printed (its reading unchanged until phase 4); tests; CHANGELOG. | done, reviewed by Fable (Jason: "you may implement phase 1; we will have fable review it", then "commit phases 0 and 1"). D10's count isn't in: release waits on it, as REQ-206 refuses packages that load today |
-| 2 | D7, the store. | proposed |
+| 2 | D7, the store. | done (Jason: "implement CR-075 phase 2 (the store) and phase 4 (the relationships reading and save gate) then commence CR-079", "commit phases 2 and 4 with these fixes"). The store is kept as a `BinaryPart`, so no lookup finds it |
 | 3 | D4, two main parts. | done (Jason: "then start phase 3", "Phase 3: commit it"). `PackageRelsUtil.isMainPart`, `Load3.oneMainPart`; the rule runs on every package type, and was measured on Word alone |
-| 4 | D5, D6's reading and D8's save gate. | proposed (WD 0.73 (i) ruled 2026-11-04, WD 0.76) |
+| 4 | D5, D6's reading and D8's save gate. | done. A `clone()` for an output and `Docx4J.bind`'s copy back aren't gated, as they're copies, not saves. Gate b382: 0 movers |
 
 Each phase's hand-off (the rule, the fixtures, Word's readings) goes to docx4j-python (its planned CR-032 for REQ-206)
 and core-ts through the portfolio.
+
+**Fable's review of phases 2 to 4** (Jason: "Fable review of CR-075 phases 2 to 4 first"), ten findings.
+
+- **Fixed.**
+  - `Docx4J.bind` copies a package back into itself through a save, so the gate refused it, and the reload left a `RepairMode.WORD` package on the default mode, so the caller's own save was refused too. It now copies with `Save.setCopy`, and keeps the mode as it keeps the findings.
+  - A store the reader refuses before parsing, an unknown declared encoding say, still refused the package. It now reads as absent like any other. The parse no longer goes through `XmlPart.setDocument`, which is where the `/null` and the stderr line came from: a store now gives one warning.
+  - A store reached by two relationships lost only the first under the switch, and a save then failed on the part. All of them go.
+  - The prefix kept on any failure, not only a break, and in any namespace. A relationships part that parses to its end now keeps nothing, so a well-formed `_rels/.rels` in the wrong namespace is refused as it was; a second reading no longer doubles the list.
+  - The rich-text binding's Flat OPC save of a package made for one control carried the source's findings, was refused, and left the value stale, with the exception printed and swallowed. Its findings are cleared. This one has no test of its own.
+  - `SaveToZipFile.saveFlatOPC` wasn't gated, where `OpcPackage.save` with the Flat OPC flag is. It is now.
+  - The inspector didn't report an unreadable store, so it and the text model disagreed. It now lists it as `unreadable`.
+  - An external `officeDocument` target is no main part, where under the switch it had died on a URL taken for a part name. docx4j-python's check at 9077b95 found the same.
+  - The gate's message and javadoc say it holds even where all the relationships read were all there were, since nothing tells how many followed, and that a caller who has put back what was lost says so with `setRepairMode`.
+- **Not a defect.** It asked whether two `officeDocument` relationships to one target should be refused, as they loaded before phase 3. I changed that to one main part, unmeasured, and Word then showed it wrong: the round `one-target` (Jason: "Two officeDocument relationships to one target: measure it"; `ot-*`, each file twice) has Word repairing two and three to one target, a dialog at every open, and saving one relationship. So phase 3's count of relationships stands, as "Word reads such a package only through a repair" says, and the message now says relationships rather than parts.
+- **A difference from Word it found.** `broken-part-package-rels`'s property fields were pending on `WD 0.72 (4)`, which is about an unreadable part. They are a different thing: with a property part absent, even on an intact package, Word empties the field under `fields: update` and docx4j leaves its cached result. Labelled `defect (e)`, not fixed here.
+- **Left.**
+  - `AbstractMerger` clones through a save, so a mail merge of such an input is refused. That stays: the result is a new package with no findings, so this is the one place the loss can be told, and under the switch it goes through.
+  - The documents4j and Microsoft Graph exporters save to hand a docx to another engine, so they are refused where docx4j-export-fo isn't. Jason's call.
+  - `FlatOpcXmlImporter` takes none of these rules, as it reads no zip and no relationships parts of its own.
+  - `EmbeddedPackagePart.getBuffer` falls back to the old bytes if a live nested package is refused, logging an error.
+- **Unmeasured** (from docx4j-python's check at 9077b95). A part's relationships part that is well formed in a wrong namespace reads as none, with `part.not_read`, detail `0`. A default save is refused. Under the switch the save goes through and what they named goes, a 10-entry package saving as 3, which here is docx4j's reading rather than Word's, as Word hasn't been asked. 
 
 ## 7. Risks
 

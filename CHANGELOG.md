@@ -138,8 +138,12 @@ Changes in Version 17.3.6
   `load(File, LoadOptions)` overloads, a literal `null` as `Docx4J.load`'s second argument needs a cast.
 - A package with more than one `officeDocument` relationship is refused too, naming the targets, where docx4j read the last silently and kept both on a save. Under
   `RepairMode.WORD` it reads the last relationship's target, as a fresh Word does, and a save keeps that part alone.
-- `OpcPackage.getLoadFindings()` says what a load read around, and the text model and the inspector report it. A part's relationships part that isn't well
-  formed is now among them, in place of a stack trace on stderr. A refusal over `_rels/.rels` names the part and the parse error, not a `NullPointerException`.
+- `OpcPackage.getLoadFindings()` says what a load read around, and the text model and the inspector report it.
+- A relationships part that isn't well formed now keeps the relationships before the break, as Word's repair does, in place of a stack trace and none at all; what a
+  lost one named reads as absent, and a save is refused rather than drop it, unless the package was loaded under `RepairMode.WORD`. `_rels/.rels` the same, where a main part's relationship is
+  among those kept, and otherwise a refusal naming the part and the parse error.
+- A custom XML store that isn't well formed no longer refuses the load: it reads as absent, a binding naming it resolves to the store that fits, as Word's repair does, and raises
+  `part.not_read`. A save writes its bytes, or under `RepairMode.WORD` drops it.
 - With JAXB 4 (docx4j-JAXB-ReferenceImpl), the reset of JAXB's error count after ten errors in a part works again
   (#164): it looked for JAXB 2's class only, logged three ERRORs, and left the part's later errors unreported.
 
