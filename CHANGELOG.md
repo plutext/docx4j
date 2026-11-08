@@ -8,7 +8,8 @@ Version 17.3.6
 Release date
 ------------
 
-[]
+8 November 2026
+
 
 Contributors to this release
 ----------------------------
@@ -23,156 +24,56 @@ Claude Fable 5.1
 Changes in Version 17.3.6
 --------------------------
 
-**Bump deps**
+### Bump deps
 
-   org.apache.xmlgraphics:batik-* ......................   1.19 -> 1.20
-   org.apache.xmlgraphics:xmlgraphics-commons ..........   2.11 -> 2.12
-   org.docx4j:docx4j-fo-renderer ....................... 2.11-docx4j.8 -> 2.12-docx4j.1
+    org.docx4j:docx4j-fo-renderer ................   2.11-docx4j.8 -> 2.12-docx4j.1
+    org.apache.xmlgraphics:batik-* ...............   1.19 -> 1.20
+    org.apache.xmlgraphics:xmlgraphics-commons ...   2.11 -> 2.12
 
-**PDF output.**
-- The FO renderer is on the Apache FOP 2.12 line (docx4j-fo-renderer 2.12-docx4j.1), and `-Papache-fop` builds
-  against Apache FOP 2.12. A 2.11 renderer still loads, with FopCapabilities' line warning.
-- A WMF or EMF picture's Chinese, Japanese or Korean text no longer breaks PDF output: an odd-length record's
-  padding came through as a NUL, which made the FO unreadable. That text now decodes with Windows' code pages
-  (① was U+FFFD). An FO that is not well-formed XML now fails with its parse error.
-- Adjacent bordered paragraphs share a box only where their borders match in every setting and their left, right and
-  hanging indents match, as in Word (only the top's and bottom's w:val were compared). A borders container no longer
-  carries its first paragraph's text-indent, so neither the paragraphs after it nor a floating table beside them take it.
-- Legacy check boxes (`FORMCHECKBOX`) are drawn in PDF output, as Word draws them, checked or not, and what follows is
-  set past them (it was 10 to 13pt left of Word's). New feature `PP_PDF_FORM_CHECKBOXES`, on by default.
-- A text box's first paragraph keeps its space before, as in Word (the box's text sat that much too high). Its text,
-  and a floating table's, no longer takes the colour, weight and slant of the paragraph it is anchored in.
-- `w:numId 0` clears every inherited left, hanging and first-line indent, the style's own too, and keeps the right one, as Word does.
-- A floating table placed by `w:tblpXSpec` below compatibility mode 15 stands where Word's does.
-- PDF: a text box's text starts at the box's top in a table cell of any `w:vAlign`, and a box stays on its paragraph's page.
-- PDF: a text box beside a floating table, or in the paragraph opening a page, stands where Word's does (renderer 2.12-docx4j.1).
-- PDF: below compatibility mode 15 a tab reaching a custom stop past its cell's edge stays on its line, as in Word (renderer
-  2.12-docx4j.1). Known limit: text after such a tab is drawn over the next cell, where Word draws none.
-- PDF: a paragraph with line breaks beside a floating table is no longer drawn twice (renderer 2.12-docx4j.1).
-- A floating table below compatibility mode 15 stands where Word's does: `w:tblpX` places the cell text, not the left
-  border, and `w:tblInd` is added (the table was about 11pt right of Word's).
-- The paragraph straight after a floating table takes no HTML auto space before, as in Word (`w:beforeAutospacing`; 14pt
-  too low before, and that much more of the page taken).
-- A paragraph whose line breaking restarts beside a left float keeps its first word (FOP-3331, which docx4j's own
-  line layout manager lacked; CR-071 phase 0).
-- Word-style layout is the docx4j FO renderer's own (2.12-docx4j.1, hook `word-layout`): docx4j's copy of FOP's
-  layout managers in `org.docx4j.fop.wordlayout` is gone, its output unchanged on the renderer (gated). The
-  `docx4j.convert.out.fo.wordLayout.*` settings keep their names. On Apache FOP (`-Papache-fop`) docx4j now lays out
-  as plain FOP does, and says so once (CR-071).
-- A paragraph beside a page-anchored floating table, or at a change of column width, is no longer drawn twice (a
-  defect of the Word layout, fixed in the renderer; 2.12-docx4j.1).
-- A page break in the paragraph a full-width floating table is anchored to no longer takes the table to the next
-  page: Word sets the table on the anchor's page and the break after it.
-- A floating table that runs past the page's foot is split across pages as Word splits it; its rows past the foot
-  were lost (fixed in the renderer, hook `float-table-split`; 2.12-docx4j.1).
-- A text-anchored floating table wider than 60% of the column has text beside it in whatever room Word leaves
-  (1pt or more, where docx4j asked for 2in) on the renderer's Word layout (hooks `word-layout`,
-  `wide-block-below-float`), and one taller than the page floats where the renderer splits it.
-- A floating table whose anchor paragraph starts a new page stays on the page before the break, where Word sets it;
-  it went to the next page with its anchor.
-- A paragraph with a hanging indent that begins with an anchored text box or picture draws its first line at the
-  hang, as Word does; it started at the left indent.
-- A VML text box positioned relative to the text is measured from where Word puts its paragraph's top: below the
-  previous paragraph's space-after and above the paragraph's top border.
-- On the docx4j FO renderer's hook `first-line-indent-after-block` the renderer indents a paragraph's first line after an
-  anchored object itself, and docx4j leaves the paragraph as it is; an anchored object's content no longer takes its
-  paragraph's first-line indent.
-- A table row whose first paragraph keeps with the next is kept whole, as Word moves it to the next page rather
-  than divide it (it was only where the row held a nested table); found through a paragraph's border container too.
+### PDF output
+- The FO renderer moves to the Apache FOP 2.12 line (docx4j-fo-renderer 2.12-docx4j.1), and Word-style layout now lives in the renderer itself.
+- Floating tables and text boxes are placed as Word places them.
+- Bordered paragraphs, `w:numId 0` indents, hanging indents beside anchored objects, and rows that keep with the next follow Word's rules.
+- Legacy check boxes (`FORMCHECKBOX`) are now drawn (`PP_PDF_FORM_CHECKBOXES`, on by default).
+- A WMF or EMF picture holding Chinese, Japanese or Korean text no longer breaks PDF output.
 
-**Reading documents.**
-- A `w:br` outside a run (directly in a paragraph, hyperlink or the body, or inside a `w:t` or `w:instrText`) is
-  read as Word reads it: a break at that point, all the text kept. docx4j dropped the break, and inside a `w:t`
-  the text before it; 206,351 of 3.7 million Common Crawl documents have one (CR-073).
-- An element Word doesn't know no longer loses what it holds. In a content host its tags go and its content is read, at any
-  depth; a run in such an element in a `w:pPr` goes to the head of the paragraph; in a `w:t` it goes with all it holds. As Word 365
-  reads them, by core-ts's check 76 (CR-076).
-- An element docx4j has no model for inside a content control's `w:sdtPr` (an `mc:Ignorable` extension, say) no
-  longer leaves the main document unread: the load took JAXB's message, which lists `w14:entityPicker`, for an XXE
-  entity error and gave up instead of preprocessing (`XmlUtils.isEntityError`). Found by docx-platform-tests.
+### Loading
+- **Behaviour change:** a package Word opens only through its repair prompt is now refused, naming the problem:
+  - duplicate zip entries
+  - more than one main document relationship
+  - a relationships part in the wrong namespace
+  - an `External` main relationship beside an internal one
 
-**Saving.**
-- A save gives a `w14:paraId` to each paragraph and table row that has none, or repeats an earlier one, in a document that
-  uses them, in any part that has been read: with one missing, Word renumbers every id in some files. `docx4j.save.paraIds=false` turns
-  it off, and `ParaIds.assign` does it on request (CR-077).
-- A `Requires` prefix only the source declared stays declared on a save for a `mc:Choice` in a `w:docPartBody` or `w:numPicBullet`, as it already was elsewhere.
-- `w:stylePaneFormatFilter` keeps its fifteen attributes on a save, where only `w:val` survived.
-  `CTSettings.getStylePaneFormatFilter()` now returns a `CTStylePaneFilter`, not a `CTShortHexNumber`.
-  Word reads `w:val` only with no attribute beside it, so on a file that has them `setVal` alone no longer changes what Word reads (CR-078).
-- `understood-namespaces.txt` is now what Word was measured to understand, 114 URIs: text takes a Choice requiring `wpi`, `oel`, `cx3`, `cx4`, `cx6`, `cx7`, `c16r2`, `ax` or `xsi`, where it took the Fallback, and the Fallback where a Choice requires one of 13 Word doesn't understand. What a reader can reach is in `traversal-namespaces.txt`.
-- An `mc:AlternateContent` with no `mc:Fallback` and no `mc:Choice` Word understands is now absent, as in Word (WD REQ-305), where its first Choice was taken: in text, which raises `mce.nothing_selected`, and in PDF and HTML. The `word` load mode, the default, takes it out at block, row and cell level, as Word's save does; `preserve` keeps it.
+  `RepairMode.WORD` (`docx4j.openpackaging.load.repair=word`) reads such packages as Word's repair does, and `RepairMode.ALL` adds docx4j's own repairs. `OpcPackage.getLoadFindings()` reports what was repaired.
+- A damaged part no longer aborts the load. A broken relationships part keeps what precedes the break (a save is refused unless repairing), and a broken custom XML store reads as absent.
+- Unusual main-part shapes read as Word reads them: `mc:AlternateContent` or another element as a part's root, a child given twice (joined or merged), and an undeclared `mc:Ignorable` prefix.
+- **API note:** with the new `load(File|InputStream, LoadOptions)` overloads, a literal `null` as `Docx4J.load`'s second argument needs a cast.
 
-**Java 25.**
-- docx4j sets its own XML element-depth limit, 256 (`docx4j.xml.maxElementDepth`, 0 for none), on the parsers it
-  creates: Java 25's default of 100 left a document 32 tables deep unreadable, and failed PDF output at 25.
+### Reading documents
+- A `w:br` outside a run is read as Word reads it, with all the text kept.
+- An element Word doesn't know no longer loses what it holds.
+- An unmodelled extension in a content control's properties no longer leaves the document unread.
 
-**A main document part that could not be read.**
-- PDF and HTML output and the text model now say which part could not be read and why (a Docx4JException; from
-  the text model, a Docx4JRuntimeException), where they failed with a NullPointerException, "Exception exporting
-  package" or empty text. In the text model, an embedded document whose main part cannot be read, and an
-  unreadable header, footer, notes, comments or glossary part, is `content.not_read` (the notes threw a
-  NullPointerException).
+### A main document part that could not be read
+- PDF, HTML and text output now name the part and the reason, instead of a `NullPointerException` or empty text.
 
-**Text extraction.**
-- Under `fields: update`, a property field with no value, the part gone, unreadable or holding nothing for it, reads as Word's does in the text model: TITLE and Company
-  empty, REVNUM 1, DOCPROPERTY of a core text property or an unknown name Word's error text (CR-067 §16). `FieldUpdater` and the outputs still keep the cached result.
-- DOCPROPERTY Manager reads the extended properties, as Word's does; it was taken for a custom property.
-- Under `fields: update`, a LISTNUM (or AUTONUM*) in a header, footer or note keeps its stored result, as Word's does,
-  where it showed the body's next number; a SET written as `w:fldSimple` shows nothing, as the complex form already
-  did (CR-067 §15).
-- A styles, numbering or settings part that cannot be read is read as if absent, and the result carries
-  `part.not_read` naming it (WD 0.66 REQ-801, CR-046 §10); an unreadable styles part no longer loses the labels
-  of directly numbered paragraphs, in the text model or `Emulator`.
-- All Caps text with no language on the run, its styles or the document defaults is cased by the new option
-  `default_language` (`TextOptions.defaultLanguage`, a BCP 47 tag, `en-US` by default), not the settings'
-  `w:themeFontLang`, which Word ignores there (it uses its editing language; WD 0.80 REQ-607).
-- `profile: word-text` writes list labels (`list_labels: true`), as Word's Save As Plain Text does (WD 0.75).
+### Text extraction
+- Under `fields: update`, a property field with no value reads as Word's does, and a LISTNUM in a header, footer or note keeps its stored result.
+- A styles, numbering or settings part that can't be read is read as absent and reported (`part.not_read`).
+- New `default_language` option for casing All Caps text, and `profile: word-text` writes list labels.
 
-**Markdown.**
-- `MarkdownExportOptions.setAddressComments(true)` writes each block's address before it as an HTML comment
-  (`<!-- body/3 paraId=5A2B1C3D -->`), so a reader of the Markdown can name the block it means; off by default.
+### Saving
+- A save gives each paragraph and table row a unique `w14:paraId` where one is missing or repeated (`docx4j.save.paraIds=false` turns it off).
+- `w:stylePaneFormatFilter` keeps all its attributes. **API change:** `CTSettings.getStylePaneFormatFilter()` now returns `CTStylePaneFilter`.
+- `mc:AlternateContent` follows Word: with no Choice Word understands and no Fallback, neither branch shows, and the understood-namespace set is now the one Word was measured to use.
 
-**Metafiles.**
-- The WMF/EMF code (repackaged Apache POI 5.5.1) takes POI's fixes since June: bounds and header checks, a
-  zero-size bitmap draws nothing, 15 bare asserts now warnings or errors (the hwmf package README, item 7).
+### Markdown
+- New `setAddressComments(true)` writes each block's address before it as an HTML comment.
 
-**Loading.**
-- A package whose zip holds two entries of one name, compared as OPC part names so that case doesn't count, is now refused, naming the
-  entry, where docx4j read the last silently: Word reads such a package only through a repair (WD REQ-206; CR-075). `new LoadOptions().repairMode(RepairMode.WORD)`,
-  or `docx4j.openpackaging.load.repair=word`, reads the first in the central directory, as Word's repair does, and records it. With the new
-  `load(File, LoadOptions)` overloads, a literal `null` as `Docx4J.load`'s second argument needs a cast.
-- A package with more than one `officeDocument` relationship is refused too, naming the targets, where docx4j read the last silently and kept both on a save. Under
-  `RepairMode.WORD` it reads the last relationship's target, as a fresh Word does, and a save keeps that part alone.
-- `OpcPackage.getLoadFindings()` says what a load read around, and the text model and the inspector report it.
-- A relationships part that isn't well formed now keeps the relationships before the break, as Word's repair does, in place of a stack trace and none at all; what a
-  lost one named reads as absent, and a save is refused rather than drop it, unless the package was loaded under `RepairMode.WORD`. `_rels/.rels` the same, where a main part's relationship is
-  among those kept, and otherwise a refusal naming the part and the parse error.
-- `mc:AlternateContent` as a part's root reads as Word's does, in the main document part and in a header, footer, notes, comments, styles, numbering or settings part, where a first use
-  failed with a `ClassCastException` and a save failed. A save of a part that was read writes an ordinary part. Two `w:document` in the branch read are joined; nothing selected is an empty document.
-  A root `w:body`, `w:p` or `w:sdtContent`, or an unknown `w:` root holding block content, reads as a document, as Word's does. A root Word refuses is refused, naming it; one it opens and
-  shows nothing of gives no text and `part.unexpected_root`; a save of either keeps its bytes, and an inspection of a main part that can't be read is `PARTIAL` (CR-079).
-- The text model refuses a package with no main document part, where it gave no text.
-- A child given more than once in the main part reads as Word reads it (WD REQ-322, CR-079): a second `w:body` or `w:sdtContent` joins the first, a VML
-  `w:txbxContent` joins in reverse, and a repeated `w:pPr`, `w:rPr`, `w:sectPr` or `w:tblPr` merges, the later's values winning and the earlier's staying,
-  where JAXB kept the last copy alone. A `w:body` in a `w:body` reads through.
-- A text reading of a package with no styles part no longer adds one: the list numbering's resolver added docx4j's default styles, which a later save wrote,
-  changing how Word laid the document out (WD REQ-204). `MainDocumentPart.getPropertyResolverAddingNothing()` is the reader's resolver.
-- A main part's root reads as Word's round `rq-*` has it (WD 0.103): an unknown root holding `mc:AlternateContent` reads the branch Word reads, and a block `w:sdt`,
-  as the root or in a branch at it, reads as the body; an empty `w:sdtContent` root is an empty document; a run or a row where a body's content stands, and
-  `w:txbxContent`, are refused.
-- A prefix in `mc:Ignorable` with no declaration in scope is warned of, `mce.undeclared_prefix`, and a part written anew drops it where docx4j doesn't know its
-  namespace, as Word's repair does, and declares it where it does (WD REQ-323). A part the preprocessor rewrites keeps its root's other namespace declarations.
-- A package with an `External` `officeDocument` relationship beside an internal one is refused, naming it, under `RepairMode.WORD` too, as Word refuses it even through a repair.
-  One with no internal one is refused as having no main part, where the URL was taken for a part name.
-- `RepairMode.ALL` (`docx4j.openpackaging.load.repair=all`) follows Word's repairs and makes docx4j's own of shapes Word won't open, listed in its javadoc. The first: an
-  `External` `officeDocument` relationship beside an internal one is dropped, its URL never fetched, and `package.external_main_part` raised. The text model's result
-  says what a load repaired, `repaired`: `none`, `word` or `own` (WD REQ-207).
-- A relationships part in another namespace is refused, naming it, or under `RepairMode.WORD` read as Word's repair reads it, every relationship by its local name, recorded as
-  `package.relationships_namespace`.
-- A custom XML store that isn't well formed no longer refuses the load: it reads as absent, a binding naming it resolves to the store that fits, as Word's repair does, and raises
-  `part.not_read`. A save writes its bytes, or under `RepairMode.WORD` drops it.
-- With JAXB 4 (docx4j-JAXB-ReferenceImpl), the reset of JAXB's error count after ten errors in a part works again
-  (#164): it looked for JAXB 2's class only, logged three ERRORs, and left the part's later errors unreported.
+### Java 25
+- docx4j sets its own XML element-depth limit (256, `docx4j.xml.maxElementDepth`). Java 25's default of 100 made deeply nested documents unreadable.
+
+See https://github.com/plutext/docx4j/blob/df0e4177bde6f406ddd505fadf38c626e633cce7/CHANGELOG.md for details
 
 
 
