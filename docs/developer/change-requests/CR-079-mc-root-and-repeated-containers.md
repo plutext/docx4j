@@ -1,7 +1,7 @@
 # CR-079: `mc:AlternateContent` as the root, and a repeated container, read as Word reads them
 
 Status: ACCEPTED 2026-11-07 (Jason: "CR-079: D1–D9 as recommended."). Proposed 2026-11-06 (Jason: "reproduce it first and then write a CR"). Reproduced
-on f960df59e; phase 0 done, phase 1 begun, uncommitted (§6). Read against WD 0.101 (portfolio 7150868), which takes phase 0 and `ft-*` into REQ-317 and REQ-322.
+on f960df59e; phases 0 to 3 done, D8's count open (§6; 4b26e7422, e8340add0, af50deffe). Read against WD 0.103 (portfolio eceabd6), which takes phase 0, `ft-*` and `rq-*` into REQ-317 to REQ-322.
 Raised by docx4j-generated-objects-ts's Word rounds and docx-tool-identifier's run of the readers (Jason: "tell the various engines about
 the disagreement"), written up in `docx4j-portfolio/docs/text_extraction_behaviour_model.md` §7.15.
 
