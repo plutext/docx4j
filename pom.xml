@@ -77,6 +77,18 @@
         <module>docx4j-bundle-extras</module> <!-- PDF output: export-fo, chart-render, the FO renderer fork, fonts; put beside docx4j-bundle -->        
         
     </modules>
+
+	<!--
+
+	Preventing https://central.sonatype.com/artifact/org.docx4j/docx4j-parent from being published isn't a one-liner.
+
+	The release deploys with nexus-staging-maven-plugin. Setting skipNexusStagingDeployMojo in the parent's plugin config would pass down to every child, so each published module would have to undo it.
+
+	central-publishing-maven-plugin has an excludeArtifacts setting, so dropping the parent becomes one line at that point.
+
+	So we'll leave it alone for now, and drop it then.
+
+	-->
 	
 	<description>
 		docx4j is a library which helps you to work with the Office Open
