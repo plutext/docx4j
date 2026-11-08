@@ -248,6 +248,13 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		}
 	}
 
+	/** One WARN a part for the children given more than once that the unmarshal read as Word reads them (CR-079 D7). @since 17.3.6 */
+	protected void warnRepeated(Unmarshaller.Listener listener) {
+		if (!(listener instanceof Docx4jUnmarshallerListener)) return;
+		int n = ((Docx4jUnmarshallerListener) listener).takeRepeated();
+		if (n > 0) log.warn(getPartName() + ": " + n + " child(ren) given more than once, read as Word reads them, joined or merged (CR-079; WD REQ-322)");
+	}
+
 	/** The parameters of the preprocessing stylesheet for this part; none here. @since 17.3.6 */
 	protected Map<String, Object> preprocessorParameters() {
 		return null;
@@ -1291,6 +1298,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * @since 17.3.4 (CR-051 phase 1)
 	 */
 	protected List<ResolvedAlternateContent> resolveAlternateContent(Unmarshaller.Listener listener) throws JAXBException {
+		warnRepeated(listener);
 		AlternateContent root = resolveRootElement();
 		if (!(listener instanceof Docx4jUnmarshallerListener)) return Collections.emptyList();
 		List<AlternateContent> found = ((Docx4jUnmarshallerListener) listener).takeBlockLevelElements();

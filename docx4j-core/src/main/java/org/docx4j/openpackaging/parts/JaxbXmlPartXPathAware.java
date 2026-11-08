@@ -863,6 +863,7 @@ implements XPathEnabled<E> {
 	 * query reads matches the tree ({@link #refreshBinder}).
 	 */
 	private void afterBinderUnmarshal(Unmarshaller.Listener listener) throws JAXBException {
+		warnRepeated(listener);
 		Object stood = jaxbElement;
 		org.docx4j.mce.AlternateContent root = resolveRootElement();
 		boolean replaced = jaxbElement != stood; // a w:body or a w:p at the root too: the binder's DOM still has it (CR-079)

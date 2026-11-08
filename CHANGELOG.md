@@ -150,6 +150,9 @@ Changes in Version 17.3.6
   A root `w:body`, `w:p` or `w:sdtContent`, or an unknown `w:` root holding block content, reads as a document, as Word's does. A root Word refuses is refused, naming it; one it opens and
   shows nothing of gives no text and `part.unexpected_root`; a save of either keeps its bytes, and an inspection of a main part that can't be read is `PARTIAL` (CR-079).
 - The text model refuses a package with no main document part, where it gave no text.
+- A child given more than once in the main part reads as Word reads it (WD REQ-322, CR-079): a second `w:body` or `w:sdtContent` joins the first, a VML
+  `w:txbxContent` joins in reverse, and a repeated `w:pPr`, `w:rPr`, `w:sectPr` or `w:tblPr` merges, the later's values winning and the earlier's staying,
+  where JAXB kept the last copy alone. A `w:body` in a `w:body` reads through.
 - A text reading of a package with no styles part no longer adds one: the list numbering's resolver added docx4j's default styles, which a later save wrote,
   changing how Word laid the document out (WD REQ-204). `MainDocumentPart.getPropertyResolverAddingNothing()` is the reader's resolver.
 - A main part's root reads as Word's round `rq-*` has it (WD 0.103): an unknown root holding `mc:AlternateContent` reads the branch Word reads, and a block `w:sdt`,

@@ -1,0 +1,3 @@
+Case sz
+TARGET TEXT
+LAST LINE

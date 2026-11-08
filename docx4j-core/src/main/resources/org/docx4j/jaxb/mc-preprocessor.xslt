@@ -1050,6 +1050,14 @@
 		</xsl:for-each>
 	</xsl:template>
 
+	<!-- A w:body in a w:body reads through, as if its tags were absent (CR-079 phase 2; the round nested, nd-20 to nd-24), its
+	     w:sectPr with it, which then merges with a later one as two copies of one do (WD REQ-322): Word's save of nd-22 keeps the
+	     nested section's w:orient under the later one's size.  JAXB rejects the nested element, so a part holding one comes
+	     here.  @since 17.3.6 -->
+	<xsl:template match="w:body[parent::w:body]">
+		<xsl:apply-templates select="node()" />
+	</xsl:template>
+
 	<xsl:template match="w:*">
 		<xsl:choose>
 			<xsl:when test="not(contains($wml-names, concat(' ', local-name(), ' ')))

@@ -1,0 +1,3 @@
+Case b-on-off-on
+TARGET TEXT
+LAST LINE

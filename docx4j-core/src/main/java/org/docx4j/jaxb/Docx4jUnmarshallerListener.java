@@ -33,7 +33,25 @@ public class Docx4jUnmarshallerListener extends Unmarshaller.Listener {
 
 	public Docx4jUnmarshallerListener(JaxbXmlPart part) {
 		this.part = part;
+		this.mainPart = part instanceof org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 		log.debug(part.getClass().getName());
+	}
+
+	/** The main document part's children given more than once are read as Word reads them (CR-079; WD REQ-322); no other part's is measured. */
+	private final boolean mainPart;
+
+	private int repeated;
+
+	/**
+	 * How many children this unmarshal found given more than once and read as Word reads them ({@link RepeatedChildren}); the count is
+	 * cleared, so a part warns once.
+	 *
+	 * @since 17.3.6
+	 */
+	public int takeRepeated() {
+		int n = repeated;
+		repeated = 0;
+		return n;
 	}
 
 	/**
@@ -99,7 +117,10 @@ public class Docx4jUnmarshallerListener extends Unmarshaller.Listener {
 
   @Override
   public void afterUnmarshal(Object target, Object parent) {
-	  
+
+		// before the parent's setter replaces the earlier copy with this one (CR-079)
+		if (mainPart && RepeatedChildren.repeated(target, parent)) repeated++;
+
 		if (target instanceof AlternateContent) {
 			
 			if (McBranchSdt.holdsBranchSdt((AlternateContent) target)) branchSdts.add((AlternateContent) target);

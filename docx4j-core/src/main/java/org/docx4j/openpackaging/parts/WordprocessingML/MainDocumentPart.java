@@ -290,14 +290,8 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 			later.setBody(from);
 			return;
 		}
-		for (Object o : from.getContent()) {
-			if (org.docx4j.XmlUtils.unwrap(o) instanceof org.jvnet.jaxb.lang.Child) ((org.jvnet.jaxb.lang.Child) org.docx4j.XmlUtils.unwrap(o)).setParent(to);
-		}
-		to.getContent().addAll(0, from.getContent());
-		if (to.getSectPr() == null && from.getSectPr() != null) {
-			from.getSectPr().setParent(to);
-			to.setSectPr(from.getSectPr());
-		}
+		// as two w:body in one document join: the final w:sectPr merged, a body with none passed over (WD REQ-322)
+		org.docx4j.jaxb.RepeatedChildren.joinBodies(from, to);
 	}
 
 	

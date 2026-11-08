@@ -1,0 +1,3 @@
+Case rPr-merge
+TARGET TEXT
+LAST LINE
