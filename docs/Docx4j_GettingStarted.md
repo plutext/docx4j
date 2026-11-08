@@ -5,7 +5,7 @@ Contents
   
 
 
-**This guide is for docx4j 17.3.5 (Java 11 and later); most of it applies to 11.5.x as well.   **
+**This guide is for docx4j 17.3.6 (Java 11 and later); most of it applies to 11.5.x as well.   **
 
 Version numbering jumped from 11.5.14 to 17.0.0 in part because of the following API changes:
 
@@ -152,7 +152,7 @@ To use docx4j 11.4 or later, ensure any code references **jakarta.xml.bind** (no
 
 `			<artifactId>``docx4j-JAXB-ReferenceImpl``</artifactId>`
 
-`			<version>17.3.5</version>`
+`			<version>17.3.6</version>`
 
 `		</dependency>`
 
@@ -166,7 +166,7 @@ To use docx4j 11.4 or later, ensure any code references **jakarta.xml.bind** (no
 
 `			<artifactId>``docx4j-JAXB-MOXy``</artifactId>`
 
-`			<version>17.3.5</version>`
+`			<version>17.3.6</version>`
 
 `		</dependency>`
 
@@ -188,7 +188,7 @@ With Maven, depend on the extras and the base jar comes with it (its pom names d
 
 `		<artifactId>docx4j-bundle-extras</artifactId>`
 
-`		<version>17.3.5</version>`
+`		<version>17.3.6</version>`
 
 `	</dependency>`
 
@@ -344,6 +344,30 @@ A similar approach works for pptx files:
 `		(PresentationMLPackage)OpcPackage.``load``(``new`` java.io.File(inputfilepath));`
 
 And similarly for xlsx files.
+
+## Damaged packages
+
+From 17.3.6, a package with one of the following faults, each of which Word opens only through its repair prompt, is refused: 
+
+- a zip holding two entries of one name, 
+- more than one main document relationship, and 
+- a relationships part in the wrong namespace.  
+
+A fourth, an External main document relationship beside an internal one, is refused too; Word won't open that at all.  The load throws a Docx4JException whose message begins "Refused:" and names what is wrong.  
+
+To read such a package as Word's repair gives it, answer the prompt in advance:
+
+```
+	WordprocessingMLPackage wordMLPackage = 
+		WordprocessingMLPackage.load(new java.io.File(inputfilepath),
+			new LoadOptions().repairMode(RepairMode.WORD));
+```
+
+or set docx4j.openpackaging.load.repair=word in docx4j.properties (the default is none).  RepairMode.ALL adds docx4j's own repairs to Word's, of shapes Word won't open: for the External main document relationship, the internal part is read and the URL is never fetched.  A package docx4j has no repair for is still refused.  Docx4J.load and OpcPackage.load take the same LoadOptions (in org.docx4j.openpackaging.io3).  
+
+Afterwards, OpcPackage.getLoadFindings() lists what the load repaired or read around, each finding with its kind (package.duplicate\_entry, say), the part or entry it concerns, and a detail; the list is empty for an ordinary package.
+
+Also from 17.3.6, a part that can't be read no longer aborts the load.  A relationships part that breaks off keeps the relationships before the break and is reported as a load finding (part.not\_read); saving that package is refused unless it was loaded with a repair mode, since the save would drop whatever the lost relationships named.  A custom XML part that can't be read is treated as absent.
 
 # OpenXML concepts
 
@@ -1350,26 +1374,26 @@ If Word is not available, you can generate PDF output via XSL FO using FOP.  If 
 
 From 17.0.4, the visitor (non-XSLT) FO exporter is likewise the default (pass Docx4J.FLAG\_EXPORT\_PREFER\_XSL for the XSLT pathway).
 
-PDF output via XSL FO is substantially improved in 17.0.5 and again in 17.1.0 and 17.2.0: line breaking, line height and placement, tab stops, paragraph spacing, list labels, tables, columns, footnotes and kerning now follow the rules Word applies, measured against Word 365. This is achieved in part by the introduction of docx4j's own FOP layout managers (in docx4j-export-fo, and on by default). The rules and the switches are documented in docx4j-export-fo/docs/word-layout-rules.md.
+PDF output via XSL FO is substantially improved in 17.0.5 and again in 17.1.0 and 17.2.0: line breaking, line height and placement, tab stops, paragraph spacing, list labels, tables, columns, footnotes and kerning now follow the rules Word applies, measured against Word 365. This is achieved in part by Word-style layout managers, on by default: docx4j-export-fo's own until 17.3.5, and from 17.3.6 the docx4j FO renderer's (see The FO renderer, below). The rules and the switches are documented in docx4j-export-fo/docs/word-layout-rules.md.
 
 See the sample code at [https://github.com/plutext/docx4j/tree/VERSION\_17\_2\_1/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples](https://github.com/plutext/docx4j/tree/VERSION_17_2_1/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples) 
 
-These jars are in the zip file, in dirs optional/export-fo and optional/chart-render (from 17.3.3 docx4j-export-fo needs both).
+From 17.3.3 docx4j-export-fo needs docx4j-chart-render too, which Maven brings as its dependency; docx4j-bundle-extras holds both (see Using docx4j bundles).
 
 **Equations.  **From 17.0.4, equations in the docx are rendered in the PDF.  Both FO pathways emit the equation as MathML inside fo:instream-foreign-object, and the JEuclid FOP plugin lays it out and draws it as vector paths, so no maths font has to be present and nothing needs configuring per document.
 
 One limitation: an equation is a single graphic, so a very long display equation overflows the margin instead of wrapping (Word cannot break inside an equation either).  Everything within the page width renders correctly.  For the whole maths pipeline - Markdown, docx, HTML and PDF - see docs/Maths\_from\_Markdown.md.
 
-**The FO renderer.  **From 17.3.0 docx4j-export-fo depends on the docx4j FO renderer, org.docx4j:**docx4j-fo-renderer** (currently 2.11-docx4j.7). docx4j-fo-renderer is an upstream-tracking fork of Apache FOP which carries the fixes docx4j has found in FOP and hooks for the Word layout rules.  Apache FOP 2.11 stays supported: exclude org.docx4j:docx4j-fo-renderer (and its -core, -events and -util artifacts) from docx4j-export-fo and add org.apache.xmlgraphics:fop (docx4j-export-fo/README.md has the recipe).  The docx4j renderer brings:
+**The FO renderer.  **From 17.3.0 docx4j-export-fo depends on the docx4j FO renderer, org.docx4j:**docx4j-fo-renderer** (currently 2.12-docx4j.1). docx4j-fo-renderer is an upstream-tracking fork of Apache FOP which carries the fixes docx4j has found in FOP and hooks for the Word layout rules.  From 17.3.6 it is also where Word-style layout lives: Word's line breaking, line placement, list items, tabs and leaders are the renderer's own layout managers, which docx4j turns on and configures (docx4j-export-fo no longer carries a copy of FOP's).  Apache FOP 2.12 stays supported: exclude org.docx4j:docx4j-fo-renderer (and its -core, -events and -util artifacts) from docx4j-export-fo and add org.apache.xmlgraphics:fop 2.12 (docx4j-export-fo/README.md has the recipe).  But from 17.3.6 docx4j then lays out as plain FOP does, since Word-style layout is the renderer's: FOP's own line breaking, line placement, list items and tabs apply, and docx4j says so once at start-up.  The docx4j renderer brings:
 
 - PDFs a fraction of their 17.2.x size: Word’s “no ligatures” setting reaches the renderer per font, so every font is embedded as a subset where a whole copy of each TrueType font used to go in.
 - Kerning and shaping that follow the run’s language, a run without w:kern left unkerned as Word leaves it, and letter-spaced text painted where the layout put it.
 - A text layer that says what the document says: a ligature extracts as its letters, a CJK ideograph as itself rather than as a Kangxi radical, a non-breaking space and a symbol glyph as what they are; and a CJK font keeps its layout tables, so its Latin text kerns.
 
-Whichever is on the classpath is used: FopCapabilities probes once per JVM and logs one INFO line naming the renderer, its version and the hooks it carries, so a support question can start from it; a rule which needs a hook falls back on Apache FOP, which therefore behaves as it did before the fork.  The probe also warns of two hazards: 
+Whichever is on the classpath is used: FopCapabilities probes once per JVM and logs one INFO line naming the renderer, its version and the hooks it carries, so a support question can start from it; a rule which needs a hook falls back on Apache FOP, and the line says which rules are off; Word layout (word-layout) is the largest of them.  The probe also warns of two hazards: 
 
 1. two copies of FOP on the classpath (the fork keeps Apache's package names, so classpath order decides which wins), and 
-2. a FOP from a release line docx4j-export-fo was not built for (its layout managers subclass FOP internals, so a 2.10 or a future 2.12 is unsupported until docx4j-export-fo moves to it).
+2. a FOP from a release line docx4j-export-fo was not built for (2.12 from 17.3.6, 2.11 before; on another line PDF output may differ or fail).
 
 **Pictures.  **From 17.3.0, pictures are drawn as Word draws them in its own PDFs: a picture stored at more than 300 pixels per inch for the size it is shown at is resampled to 200, and a high-quality JPEG is re-encoded at quality 75, as Word’s PDF export does, so the pictures in a PDF come out near the size of Word’s.  
 
@@ -2170,7 +2194,7 @@ From 17.2.0, org.docx4j.model.pagination.Paginate lays the document out with FOP
 
 `	Integer page = map.getPageIndex(paraId);   // 1-based, in rendering order; getPage() gives the number the page displays`
 
-Paginate.paginate(wordMLPackage, settings) does that and also rewrites the document's w:lastRenderedPageBreak markers, as Word records the pagination of its last rendering: every existing marker is removed, one is written at the start of each paragraph that begins a new page, and, inside a paragraph that spans pages, one at the character where the new page begins (the run is split there, as Word does).  A paragraph without a w14:paraId is given one, so a document paginated once keys stably from then on.  PaginateSettings.setLineBreaks(false) turns the mid-paragraph markers off; setWriteParaIds(false) leaves the ids alone.
+Paginate.paginate(wordMLPackage, settings) does that and also rewrites the document's w:lastRenderedPageBreak markers, as Word records the pagination of its last rendering: every existing marker is removed, one is written at the start of each paragraph that begins a new page, and, inside a paragraph that spans pages, one at the character where the new page begins (the run is split there, as Word does).  A paragraph without a w14:paraId is given one, so a document paginated once keys stably from then on.  PaginateSettings.setLineBreaks(false) turns the mid-paragraph markers off; setWriteParaIds(false) leaves the ids alone.  From 17.3.6 a save does the same in any document that uses the ids: each paragraph and table row with no w14:paraId, or with one repeating an earlier paragraph's, is given a fresh one, as Word does, since with one missing Word renumbers every id in some files.  docx4j.save.paraIds=false turns this off; ParaIds.assign(part) does it on request.
 
 The layout is of the document as if its tracked changes were accepted, and the pages are FOP's, with the fonts the package's font mapper resolves (Appendix 1): where those metrics differ from Word's, the page a paragraph lands on can differ too, so the markers are advisory, as Word's own are.  Docx4J.updateToc uses the same layout for the page numbers of a table of contents.
 
