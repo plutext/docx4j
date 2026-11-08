@@ -224,6 +224,19 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 				|| WORD_2003.equals(ns) && "wordDocument".equals(local) || XML_PACKAGE.equals(ns) && "package".equals(local);
 	}
 
+	/** A w:tr directly in the element, or a w:sdt there whose w:sdtContent holds one: content for a table, not a body. */
+	private static boolean holdsRows(org.w3c.dom.Element root) {
+		if (root == null) return false;
+		if (holds(root, "tr")) return true;
+		for (org.w3c.dom.Node n = root.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n.getNodeType() != org.w3c.dom.Node.ELEMENT_NODE || !Namespaces.NS_WORD12.equals(n.getNamespaceURI()) || !"sdt".equals(n.getLocalName())) continue;
+			for (org.w3c.dom.Node c = n.getFirstChild(); c != null; c = c.getNextSibling()) {
+				if (c.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE && "sdtContent".equals(c.getLocalName()) && holds((org.w3c.dom.Element) c, "tr")) return true;
+			}
+		}
+		return false;
+	}
+
 	/** A w:sdt directly in the element whose w:sdtContent holds a w:r. */
 	private static boolean holdsRunControl(org.w3c.dom.Element root) {
 		for (org.w3c.dom.Node n = root.getFirstChild(); n != null; n = n.getNextSibling()) {
@@ -263,8 +276,10 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		Object root = jaxbElement;
 		if (root == null || root instanceof org.docx4j.wml.Document) return;
 		org.docx4j.wml.Document document = documentOf(root);
-		// an empty w:sdtContent, which JAXB takes as a row control's, is an empty document, as Word reads it (rq-20)
-		if (document == null && root instanceof org.docx4j.wml.CTSdtContentRow && ((org.docx4j.wml.CTSdtContentRow) root).getContent().isEmpty()) {
+		// an empty w:sdtContent is an empty document, as Word reads it (rq-20). The source decides, not the class JAXB bound: the
+		// Reference Implementation binds a row control's, MOXy a block's, which drops the rows Word refuses (rq-21, rq-22)
+		if (document == null && root instanceof org.docx4j.wml.SdtContent && ((org.docx4j.wml.SdtContent) root).getContent().isEmpty()
+				&& !holdsRows(sourceRoot())) {
 			document = (org.docx4j.wml.Document) rootFrom(java.util.Collections.emptyList());
 		}
 		if (document == null) {

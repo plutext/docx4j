@@ -855,7 +855,7 @@
 			     as a body holding what it holds.  What it may hold is REQ-319's list; anything else stays as
 			     it is, and the read fails, naming it.  Only MainDocumentPart sets the parameter, as no other
 			     part is measured.  @since 17.3.6 -->
-			<xsl:when test="$mainDocumentPart and *[self::w:sdtContent
+			<xsl:when test="$mainDocumentPart and *[self::w:sdtContent[not(w:tr or w:sdt[w:sdtContent/w:tr])]
 					or (self::w:* and not(contains($wml-names, concat(' ', local-name(), ' ')))
 						and not(*[not(self::w:p or self::w:tbl or self::w:sdt[not(w:sdtContent/w:r)] or self::w:body or self::w:sectPr or self::mc:AlternateContent
 							or (self::w:* and not(self::w:sdt) and not(contains($wml-names, concat(' ', local-name(), ' ')))))]))]">

@@ -1,7 +1,7 @@
 # CR-075: packages Word repairs on opening: duplicate entries, two main parts, an unreadable relationships part or store
 
 Status: ACCEPTED 2026-11-07 (Jason: "start CR-075 decisions as recommended"): D1 to D10 as recommended in §5. Phases 0
-to 4 committed, phase 5 (`repair: all`) built, D10's count to come. Proposed 2026-11-04 (Jason: "Draft the CR for docx4j's load-side items"). The work Jason's repair policy
+to 5 committed, D10's count to come: 17.3.6 ships without it (Jason, 2026-11-08: "ship today without the count"). Proposed 2026-11-04 (Jason: "Draft the CR for docx4j's load-side items"). The work Jason's repair policy
 decisions of the same day leave to docx4j (the portfolio's `docs/repair_policy_across_ports.md`, "decisions as
 recommended", P1 to P6, 6085a74). Phases in §6. Jason ruled the two-main-parts
 statement on 2026-11-07 ("yes"), as §3 has it, so phase 3 waits on nothing. WD 0.73's item (i) ruled 2026-11-04 (WD 0.76, 7c5ee35):
@@ -163,7 +163,7 @@ count may run over other repaired files, or only these: the hand runs can't tell
 | D7 | A custom XML store not well formed (WD 0.69 (c), P2, P3). | (a) an unreadable part under CR-065 D1: bytes kept, passed over, read as absent with REQ-509's repair, `part.not_read` where a binding in scope names it, the load error's name fixed; an untouched save writes the bytes; under the switch the save drops it, as Word's does; (b) refuse the load, as today. | (a). |
 | D8 | The save gate (P2). | (a) a save refuses, naming the finding, where the load recorded a repair the save would make permanent with loss; under the switch it writes the repaired form; (b) the save warns and writes. | (a), as P2. |
 | D9 | Fixtures. | (a) a package-wiring family in docx4j-core-tests (`src/test/resources/package-wiring/`, its Python builder, byte-identical rebuild): the two-rels files of rounds 1 and 2 with Word's saves, docx4j's own duplicate `word/document.xml` and case-variant files (the case variant both after and before the exact name; Word check 75a measured the decoy-first order, Word keeping the first entry, and the fixtures pin it for docx4j), each Word check recording the prompt (P1); the relationships-cut and store files stay in the broken-part family; (b) tests building packages in Java only. | (a). The identifier copies them in (its CR-001 §3c lists two-rels as proposed). |
-| D10 | The corpus gate. | (a) before phase 1 lands, the load survey counts duplicate and OPC-equivalent entry names and multiple `officeDocument` relationships in the corpus, as CR-064's D9 gated its refusals; (b) no gate. | (a): REQ-206 turns a silent reading into a refusal, so how many documents it refuses should be known. |
+| D10 | The corpus gate. | (a) before phase 1 lands, the load survey counts duplicate and OPC-equivalent entry names and multiple `officeDocument` relationships in the corpus, as CR-064's D9 gated its refusals; (b) no gate. | (a): REQ-206 turns a silent reading into a refusal, so how many documents it refuses should be known. 17.3.6 ships before it is (Jason, 2026-11-08: "ship today without the count"): none of the 1,311 local corpus documents is refused, each refusal names its cause and `RepairMode.WORD` reads past it, and the count follows from the portfolio's catalogue queries. |
 
 ## 6. Phases
 
