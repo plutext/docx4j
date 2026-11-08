@@ -16,6 +16,12 @@ Reviewed 2026-11-09 by a Claude Fable 5.1 session at Jason's request. Its findin
 - a stale-cache check (D4);
 - the registry dependencies aligned.
 
+Revised 2026-11-09 (Jason: "make the LibreOffice wording black-box only in all four CRs; rewrite POI's txXfrm
+text-rotation rule and its VML shape-type table"):
+- LibreOffice is a black-box oracle only (CR-080 D11);
+- POI's `txXfrm` rule (CR-082) and its `ShapeType` table (CR-083, CR-080 D6) are written independently and not
+  ported.
+
 Owner: Jason Harrop. Drafted with Claude Opus 5.5.
 
 ## 0. Summary
@@ -63,7 +69,8 @@ drawing's `CTDrawing`, so its typed `getJaxbElement()` throws (§1).
   beside a full drawing cache is drawn by Word as five default blocks, not as the cache. So the cache is Word's drawing
   only for a file Word saved last (D4).
 - A diagram's shapes carry `dsp:txXfrm`, the text's rectangle, separate from the shape's. For a rotated shape, PowerPoint
-  and Word turn the text so that it reads upright (POI's `XSLFDiagram` reproduces the rule: about 25 lines).
+  and Word turn the text so that it reads upright. [MS-ODRAWXML] §2.10.3.5 defines `txXfrm` only as "a 2-D transform
+  to be applied to the text body of the shape", so the rule is measured in phase 0 and written from that (D3).
 - SmartArt text is DrawingML text (`a:txBody`: `a:bodyPr` with insets, anchor, `vert`, `rot` and `a:normAutofit
   fontScale lnSpcReduction`; `a:p`, `a:r`, bullets), not WordprocessingML.
 
@@ -76,8 +83,8 @@ Phase 0 measures, through the bridge, how Word's PDF draws a diagram and its tex
 
 - **Apache POI `XSLFDiagram`** (273 lines, `@Beta`): turns a pptx's `dsp:drawing` into an `XSLFGroupShape` (each
   `dsp:sp` becomes a `p:sp`, `txXfrm` replacing the text anchor, with the text's rotation recomputed). Its drawing is
-  POI's pptx renderer (CR-080 §3.1). **Port the `txXfrm` rotation rule only**, with the ASF header and a
-  `legals/NOTICE` line.
+  POI's pptx renderer (CR-080 §3.1). **Not ported** (Jason, 2026-11-09). docx4j writes its own `txXfrm` rotation rule
+  from phase 0's measurements; POI's is at most a cross-check on the result.
 - **docxide-pdf** (`src/docx/smartart.rs` 361 lines, `src/pdf/smartart.rs` 584): reads `dsp:sp` (geometry, fill,
   line, `txXfrm`, a text body with bullets) and draws with its geometry engine, the text in the preset's text rectangle.
   Its roadmap says what it doesn't do: `dsp:grpSp` groups, `dsp:cxnSp` connectors, a layout engine ("not planned"),
@@ -124,8 +131,9 @@ Considered on Jason's second list (2026-11-09), each read in its code:
   - **aurochs** (trkbt10, MIT, TypeScript, last pushed 2026-05-11): `packages/@aurochs-office/diagram/src/layout-engine/`,
     about 8,700 lines with its tests, registering `lin`, `sp`, `hierChild`/`hierRoot`, `cycle`, `snake`, `pyra`,
     `composite`, `conn` and `tx`.
-  - **LibreOffice** (MPL-2.0): `oox/source/drawingml/diagram/diagramlayoutatoms.cxx` (90 KB, every algorithm). A
-    reference, not a source, because MPL-2.0 is file-level copyleft.
+  - **LibreOffice** (MPL-2.0) has a SmartArt layout engine of its own. It is a black-box oracle only (CR-080 D11): probe documents converted with `soffice` and the output compared, its source not read. MPL-2.0 is file-level
+    copyleft, and a Java translation would stay MPL. Apache OpenOffice's version of that file, Apache-licensed, is a
+    3.5 KB stub.
 
   None is measured against Word in its repository.
 
@@ -150,7 +158,8 @@ in the load survey's catalogue (its `parts` column, through the portfolio).
    Picture fills (`a:blipFill` in a `dsp:spPr`) resolve through the drawing part's relationships.
 4. **Text** (D3): each shape's `a:txBody` laid out in its `dsp:txXfrm` (or the geometry's text rectangle when absent),
    with `normAutofit`'s stored `fontScale` and `lnSpcReduction` applied as Word stored them (not recomputed), drawn as
-   SVG text with chart-render's `TextWrap`, turned upright by POI's rule. Theme fonts (`+mn-lt`, `+mj-lt`) and the
+   SVG text with chart-render's `TextWrap`, turned upright by docx4j's own rule, written from phase 0's measurement of
+   rotated shapes. Theme fonts (`+mn-lt`, `+mj-lt`) and the
    diagram's `a:fontRef` resolve through the theme; fonts map through `PhysicalFonts` as the rest of the PDF does.
 5. **Into the FO**: the SVG goes into the place the inline or anchor already has (`WordLayoutFixups`, as a picture),
    so the 432 by 100pt diagram reserves its extent. That is a layout change, gated.
@@ -162,7 +171,8 @@ in the load survey's catalogue (its `parts` column, through the portfolio).
   - Probes: one SmartArt in a header and one in a footnote, to see which part Word relates the drawing from
     ([MS-ODRAWXML] §2.1.3 names only the main document); then each SmartArt category (list, process, cycle,
     hierarchy, relationship, matrix, pyramid, picture) in two
-    layouts, with one-level and two-level text, rotated shapes (a cycle) and a picture layout; Word saves each and
+    layouts, with one-level and two-level text, rotated shapes (a cycle; and one shape with text turned through 0 to 345 degrees in 15-degree steps, the oracle for
+    the `txXfrm` upright rule, which is written from it) and a picture layout; Word saves each and
     makes its PDF (bridge). The numbers come from `mutool trace` (paths) and text positions (`mutool stext`).
   - The load survey's count (via portfolio).
   - ChristopherVR/ooxml's gallery of 229 PowerPoint-authored diagrams (Apache-2.0), with its caches moved into docx
@@ -259,8 +269,8 @@ in the load survey's catalogue (its `parts` column, through the portfolio).
   Word** (Apache-2.0, TypeScript). It is the most complete found (§3), but its own project trusts its general engine
   only for an allow-list of layouts, so the port's scope is decided from phase 4's measurement, not assumed. Its `NOTICE` is reproduced in `legals/NOTICE`, as Apache-2.0 §4(d) requires, and each ported file names
   its source and commit. Its built-in layout library is not ported: that is PowerPoint's own `dgm:layoutDef` content,
-  and a reader needs none because every file carries its own layout part. aurochs (MIT) and LibreOffice (MPL-2.0,
-  reference only) are cross-checks. Recommendation: yes, the measurement first, behind its go/no-go.
+  and a reader needs none because every file carries its own layout part. aurochs (MIT) is a cross-check, and
+  LibreOffice (MPL-2.0) a black-box oracle only (CR-080 D11). Recommendation: yes, the measurement first, behind its go/no-go.
 - **D9. Gaps are reported, not silent.** Each drawing not drawn as Word draws it is reported through the log, with a
   stable code (`render.smartart.no_engine`, `render.smartart.flat_3d`, `render.smartart.stale_cache` and so on), once
   per diagram, through CR-080 D9's two mechanisms: the message writer and the gate's event lines. A caller and phase

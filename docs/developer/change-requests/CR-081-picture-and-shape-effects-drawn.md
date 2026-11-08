@@ -19,6 +19,12 @@ Reviewed 2026-11-09 by a Claude Fable 5.1 session at Jason's request. Its findin
 - `wp:effectExtent` applies to inline pictures only (§1);
 - 3-D behind a go/no-go after phase 0 (D5, §11).
 
+Revised 2026-11-09 (Jason: "make the LibreOffice wording black-box only in all four CRs; rewrite POI's txXfrm
+text-rotation rule and its VML shape-type table"):
+- LibreOffice is a black-box oracle only (CR-080 D11);
+- POI's `txXfrm` rule (CR-082) and its `ShapeType` table (CR-083, CR-080 D6) are written independently and not
+  ported.
+
 Owner: Jason Harrop. Drafted with Claude Opus 5.5.
 
 ## 0. Summary
@@ -196,7 +202,7 @@ under `pic:spPr` (through the portfolio).
   SmartArt styles can't be output without it, and those are gaps (Jason, 2026-11-09). Cross-checks:
   - rust-office-art's `scene3d.rs` and `model3d.rs` (MIT and Apache-2.0, about 65 KB of Rust with its preset tables);
   - pptx-renderer's "bounded static DrawingML 3D", validated against PowerPoint (Apache-2.0);
-  - LibreOffice (MPL-2.0, reference only).
+  - LibreOffice (MPL-2.0), a black-box oracle only (CR-080 D11): probe documents converted with `soffice` and the output compared, its source not read.
 
   rust-office-art's crate is MIT AND Apache-2.0 AND OFL-1.1; if any preset table is taken from it, its OFL font data
   is not. Recommendation: yes, behind phase 5's go/no-go after phase 0; flat and reported meanwhile.

@@ -3,7 +3,7 @@
 Status: PROPOSED 2026-11-09. Drafted on Jason's request ("let's draft CRs for the following items with the given
 suggested scope ... please evaluate what if any of that is worth porting"), one of four: this CR (shapes and geometry),
 CR-081 (picture and shape effects), CR-082 (SmartArt from its drawing cache), CR-083 (WordArt). Numbered in the order
-proposed for implementation: CR-081 to CR-083 draw with this CR's geometry. Not started; D1 to D10 open (§8). Read
+proposed for implementation: CR-081 to CR-083 draw with this CR's geometry. Not started; D1 to D11 open (§8). Read
 against docx4j c0a66b610 (VERSION_17_3_7), Apache POI trunk ae62bb5116 (`../poi`) and docxide-pdf 9508da2
 (2026-11-08), and the specifications in §12. Reviewed 2026-11-09 by a Claude Fable 5.1 session at Jason's request
 ("now have fable review the CRs please"). Its findings were applied on Jason's word ("apply the review's findings"):
@@ -12,6 +12,12 @@ against docx4j c0a66b610 (VERSION_17_3_7), Apache POI trunk ae62bb5116 (`../poi`
 - gap codes through the existing message writer and the gate's event lines (D9);
 - wrapping as a dispatch to the picture path (D4);
 - stacking order and counts corrected.
+
+Revised 2026-11-09 (Jason: "make the LibreOffice wording black-box only in all four CRs; rewrite POI's txXfrm
+text-rotation rule and its VML shape-type table"):
+- LibreOffice is a black-box oracle only (CR-080 D11);
+- POI's `txXfrm` rule (CR-082) and its `ShapeType` table (CR-083, CR-080 D6) are written independently and not
+  ported.
 
 Owner: Jason Harrop. Drafted with Claude Opus 5.5.
 
@@ -86,9 +92,9 @@ Phase 0 measures these on Word 365 (the VM, 2608) through the bridge.
 | `org.apache.poi.sl.draw.geom` (34 files, 3,368 lines) | The DrawingML geometry engine: guides, Formula's 17 operators, the built-in guides, `arcTo`, adjust values, paths, connection sites, the text rectangle, `PresetGeometries` and a StAX `PresetParser` | **Port** (repackage into `org.docx4j.org.apache.poi.sl.draw.geom`, as CR-011 did HWMF and HEMF). Its imports outside `java.*` are StAX, POI's logging (CR-011's shim maps it to slf4j), `XMLHelper` and `PaintStyle`. POI has used it for years to render pptx slides (`SlideShow` to image). |
 | `DrawSimpleShape` (443 lines): `computeOutlines`, `drawDecoration` and the head and tail decorations | A geometry's paths scaled to the anchor, and arrowheads (`a:headEnd`, `a:tailEnd`: triangle, stealth, diamond, oval, arrow; three widths and three lengths) | **Port these pieces** (about 200 lines) into docx4j's drawing. The rest of the class is written against POI's `sl.usermodel` interfaces. |
 | `DrawShape`, `DrawAutoShape`, `DrawGroupShape`, `DrawTextShape`, `DrawTextParagraph`, `DrawPaint`, `PathGradientPaint` | The Java2D renderer of POI's own shape model | **Don't port.** It draws POI's `sl.usermodel` interfaces, which are a pptx object model. An adapter from docx4j's JAXB to them would be larger than the drawing it buys, and docx4j-chart-render already draws fills, gradients, patterns, dashes and shadows from docx4j's own `CTShapeProperties`. Its shadow is the outline moved and filled in the shadow's colour, with no blur, scale or skew; chart-render's is Office's (CR-081). `DrawPaint` is already in docx4j (CR-011). |
-| `sl.usermodel.ShapeType` (246 constants) | Escher/VML shape type numbers (`o:spt`) to DrawingML preset names, the text shape types 136 to 175 included | **Keep for D6**: VML shapes and VML WordArt (CR-083) map through it. |
-| `XSLFDiagram` (273 lines) | SmartArt drawn from `dsp:drawing`, converted to a pptx group | **Read, don't port**: CR-082 takes its `txXfrm` text-rotation rule (about 25 lines). |
-| HSLF | Legacy binary PowerPoint | **No use for docx**: the one useful piece, the shape-type mapping, is `ShapeType` above, in `poi`, not HSLF. |
+| `sl.usermodel.ShapeType` (246 constants) | Escher/VML shape type numbers (`o:spt`) to DrawingML preset names, the text shape types 136 to 175 included | **Not ported** (Jason, 2026-11-09). docx4j writes its own table from [MS-ODRAW] §2.4.24 `MSOSPT` (203 shape types by number), mapped to `ST_ShapeType` and `ST_TextShapeType` names and checked against Word (CR-083 phase 0; D6's later CR). POI's is at most a cross-check on the result. |
+| `XSLFDiagram` (273 lines) | SmartArt drawn from `dsp:drawing`, converted to a pptx group | **Not ported** (Jason, 2026-11-09). CR-082 writes its own `txXfrm` text-rotation rule from Word's measurements. |
+| HSLF | Legacy binary PowerPoint | **No use for docx.** The shape-type numbers it relies on are [MS-ODRAW]'s, which docx4j reads directly. |
 | `HwmfPicture`, `HemfPicture` | WMF and EMF | **Already in docx4j** since 17.1.0 (CR-011, `org.docx4j.org.apache.poi.hwmf`/`hemf`). Open there: phase 3 (OlePres000) and phase 4 (the missing EMF and EMF+ records). Nothing new to port. |
 
 POI has no text warp (no `prstTxWarp` anywhere in its sources), no inner shadow, soft edge or reflection, and no
@@ -116,7 +122,7 @@ file names its source file and commit, and `legals/NOTICE` gains an entry (§6).
 | pptx-renderer (aiden0z, Apache-2.0, TypeScript, HTML/SVG, 502a4a4) | Most presets are written by hand (`src/shapes/presets.ts`, 215 KB); its README says the spec-compiled runtime holds 29 definitions and that "arbitrary symbolic guides in custom geometry are not yet supported". | No: POI's engine evaluates every preset and every `custGeom` from the definitions. |
 | rust-office-art (extend-hq/rust-office, MIT and Apache-2.0, Rust, d665c48, first published 2026-11-05) | A bounded evaluator over POI's own `presetShapeDefinitions.xml` (its `geometry_data/SOURCE.md` names the POI revision), with limits on guides, paths and commands; adjust handles, connection sites and text rectangles not in its API. | No code; it confirms POI's data. Its evaluation limits (1 MiB of XML, 1,024 guides, 256 paths, 8,192 commands; `geometry.rs`) are taken into phase 1 (D10). The crate's licence is MIT AND Apache-2.0 AND OFL-1.1; its OFL font data is never copied. |
 | office-open-xml-viewer (yukiyokotani, MIT, TypeScript and Rust, Canvas, a4f7785) | A postfix guide evaluator and path executor (`packages/core/src/shape/preset-geometry/`), arrowheads (`arrow-geometry.ts`). | No for geometry (POI's is the one in Java); its WordArt warp is CR-083's. |
-| LibreOffice (MPL-2.0, C++) | Mature DrawingML import (`oox/source/drawingml`). | A reference and an oracle (a document converted through it), not a source: MPL-2.0 is file-level copyleft, so a ported file would stay MPL. |
+| LibreOffice (MPL-2.0, C++) | Mature DrawingML import. | A black-box oracle only (CR-080 D11): probe documents converted with `soffice` and the output compared, its source not read. MPL-2.0 is file-level copyleft, and a translation of its code into Java would be covered by it, so docx4j's code is not written from it. |
 | pptx-typst (Sovichea, Apache-2.0, Python) | A Typst pipeline that can emit a stored SmartArt cache as SVG; its geometry is one 4 KB file. | No. |
 
 ## 4. Corpus facts (2026-11-09; the four fidelity corpora, document parts, headers and footers)
@@ -232,8 +238,9 @@ corpus documents can't be the only oracle.
 - **D6. VML shapes** (`v:shape` with `o:spt` or `v:path`, `v:rect`, `v:roundrect`, `v:oval`, `v:line`, `v:polyline`,
   `v:arc`, `v:curve`). Word reads them only where no DrawingML is written. Under CR-051's word mode docx4j reads the
   DrawingML Choice wherever there is one, so VML matters for documents from Word 2007 and earlier and from other
-  producers. Recommendation: **a later CR**, once phase 0 has counted them: through POI's `ShapeType` (o:spt to preset,
-  with the adjust units mapped) for preset shape types, plus a `v:path` parser.
+  producers. Recommendation: **a later CR**, once phase 0 has counted them: through docx4j's own table from [MS-ODRAW]
+  §2.4.24 `MSOSPT` (o:spt to preset, with the adjust units mapped and checked against Word) for preset shape types,
+  plus a `v:path` parser.
 - **D7. The oracle.** Word's PDFs through the bridge, paths read as numbers (`mutool trace`), then the raster against
   Word's. docxide-pdf's references are Word for Mac's online export, so they are not ours. Recommendation: yes.
 - **D8. docxide-pdf.** Port nothing for this CR; read it as a cross-check; any later port names its source file and
@@ -255,6 +262,12 @@ corpus documents can't be the only oracle.
   finite coordinates within the drawing's bounds. Past a limit the shape is drawn as its box and reported
   (`render.shape.over_limit`). Recommendation: yes, the numbers confirmed against the probes and the load survey's
   largest real `custGeom`.
+- **D11. MPL-2.0 sources are black-box only**, in all four CRs (Jason, 2026-11-09: "make the LibreOffice wording
+  black-box only"). LibreOffice is run, not read: probe documents are converted with `soffice` and its output
+  compared with Word's and docx4j's. Its source is not read while docx4j's code is written, because a Java translation
+  of MPL-2.0 code would be a Modification under MPL-2.0 and would stay MPL. Apache OpenOffice, LibreOffice's
+  Apache-licensed ancestor, offers no way round this: its `oox/source/drawingml/diagram/diagramlayoutatoms.cxx` is a
+  3.5 KB stub, and the SmartArt layout work came after the fork. Recommendation: yes.
 
 ## 9. Out of scope
 
@@ -290,7 +303,8 @@ Editions read (2026-11-09):
 - [MS-ODRAWXML] 35.0 (2026-10-06) and [MS-OI29500] 25.0 (2026-08-18), read on learn.microsoft.com (`office_standards`)
   on 2026-11-09.
 - [MS-DOCX] 23.0 (2026-08-18), local copy `~/Downloads/[MS-DOCX]-260818.docx`.
-- Not used: [MS-ODRAW], the binary OfficeArt format of .doc and .ppt, which docx doesn't carry.
+- [MS-ODRAW] (the binary OfficeArt format of .doc and .ppt) for §2.4.24 `MSOSPT` only: the shape-type numbers VML's
+  `o:spt` uses (D6; CR-083's table).
 
 **ISO/IEC 29500-1 (ECMA-376 Part 1)**
 - **Geometry** (§20.1.9, Shape Definitions and Attributes):

@@ -19,6 +19,12 @@ Reviewed 2026-11-09 by a Claude Fable 5.1 session at Jason's request. Its findin
 - the fork's existing text rendering modes (phase 5);
 - headers and footers (D11).
 
+Revised 2026-11-09 (Jason: "make the LibreOffice wording black-box only in all four CRs; rewrite POI's txXfrm
+text-rotation rule and its VML shape-type table"):
+- LibreOffice is a black-box oracle only (CR-080 D11);
+- POI's `txXfrm` rule (CR-082) and its `ShapeType` table (CR-083, CR-080 D6) are written independently and not
+  ported.
+
 Owner: Jason Harrop. Drafted with Claude Opus 5.5.
 
 ## 0. Summary
@@ -77,8 +83,10 @@ docxide-pdf's reading, from Word for Mac's online export:
 - **Apache POI**: no text warp anywhere (no `prstTxWarp` in its sources, no warp definitions file). Its text drawing
   (`DrawTextParagraph`, `DrawTextShape`, 1,000 lines) lays flat DrawingML text out with Java2D's `TextLayout` over
   POI's own model. Java2D gives that directly, and the WordArt text here is WordprocessingML. `sl.usermodel.ShapeType`
-  names the VML text shape types (`TEXT_PLAIN_TEXT` 136 to `TEXT_CAN_DOWN` 175) for D6. **Port `ShapeType`'s text
-  entries only**, as a table.
+  names the VML text shape types (`TEXT_PLAIN_TEXT` 136 to `TEXT_CAN_DOWN` 175). **Not ported** (Jason, 2026-11-09).
+  docx4j writes its own table for D6 from [MS-ODRAW] §2.4.24 `MSOSPT`, which numbers them `msosptTextPlainText`
+  (0x88, 136) to `msosptTextCanDown` (0xAF, 175). It maps each to its `ST_TextShapeType` name, checked against Word
+  in phase 0. POI's is at most a cross-check on the result.
 - **docxide-pdf** (`src/pdf/wordart.rs` 792 lines, `src/docx/wordart.rs` 313; ASL 2.0, no NOTICE):
   - **Envelope** (`render_warped_textbox`, `warp_point`, `SampledBoundary`): glyph outlines from the font
     (`ttf_parser`), each point mapped by its x share across the width and its y share between the top and bottom
@@ -116,8 +124,8 @@ docxide-pdf's reading, from Word for Mac's online export:
   PowerPoint. Its multi-path simplification is checked against Word's bands.
 - **ChristopherVR/ooxml** (Apache-2.0, TypeScript): text warp in its pptx UI (`src/ui/src/pptx/dom/elements/text-warp.ts`,
   `render/text-warp-arch-fit.ts`) with an envelope parity test. **A cross-check**, read in phase 2.
-- **LibreOffice** (MPL-2.0): Fontwork (`svx`, text along a path) and the import of `prstTxWarp`. **A reference and an
-  oracle only**, as MPL-2.0 files stay MPL when ported.
+- **LibreOffice** (MPL-2.0): Fontwork, text along a path, and its import of `prstTxWarp`. A black-box oracle only (CR-080 D11): probe documents converted with `soffice` and the output compared, its source not read,
+  as a Java translation of MPL-2.0 code would stay MPL.
 - **pptx-renderer** (Apache-2.0): only `textArchUp` and `textArchDown`, for single-line text
   (`src/renderer/ShapeRenderer.ts`, `getSupportedTextWarpPreset`). **Not a source**, but a third cross-check for the
   Follow Path hypothesis on the arch presets.
@@ -174,7 +182,7 @@ catalogue (through the portfolio).
    `PDFTextPainter.beginTextObject` sets the text rendering mode from the fill and stroke paints, so `fill="none"`
    gives PDF mode 3 (neither filled nor stroked: invisible, but found by a search and copied). A zero fill opacity
    would go through a transparency graphics state instead.
-6. **VML** (D6): `v:textpath` with its `v:shapetype`'s `o:spt` mapped through `ShapeType`'s table to a preset, its
+6. **VML** (D6): `v:textpath` with its `v:shapetype`'s `o:spt` mapped through docx4j's own `MSOSPT` table to a preset, its
    `string`, `style` (font and size), `fitshape` and `fitpath` read, its `v:fill` and `v:stroke` as the paint.
 
 ## 6. Phases
@@ -182,7 +190,8 @@ catalogue (through the portfolio).
 - **Phase 0, the oracle.**
   - Probes: each of the 40 presets with default adjustments and one other, one line and two lines; with
     `fromWordArt` on and off; each WordArt style of Word's gallery (15) flat; outline, gradient fill, shadow and glow
-    alone; two runs of different size and colour; a VML WordArt saved in Word 2007 compatibility mode. Word's PDFs
+    alone; two runs of different size and colour; one VML WordArt for each text shape type, 136 to 175, saved in Word 2007 compatibility mode (the oracle for D6's
+    table). Word's PDFs
     through the bridge.
   - Also: the 15 gallery styles applied to ordinary body text, which writes the same `w14` effects on body runs
     (D3), and Word's 3-D text effects (bevel, depth, rotation) on WordArt and on body text (D10).
@@ -200,7 +209,7 @@ catalogue (through the portfolio).
   - **Gate:** each preset's probes within tolerance (glyph-outline points against Word's, after alignment).
 - **Phase 3, effects on WordArt** (needs CR-081.1): shadow, glow and reflection on the glyphs.
 - **Phase 4, VML WordArt** (D6).
-  - `v:textpath` mapped to its preset through `ShapeType`'s table and drawn by phases 1 to 3, with Office's
+  - `v:textpath` mapped to its preset through docx4j's `MSOSPT` table (§3) and drawn by phases 1 to 3, with Office's
     `textpath` rules (§12).
   - **Gate:** the probe and real3's document (6 `v:textpath`) within tolerance.
 - **Phase 5, WordArt effects on body text** (D3; with the FO renderer fork).
@@ -264,7 +273,11 @@ catalogue (through the portfolio).
   (Apache-2.0, MIT). Java2D's `GlyphVector.getOutline` and `PathIterator` give the outlines that docxide-pdf reads
   with `ttf_parser`, so little of its code is needed. Recommendation: yes. This replaces the earlier draft's "port
   docxide-pdf's algorithms", written before §20.1.9.19 was read.
-- **D6. VML WordArt in this CR** (phase 4), through POI's `ShapeType` names for `o:spt` 136 to 175. Word writes VML
+- **D6. VML WordArt in this CR** (phase 4), through docx4j's own table of `o:spt` 136 to 175, from [MS-ODRAW]
+  §2.4.24 and checked against Word (phase 0). The mapping's oracle is one VML WordArt per shape type, saved by Word in
+  Word 2007 compatibility mode. Each is then read two ways:
+  - Word's own conversion of the document to the current format, if it rewrites the WordArt as `a:prstTxWarp`;
+  - otherwise, Word's PDF against the preset the name gives. Word writes VML
   WordArt for documents in Word 2007 compatibility mode (12) or earlier. Recommendation: yes, whatever the count. One
   real3 document already has six, and leaving them undrawn is a gap.
 - **D7. A WordArt's text in the text model** stays as it is: the text box's text (CR-046), unaffected by the warp.
@@ -315,7 +328,8 @@ Editions read (2026-11-09):
 - [MS-ODRAWXML] 35.0 (2026-10-06) and [MS-OI29500] 25.0 (2026-08-18), read on learn.microsoft.com (`office_standards`)
   on 2026-11-09.
 - [MS-DOCX] 23.0 (2026-08-18), local copy `~/Downloads/[MS-DOCX]-260818.docx`.
-- Not used: [MS-ODRAW], the binary OfficeArt format of .doc and .ppt, which docx doesn't carry.
+- [MS-ODRAW] (the binary OfficeArt format of .doc and .ppt) for §2.4.24 `MSOSPT` only: the text shape-type numbers
+  VML WordArt's `o:spt` uses (D6).
 
 **ISO/IEC 29500-1 (ECMA-376 Part 1)**
 - **Warps**: §20.1.9.19 `prstTxWarp` (its twelve steps are the algorithm: §3, D5), §20.1.10.76 `ST_TextShapeType`.
