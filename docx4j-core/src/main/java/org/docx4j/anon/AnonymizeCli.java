@@ -26,13 +26,16 @@ import java.nio.file.Files;
 
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.jaxb.McLoadMode;
+import org.docx4j.openpackaging.io3.LoadOptions;
+import org.docx4j.openpackaging.io3.RepairMode;
+import org.docx4j.openpackaging.packages.LoadFinding;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 /**
  * The command line:
  * <pre>
- * java -cp "docx4j-core.jar:lib/*" org.docx4j.anon.AnonymizeCli in.docx out.docx [--keep] [--keep-numbers] [--json report.json] [--no-verify] [--no-fonts]
+ * java -cp "docx4j-core.jar:lib/*" org.docx4j.anon.AnonymizeCli in.docx out.docx [--keep] [--keep-numbers] [--json report.json] [--no-verify] [--no-fonts] [--repair none|word|all]
  * </pre>
  * (docx4j-core and a JAXB runtime such as docx4j-JAXB-ReferenceImpl on the
  * classpath; the class was the docx4j-docx-anon jar's Main-Class until the
@@ -49,6 +52,12 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * <li>{@code --no-fonts}: do not discover the system's fonts (faster; the
  * non-Latin replacement characters are then not checked against the document's
  * fonts' glyphs). A pptx has no font mapper, so this makes no difference there.</li>
+ * <li>{@code --repair none|word|all}: what the load does with a package Word opens
+ * only through its repair prompt ({@link RepairMode}); without it, the property
+ * {@value RepairMode#PROPERTY} decides, and that defaults to none, which refuses
+ * such a package. Under word or all the copy is the package as repaired, so it no
+ * longer shows the fault that was repaired; each repair is listed on stderr.
+ * Since 17.3.6.</li>
  * </ul>
  * A strict (ISO/IEC 29500 Strict) input is written out transitional, because that
  * is how docx4j reads one; see {@link Anonymize}.
@@ -70,6 +79,7 @@ public class AnonymizeCli {
 		String in = null, out = null, json = null;
 		Anonymize.Mode mode = Anonymize.Mode.STRICT;
 		boolean verify = true, fonts = true, keepNumbers = false;
+		RepairMode repair = null; // the property's
 
 		for (int i = 0; i < args.length; i++) {
 			String a = args[i];
@@ -84,6 +94,10 @@ public class AnonymizeCli {
 				verify = false;
 			} else if (a.equals("--no-fonts")) {
 				fonts = false;
+			} else if (a.equals("--repair")) {
+				if (i + 1 >= args.length) return usage("--repair needs none, word or all");
+				repair = RepairMode.parse(args[++i]);
+				if (repair == null) return usage("--repair needs none, word or all, not " + args[i]);
 			} else if (a.startsWith("--")) {
 				return usage("unknown option " + a);
 			} else if (in == null) {
@@ -100,7 +114,10 @@ public class AnonymizeCli {
 		try {
 			// preserve: the output reproduces the document that caused a problem, every
 			// mc:AlternateContent branch included (CR-051 section 3.2, D5)
-			OpcPackage pkg = OpcPackage.load(new File(in), McLoadMode.PRESERVE);
+			OpcPackage pkg = OpcPackage.load(new File(in), new LoadOptions().mcLoadMode(McLoadMode.PRESERVE).repairMode(repair));
+			for (LoadFinding f : pkg.getLoadFindings()) {
+				System.err.println("docx4j anon: load finding " + f.getKind() + " " + f.getSelector() + " (" + f.getDetail() + ")");
+			}
 			if (fonts && pkg instanceof WordprocessingMLPackage) {
 				((WordprocessingMLPackage) pkg).setFontMapper(new IdentityPlusMapper());
 			}
@@ -120,6 +137,11 @@ public class AnonymizeCli {
 		} catch (Exception e) {
 			System.err.println("docx4j anon: " + e);
 			e.printStackTrace(System.err);
+			String hint = repairThatReads(e);
+			if (hint != null) {
+				System.err.println("docx4j anon: to anonymise the package as repaired, add --repair " + hint
+						+ " (the copy is then the repaired package, so it no longer shows this fault)");
+			}
 			return 3;
 		}
 
@@ -127,9 +149,26 @@ public class AnonymizeCli {
 		return result.isClean() ? 0 : 1;
 	}
 
+	/**
+	 * The --repair value that reads a package the load refused, or null: a CR-075 refusal begins
+	 * "Refused:" and names the RepairMode that reads the package, where one does.
+	 */
+	static String repairThatReads(Throwable e) {
+		for (Throwable t = e; t != null; t = t.getCause()) {
+			String m = t.getMessage();
+			if (m != null && m.startsWith("Refused:")) {
+				if (m.contains("RepairMode." + RepairMode.ALL)) return "all";
+				if (m.contains("RepairMode." + RepairMode.WORD)) return "word";
+				return null;
+			}
+			if (t.getCause() == t) break;
+		}
+		return null;
+	}
+
 	private static int usage(String problem) {
 		if (problem != null) System.err.println(problem);
-		System.err.println("usage: AnonymizeCli in.docx|in.pptx|in.xlsx out [--keep] [--keep-numbers] [--json report.json] [--no-verify] [--no-fonts]");
+		System.err.println("usage: AnonymizeCli in.docx|in.pptx|in.xlsx out [--keep] [--keep-numbers] [--json report.json] [--no-verify] [--no-fonts] [--repair none|word|all]");
 		return 2;
 	}
 
