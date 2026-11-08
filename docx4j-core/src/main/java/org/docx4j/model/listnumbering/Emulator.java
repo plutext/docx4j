@@ -550,7 +550,8 @@ public class Emulator {
     			return null;
     		}
     	}
-    	return wmlPackage.getMainDocumentPart().getPropertyResolver();
+    	// with no styles part, one that adds none: a reading of the numbers mustn't change the package (WD REQ-204)
+    	return wmlPackage.getMainDocumentPart().getPropertyResolverAddingNothing();
     }
 
     /**

@@ -299,6 +299,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 			to.setSectPr(from.getSectPr());
 		}
 	}
+
 	
 	private static Logger log = LoggerFactory.getLogger(MainDocumentPart.class);
 		
@@ -392,6 +393,27 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 	 * @throws Docx4JException 
 	 * @since 11.5.2
 	 */
+	private volatile PropertyResolver resolverAddingNothing;
+
+	/**
+	 * For a reader, which mustn't change the package it reads (WD REQ-204): {@link #getPropertyResolver()} where the package has a
+	 * styles part, as it has once that resolver exists, and otherwise one over docx4j's default styles that, unlike it, doesn't add them to the
+	 * package, so that a later save writes no styles part the reading made.
+	 *
+	 * @since 17.3.6
+	 */
+	public PropertyResolver getPropertyResolverAddingNothing() throws Docx4JException {
+		if (getStyleDefinitionsPart(false) != null) return getPropertyResolver();
+		PropertyResolver r = resolverAddingNothing;
+		if (r == null) {
+			synchronized (this) {
+				if (resolverAddingNothing == null) resolverAddingNothing = PropertyResolver.overDefaultStyles((WordprocessingMLPackage) this.pack);
+				r = resolverAddingNothing;
+			}
+		}
+		return r;
+	}
+
 	public PropertyResolver getPropertyResolver(boolean create) throws Docx4JException {
 		
 		// create=false is only really necessary where a StackOverflow is a possibility;

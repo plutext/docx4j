@@ -199,13 +199,31 @@ public class PropertyResolver {
 	 */
 
 	public PropertyResolver(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
-		
+		this(wordMLPackage, wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart(true));
+	}
+
+	private PropertyResolver(WordprocessingMLPackage wordMLPackage, org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart styles) throws Docx4JException {
 		this.wordMLPackage = wordMLPackage;
-		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
-		
-		styleDefinitionsPart = mdp.getStyleDefinitionsPart(true);
-		numberingDefinitionsPart = mdp.getNumberingDefinitionsPart();
-		init();		
+		styleDefinitionsPart = styles;
+		numberingDefinitionsPart = wordMLPackage.getMainDocumentPart().getNumberingDefinitionsPart();
+		init();
+	}
+
+	/**
+	 * A resolver over docx4j's default styles for a package that has no styles part, which, unlike the public constructor's, adds
+	 * no styles part to it: the defaults are read from a part kept here (WD REQ-204, for a reader). Use
+	 * {@link MainDocumentPart#getPropertyResolverAddingNothing()}, which keeps one.
+	 *
+	 * @since 17.3.6
+	 */
+	public static PropertyResolver overDefaultStyles(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
+		org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart defaults = new org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart();
+		try {
+			defaults.unmarshalDefaultStyles();
+		} catch (jakarta.xml.bind.JAXBException e) {
+			throw new Docx4JException("docx4j's default styles couldn't be read", e);
+		}
+		return new PropertyResolver(wordMLPackage, defaults);
 	}
 	
 	String defaultParagraphStyleId;  // "Normal" in English, but ...
