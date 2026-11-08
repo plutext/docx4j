@@ -293,6 +293,30 @@ public class RepeatedChildrenTest {
 		assertTrue(String.join("\n", failed), failed.isEmpty());
 	}
 
+	// --- the one-parent-word-check round: a child given twice in one parent --------------------------
+
+	/** python's round: Word merges a child given twice in one parent as it does two copies of the parent (WD REQ-322's NOTE, op-*). */
+	@Test
+	public void aChildGivenTwiceInOneParentMerges() throws Exception {
+		for (String name : new String[] { "op-10-pgsz-in-one-sectpr", "op-11-pgmar-in-one-sectpr", "op-12-cols-in-one-sectpr" }) {
+			List<Object> mine = new ArrayList<Object>(), word = new ArrayList<Object>();
+			for (Element s : all(root(saved(name)), "sectPr")) mine.add(stated(s));
+			for (Element s : all(root(bytes(name + "-word365")), "sectPr")) word.add(stated(s));
+			assertEquals(name, word, mine);
+		}
+		for (byte[] zip : new byte[][] { saved("op-20-numpr-in-one-ppr"), bytes("op-20-numpr-in-one-ppr-word365") }) {
+			Element numPr = all(root(zip), "numPr").get(0);
+			Map<String, String> got = new LinkedHashMap<String, String>();
+			for (Element c : children(numPr)) got.put(c.getLocalName(), c.getAttributeNS(W, "val"));
+			assertEquals("{ilvl=1, numId=2}", got.toString());
+		}
+		Map<String, Map<String, String>> ours = null, theirs = null;
+		for (Element pPr : all(root(saved("op-21-rpr-in-one-ppr")), "pPr")) for (Element c : children(pPr)) if ("rPr".equals(c.getLocalName())) ours = stated(c);
+		for (Element pPr : all(root(bytes("op-21-rpr-in-one-ppr-word365")), "pPr")) for (Element c : children(pPr)) if ("rPr".equals(c.getLocalName())) theirs = stated(c);
+		assertEquals(theirs, ours);
+		assertTrue(String.valueOf(ours), ours.containsKey("b"));
+	}
+
 	// --- the footer-refs round ----------------------------------------------------------------------
 
 	private static List<List<String>> references(byte[] zip) throws Exception {

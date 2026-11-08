@@ -1,0 +1,3 @@
+Case op-12
+TARGET TEXT
+LAST LINE

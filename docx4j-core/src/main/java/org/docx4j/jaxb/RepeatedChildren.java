@@ -58,10 +58,11 @@ import org.slf4j.LoggerFactory;
  * <li>{@code w:txbxContent} in a VML box: joined in reverse, the later's content first (D6). In {@code wps:txbx} JAXB's last is
  * Word's, so nothing.</li>
  * <li>{@code w:pPr} in a paragraph, {@code w:rPr} in a run, {@code w:sectPr} in a body or a {@code w:pPr}, {@code w:tblPr} in a table,
- * and {@code w:ind} and {@code w:spacing} twice in one {@code w:pPr} and {@code w:rFonts} in one {@code w:rPr}, as the round sectpr-merge
- * measured them (sm-53, sm-70, sm-72, sm-73): the later applied to the earlier, as {@link #merge} has it, the children REQ-322 names
- * merging in turn. Another child repeated in one parent isn't measured, and JAXB's last stands. {@code w:jc}, {@code w:sz}, {@code w:b} and
- * {@code w:vanish} need nothing: JAXB's last is Word's.</li>
+ * and a child given twice in one parent, as the rounds sectpr-merge and one-parent-word-check measured them: {@code w:ind},
+ * {@code w:spacing}, {@code w:numPr} and a paragraph mark's {@code w:rPr} in one {@code w:pPr}, {@code w:rFonts} in one {@code w:rPr},
+ * {@code w:sectPr} in one {@code w:pPr}, and {@code w:pgSz}, {@code w:pgMar} and {@code w:cols} in one {@code w:sectPr} (sm-53, sm-70,
+ * sm-72, sm-73, op-10 to op-21): the later applied to the earlier, as {@link #merge} has it, the children REQ-322 names merging in turn.
+ * {@code w:jc}, {@code w:sz}, {@code w:b} and {@code w:vanish} need nothing: JAXB's last is Word's.</li>
  * </ul>
  * The main document part's alone, as every measurement is of {@code word/document.xml}.
  *
@@ -85,15 +86,25 @@ public final class RepeatedChildren {
 			if (parent instanceof P) return mergeInto(((P) parent).getPPr(), target);
 		} else if (target instanceof RPr) {
 			if (parent instanceof R) return mergeInto(((R) parent).getRPr(), target);
+		} else if (target instanceof ParaRPr) {
+			if (parent instanceof PPr) return mergeInto(((PPr) parent).getRPr(), target);
 		} else if (target instanceof PPrBase.Ind) {
 			if (parent instanceof PPrBase) return mergeInto(((PPrBase) parent).getInd(), target);
 		} else if (target instanceof PPrBase.Spacing) {
 			if (parent instanceof PPrBase) return mergeInto(((PPrBase) parent).getSpacing(), target);
+		} else if (target instanceof PPrBase.NumPr) {
+			if (parent instanceof PPrBase) return mergeInto(((PPrBase) parent).getNumPr(), target);
 		} else if (target instanceof RFonts) {
 			if (parent instanceof RPr) return mergeInto(((RPr) parent).getRFonts(), target);
 		} else if (target instanceof SectPr) {
 			if (parent instanceof Body) return mergeInto(((Body) parent).getSectPr(), target);
 			if (parent instanceof PPr) return mergeInto(((PPr) parent).getSectPr(), target);
+		} else if (target instanceof SectPr.PgSz) {
+			if (parent instanceof SectPr) return mergeInto(((SectPr) parent).getPgSz(), target);
+		} else if (target instanceof SectPr.PgMar) {
+			if (parent instanceof SectPr) return mergeInto(((SectPr) parent).getPgMar(), target);
+		} else if (target instanceof CTColumns) {
+			if (parent instanceof SectPr) return mergeInto(((SectPr) parent).getCols(), target);
 		} else if (target instanceof TblPr) {
 			if (parent instanceof Tbl) return mergeInto(((Tbl) parent).getTblPr(), target);
 		} else if (target instanceof Body) {
