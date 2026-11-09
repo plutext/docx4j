@@ -12,3 +12,8 @@ tmp/
 release-zips/
 patches/
 docx4j-core-tests/scratch
+
+# Claude Code: personal and runtime state (shared config in .claude/ is committed)
+.claude/settings.local.json
+.claude/worktrees/
+.claude/scheduled_tasks.lock
