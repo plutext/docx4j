@@ -13,14 +13,17 @@ The sets:
   cr081-phase0-3d  scene3d and sp3d on pictures and shapes, with a longer timeout
   cr081-phase0-r2  round 2: the inline families again with a generous effect extent, since Word clips an inline
                    drawing's effects to its paragraph's height; the preset shadows on a shape
-The picture styles (cr081-phase0-styles) wait for Jason's hand-made document; the hostile probes (D10) are unit tests.
+  cr081-phase0-styles  the 28 picture styles: Jason's hand-made document (cr081-styles-hand.docx, staged as it is),
+                   and Word's XML for each style (styles-word.tsv, harvested from it by build_styles_start.py) over the
+                   photo, the photo as a JPEG and both line arts, each with the effect extent Word gave the style
+The hostile probes (D10) are unit tests.
 
-The pictures are synthetic: photo.png, a gradient with a red disc at its top left, so that a flip shows; lineart.png,
-black lines on white; lineart-alpha.png, the same lines on a transparent ground. Every package holds a settings part
-at compatibility mode 15 and a theme (2023, unless the family is about the theme).
+The pictures are synthetic: photo.png, a gradient with a red disc at its top left, so that a flip shows; photo.jpeg,
+the same as a JPEG; lineart.png, black lines on white; lineart-alpha.png, the same lines on a transparent ground. Every
+package holds a settings part at compatibility mode 15 and a theme (2023, unless the family is about the theme).
 
 usage: build_phase0.py <staging dir> [set ...]   (every set if none is named; probes.tsv always lists every set)"""
-import hashlib, io, json, os, re, sys, zipfile
+import csv, hashlib, io, json, os, re, shutil, sys, zipfile
 from xml.sax.saxutils import escape
 from PIL import Image, ImageDraw
 
@@ -80,7 +83,13 @@ def lineart(alpha):
         img = img.convert('RGB')
     return _png(img)
 
-PICTURES = {'photo.png': photo, 'lineart.png': lambda: lineart(False), 'lineart-alpha.png': lambda: lineart(True)}
+def photo_jpeg():
+    b = io.BytesIO()
+    Image.open(io.BytesIO(photo())).save(b, 'JPEG', quality=90)
+    return b.getvalue()
+
+PICTURES = {'photo.png': photo, 'photo.jpeg': photo_jpeg, 'lineart.png': lambda: lineart(False),
+            'lineart-alpha.png': lambda: lineart(True)}
 
 # ------------------------------------------------------------------------------------------------------------ colours
 
@@ -148,11 +157,13 @@ class Probe:
     """One page: a picture (pic) or a shape (wps), inline unless anchor is given."""
     def __init__(self, note, sppr='', picture='photo.png', geom='rect', ln='', rot=None, src_rect='', shape=False,
                  fill='<a:solidFill><a:srgbClr val="4472C4"/></a:solidFill>', style='', text='', anchor=None,
-                 extent='zero', extent_est=(0, 0, 0, 0), in_line=False, scene=''):
+                 extent='zero', extent_est=(0, 0, 0, 0), in_line=False, scene='', raw=''):
         self.__dict__.update(locals())
         del self.__dict__['self']
 
     def sp_pr(self):
+        if self.raw:     # a picture style: Word's spPr after its xfrm, as it is
+            return f'<a:xfrm><a:off x="0" y="0"/><a:ext cx="{CX}" cy="{CY}"/></a:xfrm>{self.raw}'
         rot = f' rot="{self.rot}"' if self.rot else ''
         geom = f'<a:prstGeom prst="{self.geom}"><a:avLst/></a:prstGeom>'
         fill = self.fill if self.shape else ''
@@ -398,6 +409,20 @@ def fam_3d_depth():
 def fam_preset_shapes():
     return [shp(f'prstShdw shdw{i} on a shape', prstshdw(f'shdw{i}', dist=76200, dir=2700000)) for i in range(1, 21)]
 
+STYLES_TSV = os.path.join(HERE, 'styles-word.tsv')
+HAND = ('fs00-hand', os.path.join(HERE, 'cr081-styles-hand.docx'))
+
+def styles_word():
+    """The 28 picture styles as Word wrote them in Jason's document: (id, name, effect extent, spPr after its xfrm)."""
+    rows = list(csv.DictReader(open(STYLES_TSV, encoding='utf-8'), delimiter='\t'))
+    return [(r['id'], r['name'], tuple(int(r[k]) for k in 'ltrb'), r['sppr']) for r in rows]
+
+def fam_styles(picture):
+    def f():
+        return [Probe(name, picture=picture, extent='word', extent_est=ee, raw=sppr) for _, name, ee, sppr in styles_word()]
+    f.__name__ = 'fam_styles_' + picture
+    return f
+
 def generous(fam):
     """Round 2: the family again with a generous effect extent. Round 1 showed that Word clips an inline drawing's
     effects to its paragraph's height (the page's width), and that an effect extent grows the paragraph."""
@@ -458,8 +483,17 @@ SETS = {
         ('fxr82-effectref-2023', generous(fam_effectref), THEME_2023),
         ('fxr83-effectref-custom', generous(fam_effectref_custom), 'custom'),
     ],
+    # The picture styles (2026-11-10): Jason applied the 28 by hand to build_styles_start.py's document; that document
+    # is staged as it is (HAND, first), and these write each style's XML over each picture.
+    'cr081-phase0-styles': [
+        ('fs10-photo', fam_styles('photo.png'), THEME_2023),
+        ('fs11-photo-jpeg', fam_styles('photo.jpeg'), THEME_2023),
+        ('fs20-lineart', fam_styles('lineart.png'), THEME_2023),
+        ('fs21-lineart-alpha', fam_styles('lineart-alpha.png'), THEME_2023),
+    ],
 }
-TIMEOUT = {'cr081-phase0': 180, 'cr081-phase0-3d': 300, 'cr081-phase0-r2': 180}
+AS_IS = {'cr081-phase0-styles': [HAND]}
+TIMEOUT = {'cr081-phase0': 180, 'cr081-phase0-3d': 300, 'cr081-phase0-r2': 180, 'cr081-phase0-styles': 300}
 
 # ---------------------------------------------------------------------------------------------------------- the XML
 
@@ -468,7 +502,7 @@ def run(words):
 
 def label(pid, probe, first):
     ppr = '' if first else '<w:pPr><w:pageBreakBefore/></w:pPr>'
-    what = describe(probe.sppr + probe.scene) or 'no effect'
+    what = describe(probe.raw or probe.sppr + probe.scene) or 'no effect'
     extra = ' '.join(x for x in (describe(probe.src_rect), describe(probe.ln), describe(probe.style),
                                  f'geom {probe.geom}' if probe.geom != 'rect' else '',
                                  f'rot {probe.rot}' if probe.rot else '', probe.picture if not probe.shape else 'shape') if x)
@@ -479,7 +513,7 @@ GENEROUS = (762000, 762000, 762000, 2286000)   # 60 pt left, top and right, 180 
 def effect_extent(probe):
     if probe.extent == 'omitted':
         return ''
-    l, t, r, b = {'estimate': probe.extent_est, 'generous': GENEROUS}.get(probe.extent, (0, 0, 0, 0))
+    l, t, r, b = {'estimate': probe.extent_est, 'word': probe.extent_est, 'generous': GENEROUS}.get(probe.extent, (0, 0, 0, 0))
     return f'<wp:effectExtent l="{l}" t="{t}" r="{r}" b="{b}"/>'
 
 def graphic(probe, n, rid):
@@ -555,8 +589,11 @@ def package(path, probes, theme):
             f'<Relationship Id="rId2" Type="{REL}theme" Target="theme/theme1.xml"/>']
     rels += [f'<Relationship Id="{rids[n]}" Type="{REL}image" Target="media/{n}"/>' for n in pics]
     theme_xml = theme_custom() if theme == 'custom' else open(os.path.join(THEMES, theme), encoding='utf-8').read()
+    ct = CT
+    if any(n.endswith('.jpeg') for n in pics):     # only then, so that the earlier sets' packages keep their bytes
+        ct = ct.replace('<Override ', '<Default Extension="jpeg" ContentType="image/jpeg"/><Override ', 1)
     with zipfile.ZipFile(path, 'w') as z:
-        entry(z, '[Content_Types].xml', DECL + CT)
+        entry(z, '[Content_Types].xml', DECL + ct)
         entry(z, '_rels/.rels', DECL + RELS)
         entry(z, 'word/document.xml', document(probes, rids))
         entry(z, 'word/_rels/document.xml.rels',
@@ -570,28 +607,36 @@ def main(staging, only=()):
     """Every set's probes go in probes.tsv; the packages of the sets named (all, if none is) go to staging."""
     manifest = ['set\tfile\tpage\tprobe\tobject\tnote\textent\txml\n']
     for setname, files in SETS.items():
+        for name, path in AS_IS.get(setname, ()):          # Jason's document: its pages are the styles, on the photo
+            for page, (_, sname, _, sppr) in enumerate(styles_word(), 1):
+                manifest.append(f'{setname}\t{name}\t{page}\t{name.split("-")[0]}-{page:02d}\tphoto.png\t{sname}\tword\t{sppr}\n')
         for name, fam, theme in files:
             prefix = name.split('-')[0]
             for page, p in enumerate(fam(), 1):
                 obj = 'shape ' + p.geom if p.shape else p.picture + ('' if p.geom == 'rect' else ' ' + p.geom)
                 if p.anchor:
                     obj += f' anchored {p.anchor}'
-                xml = p.src_rect + p.ln + p.sppr + p.scene + p.style
+                xml = p.raw or p.src_rect + p.ln + p.sppr + p.scene + p.style
                 manifest.append(f'{setname}\t{name}\t{page}\t{prefix}-{page:02d}\t{obj}\t{p.note}\t{p.extent}\t{xml}\n')
     open(os.path.join(HERE, 'probes.tsv'), 'w', newline='').writelines(manifest)
     for setname, files in SETS.items():
         if only and setname not in only:
             continue
         sums, order = [], []
-        for name, fam, theme in files:
-            prefix = name.split('-')[0]
-            probes = [(f'{prefix}-{i + 1:02d}', p) for i, p in enumerate(fam())]
+        jobs = [(name, None, path) for name, path in AS_IS.get(setname, ())] + [(n, (fam, theme), None) for n, fam, theme in files]
+        for name, gen, path in jobs:
+            if gen:
+                prefix = name.split('-')[0]
+                probes = [(f'{prefix}-{i + 1:02d}', p) for i, p in enumerate(gen[0]())]
             for copy in 'ab':
                 job = f'{name}-{copy}'
                 d = os.path.join(staging, setname, job)
                 os.makedirs(d, exist_ok=True)
                 f = os.path.join(d, name + '.docx')
-                package(f, probes, theme)
+                if gen:
+                    package(f, probes, gen[1])
+                else:
+                    shutil.copyfile(path, f)
                 j = os.path.join(d, 'job.json')
                 with open(j, 'w', newline='') as out:
                     json.dump({'verb': 'save', 'input': name + '.docx', 'timeoutSeconds': TIMEOUT[setname],
@@ -602,7 +647,8 @@ def main(staging, only=()):
                 order.append(job + '\n')
         open(os.path.join(staging, setname + '.sha256'), 'w', newline='').writelines(sums)
         open(os.path.join(staging, setname + '.order.txt'), 'w', newline='').writelines(order)
-        print(setname, len(files), 'files,', len(order), 'jobs,', sum(len(f[1]()) for f in files), 'probes')
+        print(setname, len(jobs), 'files,', len(order), 'jobs,',
+              sum(len(f[1]()) for f in files) + 28 * len(AS_IS.get(setname, ())), 'probes')
 
 if __name__ == '__main__':
     main(sys.argv[1], sys.argv[2:])

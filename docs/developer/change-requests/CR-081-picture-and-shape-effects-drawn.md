@@ -1,7 +1,8 @@
 # CR-081: picture and shape effects drawn - outer and inner shadow, glow, soft edges, reflection
 
-Status: PROPOSED 2026-11-09. Drafted on Jason's request (the four CRs of 2026-11-09; see CR-080's Status). Not
-started; D1 to D10 open (§8). Phase 1 (pictures in a rectangle) needs nothing from CR-080. Phases 2 and 3 draw with its
+Status: ACCEPTED 2026-11-10 (Jason: "CR-081 decisions as recommended"): D1 to D10 as recommended, D7 as its own CR,
+CR-084 (§8). Proposed 2026-11-09, drafted on Jason's request (the four CRs of 2026-11-09; see CR-080's Status).
+Phase 0 run in four rounds (`CR-081-notes/phase0-findings.md`). Phase 1 (pictures in a rectangle) needs nothing from CR-080. Phases 2 and 3 draw with its
 geometry. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
 Revised 2026-11-09 (Jason: "add a rendering phase to the CRs where appropriate: WordArt or SmartArt we can't output is
 a gap"):
@@ -32,7 +33,11 @@ generator and stage the jobs under bridge/staging/"). §6 names the route.
   - `cr081-phase0-3d`: 4 files, 64 probes, 8 jobs.
 - Every file is valid against the ECMA-376 transitional schemas (`CR-081-notes/check_probes.py`).
 - `CR-081-notes/probes.tsv` lists each probe's file and page.
-- The picture styles and the JPEG wait for Jason's hand-made document.
+- The picture styles: Jason applied the 28 by hand on 2026-11-10 to `build_styles_start.py`'s document
+  (`CR-081-notes/cr081-styles-hand.docx`). Word's XML for each, with the effect extent Word gave it, is in
+  `styles-word.tsv`. `cr081-phase0-styles` (5 files, 140 probes, 10 jobs) ran on 2026-11-10, all silent: his
+  document as it is, then each style over the photo, the photo as a JPEG and both line arts. Findings §7: 17 of the
+  28 styles are 3-D; a picture's line lies outside it; Word re-encodes a JPEG.
 - Round 1 clipped its vertical sweeps (Word clips an inline drawing's effects to its paragraph). Round 2,
   `cr081-phase0-r2` (15 files, 197 probes), re-ran them with a generous effect extent.
 - Every job of the three rounds was silent, and every pair pixel-identical.
@@ -75,9 +80,11 @@ drawing and adds the other three effects.
   charts).
 - An effect follows the drawing's outline, not its bounding box: a shadow under an oval picture is oval.
 - `a:softEdge rad` fades the drawing's own alpha inward by its radius, only in the band between the outline and the
-  inset ([MS-OI29500] 2.1.1306; §12). It changes the picture, not what is under it.
-- An outer shadow in a `spPr` is drawn only at `sx` and `sy` of 100% (2.1.1303). Phase 0 checks this against Word's
-  scaled picture-style shadows.
+  inset ([MS-OI29500] 2.1.1306; §12). It changes the picture, not what is under it. **Phase 0:** Word erodes by about
+  `rad` and blurs with sigma `rad` / 3, so the blur reaches inside the inset (findings §2). docx4j follows Word.
+- An outer shadow in a `spPr` is drawn only at `sx` and `sy` of 100% (2.1.1303). **Phase 0:** Word 365 draws scaled
+  and skewed shadows in a picture's `spPr`, and its own picture styles write them (findings §2, §7). docx4j follows
+  Word.
 - `wp:effectExtent`'s `l`, `r` and `t` are the left, right and top edges (2.1.1352).
 - `a:reflection` repeats the drawing, flipped, starting `dist` from it along `dir`, faded from `stA` at `stPos` to
   `endA` at `endPos` along `fadeDir`, scaled by `sx` and `sy`, blurred by `blurRad`. That is Office's reading
@@ -123,11 +130,16 @@ under `pic:spPr` (through the portfolio).
    `draw(Shape outline, CTEffectList, theme)` returns the pictures to draw under and over, each a PNG with alpha and its
    place in points. The picture itself is not passed through it, except for a soft edge (§5.4). The blur is a separable Gaussian with sigma from the radius, as
    chart-render's (one rule, measured).
-2. **The resolution of an effect picture** (D3) is a property, `docx4j.convert.out.effects.pixelsPerPoint`, default 2.
+2. **The resolution of an effect picture** (D3, decided 2026-11-10) is Word's: 200 dpi, made coarser by k =
+   ceil(blur in pixels / 16) (findings §2), with a property, `docx4j.convert.out.effects.pixelsPerPoint`, as an upper
+   bound.
    A blur is low-frequency, so the picture can be coarser than the page. Phase 0 checks file size against Word's PDF.
    Its pixel size is capped (D10).
 3. **Pictures**: the frame geometry (CR-080's `ShapeGeometry`, phases 2 and 3) clips the picture and gives the effects
-   their outline. Before CR-080, phase 1 handles the rectangle. `a:ln` on a picture is drawn as CR-080 draws a line.
+   their outline. Before CR-080, phase 1 handles the rectangle. `a:ln` on a picture is drawn as CR-080 draws a line,
+   but wholly outside the picture: on a path `w`/2 outside its edge, where a shape's line is centred on the outline. A
+   compound line is filled rings, `thickThin` at 3 : 1 : 1 (findings §2). An inline picture's effects are clipped to
+   its paragraph's line, as Word clips them (findings §3).
 4. **Into the FO**: a picture with effects becomes one SVG in the container the picture already has, so
    `WordLayoutFixups` places it unchanged. The SVG holds:
    - the effect pictures;
@@ -201,7 +213,7 @@ under `pic:spPr` (through the portfolio).
     whatever happens to this phase.
   - **Go/no-go first:** after phase 0's 3-D probes, the estimate is set from what Word's PDF holds (a picture at what
     resolution, or shading), and Jason decides whether the phase goes ahead.
-  - **Gate:** the 3-D probes within a tolerance set from Word against itself; corpora unmoved.
+  - **Gate:** the 3-D probes within the tolerance of §7 (Word doesn't differ from itself); corpora unmoved.
 - **Phase 6, the gap report** (D9): every effect in the probes and a load-survey sample rendered; what isn't drawn as
   Word draws it is listed with its reason (`a:blip` colour effects until D7's follow-up, for example).
 - **Phase 7, CHANGELOG, Getting Started.**
@@ -210,7 +222,9 @@ under `pic:spPr` (through the portfolio).
 
 - **Word's blur isn't a Gaussian of the stated radius.** CR-037 found a glow's sigma to be 0.25 of its radius, after a
   0.5 spread. Each effect may have its own rule. Phase 0 measures each, and the tolerances come from how far Word is
-  from itself across two exports.
+  from itself across two exports. **Phase 0:** each blur is a Gaussian, with its rule named (findings §2); and Word
+  doesn't differ from itself at all, so the tolerance is the pixel grid: placement within 0.36 pt at 200 dpi, and
+  alpha within 2/255 (findings §5, accepted 2026-11-10).
 - **File size.** One PNG per effect per picture. A document with many styled pictures grows. The property (D3) and
   deflate keep it bounded; phase 0 compares with Word's sizes.
 - **Soft edge on a JPEG.** FOP can't give a JPEG a soft mask: `ImageRawJPEGAdapter` has none, unlike the PNG and
@@ -223,11 +237,34 @@ under `pic:spPr` (through the portfolio).
 
 - **D1. Effects as pictures**, as Office draws them in a PDF, rather than SVG filters. FOP rasterises SVG filters at
   its own resolution, which can't be controlled per effect. Recommendation: yes.
+  **Decided 2026-11-10: as recommended.** Jason: "CR-081 D1 as recommended, or we could change FOP rasterisation of
+  SVG filters as needed in our FOP fork? I'm happy with either approach." Pictures were chosen, for phase 0's reasons:
+  - Word itself draws effects as pictures (findings §1). docx4j's pictures can reproduce its measured rules (a true
+    Gaussian, sigma blurRad / 3; 200 dpi made coarser by k, T = 16), and be tested against them without FOP.
+  - The filter arithmetic is Batik's, not FOP's. Batik's `GaussianBlurRed8Bit` blurs with three box filters at a
+    standard deviation of 2 or more, as SVG allows. A fork of FOP can change the resolution it asks for, but not the
+    blur.
+  - 3-D (phase 5; 17 of the 28 picture styles) and the soft edge need docx4j's own pixels anyway, so pictures are one
+    path where filters would be two.
+  - HTML output (CR-080 D5) shows a picture the same in every browser. Browsers' filters differ, and blend in linear
+    RGB unless told otherwise.
+
+  The fork stays the route for anything FOP draws wrongly in phase 1's SVG (the CLAUDE.md process).
 - **D2. One implementation**, chart-render's, moved to a `drawing` package of the same module and used by charts,
   pictures and shapes. Recommendation: yes. Charts' output must stay byte-identical (gate: CR-037's probes).
+  **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-081 decisions as recommended"). Phase 0 found chart-render's constants aren't Word's (findings §5:
+  its shadow sigma is blur / 2 and Word's blurRad / 3; its glow spreads 0.5 rad with sigma 0.25 rad, Word's about
+  0.45 rad with rad / 6). So the one implementation takes its constants from its host: charts keep theirs, byte for
+  byte, and pictures and shapes take Word's. Whether a chart in a Word document should take Word's is left to a probe
+  of a chart in Word.
 - **D3. Resolution** as a property, default 2 pixels per point. Recommendation: yes, the default confirmed by phase 0.
+  **Decided 2026-11-10: as phase 0 revised the recommendation** (Jason, 2026-11-10: "CR-081 decisions as recommended"; findings §5). Phase 0 didn't confirm the
+  default: Word draws effect pictures at 200 dpi (2.78 pixels per point), made coarser by a whole factor
+  k = ceil(blur in pixels / 16), and an inner shadow always at 200 dpi (findings §2). docx4j follows that rule, and
+  the property is kept as an upper bound on the resolution.
 - **D4. Effects on shapes and text boxes** in this CR (phase 3), not later. Recommendation: yes. They are the same
   code once CR-080 draws the outline.
+  **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-081 decisions as recommended").
 - **D5. 3-D** (`a:scene3d`, `a:sp3d`: bevels, extrusion, rotation, lighting) in this CR, as phase 5, the last
   drawing phase. Until then it is drawn flat and reported. It is a renderer of its own, but 3-D WordArt and 3-D
   SmartArt styles can't be output without it, and those are gaps (Jason, 2026-11-09). Cross-checks:
@@ -237,25 +274,35 @@ under `pic:spPr` (through the portfolio).
 
   rust-office-art's crate is MIT AND Apache-2.0 AND OFL-1.1; if any preset table is taken from it, its OFL font data
   is not. Recommendation: yes, behind phase 5's go/no-go after phase 0; flat and reported meanwhile.
+  **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-081 decisions as recommended"). Phase 0 found a 3-D drawing is one lit picture at 200 dpi, a JPEG
+  for a picture and Flate for a shape (findings §4), and 17 of the 28 picture styles are 3-D (§7). Phase 5's
+  estimate is set from that; its go/no-go stays Jason's, before the phase starts.
 - **D6. Preset shadows** (`a:prstShdw`, 20 presets): phase 4, whatever the count. Recommendation: yes. They are cheap
   once the outer shadow exists.
+  **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-081 decisions as recommended"). They are unblurred vector fills, one or two at fixed geometry
+  (findings §1, §5): cheaper than the outer shadow.
 - **D7. `a:blip` colour effects** (`a:grayscl`, `a:duotone`, `a:alphaModFix`, `a:lum`, `a:clrChange`, `a:biLevel`):
   not in this CR, which is about `a:effectLst`. A follow-up, if wanted, recolours the picture's pixels before
   embedding. Recommendation: yes, separately.
+  **Decided 2026-11-10: a CR of its own, CR-084** (Jason: "CR-081 D7 make a CR for this").
 - **D8. Effects in headers and footers** are drawn as in the body: the same code path. Recommendation: yes. docxide-pdf
   names this as a gap of its own.
+  **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-081 decisions as recommended").
 - **D9. Gaps are reported** with stable codes (`render.effect.flat_3d`, `render.effect.blip_recolour`,
   `render.effect.over_limit` and so on), once per drawing, through CR-080 D9's two mechanisms: the message writer and
   the gate's event lines. Recommendation: yes.
+  **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-081 decisions as recommended").
 - **D10. A cap on an effect picture.** At most 4,096 pixels a side and 16 million pixels in all; past it the picture
   is made at a coarser resolution, down to 0.5 pixels per point; past that the effect is not drawn and is reported
   (`render.effect.over_limit`). The numbers are set from phase 0's largest real picture style. Recommendation: yes.
+  **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-081 decisions as recommended"). Phase 0's largest picture-style picture is 554 by 452 pixels
+  (Metal Frame), far inside the cap, so the numbers stand.
 
 ## 9. Out of scope
 
-`a:blip` colour effects (D7, reported meanwhile); `a:effectDag`; text effects on runs (`w14:shadow`, `w14:glow`,
+`a:blip` colour effects (D7: CR-084); `a:effectDag`; text effects on runs (`w14:shadow`, `w14:glow`,
 `w14:reflection` in a `w:rPr`), whose WordArt case is CR-083's; artistic effects (`a14:imgProps` with `a14:imgEffect`:
-blur, pencil sketch and so on), where the `a:blip` is expected to be the already rendered picture and `a14:imgLayer` the source (phase 0 to confirm).
+blur, pencil sketch and so on), where the `a:blip` is expected to be the already rendered picture and `a14:imgLayer` the source (CR-084's phase 0 confirms it).
 
 ## 10. Hand-offs
 
@@ -295,7 +342,8 @@ Editions read (2026-11-09):
 **[MS-OI29500]: Office's notes on these sections**
 - **2.1.1303 (§20.1.8.45 `outerShdw`):** in an `effectLst` under `spPr`, the shadow is drawn only when `sx` and `sy`
   are 100%; any other scale needs the `effectLst` in a `grpSpPr`. Word's picture styles write scaled shadows
-  (perspective shadows) in a picture's `spPr`, so phase 0 checks what Word draws for them. Chart-render's scaled
+  (perspective shadows) in a picture's `spPr`, so phase 0 checks what Word draws for them. **Word 365 draws them**
+  (findings §2, §7); docx4j follows Word. Chart-render's scaled
   shadow (CR-037) may apply only to charts.
 - **2.1.1300 (§20.1.8.40 `innerShdw`):** `dir` is measured clockwise from the left.
 - **2.1.1304 (§20.1.8.50 `reflection`):**
@@ -305,7 +353,7 @@ Editions read (2026-11-09):
 
   §2's description follows Office.
 - **2.1.1306 (§20.1.8.53 `softEdge`):** `rad` is an inset. Only the band between the outline and the inset is
-  blurred; the inside is untouched.
+  blurred; the inside is untouched. **Word 365's blur reaches inside the inset** (findings §2); docx4j follows Word.
 - **2.1.1352 (§20.4.2.6 `effectExtent`):** `l`, `r` and `t` extend the left, right and top edges. The standard says
   the bottom for all of them.
 

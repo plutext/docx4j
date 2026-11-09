@@ -515,3 +515,183 @@ cr081-phase0-r2	fxr83-effectref-custom	2	fxr83-02	shape rect	effectRef idx 2, no
 cr081-phase0-r2	fxr83-effectref-custom	2	fxr83-02	shape rect	effectRef idx 2, no effectLst, theme with a glow at 2 and a reflection at 3	generous	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
 cr081-phase0-r2	fxr83-effectref-custom	3	fxr83-03	shape rect	effectRef idx 3, no effectLst, theme with a glow at 2 and a reflection at 3	generous	fill	144.00	108.00	under	image FlateDecode	1.68	-107.73	1.50	111.15	147.18	111.42	409x310	2.779	0.510	125B7C		same
 cr081-phase0-r2	fxr83-effectref-custom	3	fxr83-03	shape rect	effectRef idx 3, no effectLst, theme with a glow at 2 and a reflection at 3	generous	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
+cr081-phase0-styles	fs00-hand	1	fs00-01	photo.png	Simple Frame, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	8.52	7.02	8.52	9.78	161.04	124.80	448x347	2.782	1.000			same
+cr081-phase0-styles	fs00-hand	2	fs00-02	photo.png	Beveled Matte, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	12.00	12.00	12.00	12.00	168.00	132.00	467x367	2.780	1.000			same
+cr081-phase0-styles	fs00-hand	3	fs00-03	photo.png	Metal Frame	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	27.54	28.14	27.66	26.34	199.20	162.48	554x452	2.781	1.000			same
+cr081-phase0-styles	fs00-hand	4	fs00-04	photo.png	Drop Shadow Rectangle	word	image DCTDecode	144.00	108.00	under	image FlateDecode	15.60	15.46	30.96	31.10	190.56	154.56	133x107	0.698	0.651	313131	yes	same
+cr081-phase0-styles	fs00-hand	5	fs00-05	photo.png	Reflected Rounded Rectangle	word	image DCTDecode	144.00	108.00	under	image FlateDecode	1.50	-106.94	1.20	36.44	146.70	37.50	408x105	2.781	0.361	1B612F	yes	same
+cr081-phase0-styles	fs00-hand	5	fs00-05	photo.png	Reflected Rounded Rectangle	word	image DCTDecode	144.00	108.00	under	fill	0.00	0.00	0.00	0.00	144.00	108.00				0.929		same
+cr081-phase0-styles	fs00-hand	6	fs00-06	photo.png	Soft Edge Rectangle	word	image DCTDecode smask	144.30	108.30	nothing													same
+cr081-phase0-styles	fs00-hand	7	fs00-07	photo.png	Double Frame, Black	word	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.714	000000		same
+cr081-phase0-styles	fs00-hand	7	fs00-07	photo.png	Double Frame, Black	word	image DCTDecode	144.00	108.00	over	fill	18.00	18.00	18.00	18.00	180.00	144.00				0.000		same
+cr081-phase0-styles	fs00-hand	8	fs00-08	photo.png	Thick Matte, Black	word	image DCTDecode	144.00	108.00	under	image FlateDecode	44.88	26.98	65.28	65.18	254.16	200.16	177x139	0.696	0.400	000000		same
+cr081-phase0-styles	fs00-hand	8	fs00-08	photo.png	Thick Matte, Black	word	image DCTDecode	144.00	108.00	under	fill	0.00	0.00	0.00	0.00	144.00	108.00				0.000		same
+cr081-phase0-styles	fs00-hand	8	fs00-08	photo.png	Thick Matte, Black	word	image DCTDecode	144.00	108.00	over	stroke	17.50	17.50	17.50	17.50	179.00	143.00				0.000		same
+cr081-phase0-styles	fs00-hand	9	fs00-09	photo.png	Simple Frame, Black	word	image DCTDecode	144.00	108.00	under	image FlateDecode	5.28	5.14	9.18	9.32	158.46	122.46	441x341	2.783	0.431	000000		same
+cr081-phase0-styles	fs00-hand	9	fs00-09	photo.png	Simple Frame, Black	word	image DCTDecode	144.00	108.00	over	stroke	1.50	1.50	1.50	1.50	147.00	111.00						same
+cr081-phase0-styles	fs00-hand	10	fs00-10	photo.png	Beveled Oval, Black	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	18.24	3.36	18.06	69.66	180.30	181.02	502x504	2.784	1.000			same
+cr081-phase0-styles	fs00-hand	11	fs00-11	photo.png	Compound Frame, Black	word	image DCTDecode	144.00	108.00	over	image FlateDecode	0.30	0.16	0.00	0.14	144.30	108.30	401x301	2.779	0.714	000000		same
+cr081-phase0-styles	fs00-hand	11	fs00-11	photo.png	Compound Frame, Black	word	image DCTDecode	144.00	108.00	over	fill	7.00	7.00	7.00	7.00	158.00	122.00				0.000		same
+cr081-phase0-styles	fs00-hand	12	fs00-12	photo.png	Moderate Frame, Black	word	image DCTDecode	144.00	108.00	under	image FlateDecode	12.00	11.86	17.34	17.48	173.34	137.34	482x382	2.781	0.400	000000		same
+cr081-phase0-styles	fs00-hand	12	fs00-12	photo.png	Moderate Frame, Black	word	image DCTDecode	144.00	108.00	over	stroke	5.00	5.00	5.00	5.00	154.00	118.00						same
+cr081-phase0-styles	fs00-hand	13	fs00-13	photo.png	Center Shadow Rectangle	word	image DCTDecode	144.00	108.00	under	image FlateDecode	15.24	15.34	14.70	14.84	173.94	138.18	161x129	0.926	0.702	000000		same
+cr081-phase0-styles	fs00-hand	14	fs00-14	photo.png	Rounded Diagonal Corner, White	word	image DCTDecode	144.00	108.00	under	image FlateDecode	27.36	27.70	26.64	26.78	198.00	162.48	138x113	0.697	0.431	000000		same
+cr081-phase0-styles	fs00-hand	14	fs00-14	photo.png	Rounded Diagonal Corner, White	word	image DCTDecode	144.00	108.00	over	stroke	3.50	3.68	3.50	3.50	151.00	115.18						same
+cr081-phase0-styles	fs00-hand	15	fs00-15	photo.png	Snip Diagonal Corner, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	11.10	11.10	10.80	11.04	165.90	130.14	462x362	2.785	1.000			same
+cr081-phase0-styles	fs00-hand	16	fs00-16	photo.png	Moderate Frame, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	12.48	10.98	12.30	13.56	168.78	132.54	470x370	2.785	1.000			same
+cr081-phase0-styles	fs00-hand	17	fs00-17	photo.png	Rotated, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	23.28	24.42	23.82	23.16	191.10	155.58	532x433	2.784	1.000			same
+cr081-phase0-styles	fs00-hand	18	fs00-18	photo.png	Perspective Shadow, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	45.48	5.76	5.70	12.06	195.18	125.82	544x351	2.787	1.000			same
+cr081-phase0-styles	fs00-hand	19	fs00-19	photo.png	Relaxed Perspective, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	16.98	-10.14	16.92	3.00	177.90	100.86	495x281	2.782	1.000			same
+cr081-phase0-styles	fs00-hand	20	fs00-20	photo.png	Soft Edge Oval	word	image DCTDecode smask	144.30	108.30	nothing													same
+cr081-phase0-styles	fs00-hand	21	fs00-21	photo.png	Bevel Rectangle	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	8.58	4.20	4.44	8.82	157.02	121.02	437x338	2.783	1.000			same
+cr081-phase0-styles	fs00-hand	22	fs00-22	photo.png	Bevel Perspective	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	22.20	-0.06	27.78	17.16	193.98	125.10	540x348	2.784	1.000			same
+cr081-phase0-styles	fs00-hand	23	fs00-23	photo.png	Reflected Perspective Right	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	-1.68	4.02	-8.10	41.16	134.22	153.18	374x427	2.786	1.000			same
+cr081-phase0-styles	fs00-hand	24	fs00-24	photo.png	Bevel Perspective Left, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	-5.28	18.42	3.66	21.24	142.38	147.66	397x412	2.788	1.000			same
+cr081-phase0-styles	fs00-hand	25	fs00-25	photo.png	Reflected Bevel, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	4.62	3.84	4.32	39.66	152.94	151.50	426x422	2.785	1.000			same
+cr081-phase0-styles	fs00-hand	26	fs00-26	photo.png	Reflected Bevel, Black	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	4.62	3.78	4.32	41.16	152.94	152.94	426x426	2.785	1.000			same
+cr081-phase0-styles	fs00-hand	27	fs00-27	photo.png	Metal Rounded Rectangle	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	17.94	13.02	13.80	19.92	175.74	140.94	489x393	2.783	1.000			same
+cr081-phase0-styles	fs00-hand	28	fs00-28	photo.png	Metal Oval	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	17.94	18.60	17.88	18.18	179.82	144.78	500x403	2.781	1.000			same
+cr081-phase0-styles	fs10-photo	1	fs10-01	photo.png	Simple Frame, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	8.52	6.80	8.52	10.00	161.04	124.80	448x347	2.782	1.000			same
+cr081-phase0-styles	fs10-photo	2	fs10-02	photo.png	Beveled Matte, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	12.00	12.02	12.00	11.98	168.00	132.00	467x367	2.780	1.000			same
+cr081-phase0-styles	fs10-photo	3	fs10-03	photo.png	Metal Frame	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	27.54	28.16	27.66	26.32	199.20	162.48	554x452	2.781	1.000			same
+cr081-phase0-styles	fs10-photo	4	fs10-04	photo.png	Drop Shadow Rectangle	word	image DCTDecode	144.00	108.00	under	image FlateDecode	15.60	15.46	30.96	31.10	190.56	154.56	133x107	0.698	0.651	313131	yes	same
+cr081-phase0-styles	fs10-photo	5	fs10-05	photo.png	Reflected Rounded Rectangle	word	image DCTDecode	144.00	108.00	under	image FlateDecode	1.50	-107.01	1.20	36.27	146.70	37.26	408x104	2.781	0.361	1B612F	yes	same
+cr081-phase0-styles	fs10-photo	5	fs10-05	photo.png	Reflected Rounded Rectangle	word	image DCTDecode	144.00	108.00	under	fill	0.00	0.00	0.00	0.00	144.00	108.00				0.929		same
+cr081-phase0-styles	fs10-photo	6	fs10-06	photo.png	Soft Edge Rectangle	word	image DCTDecode smask	144.30	108.30	nothing													same
+cr081-phase0-styles	fs10-photo	7	fs10-07	photo.png	Double Frame, Black	word	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.27	0.06	0.03	144.30	108.30	401x301	2.779	0.714	000000		same
+cr081-phase0-styles	fs10-photo	7	fs10-07	photo.png	Double Frame, Black	word	image DCTDecode	144.00	108.00	over	fill	18.00	18.00	18.00	18.00	180.00	144.00				0.000		same
+cr081-phase0-styles	fs10-photo	8	fs10-08	photo.png	Thick Matte, Black	word	image DCTDecode	144.00	108.00	under	image FlateDecode	44.88	27.08	65.28	65.32	254.16	200.40	177x140	0.696	0.400	000000		same
+cr081-phase0-styles	fs10-photo	8	fs10-08	photo.png	Thick Matte, Black	word	image DCTDecode	144.00	108.00	under	fill	0.00	0.00	0.00	0.00	144.00	108.00				0.000		same
+cr081-phase0-styles	fs10-photo	8	fs10-08	photo.png	Thick Matte, Black	word	image DCTDecode	144.00	108.00	over	stroke	17.50	17.50	17.50	17.50	179.00	143.00				0.000		same
+cr081-phase0-styles	fs10-photo	9	fs10-09	photo.png	Simple Frame, Black	word	image DCTDecode	144.00	108.00	under	image FlateDecode	5.28	5.31	9.18	9.15	158.46	122.46	441x341	2.783	0.431	000000		same
+cr081-phase0-styles	fs10-photo	9	fs10-09	photo.png	Simple Frame, Black	word	image DCTDecode	144.00	108.00	over	stroke	1.50	1.50	1.50	1.50	147.00	111.00						same
+cr081-phase0-styles	fs10-photo	10	fs10-10	photo.png	Beveled Oval, Black	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	18.24	3.38	18.06	69.64	180.30	181.02	502x504	2.784	1.000			same
+cr081-phase0-styles	fs10-photo	11	fs10-11	photo.png	Compound Frame, Black	word	image DCTDecode	144.00	108.00	over	image FlateDecode	0.30	0.33	0.00	-0.03	144.30	108.30	401x301	2.779	0.714	000000		same
+cr081-phase0-styles	fs10-photo	11	fs10-11	photo.png	Compound Frame, Black	word	image DCTDecode	144.00	108.00	over	fill	7.00	7.00	7.00	7.00	158.00	122.00				0.000		same
+cr081-phase0-styles	fs10-photo	12	fs10-12	photo.png	Moderate Frame, Black	word	image DCTDecode	144.00	108.00	under	image FlateDecode	12.00	12.03	17.34	17.55	173.34	137.58	482x383	2.781	0.400	000000		same
+cr081-phase0-styles	fs10-photo	12	fs10-12	photo.png	Moderate Frame, Black	word	image DCTDecode	144.00	108.00	over	stroke	5.00	5.00	5.00	5.00	154.00	118.00						same
+cr081-phase0-styles	fs10-photo	13	fs10-13	photo.png	Center Shadow Rectangle	word	image DCTDecode	144.00	108.00	under	image FlateDecode	15.24	15.34	14.70	14.84	173.94	138.18	161x129	0.926	0.702	000000		same
+cr081-phase0-styles	fs10-photo	14	fs10-14	photo.png	Rounded Diagonal Corner, White	word	image DCTDecode	144.00	108.00	under	image FlateDecode	27.36	27.80	26.64	26.68	198.00	162.48	138x113	0.697	0.431	000000		same
+cr081-phase0-styles	fs10-photo	14	fs10-14	photo.png	Rounded Diagonal Corner, White	word	image DCTDecode	144.00	108.00	over	stroke	3.50	3.68	3.50	3.50	151.00	115.18						same
+cr081-phase0-styles	fs10-photo	15	fs10-15	photo.png	Snip Diagonal Corner, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	11.10	10.88	10.80	11.02	165.90	129.90	462x362	2.785	1.000			same
+cr081-phase0-styles	fs10-photo	16	fs10-16	photo.png	Moderate Frame, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	12.48	11.00	12.30	13.78	168.78	132.78	470x370	2.785	1.000			same
+cr081-phase0-styles	fs10-photo	17	fs10-17	photo.png	Rotated, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	23.28	24.44	23.82	23.14	191.10	155.58	532x433	2.784	1.000			same
+cr081-phase0-styles	fs10-photo	18	fs10-18	photo.png	Perspective Shadow, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	45.48	5.78	5.70	12.04	195.18	125.82	544x350	2.787	1.000			same
+cr081-phase0-styles	fs10-photo	19	fs10-19	photo.png	Relaxed Perspective, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	16.98	-10.12	16.92	3.22	177.90	101.10	495x282	2.782	1.000			same
+cr081-phase0-styles	fs10-photo	20	fs10-20	photo.png	Soft Edge Oval	word	image DCTDecode smask	144.30	108.30	nothing													same
+cr081-phase0-styles	fs10-photo	21	fs10-21	photo.png	Bevel Rectangle	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	8.58	4.22	4.44	8.80	157.02	121.02	437x337	2.783	1.000			same
+cr081-phase0-styles	fs10-photo	22	fs10-22	photo.png	Bevel Perspective	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	22.20	-0.28	27.78	17.14	193.98	124.86	540x348	2.784	1.000			same
+cr081-phase0-styles	fs10-photo	23	fs10-23	photo.png	Reflected Perspective Right	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	-1.68	4.04	-8.10	41.14	134.22	153.18	374x426	2.786	1.000			same
+cr081-phase0-styles	fs10-photo	24	fs10-24	photo.png	Bevel Perspective Left, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	-5.28	18.20	3.66	21.46	142.38	147.66	397x411	2.788	1.000			same
+cr081-phase0-styles	fs10-photo	25	fs10-25	photo.png	Reflected Bevel, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	4.62	3.86	4.32	39.64	152.94	151.50	426x422	2.785	1.000			same
+cr081-phase0-styles	fs10-photo	26	fs10-26	photo.png	Reflected Bevel, Black	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	4.62	3.56	4.32	41.14	152.94	152.70	426x426	2.785	1.000			same
+cr081-phase0-styles	fs10-photo	27	fs10-27	photo.png	Metal Rounded Rectangle	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	17.94	13.04	13.80	19.90	175.74	140.94	489x393	2.783	1.000			same
+cr081-phase0-styles	fs10-photo	28	fs10-28	photo.png	Metal Oval	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	17.94	18.62	17.88	18.16	179.82	144.78	500x403	2.781	1.000			same
+cr081-phase0-styles	fs11-photo-jpeg	1	fs11-01	photo.jpeg	Simple Frame, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	8.52	6.80	8.52	10.00	161.04	124.80	448x347	2.782	1.000			same
+cr081-phase0-styles	fs11-photo-jpeg	2	fs11-02	photo.jpeg	Beveled Matte, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	12.00	12.02	12.00	11.98	168.00	132.00	467x367	2.780	1.000			same
+cr081-phase0-styles	fs11-photo-jpeg	3	fs11-03	photo.jpeg	Metal Frame	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	27.54	28.16	27.66	26.32	199.20	162.48	554x452	2.781	1.000			same
+cr081-phase0-styles	fs11-photo-jpeg	4	fs11-04	photo.jpeg	Drop Shadow Rectangle	word	image DCTDecode	144.00	108.00	under	image FlateDecode	15.60	15.46	30.96	31.10	190.56	154.56	133x107	0.698	0.651	313131	yes	same
+cr081-phase0-styles	fs11-photo-jpeg	5	fs11-05	photo.jpeg	Reflected Rounded Rectangle	word	image DCTDecode	144.00	108.00	under	image FlateDecode	1.50	-107.01	1.20	36.27	146.70	37.26	408x104	2.781	0.361	1B612F	yes	same
+cr081-phase0-styles	fs11-photo-jpeg	5	fs11-05	photo.jpeg	Reflected Rounded Rectangle	word	image DCTDecode	144.00	108.00	under	fill	0.00	0.00	0.00	0.00	144.00	108.00				0.929		same
+cr081-phase0-styles	fs11-photo-jpeg	6	fs11-06	photo.jpeg	Soft Edge Rectangle	word	image DCTDecode smask	144.30	108.30	nothing													same
+cr081-phase0-styles	fs11-photo-jpeg	7	fs11-07	photo.jpeg	Double Frame, Black	word	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.27	0.06	0.03	144.30	108.30	401x301	2.779	0.714	000000		same
+cr081-phase0-styles	fs11-photo-jpeg	7	fs11-07	photo.jpeg	Double Frame, Black	word	image DCTDecode	144.00	108.00	over	fill	18.00	18.00	18.00	18.00	180.00	144.00				0.000		same
+cr081-phase0-styles	fs11-photo-jpeg	8	fs11-08	photo.jpeg	Thick Matte, Black	word	image DCTDecode	144.00	108.00	under	image FlateDecode	44.88	27.08	65.28	65.32	254.16	200.40	177x140	0.696	0.400	000000		same
+cr081-phase0-styles	fs11-photo-jpeg	8	fs11-08	photo.jpeg	Thick Matte, Black	word	image DCTDecode	144.00	108.00	under	fill	0.00	0.00	0.00	0.00	144.00	108.00				0.000		same
+cr081-phase0-styles	fs11-photo-jpeg	8	fs11-08	photo.jpeg	Thick Matte, Black	word	image DCTDecode	144.00	108.00	over	stroke	17.50	17.50	17.50	17.50	179.00	143.00				0.000		same
+cr081-phase0-styles	fs11-photo-jpeg	9	fs11-09	photo.jpeg	Simple Frame, Black	word	image DCTDecode	144.00	108.00	under	image FlateDecode	5.28	5.31	9.18	9.15	158.46	122.46	441x341	2.783	0.431	000000		same
+cr081-phase0-styles	fs11-photo-jpeg	9	fs11-09	photo.jpeg	Simple Frame, Black	word	image DCTDecode	144.00	108.00	over	stroke	1.50	1.50	1.50	1.50	147.00	111.00						same
+cr081-phase0-styles	fs11-photo-jpeg	10	fs11-10	photo.jpeg	Beveled Oval, Black	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	18.24	3.38	18.06	69.64	180.30	181.02	502x504	2.784	1.000			same
+cr081-phase0-styles	fs11-photo-jpeg	11	fs11-11	photo.jpeg	Compound Frame, Black	word	image DCTDecode	144.00	108.00	over	image FlateDecode	0.30	0.33	0.00	-0.03	144.30	108.30	401x301	2.779	0.714	000000		same
+cr081-phase0-styles	fs11-photo-jpeg	11	fs11-11	photo.jpeg	Compound Frame, Black	word	image DCTDecode	144.00	108.00	over	fill	7.00	7.00	7.00	7.00	158.00	122.00				0.000		same
+cr081-phase0-styles	fs11-photo-jpeg	12	fs11-12	photo.jpeg	Moderate Frame, Black	word	image DCTDecode	144.00	108.00	under	image FlateDecode	12.00	12.03	17.34	17.55	173.34	137.58	482x383	2.781	0.400	000000		same
+cr081-phase0-styles	fs11-photo-jpeg	12	fs11-12	photo.jpeg	Moderate Frame, Black	word	image DCTDecode	144.00	108.00	over	stroke	5.00	5.00	5.00	5.00	154.00	118.00						same
+cr081-phase0-styles	fs11-photo-jpeg	13	fs11-13	photo.jpeg	Center Shadow Rectangle	word	image DCTDecode	144.00	108.00	under	image FlateDecode	15.24	15.34	14.70	14.84	173.94	138.18	161x129	0.926	0.702	000000		same
+cr081-phase0-styles	fs11-photo-jpeg	14	fs11-14	photo.jpeg	Rounded Diagonal Corner, White	word	image DCTDecode	144.00	108.00	under	image FlateDecode	27.36	27.80	26.64	26.68	198.00	162.48	138x113	0.697	0.431	000000		same
+cr081-phase0-styles	fs11-photo-jpeg	14	fs11-14	photo.jpeg	Rounded Diagonal Corner, White	word	image DCTDecode	144.00	108.00	over	stroke	3.50	3.68	3.50	3.50	151.00	115.18						same
+cr081-phase0-styles	fs11-photo-jpeg	15	fs11-15	photo.jpeg	Snip Diagonal Corner, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	11.10	10.88	10.80	11.02	165.90	129.90	462x362	2.785	1.000			same
+cr081-phase0-styles	fs11-photo-jpeg	16	fs11-16	photo.jpeg	Moderate Frame, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	12.48	11.00	12.30	13.78	168.78	132.78	470x370	2.785	1.000			same
+cr081-phase0-styles	fs11-photo-jpeg	17	fs11-17	photo.jpeg	Rotated, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	23.28	24.44	23.82	23.14	191.10	155.58	532x433	2.784	1.000			same
+cr081-phase0-styles	fs11-photo-jpeg	18	fs11-18	photo.jpeg	Perspective Shadow, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	45.48	5.78	5.70	12.04	195.18	125.82	544x350	2.787	1.000			same
+cr081-phase0-styles	fs11-photo-jpeg	19	fs11-19	photo.jpeg	Relaxed Perspective, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	16.98	-10.12	16.92	3.22	177.90	101.10	495x282	2.782	1.000			same
+cr081-phase0-styles	fs11-photo-jpeg	20	fs11-20	photo.jpeg	Soft Edge Oval	word	image DCTDecode smask	144.30	108.30	nothing													same
+cr081-phase0-styles	fs11-photo-jpeg	21	fs11-21	photo.jpeg	Bevel Rectangle	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	8.58	4.22	4.44	8.80	157.02	121.02	437x337	2.783	1.000			same
+cr081-phase0-styles	fs11-photo-jpeg	22	fs11-22	photo.jpeg	Bevel Perspective	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	22.20	-0.28	27.78	17.14	193.98	124.86	540x348	2.784	1.000			same
+cr081-phase0-styles	fs11-photo-jpeg	23	fs11-23	photo.jpeg	Reflected Perspective Right	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	-1.68	4.04	-8.10	41.14	134.22	153.18	374x426	2.786	1.000			same
+cr081-phase0-styles	fs11-photo-jpeg	24	fs11-24	photo.jpeg	Bevel Perspective Left, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	-5.28	18.20	3.66	21.46	142.38	147.66	397x411	2.788	1.000			same
+cr081-phase0-styles	fs11-photo-jpeg	25	fs11-25	photo.jpeg	Reflected Bevel, White	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	4.62	3.86	4.32	39.64	152.94	151.50	426x422	2.785	1.000			same
+cr081-phase0-styles	fs11-photo-jpeg	26	fs11-26	photo.jpeg	Reflected Bevel, Black	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	4.62	3.56	4.32	41.14	152.94	152.70	426x426	2.785	1.000			same
+cr081-phase0-styles	fs11-photo-jpeg	27	fs11-27	photo.jpeg	Metal Rounded Rectangle	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	17.94	13.04	13.80	19.90	175.74	140.94	489x393	2.783	1.000			same
+cr081-phase0-styles	fs11-photo-jpeg	28	fs11-28	photo.jpeg	Metal Oval	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	17.94	18.62	17.88	18.16	179.82	144.78	500x403	2.781	1.000			same
+cr081-phase0-styles	fs20-lineart	1	fs20-01	lineart.png	Simple Frame, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	8.52	6.80	8.52	10.00	161.04	124.80	448x347	2.782	1.000	F0F0F0		same
+cr081-phase0-styles	fs20-lineart	2	fs20-02	lineart.png	Beveled Matte, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	12.00	12.02	12.00	11.98	168.00	132.00	467x367	2.780	1.000	F2F2F2		same
+cr081-phase0-styles	fs20-lineart	3	fs20-03	lineart.png	Metal Frame	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	27.54	28.16	27.66	26.32	199.20	162.48	554x452	2.781	1.000	DEDDDA		same
+cr081-phase0-styles	fs20-lineart	4	fs20-04	lineart.png	Drop Shadow Rectangle	word	image FlateDecode	144.00	108.00	under	image FlateDecode	15.60	15.46	30.96	31.10	190.56	154.56	133x107	0.698	0.651	313131	yes	same
+cr081-phase0-styles	fs20-lineart	5	fs20-05	lineart.png	Reflected Rounded Rectangle	word	image FlateDecode	144.00	108.00	under	image FlateDecode	1.50	-107.01	1.20	36.27	146.70	37.26	408x104	2.781	0.361	FCFCFC	yes	same
+cr081-phase0-styles	fs20-lineart	5	fs20-05	lineart.png	Reflected Rounded Rectangle	word	image FlateDecode	144.00	108.00	under	fill	0.00	0.00	0.00	0.00	144.00	108.00				0.929		same
+cr081-phase0-styles	fs20-lineart	6	fs20-06	lineart.png	Soft Edge Rectangle	word	image FlateDecode smask	144.30	108.30	nothing													same
+cr081-phase0-styles	fs20-lineart	7	fs20-07	lineart.png	Double Frame, Black	word	image FlateDecode	144.00	108.00	over	image FlateDecode	0.24	0.27	0.06	0.03	144.30	108.30	401x301	2.779	0.714	000000		same
+cr081-phase0-styles	fs20-lineart	7	fs20-07	lineart.png	Double Frame, Black	word	image FlateDecode	144.00	108.00	over	fill	18.00	18.00	18.00	18.00	180.00	144.00				0.000		same
+cr081-phase0-styles	fs20-lineart	8	fs20-08	lineart.png	Thick Matte, Black	word	image FlateDecode	144.00	108.00	under	image FlateDecode	44.88	27.08	65.28	65.32	254.16	200.40	177x140	0.696	0.400	000000		same
+cr081-phase0-styles	fs20-lineart	8	fs20-08	lineart.png	Thick Matte, Black	word	image FlateDecode	144.00	108.00	under	fill	0.00	0.00	0.00	0.00	144.00	108.00				0.000		same
+cr081-phase0-styles	fs20-lineart	8	fs20-08	lineart.png	Thick Matte, Black	word	image FlateDecode	144.00	108.00	over	stroke	17.50	17.50	17.50	17.50	179.00	143.00				0.000		same
+cr081-phase0-styles	fs20-lineart	9	fs20-09	lineart.png	Simple Frame, Black	word	image FlateDecode	144.00	108.00	under	image FlateDecode	5.28	5.31	9.18	9.15	158.46	122.46	441x341	2.783	0.431	000000		same
+cr081-phase0-styles	fs20-lineart	9	fs20-09	lineart.png	Simple Frame, Black	word	image FlateDecode	144.00	108.00	over	stroke	1.50	1.50	1.50	1.50	147.00	111.00						same
+cr081-phase0-styles	fs20-lineart	10	fs20-10	lineart.png	Beveled Oval, Black	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	18.24	3.38	18.06	69.64	180.30	181.02	502x504	2.784	1.000	CFCFCF		same
+cr081-phase0-styles	fs20-lineart	11	fs20-11	lineart.png	Compound Frame, Black	word	image FlateDecode	144.00	108.00	over	image FlateDecode	0.30	0.33	0.00	-0.03	144.30	108.30	401x301	2.779	0.714	000000		same
+cr081-phase0-styles	fs20-lineart	11	fs20-11	lineart.png	Compound Frame, Black	word	image FlateDecode	144.00	108.00	over	fill	7.00	7.00	7.00	7.00	158.00	122.00				0.000		same
+cr081-phase0-styles	fs20-lineart	12	fs20-12	lineart.png	Moderate Frame, Black	word	image FlateDecode	144.00	108.00	under	image FlateDecode	12.00	12.03	17.34	17.55	173.34	137.58	482x383	2.781	0.400	000000		same
+cr081-phase0-styles	fs20-lineart	12	fs20-12	lineart.png	Moderate Frame, Black	word	image FlateDecode	144.00	108.00	over	stroke	5.00	5.00	5.00	5.00	154.00	118.00						same
+cr081-phase0-styles	fs20-lineart	13	fs20-13	lineart.png	Center Shadow Rectangle	word	image FlateDecode	144.00	108.00	under	image FlateDecode	15.24	15.34	14.70	14.84	173.94	138.18	161x129	0.926	0.702	000000		same
+cr081-phase0-styles	fs20-lineart	14	fs20-14	lineart.png	Rounded Diagonal Corner, White	word	image FlateDecode	144.00	108.00	under	image FlateDecode	27.36	27.80	26.64	26.68	198.00	162.48	138x113	0.697	0.431	000000		same
+cr081-phase0-styles	fs20-lineart	14	fs20-14	lineart.png	Rounded Diagonal Corner, White	word	image FlateDecode	144.00	108.00	over	stroke	3.50	3.68	3.50	3.50	151.00	115.18						same
+cr081-phase0-styles	fs20-lineart	15	fs20-15	lineart.png	Snip Diagonal Corner, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	11.10	10.88	10.80	11.02	165.90	129.90	462x362	2.785	1.000	F0F0F0		same
+cr081-phase0-styles	fs20-lineart	16	fs20-16	lineart.png	Moderate Frame, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	12.48	11.00	12.30	13.78	168.78	132.78	470x370	2.785	1.000	F1F1F1		same
+cr081-phase0-styles	fs20-lineart	17	fs20-17	lineart.png	Rotated, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	23.28	24.44	23.82	23.14	191.10	155.58	532x433	2.784	1.000	F0F0F0		same
+cr081-phase0-styles	fs20-lineart	18	fs20-18	lineart.png	Perspective Shadow, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	45.48	5.78	5.70	12.04	195.18	125.82	544x350	2.787	1.000	F0F0F0		same
+cr081-phase0-styles	fs20-lineart	19	fs20-19	lineart.png	Relaxed Perspective, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	16.98	-10.12	16.92	3.22	177.90	101.10	495x282	2.782	1.000	ECECEC		same
+cr081-phase0-styles	fs20-lineart	20	fs20-20	lineart.png	Soft Edge Oval	word	image FlateDecode smask	144.30	108.30	nothing													same
+cr081-phase0-styles	fs20-lineart	21	fs20-21	lineart.png	Bevel Rectangle	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	8.58	4.22	4.44	8.80	157.02	121.02	437x337	2.783	1.000	F0F0F0		same
+cr081-phase0-styles	fs20-lineart	22	fs20-22	lineart.png	Bevel Perspective	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	22.20	-0.28	27.78	17.14	193.98	124.86	540x348	2.784	1.000			same
+cr081-phase0-styles	fs20-lineart	23	fs20-23	lineart.png	Reflected Perspective Right	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	-1.68	4.04	-8.10	41.14	134.22	153.18	374x426	2.786	1.000	ECECEC		same
+cr081-phase0-styles	fs20-lineart	24	fs20-24	lineart.png	Bevel Perspective Left, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	-5.28	18.20	3.66	21.46	142.38	147.66	397x411	2.788	1.000	EAEAEA		same
+cr081-phase0-styles	fs20-lineart	25	fs20-25	lineart.png	Reflected Bevel, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	4.62	3.86	4.32	39.64	152.94	151.50	426x422	2.785	1.000	EDEDED		same
+cr081-phase0-styles	fs20-lineart	26	fs20-26	lineart.png	Reflected Bevel, Black	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	4.62	3.56	4.32	41.14	152.94	152.70	426x426	2.785	1.000	CFCFCF		same
+cr081-phase0-styles	fs20-lineart	27	fs20-27	lineart.png	Metal Rounded Rectangle	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	17.94	13.04	13.80	19.90	175.74	140.94	489x393	2.783	1.000	DFDEDB		same
+cr081-phase0-styles	fs20-lineart	28	fs20-28	lineart.png	Metal Oval	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	17.94	18.62	17.88	18.16	179.82	144.78	500x403	2.781	1.000			same
+cr081-phase0-styles	fs21-lineart-alpha	1	fs21-01	lineart-alpha.png	Simple Frame, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	8.52	6.80	8.52	10.00	161.04	124.80	448x347	2.782	1.000	E4E4E4		same
+cr081-phase0-styles	fs21-lineart-alpha	2	fs21-02	lineart-alpha.png	Beveled Matte, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	12.00	12.02	12.00	12.22	168.00	132.24	467x368	2.780	1.000	E9E9E9		same
+cr081-phase0-styles	fs21-lineart-alpha	3	fs21-03	lineart-alpha.png	Metal Frame	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	27.54	28.16	27.66	26.32	199.20	162.48	554x452	2.781	1.000	AFADA6		same
+cr081-phase0-styles	fs21-lineart-alpha	4	fs21-04	lineart-alpha.png	Drop Shadow Rectangle	word	image FlateDecode smask	144.00	108.00	under	image FlateDecode	15.60	15.39	30.96	31.17	190.56	154.56	133x107	0.698	0.149	2A2A2A	yes	same
+cr081-phase0-styles	fs21-lineart-alpha	5	fs21-05	lineart-alpha.png	Reflected Rounded Rectangle	word	image FlateDecode smask	144.00	108.00	under	image FlateDecode	1.50	-106.84	1.20	36.34	146.70	37.50	408x105	2.781	0.361	E9E9E9	yes	same
+cr081-phase0-styles	fs21-lineart-alpha	5	fs21-05	lineart-alpha.png	Reflected Rounded Rectangle	word	image FlateDecode smask	144.00	108.00	under	fill	0.00	0.00	0.00	0.00	144.00	108.00				0.929		same
+cr081-phase0-styles	fs21-lineart-alpha	6	fs21-06	lineart-alpha.png	Soft Edge Rectangle	word	image FlateDecode smask	144.30	108.30	nothing													same
+cr081-phase0-styles	fs21-lineart-alpha	7	fs21-07	lineart-alpha.png	Double Frame, Black	word	image FlateDecode smask	144.00	108.00	over	image FlateDecode	0.24	0.27	0.06	0.03	144.30	108.30	401x301	2.779	0.835	000000		same
+cr081-phase0-styles	fs21-lineart-alpha	7	fs21-07	lineart-alpha.png	Double Frame, Black	word	image FlateDecode smask	144.00	108.00	over	fill	18.00	18.00	18.00	18.00	180.00	144.00				0.000		same
+cr081-phase0-styles	fs21-lineart-alpha	8	fs21-08	lineart-alpha.png	Thick Matte, Black	word	image FlateDecode smask	144.00	108.00	under	image FlateDecode	44.88	27.08	65.28	65.32	254.16	200.40	177x140	0.696	0.400	000000		same
+cr081-phase0-styles	fs21-lineart-alpha	8	fs21-08	lineart-alpha.png	Thick Matte, Black	word	image FlateDecode smask	144.00	108.00	under	fill	0.00	0.00	0.00	0.00	144.00	108.00				0.000		same
+cr081-phase0-styles	fs21-lineart-alpha	8	fs21-08	lineart-alpha.png	Thick Matte, Black	word	image FlateDecode smask	144.00	108.00	over	stroke	17.50	17.50	17.50	17.50	179.00	143.00				0.000		same
+cr081-phase0-styles	fs21-lineart-alpha	9	fs21-09	lineart-alpha.png	Simple Frame, Black	word	image FlateDecode smask	144.00	108.00	under	image FlateDecode	5.28	5.24	9.18	9.22	158.46	122.46	441x341	2.783	0.380	000000		same
+cr081-phase0-styles	fs21-lineart-alpha	9	fs21-09	lineart-alpha.png	Simple Frame, Black	word	image FlateDecode smask	144.00	108.00	over	stroke	1.50	1.50	1.50	1.50	147.00	111.00						same
+cr081-phase0-styles	fs21-lineart-alpha	10	fs21-10	lineart-alpha.png	Beveled Oval, Black	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	18.24	3.38	18.06	69.64	180.30	181.02	502x504	2.784	1.000	272727		same
+cr081-phase0-styles	fs21-lineart-alpha	11	fs21-11	lineart-alpha.png	Compound Frame, Black	word	image FlateDecode smask	144.00	108.00	over	image FlateDecode	0.30	0.33	0.00	-0.03	144.30	108.30	401x301	2.779	0.843	000000		same
+cr081-phase0-styles	fs21-lineart-alpha	11	fs21-11	lineart-alpha.png	Compound Frame, Black	word	image FlateDecode smask	144.00	108.00	over	fill	7.00	7.00	7.00	7.00	158.00	122.00				0.000		same
+cr081-phase0-styles	fs21-lineart-alpha	12	fs21-12	lineart-alpha.png	Moderate Frame, Black	word	image FlateDecode smask	144.00	108.00	under	image FlateDecode	12.00	12.03	17.34	17.55	173.34	137.58	482x383	2.781	0.400	000000		same
+cr081-phase0-styles	fs21-lineart-alpha	12	fs21-12	lineart-alpha.png	Moderate Frame, Black	word	image FlateDecode smask	144.00	108.00	over	stroke	5.00	5.00	5.00	5.00	154.00	118.00						same
+cr081-phase0-styles	fs21-lineart-alpha	13	fs21-13	lineart-alpha.png	Center Shadow Rectangle	word	image FlateDecode smask	144.00	108.00	under	image FlateDecode	15.24	15.34	14.70	14.84	173.94	138.18	161x129	0.926	0.239	000000		same
+cr081-phase0-styles	fs21-lineart-alpha	14	fs21-14	lineart-alpha.png	Rounded Diagonal Corner, White	word	image FlateDecode smask	144.00	108.00	under	image FlateDecode	27.36	27.80	26.64	26.68	198.00	162.48	138x113	0.697	0.212	000000		same
+cr081-phase0-styles	fs21-lineart-alpha	14	fs21-14	lineart-alpha.png	Rounded Diagonal Corner, White	word	image FlateDecode smask	144.00	108.00	over	stroke	3.50	3.68	3.50	3.50	151.00	115.18						same
+cr081-phase0-styles	fs21-lineart-alpha	15	fs21-15	lineart-alpha.png	Snip Diagonal Corner, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	11.10	10.88	10.80	11.02	165.90	129.90	462x362	2.785	1.000	E4E4E4		same
+cr081-phase0-styles	fs21-lineart-alpha	16	fs21-16	lineart-alpha.png	Moderate Frame, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	12.48	11.00	12.30	13.78	168.78	132.78	470x370	2.785	1.000	E8E8E8		same
+cr081-phase0-styles	fs21-lineart-alpha	17	fs21-17	lineart-alpha.png	Rotated, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	23.28	24.44	23.82	23.14	191.10	155.58	532x433	2.784	1.000	E7E7E7		same
+cr081-phase0-styles	fs21-lineart-alpha	18	fs21-18	lineart-alpha.png	Perspective Shadow, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	45.48	6.02	5.70	12.04	195.18	126.06	544x352	2.787	1.000	D3D3D3		same
+cr081-phase0-styles	fs21-lineart-alpha	19	fs21-19	lineart-alpha.png	Relaxed Perspective, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	16.98	-10.12	16.92	3.22	177.90	101.10	495x282	2.782	1.000	DFDFDF		same
+cr081-phase0-styles	fs21-lineart-alpha	20	fs21-20	lineart-alpha.png	Soft Edge Oval	word	image FlateDecode smask	144.30	108.30	nothing													same
+cr081-phase0-styles	fs21-lineart-alpha	21	fs21-21	lineart-alpha.png	Bevel Rectangle	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	8.58	4.46	4.44	8.56	157.02	121.02	437x338	2.783	1.000	000000		same
+cr081-phase0-styles	fs21-lineart-alpha	22	fs21-22	lineart-alpha.png	Bevel Perspective	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	22.20	-0.28	27.78	17.14	193.98	124.86	540x348	2.784	1.000	202020		same
+cr081-phase0-styles	fs21-lineart-alpha	23	fs21-23	lineart-alpha.png	Reflected Perspective Right	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	-1.68	4.04	-8.10	41.14	134.22	153.18	374x426	2.786	1.000	070707		same
+cr081-phase0-styles	fs21-lineart-alpha	24	fs21-24	lineart-alpha.png	Bevel Perspective Left, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	-5.28	18.20	3.66	21.46	142.38	147.66	397x411	2.788	1.000	E0E0E0		same
+cr081-phase0-styles	fs21-lineart-alpha	25	fs21-25	lineart-alpha.png	Reflected Bevel, White	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	4.62	3.86	4.32	39.64	152.94	151.50	426x422	2.785	1.000	EDEDED		same
+cr081-phase0-styles	fs21-lineart-alpha	26	fs21-26	lineart-alpha.png	Reflected Bevel, Black	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	4.62	3.56	4.32	41.14	152.94	152.70	426x426	2.785	1.000	CFCFCF		same
+cr081-phase0-styles	fs21-lineart-alpha	27	fs21-27	lineart-alpha.png	Metal Rounded Rectangle	word	frame (estimated)	144.00	108.00	lit	image FlateDecode	17.94	13.04	13.80	19.90	175.74	140.94	489x393	2.783	1.000	B0AEA7		same
+cr081-phase0-styles	fs21-lineart-alpha	28	fs21-28	lineart-alpha.png	Metal Oval	word	frame (estimated)	144.00	108.00	lit	image DCTDecode	17.94	18.62	17.88	18.16	179.82	144.78	500x403	2.781	1.000			same
