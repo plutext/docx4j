@@ -50,7 +50,11 @@ is CR-081's, through word-bridge.
   probes are read in all.
 - `CR-080-notes/phase0-findings.md` has the rules measured: lines, dashes, arrowheads, fill modes, style references
   by theme, text, groups and canvases. Its §5 lists what they change in phase 2, for Jason. Phase 0 still needs the
-  load survey's counts and the licence notes (its §6).
+  load survey's counts (queued with the portfolio).
+- `CR-080-notes/licence-notes.md` (2026-11-10; Jason: "draft the licence notes") has the licence notes. The geometry
+  engine is copied from POI 5.5.1 rather than trunk, since trunk's copy needs Java 16. It brings `PaintStyle` with
+  it, and `legals/NOTICE` gains the text in its §5. Along the way it found that docx4j's own
+  `presetShapeDefinitions.xml` breaks `leftArrow`, and that `PresetGeometries` lacks its 4(b) notice.
 
 Owner: Jason Harrop. Drafted with Claude Opus 5.5.
 
