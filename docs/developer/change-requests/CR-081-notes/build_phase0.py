@@ -13,6 +13,7 @@ The sets:
   cr081-phase0-3d  scene3d and sp3d on pictures and shapes, with a longer timeout
   cr081-phase0-r2  round 2: the inline families again with a generous effect extent, since Word clips an inline
                    drawing's effects to its paragraph's height; the preset shadows on a shape
+  cr081-phase0-r3  round 3: the reflection's blur with no fade, and its offset (dist along dir)
   cr081-phase0-styles  the 28 picture styles: Jason's hand-made document (cr081-styles-hand.docx, staged as it is),
                    and Word's XML for each style (styles-word.tsv, harvested from it by build_styles_start.py) over the
                    photo, the photo as a JPEG and both line arts, each with the effect extent Word gave the style
@@ -252,6 +253,18 @@ def fam_reflection():
     out += [pic(f'picture turned 30 degrees, rotWithShape {r}', rf(rotWithShape=r), rot=1800000) for r in (0, 1)]
     return out
 
+NO_FADE = dict(stA=100000, endA=100000, endPos=100000)   # alpha 100% throughout, so only the blur shapes the edges
+
+def fam_reflection_blur():
+    """Round 3: the reflection's blur, with the fade turned off (round 2's fit failed, since the fade confounds it)."""
+    return [pic(f'no fade, blurRad {b} pt', rf(blurRad=b * 12700, **NO_FADE)) for b in (0, 1, 2, 4, 6, 8, 12, 16, 24, 32)]
+
+def fam_reflection_offset():
+    """Round 3: the reflection's offset, dist along dir (every round 2 dir probe had dist 0), unblurred and unfaded."""
+    out = [pic(f'dist 12 pt, dir {d // 60000} degrees', rf(blurRad=0, dist=152400, dir=d, **NO_FADE)) for d in DIRS]
+    out += [pic(f'dist {t} pt, dir 90 degrees', rf(blurRad=0, dist=t * 12700, **NO_FADE)) for t in (0, 3, 6, 24)]
+    return out
+
 def fam_preset():
     return [pic(f'prstShdw shdw{i}', prstshdw(f'shdw{i}', dist=76200, dir=2700000)) for i in range(1, 21)]
 
@@ -485,6 +498,11 @@ SETS = {
     ],
     # The picture styles (2026-11-10): Jason applied the 28 by hand to build_styles_start.py's document; that document
     # is staged as it is (HAND, first), and these write each style's XML over each picture.
+    # Round 3 (2026-11-10): the reflection's blur and offset, to close phase 0's gate (Jason: "Small round").
+    'cr081-phase0-r3': [
+        ('fxr52-reflection-blur', generous(fam_reflection_blur), THEME_2023),
+        ('fxr53-reflection-offset', generous(fam_reflection_offset), THEME_2023),
+    ],
     'cr081-phase0-styles': [
         ('fs10-photo', fam_styles('photo.png'), THEME_2023),
         ('fs11-photo-jpeg', fam_styles('photo.jpeg'), THEME_2023),
@@ -493,7 +511,8 @@ SETS = {
     ],
 }
 AS_IS = {'cr081-phase0-styles': [HAND]}
-TIMEOUT = {'cr081-phase0': 180, 'cr081-phase0-3d': 300, 'cr081-phase0-r2': 180, 'cr081-phase0-styles': 300}
+TIMEOUT = {'cr081-phase0': 180, 'cr081-phase0-3d': 300, 'cr081-phase0-r2': 180, 'cr081-phase0-r3': 180,
+           'cr081-phase0-styles': 300}
 
 # ---------------------------------------------------------------------------------------------------------- the XML
 

@@ -1,16 +1,17 @@
 # CR-081 phase 0: how Word draws DrawingML effects in a PDF
 
-Word 16.0.20326.20232 (Microsoft 365), through word-bridge 4dcb436, 2026-11-09 and 10. Four rounds, 102 jobs plus their
+Word 16.0.20326.20232 (Microsoft 365), through word-bridge 4dcb436, 2026-11-09 and 10. Five rounds, 106 jobs plus their
 controls, every open silent and every save done:
 - `cr081-phase0`: 18 files, 220 probes.
 - `cr081-phase0-3d`: 4 files, 64 probes.
 - `cr081-phase0-r2`: 15 files, 197 probes.
 - `cr081-phase0-styles`: 5 files, 140 probes: the 28 picture styles (§7).
+- `cr081-phase0-r3`: 2 files, 22 probes: the reflection's blur, with the fade off, and its offset.
 
 The probes are `build_phase0.py`'s, listed in `probes.tsv`. Every draw is in `phase0-word.tsv` (`read_phase0.py`, over
 `pdfdraws.py`), one row for each thing a probe's page draws besides its drawing, placed against the drawing's box.
 
-**Word is deterministic.** Each file ran twice. All 696 rows are the same in both runs, in placement and in every pixel.
+**Word is deterministic.** Each file ran twice. All 718 rows are the same in both runs, in placement and in every pixel.
 So a tolerance can't come from Word against itself, as §7 of the CR assumed. It comes from the pixel grid (0.36 pt at
 200 dpi) and the 8-bit alpha.
 
@@ -54,24 +55,26 @@ erf is 0.002 to 0.005, apart from 1 pt, which is pixels.
 | `innerShdw` | **blurRad / 3** (0.325 to 0.336) | 2 to 20 pt (`fx20`) | on the outline shifted by `dist` | the drawing's box |
 | `glow` | **rad / 6** (0.163 to 0.167; 0.176 at 2 pt) | 5 to 32 pt (`fxr30`) | 0.44 to 0.47 rad outside the outline | rad beyond it |
 | `softEdge` | **rad / 3** (0.331 to 0.337) | 2.5 to 25 pt (`fx40`) | 0.86 to 1.08 rad inside the outline | the drawing's box |
+| `reflection` | **blurRad / 3** (0.329 to 0.336) | 2 to 32 pt (`fxr52`) | on the flipped outline | blurRad beyond it, plus a pixel |
 
 - **Soft edge.** The outline is transparent, and the picture is opaque again only at about 1.7 rad. So the blur reaches
   inside the inset, which isn't what [MS-OI29500] 2.1.1306 says ("the inside is untouched"). At 50 pt the 108 pt
   picture's centre is at alpha 0.40. At 78.7 pt it is gone.
-- **Reflection.** The blur pads its picture by blurRad, as the shadow's does. Its sigma isn't measured yet (§6).
+- **Reflection.** Measured with the fade off (`stA`, `endA` and `endPos` 100%, `fxr52`), so that only the blur shapes
+  the edges: the same rule as the outer shadow's. Round 2's fit failed because the fade confounds it.
 
 ### Resolution
 
 Effect pictures are 2.78 px/pt (200 dpi) unless the blur is wide: then the picture is made coarser by a whole factor k.
 
-| blurRad (shadow, reflection) | 4 pt or less | 6 and 8 pt | 16 pt | 32 pt |
-|---|---|---|---|---|
-| k | 1 | 2 | 3 | 6 |
+| blurRad (shadow, reflection) | 4 pt or less | 6 and 8 pt | 12 and 16 pt | 24 pt | 32 pt |
+|---|---|---|---|---|---|
+| k | 1 | 2 | 3 | 5 | 6 |
 
 The glow's k counts rad / 2 as its blur: 11 pt gives 1, 18 pt gives 2, 32 pt gives 3.
 
 All of these fit **k = ceil(blur in pixels at 200 dpi / T)**. The picture styles' shadows (§7) fit too: 15 pt gives 3,
-20 and 23 pt give 4. Together they put T between 15.97 and 16.7 px: **T = 16**. Word keeps a blur's radius within 16
+20 and 23 pt give 4. With the reflection's 24 pt at 5 (`fxr52`), they put T between 15.97 and 16.67 px: **T = 16**. Word keeps a blur's radius within 16
 pixels. This answers D3, and changes its default: Word's resolution follows the blur (§5).
 
 The inner shadow is the exception: always 200 dpi, to a 20 pt blur (`fx20`). Its picture is the drawing's size.
@@ -111,7 +114,8 @@ The inner shadow is the exception: always 200 dpi, to a 20 pt blur (`fx20`). Its
 All measured in `fxr50`; [MS-OI29500] 2.1.1304 holds.
 - **The flip.** The whole drawing is flipped by `sy` (-100%) about the `algn` point: bl, b or br puts it below, tl
   above, and ctr over the drawing.
-- **The offset.** It is moved by `dist` along `dir`: a gap of dist minus about 1 pt of blur padding.
+- **The offset.** It is moved by `dist` along `dir`, clockwise from +x, as the outer shadow is: 3 to 24 pt, and 12 pt
+  in the eight directions, each within 0.15 pt once the picture's one-pixel padding is allowed for (`fxr53`).
 - **The fade.** Alpha is linear from `stA` at `stPos` to `endA` at `endPos`, along `fadeDir`. 16200000 runs it upward;
   0 and 10800000 run it across.
 - **Past `endPos`** alpha holds at `endA`. The base's 0.3% rounds to nothing in 8 bits; 50% holds to the end.
@@ -201,9 +205,7 @@ Accepted 2026-11-10 (Jason: "CR-081 decisions as recommended"), and written into
 
 ## 6. Not yet measured
 
-- **Reflection.** `dir` with a non-zero `dist`: every `dir` probe had `dist` 0, so they show nothing. Also its blur's
-  sigma.
-- **Resolution.** T is 16 to within 15.97 to 16.7 px (§2); a blur of 5.75 to 6 pt would settle it.
+- **Resolution.** T is 16 to within 15.97 to 16.67 px (§2); a blur of 5.75 to 6 pt would settle it.
 - **Glow.** Its spread (0.44 to 0.47 rad, not quite 0.5): a fit of the dilation and blur together.
 - **`rotWithShape`** on a turned drawing.
 - **Text in a shape**, which casts the shape's shadow: whether glow and reflection apply to it too.

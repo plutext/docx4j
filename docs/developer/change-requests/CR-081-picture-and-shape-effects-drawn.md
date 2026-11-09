@@ -2,7 +2,7 @@
 
 Status: ACCEPTED 2026-11-10 (Jason: "CR-081 decisions as recommended"): D1 to D10 as recommended, D7 as its own CR,
 CR-084 (§8). Proposed 2026-11-09, drafted on Jason's request (the four CRs of 2026-11-09; see CR-080's Status).
-Phase 0 run in four rounds (`CR-081-notes/phase0-findings.md`). Phase 1 (pictures in a rectangle) needs nothing from CR-080. Phases 2 and 3 draw with its
+Phase 0 DONE 2026-11-10, in five rounds (`CR-081-notes/phase0-findings.md`). Phase 1 (pictures in a rectangle) needs nothing from CR-080. Phases 2 and 3 draw with its
 geometry. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
 Revised 2026-11-09 (Jason: "add a rendering phase to the CRs where appropriate: WordArt or SmartArt we can't output is
 a gap"):
@@ -40,9 +40,12 @@ generator and stage the jobs under bridge/staging/"). §6 names the route.
   28 styles are 3-D; a picture's line lies outside it; Word re-encodes a JPEG.
 - Round 1 clipped its vertical sweeps (Word clips an inline drawing's effects to its paragraph). Round 2,
   `cr081-phase0-r2` (15 files, 197 probes), re-ran them with a generous effect extent.
-- Every job of the three rounds was silent, and every pair pixel-identical.
+- Round 3, `cr081-phase0-r3` (2 files, 22 probes, 2026-11-10; Jason: "Small round"), measured the reflection's blur
+  with the fade off, and its offset.
+- Every job of the rounds was silent, and every pair pixel-identical.
 - `CR-081-notes/phase0-findings.md` has the rules measured, with the numbers in `phase0-word.tsv` (`read_phase0.py`).
-  The blur rules are named for the outer and inner shadow, the glow and the soft edge. Its §5 lists what the findings
+  The blur rules are named for every blurred effect: the outer and inner shadow, the glow, the soft edge and the
+  reflection (blurRad / 3, as the shadow's). The preset shadows are unblurred. So the gate is met. Its §5 lists what the findings
   change in §2, §7 and D2, D3, D5 and D6, for Jason; its §6 lists what isn't measured yet.
 
 Owner: Jason Harrop. Drafted with Claude Opus 5.5.
