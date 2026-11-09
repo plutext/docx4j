@@ -4,8 +4,10 @@
 
 Each package's document, settings and theme parts are validated with xmllint against the ECMA-376 transitional schemas
 (Part 4's OfficeOpenXML-XMLSchema-Transitional.zip, unzipped), with a schema for wps:wsp written here from
-[MS-ODRAWXML] 2.6 (CT_WordprocessingShape, CT_TextboxInfo), which ECMA-376 doesn't hold. mc:AlternateContent is read as
-Word reads it: its mc:Choice (Requires="wps") stands in its place. Also checked: every wp:docPr id is unique in its
+[MS-ODRAWXML] 2.6 (CT_WordprocessingShape, CT_TextboxInfo), which ECMA-376 doesn't hold; and for CR-080's groups and
+canvases, wpg:wgp and wpc:wpc, their content models as docx4j's own xsd/odrawxml/oartwordgroup.xsd and
+oartwordcanvas.xsd have them (without w14:contentPart). mc:AlternateContent is read as Word reads it: its mc:Choice
+(Requires="wps", "wpg" or "wpc") stands in its place. Also checked: every wp:docPr id is unique in its
 package, every relationship target is in the package, and every part has a content type.
 
 usage: check_probes.py <transitional xsd dir> <docx> ..."""
@@ -45,6 +47,72 @@ WPS_XSD = '''<?xml version="1.0" encoding="UTF-8"?>
 </xsd:schema>
 '''
 
+WPG_XSD = '''<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+  targetNamespace="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"
+  xmlns="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"
+  xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+  xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
+  xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-main.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/picture" schemaLocation="dml-picture.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" schemaLocation="wps.xsd"/>
+  <xsd:complexType name="CT_GraphicFrame">
+    <xsd:sequence>
+      <xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps"/>
+      <xsd:element name="cNvFrPr" type="a:CT_NonVisualGraphicFrameProperties"/>
+      <xsd:element name="xfrm" type="a:CT_Transform2D"/>
+      <xsd:element ref="a:graphic"/>
+      <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_WordprocessingGroup">
+    <xsd:sequence>
+      <xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps" minOccurs="0"/>
+      <xsd:element name="cNvGrpSpPr" type="a:CT_NonVisualGroupDrawingShapeProps"/>
+      <xsd:element name="grpSpPr" type="a:CT_GroupShapeProperties"/>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element ref="wps:wsp"/>
+        <xsd:element name="grpSp" type="CT_WordprocessingGroup"/>
+        <xsd:element name="graphicFrame" type="CT_GraphicFrame"/>
+        <xsd:element ref="pic:pic"/>
+      </xsd:choice>
+      <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="wgp" type="CT_WordprocessingGroup"/>
+</xsd:schema>
+'''
+
+WPC_XSD = '''<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+  targetNamespace="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
+  xmlns="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
+  xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+  xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
+  xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
+  xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup">
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-main.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/picture" schemaLocation="dml-picture.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" schemaLocation="wps.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" schemaLocation="wpg.xsd"/>
+  <xsd:complexType name="CT_WordprocessingCanvas">
+    <xsd:sequence>
+      <xsd:element name="bg" type="a:CT_BackgroundFormatting" minOccurs="0"/>
+      <xsd:element name="whole" type="a:CT_WholeE2oFormatting" minOccurs="0"/>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element ref="wps:wsp"/>
+        <xsd:element ref="pic:pic"/>
+        <xsd:element ref="wpg:wgp"/>
+        <xsd:element name="graphicFrame" type="wpg:CT_GraphicFrame"/>
+      </xsd:choice>
+      <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="wpc" type="CT_WordprocessingCanvas"/>
+</xsd:schema>
+'''
+
 XML_XSD = '''<?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.w3.org/XML/1998/namespace">
   <xsd:attribute name="lang" type="xsd:language"/>
@@ -64,10 +132,12 @@ ALL_XSD = '''<?xml version="1.0" encoding="UTF-8"?>
   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/picture" schemaLocation="dml-picture.xsd"/>
   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" schemaLocation="dml-wordprocessingDrawing.xsd"/>
   <xsd:import namespace="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" schemaLocation="wps.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" schemaLocation="wpg.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" schemaLocation="wpc.xsd"/>
 </xsd:schema>
 '''
 
-AC = re.compile(r'<mc:AlternateContent><mc:Choice Requires="wps">(.*?)</mc:Choice></mc:AlternateContent>', re.S)
+AC = re.compile(r'<mc:AlternateContent><mc:Choice Requires="(?:wps|wpg|wpc)">(.*?)</mc:Choice></mc:AlternateContent>', re.S)
 
 def check(schema, docx, tmp):
     errors = []
@@ -107,6 +177,8 @@ def main(xsd_dir, docxs):
         shutil.copytree(xsd_dir, sch)
         open(os.path.join(sch, 'xml.xsd'), 'w').write(XML_XSD)    # the schemas import it with no schemaLocation
         open(os.path.join(sch, 'wps.xsd'), 'w').write(WPS_XSD)
+        open(os.path.join(sch, 'wpg.xsd'), 'w').write(WPG_XSD)
+        open(os.path.join(sch, 'wpc.xsd'), 'w').write(WPC_XSD)
         open(os.path.join(sch, 'all.xsd'), 'w').write(ALL_XSD)
         bad = 0
         for d in docxs:

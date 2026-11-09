@@ -1,0 +1,1320 @@
+file	page	probe	note	size	fills	strokes	shadings	images	fill_box	stroke_box	lw	cap	join	dash	fill_colours	glyph
+fp10-presets-100x100	1	fp10-001	accentBorderCallout1, default adjustments	100x100	1	3	0	0	0.00 -0.00 100.00 100.00	-38.33 -0.00 100.00 112.50	1.0	0	1		4472C4	
+fp10-presets-100x100	2	fp10-002	accentBorderCallout2, default adjustments	100x100	1	3	0	0	0.00 -0.00 100.00 100.00	-46.67 -0.00 100.00 112.50	1.0	0	1		4472C4	
+fp10-presets-100x100	3	fp10-003	accentBorderCallout3, default adjustments	100x100	1	3	0	0	0.00 -0.00 100.00 100.00	-16.67 -0.00 100.00 112.96	1.0	0	1		4472C4	
+fp10-presets-100x100	4	fp10-004	accentCallout1, default adjustments	100x100	1	2	0	0	0.00 -0.00 100.00 100.00	-38.33 0.00 -8.33 112.50	1.0	0	1		4472C4	
+fp10-presets-100x100	5	fp10-005	accentCallout2, default adjustments	100x100	1	2	0	0	0.00 -0.00 100.00 100.00	-46.67 0.00 -8.33 112.50	1.0	0	1		4472C4	
+fp10-presets-100x100	6	fp10-006	accentCallout3, default adjustments	100x100	1	2	0	0	0.00 -0.00 100.00 100.00	-16.67 0.00 -8.33 112.96	1.0	0	1		4472C4	
+fp10-presets-100x100	7	fp10-007	actionButtonBackPrevious, default adjustments	100x100	2	2	0	0	0.00 0.00 100.00 100.00	0.00 -0.00 100.00 100.00	1.0	0	1		294476 4472C4	
+fp10-presets-100x100	8	fp10-008	actionButtonBeginning, default adjustments	100x100	2	2	0	0	0.00 0.00 100.00 100.00	0.00 -0.00 100.00 100.00	1.0	0	1		294476 4472C4	
+fp10-presets-100x100	9	fp10-009	actionButtonBlank, default adjustments	100x100	1	1	0	0	0.00 -0.00 100.00 100.00	0.00 -0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	10	fp10-010	actionButtonDocument, default adjustments	100x100	3	2	0	0	0.00 0.00 100.00 100.00	0.00 -0.00 100.00 100.00	1.0	0	1		294476 375C9E 4472C4	
+fp10-presets-100x100	11	fp10-011	actionButtonEnd, default adjustments	100x100	2	2	0	0	0.00 0.00 100.00 100.00	0.00 -0.00 100.00 100.00	1.0	0	1		294476 4472C4	
+fp10-presets-100x100	12	fp10-012	actionButtonForwardNext, default adjustments	100x100	2	2	0	0	0.00 0.00 100.00 100.00	0.00 -0.00 100.00 100.00	1.0	0	1		294476 4472C4	
+fp10-presets-100x100	13	fp10-013	actionButtonHelp, default adjustments	100x100	2	2	0	0	0.00 0.00 100.00 100.00	0.00 -0.00 100.00 100.00	1.0	0	1		294476 4472C4	
+fp10-presets-100x100	14	fp10-014	actionButtonHome, default adjustments	100x100	3	2	0	0	0.00 0.00 100.00 100.00	0.00 -0.00 100.00 100.00	1.0	0	1		294476 375C9E 4472C4	
+fp10-presets-100x100	15	fp10-015	actionButtonInformation, default adjustments	100x100	3	2	0	0	0.00 0.00 100.00 100.00	0.00 -0.00 100.00 100.00	1.0	0	1		294476 4472C4 8FAADC	
+fp10-presets-100x100	16	fp10-016	actionButtonMovie, default adjustments	100x100	2	2	0	0	0.00 0.00 100.00 100.00	0.00 -0.00 100.00 100.00	1.0	0	1		294476 4472C4	
+fp10-presets-100x100	17	fp10-017	actionButtonReturn, default adjustments	100x100	2	2	0	0	0.00 0.00 100.00 100.00	0.00 -0.00 100.00 100.00	1.0	0	1		294476 4472C4	
+fp10-presets-100x100	18	fp10-018	actionButtonSound, default adjustments	100x100	2	2	0	0	0.00 0.00 100.00 100.00	0.00 -0.00 100.00 100.00	1.0	0	1		294476 4472C4	
+fp10-presets-100x100	19	fp10-019	arc, default adjustments	100x100	1	1	0	0	50.00 0.00 100.00 50.00	50.00 0.00 100.00 50.00	1.0	0	1		4472C4	
+fp10-presets-100x100	20	fp10-020	bentArrow, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	21	fp10-021	bentConnector2, default adjustments	100x100	0	1	0	0		0.00 0.00 100.00 100.00	1.0	0	1			
+fp10-presets-100x100	22	fp10-022	bentConnector3, default adjustments	100x100	0	1	0	0		0.00 0.00 100.00 100.00	1.0	0	1			
+fp10-presets-100x100	23	fp10-023	bentConnector4, default adjustments	100x100	0	1	0	0		0.00 0.00 100.00 100.00	1.0	0	1			
+fp10-presets-100x100	24	fp10-024	bentConnector5, default adjustments	100x100	0	1	0	0		0.00 0.00 100.00 100.00	1.0	0	1			
+fp10-presets-100x100	25	fp10-025	bentUpArrow, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	26	fp10-026	bevel, default adjustments	100x100	5	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		294476 375C9E 4472C4 698ED0 8FAADC	
+fp10-presets-100x100	27	fp10-027	blockArc, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 50.00	0.00 0.00 100.00 50.00	1.0	0	1		4472C4	
+fp10-presets-100x100	28	fp10-028	borderCallout1, default adjustments	100x100	1	2	0	0	0.00 -0.00 100.00 100.00	-38.33 -0.00 100.00 112.50	1.0	0	1		4472C4	
+fp10-presets-100x100	29	fp10-029	borderCallout2, default adjustments	100x100	1	2	0	0	0.00 -0.00 100.00 100.00	-46.67 -0.00 100.00 112.50	1.0	0	1		4472C4	
+fp10-presets-100x100	30	fp10-030	borderCallout3, default adjustments	100x100	1	2	0	0	0.00 -0.00 100.00 100.00	-16.67 -0.00 100.00 112.96	1.0	0	1		4472C4	
+fp10-presets-100x100	31	fp10-031	bracePair, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	32	fp10-032	bracketPair, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	33	fp10-033	callout1, default adjustments	100x100	1	1	0	0	0.00 -0.00 100.00 100.00	-38.33 18.75 -8.33 112.50	1.0	0	1		4472C4	
+fp10-presets-100x100	34	fp10-034	callout2, default adjustments	100x100	1	1	0	0	0.00 -0.00 100.00 100.00	-46.67 18.75 -8.33 112.50	1.0	0	1		4472C4	
+fp10-presets-100x100	35	fp10-035	callout3, default adjustments	100x100	1	1	0	0	0.00 -0.00 100.00 100.00	-16.67 18.75 -8.33 112.96	1.0	0	1		4472C4	
+fp10-presets-100x100	36	fp10-036	can, default adjustments	100x100	2	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4 8FAADC	
+fp10-presets-100x100	37	fp10-037	chartPlus, default adjustments	100x100	1	1	0	0	0.00 -0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	38	fp10-038	chartStar, default adjustments	100x100	1	1	0	0	0.00 -0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	39	fp10-039	chartX, default adjustments	100x100	1	1	0	0	0.00 -0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	40	fp10-040	chevron, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	41	fp10-041	chord, default adjustments	100x100	1	1	0	0	-4.88 0.00 85.36 104.88	-4.88 0.00 85.36 104.88	1.0	0	1		4472C4	
+fp10-presets-100x100	42	fp10-042	circularArrow, default adjustments	100x100	1	1	0	0	6.25 6.25 97.95 50.00	6.25 6.25 97.95 50.00	1.0	0	1		4472C4	
+fp10-presets-100x100	43	fp10-043	cloud, default adjustments	100x100	1	2	0	0	-1.51 -1.62 102.08 102.86	-1.51 -1.62 102.08 102.86	1.0	0	1		4472C4	
+fp10-presets-100x100	44	fp10-044	cloudCallout, default adjustments	100x100	4	5	0	0	-1.51 -1.62 102.08 115.28	-1.51 -1.62 102.08 115.28	1.0	0	1		4472C4	
+fp10-presets-100x100	45	fp10-045	corner, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	46	fp10-046	cornerTabs, default adjustments	100x100	4	4	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	47	fp10-047	cube, default adjustments	100x100	3	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		375C9E 4472C4 698ED0	
+fp10-presets-100x100	48	fp10-048	curvedConnector2, default adjustments	100x100	0	1	0	0		0.00 0.00 100.00 100.00	1.0	0	1			
+fp10-presets-100x100	49	fp10-049	curvedConnector3, default adjustments	100x100	0	1	0	0		0.00 0.00 100.00 100.00	1.0	0	1			
+fp10-presets-100x100	50	fp10-050	curvedConnector4, default adjustments	100x100	0	1	0	0		0.00 0.00 100.00 100.00	1.0	0	1			
+fp10-presets-100x100	51	fp10-051	curvedConnector5, default adjustments	100x100	0	1	0	0		0.00 0.00 100.00 100.00	1.0	0	1			
+fp10-presets-100x100	52	fp10-052	curvedDownArrow, default adjustments	100x100	2	1	0	0	0.00 0.00 99.01 100.00	0.00 0.00 99.01 100.00	1.0	0	1		375C9E 4472C4	
+fp10-presets-100x100	53	fp10-053	curvedLeftArrow, default adjustments	100x100	2	1	0	0	0.00 0.00 113.74 99.01	0.00 0.00 100.00 99.01	1.0	0	1		375C9E 4472C4	
+fp10-presets-100x100	54	fp10-054	curvedRightArrow, default adjustments	100x100	2	1	0	0	-13.74 0.00 100.00 99.01	0.00 0.00 100.00 99.01	1.0	0	1		375C9E 4472C4	
+fp10-presets-100x100	55	fp10-055	curvedUpArrow, default adjustments	100x100	2	1	0	0	0.00 0.00 99.01 110.63	0.00 0.00 99.01 100.00	1.0	0	1		375C9E 4472C4	
+fp10-presets-100x100	56	fp10-056	decagon, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	57	fp10-057	diagStripe, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	58	fp10-058	diamond, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	59	fp10-059	dodecagon, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	60	fp10-060	donut, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	61	fp10-061	doubleWave, default adjustments	100x100	1	1	0	0	0.00 -14.58 100.00 114.58	0.00 -14.58 100.00 114.58	1.0	0	1		4472C4	
+fp10-presets-100x100	62	fp10-062	downArrow, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	63	fp10-063	downArrowCallout, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	64	fp10-064	ellipse, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	65	fp10-065	ellipseRibbon, default adjustments	100x100	2	1	0	0	0.00 0.00 100.00 101.04	0.00 0.00 100.00 101.04	1.0	0	0		375C9E 4472C4	
+fp10-presets-100x100	66	fp10-066	ellipseRibbon2, default adjustments	100x100	2	1	0	0	0.00 -1.04 100.00 100.00	0.00 -1.04 100.00 100.00	1.0	0	0		375C9E 4472C4	
+fp10-presets-100x100	67	fp10-067	flowChartAlternateProcess, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	68	fp10-068	flowChartCollate, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	69	fp10-069	flowChartConnector, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	70	fp10-070	flowChartDecision, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	71	fp10-071	flowChartDelay, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	72	fp10-072	flowChartDisplay, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	73	fp10-073	flowChartDocument, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 110.75	0.00 0.00 100.00 110.75	1.0	0	1		4472C4	
+fp10-presets-100x100	74	fp10-074	flowChartExtract, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	75	fp10-075	flowChartInputOutput, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	76	fp10-076	flowChartInternalStorage, default adjustments	100x100	1	2	0	0	0.00 -0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	77	fp10-077	flowChartMagneticDisk, default adjustments	100x100	1	2	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	78	fp10-078	flowChartMagneticDrum, default adjustments	100x100	1	2	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	79	fp10-079	flowChartMagneticTape, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	80	fp10-080	flowChartManualInput, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	81	fp10-081	flowChartManualOperation, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	82	fp10-082	flowChartMerge, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	83	fp10-083	flowChartMultidocument, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 108.99	0.00 0.00 100.00 108.99	1.0	0	1		4472C4	
+fp10-presets-100x100	84	fp10-084	flowChartOfflineStorage, default adjustments	100x100	1	2	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	85	fp10-085	flowChartOffpageConnector, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	86	fp10-086	flowChartOnlineStorage, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	87	fp10-087	flowChartOr, default adjustments	100x100	1	2	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	88	fp10-088	flowChartPredefinedProcess, default adjustments	100x100	1	2	0	0	0.00 -0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	89	fp10-089	flowChartPreparation, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	90	fp10-090	flowChartProcess, default adjustments	100x100	1	1	0	0	0.00 -0.00 100.00 100.00	0.00 -0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	91	fp10-091	flowChartPunchedCard, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	92	fp10-092	flowChartPunchedTape, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	93	fp10-093	flowChartSort, default adjustments	100x100	1	2	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	94	fp10-094	flowChartSummingJunction, default adjustments	100x100	1	2	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	95	fp10-095	flowChartTerminator, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	96	fp10-096	foldedCorner, default adjustments	100x100	2	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		375C9E 4472C4	
+fp10-presets-100x100	97	fp10-097	frame, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	98	fp10-098	funnel, default adjustments	100x100	1	1	0	0	-3.36 -1.68 100.16 100.42	-3.36 -1.68 100.16 100.42	1.0	0	1		4472C4	
+fp10-presets-100x100	99	fp10-099	gear6, default adjustments	100x100	1	1	0	0	4.99 1.16 95.01 98.84	4.99 1.16 95.01 98.84	1.0	0	1		4472C4	
+fp10-presets-100x100	100	fp10-100	gear9, default adjustments	100x100	1	1	0	0	0.47 0.43 99.53 97.97	0.47 0.43 99.53 97.97	1.0	0	1		4472C4	
+fp10-presets-100x100	101	fp10-101	halfFrame, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	102	fp10-102	heart, default adjustments	100x100	1	1	0	0	-52.08 -33.33 152.08 100.00	-52.08 -33.33 152.08 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	103	fp10-103	heptagon, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	104	fp10-104	hexagon, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	105	fp10-105	homePlate, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	106	fp10-106	horizontalScroll, default adjustments	100x100	2	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		375C9E 4472C4	
+fp10-presets-100x100	107	fp10-107	irregularSeal1, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	108	fp10-108	irregularSeal2, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	109	fp10-109	leftArrow, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	110	fp10-110	leftArrowCallout, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	111	fp10-111	leftBrace, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	112	fp10-112	leftBracket, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	113	fp10-113	leftCircularArrow, default adjustments	100x100	1	1	0	0	6.25 50.00 97.95 98.76	6.25 50.00 97.95 98.76	1.0	0	1		4472C4	
+fp10-presets-100x100	114	fp10-114	leftRightArrow, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	115	fp10-115	leftRightArrowCallout, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	116	fp10-116	leftRightCircularArrow, default adjustments	100x100	1	1	0	0	2.05 1.24 97.95 50.00	2.05 1.24 97.95 50.00	1.0	0	1		4472C4	
+fp10-presets-100x100	117	fp10-117	leftRightRibbon, default adjustments	100x100	2	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		375C9E 4472C4	
+fp10-presets-100x100	118	fp10-118	leftRightUpArrow, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	119	fp10-119	leftUpArrow, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	120	fp10-120	lightningBolt, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	121	fp10-121	line, default adjustments	100x100	0	1	0	0		0.00 0.00 100.00 100.00	1.0	0	1			
+fp10-presets-100x100	122	fp10-122	lineInv, default adjustments	100x100	0	1	0	0		0.00 0.00 100.00 100.00	1.0	0	1			
+fp10-presets-100x100	123	fp10-123	mathDivide, default adjustments	100x100	1	1	0	0	13.26 11.79 86.74 88.21	13.26 11.79 86.74 88.21	1.0	0	1		4472C4	
+fp10-presets-100x100	124	fp10-124	mathEqual, default adjustments	100x100	1	1	0	0	13.26 20.60 86.74 79.40	13.26 20.60 86.74 79.40	1.0	0	0		4472C4	
+fp10-presets-100x100	125	fp10-125	mathMinus, default adjustments	100x100	1	1	0	0	13.26 38.24 86.75 61.76	13.26 38.24 86.75 61.76	1.0	0	0		4472C4	
+fp10-presets-100x100	126	fp10-126	mathMultiply, default adjustments	100x100	1	1	0	0	15.70 15.70 84.30 84.30	15.70 15.70 84.30 84.30	1.0	0	0		4472C4	
+fp10-presets-100x100	127	fp10-127	mathNotEqual, default adjustments	100x100	1	1	0	0	13.26 0.00 86.74 100.00	13.26 0.00 86.74 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	128	fp10-128	mathPlus, default adjustments	100x100	1	1	0	0	13.26 13.26 86.74 86.74	13.26 13.26 86.74 86.74	1.0	0	0		4472C4	
+fp10-presets-100x100	129	fp10-129	moon, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	130	fp10-130	nonIsoscelesTrapezoid, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	131	fp10-131	noSmoking, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	132	fp10-132	notchedRightArrow, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	133	fp10-133	octagon, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	134	fp10-134	parallelogram, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	135	fp10-135	pentagon, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	136	fp10-136	pie, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	137	fp10-137	pieWedge, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	138	fp10-138	plaque, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	139	fp10-139	plaqueTabs, default adjustments	100x100	4	4	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	140	fp10-140	plus, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	141	fp10-141	quadArrow, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	142	fp10-142	quadArrowCallout, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	143	fp10-143	rect, default adjustments	100x100	1	1	0	0	0.00 -0.00 100.00 100.00	0.00 -0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	144	fp10-144	ribbon, default adjustments	100x100	2	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		375C9E 4472C4	
+fp10-presets-100x100	145	fp10-145	ribbon2, default adjustments	100x100	2	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		375C9E 4472C4	
+fp10-presets-100x100	146	fp10-146	rightArrow, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	147	fp10-147	rightArrowCallout, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	148	fp10-148	rightBrace, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	149	fp10-149	rightBracket, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	150	fp10-150	round1Rect, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	151	fp10-151	round2DiagRect, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	152	fp10-152	round2SameRect, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	153	fp10-153	roundRect, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	154	fp10-154	rtTriangle, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	155	fp10-155	smileyFace, default adjustments	100x100	2	3	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		375C9E 4472C4	
+fp10-presets-100x100	156	fp10-156	snip1Rect, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	157	fp10-157	snip2DiagRect, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	158	fp10-158	snip2SameRect, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	159	fp10-159	snipRoundRect, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	160	fp10-160	squareTabs, default adjustments	100x100	4	4	0	0	0.00 -0.00 100.00 100.00	0.00 -0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	161	fp10-161	star10, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	162	fp10-162	star12, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	163	fp10-163	star16, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	164	fp10-164	star24, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	165	fp10-165	star32, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	166	fp10-166	star4, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	167	fp10-167	star5, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	168	fp10-168	star6, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	169	fp10-169	star7, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	170	fp10-170	star8, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	171	fp10-171	straightConnector1, default adjustments	100x100	0	1	0	0		0.00 0.00 100.00 100.00	1.0	0	1			
+fp10-presets-100x100	172	fp10-172	stripedRightArrow, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	173	fp10-173	sun, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	174	fp10-174	swooshArrow, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	175	fp10-175	teardrop, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	176	fp10-176	trapezoid, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	177	fp10-177	triangle, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	178	fp10-178	upArrowCallout, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	179	fp10-179	upArrow, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	180	fp10-180	upDownArrow, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	181	fp10-181	upDownArrowCallout, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	0		4472C4	
+fp10-presets-100x100	182	fp10-182	uturnArrow, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		4472C4	
+fp10-presets-100x100	183	fp10-183	verticalScroll, default adjustments	100x100	2	1	0	0	0.00 0.00 100.00 100.00	0.00 0.00 100.00 100.00	1.0	0	1		375C9E 4472C4	
+fp10-presets-100x100	184	fp10-184	wave, default adjustments	100x100	1	1	0	0	0.00 -29.17 100.00 129.17	0.00 -29.17 100.00 129.17	1.0	0	1		4472C4	
+fp10-presets-100x100	185	fp10-185	wedgeEllipseCallout, default adjustments	100x100	1	1	0	0	-7.12 -7.12 107.12 112.50	-7.12 -7.12 107.12 112.50	1.0	0	1		4472C4	
+fp10-presets-100x100	186	fp10-186	wedgeRectCallout, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 112.50	0.00 0.00 100.00 112.50	1.0	0	1		4472C4	
+fp10-presets-100x100	187	fp10-187	wedgeRoundRectCallout, default adjustments	100x100	1	1	0	0	0.00 0.00 100.00 112.50	0.00 0.00 100.00 112.50	1.0	0	1		4472C4	
+fp11-presets-144x72	1	fp11-001	accentBorderCallout1, default adjustments	144x72	1	3	0	0	0.00 0.00 144.00 72.00	-55.20 0.00 144.00 81.00	1.0	0	1		4472C4	
+fp11-presets-144x72	2	fp11-002	accentBorderCallout2, default adjustments	144x72	1	3	0	0	0.00 0.00 144.00 72.00	-67.20 0.00 144.00 81.00	1.0	0	1		4472C4	
+fp11-presets-144x72	3	fp11-003	accentBorderCallout3, default adjustments	144x72	1	3	0	0	0.00 0.00 144.00 72.00	-24.00 0.00 144.00 81.33	1.0	0	1		4472C4	
+fp11-presets-144x72	4	fp11-004	accentCallout1, default adjustments	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-55.20 0.00 -12.00 81.00	1.0	0	1		4472C4	
+fp11-presets-144x72	5	fp11-005	accentCallout2, default adjustments	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-67.20 0.00 -12.00 81.00	1.0	0	1		4472C4	
+fp11-presets-144x72	6	fp11-006	accentCallout3, default adjustments	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-24.00 0.00 -12.00 81.33	1.0	0	1		4472C4	
+fp11-presets-144x72	7	fp11-007	actionButtonBackPrevious, default adjustments	144x72	2	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		294476 4472C4	
+fp11-presets-144x72	8	fp11-008	actionButtonBeginning, default adjustments	144x72	2	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		294476 4472C4	
+fp11-presets-144x72	9	fp11-009	actionButtonBlank, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	10	fp11-010	actionButtonDocument, default adjustments	144x72	3	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		294476 375C9E 4472C4	
+fp11-presets-144x72	11	fp11-011	actionButtonEnd, default adjustments	144x72	2	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		294476 4472C4	
+fp11-presets-144x72	12	fp11-012	actionButtonForwardNext, default adjustments	144x72	2	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		294476 4472C4	
+fp11-presets-144x72	13	fp11-013	actionButtonHelp, default adjustments	144x72	2	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		294476 4472C4	
+fp11-presets-144x72	14	fp11-014	actionButtonHome, default adjustments	144x72	3	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		294476 375C9E 4472C4	
+fp11-presets-144x72	15	fp11-015	actionButtonInformation, default adjustments	144x72	3	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		294476 4472C4 8FAADC	
+fp11-presets-144x72	16	fp11-016	actionButtonMovie, default adjustments	144x72	2	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		294476 4472C4	
+fp11-presets-144x72	17	fp11-017	actionButtonReturn, default adjustments	144x72	2	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		294476 4472C4	
+fp11-presets-144x72	18	fp11-018	actionButtonSound, default adjustments	144x72	2	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		294476 4472C4	
+fp11-presets-144x72	19	fp11-019	arc, default adjustments	144x72	1	1	0	0	72.00 0.00 144.00 36.00	72.00 0.00 144.00 36.00	1.0	0	1		4472C4	
+fp11-presets-144x72	20	fp11-020	bentArrow, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	21	fp11-021	bentConnector2, default adjustments	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp11-presets-144x72	22	fp11-022	bentConnector3, default adjustments	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp11-presets-144x72	23	fp11-023	bentConnector4, default adjustments	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp11-presets-144x72	24	fp11-024	bentConnector5, default adjustments	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp11-presets-144x72	25	fp11-025	bentUpArrow, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	26	fp11-026	bevel, default adjustments	144x72	5	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		294476 375C9E 4472C4 698ED0 8FAADC	
+fp11-presets-144x72	27	fp11-027	blockArc, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 36.00	0.00 0.00 144.00 36.00	1.0	0	1		4472C4	
+fp11-presets-144x72	28	fp11-028	borderCallout1, default adjustments	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-55.20 0.00 144.00 81.00	1.0	0	1		4472C4	
+fp11-presets-144x72	29	fp11-029	borderCallout2, default adjustments	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-67.20 0.00 144.00 81.00	1.0	0	1		4472C4	
+fp11-presets-144x72	30	fp11-030	borderCallout3, default adjustments	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-24.00 0.00 144.00 81.33	1.0	0	1		4472C4	
+fp11-presets-144x72	31	fp11-031	bracePair, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	32	fp11-032	bracketPair, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	33	fp11-033	callout1, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	-55.20 13.50 -12.00 81.00	1.0	0	1		4472C4	
+fp11-presets-144x72	34	fp11-034	callout2, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	-67.20 13.50 -12.00 81.00	1.0	0	1		4472C4	
+fp11-presets-144x72	35	fp11-035	callout3, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	-24.00 13.50 -12.00 81.33	1.0	0	1		4472C4	
+fp11-presets-144x72	36	fp11-036	can, default adjustments	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4 8FAADC	
+fp11-presets-144x72	37	fp11-037	chartPlus, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	38	fp11-038	chartStar, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	39	fp11-039	chartX, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	40	fp11-040	chevron, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	41	fp11-041	chord, default adjustments	144x72	1	1	0	0	-10.18 0.00 104.20 77.09	-10.18 0.00 104.20 77.09	1.0	0	1		4472C4	
+fp11-presets-144x72	42	fp11-042	circularArrow, default adjustments	144x72	1	1	0	0	4.50 4.50 135.00 36.00	4.50 4.50 135.00 36.00	1.0	0	1		4472C4	
+fp11-presets-144x72	43	fp11-043	cloud, default adjustments	144x72	1	2	0	0	-2.18 -1.17 146.99 74.06	-2.18 -1.17 146.99 74.06	1.0	0	1		4472C4	
+fp11-presets-144x72	44	fp11-044	cloudCallout, default adjustments	144x72	4	5	0	0	-2.18 -1.17 146.99 83.00	-2.18 -1.17 146.99 83.00	1.0	0	1		4472C4	
+fp11-presets-144x72	45	fp11-045	corner, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	46	fp11-046	cornerTabs, default adjustments	144x72	4	4	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	47	fp11-047	cube, default adjustments	144x72	3	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		375C9E 4472C4 698ED0	
+fp11-presets-144x72	48	fp11-048	curvedConnector2, default adjustments	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp11-presets-144x72	49	fp11-049	curvedConnector3, default adjustments	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp11-presets-144x72	50	fp11-050	curvedConnector4, default adjustments	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp11-presets-144x72	51	fp11-051	curvedConnector5, default adjustments	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp11-presets-144x72	52	fp11-052	curvedDownArrow, default adjustments	144x72	2	1	0	0	0.00 0.00 142.14 72.00	0.00 0.00 142.14 72.00	1.0	0	1		375C9E 4472C4	
+fp11-presets-144x72	53	fp11-053	curvedLeftArrow, default adjustments	144x72	2	1	0	0	0.00 0.00 163.79 71.82	0.00 0.00 144.00 71.82	1.0	0	1		375C9E 4472C4	
+fp11-presets-144x72	54	fp11-054	curvedRightArrow, default adjustments	144x72	2	1	0	0	-19.79 0.00 144.00 71.82	0.00 0.00 144.00 71.82	1.0	0	1		375C9E 4472C4	
+fp11-presets-144x72	55	fp11-055	curvedUpArrow, default adjustments	144x72	2	1	0	0	0.00 0.00 142.14 76.84	0.00 0.00 142.14 72.00	1.0	0	1		375C9E 4472C4	
+fp11-presets-144x72	56	fp11-056	decagon, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	57	fp11-057	diagStripe, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	58	fp11-058	diamond, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	59	fp11-059	dodecagon, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	60	fp11-060	donut, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	61	fp11-061	doubleWave, default adjustments	144x72	1	1	0	0	0.00 -10.50 144.00 82.50	0.00 -10.50 144.00 82.50	1.0	0	1		4472C4	
+fp11-presets-144x72	62	fp11-062	downArrow, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	63	fp11-063	downArrowCallout, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	64	fp11-064	ellipse, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	65	fp11-065	ellipseRibbon, default adjustments	144x72	2	1	0	0	0.00 0.00 144.00 72.75	0.00 0.00 144.00 72.75	1.0	0	0		375C9E 4472C4	
+fp11-presets-144x72	66	fp11-066	ellipseRibbon2, default adjustments	144x72	2	1	0	0	0.00 -0.75 144.00 72.00	0.00 -0.75 144.00 72.00	1.0	0	0		375C9E 4472C4	
+fp11-presets-144x72	67	fp11-067	flowChartAlternateProcess, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	68	fp11-068	flowChartCollate, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	69	fp11-069	flowChartConnector, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	70	fp11-070	flowChartDecision, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	71	fp11-071	flowChartDelay, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	72	fp11-072	flowChartDisplay, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	73	fp11-073	flowChartDocument, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 79.74	0.00 0.00 144.00 79.74	1.0	0	1		4472C4	
+fp11-presets-144x72	74	fp11-074	flowChartExtract, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	75	fp11-075	flowChartInputOutput, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	76	fp11-076	flowChartInternalStorage, default adjustments	144x72	1	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	77	fp11-077	flowChartMagneticDisk, default adjustments	144x72	1	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	78	fp11-078	flowChartMagneticDrum, default adjustments	144x72	1	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	79	fp11-079	flowChartMagneticTape, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	80	fp11-080	flowChartManualInput, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	81	fp11-081	flowChartManualOperation, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	82	fp11-082	flowChartMerge, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	83	fp11-083	flowChartMultidocument, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 78.47	0.00 0.00 144.00 78.47	1.0	0	1		4472C4	
+fp11-presets-144x72	84	fp11-084	flowChartOfflineStorage, default adjustments	144x72	1	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	85	fp11-085	flowChartOffpageConnector, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	86	fp11-086	flowChartOnlineStorage, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	87	fp11-087	flowChartOr, default adjustments	144x72	1	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	88	fp11-088	flowChartPredefinedProcess, default adjustments	144x72	1	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	89	fp11-089	flowChartPreparation, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	90	fp11-090	flowChartProcess, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	91	fp11-091	flowChartPunchedCard, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	92	fp11-092	flowChartPunchedTape, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	93	fp11-093	flowChartSort, default adjustments	144x72	1	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	94	fp11-094	flowChartSummingJunction, default adjustments	144x72	1	2	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	95	fp11-095	flowChartTerminator, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	96	fp11-096	foldedCorner, default adjustments	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp11-presets-144x72	97	fp11-097	frame, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	98	fp11-098	funnel, default adjustments	144x72	1	1	0	0	-4.83 -1.21 144.23 72.30	-4.83 -1.21 144.23 72.30	1.0	0	1		4472C4	
+fp11-presets-144x72	99	fp11-099	gear6, default adjustments	144x72	1	1	0	0	8.73 0.84 135.27 71.16	8.73 0.84 135.27 71.16	1.0	0	1		4472C4	
+fp11-presets-144x72	100	fp11-100	gear9, default adjustments	144x72	1	1	0	0	1.00 0.31 143.00 71.11	1.00 0.31 143.00 71.11	1.0	0	1		4472C4	
+fp11-presets-144x72	101	fp11-101	halfFrame, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	102	fp11-102	heart, default adjustments	144x72	1	1	0	0	-75.00 -24.00 219.00 72.00	-75.00 -24.00 219.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	103	fp11-103	heptagon, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	104	fp11-104	hexagon, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	105	fp11-105	homePlate, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	106	fp11-106	horizontalScroll, default adjustments	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp11-presets-144x72	107	fp11-107	irregularSeal1, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	108	fp11-108	irregularSeal2, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	109	fp11-109	leftArrow, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	110	fp11-110	leftArrowCallout, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	111	fp11-111	leftBrace, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	112	fp11-112	leftBracket, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	113	fp11-113	leftCircularArrow, default adjustments	144x72	1	1	0	0	4.50 36.00 135.00 71.91	4.50 36.00 135.00 71.91	1.0	0	1		4472C4	
+fp11-presets-144x72	114	fp11-114	leftRightArrow, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	115	fp11-115	leftRightArrowCallout, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	116	fp11-116	leftRightCircularArrow, default adjustments	144x72	1	1	0	0	9.00 0.09 135.00 36.00	9.00 0.09 135.00 36.00	1.0	0	1		4472C4	
+fp11-presets-144x72	117	fp11-117	leftRightRibbon, default adjustments	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp11-presets-144x72	118	fp11-118	leftRightUpArrow, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	119	fp11-119	leftUpArrow, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	120	fp11-120	lightningBolt, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	121	fp11-121	line, default adjustments	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp11-presets-144x72	122	fp11-122	lineInv, default adjustments	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp11-presets-144x72	123	fp11-123	mathDivide, default adjustments	144x72	1	1	0	0	19.09 8.49 124.91 63.51	19.09 8.49 124.91 63.51	1.0	0	1		4472C4	
+fp11-presets-144x72	124	fp11-124	mathEqual, default adjustments	144x72	1	1	0	0	19.09 14.83 124.91 57.17	19.09 14.83 124.91 57.17	1.0	0	0		4472C4	
+fp11-presets-144x72	125	fp11-125	mathMinus, default adjustments	144x72	1	1	0	0	19.09 27.54 124.92 44.47	19.09 27.54 124.92 44.47	1.0	0	0		4472C4	
+fp11-presets-144x72	126	fp11-126	mathMultiply, default adjustments	144x72	1	1	0	0	30.80 9.72 113.20 62.28	30.80 9.72 113.20 62.28	1.0	0	0		4472C4	
+fp11-presets-144x72	127	fp11-127	mathNotEqual, default adjustments	144x72	1	1	0	0	19.09 0.00 124.91 72.00	19.09 0.00 124.91 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	128	fp11-128	mathPlus, default adjustments	144x72	1	1	0	0	19.09 9.54 124.91 62.46	19.09 9.54 124.91 62.46	1.0	0	0		4472C4	
+fp11-presets-144x72	129	fp11-129	moon, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	130	fp11-130	nonIsoscelesTrapezoid, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	131	fp11-131	noSmoking, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	132	fp11-132	notchedRightArrow, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	133	fp11-133	octagon, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	134	fp11-134	parallelogram, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	135	fp11-135	pentagon, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	136	fp11-136	pie, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	137	fp11-137	pieWedge, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	138	fp11-138	plaque, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	139	fp11-139	plaqueTabs, default adjustments	144x72	4	4	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	140	fp11-140	plus, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	141	fp11-141	quadArrow, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	142	fp11-142	quadArrowCallout, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	143	fp11-143	rect, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	144	fp11-144	ribbon, default adjustments	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp11-presets-144x72	145	fp11-145	ribbon2, default adjustments	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp11-presets-144x72	146	fp11-146	rightArrow, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	147	fp11-147	rightArrowCallout, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	148	fp11-148	rightBrace, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	149	fp11-149	rightBracket, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	150	fp11-150	round1Rect, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	151	fp11-151	round2DiagRect, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	152	fp11-152	round2SameRect, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	153	fp11-153	roundRect, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	154	fp11-154	rtTriangle, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	155	fp11-155	smileyFace, default adjustments	144x72	2	3	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp11-presets-144x72	156	fp11-156	snip1Rect, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	157	fp11-157	snip2DiagRect, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	158	fp11-158	snip2SameRect, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	159	fp11-159	snipRoundRect, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	160	fp11-160	squareTabs, default adjustments	144x72	4	4	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	161	fp11-161	star10, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	162	fp11-162	star12, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	163	fp11-163	star16, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	164	fp11-164	star24, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	165	fp11-165	star32, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	166	fp11-166	star4, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	167	fp11-167	star5, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	168	fp11-168	star6, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	169	fp11-169	star7, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	170	fp11-170	star8, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	171	fp11-171	straightConnector1, default adjustments	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp11-presets-144x72	172	fp11-172	stripedRightArrow, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	173	fp11-173	sun, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	174	fp11-174	swooshArrow, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	175	fp11-175	teardrop, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	176	fp11-176	trapezoid, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	177	fp11-177	triangle, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	178	fp11-178	upArrowCallout, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	179	fp11-179	upArrow, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	180	fp11-180	upDownArrow, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	181	fp11-181	upDownArrowCallout, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp11-presets-144x72	182	fp11-182	uturnArrow, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp11-presets-144x72	183	fp11-183	verticalScroll, default adjustments	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp11-presets-144x72	184	fp11-184	wave, default adjustments	144x72	1	1	0	0	0.00 -21.00 144.00 93.00	0.00 -21.00 144.00 93.00	1.0	0	1		4472C4	
+fp11-presets-144x72	185	fp11-185	wedgeEllipseCallout, default adjustments	144x72	1	1	0	0	-10.25 -5.12 154.25 81.00	-10.25 -5.12 154.25 81.00	1.0	0	1		4472C4	
+fp11-presets-144x72	186	fp11-186	wedgeRectCallout, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 81.00	0.00 0.00 144.00 81.00	1.0	0	1		4472C4	
+fp11-presets-144x72	187	fp11-187	wedgeRoundRectCallout, default adjustments	144x72	1	1	0	0	0.00 0.00 144.00 81.00	0.00 0.00 144.00 81.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	1	fp12-001	accentBorderCallout1, adj1 9375, adj2 -4166, adj3 56250, adj4 -19166	144x72	1	3	0	0	0.00 0.00 144.00 72.00	-27.60 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	2	fp12-002	accentBorderCallout2, adj1 9375, adj2 -4166, adj3 9375, adj4 -8333, adj5 56250, adj6 -23333	144x72	1	3	0	0	0.00 0.00 144.00 72.00	-33.60 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	3	fp12-003	accentBorderCallout3, adj1 9375, adj2 -4166, adj3 9375, adj4 -8333, adj5 50000, adj6 -8333, adj7 56481, adj8 -4166	144x72	1	3	0	0	0.00 0.00 144.00 72.00	-12.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	4	fp12-004	accentCallout1, adj1 9375, adj2 -4166, adj3 56250, adj4 -19166	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-27.60 0.00 -6.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	5	fp12-005	accentCallout2, adj1 9375, adj2 -4166, adj3 9375, adj4 -8333, adj5 56250, adj6 -23333	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-33.60 0.00 -6.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	6	fp12-006	accentCallout3, adj1 9375, adj2 -4166, adj3 9375, adj4 -8333, adj5 50000, adj6 -8333, adj7 56481, adj8 -4166	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-12.00 0.00 -6.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	7	fp12-007	arc, adj1 8100000, adj2 20000	144x72	1	1	0	0	-10.18 -5.09 144.32 68.20	-10.18 -5.09 144.32 68.20	1.0	0	1		4472C4	
+fp12-presets-adj-half	8	fp12-008	bentArrow, adj1 12500, adj2 12500, adj3 12500, adj4 21875	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	9	fp12-009	bentConnector3, adj1 25000	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp12-presets-adj-half	10	fp12-010	bentConnector4, adj1 25000, adj2 25000	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp12-presets-adj-half	11	fp12-011	bentConnector5, adj1 25000, adj2 25000, adj3 25000	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp12-presets-adj-half	12	fp12-012	bentUpArrow, adj1 12500, adj2 12500, adj3 12500	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	13	fp12-013	bevel, adj 6250	144x72	5	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		294476 375C9E 4472C4 698ED0 8FAADC	
+fp12-presets-adj-half	14	fp12-014	blockArc, adj1 5400000, adj2 20000, adj3 12500	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	15	fp12-015	borderCallout1, adj1 9375, adj2 -4166, adj3 56250, adj4 -19166	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-27.60 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	16	fp12-016	borderCallout2, adj1 9375, adj2 -4166, adj3 9375, adj4 -8333, adj5 56250, adj6 -23333	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-33.60 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	17	fp12-017	borderCallout3, adj1 9375, adj2 -4166, adj3 9375, adj4 -8333, adj5 50000, adj6 -8333, adj7 56481, adj8 -4166	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-12.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	18	fp12-018	bracePair, adj 4166	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	19	fp12-019	bracketPair, adj 8333	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	20	fp12-020	callout1, adj1 9375, adj2 -4166, adj3 56250, adj4 -19166	144x72	1	1	0	0	0.00 0.00 144.00 72.00	-27.60 6.75 -6.00 40.50	1.0	0	1		4472C4	
+fp12-presets-adj-half	21	fp12-021	callout2, adj1 9375, adj2 -4166, adj3 9375, adj4 -8333, adj5 56250, adj6 -23333	144x72	1	1	0	0	0.00 0.00 144.00 72.00	-33.60 6.75 -6.00 40.50	1.0	0	1		4472C4	
+fp12-presets-adj-half	22	fp12-022	callout3, adj1 9375, adj2 -4166, adj3 9375, adj4 -8333, adj5 50000, adj6 -8333, adj7 56481, adj8 -4166	144x72	1	1	0	0	0.00 0.00 144.00 72.00	-12.00 6.75 -6.00 40.67	1.0	0	1		4472C4	
+fp12-presets-adj-half	23	fp12-023	can, adj 12500	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4 8FAADC	
+fp12-presets-adj-half	24	fp12-024	chevron, adj 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	25	fp12-025	chord, adj1 1350000, adj2 8100000	144x72	1	1	0	0	39.80 58.97 127.45 75.69	39.80 58.97 127.45 75.69	1.0	0	1		4472C4	
+fp12-presets-adj-half	26	fp12-026	circularArrow, adj1 6250, adj2 571159, adj3 10228840, adj4 5400000, adj5 6250	144x72	1	1	0	0	3.98 36.00 72.00 69.75	3.98 36.00 72.00 69.75	1.0	0	1		4472C4	
+fp12-presets-adj-half	27	fp12-027	cloudCallout, adj1 -10416, adj2 31250	144x72	4	5	0	0	-2.18 -1.17 146.99 74.06	-2.18 -1.17 146.99 74.06	1.0	0	1		4472C4	
+fp12-presets-adj-half	28	fp12-028	corner, adj1 25000, adj2 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	29	fp12-029	cube, adj 12500	144x72	3	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		375C9E 4472C4 698ED0	
+fp12-presets-adj-half	30	fp12-030	curvedConnector3, adj1 25000	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp12-presets-adj-half	31	fp12-031	curvedConnector4, adj1 25000, adj2 25000	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp12-presets-adj-half	32	fp12-032	curvedConnector5, adj1 25000, adj2 25000, adj3 25000	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp12-presets-adj-half	33	fp12-033	curvedDownArrow, adj1 12500, adj2 25000, adj3 12500	144x72	2	1	0	0	0.00 0.00 143.49 72.00	0.00 0.00 143.49 72.00	1.0	0	1		375C9E 4472C4	
+fp12-presets-adj-half	34	fp12-034	curvedLeftArrow, adj1 12500, adj2 25000, adj3 12500	144x72	2	1	0	0	0.00 0.00 154.52 71.94	0.00 0.00 144.00 71.94	1.0	0	1		375C9E 4472C4	
+fp12-presets-adj-half	35	fp12-035	curvedRightArrow, adj1 12500, adj2 25000, adj3 12500	144x72	2	1	0	0	-10.52 0.00 144.00 71.94	0.00 0.00 144.00 71.94	1.0	0	1		375C9E 4472C4	
+fp12-presets-adj-half	36	fp12-036	curvedUpArrow, adj1 12500, adj2 25000, adj3 12500	144x72	2	1	0	0	0.00 0.00 143.49 74.46	0.00 0.00 143.49 72.00	1.0	0	1		375C9E 4472C4	
+fp12-presets-adj-half	37	fp12-037	decagon, vf 52573	144x72	1	1	0	0	0.00 18.00 144.00 54.00	0.00 18.00 144.00 54.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	38	fp12-038	diagStripe, adj 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	39	fp12-039	donut, adj 12500	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	40	fp12-040	doubleWave, adj1 3125, adj2 20000	144x72	1	1	0	0	0.00 -5.25 144.00 77.25	0.00 -5.25 144.00 77.25	1.0	0	1		4472C4	
+fp12-presets-adj-half	41	fp12-041	downArrow, adj1 25000, adj2 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	42	fp12-042	downArrowCallout, adj1 12500, adj2 12500, adj3 12500, adj4 32488	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	43	fp12-043	ellipseRibbon, adj1 12500, adj2 25000, adj3 6250	144x72	2	1	0	0	0.00 0.00 144.00 72.09	0.00 0.00 144.00 72.09	1.0	0	0		375C9E 4472C4	
+fp12-presets-adj-half	44	fp12-044	ellipseRibbon2, adj1 12500, adj2 25000, adj3 6250	144x72	2	1	0	0	0.00 -0.09 144.00 72.00	0.00 -0.09 144.00 72.00	1.0	0	0		375C9E 4472C4	
+fp12-presets-adj-half	45	fp12-045	foldedCorner, adj 8333	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp12-presets-adj-half	46	fp12-046	frame, adj1 6250	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	47	fp12-047	gear6, adj1 7500, adj2 1763	144x72	1	1	0	0	3.52 0.18 140.48 71.82	3.52 0.18 140.48 71.82	1.0	0	1		4472C4	
+fp12-presets-adj-half	48	fp12-048	gear9, adj1 5000, adj2 881	144x72	1	1	0	0	0.86 0.07 143.14 70.54	0.86 0.07 143.14 70.54	1.0	0	1		4472C4	
+fp12-presets-adj-half	49	fp12-049	halfFrame, adj1 16666, adj2 16666	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	50	fp12-050	heptagon, hf 51286, vf 52605	144x72	1	1	0	0	36.00 0.00 108.00 36.00	36.00 0.00 108.00 36.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	51	fp12-051	hexagon, adj 12500, vf 57735	144x72	1	1	0	0	0.00 18.00 144.00 54.00	0.00 18.00 144.00 54.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	52	fp12-052	homePlate, adj 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	53	fp12-053	horizontalScroll, adj 6250	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp12-presets-adj-half	54	fp12-054	leftArrow, adj1 25000, adj2 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	55	fp12-055	leftArrowCallout, adj1 12500, adj2 12500, adj3 12500, adj4 32488	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	56	fp12-056	leftBrace, adj1 4166, adj2 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	57	fp12-057	leftBracket, adj 4166	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	58	fp12-058	leftCircularArrow, adj1 6250, adj2 -571159, adj3 571159, adj4 5400000, adj5 6250	144x72	1	1	0	0	72.00 36.00 140.02 69.75	72.00 36.00 140.02 69.75	1.0	0	1		4472C4	
+fp12-presets-adj-half	59	fp12-059	leftRightArrow, adj1 25000, adj2 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	60	fp12-060	leftRightArrowCallout, adj1 12500, adj2 12500, adj3 12500, adj4 24061	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	61	fp12-061	leftRightCircularArrow, adj1 6250, adj2 571159, adj3 10228840, adj4 5971159, adj5 6250	144x72	1	1	0	0	3.98 36.00 72.00 71.90	3.98 36.00 72.00 71.90	1.0	0	1		4472C4	
+fp12-presets-adj-half	62	fp12-062	leftRightRibbon, adj1 25000, adj2 25000, adj3 8333	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp12-presets-adj-half	63	fp12-063	leftRightUpArrow, adj1 12500, adj2 12500, adj3 12500	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	64	fp12-064	leftUpArrow, adj1 12500, adj2 12500, adj3 12500	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	65	fp12-065	mathDivide, adj1 11760, adj2 2940, adj3 5880	144x72	1	1	0	0	19.09 21.18 124.91 50.82	19.09 21.18 124.91 50.82	1.0	0	1		4472C4	
+fp12-presets-adj-half	66	fp12-066	mathEqual, adj1 11760, adj2 5880	144x72	1	1	0	0	19.09 25.42 124.91 46.58	19.09 25.42 124.91 46.58	1.0	0	0		4472C4	
+fp12-presets-adj-half	67	fp12-067	mathMinus, adj1 11760	144x72	1	1	0	0	19.09 31.76 124.92 40.23	19.09 31.76 124.92 40.23	1.0	0	0		4472C4	
+fp12-presets-adj-half	68	fp12-068	mathMultiply, adj1 11760	144x72	1	1	0	0	32.69 13.51 111.31 58.49	32.69 13.51 111.31 58.49	1.0	0	0		4472C4	
+fp12-presets-adj-half	69	fp12-069	mathNotEqual, adj1 11760, adj2 3300000, adj3 5880	144x72	1	1	0	0	19.09 0.00 124.91 72.00	19.09 0.00 124.91 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	70	fp12-070	mathPlus, adj1 11760	144x72	1	1	0	0	19.09 9.54 124.91 62.46	19.09 9.54 124.91 62.46	1.0	0	0		4472C4	
+fp12-presets-adj-half	71	fp12-071	moon, adj 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	72	fp12-072	nonIsoscelesTrapezoid, adj1 12500, adj2 12500	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	73	fp12-073	noSmoking, adj 9375	144x72	1	1	0	0	-0.34 0.00 144.34 72.00	-0.34 0.00 144.34 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	74	fp12-074	notchedRightArrow, adj1 25000, adj2 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	75	fp12-075	octagon, adj 14644	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	76	fp12-076	parallelogram, adj 12500	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	77	fp12-077	pentagon, hf 52573, vf 55278	144x72	1	1	0	0	36.00 0.00 108.00 36.00	36.00 0.00 108.00 36.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	78	fp12-078	pie, adj1 20000, adj2 8100000	144x72	1	1	0	0	39.80 36.00 144.00 72.23	39.80 36.00 144.00 72.23	1.0	0	1		4472C4	
+fp12-presets-adj-half	79	fp12-079	plaque, adj 8333	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	80	fp12-080	plus, adj 12500	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	81	fp12-081	quadArrow, adj1 11250, adj2 11250, adj3 11250	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	82	fp12-082	quadArrowCallout, adj1 9257, adj2 9257, adj3 9257, adj4 24061	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	83	fp12-083	ribbon, adj1 8333, adj2 25000	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp12-presets-adj-half	84	fp12-084	ribbon2, adj1 8333, adj2 25000	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp12-presets-adj-half	85	fp12-085	rightArrow, adj1 25000, adj2 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	86	fp12-086	rightArrowCallout, adj1 12500, adj2 12500, adj3 12500, adj4 32488	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	87	fp12-087	rightBrace, adj1 4166, adj2 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	88	fp12-088	rightBracket, adj 4166	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	89	fp12-089	round1Rect, adj 8333	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	90	fp12-090	round2DiagRect, adj1 8333, adj2 20000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	91	fp12-091	round2SameRect, adj1 8333, adj2 20000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	92	fp12-092	roundRect, adj 8333	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	93	fp12-093	smileyFace, adj 2326	144x72	2	3	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp12-presets-adj-half	94	fp12-094	snip1Rect, adj 8333	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	95	fp12-095	snip2DiagRect, adj1 20000, adj2 8333	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	96	fp12-096	snip2SameRect, adj1 8333, adj2 20000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	97	fp12-097	snipRoundRect, adj1 8333, adj2 8333	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	98	fp12-098	star10, adj 21266, hf 52573	144x72	1	1	0	0	36.00 0.00 108.00 72.00	36.00 0.00 108.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	99	fp12-099	star12, adj 18750	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	100	fp12-100	star16, adj 18750	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	101	fp12-101	star24, adj 18750	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	102	fp12-102	star32, adj 18750	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	103	fp12-103	star4, adj 6250	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	104	fp12-104	star5, adj 9549, hf 52573, vf 55278	144x72	1	1	0	0	36.00 0.00 108.00 36.00	36.00 0.00 108.00 36.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	105	fp12-105	star6, adj 14434, hf 57735	144x72	1	1	0	0	36.00 0.00 108.00 72.00	36.00 0.00 108.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	106	fp12-106	star7, adj 17300, hf 51286, vf 52605	144x72	1	1	0	0	36.00 0.00 108.00 36.00	36.00 0.00 108.00 36.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	107	fp12-107	star8, adj 18750	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	108	fp12-108	stripedRightArrow, adj1 25000, adj2 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	109	fp12-109	sun, adj 12500	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	110	fp12-110	swooshArrow, adj1 12500, adj2 8333	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	111	fp12-111	teardrop, adj 50000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	112	fp12-112	trapezoid, adj 12500	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	113	fp12-113	triangle, adj 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	114	fp12-114	upArrowCallout, adj1 12500, adj2 12500, adj3 12500, adj4 32488	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	115	fp12-115	upArrow, adj1 25000, adj2 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	116	fp12-116	upDownArrow, adj1 25000, adj2 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	117	fp12-117	upDownArrowCallout, adj1 12500, adj2 12500, adj3 12500, adj4 24061	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp12-presets-adj-half	118	fp12-118	uturnArrow, adj1 12500, adj2 12500, adj3 12500, adj4 21875, adj5 37500	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	119	fp12-119	verticalScroll, adj 6250	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp12-presets-adj-half	120	fp12-120	wave, adj1 6250, adj2 20000	144x72	1	1	0	0	0.00 -10.50 144.00 82.50	0.00 -10.50 144.00 82.50	1.0	0	1		4472C4	
+fp12-presets-adj-half	121	fp12-121	wedgeEllipseCallout, adj1 -10416, adj2 31250	144x72	1	1	0	0	-10.25 -5.12 154.25 73.60	-10.25 -5.12 154.25 73.60	1.0	0	1		4472C4	
+fp12-presets-adj-half	122	fp12-122	wedgeRectCallout, adj1 -10416, adj2 31250	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp12-presets-adj-half	123	fp12-123	wedgeRoundRectCallout, adj1 -10416, adj2 31250, adj3 8333	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	1	fp13-001	accentBorderCallout1, adj1 37500, adj2 -16666, adj3 225000, adj4 -76666	144x72	1	3	0	0	0.00 0.00 144.00 72.00	-110.40 0.00 144.00 162.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	2	fp13-002	accentBorderCallout2, adj1 37500, adj2 -16666, adj3 37500, adj4 -33334, adj5 225000, adj6 -93334	144x72	1	3	0	0	0.00 0.00 144.00 72.00	-134.40 0.00 144.00 162.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	3	fp13-003	accentBorderCallout3, adj1 37500, adj2 -16666, adj3 37500, adj4 -33334, adj5 200000, adj6 -33334, adj7 225926, adj8 -16666	144x72	1	3	0	0	0.00 0.00 144.00 72.00	-48.00 0.00 144.00 162.67	1.0	0	1		4472C4	
+fp13-presets-adj-double	4	fp13-004	accentCallout1, adj1 37500, adj2 -16666, adj3 225000, adj4 -76666	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-110.40 0.00 -24.00 162.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	5	fp13-005	accentCallout2, adj1 37500, adj2 -16666, adj3 37500, adj4 -33334, adj5 225000, adj6 -93334	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-134.40 0.00 -24.00 162.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	6	fp13-006	accentCallout3, adj1 37500, adj2 -16666, adj3 37500, adj4 -33334, adj5 200000, adj6 -33334, adj7 225926, adj8 -16666	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-48.00 0.00 -24.00 162.67	1.0	0	1		4472C4	
+fp13-presets-adj-double	7	fp13-007	arc, adj1 32400000, adj2 20000	144x72	1	1	0	0	72.00 36.00 144.00 36.42	144.00 36.00 144.00 36.42	1.0	0	1		4472C4	
+fp13-presets-adj-double	8	fp13-008	bentArrow, adj1 50000, adj2 50000, adj3 50000, adj4 87500	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	9	fp13-009	bentConnector3, adj1 100000	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp13-presets-adj-double	10	fp13-010	bentConnector4, adj1 100000, adj2 100000	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp13-presets-adj-double	11	fp13-011	bentConnector5, adj1 100000, adj2 100000, adj3 100000	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp13-presets-adj-double	12	fp13-012	bentUpArrow, adj1 50000, adj2 50000, adj3 50000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	13	fp13-013	bevel, adj 25000	144x72	5	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		294476 375C9E 4472C4 698ED0 8FAADC	
+fp13-presets-adj-double	14	fp13-014	blockArc, adj1 21600000, adj2 20000, adj3 50000	144x72	1	1	0	0	72.00 36.00 144.00 36.42	72.00 36.00 144.00 36.42	1.0	0	1		4472C4	
+fp13-presets-adj-double	15	fp13-015	borderCallout1, adj1 37500, adj2 -16666, adj3 225000, adj4 -76666	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-110.40 0.00 144.00 162.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	16	fp13-016	borderCallout2, adj1 37500, adj2 -16666, adj3 37500, adj4 -33334, adj5 225000, adj6 -93334	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-134.40 0.00 144.00 162.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	17	fp13-017	borderCallout3, adj1 37500, adj2 -16666, adj3 37500, adj4 -33334, adj5 200000, adj6 -33334, adj7 225926, adj8 -16666	144x72	1	2	0	0	0.00 0.00 144.00 72.00	-48.00 0.00 144.00 162.67	1.0	0	1		4472C4	
+fp13-presets-adj-double	18	fp13-018	bracePair, adj 16666	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	19	fp13-019	bracketPair, adj 33334	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	20	fp13-020	callout1, adj1 37500, adj2 -16666, adj3 225000, adj4 -76666	144x72	1	1	0	0	0.00 0.00 144.00 72.00	-110.40 27.00 -24.00 162.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	21	fp13-021	callout2, adj1 37500, adj2 -16666, adj3 37500, adj4 -33334, adj5 225000, adj6 -93334	144x72	1	1	0	0	0.00 0.00 144.00 72.00	-134.40 27.00 -24.00 162.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	22	fp13-022	callout3, adj1 37500, adj2 -16666, adj3 37500, adj4 -33334, adj5 200000, adj6 -33334, adj7 225926, adj8 -16666	144x72	1	1	0	0	0.00 0.00 144.00 72.00	-48.00 27.00 -24.00 162.67	1.0	0	1		4472C4	
+fp13-presets-adj-double	23	fp13-023	can, adj 50000	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4 8FAADC	
+fp13-presets-adj-double	24	fp13-024	chevron, adj 100000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	25	fp13-025	chord, adj1 5400000, adj2 32400000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	26	fp13-026	circularArrow, adj1 25000, adj2 2284638, adj3 40915362, adj4 21600000, adj5 25000	144x72	1	1	0	0	23.21 26.24 143.75 45.76	23.21 26.24 143.75 45.76	1.0	0	1		4472C4	
+fp13-presets-adj-double	27	fp13-027	cloudCallout, adj1 -41666, adj2 125000	144x72	4	5	0	0	-2.18 -1.17 146.99 128.00	-2.18 -1.17 146.99 128.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	28	fp13-028	corner, adj1 100000, adj2 100000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	29	fp13-029	cube, adj 50000	144x72	3	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		375C9E 4472C4 698ED0	
+fp13-presets-adj-double	30	fp13-030	curvedConnector3, adj1 100000	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp13-presets-adj-double	31	fp13-031	curvedConnector4, adj1 100000, adj2 100000	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp13-presets-adj-double	32	fp13-032	curvedConnector5, adj1 100000, adj2 100000, adj3 100000	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp13-presets-adj-double	33	fp13-033	curvedDownArrow, adj1 50000, adj2 100000, adj3 50000	144x72	2	1	0	0	0.00 0.00 137.97 72.00	0.00 0.00 137.97 72.00	1.0	0	1		375C9E 4472C4	
+fp13-presets-adj-double	34	fp13-034	curvedLeftArrow, adj1 50000, adj2 100000, adj3 50000	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp13-presets-adj-double	35	fp13-035	curvedRightArrow, adj1 50000, adj2 100000, adj3 50000	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp13-presets-adj-double	36	fp13-036	curvedUpArrow, adj1 50000, adj2 100000, adj3 50000	144x72	2	1	0	0	0.00 0.00 137.97 80.65	0.00 0.00 137.97 72.00	1.0	0	1		375C9E 4472C4	
+fp13-presets-adj-double	37	fp13-037	decagon, vf 210292	144x72	1	1	0	0	0.00 -36.00 144.00 108.00	0.00 -36.00 144.00 108.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	38	fp13-038	diagStripe, adj 100000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	39	fp13-039	donut, adj 50000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	40	fp13-040	doubleWave, adj1 12500, adj2 20000	144x72	1	1	0	0	0.00 -21.00 144.00 93.00	0.00 -21.00 144.00 93.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	41	fp13-041	downArrow, adj1 100000, adj2 100000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	42	fp13-042	downArrowCallout, adj1 50000, adj2 50000, adj3 50000, adj4 129954	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	43	fp13-043	ellipseRibbon, adj1 50000, adj2 100000, adj3 25000	144x72	2	1	0	0	0.00 0.00 144.00 75.38	0.00 0.00 144.00 75.38	1.0	0	0		375C9E 4472C4	
+fp13-presets-adj-double	44	fp13-044	ellipseRibbon2, adj1 50000, adj2 100000, adj3 25000	144x72	2	1	0	0	0.00 -3.38 144.00 72.00	0.00 -3.38 144.00 72.00	1.0	0	0		375C9E 4472C4	
+fp13-presets-adj-double	45	fp13-045	foldedCorner, adj 33334	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp13-presets-adj-double	46	fp13-046	frame, adj1 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	47	fp13-047	gear6, adj1 30000, adj2 7052	144x72	1	1	0	0	10.23 1.70 133.77 70.30	10.23 1.70 133.77 70.30	1.0	0	1		4472C4	
+fp13-presets-adj-double	48	fp13-048	gear9, adj1 20000, adj2 3526	144x72	1	1	0	0	3.19 1.40 140.81 71.61	3.19 1.40 140.81 71.61	1.0	0	1		4472C4	
+fp13-presets-adj-double	49	fp13-049	halfFrame, adj1 66666, adj2 66666	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	50	fp13-050	heptagon, hf 205144, vf 210420	144x72	1	1	0	0	-72.00 0.00 216.00 144.00	-72.00 0.00 216.00 144.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	51	fp13-051	hexagon, adj 50000, vf 230940	144x72	1	1	0	0	0.00 -36.00 144.00 108.00	0.00 -36.00 144.00 108.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	52	fp13-052	homePlate, adj 100000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	53	fp13-053	horizontalScroll, adj 25000	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp13-presets-adj-double	54	fp13-054	leftArrow, adj1 100000, adj2 100000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	55	fp13-055	leftArrowCallout, adj1 50000, adj2 50000, adj3 50000, adj4 129954	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	56	fp13-056	leftBrace, adj1 16666, adj2 100000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	57	fp13-057	leftBracket, adj 16666	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	58	fp13-058	leftCircularArrow, adj1 25000, adj2 -2284638, adj3 2284638, adj4 21600000, adj5 25000	144x72	1	1	0	0	0.57 5.39 135.00 66.61	0.57 5.39 135.00 66.61	1.0	0	1		4472C4	
+fp13-presets-adj-double	59	fp13-059	leftRightArrow, adj1 100000, adj2 100000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	60	fp13-060	leftRightArrowCallout, adj1 50000, adj2 50000, adj3 50000, adj4 96246	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	61	fp13-061	leftRightCircularArrow, adj1 25000, adj2 2284638, adj3 40915362, adj4 23884638, adj5 25000	144x72	1	1	0	0	23.21 26.24 143.75 45.76	23.21 26.24 143.75 45.76	1.0	0	1		4472C4	
+fp13-presets-adj-double	62	fp13-062	leftRightRibbon, adj1 100000, adj2 100000, adj3 33334	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp13-presets-adj-double	63	fp13-063	leftRightUpArrow, adj1 50000, adj2 50000, adj3 50000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	64	fp13-064	leftUpArrow, adj1 50000, adj2 50000, adj3 50000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	65	fp13-065	mathDivide, adj1 47040, adj2 11760, adj3 23520	144x72	1	1	0	0	19.09 9.54 124.91 62.46	19.09 9.54 124.91 62.46	1.0	0	1		4472C4	
+fp13-presets-adj-double	66	fp13-066	mathEqual, adj1 47040, adj2 23520	144x72	1	1	0	0	19.09 1.08 124.91 70.92	19.09 1.08 124.91 70.92	1.0	0	0		4472C4	
+fp13-presets-adj-double	67	fp13-067	mathMinus, adj1 47040	144x72	1	1	0	0	19.09 19.06 124.92 52.93	19.09 19.06 124.92 52.93	1.0	0	0		4472C4	
+fp13-presets-adj-double	68	fp13-068	mathMultiply, adj1 47040	144x72	1	1	0	0	27.01 2.15 116.99 69.85	27.01 2.15 116.99 69.85	1.0	0	0		4472C4	
+fp13-presets-adj-double	69	fp13-069	mathNotEqual, adj1 47040, adj2 13200000, adj3 23520	144x72	1	1	0	0	19.09 0.00 124.91 72.00	19.09 0.00 124.91 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	70	fp13-070	mathPlus, adj1 47040	144x72	1	1	0	0	19.09 9.54 124.91 62.46	19.09 9.54 124.91 62.46	1.0	0	0		4472C4	
+fp13-presets-adj-double	71	fp13-071	moon, adj 100000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	72	fp13-072	nonIsoscelesTrapezoid, adj1 50000, adj2 50000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	73	fp13-073	noSmoking, adj 37500	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	74	fp13-074	notchedRightArrow, adj1 100000, adj2 100000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	75	fp13-075	octagon, adj 58578	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	76	fp13-076	parallelogram, adj 50000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	77	fp13-077	pentagon, hf 210292, vf 221114	144x72	1	1	0	0	-72.00 0.00 216.00 144.00	-72.00 0.00 216.00 144.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	78	fp13-078	pie, adj1 20000, adj2 32400000	144x72	1	1	0	0	-0.46 -0.23 144.00 72.23	-0.46 -0.23 144.00 72.23	1.0	0	1		4472C4	
+fp13-presets-adj-double	79	fp13-079	plaque, adj 33334	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	80	fp13-080	plus, adj 50000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	81	fp13-081	quadArrow, adj1 45000, adj2 45000, adj3 45000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	82	fp13-082	quadArrowCallout, adj1 37030, adj2 37030, adj3 37030, adj4 96246	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	83	fp13-083	ribbon, adj1 33334, adj2 100000	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp13-presets-adj-double	84	fp13-084	ribbon2, adj1 33334, adj2 100000	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp13-presets-adj-double	85	fp13-085	rightArrow, adj1 100000, adj2 100000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	86	fp13-086	rightArrowCallout, adj1 50000, adj2 50000, adj3 50000, adj4 129954	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	87	fp13-087	rightBrace, adj1 16666, adj2 100000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	88	fp13-088	rightBracket, adj 16666	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	89	fp13-089	round1Rect, adj 33334	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	90	fp13-090	round2DiagRect, adj1 33334, adj2 20000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	91	fp13-091	round2SameRect, adj1 33334, adj2 20000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	92	fp13-092	roundRect, adj 33334	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	93	fp13-093	smileyFace, adj 9306	144x72	2	3	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp13-presets-adj-double	94	fp13-094	snip1Rect, adj 33334	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	95	fp13-095	snip2DiagRect, adj1 20000, adj2 33334	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	96	fp13-096	snip2SameRect, adj1 33334, adj2 20000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	97	fp13-097	snipRoundRect, adj1 33334, adj2 33334	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	98	fp13-098	star10, adj 85066, hf 210292	144x72	1	1	0	0	-79.41 0.00 223.41 72.00	-79.41 0.00 223.41 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	99	fp13-099	star12, adj 75000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	100	fp13-100	star16, adj 75000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	101	fp13-101	star24, adj 75000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	102	fp13-102	star32, adj 75000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	103	fp13-103	star4, adj 25000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	104	fp13-104	star5, adj 38196, hf 210292, vf 221114	144x72	1	1	0	0	-72.00 0.00 216.00 144.00	-72.00 0.00 216.00 144.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	105	fp13-105	star6, adj 57736, hf 230940	144x72	1	1	0	0	-94.28 0.00 238.28 72.00	-94.28 0.00 238.28 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	106	fp13-106	star7, adj 69202, hf 205144, vf 210420	144x72	1	1	0	0	-72.00 0.00 216.00 151.50	-72.00 0.00 216.00 151.50	1.0	0	1		4472C4	
+fp13-presets-adj-double	107	fp13-107	star8, adj 75000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	108	fp13-108	stripedRightArrow, adj1 100000, adj2 100000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	109	fp13-109	sun, adj 50000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	110	fp13-110	swooshArrow, adj1 50000, adj2 33334	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	111	fp13-111	teardrop, adj 200000	144x72	1	1	0	0	0.00 -36.00 216.00 72.00	0.00 -36.00 216.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	112	fp13-112	trapezoid, adj 50000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	113	fp13-113	triangle, adj 100000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	114	fp13-114	upArrowCallout, adj1 50000, adj2 50000, adj3 50000, adj4 129954	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	115	fp13-115	upArrow, adj1 100000, adj2 100000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	116	fp13-116	upDownArrow, adj1 100000, adj2 100000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	117	fp13-117	upDownArrowCallout, adj1 50000, adj2 50000, adj3 50000, adj4 96246	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp13-presets-adj-double	118	fp13-118	uturnArrow, adj1 50000, adj2 50000, adj3 50000, adj4 87500, adj5 150000	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	119	fp13-119	verticalScroll, adj 25000	144x72	2	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		375C9E 4472C4	
+fp13-presets-adj-double	120	fp13-120	wave, adj1 25000, adj2 20000	144x72	1	1	0	0	0.00 -33.60 144.00 105.60	0.00 -33.60 144.00 105.60	1.0	0	1		4472C4	
+fp13-presets-adj-double	121	fp13-121	wedgeEllipseCallout, adj1 -41666, adj2 125000	144x72	1	1	0	0	-10.25 -5.12 154.25 126.00	-10.25 -5.12 154.25 126.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	122	fp13-122	wedgeRectCallout, adj1 -41666, adj2 125000	144x72	1	1	0	0	0.00 0.00 144.00 126.00	0.00 0.00 144.00 126.00	1.0	0	1		4472C4	
+fp13-presets-adj-double	123	fp13-123	wedgeRoundRectCallout, adj1 -41666, adj2 125000, adj3 33334	144x72	1	1	0	0	0.00 0.00 144.00 126.00	0.00 0.00 144.00 126.00	1.0	0	1		4472C4	
+fp20-custgeom	1	fp20-001	guide */ w 2 5: a vertex at x = g	144x72	1	1	0	0	0.00 0.00 57.60 72.00	0.00 0.00 57.60 72.00	1.0	0	1		4472C4	
+fp20-custgeom	2	fp20-002	guide +- w 0 457200: a vertex at x = g	144x72	1	1	0	0	0.00 0.00 108.00 72.00	0.00 0.00 108.00 72.00	1.0	0	1		4472C4	
+fp20-custgeom	3	fp20-003	guide +/ w 0 2: a vertex at x = g	144x72	1	1	0	0	0.00 0.00 72.00 72.00	0.00 0.00 72.00 72.00	1.0	0	1		4472C4	
+fp20-custgeom	4	fp20-004	guide ?: -1 w hc: a vertex at x = g	144x72	1	1	0	0	0.00 0.00 72.00 72.00	0.00 0.00 72.00 72.00	1.0	0	1		4472C4	
+fp20-custgeom	5	fp20-005	guide ?: 1 wd4 hc: a vertex at x = g	144x72	1	1	0	0	0.00 0.00 36.00 72.00	0.00 0.00 36.00 72.00	1.0	0	1		4472C4	
+fp20-custgeom	6	fp20-006	guide abs -914400: a vertex at x = g	144x72	1	1	0	0	0.00 0.00 72.00 72.00	0.00 0.00 72.00 72.00	1.0	0	1		4472C4	
+fp20-custgeom	7	fp20-007	guide cat2 w 3 4: a vertex at x = g	144x72	1	1	0	0	0.00 0.00 86.40 72.00	0.00 0.00 86.40 72.00	1.0	0	1		4472C4	
+fp20-custgeom	8	fp20-008	guide sat2 w 3 4: a vertex at x = g	144x72	1	1	0	0	0.00 0.00 115.20 72.00	0.00 0.00 115.20 72.00	1.0	0	1		4472C4	
+fp20-custgeom	9	fp20-009	guide cos w 3600000: a vertex at x = g	144x72	1	1	0	0	0.00 0.00 72.00 72.00	0.00 0.00 72.00 72.00	1.0	0	1		4472C4	
+fp20-custgeom	10	fp20-010	guide sin w 1800000: a vertex at x = g	144x72	1	1	0	0	0.00 0.00 72.00 72.00	0.00 0.00 72.00 72.00	1.0	0	1		4472C4	
+fp20-custgeom	11	fp20-011	guide tan 457200 2700000: a vertex at x = g	144x72	1	1	0	0	0.00 0.00 36.00 72.00	0.00 0.00 36.00 72.00	1.0	0	1		4472C4	
+fp20-custgeom	12	fp20-012	guide max 300000 w: a vertex at x = g	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp20-custgeom	13	fp20-013	guide min 300000 w: a vertex at x = g	144x72	1	1	0	0	0.00 0.00 23.62 72.00	0.00 0.00 23.62 72.00	1.0	0	1		4472C4	
+fp20-custgeom	14	fp20-014	guide mod 548640 731520 0: a vertex at x = g	144x72	1	1	0	0	0.00 0.00 72.00 72.00	0.00 0.00 72.00 72.00	1.0	0	1		4472C4	
+fp20-custgeom	15	fp20-015	guide pin 0 2000000 w: a vertex at x = g	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp20-custgeom	16	fp20-016	guide sqrt 836127360000: a vertex at x = g	144x72	1	1	0	0	0.00 0.00 72.00 72.00	0.00 0.00 72.00 72.00	1.0	0	1		4472C4	
+fp20-custgeom	17	fp20-017	guide val 600000: a vertex at x = g	144x72	1	1	0	0	0.00 0.00 47.24 72.00	0.00 0.00 47.24 72.00	1.0	0	1		4472C4	
+fp20-custgeom	18	fp20-018	at2 into cos: x = cos(w, at2(1, 1)) = w cos 45	144x72	1	1	0	0	0.00 0.00 101.82 72.00	0.00 0.00 101.82 72.00	1.0	0	1		4472C4	
+fp20-custgeom	19	fp20-019	arcTo quarter: stAng 0 swAng 90	144x72	0	1	0	0		36.00 36.00 72.00 54.00	1.0	0	1			
+fp20-custgeom	20	fp20-020	arcTo negative sweep: stAng 0 swAng -90	144x72	0	1	0	0		36.00 18.00 72.00 36.00	1.0	0	1			
+fp20-custgeom	21	fp20-021	arcTo full turn: swAng 360	144x72	0	1	0	0		0.00 18.00 72.00 54.00	1.0	0	1			
+fp20-custgeom	22	fp20-022	arcTo past a full turn: swAng 450	144x72	0	1	0	0		0.00 18.00 72.00 54.00	1.0	0	1			
+fp20-custgeom	23	fp20-023	arcTo elliptical, from 45 degrees: wR 2 hR, stAng 45 swAng 45	144x72	0	1	0	0		55.90 36.00 72.00 37.90	1.0	0	1			
+fp20-custgeom	24	fp20-024	arcTo elliptical, stAng 30 swAng 120	144x72	0	1	0	0		33.85 36.00 72.00 37.32	1.0	0	1			
+fp20-custgeom	25	fp20-025	arcTo circular, stAng 200 swAng 100	144x72	0	1	0	0		72.00 17.12 106.55 36.00	1.0	0	1			
+fp20-custgeom	26	fp20-026	quadBezTo	144x72	0	1	0	0		0.00 24.00 144.00 72.00	1.0	0	1			
+fp20-custgeom	27	fp20-027	cubicBezTo	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp20-custgeom	28	fp20-028	an open path filled (no close)	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp20-custgeom	29	fp20-029	a closed path, stroked	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp20-custgeom	30	fp20-030	path w 100 h 100 in a 144 by 72 shape: a triangle at path (10,90) (50,10) (90,90)	144x72	1	1	0	0	14.40 7.20 129.60 64.80	14.40 7.20 129.60 64.80	1.0	0	1		4472C4	
+fp20-custgeom	31	fp20-031	stroke 0: filled, not stroked	144x72	1	0	0	0	0.00 0.00 144.00 72.00						4472C4	
+fp20-custgeom	32	fp20-032	two subpaths in one path, the inner reversed (a hole under nonzero?)	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp20-custgeom	33	fp20-033	two subpaths in one path, the inner the same way round	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		4472C4	
+fp20-custgeom	34	fp20-034	fill modes, a band each: norm lighten lightenLess darken darkenLess none	144x72	5	6	0	0	0.00 0.00 120.00 72.00	0.00 0.00 144.00 72.00	1.0	0	1		294476 375C9E 4472C4 698ED0 8FAADC	
+fp21-custgeom-edge	1	fp21-001	built-in x guides: a vertical line at each of l wd32 wd12 wd10 wd8 wd6 wd5 wd4 wd3 wd2 hc r	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp21-custgeom-edge	2	fp21-002	built-in y guides: a horizontal line at each of t hd10 hd8 hd6 hd5 hd4 hd3 hd2 vc b	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp21-custgeom-edge	3	fp21-003	built-in ss guides along x: ssd32 ssd16 ssd8 ssd6 ssd4 ssd2 ss ls	144x72	0	1	0	0		2.25 0.00 144.00 72.00	1.0	0	1			
+fp21-custgeom-edge	4	fp21-004	guide sqrt of a negative (Office: |x|): a vertex at x = g	144x72	1	1	0	0	0.00 0.00 72.00 72.00	0.00 0.00 72.00 72.00	1.0	0	1		4472C4	
+fp30-lines	1	fp30-001	line width 0 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	0.14	0	1			
+fp30-lines	2	fp30-002	line width 0.25 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	0.25	0	1			
+fp30-lines	3	fp30-003	line width 0.5 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	0.5	0	1			
+fp30-lines	4	fp30-004	line width 0.75 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	0.75	0	1			
+fp30-lines	5	fp30-005	line width 1 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp30-lines	6	fp30-006	line width 1.5 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.5	0	1			
+fp30-lines	7	fp30-007	line width 2.25 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	2.25	0	1			
+fp30-lines	8	fp30-008	line width 4.5 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.5	0	1			
+fp30-lines	9	fp30-009	line width 6 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	6.0	0	1			
+fp30-lines	10	fp30-010	line width 12 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	12.0	0	1			
+fp30-lines	11	fp30-011	prstDash solid, 1 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp30-lines	12	fp30-012	prstDash dot, 1 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1	1 3		
+fp30-lines	13	fp30-013	prstDash dash, 1 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1	4 3		
+fp30-lines	14	fp30-014	prstDash lgDash, 1 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1	8 3		
+fp30-lines	15	fp30-015	prstDash dashDot, 1 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1	4 3 1 3		
+fp30-lines	16	fp30-016	prstDash lgDashDot, 1 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1	8 3 1 3		
+fp30-lines	17	fp30-017	prstDash lgDashDotDot, 1 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1	8 3 1 3 1 3		
+fp30-lines	18	fp30-018	prstDash sysDash, 1 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1	3 1		
+fp30-lines	19	fp30-019	prstDash sysDot, 1 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1	1 1		
+fp30-lines	20	fp30-020	prstDash sysDashDot, 1 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1	3 1 1 1		
+fp30-lines	21	fp30-021	prstDash sysDashDotDot, 1 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1	3 1 1 1 1 1		
+fp30-lines	22	fp30-022	prstDash solid, 4 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	0	1			
+fp30-lines	23	fp30-023	prstDash dot, 4 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	0	1	4 12		
+fp30-lines	24	fp30-024	prstDash dash, 4 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	0	1	16 12		
+fp30-lines	25	fp30-025	prstDash lgDash, 4 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	0	1	32 12		
+fp30-lines	26	fp30-026	prstDash dashDot, 4 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	0	1	16 12 4 12		
+fp30-lines	27	fp30-027	prstDash lgDashDot, 4 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	0	1	32 12 4 12		
+fp30-lines	28	fp30-028	prstDash lgDashDotDot, 4 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	0	1	32 12 4 12 4 12		
+fp30-lines	29	fp30-029	prstDash sysDash, 4 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	0	1	12 4		
+fp30-lines	30	fp30-030	prstDash sysDot, 4 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	0	1	4 4		
+fp30-lines	31	fp30-031	prstDash sysDashDot, 4 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	0	1	12 4 4 4		
+fp30-lines	32	fp30-032	prstDash sysDashDotDot, 4 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	0	1	12 4 4 4 4 4		
+fp30-lines	33	fp30-033	prstDash solid, 4 pt, cap rnd	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	1	1			
+fp30-lines	34	fp30-034	prstDash dot, 4 pt, cap rnd	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	1	1	0 16		
+fp30-lines	35	fp30-035	prstDash dash, 4 pt, cap rnd	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	1	1	12 16		
+fp30-lines	36	fp30-036	prstDash lgDash, 4 pt, cap rnd	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	1	1	28 16		
+fp30-lines	37	fp30-037	prstDash dashDot, 4 pt, cap rnd	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	1	1	12 16 0 16		
+fp30-lines	38	fp30-038	prstDash lgDashDot, 4 pt, cap rnd	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	1	1	28 16 0 16		
+fp30-lines	39	fp30-039	prstDash lgDashDotDot, 4 pt, cap rnd	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	1	1	28 16 0 16 0 16		
+fp30-lines	40	fp30-040	prstDash sysDash, 4 pt, cap rnd	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	1	1	8 8		
+fp30-lines	41	fp30-041	prstDash sysDot, 4 pt, cap rnd	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	1	1	0 8		
+fp30-lines	42	fp30-042	prstDash sysDashDot, 4 pt, cap rnd	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	1	1	8 8 0 8		
+fp30-lines	43	fp30-043	prstDash sysDashDotDot, 4 pt, cap rnd	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	1	1	8 8 0 8 0 8		
+fp30-lines	44	fp30-044	prstDash dash, 4 pt, no cap stated	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	0	1	16 12		
+fp30-lines	45	fp30-045	custDash d 300% sp 100%, 4 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	0	1	12 4		
+fp30-lines	46	fp30-046	custDash d 100% sp 200%, d 400% sp 100%, 4 pt, cap flat	144x72	0	1	0	0		0.00 0.00 144.00 72.00	4.0	0	1	4 8 16 4		
+fp30-lines	47	fp30-047	cap flat, 8 pt, on a line	144x72	0	1	0	0		0.00 0.00 144.00 72.00	8.0	0	1			
+fp30-lines	48	fp30-048	cap rnd, 8 pt, on a line	144x72	0	1	0	0		0.00 0.00 144.00 72.00	8.0	1	1			
+fp30-lines	49	fp30-049	cap sq, 8 pt, on a line	144x72	0	1	0	0		0.00 0.00 144.00 72.00	8.0	2	1			
+fp30-lines	50	fp30-050	join round, 8 pt, on a triangle	144x72	0	1	0	0		0.00 0.00 144.00 72.00	8.0	0	1			
+fp30-lines	51	fp30-051	join bevel, 8 pt, on a triangle	144x72	0	1	0	0		0.00 0.00 144.00 72.00	8.0	0	2			
+fp30-lines	52	fp30-052	join miter lim 800%, 8 pt, on a triangle	144x72	0	1	0	0		0.00 0.00 144.00 72.00	8.0	0	0			
+fp30-lines	53	fp30-053	join miter lim 100%, 8 pt, on a triangle	144x72	0	1	0	0		0.00 0.00 144.00 72.00	8.0	0	0			
+fp30-lines	54	fp30-054	join not stated, 8 pt, on a triangle	144x72	0	1	0	0		0.00 0.00 144.00 72.00	8.0	0	1			
+fp30-lines	55	fp30-055	cmpd sng, 9 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	9.0	0	1			
+fp30-lines	56	fp30-056	cmpd dbl, 9 pt	144x72	1	0	0	0	-4.50 -4.50 148.50 76.50						000000	
+fp30-lines	57	fp30-057	cmpd thickThin, 9 pt	144x72	1	0	0	0	-4.50 -4.50 148.50 76.50						000000	
+fp30-lines	58	fp30-058	cmpd thinThick, 9 pt	144x72	1	0	0	0	-4.50 -4.50 148.50 76.50						000000	
+fp30-lines	59	fp30-059	cmpd tri, 9 pt	144x72	1	0	0	0	-4.50 -4.50 148.50 76.50						000000	
+fp30-lines	60	fp30-060	algn ctr, 9 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	9.0	0	1			
+fp30-lines	61	fp30-061	algn in, 9 pt	144x72	1	0	0	0	-0.24 -0.24 144.24 72.24						000000	
+fp30-lines	62	fp30-062	line colour at alpha 50%, 6 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	6.0	0	1			
+fp30-lines	63	fp30-063	a gradient line, 6 pt	144x72	1	0	0	0	-3.00 -3.00 147.00 75.00						P140	
+fp30-lines	64	fp30-064	a pattern line (dkDnDiag), 6 pt	144x72	1	0	0	0	-3.00 -3.00 147.00 75.00						P143	
+fp30-lines	65	fp30-065	noFill line	144x72	1	0	0	0	0.00 0.00 144.00 72.00						4472C4	
+fp30-lines	66	fp30-066	no a:ln at all	144x72	1	0	0	0	0.00 0.00 144.00 72.00						4472C4	
+fp31-arrows	1	fp31-001	tailEnd triangle w sm len sm, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.00						000000	
+fp31-arrows	2	fp31-002	tailEnd triangle w sm len med, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.00						000000	
+fp31-arrows	3	fp31-003	tailEnd triangle w sm len lg, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.00						000000	
+fp31-arrows	4	fp31-004	tailEnd triangle w med len sm, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.89						000000	
+fp31-arrows	5	fp31-005	tailEnd triangle w med len med, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.00						000000	
+fp31-arrows	6	fp31-006	tailEnd triangle w med len lg, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.00						000000	
+fp31-arrows	7	fp31-007	tailEnd triangle w lg len sm, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 74.68						000000	
+fp31-arrows	8	fp31-008	tailEnd triangle w lg len med, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 73.79						000000	
+fp31-arrows	9	fp31-009	tailEnd triangle w lg len lg, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.00						000000	
+fp31-arrows	10	fp31-010	tailEnd stealth w sm len sm, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.00						000000	
+fp31-arrows	11	fp31-011	tailEnd stealth w sm len med, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.00						000000	
+fp31-arrows	12	fp31-012	tailEnd stealth w sm len lg, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.00						000000	
+fp31-arrows	13	fp31-013	tailEnd stealth w med len sm, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.89						000000	
+fp31-arrows	14	fp31-014	tailEnd stealth w med len med, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.00						000000	
+fp31-arrows	15	fp31-015	tailEnd stealth w med len lg, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.00						000000	
+fp31-arrows	16	fp31-016	tailEnd stealth w lg len sm, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 74.68						000000	
+fp31-arrows	17	fp31-017	tailEnd stealth w lg len med, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 73.79						000000	
+fp31-arrows	18	fp31-018	tailEnd stealth w lg len lg, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.00						000000	
+fp31-arrows	19	fp31-019	tailEnd diamond w sm len sm, 1 pt	144x72	1	0	0	0	-0.22 -0.45 145.79 73.79						000000	
+fp31-arrows	20	fp31-020	tailEnd diamond w sm len med, 1 pt	144x72	1	0	0	0	-0.22 -0.45 146.68 73.79						000000	
+fp31-arrows	21	fp31-021	tailEnd diamond w sm len lg, 1 pt	144x72	1	0	0	0	-0.22 -0.45 148.47 74.24						000000	
+fp31-arrows	22	fp31-022	tailEnd diamond w med len sm, 1 pt	144x72	1	0	0	0	-0.22 -0.45 145.79 74.68						000000	
+fp31-arrows	23	fp31-023	tailEnd diamond w med len med, 1 pt	144x72	1	0	0	0	-0.22 -0.45 146.68 74.68						000000	
+fp31-arrows	24	fp31-024	tailEnd diamond w med len lg, 1 pt	144x72	1	0	0	0	-0.22 -0.45 148.47 74.68						000000	
+fp31-arrows	25	fp31-025	tailEnd diamond w lg len sm, 1 pt	144x72	1	0	0	0	-0.22 -0.45 146.24 76.47						000000	
+fp31-arrows	26	fp31-026	tailEnd diamond w lg len med, 1 pt	144x72	1	0	0	0	-0.22 -0.45 146.68 76.47						000000	
+fp31-arrows	27	fp31-027	tailEnd diamond w lg len lg, 1 pt	144x72	1	0	0	0	-0.22 -0.45 148.47 76.47						000000	
+fp31-arrows	28	fp31-028	tailEnd oval w sm len sm, 1 pt	144x72	1	0	0	0	-0.22 -0.45 146.28 74.28						000000	
+fp31-arrows	29	fp31-029	tailEnd oval w sm len med, 1 pt	144x72	1	0	0	0	-0.22 -0.45 147.18 74.53						000000	
+fp31-arrows	30	fp31-030	tailEnd oval w sm len lg, 1 pt	144x72	1	0	0	0	-0.22 -0.45 148.97 75.22						000000	
+fp31-arrows	31	fp31-031	tailEnd oval w med len sm, 1 pt	144x72	1	0	0	0	-0.22 -0.45 146.53 75.18						000000	
+fp31-arrows	32	fp31-032	tailEnd oval w med len med, 1 pt	144x72	1	0	0	0	-0.22 -0.45 147.42 75.42						000000	
+fp31-arrows	33	fp31-033	tailEnd oval w med len lg, 1 pt	144x72	1	0	0	0	-0.22 -0.45 149.21 75.92						000000	
+fp31-arrows	34	fp31-034	tailEnd oval w lg len sm, 1 pt	144x72	1	0	0	0	-0.22 -0.45 147.22 76.97						000000	
+fp31-arrows	35	fp31-035	tailEnd oval w lg len med, 1 pt	144x72	1	0	0	0	-0.22 -0.45 147.92 77.21						000000	
+fp31-arrows	36	fp31-036	tailEnd oval w lg len lg, 1 pt	144x72	1	0	0	0	-0.22 -0.45 149.71 77.71						000000	
+fp31-arrows	37	fp31-037	tailEnd arrow w sm len sm, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.55						000000	
+fp31-arrows	38	fp31-038	tailEnd arrow w sm len med, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.00						000000	
+fp31-arrows	39	fp31-039	tailEnd arrow w sm len lg, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.00						000000	
+fp31-arrows	40	fp31-040	tailEnd arrow w med len sm, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 73.56						000000	
+fp31-arrows	41	fp31-041	tailEnd arrow w med len med, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.52						000000	
+fp31-arrows	42	fp31-042	tailEnd arrow w med len lg, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.00						000000	
+fp31-arrows	43	fp31-043	tailEnd arrow w lg len sm, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 74.97						000000	
+fp31-arrows	44	fp31-044	tailEnd arrow w lg len med, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 73.99						000000	
+fp31-arrows	45	fp31-045	tailEnd arrow w lg len lg, 1 pt	144x72	1	0	0	0	-0.22 -0.45 144.00 72.50						000000	
+fp31-arrows	46	fp31-046	tailEnd triangle w sm len sm, 4.5 pt	144x72	1	0	0	0	-1.01 -2.01 144.00 72.00						000000	
+fp31-arrows	47	fp31-047	tailEnd triangle w med len med, 4.5 pt	144x72	1	0	0	0	-1.01 -2.01 144.00 72.00						000000	
+fp31-arrows	48	fp31-048	tailEnd triangle w lg len lg, 4.5 pt	144x72	1	0	0	0	-1.01 -2.01 144.00 72.00						000000	
+fp31-arrows	49	fp31-049	tailEnd stealth w sm len sm, 4.5 pt	144x72	1	0	0	0	-1.01 -2.01 144.00 72.00						000000	
+fp31-arrows	50	fp31-050	tailEnd stealth w med len med, 4.5 pt	144x72	1	0	0	0	-1.01 -2.01 144.00 72.00						000000	
+fp31-arrows	51	fp31-051	tailEnd stealth w lg len lg, 4.5 pt	144x72	1	0	0	0	-1.01 -2.01 144.00 72.00						000000	
+fp31-arrows	52	fp31-052	tailEnd diamond w sm len sm, 4.5 pt	144x72	1	0	0	0	-1.01 -2.01 148.02 76.02						000000	
+fp31-arrows	53	fp31-053	tailEnd diamond w med len med, 4.5 pt	144x72	1	0	0	0	-1.01 -2.01 150.04 78.04						000000	
+fp31-arrows	54	fp31-054	tailEnd diamond w lg len lg, 4.5 pt	144x72	1	0	0	0	-1.01 -2.01 154.06 82.06						000000	
+fp31-arrows	55	fp31-055	tailEnd oval w sm len sm, 4.5 pt	144x72	1	0	0	0	-1.01 -2.01 149.14 77.14						000000	
+fp31-arrows	56	fp31-056	tailEnd oval w med len med, 4.5 pt	144x72	1	0	0	0	-1.01 -2.01 151.70 79.70						000000	
+fp31-arrows	57	fp31-057	tailEnd oval w lg len lg, 4.5 pt	144x72	1	0	0	0	-1.01 -2.01 156.84 84.84						000000	
+fp31-arrows	58	fp31-058	tailEnd arrow w sm len sm, 4.5 pt	144x72	1	0	0	0	-1.01 -2.01 144.01 73.47						000000	
+fp31-arrows	59	fp31-059	tailEnd arrow w med len med, 4.5 pt	144x72	1	0	0	0	-1.01 -2.01 144.01 73.34						000000	
+fp31-arrows	60	fp31-060	tailEnd arrow w lg len lg, 4.5 pt	144x72	1	0	0	0	-1.01 -2.01 144.00 73.24						000000	
+fp31-arrows	61	fp31-061	headEnd triangle only, 2 pt	144x72	1	0	0	0	0.00 0.00 144.45 72.89						000000	
+fp31-arrows	62	fp31-062	headEnd oval and tailEnd stealth, 2 pt	144x72	1	0	0	0	-3.42 -3.42 144.00 72.00						000000	
+fp31-arrows	63	fp31-063	tailEnd triangle, 2 pt, flipH	144x72	1	0	0	0	0.00 -0.89 144.45 72.00						000000	
+fp31-arrows	64	fp31-064	tailEnd triangle, 2 pt, flipV	144x72	1	0	0	0	-0.45 0.00 144.00 72.89						000000	
+fp31-arrows	65	fp31-065	tailEnd triangle, 2 pt, flipH flipV	144x72	1	0	0	0	0.00 0.00 144.45 72.89						000000	
+fp31-arrows	66	fp31-066	line, tailEnd triangle, 2 pt	144x72	1	0	0	0	-0.45 -0.89 144.00 72.00						000000	
+fp31-arrows	67	fp31-067	bentConnector3, tailEnd triangle, 2 pt	144x72	1	0	0	0	0.00 -1.00 144.00 75.00						000000	
+fp31-arrows	68	fp31-068	curvedConnector3, tailEnd triangle, 2 pt	144x72	1	0	0	0	-0.02 -1.00 144.00 74.82						000000	
+fp31-arrows	69	fp31-069	arc, tailEnd triangle, 2 pt	144x72	1	0	0	0	71.99 -1.00 145.97 36.00						000000	
+fp31-arrows	70	fp31-070	bentConnector2, 2 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	2.0	0	1			
+fp31-arrows	71	fp31-071	bentConnector4, 2 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	2.0	0	1			
+fp31-arrows	72	fp31-072	bentConnector5, 2 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	2.0	0	1			
+fp31-arrows	73	fp31-073	curvedConnector2, 2 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	2.0	0	1			
+fp31-arrows	74	fp31-074	curvedConnector4, 2 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	2.0	0	1			
+fp31-arrows	75	fp31-075	curvedConnector5, 2 pt	144x72	0	1	0	0		0.00 0.00 144.00 72.00	2.0	0	1			
+fp40-fills	1	fp40-001	solid at alpha 50%	144x72	1	0	0	0	0.00 0.00 144.00 72.00						4472C4	
+fp40-fills	2	fp40-002	solid accent1 lumMod 75%	144x72	1	0	0	0	0.00 0.00 144.00 72.00						104862	
+fp40-fills	3	fp40-003	linear gradient ang 0 scaled 1	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P20	
+fp40-fills	4	fp40-004	linear gradient ang 0 scaled 0	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P24	
+fp40-fills	5	fp40-005	linear gradient ang 45 scaled 1	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P28	
+fp40-fills	6	fp40-006	linear gradient ang 45 scaled 0	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P32	
+fp40-fills	7	fp40-007	linear gradient ang 90 scaled 1	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P36	
+fp40-fills	8	fp40-008	linear gradient ang 90 scaled 0	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P40	
+fp40-fills	9	fp40-009	linear gradient ang 135 scaled 1	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P44	
+fp40-fills	10	fp40-010	linear gradient ang 135 scaled 0	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P48	
+fp40-fills	11	fp40-011	linear gradient, three stops (0, 30%, 100%)	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P56	
+fp40-fills	12	fp40-012	linear gradient, stops at alpha 100% and 0%	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P66	
+fp40-fills	13	fp40-013	linear gradient ang 0, shape turned 30 degrees, rotWithShape 1	144x72	1	0	0	0	-8.35 -31.18 152.35 103.18						P83	
+fp40-fills	14	fp40-014	linear gradient ang 0, shape turned 30 degrees, rotWithShape 0	144x72	1	0	0	0	-8.35 -31.18 152.35 103.18						P87	
+fp40-fills	15	fp40-015	linear gradient, tileRect r -50%, flip none	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P91	
+fp40-fills	16	fp40-016	linear gradient, tileRect r -50%, flip x	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P95	
+fp40-fills	17	fp40-017	path gradient circle, from the centre, on a rect	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P99	
+fp40-fills	18	fp40-018	path gradient circle, from the centre, on a ellipse	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P103	
+fp40-fills	19	fp40-019	path gradient rect, from the centre, on a rect	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P106	
+fp40-fills	20	fp40-020	path gradient rect, from the centre, on a ellipse	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P110	
+fp40-fills	21	fp40-021	path gradient shape, from the centre, on a rect	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P114	
+fp40-fills	22	fp40-022	path gradient shape, from the centre, on a ellipse	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P119	
+fp40-fills	23	fp40-023	path gradient circle, from the top left corner	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P123	
+fp40-fills	24	fp40-024	pattern pct5	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P126	
+fp40-fills	25	fp40-025	pattern pct10	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P130	
+fp40-fills	26	fp40-026	pattern pct20	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P134	
+fp40-fills	27	fp40-027	pattern pct25	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P138	
+fp40-fills	28	fp40-028	pattern pct30	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P142	
+fp40-fills	29	fp40-029	pattern pct40	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P146	
+fp40-fills	30	fp40-030	pattern pct50	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P150	
+fp40-fills	31	fp40-031	pattern pct60	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P154	
+fp40-fills	32	fp40-032	pattern pct70	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P158	
+fp40-fills	33	fp40-033	pattern pct75	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P162	
+fp40-fills	34	fp40-034	pattern pct80	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P166	
+fp40-fills	35	fp40-035	pattern pct90	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P170	
+fp40-fills	36	fp40-036	pattern horz	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P174	
+fp40-fills	37	fp40-037	pattern vert	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P178	
+fp40-fills	38	fp40-038	pattern ltHorz	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P182	
+fp40-fills	39	fp40-039	pattern ltVert	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P186	
+fp40-fills	40	fp40-040	pattern dkHorz	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P190	
+fp40-fills	41	fp40-041	pattern dkVert	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P194	
+fp40-fills	42	fp40-042	pattern narHorz	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P198	
+fp40-fills	43	fp40-043	pattern narVert	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P202	
+fp40-fills	44	fp40-044	pattern dashHorz	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P206	
+fp40-fills	45	fp40-045	pattern dashVert	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P210	
+fp40-fills	46	fp40-046	pattern cross	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P214	
+fp40-fills	47	fp40-047	pattern dnDiag	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P218	
+fp40-fills	48	fp40-048	pattern upDiag	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P222	
+fp40-fills	49	fp40-049	pattern ltDnDiag	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P226	
+fp40-fills	50	fp40-050	pattern ltUpDiag	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P230	
+fp40-fills	51	fp40-051	pattern dkDnDiag	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P234	
+fp40-fills	52	fp40-052	pattern dkUpDiag	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P238	
+fp40-fills	53	fp40-053	pattern wdDnDiag	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P242	
+fp40-fills	54	fp40-054	pattern wdUpDiag	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P246	
+fp40-fills	55	fp40-055	pattern dashDnDiag	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P250	
+fp40-fills	56	fp40-056	pattern dashUpDiag	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P254	
+fp40-fills	57	fp40-057	pattern diagCross	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P258	
+fp40-fills	58	fp40-058	pattern smCheck	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P262	
+fp40-fills	59	fp40-059	pattern lgCheck	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P266	
+fp40-fills	60	fp40-060	pattern smGrid	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P270	
+fp40-fills	61	fp40-061	pattern lgGrid	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P274	
+fp40-fills	62	fp40-062	pattern dotGrid	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P277	
+fp40-fills	63	fp40-063	pattern smConfetti	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P281	
+fp40-fills	64	fp40-064	pattern lgConfetti	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P285	
+fp40-fills	65	fp40-065	pattern horzBrick	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P289	
+fp40-fills	66	fp40-066	pattern diagBrick	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P293	
+fp40-fills	67	fp40-067	pattern solidDmnd	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P297	
+fp40-fills	68	fp40-068	pattern openDmnd	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P301	
+fp40-fills	69	fp40-069	pattern dotDmnd	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P305	
+fp40-fills	70	fp40-070	pattern plaid	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P309	
+fp40-fills	71	fp40-071	pattern sphere	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P313	
+fp40-fills	72	fp40-072	pattern weave	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P317	
+fp40-fills	73	fp40-073	pattern divot	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P321	
+fp40-fills	74	fp40-074	pattern shingle	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P325	
+fp40-fills	75	fp40-075	pattern wave	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P329	
+fp40-fills	76	fp40-076	pattern trellis	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P333	
+fp40-fills	77	fp40-077	pattern zigZag	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P337	
+fp40-fills	78	fp40-078	picture fill, stretched	144x72	0	0	0	1								
+fp40-fills	79	fp40-079	picture fill, stretched to a rect inset 10% each side	144x72	0	0	0	1								
+fp40-fills	80	fp40-080	picture fill, cropped (srcRect l 25%), stretched	144x72	0	0	0	1								
+fp40-fills	81	fp40-081	picture fill, tiled at 25%, algn tl	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P349	
+fp40-fills	82	fp40-082	picture fill, tiled at 25%, flip xy, algn ctr	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P353	
+fp40-fills	83	fp40-083	picture fill, tiled at 25%, offset tx 9 pt ty 4.5 pt	144x72	1	0	0	0	0.00 0.00 144.00 72.00						P356	
+fp40-fills	84	fp40-084	picture fill on an ellipse, stretched	144x72	0	0	0	1								
+fp40-fills	85	fp40-085	noFill	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	1			
+fp50-styles-2023	1	fp50-001	style lnRef 0, fillRef 1, no fill or line in spPr	144x72	1	0	0	0	0.00 0.00 144.00 72.00						156082	
+fp50-styles-2023	2	fp50-002	style lnRef 1, fillRef 1, no fill or line in spPr	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		156082	
+fp50-styles-2023	3	fp50-003	style lnRef 2, fillRef 1, no fill or line in spPr	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.5	0	0		156082	
+fp50-styles-2023	4	fp50-004	style lnRef 3, fillRef 1, no fill or line in spPr	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	2.0	0	0		156082	
+fp50-styles-2023	5	fp50-005	style fillRef 0, lnRef 2, no fill or line in spPr	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.5	0	0			
+fp50-styles-2023	6	fp50-006	style fillRef 2, lnRef 2, no fill or line in spPr	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.5	0	0		P29	
+fp50-styles-2023	7	fp50-007	style fillRef 3, lnRef 2, no fill or line in spPr	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.5	0	0		P37	
+fp50-styles-2023	8	fp50-008	style fillRef 1001, lnRef 2, no fill or line in spPr	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.5	0	0		156082	
+fp50-styles-2023	9	fp50-009	style fillRef 1002, lnRef 2, no fill or line in spPr	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.5	0	0		2A75A5	
+fp50-styles-2023	10	fp50-010	style fillRef 1003, lnRef 2, no fill or line in spPr	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.5	0	0		P49	
+fp50-styles-2023	11	fp50-011	style fillRef 1 lnRef 2, spPr fill and line override them	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp50-styles-2023	12	fp50-012	style lnRef 2, spPr line with only w (6 pt): the style colour stays?	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	6.0	0	0		156082	
+fp51-styles-2013	1	fp51-001	style lnRef 0, fillRef 1, no fill or line in spPr	144x72	1	0	0	0	0.00 0.00 144.00 72.00						4472C4	
+fp51-styles-2013	2	fp51-002	style lnRef 1, fillRef 1, no fill or line in spPr	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	0.5	0	0		4472C4	
+fp51-styles-2013	3	fp51-003	style lnRef 2, fillRef 1, no fill or line in spPr	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp51-styles-2013	4	fp51-004	style lnRef 3, fillRef 1, no fill or line in spPr	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.5	0	0		4472C4	
+fp51-styles-2013	5	fp51-005	style fillRef 0, lnRef 2, no fill or line in spPr	144x72	0	1	0	0		0.00 0.00 144.00 72.00	1.0	0	0			
+fp51-styles-2013	6	fp51-006	style fillRef 2, lnRef 2, no fill or line in spPr	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		P29	
+fp51-styles-2013	7	fp51-007	style fillRef 3, lnRef 2, no fill or line in spPr	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		P37	
+fp51-styles-2013	8	fp51-008	style fillRef 1001, lnRef 2, no fill or line in spPr	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp51-styles-2013	9	fp51-009	style fillRef 1002, lnRef 2, no fill or line in spPr	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		3571ED	
+fp51-styles-2013	10	fp51-010	style fillRef 1003, lnRef 2, no fill or line in spPr	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		P49	
+fp51-styles-2013	11	fp51-011	style fillRef 1 lnRef 2, spPr fill and line override them	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	1.0	0	0		4472C4	
+fp51-styles-2013	12	fp51-012	style lnRef 2, spPr line with only w (6 pt): the style colour stays?	144x72	1	1	0	0	0.00 0.00 144.00 72.00	0.00 0.00 144.00 72.00	6.0	0	0		4472C4	
+fp70-text-tl-1	1	fp70-001	"accentBorderCallout1, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	2	fp70-002	"accentBorderCallout2, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	3	fp70-003	"accentBorderCallout3, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	4	fp70-004	"accentCallout1, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	5	fp70-005	"accentCallout2, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	6	fp70-006	"accentCallout3, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	7	fp70-007	"actionButtonBackPrevious, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	8	fp70-008	"actionButtonBeginning, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	9	fp70-009	"actionButtonBlank, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	10	fp70-010	"actionButtonDocument, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	3	0	0	0	0.00 0.00 144.00 108.00						858C94 B2BCC6 DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	11	fp70-011	"actionButtonEnd, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	12	fp70-012	"actionButtonForwardNext, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	13	fp70-013	"actionButtonHelp, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	14	fp70-014	"actionButtonHome, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	3	0	0	0	0.00 0.00 144.00 108.00						858C94 B2BCC6 DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	15	fp70-015	"actionButtonInformation, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	3	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6 EBF2FA	0.07 1.84 5.35 7.51
+fp70-text-tl-1	16	fp70-016	"actionButtonMovie, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	17	fp70-017	"actionButtonReturn, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	18	fp70-018	"actionButtonSound, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	19	fp70-019	"arc, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	72.00 0.00 144.00 54.00						DEEAF6	72.10 1.84 77.38 7.51
+fp70-text-tl-1	20	fp70-020	"bentArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	21	fp70-021	"bentConnector2, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	0	0	0	0								
+fp70-text-tl-1	22	fp70-022	"bentConnector3, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	0	0	0	0								
+fp70-text-tl-1	23	fp70-023	"bentConnector4, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	0	0	0	0								
+fp70-text-tl-1	24	fp70-024	"bentConnector5, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	0	0	0	0								
+fp70-text-tl-1	25	fp70-025	"bentUpArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 83.23 5.35 88.90
+fp70-text-tl-1	26	fp70-026	"bevel, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	5	0	0	0	0.00 0.00 144.00 108.00						858C94 B2BCC6 DEEAF6 E4EEF8 EBF2FA	13.51 15.52 18.79 21.19
+fp70-text-tl-1	27	fp70-027	"blockArc, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 54.00						DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	28	fp70-028	"borderCallout1, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	29	fp70-029	"borderCallout2, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	30	fp70-030	"borderCallout3, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	31	fp70-031	"bracePair, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	11.83 13.60 17.11 19.27
+fp70-text-tl-1	32	fp70-032	"bracketPair, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	5.35 7.12 10.63 12.79
+fp70-text-tl-1	33	fp70-033	"callout1, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	34	fp70-034	"callout2, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	35	fp70-035	"callout3, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp70-text-tl-1	36	fp70-036	"can, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						DEEAF6 EBF2FA	0.07 28.99 5.35 34.66
+fp70-text-tl-1	37	fp70-037	"chartPlus, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	
+fp70-text-tl-1	38	fp70-038	"chartStar, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	
+fp70-text-tl-1	39	fp70-039	"chartX, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	
+fp70-text-tl-1	40	fp70-040	"chevron, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	54.10 1.84 59.38 7.51
+fp70-text-tl-1	41	fp70-041	"chord, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	-9.46 0.00 115.20 115.09						DEEAF6	21.19 17.68 26.47 23.35
+fp70-text-tl-1	42	fp70-042	"circularArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	6.75 6.75 137.86 54.00						DEEAF6	25.99 22.51 31.27 28.18
+fp70-text-tl-1	43	fp70-043	"cloud, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	-2.18 -1.75 146.99 111.09						DEEAF6	19.99 18.16 25.27 23.83
+fp70-text-tl-1	44	fp70-044	"cloudCallout, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	4	0	0	0	-2.18 -1.75 146.99 124.50						DEEAF6	19.99 18.16 25.27 23.83
+fp70-text-tl-1	45	fp70-045	"corner, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 55.87 5.35 61.54
+fp70-text-tl-1	46	fp70-046	"cornerTabs, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	4	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	9.19 10.96 14.47 16.63
+fp70-text-tl-1	47	fp70-047	"cube, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	3	0	0	0	0.00 0.00 144.00 108.00						B2BCC6 DEEAF6 E4EEF8	0.07 29.23 5.35 34.90
+fp71-text-tl-2	1	fp71-001	"curvedConnector2, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	0	0	0	0								
+fp71-text-tl-2	2	fp71-002	"curvedConnector3, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	0	0	0	0								
+fp71-text-tl-2	3	fp71-003	"curvedConnector4, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	0	0	0	0								
+fp71-text-tl-2	4	fp71-004	"curvedConnector5, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	0	0	0	0								
+fp71-text-tl-2	5	fp71-005	"curvedDownArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 142.36 108.00						B2BCC6 DEEAF6	0.07 1.84 5.35 7.51
+fp71-text-tl-2	6	fp71-006	"curvedLeftArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 163.79 107.40						B2BCC6 DEEAF6	0.07 1.84 5.35 7.51
+fp71-text-tl-2	7	fp71-007	"curvedRightArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	-19.79 0.00 144.00 107.40						B2BCC6 DEEAF6	0.07 1.84 5.35 7.51
+fp71-text-tl-2	8	fp71-008	"curvedUpArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 142.36 119.48						B2BCC6 DEEAF6	0.07 1.84 5.35 7.51
+fp71-text-tl-2	9	fp71-009	"decagon, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	13.75 22.51 19.03 28.18
+fp71-text-tl-2	10	fp71-010	"diagStripe, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 2.08 5.35 7.75
+fp71-text-tl-2	11	fp71-011	"diamond, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	36.10 28.99 41.38 34.66
+fp71-text-tl-2	12	fp71-012	"dodecagon, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	19.27 16.48 24.55 22.15
+fp71-text-tl-2	13	fp71-013	"donut, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	21.19 17.68 26.47 23.35
+fp71-text-tl-2	14	fp71-014	"doubleWave, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -15.75 144.00 123.75						DEEAF6	0.07 15.52 5.35 21.19
+fp71-text-tl-2	15	fp71-015	"downArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	36.10 2.08 41.38 7.75
+fp71-text-tl-2	16	fp71-016	"downArrowCallout, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp71-text-tl-2	17	fp71-017	"ellipse, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	21.19 17.68 26.47 23.35
+fp71-text-tl-2	18	fp71-018	"ellipseRibbon, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 109.12						B2BCC6 DEEAF6	36.10 29.23 41.38 34.90
+fp71-text-tl-2	19	fp71-019	"ellipseRibbon2, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 -1.12 144.00 108.00						B2BCC6 DEEAF6	36.10 5.20 41.38 10.87
+fp71-text-tl-2	20	fp71-020	"flowChartAlternateProcess, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	5.35 7.12 10.63 12.79
+fp71-text-tl-2	21	fp71-021	"flowChartCollate, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	36.10 28.99 41.38 34.66
+fp71-text-tl-2	22	fp71-022	"flowChartConnector, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	21.19 17.68 26.47 23.35
+fp71-text-tl-2	23	fp71-023	"flowChartDecision, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	36.10 28.99 41.38 34.66
+fp71-text-tl-2	24	fp71-024	"flowChartDelay, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 17.68 5.35 23.35
+fp71-text-tl-2	25	fp71-025	"flowChartDisplay, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	24.07 1.84 29.35 7.51
+fp71-text-tl-2	26	fp71-026	"flowChartDocument, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 119.61						DEEAF6	0.07 1.84 5.35 7.51
+fp71-text-tl-2	27	fp71-027	"flowChartExtract, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	36.10 55.87 41.38 61.54
+fp71-text-tl-2	28	fp71-028	"flowChartInputOutput, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	28.87 1.84 34.15 7.51
+fp71-text-tl-2	29	fp71-029	"flowChartInternalStorage, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	18.07 15.52 23.35 21.19
+fp71-text-tl-2	30	fp71-030	"flowChartMagneticDisk, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 37.87 5.35 43.54
+fp71-text-tl-2	31	fp71-031	"flowChartMagneticDrum, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	24.07 1.84 29.35 7.51
+fp71-text-tl-2	32	fp71-032	"flowChartMagneticTape, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	21.19 17.68 26.47 23.35
+fp71-text-tl-2	33	fp71-033	"flowChartManualInput, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 23.47 5.35 29.14
+fp71-text-tl-2	34	fp71-034	"flowChartManualOperation, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	28.87 1.84 34.15 7.51
+fp71-text-tl-2	35	fp71-035	"flowChartMerge, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	36.10 1.84 41.38 7.51
+fp71-text-tl-2	36	fp71-036	"flowChartMultidocument, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 117.71						DEEAF6	0.07 20.32 5.35 25.99
+fp71-text-tl-2	37	fp71-037	"flowChartOfflineStorage, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	36.10 1.84 41.38 7.51
+fp71-text-tl-2	38	fp71-038	"flowChartOffpageConnector, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp71-text-tl-2	39	fp71-039	"flowChartOnlineStorage, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	24.07 1.84 29.35 7.51
+fp71-text-tl-2	40	fp71-040	"flowChartOr, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	21.19 17.68 26.47 23.35
+fp71-text-tl-2	41	fp71-041	"flowChartPredefinedProcess, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	18.07 1.84 23.35 7.51
+fp71-text-tl-2	42	fp71-042	"flowChartPreparation, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	28.87 1.84 34.15 7.51
+fp71-text-tl-2	43	fp71-043	"flowChartProcess, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp71-text-tl-2	44	fp71-044	"flowChartPunchedCard, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 23.47 5.35 29.14
+fp71-text-tl-2	45	fp71-045	"flowChartPunchedTape, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 23.47 5.35 29.14
+fp71-text-tl-2	46	fp71-046	"flowChartSort, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	36.10 28.99 41.38 34.66
+fp71-text-tl-2	47	fp71-047	"flowChartSummingJunction, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	21.19 17.68 26.47 23.35
+fp72-text-tl-3	1	fp72-001	"flowChartTerminator, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	6.79 17.68 12.07 23.35
+fp72-text-tl-3	2	fp72-002	"foldedCorner, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						B2BCC6 DEEAF6	0.07 1.84 5.35 7.51
+fp72-text-tl-3	3	fp72-003	"frame, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	13.51 15.52 18.79 21.19
+fp72-text-tl-3	4	fp72-004	"funnel, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	-4.83 -1.81 144.23 108.45						DEEAF6	0.07 1.84 5.35 7.51
+fp72-text-tl-3	5	fp72-005	"gear6, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	8.29 1.26 135.71 106.74						DEEAF6	32.50 29.23 37.78 34.90
+fp72-text-tl-3	6	fp72-006	"gear9, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.81 0.46 143.19 106.30						DEEAF6	26.23 27.07 31.51 32.74
+fp72-text-tl-3	7	fp72-007	"halfFrame, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp72-text-tl-3	8	fp72-008	"heart, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	-75.00 -36.00 219.00 108.00						DEEAF6	24.07 29.23 29.35 34.90
+fp72-text-tl-3	9	fp72-009	"heptagon, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	14.23 23.47 19.51 29.14
+fp72-text-tl-3	10	fp72-010	"hexagon, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	21.19 17.92 26.47 23.59
+fp72-text-tl-3	11	fp72-011	"homePlate, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp72-text-tl-3	12	fp72-012	"horizontalScroll, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						B2BCC6 DEEAF6	13.51 15.52 18.79 21.19
+fp72-text-tl-3	13	fp72-013	"irregularSeal1, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	31.03 33.79 36.31 39.46
+fp72-text-tl-3	14	fp72-014	"irregularSeal2, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	35.86 33.79 41.14 39.46
+fp72-text-tl-3	15	fp72-015	"leftArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	27.19 28.99 32.47 34.66
+fp72-text-tl-3	16	fp72-016	"leftArrowCallout, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	50.50 1.84 55.78 7.51
+fp72-text-tl-3	17	fp72-017	"leftBrace, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	93.22 4.48 98.50 10.15
+fp72-text-tl-3	18	fp72-018	"leftBracket, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	42.34 4.48 47.62 10.15
+fp72-text-tl-3	19	fp72-019	"leftCircularArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	6.75 54.00 137.86 107.64						DEEAF6	25.99 22.51 31.27 28.18
+fp72-text-tl-3	20	fp72-020	"leftRightArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	27.19 28.99 32.47 34.66
+fp72-text-tl-3	21	fp72-021	"leftRightArrowCallout, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	37.54 1.84 42.82 7.51
+fp72-text-tl-3	22	fp72-022	"leftRightCircularArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	6.14 0.36 137.86 54.00						DEEAF6	25.99 22.51 31.27 28.18
+fp72-text-tl-3	23	fp72-023	"leftRightRibbon, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						B2BCC6 DEEAF6	54.10 19.84 59.38 25.51
+fp72-text-tl-3	24	fp72-024	"leftRightUpArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	13.51 69.55 18.79 75.22
+fp72-text-tl-3	25	fp72-025	"leftUpArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	13.51 69.55 18.79 75.22
+fp72-text-tl-3	26	fp72-026	"lightningBolt, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	58.42 39.07 63.70 44.74
+fp72-text-tl-3	27	fp72-027	"line, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	0	0	0	0								
+fp72-text-tl-3	28	fp72-028	"lineInv, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	0	0	0	0								
+fp72-text-tl-3	29	fp72-029	"mathDivide, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	19.09 12.73 124.91 95.27						DEEAF6	19.27 43.15 24.55 48.82
+fp72-text-tl-3	30	fp72-030	"mathEqual, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	19.09 22.25 124.91 85.75						DEEAF6	19.27 24.43 24.55 30.10
+fp72-text-tl-3	31	fp72-031	"mathMinus, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	19.09 41.30 124.92 66.70						DEEAF6	19.27 43.15 24.55 48.82
+fp72-text-tl-3	32	fp72-032	"mathMultiply, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	26.96 15.78 117.04 92.22						DEEAF6	26.95 17.68 32.23 23.35
+fp72-text-tl-3	33	fp72-033	"mathNotEqual, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	19.09 0.00 124.91 108.00						DEEAF6	19.27 24.43 24.55 30.10
+fp72-text-tl-3	34	fp72-034	"mathPlus, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	19.09 14.32 124.91 93.68						DEEAF6	19.27 43.15 24.55 48.82
+fp72-text-tl-3	35	fp72-035	"moon, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	21.19 28.03 26.47 33.70
+fp72-text-tl-3	36	fp72-036	"nonIsoscelesTrapezoid, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	18.07 15.52 23.35 21.19
+fp72-text-tl-3	37	fp72-037	"noSmoking, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	21.19 17.68 26.47 23.35
+fp72-text-tl-3	38	fp72-038	"notchedRightArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	27.19 28.99 32.47 34.66
+fp72-text-tl-3	39	fp72-039	"octagon, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	15.91 17.68 21.19 23.35
+fp72-text-tl-3	40	fp72-040	"parallelogram, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	23.35 19.60 28.63 25.27
+fp72-text-tl-3	41	fp72-041	"pentagon, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	27.67 27.55 32.95 33.22
+fp72-text-tl-3	42	fp72-042	"pie, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	21.19 17.68 26.47 23.35
+fp72-text-tl-3	43	fp72-043	"pieWedge, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	42.34 33.55 47.62 39.22
+fp72-text-tl-3	44	fp72-044	"plaque, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	12.79 14.80 18.07 20.47
+fp72-text-tl-3	45	fp72-045	"plaqueTabs, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	4	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	9.19 10.96 14.47 16.63
+fp72-text-tl-3	46	fp72-046	"plus, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 28.99 5.35 34.66
+fp72-text-tl-3	47	fp72-047	"quadArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	12.31 43.63 17.59 49.30
+fp73-text-tl-4	1	fp73-001	"quadArrowCallout, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	37.54 30.19 42.82 35.86
+fp73-text-tl-4	2	fp73-002	"rect, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp73-text-tl-4	3	fp73-003	"ribbon, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						B2BCC6 DEEAF6	36.10 19.84 41.38 25.51
+fp73-text-tl-4	4	fp73-004	"ribbon2, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						B2BCC6 DEEAF6	36.10 1.84 41.38 7.51
+fp73-text-tl-4	5	fp73-005	"rightArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 28.99 5.35 34.66
+fp73-text-tl-4	6	fp73-006	"rightArrowCallout, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp73-text-tl-4	7	fp73-007	"rightBrace, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 4.48 5.35 10.15
+fp73-text-tl-4	8	fp73-008	"rightBracket, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 4.48 5.35 10.15
+fp73-text-tl-4	9	fp73-009	"round1Rect, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp73-text-tl-4	10	fp73-010	"round2DiagRect, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	5.35 7.12 10.63 12.79
+fp73-text-tl-4	11	fp73-011	"round2SameRect, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	5.35 7.12 10.63 12.79
+fp73-text-tl-4	12	fp73-012	"roundRect, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	5.35 7.12 10.63 12.79
+fp73-text-tl-4	13	fp73-013	"rtTriangle, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	12.07 64.99 17.35 70.66
+fp73-text-tl-4	14	fp73-014	"smileyFace, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						B2BCC6 DEEAF6	21.19 17.68 26.47 23.35
+fp73-text-tl-4	15	fp73-015	"snip1Rect, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 11.20 5.35 16.87
+fp73-text-tl-4	16	fp73-016	"snip2DiagRect, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	9.19 10.96 14.47 16.63
+fp73-text-tl-4	17	fp73-017	"snip2SameRect, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	9.19 11.20 14.47 16.87
+fp73-text-tl-4	18	fp73-018	"snipRoundRect, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	5.35 7.12 10.63 12.79
+fp73-text-tl-4	19	fp73-019	"squareTabs, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	4	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	9.19 10.96 14.47 16.63
+fp73-text-tl-4	20	fp73-020	"star10, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	19.99 28.99 25.27 34.66
+fp73-text-tl-4	21	fp73-021	"star12, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	33.94 27.55 39.22 33.22
+fp73-text-tl-4	22	fp73-022	"star16, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	33.94 27.55 39.22 33.22
+fp73-text-tl-4	23	fp73-023	"star24, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	33.94 27.55 39.22 33.22
+fp73-text-tl-4	24	fp73-024	"star32, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	33.94 27.55 39.22 33.22
+fp73-text-tl-4	25	fp73-025	"star4, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	59.38 46.51 64.66 52.18
+fp73-text-tl-4	26	fp73-026	"star5, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	44.50 43.15 49.78 48.82
+fp73-text-tl-4	27	fp73-027	"star6, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	24.07 28.99 29.35 34.66
+fp73-text-tl-4	28	fp73-028	"star7, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	32.23 23.47 37.51 29.14
+fp73-text-tl-4	29	fp73-029	"star8, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	22.15 18.64 27.43 24.31
+fp73-text-tl-4	30	fp73-030	"straightConnector1, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	0	0	0	0								
+fp73-text-tl-4	31	fp73-031	"stripedRightArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	16.87 28.99 22.15 34.66
+fp73-text-tl-4	32	fp73-032	"sun, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	46.66 36.67 51.94 42.34
+fp73-text-tl-4	33	fp73-033	"swooshArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp73-text-tl-4	34	fp73-034	"teardrop, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	21.19 17.68 26.47 23.35
+fp73-text-tl-4	35	fp73-035	"trapezoid, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	18.07 15.52 23.35 21.19
+fp73-text-tl-4	36	fp73-036	"triangle, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	36.10 55.87 41.38 61.54
+fp73-text-tl-4	37	fp73-037	"upArrowCallout, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 39.79 5.35 45.46
+fp73-text-tl-4	38	fp73-038	"upArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	36.10 29.23 41.38 34.90
+fp73-text-tl-4	39	fp73-039	"upDownArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	36.10 28.99 41.38 34.66
+fp73-text-tl-4	40	fp73-040	"upDownArrowCallout, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 30.19 5.35 35.86
+fp73-text-tl-4	41	fp73-041	"uturnArrow, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp73-text-tl-4	42	fp73-042	"verticalScroll, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						B2BCC6 DEEAF6	13.51 15.52 18.79 21.19
+fp73-text-tl-4	43	fp73-043	"wave, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 -31.50 144.00 139.50						DEEAF6	0.07 28.99 5.35 34.66
+fp73-text-tl-4	44	fp73-044	"wedgeEllipseCallout, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	-10.25 -7.69 154.25 121.50						DEEAF6	21.19 17.68 26.47 23.35
+fp73-text-tl-4	45	fp73-045	"wedgeRectCallout, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 121.50						DEEAF6	0.07 1.84 5.35 7.51
+fp73-text-tl-4	46	fp73-046	"wedgeRoundRectCallout, text ""X"" Arial 8 pt, anchor t, left, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 121.50						DEEAF6	5.35 7.12 10.63 12.79
+fp74-text-br-1	1	fp74-001	"accentBorderCallout1, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	2	fp74-002	"accentBorderCallout2, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	3	fp74-003	"accentBorderCallout3, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	4	fp74-004	"accentCallout1, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	5	fp74-005	"accentCallout2, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	6	fp74-006	"accentCallout3, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	7	fp74-007	"actionButtonBackPrevious, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	8	fp74-008	"actionButtonBeginning, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	9	fp74-009	"actionButtonBlank, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	10	fp74-010	"actionButtonDocument, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	3	0	0	0	0.00 0.00 144.00 108.00						858C94 B2BCC6 DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	11	fp74-011	"actionButtonEnd, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	12	fp74-012	"actionButtonForwardNext, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	13	fp74-013	"actionButtonHelp, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	14	fp74-014	"actionButtonHome, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	3	0	0	0	0.00 0.00 144.00 108.00						858C94 B2BCC6 DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	15	fp74-015	"actionButtonInformation, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	3	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6 EBF2FA	138.84 100.75 144.12 106.42
+fp74-text-br-1	16	fp74-016	"actionButtonMovie, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	17	fp74-017	"actionButtonReturn, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	18	fp74-018	"actionButtonSound, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						858C94 DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	19	fp74-019	"arc, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	72.00 0.00 144.00 54.00						DEEAF6	138.84 46.75 144.12 52.42
+fp74-text-br-1	20	fp74-020	"bentArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	21	fp74-021	"bentConnector2, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	0	0	0	0								
+fp74-text-br-1	22	fp74-022	"bentConnector3, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	0	0	0	0								
+fp74-text-br-1	23	fp74-023	"bentConnector4, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	0	0	0	0								
+fp74-text-br-1	24	fp74-024	"bentConnector5, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	0	0	0	0								
+fp74-text-br-1	25	fp74-025	"bentUpArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	125.40 100.99 130.68 106.66
+fp74-text-br-1	26	fp74-026	"bevel, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	5	0	0	0	0.00 0.00 144.00 108.00						858C94 B2BCC6 DEEAF6 E4EEF8 EBF2FA	125.40 87.31 130.68 92.98
+fp74-text-br-1	27	fp74-027	"blockArc, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 54.00						DEEAF6	138.84 46.75 144.12 52.42
+fp74-text-br-1	28	fp74-028	"borderCallout1, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	29	fp74-029	"borderCallout2, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	30	fp74-030	"borderCallout3, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	31	fp74-031	"bracePair, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	127.32 98.11 132.60 103.78
+fp74-text-br-1	32	fp74-032	"bracketPair, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	133.56 95.47 138.84 101.14
+fp74-text-br-1	33	fp74-033	"callout1, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	34	fp74-034	"callout2, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	35	fp74-035	"callout3, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	36	fp74-036	"can, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						DEEAF6 EBF2FA	138.84 87.07 144.12 92.74
+fp74-text-br-1	37	fp74-037	"chartPlus, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	
+fp74-text-br-1	38	fp74-038	"chartStar, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	
+fp74-text-br-1	39	fp74-039	"chartX, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	
+fp74-text-br-1	40	fp74-040	"chevron, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	84.82 100.75 90.10 106.42
+fp74-text-br-1	41	fp74-041	"chord, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	-9.46 0.00 115.20 115.09						DEEAF6	117.72 84.91 123.00 90.58
+fp74-text-br-1	42	fp74-042	"circularArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	6.75 6.75 137.86 54.00						DEEAF6	113.16 80.11 118.44 85.78
+fp74-text-br-1	43	fp74-043	"cloud, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	-2.18 -1.75 146.99 111.09						DEEAF6	108.84 79.39 114.12 85.06
+fp74-text-br-1	44	fp74-044	"cloudCallout, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	4	0	0	0	-2.18 -1.75 146.99 124.50						DEEAF6	108.84 79.39 114.12 85.06
+fp74-text-br-1	45	fp74-045	"corner, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp74-text-br-1	46	fp74-046	"cornerTabs, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	4	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	129.96 91.63 135.24 97.30
+fp74-text-br-1	47	fp74-047	"cube, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	3	0	0	0	0.00 0.00 144.00 108.00						B2BCC6 DEEAF6 E4EEF8	111.96 100.99 117.24 106.66
+fp75-text-br-2	1	fp75-001	"curvedConnector2, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	0	0	0	0								
+fp75-text-br-2	2	fp75-002	"curvedConnector3, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	0	0	0	0								
+fp75-text-br-2	3	fp75-003	"curvedConnector4, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	0	0	0	0								
+fp75-text-br-2	4	fp75-004	"curvedConnector5, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	0	0	0	0								
+fp75-text-br-2	5	fp75-005	"curvedDownArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 142.36 108.00						B2BCC6 DEEAF6	138.84 100.75 144.12 106.42
+fp75-text-br-2	6	fp75-006	"curvedLeftArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 163.79 107.40						B2BCC6 DEEAF6	138.84 100.75 144.12 106.42
+fp75-text-br-2	7	fp75-007	"curvedRightArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	-19.79 0.00 144.00 107.40						B2BCC6 DEEAF6	138.84 100.75 144.12 106.42
+fp75-text-br-2	8	fp75-008	"curvedUpArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 142.36 119.48						B2BCC6 DEEAF6	138.84 100.75 144.12 106.42
+fp75-text-br-2	9	fp75-009	"decagon, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	124.92 80.11 130.20 85.78
+fp75-text-br-2	10	fp75-010	"diagStripe, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	102.84 73.87 108.12 79.54
+fp75-text-br-2	11	fp75-011	"diamond, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	102.84 73.63 108.12 79.30
+fp75-text-br-2	12	fp75-012	"dodecagon, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	119.40 86.35 124.68 92.02
+fp75-text-br-2	13	fp75-013	"donut, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	117.72 84.91 123.00 90.58
+fp75-text-br-2	14	fp75-014	"doubleWave, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -15.75 144.00 123.75						DEEAF6	138.84 87.31 144.12 92.98
+fp75-text-br-2	15	fp75-015	"downArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	102.84 73.87 108.12 79.54
+fp75-text-br-2	16	fp75-016	"downArrowCallout, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 62.83 144.12 68.50
+fp75-text-br-2	17	fp75-017	"ellipse, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	117.72 84.91 123.00 90.58
+fp75-text-br-2	18	fp75-018	"ellipseRibbon, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 109.12						B2BCC6 DEEAF6	102.84 97.63 108.12 103.30
+fp75-text-br-2	19	fp75-019	"ellipseRibbon2, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 -1.12 144.00 108.00						B2BCC6 DEEAF6	102.84 73.63 108.12 79.30
+fp75-text-br-2	20	fp75-020	"flowChartAlternateProcess, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	133.56 95.47 138.84 101.14
+fp75-text-br-2	21	fp75-021	"flowChartCollate, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	102.84 73.63 108.12 79.30
+fp75-text-br-2	22	fp75-022	"flowChartConnector, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	117.72 84.91 123.00 90.58
+fp75-text-br-2	23	fp75-023	"flowChartDecision, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	102.84 73.63 108.12 79.30
+fp75-text-br-2	24	fp75-024	"flowChartDelay, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	117.72 84.91 123.00 90.58
+fp75-text-br-2	25	fp75-025	"flowChartDisplay, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	114.84 100.75 120.12 106.42
+fp75-text-br-2	26	fp75-026	"flowChartDocument, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 119.61						DEEAF6	138.84 79.39 144.12 85.06
+fp75-text-br-2	27	fp75-027	"flowChartExtract, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	102.84 100.75 108.12 106.42
+fp75-text-br-2	28	fp75-028	"flowChartInputOutput, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	110.04 100.75 115.32 106.42
+fp75-text-br-2	29	fp75-029	"flowChartInternalStorage, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	138.84 100.99 144.12 106.66
+fp75-text-br-2	30	fp75-030	"flowChartMagneticDisk, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 82.75 144.12 88.42
+fp75-text-br-2	31	fp75-031	"flowChartMagneticDrum, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	90.82 100.75 96.10 106.42
+fp75-text-br-2	32	fp75-032	"flowChartMagneticTape, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	117.72 84.91 123.00 90.58
+fp75-text-br-2	33	fp75-033	"flowChartManualInput, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp75-text-br-2	34	fp75-034	"flowChartManualOperation, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	110.04 100.75 115.32 106.42
+fp75-text-br-2	35	fp75-035	"flowChartMerge, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	102.84 46.75 108.12 52.42
+fp75-text-br-2	36	fp75-036	"flowChartMultidocument, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 117.71						DEEAF6	118.68 96.67 123.96 102.34
+fp75-text-br-2	37	fp75-037	"flowChartOfflineStorage, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	102.84 46.75 108.12 52.42
+fp75-text-br-2	38	fp75-038	"flowChartOffpageConnector, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 79.15 144.12 84.82
+fp75-text-br-2	39	fp75-039	"flowChartOnlineStorage, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	114.84 100.75 120.12 106.42
+fp75-text-br-2	40	fp75-040	"flowChartOr, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	117.72 84.91 123.00 90.58
+fp75-text-br-2	41	fp75-041	"flowChartPredefinedProcess, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	120.84 100.75 126.12 106.42
+fp75-text-br-2	42	fp75-042	"flowChartPreparation, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	110.04 100.75 115.32 106.42
+fp75-text-br-2	43	fp75-043	"flowChartProcess, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp75-text-br-2	44	fp75-044	"flowChartPunchedCard, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp75-text-br-2	45	fp75-045	"flowChartPunchedTape, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 79.15 144.12 84.82
+fp75-text-br-2	46	fp75-046	"flowChartSort, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	102.84 73.63 108.12 79.30
+fp75-text-br-2	47	fp75-047	"flowChartSummingJunction, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	117.72 84.91 123.00 90.58
+fp76-text-br-3	1	fp76-001	"flowChartTerminator, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	131.88 84.91 137.16 90.58
+fp76-text-br-3	2	fp76-002	"foldedCorner, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						B2BCC6 DEEAF6	138.84 82.75 144.12 88.42
+fp76-text-br-3	3	fp76-003	"frame, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	125.40 87.31 130.68 92.98
+fp76-text-br-3	4	fp76-004	"funnel, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	-4.83 -1.81 144.23 108.45						DEEAF6	138.84 100.75 144.12 106.42
+fp76-text-br-3	5	fp76-005	"gear6, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	8.29 1.26 135.71 106.74						DEEAF6	106.44 73.39 111.72 79.06
+fp76-text-br-3	6	fp76-006	"gear9, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.81 0.46 143.19 106.30						DEEAF6	112.44 73.39 117.72 79.06
+fp76-text-br-3	7	fp76-007	"halfFrame, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp76-text-br-3	8	fp76-008	"heart, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	-75.00 -36.00 219.00 108.00						DEEAF6	114.84 64.99 120.12 70.66
+fp76-text-br-3	9	fp76-009	"heptagon, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	124.44 79.63 129.72 85.30
+fp76-text-br-3	10	fp76-010	"hexagon, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	117.96 85.15 123.24 90.82
+fp76-text-br-3	11	fp76-011	"homePlate, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	111.96 100.75 117.24 106.42
+fp76-text-br-3	12	fp76-012	"horizontalScroll, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						B2BCC6 DEEAF6	132.12 87.31 137.40 92.98
+fp76-text-br-3	13	fp76-013	"irregularSeal1, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	106.20 62.59 111.48 68.26
+fp76-text-br-3	14	fp76-014	"irregularSeal2, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	92.50 72.43 97.78 78.10
+fp76-text-br-3	15	fp76-015	"leftArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	139.08 73.63 144.36 79.30
+fp76-text-br-3	16	fp76-016	"leftArrowCallout, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp76-text-br-3	17	fp76-017	"leftBrace, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 98.11 144.12 103.78
+fp76-text-br-3	18	fp76-018	"leftBracket, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 98.11 144.12 103.78
+fp76-text-br-3	19	fp76-019	"leftCircularArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	6.75 54.00 137.86 107.64						DEEAF6	113.16 80.11 118.44 85.78
+fp76-text-br-3	20	fp76-020	"leftRightArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	111.96 73.63 117.24 79.30
+fp76-text-br-3	21	fp76-021	"leftRightArrowCallout, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	101.64 100.75 106.92 106.42
+fp76-text-br-3	22	fp76-022	"leftRightCircularArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	6.14 0.36 137.86 54.00						DEEAF6	113.16 80.11 118.44 85.78
+fp76-text-br-3	23	fp76-023	"leftRightRibbon, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						B2BCC6 DEEAF6	84.82 82.75 90.10 88.42
+fp76-text-br-3	24	fp76-024	"leftRightUpArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	125.40 87.31 130.68 92.98
+fp76-text-br-3	25	fp76-025	"leftUpArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	111.72 87.31 117.00 92.98
+fp76-text-br-3	26	fp76-026	"lightningBolt, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	87.46 64.03 92.74 69.70
+fp76-text-br-3	27	fp76-027	"line, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	0	0	0	0								
+fp76-text-br-3	28	fp76-028	"lineInv, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	0	0	0	0								
+fp76-text-br-3	29	fp76-029	"mathDivide, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	19.09 12.73 124.91 95.27						DEEAF6	119.88 59.47 125.16 65.14
+fp76-text-br-3	30	fp76-030	"mathEqual, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	19.09 22.25 124.91 85.75						DEEAF6	119.88 78.67 125.16 84.34
+fp76-text-br-3	31	fp76-031	"mathMinus, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	19.09 41.30 124.92 66.70						DEEAF6	119.88 59.47 125.16 65.14
+fp76-text-br-3	32	fp76-032	"mathMultiply, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	26.96 15.78 117.04 92.22						DEEAF6	111.72 84.91 117.00 90.58
+fp76-text-br-3	33	fp76-033	"mathNotEqual, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	19.09 0.00 124.91 108.00						DEEAF6	119.88 78.67 125.16 84.34
+fp76-text-br-3	34	fp76-034	"mathPlus, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	19.09 14.32 124.91 93.68						DEEAF6	119.88 59.47 125.16 65.14
+fp76-text-br-3	35	fp76-035	"moon, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	66.82 75.07 72.10 80.74
+fp76-text-br-3	36	fp76-036	"nonIsoscelesTrapezoid, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	120.84 100.99 126.12 106.66
+fp76-text-br-3	37	fp76-037	"noSmoking, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	117.72 84.91 123.00 90.58
+fp76-text-br-3	38	fp76-038	"notchedRightArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	111.96 73.63 117.24 79.30
+fp76-text-br-3	39	fp76-039	"octagon, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	123.00 84.91 128.28 90.58
+fp76-text-br-3	40	fp76-040	"parallelogram, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	115.56 83.47 120.84 89.14
+fp76-text-br-3	41	fp76-041	"pentagon, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	111.48 100.99 116.76 106.66
+fp76-text-br-3	42	fp76-042	"pie, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	117.72 84.91 123.00 90.58
+fp76-text-br-3	43	fp76-043	"pieWedge, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp76-text-br-3	44	fp76-044	"plaque, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	126.12 88.27 131.40 93.94
+fp76-text-br-3	45	fp76-045	"plaqueTabs, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	4	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	129.96 91.63 135.24 97.30
+fp76-text-br-3	46	fp76-046	"plus, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 73.63 144.12 79.30
+fp76-text-br-3	47	fp76-047	"quadArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	126.84 58.75 132.12 64.42
+fp77-text-br-4	1	fp77-001	"quadArrowCallout, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	101.64 72.91 106.92 78.58
+fp77-text-br-4	2	fp77-002	"rect, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp77-text-br-4	3	fp77-003	"ribbon, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						B2BCC6 DEEAF6	102.84 100.75 108.12 106.42
+fp77-text-br-4	4	fp77-004	"ribbon2, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						B2BCC6 DEEAF6	102.84 82.75 108.12 88.42
+fp77-text-br-4	5	fp77-005	"rightArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	111.96 73.63 117.24 79.30
+fp77-text-br-4	6	fp77-006	"rightArrowCallout, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	88.42 100.75 93.70 106.42
+fp77-text-br-4	7	fp77-007	"rightBrace, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	45.70 98.11 50.98 103.78
+fp77-text-br-4	8	fp77-008	"rightBracket, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	96.60 98.11 101.88 103.78
+fp77-text-br-4	9	fp77-009	"round1Rect, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	133.56 100.75 138.84 106.42
+fp77-text-br-4	10	fp77-010	"round2DiagRect, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	133.56 95.47 138.84 101.14
+fp77-text-br-4	11	fp77-011	"round2SameRect, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	133.56 100.75 138.84 106.42
+fp77-text-br-4	12	fp77-012	"roundRect, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	133.56 95.47 138.84 101.14
+fp77-text-br-4	13	fp77-013	"rtTriangle, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	78.82 91.63 84.10 97.30
+fp77-text-br-4	14	fp77-014	"smileyFace, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						B2BCC6 DEEAF6	117.72 84.91 123.00 90.58
+fp77-text-br-4	15	fp77-015	"snip1Rect, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	129.96 100.99 135.24 106.66
+fp77-text-br-4	16	fp77-016	"snip2DiagRect, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	129.96 91.63 135.24 97.30
+fp77-text-br-4	17	fp77-017	"snip2SameRect, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	129.96 100.99 135.24 106.66
+fp77-text-br-4	18	fp77-018	"snipRoundRect, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	129.96 100.75 135.24 106.42
+fp77-text-br-4	19	fp77-019	"squareTabs, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	4	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	129.96 91.63 135.24 97.30
+fp77-text-br-4	20	fp77-020	"star10, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	118.92 73.63 124.20 79.30
+fp77-text-br-4	21	fp77-021	"star12, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	105.00 75.55 110.28 81.22
+fp77-text-br-4	22	fp77-022	"star16, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	105.00 75.55 110.28 81.22
+fp77-text-br-4	23	fp77-023	"star24, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	105.00 75.55 110.28 81.22
+fp77-text-br-4	24	fp77-024	"star32, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	105.00 75.55 110.28 81.22
+fp77-text-br-4	25	fp77-025	"star4, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	79.54 56.35 84.82 62.02
+fp77-text-br-4	26	fp77-026	"star5, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	94.20 75.07 99.48 80.74
+fp77-text-br-4	27	fp77-027	"star6, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	114.84 73.63 120.12 79.30
+fp77-text-br-4	28	fp77-028	"star7, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	106.92 74.35 112.20 80.02
+fp77-text-br-4	29	fp77-029	"star8, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	116.76 84.43 122.04 90.10
+fp77-text-br-4	30	fp77-030	"straightConnector1, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	0	0	0	0								
+fp77-text-br-4	31	fp77-031	"stripedRightArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	111.72 73.63 117.00 79.30
+fp77-text-br-4	32	fp77-032	"sun, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	92.26 65.71 97.54 71.38
+fp77-text-br-4	33	fp77-033	"swooshArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp77-text-br-4	34	fp77-034	"teardrop, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	117.72 84.91 123.00 90.58
+fp77-text-br-4	35	fp77-035	"trapezoid, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	120.84 100.99 126.12 106.66
+fp77-text-br-4	36	fp77-036	"triangle, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	102.84 100.75 108.12 106.42
+fp77-text-br-4	37	fp77-037	"upArrowCallout, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp77-text-br-4	38	fp77-038	"upArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	102.84 100.99 108.12 106.66
+fp77-text-br-4	39	fp77-039	"upDownArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	102.84 73.63 108.12 79.30
+fp77-text-br-4	40	fp77-040	"upDownArrowCallout, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 72.91 144.12 78.58
+fp77-text-br-4	41	fp77-041	"uturnArrow, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 108.00						DEEAF6	138.84 100.75 144.12 106.42
+fp77-text-br-4	42	fp77-042	"verticalScroll, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	2	0	0	0	0.00 0.00 144.00 108.00						B2BCC6 DEEAF6	125.40 94.27 130.68 99.94
+fp77-text-br-4	43	fp77-043	"wave, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 -31.50 144.00 139.50						DEEAF6	138.84 73.63 144.12 79.30
+fp77-text-br-4	44	fp77-044	"wedgeEllipseCallout, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	-10.25 -7.69 154.25 121.50						DEEAF6	117.72 84.91 123.00 90.58
+fp77-text-br-4	45	fp77-045	"wedgeRectCallout, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 121.50						DEEAF6	138.84 100.75 144.12 106.42
+fp77-text-br-4	46	fp77-046	"wedgeRoundRectCallout, text ""X"" Arial 8 pt, anchor b, right, insets 0"	144x108	1	0	0	0	0.00 0.00 144.00 121.50						DEEAF6	133.56 95.47 138.84 101.14
+fp78-no-xfrm	1	fp78-001	rect with no xfrm in its spPr, no text	144x108	1	1	0	0	0.00 -0.00 144.00 108.00	0.00 -0.00 144.00 108.00	1.0	0	1		4472C4	
+fp90-transforms	1	fp90-001	rtTriangle, rot 30	144x108	1	1	0	0	-17.35 -28.77 107.35 136.77	-17.35 -28.77 107.35 136.77	1.0	0	1		4472C4	
+fp90-transforms	2	fp90-002	rtTriangle, rot 90	144x108	1	1	0	0	18.00 -18.00 126.00 126.00	18.00 -18.00 126.00 126.00	1.0	0	1		4472C4	
+fp90-transforms	3	fp90-003	rtTriangle, rot 180	144x108	1	1	0	0	0.00 0.00 144.00 108.00	0.00 0.00 144.00 108.00	1.0	0	1		4472C4	
+fp90-transforms	4	fp90-004	rtTriangle, rot 270	144x108	1	1	0	0	18.00 -18.00 126.00 126.00	18.00 -18.00 126.00 126.00	1.0	0	1		4472C4	
+fp90-transforms	5	fp90-005	rtTriangle, flipH	144x108	1	1	0	0	0.00 0.00 144.00 108.00	0.00 0.00 144.00 108.00	1.0	0	1		4472C4	
+fp90-transforms	6	fp90-006	rtTriangle, flipV	144x108	1	1	0	0	0.00 0.00 144.00 108.00	0.00 0.00 144.00 108.00	1.0	0	1		4472C4	
+fp90-transforms	7	fp90-007	rtTriangle, flipH flipV	144x108	1	1	0	0	0.00 0.00 144.00 108.00	0.00 0.00 144.00 108.00	1.0	0	1		4472C4	
+fp90-transforms	8	fp90-008	rtTriangle, rot 30, flipH	144x108	1	1	0	0	-17.35 43.23 161.35 136.77	-17.35 43.23 161.35 136.77	1.0	0	1		4472C4	
+fp90-transforms	9	fp90-009	rect with text, rot 30	144x108	2	0	0	1	-17.35 -28.77 161.35 136.77						000000 DEEAF6	
+fp90-transforms	10	fp90-010	rect with text, rot 30, bodyPr upright 1	144x108	1	0	0	0	-17.35 -28.77 161.35 136.77						DEEAF6	0.07 1.84 5.35 7.51
+fp90-transforms	11	fp90-011	rect with text, flipH	144x108	1	0	0	1	0.00 -0.00 144.00 108.00						DEEAF6	0.07 1.84 5.35 7.51
+fp91-groups	1	fp91-001	group: a right triangle and a rect, child space = the group	144x108	2	2	0	0	0.00 0.00 144.00 108.00	0.00 0.00 144.00 108.00	1.0	0	1		70AD47 ED7D31	
+fp91-groups	2	fp91-002	group: child space twice the group (children at half size)	144x108	2	2	0	0	0.00 0.00 72.00 54.00	0.00 0.00 72.00 54.00	1.0	0	1		70AD47 ED7D31	
+fp91-groups	3	fp91-003	group: child offset (1in, 0.5in), children moved by minus it	144x108	2	2	0	0	-72.00 -36.00 72.00 72.00	-72.00 -36.00 72.00 72.00	1.0	0	1		70AD47 ED7D31	
+fp91-groups	4	fp91-004	group rot 30	144x108	2	2	0	0	-17.35 -28.77 161.35 136.77	-17.35 -28.77 161.35 136.77	1.0	0	1		70AD47 ED7D31	
+fp91-groups	5	fp91-005	group rot 90	144x108	2	2	0	0	18.00 -18.00 126.00 126.00	18.00 -18.00 126.00 126.00	1.0	0	1		70AD47 ED7D31	
+fp91-groups	6	fp91-006	group flipH	144x108	2	2	0	0	0.00 0.00 144.00 108.00	0.00 0.00 144.00 108.00	1.0	0	1		70AD47 ED7D31	
+fp91-groups	7	fp91-007	group flipV	144x108	2	2	0	0	0.00 0.00 144.00 108.00	0.00 0.00 144.00 108.00	1.0	0	1		70AD47 ED7D31	
+fp91-groups	8	fp91-008	group flipH flipV	144x108	2	2	0	0	0.00 0.00 144.00 108.00	0.00 0.00 144.00 108.00	1.0	0	1		70AD47 ED7D31	
+fp91-groups	9	fp91-009	group rot 30, flipH	144x108	2	2	0	0	-17.35 -28.77 161.35 136.77	-17.35 -28.77 161.35 136.77	1.0	0	1		70AD47 ED7D31	
+fp91-groups	10	fp91-010	group: child rot 45	144x108	1	1	0	0	8.36 17.36 84.73 144.64	8.36 17.36 84.73 144.64	1.0	0	1		ED7D31	
+fp91-groups	11	fp91-011	group flipH: child flipV	144x108	2	2	0	0	0.00 0.00 144.00 108.00	0.00 0.00 144.00 108.00	1.0	0	1		70AD47 ED7D31	
+fp91-groups	12	fp91-012	nested three deep: group rot 20 > grpSp flipH, half width > grpSp rot 15 > rtTriangle	144x108	1	1	0	0	31.43 3.34 112.57 110.93	31.43 3.34 112.57 110.93	1.0	0	1		7030A0	
+fp91-groups	13	fp91-013	nested: grpSp child space twice its extent > rtTriangle	144x108	1	1	0	0	0.00 0.00 72.00 54.00	0.00 0.00 72.00 54.00	1.0	0	1		FFC000	
+fp91-groups	14	fp91-014	group fill: the group solidFill 70AD47, a child grpFill	144x108	2	2	0	0	0.00 0.00 144.00 108.00	0.00 0.00 144.00 108.00	1.0	0	1		70AD47	
+fp91-groups	15	fp91-015	group: a child with text	144x108	1	1	0	1	0.00 -0.00 144.00 108.00	0.00 -0.00 144.00 108.00	1.0	0	1		DEEAF6	0.55 2.32 5.83 7.99
+fp91-groups	16	fp91-016	group: a picture child	144x108	1	1	0	1	72.00 -0.00 144.00 108.00	72.00 -0.00 144.00 108.00	1.0	0	1		70AD47	
+fp91-groups	17	fp91-017	group: two rects and a straight connector from the first (site 3) to the second (site 1)	144x108	3	2	0	0	0.00 0.00 144.00 108.00	0.00 0.00 144.00 108.00	1.0	0	1		000000 70AD47 ED7D31	
+fp92-canvas	1	fp92-001	canvas: background F2F2F2, outline C00000, a rect and an ellipse	144x108	3	3	0	0	0.00 -0.00 144.00 108.00	0.00 -0.00 144.00 108.00	1.0	0	1		70AD47 ED7D31 F2F2F2	
+fp92-canvas	2	fp92-002	canvas: no background or outline, a rect and an ellipse	144x108	2	2	0	0	18.00 13.50 126.00 94.50	18.00 13.50 126.00 94.50	1.0	0	1		70AD47 ED7D31	
+fp92-canvas	3	fp92-003	canvas: background only, empty	144x108	1	0	0	0	0.00 -0.00 144.00 108.00						F2F2F2	
+fp92-canvas	4	fp92-004	canvas: straightConnector1 from the rect (site 3) to the ellipse (site 1)	144x108	4	2	0	0	0.00 -0.00 144.00 108.00	18.00 13.50 126.00 94.50	1.0	0	1		000000 70AD47 ED7D31 F2F2F2	
+fp92-canvas	5	fp92-005	canvas: bentConnector3 from the rect (site 3) to the ellipse (site 1)	144x108	4	2	0	0	0.00 -0.00 144.00 108.00	18.00 13.50 126.00 94.50	1.0	0	1		000000 70AD47 ED7D31 F2F2F2	
+fp92-canvas	6	fp92-006	canvas: curvedConnector3 from the rect (site 3) to the ellipse (site 1)	144x108	4	2	0	0	0.00 -0.00 144.00 108.00	18.00 13.50 126.00 94.50	1.0	0	1		000000 70AD47 ED7D31 F2F2F2	
+fp92-canvas	7	fp92-007	canvas: a group inside (rot 30)	144x108	3	2	0	0	0.00 -0.00 144.00 108.00	27.32 12.62 116.68 95.38	1.0	0	1		70AD47 ED7D31 F2F2F2	
+fp92-canvas	8	fp92-008	canvas: a shape with text	144x108	2	1	0	1	0.00 -0.00 144.00 108.00	18.00 13.50 126.00 94.50	1.0	0	1		DEEAF6 F2F2F2	18.55 15.74 23.85 21.43

@@ -19,6 +19,39 @@ text-rotation rule and its VML shape-type table"):
 - POI's `txXfrm` rule (CR-082) and its `ShapeType` table (CR-083, CR-080 D6) are written independently and not
   ported.
 
+Phase 0 begun 2026-11-10 (Jason, asked whether CR-080 should come before more CR-081 work: "CR-080 next"). The route
+is CR-081's, through word-bridge.
+- `CR-080-notes/build_shapes.py` built round 1, `cr080-phase0`: 13 files and 1,284 probes, each file staged once, since
+  Word was deterministic over CR-081's 718 measured draws. Each shape is anchored at a fixed place on its page, with no
+  wrap, so that its frame in the PDF is known exactly. Every file is valid against the ECMA-376 transitional schemas.
+- What round 1 holds:
+  - every preset at 100 by 100 pt and at 144 by 72;
+  - the 123 presets with adjustments, at half and at double their defaults;
+  - custom geometry: each path command, arcs, the guide formula operators and the built-in guides;
+  - lines: widths, dashes, caps, joins, compound lines, alignment and line fills;
+  - the arrowheads, in every type and size;
+  - fills: solid, gradient, the 54 patterns and picture fills;
+  - style references under the 2023 and 2013 themes;
+  - every preset's text rectangle.
+- Three presets use the guides `hd10` and `wd12` undefined, though neither the standard nor POI lists them as
+  built-in. Round 1 probes them last.
+- Groups, canvases and connectors inside them are round 2.
+- Round 1 ran 2026-11-10, and its results are in `CR-080-notes/phase0-word.json` and `.tsv` (`read_shapes.py`, over
+  `pdfpaths.py`): 1,283 probes.
+- One file opened but Word couldn't save it (`fp60`). Two more rounds found why, a bisection (`cr080-phase0-b`) and a
+  strict pair (`cr080-phase0-c`, Jason: "stage the strict two-file pair for the save failure"). Word can't save a
+  shape that has a text box and no `a:xfrm`: "A file error has occurred", and no file is written. It is the Word
+  defects register's WD-003 (Jason: "the save failure is worth an entry"). So a producer must write an `a:xfrm` for
+  any `wps:spPr` that holds a text box, and phase 2 has docx4j do so.
+- Word draws no text in 14 presets: `line`, `lineInv`, `straightConnector1`, the bent and curved connectors,
+  `chartPlus`, `chartStar` and `chartX`. Its save turns `line` and the connectors into connectors (`wps:cNvCnPr`) and
+  drops their text box.
+- Round 2, `cr080-phase0-r2` (3 files, 36 probes: transforms, groups, canvases), ran silent on 2026-11-10. 1,319
+  probes are read in all.
+- `CR-080-notes/phase0-findings.md` has the rules measured: lines, dashes, arrowheads, fill modes, style references
+  by theme, text, groups and canvases. Its §5 lists what they change in phase 2, for Jason. Phase 0 still needs the
+  load survey's counts and the licence notes (its §6).
+
 Owner: Jason Harrop. Drafted with Claude Opus 5.5.
 
 ## 0. Summary
