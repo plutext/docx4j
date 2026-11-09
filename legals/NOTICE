@@ -83,6 +83,11 @@ Open Specifications documents, which says you can "distribute in your implementa
 with or without modification, any schemas .. that are included in the documentation".
 See also the Microsoft Open Specifications Promise. 
 
+docx4j-core's org/docx4j/model/shapes/presetShapeDefinitions.xml (the DrawingML preset
+shape definitions) comes from ECMA-376 Part 1's OfficeOpenXML-DrawingMLGeometries.zip,
+which http://www.ecma-international.org/publications/standards/Ecma-376.htm says to
+"Copy these file(s), free of charge", with corrections by docx4j.
+
 Copyright © 2026, Oracle and/or its affiliates: contributions to automate the generation of all OpenXML objects from the
 XSD files. These include new files in the docx4j-xjc-copy and docx4j-openxml-objects-combined directories, as well as
 modifications to the XSD files. See further https://github.com/plutext/docx4j/pull/676
