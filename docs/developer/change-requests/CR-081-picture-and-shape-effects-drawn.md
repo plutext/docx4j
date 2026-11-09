@@ -25,6 +25,21 @@ text-rotation rule and its VML shape-type table"):
 - POI's `txXfrm` rule (CR-082) and its `ShapeType` table (CR-083, CR-080 D6) are written independently and not
   ported.
 
+Phase 0 begun 2026-11-09 (Jason: "CR-081's phase 0 text to name the word-bridge route then Go ahead to build the probe
+generator and stage the jobs under bridge/staging/"). §6 names the route.
+- `CR-081-notes/build_phase0.py` built two sets, both staged for word-bridge with each file twice:
+  - `cr081-phase0`: 18 files, 220 probes, 36 jobs;
+  - `cr081-phase0-3d`: 4 files, 64 probes, 8 jobs.
+- Every file is valid against the ECMA-376 transitional schemas (`CR-081-notes/check_probes.py`).
+- `CR-081-notes/probes.tsv` lists each probe's file and page.
+- The picture styles and the JPEG wait for Jason's hand-made document.
+- Round 1 clipped its vertical sweeps (Word clips an inline drawing's effects to its paragraph). Round 2,
+  `cr081-phase0-r2` (15 files, 197 probes), re-ran them with a generous effect extent.
+- Every job of the three rounds was silent, and every pair pixel-identical.
+- `CR-081-notes/phase0-findings.md` has the rules measured, with the numbers in `phase0-word.tsv` (`read_phase0.py`).
+  The blur rules are named for the outer and inner shadow, the glow and the soft edge. Its §5 lists what the findings
+  change in §2, §7 and D2, D3, D5 and D6, for Jason; its §6 lists what isn't measured yet.
+
 Owner: Jason Harrop. Drafted with Claude Opus 5.5.
 
 ## 0. Summary
@@ -133,7 +148,8 @@ under `pic:spPr` (through the portfolio).
 
 ## 6. Phases
 
-- **Phase 0, the oracle.**
+- **Phase 0, the oracle**, through word-bridge (Jason, 2026-11-09: "CR-081's phase 0 text to name the word-bridge
+  route").
   - Probes: one photo and one line-art PNG, each with every Word picture style (28 presets); then each effect alone,
     swept over its parameters: outer shadow distance, direction, blur, scale, skew and alignment; inner shadow; glow
     radius; soft edge radius; reflection with its eight attributes.
@@ -141,9 +157,24 @@ under `pic:spPr` (through the portfolio).
     square wrapping, to see where Word's wrap goes; a JPEG with a picture-style shadow, to compare file size with
     Word's.
   - Hostile probes for D10: an extent near 2^31 EMU with a shadow, and a blur radius at the schema's maximum.
-  - Word's PDFs through the bridge.
-  - The effect pictures are extracted (`mutool extract`), and their pixel size, offset and alpha profile read as
-    numbers.
+  - **The route.** `CR-081-notes/build_phase0.py` writes the probes' XML directly, one family to a file and one probe
+    to a page, the page's words naming it. The pictures are synthetic: a gradient "photo" with a mark in one corner,
+    so that a flip shows, and a line-art PNG, on white and on transparent. Each file is staged twice (`-a`, `-b`)
+    under the bridge's `staging/`, so that the tolerances come from Word against itself. The portfolio session submits
+    them, and Jason starts the bridge. The verb is `save`, the formats docx and pdf.
+  - **The sets.**
+    - `cr081-phase0`: the effects in two dimensions, on pictures and shapes, the preset shadows, `effectRef`, the
+      wrap and the effect extent.
+    - `cr081-phase0-3d`: the 3-D probes, on their own with a longer timeout.
+    - `cr081-phase0-styles`: the 28 picture styles and the JPEG. No COM call applies a gallery style, so Jason applies
+      the 28 by hand, once, to 28 copies of one picture, and the bridge saves that document. The generator then takes
+      Word's XML for each style from the save and writes it over the photo, the line art and the JPEG.
+  - The hostile probes don't go to Word, since a dialog halts the bridge. They are docx4j unit tests in phase 1.
+  - **What is read.**
+    - Word's save of each file shows how Word normalises what it reads: whether `wp:effectExtent` is recomputed or
+      kept, and whether a scaled shadow in a `spPr` (2.1.1303) is kept.
+    - Word's PDF shows how Word draws. The effect pictures are extracted (`mutool extract`), and their pixel size,
+      offset and alpha profile read as numbers. Anything drawn as vectors is read with `mutool trace`.
   - **Gate:** numbers committed; the blur rule for each effect named, or the tolerance it needs.
 - **Phase 1, pictures in a rectangle.**
   - Outer shadow and glow (chart-render's, moved), inner shadow, soft edge, reflection, on a rectangular picture, in

@@ -1,0 +1,517 @@
+set	file	page	probe	object	note	extent	dkind	dw	dh	role	kind	l	t	r	b	w	h	px	pxpt	amax	colour	clipped	ab
+cr081-phase0	fx10-outer-offset	1	fx10-01	photo.png	dist 0	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	4.32	4.42	4.32	4.22	152.64	116.64	424x324	2.778	0.400	000000	yes	same
+cr081-phase0	fx10-outer-offset	2	fx10-02	photo.png	dist 12700	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	3.60	3.70	4.86	4.76	152.46	116.46	424x324	2.781	0.400	000000	yes	same
+cr081-phase0	fx10-outer-offset	3	fx10-03	photo.png	dist 38100	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.400	000000	yes	same
+cr081-phase0	fx10-outer-offset	4	fx10-04	photo.png	dist 76200	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.00	0.10	8.46	6.20	152.46	114.30	424x318	2.781	0.400	000000	yes	same
+cr081-phase0	fx10-outer-offset	5	fx10-05	photo.png	dist 152400	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-4.08	-4.22	12.54	6.20	152.46	109.98	424x306	2.781	0.400	000000	yes	same
+cr081-phase0	fx10-outer-offset	6	fx10-06	photo.png	dist 304800	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-12.72	-12.62	21.18	6.20	152.46	101.58	424x283	2.781	0.400	000000	yes	same
+cr081-phase0	fx10-outer-offset	7	fx10-07	photo.png	dir 0	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-3.60	4.42	12.06	4.04	152.46	116.46	424x324	2.781	0.400	000000	yes	same
+cr081-phase0	fx10-outer-offset	8	fx10-08	photo.png	dir 2700000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-1.44	-1.34	9.90	6.20	152.46	112.86	424x314	2.781	0.400	000000	yes	same
+cr081-phase0	fx10-outer-offset	9	fx10-09	photo.png	dir 5400000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	4.32	-3.74	4.14	6.20	152.46	110.46	424x307	2.781	0.400	000000	yes	same
+cr081-phase0	fx10-outer-offset	10	fx10-10	photo.png	dir 8100000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	10.08	-1.34	-1.62	6.20	152.46	112.86	424x314	2.781	0.400	000000	yes	same
+cr081-phase0	fx10-outer-offset	11	fx10-11	photo.png	dir 10800000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	12.24	4.42	-3.78	4.04	152.46	116.46	424x324	2.781	0.400	000000	yes	same
+cr081-phase0	fx10-outer-offset	12	fx10-12	photo.png	dir 13500000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	10.08	9.94	-1.62	-1.48	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0	fx10-outer-offset	13	fx10-13	photo.png	dir 16200000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	4.32	12.34	4.14	-3.88	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0	fx10-outer-offset	14	fx10-14	photo.png	dir 18900000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-1.44	9.94	9.90	-1.48	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0	fx11-outer-blur	1	fx11-01	photo.png	blur 0	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-4.08	-3.98	4.56	2.30	144.48	106.32	401x295	2.775	0.400	000000		same
+cr081-phase0	fx11-outer-blur	2	fx11-02	photo.png	blur 12700	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-2.88	-2.78	5.58	3.32	146.70	108.54	408x302	2.781	0.400	000000	yes	same
+cr081-phase0	fx11-outer-blur	3	fx11-03	photo.png	blur 25400	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-1.92	-1.82	6.54	4.28	148.62	110.46	413x307	2.779	0.400	000000	yes	same
+cr081-phase0	fx11-outer-blur	4	fx11-04	photo.png	blur 50800	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.00	0.10	8.46	6.20	152.46	114.30	424x318	2.781	0.400	000000	yes	same
+cr081-phase0	fx11-outer-blur	5	fx11-05	photo.png	blur 101600	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	4.08	4.18	12.36	10.10	160.44	122.28	223x171	1.390	0.400	000000	yes	same
+cr081-phase0	fx11-outer-blur	6	fx11-06	photo.png	blur 203200	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	12.00	12.10	20.10	17.84	176.10	137.94	163x128	0.926	0.400	000000	yes	same
+cr081-phase0	fx11-outer-blur	7	fx11-07	photo.png	blur 406400	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	28.08	28.18	35.64	33.38	207.72	169.56	97x79	0.467	0.400	000000	yes	same
+cr081-phase0	fx11-outer-blur	8	fx11-08	photo.png	blur 25400, no offset	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	2.40	2.50	2.22	2.12	148.62	112.62	413x313	2.779	0.400	000000		same
+cr081-phase0	fx11-outer-blur	9	fx11-09	photo.png	blur 101600, no offset	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	8.40	8.50	8.04	7.94	160.44	124.44	223x173	1.390	0.400	000000	yes	same
+cr081-phase0	fx11-outer-blur	10	fx11-10	photo.png	blur 406400, no offset	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	32.40	32.50	31.32	31.22	207.72	171.72	97x80	0.467	0.400	000000	yes	same
+cr081-phase0	fx11-outer-blur	11	fx11-11	photo.png	blur 0, opaque, far	zero	image DCTDecode	144.00	108.00	under	fill	-16.97	-16.97	16.97	16.97	144.00	108.00				0.000	yes	same
+cr081-phase0	fx11-outer-blur	12	fx11-12	photo.png	blur 101600, opaque, far	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-8.64	-8.54	25.08	10.10	160.44	109.56	223x153	1.390	1.000	000000	yes	same
+cr081-phase0	fx12-outer-scale	1	fx12-01	photo.png	sx 100000 sy 100000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-11.76	0.34	12.24	0.14	144.48	108.48	401x301	2.775	0.400	000000		same
+cr081-phase0	fx12-outer-scale	2	fx12-02	photo.png	sx 50000 sy 50000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-47.76	-26.78	-23.94	-26.92	72.30	54.30	201x151	2.780	0.400	000000		same
+cr081-phase0	fx12-outer-scale	3	fx12-03	photo.png	sx 90000 sy 90000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-18.96	-5.18	4.86	-5.32	129.90	97.50	361x271	2.779	0.400	000000		same
+cr081-phase0	fx12-outer-scale	4	fx12-04	photo.png	sx 110000 sy 110000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-4.56	5.62	19.26	2.12	158.70	115.74	441x322	2.779	0.400	000000		same
+cr081-phase0	fx12-outer-scale	5	fx12-05	photo.png	sx 100000 sy 50000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-11.76	-26.78	12.06	-26.92	144.30	54.30	401x151	2.779	0.400	000000		same
+cr081-phase0	fx12-outer-scale	6	fx12-06	photo.png	sx 50000 sy 100000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-47.76	0.34	-23.94	-0.04	72.30	108.30	201x301	2.780	0.400	000000		same
+cr081-phase0	fx12-outer-scale	7	fx12-07	photo.png	sx 100000 sy -100000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-11.76	0.34	12.06	-0.04	144.30	108.30	401x301	2.779	0.400	000000		same
+cr081-phase0	fx12-outer-scale	8	fx12-08	photo.png	sx -100000 sy 100000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-11.76	0.34	12.06	-0.04	144.30	108.30	401x301	2.779	0.400	000000		same
+cr081-phase0	fx12-outer-scale	9	fx12-09	photo.png	kx 1200000 ky 0	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	7.92	0.34	31.74	-0.04	183.66	108.30	511x301	2.782	0.400	000000		same
+cr081-phase0	fx12-outer-scale	10	fx12-10	photo.png	kx -1200000 ky 0	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	7.92	0.34	31.74	-0.04	183.66	108.30	511x301	2.782	0.400	000000		same
+cr081-phase0	fx12-outer-scale	11	fx12-11	photo.png	kx 0 ky 600000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-11.76	12.82	12.06	2.12	144.30	122.94	401x342	2.779	0.400	000000		same
+cr081-phase0	fx12-outer-scale	12	fx12-12	photo.png	algn tl at 120%	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.24	0.34	28.86	2.12	173.10	110.46	481x307	2.779	0.400	000000		same
+cr081-phase0	fx12-outer-scale	13	fx12-13	photo.png	algn t at 120%	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	14.64	0.34	14.46	2.12	173.10	110.46	481x307	2.779	0.400	000000		same
+cr081-phase0	fx12-outer-scale	14	fx12-14	photo.png	algn tr at 120%	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	29.04	0.34	0.06	2.12	173.10	110.46	481x307	2.779	0.400	000000		same
+cr081-phase0	fx12-outer-scale	15	fx12-15	photo.png	algn l at 120%	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.24	11.14	28.86	2.12	173.10	121.26	481x337	2.779	0.400	000000		same
+cr081-phase0	fx12-outer-scale	16	fx12-16	photo.png	algn ctr at 120%	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	14.64	11.14	14.46	2.12	173.10	121.26	481x337	2.779	0.400	000000		same
+cr081-phase0	fx12-outer-scale	17	fx12-17	photo.png	algn r at 120%	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	29.04	11.14	0.06	2.12	173.10	121.26	481x337	2.779	0.400	000000		same
+cr081-phase0	fx12-outer-scale	18	fx12-18	photo.png	algn bl at 120%	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.24	21.94	28.86	-0.04	173.10	129.90	481x361	2.779	0.400	000000		same
+cr081-phase0	fx12-outer-scale	19	fx12-19	photo.png	algn b at 120%	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	14.64	21.94	14.46	-0.04	173.10	129.90	481x361	2.779	0.400	000000		same
+cr081-phase0	fx12-outer-scale	20	fx12-20	photo.png	algn br at 120%	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	29.04	21.94	0.06	-0.04	173.10	129.90	481x361	2.779	0.400	000000		same
+cr081-phase0	fx12-outer-scale	21	fx12-21	photo.png	perspective upper left	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	45.60	-76.94	5.88	5.78	195.48	36.84	272x52	1.391	0.400	000000	yes	same
+cr081-phase0	fx12-outer-scale	22	fx12-22	photo.png	perspective upper right	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	6.24	-76.94	45.24	5.78	195.48	36.84	272x52	1.391	0.400	000000	yes	same
+cr081-phase0	fx12-outer-scale	23	fx12-23	photo.png	perspective below	zero	image DCTDecode	144.00	108.00	nothing													same
+cr081-phase0	fx12-outer-scale	24	fx12-24	photo.png	perspective lower left	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	32.64	-102.38	5.16	7.93	181.80	13.55	253x19	1.392	0.373	000000	yes	same
+cr081-phase0	fx12-outer-scale	25	fx12-25	photo.png	perspective lower right	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	5.52	-102.38	32.28	7.93	181.80	13.55	253x19	1.392	0.373	000000	yes	same
+cr081-phase0	fx12-outer-scale	26	fx12-26	photo.png	picture turned 30 degrees, rotWithShape 0	zero	image DCTDecode	178.71	165.53	under	image FlateDecode	2.33	-9.70	2.14	-24.49	183.18	131.34	509x365	2.779	0.400	000000	yes	same
+cr081-phase0	fx12-outer-scale	27	fx12-27	photo.png	picture turned 30 degrees, rotWithShape 1	zero	image DCTDecode	178.71	165.53	under	image FlateDecode	8.33	-8.02	-3.86	-24.49	183.18	133.02	509x370	2.779	0.400	000000	yes	same
+cr081-phase0	fx13-outer-colour	1	fx13-01	photo.png	black, opaque	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.48	6.38	152.64	116.64	424x324	2.778	1.000	000000	yes	same
+cr081-phase0	fx13-outer-colour	2	fx13-02	photo.png	black 40%	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.400	000000	yes	same
+cr081-phase0	fx13-outer-colour	3	fx13-03	photo.png	red 60%	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.600	FD0000	yes	same
+cr081-phase0	fx13-outer-colour	4	fx13-04	photo.png	accent1	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	1.000	156082	yes	same
+cr081-phase0	fx13-outer-colour	5	fx13-05	photo.png	accent1 lumMod 50%	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	1.000	0B3041	yes	same
+cr081-phase0	fx13-outer-colour	6	fx13-06	photo.png	preset black 40%	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.400	000000	yes	same
+cr081-phase0	fx20-inner	1	fx20-01	photo.png	blur 0	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.502	000000		same
+cr081-phase0	fx20-inner	2	fx20-02	photo.png	blur 25400	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.502	000000		same
+cr081-phase0	fx20-inner	3	fx20-03	photo.png	blur 63500	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.502	000000		same
+cr081-phase0	fx20-inner	4	fx20-04	photo.png	blur 127000	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.478	000000		same
+cr081-phase0	fx20-inner	5	fx20-05	photo.png	blur 254000	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.447	000000		same
+cr081-phase0	fx20-inner	6	fx20-06	photo.png	dist 0	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.353	000000		same
+cr081-phase0	fx20-inner	7	fx20-07	photo.png	dist 25400	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.478	000000		same
+cr081-phase0	fx20-inner	8	fx20-08	photo.png	dist 101600	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.502	000000		same
+cr081-phase0	fx20-inner	9	fx20-09	photo.png	dist 203200	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.502	000000		same
+cr081-phase0	fx20-inner	10	fx20-10	photo.png	dir 0	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.498	000000		same
+cr081-phase0	fx20-inner	11	fx20-11	photo.png	dir 2700000	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.502	000000		same
+cr081-phase0	fx20-inner	12	fx20-12	photo.png	dir 5400000	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.498	000000		same
+cr081-phase0	fx20-inner	13	fx20-13	photo.png	dir 8100000	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.498	000000		same
+cr081-phase0	fx20-inner	14	fx20-14	photo.png	dir 10800000	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.498	000000		same
+cr081-phase0	fx20-inner	15	fx20-15	photo.png	dir 16200000	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.498	000000		same
+cr081-phase0	fx20-inner	16	fx20-16	photo.png	dir 18900000	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.502	000000		same
+cr081-phase0	fx20-inner	17	fx20-17	photo.png	red, opaque	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.996	FE0000		same
+cr081-phase0	fx20-inner	18	fx20-18	photo.png	accent1	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.996	145F81		same
+cr081-phase0	fx30-glow	1	fx30-01	photo.png	rad 25400	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	2.64	2.58	2.64	2.70	149.28	113.28	415x315	2.780	0.400	145F82	yes	same
+cr081-phase0	fx30-glow	2	fx30-02	photo.png	rad 63500	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	5.52	5.46	5.34	4.68	154.86	118.14	431x329	2.783	0.400	145F82	yes	same
+cr081-phase0	fx30-glow	3	fx30-03	photo.png	rad 101600	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	8.40	8.34	8.22	6.12	160.62	122.46	447x341	2.783	0.400	145F82	yes	same
+cr081-phase0	fx30-glow	4	fx30-04	photo.png	rad 139700	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	11.28	11.22	11.10	7.56	166.38	126.78	463x353	2.783	0.400	145F82	yes	same
+cr081-phase0	fx30-glow	5	fx30-05	photo.png	rad 228600	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	18.48	18.42	18.12	10.98	180.60	137.40	251x191	1.390	0.400	135E81	yes	same
+cr081-phase0	fx30-glow	6	fx30-06	photo.png	rad 406400	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	32.40	32.34	31.86	17.76	208.26	158.10	193x147	0.927	0.400	135E81	yes	same
+cr081-phase0	fx30-glow	7	fx30-07	photo.png	rad 139700 accent1 satMod 175% alpha 40% (as Word writes it)	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	11.28	11.38	11.10	7.64	166.38	127.02	463x353	2.783	0.400	006EAA	yes	same
+cr081-phase0	fx30-glow	8	fx30-08	photo.png	red 60%	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	11.28	11.22	11.10	7.56	166.38	126.78	463x353	2.783	0.600	FD0000	yes	same
+cr081-phase0	fx30-glow	9	fx30-09	photo.png	black, opaque	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	11.28	11.22	11.10	7.56	166.38	126.78	463x353	2.783	1.000	000000	yes	same
+cr081-phase0	fx30-glow	10	fx30-10	photo.png	green 40%	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	11.28	11.22	11.10	7.56	166.38	126.78	463x353	2.783	0.400	00AF50	yes	same
+cr081-phase0	fx40-softedge	1	fx40-01	photo.png	rad 12700	zero	image DCTDecode smask	144.48	108.48	nothing													same
+cr081-phase0	fx40-softedge	2	fx40-02	photo.png	rad 31750	zero	image DCTDecode smask	144.48	108.48	nothing													same
+cr081-phase0	fx40-softedge	3	fx40-03	photo.png	rad 63500	zero	image DCTDecode smask	144.48	108.48	nothing													same
+cr081-phase0	fx40-softedge	4	fx40-04	photo.png	rad 127000	zero	image DCTDecode smask	144.48	108.48	nothing													same
+cr081-phase0	fx40-softedge	5	fx40-05	photo.png	rad 317500	zero	image DCTDecode smask	144.48	108.48	nothing													same
+cr081-phase0	fx40-softedge	6	fx40-06	photo.png	rad 635000	zero	image DCTDecode smask	144.48	108.48	nothing													same
+cr081-phase0	fx40-softedge	7	fx40-07	photo.png	rad 1000000	zero	image DCTDecode smask	144.48	108.48	nothing													same
+cr081-phase0	fx50-reflection	1	fx50-01	photo.png	tight reflection, touching (the base)	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.96	3.02	145.92	4.08	405x11	2.775	0.510	1C6230	yes	same
+cr081-phase0	fx50-reflection	2	fx50-02	photo.png	endPos 20000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.502	1C6230	yes	same
+cr081-phase0	fx50-reflection	3	fx50-03	photo.png	endPos 55000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.514	1C6230	yes	same
+cr081-phase0	fx50-reflection	4	fx50-04	photo.png	endPos 90000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.514	1B6230	yes	same
+cr081-phase0	fx50-reflection	5	fx50-05	photo.png	endPos 100000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.514	1B6230	yes	same
+cr081-phase0	fx50-reflection	6	fx50-06	photo.png	stA 100000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.984	1D6331	yes	same
+cr081-phase0	fx50-reflection	7	fx50-07	photo.png	stA 30000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.294	1A602F	yes	same
+cr081-phase0	fx50-reflection	8	fx50-08	photo.png	endA 0	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.510	1C6230	yes	same
+cr081-phase0	fx50-reflection	9	fx50-09	photo.png	endA 50000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.518	1D6230	yes	same
+cr081-phase0	fx50-reflection	10	fx50-10	photo.png	stPos 20000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.518	1D6230	yes	same
+cr081-phase0	fx50-reflection	11	fx50-11	photo.png	stPos 50000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.518	1D6230	yes	same
+cr081-phase0	fx50-reflection	12	fx50-12	photo.png	dist 38100	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-110.06	0.78	2.86	145.74	0.80	405x3	2.779	0.000		yes	same
+cr081-phase0	fx50-reflection	13	fx50-13	photo.png	dist 50800	zero	image DCTDecode	144.00	108.00	nothing													same
+cr081-phase0	fx50-reflection	14	fx50-14	photo.png	dist 101600	zero	image DCTDecode	144.00	108.00	nothing													same
+cr081-phase0	fx50-reflection	15	fx50-15	photo.png	blurRad 0	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.24	-107.66	0.06	2.11	144.30	2.45	401x7	2.779	0.514	1D6331		same
+cr081-phase0	fx50-reflection	16	fx50-16	photo.png	blurRad 25400	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	2.40	-105.50	2.22	4.28	148.62	6.78	413x19	2.779	0.494	1C6130	yes	same
+cr081-phase0	fx50-reflection	17	fx50-17	photo.png	blurRad 101600	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	8.40	-99.50	8.04	10.11	160.44	18.61	223x27	1.390	0.424	1B612F	yes	same
+cr081-phase0	fx50-reflection	18	fx50-18	photo.png	dir 0	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.510	1C6230	yes	same
+cr081-phase0	fx50-reflection	19	fx50-19	photo.png	dir 10800000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.510	1C6230	yes	same
+cr081-phase0	fx50-reflection	20	fx50-20	photo.png	dir 16200000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.510	1C6230	yes	same
+cr081-phase0	fx50-reflection	21	fx50-21	photo.png	fadeDir 0	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.514	1B612F	yes	same
+cr081-phase0	fx50-reflection	22	fx50-22	photo.png	fadeDir 10800000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.514	1B612F	yes	same
+cr081-phase0	fx50-reflection	23	fx50-23	photo.png	fadeDir 16200000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.000		yes	same
+cr081-phase0	fx50-reflection	24	fx50-24	photo.png	upward: dir 16200000 algn tl	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	28.66	0.78	-107.32	145.74	29.34	405x82	2.779	0.000		yes	same
+cr081-phase0	fx50-reflection	25	fx50-25	photo.png	sy -50000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.502	1C6230	yes	same
+cr081-phase0	fx50-reflection	26	fx50-26	photo.png	sy -150000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.514	1C6230	yes	same
+cr081-phase0	fx50-reflection	27	fx50-27	photo.png	to the side: sx -100000 sy 100000 dir 0 algn tr	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-143.04	1.06	144.78	0.68	145.74	109.74	405x305	2.779	0.510	895B7F		same
+cr081-phase0	fx50-reflection	28	fx50-28	photo.png	kx 1200000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	40.32	-106.94	0.78	2.83	185.10	3.89	515x11	2.782	0.510	1C6330	yes	same
+cr081-phase0	fx50-reflection	29	fx50-29	photo.png	ky 600000	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.506	1D6330	yes	same
+cr081-phase0	fx50-reflection	30	fx50-30	photo.png	algn tl	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	28.66	0.78	-107.32	145.74	29.34	405x82	2.779	0.000		yes	same
+cr081-phase0	fx50-reflection	31	fx50-31	photo.png	algn ctr	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	1.06	0.78	0.68	145.74	109.74	405x305	2.779	0.510	1B6130		same
+cr081-phase0	fx50-reflection	32	fx50-32	photo.png	algn b	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.510	1C6230	yes	same
+cr081-phase0	fx50-reflection	33	fx50-33	photo.png	algn br	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.510	1C6230	yes	same
+cr081-phase0	fx50-reflection	34	fx50-34	photo.png	picture turned 30 degrees, rotWithShape 0	zero	image DCTDecode	178.71	165.53	nothing													same
+cr081-phase0	fx50-reflection	35	fx50-35	photo.png	picture turned 30 degrees, rotWithShape 1	zero	image DCTDecode	178.71	165.53	under	image FlateDecode	54.89	-92.50	-53.30	-25.93	180.30	47.10	501x131	2.779	0.510	1B6230	yes	same
+cr081-phase0	fx60-preset	1	fx60-01	photo.png	prstShdw shdw1	zero	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000	yes	same
+cr081-phase0	fx60-preset	2	fx60-02	photo.png	prstShdw shdw2	zero	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000	yes	same
+cr081-phase0	fx60-preset	3	fx60-03	photo.png	prstShdw shdw3	zero	image DCTDecode	144.00	108.00	under	fill	89.29	-58.24	4.24	4.24	237.53	54.00				0.000	yes	same
+cr081-phase0	fx60-preset	4	fx60-04	photo.png	prstShdw shdw4	zero	image DCTDecode	144.00	108.00	under	fill	-4.24	-58.24	97.77	4.24	237.53	54.00				0.000	yes	same
+cr081-phase0	fx60-preset	5	fx60-05	photo.png	prstShdw shdw5	zero	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000	yes	same
+cr081-phase0	fx60-preset	6	fx60-06	photo.png	prstShdw shdw6	zero	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000	yes	same
+cr081-phase0	fx60-preset	7	fx60-07	photo.png	prstShdw shdw7	zero	image DCTDecode	144.00	108.00	nothing													same
+cr081-phase0	fx60-preset	8	fx60-08	photo.png	prstShdw shdw8	zero	image DCTDecode	144.00	108.00	nothing													same
+cr081-phase0	fx60-preset	9	fx60-09	photo.png	prstShdw shdw9	zero	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	-31.76	-22.76	108.00	81.00				0.000		same
+cr081-phase0	fx60-preset	10	fx60-10	photo.png	prstShdw shdw10	zero	image DCTDecode	144.00	108.00	under	fill	31.76	22.76	4.24	4.24	180.00	135.00				0.000	yes	same
+cr081-phase0	fx60-preset	11	fx60-11	photo.png	prstShdw shdw11	zero	image DCTDecode	144.00	108.00	under	fill	89.29	-58.24	4.24	4.24	237.53	54.00				0.000	yes	same
+cr081-phase0	fx60-preset	12	fx60-12	photo.png	prstShdw shdw12	zero	image DCTDecode	144.00	108.00	under	fill	-4.24	-58.24	97.77	4.24	237.53	54.00				0.000	yes	same
+cr081-phase0	fx60-preset	13	fx60-13	photo.png	prstShdw shdw13	zero	image DCTDecode	144.00	108.00	under	fill	-8.49	-8.48	8.49	8.48	144.00	108.00				0.400	yes	same
+cr081-phase0	fx60-preset	13	fx60-13	photo.png	prstShdw shdw13	zero	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000	yes	same
+cr081-phase0	fx60-preset	14	fx60-14	photo.png	prstShdw shdw14	zero	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000	yes	same
+cr081-phase0	fx60-preset	15	fx60-15	photo.png	prstShdw shdw15	zero	image DCTDecode	144.00	108.00	nothing													same
+cr081-phase0	fx60-preset	16	fx60-16	photo.png	prstShdw shdw16	zero	image DCTDecode	144.00	108.00	nothing													same
+cr081-phase0	fx60-preset	17	fx60-17	photo.png	prstShdw shdw17	zero	image DCTDecode	144.00	108.00	under	fill	4.24	4.25	-4.24	-4.25	144.00	108.00				0.400		same
+cr081-phase0	fx60-preset	17	fx60-17	photo.png	prstShdw shdw17	zero	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000	yes	same
+cr081-phase0	fx60-preset	18	fx60-18	photo.png	prstShdw shdw18	zero	image DCTDecode	144.00	108.00	under	fill	4.24	4.25	-4.24	-4.25	144.00	108.00				0.400		same
+cr081-phase0	fx60-preset	18	fx60-18	photo.png	prstShdw shdw18	zero	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000	yes	same
+cr081-phase0	fx60-preset	19	fx60-19	photo.png	prstShdw shdw19	zero	image DCTDecode	144.00	108.00	under	fill	-4.24	-58.24	4.24	4.24	144.00	54.00				0.000	yes	same
+cr081-phase0	fx60-preset	20	fx60-20	photo.png	prstShdw shdw20	zero	image DCTDecode	144.00	108.00	nothing													same
+cr081-phase0	fx70-combo	1	fx70-01	photo.png	all five	zero	image DCTDecode smask	144.48	108.48	under	image FlateDecode	10.56	-93.12	14.88	2.64	169.92	18.00	472x50	2.778	0.208	0B4259	yes	same
+cr081-phase0	fx70-combo	1	fx70-01	photo.png	all five	zero	image DCTDecode smask	144.48	108.48	under	image FlateDecode	10.08	10.32	14.40	6.00	168.96	124.80	469x347	2.776	0.400	000000	yes	same
+cr081-phase0	fx70-combo	1	fx70-01	photo.png	all five	zero	image DCTDecode smask	144.48	108.48	under	image FlateDecode	8.16	8.16	8.16	6.00	160.80	122.64	447x341	2.780	0.400	145F82	yes	same
+cr081-phase0	fx70-combo	2	fx70-02	photo.png	outer shadow and glow	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	10.32	10.35	14.64	6.45	168.96	124.80	469x347	2.776	0.400	000000	yes	same
+cr081-phase0	fx70-combo	2	fx70-02	photo.png	outer shadow and glow	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	8.40	8.43	8.40	6.45	160.80	122.88	447x341	2.780	0.400	145F82	yes	same
+cr081-phase0	fx70-combo	3	fx70-03	photo.png	glow and soft edge	zero	image DCTDecode smask	144.30	108.30	under	image FlateDecode	8.16	8.16	8.16	6.24	160.62	122.70	447x341	2.783	0.400	145F82	yes	same
+cr081-phase0	fx70-combo	4	fx70-04	photo.png	inner shadow and soft edge	zero	image DCTDecode smask	144.30	108.30	nothing													same
+cr081-phase0	fx70-combo	5	fx70-05	photo.png	outer shadow and reflection	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	2.88	-101.01	7.02	2.91	153.90	9.90	428x28	2.781	0.431	1A5E2E	yes	same
+cr081-phase0	fx70-combo	5	fx70-05	photo.png	outer shadow and reflection	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.19	6.30	6.27	152.46	116.46	424x324	2.781	0.400	000000	yes	same
+cr081-phase0	fx70-combo	6	fx70-06	photo.png	outer and inner shadow	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.19	6.30	6.27	152.46	116.46	424x324	2.781	0.400	000000	yes	same
+cr081-phase0	fx70-combo	6	fx70-06	photo.png	outer and inner shadow	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.27	0.06	0.03	144.30	108.30	401x301	2.779	0.502	000000		same
+cr081-phase0	fx71-frames	1	fx71-01	photo.png ellipse	ellipse frame, outer shadow	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.48	6.38	152.64	116.64	424x324	2.778	0.400	000000	yes	same
+cr081-phase0	fx71-frames	2	fx71-02	photo.png ellipse	ellipse frame, glow	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	8.40	8.50	8.22	6.20	160.62	122.70	447x341	2.783	0.400	145F82	yes	same
+cr081-phase0	fx71-frames	3	fx71-03	photo.png ellipse	ellipse frame, inner shadow	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.498	000000		same
+cr081-phase0	fx71-frames	4	fx71-04	photo.png ellipse	ellipse frame, soft edge	zero	image DCTDecode smask	144.30	108.30	nothing													same
+cr081-phase0	fx71-frames	5	fx71-05	photo.png ellipse	ellipse frame, reflection	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.510	1C6230	yes	same
+cr081-phase0	fx71-frames	6	fx71-06	photo.png roundRect	roundRect frame, outer shadow	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.400	000000	yes	same
+cr081-phase0	fx71-frames	7	fx71-07	photo.png roundRect	roundRect frame, glow	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	8.40	8.50	8.22	6.20	160.62	122.70	447x341	2.783	0.400	145F82	yes	same
+cr081-phase0	fx71-frames	8	fx71-08	photo.png roundRect	roundRect frame, inner shadow	zero	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.498	000000		same
+cr081-phase0	fx71-frames	9	fx71-09	photo.png roundRect	roundRect frame, soft edge	zero	image DCTDecode smask	144.30	108.30	nothing													same
+cr081-phase0	fx71-frames	10	fx71-10	photo.png roundRect	roundRect frame, reflection	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.510	1C6230	yes	same
+cr081-phase0	fx71-frames	11	fx71-11	photo.png	white line 7pt, outer shadow	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	9.12	9.15	13.26	6.27	166.38	123.42	463x343	2.783	0.400	000000	yes	same
+cr081-phase0	fx71-frames	11	fx71-11	photo.png	white line 7pt, outer shadow	zero	image DCTDecode	144.00	108.00	over	stroke	3.50	3.50	3.50	3.50	151.00	115.00					yes	same
+cr081-phase0	fx71-frames	12	fx71-12	photo.png	black line 6pt, glow	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	14.40	14.50	14.22	6.20	172.62	128.70	480x358	2.781	0.400	145F82	yes	same
+cr081-phase0	fx71-frames	12	fx71-12	photo.png	black line 6pt, glow	zero	image DCTDecode	144.00	108.00	over	stroke	3.00	3.00	3.00	3.00	150.00	114.00					yes	same
+cr081-phase0	fx72-alpha	1	fx72-01	lineart.png	lineart.png, outer shadow	zero	image FlateDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.48	6.38	152.64	116.64	424x324	2.778	0.400	000000	yes	same
+cr081-phase0	fx72-alpha	2	fx72-02	lineart.png	lineart.png, inner shadow	zero	image FlateDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.502	000000		same
+cr081-phase0	fx72-alpha	3	fx72-03	lineart.png	lineart.png, glow	zero	image FlateDecode	144.00	108.00	under	image FlateDecode	8.40	8.34	8.22	6.12	160.62	122.46	447x341	2.783	0.400	145F82	yes	same
+cr081-phase0	fx72-alpha	4	fx72-04	lineart.png	lineart.png, soft edge	zero	image FlateDecode smask	144.30	108.30	nothing													same
+cr081-phase0	fx72-alpha	5	fx72-05	lineart.png	lineart.png, reflection	zero	image FlateDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.510	FDFDFD	yes	same
+cr081-phase0	fx72-alpha	6	fx72-06	lineart-alpha.png	lineart-alpha.png, outer shadow	zero	image FlateDecode smask	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.353	000000	yes	same
+cr081-phase0	fx72-alpha	7	fx72-07	lineart-alpha.png	lineart-alpha.png, inner shadow	zero	image FlateDecode smask	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.498	000000		same
+cr081-phase0	fx72-alpha	8	fx72-08	lineart-alpha.png	lineart-alpha.png, glow	zero	image FlateDecode smask	144.00	108.00	under	image DCTDecode	8.40	8.34	8.22	6.12	160.62	122.46	447x341	2.783	0.400		yes	same
+cr081-phase0	fx72-alpha	9	fx72-09	lineart-alpha.png	lineart-alpha.png, soft edge	zero	image FlateDecode smask	144.30	108.30	nothing													same
+cr081-phase0	fx72-alpha	10	fx72-10	lineart-alpha.png	lineart-alpha.png, reflection	zero	image FlateDecode smask	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	2.83	145.74	3.89	405x11	2.779	0.000		yes	same
+cr081-phase0	fx72-alpha	11	fx72-11	photo.png	photo cropped 25% each side, outer shadow	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.400	000000	yes	same
+cr081-phase0	fx80-shapes	1	fx80-01	shape rect	rect, outer shadow	zero	fill	144.00	108.00	under	image FlateDecode	2.16	2.26	6.48	6.38	152.64	116.64	424x324	2.778	0.400	000000		same
+cr081-phase0	fx80-shapes	2	fx80-02	shape ellipse	ellipse, outer shadow	zero	fill	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0	fx80-shapes	3	fx80-03	shape star5	star5, outer shadow	zero	fill	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0	fx80-shapes	4	fx80-04	shape rightArrow	rightArrow, outer shadow	zero	fill	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0	fx80-shapes	5	fx80-05	shape ellipse	ellipse, glow	zero	fill	144.00	108.00	under	image FlateDecode	8.40	8.50	8.22	8.12	160.62	124.62	447x347	2.783	0.400	145F82		same
+cr081-phase0	fx80-shapes	6	fx80-06	shape ellipse	ellipse, inner shadow	zero	fill	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.498	000000		same
+cr081-phase0	fx80-shapes	7	fx80-07	shape ellipse	ellipse, soft edge	zero	image FlateDecode smask	144.30	108.30	nothing													same
+cr081-phase0	fx80-shapes	8	fx80-08	shape ellipse	ellipse, reflection	zero	fill	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.506	416FC1		same
+cr081-phase0	fx80-shapes	9	fx80-09	shape rect	no fill, line 3pt, outer shadow	zero	image FlateDecode smask	155.34	119.58	over	stroke	-3.60	-3.70	-7.74	-7.88	144.00	108.00						same
+cr081-phase0	fx80-shapes	10	fx80-10	shape rect	no fill, no line, text, outer shadow	zero	image FlateDecode smask	144.00	100.80	under	image FlateDecode	2.16	2.16	6.30	6.30	152.46	109.26	424x304	2.781	0.357	000000		same
+cr081-phase0	fx80-shapes	11	fx80-11	shape rect	filled, text, outer shadow	zero	fill	144.00	108.00	under	image FlateDecode	2.16	2.16	6.30	6.30	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0	fx80-shapes	11	fx80-11	shape rect	filled, text, outer shadow	zero	fill	144.00	108.00	under	image FlateDecode	2.16	-1.44	6.30	2.70	152.46	109.26	424x304	2.781	0.357	000000		same
+cr081-phase0	fx80-shapes	11	fx80-11	shape rect	filled, text, outer shadow	zero	fill	144.00	108.00	over	image FlateDecode	0.00	-3.60	0.00	-3.60	144.00	100.80	399x280	2.771	0.000			same
+cr081-phase0	fx81-effectref-2013	1	fx81-01	shape rect	effectRef idx 0, no effectLst	zero	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.267 0.447 0.769		same
+cr081-phase0	fx81-effectref-2013	2	fx81-02	shape rect	effectRef idx 1, no effectLst	zero	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.267 0.447 0.769		same
+cr081-phase0	fx81-effectref-2013	3	fx81-03	shape rect	effectRef idx 2, no effectLst	zero	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.267 0.447 0.769		same
+cr081-phase0	fx81-effectref-2013	4	fx81-04	shape rect	effectRef idx 3, no effectLst	zero	fill	144.00	108.00	under	image FlateDecode	5.28	3.87	5.10	6.51	154.38	118.38	429x329	2.779	0.631	000000		same
+cr081-phase0	fx81-effectref-2013	4	fx81-04	shape rect	effectRef idx 3, no effectLst	zero	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.267 0.447 0.769		same
+cr081-phase0	fx81-effectref-2013	5	fx81-05	shape rect	effectRef idx 3, an empty effectLst stated	zero	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.267 0.447 0.769		same
+cr081-phase0	fx82-effectref-2023	1	fx82-01	shape rect	effectRef idx 0, no effectLst	zero	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
+cr081-phase0	fx82-effectref-2023	2	fx82-02	shape rect	effectRef idx 1, no effectLst	zero	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
+cr081-phase0	fx82-effectref-2023	3	fx82-03	shape rect	effectRef idx 2, no effectLst	zero	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
+cr081-phase0	fx82-effectref-2023	4	fx82-04	shape rect	effectRef idx 3, no effectLst	zero	fill	144.00	108.00	under	image FlateDecode	5.52	4.11	5.34	6.99	154.86	119.10	431x331	2.783	0.631	000000		same
+cr081-phase0	fx82-effectref-2023	4	fx82-04	shape rect	effectRef idx 3, no effectLst	zero	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
+cr081-phase0	fx82-effectref-2023	5	fx82-05	shape rect	effectRef idx 3, an empty effectLst stated	zero	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
+cr081-phase0	fx83-effectref-custom	1	fx83-01	shape rect	effectRef idx 1, no effectLst, theme with a glow at 2 and a reflection at 3	zero	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
+cr081-phase0	fx83-effectref-custom	2	fx83-02	shape rect	effectRef idx 2, no effectLst, theme with a glow at 2 and a reflection at 3	zero	fill	144.00	108.00	under	image FlateDecode	12.00	12.03	11.82	11.79	167.82	131.82	467x367	2.783	0.600	E87030		same
+cr081-phase0	fx83-effectref-custom	2	fx83-02	shape rect	effectRef idx 2, no effectLst, theme with a glow at 2 and a reflection at 3	zero	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
+cr081-phase0	fx83-effectref-custom	3	fx83-03	shape rect	effectRef idx 3, no effectLst, theme with a glow at 2 and a reflection at 3	zero	fill	144.00	108.00	under	image FlateDecode	1.68	-107.73	1.50	111.15	147.18	111.42	409x310	2.779	0.510	125B7C		same
+cr081-phase0	fx83-effectref-custom	3	fx83-03	shape rect	effectRef idx 3, no effectLst, theme with a glow at 2 and a reflection at 3	zero	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
+cr081-phase0	fx90-anchor-wrap	1	fx90-01	photo.png anchored square	square wrap, no effect (the control)	zero	image DCTDecode	144.00	108.00	nothing													same
+cr081-phase0	fx90-anchor-wrap	2	fx90-02	photo.png anchored square	square wrap, shadow right, effectExtent omitted	omitted	image DCTDecode	144.00	108.00	under	image FlateDecode	-7.68	4.26	16.14	4.20	152.46	116.46	424x324	2.781	1.000	000000		same
+cr081-phase0	fx90-anchor-wrap	3	fx90-03	photo.png anchored square	square wrap, shadow right, effectExtent zero	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-7.68	4.26	16.14	4.20	152.46	116.46	424x324	2.781	1.000	000000		same
+cr081-phase0	fx90-anchor-wrap	4	fx90-04	photo.png anchored square	square wrap, shadow right, effectExtent estimate	estimate	image DCTDecode	144.00	108.00	under	image FlateDecode	-7.68	4.26	16.14	4.20	152.46	116.46	424x324	2.781	1.000	000000		same
+cr081-phase0	fx90-anchor-wrap	5	fx90-05	photo.png anchored square	square wrap, shadow left, effectExtent zero	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	16.32	4.26	-7.86	4.20	152.46	116.46	424x324	2.781	1.000	000000		same
+cr081-phase0	fx90-anchor-wrap	6	fx90-06	photo.png anchored square	square wrap, shadow left, effectExtent estimate	estimate	image DCTDecode	144.00	108.00	under	image FlateDecode	16.32	4.26	-7.86	4.20	152.46	116.46	424x324	2.781	1.000	000000		same
+cr081-phase0	fx90-anchor-wrap	7	fx90-07	photo.png anchored square	square wrap, glow 18pt, effectExtent zero	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	18.48	18.50	18.12	18.10	180.60	144.60	251x201	1.390	0.400	135E81		same
+cr081-phase0	fx90-anchor-wrap	8	fx90-08	photo.png anchored square	square wrap, glow 18pt, effectExtent estimate	estimate	image DCTDecode	144.00	108.00	under	image FlateDecode	18.48	18.50	18.12	18.10	180.60	144.60	251x201	1.390	0.400	135E81		same
+cr081-phase0	fx90-anchor-wrap	9	fx90-09	photo.png anchored square	square wrap, reflection to 90%, effectExtent zero	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-107.10	0.78	108.84	145.74	109.74	405x305	2.779	0.514	3B7452		same
+cr081-phase0	fx90-anchor-wrap	10	fx90-10	photo.png anchored square	square wrap, reflection to 90%, effectExtent estimate	estimate	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-107.10	0.78	108.84	145.74	109.74	405x305	2.779	0.514	3B7452		same
+cr081-phase0	fx90-anchor-wrap	11	fx90-11	photo.png anchored topAndBottom	topAndBottom wrap, reflection to 90%, effectExtent zero	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-107.10	0.78	108.84	145.74	109.74	405x305	2.779	0.514	3B7452		same
+cr081-phase0	fx90-anchor-wrap	12	fx90-12	photo.png anchored topAndBottom	topAndBottom wrap, reflection to 90%, effectExtent estimate	estimate	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-107.10	0.78	108.84	145.74	109.74	405x305	2.779	0.514	3B7452		same
+cr081-phase0	fx91-inline-extent	1	fx91-01	photo.png	in a line of words, no effect (the control)	zero	image DCTDecode	144.00	108.00	nothing													same
+cr081-phase0	fx91-inline-extent	2	fx91-02	photo.png	in a line of words, shadow, effectExtent omitted	omitted	image DCTDecode	144.00	108.00	under	image FlateDecode	-4.16	-4.21	12.62	12.67	152.46	116.46	424x324	2.781	1.000	000000		same
+cr081-phase0	fx91-inline-extent	3	fx91-03	photo.png	in a line of words, shadow, effectExtent zero	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	-4.16	-4.21	12.62	12.67	152.46	116.46	424x324	2.781	1.000	000000		same
+cr081-phase0	fx91-inline-extent	4	fx91-04	photo.png	in a line of words, shadow, effectExtent estimate	estimate	image DCTDecode	144.00	108.00	under	image FlateDecode	-4.16	-4.21	12.62	12.67	152.46	116.46	424x324	2.781	1.000	000000		same
+cr081-phase0	fx91-inline-extent	5	fx91-05	photo.png	in a line of words, reflection to 90%, effectExtent zero	zero	image DCTDecode	144.00	108.00	under	image FlateDecode	0.88	-106.93	0.86	48.19	145.74	49.26	405x137	2.779	0.514	3A7451	yes	same
+cr081-phase0	fx91-inline-extent	6	fx91-06	photo.png	in a line of words, reflection to 90%, effectExtent estimate	estimate	image DCTDecode	144.00	108.00	under	image FlateDecode	0.90	-107.15	0.84	108.89	145.74	109.74	405x305	2.779	0.514	3C7452		same
+cr081-phase0-3d	fxa0-3d-pictures	1	fxa0-01	photo.png	bevel relaxedInset	zero	image DCTDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	2	fxa0-02	photo.png	bevel circle	zero	image DCTDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	3	fxa0-03	photo.png	bevel slope	zero	image DCTDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	4	fxa0-04	photo.png	bevel cross	zero	image DCTDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	5	fxa0-05	photo.png	bevel angle	zero	image DCTDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	6	fxa0-06	photo.png	bevel softRound	zero	image DCTDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	7	fxa0-07	photo.png	bevel convex	zero	image DCTDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	8	fxa0-08	photo.png	bevel coolSlant	zero	image DCTDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	9	fxa0-09	photo.png	bevel divot	zero	image DCTDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	10	fxa0-10	photo.png	bevel riblet	zero	image DCTDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	11	fxa0-11	photo.png	bevel hardEdge	zero	image DCTDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	12	fxa0-12	photo.png	bevel artDeco	zero	image DCTDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	13	fxa0-13	photo.png	camera perspectiveFront	zero	image DCTDecode smask	150.24	113.28	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	14	fxa0-14	photo.png	camera perspectiveRelaxedModerately	zero	image DCTDecode smask	154.56	94.56	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	15	fxa0-15	photo.png	camera isometricOffAxis1Right	zero	image DCTDecode smask	130.56	117.84	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	16	fxa0-16	photo.png	camera obliqueTopLeft	zero	image DCTDecode smask	145.20	109.20	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	17	fxa0-17	photo.png	camera perspectiveContrastingRightFacing	zero	image DCTDecode smask	115.44	122.40	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	18	fxa0-18	photo.png	camera isometricTopUp	zero	image DCTDecode smask	179.52	103.44	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	19	fxa0-19	photo.png	camera turned: lat 0 lon 1200000	zero	image DCTDecode smask	136.32	109.20	nothing													same
+cr081-phase0-3d	fxa0-3d-pictures	20	fxa0-20	photo.png	camera turned: lat 1200000 lon 0	zero	image DCTDecode smask	144.96	102.72	nothing													same
+cr081-phase0-3d	fxa1-3d-light	1	fxa1-01	shape rect	light rig threePt, from t	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	2	fxa1-02	shape rect	light rig balanced, from t	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	3	fxa1-03	shape rect	light rig soft, from t	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	4	fxa1-04	shape rect	light rig harsh, from t	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	5	fxa1-05	shape rect	light rig flood, from t	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	6	fxa1-06	shape rect	light rig contrasting, from t	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	7	fxa1-07	shape rect	light rig morning, from t	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	8	fxa1-08	shape rect	light rig sunrise, from t	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	9	fxa1-09	shape rect	light rig sunset, from t	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	10	fxa1-10	shape rect	light rig chilly, from t	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	11	fxa1-11	shape rect	light rig freezing, from t	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	12	fxa1-12	shape rect	light rig flat, from t	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	13	fxa1-13	shape rect	light rig twoPt, from t	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	14	fxa1-14	shape rect	light rig glow, from t	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	15	fxa1-15	shape rect	light rig brightRoom, from t	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	16	fxa1-16	shape rect	light rig threePt, from tl	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	17	fxa1-17	shape rect	light rig threePt, from tr	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	18	fxa1-18	shape rect	light rig threePt, from l	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	19	fxa1-19	shape rect	light rig threePt, from r	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	20	fxa1-20	shape rect	light rig threePt, from bl	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	21	fxa1-21	shape rect	light rig threePt, from b	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa1-3d-light	22	fxa1-22	shape rect	light rig threePt, from br	zero	image FlateDecode smask	144.96	109.20	nothing													same
+cr081-phase0-3d	fxa2-3d-material	1	fxa2-01	shape rect	material legacyMatte	zero	image FlateDecode smask	154.56	97.92	nothing													same
+cr081-phase0-3d	fxa2-3d-material	2	fxa2-02	shape rect	material legacyPlastic	zero	image FlateDecode smask	154.56	97.92	nothing													same
+cr081-phase0-3d	fxa2-3d-material	3	fxa2-03	shape rect	material legacyMetal	zero	image DCTDecode smask	154.56	97.92	nothing													same
+cr081-phase0-3d	fxa2-3d-material	4	fxa2-04	shape rect	material legacyWireframe	zero	image FlateDecode smask	154.56	97.92	nothing													same
+cr081-phase0-3d	fxa2-3d-material	5	fxa2-05	shape rect	material matte	zero	image FlateDecode smask	154.56	97.92	nothing													same
+cr081-phase0-3d	fxa2-3d-material	6	fxa2-06	shape rect	material plastic	zero	image DCTDecode smask	154.56	97.92	nothing													same
+cr081-phase0-3d	fxa2-3d-material	7	fxa2-07	shape rect	material metal	zero	image FlateDecode smask	154.56	97.92	nothing													same
+cr081-phase0-3d	fxa2-3d-material	8	fxa2-08	shape rect	material warmMatte	zero	image FlateDecode smask	154.56	97.92	nothing													same
+cr081-phase0-3d	fxa2-3d-material	9	fxa2-09	shape rect	material translucentPowder	zero	image FlateDecode smask	154.56	97.92	nothing													same
+cr081-phase0-3d	fxa2-3d-material	10	fxa2-10	shape rect	material powder	zero	image FlateDecode smask	154.56	97.92	nothing													same
+cr081-phase0-3d	fxa2-3d-material	11	fxa2-11	shape rect	material dkEdge	zero	image DCTDecode smask	154.56	97.92	nothing													same
+cr081-phase0-3d	fxa2-3d-material	12	fxa2-12	shape rect	material softEdge	zero	image DCTDecode smask	154.56	97.92	nothing													same
+cr081-phase0-3d	fxa2-3d-material	13	fxa2-13	shape rect	material clear	zero	image FlateDecode smask	154.56	97.92	nothing													same
+cr081-phase0-3d	fxa2-3d-material	14	fxa2-14	shape rect	material flat	zero	image DCTDecode smask	154.56	97.92	nothing													same
+cr081-phase0-3d	fxa2-3d-material	15	fxa2-15	shape rect	material softmetal	zero	image FlateDecode smask	154.56	97.92	nothing													same
+cr081-phase0-3d	fxa3-3d-depth	1	fxa3-01	shape rect	depth 0	zero	image FlateDecode smask	130.56	123.60	nothing													same
+cr081-phase0-3d	fxa3-3d-depth	2	fxa3-02	shape rect	depth 76200	zero	image FlateDecode smask	133.20	125.28	nothing													same
+cr081-phase0-3d	fxa3-3d-depth	3	fxa3-03	shape rect	depth 254000	zero	image FlateDecode smask	139.44	129.12	nothing													same
+cr081-phase0-3d	fxa3-3d-depth	4	fxa3-04	shape rect	depth 76200 and contour 38100	zero	image FlateDecode smask	137.28	129.12	nothing													same
+cr081-phase0-3d	fxa3-3d-depth	5	fxa3-05	shape rect	top and bottom bevels, depth 76200	zero	image DCTDecode smask	138.48	128.40	nothing													same
+cr081-phase0-3d	fxa3-3d-depth	6	fxa3-06	shape rect	z 152400, depth 76200	zero	image FlateDecode smask	133.20	125.04	nothing													same
+cr081-phase0-3d	fxa3-3d-depth	7	fxa3-07	photo.png	picture, depth 76200	zero	image DCTDecode smask	133.20	119.76	nothing													same
+cr081-phase0-r2	fxr10-outer-offset	1	fxr10-01	photo.png	dist 0	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	4.32	4.42	4.32	4.22	152.64	116.64	424x324	2.778	0.400	000000		same
+cr081-phase0-r2	fxr10-outer-offset	2	fxr10-02	photo.png	dist 12700	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	3.60	3.70	4.86	4.76	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr10-outer-offset	3	fxr10-03	photo.png	dist 38100	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr10-outer-offset	4	fxr10-04	photo.png	dist 76200	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.00	0.10	8.46	8.36	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr10-outer-offset	5	fxr10-05	photo.png	dist 152400	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-4.08	-4.22	12.54	12.68	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr10-outer-offset	6	fxr10-06	photo.png	dist 304800	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-12.72	-12.62	21.18	21.08	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr10-outer-offset	7	fxr10-07	photo.png	dir 0	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-3.60	4.42	12.06	4.04	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr10-outer-offset	8	fxr10-08	photo.png	dir 2700000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-1.44	-1.34	9.90	9.80	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr10-outer-offset	9	fxr10-09	photo.png	dir 5400000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	4.32	-3.74	4.14	12.20	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr10-outer-offset	10	fxr10-10	photo.png	dir 8100000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	10.08	-1.34	-1.62	9.80	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr10-outer-offset	11	fxr10-11	photo.png	dir 10800000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	12.24	4.42	-3.78	4.04	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr10-outer-offset	12	fxr10-12	photo.png	dir 13500000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	10.08	9.94	-1.62	-1.48	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr10-outer-offset	13	fxr10-13	photo.png	dir 16200000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	4.32	12.34	4.14	-3.88	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr10-outer-offset	14	fxr10-14	photo.png	dir 18900000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-1.44	9.94	9.90	-1.48	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr11-outer-blur	1	fxr11-01	photo.png	blur 0	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-4.08	-3.98	4.56	4.46	144.48	108.48	401x301	2.775	0.400	000000		same
+cr081-phase0-r2	fxr11-outer-blur	2	fxr11-02	photo.png	blur 12700	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-2.88	-2.78	5.58	5.48	146.70	110.70	408x308	2.781	0.400	000000		same
+cr081-phase0-r2	fxr11-outer-blur	3	fxr11-03	photo.png	blur 25400	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-1.92	-1.82	6.54	6.44	148.62	112.62	413x313	2.779	0.400	000000		same
+cr081-phase0-r2	fxr11-outer-blur	4	fxr11-04	photo.png	blur 50800	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.00	0.10	8.46	8.36	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr11-outer-blur	5	fxr11-05	photo.png	blur 101600	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	4.08	4.18	12.36	12.26	160.44	124.44	223x173	1.390	0.400	000000		same
+cr081-phase0-r2	fxr11-outer-blur	6	fxr11-06	photo.png	blur 203200	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	12.00	12.10	20.10	20.00	176.10	140.10	163x130	0.926	0.400	000000		same
+cr081-phase0-r2	fxr11-outer-blur	7	fxr11-07	photo.png	blur 406400	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	28.08	28.18	35.64	35.54	207.72	171.72	97x80	0.467	0.400	000000		same
+cr081-phase0-r2	fxr11-outer-blur	8	fxr11-08	photo.png	blur 25400, no offset	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	2.40	2.50	2.22	2.12	148.62	112.62	413x313	2.779	0.400	000000		same
+cr081-phase0-r2	fxr11-outer-blur	9	fxr11-09	photo.png	blur 101600, no offset	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	8.40	8.50	8.04	7.94	160.44	124.44	223x173	1.390	0.400	000000		same
+cr081-phase0-r2	fxr11-outer-blur	10	fxr11-10	photo.png	blur 406400, no offset	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	32.40	32.50	31.32	31.22	207.72	171.72	97x80	0.467	0.400	000000		same
+cr081-phase0-r2	fxr11-outer-blur	11	fxr11-11	photo.png	blur 0, opaque, far	generous	image DCTDecode	144.00	108.00	under	fill	-16.97	-16.97	16.97	16.97	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr11-outer-blur	12	fxr11-12	photo.png	blur 101600, opaque, far	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-8.64	-8.54	25.08	24.98	160.44	124.44	223x173	1.390	1.000	000000		same
+cr081-phase0-r2	fxr12-outer-scale	1	fxr12-01	photo.png	sx 100000 sy 100000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-11.76	0.34	12.24	0.14	144.48	108.48	401x301	2.775	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	2	fxr12-02	photo.png	sx 50000 sy 50000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-47.76	-26.78	-23.94	-26.92	72.30	54.30	201x151	2.780	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	3	fxr12-03	photo.png	sx 90000 sy 90000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-18.96	-5.18	4.86	-5.32	129.90	97.50	361x271	2.779	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	4	fxr12-04	photo.png	sx 110000 sy 110000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-4.56	5.62	19.26	5.48	158.70	119.10	441x331	2.779	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	5	fxr12-05	photo.png	sx 100000 sy 50000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-11.76	-26.78	12.06	-26.92	144.30	54.30	401x151	2.779	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	6	fxr12-06	photo.png	sx 50000 sy 100000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-47.76	0.34	-23.94	-0.04	72.30	108.30	201x301	2.780	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	7	fxr12-07	photo.png	sx 100000 sy -100000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-11.76	0.34	12.06	-0.04	144.30	108.30	401x301	2.779	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	8	fxr12-08	photo.png	sx -100000 sy 100000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-11.76	0.34	12.06	-0.04	144.30	108.30	401x301	2.779	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	9	fxr12-09	photo.png	kx 1200000 ky 0	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	7.92	0.34	31.74	-0.04	183.66	108.30	511x301	2.782	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	10	fxr12-10	photo.png	kx -1200000 ky 0	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	7.92	0.34	31.74	-0.04	183.66	108.30	511x301	2.782	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	11	fxr12-11	photo.png	kx 0 ky 600000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-11.76	12.82	12.06	12.68	144.30	133.50	401x371	2.779	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	12	fxr12-12	photo.png	algn tl at 120%	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.24	0.34	28.86	21.56	173.10	129.90	481x361	2.779	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	13	fxr12-13	photo.png	algn t at 120%	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	14.64	0.34	14.46	21.56	173.10	129.90	481x361	2.779	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	14	fxr12-14	photo.png	algn tr at 120%	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	29.04	0.34	0.06	21.56	173.10	129.90	481x361	2.779	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	15	fxr12-15	photo.png	algn l at 120%	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.24	11.14	28.86	10.76	173.10	129.90	481x361	2.779	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	16	fxr12-16	photo.png	algn ctr at 120%	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	14.64	11.14	14.46	10.76	173.10	129.90	481x361	2.779	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	17	fxr12-17	photo.png	algn r at 120%	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	29.04	11.14	0.06	10.76	173.10	129.90	481x361	2.779	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	18	fxr12-18	photo.png	algn bl at 120%	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.24	21.94	28.86	-0.04	173.10	129.90	481x361	2.779	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	19	fxr12-19	photo.png	algn b at 120%	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	14.64	21.94	14.46	-0.04	173.10	129.90	481x361	2.779	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	20	fxr12-20	photo.png	algn br at 120%	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	29.04	21.94	0.06	-0.04	173.10	129.90	481x361	2.779	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	21	fxr12-21	photo.png	perspective upper left	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	45.60	-76.94	5.88	5.78	195.48	36.84	272x52	1.391	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	22	fxr12-22	photo.png	perspective upper right	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	6.24	-76.94	45.24	5.78	195.48	36.84	272x52	1.391	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	23	fxr12-23	photo.png	perspective below	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	5.04	-120.86	4.50	57.19	153.54	44.33	143x41	0.931	0.396	000000		same
+cr081-phase0-r2	fxr12-outer-scale	24	fxr12-24	photo.png	perspective lower left	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	32.64	-102.38	5.16	31.46	181.80	37.08	253x52	1.392	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	25	fxr12-25	photo.png	perspective lower right	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	5.52	-102.38	32.28	31.46	181.80	37.08	253x52	1.392	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	26	fxr12-26	photo.png	picture turned 30 degrees, rotWithShape 0	generous	image DCTDecode	178.71	165.53	under	image FlateDecode	2.33	-9.70	2.14	14.15	183.18	169.98	509x473	2.779	0.400	000000		same
+cr081-phase0-r2	fxr12-outer-scale	27	fxr12-27	photo.png	picture turned 30 degrees, rotWithShape 1	generous	image DCTDecode	178.71	165.53	under	image FlateDecode	8.33	-8.02	-3.86	12.71	183.18	170.22	509x473	2.779	0.400	000000		same
+cr081-phase0-r2	fxr13-outer-colour	1	fxr13-01	photo.png	black, opaque	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.48	6.38	152.64	116.64	424x324	2.778	1.000	000000		same
+cr081-phase0-r2	fxr13-outer-colour	2	fxr13-02	photo.png	black 40%	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr13-outer-colour	3	fxr13-03	photo.png	red 60%	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.600	FD0000		same
+cr081-phase0-r2	fxr13-outer-colour	4	fxr13-04	photo.png	accent1	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	1.000	156082		same
+cr081-phase0-r2	fxr13-outer-colour	5	fxr13-05	photo.png	accent1 lumMod 50%	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	1.000	0B3041		same
+cr081-phase0-r2	fxr13-outer-colour	6	fxr13-06	photo.png	preset black 40%	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr30-glow	1	fxr30-01	photo.png	rad 25400	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	2.64	2.58	2.64	2.70	149.28	113.28	415x315	2.780	0.400	145F82		same
+cr081-phase0-r2	fxr30-glow	2	fxr30-02	photo.png	rad 63500	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	5.52	5.46	5.34	5.40	154.86	118.86	431x331	2.783	0.400	145F82		same
+cr081-phase0-r2	fxr30-glow	3	fxr30-03	photo.png	rad 101600	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	8.40	8.34	8.22	8.28	160.62	124.62	447x347	2.783	0.400	145F82		same
+cr081-phase0-r2	fxr30-glow	4	fxr30-04	photo.png	rad 139700	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	11.28	11.22	11.10	11.16	166.38	130.38	463x363	2.783	0.400	145F82		same
+cr081-phase0-r2	fxr30-glow	5	fxr30-05	photo.png	rad 228600	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	18.48	18.42	18.12	18.18	180.60	144.60	251x201	1.390	0.400	135E81		same
+cr081-phase0-r2	fxr30-glow	6	fxr30-06	photo.png	rad 406400	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	32.40	32.34	31.86	31.92	208.26	172.26	193x160	0.927	0.400	135E81		same
+cr081-phase0-r2	fxr30-glow	7	fxr30-07	photo.png	rad 139700 accent1 satMod 175% alpha 40% (as Word writes it)	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	11.28	11.38	11.10	11.00	166.38	130.38	463x363	2.783	0.400	006EAA		same
+cr081-phase0-r2	fxr30-glow	8	fxr30-08	photo.png	red 60%	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	11.28	11.22	11.10	11.16	166.38	130.38	463x363	2.783	0.600	FD0000		same
+cr081-phase0-r2	fxr30-glow	9	fxr30-09	photo.png	black, opaque	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	11.28	11.22	11.10	11.16	166.38	130.38	463x363	2.783	1.000	000000		same
+cr081-phase0-r2	fxr30-glow	10	fxr30-10	photo.png	green 40%	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	11.28	11.22	11.10	11.16	166.38	130.38	463x363	2.783	0.400	00AF50		same
+cr081-phase0-r2	fxr50-reflection	1	fxr50-01	photo.png	tight reflection, touching (the base)	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.96	108.86	145.92	109.92	405x305	2.775	0.510	1B6130		same
+cr081-phase0-r2	fxr50-reflection	2	fxr50-02	photo.png	endPos 20000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.502	1B6130		same
+cr081-phase0-r2	fxr50-reflection	3	fxr50-03	photo.png	endPos 55000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.514	1F6536		same
+cr081-phase0-r2	fxr50-reflection	4	fxr50-04	photo.png	endPos 90000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.514	3B7452		same
+cr081-phase0-r2	fxr50-reflection	5	fxr50-05	photo.png	endPos 100000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.514	417657		same
+cr081-phase0-r2	fxr50-reflection	6	fxr50-06	photo.png	stA 100000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.984	1D6331		same
+cr081-phase0-r2	fxr50-reflection	7	fxr50-07	photo.png	stA 30000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.294	1A602E		same
+cr081-phase0-r2	fxr50-reflection	8	fxr50-08	photo.png	endA 0	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.510	1B6130		same
+cr081-phase0-r2	fxr50-reflection	9	fxr50-09	photo.png	endA 50000	generous	image DCTDecode	144.00	108.00	under	image DCTDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.518			same
+cr081-phase0-r2	fxr50-reflection	10	fxr50-10	photo.png	stPos 20000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.518	206636		same
+cr081-phase0-r2	fxr50-reflection	11	fxr50-11	photo.png	stPos 50000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.518	437758		same
+cr081-phase0-r2	fxr50-reflection	12	fxr50-12	photo.png	dist 38100	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-110.06	0.78	111.80	145.74	109.74	405x305	2.779	0.490	1B6130		same
+cr081-phase0-r2	fxr50-reflection	13	fxr50-13	photo.png	dist 50800	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-111.02	0.78	112.76	145.74	109.74	405x305	2.779	0.482	1B612F		same
+cr081-phase0-r2	fxr50-reflection	14	fxr50-14	photo.png	dist 101600	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-115.10	0.78	116.84	145.74	109.74	405x305	2.779	0.455	1B612F		same
+cr081-phase0-r2	fxr50-reflection	15	fxr50-15	photo.png	blurRad 0	generous	image DCTDecode	144.00	108.00	under	image DCTDecode	0.24	-107.66	0.06	107.96	144.30	108.30	401x301	2.779	0.518			same
+cr081-phase0-r2	fxr50-reflection	16	fxr50-16	photo.png	blurRad 25400	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	2.40	-105.50	2.22	110.12	148.62	112.62	413x313	2.779	0.494	1B6130		same
+cr081-phase0-r2	fxr50-reflection	17	fxr50-17	photo.png	blurRad 101600	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	8.40	-99.50	8.04	115.94	160.44	124.44	223x173	1.390	0.431	1B6130		same
+cr081-phase0-r2	fxr50-reflection	18	fxr50-18	photo.png	dir 0	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.510	1B6130		same
+cr081-phase0-r2	fxr50-reflection	19	fxr50-19	photo.png	dir 10800000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.510	1B6130		same
+cr081-phase0-r2	fxr50-reflection	20	fxr50-20	photo.png	dir 16200000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.510	1B6130		same
+cr081-phase0-r2	fxr50-reflection	21	fxr50-21	photo.png	fadeDir 0	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.514	406E8A		same
+cr081-phase0-r2	fxr50-reflection	22	fxr50-22	photo.png	fadeDir 10800000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.514	886F4A		same
+cr081-phase0-r2	fxr50-reflection	23	fxr50-23	photo.png	fadeDir 16200000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.506	885B80		same
+cr081-phase0-r2	fxr50-reflection	24	fxr50-24	photo.png	upward: dir 16200000 algn tl	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	88.66	0.78	-107.32	145.74	89.34	405x249	2.779	0.247	20683D	yes	same
+cr081-phase0-r2	fxr50-reflection	25	fxr50-25	photo.png	sy -50000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	54.68	145.74	55.74	405x155	2.779	0.502	1C6130		same
+cr081-phase0-r2	fxr50-reflection	26	fxr50-26	photo.png	sy -150000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	162.68	145.74	163.74	405x455	2.779	0.514	1B6130		same
+cr081-phase0-r2	fxr50-reflection	27	fxr50-27	photo.png	to the side: sx -100000 sy 100000 dir 0 algn tr	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	-143.04	1.06	144.78	0.68	145.74	109.74	405x305	2.779	0.510	895B7F		same
+cr081-phase0-r2	fxr50-reflection	28	fxr50-28	photo.png	kx 1200000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	40.32	-106.94	0.78	108.68	185.10	109.74	515x305	2.782	0.510	1B6130		same
+cr081-phase0-r2	fxr50-reflection	29	fxr50-29	photo.png	ky 600000	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	134.12	145.74	135.18	405x376	2.779	0.506	1B6232		same
+cr081-phase0-r2	fxr50-reflection	30	fxr50-30	photo.png	algn tl	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	88.66	0.78	-107.32	145.74	89.34	405x249	2.779	0.247	20683D	yes	same
+cr081-phase0-r2	fxr50-reflection	31	fxr50-31	photo.png	algn ctr	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	1.06	0.78	0.68	145.74	109.74	405x305	2.779	0.510	1B6130		same
+cr081-phase0-r2	fxr50-reflection	32	fxr50-32	photo.png	algn b	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.510	1B6130		same
+cr081-phase0-r2	fxr50-reflection	33	fxr50-33	photo.png	algn br	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.510	1B6130		same
+cr081-phase0-r2	fxr50-reflection	34	fxr50-34	photo.png	picture turned 30 degrees, rotWithShape 0	generous	image DCTDecode	178.71	165.53	under	image FlateDecode	0.89	-164.50	0.70	154.07	180.30	155.10	501x431	2.779	0.510	1B612F	yes	same
+cr081-phase0-r2	fxr50-reflection	35	fxr50-35	photo.png	picture turned 30 degrees, rotWithShape 1	generous	image DCTDecode	178.71	165.53	under	image DCTDecode	54.89	-92.50	-53.30	94.31	180.30	167.34	501x465	2.779	0.510			same
+cr081-phase0-r2	fxr60-preset	1	fxr60-01	photo.png	prstShdw shdw1	generous	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr60-preset	2	fxr60-02	photo.png	prstShdw shdw2	generous	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr60-preset	3	fxr60-03	photo.png	prstShdw shdw3	generous	image DCTDecode	144.00	108.00	under	fill	89.29	-58.24	4.24	4.24	237.53	54.00				0.000		same
+cr081-phase0-r2	fxr60-preset	4	fxr60-04	photo.png	prstShdw shdw4	generous	image DCTDecode	144.00	108.00	under	fill	-4.24	-58.24	97.77	4.24	237.53	54.00				0.000		same
+cr081-phase0-r2	fxr60-preset	5	fxr60-05	photo.png	prstShdw shdw5	generous	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr60-preset	6	fxr60-06	photo.png	prstShdw shdw6	generous	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr60-preset	7	fxr60-07	photo.png	prstShdw shdw7	generous	image DCTDecode	144.00	108.00	under	fill	89.29	-112.24	4.24	58.24	237.53	54.00				0.000		same
+cr081-phase0-r2	fxr60-preset	8	fxr60-08	photo.png	prstShdw shdw8	generous	image DCTDecode	144.00	108.00	under	fill	-4.24	-112.24	97.77	58.24	237.53	54.00				0.000		same
+cr081-phase0-r2	fxr60-preset	9	fxr60-09	photo.png	prstShdw shdw9	generous	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	-31.76	-22.76	108.00	81.00				0.000		same
+cr081-phase0-r2	fxr60-preset	10	fxr60-10	photo.png	prstShdw shdw10	generous	image DCTDecode	144.00	108.00	under	fill	31.76	22.76	4.24	4.24	180.00	135.00				0.000		same
+cr081-phase0-r2	fxr60-preset	11	fxr60-11	photo.png	prstShdw shdw11	generous	image DCTDecode	144.00	108.00	under	fill	89.29	-58.24	4.24	4.24	237.53	54.00				0.000		same
+cr081-phase0-r2	fxr60-preset	12	fxr60-12	photo.png	prstShdw shdw12	generous	image DCTDecode	144.00	108.00	under	fill	-4.24	-58.24	97.77	4.24	237.53	54.00				0.000		same
+cr081-phase0-r2	fxr60-preset	13	fxr60-13	photo.png	prstShdw shdw13	generous	image DCTDecode	144.00	108.00	under	fill	-8.49	-8.48	8.49	8.48	144.00	108.00				0.400		same
+cr081-phase0-r2	fxr60-preset	13	fxr60-13	photo.png	prstShdw shdw13	generous	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr60-preset	14	fxr60-14	photo.png	prstShdw shdw14	generous	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr60-preset	15	fxr60-15	photo.png	prstShdw shdw15	generous	image DCTDecode	144.00	108.00	under	fill	89.29	-112.24	4.24	58.24	237.53	54.00				0.000		same
+cr081-phase0-r2	fxr60-preset	16	fxr60-16	photo.png	prstShdw shdw16	generous	image DCTDecode	144.00	108.00	under	fill	-4.24	-112.24	97.77	58.24	237.53	54.00				0.000		same
+cr081-phase0-r2	fxr60-preset	17	fxr60-17	photo.png	prstShdw shdw17	generous	image DCTDecode	144.00	108.00	under	fill	4.24	4.25	-4.24	-4.25	144.00	108.00				0.400		same
+cr081-phase0-r2	fxr60-preset	17	fxr60-17	photo.png	prstShdw shdw17	generous	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr60-preset	18	fxr60-18	photo.png	prstShdw shdw18	generous	image DCTDecode	144.00	108.00	under	fill	4.24	4.25	-4.24	-4.25	144.00	108.00				0.400		same
+cr081-phase0-r2	fxr60-preset	18	fxr60-18	photo.png	prstShdw shdw18	generous	image DCTDecode	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr60-preset	19	fxr60-19	photo.png	prstShdw shdw19	generous	image DCTDecode	144.00	108.00	under	fill	-4.24	-58.24	4.24	4.24	144.00	54.00				0.000		same
+cr081-phase0-r2	fxr60-preset	20	fxr60-20	photo.png	prstShdw shdw20	generous	image DCTDecode	144.00	108.00	under	fill	-4.24	-112.24	4.24	112.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	1	fxr61-01	shape rect	prstShdw shdw1 on a shape	generous	fill	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	2	fxr61-02	shape rect	prstShdw shdw2 on a shape	generous	fill	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	3	fxr61-03	shape rect	prstShdw shdw3 on a shape	generous	fill	144.00	108.00	under	fill	89.29	-58.24	4.24	4.24	237.53	54.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	4	fxr61-04	shape rect	prstShdw shdw4 on a shape	generous	fill	144.00	108.00	under	fill	-4.24	-58.24	97.77	4.24	237.53	54.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	5	fxr61-05	shape rect	prstShdw shdw5 on a shape	generous	fill	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	6	fxr61-06	shape rect	prstShdw shdw6 on a shape	generous	fill	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	7	fxr61-07	shape rect	prstShdw shdw7 on a shape	generous	fill	144.00	108.00	under	fill	89.29	-112.24	4.24	58.24	237.53	54.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	8	fxr61-08	shape rect	prstShdw shdw8 on a shape	generous	fill	144.00	108.00	under	fill	-4.24	-112.24	97.77	58.24	237.53	54.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	9	fxr61-09	shape rect	prstShdw shdw9 on a shape	generous	fill	144.00	108.00	under	fill	-4.24	-4.24	-31.76	-22.76	108.00	81.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	10	fxr61-10	shape rect	prstShdw shdw10 on a shape	generous	fill	144.00	108.00	under	fill	31.76	22.76	4.24	4.24	180.00	135.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	11	fxr61-11	shape rect	prstShdw shdw11 on a shape	generous	fill	144.00	108.00	under	fill	89.29	-58.24	4.24	4.24	237.53	54.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	12	fxr61-12	shape rect	prstShdw shdw12 on a shape	generous	fill	144.00	108.00	under	fill	-4.24	-58.24	97.77	4.24	237.53	54.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	13	fxr61-13	shape rect	prstShdw shdw13 on a shape	generous	fill	144.00	108.00	under	fill	-8.49	-8.48	8.49	8.48	144.00	108.00				0.400		same
+cr081-phase0-r2	fxr61-preset-shapes	13	fxr61-13	shape rect	prstShdw shdw13 on a shape	generous	fill	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	14	fxr61-14	shape rect	prstShdw shdw14 on a shape	generous	fill	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	15	fxr61-15	shape rect	prstShdw shdw15 on a shape	generous	fill	144.00	108.00	under	fill	89.29	-112.24	4.24	58.24	237.53	54.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	16	fxr61-16	shape rect	prstShdw shdw16 on a shape	generous	fill	144.00	108.00	under	fill	-4.24	-112.24	97.77	58.24	237.53	54.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	17	fxr61-17	shape rect	prstShdw shdw17 on a shape	generous	fill	144.00	108.00	under	fill	4.24	4.25	-4.24	-4.25	144.00	108.00				0.400		same
+cr081-phase0-r2	fxr61-preset-shapes	17	fxr61-17	shape rect	prstShdw shdw17 on a shape	generous	fill	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	18	fxr61-18	shape rect	prstShdw shdw18 on a shape	generous	fill	144.00	108.00	under	fill	4.24	4.25	-4.24	-4.25	144.00	108.00				0.400		same
+cr081-phase0-r2	fxr61-preset-shapes	18	fxr61-18	shape rect	prstShdw shdw18 on a shape	generous	fill	144.00	108.00	under	fill	-4.24	-4.24	4.24	4.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	19	fxr61-19	shape rect	prstShdw shdw19 on a shape	generous	fill	144.00	108.00	under	fill	-4.24	-58.24	4.24	4.24	144.00	54.00				0.000		same
+cr081-phase0-r2	fxr61-preset-shapes	20	fxr61-20	shape rect	prstShdw shdw20 on a shape	generous	fill	144.00	108.00	under	fill	-4.24	-112.24	4.24	112.24	144.00	108.00				0.000		same
+cr081-phase0-r2	fxr70-combo	1	fxr70-01	photo.png	all five	generous	image DCTDecode smask	144.48	108.48	under	image FlateDecode	10.56	-93.12	14.88	118.56	169.92	133.92	472x372	2.778	0.278	14553D		same
+cr081-phase0-r2	fxr70-combo	1	fxr70-01	photo.png	all five	generous	image DCTDecode smask	144.48	108.48	under	image FlateDecode	10.08	10.32	14.40	14.16	168.96	132.96	469x369	2.776	0.400	000000		same
+cr081-phase0-r2	fxr70-combo	1	fxr70-01	photo.png	all five	generous	image DCTDecode smask	144.48	108.48	under	image FlateDecode	8.16	8.16	8.16	8.16	160.80	124.80	447x347	2.780	0.400	145F82		same
+cr081-phase0-r2	fxr70-combo	2	fxr70-02	photo.png	outer shadow and glow	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	10.32	10.35	14.64	14.61	168.96	132.96	469x369	2.776	0.400	000000		same
+cr081-phase0-r2	fxr70-combo	2	fxr70-02	photo.png	outer shadow and glow	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	8.40	8.43	8.40	8.37	160.80	124.80	447x347	2.780	0.400	145F82		same
+cr081-phase0-r2	fxr70-combo	3	fxr70-03	photo.png	glow and soft edge	generous	image DCTDecode smask	144.30	108.30	under	image FlateDecode	8.16	8.16	8.16	8.16	160.62	124.62	447x347	2.783	0.400	145F82		same
+cr081-phase0-r2	fxr70-combo	4	fxr70-04	photo.png	inner shadow and soft edge	generous	image DCTDecode smask	144.30	108.30	nothing													same
+cr081-phase0-r2	fxr70-combo	5	fxr70-05	photo.png	outer shadow and reflection	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	2.88	-101.01	7.02	110.67	153.90	117.66	428x327	2.781	0.431	1B602F		same
+cr081-phase0-r2	fxr70-combo	5	fxr70-05	photo.png	outer shadow and reflection	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.19	6.30	6.27	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr70-combo	6	fxr70-06	photo.png	outer and inner shadow	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.19	6.30	6.27	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr70-combo	6	fxr70-06	photo.png	outer and inner shadow	generous	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.27	0.06	0.03	144.30	108.30	401x301	2.779	0.502	000000		same
+cr081-phase0-r2	fxr71-frames	1	fxr71-01	photo.png ellipse	ellipse frame, outer shadow	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.48	6.38	152.64	116.64	424x324	2.778	0.400	000000		same
+cr081-phase0-r2	fxr71-frames	2	fxr71-02	photo.png ellipse	ellipse frame, glow	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	8.40	8.50	8.22	8.12	160.62	124.62	447x347	2.783	0.400	145F82		same
+cr081-phase0-r2	fxr71-frames	3	fxr71-03	photo.png ellipse	ellipse frame, inner shadow	generous	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.498	000000		same
+cr081-phase0-r2	fxr71-frames	4	fxr71-04	photo.png ellipse	ellipse frame, soft edge	generous	image DCTDecode smask	144.30	108.30	nothing													same
+cr081-phase0-r2	fxr71-frames	5	fxr71-05	photo.png ellipse	ellipse frame, reflection	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.506	1B612F		same
+cr081-phase0-r2	fxr71-frames	6	fxr71-06	photo.png roundRect	roundRect frame, outer shadow	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr71-frames	7	fxr71-07	photo.png roundRect	roundRect frame, glow	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	8.40	8.50	8.22	8.12	160.62	124.62	447x347	2.783	0.400	145F82		same
+cr081-phase0-r2	fxr71-frames	8	fxr71-08	photo.png roundRect	roundRect frame, inner shadow	generous	image DCTDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.498	000000		same
+cr081-phase0-r2	fxr71-frames	9	fxr71-09	photo.png roundRect	roundRect frame, soft edge	generous	image DCTDecode smask	144.30	108.30	nothing													same
+cr081-phase0-r2	fxr71-frames	10	fxr71-10	photo.png roundRect	roundRect frame, reflection	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.510	1B6130		same
+cr081-phase0-r2	fxr71-frames	11	fxr71-11	photo.png	white line 7pt, outer shadow	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	9.12	9.15	13.26	13.23	166.38	130.38	463x363	2.783	0.400	000000		same
+cr081-phase0-r2	fxr71-frames	11	fxr71-11	photo.png	white line 7pt, outer shadow	generous	image DCTDecode	144.00	108.00	over	stroke	3.50	3.50	3.50	3.50	151.00	115.00						same
+cr081-phase0-r2	fxr71-frames	12	fxr71-12	photo.png	black line 6pt, glow	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	14.40	14.50	14.22	14.12	172.62	136.62	480x380	2.781	0.400	145F82		same
+cr081-phase0-r2	fxr71-frames	12	fxr71-12	photo.png	black line 6pt, glow	generous	image DCTDecode	144.00	108.00	over	stroke	3.00	3.00	3.00	3.00	150.00	114.00						same
+cr081-phase0-r2	fxr72-alpha	1	fxr72-01	lineart.png	lineart.png, outer shadow	generous	image FlateDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.48	6.38	152.64	116.64	424x324	2.778	0.400	000000		same
+cr081-phase0-r2	fxr72-alpha	2	fxr72-02	lineart.png	lineart.png, inner shadow	generous	image FlateDecode	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.502	000000		same
+cr081-phase0-r2	fxr72-alpha	3	fxr72-03	lineart.png	lineart.png, glow	generous	image FlateDecode	144.00	108.00	under	image FlateDecode	8.40	8.34	8.22	8.28	160.62	124.62	447x347	2.783	0.400	145F82		same
+cr081-phase0-r2	fxr72-alpha	4	fxr72-04	lineart.png	lineart.png, soft edge	generous	image FlateDecode smask	144.30	108.30	nothing													same
+cr081-phase0-r2	fxr72-alpha	5	fxr72-05	lineart.png	lineart.png, reflection	generous	image FlateDecode	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.510	FBFBFB		same
+cr081-phase0-r2	fxr72-alpha	6	fxr72-06	lineart-alpha.png	lineart-alpha.png, outer shadow	generous	image FlateDecode smask	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.353	000000		same
+cr081-phase0-r2	fxr72-alpha	7	fxr72-07	lineart-alpha.png	lineart-alpha.png, inner shadow	generous	image FlateDecode smask	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.498	000000		same
+cr081-phase0-r2	fxr72-alpha	8	fxr72-08	lineart-alpha.png	lineart-alpha.png, glow	generous	image FlateDecode smask	144.00	108.00	under	image DCTDecode	8.40	8.34	8.22	8.28	160.62	124.62	447x347	2.783	0.400			same
+cr081-phase0-r2	fxr72-alpha	9	fxr72-09	lineart-alpha.png	lineart-alpha.png, soft edge	generous	image FlateDecode smask	144.30	108.30	nothing													same
+cr081-phase0-r2	fxr72-alpha	10	fxr72-10	lineart-alpha.png	lineart-alpha.png, reflection	generous	image FlateDecode smask	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.271	000000		same
+cr081-phase0-r2	fxr72-alpha	11	fxr72-11	photo.png	photo cropped 25% each side, outer shadow	generous	image DCTDecode	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr80-shapes	1	fxr80-01	shape rect	rect, outer shadow	generous	fill	144.00	108.00	under	image FlateDecode	2.16	2.26	6.48	6.38	152.64	116.64	424x324	2.778	0.400	000000		same
+cr081-phase0-r2	fxr80-shapes	2	fxr80-02	shape ellipse	ellipse, outer shadow	generous	fill	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr80-shapes	3	fxr80-03	shape star5	star5, outer shadow	generous	fill	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr80-shapes	4	fxr80-04	shape rightArrow	rightArrow, outer shadow	generous	fill	144.00	108.00	under	image FlateDecode	2.16	2.26	6.30	6.20	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr80-shapes	5	fxr80-05	shape ellipse	ellipse, glow	generous	fill	144.00	108.00	under	image FlateDecode	8.40	8.50	8.22	8.12	160.62	124.62	447x347	2.783	0.400	145F82		same
+cr081-phase0-r2	fxr80-shapes	6	fxr80-06	shape ellipse	ellipse, inner shadow	generous	fill	144.00	108.00	over	image FlateDecode	0.24	0.34	0.06	-0.04	144.30	108.30	401x301	2.779	0.498	000000		same
+cr081-phase0-r2	fxr80-shapes	7	fxr80-07	shape ellipse	ellipse, soft edge	generous	image FlateDecode smask	144.30	108.30	nothing													same
+cr081-phase0-r2	fxr80-shapes	8	fxr80-08	shape ellipse	ellipse, reflection	generous	fill	144.00	108.00	under	image FlateDecode	0.96	-106.94	0.78	108.68	145.74	109.74	405x305	2.779	0.506	416FC1		same
+cr081-phase0-r2	fxr80-shapes	9	fxr80-09	shape rect	no fill, line 3pt, outer shadow	generous	image FlateDecode smask	155.34	119.58	over	stroke	-3.60	-3.70	-7.74	-7.88	144.00	108.00						same
+cr081-phase0-r2	fxr80-shapes	10	fxr80-10	shape rect	no fill, no line, text, outer shadow	generous	image FlateDecode smask	144.00	100.80	under	image FlateDecode	2.16	2.16	6.30	6.30	152.46	109.26	424x304	2.781	0.357	000000		same
+cr081-phase0-r2	fxr80-shapes	11	fxr80-11	shape rect	filled, text, outer shadow	generous	fill	144.00	108.00	under	image FlateDecode	2.16	2.16	6.30	6.30	152.46	116.46	424x324	2.781	0.400	000000		same
+cr081-phase0-r2	fxr80-shapes	11	fxr80-11	shape rect	filled, text, outer shadow	generous	fill	144.00	108.00	under	image FlateDecode	2.16	-1.44	6.30	2.70	152.46	109.26	424x304	2.781	0.357	000000		same
+cr081-phase0-r2	fxr80-shapes	11	fxr80-11	shape rect	filled, text, outer shadow	generous	fill	144.00	108.00	over	image FlateDecode	0.00	-3.60	0.00	-3.60	144.00	100.80	399x280	2.771	0.000			same
+cr081-phase0-r2	fxr81-effectref-2013	1	fxr81-01	shape rect	effectRef idx 0, no effectLst	generous	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.267 0.447 0.769		same
+cr081-phase0-r2	fxr81-effectref-2013	2	fxr81-02	shape rect	effectRef idx 1, no effectLst	generous	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.267 0.447 0.769		same
+cr081-phase0-r2	fxr81-effectref-2013	3	fxr81-03	shape rect	effectRef idx 2, no effectLst	generous	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.267 0.447 0.769		same
+cr081-phase0-r2	fxr81-effectref-2013	4	fxr81-04	shape rect	effectRef idx 3, no effectLst	generous	fill	144.00	108.00	under	image FlateDecode	5.28	3.87	5.10	6.51	154.38	118.38	429x329	2.779	0.631	000000		same
+cr081-phase0-r2	fxr81-effectref-2013	4	fxr81-04	shape rect	effectRef idx 3, no effectLst	generous	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.267 0.447 0.769		same
+cr081-phase0-r2	fxr81-effectref-2013	5	fxr81-05	shape rect	effectRef idx 3, an empty effectLst stated	generous	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.267 0.447 0.769		same
+cr081-phase0-r2	fxr82-effectref-2023	1	fxr82-01	shape rect	effectRef idx 0, no effectLst	generous	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
+cr081-phase0-r2	fxr82-effectref-2023	2	fxr82-02	shape rect	effectRef idx 1, no effectLst	generous	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
+cr081-phase0-r2	fxr82-effectref-2023	3	fxr82-03	shape rect	effectRef idx 2, no effectLst	generous	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
+cr081-phase0-r2	fxr82-effectref-2023	4	fxr82-04	shape rect	effectRef idx 3, no effectLst	generous	fill	144.00	108.00	under	image FlateDecode	5.52	4.11	5.34	6.99	154.86	119.10	431x331	2.783	0.631	000000		same
+cr081-phase0-r2	fxr82-effectref-2023	4	fxr82-04	shape rect	effectRef idx 3, no effectLst	generous	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
+cr081-phase0-r2	fxr82-effectref-2023	5	fxr82-05	shape rect	effectRef idx 3, an empty effectLst stated	generous	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
+cr081-phase0-r2	fxr83-effectref-custom	1	fxr83-01	shape rect	effectRef idx 1, no effectLst, theme with a glow at 2 and a reflection at 3	generous	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
+cr081-phase0-r2	fxr83-effectref-custom	2	fxr83-02	shape rect	effectRef idx 2, no effectLst, theme with a glow at 2 and a reflection at 3	generous	fill	144.00	108.00	under	image FlateDecode	12.00	12.03	11.82	11.79	167.82	131.82	467x367	2.783	0.600	E87030		same
+cr081-phase0-r2	fxr83-effectref-custom	2	fxr83-02	shape rect	effectRef idx 2, no effectLst, theme with a glow at 2 and a reflection at 3	generous	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
+cr081-phase0-r2	fxr83-effectref-custom	3	fxr83-03	shape rect	effectRef idx 3, no effectLst, theme with a glow at 2 and a reflection at 3	generous	fill	144.00	108.00	under	image FlateDecode	1.68	-107.73	1.50	111.15	147.18	111.42	409x310	2.779	0.510	125B7C		same
+cr081-phase0-r2	fxr83-effectref-custom	3	fxr83-03	shape rect	effectRef idx 3, no effectLst, theme with a glow at 2 and a reflection at 3	generous	fill	144.00	108.00	over	stroke	0.00	0.00	0.00	0.00	144.00	108.00				0.082 0.376 0.510		same
