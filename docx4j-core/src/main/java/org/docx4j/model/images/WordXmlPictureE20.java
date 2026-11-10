@@ -598,16 +598,37 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      * (WordLayoutFixups.pictureHeightPt) counts the padding. An anchored picture's effect extent is left
      * to the anchor's own wrap geometry.
      *
+     * <p>The extents are added to any padding the picture has already: a crop which moves an edge out
+     * (CR-029) pads the picture inside its frame, and the effect extent lies outside the frame.  Until
+     * 17.3.7 the effect extent replaced that padding, so such a picture was drawn at its frame's top left
+     * and its frame shrank to the bitmap's part (15_en-US_sdt_tbl_469: a 199pt band above a picture lost;
+     * CR-081 phase 2 findings §5).</p>
+     *
      * @since 17.3.5
      */
     void stampEffectExtent(Document d) {
     	if (d==null || d.getDocumentElement()==null || inline==null || inline.getEffectExtent()==null) return;
     	org.docx4j.dml.wordprocessingDrawing.CTEffectExtent e = inline.getEffectExtent();
     	org.w3c.dom.Element g = d.getDocumentElement();
-    	if (e.getT() > 0) g.setAttribute("padding-top", fmt(e.getT() / EMU_PER_PT) + "pt");
-    	if (e.getB() > 0) g.setAttribute("padding-bottom", fmt(e.getB() / EMU_PER_PT) + "pt");
-    	if (e.getL() > 0) g.setAttribute("padding-left", fmt(e.getL() / EMU_PER_PT) + "pt");
-    	if (e.getR() > 0) g.setAttribute("padding-right", fmt(e.getR() / EMU_PER_PT) + "pt");
+    	addPadding(g, "padding-top", e.getT());
+    	addPadding(g, "padding-bottom", e.getB());
+    	addPadding(g, "padding-left", e.getL());
+    	addPadding(g, "padding-right", e.getR());
+    }
+
+    /** The side's padding grown by emu (where positive): added to a padding in points it has already */
+    private static void addPadding(org.w3c.dom.Element g, String side, long emu) {
+    	if (emu <= 0) return;
+    	double pt = emu / EMU_PER_PT;
+    	String had = g.getAttribute(side).trim();
+    	if (had.endsWith("pt")) {
+    		try {
+    			pt += Double.parseDouble(had.substring(0, had.length() - 2));
+    		} catch (NumberFormatException ex) {
+    			log.debug("A picture's " + side + " not read: " + had);
+    		}
+    	}
+    	g.setAttribute(side, fmt(pt) + "pt");
     }
 
     // ---------------------------------------------------------------- anchored pictures

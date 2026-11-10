@@ -352,6 +352,24 @@ public class PictureEffectsFoTest {
 		assertTrue("the shadow, a picture with a soft mask", s.contains("/SMask"));
 	}
 
+	/**
+	 * A crop moving the top edge out by a quarter (CR-029: the bitmap in the frame's lower 80%, 21.6pt of padding above
+	 * it) with a 3pt effect extent above and below: the effect extent is added to the crop's padding, not put in its
+	 * place, so the frame keeps its 108pt and the picture its place in it (CR-081 phase 2 findings §5)
+	 */
+	@Test
+	public void anEffectExtentIsAddedToACropsPadding() throws Exception {
+		for (int flags : BOTH) {
+			org.w3c.dom.Document fo = fo(pkg(picture("png"), null, "0 38100 0 38100", false, "<a:srcRect t=\"-25000\"/>"), flags);
+			NodeList g = fo.getElementsByTagNameNS(FO_NS, "external-graphic");
+			assertEquals(route(flags), 1, g.getLength());
+			Element e = (Element) g.item(0);
+			assertEquals(route(flags), "86.4pt", e.getAttribute("content-height"));
+			assertEquals(route(flags), "24.6pt", e.getAttribute("padding-top"));
+			assertEquals(route(flags), "3pt", e.getAttribute("padding-bottom"));
+		}
+	}
+
 	/** The picture's own bytes in the SVG keep FOP's JPEG passthrough: the PDF holds the JPEG (DCTDecode) */
 	@Test
 	public void aJpegPassesThroughToThePdf() throws Exception {

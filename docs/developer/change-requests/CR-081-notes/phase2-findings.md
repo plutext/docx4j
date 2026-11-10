@@ -103,3 +103,11 @@ and `compare_effects.py` compares docx4j's PDF of the same files.
   - A picture with a frame or effects is drawn through the SVG, which keeps the crop's place, so phase 2 fixes that
     document. A plain picture with both still loses it.
   - The fix is to add the effect extent to CR-029's padding. It is not part of phase 2.
+  - **Fixed 2026-11-11, after phase 2** (Jason: "then fix the defect"). `stampEffectExtent` adds the effect extent
+    to the padding the picture has already.
+    - 469 with its lines taken out, so its third picture is plain: the bitmap at 85.3, 276.3 (439 by 558pt) against
+      Word's 85.3, 276.4. b416 had it at 74.0, 77.3.
+    - Gate b417 (b416's jars with that docx4j-core) against b416: 0 movers, events equal. No corpus document has a
+      plain picture with both: 469's is framed, and 14_en-GB_num_tbl_14450's effect extent is on a side its crop
+      doesn't pad.
+    - Test: `PictureEffectsFoTest.anEffectExtentIsAddedToACropsPadding` (both routes).

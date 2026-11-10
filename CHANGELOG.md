@@ -33,6 +33,7 @@ Changes in Version 17.3.7
 - Anchored pictures wrap as Word wraps them: their effect extent counted, the wrap starting distT above, behind-text pictures wrapped, a picture above its paragraph drawn there, and the text after a top-and-bottom picture no longer a line low.
 - A picture's effects are drawn as Word draws them: outer and inner shadow, glow, soft edge and reflection; a JPEG still passes through (CR-081; needs docx4j-chart-render).
 - A picture's frame is drawn: its geometry (an oval, a rounded rectangle) clips it, its line is drawn wholly outside it, and a fill behind it shows through a transparent picture (CR-081).
+- An inline picture whose crop moves an edge out keeps its place in its frame when it has an effect extent; the effect extent had replaced the crop's padding.
 
 ### HTML output
 - Shapes, groups and canvases are drawn (inline SVG) with their text over them; the XSLT route had dropped a shape's text (CR-080).
